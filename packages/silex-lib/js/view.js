@@ -1,30 +1,43 @@
-(function (){
-    goog.require('goog.dom');
-    goog.require('goog.array');
-    goog.require('goog.events');
-    goog.require('goog.object');
-    goog.require('goog.ui.Menu');
-    goog.require('goog.ui.MenuItem');
-    
-    var EVENTS = goog.object.getValues(goog.ui.Component.EventType);
-    console.log('Listening for: ' + EVENTS.join(', ') + '.');
+var silex = silex || {}; 
 
+goog.provide('silex.SilexMenu');
 
-    var el2 = goog.dom.getElement('menu2');
-    var menu2 = new goog.ui.Menu();
-    menu2.decorate(el2);
+goog.require('goog.ui.Menu');
+goog.require('goog.ui.MenuItem');
 
-    goog.events.listen(menu2, 'action', function(e) {
-      if (e.target.getId() == 'addNewItem') {
-        var n = prompt('Enter a new item...');
-        if (n) {
-          menu2.addItemAt(new goog.ui.MenuItem(n), menu2.getItemCount() - 4);
-        }
-      } else if (e.target.getId() == 'enableNewItems') {
-        menu2.getItemAt(menu2.getItemCount() - 1).setEnabled(
-            e.target.isChecked());
-      } else {
-        alert(e.target.getCaption());
-      }
+/**
+ * the Silex menu class
+ */
+silex.SilexMenu = function(){
+}
+/**
+ * singleton pattern
+ */
+silex.SilexMenu._instance = null;
+/**
+ * singleton pattern
+ */
+silex.SilexMenu.getInstance = function(){
+    if (silex.SilexMenu._instance === null){
+        silex.SilexMenu._instance = new silex.SilexMenu();
+    }
+    return silex.SilexMenu._instance;
+}
+/**
+ * reference to the menu class
+ */
+silex.SilexMenu.prototype.menu;
+/**
+ * reference to the attached element
+ */
+silex.SilexMenu.prototype.element;
+/**
+ * load the template and make it a menu
+ */
+silex.SilexMenu.prototype.attachTo = function(element){
+    this.element = element;
+    silex.TemplateHelper.loadTemplate("html/ui/menu.html", element, function(){
+        this.menu = new goog.ui.Menu();
+        this.menu.decorate(element);
     });
-})();
+}
