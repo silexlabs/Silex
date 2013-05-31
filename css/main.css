@@ -1,0 +1,11 @@
+/* 		Silex base styles 			 */
+body{
+	margin:0px !important;
+	padding:0px !important;
+	font-family : Tahoma, Arial, Helvetica, sans-serif !important;
+	width:100% !important;
+	height:100% !important;
+	max-width: none !important;
+	max-height: none !important;
+	background-color:white !important;
+}
