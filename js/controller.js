@@ -27,6 +27,10 @@ silex.controller.Main.getInstance = function(){
  */
 silex.controller.Main.prototype.menu;
 /**
+ * reference to the page tool component (view)
+ */
+silex.controller.Main.prototype.pageTool;
+/**
  * reference to the stage component (view)
  */
 silex.controller.Main.prototype.stage;
@@ -37,9 +41,10 @@ silex.controller.Main.prototype.file;
 /**
  * attach events
  */
-silex.controller.Main.prototype.initView = function(menu, stage){
+silex.controller.Main.prototype.initView = function(menu, pageTool, stage){
 	console.log('controller initView '+menu+', '+stage);
 	this.menu = menu;
+	this.pageTool = pageTool;
 	this.stage = stage;
 	var that = this;
 	this.menu.onMenuEvent = function(e){that.menuEvent(e);};
