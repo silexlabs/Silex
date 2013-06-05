@@ -3,6 +3,7 @@ silex.view = silex.view || {};
 
 goog.provide('silex.view.Menu');
 goog.provide('silex.view.Stage');
+goog.provide('silex.view.PageTool');
 
 goog.require('goog.ui.menuBar');
 goog.require('goog.ui.Menu');
@@ -181,7 +182,42 @@ silex.view.Stage.prototype.getCleanContent = function(){
 	return cleanContainer.innerHTML;
 }
 
-
+//////////////////////////////////////////////////////////////////
+// PageTool class
+//////////////////////////////////////////////////////////////////
+/**
+ * the Silex PageTool class
+ */
+silex.view.PageTool = function(){
+}
+/**
+ * singleton pattern
+ */
+silex.view.PageTool._instance = null;
+/**
+ * reference to the element to render to
+ */
+silex.view.PageTool.prototype.element;
+/**
+ * singleton pattern
+ */
+silex.view.PageTool.getInstance = function(){
+	if (silex.view.PageTool._instance === null){
+		silex.view.PageTool._instance = new silex.view.PageTool();
+	}
+	return silex.view.PageTool._instance;
+}
+/**
+ * render to the given html element
+ */
+silex.view.PageTool.prototype.attachTo = function(element, cbk){
+	console.log('attachTo '+element);
+	this.element = element;
+	that = this;
+	silex.TemplateHelper.loadTemplate("html/ui/page-tool.html", element, function(){
+		cbk();
+	});
+}
 
 
 

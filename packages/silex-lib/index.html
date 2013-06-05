@@ -1,33 +1,49 @@
 <!DOCTYPE HTML>
 <html lang="en-US">
 <head>
-    <meta charset="UTF-8">
-    <title>Silex v2.0</title>
-    
-    <!-- libs -->
-    <script src="libs/handlebars.js"></script>
-    <script src="libs/closure/goog/base.js"></script>
-    
-    <!-- jquery related lib -->
-    <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
-    <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
-    <script src="libs/editable.js"></script>
-    <script src="libs/pageable.js"></script>
+	<meta charset="UTF-8">
+	<title>Silex v2.0</title>
+	
+	<!-- libs -->
+	<script src="libs/handlebars.js"></script>
+	<script src="libs/closure/goog/base.js"></script>
+	
+	<!-- jquery related lib -->
+	<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+	<script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+	<script src="libs/editable.js"></script>
+	<script src="libs/pageable.js"></script>
 
-    <!-- core classes -->
-    <script src="js/boot.js"></script>
-    <script src="js/model.js"></script>
-    <script src="js/helper.js"></script>
-    <script src="js/view.js"></script>
-    <script src="js/controller.js"></script>
+	<!-- core classes -->
+	<script src="js/boot.js"></script>
+	<script src="js/model.js"></script>
+	<script src="js/helper.js"></script>
+	<script src="js/view.js"></script>
+	<script src="js/controller.js"></script>
 
-    <!-- main styles -->
-    <link rel="stylesheet" type="text/css" href="css/main.css" />
+	<!-- Bootstrap -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link href="libs/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
+
+	<!-- Normalize -->
+	<link href="libs/normalize.css" rel="stylesheet">
+
+	<!-- main styles -->
+	<link rel="stylesheet" type="text/css" href="css/main.css" />
 </head>
 <body>
-    <div id="_silex_menu"></div>
-    <div id="_silex_pagetool"></div>
-    <div id="_silex_csstool"></div>
-    <div id="_silex_stage"></div>
+    <div id="_silex_container" class="container-fluid fill">
+        
+        <div id="_silex_menu" class="fill"></div>
+        
+        <div class="row-fluid">
+            <div id="_silex_pagetool" class="fixed"></div>
+            <div id="_silex_stage" class="fill"></div>
+        </div>
+    </div>
+
+
+	<!-- Bootstrap -->
+	<script src="libs/bootstrap/js/bootstrap.min.js"></script>
 </body>
 </html>
