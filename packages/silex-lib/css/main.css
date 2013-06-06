@@ -1,4 +1,4 @@
-/* 		Silex base styles 			 */
+/* 		Silex base styles 			 *
 body{
 	margin:0px !important;
 	padding:0px !important;
@@ -38,6 +38,55 @@ body{
 	position: absolute;
 }
 .row-fluid{
-    position: absolute;
     z-index: -999999;	
 }
+
+/* */
+
+/* override default bootstrap css */
+.navbar-inner{
+	background-color: white;
+	background-image: none;
+
+}
+.well {
+	background: inherit;
+	border: none;
+}
+#_silex_stage {
+    margin-top: 100px; /* height of the menu => offset for silex stage */
+}
+.hero-unit{
+	xposition: inherit;
+	xheight: 600px;
+	margin: 0;
+	padding: 0;
+}
+/* styles for Silex UIs */
+.sidebar-nav-fixed {
+    padding: 9px 0;
+    position:fixed;
+    left:20px;
+    top:100px;
+    width:219px;
+}
+.navbar .brand {
+    float: none;
+    margin-top: 18px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    font-size: 20px;
+    max-width: 649px;
+	opacity: .5;
+	cursor: pointer;
+	color: black;
+	font: italic 24px arial,sans-serif;
+	padding-bottom: 0;
+}
+.row-fluid > .span-fixed-sidebar {
+    margin-left: 259px;
+    min-height: 0;
+}
+
+
+

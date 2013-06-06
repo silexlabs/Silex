@@ -32,15 +32,33 @@
 	<link rel="stylesheet" type="text/css" href="css/main.css" />
 </head>
 <body>
-    <div id="_silex_container" class="container-fluid fill">
-        
-        <div id="_silex_menu" class="fill"></div>
-        
-        <div class="row-fluid">
-            <div id="_silex_pagetool" class="fixed"></div>
-            <div id="_silex_stage" class="fill"></div>
+<div class="navbar navbar-fixed-top">
+  <div class="navbar-inner">
+    <div class="container-fluid">
+      <a class="brand" href="#">Untitled website</a>
+      <div class="nav-collapse">
+        <div id="_silex_menu"  class="nav">
         </div>
+        <p class="navbar-text pull-right">Logged in as <a href="#">username</a></p>
+      </div><!--/.nav-collapse -->
+
     </div>
+  </div>
+</div>
+
+<div class="container-fluid">
+  <div class="row-fluid row">
+    <div class="">
+      <div class="well sidebar-nav-fixed">
+        <div id="_silex_pagetool" class="nav nav-list">
+        </div>
+      </div><!--/.well -->
+    </div><!--/span-->
+
+    <div id="_silex_stage" class="span9 span-fixed-sidebar hero-unit">
+    </div><!--/span-->
+  </div><!--/row-->
+</div><!--/.fluid-container-->
 
 
 	<!-- Bootstrap -->
