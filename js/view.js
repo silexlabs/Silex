@@ -49,7 +49,7 @@ silex.view.Menu.prototype.onMenuEvent;
 silex.view.Menu.prototype.attachTo = function(element, cbk){
 	this.element = element;
 	var that = this;
-	silex.TemplateHelper.loadTemplate("html/ui/menu.html", element, function(){
+	silex.TemplateHelper.loadTemplateFile("html/ui/menu.html", element, function(){
 //		that.menu = new goog.ui.Menu();
 //		that.menu.decorate(element);
 		that.buildMenu(element);
@@ -135,7 +135,7 @@ silex.view.Stage.prototype.attachTo = function(element, cbk){
 	console.log('attachTo '+element);
 	this.element = element;
 	that = this;
-	silex.TemplateHelper.loadTemplate("html/ui/stage.html", element, function(){
+	silex.TemplateHelper.loadTemplateFile("html/ui/stage.html", element, function(){
 		cbk();
 	});
 }
@@ -166,7 +166,7 @@ silex.view.Stage.prototype.cleanup = function(){
  * return clean (non-editable) html content
  */
 silex.view.Stage.prototype.getCleanContent = function(){
-	console.log('cleanup ');
+	console.log('getCleanContent ');
 
 	var stageContainer = goog.dom.getElement('_silex_body');
 	var cleanContainer = stageContainer.cloneNode();
@@ -180,6 +180,25 @@ silex.view.Stage.prototype.getCleanContent = function(){
 	$(cleanContainer).find('.ui-resizable-handle').remove();
 
 	return cleanContainer.innerHTML;
+}
+/**
+ * get the publication pages 
+ */
+silex.view.Stage.prototype.getPages = function(){
+	console.log('getPages ');
+
+	var stageContainer = goog.dom.getElement('_silex_body');
+	
+	var pages = [];
+	$('#_silex_body a[href^="#"]').each(function() {
+		console.log('found page '+this.getAttribute('href'));
+		pages.push({
+			name: this.getAttribute('href'),
+			element: this
+		});
+	});
+
+	return pages;
 }
 
 //////////////////////////////////////////////////////////////////
@@ -208,15 +227,75 @@ silex.view.PageTool.getInstance = function(){
 	return silex.view.PageTool._instance;
 }
 /**
+ * callback for the events, set by the controller
+ */
+silex.view.PageTool.prototype.onPageToolEvent;
+/**
+ * dataProvider 
+ */
+silex.view.PageTool.prototype.dataProvider;
+/**
  * render to the given html element
  */
 silex.view.PageTool.prototype.attachTo = function(element, cbk){
-	console.log('attachTo '+element);
+	console.log('PageTool attachTo '+element);
 	this.element = element;
-	that = this;
-	silex.TemplateHelper.loadTemplate("html/ui/page-tool.html", element, function(){
+	this.dataProvider = [];
+	
+	var that = this;
+	silex.TemplateHelper.loadTemplateFile("html/ui/page-tool.html", element, function(){
 		cbk();
 	});
+}
+/**
+ * refresh with new data
+ */
+silex.view.PageTool.prototype.setDataProvider = function(data){
+	console.log('PageTool setDataProvider '+data.length);
+
+	this.dataProvider = data;
+
+	//$(this.element).find( '.page-tool-container' ).sortable('destroy');
+	//$(this.element).find( '.page-tool-container' ).selectable('destroy');
+
+	var container = goog.dom.getElementByClass('page-tool-container', this.element);
+	var templateHtml = goog.dom.getElementByClass('page-tool-template', this.element).innerHTML;
+	silex.TemplateHelper.resolveTemplate(container, templateHtml, {pages:data});
+
+	var that = this;
+	$(this.element).find( '.page-tool-container' ).selectable(
+		{
+			stop: function( event, ui ) {
+				that.selectionChanged();
+			}
+		}
+	);
+	$(this.element).find( '.page-tool-container' ).disableSelection();
+}
+/**
+ * selection has changed
+ */
+silex.view.PageTool.prototype.selectionChanged = function(){
+	console.log('PageTool selectionChanged '+this.getSelectedItems().length);
+	if (this.onPageToolEvent){
+		this.onPageToolEvent({
+			type: 'selectionChanged'
+		});
+	}
+}
+/**
+ * get selection 
+ */
+silex.view.PageTool.prototype.getSelectedItems = function(){
+	console.log('PageTool getSelectedItems ');
+	var res = [];
+	var that = this;
+	$( ".page-tool-container .page-container.ui-selected", this.element ).each(function() {
+		var index = $('.page-tool-container', that.element).index( this );
+		console.log('selected item with index '+index+' - '+this.getAttribute('class'));
+		res.push(that.dataProvider[index]);
+    });
+    return res;
 }
 
 

@@ -15,7 +15,7 @@ window.onload = function() {
 			silex.view.Stage.getInstance()
 		);
 
-		silex.controller.Main.getInstance().initModel(silex.model.File.getInstance());
+		silex.controller.Main.getInstance().attachEvents();
 
 		var element = goog.dom.getElement('_silex_pagetool');
 
@@ -25,7 +25,11 @@ window.onload = function() {
 
 			silex.view.Stage.getInstance().attachTo(element, function (){
 				console.log('stage ready');
-				silex.model.File.getInstance().load(null);
+				//var url = null;
+				var url = 'html/test1.html';
+				silex.model.File.getInstance().load(url, function(){
+					silex.model.Selection.getInstance().setSelectedFile(url);
+				});
 			});
 		});
 	});

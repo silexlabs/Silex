@@ -2,12 +2,14 @@ var silex = silex || {};
 silex.model = silex.model || {}; 
 
 goog.provide('silex.model.File');
+goog.provide('silex.model.Selection');
 
-silex.model.File = function(){
-	
-}
+//////////////////////////////////////////////////////////////////
+// File class
+//////////////////////////////////////////////////////////////////
+
 /**
- * the Silex File class
+ * constructor
  */
 silex.model.File = function(){
 }
@@ -44,19 +46,11 @@ silex.model.File.prototype.bodyTag;
 /**
  * callback for the event, has to be set by the controller
  */
-silex.model.File.prototype.onClose;
-/**
- * callback for the event, has to be set by the controller
- */
-silex.model.File.prototype.onLoad;
-/**
- * callback for the event, has to be set by the controller
- */
 silex.model.File.prototype.onError;
 /**
  * load data
  */
-silex.model.File.prototype.load = function(url){
+silex.model.File.prototype.load = function(url, cbk){
 	this.url = url;
 	if (url === null){
 		url = silex.model.File.CREATION_TEMPLATE;
@@ -95,8 +89,7 @@ silex.model.File.prototype.load = function(url){
 			// extract the body section
 			that.bodyTag = rawHtml.substring(closingTagIdx + 1, bodyCloseIdx);
 		}
-		if (that.onLoad) that.onLoad();
-		console.log('file is loaded, call '+that.onLoad);
+		if (cbk) cbk();
 	});
 }
 /**
@@ -106,7 +99,6 @@ silex.model.File.prototype.close = function(){
 	this.url = null;
 	this.headTag = '';
 	this.bodyTag = '';
-	if (this.onClose) this.onClose();
 }
 /**
  * reset data, close file
@@ -115,4 +107,80 @@ silex.model.File.prototype.save = function(html){
 	console.log('save file '+this.url+' - '+html);
 }
 
+//////////////////////////////////////////////////////////////////
+// Selection class
+//////////////////////////////////////////////////////////////////
+
+/**
+ * constructor
+ */
+silex.model.Selection = function(){
+	this.listeners = [];
+	this.file = "";
+	this.page = "";
+	this.element = null;
+}
+/**
+ * singleton pattern
+ */
+silex.model.Selection._instance = null;
+/**
+ * singleton pattern
+ */
+silex.model.Selection.getInstance = function(){
+	if (silex.model.Selection._instance === null){
+		silex.model.Selection._instance = new silex.model.Selection();
+	}
+	return silex.model.Selection._instance;
+}
+/** 
+ * opened file
+ */
+silex.model.Selection.prototype.file;
+/** 
+ * selected page
+ */
+silex.model.Selection.prototype.page;
+/** 
+ * selected element
+ */
+silex.model.Selection.prototype.element;
+/** 
+ * listeners
+ */
+silex.model.Selection.prototype.listeners;
+/** 
+ * change event callback, set by the controller
+ */
+silex.model.Selection.prototype.onChanged;
+/** 
+ * page selection
+ */
+silex.model.Selection.prototype.getSelectedPage = function(){
+	return this.page;
+}
+silex.model.Selection.prototype.setSelectedPage = function(name, notify){
+	this.page = name;
+	if (notify!==false && this.onChanged) this.onChanged("page");
+}
+/** 
+ * file selection
+ */
+silex.model.Selection.prototype.getSelectedFile = function(){
+	return this.file;
+}
+silex.model.Selection.prototype.setSelectedFile = function(name, notify){
+	this.file = name;
+	if (notify!==false && this.onChanged) this.onChanged("file");
+}
+/** 
+ * element selection
+ */
+silex.model.Selection.prototype.getSelectedElement = function(){
+	return this.element;
+}
+silex.model.Selection.prototype.setSelectedElement = function(element, notify){
+	this.element = element;
+	if (notify!==false && this.onChanged) this.onChanged("element");
+}
 
