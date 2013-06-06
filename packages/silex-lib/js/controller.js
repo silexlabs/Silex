@@ -7,6 +7,8 @@ goog.provide('silex.controller.Main');
  * the Silex controller class
  */
 silex.controller.Main = function(){
+	this.file = silex.model.File.getInstance();
+	this.selection = silex.model.Selection.getInstance();
 }
 /**
  * singleton pattern
@@ -35,9 +37,13 @@ silex.controller.Main.prototype.pageTool;
  */
 silex.controller.Main.prototype.stage;
 /**
- * reference to the file model
+ * reference to the model
  */
 silex.controller.Main.prototype.file;
+/**
+ * reference to the model
+ */
+silex.controller.Main.prototype.selection;
 /**
  * attach events
  */
@@ -48,16 +54,30 @@ silex.controller.Main.prototype.initView = function(menu, pageTool, stage){
 	this.stage = stage;
 	var that = this;
 	this.menu.onMenuEvent = function(e){that.menuEvent(e);};
+	this.pageTool.onPageToolEvent = function(e){that.pageToolEvent(e);};
 }
 /**
  * attach events
  */
-silex.controller.Main.prototype.initModel = function(file){
-	console.log('controller initModel '+file);
-	this.file = file;
+silex.controller.Main.prototype.attachEvents = function(){
+	console.log('controller attachEvents ');
 	var that = this;
-	this.file.onLoad = function(){that.fileLoaded();};
-	this.file.onClose = function(){that.fileClosed();};
+	this.selection.onChanged = function (eventName){
+		if (eventName == 'file'){
+			if (that.selection.getSelectedFile()==null){
+				that.fileClosed();
+			}
+			else{
+				that.fileLoaded();
+			}
+		}
+	};
+}
+/**
+ * page tool event
+ */
+silex.controller.Main.prototype.pageToolEvent = function(e){
+	console.log('page tool event '+this.pageTool.getSelectedItems()[0]+' - '+e.type);
 }
 /**
  * menu events
@@ -66,7 +86,9 @@ silex.controller.Main.prototype.menuEvent = function(e){
 	console.log('menu event '+e.target.getCaption() + ' - '+e.target.getId());
 	switch(e.target.getId()){
 		case 'file.new':
-			this.file.load(null);
+			this.file.load(null, function(){
+				this.selection.setSelectedFile(url);
+			});
 			break;
 		case 'file.save':
 			this.file.save(this.stage.getCleanContent());
@@ -75,20 +97,22 @@ silex.controller.Main.prototype.menuEvent = function(e){
 			break;
 		case 'file.close':
 			this.file.close();
+			this.selection.setSelectedFile(null);
 			break;
 	}
 }
 /**
  * model event
  */
-silex.controller.Main.prototype.fileLoaded = function(e){
+silex.controller.Main.prototype.fileLoaded = function(){
 	console.log('fileLoaded');
 	var htmlData = this.file.bodyTag;
 	this.stage.setContent(htmlData);
+	this.pageTool.setDataProvider(this.stage.getPages());
 }
 /**
  * model event
  */
-silex.controller.Main.prototype.fileClosed = function(e){
+silex.controller.Main.prototype.fileClosed = function(){
 	this.stage.cleanup();
 }

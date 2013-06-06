@@ -1,6 +1,9 @@
 <style type="text/css">
 	.page-tool-container{
 	}
+	.page-tool-container .ui-selected .page-preview{
+		border: 2px solid;
+	}
 	.page-container{
 		overflow-x: visible;
 		overflow-y: scroll;
@@ -19,29 +22,17 @@
 	}
 </style>
 
+<script class="page-tool-template" type="text/x-handlebars-template">
+	{{#each pages}}
+		<div class="page-container">
+			<div class="page-preview">
+				
+			</div>
+			{{name}}
+		</div>
+	{{else}}
+		<div class="loading">Loading..</div>
+	{{/each}}
+</script>
 <div class="page-tool-container">
-	<div class="page-container">
-		<div class="page-preview">
-			
-		</div>
-		Loading
-	</div>
-	<div class="page-container">
-		<div class="page-preview">
-			
-		</div>
-		Home
-	</div>
-	<div class="page-container">
-		<div class="page-preview">
-			
-		</div>
-		Services
-	</div>
-	<div class="page-container">
-		<div class="page-preview">
-			
-		</div>
-		Contact
-	</div>
 </div>
