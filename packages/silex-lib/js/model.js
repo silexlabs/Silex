@@ -14,23 +14,6 @@ goog.provide('silex.model.Selection');
 silex.model.File = function(){
 }
 /**
- * singleton pattern
- */
-silex.model.File._instance = null;
-/**
- * singleton pattern
- */
-silex.model.File.getInstance = function(){
-	if (silex.model.File._instance === null){
-		silex.model.File._instance = new silex.model.File();
-	}
-	return silex.model.File._instance;
-}
-/**
- * creation template URL
- */
-silex.model.File.CREATION_TEMPLATE = 'html/creation-template.html';
-/**
  * current file url
  * if the current file is a new file, it has no url
  */
@@ -52,9 +35,7 @@ silex.model.File.prototype.onError;
  */
 silex.model.File.prototype.load = function(url, cbk){
 	this.url = url;
-	if (url === null){
-		url = silex.model.File.CREATION_TEMPLATE;
-	}
+
 	console.log('load file '+url);
 
 	var that = this;
@@ -65,7 +46,7 @@ silex.model.File.prototype.load = function(url, cbk){
 		// success of the request
 		var xhr = e.target;
 		var rawHtml = xhr.getResponse();
-		console.log('request success '+rawHtml);
+		console.log('request success ');
 
 		// use lower case to find head and body tags
 		var lowerCaseHtml = rawHtml.toLowerCase();
@@ -119,19 +100,6 @@ silex.model.Selection = function(){
 	this.file = "";
 	this.page = "";
 	this.element = null;
-}
-/**
- * singleton pattern
- */
-silex.model.Selection._instance = null;
-/**
- * singleton pattern
- */
-silex.model.Selection.getInstance = function(){
-	if (silex.model.Selection._instance === null){
-		silex.model.Selection._instance = new silex.model.Selection();
-	}
-	return silex.model.Selection._instance;
 }
 /** 
  * opened file

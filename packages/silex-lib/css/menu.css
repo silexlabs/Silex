@@ -1,0 +1,61 @@
+.goog-menu-button{
+	display: inline-block;
+}
+.silex-menu{
+	font-weight: 400;
+	font-size-adjust: none;
+}
+.silex-menu .website-name{
+	font-family: arial,​sans-serif;
+	font-size: 20px;
+	font-style: italic;
+	color: #000000;
+	line-height: 24.65px;
+	text-overflow: ellipsis;
+	opacity: 0.5;
+	margin: 25px 4px 1px 45px;
+	overflow-x: hidden;
+	overflow-y: hidden;
+	white-space: nowrap;
+	font-stretch: normal;
+	font-variant: normal;
+	max-width: 610px;
+	max-height: 50px;
+	overflow: hidden;
+	outline: medium none;
+	outline-color: #000000;
+	display: inline-block;
+	outline-style: none;
+	outline-width: 0px;
+	position:relative;
+	text-decoration: none;
+}
+.silex-menu .login-text{
+	float: right;
+	font-size: 13px;
+	font-style: normal;
+	color: #000000;
+	line-height: 9.5px;
+	height: 35px;
+	margin-right: 10px;
+}
+.silex-menu .goog-menubar{
+	font-family: Arial,​sans-serif;
+	font-size: 13px;
+	font-style: normal;
+	color: #000000;
+	line-height: 9.5px;
+	height: 35px;
+	margin-top: 0px;
+	margin-right: 44px;
+	margin-bottom: 0px;
+	margin-left: 42px;
+
+	position: relative;
+	white-space: nowrap;
+	cursor: default;
+	font-stretch: normal;
+	font-variant: normal;
+	outline-style: none;
+	outline-width: 0px;
+}

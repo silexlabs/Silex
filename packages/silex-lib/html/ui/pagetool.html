@@ -1,0 +1,14 @@
+<link rel="stylesheet" href="css/pagetool.css">
+
+<script class="page-tool-template" type="text/x-handlebars-template">
+	{{#each pages}}
+		<a href="{{this}}" class="page-container">
+			<div class="page-preview">
+				<div class="delete">x</div>
+			</div>
+			<div>{{this}}</div>
+		</a>
+	{{/each}}
+</script>
+<div class="page-tool-container">
+</div>
