@@ -159,6 +159,10 @@ silex.model.Selection.prototype.onChanged;
 silex.model.Selection.prototype.getSelectedPage = function(){
 	return this.page;
 }
+/**
+ * change selection, with notification or not
+ * @param 	notify	if true, then notify by calling the onChanged callback
+ */
 silex.model.Selection.prototype.setSelectedPage = function(name, notify){
 	this.page = name;
 	if (notify!==false && this.onChanged) this.onChanged("page");
@@ -169,6 +173,10 @@ silex.model.Selection.prototype.setSelectedPage = function(name, notify){
 silex.model.Selection.prototype.getSelectedFile = function(){
 	return this.file;
 }
+/**
+ * change selection, with notification or not
+ * @param 	notify	if true, then notify by calling the onChanged callback
+ */
 silex.model.Selection.prototype.setSelectedFile = function(name, notify){
 	this.file = name;
 	if (notify!==false && this.onChanged) this.onChanged("file");
@@ -179,6 +187,10 @@ silex.model.Selection.prototype.setSelectedFile = function(name, notify){
 silex.model.Selection.prototype.getSelectedElement = function(){
 	return this.element;
 }
+/**
+ * change selection, with notification or not
+ * @param 	notify	if true, then notify by calling the onChanged callback
+ */
 silex.model.Selection.prototype.setSelectedElement = function(element, notify){
 	this.element = element;
 	if (notify!==false && this.onChanged) this.onChanged("element");

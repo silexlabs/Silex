@@ -62,22 +62,47 @@ silex.controller.Main.prototype.initView = function(menu, pageTool, stage){
 silex.controller.Main.prototype.attachEvents = function(){
 	console.log('controller attachEvents ');
 	var that = this;
-	this.selection.onChanged = function (eventName){
-		if (eventName == 'file'){
-			if (that.selection.getSelectedFile()==null){
-				that.fileClosed();
-			}
-			else{
-				that.fileLoaded();
-			}
-		}
-	};
+	this.selection.onChanged = function (eventName){that.selectionEvent(eventName)};
 }
 /**
- * page tool event
+ * selection event handler
+ */
+silex.controller.Main.prototype.selectionEvent = function(eventName){
+	console.log('selection event '+eventName);
+	switch (eventName){
+		case 'file':
+			if (this.selection.getSelectedFile()==null){
+				if (this.file.bodyTag==""){
+					this.fileClosed();
+				}
+				else{
+					// case of the new site
+					this.fileLoaded();
+				}
+			}
+			else{
+				this.fileLoaded();
+			}
+		break;
+		case 'page':
+			this.stage.openPage(this.selection.getSelectedPage());
+
+		break;
+	}
+}
+/**
+ * page tool event handler
  */
 silex.controller.Main.prototype.pageToolEvent = function(e){
 	console.log('page tool event '+this.pageTool.getSelectedItems()[0]+' - '+e.type);
+	switch(e.type){
+		case 'selectionChanged':
+			this.selection.setSelectedPage(this.pageTool.getSelectedItems()[0]);
+			break;
+		case 'removePage':
+			this.removePage(e.name);
+			break;
+	}
 }
 /**
  * menu events
@@ -86,12 +111,13 @@ silex.controller.Main.prototype.menuEvent = function(e){
 	console.log('menu event '+e.target.getCaption() + ' - '+e.target.getId());
 	switch(e.target.getId()){
 		case 'file.new':
+			var that = this;
 			this.file.load(null, function(){
-				this.selection.setSelectedFile(url);
+				that.selection.setSelectedFile(null);
 			});
 			break;
 		case 'file.save':
-			this.file.save(this.stage.getCleanContent());
+			this.file.save(this.stage.getBody());
 			break;
 		case 'file.open':
 			break;
@@ -99,6 +125,32 @@ silex.controller.Main.prototype.menuEvent = function(e){
 			this.file.close();
 			this.selection.setSelectedFile(null);
 			break;
+		case 'view.file':
+			window.open(this.selection.file);
+			break;
+		case 'insert.page':
+			this.insertPage();
+			break;
+	}
+}
+/**
+ * insert a new page
+ */
+silex.controller.Main.prototype.insertPage = function(){
+	var pageName = window.prompt('What name for your new page?');
+	this.stage.createPage(pageName);
+	this.pageTool.setDataProvider(this.stage.getPages());
+	this.selection.page = pageName;
+}
+/**
+ * remove a page
+ */
+silex.controller.Main.prototype.removePage = function(pageName){
+	var confirm = window.confirm('I am about to delete the page, are you sure about that?');
+	if (confirm){
+		this.stage.removePage(pageName);
+		this.pageTool.setDataProvider(this.stage.getPages());
+		this.selection.page = this.stage.getPages()[0];
 	}
 }
 /**
@@ -106,9 +158,14 @@ silex.controller.Main.prototype.menuEvent = function(e){
  */
 silex.controller.Main.prototype.fileLoaded = function(){
 	console.log('fileLoaded');
-	var htmlData = this.file.bodyTag;
-	this.stage.setContent(htmlData);
-	this.pageTool.setDataProvider(this.stage.getPages());
+	this.stage.setContent(this.file.bodyTag, this.file.headTag);
+
+	var dp = this.stage.getPages();
+	this.pageTool.setDataProvider(dp);
+	if (dp.length > 0){
+		this.stage.openPage(dp[0]);
+		this.pageTool.setSelectedIndexes([0]);
+	}
 }
 /**
  * model event

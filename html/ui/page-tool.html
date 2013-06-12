@@ -20,18 +20,21 @@
 		box-shadow: inset 1px 1px 0 rgba(0,0,0,.1),inset 0 -1px 0 rgba(0,0,0,.07);
 		height: 100px;
 	}
+	.page-preview .delete{
+		right: 20px;
+		position: absolute;
+		z-index: 999;
+	}
 </style>
 
 <script class="page-tool-template" type="text/x-handlebars-template">
 	{{#each pages}}
-		<div class="page-container">
+		<a href="{{this}}" class="page-container">
 			<div class="page-preview">
-				
+				<div class="delete">X</div>
 			</div>
-			{{name}}
-		</div>
-	{{else}}
-		<div class="loading">Loading..</div>
+			<div>{{this}}</div>
+		</a>
 	{{/each}}
 </script>
 <div class="page-tool-container">

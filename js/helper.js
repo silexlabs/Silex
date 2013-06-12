@@ -24,7 +24,7 @@ silex.TemplateHelper.loadTemplateFile = function(url, element, cbk){
  * Resolve a template and put the result in the provided element
  */
 silex.TemplateHelper.resolveTemplate = function(element, templateHtml, data){
-    console.log('resolveTemplate '+element+', '+templateHtml+', '+data);
+    //console.log('resolveTemplate '+element+', '+templateHtml+', '+data);
 	var template = Handlebars.compile(templateHtml);
 	element.innerHTML = template(data);
 }
