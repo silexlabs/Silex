@@ -15,7 +15,7 @@ silex.TemplateHelper.loadTemplateFile = function(url, element, cbk){
     goog.net.XhrIo.send(url, function(e){
         var xhr = e.target;
         var data = xhr.getResponse();
-        console.log('request success '+data);
+        console.log('request success ');
         element.innerHTML = data;
         cbk();
     });

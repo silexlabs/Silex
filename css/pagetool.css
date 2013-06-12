@@ -1,0 +1,37 @@
+
+.silex-pagetool {
+    padding: 9px 0;
+    position:fixed;
+    left:20px;
+    top:100px;
+    width:219px;
+    height: 95%;
+	overflow: auto;
+}
+
+.silex-pagetool .page-tool-container{
+}
+.silex-pagetool .page-tool-container .ui-selected .page-preview{
+	border: 2px solid;
+}
+.silex-pagetool .page-container{
+	overflow-x: visible;
+	overflow-y: scroll;
+	overflow: visible;
+	text-align: center;
+	color: #666;
+	margin: 10px;
+}
+.silex-pagetool .page-preview{
+	border: 1px solid rgba(0,0,0,.1); 
+	width: 131px;
+	height: 99px;
+	position: relative;
+	margin: auto;
+}
+.silex-pagetool .page-preview .delete{
+	right: 10px;
+	top: 5px;
+	position: absolute;
+	z-index: 999;
+}

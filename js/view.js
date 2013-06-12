@@ -1,38 +1,81 @@
 var silex = silex || {}; 
 silex.view = silex.view || {}; 
 
+goog.provide('silex.view.Workspace');
 goog.provide('silex.view.Menu');
 goog.provide('silex.view.Stage');
 goog.provide('silex.view.PageTool');
+goog.provide('silex.view.PropertiesTool');
 
 goog.require('goog.ui.menuBar');
 goog.require('goog.ui.Menu');
 goog.require('goog.ui.MenuItem');
 goog.require('goog.ui.MenuButton');
+goog.require('goog.ui.Checkbox');
+
+//////////////////////////////////////////////////////////////////
+// Workspace class
+//////////////////////////////////////////////////////////////////
+/**
+ * the Silex workspace class
+ * @constructor
+ */
+silex.view.Workspace = function(element, menu, stage, pageTool, propertiesTool){
+	this.element = element;
+	this.menu = menu;
+	this.stage = stage;
+	this.pageTool = pageTool;
+	this.propertiesTool = propertiesTool;
+}
+/**
+ * reference to the silex.view.Menu class
+ */
+silex.view.Workspace.prototype.menu;
+/**
+ * reference to the silex.view.Stage class
+ */
+silex.view.Workspace.prototype.stage;
+/**
+ * reference to the silex.view.PageTool class
+ */
+silex.view.Workspace.prototype.pageTool;
+/**
+ * reference to the silex.view.PropertiesTool class
+ */
+silex.view.Workspace.prototype.propertiesTool;
+/**
+ * reference to the attached element
+ */
+silex.view.Workspace.prototype.element;
 
 //////////////////////////////////////////////////////////////////
 // Menu class
 //////////////////////////////////////////////////////////////////
 /**
  * the Silex menu class
+ * @constructor
+ * based on closure menu class
+ * load the template and make it a menu
  */
-silex.view.Menu = function(){
+silex.view.Menu = function(element, cbk){
+	this.element = element;
+
+	var that = this;
+	silex.TemplateHelper.loadTemplateFile('html/ui/menu.html', element, function(){
+		that.buildMenu(element);
+		console.log('template loaded ');
+		if (cbk) cbk();
+		if(that.onReady) that.onReady();
+	});
 }
 /**
- * singleton pattern
+ * on ready callback
+ * used by the controller to be notified when the component is ready
+ * called 1 time after template loading and rendering
  */
-silex.view.Menu._instance = null;
+silex.view.Menu.prototype.onReady;
 /**
- * singleton pattern
- */
-silex.view.Menu.getInstance = function(){
-	if (silex.view.Menu._instance === null){
-		silex.view.Menu._instance = new silex.view.Menu();
-	}
-	return silex.view.Menu._instance;
-}
-/**
- * reference to the menu class
+ * reference to the menu class of the closure library
  */
 silex.view.Menu.prototype.menu;
 /**
@@ -44,19 +87,8 @@ silex.view.Menu.prototype.element;
  */
 silex.view.Menu.prototype.onMenuEvent;
 /**
- * load the template and make it a menu
+ * create the menu with closure API
  */
-silex.view.Menu.prototype.attachTo = function(element, cbk){
-	this.element = element;
-	var that = this;
-	silex.TemplateHelper.loadTemplateFile("html/ui/menu.html", element, function(){
-//		that.menu = new goog.ui.Menu();
-//		that.menu.decorate(element);
-		that.buildMenu(element);
-		console.log('template loaded ');
-		cbk();
-	});
-}
 silex.view.Menu.prototype.buildMenu = function(rootNode) {
 	this.menu = goog.ui.menuBar.create();
 	var menuNames = ['File', 'Insert', 'View'];
@@ -74,9 +106,6 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
 		[
 			{label:'View in new window', id:'view.file'}, 
 			null,
-			{label: '#page1', id: 'view.open.#page1'},
-			{label: '#page2', id: 'view.open.#page2'},
-			{label: '#page3', id: 'view.open.#page3'},
 		],
 	];
 
@@ -117,13 +146,26 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
 //////////////////////////////////////////////////////////////////
 /**
  * the Silex stage class
+ * @constructor
+ * load the template and render to the given html element
  */
-silex.view.Stage = function(){
+silex.view.Stage = function(element, cbk){
+	console.log(typeof(this.setContent));
+	this.element = element;
+	this.headElement = document.createElement('div');
+	that = this;
+	silex.TemplateHelper.loadTemplateFile('html/ui/stage.html', element, function(){
+		that.bodyElement = goog.dom.getElementByClass('silex-stage-body', that.element);
+		if (cbk && typeof(cbk)=='function') cbk();
+		if(that.onReady) that.onReady();
+	});
 }
 /**
- * singleton pattern
+ * on ready callback
+ * used by the controller to be notified when the component is ready
+ * called 1 time after template loading and rendering
  */
-silex.view.Stage._instance = null;
+silex.view.Stage.prototype.onReady;
 /**
  * reference to the element to render to
  */
@@ -137,33 +179,11 @@ silex.view.Stage.prototype.headElement;
  */
 silex.view.Stage.prototype.bodyElement;
 /**
- * singleton pattern
- */
-silex.view.Stage.getInstance = function(){
-	if (silex.view.Stage._instance === null){
-		silex.view.Stage._instance = new silex.view.Stage();
-	}
-	return silex.view.Stage._instance;
-}
-/**
- * render to the given html element
- */
-silex.view.Stage.prototype.attachTo = function(element, cbk){
-	console.log('attachTo '+element);
-	this.element = element;
-	this.headElement = document.createElement('div');
-	that = this;
-	silex.TemplateHelper.loadTemplateFile("html/ui/stage.html", element, function(){
-		that.bodyElement = goog.dom.getElement('_silex_body', that.element);
-		cbk();
-	});
-}
-/**
  * set the html content on the stage and make it editable
  * the parameters are strings containing html
  */
 silex.view.Stage.prototype.setContent = function(bodyHtml, headHtml){
-	console.log('setContent '+bodyHtml);
+	console.log('setContent ');
 	this.cleanup();
 	this.bodyElement.innerHTML = bodyHtml;
 	this.headElement.innerHTML = headHtml;
@@ -179,9 +199,9 @@ silex.view.Stage.prototype.setContent = function(bodyHtml, headHtml){
  */
 silex.view.Stage.prototype.cleanup = function(){
 	console.log('cleanup ');
-	$('[data-silex-type="container"]').editable("destroy")
-    $('[data-silex-type="element"]').editable("destroy")
-    //$(this.bodyElement).pageable("destroy")
+	$('[data-silex-type="container"]').editable('destroy')
+    $('[data-silex-type="element"]').editable('destroy')
+    //$(this.bodyElement).pageable('destroy')
     if (this.bodyElement) this.bodyElement.innerHTML = '';
 	if (this.headElement) this.headElement.innerHTML = '';
 }
@@ -268,26 +288,28 @@ silex.view.Stage.prototype.removePage = function(pageName){
 //////////////////////////////////////////////////////////////////
 /**
  * the Silex PageTool class
+ * @constructor
  */
-silex.view.PageTool = function(){
+silex.view.PageTool = function(element, cbk){
+	this.element = element;
+	this.dataProvider = [];
+	
+	var that = this;
+	silex.TemplateHelper.loadTemplateFile('html/ui/pagetool.html', element, function(){
+		if (cbk) cbk();
+		if(that.onReady) that.onReady();
+	});
 }
 /**
- * singleton pattern
+ * on ready callback
+ * used by the controller to be notified when the component is ready
+ * called 1 time after template loading and rendering
  */
-silex.view.PageTool._instance = null;
+silex.view.PageTool.prototype.onReady;
 /**
  * reference to the element to render to
  */
 silex.view.PageTool.prototype.element;
-/**
- * singleton pattern
- */
-silex.view.PageTool.getInstance = function(){
-	if (silex.view.PageTool._instance === null){
-		silex.view.PageTool._instance = new silex.view.PageTool();
-	}
-	return silex.view.PageTool._instance;
-}
 /**
  * callback for the events, set by the controller
  */
@@ -296,19 +318,6 @@ silex.view.PageTool.prototype.onPageToolEvent;
  * dataProvider 
  */
 silex.view.PageTool.prototype.dataProvider;
-/**
- * render to the given html element
- */
-silex.view.PageTool.prototype.attachTo = function(element, cbk){
-	console.log('PageTool attachTo '+element);
-	this.element = element;
-	this.dataProvider = [];
-	
-	var that = this;
-	silex.TemplateHelper.loadTemplateFile("html/ui/page-tool.html", element, function(){
-		cbk();
-	});
-}
 /**
  * refresh with new data
  */
@@ -378,7 +387,7 @@ silex.view.PageTool.prototype.getSelectedItems = function(){
 	var res = [];
 	var that = this;
 	var index = 0;
-	$( ".page-container", this.element ).each(function() {
+	$( '.page-container', this.element ).each(function() {
 		if($(this).hasClass('ui-selected')){
 			res.push(that.dataProvider[index]);
 		}
@@ -397,7 +406,7 @@ silex.view.PageTool.prototype.setSelectedIndexes = function(indexes, notify){
 	console.log('PageTool setSelectedIndexes '+indexes);
 	var index = 0;
 	var that = this;
-	$( ".page-container", this.element ).each(function() {
+	$( '.page-container', this.element ).each(function() {
 		var idx;
 		for (idx=0; idx<indexes.length; idx++){
 			if(index == indexes[idx]){
@@ -408,3 +417,61 @@ silex.view.PageTool.prototype.setSelectedIndexes = function(indexes, notify){
     });
 	if(notify) this.selectionChanged();
 }
+//////////////////////////////////////////////////////////////////
+// PropertiesTool class
+//////////////////////////////////////////////////////////////////
+/**
+ * the Silex PropertiesTool class
+ * @constructor
+ */
+silex.view.PropertiesTool = function(element, cbk){
+	this.element = element;
+	this.pages = [];
+	
+	var that = this;
+	silex.TemplateHelper.loadTemplateFile('html/ui/propertiestool.html', element, function(){
+		if (cbk) cbk();
+		if(that.onReady) that.onReady();
+		that.redraw();
+	});
+}
+/**
+ * on ready callback
+ * used by the controller to be notified when the component is ready
+ * called 1 time after template loading and rendering
+ */
+silex.view.PropertiesTool.prototype.onReady;
+/**
+ * pages 
+ */
+silex.view.PropertiesTool.prototype.pages;
+/**
+ * refresh with new data
+ */
+silex.view.PropertiesTool.prototype.setPages = function(data){
+	console.log('setPages '+data);
+	this.pages = data;
+	this.redraw();
+}
+/**
+ * redraw the toolbox 
+ */
+silex.view.PropertiesTool.prototype.redraw = function(){
+	console.log('redraw '+this.pages);
+	var container = goog.dom.getElementByClass('properties-tool-container', this.element);
+	var templateHtml = goog.dom.getElementByClass('pages-selector-template', this.element).innerHTML;
+	silex.TemplateHelper.resolveTemplate(container, templateHtml, {pages:this.pages});
+
+	var items = goog.dom.getElementsByClass('page-container', this.element);
+	goog.array.forEach(items, function(item) {
+		console.log('found one container '+item);
+		var checkboxElement = goog.dom.getElementByClass('page-check', item);
+		var labelElement = goog.dom.getElementByClass('page-label', item);
+		var checkbox = new goog.ui.Checkbox();
+		checkbox.decorate(checkboxElement);
+		checkbox.setLabel (labelElement);
+	});
+}
+
+
+

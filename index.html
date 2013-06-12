@@ -21,10 +21,6 @@
 	<script type="text/javascript" src="js/view.js"></script>
 	<script type="text/javascript" src="js/controller.js"></script>
 
-	<!-- Bootstrap -->
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link href="libs/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
-
 	<!-- Handlebars -->
 	<script type="text/javascript" src="libs/handlebars.js"></script>
 
@@ -35,43 +31,15 @@
 	<link rel="stylesheet" type="text/css" href="css/main.css" />
 </head>
 <body>
-	<div class="main-ui-container">
-		<div class="navbar navbar-fixed-top">
-		  <div class="navbar-inner">
-		    <div class="container-fluid">
-		      <a class="brand" href="#">Untitled website</a>
-		      <div class="nav-collapse">
-		        <div id="_silex_menu"  class="nav">
-		        </div>
-		        <p class="navbar-text pull-right">Logged in as <a href="#">username</a></p>
-		      </div><!--/.nav-collapse -->
-
-		    </div>
-		  </div>
-		</div>
-
-		<div class="container-fluid">
-		  <div class="row-fluid row">
-		    <div class="">
-		      <div class="well sidebar-nav-fixed">
-		        <div id="_silex_pagetool" class="nav nav-list">
-		        </div>
-		      </div><!--/.well -->
-		    </div><!--/span-->
-
-		    <div id="_silex_stage" class="span8 span-fixed-sidebar hero-unit">
-		    </div><!--/span-->
-		    <div class="">
-		      <div class="well sidebar-right-fixed">
-		        <div id="_silex_properties" class="nav nav-list">
-		        </div>
-		      </div><!--/.well -->
-		    </div><!--/span-->
-		  </div><!--/row-->
-		</div><!--/.fluid-container-->
+	<div class="silex-workspace">
+		<!-- menu -->
+		<div class="silex-menu"></div>
+		<!-- page tool -->
+		<div class="silex-pagetool"></div>
+		<!-- properties tool -->
+		<div class="silex-propertiestool"></div>
+		<!-- stage -->
+	    <div class="silex-stage"></div>
 	</div>
-
-	<!-- Bootstrap -->
-	<script type="text/javascript" src="libs/bootstrap/js/bootstrap.min.js"></script>
 </body>
 </html>

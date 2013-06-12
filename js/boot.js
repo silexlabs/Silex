@@ -4,35 +4,35 @@ goog.require('goog.events');
 window.onload = function() {
 	console.log('onload');
 
-	var element = goog.dom.getElement('_silex_menu');
-
-	silex.view.Menu.getInstance().attachTo(element, function (){
+	var menuElement = goog.dom.getElementByClass('silex-menu');
+	var menu = new silex.view.Menu(menuElement, function(){
 		console.log('menu ready');
-
-		silex.controller.Main.getInstance().initView(
-			silex.view.Menu.getInstance(), 
-			silex.view.PageTool.getInstance(),
-			silex.view.Stage.getInstance()
-		);
-
-		silex.controller.Main.getInstance().attachEvents();
-
-		var element = goog.dom.getElement('_silex_pagetool');
-
-		silex.view.PageTool.getInstance().attachTo(element, function (){
-
-			var element = goog.dom.getElement('_silex_stage');
-
-			silex.view.Stage.getInstance().attachTo(element, function (){
-				console.log('stage ready');
-				//var url = null;
-				var url = 'html/test1.html';
-				silex.model.File.getInstance().load(url, function(){
-					silex.model.Selection.getInstance().setSelectedFile(url);
-				});
-			});
-		});
+	});
+	var stageElement = goog.dom.getElementByClass('silex-stage');
+	var stage = new silex.view.Stage(stageElement, function(){
+		console.log('stage ready');
 	});
 
+	var pageToolElement = goog.dom.getElementByClass('silex-pagetool');
+	var pageTool = new silex.view.PageTool(pageToolElement, function(){
+		console.log('pageTool ready');
+	});
 
+	var propertiesToolElement = goog.dom.getElementByClass('silex-propertiestool');
+	var propertiesTool = new silex.view.PropertiesTool(propertiesToolElement, function(){
+		console.log('propertiesTool ready');
+	});
+
+	var workspaceElement = goog.dom.getElementByClass('silex-workspace');
+	var workspace = new silex.view.Workspace(workspaceElement, menu, stage, pageTool, propertiesTool);
+
+	var controller = new silex.controller.Main(workspace, menu, stage, pageTool, propertiesTool);
+	
+	stage.onReady = function(){	
+		//var url = null;
+		var url = 'html/test1.html';
+		controller.openFile(url, function(){
+			controller.selection.setSelectedFile(url);
+		});
+	}
 }
