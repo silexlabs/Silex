@@ -5,28 +5,28 @@
 	<title>Silex v2.0</title>
 	
 	<!-- libs -->
-	<script src="libs/handlebars.js"></script>
-	<script src="libs/closure/goog/base.js"></script>
+	<script type="text/javascript" src="libs/handlebars.js"></script>
+	<script type="text/javascript" src="libs/closure/goog/base.js"></script>
 	
 	<!-- jquery related lib -->
-	<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
-	<script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
-	<script src="libs/editable.js"></script>
-	<script src="libs/pageable.js"></script>
+	<script type="text/javascript" src="libs/jquery/jquery.js"></script>
+	<script type="text/javascript" src="libs/jquery/jquery-ui.js"></script>
+	<script type="text/javascript" src="libs/jquery/editable.js"></script>
+	<script type="text/javascript" src="libs/jquery/pageable.js"></script>
 
 	<!-- core classes -->
-	<script src="js/boot.js"></script>
-	<script src="js/model.js"></script>
-	<script src="js/helper.js"></script>
-	<script src="js/view.js"></script>
-	<script src="js/controller.js"></script>
+	<script type="text/javascript" src="js/boot.js"></script>
+	<script type="text/javascript" src="js/model.js"></script>
+	<script type="text/javascript" src="js/helper.js"></script>
+	<script type="text/javascript" src="js/view.js"></script>
+	<script type="text/javascript" src="js/controller.js"></script>
 
 	<!-- Bootstrap -->
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link href="libs/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
 
 	<!-- Handlebars -->
-	<script src="libs/handlebars.js"></script>
+	<script type="text/javascript" src="libs/handlebars.js"></script>
 
 	<!-- Normalize -->
 	<link href="libs/normalize.css" rel="stylesheet">
@@ -35,36 +35,43 @@
 	<link rel="stylesheet" type="text/css" href="css/main.css" />
 </head>
 <body>
-<div class="navbar navbar-fixed-top">
-  <div class="navbar-inner">
-    <div class="container-fluid">
-      <a class="brand" href="#">Untitled website</a>
-      <div class="nav-collapse">
-        <div id="_silex_menu"  class="nav">
-        </div>
-        <p class="navbar-text pull-right">Logged in as <a href="#">username</a></p>
-      </div><!--/.nav-collapse -->
+	<div class="main-ui-container">
+		<div class="navbar navbar-fixed-top">
+		  <div class="navbar-inner">
+		    <div class="container-fluid">
+		      <a class="brand" href="#">Untitled website</a>
+		      <div class="nav-collapse">
+		        <div id="_silex_menu"  class="nav">
+		        </div>
+		        <p class="navbar-text pull-right">Logged in as <a href="#">username</a></p>
+		      </div><!--/.nav-collapse -->
 
-    </div>
-  </div>
-</div>
+		    </div>
+		  </div>
+		</div>
 
-<div class="container-fluid">
-  <div class="row-fluid row">
-    <div class="">
-      <div class="well sidebar-nav-fixed">
-        <div id="_silex_pagetool" class="nav nav-list">
-        </div>
-      </div><!--/.well -->
-    </div><!--/span-->
+		<div class="container-fluid">
+		  <div class="row-fluid row">
+		    <div class="">
+		      <div class="well sidebar-nav-fixed">
+		        <div id="_silex_pagetool" class="nav nav-list">
+		        </div>
+		      </div><!--/.well -->
+		    </div><!--/span-->
 
-    <div id="_silex_stage" class="span9 span-fixed-sidebar hero-unit">
-    </div><!--/span-->
-  </div><!--/row-->
-</div><!--/.fluid-container-->
-
+		    <div id="_silex_stage" class="span8 span-fixed-sidebar hero-unit">
+		    </div><!--/span-->
+		    <div class="">
+		      <div class="well sidebar-right-fixed">
+		        <div id="_silex_properties" class="nav nav-list">
+		        </div>
+		      </div><!--/.well -->
+		    </div><!--/span-->
+		  </div><!--/row-->
+		</div><!--/.fluid-container-->
+	</div>
 
 	<!-- Bootstrap -->
-	<script src="libs/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="libs/bootstrap/js/bootstrap.min.js"></script>
 </body>
 </html>

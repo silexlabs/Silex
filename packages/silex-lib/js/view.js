@@ -11,7 +11,7 @@ goog.require('goog.ui.MenuItem');
 goog.require('goog.ui.MenuButton');
 
 //////////////////////////////////////////////////////////////////
-// Stage class
+// Menu class
 //////////////////////////////////////////////////////////////////
 /**
  * the Silex menu class
@@ -59,7 +59,7 @@ silex.view.Menu.prototype.attachTo = function(element, cbk){
 }
 silex.view.Menu.prototype.buildMenu = function(rootNode) {
 	this.menu = goog.ui.menuBar.create();
-	var menuNames = ["File","About"];
+	var menuNames = ['File', 'Insert', 'View'];
 	var menuOptions = [
 		[
 			{label:'New File', id:'file.new'}, 
@@ -68,7 +68,16 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
 			null,
 			{label: 'Close File', id: 'file.close'},
 		],
-		['Silex Labs', 'Getting started', 'Help'],
+		[
+			{label:'New page', id:'insert.page'}, 
+		],
+		[
+			{label:'View in new window', id:'view.file'}, 
+			null,
+			{label: '#page1', id: 'view.open.#page1'},
+			{label: '#page2', id: 'view.open.#page2'},
+			{label: '#page3', id: 'view.open.#page3'},
+		],
 	];
 
 	for (i in menuNames) {
@@ -120,6 +129,14 @@ silex.view.Stage._instance = null;
  */
 silex.view.Stage.prototype.element;
 /**
+ * reference to the element in wich we store the head of the edited html file
+ */
+silex.view.Stage.prototype.headElement;
+/**
+ * reference to the element in wich we display the body of the edited html file
+ */
+silex.view.Stage.prototype.bodyElement;
+/**
  * singleton pattern
  */
 silex.view.Stage.getInstance = function(){
@@ -134,23 +151,28 @@ silex.view.Stage.getInstance = function(){
 silex.view.Stage.prototype.attachTo = function(element, cbk){
 	console.log('attachTo '+element);
 	this.element = element;
+	this.headElement = document.createElement('div');
 	that = this;
 	silex.TemplateHelper.loadTemplateFile("html/ui/stage.html", element, function(){
+		that.bodyElement = goog.dom.getElement('_silex_body', that.element);
 		cbk();
 	});
 }
 /**
  * set the html content on the stage and make it editable
+ * the parameters are strings containing html
  */
-silex.view.Stage.prototype.setContent = function(html){
-	console.log('setContent '+html);
+silex.view.Stage.prototype.setContent = function(bodyHtml, headHtml){
+	console.log('setContent '+bodyHtml);
 	this.cleanup();
-	var stageContainer = goog.dom.getElement('_silex_body');
-	stageContainer.innerHTML = html;
+	this.bodyElement.innerHTML = bodyHtml;
+	this.headElement.innerHTML = headHtml;
     $('[data-silex-type="container"]').editable({
       isContainer: true,
     });
     $('[data-silex-type="element"]').editable();
+	
+	$(this.bodyElement).pageable({useDeeplink:false});
 }
 /**
  * cleanup editable, reset html content
@@ -159,17 +181,17 @@ silex.view.Stage.prototype.cleanup = function(){
 	console.log('cleanup ');
 	$('[data-silex-type="container"]').editable("destroy")
     $('[data-silex-type="element"]').editable("destroy")
-	var stageContainer = goog.dom.getElement('_silex_body');
-	stageContainer.innerHTML = '';
+    //$(this.bodyElement).pageable("destroy")
+    if (this.bodyElement) this.bodyElement.innerHTML = '';
+	if (this.headElement) this.headElement.innerHTML = '';
 }
 /**
- * return clean (non-editable) html content
+ * return clean html string (no edition-related content)
  */
-silex.view.Stage.prototype.getCleanContent = function(){
-	console.log('getCleanContent ');
+silex.view.Stage.prototype.getBody = function(){
+	console.log('getBody ');
 
-	var stageContainer = goog.dom.getElement('_silex_body');
-	var cleanContainer = stageContainer.cloneNode();
+	var cleanContainer = this.bodyElement.cloneNode();
 
 	$(cleanContainer).find('.ui-resizable').removeClass('ui-resizable');
 	$(cleanContainer).find('.ui-draggable').removeClass('ui-draggable');
@@ -182,25 +204,65 @@ silex.view.Stage.prototype.getCleanContent = function(){
 	return cleanContainer.innerHTML;
 }
 /**
+ * return clean html string (no edition-related content)
+ */
+silex.view.Stage.prototype.getHead = function(){
+	return this.headElement.innerHTML;
+}
+/**
  * get the publication pages 
  */
 silex.view.Stage.prototype.getPages = function(){
 	console.log('getPages ');
 
-	var stageContainer = goog.dom.getElement('_silex_body');
-	
 	var pages = [];
+
+	$('meta[name="page"]', this.headElement).each(function() {
+		console.log('found page '+this.getAttribute('content'));
+		pages.push(this.getAttribute('content'));
+	});
+/*
 	$('#_silex_body a[href^="#"]').each(function() {
 		console.log('found page '+this.getAttribute('href'));
-		pages.push({
-			name: this.getAttribute('href'),
-			element: this
-		});
+		pages.push(this.getAttribute('href'));
 	});
-
+*/
 	return pages;
 }
+silex.view.Stage.prototype.currentPage;
+/**
+ * open the given page of the site 
+ */
+silex.view.Stage.prototype.openPage = function(pageName){
+	console.log('openPage '+pageName);
+    $(this.bodyElement).pageable({currentPage:pageName});
+    this.currentPage = pageName;
+}
+/**
+ * create a new page 
+ */
+silex.view.Stage.prototype.createPage = function(pageName){
+	console.log('createPage '+pageName);
+	var meta = document.createElement('meta');
+	meta.name = 'page';
+	meta.content = pageName;
+	this.headElement.appendChild(meta);
+}
+/**
+ * delete a page 
+ */
+silex.view.Stage.prototype.removePage = function(pageName){
+	console.log('removePage '+pageName);
+	$('meta[name="page"]', this.headElement).each(
+		function () {
+			console.log('found meta '+this);
+			if (this.getAttribute('content')==pageName){
 
+				$(this).remove();
+			}
+		});
+
+}
 //////////////////////////////////////////////////////////////////
 // PageTool class
 //////////////////////////////////////////////////////////////////
@@ -263,6 +325,12 @@ silex.view.PageTool.prototype.setDataProvider = function(data){
 	silex.TemplateHelper.resolveTemplate(container, templateHtml, {pages:data});
 
 	var that = this;
+	var idx = 0;
+	$(this.element).find( '.page-tool-container .page-container' ).each(
+		function () {
+			this.setAttribute('data-index', idx++);
+		}
+	);
 	$(this.element).find( '.page-tool-container' ).selectable(
 		{
 			stop: function( event, ui ) {
@@ -271,12 +339,31 @@ silex.view.PageTool.prototype.setDataProvider = function(data){
 		}
 	);
 	$(this.element).find( '.page-tool-container' ).disableSelection();
+
+	$(this.element).find( '.page-tool-container .page-container .page-preview .delete' ).click(
+		function(e){
+			console.log('remove button pressed ');
+			that.removePageAtIndex(that.getCellIndex(this.parentNode.parentNode));
+		}
+	);
+}
+/**
+ * ask to remove a page
+ */
+silex.view.PageTool.prototype.removePageAtIndex = function(idx){
+	console.log('about to remove page '+idx+' - '+this.dataProvider[idx]);
+	if (this.onPageToolEvent){
+		this.onPageToolEvent({
+			type: 'removePage',
+			name: this.dataProvider[idx]
+		});
+	}
 }
 /**
  * selection has changed
  */
 silex.view.PageTool.prototype.selectionChanged = function(){
-	console.log('PageTool selectionChanged '+this.getSelectedItems().length);
+	console.log('PageTool selectionChanged ');
 	if (this.onPageToolEvent){
 		this.onPageToolEvent({
 			type: 'selectionChanged'
@@ -290,13 +377,34 @@ silex.view.PageTool.prototype.getSelectedItems = function(){
 	console.log('PageTool getSelectedItems ');
 	var res = [];
 	var that = this;
-	$( ".page-tool-container .page-container.ui-selected", this.element ).each(function() {
-		var index = $('.page-tool-container', that.element).index( this );
-		console.log('selected item with index '+index+' - '+this.getAttribute('class'));
-		res.push(that.dataProvider[index]);
+	var index = 0;
+	$( ".page-container", this.element ).each(function() {
+		if($(this).hasClass('ui-selected')){
+			res.push(that.dataProvider[index]);
+		}
+		index++;
     });
     return res;
 }
-
-
-
+silex.view.PageTool.prototype.getCellIndex = function (element) {
+	return parseInt(element.getAttribute('data-index'));
+}
+/**
+ * set the selection of pages 
+ * @param 	notify	if true, then notify by calling the onChanged callback
+ */
+silex.view.PageTool.prototype.setSelectedIndexes = function(indexes, notify){
+	console.log('PageTool setSelectedIndexes '+indexes);
+	var index = 0;
+	var that = this;
+	$( ".page-container", this.element ).each(function() {
+		var idx;
+		for (idx=0; idx<indexes.length; idx++){
+			if(index == indexes[idx]){
+				$(this).addClass('ui-selected');
+			}
+		}
+		index++;
+    });
+	if(notify) this.selectionChanged();
+}

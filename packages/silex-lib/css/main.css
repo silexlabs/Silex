@@ -1,47 +1,3 @@
-/* 		Silex base styles 			 *
-body{
-	margin:0px !important;
-	padding:0px !important;
-	font-family : Tahoma, Arial, Helvetica, sans-serif !important;
-	background-color:white !important;
-}
-#_silex_container{
-	z-index: -9999;
-	padding: 0;
-}
-#_silex_menu{
-}
-#_silex_pagetool{
-	min-width: 219px;
-	float: left;
-}
-#_silex_csstool{
-}
-#_silex_stage{
-	min-width: 100%;
-	min-height: 100%;
-	position: absolute;
-	left: 219px;
-	z-index: -9999;
-}
-#_silex_body{
-	min-width: 100%;
-	min-height: 100%;
-	position: absolute;
-	z-index: -9999;
-}
-#background{
-	z-index: -9999;
-	background-color: rgb(238, 238, 238);
-	min-width: 100%;
-	min-height: 100%;
-	position: absolute;
-}
-.row-fluid{
-    z-index: -999999;	
-}
-
-/* */
 
 /* override default bootstrap css */
 .navbar-inner{
@@ -53,22 +9,47 @@ body{
 	background: inherit;
 	border: none;
 }
-#_silex_stage {
-    margin-top: 100px; /* height of the menu => offset for silex stage */
-}
 .hero-unit{
 	xposition: inherit;
 	xheight: 600px;
 	margin: 0;
 	padding: 0;
+	background: white;
+}
+/* 		Silex base styles 			 */
+.main-ui-container{
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+}
+#_silex_stage {
+/*    margin-top: 100px; /* height of the menu => offset for silex stage */
+	height: 100%;
+	overflow: auto;
+	position: absolute;
 }
 /* styles for Silex UIs */
+
+/* left sidebar */
 .sidebar-nav-fixed {
     padding: 9px 0;
     position:fixed;
     left:20px;
     top:100px;
     width:219px;
+    height: 95%;
+	overflow: auto;
+}
+/* properties box */
+.sidebar-right-fixed {
+    padding: 9px 0;
+    position:fixed;
+    right:20px;
+    top:100px;
+    width:219px;
+    height: 95%;
+	overflow: auto;
 }
 .navbar .brand {
     float: none;
@@ -86,6 +67,7 @@ body{
 .row-fluid > .span-fixed-sidebar {
     margin-left: 259px;
     min-height: 0;
+    top:100px;
 }
 
 
