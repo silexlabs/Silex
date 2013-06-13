@@ -22,6 +22,9 @@
     margin: 0;
     font-size: 15px;
 }
+.silex-propertiestool legend{
+	font-size: 13px;
+}
 .silex-propertiestool .pages-container .page-label{
 	font-size: 13px;
 	color: #555555;
@@ -30,4 +33,7 @@
 .silex-propertiestool .pages-container .page-check span{
 	float: left;
 }
-
+.silex-propertiestool .text-editor-button{
+	text-align: center;
+	font-size: 13px;
+}

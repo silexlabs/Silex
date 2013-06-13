@@ -1,5 +1,9 @@
 <link rel="stylesheet" href="css/propertiestool.css">
   <link rel="stylesheet" href="libs/closure/goog/css/checkbox.css">
+  <link rel="stylesheet" href="libs/closure/goog/css/button.css">
+  <link rel="stylesheet" href="libs/closure/goog/css/custombutton.css">
+  <link rel="stylesheet" href="libs/closure/goog/css/flatbutton.css">
+  <link rel="stylesheet" href="libs/closure/goog/css/linkbutton.css">
 
 <script class="pages-selector-template" type="text/x-handlebars-template">
 	{{#each pages}}
@@ -9,10 +13,19 @@
 		</div>
 	{{/each}}
 </script>
+<script class="edition-template" type="text/x-handlebars-template">
+	{{#if textEditor}}
+	<div class="text-editor-button" title="Open text editor">Edit text</div>
+	{{/if}}
+</script>
 <h1>Properties</h1>
 <div class="main-container">
 	<fieldset>
 	<legend>Visibility</legend>
 	<div class="pages-container"></div>
+	</fieldset>
+	<fieldset>
+	<legend>Content</legend>
+	<div class="edition-container"></div>
 	</fieldset>
 </div>

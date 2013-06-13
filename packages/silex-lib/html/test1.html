@@ -1,6 +1,6 @@
 <html>
 <head>
-	<title>temp</title>
+	<title>Untitled website</title>
 	<meta name="page" content="page1">
 	<meta name="page" content="page2">
 	<script type="text/javascript" src="../libs/jquery/jquery.js"></script>
@@ -16,7 +16,8 @@
 			display: none;
 		}
 		.background{
-			position: relative;
+			position: relative !important;
+			left: inherit !important;
 			top: 0px;
 			margin-left: auto;
 			margin-right: auto;
@@ -27,18 +28,18 @@
 		<div style="position: absolute; width: 523px; height: 55px; left: 32px; top: 5px;" class="editable-style" data-silex-type="container">
 			
 			<div style="left: 14px; top: 12px; position: absolute; width: 100px; height: 29px;" class="editable-style" data-silex-type="element" data-silex-sub-type="text">
-				<a href="#page1">link to page1</a>
+				<p><a href="#page1">link to page1</a></p>
 			</div>
 			<div style="left: 139px; top: 12px; position: absolute; width: 109px; height: 28px;" class="editable-style" data-silex-type="element" data-silex-sub-type="text">
-				<a href="#page2">link to page2</a>
+				<p><a href="#page2">link to page2</a></p>
 			</div>
 		</div>
 
 		<div style="position: absolute; width: 521px; height: 399px; left: 34px; top: 89px;" class="editable-style silex-page page1" data-silex-type="container">
-			<div style="left: 127px; top: 45px; position: absolute; width: 200px; height: 30px;" class="editable-style" data-silex-type="element" data-silex-sub-type="text">Page 1 content</div>
+			<div style="left: 127px; top: 45px; position: absolute; width: 200px; height: 30px;" class="editable-style" data-silex-type="element" data-silex-sub-type="text"><p>Page 1 content</p></div>
 		</div>
 		<div style="position: absolute; width: 521px; height: 399px; left: 34px; top: 89px;" class="editable-style silex-page page2" data-silex-type="container">
-			<div style="left: 127px; top: 45px; position: absolute; width: 200px; height: 30px;" class="editable-style" data-silex-type="element" data-silex-sub-type="text">Page 2 content</div>
+			<div style="left: 127px; top: 45px; position: absolute; width: 200px; height: 30px;" class="editable-style" data-silex-type="element" data-silex-sub-type="text"><p>Page 2 content</p></div>
 		</div>
 	</div>
 </body>
