@@ -1,12 +1,16 @@
 <link rel="stylesheet" href="css/propertiestool.css">
+  <link rel="stylesheet" href="libs/closure/goog/css/checkbox.css">
 
 <script class="pages-selector-template" type="text/x-handlebars-template">
 	{{#each pages}}
 		<div class="page-container">
-			<input class="page-check" type="checkbox" />
+			<span class="page-check" />
 			<label class="page-label">{{this}}</label>
 		</div>
 	{{/each}}
 </script>
-<div class="label">Properties</div>
+<h1>Properties</h1>
+<fieldset>
+<legend>Visibility</legend>
 <div class="pages-container"></div>
+</fieldset>

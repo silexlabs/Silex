@@ -10,16 +10,21 @@
 }
 .silex-propertiestool{
 }
-.silex-propertiestool .label{
+.silex-propertiestool h1{
     background-color: #323232;
     border: 1px solid #323232;
     color: #FFFFFF;
     font-weight: bold;
     height: 15px;
     padding: 10px 0 10px 12px;
+    font-size: 15px;
 }
-.silex-propertiestool .pages-container{
-	padding: 20px;
-
+.silex-propertiestool .pages-container .page-label{
+	font-size: 13px;
+	color: #555555;
+	vertical-align: middle;
+}
+.silex-propertiestool .pages-container .page-check span{
+	float: left;
 }
 

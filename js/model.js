@@ -99,7 +99,7 @@ silex.model.Selection = function(){
 	this.listeners = [];
 	this.file = "";
 	this.page = "";
-	this.element = null;
+	this.elements = [];
 }
 /** 
  * opened file
@@ -110,9 +110,9 @@ silex.model.Selection.prototype.file;
  */
 silex.model.Selection.prototype.page;
 /** 
- * selected element
+ * selected elements
  */
-silex.model.Selection.prototype.element;
+silex.model.Selection.prototype.elements;
 /** 
  * listeners
  */
@@ -150,17 +150,17 @@ silex.model.Selection.prototype.setSelectedFile = function(name, notify){
 	if (notify!==false && this.onChanged) this.onChanged("file");
 }
 /** 
- * element selection
+ * elements selection
  */
-silex.model.Selection.prototype.getSelectedElement = function(){
-	return this.element;
+silex.model.Selection.prototype.getSelectedElements = function(){
+	return this.elements;
 }
 /**
  * change selection, with notification or not
  * @param 	notify	if true, then notify by calling the onChanged callback
  */
-silex.model.Selection.prototype.setSelectedElement = function(element, notify){
-	this.element = element;
-	if (notify!==false && this.onChanged) this.onChanged("element");
+silex.model.Selection.prototype.setSelectedElements = function(elements, notify){
+	this.elements = elements;
+	if (notify!==false && this.onChanged) this.onChanged("elements");
 }
 

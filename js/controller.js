@@ -26,6 +26,7 @@ silex.controller.Main = function(workspace, menu, stage, pageTool, propertiesToo
 	this.menu.onMenuEvent = function(e){that.menuEvent(e);};
 	this.pageTool.onPageToolEvent = function(e){that.pageToolEvent(e);};
 	this.propertiesTool.onPropertiesToolEvent = function(e){that.propertiesToolEvent(e);};
+	this.stage.onStageEvent = function(e){that.stageEvent(e);};
 	this.selection.onChanged = function (eventName){that.selectionEvent(eventName)};
 }
 /**
@@ -80,11 +81,16 @@ silex.controller.Main.prototype.selectionEvent = function(eventName){
 			else{
 				this.fileLoaded();
 			}
-		break;
+			break;
 		case 'page':
-			this.stage.openPage(this.selection.getSelectedPage());
-
-		break;
+			var page = this.selection.getSelectedPage();
+			if (page){
+				this.stage.openPage(this.selection.getSelectedPage());
+			}
+			break;
+		case 'elements':
+			this.propertiesTool.setElements(this.selection.getSelectedElements());
+			break;
 	}
 }
 /**
@@ -113,6 +119,26 @@ silex.controller.Main.prototype.propertiesToolEvent = function(e){
 		case 'ready':
 			console.log('ready => redraw');
 			this.workspace.redraw();
+			break;
+	}
+}
+/**
+ * properties tool event handler
+ */
+silex.controller.Main.prototype.stageEvent = function(e){
+	switch(e.type){
+		case 'ready':
+			console.log('ready => redraw');
+			this.workspace.redraw();
+			break;
+		case 'select':
+			console.log('select ');
+			if (e.element){
+				this.selection.setSelectedElements([e.element]);
+			}
+			else{
+				this.selection.setSelectedElements([]);
+			}
 			break;
 	}
 }
@@ -167,6 +193,8 @@ silex.controller.Main.prototype.openFile = function(url, cbk){
 	var that = this;
 	this.file.load(url, function(){
 		if (cbk) cbk();
+		that.selection.setSelectedPage(null);
+		that.selection.setSelectedElements([]);
 	});
 }
 /**
@@ -175,6 +203,8 @@ silex.controller.Main.prototype.openFile = function(url, cbk){
 silex.controller.Main.prototype.closeFile = function(){
 	this.file.close();
 	this.selection.setSelectedFile(null);
+	this.selection.setSelectedPage(null);
+	this.selection.setSelectedElements([]);
 }
 /**
  * insert a new page
