@@ -135,12 +135,16 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
 	var menuOptions = [
 		[
 			{label:'New File', id:'file.new'}, 
-			{label: 'Open File', id: 'file.open'},
+			{label: 'Open File...', id: 'file.open'},
 			{label: 'Save File', id: 'file.save'},
 			null,
 			{label: 'Close File', id: 'file.close'},
 		],
 		[
+			{label:'Text box', id:'insert.text'}, 
+			{label:'Image...', id:'insert.image'}, 
+			{label:'Container', id:'insert.container'}, 
+			null,
 			{label:'New page', id:'insert.page'}, 
 		],
 		[
@@ -158,7 +162,7 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
 				if (itemData) {
 					var label = itemData.label || itemData;
 					var id = itemData.id || itemData.label || itemData;
-					item = new goog.ui.MenuItem(label + '...');
+					item = new goog.ui.MenuItem(label);
 					item.setId(id);
 				} else {
 					item = new goog.ui.MenuSeparator();
