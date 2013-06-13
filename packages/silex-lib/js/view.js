@@ -193,12 +193,20 @@ silex.view.Stage = function(element, cbk){
 	console.log(typeof(this.setContent));
 	this.element = element;
 	this.headElement = document.createElement('div');
-	that = this;
+	var that = this;
 	silex.TemplateHelper.loadTemplateFile('html/ui/stage.html', element, function(){
 		console.log('template loaded');
 		that.bodyElement = goog.dom.getElementByClass('silex-stage-body', that.element);
 		if (cbk && typeof(cbk)=='function') cbk();
 		if(that.onReady) that.onReady();
+		if (that.onStageEvent) that.onStageEvent({type:'ready'});
+	});
+	$(this.element).on('mousedown', function(e){
+		console.log('mousedown '+e.target.className);
+		if (that.onStageEvent) that.onStageEvent({
+			type:'select',
+			element:that.findEditableParent(e.target),
+		});
 	});
 }
 /**
@@ -207,6 +215,10 @@ silex.view.Stage = function(element, cbk){
  * called 1 time after template loading and rendering
  */
 silex.view.Stage.prototype.onReady;
+/**
+ * callback for stage events, set by the controller
+ */
+silex.view.Stage.prototype.onStageEvent;
 /**
  * reference to the element to render to
  */
@@ -219,6 +231,18 @@ silex.view.Stage.prototype.headElement;
  * reference to the element in wich we display the body of the edited html file
  */
 silex.view.Stage.prototype.bodyElement;
+/**
+ * find the first editable parent
+ */
+silex.view.Stage.prototype.findEditableParent = function(child){
+	while (child && child.getAttribute && !child.getAttribute('data-silex-type')){
+		child = child.parentNode;
+	}
+	if (child && child.getAttribute && child.getAttribute('data-silex-type'))
+		return child;
+	else
+		return null;
+}
 /**
  * set the html content on the stage and make it editable
  * the parameters are strings containing html
@@ -474,6 +498,7 @@ silex.view.PageTool.prototype.setSelectedIndexes = function(indexes, notify){
 silex.view.PropertiesTool = function(element, cbk){
 	this.element = element;
 	this.pages = [];
+	this.pageCheckboxes = [];
 	
 	var that = this;
 	silex.TemplateHelper.loadTemplateFile('html/ui/propertiestool.html', element, function(){
@@ -503,11 +528,60 @@ silex.view.PageTool.prototype.onPropertiesToolEvent;
  */
 silex.view.PropertiesTool.prototype.pages;
 /**
+ * selected elements on the stage
+ */
+silex.view.PropertiesTool.prototype.elements;
+/**
+ * checkboxes instanciated for each page
+ */
+silex.view.PropertiesTool.prototype.pageCheckboxes;
+/**
  * refresh with new data
  */
 silex.view.PropertiesTool.prototype.setPages = function(data){
 	console.log('setPages '+data);
+	// store data
 	this.pages = data;
+	// reset selection
+	this.setElements([]);
+	// reset page checkboxes
+	goog.array.forEach(this.pageCheckboxes, function(item) {
+		item.checkbox.dispose();
+	});
+	// init page template
+	var pagesContainer = goog.dom.getElementByClass('pages-container', this.element);
+	var templateHtml = goog.dom.getElementByClass('pages-selector-template', this.element).innerHTML;
+	silex.TemplateHelper.resolveTemplate(pagesContainer, templateHtml, {pages:this.pages});
+	// create page checkboxes
+	this.pageCheckboxes = [];
+	var that = this;
+	var mainContainer = goog.dom.getElementByClass('pages-container', this.element);
+	var items = goog.dom.getElementsByClass('page-container', mainContainer);
+	var idx = 0;
+	goog.array.forEach(items, function(item) {
+		console.log('found one container '+item.className);
+		var checkboxElement = goog.dom.getElementByClass('page-check', item);
+		var labelElement = goog.dom.getElementByClass('page-label', item);
+		var checkbox = new goog.ui.Checkbox();
+		var pageName = that.pages[idx++];
+		checkbox.render(checkboxElement);
+		checkbox.setLabel (labelElement);
+		that.pageCheckboxes.push({
+			checkbox: checkbox,
+			page: pageName,
+		});
+		goog.events.listen(checkbox, goog.ui.Component.EventType.CHANGE, function(e){
+			that.selectPage(pageName, checkbox);
+		});
+	});
+	// refresh display
+	this.redraw();
+}
+/**
+ * the selection has changed
+ */
+silex.view.PropertiesTool.prototype.setElements = function(elements){
+	this.elements = elements;
 	this.redraw();
 }
 /**
@@ -515,20 +589,54 @@ silex.view.PropertiesTool.prototype.setPages = function(data){
  */
 silex.view.PropertiesTool.prototype.redraw = function(){
 	console.log('redraw '+this.pages);
-	var pagesContainer = goog.dom.getElementByClass('pages-container', this.element);
-	var templateHtml = goog.dom.getElementByClass('pages-selector-template', this.element).innerHTML;
-	silex.TemplateHelper.resolveTemplate(pagesContainer, templateHtml, {pages:this.pages});
 
-	var items = goog.dom.getElementsByClass('page-container', this.element);
-	goog.array.forEach(items, function(item) {
-		console.log('found one container '+item);
-		var checkboxElement = goog.dom.getElementByClass('page-check', item);
-		var labelElement = goog.dom.getElementByClass('page-label', item);
-		var checkbox = new goog.ui.Checkbox();
-		checkbox.decorate(checkboxElement);
-		checkbox.setLabel (labelElement);
+	// refresh page checkboxes
+	var idx = 0;
+	var that = this;
+	goog.array.forEach(this.pageCheckboxes, function(item) {
+		if (that.elements!=null && that.elements.length>0){
+			// there is a selection
+			var element = that.elements[0];
+			var pageName = that.pages[idx];
+			item.checkbox.setEnabled(true);
+			item.checkbox.setChecked(goog.dom.classes.has(element, pageName));
+			idx++;
+		}
+		else{
+			// no selected element
+			item.checkbox.setChecked(false);
+			item.checkbox.setEnabled(false);
+		}
+		console.log('checkbox found '+item.checkbox.isEnabled()+' - '+item.checkbox.isChecked());
 	});
 }
-
-
-
+/**
+ * callback for checkboxes click event
+ */
+silex.view.PropertiesTool.prototype.selectPage = function(pageName, checkbox){
+	var isChecked = checkbox.isChecked();
+	console.log(pageName+' - '+isChecked);
+	if (this.elements && this.elements.length>0){
+		var element = this.elements[0];
+		if (isChecked){
+			goog.dom.classes.add(element, pageName)
+			goog.dom.classes.add(element, 'silex-page')
+		}
+		else{
+			goog.dom.classes.remove(element, pageName)
+			if (this.getNumberOfPages(element)==0){
+				goog.dom.classes.remove(element, 'silex-page')
+			}
+		}
+	}
+	this.redraw();
+}
+silex.view.PropertiesTool.prototype.getNumberOfPages = function(element){
+	var res = 0;
+	goog.array.forEach(this.pages, function(page) {
+		if(goog.dom.classes.has(element, page)){
+			res++;
+		}
+	});
+	return res;
+}
