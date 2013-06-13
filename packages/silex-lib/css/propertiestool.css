@@ -1,7 +1,25 @@
 .silex-propertiestool{
-	float: right;
-	width: 200px;
-}
-.silex-propertiestool .properties-tool-container{
+    position: absolute;
+	right: 0;
+	width: 250px;
+	height: 95%;
+	background-color: rgb(255, 255, 255);
+    z-index: 800;
+
 
 }
+.silex-propertiestool{
+}
+.silex-propertiestool .label{
+    background-color: #323232;
+    border: 1px solid #323232;
+    color: #FFFFFF;
+    font-weight: bold;
+    height: 15px;
+    padding: 10px 0 10px 12px;
+}
+.silex-propertiestool .pages-container{
+	padding: 20px;
+
+}
+

@@ -25,6 +25,7 @@ silex.controller.Main = function(workspace, menu, stage, pageTool, propertiesToo
 	// attach events to the view and model
 	this.menu.onMenuEvent = function(e){that.menuEvent(e);};
 	this.pageTool.onPageToolEvent = function(e){that.pageToolEvent(e);};
+	this.propertiesTool.onPropertiesToolEvent = function(e){that.propertiesToolEvent(e);};
 	this.selection.onChanged = function (eventName){that.selectionEvent(eventName)};
 }
 /**
@@ -98,44 +99,65 @@ silex.controller.Main.prototype.pageToolEvent = function(e){
 		case 'removePage':
 			this.removePage(e.name);
 			break;
+		case 'ready':
+			console.log('ready => redraw');
+			this.workspace.redraw();
+			break;
+	}
+}
+/**
+ * properties tool event handler
+ */
+silex.controller.Main.prototype.propertiesToolEvent = function(e){
+	switch(e.type){
+		case 'ready':
+			console.log('ready => redraw');
+			this.workspace.redraw();
+			break;
 	}
 }
 /**
  * menu events
  */
 silex.controller.Main.prototype.menuEvent = function(e){
-	console.log('menu event '+e.target.getCaption() + ' - '+e.target.getId());
 	var that = this;
-	switch(e.target.getId()){
-		case 'file.new':
-			this.openFile(silex.controller.Main.CREATION_TEMPLATE, function(){
-				that.selection.setSelectedFile(null);
-			});
-			break;
-		case 'file.save':
-			if (this.selection.getSelectedFile()!=null){
-				that.file.save(this.stage.getBody());
-			}
-			else{
+	if (e && e.target){
+		console.log('menu event '+e.target.getCaption() + ' - '+e.target.getId());
+		switch(e.target.getId()){
+			case 'file.new':
+				this.openFile(silex.controller.Main.CREATION_TEMPLATE, function(){
+					that.selection.setSelectedFile(null);
+				});
+				break;
+			case 'file.save':
+				if (this.selection.getSelectedFile()!=null){
+					that.file.save(this.stage.getBody());
+				}
+				else{
+					var url = window.prompt('What is the file name? (todo: open dropbox file browser)');
+					that.file.saveAs(this.stage.getBody(), url);
+				}
+				break;
+			case 'file.open':
 				var url = window.prompt('What is the file name? (todo: open dropbox file browser)');
-				that.file.saveAs(this.stage.getBody(), url);
-			}
-			break;
-		case 'file.open':
-			var url = window.prompt('What is the file name? (todo: open dropbox file browser)');
-			this.openFile(url, function(){
-				that.selection.setSelectedFile(url);
-			});
-			break;
-		case 'file.close':
-			this.closeFile();
-			break;
-		case 'view.file':
-			window.open(this.selection.file);
-			break;
-		case 'insert.page':
-			this.insertPage();
-			break;
+				this.openFile(url, function(){
+					that.selection.setSelectedFile(url);
+				});
+				break;
+			case 'file.close':
+				this.closeFile();
+				break;
+			case 'view.file':
+				window.open(this.selection.file);
+				break;
+			case 'insert.page':
+				this.insertPage();
+				break;
+		}
+	}
+	else{
+		console.log('ready => redraw');
+		this.workspace.redraw();
 	}
 }
 /**
