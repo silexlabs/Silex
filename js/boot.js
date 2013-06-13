@@ -5,23 +5,16 @@ window.onload = function() {
 	console.log('onload');
 
 	var menuElement = goog.dom.getElementByClass('silex-menu');
-	var menu = new silex.view.Menu(menuElement, function(){
-		console.log('menu ready');
-	});
+	var menu = new silex.view.Menu(menuElement);
+	
 	var stageElement = goog.dom.getElementByClass('silex-stage');
-	var stage = new silex.view.Stage(stageElement, function(){
-		console.log('stage ready');
-	});
+	var stage = new silex.view.Stage(stageElement);
 
 	var pageToolElement = goog.dom.getElementByClass('silex-pagetool');
-	var pageTool = new silex.view.PageTool(pageToolElement, function(){
-		console.log('pageTool ready');
-	});
+	var pageTool = new silex.view.PageTool(pageToolElement);
 
 	var propertiesToolElement = goog.dom.getElementByClass('silex-propertiestool');
-	var propertiesTool = new silex.view.PropertiesTool(propertiesToolElement, function(){
-		console.log('propertiesTool ready');
-	});
+	var propertiesTool = new silex.view.PropertiesTool(propertiesToolElement);
 
 	var workspaceElement = goog.dom.getElementByClass('silex-workspace');
 	var workspace = new silex.view.Workspace(workspaceElement, menu, stage, pageTool, propertiesTool);

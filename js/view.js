@@ -7,11 +7,15 @@ goog.provide('silex.view.Stage');
 goog.provide('silex.view.PageTool');
 goog.provide('silex.view.PropertiesTool');
 
+goog.require('goog.style');
+
 goog.require('goog.ui.menuBar');
 goog.require('goog.ui.Menu');
 goog.require('goog.ui.MenuItem');
 goog.require('goog.ui.MenuButton');
 goog.require('goog.ui.Checkbox');
+
+goog.require('goog.dom.ViewportSizeMonitor');
 
 //////////////////////////////////////////////////////////////////
 // Workspace class
@@ -26,7 +30,18 @@ silex.view.Workspace = function(element, menu, stage, pageTool, propertiesTool){
 	this.stage = stage;
 	this.pageTool = pageTool;
 	this.propertiesTool = propertiesTool;
+	
+	this.viewport = new goog.dom.ViewportSizeMonitor();
+
+	var that = this;
+	goog.events.listen(this.viewport, goog.events.EventType.RESIZE, function(e){
+		that.redraw();
+	});
 }
+/**
+ * closure goog.dom.ViewportSizeMonitor object
+ */
+silex.view.Workspace.prototype.viewport;
 /**
  * reference to the silex.view.Menu class
  */
@@ -47,6 +62,30 @@ silex.view.Workspace.prototype.propertiesTool;
  * reference to the attached element
  */
 silex.view.Workspace.prototype.element;
+/**
+ * redraw the workspace, positions and sizes of the tool boxes
+ */
+silex.view.Workspace.prototype.redraw = function(){
+	var that = this;
+	setTimeout(function() { that.doRedraw(); }, 200);
+}
+silex.view.Workspace.prototype.doRedraw = function(){
+	var viewportSize = this.viewport.getSize();
+	var pageToolSize = goog.style.getSize(this.pageTool.element);
+	var propertiesToolSize = goog.style.getSize(this.propertiesTool.element);
+	var menuSize = goog.style.getSize(this.menu.element);
+
+	// stage
+	var stageWidth = viewportSize.width - pageToolSize.width - propertiesToolSize.width;
+	goog.style.setWidth(this.stage.element, stageWidth);
+	console.log('redraw workspace '+stageWidth);
+
+	// menu offset
+	var toolsHeight = viewportSize.height - menuSize.height;
+	goog.style.setHeight(this.pageTool.element, toolsHeight);
+	goog.style.setHeight(this.propertiesTool.element, toolsHeight);
+	goog.style.setHeight(this.stage.element, toolsHeight);
+}
 
 //////////////////////////////////////////////////////////////////
 // Menu class
@@ -62,10 +101,11 @@ silex.view.Menu = function(element, cbk){
 
 	var that = this;
 	silex.TemplateHelper.loadTemplateFile('html/ui/menu.html', element, function(){
+		console.log('template loaded');
 		that.buildMenu(element);
-		console.log('template loaded ');
 		if (cbk) cbk();
 		if(that.onReady) that.onReady();
+		if (that.onMenuEvent) that.onMenuEvent({type:'ready'});
 	});
 }
 /**
@@ -155,6 +195,7 @@ silex.view.Stage = function(element, cbk){
 	this.headElement = document.createElement('div');
 	that = this;
 	silex.TemplateHelper.loadTemplateFile('html/ui/stage.html', element, function(){
+		console.log('template loaded');
 		that.bodyElement = goog.dom.getElementByClass('silex-stage-body', that.element);
 		if (cbk && typeof(cbk)=='function') cbk();
 		if(that.onReady) that.onReady();
@@ -296,8 +337,14 @@ silex.view.PageTool = function(element, cbk){
 	
 	var that = this;
 	silex.TemplateHelper.loadTemplateFile('html/ui/pagetool.html', element, function(){
+		console.log('template loaded');
 		if (cbk) cbk();
 		if(that.onReady) that.onReady();
+		if (that.onPageToolEvent){
+			that.onPageToolEvent({
+				type: 'ready',
+			});
+		}
 	});
 }
 /**
@@ -430,8 +477,14 @@ silex.view.PropertiesTool = function(element, cbk){
 	
 	var that = this;
 	silex.TemplateHelper.loadTemplateFile('html/ui/propertiestool.html', element, function(){
+		console.log('template loaded');
 		if (cbk) cbk();
 		if(that.onReady) that.onReady();
+		if (that.onPropertiesToolEvent){
+			that.onPropertiesToolEvent({
+				type: 'ready',
+			});
+		}
 		that.redraw();
 	});
 }
@@ -441,6 +494,10 @@ silex.view.PropertiesTool = function(element, cbk){
  * called 1 time after template loading and rendering
  */
 silex.view.PropertiesTool.prototype.onReady;
+/**
+ * callback for the events, set by the controller
+ */
+silex.view.PageTool.prototype.onPropertiesToolEvent;
 /**
  * pages 
  */
@@ -458,9 +515,9 @@ silex.view.PropertiesTool.prototype.setPages = function(data){
  */
 silex.view.PropertiesTool.prototype.redraw = function(){
 	console.log('redraw '+this.pages);
-	var container = goog.dom.getElementByClass('properties-tool-container', this.element);
+	var pagesContainer = goog.dom.getElementByClass('pages-container', this.element);
 	var templateHtml = goog.dom.getElementByClass('pages-selector-template', this.element).innerHTML;
-	silex.TemplateHelper.resolveTemplate(container, templateHtml, {pages:this.pages});
+	silex.TemplateHelper.resolveTemplate(pagesContainer, templateHtml, {pages:this.pages});
 
 	var items = goog.dom.getElementsByClass('page-container', this.element);
 	goog.array.forEach(items, function(item) {
