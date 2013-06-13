@@ -1,9 +1,10 @@
-.goog-menu-button{
-	display: inline-block;
-}
 .silex-menu{
 	font-weight: 400;
 	font-size-adjust: none;
+}
+.silex-menu .goog-menu-button{
+	display: inline-block;
+	cursor: default;
 }
 .silex-menu .website-name{
 	font-family: arial,​sans-serif;
@@ -53,7 +54,6 @@
 
 	position: relative;
 	white-space: nowrap;
-	cursor: default;
 	font-stretch: normal;
 	font-variant: normal;
 	outline-style: none;
