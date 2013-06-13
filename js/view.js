@@ -131,7 +131,7 @@ silex.view.Menu.prototype.onMenuEvent;
  */
 silex.view.Menu.prototype.buildMenu = function(rootNode) {
 	this.menu = goog.ui.menuBar.create();
-	var menuNames = ['File', 'Insert', 'View'];
+	var menuNames = ['File', 'Edit', 'View', 'Insert'];
 	var menuOptions = [
 		[
 			{label:'New File', id:'file.new'}, 
@@ -141,15 +141,18 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
 			{label: 'Close File', id: 'file.close'},
 		],
 		[
+			{label:'Delete', id:'edit.delete'}, 
+		],
+		[
+			{label:'View in new window', id:'view.file'}, 
+			null,
+		],
+		[
 			{label:'Text box', id:'insert.text'}, 
 			{label:'Image...', id:'insert.image'}, 
 			{label:'Container', id:'insert.container'}, 
 			null,
 			{label:'New page', id:'insert.page'}, 
-		],
-		[
-			{label:'View in new window', id:'view.file'}, 
-			null,
 		],
 	];
 
@@ -214,6 +217,18 @@ silex.view.Stage = function(element, cbk){
 	});
 }
 /**
+ * constant for silex element type
+ */
+silex.view.Stage.ELEMENT_TYPE_CONTAINER = 'container';
+/**
+ * constant for silex element type
+ */
+silex.view.Stage.ELEMENT_TYPE_ELEMENT = 'element';
+/**
+ * constant for silex element type
+ */
+silex.view.Stage.ELEMENT_SUBTYPE_TEXT = 'text';
+/**
  * on ready callback
  * used by the controller to be notified when the component is ready
  * called 1 time after template loading and rendering
@@ -253,26 +268,36 @@ silex.view.Stage.prototype.findEditableParent = function(child){
  */
 silex.view.Stage.prototype.setContent = function(bodyHtml, headHtml){
 	console.log('setContent ');
-	this.cleanup();
+	this.makeEditable(false);
 	this.bodyElement.innerHTML = bodyHtml;
 	this.headElement.innerHTML = headHtml;
-    $('[data-silex-type="container"]').editable({
-      isContainer: true,
-    });
-    $('[data-silex-type="element"]').editable();
-	
-	$(this.bodyElement).pageable({useDeeplink:false});
+	this.makeEditable(true);
 }
 /**
- * cleanup editable, reset html content
+ * reset html content
  */
-silex.view.Stage.prototype.cleanup = function(){
-	console.log('cleanup ');
-	$('[data-silex-type="container"]').editable('destroy')
-    $('[data-silex-type="element"]').editable('destroy')
-    //$(this.bodyElement).pageable('destroy')
+silex.view.Stage.prototype.removeContent = function(){
+	console.log('removeContent ');
     if (this.bodyElement) this.bodyElement.innerHTML = '';
 	if (this.headElement) this.headElement.innerHTML = '';
+}
+/**
+ * init or remove editable
+ */
+silex.view.Stage.prototype.makeEditable = function(isEditable){
+	if (isEditable){
+		$('[data-silex-type="container"]').editable({
+		  isContainer: true,
+		});
+		$('[data-silex-type="element"]').editable();
+
+		$(this.bodyElement).pageable({useDeeplink:false});
+	}
+	else{
+		$('[data-silex-type="container"]').editable('destroy')
+	    $('[data-silex-type="element"]').editable('destroy')
+	    //$(this.bodyElement).pageable('destroy')
+	}
 }
 /**
  * return clean html string (no edition-related content)
@@ -350,7 +375,32 @@ silex.view.Stage.prototype.removePage = function(pageName){
 				$(this).remove();
 			}
 		});
-
+}
+/**
+ * add elements
+ */
+silex.view.Stage.prototype.addElement = function(elementType){
+	console.log('addElement '+elementType);
+	var newHtml;
+	switch(elementType){
+		case silex.view.Stage.ELEMENT_TYPE_CONTAINER:
+			newHtml = '<div class="editable-style" data-silex-type="container" style="position: absolute; width: 100px; height: 100px; left: 50%; top: 50%;" />';
+			break;
+		case silex.view.Stage.ELEMENT_SUBTYPE_TEXT:
+			newHtml = '<div class="editable-style" data-silex-type="element" data-silex-sub-type="text" style="position: absolute; width: 200px; height: 30px; left: 50%; top: 50%;">New text box</div>';
+			break;
+	}
+	var element = $('.background', this.bodyElement).append(newHtml);
+	this.makeEditable(true);
+	return element;
+}
+/**
+ * remove elements
+ */
+silex.view.Stage.prototype.removeElement = function(element){
+	console.log('removeElement '+element);
+	$(element).remove();
+	return element;
 }
 //////////////////////////////////////////////////////////////////
 // PageTool class

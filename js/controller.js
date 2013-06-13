@@ -179,6 +179,20 @@ silex.controller.Main.prototype.menuEvent = function(e){
 			case 'insert.page':
 				this.insertPage();
 				break;
+			case 'insert.text':
+				var element = this.stage.addElement(silex.view.Stage.ELEMENT_SUBTYPE_TEXT);
+				this.selection.setSelectedElements([element]);
+				break;
+			case 'insert.image':
+				break;
+			case 'insert.container':
+				var element = this.stage.addElement(silex.view.Stage.ELEMENT_TYPE_CONTAINER);
+				this.selection.setSelectedElements([element]);
+				break;
+			case 'edit.delete':
+				var element = this.selection.getSelectedElements()[0];
+				this.stage.removeElement(element);
+				break;
 		}
 	}
 	else{

@@ -8,7 +8,9 @@
 
 
 }
-.silex-propertiestool{
+.silex-propertiestool .main-container{
+	padding: 5px;
+	margin: 5px;
 }
 .silex-propertiestool h1{
     background-color: #323232;
