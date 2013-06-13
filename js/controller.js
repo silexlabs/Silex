@@ -7,7 +7,7 @@ goog.provide('silex.controller.Main');
  * the Silex controller class
  * @constructor
  */
-silex.controller.Main = function(workspace, menu, stage, pageTool, propertiesTool){
+silex.controller.Main = function(workspace, menu, stage, pageTool, propertiesTool, ckEditor){
 	console.log('controller initView '+menu+', '+stage);
 	var that = this;
 	
@@ -17,6 +17,7 @@ silex.controller.Main = function(workspace, menu, stage, pageTool, propertiesToo
 	this.stage = stage;
 	this.pageTool = pageTool;
 	this.propertiesTool = propertiesTool;
+	this.ckEditor = ckEditor;
 	
 	// cerate the model
 	this.file = new silex.model.File();
@@ -26,6 +27,7 @@ silex.controller.Main = function(workspace, menu, stage, pageTool, propertiesToo
 	this.menu.onMenuEvent = function(e){that.menuEvent(e);};
 	this.pageTool.onPageToolEvent = function(e){that.pageToolEvent(e);};
 	this.propertiesTool.onPropertiesToolEvent = function(e){that.propertiesToolEvent(e);};
+	this.ckEditor.onCKEditorEvent = function(e){that.ckEditorEvent(e);};
 	this.stage.onStageEvent = function(e){that.stageEvent(e);};
 	this.selection.onChanged = function (eventName){that.selectionEvent(eventName)};
 }
@@ -54,6 +56,10 @@ silex.controller.Main.prototype.pageTool;
  * reference to the properties tool component (view)
  */
 silex.controller.Main.prototype.propertiesTool;
+/**
+ * reference to the CKEditor component (view)
+ */
+silex.controller.Main.prototype.ckEditor;
 /**
  * reference to the model
  */
@@ -90,6 +96,7 @@ silex.controller.Main.prototype.selectionEvent = function(eventName){
 			break;
 		case 'elements':
 			this.propertiesTool.setElements(this.selection.getSelectedElements());
+			this.ckEditor.setElements(this.selection.getSelectedElements());
 			break;
 	}
 }
@@ -115,10 +122,13 @@ silex.controller.Main.prototype.pageToolEvent = function(e){
  * properties tool event handler
  */
 silex.controller.Main.prototype.propertiesToolEvent = function(e){
+	console.log('propertiesToolEvent '+e.type);
 	switch(e.type){
 		case 'ready':
-			console.log('ready => redraw');
 			this.workspace.redraw();
+			break;
+		case 'openTextEditor':
+			this.editText();
 			break;
 	}
 }
@@ -176,6 +186,9 @@ silex.controller.Main.prototype.menuEvent = function(e){
 			case 'view.file':
 				window.open(this.selection.file);
 				break;
+			case 'view.open.textEditor':
+				this.editText();
+				break;
 			case 'insert.page':
 				this.insertPage();
 				break;
@@ -189,9 +202,12 @@ silex.controller.Main.prototype.menuEvent = function(e){
 				var element = this.stage.addElement(silex.view.Stage.ELEMENT_TYPE_CONTAINER);
 				this.selection.setSelectedElements([element]);
 				break;
-			case 'edit.delete':
+			case 'edit.delete.selection':
 				var element = this.selection.getSelectedElements()[0];
 				this.stage.removeElement(element);
+				break;
+			case 'edit.delete.page':
+				this.removePage(this.selection.getSelectedPage());
 				break;
 		}
 	}
@@ -249,6 +265,13 @@ silex.controller.Main.prototype.removePage = function(pageName){
 		// update model to open this page
 		this.selection.setSelectedPage(this.stage.getPages()[0]);
 	}
+}
+/**
+ * Edit text content
+ */
+silex.controller.Main.prototype.editText = function(){
+	this.ckEditor.openEditor();
+	this.workspace.redraw();
 }
 /**
  * model event

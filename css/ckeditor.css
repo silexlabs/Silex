@@ -1,0 +1,34 @@
+.silex-ckeditor{
+	position: absolute;
+	width: 100%;
+	height: 100%;
+}
+
+.ckeditor-background{
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	top: 0;
+	left: 0;
+	background-color: black;
+	z-index: 9998;
+	opacity: .5;
+	display: none;
+}
+.ck-editor{
+	display: none;
+}
+.cke_chrome{
+	margin: 0 !important;
+	padding: 0 !important;
+	border-radius: 0 !important;
+	border-width: 0 !important;
+    position: absolute;
+    z-index: 9999;
+    width: 95%;
+    height: 400px; /* forced in silex.view.CKEditor.prototype.openEditor */
+    
+}
+.cke_inner{
+	border-radius: 0 !important;
+}

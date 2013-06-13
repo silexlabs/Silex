@@ -6,6 +6,7 @@ goog.provide('silex.view.Menu');
 goog.provide('silex.view.Stage');
 goog.provide('silex.view.PageTool');
 goog.provide('silex.view.PropertiesTool');
+goog.provide('silex.view.CKEditor');
 
 goog.require('goog.style');
 
@@ -14,6 +15,7 @@ goog.require('goog.ui.Menu');
 goog.require('goog.ui.MenuItem');
 goog.require('goog.ui.MenuButton');
 goog.require('goog.ui.Checkbox');
+goog.require('goog.ui.CustomButton');
 
 goog.require('goog.dom.ViewportSizeMonitor');
 
@@ -24,12 +26,13 @@ goog.require('goog.dom.ViewportSizeMonitor');
  * the Silex workspace class
  * @constructor
  */
-silex.view.Workspace = function(element, menu, stage, pageTool, propertiesTool){
+silex.view.Workspace = function(element, menu, stage, pageTool, propertiesTool, ckEditor){
 	this.element = element;
 	this.menu = menu;
 	this.stage = stage;
 	this.pageTool = pageTool;
 	this.propertiesTool = propertiesTool;
+	this.ckEditor = ckEditor;
 	
 	this.viewport = new goog.dom.ViewportSizeMonitor();
 
@@ -59,6 +62,10 @@ silex.view.Workspace.prototype.pageTool;
  */
 silex.view.Workspace.prototype.propertiesTool;
 /**
+ * reference to the silex.view.CKEditor class
+ */
+silex.view.Workspace.prototype.ckEditor;
+/**
  * reference to the attached element
  */
 silex.view.Workspace.prototype.element;
@@ -67,7 +74,7 @@ silex.view.Workspace.prototype.element;
  */
 silex.view.Workspace.prototype.redraw = function(){
 	var that = this;
-	setTimeout(function() { that.doRedraw(); }, 200);
+	setTimeout(function() { that.doRedraw(); }, 400);
 }
 silex.view.Workspace.prototype.doRedraw = function(){
 	var viewportSize = this.viewport.getSize();
@@ -85,6 +92,15 @@ silex.view.Workspace.prototype.doRedraw = function(){
 	goog.style.setHeight(this.pageTool.element, toolsHeight);
 	goog.style.setHeight(this.propertiesTool.element, toolsHeight);
 	goog.style.setHeight(this.stage.element, toolsHeight);
+
+	// ckeditor
+	var ckEditorContent = goog.dom.getElementByClass('cke_editor_ck-editor', this.ckEditor.element);
+	if (ckEditorContent){
+		var ckEditorSize = goog.style.getSize(ckEditorContent);
+		var posX = (viewportSize.width - ckEditorSize.width)/2;
+		var posY = (viewportSize.height - ckEditorSize.height)/2;
+		goog.style.setPosition(ckEditorContent, posX);
+	}
 }
 
 //////////////////////////////////////////////////////////////////
@@ -141,11 +157,14 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
 			{label: 'Close File', id: 'file.close'},
 		],
 		[
-			{label:'Delete', id:'edit.delete'}, 
+			{label:'Delete selection', id:'edit.delete.selection'}, 
+			null,
+			{label:'Delete page', id:'edit.delete.page'}, 
 		],
 		[
 			{label:'View in new window', id:'view.file'}, 
 			null,
+			{label:'Open text editor', id:'view.open.textEditor'}, 
 		],
 		[
 			{label:'Text box', id:'insert.text'}, 
@@ -387,7 +406,7 @@ silex.view.Stage.prototype.addElement = function(elementType){
 			newHtml = '<div class="editable-style" data-silex-type="container" style="position: absolute; width: 100px; height: 100px; left: 50%; top: 50%;" />';
 			break;
 		case silex.view.Stage.ELEMENT_SUBTYPE_TEXT:
-			newHtml = '<div class="editable-style" data-silex-type="element" data-silex-sub-type="text" style="position: absolute; width: 200px; height: 30px; left: 50%; top: 50%;">New text box</div>';
+			newHtml = '<div class="editable-style" data-silex-type="element" data-silex-sub-type="text" style="position: absolute; width: 200px; height: 30px; left: 50%; top: 50%;"><p>New text box</p></div>';
 			break;
 	}
 	var element = $('.background', this.bodyElement).append(newHtml);
@@ -663,6 +682,35 @@ silex.view.PropertiesTool.prototype.redraw = function(){
 		}
 		console.log('checkbox found '+item.checkbox.isEnabled()+' - '+item.checkbox.isChecked());
 	});
+
+	// refresh properties
+	var editionContainer = goog.dom.getElementByClass('edition-container', this.element);
+	if (this.elements && this.elements.length>0 && this.elements[0].getAttribute){
+		var templateHtml = goog.dom.getElementByClass('edition-template', this.element).innerHTML;
+		silex.TemplateHelper.resolveTemplate(editionContainer, templateHtml, {
+			textEditor: (this.elements[0].getAttribute('data-silex-sub-type')==silex.view.Stage.ELEMENT_SUBTYPE_TEXT),
+		});
+
+		// text editor
+		var buttonElement = goog.dom.getElementByClass('text-editor-button', editionContainer);
+		if (buttonElement){
+			var button = new goog.ui.CustomButton();
+			button.decorate(buttonElement);
+			goog.events.listen(buttonElement, goog.events.EventType.CLICK, function(e) { 
+				if (that.onPropertiesToolEvent){
+					that.onPropertiesToolEvent({
+						type: 'openTextEditor',
+					});
+				}
+			});
+		}
+	}
+	else{
+		if (editionContainer){
+			editionContainer.innerHTML = '';
+		}
+	}
+
 }
 /**
  * callback for checkboxes click event
@@ -685,6 +733,9 @@ silex.view.PropertiesTool.prototype.selectPage = function(pageName, checkbox){
 	}
 	this.redraw();
 }
+/**
+ * count the number of pages in which the element is visible
+ */
 silex.view.PropertiesTool.prototype.getNumberOfPages = function(element){
 	var res = 0;
 	goog.array.forEach(this.pages, function(page) {
@@ -693,4 +744,130 @@ silex.view.PropertiesTool.prototype.getNumberOfPages = function(element){
 		}
 	});
 	return res;
+}
+//////////////////////////////////////////////////////////////////
+// CKEditor class
+//////////////////////////////////////////////////////////////////
+/**
+ * the Silex CKEditor class
+ * @constructor
+ */
+silex.view.CKEditor = function(element, cbk){
+	this.element = element;
+	
+	var that = this;
+	silex.TemplateHelper.loadTemplateFile('html/ui/ckeditor.html', element, function(){
+		console.log('template loaded');
+		if (cbk) cbk();
+		if(that.onReady) that.onReady();
+		if (that.onPropertiesToolEvent){
+			that.onPropertiesToolEvent({
+				type: 'ready',
+			});
+		}
+	});
+}
+/**
+ * on ready callback
+ * used by the controller to be notified when the component is ready
+ * called 1 time after template loading and rendering
+ */
+silex.view.CKEditor.prototype.onReady;
+/**
+ * callback for the events, set by the controller
+ */
+silex.view.CKEditor.prototype.onCKEditorEvent;
+/**
+ * selected elements on the stage
+ */
+silex.view.CKEditor.prototype.elements;
+/**
+ * instance of the ckeditor
+ */
+silex.view.CKEditor.prototype.editorInstance;
+silex.view.CKEditor.prototype.timer;
+/**
+ * the selection has changed
+ */
+silex.view.CKEditor.prototype.setElements = function(elements){
+	console.log('setElements '+elements);
+	this.elements = elements;
+}
+silex.view.CKEditor.prototype.getElement = function(){
+	return goog.dom.getElementsByTagNameAndClass('p', null, this.elements[0])[0];
+}
+/**
+ * Open the editor
+ */
+silex.view.CKEditor.prototype.openEditor = function(){
+	console.log('openEditor ');
+	var element = this.getElement();
+	console.log(element);
+	if (element){
+		var that = this;
+		var textArea = goog.dom.getElementByClass('ck-editor');
+		textArea.innerHTML = element.innerHTML;
+
+		that.editorInstance = CKEDITOR.replace( 'ck-editor', {
+			contentsCss: 'libs/ckeditor/outputxhtml.css',
+	        height: 500,
+	        width: "100%",
+			stylesSet: [
+				{ name: 'Strong Emphasis', element: 'strong' },
+				{ name: 'Emphasis', element: 'em' },
+
+				{ name: 'Computer Code', element: 'code' },
+				{ name: 'Keyboard Phrase', element: 'kbd' },
+				{ name: 'Sample Text', element: 'samp' },
+				{ name: 'Variable', element: 'var' },
+
+				{ name: 'Deleted Text', element: 'del' },
+				{ name: 'Inserted Text', element: 'ins' },
+
+				{ name: 'Cited Work', element: 'cite' },
+				{ name: 'Inline Quotation', element: 'q' }
+			]
+		});
+		that.editorInstance.on("instanceReady", function(){
+
+			// listen the keyboard events to call the callback when the user enters text
+			that.editorInstance.document.on("keyup", function(){that.onUserInput();});
+			// for the combo boxes to be taken into account
+			that.timer = setInterval(function(){
+				that.onUserInput();
+			},1000);
+
+			that.editorInstance.setData(element.innerHTML);
+		});
+
+		// background
+		var background = goog.dom.getElementByClass('ckeditor-background');
+		// show
+		goog.style.setStyle(background, 'display', 'inherit');
+		// close
+		goog.events.listen(background, goog.events.EventType.CLICK, function(e){
+			that.closeEditor();
+		});
+	}
+}
+/**
+ * close ckeditor 
+ */
+silex.view.CKEditor.prototype.closeEditor = function(){
+	this.editorInstance.destroy();
+	clearTimeout(this.timer);
+	// background
+	var background = goog.dom.getElementByClass('ckeditor-background');
+	goog.style.setStyle(background, 'display', 'none');
+}
+/**
+ * text changed in ckeditor 
+ */
+silex.view.CKEditor.prototype.onUserInput = function(){
+	console.log("onUserInput "+this.editorInstance.getData());
+	console.log("onUserInput "+this.elements);
+	var element = this.getElement();
+	if (element){
+		element.innerHTML = this.editorInstance.getData();
+	}
 }

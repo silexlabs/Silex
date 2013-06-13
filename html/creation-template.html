@@ -1,16 +1,28 @@
 <html>
 <head>
-	<title>temp</title>
+	<title>Untitled website</title>
+	<meta name="page" content="page1">
+	<script type="text/javascript" src="../libs/jquery/jquery.js"></script>
+	<script type="text/javascript" src="../libs/jquery/jquery-ui.js"></script>
+	<script type="text/javascript" src="../libs/jquery/pageable.js"></script>
+	<script type="text/javascript" src="../js/silex.js"></script>
+	<!-- Normalize -->
+	<link href="../libs/normalize.css" rel="stylesheet">
 </head>
 <body>
 	<style type="text/css">
+		.silex-page{
+			display: none;
+		}
+		.background{
+			position: relative !important;
+			left: inherit !important;
+			top: 0px;
+			margin-left: auto;
+			margin-right: auto;
+		}
 	</style>
-	<div id="background" class="editable-style" data-silex-type="container"
-		style="background-color: #EEEEEE; height: 600px; width: 600px;"
-	>
-		<div style="background-color: rgb(255, 255, 255); position: absolute; width: 400px; height: 400px;" class="editable-style" data-silex-type="container">
-			<div style="left: 127px; top: 45px; position: absolute; width: 200px; height: 30px;" class="editable-style" data-silex-type="element">Empty content</div>
-		</div>
+	<div class="background editable-style" data-silex-type="container" style="background-color: rgb(255, 255, 255); height: 775px; width: 594px; top: 10px; ">
 	</div>
 </body>
 </html>
