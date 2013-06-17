@@ -94,12 +94,11 @@ silex.view.Workspace.prototype.doRedraw = function(){
 	goog.style.setHeight(this.stage.element, toolsHeight);
 
 	// ckeditor
-	var ckEditorContent = goog.dom.getElementByClass('cke_editor_ck-editor', this.ckEditor.element);
-	if (ckEditorContent){
-		var ckEditorSize = goog.style.getSize(ckEditorContent);
+	if (this.ckEditor.element){
+		var ckEditorSize = goog.style.getSize(this.ckEditor.element);
 		var posX = (viewportSize.width - ckEditorSize.width)/2;
 		var posY = (viewportSize.height - ckEditorSize.height)/2;
-		goog.style.setPosition(ckEditorContent, posX);
+		goog.style.setPosition(this.ckEditor.element, posX, posY);
 	}
 }
 
@@ -841,7 +840,7 @@ silex.view.CKEditor.prototype.openEditor = function(){
 		});
 
 		// background
-		var background = goog.dom.getElementByClass('ckeditor-background');
+		var background = goog.dom.getElementByClass('dialogs-background');
 		// show
 		goog.style.setStyle(background, 'display', 'inherit');
 		// close
@@ -857,7 +856,7 @@ silex.view.CKEditor.prototype.closeEditor = function(){
 	this.editorInstance.destroy();
 	clearTimeout(this.timer);
 	// background
-	var background = goog.dom.getElementByClass('ckeditor-background');
+	var background = goog.dom.getElementByClass('dialogs-background');
 	goog.style.setStyle(background, 'display', 'none');
 }
 /**
