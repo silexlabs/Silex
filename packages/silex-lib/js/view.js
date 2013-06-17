@@ -16,6 +16,7 @@ goog.require('goog.ui.MenuItem');
 goog.require('goog.ui.MenuButton');
 goog.require('goog.ui.Checkbox');
 goog.require('goog.ui.CustomButton');
+goog.require('goog.ui.TabPane');
 
 goog.require('goog.dom.ViewportSizeMonitor');
 
@@ -582,6 +583,7 @@ silex.view.PropertiesTool = function(element, cbk){
 				type: 'ready',
 			});
 		}
+		that.buildTabs();
 		that.redraw();
 	});
 }
@@ -607,6 +609,20 @@ silex.view.PropertiesTool.prototype.elements;
  * checkboxes instanciated for each page
  */
 silex.view.PropertiesTool.prototype.pageCheckboxes;
+/**
+ * build tabs for the different states (normal, pressed, hover)
+ */
+silex.view.PropertiesTool.prototype.buildTabs = function(){
+	var tabContainer = goog.dom.getElementByClass('tab-container', this.element);
+//	var templateHtml = goog.dom.getElementByClass('style-template', this.element).innerHTML;
+//	silex.TemplateHelper.resolveTemplate(tabContainer, templateHtml, {elements:this.elements});
+
+	var tabPage = goog.dom.getElementByClass('tab-page', this.element);
+	var tabPane = new goog.ui.TabPane(tabContainer);
+	tabPane.addPage(new goog.ui.TabPane.TabPage(tabPage, 'Normal'));
+	tabPane.addPage(new goog.ui.TabPane.TabPage(tabPage, 'Hover'));
+	tabPane.addPage(new goog.ui.TabPane.TabPage(tabPage, 'Pressed'));
+}
 /**
  * refresh with new data
  */
@@ -759,8 +775,8 @@ silex.view.CKEditor = function(element, cbk){
 		console.log('template loaded');
 		if (cbk) cbk();
 		if(that.onReady) that.onReady();
-		if (that.onPropertiesToolEvent){
-			that.onPropertiesToolEvent({
+		if (that.onCKEditorEvent){
+			that.onCKEditorEvent({
 				type: 'ready',
 			});
 		}
@@ -777,77 +793,71 @@ silex.view.CKEditor.prototype.onReady;
  */
 silex.view.CKEditor.prototype.onCKEditorEvent;
 /**
- * selected elements on the stage
+ * last value of the html content
  */
-silex.view.CKEditor.prototype.elements;
+silex.view.CKEditor.prototype.lastHtml;
 /**
  * instance of the ckeditor
  */
 silex.view.CKEditor.prototype.editorInstance;
 silex.view.CKEditor.prototype.timer;
 /**
- * the selection has changed
+ * retrieve the editor html content
  */
-silex.view.CKEditor.prototype.setElements = function(elements){
-	console.log('setElements '+elements);
-	this.elements = elements;
-}
-silex.view.CKEditor.prototype.getElement = function(){
-	return goog.dom.getElementsByTagNameAndClass('p', null, this.elements[0])[0];
+silex.view.CKEditor.prototype.getData = function(){
+	return this.editorInstance.getData();
 }
 /**
  * Open the editor
  */
-silex.view.CKEditor.prototype.openEditor = function(){
-	console.log('openEditor ');
-	var element = this.getElement();
-	console.log(element);
-	if (element){
-		var that = this;
-		var textArea = goog.dom.getElementByClass('ck-editor');
-		textArea.innerHTML = element.innerHTML;
+silex.view.CKEditor.prototype.openEditor = function(initialHtml){
+	console.log('openEditor '+initialHtml);
 
-		that.editorInstance = CKEDITOR.replace( 'ck-editor', {
-			contentsCss: 'libs/ckeditor/outputxhtml.css',
-	        height: 500,
-	        width: "100%",
-			stylesSet: [
-				{ name: 'Strong Emphasis', element: 'strong' },
-				{ name: 'Emphasis', element: 'em' },
+	var that = this;
+	var textArea = goog.dom.getElementByClass('ck-editor');
+	textArea.innerHTML = initialHtml;
+	this.lastHtml = initialHtml;
 
-				{ name: 'Computer Code', element: 'code' },
-				{ name: 'Keyboard Phrase', element: 'kbd' },
-				{ name: 'Sample Text', element: 'samp' },
-				{ name: 'Variable', element: 'var' },
+	this.editorInstance = CKEDITOR.replace( 'ck-editor', {
+		contentsCss: 'libs/ckeditor/outputxhtml.css',
+        height: 500,
+        width: "100%",
+		stylesSet: [
+			{ name: 'Strong Emphasis', element: 'strong' },
+			{ name: 'Emphasis', element: 'em' },
 
-				{ name: 'Deleted Text', element: 'del' },
-				{ name: 'Inserted Text', element: 'ins' },
+			{ name: 'Computer Code', element: 'code' },
+			{ name: 'Keyboard Phrase', element: 'kbd' },
+			{ name: 'Sample Text', element: 'samp' },
+			{ name: 'Variable', element: 'var' },
 
-				{ name: 'Cited Work', element: 'cite' },
-				{ name: 'Inline Quotation', element: 'q' }
-			]
-		});
-		that.editorInstance.on("instanceReady", function(){
+			{ name: 'Deleted Text', element: 'del' },
+			{ name: 'Inserted Text', element: 'ins' },
 
-			// listen the keyboard events to call the callback when the user enters text
-			that.editorInstance.document.on("keyup", function(){that.onUserInput();});
-			// for the combo boxes to be taken into account
-			that.timer = setInterval(function(){
-				that.onUserInput();
-			},1000);
+			{ name: 'Cited Work', element: 'cite' },
+			{ name: 'Inline Quotation', element: 'q' }
+		]
+	});
+	this.editorInstance.on("instanceReady", function(){
 
-			that.editorInstance.setData(element.innerHTML);
-		});
+		// listen the keyboard events to call the callback when the user enters text
+		that.editorInstance.document.on("keyup", function(){that.onUserInput();});
+		// for the combo boxes to be taken into account
+		that.timer = setInterval(function(){
+			that.onUserInput();
+		},1000);
 
-		// background
-		var background = goog.dom.getElementByClass('dialogs-background');
-		// show
-		goog.style.setStyle(background, 'display', 'inherit');
-		// close
-		goog.events.listen(background, goog.events.EventType.CLICK, function(e){
-			that.closeEditor();
-		});
-	}
+		that.editorInstance.setData(initialHtml);
+	});
+
+	// background
+	var background = goog.dom.getElementByClass('dialogs-background');
+	// show
+	goog.style.setStyle(background, 'display', 'inherit');
+	// close
+	goog.events.listen(background, goog.events.EventType.CLICK, function(e){
+		that.closeEditor();
+	});
 }
 /**
  * close ckeditor 
@@ -863,10 +873,13 @@ silex.view.CKEditor.prototype.closeEditor = function(){
  * text changed in ckeditor 
  */
 silex.view.CKEditor.prototype.onUserInput = function(){
-	console.log("onUserInput "+this.editorInstance.getData());
-	console.log("onUserInput "+this.elements);
-	var element = this.getElement();
-	if (element){
-		element.innerHTML = this.editorInstance.getData();
+	if (this.lastHtml != this.getData()){
+		console.log("onUserInput ");
+		if (this.onCKEditorEvent){
+			this.onCKEditorEvent({
+				type: 'changed',
+			});
+		}
+		this.lastHtml = this.getData();
 	}
 }

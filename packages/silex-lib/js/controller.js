@@ -96,7 +96,26 @@ silex.controller.Main.prototype.selectionEvent = function(eventName){
 			break;
 		case 'elements':
 			this.propertiesTool.setElements(this.selection.getSelectedElements());
-			this.ckEditor.setElements(this.selection.getSelectedElements());
+			break;
+	}
+}
+/**
+ * CKEditor event handler
+ */
+silex.controller.Main.prototype.ckEditorEvent = function(e){
+	console.log('CKEditor event '+e.type);
+	switch(e.type){
+		case 'changed':
+			var selectedElements = this.selection.getSelectedElements();
+			if (selectedElements && selectedElements.length>0){
+				var pElements = goog.dom.getElementsByTagNameAndClass('p', null, selectedElements[0]);
+				if (pElements && pElements.length > 0){
+					pElements[0].innerHTML = this.ckEditor.getData();
+				}
+				else{
+					throw('Could not find the mandatory p element in the text field');
+				}
+			}
 			break;
 	}
 }
@@ -270,7 +289,16 @@ silex.controller.Main.prototype.removePage = function(pageName){
  * Edit text content
  */
 silex.controller.Main.prototype.editText = function(){
-	this.ckEditor.openEditor();
+	var selectedElements = this.selection.getSelectedElements();
+	if (selectedElements && selectedElements.length>0){
+		var pElements = goog.dom.getElementsByTagNameAndClass('p', null, selectedElements[0]);
+		if (pElements && pElements.length > 0){
+			this.ckEditor.openEditor(pElements[0].innerHTML);
+		}
+		else{
+			throw('Could not find the mandatory p element in the text field');
+		}
+	}
 	this.workspace.redraw();
 }
 /**
