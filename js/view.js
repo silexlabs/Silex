@@ -17,6 +17,7 @@ goog.require('goog.ui.MenuButton');
 goog.require('goog.ui.Checkbox');
 goog.require('goog.ui.CustomButton');
 goog.require('goog.ui.TabPane');
+goog.require('goog.ui.HsvPalette');
 
 goog.require('goog.dom.ViewportSizeMonitor');
 
@@ -584,6 +585,7 @@ silex.view.PropertiesTool = function(element, cbk){
 			});
 		}
 		that.buildTabs();
+		that.buildStylePane();
 		that.redraw();
 	});
 }
@@ -610,18 +612,60 @@ silex.view.PropertiesTool.prototype.elements;
  */
 silex.view.PropertiesTool.prototype.pageCheckboxes;
 /**
+ * color picker for background color
+ */
+silex.view.PropertiesTool.prototype.bgColorPicker;
+
+/**
  * build tabs for the different states (normal, pressed, hover)
  */
 silex.view.PropertiesTool.prototype.buildTabs = function(){
 	var tabContainer = goog.dom.getElementByClass('tab-container', this.element);
-//	var templateHtml = goog.dom.getElementByClass('style-template', this.element).innerHTML;
-//	silex.TemplateHelper.resolveTemplate(tabContainer, templateHtml, {elements:this.elements});
 
+	// tab pane 
 	var tabPage = goog.dom.getElementByClass('tab-page', this.element);
 	var tabPane = new goog.ui.TabPane(tabContainer);
 	tabPane.addPage(new goog.ui.TabPane.TabPage(tabPage, 'Normal'));
 	tabPane.addPage(new goog.ui.TabPane.TabPage(tabPage, 'Hover'));
 	tabPane.addPage(new goog.ui.TabPane.TabPage(tabPage, 'Pressed'));
+
+	tabPane.setSelectedIndex(1); // workaround bug "first pane id display none"
+	tabPane.setSelectedIndex(0);
+
+}
+
+silex.view.PropertiesTool.prototype.buildStylePane = function(){
+	var that = this;
+
+	// background
+	var colorPickerElement = goog.dom.getElementByClass('color-picker', this.element);
+	this.bgColorPicker = new goog.ui.HsvPalette(null, null, 'goog-hsv-palette-sm');
+	this.bgColorPicker.render(colorPickerElement);
+	goog.events.listen(this.bgColorPicker, goog.ui.Component.EventType.ACTION, function(){
+		that.applyStyle()
+	});
+
+}
+silex.view.PropertiesTool.prototype.applyStyle = function(){
+	var color = this.bgColorPicker.getColor();
+
+	if (this.elements && this.elements.length>0){
+		goog.style.setStyle(this.elements[0], 'background-color', color);
+	}
+	else{
+		goog.style.setStyle(goog.dom.getElementByClass('silex-stage'), 'background-color', color);
+		throw('todo: change color in the headers');
+	}
+}
+silex.view.PropertiesTool.prototype.displayStyle = function(){
+	var color;
+	if (this.elements && this.elements.length>0){
+		color = goog.style.getBackgroundColor(this.elements[0]);
+	}
+	else{
+		color = goog.style.getBackgroundColor(goog.dom.getElementByClass('silex-stage'));
+	}
+	this.bgColorPicker.setColor(color);
 }
 /**
  * refresh with new data
@@ -670,6 +714,7 @@ silex.view.PropertiesTool.prototype.setPages = function(data){
  */
 silex.view.PropertiesTool.prototype.setElements = function(elements){
 	this.elements = elements;
+	this.displayStyle();
 	this.redraw();
 }
 /**

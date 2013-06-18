@@ -37,3 +37,49 @@
 	text-align: center;
 	font-size: 13px;
 }
+/* style UIs */
+.silex-propertiestool .color-picker{
+  width: 100%;
+  height: 100%;
+}
+/* tabs */
+.silex-propertiestool .goog-tabpane {
+  background: white;
+  padding-left: 1px;
+}
+.silex-propertiestool .goog-tabpane-tabs {
+  list-style: none;
+  margin: 0px;
+  padding: 0px;
+}
+
+.silex-propertiestool .goog-tabpane-cont {
+  overflow: auto;
+  clear: both;
+  background: white;
+  border: 1px solid;
+  border-color: threedhighlight threedshadow threedshadow threedhighlight;
+  padding: 2px;
+}
+
+.silex-propertiestool .goog-tabpane-tab, .silex-propertiestool .goog-tabpane-tab-selected {
+  display: block;
+  float: left;
+  padding: 0px 10px;
+  background: white;
+  border: 1px solid;
+  border-color: threedhighlight threedshadow threedface threedhighlight;
+  margin: 0px;
+}
+
+.silex-propertiestool .goog-tabpane-tab {
+  margin-top: 0px;
+}
+
+.silex-propertiestool .goog-tabpane-tab-selected {
+  padding-bottom: 2px;
+  padding-top: 2px;
+  position: relative;
+  top: 1px;
+  font-weight: bold;
+}
