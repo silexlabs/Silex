@@ -1,9 +1,13 @@
 <link rel="stylesheet" href="css/propertiestool.css">
-  <link rel="stylesheet" href="libs/closure/goog/css/checkbox.css">
-  <link rel="stylesheet" href="libs/closure/goog/css/button.css">
-  <link rel="stylesheet" href="libs/closure/goog/css/custombutton.css">
-  <link rel="stylesheet" href="libs/closure/goog/css/flatbutton.css">
-  <link rel="stylesheet" href="libs/closure/goog/css/linkbutton.css">
+
+<link rel="stylesheet" href="libs/closure/goog/css/checkbox.css">
+<link rel="stylesheet" href="libs/closure/goog/css/button.css">
+<link rel="stylesheet" href="libs/closure/goog/css/custombutton.css">
+<link rel="stylesheet" href="libs/closure/goog/css/flatbutton.css">
+<link rel="stylesheet" href="libs/closure/goog/css/linkbutton.css">
+<link rel="stylesheet" href="libs/closure/goog/css/tab.css">
+<link rel="stylesheet" href="libs/closure/goog/css/tabbar.css">
+<link rel="stylesheet" href="libs/closure/goog/css/hsvpalette.css">
 
 <script class="pages-selector-template" type="text/x-handlebars-template">
 	{{#each pages}}
@@ -12,6 +16,8 @@
 			<label class="page-label">{{this}}</label>
 		</div>
 	{{/each}}
+</script>
+<script class="style-template" type="text/x-handlebars-template">
 </script>
 <script class="edition-template" type="text/x-handlebars-template">
 	{{#if textEditor}}
@@ -28,12 +34,17 @@
 	<legend>Content</legend>
 	<div class="edition-container"></div>
 	</fieldset>
-	<span class="tab-container">
-	</span>
-	<span class="tab-page">
-		<fieldset class="background">
-			<legend>Background</legend>
-			<span class="color-picker">XXXXX</span>
-		</fieldset>
+	<span class="style-container">
+		<hr />
+		<span class="tab-container">
+		</span>
+		<hr />
+		<span class="tab-page">
+			<fieldset class="background-property">
+				<legend>Background</legend>
+				<span class="color-picker"></span>
+				<div class="transparent-bg-button" title="Reset color">Transparent</div>
+			</fieldset>
+		</span>
 	</span>
 </div>

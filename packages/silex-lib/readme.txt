@@ -1,21 +1,94 @@
+#Silex, the html5 editor
+
+##About Silex
+
+Silex is a free and open source software that allows to create Flash and Html websites directly in the browser without writing code. Defined as a CMS (Content Management System) it is used to assemble multimedia content and publish it.
+
+More info on Silex Labs website
+http://www.silexlabs.org/silex/
+
+Silex is used to assemble multimedia content and publish it online and on the desktop. You are able to produce websites quickly, and directly in the browser. Silex is maintained by Silex Labs, non profit organization based in Paris.
+
+GPL license 
+http://www.silexlabs.org/silex/silex-licensing/
+
+##Roadmap
+
+Current version: v2.0.0alpha2
+http://demos.silexlabs.org/silex-v2-alpha2/
+
+###v2.0.0alpha3
+
+Software architecture
+* split view.js in several .js
+* interfaces for jquery plugins, so that there is jquery only there
+* address the z-index vs selection issue
+
+Properties 
+* background and border file://localhost/Users/lexa/Dropbox/fdt-workspace/Silex/libs/closure/goog/demos/colormenubutton.html
+* position and size, centered V/H? file://localhost/Users/lexa/Dropbox/fdt-workspace/Silex/libs/closure/goog/demos/roundedpanel.html
+* font
+* z-index
+* rotation
+* cursor
 
 
+###v2.0.0alpha4
 
+Texte
+* entrer en editing en double cliquant sur le bloc texte
+* difference entre typo dans l’editeur text et sur la scene
+* liens internes / externes : dans le proprietes
 
+Contours
+* est ce que c’est possible = couleur différente pour blocs texte / container / image
+* est ce que c’est possible = item selected / item not selected = distinguer visuellement l’état selectionné de l’état non selectionné.
 
+page
+* ré-éditer le nom des pages
 
-to do 
-- layout in js
-- interfaces for jquery plugins, so that there is jquery only there
-- properties panel with closure zippy component
-  . visible in pages selection
-  . bg color
-  . centered?
-- insert components
-  . media (image, audio, video)
-  . text
-  . container
-  . nav bar
-- inline menu on the elements
-  . delete
-  . lock/unlock
+Insert components
+* media (image, audio, video)
+* nav bar
+
+File
+* save
+* save as
+
+Resize : caler a gauche quand fenetre trop petite 
+
+###v2.0.0alpha5
+
+Edition 
+* delete elements
+* copy/cut/paste
+* undo/redo
+* autosave
+* multiple selection
+
+File properties 
+* background 
+* title and description and keywords 
+* favicon
+
+Contextual menu on the elements
+* delete
+* lock/unlock
+* up/down (z-index)
+
+###v2.0.0beta1
+
+Debuging
+
+Nice to have :
+* file://localhost/Users/lexa/Dropbox/fdt-workspace/Silex/libs/closure/goog/demos/onlinehandler.html
+* file://localhost/Users/lexa/Dropbox/fdt-workspace/Silex/libs/closure/goog/demos/fpsdisplay.html
+
+###v2.0.x
+
+Packaging / distribution
+* App.js ?
+* arvixe like service & ftp dans unifile
+* newsletter editor
+* wp, drupal, joomla page editor
+* mockup tool
