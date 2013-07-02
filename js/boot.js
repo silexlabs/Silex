@@ -25,10 +25,10 @@ window.onload = function() {
 	var workspaceElement = goog.dom.getElementByClass('silex-workspace');
 	var workspace = new silex.view.Workspace(workspaceElement, menu, stage, pageTool, propertiesTool, ckEditor);
 
-	var controller = new silex.controller.Main(workspace, menu, stage, pageTool, propertiesTool, ckEditor);
+	var controller = new silex.Controller(workspace, menu, stage, pageTool, propertiesTool, ckEditor);
 	
 	stage.onReady = function(){	
-		var url = silex.controller.Main.CREATION_TEMPLATE;
+		var url = silex.Controller.CREATION_TEMPLATE;
 		var url = 'html/test1.html';
 		controller.openFile(url, function(){
 			controller.selection.setSelectedFile(url);
