@@ -19,17 +19,26 @@ http://demos.silexlabs.org/silex-v2-alpha2/
 
 ###v2.0.0alpha3
 
+http://demos.silexlabs.org/silex-v2-alpha3/
+
 Software architecture
-* split view.js in several .js
+* split view in several files
 * interfaces for jquery plugins, so that there is jquery only there
-* address the z-index vs selection issue
+
+Text editor
+* use goog.editor
+
+Wysiwyg
+* selected state 
+* handle visible only when selected
+* grid
 
 Properties 
-* background and border file://localhost/Users/lexa/Dropbox/fdt-workspace/Silex/libs/closure/goog/demos/colormenubutton.html
-* position and size, centered V/H? file://localhost/Users/lexa/Dropbox/fdt-workspace/Silex/libs/closure/goog/demos/roundedpanel.html
+* background color property
+* border property file://localhost/Users/lexa/Dropbox/fdt-workspace/Silex/libs/closure/goog/demos/roundedpanel
+* position and size, centered V/H? .html
 * font
 * z-index
-* rotation
 * cursor
 
 
@@ -75,6 +84,7 @@ Contextual menu on the elements
 * delete
 * lock/unlock
 * up/down (z-index)
+* rotation
 
 ###v2.0.0beta1
 
