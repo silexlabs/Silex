@@ -153,6 +153,12 @@ silex.view.TextEditor.prototype.closeEditor = function(){
 	// hide
 	goog.style.setStyle(background, 'display', 'none');
 	goog.style.setStyle(this.element, 'display', 'none');
+
+	if (this.onTextEditorEvent){
+		this.onTextEditorEvent({
+			type: 'closed',
+		});
+	}
 }
 /**
  * retrieve the editor html content
