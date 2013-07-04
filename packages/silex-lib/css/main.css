@@ -5,7 +5,17 @@
 	top: 0;
 	left: 0;
 	background-color: black;
-	z-index: 9998;
 	opacity: .5;
 	display: none;
+	z-index: 100; /* 110 for editors and 120 for dialogs */
+	cursor: pointer;
+}
+.modal-dialog{
+	z-index: 120; /* 100 for bg */	
+}
+
+/* store google images lovcally */
+.goog-toolbar-menu-button-dropdown, .tr-icon {
+	/* Client apps may override the URL at which they serve the sprite. */
+	background-image: url(../assets/ui/editortoolbar.png);
 }

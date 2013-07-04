@@ -46,6 +46,8 @@ $.widget('silexlabs.editable', {
 	enableEditable: function(){
 		console.log("enable ");
 		this.element.resizable();
+		//this.element.draggable({ revert: 'invalid', snap: true });
+		//this.element.draggable({ revert: 'invalid', grid: [ 20, 20 ] });
 		this.element.draggable({ revert: 'invalid' });
 		this.element.resizable('enable').draggable('enable');
 		if (this.options.isContainer){

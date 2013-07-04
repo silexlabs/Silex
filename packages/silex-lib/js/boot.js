@@ -16,16 +16,13 @@ window.onload = function() {
 	var propertiesToolElement = goog.dom.getElementByClass('silex-propertiestool');
 	var propertiesTool = new silex.view.PropertiesTool(propertiesToolElement);
 
-	var ckEditorElement = goog.dom.getElementByClass('silex-ckeditor');
-	var ckEditor = new silex.view.CKEditor(ckEditorElement);
-
-	console.log('xxx');
-	console.log(ckEditor);
+	var textEditorElement = goog.dom.getElementByClass('silex-texteditor');
+	var textEditor = new silex.view.TextEditor(textEditorElement);
 
 	var workspaceElement = goog.dom.getElementByClass('silex-workspace');
-	var workspace = new silex.view.Workspace(workspaceElement, menu, stage, pageTool, propertiesTool, ckEditor);
+	var workspace = new silex.view.Workspace(workspaceElement, menu, stage, pageTool, propertiesTool, textEditor);
 
-	var controller = new silex.Controller(workspace, menu, stage, pageTool, propertiesTool, ckEditor);
+	var controller = new silex.Controller(workspace, menu, stage, pageTool, propertiesTool, textEditor);
 	
 	stage.onReady = function(){	
 		var url = silex.Controller.CREATION_TEMPLATE;
