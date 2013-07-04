@@ -21,6 +21,16 @@
 		</div>
 	{{/each}}
 </script>
+<script class="link-template" type="text/x-handlebars-template">
+	<select class="link-combo-box">
+		<option value="none">Link to ...</option>
+		{{#each pages}}
+			<option value="#{{this}}">#{{this}}</option>
+		{{/each}}
+		<option value="custom">External link</option>
+	</select>
+	<input class="link-input-text" type="text" />
+</script>
 <script class="style-template" type="text/x-handlebars-template">
 </script>
 <script class="edition-template" type="text/x-handlebars-template">
@@ -31,12 +41,16 @@
 <h1>Properties</h1>
 <div class="main-container">
 	<fieldset>
-	<legend>Visibility</legend>
-	<div class="pages-container"></div>
+		<legend>Visibility</legend>
+		<div class="pages-container"></div>
 	</fieldset>
 	<fieldset>
-	<legend>Content</legend>
-	<div class="edition-container"></div>
+		<legend>link</legend>
+		<div class="link-container"></div>
+	</fieldset>
+	<fieldset>
+		<legend>Content</legend>
+		<div class="edition-container"></div>
 	</fieldset>
 	<span class="style-container">
 		<hr />
@@ -45,8 +59,7 @@
 		<hr />
 		<span class="tab-page">
 			<fieldset class="background-property">
-				<legend>Background</legend>
-				<h2>Color</h2>
+				<legend>Background Color</legend>
 				<span class="color-bg-button"></span>
 				<span class="enable-color-bg-button"></span> Transparent
 				<hr>

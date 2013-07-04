@@ -5,6 +5,7 @@ goog.require('goog.ui.CustomButton');
 goog.require('goog.ui.TabPane');
 //goog.require('goog.ui.HsvaPalette');
 goog.require('goog.ui.ColorMenuButton');
+goog.require('goog.editor.Field');
 
 
 var silex = silex || {}; 
@@ -84,6 +85,10 @@ silex.view.PropertiesTool.prototype.state;
  * checkboxes instanciated for each page
  */
 silex.view.PropertiesTool.prototype.pageCheckboxes;
+/**
+ * text field used to type an external link
+ */
+silex.view.PropertiesTool.prototype.linkInputTextField;
 /**
  * color picker for background color
  */
@@ -315,6 +320,48 @@ silex.view.PropertiesTool.prototype.setPages = function(data){
 	goog.array.forEach(this.pageCheckboxes, function(item) {
 		item.checkbox.dispose();
 	});
+	// ** 
+	// link, select page or enter custom link
+	// ** 
+	// init page template
+	var linkContainer = goog.dom.getElementByClass('link-container', this.element);
+	var templateHtml = goog.dom.getElementByClass('link-template', this.element).innerHTML;
+	silex.TemplateHelper.resolveTemplate(linkContainer, templateHtml, {pages:this.pages});
+	// handle the dropdown list from the template
+	var linkDropdown = goog.dom.getElementByClass('link-combo-box', this.element);
+	linkDropdown.onchange = function (e) {
+		var element = that.getElement();
+		if (linkDropdown.value=='none'){
+			element.setAttribute('data-silex-href', null);
+		}
+		else if (linkDropdown.value=='custom'){
+			element.setAttribute('data-silex-href', '');
+		}
+		else {
+			element.setAttribute('data-silex-href', linkDropdown.value);
+		}
+		that.redraw();
+	}
+
+	// create a text field
+	var linkInputElement = goog.dom.getElementByClass('link-input-text', this.element);
+	this.linkInputTextField = new goog.editor.Field(linkInputElement);
+	// make editable
+	this.linkInputTextField.makeEditable();
+	// hide by default
+	var linkInputElement = goog.dom.getElementByClass('link-input-text', this.element); // get the new input which may be an iframe
+	linkInputElement.style.display = 'none';
+	var that = this;
+	// Watch for field changes, to display below.
+	goog.events.listen(this.linkInputTextField, goog.editor.Field.EventType.DELAYEDCHANGE, function(){
+		var element = that.getElement();
+		// update the href attribute
+		element.setAttribute('data-silex-href', that.linkInputTextField.getCleanContents());
+	});
+
+	// ** 
+	// visibility, select page
+	// ** 
 	// init page template
 	var pagesContainer = goog.dom.getElementByClass('pages-container', this.element);
 	var templateHtml = goog.dom.getElementByClass('pages-selector-template', this.element).innerHTML;
@@ -385,6 +432,31 @@ silex.view.PropertiesTool.prototype.redraw = function(){
 		}
 		console.log('checkbox found '+item.checkbox.isEnabled()+' - '+item.checkbox.isChecked());
 	});
+
+	// refresh the link inputs
+	var linkDropdown = goog.dom.getElementByClass('link-combo-box', this.element);
+	if (linkDropdown){
+		// default selection 
+		var hrefAttr = element.getAttribute('data-silex-href');
+		if (hrefAttr==null){
+			linkDropdown.value='none';
+		}
+		else{
+			// in case it is a custom link
+			this.linkInputTextField.setHtml(false, hrefAttr);
+			linkDropdown.value='custom';
+			// select a page if it is not a custom link
+			linkDropdown.value = hrefAttr;
+		}
+		// visibility of the text edit 
+		var linkInputElement = goog.dom.getElementByClass('link-input-text', this.element);
+		if(linkDropdown.value=='custom'){
+			linkInputElement.style.display = 'inherit';
+		}
+		else{
+			linkInputElement.style.display = 'none';
+		}
+	}
 
 	// refresh properties
 	var editionContainer = goog.dom.getElementByClass('edition-container', this.element);

@@ -11,6 +11,10 @@ $(function() {
 		currentPage: firstPageName, 
 		useDeeplink:true
 	});
+	// silex links
+	$('[data-silex-href]').click(function () {
+		window.location.href = this.getAttribute('data-silex-href');
+	});
 	// apply the default style to all elements
 	$('[data-style-normal]').each(function () {
 		silexSetState(this, 'normal')
