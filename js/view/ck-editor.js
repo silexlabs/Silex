@@ -27,6 +27,10 @@ silex.view.CKEditor = function(element, cbk){
 	});
 }
 /**
+ * reference to the attached element
+ */
+silex.view.Menu.prototype.element;
+/**
  * on ready callback
  * used by the controller to be notified when the component is ready
  * called 1 time after template loading and rendering

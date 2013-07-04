@@ -28,11 +28,6 @@ Software architecture
 Text editor
 * use goog.editor
 
-Wysiwyg
-* selected state 
-* handle visible only when selected
-* grid
-
 Properties 
 * background color property
 * border property file://localhost/Users/lexa/Dropbox/fdt-workspace/Silex/libs/closure/goog/demos/roundedpanel
@@ -49,9 +44,10 @@ Texte
 * difference entre typo dans l’editeur text et sur la scene
 * liens internes / externes : dans le proprietes
 
-Contours
-* est ce que c’est possible = couleur différente pour blocs texte / container / image
-* est ce que c’est possible = item selected / item not selected = distinguer visuellement l’état selectionné de l’état non selectionné.
+Wysiwyg
+* selected state 
+* resize handle visible only when selected
+* grid? snap?
 
 page
 * ré-éditer le nom des pages

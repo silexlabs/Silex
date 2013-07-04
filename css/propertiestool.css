@@ -4,7 +4,6 @@
 	width: 250px;
 	height: 95%;
 	background-color: rgb(255, 255, 255);
-	z-index: 800;
 }
 .silex-propertiestool .main-container{
 	padding: 5px;
@@ -83,6 +82,10 @@
 }
 .silex-propertiestool legend{
 	font-size: 13px;
+}
+/* color button */
+.silex-propertiestool .color-bg-button .goog-inline-block{
+	display: block;
 }
 /* color button */
 .silex-propertiestool .goog-color-menu-button-indicator{

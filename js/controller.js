@@ -7,7 +7,7 @@ goog.provide('silex.Controller');
  * the Silex controller class
  * @constructor
  */
-silex.Controller = function(workspace, menu, stage, pageTool, propertiesTool, ckEditor){
+silex.Controller = function(workspace, menu, stage, pageTool, propertiesTool, textEditor){
 	console.log('controller initView '+menu+', '+stage);
 	var that = this;
 	
@@ -17,7 +17,7 @@ silex.Controller = function(workspace, menu, stage, pageTool, propertiesTool, ck
 	this.stage = stage;
 	this.pageTool = pageTool;
 	this.propertiesTool = propertiesTool;
-	this.ckEditor = ckEditor;
+	this.textEditor = textEditor;
 	
 	// cerate the model
 	this.file = new silex.model.File();
@@ -28,7 +28,7 @@ silex.Controller = function(workspace, menu, stage, pageTool, propertiesTool, ck
 	this.pageTool.onPageToolEvent = function(e){that.pageToolEvent(e);};
 	this.propertiesTool.onPropertiesToolEvent = function(e){that.propertiesToolEvent(e);};
 	this.propertiesTool.onSelectImage = function(cbk){that.onChooseFileRequest(cbk);};
-	this.ckEditor.onCKEditorEvent = function(e){that.ckEditorEvent(e);};
+	this.textEditor.onTextEditorEvent = function(e){that.textEditorEvent(e);};
 	this.stage.onStageEvent = function(e){that.stageEvent(e);};
 	this.selection.onChanged = function (eventName){that.selectionEvent(eventName)};
 }
@@ -58,9 +58,9 @@ silex.Controller.prototype.pageTool;
  */
 silex.Controller.prototype.propertiesTool;
 /**
- * reference to the CKEditor component (view)
+ * reference to the TextEditor component (view)
  */
-silex.Controller.prototype.ckEditor;
+silex.Controller.prototype.textEditor;
 /**
  * reference to the model
  */
@@ -116,20 +116,14 @@ silex.Controller.prototype.selectionEvent = function(eventName){
 	}
 }
 /**
- * CKEditor event handler
+ * TextEditor event handler
  */
-silex.Controller.prototype.ckEditorEvent = function(e){
-	console.log('CKEditor event '+e.type);
+silex.Controller.prototype.textEditorEvent = function(e){
+	console.log('TextEditor event '+e.type);
 	switch(e.type){
 		case 'changed':
 			var element = this.getElement();
-			var pElements = goog.dom.getElementsByTagNameAndClass('p', null, element);
-			if (pElements && pElements.length > 0){
-				pElements[0].innerHTML = this.ckEditor.getData();
-			}
-			else{
-				throw('Could not find the mandatory p element in the text field');
-			}
+			element.innerHTML = this.textEditor.getData();
 			break;
 	}
 }
@@ -357,13 +351,7 @@ silex.Controller.prototype.removePage = function(pageName){
  */
 silex.Controller.prototype.editText = function(){
 	var element = this.getElement();
-	var pElements = goog.dom.getElementsByTagNameAndClass('p', null, element);
-	if (pElements && pElements.length > 0){
-		this.ckEditor.openEditor(pElements[0].innerHTML);
-	}
-	else{
-		throw('Could not find the mandatory p element in the text field');
-	}
+	this.textEditor.openEditor(element.innerHTML);
 	this.workspace.redraw();
 }
 /**
