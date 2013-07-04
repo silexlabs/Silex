@@ -125,6 +125,10 @@ silex.Controller.prototype.textEditorEvent = function(e){
 			var element = this.getElement();
 			element.innerHTML = this.textEditor.getData();
 			break;
+		case 'closed':
+			var element = this.getElement();
+			this.stage.makeEditable(true, element);
+			break;
 	}
 }
 /**
@@ -352,6 +356,7 @@ silex.Controller.prototype.removePage = function(pageName){
  */
 silex.Controller.prototype.editText = function(){
 	var element = this.getElement();
+	this.stage.makeEditable(false, element);
 	this.textEditor.openEditor(element.innerHTML);
 	this.workspace.redraw();
 }

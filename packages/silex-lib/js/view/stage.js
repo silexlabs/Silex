@@ -119,20 +119,31 @@ silex.view.Stage.prototype.removeContent = function(){
 }
 /**
  * init or remove editable
+ * if opt_element is not provided, make the stage editable or not
  */
-silex.view.Stage.prototype.makeEditable = function(isEditable){
+silex.view.Stage.prototype.makeEditable = function(isEditable, opt_element){
 	if (isEditable){
-		$('[data-silex-type="container"]').editable({
-			isContainer: true,
-		});
-		$('[data-silex-type="element"]').editable();
+		if (opt_element == null){
+			$('[data-silex-type="container"]').editable({
+				isContainer: true,
+			});
+			$('[data-silex-type="element"]').editable();
 
-		$(this.bodyElement).pageable({useDeeplink:false});
+			$(this.bodyElement).pageable({useDeeplink:false});
+		}
+		else{
+			$(opt_element).editable();
+		}
 	}
 	else{
-		$('[data-silex-type="container"]').editable('destroy')
-	    $('[data-silex-type="element"]').editable('destroy')
-	    //$(this.bodyElement).pageable('destroy')
+		if (opt_element == null){
+			$('[data-silex-type="container"]').editable('destroy');
+		    $('[data-silex-type="element"]').editable('destroy');
+		    //$(this.bodyElement).pageable('destroy')
+		}
+		else{
+			$(opt_element).editable('destroy');
+		}
 	}
 }
 /**

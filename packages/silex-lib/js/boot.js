@@ -26,7 +26,7 @@ window.onload = function() {
 	
 	stage.onReady = function(){	
 		var url = silex.Controller.CREATION_TEMPLATE;
-		var url = 'html/test1.html';
+		//var url = 'html/test1.html';
 		controller.openFile(url, function(){
 			controller.selection.setSelectedFile(url);
 return;
