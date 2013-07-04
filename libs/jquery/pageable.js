@@ -21,12 +21,12 @@ $.widget('silexlabs.pageable', {
         }
 	},
 	_create: function() {
-		console.log("_create ");
-        if(this.useDeeplink){
-            $(window).bind( 'hashchange', this.updatePage);
+        console.log("_create ");
+        var that=this;
+        if(this.options.useDeeplink){
+            $(window).bind( 'hashchange', this.cbk = function(){that.updatePage()});
         }
         else{
-            var that=this;
             this.element.find('a').each(function(){
                 $(this).bind('click', function(event){
                     event.preventDefault();
@@ -40,8 +40,8 @@ $.widget('silexlabs.pageable', {
 	},
 	_destroy: function() {
 		console.log("_destroy ");
-        if(this.useDeeplink){
-            $(window).unbind( 'hashchange', this.updatePage);
+        if(this.options.useDeeplink){
+            $(window).unbind( 'hashchange', this.cbk);
         }
         else{
             this.element.find('a').each(function(){
@@ -50,12 +50,13 @@ $.widget('silexlabs.pageable', {
         }
 	},
     updatePage: function (event){
-        if(this.useDeeplink){
+        console.log(this);
+        if(this.options.useDeeplink){
             this.options.currentPage = window.location.hash;
         }
         if (this.options.currentPage.charAt(0)=='#') this.options.currentPage = this.options.currentPage.substr(1);
         
-        console.log('pageable show page '+this.options.currentPage);
+        console.log('pageable show page '+this.options.currentPage+' - '+this.options.useDeeplink);
 
         $('#current-page-style').remove();
         $('head').append('<style id="current-page-style">.'+this.options.currentPage+'{display:inherit !important;}</style>');

@@ -18,6 +18,19 @@
 .silex-propertiestool .pages-container .page-check span{
 	float: left;
 }
+/* link */
+.silex-propertiestool .link-combo-box{
+	font-size: small;
+}
+.silex-propertiestool .link-input-text{
+	background-color: white;
+	border: 1px solid;
+	display: inherit;
+	height: 30px;
+	overflow: hidden;
+	padding: 0;
+	width: 100%;
+}
 /* buttons */
 .silex-propertiestool .button{
 	text-align: center;
