@@ -242,7 +242,8 @@ silex.Controller.prototype.menuEvent = function(e){
 					else{
 						var url = window.prompt('What is the file name? (todo: open dropbox file browser)', 'html/test1.html');
 						if(url){
-							that.file.saveAs(this.stage.getBody(), this.stage.getHead(), url);
+							that.file.url = url;
+							that.file.save(this.stage.getBody(), this.stage.getHead());
 						}
 					}
 					break;

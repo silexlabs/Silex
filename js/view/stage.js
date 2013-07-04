@@ -259,7 +259,9 @@ silex.view.Stage.prototype.addElement = function(elementType, opt_url){
 			newHtml = '<div class="editable-style silex-default-style-image" data-silex-type="element" style="position: absolute; left: 50%; top: 50%;"><img src="'+opt_url+'" style="width: 100%; height: 100%; " /></div>';
 			break;
 	}
-	var element = $('.background', this.bodyElement).append(newHtml);
+	$('.background', this.bodyElement).append(newHtml);
+	var elements = $('.background').children();
+	var element = elements[elements.length-1];
 	this.makeEditable(true);
 	return element;
 }
