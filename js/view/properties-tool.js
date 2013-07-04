@@ -284,7 +284,7 @@ silex.view.PropertiesTool.prototype.displayStyle = function(){
 	// **
 	// BG color
 	//var color = style.backgroundColor;
-	var color = goog.style.getStyle(element, 'background-color');
+	var color = goog.style.getComputedStyle(element, 'background-color');
 	if (color == undefined || color == 'transparent' || color == ''){
 		this.transparentBgCheckbox.setChecked(true);
 		this.bgColorPicker.setEnabled(false);

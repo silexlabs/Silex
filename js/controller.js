@@ -326,7 +326,7 @@ silex.Controller.prototype.closeFile = function(){
  */
 silex.Controller.prototype.insertPage = function(){
 	// create the new page in the view
-	var pageName = window.prompt('What name for your new page?', 'html/test.html');
+	var pageName = window.prompt('What name for your new page?', '');
 	this.stage.createPage(pageName);
 	// update tools
 	var pages = this.stage.getPages();
