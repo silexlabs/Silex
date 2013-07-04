@@ -101,5 +101,6 @@ silex.model.File.prototype.save = function(body, head, bodyStyle){
 	html += '<body style="'+bodyStyle+'">'+body+'</body>';
 	html += '</html>';
 	console.log('save file '+this.url+' - '+html);
+	alert(html);
 }
 
