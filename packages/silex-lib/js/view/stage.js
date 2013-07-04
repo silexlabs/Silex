@@ -161,7 +161,7 @@ silex.view.Stage.prototype.getBodyStyle = function(){
 	return buffer.join('');
 	*/
 
-	return this.bodyElement.getAttribute('data-style-normal');
+	return this.bodyElement.getAttribute('style');
 }
 /**
  * set body style from a string
@@ -271,9 +271,9 @@ silex.view.Stage.prototype.addElement = function(elementType, opt_url){
 			break;
 	}
 	$('.background', this.bodyElement).append(newHtml);
+	this.makeEditable(true);
 	var elements = $('.background').children();
 	var element = elements[elements.length-1];
-	this.makeEditable(true);
 	return element;
 }
 /**

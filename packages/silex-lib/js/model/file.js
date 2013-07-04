@@ -94,6 +94,8 @@ silex.model.File.prototype.close = function(){
  * reset data, close file
  */
 silex.model.File.prototype.save = function(body, head, bodyStyle){
+	if (bodyStyle==null) bodyStyle='';
+
 	// build the html content
 	var html = '';
 	html += '<html>';
