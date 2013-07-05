@@ -71,7 +71,6 @@ silex.view.Workspace.prototype.doRedraw = function(){
 	// stage
 	var stageWidth = viewportSize.width - pageToolSize.width - propertiesToolSize.width;
 	goog.style.setWidth(this.stage.element, stageWidth);
-	console.log('redraw workspace '+stageWidth);
 
 	// menu offset
 	var toolsHeight = viewportSize.height - menuSize.height;

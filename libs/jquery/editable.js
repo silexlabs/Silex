@@ -7,7 +7,6 @@ $.widget('silexlabs.editable', {
 	},
 	// _setOption is called for each individual option that is changing
 	_setOption: function( key, value ) {
-		console.log('set option '+key+'='+value);
 		this.options[key] = value;
 		switch(key){
 			case 'isContainer':
@@ -25,18 +24,15 @@ $.widget('silexlabs.editable', {
 		}
 	},
 	_create: function() {
-		console.log("_create ");
 		this.enableEditable();
 	},
 	_destroy: function() {
-		console.log("_destroy ");
 		this.element.resizable('destroy').draggable('destroy');
 		if (this.options.isContainer){
 			this.element.droppable('destroy');
 		}
 	},
 	disableEditable: function(){
-		console.log("disable ");
 		this.element.draggable({revert:undefined});
 		if (this.options.isContainer){
 			this.element.droppable('disable');
@@ -44,7 +40,6 @@ $.widget('silexlabs.editable', {
 		this.element.resizable('disable').draggable('disable');
 	},
 	enableEditable: function(){
-		console.log("enable ");
 		this.element.resizable();
 		//this.element.draggable({ revert: 'invalid', snap: true });
 		//this.element.draggable({ revert: 'invalid', grid: [ 20, 20 ] });
@@ -62,7 +57,6 @@ $.widget('silexlabs.editable', {
 					var droppedTo = this;
 
 					// compute new position in the container
-					console.log('drop ');
 
 					// keep initial position
 					var initialOffset = $(dropped).offset();

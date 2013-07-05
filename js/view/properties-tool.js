@@ -27,7 +27,6 @@ silex.view.PropertiesTool = function(element, cbk){
 	
 	var that = this;
 	silex.TemplateHelper.loadTemplateFile('js/view/templates/propertiestool.html', element, function(){
-		console.log('template loaded');
 		if (cbk) cbk();
 		if(that.onReady) that.onReady();
 		if (that.onPropertiesToolEvent){
@@ -117,8 +116,6 @@ silex.view.PropertiesTool.prototype.buildTabs = function(){
 	tabPane.setSelectedIndex(0);
 	var that = this;
 	goog.events.listen(tabPane, goog.ui.TabPane.Events.CHANGE, function() { 
-		console.log('changed tab');
-		console.log(tabPane.getSelectedPage().getTitle());
 		switch(tabPane.getSelectedPage().getTitle()){
 			case silex.view.PropertiesTool.TAB_TITLE_NORMAL:
 				that.state = silex.view.PropertiesTool.STATE_NORMAL;
@@ -234,13 +231,11 @@ silex.view.PropertiesTool.prototype.getStyle = function(state){
 	if (state==null) return null;
 
 	var element = this.getElement();
-	console.log(element);
 	var styleStr = element.getAttribute('data-style-'+state);
 	if (styleStr == null){
 		styleStr = '';
 	}
 	var style = goog.style.parseStyleAttribute(styleStr);
-	console.log('getStyle '+state+' - '+styleStr+' - '+style);
 	return style;
 }
 /**
@@ -256,7 +251,6 @@ silex.view.PropertiesTool.prototype.setStyle = function(state){
  * apply the current style properties to the element being edited 
  */
 silex.view.PropertiesTool.prototype.applyStyle = function(style){
-	console.log('applyStyle ');
 
 	// default value for style is the style of the element being edited
 	if (!style){
@@ -311,7 +305,6 @@ silex.view.PropertiesTool.prototype.displayStyle = function(){
  * refresh with new data
  */
 silex.view.PropertiesTool.prototype.setPages = function(data){
-	console.log('setPages '+data);
 	// store data
 	this.pages = data;
 	// reset selection
@@ -373,7 +366,6 @@ silex.view.PropertiesTool.prototype.setPages = function(data){
 	var items = goog.dom.getElementsByClass('page-container', mainContainer);
 	var idx = 0;
 	goog.array.forEach(items, function(item) {
-		console.log('found one container '+item.className);
 		var checkboxElement = goog.dom.getElementByClass('page-check', item);
 		var labelElement = goog.dom.getElementByClass('page-label', item);
 		var checkbox = new goog.ui.Checkbox();
@@ -408,7 +400,6 @@ silex.view.PropertiesTool.prototype.setElements = function(elements){
  * redraw the properties
  */
 silex.view.PropertiesTool.prototype.redraw = function(){
-	console.log('redraw '+this.pages);
 
 	// select the element being edited
 	var element = this.getElement();
@@ -430,7 +421,6 @@ silex.view.PropertiesTool.prototype.redraw = function(){
 			item.checkbox.setChecked(false);
 			item.checkbox.setEnabled(false);
 		}
-		console.log('checkbox found '+item.checkbox.isEnabled()+' - '+item.checkbox.isChecked());
 	});
 
 	// refresh the link inputs

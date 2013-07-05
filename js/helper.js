@@ -11,11 +11,9 @@ silex.TemplateHelper = function(){
  * load a template and put the content in the provided element, then call the callback
  */
 silex.TemplateHelper.loadTemplateFile = function(url, element, cbk){
-    console.log('loadTemplateFile '+url);
     goog.net.XhrIo.send(url, function(e){
         var xhr = e.target;
         var data = xhr.getResponse();
-        console.log('request success ');
         element.innerHTML = data;
         cbk();
     });
@@ -24,7 +22,6 @@ silex.TemplateHelper.loadTemplateFile = function(url, element, cbk){
  * Resolve a template and put the result in the provided element
  */
 silex.TemplateHelper.resolveTemplate = function(element, templateHtml, data){
-    //console.log('resolveTemplate '+element+', '+templateHtml+', '+data);
     var template = Handlebars.compile(templateHtml);
     element.innerHTML = template(data);
 }
@@ -39,7 +36,6 @@ silex.TemplateHelper.resolveTemplate = function(element, templateHtml, data){
  *              result  ../f/g/file.html
  */
 silex.TemplateHelper.getRelativePath = function(url, base){
-    console.log('getRelativePath '+url+', '+base);
     // check if they are both absolute urls
     if(base.indexOf('http')!=0 || url.indexOf('http')!=0){
         console.log('Warning: the URL is not absolute');
@@ -81,7 +77,6 @@ silex.TemplateHelper.getRelativePath = function(url, base){
     // now append the folders from url and the file name
     relativePath += urlArr.join('/') + '/' + fileName;
 
-    console.log('result '+relativePath);
     return relativePath;
 }
 /**
