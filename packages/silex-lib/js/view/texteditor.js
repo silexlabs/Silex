@@ -30,7 +30,6 @@ silex.view.TextEditor = function(element, cbk){
 	
 	var that = this;
 	silex.TemplateHelper.loadTemplateFile('js/view/templates/texteditor.html', element, function(){
-		console.log('template loaded');
 		that.initUI();
 		if (cbk) cbk();
 		if(that.onReady) that.onReady();
@@ -131,7 +130,6 @@ silex.view.TextEditor.prototype.initUI = function () {
  * Open the editor
  */
 silex.view.TextEditor.prototype.openEditor = function(initialHtml){
-	console.log('openEditor '+initialHtml);
 	this.textField.setHtml(false, initialHtml);
 	// background
 	var background = goog.dom.getElementByClass('dialogs-background');
@@ -170,7 +168,6 @@ silex.view.TextEditor.prototype.getData = function(){
  * the content has changed, notify the controler
  */
 silex.view.TextEditor.prototype.contentChanged = function () {
-	console.log('content changed '+this.textField.getCleanContents());
 	if (this.onTextEditorEvent){
 		this.onTextEditorEvent({
 			type: 'changed',

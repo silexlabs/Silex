@@ -22,7 +22,6 @@ silex.view.Menu = function(element, cbk){
 
 	var that = this;
 	silex.TemplateHelper.loadTemplateFile('js/view/templates/menu.html', element, function(){
-		console.log('template loaded');
 		that.buildMenu(element);
 		if (cbk) cbk();
 		if(that.onReady) that.onReady();
@@ -119,7 +118,6 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
  * website name
  */
 silex.view.Menu.prototype.setWebsiteName = function(name){
-	console.log('setWebsiteName '+name);
 	goog.dom.getElementByClass('website-name').innerHTML = name;
 	
 }

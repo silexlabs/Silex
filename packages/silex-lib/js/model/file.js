@@ -38,9 +38,6 @@ silex.model.File.prototype.onError;
  */
 silex.model.File.prototype.load = function(url, cbk){
 	this.url = url;
-
-	console.log('load file '+url);
-
 	var that = this;
 	goog.net.XhrIo.send(url, function(e){
 		// reset
@@ -49,7 +46,6 @@ silex.model.File.prototype.load = function(url, cbk){
 		// success of the request
 		var xhr = e.target;
 		var rawHtml = xhr.getResponse();
-		console.log('request success ');
 
 		// use lower case to find head and body tags
 		var lowerCaseHtml = rawHtml.toLowerCase();
@@ -76,7 +72,7 @@ silex.model.File.prototype.load = function(url, cbk){
 		// extract body style
 		var bodyTag = rawHtml.substring(bodyOpenIdx, bodyCloseIdx + 1);
 		var styleStart = bodyTag.indexOf('"');
-		var styleEnd = bodyTag.lastIndexOf('"');
+		var styleEnd = bodyTag.indexOf('"', styleStart+1);
 		that.bodyStyle = bodyTag.substring(styleStart+1, styleEnd);
 
 		if (cbk) cbk();
@@ -102,7 +98,7 @@ silex.model.File.prototype.save = function(body, head, bodyStyle){
 	html += '<head>'+head+'</head>';
 	html += '<body style="'+bodyStyle+'">'+body+'</body>';
 	html += '</html>';
-	console.log('save file '+this.url+' - '+html);
+
 	alert(html);
 }
 

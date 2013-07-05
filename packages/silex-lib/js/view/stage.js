@@ -16,14 +16,12 @@ silex.view.Stage = function(element, cbk){
 	this.headElement = document.createElement('div');
 	var that = this;
 	silex.TemplateHelper.loadTemplateFile('js/view/templates/stage.html', element, function(){
-		console.log('template loaded');
 		that.bodyElement = goog.dom.getElementByClass('silex-stage-body', that.element);
 		if (cbk && typeof(cbk)=='function') cbk();
 		if(that.onReady) that.onReady();
 		if (that.onStageEvent) that.onStageEvent({type:'ready'});
 	});
 	$(this.element).on('mousedown', function(e){
-		console.log('mousedown '+e.target.className);
 		if (that.onStageEvent) that.onStageEvent({
 			type:'select',
 			element:that.findEditableParent(e.target),
@@ -31,7 +29,6 @@ silex.view.Stage = function(element, cbk){
 	});
 	// dispatch event when an element has been moved
 	$(this.element).on('dragstop', function(e){
-		console.log('dragstop '+e.target.className);
 		if (that.onStageEvent) that.onStageEvent({
 			type:'change',
 			element:that.findEditableParent(e.target),
@@ -39,7 +36,6 @@ silex.view.Stage = function(element, cbk){
 	});
 	// dispatch event when an element has been moved or resized
 	$(this.element).on('resize', function(e){
-		console.log('resize '+e.target.className);
 		if (that.onStageEvent) that.onStageEvent({
 			type:'change',
 			element:that.findEditableParent(e.target),
@@ -101,19 +97,17 @@ silex.view.Stage.prototype.findEditableParent = function(child){
  * the parameters are strings containing html
  */
 silex.view.Stage.prototype.setContent = function(bodyHtml, headHtml, bodyStyleStr){
-	console.log('setContent ');
 	this.makeEditable(false);
 	this.bodyElement.innerHTML = bodyHtml;
 	this.headElement.innerHTML = headHtml;
 	this.makeEditable(true);
 
-	this.bodyElement.setAttribute('style', bodyStyleStr);
+	this.setBodyStyle(bodyStyleStr);
 }
 /**
  * reset html content
  */
 silex.view.Stage.prototype.removeContent = function(){
-	console.log('removeContent ');
     if (this.bodyElement) this.bodyElement.innerHTML = '';
 	if (this.headElement) this.headElement.innerHTML = '';
 }
@@ -160,13 +154,16 @@ silex.view.Stage.prototype.getBodyStyle = function(){
 	});
 	return buffer.join('');
 	*/
-
+console.log('getBodyStyle ');
+console.log(this.bodyElement.outerHTML);
+console.log(this.bodyElement.getAttribute('style'));
 	return this.bodyElement.getAttribute('style');
 }
 /**
  * set body style from a string
  */
 silex.view.Stage.prototype.setBodyStyle = function(styleStr){
+	console.log('setBodyStyle '+styleStr);
 	return this.bodyElement.setAttribute('data-style-normal', styleStr);
 	return this.bodyElement.setAttribute('style', styleStr);
 }
@@ -174,9 +171,7 @@ silex.view.Stage.prototype.setBodyStyle = function(styleStr){
  * return clean html string (no edition-related content)
  */
 silex.view.Stage.prototype.getBody = function(){
-	console.log('getBody ');
-
-	var cleanContainer = this.bodyElement.cloneNode();
+	var cleanContainer = this.bodyElement.cloneNode(true);
 
 	$(cleanContainer).find('.ui-resizable').removeClass('ui-resizable');
 	$(cleanContainer).find('.ui-draggable').removeClass('ui-draggable');
@@ -210,12 +205,9 @@ silex.view.Stage.prototype.getHead = function(){
  * get the publication pages 
  */
 silex.view.Stage.prototype.getPages = function(){
-	console.log('getPages ');
-
 	var pages = [];
 
 	$('meta[name="page"]', this.headElement).each(function() {
-		console.log('found page '+this.getAttribute('content'));
 		pages.push(this.getAttribute('content'));
 	});
 	return pages;
@@ -225,7 +217,6 @@ silex.view.Stage.prototype.currentPage;
  * open the given page of the site 
  */
 silex.view.Stage.prototype.openPage = function(pageName){
-	console.log('openPage '+pageName);
     $(this.bodyElement).pageable({currentPage:pageName});
     this.currentPage = pageName;
 }
@@ -233,7 +224,6 @@ silex.view.Stage.prototype.openPage = function(pageName){
  * create a new page 
  */
 silex.view.Stage.prototype.createPage = function(pageName){
-	console.log('createPage '+pageName);
 	var meta = document.createElement('meta');
 	meta.name = 'page';
 	meta.content = pageName;
@@ -243,12 +233,9 @@ silex.view.Stage.prototype.createPage = function(pageName){
  * delete a page 
  */
 silex.view.Stage.prototype.removePage = function(pageName){
-	console.log('removePage '+pageName);
 	$('meta[name="page"]', this.headElement).each(
 		function () {
-			console.log('found meta '+this);
 			if (this.getAttribute('content')==pageName){
-
 				$(this).remove();
 			}
 		});
@@ -257,7 +244,6 @@ silex.view.Stage.prototype.removePage = function(pageName){
  * add elements
  */
 silex.view.Stage.prototype.addElement = function(elementType, opt_url){
-	console.log('addElement '+elementType);
 	var newHtml;
 	switch(elementType){
 		case silex.view.Stage.ELEMENT_TYPE_CONTAINER:
@@ -280,7 +266,6 @@ silex.view.Stage.prototype.addElement = function(elementType, opt_url){
  * remove elements
  */
 silex.view.Stage.prototype.removeElement = function(element){
-	console.log('removeElement '+element);
 	$(element).remove();
 	return element;
 }

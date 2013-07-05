@@ -8,7 +8,6 @@ goog.provide('silex.Controller');
  * @constructor
  */
 silex.Controller = function(workspace, menu, stage, pageTool, propertiesTool, textEditor){
-	console.log('controller initView '+menu+', '+stage);
 	var that = this;
 	
 	// store references to the view components
@@ -88,7 +87,6 @@ silex.Controller.prototype.getElement = function(){
  * selection event handler
  */
 silex.Controller.prototype.selectionEvent = function(eventName){
-	console.log('selection event '+eventName);
 	switch (eventName){
 		case 'file':
 			if (this.selection.getSelectedFile()==null){
@@ -119,7 +117,6 @@ silex.Controller.prototype.selectionEvent = function(eventName){
  * TextEditor event handler
  */
 silex.Controller.prototype.textEditorEvent = function(e){
-	console.log('TextEditor event '+e.type);
 	switch(e.type){
 		case 'changed':
 			var element = this.getElement();
@@ -135,7 +132,6 @@ silex.Controller.prototype.textEditorEvent = function(e){
  * page tool event handler
  */
 silex.Controller.prototype.pageToolEvent = function(e){
-	console.log('page tool event '+this.pageTool.getSelectedItems()[0]+' - '+e.type);
 	switch(e.type){
 		case 'selectionChanged':
 			this.selection.setSelectedPage(this.pageTool.getSelectedItems()[0]);
@@ -144,7 +140,6 @@ silex.Controller.prototype.pageToolEvent = function(e){
 			this.removePage(e.name);
 			break;
 		case 'ready':
-			console.log('ready => redraw');
 			this.workspace.redraw();
 			break;
 	}
@@ -153,7 +148,7 @@ silex.Controller.prototype.pageToolEvent = function(e){
  * properties tool event handler
  */
 silex.Controller.prototype.onChooseFileRequest = function(cbk){
-	var url = window.prompt('What is the file name? (todo: open dropbox file browser)', 'assets/test.png');
+	var url = window.prompt('What is the file name? (todo: open dropbox file browser)', window.location.href+'assets/test.png');
 	if(url){
 		cbk(url);
 	}
@@ -162,7 +157,6 @@ silex.Controller.prototype.onChooseFileRequest = function(cbk){
  * properties tool event handler
  */
 silex.Controller.prototype.propertiesToolEvent = function(e){
-	console.log('propertiesToolEvent '+e.type);
 	switch(e.type){
 		case 'ready':
 			this.workspace.redraw();
@@ -171,10 +165,8 @@ silex.Controller.prototype.propertiesToolEvent = function(e){
 			this.editText();
 			break;
 		case 'changedState':
-			console.log('changedState '+e.state);
 			break;
 		case 'styleChanged':
-			console.log('styleChanged '+e.state);
 			var element = this.getElement();
 			goog.style.setStyle(element, e.style);
 			this.saveSelectionStyle();
@@ -195,11 +187,9 @@ silex.Controller.prototype.saveSelectionStyle = function(){
 silex.Controller.prototype.stageEvent = function(e){
 	switch(e.type){
 		case 'ready':
-			console.log('ready => redraw');
 			this.workspace.redraw();
 			break;
 		case 'select':
-			console.log('select ');
 			if (e.element){
 				this.selection.setSelectedElements([e.element]);
 			}
@@ -209,7 +199,6 @@ silex.Controller.prototype.stageEvent = function(e){
 			break;
 		case 'change':
 			// size or position of the element has changed
-			console.log('change ');
 			this.saveSelectionStyle();
 			break;
 	}
@@ -232,7 +221,6 @@ silex.Controller.prototype.menuEvent = function(e){
 			}
 		}
 		else{
-			console.log('menu event '+e.target.getCaption() + ' - '+e.target.getId());
 			switch(e.target.getId()){
 				case 'file.new':
 					this.openFile(silex.Controller.CREATION_TEMPLATE, function(){
@@ -240,15 +228,15 @@ silex.Controller.prototype.menuEvent = function(e){
 					});
 					break;
 				case 'file.save':
-					if (this.selection.getSelectedFile()!=null){
-						that.file.save(this.stage.getBody(), this.stage.getHead(), this.stage.getBodyStyle());
-					}
-					else{
+					if (this.selection.getSelectedFile()==null){
 						var url = window.prompt('What is the file name? (todo: open dropbox file browser)', 'html/test1.html');
 						if(url){
 							that.file.url = url;
-							that.file.save(this.stage.getBody(), this.stage.getHead());
+							this.selection.setSelectedFile(url);
 						}
+					}
+					if (this.selection.getSelectedFile()!=null){
+						that.file.save(this.stage.getBody(), this.stage.getHead(), this.stage.getBodyStyle());
 					}
 					break;
 				case 'file.open':
@@ -276,11 +264,12 @@ silex.Controller.prototype.menuEvent = function(e){
 					this.selection.setSelectedElements([element]);
 					break;
 				case 'insert.image':
-					var url = window.prompt('What is the file name? (todo: open dropbox file browser)', 'assets/test.png');
-					if(url){
-						var element = this.stage.addElement(silex.view.Stage.ELEMENT_TYPE_IMAGE, url);
-						this.selection.setSelectedElements([element]);
-					}
+					this.onChooseFileRequest(function (url) {
+						if(url){
+							var element = that.stage.addElement(silex.view.Stage.ELEMENT_TYPE_IMAGE, url);
+							that.selection.setSelectedElements([element]);
+						}
+					})
 					break;
 				case 'insert.container':
 					var element = this.stage.addElement(silex.view.Stage.ELEMENT_TYPE_CONTAINER);
@@ -297,7 +286,6 @@ silex.Controller.prototype.menuEvent = function(e){
 		}
 	}
 	else{
-		console.log('ready => redraw');
 		this.workspace.redraw();
 	}
 }
@@ -364,7 +352,6 @@ silex.Controller.prototype.editText = function(){
  * model event
  */
 silex.Controller.prototype.fileLoaded = function(){
-	console.log('fileLoaded');
 	this.stage.setContent(this.file.bodyTag, this.file.headTag, this.file.bodyStyle);
 
 	var pages = this.stage.getPages();

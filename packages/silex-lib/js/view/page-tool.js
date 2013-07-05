@@ -17,7 +17,6 @@ silex.view.PageTool = function(element, cbk){
 	
 	var that = this;
 	silex.TemplateHelper.loadTemplateFile('js/view/templates/pagetool.html', element, function(){
-		console.log('template loaded');
 		if (cbk) cbk();
 		if(that.onReady) that.onReady();
 		if (that.onPageToolEvent){
@@ -49,7 +48,6 @@ silex.view.PageTool.prototype.dataProvider;
  * refresh with new data
  */
 silex.view.PageTool.prototype.setDataProvider = function(data){
-	console.log('PageTool setDataProvider '+data.length);
 
 	this.dataProvider = data;
 
@@ -78,7 +76,6 @@ silex.view.PageTool.prototype.setDataProvider = function(data){
 
 	$(this.element).find( '.page-tool-container .page-container .page-preview .delete' ).click(
 		function(e){
-			console.log('remove button pressed ');
 			that.removePageAtIndex(that.getCellIndex(this.parentNode.parentNode));
 		}
 	);
@@ -87,7 +84,6 @@ silex.view.PageTool.prototype.setDataProvider = function(data){
  * ask to remove a page
  */
 silex.view.PageTool.prototype.removePageAtIndex = function(idx){
-	console.log('about to remove page '+idx+' - '+this.dataProvider[idx]);
 	if (this.onPageToolEvent){
 		this.onPageToolEvent({
 			type: 'removePage',
@@ -99,7 +95,6 @@ silex.view.PageTool.prototype.removePageAtIndex = function(idx){
  * selection has changed
  */
 silex.view.PageTool.prototype.selectionChanged = function(){
-	console.log('PageTool selectionChanged ');
 	if (this.onPageToolEvent){
 		this.onPageToolEvent({
 			type: 'selectionChanged'
@@ -110,7 +105,6 @@ silex.view.PageTool.prototype.selectionChanged = function(){
  * get selection 
  */
 silex.view.PageTool.prototype.getSelectedItems = function(){
-	console.log('PageTool getSelectedItems ');
 	var res = [];
 	var that = this;
 	var index = 0;
@@ -130,7 +124,6 @@ silex.view.PageTool.prototype.getCellIndex = function (element) {
  * @param 	notify	if true, then notify by calling the onChanged callback
  */
 silex.view.PageTool.prototype.setSelectedIndexes = function(indexes, notify){
-	console.log('PageTool setSelectedIndexes '+indexes);
 	var index = 0;
 	var that = this;
 	$( '.page-container', this.element ).each(function() {
