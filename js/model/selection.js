@@ -8,7 +8,7 @@ goog.provide('silex.model.Selection');
 //////////////////////////////////////////////////////////////////
 
 /**
- * constructor
+ * @constructor
  */
 silex.model.Selection = function(){
 	this.listeners = [];
@@ -54,6 +54,7 @@ silex.model.Selection.prototype.setSelectedPage = function(name, notify){
  * file selection
  */
 silex.model.Selection.prototype.getSelectedFile = function(){
+	console.log("getSelectedFile "+this.file);
 	return this.file;
 }
 /**
@@ -61,6 +62,7 @@ silex.model.Selection.prototype.getSelectedFile = function(){
  * @param 	notify	if true, then notify by calling the onChanged callback
  */
 silex.model.Selection.prototype.setSelectedFile = function(name, notify){
+	console.log("setSelectedFile "+this.file+" - "+name);
 	this.file = name;
 	if (notify!==false && this.onChanged) this.onChanged("file");
 }

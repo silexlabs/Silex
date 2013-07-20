@@ -21,7 +21,7 @@ silex.view.Menu = function(element, cbk){
 	this.element = element;
 
 	var that = this;
-	silex.TemplateHelper.loadTemplateFile('js/view/templates/menu.html', element, function(){
+	silex.Helper.loadTemplateFile('js/view/templates/menu.html', element, function(){
 		that.buildMenu(element);
 		if (cbk) cbk();
 		if(that.onReady) that.onReady();
@@ -58,25 +58,25 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
 			{label: 'Open File...', id: 'file.open'},
 			{label: 'Save File', id: 'file.save'},
 			null,
-			{label: 'Close File', id: 'file.close'},
+			{label: 'Close File', id: 'file.close'}
 		],
 		[
 			{label:'Delete selection', id:'edit.delete.selection'}, 
 			null,
-			{label:'Delete page', id:'edit.delete.page'}, 
+			{label:'Delete page', id:'edit.delete.page'} 
 		],
 		[
 			{label:'View in new window', id:'view.file'}, 
 			null,
-			{label:'Open text editor', id:'view.open.textEditor'}, 
+			{label:'Open text editor', id:'view.open.textEditor'} 
 		],
 		[
 			{label:'Text box', id:'insert.text'}, 
 			{label:'Image...', id:'insert.image'}, 
 			{label:'Container', id:'insert.container'}, 
 			null,
-			{label:'New page', id:'insert.page'}, 
-		],
+			{label:'New page', id:'insert.page'} 
+		]
 	];
 
 	for (i in menuNames) {

@@ -16,12 +16,12 @@ silex.view.PageTool = function(element, cbk){
 	this.dataProvider = [];
 	
 	var that = this;
-	silex.TemplateHelper.loadTemplateFile('js/view/templates/pagetool.html', element, function(){
+	silex.Helper.loadTemplateFile('js/view/templates/pagetool.html', element, function(){
 		if (cbk) cbk();
 		if(that.onReady) that.onReady();
 		if (that.onPageToolEvent){
 			that.onPageToolEvent({
-				type: 'ready',
+				type: 'ready'
 			});
 		}
 	});
@@ -56,7 +56,7 @@ silex.view.PageTool.prototype.setDataProvider = function(data){
 
 	var container = goog.dom.getElementByClass('page-tool-container', this.element);
 	var templateHtml = goog.dom.getElementByClass('page-tool-template', this.element).innerHTML;
-	silex.TemplateHelper.resolveTemplate(container, templateHtml, {pages:data});
+	silex.Helper.resolveTemplate(container, templateHtml, {pages:data});
 
 	var that = this;
 	var idx = 0;

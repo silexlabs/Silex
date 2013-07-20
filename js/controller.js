@@ -214,10 +214,7 @@ silex.Controller.prototype.menuEvent = function(e){
 			if(name){
 				this.menu.setWebsiteName(name);
 				// update website title
-				var elements = this.stage.headElement.getElementsByTagName('title');
-				if (elements && elements.length > 0){
-					elements[0].innerHTML = name;
-				}
+				this.stage.setTitle(name);
 			}
 		}
 		else{
@@ -231,12 +228,12 @@ silex.Controller.prototype.menuEvent = function(e){
 					if (this.selection.getSelectedFile()==null){
 						var url = window.prompt('What is the file name? (todo: open dropbox file browser)', 'html/test1.html');
 						if(url){
-							that.file.url = url;
+							this.file.url = url;
 							this.selection.setSelectedFile(url);
 						}
 					}
 					if (this.selection.getSelectedFile()!=null){
-						that.file.save(this.stage.getBody(), this.stage.getHead(), this.stage.getBodyStyle());
+						that.file.save(this.stage.getBody(this.selection.getSelectedFile()), this.stage.getHead(), this.stage.getBodyStyle());
 					}
 					break;
 				case 'file.open':
@@ -363,9 +360,9 @@ silex.Controller.prototype.fileLoaded = function(){
 	}
 
 	// update website title
-	var elements = this.stage.headElement.getElementsByTagName('title');
-	if (elements && elements.length > 0){
-		this.menu.setWebsiteName(elements[0].innerHTML);
+	var title = this.stage.getTitle();
+	if (title){
+		this.menu.setWebsiteName(title);
 	}
 }
 /**

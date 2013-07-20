@@ -13,9 +13,9 @@ silex.view = silex.view || {};
  */
 silex.view.Stage = function(element, cbk){
 	this.element = element;
-	this.headElement = document.createElement('div');
+	this.headElement = goog.dom.createElement('div');
 	var that = this;
-	silex.TemplateHelper.loadTemplateFile('js/view/templates/stage.html', element, function(){
+	silex.Helper.loadTemplateFile('js/view/templates/stage.html', element, function(){
 		that.bodyElement = goog.dom.getElementByClass('silex-stage-body', that.element);
 		if (cbk && typeof(cbk)=='function') cbk();
 		if(that.onReady) that.onReady();
@@ -24,21 +24,21 @@ silex.view.Stage = function(element, cbk){
 	$(this.element).on('mousedown', function(e){
 		if (that.onStageEvent) that.onStageEvent({
 			type:'select',
-			element:that.findEditableParent(e.target),
+			element:that.findEditableParent(e.target)
 		});
 	});
 	// dispatch event when an element has been moved
 	$(this.element).on('dragstop', function(e){
 		if (that.onStageEvent) that.onStageEvent({
 			type:'change',
-			element:that.findEditableParent(e.target),
+			element:that.findEditableParent(e.target)
 		});
 	});
 	// dispatch event when an element has been moved or resized
 	$(this.element).on('resize', function(e){
 		if (that.onStageEvent) that.onStageEvent({
 			type:'change',
-			element:that.findEditableParent(e.target),
+			element:that.findEditableParent(e.target)
 		});
 	});
 }
@@ -119,7 +119,7 @@ silex.view.Stage.prototype.makeEditable = function(isEditable, opt_element){
 	if (isEditable){
 		if (opt_element == null){
 			$('[data-silex-type="container"]').editable({
-				isContainer: true,
+				isContainer: true
 			});
 			$('[data-silex-type="element"]').editable();
 
@@ -164,13 +164,17 @@ console.log(this.bodyElement.getAttribute('style'));
  */
 silex.view.Stage.prototype.setBodyStyle = function(styleStr){
 	console.log('setBodyStyle '+styleStr);
-	return this.bodyElement.setAttribute('data-style-normal', styleStr);
-	return this.bodyElement.setAttribute('style', styleStr);
+	this.bodyElement.setAttribute('data-style-normal', styleStr);
+	this.bodyElement.setAttribute('style', styleStr);
 }
 /**
  * return clean html string (no edition-related content)
  */
-silex.view.Stage.prototype.getBody = function(){
+silex.view.Stage.prototype.getBody = function(baseUrl){
+
+	if (baseUrl==null){
+		throw ('The base URL is needed in order to convert paths to relative');
+	}
 	var cleanContainer = this.bodyElement.cloneNode(true);
 
 	$(cleanContainer).find('.ui-resizable').removeClass('ui-resizable');
@@ -183,6 +187,11 @@ silex.view.Stage.prototype.getBody = function(){
 
 	// apply the data-style-normal to all nodes
 	this.applyState('normal');
+
+	// convert absolute to relative paths
+	$('[src]', cleanContainer).each(function () {
+		this.setAttribute('src', silex.Helper.getRelativePath(this.getAttribute('src'), baseUrl));
+	});
 	
 	return cleanContainer.innerHTML;
 }
@@ -224,7 +233,7 @@ silex.view.Stage.prototype.openPage = function(pageName){
  * create a new page 
  */
 silex.view.Stage.prototype.createPage = function(pageName){
-	var meta = document.createElement('meta');
+	var meta = goog.dom.createElement('meta');
 	meta.name = 'page';
 	meta.content = pageName;
 	this.headElement.appendChild(meta);
@@ -269,3 +278,32 @@ silex.view.Stage.prototype.removeElement = function(element){
 	$(element).remove();
 	return element;
 }
+/**
+ * website title
+ */
+silex.view.Stage.prototype.getTitle = function(){
+	var elements = this.headElement.getElementsByTagName('title');
+	if (elements && elements.length > 0){
+		return elements[0].innerHTML;
+	}
+	else{
+		return null;
+	}
+}
+/**
+ * website title
+ */
+silex.view.Stage.prototype.setTitle = function(name){
+	// update website title
+	var elements = this.headElement.getElementsByTagName('title');
+	if (elements && elements.length > 0){
+		elements[0].innerHTML = name;
+	}
+	// new website title
+	else{
+		var child = goog.dom.createElement('title');
+		child.innerHTML = name;
+		this.headElement.appendChild(child)
+	}
+}
+
