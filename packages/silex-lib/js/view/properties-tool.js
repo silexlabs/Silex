@@ -26,12 +26,12 @@ silex.view.PropertiesTool = function(element, cbk){
 	this.state = silex.view.PropertiesTool.STATE_NORMAL;
 	
 	var that = this;
-	silex.TemplateHelper.loadTemplateFile('js/view/templates/propertiestool.html', element, function(){
+	silex.Helper.loadTemplateFile('js/view/templates/propertiestool.html', element, function(){
 		if (cbk) cbk();
 		if(that.onReady) that.onReady();
 		if (that.onPropertiesToolEvent){
 			that.onPropertiesToolEvent({
-				type: 'ready',
+				type: 'ready'
 			});
 		}
 		that.buildTabs();
@@ -133,7 +133,7 @@ silex.view.PropertiesTool.prototype.buildTabs = function(){
 			// notify the controler
 			that.onPropertiesToolEvent({
 				type: 'changedState',
-				state: that.state,
+				state: that.state
 			});
 		}
 		that.displayStyle();
@@ -261,7 +261,7 @@ silex.view.PropertiesTool.prototype.applyStyle = function(style){
 		this.onPropertiesToolEvent({
 			type: 'styleChanged',
 			style: style,
-			state: this.state,
+			state: this.state
 		});
 	}
 	// refresh UI
@@ -319,7 +319,7 @@ silex.view.PropertiesTool.prototype.setPages = function(data){
 	// init page template
 	var linkContainer = goog.dom.getElementByClass('link-container', this.element);
 	var templateHtml = goog.dom.getElementByClass('link-template', this.element).innerHTML;
-	silex.TemplateHelper.resolveTemplate(linkContainer, templateHtml, {pages:this.pages});
+	silex.Helper.resolveTemplate(linkContainer, templateHtml, {pages:this.pages});
 	// handle the dropdown list from the template
 	var linkDropdown = goog.dom.getElementByClass('link-combo-box', this.element);
 	linkDropdown.onchange = function (e) {
@@ -358,7 +358,7 @@ silex.view.PropertiesTool.prototype.setPages = function(data){
 	// init page template
 	var pagesContainer = goog.dom.getElementByClass('pages-container', this.element);
 	var templateHtml = goog.dom.getElementByClass('pages-selector-template', this.element).innerHTML;
-	silex.TemplateHelper.resolveTemplate(pagesContainer, templateHtml, {pages:this.pages});
+	silex.Helper.resolveTemplate(pagesContainer, templateHtml, {pages:this.pages});
 	// create page checkboxes
 	this.pageCheckboxes = [];
 	var that = this;
@@ -374,7 +374,7 @@ silex.view.PropertiesTool.prototype.setPages = function(data){
 		checkbox.setLabel (labelElement);
 		that.pageCheckboxes.push({
 			checkbox: checkbox,
-			page: pageName,
+			page: pageName
 		});
 		goog.events.listen(checkbox, goog.ui.Component.EventType.CHANGE, function(e){
 			that.selectPage(pageName, checkbox);
@@ -452,8 +452,8 @@ silex.view.PropertiesTool.prototype.redraw = function(){
 	var editionContainer = goog.dom.getElementByClass('edition-container', this.element);
 	if (element.getAttribute){
 		var templateHtml = goog.dom.getElementByClass('edition-template', this.element).innerHTML;
-		silex.TemplateHelper.resolveTemplate(editionContainer, templateHtml, {
-			textEditor: (element.getAttribute('data-silex-sub-type')==silex.view.Stage.ELEMENT_SUBTYPE_TEXT),
+		silex.Helper.resolveTemplate(editionContainer, templateHtml, {
+			textEditor: (element.getAttribute('data-silex-sub-type')==silex.view.Stage.ELEMENT_SUBTYPE_TEXT)
 		});
 
 		// text editor
@@ -464,7 +464,7 @@ silex.view.PropertiesTool.prototype.redraw = function(){
 			goog.events.listen(buttonElement, goog.events.EventType.CLICK, function(e) { 
 				if (that.onPropertiesToolEvent){
 					that.onPropertiesToolEvent({
-						type: 'openTextEditor',
+						type: 'openTextEditor'
 					});
 				}
 			});

@@ -28,7 +28,7 @@ window.onload = function() {
 		var url = silex.Controller.CREATION_TEMPLATE;
 		//var url = 'html/test1.html';
 		controller.openFile(url, function(){
-			controller.selection.setSelectedFile(url);
+			controller.selection.setSelectedFile(null);
 return;
 			setTimeout(function() { 
 				var element = goog.dom.getElementsByClass('editable-style')[5];

@@ -29,13 +29,13 @@ silex.view.TextEditor = function(element, cbk){
 	this.element = element;
 	
 	var that = this;
-	silex.TemplateHelper.loadTemplateFile('js/view/templates/texteditor.html', element, function(){
+	silex.Helper.loadTemplateFile('js/view/templates/texteditor.html', element, function(){
 		that.initUI();
 		if (cbk) cbk();
 		if(that.onReady) that.onReady();
 		if (that.onTextEditorEvent){
 			that.onTextEditorEvent({
-				type: 'ready',
+				type: 'ready'
 			});
 		}
 	});
@@ -154,7 +154,7 @@ silex.view.TextEditor.prototype.closeEditor = function(){
 
 	if (this.onTextEditorEvent){
 		this.onTextEditorEvent({
-			type: 'closed',
+			type: 'closed'
 		});
 	}
 }
@@ -170,7 +170,7 @@ silex.view.TextEditor.prototype.getData = function(){
 silex.view.TextEditor.prototype.contentChanged = function () {
 	if (this.onTextEditorEvent){
 		this.onTextEditorEvent({
-			type: 'changed',
+			type: 'changed'
 		});
 	}
 }

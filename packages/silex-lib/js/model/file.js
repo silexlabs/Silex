@@ -8,7 +8,7 @@ goog.provide('silex.model.File');
 //////////////////////////////////////////////////////////////////
 
 /**
- * constructor
+ * @constructor
  */
 silex.model.File = function(){
 }
@@ -101,4 +101,3 @@ silex.model.File.prototype.save = function(body, head, bodyStyle){
 
 	alert(html);
 }
-
