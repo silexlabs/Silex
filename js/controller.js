@@ -234,7 +234,7 @@ silex.Controller.prototype.menuEvent = function(e){
 						}
 					}
 					if (this.selection.getSelectedFile()!=null){
-						that.file.save(this.stage.getBody(this.selection.getSelectedFile()), 
+						this.file.save(this.stage.getBody(this.selection.getSelectedFile()), 
 							this.stage.getHead(), this.stage.getBodyStyle());
 					}
 					break;
