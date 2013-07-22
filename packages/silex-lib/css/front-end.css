@@ -11,3 +11,6 @@
 .silex-default-style-container, .silex-default-style-text{
 	background-color: white;
 }
+.silex-default-style-text{
+	overflow: hidden;
+}
