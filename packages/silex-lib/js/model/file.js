@@ -100,4 +100,5 @@ silex.model.File.prototype.save = function(body, head, bodyStyle){
 	html += '</html>';
 
 	alert(html);
+	console.warn(html);
 }
