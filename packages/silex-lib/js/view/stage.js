@@ -96,11 +96,30 @@ silex.view.Stage.prototype.findEditableParent = function(child){
  * set the html content on the stage and make it editable
  * the parameters are strings containing html
  */
-silex.view.Stage.prototype.setContent = function(bodyHtml, headHtml, bodyStyleStr){
+silex.view.Stage.prototype.setContent = function(bodyHtml, headHtml, bodyStyleStr, baseUrl){
+	console.log('getBody '+baseUrl);
+	if (baseUrl==null){
+		console.log('The base URL is null, just load without converting relative paths to absolute');
+	}
+
 	this.makeEditable(false);
 	this.bodyElement.innerHTML = bodyHtml;
 	this.headElement.innerHTML = headHtml;
 	this.makeEditable(true);
+
+	// convert absolute to relative paths
+	$(this.bodyElement).find('[src],[href]').each(function () {
+		// attribute can be src or href
+		var attr = 'src';
+		var value = this.getAttribute(attr);
+		if (value==null){
+			attr = 'href';
+			value = this.getAttribute(attr);
+		}
+
+		this.setAttribute(attr, silex.Helper.getAbsolutePath(value, baseUrl));
+	});
+
 
 	this.setBodyStyle(bodyStyleStr);
 }
@@ -144,19 +163,8 @@ silex.view.Stage.prototype.makeEditable = function(isEditable, opt_element){
  * @return body style as a string
  */
 silex.view.Stage.prototype.getBodyStyle = function(){
-	// get the style as string
-/*	var buffer = [];
-	goog.object.forEach(this.element.style, function(value, key) {
-		if (value && typeof(value)=='string'
-		 && key!='cssText' && typeof(key)=='string')
-		console.log(goog.string.toSelectorCase(key)+'='+value)
-		buffer.push(goog.string.toSelectorCase(key), ':', value, '; ')
-	});
-	return buffer.join('');
-	*/
-console.log('getBodyStyle ');
-console.log(this.bodyElement.outerHTML);
-console.log(this.bodyElement.getAttribute('style'));
+	console.log('getBodyStyle ');
+	console.log(this.bodyElement.getAttribute('style'));
 	return this.bodyElement.getAttribute('style');
 }
 /**
@@ -171,7 +179,7 @@ silex.view.Stage.prototype.setBodyStyle = function(styleStr){
  * return clean html string (no edition-related content)
  */
 silex.view.Stage.prototype.getBody = function(baseUrl){
-
+	console.log('getBody '+baseUrl);
 	if (baseUrl==null){
 		throw ('The base URL is needed in order to convert paths to relative');
 	}
@@ -189,8 +197,16 @@ silex.view.Stage.prototype.getBody = function(baseUrl){
 	this.applyState('normal');
 
 	// convert absolute to relative paths
-	$('[src]', cleanContainer).each(function () {
-		this.setAttribute('src', silex.Helper.getRelativePath(this.getAttribute('src'), baseUrl));
+	$(cleanContainer).find('[src],[href]').each(function () {
+		// attribute can be src or href
+		var attr = 'src';
+		var value = this.getAttribute(attr);
+		if (value==null){
+			attr = 'href';
+			value = this.getAttribute(attr);
+		}
+
+		this.setAttribute(attr, silex.Helper.getRelativePath(value, baseUrl));
 	});
 	
 	return cleanContainer.innerHTML;

@@ -226,18 +226,21 @@ silex.Controller.prototype.menuEvent = function(e){
 					break;
 				case 'file.save':
 					if (this.selection.getSelectedFile()==null){
-						var url = window.prompt('What is the file name? (todo: open dropbox file browser)', 'html/test1.html');
+						var url = window.prompt('What is the file name? (todo: open dropbox file browser)', 
+							window.location.href+'html/test1.html');
 						if(url){
 							this.file.url = url;
-							this.selection.setSelectedFile(url);
+							this.selection.setSelectedFile(url, false);
 						}
 					}
 					if (this.selection.getSelectedFile()!=null){
-						that.file.save(this.stage.getBody(this.selection.getSelectedFile()), this.stage.getHead(), this.stage.getBodyStyle());
+						that.file.save(this.stage.getBody(this.selection.getSelectedFile()), 
+							this.stage.getHead(), this.stage.getBodyStyle());
 					}
 					break;
 				case 'file.open':
-					var url = window.prompt('What is the file name? (todo: open dropbox file browser)', 'html/test1.html');
+					var url = window.prompt('What is the file name? (todo: open dropbox file browser)', 
+						window.location.href+'html/test1.html');
 					if(url){
 						this.openFile(url, function(){
 							that.selection.setSelectedFile(url);
@@ -349,7 +352,7 @@ silex.Controller.prototype.editText = function(){
  * model event
  */
 silex.Controller.prototype.fileLoaded = function(){
-	this.stage.setContent(this.file.bodyTag, this.file.headTag, this.file.bodyStyle);
+	this.stage.setContent(this.file.bodyTag, this.file.headTag, this.file.bodyStyle, this.selection.getSelectedFile());
 
 	var pages = this.stage.getPages();
 	this.pageTool.setDataProvider(pages);

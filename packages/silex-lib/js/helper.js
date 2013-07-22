@@ -3,6 +3,7 @@ var silex = silex || {};
 goog.provide('silex.Helper');
 
 goog.require('goog.net.XhrIo');
+goog.require('goog.Uri');
 
 silex.Helper = function(){
     
@@ -36,7 +37,8 @@ silex.Helper.resolveTemplate = function(element, templateHtml, data){
  *              result  ../f/g/file.html
  */
 silex.Helper.getRelativePath = function(url, base){
-    console.log('getRelativePath of '+url+' from '+base);
+    console.log('getRelativePath of '+url+' in '+base);
+
     // check if they are both absolute urls
     if(base.indexOf('http')!=0 || url.indexOf('http')!=0){
         console.log('Warning: the URL is not absolute');
@@ -78,8 +80,18 @@ silex.Helper.getRelativePath = function(url, base){
     // now append the folders from url and the file name
     relativePath += urlArr.join('/') + '/' + fileName;
 
+    console.log('getRelativePath is '+relativePath);
+
     return relativePath;
 }
+/**
+ * convert relative to absolute url 
+ * use http://docs.closure-library.googlecode.com/git/class_goog_Uri.html
+ */
+silex.Helper.getAbsolutePath = function(url, base){
+    return goog.Uri.resolve(base, url);
+}
+
 /**
  * replace all absolute urls with the relative path
  *
