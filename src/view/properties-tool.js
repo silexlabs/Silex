@@ -328,13 +328,18 @@ silex.view.PropertiesTool.prototype.setPages = function(data){
 	linkDropdown.onchange = function (e) {
 		var element = that.getElement();
 		if (linkDropdown.value=='none'){
-			element.setAttribute('data-silex-href', null);
+			element.removeAttribute('data-silex-href');
 		}
 		else if (linkDropdown.value=='custom'){
-			element.setAttribute('data-silex-href', '');
+			// keep previous link value
+			var prevVal = that.linkInputTextField.getCleanContents();
+			// reset if it was an internal link
+			if (prevVal.indexOf('#')==0) prevVal = '';
+			// store in the href attr
+			element.setAttribute('data-silex-href', prevVal);
 		}
 		else {
-			element.setAttribute('data-silex-href', linkDropdown.value);
+			element.setAttribute('data-silex-href', '#'+linkDropdown.value);
 		}
 		that.redraw();
 	}
@@ -435,11 +440,16 @@ silex.view.PropertiesTool.prototype.redraw = function(){
 			linkDropdown.value='none';
 		}
 		else{
-			// in case it is a custom link
-			this.linkInputTextField.setHtml(false, hrefAttr);
-			linkDropdown.value='custom';
-			// select a page if it is not a custom link
-			linkDropdown.value = hrefAttr;
+			if (hrefAttr.indexOf('#')==0 && goog.array.contains(this.pages, hrefAttr.substr(1))){
+				// case of an internal link
+				// select a page
+				linkDropdown.value = hrefAttr.substr(1);
+			}
+			else{
+				// in case it is a custom link
+				this.linkInputTextField.setHtml(false, hrefAttr);
+				linkDropdown.value='custom';
+			}
 		}
 		// visibility of the text edit 
 		var linkInputElement = goog.dom.getElementByClass('link-input-text', this.element);
