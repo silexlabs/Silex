@@ -92,6 +92,9 @@ silex.view.PropertiesTool.prototype.linkInputTextField;
  * color picker for background color
  */
 silex.view.PropertiesTool.prototype.bgColorPicker;
+/**
+ * check box for background color transparency
+ */
 silex.view.PropertiesTool.prototype.transparentBgCheckbox;
 /**
  * controls for background image
