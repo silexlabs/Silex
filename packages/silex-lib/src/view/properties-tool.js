@@ -1,11 +1,15 @@
 goog.provide('silex.view.PropertiesTool');
 
+goog.require('goog.cssom');
 goog.require('goog.ui.Checkbox');
 goog.require('goog.ui.CustomButton');
 goog.require('goog.ui.TabPane');
 //goog.require('goog.ui.HsvaPalette');
 goog.require('goog.ui.ColorMenuButton');
 goog.require('goog.editor.Field');
+
+goog.require('goog.array');
+goog.require('goog.object');
 
 
 var silex = silex || {}; 
@@ -132,7 +136,7 @@ silex.view.PropertiesTool.prototype.buildTabs = function(){
 		}
 		if (that.onPropertiesToolEvent){
 			// display the corresponding state
-			that.setStyle();
+			that.applyStyle();
 			// notify the controler
 			that.onPropertiesToolEvent({
 				type: 'changedState',
@@ -154,32 +158,29 @@ silex.view.PropertiesTool.prototype.buildStylePane = function(){
 	this.bgColorPicker.setTooltip('Click to select color');
 	this.bgColorPicker.render(goog.dom.getElementByClass('color-bg-button'));
 	goog.events.listen(this.bgColorPicker, goog.ui.Component.EventType.ACTION, function() { 
-		// get the style of the element being edited
-		var style = that.getStyle();
 		// update style
 		var color = that.bgColorPicker.getSelectedColor();
-		style.backgroundColor = color;
+		that.getElement().style.backgroundColor = color;
 		// apply to the element and store it in the state attribute
-		that.applyStyle(style)
+		that.styleChanged()
 	});
 	this.transparentBgCheckbox = new goog.ui.Checkbox();
 	this.transparentBgCheckbox.decorate(goog.dom.getElementByClass('enable-color-bg-button'));
 	goog.events.listen(this.transparentBgCheckbox, goog.ui.Component.EventType.CHANGE, function() {
-		// get the style of the element being edited
-		var style = that.getStyle();
+		console.log('check '+that.transparentBgCheckbox.getChecked());
 		// update style
 		if (that.transparentBgCheckbox.getChecked()==false){
 			var color = that.bgColorPicker.getSelectedColor();
 			if (color==null) {
 				color='#FFFFFF';
 			}
-			style.backgroundColor = color;
+			that.getElement().style.backgroundColor = color;
 		}
 		else{
-			style.backgroundColor = 'transparent';
+			that.getElement().style.backgroundColor = 'transparent';
 		}
 		// apply to the element and store it in the state attribute
-		that.applyStyle(style)
+		that.styleChanged()
 	});
 /*
 	// BG image
@@ -189,13 +190,11 @@ silex.view.PropertiesTool.prototype.buildStylePane = function(){
 	this.bgSelectBgImage.setTooltip('Click to select a file');
 	goog.events.listen(buttonElement, goog.events.EventType.CLICK, function(e) { 
 		that.onSelectImage(function(url){
-			// get the style of the element being edited
-			var style = that.getStyle();
 			// update style
 			var backgroundImage = url;
-			style.backgroundImage = 'url(' + backgroundImage + ')';
+			that.getElement().style.backgroundImage = 'url(' + backgroundImage + ')';
 			// apply to the element and store it in the state attribute
-			that.applyStyle(style)
+			that.styleChanged()
 		});
 	});
 	var buttonElement = goog.dom.getElementByClass('clear-bg-image-button');
@@ -203,12 +202,10 @@ silex.view.PropertiesTool.prototype.buildStylePane = function(){
 	this.bgClearBgImage.setTooltip('Click to select a file');
 	this.bgClearBgImage.decorate(buttonElement);
 	goog.events.listen(buttonElement, goog.events.EventType.CLICK, function(e) { 
-		// get the style of the element being edited
-		var style = that.getStyle();
 		// update style
-		style.backgroundImage = 'none';
+		that.getElement().style.backgroundImage = 'none';
 		// apply to the element and store it in the state attribute
-		that.applyStyle(style)
+		that.styleChanged()
 	});
 */
 }
@@ -227,7 +224,8 @@ silex.view.PropertiesTool.prototype.getElement = function(){
 	return element;
 }
 /**
- * select the style of the element being edited
+ * get the style of the element being edited for the given state
+ * returns a style object for the data-style-* value
  */
 silex.view.PropertiesTool.prototype.getStyle = function(state){
 	if(state==null) state = this.state;
@@ -239,26 +237,85 @@ silex.view.PropertiesTool.prototype.getStyle = function(state){
 		styleStr = '';
 	}
 	var style = goog.style.parseStyleAttribute(styleStr);
+
+	// take position and size into account
+	if (state!=silex.view.PropertiesTool.STATE_NORMAL){
+		var normalStyle = this.getStyle(silex.view.PropertiesTool.STATE_NORMAL);
+		style.top = normalStyle.top;
+		style.left = normalStyle.left;
+		style.width = normalStyle.width;
+		style.height = normalStyle.height;
+		style.position = normalStyle.position;
+	}
 	return style;
 }
 /**
  * display the style in data-style-*
+ * sets the element.style value with the value found in data-style-*
  */
-silex.view.PropertiesTool.prototype.setStyle = function(state){
+silex.view.PropertiesTool.prototype.applyStyle = function(state){
 	if(state==null) state = this.state;
 	var element = this.getElement();
 	//element.setAttribute('style', element.getAttribute('data-style-'+state));
-	goog.style.setStyle(element, this.getStyle(state));
+	//goog.style.applyStyle(element, this.getStyle(state));
+//	element.style = this.getStyle(state);
+	var style = this.getStyle(state);
+	goog.object.forEach(style, function(val, index, obj) {
+		if (val)
+			element.style[index] = val;
+	});
+}
+/**
+ * save the current style properties of the element being edited 
+ * the current style attribute will be stored in data-style-*
+ * and the normal style will be updated with the size and position properties
+ */
+silex.view.PropertiesTool.prototype.saveStyle = function(style, state){
+	var element = this.getElement();
+
+	// default value for style is the style of the element being edited
+	if (!state){
+		state = this.state;
+	}
+	if (!style){
+		style = goog.style.parseStyleAttribute(element.getAttribute('style'));
+	}
+	// save the position and size in the normal state
+	if (state!=silex.view.PropertiesTool.STATE_NORMAL){
+		var normalStyle = this.getStyle(silex.view.PropertiesTool.STATE_NORMAL);
+		normalStyle.top = style.top;
+		normalStyle.left = style.left;
+		normalStyle.width = style.width;
+		normalStyle.height = style.height;
+		normalStyle.position = style.position;
+		this.saveStyle(normalStyle, silex.view.PropertiesTool.STATE_NORMAL)
+
+		// do not save position and size in the other states
+		style.top = null;
+		style.left = null;
+		style.width = null;
+		style.height = null;
+		style.position = null;
+	}
+	// build a string out of the style object
+	var styleStr = '';
+	goog.object.forEach(style, function(val, index, obj) {
+		if (val)
+			styleStr += goog.string.toSelectorCase(index) + ': ' + val + '; ';
+	});
+	// store the string in the state attr
+	element.setAttribute('data-style-'+state, styleStr);
+
+	// non, this call is made by the controller : this.styleChanged();
 }
 /**
  * apply the current style properties to the element being edited 
  */
-silex.view.PropertiesTool.prototype.applyStyle = function(style){
+silex.view.PropertiesTool.prototype.styleChanged = function(){
 
 	// default value for style is the style of the element being edited
-	if (!style){
-		style = this.getStyle();
-	}
+	style = this.getStyle();
+
 	// dispatch event
 	if (this.onPropertiesToolEvent){
 		this.onPropertiesToolEvent({
@@ -397,10 +454,10 @@ silex.view.PropertiesTool.prototype.setPages = function(data){
 silex.view.PropertiesTool.prototype.setElements = function(elements){
 	if (this.elements){
 		// restore the normal state
-		this.setStyle(silex.view.PropertiesTool.STATE_NORMAL);
+		this.applyStyle(silex.view.PropertiesTool.STATE_NORMAL);
 	}
 	this.elements = elements;
-	this.setStyle();
+	this.applyStyle();
 	this.displayStyle();
 	this.redraw();
 }

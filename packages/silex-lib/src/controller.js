@@ -186,8 +186,6 @@ silex.Controller.prototype.propertiesToolEvent = function(e){
 		case 'changedState':
 			break;
 		case 'styleChanged':
-			var element = this.getElement();
-			goog.style.setStyle(element, e.style);
 			this.saveSelectionStyle();
 			break;
 	}
@@ -196,9 +194,7 @@ silex.Controller.prototype.propertiesToolEvent = function(e){
  * store style in data-style-*
  */
 silex.Controller.prototype.saveSelectionStyle = function(){
-	var element = this.getElement();
-	var state = this.propertiesTool.state;
-	element.setAttribute('data-style-'+state, element.getAttribute('style'));
+	this.propertiesTool.saveStyle();
 }
 /**
  * properties tool event handler
@@ -246,13 +242,13 @@ silex.Controller.prototype.menuEvent = function(e){
 				case 'file.saveas':
 					this.fileExplorer.saveHtmlAs(
 					this.file,
-					function (resultAfterChooseFile) {
+					function () {
 						that.file.save(that.stage.getBody(that.file.url), 
 							that.stage.getHead(), that.stage.getBodyStyle());
 					},
-					function (result) {
+					function () {
 						console.log('save success');
-						that.selection.setSelectedFile(result.url, false);
+						that.selection.setSelectedFile(that.file.url, false);
 					});
 				case 'file.save':
 					if (this.selection.getSelectedFile()==null){
@@ -261,13 +257,13 @@ silex.Controller.prototype.menuEvent = function(e){
 
 						this.fileExplorer.saveHtmlAs(
 						this.file,
-						function (resultAfterChooseFile) {
+						function () {
 							that.file.save(that.stage.getBody(that.file.url), 
 								that.stage.getHead(), that.stage.getBodyStyle());
 						},
-						function (result) {
+						function () {
 							console.log('save success');
-							that.selection.setSelectedFile(result.url, false);
+							that.selection.setSelectedFile(that.file.url, false);
 						});
 					}
 					else{
