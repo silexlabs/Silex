@@ -138,7 +138,7 @@ silex.view.TextEditor.prototype.openEditor = function(initialHtml){
 	goog.style.setStyle(this.element, 'display', 'inherit');
 	// close
 	var that = this;
-	goog.events.listen(background, goog.events.EventType.CLICK, function(e){
+	goog.events.listenOnce(background, goog.events.EventType.CLICK, function(e){
 		that.closeEditor();
 	});
 }

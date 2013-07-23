@@ -21,3 +21,6 @@
 	top: -10px;
 	width: 39px;
 }
+div.tr_bubble{
+	z-index: 999 !important;
+}
