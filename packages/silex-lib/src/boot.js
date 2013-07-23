@@ -45,7 +45,7 @@ silex.boot = function() {
 		//var url = 'html/test1.html';
 		controller.openFile(url, function(){
 			controller.selection.setSelectedFile(null);
-return;
+/*
 			setTimeout(function() { 
 				var element = goog.dom.getElementsByClass('editable-style')[5];
 				console.log(element);
@@ -53,6 +53,7 @@ return;
 				controller.editText();
 				workspace.redraw();
 			}, 1000);
+*/
 		});
 	}
 }

@@ -81,6 +81,10 @@ silex.view.Stage.prototype.headElement;
  */
 silex.view.Stage.prototype.bodyElement;
 /**
+ * current opened page name
+ */
+silex.view.Stage.prototype.currentPage;
+/**
  * find the first editable parent
  */
 silex.view.Stage.prototype.findEditableParent = function(child){
@@ -238,7 +242,6 @@ silex.view.Stage.prototype.getPages = function(){
 	});
 	return pages;
 }
-silex.view.Stage.prototype.currentPage;
 /**
  * open the given page of the site 
  */
