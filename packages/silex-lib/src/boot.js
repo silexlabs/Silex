@@ -45,6 +45,7 @@ silex.boot = function() {
 		//var url = 'html/test1.html';
 		controller.openFile(url, function(){
 			controller.selection.setSelectedFile(null);
+			workspace.redraw();
 /*
 			setTimeout(function() { 
 				var element = goog.dom.getElementsByClass('editable-style')[5];

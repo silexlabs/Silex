@@ -84,11 +84,11 @@ silex.view.FileExplorer.prototype.browse = function(cbk, opt){
 	filepicker.pick(
 	opt,
 	function(InkBlob){
-		console.log(JSON.stringify(InkBlob));
+		InkBlob.url = InkBlob.url.replace('https://', 'http://');
 		if (cbk) cbk(InkBlob);
 	},
 	function(FPError){
-		console.log(FPError.toString());
+		console.error(FPError);
 	});
 }
 /**
@@ -106,7 +106,7 @@ silex.view.FileExplorer.prototype.saveHtml = function(file, cbk){
 		if (cbk) cbk(InkBlob);
 	},
 	function(FPError){
-		console.log(FPError.toString());
+		console.error(FPError);
 	});
 }
 /**
@@ -122,13 +122,13 @@ silex.view.FileExplorer.prototype.saveHtmlAs = function(file, cbkAfterChooseFile
 		services: silex.view.FileExplorer.SERVICES
 	},
 	function(tmpInkBlob){
-		file.url = tmpInkBlob.url;
+		file.url = tmpInkBlob.url.replace('https://', 'http://');
 		file.filepickerBlob = tmpInkBlob;
 		if (cbkAfterChooseFile) cbkAfterChooseFile(tmpInkBlob);
 		that.saveHtml(file, cbk)
 	},
 	function(FPError){
-		console.log(FPError.toString());
+		console.error(FPError);
 	});
 }
 
