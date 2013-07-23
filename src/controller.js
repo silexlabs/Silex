@@ -169,9 +169,7 @@ silex.Controller.prototype.pageToolEvent = function(e){
 silex.Controller.prototype.onChooseFileRequest = function(cbk){
 	//var url = window.prompt('What is the file name? (todo: open dropbox file browser)', window.location.href+'assets/test.png');
 	this.fileExplorer.browse(function (result) {
-		if(result && result.url){
-			cbk(result.url);
-		}
+		cbk(result.url);
 	});
 }
 /**
@@ -282,12 +280,9 @@ silex.Controller.prototype.menuEvent = function(e){
 					this.fileExplorer.browseHtml(this.file, function (result) {
 						//var url = window.prompt('What is the file name? (todo: open dropbox file browser)', 
 						//window.location.href+'html/test1.html');
-						var url = result.url;
-						if(url){
-							that.openFile(url, function(){
-								that.selection.setSelectedFile(url);
-							});
-						}
+						that.openFile(result.url, function(){
+							that.selection.setSelectedFile(result.url);
+						});
 					});
 					break;
 				case 'file.close':
