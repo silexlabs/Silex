@@ -87,18 +87,24 @@ silex.model.File.prototype.close = function(){
 	this.bodyTag = '';
 }
 /**
- * reset data, close file
+ * store the new data in memory
  */
 silex.model.File.prototype.save = function(body, head, bodyStyle){
 	if (bodyStyle==null) bodyStyle='';
 
-	// build the html content
+	this.bodyStyle = bodyStyle;
+	this.bodyTag = body;
+	this.headTag = head;
+}
+/**
+ * build the html content
+ */
+silex.model.File.prototype.getHtml = function(){
 	var html = '';
 	html += '<html>';
-	html += '<head>'+head+'</head>';
-	html += '<body style="'+bodyStyle+'">'+body+'</body>';
+	html += '<head>'+this.headTag+'</head>';
+	html += '<body style="'+this.bodyStyle+'">'+this.bodyTag+'</body>';
 	html += '</html>';
-
-	alert(html);
 	console.warn(html);
+	return html;
 }

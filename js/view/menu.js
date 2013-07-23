@@ -68,7 +68,8 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
 		[
 			{label:'View in new window', id:'view.file'}, 
 			null,
-			{label:'Open text editor', id:'view.open.textEditor'} 
+			{label:'Open text editor', id:'view.open.textEditor'},
+			{label:'Open file browser', id:'view.open.fileExplorer'} 
 		],
 		[
 			{label:'Text box', id:'insert.text'}, 

@@ -7,7 +7,7 @@ goog.provide('silex.Controller');
  * the Silex controller class
  * @constructor
  */
-silex.Controller = function(workspace, menu, stage, pageTool, propertiesTool, textEditor){
+silex.Controller = function(workspace, menu, stage, pageTool, propertiesTool, textEditor, fileExplorer){
 	var that = this;
 	
 	// store references to the view components
@@ -17,6 +17,7 @@ silex.Controller = function(workspace, menu, stage, pageTool, propertiesTool, te
 	this.pageTool = pageTool;
 	this.propertiesTool = propertiesTool;
 	this.textEditor = textEditor;
+	this.fileExplorer = fileExplorer;
 	
 	// cerate the model
 	this.file = new silex.model.File();
@@ -28,6 +29,7 @@ silex.Controller = function(workspace, menu, stage, pageTool, propertiesTool, te
 	this.propertiesTool.onPropertiesToolEvent = function(e){that.propertiesToolEvent(e);};
 	this.propertiesTool.onSelectImage = function(cbk){that.onChooseFileRequest(cbk);};
 	this.textEditor.onTextEditorEvent = function(e){that.textEditorEvent(e);};
+	//this.fileExplorer.onFileExplorerEvent = function(e){that.fileExplorerEvent(e);};
 	this.stage.onStageEvent = function(e){that.stageEvent(e);};
 	this.selection.onChanged = function (eventName){that.selectionEvent(eventName)};
 }
@@ -60,6 +62,10 @@ silex.Controller.prototype.propertiesTool;
  * reference to the TextEditor component (view)
  */
 silex.Controller.prototype.textEditor;
+/**
+ * reference to the FileExplorer component (view)
+ */
+silex.Controller.prototype.fileExplorer;
 /**
  * reference to the model
  */
@@ -129,6 +135,15 @@ silex.Controller.prototype.textEditorEvent = function(e){
 	}
 }
 /**
+ * FileExplorer event handler
+ *
+silex.Controller.prototype.fileExplorerEvent = function(e){
+	switch(e.type){
+		case 'ready':
+			break;
+	}
+}
+/**
  * page tool event handler
  */
 silex.Controller.prototype.pageToolEvent = function(e){
@@ -148,10 +163,12 @@ silex.Controller.prototype.pageToolEvent = function(e){
  * properties tool event handler
  */
 silex.Controller.prototype.onChooseFileRequest = function(cbk){
-	var url = window.prompt('What is the file name? (todo: open dropbox file browser)', window.location.href+'assets/test.png');
-	if(url){
-		cbk(url);
-	}
+	//var url = window.prompt('What is the file name? (todo: open dropbox file browser)', window.location.href+'assets/test.png');
+	this.fileExplorer.browse(function (result) {
+		if(result && result.url){
+			cbk(result.url);
+		}
+	});
 }
 /**
  * properties tool event handler
@@ -226,26 +243,37 @@ silex.Controller.prototype.menuEvent = function(e){
 					break;
 				case 'file.save':
 					if (this.selection.getSelectedFile()==null){
-						var url = window.prompt('What is the file name? (todo: open dropbox file browser)', 
-							window.location.href+'html/test1.html');
-						if(url){
-							this.file.url = url;
-							this.selection.setSelectedFile(url, false);
-						}
+						//var url = window.prompt('What is the file name? (todo: open dropbox file browser)', 
+						//	window.location.href+'html/test1.html');
+
+						this.fileExplorer.saveHtmlAs(
+						this.file,
+						function (resultAfterChooseFile) {
+							that.file.save(that.stage.getBody(that.file.url), 
+								that.stage.getHead(), that.stage.getBodyStyle());
+						},
+						function (result) {
+							console.log('save success');
+							that.selection.setSelectedFile(result.url, false);
+						});
 					}
-					if (this.selection.getSelectedFile()!=null){
+					else{
 						this.file.save(this.stage.getBody(this.selection.getSelectedFile()), 
 							this.stage.getHead(), this.stage.getBodyStyle());
+						this.fileExplorer.saveHtml(this.file);
 					}
 					break;
 				case 'file.open':
-					var url = window.prompt('What is the file name? (todo: open dropbox file browser)', 
-						window.location.href+'html/test1.html');
-					if(url){
-						this.openFile(url, function(){
-							that.selection.setSelectedFile(url);
-						});
-					}
+					this.fileExplorer.browseHtml(this.file, function (result) {
+						//var url = window.prompt('What is the file name? (todo: open dropbox file browser)', 
+						//window.location.href+'html/test1.html');
+						var url = result.url;
+						if(url){
+							that.openFile(url, function(){
+								that.selection.setSelectedFile(url);
+							});
+						}
+					});
 					break;
 				case 'file.close':
 					this.closeFile();
@@ -253,8 +281,8 @@ silex.Controller.prototype.menuEvent = function(e){
 				case 'view.file':
 					window.open(this.selection.file);
 					break;
-				case 'view.open.textEditor':
-					this.editText();
+				case 'view.open.fileExplorer':
+					this.fileExplorer.browseHtml(this.file);
 					break;
 				case 'insert.page':
 					this.insertPage();

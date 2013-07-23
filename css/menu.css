@@ -32,13 +32,12 @@
 	text-decoration: none;
 }
 .silex-menu .login-text{
+	clear: right;
+	color: #666;
 	float: right;
-	font-size: 13px;
+	font-size: 11px;
 	font-style: normal;
-	color: #000000;
-	line-height: 9.5px;
-	height: 35px;
-	margin-right: 10px;
+	margin: 10px 10px 0 0;
 }
 .silex-menu .goog-menubar{
 	font-family: Arial,​sans-serif;
