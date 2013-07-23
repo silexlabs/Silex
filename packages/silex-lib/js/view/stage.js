@@ -205,8 +205,9 @@ silex.view.Stage.prototype.getBody = function(baseUrl){
 			attr = 'href';
 			value = this.getAttribute(attr);
 		}
-
-		this.setAttribute(attr, silex.Helper.getRelativePath(value, baseUrl));
+// to do, do not wwork with file picker
+console.warn('Conversion to relative url is turned off because of the file picker');
+		//this.setAttribute(attr, silex.Helper.getRelativePath(value, baseUrl));
 	});
 	
 	return cleanContainer.innerHTML;

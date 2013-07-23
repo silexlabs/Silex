@@ -12,13 +12,14 @@ silex.view = silex.view || {};
  * the Silex workspace class
  * @constructor
  */
-silex.view.Workspace = function(element, menu, stage, pageTool, propertiesTool, ckEditor){
+silex.view.Workspace = function(element, menu, stage, pageTool, propertiesTool, textEditor, fileExplorer){
 	this.element = element;
 	this.menu = menu;
 	this.stage = stage;
 	this.pageTool = pageTool;
 	this.propertiesTool = propertiesTool;
-	this.ckEditor = ckEditor;
+	this.textEditor = textEditor;
+	this.fileExplorer = fileExplorer;
 	
 	this.viewport = new goog.dom.ViewportSizeMonitor();
 
@@ -48,9 +49,13 @@ silex.view.Workspace.prototype.pageTool;
  */
 silex.view.Workspace.prototype.propertiesTool;
 /**
- * reference to the silex.view.CKEditor class
+ * reference to the silex.view.TextEditor class
  */
-silex.view.Workspace.prototype.ckEditor;
+silex.view.Workspace.prototype.textEditor;
+/**
+ * reference to the silex.view.FileExplorer class
+ */
+silex.view.Workspace.prototype.fileExplorer;
 /**
  * reference to the attached element
  */
@@ -78,11 +83,18 @@ silex.view.Workspace.prototype.doRedraw = function(){
 	goog.style.setHeight(this.propertiesTool.element, toolsHeight);
 	goog.style.setHeight(this.stage.element, toolsHeight);
 
-	// ckeditor
-	if (this.ckEditor.element){
-		var ckEditorSize = goog.style.getSize(this.ckEditor.element);
-		var posX = (viewportSize.width - ckEditorSize.width)/2;
-		var posY = (viewportSize.height - ckEditorSize.height)/2;
-		goog.style.setPosition(this.ckEditor.element, posX, posY);
+	// texteditor
+	if (this.textEditor.element){
+		var textEditorSize = goog.style.getSize(this.textEditor.element);
+		var posX = (viewportSize.width - textEditorSize.width)/2;
+		var posY = (viewportSize.height - textEditorSize.height)/2;
+		goog.style.setPosition(this.textEditor.element, posX, posY);
+	}
+	// fileExplorer
+	if (this.fileExplorer.element){
+		var fileExplorerSize = goog.style.getSize(this.fileExplorer.element);
+		var posX = (viewportSize.width - fileExplorerSize.width)/2;
+		var posY = (viewportSize.height - fileExplorerSize.height)/2;
+		goog.style.setPosition(this.fileExplorer.element, posX, posY);
 	}
 }

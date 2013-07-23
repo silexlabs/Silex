@@ -19,10 +19,13 @@ window.onload = function() {
 	var textEditorElement = goog.dom.getElementByClass('silex-texteditor');
 	var textEditor = new silex.view.TextEditor(textEditorElement);
 
-	var workspaceElement = goog.dom.getElementByClass('silex-workspace');
-	var workspace = new silex.view.Workspace(workspaceElement, menu, stage, pageTool, propertiesTool, textEditor);
+	var fileExplorerElement = goog.dom.getElementByClass('silex-fileexplorer');
+	var fileExplorer = new silex.view.FileExplorer(fileExplorerElement);
 
-	var controller = new silex.Controller(workspace, menu, stage, pageTool, propertiesTool, textEditor);
+	var workspaceElement = goog.dom.getElementByClass('silex-workspace');
+	var workspace = new silex.view.Workspace(workspaceElement, menu, stage, pageTool, propertiesTool, textEditor, fileExplorer);
+
+	var controller = new silex.Controller(workspace, menu, stage, pageTool, propertiesTool, textEditor, fileExplorer);
 	
 	stage.onReady = function(){	
 		var url = silex.Controller.CREATION_TEMPLATE;
