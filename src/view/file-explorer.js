@@ -103,7 +103,7 @@ silex.view.FileExplorer.prototype.saveHtml = function(file, cbk){
 	function(InkBlob){
 		console.log(JSON.stringify(InkBlob));
 		file.filepickerBlob = InkBlob;
-		if (cbk) cbk(InkBlob);
+		if (cbk) cbk();
 	},
 	function(FPError){
 		console.error(FPError);
@@ -124,7 +124,7 @@ silex.view.FileExplorer.prototype.saveHtmlAs = function(file, cbkAfterChooseFile
 	function(tmpInkBlob){
 		file.url = tmpInkBlob.url.replace('https://', 'http://');
 		file.filepickerBlob = tmpInkBlob;
-		if (cbkAfterChooseFile) cbkAfterChooseFile(tmpInkBlob);
+		if (cbkAfterChooseFile) cbkAfterChooseFile();
 		that.saveHtml(file, cbk)
 	},
 	function(FPError){

@@ -36,15 +36,19 @@ $(function() {
 		});
 	});
 	function silexSetState (element, state) {
-		element.setAttribute('style', element.getAttribute('data-style-'+state));
-return;
-		var stylesStr = element.getAttribute('data-style-'+state).split(';');
-		var styles = {};
-		for (var idx=0; idx<stylesStr.length; idx++){
-			var pair = stylesStr[idx].split(':');
-			styles[pair[0]] = pair[1];
+		// apply normal style first
+		element.setAttribute('style', element.getAttribute('data-style-normal'));
+
+		// apply specific style
+		if (state != 'normal'){
+			var stylesStr = element.getAttribute('data-style-'+state).split(';');
+			var styles = {};
+			for (var idx=0; idx<stylesStr.length; idx++){
+				var pair = stylesStr[idx].split(':');
+				styles[pair[0]] = pair[1];
+			}
+			console.log(styles);
+			$(element).css(styles);
 		}
-		console.log(styles);
-		$(element).css(styles);
 	}
 })
