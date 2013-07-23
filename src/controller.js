@@ -325,6 +325,31 @@ silex.Controller.prototype.menuEvent = function(e){
 				case 'edit.delete.page':
 					this.removePage(this.selection.getSelectedPage());
 					break;
+				// Help menu
+				case 'help.about':
+					window.open("http://www.silexlabs.org/silex/");
+					break;
+				case 'help.aboutSilexLabs':
+					window.open("http://www.silexlabs.org/silexlabs/");
+					break;
+				case 'help.forums':
+					window.open("http://www.silexlabs.org/groups/silex/hierarchy");
+					break;
+				case 'help.newsLetter':
+					window.open("http://feedburner.google.com/fb/a/mailverify?uri=SilexLabsBlogEn");
+					break;
+				case 'help.googlPlus':
+					window.open("https://plus.google.com/communities/107373636457908189681");
+					break;
+				case 'help.twitter':
+					window.open("http://twitter.com/silexlabs");
+					break;
+				case 'help.facebook':
+					window.open("http://www.facebook.com/silexlabs");
+					break;
+				case 'help.forkMe':
+					window.open("https://bitbucket.org/lexoyo/silex");
+					break;
 			}
 		}
 	}

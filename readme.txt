@@ -20,13 +20,12 @@ http://demos.silexlabs.org/silex-v2-alpha2/
 ###dev notes / encours
 
 * Urls relatives (absolues pendant édition)
-* Sauvegarde
+* Ajout "fork me" dans le menu
 * Ombres et bordures, 
 * image en bg (scale pas repeat)
 * Zindex
 * Lock (double click to unlock?)
 * Double click to edit
-* Ajout "fork me" dans le menu
 * Ajout ftp à unifile? 
 * silex.io/v2.0 => proto silex?
 
