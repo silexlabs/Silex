@@ -24,8 +24,9 @@
 <script class="link-template" type="text/x-handlebars-template">
 	<select class="link-combo-box">
 		<option value="none">Link to ...</option>
+		<option value="none">Nothing</option>
 		{{#each pages}}
-			<option value="#{{this}}">#{{this}}</option>
+			<option value="{{this}}">#{{this}}</option>
 		{{/each}}
 		<option value="custom">External link</option>
 	</select>
