@@ -51,7 +51,7 @@ silex.view.Menu.prototype.onMenuEvent;
  */
 silex.view.Menu.prototype.buildMenu = function(rootNode) {
 	this.menu = goog.ui.menuBar.create();
-	var menuNames = ['File', 'Edit', 'View', 'Insert'];
+	var menuNames = ['File', 'Edit', 'View', 'Insert', 'Help'];
 	var menuOptions = [
 		[
 			{label:'New File', id:'file.new'}, 
@@ -78,6 +78,18 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
 			{label:'Container', id:'insert.container'}, 
 			null,
 			{label:'New page', id:'insert.page'} 
+		],
+		[
+			{label:'Forums', id:'help.forums'}, 
+			{label:'About Silex', id:'help.about'}, 
+			{label:'About Silex Labs', id:'help.aboutSilexLabs'}, 
+			null,
+			{label:'Silex Labs news letter', id:'help.newsLetter'}, 
+			{label:'Google+', id:'help.googlPlus'}, 
+			{label:'Twitter', id:'help.twitter'}, 
+			{label:'Facebook', id:'help.facebook'}, 
+			null,
+			{label:'Fork me!', id:'help.forkMe'} 
 		]
 	];
 
