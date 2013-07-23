@@ -32,24 +32,35 @@
 	text-decoration: none;
 }
 .silex-menu .login-text{
-	clear: right;
 	color: #666;
-	float: right;
 	font-size: 11px;
 	font-style: normal;
-	margin: 10px 10px 0 0;
+	text-align: right;
+	margin: 5px 10px 0 0;
+	position: absolute;
+	top: 0;
+	right: 0;
+}
+.silex-menu .login-text p{
+	margin: 5px 0 0 0;
+}
+.silex-menu .goog-menubar .goog-menu-button-caption{
+	margin-right: 2px;
+	margin-left: 2px;
 }
 .silex-menu .goog-menubar{
 	font-family: Arial,​sans-serif;
 	font-size: 13px;
 	font-style: normal;
 	color: #000000;
-	line-height: 9.5px;
+	line-height: 20px;
 	height: 35px;
-	margin-top: 0px;
-	margin-right: 44px;
-	margin-bottom: 0px;
-	margin-left: 42px;
+	margin-top: 0;
+	margin-right: 0;
+	margin-bottom: 0;
+	margin-left: 40px;
+	padding-top: 0;
+	padding-bottom: 5px;
 
 	position: relative;
 	white-space: nowrap;
@@ -57,4 +68,13 @@
 	font-variant: normal;
 	outline-style: none;
 	outline-width: 0px;
+}
+.silex-menu .goog-menu-button-open {
+background: #fff;
+border: 1px solid rgba(0,0,0,.2);
+border-bottom: none;
+-moz-box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+-webkit-box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+color: black;
 }
