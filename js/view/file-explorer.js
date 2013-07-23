@@ -24,6 +24,14 @@ silex.view.FileExplorer = function(element, cbk){
 	});
 }
 /**
+ * Contant for file picker config
+ */
+silex.view.FileExplorer.CONTAINER_TYPE = 'modal';
+/**
+ * Contant for file picker config
+ */
+silex.view.FileExplorer.SERVICES = ["DROPBOX", "GOOGLE_DRIVE", "EVERNOTE", "FTP"];
+/**
  * on ready callback
  * used by the controller to be notified when the component is ready
  * called 1 time after template loading and rendering
@@ -58,8 +66,8 @@ silex.view.FileExplorer.prototype.browseHtml = function(file, cbk){
 	}, 
 	{
 		mimetypes: ['text/html', 'text/plain'],
-		container: 'modal',
-		services:['DROPBOX', 'GOOGLE_DRIVE']
+		container: silex.view.FileExplorer.CONTAINER_TYPE,
+		services: silex.view.FileExplorer.SERVICES
 	});
 }
 /**
@@ -69,8 +77,8 @@ silex.view.FileExplorer.prototype.browse = function(cbk, opt){
 	// default is image
 	if (!opt) opt = {
 		mimetypes: ['image/*', 'text/plain'],
-		container: 'modal',
-		services:['DROPBOX', 'GOOGLE_DRIVE']
+		container: silex.view.FileExplorer.CONTAINER_TYPE,
+		services: silex.view.FileExplorer.SERVICES
 	};
 	// pick it up
 	filepicker.pick(
@@ -110,8 +118,8 @@ silex.view.FileExplorer.prototype.saveHtmlAs = function(file, cbkAfterChooseFile
 	filepicker.exportFile( "http://google.com/",
 	{
 		mimetypes: ['text/html', 'text/plain'],
-		container: 'modal',
-		services:['DROPBOX', 'GOOGLE_DRIVE']
+		container: silex.view.FileExplorer.CONTAINER_TYPE,
+		services: silex.view.FileExplorer.SERVICES
 	},
 	function(tmpInkBlob){
 		file.url = tmpInkBlob.url;

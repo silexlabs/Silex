@@ -241,6 +241,17 @@ silex.Controller.prototype.menuEvent = function(e){
 						that.selection.setSelectedFile(null);
 					});
 					break;
+				case 'file.saveas':
+					this.fileExplorer.saveHtmlAs(
+					this.file,
+					function (resultAfterChooseFile) {
+						that.file.save(that.stage.getBody(that.file.url), 
+							that.stage.getHead(), that.stage.getBodyStyle());
+					},
+					function (result) {
+						console.log('save success');
+						that.selection.setSelectedFile(result.url, false);
+					});
 				case 'file.save':
 					if (this.selection.getSelectedFile()==null){
 						//var url = window.prompt('What is the file name? (todo: open dropbox file browser)', 
