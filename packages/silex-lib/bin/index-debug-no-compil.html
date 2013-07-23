@@ -1,0 +1,76 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<title>Silex</title>
+
+	<!-- Normalize -->
+	<link href="libs/normalize.css" rel="stylesheet">
+
+	<!-- main styles -->
+	<link rel="stylesheet" type="text/css" href="css/main.css" />
+	<link rel="stylesheet" type="text/css" href="css/front-end.css">
+	<link rel="stylesheet" type="text/css" href="css/closure/common.css">
+	
+	<!-- jquery related lib -->
+	<script type="text/javascript" src="libs/jquery/jquery.js"></script>
+	<script type="text/javascript" src="libs/jquery/jquery-ui.js"></script>
+	<script type="text/javascript" src="libs/jquery/editable.js"></script>
+	<script type="text/javascript" src="libs/jquery/pageable.js"></script>
+
+	<!-- libs -->
+	<script type="text/javascript" src="libs/handlebars.js"></script>
+	<script type="text/javascript" src="//api.filepicker.io/v1/filepicker.js"></script>
+	
+	<!-- closure without compil -->
+	<script type="text/javascript" src="../build/closure-library/closure/goog/base.js"></script>
+
+	<!-- model -->
+	<script type="text/javascript" src="../src/model/file.js"></script>
+	<script type="text/javascript" src="../src/model/selection.js"></script>
+
+	<!-- view -->
+	<script type="text/javascript" src="../src/view/menu.js"></script>
+	<script type="text/javascript" src="../src/view/page-tool.js"></script>
+	<script type="text/javascript" src="../src/view/properties-tool.js"></script>
+	<script type="text/javascript" src="../src/view/stage.js"></script>
+	<script type="text/javascript" src="../src/view/texteditor.js"></script>
+	<script type="text/javascript" src="../src/view/file-explorer.js"></script>
+	<script type="text/javascript" src="../src/view/workspace.js"></script>
+
+	<!-- controller -->
+	<script type="text/javascript" src="../src/controller.js"></script>
+
+	<!-- core classes -->
+	<script type="text/javascript" src="../src/helper.js"></script>
+	<script type="text/javascript" src="../src/boot.js"></script>
+
+	<!-- Silex compiled --
+	<script type="text/javascript" src="js/admin.js"></script>
+
+	<!-- Handlebars -->
+	<script type="text/javascript" src="libs/handlebars.js"></script>
+
+</head>
+<body>
+	<div class="silex-workspace">
+		<!-- menu -->
+		<div class="silex-menu"></div>
+		<!-- page tool -->
+		<div class="silex-pagetool"></div>
+		<!-- properties tool -->
+		<div class="silex-propertiestool"></div>
+		<!-- stage -->
+	    <div class="silex-stage"></div>
+		<!-- dialogs background -->
+		<div class="dialogs-background"></div>
+		<!-- text editor -->
+		<div class="silex-texteditor"></div>
+		<!-- file explorer -->
+		<div class="silex-fileexplorer"></div>
+	</div>
+	<script type="text/javascript">
+		silex.boot();
+	</script>
+</body>
+</html>

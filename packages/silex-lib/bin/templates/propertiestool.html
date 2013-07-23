@@ -1,0 +1,74 @@
+<link rel="stylesheet" href="css/propertiestool.css">
+
+<link rel="stylesheet" href="css/closure/checkbox.css">
+<link rel="stylesheet" href="css/closure/button.css">
+<link rel="stylesheet" href="css/closure/custombutton.css">
+<link rel="stylesheet" href="css/closure/flatbutton.css">
+<link rel="stylesheet" href="css/closure/linkbutton.css">
+<link rel="stylesheet" href="css/closure/tab.css">
+<link rel="stylesheet" href="css/closure/tabbar.css">
+<link rel="stylesheet" href="css/closure/hsvapalette.css">
+
+<link rel="stylesheet" href="css/closure/palette.css">
+<link rel="stylesheet" href="css/closure/colorpalette.css">
+<link rel="stylesheet" href="css/closure/colormenubutton.css">
+
+<script class="pages-selector-template" type="text/x-handlebars-template">
+	{{#each pages}}
+		<div class="page-container">
+			<span class="page-check" />
+			<label class="page-label">{{this}}</label>
+		</div>
+	{{/each}}
+</script>
+<script class="link-template" type="text/x-handlebars-template">
+	<select class="link-combo-box">
+		<option value="none">Link to ...</option>
+		{{#each pages}}
+			<option value="#{{this}}">#{{this}}</option>
+		{{/each}}
+		<option value="custom">External link</option>
+	</select>
+	<input class="link-input-text" type="text" />
+</script>
+<script class="style-template" type="text/x-handlebars-template">
+</script>
+<script class="edition-template" type="text/x-handlebars-template">
+	{{#if textEditor}}
+	<div class="button text-editor-button" title="Open text editor">Edit text</div>
+	{{/if}}
+</script>
+<h1>Properties</h1>
+<div class="main-container">
+	<fieldset>
+		<legend>Visibility</legend>
+		<div class="pages-container"></div>
+	</fieldset>
+	<fieldset>
+		<legend>link</legend>
+		<div class="link-container"></div>
+	</fieldset>
+	<fieldset>
+		<legend>Content</legend>
+		<div class="edition-container"></div>
+	</fieldset>
+	<span class="style-container">
+		<hr />
+		<span class="tab-container">
+		</span>
+		<hr />
+		<span class="tab-page">
+			<fieldset class="background-property">
+				<legend>Background Color</legend>
+				<span class="color-bg-button"></span>
+				<span class="enable-color-bg-button"></span> Transparent
+				<hr>
+<!--				<h2>Image</h2>
+				<div class="button bg-image-button">Select image</div>
+				<div class="button clear-bg-image-button">Clear image</div>
+				<hr>
+-->
+			</fieldset>
+		</span>
+	</span>
+</div>
