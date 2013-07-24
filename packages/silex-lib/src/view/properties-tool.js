@@ -331,6 +331,8 @@ silex.view.PropertiesTool.prototype.styleChanged = function(){
  * display the style of the element being edited 
  */
 silex.view.PropertiesTool.prototype.displayStyle = function(){
+	console.log("displayStyle ");
+
 	// select the element being edited
 	var element = this.getElement();
 //	var style = this.getStyle();
@@ -338,28 +340,32 @@ silex.view.PropertiesTool.prototype.displayStyle = function(){
 	// **
 	// BG color
 	//var color = style.backgroundColor;
-	var color = goog.style.getComputedStyle(element, 'background-color');
-	if (color == undefined || color == 'transparent' || color == ''){
-		this.transparentBgCheckbox.setChecked(true);
-		this.bgColorPicker.setEnabled(false);
+	if (element){
+		var color = goog.style.getStyle(element, 'background-color');
+		console.log(this.transparentBgCheckbox.getChecked());
+		console.log(color);
+		if (color == undefined || color == 'transparent' || color == ''){
+			this.transparentBgCheckbox.setChecked(true);
+			this.bgColorPicker.setEnabled(false);
+		}
+		else{
+			this.transparentBgCheckbox.setChecked(false);
+			this.bgColorPicker.setEnabled(true);
+			this.bgColorPicker.setSelectedColor(color);
+		}
+		//this.bgColorPicker.setContent(color);
+		// **
+		// BG image
+	/*
+		console.log('BG image : '+style.backgroundImage);
+		if (style.backgroundImage!=null && style.backgroundImage!='none' && style.backgroundImage!=''){
+			this.bgClearBgImage.setEnabled(true);
+		}
+		else{
+			this.bgClearBgImage.setEnabled(false);
+		}
+	*/
 	}
-	else{
-		this.transparentBgCheckbox.setChecked(false);
-		this.bgColorPicker.setEnabled(true);
-		this.bgColorPicker.setSelectedColor(color);
-	}
-	//this.bgColorPicker.setContent(color);
-	// **
-	// BG image
-/*
-	console.log('BG image : '+style.backgroundImage);
-	if (style.backgroundImage!=null && style.backgroundImage!='none' && style.backgroundImage!=''){
-		this.bgClearBgImage.setEnabled(true);
-	}
-	else{
-		this.bgClearBgImage.setEnabled(false);
-	}
-*/
 }
 /**
  * refresh with new data

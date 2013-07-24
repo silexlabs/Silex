@@ -276,13 +276,29 @@ silex.view.Stage.prototype.addElement = function(elementType, opt_url){
 	var newHtml;
 	switch(elementType){
 		case silex.view.Stage.ELEMENT_TYPE_CONTAINER:
-			newHtml = '<div class="editable-style silex-default-style-container" data-silex-type="container" style="position: absolute; width: 100px; height: 100px; left: 100px; top: 100px;" />';
+			newHtml = '<div class="editable-style " \
+				data-silex-type="container" \
+				style="position: absolute; \
+					width: 100px; height: 100px; left: 100px; top: 100px; \
+					background-color: white; " \
+				/>';
 			break;
 		case silex.view.Stage.ELEMENT_SUBTYPE_TEXT:
-			newHtml = '<div class="editable-style silex-default-style-text" data-silex-type="element" data-silex-sub-type="text" style="position: absolute; width: 100px; height: 100px; left: 100px; top: 100px;">New text box</div>';
+			newHtml = '<div class="editable-style " \
+				data-silex-type="element" \
+				data-silex-sub-type="text" \
+				style="position: absolute; \
+					width: 100px; height: 100px; left: 100px; top: 100px; \
+					background-color: white; \
+					overflow: hidden;" \
+				>New text box</div>';
 			break;
 		case silex.view.Stage.ELEMENT_TYPE_IMAGE:
-			newHtml = '<div class="editable-style silex-default-style-image" data-silex-type="element" style="position: absolute; left: 100px; top: 100px;"><img src="'+opt_url+'" style="width: 100%; height: 100%; " /></div>';
+			newHtml = '<div class="editable-style " \
+			data-silex-type="element" \
+			style="position: absolute; left: 100px; top: 100px;">\
+				<img src="'+opt_url+'" style="width: 100%; height: 100%; " />\
+			</div>';
 			break;
 	}
 	$('.background', this.bodyElement).append(newHtml);

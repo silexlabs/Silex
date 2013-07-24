@@ -19,15 +19,28 @@ http://demos.silexlabs.org/silex-v2-alpha2/
 
 ###dev notes / encours
 
-* Urls relatives (absolues pendant édition)
-* Ajout "fork me" dans le menu
-* Ombres et bordures, 
-* image en bg (scale pas repeat)
-* Zindex
+
+bugs
+* transparent check box bug
+* new image side is stuck
+
+refactoring
+* model : component, page, style
+* view : editors?
+
+functionnal
 * Lock (double click to unlock?)
+* Urls relatives (absolues pendant édition)
+* url de l'image selectionnee
+* image en bg (scale pas repeat)
+* Ombres et bordures, 
+* Zindex
 * Double click to edit
-* Ajout ftp à unifile? 
+* group images on the same drive as the html page?
+
+
 * silex.io/v2.0 => proto silex?
+
 
 ###v2.0.0alpha3
 
