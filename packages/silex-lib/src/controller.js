@@ -294,20 +294,26 @@ silex.Controller.prototype.menuEvent = function(e){
 					this.insertPage();
 					break;
 				case 'insert.text':
-					var element = this.stage.addElement(silex.view.Stage.ELEMENT_SUBTYPE_TEXT);
-					this.selection.setSelectedElements([element]);
+					this.stage.addElement(silex.view.Stage.ELEMENT_SUBTYPE_TEXT, function (element) {
+						console.log('loaded'+element);
+						that.selection.setSelectedElements([element]);
+					});
 					break;
 				case 'insert.image':
 					this.onChooseFileRequest(function (url) {
 						if(url){
-							var element = that.stage.addElement(silex.view.Stage.ELEMENT_TYPE_IMAGE, url);
-							that.selection.setSelectedElements([element]);
+							that.stage.addElement(silex.view.Stage.ELEMENT_SUBTYPE_IMAGE, function (element) {
+								console.log('loaded'+element);
+								that.selection.setSelectedElements([element]);
+							}, url);
 						}
 					})
 					break;
 				case 'insert.container':
-					var element = this.stage.addElement(silex.view.Stage.ELEMENT_TYPE_CONTAINER);
-					this.selection.setSelectedElements([element]);
+					this.stage.addElement(silex.view.Stage.ELEMENT_TYPE_CONTAINER, function (element) {
+						console.log('loaded'+element);
+						that.selection.setSelectedElements([element]);
+					});
 					break;
 				case 'edit.delete.selection':
 					var element = this.selection.getSelectedElements()[0];
