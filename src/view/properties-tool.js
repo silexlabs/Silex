@@ -458,6 +458,7 @@ silex.view.PropertiesTool.prototype.setPages = function(data){
  * the selection has changed
  */
 silex.view.PropertiesTool.prototype.setElements = function(elements){
+	console.log('setElements '+elements);
 	if (this.elements){
 		// restore the normal state
 		this.applyStyle(silex.view.PropertiesTool.STATE_NORMAL);
@@ -526,7 +527,7 @@ silex.view.PropertiesTool.prototype.redraw = function(){
 
 	// refresh properties
 	var editionContainer = goog.dom.getElementByClass('edition-container', this.element);
-	if (element.getAttribute){
+	if (element && element.getAttribute){
 		var templateHtml = goog.dom.getElementByClass('edition-template', this.element).innerHTML;
 		silex.Helper.resolveTemplate(editionContainer, templateHtml, {
 			textEditor: (element.getAttribute('data-silex-sub-type')==silex.view.Stage.ELEMENT_SUBTYPE_TEXT)

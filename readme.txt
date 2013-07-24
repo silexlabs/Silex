@@ -21,7 +21,6 @@ http://demos.silexlabs.org/silex-v2-alpha2/
 
 
 bugs
-* transparent check box bug
 * new image side is stuck
 
 refactoring

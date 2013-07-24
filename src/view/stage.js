@@ -49,11 +49,11 @@ silex.view.Stage.ELEMENT_TYPE_CONTAINER = 'container';
 /**
  * constant for silex element type
  */
-silex.view.Stage.ELEMENT_TYPE_IMAGE = 'image';
+silex.view.Stage.ELEMENT_TYPE_ELEMENT = 'element';
 /**
  * constant for silex element type
  */
-silex.view.Stage.ELEMENT_TYPE_ELEMENT = 'element';
+silex.view.Stage.ELEMENT_SUBTYPE_IMAGE = 'image';
 /**
  * constant for silex element type
  */
@@ -272,40 +272,72 @@ silex.view.Stage.prototype.removePage = function(pageName){
 /**
  * add elements
  */
-silex.view.Stage.prototype.addElement = function(elementType, opt_url){
-	var newHtml;
+silex.view.Stage.prototype.addElement = function(elementType, cbk, opt_url){
 	switch(elementType){
 		case silex.view.Stage.ELEMENT_TYPE_CONTAINER:
-			newHtml = '<div class="editable-style " \
-				data-silex-type="container" \
-				style="position: absolute; \
-					width: 100px; height: 100px; left: 100px; top: 100px; \
-					background-color: white; " \
-				/>';
+			// create the conatiner
+			var div = goog.dom.createElement('div');
+			div.className = 'editable-style';
+			div.setAttribute('data-silex-type', silex.view.Stage.ELEMENT_TYPE_CONTAINER)
+			div.style.position = 'absolute';
+			div.style.left = '100px';
+			div.style.top = '100px';
+			div.style.height = '100px';
+			div.style.width = '100px';
+			div.style.backgroundColor = 'white';
+			// attach it 
+			$('.background', this.bodyElement).append(div);
+			// callback
+			if (cbk) cbk(div);
 			break;
 		case silex.view.Stage.ELEMENT_SUBTYPE_TEXT:
-			newHtml = '<div class="editable-style " \
-				data-silex-type="element" \
-				data-silex-sub-type="text" \
-				style="position: absolute; \
-					width: 100px; height: 100px; left: 100px; top: 100px; \
-					background-color: white; \
-					overflow: hidden;" \
-				>New text box</div>';
+			// create the element
+			var div = goog.dom.createElement('div');
+			div.className = 'editable-style';
+			div.setAttribute('data-silex-type', silex.view.Stage.ELEMENT_TYPE_ELEMENT)
+			div.setAttribute('data-silex-sub-type', silex.view.Stage.ELEMENT_SUBTYPE_TEXT)
+			div.style.position = 'absolute';
+			div.style.left = '100px';
+			div.style.top = '100px';
+			div.style.height = '100px';
+			div.style.width = '100px';
+			div.style.backgroundColor = 'white';
+			div.style.overflow = 'hidden';
+			div.innerHTML = 'New text box';
+			// attach it 
+			$('.background', this.bodyElement).append(div);
+			// callback
+			if (cbk) cbk(div);
 			break;
-		case silex.view.Stage.ELEMENT_TYPE_IMAGE:
-			newHtml = '<div class="editable-style " \
-			data-silex-type="element" \
-			style="position: absolute; left: 100px; top: 100px;">\
-				<img src="'+opt_url+'" style="width: 100%; height: 100%; " />\
-			</div>';
+		case silex.view.Stage.ELEMENT_SUBTYPE_IMAGE:
+			var div = goog.dom.createElement('div');
+			div.className = 'editable-style';
+			div.setAttribute('data-silex-type', silex.view.Stage.ELEMENT_TYPE_ELEMENT)
+			div.setAttribute('data-silex-sub-type', silex.view.Stage.ELEMENT_SUBTYPE_IMAGE)
+			div.style.position = 'absolute';
+			div.style.left = '100px';
+			div.style.top = '100px';
+
+			var img = goog.dom.createElement('img');
+			img.onload = function (e){
+				// set container size to match image size
+				div.style.width = img.offsetWidth + 'px';
+				div.style.height = img.offsetHeight + 'px';
+				// callback
+				if (cbk) cbk(div);
+			}
+			img.style.width = '100%';
+			img.style.height = '100%';
+			img.src = opt_url;
+
+			// attach it all
+			$('.background', this.bodyElement).append(div);
+			$(div).append(img);
+			// callback
+			if (cbk) cbk(div);
 			break;
 	}
-	$('.background', this.bodyElement).append(newHtml);
 	this.makeEditable(true);
-	var elements = $('.background').children();
-	var element = elements[elements.length-1];
-	return element;
 }
 /**
  * remove elements
