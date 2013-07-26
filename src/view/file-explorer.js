@@ -11,6 +11,8 @@ silex.view = silex.view || {};
  * @constructor
  * based on http://www.inkfilepicker.com/
  * load the template and make it a FileExplorer
+ * this is only the UI part, to let user choose a file in the cloud
+ * @see silex.service.CloudStorage 	for the service/network part
  */
 silex.view.FileExplorer = function(element, cbk){
 	this.element = element;
@@ -40,7 +42,7 @@ silex.view.FileExplorer.prototype.onReady;
 /**
  * reference to the filepicker instance
  */
-silex.view.FileExplorer.prototype.filepicker;
+silex.view.FileExplorer.prototype.filePicker;
 /**
  * reference to the attached element
  */
@@ -53,57 +55,26 @@ silex.view.FileExplorer.prototype.onFileExplorerEvent;
  * init file explorer
  */
 silex.view.FileExplorer.prototype.init = function(){
-	filepicker.setKey("Au2K2SaKHSGiaXXrGExQUz");
-}
-/**
- * pick an html file
- */
-silex.view.FileExplorer.prototype.browseHtml = function(file, cbk){
-	this.browse(
-	function (InkBlob) {
-		file.filepickerBlob = InkBlob;
-		if (cbk) cbk(InkBlob);
-	}, 
-	{
-		mimetypes: ['text/html', 'text/plain'],
-		container: silex.view.FileExplorer.CONTAINER_TYPE,
-		services: silex.view.FileExplorer.SERVICES
-	});
+	this.filePicker = silex.service.CloudStorage.getInstance().filePicker;
 }
 /**
  * pick a file
+ * @param opt_mimetypes 	optional array of accepted mimetypes, e.g. ['text/html', 'text/plain']
  */
-silex.view.FileExplorer.prototype.browse = function(cbk, opt){
+silex.view.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes){
 	// default is image
-	if (!opt) opt = {
-		mimetypes: ['image/*', 'text/plain'],
+	if (!opt_mimetypes) opt_mimetypes = ['image/*', 'text/plain'];
+
+	// pick it up
+	this.filePicker.pick(
+	{
+		mimetypes: opt_mimetypes,
 		container: silex.view.FileExplorer.CONTAINER_TYPE,
 		services: silex.view.FileExplorer.SERVICES
-	};
-	// pick it up
-	filepicker.pick(
-	opt,
-	function(InkBlob){
-		InkBlob.url = InkBlob.url.replace('https://', 'http://');
-		if (cbk) cbk(InkBlob);
 	},
-	function(FPError){
-		console.error(FPError);
-	});
-}
-/**
- * save a previously opened file
- */
-silex.view.FileExplorer.prototype.saveHtml = function(file, cbk){
-	// save the actual data
-	filepicker.write(
-	file.filepickerBlob, 
-	file.getHtml(), 
-	{}, 
 	function(InkBlob){
-		console.log(JSON.stringify(InkBlob));
-		file.filepickerBlob = InkBlob;
-		if (cbk) cbk();
+		var url = InkBlob.url.replace('https://', 'http://');
+		if (cbk) cbk(url);
 	},
 	function(FPError){
 		console.error(FPError);
@@ -111,21 +82,23 @@ silex.view.FileExplorer.prototype.saveHtml = function(file, cbk){
 }
 /**
  * save as dialog
+ * @param opt_mimetypes 	optional array of accepted mimetypes, e.g. ['text/html', 'text/plain']
  */
-silex.view.FileExplorer.prototype.saveHtmlAs = function(file, cbkAfterChooseFile, cbk){
+silex.view.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes){
+	// default is html
+	if (!opt_mimetypes) opt_mimetypes = ['text/html', 'text/plain'];
+
 	var that = this;
 	// export dummy data
-	filepicker.exportFile( "http://google.com/",
+	this.filePicker.exportFile( "http://google.com/",
 	{
-		mimetypes: ['text/html', 'text/plain'],
+		mimetypes: opt_mimetypes,
 		container: silex.view.FileExplorer.CONTAINER_TYPE,
 		services: silex.view.FileExplorer.SERVICES
 	},
 	function(tmpInkBlob){
-		file.url = tmpInkBlob.url.replace('https://', 'http://');
-		file.filepickerBlob = tmpInkBlob;
-		if (cbkAfterChooseFile) cbkAfterChooseFile();
-		that.saveHtml(file, cbk)
+		var url = tmpInkBlob.url.replace('https://', 'http://');
+		if (cbk) cbk(url);
 	},
 	function(FPError){
 		console.error(FPError);

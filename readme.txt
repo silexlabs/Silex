@@ -20,12 +20,12 @@ http://demos.silexlabs.org/silex-v2-alpha2/
 ###dev notes / encours
 
 
-bugs
-* new image side is stuck
-
 refactoring
+* suppr selection class, tout cbk (genre propertiesTool.editElement(element, function(){//changed}))
+* externs : text editor?? file picker dialog
 * model : component, page, style
 * view : editors?
+* reactiver les urls relatives?
 
 functionnal
 * Lock (double click to unlock?)
