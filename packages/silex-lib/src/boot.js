@@ -43,7 +43,8 @@ silex.boot = function() {
 	stage.onReady = function(){	
 		var url = silex.Controller.CREATION_TEMPLATE;
 		//var url = 'html/test1.html';
-		controller.openFile(url, function(){
+		silex.service.CloudStorage.getInstance().load(url, function(rawHtml){
+			controller.file.setHtml(rawHtml);
 			controller.selection.setSelectedFile(null);
 			workspace.redraw();
 /*

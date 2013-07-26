@@ -99,18 +99,25 @@ silex.Controller.prototype.getElement = function(){
 silex.Controller.prototype.selectionEvent = function(eventName){
 	switch (eventName){
 		case 'file':
-			if (this.selection.getSelectedFile()==null){
-				if (this.file.bodyTag==""){
-					this.fileClosed();
-				}
-				else{
-					// case of the new site
-					this.fileLoaded();
-				}
+			this.stage.setContent(this.file.bodyTag, this.file.headTag, this.file.bodyStyle, this.selection.getSelectedFile());
+
+			var pages = this.stage.getPages();
+			this.pageTool.setDataProvider(pages);
+			this.propertiesTool.setPages(pages);
+			if (pages.length > 0){
+				this.stage.openPage(pages[0]);
+				this.pageTool.setSelectedIndexes([0]);
 			}
-			else{
-				this.fileLoaded();
+
+			// update website title
+			var title = this.stage.getTitle();
+			if (title){
+				this.menu.setWebsiteName(title);
 			}
+
+			// reset selection
+			this.selection.setSelectedPage(null);
+			this.selection.setSelectedElements([]);
 			break;
 		case 'page':
 			var page = this.selection.getSelectedPage();
@@ -168,9 +175,10 @@ silex.Controller.prototype.pageToolEvent = function(e){
  */
 silex.Controller.prototype.onChooseFileRequest = function(cbk){
 	//var url = window.prompt('What is the file name? (todo: open dropbox file browser)', window.location.href+'assets/test.png');
-	this.fileExplorer.browse(function (result) {
+	this.fileExplorer.openDialog(function (result) {
 		cbk(result.url);
-	});
+	},
+	['image/*', 'text/plain']);
 }
 /**
  * properties tool event handler
@@ -235,60 +243,50 @@ silex.Controller.prototype.menuEvent = function(e){
 		else{
 			switch(e.target.getId()){
 				case 'file.new':
-					this.openFile(silex.Controller.CREATION_TEMPLATE, function(){
+					silex.service.CloudStorage.getInstance().load(silex.Controller.CREATION_TEMPLATE, function(rawHtml){
+						that.file.setHtml(rawHtml);
 						that.selection.setSelectedFile(null);
 					});
 					break;
 				case 'file.saveas':
-					this.fileExplorer.saveHtmlAs(
-					this.file,
-					function () {
-						that.file.save(that.stage.getBody(that.file.url), 
-							that.stage.getHead(), that.stage.getBodyStyle());
-					},
-					function () {
-						console.log('save success');
-						that.selection.setSelectedFile(that.file.url, false);
-					});
+					this.saveFileAs();
+					break;
+
 				case 'file.save':
 					if (this.selection.getSelectedFile()==null){
-						//var url = window.prompt('What is the file name? (todo: open dropbox file browser)', 
-						//	window.location.href+'html/test1.html');
-
-						this.fileExplorer.saveHtmlAs(
-						this.file,
-						function () {
-							that.file.save(that.stage.getBody(that.file.url), 
-								that.stage.getHead(), that.stage.getBodyStyle());
-						},
-						function () {
-							console.log('save success');
-							that.selection.setSelectedFile(that.file.url, false);
-						});
+						this.saveFileAs();
 					}
 					else{
-						this.file.save(this.stage.getBody(this.selection.getSelectedFile()), 
-							this.stage.getHead(), this.stage.getBodyStyle());
-						this.fileExplorer.saveHtml(this.file);
+						this.file.setBodyTag(this.stage.getBody(this.file.getUrl()));
+						this.file.setHeadTag(this.stage.getHead());
+						this.file.setBodyStyle(this.stage.getBodyStyle());
+
+						silex.service.CloudStorage.getInstance().save(this.file.getUrl(), this.file.getHtml(), function () {
+							console.log('file saved');
+							that.selection.setSelectedFile(that.file.getUrl());
+						});
 					}
 					break;
 				case 'file.open':
-					this.fileExplorer.browseHtml(this.file, function (result) {
-						//var url = window.prompt('What is the file name? (todo: open dropbox file browser)', 
-						//window.location.href+'html/test1.html');
-						that.openFile(result.url, function(){
-							that.selection.setSelectedFile(result.url);
+					this.fileExplorer.openDialog(function (url) {
+						silex.service.CloudStorage.getInstance().load(url, function(rawHtml){
+							console.log('loaded ');
+							console.log(rawHtml);
+							that.file.close();
+							that.file.setUrl(url);
+							that.file.setHtml(rawHtml);
+							that.selection.setSelectedFile(url);
 						});
-					});
+					}, ['text/html', 'text/plain']);
 					break;
 				case 'file.close':
-					this.closeFile();
+					this.file.close();
 					break;
 				case 'view.file':
 					window.open(this.selection.file);
 					break;
 				case 'view.open.fileExplorer':
-					this.fileExplorer.browseHtml(this.file);
+					this.fileExplorer.openDialog();
 					break;
 				case 'insert.page':
 					this.insertPage();
@@ -355,24 +353,26 @@ silex.Controller.prototype.menuEvent = function(e){
 	}
 }
 /**
- * open a file
+ * save a file with a new name
  */
-silex.Controller.prototype.openFile = function(url, cbk){
+silex.Controller.prototype.saveFileAs = function(){
 	var that = this;
-	this.file.load(url, function(){
-		if (cbk) cbk();
-		that.selection.setSelectedPage(null);
-		that.selection.setSelectedElements([]);
-	});
-}
-/**
- * close a file
- */
-silex.Controller.prototype.closeFile = function(){
-	this.file.close();
-	this.selection.setSelectedFile(null);
-	this.selection.setSelectedPage(null);
-	this.selection.setSelectedElements([]);
+
+	// choose a new name
+	this.fileExplorer.saveAsDialog(
+	function (url) {
+		// save the data
+		console.log('selection of a new file success');
+		that.file.setBodyTag(that.stage.getBody(url));
+		that.file.setHeadTag(that.stage.getHead());
+		that.file.setBodyStyle(that.stage.getBodyStyle());
+		that.file.setUrl(url);
+		silex.service.CloudStorage.getInstance().save(url, that.file.getHtml(), function () {
+			console.log('file saved');
+			that.selection.setSelectedFile(url);
+		});
+	},
+	['text/html', 'text/plain']);
 }
 /**
  * insert a new page
@@ -412,30 +412,4 @@ silex.Controller.prototype.editText = function(){
 	this.stage.makeEditable(false, element);
 	this.textEditor.openEditor(element.innerHTML);
 	this.workspace.redraw();
-}
-/**
- * model event
- */
-silex.Controller.prototype.fileLoaded = function(){
-	this.stage.setContent(this.file.bodyTag, this.file.headTag, this.file.bodyStyle, this.selection.getSelectedFile());
-
-	var pages = this.stage.getPages();
-	this.pageTool.setDataProvider(pages);
-	this.propertiesTool.setPages(pages);
-	if (pages.length > 0){
-		this.stage.openPage(pages[0]);
-		this.pageTool.setSelectedIndexes([0]);
-	}
-
-	// update website title
-	var title = this.stage.getTitle();
-	if (title){
-		this.menu.setWebsiteName(title);
-	}
-}
-/**
- * model event
- */
-silex.Controller.prototype.fileClosed = function(){
-	this.stage.cleanup();
 }
