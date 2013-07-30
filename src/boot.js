@@ -1,3 +1,14 @@
+//////////////////////////////////////////////////
+// Silex, live web creation
+// http://projects.silexlabs.org/?/silex/
+// 
+// Copyright (c) 2012 Silex Labs
+// http://www.silexlabs.org/
+// 
+// Silex is available under the GPL license
+// http://www.silexlabs.org/silex/silex-licensing/
+//////////////////////////////////////////////////
+
 goog.provide('silex.boot');
 
 goog.require('goog.dom');
@@ -17,47 +28,111 @@ goog.require('silex.view.Workspace');
 silex.boot = function() {
 	console.log('onload');
 
+	// create all views and attach them to the dom
+	// it is a sequence, because views loads templates one after another
 	var menuElement = goog.dom.getElementByClass('silex-menu');
-	var menu = new silex.view.Menu(menuElement);
+	var menu = new silex.view.Menu(menuElement,
+	function () {
+		console.log('Menu created');
+		var stageElement = goog.dom.getElementByClass('silex-stage');
+		var stage = new silex.view.Stage(stageElement,
+	function () {
+		console.log('Stage created');
+		var pageToolElement = goog.dom.getElementByClass('silex-pagetool');
+		var pageTool = new silex.view.PageTool(pageToolElement,
+	function () {
+		console.log('PageTool created');
+		var propertiesToolElement = goog.dom.getElementByClass('silex-propertiestool');
+		var propertiesTool = new silex.view.PropertiesTool(propertiesToolElement,
+	function () {
+		console.log('PropertiesTool created');
+		var textEditorElement = goog.dom.getElementByClass('silex-texteditor');
+		var textEditor = new silex.view.TextEditor(textEditorElement,
+	function () {
+		console.log('TextEditor created');
+		var fileExplorerElement = goog.dom.getElementByClass('silex-fileexplorer');
+		var fileExplorer = new silex.view.FileExplorer(fileExplorerElement,
+	function () {
+		console.log('FileExplorer created');
+		// create the workspace which place all components in the page
+		var workspaceElement = goog.dom.getElementByClass('silex-workspace');
+		var workspace = new silex.view.Workspace(
+			workspaceElement, 
+			menu, 
+			stage, 
+			pageTool, 
+			propertiesTool, 
+			textEditor, 
+			fileExplorer);
+		console.log('Workspace created');
 
-	var stageElement = goog.dom.getElementByClass('silex-stage');
-	var stage = new silex.view.Stage(stageElement);
+		// create the main model element, the file
+		// which creates pages and elements when a file will be loaded later
+		// the model updates the views
+		var file = new silex.model.File(
+			workspace, 
+			menu, 
+			stage, 
+			pageTool, 
+			propertiesTool, 
+			textEditor, 
+			fileExplorer);
+		console.log('File created');
 
-	var pageToolElement = goog.dom.getElementByClass('silex-pagetool');
-	var pageTool = new silex.view.PageTool(pageToolElement);
+		var selection = new silex.model.Selection(
+			workspace, 
+			menu, 
+			stage, 
+			pageTool, 
+			propertiesTool, 
+			textEditor, 
+			fileExplorer);
+		console.log('Selection created');
 
-	var propertiesToolElement = goog.dom.getElementByClass('silex-propertiestool');
-	var propertiesTool = new silex.view.PropertiesTool(propertiesToolElement);
+		// the controller listens to the view components 
+		// and updates the model
+		var controller = new silex.Controller(
+			workspace, 
+			menu, 
+			stage, 
+			pageTool, 
+			propertiesTool, 
+			textEditor, 
+			fileExplorer,
+			file,
+			selection);
+		console.log('Controller created');
 
-	var textEditorElement = goog.dom.getElementByClass('silex-texteditor');
-	var textEditor = new silex.view.TextEditor(textEditorElement);
+		// now create an empty file to let the user start using Silex
+		file.newFile();
+		console.log('end');
+	});
+	});
+	});
+	});
+	});
+	});
 
-	var fileExplorerElement = goog.dom.getElementByClass('silex-fileexplorer');
-	var fileExplorer = new silex.view.FileExplorer(fileExplorerElement);
-
-	var workspaceElement = goog.dom.getElementByClass('silex-workspace');
-	var workspace = new silex.view.Workspace(workspaceElement, menu, stage, pageTool, propertiesTool, textEditor, fileExplorer);
-
-	var controller = new silex.Controller(workspace, menu, stage, pageTool, propertiesTool, textEditor, fileExplorer);
-	
+/*	
 	stage.onReady = function(){	
+		return;
 		var url = silex.Controller.CREATION_TEMPLATE;
 		//var url = 'html/test1.html';
 		silex.service.CloudStorage.getInstance().load(url, function(rawHtml){
 			controller.file.setHtml(rawHtml);
-			controller.selection.setSelectedFile(null);
-			workspace.redraw();
+			controller.selection.setFile(null);
+			workspace.invalidate();
 /*
 			setTimeout(function() { 
 				var element = goog.dom.getElementsByClass('editable-style')[5];
 				console.log(element);
-				controller.selection.setSelectedElements([element]);
+				controller.selection.setElement([element]);
 				controller.editText();
-				workspace.redraw();
+				workspace.invalidate();
 			}, 1000);
-*/
 		});
 	}
+*/
 }
 
 // Ensures the symbol will be visible after compiler renaming.

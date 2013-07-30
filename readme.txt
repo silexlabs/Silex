@@ -21,7 +21,16 @@ http://demos.silexlabs.org/silex-v2-alpha2/
 
 
 refactoring
-* suppr selection class, tout cbk (genre propertiesTool.editElement(element, function(){//changed}))
+* tout cbk (genre propertiesTool.editElement(element, function(){//changed}))
+* selection page, element, state est utile
+* pas de multiple selection
+* le controller est plutot une classe de control
+* suppr jquery
+* renommer boot.js en app.js
+* renommer controller.js en adapter.js ??
+* plus de var that = this;
+* verif les package dans tous les fichiers (copier coller => peut etre un autre package)
+* utiliser 'use strict';
 * externs : text editor?? file picker dialog
 * model : component, page, style
 * view : editors?

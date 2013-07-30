@@ -1,19 +1,31 @@
-var silex = silex || {}; 
-silex.controller = silex.controller || {}; 
+//////////////////////////////////////////////////
+// Silex, live web creation
+// http://projects.silexlabs.org/?/silex/
+// 
+// Copyright (c) 2012 Silex Labs
+// http://www.silexlabs.org/
+// 
+// Silex is available under the GPL license
+// http://www.silexlabs.org/silex/silex-licensing/
+//////////////////////////////////////////////////
 
 goog.provide('silex.Controller');
-
-goog.require('silex.model.File');
-goog.require('silex.model.Selection');
-
 
 /**
  * the Silex controller class
  * @constructor
  */
-silex.Controller = function(workspace, menu, stage, pageTool, propertiesTool, textEditor, fileExplorer){
-	var that = this;
-	
+silex.Controller = function(
+	workspace, 
+	menu, 
+	stage, 
+	pageTool, 
+	propertiesTool, 
+	textEditor, 
+	fileExplorer, 
+	file, 
+	selection){
+
 	// store references to the view components
 	this.workspace = workspace;
 	this.menu = menu;
@@ -22,25 +34,21 @@ silex.Controller = function(workspace, menu, stage, pageTool, propertiesTool, te
 	this.propertiesTool = propertiesTool;
 	this.textEditor = textEditor;
 	this.fileExplorer = fileExplorer;
-	
-	// cerate the model
-	this.file = new silex.model.File();
-	this.selection = new silex.model.Selection();
+
+	// store reference to the model
+	this.file = file;
+	this.selection = selection;
+
+	// init selection
+	this.selection.setComponent(this.file.getStageComponent());
 
 	// attach events to the view and model
-	this.menu.onMenuEvent = function(e){that.menuEvent(e);};
-	this.pageTool.onPageToolEvent = function(e){that.pageToolEvent(e);};
-	this.propertiesTool.onPropertiesToolEvent = function(e){that.propertiesToolEvent(e);};
-	this.propertiesTool.onSelectImage = function(cbk){that.onChooseFileRequest(cbk);};
-	this.textEditor.onTextEditorEvent = function(e){that.textEditorEvent(e);};
-	//this.fileExplorer.onFileExplorerEvent = function(e){that.fileExplorerEvent(e);};
-	this.stage.onStageEvent = function(e){that.stageEvent(e);};
-	this.selection.onChanged = function (eventName){that.selectionEvent(eventName)};
+	this.menu.onStatus = goog.bind(this.menuCallback, this);
+	this.stage.onStatus = goog.bind(this.stageCallback, this);
+	this.pageTool.onStatus = goog.bind(this.pageToolCallback, this);
+	this.propertiesTool.onStatus = goog.bind(this.propertiesToolCallback, this);
+	this.textEditor.onStatus = goog.bind(this.textEditorCallback, this);
 }
-/**
- * creation template URL constant
- */
-silex.Controller.CREATION_TEMPLATE = 'creation-template.html';
 /**
  * reference to the workspace component (view)
  */
@@ -78,338 +86,188 @@ silex.Controller.prototype.file;
  * reference to the model
  */
 silex.Controller.prototype.selection;
-/**
- * select the element being edited
- */
-silex.Controller.prototype.getElement = function(){
-	var element;
-	var selectedElements = this.selection.getSelectedElements();
-	if (selectedElements && selectedElements.length>0){
-		element = selectedElements[0];
-	}
-	else{
-		// site background
-		element = this.stage.bodyElement;
-	}
-	return element;
-}
-/**
- * selection event handler
- */
-silex.Controller.prototype.selectionEvent = function(eventName){
-	switch (eventName){
-		case 'file':
-			this.stage.setContent(this.file.bodyTag, this.file.headTag, this.file.bodyStyle, this.selection.getSelectedFile());
 
-			var pages = this.stage.getPages();
-			this.pageTool.setDataProvider(pages);
-			this.propertiesTool.setPages(pages);
-			if (pages.length > 0){
-				this.stage.openPage(pages[0]);
-				this.pageTool.setSelectedIndexes([0]);
-			}
+////////////////////////////////////////////////////////////////
+// Callback for the view events
+////////////////////////////////////////////////////////////////
+/**
+ * menu event handler
+ */
+silex.Controller.prototype.menuCallback = function(event){
+	console.log('menuCallback');
+	console.log(event);
+	switch(event.type){
+		case 'title.changed':
+			var name = window.prompt('What is the name of your website?', this.menu.getWebsiteName());
+			if (name) this.file.setTitle(name);
+			break;
+		case 'file.new':
+			this.file.newFile();
+			break;
+		case 'file.saveas':
+			this.file.saveAs();
+			break;
 
-			// update website title
-			var title = this.stage.getTitle();
-			if (title){
-				this.menu.setWebsiteName(title);
-			}
-
-			// reset selection
-			this.selection.setSelectedPage(null);
-			this.selection.setSelectedElements([]);
-			break;
-		case 'page':
-			var page = this.selection.getSelectedPage();
-			if (page){
-				this.stage.openPage(this.selection.getSelectedPage());
-			}
-			break;
-		case 'elements':
-			this.propertiesTool.setElements(this.selection.getSelectedElements());
-			break;
-	}
-}
-/**
- * TextEditor event handler
- */
-silex.Controller.prototype.textEditorEvent = function(e){
-	switch(e.type){
-		case 'changed':
-			var element = this.getElement();
-			element.innerHTML = this.textEditor.getData();
-			break;
-		case 'closed':
-			var element = this.getElement();
-			this.stage.makeEditable(true, element);
-			break;
-	}
-}
-/**
- * FileExplorer event handler
- *
-silex.Controller.prototype.fileExplorerEvent = function(e){
-	switch(e.type){
-		case 'ready':
-			break;
-	}
-}
-/**
- * page tool event handler
- */
-silex.Controller.prototype.pageToolEvent = function(e){
-	switch(e.type){
-		case 'selectionChanged':
-			this.selection.setSelectedPage(this.pageTool.getSelectedItems()[0]);
-			break;
-		case 'removePage':
-			this.removePage(e.name);
-			break;
-		case 'ready':
-			this.workspace.redraw();
-			break;
-	}
-}
-/**
- * properties tool event handler
- */
-silex.Controller.prototype.onChooseFileRequest = function(cbk){
-	//var url = window.prompt('What is the file name? (todo: open dropbox file browser)', window.location.href+'assets/test.png');
-	this.fileExplorer.openDialog(function (result) {
-		cbk(result.url);
-	},
-	['image/*', 'text/plain']);
-}
-/**
- * properties tool event handler
- */
-silex.Controller.prototype.propertiesToolEvent = function(e){
-	switch(e.type){
-		case 'ready':
-			this.workspace.redraw();
-			break;
-		case 'openTextEditor':
-			this.editText();
-			break;
-		case 'changedState':
-			break;
-		case 'styleChanged':
-			this.saveSelectionStyle();
-			break;
-	}
-}
-/**
- * store style in data-style-*
- */
-silex.Controller.prototype.saveSelectionStyle = function(){
-	this.propertiesTool.saveStyle();
-}
-/**
- * properties tool event handler
- */
-silex.Controller.prototype.stageEvent = function(e){
-	switch(e.type){
-		case 'ready':
-			this.workspace.redraw();
-			break;
-		case 'select':
-			if (e.element){
-				this.selection.setSelectedElements([e.element]);
+		case 'file.save':
+			if (this.file.getUrl()==null){
+				this.file.saveAs();
 			}
 			else{
-				this.selection.setSelectedElements([]);
+				this.file.save();
+			}
+			break;
+		case 'file.open':
+			this.file.open(goog.bind(function () {
+				this.selection.setComponent(this.file.getStageComponent());
+			}, this));
+			break;
+		case 'file.close':
+			this.file.close(goog.bind(function () {
+				this.selection.setComponent(null);
+			}, this));
+			break;
+		case 'view.file':
+			this.file.view()
+			break;
+		case 'view.open.fileExplorer':
+			this.fileExplorer.openDialog();
+			break;
+		case 'insert.page':
+			var page = this.file.createPage();
+			this.selection.setPage(page);
+			page.open();
+			break;
+		case 'insert.text':
+			var component = this.file.getStageComponent().addText();
+			this.selection.setComponent(component);
+			break;
+		case 'insert.image':
+			this.fileExplorer.openDialog(
+			goog.bind(function (url) {
+				var component = this.file.getStageComponent().addImage(url);
+				this.selection.setComponent(component);
+			}, this),
+			['image/*', 'text/plain']);
+			break;
+		case 'insert.container':
+			var component = this.file.getStageComponent().addContainer();
+			this.selection.setComponent(component);
+			break;
+		case 'edit.delete.selection':
+			// delete component
+			this.file.getStageComponent().remove(this.selection.getComponent());
+			// select stage 
+			this.selection.setComponent(this.file.getStageComponent());
+			break;
+		case 'edit.delete.page':
+			this.file.deletePage(this.selection.getPage());
+			break;
+		// Help menu
+		case 'help.about':
+			window.open("http://www.silexlabs.org/silex/");
+			break;
+		case 'help.aboutSilexLabs':
+			window.open("http://www.silexlabs.org/silexlabs/");
+			break;
+		case 'help.forums':
+			window.open("http://www.silexlabs.org/groups/silex/hierarchy");
+			break;
+		case 'help.newsLetter':
+			window.open("http://feedburner.google.com/fb/a/mailverify?uri=SilexLabsBlogEn");
+			break;
+		case 'help.googlPlus':
+			window.open("https://plus.google.com/communities/107373636457908189681");
+			break;
+		case 'help.twitter':
+			window.open("http://twitter.com/silexlabs");
+			break;
+		case 'help.facebook':
+			window.open("http://www.facebook.com/silexlabs");
+			break;
+		case 'help.forkMe':
+			window.open("https://bitbucket.org/lexoyo/silex");
+			break;
+	}
+}
+/**
+ * stage event handler
+ */
+silex.Controller.prototype.stageCallback = function(event){
+	console.log('stageCallback '+this.selection.getContext());
+	console.log(event);
+	switch(event.type){
+		case 'select':
+			// reset context for the old selection
+			var oldSelectedComp = this.selection.getComponent();
+			if (oldSelectedComp) oldSelectedComp.setContext(silex.model.Component.CONTEXT_NORMAL);
+			// select the new element
+			if (event.element){
+				this.selection.setComponent(new silex.model.Component(event.element));
+				// update context for the selection
+				this.selection.getComponent().setContext(this.selection.getContext());
+			}
+			else{
+				// select stage 
+				this.selection.setComponent(this.file.getStageComponent());
 			}
 			break;
 		case 'change':
 			// size or position of the element has changed
-			this.saveSelectionStyle();
+			this.selection.getComponent().setBoundingBox(
+				this.selection.getComponent().getBoundingBox()
+			);
 			break;
 	}
 }
 /**
- * menu events
+ * pageTool event handler
  */
-silex.Controller.prototype.menuEvent = function(e){
-	var that = this;
-	if (e && e.target){
-		if (goog.dom.classes.has(e.target,'website-name')){
-			var name = window.prompt('What is the name of your website?', this.menu.getWebsiteName());
-			if(name){
-				this.menu.setWebsiteName(name);
-				// update website title
-				this.stage.setTitle(name);
-			}
-		}
-		else{
-			switch(e.target.getId()){
-				case 'file.new':
-					silex.service.CloudStorage.getInstance().load(silex.Controller.CREATION_TEMPLATE, function(rawHtml){
-						that.file.setHtml(rawHtml);
-						that.selection.setSelectedFile(null);
-					});
-					break;
-				case 'file.saveas':
-					this.saveFileAs();
-					break;
-
-				case 'file.save':
-					if (this.selection.getSelectedFile()==null){
-						this.saveFileAs();
-					}
-					else{
-						this.file.setBodyTag(this.stage.getBody(this.file.getUrl()));
-						this.file.setHeadTag(this.stage.getHead());
-						this.file.setBodyStyle(this.stage.getBodyStyle());
-
-						silex.service.CloudStorage.getInstance().save(this.file.getUrl(), this.file.getHtml(), function () {
-							console.log('file saved');
-							that.selection.setSelectedFile(that.file.getUrl());
-						});
-					}
-					break;
-				case 'file.open':
-					this.fileExplorer.openDialog(function (url) {
-						silex.service.CloudStorage.getInstance().load(url, function(rawHtml){
-							console.log('loaded ');
-							console.log(rawHtml);
-							that.file.close();
-							that.file.setUrl(url);
-							that.file.setHtml(rawHtml);
-							that.selection.setSelectedFile(url);
-						});
-					}, ['text/html', 'text/plain']);
-					break;
-				case 'file.close':
-					this.file.close();
-					break;
-				case 'view.file':
-					window.open(this.selection.file);
-					break;
-				case 'view.open.fileExplorer':
-					this.fileExplorer.openDialog();
-					break;
-				case 'insert.page':
-					this.insertPage();
-					break;
-				case 'insert.text':
-					this.stage.addElement(silex.view.Stage.ELEMENT_SUBTYPE_TEXT, function (element) {
-						console.log('loaded'+element);
-						that.selection.setSelectedElements([element]);
-					});
-					break;
-				case 'insert.image':
-					this.onChooseFileRequest(function (url) {
-						if(url){
-							that.stage.addElement(silex.view.Stage.ELEMENT_SUBTYPE_IMAGE, function (element) {
-								console.log('loaded'+element);
-								that.selection.setSelectedElements([element]);
-							}, url);
-						}
-					})
-					break;
-				case 'insert.container':
-					this.stage.addElement(silex.view.Stage.ELEMENT_TYPE_CONTAINER, function (element) {
-						console.log('loaded'+element);
-						that.selection.setSelectedElements([element]);
-					});
-					break;
-				case 'edit.delete.selection':
-					var element = this.selection.getSelectedElements()[0];
-					this.stage.removeElement(element);
-					break;
-				case 'edit.delete.page':
-					this.removePage(this.selection.getSelectedPage());
-					break;
-				// Help menu
-				case 'help.about':
-					window.open("http://www.silexlabs.org/silex/");
-					break;
-				case 'help.aboutSilexLabs':
-					window.open("http://www.silexlabs.org/silexlabs/");
-					break;
-				case 'help.forums':
-					window.open("http://www.silexlabs.org/groups/silex/hierarchy");
-					break;
-				case 'help.newsLetter':
-					window.open("http://feedburner.google.com/fb/a/mailverify?uri=SilexLabsBlogEn");
-					break;
-				case 'help.googlPlus':
-					window.open("https://plus.google.com/communities/107373636457908189681");
-					break;
-				case 'help.twitter':
-					window.open("http://twitter.com/silexlabs");
-					break;
-				case 'help.facebook':
-					window.open("http://www.facebook.com/silexlabs");
-					break;
-				case 'help.forkMe':
-					window.open("https://bitbucket.org/lexoyo/silex");
-					break;
-			}
-		}
-	}
-	else{
-		this.workspace.redraw();
+silex.Controller.prototype.pageToolCallback = function(event){
+	console.log('pageToolCallback');
+	console.log(event);
+	switch(event.type){
+	case 'changed':
+		this.selection.setPage(event.page);
+		event.page.open();
+		break;
+	case 'delete':
+		// delete the page from the model
+		this.file.deletePage(event.page);
+		break;
 	}
 }
 /**
- * save a file with a new name
+ * propertiesTool event handler
  */
-silex.Controller.prototype.saveFileAs = function(){
-	var that = this;
-
-	// choose a new name
-	this.fileExplorer.saveAsDialog(
-	function (url) {
-		// save the data
-		console.log('selection of a new file success');
-		that.file.setBodyTag(that.stage.getBody(url));
-		that.file.setHeadTag(that.stage.getHead());
-		that.file.setBodyStyle(that.stage.getBodyStyle());
-		that.file.setUrl(url);
-		silex.service.CloudStorage.getInstance().save(url, that.file.getHtml(), function () {
-			console.log('file saved');
-			that.selection.setSelectedFile(url);
-		});
-	},
-	['text/html', 'text/plain']);
-}
-/**
- * insert a new page
- */
-silex.Controller.prototype.insertPage = function(){
-	// create the new page in the view
-	var pageName = window.prompt('What name for your new page?', '');
-	this.stage.createPage(pageName);
-	// update tools
-	var pages = this.stage.getPages();
-	this.pageTool.setDataProvider(pages);
-	this.propertiesTool.setPages(pages);
-	// update model to open this page
-	this.selection.setSelectedPage(pageName);
-}
-/**
- * remove a page
- */
-silex.Controller.prototype.removePage = function(pageName){
-	var confirm = window.confirm('I am about to delete the page, are you sure about that?');
-	if (confirm){
-		// delete the page from the view
-		this.stage.removePage(pageName);
-		// update tools
-		var pages = this.stage.getPages();
-		this.pageTool.setDataProvider(pages);
-		this.propertiesTool.setPages(pages);
-		// update model to open this page
-		this.selection.setSelectedPage(this.stage.getPages()[0]);
+silex.Controller.prototype.propertiesToolCallback = function(event){
+	console.log('propertiesToolCallback');
+	console.log(event);
+	switch(event.type){
+		case 'openTextEditor':
+			textEditor.openEditor(this.selection.getComponent().getHtml());
+			break;
+		case 'contextChanged':
+			// style of the element has changed
+			this.selection.setContext(event.context);
+			this.selection.getComponent().setContext(event.context);
+			break;
+		case 'styleChanged':
+			// style of the element has changed
+			this.selection.getComponent().setStyle(event.style, event.context);
+			break;
+		case 'propertiesChanged':
+			break;
 	}
 }
 /**
- * Edit text content
+ * textEditor event handler
  */
-silex.Controller.prototype.editText = function(){
-	var element = this.getElement();
-	this.stage.makeEditable(false, element);
-	this.textEditor.openEditor(element.innerHTML);
-	this.workspace.redraw();
+silex.Controller.prototype.textEditorCallback = function(event){
+	console.log('textEditorCallback');
+	console.log(event);
+	switch(event.type){
+	case 'changed':
+		this.selection.getComponent().setHtml(event.content);
+		break;
+	}
 }

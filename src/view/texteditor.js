@@ -1,9 +1,18 @@
+//////////////////////////////////////////////////
+// Silex, live web creation
+// http://projects.silexlabs.org/?/silex/
+// 
+// Copyright (c) 2012 Silex Labs
+// http://www.silexlabs.org/
+// 
+// Silex is available under the GPL license
+// http://www.silexlabs.org/silex/silex-licensing/
+//////////////////////////////////////////////////
+
 goog.provide('silex.view.TextEditor');
 
-var silex = silex || {}; 
-silex.view = silex.view || {}; 
-
 goog.require('goog.dom');
+goog.require('goog.events');
 goog.require('goog.editor.Command');
 goog.require('goog.editor.Field');
 goog.require('goog.editor.plugins.BasicTextFormatter');
@@ -28,38 +37,19 @@ goog.require('goog.ui.editor.ToolbarController');
 silex.view.TextEditor = function(element, cbk){
 	this.element = element;
 	
-	var that = this;
 	silex.Helper.loadTemplateFile('templates/texteditor.html', element, function(){
-		that.initUI();
+		this.initUI();
 		if (cbk) cbk();
-		if(that.onReady) that.onReady();
-		if (that.onTextEditorEvent){
-			that.onTextEditorEvent({
-				type: 'ready'
-			});
-		}
-	});
+	}, this);
 }
 /**
  * reference to the attached element
  */
 silex.view.Menu.prototype.element;
 /**
- * on ready callback
- * used by the controller to be notified when the component is ready
- * called 1 time after template loading and rendering
- */
-silex.view.TextEditor.prototype.onReady;
-/**
- * on ready callback
- * used by the controller to be notified when the component is ready
- * called 1 time after template loading and rendering
- */
-silex.view.TextEditor.prototype.onReady;
-/**
  * callback for the events, set by the controller
  */
-silex.view.TextEditor.prototype.onTextEditorEvent;
+silex.view.TextEditor.prototype.onStatus;
 /**
  * the editable text field
  */
@@ -112,18 +102,17 @@ silex.view.TextEditor.prototype.initUI = function () {
 	// Hook the toolbar into the field.
 	var myToolbarController = new goog.ui.editor.ToolbarController(this.textField, myToolbar);
 
-	var that = this;
 	// Watch for field changes, to display below.
 	goog.events.listen(this.textField, goog.editor.Field.EventType.DELAYEDCHANGE, function(){
-		that.contentChanged();
-	});
+		this.contentChanged();
+	}, false, this);
 
 	this.textField.makeEditable();
 
 	// close button
 	goog.events.listen(goog.dom.getElementByClass('close-btn', this.element), goog.events.EventType.CLICK, function(){
-		that.closeEditor();
-	});
+		this.closeEditor();
+	}, false, this);
 
 }
 /**
@@ -137,10 +126,9 @@ silex.view.TextEditor.prototype.openEditor = function(initialHtml){
 	goog.style.setStyle(background, 'display', 'inherit');
 	goog.style.setStyle(this.element, 'display', 'inherit');
 	// close
-	var that = this;
 	goog.events.listenOnce(background, goog.events.EventType.CLICK, function(e){
-		that.closeEditor();
-	});
+		this.closeEditor();
+	}, false, this);
 }
 /**
  * close text editor 
@@ -151,12 +139,6 @@ silex.view.TextEditor.prototype.closeEditor = function(){
 	// hide
 	goog.style.setStyle(background, 'display', 'none');
 	goog.style.setStyle(this.element, 'display', 'none');
-
-	if (this.onTextEditorEvent){
-		this.onTextEditorEvent({
-			type: 'closed'
-		});
-	}
 }
 /**
  * retrieve the editor html content
@@ -168,9 +150,10 @@ silex.view.TextEditor.prototype.getData = function(){
  * the content has changed, notify the controler
  */
 silex.view.TextEditor.prototype.contentChanged = function () {
-	if (this.onTextEditorEvent){
-		this.onTextEditorEvent({
-			type: 'changed'
+	if (this.onStatus){
+		this.onStatus({
+			type: 'changed',
+			content: this.getData()
 		});
 	}
 }
