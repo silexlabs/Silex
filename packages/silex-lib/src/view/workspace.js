@@ -1,9 +1,17 @@
+//////////////////////////////////////////////////
+// Silex, live web creation
+// http://projects.silexlabs.org/?/silex/
+// 
+// Copyright (c) 2012 Silex Labs
+// http://www.silexlabs.org/
+// 
+// Silex is available under the GPL license
+// http://www.silexlabs.org/silex/silex-licensing/
+//////////////////////////////////////////////////
+
 goog.provide('silex.view.Workspace');
 
 goog.require('goog.dom.ViewportSizeMonitor');
-
-var silex = silex || {}; 
-silex.view = silex.view || {}; 
 
 //////////////////////////////////////////////////////////////////
 // Workspace class
@@ -23,10 +31,11 @@ silex.view.Workspace = function(element, menu, stage, pageTool, propertiesTool, 
 	
 	this.viewport = new goog.dom.ViewportSizeMonitor();
 
-	var that = this;
 	goog.events.listen(this.viewport, goog.events.EventType.RESIZE, function(e){
-		that.redraw();
-	});
+		this.redraw();
+	}, false, this);
+	this.isDirty = false;
+	this.invalidate();
 }
 /**
  * closure goog.dom.ViewportSizeMonitor object
@@ -61,13 +70,35 @@ silex.view.Workspace.prototype.fileExplorer;
  */
 silex.view.Workspace.prototype.element;
 /**
+ * invalidation mechanism
+ */
+silex.view.Workspace.prototype.isDirty;
+/**
+ * set as dirty
+ * invalidation mechanism
+ */
+silex.view.Workspace.prototype.invalidate = function(){
+	if (this.isDirty == false){
+		this.isDirty = true;
+		this.redraw();
+	}
+}
+/**
  * redraw the workspace, positions and sizes of the tool boxes
+ * invalidation mechanism
  */
 silex.view.Workspace.prototype.redraw = function(){
+	if (this.isDirty == false){
+		console.warn('Do not call redraw directly, use invalidate() instead');
+	}
 	var that = this;
-	setTimeout(function() { that.doRedraw(); }, 400);
+	setTimeout(function() { 
+		that.doRedraw(); 
+	}, 400);
 }
 silex.view.Workspace.prototype.doRedraw = function(){
+	this.isDirty = false;
+
 	var viewportSize = this.viewport.getSize();
 	var pageToolSize = goog.style.getSize(this.pageTool.element);
 	var propertiesToolSize = goog.style.getSize(this.propertiesTool.element);

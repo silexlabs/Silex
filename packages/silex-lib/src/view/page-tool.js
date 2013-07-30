@@ -1,62 +1,58 @@
+//////////////////////////////////////////////////
+// Silex, live web creation
+// http://projects.silexlabs.org/?/silex/
+// 
+// Copyright (c) 2012 Silex Labs
+// http://www.silexlabs.org/
+// 
+// Silex is available under the GPL license
+// http://www.silexlabs.org/silex/silex-licensing/
+//////////////////////////////////////////////////
+
 goog.provide('silex.view.PageTool');
 
-var silex = silex || {}; 
-silex.view = silex.view || {}; 
-
-
-//////////////////////////////////////////////////////////////////
-// PageTool class
-//////////////////////////////////////////////////////////////////
 /**
  * the Silex PageTool class
  * @constructor
  */
 silex.view.PageTool = function(element, cbk){
 	this.element = element;
-	this.dataProvider = [];
+	this.pages = [];
 	
-	var that = this;
 	silex.Helper.loadTemplateFile('templates/pagetool.html', element, function(){
+		goog.events.listen(this.element, goog.events.EventType.CLICK, function (e) {
+			this.setSelectedIndex(this.getCellIndex(e.target));
+		}, false, this);
 		if (cbk) cbk();
-		if(that.onReady) that.onReady();
-		if (that.onPageToolEvent){
-			that.onPageToolEvent({
-				type: 'ready'
-			});
-		}
-	});
+	}, this);
 }
-/**
- * on ready callback
- * used by the controller to be notified when the component is ready
- * called 1 time after template loading and rendering
- */
-silex.view.PageTool.prototype.onReady;
 /**
  * reference to the element to render to
  */
 silex.view.PageTool.prototype.element;
 /**
- * callback for the events, set by the controller
+ * callback for the events, passed by the controller
  */
-silex.view.PageTool.prototype.onPageToolEvent;
+silex.view.PageTool.prototype.onStatus;
 /**
- * dataProvider 
+ * pages
+ * array of Page instances
+ * @see silex.model.Page
  */
-silex.view.PageTool.prototype.dataProvider;
+silex.view.PageTool.prototype.pages;
 /**
- * refresh with new data
+ * refresh with new page list
  */
-silex.view.PageTool.prototype.setDataProvider = function(data){
+silex.view.PageTool.prototype.setPages = function(pages){
 
-	this.dataProvider = data;
+	this.pages = pages;
 
 	//$(this.element).find( '.page-tool-container' ).sortable('destroy');
 	//$(this.element).find( '.page-tool-container' ).selectable('destroy');
 
 	var container = goog.dom.getElementByClass('page-tool-container', this.element);
 	var templateHtml = goog.dom.getElementByClass('page-tool-template', this.element).innerHTML;
-	silex.Helper.resolveTemplate(container, templateHtml, {pages:data});
+	silex.Helper.resolveTemplate(container, templateHtml, {pages:pages});
 
 	var that = this;
 	var idx = 0;
@@ -65,6 +61,7 @@ silex.view.PageTool.prototype.setDataProvider = function(data){
 			this.setAttribute('data-index', idx++);
 		}
 	);
+/*
 	$(this.element).find( '.page-tool-container' ).selectable(
 		{
 			stop: function( event, ui ) {
@@ -73,6 +70,7 @@ silex.view.PageTool.prototype.setDataProvider = function(data){
 		}
 	);
 	$(this.element).find( '.page-tool-container' ).disableSelection();
+*/
 
 	$(this.element).find( '.page-tool-container .page-container .page-preview .delete' ).click(
 		function(e){
@@ -84,37 +82,41 @@ silex.view.PageTool.prototype.setDataProvider = function(data){
  * ask to remove a page
  */
 silex.view.PageTool.prototype.removePageAtIndex = function(idx){
-	if (this.onPageToolEvent){
-		this.onPageToolEvent({
-			type: 'removePage',
-			name: this.dataProvider[idx]
-		});
-	}
+	if (this.onStatus) this.onStatus({
+		type:'delete',
+		page: this.pages[idx]
+	});
 }
 /**
  * selection has changed
  */
 silex.view.PageTool.prototype.selectionChanged = function(){
-	if (this.onPageToolEvent){
-		this.onPageToolEvent({
-			type: 'selectionChanged'
-		});
-	}
+	var page = null;
+	if (this.getSelectedItem().length > 0)
+		page = this.getSelectedItem();
+	
+	if (this.onStatus) this.onStatus({
+		type:'changed',
+		page: page
+	});
 }
 /**
  * get selection 
  */
-silex.view.PageTool.prototype.getSelectedItems = function(){
-	var res = [];
+silex.view.PageTool.prototype.getSelectedItem = function(){
+	var selectedPages = [];
 	var that = this;
 	var index = 0;
 	$( '.page-container', this.element ).each(function() {
 		if($(this).hasClass('ui-selected')){
-			res.push(that.dataProvider[index]);
+			selectedPages.push(that.pages[index]);
 		}
 		index++;
     });
-    return res;
+    if (selectedPages.length>0)
+	    return selectedPages[0];
+	else
+		return null;
 }
 silex.view.PageTool.prototype.getCellIndex = function (element) {
 	return parseInt(element.getAttribute('data-index'));
@@ -123,17 +125,17 @@ silex.view.PageTool.prototype.getCellIndex = function (element) {
  * set the selection of pages 
  * @param 	notify	if true, then notify by calling the onChanged callback
  */
-silex.view.PageTool.prototype.setSelectedIndexes = function(indexes, notify){
-	var index = 0;
+silex.view.PageTool.prototype.setSelectedIndex = function(index, notify){
 	var that = this;
+	var idx = 0;
 	$( '.page-container', this.element ).each(function() {
-		var idx;
-		for (idx=0; idx<indexes.length; idx++){
-			if(index == indexes[idx]){
-				$(this).addClass('ui-selected');
-			}
+		if(index == idx){
+			$(this).addClass('ui-selected');
 		}
-		index++;
+		else{
+			$(this).removeClass('ui-selected');
+		}
+		idx++;
     });
 	if(notify) this.selectionChanged();
 }

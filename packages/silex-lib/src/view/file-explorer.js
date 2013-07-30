@@ -1,7 +1,15 @@
-goog.provide('silex.view.FileExplorer');
+//////////////////////////////////////////////////
+// Silex, live web creation
+// http://projects.silexlabs.org/?/silex/
+// 
+// Copyright (c) 2012 Silex Labs
+// http://www.silexlabs.org/
+// 
+// Silex is available under the GPL license
+// http://www.silexlabs.org/silex/silex-licensing/
+//////////////////////////////////////////////////
 
-var silex = silex || {}; 
-silex.view = silex.view || {}; 
+goog.provide('silex.view.FileExplorer');
 
 //////////////////////////////////////////////////////////////////
 // FileExplorer class
@@ -33,12 +41,6 @@ silex.view.FileExplorer.CONTAINER_TYPE = 'modal';
  * Contant for file picker config
  */
 silex.view.FileExplorer.SERVICES = ["DROPBOX", "GOOGLE_DRIVE", "EVERNOTE", "FTP"];
-/**
- * on ready callback
- * used by the controller to be notified when the component is ready
- * called 1 time after template loading and rendering
- *
-silex.view.FileExplorer.prototype.onReady;
 /**
  * reference to the filepicker instance
  */

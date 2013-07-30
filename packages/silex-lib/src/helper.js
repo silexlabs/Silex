@@ -1,22 +1,31 @@
-var silex = silex || {}; 
+//////////////////////////////////////////////////
+// Silex, live web creation
+// http://projects.silexlabs.org/?/silex/
+// 
+// Copyright (c) 2012 Silex Labs
+// http://www.silexlabs.org/
+// 
+// Silex is available under the GPL license
+// http://www.silexlabs.org/silex/silex-licensing/
+//////////////////////////////////////////////////
 
 goog.provide('silex.Helper');
 
 goog.require('goog.net.XhrIo');
 goog.require('goog.Uri');
+goog.require('goog.style');
 
 silex.Helper = function(){
-    
 }
 /**
  * load a template and put the content in the provided element, then call the callback
  */
-silex.Helper.loadTemplateFile = function(url, element, cbk){
+silex.Helper.loadTemplateFile = function(url, element, cbk, context){
     goog.net.XhrIo.send(url, function(e){
         var xhr = e.target;
         var data = xhr.getResponse();
         element.innerHTML = data;
-        cbk();
+        if (cbk) goog.bind(cbk, context)();
     });
 }
 /**
@@ -91,13 +100,31 @@ silex.Helper.getRelativePath = function(url, base){
 silex.Helper.getAbsolutePath = function(url, base){
     return goog.Uri.resolve(base, url);
 }
+/**
+ * convert style object to string
+ */
+silex.Helper.styleToString = function(style){
+    // build a string out of the style object
+    var styleStr = '';
+    goog.object.forEach(style, function(val, index, obj) {
+        if (val)
+            styleStr += goog.string.toSelectorCase(index) + ': ' + val + '; ';
+    });
+    return string;
+}
+/**
+ * convert style string to object
+ */
+silex.Helper.stringToStyle = function(styleStr){
+    return goog.style.parseStyleAttribute(styleStr);
+}
 
 /**
  * replace all absolute urls with the relative path
  *
 silex.Helper.convertURLsToRelative = function(str){
     // convert absolute URLs to relative
-    var base = this.selection.getSelectedFile();
+    var base = this.selection.getFile();
     //str = str.replace(window.location.href, './');
     var styleArr = str.split('url(');
     for (var idx=1; idx<styleArr.length; idx++){

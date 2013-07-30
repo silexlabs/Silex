@@ -2,10 +2,10 @@
 
 <script class="page-tool-template" type="text/x-handlebars-template">
 	{{#each pages}}
-		<a href="{{this}}" class="page-container">
+		<a href="#{{name}}" class="page-container">
 			<div class="page-preview">
 				<div class="delete">x</div>
-				<div class="label">{{this}}</div>
+				<div class="label">{{name}}</div>
 			</div>
 		</a>
 	{{/each}}

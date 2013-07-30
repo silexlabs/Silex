@@ -1,12 +1,20 @@
+//////////////////////////////////////////////////
+// Silex, live web creation
+// http://projects.silexlabs.org/?/silex/
+// 
+// Copyright (c) 2012 Silex Labs
+// http://www.silexlabs.org/
+// 
+// Silex is available under the GPL license
+// http://www.silexlabs.org/silex/silex-licensing/
+//////////////////////////////////////////////////
+
 goog.provide('silex.view.Menu');
 
 goog.require('goog.ui.menuBar');
 goog.require('goog.ui.Menu');
 goog.require('goog.ui.MenuItem');
 goog.require('goog.ui.MenuButton');
-
-var silex = silex || {}; 
-silex.view = silex.view || {}; 
 
 //////////////////////////////////////////////////////////////////
 // Menu class
@@ -20,20 +28,11 @@ silex.view = silex.view || {};
 silex.view.Menu = function(element, cbk){
 	this.element = element;
 
-	var that = this;
 	silex.Helper.loadTemplateFile('templates/menu.html', element, function(){
-		that.buildMenu(element);
+		this.buildMenu(element);
 		if (cbk) cbk();
-		if(that.onReady) that.onReady();
-		if (that.onMenuEvent) that.onMenuEvent({type:'ready'});
-	});
+	}, this);
 }
-/**
- * on ready callback
- * used by the controller to be notified when the component is ready
- * called 1 time after template loading and rendering
- */
-silex.view.Menu.prototype.onReady;
 /**
  * reference to the menu class of the closure library
  */
@@ -45,7 +44,7 @@ silex.view.Menu.prototype.element;
 /**
  * callback for menu events, set by the controller
  */
-silex.view.Menu.prototype.onMenuEvent;
+silex.view.Menu.prototype.onStatus;
 /**
  * create the menu with closure API
  */
@@ -120,20 +119,38 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
 	// render the menu
 	this.menu.render(rootNode);
 	// event handling
-	var that = this;
 	goog.events.listen(this.menu, goog.ui.Component.EventType.ACTION, function(e){
-		if (that.onMenuEvent) that.onMenuEvent(e);
-	});
+		this.onMenuEvent(e);
+	}, false, this);
 	goog.events.listen(goog.dom.getElementByClass('website-name'), goog.events.EventType.CLICK, function(e){
-		if (that.onMenuEvent) that.onMenuEvent(e);
-	});
+		this.onMenuEvent(e);
+	}, false, this);
+}
+/**
+ * handles menu events
+ * calls onStatus to notify the controller
+ */
+silex.view.Menu.prototype.onMenuEvent = function (e) {
+	if (this.onStatus && e && e.target){
+		if (goog.dom.classes.has(e.target, 'website-name')){
+			// notify the controller
+			if (this.onStatus) this.onStatus({
+				type:'title.changed'
+			});
+		}
+		else{
+			this.onStatus({
+				type: e.target.getId()
+			});
+		}
+	}
 }
 /**
  * website name
+ * called by file when updating the website title
  */
 silex.view.Menu.prototype.setWebsiteName = function(name){
 	goog.dom.getElementByClass('website-name').innerHTML = name;
-	
 }
 /**
  * website name

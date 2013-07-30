@@ -1,5 +1,13 @@
-var silex = silex || {}; 
-silex.model = silex.model || {}; 
+//////////////////////////////////////////////////
+// Silex, live web creation
+// http://projects.silexlabs.org/?/silex/
+// 
+// Copyright (c) 2012 Silex Labs
+// http://www.silexlabs.org/
+// 
+// Silex is available under the GPL license
+// http://www.silexlabs.org/silex/silex-licensing/
+//////////////////////////////////////////////////
 
 goog.provide('silex.model.Selection');
 
@@ -10,14 +18,31 @@ goog.provide('silex.model.Selection');
 /**
  * @constructor
  */
-silex.model.Selection = function(){
-	this.listeners = [];
-	this.file = "";
-	this.page = "";
-	this.elements = [];
+silex.model.Selection = function(
+	workspace, 
+	menu, 
+	stage, 
+	pageTool, 
+	propertiesTool, 
+	textEditor, 
+	fileExplorer){
+
+	// store the view
+	this.workspace = workspace;
+	this.menu = menu;
+	this.stage = stage;
+	this.pageTool = pageTool;
+	this.propertiesTool = propertiesTool;
+	this.textEditor = textEditor;
+	this.fileExplorer = fileExplorer;
+
+	this.file = null;
+	this.page = null;
+	this.component = null;
+	this.context = silex.model.Component.CONTEXT_NORMAL;
 }
 /** 
- * opened file
+ * selected file
  */
 silex.model.Selection.prototype.file;
 /** 
@@ -25,59 +50,89 @@ silex.model.Selection.prototype.file;
  */
 silex.model.Selection.prototype.page;
 /** 
- * selected elements
+ * selected component
  */
-silex.model.Selection.prototype.elements;
+silex.model.Selection.prototype.component;
 /** 
- * listeners
+ * selected context
  */
-silex.model.Selection.prototype.listeners;
-/** 
- * change event callback, set by the controller
+silex.model.Selection.prototype.context;
+/**
+ * element of the view, to be updated by this model
  */
-silex.model.Selection.prototype.onChanged;
+silex.model.File.prototype.workspace;
+/**
+ * element of the view, to be updated by this model
+ */
+silex.model.File.prototype.menu;
+/**
+ * element of the view, to be updated by this model
+ */
+silex.model.File.prototype.stage;
+/**
+ * element of the view, to be updated by this model
+ */
+silex.model.File.prototype.pageTool;
+/**
+ * element of the view, to be updated by this model
+ */
+silex.model.File.prototype.propertiesTool;
+/**
+ * element of the view, to be updated by this model
+ */
+silex.model.File.prototype.textEditor;
+/**
+ * element of the view, to be updated by this model
+ */
+silex.model.File.prototype.fileExplorer;
 /** 
  * page selection
  */
-silex.model.Selection.prototype.getSelectedPage = function(){
+silex.model.Selection.prototype.getPage = function(){
 	return this.page;
 }
 /**
- * change selection, with notification or not
- * @param 	notify	if true, then notify by calling the onChanged callback
+ * change selection
  */
-silex.model.Selection.prototype.setSelectedPage = function(name, notify){
-	this.page = name;
-	if (notify!==false && this.onChanged) this.onChanged("page");
+silex.model.Selection.prototype.setPage = function(page){
+	this.page = page;
 }
 /** 
  * file selection
  */
-silex.model.Selection.prototype.getSelectedFile = function(){
-	console.log("getSelectedFile "+this.file);
+silex.model.Selection.prototype.getFile = function(){
 	return this.file;
 }
 /**
- * change selection, with notification or not
- * @param 	notify	if true, then notify by calling the onChanged callback
+ * change selection
  */
-silex.model.Selection.prototype.setSelectedFile = function(name, notify){
-	console.log("setSelectedFile "+this.file+" - "+name);
+silex.model.Selection.prototype.setFile = function(name){
 	this.file = name;
-	if (notify!==false && this.onChanged) this.onChanged("file");
 }
 /** 
- * elements selection
+ * component selection
  */
-silex.model.Selection.prototype.getSelectedElements = function(){
-	return this.elements;
+silex.model.Selection.prototype.getComponent = function(){
+	return this.component;
 }
 /**
- * change selection, with notification or not
- * @param 	notify	if true, then notify by calling the onChanged callback
+ * change selection
  */
-silex.model.Selection.prototype.setSelectedElements = function(elements, notify){
-	this.elements = elements;
-	if (notify!==false && this.onChanged) this.onChanged("elements");
+silex.model.Selection.prototype.setComponent = function(component){
+	this.component = component;
+	// update tools
+	this.propertiesTool.setComponent(component);
+}
+/** 
+ * component selection
+ */
+silex.model.Selection.prototype.getContext = function(){
+	return this.context;
+}
+/**
+ * change selection
+ */
+silex.model.Selection.prototype.setContext = function(context){
+	this.context = context;
 }
 
