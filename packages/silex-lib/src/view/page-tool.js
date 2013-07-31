@@ -18,10 +18,11 @@ goog.provide('silex.view.PageTool');
 silex.view.PageTool = function(element, cbk){
 	this.element = element;
 	this.pages = [];
-	
+	this.selectedIndex = -1;
+
 	silex.Helper.loadTemplateFile('templates/pagetool.html', element, function(){
 		goog.events.listen(this.element, goog.events.EventType.CLICK, function (e) {
-			this.setSelectedIndex(this.getCellIndex(e.target));
+			this.selectionChanged(this.pages[this.getCellIndex(e.target.parentNode)], true);
 		}, false, this);
 		if (cbk) cbk();
 	}, this);
@@ -35,6 +36,10 @@ silex.view.PageTool.prototype.element;
  */
 silex.view.PageTool.prototype.onStatus;
 /**
+ * selected index
+ */
+silex.view.PageTool.prototype.selectedIndex;
+/**
  * pages
  * array of Page instances
  * @see silex.model.Page
@@ -44,7 +49,7 @@ silex.view.PageTool.prototype.pages;
  * refresh with new page list
  */
 silex.view.PageTool.prototype.setPages = function(pages){
-
+	// store pages list
 	this.pages = pages;
 
 	//$(this.element).find( '.page-tool-container' ).sortable('destroy');
@@ -61,20 +66,14 @@ silex.view.PageTool.prototype.setPages = function(pages){
 			this.setAttribute('data-index', idx++);
 		}
 	);
-/*
-	$(this.element).find( '.page-tool-container' ).selectable(
-		{
-			stop: function( event, ui ) {
-				that.selectionChanged();
-			}
-		}
-	);
-	$(this.element).find( '.page-tool-container' ).disableSelection();
-*/
-
 	$(this.element).find( '.page-tool-container .page-container .page-preview .delete' ).click(
 		function(e){
 			that.removePageAtIndex(that.getCellIndex(this.parentNode.parentNode));
+		}
+	);
+	$(this.element).find( '.page-tool-container .page-container .page-preview .label' ).click(
+		function(e){
+			that.renamePageAtIndex(that.getCellIndex(this.parentNode.parentNode));
 		}
 	);
 }
@@ -88,35 +87,40 @@ silex.view.PageTool.prototype.removePageAtIndex = function(idx){
 	});
 }
 /**
+ * ask to rename a page
+ */
+silex.view.PageTool.prototype.renamePageAtIndex = function(idx){
+	if (this.onStatus) this.onStatus({
+		type:'rename',
+		page: this.pages[idx]
+	});
+}
+/**
  * selection has changed
  */
-silex.view.PageTool.prototype.selectionChanged = function(){
-	var page = null;
-	if (this.getSelectedItem().length > 0)
-		page = this.getSelectedItem();
-	
+silex.view.PageTool.prototype.selectionChanged = function(page){
 	if (this.onStatus) this.onStatus({
 		type:'changed',
 		page: page
 	});
 }
 /**
+ * set selection 
+ */
+silex.view.PageTool.prototype.setSelectedItem = function(page, notify){
+	var idx = silex.model.Page.getPageIndex(page.name, this.pages);
+	this.setSelectedIndex(idx, notify);
+}
+/**
  * get selection 
  */
 silex.view.PageTool.prototype.getSelectedItem = function(){
-	var selectedPages = [];
-	var that = this;
-	var index = 0;
-	$( '.page-container', this.element ).each(function() {
-		if($(this).hasClass('ui-selected')){
-			selectedPages.push(that.pages[index]);
-		}
-		index++;
-    });
-    if (selectedPages.length>0)
-	    return selectedPages[0];
-	else
+	if (this.pages.length > this.selectedIndex){
+		return this.pages[this.selectedIndex];
+	}
+	else{
 		return null;
+	}
 }
 silex.view.PageTool.prototype.getCellIndex = function (element) {
 	return parseInt(element.getAttribute('data-index'));
@@ -126,6 +130,8 @@ silex.view.PageTool.prototype.getCellIndex = function (element) {
  * @param 	notify	if true, then notify by calling the onChanged callback
  */
 silex.view.PageTool.prototype.setSelectedIndex = function(index, notify){
+	this.selectedIndex = index;
+
 	var that = this;
 	var idx = 0;
 	$( '.page-container', this.element ).each(function() {
@@ -137,5 +143,5 @@ silex.view.PageTool.prototype.setSelectedIndex = function(index, notify){
 		}
 		idx++;
     });
-	if(notify) this.selectionChanged();
+	if(notify!==false) this.selectionChanged(this.getSelectedItem());
 }

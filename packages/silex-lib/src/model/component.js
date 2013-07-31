@@ -14,11 +14,12 @@ goog.provide('silex.model.Component');
 /**
  * @constructor
  */
-silex.model.Component = function(element, type, opt_context){
+silex.model.Component = function(element, opt_context){
+	this.isEditable = false;
 	// store a reference to the editable component
 	this.element = this.getFirstEditableParent(element);
 	// store component type
-	this.type = type;
+	this.type = silex.model.Component.getType(this.element);
 	// default value for context
 	if (opt_context == null) 
 		opt_context = silex.model.Component.CONTEXT_NORMAL;
@@ -56,6 +57,20 @@ silex.model.Component.prototype.element;
  */
 silex.model.Component.prototype.context;
 /**
+ * type
+ */
+silex.model.Component.getType = function (element){
+	var type = element.getAttribute('data-silex-type');
+	var subType = element.getAttribute('data-silex-sub-type');
+	switch(type){
+		case silex.model.Component.ELEMENT_TYPE_CONTAINER:
+			return type;
+		case silex.model.Component.ELEMENT_TYPE_ELEMENT:
+			return subType;
+	}
+	throw('Could not determine the type of this element.');
+}
+/**
  * context getter/setter
  */
 silex.model.Component.prototype.getContext = function (){
@@ -65,7 +80,6 @@ silex.model.Component.prototype.getContext = function (){
  * context getter/setter
  */
 silex.model.Component.prototype.setContext = function (context){
-	console.log('setContext '+context);
 	this.context = context;
 	this.setStyle(this.getStyle(context), context);
 }
@@ -98,7 +112,6 @@ silex.model.Component.prototype.getStyle = function (opt_context){
  * style
  */
 silex.model.Component.prototype.setStyle = function (style, opt_context){
-	console.log('setStyle '+opt_context+' - '+this.context);
 	if (style == null){
 		// case of stage?
 		return;
@@ -124,6 +137,7 @@ silex.model.Component.prototype.setStyle = function (style, opt_context){
 		styleStr += 'left: '+bb.left+'; ';
 		styleStr += 'width: '+bb.width+'; ';
 		styleStr += 'height: '+bb.height+'; ';
+		styleStr += 'position: absolute; ';
 	}
 	// store in the model
 	this.element.setAttribute('data-style-'+opt_context, styleStr);
@@ -165,7 +179,7 @@ silex.model.Component.prototype.setBoundingBox = function (boundingBox){
 	// build a string out of the style object
 	var styleStr = silex.Helper.styleToString(style);
 	// store it in the data-style-normal attribute
-	this.element.setAttribute(silex.model.Component.CONTEXT_NORMAL, styleStr);
+	this.element.setAttribute('data-style-'+silex.model.Component.CONTEXT_NORMAL, styleStr);
 }
 /**
  * image source
@@ -211,21 +225,14 @@ silex.model.Component.prototype.getHtml = function (opt_baseUrl){
 	this.applyStateToAllComponents('normal');
 
 	// unregister jquery plugin
-	this.makeEditable(false, this.element);
+	this.setEditable(false);
 
 	// remove all markup linked to the "editable" jquery plugin
 	var cleanContainer = this.element.cloneNode(true);
 
 	// register jquery plugin
-	this.makeEditable(true, this.element);
+	this.setEditable(true);
 
-	// cleanup the dom
-	$(cleanContainer).find('.ui-resizable').removeClass('ui-resizable');
-	$(cleanContainer).find('.ui-draggable').removeClass('ui-draggable');
-	$(cleanContainer).find('.ui-droppable').removeClass('ui-droppable');
-	$(cleanContainer).find('[aria-disabled]').removeAttr('aria-disabled');
-	$(cleanContainer).find('.ui-resizable-handle').remove();
-	
 	// relative URLs when possible
 	if (opt_baseUrl){
 		this.absolute2relative(opt_baseUrl);
@@ -239,9 +246,9 @@ silex.model.Component.prototype.getHtml = function (opt_baseUrl){
  * make it editable and with absolute urls
  */
 silex.model.Component.prototype.setHtml = function (html, opt_baseUrl){
-	console.log('setHtml');
+	console.log('setHtml '+html);
 	// unregister jquery plugin
-	this.makeEditable(false, this.element);
+	this.setEditable(false);
 	// set the html content
 	this.element.innerHTML = html;
 	// absolute URLs when possible
@@ -249,49 +256,68 @@ silex.model.Component.prototype.setHtml = function (html, opt_baseUrl){
 		this.relative2absolute(opt_baseUrl);
 	}
 	// restore editing
-	this.makeEditable(true, this.element);
+	this.setEditable(true);
 }
 /**
  * find the first editable parent
  */
-silex.model.Component.prototype.getFirstEditableParent = function(child){
+silex.model.Component.prototype.getFirstEditableParent = function(element){
+	var child = element;
 	// go through all parents untill it is editable
-	while (child && child.getAttribute && !child.getAttribute('data-silex-type')){
+	while (child && child.getAttribute && !this.getEditable(child)){
 		child = child.parentNode;
 	}
 	// return the first editable element
-	if (child && child.getAttribute && child.getAttribute('data-silex-type')){
+	if (child && child.getAttribute && this.getEditable(child)){
 		return child;
 	}
 	else{
 		console.warn('The component has no editable parent.');
 	}
-	return null;
+	return element;
 }
 /**
- * init or remove editable
- * if opt_element is not provided, make the stage editable or not
+ * init or remove the editable jquery plugin
+ * if opt_element element to set as editable, optional, this.element is default
  */
-silex.model.Component.prototype.makeEditable = function(isEditable, opt_element){
-	console.log('makeEditable '+isEditable);
+silex.model.Component.prototype.getEditable = function(opt_element){
 	// default value for the element
 	if (opt_element == null){
 		opt_element = this.element;
 	}
-	console.log(opt_element);
+	return $(opt_element).hasClass('editable-style');
+}
+/**
+ * init or remove the editable jquery plugin
+ * if opt_element element to set as editable, optional, this.element is default
+ */
+silex.model.Component.prototype.setEditable = function(isEditable, opt_element){
+	console.log('setEditable '+isEditable);
+	// default value for the element
+	if (opt_element == null){
+		opt_element = this.element;
+	}
 	// activate editable plugin
 	if (isEditable){
-		$('[data-silex-type="container"]', opt_element).editable({
+		$('.editable-style[data-silex-type="container"]', opt_element).editable({
 			isContainer: true
 		});
-		$('[data-silex-type="element"]', opt_element).editable();
+		$('.editable-style[data-silex-type="element"]', opt_element).editable();
 	}
 	// deactivate editable plugin
-	else{
+	else if (this.getEditable(opt_element)){
 		$('[data-silex-type="container"]', opt_element).editable('destroy');
 	    $('[data-silex-type="element"]', opt_element).editable('destroy');
-	    //$(this.bodyElement).pageable('destroy')
+	    $(opt_element).editable('destroy');
+	
+		// cleanup the dom
+		$(opt_element).find('.ui-resizable').removeClass('ui-resizable');
+		$(opt_element).find('.ui-draggable').removeClass('ui-draggable');
+		$(opt_element).find('.ui-droppable').removeClass('ui-droppable');
+		$(opt_element).find('[aria-disabled]').removeAttr('aria-disabled');
+		$(opt_element).find('.ui-resizable-handle').remove();
 	}
+	this.isEditable = isEditable;
 }
 /**
  * Browse the children and convert all URLs to relative when possible
@@ -358,9 +384,10 @@ silex.model.Component.prototype.addContainer = function(){
 	div.className = 'editable-style';
 	div.setAttribute('data-silex-type', silex.model.Component.ELEMENT_TYPE_CONTAINER)
 	// attach it 
-	goog.dom.appendChild(this.element, div);
+	var container = goog.dom.getElementsByClass('background', this.element);
+	goog.dom.appendChild(container, div);
 	// make it editable
-	this.makeEditable(div);
+	this.setEditable(div);
 	// set default style
 	var style = {};
 	style.position = 'absolute';
@@ -368,8 +395,8 @@ silex.model.Component.prototype.addContainer = function(){
 	style.top = '100px';
 	style.height = '100px';
 	style.width = '100px';
-	style.backgroundColor = 'white';
-	var component = new silex.model.Component(div, silex.model.Component.ELEMENT_TYPE_CONTAINER);
+	style.backgroundColor = 'rgba(255, 255, 255, 1)';
+	var component = new silex.model.Component(div);
 	component.setStyle(style, silex.model.Component.CONTEXT_NORMAL);
 	// return a component for this element
 	return component;
@@ -390,9 +417,10 @@ silex.model.Component.prototype.addText = function(){
 	div.setAttribute('data-silex-sub-type', silex.model.Component.ELEMENT_SUBTYPE_TEXT)
 	div.innerHTML = 'New text box';
 	// attach it 
-	goog.dom.appendChild(this.element, div);
+	var container = goog.dom.getElementsByClass('background', this.element)[0];
+	goog.dom.appendChild(container, div);
 	// make it editable
-	this.makeEditable(div);
+	this.setEditable(div);
 	// set default style
 	var style = {};
 	style.position = 'absolute';
@@ -400,9 +428,9 @@ silex.model.Component.prototype.addText = function(){
 	style.top = '100px';
 	style.height = '100px';
 	style.width = '100px';
-	style.backgroundColor = 'white';
+	style.backgroundColor = 'rgba(255, 255, 255, 1)';
 	style.overflow = 'hidden';
-	var component = new silex.model.Component(div, silex.model.Component.ELEMENT_SUBTYPE_TEXT);
+	var component = new silex.model.Component(div);
 	component.setStyle(style, silex.model.Component.CONTEXT_NORMAL);
 	// return a component for this element
 	return component;
@@ -417,7 +445,7 @@ silex.model.Component.prototype.addImage = function(url){
 		throw('Canot create a child component for this component because it is not of type '+silex.model.Component.ELEMENT_TYPE_CONTAINER);
 	}
 	if (url == null){
-		console.throw('No URL provided for the image component');
+		console.error('No URL provided for the image component');
 	}
 	var div = goog.dom.createElement('div');
 	div.className = 'editable-style';
@@ -427,19 +455,20 @@ silex.model.Component.prototype.addImage = function(url){
 	var img = goog.dom.createElement('img');
 	img.style.width = '100%';
 	img.style.height = '100%';
-	img.setAttribute('src', opt_url);
+	img.setAttribute('src', url);
 
 	// attach it all
-	goog.dom.appendChild(this.element, div);
+	var container = goog.dom.getElementsByClass('background', this.element);
+	goog.dom.appendChild(container, div);
 	goog.dom.appendChild(div, img);
 	// make it editable
-	this.makeEditable(div);
+	this.setEditable(div);
 	// set default style
 	var style = {};
 	style.position = 'absolute';
 	style.left = '100px';
 	style.top = '100px';
-	var component = new silex.model.Component(div, silex.model.Component.ELEMENT_SUBTYPE_IMAGE);
+	var component = new silex.model.Component(div);
 	component.setStyle(style, silex.model.Component.CONTEXT_NORMAL);
 	img.onload = function (e){
 		// set container size to match image size
@@ -460,4 +489,44 @@ silex.model.Component.prototype.remove = function(component){
 		throw('Canot remove this component because it is not my children.')
 	}
 	goog.dom.removeNode(component.element);
+}
+/**
+ * link
+ */
+silex.model.Component.prototype.removeLink = function(){
+	this.element.removeAttribute('data-silex-href');
+}
+/**
+ * link
+ */
+silex.model.Component.prototype.setLink = function(url){
+	this.element.setAttribute('data-silex-href', url);
+}
+/**
+ * link
+ */
+silex.model.Component.prototype.getLink = function(){
+	return this.element.getAttribute('data-silex-href');
+}
+/**
+ * mark selection
+ */
+silex.model.Component.prototype.setSelected = function(isSelected){
+//	var prop = null;
+	if (isSelected){
+		goog.dom.classes.add(this.element, 'silex-selected');
+//		prop = '0 0 1px 1px rgba(0, 0, 0, .8), inset 0 0 1px 1px rgba(255, 255, 255, 0.8)';
+	}
+	else{
+		goog.dom.classes.remove(this.element, 'silex-selected');
+	}
+//	this.element.style.boxShadow = prop;
+//	this.element.style.MozBoxShadow = prop;
+//	this.element.style.WebkitBoxShadow = prop;
+}
+/**
+ * mark selection
+ */
+silex.model.Component.prototype.getSelected = function(){
+	return goog.dom.classes.has(this.element, 'silex-selected');
 }

@@ -19,20 +19,11 @@ http://demos.silexlabs.org/silex-v2-alpha2/
 
 ###dev notes / encours
 
-
 refactoring
-* tout cbk (genre propertiesTool.editElement(element, function(){//changed}))
-* selection page, element, state est utile
-* pas de multiple selection
-* le controller est plutot une classe de control
-* suppr jquery
+* suppr jquery quand pas utile
 * renommer boot.js en app.js
-* renommer controller.js en adapter.js ??
-* plus de var that = this;
-* verif les package dans tous les fichiers (copier coller => peut etre un autre package)
 * utiliser 'use strict';
 * externs : text editor?? file picker dialog
-* model : component, page, style
 * view : editors?
 * reactiver les urls relatives?
 
@@ -47,7 +38,7 @@ functionnal
 * group images on the same drive as the html page?
 
 
-* silex.io/v2.0 => proto silex?
+* silex.io/2.0 => proto silex?
 
 
 ###v2.0.0alpha3

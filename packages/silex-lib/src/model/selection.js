@@ -119,7 +119,12 @@ silex.model.Selection.prototype.getComponent = function(){
  * change selection
  */
 silex.model.Selection.prototype.setComponent = function(component){
+	// unselect previous
+	if (this.component) this.component.setSelected(false);
+	// store reference to the selected component
 	this.component = component;
+	// select new component
+	if (this.component) this.component.setSelected(true);
 	// update tools
 	this.propertiesTool.setComponent(component);
 }

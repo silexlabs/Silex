@@ -133,9 +133,10 @@ silex.Controller.prototype.menuCallback = function(event){
 			this.fileExplorer.openDialog();
 			break;
 		case 'insert.page':
-			var page = this.file.createPage();
-			this.selection.setPage(page);
-			page.open();
+			this.file.createPage(goog.bind(function (page) {
+				this.selection.setPage(page);
+				page.open();
+			}, this));
 			break;
 		case 'insert.text':
 			var component = this.file.getStageComponent().addText();
@@ -160,7 +161,12 @@ silex.Controller.prototype.menuCallback = function(event){
 			this.selection.setComponent(this.file.getStageComponent());
 			break;
 		case 'edit.delete.page':
-			this.file.deletePage(this.selection.getPage());
+			console.log(this.selection.getPage());
+			this.selection.getPage().remove();
+			break;
+		case 'edit.rename.page':
+			this.selection.getPage().rename();
+			this.selection.getPage().open();
 			break;
 		// Help menu
 		case 'help.about':
@@ -202,7 +208,12 @@ silex.Controller.prototype.stageCallback = function(event){
 			if (oldSelectedComp) oldSelectedComp.setContext(silex.model.Component.CONTEXT_NORMAL);
 			// select the new element
 			if (event.element){
-				this.selection.setComponent(new silex.model.Component(event.element));
+				// update the 
+				this.selection.setComponent(
+					new silex.model.Component(
+						event.element, 
+						this.selection.getContext()
+				));
 				// update context for the selection
 				this.selection.getComponent().setContext(this.selection.getContext());
 			}
@@ -212,10 +223,14 @@ silex.Controller.prototype.stageCallback = function(event){
 			}
 			break;
 		case 'change':
+			console.log(this.selection.getComponent().element);
+			console.log(this.selection.getComponent().getBoundingBox());
 			// size or position of the element has changed
 			this.selection.getComponent().setBoundingBox(
 				this.selection.getComponent().getBoundingBox()
 			);
+			console.log(this.selection.getComponent().element);
+			console.log(this.selection.getComponent().getBoundingBox());
 			break;
 	}
 }
@@ -228,11 +243,17 @@ silex.Controller.prototype.pageToolCallback = function(event){
 	switch(event.type){
 	case 'changed':
 		this.selection.setPage(event.page);
-		event.page.open();
+		if (event.page){
+			event.page.open();
+		}
 		break;
 	case 'delete':
 		// delete the page from the model
-		this.file.deletePage(event.page);
+		event.page.remove();
+		break;
+	case 'rename':
+		// delete the page from the model
+		event.page.rename();
 		break;
 	}
 }
@@ -244,7 +265,7 @@ silex.Controller.prototype.propertiesToolCallback = function(event){
 	console.log(event);
 	switch(event.type){
 		case 'openTextEditor':
-			textEditor.openEditor(this.selection.getComponent().getHtml());
+			this.textEditor.openEditor(this.selection.getComponent().getHtml());
 			break;
 		case 'contextChanged':
 			// style of the element has changed
