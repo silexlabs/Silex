@@ -17,7 +17,7 @@
 	{{#each pages}}
 		<div class="page-container">
 			<span class="page-check" />
-			<label class="page-label">{{this}}</label>
+			<label class="page-label">{{this.name}}</label>
 		</div>
 	{{/each}}
 </script>
@@ -25,10 +25,10 @@
 	<select class="link-combo-box">
 		<option value="none">Link to ...</option>
 		<option value="none">Nothing</option>
-		{{#each pages}}
-			<option value="{{this}}">#{{this}}</option>
-		{{/each}}
 		<option value="custom">External link</option>
+		{{#each pages}}
+			<option value="{{this.name}}">#{{this.name}}</option>
+		{{/each}}
 	</select>
 	<input class="link-input-text" type="text" />
 </script>
@@ -62,6 +62,7 @@
 			<fieldset class="background-property">
 				<legend>Background Color</legend>
 				<span class="color-bg-button"></span>
+				<span class="color-bg-palette"></span>
 				<span class="enable-color-bg-button"></span> Transparent
 				<hr>
 <!--				<h2>Image</h2>

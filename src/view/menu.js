@@ -63,7 +63,8 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
 		[
 			{label:'Delete selection', id:'edit.delete.selection'}, 
 			null,
-			{label:'Delete page', id:'edit.delete.page'} 
+			{label:'Rename page', id:'edit.rename.page'},
+			{label:'Delete page', id:'edit.delete.page'}
 		],
 		[
 			{label:'View in new window', id:'view.file'}, 

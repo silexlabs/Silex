@@ -26,7 +26,7 @@ goog.require('silex.view.FileExplorer');
 goog.require('silex.view.Workspace');
 
 silex.boot = function() {
-	console.log('onload');
+	console.log('--start boot--');
 
 	// create all views and attach them to the dom
 	// it is a sequence, because views loads templates one after another
@@ -104,8 +104,10 @@ silex.boot = function() {
 		console.log('Controller created');
 
 		// now create an empty file to let the user start using Silex
-		file.newFile();
-		console.log('end');
+		file.newFile(function () {
+			controller.menuCallback({type:'insert.text'});
+		});
+		console.log('--end boot--');
 	});
 	});
 	});

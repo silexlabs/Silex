@@ -15,8 +15,8 @@ goog.require('goog.cssom');
 goog.require('goog.ui.Checkbox');
 goog.require('goog.ui.CustomButton');
 goog.require('goog.ui.TabPane');
-//goog.require('goog.ui.HsvaPalette');
-goog.require('goog.ui.ColorMenuButton');
+goog.require('goog.ui.HsvaPalette');
+goog.require('goog.ui.ColorButton');
 goog.require('goog.editor.Field');
 
 goog.require('goog.array');
@@ -72,6 +72,10 @@ silex.view.PropertiesTool.prototype.linkInputTextField;
  */
 silex.view.PropertiesTool.prototype.bgColorPicker;
 /**
+ * color picker for background color
+ */
+silex.view.PropertiesTool.prototype.hsvPalette;
+/**
  * check box for background color transparency
  */
 silex.view.PropertiesTool.prototype.transparentBgCheckbox;
@@ -112,7 +116,6 @@ silex.view.PropertiesTool.prototype.buildTabs = function(){
 				this.context = silex.model.Component.CONTEXT_PRESSED;
 				break;
 		}
-		console.log('change '+this.context);
 		// notify the controler
 		if (this.onStatus){
 			this.onStatus({
@@ -136,27 +139,48 @@ silex.view.PropertiesTool.prototype.buildStylePane = function(){
 	// background
 
 	// BG color
-	this.bgColorPicker = new goog.ui.ColorMenuButton();
-	this.bgColorPicker.setTooltip('Click to select color');
-	this.bgColorPicker.render(goog.dom.getElementByClass('color-bg-button'));
-	goog.events.listen(this.bgColorPicker, goog.ui.Component.EventType.ACTION, function() { 
+	var hsvPaletteElement = goog.dom.getElementByClass('color-bg-palette', this.element);
+	this.hsvPalette = new goog.ui.HsvaPalette(null, null, null, 'goog-hsva-palette-sm');
+
+	this.hsvPalette.render(hsvPaletteElement);
+	goog.events.listen(this.hsvPalette, goog.ui.Component.EventType.ACTION, 
+	function (e) {
 		// update style
-		var color = this.bgColorPicker.getSelectedColor();
+		var color = silex.Helper.hexToRgba(this.hsvPalette.getColorRgbaHex());
 		var style = this.component.getStyle();
+		if (style==null) style = {};
 		style.backgroundColor = color;
 		// notify the controller
-		this.styleChanged(style)
+		this.styleChanged(style);
+	}, false, this);
+
+	this.bgColorPicker = new goog.ui.ColorButton();
+	this.bgColorPicker.setTooltip('Click to select color');
+	this.bgColorPicker.render(goog.dom.getElementByClass('color-bg-button'));
+	
+	this.setColorPaletteVisibility(false);
+	goog.events.listen(this.bgColorPicker, goog.ui.Component.EventType.ACTION, function() { 
+		// show the palette
+		if (this.getColorPaletteVisibility() == false){
+			var style = this.component.getStyle();
+			this.hsvPalette.setColorRgbaHex(silex.Helper.rgbaToHex(style.backgroundColor));
+			this.setColorPaletteVisibility(true);
+		}
+		else{
+			this.setColorPaletteVisibility(false);
+		}
 	}, false, this);
 	this.transparentBgCheckbox = new goog.ui.Checkbox();
-	this.transparentBgCheckbox.decorate(goog.dom.getElementByClass('enable-color-bg-button'));
+	this.transparentBgCheckbox.decorate(goog.dom.getElementByClass('enable-color-bg-button'), this.element);
 	goog.events.listen(this.transparentBgCheckbox, goog.ui.Component.EventType.CHANGE, function() {
-		console.log('check '+this.transparentBgCheckbox.getChecked());
 		var style = this.component.getStyle();
+		if (style==null) style = {};
 		// update style
 		if (this.transparentBgCheckbox.getChecked()==false){
-			var color = this.bgColorPicker.getSelectedColor();
+			var color = silex.Helper.hexToRgba(this.hsvPalette.getColorRgbaHex());
 			if (color==null) {
-				color='#FFFFFF';
+				//color='#FFFFFF';
+				color = 'rgba(255, 255, 0, 1)'
 			}
 			style.backgroundColor = color;
 		}
@@ -193,6 +217,32 @@ silex.view.PropertiesTool.prototype.buildStylePane = function(){
 	}, false, this);
 */
 }
+/** 
+ * color palette visibility
+ * do not set display to none, because the setColor then leave the color palette UI unchanged
+ */
+silex.view.PropertiesTool.prototype.getColorPaletteVisibility = function(){
+	return this.hsvPalette.getElement().style.visibility != 'hidden';
+}
+/** 
+ * color palette visibility
+ * do not set display to none, because the setColor then leave the color palette UI unchanged
+ */
+silex.view.PropertiesTool.prototype.setColorPaletteVisibility = function(isVisible){
+	if (isVisible){
+		if (!this.getColorPaletteVisibility()){
+			this.hsvPalette.getElement().style.visibility = null;
+			this.hsvPalette.getElement().style.position = null;
+		}
+	}
+	else{
+		if (this.getColorPaletteVisibility()){
+			this.hsvPalette.getElement().style.visibility = 'hidden';
+			this.hsvPalette.getElement().style.position = 'absolute';
+		}
+	}
+}
+
 /**
  * notify the controller that the style changed
  */
@@ -250,7 +300,6 @@ silex.view.PropertiesTool.prototype.applyStyle = function(element){
  * and the normal style will be updated with the size and position properties
  *
 silex.view.PropertiesTool.prototype.saveStyle = function(element, opt_context){
-	console.log('saveStyle '+opt_context+' - '+this.context);
 	var element = this.getElement();
 
 	// default value for style is the style of the element being edited
@@ -260,7 +309,6 @@ silex.view.PropertiesTool.prototype.saveStyle = function(element, opt_context){
 	if (!style){
 		style = goog.style.parseStyleAttribute(element.getAttribute('style'));
 	}
-	console.log(element, element.getAttribute('style'), style);
 	// save the position and size in the normal context
 	if (opt_context!=silex.model.Component.CONTEXT_NORMAL){
 		var normalStyle = this.computeStyle(silex.model.Component.CONTEXT_NORMAL);
@@ -286,15 +334,14 @@ silex.view.PropertiesTool.prototype.saveStyle = function(element, opt_context){
 	});
 	// store the string in the context attr
 	element.setAttribute('data-style-'+opt_context, styleStr);
-	console.log('saveStyle setAttribute ', opt_context, style, styleStr);
 }
 /**
  * display the style of the element being edited 
  */
 silex.view.PropertiesTool.prototype.setComponent = function(component){
-	console.log("setComponent ");
 	this.component = component;
-	this.redraw()
+	//this.setColorPaletteVisibility(false);
+	this.redraw();
 }
 /**
  * refresh with new data
@@ -316,19 +363,21 @@ silex.view.PropertiesTool.prototype.setPages = function(data){
 	// handle the dropdown list from the template
 	var linkDropdown = goog.dom.getElementByClass('link-combo-box', this.element);
 	linkDropdown.onchange = goog.bind(function (e) {
+		console.warn(linkDropdown.value);
 		if (linkDropdown.value=='none'){
-			this.component.removeAttribute('data-silex-href');
+			this.component.removeLink();
 		}
 		else if (linkDropdown.value=='custom'){
 			// keep previous link value
 			var prevVal = this.linkInputTextField.getCleanContents();
 			// reset if it was an internal link
 			if (prevVal.indexOf('#')==0) prevVal = '';
+			if (prevVal=='') prevVal = 'http://silex.io';
 			// store in the href attr
-			this.component.setAttribute('data-silex-href', prevVal);
+			this.component.setLink(prevVal);
 		}
 		else {
-			this.component.setAttribute('data-silex-href', '#'+linkDropdown.value);
+			this.component.setLink('#'+linkDropdown.value);
 		}
 		// notify the controler
 		if (this.onStatus){
@@ -337,7 +386,6 @@ silex.view.PropertiesTool.prototype.setPages = function(data){
 				context: this.context
 			});
 		}
-		// refresh ui
 		this.redraw();
 	}, this);
 	// create a text field for custom link
@@ -352,7 +400,7 @@ silex.view.PropertiesTool.prototype.setPages = function(data){
 	// Watch for field changes, to display below.
 	goog.events.listen(this.linkInputTextField, goog.editor.Field.EventType.DELAYEDCHANGE, function(){
 		// update the href attribute
-		this.component.setAttribute('data-silex-href', this.linkInputTextField.getCleanContents());
+		this.component.setLink(this.linkInputTextField.getCleanContents());
 		// notify the controler
 		if (this.onStatus){
 			this.onStatus({
@@ -360,8 +408,6 @@ silex.view.PropertiesTool.prototype.setPages = function(data){
 				context: this.context
 			});
 		}
-		// refresh ui
-		this.redraw();
 	}, false, this);
 	// ** 
 	// page selector
@@ -397,7 +443,6 @@ silex.view.PropertiesTool.prototype.setPages = function(data){
  * the selection has changed
  *
 silex.view.PropertiesTool.prototype.setElements = function(elements){
-	console.log('setElements ', elements);
 	if (this.elements){
 		// restore the normal context
 		this.applyStyle(silex.model.Component.CONTEXT_NORMAL);
@@ -420,21 +465,23 @@ silex.view.PropertiesTool.prototype.redraw = function(){
 		var style = this.component.getStyle();
 		if (style){
 			var color = style.backgroundColor;
-			console.log(color);
 			if (color == undefined || color == 'transparent' || color == ''){
 				this.transparentBgCheckbox.setChecked(true);
 				this.bgColorPicker.setEnabled(false);
+				this.setColorPaletteVisibility(false)
 			}
 			else{
+				var hex = silex.Helper.rgbaToHex(color);
+
 				this.transparentBgCheckbox.setChecked(false);
 				this.bgColorPicker.setEnabled(true);
-				this.bgColorPicker.setSelectedColor(color);
+				this.bgColorPicker.setValue(hex.substring(0,7));
+				this.hsvPalette.setColorRgbaHex(hex);
 			}
 			//this.bgColorPicker.setContent(color);
 			// **
 			// BG image
 		/*
-			console.log('BG image : '+style.backgroundImage);
 			if (style.backgroundImage!=null && style.backgroundImage!='none' && style.backgroundImage!=''){
 				this.bgClearBgImage.setEnabled(true);
 			}
@@ -466,12 +513,12 @@ silex.view.PropertiesTool.prototype.redraw = function(){
 		var linkDropdown = goog.dom.getElementByClass('link-combo-box', this.element);
 		if (linkDropdown){
 			// default selection 
-			var hrefAttr = this.component.element.getAttribute('data-silex-href');
+			var hrefAttr = this.component.getLink();
 			if (hrefAttr==null){
 				linkDropdown.value='none';
 			}
 			else{
-				if (hrefAttr.indexOf('#')==0 && goog.array.contains(this.pages, hrefAttr.substr(1))){
+				if (hrefAttr.indexOf('#')==0 && silex.model.Page.getPageIndex(hrefAttr.substr(1), this.pages)>=0){
 					// case of an internal link
 					// select a page
 					linkDropdown.value = hrefAttr.substr(1);
@@ -528,12 +575,12 @@ silex.view.PropertiesTool.prototype.selectPage = function(page, checkbox){
 	// apply the page selection
 	if (checkbox.isChecked()){
 		goog.dom.classes.add(this.component.element, page.name)
-		goog.dom.classes.add(this.component.element, 'silex-page')
+		goog.dom.classes.add(this.component.element, silex.model.Page.PAGE_CLASS)
 	}
 	else{
 		goog.dom.classes.remove(this.component.element, page.name)
 		if (this.getNumberOfPages(this.component.element)==0){
-			goog.dom.classes.remove(this.component.element, 'silex-page')
+			goog.dom.classes.remove(this.component.element, silex.model.Page.PAGE_CLASS)
 		}
 	}
 	// notify the controler
