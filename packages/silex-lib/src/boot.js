@@ -17,6 +17,13 @@ goog.require('goog.events');
 goog.require('silex.Helper');
 goog.require('silex.Controller');
 
+goog.require('silex.service.CloudStorage');
+
+goog.require('silex.model.Selection');
+goog.require('silex.model.File');
+goog.require('silex.model.Page');
+goog.require('silex.model.Component');
+
 goog.require('silex.view.Menu');
 goog.require('silex.view.Stage');
 goog.require('silex.view.PageTool');
