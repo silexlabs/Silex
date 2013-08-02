@@ -37,10 +37,6 @@ functionnal
 * Double click to edit
 * group images on the same drive as the html page?
 
-
-* silex.io/2.0 => proto silex?
-
-
 ###v2.0.0alpha3
 
 http://demos.silexlabs.org/silex-v2-alpha3/
