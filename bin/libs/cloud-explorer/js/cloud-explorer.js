@@ -147,9 +147,11 @@ cloudExplorer.write = ce_write;
 /* Config */
 angular.module('ceConf', [])
 
-	.constant( 'server.url', 'http://127.0.0.1\\:5000/v1.0/' )
+	//.constant( 'server.url', 'http://127.0.0.1\\:5000/v1.0/' )
+	.constant( 'server.url', 'http://unifile.silexlabs.org/v1.0/' )
 
-	.constant( 'server.url.unescaped', 'http://127.0.0.1:5000/v1.0/' ) // Need to get rid of this as soon as we use an angular version that is not buggy on this
+	//.constant( 'server.url.unescaped', 'http://127.0.0.1:5000/v1.0/' ) // Need to get rid of this as soon as we use an angular version that is not buggy on this
+	.constant( 'server.url.unescaped', 'http://unifile.silexlabs.org/v1.0/' ) // Need to get rid of this as soon as we use an angular version that is not buggy on this
 
 	.constant( 'console.level', 0 ) // 0: DEBUG, 1: INFO, 2: WARNING, 3: ERROR, 4: NOTHING (no console)
 

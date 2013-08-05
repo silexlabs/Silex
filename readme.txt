@@ -24,6 +24,10 @@ cloud explorer
 * choose the extension??
 * design
 
+add 
+* set as default page
+* img non visible pendant 1er loading (apre ajout)
+
 refactoring
 * replace *.style.* by goog.style.setStyle
 * suppr jquery quand pas utile
