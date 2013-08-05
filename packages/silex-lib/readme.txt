@@ -19,9 +19,10 @@ http://demos.silexlabs.org/silex-v2-alpha2/
 
 ###dev notes / encours
 
-bug text editor
-
-cloud explorer adds a #/index-debug-no-compil.html
+cloud explorer
+* adds a #/index-debug-no-compil.html
+* choose the extension??
+* design
 
 refactoring
 * replace *.style.* by goog.style.setStyle
