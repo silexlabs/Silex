@@ -235,7 +235,7 @@ silex.model.Component.prototype.getHtml = function (opt_baseUrl){
 
 	// relative URLs when possible
 	if (opt_baseUrl){
-		this.absolute2relative(opt_baseUrl);
+		this.absolute2relative(opt_baseUrl, cleanContainer);
 	}
 
 	// return the html content
@@ -293,23 +293,44 @@ silex.model.Component.prototype.getEditable = function(opt_element){
  */
 silex.model.Component.prototype.setEditable = function(isEditable, opt_element){
 	console.log('setEditable '+isEditable);
+	console.log(opt_element);
 	// default value for the element
 	if (opt_element == null){
 		opt_element = this.element;
 	}
+	console.log(opt_element);
 	// activate editable plugin
 	if (isEditable){
-		$('.editable-style[data-silex-type="container"]', opt_element).editable({
-			isContainer: true
+		$('.editable-style[data-silex-type="container"]', opt_element).each(function(){
+			$(this).editable({
+				isContainer: true
+			});
 		});
 		$('.editable-style[data-silex-type="element"]', opt_element).editable();
+
+		// the root element (is not editable when it is the stage, i.e. has no css class 'editable-style')
+		if (this.getEditable(opt_element)){
+			var type = opt_element.getAttribute('data-silex-type');
+			if (type==silex.model.Component.ELEMENT_TYPE_CONTAINER){
+				$(opt_element).editable({
+					isContainer: true
+				});
+			}
+			else{
+				$(opt_element).editable();
+			}
+		}
 	}
 	// deactivate editable plugin
 	else if (this.getEditable(opt_element)){
 		$('[data-silex-type="container"]', opt_element).editable('destroy');
 	    $('[data-silex-type="element"]', opt_element).editable('destroy');
-	    $(opt_element).editable('destroy');
 	
+		// the root element (is not editable when it is the stage, i.e. has no css class 'editable-style')
+		if (this.getEditable(opt_element)){
+			$(opt_element).editable('destroy');
+		}
+		
 		// cleanup the dom
 		$(opt_element).find('.ui-resizable').removeClass('ui-resizable');
 		$(opt_element).find('.ui-draggable').removeClass('ui-draggable');
@@ -322,12 +343,16 @@ silex.model.Component.prototype.setEditable = function(isEditable, opt_element){
 /**
  * Browse the children and convert all URLs to relative when possible
  */
-silex.model.Component.prototype.absolute2relative = function (baseUrl) {
+silex.model.Component.prototype.absolute2relative = function (baseUrl, opt_element) {
+	console.log('absolute2relative '+baseUrl);
 	if (baseUrl==null){
 		throw ('The base URL is needed in order to convert paths to relative');
 	}
+	if (opt_element==null){
+		opt_element = this.element;
+	}
 	// convert absolute to relative paths
-	$(this.element).find('[src],[href]').each(function () {
+	$(opt_element).find('[src],[href]').each(function () {
 		// attribute can be src or href
 		var attr = 'src';
 		var value = this.getAttribute(attr);
@@ -343,7 +368,11 @@ silex.model.Component.prototype.absolute2relative = function (baseUrl) {
 /**
  * Browse the children and convert all URLs to absolute
  */
-silex.model.Component.prototype.relative2absolute = function (baseUrl) {
+silex.model.Component.prototype.relative2absolute = function (baseUrl, opt_element) {
+	console.log('relative2absolute '+baseUrl);
+	if (opt_element==null){
+		opt_element = this.element;
+	}
 	// convert absolute to relative paths
 	$(this.element).find('[src],[href]').each(function () {
 		// attribute can be src or href
@@ -384,10 +413,10 @@ silex.model.Component.prototype.addContainer = function(){
 	div.className = 'editable-style';
 	div.setAttribute('data-silex-type', silex.model.Component.ELEMENT_TYPE_CONTAINER)
 	// attach it 
-	var container = goog.dom.getElementsByClass('background', this.element);
+	var container = goog.dom.getElementsByClass('background', this.element)[0];
 	goog.dom.appendChild(container, div);
 	// make it editable
-	this.setEditable(div);
+	this.setEditable(true, div);
 	// set default style
 	var style = {};
 	style.position = 'absolute';
@@ -420,7 +449,7 @@ silex.model.Component.prototype.addText = function(){
 	var container = goog.dom.getElementsByClass('background', this.element)[0];
 	goog.dom.appendChild(container, div);
 	// make it editable
-	this.setEditable(div);
+	this.setEditable(true, div);
 	// set default style
 	var style = {};
 	style.position = 'absolute';
@@ -441,6 +470,7 @@ silex.model.Component.prototype.addText = function(){
  * and returns a new component for the element
  */
 silex.model.Component.prototype.addImage = function(url){
+	console.log('addImage '+url);
 	if (this.type != silex.model.Component.ELEMENT_TYPE_CONTAINER){
 		throw('Canot create a child component for this component because it is not of type '+silex.model.Component.ELEMENT_TYPE_CONTAINER);
 	}
@@ -458,11 +488,11 @@ silex.model.Component.prototype.addImage = function(url){
 	img.setAttribute('src', url);
 
 	// attach it all
-	var container = goog.dom.getElementsByClass('background', this.element);
+	var container = goog.dom.getElementsByClass('background', this.element)[0];
 	goog.dom.appendChild(container, div);
 	goog.dom.appendChild(div, img);
 	// make it editable
-	this.setEditable(div);
+	this.setEditable(true, div);
 	// set default style
 	var style = {};
 	style.position = 'absolute';
@@ -475,8 +505,6 @@ silex.model.Component.prototype.addImage = function(url){
 		style.width = img.offsetWidth + 'px';
 		style.height = img.offsetHeight + 'px';
 		component.setStyle(style, silex.model.Component.CONTEXT_NORMAL);
-		// callback
-		if (cbk) cbk(div);
 	}
 	// return a component for this element
 	return component;

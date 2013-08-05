@@ -18,8 +18,10 @@ goog.provide('silex.service.CloudStorage');
  * load and save data to and from the cloud storage services
  */
 silex.service.CloudStorage = function(){
-	console.log('CloudStorage '+cloudExplorer)
 	this.filePicker = cloudExplorer;
+//	this.filePicker = filepicker;
+//	this.filePicker.setKey("Au2K2SaKHSGiaXXrGExQUz");
+
 }
 /**
  * reference to the filepicker instance
@@ -40,15 +42,16 @@ silex.service.CloudStorage.getInstance = function(){
 /**
  * save a file
  */
-silex.service.CloudStorage.prototype.save = function(url, rawData, cbk){
+silex.service.CloudStorage.prototype.save = function(blob, rawData, cbk){
 	// save the actual data
-	filepicker.write(
-	url, 
+	this.filePicker.write(
+	blob, 
 	rawData, 
-	{}, 
-	function(InkBlob){
-		console.log(InkBlob);
-		if (cbk) cbk();
+	function(blob){
+		// workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
+		new goog.async.Delay(function () {
+			if (cbk) cbk();
+		}, 10, this).start();
 	},
 	function(FPError){
 		console.error(FPError);
@@ -57,12 +60,32 @@ silex.service.CloudStorage.prototype.save = function(url, rawData, cbk){
 /**
  * load data
  */
-silex.service.CloudStorage.prototype.load = function(url, cbk){
+silex.service.CloudStorage.prototype.load = function(blob, cbk){
+
+	this.filePicker.read(
+	blob, 
+	function(blob){
+		// workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
+		new goog.async.Delay(function () {
+			if (cbk) cbk(blob);
+		}, 10, this).start();
+	},
+	function(FPError){
+		console.error(FPError);
+	});
+}
+/**
+ * load data
+ */
+silex.service.CloudStorage.prototype.loadLocal = function(url, cbk){
 	var that = this;
 	goog.net.XhrIo.send(url, function(e){
 		// success of the request
 		var xhr = e.target;
 		var rawHtml = xhr.getResponse();
-		if (cbk) cbk(rawHtml);
+		// workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
+		new goog.async.Delay(function () {
+			if (cbk) cbk(rawHtml);
+		}, 10, this).start();
 	});
 }
