@@ -458,7 +458,7 @@ silex.model.Component.prototype.addText = function(){
 	style.height = '100px';
 	style.width = '100px';
 	style.backgroundColor = 'rgba(255, 255, 255, 1)';
-	style.overflow = 'hidden';
+	//style.overflow = 'hidden';
 	var component = new silex.model.Component(div);
 	component.setStyle(style, silex.model.Component.CONTEXT_NORMAL);
 	// return a component for this element

@@ -14,7 +14,7 @@ goog.provide('silex.view.PropertiesTool');
 goog.require('goog.cssom');
 goog.require('goog.ui.Checkbox');
 goog.require('goog.ui.CustomButton');
-goog.require('goog.ui.TabPane');
+goog.require('goog.ui.TabBar');
 goog.require('goog.ui.HsvaPalette');
 goog.require('goog.ui.ColorButton');
 goog.require('goog.editor.Field');
@@ -93,19 +93,12 @@ silex.view.PropertiesTool.prototype.onStatus;
  * build tabs for the different contexts (normal, pressed, hover)
  */
 silex.view.PropertiesTool.prototype.buildTabs = function(){
-	var tabContainer = goog.dom.getElementByClass('tab-container', this.element);
-
-	// tab pane 
-	var tabPage = goog.dom.getElementByClass('tab-page', this.element);
-	var tabPane = new goog.ui.TabPane(tabContainer);
-	tabPane.addPage(new goog.ui.TabPane.TabPage(tabPage, silex.view.PropertiesTool.TAB_TITLE_NORMAL));
-	tabPane.addPage(new goog.ui.TabPane.TabPage(tabPage, silex.view.PropertiesTool.TAB_TITLE_HOVER));
-	tabPane.addPage(new goog.ui.TabPane.TabPage(tabPage, silex.view.PropertiesTool.TAB_TITLE_PRESSED));
-
-	tabPane.setSelectedIndex(1); // workaround bug "first pane id display none"
-	tabPane.setSelectedIndex(0);
-	goog.events.listen(tabPane, goog.ui.TabPane.Events.CHANGE, function() { 
-		switch(tabPane.getSelectedPage().getTitle()){
+	var tabContainer = goog.dom.getElementByClass('tab-bar-container', this.element);
+	var tabBar = new goog.ui.TabBar();
+	tabBar.decorate(tabContainer);
+	goog.events.listen(tabBar, goog.ui.Component.EventType.ACTION, function(event) { 
+		console.log(tabBar.getSelectedTab().getCaption());
+		switch(tabBar.getSelectedTab().getCaption()){
 			case silex.view.PropertiesTool.TAB_TITLE_NORMAL:
 				this.context = silex.model.Component.CONTEXT_NORMAL;
 				break;
