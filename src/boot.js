@@ -60,6 +60,7 @@ silex.boot = function() {
 		var fileExplorerElement = goog.dom.getElementByClass('silex-fileexplorer');
 		var fileExplorer = new silex.view.FileExplorer(fileExplorerElement,
 	function () {
+		console.log('FileExplorer '+fileExplorer.element);
 		console.log('FileExplorer created');
 		// create the workspace which place all components in the page
 		var workspaceElement = goog.dom.getElementByClass('silex-workspace');
@@ -113,6 +114,7 @@ silex.boot = function() {
 		// now create an empty file to let the user start using Silex
 		file.newFile(function () {
 			controller.menuCallback({type:'insert.text'});
+			controller.menuCallback({type:'insert.image'});
 		});
 		console.log('--end boot--');
 	});
