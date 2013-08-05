@@ -188,7 +188,7 @@ silex.view.PropertiesTool.prototype.buildStylePane = function(){
 		// apply to the element and store it in the context attribute
 		this.styleChanged(style)
 	}, false, this);
-/*
+
 	// BG image
 	var buttonElement = goog.dom.getElementByClass('bg-image-button');
 	this.bgSelectBgImage = new goog.ui.CustomButton();
@@ -213,7 +213,6 @@ silex.view.PropertiesTool.prototype.buildStylePane = function(){
 		// apply to the element and store it in the context attribute
 		this.styleChanged()
 	}, false, this);
-*/
 }
 /** 
  * color palette visibility
@@ -252,86 +251,6 @@ silex.view.PropertiesTool.prototype.styleChanged = function(style){
 	});
 	// refresh ui
 	this.redraw();
-}
-/**
- * get the style of the element being edited for the given context
- * returns a style object for the data-style-* value
- *
-silex.view.PropertiesTool.prototype.computeStyle = function(element, opt_context){
-	if(opt_context==null) opt_context = this.context;
-	if (opt_context==null) return null;
-
-	var styleStr = element.getAttribute('data-style-'+opt_context);
-	if (styleStr == null){
-		styleStr = '';
-	}
-	var style = goog.style.parseStyleAttribute(styleStr);
-
-	// take position and size into account
-	if (opt_context!=silex.model.Component.CONTEXT_NORMAL){
-		var normalStyle = this.computeStyle(silex.model.Component.CONTEXT_NORMAL);
-		style.top = normalStyle.top;
-		style.left = normalStyle.left;
-		style.width = normalStyle.width;
-		style.height = normalStyle.height;
-		style.position = normalStyle.position;
-	}
-	return style;
-}
-/**
- * apply the style in data-style-* to the element
- * sets the element.style value with the value found in data-style-*
- *
-silex.view.PropertiesTool.prototype.applyStyle = function(element){
-	//element.setAttribute('style', element.getAttribute('data-style-'+this.context));
-	//goog.style.applyStyle(element, this.computeStyle(this.context));
-//	element.style = this.computeStyle(this.context);
-	var style = this.computeStyle(element, this.context);
-	goog.object.forEach(style, function(val, index, obj) {
-		if (val)
-			element.style[index] = val;
-	});
-}
-/**
- * save the current style properties of the element being edited 
- * the current style attribute will be stored in data-style-*
- * and the normal style will be updated with the size and position properties
- *
-silex.view.PropertiesTool.prototype.saveStyle = function(element, opt_context){
-	var element = this.getElement();
-
-	// default value for style is the style of the element being edited
-	if (!opt_context){
-		opt_context = this.context;
-	}
-	if (!style){
-		style = goog.style.parseStyleAttribute(element.getAttribute('style'));
-	}
-	// save the position and size in the normal context
-	if (opt_context!=silex.model.Component.CONTEXT_NORMAL){
-		var normalStyle = this.computeStyle(silex.model.Component.CONTEXT_NORMAL);
-		normalStyle.top = style.top;
-		normalStyle.left = style.left;
-		normalStyle.width = style.width;
-		normalStyle.height = style.height;
-		normalStyle.position = style.position;
-		this.saveStyle(normalStyle, silex.model.Component.CONTEXT_NORMAL)
-
-		// do not save position and size in the other contexts
-		style.top = null;
-		style.left = null;
-		style.width = null;
-		style.height = null;
-		style.position = null;
-	}
-	// build a string out of the style object
-	var styleStr = '';
-	goog.object.forEach(style, function(val, index, obj) {
-		if (val)
-			styleStr += goog.string.toSelectorCase(index) + ': ' + val + '; ';
-	});
-	// store the string in the context attr
-	element.setAttribute('data-style-'+opt_context, styleStr);
 }
 /**
  * display the style of the element being edited 
@@ -438,19 +357,6 @@ silex.view.PropertiesTool.prototype.setPages = function(data){
 	this.redraw();
 }
 /**
- * the selection has changed
- *
-silex.view.PropertiesTool.prototype.setElements = function(elements){
-	if (this.elements){
-		// restore the normal context
-		this.applyStyle(silex.model.Component.CONTEXT_NORMAL);
-	}
-	this.elements = elements;
-	this.applyStyle();
-	this.displayStyle();
-	this.redraw();
-}
-/**
  * redraw the properties
  */
 silex.view.PropertiesTool.prototype.redraw = function(){
@@ -479,14 +385,12 @@ silex.view.PropertiesTool.prototype.redraw = function(){
 			//this.bgColorPicker.setContent(color);
 			// **
 			// BG image
-		/*
 			if (style.backgroundImage!=null && style.backgroundImage!='none' && style.backgroundImage!=''){
 				this.bgClearBgImage.setEnabled(true);
 			}
 			else{
 				this.bgClearBgImage.setEnabled(false);
 			}
-		*/
 		}
 		// **
 		// properties

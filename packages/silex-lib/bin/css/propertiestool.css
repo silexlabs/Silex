@@ -43,7 +43,7 @@
 }
 .silex-propertiestool .goog-tab {
 	color: black;
-	font-size: 15px;
+	font-size: 13px;
 	font-weight: normal;
 	text-decoration: none;
 	cursor: pointer;
@@ -51,10 +51,18 @@
 .silex-propertiestool .tab-page {
 	background-color: white;
 	display: block;
+	border-left: 1px solid #6b90da;
+	border-right: 1px solid #6b90da;
+	border-bottom: 1px solid #6b90da;
+	padding: 5px;
 }
 /* checkbox etc */
 .silex-propertiestool fieldset {
 	font-size: 13px;
+	border: none;
+	/* border-top: 1px solid; */
+	border-left: 1px grey;
+	border-left-style: dotted;
 }
 /* color text in hsv palette */
 .silex-propertiestool .goog-hsva-palette-sm-input {
@@ -84,6 +92,8 @@
 }
 .silex-propertiestool legend{
 	font-size: 13px;
+	padding: 0;
+	font-weight: bold;
 }
 /* color button */
 .silex-propertiestool .color-bg-button .goog-inline-block{
