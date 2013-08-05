@@ -144,8 +144,8 @@ silex.Controller.prototype.menuCallback = function(event){
 			break;
 		case 'insert.image':
 			this.fileExplorer.openDialog(
-			goog.bind(function (url) {
-				var component = this.file.getStageComponent().addImage(url);
+			goog.bind(function (blob) {
+				var component = this.file.getStageComponent().addImage(blob.url);
 				this.selection.setComponent(component);
 			}, this),
 			['image/*', 'text/plain']);

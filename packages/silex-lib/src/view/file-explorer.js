@@ -65,7 +65,6 @@ silex.view.FileExplorer.prototype.onFileExplorerEvent;
  */
 silex.view.FileExplorer.prototype.init = function(){
 	this.filePicker = silex.service.CloudStorage.getInstance().filePicker;
-	console.log('FileExplorer '+this.filePicker);
 }
 /**
  * pick a file
@@ -77,18 +76,16 @@ silex.view.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes){
 
 	// pick it up
 	this.filePicker.pick(
-	{
-		mimetypes: opt_mimetypes,
-		container: silex.view.FileExplorer.CONTAINER_TYPE,
-		services: silex.view.FileExplorer.SERVICES
-	},
-	goog.bind(function(InkBlob){
+	goog.bind(function(blob){
 		// hide dialog
 		this.closeEditor();
 
 		// notify controller
-		var url = InkBlob.url.replace('https://', 'http://');
-		if (cbk) cbk(url);
+		blob.url = blob.url.replace('https://', 'http://');
+		// workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
+		new goog.async.Delay(function () {
+			if (cbk) cbk(blob);
+		}, 10, this).start();
 	}, this),
 	function(FPError){
 		console.error(FPError);
@@ -104,21 +101,19 @@ silex.view.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes){
 	// default is html
 	if (!opt_mimetypes) opt_mimetypes = ['text/html', 'text/plain'];
 
-	var that = this;
 	// export dummy data
-	this.filePicker.exportFile( "http://google.com/",
-	{
-		mimetypes: opt_mimetypes,
-		container: silex.view.FileExplorer.CONTAINER_TYPE,
-		services: silex.view.FileExplorer.SERVICES
-	},
-	goog.bind(function(tmpInkBlob){
+	this.filePicker.exportFile( "http://google.com/", 
+	goog.bind(function(blob){
+
 		// hide dialog
 		this.closeEditor();
 
 		// notify controller
-		var url = tmpInkBlob.url.replace('https://', 'http://');
-		if (cbk) cbk(url);
+		blob.url = blob.url.replace('https://', 'http://');
+		// workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
+		new goog.async.Delay(function () {
+			if (cbk) cbk(blob);
+		}, 10, this).start();
 	}, this),
 	function(FPError){
 		console.error(FPError);

@@ -73,6 +73,10 @@ silex.model.File.prototype.fileExplorer;
  */
 silex.model.File.prototype.url;
 /**
+ * current file blob
+ */
+silex.model.File.prototype.blob;
+/**
  * current file head content (string)
  */
 silex.model.File.prototype.headTag;
@@ -91,10 +95,11 @@ silex.model.File.prototype.bodyStyle;
  * load an empty new file
  */
 silex.model.File.prototype.newFile = function (cbk) {
-	silex.service.CloudStorage.getInstance().load(silex.model.File.CREATION_TEMPLATE, 
+	silex.service.CloudStorage.getInstance().loadLocal(silex.model.File.CREATION_TEMPLATE, 
 	goog.bind(function(rawHtml){
 		this.setHtml(rawHtml);
 		this.setUrl(null);
+		this.setBlob(null);
 		if (cbk) cbk();
 	}, this));
 }
@@ -102,25 +107,33 @@ silex.model.File.prototype.newFile = function (cbk) {
  * save a file with a new name
  */
 silex.model.File.prototype.saveAs = function(cbk){
+	console.log('saveAs');
 	// choose a new name
 	this.fileExplorer.saveAsDialog(
-	goog.bind(function (url) {
+	goog.bind(function (blob) {
+		console.log('saveAsDialog pick ok ');
+		console.log(blob);
+
 		// save the data
 		console.log('selection of a new file success');
-		this.setUrl(url);
+		this.setUrl(blob.url);
+		this.setBlob(blob);
 		this.save(cbk);
 	}, this),
 	['text/html', 'text/plain']);
+	this.workspace.invalidate();
 }
 /**
  * write content to the file
  */
 silex.model.File.prototype.save = function(cbk){
-	var url = this.getUrl();
-	this.setBodyTag(this.getStageComponent().getHtml(url));
+	console.log('save');
+	var blob = this.getBlob();
+	console.log('save');
+	this.setBodyTag(this.getStageComponent().getHtml(blob.url));
 	this.setHeadTag(this.stage.getHead());
 	this.setBodyStyle(this.stage.getBodyStyle());
-	silex.service.CloudStorage.getInstance().save(url, this.getHtml(), function () {
+	silex.service.CloudStorage.getInstance().save(blob, this.getHtml(), function () {
 		console.log('file saved');
 		if (cbk) cbk();
 	});
@@ -130,27 +143,31 @@ silex.model.File.prototype.save = function(cbk){
  * load a new file
  */
 silex.model.File.prototype.open = function(cbk){
+	console.log('open');
 	// let the user choose the file
 	this.fileExplorer.openDialog(
-	goog.bind(function (url) {
-		silex.service.CloudStorage.getInstance().load(url, 
+	goog.bind(function (blob) {
+		console.log('openDialog pick ok ');
+		console.log(blob);
+		silex.service.CloudStorage.getInstance().load(blob, 
 		goog.bind(function(rawHtml){
-			console.log('loaded ');
-			console.log(rawHtml);
-
 			// update model
 			this.close();
-			this.setUrl(url);
+			this.setUrl(blob.url);
+			this.setBlob(blob);
 			this.setHtml(rawHtml);
 		}, this));
 	}, this), 
 	['text/html', 'text/plain']);
+	this.workspace.invalidate();
 }
 /**
  * reset data, close file
  */
 silex.model.File.prototype.close = function(){
+	console.log('close');
 	this.url = null;
+	this.blob = null;
 	this.headTag = '';
 	this.bodyTag = '';
 	//
@@ -207,6 +224,18 @@ silex.model.File.prototype.getUrl = function(){
  */
 silex.model.File.prototype.setUrl = function(url){
 	this.url = url;
+}
+/**
+ * get the blob of the file
+ */
+silex.model.File.prototype.getBlob = function(){
+	return this.blob;
+}
+/**
+ * store blob of this file
+ */
+silex.model.File.prototype.setBlob = function(blob){
+	this.blob = blob;
 }
 /**
  * get the string containing the style attribute of the body tag
