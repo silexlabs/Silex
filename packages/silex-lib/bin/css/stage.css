@@ -7,15 +7,12 @@
 	-moz-user-select: moz-none;
 	-ms-user-select: none;
 	user-select: none;
-	cursor: default;
+	cursor: move;
 }
 .editable-style:hover { 
 	box-shadow: 0px 0px 5px #888888;
 }
 .editable-style.silex-selected{
-	box-shadow: 0 0 1px 1px rgba(0, 0, 0, .8), inset 0 0 1px 1px rgba(255, 255, 255, 0.8);
-	-moz-box-shadow: 0 0 1px 1px rgba(0, 0, 0, .8), inset 0 0 1px 1px rgba(255, 255, 255, 0.8);
-	-webkit-box-shadow: 0 0 1px 1px rgba(0, 0, 0, .8), inset 0 0 1px 1px rgba(255, 255, 255, 0.8);
 }
 .silex-stage{
 	background-color: #CCCCCC;
@@ -28,4 +25,43 @@
 	overflow: auto;
 	padding-top: 5px;
 	position: relative !important; /* because it is changed as body style */
+}
+/* resizable skin *
+.editable-style.silex-selected .ui-resizable-n,
+.editable-style.silex-selected .ui-resizable-s,
+.editable-style.silex-selected .ui-resizable-e,
+.editable-style.silex-selected .ui-resizable-w
+{
+	background-color: #333333;
+	border: 1px solid #666666;
+}
+/* */
+.ui-icon-gripsmall-diagonal-se{
+	background-image: none;
+}
+.editable-style.silex-selected>.ui-resizable-se,
+.editable-style.silex-selected>.ui-resizable-sw,
+.editable-style.silex-selected>.ui-resizable-ne,
+.editable-style.silex-selected>.ui-resizable-nw
+{
+	background-color: #333333;
+	border: 1px solid #666666;
+	width: 5px !important;
+	height: 5px !important;
+}
+.editable-style.silex-selected>.ui-resizable-se{
+	bottom: -7px;
+	right: -7px;
+}
+.editable-style.silex-selected>.ui-resizable-sw{
+	bottom: -7px;
+	left: -7px;
+}
+.editable-style.silex-selected>.ui-resizable-ne{
+	top: -7px;
+	right: -7px;
+}
+.editable-style.silex-selected>.ui-resizable-nw{
+	top: -7px;
+	left: -7px;
 }

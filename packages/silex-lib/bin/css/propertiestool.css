@@ -3,7 +3,7 @@
 	right: 0;
 	width: 250px;
 	height: 95%;
-	background-color: rgb(255, 255, 255);
+	background-color: #f3f3f3;
 }
 .silex-propertiestool .main-container{
 	padding: 5px;
@@ -37,44 +37,33 @@
 	font-size: 13px;
 }
 /* tabs */
-.silex-propertiestool .goog-tabpane {
-	background: white;
+.silex-propertiestool .goog-tab-bar {
+	background-color: transparent;
 	padding-left: 1px;
 }
-.silex-propertiestool .goog-tabpane-tabs {
-	list-style: none;
-	margin: 0px;
-	padding: 0px;
+.silex-propertiestool .goog-tab {
+	color: black;
+	font-size: 15px;
+	font-weight: normal;
+	text-decoration: none;
+	cursor: pointer;
 }
-.silex-propertiestool .goog-tabpane-cont {
-	overflow: auto;
-	clear: both;
-	background: white;
-	border: 1px solid;
-	border-color: threedhighlight threedshadow threedshadow threedhighlight;
-	padding: 2px;
-}
-.silex-propertiestool .goog-tabpane-tab, .silex-propertiestool .goog-tabpane-tab-selected {
+.silex-propertiestool .tab-page {
+	background-color: white;
 	display: block;
-	float: left;
-	padding: 0px 10px;
-	background: white;
-	border: 1px solid;
-	border-color: threedhighlight threedshadow threedface threedhighlight;
-	margin: 0px;
+}
+/* checkbox etc */
+.silex-propertiestool fieldset {
+	font-size: 13px;
+}
+/* color text in hsv palette */
+.silex-propertiestool .goog-hsva-palette-sm-input {
+	font-size: 13px;
+}
+.silex-propertiestool .goog-hsva-palette-sm{
+	overflow: hidden;
 }
 
-.silex-propertiestool .goog-tabpane-tab {
-	margin-top: 0px;
-}
-
-.silex-propertiestool .goog-tabpane-tab-selected {
-	padding-bottom: 2px;
-	padding-top: 2px;
-	position: relative;
-	top: 1px;
-	font-weight: bold;
-}
 /* properties */
 .silex-propertiestool h1,
 .silex-propertiestool h2{

@@ -40,7 +40,9 @@ $.widget('silexlabs.editable', {
 		this.element.resizable('disable').draggable('disable');
 	},
 	enableEditable: function(){
-		this.element.resizable();
+		this.element.resizable({
+			handles : 'all'
+		});
 		//this.element.draggable({ revert: 'invalid', snap: true });
 		//this.element.draggable({ revert: 'invalid', grid: [ 20, 20 ] });
 		this.element.draggable({ revert: 'invalid' });
