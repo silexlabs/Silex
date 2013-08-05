@@ -20,6 +20,7 @@ http://demos.silexlabs.org/silex-v2-alpha2/
 ###dev notes / encours
 
 refactoring
+* replace *.style.* by goog.style.setStyle
 * suppr jquery quand pas utile
 * renommer boot.js en app.js
 * utiliser 'use strict';

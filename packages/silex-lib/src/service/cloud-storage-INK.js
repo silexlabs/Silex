@@ -18,8 +18,8 @@ goog.provide('silex.service.CloudStorage');
  * load and save data to and from the cloud storage services
  */
 silex.service.CloudStorage = function(){
-	console.log('CloudStorage '+cloudExplorer)
-	this.filePicker = cloudExplorer;
+	this.filePicker = filepicker;
+	this.filePicker.setKey("Au2K2SaKHSGiaXXrGExQUz");
 }
 /**
  * reference to the filepicker instance
