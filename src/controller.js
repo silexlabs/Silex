@@ -131,6 +131,7 @@ silex.Controller.prototype.menuCallback = function(event){
 			break;
 		case 'view.open.fileExplorer':
 			this.fileExplorer.openDialog();
+			this.workspace.invalidate();
 			break;
 		case 'insert.page':
 			this.file.createPage(goog.bind(function (page) {
@@ -149,6 +150,7 @@ silex.Controller.prototype.menuCallback = function(event){
 				this.selection.setComponent(component);
 			}, this),
 			['image/*', 'text/plain']);
+			this.workspace.invalidate();
 			break;
 		case 'insert.container':
 			var component = this.file.getStageComponent().addContainer();

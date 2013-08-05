@@ -145,14 +145,19 @@ silex.view.PropertiesTool.prototype.buildStylePane = function(){
 	this.hsvPalette.render(hsvPaletteElement);
 	goog.events.listen(this.hsvPalette, goog.ui.Component.EventType.ACTION, 
 	function (e) {
-		// update style
-		var color = silex.Helper.hexToRgba(this.hsvPalette.getColorRgbaHex());
-		var style = this.component.getStyle();
-		if (style==null) style = {};
-		style.backgroundColor = color;
-		// notify the controller
-		this.styleChanged(style);
+		// only if there is a selection (not at init time)
+		if (this.component){
+			// update style
+			var color = silex.Helper.hexToRgba(this.hsvPalette.getColorRgbaHex());
+			var style = this.component.getStyle();
+			if (style==null) style = {};
+			style.backgroundColor = color;
+			// notify the controller
+			this.styleChanged(style);
+		}
 	}, false, this);
+	// init palette
+	this.hsvPalette.setColorRgbaHex('#FFFFFFFF');
 
 	this.bgColorPicker = new goog.ui.ColorButton();
 	this.bgColorPicker.setTooltip('Click to select color');
@@ -180,7 +185,7 @@ silex.view.PropertiesTool.prototype.buildStylePane = function(){
 			var color = silex.Helper.hexToRgba(this.hsvPalette.getColorRgbaHex());
 			if (color==null) {
 				//color='#FFFFFF';
-				color = 'rgba(255, 255, 0, 1)'
+				color = 'rgba(255, 255, 255, 1)'
 			}
 			style.backgroundColor = color;
 		}

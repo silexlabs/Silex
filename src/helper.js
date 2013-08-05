@@ -163,11 +163,12 @@ silex.Helper.rgbaToHex = function(rgba){
     rgbaArr = silex.Helper.rgbaToArray(rgba);
 
     r = rgbaArr[0].toString(16); if (r.length<2) r = '0'+r;
-    g = rgbaArr[1].toString(16); if (g.length<2) r = '0'+g;
-    b = rgbaArr[2].toString(16); if (b.length<2) r = '0'+b;
-    a = (rgbaArr[3]).toString(16); if (a.length<2) r = '0'+a;
+    g = rgbaArr[1].toString(16); if (g.length<2) g = '0'+g;
+    b = rgbaArr[2].toString(16); if (b.length<2) b = '0'+b;
+    a = (rgbaArr[3]).toString(16); if (a.length<2) a = '0'+a;
 
     var result = '#'+(r+g+b+a);
+    console.log('rgbaToHex return '+result);
     return result;
 }
 /**

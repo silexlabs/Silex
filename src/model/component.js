@@ -322,7 +322,7 @@ silex.model.Component.prototype.setEditable = function(isEditable, opt_element){
 		}
 	}
 	// deactivate editable plugin
-	else if (this.getEditable(opt_element)){
+	else{
 		$('[data-silex-type="container"]', opt_element).editable('destroy');
 	    $('[data-silex-type="element"]', opt_element).editable('destroy');
 	
@@ -330,7 +330,7 @@ silex.model.Component.prototype.setEditable = function(isEditable, opt_element){
 		if (this.getEditable(opt_element)){
 			$(opt_element).editable('destroy');
 		}
-		
+
 		// cleanup the dom
 		$(opt_element).find('.ui-resizable').removeClass('ui-resizable');
 		$(opt_element).find('.ui-draggable').removeClass('ui-draggable');
