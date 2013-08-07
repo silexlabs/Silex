@@ -1,6 +1,6 @@
 
 .silex-pagetool {
-	padding: 9px 0;
+	padding: 0;
 	position:fixed;
 	left:0;
 	top:90px;
@@ -30,6 +30,7 @@
 	font-size: 12px;
 	padding: 5px;
 	position: absolute;
+	cursor: text;
 }
 .silex-pagetool .page-preview{
 	border: 1px solid rgba(0,0,0,.1); 
@@ -37,9 +38,11 @@
 	height: 99px;
 	position: relative;
 	margin: auto;
+	cursor: default;
 }
 .silex-pagetool .page-preview .delete{
 	right: 10px;
 	top: 5px;
 	position: absolute;
+	cursor: pointer;
 }

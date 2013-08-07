@@ -1,6 +1,21 @@
 body{
 	overflow: hidden;
 }
+/* loading */
+body.loading-pending>*{
+	visibility: hidden;
+}
+body .loader{
+	display: none;
+}
+body.loading-pending .loader{
+	display: inherit;
+	visibility: inherit;
+	left: 45%;
+	position: absolute;
+	top: 50%;
+}
+/* ****** */
 .dialogs-background{
 	width: 100%;
 	height: 100%;

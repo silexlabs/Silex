@@ -1,14 +1,20 @@
 <!DOCTYPE HTML>
 <html lang="en-US">
 <head>
-	<meta charset="UTF-8">
 	<title>Silex</title>
+
+	<meta charset="UTF-8">
+
+	<link rel="shortcut icon" href="assets/favicon.png" type="image/png">
+	<link rel="icon" href="assets/favicon.png" type="image/png" />
+	<link ref="apple-touch-icon" href="assets/favicon.png" />
 
 	<!-- Normalize -->
 	<link href="libs/normalize.css" rel="stylesheet">
 
 	<!-- main styles -->
 	<link rel="stylesheet" type="text/css" href="css/main.css" />
+	<link rel="stylesheet" type="text/css" href="css/loader.css" />
 	<link rel="stylesheet" type="text/css" href="css/front-end.css">
 	<link rel="stylesheet" type="text/css" href="css/closure/common.css">
 	
@@ -26,8 +32,8 @@
 	<!-- INK file picker --
 	<script type="text/javascript" src="//api.filepicker.io/v1/filepicker.js"></script>
 	<!-- Cloud explorer -->
-	<script src="http://code.angularjs.org/1.1.5/angular.js"></script>
-	<script src="http://code.angularjs.org/1.1.5/angular-resource.js"></script>
+	<script src="libs/angular.js"></script>
+	<script src="libs/angular-resource.js"></script>
 	<script src="libs/cloud-explorer/js/cloud-explorer.js"></script>
 	
 	<!-- closure without compil -->
@@ -65,7 +71,10 @@
 	<script type="text/javascript" src="libs/handlebars.js"></script>
 
 </head>
-<body>
+<body class="loading-pending">
+	<div class="loader">
+		<div id="noTrespassingOuterBarG"><div id="noTrespassingFrontBarG" class="noTrespassingAnimationG"><div class="noTrespassingBarLineG"></div><div class="noTrespassingBarLineG"></div><div class="noTrespassingBarLineG"></div><div class="noTrespassingBarLineG"></div><div class="noTrespassingBarLineG"></div><div class="noTrespassingBarLineG"></div></div></div>
+	</div>
 	<div class="silex-workspace">
 		<!-- file explorer -->
 		<div class="silex-fileexplorer">

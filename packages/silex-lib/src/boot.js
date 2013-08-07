@@ -9,10 +9,18 @@
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
 
+'use strict';
+
 goog.provide('silex.boot');
 
 goog.require('goog.dom');
 goog.require('goog.events');
+
+// debug
+goog.require('goog.debug');
+goog.require('goog.debug.FancyWindow');
+goog.require('goog.log');
+
 
 goog.require('silex.Helper');
 goog.require('silex.Controller');
@@ -115,6 +123,9 @@ silex.boot = function() {
 		file.newFile(function () {
 			//controller.menuCallback({type:'insert.text'});
 			//controller.menuCallback({type:'insert.image'});
+			
+			controller.menuCallback({type:'tools.debug.activate'});
+			controller.menuCallback({type:'tools.debug.window'});
 		});
 		console.log('--end boot--');
 	});
