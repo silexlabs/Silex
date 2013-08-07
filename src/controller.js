@@ -129,6 +129,27 @@ silex.Controller.prototype.menuCallback = function(event){
 		case 'view.file':
 			this.file.view()
 			break;
+		case 'tools.debug.activate':
+			goog.log.info(this.theLogger, goog.debug.deepExpose(event));
+goog.debug.LogManager.getLoggers
+setLevel(level)
+			break;
+		case 'tools.debug.deactivate':
+			goog.log.fine(this.theLogger, goog.debug.expose(event), 'test debug', 'test debug 2');
+goog.debug.LogManager.getLoggers
+setLevel(level)
+debugWindow.setEnabled(true);
+			break;
+		case 'tools.debug.open':
+			// Create the debug window.
+			this.theLogger = goog.log.getLogger('demo');
+			var debugWindow = new goog.debug.FancyWindow('main');
+			debugWindow.setEnabled(true);
+			debugWindow.init();
+			break;
+		case 'tools.debug.close':
+			debugWindow.setEnabled(false);
+			break;
 		case 'view.open.fileExplorer':
 			this.fileExplorer.openDialog();
 			this.workspace.invalidate();

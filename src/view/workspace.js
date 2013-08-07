@@ -114,6 +114,8 @@ silex.view.Workspace.prototype.doRedraw = function(){
 	goog.style.setHeight(this.propertiesTool.element, toolsHeight);
 	goog.style.setHeight(this.stage.element, toolsHeight);
 
+	goog.style.setPosition(this.pageTool.element, null, menuSize.height);
+
 	// texteditor
 	if (this.textEditor.element){
 		var textEditorSize = goog.style.getSize(this.textEditor.element);
@@ -127,5 +129,9 @@ silex.view.Workspace.prototype.doRedraw = function(){
 		var posX = (viewportSize.width - fileExplorerSize.width)/2;
 		var posY = (viewportSize.height - fileExplorerSize.height)/2;
 		goog.style.setPosition(this.fileExplorer.element, posX, posY);
+	}
+	// no more loading
+	if (goog.dom.classes.has(document.body, 'loading-pending')){
+		goog.dom.classes.remove(document.body, 'loading-pending')
 	}
 }

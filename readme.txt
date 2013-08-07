@@ -20,30 +20,47 @@ http://demos.silexlabs.org/silex-v2-alpha2/
 ###dev notes / encours
 
 cloud explorer
-* adds a #/index-debug-no-compil.html
 * choose the extension??
+* frames au lieu de popup
 * design
+* detection des pages callback (google_auth et twitter.com)
+* garder le token quand on est déja connecté?
+* find contributors
+	Alertes pour liens vers ink
+	Alternatives.to
+	Poster des messages qui disent
+	"on a aussi ce besoin, on s y est mis venez nous aider c est OS
+	js client : aidez ns avec l ihm
+	Js server : ajoutez des services"
 
-add 
-* set as default page
-* img non visible pendant 1er loading (apre ajout)
+com
+* envoi a EO de MS?
+* Alternatives.to
+* revoir tous les sites qui parlent de silex
+* landing page sur silex.io
+* redirection html5-editor.org 
 
 refactoring
 * replace *.style.* by goog.style.setStyle
 * suppr jquery quand pas utile
 * renommer boot.js en app.js
-* utiliser 'use strict';
 * externs : text editor?? file picker dialog
 * view : editors?
 * reactiver les urls relatives?
 
 functionnal
-* Lock (double click to unlock?)
-* Urls relatives (absolues pendant édition)
+* img non visible pendant 1er loading (apre ajout)
+* Insertion d'un élément -> visible uniquement dans la page courante
+* size & position
+* set as default page
+* champs de text des pages modifiables
+* Lock/unlock
+* shortcuts
 * url de l'image selectionnee
 * image en bg (scale pas repeat)
 * Ombres et bordures, 
 * Zindex
+* sons?
 * Double click to edit
 * group images on the same drive as the html page?
 

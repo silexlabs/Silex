@@ -50,7 +50,7 @@ silex.view.Menu.prototype.onStatus;
  */
 silex.view.Menu.prototype.buildMenu = function(rootNode) {
 	this.menu = goog.ui.menuBar.create();
-	var menuNames = ['File', 'Edit', 'View', 'Insert', 'Help'];
+	var menuNames = ['File', 'Edit', 'View', 'Insert', 'Tools', 'Help'];
 	var menuOptions = [
 		[
 			{label:'New File', id:'file.new'}, 
@@ -70,7 +70,7 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
 			{label:'View in new window', id:'view.file'}, 
 			null,
 			{label:'Open text editor', id:'view.open.textEditor'},
-			{label:'Open file browser', id:'view.open.fileExplorer'} 
+			{label:'Open file browser', id:'view.open.fileExplorer'}
 		],
 		[
 			{label:'Text box', id:'insert.text'}, 
@@ -78,6 +78,12 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
 			{label:'Container', id:'insert.container'}, 
 			null,
 			{label:'New page', id:'insert.page'} 
+		],
+		[
+			{label:'Activate debug', id:'tools.debug.activate'},
+			{label:'Deactivate debug', id:'tools.debug.deactivate'},
+			{label:'Open debug window', id:'tools.debug.open'},
+			{label:'Close debug window', id:'tools.debug.close'} 
 		],
 		[
 			{label:'Forums', id:'help.forums'}, 
