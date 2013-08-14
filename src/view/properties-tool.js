@@ -197,7 +197,7 @@ silex.view.PropertiesTool.prototype.buildStylePane = function(){
 		this.onSelectImage(function(url){
 			// update style
 			var backgroundImage = url;
-			this.getElement().style.backgroundImage = 'url(' + backgroundImage + ')';
+			goog.style.setStyle(this.getElement(), 'backgroundImage', 'url(' + backgroundImage + ')');
 			// apply to the element and store it in the context attribute
 			this.styleChanged()
 		});
@@ -208,7 +208,7 @@ silex.view.PropertiesTool.prototype.buildStylePane = function(){
 	this.bgClearBgImage.decorate(buttonElement);
 	goog.events.listen(buttonElement, goog.events.EventType.CLICK, function(e) { 
 		// update style
-		this.getElement().style.backgroundImage = 'none';
+		goog.style.setStyle(this.getElement(), 'backgroundImage', 'none');
 		// apply to the element and store it in the context attribute
 		this.styleChanged()
 	}, false, this);
@@ -218,7 +218,7 @@ silex.view.PropertiesTool.prototype.buildStylePane = function(){
  * do not set display to none, because the setColor then leave the color palette UI unchanged
  */
 silex.view.PropertiesTool.prototype.getColorPaletteVisibility = function(){
-	return this.hsvPalette.getElement().style.visibility != 'hidden';
+	return goog.style.getStyle(this.hsvPalette.getElement(), 'visibility') != 'hidden';
 }
 /** 
  * color palette visibility
@@ -227,14 +227,14 @@ silex.view.PropertiesTool.prototype.getColorPaletteVisibility = function(){
 silex.view.PropertiesTool.prototype.setColorPaletteVisibility = function(isVisible){
 	if (isVisible){
 		if (!this.getColorPaletteVisibility()){
-			this.hsvPalette.getElement().style.visibility = null;
-			this.hsvPalette.getElement().style.position = null;
+			goog.style.setStyle(this.hsvPalette.getElement(), 'visibility', null);
+			goog.style.setStyle(this.hsvPalette.getElement(), 'position', null);
 		}
 	}
 	else{
 		if (this.getColorPaletteVisibility()){
-			this.hsvPalette.getElement().style.visibility = 'hidden';
-			this.hsvPalette.getElement().style.position = 'absolute';
+			goog.style.setStyle(this.hsvPalette.getElement(), 'visibility', 'hidden');
+			goog.style.setStyle(this.hsvPalette.getElement(), 'position', 'absolute');
 		}
 	}
 }
@@ -310,7 +310,7 @@ silex.view.PropertiesTool.prototype.setPages = function(data){
 	this.linkInputTextField.makeEditable();
 	// hide by default
 	var linkInputElement = goog.dom.getElementByClass('link-input-text', this.element); // get the new input which may be an iframe
-	linkInputElement.style.display = 'none';
+	goog.style.setStyle(linkInputElement, 'display', 'none');
 	var that = this;
 	// Watch for field changes, to display below.
 	goog.events.listen(this.linkInputTextField, goog.editor.Field.EventType.DELAYEDCHANGE, function(){
@@ -432,10 +432,10 @@ silex.view.PropertiesTool.prototype.redraw = function(){
 			// visibility of the text edit 
 			var linkInputElement = goog.dom.getElementByClass('link-input-text', this.element);
 			if(linkDropdown.value=='custom'){
-				linkInputElement.style.display = 'inherit';
+				goog.style.setStyle(linkInputElement, 'display', 'inherit');
 			}
 			else{
-				linkInputElement.style.display = 'none';
+				goog.style.setStyle(linkInputElement, 'display', 'none');
 			}
 		}
 
