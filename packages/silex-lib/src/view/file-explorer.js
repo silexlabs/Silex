@@ -28,7 +28,7 @@ goog.require('goog.async.Delay');
 silex.view.FileExplorer = function(element, cbk){
 	var that = this;
 	this.element = element;
-	this.element.style.display = 'none';
+	goog.style.setStyle(this.element, 'display', 'none');
 
 	if (cbk) {
 		new goog.async.Delay(function () {
@@ -138,7 +138,7 @@ silex.view.FileExplorer.prototype.openEditor = function(){
 	var background = goog.dom.getElementByClass('dialogs-background');
 	// show
 	goog.style.setStyle(background, 'display', 'inherit');
-	this.element.style.display = null;
+	goog.style.setStyle(this.element, 'display', null);
 	// close
 	goog.events.listen(background, goog.events.EventType.CLICK, this.closeEditor, true, this);
 }
@@ -151,7 +151,7 @@ silex.view.FileExplorer.prototype.closeEditor = function(){
 	var background = goog.dom.getElementByClass('dialogs-background');
 	// hide
 	goog.style.setStyle(background, 'display', 'none');
-	this.element.style.display = 'none';
+	goog.style.setStyle(this.element, 'display', 'none');
 	// close
 	goog.events.unlisten(background, goog.events.EventType.CLICK, this.closeEditor, true, this);
 }

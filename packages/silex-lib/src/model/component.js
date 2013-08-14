@@ -131,7 +131,7 @@ silex.model.Component.prototype.setStyle = function (style, opt_context){
 	goog.object.forEach(style, function(val, index, obj) {
 		if (val){
 			// apply to the view
-			this.element.style[index] = val;
+			goog.style.setStyle(this.element, index, val);
 
 			//build the string
 			styleStr += goog.string.toSelectorCase(index) + ': ' + val + '; ';
@@ -155,10 +155,10 @@ silex.model.Component.prototype.setStyle = function (style, opt_context){
  */
 silex.model.Component.prototype.getBoundingBox = function (){
 	return {
-		top: this.element.style.top,
-		left: this.element.style.left,
-		width: this.element.style.width,
-		height: this.element.style.height
+		top: goog.style.getStyle(this.element, 'top'),
+		left: goog.style.getStyle(this.element, 'left'),
+		width: goog.style.getStyle(this.element, 'width'),
+		height: goog.style.getStyle(this.element, 'height')
 	};
 }
 /**
@@ -167,10 +167,11 @@ silex.model.Component.prototype.getBoundingBox = function (){
  */
 silex.model.Component.prototype.setBoundingBox = function (boundingBox){
 	// change the view, move/resize the dom element
-	this.element.style.top = boundingBox.top;
-	this.element.style.left = boundingBox.left;
-	this.element.style.width = boundingBox.width;
-	this.element.style.height = boundingBox.height;
+	goog.style.setStyle(this.element, 'top', boundingBox.top);
+	goog.style.setStyle(this.element, 'left', boundingBox.left);
+	goog.style.setStyle(this.element, 'width', boundingBox.width);
+	goog.style.setStyle(this.element, 'height', boundingBox.height);
+
 	// get the data-style-normal attribute
 	var styleStr = this.element.getAttribute('data-style-'+silex.model.Component.CONTEXT_NORMAL);
 	if (styleStr == null){
@@ -480,8 +481,8 @@ silex.model.Component.prototype.addImage = function(url){
 	div.setAttribute('data-silex-sub-type', silex.model.Component.ELEMENT_SUBTYPE_IMAGE)
 
 	var img = goog.dom.createElement('img');
-	img.style.width = '100%';
-	img.style.height = '100%';
+	goog.style.setStyle(img, 'width', '100%');
+	goog.style.setStyle(img, 'height', '100%');
 	img.setAttribute('src', url);
 
 	// attach it all
@@ -537,17 +538,12 @@ silex.model.Component.prototype.getLink = function(){
  * mark selection
  */
 silex.model.Component.prototype.setSelected = function(isSelected){
-//	var prop = null;
 	if (isSelected){
 		goog.dom.classes.add(this.element, 'silex-selected');
-//		prop = '0 0 1px 1px rgba(0, 0, 0, .8), inset 0 0 1px 1px rgba(255, 255, 255, 0.8)';
 	}
 	else{
 		goog.dom.classes.remove(this.element, 'silex-selected');
 	}
-//	this.element.style.boxShadow = prop;
-//	this.element.style.MozBoxShadow = prop;
-//	this.element.style.WebkitBoxShadow = prop;
 }
 /**
  * mark selection
