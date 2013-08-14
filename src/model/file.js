@@ -107,15 +107,11 @@ silex.model.File.prototype.newFile = function (cbk) {
  * save a file with a new name
  */
 silex.model.File.prototype.saveAs = function(cbk){
-	console.log('saveAs');
 	// choose a new name
 	this.fileExplorer.saveAsDialog(
 	goog.bind(function (blob) {
-		console.log('saveAsDialog pick ok ');
-		console.log(blob);
 
 		// save the data
-		console.log('selection of a new file success');
 		this.setUrl(blob.url);
 		this.setBlob(blob);
 		this.save(cbk);
@@ -127,14 +123,11 @@ silex.model.File.prototype.saveAs = function(cbk){
  * write content to the file
  */
 silex.model.File.prototype.save = function(cbk){
-	console.log('save');
 	var blob = this.getBlob();
-	console.log('save');
 	this.setBodyTag(this.getStageComponent().getHtml(blob.url));
 	this.setHeadTag(this.stage.getHead());
 	this.setBodyStyle(this.stage.getBodyStyle());
 	silex.service.CloudStorage.getInstance().save(blob, this.getHtml(), function () {
-		console.log('file saved');
 		if (cbk) cbk();
 	});
 }
@@ -143,12 +136,9 @@ silex.model.File.prototype.save = function(cbk){
  * load a new file
  */
 silex.model.File.prototype.open = function(cbk){
-	console.log('open');
 	// let the user choose the file
 	this.fileExplorer.openDialog(
 	goog.bind(function (blob) {
-		console.log('openDialog pick ok ');
-		console.log(blob);
 		silex.service.CloudStorage.getInstance().load(blob, 
 		goog.bind(function(rawHtml){
 			// update model
@@ -165,7 +155,6 @@ silex.model.File.prototype.open = function(cbk){
  * reset data, close file
  */
 silex.model.File.prototype.close = function(){
-	console.log('close');
 	this.url = null;
 	this.blob = null;
 	this.headTag = '';
@@ -255,7 +244,6 @@ silex.model.File.prototype.setBodyStyle = function(bodyStyle){
  * Parse the raw html and set the bodyTag and headTag strings
  */
 silex.model.File.prototype.setHtml = function(rawHtml){
-	console.log('setHtml');
 
 	// use lower case to find head and body tags
 	var lowerCaseHtml = rawHtml.toLowerCase();

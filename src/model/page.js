@@ -83,7 +83,6 @@ silex.model.Page.getPageIndex = function (pageName, pages) {
  * open the given page of the site 
  */
 silex.model.Page.prototype.open = function(){
-	console.log('open '+this.name);
     $(this.stage.bodyElement).pageable({currentPage:this.name});
     this.pageTool.setSelectedItem(this, false);
 }

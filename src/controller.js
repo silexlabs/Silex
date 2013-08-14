@@ -94,8 +94,6 @@ silex.Controller.prototype.selection;
  * menu event handler
  */
 silex.Controller.prototype.menuCallback = function(event){
-	console.log('menuCallback');
-	console.log(event);
 	switch(event.type){
 		case 'title.changed':
 			var name = window.prompt('What is the name of your website?', this.menu.getWebsiteName());
@@ -130,25 +128,28 @@ silex.Controller.prototype.menuCallback = function(event){
 			this.file.view()
 			break;
 		case 'tools.debug.activate':
-			goog.log.info(this.theLogger, goog.debug.deepExpose(event));
-goog.debug.LogManager.getLoggers
-setLevel(level)
+			var loggers = goog.debug.LogManager.getLoggers();
+			for (var idx in loggers){
+				var logger = loggers[idx];
+				logger.setLevel(goog.debug.Logger.Level.ALL);
+			}
 			break;
 		case 'tools.debug.deactivate':
-			goog.log.fine(this.theLogger, goog.debug.expose(event), 'test debug', 'test debug 2');
-goog.debug.LogManager.getLoggers
-setLevel(level)
-debugWindow.setEnabled(true);
+			var loggers = goog.debug.LogManager.getLoggers();
+			for (var idx in loggers){
+				var logger = loggers[idx];
+				logger.setLevel(goog.debug.Logger.Level.OFF);
+			}
+			this.debugWindow.setEnabled(false);
 			break;
 		case 'tools.debug.open':
 			// Create the debug window.
-			this.theLogger = goog.log.getLogger('demo');
-			var debugWindow = new goog.debug.FancyWindow('main');
-			debugWindow.setEnabled(true);
-			debugWindow.init();
+			if (this.debugWindow==null) this.debugWindow = new goog.debug.FancyWindow('main');
+			this.debugWindow.setEnabled(true);
+			this.debugWindow.init();
 			break;
 		case 'tools.debug.close':
-			debugWindow.setEnabled(false);
+			this.debugWindow.setEnabled(false);
 			break;
 		case 'view.open.fileExplorer':
 			this.fileExplorer.openDialog();
@@ -184,7 +185,6 @@ debugWindow.setEnabled(true);
 			this.selection.setComponent(this.file.getStageComponent());
 			break;
 		case 'edit.delete.page':
-			console.log(this.selection.getPage());
 			this.selection.getPage().remove();
 			break;
 		case 'edit.rename.page':
@@ -222,8 +222,6 @@ debugWindow.setEnabled(true);
  * stage event handler
  */
 silex.Controller.prototype.stageCallback = function(event){
-	console.log('stageCallback '+this.selection.getContext());
-	console.log(event);
 	switch(event.type){
 		case 'select':
 			// reset context for the old selection
@@ -246,14 +244,10 @@ silex.Controller.prototype.stageCallback = function(event){
 			}
 			break;
 		case 'change':
-			console.log(this.selection.getComponent().element);
-			console.log(this.selection.getComponent().getBoundingBox());
 			// size or position of the element has changed
 			this.selection.getComponent().setBoundingBox(
 				this.selection.getComponent().getBoundingBox()
 			);
-			console.log(this.selection.getComponent().element);
-			console.log(this.selection.getComponent().getBoundingBox());
 			break;
 	}
 }
@@ -261,8 +255,6 @@ silex.Controller.prototype.stageCallback = function(event){
  * pageTool event handler
  */
 silex.Controller.prototype.pageToolCallback = function(event){
-	console.log('pageToolCallback');
-	console.log(event);
 	switch(event.type){
 	case 'changed':
 		this.selection.setPage(event.page);
@@ -284,8 +276,6 @@ silex.Controller.prototype.pageToolCallback = function(event){
  * propertiesTool event handler
  */
 silex.Controller.prototype.propertiesToolCallback = function(event){
-	console.log('propertiesToolCallback');
-	console.log(event);
 	switch(event.type){
 		case 'openTextEditor':
 			this.textEditor.openEditor(this.selection.getComponent().getHtml());
@@ -307,8 +297,6 @@ silex.Controller.prototype.propertiesToolCallback = function(event){
  * textEditor event handler
  */
 silex.Controller.prototype.textEditorCallback = function(event){
-	console.log('textEditorCallback');
-	console.log(event);
 	switch(event.type){
 	case 'changed':
 		this.selection.getComponent().setHtml(event.content);

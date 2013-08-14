@@ -37,7 +37,12 @@ silex.view.FileExplorer = function(element, cbk){
 		}, 10).start();
 	}
 
-/*	silex.Helper.loadTemplateFile('templates/fileexplorer.html', element, function(){
+	// close button
+	goog.events.listen(goog.dom.getElementByClass('close-btn', this.element), goog.events.EventType.CLICK, function(){
+		this.closeEditor();
+	}, false, this);
+
+  /*	silex.Helper.loadTemplateFile('templates/fileexplorer.html', element, function(){
 		that.init();
 		if (cbk) cbk();
 	});

@@ -35,22 +35,18 @@ silex.view.Stage = function(element, cbk){
 		});
 	}, false, this);
 	goog.events.listen(this.element, 'mouseup', function(e){
-		console.log('dispatch mouseup');
 		if (this.onStatus) this.onStatus({
 			type:'change'
 		});
 	}, false, this);
 	// dispatch event when an element has been moved
 	goog.events.listen(this.element, 'dragstop', function(e){
-		console.log('dispatch drag');
 		if (this.onStatus) this.onStatus({
 			type:'change'
 		});
 	}, false, this);
 	// dispatch event when an element has been moved or resized
 	goog.events.listen(this.element, 'resize', function(e){
-		console.log('dispatch resize');
-		console.log(this);
 		if (this.onStatus) this.onStatus({
 			type:'change'
 		});
@@ -79,7 +75,7 @@ silex.view.Stage.prototype.bodyElement;
  * so that it is editable
  */
 silex.view.Stage.prototype.setBody = function(bodyHtml){
-	if (bodyHtml!='') console.warn('warning: you are supposed to do stageComponent.setHtml');
+	if (bodyHtml!='') console.warn('warning: you are supposed to use stageComponent.setHtml');
 	this.bodyElement.innerHTML = bodyHtml;
 }
 /**
