@@ -62,6 +62,7 @@
 
 	<!-- core classes -->
 	<script type="text/javascript" src="../src/helper.js"></script>
+	<script type="text/javascript" src="../src/logger.js"></script>
 	<script type="text/javascript" src="../src/boot.js"></script>
 
 	<!-- Silex compiled --
@@ -81,8 +82,8 @@
 			<link rel="stylesheet" href="css/fileexplorer.css">
 			<link rel="stylesheet" href="libs/cloud-explorer/css/style.css">
 			<div style="/* display:none; */" id="CE" ng-app="ceDirectives">
+				<div class="close-btn"></div>
 				<div ce-browser></div>
-				<button>close</button>
 			</div>
 		</div>
 		<!-- menu -->

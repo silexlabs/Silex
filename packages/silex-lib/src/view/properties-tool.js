@@ -97,7 +97,6 @@ silex.view.PropertiesTool.prototype.buildTabs = function(){
 	var tabBar = new goog.ui.TabBar();
 	tabBar.decorate(tabContainer);
 	goog.events.listen(tabBar, goog.ui.Component.EventType.ACTION, function(event) { 
-		console.log(tabBar.getSelectedTab().getCaption());
 		switch(tabBar.getSelectedTab().getCaption()){
 			case silex.view.PropertiesTool.TAB_TITLE_NORMAL:
 				this.context = silex.model.Component.CONTEXT_NORMAL;
@@ -280,7 +279,6 @@ silex.view.PropertiesTool.prototype.setPages = function(data){
 	// handle the dropdown list from the template
 	var linkDropdown = goog.dom.getElementByClass('link-combo-box', this.element);
 	linkDropdown.onchange = goog.bind(function (e) {
-		console.warn(linkDropdown.value);
 		if (linkDropdown.value=='none'){
 			this.component.removeLink();
 		}

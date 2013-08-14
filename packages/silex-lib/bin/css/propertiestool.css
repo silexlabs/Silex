@@ -3,7 +3,6 @@
 	right: 0;
 	width: 250px;
 	height: 95%;
-	background-color: #f3f3f3;
 }
 .silex-propertiestool .main-container{
 	padding: 5px;
@@ -41,6 +40,9 @@
 	background-color: transparent;
 	padding-left: 1px;
 }
+.silex-propertiestool .goog-tab-bar .goog-tab-selected{
+	background-color: #f3f3f3;
+}
 .silex-propertiestool .goog-tab {
 	color: black;
 	font-size: 13px;
@@ -49,7 +51,7 @@
 	cursor: pointer;
 }
 .silex-propertiestool .tab-page {
-	background-color: white;
+	background-color: #f3f3f3;
 	display: block;
 	border-left: 1px solid #6b90da;
 	border-right: 1px solid #6b90da;

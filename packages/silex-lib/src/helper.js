@@ -46,11 +46,10 @@ silex.Helper.resolveTemplate = function(element, templateHtml, data){
  *              result  ../f/g/file.html
  */
 silex.Helper.getRelativePath = function(url, base){
-    console.log('getRelativePath of '+url+' in '+base);
 
     // check if they are both absolute urls
     if(base.indexOf('http')!=0 || url.indexOf('http')!=0){
-        console.log('Warning: the URL is not absolute');
+        console.warn('Warning: the URL is not absolute');
         return url;
     }
     // get an array out of the URLs
@@ -68,7 +67,7 @@ silex.Helper.getRelativePath = function(url, base){
     baseArr.shift();
     // check if they are on the same domain
     if(baseArr[0]!=urlArr[0]){
-        console.log('Warning: the URL is not on the same domain as the base url');
+        console.warn('Warning: the URL is not on the same domain as the base url');
         return url;
     }
     // remove the common part
@@ -88,8 +87,6 @@ silex.Helper.getRelativePath = function(url, base){
 
     // now append the folders from url and the file name
     relativePath += urlArr.join('/') + '/' + fileName;
-
-    console.log('getRelativePath is '+relativePath);
 
     return relativePath;
 }
@@ -168,7 +165,6 @@ silex.Helper.rgbaToHex = function(rgba){
     a = (rgbaArr[3]).toString(16); if (a.length<2) a = '0'+a;
 
     var result = '#'+(r+g+b+a);
-    console.log('rgbaToHex return '+result);
     return result;
 }
 /**
@@ -200,22 +196,3 @@ silex.Helper.rgbaToArray = function(rgba){
     var result = [r, g, b, a];
     return result;
 }
-/**
- * replace all absolute urls with the relative path
- *
-silex.Helper.convertURLsToRelative = function(str){
-    // convert absolute URLs to relative
-    var base = this.selection.getFile();
-    //str = str.replace(window.location.href, './');
-    var styleArr = str.split('url(');
-    for (var idx=1; idx<styleArr.length; idx++){
-        // get the url from this line
-        var url = styleArr[idx].substr(0, styleArr[idx].indexOf(')'));
-        var relUrl = silex.Helper.getRelativePath(url, base);
-        // put back the rest of the line
-        styleArr[idx] = relUrl + styleArr[idx].substr(styleArr[idx].indexOf(')'));
-    }
-    str = styleArr.join('url(');
-    return str;
-}
-*/
