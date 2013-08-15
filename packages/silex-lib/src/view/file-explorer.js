@@ -61,7 +61,7 @@ silex.view.FileExplorer.SERVICES = ["DROPBOX", "GOOGLE_DRIVE", "EVERNOTE", "FTP"
  */
 silex.view.FileExplorer.prototype.filePicker;
 /**
- * reference to the attached element
+ * element of the dom to which the component is rendered
  */
 silex.view.FileExplorer.prototype.element;
 /**
