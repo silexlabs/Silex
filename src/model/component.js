@@ -101,8 +101,8 @@ silex.model.Component.prototype.getStyle = function (opt_context){
 	// retrieve the element style
 	var styleStr = this.element.getAttribute('data-style-'+opt_context);
 	if (styleStr == null){
-		//styleStr = '';
-		return null;
+		styleStr = '';
+		//return null;
 	}
 	// parse the style string
 	var style = silex.Helper.stringToStyle(styleStr);
