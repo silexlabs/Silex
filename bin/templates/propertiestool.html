@@ -13,46 +13,47 @@
 <link rel="stylesheet" href="css/closure/colorpalette.css">
 <link rel="stylesheet" href="css/closure/colormenubutton.css">
 
-<script class="pages-selector-template" type="text/x-handlebars-template">
-	{{#each pages}}
-		<div class="page-container">
-			<span class="page-check" />
-			<label class="page-label">{{this.name}}</label>
-		</div>
-	{{/each}}
-</script>
-<script class="link-template" type="text/x-handlebars-template">
-	<select class="link-combo-box">
-		<option value="none">Link to ...</option>
-		<option value="none">Nothing</option>
-		<option value="custom">External link</option>
-		{{#each pages}}
-			<option value="{{this.name}}">#{{this.name}}</option>
-		{{/each}}
-	</select>
-	<input class="link-input-text" type="text" />
-</script>
-<script class="style-template" type="text/x-handlebars-template">
-</script>
-<script class="edition-template" type="text/x-handlebars-template">
-	{{#if textEditor}}
-	<div class="button text-editor-button" title="Open text editor">Edit text</div>
-	{{/if}}
-</script>
 <h1>Properties</h1>
 <div class="main-container">
-	<fieldset>
-		<legend>Show only on</legend>
-		<div class="pages-container"></div>
-	</fieldset>
-	<fieldset>
-		<legend>Link</legend>
-		<div class="link-container"></div>
-	</fieldset>
-	<fieldset>
-		<legend>Content</legend>
-		<div class="edition-container"></div>
-	</fieldset>
+	<span class="property-editor">
+		<script class="pages-selector-template" type="text/x-handlebars-template">
+			{{#each pages}}
+				<div class="page-container">
+					<span class="page-check" />
+					<label class="page-label">{{this.name}}</label>
+				</div>
+			{{/each}}
+		</script>
+		<script class="link-template" type="text/x-handlebars-template">
+				<option value="none">Link to ...</option>
+				<option value="none">Nothing</option>
+				<option value="custom">External link</option>
+				{{#each pages}}
+					<option value="{{this.name}}">#{{this.name}}</option>
+				{{/each}}
+		</script>
+		<script class="edition-template" type="text/x-handlebars-template">
+			{{#if textEditor}}
+			<div class="button text-editor-button" title="Open text editor">Edit text</div>
+			{{/if}}
+		</script>
+		<fieldset>
+			<legend>Show only on</legend>
+			<div class="pages-container"></div>
+		</fieldset>
+		<fieldset>
+			<legend>Link</legend>
+			<div>
+				<select class="link-combo-box">
+				</select>
+			</div>
+			<input class="link-input-text" type="text" />
+		</fieldset>
+		<fieldset>
+			<legend>Content</legend>
+			<div class="edition-container"></div>
+		</fieldset>
+	</span>
 	<span class="style-container">
 		<hr />
 		<div class="tab-bar-container goog-tab-bar goog-tab-bar-top">
@@ -61,17 +62,19 @@
 			<div class="goog-tab">Pressed</div>
 		</div>
 		<span class="tab-page">
-			<fieldset class="background-property">
-				<legend>Background Color</legend>
-				<span class="color-bg-button"></span>
-				<span class="color-bg-palette"></span>
-				<span class="enable-color-bg-button"></span> Transparent
-			</fieldset>
-			<fieldset class="background-image">
-				<legend>Background Image</legend>
-				<div class="button bg-image-button">Select image</div>
-				<div class="button clear-bg-image-button">Clear image</div>
-			</fieldset>
+			<div class="background-editor">
+				<fieldset class="background-property">
+					<legend>Background Color</legend>
+					<span class="color-bg-button"></span>
+					<span class="color-bg-palette"></span>
+					<span class="enable-color-bg-button"></span> Transparent
+				</fieldset>
+				<fieldset class="background-image">
+					<legend>Background Image</legend>
+					<div class="button bg-image-button">Select image</div>
+					<div class="button clear-bg-image-button">Clear image</div>
+				</fieldset>
+			</div>
 			<hr>
 		</span>
 	</span>

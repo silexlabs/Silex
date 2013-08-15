@@ -23,7 +23,7 @@
 }
 .silex-propertiestool .link-input-text{
 	background-color: white;
-	border: 1px solid;
+	border: 1px dotted;
 	display: inherit;
 	height: 30px;
 	overflow: hidden;

@@ -38,7 +38,7 @@ silex.view.Menu = function(element, cbk){
  */
 silex.view.Menu.prototype.menu;
 /**
- * reference to the attached element
+ * element of the dom to which the component is rendered
  */
 silex.view.Menu.prototype.element;
 /**

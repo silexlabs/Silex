@@ -277,8 +277,17 @@ silex.Controller.prototype.pageToolCallback = function(event){
  */
 silex.Controller.prototype.propertiesToolCallback = function(event){
 	switch(event.type){
-		case 'openTextEditor':
+		case 'editText':
 			this.textEditor.openEditor(this.selection.getComponent().getHtml());
+			break;
+		case 'selectBgImage':
+			this.fileExplorer.openDialog(
+			goog.bind(function (blob) {
+				this.propertiesTool.setBgImage(blob.url);
+			}, this),
+			['image/*', 'text/plain']);
+			this.workspace.invalidate();
+
 			break;
 		case 'contextChanged':
 			// style of the element has changed
