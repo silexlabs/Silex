@@ -116,28 +116,32 @@ silex.view.propertiesTool.BgEditor.prototype.setStyle = function(style){
  * redraw the properties
  */
 silex.view.propertiesTool.BgEditor.prototype.redraw = function(){
+	if(this.isRedraw == false){
+		this.isRedraw = true;
 		// BG color
-	var color = this.style.backgroundColor;
-	if (color == undefined || color == 'transparent' || color == ''){
-		this.transparentBgCheckbox.setChecked(true);
-		this.bgColorPicker.setEnabled(false);
-		this.setColorPaletteVisibility(false)
-	}
-	else{
-		var hex = silex.Helper.rgbaToHex(color);
+		var color = this.style.backgroundColor;
+		if (color == undefined || color == 'transparent' || color == ''){
+			this.transparentBgCheckbox.setChecked(true);
+			this.bgColorPicker.setEnabled(false);
+			this.setColorPaletteVisibility(false)
+		}
+		else{
+			var hex = silex.Helper.rgbaToHex(color);
 
-		this.transparentBgCheckbox.setChecked(false);
-		this.bgColorPicker.setEnabled(true);
-		this.bgColorPicker.setValue(hex.substring(0,7));
-		this.hsvPalette.setColorRgbaHex(hex);
+			this.transparentBgCheckbox.setChecked(false);
+			this.bgColorPicker.setEnabled(true);
+			this.bgColorPicker.setValue(hex.substring(0,7));
+			this.hsvPalette.setColorRgbaHex(hex);
+		}
+		// BG image
+		if (this.style.backgroundImage!=null && this.style.backgroundImage!='none' && this.style.backgroundImage!=''){
+			this.bgClearBgImage.setEnabled(true);
+		}
+		else{
+			this.bgClearBgImage.setEnabled(false);
+		}
 	}
-	// BG image
-	if (this.style.backgroundImage!=null && this.style.backgroundImage!='none' && this.style.backgroundImage!=''){
-		this.bgClearBgImage.setEnabled(true);
-	}
-	else{
-		this.bgClearBgImage.setEnabled(false);
-	}
+	this.isRedraw = false;
 }
 /** 
  * User has selected a color
@@ -149,6 +153,8 @@ silex.view.propertiesTool.BgEditor.prototype.onColorChanged = function(event){
 	this.style.backgroundColor = color;
 	// notify the toolbox
 	this.styleChanged(this.style);
+	// redraw to reflect changes
+	this.redraw();
 }
 /** 
  * User has clicked on the color button
@@ -182,6 +188,8 @@ silex.view.propertiesTool.BgEditor.prototype.onTransparentChanged = function(eve
 	}
 	// notify the toolbox
 	this.styleChanged(this.style)
+	// redraw to reflect changes
+	this.redraw();
 }
 /** 
  * User has clicked the select image button
@@ -198,6 +206,8 @@ silex.view.propertiesTool.BgEditor.prototype.setBgImage = function(url){
 	goog.style.setStyle(this.getElement(), 'backgroundImage', 'url(' + backgroundImage + ')');
 	// apply to the element and store it in the context attribute
 	this.styleChanged(this.style);
+	// redraw to reflect changes
+	this.redraw();
 }
 /** 
  * User has clicked the clear image button
@@ -207,6 +217,8 @@ silex.view.propertiesTool.BgEditor.prototype.onClearImageButton = function(event
 	this.style.backgroundImage = none;
 	// apply to the element and store it in the context attribute
 	this.styleChanged(this.style)
+	// redraw to reflect changes
+	this.redraw();
 }
 /** 
  * color palette visibility

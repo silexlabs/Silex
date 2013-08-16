@@ -223,7 +223,7 @@ silex.view.propertiesTool.PropertyEditor.prototype.redraw = function(){
 			if (buttonElement){
 				var button = new goog.ui.CustomButton();
 				button.decorate(buttonElement);
-				goog.events.listen(buttonElement, goog.events.EventType.CLICK, this.editText(), false);
+				goog.events.listen(buttonElement, goog.events.EventType.CLICK, this.editText, false);
 			}
 		}
 		else{
