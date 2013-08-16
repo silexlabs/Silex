@@ -37,19 +37,19 @@ silex.model.Component.CONTEXT_PRESSED='pressed';
 /**
  * constant for silex element type
  */
-silex.model.Component.ELEMENT_TYPE_CONTAINER = 'container';
+silex.model.Component.TYPE_CONTAINER = 'container';
 /**
  * constant for silex element type
  */
-silex.model.Component.ELEMENT_TYPE_ELEMENT = 'element';
+silex.model.Component.TYPE_ELEMENT = 'element';
 /**
  * constant for silex element type
  */
-silex.model.Component.ELEMENT_SUBTYPE_IMAGE = 'image';
+silex.model.Component.SUBTYPE_IMAGE = 'image';
 /**
  * constant for silex element type
  */
-silex.model.Component.ELEMENT_SUBTYPE_TEXT = 'text';
+silex.model.Component.SUBTYPE_TEXT = 'text';
 /**
  * logger for debugging
  * @see 	silex.Logger
@@ -70,9 +70,9 @@ silex.model.Component.getType = function (element){
 	var type = element.getAttribute('data-silex-type');
 	var subType = element.getAttribute('data-silex-sub-type');
 	switch(type){
-		case silex.model.Component.ELEMENT_TYPE_CONTAINER:
+		case silex.model.Component.TYPE_CONTAINER:
 			return type;
-		case silex.model.Component.ELEMENT_TYPE_ELEMENT:
+		case silex.model.Component.TYPE_ELEMENT:
 			return subType;
 	}
 	throw('Could not determine the type of this element.');
@@ -193,7 +193,7 @@ silex.model.Component.prototype.setBoundingBox = function (boundingBox){
  * image source
  */
 silex.model.Component.prototype.getImageSrc = function (){
-	if (this.type == silex.model.Component.ELEMENT_SUBTYPE_IMAGE){
+	if (this.type == silex.model.Component.SUBTYPE_IMAGE){
 		var img = goog.dom.getElementsByTagNameAndClass('img', null, this.element)[0];
 		if (img != null){
 			return img.getAttribute('src');
@@ -211,7 +211,7 @@ silex.model.Component.prototype.getImageSrc = function (){
  * image source
  */
 silex.model.Component.prototype.setImageSrc = function (url){
-	if (this.type == silex.model.Component.ELEMENT_SUBTYPE_IMAGE){
+	if (this.type == silex.model.Component.SUBTYPE_IMAGE){
 		var img = goog.dom.getElementsByTagNameAndClass('img', null, this.element)[0];
 		if (img != null){
 			return img.setAttribute('src', url);
@@ -314,7 +314,7 @@ silex.model.Component.prototype.setEditable = function(isEditable, opt_element){
 		// the root element (is not editable when it is the stage, i.e. has no css class 'editable-style')
 		if (this.getEditable(opt_element)){
 			var type = opt_element.getAttribute('data-silex-type');
-			if (type==silex.model.Component.ELEMENT_TYPE_CONTAINER){
+			if (type==silex.model.Component.TYPE_CONTAINER){
 				$(opt_element).editable({
 					isContainer: true
 				});
@@ -404,13 +404,13 @@ silex.model.Component.prototype.applyStateToAllComponents = function(state){
  * and returns a new component for the element
  */
 silex.model.Component.prototype.addContainer = function(){
-	if (this.type != silex.model.Component.ELEMENT_TYPE_CONTAINER){
-		throw('Canot create a child component for this component because it is not of type '+silex.model.Component.ELEMENT_TYPE_CONTAINER);
+	if (this.type != silex.model.Component.TYPE_CONTAINER){
+		throw('Canot create a child component for this component because it is not of type '+silex.model.Component.TYPE_CONTAINER);
 	}
 	// create the conatiner
 	var div = goog.dom.createElement('div');
 	div.className = 'editable-style';
-	div.setAttribute('data-silex-type', silex.model.Component.ELEMENT_TYPE_CONTAINER)
+	div.setAttribute('data-silex-type', silex.model.Component.TYPE_CONTAINER)
 	// attach it 
 	var container = goog.dom.getElementsByClass('background', this.element)[0];
 	goog.dom.appendChild(container, div);
@@ -435,14 +435,14 @@ silex.model.Component.prototype.addContainer = function(){
  * and returns a new component for the element
  */
 silex.model.Component.prototype.addText = function(){
-	if (this.type != silex.model.Component.ELEMENT_TYPE_CONTAINER){
-		throw('Canot create a child component for this component because it is not of type '+silex.model.Component.ELEMENT_TYPE_CONTAINER);
+	if (this.type != silex.model.Component.TYPE_CONTAINER){
+		throw('Canot create a child component for this component because it is not of type '+silex.model.Component.TYPE_CONTAINER);
 	}
 	// create the element
 	var div = goog.dom.createElement('div');
 	div.className = 'editable-style';
-	div.setAttribute('data-silex-type', silex.model.Component.ELEMENT_TYPE_ELEMENT)
-	div.setAttribute('data-silex-sub-type', silex.model.Component.ELEMENT_SUBTYPE_TEXT)
+	div.setAttribute('data-silex-type', silex.model.Component.TYPE_ELEMENT)
+	div.setAttribute('data-silex-sub-type', silex.model.Component.SUBTYPE_TEXT)
 	div.innerHTML = 'New text box';
 	// attach it 
 	var container = goog.dom.getElementsByClass('background', this.element)[0];
@@ -469,16 +469,16 @@ silex.model.Component.prototype.addText = function(){
  * and returns a new component for the element
  */
 silex.model.Component.prototype.addImage = function(url){
-	if (this.type != silex.model.Component.ELEMENT_TYPE_CONTAINER){
-		throw('Canot create a child component for this component because it is not of type '+silex.model.Component.ELEMENT_TYPE_CONTAINER);
+	if (this.type != silex.model.Component.TYPE_CONTAINER){
+		throw('Canot create a child component for this component because it is not of type '+silex.model.Component.TYPE_CONTAINER);
 	}
 	if (url == null){
 		this.logger.error('No URL provided for the image component');
 	}
 	var div = goog.dom.createElement('div');
 	div.className = 'editable-style';
-	div.setAttribute('data-silex-type', silex.model.Component.ELEMENT_TYPE_ELEMENT)
-	div.setAttribute('data-silex-sub-type', silex.model.Component.ELEMENT_SUBTYPE_IMAGE)
+	div.setAttribute('data-silex-type', silex.model.Component.TYPE_ELEMENT)
+	div.setAttribute('data-silex-sub-type', silex.model.Component.SUBTYPE_IMAGE)
 
 	var img = goog.dom.createElement('img');
 	goog.style.setStyle(img, 'width', '100%');
