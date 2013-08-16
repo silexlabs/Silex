@@ -115,7 +115,7 @@ silex.Controller.prototype.menuCallback = function(event){
 			break;
 
 		case 'file.save':
-			if (this.file.getUrl()==null){
+			if (this.file.getBlob()==null){
 				this.file.saveAs();
 			}
 			else{
@@ -366,7 +366,14 @@ silex.Controller.prototype.propertiesToolCallback = function(event){
 			}, this),
 			['image/*', 'text/plain']);
 			this.workspace.invalidate();
-
+			break;
+		case 'selectImage':
+			this.fileExplorer.openDialog(
+			goog.bind(function (blob) {
+				this.propertiesTool.setImage(blob.url);
+			}, this),
+			['image/*', 'text/plain']);
+			this.workspace.invalidate();
 			break;
 		case 'contextChanged':
 			// style of the element has changed

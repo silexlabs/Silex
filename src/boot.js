@@ -122,13 +122,14 @@ silex.boot = function() {
 		logger.fine('Controller created');
 
 		// now create an empty file to let the user start using Silex
-		file.newFile(function () {
-			//controller.menuCallback({type:'insert.text'});
-			//controller.menuCallback({type:'insert.image'});
-			
-			controller.menuCallback({type:'tools.debug.activate'});
-			controller.menuCallback({type:'tools.debug.window'});
+/*		file.newFile(function () {
+			controller.menuCallback({type:'insert.text'});
+			controller.menuCallback({type:'insert.image'});
 		});
+/**/
+		// for testing purpose only
+		file.openFromUrl('http://localhost:8888/repositories/fdt-workspace/Silex/silex-tests/template.html');
+/**/
 		logger.info('--end boot--');
 	});
 	});

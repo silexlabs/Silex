@@ -19,9 +19,6 @@ goog.provide('silex.service.CloudStorage');
  */
 silex.service.CloudStorage = function(){
 	this.filePicker = cloudExplorer;
-//	this.filePicker = filepicker;
-//	this.filePicker.setKey("Au2K2SaKHSGiaXXrGExQUz");
-
 }
 /**
  * reference to the filepicker instance

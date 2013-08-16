@@ -15,7 +15,7 @@
 
 <h1>Properties</h1>
 <div class="main-container">
-	<span class="property-editor">
+	<span class="page-editor">
 		<script class="pages-selector-template" type="text/x-handlebars-template">
 			{{#each pages}}
 				<div class="page-container">
@@ -32,11 +32,6 @@
 					<option value="{{this.name}}">#{{this.name}}</option>
 				{{/each}}
 		</script>
-		<script class="edition-template" type="text/x-handlebars-template">
-			{{#if textEditor}}
-			<div class="button text-editor-button" title="Open text editor">Edit text</div>
-			{{/if}}
-		</script>
 		<fieldset>
 			<legend>Show only on (<small class="show-on-all-pages-btn">or show on all pages</small>)</legend>
 			<div class="pages-container"></div>
@@ -49,6 +44,17 @@
 			</div>
 			<input class="link-input-text" type="text" />
 		</fieldset>
+	</span>
+	<span class="property-editor">
+		<script class="edition-template" type="text/x-handlebars-template">
+			{{#if textEditor}}
+			<div class="button text-editor-button" title="Open text editor">Edit text</div>
+			{{/if}}
+			{{#if imageUrl}}
+			<input class="image-url-input" value="{{imageUrl}}" />
+			<div class="button image-url-button" title="Open file browser">...</div>
+			{{/if}}
+		</script>
 		<fieldset>
 			<legend>Content</legend>
 			<div class="edition-container"></div>

@@ -9,12 +9,11 @@
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
 
-goog.provide('silex.view.propertiesTool.PropertyEditor');
+goog.provide('silex.view.propertiesTool.PagePane');
 
 goog.require('goog.cssom');
 goog.require('goog.ui.Checkbox');
 goog.require('goog.ui.CustomButton');
-goog.require('goog.ui.TabBar');
 goog.require('goog.ui.HsvaPalette');
 goog.require('goog.ui.ColorButton');
 goog.require('goog.editor.Field');
@@ -27,41 +26,36 @@ goog.require('goog.object');
  * let user edit style of components
  * @constructor
  */
-silex.view.propertiesTool.PropertyEditor = function(element, propertyChanged, editText){
+silex.view.propertiesTool.PagePane = function(element, pageChanged){
 	this.element = element;
 	this.pageCheckboxes = [];
-	this.propertyChanged = propertyChanged;
-	this.editText = editText;
+	this.pageChanged = pageChanged;
 	this.buildUi();
 }
 /**
  * element of the dom to which the component is rendered
  */
-silex.view.propertiesTool.PropertyEditor.prototype.element;
+silex.view.propertiesTool.PagePane.prototype.element;
 /**
  * component to be edited
  */
-silex.view.propertiesTool.PropertyEditor.prototype.component;
+silex.view.propertiesTool.PagePane.prototype.component;
 /**
  * callback to notify the tool box
  */
-silex.view.propertiesTool.PropertyEditor.prototype.propertyChanged;
-/**
- * callback to call to let the user edit the text content of the component
- */
-silex.view.propertiesTool.PropertyEditor.prototype.editText;
+silex.view.propertiesTool.PagePane.prototype.pageChanged;
 /**
  * dropdown list to select a link
  */
-silex.view.propertiesTool.PropertyEditor.prototype.linkDropdown;
+silex.view.propertiesTool.PagePane.prototype.linkDropdown;
 /**
  * text field used to type an external link
  */
-silex.view.propertiesTool.PropertyEditor.prototype.linkInputTextField;
+silex.view.propertiesTool.PagePane.prototype.linkInputTextField;
 /**
  * build the UI
  */
-silex.view.propertiesTool.PropertyEditor.prototype.buildUi = function(){
+silex.view.propertiesTool.PagePane.prototype.buildUi = function(){
 	// link, select page or enter custom link
 	// handle the dropdown list from the template
 	this.linkDropdown = goog.dom.getElementByClass('link-combo-box', this.element);
@@ -81,14 +75,14 @@ silex.view.propertiesTool.PropertyEditor.prototype.buildUi = function(){
 /**
  * display the propertis of the component being edited 
  */
-silex.view.propertiesTool.PropertyEditor.prototype.setComponent = function(component){
+silex.view.propertiesTool.PagePane.prototype.setComponent = function(component){
 	this.component = component;
 	this.redraw();
 }
 /**
  * refresh with new data
  */
-silex.view.propertiesTool.PropertyEditor.prototype.setPages = function(data){
+silex.view.propertiesTool.PagePane.prototype.setPages = function(data){
 	// store page data
 	this.pages = data;
 
@@ -141,7 +135,7 @@ silex.view.propertiesTool.PropertyEditor.prototype.setPages = function(data){
 /**
  * the user changed the link drop down
  */
-silex.view.propertiesTool.PropertyEditor.prototype.onLinkChanged = function(event){
+silex.view.propertiesTool.PagePane.prototype.onLinkChanged = function(event){
 	if (this.linkDropdown.value=='none'){
 		this.component.removeLink();
 	}
@@ -157,22 +151,22 @@ silex.view.propertiesTool.PropertyEditor.prototype.onLinkChanged = function(even
 	else {
 		this.component.setLink('#'+this.linkDropdown.value);
 	}
-	this.propertyChanged();
+	this.pageChanged();
 	this.redraw();
 }
 /**
  * the user changed the link text field
  */
-silex.view.propertiesTool.PropertyEditor.prototype.onLinkTextChanged = function(event){
+silex.view.propertiesTool.PagePane.prototype.onLinkTextChanged = function(event){
 	// update the href attribute
 	this.component.setLink(this.linkInputTextField.getCleanContents());
 	// notify the controler
-	this.propertyChanged();
+	this.pageChanged();
 }
 /**
  * redraw the properties
  */
-silex.view.propertiesTool.PropertyEditor.prototype.redraw = function(){
+silex.view.propertiesTool.PagePane.prototype.redraw = function(){
 	if (this.component && this.pageCheckboxes){
 		// refresh page checkboxes
 		goog.array.forEach(this.pageCheckboxes, function(item) {
@@ -215,34 +209,12 @@ silex.view.propertiesTool.PropertyEditor.prototype.redraw = function(){
 		else{
 			goog.style.setStyle(linkInputElement, 'display', 'none');
 		}
-
-		// refresh properties
-		var editionContainer = goog.dom.getElementByClass('edition-container', this.element);
-		if (this.component){
-			var templateHtml = goog.dom.getElementByClass('edition-template', this.element).innerHTML;
-			silex.Helper.resolveTemplate(editionContainer, templateHtml, {
-				textEditor: (this.component.type==silex.model.Component.ELEMENT_SUBTYPE_TEXT)
-			});
-
-			// text editor
-			var buttonElement = goog.dom.getElementByClass('text-editor-button', editionContainer);
-			if (buttonElement){
-				var button = new goog.ui.CustomButton();
-				button.decorate(buttonElement);
-				goog.events.listen(buttonElement, goog.events.EventType.CLICK, this.editText, false);
-			}
-		}
-		else{
-			if (editionContainer){
-				editionContainer.innerHTML = '';
-			}
-		}
 	}
 }
 /**
  * callback for checkboxes click event
  */
-silex.view.propertiesTool.PropertyEditor.prototype.checkPage = function(page, checkbox){
+silex.view.propertiesTool.PagePane.prototype.checkPage = function(page, checkbox){
 	// apply the page selection
 	if (checkbox.isChecked()){
 		page.addComponent(this.component);
@@ -251,19 +223,19 @@ silex.view.propertiesTool.PropertyEditor.prototype.checkPage = function(page, ch
 		page.removeComponent(this.component);
 	}
 	// notify the toolbox
-	this.propertyChanged();
+	this.pageChanged();
 	// refresh ui
 	this.redraw();
 }
 /**
  * callback for checkboxes click event
  */
-silex.view.propertiesTool.PropertyEditor.prototype.unCheckAll = function(){
+silex.view.propertiesTool.PagePane.prototype.unCheckAll = function(){
 	goog.array.forEach(this.pages, function(page) {
 		page.removeComponent(this.component);
 	}, this);
 	// notify the toolbox
-	this.propertyChanged();
+	this.pageChanged();
 	// refresh ui
 	this.redraw();
 }

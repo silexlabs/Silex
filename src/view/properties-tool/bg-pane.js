@@ -9,7 +9,7 @@
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
 
-goog.provide('silex.view.propertiesTool.BgEditor');
+goog.provide('silex.view.propertiesTool.BgPane');
 
 goog.require('goog.ui.Checkbox');
 goog.require('goog.ui.CustomButton');
@@ -25,7 +25,7 @@ goog.require('goog.object');
  * let user edit style of components
  * @constructor
  */
-silex.view.propertiesTool.BgEditor = function(element, styleChanged, selectImage){
+silex.view.propertiesTool.BgPane = function(element, styleChanged, selectImage){
 	this.element = element;
 	this.styleChanged = styleChanged;
 	this.selectImage = selectImage;
@@ -34,40 +34,40 @@ silex.view.propertiesTool.BgEditor = function(element, styleChanged, selectImage
 /**
  * element of the dom to which the component is rendered
  */
-silex.view.propertiesTool.BgEditor.prototype.element;
+silex.view.propertiesTool.BgPane.prototype.element;
 /**
  * style to be edited
  */
-silex.view.propertiesTool.BgEditor.prototype.style;
+silex.view.propertiesTool.BgPane.prototype.style;
 /**
  * callback to notify the tool box
  */
-silex.view.propertiesTool.BgEditor.prototype.styleChanged;
+silex.view.propertiesTool.BgPane.prototype.styleChanged;
 /**
  * callback to call to let the user choose a background image
  */
-silex.view.propertiesTool.BgEditor.prototype.selectImage;
+silex.view.propertiesTool.BgPane.prototype.selectImage;
 /**
  * color picker for background color
  */
-silex.view.propertiesTool.BgEditor.prototype.bgColorPicker;
+silex.view.propertiesTool.BgPane.prototype.bgColorPicker;
 /**
  * color picker for background color
  */
-silex.view.propertiesTool.BgEditor.prototype.hsvPalette;
+silex.view.propertiesTool.BgPane.prototype.hsvPalette;
 /**
  * check box for background color transparency
  */
-silex.view.propertiesTool.BgEditor.prototype.transparentBgCheckbox;
+silex.view.propertiesTool.BgPane.prototype.transparentBgCheckbox;
 /**
  * controls for background image
  */
-silex.view.propertiesTool.BgEditor.prototype.bgSelectBgImage;
-silex.view.propertiesTool.BgEditor.prototype.bgClearBgImage;
+silex.view.propertiesTool.BgPane.prototype.bgSelectBgImage;
+silex.view.propertiesTool.BgPane.prototype.bgClearBgImage;
 /**
  * build the UI
  */
-silex.view.propertiesTool.BgEditor.prototype.buildUi = function(){
+silex.view.propertiesTool.BgPane.prototype.buildUi = function(){
 	// BG color
 	var hsvPaletteElement = goog.dom.getElementByClass('color-bg-palette', this.element);
 	this.hsvPalette = new goog.ui.HsvaPalette(null, null, null, 'goog-hsva-palette-sm');
@@ -108,14 +108,14 @@ silex.view.propertiesTool.BgEditor.prototype.buildUi = function(){
 /**
  * display the style of the element being edited 
  */
-silex.view.propertiesTool.BgEditor.prototype.setStyle = function(style){
+silex.view.propertiesTool.BgPane.prototype.setStyle = function(style){
 	this.style = style;
 	this.redraw();
 }
 /**
  * redraw the properties
  */
-silex.view.propertiesTool.BgEditor.prototype.redraw = function(){
+silex.view.propertiesTool.BgPane.prototype.redraw = function(){
 	if(this.isRedraw == false){
 		this.isRedraw = true;
 
@@ -150,7 +150,7 @@ silex.view.propertiesTool.BgEditor.prototype.redraw = function(){
 /** 
  * User has selected a color
  */
-silex.view.propertiesTool.BgEditor.prototype.onColorChanged = function(event){
+silex.view.propertiesTool.BgPane.prototype.onColorChanged = function(event){
 	// update style
 	var color = silex.Helper.hexToRgba(this.hsvPalette.getColorRgbaHex());
 	if (this.style==null) this.style = {};
@@ -164,7 +164,7 @@ silex.view.propertiesTool.BgEditor.prototype.onColorChanged = function(event){
  * User has clicked on the color button
  * open or close the palete
  */
-silex.view.propertiesTool.BgEditor.prototype.onBgColorButton = function(event){
+silex.view.propertiesTool.BgPane.prototype.onBgColorButton = function(event){
 	// show the palette
 	if (this.getColorPaletteVisibility() == false){
 		this.hsvPalette.setColorRgbaHex(silex.Helper.rgbaToHex(this.style.backgroundColor));
@@ -177,7 +177,7 @@ silex.view.propertiesTool.BgEditor.prototype.onBgColorButton = function(event){
 /** 
  * User has clicked the transparent checkbox
  */
-silex.view.propertiesTool.BgEditor.prototype.onTransparentChanged = function(event){
+silex.view.propertiesTool.BgPane.prototype.onTransparentChanged = function(event){
 	// update style
 	if (this.transparentBgCheckbox.getChecked()==false){
 		var color = silex.Helper.hexToRgba(this.hsvPalette.getColorRgbaHex());
@@ -198,13 +198,13 @@ silex.view.propertiesTool.BgEditor.prototype.onTransparentChanged = function(eve
 /** 
  * User has clicked the select image button
  */
-silex.view.propertiesTool.BgEditor.prototype.onSelectImageButton = function(event){
+silex.view.propertiesTool.BgPane.prototype.onSelectImageButton = function(event){
 	this.selectImage();
 }
 /** 
  * User has selected an image
  */
-silex.view.propertiesTool.BgEditor.prototype.setBgImage = function(url){
+silex.view.propertiesTool.BgPane.prototype.setBgImage = function(url){
 	// update style
 	var backgroundImage = url;
 	goog.style.setStyle(this.getElement(), 'backgroundImage', 'url(' + backgroundImage + ')');
@@ -216,7 +216,7 @@ silex.view.propertiesTool.BgEditor.prototype.setBgImage = function(url){
 /** 
  * User has clicked the clear image button
  */
-silex.view.propertiesTool.BgEditor.prototype.onClearImageButton = function(event){
+silex.view.propertiesTool.BgPane.prototype.onClearImageButton = function(event){
 	// update style
 	this.style.backgroundImage = none;
 	// apply to the element and store it in the context attribute
@@ -228,14 +228,14 @@ silex.view.propertiesTool.BgEditor.prototype.onClearImageButton = function(event
  * color palette visibility
  * do not set display to none, because the setColor then leave the color palette UI unchanged
  */
-silex.view.propertiesTool.BgEditor.prototype.getColorPaletteVisibility = function(){
+silex.view.propertiesTool.BgPane.prototype.getColorPaletteVisibility = function(){
 	return goog.style.getStyle(this.hsvPalette.getElement(), 'visibility') != 'hidden';
 }
 /** 
  * color palette visibility
  * do not set display to none, because the setColor then leave the color palette UI unchanged
  */
-silex.view.propertiesTool.BgEditor.prototype.setColorPaletteVisibility = function(isVisible){
+silex.view.propertiesTool.BgPane.prototype.setColorPaletteVisibility = function(isVisible){
 	if (isVisible){
 		if (!this.getColorPaletteVisibility()){
 			goog.style.setStyle(this.hsvPalette.getElement(), 'visibility', null);

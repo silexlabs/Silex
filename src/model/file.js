@@ -95,11 +95,18 @@ silex.model.File.prototype.bodyStyle;
  * load an empty new file
  */
 silex.model.File.prototype.newFile = function (cbk) {
-	silex.service.CloudStorage.getInstance().loadLocal(silex.model.File.CREATION_TEMPLATE, 
+	this.openFromUrl(silex.model.File.CREATION_TEMPLATE, cbk);
+}
+/**
+ * load an arbitrary url as a silex html file
+ * will not be able to save
+ */
+silex.model.File.prototype.openFromUrl = function (url, cbk) {
+	silex.service.CloudStorage.getInstance().loadLocal(url, 
 	goog.bind(function(rawHtml){
+		this.setUrl(url);
 		this.setHtml(rawHtml);
-		this.setUrl(null);
-		this.setBlob(null);
+		this.setBlob(null); // will not be able to save
 		if (cbk) cbk();
 	}, this));
 }
@@ -225,6 +232,11 @@ silex.model.File.prototype.getBlob = function(){
  */
 silex.model.File.prototype.setBlob = function(blob){
 	this.blob = blob;
+	// update tools
+	if (blob)
+		this.propertiesTool.setBaseUrl(blob.url);
+	else
+		this.propertiesTool.setBaseUrl(null);
 }
 /**
  * get the string containing the style attribute of the body tag
