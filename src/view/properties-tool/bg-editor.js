@@ -118,6 +118,10 @@ silex.view.propertiesTool.BgEditor.prototype.setStyle = function(style){
 silex.view.propertiesTool.BgEditor.prototype.redraw = function(){
 	if(this.isRedraw == false){
 		this.isRedraw = true;
+
+		if (this.style == null)
+			this.style = {};
+
 		// BG color
 		var color = this.style.backgroundColor;
 		if (color == undefined || color == 'transparent' || color == ''){
