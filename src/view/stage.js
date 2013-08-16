@@ -69,6 +69,92 @@ silex.view.Stage.prototype.headElement;
  */
 silex.view.Stage.prototype.bodyElement;
 /**
+ * get the pages from the dom
+ * @see silex.model.Page
+ */
+silex.view.Stage.prototype.getPagesNamesFromDom = function(){
+	// retrieve all page names from the head section
+	var pageNames = [];
+	$('meta[name="page"]', this.headElement).each(function() {
+		pageNames.push(this.getAttribute('content'));
+	});
+	return pageNames;
+}
+/**
+ * remove a page from the dom
+ * @see silex.model.Page
+ */
+silex.view.Stage.prototype.removePage = function(page){
+	// remove the DOM element
+	$('meta[name="page"]', this.headElement).each(
+		function () {
+			if (this.getAttribute('content')==page.name){
+				$(this).remove();
+		}
+	});
+	// remove the links to this page
+	$('*[data-silex-href="#'+page.name+'"]').each(
+		function () {
+			this.removeAttribute('data-silex-href');
+		}
+	);
+	// check elements which were only visible on this page
+	// and make them visible everywhere
+	$('.'+page.name).each(
+		function () {
+			$(this).removeClass(page.name);
+
+			var pagesOfElement = silex.model.Page.getPagesForElement(this);
+			if (pagesOfElement.length <= 0) 
+				$(this).removeClass(silex.model.Page.PAGE_CLASS);
+		}
+	);
+}
+/**
+ * add a page from the dom
+ * @see silex.model.Page
+ */
+silex.view.Stage.prototype.addPage = function(page){
+	// create the DOM element
+	var meta = goog.dom.createElement('meta');
+	meta.name = 'page';
+	meta.content = page.name;
+	goog.dom.appendChild(this.headElement, meta);
+}
+/**
+ * rename a page in the dom
+ * @see silex.model.Page
+ */
+silex.view.Stage.prototype.renamePage = function(page, name){
+	var that = this;
+	// update the DOM element
+	$('meta[name="page"]', this.stage.headElement).each(
+		function () {
+			if (this.getAttribute('content') == that.name){
+				this.setAttribute('content', name);
+		}
+	});
+	// update the links to this page
+	$('*[data-silex-href="#'+this.name+'"]').each(
+		function () {
+			this.setAttribute('data-silex-href', '#'+name);
+		}
+	);
+	// update the visibility of the compoents
+	$('.'+this.name).each(
+		function () {
+			$(this).removeClass(that.name);
+			$(this).addClass(name);
+		}
+	);
+}
+/**
+ * open the page
+ */
+silex.view.Stage.prototype.openPage = function(page){
+	$(this.bodyElement).pageable({currentPage:page.name});
+}
+/**
  * set the html content on the stage
  * @param string containing html
  * warning: you are supposed to do stageComponent.setHtml(bodyHtml, baseUrl);

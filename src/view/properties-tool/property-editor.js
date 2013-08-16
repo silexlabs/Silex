@@ -29,6 +29,7 @@ goog.require('goog.object');
  */
 silex.view.propertiesTool.PropertyEditor = function(element, propertyChanged, editText){
 	this.element = element;
+	this.pageCheckboxes = [];
 	this.propertyChanged = propertyChanged;
 	this.editText = editText;
 	this.buildUi();
@@ -98,15 +99,12 @@ silex.view.propertiesTool.PropertyEditor.prototype.setPages = function(data){
 		});
 	}
 
-	// render page/visibility template
+	// link selector
 	var linkContainer = goog.dom.getElementByClass('link-combo-box', this.element);
-	console.log(this.element);
-	console.log(linkContainer);
-	console.log(goog.dom.getElementByClass('link-template', this.element));
 	var templateHtml = goog.dom.getElementByClass('link-template', this.element).innerHTML;
 	silex.Helper.resolveTemplate(linkContainer, templateHtml, {pages:this.pages});
 
-	// page selector
+	// render page/visibility template
 	// init page template
 	var pagesContainer = goog.dom.getElementByClass('pages-container', this.element);
 	var templateHtml = goog.dom.getElementByClass('pages-selector-template', this.element).innerHTML;
@@ -192,7 +190,7 @@ silex.view.propertiesTool.PropertyEditor.prototype.redraw = function(){
 			this.linkDropdown.value='none';
 		}
 		else{
-			if (hrefAttr.indexOf('#')==0 && silex.model.Page.getPageIndex(hrefAttr.substr(1), this.pages)>=0){
+			if (hrefAttr.indexOf('#')==0 && silex.model.Page.getPageIndex(hrefAttr.substr(1))>=0){
 				// case of an internal link
 				// select a page
 				this.linkDropdown.value = hrefAttr.substr(1);
@@ -241,29 +239,13 @@ silex.view.propertiesTool.PropertyEditor.prototype.redraw = function(){
 silex.view.propertiesTool.PropertyEditor.prototype.selectPage = function(page, checkbox){
 	// apply the page selection
 	if (checkbox.isChecked()){
-		goog.dom.classes.add(this.component.element, page.name)
-		goog.dom.classes.add(this.component.element, silex.model.Page.PAGE_CLASS)
+		page.addComponent(this.component);
 	}
 	else{
-		goog.dom.classes.remove(this.component.element, page.name)
-		if (this.getNumberOfPages(this.component.element)==0){
-			goog.dom.classes.remove(this.component.element, silex.model.Page.PAGE_CLASS)
-		}
+		page.removeComponent(this.component);
 	}
 	// notify the toolbox
 	this.propertyChanged();
 	// refresh ui
 	this.redraw();
-}
-/**
- * count the number of pages in which the element is visible
- */
-silex.view.propertiesTool.PropertyEditor.prototype.getNumberOfPages = function(element){
-	var res = 0;
-	goog.array.forEach(this.pages, function(page) {
-		if(goog.dom.classes.has(element, page.name)){
-			res++;
-		}
-	}, this);
-	return res;
 }

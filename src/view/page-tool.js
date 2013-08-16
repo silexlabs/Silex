@@ -108,7 +108,7 @@ silex.view.PageTool.prototype.selectionChanged = function(page){
  * set selection 
  */
 silex.view.PageTool.prototype.setSelectedItem = function(page, notify){
-	var idx = silex.model.Page.getPageIndex(page.name, this.pages);
+	var idx = silex.model.Page.getPageIndex(page.name);
 	this.setSelectedIndex(idx, notify);
 }
 /**
