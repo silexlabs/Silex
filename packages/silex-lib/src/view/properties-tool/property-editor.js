@@ -126,9 +126,15 @@ silex.view.propertiesTool.PropertyEditor.prototype.setPages = function(data){
 			page: page
 		});
 		goog.events.listen(checkbox, goog.ui.Component.EventType.CHANGE, function(e){
-			this.selectPage(page, checkbox);
+			this.checkPage(page, checkbox);
 		}, false, this);
 	}, this);
+	// show on all pages button
+	var showAllBtn = goog.dom.getElementByClass('show-on-all-pages-btn', this.element);
+	goog.events.listen(showAllBtn, goog.events.EventType.CLICK, function(e){
+		this.unCheckAll();
+	}, false, this);
+
 	// refresh display
 	this.redraw();
 }
@@ -236,7 +242,7 @@ silex.view.propertiesTool.PropertyEditor.prototype.redraw = function(){
 /**
  * callback for checkboxes click event
  */
-silex.view.propertiesTool.PropertyEditor.prototype.selectPage = function(page, checkbox){
+silex.view.propertiesTool.PropertyEditor.prototype.checkPage = function(page, checkbox){
 	// apply the page selection
 	if (checkbox.isChecked()){
 		page.addComponent(this.component);
@@ -244,6 +250,18 @@ silex.view.propertiesTool.PropertyEditor.prototype.selectPage = function(page, c
 	else{
 		page.removeComponent(this.component);
 	}
+	// notify the toolbox
+	this.propertyChanged();
+	// refresh ui
+	this.redraw();
+}
+/**
+ * callback for checkboxes click event
+ */
+silex.view.propertiesTool.PropertyEditor.prototype.unCheckAll = function(){
+	goog.array.forEach(this.pages, function(page) {
+		page.removeComponent(this.component);
+	}, this);
 	// notify the toolbox
 	this.propertyChanged();
 	// refresh ui

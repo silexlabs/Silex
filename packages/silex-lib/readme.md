@@ -45,7 +45,6 @@ refactoring
 
 functionnal
 * img non visible pendant 1er loading (apre ajout)
-* Insertion d'un élément -> visible uniquement dans la page courante
 * size & position
 * set as default page
 * champs de text des pages modifiables

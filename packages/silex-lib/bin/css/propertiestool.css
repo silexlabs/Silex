@@ -17,6 +17,14 @@
 .silex-propertiestool .pages-container .page-check span{
 	float: left;
 }
+.silex-propertiestool .show-on-all-pages-btn{
+	font-weight: normal;
+	color: blue;
+	cursor: pointer;
+}
+.silex-propertiestool .show-on-all-pages-btn:hover{
+	text-decoration: underline;
+}
 /* link */
 .silex-propertiestool .link-combo-box{
 	font-size: small;
