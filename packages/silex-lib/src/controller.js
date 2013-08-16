@@ -26,6 +26,9 @@ silex.Controller = function(
 	file, 
 	selection){
 
+	// logger
+	this.logger = new silex.Logger('silex.Controller', true);
+
 	// store references to the view components
 	this.workspace = workspace;
 	this.menu = menu;
@@ -49,6 +52,11 @@ silex.Controller = function(
 	this.propertiesTool.onStatus = goog.bind(this.propertiesToolCallback, this);
 	this.textEditor.onStatus = goog.bind(this.textEditorCallback, this);
 }
+/**
+ * logger for debugging
+ * @see 	silex.Logger
+ */
+silex.model.Component.prototype.logger;
 /**
  * reference to the workspace component (view)
  */
@@ -228,6 +236,7 @@ silex.Controller.prototype.menuCallback = function(event){
  * stage event handler
  */
 silex.Controller.prototype.stageCallback = function(event){
+	this.logger.info('stageCallback ', event);
 	switch(event.type){
 		case 'select':
 			// reset context for the old selection
@@ -254,6 +263,10 @@ silex.Controller.prototype.stageCallback = function(event){
 			this.selection.getComponent().setBoundingBox(
 				this.selection.getComponent().getBoundingBox()
 			);
+			break;
+		case 'edit':
+			// size or position of the element has changed
+			this.editComponent();
 			break;
 	}
 }
@@ -344,7 +357,7 @@ silex.Controller.prototype.createPage = function(){
 silex.Controller.prototype.propertiesToolCallback = function(event){
 	switch(event.type){
 		case 'editText':
-			this.textEditor.openEditor(this.selection.getComponent().getHtml());
+			this.editComponent();
 			break;
 		case 'selectBgImage':
 			this.fileExplorer.openDialog(
@@ -375,6 +388,18 @@ silex.Controller.prototype.textEditorCallback = function(event){
 	switch(event.type){
 	case 'changed':
 		this.selection.getComponent().setHtml(event.content);
+		break;
+	}
+}
+/**
+ * edit a component
+ * take its type into account
+ */
+silex.Controller.prototype.editComponent = function(){
+	var component = this.selection.getComponent();
+	switch(component.type){
+	case silex.model.Component.SUBTYPE_TEXT:
+		this.textEditor.openEditor(component.getHtml());
 		break;
 	}
 }

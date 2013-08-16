@@ -125,7 +125,6 @@ silex.model.Page.getPagesForElement = function(element){
 			res.push(page);
 		}
 	}, this);
-	console.log('getPagesForElement', element, res);
 	return res;
 }
 ////////////////////////////////////////////////

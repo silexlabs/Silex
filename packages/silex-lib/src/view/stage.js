@@ -51,6 +51,12 @@ silex.view.Stage = function(element, cbk){
 			type:'change'
 		});
 	}, false, this);
+	// detect double click
+	goog.events.listen(this.element, goog.events.EventType.DBLCLICK, function(e){
+		if (this.onStatus) this.onStatus({
+			type:'edit'
+		});
+	}, false, this);
 }
 /**
  * callback set by the controller
