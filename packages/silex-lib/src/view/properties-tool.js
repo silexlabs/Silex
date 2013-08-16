@@ -29,7 +29,6 @@ goog.require('goog.object');
  */
 silex.view.PropertiesTool = function(element, cbk){
 	this.element = element;
-	this.pageCheckboxes = [];
 	this.context = silex.model.Component.CONTEXT_NORMAL;
 	
 	silex.Helper.loadTemplateFile('templates/propertiestool.html', element, function(){

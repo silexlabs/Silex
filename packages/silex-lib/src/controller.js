@@ -156,10 +156,7 @@ silex.Controller.prototype.menuCallback = function(event){
 			this.workspace.invalidate();
 			break;
 		case 'insert.page':
-			this.file.createPage(goog.bind(function (page) {
-				this.selection.setPage(page);
-				page.open();
-			}, this));
+			this.createPage();
 			break;
 		case 'insert.text':
 			var component = this.file.getStageComponent().addText();
@@ -185,7 +182,7 @@ silex.Controller.prototype.menuCallback = function(event){
 			this.selection.setComponent(this.file.getStageComponent());
 			break;
 		case 'edit.delete.page':
-			this.selection.getPage().remove();
+			this.removePage(this.selection.getPage());
 			break;
 		case 'edit.rename.page':
 			this.selection.getPage().rename();
@@ -264,14 +261,74 @@ silex.Controller.prototype.pageToolCallback = function(event){
 		break;
 	case 'delete':
 		// delete the page from the model
-		event.page.remove();
+		this.removePage(event.page);
 		break;
 	case 'rename':
 		// delete the page from the model
-		event.page.rename();
+		this.renamePage(event.page);
 		break;
 	}
 }
+/**
+ * rename a page
+ */
+silex.Controller.prototype.renamePage = function(page){
+	var name = window.prompt('What name for your page?', this.name);
+	if(name){
+		page.rename(name);
+	}
+}
+/**
+ * remvoe a given page
+ */
+silex.Controller.prototype.removePage = function(page){
+	if (window.confirm('I am about to delete the page, are you sure?')){
+		// update model
+		page.detach();
+	}
+}
+/**
+ * create a page
+ */
+silex.Controller.prototype.createPage = function(){
+	// create the page instance
+	var pageName = window.prompt('What name for your new page?', 'New page name');
+	if (pageName && pageName.length>0){
+		// cleanup the page name
+		pageName = pageName.replace(/\ /g,'-')
+			.replace(/\./g,'-')
+			.replace(/'/g,'-')
+			.replace(/"/g,'-')
+			.toLowerCase();
+		// check if a page with this name exists
+		var pages = silex.model.Page.getPages();
+		var exists = null;
+		goog.array.forEach(pages, function(page) {
+			if (page.name == pageName)
+				exists = page;
+		}, this);
+		if (exists){
+			exists.open();
+		}
+		else{
+			// create the page model
+			var page = new silex.model.Page(
+				pageName, 
+				this.workspace,
+				this.menu,
+				this.stage,
+				this.pageTool,
+				this.propertiesTool,
+				this.textEditor,
+				this.fileExplorer
+			);
+			page.attach();
+			this.selection.setPage(page);
+			page.open();
+		}
+	}
+}
+
 /**
  * propertiesTool event handler
  */

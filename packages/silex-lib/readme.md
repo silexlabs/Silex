@@ -42,10 +42,6 @@ com
 
 refactoring
 * suppr jquery quand pas utile
-* renommer boot.js en app.js
-* externs : text editor?? file picker dialog
-* view : editors?
-* reactiver les urls relatives?
 
 functionnal
 * img non visible pendant 1er loading (apre ajout)
