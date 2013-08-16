@@ -261,6 +261,9 @@ silex.model.Component.prototype.setHtml = function (html, opt_baseUrl){
 	if (opt_baseUrl){
 		this.relative2absolute(opt_baseUrl);
 	}
+	else{
+		this.logger.warn('setHtml without base url, the URLs could not be converted to absolute');
+	}
 	// restore editing
 	this.setEditable(true);
 }

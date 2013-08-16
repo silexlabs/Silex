@@ -28,16 +28,23 @@ goog.require('goog.object');
  * @constructor
  */
 silex.view.PropertiesTool = function(element, cbk){
+	// logger
+	this.logger = new silex.Logger('silex.view.PropertiesTool', true);
+
 	this.element = element;
 	this.context = silex.model.Component.CONTEXT_NORMAL;
 	
 	silex.Helper.loadTemplateFile('templates/propertiestool.html', element, function(){
 		this.buildTabs();
-		this.buildStylePane();
-		this.buildPropertyPane();
+		this.buildPanes();
 		if (cbk) cbk();
 	}, this);
 }
+/**
+ * logger for debugging
+ * @see 	silex.Logger
+ */
+silex.model.Component.prototype.logger;
 /**
  * tabs titles
  */
@@ -58,14 +65,19 @@ silex.view.PropertiesTool.prototype.component;
 silex.view.PropertiesTool.prototype.context;
 /**
  * bg editor
- * @see 	silex.view.propertiesTool.BgEditor
+ * @see 	silex.view.propertiesTool.BgPane
  */
-silex.view.PropertiesTool.prototype.bgEditor;
+silex.view.PropertiesTool.prototype.bgPane;
 /**
  * property editor
- * @see 	silex.view.propertiesTool.PropertyEditor
+ * @see 	silex.view.propertiesTool.PropertyPane
  */
-silex.view.PropertiesTool.prototype.propertyEditor;
+silex.view.PropertiesTool.prototype.propertyPane;
+/**
+ * property editor
+ * @see 	silex.view.propertiesTool.PagePane
+ */
+silex.view.PropertiesTool.prototype.pagePane;
 /**
  * callback set by the controller
  */
@@ -98,33 +110,40 @@ silex.view.PropertiesTool.prototype.buildTabs = function(){
 		}
 		// update display
 		var style = this.component.getStyle();
-		this.bgEditor.setStyle();
+		this.bgPane.setStyle();
 	}, false, this);
 }
 /**
  * build the UI
  */
-silex.view.PropertiesTool.prototype.buildStylePane = function(){
+silex.view.PropertiesTool.prototype.buildPanes = function(){
+	this.logger.info('buildPane', 
+		goog.dom.getElementByClass('background-editor', this.element), 
+		goog.dom.getElementByClass('page-editor', this.element), 
+		goog.dom.getElementByClass('property-editor', this.element)
+	);
 	// background
-	this.bgEditor = new silex.view.propertiesTool.BgEditor(
+	this.bgPane = new silex.view.propertiesTool.BgPane(
 		goog.dom.getElementByClass('background-editor', this.element), 
 		goog.bind(this.styleChanged, this),
 		goog.bind(this.selectBgImage, this)
 	);
-}
-/**
- * build the UI
- */
-silex.view.PropertiesTool.prototype.buildPropertyPane = function(){
-	this.propertyEditor = new silex.view.propertiesTool.PropertyEditor(
+	// property
+	this.propertyPane = new silex.view.propertiesTool.PropertyPane(
 		goog.dom.getElementByClass('property-editor', this.element), 
 		goog.bind(this.propertyChanged, this),
-		goog.bind(this.editText, this)
+		goog.bind(this.editText, this),
+		goog.bind(this.selectImage, this)
+	);
+	// page
+	this.pagePane = new silex.view.propertiesTool.PagePane(
+		goog.dom.getElementByClass('page-editor', this.element), 
+		goog.bind(this.propertyChanged, this)
 	);
 }
 /**
  * notify the controller that the user needs to select a bg image
- * this is called by BgEditor 
+ * this is called by BgPane 
  */
 silex.view.PropertiesTool.prototype.selectBgImage = function(){
 	if(this.onStatus) this.onStatus({
@@ -132,19 +151,34 @@ silex.view.PropertiesTool.prototype.selectBgImage = function(){
 	});
 }
 /**
- * notify the controller that the user needs to edit the html content of the component
- * this is called by PropertyEditor
+ * let the controller set a bg image
  */
-silex.view.PropertiesTool.prototype.editText = function(){
+silex.view.PropertiesTool.prototype.setBgImage = function(url){
+	this.bgPane.setBgImage(url);
+}
+/**
+ * notify the controller that the user needs to select a bg image
+ * this is called by BgPane 
+ */
+silex.view.PropertiesTool.prototype.selectImage = function(){
 	if(this.onStatus) this.onStatus({
-		type: 'editText'
+		type: 'selectImage'
 	});
 }
 /**
  * let the controller set a bg image
  */
-silex.view.PropertiesTool.prototype.setBgImage = function(url){
-	this.bgEditor.setBgImage(url);
+silex.view.PropertiesTool.prototype.setImage = function(url){
+	this.propertyPane.setImage(url);
+}
+/**
+ * notify the controller that the user needs to edit the html content of the component
+ * this is called by PropertyPane
+ */
+silex.view.PropertiesTool.prototype.editText = function(){
+	if(this.onStatus) this.onStatus({
+		type: 'editText'
+	});
 }
 /**
  * notify the controller that the style changed
@@ -169,18 +203,25 @@ silex.view.PropertiesTool.prototype.propertyChanged = function(){
 	}
 }
 /**
- * display the style of the element being edited 
+ * set 
  */
 silex.view.PropertiesTool.prototype.setComponent = function(component){
 	this.component = component;
-	this.propertyEditor.setComponent(component);
+	this.propertyPane.setComponent(component);
+	this.pagePane.setComponent(component);
 
 	var style = this.component.getStyle();
-	this.bgEditor.setStyle(style);
+	this.bgPane.setStyle(style);
+}
+/**
+ * display the style of the element being edited 
+ */
+silex.view.PropertiesTool.prototype.setBaseUrl = function(url){
+	this.propertyPane.setBaseUrl(url);
 }
 /**
  * refresh with new data
  */
 silex.view.PropertiesTool.prototype.setPages = function(data){
-	this.propertyEditor.setPages(data);
+	this.pagePane.setPages(data);
 }
