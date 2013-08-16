@@ -160,12 +160,18 @@ silex.Controller.prototype.menuCallback = function(event){
 			break;
 		case 'insert.text':
 			var component = this.file.getStageComponent().addText();
+			// only visible on the current page
+			this.selection.getPage().addComponent(component);
+			// select the component
 			this.selection.setComponent(component);
 			break;
 		case 'insert.image':
 			this.fileExplorer.openDialog(
 			goog.bind(function (blob) {
 				var component = this.file.getStageComponent().addImage(blob.url);
+				// only visible on the current page
+				this.selection.getPage().addComponent(component);
+				// select the component
 				this.selection.setComponent(component);
 			}, this),
 			['image/*', 'text/plain']);
@@ -173,6 +179,9 @@ silex.Controller.prototype.menuCallback = function(event){
 			break;
 		case 'insert.container':
 			var component = this.file.getStageComponent().addContainer();
+			// only visible on the current page
+			this.selection.getPage().addComponent(component);
+			// select the component
 			this.selection.setComponent(component);
 			break;
 		case 'edit.delete.selection':
