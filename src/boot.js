@@ -42,7 +42,7 @@ goog.require('silex.view.Workspace');
 
 silex.boot = function() {
 	var logger = new silex.Logger('silex.boot', false);
-	logger.setLevel(silex.Logger.INFO);
+//	logger.setLevel(silex.Logger.INFO);
 	logger.info('--start boot--');
 
 	// create all views and attach them to the dom
@@ -127,8 +127,11 @@ silex.boot = function() {
 			controller.menuCallback({type:'insert.image'});
 		});
 /**/
+		// remove hash added by cloud explorer
+		window.location.hash = '';
 		// for testing purpose only
-		file.openFromUrl('http://localhost:8888/repositories/fdt-workspace/Silex/silex-tests/template.html');
+		var base = window.location.href.substr(0, window.location.href.lastIndexOf('/'));
+		file.openFromUrl(base+'/../silex-tests/template.html');
 /**/
 		logger.info('--end boot--');
 	});

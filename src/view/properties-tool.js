@@ -206,6 +206,7 @@ silex.view.PropertiesTool.prototype.propertyChanged = function(){
  * set 
  */
 silex.view.PropertiesTool.prototype.setComponent = function(component){
+	this.logger.fine('setComponent', component);
 	this.component = component;
 	this.propertyPane.setComponent(component);
 	this.pagePane.setComponent(component);

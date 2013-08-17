@@ -42,6 +42,21 @@
 .silex-propertiestool .button{
 	text-align: center;
 	font-size: 13px;
+	width: 45%;
+}
+/* comboboxes */
+.silex-propertiestool .tab-page label{
+	display: block;
+	margin: 4px 2px 0;
+}
+.silex-propertiestool .combobox{
+	text-align: center;
+	font-size: 13px;
+	width: 45%;
+}
+.silex-propertiestool .combobox .goog-menu-button-outer-box, 
+.silex-propertiestool .combobox .goog-menu-button-inner-box{
+	width: 100%;
 }
 /* tabs */
 .silex-propertiestool .goog-tab-bar {
