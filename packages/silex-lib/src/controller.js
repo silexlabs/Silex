@@ -136,19 +136,11 @@ silex.Controller.prototype.menuCallback = function(event){
 			this.file.view()
 			break;
 		case 'tools.debug.activate':
-			var loggers = goog.debug.LogManager.getLoggers();
-			for (var idx in loggers){
-				var logger = loggers[idx];
-				logger.setLevel(goog.debug.Logger.Level.ALL);
-			}
+			this.logger.setLevel(silex.Logger.ALL);
 			break;
 		case 'tools.debug.deactivate':
-			var loggers = goog.debug.LogManager.getLoggers();
-			for (var idx in loggers){
-				var logger = loggers[idx];
-				logger.setLevel(goog.debug.Logger.Level.OFF);
-			}
-			this.debugWindow.setEnabled(false);
+			this.logger.setLevel(silex.Logger.OFF);
+			//this.debugWindow.setEnabled(false);
 			break;
 		case 'tools.debug.open':
 			// Create the debug window.

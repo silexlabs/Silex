@@ -20,8 +20,6 @@ http://demos.silexlabs.org/silex-v2-alpha2/
 ###dev notes / encours
 
 cloud explorer
-* choose the extension??
-* frames au lieu de popup
 * design
 * detection des pages callback (google_auth et twitter.com)
 * garder le token quand on est déja connecté?
@@ -41,72 +39,51 @@ com
 * redirection html5-editor.org 
 
 refactoring
-* suppr jquery quand pas utile
+* pane avec la meme interface : get/setComponent seulement et passer le logger?
+* suppr jquery quand pas utile, seulement dans stage
 
-functionnal
-* img non visible pendant 1er loading (apre ajout)
-* size & position
-* set as default page
-* champs de text des pages modifiables
-* Lock/unlock
-* shortcuts
-* url de l'image selectionnee
-* image en bg (scale pas repeat)
-* Ombres et bordures, 
-* Zindex
-* sons?
-* Double click to edit
-* group images on the same drive as the html page?
 
 ###v2.0.0alpha3
 
 http://demos.silexlabs.org/silex-v2-alpha3/
 
-Software architecture
-* split view in several files
-* interfaces for jquery plugins, so that there is jquery only there
-
-Text editor
-* use goog.editor
+functionnal
+* img non visible pendant 1er loading (apre ajout)
 
 Properties 
-* background color property
+* Lock/unlock
+* bg image (scale pas repeat)
+* shadows
 * border property file://localhost/Users/lexa/Dropbox/fdt-workspace/Silex/libs/closure/goog/demos/roundedpanel
 * position and size, centered V/H? .html
-* font
+* font-*
 * z-index
 * cursor
+* scroll?
 
 
 ###v2.0.0alpha4
 
+WYSIWYG
+* shortcuts (suppr, arrows, save, new, open)
+* UI sounds? 
+* set as default page
+
 Texte
-* entrer en editing en double cliquant sur le bloc texte
 * difference entre typo dans l’editeur text et sur la scene
-* liens internes / externes : dans le proprietes
+* detecter la couleur de fond (chercher le background color ou image dans les parents)
 
-Wysiwyg
-* selected state 
-* resize handle visible only when selected
-* grid? snap?
-
-page
-* ré-éditer le nom des pages
-
-Insert components
+Components
 * media (image, audio, video)
 * nav bar
 
 File
-* save
-* save as
-
-Resize : caler a gauche quand fenetre trop petite 
+* group images on the same drive as the html page? 
+* export (cleanup html, make zip with .html, .js, .css, all media)?
 
 ###v2.0.0alpha5
 
 Edition 
-* delete elements
 * copy/cut/paste
 * undo/redo
 * autosave
@@ -117,7 +94,7 @@ File properties
 * title and description and keywords 
 * favicon
 
-Contextual menu on the elements
+Contextual menu on the elements (menu bar under the menu like google?)
 * delete
 * lock/unlock
 * up/down (z-index)
@@ -139,3 +116,7 @@ Packaging / distribution
 * newsletter editor
 * wp, drupal, joomla page editor
 * mockup tool
+
+
+
+

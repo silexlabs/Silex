@@ -77,8 +77,46 @@
 				</fieldset>
 				<fieldset class="background-image">
 					<legend>Background Image</legend>
-					<div class="button bg-image-button">Select image</div>
-					<div class="button clear-bg-image-button">Clear image</div>
+					<div>
+						<div class="button bg-image-button">Select image</div>
+						<div class="button clear-bg-image-button">Clear image</div>
+					</div>
+					<div>
+						<label>Position</label>
+						<div class="bg-position-h-combo-box combobox goog-select">
+							<ul class="goog-menu">
+								<li class="goog-menuitem" id="left">left</li>
+								<li class="goog-menuitem" id="center">center</li>
+								<li class="goog-menuitem" id="right">right</li>
+							</ul>
+						</div>
+						<div class="bg-position-v-combo-box combobox goog-select">
+							<ul class="goog-menu">
+								<li class="goog-menuitem" id="top">top</li>
+								<li class="goog-menuitem" id="center">center</li>
+								<li class="goog-menuitem" id="bottom">bottom</li>
+							</ul>
+						</div>
+					</div>
+					<div>
+						<label>Properties</label>
+						<div class="bg-attachement-combo-box combobox goog-select">
+							<ul class="goog-menu">
+								<li class="goog-menuitem" title="The background scrolls along with the element" id="scroll">scroll</li>
+								<li class="goog-menuitem" title="The background is fixed with regard to the viewport" id="fixed">fixed</li>
+								<li class="goog-menuitem" title="The background scrolls along with the element's contents" id="local">local</li>
+							</ul>
+						</div>
+						<div class="bg-repeat-combo-box combobox goog-select">
+							<ul class="goog-menu">
+								<li class="goog-menuitem" title="The background image is repeated both vertically and horizontally" id="repeat">repeat</li>
+								<li class="goog-menuitem" title="The background image is only repeated horizontally" id="repeat-x">repeat-x</li>
+								<li class="goog-menuitem" title="The background image is only repeated vertically" id="repeat-y">repeat-y</li>
+								<li class="goog-menuitem" title="The background-image is not repeated" id="no-repeat">no-repeat</li>
+								<li class="goog-menuitem" title="The setting of the background-repeat property is inherited from the parent element" id="inherit">inherit</li>
+							</ul>
+						</div>
+					</div>
 				</fieldset>
 			</div>
 			<hr>

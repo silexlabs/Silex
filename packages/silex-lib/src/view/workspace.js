@@ -32,7 +32,7 @@ silex.view.Workspace = function(element, menu, stage, pageTool, propertiesTool, 
 	this.viewport = new goog.dom.ViewportSizeMonitor();
 
 	goog.events.listen(this.viewport, goog.events.EventType.RESIZE, function(e){
-		this.redraw();
+		this.invalidate();
 	}, false, this);
 	this.isDirty = false;
 	this.invalidate();

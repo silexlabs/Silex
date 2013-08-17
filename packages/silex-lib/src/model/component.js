@@ -127,9 +127,14 @@ silex.model.Component.prototype.setStyle = function (style, opt_context){
 	if (opt_context == null){
 		opt_context = this.context;
 	}
+	this.logger.fine('setStyle', style);
 	var styleStr = '';
 	goog.object.forEach(style, function(val, index, obj) {
 		if (val){
+			// do not keep 'no image' info, simply remove the style
+			if (val == 'none')
+				val = null;
+
 			// apply to the view
 			goog.style.setStyle(this.element, index, val);
 

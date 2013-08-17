@@ -64,6 +64,10 @@ silex.view.propertiesTool.BgPane.prototype.transparentBgCheckbox;
  */
 silex.view.propertiesTool.BgPane.prototype.bgSelectBgImage;
 silex.view.propertiesTool.BgPane.prototype.bgClearBgImage;
+silex.view.propertiesTool.BgPane.prototype.attachementComboBox;
+silex.view.propertiesTool.BgPane.prototype.vPositionComboBox;
+silex.view.propertiesTool.BgPane.prototype.hPositionComboBox;
+silex.view.propertiesTool.BgPane.prototype.repeatComboBox;
 /**
  * build the UI
  */
@@ -104,6 +108,28 @@ silex.view.propertiesTool.BgPane.prototype.buildUi = function(){
 	this.bgClearBgImage.setTooltip('Click to select a file');
 	this.bgClearBgImage.decorate(buttonElement);
 	goog.events.listen(buttonElement, goog.events.EventType.CLICK, this.onClearImageButton, false, this);
+
+	// bg image properties
+    this.attachementComboBox = goog.ui.decorate(goog.dom.getElementByClass('bg-attachement-combo-box'));
+    this.vPositionComboBox = goog.ui.decorate(goog.dom.getElementByClass('bg-position-v-combo-box'));
+    this.hPositionComboBox = goog.ui.decorate(goog.dom.getElementByClass('bg-position-h-combo-box'));
+    this.repeatComboBox = goog.ui.decorate(goog.dom.getElementByClass('bg-repeat-combo-box'));
+	goog.events.listen(this.attachementComboBox, goog.ui.Component.EventType.CHANGE, function (event) {
+		this.setBgImageAttachement(event.target.getSelectedItem().getId());
+	}, false, this);
+	goog.events.listen(this.vPositionComboBox, goog.ui.Component.EventType.CHANGE, function (event) {
+		var hPosition = this.hPositionComboBox.getSelectedItem().getId();
+		var vPosition = this.vPositionComboBox.getSelectedItem().getId();
+		this.setBgImagePosition(vPosition+' '+hPosition);
+	}, false, this);
+	goog.events.listen(this.hPositionComboBox, goog.ui.Component.EventType.CHANGE, function (event) {
+		var hPosition = this.hPositionComboBox.getSelectedItem().getId();
+		var vPosition = this.vPositionComboBox.getSelectedItem().getId();
+		this.setBgImagePosition(vPosition+' '+hPosition);
+	}, false, this);
+	goog.events.listen(this.repeatComboBox, goog.ui.Component.EventType.CHANGE, function (event) {
+		this.setBgImageRepeat(event.target.getSelectedItem().getId());
+	}, false, this);
 }
 /**
  * display the style of the element being edited 
@@ -127,7 +153,7 @@ silex.view.propertiesTool.BgPane.prototype.redraw = function(){
 		if (color == undefined || color == 'transparent' || color == ''){
 			this.transparentBgCheckbox.setChecked(true);
 			this.bgColorPicker.setEnabled(false);
-			this.setColorPaletteVisibility(false)
+			this.setColorPaletteVisibility(false);
 		}
 		else{
 			var hex = silex.Helper.rgbaToHex(color);
@@ -138,11 +164,84 @@ silex.view.propertiesTool.BgPane.prototype.redraw = function(){
 			this.hsvPalette.setColorRgbaHex(hex);
 		}
 		// BG image
+		console.log(this.style);
 		if (this.style.backgroundImage!=null && this.style.backgroundImage!='none' && this.style.backgroundImage!=''){
 			this.bgClearBgImage.setEnabled(true);
 		}
 		else{
 			this.bgClearBgImage.setEnabled(false);
+		}
+		// workaround "backgroundImage not set"
+		this.bgClearBgImage.setEnabled(true);
+		if (this.style.backgroundAttachement != null){
+			switch(this.style.backgroundAttachement){
+				case 'scroll':
+					this.attachementComboBox.setSelectedIndex(0);
+					break;
+				case 'fixed':
+					this.attachementComboBox.setSelectedIndex(1);
+					break;
+				case 'local':
+					this.attachementComboBox.setSelectedIndex(2);
+					break;
+			}
+		}
+		else{
+			this.attachementComboBox.setSelectedIndex(0);
+		}
+		if (this.style.backgroundPosition != null){
+			var posArr = this.style.backgroundPosition.split(' ');
+			var vPosition = posArr[0];
+			var hPosition = posArr[1];
+			console.log(vPosition, hPosition);
+			switch(vPosition){
+				case 'top':
+					this.vPositionComboBox.setSelectedIndex(0);
+					break;
+				case 'center':
+					this.vPositionComboBox.setSelectedIndex(1);
+					break;
+				case 'bottom':
+					this.vPositionComboBox.setSelectedIndex(2);
+					break;
+			}
+			switch(hPosition){
+				case 'left':
+					this.hPositionComboBox.setSelectedIndex(0);
+					break;
+				case 'center':
+					this.hPositionComboBox.setSelectedIndex(1);
+					break;
+				case 'right':
+					this.hPositionComboBox.setSelectedIndex(2);
+					break;
+			}
+		}
+		else{
+			this.vPositionComboBox.setSelectedIndex(0);
+			this.hPositionComboBox.setSelectedIndex(0);
+		}
+		if (this.style.backgroundRepeat != null){
+			switch(this.style.backgroundRepeat){
+				case 'repeat':
+					this.repeatComboBox.setSelectedIndex(0);
+					break;
+				case 'repeat-x':
+					this.repeatComboBox.setSelectedIndex(1);
+					break;
+				case 'repeat-y':
+					this.repeatComboBox.setSelectedIndex(2);
+					break;
+				case 'no-repeat':
+					this.repeatComboBox.setSelectedIndex(3);
+					break;
+				case 'inherit':
+					this.repeatComboBox.setSelectedIndex(4);
+					break;
+			}
+		}
+		else{
+			this.repeatComboBox.setSelectedIndex(0);
 		}
 	}
 	this.isRedraw = false;
@@ -151,6 +250,7 @@ silex.view.propertiesTool.BgPane.prototype.redraw = function(){
  * User has selected a color
  */
 silex.view.propertiesTool.BgPane.prototype.onColorChanged = function(event){
+	console.log('onColorChanged');
 	// update style
 	var color = silex.Helper.hexToRgba(this.hsvPalette.getColorRgbaHex());
 	if (this.style==null) this.style = {};
@@ -165,6 +265,7 @@ silex.view.propertiesTool.BgPane.prototype.onColorChanged = function(event){
  * open or close the palete
  */
 silex.view.propertiesTool.BgPane.prototype.onBgColorButton = function(event){
+	console.log('onBgColorButton');
 	// show the palette
 	if (this.getColorPaletteVisibility() == false){
 		this.hsvPalette.setColorRgbaHex(silex.Helper.rgbaToHex(this.style.backgroundColor));
@@ -178,6 +279,7 @@ silex.view.propertiesTool.BgPane.prototype.onBgColorButton = function(event){
  * User has clicked the transparent checkbox
  */
 silex.view.propertiesTool.BgPane.prototype.onTransparentChanged = function(event){
+	console.log('onTransparentChanged');
 	// update style
 	if (this.transparentBgCheckbox.getChecked()==false){
 		var color = silex.Helper.hexToRgba(this.hsvPalette.getColorRgbaHex());
@@ -199,15 +301,54 @@ silex.view.propertiesTool.BgPane.prototype.onTransparentChanged = function(event
  * User has clicked the select image button
  */
 silex.view.propertiesTool.BgPane.prototype.onSelectImageButton = function(event){
+	console.log('onSelectImageButton');
 	this.selectImage();
 }
 /** 
- * User has selected an image
+ * User has selected an image 
+ * called by controller
  */
 silex.view.propertiesTool.BgPane.prototype.setBgImage = function(url){
+	console.log('setBgImage', url, this.style)
 	// update style
 	var backgroundImage = url;
-	goog.style.setStyle(this.getElement(), 'backgroundImage', 'url(' + backgroundImage + ')');
+	this.style.backgroundImage = 'url(\'' + backgroundImage + '\')';
+	// apply to the element and store it in the context attribute
+	this.styleChanged(this.style);
+	// redraw to reflect changes
+	this.redraw();
+}
+/** 
+ * Property changed callback
+ */
+silex.view.propertiesTool.BgPane.prototype.setBgImageAttachement = function(value){
+	console.log('setBgImageAttachement', value, this.style)
+	// update style
+	this.style.backgroundAttachement = value;
+	// apply to the element and store it in the context attribute
+	this.styleChanged(this.style);
+	// redraw to reflect changes
+	this.redraw();
+}
+/** 
+ * Property changed callback
+ */
+silex.view.propertiesTool.BgPane.prototype.setBgImagePosition = function(value){
+	console.log('setBgImagePosition', value, this.style)
+	// update style
+	this.style.backgroundPosition = value;
+	// apply to the element and store it in the context attribute
+	this.styleChanged(this.style);
+	// redraw to reflect changes
+	this.redraw();
+}
+/** 
+ * Property changed callback
+ */
+silex.view.propertiesTool.BgPane.prototype.setBgImageRepeat = function(value){
+	console.log('setBgImageRepeat', value, this.style)
+	// update style
+	this.style.backgroundRepeat = value;
 	// apply to the element and store it in the context attribute
 	this.styleChanged(this.style);
 	// redraw to reflect changes
@@ -217,8 +358,9 @@ silex.view.propertiesTool.BgPane.prototype.setBgImage = function(url){
  * User has clicked the clear image button
  */
 silex.view.propertiesTool.BgPane.prototype.onClearImageButton = function(event){
+	console.log('onClearImageButton');
 	// update style
-	this.style.backgroundImage = none;
+	this.style.backgroundImage = 'none';
 	// apply to the element and store it in the context attribute
 	this.styleChanged(this.style)
 	// redraw to reflect changes

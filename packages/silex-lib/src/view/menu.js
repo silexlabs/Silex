@@ -80,10 +80,8 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
 			{label:'New page', id:'insert.page'} 
 		],
 		[
-			{label:'Activate debug', id:'tools.debug.activate'},
-			{label:'Deactivate debug', id:'tools.debug.deactivate'},
-			{label:'Open debug window', id:'tools.debug.open'},
-			{label:'Close debug window', id:'tools.debug.close'} 
+			{label:'Debug mode ON', id:'tools.debug.activate'},
+			{label:'Debug mode OFF', id:'tools.debug.deactivate'}
 		],
 		[
 			{label:'Forums', id:'help.forums'}, 
