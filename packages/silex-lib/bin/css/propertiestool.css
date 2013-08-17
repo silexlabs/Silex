@@ -29,17 +29,19 @@
 .silex-propertiestool .link-combo-box{
 	font-size: small;
 }
-.silex-propertiestool .link-input-text{
+/* input text fields */
+.silex-propertiestool .link-input-text,
+.silex-propertiestool input{
 	background-color: white;
 	border: 1px dotted;
 	display: inherit;
-	height: 30px;
+	height: 22px;
 	overflow: hidden;
 	padding: 0;
 	width: 100%;
 }
 /* buttons */
-.silex-propertiestool .button{
+.silex-propertiestool .tab-page .button{
 	text-align: center;
 	font-size: 13px;
 	width: 45%;
