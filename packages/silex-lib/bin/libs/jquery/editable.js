@@ -4,20 +4,33 @@ $.widget('silexlabs.editable', {
 	version: '1.0.0',
 	options: {
         isContainer: false,
+        isResizable: true,
+        isDroppable: true,
+        isDraggable: true
 	},
 	// _setOption is called for each individual option that is changing
 	_setOption: function( key, value ) {
-		this.options[key] = value;
 		switch(key){
 			case 'isContainer':
+				this.options[key] = value;
 				this.disableEditable();
 				this.enableEditable();
 				break;
 			case 'disabled':
+				this.options[key] = value;
 				if (value==true){
 					this.disableEditable();
 				}
 				else{
+					this.enableEditable();
+				}
+				break;
+			case 'isDroppable':
+			case 'isDraggable':
+			case 'isResizable':
+				if (this.options.disabled==false){
+					this.disableEditable();
+					this.options[key] = value;
 					this.enableEditable();
 				}
 				break;
@@ -27,27 +40,37 @@ $.widget('silexlabs.editable', {
 		this.enableEditable();
 	},
 	_destroy: function() {
-		this.element.resizable('destroy').draggable('destroy');
-		if (this.options.isContainer){
+		if (this.options.isDraggable != false)
+			this.element.draggable('destroy');
+		if (this.options.isResizable != false)
+			this.element.resizable('destroy');
+		if (this.options.isContainer && this.options.isDroppable != false){
 			this.element.droppable('destroy');
 		}
 	},
 	disableEditable: function(){
-		this.element.draggable({revert:undefined});
-		if (this.options.isContainer){
+		if (this.options.isDraggable != false)
+			this.element.draggable({revert:undefined});
+		if (this.options.isContainer && this.options.isDroppable != false){
 			this.element.droppable('disable');
 		}
-		this.element.resizable('disable').draggable('disable');
+		if (this.options.isDraggable != false)
+			this.element.draggable('disable');
+		if (this.options.isResizable != false)
+			this.element.resizable('disable');
 	},
 	enableEditable: function(){
-		this.element.resizable({
-			handles : 'all'
-		});
+		if (this.options.isResizable != false)
+			this.element.resizable({
+				handles : 'all'
+			});
 		//this.element.draggable({ revert: 'invalid', snap: true });
 		//this.element.draggable({ revert: 'invalid', grid: [ 20, 20 ] });
-		this.element.draggable({ revert: 'invalid' });
-		this.element.resizable('enable').draggable('enable');
-		if (this.options.isContainer){
+		if (this.options.isDraggable != false)
+			this.element.draggable({ revert: 'invalid' });
+		if (this.options.isResizable != false)
+			this.element.resizable('enable').draggable('enable');
+		if (this.options.isContainer && this.options.isDroppable != false){
 			this.element.droppable({
 				// prevent propagation
 				greedy: true,
