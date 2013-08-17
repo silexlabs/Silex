@@ -11,6 +11,7 @@ body{
 	top: 0px !important; /* !important is useful while editing */
 	margin-left: auto;
 	margin-right: auto;
+	z-index: 1;
 }
 .editable-style{
 	position: absolute;

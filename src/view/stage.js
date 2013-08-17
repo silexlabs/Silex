@@ -27,6 +27,13 @@ silex.view.Stage = function(element, cbk){
 		if (cbk) cbk();
 		// make the body pageable
 		$(this.bodyElement).pageable({useDeeplink:false});
+		// allow drops
+		$(this.bodyElement).editable({
+	        isContainer: true,
+	        isResizable: false,
+	        isDroppable: true,
+	        isDraggable: false
+		});
 	}, this);
 	goog.events.listen(this.element, 'mousedown', function(e){
 		if (this.onStatus) this.onStatus({
