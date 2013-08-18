@@ -203,7 +203,7 @@ silex.view.PropertiesTool.prototype.propertyChanged = function(){
 	}
 }
 /**
- * set 
+ * set component
  */
 silex.view.PropertiesTool.prototype.setComponent = function(component){
 	this.logger.fine('setComponent', component);
@@ -213,6 +213,16 @@ silex.view.PropertiesTool.prototype.setComponent = function(component){
 
 	var style = this.component.getStyle();
 	this.bgPane.setStyle(style);
+}
+/**
+ * force redraw
+ */
+silex.view.PropertiesTool.prototype.redraw = function(){
+	this.logger.fine('redraw');
+
+	this.propertyPane.redraw();
+	this.pagePane.redraw();
+	this.bgPane.redraw();
 }
 /**
  * display the style of the element being edited 

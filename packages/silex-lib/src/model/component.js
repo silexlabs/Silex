@@ -107,11 +107,13 @@ silex.model.Component.prototype.getStyle = function (opt_context){
 	// parse the style string
 	var style = silex.Helper.stringToStyle(styleStr);
 	// remove the position and size values
-	style.top = null;
-	style.left = null;
-	style.width = null;
-	style.height = null;
-	style.position = null;
+	style.top = undefined;
+	style.left = undefined;
+	style.width = undefined;
+	style.height = undefined;
+	style.bottom = undefined;
+	style.right = undefined;
+	style.position = undefined;
 	// return the style
 	return style;
 }
@@ -149,6 +151,8 @@ silex.model.Component.prototype.setStyle = function (style, opt_context){
 		styleStr += 'left: '+bb.left+'; ';
 		styleStr += 'width: '+bb.width+'; ';
 		styleStr += 'height: '+bb.height+'; ';
+		styleStr += 'bottom: '+bb.bottom+'; ';
+		styleStr += 'right: '+bb.right+'; ';
 		styleStr += 'position: absolute; ';
 	}
 	// store in the model
@@ -163,7 +167,9 @@ silex.model.Component.prototype.getBoundingBox = function (){
 		top: goog.style.getStyle(this.element, 'top'),
 		left: goog.style.getStyle(this.element, 'left'),
 		width: goog.style.getStyle(this.element, 'width'),
-		height: goog.style.getStyle(this.element, 'height')
+		height: goog.style.getStyle(this.element, 'height'),
+		bottom: goog.style.getStyle(this.element, 'bottom'),
+		right: goog.style.getStyle(this.element, 'right')
 	};
 }
 /**
@@ -172,10 +178,18 @@ silex.model.Component.prototype.getBoundingBox = function (){
  */
 silex.model.Component.prototype.setBoundingBox = function (boundingBox){
 	// change the view, move/resize the dom element
-	goog.style.setStyle(this.element, 'top', boundingBox.top);
-	goog.style.setStyle(this.element, 'left', boundingBox.left);
-	goog.style.setStyle(this.element, 'width', boundingBox.width);
-	goog.style.setStyle(this.element, 'height', boundingBox.height);
+	if (boundingBox.top) goog.style.setStyle(this.element, 'top', boundingBox.top);
+	else goog.style.setStyle(this.element, 'top', null);
+	if (boundingBox.left) goog.style.setStyle(this.element, 'left', boundingBox.left);
+	else goog.style.setStyle(this.element, 'left', null);
+	if (boundingBox.width) goog.style.setStyle(this.element, 'width', boundingBox.width);
+	else goog.style.setStyle(this.element, 'width', null);
+	if (boundingBox.height) goog.style.setStyle(this.element, 'height', boundingBox.height);
+	else goog.style.setStyle(this.element, 'height', null);
+	if (boundingBox.bottom) goog.style.setStyle(this.element, 'bottom', boundingBox.bottom);
+	else goog.style.setStyle(this.element, 'bottom', null);
+	if (boundingBox.right) goog.style.setStyle(this.element, 'right', boundingBox.right);
+	else goog.style.setStyle(this.element, 'right', null);
 
 	// get the data-style-normal attribute
 	var styleStr = this.element.getAttribute('data-style-'+silex.model.Component.CONTEXT_NORMAL);
@@ -189,6 +203,8 @@ silex.model.Component.prototype.setBoundingBox = function (boundingBox){
 	style.left = boundingBox.left;
 	style.width = boundingBox.width;
 	style.height = boundingBox.height;
+	style.bottom = boundingBox.bottom;
+	style.right = boundingBox.right;
 	// build a string out of the style object
 	var styleStr = silex.Helper.styleToString(style);
 	// store it in the data-style-normal attribute
@@ -504,12 +520,14 @@ silex.model.Component.prototype.addImage = function(url){
 	style.position = 'absolute';
 	style.left = '100px';
 	style.top = '100px';
+	style.visibility = 'hidden';
 	var component = new silex.model.Component(div);
 	component.setStyle(style, silex.model.Component.CONTEXT_NORMAL);
 	img.onload = function (e){
 		// set container size to match image size
 		style.width = img.offsetWidth + 'px';
 		style.height = img.offsetHeight + 'px';
+		style.visibility = undefined;
 		component.setStyle(style, silex.model.Component.CONTEXT_NORMAL);
 	}
 	// return a component for this element

@@ -255,6 +255,7 @@ silex.Controller.prototype.stageCallback = function(event){
 			this.selection.getComponent().setBoundingBox(
 				this.selection.getComponent().getBoundingBox()
 			);
+			this.propertiesTool.redraw();
 			break;
 		case 'edit':
 			// size or position of the element has changed

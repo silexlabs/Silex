@@ -52,12 +52,15 @@ functionnal
 
 Properties 
 * Lock/unlock
-* bg image (scale pas repeat)
-* shadows
-* border property file://localhost/Users/lexa/Dropbox/fdt-workspace/Silex/libs/closure/goog/demos/roundedpanel
-* position and size, centered V/H? .html
-* font-*
 * z-index
+* shadows
+* border property file://localhost/Users/lexa/Dropbox/fdt-workspace/Silex/build/closure-library/closure/goog/demos/roundedpanel.html
+  * border width
+  * border color
+* corners
+  * corner radius
+  * corners: All, Top, Bottom, Left, Right, Top Left, Top Right, Bottom Left, Bottom Right, 
+* font-*
 * cursor
 * scroll?
 

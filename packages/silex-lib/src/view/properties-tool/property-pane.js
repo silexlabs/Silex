@@ -55,9 +55,54 @@ silex.view.propertiesTool.PropertyPane.prototype.baseUrl;
  */
 silex.view.propertiesTool.PropertyPane.prototype.isRedraw;
 /**
+ * UI for position and size
+ */
+silex.view.propertiesTool.PropertyPane.prototype.leftInput;
+silex.view.propertiesTool.PropertyPane.prototype.rightInput;
+silex.view.propertiesTool.PropertyPane.prototype.topInput;
+silex.view.propertiesTool.PropertyPane.prototype.bottomInput;
+silex.view.propertiesTool.PropertyPane.prototype.widthInput;
+silex.view.propertiesTool.PropertyPane.prototype.heightInput;
+/**
  * build the UI
  */
 silex.view.propertiesTool.PropertyPane.prototype.buildUi = function(){
+	this.leftInput = goog.dom.getElementByClass('left-input');
+	goog.events.listen(this.leftInput, 'change', this.onPositionChanged, false, this);
+	this.widthInput = goog.dom.getElementByClass('width-input');
+	goog.events.listen(this.widthInput, 'change', this.onPositionChanged, false, this);
+	this.bottomInput = goog.dom.getElementByClass('bottom-input');
+	goog.events.listen(this.bottomInput, 'change', this.onPositionChanged, false, this);
+	this.topInput = goog.dom.getElementByClass('top-input');
+	goog.events.listen(this.topInput, 'change', this.onPositionChanged, false, this);
+	this.heightInput = goog.dom.getElementByClass('height-input');
+	goog.events.listen(this.heightInput, 'change', this.onPositionChanged, false, this);
+	this.rightInput = goog.dom.getElementByClass('right-input');
+	goog.events.listen(this.rightInput, 'change', this.onPositionChanged, false, this);
+}
+/**
+ * position or size changed
+ * callback for number inputs
+ */
+silex.view.propertiesTool.PropertyPane.prototype.onPositionChanged = function(event){
+	if (this.component && !this.isRedraw && goog.dom.classes.has(this.component.element, 'editable-style')){
+		var bbox = {};
+		if (this.leftInput.value && this.leftInput.value!='')
+			bbox.left = this.leftInput.value + 'px';
+		if (this.widthInput.value && this.widthInput.value!='')
+			bbox.width = this.widthInput.value + 'px';
+		if (this.bottomInput.value && this.bottomInput.value!='')
+			bbox.bottom = this.bottomInput.value + 'px';
+		if (this.topInput.value && this.topInput.value!='')
+			bbox.top = this.topInput.value + 'px';
+		if (this.heightInput.value && this.heightInput.value!='')
+			bbox.height = this.heightInput.value + 'px';
+		if (this.rightInput.value && this.rightInput.value!='')
+			bbox.right = this.rightInput.value + 'px';
+
+		this.component.setBoundingBox(bbox);
+	}
+	this.redraw();
 }
 /**
  * display the propertis of the component being edited 
@@ -131,22 +176,34 @@ silex.view.propertiesTool.PropertyPane.prototype.redraw = function(){
 								this.setImage(inputElement.value);
 						}
 					}, false, this);
-
-					// create a text field object
-/*					var textField = new goog.editor.Field(inputElement);
-					// make editable
-					textField.makeEditable();
-					// set URL
-					textField.setHtml(false, imageUrl);
-					goog.events.listen(textField, goog.editor.Field.EventType.DELAYEDCHANGE, function (event) {
-						console.log(this);
-						if (this.component && !this.isRedraw){
-							if (this.component.type==silex.model.Component.SUBTYPE_IMAGE)
-								this.setImage(textField.getCleanContents());
-						}
-					}, false, this);
-*/
 				}
+			}
+
+			// position and size
+			if (goog.dom.classes.has(this.component.element, 'editable-style')){
+				var bbox = this.component.getBoundingBox();
+				console.log('redraw', bbox)
+				if (bbox.left != null) this.leftInput.value = bbox.left.substr(0, bbox.left.indexOf('px'));
+				else this.leftInput.value = '';
+				if (bbox.width != null) this.widthInput.value = bbox.width.substr(0, bbox.width.indexOf('px'));
+				else this.widthInput.value = '';
+				if (bbox.bottom != null) this.bottomInput.value = bbox.bottom.substr(0, bbox.bottom.indexOf('px'));
+				else this.bottomInput.value = '';
+				if (bbox.top != null) this.topInput.value = bbox.top.substr(0, bbox.top.indexOf('px'));
+				else this.topInput.value = '';
+				if (bbox.height != null) this.heightInput.value = bbox.height.substr(0, bbox.height.indexOf('px'));
+				else this.heightInput.value = '';
+				if (bbox.right != null) this.rightInput.value = bbox.right.substr(0, bbox.right.indexOf('px'));
+				else this.rightInput.value = '';
+			}
+			else{
+				// case of the stage
+				this.leftInput.value = '';
+				this.widthInput.value = '';
+				this.bottomInput.value = '';
+				this.topInput.value = '';
+				this.heightInput.value = '';
+				this.rightInput.value = '';
 			}
 		}
 		else{
