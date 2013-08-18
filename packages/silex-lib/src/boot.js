@@ -17,10 +17,7 @@ goog.require('goog.dom');
 goog.require('goog.events');
 
 // debug
-goog.require('goog.debug');
-goog.require('goog.debug.FancyWindow');
-goog.require('goog.log');
-
+goog.require('silex.Logger');
 
 goog.require('silex.Helper');
 goog.require('silex.Controller');
@@ -36,6 +33,9 @@ goog.require('silex.view.Menu');
 goog.require('silex.view.Stage');
 goog.require('silex.view.PageTool');
 goog.require('silex.view.PropertiesTool');
+goog.require('silex.view.propertiesTool.BgPane');
+goog.require('silex.view.propertiesTool.PagePane');
+goog.require('silex.view.propertiesTool.PropertyPane');
 goog.require('silex.view.TextEditor');
 goog.require('silex.view.FileExplorer');
 goog.require('silex.view.Workspace');
@@ -122,18 +122,17 @@ silex.boot = function() {
 		logger.fine('Controller created');
 
 		// now create an empty file to let the user start using Silex
-/**/
+/* */
 		file.newFile(function () {
-			controller.menuCallback({type:'insert.text'});
-//			controller.menuCallback({type:'insert.image'});
+			//controller.menuCallback({type:'insert.text'});
 		});
-/**
+/* *
 		// remove hash added by cloud explorer
 		window.location.hash = '';
 		// for testing purpose only
 		var base = window.location.href.substr(0, window.location.href.lastIndexOf('/'));
 		file.openFromUrl(base+'/../silex-tests/template.html');
-/**/
+/* */
 		logger.info('--end boot--');
 	});
 	});
