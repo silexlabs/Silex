@@ -29,6 +29,44 @@
 .silex-propertiestool .link-combo-box{
 	font-size: small;
 }
+/* content */
+.silex-propertiestool .image-url-input{
+	float: left;
+	margin-top: 2px;
+	width: 185px;
+}
+/* position */
+.silex-propertiestool .position-editor label{
+	float: left;
+	margin-top: 4px;
+	margin-right: 2px;
+	margin-left: 3px;
+	width: 10px;
+	text-align: right;
+
+	color: #555555;
+	font-size: 11px;
+}
+.silex-propertiestool .position-editor label.right-bottom{
+	width: 25px
+}
+.silex-propertiestool .position-editor label.new-line{
+	clear: left;
+}
+.silex-propertiestool .position-editor input{
+	width: 47px;
+	height: 15px;
+
+	padding-top: 2px;
+	margin: 1px 0 0;
+
+	float: left;
+
+	border-style: inset;
+	
+	font-size: 12px;
+	text-align: center;
+}
 /* input text fields */
 .silex-propertiestool .link-input-text,
 .silex-propertiestool input{

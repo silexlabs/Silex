@@ -42,7 +42,7 @@ goog.require('silex.view.Workspace');
 
 silex.boot = function() {
 	var logger = new silex.Logger('silex.boot', false);
-//	logger.setLevel(silex.Logger.INFO);
+	//logger.setLevel(silex.Logger.INFO);
 	logger.info('--start boot--');
 
 	// create all views and attach them to the dom
@@ -122,11 +122,12 @@ silex.boot = function() {
 		logger.fine('Controller created');
 
 		// now create an empty file to let the user start using Silex
-/*		file.newFile(function () {
-			controller.menuCallback({type:'insert.text'});
-			controller.menuCallback({type:'insert.image'});
-		});
 /**/
+		file.newFile(function () {
+			controller.menuCallback({type:'insert.text'});
+//			controller.menuCallback({type:'insert.image'});
+		});
+/**
 		// remove hash added by cloud explorer
 		window.location.hash = '';
 		// for testing purpose only
