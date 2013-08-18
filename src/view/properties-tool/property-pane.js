@@ -58,10 +58,25 @@ silex.view.propertiesTool.PropertyPane.prototype.isRedraw;
  * UI for position and size
  */
 silex.view.propertiesTool.PropertyPane.prototype.leftInput;
+/**
+ * UI for position and size
+ */
 silex.view.propertiesTool.PropertyPane.prototype.rightInput;
+/**
+ * UI for position and size
+ */
 silex.view.propertiesTool.PropertyPane.prototype.topInput;
+/**
+ * UI for position and size
+ */
 silex.view.propertiesTool.PropertyPane.prototype.bottomInput;
+/**
+ * UI for position and size
+ */
 silex.view.propertiesTool.PropertyPane.prototype.widthInput;
+/**
+ * UI for position and size
+ */
 silex.view.propertiesTool.PropertyPane.prototype.heightInput;
 /**
  * build the UI

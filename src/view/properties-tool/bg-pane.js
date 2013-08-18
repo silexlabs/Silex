@@ -63,10 +63,25 @@ silex.view.propertiesTool.BgPane.prototype.transparentBgCheckbox;
  * controls for background image
  */
 silex.view.propertiesTool.BgPane.prototype.bgSelectBgImage;
+/**
+ * controls for background image
+ */
 silex.view.propertiesTool.BgPane.prototype.bgClearBgImage;
+/**
+ * controls for background image
+ */
 silex.view.propertiesTool.BgPane.prototype.attachementComboBox;
+/**
+ * controls for background image
+ */
 silex.view.propertiesTool.BgPane.prototype.vPositionComboBox;
+/**
+ * controls for background image
+ */
 silex.view.propertiesTool.BgPane.prototype.hPositionComboBox;
+/**
+ * controls for background image
+ */
 silex.view.propertiesTool.BgPane.prototype.repeatComboBox;
 /**
  * build the UI
