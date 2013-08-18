@@ -17,12 +17,12 @@
 .silex-propertiestool .pages-container .page-check span{
 	float: left;
 }
-.silex-propertiestool .show-on-all-pages-btn{
+.silex-propertiestool .link-small-btn{
 	font-weight: normal;
 	color: blue;
 	cursor: pointer;
 }
-.silex-propertiestool .show-on-all-pages-btn:hover{
+.silex-propertiestool .link-small-btn:hover{
 	text-decoration: underline;
 }
 /* link */
