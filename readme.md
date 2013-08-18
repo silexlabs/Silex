@@ -51,7 +51,6 @@ functionnal
 * img non visible pendant 1er loading (apre ajout)
 
 Properties 
-* Lock/unlock
 * z-index
 * shadows
 * border property file://localhost/Users/lexa/Dropbox/fdt-workspace/Silex/build/closure-library/closure/goog/demos/roundedpanel.html

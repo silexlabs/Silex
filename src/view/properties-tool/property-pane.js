@@ -67,6 +67,13 @@ silex.view.propertiesTool.PropertyPane.prototype.heightInput;
  * build the UI
  */
 silex.view.propertiesTool.PropertyPane.prototype.buildUi = function(){
+	// lock / unlock
+	var lockBtn = goog.dom.getElementByClass('lock-btn');
+	var unlockBtn = goog.dom.getElementByClass('unlock-btn');
+	goog.events.listen(lockBtn, goog.events.EventType.CLICK, this.lock, false, this);
+	goog.events.listen(unlockBtn, goog.events.EventType.CLICK, this.unlock, false, this);
+
+	// position and size
 	this.leftInput = goog.dom.getElementByClass('left-input');
 	goog.events.listen(this.leftInput, 'change', this.onPositionChanged, false, this);
 	this.widthInput = goog.dom.getElementByClass('width-input');
@@ -79,6 +86,18 @@ silex.view.propertiesTool.PropertyPane.prototype.buildUi = function(){
 	goog.events.listen(this.heightInput, 'change', this.onPositionChanged, false, this);
 	this.rightInput = goog.dom.getElementByClass('right-input');
 	goog.events.listen(this.rightInput, 'change', this.onPositionChanged, false, this);
+}
+/**
+ * callback for the lock/unlock button
+ */
+silex.view.propertiesTool.PropertyPane.prototype.lock = function(event){
+	this.component.setEditable(false);
+}
+/**
+ * callback for the lock/unlock button
+ */
+silex.view.propertiesTool.PropertyPane.prototype.unlock = function(event){
+	this.component.setEditable(true);
 }
 /**
  * position or size changed
