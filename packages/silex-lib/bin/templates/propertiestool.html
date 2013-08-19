@@ -17,7 +17,7 @@
 <div class="main-container">
 	<span class="position-editor">
 		<fieldset>
-			<legend>Position and size (<span class="lock-btn link-small-btn">lock</span> / <span class="unlock-btn link-small-btn">unlock</span>)</legend>
+			<legend>Position and size <span class="lock-btn link-small-btn">(lock</span> / <span class="unlock-btn link-small-btn">unlock)</span></legend>
 			<div>
 				<label>X</label>
 				<input class="position-input left-input" type="number" />
@@ -52,7 +52,7 @@
 				{{/each}}
 		</script>
 		<fieldset>
-			<legend>Show only on (<span class="show-on-all-pages-btn link-small-btn">show on all pages</span>)</legend>
+			<legend>Show only on <span class="show-on-all-pages-btn link-small-btn">(show on all pages)</span></legend>
 			<div class="pages-container"></div>
 		</fieldset>
 		<fieldset>
@@ -80,17 +80,65 @@
 		</fieldset>
 	</span>
 	<span class="style-container">
-		<hr />
 		<div class="tab-bar-container goog-tab-bar goog-tab-bar-top">
 			<div class="goog-tab goog-tab-selected">Normal</div>
 			<div class="goog-tab">Hover</div>
 			<div class="goog-tab">Pressed</div>
 		</div>
 		<span class="tab-page">
+			<div class="border-editor">
+				<fieldset class="border-property">
+					<legend>Border <span class="enable-border-color-button link-small-btn">(No border)</span></legend>
+					<label>Width</label>
+					<input class="border-width-input" type="number" />
+					<label>Color</label>
+					<span class="border-color-button color-button"></span>
+					<span class="border-color-palette"></span>
+					<label>Type</label>
+					<div class="border-type-combo-box combobox goog-select">
+						<ul class="goog-menu">
+							<li class="goog-menuitem" id="solid">solid</li>
+							<li class="goog-menuitem" id="dotted">dotted</li>
+							<li class="goog-menuitem" id="dashed">dashed</li>
+							<li class="goog-menuitem" id="double">double</li>
+							<li class="goog-menuitem" id="groove">groove</li>
+							<li class="goog-menuitem" id="ridge">ridge</li>
+							<li class="goog-menuitem" id="inset">inset</li>
+							<li class="goog-menuitem" id="outset">outset</li>
+						</ul>
+					</div>
+					<div class="border-placement-container">
+						<span class="border-placement-check goog-checkbox"></span>
+						<label class="border-placement-label">Top</label>
+						<span class="border-placement-check goog-checkbox"></span>
+						<label class="border-placement-label">Right</label>
+						<span class="border-placement-check goog-checkbox"></span>
+						<label class="border-placement-label">Bottom</label>
+						<span class="border-placement-check goog-checkbox"></span>
+						<label class="border-placement-label">Left</label>
+					</div>
+				</fieldset>
+				<fieldset class="corner-property">
+					<legend>Corners</legend>
+					<label>Radius</label>
+					<input class="corner-radius-input" type="number" />
+					<label>Applys to</label>
+					<div class="corner-placement-container">
+						<span class="corner-placement-check goog-checkbox"></span>
+						<label class="corner-placement-label">Top Left</label>
+						<span class="corner-placement-check goog-checkbox"></span>
+						<label class="corner-placement-label">Top Right</label>
+						<span class="corner-placement-check goog-checkbox"></span>
+						<label class="corner-placement-label">Btm. Left</label>
+						<span class="corner-placement-check goog-checkbox"></span>
+						<label class="corner-placement-label">Btm. Right</label>
+					</div>
+				</fieldset>
+			</div>
 			<div class="background-editor">
 				<fieldset class="background-property">
 					<legend>Background Color</legend>
-					<span class="color-bg-button"></span>
+					<span class="color-bg-button color-button"></span>
 					<span class="color-bg-palette"></span>
 					<span class="enable-color-bg-button"></span> Transparent
 				</fieldset>
@@ -138,7 +186,6 @@
 					</div>
 				</fieldset>
 			</div>
-			<hr>
 		</span>
 	</span>
 </div>

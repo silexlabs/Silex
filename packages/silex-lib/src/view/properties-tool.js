@@ -74,6 +74,11 @@ silex.view.PropertiesTool.prototype.bgPane;
  */
 silex.view.PropertiesTool.prototype.propertyPane;
 /**
+ * editor
+ * @see 	silex.view.propertiesTool.BorderPane
+ */
+silex.view.PropertiesTool.prototype.borderPane;
+/**
  * property editor
  * @see 	silex.view.propertiesTool.PagePane
  */
@@ -127,6 +132,11 @@ silex.view.PropertiesTool.prototype.buildPanes = function(){
 		goog.dom.getElementByClass('background-editor', this.element), 
 		goog.bind(this.styleChanged, this),
 		goog.bind(this.selectBgImage, this)
+	);
+	// border
+	this.borderPane = new silex.view.propertiesTool.BorderPane(
+		goog.dom.getElementByClass('border-editor', this.element), 
+		goog.bind(this.styleChanged, this)
 	);
 	// property
 	this.propertyPane = new silex.view.propertiesTool.PropertyPane(
@@ -212,6 +222,7 @@ silex.view.PropertiesTool.prototype.setComponent = function(component){
 	this.pagePane.setComponent(component);
 
 	var style = this.component.getStyle();
+	this.borderPane.setStyle(style);
 	this.bgPane.setStyle(style);
 }
 /**
@@ -220,6 +231,7 @@ silex.view.PropertiesTool.prototype.setComponent = function(component){
 silex.view.PropertiesTool.prototype.redraw = function(){
 	this.logger.fine('redraw');
 
+	this.borderPane.redraw();
 	this.propertyPane.redraw();
 	this.pagePane.redraw();
 	this.bgPane.redraw();
