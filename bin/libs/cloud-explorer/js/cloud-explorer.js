@@ -101,13 +101,34 @@ function ce_pick(onSuccess, onError) {
 /**
  * TODO match method signature: ce_exportFile(input, [options], onSuccess, onError, onProgress)
  * When does Alex use it ? use store() first ?
+ * signature: ce_exportFile(input, [options], onSuccess, onError)
  */
-function ce_exportFile(input, onSuccess, onError) {
+function ce_exportFile()
+{
+	if (arguments.length == 0)
+	{
+		throw "Incorrect number of arguments in call to exportFile. Method signature is: exportFile(input, [options], onSuccess, onError) ";
+	}
 	__ceInstance["mode"] = ONE_FILE_SAVE_MODE;
+	__ceInstance["input"] = arguments[0];
+	__ceInstance["options"] = (arguments.length >=2 && typeof(arguments[1]) != 'function') ? arguments[1] : null;
+	var sc = null;
+	if (arguments.length >= 2 && typeof(arguments[1]) == 'function')
+	{
+		sc = arguments[1];
+	}
+	else if (arguments.length >= 3)
+	{
+		sc = arguments[2];
+	}
 	__ceInstance["onSuccess"] = function(data) {
 		closeCE();
-		onSuccess(data);
+		if (sc != null)
+		{
+			sc(data);
+		}
 	}
+	// TODO onError
 	openCE();
 }
 /**
@@ -139,6 +160,42 @@ cloudExplorer.pick = ce_pick;
 cloudExplorer.exportFile = ce_exportFile;
 cloudExplorer.read = ce_read;
 cloudExplorer.write = ce_write;
+
+
+////////
+// UTILS
+////////
+
+function getExtByMimeType( mt )
+{
+console.log('getExtByMimeType '+mt);
+	switch (mt.toLowerCase())
+	{
+		case 'image/png':
+			return 'png';
+		case 'image/jpeg':
+			return 'jpg';
+		case 'text/html':
+			return 'html';
+		default:
+			throw 'Unknown MIME Type: '+mt;
+	}
+}
+function getMimeByExt( ext )
+{
+console.log('getMimeByExt '+ext);
+	switch ( ext.toLowerCase() )
+	{
+		case 'png':
+			return 'image/png';
+		case 'jpg':
+			return 'image/jpeg';
+		case 'html':
+			return 'text/html';
+		default:
+			return null;
+	}
+}
 
 /////////////////////////
 // AngularJS CE component
@@ -572,7 +629,7 @@ angular.module('ceCtrls', ['ceServices'])
 	/**
 	 * Sets some exposed functions to the outside world
 	 */
-	.controller('CEBrowserCtrl', ['$scope', '$unifileSrv', '$unifileStub', '$ceUtils', function($scope, $unifileSrv, $unifileStub, $ceUtils)
+	.controller('CEBrowserCtrl', ['$scope', '$rootScope', '$unifileSrv', '$unifileStub', '$ceUtils', function($scope, $rootScope, $unifileSrv, $unifileStub, $ceUtils)
 		{
 			if (__ceInstance)
 			{
@@ -594,8 +651,8 @@ console.log("path.srv= "+path.srv+"   path.path= "+path.path+"    path.filename=
 						$unifileSrv.upload( [fileBlob], path.path, function() { onSuccess(target); } );
 					 } );
 				};
-				__ceInstance["refresh"] = function() {
-					$scope.$digest();
+				__ceInstance["refresh"] = function() { console.log('digest called');
+					$rootScope.$digest();
 				}
 			}
 		}
@@ -814,15 +871,38 @@ console.log("path.srv= "+path.srv+"   path.path= "+path.path+"    path.filename=
 				{
 					if ($scope.files[fi].isSelected===true)
 					{
-						__ceInstance.onSuccess({ 'url': $ceUtils.pathToUrl({'srv':$scope.srv, 'path':$scope.path, 'filename':$scope.files[fi].name }) }); // FIXME other CEBlob fields
+						__ceInstance.onSuccess({
+													'url': $ceUtils.pathToUrl({'srv':$scope.srv, 'path':$scope.path, 'filename':$scope.files[fi].name}),
+													'filename': $scope.files[fi].name,
+													'mimetype': ($scope.files[fi].name.indexOf('.') > -1) ? getMimeByExt($scope.files[fi].name.substring($scope.files[fi].name.lastIndexOf('.')+1)) : null
+												}); // FIXME other CEBlob fields
 						break;
 					}
 				}
 			};
+			$scope.ext = null;
+			$scope.$watch( function(){ return __ceInstance }, refreshExtension, true);
+			function refreshExtension()
+			{
+				$scope.ext = null;
+				( __ceInstance['options'] != null && __ceInstance['options']['mimetype'] != null)  ? $scope.ext = getExtByMimeType( __ceInstance['options']['mimetype'] ) : $scope.ext = null;
+				if ($scope.ext == null)
+				{
+					if ( __ceInstance['input'] != null && __ceInstance['input']['mimetype'] != null )
+					{
+						$scope.ext = getExtByMimeType( __ceInstance['input']['mimetype'] );
+					}
+				}
+console.log('ext has been refreshed and is now: '+$scope.ext);
+			}
 			$scope.saveAs = function(fileName)
 			{
+				if ($scope.ext == null)
+				{
+					throw "Can't save file with no mimetype set !";
+				}
 				// TODO create file ?
-				__ceInstance.onSuccess({ 'url': $ceUtils.pathToUrl({'srv':$scope.srv, 'path':$scope.path, 'filename':fileName+".ext" }) }); // FIXME other CEBlob fields // FIXME extension
+				__ceInstance.onSuccess({ 'url': $ceUtils.pathToUrl({'srv':$scope.srv, 'path':$scope.path, 'filename':fileName+"."+$scope.ext }) }); // FIXME other CEBlob fields
 			};
 		}])
 
@@ -1299,7 +1379,7 @@ angular.module('ceDirectives', [ 'ceConf', 'ceServices', 'ceCtrls' ])
 								<button ng-hide=\"isEmptyClipboard()\" ng-click=\"paste()\">Paste</button> <button ng-hide=\"isEmptySelection\" ng-click=\"remove()\">Delete</button> \
 							</li> \
 							<li ng-show=\"isCtrlBtnsVisible()\"> \
-								<div ng-hide=\"hideSaveAsBtn()\" class=\"ce-saveas-btn\">{{ srv+\":\"+path+\"/\" }} <input type=\"text\" ng-model=\"saveAsName\"> .ext <button ng-click=\"saveAs(saveAsName)\">Save As</button></div> \
+								<div ng-hide=\"hideSaveAsBtn()\" class=\"ce-saveas-btn\">{{ srv+\":\"+path+\"/\" }} <input type=\"text\" ng-model=\"saveAsName\"> .{{ext}} <button ng-click=\"saveAs(saveAsName)\">Save As</button></div> \
 								<button ng-hide=\"hideSelectBtn()\" ng-click=\"chose()\">Select</button> \
 							</li> \
 							<li ng-if=\"showLinkToParent()\"><span ng-init=\"setLinkToParent()\" class=\"ce-item is-dir-true\" ce-folder>..</span></li> \

@@ -123,7 +123,7 @@ silex.model.File.prototype.saveAs = function(cbk){
 		this.setBlob(blob);
 		this.save(cbk);
 	}, this),
-	['text/html', 'text/plain']);
+	{'mimetype':'text/html'});
 	this.workspace.invalidate();
 }
 /**

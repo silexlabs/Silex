@@ -107,10 +107,13 @@ silex.view.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes){
  */
 silex.view.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes){
 	// default is html
-	if (!opt_mimetypes) opt_mimetypes = ['text/html', 'text/plain'];
+	if (!opt_mimetypes) opt_mimetypes = {'mimetype':'text/html'};
+
+	console.log('saveAsDialog ', opt_mimetypes)
 
 	// export dummy data
 	this.filePicker.exportFile( "http://google.com/", 
+	opt_mimetypes,
 	goog.bind(function(blob){
 
 		// hide dialog
