@@ -45,6 +45,10 @@ silex.view.propertiesTool.PagePane.prototype.component;
  */
 silex.view.propertiesTool.PagePane.prototype.pageChanged;
 /**
+ * avoid loops on redraw
+ */
+silex.view.propertiesTool.PagePane.prototype.isRedraw;
+/**
  * dropdown list to select a link
  */
 silex.view.propertiesTool.PagePane.prototype.linkDropdown;
@@ -167,7 +171,8 @@ silex.view.propertiesTool.PagePane.prototype.onLinkTextChanged = function(event)
  * redraw the properties
  */
 silex.view.propertiesTool.PagePane.prototype.redraw = function(){
-	if (this.component && this.pageCheckboxes){
+	if (this.component && this.pageCheckboxes && !this.isRedraw){
+		this.isRedraw = true;
 		// refresh page checkboxes
 		goog.array.forEach(this.pageCheckboxes, function(item) {
 			if (this.component){
@@ -190,7 +195,7 @@ silex.view.propertiesTool.PagePane.prototype.redraw = function(){
 			this.linkDropdown.value='none';
 		}
 		else{
-			if (hrefAttr.indexOf('#')==0 && silex.model.Page.getPageIndex(hrefAttr.substr(1))>=0){
+			if (hrefAttr.indexOf('#')==0 && silex.model.Page.getPageByName(hrefAttr.substr(1))){
 				// case of an internal link
 				// select a page
 				this.linkDropdown.value = hrefAttr.substr(1);
@@ -209,6 +214,7 @@ silex.view.propertiesTool.PagePane.prototype.redraw = function(){
 		else{
 			goog.style.setStyle(linkInputElement, 'display', 'none');
 		}
+		this.isRedraw = false;
 	}
 }
 /**

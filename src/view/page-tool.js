@@ -60,12 +60,6 @@ silex.view.PageTool.prototype.setPages = function(pages){
 	silex.Helper.resolveTemplate(container, templateHtml, {pages:pages});
 
 	var that = this;
-	var idx = 0;
-	$(this.element).find( '.page-tool-container .page-container' ).each(
-		function () {
-			this.setAttribute('data-index', idx++);
-		}
-	);
 	$(this.element).find( '.page-tool-container .page-container .page-preview .delete' ).click(
 		function(e){
 			that.removePageAtIndex(that.getCellIndex(this.parentNode.parentNode));
@@ -108,7 +102,7 @@ silex.view.PageTool.prototype.selectionChanged = function(page){
  * set selection 
  */
 silex.view.PageTool.prototype.setSelectedItem = function(page, notify){
-	var idx = silex.model.Page.getPageIndex(page.name);
+	var idx = silex.model.Page.getPageIndex(page);
 	this.setSelectedIndex(idx, notify);
 }
 /**
@@ -123,7 +117,10 @@ silex.view.PageTool.prototype.getSelectedItem = function(){
 	}
 }
 silex.view.PageTool.prototype.getCellIndex = function (element) {
-	return parseInt(element.getAttribute('data-index'));
+	var page = silex.model.Page.getPageByName(element.getAttribute('data-page-name'));
+	var idx = silex.model.Page.getPageIndex(page);
+	console.log('getCellIndex return ', element, this.pages[idx], idx)
+	return idx;
 }
 /**
  * set the selection of pages 

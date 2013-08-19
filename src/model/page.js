@@ -100,12 +100,27 @@ silex.model.Page.removePage = function(page){
  * retrieve the index of a given page in an array of pages
  * static method
  */
-silex.model.Page.getPageIndex = function (pageName) {
+silex.model.Page.getPageByName = function (pageName) {
+	var res = null;
+	var pages = silex.model.Page.getPages();
+	goog.array.forEach(pages, function(page) {
+		if(page.name == pageName){
+			res = page;
+			return;
+		}
+	});
+	return res;
+}
+/**
+ * retrieve the index of a given page in an array of pages
+ * static method
+ */
+silex.model.Page.getPageIndex = function (page) {
 	var res = -1;
 	var idx = 0;
 	var pages = silex.model.Page.getPages();
-	goog.array.forEach(pages, function(page) {
-		if(pageName == page.name){
+	goog.array.forEach(pages, function(page2) {
+		if(page.name == page2.name){
 			res = idx;
 			return;
 		}
@@ -158,7 +173,7 @@ silex.model.Page.prototype.attach = function(){
  * update the tools and the view
  */
 silex.model.Page.prototype.detach = function(){
-    console.log('detach');
+    console.log('detach ', this);
 	// update the model
 	silex.model.Page.removePage(this);
 

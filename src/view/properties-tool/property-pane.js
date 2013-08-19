@@ -227,7 +227,6 @@ silex.view.propertiesTool.PropertyPane.prototype.redraw = function(){
 				var inputElement = goog.dom.getElementByClass('image-url-input', editionContainer);
 				if (inputElement){
 					goog.events.listen(inputElement, 'change', function (event) {
-						console.log(this);
 						if (this.component && !this.isRedraw){
 							if (this.component.type==silex.model.Component.SUBTYPE_IMAGE)
 								this.setImage(inputElement.value);
@@ -239,7 +238,6 @@ silex.view.propertiesTool.PropertyPane.prototype.redraw = function(){
 			// position and size
 			if (goog.dom.classes.has(this.component.element, 'editable-style')){
 				var bbox = this.component.getBoundingBox();
-				console.log('redraw', bbox)
 				if (bbox.left != null) this.leftInput.value = bbox.left.substr(0, bbox.left.indexOf('px'));
 				else this.leftInput.value = '';
 				if (bbox.width != null) this.widthInput.value = bbox.width.substr(0, bbox.width.indexOf('px'));

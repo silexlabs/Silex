@@ -288,7 +288,7 @@ silex.Controller.prototype.pageToolCallback = function(event){
  * rename a page
  */
 silex.Controller.prototype.renamePage = function(page){
-	var name = window.prompt('What name for your page?', this.name);
+	var name = window.prompt('What name for your page?', page.name);
 	if(name){
 		page.rename(name);
 	}
@@ -297,7 +297,7 @@ silex.Controller.prototype.renamePage = function(page){
  * remvoe a given page
  */
 silex.Controller.prototype.removePage = function(page){
-	if (window.confirm('I am about to delete the page, are you sure?')){
+	if (window.confirm('I am about to delete the page "'+page.name+'", are you sure?')){
 		// update model
 		page.detach();
 	}

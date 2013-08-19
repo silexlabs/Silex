@@ -40,6 +40,10 @@ silex.view.propertiesTool.BgPane.prototype.element;
  */
 silex.view.propertiesTool.BgPane.prototype.style;
 /**
+ * avoid loops on redraw
+ */
+silex.view.propertiesTool.BgPane.prototype.isRedraw;
+/**
  * callback to notify the tool box
  */
 silex.view.propertiesTool.BgPane.prototype.styleChanged;
@@ -256,8 +260,8 @@ silex.view.propertiesTool.BgPane.prototype.redraw = function(){
 		else{
 			this.repeatComboBox.setSelectedIndex(0);
 		}
+		this.isRedraw = false;
 	}
-	this.isRedraw = false;
 }
 /** 
  * User has selected a color
