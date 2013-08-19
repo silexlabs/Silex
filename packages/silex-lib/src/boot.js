@@ -42,7 +42,7 @@ goog.require('silex.view.Workspace');
 
 silex.boot = function() {
 	var logger = new silex.Logger('silex.boot', false);
-	//logger.setLevel(silex.Logger.INFO);
+	logger.setLevel(silex.Logger.ALL);
 	logger.info('--start boot--');
 
 	// create all views and attach them to the dom

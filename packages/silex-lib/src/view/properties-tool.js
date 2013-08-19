@@ -221,7 +221,7 @@ silex.view.PropertiesTool.prototype.setComponent = function(component){
 	this.propertyPane.setComponent(component);
 	this.pagePane.setComponent(component);
 
-	var style = this.component.getStyle();
+	var style = this.component.getStyle() || {};
 	this.borderPane.setStyle(style);
 	this.bgPane.setStyle(style);
 }

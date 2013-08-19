@@ -142,10 +142,8 @@ silex.view.propertiesTool.BorderPane.prototype.setStyle = function(style){
  * redraw the properties
  */
 silex.view.propertiesTool.BorderPane.prototype.redraw = function(){
-		console.log('aaa', this.style);
 	if (this.style && !this.isRedraw){
 		this.isRedraw = true;
-		console.log('bbb', this.style);
 		// border width
 		if (this.style.borderWidth){
 			var values = this.style.borderWidth.split(' ');
@@ -163,7 +161,6 @@ silex.view.propertiesTool.BorderPane.prototype.redraw = function(){
 			}
 			// border color
 			var color = this.style.borderColor;
-			console.log('test', color);
 			if (color == undefined || color == 'transparent' || color == ''){
 				this.bgColorPicker.setEnabled(false);
 				this.setColorPaletteVisibility(false);
@@ -218,8 +215,8 @@ silex.view.propertiesTool.BorderPane.prototype.redraw = function(){
 				checkBox.setChecked(true);
 			}
 		}
+		this.isRedraw = false;
 	}
-	this.isRedraw = false;
 }
 /**
  * property changed

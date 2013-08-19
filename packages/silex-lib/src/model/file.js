@@ -257,6 +257,11 @@ silex.model.File.prototype.setBodyStyle = function(bodyStyle){
  */
 silex.model.File.prototype.setHtml = function(rawHtml){
 
+	// reset the previous page model
+	var pages = silex.model.Page.getPages();
+	goog.array.forEach(pages, function(page) {
+		page.detach();
+	});
 	// use lower case to find head and body tags
 	var lowerCaseHtml = rawHtml.toLowerCase();
 	// split head and body tags 
@@ -290,12 +295,6 @@ silex.model.File.prototype.setHtml = function(rawHtml){
 	this.stage.setHead(this.headTag);
 	this.stage.setBodyStyle(this.bodyStyle);
 
-	// reset the previous page model
-	var pages = silex.model.Page.getPages();
-	goog.array.forEach(pages, function(page) {
-		page.remove();
-	});
-
 	// handle pages of the loaded html
 	var pagesNames = this.stage.getPagesNamesFromDom();
 
@@ -311,8 +310,14 @@ silex.model.File.prototype.setHtml = function(rawHtml){
 			this.textEditor,
 			this.fileExplorer
 		);
-		page.attach();
+		// no, because it is allready attached to the stage: page.attach();
+		silex.model.Page.addPage(page);
 	}, this);
+
+	// update tools
+	var pages = silex.model.Page.getPages();
+	this.pageTool.setPages(pages);
+	this.propertiesTool.setPages(pages);
 
 	// open default page
 	this.pageTool.setSelectedIndex(0);
@@ -331,7 +336,7 @@ silex.model.File.prototype.getHtml = function(){
 	var html = '';
 	html += '<html>';
 	html += '<head>'+this.headTag+'</head>';
-	html += '<body style="'+this.bodyStyle+'">'+this.bodyTag+'</body>';
+	html += '<body style="'+this.getBodyStyle()+'">'+this.bodyTag+'</body>';
 	html += '</html>';
 
 	return html;

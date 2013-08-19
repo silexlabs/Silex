@@ -115,6 +115,7 @@ silex.model.Component.prototype.getStyle = function (opt_context){
 	}
 	// parse the style string
 	var style = silex.Helper.stringToStyle(styleStr);
+	console.log('conversion of style ', styleStr, style);
 	// remove the position and size values
 	style.top = undefined;
 	style.left = undefined;
@@ -138,7 +139,7 @@ silex.model.Component.prototype.setStyle = function (style, opt_context){
 	if (opt_context == null){
 		opt_context = this.context;
 	}
-	this.logger.fine('setStyle', style);
+	console.log('setStyle', style, opt_context);
 	var styleStr = '';
 	goog.object.forEach(style, function(val, index, obj) {
 		if (val){
@@ -149,13 +150,17 @@ silex.model.Component.prototype.setStyle = function (style, opt_context){
 			else{
 				//build the string
 				styleStr += goog.string.toSelectorCase(index) + ': ' + val + '; ';
+	console.log('setStyle string ', goog.string.toSelectorCase(index) + ': ' + val + '; ');
 			}
 
 			// apply to the view
 			goog.style.setStyle(this.element, index, val);
 
+	console.log('setStyle apply ', this.element, index, val);
+
 		}
 	}, this);
+	console.log('conversion of style ', style, styleStr);
 	// add the bounding box if needed
 	if (opt_context == silex.model.Component.CONTEXT_NORMAL){
 		var bb = this.getBoundingBox();
