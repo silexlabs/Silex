@@ -49,6 +49,7 @@ http://demos.silexlabs.org/silex-v2-alpha3/
 
 functionnal
 * img non visible pendant 1er loading (apre ajout)
+* advanced mode
 
 Properties 
 * z-index
@@ -62,6 +63,7 @@ Properties
 * font-*
 * cursor
 * scroll?
+* ajout max/min width/height, pour rendre bottom/right utile
 
 
 ###v2.0.0alpha4

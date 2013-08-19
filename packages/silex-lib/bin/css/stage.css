@@ -13,9 +13,12 @@
 	box-shadow: 0px 0px 5px #888888;
 }
 .editable-style.silex-selected{
+	border: 1px solid #666666;
 }
+.editable-style.locked-style,
+.editable-style.locked-style .editable-style,
 .editable-style.background{
-	cursor: default;
+	cursor: pointer;
 }
 .silex-stage{
 	background-color: #CCCCCC;
