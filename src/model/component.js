@@ -78,6 +78,15 @@ silex.model.Component.getType = function (element){
 	throw('Could not determine the type of this element.');
 }
 /**
+ * retrieve the element to which I attach the new elements
+ * 'this' is expected to be the stage
+ */
+silex.model.Component.prototype.getBackgroundElement = function (){
+	var elements = goog.dom.getElementsByClass('background', this.element);
+	if (elements.length>0) return elements[0];
+	return this.element;
+}
+/**
  * context getter/setter
  */
 silex.model.Component.prototype.getContext = function (){
@@ -307,6 +316,39 @@ silex.model.Component.prototype.getFirstEditableParent = function(element){
 	return element;
 }
 /**
+ * lock/unlock
+ * this makes the component selectable but not draggable nor resizable
+ */
+silex.model.Component.prototype.getLocked = function(opt_element){
+	// default value for the element
+	if (opt_element == null){
+		opt_element = this.element;
+	}
+	return $(opt_element).hasClass('locked-style');
+}
+/**
+ * lock/unlock
+ * this makes the component selectable but not draggable nor resizable
+ */
+silex.model.Component.prototype.setLocked = function(isLocked, opt_element){
+	// default value for the element
+	if (opt_element == null){
+		opt_element = this.element;
+	}
+	// lock/unlock plugin
+	if (isLocked){
+		if (!$(opt_element).hasClass('locked-style')){
+			$(opt_element).addClass('locked-style');
+		}
+	}
+	else{
+		if ($(opt_element).hasClass('locked-style')){
+			$(opt_element).removeClass('locked-style');
+		}
+	}
+	this.setEditable(!isLocked, opt_element);
+}
+/**
  * init or remove the editable jquery plugin
  * if opt_element element to set as editable, optional, this.element is default
  */
@@ -329,6 +371,7 @@ silex.model.Component.prototype.setEditable = function(isEditable, opt_element){
 	// activate editable plugin
 	if (isEditable){
 		$('.editable-style[data-silex-type="container"]', opt_element).each(function(){
+			if ($(this).hasClass('locked-style')) return;
 			$(this).editable({
 				isContainer: true
 			});
@@ -337,6 +380,7 @@ silex.model.Component.prototype.setEditable = function(isEditable, opt_element){
 
 		// the root element (is not editable when it is the stage, i.e. has no css class 'editable-style')
 		if (this.getEditable(opt_element)){
+			if ($(this).hasClass('locked-style')) return;
 			var type = opt_element.getAttribute('data-silex-type');
 			if (type==silex.model.Component.TYPE_CONTAINER){
 				$(opt_element).editable({
@@ -436,7 +480,7 @@ silex.model.Component.prototype.addContainer = function(){
 	div.className = 'editable-style';
 	div.setAttribute('data-silex-type', silex.model.Component.TYPE_CONTAINER)
 	// attach it 
-	var container = goog.dom.getElementsByClass('background', this.element)[0];
+	var container = this.getBackgroundElement();
 	goog.dom.appendChild(container, div);
 	// make it editable
 	this.setEditable(true, div);
@@ -469,7 +513,7 @@ silex.model.Component.prototype.addText = function(){
 	div.setAttribute('data-silex-sub-type', silex.model.Component.SUBTYPE_TEXT)
 	div.innerHTML = 'New text box';
 	// attach it 
-	var container = goog.dom.getElementsByClass('background', this.element)[0];
+	var container = this.getBackgroundElement();
 	goog.dom.appendChild(container, div);
 	// make it editable
 	this.setEditable(true, div);
@@ -510,7 +554,7 @@ silex.model.Component.prototype.addImage = function(url){
 	img.setAttribute('src', url);
 
 	// attach it all
-	var container = goog.dom.getElementsByClass('background', this.element)[0];
+	var container = this.getBackgroundElement();
 	goog.dom.appendChild(container, div);
 	goog.dom.appendChild(div, img);
 	// make it editable

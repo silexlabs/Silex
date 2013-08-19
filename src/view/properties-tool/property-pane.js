@@ -103,16 +103,39 @@ silex.view.propertiesTool.PropertyPane.prototype.buildUi = function(){
 	goog.events.listen(this.rightInput, 'change', this.onPositionChanged, false, this);
 }
 /**
+ * look for a locked parent
+ */
+silex.view.propertiesTool.PropertyPane.prototype.hasLockedParent = function(){
+	var element = this.component.element.parentNode;
+	while(element && !goog.dom.classes.has(element, 'locked-style')){
+		element = element.parentNode;
+	}
+	if (element && goog.dom.classes.has(element, 'locked-style')){
+		return true;
+	}
+	return false;
+}
+/**
  * callback for the lock/unlock button
  */
 silex.view.propertiesTool.PropertyPane.prototype.lock = function(event){
-	this.component.setEditable(false);
+	if(!this.hasLockedParent()){
+		this.component.setLocked(true);
+	}
+	else{
+		alert('unlock the parent in order to lock / unlock this component.');
+	}
 }
 /**
  * callback for the lock/unlock button
  */
 silex.view.propertiesTool.PropertyPane.prototype.unlock = function(event){
-	this.component.setEditable(true);
+	if(!this.hasLockedParent()){
+		this.component.setLocked(false);
+	}
+	else{
+		alert('unlock the parent in order to lock / unlock this component.');
+	}
 }
 /**
  * position or size changed
