@@ -143,14 +143,17 @@ silex.model.Component.prototype.setStyle = function (style, opt_context){
 	goog.object.forEach(style, function(val, index, obj) {
 		if (val){
 			// do not keep 'no image' info, simply remove the style
-			if (val == 'none')
+			if (val == 'none'){
 				val = null;
+			}
+			else{
+				//build the string
+				styleStr += goog.string.toSelectorCase(index) + ': ' + val + '; ';
+			}
 
 			// apply to the view
 			goog.style.setStyle(this.element, index, val);
 
-			//build the string
-			styleStr += goog.string.toSelectorCase(index) + ': ' + val + '; ';
 		}
 	}, this);
 	// add the bounding box if needed

@@ -179,7 +179,6 @@ silex.view.propertiesTool.BgPane.prototype.redraw = function(){
 			this.hsvPalette.setColorRgbaHex(hex);
 		}
 		// BG image
-		console.log(this.style);
 		if (this.style.backgroundImage!=null && this.style.backgroundImage!='none' && this.style.backgroundImage!=''){
 			this.bgClearBgImage.setEnabled(true);
 		}
@@ -208,7 +207,6 @@ silex.view.propertiesTool.BgPane.prototype.redraw = function(){
 			var posArr = this.style.backgroundPosition.split(' ');
 			var vPosition = posArr[0];
 			var hPosition = posArr[1];
-			console.log(vPosition, hPosition);
 			switch(vPosition){
 				case 'top':
 					this.vPositionComboBox.setSelectedIndex(0);
@@ -265,7 +263,6 @@ silex.view.propertiesTool.BgPane.prototype.redraw = function(){
  * User has selected a color
  */
 silex.view.propertiesTool.BgPane.prototype.onColorChanged = function(event){
-	console.log('onColorChanged');
 	// update style
 	var color = silex.Helper.hexToRgba(this.hsvPalette.getColorRgbaHex());
 	if (this.style==null) this.style = {};
@@ -280,7 +277,6 @@ silex.view.propertiesTool.BgPane.prototype.onColorChanged = function(event){
  * open or close the palete
  */
 silex.view.propertiesTool.BgPane.prototype.onBgColorButton = function(event){
-	console.log('onBgColorButton');
 	// show the palette
 	if (this.getColorPaletteVisibility() == false){
 		this.hsvPalette.setColorRgbaHex(silex.Helper.rgbaToHex(this.style.backgroundColor));
@@ -294,7 +290,6 @@ silex.view.propertiesTool.BgPane.prototype.onBgColorButton = function(event){
  * User has clicked the transparent checkbox
  */
 silex.view.propertiesTool.BgPane.prototype.onTransparentChanged = function(event){
-	console.log('onTransparentChanged');
 	// update style
 	if (this.transparentBgCheckbox.getChecked()==false){
 		var color = silex.Helper.hexToRgba(this.hsvPalette.getColorRgbaHex());
@@ -316,7 +311,6 @@ silex.view.propertiesTool.BgPane.prototype.onTransparentChanged = function(event
  * User has clicked the select image button
  */
 silex.view.propertiesTool.BgPane.prototype.onSelectImageButton = function(event){
-	console.log('onSelectImageButton');
 	this.selectImage();
 }
 /** 
@@ -324,7 +318,6 @@ silex.view.propertiesTool.BgPane.prototype.onSelectImageButton = function(event)
  * called by controller
  */
 silex.view.propertiesTool.BgPane.prototype.setBgImage = function(url){
-	console.log('setBgImage', url, this.style)
 	// update style
 	var backgroundImage = url;
 	this.style.backgroundImage = 'url(\'' + backgroundImage + '\')';
@@ -337,7 +330,6 @@ silex.view.propertiesTool.BgPane.prototype.setBgImage = function(url){
  * Property changed callback
  */
 silex.view.propertiesTool.BgPane.prototype.setBgImageAttachement = function(value){
-	console.log('setBgImageAttachement', value, this.style)
 	// update style
 	this.style.backgroundAttachement = value;
 	// apply to the element and store it in the context attribute
@@ -349,7 +341,6 @@ silex.view.propertiesTool.BgPane.prototype.setBgImageAttachement = function(valu
  * Property changed callback
  */
 silex.view.propertiesTool.BgPane.prototype.setBgImagePosition = function(value){
-	console.log('setBgImagePosition', value, this.style)
 	// update style
 	this.style.backgroundPosition = value;
 	// apply to the element and store it in the context attribute
@@ -361,7 +352,6 @@ silex.view.propertiesTool.BgPane.prototype.setBgImagePosition = function(value){
  * Property changed callback
  */
 silex.view.propertiesTool.BgPane.prototype.setBgImageRepeat = function(value){
-	console.log('setBgImageRepeat', value, this.style)
 	// update style
 	this.style.backgroundRepeat = value;
 	// apply to the element and store it in the context attribute
@@ -373,7 +363,6 @@ silex.view.propertiesTool.BgPane.prototype.setBgImageRepeat = function(value){
  * User has clicked the clear image button
  */
 silex.view.propertiesTool.BgPane.prototype.onClearImageButton = function(event){
-	console.log('onClearImageButton');
 	// update style
 	this.style.backgroundImage = 'none';
 	// apply to the element and store it in the context attribute

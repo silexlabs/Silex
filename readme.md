@@ -59,7 +59,7 @@ Properties
   * border color
 * corners
   * corner radius
-  * corners: All, Top, Bottom, Left, Right, Top Left, Top Right, Bottom Left, Bottom Right, 
+  * corners: All,Top,Bottom,Left,Right,Top Left,Top Right,Bottom Left,Bottom Right,
 * font-*
 * cursor
 * scroll?
