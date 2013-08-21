@@ -37,3 +37,8 @@ body.loading-pending .loader{
 	/* Client apps may override the URL at which they serve the sprite. */
 	background-image: url(../assets/ui/editortoolbar.png);
 }
+
+/* advanced mode */
+.advanced-mode-off .advanced-only{
+	display: none;
+}

@@ -135,21 +135,24 @@ silex.Controller.prototype.menuCallback = function(event){
 		case 'view.file':
 			this.file.view()
 			break;
+		case 'tools.advanced.activate':
+		console.log(event, goog.dom.classes.has(document.body, 'advanced-mode-on'));
+			if (!goog.dom.classes.has(document.body, 'advanced-mode-on')){
+				goog.dom.classes.add(document.body, 'advanced-mode-on');
+				goog.dom.classes.remove(document.body, 'advanced-mode-off');
+			}
+			else{
+				goog.dom.classes.remove(document.body, 'advanced-mode-on');
+				goog.dom.classes.add(document.body, 'advanced-mode-off');
+			}
+			break;
 		case 'tools.debug.activate':
-			this.logger.setLevel(silex.Logger.ALL);
-			break;
-		case 'tools.debug.deactivate':
-			this.logger.setLevel(silex.Logger.OFF);
-			//this.debugWindow.setEnabled(false);
-			break;
-		case 'tools.debug.open':
-			// Create the debug window.
-			if (this.debugWindow==null) this.debugWindow = new goog.debug.FancyWindow('main');
-			this.debugWindow.setEnabled(true);
-			this.debugWindow.init();
-			break;
-		case 'tools.debug.close':
-			this.debugWindow.setEnabled(false);
+			if (this.logger.getLevel() != silex.Logger.ALL){
+				this.logger.setLevel(silex.Logger.ALL);
+			}
+			else{
+				this.logger.setLevel(silex.Logger.OFF);
+			}
 			break;
 		case 'view.open.fileExplorer':
 			this.fileExplorer.openDialog();

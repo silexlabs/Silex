@@ -80,8 +80,8 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
 			{label:'New page', id:'insert.page'} 
 		],
 		[
-			{label:'Debug mode ON', id:'tools.debug.activate'},
-			{label:'Debug mode OFF', id:'tools.debug.deactivate'}
+			{label:'Apollo mode', id:'tools.advanced.activate', checkable: true},
+			{label:'Debug mode', id:'tools.debug.activate', checkable: true}
 		],
 		[
 			{label:'Forums', id:'help.forums'}, 
@@ -104,10 +104,11 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
 			function(itemData) {
 				var item;
 				if (itemData) {
-					var label = itemData.label || itemData;
-					var id = itemData.id || itemData.label || itemData;
+					var label = itemData.label;
+					var id = itemData.id;
 					item = new goog.ui.MenuItem(label);
 					item.setId(id);
+					if (itemData.checkable) item.setCheckable(true);
 				} else {
 					item = new goog.ui.MenuSeparator();
 				}
