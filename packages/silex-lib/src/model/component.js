@@ -559,29 +559,32 @@ silex.model.Component.prototype.addImage = function(url){
 	var img = goog.dom.createElement('img');
 	goog.style.setStyle(img, 'width', '100%');
 	goog.style.setStyle(img, 'height', '100%');
-	img.setAttribute('src', url);
 
 	// attach it all
 	var container = this.getBackgroundElement();
 	goog.dom.appendChild(container, div);
 	goog.dom.appendChild(div, img);
-	// make it editable
-	this.setEditable(true, div);
+
 	// set default style
 	var style = {};
 	style.position = 'absolute';
 	style.left = '100px';
 	style.top = '100px';
-	style.visibility = 'hidden';
+	
 	var component = new silex.model.Component(div);
 	component.setStyle(style, silex.model.Component.CONTEXT_NORMAL);
 	img.onload = function (e){
+		console.log('image loaded');
 		// set container size to match image size
 		style.width = img.offsetWidth + 'px';
 		style.height = img.offsetHeight + 'px';
-		style.visibility = undefined;
 		component.setStyle(style, silex.model.Component.CONTEXT_NORMAL);
+		// make it editable
+		component.setEditable(true, div);
 	}
+	// start loading
+	img.setAttribute('src', url);
+
 	// return a component for this element
 	return component;
 }
