@@ -12,13 +12,13 @@
 .silex-texteditor .toolbar{
 	width: 100%;
 }
-.close-btn{
+.silex-texteditor .close-btn{
 	background-image: url("../assets/ui/close.png");
 	cursor: pointer;
 	height: 38px;
 	position: absolute;
-	right: -10px;
-	top: -10px;
+	right: 0;
+	top: 0;
 	width: 39px;
 }
 div.tr_bubble{

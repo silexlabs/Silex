@@ -570,6 +570,9 @@ silex.model.Component.prototype.addImage = function(url){
 	style.position = 'absolute';
 	style.left = '100px';
 	style.top = '100px';
+
+	// start loading
+	img.setAttribute('src', url);
 	
 	var component = new silex.model.Component(div);
 	component.setStyle(style, silex.model.Component.CONTEXT_NORMAL);
@@ -582,9 +585,6 @@ silex.model.Component.prototype.addImage = function(url){
 		// make it editable
 		component.setEditable(true, div);
 	}
-	// start loading
-	img.setAttribute('src', url);
-
 	// return a component for this element
 	return component;
 }
