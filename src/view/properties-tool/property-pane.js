@@ -79,6 +79,10 @@ silex.view.propertiesTool.PropertyPane.prototype.widthInput;
  */
 silex.view.propertiesTool.PropertyPane.prototype.heightInput;
 /**
+ * UI for position and size
+ */
+silex.view.propertiesTool.PropertyPane.prototype.zIndexInput;
+/**
  * build the UI
  */
 silex.view.propertiesTool.PropertyPane.prototype.buildUi = function(){
@@ -101,6 +105,10 @@ silex.view.propertiesTool.PropertyPane.prototype.buildUi = function(){
 	goog.events.listen(this.heightInput, 'change', this.onPositionChanged, false, this);
 	this.rightInput = goog.dom.getElementByClass('right-input');
 	goog.events.listen(this.rightInput, 'change', this.onPositionChanged, false, this);
+
+	// z index
+	this.zIndexInput = goog.dom.getElementByClass('z-index-input');
+	goog.events.listen(this.zIndexInput, 'change', this.onPositionChanged, false, this);
 }
 /**
  * look for a locked parent
@@ -156,6 +164,8 @@ silex.view.propertiesTool.PropertyPane.prototype.onPositionChanged = function(ev
 			bbox.height = this.heightInput.value + 'px';
 		if (this.rightInput.value && this.rightInput.value!='')
 			bbox.right = this.rightInput.value + 'px';
+		if (this.zIndexInput.value && this.zIndexInput.value!='')
+			bbox.zIndex = this.zIndexInput.value;
 
 		this.component.setBoundingBox(bbox);
 	}
@@ -250,6 +260,8 @@ silex.view.propertiesTool.PropertyPane.prototype.redraw = function(){
 				else this.heightInput.value = '';
 				if (bbox.right != null) this.rightInput.value = bbox.right.substr(0, bbox.right.indexOf('px'));
 				else this.rightInput.value = '';
+				if (bbox.zIndex != null) this.zIndexInput.value = bbox.zIndex;
+				else this.zIndexInput.value = '';
 			}
 			else{
 				// case of the stage
@@ -259,6 +271,7 @@ silex.view.propertiesTool.PropertyPane.prototype.redraw = function(){
 				this.topInput.value = '';
 				this.heightInput.value = '';
 				this.rightInput.value = '';
+				this.zIndexInput.value = '';
 			}
 		}
 		else{

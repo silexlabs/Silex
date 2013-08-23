@@ -84,6 +84,11 @@ silex.view.PropertiesTool.prototype.borderPane;
  */
 silex.view.PropertiesTool.prototype.pagePane;
 /**
+ * property editor
+ * @see 	silex.view.propertiesTool.GeneralStylePane
+ */
+silex.view.PropertiesTool.prototype.generalStylePane;
+/**
  * callback set by the controller
  */
 silex.view.PropertiesTool.prototype.onStatus;
@@ -149,6 +154,11 @@ silex.view.PropertiesTool.prototype.buildPanes = function(){
 	this.pagePane = new silex.view.propertiesTool.PagePane(
 		goog.dom.getElementByClass('page-editor', this.element), 
 		goog.bind(this.propertyChanged, this)
+	);
+	// general styles
+	this.generalStylePane = new silex.view.propertiesTool.GeneralStylePane(
+		goog.dom.getElementByClass('general-editor', this.element), 
+		goog.bind(this.styleChanged, this)
 	);
 }
 /**
@@ -224,6 +234,7 @@ silex.view.PropertiesTool.prototype.setComponent = function(component){
 	var style = this.component.getStyle() || {};
 	this.borderPane.setStyle(style);
 	this.bgPane.setStyle(style);
+	this.generalStylePane.setStyle(style);
 }
 /**
  * force redraw
@@ -234,6 +245,7 @@ silex.view.PropertiesTool.prototype.redraw = function(){
 	this.borderPane.redraw();
 	this.propertyPane.redraw();
 	this.pagePane.redraw();
+	this.generalStylePane.redraw();
 	this.bgPane.redraw();
 }
 /**
