@@ -950,7 +950,7 @@ console.log('ext has been refreshed and is now: '+$scope.ext);
 			 */
 			function authorize(url, serviceName)
 			{
-				var authPopup = $window.open(url, 'authPopup', 'height=550,width=750,dialog'); // FIXME parameterize size? per service ?
+				var authPopup = $window.open(url, 'authPopup', 'height=829,width=1035,dialog'); // FIXME parameterize size? per service ?
 				authPopup.owner = $window;
 				if ($window.focus) { authPopup.focus() }
 				if (authPopup)

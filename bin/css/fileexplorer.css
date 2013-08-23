@@ -2,17 +2,17 @@
 	position: absolute;
 	z-index: 200;
 	width: 80%;
-	max-width: 1052px; /* max width defined in the cloud explorer css */
+	max-width: 929px; /* max width defined in the cloud explorer css */
 }
 .silex-fileexplorer .ng-scope{
 	width: 100% !important;
 }
-.close-btn{
+.silex-fileexplorer .close-btn{
 	background-image: url("../assets/ui/close.png");
 	cursor: pointer;
 	height: 38px;
 	position: absolute;
-	right: -10px;
-	top: -10px;
+	right: 0;
+	top: 11px;
 	width: 39px;
 }

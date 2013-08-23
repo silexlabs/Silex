@@ -6,9 +6,9 @@ div#CE
 	font-family: arial, sans-serif;
 	line-height: normal;
 
-	max-width:1052px;
+	max-width:929px;
 	width: 85%;
-	height: 530px;
+	height: 574px;
 
 	position: static;
 	margin: auto;
@@ -42,14 +42,16 @@ div#CE .ceBrowser .span5,
 div#CE .ceBrowser .span7{
 	border-top: 1px solid rgb(229, 229, 229);
 	float: left;
-	overflow: auto;
-	height: 475px;
+	overflow-y: auto;
+	overflow-x: hidden;
+	height: 518px;
 }
 div#CE .ceBrowser .span5{
-	width: 25%;
+	width: 180px;
+	border-right: 1px solid rgb(229, 229, 229);
 }
 div#CE .ceBrowser .span7{
-	width: 75%;
+	width: 748px;
 }
 div#CE ul
 {
