@@ -7,6 +7,8 @@
 .silex-propertiestool .main-container{
 	padding: 5px;
 	margin: 5px;
+	height: 225px;
+	overflow-y: auto;
 }
 /* pages */
 .silex-propertiestool .pages-container .page-label{
@@ -50,11 +52,15 @@
 .silex-propertiestool .position-editor label.right-bottom{
 	width: 25px
 }
+.silex-propertiestool .position-editor label.z-index-label{
+	text-align: center;
+	width: 69px;
+}
 .silex-propertiestool .position-editor label.new-line{
 	clear: left;
 }
 .silex-propertiestool .position-editor input{
-	width: 47px;
+	width: 42px;
 	height: 15px;
 
 	padding-top: 2px;
@@ -77,6 +83,9 @@
 	overflow: hidden;
 	padding: 0;
 	width: 100%;
+}
+.silex-propertiestool input.opacity-input{
+	width: 47px;
 }
 /* buttons */
 .silex-propertiestool .tab-page .button{

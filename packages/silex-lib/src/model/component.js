@@ -123,6 +123,7 @@ silex.model.Component.prototype.getStyle = function (opt_context){
 	style.height = undefined;
 	style.bottom = undefined;
 	style.right = undefined;
+	style.zIndex = undefined;
 	style.position = undefined;
 	// return the style
 	return style;
@@ -170,6 +171,7 @@ silex.model.Component.prototype.setStyle = function (style, opt_context){
 		styleStr += 'height: '+bb.height+'; ';
 		styleStr += 'bottom: '+bb.bottom+'; ';
 		styleStr += 'right: '+bb.right+'; ';
+		styleStr += 'z-index: '+bb.zIndex+'; ';
 		styleStr += 'position: absolute; ';
 	}
 	// store in the model
@@ -186,7 +188,8 @@ silex.model.Component.prototype.getBoundingBox = function (){
 		width: goog.style.getStyle(this.element, 'width'),
 		height: goog.style.getStyle(this.element, 'height'),
 		bottom: goog.style.getStyle(this.element, 'bottom'),
-		right: goog.style.getStyle(this.element, 'right')
+		right: goog.style.getStyle(this.element, 'right'),
+		zIndex: goog.style.getStyle(this.element, 'zIndex')
 	};
 }
 /**
@@ -207,6 +210,8 @@ silex.model.Component.prototype.setBoundingBox = function (boundingBox){
 	else goog.style.setStyle(this.element, 'bottom', null);
 	if (boundingBox.right) goog.style.setStyle(this.element, 'right', boundingBox.right);
 	else goog.style.setStyle(this.element, 'right', null);
+	if (boundingBox.zIndex) goog.style.setStyle(this.element, 'zIndex', boundingBox.zIndex);
+	else goog.style.setStyle(this.element, 'zIndex', null);
 
 	// get the data-style-normal attribute
 	var styleStr = this.element.getAttribute('data-style-'+silex.model.Component.CONTEXT_NORMAL);
@@ -222,6 +227,7 @@ silex.model.Component.prototype.setBoundingBox = function (boundingBox){
 	style.height = boundingBox.height;
 	style.bottom = boundingBox.bottom;
 	style.right = boundingBox.right;
+	style.right = boundingBox.zIndex;
 	// build a string out of the style object
 	var styleStr = silex.Helper.styleToString(style);
 	// store it in the data-style-normal attribute
