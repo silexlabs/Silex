@@ -197,7 +197,6 @@ silex.Controller.prototype.menuCallback = function(event){
 			break;
 		case 'edit.rename.page':
 			this.selection.getPage().rename();
-			this.selection.getPage().open();
 			break;
 		// Help menu
 		case 'help.about':
@@ -294,6 +293,7 @@ silex.Controller.prototype.renamePage = function(page){
 	if(name){
 		page.rename(name);
 	}
+	this.selection.getPage().open();
 }
 /**
  * remvoe a given page

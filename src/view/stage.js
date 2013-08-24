@@ -141,22 +141,22 @@ silex.view.Stage.prototype.addPage = function(page){
 silex.view.Stage.prototype.renamePage = function(page, name){
 	var that = this;
 	// update the DOM element
-	$('meta[name="page"]', this.stage.headElement).each(
+	$('meta[name="page"]', this.headElement).each(
 		function () {
-			if (this.getAttribute('content') == that.name){
+			if (this.getAttribute('content') == page.name){
 				this.setAttribute('content', name);
 		}
 	});
 	// update the links to this page
-	$('*[data-silex-href="#'+this.name+'"]').each(
+	$('*[data-silex-href="#'+page.name+'"]').each(
 		function () {
 			this.setAttribute('data-silex-href', '#'+name);
 		}
 	);
 	// update the visibility of the compoents
-	$('.'+this.name).each(
+	$('.'+page.name).each(
 		function () {
-			$(this).removeClass(that.name);
+			$(this).removeClass(page.name);
 			$(this).addClass(name);
 		}
 	);

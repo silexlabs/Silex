@@ -173,7 +173,6 @@ silex.model.Page.prototype.attach = function(){
  * update the tools and the view
  */
 silex.model.Page.prototype.detach = function(){
-    console.log('detach ', this);
 	// update the model
 	silex.model.Page.removePage(this);
 
@@ -190,10 +189,10 @@ silex.model.Page.prototype.detach = function(){
  * @see 	silex.model.Page
  */
 silex.model.Page.prototype.rename = function(name){
-	this.name = name;
 	// update stage
 	this.stage.renamePage(this, name);
-
+	// store the new  name (do not do it before this.stage.renamePage)
+	this.name = name;
 	// update tools
 	var pages = silex.model.Page.getPages();
 	this.pageTool.setPages(pages);
