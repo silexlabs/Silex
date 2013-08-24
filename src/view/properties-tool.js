@@ -120,7 +120,7 @@ silex.view.PropertiesTool.prototype.buildTabs = function(){
 		}
 		// update display
 		var style = this.component.getStyle();
-		this.bgPane.setStyle();
+		this.bgPane.setStyle(style);
 	}, false, this);
 }
 /**

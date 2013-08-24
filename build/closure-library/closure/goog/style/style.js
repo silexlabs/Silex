@@ -1961,7 +1961,7 @@ goog.style.parseStyleAttribute = function(value) {
   var result = {};
   goog.array.forEach(value.split(/\s*;\s*/), function(pair) {
     var keyValue = pair.split(/\s*:\s*/);
-    console.log('parseStyleAttribute', pair, keyValue);
+    console.warn('BUGGUY parseStyleAttribute, replace by silex closure-patches.js', pair, keyValue);
     if (keyValue.length == 2) {
       result[goog.string.toCamelCase(keyValue[0].toLowerCase())] = keyValue[1];
     }

@@ -132,8 +132,9 @@ silex.model.Component.prototype.getStyle = function (opt_context){
  */
 silex.model.Component.prototype.setStyle = function (style, opt_context){
 	if (style == null){
-		// case of stage?
-		return;
+		// case of stage and context with no style yet
+		//return;
+		style = {};
 	}
 	// default value for the state
 	if (opt_context == null){
@@ -192,6 +193,7 @@ silex.model.Component.prototype.getBoundingBox = function (){
  * key/value pairs of string with unit, e.g. '5px'
  */
 silex.model.Component.prototype.setBoundingBox = function (boundingBox){
+	goog.style.setStyle(this.element, 'position', 'absolute');
 	// change the view, move/resize the dom element
 	if (boundingBox.top) goog.style.setStyle(this.element, 'top', boundingBox.top);
 	else goog.style.setStyle(this.element, 'top', null);
@@ -493,15 +495,19 @@ silex.model.Component.prototype.addContainer = function(){
 	goog.dom.appendChild(container, div);
 	// make it editable
 	this.setEditable(true, div);
+	// create the component instance
+	var component = new silex.model.Component(div);
+	// set bounding box
+	var bb = {};
+	bb.left = '100px';
+	bb.top = '100px';
+	bb.height = '100px';
+	bb.width = '100px';
+	component.setBoundingBox(bb);
 	// set default style
 	var style = {};
-	style.position = 'absolute';
-	style.left = '100px';
-	style.top = '100px';
-	style.height = '100px';
-	style.width = '100px';
 	style.backgroundColor = 'rgba(255, 255, 255, 1)';
-	var component = new silex.model.Component(div);
+	//style.overflow = 'hidden';
 	component.setStyle(style, silex.model.Component.CONTEXT_NORMAL);
 	// return a component for this element
 	return component;
@@ -526,16 +532,19 @@ silex.model.Component.prototype.addText = function(){
 	goog.dom.appendChild(container, div);
 	// make it editable
 	this.setEditable(true, div);
+	// create the component instance
+	var component = new silex.model.Component(div);
+	// set bounding box
+	var bb = {};
+	bb.left = '100px';
+	bb.top = '100px';
+	bb.height = '100px';
+	bb.width = '100px';
+	component.setBoundingBox(bb);
 	// set default style
 	var style = {};
-	style.position = 'absolute';
-	style.left = '100px';
-	style.top = '100px';
-	style.height = '100px';
-	style.width = '100px';
 	style.backgroundColor = 'rgba(255, 255, 255, 1)';
 	//style.overflow = 'hidden';
-	var component = new silex.model.Component(div);
 	component.setStyle(style, silex.model.Component.CONTEXT_NORMAL);
 	// return a component for this element
 	return component;
@@ -566,22 +575,22 @@ silex.model.Component.prototype.addImage = function(url){
 	goog.dom.appendChild(container, div);
 	goog.dom.appendChild(div, img);
 
-	// set default style
-	var style = {};
-	style.position = 'absolute';
-	style.left = '100px';
-	style.top = '100px';
+	// create the component instance
+	var component = new silex.model.Component(div);
+	// set bounding box
+	var bb = {};
+	bb.left = '100px';
+	bb.top = '100px';
+	component.setBoundingBox(bb);
 
 	// start loading
 	img.setAttribute('src', url);
 	
-	var component = new silex.model.Component(div);
-	component.setStyle(style, silex.model.Component.CONTEXT_NORMAL);
 	img.onload = function (e){
 		// set container size to match image size
-		style.width = img.offsetWidth + 'px';
-		style.height = img.offsetHeight + 'px';
-		component.setStyle(style, silex.model.Component.CONTEXT_NORMAL);
+		bb.width = img.offsetWidth + 'px';
+		bb.height = img.offsetHeight + 'px';
+		component.setBoundingBox(bb);
 		// make it editable
 		component.setEditable(true, div);
 	}
