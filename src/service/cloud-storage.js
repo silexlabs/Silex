@@ -25,6 +25,10 @@ silex.service.CloudStorage = function(){
  */
 silex.service.CloudStorage.prototype.filePicker;
 /**
+ * constant
+ */
+silex.service.CloudStorage.BACK_END_URL = "http://unifile.silexlabs.org/v1.0/services/list/";
+/**
  * singleton implementation
  */
 silex.service.CloudStorage.instance;

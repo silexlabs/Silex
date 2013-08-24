@@ -115,7 +115,6 @@ silex.model.Component.prototype.getStyle = function (opt_context){
 	}
 	// parse the style string
 	var style = silex.Helper.stringToStyle(styleStr);
-	console.log('conversion of style ', styleStr, style);
 	// remove the position and size values
 	style.top = undefined;
 	style.left = undefined;
@@ -140,7 +139,6 @@ silex.model.Component.prototype.setStyle = function (style, opt_context){
 	if (opt_context == null){
 		opt_context = this.context;
 	}
-	console.log('setStyle', style, opt_context);
 	var styleStr = '';
 	goog.object.forEach(style, function(val, index, obj) {
 		if (val){
@@ -151,17 +149,14 @@ silex.model.Component.prototype.setStyle = function (style, opt_context){
 			else{
 				//build the string
 				styleStr += goog.string.toSelectorCase(index) + ': ' + val + '; ';
-	console.log('setStyle string ', goog.string.toSelectorCase(index) + ': ' + val + '; ');
 			}
 
 			// apply to the view
 			goog.style.setStyle(this.element, index, val);
 
-	console.log('setStyle apply ', this.element, index, val);
 
 		}
 	}, this);
-	console.log('conversion of style ', style, styleStr);
 	// add the bounding box if needed
 	if (opt_context == silex.model.Component.CONTEXT_NORMAL){
 		var bb = this.getBoundingBox();
@@ -227,7 +222,7 @@ silex.model.Component.prototype.setBoundingBox = function (boundingBox){
 	style.height = boundingBox.height;
 	style.bottom = boundingBox.bottom;
 	style.right = boundingBox.right;
-	style.right = boundingBox.zIndex;
+	style.zIndex = boundingBox.zIndex;
 	// build a string out of the style object
 	var styleStr = silex.Helper.styleToString(style);
 	// store it in the data-style-normal attribute
@@ -583,7 +578,6 @@ silex.model.Component.prototype.addImage = function(url){
 	var component = new silex.model.Component(div);
 	component.setStyle(style, silex.model.Component.CONTEXT_NORMAL);
 	img.onload = function (e){
-		console.log('image loaded');
 		// set container size to match image size
 		style.width = img.offsetWidth + 'px';
 		style.height = img.offsetHeight + 'px';

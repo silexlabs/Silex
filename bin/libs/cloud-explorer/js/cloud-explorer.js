@@ -321,7 +321,8 @@ console.log("before extracting path and filename, parsedUrl= "+parsedUrl);
 			{
 				if (services[si]["name"] == srvName)
 				{
-					if (services[si].hasOwnProperty("isConnected") && services[si]["isConnected"]===true)
+					if (services[si].hasOwnProperty("isConnected") && services[si]["isConnected"]===true
+						&& services[si].hasOwnProperty("isLoggedIn") && services[si]["isLoggedIn"]===true)
 					{
 						return true;
 					}
@@ -338,17 +339,17 @@ console.log("before extracting path and filename, parsedUrl= "+parsedUrl);
 				{
 					continue;
 				}
-				if (!services[si]["isConnected"])
+				if (!services[si]["isLoggedIn"])
 				{
 					var res = $unifileStub.login({service:srvName}, function (status)
 						{
 							if (res.success == true)
 							{
-								services[si]["isConnected"] = true;
+								services[si]["isLoggedIn"] = true;
 							}
 							else
 							{
-								services[si]["isConnected"] = false;
+								services[si]["isLoggedIn"] = false;
 							}
 						},
 						function (obj) // FIXME
@@ -357,6 +358,7 @@ console.log("before extracting path and filename, parsedUrl= "+parsedUrl);
 							console.error(obj.data); // FIXME
 							console.error(obj.status); // FIXME
 							services[si]["isConnected"] = false;
+							services[si]["isLoggedIn"] = false;
 						});
 				}
 				return;
@@ -685,7 +687,7 @@ console.log("path.srv= "+path.srv+"   path.path= "+path.path+"    path.filename=
 //console.log("services[s]= "+JSON.stringify(services[s]))
 						$scope.tree[services[s]["name"]] = [];
 					}
-					if (services[s]["isConnected"]===true)
+					if (services[s]["isConnected"]===true && services[s]["isLoggedIn"]===true)
 					{
 						//console.log(services[s]["name"]+" connected but no data found in tree. Performing ls()...");
 						var sname = services[s]["name"]; // cannot use s in cb functions below (don't know why...)
