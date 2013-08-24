@@ -136,7 +136,6 @@ silex.Controller.prototype.menuCallback = function(event){
 			this.file.view()
 			break;
 		case 'tools.advanced.activate':
-		console.log(event, goog.dom.classes.has(document.body, 'advanced-mode-on'));
 			if (!goog.dom.classes.has(document.body, 'advanced-mode-on')){
 				goog.dom.classes.add(document.body, 'advanced-mode-on');
 				goog.dom.classes.remove(document.body, 'advanced-mode-off');

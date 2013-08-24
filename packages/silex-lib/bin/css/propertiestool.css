@@ -155,10 +155,6 @@
 /* checkbox etc */
 .silex-propertiestool fieldset {
 	font-size: 13px;
-	border: none;
-	/* border-top: 1px solid; */
-	border-left: 1px grey;
-	border-left-style: dotted;
 }
 .silex-propertiestool .goog-checkbox{
 	float: left;

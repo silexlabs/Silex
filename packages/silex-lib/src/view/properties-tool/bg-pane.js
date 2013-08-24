@@ -161,11 +161,8 @@ silex.view.propertiesTool.BgPane.prototype.setStyle = function(style){
  * redraw the properties
  */
 silex.view.propertiesTool.BgPane.prototype.redraw = function(){
-	if(this.isRedraw == false){
+	if(this.style && !this.isRedraw && this.transparentBgCheckbox){
 		this.isRedraw = true;
-
-		if (this.style == null)
-			this.style = {};
 
 		// BG color
 		var color = this.style.backgroundColor;
