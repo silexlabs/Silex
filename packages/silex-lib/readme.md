@@ -21,8 +21,7 @@ http://demos.silexlabs.org/silex-v2-alpha2/
 
 cloud explorer
 * design
-* detection des pages callback (google_auth et twitter.com)
-* garder le token quand on est déja connecté?
+* garder le token quand on est déja connecté
 * find contributors
 	Alertes pour liens vers ink
 	Alternatives.to
@@ -38,8 +37,13 @@ com
 * landing page sur silex.io
 * redirection html5-editor.org 
 
+
+Silex
+* ajout d'éléments sur la page en cours : seulement si aucun parent n'est un "calque"
+* afficher l'email du gars logué (demander a thomas)
+* lock/unlock en mode avancé
+
 refactoring
-* pane avec la meme interface : get/setComponent seulement et passer le logger?
 * suppr jquery quand pas utile, seulement dans stage
 
 

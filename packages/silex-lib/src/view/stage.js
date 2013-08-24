@@ -189,16 +189,13 @@ silex.view.Stage.prototype.getBody = function(){
  * @param string containing html
  */
 silex.view.Stage.prototype.setHead = function(headHtml){
-	console.log('setHead', this.headElement.innerHTML);
 	this.headElement.innerHTML = headHtml;
-	console.log('setHead', headHtml, ' - ', this.headElement.innerHTML, ' - ', this.headElement);
 }
 /**
  * get the html content on the stage
  * @return string containing html
  */
 silex.view.Stage.prototype.getHead = function(){
-	console.log('getHead', this.headElement)
 	return this.headElement.innerHTML;
 }
 /**
