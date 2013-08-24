@@ -22,6 +22,7 @@ silex.view.PageTool = function(element, cbk){
 
 	silex.Helper.loadTemplateFile('templates/pagetool.html', element, function(){
 		goog.events.listen(this.element, goog.events.EventType.CLICK, function (e) {
+			console.log('click on page ', this.element)
 			this.selectionChanged(this.pages[this.getCellIndex(e.target.parentNode)], true);
 		}, false, this);
 		if (cbk) cbk();
@@ -62,11 +63,19 @@ silex.view.PageTool.prototype.setPages = function(pages){
 	var that = this;
 	$(this.element).find( '.page-tool-container .page-container .page-preview .delete' ).click(
 		function(e){
+			console.log('click on delete ', this.element)
+			// stop propagation to prevent the general listener to catch it (click on a page)
+			e.stopPropagation();
+			// remove the page
 			that.removePageAtIndex(that.getCellIndex(this.parentNode.parentNode));
 		}
 	);
 	$(this.element).find( '.page-tool-container .page-container .page-preview .label' ).click(
 		function(e){
+			console.log('click', this, this.parentNode.parentNode)
+			// stop propagation to prevent the general listener to catch it (click on a page)
+			e.stopPropagation();
+			// rename the page
 			that.renamePageAtIndex(that.getCellIndex(this.parentNode.parentNode));
 		}
 	);
@@ -117,10 +126,15 @@ silex.view.PageTool.prototype.getSelectedItem = function(){
 	}
 }
 silex.view.PageTool.prototype.getCellIndex = function (element) {
+	console.log('getCellIndex', element, element.getAttribute('data-page-name'))
 	var page = silex.model.Page.getPageByName(element.getAttribute('data-page-name'));
-	var idx = silex.model.Page.getPageIndex(page);
+	if (page){
+		var idx = silex.model.Page.getPageIndex(page);
+		return idx;
+	}
 	console.log('getCellIndex return ', element, this.pages[idx], idx)
-	return idx;
+	console.error('Page not found for element ', element, silex.model.Page.pages);
+	return -1;
 }
 /**
  * set the selection of pages 
