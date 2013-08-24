@@ -1,6 +1,11 @@
 body{
 	overflow: hidden;
 }
+.background{
+	position: relative !important;
+	left: inherit !important;
+	top: 0px !important; /* !important is useful while editing */
+}
 /* loading */
 body.loading-pending>*{
 	visibility: hidden;
