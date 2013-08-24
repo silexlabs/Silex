@@ -179,7 +179,13 @@ silex.view.propertiesTool.PropertyPane.prototype.setComponent = function(compone
 	this.redraw();
 }
 /**
- * display the style of the element being edited 
+ * base url for abs/rel conversions
+ */
+silex.view.propertiesTool.PropertyPane.prototype.getBaseUrl = function(){
+	return this.baseUrl;
+}
+/**
+ * base url for abs/rel conversions
  */
 silex.view.propertiesTool.PropertyPane.prototype.setBaseUrl = function(url){
 	this.baseUrl = url;
