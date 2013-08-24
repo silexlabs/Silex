@@ -443,6 +443,15 @@ silex.model.Component.prototype.absolute2relative = function (baseUrl, opt_eleme
 		}
 		this.setAttribute(attr, silex.Helper.getRelativePath(value, baseUrl));
 	});
+	// bg image
+	$(opt_element).find('[data-silex-type]').each(function () {
+		console.log ($(this).css("background-image"), this);
+		if ($(this).css('background-image')){
+			console.log ('has a bg image');
+			var value = $(this).css("background-image");
+			$(this).css("background-image", silex.Helper.getRelativePath(value, baseUrl));
+		}
+	});
 }
 /**
  * Browse the children and convert all URLs to absolute

@@ -249,7 +249,13 @@ silex.view.PropertiesTool.prototype.redraw = function(){
 	this.bgPane.redraw();
 }
 /**
- * display the style of the element being edited 
+ * base url for abs/rel conversions
+ */
+silex.view.PropertiesTool.prototype.getBaseUrl = function(){
+	return this.propertyPane.getBaseUrl();
+}
+/**
+ * base url for abs/rel conversions
  */
 silex.view.PropertiesTool.prototype.setBaseUrl = function(url){
 	this.propertyPane.setBaseUrl(url);

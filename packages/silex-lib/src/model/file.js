@@ -333,10 +333,31 @@ silex.model.File.prototype.setHtml = function(rawHtml){
  * use the bodyTag and headTag objects
  */
 silex.model.File.prototype.getHtml = function(){
+	// handle background url of the body style
+	var style = silex.Helper.stringToStyle(this.getBodyStyle());
+	if (style.backgroundImage){
+		var url = style.backgroundImage.substring(style.backgroundImage.indexOf('(')+1, style.backgroundImage.indexOf(')'));
+		// also remove '' if needed
+		var quoteIdx = url.indexOf("'");
+		if (quoteIdx>=0){
+			url = url.substring(quoteIdx+1, url.lastIndexOf("'"));
+		}
+		// absolute to relative
+		url = silex.Helper.getRelativePath(url, this.propertiesTool.getBaseUrl());
+		// put back the url('...')
+		url = 'url(\'' + url + '\')';
+		console.log('getHtml', url);
+		// set the body style
+		style.backgroundImage = url;
+	}
+	// convert back to string
+	var styleStr = silex.Helper.styleToString(style);
+	console.log('getHtml', styleStr);
+
 	var html = '';
 	html += '<html>';
 	html += '<head>'+this.headTag+'</head>';
-	html += '<body style="'+this.getBodyStyle()+'">'+this.bodyTag+'</body>';
+	html += '<body style="'+styleStr+'">'+this.bodyTag+'</body>';
 	html += '</html>';
 
 	return html;
