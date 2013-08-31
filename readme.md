@@ -112,6 +112,9 @@ Contextual menu on the elements (menu bar under the menu like google?)
 
 Debuging
 
+Validation
+* http://validator.w3.org/
+
 Nice to have :
 * file://localhost/Users/lexa/Dropbox/fdt-workspace/Silex/libs/closure/goog/demos/onlinehandler.html
 * file://localhost/Users/lexa/Dropbox/fdt-workspace/Silex/libs/closure/goog/demos/fpsdisplay.html
