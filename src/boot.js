@@ -38,6 +38,7 @@ goog.require('silex.view.propertiesTool.PagePane');
 goog.require('silex.view.propertiesTool.BorderPane');
 goog.require('silex.view.propertiesTool.PropertyPane');
 goog.require('silex.view.propertiesTool.GeneralStylePane');
+goog.require('silex.view.HTMLEditor');
 goog.require('silex.view.TextEditor');
 goog.require('silex.view.FileExplorer');
 goog.require('silex.view.Workspace');
@@ -66,6 +67,10 @@ silex.boot = function() {
 		var propertiesTool = new silex.view.PropertiesTool(propertiesToolElement,
 	function () {
 		logger.fine('PropertiesTool created');
+		var htmlEditorElement = goog.dom.getElementByClass('silex-htmleditor');
+		var htmlEditor = new silex.view.HTMLEditor(htmlEditorElement,
+	function () {
+		logger.fine('HTMLEditor created');
 		var textEditorElement = goog.dom.getElementByClass('silex-texteditor');
 		var textEditor = new silex.view.TextEditor(textEditorElement,
 	function () {
@@ -83,6 +88,7 @@ silex.boot = function() {
 			stage, 
 			pageTool, 
 			propertiesTool, 
+			htmlEditor, 
 			textEditor, 
 			fileExplorer);
 		logger.fine('Workspace created');
@@ -96,6 +102,7 @@ silex.boot = function() {
 			stage, 
 			pageTool, 
 			propertiesTool, 
+			htmlEditor, 
 			textEditor, 
 			fileExplorer);
 		logger.fine('File created');
@@ -106,6 +113,7 @@ silex.boot = function() {
 			stage, 
 			pageTool, 
 			propertiesTool, 
+			htmlEditor, 
 			textEditor, 
 			fileExplorer);
 		logger.fine('Selection created');
@@ -118,6 +126,7 @@ silex.boot = function() {
 			stage, 
 			pageTool, 
 			propertiesTool, 
+			htmlEditor, 
 			textEditor, 
 			fileExplorer,
 			file,
@@ -137,6 +146,7 @@ silex.boot = function() {
 		file.openFromUrl(base+'/../silex-tests/template.html');
 /* */
 		logger.info('--end boot--');
+	});
 	});
 	});
 	});

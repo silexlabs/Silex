@@ -19,10 +19,11 @@ goog.require('goog.object');
  * let user edit style of components
  * @constructor
  */
-silex.view.propertiesTool.PropertyPane = function(element, propertyChanged, editText, selectImage){
+silex.view.propertiesTool.PropertyPane = function(element, propertyChanged, editHTML, editText, selectImage){
 	this.element = element;
 	this.propertyChanged = propertyChanged;
 	this.editText = editText;
+	this.editHTML = editHTML;
 	this.selectImage = selectImage;
 	this.buildUi();
 }
@@ -38,6 +39,10 @@ silex.view.propertiesTool.PropertyPane.prototype.component;
  * callback to notify the tool box
  */
 silex.view.propertiesTool.PropertyPane.prototype.propertyChanged;
+/**
+ * callback to call to let the user edit the HTML content of the component
+ */
+silex.view.propertiesTool.PropertyPane.prototype.editHTML;
 /**
  * callback to call to let the user edit the text content of the component
  */
@@ -220,10 +225,18 @@ silex.view.propertiesTool.PropertyPane.prototype.redraw = function(){
 		if (this.component){
 			var templateHtml = goog.dom.getElementByClass('edition-template', this.element).innerHTML;
 			silex.Helper.resolveTemplate(editionContainer, templateHtml, {
+				htmlEditor: (this.component.type==silex.model.Component.TYPE_CONTAINER),
 				textEditor: (this.component.type==silex.model.Component.SUBTYPE_TEXT),
 				imageUrl: imageUrl
 			});
 
+			// HTML editor
+			var buttonElement = goog.dom.getElementByClass('html-editor-button', editionContainer);
+			if (buttonElement){
+				var button = new goog.ui.CustomButton();
+				button.decorate(buttonElement);
+				goog.events.listen(buttonElement, goog.events.EventType.CLICK, this.editHTML, false);
+			}
 			// text editor
 			var buttonElement = goog.dom.getElementByClass('text-editor-button', editionContainer);
 			if (buttonElement){

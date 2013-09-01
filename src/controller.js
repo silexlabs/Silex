@@ -21,6 +21,7 @@ silex.Controller = function(
 	stage, 
 	pageTool, 
 	propertiesTool, 
+	htmlEditor, 
 	textEditor, 
 	fileExplorer, 
 	file, 
@@ -36,6 +37,7 @@ silex.Controller = function(
 	this.pageTool = pageTool;
 	this.propertiesTool = propertiesTool;
 	this.textEditor = textEditor;
+	this.htmlEditor = htmlEditor;
 	this.fileExplorer = fileExplorer;
 
 	// store reference to the model
@@ -50,6 +52,7 @@ silex.Controller = function(
 	this.stage.onStatus = goog.bind(this.stageCallback, this);
 	this.pageTool.onStatus = goog.bind(this.pageToolCallback, this);
 	this.propertiesTool.onStatus = goog.bind(this.propertiesToolCallback, this);
+	this.htmlEditor.onStatus = goog.bind(this.htmlEditorCallback, this);
 	this.textEditor.onStatus = goog.bind(this.textEditorCallback, this);
 }
 /**
@@ -78,6 +81,10 @@ silex.Controller.prototype.pageTool;
  * reference to the properties tool component (view)
  */
 silex.Controller.prototype.propertiesTool;
+/**
+ * reference to the HTMLEditor component (view)
+ */
+silex.Controller.prototype.htmlEditor;
 /**
  * reference to the TextEditor component (view)
  */
@@ -156,6 +163,9 @@ silex.Controller.prototype.menuCallback = function(event){
 		case 'view.open.fileExplorer':
 			this.fileExplorer.openDialog();
 			this.workspace.invalidate();
+			break;
+		case 'view.open.textEditor':
+			this.editComponent();
 			break;
 		case 'insert.page':
 			this.createPage();
@@ -351,6 +361,9 @@ silex.Controller.prototype.createPage = function(){
  */
 silex.Controller.prototype.propertiesToolCallback = function(event){
 	switch(event.type){
+		case 'editHTML':
+			this.editComponent();
+			break;
 		case 'editText':
 			this.editComponent();
 			break;
@@ -384,6 +397,16 @@ silex.Controller.prototype.propertiesToolCallback = function(event){
 	}
 }
 /**
+ * htmlEditor event handler
+ */
+silex.Controller.prototype.htmlEditorCallback = function(event){
+	switch(event.type){
+	case 'changed':
+		this.selection.getComponent().setHtml(event.content);
+		break;
+	}
+}
+/**
  * textEditor event handler
  */
 silex.Controller.prototype.textEditorCallback = function(event){
@@ -402,6 +425,9 @@ silex.Controller.prototype.editComponent = function(){
 	switch(component.type){
 	case silex.model.Component.SUBTYPE_TEXT:
 		this.textEditor.openEditor(component.getHtml());
+		break;
+	case silex.model.Component.TYPE_CONTAINER:
+		this.htmlEditor.openEditor(component.getHtml());
 		break;
 	}
 }

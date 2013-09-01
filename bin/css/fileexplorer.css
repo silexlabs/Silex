@@ -6,6 +6,7 @@
 }
 .silex-fileexplorer .ng-scope{
 	width: 100% !important;
+	min-width: 929px; /* width defined in the cloud explorer css */
 }
 .silex-fileexplorer .close-btn{
 	background-image: url("../assets/ui/close.png");

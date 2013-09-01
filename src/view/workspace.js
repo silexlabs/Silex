@@ -20,12 +20,13 @@ goog.require('goog.dom.ViewportSizeMonitor');
  * the Silex workspace class
  * @constructor
  */
-silex.view.Workspace = function(element, menu, stage, pageTool, propertiesTool, textEditor, fileExplorer){
+silex.view.Workspace = function(element, menu, stage, pageTool, propertiesTool, htmlEditor, textEditor, fileExplorer){
 	this.element = element;
 	this.menu = menu;
 	this.stage = stage;
 	this.pageTool = pageTool;
 	this.propertiesTool = propertiesTool;
+	this.htmlEditor = htmlEditor;
 	this.textEditor = textEditor;
 	this.fileExplorer = fileExplorer;
 	
@@ -57,6 +58,10 @@ silex.view.Workspace.prototype.pageTool;
  * reference to the silex.view.PropertiesTool class
  */
 silex.view.Workspace.prototype.propertiesTool;
+/**
+ * reference to the silex.view.HTMLEditor class
+ */
+silex.view.Workspace.prototype.htmlEditor;
 /**
  * reference to the silex.view.TextEditor class
  */
@@ -116,6 +121,13 @@ silex.view.Workspace.prototype.doRedraw = function(){
 
 	goog.style.setPosition(this.pageTool.element, null, menuSize.height);
 
+	// htmlEditor
+	if (this.htmlEditor.element){
+		var htmlEditorSize = goog.style.getSize(this.htmlEditor.element);
+		var posX = (viewportSize.width - htmlEditorSize.width)/2;
+		var posY = (viewportSize.height - htmlEditorSize.height)/2;
+		goog.style.setPosition(this.htmlEditor.element, posX, posY);
+	}
 	// texteditor
 	if (this.textEditor.element){
 		var textEditorSize = goog.style.getSize(this.textEditor.element);

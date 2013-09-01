@@ -45,7 +45,7 @@ silex.view.TextEditor = function(element, cbk){
 /**
  * element of the dom to which the component is rendered
  */
-silex.view.Menu.prototype.element;
+silex.view.TextEditor.prototype.element;
 /**
  * callback for the events, set by the controller
  */

@@ -17,7 +17,7 @@
 <div class="main-container">
 	<span class="position-editor">
 		<fieldset>
-			<legend>Position and size <span class="lock-btn link-small-btn">(lock</span> / <span class="unlock-btn link-small-btn">unlock)</span></legend>
+			<legend>Position and size <span class="lock-btn link-small-btn advanced-only">(lock /</span> <span class="unlock-btn link-small-btn advanced-only">unlock)</span></legend>
 			<div>
 				<label>X</label>
 				<input class="position-input left-input" type="number" />
@@ -56,7 +56,7 @@
 				{{/each}}
 		</script>
 		<fieldset>
-			<legend>Show only on <span class="show-on-all-pages-btn link-small-btn">(show on all pages)</span></legend>
+			<legend>Show only on <span class="show-on-all-pages-btn link-small-btn advanced-only">(show on all pages)</span></legend>
 			<div class="pages-container"></div>
 		</fieldset>
 		<fieldset>
@@ -70,6 +70,9 @@
 	</span>
 	<span class="property-editor">
 		<script class="edition-template" type="text/x-handlebars-template">
+			{{#if htmlEditor}}
+			<div class="button html-editor-button advanced-only" title="Open HTML editor">Edit HTML</div>
+			{{/if}}
 			{{#if textEditor}}
 			<div class="button text-editor-button" title="Open text editor">Edit text</div>
 			{{/if}}
@@ -149,7 +152,7 @@
 			</div>
 			<div class="border-editor">
 				<fieldset class="border-property">
-					<legend>Border <span class="enable-border-color-button link-small-btn">(No border)</span></legend>
+					<legend>Border <span class="enable-border-color-button link-small-btn advanced-only">(No border)</span></legend>
 					<label>Width</label>
 					<input class="border-width-input" type="number" />
 					<label>Color</label>
