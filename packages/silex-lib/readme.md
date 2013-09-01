@@ -21,7 +21,6 @@ http://demos.silexlabs.org/silex-v2-alpha2/
 
 cloud explorer
 * design
-* garder le token quand on est déja connecté
 * find contributors
 	Alertes pour liens vers ink
 	Alternatives.to
@@ -30,7 +29,13 @@ cloud explorer
 	js client : aidez ns avec l ihm
 	Js server : ajoutez des services"
 
-com
+com ce
+* parler de unifile/CE comme ils parlent de l'api et du client sur https://github.com/ether/etherpad-lite
+
+Stress tests
+* https://github.com/ether/etherpad-lite/tree/develop/bin/loadTesting
+
+com silex
 * envoi a EO de MS (contact lex)?
 * Alternatives.to
 * revoir tous les sites qui parlent de silex
