@@ -72,6 +72,27 @@ silex.view.TextEditor.prototype.initUI = function () {
 	this.textField.registerPlugin(new goog.editor.plugins.LinkDialogPlugin());
 	this.textField.registerPlugin(new goog.editor.plugins.LinkBubble());
 
+	// add fonts
+	var fontFaceButton = goog.ui.editor.DefaultToolbar.makeBuiltInToolbarButton(goog.editor.Command.FONT_FACE);
+//	goog.ui.editor.ToolbarFactory.addFont(fontFaceButton, 'Arial', 'Arial, Helvetica, sans-serif');
+	goog.ui.editor.ToolbarFactory.addFont(fontFaceButton, 'Arial Black', 'Arial Black, Gadget, sans-serif');
+	goog.ui.editor.ToolbarFactory.addFont(fontFaceButton, 'Impact', 'Impact5, Charcoal, sans-serif');
+	goog.ui.editor.ToolbarFactory.addFont(fontFaceButton, 'Lucida Console', 'Lucida Console, Monaco, monospace');
+	goog.ui.editor.ToolbarFactory.addFont(fontFaceButton, 'Lucida Sans', 'Lucida Sans Unicode, Lucida Grande, sans-serif');
+	goog.ui.editor.ToolbarFactory.addFont(fontFaceButton, 'Palatino', 'Palatino Linotype, Book Antiqua, Palatino, serif');
+	goog.ui.editor.ToolbarFactory.addFont(fontFaceButton, 'Tahoma', 'Tahoma, Geneva, sans-serif');
+//	goog.ui.editor.ToolbarFactory.addFont(fontFaceButton, 'Times', 'Times New Roman, Times, serif');
+
+	// add font sizes
+	var fontSizeButton = goog.ui.editor.DefaultToolbar.makeBuiltInToolbarButton(goog.editor.Command.FONT_SIZE);
+	goog.ui.editor.ToolbarFactory.addFontSize(fontSizeButton, '1', '1');
+	goog.ui.editor.ToolbarFactory.addFontSize(fontSizeButton, '2', '2');
+	goog.ui.editor.ToolbarFactory.addFontSize(fontSizeButton, '3', '3');
+	goog.ui.editor.ToolbarFactory.addFontSize(fontSizeButton, '4', '4');
+	goog.ui.editor.ToolbarFactory.addFontSize(fontSizeButton, '5', '5');
+	goog.ui.editor.ToolbarFactory.addFontSize(fontSizeButton, '6', '6');
+	goog.ui.editor.ToolbarFactory.addFontSize(fontSizeButton, '7', '7');
+
 	// Specify the buttons to add to the toolbar, using built in default buttons.
 	var buttons = [
 	goog.editor.Command.BOLD,
@@ -79,8 +100,8 @@ silex.view.TextEditor.prototype.initUI = function () {
 	goog.editor.Command.UNDERLINE,
 	goog.editor.Command.FONT_COLOR,
 	goog.editor.Command.BACKGROUND_COLOR,
-	goog.editor.Command.FONT_FACE,
-	goog.editor.Command.FONT_SIZE,
+	fontFaceButton,
+	fontSizeButton,
 	goog.editor.Command.LINK,
 	goog.editor.Command.UNDO,
 	goog.editor.Command.REDO,
