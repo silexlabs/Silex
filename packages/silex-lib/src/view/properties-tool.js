@@ -147,6 +147,7 @@ silex.view.PropertiesTool.prototype.buildPanes = function(){
 	this.propertyPane = new silex.view.propertiesTool.PropertyPane(
 		goog.dom.getElementByClass('property-editor', this.element), 
 		goog.bind(this.propertyChanged, this),
+		goog.bind(this.editHTML, this),
 		goog.bind(this.editText, this),
 		goog.bind(this.selectImage, this)
 	);
@@ -190,6 +191,15 @@ silex.view.PropertiesTool.prototype.selectImage = function(){
  */
 silex.view.PropertiesTool.prototype.setImage = function(url){
 	this.propertyPane.setImage(url);
+}
+/**
+ * notify the controller that the user needs to edit the html content of the component
+ * this is called by PropertyPane
+ */
+silex.view.PropertiesTool.prototype.editHTML = function(){
+	if(this.onStatus) this.onStatus({
+		type: 'editHTML'
+	});
 }
 /**
  * notify the controller that the user needs to edit the html content of the component

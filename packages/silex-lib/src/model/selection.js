@@ -24,6 +24,7 @@ silex.model.Selection = function(
 	stage, 
 	pageTool, 
 	propertiesTool, 
+	htmlEditor, 
 	textEditor, 
 	fileExplorer){
 
@@ -33,6 +34,7 @@ silex.model.Selection = function(
 	this.stage = stage;
 	this.pageTool = pageTool;
 	this.propertiesTool = propertiesTool;
+	this.htmlEditor = htmlEditor;
 	this.textEditor = textEditor;
 	this.fileExplorer = fileExplorer;
 
@@ -77,6 +79,10 @@ silex.model.File.prototype.pageTool;
  * element of the view, to be updated by this model
  */
 silex.model.File.prototype.propertiesTool;
+/**
+ * element of the view, to be updated by this model
+ */
+silex.model.File.prototype.htmlEditor;
 /**
  * element of the view, to be updated by this model
  */

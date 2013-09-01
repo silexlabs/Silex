@@ -20,7 +20,8 @@
 	float: left;
 }
 .silex-propertiestool .link-small-btn{
-	font-weight: normal;
+	font-weight: lighter;
+	font-size: x-small;
 	color: blue;
 	cursor: pointer;
 }
