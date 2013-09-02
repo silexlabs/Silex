@@ -27,7 +27,7 @@ cloud explorer
 	Poster des messages qui disent
 	"on a aussi ce besoin, on s y est mis venez nous aider c est OS
 	js client : aidez ns avec l ihm
-	Js server : ajoutez des services"
+	Js server : ajoutez des services
 
 com ce
 * parler de unifile/CE comme ils parlent de l'api et du client sur https://github.com/ether/etherpad-lite
@@ -36,21 +36,18 @@ Stress tests
 * https://github.com/ether/etherpad-lite/tree/develop/bin/loadTesting
 
 com silex
+* landing page
+  * comme sur http://etherpad.org/ proposer download ou une liste de "public instances"? et aussi le "contribute" qui est bien, et le workflow avec github, le site etc.
 * envoi a EO de MS (contact lex)?
 * Alternatives.to
 * revoir tous les sites qui parlent de silex
 * landing page sur silex.io
 * redirection html5-editor.org 
 
-
 Silex
+* edit HTML: seulement sur un nouveau type de composant : HTML element (qui n'est pas container)
 * ajout d'éléments sur la page en cours : seulement si aucun parent n'est un "calque"
 * afficher l'email du gars logué (demander a thomas)
-* lock/unlock en mode avancé
-
-refactoring
-* suppr jquery quand pas utile, seulement dans stage
-
 
 ###v2.0.0alpha3
 
