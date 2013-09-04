@@ -77,6 +77,8 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
 			{label:'Image...', id:'insert.image'}, 
 			{label:'Container', id:'insert.container'}, 
 			null,
+			{label:'HTML box', id:'insert.html'}, 
+			null,
 			{label:'New page', id:'insert.page'} 
 		],
 		[

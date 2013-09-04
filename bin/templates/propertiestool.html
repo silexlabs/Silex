@@ -17,7 +17,9 @@
 <div class="main-container">
 	<span class="position-editor">
 		<fieldset>
-			<legend>Position and size <span class="lock-btn link-small-btn advanced-only">(lock /</span> <span class="unlock-btn link-small-btn advanced-only">unlock)</span></legend>
+<!--			<legend>Position and size <span class="lock-btn link-small-btn advanced-only">(lock /</span> <span class="unlock-btn link-small-btn advanced-only">unlock)</span></legend>
+-->
+			<legend>Position and size</legend>
 			<div>
 				<label>X</label>
 				<input class="position-input left-input" type="number" />
@@ -71,14 +73,14 @@
 	<span class="property-editor">
 		<script class="edition-template" type="text/x-handlebars-template">
 			{{#if htmlEditor}}
-			<div class="button html-editor-button advanced-only" title="Open HTML editor">Edit HTML</div>
+			<div class="button html-editor-button" title="Open HTML editor">Edit HTML</div>
 			{{/if}}
 			{{#if textEditor}}
 			<div class="button text-editor-button" title="Open text editor">Edit text</div>
 			{{/if}}
 			{{#if imageUrl}}
 			<input class="image-url-input advanced-only" value="{{imageUrl}}" />
-			<div class="button image-url-button advanced-only" title="Open file browser">...</div>
+			<div class="button image-url-button" title="Open file browser">Swap image</div>
 			{{/if}}
 		</script>
 		<fieldset>
