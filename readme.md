@@ -22,6 +22,7 @@ http://demos.silexlabs.org/silex-v2-alpha2/
 http://demos.silexlabs.org/silex-v2-alpha3/
 
 Properties 
+
 * shadows
 * font-*
 * cursor
@@ -31,36 +32,43 @@ Properties
 ###v2.0.0alpha4
 
 WYSIWYG
+
 * shortcuts (suppr, arrows, save, new, open)
 * UI sounds? 
 * set as default page
 
 Texte
+
 * difference entre typo dans l’editeur text et sur la scene
 * detecter la couleur de fond (chercher le background color ou image dans les parents)
 
 Components
+
 * media (image, audio, video)
 * nav bar
 
 File
+
 * group images on the same drive as the html page? 
 * export (cleanup html, make zip with .html, .js, .css, all media)?
 
 ###v2.0.0alpha5
 
 Edition 
+
 * copy/cut/paste
 * undo/redo
 * autosave
 * multiple selection
 
 File properties 
+
 * background 
 * title and description and keywords 
 * favicon
 
 Contextual menu on the elements (menu bar under the menu like google?)
+
 * delete
 * lock/unlock
 * up/down (z-index)
@@ -71,21 +79,20 @@ Contextual menu on the elements (menu bar under the menu like google?)
 Debuging
 
 Validation
+
 * http://validator.w3.org/
 
 Nice to have :
+
 * file://localhost/Users/lexa/Dropbox/fdt-workspace/Silex/libs/closure/goog/demos/onlinehandler.html
 * file://localhost/Users/lexa/Dropbox/fdt-workspace/Silex/libs/closure/goog/demos/fpsdisplay.html
 
 ###v2.0.x
 
 Packaging / distribution
+
 * App.js ?
 * arvixe like service & ftp dans unifile
 * newsletter editor
 * wp, drupal, joomla page editor
 * mockup tool
-
-
-
-
