@@ -94,8 +94,8 @@ silex.view.propertiesTool.PropertyPane.prototype.buildUi = function(){
 	// lock / unlock
 	var lockBtn = goog.dom.getElementByClass('lock-btn');
 	var unlockBtn = goog.dom.getElementByClass('unlock-btn');
-	goog.events.listen(lockBtn, goog.events.EventType.CLICK, this.lock, false, this);
-	goog.events.listen(unlockBtn, goog.events.EventType.CLICK, this.unlock, false, this);
+	if (lockBtn) goog.events.listen(lockBtn, goog.events.EventType.CLICK, this.lock, false, this);
+	if (unlockBtn) goog.events.listen(unlockBtn, goog.events.EventType.CLICK, this.unlock, false, this);
 
 	// position and size
 	this.leftInput = goog.dom.getElementByClass('left-input');
@@ -225,7 +225,7 @@ silex.view.propertiesTool.PropertyPane.prototype.redraw = function(){
 		if (this.component){
 			var templateHtml = goog.dom.getElementByClass('edition-template', this.element).innerHTML;
 			silex.Helper.resolveTemplate(editionContainer, templateHtml, {
-				htmlEditor: (this.component.type==silex.model.Component.TYPE_CONTAINER),
+				htmlEditor: (this.component.type==silex.model.Component.SUBTYPE_HTML),
 				textEditor: (this.component.type==silex.model.Component.SUBTYPE_TEXT),
 				imageUrl: imageUrl
 			});

@@ -177,6 +177,13 @@ silex.Controller.prototype.menuCallback = function(event){
 			// select the component
 			this.selection.setComponent(component);
 			break;
+		case 'insert.html':
+			var component = this.file.getStageComponent().addHtml();
+			// only visible on the current page
+			this.selection.getPage().addComponent(component);
+			// select the component
+			this.selection.setComponent(component);
+			break;
 		case 'insert.image':
 			this.fileExplorer.openDialog(
 			goog.bind(function (blob) {
@@ -376,12 +383,7 @@ silex.Controller.prototype.propertiesToolCallback = function(event){
 			this.workspace.invalidate();
 			break;
 		case 'selectImage':
-			this.fileExplorer.openDialog(
-			goog.bind(function (blob) {
-				this.propertiesTool.setImage(blob.url);
-			}, this),
-			['image/*', 'text/plain']);
-			this.workspace.invalidate();
+			this.editComponent();
 			break;
 		case 'contextChanged':
 			// style of the element has changed
@@ -426,8 +428,16 @@ silex.Controller.prototype.editComponent = function(){
 	case silex.model.Component.SUBTYPE_TEXT:
 		this.textEditor.openEditor(component.getHtml());
 		break;
-	case silex.model.Component.TYPE_CONTAINER:
+	case silex.model.Component.SUBTYPE_HTML:
 		this.htmlEditor.openEditor(component.getHtml());
+		break;
+	case silex.model.Component.SUBTYPE_IMAGE:
+		this.fileExplorer.openDialog(
+		goog.bind(function (blob) {
+			this.propertiesTool.setImage(blob.url);
+		}, this),
+		['image/*', 'text/plain']);
+		this.workspace.invalidate();
 		break;
 	}
 }

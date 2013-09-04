@@ -17,59 +17,15 @@ http://www.silexlabs.org/silex/silex-licensing/
 Current version: v2.0.0alpha2
 http://demos.silexlabs.org/silex-v2-alpha2/
 
-###dev notes / encours
-
-cloud explorer
-* design
-* find contributors
-	Alertes pour liens vers ink
-	Alternatives.to
-	Poster des messages qui disent
-	"on a aussi ce besoin, on s y est mis venez nous aider c est OS
-	js client : aidez ns avec l ihm
-	Js server : ajoutez des services
-
-com ce
-* parler de unifile/CE comme ils parlent de l'api et du client sur https://github.com/ether/etherpad-lite
-
-Stress tests
-* https://github.com/ether/etherpad-lite/tree/develop/bin/loadTesting
-
-com silex
-* landing page
-  * comme sur http://etherpad.org/ proposer download ou une liste de "public instances"? et aussi le "contribute" qui est bien, et le workflow avec github, le site etc.
-* envoi a EO de MS (contact lex)?
-* Alternatives.to
-* revoir tous les sites qui parlent de silex
-* landing page sur silex.io
-* redirection html5-editor.org 
-
-Silex
-* edit HTML: seulement sur un nouveau type de composant : HTML element (qui n'est pas container)
-* ajout d'éléments sur la page en cours : seulement si aucun parent n'est un "calque"
-* afficher l'email du gars logué (demander a thomas)
-
 ###v2.0.0alpha3
 
 http://demos.silexlabs.org/silex-v2-alpha3/
 
-functionnal
-* img non visible pendant 1er loading (apre ajout)
-* advanced mode
-
 Properties 
-* z-index
 * shadows
-* border property file://localhost/Users/lexa/Dropbox/fdt-workspace/Silex/build/closure-library/closure/goog/demos/roundedpanel.html
-  * border width
-  * border color
-* corners
-  * corner radius
-  * corners: All,Top,Bottom,Left,Right,Top Left,Top Right,Bottom Left,Bottom Right,
 * font-*
 * cursor
 * scroll?
-* ajout max/min width/height, pour rendre bottom/right utile
 
 
 ###v2.0.0alpha4

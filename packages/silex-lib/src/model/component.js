@@ -51,6 +51,10 @@ silex.model.Component.SUBTYPE_IMAGE = 'image';
  */
 silex.model.Component.SUBTYPE_TEXT = 'text';
 /**
+ * constant for silex element type
+ */
+silex.model.Component.SUBTYPE_HTML = 'html';
+/**
  * logger for debugging
  * @see 	silex.Logger
  */
@@ -536,6 +540,43 @@ silex.model.Component.prototype.addText = function(){
 	div.setAttribute('data-silex-type', silex.model.Component.TYPE_ELEMENT)
 	div.setAttribute('data-silex-sub-type', silex.model.Component.SUBTYPE_TEXT)
 	div.innerHTML = 'New text box';
+	// attach it 
+	var container = this.getBackgroundElement();
+	goog.dom.appendChild(container, div);
+	// make it editable
+	this.setEditable(true, div);
+	// create the component instance
+	var component = new silex.model.Component(div);
+	// set bounding box
+	var bb = {};
+	bb.left = '100px';
+	bb.top = '100px';
+	bb.height = '100px';
+	bb.width = '100px';
+	component.setBoundingBox(bb);
+	// set default style
+	var style = {};
+	style.backgroundColor = 'rgba(255, 255, 255, 1)';
+	//style.overflow = 'hidden';
+	component.setStyle(style, silex.model.Component.CONTEXT_NORMAL);
+	// return a component for this element
+	return component;
+}
+/**
+ * component creation
+ * create a DOM element, attach it to this container 
+ * and returns a new component for the element
+ */
+silex.model.Component.prototype.addHtml = function(){
+	if (this.type != silex.model.Component.TYPE_CONTAINER){
+		throw('Canot create a child component for this component because it is not of type '+silex.model.Component.TYPE_CONTAINER);
+	}
+	// create the element
+	var div = goog.dom.createElement('div');
+	div.className = 'editable-style';
+	div.setAttribute('data-silex-type', silex.model.Component.TYPE_ELEMENT)
+	div.setAttribute('data-silex-sub-type', silex.model.Component.SUBTYPE_HTML)
+	div.innerHTML = '<p>New HTML box</p>';
 	// attach it 
 	var container = this.getBackgroundElement();
 	goog.dom.appendChild(container, div);
