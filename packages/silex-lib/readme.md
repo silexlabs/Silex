@@ -96,3 +96,5 @@ Packaging / distribution
 * newsletter editor
 * wp, drupal, joomla page editor
 * mockup tool
+* banner editor
+
