@@ -60,6 +60,9 @@ Edition
 * undo/redo
 * autosave
 * multiple selection
+* better text editor? 
+  http://www.webdesignerdepot.com/2008/12/20-excellent-free-rich-text-editors/
+  http://mindmup.github.io/bootstrap-wysiwyg/
 
 File properties 
 
@@ -92,7 +95,23 @@ Nice to have :
 Packaging / distribution
 
 * App.js ?
-* arvixe like service & ftp dans unifile
-* newsletter editor
-* wp, drupal, joomla page editor
+* arvixe like service
+* add "multiple ftp" to file browser
+* newsletter editor or postcard editor
+* mainstream CMS page, article or theme editor
 * mockup tool
+
+Distribution
+
+* Hosted free
+  Edit HTML pages in your drobbox, gdrive...  Your site is visible only by people with whom you share it. 
+  Tech note: host cloud explorer @silexlabs (silex.html on SL dedicated server and nodejs on heroku)
+* Hosted pro
+  Edit your site directly from an online location. Your site accessible to everyone 24/7. Paid, no setup, no need to know anything about hosting.
+  Tech note: PHP file explorer hosted @arvixe, silex.html on SL dedicated server (use arvixe.silex.io ??)
+* Automatic install on your hosting, with scriptaculous
+  Your site is accessible from everywhere 24/7. You can manage multiple separated sites.
+  Tech note: silex.html and PHP file explorer hosted by the user's hosting company
+* Hosted by you for your users
+  Offer Silex "Hosted free" version to your users, on your domain. You can even change the design of Silex to match your brand.
+  Tech note: node server, silex in the unifile server
