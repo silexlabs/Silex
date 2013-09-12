@@ -12,6 +12,28 @@ Silex is used to assemble multimedia content and publish it online and on the de
 GPL license 
 http://www.silexlabs.org/silex/silex-licensing/
 
+##Distribution/packages
+
+This is how Silex will be distributed
+
+* Hosted free
+  No install, just go to http://silex.io/latest/ and do design
+  Edit HTML pages in your drobbox, gdrive...  Your site is visible only by people with whom you share it. 
+  Tech note: host cloud explorer @silexlabs (silex.html on SL dedicated server and nodejs on heroku)
+* Hosted pro
+  No install, purchase a hosting plan @arvixe, and go to http://arvixe.silex.io/latest/ and do design
+  Edit your site from an online location. Your site accessible to everyone 24/7. 
+  Paid, no setup, no need to know anything about hosting.
+  Tech note: PHP file explorer hosted @arvixe, silex.html on SL dedicated server (use arvixe.silex.io ??)
+* Hosted anywhere
+  Purchase a stadard shared hosting, and use Scriptaculous automatic install to install Silex in a folder.
+  You can manage multiple separated sites with different instances of Silex to edit the site. 
+  Tech note: silex.html and PHP file explorer hosted by the user's hosting company
+* Hosted by you, front and back
+  Offer Silex "Hosted free" version to your users, on your domain name. 
+  Your users go to your URL and use Silex from there to edit their files from their cloud services.
+  Tech note: node server, silex in the unifile server
+
 ##Roadmap
 
 Current version: v2.0.0alpha2
@@ -100,18 +122,5 @@ Packaging / distribution
 * newsletter editor or postcard editor
 * mainstream CMS page, article or theme editor
 * mockup tool
+* banner editor
 
-Distribution
-
-* Hosted free
-  Edit HTML pages in your drobbox, gdrive...  Your site is visible only by people with whom you share it. 
-  Tech note: host cloud explorer @silexlabs (silex.html on SL dedicated server and nodejs on heroku)
-* Hosted pro
-  Edit your site directly from an online location. Your site accessible to everyone 24/7. Paid, no setup, no need to know anything about hosting.
-  Tech note: PHP file explorer hosted @arvixe, silex.html on SL dedicated server (use arvixe.silex.io ??)
-* Automatic install on your hosting, with scriptaculous
-  Your site is accessible from everywhere 24/7. You can manage multiple separated sites.
-  Tech note: silex.html and PHP file explorer hosted by the user's hosting company
-* Hosted by you for your users
-  Offer Silex "Hosted free" version to your users, on your domain. You can even change the design of Silex to match your brand.
-  Tech note: node server, silex in the unifile server
