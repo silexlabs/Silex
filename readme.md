@@ -14,7 +14,7 @@ http://www.silexlabs.org/silex/silex-licensing/
 
 ##Distribution/packages
 
-This is how Silex will be distributed
+This is how Silex is distributed
 
 * Hosted free
   No install, just go to http://silex.io/latest/ and do design
@@ -30,11 +30,21 @@ This is how Silex will be distributed
   You can manage multiple separated sites with different instances of Silex to edit the site. 
   Tech note: silex.html and PHP file explorer hosted by the user's hosting company
 * Hosted by you, front and back
+  Download Silex and host it with its nodejs server.
   Offer Silex "Hosted free" version to your users, on your domain name. 
   Your users go to your URL and use Silex from there to edit their files from their cloud services.
   Tech note: node server, silex in the unifile server
 
-##Roadmap
+##dependencies
+
+* unifile https://github.com/silexlabs/unifile 
+  wich uses nodejs and the modules: express, dbox, express, googleapis, logger, node-oauth, oauth, path
+* cloud explorer https://github.com/silexlabs/cloud-explorer 
+  which uses angular.js
+* ace http://ace.c9.io/
+* google closure library and compiler
+* jquery and jquery UI
+* handlebars.js
 
 Current version: v2.0.0alpha2
 http://demos.silexlabs.org/silex-v2-alpha2/
