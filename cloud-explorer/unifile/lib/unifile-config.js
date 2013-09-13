@@ -1,4 +1,8 @@
 /**
+ * route name for unifile api
+ */
+exports.apiRoot = "/api";
+/**
  * other config files to considere (if they exist)
  */
 exports.otherConfFiles = [
@@ -10,8 +14,8 @@ exports.otherConfFiles = [
 exports.staticFolders = [
 	// assets
 	{
-		name: "/www",
-		path: "../www/"
+		name: "/unifile-assets",
+		path: "../unifile-assets/"
 	}
 ];
 /**
@@ -51,7 +55,7 @@ exports.gdrive =
  */
 exports.routes = {
 	"/":{
-		"unifile/":{
+		"api/":{
 			"v1.0/":{
 				"services/":{
 					"list/":{}

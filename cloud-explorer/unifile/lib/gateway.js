@@ -33,17 +33,18 @@ var express = require('express');
 var app = express();
 var router = require('./core/router');
 var url = require('url');
+var apiRoot = require('./core/config-manager').getConfig("apiRoot");
 
 /**
  * app init
  */
 app.configure(function() {
 
-    app.use('/unifile', express.bodyParser());
+    app.use(apiRoot, express.bodyParser());
 
 	// start session
-	app.use('/unifile', express.cookieParser());
-	app.use('/unifile', express.cookieSession({ secret: 'plum plum plum'}));
+	app.use(apiRoot, express.cookieParser());
+	app.use(apiRoot, express.cookieSession({ secret: 'plum plum plum'}));
 
 	router.init(app, express);
 });
@@ -85,7 +86,7 @@ for(var folder in staticFolders){
 /**
  * prepare url and call the router
  */
-app.use('/unifile', function(request, response, next){
+app.use(apiRoot, function(request, response, next){
 	console.log('-------------------------------------');
 	console.log(request.url);
 	var url_parts = url.parse(request.url, true);

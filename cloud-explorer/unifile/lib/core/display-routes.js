@@ -44,8 +44,8 @@ function display_routes(route_obj){
 	var found = false;
 	var reply = "";
 
-	reply += '<html><head><link rel="stylesheet" href="/v1.0/www/exec/get/unifile/style.css" /></head><body>';
-	reply += '<a href="https://github.com/silexlabs/unifile"><img style="position: absolute; top: 0; right: 0; border: 0;" src="/v1.0/www/exec/get/unifile/forkme.png"></a>';
+	reply += '<html><head><link rel="stylesheet" href="/unifile-assets/style.css" /></head><body>';
+	reply += '<a href="https://github.com/silexlabs/unifile"><img style="position: absolute; top: 0; right: 0; border: 0;" src="/unifile-assets/forkme.png"></a>';
 	reply += '<ul>';
 	reply += '<li class="link up-link"><a href="../">../</a></li>';
 
