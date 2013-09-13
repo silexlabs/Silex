@@ -27,7 +27,7 @@ silex.service.CloudStorage.prototype.filePicker;
 /**
  * constant
  */
-silex.service.CloudStorage.BACK_END_URL = "http://unifile.silexlabs.org/v1.0/services/list/";
+//silex.service.CloudStorage.BACK_END_URL = "../unifile/v1.0/services/list/";
 /**
  * singleton implementation
  */
