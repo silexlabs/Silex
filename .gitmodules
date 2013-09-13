@@ -1,6 +1,0 @@
-[submodule "bin/unifile"]
-	path = bin/unifile
-	url = https://github.com/silexlabs/unifile.git
-[submodule "bin/cloud-explorer"]
-	path = bin/cloud-explorer
-	url = https://github.com/silexlabs/cloud-explorer.git

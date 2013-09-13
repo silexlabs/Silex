@@ -1,0 +1,5 @@
+.project
+npm-debug.log
+build.xml
+release.sh
+release-LICENSE
