@@ -231,6 +231,7 @@ silex.model.Component.prototype.setBoundingBox = function (boundingBox){
 	style.zIndex = boundingBox.zIndex;
 	// build a string out of the style object
 	var styleStr = silex.Helper.styleToString(style);
+
 	// store it in the data-style-normal attribute
 	this.element.setAttribute('data-style-'+silex.model.Component.CONTEXT_NORMAL, styleStr);
 }

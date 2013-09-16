@@ -41,7 +41,8 @@ silex.view.Stage = function(element, cbk){
 			element:e.target
 		});
 	}, false, this);
-	goog.events.listen(this.element, 'mouseup', function(e){
+	// listen on body instead of element because user can release on the tool boxes
+	goog.events.listen(document.body, 'mouseup', function(e){
 		if (this.onStatus) this.onStatus({
 			type:'change'
 		});
