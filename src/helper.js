@@ -49,7 +49,7 @@ silex.Helper.getRelativePath = function(url, base){
 
     // check if they are both absolute urls
     if(base.indexOf('http')!=0 || url.indexOf('http')!=0){
-        console.warn('Warning: the URL is not absolute');
+        console.warn('Warning: the URL is not absolute ', url);
         return url;
     }
     // get an array out of the URLs

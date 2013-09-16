@@ -16,6 +16,6 @@ body{
 .editable-style{
 	position: absolute;
 }
-.editable-style [data-silex-sub-type="image"]{
-	overflow: hidden;
+.editable-style [data-silex-sub-type="image"] img{
+	border-radius: inherit;
 }

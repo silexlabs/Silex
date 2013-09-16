@@ -172,6 +172,7 @@ silex.model.File.prototype.close = function(){
 	this.blob = null;
 	this.headTag = '';
 	this.bodyTag = '';
+	this.setHtml('');
 	//
 	this.stage.setBody('');
 	this.stage.setHead('');
@@ -265,9 +266,10 @@ silex.model.File.prototype.setHtml = function(rawHtml){
 
 	// reset the previous page model
 	var pages = silex.model.Page.getPages();
-	goog.array.forEach(pages, function(page) {
+	while(pages.length>0) {
+		var page = pages[0];
 		page.detach();
-	});
+	}
 	// use lower case to find head and body tags
 	var lowerCaseHtml = rawHtml.toLowerCase();
 	// split head and body tags 
@@ -352,13 +354,11 @@ silex.model.File.prototype.getHtml = function(){
 		url = silex.Helper.getRelativePath(url, this.propertiesTool.getBaseUrl());
 		// put back the url('...')
 		url = 'url(\'' + url + '\')';
-		console.log('getHtml', url);
 		// set the body style
 		style.backgroundImage = url;
 	}
 	// convert back to string
 	var styleStr = silex.Helper.styleToString(style);
-	console.log('getHtml', styleStr);
 
 	var html = '';
 	html += '<html>';
