@@ -213,7 +213,7 @@ silex.Controller.prototype.menuCallback = function(event){
 			this.removePage(this.selection.getPage());
 			break;
 		case 'edit.rename.page':
-			this.selection.getPage().rename();
+			this.renamePage(this.selection.getPage());
 			break;
 		// Help menu
 		case 'help.about':
@@ -306,7 +306,7 @@ silex.Controller.prototype.pageToolCallback = function(event){
  * rename a page
  */
 silex.Controller.prototype.renamePage = function(page){
-	var name = window.prompt('What name for your page?', page.name);
+	var name = this.getUserInputPageName(page.name);
 	if(name){
 		page.rename(name);
 	}
@@ -322,11 +322,10 @@ silex.Controller.prototype.removePage = function(page){
 	}
 }
 /**
- * create a page
+ * input a page name
  */
-silex.Controller.prototype.createPage = function(){
-	// create the page instance
-	var pageName = window.prompt('What name for your new page?', 'New page name');
+silex.Controller.prototype.getUserInputPageName = function(defaultName){
+	var pageName = window.prompt('Enter a name for your page!', defaultName);
 	if (pageName && pageName.length>0){
 		// cleanup the page name
 		pageName = pageName.replace(/\ /g,'-')
@@ -345,21 +344,31 @@ silex.Controller.prototype.createPage = function(){
 			exists.open();
 		}
 		else{
-			// create the page model
-			var page = new silex.model.Page(
-				pageName, 
-				this.workspace,
-				this.menu,
-				this.stage,
-				this.pageTool,
-				this.propertiesTool,
-				this.textEditor,
-				this.fileExplorer
-			);
-			page.attach();
-			this.selection.setPage(page);
-			page.open();
+			return pageName;
 		}
+	}
+	return null;
+}
+/**
+ * create a page
+ */
+silex.Controller.prototype.createPage = function(){
+	var pageName = this.getUserInputPageName('My new page name');
+	if(pageName){
+		// create the page model
+		var page = new silex.model.Page(
+			pageName, 
+			this.workspace,
+			this.menu,
+			this.stage,
+			this.pageTool,
+			this.propertiesTool,
+			this.textEditor,
+			this.fileExplorer
+		);
+		page.attach();
+		this.selection.setPage(page);
+		page.open();
 	}
 }
 
