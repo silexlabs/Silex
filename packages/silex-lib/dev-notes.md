@@ -47,14 +47,13 @@ Silex
 
 Bugs
 
-* rename page: keep blank spaces
-* import image => relative instead of absolute
-* corner radius hover, pressed
 * border color palete update when switch to hover, pressed
 * border width to "" on hover, pressed
 * baground image on hover, pressed
 * url restent absolues, parfois avec "'", parfois sans, parfois avec &quot;
 * ajouts menu?
+* url des images pour service local, ouvre une page, insert image, rouvre la page
+* ?? import image => relative instead of absolute
 
 ##Usability tests
 
