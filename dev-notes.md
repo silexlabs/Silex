@@ -48,14 +48,13 @@ Silex
 Bugs
 
 * rename page: keep blank spaces
-* images and resize knobs (remove mask, use bg image to have rounded corners)
 * import image => relative instead of absolute
-* effacement pages avant unload
 * corner radius hover, pressed
 * border color palete update when switch to hover, pressed
 * border width to "" on hover, pressed
 * baground image on hover, pressed
 * url restent absolues, parfois avec "'", parfois sans, parfois avec &quot;
+* ajouts menu?
 
 ##Usability tests
 
