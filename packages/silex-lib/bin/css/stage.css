@@ -20,6 +20,7 @@
 .editable-style.locked-style .editable-style,
 .editable-style.background{
 	cursor: pointer;
+	margin-bottom: 30px;
 }
 .silex-stage{
 	background-color: #CCCCCC;

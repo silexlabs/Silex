@@ -14,7 +14,11 @@ http://www.silexlabs.org/silex/silex-licensing/
 
 ##Distribution/packages
 
-This is how Silex is distributed
+Sure, you can clone the repo and start unifile, the back end of Silex, with nodejs. For this, see cloud-explorer/unifile/readme.md
+
+But you may want to use Silex without hosting the nodejs server, on your computer or on your shared hosting. There are several ways to do this according to your needs.
+
+This is how Silex is distributed:
 
 * Hosted free
   No install, just go to http://silex.io/latest/ and do design
