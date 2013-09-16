@@ -40,24 +40,30 @@ silex.view.Stage = function(element, cbk){
 			type:'select',
 			element:e.target
 		});
+		this.isDragging = true;
 	}, false, this);
 	// listen on body instead of element because user can release on the tool boxes
 	goog.events.listen(document.body, 'mouseup', function(e){
-		if (this.onStatus) this.onStatus({
-			type:'change'
-		});
+		if(this.isDragging){
+			if (this.onStatus) this.onStatus({
+				type:'change'
+			});
+			this.isDragging = false;
+		}
 	}, false, this);
 	// dispatch event when an element has been moved
 	goog.events.listen(this.element, 'dragstop', function(e){
 		if (this.onStatus) this.onStatus({
 			type:'change'
 		});
+		this.isDragging = false;
 	}, false, this);
 	// dispatch event when an element has been moved or resized
 	goog.events.listen(this.element, 'resize', function(e){
 		if (this.onStatus) this.onStatus({
 			type:'change'
 		});
+		this.isDragging = false;
 	}, false, this);
 	// detect double click
 	goog.events.listen(this.element, goog.events.EventType.DBLCLICK, function(e){
