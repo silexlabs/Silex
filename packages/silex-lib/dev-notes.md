@@ -47,13 +47,12 @@ Silex
 
 Bugs
 
-* border color palete update when switch to hover, pressed
-* border width to "" on hover, pressed
-* baground image on hover, pressed
 * url restent absolues, parfois avec "'", parfois sans, parfois avec &quot;
-* ajouts menu?
+* save knobs 
 * url des images pour service local, ouvre une page, insert image, rouvre la page
+* il y a des images en ligne pour la palette, les mettre en local
 * ?? import image => relative instead of absolute
+* bg properties: manque background-size?
 
 ##Usability tests
 

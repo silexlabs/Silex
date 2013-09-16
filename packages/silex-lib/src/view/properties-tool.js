@@ -181,6 +181,7 @@ silex.view.PropertiesTool.prototype.setBgImage = function(url){
  * this is called by BgPane 
  */
 silex.view.PropertiesTool.prototype.selectImage = function(){
+	console.log("selectImage");
 	if(this.onStatus) this.onStatus({
 		type: 'selectImage'
 	});
