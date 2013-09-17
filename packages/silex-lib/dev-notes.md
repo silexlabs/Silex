@@ -48,8 +48,14 @@ Silex
 Bugs
 
 * url restent absolues, parfois avec "'", parfois sans, parfois avec &quot;
-* save knobs 
-* url des images pour service local, ouvre une page, insert image, rouvre la page
+* url service local bug
+  getAbsolutePath :
+  ../api/v1.0/www/exec/get/2012-04-19%2018.28.13.jpg
+  ../api/v1.0/www/exec/get/tmp.html
+  retourne : api/v1.0/www/exec/api/v1.0/www/exec/get/2012-04-19%2018.28.13.jpg
+  => bug url des images pour service local, ouvre une page, insert image, rouvre la page
+  
+* save knobs dans la page html
 * il y a des images en ligne pour la palette, les mettre en local
 * ?? import image => relative instead of absolute
 * bg properties: manque background-size?

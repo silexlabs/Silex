@@ -49,7 +49,7 @@ silex.Helper.getRelativePath = function(url, base){
 
     // check if they are both absolute urls
     if(base.indexOf('http')!=0 || url.indexOf('http')!=0){
-        console.warn('Warning: the URL is not absolute ', url);
+        console.warn('Warning: the URL is not absolute ', url, base);
         return url;
     }
     // get an array out of the URLs
@@ -67,7 +67,7 @@ silex.Helper.getRelativePath = function(url, base){
     baseArr.shift();
     // check if they are on the same domain
     if(baseArr[0]!=urlArr[0]){
-        console.warn('Warning: the URL is not on the same domain as the base url');
+        console.warn('Warning: the URL is not on the same domain as the base url ', url);
         return url;
     }
     // remove the common part
@@ -88,6 +88,8 @@ silex.Helper.getRelativePath = function(url, base){
     // now append the folders from url and the file name
     relativePath += urlArr.join('/') + '/' + fileName;
 
+    console.log("getRelativePath ", url, base, relativePath);
+
     return relativePath;
 }
 /**
@@ -95,7 +97,8 @@ silex.Helper.getRelativePath = function(url, base){
  * use http://docs.closure-library.googlecode.com/git/class_goog_Uri.html
  */
 silex.Helper.getAbsolutePath = function(url, base){
-    return goog.Uri.resolve(base, url);
+    console.log("getAbsolutePath ", url, base, goog.Uri.resolve(base, url).toString());
+    return goog.Uri.resolve(base, url).toString();
 }
 /**
  * convert style object to string
