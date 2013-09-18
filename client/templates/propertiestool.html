@@ -1,0 +1,206 @@
+<link rel="stylesheet" href="css/propertiestool.css">
+
+<link rel="stylesheet" href="css/closure/checkbox.css">
+<link rel="stylesheet" href="css/closure/button.css">
+<link rel="stylesheet" href="css/closure/custombutton.css">
+<link rel="stylesheet" href="css/closure/flatbutton.css">
+<link rel="stylesheet" href="css/closure/linkbutton.css">
+<link rel="stylesheet" href="css/closure/tab.css">
+<link rel="stylesheet" href="css/closure/tabbar.css">
+<link rel="stylesheet" href="css/closure/hsvapalette.css">
+
+<link rel="stylesheet" href="css/closure/palette.css">
+<link rel="stylesheet" href="css/closure/colorpalette.css">
+<link rel="stylesheet" href="css/closure/colormenubutton.css">
+
+<h1>Properties</h1>
+<div class="main-container">
+	<span class="position-editor">
+		<fieldset>
+<!--			<legend>Position and size <span class="lock-btn link-small-btn advanced-only">(lock /</span> <span class="unlock-btn link-small-btn advanced-only">unlock)</span></legend>
+-->
+			<legend>Position and size</legend>
+			<div>
+				<label>X</label>
+				<input class="position-input left-input" type="number" />
+				<label>W</label>
+				<input class="position-input width-input" type="number" />
+				<label class="right-bottom advanced-only">Right</label>
+				<input class="position-input right-input advanced-only" type="number" />
+				<label class="new-line">Y</label>
+				<input class="position-input top-input" type="number" />
+				<label>H</label>
+				<input class="position-input height-input" type="number" />
+				<label class="right-bottom advanced-only">Btm.</label>
+				<input class="position-input bottom-input advanced-only" type="number" />
+			</div>
+			<div>
+				<label class="z-index-label advanced-only">Z index</label>
+				<input class="position-input z-index-input advanced-only" type="number" />
+			</div>
+		</fieldset>
+	</span>
+	<span class="page-editor">
+		<script class="pages-selector-template" type="text/x-handlebars-template">
+			{{#each pages}}
+				<div class="page-container">
+					<span class="page-check" />
+					<label class="page-label">{{this.name}}</label>
+				</div>
+			{{/each}}
+		</script>
+		<script class="link-template" type="text/x-handlebars-template">
+				<option value="none">Link to ...</option>
+				<option value="none">Nothing</option>
+				<option value="custom">External link</option>
+				{{#each pages}}
+					<option value="{{this.name}}">#{{this.name}}</option>
+				{{/each}}
+		</script>
+		<fieldset>
+			<legend>Show only on <span class="show-on-all-pages-btn link-small-btn advanced-only">(show on all pages)</span></legend>
+			<div class="pages-container"></div>
+		</fieldset>
+		<fieldset>
+			<legend>Link</legend>
+			<div>
+				<select class="link-combo-box">
+				</select>
+			</div>
+			<input class="link-input-text" type="text" />
+		</fieldset>
+	</span>
+	<span class="property-editor">
+		<script class="edition-template" type="text/x-handlebars-template">
+			{{#if htmlEditor}}
+			<div class="button html-editor-button" title="Open HTML editor">Edit HTML</div>
+			{{/if}}
+			{{#if textEditor}}
+			<div class="button text-editor-button" title="Open text editor">Edit text</div>
+			{{/if}}
+			{{#if imageUrl}}
+			<input class="image-url-input advanced-only" value="{{imageUrl}}" />
+			<div class="button image-url-button" title="Open file browser">Swap image</div>
+			{{/if}}
+		</script>
+		<fieldset>
+			<legend>Content</legend>
+			<div class="edition-container"></div>
+		</fieldset>
+	</span>
+	<span class="style-container">
+		<div class="tab-bar-container goog-tab-bar goog-tab-bar-top">
+			<div class="goog-tab goog-tab-selected">Normal</div>
+			<div class="goog-tab">Hover</div>
+			<div class="goog-tab">Pressed</div>
+		</div>
+		<span class="tab-page">
+			<div class="general-editor">
+				<fieldset class="opacity-property advanced-only">
+					<legend>Opacity <small>between 0 and 1</small></legend>
+					<input class="opacity-input" type="number" />
+				</fieldset>
+			</div>
+			<div class="background-editor">
+				<fieldset class="background-property">
+					<legend>Background Color</legend>
+					<span class="color-bg-button color-button"></span>
+					<span class="color-bg-palette"></span>
+					<span class="enable-color-bg-button"></span> Transparent
+				</fieldset>
+				<fieldset class="background-image">
+					<legend>Background Image</legend>
+					<div>
+						<div class="button bg-image-button">Select image</div>
+						<div class="button clear-bg-image-button">Clear image</div>
+					</div>
+					<div class="advanced-only">
+						<label>Position</label>
+						<div class="bg-position-h-combo-box combobox goog-select">
+							<ul class="goog-menu">
+								<li class="goog-menuitem" id="left">left</li>
+								<li class="goog-menuitem" id="center">center</li>
+								<li class="goog-menuitem" id="right">right</li>
+							</ul>
+						</div>
+						<div class="bg-position-v-combo-box combobox goog-select">
+							<ul class="goog-menu">
+								<li class="goog-menuitem" id="top">top</li>
+								<li class="goog-menuitem" id="center">center</li>
+								<li class="goog-menuitem" id="bottom">bottom</li>
+							</ul>
+						</div>
+					</div>
+					<div class="advanced-only">
+						<label>Properties</label>
+						<div class="bg-attachement-combo-box combobox goog-select">
+							<ul class="goog-menu">
+								<li class="goog-menuitem" title="The background scrolls along with the element" id="scroll">scroll</li>
+								<li class="goog-menuitem" title="The background is fixed with regard to the viewport" id="fixed">fixed</li>
+								<li class="goog-menuitem" title="The background scrolls along with the element's contents" id="local">local</li>
+							</ul>
+						</div>
+						<div class="bg-repeat-combo-box combobox goog-select">
+							<ul class="goog-menu">
+								<li class="goog-menuitem" title="The background image is repeated both vertically and horizontally" id="repeat">repeat</li>
+								<li class="goog-menuitem" title="The background image is only repeated horizontally" id="repeat-x">repeat-x</li>
+								<li class="goog-menuitem" title="The background image is only repeated vertically" id="repeat-y">repeat-y</li>
+								<li class="goog-menuitem" title="The background-image is not repeated" id="no-repeat">no-repeat</li>
+								<li class="goog-menuitem" title="The setting of the background-repeat property is inherited from the parent element" id="inherit">inherit</li>
+							</ul>
+						</div>
+					</div>
+				</fieldset>
+			</div>
+			<div class="border-editor">
+				<fieldset class="border-property">
+					<legend>Border <span class="enable-border-color-button link-small-btn advanced-only">(No border)</span></legend>
+					<label>Width</label>
+					<input class="border-width-input" type="number" />
+					<label>Color</label>
+					<span class="border-color-button color-button"></span>
+					<span class="border-color-palette"></span>
+					<label class="advanced-only">Type</label>
+					<div class="border-type-combo-box combobox goog-select advanced-only">
+						<ul class="goog-menu">
+							<li class="goog-menuitem" id="solid">solid</li>
+							<li class="goog-menuitem" id="dotted">dotted</li>
+							<li class="goog-menuitem" id="dashed">dashed</li>
+							<li class="goog-menuitem" id="double">double</li>
+							<li class="goog-menuitem" id="groove">groove</li>
+							<li class="goog-menuitem" id="ridge">ridge</li>
+							<li class="goog-menuitem" id="inset">inset</li>
+							<li class="goog-menuitem" id="outset">outset</li>
+						</ul>
+					</div>
+					<div class="border-placement-container advanced-only">
+						<span class="border-placement-check goog-checkbox"></span>
+						<label class="border-placement-label">Top</label>
+						<span class="border-placement-check goog-checkbox"></span>
+						<label class="border-placement-label">Right</label>
+						<span class="border-placement-check goog-checkbox"></span>
+						<label class="border-placement-label">Bottom</label>
+						<span class="border-placement-check goog-checkbox"></span>
+						<label class="border-placement-label">Left</label>
+					</div>
+				</fieldset>
+				<fieldset class="corner-property">
+					<legend>Corners</legend>
+					<label>Radius</label>
+					<input class="corner-radius-input" type="number" />
+					<label class="advanced-only">Applys to</label>
+					<div class="corner-placement-container advanced-only">
+						<span class="corner-placement-check goog-checkbox"></span>
+						<label class="corner-placement-label">Top Left</label>
+						<span class="corner-placement-check goog-checkbox"></span>
+						<label class="corner-placement-label">Top Right</label>
+						<span class="corner-placement-check goog-checkbox"></span>
+						<label class="corner-placement-label">Btm. Left</label>
+						<span class="corner-placement-check goog-checkbox"></span>
+						<label class="corner-placement-label">Btm. Right</label>
+					</div>
+				</fieldset>
+			</div>
+		</span>
+	</span>
+</div>

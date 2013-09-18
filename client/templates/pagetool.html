@@ -1,0 +1,15 @@
+<link rel="stylesheet" href="css/pagetool.css">
+
+<script class="page-tool-template" type="text/x-handlebars-template">
+	{{#each pages}}
+		<a href="#{{name}}" class="page-container"
+			data-page-name="{{name}}">
+			<div class="page-preview">
+				<small class="delete">x</small>
+				<div class="label">{{name}}</div>
+			</div>
+		</a>
+	{{/each}}
+</script>
+<div class="page-tool-container">
+</div>

@@ -1,0 +1,26 @@
+.silex-texteditor{
+	position: absolute;
+	width: 90%;
+	height: 90%;
+	display: none;
+	z-index: 110; /* 100 for bg */	
+}
+.silex-texteditor .text-field{
+	width: 100%;
+	height: 90%;
+}
+.silex-texteditor .toolbar{
+	width: 100%;
+}
+.silex-texteditor .close-btn{
+	background-image: url("../assets/ui/close.png");
+	cursor: pointer;
+	height: 38px;
+	position: absolute;
+	right: 0;
+	top: 0;
+	width: 39px;
+}
+div.tr_bubble{
+	z-index: 999 !important;
+}
