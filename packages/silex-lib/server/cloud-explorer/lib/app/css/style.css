@@ -35,22 +35,28 @@ div#CE .ceTitle{
 
 	font-size: 20px;
 }
-div#CE .ceBrowser{
+div#CE .ceTitle button {
+	display:inline-block;border:0;padding:0;margin-right:15px;
+	background:none;
+	float:right;
+	margin-right:10px;
+}
+div#CE .ce-browser{
 	height: 100%;
 }
-div#CE .ceBrowser .span5,
-div#CE .ceBrowser .span7{
+div#CE .ce-browser .span5,
+div#CE .ce-browser .span7{
 	border-top: 1px solid rgb(229, 229, 229);
 	float: left;
 	overflow-y: auto;
 	overflow-x: hidden;
 	height: 518px;
 }
-div#CE .ceBrowser .span5{
+div#CE .ce-browser .span5{
 	width: 180px;
 	border-right: 1px solid rgb(229, 229, 229);
 }
-div#CE .ceBrowser .span7{
+div#CE .ce-browser .span7{
 	width: 748px;
 }
 div#CE ul
@@ -69,6 +75,9 @@ div#CE input[type=file]
 	width:0;height:0;overflow:hidden;
 }
 /* FILES TREE */
+div#CE .ce-left-pane li {
+	margin-bottom:10px;
+}
 div#CE ul.tree, div#CE .ce-right-pane ul{
 	list-style:none;
 	margin: 15px;
@@ -140,6 +149,33 @@ div#CE .ce-item input[type="text"], div#CE .ce-new-item input[type="text"]
 {
 	padding:0;margin:0;
 	height:20px;line-height:18px;
+}
+div#CE .ce-item .ctrls
+{
+	display:none;
+}
+div#CE .ce-item:hover .ctrls
+{
+	display:inline-block;
+}
+div#CE .ce-item button
+{
+	background:url("../assets/editortoolbar.png") no-repeat;
+	width:16px;height:16px;
+	border:0;padding:0;margin-right:10px;
+}
+div#CE .ce-item button.rename
+{
+	background-position: -336px 0px;
+}
+div#CE .ce-item button.remove
+{
+	background-position: -528px 0px;
+}
+div#CE .ce-mkdir-btn
+{
+	display:inline-block;border:0;padding:0;margin-right:15px;
+	background:none;
 }
 div#CE .loggedin-hide-true /* FIXME useful ? */
 {

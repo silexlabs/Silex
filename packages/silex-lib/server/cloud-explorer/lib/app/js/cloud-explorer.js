@@ -96,6 +96,9 @@ function ce_pick(onSuccess, onError) {
 		closeCE();
 		onSuccess(data);
 	}
+	__ceInstance["cancel"] = function(data) {
+		closeCE();
+	}
 	openCE();
 }
 /**
@@ -127,6 +130,9 @@ function ce_exportFile()
 		{
 			sc(data);
 		}
+	}
+	__ceInstance["cancel"] = function(data) {
+		closeCE();
 	}
 	// TODO onError
 	openCE();
@@ -243,6 +249,7 @@ angular.module('ceServices', ['ngResource', 'ceConf'])
 				listServices: {method:'GET', params:{service:'services', method:'list'}, isArray:true},
 				connect: {method:'GET', params:{method:'connect'}, isArray:false},
 				login: {method:'GET', params:{method:'login'}, isArray:false},
+				logout: {method:'GET', params:{method:'logout'}, isArray:false},
 				ls: {method:'GET', params:{method:'exec', command:'ls'}, isArray:true},
 				rm: {method:'GET', params:{method:'exec', command:'rm'}, isArray:false},
 				mkdir: {method:'GET', params:{method:'exec', command:'mkdir'}, isArray:false},
@@ -336,6 +343,23 @@ console.log("before extracting path and filename, parsedUrl= "+parsedUrl);
 			}
 			return false;
 		}
+		function logout()
+		{
+			for (var si = 0; si < services.length; si++)
+			{
+				if (services[si]["isLoggedIn"])
+				{
+					(function(srv) {
+						$unifileStub.logout({service:srv["name"]}, function (status)
+							{
+								srv["isLoggedIn"] = false;
+								console.log('Successfuly logged out from '+srv["name"]);
+							});
+					})(services[si]);
+				}
+			}
+			currentNav = undefined; //{ "path": null, "files": [], "srv": null };
+		}
 		function login(srvName)
 		{
 			for (var si = 0; si < services.length; si++) // FIXME angular 1.1.3 doesn't accept both filter and associative arrays in ng-repeat. As soon as it does, optimize it to make services an associative array
@@ -355,6 +379,7 @@ console.log("before extracting path and filename, parsedUrl= "+parsedUrl);
 							else
 							{
 								services[si]["isLoggedIn"] = false;
+								console.error('Could not login. Please retry.');
 							}
 						},
 						function (obj) // FIXME
@@ -370,11 +395,17 @@ console.log("before extracting path and filename, parsedUrl= "+parsedUrl);
 			}
 		}
 		function cd(srvName, path) {
-//console.log("cd("+srvName+", "+path+")");
+console.log("cd("+srvName+", "+path+")");
 			$unifileStub.ls({service:srvName, path:path}, function (res)
 				{
 					console.log("cd command returned "+res.length+" elts for service "+srvName);
 					currentNav = { "srv": srvName, "path": path, "files": res };
+				},
+				function(obj)
+				{
+					console.error('Error while calling ls');
+					console.error(obj.data); // FIXME
+					console.error(obj.status); // FIXME
 				});
 		}
 		//$unifileSrv.mv($scope.fileSrv, evData.path, $scope.filePath, evData.files);
@@ -434,32 +465,32 @@ console.log("before extracting path and filename, parsedUrl= "+parsedUrl);
 				}
 			}
 		}
-		function remove() { // FIXME manage errors
-			for(var fi in currentNav.files)
+		function remove(file) { // FIXME manage errors
+			/*for(var fi in currentNav.files)
 			{
 				var cf = currentNav.files[fi];
 				if (cf.isSelected===true)
-				{
+				{*/
 					var fp = currentNav.path;
 					if (fp != '')
 					{
 						fp += '/';
 					}
-					fp += cf.name; console.log("calling rm with cf.name= "+cf.name);
-					(function(cf) {
+					fp += file.name; console.log("calling rm with file.name= "+file.name);
+					(function(file) {
 						$unifileStub.rm({service:currentNav.srv, path:fp}, function() { 
 							for(var fir in currentNav.files)
 							{
-								if (currentNav.files[fir] == cf)
+								if (currentNav.files[fir] == file)
 								{
 									var temp = currentNav.files.splice(fir,1); console.log("removed it at "+fir+"  named "+temp[0].name);
 									return;
 								}
 							}
 						});
-					})(cf);
-				}
-			}
+					})(file);
+			/*	}
+			}*/
 		}
 		function paste() { // FIXME manage errors
 			if (clipboard["files"].length == 0 || currentNav["path"]==clipboard["path"])
@@ -616,6 +647,7 @@ console.log("togleSelect "+file.name);
 			clipboard: function() { return clipboard; },
 			listServices: listServices,
 			login: login,
+			logout: logout,
 			cd: cd,
 			mv: mv,
 			setClipboardContent: setClipboardContent,
@@ -662,6 +694,13 @@ console.log("path.srv= "+path.srv+"   path.path= "+path.path+"    path.filename=
 					$rootScope.$digest();
 				}
 			}
+			$scope.abort = function() {
+				__ceInstance["cancel"]();
+			};
+			$scope.logout = function() {
+				$unifileSrv.logout();
+				__ceInstance["cancel"]();
+			};
 		}
 	])
 
@@ -777,6 +816,12 @@ console.log("path.srv= "+path.srv+"   path.path= "+path.path+"    path.filename=
 						}
 					}
 				}
+				else
+				{
+					$scope.path = null;
+					$scope.srv = null;
+					$scope.files = [];
+				}
 			}
 			$scope.isCtrlBtnsVisible = function() {
 				return ($unifileSrv.currentNav() !== undefined);
@@ -810,10 +855,10 @@ console.log("path.srv= "+path.srv+"   path.path= "+path.path+"    path.filename=
 			$scope.isEmptyClipboard = function() {
 				return ($unifileSrv.clipboard()["files"].length === 0);
 			}
-			$scope.remove = function() {
+			/*$scope.remove = function() {
 				$unifileSrv.remove();
-			}
-			$scope.copy = function()
+			}*/
+			/*$scope.copy = function()
 			{
 				$unifileSrv.setClipboardContent(0);
 			};
@@ -824,8 +869,8 @@ console.log("path.srv= "+path.srv+"   path.path= "+path.path+"    path.filename=
 			$scope.paste = function()
 			{
 				$unifileSrv.paste();
-			};
-			$scope.chose = function()
+			};*/
+			/*$scope.chose = function()
 			{
 				for(var fi in $scope.files)
 				{
@@ -839,7 +884,7 @@ console.log("path.srv= "+path.srv+"   path.path= "+path.path+"    path.filename=
 						break;
 					}
 				}
-			};
+			};*/
 			$scope.ext = null;
 			$scope.$watch( function(){ return __ceInstance }, refreshExtension, true);
 			function refreshExtension()
@@ -869,7 +914,7 @@ console.log('ext has been refreshed and is now: '+$scope.ext);
 	/**
 	 * This controller is shared by the ceFile and ceFolder directives.
 	 */
-	.controller('CEFileEntryCtrl', ['$scope', '$element', '$unifileSrv', '$unifileStub', 'server.url.unescaped', '$q', '$window', function($scope, $element, $unifileSrv, $unifileStub, serverUrl, $q, $window)
+	.controller('CEFileEntryCtrl', ['$scope', '$element', '$unifileSrv', '$unifileStub', 'server.url.unescaped', '$q', '$window', '$ceUtils', function($scope, $element, $unifileSrv, $unifileStub, serverUrl, $q, $window, $ceUtils)
 		{
 			function getFilePath() {
 				var fp = $scope.path;
@@ -974,17 +1019,22 @@ console.log("sorry, but you're not connected to "+$scope.fileSrv);
 			};
 			$scope.select = function()
 			{
-console.log("simple click received");
-				var lastSel = $scope.file["lastSelectionDate"];
-				$unifileSrv.togleSelect($scope.file);
-				if (lastSel)
+/*console.log("simple click received");
+				var lastSel = $scope.file["lastSelectionDate"];*/
+				//$unifileSrv.togleSelect($scope.file);
+				/*if (lastSel)
 				{
 					var diff = ($scope.file["lastSelectionDate"] - lastSel);
 					if (diff < 2000 && diff > 500) // FIXME those values should be config constants
 					{
 						$scope.rename("");
 					}
-				}
+				}*/
+				__ceInstance.onSuccess({
+						'url': $ceUtils.pathToUrl({'srv':$scope.srv, 'path':$scope.path, 'filename':$scope.file.name}),
+						'filename': $scope.file.name,
+						'mimetype': ($scope.file.name.indexOf('.') > -1) ? getMimeByExt($scope.file.name.substring($scope.file.name.lastIndexOf('.')+1)) : null
+					}); // FIXME other CEBlob fields
 			};
 
 			/**
@@ -1130,6 +1180,9 @@ console.log("rename called and now off");
 					}
 				}
 			};
+			$scope.remove = function() {
+				$unifileSrv.remove($scope.file);
+			};
 		}
 	])
 
@@ -1207,7 +1260,7 @@ angular.module('ceDirectives', [ 'ceConf', 'ceServices', 'ceCtrls' ])
 	.directive('ceMkdirBtn', function()
 	{
 		return {
-			restrict: 'A',
+			restrict: 'C',
 			template: '<button ng-click="mkdir()">New folder</button>',
 			replace: 'true',
 			controller: function($scope)
@@ -1253,7 +1306,7 @@ angular.module('ceDirectives', [ 'ceConf', 'ceServices', 'ceCtrls' ])
 				attrs.$set('draggable', 'false'); // necessary to avoid folders that aren't files to be draggable
 
 				//element.bind('dblclick', scope.enterDir ); // not set with ng-click 'cause we need to be able to unbind it at some points (renaming, ...)
-				element.bind('dblclick', function(e) { scope.$apply(function(scope){scope.enterDir(e);}); } ); // not set with ng-click 'cause we need to be able to unbind it at some points (renaming, ...)
+				//element.bind('dblclick', function(e) { scope.$apply(function(scope){scope.enterDir(e);}); } ); // not set with ng-click 'cause we need to be able to unbind it at some points (renaming, ...)
 				element.bind('dragenter', function(e) { scope.$apply(function(scope){scope.handleDragEnter(e);}); } );
 				element.bind('dragleave', function(e) { scope.$apply(function(scope){scope.handleDragLeave(e);}); } );
 				element.bind('dragover', function(e) { scope.$apply(function(scope){scope.handleDragOver(e);}); } );
@@ -1273,7 +1326,7 @@ angular.module('ceDirectives', [ 'ceConf', 'ceServices', 'ceCtrls' ])
 				attrs.$set('draggable', 'true');
 
 				//element.bind('click', scope.select );
-				element.bind('click', function(e) { scope.$apply(function(scope){scope.select(e);}); } );
+				//element.bind('click', function(e) { scope.$apply(function(scope){scope.select(e);}); } );
 				element.bind('dragstart', function(e) { scope.$apply(function(scope){scope.handleDragStart(e);}); } );
 				element.bind('dragend', function(e) { scope.$apply(function(scope){scope.handleDragEnd(e);}); } );
 			}
@@ -1300,7 +1353,7 @@ angular.module('ceDirectives', [ 'ceConf', 'ceServices', 'ceCtrls' ])
 	.directive('ceLeftPane',  function()
 	{
 		return {
-			restrict: 'A',
+			restrict: 'C',
 			replace: true,
 			template: "<div> \
 						<ul class=\"tree\"> \
@@ -1323,21 +1376,17 @@ angular.module('ceDirectives', [ 'ceConf', 'ceServices', 'ceCtrls' ])
 			template: "<div> \
 						<ul> \
 							<li ng-show=\"isCtrlBtnsVisible()\"> \
-								<div ng-hide=\"hideUploadBtn()\" file-uploader></div> \
-								<div ce-mkdir-btn></div> \
-								<button ng-hide=\"isEmptySelection\" ng-click=\"copy()\">Copy</button> \
-								<button ng-hide=\"isEmptySelection\" ng-click=\"cut()\">Cut</button> \
-								<button ng-hide=\"isEmptyClipboard()\" ng-click=\"paste()\">Paste</button> <button ng-hide=\"isEmptySelection\" ng-click=\"remove()\">Delete</button> \
+								<div class=\"ce-mkdir-btn\"></div> \
 							</li> \
 							<li ng-show=\"isCtrlBtnsVisible()\"> \
 								<div ng-hide=\"hideSaveAsBtn()\" class=\"ce-saveas-btn\">{{ srv+\":\"+path+\"/\" }} <input type=\"text\" ng-model=\"saveAsName\"> .{{ext}} <button ng-click=\"saveAs(saveAsName)\">Save As</button></div> \
-								<button ng-hide=\"hideSelectBtn()\" ng-click=\"chose()\">Select</button> \
 							</li> \
-							<li ng-if=\"showLinkToParent()\"><span ng-init=\"setLinkToParent()\" class=\"ce-item is-dir-true\" ce-folder>..</span></li> \
+							<li ng-if=\"showLinkToParent()\" ng-click=\"enterDir()\"><span ng-init=\"setLinkToParent()\" class=\"ce-item is-dir-true\" ce-folder>..</span></li> \
 							<li class=\"ce-item\" ng-repeat=\"file in files | orderBy:'is_dir':true\"> \
-								<div ng-if=\"file.is_dir && !renameOn\" ce-folder ce-file ng-class=\"getClass()\"><span>{{file.name}}</span></div> \
-								<div ng-if=\"!file.is_dir && !renameOn\" ce-file ng-class=\"getClass()\"><span>{{file.name}}</span></div> \
+								<div ng-if=\"file.is_dir && !renameOn\" ce-folder ce-file ng-class=\"getClass()\" ng-click=\"enterDir()\"><span>{{file.name}}</span></div> \
+								<div ng-if=\"!file.is_dir && !renameOn\" ce-file ng-class=\"getClass()\" ng-click=\"select()\"><span>{{file.name}}</span></div> \
 								<div class=\"ce-rename\" ng-if=\"renameOn\" ng-class=\"getClass()\"></div> \
+								<div class=\"ctrls\"><button class=\"rename\" type='button' ng-click=\"rename('')\"></button><button class=\"remove\" type='button' ng-click=\"remove()\"></button></div> \
 							</li> \
 							<li class=\"ce-new-item ce-mkdir\" ng-if=\"mkdirOn\"></li> \
 						</ul> \
@@ -1351,13 +1400,13 @@ angular.module('ceDirectives', [ 'ceConf', 'ceServices', 'ceCtrls' ])
 	.directive('ceBrowser',  function()
 	{
 		return {
-			restrict: 'A',
+			restrict: 'C',
 			replace: true,
-			template: "<div class=\"ceBrowser\"> \
-						<div class=\"ceTitle\">Browse your cloud drives</div> \
+			template: "<div> \
+						<div class=\"ceTitle\">Browse your cloud drives <button type=\"button\" ng-click=\"abort()\">Close</button> <button type=\"button\" ng-click=\"logout()\">Logout</button></div> \
 						<div class=\"row-fluid\"> \
 							<div class=\"span5\"> \
-								<div ce-left-pane></div> \
+								<div class=\"ce-left-pane\"></div> \
 							</div> \
 							<div class=\"span7\"> \
 								<div class=\"ce-right-pane\"></div> \
