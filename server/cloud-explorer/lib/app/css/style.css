@@ -174,7 +174,7 @@ div#CE .ce-item button.remove
 }
 div#CE .ce-mkdir-btn
 {
-	display:inline-block;border:0;padding:0;margin-right:15px;
+	display:inline-block;border:0;padding:0;margin-right:15px;margin-bottom:11px;
 	background:none;
 }
 div#CE .loggedin-hide-true /* FIXME useful ? */
@@ -188,8 +188,12 @@ div#CE .loggedin-show-false /* FIXME useful ? */
 /* save as btn */
 div#CE div.ce-saveas-btn
 {
-	border:1px solid black;
-
+	float:right;
+	border:1px solid rgb(229, 229, 229);
+	padding:2px;
+}
+div#CE div.ce-saveas-btn button {
+	border:0;padding:0;background:none;
 }
 div#CE div.ce-saveas-btn input
 {
