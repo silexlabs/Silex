@@ -46,7 +46,7 @@ silex.Helper.resolveTemplate = function(element, templateHtml, data){
  *              result  ../f/g/file.html
  */
 silex.Helper.getRelativePath = function(url, base){
-
+    console.log('getRelativePath', url, base);
     // check if they are both absolute urls
     if(base.indexOf('http')!=0 || url.indexOf('http')!=0){
         console.warn('Warning: the URL is not absolute ', url, base);

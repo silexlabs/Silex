@@ -88,8 +88,9 @@ silex.view.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes){
 		// hide dialog
 		this.closeEditor();
 
-		// notify controller
 		blob.url = blob.url.replace('https://', 'http://');
+
+		// notify controller
 		// workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
 		new goog.async.Delay(function () {
 			if (cbk) cbk(blob);

@@ -137,6 +137,18 @@ silex.boot = function() {
 /* */
 		file.newFile(function () {
 			// controller.menuCallback({type:'insert.text'});
+			var url = '../api/v1.0/dropbox/exec/get/_test/silex.html';
+			var blob = {
+				url: url
+			};
+			silex.service.CloudStorage.getInstance().load(blob, 
+				goog.bind(function(rawHtml){
+					// update model
+					file.close();
+					file.setUrl(blob.url);
+					file.setBlob(blob);
+					file.setHtml(rawHtml);
+				}, this)); 
 		});
 /* *
 		// remove hash added by cloud explorer
