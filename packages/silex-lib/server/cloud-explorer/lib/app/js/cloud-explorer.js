@@ -71,10 +71,7 @@ function openCE()
 			}
 		}
 	}
-	else
-	{
-		__ceInstance["refresh"]();
-	}
+	__ceInstance["refresh"]();
 	if (ceInstance.style.display != "block")
 	{
 		ceInstance.style.display = "block";
@@ -112,7 +109,7 @@ function ce_exportFile()
 	{
 		throw "Incorrect number of arguments in call to exportFile. Method signature is: exportFile(input, [options], onSuccess, onError) ";
 	}
-	__ceInstance["mode"] = ONE_FILE_SAVE_MODE;
+	__ceInstance["mode"] = ONE_FILE_SAVE_MODE;//console.log("setting mode to "+__ceInstance["mode"]);
 	__ceInstance["input"] = arguments[0];
 	__ceInstance["options"] = (arguments.length >=2 && typeof(arguments[1]) != 'function') ? arguments[1] : null;
 	var sc = null;
@@ -395,7 +392,7 @@ console.log("before extracting path and filename, parsedUrl= "+parsedUrl);
 			}
 		}
 		function cd(srvName, path) {
-console.log("cd("+srvName+", "+path+")");
+//console.log("cd("+srvName+", "+path+")");
 			$unifileStub.ls({service:srvName, path:path}, function (res)
 				{
 					console.log("cd command returned "+res.length+" elts for service "+srvName);
@@ -424,9 +421,9 @@ console.log("cd("+srvName+", "+path+")");
 				{
 					$unifileStub.mv({service:newSrv, path:oldPath+file.name+':'+newPath+file.name}, function()		// FIXME unifile should manage mv between srvs
 					{
-						var op = oldPath.substring(0, oldPath.lastIndexOf('/')); console.log("OP="+op);
-						var np = newPath.substring(0, newPath.lastIndexOf('/')); console.log("NP="+np);
-						console.log("CP= "+ currentNav["path"])
+						var op = oldPath.substring(0, oldPath.lastIndexOf('/')); //console.log("OP="+op);
+						var np = newPath.substring(0, newPath.lastIndexOf('/')); //console.log("NP="+np);
+						//console.log("CP= "+ currentNav["path"])
 						if (op == currentNav["path"])
 						{
 							for(var i in currentNav['files'])
@@ -554,7 +551,7 @@ console.log("cd("+srvName+", "+path+")");
 		}
 		function togleSelect(file)
 		{
-console.log("togleSelect "+file.name);
+//console.log("togleSelect "+file.name);
 			for(var fi in currentNav.files)
 			{
 				if (currentNav.files[fi] == file)
@@ -779,7 +776,7 @@ console.log("path.srv= "+path.srv+"   path.path= "+path.path+"    path.filename=
 				return true;
 			}
 			$scope.hideSaveAsBtn = function()
-			{
+			{console.log('__ceInstance= '+__ceInstance);console.log('mode= '+__ceInstance["mode"]);
 				if (__ceInstance && __ceInstance["mode"] === ONE_FILE_SAVE_MODE)
 				{
 					return false;
@@ -1377,11 +1374,9 @@ angular.module('ceDirectives', [ 'ceConf', 'ceServices', 'ceCtrls' ])
 						<ul> \
 							<li ng-show=\"isCtrlBtnsVisible()\"> \
 								<div class=\"ce-mkdir-btn\"></div> \
+								<div ng-hide=\"hideSaveAsBtn()\" class=\"ce-saveas-btn\">Save As: {{ srv+\":\"+path+\"/\" }} <input type=\"text\" ng-model=\"saveAsName\"> .{{ext}} <button ng-click=\"saveAs(saveAsName)\">OK</button></div> \
 							</li> \
-							<li ng-show=\"isCtrlBtnsVisible()\"> \
-								<div ng-hide=\"hideSaveAsBtn()\" class=\"ce-saveas-btn\">{{ srv+\":\"+path+\"/\" }} <input type=\"text\" ng-model=\"saveAsName\"> .{{ext}} <button ng-click=\"saveAs(saveAsName)\">Save As</button></div> \
-							</li> \
-							<li ng-if=\"showLinkToParent()\" ng-click=\"enterDir()\"><span ng-init=\"setLinkToParent()\" class=\"ce-item is-dir-true\" ce-folder>..</span></li> \
+							<li ng-if=\"showLinkToParent()\" ng-click=\"enterDir()\"><div ng-init=\"setLinkToParent()\" class=\"ce-item is-dir-true\" ce-folder>..</div></li> \
 							<li class=\"ce-item\" ng-repeat=\"file in files | orderBy:'is_dir':true\"> \
 								<div ng-if=\"file.is_dir && !renameOn\" ce-folder ce-file ng-class=\"getClass()\" ng-click=\"enterDir()\"><span>{{file.name}}</span></div> \
 								<div ng-if=\"!file.is_dir && !renameOn\" ce-file ng-class=\"getClass()\" ng-click=\"select()\"><span>{{file.name}}</span></div> \
