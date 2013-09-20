@@ -17,9 +17,7 @@ goog.require('goog.style');
 
 silex.Helper = function(){
 }
-silex.Helper.BaseUrl = 'http://localhost:5000/silex/';
-//silex.Helper.BaseUrl = window.location.toString();
-//silex.Helper.BaseUrl = window.location.href.substr(0, window.location.href.lastIndexOf('/'));
+silex.Helper.BaseUrl = window.location.href.substr(0, window.location.href.lastIndexOf('/')+1);
 /**
  * load a template and put the content in the provided element, then call the callback
  */
