@@ -44,9 +44,14 @@ silex.service.CloudStorage.getInstance = function(){
  * save a file
  */
 silex.service.CloudStorage.prototype.save = function(blob, rawData, cbk){
+	// cloud explorer expects relative path
+	var relBlob = {
+		url : silex.Helper.getRelativePath(blob.url, silex.Helper.BaseUrl)
+	}
+
 	// save the actual data
 	this.filePicker.write(
-	blob, 
+	relBlob, 
 	rawData, 
 	function(blob){
 		// workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
@@ -63,12 +68,16 @@ silex.service.CloudStorage.prototype.save = function(blob, rawData, cbk){
  */
 silex.service.CloudStorage.prototype.load = function(blob, cbk){
 
+	// cloud explorer expects relative path
+	var relBlob = {
+		url : silex.Helper.getRelativePath(blob.url, silex.Helper.BaseUrl)
+	}
 	this.filePicker.read(
-	blob, 
-	function(blob){
+	relBlob, 
+	function(data){
 		// workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
 		new goog.async.Delay(function () {
-			if (cbk) cbk(blob);
+			if (cbk) cbk(data);
 		}, 10, this).start();
 	},
 	function(FPError){

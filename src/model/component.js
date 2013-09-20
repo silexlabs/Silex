@@ -290,11 +290,10 @@ silex.model.Component.prototype.getHtml = function (opt_baseUrl){
 	var htmlString = cleanContainer.innerHTML;
 
 	// relative URLs when possible
-	console.log('getHtml', opt_baseUrl)
 	if (opt_baseUrl){
-		opt_baseUrl = silex.Helper.getAbsolutePath(opt_baseUrl, 'http://localhost:5000/silex/');
+		opt_baseUrl = silex.Helper.getAbsolutePath(opt_baseUrl, silex.Helper.BaseUrl);
 		//this.absolute2relative(opt_baseUrl, cleanContainer);
-		htmlString = this.replaceRelativeByAbsolute(cleanContainer.innerHTML, opt_baseUrl);
+		htmlString = this.absolute2Relative(htmlString, opt_baseUrl);
 	}
 
 	// return the html content
@@ -309,14 +308,14 @@ silex.model.Component.prototype.setHtml = function (html, opt_baseUrl){
 	this.setEditable(false);
 	// absolute URLs when possible
 	if (opt_baseUrl){
-		//this.relative2absolute(opt_baseUrl);
-		html = this.replaceAbsoluteByRelative(html, opt_baseUrl);
+		opt_baseUrl = silex.Helper.getAbsolutePath(opt_baseUrl, silex.Helper.BaseUrl);
+		html = this.relative2absolute(html, opt_baseUrl);
 	}
-	// set the html content
-	this.element.innerHTML = html;
 	else{
 		this.logger.warn('setHtml without base url, the URLs could not be converted to absolute');
 	}
+	// set the html content
+	this.element.innerHTML = html;
 	// restore editing
 	this.setEditable(true);
 }
@@ -438,49 +437,40 @@ silex.model.Component.prototype.setEditable = function(isEditable, opt_element){
  * Browse the children and convert all URLs to relative when possible
  * this will not work, because element.style.backgroundImage is reevaluated when set to a relative value
  */
-silex.model.Component.prototype.replaceRelativeByAbsolute = function (htmlString, baseUrl) {
-	var ____htmlString = htmlString;
+silex.model.Component.prototype.absolute2Relative = function (htmlString, baseUrl) {
 	// image source
 	htmlString = htmlString.replace(/<img.*src="?([^" ]*)" /g, function(match, group1, group2){
-		var res = 'url("' + silex.Helper.getRelativePath(group2, baseUrl)+'")';
-		console.log('---------------- ', group2, res);
+		var res =  match.replace(group1, silex.Helper.getRelativePath(group1, baseUrl));
 		return res;
 	});
 	// css url()
 	htmlString = htmlString.replace(/url\((['"])(.+?)\1\)/g, function(match, group1, group2){
 		var res = 'url("' + silex.Helper.getRelativePath(group2, baseUrl)+'")';
-		console.log('---------------- ', group2, res);
 		return res;
 	});
-	console.log(htmlString);
-	return ____htmlString;
+	return htmlString;
 }
 /**
  * convert all URLs to absolute
  */
-silex.model.Component.prototype.replaceAbsoluteByRelative = function (htmlString, baseUrl) {
-	var ____htmlString = htmlString;
+silex.model.Component.prototype.relative2absolute = function (htmlString, baseUrl) {
 	// image source
 	htmlString = htmlString.replace(/<img.*src="?([^" ]*)" /g, function(match, group1, group2){
-		var res = 'url("' + silex.Helper.getAbsolutePath(group2, baseUrl)+'")';
-		console.log('---------------- ', group2, res);
+		var res =  match.replace(group1, silex.Helper.getAbsolutePath(group1, baseUrl));
 		return res;
 	});
 	// css url()
 	htmlString = htmlString.replace(/url\((['"])(.+?)\1\)/g, function(match, group1, group2){
 		var res = 'url("' + silex.Helper.getAbsolutePath(group2, baseUrl)+'")';
-		console.log('---------------- ', group2, res);
 		return res;
 	});
-	console.log(htmlString);
-	return ____htmlString;
+	return htmlString;
 }
 /**
  * Browse the children and convert all URLs to relative when possible
  * this will not work, because element.style.backgroundImage is reevaluated when set to a relative value
  *
 silex.model.Component.prototype.absolute2relative = function (baseUrl, opt_element) {
-	console.log ('absolute2relative', baseUrl, opt_element);
 	if (baseUrl==null){
 		throw ('The base URL is needed in order to convert paths to relative');
 	}
@@ -503,16 +493,13 @@ silex.model.Component.prototype.absolute2relative = function (baseUrl, opt_eleme
 	// bg image
 	this.doAbsolute2relativeBg(opt_element, 'http://localhost:5000/silex/', baseUrl);
 	$(opt_element).find('[data-silex-type]').each(function () {
-		console.log ('absolute2relative', $(this).css("background-image"), this);
 		that.doAbsolute2relativeBg(this, 'http://localhost:5000/silex/', baseUrl);
 	});
 }
 silex.model.Component.prototype.doAbsolute2relativeBg = function(element, initialBaseUrl, finalBaseUrl){
 	if ($(element).css('background-image')){
-		console.log ('absolute2relative', 'has a bg image', initialBaseUrl, finalBaseUrl);
 		var value = $(element).css("background-image").replace(/^url\(["']?/, '').replace(/["']?\)$/, '');
 		$(element).css("background-image", 'url("' + silex.Helper.getRelativePath(value, finalBaseUrl)+")");
-		console.log('new bg url ', silex.Helper.getRelativePath(value, finalBaseUrl));
 	}
 }
 /**

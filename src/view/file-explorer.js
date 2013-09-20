@@ -90,6 +90,9 @@ silex.view.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes){
 
 		blob.url = blob.url.replace('https://', 'http://');
 
+		// we are supposed to return an absolute URL
+		blob.url = silex.Helper.getAbsolutePath(blob.url, silex.Helper.BaseUrl);
+
 		// notify controller
 		// workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
 		new goog.async.Delay(function () {
@@ -122,6 +125,10 @@ silex.view.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes){
 
 		// notify controller
 		blob.url = blob.url.replace('https://', 'http://');
+
+		// we are supposed to return an absolute URL
+		blob.url = silex.Helper.getAbsolutePath(blob.url, silex.Helper.BaseUrl);
+
 		// workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
 		new goog.async.Delay(function () {
 			if (cbk) cbk(blob);
