@@ -134,10 +134,14 @@ silex.boot = function() {
 		logger.fine('Controller created');
 
 		// now create an empty file to let the user start using Silex
-/* */
 		file.newFile(function () {
+			return;
+
+			// debug: insert a text field
 			// controller.menuCallback({type:'insert.text'});
-			var url = '../api/v1.0/dropbox/exec/get/_test/silex.html';
+
+			// debug: load a file
+			var url = silex.Helper.BaseUrl+'/api/v1.0/dropbox/exec/get/_test/silex.html';
 			var blob = {
 				url: url
 			};

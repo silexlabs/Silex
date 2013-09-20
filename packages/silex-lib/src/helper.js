@@ -17,6 +17,9 @@ goog.require('goog.style');
 
 silex.Helper = function(){
 }
+silex.Helper.BaseUrl = 'http://localhost:5000/silex/';
+//silex.Helper.BaseUrl = window.location.toString();
+//silex.Helper.BaseUrl = window.location.href.substr(0, window.location.href.lastIndexOf('/'));
 /**
  * load a template and put the content in the provided element, then call the callback
  */
@@ -46,7 +49,6 @@ silex.Helper.resolveTemplate = function(element, templateHtml, data){
  *              result  ../f/g/file.html
  */
 silex.Helper.getRelativePath = function(url, base){
-    console.log('getRelativePath', url, base);
     // check if they are both absolute urls
     if(base.indexOf('http')!=0 || url.indexOf('http')!=0){
         console.warn('Warning: the URL is not absolute ', url, base);
@@ -67,7 +69,7 @@ silex.Helper.getRelativePath = function(url, base){
     baseArr.shift();
     // check if they are on the same domain
     if(baseArr[0]!=urlArr[0]){
-        console.warn('Warning: the URL is not on the same domain as the base url ', url);
+        console.warn('Warning: the URL is not on the same domain as the base url ', url, base);
         return url;
     }
     // remove the common part
@@ -86,9 +88,10 @@ silex.Helper.getRelativePath = function(url, base){
     }
 
     // now append the folders from url and the file name
-    relativePath += urlArr.join('/') + '/' + fileName;
-
-    console.log("getRelativePath ", url, base, relativePath);
+    if (urlArr.length>0){
+        relativePath += urlArr.join('/') + '/';
+    }
+    relativePath += fileName;
 
     return relativePath;
 }
@@ -97,7 +100,6 @@ silex.Helper.getRelativePath = function(url, base){
  * use http://docs.closure-library.googlecode.com/git/class_goog_Uri.html
  */
 silex.Helper.getAbsolutePath = function(url, base){
-    console.log("getAbsolutePath ", url, base, goog.Uri.resolve(base, url).toString());
     return goog.Uri.resolve(base, url).toString();
 }
 /**
