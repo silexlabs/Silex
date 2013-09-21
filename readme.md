@@ -2,7 +2,7 @@
 
 ##About Silex
 
-Silex is a free and open source software that allows to create websites directly in the browser without writing code. It between a CMS (Content Management System) and a website builder in the cloud. 
+Silex is a free and open source software that allows to create websites directly in the browser without writing code. It is a mixture between a CMS (Content Management System) and a website builder in the cloud, because it has content management fonctionalities and it is designed oriented. 
 
 Brought to you by Silex Labs team, promoting free software.
 
@@ -35,7 +35,7 @@ GPL license
 
 ##Distribution/packages
 
-Developers you can clone this repository and start unifile, the back end of Silex, with nodejs. For this, see cloud-explorer/unifile/readme.md
+Developers you can clone this repository and start the serveur (unifile), the back end of Silex, with nodejs. For this, see cloud-explorer/unifile/readme.md
 
 You can use Silex online on www.silex.io or locally or on your server. 
 

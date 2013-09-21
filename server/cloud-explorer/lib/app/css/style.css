@@ -53,11 +53,11 @@ div#CE .ce-browser .span7{
 	height: 518px;
 }
 div#CE .ce-browser .span5{
-	width: 180px;
+	width: 25%;
 	border-right: 1px solid rgb(229, 229, 229);
 }
 div#CE .ce-browser .span7{
-	width: 748px;
+	width: 74%;
 }
 div#CE ul
 {
