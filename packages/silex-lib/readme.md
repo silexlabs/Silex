@@ -2,38 +2,60 @@
 
 ##About Silex
 
-Silex is a free and open source software that allows to create Flash and Html websites directly in the browser without writing code. Defined as a CMS (Content Management System) it is used to assemble multimedia content and publish it.
+Silex is a free and open source software that allows to create websites directly in the browser without writing code. It between a CMS (Content Management System) and a website builder in the cloud. 
+
+Brought to you by Silex Labs team, promoting free software.
+
+Current version: v2.0.0alpha3
+
+* http://www.silex.io/
 
 More info on Silex Labs website
-http://www.silexlabs.org/silex/
 
-Silex is used to assemble multimedia content and publish it online and on the desktop. You are able to produce websites quickly, and directly in the browser. Silex is maintained by Silex Labs, non profit organization based in Paris.
+* http://www.silexlabs.org/silex/
+
+Questions and answers
+
+* http://graphicdesign.stackexchange.com/questions/tagged/silex
+
+Discussions
+
+* Facebook http://www.facebook.com/silexlabs 
+* Twitter https://twitter.com/silexlabs
+* Google plus https://plus.google.com/communities/107373636457908189681
+
+News and tutorials
+
+* blog http://www.silexlabs.org/category/the-blog/blog-silex/
+* subscribe by email http://feedburner.google.com/fb/a/mailverify?uri=SilexLabsBlogEn
 
 GPL license 
-http://www.silexlabs.org/silex/silex-licensing/
+
+* http://www.silexlabs.org/silex/silex-licensing/
 
 ##Distribution/packages
 
-Sure, you can clone the repo and start unifile, the back end of Silex, with nodejs. For this, see cloud-explorer/unifile/readme.md
+Developers you can clone this repository and start unifile, the back end of Silex, with nodejs. For this, see cloud-explorer/unifile/readme.md
 
-But you may want to use Silex without hosting the nodejs server, on your computer or on your shared hosting. There are several ways to do this according to your needs.
+You can use Silex online on www.silex.io or locally or on your server. 
 
 This is how Silex is distributed:
 
 * Hosted free
-  No install, just go to http://silex.io/latest/ and do design
+  No install, just go to http://www.silex.io/ and do design
   Edit HTML pages in your drobbox, gdrive...  Your site is visible only by people with whom you share it. 
   Tech note: host cloud explorer @silexlabs (silex.html on SL dedicated server and nodejs on heroku)
 * Hosted pro
-  No install, purchase a hosting plan @arvixe, and go to http://arvixe.silex.io/latest/ and do design
-  Edit your site from an online location. Your site accessible to everyone 24/7. 
+  Comming soon
+  Purchase a hosting plan, go to http://www.silex.pro/ and do design
+  You edit your site from an online location. Your site accessible to everyone 24/7. 
   Paid, no setup, no need to know anything about hosting.
   Tech note: PHP file explorer hosted @arvixe, silex.html on SL dedicated server (use arvixe.silex.io ??)
 * Hosted anywhere
   Purchase a stadard shared hosting, and use Scriptaculous automatic install to install Silex in a folder.
   You can manage multiple separated sites with different instances of Silex to edit the site. 
   Tech note: silex.html and PHP file explorer hosted by the user's hosting company
-* Hosted by you, front and back
+* Hosted by you, front and back 
   Download Silex and host it with its nodejs server.
   Offer Silex "Hosted free" version to your users, on your domain name. 
   Your users go to your URL and use Silex from there to edit their files from their cloud services.
@@ -50,28 +72,22 @@ This is how Silex is distributed:
 * jquery and jquery UI
 * handlebars.js
 
-Current version: v2.0.0alpha2
-http://demos.silexlabs.org/silex-v2-alpha2/
-
-###v2.0.0alpha3
-
-http://demos.silexlabs.org/silex-v2-alpha3/
-
-Properties 
-
-* shadows
-* font-*
-* cursor
-* scroll?
-
+##Road map
 
 ###v2.0.0alpha4
 
 WYSIWYG
 
 * shortcuts (suppr, arrows, save, new, open)
+* set as default page (drag drop pages and change order)
+
+Properties 
+
 * UI sounds? 
-* set as default page
+* shadows
+* font-*
+* cursor
+* scroll?
 
 Texte
 
