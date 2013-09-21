@@ -31,7 +31,8 @@
 .silex-stage-body{
 	height: 100%;	
 	overflow: auto;
-	padding-top: 5px;
+	padding: 5px;
+	padding-bottom: 0;
 	position: relative !important; /* because it is changed as body style */
 }
 /* resizable skin *

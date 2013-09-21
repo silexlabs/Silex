@@ -135,13 +135,12 @@ silex.boot = function() {
 
 		// now create an empty file to let the user start using Silex
 		file.newFile(function () {
-			return;
-
 			// debug: insert a text field
 			// controller.menuCallback({type:'insert.text'});
 
+/* *
 			// debug: load a file
-			var url = silex.Helper.BaseUrl+'/api/v1.0/dropbox/exec/get/_test/silex.html';
+			var url = silex.Helper.BaseUrl+'/api/v1.0/www/exec/get/index.html';
 			var blob = {
 				url: url
 			};
@@ -153,14 +152,10 @@ silex.boot = function() {
 					file.setBlob(blob);
 					file.setHtml(rawHtml);
 				}, this)); 
+/* */
 		});
-/* *
 		// remove hash added by cloud explorer
 		window.location.hash = '';
-		// for testing purpose only
-		var base = window.location.href.substr(0, window.location.href.lastIndexOf('/'));
-		file.openFromUrl(base+'/../silex-tests/template.html');
-/* */
 		logger.info('--end boot--');
 	});
 	});
