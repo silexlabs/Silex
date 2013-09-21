@@ -12,6 +12,11 @@ exports.staticFolders = [
 	{
 		name: "/cloud-explorer",
 		path: "../../lib/"
+	},
+	// file browser tests
+	{
+		name: "/cetest",
+		path: "../../lib/app/"
 	}
 ];
 
