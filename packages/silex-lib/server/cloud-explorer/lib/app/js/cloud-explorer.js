@@ -63,13 +63,6 @@ function openCE()
 	if (ceInstance == null)
 	{
 		ceInstance = document.getElementById("CE");
-		for (var ci in ceInstance.children)
-		{
-			if (ceInstance.children[ci].tagName == "BUTTON")
-			{
-				ceInstance.children[ci].addEventListener( "click", function() { ceInstance.style.display = "none"; }, false );
-			}
-		}
 	}
 	__ceInstance["refresh"]();
 	if (ceInstance.style.display != "block")
@@ -669,6 +662,7 @@ angular.module('ceCtrls', ['ceServices'])
 		{
 			if (__ceInstance)
 			{
+				console.log('Cloud Explorer starting in integrated mode...');
 				__ceInstance["read"] = function(input, onSuccess) {
 					var path = $ceUtils.urlToPath(input.url);
 console.log("path.srv= "+path.srv+"   path.path= "+path.path+"    path.filename= "+path.filename);
@@ -690,6 +684,10 @@ console.log("path.srv= "+path.srv+"   path.path= "+path.path+"    path.filename=
 				__ceInstance["refresh"] = function() { console.log('digest called');
 					$rootScope.$digest();
 				}
+			}
+			else
+			{
+				console.log('Cloud Explorer starting in standalone mode...');
 			}
 			$scope.abort = function() {
 				__ceInstance["cancel"]();
@@ -1295,7 +1293,7 @@ angular.module('ceDirectives', [ 'ceConf', 'ceServices', 'ceCtrls' ])
 	{
 		return {
 			priority: 1,
-			restrict: 'A',
+			restrict: 'C',
 			link: function(scope, element, attrs)
 			{
 				scope.isDir = true;
@@ -1316,7 +1314,7 @@ angular.module('ceDirectives', [ 'ceConf', 'ceServices', 'ceCtrls' ])
 	.directive('ceFile', function()
 	{
 		return {
-			restrict: 'A',
+			restrict: 'C',
 			link: function(scope, element, attrs)
 			{
 				scope.isFile = true;
@@ -1355,7 +1353,7 @@ angular.module('ceDirectives', [ 'ceConf', 'ceServices', 'ceCtrls' ])
 			template: "<div> \
 						<ul class=\"tree\"> \
 							<li ng-repeat=\"(srvTreeK, srvTreeV) in tree\" ng-init=\"srv=srvTreeK; path='';\"> \
-								<span class=\"ce-item\" ce-folder ng-click=\"enterDir()\" ng-class=\"srvTreeK\">{{ srvTreeK }}</span> \
+								<span class=\"ce-item\" class=\"ce-folder\" ng-click=\"enterDir()\" ng-class=\"srvTreeK\">{{ srvTreeK }}</span> \
 							</li> \
 						</ul> \
 					</div>",
@@ -1378,8 +1376,8 @@ angular.module('ceDirectives', [ 'ceConf', 'ceServices', 'ceCtrls' ])
 							</li> \
 							<li ng-if=\"showLinkToParent()\" ng-click=\"enterDir()\"><div ng-init=\"setLinkToParent()\" class=\"ce-item is-dir-true\" ce-folder>..</div></li> \
 							<li class=\"ce-item\" ng-repeat=\"file in files | orderBy:'is_dir':true\"> \
-								<div ng-if=\"file.is_dir && !renameOn\" ce-folder ce-file ng-class=\"getClass()\" ng-click=\"enterDir()\"><span>{{file.name}}</span></div> \
-								<div ng-if=\"!file.is_dir && !renameOn\" ce-file ng-class=\"getClass()\" ng-click=\"select()\"><span>{{file.name}}</span></div> \
+								<div ng-if=\"file.is_dir && !renameOn\" class=\"ce-folder ce-file\" ng-class=\"getClass()\" ng-click=\"enterDir()\"><span>{{file.name}}</span></div> \
+								<div ng-if=\"!file.is_dir && !renameOn\" class=\"ce-file\" ng-class=\"getClass()\" ng-click=\"select()\"><span>{{file.name}}</span></div> \
 								<div class=\"ce-rename\" ng-if=\"renameOn\" ng-class=\"getClass()\"></div> \
 								<div class=\"ctrls\"><button class=\"rename\" type='button' ng-click=\"rename('')\"></button><button class=\"remove\" type='button' ng-click=\"remove()\"></button></div> \
 							</li> \
@@ -1398,7 +1396,7 @@ angular.module('ceDirectives', [ 'ceConf', 'ceServices', 'ceCtrls' ])
 			restrict: 'C',
 			replace: true,
 			template: "<div> \
-						<div class=\"ceTitle\">Browse your cloud drives <button type=\"button\" ng-click=\"abort()\">Close</button> <button type=\"button\" ng-click=\"logout()\">Logout</button></div> \
+						<div class=\"ceTitle\">Browse your cloud drives <button class=\"close-btn\" type=\"button\" ng-click=\"abort()\">Close</button> <button type=\"button\" ng-click=\"logout()\">Logout</button></div> \
 						<div class=\"row-fluid\"> \
 							<div class=\"span5\"> \
 								<div class=\"ce-left-pane\"></div> \
@@ -1407,7 +1405,6 @@ angular.module('ceDirectives', [ 'ceConf', 'ceServices', 'ceCtrls' ])
 								<div class=\"ce-right-pane\"></div> \
 							</div> \
 						</div> \
-						<div class=\"row-fluid\"><div class=\"span12\" ce-console></div></div> \
 					</div>",
 			controller: 'CEBrowserCtrl'
 		};

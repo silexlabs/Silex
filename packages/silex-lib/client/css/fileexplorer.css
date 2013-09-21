@@ -4,16 +4,16 @@
 	width: 80%;
 	max-width: 929px; /* max width defined in the cloud explorer css */
 }
-.silex-fileexplorer .ng-scope{
-	width: 100% !important;
-	min-width: 929px; /* width defined in the cloud explorer css */
+.silex-fileexplorer .ce-item {
+	
+	/*min-width: 929px;*/ /* width defined in the cloud explorer css */
 }
-.silex-fileexplorer .close-btn{
-	background-image: url("../assets/ui/close.png");
+.silex-fileexplorer .close-btn {
+	/*background-image: url("../assets/ui/close.png");
 	cursor: pointer;
 	height: 38px;
 	position: absolute;
 	right: 0;
 	top: 11px;
-	width: 39px;
+	width: 39px;*/
 }
