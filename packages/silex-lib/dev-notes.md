@@ -39,26 +39,14 @@ com silex
 
 Silex
 
-* edit HTML: seulement sur un nouveau type de composant : HTML element (qui n'est pas container)
 * ajout d'éléments sur la page en cours : seulement si aucun parent n'est un "calque"
 * ajout max/min width/height, pour rendre bottom/right utile
 * afficher l'email du gars logué (demander a thomas)
 
-
 Bugs
 
-* url restent absolues, parfois avec "'", parfois sans, parfois avec &quot;
-* url service local bug
-  getAbsolutePath :
-  ../api/v1.0/www/exec/get/2012-04-19%2018.28.13.jpg
-  ../api/v1.0/www/exec/get/tmp.html
-  retourne : api/v1.0/www/exec/api/v1.0/www/exec/get/2012-04-19%2018.28.13.jpg
-  => bug url des images pour service local, ouvre une page, insert image, rouvre la page
-  
-* save knobs dans la page html
+* bg properties: manque background-size? scalemode?
 * il y a des images en ligne pour la palette, les mettre en local
-* ?? import image => relative instead of absolute
-* bg properties: manque background-size?
 
 ##Usability tests
 
@@ -66,20 +54,21 @@ Plan:
 
 * silex fait des sites vitrine 
 * cloud based (en ligne, sauve sur dropbox ou gd)
-* manque les plugins, thèmes, export pour hébergement 
+* manque les plugins, thèmes, export pour hébergement, hébergement automatique
 * probablement pas mal d'autres trucs, et des bugs
 
 Targets
 
 * Anto
-* Françoise 
-* Moly
-* Ewa
-* Woodoo
-* Camcrock
 * Pol
 * Justin
+* Camcrock
+* Woodoo
 
+* Moly
+* Ewa
+
+* Françoise 
 
 ##Silex v2 remarques
 
