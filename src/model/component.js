@@ -433,7 +433,7 @@ silex.model.Component.prototype.setEditable = function(isEditable, opt_element){
  */
 silex.model.Component.prototype.absolute2Relative = function (htmlString, baseUrl) {
 	// image source
-	htmlString = htmlString.replace(/<img.*src="?([^" ]*)" /g, function(match, group1, group2){
+	htmlString = htmlString.replace(/src="?([^" ]*)" /g, function(match, group1, group2){
 		var res =  match.replace(group1, silex.Helper.getRelativePath(group1, baseUrl));
 		return res;
 	});
@@ -449,13 +449,13 @@ silex.model.Component.prototype.absolute2Relative = function (htmlString, baseUr
  */
 silex.model.Component.prototype.relative2absolute = function (htmlString, baseUrl) {
 	// image source
-	htmlString = htmlString.replace(/<img.*src="?([^" ]*)" /g, function(match, group1, group2){
+	htmlString = htmlString.replace(/src="?([^" ]*)" /g, function(match, group1, group2){
 		var res =  match.replace(group1, silex.Helper.getAbsolutePath(group1, baseUrl));
 		return res;
 	});
 	// css url()
 	htmlString = htmlString.replace(/url\((['"])(.+?)\1\)/g, function(match, group1, group2){
-		var res = 'url("' + silex.Helper.getAbsolutePath(group2, baseUrl)+'")';
+		var res = "url('" + silex.Helper.getAbsolutePath(group2, baseUrl)+"')";
 		return res;
 	});
 	return htmlString;
