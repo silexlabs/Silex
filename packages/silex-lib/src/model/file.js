@@ -376,9 +376,9 @@ silex.model.File.prototype.getHtml = function(){
  * view this file in a new window
  */
 silex.model.File.prototype.view = function(){
-	if (this.getUrl()==null){
+	if (this.getBlob()==null){
 		if (window.confirm('The publication has to be saved first. Save the publication now?')){
-			this.save(goog.bind(function () {
+			this.saveAs(goog.bind(function () {
 				window.open(this.getUrl());
 			}, this));
 		}
