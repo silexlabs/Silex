@@ -54,6 +54,12 @@ silex.Controller = function(
 	this.propertiesTool.onStatus = goog.bind(this.propertiesToolCallback, this);
 	this.htmlEditor.onStatus = goog.bind(this.htmlEditorCallback, this);
 	this.textEditor.onStatus = goog.bind(this.textEditorCallback, this);
+
+	function closeEditorWarning(){
+		return 'Are you sure?'
+	}
+	window.onbeforeunload = closeEditorWarning;
+
 }
 /**
  * logger for debugging
