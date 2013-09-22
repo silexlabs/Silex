@@ -445,7 +445,7 @@ silex.model.Component.prototype.absolute2Relative = function (htmlString, baseUr
 	});
 	// css url()
 	htmlString = htmlString.replace(/url\((['"])(.+?)\1\)/g, function(match, group1, group2){
-		var res = 'url("' + silex.Helper.getRelativePath(group2, baseUrl)+'")';
+		var res = "url('" + silex.Helper.getRelativePath(group2, baseUrl)+"')";
 		return res;
 	});
 	return htmlString;

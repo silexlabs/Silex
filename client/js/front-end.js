@@ -61,6 +61,7 @@ $(function() {
 	 * set silex state to an element, e.g. normal, hover, pressed states
 	 */
 	function silexSetState (element, state) {
+		console.log('silexSetState', element, state);
 		// apply normal style first
 		element.setAttribute('style', element.getAttribute('data-style-normal'));
 
