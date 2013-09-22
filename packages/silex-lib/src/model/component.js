@@ -418,6 +418,7 @@ silex.model.Component.prototype.setEditable = function(isEditable, opt_element){
 		}
 
 		// cleanup the dom
+		$(opt_element).find('.silex-selected').removeClass('silex-selected');
 		$(opt_element).find('.ui-resizable').removeClass('ui-resizable');
 		$(opt_element).find('.ui-draggable').removeClass('ui-draggable');
 		$(opt_element).find('.ui-droppable').removeClass('ui-droppable');
