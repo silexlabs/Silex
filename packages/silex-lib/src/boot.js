@@ -17,7 +17,7 @@ goog.require('goog.dom');
 goog.require('goog.events');
 
 // debug
-goog.require('silex.Logger');
+//goog.require('silex.Logger');
 
 goog.require('silex.Helper');
 goog.require('silex.Controller');
@@ -44,42 +44,42 @@ goog.require('silex.view.FileExplorer');
 goog.require('silex.view.Workspace');
 
 silex.boot = function() {
-	var logger = new silex.Logger('silex.boot', false);
-	logger.setLevel(silex.Logger.ALL);
+	//var logger = new silex.Logger('silex.boot', false);
+	//logger.setLevel(silex.Logger.ALL);
 	//logger.setLevel(silex.Logger.ERROR);
-	logger.info('--start boot--');
+	//logger.info('--start boot--');
 
 	// create all views and attach them to the dom
 	// it is a sequence, because views loads templates one after another
 	var menuElement = goog.dom.getElementByClass('silex-menu');
 	var menu = new silex.view.Menu(menuElement,
 	function () {
-		logger.fine('Menu created');
+		//logger.fine('Menu created');
 		var stageElement = goog.dom.getElementByClass('silex-stage');
 		var stage = new silex.view.Stage(stageElement,
 	function () {
-		logger.fine('Stage created');
+		//logger.fine('Stage created');
 		var pageToolElement = goog.dom.getElementByClass('silex-pagetool');
 		var pageTool = new silex.view.PageTool(pageToolElement,
 	function () {
-		logger.fine('PageTool created');
+		//logger.fine('PageTool created');
 		var propertiesToolElement = goog.dom.getElementByClass('silex-propertiestool');
 		var propertiesTool = new silex.view.PropertiesTool(propertiesToolElement,
 	function () {
-		logger.fine('PropertiesTool created');
+		//logger.fine('PropertiesTool created');
 		var htmlEditorElement = goog.dom.getElementByClass('silex-htmleditor');
 		var htmlEditor = new silex.view.HTMLEditor(htmlEditorElement,
 	function () {
-		logger.fine('HTMLEditor created');
+		//logger.fine('HTMLEditor created');
 		var textEditorElement = goog.dom.getElementByClass('silex-texteditor');
 		var textEditor = new silex.view.TextEditor(textEditorElement,
 	function () {
-		logger.fine('TextEditor created');
+		//logger.fine('TextEditor created');
 		var fileExplorerElement = goog.dom.getElementByClass('silex-fileexplorer');
 		var fileExplorer = new silex.view.FileExplorer(fileExplorerElement,
 	function () {
-		logger.fine('FileExplorer '+fileExplorer.element);
-		logger.fine('FileExplorer created');
+		//logger.fine('FileExplorer '+fileExplorer.element);
+		//logger.fine('FileExplorer created');
 		// create the workspace which place all components in the page
 		var workspaceElement = goog.dom.getElementByClass('silex-workspace');
 		var workspace = new silex.view.Workspace(
@@ -91,7 +91,7 @@ silex.boot = function() {
 			htmlEditor, 
 			textEditor, 
 			fileExplorer);
-		logger.fine('Workspace created');
+		//logger.fine('Workspace created');
 
 		// create the main model element, the file
 		// which creates pages and elements when a file will be loaded later
@@ -105,7 +105,7 @@ silex.boot = function() {
 			htmlEditor, 
 			textEditor, 
 			fileExplorer);
-		logger.fine('File created');
+		//logger.fine('File created');
 
 		var selection = new silex.model.Selection(
 			workspace, 
@@ -116,7 +116,7 @@ silex.boot = function() {
 			htmlEditor, 
 			textEditor, 
 			fileExplorer);
-		logger.fine('Selection created');
+		//logger.fine('Selection created');
 
 		// the controller listens to the view components 
 		// and updates the model
@@ -131,7 +131,7 @@ silex.boot = function() {
 			fileExplorer,
 			file,
 			selection);
-		logger.fine('Controller created');
+		//logger.fine('Controller created');
 
 		// now create an empty file to let the user start using Silex
 		file.newFile(function () {
@@ -156,7 +156,7 @@ silex.boot = function() {
 		});
 		// remove hash added by cloud explorer
 		window.location.hash = '';
-		logger.info('--end boot--');
+		//logger.info('--end boot--');
 	});
 	});
 	});

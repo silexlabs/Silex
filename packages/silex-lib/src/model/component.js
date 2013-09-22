@@ -15,8 +15,6 @@ goog.provide('silex.model.Component');
  * @constructor
  */
 silex.model.Component = function(element, opt_context){
-	this.logger = new silex.Logger('silex.model.Component', true);
-
 	this.isEditable = false;
 	// store a reference to the editable component
 	this.element = this.getFirstEditableParent(element);
@@ -54,11 +52,6 @@ silex.model.Component.SUBTYPE_TEXT = 'text';
  * constant for silex element type
  */
 silex.model.Component.SUBTYPE_HTML = 'html';
-/**
- * logger for debugging
- * @see 	silex.Logger
- */
-silex.model.Component.prototype.logger;
 /**
  * element 
  */
@@ -245,11 +238,11 @@ silex.model.Component.prototype.getImageSrc = function (){
 			return img.getAttribute('src');
 		}
 		else{
-			this.logger.error('The image element inside the component could not be found. Canot get the source.');
+			console.error('The image element inside the component could not be found. Canot get the source.');
 		}
 	}
 	else{
-		this.logger.error('The component is not an image, canot get the source.');
+		console.error('The component is not an image, canot get the source.');
 	}
 	return '';
 }
@@ -263,11 +256,11 @@ silex.model.Component.prototype.setImageSrc = function (url){
 			return img.setAttribute('src', url);
 		}
 		else{
-			this.logger.error('The image element inside the component could not be found. Canot set the source.');
+			console.error('The image element inside the component could not be found. Canot set the source.');
 		}
 	}
 	else{
-		this.logger.error('The component is not an image, canot set the source.');
+		console.error('The component is not an image, canot set the source.');
 	}
 }
 /**
@@ -312,7 +305,7 @@ silex.model.Component.prototype.setHtml = function (html, opt_baseUrl){
 		html = this.relative2absolute(html, opt_baseUrl);
 	}
 	else{
-		this.logger.warn('setHtml without base url, the URLs could not be converted to absolute');
+		console.warn('setHtml without base url, the URLs could not be converted to absolute');
 	}
 	// set the html content
 	this.element.innerHTML = html;
@@ -333,7 +326,7 @@ silex.model.Component.prototype.getFirstEditableParent = function(element){
 		return child;
 	}
 	else{
-		this.logger.warn('The component has no editable parent.');
+		console.warn('The component has no editable parent.');
 	}
 	return element;
 }
@@ -654,7 +647,7 @@ silex.model.Component.prototype.addImage = function(url){
 		throw('Canot create a child component for this component because it is not of type '+silex.model.Component.TYPE_CONTAINER);
 	}
 	if (url == null){
-		this.logger.error('No URL provided for the image component');
+		console.error('No URL provided for the image component');
 	}
 	var div = goog.dom.createElement('div');
 	div.className = 'editable-style';

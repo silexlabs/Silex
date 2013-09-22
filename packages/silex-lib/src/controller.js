@@ -28,7 +28,7 @@ silex.Controller = function(
 	selection){
 
 	// logger
-	this.logger = new silex.Logger('silex.Controller', true);
+	//this.logger = new silex.Logger('silex.Controller', true);
 
 	// store references to the view components
 	this.workspace = workspace;
@@ -246,7 +246,6 @@ silex.Controller.prototype.menuCallback = function(event){
  * stage event handler
  */
 silex.Controller.prototype.stageCallback = function(event){
-	this.logger.info('stageCallback ', event);
 	switch(event.type){
 		case 'select':
 			// reset context for the old selection

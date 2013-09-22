@@ -28,9 +28,6 @@ goog.require('goog.object');
  * @constructor
  */
 silex.view.PropertiesTool = function(element, cbk){
-	// logger
-	this.logger = new silex.Logger('silex.view.PropertiesTool', true);
-
 	this.element = element;
 	this.context = silex.model.Component.CONTEXT_NORMAL;
 	
@@ -40,11 +37,6 @@ silex.view.PropertiesTool = function(element, cbk){
 		if (cbk) cbk();
 	}, this);
 }
-/**
- * logger for debugging
- * @see 	silex.Logger
- */
-silex.model.Component.prototype.logger;
 /**
  * tabs titles
  */
@@ -126,11 +118,6 @@ silex.view.PropertiesTool.prototype.buildTabs = function(){
  * build the UI
  */
 silex.view.PropertiesTool.prototype.buildPanes = function(){
-	this.logger.info('buildPane', 
-		goog.dom.getElementByClass('background-editor', this.element), 
-		goog.dom.getElementByClass('page-editor', this.element), 
-		goog.dom.getElementByClass('property-editor', this.element)
-	);
 	// background
 	this.bgPane = new silex.view.propertiesTool.BgPane(
 		goog.dom.getElementByClass('background-editor', this.element), 
@@ -236,7 +223,6 @@ silex.view.PropertiesTool.prototype.propertyChanged = function(){
  * set component
  */
 silex.view.PropertiesTool.prototype.setComponent = function(component){
-	this.logger.fine('setComponent', component);
 	this.component = component;
 	this.propertyPane.setComponent(component);
 	this.pagePane.setComponent(component);
@@ -250,7 +236,6 @@ silex.view.PropertiesTool.prototype.setComponent = function(component){
  * force redraw
  */
 silex.view.PropertiesTool.prototype.redraw = function(){
-	this.logger.fine('redraw');
 
 	this.borderPane.redraw();
 	this.propertyPane.redraw();

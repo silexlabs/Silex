@@ -82,8 +82,7 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
 			{label:'New page', id:'insert.page'} 
 		],
 		[
-			{label:'Apollo mode', id:'tools.advanced.activate', checkable: true},
-			{label:'Debug mode', id:'tools.debug.activate', checkable: true}
+			{label:'Apollo mode', id:'tools.advanced.activate', checkable: true}
 		],
 		[
 			{label:'Forums', id:'help.forums'}, 
