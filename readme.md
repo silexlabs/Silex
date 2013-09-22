@@ -118,7 +118,7 @@ Components
 File
 
 * group images on the same drive as the html page? 
-* export (cleanup html, make zip with .html, .js, .css, all media)?
+* export (cleanup html, make zip with .html, .js, .css, all media)? + host on github or other free hosts?
 
 ###v2.0.0alpha5
 
@@ -183,4 +183,3 @@ Packaging / distribution
 
   * http://www.goodsync.com/how-to-sync/ftp
   * https://github.com/FTPbox
-  * 
