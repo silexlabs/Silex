@@ -72,6 +72,22 @@ This is how Silex is distributed:
 * jquery and jquery UI
 * handlebars.js
 
+##Development
+
+To install Silex, client and server on your local computer, follow the instructions bellow.
+
+###install node and npm 
+https://gist.github.com/isaacs/579814
+
+###install foreman
+http://blog.daviddollar.org/2011/05/06/introducing-foreman.html
+
+###get silex and start the server
+cd /home/
+git clone git@bitbucket.org:lexoyo/silex.git
+cd silex/server/
+./start-server.sh
+
 ##Road map
 
 ###v2.0.0alpha4
@@ -154,3 +170,17 @@ Packaging / distribution
 * mockup tool
 * banner editor
 
+###other features
+
+* edit local website
+
+  * http://devcenter.kinvey.com/nodejs/guides/users
+  * http://stackoverflow.com/questions/11534412/any-good-user-management-framework-for-node-js
+  * http://usercake.com/docs.php#3
+  * http://labs.bittorrent.com/experiments/sync/technology.htm
+
+* edit ftp
+
+  * http://www.goodsync.com/how-to-sync/ftp
+  * https://github.com/FTPbox
+  * 
