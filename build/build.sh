@@ -14,5 +14,5 @@ closure-library/closure/bin/build/closurebuilder.py \
   --namespace="silex.boot" \
   --output_mode=compiled \
   --compiler_jar=closure-compiler.jar \
-  > ../client/js/admin.js
+  > ../bin/js/admin.js
   
