@@ -76,7 +76,7 @@ silex.view.TextEditor.prototype.initUI = function () {
 	var fontFaceButton = goog.ui.editor.DefaultToolbar.makeBuiltInToolbarButton(goog.editor.Command.FONT_FACE);
 //	goog.ui.editor.ToolbarFactory.addFont(fontFaceButton, 'Arial', 'Arial, Helvetica, sans-serif');
 	goog.ui.editor.ToolbarFactory.addFont(fontFaceButton, 'Arial Black', 'Arial Black, Gadget, sans-serif');
-	goog.ui.editor.ToolbarFactory.addFont(fontFaceButton, 'Impact', 'Impact5, Charcoal, sans-serif');
+	goog.ui.editor.ToolbarFactory.addFont(fontFaceButton, 'Impact', 'Impact, Charcoal, sans-serif');
 	goog.ui.editor.ToolbarFactory.addFont(fontFaceButton, 'Lucida Console', 'Lucida Console, Monaco, monospace');
 	goog.ui.editor.ToolbarFactory.addFont(fontFaceButton, 'Lucida Sans', 'Lucida Sans Unicode, Lucida Grande, sans-serif');
 	goog.ui.editor.ToolbarFactory.addFont(fontFaceButton, 'Palatino', 'Palatino Linotype, Book Antiqua, Palatino, serif');
