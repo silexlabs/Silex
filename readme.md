@@ -96,6 +96,7 @@ WYSIWYG
 
 * shortcuts (suppr, arrows, save, new, open)
 * set as default page (drag drop pages and change order)
+* analytics to analyse the use of the editor
 
 Properties 
 
@@ -170,7 +171,7 @@ Packaging / distribution
 * mockup tool
 * banner editor
 
-###other features
+###other features and ideas for plugins
 
 * edit local website
 
@@ -183,3 +184,9 @@ Packaging / distribution
 
   * http://www.goodsync.com/how-to-sync/ftp
   * https://github.com/FTPbox
+
+* analytics
+  
+  * google, yahoo, piwik
+  * track links http://www.seosite.co.uk/outgoing-links-on-google-analytics
+
