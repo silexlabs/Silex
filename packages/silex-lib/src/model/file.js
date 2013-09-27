@@ -100,26 +100,26 @@ silex.model.File.prototype.bodyStyle;
 /**
  * load an empty new file
  */
-silex.model.File.prototype.newFile = function (cbk) {
-	this.openFromUrl(silex.model.File.CREATION_TEMPLATE, cbk);
+silex.model.File.prototype.newFile = function (cbk, opt_errCbk){
+	this.openFromUrl(silex.model.File.CREATION_TEMPLATE, cbk, opt_errCbk);
 }
 /**
  * load an arbitrary url as a silex html file
  * will not be able to save
  */
-silex.model.File.prototype.openFromUrl = function (url, cbk) {
+silex.model.File.prototype.openFromUrl = function (url, cbk, opt_errCbk){
 	silex.service.CloudStorage.getInstance().loadLocal(url, 
 	goog.bind(function(rawHtml){
 		this.setUrl(url);
 		this.setHtml(rawHtml);
 		this.setBlob(null); // will not be able to save
 		if (cbk) cbk();
-	}, this));
+	}, this), opt_errCbk);
 }
 /**
  * save a file with a new name
  */
-silex.model.File.prototype.saveAs = function(cbk){
+silex.model.File.prototype.saveAs = function(cbk, opt_errCbk){
 	// choose a new name
 	this.fileExplorer.saveAsDialog(
 	goog.bind(function (blob) {
@@ -127,28 +127,28 @@ silex.model.File.prototype.saveAs = function(cbk){
 		// save the data
 		this.setUrl(blob.url);
 		this.setBlob(blob);
-		this.save(cbk);
+		this.save(cbk, opt_errCbk);
 	}, this),
-	{'mimetype':'text/html'});
+	{'mimetype':'text/html'}, opt_errCbk);
 	this.workspace.invalidate();
 }
 /**
  * write content to the file
  */
-silex.model.File.prototype.save = function(cbk){
+silex.model.File.prototype.save = function(cbk, opt_errCbk){
 	var blob = this.getBlob();
 	this.setBodyTag(this.getStageComponent().getHtml(blob.url));
 	this.setHeadTag(this.stage.getHead());
 	this.setBodyStyle(this.stage.getBodyStyle());
 	silex.service.CloudStorage.getInstance().save(blob, this.getHtml(), function () {
 		if (cbk) cbk();
-	});
+	}, opt_errCbk);
 }
 
 /**
  * load a new file
  */
-silex.model.File.prototype.open = function(cbk){
+silex.model.File.prototype.open = function(cbk, opt_errCbk){
 	// let the user choose the file
 	this.fileExplorer.openDialog(
 	goog.bind(function (blob) {
@@ -159,9 +159,9 @@ silex.model.File.prototype.open = function(cbk){
 			this.setUrl(blob.url);
 			this.setBlob(blob);
 			this.setHtml(rawHtml);
-		}, this));
+		}, this), opt_errCbk);
 	}, this), 
-	['text/html', 'text/plain']);
+	['text/html', 'text/plain'], opt_errCbk);
 	this.workspace.invalidate();
 }
 /**

@@ -30,6 +30,10 @@ silex.Controller = function(
 	// logger
 	//this.logger = new silex.Logger('silex.Controller', true);
 
+	// tracker
+	this.tracker = new silex.service.Tracker();
+	this.tracker.trackAction('event/controller-start', 'start', 2);
+
 	// store references to the view components
 	this.workspace = workspace;
 	this.menu = menu;
@@ -62,10 +66,10 @@ silex.Controller = function(
 
 }
 /**
- * logger for debugging
- * @see 	silex.Logger
+ * tracker
+ * @see 	silex.service.Tracker
  */
-silex.model.Component.prototype.logger;
+silex.Controller.prototype.tracker;
 /**
  * reference to the workspace component (view)
  */
@@ -115,6 +119,7 @@ silex.Controller.prototype.selection;
  * menu event handler
  */
 silex.Controller.prototype.menuCallback = function(event){
+	this.tracker.trackAction('user-action/menu/'+event.type, null, 4);
 	switch(event.type){
 		case 'title.changed':
 			var name = window.prompt('What is the name of your website?', this.menu.getWebsiteName());
@@ -124,20 +129,32 @@ silex.Controller.prototype.menuCallback = function(event){
 			this.file.newFile();
 			break;
 		case 'file.saveas':
-			this.file.saveAs();
+			this.file.saveAs(null, 
+				goog.bind(function (error) {
+					this.tracker.trackAction('error/menu/'+event.type, JSON.stringify(error), 0);
+				}, this));
 			break;
 
 		case 'file.save':
 			if (this.file.getBlob()==null){
-				this.file.saveAs();
+				this.file.saveAs(null,
+				goog.bind(function (error) {
+					this.tracker.trackAction('error/menu/'+event.type, JSON.stringify(error), 0);
+				}, this));
 			}
 			else{
-				this.file.save();
+				this.file.save(null, 
+					goog.bind(function (error) {
+					this.tracker.trackAction('error/menu/'+event.type, JSON.stringify(error), 0);
+				}, this));
 			}
 			break;
 		case 'file.open':
 			this.file.open(goog.bind(function () {
 				this.selection.setComponent(this.file.getStageComponent());
+			}, this), 
+			goog.bind(function (error) {
+				this.tracker.trackAction('error/menu/'+event.type, JSON.stringify(error), 0);
 			}, this));
 			break;
 		case 'file.close':
@@ -193,13 +210,17 @@ silex.Controller.prototype.menuCallback = function(event){
 		case 'insert.image':
 			this.fileExplorer.openDialog(
 			goog.bind(function (blob) {
-				var component = this.file.getStageComponent().addImage(blob.url);
-				// only visible on the current page
-				this.selection.getPage().addComponent(component);
-				// select the component
-				this.selection.setComponent(component);
-			}, this),
-			['image/*', 'text/plain']);
+					var component = this.file.getStageComponent().addImage(blob.url);
+					// only visible on the current page
+					this.selection.getPage().addComponent(component);
+					// select the component
+					this.selection.setComponent(component);
+				}, this),
+					['image/*', 'text/plain'],
+				goog.bind(function (error) {
+					this.tracker.trackAction('error/menu/'+event.type, JSON.stringify(error), 0);
+				}, this)
+			);
 			this.workspace.invalidate();
 			break;
 		case 'insert.container':
@@ -252,6 +273,7 @@ silex.Controller.prototype.menuCallback = function(event){
  * stage event handler
  */
 silex.Controller.prototype.stageCallback = function(event){
+	this.tracker.trackAction('user-action/stage/'+event.type, null, 4);
 	switch(event.type){
 		case 'select':
 			// reset context for the old selection
@@ -290,6 +312,7 @@ silex.Controller.prototype.stageCallback = function(event){
  * pageTool event handler
  */
 silex.Controller.prototype.pageToolCallback = function(event){
+	this.tracker.trackAction('user-action/page-tool/'+event.type, null, 4);
 	switch(event.type){
 	case 'changed':
 		this.selection.setPage(event.page);
@@ -381,6 +404,7 @@ silex.Controller.prototype.createPage = function(){
  * propertiesTool event handler
  */
 silex.Controller.prototype.propertiesToolCallback = function(event){
+	this.tracker.trackAction('user-action/properties-tool/'+event.type, null, 4);
 	switch(event.type){
 		case 'editHTML':
 			this.editComponent();
@@ -393,7 +417,11 @@ silex.Controller.prototype.propertiesToolCallback = function(event){
 			goog.bind(function (blob) {
 				this.propertiesTool.setBgImage(blob.url);
 			}, this),
-			['image/*', 'text/plain']);
+			['image/*', 'text/plain'],
+			goog.bind(function (error) {
+				this.tracker.trackAction('error/properties-tool/'+event.type, JSON.stringify(error), 0);
+			}, this)
+			);
 			this.workspace.invalidate();
 			break;
 		case 'selectImage':
@@ -450,7 +478,11 @@ silex.Controller.prototype.editComponent = function(){
 		goog.bind(function (blob) {
 			this.propertiesTool.setImage(blob.url);
 		}, this),
-		['image/*', 'text/plain']);
+		['image/*', 'text/plain'],
+			goog.bind(function (error) {
+				this.tracker.trackAction('error/edit-component/'+event.type, JSON.stringify(error), 0);
+			}, this)
+		);
 		this.workspace.invalidate();
 		break;
 	}
