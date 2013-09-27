@@ -34,7 +34,7 @@ class JsCompilerError(Exception):
 
 def _GetJavaVersionString():
   """Get the version string from the Java VM."""
-  return subprocess.check_output(['java', '-version'], stderr=subprocess.STDOUT)
+  return subprocess.Popen(['java', '-version'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
 
 
 def _ParseJavaVersion(version_string):
@@ -130,6 +130,6 @@ def Compile(compiler_jar_path, source_paths,
   logging.info('Compiling with the following command: %s', ' '.join(args))
 
   try:
-    return subprocess.check_output(args)
+    return subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
   except subprocess.CalledProcessError:
     raise JsCompilerError('JavaScript compilation failed.')
