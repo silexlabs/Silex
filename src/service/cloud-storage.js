@@ -43,7 +43,7 @@ silex.service.CloudStorage.getInstance = function(){
 /**
  * save a file
  */
-silex.service.CloudStorage.prototype.save = function(blob, rawData, cbk){
+silex.service.CloudStorage.prototype.save = function(blob, rawData, cbk, opt_errCbk){
 	// cloud explorer expects relative path
 	var relBlob = {
 		url : silex.Helper.getRelativePath(blob.url, silex.Helper.BaseUrl)
@@ -61,12 +61,15 @@ silex.service.CloudStorage.prototype.save = function(blob, rawData, cbk){
 	},
 	function(FPError){
 		console.error(FPError);
+		if (opt_errCbk){
+			opt_errCbk(FPError);
+		}
 	});
 }
 /**
  * load data
  */
-silex.service.CloudStorage.prototype.load = function(blob, cbk){
+silex.service.CloudStorage.prototype.load = function(blob, cbk, opt_errCbk){
 
 	// cloud explorer expects relative path
 	var relBlob = {
@@ -82,20 +85,31 @@ silex.service.CloudStorage.prototype.load = function(blob, cbk){
 	},
 	function(FPError){
 		console.error(FPError);
+		if (opt_errCbk){
+			opt_errCbk(FPError);
+		}
 	});
 }
 /**
  * load data
  */
-silex.service.CloudStorage.prototype.loadLocal = function(url, cbk){
-	var that = this;
+silex.service.CloudStorage.prototype.loadLocal = function(url, cbk, opt_errCbk){
 	goog.net.XhrIo.send(url, function(e){
 		// success of the request
 		var xhr = e.target;
 		var rawHtml = xhr.getResponse();
-		// workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
-		new goog.async.Delay(function () {
-			if (cbk) cbk(rawHtml);
-		}, 10, this).start();
+		if (xhr.isSuccess()){
+			// workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
+			new goog.async.Delay(function () {
+				if (cbk) cbk(rawHtml);
+			}, 10, this).start();
+		}
+		else{
+			var message = xhr.getLastError();
+			console.error(message, xhr, xhr.isSuccess(), xhr.getStatus(), xhr.headers.toString());
+			if (opt_errCbk){
+				opt_errCbk(message);
+			}
+		}
 	});
 }
