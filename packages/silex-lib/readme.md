@@ -1,8 +1,8 @@
-#Silex, the html5 editor
+#Silex, live web creation.
 
 ##About Silex
 
-Silex is a free and open source software that allows to create websites directly in the browser without writing code. It is a mixture between a CMS (Content Management System) and a website builder in the cloud, because it has content management fonctionalities and it is designed oriented. 
+Silex, is a free and open source website buidler in the cloud. Create websites directly in the browser without writing code. And it is suitable for professional designers to produce great websites without constraints. Silex is also known as the HTML5 editor.
 
 Brought to you by Silex Labs team, promoting free software.
 
@@ -27,7 +27,7 @@ Discussions
 News and tutorials
 
 * blog http://www.silexlabs.org/category/the-blog/blog-silex/
-* subscribe by email http://feedburner.google.com/fb/a/mailverify?uri=SilexLabsBlogEn
+* subscribe by email http://eepurl.com/F48q5
 
 GPL license 
 
