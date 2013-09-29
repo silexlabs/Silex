@@ -47,6 +47,7 @@ Bugs
 
 * bg properties: manque background-size? scalemode?
 * il y a des images en ligne pour la palette, les mettre en local
+* http://ditesh.gathani.org/blog/2011/07/catching-uncaught-exceptions-in-node-js/
 
 ##Usability tests
 
