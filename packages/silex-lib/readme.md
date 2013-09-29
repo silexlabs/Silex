@@ -33,9 +33,19 @@ GPL license
 
 * http://www.silexlabs.org/silex/silex-licensing/
 
-##Distribution/packages
+##Installation on your local computer (developers only)
 
-Developers you can clone this repository and start the serveur (unifile), the back end of Silex, with nodejs. For this, see cloud-explorer/unifile/readme.md
+Developers you can clone this repository and start the serveur (unifile), the back end of Silex, with nodejs. See instructions bellow.
+
+Clone this repository, and do not forget the sub modules (cloud-explorer and unifile)
+
+Then install node.js http://nodejs.org/
+
+Start the server with "node cloud-explorer/unifile/lib/gateway.js"
+
+And open http://localhost:5000/ in a browser
+
+##Distribution/packages
 
 You can use Silex online on www.silex.io or locally or on your server. 
 
