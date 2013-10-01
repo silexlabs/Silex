@@ -155,7 +155,7 @@ silex.view.FileExplorer.prototype.openEditor = function(){
 	var background = goog.dom.getElementByClass('dialogs-background');
 	// show
 	goog.style.setStyle(background, 'display', 'inherit');
-	goog.style.setStyle(this.element, 'display', null);
+	goog.style.setStyle(this.element, 'display', '');
 	// close
 	goog.events.listen(background, goog.events.EventType.CLICK, this.closeEditor, true, this);
 }
