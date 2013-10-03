@@ -1,4 +1,4 @@
-	
+
 #dev notes
 
 ##encours
@@ -35,16 +35,18 @@ com silex
 * Alternatives.to
 * revoir tous les sites qui parlent de silex
 * landing page sur silex.io
-* redirection html5-editor.org 
+* redirection html5-editor.org
 
 Silex
 
 * ajout d'éléments sur la page en cours : seulement si aucun parent n'est un "calque"
+* Verif extension de fichiers (open file, insert image)
 * ajout max/min width/height, pour rendre bottom/right utile
-* afficher l'email du gars logué (demander a thomas)
+* Ajout son et video??
 
 Bugs
 
+* il y a aussi un pb récurrent que j'avais déjà remarqué c'est que quand on rentre des chiffres par exemple d'opacité sur un objet ou élément, le même chiffre reste affiché quand on change d'éléments même si ça ne s'applique pas forcément (des fois ça s'applique aussi mais la plupart du temps ça reste juste affiché)
 * bg properties: manque background-size? scalemode?
 * il y a des images en ligne pour la palette, les mettre en local
 * http://ditesh.gathani.org/blog/2011/07/catching-uncaught-exceptions-in-node-js/
@@ -53,10 +55,7 @@ Bugs
 
 Plan:
 
-* silex fait des sites vitrine 
-* cloud based (en ligne, sauve sur dropbox ou gd)
-* manque les plugins, thèmes, export pour hébergement, hébergement automatique
-* probablement pas mal d'autres trucs, et des bugs
+https://docs.google.com/document/d/1PVGgSq8XTFSHrqOtLx8B5cY7l9HnDO74mhGhODZLZyY/edit#
 
 Targets
 
@@ -69,7 +68,12 @@ Targets
 * Moly
 * Ewa
 
-* Françoise 
+* Françoise
+* Ovidiu
+* Alex ketchu
+* Bienf
+* Laurent mrm
+* francky
 
 ##Silex v2 remarques
 
@@ -88,7 +92,7 @@ Ca définit la taille de ton site, c'est important... Je ne suis pas sur de comp
 
 Ah c'est intéressant. Tu peux me dire à quoi tu t'attendais stp, j'ai trop la tete dans le guidon pour m'en rendre compte?
 
-Et en effet, il n'y a rien sans cloud dans silex v2... 
+Et en effet, il n'y a rien sans cloud dans silex v2...
 
 
 > bon je viens de voir le rapport de bug sur le bloquage des popups :-)
@@ -101,7 +105,7 @@ Ca devrait t'afficher tes dossiers
 
 bon j'ai réussi à afficher les fichiers. du coup j'ai sauvegardé. ensuite j'ai voulu faire edit>rename page, j'ai perdu ma page, qui n'apparait d'ailleurs plus dans mon gdrive.
 
-Le coup du cloud mérite une explication, sinon on comprend rien. Je te proposerai bien que presque au tout début tu proposes un wizard qui permette d'importer une page de démo (pas vide!) dans ton cloud, ainsi qu'une image déjà embeddée dans la page et dans le cloud. Et qu'une fois que l'importation s'est bien passée te donne l'url permettant de consulter le site, parce que ça non plus c'est pas évident. 
+Le coup du cloud mérite une explication, sinon on comprend rien. Je te proposerai bien que presque au tout début tu proposes un wizard qui permette d'importer une page de démo (pas vide!) dans ton cloud, ainsi qu'une image déjà embeddée dans la page et dans le cloud. Et qu'une fois que l'importation s'est bien passée te donne l'url permettant de consulter le site, parce que ça non plus c'est pas évident.
 
 Je te cache pas que là je suis un peu perdu, pourtant silex j'ai bien pratiqué... Avant de faire plus de debug mets qqun de ta cible devant le logiciel et regarde le faire, ça te permettra de voir tout plein de choses que je peux difficilement t'expliquer par mail. Si ca c'est pas possible je peux te faire une session partage d'écran par skype, mais ça sera moins bien.
 

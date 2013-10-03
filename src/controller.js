@@ -216,7 +216,7 @@ silex.Controller.prototype.menuCallback = function(event){
 					// select the component
 					this.selection.setComponent(component);
 				}, this),
-					['image/*', 'text/plain'],
+				['image/*', 'text/plain'],
 				goog.bind(function (error) {
 					this.tracker.trackAction('error/menu/'+event.type, JSON.stringify(error), 0);
 				}, this)
