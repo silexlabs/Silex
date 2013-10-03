@@ -1,10 +1,10 @@
 //////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
-// 
+//
 // Copyright (c) 2012 Silex Labs
 // http://www.silexlabs.org/
-// 
+//
 // Silex is available under the GPL license
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
@@ -59,7 +59,7 @@ silex.view.propertiesTool.GeneralStylePane.prototype.buildUi = function(){
 	goog.events.listen(this.opacityInput, 'change', this.onInputChanged, false, this);
 }
 /**
- * display the style of the element being edited 
+ * display the style of the element being edited
  */
 silex.view.propertiesTool.GeneralStylePane.prototype.setStyle = function(style){
 	this.style = style;
@@ -75,17 +75,23 @@ silex.view.propertiesTool.GeneralStylePane.prototype.redraw = function(){
 		if (this.style.opacity){
 			this.opacityInput.value = this.style.opacity;
 		}
-
+		else{
+			this.opacityInput.value = '';
+		}
 		this.isRedraw = false;
 	}
 }
-/** 
+/**
  * User has selected a color
  */
 silex.view.propertiesTool.GeneralStylePane.prototype.onInputChanged = function(event){
-	if (this.style && !this.isRedraw && this.opacityInput.value && this.opacityInput.value!=''){
-		this.style.opacity = this.opacityInput.value;
-
+	if (this.style && !this.isRedraw){
+	 	if(this.opacityInput.value && this.opacityInput.value!=''){
+			this.style.opacity = this.opacityInput.value;
+		}
+		else{
+			this.style.opacity = 'none';
+		}
 		// notify the toolbox
 		this.styleChanged(this.style);
 		// redraw to reflect changes

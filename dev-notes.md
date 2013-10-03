@@ -46,7 +46,6 @@ Silex
 
 Bugs
 
-* il y a aussi un pb récurrent que j'avais déjà remarqué c'est que quand on rentre des chiffres par exemple d'opacité sur un objet ou élément, le même chiffre reste affiché quand on change d'éléments même si ça ne s'applique pas forcément (des fois ça s'applique aussi mais la plupart du temps ça reste juste affiché)
 * bg properties: manque background-size? scalemode?
 * il y a des images en ligne pour la palette, les mettre en local
 * http://ditesh.gathani.org/blog/2011/07/catching-uncaught-exceptions-in-node-js/
