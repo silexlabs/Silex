@@ -85,16 +85,16 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
 			{label:'Apollo mode', id:'tools.advanced.activate', checkable: true}
 		],
 		[
-			{label:'Forums', id:'help.forums'}, 
+			{label:'Questions and answers', id:'help.forums'}, 
 			{label:'About Silex', id:'help.about'}, 
 			{label:'About Silex Labs', id:'help.aboutSilexLabs'}, 
 			null,
 			{label:'Silex Labs news letter', id:'help.newsLetter'}, 
-			{label:'Google+', id:'help.googlPlus'}, 
 			{label:'Twitter', id:'help.twitter'}, 
+			{label:'Google+', id:'help.googlPlus'}, 
 			{label:'Facebook', id:'help.facebook'}, 
 			null,
-			{label:'Fork me!', id:'help.forkMe'} 
+			{label:'Fork me on github!', id:'help.forkMe'} 
 		]
 	];
 

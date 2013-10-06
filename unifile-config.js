@@ -2,13 +2,14 @@
  * other config files to considere (if they exist)
  */
 exports.otherConfFiles = [
+	'custom-unifile-conf.js'
 ]
 
 // overide default config
 /**
  * www service config (the local server)
  */
-exports.www = 
+exports.www =
 {
 	root : "../../../../www"
 }
