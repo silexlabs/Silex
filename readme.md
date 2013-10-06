@@ -158,6 +158,11 @@ Contextual menu on the elements (menu bar under the menu like google?)
 
 ###v2.0.0beta1
 
+Continuous integration
+* jshint, PhantomJS, jenkins, Selenium
+* unit tests
+* functional tests
+
 Debuging
 
 Validation
@@ -174,12 +179,14 @@ Nice to have :
 Packaging / distribution
 
 * App.js ?
+* chrome app http://developer.chrome.com/apps/about_apps.html
 * arvixe like service
 * add "multiple ftp" to file browser
 * newsletter editor or postcard editor
 * mainstream CMS page, article or theme editor
 * mockup tool
 * banner editor
+
 
 ###other features and ideas for plugins
 
@@ -202,3 +209,4 @@ Packaging / distribution
 
 
 * mobile optimized version of Silex editor
+

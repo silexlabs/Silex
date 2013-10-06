@@ -44,6 +44,14 @@ Silex
 * ajout max/min width/height, pour rendre bottom/right utile
 * Ajout son et video??
 
+- suppr gdrive
+- notifier les erreur et succes
+- readme
+- autres bugs
+- système de logs/bug report http://jserrlog.appspot.com/
+
+
+
 Bugs
 
 * bg properties: manque background-size? scalemode?
