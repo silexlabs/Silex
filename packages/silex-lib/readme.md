@@ -1,8 +1,8 @@
-#Silex, the html5 editor
+#Silex, live web creation.
 
 ##About Silex
 
-Silex is a free and open source software that allows to create websites directly in the browser without writing code. It is a mixture between a CMS (Content Management System) and a website builder in the cloud, because it has content management fonctionalities and it is designed oriented. 
+Silex, is a free and open source website buidler in the cloud. Create websites directly in the browser without writing code. And it is suitable for professional designers to produce great websites without constraints. Silex is also known as the HTML5 editor.
 
 Brought to you by Silex Labs team, promoting free software.
 
@@ -20,16 +20,16 @@ Questions and answers
 
 Discussions
 
-* Facebook http://www.facebook.com/silexlabs 
+* Facebook http://www.facebook.com/silexlabs
 * Twitter https://twitter.com/silexlabs
 * Google plus https://plus.google.com/communities/107373636457908189681
 
 News and tutorials
 
 * blog http://www.silexlabs.org/category/the-blog/blog-silex/
-* subscribe by email http://feedburner.google.com/fb/a/mailverify?uri=SilexLabsBlogEn
+* subscribe by email http://eepurl.com/F48q5
 
-GPL license 
+GPL license
 
 * http://www.silexlabs.org/silex/silex-licensing/
 
@@ -41,41 +41,41 @@ Clone this repository, and do not forget the sub modules (cloud-explorer and uni
 
 Then install node.js http://nodejs.org/
 
-Start the server with "node cloud-explorer/unifile/lib/gateway.js"
+Start the server with "node cloud-explorer/unifile/lib/app.js"
 
 And open http://localhost:5000/ in a browser
 
 ##Distribution/packages
 
-You can use Silex online on www.silex.io or locally or on your server. 
+You can use Silex online on www.silex.io or locally or on your server.
 
 This is how Silex is distributed:
 
 * Hosted free
   No install, just go to http://www.silex.io/ and do design
-  Edit HTML pages in your drobbox, gdrive...  Your site is visible only by people with whom you share it. 
+  Edit HTML pages in your drobbox, gdrive...  Your site is visible only by people with whom you share it.
   Tech note: host cloud explorer @silexlabs (silex.html on SL dedicated server and nodejs on heroku)
 * Hosted pro
   Comming soon
   Purchase a hosting plan, go to http://www.silex.pro/ and do design
-  You edit your site from an online location. Your site accessible to everyone 24/7. 
+  You edit your site from an online location. Your site accessible to everyone 24/7.
   Paid, no setup, no need to know anything about hosting.
   Tech note: PHP file explorer hosted @arvixe, silex.html on SL dedicated server (use arvixe.silex.io ??)
 * Hosted anywhere
   Purchase a stadard shared hosting, and use Scriptaculous automatic install to install Silex in a folder.
-  You can manage multiple separated sites with different instances of Silex to edit the site. 
+  You can manage multiple separated sites with different instances of Silex to edit the site.
   Tech note: silex.html and PHP file explorer hosted by the user's hosting company
-* Hosted by you, front and back 
+* Hosted by you, front and back
   Download Silex and host it with its nodejs server.
-  Offer Silex "Hosted free" version to your users, on your domain name. 
+  Offer Silex "Hosted free" version to your users, on your domain name.
   Your users go to your URL and use Silex from there to edit their files from their cloud services.
   Tech note: node server, silex in the unifile server
 
 ##dependencies
 
-* unifile https://github.com/silexlabs/unifile 
+* unifile https://github.com/silexlabs/unifile
   wich uses nodejs and the modules: express, dbox, express, googleapis, logger, node-oauth, oauth, path
-* cloud explorer https://github.com/silexlabs/cloud-explorer 
+* cloud explorer https://github.com/silexlabs/cloud-explorer
   which uses angular.js
 * ace http://ace.c9.io/
 * google closure library and compiler
@@ -86,7 +86,7 @@ This is how Silex is distributed:
 
 To install Silex, client and server on your local computer, follow the instructions bellow.
 
-###install node and npm 
+###install node and npm
 https://gist.github.com/isaacs/579814
 
 ###install foreman
@@ -108,9 +108,9 @@ WYSIWYG
 * set as default page (drag drop pages and change order)
 * analytics to analyse the use of the editor
 
-Properties 
+Properties
 
-* UI sounds? 
+* UI sounds?
 * shadows
 * font-*
 * cursor
@@ -128,25 +128,25 @@ Components
 
 File
 
-* group images on the same drive as the html page? 
+* group images on the same drive as the html page?
 * export (cleanup html, make zip with .html, .js, .css, all media)? + host on github or other free hosts?
 
 ###v2.0.0alpha5
 
-Edition 
+Edition
 
 * copy/cut/paste
 * undo/redo
 * autosave
 * multiple selection
-* better text editor? 
+* better text editor?
   http://www.webdesignerdepot.com/2008/12/20-excellent-free-rich-text-editors/
   http://mindmup.github.io/bootstrap-wysiwyg/
 
-File properties 
+File properties
 
-* background 
-* title and description and keywords 
+* background
+* title and description and keywords
 * favicon
 
 Contextual menu on the elements (menu bar under the menu like google?)
@@ -157,6 +157,11 @@ Contextual menu on the elements (menu bar under the menu like google?)
 * rotation
 
 ###v2.0.0beta1
+
+Continuous integration
+* jshint, PhantomJS, jenkins, Selenium
+* unit tests
+* functional tests
 
 Debuging
 
@@ -174,12 +179,14 @@ Nice to have :
 Packaging / distribution
 
 * App.js ?
+* chrome app http://developer.chrome.com/apps/about_apps.html
 * arvixe like service
 * add "multiple ftp" to file browser
 * newsletter editor or postcard editor
 * mainstream CMS page, article or theme editor
 * mockup tool
 * banner editor
+
 
 ###other features and ideas for plugins
 
@@ -196,7 +203,10 @@ Packaging / distribution
   * https://github.com/FTPbox
 
 * analytics
-  
+
   * google, yahoo, piwik
   * track links http://www.seosite.co.uk/outgoing-links-on-google-analytics
+
+
+* mobile optimized version of Silex editor
 
