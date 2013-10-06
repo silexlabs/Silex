@@ -216,7 +216,7 @@ silex.Controller.prototype.menuCallback = function(event){
 					// select the component
 					this.selection.setComponent(component);
 				}, this),
-					['image/*', 'text/plain'],
+				['image/*', 'text/plain'],
 				goog.bind(function (error) {
 					this.tracker.trackAction('error/menu/'+event.type, JSON.stringify(error), 0);
 				}, this)
@@ -250,10 +250,10 @@ silex.Controller.prototype.menuCallback = function(event){
 			window.open("http://www.silexlabs.org/silexlabs/");
 			break;
 		case 'help.forums':
-			window.open("http://www.silexlabs.org/groups/silex/hierarchy");
+			window.open("http://graphicdesign.stackexchange.com/questions/tagged/silex");
 			break;
 		case 'help.newsLetter':
-			window.open("http://feedburner.google.com/fb/a/mailverify?uri=SilexLabsBlogEn");
+			window.open("http://eepurl.com/F48q5");
 			break;
 		case 'help.googlPlus':
 			window.open("https://plus.google.com/communities/107373636457908189681");
@@ -265,7 +265,7 @@ silex.Controller.prototype.menuCallback = function(event){
 			window.open("http://www.facebook.com/silexlabs");
 			break;
 		case 'help.forkMe':
-			window.open("https://bitbucket.org/lexoyo/silex");
+			window.open("https://github.com/silexlabs/Silex");
 			break;
 	}
 }
