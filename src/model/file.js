@@ -377,11 +377,13 @@ silex.model.File.prototype.getHtml = function(){
  */
 silex.model.File.prototype.view = function(){
 	if (this.getBlob()==null){
-		if (window.confirm('The publication has to be saved first. Save the publication now?')){
-			this.saveAs(goog.bind(function () {
-				window.open(this.getUrl());
-			}, this));
-		}
+		alertify.confirm('The publication has to be saved first. Save the publication now?', goog.bind(function(accept){
+			if (accept){
+				this.saveAs(goog.bind(function () {
+					window.open(this.getUrl());
+				}, this));
+			}
+		}, this));
 	}
 	else{
 		window.open(this.getUrl());
