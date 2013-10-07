@@ -1,10 +1,10 @@
 //////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
-// 
+//
 // Copyright (c) 2012 Silex Labs
 // http://www.silexlabs.org/
-// 
+//
 // Silex is available under the GPL license
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
@@ -84,13 +84,13 @@ silex.boot = function() {
 		// create the workspace which place all components in the page
 		var workspaceElement = goog.dom.getElementByClass('silex-workspace');
 		var workspace = new silex.view.Workspace(
-			workspaceElement, 
-			menu, 
-			stage, 
-			pageTool, 
-			propertiesTool, 
-			htmlEditor, 
-			textEditor, 
+			workspaceElement,
+			menu,
+			stage,
+			pageTool,
+			propertiesTool,
+			htmlEditor,
+			textEditor,
 			fileExplorer);
 		//logger.fine('Workspace created');
 
@@ -98,37 +98,37 @@ silex.boot = function() {
 		// which creates pages and elements when a file will be loaded later
 		// the model updates the views
 		var file = new silex.model.File(
-			workspace, 
-			menu, 
-			stage, 
-			pageTool, 
-			propertiesTool, 
-			htmlEditor, 
-			textEditor, 
+			workspace,
+			menu,
+			stage,
+			pageTool,
+			propertiesTool,
+			htmlEditor,
+			textEditor,
 			fileExplorer);
 		//logger.fine('File created');
 
 		var selection = new silex.model.Selection(
-			workspace, 
-			menu, 
-			stage, 
-			pageTool, 
-			propertiesTool, 
-			htmlEditor, 
-			textEditor, 
+			workspace,
+			menu,
+			stage,
+			pageTool,
+			propertiesTool,
+			htmlEditor,
+			textEditor,
 			fileExplorer);
 		//logger.fine('Selection created');
 
-		// the controller listens to the view components 
+		// the controller listens to the view components
 		// and updates the model
 		var controller = new silex.Controller(
-			workspace, 
-			menu, 
-			stage, 
-			pageTool, 
-			propertiesTool, 
-			htmlEditor, 
-			textEditor, 
+			workspace,
+			menu,
+			stage,
+			pageTool,
+			propertiesTool,
+			htmlEditor,
+			textEditor,
 			fileExplorer,
 			file,
 			selection);
@@ -145,18 +145,16 @@ silex.boot = function() {
 			var blob = {
 				url: url
 			};
-			silex.service.CloudStorage.getInstance().load(blob, 
+			silex.service.CloudStorage.getInstance().load(blob,
 				goog.bind(function(rawHtml){
 					// update model
 					file.close();
 					file.setUrl(blob.url);
 					file.setBlob(blob);
 					file.setHtml(rawHtml);
-				}, this)); 
+				}, this));
 /* */
 		});
-		// remove hash added by cloud explorer
-		window.location.hash = '';
 		//logger.info('--end boot--');
 	});
 	});
