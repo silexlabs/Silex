@@ -1,10 +1,10 @@
 //////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
-// 
+//
 // Copyright (c) 2012 Silex Labs
 // http://www.silexlabs.org/
-// 
+//
 // Silex is available under the GPL license
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
@@ -119,7 +119,7 @@ silex.view.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes, op
 	console.log('saveAsDialog ', opt_mimetypes)
 
 	// export dummy data
-	this.filePicker.exportFile( "http://google.com/", 
+	this.filePicker.exportFile( "http://google.com/",
 	opt_mimetypes,
 	goog.bind(function(blob){
 
@@ -147,7 +147,7 @@ silex.view.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes, op
 	this.openEditor();
 }
 /**
- * open editor 
+ * open editor
  * this is private method, do not call it
  */
 silex.view.FileExplorer.prototype.openEditor = function(){
@@ -160,7 +160,7 @@ silex.view.FileExplorer.prototype.openEditor = function(){
 	goog.events.listen(background, goog.events.EventType.CLICK, this.closeEditor, true, this);
 }
 /**
- * close editor 
+ * close editor
  * this is private method, do not call it
  */
 silex.view.FileExplorer.prototype.closeEditor = function(){
