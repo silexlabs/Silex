@@ -1,10 +1,10 @@
 //////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
-// 
+//
 // Copyright (c) 2012 Silex Labs
 // http://www.silexlabs.org/
-// 
+//
 // Silex is available under the GPL license
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
@@ -21,7 +21,7 @@ silex.model.Component = function(element, opt_context){
 	// store component type
 	this.type = silex.model.Component.getType(this.element);
 	// default value for context
-	if (opt_context == null) 
+	if (opt_context == null)
 		opt_context = silex.model.Component.CONTEXT_NORMAL;
 	// apply the style for the context
 	this.setContext(opt_context);
@@ -53,11 +53,11 @@ silex.model.Component.SUBTYPE_TEXT = 'text';
  */
 silex.model.Component.SUBTYPE_HTML = 'html';
 /**
- * element 
+ * element
  */
 silex.model.Component.prototype.element;
 /**
- * context 
+ * context
  */
 silex.model.Component.prototype.context;
 /**
@@ -73,6 +73,17 @@ silex.model.Component.getType = function (element){
 			return subType;
 	}
 	throw('Could not determine the type of this element.');
+}
+/**
+ * retrieve the first parent which is visible only on some pages
+ * @returns null or the element or one of its parents which has the css class silex.model.Page.PAGE_CLASS
+ */
+silex.model.Component.prototype.getFirstPageableParent = function (){
+	var element = this.element;
+	while(element && !goog.dom.classes.has(element, silex.model.Page.PAGE_CLASS)){
+		element = element.parentNode;
+	}
+	return element;
 }
 /**
  * retrieve the element to which I attach the new elements
@@ -171,7 +182,7 @@ silex.model.Component.prototype.setStyle = function (style, opt_context){
 	this.element.setAttribute('data-style-'+opt_context, styleStr);
 }
 /**
- * bounding box 
+ * bounding box
  * key/value pairs of string with unit, e.g. '5px'
  */
 silex.model.Component.prototype.getBoundingBox = function (){
@@ -186,7 +197,7 @@ silex.model.Component.prototype.getBoundingBox = function (){
 	};
 }
 /**
- * bounding box 
+ * bounding box
  * key/value pairs of string with unit, e.g. '5px'
  */
 silex.model.Component.prototype.setBoundingBox = function (boundingBox){
@@ -411,7 +422,7 @@ silex.model.Component.prototype.setEditable = function(isEditable, opt_element){
 	else{
 		$('[data-silex-type="container"]', opt_element).editable('destroy');
 	    $('[data-silex-type="element"]', opt_element).editable('destroy');
-	
+
 		// the root element (is not editable when it is the stage, i.e. has no css class 'editable-style')
 		if (this.getEditable(opt_element)){
 			$(opt_element).editable('destroy');
@@ -531,7 +542,7 @@ silex.model.Component.prototype.applyStateToAllComponents = function(state){
 }
 /**
  * component creation
- * create a DOM element, attach it to this container 
+ * create a DOM element, attach it to this container
  * and returns a new component for the element
  */
 silex.model.Component.prototype.addContainer = function(){
@@ -542,7 +553,7 @@ silex.model.Component.prototype.addContainer = function(){
 	var div = goog.dom.createElement('div');
 	div.className = 'editable-style';
 	div.setAttribute('data-silex-type', silex.model.Component.TYPE_CONTAINER)
-	// attach it 
+	// attach it
 	var container = this.getBackgroundElement();
 	goog.dom.appendChild(container, div);
 	// make it editable
@@ -566,7 +577,7 @@ silex.model.Component.prototype.addContainer = function(){
 }
 /**
  * component creation
- * create a DOM element, attach it to this container 
+ * create a DOM element, attach it to this container
  * and returns a new component for the element
  */
 silex.model.Component.prototype.addText = function(){
@@ -579,7 +590,7 @@ silex.model.Component.prototype.addText = function(){
 	div.setAttribute('data-silex-type', silex.model.Component.TYPE_ELEMENT)
 	div.setAttribute('data-silex-sub-type', silex.model.Component.SUBTYPE_TEXT)
 	div.innerHTML = 'New text box';
-	// attach it 
+	// attach it
 	var container = this.getBackgroundElement();
 	goog.dom.appendChild(container, div);
 	// make it editable
@@ -603,7 +614,7 @@ silex.model.Component.prototype.addText = function(){
 }
 /**
  * component creation
- * create a DOM element, attach it to this container 
+ * create a DOM element, attach it to this container
  * and returns a new component for the element
  */
 silex.model.Component.prototype.addHtml = function(){
@@ -616,7 +627,7 @@ silex.model.Component.prototype.addHtml = function(){
 	div.setAttribute('data-silex-type', silex.model.Component.TYPE_ELEMENT)
 	div.setAttribute('data-silex-sub-type', silex.model.Component.SUBTYPE_HTML)
 	div.innerHTML = '<p>New HTML box</p>';
-	// attach it 
+	// attach it
 	var container = this.getBackgroundElement();
 	goog.dom.appendChild(container, div);
 	// make it editable
@@ -640,7 +651,7 @@ silex.model.Component.prototype.addHtml = function(){
 }
 /**
  * component creation
- * create a DOM element, attach it to this container 
+ * create a DOM element, attach it to this container
  * and returns a new component for the element
  */
 silex.model.Component.prototype.addImage = function(url){
@@ -674,7 +685,7 @@ silex.model.Component.prototype.addImage = function(url){
 
 	// start loading
 	img.setAttribute('src', url);
-	
+
 	img.onload = function (e){
 		// set container size to match image size
 		bb.width = img.offsetWidth + 'px';

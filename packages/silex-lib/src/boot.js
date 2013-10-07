@@ -137,7 +137,8 @@ silex.boot = function() {
 		// now create an empty file to let the user start using Silex
 		file.newFile(function () {
 			// debug: insert a text field
-			// controller.menuCallback({type:'insert.text'});
+			//controller.menuCallback({type:'insert.text'});
+			//controller.menuCallback({type:'insert.container'});
 
 /* *
 			// debug: load a file
