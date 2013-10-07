@@ -127,6 +127,14 @@
 		<div class="silex-texteditor"></div>
 	</div>
 	<script type="text/javascript">
+		// redirect /silex to /silex/
+		if(window.location.href.slice(-5) === 'silex'){
+			console.log('redirect', window.location.href, window.location.href+'/');
+			window.location.href += '/';
+		}
+		// remove hash added by cloud explorer
+		window.location.hash = '';
+		// boot silex app
 		silex.boot();
 	</script>
 </body>
