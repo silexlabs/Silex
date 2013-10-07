@@ -1,10 +1,10 @@
 //////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
-// 
+//
 // Copyright (c) 2012 Silex Labs
 // http://www.silexlabs.org/
-// 
+//
 // Silex is available under the GPL license
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
@@ -18,13 +18,13 @@ goog.provide('silex.model.File');
  * @constructor
  */
 silex.model.File = function(
-	workspace, 
-	menu, 
-	stage, 
-	pageTool, 
-	propertiesTool, 
-	htmlEditor, 
-	textEditor, 
+	workspace,
+	menu,
+	stage,
+	pageTool,
+	propertiesTool,
+	htmlEditor,
+	textEditor,
 	fileExplorer){
 
 	// store references to the view components
@@ -108,7 +108,7 @@ silex.model.File.prototype.newFile = function (cbk, opt_errCbk){
  * will not be able to save
  */
 silex.model.File.prototype.openFromUrl = function (url, cbk, opt_errCbk){
-	silex.service.CloudStorage.getInstance().loadLocal(url, 
+	silex.service.CloudStorage.getInstance().loadLocal(url,
 	goog.bind(function(rawHtml){
 		this.setUrl(url);
 		this.setHtml(rawHtml);
@@ -152,7 +152,7 @@ silex.model.File.prototype.open = function(cbk, opt_errCbk){
 	// let the user choose the file
 	this.fileExplorer.openDialog(
 	goog.bind(function (blob) {
-		silex.service.CloudStorage.getInstance().load(blob, 
+		silex.service.CloudStorage.getInstance().load(blob,
 		goog.bind(function(rawHtml){
 			// update model
 			this.close();
@@ -160,7 +160,7 @@ silex.model.File.prototype.open = function(cbk, opt_errCbk){
 			this.setBlob(blob);
 			this.setHtml(rawHtml);
 		}, this), opt_errCbk);
-	}, this), 
+	}, this),
 	['text/html', 'text/plain'], opt_errCbk);
 	this.workspace.invalidate();
 }
@@ -272,7 +272,7 @@ silex.model.File.prototype.setHtml = function(rawHtml){
 	}
 	// use lower case to find head and body tags
 	var lowerCaseHtml = rawHtml.toLowerCase();
-	// split head and body tags 
+	// split head and body tags
 	var headOpenIdx = lowerCaseHtml.indexOf("<head>");
 	if (headOpenIdx == -1) headOpenIdx = lowerCaseHtml.indexOf("<head ");
 	var headCloseIdx = lowerCaseHtml.indexOf("</head>");
@@ -309,7 +309,7 @@ silex.model.File.prototype.setHtml = function(rawHtml){
 	// update model
 	goog.array.forEach(pagesNames, function(pageName) {
 		var page = new silex.model.Page(
-			pageName, 
+			pageName,
 			this.workspace,
 			this.menu,
 			this.stage,

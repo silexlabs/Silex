@@ -40,8 +40,6 @@ com silex
 Silex
 
 * ajout d'éléments sur la page en cours : seulement si aucun parent n'est un "calque"
-- notifier les erreur et succes
-- redirect /silex to /silex/
 * Verif extension de fichiers (open file, insert image)
 * === instead of ==
 - autres bugs
