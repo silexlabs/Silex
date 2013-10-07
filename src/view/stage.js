@@ -1,10 +1,10 @@
 //////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
-// 
+//
 // Copyright (c) 2012 Silex Labs
 // http://www.silexlabs.org/
-// 
+//
 // Silex is available under the GPL license
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
@@ -64,6 +64,12 @@ silex.view.Stage = function(element, cbk){
 			type:'change'
 		});
 		this.isDragging = false;
+	}, false, this);
+	// dispatch event when an element is dropped in a new container
+	goog.events.listen(this.element, 'newContainer', function(e){
+		if (this.onStatus) this.onStatus({
+			type:'newContainer'
+		});
 	}, false, this);
 	// detect double click
 	goog.events.listen(this.element, goog.events.EventType.DBLCLICK, function(e){
@@ -125,7 +131,7 @@ silex.view.Stage.prototype.removePage = function(page){
 			$(this).removeClass(page.name);
 
 			var pagesOfElement = silex.model.Page.getPagesForElement(this);
-			if (pagesOfElement.length <= 0) 
+			if (pagesOfElement.length <= 0)
 				$(this).removeClass(silex.model.Page.PAGE_CLASS);
 		}
 	);

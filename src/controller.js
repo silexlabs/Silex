@@ -319,6 +319,23 @@ silex.Controller.prototype.stageCallback = function(event){
 			);
 			this.propertiesTool.redraw();
 			break;
+		case 'newContainer':
+			// an element is dropped in a new container
+			var component = this.selection.getComponent();
+			// if it is dropped in a container which is visible only on some pages,
+			// then the dropped element should be visible everywhere, i.e. in the same pages as its parent
+			if (component.getFirstPageableParent()!=null){
+				// get all the pages in which this element is visible
+				var pages = silex.model.Page.getPagesForElement(component.element);
+				for (idx in pages){
+					var page = pages[idx];
+					// remove the component from the page
+					page.removeComponent(component);
+				}
+				// redraw the tool box in order to reflect the changes
+				this.propertiesTool.redraw();
+			}
+			break;
 		case 'edit':
 			// size or position of the element has changed
 			this.editComponent();

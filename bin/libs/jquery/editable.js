@@ -74,21 +74,21 @@ $.widget('silexlabs.editable', {
 			this.element.droppable({
 				// prevent propagation
 				greedy: true,
-				
+
 				drop: function( event, ui ) {
 					// reference to the elements
-					var dropped = ui.draggable;
-					var droppedFrom = $(dropped).parent();
+					var dropped = ui.draggable[0];
+					var droppedFrom = $(dropped).parent()[0];
 					var droppedTo = this;
 
 					// compute new position in the container
 
 					// keep initial position
 					var initialOffset = $(dropped).offset();
-					
+
 					// move to the new container
 					$(dropped).detach().appendTo($(droppedTo));
-					
+
 					// compute new position
 					var newOffset = $(dropped).offset();
 					var deltaTop = initialOffset.top - newOffset.top;
@@ -98,6 +98,17 @@ $.widget('silexlabs.editable', {
 
 					// put back at the same position
 					$(dropped).css({top: newPosTop+'px',left: newPosLeft+'px'});
+
+					// dispatch event to notify that the element changed container
+					if (droppedTo !== droppedFrom){
+						// trigger an event the old fashion way because it has to be catched by old fashioned addEventListener
+						//$(dropped).trigger('newContainer', [dropped, droppedTo, droppedFrom]);
+						var event = document.createEvent('Event');
+						event.initEvent('newContainer', true, true);
+						dropped.dispatchEvent(event);
+					}
+					else{
+					}
 		    	}
 		    });
 		    this.element.droppable('enable');
