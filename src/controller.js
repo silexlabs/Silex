@@ -1,10 +1,10 @@
 //////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
-// 
+//
 // Copyright (c) 2012 Silex Labs
 // http://www.silexlabs.org/
-// 
+//
 // Silex is available under the GPL license
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
@@ -16,15 +16,15 @@ goog.provide('silex.Controller');
  * @constructor
  */
 silex.Controller = function(
-	workspace, 
-	menu, 
-	stage, 
-	pageTool, 
-	propertiesTool, 
-	htmlEditor, 
-	textEditor, 
-	fileExplorer, 
-	file, 
+	workspace,
+	menu,
+	stage,
+	pageTool,
+	propertiesTool,
+	htmlEditor,
+	textEditor,
+	fileExplorer,
+	file,
 	selection){
 
 	// logger
@@ -76,7 +76,7 @@ silex.Controller.prototype.tracker;
 silex.Controller.prototype.workspace;
 /**
  * reference to the menu from the view
- * this.menu.menu is the actual closure component 
+ * this.menu.menu is the actual closure component
  */
 silex.Controller.prototype.menu;
 /**
@@ -122,29 +122,43 @@ silex.Controller.prototype.menuCallback = function(event){
 	this.tracker.trackAction('user-action/menu/'+event.type, null, 4);
 	switch(event.type){
 		case 'title.changed':
-			var name = window.prompt('What is the name of your website?', this.menu.getWebsiteName());
-			if (name) this.file.setTitle(name);
+			alertify.prompt('What is the name of your website?', goog.bind(function (accept, name) {
+				console.log('prompt return', arguments);
+				if (accept) this.file.setTitle(name);
+			}, this), this.menu.getWebsiteName());
 			break;
 		case 'file.new':
 			this.file.newFile();
 			break;
 		case 'file.saveas':
-			this.file.saveAs(null, 
+			this.file.saveAs(
+				goog.bind(function () {
+					this.notifySuccess('Your file is saved.');
+				}, this),
 				goog.bind(function (error) {
+					this.notifyError(error);
 					this.tracker.trackAction('error/menu/'+event.type, JSON.stringify(error), 0);
 				}, this));
 			break;
 
 		case 'file.save':
 			if (this.file.getBlob()==null){
-				this.file.saveAs(null,
+				this.file.saveAs(
+				goog.bind(function () {
+					this.notifySuccess('Your file is saved.');
+				}, this),
 				goog.bind(function (error) {
+					this.notifyError(error);
 					this.tracker.trackAction('error/menu/'+event.type, JSON.stringify(error), 0);
 				}, this));
 			}
 			else{
-				this.file.save(null, 
-					goog.bind(function (error) {
+				this.file.save(
+				goog.bind(function () {
+					this.notifySuccess('Your file is saved.');
+				}, this),
+				goog.bind(function (error) {
+					this.notifyError(error);
 					this.tracker.trackAction('error/menu/'+event.type, JSON.stringify(error), 0);
 				}, this));
 			}
@@ -152,7 +166,7 @@ silex.Controller.prototype.menuCallback = function(event){
 		case 'file.open':
 			this.file.open(goog.bind(function () {
 				this.selection.setComponent(this.file.getStageComponent());
-			}, this), 
+			}, this),
 			goog.bind(function (error) {
 				this.tracker.trackAction('error/menu/'+event.type, JSON.stringify(error), 0);
 			}, this));
@@ -218,6 +232,7 @@ silex.Controller.prototype.menuCallback = function(event){
 				}, this),
 				['image/*', 'text/plain'],
 				goog.bind(function (error) {
+					this.notifyError(error);
 					this.tracker.trackAction('error/menu/'+event.type, JSON.stringify(error), 0);
 				}, this)
 			);
@@ -233,7 +248,7 @@ silex.Controller.prototype.menuCallback = function(event){
 		case 'edit.delete.selection':
 			// delete component
 			this.file.getStageComponent().remove(this.selection.getComponent());
-			// select stage 
+			// select stage
 			this.selection.setComponent(this.file.getStageComponent());
 			break;
 		case 'edit.delete.page':
@@ -281,17 +296,17 @@ silex.Controller.prototype.stageCallback = function(event){
 			if (oldSelectedComp) oldSelectedComp.setContext(silex.model.Component.CONTEXT_NORMAL);
 			// select the new element
 			if (event.element){
-				// update the 
+				// update the
 				this.selection.setComponent(
 					new silex.model.Component(
-						event.element, 
+						event.element,
 						this.selection.getContext()
 				));
 				// update context for the selection
 				this.selection.getComponent().setContext(this.selection.getContext());
 			}
 			else{
-				// select stage 
+				// select stage
 				this.selection.setComponent(this.file.getStageComponent());
 			}
 			break;
@@ -344,38 +359,42 @@ silex.Controller.prototype.renamePage = function(page){
  * remvoe a given page
  */
 silex.Controller.prototype.removePage = function(page){
-	if (window.confirm('I am about to delete the page "'+page.name+'", are you sure?')){
-		// update model
-		page.detach();
-	}
+	alertify.confirm('I am about to delete the page "'+page.name+'", are you sure?', function(accept){
+		if (accept){
+			// update model
+			page.detach();
+		}
+	});
 }
 /**
  * input a page name
  */
-silex.Controller.prototype.getUserInputPageName = function(defaultName){
-	var pageName = window.prompt('Enter a name for your page!', defaultName);
-	if (pageName && pageName.length>0){
-		// cleanup the page name
-		pageName = pageName.replace(/\ /g,'-')
-			.replace(/\./g,'-')
-			.replace(/'/g,'-')
-			.replace(/"/g,'-')
-			.toLowerCase();
-		// check if a page with this name exists
-		var pages = silex.model.Page.getPages();
-		var exists = null;
-		goog.array.forEach(pages, function(page) {
-			if (page.name == pageName)
-				exists = page;
-		}, this);
-		if (exists){
-			exists.open();
+silex.Controller.prototype.getUserInputPageName = function(defaultName, cbk){
+	alertify.prompt('Enter a name for your page!',
+	function(accept, pageName){
+		if (accept && pageName && pageName.length>0){
+			// cleanup the page name
+			pageName = pageName.replace(/\ /g,'-')
+				.replace(/\./g,'-')
+				.replace(/'/g,'-')
+				.replace(/"/g,'-')
+				.toLowerCase();
+			// check if a page with this name exists
+			var pages = silex.model.Page.getPages();
+			var exists = null;
+			goog.array.forEach(pages, function(page) {
+				if (page.name == pageName)
+					exists = page;
+			});
+			if (exists){
+				exists.open();
+			}
+			else{
+				cbk(pageName);
+			}
 		}
-		else{
-			return pageName;
-		}
-	}
-	return null;
+		cbk(null);
+	}, defaultName);
 }
 /**
  * create a page
@@ -385,7 +404,7 @@ silex.Controller.prototype.createPage = function(){
 	if(pageName){
 		// create the page model
 		var page = new silex.model.Page(
-			pageName, 
+			pageName,
 			this.workspace,
 			this.menu,
 			this.stage,
@@ -419,6 +438,7 @@ silex.Controller.prototype.propertiesToolCallback = function(event){
 			}, this),
 			['image/*', 'text/plain'],
 			goog.bind(function (error) {
+				this.notifyError(error);
 				this.tracker.trackAction('error/properties-tool/'+event.type, JSON.stringify(error), 0);
 			}, this)
 			);
@@ -480,10 +500,25 @@ silex.Controller.prototype.editComponent = function(){
 		}, this),
 		['image/*', 'text/plain'],
 			goog.bind(function (error) {
+				this.notifyError(error);
 				this.tracker.trackAction('error/edit-component/'+event.type, JSON.stringify(error), 0);
 			}, this)
 		);
 		this.workspace.invalidate();
 		break;
 	}
+}
+/**
+ * notify the user
+ */
+silex.Controller.prototype.notifySuccess = function(message){
+	console.info(message);
+	alertify.success(message);
+}
+/**
+ * notify the user
+ */
+silex.Controller.prototype.notifyError = function(message){
+	console.error(message);
+	alertify.error(message);
 }

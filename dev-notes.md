@@ -40,17 +40,18 @@ com silex
 Silex
 
 * ajout d'éléments sur la page en cours : seulement si aucun parent n'est un "calque"
+- notifier les erreur et succes
+- redirect /silex to /silex/
 * Verif extension de fichiers (open file, insert image)
+* === instead of ==
+- autres bugs
+- readme
+- ?système de logs/bug report http://jserrlog.appspot.com/
 * ajout max/min width/height, pour rendre bottom/right utile
 * Ajout son et video??
 
-- suppr gdrive
-- notifier les erreur et succes
-- readme
-- autres bugs
-- système de logs/bug report http://jserrlog.appspot.com/
-
-
+unifile
+- readme https://npmjs.org/package/social-cms-backend
 
 Bugs
 
