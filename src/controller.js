@@ -142,7 +142,7 @@ silex.Controller.prototype.menuCallback = function(event){
 			break;
 
 		case 'file.save':
-			if (this.file.getBlob()==null){
+			if (!this.file.getBlob()){
 				this.file.saveAs(
 				goog.bind(function () {
 					this.notifySuccess('Your file is saved.');
@@ -192,7 +192,7 @@ silex.Controller.prototype.menuCallback = function(event){
 			}
 			break;
 		case 'tools.debug.activate':
-			if (this.logger.getLevel() != silex.Logger.ALL){
+			if (this.logger.getLevel() !== silex.Logger.ALL){
 				this.logger.setLevel(silex.Logger.ALL);
 			}
 			else{
@@ -324,7 +324,7 @@ silex.Controller.prototype.stageCallback = function(event){
 			var component = this.selection.getComponent();
 			// if it is dropped in a container which is visible only on some pages,
 			// then the dropped element should be visible everywhere, i.e. in the same pages as its parent
-			if (component.getFirstPageableParent()!=null){
+			if (component.getFirstPageableParent()!==null){
 				// get all the pages in which this element is visible
 				var pages = silex.model.Page.getPagesForElement(component.element);
 				for (idx in pages){
@@ -402,7 +402,7 @@ silex.Controller.prototype.getUserInputPageName = function(defaultName, cbk){
 			var pages = silex.model.Page.getPages();
 			var exists = null;
 			goog.array.forEach(pages, function(page) {
-				if (page.name == pageName)
+				if (page.name === pageName)
 					exists = page;
 			});
 			if (exists){

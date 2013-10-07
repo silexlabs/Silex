@@ -1,10 +1,10 @@
 //////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
-// 
+//
 // Copyright (c) 2012 Silex Labs
 // http://www.silexlabs.org/
-// 
+//
 // Silex is available under the GPL license
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
@@ -104,7 +104,7 @@ silex.view.propertiesTool.BgPane.prototype.buildUi = function(){
 	this.bgColorPicker.setTooltip('Click to select color');
 	this.bgColorPicker.render(goog.dom.getElementByClass('color-bg-button'));
 	goog.events.listen(this.bgColorPicker, goog.ui.Component.EventType.ACTION, this.onBgColorButton, false, this);
-	
+
 	// init palette
 	this.hsvPalette.setColorRgbaHex('#FFFFFFFF');
 	this.setColorPaletteVisibility(false);
@@ -151,7 +151,7 @@ silex.view.propertiesTool.BgPane.prototype.buildUi = function(){
 	}, false, this);
 }
 /**
- * display the style of the element being edited 
+ * display the style of the element being edited
  */
 silex.view.propertiesTool.BgPane.prototype.setStyle = function(style){
 	this.style = style;
@@ -166,7 +166,7 @@ silex.view.propertiesTool.BgPane.prototype.redraw = function(){
 
 		// BG color
 		var color = this.style.backgroundColor;
-		if (color == undefined || color == 'transparent' || color == ''){
+		if (color === undefined || color === 'transparent' || color === ''){
 			this.transparentBgCheckbox.setChecked(true);
 			this.bgColorPicker.setEnabled(false);
 			this.setColorPaletteVisibility(false);
@@ -180,7 +180,7 @@ silex.view.propertiesTool.BgPane.prototype.redraw = function(){
 			this.hsvPalette.setColorRgbaHex(hex);
 		}
 		// BG image
-		if (this.style.backgroundImage!=null && this.style.backgroundImage!='none' && this.style.backgroundImage!=''){
+		if (this.style.backgroundImage!==null && this.style.backgroundImage!=='none' && this.style.backgroundImage!==''){
 			this.bgClearBgImage.setEnabled(true);
 		}
 		else{
@@ -188,7 +188,7 @@ silex.view.propertiesTool.BgPane.prototype.redraw = function(){
 		}
 		// workaround "backgroundImage not set"
 		this.bgClearBgImage.setEnabled(true);
-		if (this.style.backgroundAttachement != null){
+		if (this.style.backgroundAttachement){
 			switch(this.style.backgroundAttachement){
 				case 'scroll':
 					this.attachementComboBox.setSelectedIndex(0);
@@ -204,7 +204,7 @@ silex.view.propertiesTool.BgPane.prototype.redraw = function(){
 		else{
 			this.attachementComboBox.setSelectedIndex(0);
 		}
-		if (this.style.backgroundPosition != null){
+		if (this.style.backgroundPosition){
 			var posArr = this.style.backgroundPosition.split(' ');
 			var vPosition = posArr[0];
 			var hPosition = posArr[1];
@@ -235,7 +235,7 @@ silex.view.propertiesTool.BgPane.prototype.redraw = function(){
 			this.vPositionComboBox.setSelectedIndex(0);
 			this.hPositionComboBox.setSelectedIndex(0);
 		}
-		if (this.style.backgroundRepeat != null){
+		if (this.style.backgroundRepeat){
 			switch(this.style.backgroundRepeat){
 				case 'repeat':
 					this.repeatComboBox.setSelectedIndex(0);
@@ -260,26 +260,26 @@ silex.view.propertiesTool.BgPane.prototype.redraw = function(){
 		this.isRedraw = false;
 	}
 }
-/** 
+/**
  * User has selected a color
  */
 silex.view.propertiesTool.BgPane.prototype.onColorChanged = function(event){
 	// update style
 	var color = silex.Helper.hexToRgba(this.hsvPalette.getColorRgbaHex());
-	if (this.style==null) this.style = {};
+	if (!this.style) this.style = {};
 	this.style.backgroundColor = color;
 	// notify the toolbox
 	this.styleChanged(this.style);
 	// redraw to reflect changes
 	this.redraw();
 }
-/** 
+/**
  * User has clicked on the color button
  * open or close the palete
  */
 silex.view.propertiesTool.BgPane.prototype.onBgColorButton = function(event){
 	// show the palette
-	if (this.getColorPaletteVisibility() == false){
+	if (this.getColorPaletteVisibility() === false){
 		this.hsvPalette.setColorRgbaHex(silex.Helper.rgbaToHex(this.style.backgroundColor));
 		this.setColorPaletteVisibility(true);
 	}
@@ -287,14 +287,14 @@ silex.view.propertiesTool.BgPane.prototype.onBgColorButton = function(event){
 		this.setColorPaletteVisibility(false);
 	}
 }
-/** 
+/**
  * User has clicked the transparent checkbox
  */
 silex.view.propertiesTool.BgPane.prototype.onTransparentChanged = function(event){
 	// update style
-	if (this.transparentBgCheckbox.getChecked()==false){
+	if (this.transparentBgCheckbox.getChecked()===false){
 		var color = silex.Helper.hexToRgba(this.hsvPalette.getColorRgbaHex());
-		if (color==null) {
+		if (!color) {
 			//color='#FFFFFF';
 			color = 'rgba(255, 255, 255, 1)'
 		}
@@ -308,14 +308,14 @@ silex.view.propertiesTool.BgPane.prototype.onTransparentChanged = function(event
 	// redraw to reflect changes
 	this.redraw();
 }
-/** 
+/**
  * User has clicked the select image button
  */
 silex.view.propertiesTool.BgPane.prototype.onSelectImageButton = function(event){
 	this.selectImage();
 }
-/** 
- * User has selected an image 
+/**
+ * User has selected an image
  * called by controller
  */
 silex.view.propertiesTool.BgPane.prototype.setBgImage = function(url){
@@ -327,7 +327,7 @@ silex.view.propertiesTool.BgPane.prototype.setBgImage = function(url){
 	// redraw to reflect changes
 	this.redraw();
 }
-/** 
+/**
  * Property changed callback
  */
 silex.view.propertiesTool.BgPane.prototype.setBgImageAttachement = function(value){
@@ -338,7 +338,7 @@ silex.view.propertiesTool.BgPane.prototype.setBgImageAttachement = function(valu
 	// redraw to reflect changes
 	this.redraw();
 }
-/** 
+/**
  * Property changed callback
  */
 silex.view.propertiesTool.BgPane.prototype.setBgImagePosition = function(value){
@@ -349,7 +349,7 @@ silex.view.propertiesTool.BgPane.prototype.setBgImagePosition = function(value){
 	// redraw to reflect changes
 	this.redraw();
 }
-/** 
+/**
  * Property changed callback
  */
 silex.view.propertiesTool.BgPane.prototype.setBgImageRepeat = function(value){
@@ -360,7 +360,7 @@ silex.view.propertiesTool.BgPane.prototype.setBgImageRepeat = function(value){
 	// redraw to reflect changes
 	this.redraw();
 }
-/** 
+/**
  * User has clicked the clear image button
  */
 silex.view.propertiesTool.BgPane.prototype.onClearImageButton = function(event){
@@ -371,14 +371,14 @@ silex.view.propertiesTool.BgPane.prototype.onClearImageButton = function(event){
 	// redraw to reflect changes
 	this.redraw();
 }
-/** 
+/**
  * color palette visibility
  * do not set display to none, because the setColor then leave the color palette UI unchanged
  */
 silex.view.propertiesTool.BgPane.prototype.getColorPaletteVisibility = function(){
-	return goog.style.getStyle(this.hsvPalette.getElement(), 'visibility') != 'hidden';
+	return goog.style.getStyle(this.hsvPalette.getElement(), 'visibility') !== 'hidden';
 }
-/** 
+/**
  * color palette visibility
  * do not set display to none, because the setColor then leave the color palette UI unchanged
  */

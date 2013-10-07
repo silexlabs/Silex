@@ -1,10 +1,10 @@
 //////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
-// 
+//
 // Copyright (c) 2012 Silex Labs
 // http://www.silexlabs.org/
-// 
+//
 // Silex is available under the GPL license
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
@@ -15,13 +15,13 @@ goog.provide('silex.model.Page');
  * @constructor
  */
 silex.model.Page = function(
-	name, 
-	workspace, 
-	menu, 
-	stage, 
-	pageTool, 
-	propertiesTool, 
-	textEditor, 
+	name,
+	workspace,
+	menu,
+	stage,
+	pageTool,
+	propertiesTool,
+	textEditor,
 	fileExplorer){
 
 
@@ -104,7 +104,7 @@ silex.model.Page.getPageByName = function (pageName) {
 	var res = null;
 	var pages = silex.model.Page.getPages();
 	goog.array.forEach(pages, function(page) {
-		if(page.name == pageName){
+		if(page.name === pageName){
 			res = page;
 			return;
 		}
@@ -120,7 +120,7 @@ silex.model.Page.getPageIndex = function (page) {
 	var idx = 0;
 	var pages = silex.model.Page.getPages();
 	goog.array.forEach(pages, function(page2) {
-		if(page.name == page2.name){
+		if(page.name === page2.name){
 			res = idx;
 			return;
 		}
@@ -146,7 +146,7 @@ silex.model.Page.getPagesForElement = function(element){
 // instance methods
 ////////////////////////////////////////////////
 /**
- * open the given page of the site 
+ * open the given page of the site
  */
 silex.model.Page.prototype.open = function(){
     this.stage.openPage(this);
@@ -218,7 +218,7 @@ silex.model.Page.prototype.removeComponent = function(component){
 	if (goog.dom.classes.has(component.element, this.name))
 		goog.dom.classes.remove(component.element, this.name)
 
-	if (silex.model.Page.getPagesForElement(component.element).length==0){
+	if (silex.model.Page.getPagesForElement(component.element).length===0){
 		if (goog.dom.classes.has(component.element, silex.model.Page.PAGE_CLASS))
 			goog.dom.classes.remove(component.element, silex.model.Page.PAGE_CLASS)
 	}

@@ -114,7 +114,7 @@ silex.view.Stage.prototype.removePage = function(page){
 	// remove the DOM element
 	$('meta[name="page"]', this.headElement).each(
 		function () {
-			if (this.getAttribute('content')==page.name){
+			if (this.getAttribute('content')===page.name){
 				$(this).remove();
 		}
 	});
@@ -156,7 +156,7 @@ silex.view.Stage.prototype.renamePage = function(page, name){
 	// update the DOM element
 	$('meta[name="page"]', this.headElement).each(
 		function () {
-			if (this.getAttribute('content') == page.name){
+			if (this.getAttribute('content') === page.name){
 				this.setAttribute('content', name);
 		}
 	});
@@ -187,7 +187,7 @@ silex.view.Stage.prototype.openPage = function(page){
  * so that it is editable
  */
 silex.view.Stage.prototype.setBody = function(bodyHtml){
-	if (bodyHtml!='') console.warn('warning: you are supposed to use stageComponent.setHtml');
+	if (bodyHtml!=='') console.warn('warning: you are supposed to use stageComponent.setHtml');
 	this.bodyElement.innerHTML = bodyHtml;
 }
 /**

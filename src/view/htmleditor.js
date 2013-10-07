@@ -1,10 +1,10 @@
 //////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
-// 
+//
 // Copyright (c) 2012 Silex Labs
 // http://www.silexlabs.org/
-// 
+//
 // Silex is available under the GPL license
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
@@ -18,7 +18,7 @@ goog.provide('silex.view.HTMLEditor');
  */
 silex.view.HTMLEditor = function(element, cbk){
 	this.element = element;
-	
+
 	silex.Helper.loadTemplateFile('templates/htmleditor.html', element, function(){
 		this.initUI();
 		if (cbk) cbk();
@@ -49,7 +49,7 @@ silex.view.HTMLEditor.prototype.initUI = function () {
     //this.ace.setTheme("ace/theme/monokai");
     this.ace.getSession().setMode("ace/mode/html");
 	this.ace.getSession().on('change', goog.bind(function(e) {
-		if (this.iAmSettingValue == false){
+		if (this.iAmSettingValue === false){
 			var value = this.ace.getValue();
 			setTimeout(goog.bind(function(){
 				this.contentChanged();
@@ -82,7 +82,7 @@ silex.view.HTMLEditor.prototype.openEditor = function(initialHtml){
 	this.ace.resize();
 }
 /**
- * close text editor 
+ * close text editor
  */
 silex.view.HTMLEditor.prototype.closeEditor = function(){
 	// background

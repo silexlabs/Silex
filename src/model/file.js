@@ -274,10 +274,10 @@ silex.model.File.prototype.setHtml = function(rawHtml){
 	var lowerCaseHtml = rawHtml.toLowerCase();
 	// split head and body tags
 	var headOpenIdx = lowerCaseHtml.indexOf("<head>");
-	if (headOpenIdx == -1) headOpenIdx = lowerCaseHtml.indexOf("<head ");
+	if (headOpenIdx === -1) headOpenIdx = lowerCaseHtml.indexOf("<head ");
 	var headCloseIdx = lowerCaseHtml.indexOf("</head>");
 	var bodyOpenIdx = lowerCaseHtml.indexOf("<body>");
-	if (bodyOpenIdx == -1) bodyOpenIdx = lowerCaseHtml.indexOf("<body ");
+	if (bodyOpenIdx === -1) bodyOpenIdx = lowerCaseHtml.indexOf("<body ");
 	var bodyCloseIdx = lowerCaseHtml.indexOf("</body>");
 
 	if (headOpenIdx > -1 && headCloseIdx > -1){
@@ -376,7 +376,7 @@ silex.model.File.prototype.getHtml = function(){
  * view this file in a new window
  */
 silex.model.File.prototype.view = function(){
-	if (this.getBlob()==null){
+	if (!this.getBlob()){
 		alertify.confirm('The publication has to be saved first. Save the publication now?', goog.bind(function(accept){
 			if (accept){
 				this.saveAs(goog.bind(function () {

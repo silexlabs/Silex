@@ -1,10 +1,10 @@
 //////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
-// 
+//
 // Copyright (c) 2012 Silex Labs
 // http://www.silexlabs.org/
-// 
+//
 // Silex is available under the GPL license
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
@@ -77,7 +77,7 @@ silex.view.propertiesTool.PagePane.prototype.buildUi = function(){
 	goog.events.listen(this.linkInputTextField, goog.editor.Field.EventType.DELAYEDCHANGE, this.onLinkTextChanged, false, this);
 }
 /**
- * display the propertis of the component being edited 
+ * display the propertis of the component being edited
  */
 silex.view.propertiesTool.PagePane.prototype.setComponent = function(component){
 	this.component = component;
@@ -140,15 +140,15 @@ silex.view.propertiesTool.PagePane.prototype.setPages = function(data){
  * the user changed the link drop down
  */
 silex.view.propertiesTool.PagePane.prototype.onLinkChanged = function(event){
-	if (this.linkDropdown.value=='none'){
+	if (this.linkDropdown.value==='none'){
 		this.component.removeLink();
 	}
-	else if (this.linkDropdown.value=='custom'){
+	else if (this.linkDropdown.value==='custom'){
 		// keep previous link value
 		var prevVal = this.linkInputTextField.getCleanContents();
 		// reset if it was an internal link
-		if (prevVal.indexOf('#')==0) prevVal = '';
-		if (prevVal=='') prevVal = 'http://silex.io';
+		if (prevVal.indexOf('#')===0) prevVal = '';
+		if (prevVal==='') prevVal = 'http://silex.io';
 		// store in the href attr
 		this.component.setLink(prevVal);
 	}
@@ -189,13 +189,13 @@ silex.view.propertiesTool.PagePane.prototype.redraw = function(){
 		}, this);
 
 		// refresh the link inputs
-		// default selection 
+		// default selection
 		var hrefAttr = this.component.getLink();
-		if (hrefAttr==null){
+		if (!hrefAttr){
 			this.linkDropdown.value='none';
 		}
 		else{
-			if (hrefAttr.indexOf('#')==0 && silex.model.Page.getPageByName(hrefAttr.substr(1))){
+			if (hrefAttr.indexOf('#')===0 && silex.model.Page.getPageByName(hrefAttr.substr(1))){
 				// case of an internal link
 				// select a page
 				this.linkDropdown.value = hrefAttr.substr(1);
@@ -206,9 +206,9 @@ silex.view.propertiesTool.PagePane.prototype.redraw = function(){
 				this.linkDropdown.value='custom';
 			}
 		}
-		// visibility of the text edit 
+		// visibility of the text edit
 		var linkInputElement = goog.dom.getElementByClass('link-input-text', this.element);
-		if(this.linkDropdown.value=='custom'){
+		if(this.linkDropdown.value==='custom'){
 			goog.style.setStyle(linkInputElement, 'display', 'inherit');
 		}
 		else{

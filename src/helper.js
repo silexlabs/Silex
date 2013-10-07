@@ -1,10 +1,10 @@
 //////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
-// 
+//
 // Copyright (c) 2012 Silex Labs
 // http://www.silexlabs.org/
-// 
+//
 // Silex is available under the GPL license
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
@@ -48,7 +48,7 @@ silex.Helper.resolveTemplate = function(element, templateHtml, data){
  */
 silex.Helper.getRelativePath = function(url, base){
     // check if they are both absolute urls
-    if(base.indexOf('http')!=0 || url.indexOf('http')!=0){
+    if(base.indexOf('http')!==0 || url.indexOf('http')!==0){
         console.warn('Warning: the URL is not absolute ', url, base);
         return url;
     }
@@ -66,7 +66,7 @@ silex.Helper.getRelativePath = function(url, base){
     baseArr.shift();
     baseArr.shift();
     // check if they are on the same domain
-    if(baseArr[0]!=urlArr[0]){
+    if(baseArr[0]!==urlArr[0]){
         console.warn('Warning: the URL is not on the same domain as the base url ', url, base);
         return url;
     }
@@ -74,12 +74,12 @@ silex.Helper.getRelativePath = function(url, base){
     var baseElement;
     var urlElement;
     while (baseArr.length>0 && urlArr.length>0
-        && baseArr[0]==urlArr[0]){
+        && baseArr[0]===urlArr[0]){
         baseArr.shift();
         urlArr.shift();
     }
-    
-    // as many '../' as there are folders left in the base url 
+
+    // as many '../' as there are folders left in the base url
     var relativePath = '';
     for (var idx = 0; idx<baseArr.length; idx++){
         relativePath += '../';
@@ -94,7 +94,7 @@ silex.Helper.getRelativePath = function(url, base){
     return relativePath;
 }
 /**
- * convert relative to absolute url 
+ * convert relative to absolute url
  * use http://docs.closure-library.googlecode.com/git/class_goog_Uri.html
  */
 silex.Helper.getAbsolutePath = function(url, base){
