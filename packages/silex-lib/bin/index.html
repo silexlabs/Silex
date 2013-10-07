@@ -66,6 +66,11 @@
 	<script type="text/javascript" src="libs/jquery/editable.js"></script>
 	<script type="text/javascript" src="libs/jquery/pageable.js"></script>
 
+	<!-- alertify.js -->
+	<script type="text/javascript" src="libs/alertify/alertify.min.js" ></script>
+	<link rel="stylesheet" href="libs/alertify/alertify.core.css" />
+	<link rel="stylesheet" href="libs/alertify/alertify.bootstrap.css" />
+
 	<!-- libs -->
 	<script type="text/javascript" src="libs/handlebars.js"></script>
 	<script type="text/javascript" src="libs/ace/ace.js" ></script>
@@ -81,6 +86,14 @@
 	<script type="text/javascript" src="js/admin.js"></script>
 	<script type="text/javascript" src="js/closure-patches.js"></script>
 	<script type="text/javascript">
+		// redirect /silex to /silex/
+		if(window.location.href.slice(-5) === 'silex'){
+			console.log('redirect', window.location.href, window.location.href+'/');
+			window.location.href += '/';
+		}
+		// remove hash added by cloud explorer
+		window.location.hash = '';
+		// boot silex app
 		silex.boot();
 	</script>
 </body>
