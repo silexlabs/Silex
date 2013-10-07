@@ -159,9 +159,20 @@ Contextual menu on the elements (menu bar under the menu like google?)
 ###v2.0.0beta1
 
 Continuous integration
+
 * jshint, PhantomJS, jenkins, Selenium
 * unit tests
 * functional tests
+
+Profesionnal installation
+
+* bower?
+
+Unifile archi
+
+* Should be a nodejs module
+* Silex ande CE would use it as a middleware
+* No more strange system for config in unifle?
 
 Debuging
 
@@ -209,4 +220,8 @@ Packaging / distribution
 
 
 * mobile optimized version of Silex editor
+
+* sites dynamiques ou administrables
+Google mbaas
+Ou un cms backend only
 

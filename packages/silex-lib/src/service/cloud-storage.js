@@ -57,11 +57,12 @@ silex.service.CloudStorage.prototype.save = function(blob, rawData, cbk, opt_err
 		// workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
 		new goog.async.Delay(function () {
 			if (cbk) cbk();
-		}, 10, this).start();
+		}, 10).start();
 	},
 	function(FPError){
 		console.error(FPError);
 		if (opt_errCbk){
+			console.error(FPError);
 			opt_errCbk(FPError);
 		}
 	});
@@ -81,11 +82,12 @@ silex.service.CloudStorage.prototype.load = function(blob, cbk, opt_errCbk){
 		// workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
 		new goog.async.Delay(function () {
 			if (cbk) cbk(data);
-		}, 10, this).start();
+		}, 10).start();
 	},
 	function(FPError){
 		console.error(FPError);
 		if (opt_errCbk){
+			console.error(FPError);
 			opt_errCbk(FPError);
 		}
 	});
@@ -102,12 +104,13 @@ silex.service.CloudStorage.prototype.loadLocal = function(url, cbk, opt_errCbk){
 			// workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
 			new goog.async.Delay(function () {
 				if (cbk) cbk(rawHtml);
-			}, 10, this).start();
+			}, 10).start();
 		}
 		else{
 			var message = xhr.getLastError();
 			console.error(message, xhr, xhr.isSuccess(), xhr.getStatus(), xhr.headers.toString());
 			if (opt_errCbk){
+				console.error(FPError);
 				opt_errCbk(message);
 			}
 		}
