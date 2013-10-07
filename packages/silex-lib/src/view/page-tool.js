@@ -1,10 +1,10 @@
 //////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
-// 
+//
 // Copyright (c) 2012 Silex Labs
 // http://www.silexlabs.org/
-// 
+//
 // Silex is available under the GPL license
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
@@ -108,14 +108,14 @@ silex.view.PageTool.prototype.selectionChanged = function(page){
 	});
 }
 /**
- * set selection 
+ * set selection
  */
 silex.view.PageTool.prototype.setSelectedItem = function(page, notify){
 	var idx = silex.model.Page.getPageIndex(page);
 	this.setSelectedIndex(idx, notify);
 }
 /**
- * get selection 
+ * get selection
  */
 silex.view.PageTool.prototype.getSelectedItem = function(){
 	if (this.pages.length > this.selectedIndex){
@@ -137,7 +137,7 @@ silex.view.PageTool.prototype.getCellIndex = function (element) {
 	return -1;
 }
 /**
- * set the selection of pages 
+ * set the selection of pages
  * @param 	notify	if true, then notify by calling the onChanged callback
  */
 silex.view.PageTool.prototype.setSelectedIndex = function(index, notify){
@@ -146,7 +146,7 @@ silex.view.PageTool.prototype.setSelectedIndex = function(index, notify){
 	var that = this;
 	var idx = 0;
 	$( '.page-container', this.element ).each(function() {
-		if(index == idx){
+		if(index === idx){
 			$(this).addClass('ui-selected');
 		}
 		else{

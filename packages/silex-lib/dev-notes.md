@@ -39,8 +39,6 @@ com silex
 
 Silex
 
-* ajout d'éléments sur la page en cours : seulement si aucun parent n'est un "calque"
-* Verif extension de fichiers (open file, insert image)
 * === instead of ==
 - autres bugs
 - readme

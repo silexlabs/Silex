@@ -1,10 +1,10 @@
 //////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
-// 
+//
 // Copyright (c) 2012 Silex Labs
 // http://www.silexlabs.org/
-// 
+//
 // Silex is available under the GPL license
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
@@ -29,7 +29,7 @@ silex.view.Workspace = function(element, menu, stage, pageTool, propertiesTool, 
 	this.htmlEditor = htmlEditor;
 	this.textEditor = textEditor;
 	this.fileExplorer = fileExplorer;
-	
+
 	this.viewport = new goog.dom.ViewportSizeMonitor();
 
 	goog.events.listen(this.viewport, goog.events.EventType.RESIZE, function(e){
@@ -83,7 +83,7 @@ silex.view.Workspace.prototype.isDirty;
  * invalidation mechanism
  */
 silex.view.Workspace.prototype.invalidate = function(){
-	if (this.isDirty == false){
+	if (this.isDirty === false){
 		this.isDirty = true;
 		this.redraw();
 	}
@@ -93,12 +93,12 @@ silex.view.Workspace.prototype.invalidate = function(){
  * invalidation mechanism
  */
 silex.view.Workspace.prototype.redraw = function(){
-	if (this.isDirty == false){
+	if (this.isDirty === false){
 		console.warn('Do not call redraw directly, use invalidate() instead');
 	}
 	var that = this;
-	setTimeout(function() { 
-		that.doRedraw(); 
+	setTimeout(function() {
+		that.doRedraw();
 	}, 400);
 }
 silex.view.Workspace.prototype.doRedraw = function(){

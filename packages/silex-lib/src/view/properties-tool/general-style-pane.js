@@ -86,7 +86,7 @@ silex.view.propertiesTool.GeneralStylePane.prototype.redraw = function(){
  */
 silex.view.propertiesTool.GeneralStylePane.prototype.onInputChanged = function(event){
 	if (this.style && !this.isRedraw){
-	 	if(this.opacityInput.value && this.opacityInput.value!=''){
+	 	if(this.opacityInput.value && this.opacityInput.value!==''){
 			this.style.opacity = this.opacityInput.value;
 		}
 		else{

@@ -1,10 +1,10 @@
 //////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
-// 
+//
 // Copyright (c) 2012 Silex Labs
 // http://www.silexlabs.org/
-// 
+//
 // Silex is available under the GPL license
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
@@ -36,7 +36,7 @@ silex.service.CloudStorage.instance;
  * singleton implementation
  */
 silex.service.CloudStorage.getInstance = function(){
-	if (silex.service.CloudStorage.instance == null)
+	if (!silex.service.CloudStorage.instance)
 		silex.service.CloudStorage.instance = new silex.service.CloudStorage();
 	return silex.service.CloudStorage.instance;
 }
@@ -51,8 +51,8 @@ silex.service.CloudStorage.prototype.save = function(blob, rawData, cbk, opt_err
 
 	// save the actual data
 	this.filePicker.write(
-	relBlob, 
-	rawData, 
+	relBlob,
+	rawData,
 	function(blob){
 		// workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
 		new goog.async.Delay(function () {
@@ -77,7 +77,7 @@ silex.service.CloudStorage.prototype.load = function(blob, cbk, opt_errCbk){
 		url : silex.Helper.getRelativePath(blob.url, silex.Helper.BaseUrl)
 	}
 	this.filePicker.read(
-	relBlob, 
+	relBlob,
 	function(data){
 		// workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
 		new goog.async.Delay(function () {

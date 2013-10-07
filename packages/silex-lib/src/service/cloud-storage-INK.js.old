@@ -1,10 +1,10 @@
 //////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
-// 
+//
 // Copyright (c) 2012 Silex Labs
 // http://www.silexlabs.org/
-// 
+//
 // Silex is available under the GPL license
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
@@ -33,7 +33,7 @@ silex.service.CloudStorage.instance;
  * singleton implementation
  */
 silex.service.CloudStorage.getInstance = function(){
-	if (silex.service.CloudStorage.instance == null)
+	if (!silex.service.CloudStorage.instance)
 		silex.service.CloudStorage.instance = new silex.service.CloudStorage();
 	return silex.service.CloudStorage.instance;
 }
@@ -43,9 +43,9 @@ silex.service.CloudStorage.getInstance = function(){
 silex.service.CloudStorage.prototype.save = function(url, rawData, cbk){
 	// save the actual data
 	filepicker.write(
-	url, 
-	rawData, 
-	{}, 
+	url,
+	rawData,
+	{},
 	function(InkBlob){
 		console.log(InkBlob);
 		if (cbk) cbk();

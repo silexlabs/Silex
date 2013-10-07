@@ -21,7 +21,7 @@ silex.model.Component = function(element, opt_context){
 	// store component type
 	this.type = silex.model.Component.getType(this.element);
 	// default value for context
-	if (opt_context == null)
+	if (!opt_context)
 		opt_context = silex.model.Component.CONTEXT_NORMAL;
 	// apply the style for the context
 	this.setContext(opt_context);
@@ -112,12 +112,12 @@ silex.model.Component.prototype.setContext = function (context){
  */
 silex.model.Component.prototype.getStyle = function (opt_context){
 	// default value for the state
-	if (opt_context == null){
+	if (!opt_context){
 		opt_context = this.context;
 	}
 	// retrieve the element style
 	var styleStr = this.element.getAttribute('data-style-'+opt_context);
-	if (styleStr == null){
+	if (!styleStr){
 		styleStr = '';
 		//return null;
 	}
@@ -139,20 +139,20 @@ silex.model.Component.prototype.getStyle = function (opt_context){
  * style
  */
 silex.model.Component.prototype.setStyle = function (style, opt_context){
-	if (style == null){
+	if (!style){
 		// case of stage and context with no style yet
 		//return;
 		style = {};
 	}
 	// default value for the state
-	if (opt_context == null){
+	if (!opt_context){
 		opt_context = this.context;
 	}
 	var styleStr = '';
 	goog.object.forEach(style, function(val, index, obj) {
 		if (val){
 			// do not keep 'no image' info, simply remove the style
-			if (val == 'none'){
+			if (val === 'none'){
 				val = null;
 			}
 			else{
@@ -167,7 +167,7 @@ silex.model.Component.prototype.setStyle = function (style, opt_context){
 		}
 	}, this);
 	// add the bounding box if needed
-	if (opt_context == silex.model.Component.CONTEXT_NORMAL){
+	if (opt_context === silex.model.Component.CONTEXT_NORMAL){
 		var bb = this.getBoundingBox();
 		styleStr += 'top: '+bb.top+'; ';
 		styleStr += 'left: '+bb.left+'; ';
@@ -220,7 +220,7 @@ silex.model.Component.prototype.setBoundingBox = function (boundingBox){
 
 	// get the data-style-normal attribute
 	var styleStr = this.element.getAttribute('data-style-'+silex.model.Component.CONTEXT_NORMAL);
-	if (styleStr == null){
+	if (!styleStr){
 		styleStr = '';
 	}
 	// convert to style object
@@ -243,9 +243,9 @@ silex.model.Component.prototype.setBoundingBox = function (boundingBox){
  * image source
  */
 silex.model.Component.prototype.getImageSrc = function (){
-	if (this.type == silex.model.Component.SUBTYPE_IMAGE){
+	if (this.type === silex.model.Component.SUBTYPE_IMAGE){
 		var img = goog.dom.getElementsByTagNameAndClass('img', null, this.element)[0];
-		if (img != null){
+		if (img){
 			return img.getAttribute('src');
 		}
 		else{
@@ -261,9 +261,9 @@ silex.model.Component.prototype.getImageSrc = function (){
  * image source
  */
 silex.model.Component.prototype.setImageSrc = function (url){
-	if (this.type == silex.model.Component.SUBTYPE_IMAGE){
+	if (this.type === silex.model.Component.SUBTYPE_IMAGE){
 		var img = goog.dom.getElementsByTagNameAndClass('img', null, this.element)[0];
-		if (img != null){
+		if (img){
 			return img.setAttribute('src', url);
 		}
 		else{
@@ -347,7 +347,7 @@ silex.model.Component.prototype.getFirstEditableParent = function(element){
  */
 silex.model.Component.prototype.getLocked = function(opt_element){
 	// default value for the element
-	if (opt_element == null){
+	if (!opt_element){
 		opt_element = this.element;
 	}
 	return $(opt_element).hasClass('locked-style');
@@ -358,7 +358,7 @@ silex.model.Component.prototype.getLocked = function(opt_element){
  */
 silex.model.Component.prototype.setLocked = function(isLocked, opt_element){
 	// default value for the element
-	if (opt_element == null){
+	if (!opt_element){
 		opt_element = this.element;
 	}
 	// lock/unlock plugin
@@ -380,7 +380,7 @@ silex.model.Component.prototype.setLocked = function(isLocked, opt_element){
  */
 silex.model.Component.prototype.getEditable = function(opt_element){
 	// default value for the element
-	if (opt_element == null){
+	if (!opt_element){
 		opt_element = this.element;
 	}
 	return $(opt_element).hasClass('editable-style');
@@ -391,7 +391,7 @@ silex.model.Component.prototype.getEditable = function(opt_element){
  */
 silex.model.Component.prototype.setEditable = function(isEditable, opt_element){
 	// default value for the element
-	if (opt_element == null){
+	if (!opt_element){
 		opt_element = this.element;
 	}
 	// activate editable plugin
@@ -408,7 +408,7 @@ silex.model.Component.prototype.setEditable = function(isEditable, opt_element){
 		if (this.getEditable(opt_element)){
 			if ($(this).hasClass('locked-style')) return;
 			var type = opt_element.getAttribute('data-silex-type');
-			if (type==silex.model.Component.TYPE_CONTAINER){
+			if (type===silex.model.Component.TYPE_CONTAINER){
 				$(opt_element).editable({
 					isContainer: true
 				});
@@ -472,69 +472,13 @@ silex.model.Component.prototype.relative2absolute = function (htmlString, baseUr
 	return htmlString;
 }
 /**
- * Browse the children and convert all URLs to relative when possible
- * this will not work, because element.style.backgroundImage is reevaluated when set to a relative value
- *
-silex.model.Component.prototype.absolute2relative = function (baseUrl, opt_element) {
-	if (baseUrl==null){
-		throw ('The base URL is needed in order to convert paths to relative');
-	}
-	if (opt_element==null){
-		opt_element = this.element;
-	}
-	var that = this;
-	// convert absolute to relative paths
-	$(opt_element).find('[src],[href]').each(function () {
-		// attribute can be src or href
-		var attr = 'src';
-		var value = this.getAttribute(attr);
-		if (value==null){
-			attr = 'href';
-			value = this.getAttribute(attr);
-		}
-		this.setAttribute(attr, silex.Helper.getAbsolutePath(value, 'http://localhost:5000/silex/'));
-		this.setAttribute(attr, silex.Helper.getRelativePath(value, baseUrl));
-	});
-	// bg image
-	this.doAbsolute2relativeBg(opt_element, 'http://localhost:5000/silex/', baseUrl);
-	$(opt_element).find('[data-silex-type]').each(function () {
-		that.doAbsolute2relativeBg(this, 'http://localhost:5000/silex/', baseUrl);
-	});
-}
-silex.model.Component.prototype.doAbsolute2relativeBg = function(element, initialBaseUrl, finalBaseUrl){
-	if ($(element).css('background-image')){
-		var value = $(element).css("background-image").replace(/^url\(["']?/, '').replace(/["']?\)$/, '');
-		$(element).css("background-image", 'url("' + silex.Helper.getRelativePath(value, finalBaseUrl)+")");
-	}
-}
-/**
- * Browse the children and convert all URLs to absolute
- *
-silex.model.Component.prototype.relative2absolute = function (baseUrl, opt_element) {
-	if (opt_element==null){
-		opt_element = this.element;
-	}
-	// convert absolute to relative paths
-	$(this.element).find('[src],[href]').each(function () {
-		// attribute can be src or href
-		var attr = 'src';
-		var value = this.getAttribute(attr);
-		if (value==null){
-			attr = 'href';
-			value = this.getAttribute(attr);
-		}
-
-		this.setAttribute(attr, silex.Helper.getAbsolutePath(value, baseUrl));
-	});
-}
-/**
  * apply a given state to all chlidren
  */
 silex.model.Component.prototype.applyStateToAllComponents = function(state){
 	// apply the data-style-normal or data-style-* to all nodes
 	$('[data-style-normal]').each(function () {
 		var styleStr = this.getAttribute('data-style-'+state);
-		if (styleStr!=null)
+		if (styleStr!==null)
 			this.setAttribute('style', styleStr);
 		else
 			this.setAttribute('style', this.getAttribute('data-style-normal'));
@@ -546,7 +490,7 @@ silex.model.Component.prototype.applyStateToAllComponents = function(state){
  * and returns a new component for the element
  */
 silex.model.Component.prototype.addContainer = function(){
-	if (this.type != silex.model.Component.TYPE_CONTAINER){
+	if (this.type !== silex.model.Component.TYPE_CONTAINER){
 		throw('Canot create a child component for this component because it is not of type '+silex.model.Component.TYPE_CONTAINER);
 	}
 	// create the conatiner
@@ -581,7 +525,7 @@ silex.model.Component.prototype.addContainer = function(){
  * and returns a new component for the element
  */
 silex.model.Component.prototype.addText = function(){
-	if (this.type != silex.model.Component.TYPE_CONTAINER){
+	if (this.type !== silex.model.Component.TYPE_CONTAINER){
 		throw('Canot create a child component for this component because it is not of type '+silex.model.Component.TYPE_CONTAINER);
 	}
 	// create the element
@@ -618,7 +562,7 @@ silex.model.Component.prototype.addText = function(){
  * and returns a new component for the element
  */
 silex.model.Component.prototype.addHtml = function(){
-	if (this.type != silex.model.Component.TYPE_CONTAINER){
+	if (this.type !== silex.model.Component.TYPE_CONTAINER){
 		throw('Canot create a child component for this component because it is not of type '+silex.model.Component.TYPE_CONTAINER);
 	}
 	// create the element
@@ -655,10 +599,10 @@ silex.model.Component.prototype.addHtml = function(){
  * and returns a new component for the element
  */
 silex.model.Component.prototype.addImage = function(url){
-	if (this.type != silex.model.Component.TYPE_CONTAINER){
+	if (this.type !== silex.model.Component.TYPE_CONTAINER){
 		throw('Canot create a child component for this component because it is not of type '+silex.model.Component.TYPE_CONTAINER);
 	}
-	if (url == null){
+	if (!url){
 		console.error('No URL provided for the image component');
 	}
 	var div = goog.dom.createElement('div');
