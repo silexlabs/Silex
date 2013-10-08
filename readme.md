@@ -161,8 +161,10 @@ Contextual menu on the elements (menu bar under the menu like google?)
 Continuous integration
 
 * jshint, PhantomJS, jenkins, Selenium
-* unit tests
+* unit tests http://stackoverflow.com/questions/11520170/unit-testing-oauth-js-with-mocha
 * functional tests
+* integration http://about.travis-ci.org/docs/user/languages/javascript-with-nodejs/
+
 
 Profesionnal installation
 
@@ -173,6 +175,12 @@ Unifile archi
 * Should be a nodejs module
 * Silex ande CE would use it as a middleware
 * No more strange system for config in unifle?
+
+unifile archi, tests and readme
+
+* https://npmjs.org/package/social-cms-backend
+* tests http://stackoverflow.com/questions/11520170/unit-testing-oauth-js-with-mocha
+* http://decodize.com/javascript/build-nodejs-npm-installation-package-scratch/
 
 Debuging
 

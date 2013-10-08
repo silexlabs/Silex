@@ -32,23 +32,18 @@ com silex
   * etudier la com de http://korben.info/bluegriffon-un-excellent-editeur-html-wysiwyg-libre.html
 
 * envoi a EO de MS (contact lex)?
-* Alternatives.to
+* Alternatives.to wikipedia readme
 * revoir tous les sites qui parlent de silex
 * landing page sur silex.io
 * redirection html5-editor.org
 
 Silex
 
-* === instead of ==
 - autres bugs
 - readme
 - ?système de logs/bug report http://jserrlog.appspot.com/
 * ajout max/min width/height, pour rendre bottom/right utile
 * Ajout son et video??
-
-unifile archi and readme
-- https://npmjs.org/package/social-cms-backend
-- http://decodize.com/javascript/build-nodejs-npm-installation-package-scratch/
 
 Bugs
 
