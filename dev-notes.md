@@ -46,8 +46,9 @@ Silex
 * ajout max/min width/height, pour rendre bottom/right utile
 * Ajout son et video??
 
-unifile
-- readme https://npmjs.org/package/social-cms-backend
+unifile archi and readme
+- https://npmjs.org/package/social-cms-backend
+- http://decodize.com/javascript/build-nodejs-npm-installation-package-scratch/
 
 Bugs
 

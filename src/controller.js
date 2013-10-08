@@ -136,7 +136,7 @@ silex.Controller.prototype.menuCallback = function(event){
 					this.notifySuccess('Your file is saved.');
 				}, this),
 				goog.bind(function (error) {
-					this.notifyError('Error: I did not manage to save the file. '+error.toString());
+					this.notifyError('Error: I did not manage to save the file. <br /><br />'+error.message);
 					this.tracker.trackAction('error/menu/'+event.type, JSON.stringify(error), 0);
 				}, this));
 			break;
@@ -148,7 +148,7 @@ silex.Controller.prototype.menuCallback = function(event){
 					this.notifySuccess('Your file is saved.');
 				}, this),
 				goog.bind(function (error) {
-					this.notifyError('Error: I did not manage to save the file. '+error.toString());
+					this.notifyError('Error: I did not manage to save the file. <br /><br />'+error.message);
 					this.tracker.trackAction('error/menu/'+event.type, JSON.stringify(error), 0);
 				}, this));
 			}
@@ -158,7 +158,7 @@ silex.Controller.prototype.menuCallback = function(event){
 					this.notifySuccess('Your file is saved.');
 				}, this),
 				goog.bind(function (error) {
-					this.notifyError('Error: I did not manage to save the file. '+error.toString());
+					this.notifyError('Error: I did not manage to save the file. <br /><br />'+error.message);
 					this.tracker.trackAction('error/menu/'+event.type, JSON.stringify(error), 0);
 				}, this));
 			}
@@ -169,7 +169,7 @@ silex.Controller.prototype.menuCallback = function(event){
 				this.selection.setComponent(this.file.getStageComponent());
 			}, this),
 			goog.bind(function (error) {
-				this.notifyError('Error: I did not manage to open this file. '+error.toString());
+				this.notifyError('Error: I did not manage to open this file. <br /><br />'+error.message);
 				this.tracker.trackAction('error/menu/'+event.type, JSON.stringify(error), 0);
 			}, this));
 			break;
@@ -234,7 +234,7 @@ silex.Controller.prototype.menuCallback = function(event){
 				}, this),
 				['image/*', 'text/plain'],
 				goog.bind(function (error) {
-					this.notifyError('Error: I did not manage to load the image. '+error.toString());
+					this.notifyError('Error: I did not manage to load the image. <br /><br />'+error.message);
 					this.tracker.trackAction('error/menu/'+event.type, JSON.stringify(error), 0);
 				}, this)
 			);
@@ -368,11 +368,12 @@ silex.Controller.prototype.pageToolCallback = function(event){
  * rename a page
  */
 silex.Controller.prototype.renamePage = function(page){
-	var name = this.getUserInputPageName(page.name);
-	if(name){
-		page.rename(name);
-	}
-	this.selection.getPage().open();
+	this.getUserInputPageName(page.name, goog.bind(function (name) {
+		if(name){
+			page.rename(name);
+		}
+		this.selection.getPage().open();
+	}, this));
 }
 /**
  * remvoe a given page
@@ -419,23 +420,24 @@ silex.Controller.prototype.getUserInputPageName = function(defaultName, cbk){
  * create a page
  */
 silex.Controller.prototype.createPage = function(){
-	var pageName = this.getUserInputPageName('My new page name');
-	if(pageName){
-		// create the page model
-		var page = new silex.model.Page(
-			pageName,
-			this.workspace,
-			this.menu,
-			this.stage,
-			this.pageTool,
-			this.propertiesTool,
-			this.textEditor,
-			this.fileExplorer
-		);
-		page.attach();
-		this.selection.setPage(page);
-		page.open();
-	}
+	this.getUserInputPageName('My new page name', goog.bind(function (pageName) {
+		if(pageName){
+			// create the page model
+			var page = new silex.model.Page(
+				pageName,
+				this.workspace,
+				this.menu,
+				this.stage,
+				this.pageTool,
+				this.propertiesTool,
+				this.textEditor,
+				this.fileExplorer
+			);
+			page.attach();
+			this.selection.setPage(page);
+			page.open();
+		}
+	}, this));
 }
 
 /**
@@ -457,7 +459,7 @@ silex.Controller.prototype.propertiesToolCallback = function(event){
 			}, this),
 			['image/*', 'text/plain'],
 			goog.bind(function (error) {
-				this.notifyError('Error: I did not manage to load the image. '+error.toString());
+				this.notifyError('Error: I did not manage to load the image. <br /><br />'+error.message);
 				this.tracker.trackAction('error/properties-tool/'+event.type, JSON.stringify(error), 0);
 			}, this)
 			);
@@ -519,7 +521,7 @@ silex.Controller.prototype.editComponent = function(){
 		}, this),
 		['image/*', 'text/plain'],
 			goog.bind(function (error) {
-				this.notifyError('Error: I did not manage to load the image. '+error.toString());
+				this.notifyError('Error: I did not manage to load the image. <br /><br />'+error.message);
 				this.tracker.trackAction('error/edit-component/'+event.type, JSON.stringify(error), 0);
 			}, this)
 		);
