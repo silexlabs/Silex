@@ -8,7 +8,7 @@ Brought to you by Silex Labs team, promoting free software.
 
 Current version: v2.0.0alpha3
 
-* http://www.silex.io/
+* http://www.silex.me/
 
 More info on Silex Labs website
 
@@ -33,6 +33,14 @@ GPL license
 
 * http://www.silexlabs.org/silex/silex-licensing/
 
+Main contributors
+
+* Alex lexoyo Hoyau @lexoyo
+* Thomas zabojad Fetiveau http://www.tokom.fr/
+* Pol superwup Goasdoué @superwup
+* Nicolas "silex" Masson @NicoSilex‎
+
+
 ##Installation on your local computer (developers only)
 
 Developers you can clone this repository and start the serveur (unifile), the back end of Silex, with nodejs. See instructions bellow.
@@ -47,12 +55,12 @@ And open http://localhost:5000/ in a browser
 
 ##Distribution/packages
 
-You can use Silex online on www.silex.io or locally or on your server.
+You can use Silex online on www.silex.me or locally or on your server.
 
 This is how Silex is distributed:
 
 * Hosted free
-  No install, just go to http://www.silex.io/ and do design
+  No install, just go to http://www.silex.me/ and do design
   Edit HTML pages in your drobbox, gdrive...  Your site is visible only by people with whom you share it.
   Tech note: host cloud explorer @silexlabs (silex.html on SL dedicated server and nodejs on heroku)
 * Hosted pro
@@ -60,7 +68,7 @@ This is how Silex is distributed:
   Purchase a hosting plan, go to http://www.silex.pro/ and do design
   You edit your site from an online location. Your site accessible to everyone 24/7.
   Paid, no setup, no need to know anything about hosting.
-  Tech note: PHP file explorer hosted @arvixe, silex.html on SL dedicated server (use arvixe.silex.io ??)
+  Tech note: PHP file explorer hosted @arvixe, silex.html on SL dedicated server (use arvixe.silex.me ??)
 * Hosted anywhere
   Purchase a stadard shared hosting, and use Scriptaculous automatic install to install Silex in a folder.
   You can manage multiple separated sites with different instances of Silex to edit the site.
@@ -77,7 +85,7 @@ This is how Silex is distributed:
   wich uses nodejs and the modules: express, dbox, express, googleapis, logger, node-oauth, oauth, path
 * cloud explorer https://github.com/silexlabs/cloud-explorer
   which uses angular.js
-* ace http://ace.c9.io/
+* ace http://ace.c9.me/
 * google closure library and compiler
 * jquery and jquery UI
 * handlebars.js
@@ -141,7 +149,7 @@ Edition
 * multiple selection
 * better text editor?
   http://www.webdesignerdepot.com/2008/12/20-excellent-free-rich-text-editors/
-  http://mindmup.github.io/bootstrap-wysiwyg/
+  http://mindmup.github.me/bootstrap-wysiwyg/
 
 File properties
 
