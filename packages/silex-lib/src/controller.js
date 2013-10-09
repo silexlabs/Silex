@@ -357,7 +357,7 @@ silex.Controller.prototype.stageCallback = function(event){
  * pageTool event handler
  */
 silex.Controller.prototype.pageToolCallback = function(event){
-	//this.tracker.trackAction('controller-events', 'request', event.type, 0);
+	this.tracker.trackAction('controller-events', 'request', event.type, 0);
 	switch(event.type){
 	case 'changed':
 		this.selection.setPage(event.page);
