@@ -148,7 +148,7 @@ silex.view.propertiesTool.PagePane.prototype.onLinkChanged = function(event){
 		var prevVal = this.linkInputTextField.getCleanContents();
 		// reset if it was an internal link
 		if (prevVal.indexOf('#')===0) prevVal = '';
-		if (prevVal==='') prevVal = 'http://silex.io';
+		if (prevVal==='') prevVal = 'http://www.silex.me/';
 		// store in the href attr
 		this.component.setLink(prevVal);
 	}

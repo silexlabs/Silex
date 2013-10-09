@@ -1,10 +1,10 @@
 //////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
-// 
+//
 // Copyright (c) 2012 Silex Labs
 // http://www.silexlabs.org/
-// 
+//
 // Silex is available under the GPL license
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
@@ -18,7 +18,7 @@ goog.provide('silex.service.Tracker');
  */
 silex.service.Tracker = function(){
 	if(!ga){
-		throw('google analytcs not loaded');
+		console.error('google analytcs not loaded');
 	}
 }
 /**
@@ -28,9 +28,9 @@ silex.service.Tracker.SILEX_ACTIONS_CATEGORY = 'silex-event';
 /**
  * constant
  */
-silex.service.Tracker.prototype.trackAction = function (name, opt_label, opt_value) {
+silex.service.Tracker.prototype.trackAction = function (category, action, opt_label, opt_value) {
 	console.log('trackAction', arguments);
-	//_gaq.push(['_trackEvent', silex.service.Tracker.SILEX_ACTIONS_CATEGORY, name, opt_label, opt_value, true]);
-	ga('send', 'event', silex.service.Tracker.SILEX_ACTIONS_CATEGORY, name, opt_label, opt_value, true);
+	//_gaq.push(['_trackEvent', silex.service.Tracker.SILEX_ACTIONS_CATEGORY, action, opt_label, opt_value, true]);
+	ga('send', 'event', category, action, opt_label, opt_value, true);
 }
 
