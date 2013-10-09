@@ -159,6 +159,7 @@ silex.model.File.prototype.open = function(cbk, opt_errCbk){
 			this.setUrl(blob.url);
 			this.setBlob(blob);
 			this.setHtml(rawHtml);
+			if(cbk) cbk();
 		}, this), opt_errCbk);
 	}, this),
 	['text/html', 'text/plain'], opt_errCbk);
@@ -167,7 +168,7 @@ silex.model.File.prototype.open = function(cbk, opt_errCbk){
 /**
  * reset data, close file
  */
-silex.model.File.prototype.close = function(){
+silex.model.File.prototype.close = function(opt_cbk){
 	this.url = null;
 	this.blob = null;
 	this.headTag = '';

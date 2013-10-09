@@ -119,7 +119,7 @@ silex.Controller.prototype.selection;
  * menu event handler
  */
 silex.Controller.prototype.menuCallback = function(event){
-	//this.tracker.trackAction('controller-events', 'request', event.type, 0);
+	this.tracker.trackAction('controller-events', 'request', event.type, 0);
 	switch(event.type){
 		case 'title.changed':
 			alertify.prompt('What is the name of your website?', goog.bind(function (accept, name) {
@@ -178,10 +178,8 @@ silex.Controller.prototype.menuCallback = function(event){
 			}, this));
 			break;
 		case 'file.close':
-			this.file.close(goog.bind(function () {
-				this.selection.setComponent(null);
-				this.tracker.trackAction('controller-events', 'success', event.type, 1);
-			}, this));
+			this.file.close();
+			this.selection.setComponent(null);
 			break;
 		case 'view.file':
 			this.file.view()
