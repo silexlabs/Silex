@@ -139,6 +139,7 @@ silex.boot = function() {
 			// debug: insert a text field
 			//controller.menuCallback({type:'insert.text'});
 			//controller.menuCallback({type:'insert.container'});
+			controller.menuCallback({type:'insert.html'});
 
 /* *
 			// debug: load a file

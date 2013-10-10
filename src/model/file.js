@@ -168,7 +168,7 @@ silex.model.File.prototype.open = function(cbk, opt_errCbk){
 /**
  * reset data, close file
  */
-silex.model.File.prototype.close = function(opt_cbk){
+silex.model.File.prototype.close = function(){
 	this.url = null;
 	this.blob = null;
 	this.headTag = '';

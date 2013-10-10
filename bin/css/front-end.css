@@ -19,3 +19,6 @@ body{
 .editable-style [data-silex-sub-type="image"] img{
 	border-radius: inherit;
 }
+.editable-style [data-silex-sub-type="html"] .html-content{
+	overflow: auto;
+}

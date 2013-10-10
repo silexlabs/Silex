@@ -44,6 +44,7 @@ silex.service.CloudStorage.getInstance = function(){
  * save a file
  */
 silex.service.CloudStorage.prototype.save = function(blob, rawData, cbk, opt_errCbk){
+	console.log('save', rawData);
 	// cloud explorer expects relative path
 	var relBlob = {
 		url : silex.Helper.getRelativePath(blob.url, silex.Helper.BaseUrl)

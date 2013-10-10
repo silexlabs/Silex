@@ -291,7 +291,18 @@ silex.model.Component.prototype.getHtml = function (opt_baseUrl){
 	this.setEditable(true);
 
 	// get the result as a string
-	var htmlString = cleanContainer.innerHTML;
+	var htmlString = '';
+	if (this.type==silex.model.Component.SUBTYPE_HTML){
+		// html boxes have a container for the html
+		var htmlContent = goog.dom.getFirstElementChild(cleanContainer);
+		if (htmlContent){
+			htmlString = htmlContent.innerHTML;
+		}
+	}
+	else{
+		// others have their content right inside the element
+		htmlString = cleanContainer.innerHTML;
+	}
 
 	// relative URLs when possible
 	if (opt_baseUrl){
@@ -319,7 +330,17 @@ silex.model.Component.prototype.setHtml = function (html, opt_baseUrl){
 		console.warn('setHtml without base url, the URLs could not be converted to absolute');
 	}
 	// set the html content
-	this.element.innerHTML = html;
+	if (this.type==silex.model.Component.SUBTYPE_HTML){
+		// html boxes have a container for the html
+		var htmlContent = goog.dom.getFirstElementChild(this.element);
+		if (htmlContent){
+			htmlContent.innerHTML = html;
+		}
+	}
+	else{
+		// others have their content right inside the element
+		this.element.innerHTML = html;
+	}
 	// restore editing
 	this.setEditable(true);
 }
@@ -568,12 +589,20 @@ silex.model.Component.prototype.addHtml = function(){
 	// create the element
 	var div = goog.dom.createElement('div');
 	div.className = 'editable-style';
-	div.setAttribute('data-silex-type', silex.model.Component.TYPE_ELEMENT)
-	div.setAttribute('data-silex-sub-type', silex.model.Component.SUBTYPE_HTML)
-	div.innerHTML = '<p>New HTML box</p>';
-	// attach it
+	div.setAttribute('data-silex-type', silex.model.Component.TYPE_ELEMENT);
+	div.setAttribute('data-silex-sub-type', silex.model.Component.SUBTYPE_HTML);
+
+	var htmlContent = goog.dom.createElement('div');
+	htmlContent.className = 'html-content';
+	htmlContent.innerHTML = '<p>New HTML box</p>';
+	goog.style.setStyle(htmlContent, 'width', '100%');
+	goog.style.setStyle(htmlContent, 'height', '100%');
+
+	// attach it all
 	var container = this.getBackgroundElement();
 	goog.dom.appendChild(container, div);
+	goog.dom.appendChild(div, htmlContent);
+
 	// make it editable
 	this.setEditable(true, div);
 	// create the component instance
