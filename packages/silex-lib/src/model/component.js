@@ -358,7 +358,8 @@ silex.model.Component.prototype.getFirstEditableParent = function(element){
 		return child;
 	}
 	else{
-		console.warn('The component has no editable parent.');
+		// The component has no editable parent
+		// This is the case of the stage
 	}
 	return element;
 }

@@ -29,8 +29,7 @@ silex.service.Tracker.SILEX_ACTIONS_CATEGORY = 'silex-event';
  * constant
  */
 silex.service.Tracker.prototype.trackAction = function (category, action, opt_label, opt_value) {
-	console.info('trackAction', arguments);
-	//_gaq.push(['_trackEvent', silex.service.Tracker.SILEX_ACTIONS_CATEGORY, action, opt_label, opt_value, true]);
+	//console.info('trackAction', arguments);
 	ga('send', 'event', category, action, opt_label, opt_value, true);
 }
 
