@@ -137,7 +137,7 @@ silex.Controller.prototype.menuCallback = function(event){
 					this.tracker.trackAction('controller-events', 'success', event.type, 1);
 				}, this),
 				goog.bind(function (error) {
-					this.notifyError('Error: I did not manage to save the file. <br /><br />'+error.message);
+					this.notifyError('Error: I did not manage to save the file. <br /><br />'+(error.message || ''));
 					this.tracker.trackAction('controller-events', 'error', event.type, -1);
 				}, this));
 			break;
@@ -150,7 +150,7 @@ silex.Controller.prototype.menuCallback = function(event){
 					this.tracker.trackAction('controller-events', 'success', event.type, 1);
 				}, this),
 				goog.bind(function (error) {
-					this.notifyError('Error: I did not manage to save the file. <br /><br />'+error.message);
+					this.notifyError('Error: I did not manage to save the file. <br /><br />'+(error.message || ''));
 					this.tracker.trackAction('controller-events', 'error', event.type, -1);
 				}, this));
 			}
@@ -161,7 +161,7 @@ silex.Controller.prototype.menuCallback = function(event){
 					this.tracker.trackAction('controller-events', 'success', event.type, 1);
 				}, this),
 				goog.bind(function (error) {
-					this.notifyError('Error: I did not manage to save the file. <br /><br />'+error.message);
+					this.notifyError('Error: I did not manage to save the file. <br /><br />'+(error.message || ''));
 					this.tracker.trackAction('controller-events', 'error', event.type, -1);
 				}, this));
 			}
@@ -173,7 +173,7 @@ silex.Controller.prototype.menuCallback = function(event){
 				this.tracker.trackAction('controller-events', 'success', event.type, 1);
 			}, this),
 			goog.bind(function (error) {
-				this.notifyError('Error: I did not manage to open this file. <br /><br />'+error.message);
+				this.notifyError('Error: I did not manage to open this file. <br /><br />'+(error.message || ''));
 				this.tracker.trackAction('controller-events', 'error', event.type, -1);
 			}, this));
 			break;
@@ -243,7 +243,7 @@ silex.Controller.prototype.menuCallback = function(event){
 				}, this),
 				['image/*', 'text/plain'],
 				goog.bind(function (error) {
-					this.notifyError('Error: I did not manage to load the image. <br /><br />'+error.message);
+					this.notifyError('Error: I did not manage to load the image. <br /><br />'+(error.message || ''));
 					this.tracker.trackAction('controller-events', 'error', event.type, -1);
 				}, this)
 			);
@@ -473,7 +473,7 @@ silex.Controller.prototype.propertiesToolCallback = function(event){
 			}, this),
 			['image/*', 'text/plain'],
 			goog.bind(function (error) {
-				this.notifyError('Error: I did not manage to load the image. <br /><br />'+error.message);
+				this.notifyError('Error: I did not manage to load the image. <br /><br />'+(error.message || ''));
 				this.tracker.trackAction('controller-events', 'error', event.type, -1);
 			}, this)
 			);
@@ -535,7 +535,7 @@ silex.Controller.prototype.editComponent = function(){
 		}, this),
 		['image/*', 'text/plain'],
 			goog.bind(function (error) {
-				this.notifyError('Error: I did not manage to load the image. <br /><br />'+error.message);
+				this.notifyError('Error: I did not manage to load the image. <br /><br />'+(error.message || ''));
 			}, this)
 		);
 		this.workspace.invalidate();
