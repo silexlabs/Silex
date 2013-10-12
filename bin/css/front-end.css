@@ -22,3 +22,6 @@ body{
 .editable-style [data-silex-sub-type="html"] .html-content{
 	overflow: auto;
 }
+.editable-style [data-silex-href]{
+	cursor: pointer;
+}
