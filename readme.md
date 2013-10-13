@@ -44,39 +44,42 @@ Main contributors
 
 Developers you can clone this repository and start the serveur (unifile), the back end of Silex, with nodejs. See instructions bellow.
 
+### on linux or macos
+
+Prerequisite :
+
+* [node.js](http://nodejs.org/) installed
+* NPM installed (https://npmjs.org/)
+
 Clone this repository, and do not forget the sub modules (cloud-explorer and unifile)
 
-Then install node.js http://nodejs.org/
+Install node modules: npm install
 
-Start the server with "node cloud-explorer/unifile/lib/app.js"
+Start the server: node cloud-explorer/unifile/lib/app.js"
 
 And open http://localhost:5000/ in a browser
 
-### more detailed instructions for installation on your computer
+### Local installation on Windows
 
 > instructions provided by Régis RIGAUD :)
 
-on windows, install a GIT client - ex. [GitHub Windows](http://windows.github.com/) or MsysGit, [follow these steps](http://www.commentcamarche.net/faq/13094-utiliser-git-sous-windows).
+Prerequisite :
 
-Get Silex files with MsysGit
+* [node.js](http://nodejs.org/) installed
+* Git Client installed (http://windows.github.com/)
+* NPM installed (https://npmjs.org/)
 
-* start git-bash 
-* clone the project : git-clone https://github.com/silexlabs/Silex.git
+Installation of Silex:
 
-Get Silex files with git
+* Launch the "Git Shell"
+* Create a complete clone of Silex Project : git clone --recursive https://github.com/silexlabs/Silex.git
+* Go to Silex's Directory.
+* install depedencies  : npm install
 
-* start Git Shell
-* clone the project : git clone --recursive https://github.com/silexlabs/Silex.git (yes, the syntax is "git clone" without the "-")
+Start Silex :
 
-Install Silex
-
-* open the folder Silex.
-* type this command : npm install
-
-Then, start Silex server
-
-* type this command assuming you are still at the root of Silex folder : node cloud-explorer\unifile\lib\app.js
-* open a browser at the address http://localhost:6805/silex/ and ENJOY !!!
+* Launch Silex from a command prompt ( Silex's Directory) : node cloud-explorer\unifile\lib\app.js
+* Open your favorite browser on http://localhost:6805/silex/ and ENJOY !!!
 
 ##Distribution/packages
 
