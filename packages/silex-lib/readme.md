@@ -40,7 +40,6 @@ Main contributors
 * Pol superwup Goasdoué @superwup
 * Nicolas "silex" Masson @NicoSilex‎
 
-
 ##Installation on your local computer (developers only)
 
 Developers you can clone this repository and start the serveur (unifile), the back end of Silex, with nodejs. See instructions bellow.
@@ -52,6 +51,32 @@ Then install node.js http://nodejs.org/
 Start the server with "node cloud-explorer/unifile/lib/app.js"
 
 And open http://localhost:5000/ in a browser
+
+### more detailed instructions for installation on your computer
+
+> instructions provided by Régis RIGAUD :)
+
+on windows, install a GIT client - ex. [GitHub Windows](http://windows.github.com/) or MsysGit, [follow these steps](http://www.commentcamarche.net/faq/13094-utiliser-git-sous-windows).
+
+Get Silex files with MsysGit
+
+* start git-bash 
+* clone the project : git-clone https://github.com/silexlabs/Silex.git
+
+Get Silex files with git
+
+* start Git Shell
+* clone the project : git clone --recursive https://github.com/silexlabs/Silex.git (yes, the syntax is "git clone" without the "-")
+
+Install Silex
+
+* open the folder Silex.
+* type this command : npm install
+
+Then, start Silex server
+
+* type this command assuming you are still at the root of Silex folder : node cloud-explorer\unifile\lib\app.js
+* open a browser at the address http://localhost:6805/silex/ and ENJOY !!!
 
 ##Distribution/packages
 
@@ -146,7 +171,7 @@ Edition
 * copy/cut/paste
 * undo/redo
 * autosave
-* multiple selection
+* multiple selection https://github.com/someshwara/MultiDraggable
 * better text editor?
   http://www.webdesignerdepot.com/2008/12/20-excellent-free-rich-text-editors/
   http://mindmup.github.me/bootstrap-wysiwyg/
