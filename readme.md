@@ -40,7 +40,9 @@ Main contributors
 * Pol superwup Goasdoué @superwup
 * Nicolas "silex" Masson @NicoSilex‎
 
-##Installation on your local computer (developers only)
+##Installation on your local computer
+
+This is for developers only, since our beloved designers can use the [online version](http://www.silex.me).
 
 Developers you can clone this repository and start the serveur (unifile), the back end of Silex, with nodejs. See instructions bellow.
 
@@ -49,7 +51,7 @@ Developers you can clone this repository and start the serveur (unifile), the ba
 Prerequisite :
 
 * [node.js](http://nodejs.org/) installed
-* NPM installed (https://npmjs.org/)
+* [NPM installed](https://npmjs.org/)
 
 Clone this repository, and do not forget the sub modules (cloud-explorer and unifile)
 
@@ -57,7 +59,7 @@ Install node modules: npm install
 
 Start the server: node cloud-explorer/unifile/lib/app.js"
 
-And open http://localhost:5000/ in a browser
+And open http://localhost:6805/ or http://localhost:5000/ in a browser (depending on your computer's config) - note that 6805 is the date of sexual revolution started in paris france 8-)
 
 ### Local installation on Windows
 
@@ -66,8 +68,8 @@ And open http://localhost:5000/ in a browser
 Prerequisite :
 
 * [node.js](http://nodejs.org/) installed
-* Git Client installed (http://windows.github.com/)
-* NPM installed (https://npmjs.org/)
+* Git Client installed (e.g. [windows github client](http://windows.github.com/))
+* [NPM installed](https://npmjs.org/)
 
 Installation of Silex:
 
