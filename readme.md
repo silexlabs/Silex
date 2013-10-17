@@ -57,7 +57,7 @@ Clone this repository, and do not forget the sub modules (cloud-explorer and uni
 
 Install node modules: npm install
 
-Start the server: node cloud-explorer/unifile/lib/app.js"
+Start the server: node server/api-server.js
 
 And open http://localhost:6805/ or http://localhost:5000/ in a browser (depending on your computer's config) - note that 6805 is the date of sexual revolution started in paris france 8-)
 
@@ -80,7 +80,7 @@ Installation of Silex:
 
 Start Silex :
 
-* Launch Silex from a command prompt ( Silex's Directory) : node cloud-explorer\unifile\lib\app.js
+* Launch Silex from a command prompt ( Silex's Directory) : node server/api-server.js
 * Open your favorite browser on http://localhost:6805/silex/ and ENJOY !!!
 
 ##dependencies
