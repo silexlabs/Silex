@@ -51,29 +51,37 @@ Bugs
 * il y a des images en ligne pour la palette, les mettre en local
 * http://ditesh.gathani.org/blog/2011/07/catching-uncaught-exceptions-in-node-js/
 
-##Usability tests
+##Notes
 
-Plan:
-
+Usability tests
 https://docs.google.com/document/d/1PVGgSq8XTFSHrqOtLx8B5cY7l9HnDO74mhGhODZLZyY/edit#
 
-Targets
+##Distribution/packages
 
-* Anto
-* Pol
-* Justin
-* Camcrock
-* Woodoo
+You can use Silex online on www.silex.me or locally or on your server.
 
-* Moly
-* Ewa
+This is how Silex is distributed:
 
-* Françoise
-* Ovidiu
-* Alex ketchu
-* Bienf
-* Laurent mrm
-* francky
+* Hosted free
+  No install, just go to http://www.silex.me/ and do design
+  Edit HTML pages in your drobbox, gdrive...  Your site is visible only by people with whom you share it.
+  Tech note: host cloud explorer @silexlabs (silex.html on SL dedicated server and nodejs on heroku)
+* Hosted pro
+  Comming soon
+  Purchase a hosting plan, go to http://www.silex.pro/ and do design
+  You edit your site from an online location. Your site accessible to everyone 24/7.
+  Paid, no setup, no need to know anything about hosting.
+  Tech note: PHP file explorer hosted @arvixe, silex.html on SL dedicated server (use arvixe.silex.me ??)
+* Hosted anywhere
+  Purchase a stadard shared hosting, and use Scriptaculous automatic install to install Silex in a folder.
+  You can manage multiple separated sites with different instances of Silex to edit the site.
+  Tech note: silex.html and PHP file explorer hosted by the user's hosting company
+* Hosted by you, front and back
+  Download Silex and host it with its nodejs server.
+  Offer Silex "Hosted free" version to your users, on your domain name.
+  Your users go to your URL and use Silex from there to edit their files from their cloud services.
+  Tech note: node server, silex in the unifile server
+
 
 ##Silex v2 remarques
 
