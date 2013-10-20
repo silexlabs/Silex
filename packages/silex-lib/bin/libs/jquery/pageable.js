@@ -54,7 +54,7 @@ $.widget('silexlabs.pageable', {
 		
 
 		$('#current-page-style').remove();
-		$('head').append('<style id="current-page-style">.'+this.options.currentPage+'{display:inherit !important;}</style>');
+		$('head').append('<style id="current-page-style">.'+this.options.currentPage+'{display:inherit !important; opacity:inherit; }</style>');
 	}
 });
 })(jQuery);
