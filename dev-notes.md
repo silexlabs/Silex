@@ -39,6 +39,8 @@ com silex
 
 Silex
 
+- .htaccess ?
+- Loader sur images - en mode admin seulement? Gif en background des images
 - autres bugs
 - readme
 - ?système de logs/bug report http://jserrlog.appspot.com/
