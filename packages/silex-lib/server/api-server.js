@@ -12,8 +12,15 @@ var unifile = require('unifile');
 var options = unifile.defaultConfig;
 
 // change www root
-options.www.root = "../../../../../../www";
+options.www.root = "../../../../www";
 
+// DEBUG ONLY
+// define users (login/password) wich will be authorized to access the www folder (read and write)
+/*
+options.www.users = {
+    "admin": "admin"
+}
+*/
 // add static folders
 options.staticFolders.push(
     // file browser
