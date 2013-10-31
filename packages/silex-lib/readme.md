@@ -1,5 +1,9 @@
 #Silex, live web creation.
 
+[![Build Status](https://travis-ci.org/silexlabs/Silex.png?branch=master)](https://travis-ci.org/silexlabs/Silex)
+[![Dependency Status](https://gemnasium.com/silexlabs/Silex.png)](https://gemnasium.com/silexlabs/Silex)
+[![NPM version](https://badge.fury.io/js/Silex.png)](http://badge.fury.io/js/Silex)
+
 ##About Silex
 
 Silex, is a free and open source website buidler in the cloud. Create websites directly in the browser without writing code. And it is suitable for professional designers to produce great websites without constraints. Silex is also known as the HTML5 editor.
@@ -219,4 +223,25 @@ Packaging / distribution
 * sites dynamiques ou administrables
   Google mbaas
   Ou un cms backend only
+
+* FB page editor
+
+* Export to host anywhere
+
+  * data-silex-href to <a> tags
+  * data-silex-* to css
+  * make a js script which cleans up silex dom and converts inline styles to css. The generated html should look like a human did it by hand.
+  * download a zip with all js, css, html, fonts and assets, remove css from the html page, download external medias and scripts
+
+* Export and host it on a free hosting
+
+  * uses an api to upload silex site to a free host
+  * github, assos, ??
+
+* Expot to use in haxe with cocktail
+
+  * port silex scripts to haxe js if needed
+  * remove unsupported css styles
+  * close the html tags (e.g. <img /> instead of <img>)
+  * create the .hx, .hxml, .nmml files to test
 
