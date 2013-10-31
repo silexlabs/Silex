@@ -2,7 +2,6 @@
 
 [![Build Status](https://travis-ci.org/silexlabs/Silex.png?branch=master)](https://travis-ci.org/silexlabs/Silex)
 [![Dependency Status](https://gemnasium.com/silexlabs/Silex.png)](https://gemnasium.com/silexlabs/Silex)
-[![NPM version](https://badge.fury.io/js/Silex.png)](http://badge.fury.io/js/Silex)
 
 ##About Silex
 
