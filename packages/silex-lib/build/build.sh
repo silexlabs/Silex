@@ -1,18 +1,30 @@
-# compile with closure compiler
-#java -jar compiler.jar --js js/controller.js js/helper.js js/model/file.js js/model/selection.js js/view/menu.js js/view/page-tool.js js/view/properties-tool.js js/view/stage.js js/view/texteditor.js js/view/workspace.js 
+#!/bin/sh
 
-# compile with advanced compilation
-# java -jar compiler.jar --compilation_level ADVANCED_OPTIMIZATIONS --js js/controller.js js/helper.js js/model/file.js js/model/selection.js js/view/menu.js js/view/page-tool.js js/view/properties-tool.js js/view/stage.js js/view/texteditor.js js/view/workspace.js 
+# Retrieve the absolute paths
+SCRIPT_PATH="`dirname $0`"
+ROOT=$(cd $SCRIPT_PATH"/.."; pwd)
+
+OPTIM_FLAG=""
+
+if [ "$1" == "release" ]; then
+    OPTIM_FLAG="ADVANCED_OPTIMIZATIONS"
+else
+    if [ "$1" == "debug" ]; then
+        OPTIM_FLAG="SIMPLE_OPTIMIZATIONS"
+    else
+        echo "Build error, wrong params, param 1 is expected to be \"release\" or \"debug\""
+        exit 1
+    fi
+fi
 
 # build with closure builder
-#libs/closure-library/closure/bin/build/closurebuilder.py --root=libs/ --root=js/ --namespace="silex"
-
-# build with closure builder
-closure-library/closure/bin/build/closurebuilder.py \
-  --root=closure-library/ \
-  --root=../src/ \
+$ROOT/build/closure-library/closure/bin/build/closurebuilder.py \
+  --root="$ROOT/build/closure-library/" \
+  --root="$ROOT/src/" \
   --namespace="silex.boot" \
   --output_mode=compiled \
-  --compiler_jar=closure-compiler.jar \
-  > ../bin/js/admin.js
-  
+  --compiler_jar="$ROOT/build/closure-compiler.jar" \
+  --compiler_flags=--compilation_level=$OPTIM_FLAG \
+  --compiler_flags=--externs="$ROOT/cloud-explorer/lib/app/js/cloud-explorer.js" \
+  --compiler_flags=--js_output_file="$ROOT/bin/js/admin.js"
+
