@@ -8,10 +8,9 @@
   ],
   "dependencies": {
     "unifile": "0.0.x",
-    "express": "3.2.x",
+    "express": "3.4.x",
     "dbox": "0.6.x",
     "node-oauth": "0.1.x",
-    "googleapis": "0.2.x",
     "oauth": "",
     "path": ""
   },
@@ -25,7 +24,6 @@
     "cms",
     "rest",
     "dropbox",
-    "google-drive",
     "storage",
     "filepicker",
     "api"
