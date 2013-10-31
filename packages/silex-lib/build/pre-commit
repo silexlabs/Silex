@@ -1,6 +1,10 @@
 #!/bin/sh
 
-exit 1
-echo "..........."
-../../build/build.sh
+# Retrieve the absolute paths
+SCRIPT_PATH="`dirname $0`"
+ROOT=$(cd $SCRIPT_PATH"/../.."; pwd)
+
+# Build
+echo "Building silex bin/js/admin.js"
+$ROOT/build/build.sh debug
 

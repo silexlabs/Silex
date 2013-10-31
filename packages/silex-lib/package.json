@@ -36,6 +36,9 @@
   },
   "scripts" :
   {
-    "test" : "make test"
+    "test" : "make test",
+    "xxxxpostinstall": "post-install-npm.sh"
+  },
+  "devDependencies": {
   }
 }
