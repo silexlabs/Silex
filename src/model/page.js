@@ -139,7 +139,7 @@ silex.model.Page.getPagesForElement = function(element){
 		if(goog.dom.classes.has(element, page.name)){
 			res.push(page);
 		}
-	}, this);
+	});
 	return res;
 }
 ////////////////////////////////////////////////
