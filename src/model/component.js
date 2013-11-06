@@ -108,9 +108,11 @@ silex.model.Component.prototype.setContext = function (context){
 	this.setStyle(this.getStyle(context), context);
 }
 /**
- * style
+ * style with position and size
+ * to set the css style, use setStyle or setBoundingBox
+ * @return the css style object
  */
-silex.model.Component.prototype.getStyle = function (opt_context){
+silex.model.Component.prototype.getCss = function (opt_context){
 	// default value for the state
 	if (!opt_context){
 		opt_context = this.context;
@@ -123,6 +125,38 @@ silex.model.Component.prototype.getStyle = function (opt_context){
 	}
 	// parse the style string
 	var style = silex.Helper.stringToStyle(styleStr);
+
+	// compute the final style object without the undefined and '' values
+	var finalStyle = {};
+	goog.object.forEach(style, function(val, index, obj) {
+		if (val && val !== ''){
+			finalStyle[index] = val;
+		}
+	}, this);
+	return finalStyle;
+}
+/**
+ * @return true if the component has a css style object for the given context
+ */
+silex.model.Component.prototype.hasStyle = function (opt_context){
+	// default value for the state
+	if (!opt_context){
+		opt_context = this.context;
+	}
+	// retrieve the element style
+	var styleStr = this.element.getAttribute('data-style-'+opt_context);
+	if (styleStr){
+		return true;
+	}
+	return false;
+}
+/**
+ * style without position and size
+ */
+silex.model.Component.prototype.getStyle = function (opt_context){
+
+	var style = this.getCss(opt_context);
+
 	// remove the position and size values
 	style.top = undefined;
 	style.left = undefined;
@@ -132,8 +166,16 @@ silex.model.Component.prototype.getStyle = function (opt_context){
 	style.right = undefined;
 	style.zIndex = undefined;
 	style.position = undefined;
+
+	// compute the final style object without the undefined and '' values
+	var finalStyle = {};
+	goog.object.forEach(style, function(val, index, obj) {
+		if (val && val !== ''){
+			finalStyle[index] = val;
+		}
+	}, this);
 	// return the style
-	return style;
+	return finalStyle;
 }
 /**
  * style
@@ -162,8 +204,6 @@ silex.model.Component.prototype.setStyle = function (style, opt_context){
 
 			// apply to the view
 			goog.style.setStyle(this.element, index, val);
-
-
 		}
 	}, this);
 	// add the bounding box if needed
@@ -179,7 +219,12 @@ silex.model.Component.prototype.setStyle = function (style, opt_context){
 		styleStr += 'position: absolute; ';
 	}
 	// store in the model
-	this.element.setAttribute('data-style-'+opt_context, styleStr);
+	if (styleStr !== ''){
+		this.element.setAttribute('data-style-'+opt_context, styleStr);
+	}
+	else{
+		this.element.removeAttribute('data-style-'+opt_context);
+	}
 }
 /**
  * bounding box
@@ -218,13 +263,8 @@ silex.model.Component.prototype.setBoundingBox = function (boundingBox){
 	if (boundingBox.zIndex) goog.style.setStyle(this.element, 'zIndex', boundingBox.zIndex);
 	else goog.style.setStyle(this.element, 'zIndex', null);
 
-	// get the data-style-normal attribute
-	var styleStr = this.element.getAttribute('data-style-'+silex.model.Component.CONTEXT_NORMAL);
-	if (!styleStr){
-		styleStr = '';
-	}
-	// convert to style object
-	var style = silex.Helper.stringToStyle(styleStr);
+	// get the data-style-normal attribute as a css object
+	var style = this.getCss(silex.model.Component.CONTEXT_NORMAL);
 	// update the model
 	style.top = boundingBox.top;
 	style.left = boundingBox.left;
@@ -714,4 +754,34 @@ silex.model.Component.prototype.setSelected = function(isSelected){
  */
 silex.model.Component.prototype.getSelected = function(){
 	return goog.dom.classes.has(this.element, 'silex-selected');
+}
+/**
+ * add a class
+ */
+silex.model.Component.prototype.addClass = function(className){
+	goog.dom.classes.add(this.element, className);
+}
+/**
+ * remove a class
+ */
+silex.model.Component.prototype.removeClass = function(className){
+	goog.dom.classes.remove(this.element, className);
+}
+/**
+ * get css classes
+ */
+silex.model.Component.prototype.getClasses = function(){
+	return goog.dom.classes.get(this.element);
+}
+/**
+ * set css classes
+ */
+silex.model.Component.prototype.getClasses = function(classes){
+	return goog.dom.classes.set(this.element, classes);
+}
+/**
+ * check if the component has a given css class
+ */
+silex.model.Component.prototype.hasClass = function(className){
+	return goog.dom.classes.has(this.element, className);
 }

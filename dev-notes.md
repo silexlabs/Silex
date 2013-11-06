@@ -3,10 +3,8 @@
 
 ##encours
 
+###cloud explorer
 
-cloud explorer
-
-* design
 * find contributors
 
   * Alertes pour liens vers ink
@@ -24,7 +22,7 @@ Stress tests
 
 * https://github.com/ether/etherpad-lite/tree/develop/bin/loadTesting
 
-com silex
+###com silex
 
 * landing page
 
@@ -37,21 +35,33 @@ com silex
 * landing page sur silex.io
 * redirection html5-editor.org
 
-Silex
+###Silex
 
-- .htaccess ?
-- Loader sur images - en mode admin seulement? Gif en background des images
-- autres bugs
-- readme
-- ?système de logs/bug report http://jserrlog.appspot.com/
+dev
+
+* .htaccess ? + suppr admin/admin from default silex install
+* Loader sur images - en mode admin seulement? Gif en background des images + min-width/height
+* autres bugs
+* ? système de logs/bug report http://jserrlog.appspot.com/
 * ajout max/min width/height, pour rendre bottom/right utile
 * Ajout son et video??
+* publish 
+
+  * publish settings = choose a folder in CE
+  * publish in the file menu => check that CE is logged in and do the export to clean html
+  * missing in CE: choose a folder, check logged in (access to a folder), title of the popup
 
 Bugs
 
 * bg properties: manque background-size? scalemode?
 * il y a des images en ligne pour la palette, les mettre en local
-* http://ditesh.gathani.org/blog/2011/07/catching-uncaught-exceptions-in-node-js/
+  GET http://ssl.gstatic.com/editor/editortoolbar.png  (index):1
+  GET http://ssl.gstatic.com/editor/button-bg.png  admin.js:172
+  GET http://ssl.gstatic.com/closure/hsva-sprite-sm.png  ace.js:1
+  GET http://ssl.gstatic.com/editor/button-bg.png  ace.js:1
+  GET http://ssl.gstatic.com/closure/check-sprite.gif  admin.js:71
+  GET http://ssl.gstatic.com/editor/toolbar-bg.png  admin.js:194
+  GET http://ssl.gstatic.com/editor/editortoolbar.png  
 
 ##Notes
 
