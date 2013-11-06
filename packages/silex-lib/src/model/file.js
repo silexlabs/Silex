@@ -420,5 +420,164 @@ silex.model.File.prototype.setTitle = function(name){
 	// update menu
 	this.menu.setWebsiteName(name);
 }
+/**
+ * cleanup html page
+ * remove Silex specific data from HTML
+ * create an external CSS file
+ * generates a list of js scripts and assets to be eported with the file
+ * @return 
+ */
+silex.model.File.prototype.cleanup = function(cbk, opt_errCbk){
+	// build a clean body clone
+	var bodyComponent = this.getStageComponent();
+	var bodyStr = bodyComponent.getHtml();
 
+	// head
+	var headStr = this.stage.getHead();
 
+	// list of css and files (assets, scripts...)
+	var cssArray = [];
+	var files = [];
+
+	// **
+	// get all files and put them into assets/ or scripts/
+	if (!this.getBlob()){
+		if (opt_errCbk){
+			opt_errCbk({
+				message: 'The file must be saved before I can clean it up for you.'
+			})
+		}
+		return;
+	}
+	var baseUrl = this.getBlob().url;
+
+	// image source
+	bodyStr = bodyStr.replace(/src="?([^" ]*)" /g, function(match, group1, group2){
+		var absolute = silex.Helper.getAbsolutePath(group1, baseUrl);
+		var fileName = absolute.substr(absolute.lastIndexOf('/')+1);
+		var newRelativePath = 'assets/' + fileName;
+		files.push({
+			url: absolute
+			, dest: '../' + newRelativePath
+		});
+		var res =  match.replace(group1, newRelativePath);
+		return res;
+	});
+	// url()
+	bodyStr = bodyStr.replace(/url\((['"])(.+?)\1\)/g, function(match, group1, group2){
+		var absolute = silex.Helper.getAbsolutePath(group2, baseUrl);
+		var fileName = absolute.substr(absolute.lastIndexOf('/')+1);
+		var newRelativePath = 'assets/' + fileName;
+		var res = "url('" + newRelativePath +"')";
+		files.push({
+			url: absolute
+			, dest: '../' + newRelativePath
+		});
+		return res;
+	});
+	// css
+	headStr = headStr.replace(/href="?([^" ]*)"/g, function(match, group1, group2){
+		var absolute = silex.Helper.getAbsolutePath(group1, baseUrl);
+		var fileName = absolute.substr(absolute.lastIndexOf('/')+1);
+		var newRelativePath = 'css/' + fileName;
+		files.push({
+			url: absolute
+			, dest: newRelativePath
+		});
+		var res =  match.replace(group1, newRelativePath);
+		return res;
+	});
+	// scripts
+	headStr = headStr.replace(/src="?([^"]*)"/g, function(match, group1, group2){
+		var absolute = silex.Helper.getAbsolutePath(group1, baseUrl);
+		var fileName = absolute.substr(absolute.lastIndexOf('/')+1);
+		var newRelativePath = 'js/' + fileName;
+		files.push({
+			url: absolute
+			, dest: newRelativePath
+		});
+		var res =  match.replace(group1, newRelativePath);
+		return res;
+	});
+
+	// build a clean body clone
+	var bodyElement = goog.dom.createElement('div');
+	bodyElement.innerHTML = bodyStr;
+
+	// head
+	var headElement = goog.dom.createElement('div');
+	headElement.innerHTML = headStr;
+
+	// **
+	// extract the components styles to external .css file
+	var components = goog.dom.getElementsByClass('editable-style', bodyElement);
+	var componentIdx = 0;
+	goog.array.forEach(components, function(node) {
+		var component = new silex.model.Component(node);
+
+		// create a class name for this css
+		var className = 'component_' + componentIdx;
+		component.addClass(className);
+		componentIdx ++;
+		// add the css for this context
+		var cssNormal = component.getCss(silex.model.Component.CONTEXT_NORMAL);
+		cssArray.push({
+			classNames: ['.' + className]
+			, styles: cssNormal
+		});
+		// add the css for this context
+		if (component.hasStyle(silex.model.Component.CONTEXT_HOVER)){
+			var cssHover = component.getCss(silex.model.Component.CONTEXT_HOVER);
+			cssArray.push({
+				classNames: ['.' + className+':hover']
+				, styles: cssHover
+			});
+		}
+		// add the css for this context
+		if (component.hasStyle(silex.model.Component.CONTEXT_PRESSED)){
+			var cssPressed = component.getCss(silex.model.Component.CONTEXT_PRESSED);
+			cssArray.push({
+				classNames: ['.' + className+':pressed']
+				, styles: cssPressed
+			});
+		}
+		// remove inline css styles
+		component.element.removeAttribute('data-style-' + silex.model.Component.CONTEXT_NORMAL);
+		component.element.removeAttribute('data-style-' + silex.model.Component.CONTEXT_HOVER);
+		component.element.removeAttribute('data-style-' + silex.model.Component.CONTEXT_PRESSED);
+		component.element.removeAttribute('style');
+	}, this);
+	// body style
+	var styleStr = this.stage.getBodyStyle();
+	cssArray.push({
+		classNames: ['body']
+		, styles: [styleStr]
+	});
+	// fixme: find patterns to reduce the number of css classes
+	// final css
+	var cssStr = '';
+	goog.array.forEach(cssArray, function(cssData) {
+		var elementCssStr = '';
+		// compute class names
+		goog.array.forEach(cssData.classNames, function(className) {
+			if (elementCssStr != '') elementCssStr += ', ';
+			elementCssStr += className;
+		}, this);
+		// compute styles
+		elementCssStr += '{\n\t' + silex.Helper.styleToString(cssData.styles) + '\n}';
+		cssStr += '\n'+elementCssStr;
+	}, this);
+	// format css
+	cssStr.replace('; ', ';\n\t');
+
+	// final html page
+	var html = '';
+	html += '<html>';
+	html += '<head>'+headElement.innerHTML+'</head>';
+	html += '<body>'+bodyElement.innerHTML+'</body>';
+	html += '</html>';
+
+	console.log('cleanup', html, cssStr, files);
+	// callback
+	cbk(html, cssStr, files)
+}

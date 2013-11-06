@@ -105,15 +105,6 @@ WYSIWYG
 
 * shortcuts (suppr, arrows, save, new, open)
 * set as default page (drag drop pages and change order)
-* analytics to analyse the use of the editor
-
-Properties
-
-* UI sounds?
-* shadows
-* font-*
-* cursor
-* scroll?
 
 Texte
 
@@ -122,7 +113,7 @@ Texte
 
 Components
 
-* media (image, audio, video)
+* ?? media (audio, video)
 * nav bar
 
 File
@@ -155,6 +146,14 @@ Contextual menu on the elements (menu bar under the menu like google?)
 * up/down (z-index)
 * rotation
 
+Properties
+
+* shadows
+* font-*
+* cursor
+* scroll?
+
+
 ###v2.0.0beta1
 
 Continuous integration
@@ -162,11 +161,10 @@ Continuous integration
 * jshint, PhantomJS, jenkins, Selenium
 * unit tests http://stackoverflow.com/questions/11520170/unit-testing-oauth-js-with-mocha
 * functional tests
-* integration http://about.travis-ci.org/docs/user/languages/javascript-with-nodejs/
-
 
 Profesionnal installation
 
+* softaculous virtual install
 * bower?
 
 Remove handlebars.js (and use jade on the server side instead?)
@@ -244,3 +242,8 @@ Packaging / distribution
   * close the html tags (e.g. <img /> instead of <img>)
   * create the .hx, .hxml, .nmml files to test
 
+* widgets 
+
+  * widget agenda
+  * widget player vidéo 
+  * webgl

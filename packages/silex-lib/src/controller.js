@@ -141,6 +141,19 @@ silex.Controller.prototype.menuCallback = function(event){
 					this.tracker.trackAction('controller-events', 'error', event.type, -1);
 				}, this));
 			break;
+		case 'file.export':
+			this.file.cleanup(
+				goog.bind(function (html, css, files) {
+					this.notifySuccess('Your file is cleanedup.');
+					this.tracker.trackAction('controller-events', 'success', event.type, 1);
+					alertify.alert(css.toString());
+					console.info(html);
+				}, this),
+				goog.bind(function (error) {
+					this.notifyError('Error: I did not manage to cleanup the file. <br /><br />'+(error.message || ''));
+					this.tracker.trackAction('controller-events', 'error', event.type, -1);
+				}, this));
+			break;
 
 		case 'file.save':
 			if (!this.file.getBlob()){
