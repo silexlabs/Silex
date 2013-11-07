@@ -181,6 +181,40 @@ silex.view.Stage.prototype.openPage = function(page){
 	$(this.bodyElement).pageable({currentPage:page.name});
 }
 /**
+ * get/set the publication path
+ * @see silex.model.File
+ */
+silex.view.Stage.prototype.setPublicationPath = function(path){
+	var that = this;
+	var found = false;
+	// update the DOM element
+	$('meta[name="publicationPath"]', this.headElement).each(
+	function () {
+		this.setAttribute('content', path);
+		found = true;
+	});
+	if (!found){
+		// create the DOM element
+		var meta = goog.dom.createElement('meta');
+		meta.name = 'publicationPath';
+		meta.content = path;
+		goog.dom.appendChild(this.headElement, meta);
+	}
+}
+/**
+ * get/set the publication path
+ * @see silex.model.File
+ */
+silex.view.Stage.prototype.getPublicationPath = function(){
+	var that = this;
+	var path = null;
+	$('meta[name="publicationPath"]', this.headElement).each(
+	function () {
+		path = this.getAttribute('content');
+	});
+	return path;
+}
+/**
  * set the html content on the stage
  * @param string containing html
  * warning: you are supposed to do stageComponent.setHtml(bodyHtml, baseUrl);

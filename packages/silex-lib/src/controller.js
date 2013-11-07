@@ -58,6 +58,7 @@ silex.Controller = function(
 	this.stage.onStatus = goog.bind(this.stageCallback, this);
 	this.pageTool.onStatus = goog.bind(this.pageToolCallback, this);
 	this.propertiesTool.onStatus = goog.bind(this.propertiesToolCallback, this);
+	this.publishSettings.onStatus = goog.bind(this.publishSettingsCallback, this);
 	this.htmlEditor.onStatus = goog.bind(this.htmlEditorCallback, this);
 	this.textEditor.onStatus = goog.bind(this.textEditorCallback, this);
 
@@ -151,12 +152,25 @@ silex.Controller.prototype.menuCallback = function(event){
 			this.publishSettings.openDialog();
 			break;
 		case 'file.publish':
+/*
 			this.file.cleanup(
 				goog.bind(function (html, css, files) {
 					this.notifySuccess('Your file is cleanedup.');
 					this.tracker.trackAction('controller-events', 'success', event.type, 1);
 					alertify.alert(css.toString());
 					console.info(html);
+				}, this),
+				goog.bind(function (error) {
+					this.notifyError('Error: I did not manage to cleanup the file. <br /><br />'+(error.message || ''));
+					this.tracker.trackAction('controller-events', 'error', event.type, -1);
+				}, this));
+*/
+			this.file.publish(
+				goog.bind(function (ret) {
+					this.notifySuccess('Your site is published. '+ret);
+					this.tracker.trackAction('controller-events', 'success', event.type, 1);
+					alertify.alert(ret);
+					console.info(ret);
 				}, this),
 				goog.bind(function (error) {
 					this.notifyError('Error: I did not manage to cleanup the file. <br /><br />'+(error.message || ''));
@@ -476,6 +490,31 @@ silex.Controller.prototype.createPage = function(successCbk, errorCbk){
 }
 
 /**
+ * publishSettings event handler
+ */
+silex.Controller.prototype.publishSettingsCallback = function(event){
+	switch(event.type){
+		case 'browsePublishPath':
+			this.fileExplorer.openDialog(
+			goog.bind(function (blob) {
+				var url = blob.url.substr(blob.url.indexOf('api/v1.0/')+9);
+				url = url.replace('/exec/get', '');
+				this.file.setPublicationPath(url);
+				this.tracker.trackAction('controller-events', 'success', event.type, 1);
+			}, this),
+			['image/*', 'text/plain'],
+			goog.bind(function (error) {
+				this.notifyError('Error: I could not select the publish path. <br /><br />'+(error.message || ''));
+				this.tracker.trackAction('controller-events', 'error', event.type, -1);
+			}, this)
+			);
+			break;
+		case 'change':
+			this.file.setPublicationPath(event.data);
+			break;
+	}
+}
+/**
  * propertiesTool event handler
  */
 silex.Controller.prototype.propertiesToolCallback = function(event){
@@ -495,7 +534,7 @@ silex.Controller.prototype.propertiesToolCallback = function(event){
 			}, this),
 			['image/*', 'text/plain'],
 			goog.bind(function (error) {
-				this.notifyError('Error: I did not manage to load the image. <br /><br />'+(error.message || ''));
+				this.notifyError('Error: I could not load the image. <br /><br />'+(error.message || ''));
 				this.tracker.trackAction('controller-events', 'error', event.type, -1);
 			}, this)
 			);
