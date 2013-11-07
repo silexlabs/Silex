@@ -20,7 +20,7 @@ goog.require('goog.dom.ViewportSizeMonitor');
  * the Silex workspace class
  * @constructor
  */
-silex.view.Workspace = function(element, menu, stage, pageTool, propertiesTool, htmlEditor, textEditor, fileExplorer){
+silex.view.Workspace = function(element, menu, stage, pageTool, propertiesTool, htmlEditor, textEditor, fileExplorer, publishSettings){
 	this.element = element;
 	this.menu = menu;
 	this.stage = stage;
@@ -29,6 +29,7 @@ silex.view.Workspace = function(element, menu, stage, pageTool, propertiesTool, 
 	this.htmlEditor = htmlEditor;
 	this.textEditor = textEditor;
 	this.fileExplorer = fileExplorer;
+	this.publishSettings = publishSettings;
 
 	this.viewport = new goog.dom.ViewportSizeMonitor();
 
@@ -70,6 +71,10 @@ silex.view.Workspace.prototype.textEditor;
  * reference to the silex.view.FileExplorer class
  */
 silex.view.Workspace.prototype.fileExplorer;
+/**
+ * reference to the silex.view.PublishSettings class
+ */
+silex.view.Workspace.prototype.publishSettings;
 /**
  * element of the dom to which the component is rendered
  */
@@ -141,6 +146,13 @@ silex.view.Workspace.prototype.doRedraw = function(){
 		var posX = (viewportSize.width - fileExplorerSize.width)/2;
 		var posY = (viewportSize.height - fileExplorerSize.height)/2;
 		goog.style.setPosition(this.fileExplorer.element, posX, posY);
+	}
+	// publishSettings
+	if (this.publishSettings.element){
+		var publishSettingsSize = goog.style.getSize(this.publishSettings.element);
+		var posX = (viewportSize.width - publishSettingsSize.width)/2;
+		var posY = (viewportSize.height - publishSettingsSize.height)/2;
+		goog.style.setPosition(this.publishSettings.element, posX, posY);
 	}
 	// no more loading
 	if (goog.dom.classes.has(document.body, 'loading-pending')){

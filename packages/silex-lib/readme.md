@@ -247,3 +247,11 @@ Packaging / distribution
   * widget agenda
   * widget player vidéo 
   * webgl
+
+* Mobile version
+
+  * tabs in the properties toolbox: normal, mobile V, mobile H
+  * mobile => bg set to 100% width, stage set to iPhone width
+  * data-style-mobile-v, data-style-mobile-h complement of data-style-normal, with position and size and URL (...) data only
+  * better design for the toolbox
+  * view menu: iPhone, iPad, web
