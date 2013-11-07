@@ -24,6 +24,7 @@ silex.Controller = function(
 	htmlEditor,
 	textEditor,
 	fileExplorer,
+	publishSettings,
 	file,
 	selection){
 
@@ -43,6 +44,7 @@ silex.Controller = function(
 	this.textEditor = textEditor;
 	this.htmlEditor = htmlEditor;
 	this.fileExplorer = fileExplorer;
+	this.publishSettings = publishSettings;
 
 	// store reference to the model
 	this.file = file;
@@ -104,6 +106,10 @@ silex.Controller.prototype.textEditor;
  */
 silex.Controller.prototype.fileExplorer;
 /**
+ * reference to the PublishSettings component (view)
+ */
+silex.Controller.prototype.publishSettings;
+/**
  * reference to the model
  */
 silex.Controller.prototype.file;
@@ -141,7 +147,10 @@ silex.Controller.prototype.menuCallback = function(event){
 					this.tracker.trackAction('controller-events', 'error', event.type, -1);
 				}, this));
 			break;
-		case 'file.export':
+		case 'file.publish.settings':
+			this.publishSettings.openDialog();
+			break;
+		case 'file.publish':
 			this.file.cleanup(
 				goog.bind(function (html, css, files) {
 					this.notifySuccess('Your file is cleanedup.');

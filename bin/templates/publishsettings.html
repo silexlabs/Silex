@@ -1,0 +1,34 @@
+<link rel="stylesheet" href="css/publishsettings.css">
+<div class="dialog">
+	<div class="header">
+		<div class="title">Website settings<button class="close-btn" type="button"></button></div>
+	</div>
+	<div class="body">
+		<div class="left-pane">
+			<ul class="tree">
+				<li class="selected"><span>Publish settings</span></li>
+			</ul>
+		</div>
+		<div class="right-pane">
+			<ul>
+				<li>
+					<fieldset>
+						<legend>Info</legend>
+						<p>publish your site to a location (publish path) will generate an optimized version, without the data needed by Silex to edit the file again.</p>
+						<p>If you publish to www/ your site will be online on {{baseUrl}}. If you publish on Dropbox, use [service url] to get it live on the web.</p>
+					</fieldset>
+				</li>
+			</ul>
+			<ul>
+				<li>
+					<fieldset>
+						<legend>Publish Path</legend>
+						<p>Path to the folder in wich I will publish the website. This folder content will be deleted.</p>
+						<input type="text" class="input-url" value="{{publishPath}}" />
+						<button class="browse-btn" type="button">...</button>
+					</fieldset>
+				</li>
+			</ul>
+		</div>
+	</div>
+</div>

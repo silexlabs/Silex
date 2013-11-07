@@ -1,0 +1,102 @@
+.silex-publishsettings{
+	position: absolute;
+	z-index: 200;
+	width: 80%;
+	max-width: 929px;
+}
+.silex-publishsettings .dialog {
+	color: #727271;
+	font-style: normal;
+	font-size: 13px;
+	font-family: arial, sans-serif;
+	line-height: normal;
+	max-width: 929px;
+	width: 85%;
+	height: 574px;
+	position: static;
+	margin: auto;
+	background-color: white;
+	border-color: rgb(172, 172, 172);
+	border-style: solid;
+	border-width: 1px;
+	box-shadow: rgba(0, 0, 0, 0.2) 0px 4px 16px 0px;
+	-moz-box-shadow: rgba(0, 0, 0, 0.2) 0px 4px 16px 0px;
+	-webkit-box-shadow: rgba(0, 0, 0, 0.2) 0px 4px 16px 0px;
+}
+.silex-publishsettings .title {
+	border-top: 1px solid rgb(229, 229, 229);
+	height: 20px;
+	padding-bottom: 17px;
+	padding-left: 20px;
+	padding-right: 20px;
+	padding-top: 17px;
+	font-size: 20px;
+}
+.silex-publishsettings .body {
+	border-top: 1px solid rgb(229, 229, 229);
+	overflow-y: auto;
+	overflow-x: hidden;
+	height: 524px;
+	width: 100%;
+}
+.silex-publishsettings .close-btn {
+	background: url("/cloud-explorer/app/assets/close.png") no-repeat center center;
+	background-size: 11px 11px;
+	width: 30px;
+	display: inline-block;
+	border: 0;
+	padding: 0;
+	margin-right: 15px;
+	float: right;
+	margin-right: 10px;
+	height: 30px;
+	cursor: pointer;
+}
+.silex-publishsettings .left-pane {
+	width: 25%;
+	height: 100%;
+	border-right: 1px solid rgb(229, 229, 229);
+	float: left;
+}
+.silex-publishsettings .left-pane ul {
+	list-style: none;
+	margin:0;
+	padding: 0;
+}
+.silex-publishsettings .left-pane ul li {
+	padding: 15px;
+	cursor: pointer;
+}
+.silex-publishsettings .left-pane ul li.selected {
+	font-weight: bold;
+}
+.silex-publishsettings .right-pane {
+	float: left;
+	overflow-y: auto;
+	overflow-x: hidden;
+	height: 524px;
+	width: 74%;
+}
+.silex-publishsettings .right-pane ul {
+	list-style: none;
+	margin:0;
+	padding: 0;
+}
+.silex-publishsettings .right-pane ul li {
+	color: #727271;
+	font-style: normal;
+	font-size: 13px;
+	font-family: arial, sans-serif;
+	line-height: normal;
+}
+.silex-publishsettings .right-pane ul li fieldset {
+	margin: 10px;
+	padding: 10px;
+}
+.silex-publishsettings .right-pane ul li .input-url {
+	width: 85%;
+}
+.silex-publishsettings .right-pane ul li .browse-btn {
+	width: 10%;
+
+}

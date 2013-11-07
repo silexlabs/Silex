@@ -47,9 +47,21 @@ dev
 * Ajout son et video??
 * publish 
 
+  * finish cleanup: head, editable, ...
+  * data-silex-href to <a> tags
   * publish settings = choose a folder in CE
   * publish in the file menu => check that CE is logged in and do the export to clean html
   * missing in CE: choose a folder, check logged in (access to a folder), title of the popup
+
+    Publish
+    - what's new in this version? (=> adds to readme.txt)
+    - .history/deleted_[date]/
+    - set viewport size to background?
+
+    Publish settings
+    - info: publish your site to a location (publish path) will generate an optimized version, without the data needed by Silex to edit the file again. A history of the versions of your site is kept in the .history/ folder. If you publish to www/ your site will be online on [baseUrl]/. If you publish on Dropbox, use [service url] to get it live on the web.
+    - publish path
+  
 
 Bugs
 
