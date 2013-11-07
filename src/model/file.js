@@ -25,7 +25,8 @@ silex.model.File = function(
 	propertiesTool,
 	htmlEditor,
 	textEditor,
-	fileExplorer){
+	fileExplorer,
+	publishSettings){
 
 	// store references to the view components
 	this.workspace = workspace;
@@ -36,6 +37,7 @@ silex.model.File = function(
 	this.htmlEditor = htmlEditor;
 	this.textEditor = textEditor;
 	this.fileExplorer = fileExplorer;
+	this.publishSettings = publishSettings;
 }
 /**
  * creation template URL constant
@@ -73,6 +75,10 @@ silex.model.File.prototype.textEditor;
  * element of the view, to be updated by this model
  */
 silex.model.File.prototype.fileExplorer;
+/**
+ * element of the view, to be updated by this model
+ */
+silex.model.File.prototype.publishSettings;
 /**
  * current file url
  * if the current file is a new file, it has no url
@@ -336,6 +342,8 @@ silex.model.File.prototype.setHtml = function(rawHtml){
 	if (title){
 		this.menu.setWebsiteName(title);
 	}
+	// update publication settings
+	this.setPublicationPath(this.getPublicationPath());
 }
 /**
  * build a string of the raw html content
@@ -378,7 +386,7 @@ silex.model.File.prototype.getHtml = function(){
  */
 silex.model.File.prototype.view = function(){
 	if (!this.getBlob()){
-		alertify.confirm('The publication has to be saved first. Save the publication now?', goog.bind(function(accept){
+		alertify.confirm('The file has to be saved first. Save the file now?', goog.bind(function(accept){
 			if (accept){
 				this.saveAs(goog.bind(function () {
 					window.open(this.getUrl());
@@ -419,6 +427,47 @@ silex.model.File.prototype.setTitle = function(name){
 	}
 	// update menu
 	this.menu.setWebsiteName(name);
+}
+/**
+ * get/set the publication path
+ */
+silex.model.File.prototype.setPublicationPath = function(path){
+	this.publishSettings.setPublicationPath(path);
+	this.stage.setPublicationPath(path);
+}
+/**
+ * get/set the publication path
+ */
+silex.model.File.prototype.getPublicationPath = function(){
+	return this.stage.getPublicationPath();
+}
+/**
+ * publish html page
+ * cleanup HTML
+ * send data to server side export script
+ * @return 
+ */
+silex.model.File.prototype.publish = function(cbk, opt_errCbk){
+	console.log('publish');
+	if (!this.getPublicationPath()){
+		if (opt_errCbk){
+			opt_errCbk({
+				message: 'The publication path must be set before I can clean it up for you.'
+			})
+		}
+		return;
+	}
+	this.cleanup(
+	goog.bind(function (html, css, files) {
+		console.log('publish cleanup ok');
+		silex.service.SilexTasks.getInstance().publish(this.getPublicationPath(), html, css, files, cbk, opt_errCbk);
+	}, this),
+	goog.bind(function (error) {
+		console.error('publish cleanup error', error);
+		if (opt_errCbk){
+			opt_errCbk(error);
+		}
+	}, this));
 }
 /**
  * cleanup html page
@@ -577,7 +626,7 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk){
 	html += '<body>'+bodyElement.innerHTML+'</body>';
 	html += '</html>';
 
-	console.log('cleanup', html, cssStr, files);
+	//console.log('cleanup', html, cssStr, files);
 	// callback
 	cbk(html, cssStr, files)
 }

@@ -145,11 +145,12 @@ silex.boot = function() {
 		// now create an empty file to let the user start using Silex
 		file.newFile(function () {
 			// debug: insert a text field
-/*			controller.menuCallback({type:'insert.text'});
+			controller.menuCallback({type:'insert.text'});
 			controller.menuCallback({type:'insert.container'});
 			controller.menuCallback({type:'insert.html'});
 
 			file.getStageComponent().addImage('../silex.png');
+			file.setPublicationPath('www/test111/');
 
 			setTimeout(function(){
 				var blob = {
@@ -157,7 +158,7 @@ silex.boot = function() {
 				};
 				file.setUrl(blob.url);
 				file.setBlob(blob);
-				controller.menuCallback({type:'file.publish.settings'});
+				controller.menuCallback({type:'file.publish'});
 			}, 1000);
 
 /* *
