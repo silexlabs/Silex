@@ -37,6 +37,13 @@ silex.Helper.resolveTemplate = function(element, templateHtml, data){
     element.innerHTML = template(data);
 }
 /**
+ * Check if an URL is relative or absolute
+ * @return  true if the url is absolute
+ */
+silex.Helper.isAbsoluteUrl = function(url){
+    return url.indexOf('http')===0;
+}
+/**
  * Get a relative path from an absolute URL, given a base URL
  * @param url   a URL which has to end with a '/' or with a file name
  * @param base  a URL which has to end with a '/' or with a file name

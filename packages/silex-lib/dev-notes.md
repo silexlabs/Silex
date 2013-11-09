@@ -44,8 +44,16 @@ dev
 * autres bugs
 * ? système de logs/bug report http://jserrlog.appspot.com/
 * ajout max/min width/height, pour rendre bottom/right utile
-* Ajout son et video??
+
 * publish 
+
+suppr http://localhost:5000 des files
+debug fileFromService
+impl fileFromUrl
+impl fileToService
+select folder dans CE
+ajout liens vers ouvaton et toile-libre? arvixe? autre afiliate?
+cf readme * Export to host anywhere
 
   * finish cleanup: head, editable, ...
   * data-silex-href to <a> tags

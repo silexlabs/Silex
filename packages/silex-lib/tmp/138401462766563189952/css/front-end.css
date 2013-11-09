@@ -1,0 +1,27 @@
+body{
+	width: 100%;
+	height: 100%;
+}
+.silex-page{
+	display: none;
+}
+.background{
+	position: relative !important;
+	left: inherit !important;
+	top: 0px !important; /* !important is useful while editing */
+	margin-left: auto;
+	margin-right: auto;
+	z-index: 1;
+}
+.editable-style{
+	position: absolute;
+}
+.editable-style [data-silex-sub-type="image"] img{
+	border-radius: inherit;
+}
+.editable-style [data-silex-sub-type="html"] .html-content{
+	overflow: auto;
+}
+.editable-style [data-silex-href]{
+	cursor: pointer;
+}
