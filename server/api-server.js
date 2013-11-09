@@ -14,13 +14,25 @@ var options = unifile.defaultConfig;
 // change www root
 options.www.root = "../../../../www";
 
+// silex backend
+app.use('/silex/tasks', express.bodyParser());
+app.use('/silex/tasks', express.cookieParser());
+app.use('/silex/tasks', express.cookieSession({ secret: 'plum plum plum'}));
+
+app.post('/silex/tasks/:task', function(req, res, next){
+    var silexTasks = require('./silex-tasks.js');
+    silexTasks.route(function(result){
+        res.send(result);
+    }, req, res, next, req.params.task);
+});
+
+/* */
 // DEBUG ONLY
 // define users (login/password) wich will be authorized to access the www folder (read and write)
-/*
 options.www.users = {
     "admin": "admin"
 }
-*/
+/* */
 // add static folders
 options.staticFolders.push(
     // file browser
@@ -49,7 +61,8 @@ options.staticFolders.push(
 );
 
 // use unifile as a middleware
-app.use(unifile.middleware(express, app, options));
+var unifileMiddleware = unifile.middleware(express, app, options);
+app.use(unifileMiddleware);
 
 // server 'loop'
 var port = process.env.PORT || 6805; // 6805 is the date of sexual revolution started in paris france 8-)
@@ -57,9 +70,12 @@ app.listen(port, function() {
   console.log('Listening on ' + port);
 });
 
+/* *
+// PRODUCTION ONLY
 // catch all errors and prevent nodejs to crash, production mode
 process.on('uncaughtException', function(err) {
     console.log  ('---------------------');
     console.error('---------------------', 'Caught exception: ', err, '---------------------');
     console.log  ('---------------------');
 });
+/* */

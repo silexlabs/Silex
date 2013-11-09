@@ -38,12 +38,17 @@ silex.service.SilexTasks.prototype.publish = function(path, html, css, files, cb
 	console.log('publish service');
 
 	var url = '/silex/tasks/publish';
+	var qd = new goog.Uri.QueryData(); 
+	qd.add('path', path); 
+	qd.add('html', html); 
+	qd.add('css', css); 
+	qd.add('files', JSON.stringify(files)); 
 	goog.net.XhrIo.send(url, function(e){
 		// success of the request
 		var xhr = e.target;
-		var rawHtml = xhr.getResponse();
+		var json = xhr.getResponseJson();
 		if (xhr.isSuccess()){
-			if (cbk) cbk(rawHtml);
+			if (cbk) cbk(json);
 		}
 		else{
 			var message = xhr.getLastError();
@@ -52,10 +57,5 @@ silex.service.SilexTasks.prototype.publish = function(path, html, css, files, cb
 				opt_errCbk(message);
 			}
 		}
-	}, 'post', [{
-		path: path
-		, html: html
-		, css: css
-		, files: files
-	}]);
+	}, 'POST', qd.toString());
 }

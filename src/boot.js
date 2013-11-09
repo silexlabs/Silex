@@ -144,13 +144,15 @@ silex.boot = function() {
 
 		// now create an empty file to let the user start using Silex
 		file.newFile(function () {
+
+/*
 			// debug: insert a text field
 			controller.menuCallback({type:'insert.text'});
 			controller.menuCallback({type:'insert.container'});
 			controller.menuCallback({type:'insert.html'});
 
 			file.getStageComponent().addImage('../silex.png');
-			file.setPublicationPath('www/test111/');
+			//file.setPublicationPath('www/test111/');
 
 			setTimeout(function(){
 				var blob = {
@@ -161,9 +163,9 @@ silex.boot = function() {
 				controller.menuCallback({type:'file.publish'});
 			}, 1000);
 
-/* *
+/* */
 			// debug: load a file
-			var url = silex.Helper.BaseUrl+'/api/v1.0/www/exec/get/index.html';
+			var url = '../api/v1.0/www/exec/get/temp.html';
 			var blob = {
 				url: url
 			};
@@ -171,9 +173,11 @@ silex.boot = function() {
 				goog.bind(function(rawHtml){
 					// update model
 					file.close();
-					file.setUrl(blob.url);
+					file.setUrl(url);
 					file.setBlob(blob);
 					file.setHtml(rawHtml);
+
+					controller.menuCallback({type:'file.publish'});
 				}, this));
 /* */
 		});

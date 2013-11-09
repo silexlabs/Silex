@@ -152,19 +152,6 @@ silex.Controller.prototype.menuCallback = function(event){
 			this.publishSettings.openDialog();
 			break;
 		case 'file.publish':
-/*
-			this.file.cleanup(
-				goog.bind(function (html, css, files) {
-					this.notifySuccess('Your file is cleanedup.');
-					this.tracker.trackAction('controller-events', 'success', event.type, 1);
-					alertify.alert(css.toString());
-					console.info(html);
-				}, this),
-				goog.bind(function (error) {
-					this.notifyError('Error: I did not manage to cleanup the file. <br /><br />'+(error.message || ''));
-					this.tracker.trackAction('controller-events', 'error', event.type, -1);
-				}, this));
-*/
 			this.file.publish(
 				goog.bind(function (ret) {
 					this.notifySuccess('Your site is published. '+ret);
@@ -497,8 +484,10 @@ silex.Controller.prototype.publishSettingsCallback = function(event){
 		case 'browsePublishPath':
 			this.fileExplorer.openDialog(
 			goog.bind(function (blob) {
-				var url = blob.url.substr(blob.url.indexOf('api/v1.0/')+9);
-				url = url.replace('/exec/get', '');
+				console.log(blob)
+				var url = blob.url.substring(blob.url.indexOf('api/v1.0/')+9, blob.url.lastIndexOf('/'));
+				//var url = blob.url.substr(blob.url.indexOf('api/v1.0/')+9);
+				//url = url.replace('/exec/get', '');
 				this.file.setPublicationPath(url);
 				this.tracker.trackAction('controller-events', 'success', event.type, 1);
 			}, this),

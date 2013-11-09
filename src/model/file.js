@@ -499,15 +499,23 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk){
 		return;
 	}
 	var baseUrl = this.getBlob().url;
+	baseUrl = baseUrl.substring(0, baseUrl.lastIndexOf('/')+1);
 
 	// image source
 	bodyStr = bodyStr.replace(/src="?([^" ]*)" /g, function(match, group1, group2){
 		var absolute = silex.Helper.getAbsolutePath(group1, baseUrl);
+		console.log('found url to import (image)', absolute, absolute.indexOf('http'));
+		var relative = silex.Helper.getRelativePath(absolute, silex.Helper.BaseUrl);
+		// replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
+		if (!silex.Helper.isAbsoluteUrl(relative)){
+			relative = relative.replace('../', '/');
+		} 
 		var fileName = absolute.substr(absolute.lastIndexOf('/')+1);
 		var newRelativePath = 'assets/' + fileName;
 		files.push({
 			url: absolute
-			, dest: '../' + newRelativePath
+			, destPath: newRelativePath
+			, srcPath: relative
 		});
 		var res =  match.replace(group1, newRelativePath);
 		return res;
@@ -515,23 +523,36 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk){
 	// url()
 	bodyStr = bodyStr.replace(/url\((['"])(.+?)\1\)/g, function(match, group1, group2){
 		var absolute = silex.Helper.getAbsolutePath(group2, baseUrl);
+		var relative = silex.Helper.getRelativePath(absolute, silex.Helper.BaseUrl);
+		// replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
+		if (!silex.Helper.isAbsoluteUrl(relative)){
+			relative = relative.replace('../', '/');
+		} 
 		var fileName = absolute.substr(absolute.lastIndexOf('/')+1);
 		var newRelativePath = 'assets/' + fileName;
 		var res = "url('" + newRelativePath +"')";
 		files.push({
 			url: absolute
-			, dest: '../' + newRelativePath
+			, destPath: newRelativePath
+			, srcPath: relative
 		});
 		return res;
 	});
 	// css
 	headStr = headStr.replace(/href="?([^" ]*)"/g, function(match, group1, group2){
 		var absolute = silex.Helper.getAbsolutePath(group1, baseUrl);
+		console.log('found url to import (css)', absolute, absolute.indexOf('http'));
+		var relative = silex.Helper.getRelativePath(absolute, silex.Helper.BaseUrl);
+		// replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
+		if (!silex.Helper.isAbsoluteUrl(relative)){
+			relative = relative.replace('../', '/');
+		} 
 		var fileName = absolute.substr(absolute.lastIndexOf('/')+1);
 		var newRelativePath = 'css/' + fileName;
 		files.push({
 			url: absolute
-			, dest: newRelativePath
+			, destPath: newRelativePath
+			, srcPath: relative
 		});
 		var res =  match.replace(group1, newRelativePath);
 		return res;
@@ -539,11 +560,18 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk){
 	// scripts
 	headStr = headStr.replace(/src="?([^"]*)"/g, function(match, group1, group2){
 		var absolute = silex.Helper.getAbsolutePath(group1, baseUrl);
+		console.log('found url to import (scripts)', absolute, absolute.indexOf('http'));
+		var relative = silex.Helper.getRelativePath(absolute, silex.Helper.BaseUrl);
+		// replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
+		if (!silex.Helper.isAbsoluteUrl(relative)){
+			relative = relative.replace('../', '/');
+		} 
 		var fileName = absolute.substr(absolute.lastIndexOf('/')+1);
 		var newRelativePath = 'js/' + fileName;
 		files.push({
 			url: absolute
-			, dest: newRelativePath
+			, destPath: newRelativePath
+			, srcPath: relative
 		});
 		var res =  match.replace(group1, newRelativePath);
 		return res;
@@ -622,7 +650,7 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk){
 	// final html page
 	var html = '';
 	html += '<html>';
-	html += '<head>'+headElement.innerHTML+'</head>';
+	html += '<head><link href="css/styles.css" rel="stylesheet">'+headElement.innerHTML+'</head>';
 	html += '<body>'+bodyElement.innerHTML+'</body>';
 	html += '</html>';
 
