@@ -49,21 +49,22 @@ dev
 
 select folder dans CE
 
-ajout a publish settings
-- radio button pour choisir entre publish path (advanced users), et apps dropbox (combo avec liste des services)
+ajout a publish
+- settings : radio button pour choisir entre publish path (advanced users), et apps dropbox (combo avec liste des services)
+- history
+  - what's new in this version? (=> adds to readme.txt)
+  - .history/deleted_[date]/
+  - set viewport size to background?
 
-cf readme * Export to host anywhere
-
-  * finish cleanup: head, editable, ...
-  * data-silex-href to <a> tags
+en cours
+  * publier nouvelle version unifile sur npm
+  
+  * internal links / data-silex-href to <a> tags
+  * missing in CE: choose a folder in CE
   * publish settings = choose a folder in CE
   * publish in the file menu => check that CE is logged in and do the export to clean html
-  * missing in CE: choose a folder, check logged in (access to a folder), title of the popup
+  * missing in CE: check logged in and relogin
 
-    Publish
-    - what's new in this version? (=> adds to readme.txt)
-    - .history/deleted_[date]/
-    - set viewport size to background?
 
     Publish settings
     - info: publish your site to a location (publish path) will generate an optimized version, without the data needed by Silex to edit the file again. A history of the versions of your site is kept in the .history/ folder. If you publish to www/ your site will be online on [baseUrl]/. If you publish on Dropbox, use [service url] to get it live on the web.

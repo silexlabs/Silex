@@ -223,18 +223,6 @@ Packaging / distribution
 
 * FB page editor
 
-* Export to host anywhere
-
-  * data-silex-href to <a> tags
-  * data-silex-* to css
-  * make a js script which cleans up silex dom and converts inline styles to css. The generated html should look like a human did it by hand.
-  * download a zip with all js, css, html, fonts and assets, remove css from the html page, download external medias and scripts
-
-* Export and host it on a free hosting
-
-  * uses an api to upload silex site to a free host
-  * github, assos, ??
-
 * Expot to use in haxe with cocktail
 
   * port silex scripts to haxe js if needed
