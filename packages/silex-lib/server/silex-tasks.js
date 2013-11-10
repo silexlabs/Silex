@@ -49,14 +49,19 @@ exports.publish = function(cbk, req, res, next, path, html, css, files){
 			}
 			else{
 				// write the html
-		    	exports.writeFileToService(req, res, next, resolvedPath + '/index.html', html, function (status){
-		    		if(!status.success){
-		    			cbk(status);
+		    	exports.writeFileToService(req, res, next, path + '/index.html', html, function (error){
+		    		if(error){
+		    			cbk({success:false, code: error.code});
 		    		}
 		    		else{
 						// write the css
-				    	exports.writeFileToService(req, res, next, resolvedPath + '/css/styles.css', css, function (status){
-							cbk(status);
+				    	exports.writeFileToService(req, res, next, path + '/css/styles.css', css, function (error){
+				    		if(error){
+				    			cbk({success:false, code: error.code});
+				    		}
+				    		else{
+				    			cbk();
+				    		}
 						});
 		    		}
 		    	});
@@ -100,11 +105,16 @@ exports.getFile = function(req, res, next, srcPath, dstPath, cbk){
  * get file from URL, to a service
  */
 exports.getFileFromUrl = function(req, res, next, srcPath, dstPath, cbk){
-	var file = fs.createWriteStream(dstPath);
+	var data = '';
 	http.get(srcPath, function(result) {
-    	exports.writeFileToService(req, res, next, dstPath, result, function(status) {
-			cbk();
-        });
+		result.on('data', function(chunk) {
+		    data += chunk;
+		  });
+		  result.on('end', function() {
+	    	exports.writeFileToService(req, res, next, dstPath, data, function(status) {
+				cbk();
+	        });
+		  });
 	}).on('error', function(e) {
 		console.error('Error while loading '+srcPath+': ' + e.message);
 		cbk({
@@ -140,9 +150,15 @@ exports.getFileFromService = function(req, res, next, srcPath, dstPath, cbk){
  * call unifile as an api
  */
 exports.writeFileToService = function(req, res, next, url, data, cbk){
+//	req.body = req.body || {};
 	req.body.data = data;
 	exports.unifileRoute(req, res, next, url, function(response, status, data, mime_type, responseFilePath) {
-		cbk(status);
+		if (status.success){
+			cbk();
+		}
+		else{
+			cbk(status);
+		}
     });
 }
 /**
