@@ -579,6 +579,7 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk){
 	// head
 	var headElement = goog.dom.createElement('div');
 	headElement.innerHTML = headStr;
+	$('meta[name="publicationPath"]', headElement).remove();
 
 	// **
 	// extract the components styles to external .css file
@@ -613,11 +614,27 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk){
 				, styles: cssPressed
 			});
 		}
+		// internal links
+		var href = component.element.getAttribute('data-silex-href');
+		
+		console.warn('TODO: internal links');
+		if (false && href)
+		{
+			component.element.tagName = 'a';
+			component.element.setAttribute('href', href);
+			component.element.removeAttribute('data-silex-href');
+		}
+
+		// cleanup styles used during edition
+		component.removeClass('editable-style');
+		component.element.removeAttribute('data-silex-type');
+		component.element.removeAttribute('data-silex-sub-type');
 		// remove inline css styles
 		component.element.removeAttribute('data-style-' + silex.model.Component.CONTEXT_NORMAL);
 		component.element.removeAttribute('data-style-' + silex.model.Component.CONTEXT_HOVER);
 		component.element.removeAttribute('data-style-' + silex.model.Component.CONTEXT_PRESSED);
 		component.element.removeAttribute('style');
+
 	}, this);
 	// body style
 	var styleStr = this.stage.getBodyStyle();
@@ -648,7 +665,7 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk){
 	html += '<head><link href="css/styles.css" rel="stylesheet">'+headElement.innerHTML+'</head>';
 	html += '<body>'+bodyElement.innerHTML+'</body>';
 	html += '</html>';
-
+console.info(html);
 	// callback
 	cbk(html, cssStr, files)
 }

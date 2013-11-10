@@ -48,16 +48,20 @@ exports.publish = function(cbk, req, res, next, path, html, css, files){
 				cbk({success:false, code: error.code});
 			}
 			else{
-				cbk({success: true});
+				// write the html
+		    	exports.writeFileToService(req, res, next, resolvedPath + '/index.html', html, function (status){
+		    		if(!status.success){
+		    			cbk(status);
+		    		}
+		    		else{
+						// write the css
+				    	exports.writeFileToService(req, res, next, resolvedPath + '/css/styles.css', css, function (status){
+							cbk(status);
+						});
+		    		}
+		    	});
 			}
 		});
-return;
-		// write the html
-		var file = fs.createWriteStream(resolvedPath + '/index.html');
-		file.write(html);
-		// write the css
-		var file = fs.createWriteStream(resolvedPath + '/css/styles.css');
-		file.write(css);
 	});
 
 }
@@ -97,9 +101,8 @@ exports.getFile = function(req, res, next, srcPath, dstPath, cbk){
  */
 exports.getFileFromUrl = function(req, res, next, srcPath, dstPath, cbk){
 	var file = fs.createWriteStream(dstPath);
-	http.get(srcPath, function(res) {
-    	req.body.data = res;
-    	exports.unifileRoute(req, res, next, dstPath, function(response, status, data, mime_type, responseFilePath) {
+	http.get(srcPath, function(result) {
+    	exports.writeFileToService(req, res, next, dstPath, result, function(status) {
 			cbk();
         });
 	}).on('error', function(e) {
@@ -115,19 +118,13 @@ exports.getFileFromUrl = function(req, res, next, srcPath, dstPath, cbk){
 exports.getFileFromService = function(req, res, next, srcPath, dstPath, cbk){
 	exports.unifileRoute(req, res, next, srcPath, function (response, status, data, mime_type, responseFilePath) {
     	if (data){
-        	req.body.data = data;
-        	exports.unifileRoute(req, res, next, dstPath, function(response, status, data, mime_type, responseFilePath) {
-		        cbk(status);
-	        });
+	    	exports.writeFileToService(req, res, next, dstPath, data, cbk);
     	}
     	else if (responseFilePath){
 			fs.readFile(responseFilePath, function (err, data) {
 		        if (err) cbk(err);
 		        else {
-		        	req.body.data = data;
-		        	exports.unifileRoute(req, res, next, dstPath, function(response, status, data, mime_type, responseFilePath) {
-				        cbk(status);
-			        });
+			    	exports.writeFileToService(req, res, next, dstPath, data, cbk);
 		        }
 		    });
     	}
@@ -139,6 +136,18 @@ exports.getFileFromService = function(req, res, next, srcPath, dstPath, cbk){
     	}
     });
 }
+/**
+ * call unifile as an api
+ */
+exports.writeFileToService = function(req, res, next, url, data, cbk){
+	req.body.data = data;
+	exports.unifileRoute(req, res, next, url, function(response, status, data, mime_type, responseFilePath) {
+		cbk(status);
+    });
+}
+/**
+ * call unifile as an api
+ */
 exports.unifileRoute = function(req, res, next, url, cbk){
     // split to be able to manipulate each folder
     var url_arr = url.split('/');
@@ -176,15 +185,4 @@ exports.unifileRoute = function(req, res, next, url, cbk){
         	, code: 'Error in service '+serviceName+': '+e
         });
     }
-}
-exports.cp = function(req, res, next, srcPath, savPath, cbk) {
-	fs.readFile(srcPath, function (err, data) {
-        if (err) cbk(err);
-        else {
-	        fs.writeFile (savPath, data, function(err) {
-		        if (err) cbk(err);
-		        else cbk();
-	        });
-        }
-    });
 }

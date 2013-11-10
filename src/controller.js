@@ -152,19 +152,24 @@ silex.Controller.prototype.menuCallback = function(event){
 			this.publishSettings.openDialog();
 			break;
 		case 'file.publish':
-			this.file.publish(
-				goog.bind(function (ret) {
-					this.notifySuccess('Your site is published. '+ret);
-					this.tracker.trackAction('controller-events', 'success', event.type, 1);
-					alertify.alert(ret);
-					console.info(ret);
-				}, this),
-				goog.bind(function (error) {
-					this.notifyError('Error: I did not manage to publish the file. You may want to check the publication settings. <br /><br />'+((error || {}).message || ''));
-					this.tracker.trackAction('controller-events', 'error', event.type, -1);
-				}, this));
+			if (!this.file.getPublicationPath()){
+				this.publishSettings.openDialog();
+			}
+			else
+			{
+				this.file.publish(
+					goog.bind(function (ret) {
+						this.notifySuccess('Your site is published. '+ret);
+						this.tracker.trackAction('controller-events', 'success', event.type, 1);
+						alertify.alert(ret);
+						console.info(ret);
+					}, this),
+					goog.bind(function (error) {
+						this.notifyError('Error: I did not manage to publish the file. You may want to check the publication settings. <br /><br />'+((error || {}).message || ''));
+						this.tracker.trackAction('controller-events', 'error', event.type, -1);
+					}, this));
+			}
 			break;
-
 		case 'file.save':
 			if (!this.file.getBlob()){
 				this.file.saveAs(

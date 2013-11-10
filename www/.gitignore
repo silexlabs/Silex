@@ -1,8 +1,1 @@
-*.hxproj
-*.js.map
-*.swf
-*.sublime-project
-*.sublime-workspace
-*.DS_Store
-.temp
-node_modules
+*
