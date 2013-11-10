@@ -57,7 +57,7 @@ ajout a publish
   - set viewport size to background?
 
 en cours
-  * publier nouvelle version unifile sur npm
+  * super lent => plusieurs opérations en parallele
   
   * internal links / data-silex-href to <a> tags
   * missing in CE: choose a folder in CE

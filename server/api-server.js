@@ -23,6 +23,7 @@ app.post('/silex/tasks/:task', function(req, res, next){
     var silexTasks = require('./silex-tasks.js');
     silexTasks.route(function(result){
         console.log('silex task result', result);
+        if (!result) result = {success:true};
         res.send(result);
     }, req, res, next, req.params.task);
 });
