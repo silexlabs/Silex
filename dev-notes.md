@@ -47,12 +47,11 @@ dev
 
 * publish 
 
-suppr http://localhost:5000 des files
-debug fileFromService
-impl fileFromUrl
-impl fileToService
 select folder dans CE
-ajout liens vers ouvaton et toile-libre? arvixe? autre afiliate?
+
+ajout a publish settings
+- radio button pour choisir entre publish path (advanced users), et apps dropbox (combo avec liste des services)
+
 cf readme * Export to host anywhere
 
   * finish cleanup: head, editable, ...

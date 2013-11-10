@@ -33,14 +33,12 @@ silex.view.PublishSettings = function(element, cbk){
 		}, false, this);
 		var btn = goog.dom.getElementByClass('browse-btn', this.element);
 		goog.events.listen(btn, goog.events.EventType.CLICK, function(){
-			console.log('browse');
 			this.onStatus({
 				type: 'browsePublishPath'
 			});
 		}, false, this);
 		var inputPublicationPath = goog.dom.getElementByClass('input-publication-path');
 		goog.events.listen(inputPublicationPath, goog.ui.Component.EventType.CHANGE, function(){
-			console.log('change');
 			this.onStatus({
 				type: 'change',
 				data: inputPublicationPath.value

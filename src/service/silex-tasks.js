@@ -35,8 +35,6 @@ silex.service.SilexTasks.getInstance = function(){
  * publish a website to a given folder
  */
 silex.service.SilexTasks.prototype.publish = function(path, html, css, files, cbk, opt_errCbk){
-	console.log('publish service');
-
 	var url = '/silex/tasks/publish';
 	var qd = new goog.Uri.QueryData(); 
 	qd.add('path', path); 
@@ -48,7 +46,16 @@ silex.service.SilexTasks.prototype.publish = function(path, html, css, files, cb
 		var xhr = e.target;
 		var json = xhr.getResponseJson();
 		if (xhr.isSuccess()){
-			if (cbk) cbk(json);
+			if (json.success){
+				if (cbk) cbk(json);
+			}
+			else{
+				var message = json.code || json.message;
+				console.error(message, xhr, xhr.isSuccess(), xhr.getStatus(), xhr.headers.toString());
+				if (opt_errCbk){
+					opt_errCbk(message);
+				}
+			}
 		}
 		else{
 			var message = xhr.getLastError();
