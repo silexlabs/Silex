@@ -4,6 +4,9 @@ fs = require('fs');
 http = require('http');
 router = require('unifile/lib/core/router.js');
 
+/**
+ * route the call to a silex task
+ */
 exports.route = function(cbk, req, res, next, task){
 	switch(task){
 		case 'publish':
@@ -11,21 +14,17 @@ exports.route = function(cbk, req, res, next, task){
 		break;
 	}
 }
-exports.createFolders = function(folders, errCbk, cbk){
+/**
+ * create folders needed for publishing
+ */
+exports.createFolders = function(req, res, next, folders, errCbk, cbk){
 	if (folders.length>0){
 		var folder = folders.shift();
-		
-		console.log('fs.mkdir', folder);
-		fs.mkdir(folder, null, function (error) {
-			console.log('fs.mkdir callback', error);
-			if (error){
-				console.error('mkdir error: ', error);
-				errCbk({success:false, code: error.code});
-			}
-			else{
-				exports.createFolders(folders, errCbk, cbk);
-			}
-		});
+		folder = folder.replace('/exec/put/', '/exec/mkdir/')
+		exports.unifileRoute(req, res, next, folder, function(response, status, data, mime_type, responseFilePath) {
+			// do not handle errors, since it is probably due to already existing folders
+			exports.createFolders(req, res, next, folders, errCbk, cbk);
+        });
 	}
 	else{
 		cbk();
@@ -33,28 +32,26 @@ exports.createFolders = function(folders, errCbk, cbk){
 }
 /**
  * the public method called to publish a website to a location
- * create a temp folder, the css, js, assets folders
- * download assets and files
- * write css and html data
+ * copy assets and files to and from unifile services
+ * write css and html data to a unifile service
  */
 exports.publish = function(cbk, req, res, next, path, html, css, files){
 	// folder to store files
-	var tmpPath = '../tmp/' + (new Date().getTime()) + Math.round(Math.random() * 1000000000) + '/';
-	var resolvedPath = pathModule.resolve(__dirname, tmpPath);
-	exports.createFolders([resolvedPath, resolvedPath + '/js', resolvedPath + '/css', resolvedPath + '/assets'], cbk, function (){
-		//console.log('publish', path, html, css, files)
-		console.log('publish');
+//	var tmpPath = '../tmp/' + (new Date().getTime()) + Math.round(Math.random() * 1000000000) + '/';
+//	var resolvedPath = pathModule.resolve(__dirname, tmpPath);
 
-		// get all files to local
-		exports.getAllFiles(req, res, next, files, resolvedPath, function(error){
+	exports.createFolders(req, res, next, [path + '/js', path + '/css', path + '/assets'], cbk, function (){
+		// get all files data and copy it to destination service
+		exports.publishFiles(req, res, next, files, path, function(error){
 			if (error){
-				console.error('Error', error.code);
+				console.error('Error in publishFiles', error);
 				cbk({success:false, code: error.code});
 			}
 			else{
 				cbk({success: true});
 			}
 		});
+return;
 		// write the html
 		var file = fs.createWriteStream(resolvedPath + '/index.html');
 		file.write(html);
@@ -64,15 +61,19 @@ exports.publish = function(cbk, req, res, next, path, html, css, files){
 	});
 
 }
-exports.getAllFiles = function(req, res, next, files, dstPath, cbk){
+/**
+ * get all files data and copy it to destination service
+ */
+exports.publishFiles = function(req, res, next, files, dstPath, cbk){
 	if(files.length>0){
-		var file = files.pop();
+		var file = files.shift();
 		exports.getFile(req, res, next, file.srcPath, dstPath + '/' + file.destPath, function (error) {
 			if (error){
+				console.error('Error in getFile', error);
 				cbk({success:false, code: error.code});
 			}
 			else{
-				exports.getAllFiles(req, res, next, files, dstPath, cbk);
+				exports.publishFiles(req, res, next, files, dstPath, cbk);
 			}
 		});
 	}
@@ -81,7 +82,7 @@ exports.getAllFiles = function(req, res, next, files, dstPath, cbk){
 	}
 }
 /**
- * get file from URL or service, to a service
+ * get one file from URL or service, to a service
  */
 exports.getFile = function(req, res, next, srcPath, dstPath, cbk){
 	if (srcPath.indexOf('http')===0){
@@ -95,14 +96,14 @@ exports.getFile = function(req, res, next, srcPath, dstPath, cbk){
  * get file from URL, to a service
  */
 exports.getFileFromUrl = function(req, res, next, srcPath, dstPath, cbk){
-	console.log('getFileFromUrl', srcPath, dstPath);
 	var file = fs.createWriteStream(dstPath);
 	http.get(srcPath, function(res) {
-		console.log('Got response for '+srcPath+': ' + res.statusCode);
-		res.pipe(file);
-		cbk();
+    	req.body.data = res;
+    	exports.unifileRoute(req, res, next, dstPath, function(response, status, data, mime_type, responseFilePath) {
+			cbk();
+        });
 	}).on('error', function(e) {
-		console.log('Error while loading '+srcPath+': ' + e.message);
+		console.error('Error while loading '+srcPath+': ' + e.message);
 		cbk({
         	code: 'Error while loading '+srcPath+': ' + e.message
         });
@@ -112,68 +113,71 @@ exports.getFileFromUrl = function(req, res, next, srcPath, dstPath, cbk){
  * get file from a service, to a service
  */
 exports.getFileFromService = function(req, res, next, srcPath, dstPath, cbk){
-	console.log('getFileFromService', srcPath, dstPath);
+	exports.unifileRoute(req, res, next, srcPath, function (response, status, data, mime_type, responseFilePath) {
+    	if (data){
+        	req.body.data = data;
+        	exports.unifileRoute(req, res, next, dstPath, function(response, status, data, mime_type, responseFilePath) {
+		        cbk(status);
+	        });
+    	}
+    	else if (responseFilePath){
+			fs.readFile(responseFilePath, function (err, data) {
+		        if (err) cbk(err);
+		        else {
+		        	req.body.data = data;
+		        	exports.unifileRoute(req, res, next, dstPath, function(response, status, data, mime_type, responseFilePath) {
+				        cbk(status);
+			        });
+		        }
+		    });
+    	}
+    	else{
+            console.error('Error, no data in result of '+serviceName);
+            cbk({
+            	code: 'Error, no data in result of '+serviceName
+            });
+    	}
+    });
+}
+exports.unifileRoute = function(req, res, next, url, cbk){
     // split to be able to manipulate each folder
-    var url_arr = srcPath.split('/');
+    var url_arr = url.split('/');
     // remove the first empty '' from the path (first slash)
     url_arr.shift();
     // remove the 'api' path
     url_arr.shift();
     // remove the api version number
     url_arr.shift();
-    console.log('User request:', url_arr);
    // get and remove the service name
     var serviceName = url_arr.shift();
     try{
         if (serviceName){
-            var routed = router.route(serviceName, url_arr, req, res, next, function (response, status, data, mime_type, responseFilePath) {
-            	console.log('router result', status);
-            	if (data){
-					var file = fs.createWriteStream(dstPath);
-					file.write(data);
-                	cbk();
-            	}
-            	else if (responseFilePath){
-            		exports.cp(responseFilePath, dstPath, function (error) {
-            			if (error){
-				            cbk({
-				            	code: 'Error for '+serviceName+ ': ' + error.code
-				            });
-            			}
-            			else{
-	                		cbk();
-            			}
-            		});
-            	}
-            	else{
-	                console.error('no data for '+serviceName);
-		            cbk({
-		            	code: 'no data for '+serviceName
-		            });
-            	}
-            });
+            var routed = router.route(serviceName, url_arr, req, res, next, cbk);
             if (!routed){
                 console.error('Unknown service '+serviceName);
-	            cbk({
-	            	code: 'Unknown service '+serviceName
+	            cbk(res, {
+	            	success: false
+	            	, code: 'Unknown service '+serviceName
 	            });
             }
         }
         else{
             console.error('Unknown service '+serviceName);
             cbk({
-            	code: 'Unknown service '+serviceName
+            	success: false
+	        	, code: 'Unknown service '+serviceName
             });
         }
     }
     catch(e){
-        console.error('Error loading service '+serviceName+': '+e);
-            cbk({
-            	code: 'Error loading service '+serviceName+': '+e
-            });
+        console.error('Error in service '+serviceName+': '+e);
+        cbk({
+        	success: false
+        	, code: 'Error in service '+serviceName+': '+e
+        });
     }
 }
-exports.cp = function(srcPath, savPath, cbk) {
+exports.cp = function(req, res, next, srcPath, savPath, cbk) {
 	fs.readFile(srcPath, function (err, data) {
         if (err) cbk(err);
         else {

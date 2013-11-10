@@ -160,7 +160,7 @@ silex.Controller.prototype.menuCallback = function(event){
 					console.info(ret);
 				}, this),
 				goog.bind(function (error) {
-					this.notifyError('Error: I did not manage to cleanup the file. <br /><br />'+(error.message || ''));
+					this.notifyError('Error: I did not manage to publish the file. You may want to check the publication settings. <br /><br />'+((error || {}).message || ''));
 					this.tracker.trackAction('controller-events', 'error', event.type, -1);
 				}, this));
 			break;
@@ -485,9 +485,10 @@ silex.Controller.prototype.publishSettingsCallback = function(event){
 			this.fileExplorer.openDialog(
 			goog.bind(function (blob) {
 				console.log(blob)
-				var url = blob.url.substring(blob.url.indexOf('api/v1.0/')+9, blob.url.lastIndexOf('/'));
+				var url = blob.url.substring(blob.url.indexOf('/api/v1.0/'), blob.url.lastIndexOf('/'));
+				//var url = blob.url.substring(blob.url.indexOf('api/v1.0/')+9, blob.url.lastIndexOf('/'));
 				//var url = blob.url.substr(blob.url.indexOf('api/v1.0/')+9);
-				//url = url.replace('/exec/get', '');
+				url = url.replace('/exec/get', '/exec/put');
 				this.file.setPublicationPath(url);
 				this.tracker.trackAction('controller-events', 'success', event.type, 1);
 			}, this),

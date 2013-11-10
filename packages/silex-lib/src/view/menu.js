@@ -59,7 +59,7 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
 			{label: 'Save As...', id: 'file.saveas'},
 			null,
 			{label: 'Publish', id: 'file.publish'},
-			{label: 'Publish settings...', id: 'file.publish.settings'},
+			{label: 'Settings...', id: 'file.publish.settings'},
 			null,
 			{label: 'Close File', id: 'file.close'}
 		],

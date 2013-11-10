@@ -22,6 +22,7 @@ app.use('/silex/tasks', express.cookieSession({ secret: 'plum plum plum'}));
 app.post('/silex/tasks/:task', function(req, res, next){
     var silexTasks = require('./silex-tasks.js');
     silexTasks.route(function(result){
+        console.log('silex task result', result);
         res.send(result);
     }, req, res, next, req.params.task);
 });
@@ -70,7 +71,7 @@ app.listen(port, function() {
   console.log('Listening on ' + port);
 });
 
-/* *
+/* */
 // PRODUCTION ONLY
 // catch all errors and prevent nodejs to crash, production mode
 process.on('uncaughtException', function(err) {

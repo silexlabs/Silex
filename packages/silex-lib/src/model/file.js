@@ -448,7 +448,6 @@ silex.model.File.prototype.getPublicationPath = function(){
  * @return 
  */
 silex.model.File.prototype.publish = function(cbk, opt_errCbk){
-	console.log('publish');
 	if (!this.getPublicationPath()){
 		if (opt_errCbk){
 			opt_errCbk({
@@ -459,7 +458,6 @@ silex.model.File.prototype.publish = function(cbk, opt_errCbk){
 	}
 	this.cleanup(
 	goog.bind(function (html, css, files) {
-		console.log('publish cleanup ok');
 		silex.service.SilexTasks.getInstance().publish(this.getPublicationPath(), html, css, files, cbk, opt_errCbk);
 	}, this),
 	goog.bind(function (error) {
@@ -504,7 +502,6 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk){
 	// image source
 	bodyStr = bodyStr.replace(/src="?([^" ]*)" /g, function(match, group1, group2){
 		var absolute = silex.Helper.getAbsolutePath(group1, baseUrl);
-		console.log('found url to import (image)', absolute, absolute.indexOf('http'));
 		var relative = silex.Helper.getRelativePath(absolute, silex.Helper.BaseUrl);
 		// replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
 		if (!silex.Helper.isAbsoluteUrl(relative)){
@@ -541,7 +538,6 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk){
 	// css
 	headStr = headStr.replace(/href="?([^" ]*)"/g, function(match, group1, group2){
 		var absolute = silex.Helper.getAbsolutePath(group1, baseUrl);
-		console.log('found url to import (css)', absolute, absolute.indexOf('http'));
 		var relative = silex.Helper.getRelativePath(absolute, silex.Helper.BaseUrl);
 		// replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
 		if (!silex.Helper.isAbsoluteUrl(relative)){
@@ -560,7 +556,6 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk){
 	// scripts
 	headStr = headStr.replace(/src="?([^"]*)"/g, function(match, group1, group2){
 		var absolute = silex.Helper.getAbsolutePath(group1, baseUrl);
-		console.log('found url to import (scripts)', absolute, absolute.indexOf('http'));
 		var relative = silex.Helper.getRelativePath(absolute, silex.Helper.BaseUrl);
 		// replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
 		if (!silex.Helper.isAbsoluteUrl(relative)){
@@ -654,7 +649,6 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk){
 	html += '<body>'+bodyElement.innerHTML+'</body>';
 	html += '</html>';
 
-	//console.log('cleanup', html, cssStr, files);
 	// callback
 	cbk(html, cssStr, files)
 }
