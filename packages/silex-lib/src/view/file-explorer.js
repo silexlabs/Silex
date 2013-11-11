@@ -116,8 +116,6 @@ silex.view.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes, op
 	// default is html
 	if (!opt_mimetypes) opt_mimetypes = {'mimetype':'text/html'};
 
-	console.log('saveAsDialog ', opt_mimetypes)
-
 	// export dummy data
 	this.filePicker.exportFile( "http://google.com/",
 	opt_mimetypes,

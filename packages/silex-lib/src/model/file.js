@@ -679,7 +679,7 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk){
 	html += '<head><link href="css/styles.css" rel="stylesheet">'+headElement.innerHTML+'</head>';
 	html += '<body>'+bodyElement.innerHTML+'</body>';
 	html += '</html>';
-console.info(html);
+
 	// callback
 	cbk(html, cssStr, files)
 }
