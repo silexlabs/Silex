@@ -133,9 +133,8 @@ Edition
   http://www.webdesignerdepot.com/2008/12/20-excellent-free-rich-text-editors/
   http://mindmup.github.me/bootstrap-wysiwyg/
 
-File properties
+File properties (in the settings dialog)
 
-* background
 * title and description and keywords
 * favicon
 
@@ -211,9 +210,9 @@ Packaging / distribution
 
 * analytics
 
-  * google, yahoo, piwik
+  * in the settings dialog
+  * tracking code + select google, yahoo, piwik
   * track links http://www.seosite.co.uk/outgoing-links-on-google-analytics
-
 
 * mobile optimized version of Silex editor
 
@@ -259,4 +258,4 @@ Packaging / distribution
 
 deployment
   
-  * css
+  * css 
