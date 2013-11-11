@@ -130,7 +130,6 @@ silex.Controller.prototype.menuCallback = function(event){
 	switch(event.type){
 		case 'title.changed':
 			alertify.prompt('What is the name of your website?', goog.bind(function (accept, name) {
-				console.log('prompt return', arguments);
 				if (accept) this.file.setTitle(name);
 			}, this), this.menu.getWebsiteName());
 			break;
@@ -497,7 +496,6 @@ silex.Controller.prototype.publishSettingsCallback = function(event){
 		case 'browsePublishPath':
 			this.fileExplorer.openDialog(
 			goog.bind(function (blob) {
-				console.log(blob)
 				var url = blob.url.substring(blob.url.indexOf('/api/v1.0/'), blob.url.lastIndexOf('/'));
 				//var url = blob.url.substring(blob.url.indexOf('api/v1.0/')+9, blob.url.lastIndexOf('/'));
 				//var url = blob.url.substr(blob.url.indexOf('api/v1.0/')+9);
