@@ -163,7 +163,7 @@ silex.boot = function() {
 				controller.menuCallback({type:'file.publish'});
 			}, 1000);
 
-/* */
+/* *
 			// debug: load a file
 			//var url = '../api/v1.0/www/exec/get/temp.html';
 			var url = '../api/v1.0/dropbox/exec/get/_test/lexoyo.me.html';
