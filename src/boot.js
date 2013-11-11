@@ -23,6 +23,7 @@ goog.require('silex.Helper');
 goog.require('silex.Controller');
 
 goog.require('silex.service.CloudStorage');
+goog.require('silex.service.SilexTasks');
 goog.require('silex.service.Tracker');
 
 goog.require('silex.model.Selection');
