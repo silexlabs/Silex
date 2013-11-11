@@ -150,22 +150,30 @@ silex.Controller.prototype.menuCallback = function(event){
 			break;
 		case 'file.publish.settings':
 			this.publishSettings.openDialog();
+			this.workspace.invalidate();
 			break;
 		case 'file.publish':
 			if (!this.file.getPublicationPath()){
 				this.publishSettings.openDialog();
+				this.workspace.invalidate();
 			}
 			else
 			{
 				this.file.publish(
-					goog.bind(function (ret) {
-						this.notifySuccess('Your site is published. '+ret);
-						this.tracker.trackAction('controller-events', 'success', event.type, 1);
-						alertify.alert(ret);
-						console.info(ret);
+					goog.bind(function (status) {
+						if (status && status.success == false){
+							console.error('Error: I did not manage to publish the file. (1)');
+							this.notifyError('Error: I did not manage to publish the file. You may want to check the publication settings. <br /><br />'+(status.message || status.code || ''));
+							this.tracker.trackAction('controller-events', 'error', event.type, -1);
+						}
+						else{
+							this.notifySuccess('Your site is published. ');
+							this.tracker.trackAction('controller-events', 'success', event.type, 1);
+						}
 					}, this),
 					goog.bind(function (error) {
-						this.notifyError('Error: I did not manage to publish the file. You may want to check the publication settings. <br /><br />'+((error || {}).message || ''));
+						console.error('Error: I did not manage to publish the file. (2)', error);
+						this.notifyError('Error: I did not manage to publish the file. You may want to check the publication settings. <br /><br />'+error);
 						this.tracker.trackAction('controller-events', 'error', event.type, -1);
 					}, this));
 			}

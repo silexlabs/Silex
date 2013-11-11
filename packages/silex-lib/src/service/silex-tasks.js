@@ -44,8 +44,8 @@ silex.service.SilexTasks.prototype.publish = function(path, html, css, files, cb
 	goog.net.XhrIo.send(url, function(e){
 		// success of the request
 		var xhr = e.target;
-		var json = xhr.getResponseJson();
 		if (xhr.isSuccess()){
+			var json = xhr.getResponseJson();
 			if (json.success){
 				if (cbk) cbk(json);
 			}
@@ -59,7 +59,7 @@ silex.service.SilexTasks.prototype.publish = function(path, html, css, files, cb
 		}
 		else{
 			var message = xhr.getLastError();
-			console.error(message, xhr, xhr.isSuccess(), xhr.getStatus(), xhr.headers.toString());
+			console.error(xhr.getLastError(), xhr.getLastErrorCode(), xhr.isSuccess(), xhr.getStatus(), xhr.headers);
 			if (opt_errCbk){
 				opt_errCbk(message);
 			}

@@ -582,6 +582,31 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk){
 	$('meta[name="publicationPath"]', headElement).remove();
 
 	// **
+	// replace internal links <div data-silex-href="..." by <a href="..."
+	// do a first pass, in order to avoid replacing the elements in the <a> containers
+	var components = goog.dom.getElementsByClass('editable-style', bodyElement);
+	goog.array.forEach(components, function(node) {
+		var component = new silex.model.Component(node);
+		var href = component.element.getAttribute('data-silex-href');
+		if (href)
+		{
+			component.element.setAttribute('href', href);
+			component.element.removeAttribute('data-silex-href');
+
+			// create a clone with a different tagname
+			var outerHtml = goog.dom.getOuterHtml(component.element);
+			outerHtml = '<a' + outerHtml.substring(4, outerHtml.length - 6) + '</a>'; // 4 is for <div and 6 for </div>
+
+			// insert the clone at the place of the original and remove the original
+			var fragment = goog.dom.htmlToDocumentFragment(outerHtml);
+			goog.dom.insertSiblingBefore(fragment, component.element);
+			goog.dom.removeNode(component.element);
+
+			// store the reference to the new node
+			component.element = fragment;
+		}
+	}, this);
+	// **
 	// extract the components styles to external .css file
 	var components = goog.dom.getElementsByClass('editable-style', bodyElement);
 	var componentIdx = 0;
@@ -614,16 +639,6 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk){
 				, styles: cssPressed
 			});
 		}
-		// internal links
-		var href = component.element.getAttribute('data-silex-href');
-		
-		console.warn('TODO: internal links');
-		if (false && href)
-		{
-			component.element.tagName = 'a';
-			component.element.setAttribute('href', href);
-			component.element.removeAttribute('data-silex-href');
-		}
 
 		// cleanup styles used during edition
 		component.removeClass('editable-style');
@@ -634,7 +649,6 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk){
 		component.element.removeAttribute('data-style-' + silex.model.Component.CONTEXT_HOVER);
 		component.element.removeAttribute('data-style-' + silex.model.Component.CONTEXT_PRESSED);
 		component.element.removeAttribute('style');
-
 	}, this);
 	// body style
 	var styleStr = this.stage.getBodyStyle();

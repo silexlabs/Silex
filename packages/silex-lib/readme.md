@@ -223,6 +223,19 @@ Packaging / distribution
 
 * FB page editor
 
+* add to publish
+  
+  * settings : radio buttons to choose 
+    * "dropbox apps": combo box with list of services (paperplane.io etc.), combo box to choose a website => set the publish path to Apps/paperplane/the.website.com/
+    *and "publish path" (advanced users), the current behavior
+
+  * history of the versions published
+  
+    * ask "what's new in this version"? (=> track versions in a versions.json file)
+    * .history/deleted_[date]/
+
+  * SEO: https://developers.google.com/webmasters/ajax-crawling/docs/specification
+
 * Expot to use in haxe with cocktail
 
   * port silex scripts to haxe js if needed
