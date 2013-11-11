@@ -256,3 +256,7 @@ Packaging / distribution
   * data-style-mobile-v, data-style-mobile-h complement of data-style-normal, with position and size and URL (...) data only
   * better design for the toolbox
   * view menu: iPhone, iPad, web
+
+deployment
+  
+  * css
