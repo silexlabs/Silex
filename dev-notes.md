@@ -1,4 +1,3 @@
-
 #dev notes
 
 ##encours
@@ -51,12 +50,13 @@ select folder dans CE
 
 en cours
   * super lent => plusieurs opérations en parallele
-  
-  * internal links / data-silex-href to <a> tags
+
+  * add links to sync DB folder with an FTP FTPBox and http://alternativeto.net/software/ftpbox/ 
   * missing in CE: choose a folder in CE
   * publish settings = choose a folder in CE
   * publish in the file menu => check that CE is logged in and do the export to clean html
   * missing in CE: check logged in and relogin
+
 
   
 Bugs
