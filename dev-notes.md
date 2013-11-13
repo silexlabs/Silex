@@ -39,6 +39,7 @@ Stress tests
 
 dev
 
+* suppr www sur silex.me
 * .htaccess ? + suppr admin/admin from default silex install
 * Loader sur images - en mode admin seulement? Gif en background des images + min-width/height
 * autres bugs
