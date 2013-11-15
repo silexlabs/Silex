@@ -692,7 +692,7 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk){
 	var styleStr = this.stage.getBodyStyle();
 	cssArray.push({
 		classNames: ['body']
-		, styles: [styleStr]
+		, styles: styleStr
 	});
 	// fixme: find patterns to reduce the number of css classes
 	// final css
