@@ -55,11 +55,14 @@ a tester :
 * nouvelles pages et retro-compat
 * bug export issue github => fermer issue
 
+a finir
+* test selenium
+* publish super lent => plusieurs opérations en parallele
+* grunt: check avant de compiler
 
   * attention aux regles dans front-end.css (.editable-style [data-silex-sub-type="image"])
-  * less
+  * less au lieu de juste css
 
-  * super lent => plusieurs opérations en parallele
 
   * add links to sync DB folder with an FTP FTPBox and http://alternativeto.net/software/ftpbox/ 
   * missing in CE: choose a folder in CE
