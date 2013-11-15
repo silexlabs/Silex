@@ -35,94 +35,72 @@ The Following folder structure is required:
 */
 module.exports = function(grunt) {
 
-  var srcFiles = [];
-/*
-  grunt.file.recurse('src/js', function (abspath, rootdir, subdir, filename) {
-    console.log(abspath, rootdir, subdir, filename);
-    srcFiles.push(abspath);
-  });
-  grunt.file.recurse('build/closure-library/closure/', function (abspath, rootdir, subdir, filename) {
-    console.log(abspath, rootdir, subdir, filename);
-    srcFiles.push(abspath);
-  });
-  grunt.file.recurse('build/closure-library/third_party/closure/goog/mochikit/async/', function (abspath, rootdir, subdir, filename) {
-    console.log(abspath, rootdir, subdir, filename);
-    srcFiles.push(abspath);
-  });
-*/
   // Project configuration.
   grunt.initConfig({
-    pkg: grunt.file.readJSON('package.json'),
-    csslint: {
+    pkg: grunt.file.readJSON('package.json')
+    , csslint: {
       strict: {
         src: ['src/less/*.css']
       }
-    },
-    compress: {
+    }
+    , compress: {
       main: {
         options: {
           mode: 'gzip'
-        },
-        files: [
+        }
+        , files: [
           {
-            expand: true,
-            src: ['bin/js/admin.min.js'],
-            dest: '',
-            ext: '.min.zipped.js'
-          },
-          {
-            expand: true,
-            src: ['bin/css/admin.min.css'],
-            dest: '',
-            ext: '.min.zipped.css'
+            expand: true
+            , src: ['bin/js/admin.min.js']
+            , dest: ''
+            , ext: '.min.zipped.js'
+          }
+          , {
+            expand: true
+            , src: ['bin/css/admin.min.css']
+            , dest: ''
+            , ext: '.min.zipped.css'
           }
         ]
       }
-    },
-    concat: {
-/*
+    }
+    , concat: {
       dist: {
-        src: ['src/js/model/*.js', 'src/js/view/*.js', 'src/js/view/properties-tool/*.js', 'src/js/service/*.js', 'src/js/*.js'],
-        dest: 'bin/js/admin.js',
-      },
-*/
-      dist: {
-        src: ['src/less/*.css'],
-        dest: 'src/less/temp.less',
-      },
-    },
-    htmllint: {
+        src: ['src/less/*.css']
+        , dest: 'src/less/temp.less'
+      }
+    }
+    , htmllint: {
         all: ["bin/*.html"]
-    },
-    jslint: { 
+    }
+    , jslint: { 
       client: {
         src: [
-          'src/js/*/*.js',
-          'src/js/*.js'
-        ],
-        exclude: [],
+          'src/js/*/*.js'
+          , 'src/js/*.js'
+        ]
+        , exclude: []
       }
-    },
-    less: {
+    }
+    , less: {
       development: {
         files: {
           "bin/css/admin.css": "src/less/temp.less"
         }
-      },
-      production: {
+      }
+      , production: {
         options: {
           cleancss: true
-        },
-        files: {
+        }
+        , files: {
           "bin/css/admin.min.css": "src/less/temp.less"
         }
       }
-    },
-    closureBuilder: {
+    }
+    , closureBuilder: {
       release: {
         options: {
           closureLibraryPath: 'build/closure-library/'
-          //, inputs: 'src/js/boot.js'
           , namespaces: 'silex.boot'
           , builder: 'build/closure-library/closure/bin/build/closurebuilder.py'
           , compilerFile: 'build/closure-compiler.jar'
@@ -136,14 +114,12 @@ module.exports = function(grunt) {
             , use_closure_library: true
           }
         }
-        //, src: ['build/closure-library/closure/**/*.js', 'build/closure-library/third_party/closure/goog/mochikit/async/*.js', 'src/**/*.js']
         , src: ['build/closure-library/', 'src/js/']
         , dest: 'bin/js/admin.min.js'
-      },
-      debug: {
+      }
+      , debug: {
         options: {
           closureLibraryPath: 'build/closure-library/'
-          //, inputs: 'src/js/boot.js'
           , namespaces: 'silex.boot'
           , builder: 'build/closure-library/closure/bin/build/closurebuilder.py'
           , compilerFile: 'build/closure-compiler.jar'
@@ -155,12 +131,11 @@ module.exports = function(grunt) {
             , use_closure_library: true
           }
         }
-        //, src: ['build/closure-library/closure/**/*.js', 'build/closure-library/third_party/closure/goog/mochikit/async/*.js', 'src/**/*.js']
         , src: ['build/closure-library/', 'src/js/']
         , dest: 'bin/js/admin.js'
-      },
-    },
-    watch: {
+      }
+    }
+    , watch: {
         javascript: {
             files: ['src/js/**/*.js', 'src/less/*.css']
             , tasks: ['deploy', 'test']

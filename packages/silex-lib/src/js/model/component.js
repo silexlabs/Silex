@@ -38,6 +38,11 @@ silex.model.Component.CONTEXT_PRESSED='pressed';
 silex.model.Component.TYPE_CONTAINER = 'container';
 /**
  * constant for silex element type
+ * a page is an "a" anchor tag with name set to the page id, and the innerHTML is the page full title
+ */
+silex.model.Component.TYPE_PAGE = 'page';
+/**
+ * constant for silex element type
  */
 silex.model.Component.TYPE_ELEMENT = 'element';
 /**
