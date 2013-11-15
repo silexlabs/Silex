@@ -50,6 +50,11 @@ dev
 select folder dans CE
 
 en cours
+
+  * attention aux regles dans front-end.css (.editable-style [data-silex-sub-type="image"])
+  * bug export issue github
+  * less
+
   * super lent => plusieurs opérations en parallele
 
   * add links to sync DB folder with an FTP FTPBox and http://alternativeto.net/software/ftpbox/ 

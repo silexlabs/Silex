@@ -62,35 +62,35 @@ silex.model.Selection.prototype.context;
 /**
  * element of the view, to be updated by this model
  */
-silex.model.File.prototype.workspace;
+silex.model.Selection.prototype.workspace;
 /**
  * element of the view, to be updated by this model
  */
-silex.model.File.prototype.menu;
+silex.model.Selection.prototype.menu;
 /**
  * element of the view, to be updated by this model
  */
-silex.model.File.prototype.stage;
+silex.model.Selection.prototype.stage;
 /**
  * element of the view, to be updated by this model
  */
-silex.model.File.prototype.pageTool;
+silex.model.Selection.prototype.pageTool;
 /**
  * element of the view, to be updated by this model
  */
-silex.model.File.prototype.propertiesTool;
+silex.model.Selection.prototype.propertiesTool;
 /**
  * element of the view, to be updated by this model
  */
-silex.model.File.prototype.htmlEditor;
+silex.model.Selection.prototype.htmlEditor;
 /**
  * element of the view, to be updated by this model
  */
-silex.model.File.prototype.textEditor;
+silex.model.Selection.prototype.textEditor;
 /**
  * element of the view, to be updated by this model
  */
-silex.model.File.prototype.fileExplorer;
+silex.model.Selection.prototype.fileExplorer;
 /** 
  * page selection
  */

@@ -31,18 +31,15 @@
 	border-color: rgb(172, 172, 172);
 	border-style: solid;
 	border-width: 1px;
-	box-shadow: rgba(0, 0, 0, 0.2) 0px 4px 16px 0px;
-	-moz-box-shadow: rgba(0, 0, 0, 0.2) 0px 4px 16px 0px;
-	-webkit-box-shadow: rgba(0, 0, 0, 0.2) 0px 4px 16px 0px;
+	-moz-box-shadow: rgba(0, 0, 0, 0.2) 0 4px 16px 0;
+	-webkit-box-shadow: rgba(0, 0, 0, 0.2) 0 4px 16px 0;
+	box-shadow: rgba(0, 0, 0, 0.2) 0 4px 16px 0;
 }
 .silex-publishsettings .title {
 	border-top: 1px solid rgb(229, 229, 229);
 	height: 20px;
-	padding-bottom: 17px;
-	padding-left: 20px;
-	padding-right: 20px;
-	padding-top: 17px;
-	font-size: 20px;
+	padding: 17px 20px;
+	font-size: 20;
 }
 .silex-publishsettings .body {
 	border-top: 1px solid rgb(229, 229, 229);

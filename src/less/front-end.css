@@ -8,7 +8,7 @@ body{
 .background{
 	position: relative !important;
 	left: inherit !important;
-	top: 0px !important; /* !important is useful while editing */
+	top: 0 !important; /* !important is useful while editing */
 	margin-left: auto;
 	margin-right: auto;
 	z-index: 1;

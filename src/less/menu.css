@@ -7,8 +7,8 @@
 	cursor: default;
 }
 .silex-menu .website-name{
-	font-family: arial,​sans-serif;
-	font-size: 20px;
+	font-family: "arial", "​sans-serif";
+	font-size: 20;
 	font-style: italic;
 	color: #000000;
 	line-height: 24.65px;
@@ -27,7 +27,7 @@
 	outline-color: #000000;
 	display: inline-block;
 	outline-style: none;
-	outline-width: 0px;
+	outline-width: 0;
 	position:relative;
 	text-decoration: none;
 }
@@ -49,16 +49,13 @@
 	margin-left: 2px;
 }
 .silex-menu .goog-menubar{
-	font-family: Arial,​sans-serif;
+	font-family: "arial", "​sans-serif";
 	font-size: 13px;
 	font-style: normal;
 	color: #000000;
-	line-height: 20px;
+	line-height: 20;
 	height: 35px;
-	margin-top: 0;
-	margin-right: 0;
-	margin-bottom: 0;
-	margin-left: 40px;
+	margin: 0 0 0 40px;
 	padding-top: 0;
 	padding-bottom: 5px;
 
@@ -67,7 +64,7 @@
 	font-stretch: normal;
 	font-variant: normal;
 	outline-style: none;
-	outline-width: 0px;
+	outline-width: 0;
 }
 .silex-menu .goog-menu-button-open {
 background: #fff;

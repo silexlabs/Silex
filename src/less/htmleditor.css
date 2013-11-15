@@ -7,7 +7,7 @@
 }
 .silex-htmleditor .title-bar{
 	border-top: 1px solid #E5E5E5;
-	font-size: 20px;
+	font-size: 20;
 	height: 20px;
 	padding: 17px 20px;
 	background-color: white;
@@ -26,6 +26,6 @@
 	top: 11px;
 	width: 39px;
 }
-div.tr_bubble{
+.tr_bubble{
 	z-index: 999 !important;
 }

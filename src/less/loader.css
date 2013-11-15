@@ -1,5 +1,5 @@
 
-#noTrespassingOuterBarG{
+.noTrespassingOuterBarG{
 height:13px;
 width:100px;
 border:1px solid #000000;
@@ -46,60 +46,42 @@ animation-iteration-count:infinite;
 animation-timing-function:linear;
 }
 
-#noTrespassingFrontBarG{
-}
-
 @-moz-keyframes noTrespassingAnimationG{
-0%{
-margin-left:0px;
-}
+	from {
+	margin-left:0;
+	}
 
-100%{
-margin-left:-24px;
-}
-
+	to {
+	margin-left:-24px;
+	}
 }
 
 @-webkit-keyframes noTrespassingAnimationG{
-0%{
-margin-left:0px;
-}
+	from {
+	margin-left:0;
+	}
 
-100%{
-margin-left:-24px;
-}
-
-}
-
-@-ms-keyframes noTrespassingAnimationG{
-0%{
-margin-left:0px;
-}
-
-100%{
-margin-left:-24px;
-}
-
+	to {
+	margin-left:-24px;
+	}
 }
 
 @-o-keyframes noTrespassingAnimationG{
-0%{
-margin-left:0px;
-}
+	from {
+	margin-left:0;
+	}
 
-100%{
-margin-left:-24px;
-}
-
+	to {
+	margin-left:-24px;
+	}
 }
 
 @keyframes noTrespassingAnimationG{
-0%{
-margin-left:0px;
-}
+	from {
+	margin-left:0;
+	}
 
-100%{
-margin-left:-24px;
-}
-
+	to {
+	margin-left:-24px;
+	}
 }
