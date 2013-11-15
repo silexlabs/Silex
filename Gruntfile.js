@@ -4,9 +4,23 @@ Inspired by https://gist.github.com/madr/7356170
 
 Uses:
 
+* check syntax with *lint
+
+  $ grunt check
+
+* check syntax with *lint, compile with google closure builder/compiler
+
   $ grunt deploy
+
+* check syntax with *lint, compile with google closure builder/compiler, execute functional tests
+
   $ grunt test
+
+* watch and deploy when needed
+
   $ grunt watch
+
+
 
 The Following folder structure is required:
 
@@ -137,8 +151,8 @@ module.exports = function(grunt) {
     }
     , watch: {
         javascript: {
-            files: ['src/js/**/*.js', 'src/less/*.css']
-            , tasks: ['deploy', 'test']
+            files: ['src/js/**/*.js', 'src/less/*.css', 'bin/**/*.html']
+            , tasks: [/*'check', */'deploy']
         }
         , livereload: {
             files: ['Gruntfile.js', 'bin/js/*.js', 'bin/css/*.css', 'bin/assets/**/*.{png,jpg,jpeg,gif,webp,svg}', 'js/*.js', ]
@@ -147,6 +161,17 @@ module.exports = function(grunt) {
             }
         }
     }
+    , simplemocha: {
+        options: {
+          globals: ['should']
+          , timeout: 3000
+          , ignoreLeaks: false
+          , grep: '*-test'
+          , ui: 'bdd'
+          , reporter: 'tap'
+        }
+        , all: { src: 'test/**/*.js' }
+      }
   });
 
   grunt.loadNpmTasks('grunt-closure-tools');
@@ -157,7 +182,11 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-html');
   grunt.loadNpmTasks('grunt-jslint');
-  
+  grunt.loadNpmTasks('grunt-simple-mocha');
+
   grunt.registerTask('deploy', ['concat', 'less:production', 'less:development', 'closureBuilder:debug', 'closureBuilder:release', 'compress']);
-  grunt.registerTask('test', ['htmllint', 'csslint', 'jslint']);  grunt.registerTask('default', ['test', 'deploy', 'watch']);
+  grunt.registerTask('check', ['htmllint', 'csslint', 'jslint']);
+  grunt.registerTask('test', [/*'check', */'deploy', 'simplemocha']);
+  
+  grunt.registerTask('default', ['check', 'deploy', 'watch']);
 }

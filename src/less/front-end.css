@@ -16,12 +16,15 @@ body{
 .editable-style{
 	position: absolute;
 }
-.editable-style [data-silex-sub-type="image"] img{
+.editable-style[data-silex-sub-type="image"] img{
 	border-radius: inherit;
 }
-.editable-style [data-silex-sub-type="html"] .html-content{
+.editable-style[data-silex-sub-type="html"] .html-content{
 	overflow: auto;
 }
-.editable-style [data-silex-href]{
+.editable-style[data-silex-href]{
 	cursor: pointer;
+}
+a[data-silex-type="page"]{
+	display: none;
 }

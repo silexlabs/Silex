@@ -38,7 +38,7 @@
 /***********************
 	html box
 ***********************/
-.editable-style [data-silex-sub-type="html"]:hover .html-content{
+.editable-style[data-silex-sub-type="html"]:hover .html-content{
 	display: none;
 }
 
