@@ -101,8 +101,8 @@ silex.view.Stage.prototype.bodyElement;
 silex.view.Stage.prototype.getPagesNamesFromDom = function(){
 	// retrieve all page names from the head section
 	var pageNames = [];
-	$('meta[name="page"]', this.headElement).each(function() {
-		pageNames.push(this.getAttribute('content'));
+	$('a[data-silex-type="page"]', this.bodyElement).each(function() {
+		pageNames.push(this.getAttribute('name'));
 	});
 	return pageNames;
 }
@@ -112,9 +112,9 @@ silex.view.Stage.prototype.getPagesNamesFromDom = function(){
  */
 silex.view.Stage.prototype.removePage = function(page){
 	// remove the DOM element
-	$('meta[name="page"]', this.headElement).each(
+	$('a[data-silex-type="page"]', this.bodyElement).each(
 		function () {
-			if (this.getAttribute('content')===page.name){
+			if (this.getAttribute('name')===page.name){
 				$(this).remove();
 		}
 	});
@@ -142,10 +142,11 @@ silex.view.Stage.prototype.removePage = function(page){
  */
 silex.view.Stage.prototype.addPage = function(page){
 	// create the DOM element
-	var meta = goog.dom.createElement('meta');
-	meta.name = 'page';
-	meta.content = page.name;
-	goog.dom.appendChild(this.headElement, meta);
+	var aTag = goog.dom.createElement('a');
+	aTag.name = page.name;
+	aTag.setAttribute('data-silex-type', silex.model.Component.TYPE_PAGE);
+	aTag.innerHTML = page.name;
+	goog.dom.appendChild(this.bodyElement, aTag);
 }
 /**
  * rename a page in the dom
@@ -154,10 +155,10 @@ silex.view.Stage.prototype.addPage = function(page){
 silex.view.Stage.prototype.renamePage = function(page, name){
 	var that = this;
 	// update the DOM element
-	$('meta[name="page"]', this.headElement).each(
+	$('a[data-silex-type="page"]', this.bodyElement).each(
 		function () {
-			if (this.getAttribute('content') === page.name){
-				this.setAttribute('content', name);
+			if (this.getAttribute('name') === page.name){
+				this.setAttribute('name', name);
 		}
 	});
 	// update the links to this page

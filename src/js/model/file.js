@@ -344,6 +344,9 @@ silex.model.File.prototype.setHtml = function(rawHtml){
 	}
 	// update publication settings
 	this.setPublicationPath(this.getPublicationPath());
+
+	// handle retrocompatibility issues
+	this.handleRetrocompatibility();
 }
 /**
  * build a string of the raw html content
@@ -428,6 +431,41 @@ silex.model.File.prototype.setTitle = function(name){
 	// update menu
 	this.menu.setWebsiteName(name);
 }
+//////////////////////////////////////////////////////////////////
+// retrocompatibility process
+// called after opening a file
+//////////////////////////////////////////////////////////////////
+/**
+ * handle retrocompatibility issues
+ */
+silex.model.File.prototype.handleRetrocompatibility = function(){
+	var that = this;
+	// handle older page system
+	$('meta[name="page"]', this.stage.headElement).each(function() {
+		// old fashion way to get the name
+		var pageName = this.getAttribute('content');
+		// create a page object
+		var page = new silex.model.Page(
+			pageName,
+			that.workspace,
+			that.menu,
+			that.stage,
+			that.pageTool,
+			that.propertiesTool,
+			that.textEditor,
+			that.fileExplorer
+		);
+		// add in new page system
+		silex.model.Page.addPage(page);
+		// remove the old tag
+		$(this).remove();
+	});
+}
+//////////////////////////////////////////////////////////////////
+// publication process
+// cleanup html and generate assets/ and css/ and js/ folders
+// call the silex-task service, publish task
+//////////////////////////////////////////////////////////////////
 /**
  * get/set the publication path
  */

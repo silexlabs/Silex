@@ -51,6 +51,9 @@ select folder dans CE
 
 en cours
 
+a tester : nouvelles pages et retrocompat
+
+
   * attention aux regles dans front-end.css (.editable-style [data-silex-sub-type="image"])
   * bug export issue github
   * less
