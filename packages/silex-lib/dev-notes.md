@@ -51,11 +51,12 @@ select folder dans CE
 
 en cours
 
-a tester : nouvelles pages et retrocompat
+a tester : 
+* nouvelles pages et retro-compat
+* bug export issue github => fermer issue
 
 
   * attention aux regles dans front-end.css (.editable-style [data-silex-sub-type="image"])
-  * bug export issue github
   * less
 
   * super lent => plusieurs opérations en parallele

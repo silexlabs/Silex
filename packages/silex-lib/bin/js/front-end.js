@@ -15,10 +15,10 @@ $(function() {
 	 * and open the 1st one by default
 	 */
 	var firstPageName = null;
-	var metaPages = $('head meta[name="page"]');
+	var metaPages = $('a[data-silex-type="page"]');
 	if (metaPages && metaPages.length>0){
 		var firstMeta = metaPages[0];
-		firstPageName = firstMeta.getAttribute('content');
+		firstPageName = firstMeta.getAttribute('id');
 	}
 	/**
 	 * init page system
