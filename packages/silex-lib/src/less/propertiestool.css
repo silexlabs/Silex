@@ -50,14 +50,14 @@
 	color: #555555;
 	font-size: 11px;
 }
-.silex-propertiestool .position-editor label.right-bottom{
+.silex-propertiestool .position-editor .right-bottom{
 	width: 25px
 }
-.silex-propertiestool .position-editor label.z-index-label{
+.silex-propertiestool .position-editor .z-index-label{
 	text-align: center;
 	width: 69px;
 }
-.silex-propertiestool .position-editor label.new-line{
+.silex-propertiestool .position-editor .new-line{
 	clear: left;
 }
 .silex-propertiestool .position-editor input{
@@ -85,7 +85,7 @@
 	padding: 0;
 	width: 100%;
 }
-.silex-propertiestool input.opacity-input{
+.silex-propertiestool .opacity-input{
 	width: 47px;
 }
 /* buttons */
@@ -102,7 +102,6 @@
 .silex-propertiestool .tab-page .border-placement-container label,
 .silex-propertiestool .tab-page .corner-placement-container label{
 	display: inline-block;
-	float: left;
 	margin: 4px 2px 0;
 	width: 35%;
 }
@@ -179,7 +178,7 @@
 	font-weight: bold;
 }
 .silex-propertiestool h1{
-	padding: 10px 0 10px 12px;
+	padding: 10 0 10 12px;
 	height: 15px;
 	font-size: 15px;
 }

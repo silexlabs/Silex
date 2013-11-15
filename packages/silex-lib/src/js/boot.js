@@ -15,6 +15,7 @@ goog.provide('silex.boot');
 
 goog.require('goog.dom');
 goog.require('goog.events');
+goog.require('goog.style');
 
 // debug
 //goog.require('silex.Logger');

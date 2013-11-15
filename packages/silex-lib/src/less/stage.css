@@ -1,5 +1,5 @@
 .editable-style {
-	box-shadow: 0px 0px 1px #888888;
+	box-shadow: 0 0 1px #888888;
 
 	-webkit-touch-callout: none;
 	-webkit-user-select: none;
@@ -10,7 +10,7 @@
 	cursor: move;
 }
 .editable-style:hover {
-	box-shadow: 0px 0px 5px #888888;
+	box-shadow: 0 0 5px #888888;
 	opacity: 1 !important;
 }
 .editable-style.silex-selected{
@@ -32,7 +32,7 @@
 	height: 100%;
 	overflow: auto;
 	padding: 5px;
-	padding-bottom: 0;
+	padding-bottom: 0px;
 	position: relative !important; /* because it is changed as body style */
 }
 /***********************
