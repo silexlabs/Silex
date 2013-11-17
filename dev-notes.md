@@ -1,8 +1,6 @@
 #dev notes
 
-##encours
-
-###cloud explorer
+##cloud explorer
 
 * find contributors
 
@@ -21,12 +19,19 @@ Stress tests
 
 * https://github.com/ether/etherpad-lite/tree/develop/bin/loadTesting
 
-###com silex
+##com silex
 
 * landing page
 
   * comme sur http://etherpad.org/ proposer download ou une liste de "public instances"? et aussi le "contribute" qui est bien, et le workflow avec github, le site etc.
   * etudier la com de http://korben.info/bluegriffon-un-excellent-editeur-html-wysiwyg-libre.html
+  * inspirations:
+
+    * http://www.pansnap.co.uk/
+    * http://bathyscaphe.sourceforge.jp/
+    * https://everhour.com/#individual (a utiliser pour tracker le temps)
+    * http://dribbble.com/adamgedney/tags/landing
+    * http://dribbble.com/shots/965728-FREE-Icon-Backgrounds (Pour lexoyo.me? Attention lisence)
 
 * envoi a EO de MS (contact lex)?
 * Alternatives.to wikipedia readme
@@ -34,9 +39,34 @@ Stress tests
 * landing page sur silex.io
 * redirection html5-editor.org
 
-###Silex
+##Silex
 
-dev
+###en cours
+
+a tester :
+
+* sauvegarde de publicationPath dans le html
+* nouvelles pages et retro-compat
+* bug export issue github => fermer issue
+
+a finir
+
+* attention aux regles dans front-end.css (.editable-style [data-silex-sub-type="image"])
+* publish super lent => plusieurs opérations en parallele
+* less au lieu de juste css
+* test selenium
+
+2nd step of publish
+
+* add links to sync DB folder with an FTP FTPBox and http://alternativeto.net/software/ftpbox/ 
+* missing in CE: choose a folder in CE
+* publish settings = choose a folder in CE
+* publish in the file menu => check that CE is logged in and do the export to clean html
+* missing in CE: check logged in and relogin
+
+###Todo
+
+Dev
 
 * suppr www sur silex.me
 * .htaccess ? + suppr admin/admin from default silex install
@@ -45,33 +75,26 @@ dev
 * ? système de logs/bug report http://jserrlog.appspot.com/
 * ajout max/min width/height, pour rendre bottom/right utile
 
-* publish 
+####Containers evolution
 
-select folder dans CE
+Il faut créer des "containers spécialisés", avec une propriété "layout" qui permettent d'aligner son contenu :
+* horizontal
+* vertical
+* tile (les images passent à la ligne quand il n'y a plus la place)
 
-en cours
+Autres possibilités
+* on ajoute les settings au container actuel, qui serait par défaut layout:absolute
+* on fait plusieurs autres containers, chacun pour un comportement
+  * absolute container (l'actuel)
+  * vertical container
+  * horizontal container
+  * tile container
 
-a tester : 
-* nouvelles pages et retro-compat
-* bug export issue github => fermer issue
+Et aussi
 
-a finir
-* test selenium
-* publish super lent => plusieurs opérations en parallele
-* grunt: check avant de compiler
+* fixed container (ne scroll pas)
+* always visible container (quand on scroll, il se déplace tant qu'il n'est pas au bord, mais il reste toujours visible)
 
-  * attention aux regles dans front-end.css (.editable-style [data-silex-sub-type="image"])
-  * less au lieu de juste css
-
-
-  * add links to sync DB folder with an FTP FTPBox and http://alternativeto.net/software/ftpbox/ 
-  * missing in CE: choose a folder in CE
-  * publish settings = choose a folder in CE
-  * publish in the file menu => check that CE is logged in and do the export to clean html
-  * missing in CE: check logged in and relogin
-
-
-  
 Bugs
 
 * set viewport size to background?

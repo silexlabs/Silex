@@ -246,7 +246,7 @@ Packaging / distribution
 
   * widget agenda
   * widget player vidéo 
-  * webgl
+  * webgl (cf open gl editor http://stackoverflow.com/questions/7093354/any-free-open-source-webgl-editors)
 
 * Mobile version
 

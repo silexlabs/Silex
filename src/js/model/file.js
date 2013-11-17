@@ -270,7 +270,6 @@ silex.model.File.prototype.setBodyStyle = function(bodyStyle){
  * Parse the raw html and set the bodyTag and headTag strings
  */
 silex.model.File.prototype.setHtml = function(rawHtml){
-
 	// reset the previous page model
 	var pages = silex.model.Page.getPages();
 	while(pages.length>0) {
@@ -486,6 +485,7 @@ silex.model.File.prototype.getPublicationPath = function(){
  * @return 
  */
 silex.model.File.prototype.publish = function(cbk, opt_errCbk){
+	console.log('file publish',this.getPublicationPath());
 	if (!this.getPublicationPath()){
 		if (opt_errCbk){
 			opt_errCbk({

@@ -2,6 +2,7 @@
 pathModule = require('path');
 fs = require('fs');
 http = require('http');
+https = require('https');
 router = require('unifile/lib/core/router.js');
 
 /**
@@ -106,7 +107,15 @@ exports.getFile = function(req, res, next, srcPath, dstPath, cbk){
  */
 exports.getFileFromUrl = function(req, res, next, srcPath, dstPath, cbk){
 	var data = '';
-	http.get(srcPath, function(result) {
+
+	// http or https
+	var http_s = http;
+	if (srcPath.indexOf('https')===0){
+		http_s = https;
+	}
+
+	// load the file
+	http_s.get(srcPath, function(result) {
 		result.on('data', function(chunk) {
 		    data += chunk;
 		  });
@@ -153,6 +162,7 @@ exports.writeFileToService = function(req, res, next, url, data, cbk){
 //	req.body = req.body || {};
 	req.body.data = data;
 	exports.unifileRoute(req, res, next, url, function(response, status, data, mime_type, responseFilePath) {
+		console.log('writeFileToService, unifileRoute ', url, 'returned', status, data, mime_type, responseFilePath)
 		if (status.success){
 			cbk();
 		}
