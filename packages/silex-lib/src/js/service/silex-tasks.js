@@ -35,6 +35,13 @@ silex.service.SilexTasks.getInstance = function(){
  * publish a website to a given folder
  */
 silex.service.SilexTasks.prototype.publish = function(path, html, css, files, cbk, opt_errCbk){
+	// check inputs
+	if(!path || !html || !css || !files){
+		console.error('Param path, html, css or files missing');
+		if(opt_errCbk) opt_errCbk('Param path, html, css or files missing');
+		return;
+	}
+	console.log('xxx', typeof(path), path);
 	var url = '/silex/tasks/publish';
 	var qd = new goog.Uri.QueryData(); 
 	qd.add('path', path); 
