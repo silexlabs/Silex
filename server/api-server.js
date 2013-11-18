@@ -8,33 +8,14 @@ var express = require('express');
 var app = express();
 var unifile = require('unifile');
 
+// ********************************
 // config
+// ********************************
 var options = unifile.defaultConfig;
 
 // change www root
-options.www.root = "../../../../www";
+options.www.ROOT = "../../../../www";
 
-// silex backend
-app.use('/silex/tasks', express.bodyParser());
-app.use('/silex/tasks', express.cookieParser());
-app.use('/silex/tasks', express.cookieSession({ secret: 'plum plum plum'}));
-
-app.post('/silex/tasks/:task', function(req, res, next){
-    var silexTasks = require('./silex-tasks.js');
-    silexTasks.route(function(result){
-        console.log('silex task result', result);
-        if (!result) result = {success:true};
-        res.send(result);
-    }, req, res, next, req.params.task);
-});
-
-/* */
-// DEBUG ONLY
-// define users (login/password) wich will be authorized to access the www folder (read and write)
-options.www.users = {
-    "admin": "admin"
-}
-/* */
 // add static folders
 options.staticFolders.push(
     // file browser
@@ -62,6 +43,35 @@ options.staticFolders.push(
     }
 );
 
+// get command line args
+var debug = false;
+for (var i in process.argv){
+    var val = process.argv[i];
+    if (val == '-debug') debug = true;
+}
+
+// debug or production mode
+if (!debug){
+    // PRODUCTION ONLY
+    console.warn('Running server in production mode');
+    // catch all errors and prevent nodejs to crash, production mode
+    process.on('uncaughtException', function(err) {
+        console.log  ('---------------------');
+        console.error('---------------------', 'Caught exception: ', err, '---------------------');
+        console.log  ('---------------------');
+    });
+}
+else{
+    // DEBUG ONLY
+    console.warn('Running server in debug mode');
+    // define users (login/password) wich will be authorized to access the www folder (read and write)
+    options.www.USERS = {
+        "admin": "admin"
+    }
+}
+// ********************************
+// unifile server
+// ********************************
 // use unifile as a middleware
 var unifileMiddleware = unifile.middleware(express, app, options);
 app.use(unifileMiddleware);
@@ -72,12 +82,19 @@ app.listen(port, function() {
   console.log('Listening on ' + port);
 });
 
-/* *
-// PRODUCTION ONLY
-// catch all errors and prevent nodejs to crash, production mode
-process.on('uncaughtException', function(err) {
-    console.log  ('---------------------');
-    console.error('---------------------', 'Caught exception: ', err, '---------------------');
-    console.log  ('---------------------');
+// ********************************
+// silex tasks
+// ********************************
+
+app.use('/silex/tasks', express.bodyParser());
+app.use('/silex/tasks', express.cookieParser());
+app.use('/silex/tasks', express.cookieSession({ secret: 'plum plum plum'}));
+
+app.post('/silex/tasks/:task', function(req, res, next){
+    var silexTasks = require('./silex-tasks.js');
+    silexTasks.route(function(result){
+        console.log('silex task result', result);
+        if (!result) result = {success:true};
+        res.send(result);
+    }, req, res, next, req.params.task);
 });
-/* */

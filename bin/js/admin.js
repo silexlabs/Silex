@@ -46488,6 +46488,13 @@ silex.service.SilexTasks.getInstance = function(){
  * publish a website to a given folder
  */
 silex.service.SilexTasks.prototype.publish = function(path, html, css, files, cbk, opt_errCbk){
+	// check inputs
+	if(!path || !html || !css || !files){
+		console.error('Param path, html, css or files missing');
+		if(opt_errCbk) opt_errCbk('Param path, html, css or files missing');
+		return;
+	}
+	console.log('xxx', typeof(path), path);
 	var url = '/silex/tasks/publish';
 	var qd = new goog.Uri.QueryData(); 
 	qd.add('path', path); 
@@ -80547,8 +80554,10 @@ silex.model.File.prototype.handleRetrocompatibility = function(){
  * get/set the publication path
  */
 silex.model.File.prototype.setPublicationPath = function(path){
-	this.publishSettings.setPublicationPath(path);
-	this.stage.setPublicationPath(path);
+	if (path){
+		this.publishSettings.setPublicationPath(path);
+		this.stage.setPublicationPath(path);
+	}
 }
 /**
  * get/set the publication path
@@ -80563,7 +80572,7 @@ silex.model.File.prototype.getPublicationPath = function(){
  * @return 
  */
 silex.model.File.prototype.publish = function(cbk, opt_errCbk){
-	console.log('file publish',this.getPublicationPath());
+	console.log('file publish',this.getPublicationPath());	
 	if (!this.getPublicationPath()){
 		if (opt_errCbk){
 			opt_errCbk({
@@ -81083,7 +81092,7 @@ silex.boot = function() {
 				controller.menuCallback({type:'file.publish'});
 			}, 1000);
 
-/* *
+/* */
 			// debug: load a file
 			//var url = '../api/v1.0/www/exec/get/temp.html';
 			var url = '../api/v1.0/dropbox/exec/get/_test/lexoyo.me.html';

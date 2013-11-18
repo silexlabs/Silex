@@ -37,10 +37,17 @@ exports.createFolders = function(req, res, next, folders, errCbk, cbk){
  * write css and html data to a unifile service
  */
 exports.publish = function(cbk, req, res, next, path, html, css, files){
+	// check inputs
+	if (!cbk || !req || !res || !next || !path || !html || !css || !files){
+		console.error('All attributes needed: cbk, req, res, next, path, html, css, files', !!cbk, !!req, !!res, !!next, !!path, !!html, !!css, !!files)
+		cbk({
+			success: false
+			, code: 'All attributes needed: cbk, req, res, next, path, html, css, files ('+(!!cbk)+', '+(!!req)+', '+(!!res)+', '+(!!next)+', '+(!!path)+', '+(!!html)+', '+(!!css)+', '+(!!files)+')'
+		});
+		return;
+	}
+console.log(path);
 	// folder to store files
-//	var tmpPath = '../tmp/' + (new Date().getTime()) + Math.round(Math.random() * 1000000000) + '/';
-//	var resolvedPath = pathModule.resolve(__dirname, tmpPath);
-
 	exports.createFolders(req, res, next, [path + '/js', path + '/css', path + '/assets'], cbk, function (){
 		// get all files data and copy it to destination service
 		exports.publishFiles(req, res, next, files, path, function(error){
