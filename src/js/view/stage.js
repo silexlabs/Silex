@@ -191,10 +191,17 @@ silex.view.Stage.prototype.setPublicationPath = function(path){
 	// update the DOM element
 	$('meta[name="publicationPath"]', this.headElement).each(
 	function () {
-		this.setAttribute('content', path);
+		if (path && path!==''){
+			// update path
+			this.setAttribute('content', path);
+		}
+		else{
+			// remove the path
+			$(this).remove();
+		}
 		found = true;
 	});
-	if (!found){
+	if (!found && path && path!==''){
 		// create the DOM element
 		var meta = goog.dom.createElement('meta');
 		meta.name = 'publicationPath';

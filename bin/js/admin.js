@@ -30780,10 +30780,17 @@ silex.view.Stage.prototype.setPublicationPath = function(path){
 	// update the DOM element
 	$('meta[name="publicationPath"]', this.headElement).each(
 	function () {
-		this.setAttribute('content', path);
+		if (path && path!==''){
+			// update path
+			this.setAttribute('content', path);
+		}
+		else{
+			// remove the path
+			$(this).remove();
+		}
 		found = true;
 	});
-	if (!found){
+	if (!found && path && path!==''){
 		// create the DOM element
 		var meta = goog.dom.createElement('meta');
 		meta.name = 'publicationPath';
@@ -80554,10 +80561,12 @@ silex.model.File.prototype.handleRetrocompatibility = function(){
  * get/set the publication path
  */
 silex.model.File.prototype.setPublicationPath = function(path){
-	if (path){
-		this.publishSettings.setPublicationPath(path);
-		this.stage.setPublicationPath(path);
+	if (path===''){
+		path = null;
 	}
+
+	this.publishSettings.setPublicationPath(path);
+	this.stage.setPublicationPath(path);
 }
 /**
  * get/set the publication path
@@ -80572,7 +80581,6 @@ silex.model.File.prototype.getPublicationPath = function(){
  * @return 
  */
 silex.model.File.prototype.publish = function(cbk, opt_errCbk){
-	console.log('file publish',this.getPublicationPath());	
 	if (!this.getPublicationPath()){
 		if (opt_errCbk){
 			opt_errCbk({
@@ -81094,8 +81102,8 @@ silex.boot = function() {
 
 /* */
 			// debug: load a file
-			//var url = '../api/v1.0/www/exec/get/temp.html';
-			var url = '../api/v1.0/dropbox/exec/get/_test/lexoyo.me.html';
+			var url = '../api/v1.0/www/exec/get/editable.html';
+			//var url = '../api/v1.0/dropbox/exec/get/_test/lexoyo.me.html';
 			var blob = {
 				url: url
 			};
