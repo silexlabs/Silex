@@ -469,10 +469,12 @@ silex.model.File.prototype.handleRetrocompatibility = function(){
  * get/set the publication path
  */
 silex.model.File.prototype.setPublicationPath = function(path){
-	if (path){
-		this.publishSettings.setPublicationPath(path);
-		this.stage.setPublicationPath(path);
+	if (path===''){
+		path = null;
 	}
+
+	this.publishSettings.setPublicationPath(path);
+	this.stage.setPublicationPath(path);
 }
 /**
  * get/set the publication path
@@ -487,7 +489,6 @@ silex.model.File.prototype.getPublicationPath = function(){
  * @return 
  */
 silex.model.File.prototype.publish = function(cbk, opt_errCbk){
-	console.log('file publish',this.getPublicationPath());	
 	if (!this.getPublicationPath()){
 		if (opt_errCbk){
 			opt_errCbk({
