@@ -45,12 +45,12 @@ Stress tests
 
 a tester :
 
-* sauvegarde de publicationPath dans le html
 * nouvelles pages et retro-compat
 * bug export issue github => fermer issue
 
 a finir
 
+* update front-end.* sur static silex
 * attention aux regles dans front-end.css (.editable-style [data-silex-sub-type="image"])
 * publish super lent => plusieurs opérations en parallele
 * less au lieu de juste css

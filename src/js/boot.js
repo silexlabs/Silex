@@ -167,7 +167,7 @@ silex.boot = function() {
 
 /* */
 			// debug: load a file
-			var url = '../api/v1.0/www/exec/get/editable.html';
+			var url = '../api/v1.0/www/exec/get/temp.html';
 			//var url = '../api/v1.0/dropbox/exec/get/_test/lexoyo.me.html';
 			var blob = {
 				url: url
@@ -179,7 +179,7 @@ silex.boot = function() {
 					file.setUrl(url);
 					file.setBlob(blob);
 					file.setHtml(rawHtml);
-
+return;
 					controller.menuCallback({type:'file.publish'});
 				}, this));
 /* */
