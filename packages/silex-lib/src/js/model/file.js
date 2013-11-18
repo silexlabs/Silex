@@ -454,8 +454,9 @@ silex.model.File.prototype.handleRetrocompatibility = function(){
 			that.textEditor,
 			that.fileExplorer
 		);
+		console.log('retro compat in action', this, page);
 		// add in new page system
-		silex.model.Page.addPage(page);
+		page.attach();
 		// remove the old tag
 		$(this).remove();
 	});
