@@ -162,7 +162,7 @@ silex.Controller.prototype.menuCallback = function(event){
 					goog.bind(function (status) {
 						if (status && status.success == false){
 							console.error('Error: I did not manage to publish the file. (1)');
-							this.notifyError('Error: I did not manage to publish the file. You may want to check the publication settings. <br /><br />'+(status.message || status.code || ''));
+							this.notifyError('I did not manage to publish the file. You may want to check the publication settings and your internet connection. <br /><br />Error message: '+(status.message || status.code || ''));
 							this.tracker.trackAction('controller-events', 'error', event.type, -1);
 						}
 						else{
@@ -172,7 +172,7 @@ silex.Controller.prototype.menuCallback = function(event){
 					}, this),
 					goog.bind(function (error) {
 						console.error('Error: I did not manage to publish the file. (2)', error);
-						this.notifyError('Error: I did not manage to publish the file. You may want to check the publication settings. <br /><br />'+error);
+						this.notifyError('I did not manage to publish the file. You may want to check the publication settings and your internet connection. <br /><br />Error message: '+error);
 						this.tracker.trackAction('controller-events', 'error', event.type, -1);
 					}, this));
 			}
