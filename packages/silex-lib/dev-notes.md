@@ -45,15 +45,15 @@ Stress tests
 
 a tester :
 
-* nouvelles pages et retro-compat
 * bug export issue github => fermer issue
 
 a finir
 
+* debug "grunt test"
 * update front-end.* sur static silex
+* push unifile et silex
 * attention aux regles dans front-end.css (.editable-style [data-silex-sub-type="image"])
-* publish super lent => plusieurs opérations en parallele
-* less au lieu de juste css
+* ? publish super lent => plusieurs opérations en parallele
 * test selenium
 
 2nd step of publish
@@ -68,8 +68,7 @@ a finir
 
 Dev
 
-* suppr www sur silex.me
-* .htaccess ? + suppr admin/admin from default silex install
+* less au lieu de juste css
 * Loader sur images - en mode admin seulement? Gif en background des images + min-width/height
 * autres bugs
 * ? système de logs/bug report http://jserrlog.appspot.com/

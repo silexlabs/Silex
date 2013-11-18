@@ -49,7 +49,9 @@
     , "grunt-contrib-watch": "~0.5.3"
     , "grunt-html": "~0.3.4"
     , "grunt-closure-tools": "~0.8.4"
-    , "selenium-webdriver": "~2.37.0"
     , "grunt-simple-mocha": "~0.4.0"
+    , "mocha": "~1.14.0"
+    , "chai": "~1.8.1"
+    , "webdriverjs": "~0.7.14"
   }
 }

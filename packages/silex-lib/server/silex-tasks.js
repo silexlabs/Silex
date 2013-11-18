@@ -46,7 +46,6 @@ exports.publish = function(cbk, req, res, next, path, html, css, files){
 		});
 		return;
 	}
-console.log(path);
 	// folder to store files
 	exports.createFolders(req, res, next, [path + '/js', path + '/css', path + '/assets'], cbk, function (){
 		// get all files data and copy it to destination service
