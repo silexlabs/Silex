@@ -8,6 +8,11 @@ var express = require('express');
 var app = express();
 var unifile = require('unifile');
 
+// use express for silex tasks (has to be done before app.use(unifile.middleware(...))
+app.use('/silex/tasks', express.bodyParser());
+app.use('/silex/tasks', express.cookieParser());
+app.use('/silex/tasks', express.cookieSession({ secret: 'plum plum plum'}));
+
 // ********************************
 // config
 // ********************************
@@ -73,8 +78,7 @@ else{
 // unifile server
 // ********************************
 // use unifile as a middleware
-var unifileMiddleware = unifile.middleware(express, app, options);
-app.use(unifileMiddleware);
+app.use(unifile.middleware(express, app, options));
 
 // server 'loop'
 var port = process.env.PORT || 6805; // 6805 is the date of sexual revolution started in paris france 8-)
@@ -85,10 +89,6 @@ app.listen(port, function() {
 // ********************************
 // silex tasks
 // ********************************
-
-app.use('/silex/tasks', express.bodyParser());
-app.use('/silex/tasks', express.cookieParser());
-app.use('/silex/tasks', express.cookieSession({ secret: 'plum plum plum'}));
 
 app.post('/silex/tasks/:task', function(req, res, next){
     var silexTasks = require('./silex-tasks.js');
