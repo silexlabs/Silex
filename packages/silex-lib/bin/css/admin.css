@@ -13,9 +13,9 @@ body {
   display: none;
 }
 .background {
-  position: relative;
-  left: inherit;
-  top: 0;
+  position: relative !important;
+  left: inherit !important;
+  top: 0 !important;
   /* !important is useful while editing */
   margin-left: auto;
   margin-right: auto;
@@ -24,10 +24,10 @@ body {
 .editable-style {
   position: absolute;
 }
-.editable-style[data-silex-sub-type="image"] img {
-  border-radius: inherit;
-}
-.editable-style[data-silex-sub-type="html"] .html-content {
+.editable-style[data-silex-sub-type="image"],
+.silex-image,
+.editable-style[data-silex-sub-type="html"] .html-content,
+.silex-html {
   overflow: auto;
 }
 .editable-style[data-silex-href] {
@@ -637,6 +637,14 @@ body.loading-pending .loader {
   user-select: none;
   cursor: move;
 }
+/* images */
+.editable-style[data-silex-sub-type="image"] {
+  overflow: visible;
+}
+.editable-style[data-silex-sub-type="image"] img {
+  border-radius: inherit;
+}
+/* /images */
 .editable-style:hover {
   box-shadow: 0 0 5px #888888;
   opacity: 1 !important;

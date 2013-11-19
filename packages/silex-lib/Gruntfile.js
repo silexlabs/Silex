@@ -53,13 +53,11 @@ module.exports = function(grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json')
     , csslint: {
-      strict: {
-        src: ['src/less/*.css']
-      }
-      , lax: {
+      lax: {
         src: ['src/less/*.css']
         , options: {
           important: false // useful when opening a website in Silex
+          , "adjoining-classes": false
         }
       }
     }
@@ -96,7 +94,7 @@ module.exports = function(grunt) {
     , jslint: { 
       client: {
         src: [
-          'src/js/*/*.js'
+          ['build/closure-library/closure/goog/base.js', 'build/closure-library/closure/**/*.js', 'src/js/*/*.js']
           , 'src/js/*.js'
         ]
         , exclude: []
@@ -104,11 +102,6 @@ module.exports = function(grunt) {
     }
     , less: {
       development: {
-        files: {
-          "bin/css/admin.css": "src/less/.temp"
-        }
-      }
-      , production: {
         options: {
           cleancss: true
         }
@@ -116,25 +109,64 @@ module.exports = function(grunt) {
           "bin/css/admin.min.css": "src/less/.temp"
         }
       }
+      , production: {
+        files: {
+          "bin/css/admin.css": "src/less/.temp"
+        }
+      }
     }
     , closureBuilder: {
       release: {
         options: {
           closureLibraryPath: 'build/closure-library/'
-          , namespaces: 'silex.boot'
+          , namespaces: ['silex.boot']
           , builder: 'build/closure-library/closure/bin/build/closurebuilder.py'
           , compilerFile: 'build/closure-compiler.jar'
-          , output_mode: ''
           , compile: true
           , compilerOpts: {
-            compilation_level: 'ADVANCED_OPTIMIZATIONS'
+            compilation_level: 'SIMPLE_OPTIMIZATIONS'
             , warning_level: 'QUIET'
             , externs: 'cloud-explorer/lib/app/js/cloud-explorer.js'
             , debug: false
-            , use_closure_library: true
+//            , only_closure_dependencies: true
+//            , closure_entry_point: 'silex.boot'
+//            , use_closure_library: true
+//            , closure_entry_point: 'build/closure-library/closure/goog/base.js'
+//            , process_closure_primitives: true
           }
         }
-        , src: ['build/closure-library/', 'src/js/']
+        , src: ['src/js/', 'build/closure-library/']
+        , dest: 'bin/js/admin.min.js'
+      }
+      , xxxrelease: {
+        options: {
+          closureLibraryPath: 'build/closure-library/'
+          , namespaces: ['silex.boot', 'goog']
+          , builder: 'build/closure-library/closure/bin/build/closurebuilder.py'
+          , compilerFile: 'build/closure-compiler.jar'
+          , compile: true
+          , compilerOpts: {
+            compilation_level: 'ADVANCED_OPTIMIZATIONS'
+            , externs: 'cloud-explorer/lib/app/js/cloud-explorer.js'
+            , debug: false
+            , only_closure_dependencies: true
+            , closure_entry_point: 'silex.boot'
+            , process_closure_primitives: true
+            , warning_level: 'QUIET'
+          }
+        }
+        //java -jar bin/compiler.jar 
+        // --js closure-library/closure/goog/base.js 
+        // --js app.js 
+        // --externs externs.js 
+        // --manage_closure_dependencies true 
+        // --process_closure_primitives true 
+        // --summary_detail_level 3 
+        // --warning_level VERBOSE 
+        // --compilation_level=ADVANCED_OPTIMIZATIONS 
+        // --closure_entry_point my.ap
+        
+        , src: ['src/js/']
         , dest: 'bin/js/admin.min.js'
       }
       , debug: {
@@ -187,12 +219,12 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-less');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-html');
-  grunt.loadNpmTasks('grunt-jslint');
+  grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-simple-mocha');
 
   grunt.registerTask('deploy', ['concat', 'less:production', 'less:development', 'closureBuilder:debug', 'closureBuilder:release', 'compress']);
   grunt.registerTask('check', ['htmllint', 'csslint:lax', 'jslint']);
-  grunt.registerTask('test', [/*'check', */'deploy', 'simplemocha']);
+  grunt.registerTask('test', ['check', 'deploy', 'simplemocha']);
   
-  grunt.registerTask('default', ['check', 'deploy', 'watch']);
+  grunt.registerTask('default', ['check', 'deploy']);
 }
