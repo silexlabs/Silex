@@ -20,6 +20,14 @@ $(function() {
 		var firstMeta = metaPages[0];
 		firstPageName = firstMeta.getAttribute('id');
 	}
+	else{
+		// legacy
+		metaPages = $('meta[name="page"]');
+		if (metaPages && metaPages.length>0){
+			var firstMeta = metaPages[0];
+			firstPageName = firstMeta.getAttribute('content');
+		}
+	}
 	/**
 	 * init page system
 	 */
@@ -61,7 +69,6 @@ $(function() {
 	 * set silex state to an element, e.g. normal, hover, pressed states
 	 */
 	function silexSetState (element, state) {
-		console.log('silexSetState', element, state);
 		// apply normal style first
 		element.setAttribute('style', element.getAttribute('data-style-normal'));
 
@@ -73,7 +80,6 @@ $(function() {
 				var pair = stylesStr[idx].split(':');
 				styles[pair[0]] = pair[1];
 			}
-			console.log(styles);
 			$(element).css(styles);
 		}
 	}
