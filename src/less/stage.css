@@ -9,6 +9,15 @@
 	user-select: none;
 	cursor: move;
 }
+/* images */
+.editable-style[data-silex-sub-type="image"]{
+	overflow: visible;
+}
+.editable-style[data-silex-sub-type="image"] img{
+	border-radius: inherit;
+}
+/* /images */
+
 .editable-style:hover {
 	box-shadow: 0 0 5px #888888;
 	opacity: 1 !important;

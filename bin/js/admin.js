@@ -80757,10 +80757,12 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk){
 	goog.array.forEach(components, function(node) {
 		var component = new silex.model.Component(node);
 
+		// add the component type
+		var classNameType = 'silex-' + component.type;
+		component.addClass(classNameType);
 		// create a class name for this css
-		var className = 'component_' + componentIdx;
+		var className = 'component-' + (componentIdx++);
 		component.addClass(className);
-		componentIdx ++;
 		// add the css for this context
 		var cssNormal = component.getCss(silex.model.Component.CONTEXT_NORMAL);
 		cssArray.push({
