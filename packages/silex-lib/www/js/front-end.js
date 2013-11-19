@@ -15,10 +15,18 @@ $(function() {
 	 * and open the 1st one by default
 	 */
 	var firstPageName = null;
-	var metaPages = $('head meta[name="page"]');
+	var metaPages = $('a[data-silex-type="page"]');
 	if (metaPages && metaPages.length>0){
 		var firstMeta = metaPages[0];
-		firstPageName = firstMeta.getAttribute('content');
+		firstPageName = firstMeta.getAttribute('id');
+	}
+	else{
+		// legacy
+		metaPages = $('meta[name="page"]');
+		if (metaPages && metaPages.length>0){
+			var firstMeta = metaPages[0];
+			firstPageName = firstMeta.getAttribute('content');
+		}
 	}
 	/**
 	 * init page system
@@ -42,24 +50,25 @@ $(function() {
 	/**
 	 * handle states depending on mouse events
 	 */
+	$('[data-style-normal]').mouseout(function () {
+		silexSetState(this, 'normal');
+	});
 	$('[data-style-hover]').mouseover(function () {
 		silexSetState(this, 'hover');
-	}).mouseout(function () {
-		silexSetState(this, 'normal');
 	});
 	$('[data-style-pressed]').mousedown(function () {
 		silexSetState(this, 'pressed');
-	}).mouseup(function () {
-		if (this.getAttribute('data-style-hover'))
-			silexSetState(this, 'hover');
-		else
-			silexSetState(this, 'normal');
+		$(this).mouseup(function () {
+			if (this.getAttribute('data-style-hover'))
+				silexSetState(this, 'hover');
+			else
+				silexSetState(this, 'normal');
+		});
 	});
 	/**
 	 * set silex state to an element, e.g. normal, hover, pressed states
 	 */
 	function silexSetState (element, state) {
-		console.log('silexSetState', element, state);
 		// apply normal style first
 		element.setAttribute('style', element.getAttribute('data-style-normal'));
 
@@ -71,7 +80,6 @@ $(function() {
 				var pair = stylesStr[idx].split(':');
 				styles[pair[0]] = pair[1];
 			}
-			console.log(styles);
 			$(element).css(styles);
 		}
 	}

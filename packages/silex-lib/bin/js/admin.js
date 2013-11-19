@@ -80671,7 +80671,7 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk){
 		} 
 		var fileName = absolute.substr(absolute.lastIndexOf('/')+1);
 		var newRelativePath = 'assets/' + fileName;
-		var res = "url('" + newRelativePath +"')";
+		var res = "url('../" + newRelativePath +"')";
 		files.push({
 			url: absolute
 			, destPath: newRelativePath
@@ -80699,21 +80699,31 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk){
 	});
 	// scripts
 	headStr = headStr.replace(/src="?([^"]*)"/g, function(match, group1, group2){
+		var preventDownload = false;
 		var absolute = silex.Helper.getAbsolutePath(group1, baseUrl);
 		var relative = silex.Helper.getRelativePath(absolute, silex.Helper.BaseUrl);
 		// replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
 		if (!silex.Helper.isAbsoluteUrl(relative)){
 			relative = relative.replace('../', '/');
 		} 
-		var fileName = absolute.substr(absolute.lastIndexOf('/')+1);
-		var newRelativePath = 'js/' + fileName;
-		files.push({
-			url: absolute
-			, destPath: newRelativePath
-			, srcPath: relative
-		});
-		var res =  match.replace(group1, newRelativePath);
-		return res;
+		else{
+			// only allowed domains
+			if (absolute.indexOf("http://static.silex.me") !== 0){
+				preventDownload = true;
+			}
+		}
+		if (!preventDownload){
+			var fileName = absolute.substr(absolute.lastIndexOf('/')+1);
+			var newRelativePath = 'js/' + fileName;
+			files.push({
+				url: absolute
+				, destPath: newRelativePath
+				, srcPath: relative
+			});
+			var res =  match.replace(group1, newRelativePath);
+			return res;
+		}
+		return match;
 	});
 
 	// build a clean body clone
@@ -80800,7 +80810,7 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk){
 	var styleStr = this.stage.getBodyStyle();
 	cssArray.push({
 		classNames: ['body']
-		, styles: styleStr
+		, styles: silex.Helper.stringToStyle(styleStr)
 	});
 	// fixme: find patterns to reduce the number of css classes
 	// final css
@@ -81113,7 +81123,7 @@ silex.boot = function() {
 				controller.menuCallback({type:'file.publish'});
 			}, 1000);
 
-/* *
+/* */
 			// debug: load a file
 			var url = '../api/v1.0/www/exec/get/temp.html';
 			//var url = '../api/v1.0/dropbox/exec/get/_test/lexoyo.me.html';
@@ -81127,7 +81137,7 @@ silex.boot = function() {
 					file.setUrl(url);
 					file.setBlob(blob);
 					file.setHtml(rawHtml);
-return;
+
 					controller.menuCallback({type:'file.publish'});
 				}, this));
 /* */

@@ -123,7 +123,13 @@ exports.getFileFromUrl = function(req, res, next, srcPath, dstPath, cbk){
 	// load the file
 	http_s.get(srcPath, function(result) {
 		result.on('data', function(chunk) {
-		    data += chunk;
+			if (srcPath.indexOf('https')===0){
+				// https => all the data the 1st time
+		    	data = chunk;
+			}
+			else{
+			    data += chunk;
+			}
 		  });
 		  result.on('end', function() {
 	    	exports.writeFileToService(req, res, next, dstPath, data, function(status) {
@@ -165,7 +171,6 @@ exports.getFileFromService = function(req, res, next, srcPath, dstPath, cbk){
  * call unifile as an api
  */
 exports.writeFileToService = function(req, res, next, url, data, cbk){
-//	req.body = req.body || {};
 	req.body.data = data;
 	exports.unifileRoute(req, res, next, url, function(response, status, data, mime_type, responseFilePath) {
 		console.log('writeFileToService, unifileRoute ', url, 'returned', status, data, mime_type, responseFilePath)
@@ -204,7 +209,7 @@ exports.unifileRoute = function(req, res, next, url, cbk){
         }
         else{
             console.error('Unknown service '+serviceName);
-            cbk({
+            cbk(res, {
             	success: false
 	        	, code: 'Unknown service '+serviceName
             });
@@ -212,7 +217,7 @@ exports.unifileRoute = function(req, res, next, url, cbk){
     }
     catch(e){
         console.error('Error in service '+serviceName+': '+e);
-        cbk({
+        cbk(res, {
         	success: false
         	, code: 'Error in service '+serviceName+': '+e
         });
