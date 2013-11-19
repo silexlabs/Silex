@@ -13,9 +13,9 @@ body {
   display: none;
 }
 .background {
-  position: relative !important;
-  left: inherit !important;
-  top: 0 !important;
+  position: relative;
+  left: inherit;
+  top: 0;
   /* !important is useful while editing */
   margin-left: auto;
   margin-right: auto;

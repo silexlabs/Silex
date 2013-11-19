@@ -56,6 +56,12 @@ module.exports = function(grunt) {
       strict: {
         src: ['src/less/*.css']
       }
+      , lax: {
+        src: ['src/less/*.css']
+        , options: {
+          important: false // useful when opening a website in Silex
+        }
+      }
     }
     , compress: {
       main: {
@@ -81,7 +87,7 @@ module.exports = function(grunt) {
     , concat: {
       dist: {
         src: ['src/less/*.css']
-        , dest: 'src/less/temp.less'
+        , dest: 'src/less/.temp'
       }
     }
     , htmllint: {
@@ -99,7 +105,7 @@ module.exports = function(grunt) {
     , less: {
       development: {
         files: {
-          "bin/css/admin.css": "src/less/temp.less"
+          "bin/css/admin.css": "src/less/.temp"
         }
       }
       , production: {
@@ -107,7 +113,7 @@ module.exports = function(grunt) {
           cleancss: true
         }
         , files: {
-          "bin/css/admin.min.css": "src/less/temp.less"
+          "bin/css/admin.min.css": "src/less/.temp"
         }
       }
     }
@@ -185,7 +191,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-simple-mocha');
 
   grunt.registerTask('deploy', ['concat', 'less:production', 'less:development', 'closureBuilder:debug', 'closureBuilder:release', 'compress']);
-  grunt.registerTask('check', ['htmllint', 'csslint', 'jslint']);
+  grunt.registerTask('check', ['htmllint', 'csslint:lax', 'jslint']);
   grunt.registerTask('test', [/*'check', */'deploy', 'simplemocha']);
   
   grunt.registerTask('default', ['check', 'deploy', 'watch']);
