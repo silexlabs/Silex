@@ -14,6 +14,42 @@ app.use('/silex/tasks', express.cookieParser());
 app.use('/silex/tasks', express.cookieSession({ secret: 'plum plum plum'}));
 
 // ********************************
+// production
+// ********************************
+var isDebug = false;
+/**
+ * catch all errors to prevent nodejs server crash
+ */
+function onCatchError(err) {
+    console.log  ('---------------------');
+    console.error('---------------------', 'Caught exception: ', err, '---------------------');
+    console.log  ('---------------------');
+}
+/**
+ * set debug or production modes
+ */
+exports.setDebugMode = function(debug){
+    if(debug && !isDebug){
+        process.removeListener('uncaughtException', onCatchError);
+   
+        // DEBUG ONLY
+        console.warn('Running server in debug mode');
+        // define users (login/password) wich will be authorized to access the www folder (read and write)
+        options.www.USERS = {
+            "admin": "admin"
+        }
+    }
+    if(!debug && isDebug){
+        // PRODUCTION ONLY
+        console.warn('Running server in production mode');
+        // catch all errors and prevent nodejs to crash, production mode
+        process.on('uncaughtException', onCatchError);
+
+        // reset debug
+        options.www.USERS = {};
+    }
+}
+// ********************************
 // config
 // ********************************
 var options = unifile.defaultConfig;
@@ -56,24 +92,8 @@ for (var i in process.argv){
 }
 
 // debug or production mode
-if (!debug){
-    // PRODUCTION ONLY
-    console.warn('Running server in production mode');
-    // catch all errors and prevent nodejs to crash, production mode
-    process.on('uncaughtException', function(err) {
-        console.log  ('---------------------');
-        console.error('---------------------', 'Caught exception: ', err, '---------------------');
-        console.log  ('---------------------');
-    });
-}
-else{
-    // DEBUG ONLY
-    console.warn('Running server in debug mode');
-    // define users (login/password) wich will be authorized to access the www folder (read and write)
-    options.www.USERS = {
-        "admin": "admin"
-    }
-}
+exports.setDebugMode(debug);
+
 // ********************************
 // unifile server
 // ********************************
