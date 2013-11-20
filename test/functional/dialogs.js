@@ -3,6 +3,7 @@ var assert = require('assert')
 , webdriver = require('selenium-webdriver')
 , expect = require('chai').expect;
 
+silexServer.setDebugMode(true);
 /* */
 //////////////////////////////////////////
 // ChromeDriver
@@ -44,7 +45,7 @@ it('should be able to view the home page', function(done) {
     // wait for silex to be loaded
     setTimeout(function () {
         done();
-    }, 5000)
+    }, 3000)
 });
 it('should be able to open the file menu', function(done) {
     // click
@@ -55,23 +56,30 @@ it('should be able to open the file menu', function(done) {
         return true;
     });
 });
-it('should be able to click the file/open menu', function(done) {
-    // click
-    driver.findElement(webdriver.By.className('menu-item-file-open')).then(function (element) {
-        element.click().then(function () {
-            done();
-        })
-        return true;
+it('should be able to open the file explorer dialog', function(done) {
+    // click 
+    driver.findElement(webdriver.By.className('menu-item-file-open')).click();
+    // check visibility
+    driver.findElement(webdriver.By.className('silex-fileexplorer')).isDisplayed().then(function (isDisplayed) {
+        console.log("dialog visibility", isDisplayed);
+        if (isDisplayed) done();
+        else done('dialog is not visible');
+        return isDisplayed;
     });
 });
-it('should be able to open the open file dialog', function(done) {
-    // check dialog
-    driver.findElement(webdriver.By.className('silex-fileexplorer')).then(function (element) {
-        // click, just to check that it is visible
-        element.click().then(function () {
-            done();
-        });
-        return true;
+it('should be able to close the file explorer dialog', function(done) {
+    // click on close
+    driver.findElement(webdriver.By.className('silex-fileexplorer'))
+    .findElement(webdriver.By.className('close-btn'))
+    .click();
+    // check visibility
+    driver.findElement(webdriver.By.className('silex-fileexplorer'))
+    .isDisplayed()
+    .then(function (isDisplayed) {
+        console.log("dialog visibility", isDisplayed);
+        if (!isDisplayed) done();
+        else done('dialog is still visible');
+        return !isDisplayed;
     });
 });
 after(function(done) {
