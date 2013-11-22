@@ -43,11 +43,7 @@ Stress tests
 
 ###en cours
 
-a tester :
-
 * bugs
-- depot dans un container => visible partout
-- clignottement du bg image quand on selectionne
 - selection de folder dans CE
 - alignement de CE quand on l'ouvre depuis settings
 - fond de dialogs pas clickable partout
