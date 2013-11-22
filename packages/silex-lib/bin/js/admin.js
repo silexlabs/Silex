@@ -32378,7 +32378,7 @@ silex.model.Component.getType = function(element) {
  * @return null or the element or one of its parents which has the css class silex.model.Page.PAGE_CLASS
  */
 silex.model.Component.prototype.getFirstPageableParent = function() {
-    var element = this.element;
+    var element = this.element.parentNode;
     while (element && !goog.dom.classes.has(element, silex.model.Page.PAGE_CLASS)) {
         element = element.parentNode;
     }
