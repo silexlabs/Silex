@@ -30988,22 +30988,24 @@ silex.view.PublishSettings.prototype.closeEditor = function(){
 
 goog.provide('silex.Controller');
 
+
+
 /**
  * the Silex controller class
  * @constructor
  */
 silex.Controller = function(
-	workspace,
-	menu,
-	stage,
-	pageTool,
-	propertiesTool,
-	htmlEditor,
-	textEditor,
-	fileExplorer,
-	publishSettings,
-	file,
-	selection){
+    workspace,
+    menu,
+    stage,
+    pageTool,
+    propertiesTool,
+    htmlEditor,
+    textEditor,
+    fileExplorer,
+    publishSettings,
+    file,
+    selection) {
 
 	// logger
 	//this.logger = new silex.Logger('silex.Controller', true);
@@ -31039,62 +31041,87 @@ silex.Controller = function(
 	this.htmlEditor.onStatus = goog.bind(this.htmlEditorCallback, this);
 	this.textEditor.onStatus = goog.bind(this.textEditorCallback, this);
 
-	function closeEditorWarning(){
-		return 'Are you sure?'
+	function closeEditorWarning() {
+		return 'Are you sure?';
 	}
 	window.onbeforeunload = closeEditorWarning;
 
-}
+};
+
+
 /**
  * tracker
  * @see 	silex.service.Tracker
  */
 silex.Controller.prototype.tracker;
+
+
 /**
  * reference to the workspace component (view)
  */
 silex.Controller.prototype.workspace;
+
+
 /**
  * reference to the menu from the view
  * this.menu.menu is the actual closure component
  */
 silex.Controller.prototype.menu;
+
+
 /**
  * reference to the stage component (view)
  */
 silex.Controller.prototype.stage;
+
+
 /**
  * reference to the page tool component (view)
  */
 silex.Controller.prototype.pageTool;
+
+
 /**
  * reference to the properties tool component (view)
  */
 silex.Controller.prototype.propertiesTool;
+
+
 /**
  * reference to the HTMLEditor component (view)
  */
 silex.Controller.prototype.htmlEditor;
+
+
 /**
  * reference to the TextEditor component (view)
  */
 silex.Controller.prototype.textEditor;
+
+
 /**
  * reference to the FileExplorer component (view)
  */
 silex.Controller.prototype.fileExplorer;
+
+
 /**
  * reference to the PublishSettings component (view)
  */
 silex.Controller.prototype.publishSettings;
+
+
 /**
  * reference to the model
  */
 silex.Controller.prototype.file;
+
+
 /**
  * reference to the model
  */
 silex.Controller.prototype.selection;
+
 
 ////////////////////////////////////////////////////////////////
 // Callback for the view events
@@ -31102,11 +31129,11 @@ silex.Controller.prototype.selection;
 /**
  * menu event handler
  */
-silex.Controller.prototype.menuCallback = function(event){
+silex.Controller.prototype.menuCallback = function(event) {
 	this.tracker.trackAction('controller-events', 'request', event.type, 0);
-	switch(event.type){
+	switch (event.type) {
 		case 'title.changed':
-			alertify.prompt('What is the name of your website?', goog.bind(function (accept, name) {
+			alertify.prompt('What is the name of your website?', goog.bind(function(accept, name) {
 				if (accept) this.file.setTitle(name);
 			}, this), this.menu.getWebsiteName());
 			break;
@@ -31115,12 +31142,12 @@ silex.Controller.prototype.menuCallback = function(event){
 			break;
 		case 'file.saveas':
 			this.file.saveAs(
-				goog.bind(function () {
+				goog.bind(function() {
 					this.notifySuccess('Your file is saved.');
 					this.tracker.trackAction('controller-events', 'success', event.type, 1);
 				}, this),
-				goog.bind(function (error) {
-					this.notifyError('Error: I did not manage to save the file. <br /><br />'+(error.message || ''));
+				goog.bind(function(error) {
+					this.notifyError('Error: I did not manage to save the file. <br /><br />' + (error.message || ''));
 					this.tracker.trackAction('controller-events', 'error', event.type, -1);
 				}, this));
 			break;
@@ -31129,63 +31156,63 @@ silex.Controller.prototype.menuCallback = function(event){
 			this.workspace.invalidate();
 			break;
 		case 'file.publish':
-			if (!this.file.getPublicationPath()){
+			if (!this.file.getPublicationPath()) {
 				this.publishSettings.openDialog();
 				this.workspace.invalidate();
 			}
 			else
 			{
 				this.file.publish(
-					goog.bind(function (status) {
-						if (status && status.success == false){
+					goog.bind(function(status) {
+						if (status && status.success == false) {
 							console.error('Error: I did not manage to publish the file. (1)');
-							this.notifyError('I did not manage to publish the file. You may want to check the publication settings and your internet connection. <br /><br />Error message: '+(status.message || status.code || ''));
+							this.notifyError('I did not manage to publish the file. You may want to check the publication settings and your internet connection. <br /><br />Error message: ' + (status.message || status.code || ''));
 							this.tracker.trackAction('controller-events', 'error', event.type, -1);
 						}
-						else{
+						else {
 							this.notifySuccess('Your site is published. ');
 							this.tracker.trackAction('controller-events', 'success', event.type, 1);
 						}
 					}, this),
-					goog.bind(function (error) {
+					goog.bind(function(error) {
 						console.error('Error: I did not manage to publish the file. (2)', error);
-						this.notifyError('I did not manage to publish the file. You may want to check the publication settings and your internet connection. <br /><br />Error message: '+error);
+						this.notifyError('I did not manage to publish the file. You may want to check the publication settings and your internet connection. <br /><br />Error message: ' + error);
 						this.tracker.trackAction('controller-events', 'error', event.type, -1);
 					}, this));
 			}
 			break;
 		case 'file.save':
-			if (!this.file.getBlob()){
+			if (!this.file.getBlob()) {
 				this.file.saveAs(
-				goog.bind(function () {
+				goog.bind(function() {
 					this.notifySuccess('Your file is saved.');
 					this.tracker.trackAction('controller-events', 'success', event.type, 1);
 				}, this),
-				goog.bind(function (error) {
-					this.notifyError('Error: I did not manage to save the file. <br /><br />'+(error.message || ''));
+				goog.bind(function(error) {
+					this.notifyError('Error: I did not manage to save the file. <br /><br />' + (error.message || ''));
 					this.tracker.trackAction('controller-events', 'error', event.type, -1);
 				}, this));
 			}
-			else{
+			else {
 				this.file.save(
-				goog.bind(function () {
+				goog.bind(function() {
 					this.notifySuccess('Your file is saved.');
 					this.tracker.trackAction('controller-events', 'success', event.type, 1);
 				}, this),
-				goog.bind(function (error) {
-					this.notifyError('Error: I did not manage to save the file. <br /><br />'+(error.message || ''));
+				goog.bind(function(error) {
+					this.notifyError('Error: I did not manage to save the file. <br /><br />' + (error.message || ''));
 					this.tracker.trackAction('controller-events', 'error', event.type, -1);
 				}, this));
 			}
 			break;
 		case 'file.open':
-			this.file.open(goog.bind(function () {
-				this.notifySuccess(this.file.getTitle()+' opened.');
+			this.file.open(goog.bind(function() {
+				this.notifySuccess(this.file.getTitle() + ' opened.');
 				this.selection.setComponent(this.file.getStageComponent());
 				this.tracker.trackAction('controller-events', 'success', event.type, 1);
 			}, this),
-			goog.bind(function (error) {
-				this.notifyError('Error: I did not manage to open this file. <br /><br />'+(error.message || ''));
+			goog.bind(function(error) {
+				this.notifyError('Error: I did not manage to open this file. <br /><br />' + (error.message || ''));
 				this.tracker.trackAction('controller-events', 'error', event.type, -1);
 			}, this));
 			break;
@@ -31194,23 +31221,23 @@ silex.Controller.prototype.menuCallback = function(event){
 			this.selection.setComponent(null);
 			break;
 		case 'view.file':
-			this.file.view()
+			this.file.view();
 			break;
 		case 'tools.advanced.activate':
-			if (!goog.dom.classes.has(document.body, 'advanced-mode-on')){
+			if (!goog.dom.classes.has(document.body, 'advanced-mode-on')) {
 				goog.dom.classes.add(document.body, 'advanced-mode-on');
 				goog.dom.classes.remove(document.body, 'advanced-mode-off');
 			}
-			else{
+			else {
 				goog.dom.classes.remove(document.body, 'advanced-mode-on');
 				goog.dom.classes.add(document.body, 'advanced-mode-off');
 			}
 			break;
 		case 'tools.debug.activate':
-			if (this.logger.getLevel() !== silex.Logger.ALL){
+			if (this.logger.getLevel() !== silex.Logger.ALL) {
 				this.logger.setLevel(silex.Logger.ALL);
 			}
-			else{
+			else {
 				this.logger.setLevel(silex.Logger.OFF);
 			}
 			break;
@@ -31222,10 +31249,10 @@ silex.Controller.prototype.menuCallback = function(event){
 			this.editComponent();
 			break;
 		case 'insert.page':
-			this.createPage(function(){
+			this.createPage(function() {
 				this.tracker.trackAction('controller-events', 'success', event.type, 1);
 			},
-			function(){
+			function() {
 				this.tracker.trackAction('controller-events', 'cancel', event.type, 0);
 			});
 			break;
@@ -31245,7 +31272,7 @@ silex.Controller.prototype.menuCallback = function(event){
 			break;
 		case 'insert.image':
 			this.fileExplorer.openDialog(
-			goog.bind(function (blob) {
+			goog.bind(function(blob) {
 					var component = this.file.getStageComponent().addImage(blob.url);
 					// only visible on the current page
 					this.selection.getPage().addComponent(component);
@@ -31254,8 +31281,8 @@ silex.Controller.prototype.menuCallback = function(event){
 					this.tracker.trackAction('controller-events', 'success', event.type, 1);
 				}, this),
 				['image/*', 'text/plain'],
-				goog.bind(function (error) {
-					this.notifyError('Error: I did not manage to load the image. <br /><br />'+(error.message || ''));
+				goog.bind(function(error) {
+					this.notifyError('Error: I did not manage to load the image. <br /><br />' + (error.message || ''));
 					this.tracker.trackAction('controller-events', 'error', event.type, -1);
 				}, this)
 			);
@@ -31282,43 +31309,45 @@ silex.Controller.prototype.menuCallback = function(event){
 			break;
 		// Help menu
 		case 'help.about':
-			window.open("http://www.silexlabs.org/silex/");
+			window.open('http://www.silexlabs.org/silex/');
 			break;
 		case 'help.aboutSilexLabs':
-			window.open("http://www.silexlabs.org/silexlabs/");
+			window.open('http://www.silexlabs.org/silexlabs/');
 			break;
 		case 'help.forums':
-			window.open("http://graphicdesign.stackexchange.com/questions/tagged/silex");
+			window.open('http://graphicdesign.stackexchange.com/questions/tagged/silex');
 			break;
 		case 'help.newsLetter':
-			window.open("http://eepurl.com/F48q5");
+			window.open('http://eepurl.com/F48q5');
 			break;
 		case 'help.googlPlus':
-			window.open("https://plus.google.com/communities/107373636457908189681");
+			window.open('https://plus.google.com/communities/107373636457908189681');
 			break;
 		case 'help.twitter':
-			window.open("http://twitter.com/silexlabs");
+			window.open('http://twitter.com/silexlabs');
 			break;
 		case 'help.facebook':
-			window.open("http://www.facebook.com/silexlabs");
+			window.open('http://www.facebook.com/silexlabs');
 			break;
 		case 'help.forkMe':
-			window.open("https://github.com/silexlabs/Silex");
+			window.open('https://github.com/silexlabs/Silex');
 			break;
 	}
-}
+};
+
+
 /**
  * stage event handler
  */
-silex.Controller.prototype.stageCallback = function(event){
+silex.Controller.prototype.stageCallback = function(event) {
 	//this.tracker.trackAction('controller-events', 'request', event.type, 0);
-	switch(event.type){
+	switch (event.type) {
 		case 'select':
 			// reset context for the old selection
 			var oldSelectedComp = this.selection.getComponent();
 			if (oldSelectedComp) oldSelectedComp.setContext(silex.model.Component.CONTEXT_NORMAL);
 			// select the new element
-			if (event.element){
+			if (event.element) {
 				// update the
 				this.selection.setComponent(
 					new silex.model.Component(
@@ -31328,7 +31357,7 @@ silex.Controller.prototype.stageCallback = function(event){
 				// update context for the selection
 				this.selection.getComponent().setContext(this.selection.getContext());
 			}
-			else{
+			else {
 				// select stage
 				this.selection.setComponent(this.file.getStageComponent());
 			}
@@ -31345,10 +31374,10 @@ silex.Controller.prototype.stageCallback = function(event){
 			var component = this.selection.getComponent();
 			// if it is dropped in a container which is visible only on some pages,
 			// then the dropped element should be visible everywhere, i.e. in the same pages as its parent
-			if (component.getFirstPageableParent()!==null){
+			if (component.getFirstPageableParent() !== null) {
 				// get all the pages in which this element is visible
 				var pages = silex.model.Page.getPagesForElement(component.element);
-				for (idx in pages){
+				for (idx in pages) {
 					var page = pages[idx];
 					// remove the component from the page
 					page.removeComponent(component);
@@ -31362,16 +31391,18 @@ silex.Controller.prototype.stageCallback = function(event){
 			this.editComponent();
 			break;
 	}
-}
+};
+
+
 /**
  * pageTool event handler
  */
-silex.Controller.prototype.pageToolCallback = function(event){
+silex.Controller.prototype.pageToolCallback = function(event) {
 	this.tracker.trackAction('controller-events', 'request', event.type, 0);
-	switch(event.type){
+	switch (event.type) {
 	case 'changed':
 		this.selection.setPage(event.page);
-		if (event.page){
+		if (event.page) {
 			event.page.open();
 		}
 		break;
@@ -31384,41 +31415,47 @@ silex.Controller.prototype.pageToolCallback = function(event){
 		this.renamePage(event.page);
 		break;
 	}
-}
+};
+
+
 /**
  * rename a page
  */
-silex.Controller.prototype.renamePage = function(page){
-	this.getUserInputPageName(page.name, goog.bind(function (name) {
-		if(name){
+silex.Controller.prototype.renamePage = function(page) {
+	this.getUserInputPageName(page.name, goog.bind(function(name) {
+		if (name) {
 			page.rename(name);
 		}
 		this.selection.getPage().open();
 	}, this));
-}
+};
+
+
 /**
  * remvoe a given page
  */
-silex.Controller.prototype.removePage = function(page){
-	alertify.confirm('I am about to delete the page "'+page.name+'", are you sure?', function(accept){
-		if (accept){
+silex.Controller.prototype.removePage = function(page) {
+	alertify.confirm('I am about to delete the page "' + page.name + '", are you sure?', function(accept) {
+		if (accept) {
 			// update model
 			page.detach();
 		}
 	});
-}
+};
+
+
 /**
  * input a page name
  */
-silex.Controller.prototype.getUserInputPageName = function(defaultName, cbk){
+silex.Controller.prototype.getUserInputPageName = function(defaultName, cbk) {
 	alertify.prompt('Enter a name for your page!',
-	function(accept, pageName){
-		if (accept && pageName && pageName.length>0){
+	function(accept, pageName) {
+		if (accept && pageName && pageName.length > 0) {
 			// cleanup the page name
-			pageName = pageName.replace(/\ /g,'-')
-				.replace(/\./g,'-')
-				.replace(/'/g,'-')
-				.replace(/"/g,'-')
+			pageName = pageName.replace(/\ /g, '-')
+				.replace(/\./g, '-')
+				.replace(/'/g, '-')
+				.replace(/"/g, '-')
 				.toLowerCase();
 			// check if a page with this name exists
 			var pages = silex.model.Page.getPages();
@@ -31427,22 +31464,24 @@ silex.Controller.prototype.getUserInputPageName = function(defaultName, cbk){
 				if (page.name === pageName)
 					exists = page;
 			});
-			if (exists){
+			if (exists) {
 				exists.open();
 			}
-			else{
+			else {
 				cbk(pageName);
 			}
 		}
 		cbk(null);
 	}, defaultName);
-}
+};
+
+
 /**
  * create a page
  */
-silex.Controller.prototype.createPage = function(successCbk, errorCbk){
-	this.getUserInputPageName('My new page name', goog.bind(function (pageName) {
-		if(pageName){
+silex.Controller.prototype.createPage = function(successCbk, errorCbk) {
+	this.getUserInputPageName('My new page name', goog.bind(function(pageName) {
+		if (pageName) {
 			// create the page model
 			var page = new silex.model.Page(
 				pageName,
@@ -31459,20 +31498,21 @@ silex.Controller.prototype.createPage = function(successCbk, errorCbk){
 			page.open();
 			if (successCbk) successCbk();
 		}
-		else{
+		else {
 			if (errorCbk) errorCbk();
 		}
 	}, this));
-}
+};
+
 
 /**
  * publishSettings event handler
  */
-silex.Controller.prototype.publishSettingsCallback = function(event){
-	switch(event.type){
+silex.Controller.prototype.publishSettingsCallback = function(event) {
+	switch (event.type) {
 		case 'browsePublishPath':
 			this.fileExplorer.openDialog(
-			goog.bind(function (blob) {
+			goog.bind(function(blob) {
 				var url = blob.url.substring(blob.url.indexOf('/api/v1.0/'), blob.url.lastIndexOf('/'));
 				//var url = blob.url.substring(blob.url.indexOf('api/v1.0/')+9, blob.url.lastIndexOf('/'));
 				//var url = blob.url.substr(blob.url.indexOf('api/v1.0/')+9);
@@ -31481,8 +31521,8 @@ silex.Controller.prototype.publishSettingsCallback = function(event){
 				this.tracker.trackAction('controller-events', 'success', event.type, 1);
 			}, this),
 			['image/*', 'text/plain'],
-			goog.bind(function (error) {
-				this.notifyError('Error: I could not select the publish path. <br /><br />'+(error.message || ''));
+			goog.bind(function(error) {
+				this.notifyError('Error: I could not select the publish path. <br /><br />' + (error.message || ''));
 				this.tracker.trackAction('controller-events', 'error', event.type, -1);
 			}, this)
 			);
@@ -31491,13 +31531,15 @@ silex.Controller.prototype.publishSettingsCallback = function(event){
 			this.file.setPublicationPath(event.data);
 			break;
 	}
-}
+};
+
+
 /**
  * propertiesTool event handler
  */
-silex.Controller.prototype.propertiesToolCallback = function(event){
+silex.Controller.prototype.propertiesToolCallback = function(event) {
 	//this.tracker.trackAction('controller-events', 'request', event.type, 0);
-	switch(event.type){
+	switch (event.type) {
 		case 'editHTML':
 			this.editComponent();
 			break;
@@ -31506,13 +31548,13 @@ silex.Controller.prototype.propertiesToolCallback = function(event){
 			break;
 		case 'selectBgImage':
 			this.fileExplorer.openDialog(
-			goog.bind(function (blob) {
+			goog.bind(function(blob) {
 				this.propertiesTool.setBgImage(blob.url);
 				this.tracker.trackAction('controller-events', 'success', event.type, 1);
 			}, this),
 			['image/*', 'text/plain'],
-			goog.bind(function (error) {
-				this.notifyError('Error: I could not load the image. <br /><br />'+(error.message || ''));
+			goog.bind(function(error) {
+				this.notifyError('Error: I could not load the image. <br /><br />' + (error.message || ''));
 				this.tracker.trackAction('controller-events', 'error', event.type, -1);
 			}, this)
 			);
@@ -31533,34 +31575,40 @@ silex.Controller.prototype.propertiesToolCallback = function(event){
 		case 'propertiesChanged':
 			break;
 	}
-}
+};
+
+
 /**
  * htmlEditor event handler
  */
-silex.Controller.prototype.htmlEditorCallback = function(event){
-	switch(event.type){
+silex.Controller.prototype.htmlEditorCallback = function(event) {
+	switch (event.type) {
 	case 'changed':
 		this.selection.getComponent().setHtml(event.content);
 		break;
 	}
-}
+};
+
+
 /**
  * textEditor event handler
  */
-silex.Controller.prototype.textEditorCallback = function(event){
-	switch(event.type){
+silex.Controller.prototype.textEditorCallback = function(event) {
+	switch (event.type) {
 	case 'changed':
 		this.selection.getComponent().setHtml(event.content);
 		break;
 	}
-}
+};
+
+
 /**
  * edit a component
  * take its type into account
  */
-silex.Controller.prototype.editComponent = function(){
+silex.Controller.prototype.editComponent = function() {
 	var component = this.selection.getComponent();
-	switch(component.type){
+	switch (component.type) {
 	case silex.model.Component.SUBTYPE_TEXT:
 		this.textEditor.openEditor(component.getHtml());
 		break;
@@ -31569,32 +31617,36 @@ silex.Controller.prototype.editComponent = function(){
 		break;
 	case silex.model.Component.SUBTYPE_IMAGE:
 		this.fileExplorer.openDialog(
-		goog.bind(function (blob) {
+		goog.bind(function(blob) {
 			this.propertiesTool.setImage(blob.url);
 		}, this),
 		['image/*', 'text/plain'],
-			goog.bind(function (error) {
-				this.notifyError('Error: I did not manage to load the image. <br /><br />'+(error.message || ''));
+			goog.bind(function(error) {
+				this.notifyError('Error: I did not manage to load the image. <br /><br />' + (error.message || ''));
 			}, this)
 		);
 		this.workspace.invalidate();
 		break;
 	}
-}
+};
+
+
 /**
  * notify the user
  */
-silex.Controller.prototype.notifySuccess = function(message){
+silex.Controller.prototype.notifySuccess = function(message) {
 	console.info(message);
 	alertify.success(message);
-}
+};
+
+
 /**
  * notify the user
  */
-silex.Controller.prototype.notifyError = function(message){
+silex.Controller.prototype.notifyError = function(message) {
 	console.error(message);
 	alertify.error(message);
-}
+};
 // Copyright 2007 The Closure Library Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -31956,10 +32008,12 @@ silex.view.FileExplorer.prototype.closeEditor = function(){
 
 goog.provide('silex.model.Component');
 
+
+
 /**
  * @constructor
  */
-silex.model.Component = function(element, opt_context){
+silex.model.Component = function(element, opt_context) {
 	this.isEditable = false;
 	// store a reference to the editable component
 	this.element = this.getFirstEditableParent(element);
@@ -31970,106 +32024,136 @@ silex.model.Component = function(element, opt_context){
 		opt_context = silex.model.Component.CONTEXT_NORMAL;
 	// apply the style for the context
 	this.setContext(opt_context);
-}
+};
+
+
 /**
  * contexts of an element
  */
-silex.model.Component.CONTEXT_NORMAL='normal';
-silex.model.Component.CONTEXT_HOVER='hover';
-silex.model.Component.CONTEXT_PRESSED='pressed';
+silex.model.Component.CONTEXT_NORMAL = 'normal';
+silex.model.Component.CONTEXT_HOVER = 'hover';
+silex.model.Component.CONTEXT_PRESSED = 'pressed';
+
+
 /**
  * constant for silex element type
  */
 silex.model.Component.TYPE_CONTAINER = 'container';
+
+
 /**
  * constant for silex element type
  * a page is an "a" anchor tag with name set to the page id, and the innerHTML is the page full title
  */
 silex.model.Component.TYPE_PAGE = 'page';
+
+
 /**
  * constant for silex element type
  */
 silex.model.Component.TYPE_ELEMENT = 'element';
+
+
 /**
  * constant for silex element type
  */
 silex.model.Component.SUBTYPE_IMAGE = 'image';
+
+
 /**
  * constant for silex element type
  */
 silex.model.Component.SUBTYPE_TEXT = 'text';
+
+
 /**
  * constant for silex element type
  */
 silex.model.Component.SUBTYPE_HTML = 'html';
+
+
 /**
  * element
  */
 silex.model.Component.prototype.element;
+
+
 /**
  * context
  */
 silex.model.Component.prototype.context;
+
+
 /**
  * type
  */
-silex.model.Component.getType = function (element){
+silex.model.Component.getType = function(element) {
 	var type = element.getAttribute('data-silex-type');
 	var subType = element.getAttribute('data-silex-sub-type');
-	switch(type){
+	switch (type) {
 		case silex.model.Component.TYPE_CONTAINER:
 			return type;
 		case silex.model.Component.TYPE_ELEMENT:
 			return subType;
 	}
-	throw('Could not determine the type of this element.');
-}
+	throw ('Could not determine the type of this element.');
+};
+
+
 /**
  * retrieve the first parent which is visible only on some pages
- * @returns null or the element or one of its parents which has the css class silex.model.Page.PAGE_CLASS
+ * @return null or the element or one of its parents which has the css class silex.model.Page.PAGE_CLASS
  */
-silex.model.Component.prototype.getFirstPageableParent = function (){
+silex.model.Component.prototype.getFirstPageableParent = function() {
 	var element = this.element;
-	while(element && !goog.dom.classes.has(element, silex.model.Page.PAGE_CLASS)){
+	while (element && !goog.dom.classes.has(element, silex.model.Page.PAGE_CLASS)) {
 		element = element.parentNode;
 	}
 	return element;
-}
+};
+
+
 /**
  * retrieve the element to which I attach the new elements
  * 'this' is expected to be the stage
  */
-silex.model.Component.prototype.getBackgroundElement = function (){
+silex.model.Component.prototype.getBackgroundElement = function() {
 	var elements = goog.dom.getElementsByClass('background', this.element);
-	if (elements.length>0) return elements[0];
+	if (elements.length > 0) return elements[0];
 	return this.element;
-}
+};
+
+
 /**
  * context getter/setter
  */
-silex.model.Component.prototype.getContext = function (){
+silex.model.Component.prototype.getContext = function() {
 	return this.context;
-}
+};
+
+
 /**
  * context getter/setter
  */
-silex.model.Component.prototype.setContext = function (context){
+silex.model.Component.prototype.setContext = function(context) {
 	this.context = context;
 	this.setStyle(this.getStyle(context), context);
-}
+};
+
+
 /**
  * style with position and size
  * to set the css style, use setStyle or setBoundingBox
  * @return the css style object
  */
-silex.model.Component.prototype.getCss = function (opt_context){
+silex.model.Component.prototype.getCss = function(opt_context) {
 	// default value for the state
-	if (!opt_context){
+	if (!opt_context) {
 		opt_context = this.context;
 	}
 	// retrieve the element style
-	var styleStr = this.element.getAttribute('data-style-'+opt_context);
-	if (!styleStr){
+	var styleStr = this.element.getAttribute('data-style-' + opt_context);
+	if (!styleStr) {
 		styleStr = '';
 		//return null;
 	}
@@ -32079,31 +32163,35 @@ silex.model.Component.prototype.getCss = function (opt_context){
 	// compute the final style object without the undefined and '' values
 	var finalStyle = {};
 	goog.object.forEach(style, function(val, index, obj) {
-		if (val && val !== ''){
+		if (val && val !== '') {
 			finalStyle[index] = val;
 		}
 	}, this);
 	return finalStyle;
-}
+};
+
+
 /**
  * @return true if the component has a css style object for the given context
  */
-silex.model.Component.prototype.hasStyle = function (opt_context){
+silex.model.Component.prototype.hasStyle = function(opt_context) {
 	// default value for the state
-	if (!opt_context){
+	if (!opt_context) {
 		opt_context = this.context;
 	}
 	// retrieve the element style
-	var styleStr = this.element.getAttribute('data-style-'+opt_context);
-	if (styleStr){
+	var styleStr = this.element.getAttribute('data-style-' + opt_context);
+	if (styleStr) {
 		return true;
 	}
 	return false;
-}
+};
+
+
 /**
  * style without position and size
  */
-silex.model.Component.prototype.getStyle = function (opt_context){
+silex.model.Component.prototype.getStyle = function(opt_context) {
 
 	var style = this.getCss(opt_context);
 
@@ -32120,34 +32208,36 @@ silex.model.Component.prototype.getStyle = function (opt_context){
 	// compute the final style object without the undefined and '' values
 	var finalStyle = {};
 	goog.object.forEach(style, function(val, index, obj) {
-		if (val && val !== ''){
+		if (val && val !== '') {
 			finalStyle[index] = val;
 		}
 	}, this);
 	// return the style
 	return finalStyle;
-}
+};
+
+
 /**
  * style
  */
-silex.model.Component.prototype.setStyle = function (style, opt_context){
-	if (!style){
+silex.model.Component.prototype.setStyle = function(style, opt_context) {
+	if (!style) {
 		// case of stage and context with no style yet
 		//return;
 		style = {};
 	}
 	// default value for the state
-	if (!opt_context){
+	if (!opt_context) {
 		opt_context = this.context;
 	}
 	var styleStr = '';
 	goog.object.forEach(style, function(val, index, obj) {
-		if (val){
+		if (val) {
 			// do not keep 'no image' info, simply remove the style
-			if (val === 'none'){
+			if (val === 'none') {
 				val = null;
 			}
-			else{
+			else {
 				//build the string
 				styleStr += goog.string.toSelectorCase(index) + ': ' + val + '; ';
 			}
@@ -32157,30 +32247,32 @@ silex.model.Component.prototype.setStyle = function (style, opt_context){
 		}
 	}, this);
 	// add the bounding box if needed
-	if (opt_context === silex.model.Component.CONTEXT_NORMAL){
+	if (opt_context === silex.model.Component.CONTEXT_NORMAL) {
 		var bb = this.getBoundingBox();
-		styleStr += 'top: '+bb.top+'; ';
-		styleStr += 'left: '+bb.left+'; ';
-		styleStr += 'width: '+bb.width+'; ';
-		styleStr += 'height: '+bb.height+'; ';
-		styleStr += 'bottom: '+bb.bottom+'; ';
-		styleStr += 'right: '+bb.right+'; ';
-		styleStr += 'z-index: '+bb.zIndex+'; ';
+		styleStr += 'top: ' + bb.top + '; ';
+		styleStr += 'left: ' + bb.left + '; ';
+		styleStr += 'width: ' + bb.width + '; ';
+		styleStr += 'height: ' + bb.height + '; ';
+		styleStr += 'bottom: ' + bb.bottom + '; ';
+		styleStr += 'right: ' + bb.right + '; ';
+		styleStr += 'z-index: ' + bb.zIndex + '; ';
 		styleStr += 'position: absolute; ';
 	}
 	// store in the model
-	if (styleStr !== ''){
-		this.element.setAttribute('data-style-'+opt_context, styleStr);
+	if (styleStr !== '') {
+		this.element.setAttribute('data-style-' + opt_context, styleStr);
 	}
-	else{
-		this.element.removeAttribute('data-style-'+opt_context);
+	else {
+		this.element.removeAttribute('data-style-' + opt_context);
 	}
-}
+};
+
+
 /**
  * bounding box
  * key/value pairs of string with unit, e.g. '5px'
  */
-silex.model.Component.prototype.getBoundingBox = function (){
+silex.model.Component.prototype.getBoundingBox = function() {
 	return {
 		top: goog.style.getStyle(this.element, 'top'),
 		left: goog.style.getStyle(this.element, 'left'),
@@ -32190,12 +32282,14 @@ silex.model.Component.prototype.getBoundingBox = function (){
 		right: goog.style.getStyle(this.element, 'right'),
 		zIndex: goog.style.getStyle(this.element, 'zIndex')
 	};
-}
+};
+
+
 /**
  * bounding box
  * key/value pairs of string with unit, e.g. '5px'
  */
-silex.model.Component.prototype.setBoundingBox = function (boundingBox){
+silex.model.Component.prototype.setBoundingBox = function(boundingBox) {
 	goog.style.setStyle(this.element, 'position', 'absolute');
 	// change the view, move/resize the dom element
 	if (boundingBox.top) goog.style.setStyle(this.element, 'top', boundingBox.top);
@@ -32227,47 +32321,53 @@ silex.model.Component.prototype.setBoundingBox = function (boundingBox){
 	var styleStr = silex.Helper.styleToString(style);
 
 	// store it in the data-style-normal attribute
-	this.element.setAttribute('data-style-'+silex.model.Component.CONTEXT_NORMAL, styleStr);
-}
+	this.element.setAttribute('data-style-' + silex.model.Component.CONTEXT_NORMAL, styleStr);
+};
+
+
 /**
  * image source
  */
-silex.model.Component.prototype.getImageSrc = function (){
-	if (this.type === silex.model.Component.SUBTYPE_IMAGE){
+silex.model.Component.prototype.getImageSrc = function() {
+	if (this.type === silex.model.Component.SUBTYPE_IMAGE) {
 		var img = goog.dom.getElementsByTagNameAndClass('img', null, this.element)[0];
-		if (img){
+		if (img) {
 			return img.getAttribute('src');
 		}
-		else{
+		else {
 			console.error('The image element inside the component could not be found. Canot get the source.');
 		}
 	}
-	else{
+	else {
 		console.error('The component is not an image, canot get the source.');
 	}
 	return '';
-}
+};
+
+
 /**
  * image source
  */
-silex.model.Component.prototype.setImageSrc = function (url){
-	if (this.type === silex.model.Component.SUBTYPE_IMAGE){
+silex.model.Component.prototype.setImageSrc = function(url) {
+	if (this.type === silex.model.Component.SUBTYPE_IMAGE) {
 		var img = goog.dom.getElementsByTagNameAndClass('img', null, this.element)[0];
-		if (img){
+		if (img) {
 			return img.setAttribute('src', url);
 		}
-		else{
+		else {
 			console.error('The image element inside the component could not be found. Canot set the source.');
 		}
 	}
-	else{
+	else {
 		console.error('The component is not an image, canot set the source.');
 	}
-}
+};
+
+
 /**
  * get raw html content
  */
-silex.model.Component.prototype.getHtml = function (opt_baseUrl){
+silex.model.Component.prototype.getHtml = function(opt_baseUrl) {
 	// apply the data-style-normal to all nodes
 	this.applyStateToAllComponents('normal');
 
@@ -32282,20 +32382,20 @@ silex.model.Component.prototype.getHtml = function (opt_baseUrl){
 
 	// get the result as a string
 	var htmlString = '';
-	if (this.type==silex.model.Component.SUBTYPE_HTML){
+	if (this.type == silex.model.Component.SUBTYPE_HTML) {
 		// html boxes have a container for the html
 		var htmlContent = goog.dom.getFirstElementChild(cleanContainer);
-		if (htmlContent){
+		if (htmlContent) {
 			htmlString = htmlContent.innerHTML;
 		}
 	}
-	else{
+	else {
 		// others have their content right inside the element
 		htmlString = cleanContainer.innerHTML;
 	}
 
 	// relative URLs when possible
-	if (opt_baseUrl){
+	if (opt_baseUrl) {
 		opt_baseUrl = silex.Helper.getAbsolutePath(opt_baseUrl, silex.Helper.BaseUrl);
 		//this.absolute2relative(opt_baseUrl, cleanContainer);
 		htmlString = this.absolute2Relative(htmlString, opt_baseUrl);
@@ -32303,112 +32403,124 @@ silex.model.Component.prototype.getHtml = function (opt_baseUrl){
 
 	// return the html content
 	return htmlString;
-}
+};
+
+
 /**
  * set html content
  * make it editable and with absolute urls
  */
-silex.model.Component.prototype.setHtml = function (html, opt_baseUrl){
+silex.model.Component.prototype.setHtml = function(html, opt_baseUrl) {
 	// unregister jquery plugin
 	this.setEditable(false);
 	// absolute URLs when possible
-	if (opt_baseUrl){
+	if (opt_baseUrl) {
 		opt_baseUrl = silex.Helper.getAbsolutePath(opt_baseUrl, silex.Helper.BaseUrl);
 		html = this.relative2absolute(html, opt_baseUrl);
 	}
-	else{
+	else {
 		console.warn('setHtml without base url, the URLs could not be converted to absolute');
 	}
 	// set the html content
-	if (this.type==silex.model.Component.SUBTYPE_HTML){
+	if (this.type == silex.model.Component.SUBTYPE_HTML) {
 		// html boxes have a container for the html
 		var htmlContent = goog.dom.getFirstElementChild(this.element);
-		if (htmlContent){
+		if (htmlContent) {
 			htmlContent.innerHTML = html;
 		}
 	}
-	else{
+	else {
 		// others have their content right inside the element
 		this.element.innerHTML = html;
 	}
 	// restore editing
 	this.setEditable(true);
-}
+};
+
+
 /**
  * find the first editable parent
  */
-silex.model.Component.prototype.getFirstEditableParent = function(element){
+silex.model.Component.prototype.getFirstEditableParent = function(element) {
 	var child = element;
 	// go through all parents untill it is editable
-	while (child && child.getAttribute && !this.getEditable(child)){
+	while (child && child.getAttribute && !this.getEditable(child)) {
 		child = child.parentNode;
 	}
 	// return the first editable element
-	if (child && child.getAttribute && this.getEditable(child)){
+	if (child && child.getAttribute && this.getEditable(child)) {
 		return child;
 	}
-	else{
+	else {
 		// The component has no editable parent
 		// This is the case of the stage
 	}
 	return element;
-}
+};
+
+
 /**
  * lock/unlock
  * this makes the component selectable but not draggable nor resizable
  */
-silex.model.Component.prototype.getLocked = function(opt_element){
+silex.model.Component.prototype.getLocked = function(opt_element) {
 	// default value for the element
-	if (!opt_element){
+	if (!opt_element) {
 		opt_element = this.element;
 	}
 	return $(opt_element).hasClass('locked-style');
-}
+};
+
+
 /**
  * lock/unlock
  * this makes the component selectable but not draggable nor resizable
  */
-silex.model.Component.prototype.setLocked = function(isLocked, opt_element){
+silex.model.Component.prototype.setLocked = function(isLocked, opt_element) {
 	// default value for the element
-	if (!opt_element){
+	if (!opt_element) {
 		opt_element = this.element;
 	}
 	// lock/unlock plugin
-	if (isLocked){
-		if (!$(opt_element).hasClass('locked-style')){
+	if (isLocked) {
+		if (!$(opt_element).hasClass('locked-style')) {
 			$(opt_element).addClass('locked-style');
 		}
 	}
-	else{
-		if ($(opt_element).hasClass('locked-style')){
+	else {
+		if ($(opt_element).hasClass('locked-style')) {
 			$(opt_element).removeClass('locked-style');
 		}
 	}
 	this.setEditable(!isLocked, opt_element);
-}
+};
+
+
 /**
  * init or remove the editable jquery plugin
  * if opt_element element to set as editable, optional, this.element is default
  */
-silex.model.Component.prototype.getEditable = function(opt_element){
+silex.model.Component.prototype.getEditable = function(opt_element) {
 	// default value for the element
-	if (!opt_element){
+	if (!opt_element) {
 		opt_element = this.element;
 	}
 	return $(opt_element).hasClass('editable-style');
-}
+};
+
+
 /**
  * init or remove the editable jquery plugin
  * if opt_element element to set as editable, optional, this.element is default
  */
-silex.model.Component.prototype.setEditable = function(isEditable, opt_element){
+silex.model.Component.prototype.setEditable = function(isEditable, opt_element) {
 	// default value for the element
-	if (!opt_element){
+	if (!opt_element) {
 		opt_element = this.element;
 	}
 	// activate editable plugin
-	if (isEditable){
-		$('.editable-style[data-silex-type="container"]', opt_element).each(function(){
+	if (isEditable) {
+		$('.editable-style[data-silex-type="container"]', opt_element).each(function() {
 			if ($(this).hasClass('locked-style')) return;
 			$(this).editable({
 				isContainer: true
@@ -32417,26 +32529,26 @@ silex.model.Component.prototype.setEditable = function(isEditable, opt_element){
 		$('.editable-style[data-silex-type="element"]', opt_element).editable();
 
 		// the root element (is not editable when it is the stage, i.e. has no css class 'editable-style')
-		if (this.getEditable(opt_element)){
+		if (this.getEditable(opt_element)) {
 			if ($(this).hasClass('locked-style')) return;
 			var type = opt_element.getAttribute('data-silex-type');
-			if (type===silex.model.Component.TYPE_CONTAINER){
+			if (type === silex.model.Component.TYPE_CONTAINER) {
 				$(opt_element).editable({
 					isContainer: true
 				});
 			}
-			else{
+			else {
 				$(opt_element).editable();
 			}
 		}
 	}
 	// deactivate editable plugin
-	else{
+	else {
 		$('[data-silex-type="container"]', opt_element).editable('destroy');
 	    $('[data-silex-type="element"]', opt_element).editable('destroy');
 
 		// the root element (is not editable when it is the stage, i.e. has no css class 'editable-style')
-		if (this.getEditable(opt_element)){
+		if (this.getEditable(opt_element)) {
 			$(opt_element).editable('destroy');
 		}
 
@@ -32449,66 +32561,74 @@ silex.model.Component.prototype.setEditable = function(isEditable, opt_element){
 		$(opt_element).find('.ui-resizable-handle').remove();
 	}
 	this.isEditable = isEditable;
-}
+};
+
+
 /**
  * Browse the children and convert all URLs to relative when possible
  * this will not work, because element.style.backgroundImage is reevaluated when set to a relative value
  */
-silex.model.Component.prototype.absolute2Relative = function (htmlString, baseUrl) {
+silex.model.Component.prototype.absolute2Relative = function(htmlString, baseUrl) {
 	// image source
-	htmlString = htmlString.replace(/src="?([^" ]*)" /g, function(match, group1, group2){
-		var res =  match.replace(group1, silex.Helper.getRelativePath(group1, baseUrl));
+	htmlString = htmlString.replace(/src="?([^" ]*)" /g, function(match, group1, group2) {
+		var res = match.replace(group1, silex.Helper.getRelativePath(group1, baseUrl));
 		return res;
 	});
 	// css url()
-	htmlString = htmlString.replace(/url\((['"])(.+?)\1\)/g, function(match, group1, group2){
-		var res = "url('" + silex.Helper.getRelativePath(group2, baseUrl)+"')";
+	htmlString = htmlString.replace(/url\((['"])(.+?)\1\)/g, function(match, group1, group2) {
+		var res = "url('" + silex.Helper.getRelativePath(group2, baseUrl) + "')";
 		return res;
 	});
 	return htmlString;
-}
+};
+
+
 /**
  * convert all URLs to absolute
  */
-silex.model.Component.prototype.relative2absolute = function (htmlString, baseUrl) {
+silex.model.Component.prototype.relative2absolute = function(htmlString, baseUrl) {
 	// image source
-	htmlString = htmlString.replace(/src="?([^" ]*)" /g, function(match, group1, group2){
-		var res =  match.replace(group1, silex.Helper.getAbsolutePath(group1, baseUrl));
+	htmlString = htmlString.replace(/src="?([^" ]*)" /g, function(match, group1, group2) {
+		var res = match.replace(group1, silex.Helper.getAbsolutePath(group1, baseUrl));
 		return res;
 	});
 	// css url()
-	htmlString = htmlString.replace(/url\((['"])(.+?)\1\)/g, function(match, group1, group2){
-		var res = "url('" + silex.Helper.getAbsolutePath(group2, baseUrl)+"')";
+	htmlString = htmlString.replace(/url\((['"])(.+?)\1\)/g, function(match, group1, group2) {
+		var res = "url('" + silex.Helper.getAbsolutePath(group2, baseUrl) + "')";
 		return res;
 	});
 	return htmlString;
-}
+};
+
+
 /**
  * apply a given state to all chlidren
  */
-silex.model.Component.prototype.applyStateToAllComponents = function(state){
+silex.model.Component.prototype.applyStateToAllComponents = function(state) {
 	// apply the data-style-normal or data-style-* to all nodes
-	$('[data-style-normal]').each(function () {
-		var styleStr = this.getAttribute('data-style-'+state);
-		if (styleStr!==null)
+	$('[data-style-normal]').each(function() {
+		var styleStr = this.getAttribute('data-style-' + state);
+		if (styleStr !== null)
 			this.setAttribute('style', styleStr);
 		else
 			this.setAttribute('style', this.getAttribute('data-style-normal'));
 	});
-}
+};
+
+
 /**
  * component creation
  * create a DOM element, attach it to this container
  * and returns a new component for the element
  */
-silex.model.Component.prototype.addContainer = function(){
-	if (this.type !== silex.model.Component.TYPE_CONTAINER){
-		throw('Canot create a child component for this component because it is not of type '+silex.model.Component.TYPE_CONTAINER);
+silex.model.Component.prototype.addContainer = function() {
+	if (this.type !== silex.model.Component.TYPE_CONTAINER) {
+		throw ('Canot create a child component for this component because it is not of type ' + silex.model.Component.TYPE_CONTAINER);
 	}
 	// create the conatiner
 	var div = goog.dom.createElement('div');
 	div.className = 'editable-style';
-	div.setAttribute('data-silex-type', silex.model.Component.TYPE_CONTAINER)
+	div.setAttribute('data-silex-type', silex.model.Component.TYPE_CONTAINER);
 	// attach it
 	var container = this.getBackgroundElement();
 	goog.dom.appendChild(container, div);
@@ -32530,21 +32650,23 @@ silex.model.Component.prototype.addContainer = function(){
 	component.setStyle(style, silex.model.Component.CONTEXT_NORMAL);
 	// return a component for this element
 	return component;
-}
+};
+
+
 /**
  * component creation
  * create a DOM element, attach it to this container
  * and returns a new component for the element
  */
-silex.model.Component.prototype.addText = function(){
-	if (this.type !== silex.model.Component.TYPE_CONTAINER){
-		throw('Canot create a child component for this component because it is not of type '+silex.model.Component.TYPE_CONTAINER);
+silex.model.Component.prototype.addText = function() {
+	if (this.type !== silex.model.Component.TYPE_CONTAINER) {
+		throw ('Canot create a child component for this component because it is not of type ' + silex.model.Component.TYPE_CONTAINER);
 	}
 	// create the element
 	var div = goog.dom.createElement('div');
 	div.className = 'editable-style';
-	div.setAttribute('data-silex-type', silex.model.Component.TYPE_ELEMENT)
-	div.setAttribute('data-silex-sub-type', silex.model.Component.SUBTYPE_TEXT)
+	div.setAttribute('data-silex-type', silex.model.Component.TYPE_ELEMENT);
+	div.setAttribute('data-silex-sub-type', silex.model.Component.SUBTYPE_TEXT);
 	div.innerHTML = 'New text box';
 	// attach it
 	var container = this.getBackgroundElement();
@@ -32567,15 +32689,17 @@ silex.model.Component.prototype.addText = function(){
 	component.setStyle(style, silex.model.Component.CONTEXT_NORMAL);
 	// return a component for this element
 	return component;
-}
+};
+
+
 /**
  * component creation
  * create a DOM element, attach it to this container
  * and returns a new component for the element
  */
-silex.model.Component.prototype.addHtml = function(){
-	if (this.type !== silex.model.Component.TYPE_CONTAINER){
-		throw('Canot create a child component for this component because it is not of type '+silex.model.Component.TYPE_CONTAINER);
+silex.model.Component.prototype.addHtml = function() {
+	if (this.type !== silex.model.Component.TYPE_CONTAINER) {
+		throw ('Canot create a child component for this component because it is not of type ' + silex.model.Component.TYPE_CONTAINER);
 	}
 	// create the element
 	var div = goog.dom.createElement('div');
@@ -32612,23 +32736,25 @@ silex.model.Component.prototype.addHtml = function(){
 	component.setStyle(style, silex.model.Component.CONTEXT_NORMAL);
 	// return a component for this element
 	return component;
-}
+};
+
+
 /**
  * component creation
  * create a DOM element, attach it to this container
  * and returns a new component for the element
  */
-silex.model.Component.prototype.addImage = function(url){
-	if (this.type !== silex.model.Component.TYPE_CONTAINER){
-		throw('Canot create a child component for this component because it is not of type '+silex.model.Component.TYPE_CONTAINER);
+silex.model.Component.prototype.addImage = function(url) {
+	if (this.type !== silex.model.Component.TYPE_CONTAINER) {
+		throw ('Canot create a child component for this component because it is not of type ' + silex.model.Component.TYPE_CONTAINER);
 	}
-	if (!url){
+	if (!url) {
 		console.error('No URL provided for the image component');
 	}
 	var div = goog.dom.createElement('div');
 	div.className = 'editable-style';
-	div.setAttribute('data-silex-type', silex.model.Component.TYPE_ELEMENT)
-	div.setAttribute('data-silex-sub-type', silex.model.Component.SUBTYPE_IMAGE)
+	div.setAttribute('data-silex-type', silex.model.Component.TYPE_ELEMENT);
+	div.setAttribute('data-silex-sub-type', silex.model.Component.SUBTYPE_IMAGE);
 
 	var img = goog.dom.createElement('img');
 	goog.style.setStyle(img, 'width', '100%');
@@ -32650,91 +32776,113 @@ silex.model.Component.prototype.addImage = function(url){
 	// start loading
 	img.setAttribute('src', url);
 
-	img.onload = function (e){
+	img.onload = function(e) {
 		// set container size to match image size
 		bb.width = img.offsetWidth + 'px';
 		bb.height = img.offsetHeight + 'px';
 		component.setBoundingBox(bb);
 		// make it editable
 		component.setEditable(true, div);
-	}
+	};
 	// return a component for this element
 	return component;
-}
+};
+
+
 /**
  * remove elements
  */
-silex.model.Component.prototype.remove = function(component){
-	if (!goog.dom.contains(this.element, component.element)){
-		throw('Canot remove this component because it is not my children.')
+silex.model.Component.prototype.remove = function(component) {
+	if (!goog.dom.contains(this.element, component.element)) {
+		throw ('Canot remove this component because it is not my children.');
 	}
 	goog.dom.removeNode(component.element);
-}
+};
+
+
 /**
  * link
  */
-silex.model.Component.prototype.removeLink = function(){
+silex.model.Component.prototype.removeLink = function() {
 	this.element.removeAttribute('data-silex-href');
-}
+};
+
+
 /**
  * link
  */
-silex.model.Component.prototype.setLink = function(url){
+silex.model.Component.prototype.setLink = function(url) {
 	this.element.setAttribute('data-silex-href', url);
-}
+};
+
+
 /**
  * link
  */
-silex.model.Component.prototype.getLink = function(){
+silex.model.Component.prototype.getLink = function() {
 	return this.element.getAttribute('data-silex-href');
-}
+};
+
+
 /**
  * mark selection
  */
-silex.model.Component.prototype.setSelected = function(isSelected){
-	if (isSelected){
+silex.model.Component.prototype.setSelected = function(isSelected) {
+	if (isSelected) {
 		goog.dom.classes.add(this.element, 'silex-selected');
 	}
-	else{
+	else {
 		goog.dom.classes.remove(this.element, 'silex-selected');
 	}
-}
+};
+
+
 /**
  * mark selection
  */
-silex.model.Component.prototype.getSelected = function(){
+silex.model.Component.prototype.getSelected = function() {
 	return goog.dom.classes.has(this.element, 'silex-selected');
-}
+};
+
+
 /**
  * add a class
  */
-silex.model.Component.prototype.addClass = function(className){
+silex.model.Component.prototype.addClass = function(className) {
 	goog.dom.classes.add(this.element, className);
-}
+};
+
+
 /**
  * remove a class
  */
-silex.model.Component.prototype.removeClass = function(className){
+silex.model.Component.prototype.removeClass = function(className) {
 	goog.dom.classes.remove(this.element, className);
-}
+};
+
+
 /**
  * get css classes
  */
-silex.model.Component.prototype.getClasses = function(){
+silex.model.Component.prototype.getClasses = function() {
 	return goog.dom.classes.get(this.element);
-}
+};
+
+
 /**
  * set css classes
  */
-silex.model.Component.prototype.getClasses = function(classes){
+silex.model.Component.prototype.getClasses = function(classes) {
 	return goog.dom.classes.set(this.element, classes);
-}
+};
+
+
 /**
  * check if the component has a given css class
  */
-silex.model.Component.prototype.hasClass = function(className){
+silex.model.Component.prototype.hasClass = function(className) {
 	return goog.dom.classes.has(this.element, className);
-}
+};
 // Copyright 2008 The Closure Library Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -41267,38 +41415,46 @@ goog.debug.entryPointRegistry.register(
 
 goog.provide('silex.Helper');
 
-goog.require('goog.net.XhrIo');
 goog.require('goog.Uri');
+goog.require('goog.net.XhrIo');
 goog.require('goog.style');
 
-silex.Helper = function(){
-}
-silex.Helper.BaseUrl = window.location.href.substr(0, window.location.href.lastIndexOf('/')+1);
+silex.Helper = function() {
+};
+silex.Helper.BaseUrl = window.location.href.substr(0, window.location.href.lastIndexOf('/') + 1);
+
+
 /**
  * load a template and put the content in the provided element, then call the callback
  */
-silex.Helper.loadTemplateFile = function(url, element, cbk, context){
-    goog.net.XhrIo.send(url, function(e){
-        var xhr = e.target;
-        var data = xhr.getResponse();
-        element.innerHTML = data;
-        if (cbk) goog.bind(cbk, context)();
-    });
-}
+silex.Helper.loadTemplateFile = function(url, element, cbk, context) {
+  goog.net.XhrIo.send(url, function(e) {
+    var xhr = e.target;
+    var data = xhr.getResponse();
+    element.innerHTML = data;
+    if (cbk) goog.bind(cbk, context)();
+  });
+};
+
+
 /**
  * Resolve a template and put the result in the provided element
  */
-silex.Helper.resolveTemplate = function(element, templateHtml, data){
-    var template = Handlebars.compile(templateHtml);
-    element.innerHTML = template(data);
-}
+silex.Helper.resolveTemplate = function(element, templateHtml, data) {
+  var template = Handlebars.compile(templateHtml);
+  element.innerHTML = template(data);
+};
+
+
 /**
  * Check if an URL is relative or absolute
  * @return  true if the url is absolute
  */
-silex.Helper.isAbsoluteUrl = function(url){
-    return url.indexOf('http')===0;
-}
+silex.Helper.isAbsoluteUrl = function(url) {
+  return url.indexOf('http') === 0;
+};
+
+
 /**
  * Get a relative path from an absolute URL, given a base URL
  * @param url   a URL which has to end with a '/' or with a file name
@@ -41309,159 +41465,173 @@ silex.Helper.isAbsoluteUrl = function(url){
  *              url     http://abc.com/d/f/g/file.html
  *              result  ../f/g/file.html
  */
-silex.Helper.getRelativePath = function(url, base){
-    // check if they are both absolute urls
-    if(base.indexOf('http')!==0 || url.indexOf('http')!==0){
-        console.warn('Warning: the URL is not absolute ', url, base);
-        return url;
-    }
-    // get an array out of the URLs
-    var urlArr = url.split('/');
-    var baseArr = base.split('/');
-    // keep track of the file name if any
-    var fileName  = urlArr[urlArr.length-1];
-    // remove the filename and the last '/'
-    urlArr.pop();
-    baseArr.pop();
-    // remove the http[s]://
-    urlArr.shift();
-    urlArr.shift();
+silex.Helper.getRelativePath = function(url, base) {
+  // check if they are both absolute urls
+  if (base.indexOf('http') !== 0 || url.indexOf('http') !== 0) {
+    console.warn('Warning: the URL is not absolute ', url, base);
+    return url;
+  }
+  // get an array out of the URLs
+  var urlArr = url.split('/');
+  var baseArr = base.split('/');
+  // keep track of the file name if any
+  var fileName = urlArr[urlArr.length - 1];
+  // remove the filename and the last '/'
+  urlArr.pop();
+  baseArr.pop();
+  // remove the http[s]://
+  urlArr.shift();
+  urlArr.shift();
+  baseArr.shift();
+  baseArr.shift();
+  // check if they are on the same domain
+  if (baseArr[0] !== urlArr[0]) {
+    console.warn('Warning: the URL is not on the same domain as the base url ', url, base);
+    return url;
+  }
+  // remove the common part
+  var baseElement;
+  var urlElement;
+  while (baseArr.length > 0 && urlArr.length > 0
+        && baseArr[0] === urlArr[0]) {
     baseArr.shift();
-    baseArr.shift();
-    // check if they are on the same domain
-    if(baseArr[0]!==urlArr[0]){
-        console.warn('Warning: the URL is not on the same domain as the base url ', url, base);
-        return url;
-    }
-    // remove the common part
-    var baseElement;
-    var urlElement;
-    while (baseArr.length>0 && urlArr.length>0
-        && baseArr[0]===urlArr[0]){
-        baseArr.shift();
-        urlArr.shift();
-    }
+    urlArr.shift();
+  }
 
-    // as many '../' as there are folders left in the base url
-    var relativePath = '';
-    for (var idx = 0; idx<baseArr.length; idx++){
-        relativePath += '../';
-    }
+  // as many '../' as there are folders left in the base url
+  var relativePath = '';
+  for (var idx = 0; idx < baseArr.length; idx++) {
+    relativePath += '../';
+  }
 
-    // now append the folders from url and the file name
-    if (urlArr.length>0){
-        relativePath += urlArr.join('/') + '/';
-    }
-    relativePath += fileName;
+  // now append the folders from url and the file name
+  if (urlArr.length > 0) {
+    relativePath += urlArr.join('/') + '/';
+  }
+  relativePath += fileName;
 
-    return relativePath;
-}
+  return relativePath;
+};
+
+
 /**
  * convert relative to absolute url
  * use http://docs.closure-library.googlecode.com/git/class_goog_Uri.html
  */
-silex.Helper.getAbsolutePath = function(url, base){
-    return goog.Uri.resolve(base, url).toString();
-}
+silex.Helper.getAbsolutePath = function(url, base) {
+  return goog.Uri.resolve(base, url).toString();
+};
+
+
 /**
  * convert style object to string
  */
-silex.Helper.styleToString = function(style){
-    // build a string out of the style object
-    var styleStr = '';
-    goog.object.forEach(style, function(val, index, obj) {
-        if (val)
-            styleStr += goog.string.toSelectorCase(index) + ': ' + val + '; ';
-    });
-    return styleStr;
-}
+silex.Helper.styleToString = function(style) {
+  // build a string out of the style object
+  var styleStr = '';
+  goog.object.forEach(style, function(val, index, obj) {
+    if (val)
+      styleStr += goog.string.toSelectorCase(index) + ': ' + val + '; ';
+  });
+  return styleStr;
+};
+
+
 /**
  * convert style string to object
  */
-silex.Helper.stringToStyle = function(styleStr){
-    return goog.style.parseStyleAttribute(styleStr);
-}
+silex.Helper.stringToStyle = function(styleStr) {
+  return goog.style.parseStyleAttribute(styleStr);
+};
+
+
 /**
  * convert hex color to rgba values
  * @example  #000000FF will return rgba(0, 0, 0, 1)
  */
-silex.Helper.hexToRgba = function(hex){
-    if (hex.indexOf('#')!==0) return hex;
-    if (hex.length!==9){
-        console.error('Error in length '+hex+' - '+hex.length);
-        return hex;
-    }
-    hexArr = silex.Helper.hexToArray(hex);
-    r = hexArr[0];
-    g = hexArr[1];
-    b = hexArr[2];
-    a = hexArr[3];
+silex.Helper.hexToRgba = function(hex) {
+  if (hex.indexOf('#') !== 0) return hex;
+  if (hex.length !== 9) {
+    console.error('Error in length ' + hex + ' - ' + hex.length);
+    return hex;
+  }
+  hexArr = silex.Helper.hexToArray(hex);
+  r = hexArr[0];
+  g = hexArr[1];
+  b = hexArr[2];
+  a = hexArr[3];
 
-    var result = 'rgba('+r+','+g+','+b+','+a+')';
-    return result;
-}
+  var result = 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+  return result;
+};
+
+
 /**
  * convert rgba to array of values
  * @example     #000000FF will return [0, 0, 0, 1]
  */
-silex.Helper.hexToArray = function(hex){
-    if (hex.indexOf('#')!==0) return hex;
-    hex = hex.replace('#','');
-    r = parseInt(hex.substring(0,2), 16);
-    g = parseInt(hex.substring(2,4), 16);
-    b = parseInt(hex.substring(4,6), 16);
-    a = parseInt(hex.substring(6,8), 16)/255;
+silex.Helper.hexToArray = function(hex) {
+  if (hex.indexOf('#') !== 0) return hex;
+  hex = hex.replace('#', '');
+  r = parseInt(hex.substring(0, 2), 16);
+  g = parseInt(hex.substring(2, 4), 16);
+  b = parseInt(hex.substring(4, 6), 16);
+  a = parseInt(hex.substring(6, 8), 16) / 255;
 
-    var result = [r, g, b, a];
-    return result;
-}
+  var result = [r, g, b, a];
+  return result;
+};
+
+
 /**
  * convert rgba to hex
  * @example     rgba(0, 0, 0, 1) will return #000000FF
  */
-silex.Helper.rgbaToHex = function(rgba){
-    // has to be rgb or rgba
-    if (rgba.indexOf('rgb')!==0) return rgba;
-    // get the array version
-    rgbaArr = silex.Helper.rgbaToArray(rgba);
+silex.Helper.rgbaToHex = function(rgba) {
+  // has to be rgb or rgba
+  if (rgba.indexOf('rgb') !== 0) return rgba;
+  // get the array version
+  rgbaArr = silex.Helper.rgbaToArray(rgba);
 
-    r = rgbaArr[0].toString(16); if (r.length<2) r = '0'+r;
-    g = rgbaArr[1].toString(16); if (g.length<2) g = '0'+g;
-    b = rgbaArr[2].toString(16); if (b.length<2) b = '0'+b;
-    a = (rgbaArr[3]).toString(16); if (a.length<2) a = '0'+a;
+  r = rgbaArr[0].toString(16); if (r.length < 2) r = '0' + r;
+  g = rgbaArr[1].toString(16); if (g.length < 2) g = '0' + g;
+  b = rgbaArr[2].toString(16); if (b.length < 2) b = '0' + b;
+  a = (rgbaArr[3]).toString(16); if (a.length < 2) a = '0' + a;
 
-    var result = '#'+(r+g+b+a);
-    return result;
-}
+  var result = '#' + (r + g + b + a);
+  return result;
+};
+
+
 /**
  * convert rgba to array of values
  * @example     rgba(0, 0, 0, 1) will return [0, 0, 0, 1]
  */
-silex.Helper.rgbaToArray = function(rgba){
-    // not rgb nor rgba
-    if (rgba.indexOf('rgb')!==0) return rgba;
-    if (rgba.indexOf('rgba')!==0){
-        // rgb
-        rgba = rgba.replace('rgb','');
-    }
-    else{
-        // rgba
-        rgba = rgba.replace('rgba','');
-    }
-    rgba = rgba.replace(' ','');
-    rgbaArr = rgba.substring(1,rgba.length-1).split(',');
+silex.Helper.rgbaToArray = function(rgba) {
+  // not rgb nor rgba
+  if (rgba.indexOf('rgb') !== 0) return rgba;
+  if (rgba.indexOf('rgba') !== 0) {
+    // rgb
+    rgba = rgba.replace('rgb', '');
+  }
+  else {
+    // rgba
+    rgba = rgba.replace('rgba', '');
+  }
+  rgba = rgba.replace(' ', '');
+  rgbaArr = rgba.substring(1, rgba.length - 1).split(',');
 
-    // add alpha if needed
-    if (rgbaArr.length<4) rgbaArr.push('1');
+  // add alpha if needed
+  if (rgbaArr.length < 4) rgbaArr.push('1');
 
-    r = parseInt(rgbaArr[0]);
-    g = parseInt(rgbaArr[1]);
-    b = parseInt(rgbaArr[2]);
-    a = parseInt(rgbaArr[3]*255);
+  r = parseInt(rgbaArr[0]);
+  g = parseInt(rgbaArr[1]);
+  b = parseInt(rgbaArr[2]);
+  a = parseInt(rgbaArr[3] * 255);
 
-    var result = [r, g, b, a];
-    return result;
-}
+  var result = [r, g, b, a];
+  return result;
+};
 //////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
@@ -79332,243 +79502,113 @@ silex.view.TextEditor.prototype.contentChanged = function () {
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
 
-goog.provide('silex.view.propertiesTool.PagePane');
-
-goog.require('goog.cssom');
-goog.require('goog.ui.Checkbox');
-goog.require('goog.ui.CustomButton');
-goog.require('goog.ui.HsvaPalette');
-goog.require('goog.ui.ColorButton');
-goog.require('goog.editor.Field');
-
-goog.require('goog.array');
-goog.require('goog.object');
+goog.provide('silex.service.CloudStorage');
 
 /**
- * on of Silex Editors class
- * let user edit style of components
+ * the Silex CloudStorage singleton
  * @constructor
+ * based on http://www.inkfilepicker.com/
+ * load and save data to and from the cloud storage services
  */
-silex.view.propertiesTool.PagePane = function(element, pageChanged){
-	this.element = element;
-	this.pageCheckboxes = [];
-	this.pageChanged = pageChanged;
-	this.buildUi();
+silex.service.CloudStorage = function(){
+	this.filePicker = cloudExplorer;
 }
 /**
- * element of the dom to which the component is rendered
+ * reference to the filepicker instance
  */
-silex.view.propertiesTool.PagePane.prototype.element;
+silex.service.CloudStorage.prototype.filePicker;
 /**
- * component to be edited
+ * constant
  */
-silex.view.propertiesTool.PagePane.prototype.component;
+//silex.service.CloudStorage.BACK_END_URL = "../unifile/v1.0/services/list/";
 /**
- * callback to notify the tool box
+ * singleton implementation
  */
-silex.view.propertiesTool.PagePane.prototype.pageChanged;
+silex.service.CloudStorage.instance;
 /**
- * avoid loops on redraw
+ * singleton implementation
  */
-silex.view.propertiesTool.PagePane.prototype.isRedraw;
-/**
- * dropdown list to select a link
- */
-silex.view.propertiesTool.PagePane.prototype.linkDropdown;
-/**
- * text field used to type an external link
- */
-silex.view.propertiesTool.PagePane.prototype.linkInputTextField;
-/**
- * build the UI
- */
-silex.view.propertiesTool.PagePane.prototype.buildUi = function(){
-	// link, select page or enter custom link
-	// handle the dropdown list from the template
-	this.linkDropdown = goog.dom.getElementByClass('link-combo-box', this.element);
-	this.linkDropdown.onchange = goog.bind(this.onLinkChanged, this);
-
-	// create a text field for custom link
-	var linkInputElement = goog.dom.getElementByClass('link-input-text', this.element);
-	this.linkInputTextField = new goog.editor.Field(linkInputElement);
-	// make editable
-	this.linkInputTextField.makeEditable();
-	// hide by default
-	var linkInputElement = goog.dom.getElementByClass('link-input-text', this.element); // get the new input which may be an iframe
-	goog.style.setStyle(linkInputElement, 'display', 'none');
-	// Watch for field changes, to display below.
-	goog.events.listen(this.linkInputTextField, goog.editor.Field.EventType.DELAYEDCHANGE, this.onLinkTextChanged, false, this);
+silex.service.CloudStorage.getInstance = function(){
+	if (!silex.service.CloudStorage.instance)
+		silex.service.CloudStorage.instance = new silex.service.CloudStorage();
+	return silex.service.CloudStorage.instance;
 }
 /**
- * display the propertis of the component being edited
+ * save a file
  */
-silex.view.propertiesTool.PagePane.prototype.setComponent = function(component){
-	this.component = component;
-	this.redraw();
-}
-/**
- * refresh with new data
- */
-silex.view.propertiesTool.PagePane.prototype.setPages = function(data){
-	// store page data
-	this.pages = data;
-
-	// reset page checkboxes
-	if (this.pageCheckboxes){
-		goog.array.forEach(this.pageCheckboxes, function(item) {
-			item.checkbox.dispose();
-		});
+silex.service.CloudStorage.prototype.save = function(blob, rawData, cbk, opt_errCbk){
+	// cloud explorer expects relative path
+	var relBlob = {
+		url : silex.Helper.getRelativePath(blob.url, silex.Helper.BaseUrl)
 	}
 
-	// link selector
-	var linkContainer = goog.dom.getElementByClass('link-combo-box', this.element);
-	var templateHtml = goog.dom.getElementByClass('link-template', this.element).innerHTML;
-	silex.Helper.resolveTemplate(linkContainer, templateHtml, {pages:this.pages});
-
-	// render page/visibility template
-	// init page template
-	var pagesContainer = goog.dom.getElementByClass('pages-container', this.element);
-	var templateHtml = goog.dom.getElementByClass('pages-selector-template', this.element).innerHTML;
-	silex.Helper.resolveTemplate(pagesContainer, templateHtml, {pages:this.pages});
-	// create page checkboxes
-	this.pageCheckboxes = [];
-	var mainContainer = goog.dom.getElementByClass('pages-container', this.element);
-	var items = goog.dom.getElementsByClass('page-container', mainContainer);
-	var idx = 0;
-	goog.array.forEach(items, function(item) {
-		var checkboxElement = goog.dom.getElementByClass('page-check', item);
-		var labelElement = goog.dom.getElementByClass('page-label', item);
-		var checkbox = new goog.ui.Checkbox();
-		var page = this.pages[idx++];
-		checkbox.render(checkboxElement);
-		checkbox.setLabel (labelElement);
-		this.pageCheckboxes.push({
-			checkbox: checkbox,
-			page: page
-		});
-		goog.events.listen(checkbox, goog.ui.Component.EventType.CHANGE, function(e){
-			this.checkPage(page, checkbox);
-		}, false, this);
-	}, this);
-	// show on all pages button
-	var showAllBtn = goog.dom.getElementByClass('show-on-all-pages-btn', this.element);
-	goog.events.listen(showAllBtn, goog.events.EventType.CLICK, function(e){
-		this.unCheckAll();
-	}, false, this);
-
-	// refresh display
-	this.redraw();
+	// save the actual data
+	this.filePicker.write(
+	relBlob,
+	rawData,
+	function(blob){
+		// workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
+		new goog.async.Delay(function () {
+			if (cbk) cbk();
+		}, 10).start();
+	},
+	function(FPError){
+		console.error(FPError);
+		if (opt_errCbk){
+			console.error(FPError);
+			opt_errCbk(FPError);
+		}
+	});
 }
 /**
- * the user changed the link drop down
+ * load data
  */
-silex.view.propertiesTool.PagePane.prototype.onLinkChanged = function(event){
-	if (this.linkDropdown.value==='none'){
-		this.component.removeLink();
-	}
-	else if (this.linkDropdown.value==='custom'){
-		// keep previous link value
-		var prevVal = this.linkInputTextField.getCleanContents();
-		// reset if it was an internal link
-		if (prevVal.indexOf('#')===0) prevVal = '';
-		if (prevVal==='') prevVal = 'http://www.silex.me/';
-		// store in the href attr
-		this.component.setLink(prevVal);
-	}
-	else {
-		this.component.setLink('#'+this.linkDropdown.value);
-	}
-	this.pageChanged();
-	this.redraw();
-}
-/**
- * the user changed the link text field
- */
-silex.view.propertiesTool.PagePane.prototype.onLinkTextChanged = function(event){
-	// update the href attribute
-	this.component.setLink(this.linkInputTextField.getCleanContents());
-	// notify the controler
-	this.pageChanged();
-}
-/**
- * redraw the properties
- */
-silex.view.propertiesTool.PagePane.prototype.redraw = function(){
-	if (this.component && this.pageCheckboxes && !this.isRedraw){
-		this.isRedraw = true;
-		// refresh page checkboxes
-		goog.array.forEach(this.pageCheckboxes, function(item) {
-			if (this.component){
-				// there is a selection
-				var pageName = item.page.name;
-				item.checkbox.setEnabled(true);
-				item.checkbox.setChecked(goog.dom.classes.has(this.component.element, pageName));
-			}
-			else{
-				// no selected element
-				item.checkbox.setChecked(false);
-				item.checkbox.setEnabled(false);
-			}
-		}, this);
+silex.service.CloudStorage.prototype.load = function(blob, cbk, opt_errCbk){
 
-		// refresh the link inputs
-		// default selection
-		var hrefAttr = this.component.getLink();
-		if (!hrefAttr){
-			this.linkDropdown.value='none';
+	// cloud explorer expects relative path
+	var relBlob = {
+		url : silex.Helper.getRelativePath(blob.url, silex.Helper.BaseUrl)
+	}
+	this.filePicker.read(
+	relBlob,
+	function(data){
+		// workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
+		new goog.async.Delay(function () {
+			if (cbk) cbk(data);
+		}, 10).start();
+	},
+	function(FPError){
+		console.error(FPError);
+		if (opt_errCbk){
+			console.error(FPError);
+			opt_errCbk(FPError);
+		}
+	});
+}
+/**
+ * load data
+ */
+silex.service.CloudStorage.prototype.loadLocal = function(url, cbk, opt_errCbk){
+	goog.net.XhrIo.send(url, function(e){
+		// success of the request
+		var xhr = e.target;
+		var rawHtml = xhr.getResponse();
+		if (xhr.isSuccess()){
+			// workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
+			new goog.async.Delay(function () {
+				if (cbk) cbk(rawHtml);
+			}, 10).start();
 		}
 		else{
-			if (hrefAttr.indexOf('#')===0 && silex.model.Page.getPageByName(hrefAttr.substr(1))){
-				// case of an internal link
-				// select a page
-				this.linkDropdown.value = hrefAttr.substr(1);
-			}
-			else{
-				// in case it is a custom link
-				this.linkInputTextField.setHtml(false, hrefAttr);
-				this.linkDropdown.value='custom';
+			var message = xhr.getLastError();
+			console.error(message, xhr, xhr.isSuccess(), xhr.getStatus(), xhr.headers.toString());
+			if (opt_errCbk){
+				console.error(FPError);
+				opt_errCbk(message);
 			}
 		}
-		// visibility of the text edit
-		var linkInputElement = goog.dom.getElementByClass('link-input-text', this.element);
-		if(this.linkDropdown.value==='custom'){
-			goog.style.setStyle(linkInputElement, 'display', 'inherit');
-		}
-		else{
-			goog.style.setStyle(linkInputElement, 'display', 'none');
-		}
-		this.isRedraw = false;
-	}
-}
-/**
- * callback for checkboxes click event
- */
-silex.view.propertiesTool.PagePane.prototype.checkPage = function(page, checkbox){
-	// apply the page selection
-	if (checkbox.isChecked()){
-		page.addComponent(this.component);
-	}
-	else{
-		page.removeComponent(this.component);
-	}
-	// notify the toolbox
-	this.pageChanged();
-	// refresh ui
-	this.redraw();
-}
-/**
- * callback for checkboxes click event
- */
-silex.view.propertiesTool.PagePane.prototype.unCheckAll = function(){
-	goog.array.forEach(this.pages, function(page) {
-		page.removeComponent(this.component);
-	}, this);
-	// notify the toolbox
-	this.pageChanged();
-	// refresh ui
-	this.redraw();
-}
-//////////////////////////////////////////////////
+	});
+}//////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
 //
@@ -80113,6 +80153,8 @@ silex.view.PropertiesTool.prototype.setPages = function(data){
 
 goog.provide('silex.model.File');
 
+
+
 //////////////////////////////////////////////////////////////////
 // File class
 //////////////////////////////////////////////////////////////////
@@ -80120,15 +80162,15 @@ goog.provide('silex.model.File');
  * @constructor
  */
 silex.model.File = function(
-	workspace,
-	menu,
-	stage,
-	pageTool,
-	propertiesTool,
-	htmlEditor,
-	textEditor,
-	fileExplorer,
-	publishSettings){
+    workspace,
+    menu,
+    stage,
+    pageTool,
+    propertiesTool,
+    htmlEditor,
+    textEditor,
+    fileExplorer,
+    publishSettings) {
 
 	// store references to the view components
 	this.workspace = workspace;
@@ -80140,143 +80182,184 @@ silex.model.File = function(
 	this.textEditor = textEditor;
 	this.fileExplorer = fileExplorer;
 	this.publishSettings = publishSettings;
-}
+};
+
+
 /**
  * creation template URL constant
  */
 silex.model.File.CREATION_TEMPLATE = 'creation-template.html';
+
+
 /**
  * element of the view, to be updated by this model
  */
 silex.model.File.prototype.workspace;
+
+
 /**
  * element of the view, to be updated by this model
  */
 silex.model.File.prototype.menu;
+
+
 /**
  * element of the view, to be updated by this model
  */
 silex.model.File.prototype.stage;
+
+
 /**
  * element of the view, to be updated by this model
  */
 silex.model.File.prototype.pageTool;
+
+
 /**
  * element of the view, to be updated by this model
  */
 silex.model.File.prototype.propertiesTool;
+
+
 /**
  * element of the view, to be updated by this model
  */
 silex.model.File.prototype.htmlEditor;
+
+
 /**
  * element of the view, to be updated by this model
  */
 silex.model.File.prototype.textEditor;
+
+
 /**
  * element of the view, to be updated by this model
  */
 silex.model.File.prototype.fileExplorer;
+
+
 /**
  * element of the view, to be updated by this model
  */
 silex.model.File.prototype.publishSettings;
+
+
 /**
  * current file url
  * if the current file is a new file, it has no url
  */
 silex.model.File.prototype.url;
+
+
 /**
  * current file blob
  */
 silex.model.File.prototype.blob;
+
+
 /**
  * current file head content (string)
  */
 silex.model.File.prototype.headTag;
+
+
 /**
  * current file body content (string)
  */
 silex.model.File.prototype.bodyTag;
+
+
 /**
  * current file body style (string)
  */
 silex.model.File.prototype.bodyStyle;
+
+
 ////////////////////////////////////////////////
 // File management methods
 ////////////////////////////////////////////////
 /**
  * load an empty new file
  */
-silex.model.File.prototype.newFile = function (cbk, opt_errCbk){
+silex.model.File.prototype.newFile = function(cbk, opt_errCbk) {
 	this.openFromUrl(silex.model.File.CREATION_TEMPLATE, cbk, opt_errCbk);
-}
+};
+
+
 /**
  * load an arbitrary url as a silex html file
  * will not be able to save
  */
-silex.model.File.prototype.openFromUrl = function (url, cbk, opt_errCbk){
+silex.model.File.prototype.openFromUrl = function(url, cbk, opt_errCbk) {
 	silex.service.CloudStorage.getInstance().loadLocal(url,
-	goog.bind(function(rawHtml){
+	goog.bind(function(rawHtml) {
 		this.setUrl(url);
 		this.setHtml(rawHtml);
 		this.setBlob(null); // will not be able to save
 		if (cbk) cbk();
 	}, this), opt_errCbk);
-}
+};
+
+
 /**
  * save a file with a new name
  */
-silex.model.File.prototype.saveAs = function(cbk, opt_errCbk){
+silex.model.File.prototype.saveAs = function(cbk, opt_errCbk) {
 	// choose a new name
 	this.fileExplorer.saveAsDialog(
-	goog.bind(function (blob) {
+	goog.bind(function(blob) {
 
 		// save the data
 		this.setUrl(blob.url);
 		this.setBlob(blob);
 		this.save(cbk, opt_errCbk);
 	}, this),
-	{'mimetype':'text/html'}, opt_errCbk);
+	{'mimetype': 'text/html'}, opt_errCbk);
 	this.workspace.invalidate();
-}
+};
+
+
 /**
  * write content to the file
  */
-silex.model.File.prototype.save = function(cbk, opt_errCbk){
+silex.model.File.prototype.save = function(cbk, opt_errCbk) {
 	var blob = this.getBlob();
 	this.setBodyTag(this.getStageComponent().getHtml(blob.url));
 	this.setHeadTag(this.stage.getHead());
 	this.setBodyStyle(this.stage.getBodyStyle());
-	silex.service.CloudStorage.getInstance().save(blob, this.getHtml(), function () {
+	silex.service.CloudStorage.getInstance().save(blob, this.getHtml(), function() {
 		if (cbk) cbk();
 	}, opt_errCbk);
-}
+};
+
 
 /**
  * load a new file
  */
-silex.model.File.prototype.open = function(cbk, opt_errCbk){
+silex.model.File.prototype.open = function(cbk, opt_errCbk) {
 	// let the user choose the file
 	this.fileExplorer.openDialog(
-	goog.bind(function (blob) {
+	goog.bind(function(blob) {
 		silex.service.CloudStorage.getInstance().load(blob,
-		goog.bind(function(rawHtml){
+		goog.bind(function(rawHtml) {
 			// update model
 			this.close();
 			this.setUrl(blob.url);
 			this.setBlob(blob);
 			this.setHtml(rawHtml);
-			if(cbk) cbk();
+			if (cbk) cbk();
 		}, this), opt_errCbk);
 	}, this),
 	['text/html', 'text/plain'], opt_errCbk);
 	this.workspace.invalidate();
-}
+};
+
+
 /**
  * reset data, close file
  */
-silex.model.File.prototype.close = function(){
+silex.model.File.prototype.close = function() {
 	this.url = null;
 	this.blob = null;
 	this.headTag = '';
@@ -80287,124 +80370,148 @@ silex.model.File.prototype.close = function(){
 	this.stage.setHead('');
 	this.stage.setBodyStyle('');
 	this.workspace.invalidate();
-}
+};
+
+
 ////////////////////////////////////////////////
 // DOM related methods
 ////////////////////////////////////////////////
 /**
  * get the HtmlDom element containing the body tag
  */
-silex.model.File.prototype.getStageComponent = function(){
+silex.model.File.prototype.getStageComponent = function() {
 	return new silex.model.Component(this.stage.bodyElement);
-}
+};
+
+
 /**
  * get the HtmlDom element containing the body tag
  */
-silex.model.File.prototype.getBodyTag = function(){
+silex.model.File.prototype.getBodyTag = function() {
 	return this.bodyTag;
-}
+};
+
+
 /**
  * store new data in memory
  * @param	body 	an HtmlDom element containing a new version of the body tag
  */
-silex.model.File.prototype.setBodyTag = function(body){
+silex.model.File.prototype.setBodyTag = function(body) {
 	this.bodyTag = body;
-}
+};
+
+
 /**
  * get the HtmlDom element containing the head tag
  */
-silex.model.File.prototype.getHeadTag = function(){
+silex.model.File.prototype.getHeadTag = function() {
 	return this.headTag;
-}
+};
+
+
 /**
  * store new data in memory
  * @param	head 	an HtmlDom element containing a new version of the head tag
  */
-silex.model.File.prototype.setHeadTag = function(head){
+silex.model.File.prototype.setHeadTag = function(head) {
 	this.headTag = head;
-}
+};
+
+
 /**
  * get the url of the file
  * @param	head 	an HtmlDom element containing a new version of the head tag
  */
-silex.model.File.prototype.getUrl = function(){
+silex.model.File.prototype.getUrl = function() {
 	return this.url;
-}
+};
+
+
 /**
  * store url of this file
  * @param	head 	an HtmlDom element containing a new version of the head tag
  */
-silex.model.File.prototype.setUrl = function(url){
+silex.model.File.prototype.setUrl = function(url) {
 	this.url = url;
-}
+};
+
+
 /**
  * get the blob of the file
  */
-silex.model.File.prototype.getBlob = function(){
+silex.model.File.prototype.getBlob = function() {
 	return this.blob;
-}
+};
+
+
 /**
  * store blob of this file
  */
-silex.model.File.prototype.setBlob = function(blob){
+silex.model.File.prototype.setBlob = function(blob) {
 	this.blob = blob;
 	// update tools
 	if (blob)
 		this.propertiesTool.setBaseUrl(blob.url);
 	else
 		this.propertiesTool.setBaseUrl(null);
-}
+};
+
+
 /**
  * get the string containing the style attribute of the body tag
  */
-silex.model.File.prototype.getBodyStyle = function(){
+silex.model.File.prototype.getBodyStyle = function() {
 	return this.bodyStyle;
-}
+};
+
+
 /**
  * store new data in memory
  * @param	bodyStyle 	a string containing the style attribute to set on the body tag
  */
-silex.model.File.prototype.setBodyStyle = function(bodyStyle){
+silex.model.File.prototype.setBodyStyle = function(bodyStyle) {
 	this.bodyStyle = bodyStyle;
-}
+};
+
+
 /**
  * build the html content
  * Parse the raw html and set the bodyTag and headTag strings
  */
-silex.model.File.prototype.setHtml = function(rawHtml){
+silex.model.File.prototype.setHtml = function(rawHtml) {
 	// reset the previous page model
 	var pages = silex.model.Page.getPages();
-	while(pages.length>0) {
+	while (pages.length > 0) {
 		var page = pages[0];
 		page.detach();
 	}
 	// use lower case to find head and body tags
 	var lowerCaseHtml = rawHtml.toLowerCase();
 	// split head and body tags
-	var headOpenIdx = lowerCaseHtml.indexOf("<head>");
-	if (headOpenIdx === -1) headOpenIdx = lowerCaseHtml.indexOf("<head ");
-	var headCloseIdx = lowerCaseHtml.indexOf("</head>");
-	var bodyOpenIdx = lowerCaseHtml.indexOf("<body>");
-	if (bodyOpenIdx === -1) bodyOpenIdx = lowerCaseHtml.indexOf("<body ");
-	var bodyCloseIdx = lowerCaseHtml.indexOf("</body>");
+	var headOpenIdx = lowerCaseHtml.indexOf('<head>');
+	if (headOpenIdx === -1) headOpenIdx = lowerCaseHtml.indexOf('<head ');
+	var headCloseIdx = lowerCaseHtml.indexOf('</head>');
+	var bodyOpenIdx = lowerCaseHtml.indexOf('<body>');
+	if (bodyOpenIdx === -1) bodyOpenIdx = lowerCaseHtml.indexOf('<body ');
+	var bodyCloseIdx = lowerCaseHtml.indexOf('</body>');
 
-	if (headOpenIdx > -1 && headCloseIdx > -1){
+	if (headOpenIdx > -1 && headCloseIdx > -1) {
 		// look for the first ">" after "<head"
-		var closingTagIdx = lowerCaseHtml.indexOf(">", headOpenIdx);
+		var closingTagIdx = lowerCaseHtml.indexOf('>', headOpenIdx);
 		// extract the head section
 		this.headTag = rawHtml.substring(closingTagIdx + 1, headCloseIdx);
 	}
-	if (bodyOpenIdx > -1 && bodyCloseIdx > -1){
+	if (bodyOpenIdx > -1 && bodyCloseIdx > -1) {
 		// look for the first ">" after "<body"
-		var closingTagIdx = lowerCaseHtml.indexOf(">", bodyOpenIdx);
+		var closingTagIdx = lowerCaseHtml.indexOf('>', bodyOpenIdx);
 		// extract the body section
 		this.bodyTag = rawHtml.substring(closingTagIdx + 1, bodyCloseIdx);
 	}
 	// extract body style
 	var bodyTag = rawHtml.substring(bodyOpenIdx, bodyCloseIdx + 1);
 	var styleStart = bodyTag.indexOf('"');
-	var styleEnd = bodyTag.indexOf('"', styleStart+1);
-	this.bodyStyle = bodyTag.substring(styleStart+1, styleEnd);
+	var styleEnd = bodyTag.indexOf('"', styleStart + 1);
+	this.bodyStyle = bodyTag.substring(styleStart + 1, styleEnd);
 
 	// update view
 	this.getStageComponent().setHtml(this.bodyTag, this.getUrl());
@@ -80440,7 +80547,7 @@ silex.model.File.prototype.setHtml = function(rawHtml){
 
 	// update website title
 	var title = this.getTitle();
-	if (title){
+	if (title) {
 		this.menu.setWebsiteName(title);
 	}
 	// update publication settings
@@ -80448,15 +80555,17 @@ silex.model.File.prototype.setHtml = function(rawHtml){
 
 	// handle retrocompatibility issues
 	this.handleRetrocompatibility();
-}
+};
+
+
 /**
  * build a string of the raw html content
  * use the bodyTag and headTag objects
  */
-silex.model.File.prototype.getHtml = function(){
+silex.model.File.prototype.getHtml = function() {
 	// handle background url of the body style
 	var style = silex.Helper.stringToStyle(this.getBodyStyle());
-/*
+  /*
 	if (style.backgroundImage){
 		var url = style.backgroundImage.substring(style.backgroundImage.indexOf('(')+1, style.backgroundImage.indexOf(')'));
 		// also remove '' if needed
@@ -80471,67 +80580,75 @@ silex.model.File.prototype.getHtml = function(){
 		// set the body style
 		style.backgroundImage = url;
 	}
-*/	// convert back to string
+  */	// convert back to string
 	var styleStr = silex.Helper.styleToString(style);
 
 	var html = '';
 	html += '<html>';
-	html += '<head>'+this.headTag+'</head>';
-	html += '<body style="'+styleStr+'">'+this.bodyTag+'</body>';
+	html += '<head>' + this.headTag + '</head>';
+	html += '<body style="' + styleStr + '">' + this.bodyTag + '</body>';
 	html += '</html>';
 
 	return html;
-}
+};
+
+
 ////////////////////////////////////////////////
 // Website related methods
 ////////////////////////////////////////////////
 /**
  * view this file in a new window
  */
-silex.model.File.prototype.view = function(){
-	if (!this.getBlob()){
-		alertify.confirm('The file has to be saved first. Save the file now?', goog.bind(function(accept){
-			if (accept){
-				this.saveAs(goog.bind(function () {
+silex.model.File.prototype.view = function() {
+	if (!this.getBlob()) {
+		alertify.confirm('The file has to be saved first. Save the file now?', goog.bind(function(accept) {
+			if (accept) {
+				this.saveAs(goog.bind(function() {
 					window.open(this.getUrl());
 				}, this));
 			}
 		}, this));
 	}
-	else{
+	else {
 		window.open(this.getUrl());
 	}
-}
+};
+
+
 /**
  * website title
  */
-silex.model.File.prototype.getTitle = function(){
+silex.model.File.prototype.getTitle = function() {
 	var elements = this.stage.headElement.getElementsByTagName('title');
-	if (elements && elements.length > 0){
+	if (elements && elements.length > 0) {
 		return elements[0].innerHTML;
 	}
-	else{
+	else {
 		return null;
 	}
-}
+};
+
+
 /**
  * website title
  */
-silex.model.File.prototype.setTitle = function(name){
+silex.model.File.prototype.setTitle = function(name) {
 	// update website title
 	var elements = this.stage.headElement.getElementsByTagName('title');
-	if (elements && elements.length > 0){
+	if (elements && elements.length > 0) {
 		elements[0].innerHTML = name;
 	}
 	// new website title
-	else{
+	else {
 		var child = goog.dom.createElement('title');
 		child.innerHTML = name;
-		this.stage.headElement.appendChild(child)
+		this.stage.headElement.appendChild(child);
 	}
 	// update menu
 	this.menu.setWebsiteName(name);
-}
+};
+
+
 //////////////////////////////////////////////////////////////////
 // retrocompatibility process
 // called after opening a file
@@ -80539,7 +80656,7 @@ silex.model.File.prototype.setTitle = function(name){
 /**
  * handle retrocompatibility issues
  */
-silex.model.File.prototype.handleRetrocompatibility = function(){
+silex.model.File.prototype.handleRetrocompatibility = function() {
 	var that = this;
 	// handle older page system
 	$('meta[name="page"]', this.stage.headElement).each(function() {
@@ -80562,7 +80679,9 @@ silex.model.File.prototype.handleRetrocompatibility = function(){
 		// remove the old tag
 		$(this).remove();
 	});
-}
+};
+
+
 //////////////////////////////////////////////////////////////////
 // publication process
 // cleanup html and generate assets/ and css/ and js/ folders
@@ -80571,54 +80690,60 @@ silex.model.File.prototype.handleRetrocompatibility = function(){
 /**
  * get/set the publication path
  */
-silex.model.File.prototype.setPublicationPath = function(path){
-	if (path===''){
+silex.model.File.prototype.setPublicationPath = function(path) {
+	if (path === '') {
 		path = null;
 	}
 
 	this.publishSettings.setPublicationPath(path);
 	this.stage.setPublicationPath(path);
-}
+};
+
+
 /**
  * get/set the publication path
  */
-silex.model.File.prototype.getPublicationPath = function(){
+silex.model.File.prototype.getPublicationPath = function() {
 	return this.stage.getPublicationPath();
-}
+};
+
+
 /**
  * publish html page
  * cleanup HTML
  * send data to server side export script
- * @return 
+ * @return
  */
-silex.model.File.prototype.publish = function(cbk, opt_errCbk){
-	if (!this.getPublicationPath()){
-		if (opt_errCbk){
+silex.model.File.prototype.publish = function(cbk, opt_errCbk) {
+	if (!this.getPublicationPath()) {
+		if (opt_errCbk) {
 			opt_errCbk({
 				message: 'The publication path must be set before I can clean it up for you.'
-			})
+			});
 		}
 		return;
 	}
 	this.cleanup(
-	goog.bind(function (html, css, files) {
+	goog.bind(function(html, css, files) {
 		silex.service.SilexTasks.getInstance().publish(this.getPublicationPath(), html, css, files, cbk, opt_errCbk);
 	}, this),
-	goog.bind(function (error) {
+	goog.bind(function(error) {
 		console.error('publish cleanup error', error);
-		if (opt_errCbk){
+		if (opt_errCbk) {
 			opt_errCbk(error);
 		}
 	}, this));
-}
+};
+
+
 /**
  * cleanup html page
  * remove Silex specific data from HTML
  * create an external CSS file
  * generates a list of js scripts and assets to be eported with the file
- * @return 
+ * @return
  */
-silex.model.File.prototype.cleanup = function(cbk, opt_errCbk){
+silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
 	// build a clean body clone
 	var bodyComponent = this.getStageComponent();
 	var bodyStr = bodyComponent.getHtml();
@@ -80632,95 +80757,95 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk){
 
 	// **
 	// get all files and put them into assets/ or scripts/
-	if (!this.getBlob()){
-		if (opt_errCbk){
+	if (!this.getBlob()) {
+		if (opt_errCbk) {
 			opt_errCbk({
 				message: 'The file must be saved before I can clean it up for you.'
-			})
+			});
 		}
 		return;
 	}
 	var baseUrl = this.getBlob().url;
-	baseUrl = baseUrl.substring(0, baseUrl.lastIndexOf('/')+1);
+	baseUrl = baseUrl.substring(0, baseUrl.lastIndexOf('/') + 1);
 
 	// image source
-	bodyStr = bodyStr.replace(/src="?([^" ]*)" /g, function(match, group1, group2){
+	bodyStr = bodyStr.replace(/src="?([^" ]*)" /g, function(match, group1, group2) {
 		var absolute = silex.Helper.getAbsolutePath(group1, baseUrl);
 		var relative = silex.Helper.getRelativePath(absolute, silex.Helper.BaseUrl);
 		// replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
-		if (!silex.Helper.isAbsoluteUrl(relative)){
+		if (!silex.Helper.isAbsoluteUrl(relative)) {
 			relative = relative.replace('../', '/');
-		} 
-		var fileName = absolute.substr(absolute.lastIndexOf('/')+1);
+		}
+		var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
 		var newRelativePath = 'assets/' + fileName;
 		files.push({
 			url: absolute
-			, destPath: newRelativePath
-			, srcPath: relative
+, destPath: newRelativePath
+, srcPath: relative
 		});
-		var res =  match.replace(group1, newRelativePath);
+		var res = match.replace(group1, newRelativePath);
 		return res;
 	});
 	// url()
-	bodyStr = bodyStr.replace(/url\((['"])(.+?)\1\)/g, function(match, group1, group2){
+	bodyStr = bodyStr.replace(/url\((['"])(.+?)\1\)/g, function(match, group1, group2) {
 		var absolute = silex.Helper.getAbsolutePath(group2, baseUrl);
 		var relative = silex.Helper.getRelativePath(absolute, silex.Helper.BaseUrl);
 		// replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
-		if (!silex.Helper.isAbsoluteUrl(relative)){
+		if (!silex.Helper.isAbsoluteUrl(relative)) {
 			relative = relative.replace('../', '/');
-		} 
-		var fileName = absolute.substr(absolute.lastIndexOf('/')+1);
+		}
+		var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
 		var newRelativePath = 'assets/' + fileName;
-		var res = "url('../" + newRelativePath +"')";
+		var res = "url('../" + newRelativePath + "')";
 		files.push({
 			url: absolute
-			, destPath: newRelativePath
-			, srcPath: relative
+, destPath: newRelativePath
+, srcPath: relative
 		});
 		return res;
 	});
 	// css
-	headStr = headStr.replace(/href="?([^" ]*)"/g, function(match, group1, group2){
+	headStr = headStr.replace(/href="?([^" ]*)"/g, function(match, group1, group2) {
 		var absolute = silex.Helper.getAbsolutePath(group1, baseUrl);
 		var relative = silex.Helper.getRelativePath(absolute, silex.Helper.BaseUrl);
 		// replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
-		if (!silex.Helper.isAbsoluteUrl(relative)){
+		if (!silex.Helper.isAbsoluteUrl(relative)) {
 			relative = relative.replace('../', '/');
-		} 
-		var fileName = absolute.substr(absolute.lastIndexOf('/')+1);
+		}
+		var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
 		var newRelativePath = 'css/' + fileName;
 		files.push({
 			url: absolute
-			, destPath: newRelativePath
-			, srcPath: relative
+, destPath: newRelativePath
+, srcPath: relative
 		});
-		var res =  match.replace(group1, newRelativePath);
+		var res = match.replace(group1, newRelativePath);
 		return res;
 	});
 	// scripts
-	headStr = headStr.replace(/src="?([^"]*)"/g, function(match, group1, group2){
+	headStr = headStr.replace(/src="?([^"]*)"/g, function(match, group1, group2) {
 		var preventDownload = false;
 		var absolute = silex.Helper.getAbsolutePath(group1, baseUrl);
 		var relative = silex.Helper.getRelativePath(absolute, silex.Helper.BaseUrl);
 		// replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
-		if (!silex.Helper.isAbsoluteUrl(relative)){
+		if (!silex.Helper.isAbsoluteUrl(relative)) {
 			relative = relative.replace('../', '/');
-		} 
-		else{
+		}
+		else {
 			// only allowed domains
-			if (absolute.indexOf("http://static.silex.me") !== 0){
+			if (absolute.indexOf('http://static.silex.me') !== 0) {
 				preventDownload = true;
 			}
 		}
-		if (!preventDownload){
-			var fileName = absolute.substr(absolute.lastIndexOf('/')+1);
+		if (!preventDownload) {
+			var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
 			var newRelativePath = 'js/' + fileName;
 			files.push({
 				url: absolute
-				, destPath: newRelativePath
-				, srcPath: relative
+, destPath: newRelativePath
+, srcPath: relative
 			});
-			var res =  match.replace(group1, newRelativePath);
+			var res = match.replace(group1, newRelativePath);
 			return res;
 		}
 		return match;
@@ -80780,18 +80905,18 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk){
 			, styles: cssNormal
 		});
 		// add the css for this context
-		if (component.hasStyle(silex.model.Component.CONTEXT_HOVER)){
+		if (component.hasStyle(silex.model.Component.CONTEXT_HOVER)) {
 			var cssHover = component.getCss(silex.model.Component.CONTEXT_HOVER);
 			cssArray.push({
-				classNames: ['.' + className+':hover']
+				classNames: ['.' + className + ':hover']
 				, styles: cssHover
 			});
 		}
 		// add the css for this context
-		if (component.hasStyle(silex.model.Component.CONTEXT_PRESSED)){
+		if (component.hasStyle(silex.model.Component.CONTEXT_PRESSED)) {
 			var cssPressed = component.getCss(silex.model.Component.CONTEXT_PRESSED);
 			cssArray.push({
-				classNames: ['.' + className+':pressed']
+				classNames: ['.' + className + ':pressed']
 				, styles: cssPressed
 			});
 		}
@@ -80824,7 +80949,7 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk){
 		}, this);
 		// compute styles
 		elementCssStr += '{\n\t' + silex.Helper.styleToString(cssData.styles) + '\n}';
-		cssStr += '\n'+elementCssStr;
+		cssStr += '\n' + elementCssStr;
 	}, this);
 	// format css
 	cssStr.replace('; ', ';\n\t');
@@ -80832,13 +80957,13 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk){
 	// final html page
 	var html = '';
 	html += '<html>';
-	html += '<head><link href="css/styles.css" rel="stylesheet">'+headElement.innerHTML+'</head>';
-	html += '<body>'+bodyElement.innerHTML+'</body>';
+	html += '<head><link href="css/styles.css" rel="stylesheet">' + headElement.innerHTML + '</head>';
+	html += '<body>' + bodyElement.innerHTML + '</body>';
 	html += '</html>';
 
 	// callback
-	cbk(html, cssStr, files)
-}
+	cbk(html, cssStr, files);
+};
 //////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
@@ -80850,113 +80975,243 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk){
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
 
-goog.provide('silex.service.CloudStorage');
+goog.provide('silex.view.propertiesTool.PagePane');
+
+goog.require('goog.cssom');
+goog.require('goog.ui.Checkbox');
+goog.require('goog.ui.CustomButton');
+goog.require('goog.ui.HsvaPalette');
+goog.require('goog.ui.ColorButton');
+goog.require('goog.editor.Field');
+
+goog.require('goog.array');
+goog.require('goog.object');
 
 /**
- * the Silex CloudStorage singleton
+ * on of Silex Editors class
+ * let user edit style of components
  * @constructor
- * based on http://www.inkfilepicker.com/
- * load and save data to and from the cloud storage services
  */
-silex.service.CloudStorage = function(){
-	this.filePicker = cloudExplorer;
+silex.view.propertiesTool.PagePane = function(element, pageChanged){
+	this.element = element;
+	this.pageCheckboxes = [];
+	this.pageChanged = pageChanged;
+	this.buildUi();
 }
 /**
- * reference to the filepicker instance
+ * element of the dom to which the component is rendered
  */
-silex.service.CloudStorage.prototype.filePicker;
+silex.view.propertiesTool.PagePane.prototype.element;
 /**
- * constant
+ * component to be edited
  */
-//silex.service.CloudStorage.BACK_END_URL = "../unifile/v1.0/services/list/";
+silex.view.propertiesTool.PagePane.prototype.component;
 /**
- * singleton implementation
+ * callback to notify the tool box
  */
-silex.service.CloudStorage.instance;
+silex.view.propertiesTool.PagePane.prototype.pageChanged;
 /**
- * singleton implementation
+ * avoid loops on redraw
  */
-silex.service.CloudStorage.getInstance = function(){
-	if (!silex.service.CloudStorage.instance)
-		silex.service.CloudStorage.instance = new silex.service.CloudStorage();
-	return silex.service.CloudStorage.instance;
+silex.view.propertiesTool.PagePane.prototype.isRedraw;
+/**
+ * dropdown list to select a link
+ */
+silex.view.propertiesTool.PagePane.prototype.linkDropdown;
+/**
+ * text field used to type an external link
+ */
+silex.view.propertiesTool.PagePane.prototype.linkInputTextField;
+/**
+ * build the UI
+ */
+silex.view.propertiesTool.PagePane.prototype.buildUi = function(){
+	// link, select page or enter custom link
+	// handle the dropdown list from the template
+	this.linkDropdown = goog.dom.getElementByClass('link-combo-box', this.element);
+	this.linkDropdown.onchange = goog.bind(this.onLinkChanged, this);
+
+	// create a text field for custom link
+	var linkInputElement = goog.dom.getElementByClass('link-input-text', this.element);
+	this.linkInputTextField = new goog.editor.Field(linkInputElement);
+	// make editable
+	this.linkInputTextField.makeEditable();
+	// hide by default
+	var linkInputElement = goog.dom.getElementByClass('link-input-text', this.element); // get the new input which may be an iframe
+	goog.style.setStyle(linkInputElement, 'display', 'none');
+	// Watch for field changes, to display below.
+	goog.events.listen(this.linkInputTextField, goog.editor.Field.EventType.DELAYEDCHANGE, this.onLinkTextChanged, false, this);
 }
 /**
- * save a file
+ * display the propertis of the component being edited
  */
-silex.service.CloudStorage.prototype.save = function(blob, rawData, cbk, opt_errCbk){
-	// cloud explorer expects relative path
-	var relBlob = {
-		url : silex.Helper.getRelativePath(blob.url, silex.Helper.BaseUrl)
+silex.view.propertiesTool.PagePane.prototype.setComponent = function(component){
+	this.component = component;
+	this.redraw();
+}
+/**
+ * refresh with new data
+ */
+silex.view.propertiesTool.PagePane.prototype.setPages = function(data){
+	// store page data
+	this.pages = data;
+
+	// reset page checkboxes
+	if (this.pageCheckboxes){
+		goog.array.forEach(this.pageCheckboxes, function(item) {
+			item.checkbox.dispose();
+		});
 	}
 
-	// save the actual data
-	this.filePicker.write(
-	relBlob,
-	rawData,
-	function(blob){
-		// workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
-		new goog.async.Delay(function () {
-			if (cbk) cbk();
-		}, 10).start();
-	},
-	function(FPError){
-		console.error(FPError);
-		if (opt_errCbk){
-			console.error(FPError);
-			opt_errCbk(FPError);
-		}
-	});
-}
-/**
- * load data
- */
-silex.service.CloudStorage.prototype.load = function(blob, cbk, opt_errCbk){
+	// link selector
+	var linkContainer = goog.dom.getElementByClass('link-combo-box', this.element);
+	var templateHtml = goog.dom.getElementByClass('link-template', this.element).innerHTML;
+	silex.Helper.resolveTemplate(linkContainer, templateHtml, {pages:this.pages});
 
-	// cloud explorer expects relative path
-	var relBlob = {
-		url : silex.Helper.getRelativePath(blob.url, silex.Helper.BaseUrl)
-	}
-	this.filePicker.read(
-	relBlob,
-	function(data){
-		// workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
-		new goog.async.Delay(function () {
-			if (cbk) cbk(data);
-		}, 10).start();
-	},
-	function(FPError){
-		console.error(FPError);
-		if (opt_errCbk){
-			console.error(FPError);
-			opt_errCbk(FPError);
-		}
-	});
+	// render page/visibility template
+	// init page template
+	var pagesContainer = goog.dom.getElementByClass('pages-container', this.element);
+	var templateHtml = goog.dom.getElementByClass('pages-selector-template', this.element).innerHTML;
+	silex.Helper.resolveTemplate(pagesContainer, templateHtml, {pages:this.pages});
+	// create page checkboxes
+	this.pageCheckboxes = [];
+	var mainContainer = goog.dom.getElementByClass('pages-container', this.element);
+	var items = goog.dom.getElementsByClass('page-container', mainContainer);
+	var idx = 0;
+	goog.array.forEach(items, function(item) {
+		var checkboxElement = goog.dom.getElementByClass('page-check', item);
+		var labelElement = goog.dom.getElementByClass('page-label', item);
+		var checkbox = new goog.ui.Checkbox();
+		var page = this.pages[idx++];
+		checkbox.render(checkboxElement);
+		checkbox.setLabel (labelElement);
+		this.pageCheckboxes.push({
+			checkbox: checkbox,
+			page: page
+		});
+		goog.events.listen(checkbox, goog.ui.Component.EventType.CHANGE, function(e){
+			this.checkPage(page, checkbox);
+		}, false, this);
+	}, this);
+	// show on all pages button
+	var showAllBtn = goog.dom.getElementByClass('show-on-all-pages-btn', this.element);
+	goog.events.listen(showAllBtn, goog.events.EventType.CLICK, function(e){
+		this.unCheckAll();
+	}, false, this);
+
+	// refresh display
+	this.redraw();
 }
 /**
- * load data
+ * the user changed the link drop down
  */
-silex.service.CloudStorage.prototype.loadLocal = function(url, cbk, opt_errCbk){
-	goog.net.XhrIo.send(url, function(e){
-		// success of the request
-		var xhr = e.target;
-		var rawHtml = xhr.getResponse();
-		if (xhr.isSuccess()){
-			// workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
-			new goog.async.Delay(function () {
-				if (cbk) cbk(rawHtml);
-			}, 10).start();
+silex.view.propertiesTool.PagePane.prototype.onLinkChanged = function(event){
+	if (this.linkDropdown.value==='none'){
+		this.component.removeLink();
+	}
+	else if (this.linkDropdown.value==='custom'){
+		// keep previous link value
+		var prevVal = this.linkInputTextField.getCleanContents();
+		// reset if it was an internal link
+		if (prevVal.indexOf('#')===0) prevVal = '';
+		if (prevVal==='') prevVal = 'http://www.silex.me/';
+		// store in the href attr
+		this.component.setLink(prevVal);
+	}
+	else {
+		this.component.setLink('#'+this.linkDropdown.value);
+	}
+	this.pageChanged();
+	this.redraw();
+}
+/**
+ * the user changed the link text field
+ */
+silex.view.propertiesTool.PagePane.prototype.onLinkTextChanged = function(event){
+	// update the href attribute
+	this.component.setLink(this.linkInputTextField.getCleanContents());
+	// notify the controler
+	this.pageChanged();
+}
+/**
+ * redraw the properties
+ */
+silex.view.propertiesTool.PagePane.prototype.redraw = function(){
+	if (this.component && this.pageCheckboxes && !this.isRedraw){
+		this.isRedraw = true;
+		// refresh page checkboxes
+		goog.array.forEach(this.pageCheckboxes, function(item) {
+			if (this.component){
+				// there is a selection
+				var pageName = item.page.name;
+				item.checkbox.setEnabled(true);
+				item.checkbox.setChecked(goog.dom.classes.has(this.component.element, pageName));
+			}
+			else{
+				// no selected element
+				item.checkbox.setChecked(false);
+				item.checkbox.setEnabled(false);
+			}
+		}, this);
+
+		// refresh the link inputs
+		// default selection
+		var hrefAttr = this.component.getLink();
+		if (!hrefAttr){
+			this.linkDropdown.value='none';
 		}
 		else{
-			var message = xhr.getLastError();
-			console.error(message, xhr, xhr.isSuccess(), xhr.getStatus(), xhr.headers.toString());
-			if (opt_errCbk){
-				console.error(FPError);
-				opt_errCbk(message);
+			if (hrefAttr.indexOf('#')===0 && silex.model.Page.getPageByName(hrefAttr.substr(1))){
+				// case of an internal link
+				// select a page
+				this.linkDropdown.value = hrefAttr.substr(1);
+			}
+			else{
+				// in case it is a custom link
+				this.linkInputTextField.setHtml(false, hrefAttr);
+				this.linkDropdown.value='custom';
 			}
 		}
-	});
-}//////////////////////////////////////////////////
+		// visibility of the text edit
+		var linkInputElement = goog.dom.getElementByClass('link-input-text', this.element);
+		if(this.linkDropdown.value==='custom'){
+			goog.style.setStyle(linkInputElement, 'display', 'inherit');
+		}
+		else{
+			goog.style.setStyle(linkInputElement, 'display', 'none');
+		}
+		this.isRedraw = false;
+	}
+}
+/**
+ * callback for checkboxes click event
+ */
+silex.view.propertiesTool.PagePane.prototype.checkPage = function(page, checkbox){
+	// apply the page selection
+	if (checkbox.isChecked()){
+		page.addComponent(this.component);
+	}
+	else{
+		page.removeComponent(this.component);
+	}
+	// notify the toolbox
+	this.pageChanged();
+	// refresh ui
+	this.redraw();
+}
+/**
+ * callback for checkboxes click event
+ */
+silex.view.propertiesTool.PagePane.prototype.unCheckAll = function(){
+	goog.array.forEach(this.pages, function(page) {
+		page.removeComponent(this.component);
+	}, this);
+	// notify the toolbox
+	this.pageChanged();
+	// refresh ui
+	this.redraw();
+}
+//////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
 //
@@ -80974,36 +81229,31 @@ goog.provide('silex.boot');
 goog.require('goog.dom');
 goog.require('goog.events');
 goog.require('goog.style');
-
+goog.require('silex.Controller');
 // debug
 //goog.require('silex.Logger');
-
 goog.require('silex.Helper');
-goog.require('silex.Controller');
-
+goog.require('silex.model.Component');
+goog.require('silex.model.File');
+goog.require('silex.model.Page');
+goog.require('silex.model.Selection');
 goog.require('silex.service.CloudStorage');
 goog.require('silex.service.SilexTasks');
 goog.require('silex.service.Tracker');
-
-goog.require('silex.model.Selection');
-goog.require('silex.model.File');
-goog.require('silex.model.Page');
-goog.require('silex.model.Component');
-
+goog.require('silex.view.FileExplorer');
+goog.require('silex.view.HTMLEditor');
 goog.require('silex.view.Menu');
-goog.require('silex.view.Stage');
 goog.require('silex.view.PageTool');
 goog.require('silex.view.PropertiesTool');
-goog.require('silex.view.propertiesTool.BgPane');
-goog.require('silex.view.propertiesTool.PagePane');
-goog.require('silex.view.propertiesTool.BorderPane');
-goog.require('silex.view.propertiesTool.PropertyPane');
-goog.require('silex.view.propertiesTool.GeneralStylePane');
-goog.require('silex.view.HTMLEditor');
-goog.require('silex.view.TextEditor');
-goog.require('silex.view.FileExplorer');
 goog.require('silex.view.PublishSettings');
+goog.require('silex.view.Stage');
+goog.require('silex.view.TextEditor');
 goog.require('silex.view.Workspace');
+goog.require('silex.view.propertiesTool.BgPane');
+goog.require('silex.view.propertiesTool.BorderPane');
+goog.require('silex.view.propertiesTool.GeneralStylePane');
+goog.require('silex.view.propertiesTool.PagePane');
+goog.require('silex.view.propertiesTool.PropertyPane');
 
 silex.boot = function() {
 	//var logger = new silex.Logger('silex.boot', false);
@@ -81015,35 +81265,35 @@ silex.boot = function() {
 	// it is a sequence, because views loads templates one after another
 	var menuElement = goog.dom.getElementByClass('silex-menu');
 	var menu = new silex.view.Menu(menuElement,
-	function () {
+	function() {
 		//logger.fine('Menu created');
 		var stageElement = goog.dom.getElementByClass('silex-stage');
 		var stage = new silex.view.Stage(stageElement,
-	function () {
+	function() {
 		//logger.fine('Stage created');
 		var pageToolElement = goog.dom.getElementByClass('silex-pagetool');
 		var pageTool = new silex.view.PageTool(pageToolElement,
-	function () {
+	function() {
 		//logger.fine('PageTool created');
 		var propertiesToolElement = goog.dom.getElementByClass('silex-propertiestool');
 		var propertiesTool = new silex.view.PropertiesTool(propertiesToolElement,
-	function () {
+	function() {
 		//logger.fine('PropertiesTool created');
 		var htmlEditorElement = goog.dom.getElementByClass('silex-htmleditor');
 		var htmlEditor = new silex.view.HTMLEditor(htmlEditorElement,
-	function () {
+	function() {
 		//logger.fine('HTMLEditor created');
 		var textEditorElement = goog.dom.getElementByClass('silex-texteditor');
 		var textEditor = new silex.view.TextEditor(textEditorElement,
-	function () {
+	function() {
 		//logger.fine('TextEditor created');
 		var fileExplorerElement = goog.dom.getElementByClass('silex-fileexplorer');
 		var fileExplorer = new silex.view.FileExplorer(fileExplorerElement,
-	function () {
+	function() {
 		//logger.fine('FileExplorer created');
 		var publishSettingsElement = goog.dom.getElementByClass('silex-publishsettings');
 		var publishSettings = new silex.view.PublishSettings(publishSettingsElement,
-	function () {
+	function() {
 		//logger.fine('PublishSettings created');
 		// create the workspace which place all components in the page
 		var workspaceElement = goog.dom.getElementByClass('silex-workspace');
@@ -81103,9 +81353,9 @@ silex.boot = function() {
 		//logger.fine('Controller created');
 
 		// now create an empty file to let the user start using Silex
-		file.newFile(function () {
+		file.newFile(function() {
 
-/*
+                                 /*
 			// debug: insert a text field
 			controller.menuCallback({type:'insert.text'});
 			controller.menuCallback({type:'insert.container'});
@@ -81151,7 +81401,7 @@ return;
 	});
 	});
 	});
-}
+};
 
 // Ensures the symbol will be visible after compiler renaming.
 goog.exportSymbol('silex.boot', silex.boot);

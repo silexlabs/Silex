@@ -7,7 +7,6 @@
 	cursor: default;
 }
 .silex-menu .website-name{
-	font-family: "arial", "​sans-serif";
 	font-size: 20px;
 	font-style: italic;
 	color: #000000;
@@ -49,7 +48,6 @@
 	margin-left: 2px;
 }
 .silex-menu .goog-menubar{
-	font-family: "arial", "​sans-serif";
 	font-size: 13px;
 	font-style: normal;
 	color: #000000;

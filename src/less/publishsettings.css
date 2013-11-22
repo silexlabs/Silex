@@ -23,7 +23,6 @@
 	font-family: arial, sans-serif;
 	line-height: normal;
 	max-width: 929px;
-	width: 85%;
 	height: 574px;
 	position: static;
 	margin: auto;
@@ -56,7 +55,6 @@
 	border: 0;
 	padding: 0;
 	margin-right: 15px;
-	float: right;
 	margin-right: 10px;
 	height: 30px;
 	cursor: pointer;

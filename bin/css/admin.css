@@ -36,6 +36,11 @@ body {
 a[data-silex-type="page"] {
   display: none;
 }
+/* prevent links default formatting */
+.silex-text {
+  color: inherit;
+  text-decoration: inherit;
+}
 .silex-htmleditor {
   position: absolute;
   width: 90%;
@@ -143,6 +148,16 @@ a[data-silex-type="page"] {
     margin-left: -24px;
   }
 }
+.small-font {
+  font-size: 13px;
+  font-family: "arial", "​sans-serif";
+}
+.xsmall-font {
+  font-size: 13px;
+  font-weight: lighter;
+  color: #555555;
+  font-family: "arial", "​sans-serif";
+}
 body {
   overflow: hidden;
 }
@@ -176,7 +191,7 @@ body.loading-pending .loader {
   background-color: black;
   opacity: .5;
   display: none;
-  z-index: 100;
+  z-index: 200;
   /* 110 for editors and 120 for dialogs */
   cursor: pointer;
 }
@@ -203,7 +218,6 @@ body.loading-pending .loader {
   cursor: default;
 }
 .silex-menu .website-name {
-  font-family: "arial", "​sans-serif";
   font-size: 20px;
   font-style: italic;
   color: #000000;
@@ -245,7 +259,6 @@ body.loading-pending .loader {
   margin-left: 2px;
 }
 .silex-menu .goog-menubar {
-  font-family: "arial", "​sans-serif";
   font-size: 13px;
   font-style: normal;
   color: #000000;
@@ -291,13 +304,11 @@ body.loading-pending .loader {
   overflow-y: scroll;
   overflow: visible;
   text-align: center;
-  color: #666;
   margin: 10px;
   text-decoration: none;
 }
 .silex-pagetool .page-container .label {
   bottom: 0;
-  font-size: 12px;
   padding: 5px;
   position: absolute;
   cursor: text;
@@ -329,17 +340,17 @@ body.loading-pending .loader {
   overflow-y: auto;
 }
 /* pages */
+.silex-propertiestool .page-container {
+  margin: 4px 0;
+}
 .silex-propertiestool .pages-container .page-label {
-  font-size: 13px;
-  color: #555555;
   vertical-align: middle;
 }
 .silex-propertiestool .pages-container .page-check span {
   float: left;
+  margin: 3px;
 }
 .silex-propertiestool .link-small-btn {
-  font-weight: lighter;
-  font-size: x-small;
   color: blue;
   cursor: pointer;
 }
@@ -404,7 +415,6 @@ body.loading-pending .loader {
 /* buttons */
 .silex-propertiestool .tab-page .button {
   text-align: center;
-  font-size: 13px;
   width: 45%;
 }
 /* comboboxes */
@@ -418,17 +428,6 @@ body.loading-pending .loader {
   margin: 4px 2px 0;
   width: 35%;
 }
-/*
-.silex-propertiestool .combobox{
-	text-align: center;
-	font-size: 13px;
-	width: 45%;
-}
-.silex-propertiestool .combobox .goog-menu-button-outer-box, 
-.silex-propertiestool .combobox .goog-menu-button-inner-box{
-	width: 100%;
-}
-*/
 /* tabs */
 .silex-propertiestool .goog-tab-bar {
   background-color: transparent;
@@ -442,7 +441,6 @@ body.loading-pending .loader {
 }
 .silex-propertiestool .goog-tab {
   color: black;
-  font-size: 13px;
   font-weight: normal;
   text-decoration: none;
   cursor: pointer;
@@ -464,10 +462,6 @@ body.loading-pending .loader {
 }
 .silex-propertiestool .tab-page fieldset {
   margin-top: 10px;
-}
-/* checkbox etc */
-.silex-propertiestool fieldset {
-  font-size: 13px;
 }
 .silex-propertiestool .goog-checkbox {
   float: left;
@@ -499,7 +493,6 @@ body.loading-pending .loader {
   font-size: 12px;
 }
 .silex-propertiestool legend {
-  font-size: 13px;
   padding: 0;
   font-weight: bold;
 }
@@ -542,7 +535,6 @@ body.loading-pending .loader {
   font-family: arial, sans-serif;
   line-height: normal;
   max-width: 929px;
-  width: 85%;
   height: 574px;
   position: static;
   margin: auto;
@@ -575,7 +567,6 @@ body.loading-pending .loader {
   border: 0;
   padding: 0;
   margin-right: 15px;
-  float: right;
   margin-right: 10px;
   height: 30px;
   cursor: pointer;

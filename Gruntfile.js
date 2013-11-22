@@ -62,35 +62,8 @@ module.exports = function(grunt) {
             , "box-sizing" : false
             , "box-model" : false
             , "overqualified-elements" : false
-            , "display-property-grouping" : false
-            , "bulletproof-font-face" : false
-            , "compatible-vendor-prefixes" : false
-            , "regex-selectors" : false
-            , "errors" : false
-            , "duplicate-background-images" : false
-            , "duplicate-properties" : false
-            , "empty-rules" : false
-            , "selector-max-approaching" : false
-            , "gradients" : false
             , "fallback-colors" : false
-            , "font-sizes" : false
-            , "font-faces" : false
-            , "floats" : false
-            , "star-property-hack" : false
-            , "outline-none" : false
-            , "import" : false
-            , "ids" : false
-            , "underscore-property-hack" : false
-            , "rules-count" : false
-            , "qualified-headings" : false
-            , "selector-max" : false
-            , "shorthand" : false
-            , "text-indent" : false
-            , "unique-headings" : false
-            , "universal-selector" : false
             , "unqualified-attributes" : false
-            , "vendor-prefix" : false
-            , "zero-units" : false
         }
       }
     }
@@ -235,8 +208,8 @@ module.exports = function(grunt) {
     }
     , watch: {
         javascript: {
-            files: ['src/js/**/*.js', 'src/less/*.css', 'bin/**/*.html']
-            , tasks: [/*'check', */'deploy']
+            files: ['src/js/**/*.js', 'src/less/*.css', 'bin/**/*.html', 'Gruntfile.js']
+            , tasks: ['check', 'deploy']
         }
         , livereload: {
             files: ['Gruntfile.js', 'bin/js/*.js', 'bin/css/*.css', 'bin/assets/**/*.{png,jpg,jpeg,gif,webp,svg}', 'js/*.js', ]

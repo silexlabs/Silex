@@ -16,36 +16,31 @@ goog.provide('silex.boot');
 goog.require('goog.dom');
 goog.require('goog.events');
 goog.require('goog.style');
-
+goog.require('silex.Controller');
 // debug
 //goog.require('silex.Logger');
-
 goog.require('silex.Helper');
-goog.require('silex.Controller');
-
+goog.require('silex.model.Component');
+goog.require('silex.model.File');
+goog.require('silex.model.Page');
+goog.require('silex.model.Selection');
 goog.require('silex.service.CloudStorage');
 goog.require('silex.service.SilexTasks');
 goog.require('silex.service.Tracker');
-
-goog.require('silex.model.Selection');
-goog.require('silex.model.File');
-goog.require('silex.model.Page');
-goog.require('silex.model.Component');
-
+goog.require('silex.view.FileExplorer');
+goog.require('silex.view.HTMLEditor');
 goog.require('silex.view.Menu');
-goog.require('silex.view.Stage');
 goog.require('silex.view.PageTool');
 goog.require('silex.view.PropertiesTool');
-goog.require('silex.view.propertiesTool.BgPane');
-goog.require('silex.view.propertiesTool.PagePane');
-goog.require('silex.view.propertiesTool.BorderPane');
-goog.require('silex.view.propertiesTool.PropertyPane');
-goog.require('silex.view.propertiesTool.GeneralStylePane');
-goog.require('silex.view.HTMLEditor');
-goog.require('silex.view.TextEditor');
-goog.require('silex.view.FileExplorer');
 goog.require('silex.view.PublishSettings');
+goog.require('silex.view.Stage');
+goog.require('silex.view.TextEditor');
 goog.require('silex.view.Workspace');
+goog.require('silex.view.propertiesTool.BgPane');
+goog.require('silex.view.propertiesTool.BorderPane');
+goog.require('silex.view.propertiesTool.GeneralStylePane');
+goog.require('silex.view.propertiesTool.PagePane');
+goog.require('silex.view.propertiesTool.PropertyPane');
 
 silex.boot = function() {
 	//var logger = new silex.Logger('silex.boot', false);
@@ -57,35 +52,35 @@ silex.boot = function() {
 	// it is a sequence, because views loads templates one after another
 	var menuElement = goog.dom.getElementByClass('silex-menu');
 	var menu = new silex.view.Menu(menuElement,
-	function () {
+	function() {
 		//logger.fine('Menu created');
 		var stageElement = goog.dom.getElementByClass('silex-stage');
 		var stage = new silex.view.Stage(stageElement,
-	function () {
+	function() {
 		//logger.fine('Stage created');
 		var pageToolElement = goog.dom.getElementByClass('silex-pagetool');
 		var pageTool = new silex.view.PageTool(pageToolElement,
-	function () {
+	function() {
 		//logger.fine('PageTool created');
 		var propertiesToolElement = goog.dom.getElementByClass('silex-propertiestool');
 		var propertiesTool = new silex.view.PropertiesTool(propertiesToolElement,
-	function () {
+	function() {
 		//logger.fine('PropertiesTool created');
 		var htmlEditorElement = goog.dom.getElementByClass('silex-htmleditor');
 		var htmlEditor = new silex.view.HTMLEditor(htmlEditorElement,
-	function () {
+	function() {
 		//logger.fine('HTMLEditor created');
 		var textEditorElement = goog.dom.getElementByClass('silex-texteditor');
 		var textEditor = new silex.view.TextEditor(textEditorElement,
-	function () {
+	function() {
 		//logger.fine('TextEditor created');
 		var fileExplorerElement = goog.dom.getElementByClass('silex-fileexplorer');
 		var fileExplorer = new silex.view.FileExplorer(fileExplorerElement,
-	function () {
+	function() {
 		//logger.fine('FileExplorer created');
 		var publishSettingsElement = goog.dom.getElementByClass('silex-publishsettings');
 		var publishSettings = new silex.view.PublishSettings(publishSettingsElement,
-	function () {
+	function() {
 		//logger.fine('PublishSettings created');
 		// create the workspace which place all components in the page
 		var workspaceElement = goog.dom.getElementByClass('silex-workspace');
@@ -145,9 +140,9 @@ silex.boot = function() {
 		//logger.fine('Controller created');
 
 		// now create an empty file to let the user start using Silex
-		file.newFile(function () {
+		file.newFile(function() {
 
-/*
+                                 /*
 			// debug: insert a text field
 			controller.menuCallback({type:'insert.text'});
 			controller.menuCallback({type:'insert.container'});
@@ -193,7 +188,7 @@ return;
 	});
 	});
 	});
-}
+};
 
 // Ensures the symbol will be visible after compiler renaming.
 goog.exportSymbol('silex.boot', silex.boot);
