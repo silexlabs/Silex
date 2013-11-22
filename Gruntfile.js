@@ -174,17 +174,17 @@ module.exports = function(grunt) {
             , warning_level: 'QUIET'
           }
         }
-        //java -jar bin/compiler.jar 
-        // --js closure-library/closure/goog/base.js 
-        // --js app.js 
-        // --externs externs.js 
-        // --manage_closure_dependencies true 
-        // --process_closure_primitives true 
-        // --summary_detail_level 3 
-        // --warning_level VERBOSE 
-        // --compilation_level=ADVANCED_OPTIMIZATIONS 
+        //java -jar bin/compiler.jar
+        // --js closure-library/closure/goog/base.js
+        // --js app.js
+        // --externs externs.js
+        // --manage_closure_dependencies true
+        // --process_closure_primitives true
+        // --summary_detail_level 3
+        // --warning_level VERBOSE
+        // --compilation_level=ADVANCED_OPTIMIZATIONS
         // --closure_entry_point my.ap
-        
+
         , src: ['src/js/']
         , dest: 'bin/js/admin.min.js'
       }
@@ -209,7 +209,8 @@ module.exports = function(grunt) {
     , watch: {
         javascript: {
             files: ['src/js/**/*.js', 'src/less/*.css', 'bin/**/*.html', 'Gruntfile.js']
-            , tasks: ['check', 'deploy']
+            //, tasks: ['check', 'deploy']
+            , tasks: ['deploy']
         }
         , livereload: {
             files: ['Gruntfile.js', 'bin/js/*.js', 'bin/css/*.css', 'bin/assets/**/*.{png,jpg,jpeg,gif,webp,svg}', 'js/*.js', ]
@@ -244,6 +245,6 @@ module.exports = function(grunt) {
   grunt.registerTask('deploy', ['concat', 'less:production', 'less:development', 'closureBuilder:debug', 'closureBuilder:release', 'compress']);
   grunt.registerTask('check', ['htmllint', 'csslint:lax', 'closureLint']);
   grunt.registerTask('test', ['check', 'deploy', 'simplemocha']);
-  
+
   grunt.registerTask('default', ['check', 'deploy']);
 }
