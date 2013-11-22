@@ -45,15 +45,11 @@ Stress tests
 
 * bugs
 - selection de folder dans CE
-- alignement de CE quand on l'ouvre depuis settings
-- fond de dialogs pas clickable partout
 
 a finir
 
 * debug "grunt test"
-* update front-end.* sur static silex
 * push unifile et silex
-* attention aux regles dans front-end.css (.editable-style [data-silex-sub-type="image"])
 * ? publish super lent => plusieurs opérations en parallele
 * test selenium
 

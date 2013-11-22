@@ -41,11 +41,11 @@ body.loading-pending .loader{
 	background-color: black;
 	opacity: .5;
 	display: none;
-	z-index: 200; /* 110 for editors and 120 for dialogs */
+	z-index: 110; /* 110 for editors and 120 for dialogs */
 	cursor: pointer;
 }
 .modal-dialog{
-	z-index: 120; /* 100 for bg */	
+	z-index: 120; /* 100 for bg */
 }
 
 /* store google images lovcally */

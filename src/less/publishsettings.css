@@ -7,14 +7,14 @@
 	background-color: black;
 	opacity: .5;
 	display: none;
-	z-index: 99; /* 110 for editors and 120 for dialogs */
+	z-index: 105; /* 110 for editors and 120 for dialogs */
 	cursor: pointer;
 }
 .silex-publishsettings{
 	position: absolute;
 	width: 80%;
 	max-width: 929px;
-	z-index: 200;
+	z-index: 106;
 }
 .silex-publishsettings .dialog {
 	color: #727271;
