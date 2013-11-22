@@ -225,14 +225,14 @@ silex.view.propertiesTool.BgPane.prototype.buildUi = function() {
         this.setBgImagePosition(vPosition + ' ' + hPosition);
       }, false, this);
   goog.events.listen(this.hPositionComboBox,
-      goog.ui.component.EventType.CHANGE,
+      goog.ui.Component.EventType.CHANGE,
       function(event) {
         var hPosition = this.hPositionComboBox.getSelectedItem().getId();
         var vPosition = this.vPositionComboBox.getSelectedItem().getId();
         this.setBgImagePosition(vPosition + ' ' + hPosition);
       }, false, this);
   goog.events.listen(this.repeatComboBox,
-      goog.ui.component.EventType.CHANGE,
+      goog.ui.Component.EventType.CHANGE,
       function(event) {
         this.setBgImageRepeat(event.target.getSelectedItem().getId());
       }, false, this);

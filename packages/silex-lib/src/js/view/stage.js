@@ -138,7 +138,7 @@ silex.view.Stage.prototype.getPagesNamesFromDom = function() {
 silex.view.Stage.prototype.removePage = function(page) {
   // remove the DOM element
   $('a[data-silex-type="page"]', this.bodyElement).each(
-      function()) {
+      function() {
     if (this.getAttribute('id') === page.name) {
       $(this).remove();
     }

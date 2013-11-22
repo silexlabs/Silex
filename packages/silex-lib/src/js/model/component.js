@@ -257,7 +257,14 @@ silex.model.Component.prototype.setStyle = function(style, opt_context) {
             }
 
             // apply to the view
-            goog.style.setStyle(this.element, index, val);
+            // compare with current style before applying style
+            // to prevent flickering
+            // remove ' from value because some browsers modifies bg image
+            // and adds ' (e.g. chrome)
+            var sanitized = val.replace(/\'/g, '');
+            if (this.element.style[index] !== sanitized){
+	            goog.style.setStyle(this.element, index, val);
+            }
         }
     }, this);
     // add the bounding box if needed
@@ -274,7 +281,9 @@ silex.model.Component.prototype.setStyle = function(style, opt_context) {
     }
     // store in the model
     if (styleStr !== '') {
-        this.element.setAttribute('data-style-' + opt_context, styleStr);
+    		if (this.element.getAttribute('data-style-' + opt_context)!==styleStr){
+	        this.element.setAttribute('data-style-' + opt_context, styleStr);
+    		}
     }
     else {
         this.element.removeAttribute('data-style-' + opt_context);
