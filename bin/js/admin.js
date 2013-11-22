@@ -81560,7 +81560,7 @@ silex.model.File.prototype.handleRetrocompatibility = function() {
             that.textEditor,
             that.fileExplorer
         );
-        console.log('retro compat in action', this, page);
+        console.warn('retro compat in action', this, page);
         // add in new page system
         page.attach();
         // remove the old tag
@@ -81612,6 +81612,12 @@ silex.model.File.prototype.publish = function(cbk, opt_errCbk) {
     }
     this.cleanup(
     goog.bind(function(html, css, files) {
+
+
+console.info(html, css, files);
+return
+
+
         silex.service.SilexTasks.getInstance().publish(this.getPublicationPath(), html, css, files, cbk, opt_errCbk);
     }, this),
     goog.bind(function(error) {
@@ -81656,7 +81662,7 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
     baseUrl = baseUrl.substring(0, baseUrl.lastIndexOf('/') + 1);
 
     // image source
-    bodyStr = bodyStr.replace(/src="?([^" ]*)" /g, function(match, group1, group2) {
+    bodyStr = bodyStr.replace(/<img src="?([^" ]*)" /g, function(match, group1, group2) {
         var absolute = silex.Helper.getAbsolutePath(group1, baseUrl);
         var relative = silex.Helper.getRelativePath(absolute, silex.Helper.BaseUrl);
         // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
@@ -81667,30 +81673,17 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
         var newRelativePath = 'assets/' + fileName;
         files.push({
             url: absolute
-, destPath: newRelativePath
-, srcPath: relative
+            , destPath: newRelativePath
+            , srcPath: relative
         });
         var res = match.replace(group1, newRelativePath);
         return res;
     });
-    // url()
-    bodyStr = bodyStr.replace(/url\((['"])(.+?)\1\)/g, function(match, group1, group2) {
-        var absolute = silex.Helper.getAbsolutePath(group2, baseUrl);
-        var relative = silex.Helper.getRelativePath(absolute, silex.Helper.BaseUrl);
-        // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
-        if (!silex.Helper.isAbsoluteUrl(relative)) {
-            relative = relative.replace('../', '/');
-        }
-        var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
-        var newRelativePath = 'assets/' + fileName;
-        var res = "url('../" + newRelativePath + "')";
-        files.push({
-            url: absolute
-, destPath: newRelativePath
-, srcPath: relative
-        });
-        return res;
-    });
+    // background-image / url(...)
+    bodyStr = bodyStr.replace(/url\((['"])(.+?)\1\)/g, goog.bind(function(match, group1, group2){
+      console.log('filter', arguments)
+      return this.filterBgImage(baseUrl, files, match, group1, group2)
+    }, this));
     // css
     headStr = headStr.replace(/href="?([^" ]*)"/g, function(match, group1, group2) {
         var absolute = silex.Helper.getAbsolutePath(group1, baseUrl);
@@ -81703,8 +81696,8 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
         var newRelativePath = 'css/' + fileName;
         files.push({
             url: absolute
-, destPath: newRelativePath
-, srcPath: relative
+            , destPath: newRelativePath
+            , srcPath: relative
         });
         var res = match.replace(group1, newRelativePath);
         return res;
@@ -81729,8 +81722,8 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
             var newRelativePath = 'js/' + fileName;
             files.push({
                 url: absolute
-, destPath: newRelativePath
-, srcPath: relative
+                , destPath: newRelativePath
+                , srcPath: relative
             });
             var res = match.replace(group1, newRelativePath);
             return res;
@@ -81772,6 +81765,27 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
             component.element = fragment;
         }
     }, this);
+    // **
+    // URLs
+/* better that to replace in the html string: goes through each node
+does not work because
+this does nothing: node.style.backgroundImage = "url('" + info.destPath + "')";
+
+    // apply body style
+    var s = silex.Helper.stringToStyle(this.stage.getBodyStyle());
+    goog.object.forEach(s, function(val, index, obj) {
+      if(val) goog.style.setStyle(bodyElement, index, val);
+    }, this);
+
+    var components = goog.dom.getElementsByTagNameAndClass(null, null, bodyElement);
+    goog.array.forEach(components, function(node) {
+      console.info(node.nodeType, node.nodeName)
+      files.concat(this.handleNodeUrls(node, baseUrl));
+    }, this);
+    // handle also the body
+    files.concat(this.handleNodeUrls(bodyElement, baseUrl));
+*/
+
     // **
     // extract the components styles to external .css file
     var components = goog.dom.getElementsByClass('editable-style', bodyElement);
@@ -81818,11 +81832,15 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
         component.element.removeAttribute('data-style-' + silex.model.Component.CONTEXT_PRESSED);
         component.element.removeAttribute('style');
     }, this);
+
     // body style
-    var styleStr = this.stage.getBodyStyle();
+    var bodyStyleStr = this.stage.getBodyStyle();
+    bodyStyleStr = bodyStyleStr.replace(/url\((['"])(.+?)\1\)/g, goog.bind(function(match, group1, group2){
+      return this.filterBgImage(baseUrl, files, match, group1, group2)
+    }, this));
     cssArray.push({
         classNames: ['body']
-        , styles: silex.Helper.stringToStyle(styleStr)
+        , styles: silex.Helper.stringToStyle(bodyStyleStr)
     });
     // fixme: find patterns to reduce the number of css classes
     // final css
@@ -81851,6 +81869,107 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
     // callback
     cbk(html, cssStr, files);
 };
+silex.model.File.prototype.filterBgImage = function(baseUrl, files, match, group1, group2) {
+  var absolute = silex.Helper.getAbsolutePath(group2, baseUrl);
+  var relative = silex.Helper.getRelativePath(absolute, silex.Helper.BaseUrl);
+  // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
+  if (!silex.Helper.isAbsoluteUrl(relative)) {
+      relative = relative.replace('../', '/');
+  }
+  var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
+  var newRelativePath = 'assets/' + fileName;
+  var res = "url('../" + newRelativePath + "')";
+  files.push({
+      url: absolute
+      , destPath: newRelativePath
+      , srcPath: relative
+  });
+  return res;
+}
+/**
+ * Determine what to do with a node in function of the URLs it carries
+ *
+ * @param     {Element} node    the node
+ * @return    {array} an array of info about the URLs of the element,
+ *     which will be served locally.
+ *     This objects in this array have these parameters
+ *     - url: the absolute url
+ *     - destPath: the destination path (local, relative to the published file)
+ *     - srcPath: the source path or relative URL (relative to the current file)
+ *
+silex.model.File.prototype.handleNodeUrls = function (node, baseUrl) {
+  console.log('handleNodeUrls', node)
+  var filesToBeServedLocally = [];
+  switch (node.nodeName){
+    case 'IMG':
+      // get the ressource URL
+      var url = node.getAttribute('src');
+      // det if it should be served locally
+      var info = this.getPublicationInfo(url, baseUrl, 'assets/');
+      if (info) {
+        // store the publication info
+        filesToBeServedLocally.push(info);
+        // update with local path
+        node.setAttribute('src', info.destPath);
+      }
+      break;
+  }
+  // background-image / url(...)
+  console.log(node.style.backgroundImage)
+  if (node.style.backgroundImage){
+    console.log('yeah')
+    // get the ressource URL
+    console.log('start search bg', node.style.backgroundImage)
+    var url = node.style.backgroundImage;
+    url = url.substr(url.indexOf('url(') + 4);
+    url = url.substring(0, url.lastIndexOf(')'));
+    // det if it should be served locally
+    // (../ because it is relative to css/style.css)
+    var info = this.getPublicationInfo(url, baseUrl, '../assets/');
+    if (info) {
+      // store the publication info
+      filesToBeServedLocally.push(info);
+      // update with local path
+      //bug: do nothing:
+      node.style.backgroundImage = "url('" + info.destPath + "')";
+      //goog.style.setStyle(node, 'background-image', "xxxurl('xxxxx" + info.destPath + "')");
+      //node.style.backgroundImage = undefined;
+      //goog.style.setStyle(node, 'background-image', undefined);
+      console.warn('replace', info.destPath, node.style.backgroundImage)
+    }
+    console.log('end search bg', node.style.backgroundImage)
+  }
+  return filesToBeServedLocally;
+}
+/**
+ * Determine if the ressource with the given URL can be downloaded
+ *     and served locally after publish is done
+ * @param     {string} url    the URL of the ressource
+ * @return    {object} the info about the object if it is possible,
+ *     or null otherwise. This object has these parameters
+ *     - url: the absolute url
+ *     - destPath: the destination path (local, relative to the published file)
+ *     - srcPath: the source path or relative URL (relative to the current file)
+ *
+silex.model.File.prototype.getPublicationInfo = function (url, baseUrl, localFolder) {
+  console.log('getPublicationInfo', arguments)
+  var absolute = silex.Helper.getAbsolutePath(url, baseUrl);
+  var relative = silex.Helper.getRelativePath(absolute, silex.Helper.BaseUrl);
+  // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
+  if (!silex.Helper.isAbsoluteUrl(relative)) {
+      relative = relative.replace('../', '/');
+  }
+  var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
+  var newRelativePath = localFolder + fileName;
+  var res = {
+      url: absolute
+      , destPath: newRelativePath
+      , srcPath: relative
+  };
+  console.log('getPublicationInfo', res);
+  return res;
+}
+/* */
 //////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
@@ -82301,7 +82420,7 @@ silex.boot = function() {
                 controller.menuCallback({type:'file.publish'});
             }, 1000);
 
-/* */
+/* *
             // debug: load a file
             var url = '../api/v1.0/www/exec/get/temp.html';
             //var url = '../api/v1.0/dropbox/exec/get/_test/lexoyo.me.html';
