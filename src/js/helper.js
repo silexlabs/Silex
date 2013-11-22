@@ -9,6 +9,12 @@
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
 
+/**
+ * @fileoverview Helper class for common tasks
+ *
+ */
+
+
 goog.provide('silex.Helper');
 
 goog.require('goog.Uri');
