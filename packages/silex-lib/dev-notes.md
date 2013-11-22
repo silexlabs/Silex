@@ -45,7 +45,12 @@ Stress tests
 
 a tester :
 
-* bug export issue github => fermer issue
+* bugs
+- depot dans un container => visible partout
+- selection de folder dans CE
+- clignottement du bg image quand on selectionne
+- alignement de CE quand on l'ouvre depuis settings
+- fond de dialogs pas clickable partout
 
 a finir
 

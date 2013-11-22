@@ -57,7 +57,40 @@ module.exports = function(grunt) {
         src: ['src/less/*.css']
         , options: {
           important: false // useful when opening a website in Silex
-          , "adjoining-classes": false
+            , "adjoining-classes" : false
+            , "known-properties" : false
+            , "box-sizing" : false
+            , "box-model" : false
+            , "overqualified-elements" : false
+            , "display-property-grouping" : false
+            , "bulletproof-font-face" : false
+            , "compatible-vendor-prefixes" : false
+            , "regex-selectors" : false
+            , "errors" : false
+            , "duplicate-background-images" : false
+            , "duplicate-properties" : false
+            , "empty-rules" : false
+            , "selector-max-approaching" : false
+            , "gradients" : false
+            , "fallback-colors" : false
+            , "font-sizes" : false
+            , "font-faces" : false
+            , "floats" : false
+            , "star-property-hack" : false
+            , "outline-none" : false
+            , "import" : false
+            , "ids" : false
+            , "underscore-property-hack" : false
+            , "rules-count" : false
+            , "qualified-headings" : false
+            , "selector-max" : false
+            , "shorthand" : false
+            , "text-indent" : false
+            , "unique-headings" : false
+            , "universal-selector" : false
+            , "unqualified-attributes" : false
+            , "vendor-prefix" : false
+            , "zero-units" : false
         }
       }
     }
@@ -91,13 +124,26 @@ module.exports = function(grunt) {
     , htmllint: {
         all: ["bin/*.html"]
     }
-    , jslint: { 
-      client: {
-        src: [
-          ['build/closure-library/closure/goog/base.js', 'build/closure-library/closure/**/*.js', 'src/js/*/*.js']
-          , 'src/js/*.js'
-        ]
-        , exclude: []
+    , closureLint: {
+      app:{
+        closureLinterPath : 'build/closure-linter/closure_linter'
+        , command: 'gjslint.py'
+        , src: [ 'src/js/**/*.js' ]
+        , options: {
+          stdout: true
+          , strict: true
+        }
+      }
+    }
+    , closureFixStyle: {
+      app:{
+        closureLinterPath : 'build/closure-linter/closure_linter'
+        , command: 'fixjsstyle.py'
+        , src: [ 'src/js/**/*.js' ]
+        , options: {
+          stdout: true
+          , strict: true
+        }
       }
     }
     , less: {
@@ -219,11 +265,11 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-less');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-html');
-  grunt.loadNpmTasks('grunt-contrib-jshint');
+  grunt.loadNpmTasks('grunt-closure-linter');
   grunt.loadNpmTasks('grunt-simple-mocha');
 
   grunt.registerTask('deploy', ['concat', 'less:production', 'less:development', 'closureBuilder:debug', 'closureBuilder:release', 'compress']);
-  grunt.registerTask('check', ['htmllint', 'csslint:lax', 'jslint']);
+  grunt.registerTask('check', ['htmllint', 'csslint:lax', 'closureFixStyle', 'closureLint']);
   grunt.registerTask('test', ['check', 'deploy', 'simplemocha']);
   
   grunt.registerTask('default', ['check', 'deploy']);
