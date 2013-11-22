@@ -3,7 +3,9 @@
   z-index: 210;
   width: 80%;
   max-width: 929px;
-  /* max width defined in the cloud explorer css */
+  /* defined in the cloud explorer css */
+  height: 574px;
+  /* defined in the cloud explorer css */
 }
 body {
   width: 100%;
@@ -191,7 +193,7 @@ body.loading-pending .loader {
   background-color: black;
   opacity: .5;
   display: none;
-  z-index: 200;
+  z-index: 110;
   /* 110 for editors and 120 for dialogs */
   cursor: pointer;
 }
@@ -513,7 +515,7 @@ body.loading-pending .loader {
   background-color: black;
   opacity: .5;
   display: none;
-  z-index: 99;
+  z-index: 105;
   /* 110 for editors and 120 for dialogs */
   cursor: pointer;
 }
@@ -521,7 +523,7 @@ body.loading-pending .loader {
   position: absolute;
   width: 80%;
   max-width: 929px;
-  z-index: 200;
+  z-index: 106;
 }
 .silex-publishsettings .dialog {
   color: #727271;
