@@ -47,8 +47,8 @@ a tester :
 
 * bugs
 - depot dans un container => visible partout
-- selection de folder dans CE
 - clignottement du bg image quand on selectionne
+- selection de folder dans CE
 - alignement de CE quand on l'ouvre depuis settings
 - fond de dialogs pas clickable partout
 
@@ -63,7 +63,7 @@ a finir
 
 2nd step of publish
 
-* add links to sync DB folder with an FTP FTPBox and http://alternativeto.net/software/ftpbox/ 
+* add links to sync DB folder with an FTP FTPBox and http://alternativeto.net/software/ftpbox/
 * missing in CE: choose a folder in CE
 * publish settings = choose a folder in CE
 * publish in the file menu => check that CE is logged in and do the export to clean html
@@ -110,7 +110,7 @@ Bugs
   GET http://ssl.gstatic.com/editor/button-bg.png  ace.js:1
   GET http://ssl.gstatic.com/closure/check-sprite.gif  admin.js:71
   GET http://ssl.gstatic.com/editor/toolbar-bg.png  admin.js:194
-  GET http://ssl.gstatic.com/editor/editortoolbar.png  
+  GET http://ssl.gstatic.com/editor/editortoolbar.png
 
 ##Notes
 

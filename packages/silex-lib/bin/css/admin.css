@@ -168,7 +168,7 @@ body {
   /* !important is useful while editing */
 }
 /* loading */
-body.loading-pending > * {
+body.loading-pending > div {
   visibility: hidden;
 }
 body .loader {
@@ -475,22 +475,17 @@ body.loading-pending .loader {
   max-width: 195px;
 }
 /* properties */
-.silex-propertiestool h1,
-.silex-propertiestool h2 {
+.silex-propertiestool .title1 {
   background-color: #323232;
   border: 1px solid #323232;
   color: #FFFFFF;
   margin: 0;
   font-weight: bold;
 }
-.silex-propertiestool h1 {
+.silex-propertiestool .title1 {
   padding: 10 0 10 12px;
   height: 15px;
   font-size: 15px;
-}
-.silex-propertiestool h2 {
-  padding: 5px 0 3px 6px;
-  font-size: 12px;
 }
 .silex-propertiestool legend {
   padding: 0;
@@ -659,7 +654,7 @@ body.loading-pending .loader {
   height: 100%;
   overflow: auto;
   padding: 5px;
-  padding-bottom: 0px;
+  padding-bottom: 0;
   position: relative !important;
   /* because it is changed as body style */
 }

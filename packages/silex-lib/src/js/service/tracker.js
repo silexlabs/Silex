@@ -9,6 +9,14 @@
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
 
+/**
+ * @fileoverview Service used to interact with google analytics server.
+ *     It is used in Silex to track the user actions (QOS layer).
+ *     This class is a singleton.
+ *
+ */
+
+
 goog.provide('silex.service.Tracker');
 
 /**
@@ -16,20 +24,24 @@ goog.provide('silex.service.Tracker');
  * this is for us to detect problems and improve user experience
  * @constructor
  */
-silex.service.Tracker = function(){
-	if(!ga){
-		console.error('google analytcs not loaded');
-	}
-}
+silex.service.Tracker = function() {
+    if (!ga) {
+        console.error('google analytcs not loaded');
+    }
+};
+
+
 /**
  * constant
  */
 silex.service.Tracker.SILEX_ACTIONS_CATEGORY = 'silex-event';
+
+
 /**
  * constant
  */
-silex.service.Tracker.prototype.trackAction = function (category, action, opt_label, opt_value) {
-	//console.info('trackAction', arguments);
-	ga('send', 'event', category, action, opt_label, opt_value, true);
+silex.service.Tracker.prototype.trackAction = function(category, action, opt_label, opt_value) {
+    //console.info('trackAction', arguments);
+    ga('send', 'event', category, action, opt_label, opt_value, true);
 }
 

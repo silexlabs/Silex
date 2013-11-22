@@ -108,17 +108,17 @@ module.exports = function(grunt) {
         }
       }
     }
-    , closureFixStyle: {
-      app:{
-        closureLinterPath : 'build/closure-linter/closure_linter'
-        , command: 'fixjsstyle.py'
-        , src: [ 'src/js/**/*.js' ]
-        , options: {
-          stdout: true
-          , strict: true
-        }
-      }
-    }
+    // , closureFixStyle: {
+    //   app:{
+    //     closureLinterPath : 'build/closure-linter/closure_linter'
+    //     , command: 'fixjsstyle.py'
+    //     , src: [ 'src/js/**/*.js' ]
+    //     , options: {
+    //       stdout: true
+    //       , strict: true
+    //     }
+    //   }
+    // }
     , less: {
       development: {
         options: {
@@ -242,7 +242,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-simple-mocha');
 
   grunt.registerTask('deploy', ['concat', 'less:production', 'less:development', 'closureBuilder:debug', 'closureBuilder:release', 'compress']);
-  grunt.registerTask('check', ['htmllint', 'csslint:lax', 'closureFixStyle', 'closureLint']);
+  grunt.registerTask('check', ['htmllint', 'csslint:lax', 'closureLint']);
   grunt.registerTask('test', ['check', 'deploy', 'simplemocha']);
   
   grunt.registerTask('default', ['check', 'deploy']);
