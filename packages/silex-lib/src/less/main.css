@@ -1,3 +1,14 @@
+.small-font{
+	font-size: 13px;
+	font-family: "arial", "​sans-serif";
+}
+.xsmall-font{
+	font-size: 13px;
+	font-weight: lighter;
+	color: #555555;
+	font-family: "arial", "​sans-serif";
+}
+
 body{
 	overflow: hidden;
 }
@@ -7,7 +18,7 @@ body{
 	top: 0 !important; /* !important is useful while editing */
 }
 /* loading */
-body.loading-pending>*{
+body.loading-pending>div{
 	visibility: hidden;
 }
 body .loader{
@@ -30,7 +41,7 @@ body.loading-pending .loader{
 	background-color: black;
 	opacity: .5;
 	display: none;
-	z-index: 100; /* 110 for editors and 120 for dialogs */
+	z-index: 200; /* 110 for editors and 120 for dialogs */
 	cursor: pointer;
 }
 .modal-dialog{

@@ -11,10 +11,10 @@
 <link rel="stylesheet" href="css/closure/colorpalette.css">
 <link rel="stylesheet" href="css/closure/colormenubutton.css">
 
-<h1>Properties</h1>
+<h1 class="title1">Properties</h1>
 <div class="main-container">
 	<span class="position-editor">
-		<fieldset>
+		<fieldset class="small-font">
 <!--			<legend>Position and size <span class="lock-btn link-small-btn advanced-only">(lock /</span> <span class="unlock-btn link-small-btn advanced-only">unlock)</span></legend>
 -->
 			<legend>Position and size</legend>
@@ -43,7 +43,7 @@
 			{{#each pages}}
 				<div class="page-container">
 					<span class="page-check" />
-					<label class="page-label">{{this.name}}</label>
+					<label class="page-label xsmall-font">{{this.name}}</label>
 				</div>
 			{{/each}}
 		</script>
@@ -55,11 +55,11 @@
 					<option value="{{this.name}}">#{{this.name}}</option>
 				{{/each}}
 		</script>
-		<fieldset>
+		<fieldset class="small-font">
 			<legend>Show only on <span class="show-on-all-pages-btn link-small-btn advanced-only">(show on all pages)</span></legend>
 			<div class="pages-container"></div>
 		</fieldset>
-		<fieldset>
+		<fieldset class="small-font">
 			<legend>Link</legend>
 			<div>
 				<select class="link-combo-box">
@@ -71,42 +71,42 @@
 	<span class="property-editor">
 		<script class="edition-template" type="text/x-handlebars-template">
 			{{#if htmlEditor}}
-			<div class="button html-editor-button" title="Open HTML editor">Edit HTML</div>
+			<div class="button small-font html-editor-button" title="Open HTML editor">Edit HTML</div>
 			{{/if}}
 			{{#if textEditor}}
-			<div class="button text-editor-button" title="Open text editor">Edit text</div>
+			<div class="button small-font text-editor-button" title="Open text editor">Edit text</div>
 			{{/if}}
 			{{#if imageUrl}}
 			<input placeholder="-" class="image-url-input advanced-only" value="{{imageUrl}}" />
-			<div class="button image-url-button" title="Open file browser">Swap image</div>
+			<div class="button small-font image-url-button" title="Open file browser">Swap image</div>
 			{{/if}}
 		</script>
-		<fieldset>
+		<fieldset class="small-font">
 			<legend>Content</legend>
 			<div class="edition-container"></div>
 		</fieldset>
 	</span>
 	<span class="style-container">
-		<div class="tab-bar-container goog-tab-bar goog-tab-bar-top">
+		<div class="tab-bar-container goog-tab-bar goog-tab-bar-top small-font">
 			<div class="goog-tab goog-tab-selected">Normal</div>
 			<div class="goog-tab">Hover</div>
 			<div class="goog-tab">Pressed</div>
 		</div>
 		<span class="tab-page">
 			<div class="general-editor">
-				<fieldset class="opacity-property advanced-only">
+				<fieldset class="small-font opacity-property advanced-only">
 					<legend>Opacity <small>between 0 and 1</small></legend>
 					<input placeholder="-" class="opacity-input" type="number" />
 				</fieldset>
 			</div>
 			<div class="background-editor">
-				<fieldset class="background-property">
+				<fieldset class="small-font background-property">
 					<legend>Background Color</legend>
 					<span class="color-bg-button color-button"></span>
 					<span class="color-bg-palette"></span>
 					<span class="enable-color-bg-button"></span> Transparent
 				</fieldset>
-				<fieldset class="background-image">
+				<fieldset class="small-font background-image">
 					<legend>Background Image</legend>
 					<div>
 						<div class="button bg-image-button">Select image</div>
@@ -151,7 +151,7 @@
 				</fieldset>
 			</div>
 			<div class="border-editor">
-				<fieldset class="border-property">
+				<fieldset class="small-font border-property">
 					<legend>Border <span class="enable-border-color-button link-small-btn advanced-only">(No border)</span></legend>
 					<label>Width</label>
 					<input placeholder="-" class="border-width-input" type="number" />
@@ -182,7 +182,7 @@
 						<label class="border-placement-label">Left</label>
 					</div>
 				</fieldset>
-				<fieldset class="corner-property">
+				<fieldset class="small-font corner-property">
 					<legend>Corners</legend>
 					<label>Radius</label>
 					<input placeholder="-" class="corner-radius-input" type="number" />

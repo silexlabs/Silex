@@ -41,7 +41,7 @@
 	height: 100%;
 	overflow: auto;
 	padding: 5px;
-	padding-bottom: 0px;
+	padding-bottom: 0;
 	position: relative !important; /* because it is changed as body style */
 }
 /***********************

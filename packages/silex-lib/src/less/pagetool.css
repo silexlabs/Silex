@@ -21,13 +21,11 @@
 	overflow-y: scroll;
 	overflow: visible;
 	text-align: center;
-	color: #666;
 	margin: 10px;
 	text-decoration: none;
 }
 .silex-pagetool .page-container .label{
 	bottom: 0;
-	font-size: 12px;
 	padding: 5px;
 	position: absolute;
 	cursor: text;
