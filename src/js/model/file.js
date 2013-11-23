@@ -19,6 +19,7 @@
 
 
 goog.provide('silex.model.File');
+goog.require('silex.model.Config');
 
 
 
@@ -249,6 +250,72 @@ silex.model.File.prototype.close = function() {
     this.workspace.invalidate();
 };
 
+/**
+ * refresh the list of loaded fonts. When a user changes the font family
+ * of a text, the corresponding font file is loaded if available
+ */
+silex.model.File.prototype.refreshFontList = function() {
+
+    //detach all previously loaded font before, to avoid duplicate
+    var links = goog.dom.getElementsByTagNameAndClass('link');
+    goog.array.forEach(links, function (link) {
+        //fonts are loaded used 'links' element pointing to google fonts service
+        if (link.getAttribute('href').indexOf('fonts') !== -1) {
+            link.parentNode.removeChild(link);
+        }
+    });
+
+    //get all components and get the font family style for each
+    var components = goog.dom.getElementsByClass('editable-style'),
+
+        //holds used font names. Stored as map to prevent duplicated
+        fontNames = {};
+
+    goog.array.forEach(components, function(node) {
+        var component = new silex.model.Component(node);
+
+        //for each component, get font family for each style
+        var styles = [
+            component.getStyle(silex.model.Component.CONTEXT_NORMAL),
+            component.getStyle(silex.model.Component.CONTEXT_HOVER),
+            component.getStyle(silex.model.Component.CONTEXT_PRESSED)
+        ];
+
+        goog.array.forEach(styles, function(style) {
+            if (style.fontFamily !== undefined) {
+                fontNames[style.fontFamily] = true;
+            }
+        });
+    });
+
+    //text styles can also be applied using old-school font tag.
+    //Get face attribute values from them
+    var fontTags = goog.dom.getElementsByTagNameAndClass('font');
+    goog.array.forEach(fontTags, function(fontTag) {
+        if (null !== fontTag.getAttribute('face')) {
+            fontNames[fontTag.getAttribute('face')] = true;
+        }
+    });
+
+    //get authorised fonts
+    var availableFonts = silex.model.Config.fonts,
+        head = document.head;
+
+    //for each used font family, if a corresponding font is available, load it
+    for (var fontName in fontNames) {
+        if (availableFonts[fontName] !== undefined) {
+
+            //load the font by appending a link, which will load a CSS file containing the
+            //font rules
+            var link = goog.dom.createElement('link');
+            link.setAttribute('href', availableFonts[fontName].href);
+            link.setAttribute('rel', 'stylesheet');
+            link.setAttribute('type', 'text/css');
+
+            head.appendChild(link);
+        }
+    };
+}
 
 ////////////////////////////////////////////////
 // DOM related methods

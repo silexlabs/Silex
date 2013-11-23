@@ -627,6 +627,9 @@ silex.Controller.prototype.textEditorCallback = function(event) {
     switch (event.type) {
     case 'changed':
         this.selection.getComponent().setHtml(event.content);
+
+        //update loaded font list, as user might have choose a new one
+        this.file.refreshFontList();
         break;
     }
 };
