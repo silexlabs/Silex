@@ -50,7 +50,7 @@
     , "grunt-contrib-jshint": "~0.7.2"
     , "grunt-html": "~0.3.4"
     , "grunt-closure-tools": "~0.8.4"
-    , "grunt-closure-linter": "Õ.0.2"
+    , "grunt-closure-linter": "~0.1.0"
     , "grunt-simple-mocha": "~0.4.0"
     , "mocha": "~1.14.0"
     , "chai": "~1.8.1"
