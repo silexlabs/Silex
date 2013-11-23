@@ -165,7 +165,13 @@ silex.view.TextEditor.prototype.initUI = function() {
         this.contentChanged();
       }, false, this);
 
-  this.textField.makeEditable();
+  try{
+    this.textField.makeEditable();
+  }
+  catch(e){
+    // goog.editor.BrowserFeature.HAS_STYLE_WITH_CSS = false;
+    console.error('error catched', e);
+  }
 
   // close button
   goog.events.listen(goog.dom.getElementByClass('close-btn', this.element),
