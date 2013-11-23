@@ -80133,7 +80133,13 @@ silex.view.TextEditor.prototype.initUI = function() {
         this.contentChanged();
       }, false, this);
 
-  this.textField.makeEditable();
+  try{
+    this.textField.makeEditable();
+  }
+  catch(e){
+    // goog.editor.BrowserFeature.HAS_STYLE_WITH_CSS = false;
+    console.error('error catched', e);
+  }
 
   // close button
   goog.events.listen(goog.dom.getElementByClass('close-btn', this.element),
@@ -82065,7 +82071,13 @@ silex.view.propertiesTool.PagePane.prototype.buildUi = function() {
   var linkInputElement = goog.dom.getElementByClass('link-input-text', this.element);
   this.linkInputTextField = new goog.editor.Field(linkInputElement);
   // make editable
-  this.linkInputTextField.makeEditable();
+  try{
+    this.linkInputTextField.makeEditable();
+  }
+  catch(e){
+    // goog.editor.BrowserFeature.HAS_STYLE_WITH_CSS = false;
+    console.error('error catched', e);
+  }
   // hide by default
   var linkInputElement = goog.dom.getElementByClass('link-input-text', this.element); // get the new input which may be an iframe
   goog.style.setStyle(linkInputElement, 'display', 'none');

@@ -25,6 +25,8 @@
 
 	<!-- Normalize -->
 	<link href="libs/normalize.css" rel="stylesheet">
+	<!-- google closure patches -->
+	<link rel="stylesheet" type="text/css" href="css/closure/common.css">
 
 </head>
 <body class="loading-pending advanced-mode-off">
@@ -61,7 +63,6 @@
 	</div>
 	<!-- main styles -->
 	<link rel="stylesheet" type="text/css" href="css/admin.min.css" />
-	<link rel="stylesheet" type="text/css" href="css/closure/common.css">
 
 	<!-- jquery related lib -->
 	<script type="text/javascript" src="libs/jquery/jquery.js"></script>
@@ -86,7 +87,9 @@
 
 	<!-- Silex compiled -->
 	<script type="text/javascript" src="js/admin.min.js"></script>
+	<!-- google closure patches -->
 	<script type="text/javascript" src="js/closure-patches.js"></script>
+	<!-- start Silex -->
 	<script type="text/javascript">
 		// redirect /silex to /silex/
 		if(window.location.href.slice(-5) === 'silex'){
