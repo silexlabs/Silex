@@ -601,12 +601,6 @@ silex.model.File.prototype.publish = function(cbk, opt_errCbk) {
     }
     this.cleanup(
     goog.bind(function(html, css, files) {
-
-
-console.info(html, css, files);
-return
-
-
         silex.service.SilexTasks.getInstance().publish(this.getPublicationPath(), html, css, files, cbk, opt_errCbk);
     }, this),
     goog.bind(function(error) {

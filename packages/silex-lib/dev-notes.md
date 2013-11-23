@@ -48,10 +48,10 @@ Stress tests
 
 a finir
 
-* debug "grunt test"
-* push unifile et silex
-* ? publish super lent => plusieurs opérations en parallele
+* push unifile, CE et silex
+* fixer les erreurs "grunt test"
 * test selenium
+* ? publish super lent => plusieurs opérations en parallele
 
 2nd step of publish
 
@@ -67,8 +67,7 @@ Dev
 
 * less au lieu de juste css
 * Loader sur images - en mode admin seulement? Gif en background des images + min-width/height
-* autres bugs
-* ? système de logs/bug report http://jserrlog.appspot.com/
+* ?qos, système de logs/bug report http://jserrlog.appspot.com/
 * ajout max/min width/height, pour rendre bottom/right utile
 
 ####Containers evolution
