@@ -269,7 +269,7 @@ silex.model.File.prototype.refreshFontList = function() {
     var components = goog.dom.getElementsByClass('editable-style'),
 
         //holds used font names. Stored as map to prevent duplicated
-        fontNames = {};
+        fontFamilies = {};
 
     goog.array.forEach(components, function(node) {
         var component = new silex.model.Component(node);
@@ -283,7 +283,7 @@ silex.model.File.prototype.refreshFontList = function() {
 
         goog.array.forEach(styles, function(style) {
             if (style.fontFamily !== undefined) {
-                fontNames[style.fontFamily] = true;
+                fontFamilies[style.fontFamily] = true;
             }
         });
     });
@@ -293,22 +293,34 @@ silex.model.File.prototype.refreshFontList = function() {
     var fontTags = goog.dom.getElementsByTagNameAndClass('font');
     goog.array.forEach(fontTags, function(fontTag) {
         if (null !== fontTag.getAttribute('face')) {
-            fontNames[fontTag.getAttribute('face')] = true;
+            fontFamilies[fontTag.getAttribute('face')] = true;
         }
     });
 
     //get authorised fonts
     var availableFonts = silex.model.Config.fonts,
-        head = document.head;
+        head = document.head,
+
+        //return the font from the font family or null
+        getFont = function(fontFamily) {
+            for (var fontName in availableFonts) {
+                if (availableFonts[fontName].value === fontFamily)
+                    return availableFonts[fontName];
+            }
+            return null;
+        }
 
     //for each used font family, if a corresponding font is available, load it
-    for (var fontName in fontNames) {
-        if (availableFonts[fontName] !== undefined) {
+    for (var fontFamily in fontFamilies) {
+
+        var font = getFont(fontFamily);
+        //check that a URL to load is available. There is none for system font (serif, sans-serif...)
+        if (font && font.href !== undefined) {
 
             //load the font by appending a link, which will load a CSS file containing the
             //font rules
             var link = goog.dom.createElement('link');
-            link.setAttribute('href', availableFonts[fontName].href);
+            link.setAttribute('href', font.href);
             link.setAttribute('rel', 'stylesheet');
             link.setAttribute('type', 'text/css');
 
