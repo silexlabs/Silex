@@ -47,6 +47,8 @@ Stress tests
 * !!! Urgent : in silex.model.File.prototype.setHtml and silex.model.File.prototype.save
 * borders in ff
 - selection de folder dans CE
+- champs de text "external link" prend du html
+- 
 
 a finir
 
