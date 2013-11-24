@@ -35,6 +35,7 @@ goog.require('goog.events');
 goog.require('goog.ui.editor.DefaultToolbar');
 goog.require('goog.ui.editor.ToolbarController');
 
+goog.require('silex.model.Config');
 
 
 /**
@@ -97,24 +98,12 @@ silex.view.TextEditor.prototype.initUI = function() {
   var fontFaceButton = goog.ui.editor.DefaultToolbar.makeBuiltInToolbarButton(
       goog.editor.Command.FONT_FACE);
 
-  goog.ui.editor.ToolbarFactory.addFont(fontFaceButton,
-      'Arial Black',
-      'Arial Black, Gadget, sans-serif');
-  goog.ui.editor.ToolbarFactory.addFont(fontFaceButton,
-      'Impact',
-      'Impact, Charcoal, sans-serif');
-  goog.ui.editor.ToolbarFactory.addFont(fontFaceButton,
-      'Lucida Console',
-      'Lucida Console, Monaco, monospace');
-  goog.ui.editor.ToolbarFactory.addFont(fontFaceButton,
-      'Lucida Sans',
-      'Lucida Sans Unicode, Lucida Grande, sans-serif');
-  goog.ui.editor.ToolbarFactory.addFont(fontFaceButton,
-      'Palatino',
-      'Palatino Linotype, Book Antiqua, Palatino, serif');
-  goog.ui.editor.ToolbarFactory.addFont(fontFaceButton,
-      'Tahoma',
-      'Tahoma, Geneva, sans-serif');
+  var availableFonts = silex.model.Config.fonts;
+  for (var fontName in availableFonts) {
+      goog.ui.editor.ToolbarFactory.addFont(fontFaceButton,
+          fontName,
+          availableFonts[fontName].value);
+  }
 
   // add font sizes
   var fontSizeButton = goog.ui.editor.DefaultToolbar.makeBuiltInToolbarButton(
