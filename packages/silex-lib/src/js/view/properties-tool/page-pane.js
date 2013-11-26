@@ -19,15 +19,14 @@
 
 goog.provide('silex.view.propertiesTool.PagePane');
 
+goog.require('goog.array');
 goog.require('goog.cssom');
+goog.require('goog.editor.Field');
+goog.require('goog.object');
 goog.require('goog.ui.Checkbox');
+goog.require('goog.ui.ColorButton');
 goog.require('goog.ui.CustomButton');
 goog.require('goog.ui.HsvaPalette');
-goog.require('goog.ui.ColorButton');
-goog.require('goog.editor.Field');
-
-goog.require('goog.array');
-goog.require('goog.object');
 
 
 
@@ -89,43 +88,53 @@ silex.view.propertiesTool.PagePane.prototype.linkInputTextField;
 silex.view.propertiesTool.PagePane.prototype.buildUi = function() {
   // link, select page or enter custom link
   // handle the dropdown list from the template
-  this.linkDropdown = goog.dom.getElementByClass('link-combo-box', this.element);
+  this.linkDropdown = goog.dom.getElementByClass('link-combo-box',
+      this.element);
   this.linkDropdown.onchange = goog.bind(this.onLinkChanged, this);
 
   // create a text field for custom link
-  var linkInputElement = goog.dom.getElementByClass('link-input-text', this.element);
+  var linkInputElement = goog.dom.getElementByClass('link-input-text',
+      this.element);
   this.linkInputTextField = new goog.editor.Field(linkInputElement);
   // make editable
-  try{
+  try {
     this.linkInputTextField.makeEditable();
   }
-  catch(e){
+  catch (e) {
     // goog.editor.BrowserFeature.HAS_STYLE_WITH_CSS = false;
     console.error('error catched', e);
   }
   // hide by default
-  var linkInputElement = goog.dom.getElementByClass('link-input-text', this.element); // get the new input which may be an iframe
+  var linkInputElement = goog.dom.getElementByClass('link-input-text',
+      this.element); // get the new input which may be an iframe
   goog.style.setStyle(linkInputElement, 'display', 'none');
   // Watch for field changes, to display below.
-  goog.events.listen(this.linkInputTextField, goog.editor.Field.EventType.DELAYEDCHANGE, this.onLinkTextChanged, false, this);
+  goog.events.listen(this.linkInputTextField,
+      goog.editor.Field.EventType.DELAYEDCHANGE,
+      this.onLinkTextChanged,
+      false,
+      this);
 };
 
 
 /**
  * display the propertis of the component being edited
+ * @param   {silex.model.component} component   the component to edit
  */
-silex.view.propertiesTool.PagePane.prototype.setComponent = function(component) {
+silex.view.propertiesTool.PagePane.prototype.setComponent =
+    function(component) {
   this.component = component;
   this.redraw();
 };
 
 
 /**
- * refresh with new data
+ * refresh with new pages
+ * @param   {array} pages   the new list of pages
  */
-silex.view.propertiesTool.PagePane.prototype.setPages = function(data) {
-  // store page data
-  this.pages = data;
+silex.view.propertiesTool.PagePane.prototype.setPages = function(pages) {
+  // store the pages
+  this.pages = pages;
 
   // reset page checkboxes
   if (this.pageCheckboxes) {
@@ -135,18 +144,27 @@ silex.view.propertiesTool.PagePane.prototype.setPages = function(data) {
   }
 
   // link selector
-  var linkContainer = goog.dom.getElementByClass('link-combo-box', this.element);
-  var templateHtml = goog.dom.getElementByClass('link-template', this.element).innerHTML;
-  silex.Helper.resolveTemplate(linkContainer, templateHtml, {pages:this.pages});
+  var linkContainer = goog.dom.getElementByClass('link-combo-box',
+      this.element);
+  var templateHtml = goog.dom.getElementByClass('link-template',
+      this.element).innerHTML;
+  silex.Helper.resolveTemplate(linkContainer,
+      templateHtml,
+      {pages: this.pages});
 
   // render page/visibility template
   // init page template
-  var pagesContainer = goog.dom.getElementByClass('pages-container', this.element);
-  var templateHtml = goog.dom.getElementByClass('pages-selector-template', this.element).innerHTML;
-  silex.Helper.resolveTemplate(pagesContainer, templateHtml, {pages:this.pages});
+  var pagesContainer = goog.dom.getElementByClass('pages-container',
+      this.element);
+  var templateHtml = goog.dom.getElementByClass('pages-selector-template',
+      this.element).innerHTML;
+  silex.Helper.resolveTemplate(pagesContainer,
+      templateHtml,
+      {pages: this.pages});
   // create page checkboxes
   this.pageCheckboxes = [];
-  var mainContainer = goog.dom.getElementByClass('pages-container', this.element);
+  var mainContainer = goog.dom.getElementByClass('pages-container',
+      this.element);
   var items = goog.dom.getElementsByClass('page-container', mainContainer);
   var idx = 0;
   goog.array.forEach(items, function(item) {
@@ -155,17 +173,19 @@ silex.view.propertiesTool.PagePane.prototype.setPages = function(data) {
     var checkbox = new goog.ui.Checkbox();
     var page = this.pages[idx++];
     checkbox.render(checkboxElement);
-    checkbox.setLabel (labelElement);
+    checkbox.setLabel(labelElement);
     this.pageCheckboxes.push({
       checkbox: checkbox,
       page: page
     });
-    goog.events.listen(checkbox, goog.ui.Component.EventType.CHANGE, function(e) {
-      this.checkPage(page, checkbox);
-    }, false, this);
+    goog.events.listen(checkbox, goog.ui.Component.EventType.CHANGE,
+        function(e) {
+          this.checkPage(page, checkbox);
+        }, false, this);
   }, this);
   // show on all pages button
-  var showAllBtn = goog.dom.getElementByClass('show-on-all-pages-btn', this.element);
+  var showAllBtn = goog.dom.getElementByClass('show-on-all-pages-btn',
+      this.element);
   goog.events.listen(showAllBtn, goog.events.EventType.CLICK, function(e) {
     this.unCheckAll();
   }, false, this);
@@ -178,21 +198,21 @@ silex.view.propertiesTool.PagePane.prototype.setPages = function(data) {
 /**
  * the user changed the link drop down
  */
-silex.view.propertiesTool.PagePane.prototype.onLinkChanged = function(event) {
-  if (this.linkDropdown.value==='none') {
+silex.view.propertiesTool.PagePane.prototype.onLinkChanged = function() {
+  if (this.linkDropdown.value === 'none') {
     this.component.removeLink();
   }
-  else if (this.linkDropdown.value==='custom') {
+  else if (this.linkDropdown.value === 'custom') {
     // keep previous link value
     var prevVal = this.linkInputTextField.getCleanContents();
     // reset if it was an internal link
-    if (prevVal.indexOf('#')===0) prevVal = '';
-    if (prevVal==='') prevVal = 'http://www.silex.me/';
+    if (prevVal.indexOf('#') === 0) prevVal = '';
+    if (prevVal === '') prevVal = 'http://www.silex.me/';
     // store in the href attr
     this.component.setLink(prevVal);
   }
   else {
-    this.component.setLink('#'+this.linkDropdown.value);
+    this.component.setLink('#' + this.linkDropdown.value);
   }
   this.pageChanged();
   this.redraw();
@@ -202,7 +222,8 @@ silex.view.propertiesTool.PagePane.prototype.onLinkChanged = function(event) {
 /**
  * the user changed the link text field
  */
-silex.view.propertiesTool.PagePane.prototype.onLinkTextChanged = function(event) {
+silex.view.propertiesTool.PagePane.prototype.onLinkTextChanged =
+    function() {
   // update the href attribute
   this.component.setLink(this.linkInputTextField.getCleanContents());
   // notify the controler
@@ -222,7 +243,8 @@ silex.view.propertiesTool.PagePane.prototype.redraw = function() {
         // there is a selection
         var pageName = item.page.name;
         item.checkbox.setEnabled(true);
-        item.checkbox.setChecked(goog.dom.classes.has(this.component.element, pageName));
+        item.checkbox.setChecked(goog.dom.classes.has(this.component.element,
+            pageName));
       }
       else {
         // no selected element
@@ -235,10 +257,11 @@ silex.view.propertiesTool.PagePane.prototype.redraw = function() {
     // default selection
     var hrefAttr = this.component.getLink();
     if (!hrefAttr) {
-      this.linkDropdown.value='none';
+      this.linkDropdown.value = 'none';
     }
     else {
-      if (hrefAttr.indexOf('#')===0 && silex.model.Page.getPageByName(hrefAttr.substr(1))) {
+      if (hrefAttr.indexOf('#') === 0 &&
+          silex.model.Page.getPageByName(hrefAttr.substr(1))) {
         // case of an internal link
         // select a page
         this.linkDropdown.value = hrefAttr.substr(1);
@@ -246,12 +269,13 @@ silex.view.propertiesTool.PagePane.prototype.redraw = function() {
       else {
         // in case it is a custom link
         this.linkInputTextField.setHtml(false, hrefAttr);
-        this.linkDropdown.value='custom';
+        this.linkDropdown.value = 'custom';
       }
     }
     // visibility of the text edit
-    var linkInputElement = goog.dom.getElementByClass('link-input-text', this.element);
-    if (this.linkDropdown.value==='custom') {
+    var linkInputElement = goog.dom.getElementByClass('link-input-text',
+        this.element);
+    if (this.linkDropdown.value === 'custom') {
       goog.style.setStyle(linkInputElement, 'display', 'inherit');
     }
     else {
@@ -264,8 +288,12 @@ silex.view.propertiesTool.PagePane.prototype.redraw = function() {
 
 /**
  * callback for checkboxes click event
+ * changes the visibility of the current component for the given page
+ * @param   {silex.model.page} page   the page for wich the visibility changes
+ * @param   {goog.ui.Checkbox} checkbox   the checkbox clicked
  */
-silex.view.propertiesTool.PagePane.prototype.checkPage = function(page, checkbox) {
+silex.view.propertiesTool.PagePane.prototype.checkPage =
+    function(page, checkbox) {
   // apply the page selection
   if (checkbox.isChecked()) {
     page.addComponent(this.component);
@@ -291,4 +319,4 @@ silex.view.propertiesTool.PagePane.prototype.unCheckAll = function() {
   this.pageChanged();
   // refresh ui
   this.redraw();
-}
+};

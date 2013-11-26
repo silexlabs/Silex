@@ -208,6 +208,8 @@ silex.view.Stage.prototype.renamePage = function(page, name) {
 
 /**
  * open the page
+ * this is a static method, a helper
+ * @param {silex.model.Page} page   the page to open
  */
 silex.view.Stage.prototype.openPage = function(page) {
   $(this.bodyElement).pageable({currentPage: page.name});
@@ -247,6 +249,7 @@ silex.view.Stage.prototype.setPublicationPath = function(path) {
 /**
  * get/set the publication path
  * @see silex.model.File
+ * @return {string}   the publication path
  */
 silex.view.Stage.prototype.getPublicationPath = function() {
   var that = this;
@@ -261,9 +264,9 @@ silex.view.Stage.prototype.getPublicationPath = function() {
 
 /**
  * set the html content on the stage
- * @param string containing html
  * warning: you are supposed to do stageComponent.setHtml(bodyHtml, baseUrl);
  * so that it is editable
+ * @param   {string} bodyHtml   HTML string to be stored/displayed as the body
  */
 silex.view.Stage.prototype.setBody = function(bodyHtml) {
   if (bodyHtml !== '') {
@@ -275,7 +278,7 @@ silex.view.Stage.prototype.setBody = function(bodyHtml) {
 
 /**
  * get the html content on the stage
- * @return string containing html
+ * @return {string} containing html
  */
 silex.view.Stage.prototype.getBody = function() {
   return this.bodyElement.innerHTML;
@@ -284,7 +287,7 @@ silex.view.Stage.prototype.getBody = function() {
 
 /**
  * set the html content on the stage
- * @param string containing html
+ * @param {string} headHtml containing html
  */
 silex.view.Stage.prototype.setHead = function(headHtml) {
   this.headElement.innerHTML = headHtml;
@@ -293,7 +296,7 @@ silex.view.Stage.prototype.setHead = function(headHtml) {
 
 /**
  * get the html content on the stage
- * @return string containing html
+ * @return {string} containing html
  */
 silex.view.Stage.prototype.getHead = function() {
   return this.headElement.innerHTML;
@@ -302,6 +305,7 @@ silex.view.Stage.prototype.getHead = function() {
 
 /**
  * set body style from a string
+ * @param {string} styleStr  body style as a string
  */
 silex.view.Stage.prototype.setBodyStyle = function(styleStr) {
   this.bodyElement.setAttribute('data-style-normal', styleStr);
@@ -310,7 +314,7 @@ silex.view.Stage.prototype.setBodyStyle = function(styleStr) {
 
 
 /**
- * @return body style as a string
+ * @return {string} body style as a string
  */
 silex.view.Stage.prototype.getBodyStyle = function() {
   return this.bodyElement.getAttribute('data-style-normal');
