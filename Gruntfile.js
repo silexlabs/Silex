@@ -4,6 +4,10 @@ Inspired by https://gist.github.com/madr/7356170
 
 Uses:
 
+* fix style with google fix style (indentation etc)
+
+  $ grunt fix
+
 * check syntax with *lint
 
   $ grunt check
@@ -108,17 +112,17 @@ module.exports = function(grunt) {
         }
       }
     }
-    // , closureFixStyle: {
-    //   app:{
-    //     closureLinterPath : 'build/closure-linter/closure_linter'
-    //     , command: 'fixjsstyle.py'
-    //     , src: [ 'src/js/**/*.js' ]
-    //     , options: {
-    //       stdout: true
-    //       , strict: true
-    //     }
-    //   }
-    // }
+    , closureFixStyle: {
+      app:{
+        closureLinterPath : 'build/closure-linter/closure_linter'
+        , command: 'fixjsstyle.py'
+        , src: [ 'src/js/**/*.js' ]
+        , options: {
+          strict: true
+          , stdout: true
+        }
+      }
+    }
     , less: {
       development: {
         options: {
@@ -147,45 +151,9 @@ module.exports = function(grunt) {
             , warning_level: 'QUIET'
             , externs: 'cloud-explorer/lib/app/js/cloud-explorer.js'
             , debug: false
-//            , only_closure_dependencies: true
-//            , closure_entry_point: 'silex.boot'
-//            , use_closure_library: true
-//            , closure_entry_point: 'build/closure-library/closure/goog/base.js'
-//            , process_closure_primitives: true
           }
         }
         , src: ['src/js/', 'build/closure-library/']
-        , dest: 'bin/js/admin.min.js'
-      }
-      , xxxrelease: {
-        options: {
-          closureLibraryPath: 'build/closure-library/'
-          , namespaces: ['silex.boot', 'goog']
-          , builder: 'build/closure-library/closure/bin/build/closurebuilder.py'
-          , compilerFile: 'build/closure-compiler.jar'
-          , compile: true
-          , compilerOpts: {
-            compilation_level: 'ADVANCED_OPTIMIZATIONS'
-            , externs: 'cloud-explorer/lib/app/js/cloud-explorer.js'
-            , debug: false
-            , only_closure_dependencies: true
-            , closure_entry_point: 'silex.boot'
-            , process_closure_primitives: true
-            , warning_level: 'QUIET'
-          }
-        }
-        //java -jar bin/compiler.jar
-        // --js closure-library/closure/goog/base.js
-        // --js app.js
-        // --externs externs.js
-        // --manage_closure_dependencies true
-        // --process_closure_primitives true
-        // --summary_detail_level 3
-        // --warning_level VERBOSE
-        // --compilation_level=ADVANCED_OPTIMIZATIONS
-        // --closure_entry_point my.ap
-
-        , src: ['src/js/']
         , dest: 'bin/js/admin.min.js'
       }
       , debug: {
@@ -210,7 +178,7 @@ module.exports = function(grunt) {
         javascript: {
             files: ['src/js/**/*.js', 'src/less/*.css', 'bin/**/*.html', 'Gruntfile.js']
             //, tasks: ['check', 'deploy']
-            , tasks: ['deploy']
+            , tasks: ['deploy', 'run']
         }
         , livereload: {
             files: ['Gruntfile.js', 'bin/js/*.js', 'bin/css/*.css', 'bin/assets/**/*.{png,jpg,jpeg,gif,webp,svg}', 'js/*.js', ]
@@ -224,7 +192,6 @@ module.exports = function(grunt) {
           globals: ['should']
           , timeout: 3000
           , ignoreLeaks: false
-          , grep: '*-test'
           , ui: 'bdd'
           , reporter: 'tap'
         }
@@ -245,6 +212,16 @@ module.exports = function(grunt) {
   grunt.registerTask('deploy', ['concat', 'less:production', 'less:development', 'closureBuilder:debug', 'closureBuilder:release', 'compress']);
   grunt.registerTask('check', ['htmllint', 'csslint:lax', 'closureLint']);
   grunt.registerTask('test', ['check', 'deploy', 'simplemocha']);
+  grunt.registerTask('fix', ['closureFixStyle']);
 
   grunt.registerTask('default', ['check', 'deploy']);
+  grunt.registerTask('runAndWatch', 'Start Silex and watch', function () {
+      grunt.task.run([
+          'concurrent:run',
+          'watch'
+      ]);
+  });
+  grunt.registerTask('run', 'Start Silex', function () {
+      var server = require('./server/api-server.js');
+  });
 }

@@ -20,14 +20,15 @@
 
 goog.provide('silex.view.PropertiesTool');
 
+goog.require('goog.array');
 goog.require('goog.cssom');
+goog.require('goog.editor.Field');
+goog.require('goog.object');
 goog.require('goog.ui.Checkbox');
 goog.require('goog.ui.CustomButton');
 goog.require('goog.ui.TabBar');
-goog.require('goog.editor.Field');
 
-goog.require('goog.array');
-goog.require('goog.object');
+
 
 //////////////////////////////////////////////////////////////////
 // PropertiesTool class
@@ -37,23 +38,23 @@ goog.require('goog.object');
  * @constructor
  */
 silex.view.PropertiesTool = function(element, cbk) {
-    this.element = element;
-    this.context = silex.model.Component.CONTEXT_NORMAL;
+  this.element = element;
+  this.context = silex.model.Component.CONTEXT_NORMAL;
 
-    silex.Helper.loadTemplateFile('templates/propertiestool.html', element, function() {
-        this.buildTabs();
-        this.buildPanes();
-        if (cbk) cbk();
-    }, this);
+  silex.Helper.loadTemplateFile('templates/propertiestool.html', element, function() {
+    this.buildTabs();
+    this.buildPanes();
+    if (cbk) cbk();
+  }, this);
 };
 
 
 /**
  * tabs titles
  */
-silex.view.PropertiesTool.TAB_TITLE_NORMAL='Normal';
-silex.view.PropertiesTool.TAB_TITLE_HOVER='Hover';
-silex.view.PropertiesTool.TAB_TITLE_PRESSED='Pressed';
+silex.view.PropertiesTool.TAB_TITLE_NORMAL = 'Normal';
+silex.view.PropertiesTool.TAB_TITLE_HOVER = 'Hover';
+silex.view.PropertiesTool.TAB_TITLE_PRESSED = 'Pressed';
 
 
 /**
@@ -119,31 +120,31 @@ silex.view.PropertiesTool.prototype.onStatus;
  * build tabs for the different contexts (normal, pressed, hover)
  */
 silex.view.PropertiesTool.prototype.buildTabs = function() {
-    var tabContainer = goog.dom.getElementByClass('tab-bar-container', this.element);
-    var tabBar = new goog.ui.TabBar();
-    tabBar.decorate(tabContainer);
-    goog.events.listen(tabBar, goog.ui.Component.EventType.ACTION, function(event) {
-        switch (tabBar.getSelectedTab().getCaption()) {
-            case silex.view.PropertiesTool.TAB_TITLE_NORMAL:
-                this.context = silex.model.Component.CONTEXT_NORMAL;
-                break;
-            case silex.view.PropertiesTool.TAB_TITLE_HOVER:
-                this.context = silex.model.Component.CONTEXT_HOVER;
-                break;
-            case silex.view.PropertiesTool.TAB_TITLE_PRESSED:
-                this.context = silex.model.Component.CONTEXT_PRESSED;
-                break;
-        }
-        // notify the controler
-        if (this.onStatus) {
-            this.onStatus({
-                type: 'contextChanged',
-                context: this.context
-            });
-        }
-        // update display
-        this.setComponent(this.component);
-    }, false, this);
+  var tabContainer = goog.dom.getElementByClass('tab-bar-container', this.element);
+  var tabBar = new goog.ui.TabBar();
+  tabBar.decorate(tabContainer);
+  goog.events.listen(tabBar, goog.ui.Component.EventType.ACTION, function(event) {
+    switch (tabBar.getSelectedTab().getCaption()) {
+      case silex.view.PropertiesTool.TAB_TITLE_NORMAL:
+        this.context = silex.model.Component.CONTEXT_NORMAL;
+        break;
+      case silex.view.PropertiesTool.TAB_TITLE_HOVER:
+        this.context = silex.model.Component.CONTEXT_HOVER;
+        break;
+      case silex.view.PropertiesTool.TAB_TITLE_PRESSED:
+        this.context = silex.model.Component.CONTEXT_PRESSED;
+        break;
+    }
+    // notify the controler
+    if (this.onStatus) {
+      this.onStatus({
+        type: 'contextChanged',
+        context: this.context
+      });
+    }
+    // update display
+    this.setComponent(this.component);
+  }, false, this);
 };
 
 
@@ -151,35 +152,35 @@ silex.view.PropertiesTool.prototype.buildTabs = function() {
  * build the UI
  */
 silex.view.PropertiesTool.prototype.buildPanes = function() {
-    // background
-    this.bgPane = new silex.view.propertiesTool.BgPane(
-        goog.dom.getElementByClass('background-editor', this.element),
-        goog.bind(this.styleChanged, this),
-        goog.bind(this.selectBgImage, this)
-    );
-    // border
-    this.borderPane = new silex.view.propertiesTool.BorderPane(
-        goog.dom.getElementByClass('border-editor', this.element),
-        goog.bind(this.styleChanged, this)
-    );
-    // property
-    this.propertyPane = new silex.view.propertiesTool.PropertyPane(
-        goog.dom.getElementByClass('property-editor', this.element),
-        goog.bind(this.propertyChanged, this),
-        goog.bind(this.editHTML, this),
-        goog.bind(this.editText, this),
-        goog.bind(this.selectImage, this)
-    );
-    // page
-    this.pagePane = new silex.view.propertiesTool.PagePane(
-        goog.dom.getElementByClass('page-editor', this.element),
-        goog.bind(this.propertyChanged, this)
-    );
-    // general styles
-    this.generalStylePane = new silex.view.propertiesTool.GeneralStylePane(
-        goog.dom.getElementByClass('general-editor', this.element),
-        goog.bind(this.styleChanged, this)
-    );
+  // background
+  this.bgPane = new silex.view.propertiesTool.BgPane(
+      goog.dom.getElementByClass('background-editor', this.element),
+      goog.bind(this.styleChanged, this),
+      goog.bind(this.selectBgImage, this)
+      );
+  // border
+  this.borderPane = new silex.view.propertiesTool.BorderPane(
+      goog.dom.getElementByClass('border-editor', this.element),
+      goog.bind(this.styleChanged, this)
+      );
+  // property
+  this.propertyPane = new silex.view.propertiesTool.PropertyPane(
+      goog.dom.getElementByClass('property-editor', this.element),
+      goog.bind(this.propertyChanged, this),
+      goog.bind(this.editHTML, this),
+      goog.bind(this.editText, this),
+      goog.bind(this.selectImage, this)
+      );
+  // page
+  this.pagePane = new silex.view.propertiesTool.PagePane(
+      goog.dom.getElementByClass('page-editor', this.element),
+      goog.bind(this.propertyChanged, this)
+      );
+  // general styles
+  this.generalStylePane = new silex.view.propertiesTool.GeneralStylePane(
+      goog.dom.getElementByClass('general-editor', this.element),
+      goog.bind(this.styleChanged, this)
+      );
 };
 
 
@@ -188,9 +189,9 @@ silex.view.PropertiesTool.prototype.buildPanes = function() {
  * this is called by BgPane
  */
 silex.view.PropertiesTool.prototype.selectBgImage = function() {
-    if (this.onStatus) this.onStatus({
-        type: 'selectBgImage'
-    });
+  if (this.onStatus) this.onStatus({
+    type: 'selectBgImage'
+  });
 };
 
 
@@ -198,7 +199,7 @@ silex.view.PropertiesTool.prototype.selectBgImage = function() {
  * let the controller set a bg image
  */
 silex.view.PropertiesTool.prototype.setBgImage = function(url) {
-    this.bgPane.setBgImage(url);
+  this.bgPane.setBgImage(url);
 };
 
 
@@ -207,9 +208,9 @@ silex.view.PropertiesTool.prototype.setBgImage = function(url) {
  * this is called by BgPane
  */
 silex.view.PropertiesTool.prototype.selectImage = function() {
-    if (this.onStatus) this.onStatus({
-        type: 'selectImage'
-    });
+  if (this.onStatus) this.onStatus({
+    type: 'selectImage'
+  });
 };
 
 
@@ -217,7 +218,7 @@ silex.view.PropertiesTool.prototype.selectImage = function() {
  * let the controller set a bg image
  */
 silex.view.PropertiesTool.prototype.setImage = function(url) {
-    this.propertyPane.setImage(url);
+  this.propertyPane.setImage(url);
 };
 
 
@@ -226,9 +227,9 @@ silex.view.PropertiesTool.prototype.setImage = function(url) {
  * this is called by PropertyPane
  */
 silex.view.PropertiesTool.prototype.editHTML = function() {
-    if (this.onStatus) this.onStatus({
-        type: 'editHTML'
-    });
+  if (this.onStatus) this.onStatus({
+    type: 'editHTML'
+  });
 };
 
 
@@ -237,9 +238,9 @@ silex.view.PropertiesTool.prototype.editHTML = function() {
  * this is called by PropertyPane
  */
 silex.view.PropertiesTool.prototype.editText = function() {
-    if (this.onStatus) this.onStatus({
-        type: 'editText'
-    });
+  if (this.onStatus) this.onStatus({
+    type: 'editText'
+  });
 };
 
 
@@ -247,11 +248,11 @@ silex.view.PropertiesTool.prototype.editText = function() {
  * notify the controller that the style changed
  */
 silex.view.PropertiesTool.prototype.styleChanged = function(style) {
-    if (this.onStatus) this.onStatus({
-        type: 'styleChanged',
-        style: style,
-        context: this.context
-    });
+  if (this.onStatus) this.onStatus({
+    type: 'styleChanged',
+    style: style,
+    context: this.context
+  });
 };
 
 
@@ -259,13 +260,13 @@ silex.view.PropertiesTool.prototype.styleChanged = function(style) {
  * notify the controller that the component properties changed
  */
 silex.view.PropertiesTool.prototype.propertyChanged = function() {
-    // notify the controler
-    if (this.onStatus) {
-        this.onStatus({
-            type: 'propertiesChanged',
-            context: this.context
-        });
-    }
+  // notify the controler
+  if (this.onStatus) {
+    this.onStatus({
+      type: 'propertiesChanged',
+      context: this.context
+    });
+  }
 };
 
 
@@ -273,14 +274,14 @@ silex.view.PropertiesTool.prototype.propertyChanged = function() {
  * set component
  */
 silex.view.PropertiesTool.prototype.setComponent = function(component) {
-    this.component = component;
-    this.propertyPane.setComponent(component);
-    this.pagePane.setComponent(component);
+  this.component = component;
+  this.propertyPane.setComponent(component);
+  this.pagePane.setComponent(component);
 
-    var style = this.component.getStyle() || {};
-    this.borderPane.setStyle(style);
-    this.bgPane.setStyle(style);
-    this.generalStylePane.setStyle(style);
+  var style = this.component.getStyle() || {};
+  this.borderPane.setStyle(style);
+  this.bgPane.setStyle(style);
+  this.generalStylePane.setStyle(style);
 };
 
 
@@ -289,11 +290,11 @@ silex.view.PropertiesTool.prototype.setComponent = function(component) {
  */
 silex.view.PropertiesTool.prototype.redraw = function() {
 
-    this.borderPane.redraw();
-    this.propertyPane.redraw();
-    this.pagePane.redraw();
-    this.generalStylePane.redraw();
-    this.bgPane.redraw();
+  this.borderPane.redraw();
+  this.propertyPane.redraw();
+  this.pagePane.redraw();
+  this.generalStylePane.redraw();
+  this.bgPane.redraw();
 };
 
 
@@ -301,7 +302,7 @@ silex.view.PropertiesTool.prototype.redraw = function() {
  * base url for abs/rel conversions
  */
 silex.view.PropertiesTool.prototype.getBaseUrl = function() {
-    return this.propertyPane.getBaseUrl();
+  return this.propertyPane.getBaseUrl();
 };
 
 
@@ -309,7 +310,7 @@ silex.view.PropertiesTool.prototype.getBaseUrl = function() {
  * base url for abs/rel conversions
  */
 silex.view.PropertiesTool.prototype.setBaseUrl = function(url) {
-    this.propertyPane.setBaseUrl(url);
+  this.propertyPane.setBaseUrl(url);
 };
 
 
@@ -317,5 +318,5 @@ silex.view.PropertiesTool.prototype.setBaseUrl = function(url) {
  * refresh with new data
  */
 silex.view.PropertiesTool.prototype.setPages = function(data) {
-    this.pagePane.setPages(data);
-}
+  this.pagePane.setPages(data);
+};

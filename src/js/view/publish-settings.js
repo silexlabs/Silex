@@ -49,15 +49,15 @@ silex.view.PublishSettings = function(element, cbk) {
         var inputPublicationPath =
             goog.dom.getElementByClass('input-publication-path');
         goog.events.listen(
-          inputPublicationPath, goog.ui.Component.EventType.CHANGE, function() {
-          this.onStatus({
+            inputPublicationPath, goog.ui.Component.EventType.CHANGE, function() {
+              this.onStatus({
                 type: 'change',
                 data: inputPublicationPath.value
               });
-          }, false, this);
-    // continue loading
-    if (cbk) cbk();
-  }, this);
+            }, false, this);
+        // continue loading
+        if (cbk) cbk();
+      }, this);
 };
 
 
@@ -119,10 +119,10 @@ silex.view.PublishSettings.prototype.openEditor = function(cbk) {
   goog.style.setStyle(this.element, 'display', '');
   // close
   goog.events.listen(background,
-    goog.events.EventType.CLICK,
-    this.closeEditor,
-    true,
-    this);
+      goog.events.EventType.CLICK,
+      this.closeEditor,
+      true,
+      this);
 };
 
 
@@ -139,8 +139,8 @@ silex.view.PublishSettings.prototype.closeEditor = function() {
   goog.style.setStyle(this.element, 'display', 'none');
   // close
   goog.events.unlisten(background,
-    goog.events.EventType.CLICK,
-    this.closeEditor,
-    true,
-    this);
-}
+      goog.events.EventType.CLICK,
+      this.closeEditor,
+      true,
+      this);
+};

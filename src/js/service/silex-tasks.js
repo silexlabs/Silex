@@ -19,6 +19,8 @@
 
 goog.provide('silex.service.SilexTasks');
 
+
+
 /**
  * the Silex SilexTasks singleton
  * @constructor
@@ -39,9 +41,9 @@ silex.service.SilexTasks.instance;
  * singleton implementation
  */
 silex.service.SilexTasks.getInstance = function() {
-    if (!silex.service.SilexTasks.instance)
-        silex.service.SilexTasks.instance = new silex.service.SilexTasks();
-    return silex.service.SilexTasks.instance;
+  if (!silex.service.SilexTasks.instance)
+    silex.service.SilexTasks.instance = new silex.service.SilexTasks();
+  return silex.service.SilexTasks.instance;
 };
 
 
@@ -49,42 +51,42 @@ silex.service.SilexTasks.getInstance = function() {
  * publish a website to a given folder
  */
 silex.service.SilexTasks.prototype.publish = function(path, html, css, files, cbk, opt_errCbk) {
-    // check inputs
-    if (!path || !html || !css || !files) {
-        console.error('Param path, html, css or files missing');
-        if (opt_errCbk) opt_errCbk('Param path, html, css or files missing');
-        return;
+  // check inputs
+  if (!path || !html || !css || !files) {
+    console.error('Param path, html, css or files missing');
+    if (opt_errCbk) opt_errCbk('Param path, html, css or files missing');
+    return;
+  }
+  console.log('xxx', typeof(path), path);
+  var url = '/silex/tasks/publish';
+  var qd = new goog.Uri.QueryData();
+  qd.add('path', path);
+  qd.add('html', html);
+  qd.add('css', css);
+  qd.add('files', JSON.stringify(files));
+  console.log('sends server', path, qd.toString());
+  goog.net.XhrIo.send(url, function(e) {
+    // success of the request
+    var xhr = e.target;
+    if (xhr.isSuccess()) {
+      var json = xhr.getResponseJson();
+      if (json.success) {
+        if (cbk) cbk(json);
+      }
+      else {
+        var message = json.code || json.message;
+        console.error(message, xhr, xhr.isSuccess(), xhr.getStatus(), xhr.headers.toString());
+        if (opt_errCbk) {
+          opt_errCbk(message);
+        }
+      }
     }
-    console.log('xxx', typeof(path), path);
-    var url = '/silex/tasks/publish';
-    var qd = new goog.Uri.QueryData();
-    qd.add('path', path);
-    qd.add('html', html);
-    qd.add('css', css);
-    qd.add('files', JSON.stringify(files));
-    console.log('sends server', path, qd.toString());
-    goog.net.XhrIo.send(url, function(e) {
-        // success of the request
-        var xhr = e.target;
-        if (xhr.isSuccess()) {
-            var json = xhr.getResponseJson();
-            if (json.success) {
-                if (cbk) cbk(json);
-            }
-            else {
-                var message = json.code || json.message;
-                console.error(message, xhr, xhr.isSuccess(), xhr.getStatus(), xhr.headers.toString());
-                if (opt_errCbk) {
-                    opt_errCbk(message);
-                }
-            }
-        }
-        else {
-            var message = xhr.getLastError();
-            console.error(xhr.getLastError(), xhr.getLastErrorCode(), xhr.isSuccess(), xhr.getStatus(), xhr.headers);
-            if (opt_errCbk) {
-                opt_errCbk(message);
-            }
-        }
-    }, 'POST', qd.toString());
-}
+    else {
+      var message = xhr.getLastError();
+      console.error(xhr.getLastError(), xhr.getLastErrorCode(), xhr.isSuccess(), xhr.getStatus(), xhr.headers);
+      if (opt_errCbk) {
+        opt_errCbk(message);
+      }
+    }
+  }, 'POST', qd.toString());
+};

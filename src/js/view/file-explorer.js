@@ -24,6 +24,8 @@ goog.provide('silex.view.FileExplorer');
 
 goog.require('goog.async.Delay');
 
+
+
 //////////////////////////////////////////////////////////////////
 // FileExplorer class
 //////////////////////////////////////////////////////////////////
@@ -32,27 +34,27 @@ goog.require('goog.async.Delay');
  * @constructor
  */
 silex.view.FileExplorer = function(element, cbk) {
-    var that = this;
-    this.element = element;
-    goog.style.setStyle(this.element, 'display', 'none');
+  var that = this;
+  this.element = element;
+  goog.style.setStyle(this.element, 'display', 'none');
 
-    if (cbk) {
-        new goog.async.Delay(function() {
-            cbk();
-            that.init();
-        }, 10).start();
-    }
+  if (cbk) {
+    new goog.async.Delay(function() {
+      cbk();
+      that.init();
+    }, 10).start();
+  }
 
-    // close button
-    goog.events.listen(goog.dom.getElementByClass('close-btn', this.element), goog.events.EventType.CLICK, function() {
-        this.closeEditor();
-    }, false, this);
+  // close button
+  goog.events.listen(goog.dom.getElementByClass('close-btn', this.element), goog.events.EventType.CLICK, function() {
+    this.closeEditor();
+  }, false, this);
 
   /*    silex.Helper.loadTemplateFile('templates/fileexplorer.html', element, function() {
         that.init();
         if (cbk) cbk();
     });
-*/
+  */
 };
 
 
@@ -65,7 +67,7 @@ silex.view.FileExplorer.CONTAINER_TYPE = 'modal';
 /**
  * Contant for file picker config
  */
-silex.view.FileExplorer.SERVICES = ["DROPBOX", "GOOGLE_DRIVE", "EVERNOTE", "FTP"];
+silex.view.FileExplorer.SERVICES = ['DROPBOX', 'GOOGLE_DRIVE', 'EVERNOTE', 'FTP'];
 
 
 /**
@@ -90,7 +92,7 @@ silex.view.FileExplorer.prototype.onFileExplorerEvent;
  * init file explorer
  */
 silex.view.FileExplorer.prototype.init = function() {
-    this.filePicker = silex.service.CloudStorage.getInstance().filePicker;
+  this.filePicker = silex.service.CloudStorage.getInstance().filePicker;
 };
 
 
@@ -99,12 +101,12 @@ silex.view.FileExplorer.prototype.init = function() {
  * @param opt_mimetypes     optional array of accepted mimetypes, e.g. ['text/html', 'text/plain']
  */
 silex.view.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes, opt_errCbk) {
-    // default is image
-    if (!opt_mimetypes) opt_mimetypes = ['image/*', 'text/plain'];
+  // default is image
+  if (!opt_mimetypes) opt_mimetypes = ['image/*', 'text/plain'];
 
-    // pick it up
-    this.filePicker.pick(
-    goog.bind(function(blob) {
+  // pick it up
+  this.filePicker.pick(
+      goog.bind(function(blob) {
         // hide dialog
         this.closeEditor();
 
@@ -116,17 +118,17 @@ silex.view.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes, opt_
         // notify controller
         // workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
         new goog.async.Delay(function() {
-            if (cbk) cbk(blob);
+          if (cbk) cbk(blob);
         }, 10, this).start();
-    }, this),
-    function(FPError) {
+      }, this),
+      function(FPError) {
         console.error(FPError);
         if (opt_errCbk) {
-            opt_errCbk(FPError);
+          opt_errCbk(FPError);
         }
-    });
-    // show dialog
-    this.openEditor();
+      });
+  // show dialog
+  this.openEditor();
 };
 
 
@@ -135,13 +137,13 @@ silex.view.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes, opt_
  * @param opt_mimetypes     optional array of accepted mimetypes, e.g. ['text/html', 'text/plain']
  */
 silex.view.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes, opt_errCbk) {
-    // default is html
-    if (!opt_mimetypes) opt_mimetypes = {'mimetype':'text/html'};
+  // default is html
+  if (!opt_mimetypes) opt_mimetypes = {'mimetype': 'text/html'};
 
-    // export dummy data
-    this.filePicker.exportFile( "http://google.com/",
-    opt_mimetypes,
-    goog.bind(function(blob) {
+  // export dummy data
+  this.filePicker.exportFile('http://google.com/',
+      opt_mimetypes,
+      goog.bind(function(blob) {
 
         // hide dialog
         this.closeEditor();
@@ -154,17 +156,17 @@ silex.view.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes, op
 
         // workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
         new goog.async.Delay(function() {
-            if (cbk) cbk(blob);
+          if (cbk) cbk(blob);
         }, 10, this).start();
-    }, this),
-    function(FPError) {
+      }, this),
+      function(FPError) {
         console.error(FPError);
         if (opt_errCbk) {
-            opt_errCbk(FPError);
+          opt_errCbk(FPError);
         }
-    });
-    // show dialog
-    this.openEditor();
+      });
+  // show dialog
+  this.openEditor();
 };
 
 
@@ -173,13 +175,13 @@ silex.view.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes, op
  * this is private method, do not call it
  */
 silex.view.FileExplorer.prototype.openEditor = function() {
-    // background
-    var background = goog.dom.getElementByClass('dialogs-background');
-    // show
-    goog.style.setStyle(background, 'display', 'inherit');
-    goog.style.setStyle(this.element, 'display', '');
-    // close
-    goog.events.listen(background, goog.events.EventType.CLICK, this.closeEditor, true, this);
+  // background
+  var background = goog.dom.getElementByClass('dialogs-background');
+  // show
+  goog.style.setStyle(background, 'display', 'inherit');
+  goog.style.setStyle(this.element, 'display', '');
+  // close
+  goog.events.listen(background, goog.events.EventType.CLICK, this.closeEditor, true, this);
 };
 
 
@@ -188,11 +190,11 @@ silex.view.FileExplorer.prototype.openEditor = function() {
  * this is private method, do not call it
  */
 silex.view.FileExplorer.prototype.closeEditor = function() {
-    // background
-    var background = goog.dom.getElementByClass('dialogs-background');
-    // hide
-    goog.style.setStyle(background, 'display', 'none');
-    goog.style.setStyle(this.element, 'display', 'none');
-    // close
-    goog.events.unlisten(background, goog.events.EventType.CLICK, this.closeEditor, true, this);
-}
+  // background
+  var background = goog.dom.getElementByClass('dialogs-background');
+  // hide
+  goog.style.setStyle(background, 'display', 'none');
+  goog.style.setStyle(this.element, 'display', 'none');
+  // close
+  goog.events.unlisten(background, goog.events.EventType.CLICK, this.closeEditor, true, this);
+};

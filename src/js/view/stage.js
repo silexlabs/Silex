@@ -139,26 +139,26 @@ silex.view.Stage.prototype.removePage = function(page) {
   // remove the DOM element
   $('a[data-silex-type="page"]', this.bodyElement).each(
       function() {
-    if (this.getAttribute('id') === page.name) {
-      $(this).remove();
-    }
-  });
+        if (this.getAttribute('id') === page.name) {
+          $(this).remove();
+        }
+      });
   // remove the links to this page
-  $('*[data-silex-href="#'+page.name+'"]').each(
-    function() {
-      this.removeAttribute('data-silex-href');
-    }
+  $('*[data-silex-href="#' + page.name + '"]').each(
+      function() {
+        this.removeAttribute('data-silex-href');
+      }
   );
   // check elements which were only visible on this page
   // and make them visible everywhere
-  $('.'+page.name).each(
-    function() {
-      $(this).removeClass(page.name);
+  $('.' + page.name).each(
+      function() {
+        $(this).removeClass(page.name);
 
-      var pagesOfElement = silex.model.Page.getPagesForElement(this);
-      if (pagesOfElement.length <= 0)
-        $(this).removeClass(silex.model.Page.PAGE_CLASS);
-    }
+        var pagesOfElement = silex.model.Page.getPagesForElement(this);
+        if (pagesOfElement.length <= 0)
+          $(this).removeClass(silex.model.Page.PAGE_CLASS);
+      }
   );
 };
 
@@ -185,23 +185,23 @@ silex.view.Stage.prototype.renamePage = function(page, name) {
   var that = this;
   // update the DOM element
   $('a[data-silex-type="page"]', this.bodyElement).each(
-    function() {
-      if (this.getAttribute('id') === page.name) {
-        this.setAttribute('id', name);
-    }
-  });
+      function() {
+        if (this.getAttribute('id') === page.name) {
+          this.setAttribute('id', name);
+        }
+      });
   // update the links to this page
-  $('*[data-silex-href="#'+page.name+'"]').each(
-    function() {
-      this.setAttribute('data-silex-href', '#'+name);
-    }
+  $('*[data-silex-href="#' + page.name + '"]').each(
+      function() {
+        this.setAttribute('data-silex-href', '#' + name);
+      }
   );
   // update the visibility of the compoents
-  $('.'+page.name).each(
-    function() {
-      $(this).removeClass(page.name);
-      $(this).addClass(name);
-    }
+  $('.' + page.name).each(
+      function() {
+        $(this).removeClass(page.name);
+        $(this).addClass(name);
+      }
   );
 };
 
@@ -210,7 +210,7 @@ silex.view.Stage.prototype.renamePage = function(page, name) {
  * open the page
  */
 silex.view.Stage.prototype.openPage = function(page) {
-  $(this.bodyElement).pageable({currentPage:page.name});
+  $(this.bodyElement).pageable({currentPage: page.name});
 };
 
 
@@ -223,18 +223,18 @@ silex.view.Stage.prototype.setPublicationPath = function(path) {
   var found = false;
   // update the DOM element
   $('meta[name="publicationPath"]', this.headElement).each(
-  function() {
-    if (path && path!=='') {
-      // update path
-      this.setAttribute('content', path);
-    }
-    else {
-      // remove the path
-      $(this).remove();
-    }
-    found = true;
-  });
-  if (!found && path && path!=='') {
+      function() {
+        if (path && path !== '') {
+          // update path
+          this.setAttribute('content', path);
+        }
+        else {
+          // remove the path
+          $(this).remove();
+        }
+        found = true;
+      });
+  if (!found && path && path !== '') {
     // create the DOM element
     var meta = goog.dom.createElement('meta');
     meta.name = 'publicationPath';
@@ -252,9 +252,9 @@ silex.view.Stage.prototype.getPublicationPath = function() {
   var that = this;
   var path = null;
   $('meta[name="publicationPath"]', this.headElement).each(
-  function() {
-    path = this.getAttribute('content');
-  });
+      function() {
+        path = this.getAttribute('content');
+      });
   return path;
 };
 
@@ -266,7 +266,7 @@ silex.view.Stage.prototype.getPublicationPath = function() {
  * so that it is editable
  */
 silex.view.Stage.prototype.setBody = function(bodyHtml) {
-  if (bodyHtml!==''){
+  if (bodyHtml !== '') {
     console.warn('warning: you are supposed to use stageComponent.setHtml');
   }
   this.bodyElement.innerHTML = bodyHtml;
@@ -314,4 +314,4 @@ silex.view.Stage.prototype.setBodyStyle = function(styleStr) {
  */
 silex.view.Stage.prototype.getBodyStyle = function() {
   return this.bodyElement.getAttribute('data-style-normal');
-}
+};
