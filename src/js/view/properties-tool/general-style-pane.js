@@ -18,14 +18,15 @@
 
 goog.provide('silex.view.propertiesTool.GeneralStylePane');
 
-goog.require('goog.ui.Checkbox');
-goog.require('goog.ui.CustomButton');
-goog.require('goog.ui.TabBar');
-goog.require('goog.ui.HsvaPalette');
-goog.require('goog.ui.ColorButton');
-
 goog.require('goog.array');
 goog.require('goog.object');
+goog.require('goog.ui.Checkbox');
+goog.require('goog.ui.ColorButton');
+goog.require('goog.ui.CustomButton');
+goog.require('goog.ui.HsvaPalette');
+goog.require('goog.ui.TabBar');
+
+
 
 /**
  * on of Silex Editors class
@@ -33,9 +34,9 @@ goog.require('goog.object');
  * @constructor
  */
 silex.view.propertiesTool.GeneralStylePane = function(element, styleChanged) {
-    this.element = element;
-    this.styleChanged = styleChanged;
-    this.buildUi();
+  this.element = element;
+  this.styleChanged = styleChanged;
+  this.buildUi();
 };
 
 
@@ -73,9 +74,9 @@ silex.view.propertiesTool.GeneralStylePane.prototype.opacityInput;
  * build the UI
  */
 silex.view.propertiesTool.GeneralStylePane.prototype.buildUi = function() {
-    // opacity
-    this.opacityInput = goog.dom.getElementByClass('opacity-input');
-    goog.events.listen(this.opacityInput, 'change', this.onInputChanged, false, this);
+  // opacity
+  this.opacityInput = goog.dom.getElementByClass('opacity-input');
+  goog.events.listen(this.opacityInput, 'change', this.onInputChanged, false, this);
 };
 
 
@@ -83,8 +84,8 @@ silex.view.propertiesTool.GeneralStylePane.prototype.buildUi = function() {
  * display the style of the element being edited
  */
 silex.view.propertiesTool.GeneralStylePane.prototype.setStyle = function(style) {
-    this.style = style;
-    this.redraw();
+  this.style = style;
+  this.redraw();
 };
 
 
@@ -92,17 +93,17 @@ silex.view.propertiesTool.GeneralStylePane.prototype.setStyle = function(style) 
  * redraw the properties
  */
 silex.view.propertiesTool.GeneralStylePane.prototype.redraw = function() {
-    if (this.style && !this.isRedraw) {
-        this.isRedraw = true;
+  if (this.style && !this.isRedraw) {
+    this.isRedraw = true;
 
-        if (this.style.opacity) {
-            this.opacityInput.value = this.style.opacity;
-        }
-        else {
-            this.opacityInput.value = '';
-        }
-        this.isRedraw = false;
+    if (this.style.opacity) {
+      this.opacityInput.value = this.style.opacity;
     }
+    else {
+      this.opacityInput.value = '';
+    }
+    this.isRedraw = false;
+  }
 };
 
 
@@ -110,16 +111,16 @@ silex.view.propertiesTool.GeneralStylePane.prototype.redraw = function() {
  * User has selected a color
  */
 silex.view.propertiesTool.GeneralStylePane.prototype.onInputChanged = function(event) {
-    if (this.style && !this.isRedraw) {
-         if (this.opacityInput.value && this.opacityInput.value!=='') {
-            this.style.opacity = this.opacityInput.value;
-        }
-        else {
-            this.style.opacity = 'none';
-        }
-        // notify the toolbox
-        this.styleChanged(this.style);
-        // redraw to reflect changes
-        this.redraw();
+  if (this.style && !this.isRedraw) {
+    if (this.opacityInput.value && this.opacityInput.value !== '') {
+      this.style.opacity = this.opacityInput.value;
     }
-}
+    else {
+      this.style.opacity = 'none';
+    }
+    // notify the toolbox
+    this.styleChanged(this.style);
+    // redraw to reflect changes
+    this.redraw();
+  }
+};

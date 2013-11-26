@@ -49,7 +49,8 @@ silex.view.PublishSettings = function(element, cbk) {
         var inputPublicationPath =
             goog.dom.getElementByClass('input-publication-path');
         goog.events.listen(
-            inputPublicationPath, goog.ui.Component.EventType.CHANGE, function() {
+            inputPublicationPath, goog.ui.Component.EventType.CHANGE,
+            function() {
               this.onStatus({
                 type: 'change',
                 data: inputPublicationPath.value
@@ -77,6 +78,7 @@ silex.view.PublishSettings.prototype.onStatus;
 
 /**
  * set publication path
+ * @param   {string} path
  */
 silex.view.PublishSettings.prototype.setPublicationPath = function(path) {
   this.publicationPath = path;
@@ -95,22 +97,10 @@ silex.view.PublishSettings.prototype.redraw = function() {
 
 
 /**
- * open settings
- * @param opt_mimetypes   optional array of accepted mimetypes,
- *     e.g. ['text/html', 'text/plain']
+ * open settings dialog
+ * @param {function} cbk   callback to be called when the user closes the dialog
  */
 silex.view.PublishSettings.prototype.openDialog = function(cbk) {
-  // show dialog
-  this.openEditor(cbk);
-  this.redraw();
-};
-
-
-/**
- * open editor
- * this is private method, do not call it
- */
-silex.view.PublishSettings.prototype.openEditor = function(cbk) {
   this.onClose = cbk;
   // background
   var background = goog.dom.getElementByClass('settings-background');
@@ -123,6 +113,7 @@ silex.view.PublishSettings.prototype.openEditor = function(cbk) {
       this.closeEditor,
       true,
       this);
+  this.redraw();
 };
 
 
