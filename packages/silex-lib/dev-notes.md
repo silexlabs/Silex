@@ -43,12 +43,34 @@ Stress tests
 
 ###en cours
 
+Suite à la nuit charrette
+
+  Bug Firefox
+  Bug IE
+
+  Position and size depends on contexts
+
+  Text formatting depends on context (prevent changing raw text when in another context)
+
+  Suppress rigth and bottom
+
+  Add padding
+
+  Add box behavior
+  - fix right/lef/top/bottom => margin availability
+  - adapt w/h to content
+
+  Layout
+  - none(abs), horizontal, vertical => padding
+
 * bugs
 * !!! Urgent : in silex.model.File.prototype.setHtml and silex.model.File.prototype.save
 * borders in ff
 - selection de folder dans CE
 - champs de text "external link" prend du html
-- 
+- view in new window => voulez vous sauvegarder?
+
+Rename api-server.js in boot.js, like client side
 
 a finir
 

@@ -19,15 +19,17 @@
 
 goog.provide('silex.service.Tracker');
 
+
+
 /**
  * the Silex Tracker class hadles user actions tracking
  * this is for us to detect problems and improve user experience
  * @constructor
  */
 silex.service.Tracker = function() {
-    if (!ga) {
-        console.error('google analytcs not loaded');
-    }
+  if (!ga) {
+    console.error('google analytcs not loaded');
+  }
 };
 
 
@@ -41,7 +43,7 @@ silex.service.Tracker.SILEX_ACTIONS_CATEGORY = 'silex-event';
  * constant
  */
 silex.service.Tracker.prototype.trackAction = function(category, action, opt_label, opt_value) {
-    //console.info('trackAction', arguments);
-    ga('send', 'event', category, action, opt_label, opt_value, true);
-}
+  //console.info('trackAction', arguments);
+  ga('send', 'event', category, action, opt_label, opt_value, true);
+};
 

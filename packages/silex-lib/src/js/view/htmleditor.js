@@ -20,16 +20,18 @@
 
 goog.provide('silex.view.HTMLEditor');
 
+
+
 /**
  * @constructor
  */
 silex.view.HTMLEditor = function(element, cbk) {
-    this.element = element;
+  this.element = element;
 
-    silex.Helper.loadTemplateFile('templates/htmleditor.html', element, function() {
-        this.initUI();
-        if (cbk) cbk();
-    }, this);
+  silex.Helper.loadTemplateFile('templates/htmleditor.html', element, function() {
+    this.initUI();
+    if (cbk) cbk();
+  }, this);
 };
 
 
@@ -61,22 +63,22 @@ silex.view.HTMLEditor.prototype.iAmSettingValue;
  * init the menu and UIs
  */
 silex.view.HTMLEditor.prototype.initUI = function() {
-    this.ace = ace.edit(goog.dom.getElementByClass('ace-editor', this.element));
-    this.iAmSettingValue = false;
-    //this.ace.setTheme("ace/theme/monokai");
-    this.ace.getSession().setMode("ace/mode/html");
-    this.ace.getSession().on('change', goog.bind(function(e) {
-        if (this.iAmSettingValue === false) {
-            var value = this.ace.getValue();
-            setTimeout(goog.bind(function() {
-                this.contentChanged();
-            }, this), 100);
-        }
-    }, this));
-    // close button
-    goog.events.listen(goog.dom.getElementByClass('close-btn', this.element), goog.events.EventType.CLICK, function() {
-        this.closeEditor();
-    }, false, this);
+  this.ace = ace.edit(goog.dom.getElementByClass('ace-editor', this.element));
+  this.iAmSettingValue = false;
+  //this.ace.setTheme("ace/theme/monokai");
+  this.ace.getSession().setMode('ace/mode/html');
+  this.ace.getSession().on('change', goog.bind(function(e) {
+    if (this.iAmSettingValue === false) {
+      var value = this.ace.getValue();
+      setTimeout(goog.bind(function() {
+        this.contentChanged();
+      }, this), 100);
+    }
+  }, this));
+  // close button
+  goog.events.listen(goog.dom.getElementByClass('close-btn', this.element), goog.events.EventType.CLICK, function() {
+    this.closeEditor();
+  }, false, this);
 };
 
 
@@ -84,21 +86,21 @@ silex.view.HTMLEditor.prototype.initUI = function() {
  * Open the editor
  */
 silex.view.HTMLEditor.prototype.openEditor = function(initialHtml) {
-    // background
-    var background = goog.dom.getElementByClass('dialogs-background');
-    // show
-    goog.style.setStyle(background, 'display', 'inherit');
-    goog.style.setStyle(this.element, 'display', 'inherit');
-    // close
-    goog.events.listenOnce(background, goog.events.EventType.CLICK, function(e) {
-        this.closeEditor();
-    }, false, this);
-    // set value
-    this.iAmSettingValue = true;
-    this.ace.setValue(initialHtml);
-    this.iAmSettingValue = false;
-    // force ace redraw
-    this.ace.resize();
+  // background
+  var background = goog.dom.getElementByClass('dialogs-background');
+  // show
+  goog.style.setStyle(background, 'display', 'inherit');
+  goog.style.setStyle(this.element, 'display', 'inherit');
+  // close
+  goog.events.listenOnce(background, goog.events.EventType.CLICK, function(e) {
+    this.closeEditor();
+  }, false, this);
+  // set value
+  this.iAmSettingValue = true;
+  this.ace.setValue(initialHtml);
+  this.iAmSettingValue = false;
+  // force ace redraw
+  this.ace.resize();
 };
 
 
@@ -106,11 +108,11 @@ silex.view.HTMLEditor.prototype.openEditor = function(initialHtml) {
  * close text editor
  */
 silex.view.HTMLEditor.prototype.closeEditor = function() {
-    // background
-    var background = goog.dom.getElementByClass('dialogs-background');
-    // hide
-    goog.style.setStyle(background, 'display', 'none');
-    goog.style.setStyle(this.element, 'display', 'none');
+  // background
+  var background = goog.dom.getElementByClass('dialogs-background');
+  // hide
+  goog.style.setStyle(background, 'display', 'none');
+  goog.style.setStyle(this.element, 'display', 'none');
 };
 
 
@@ -118,7 +120,7 @@ silex.view.HTMLEditor.prototype.closeEditor = function() {
  * retrieve the editor html content
  */
 silex.view.HTMLEditor.prototype.getData = function() {
-    return this.ace.getValue();
+  return this.ace.getValue();
 };
 
 
@@ -126,10 +128,10 @@ silex.view.HTMLEditor.prototype.getData = function() {
  * the content has changed, notify the controler
  */
 silex.view.HTMLEditor.prototype.contentChanged = function() {
-    if (this.onStatus) {
-        this.onStatus({
-            type: 'changed',
-            content: this.getData()
-        });
-    }
-}
+  if (this.onStatus) {
+    this.onStatus({
+      type: 'changed',
+      content: this.getData()
+    });
+  }
+};

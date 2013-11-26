@@ -38,6 +38,7 @@ goog.require('goog.ui.editor.ToolbarController');
 goog.require('silex.model.Config');
 
 
+
 /**
  * the Silex TextEditor class
  * @constructor
@@ -100,9 +101,9 @@ silex.view.TextEditor.prototype.initUI = function() {
 
   var availableFonts = silex.model.Config.fonts;
   for (var fontName in availableFonts) {
-      goog.ui.editor.ToolbarFactory.addFont(fontFaceButton,
-          fontName,
-          availableFonts[fontName].value);
+    goog.ui.editor.ToolbarFactory.addFont(fontFaceButton,
+        fontName,
+        availableFonts[fontName].value);
   }
 
   // add font sizes
@@ -154,10 +155,10 @@ silex.view.TextEditor.prototype.initUI = function() {
         this.contentChanged();
       }, false, this);
 
-  try{
+  try {
     this.textField.makeEditable();
   }
-  catch(e){
+  catch (e) {
     // goog.editor.BrowserFeature.HAS_STYLE_WITH_CSS = false;
     console.error('error catched', e);
   }
