@@ -251,11 +251,9 @@ silex.model.Component.prototype.setStyle = function(style, opt_context) {
       if (val === 'none') {
         val = null;
       }
-      else {
+      if (val) {
         //build the string
         styleStr += goog.string.toSelectorCase(index) + ': ' + val + '; ';
-      }
-      if (val) {
         // apply to the view
         // compare with current style before applying style
         // to prevent flickering
@@ -614,17 +612,14 @@ silex.model.Component.prototype.absolute2Relative = function(htmlString, baseUrl
  * convert all URLs to absolute
  */
 silex.model.Component.prototype.relative2absolute = function(htmlString, baseUrl) {
-  console.log('relative2absolute', baseUrl)
   // image source
   htmlString = htmlString.replace(/src="?([^" ]*)" /g, function(match, group1, group2) {
     var res = match.replace(group1, silex.Helper.getAbsolutePath(group1, baseUrl));
-    console.log('relative2absolute', match, group1, res)
     return res;
   });
   // css url()
   htmlString = htmlString.replace(/url\((['"])(.+?)\1\)/g, function(match, group1, group2) {
     var res = "url('" + silex.Helper.getAbsolutePath(group2, baseUrl) + "')";
-    console.log('relative2absolute', group2, res)
     return res;
   });
   return htmlString;

@@ -446,7 +446,7 @@ silex.view.propertiesTool.BgPane.prototype.setBgImage = function(url) {
 silex.view.propertiesTool.BgPane.prototype.setBgImageAttachement =
     function(value) {
   // update style
-  this.style.backgroundAttachement = value;
+  this.style.backgroundAttachment = value;
   // apply to the element and store it in the context attribute
   this.styleChanged(this.style);
   // redraw to reflect changes
