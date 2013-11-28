@@ -255,15 +255,19 @@ silex.model.Component.prototype.setStyle = function(style, opt_context) {
         //build the string
         styleStr += goog.string.toSelectorCase(index) + ': ' + val + '; ';
       }
-
-      // apply to the view
-      // compare with current style before applying style
-      // to prevent flickering
-      // remove ' from value because some browsers modifies bg image
-      // and adds ' (e.g. chrome)
-      var sanitized = val.replace(/\'/g, '');
-      if (this.element.style[index] !== sanitized) {
-	            goog.style.setStyle(this.element, index, val);
+      if (val) {
+        // apply to the view
+        // compare with current style before applying style
+        // to prevent flickering
+        // remove ' from value because some browsers modifies bg image
+        // and adds ' (e.g. chrome)
+        var sanitized = val.replace(/\'/g, '');
+        if (this.element.style[index] !== sanitized) { 
+          goog.style.setStyle(this.element, index, val);
+        }
+      }
+      else{
+        goog.style.setStyle(this.element, index, null);
       }
     }
   }, this);
