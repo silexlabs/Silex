@@ -4,7 +4,7 @@
 
 ##About Silex
 
-Silex, is a free and open source website buidler in the cloud. Create websites directly in the browser without writing code. And it is suitable for professional designers to produce great websites without constraints. Silex is also known as the HTML5 editor.
+Silex, is a free and open source website builder in the cloud. Create websites directly in the browser without writing code. And it is suitable for professional designers to produce great websites without constraints. Silex is also known as the HTML5 editor.
 
 Brought to you by Silex Labs team, promoting free software.
 
@@ -130,7 +130,7 @@ Edition
 * multiple selection https://github.com/someshwara/MultiDraggable
 * better text editor?
   http://www.webdesignerdepot.com/2008/12/20-excellent-free-rich-text-editors/
-  http://mindmup.github.me/bootstrap-wysiwyg/
+  https://github.com/mindmup/bootstrap-wysiwyg
 
 File properties (in the settings dialog)
 
@@ -160,7 +160,7 @@ Continuous integration
 * unit tests http://stackoverflow.com/questions/11520170/unit-testing-oauth-js-with-mocha
 * functional tests
 
-Profesionnal installation
+Professional installation
 
 * softaculous virtual install
 * bower?
@@ -200,7 +200,7 @@ Packaging / distribution
   * http://devcenter.kinvey.com/nodejs/guides/users
   * http://stackoverflow.com/questions/11534412/any-good-user-management-framework-for-node-js
   * http://usercake.com/docs.php#3
-  * http://labs.bittorrent.com/experiments/sync/technology.htm
+  * http://www.bittorrent.com/sync
 
 * edit ftp
 
