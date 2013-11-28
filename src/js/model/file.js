@@ -264,33 +264,30 @@ silex.model.File.prototype.refreshFontList = function() {
       link.parentNode.removeChild(link);
     }
   });
-
-  //get all components and get the font family style for each
-  var components = goog.dom.getElementsByClass('editable-style'),
-
-      //holds used font names. Stored as map to prevent duplicated
-      fontFamilies = {};
-
-  goog.array.forEach(components, function(node) {
-    var component = new silex.model.Component(node);
-
-    //for each component, get font family for each style
-    var styles = [
-      component.getStyle(silex.model.Component.CONTEXT_NORMAL),
-      component.getStyle(silex.model.Component.CONTEXT_HOVER),
-      component.getStyle(silex.model.Component.CONTEXT_PRESSED)
-    ];
-
-    goog.array.forEach(styles, function(style) {
-      if (style.fontFamily !== undefined) {
-        fontFamilies[style.fontFamily] = true;
-      }
-    });
+  var head = this.stage.headElement;
+  //detach all previously loaded font before, to avoid duplicate
+  var links = goog.dom.getElementsByTagNameAndClass('link', null, head);
+  goog.array.forEach(links, function(link) {
+    //fonts are loaded used 'links' element pointing to google fonts service
+    if (link.getAttribute('href').indexOf('fonts') !== -1) {
+      link.parentNode.removeChild(link);
+    }
+  });
+  //detach all previously loaded font before, to avoid duplicate
+  var links = goog.dom.getElementsByTagNameAndClass('link', null, head);
+  goog.array.forEach(links, function(link) {
+    //fonts are loaded used 'links' element pointing to google fonts service
+    if (link.getAttribute('href').indexOf('fonts') !== -1) {
+      link.parentNode.removeChild(link);
+    }
   });
 
+  var fontFamilies = this.getNeededFonts();
+
+  console.log('fonts ', fontFamilies)
   //text styles can also be applied using old-school font tag.
   //Get face attribute values from them
-  var fontTags = goog.dom.getElementsByTagNameAndClass('font');
+  var fontTags = goog.dom.getElementsByTagNameAndClass('font', null, head);
   goog.array.forEach(fontTags, function(fontTag) {
     if (null !== fontTag.getAttribute('face')) {
       fontFamilies[fontTag.getAttribute('face')] = true;
@@ -298,9 +295,7 @@ silex.model.File.prototype.refreshFontList = function() {
   });
 
   //get authorised fonts
-  var availableFonts = silex.model.Config.fonts,
-      head = document.head,
-
+  var availableFonts = silex.model.Config.fonts;
       //return the font from the font family or null
       getFont = function(fontFamily) {
             for (var fontName in availableFonts) {
@@ -325,8 +320,31 @@ silex.model.File.prototype.refreshFontList = function() {
       link.setAttribute('type', 'text/css');
 
       head.appendChild(link);
+
+      // for the editor
+      var link = goog.dom.createElement('link');
+      link.setAttribute('href', font.href);
+      link.setAttribute('rel', 'stylesheet');
+      link.setAttribute('type', 'text/css');
+
+      document.head.appendChild(link);
     }
   }
+};
+/**
+ * @return {object} object of fonts which are used in the text fields (key is the font name)
+ */
+silex.model.File.prototype.getNeededFonts = function() {
+  var innerHTML = this.getStageComponent().getHtml();
+  console.log('getNeededFonts')
+  var neededFonts = [];
+  innerHTML.replace(/<font.*face="?([^"]*)"/g, function(match, group1, group2) {
+    console.log('found', group1)
+    neededFonts[group1] = true;
+    return match;
+  });
+  console.log('getNeededFonts returns', neededFonts)
+  return neededFonts;
 };
 
 
@@ -418,7 +436,7 @@ silex.model.File.prototype.setBlob = function(blob) {
  * get the string containing the style attribute of the body tag
  */
 silex.model.File.prototype.getBodyStyle = function() {
-  var absolutePathStyle = this.getStageComponent().relative2absolute(this.bodyStyle, blob.url);
+  var absolutePathStyle = this.getStageComponent().relative2absolute(this.bodyStyle, this.getUrl());
   return absolutePathStyle;
 };
 
@@ -428,7 +446,7 @@ silex.model.File.prototype.getBodyStyle = function() {
  * @param    bodyStyle     a string containing the style attribute to set on the body tag
  */
 silex.model.File.prototype.setBodyStyle = function(bodyStyle) {
-  var relativePathStyle = this.getStageComponent().absolute2Relative(bodyStyle, blob.url);
+  var relativePathStyle = this.getStageComponent().absolute2Relative(bodyStyle, this.getUrl());
   this.bodyStyle = relativePathStyle;
 };
 
@@ -513,6 +531,9 @@ silex.model.File.prototype.setHtml = function(rawHtml) {
   }
   // update publication settings
   this.setPublicationPath(this.getPublicationPath());
+
+  // update fonts
+  this.refreshFontList();
 
   // handle retrocompatibility issues
   this.handleRetrocompatibility();
@@ -733,7 +754,8 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
   baseUrl = baseUrl.substring(0, baseUrl.lastIndexOf('/') + 1);
 
   // image source
-  bodyStr = bodyStr.replace(/<img src="?([^" ]*)" /g, function(match, group1, group2) {
+  bodyStr = bodyStr.replace(/<img.*src="?([^" ]*)"/g, function(match, group1, group2) {
+    console.log('replace img ', match, group1, group2);
     var absolute = silex.Helper.getAbsolutePath(group1, baseUrl);
     var relative = silex.Helper.getRelativePath(absolute, silex.Helper.BaseUrl);
     // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
@@ -757,21 +779,31 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
   }, this));
   // css
   headStr = headStr.replace(/href="?([^" ]*)"/g, function(match, group1, group2) {
+    var preventDownload = false;
     var absolute = silex.Helper.getAbsolutePath(group1, baseUrl);
     var relative = silex.Helper.getRelativePath(absolute, silex.Helper.BaseUrl);
     // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
     if (!silex.Helper.isAbsoluteUrl(relative)) {
       relative = relative.replace('../', '/');
     }
-    var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
-    var newRelativePath = 'css/' + fileName;
-    files.push({
-      url: absolute
-, destPath: newRelativePath
-, srcPath: relative
-    });
-    var res = match.replace(group1, newRelativePath);
-    return res;
+    else {
+      // only allowed domains
+      if (absolute.indexOf('http://static.silex.me') !== 0) {
+        preventDownload = true;
+      }
+    }
+    if (!preventDownload) {
+      var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
+      var newRelativePath = 'css/' + fileName;
+      files.push({
+        url: absolute
+        , destPath: newRelativePath
+        , srcPath: relative
+      });
+      var res = match.replace(group1, newRelativePath);
+      return res;
+    }
+    return match;
   });
   // scripts
   headStr = headStr.replace(/src="?([^"]*)"/g, function(match, group1, group2) {
