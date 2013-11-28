@@ -100,9 +100,23 @@ silex.view.FileExplorer.prototype.init = function() {
  * pick a file
  * @param opt_mimetypes     optional array of accepted mimetypes, e.g. ['text/html', 'text/plain']
  */
-silex.view.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes, opt_errCbk) {
+silex.view.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes, opt_fileExtentions, opt_errCbk) {
   // default is image
   if (!opt_mimetypes) opt_mimetypes = ['image/*', 'text/plain'];
+
+  var errCbk = function(FPError) {
+    console.error(FPError);
+    if (opt_errCbk) {
+      opt_errCbk(FPError);
+    }
+  };
+  var successCbk = function (blob) {
+    // notify controller
+    // workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
+    new goog.async.Delay(function() {
+      if (cbk) cbk(blob);
+    }, 10, this).start();
+  };
 
   // pick it up
   this.filePicker.pick(
@@ -115,18 +129,26 @@ silex.view.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes, opt_
         // we are supposed to return an absolute URL
         blob.url = silex.Helper.getAbsolutePath(blob.url, silex.Helper.BaseUrl);
 
-        // notify controller
-        // workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
-        new goog.async.Delay(function() {
-          if (cbk) cbk(blob);
-        }, 10, this).start();
-      }, this),
-      function(FPError) {
-        console.error(FPError);
-        if (opt_errCbk) {
-          opt_errCbk(FPError);
+        // check the the file extention is ok
+        if (opt_fileExtentions && silex.Helper.checkFileExt(blob.url, opt_fileExtentions) === false){
+          var fileName = blob.url.substring(blob.url.lastIndexOf('/') + 1);
+          alertify.confirm('The file name ' + 
+            fileName + 
+            ' does not looks good to me, are you sure you want to select this file?', 
+              function (accept) {
+            if (accept) {
+              successCbk(blob);
+            }
+            else{
+              errCbk({message: 'Wrong file type.'})
+            }
+          });
         }
-      });
+        else{
+          successCbk(blob);
+        }
+      }, this),
+      errCbk);
   // show dialog
   this.openEditor();
 };
@@ -136,9 +158,23 @@ silex.view.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes, opt_
  * save as dialog
  * @param opt_mimetypes     optional array of accepted mimetypes, e.g. ['text/html', 'text/plain']
  */
-silex.view.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes, opt_errCbk) {
+silex.view.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes, opt_fileExtentions, opt_errCbk) {
   // default is html
   if (!opt_mimetypes) opt_mimetypes = {'mimetype': 'text/html'};
+
+  var errCbk = function(FPError) {
+    console.error(FPError);
+    if (opt_errCbk) {
+      opt_errCbk(FPError);
+    }
+  };
+  var successCbk = function (blob) {
+    // notify controller
+    // workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
+    new goog.async.Delay(function() {
+      if (cbk) cbk(blob);
+    }, 10, this).start();
+  };
 
   // export dummy data
   this.filePicker.exportFile('http://google.com/',
@@ -154,17 +190,26 @@ silex.view.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes, op
         // we are supposed to return an absolute URL
         blob.url = silex.Helper.getAbsolutePath(blob.url, silex.Helper.BaseUrl);
 
-        // workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
-        new goog.async.Delay(function() {
-          if (cbk) cbk(blob);
-        }, 10, this).start();
-      }, this),
-      function(FPError) {
-        console.error(FPError);
-        if (opt_errCbk) {
-          opt_errCbk(FPError);
+        // check the the file extention is ok
+        if (opt_fileExtentions && silex.Helper.checkFileExt(blob.url, opt_fileExtentions) === false){
+          var fileName = blob.url.substring(blob.url.lastIndexOf('/') + 1);
+          alertify.confirm('The file name ' + 
+            fileName + 
+            ' does not looks good to me, are you sure you want to select this file?', 
+              function (accept) {
+            if (accept) {
+              successCbk(blob);
+            }
+            else{
+              errCbk({message: 'Wrong file type.'})
+            }
+          });
         }
-      });
+        else{
+          successCbk(blob);
+        }
+      }, this),
+      errCbk);
   // show dialog
   this.openEditor();
 };

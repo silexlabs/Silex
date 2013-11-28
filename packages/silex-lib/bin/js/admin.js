@@ -31620,6 +31620,7 @@ silex.Controller.prototype.menuCallback = function(event) {
             this.tracker.trackAction('controller-events', 'success', event.type, 1);
           }, this),
           ['image/*', 'text/plain'],
+          ['jpg', 'gif', 'png'],
           goog.bind(function(error) {
             this.notifyError('Error: I did not manage to load the image. <br /><br />' + (error.message || ''));
             this.tracker.trackAction('controller-events', 'error', event.type, -1);
@@ -31860,6 +31861,7 @@ silex.Controller.prototype.publishSettingsCallback = function(event) {
             this.tracker.trackAction('controller-events', 'success', event.type, 1);
           }, this),
           ['image/*', 'text/plain'],
+          ['jpg', 'gif', 'png'],
           goog.bind(function(error) {
             this.notifyError('Error: I could not select the publish path. <br /><br />' + (error.message || ''));
             this.tracker.trackAction('controller-events', 'error', event.type, -1);
@@ -31886,16 +31888,20 @@ silex.Controller.prototype.propertiesToolCallback = function(event) {
       this.editComponent();
       break;
     case 'selectBgImage':
+      var errCbk = function(error) {
+        this.notifyError('Error: I could not load the image. <br /><br />' + (error.message || ''));
+        this.tracker.trackAction('controller-events', 'error', event.type, -1);
+      };
+      var successCbk = function(blob) {
+        this.propertiesTool.setBgImage(blob.url);
+        this.tracker.trackAction('controller-events', 'success', event.type, 1);
+      };
+      // open the file browser
       this.fileExplorer.openDialog(
-          goog.bind(function(blob) {
-            this.propertiesTool.setBgImage(blob.url);
-            this.tracker.trackAction('controller-events', 'success', event.type, 1);
-          }, this),
-          ['image/*', 'text/plain'],
-          goog.bind(function(error) {
-            this.notifyError('Error: I could not load the image. <br /><br />' + (error.message || ''));
-            this.tracker.trackAction('controller-events', 'error', event.type, -1);
-          }, this)
+        goog.bind(successCbk, this),
+        ['image/*', 'text/plain'],
+        ['jpg', 'gif', 'png'],
+        goog.bind(errCbk, this)
       );
       this.workspace.invalidate();
       break;
@@ -31963,6 +31969,7 @@ silex.Controller.prototype.editComponent = function() {
             this.propertiesTool.setImage(blob.url);
           }, this),
           ['image/*', 'text/plain'],
+          ['jpg', 'gif', 'png'],
           goog.bind(function(error) {
             this.notifyError('Error: I did not manage to load the image. <br /><br />' + (error.message || ''));
           }, this)
@@ -32268,9 +32275,23 @@ silex.view.FileExplorer.prototype.init = function() {
  * pick a file
  * @param opt_mimetypes     optional array of accepted mimetypes, e.g. ['text/html', 'text/plain']
  */
-silex.view.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes, opt_errCbk) {
+silex.view.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes, opt_fileExtentions, opt_errCbk) {
   // default is image
   if (!opt_mimetypes) opt_mimetypes = ['image/*', 'text/plain'];
+
+  var errCbk = function(FPError) {
+    console.error(FPError);
+    if (opt_errCbk) {
+      opt_errCbk(FPError);
+    }
+  };
+  var successCbk = function (blob) {
+    // notify controller
+    // workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
+    new goog.async.Delay(function() {
+      if (cbk) cbk(blob);
+    }, 10, this).start();
+  };
 
   // pick it up
   this.filePicker.pick(
@@ -32283,18 +32304,26 @@ silex.view.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes, opt_
         // we are supposed to return an absolute URL
         blob.url = silex.Helper.getAbsolutePath(blob.url, silex.Helper.BaseUrl);
 
-        // notify controller
-        // workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
-        new goog.async.Delay(function() {
-          if (cbk) cbk(blob);
-        }, 10, this).start();
-      }, this),
-      function(FPError) {
-        console.error(FPError);
-        if (opt_errCbk) {
-          opt_errCbk(FPError);
+        // check the the file extention is ok
+        if (opt_fileExtentions && silex.Helper.checkFileExt(blob.url, opt_fileExtentions) === false){
+          var fileName = blob.url.substring(blob.url.lastIndexOf('/') + 1);
+          alertify.confirm('The file name ' + 
+            fileName + 
+            ' does not looks good to me, are you sure you want to select this file?', 
+              function (accept) {
+            if (accept) {
+              successCbk(blob);
+            }
+            else{
+              errCbk({message: 'Wrong file type.'})
+            }
+          });
         }
-      });
+        else{
+          successCbk(blob);
+        }
+      }, this),
+      errCbk);
   // show dialog
   this.openEditor();
 };
@@ -32304,9 +32333,23 @@ silex.view.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes, opt_
  * save as dialog
  * @param opt_mimetypes     optional array of accepted mimetypes, e.g. ['text/html', 'text/plain']
  */
-silex.view.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes, opt_errCbk) {
+silex.view.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes, opt_fileExtentions, opt_errCbk) {
   // default is html
   if (!opt_mimetypes) opt_mimetypes = {'mimetype': 'text/html'};
+
+  var errCbk = function(FPError) {
+    console.error(FPError);
+    if (opt_errCbk) {
+      opt_errCbk(FPError);
+    }
+  };
+  var successCbk = function (blob) {
+    // notify controller
+    // workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
+    new goog.async.Delay(function() {
+      if (cbk) cbk(blob);
+    }, 10, this).start();
+  };
 
   // export dummy data
   this.filePicker.exportFile('http://google.com/',
@@ -32322,17 +32365,26 @@ silex.view.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes, op
         // we are supposed to return an absolute URL
         blob.url = silex.Helper.getAbsolutePath(blob.url, silex.Helper.BaseUrl);
 
-        // workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
-        new goog.async.Delay(function() {
-          if (cbk) cbk(blob);
-        }, 10, this).start();
-      }, this),
-      function(FPError) {
-        console.error(FPError);
-        if (opt_errCbk) {
-          opt_errCbk(FPError);
+        // check the the file extention is ok
+        if (opt_fileExtentions && silex.Helper.checkFileExt(blob.url, opt_fileExtentions) === false){
+          var fileName = blob.url.substring(blob.url.lastIndexOf('/') + 1);
+          alertify.confirm('The file name ' + 
+            fileName + 
+            ' does not looks good to me, are you sure you want to select this file?', 
+              function (accept) {
+            if (accept) {
+              successCbk(blob);
+            }
+            else{
+              errCbk({message: 'Wrong file type.'})
+            }
+          });
         }
-      });
+        else{
+          successCbk(blob);
+        }
+      }, this),
+      errCbk);
   // show dialog
   this.openEditor();
 };
@@ -42036,7 +42088,21 @@ silex.Helper.rgbaToArray = function(rgba) {
   var result = [r, g, b, a];
   return result;
 };
-//////////////////////////////////////////////////
+/**
+ * check if the file name has the desired extension
+ * @param   {string} filename  the file name to be checked
+ * @param   {array} extArray  the allowed extensions
+ */
+silex.Helper.checkFileExt = function (fileName, extArray){
+  var fileName = fileName;
+  var ext = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
+  for(idx in extArray) {
+    if (extArray[idx].toLowerCase() === ext){
+      return true;
+    }
+  }
+  return false;
+}//////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
 //
@@ -81467,7 +81533,9 @@ silex.model.File.prototype.saveAs = function(cbk, opt_errCbk) {
         this.setBlob(blob);
         this.save(cbk, opt_errCbk);
       }, this),
-      {'mimetype': 'text/html'}, opt_errCbk);
+      {'mimetype': 'text/html'}, 
+      ['html', 'htm'],
+      opt_errCbk);
   this.workspace.invalidate();
 };
 
@@ -81503,7 +81571,9 @@ silex.model.File.prototype.open = function(cbk, opt_errCbk) {
               if (cbk) cbk();
             }, this), opt_errCbk);
       }, this),
-      ['text/html', 'text/plain'], opt_errCbk);
+      ['text/html', 'text/plain'], 
+      ['html', 'htm'],
+      opt_errCbk);
   this.workspace.invalidate();
 };
 
@@ -81571,14 +81641,14 @@ silex.model.File.prototype.refreshFontList = function() {
 
   //get authorised fonts
   var availableFonts = silex.model.Config.fonts;
-      //return the font from the font family or null
-      getFont = function(fontFamily) {
-            for (var fontName in availableFonts) {
-          if (availableFonts[fontName].value === fontFamily)
-                    return availableFonts[fontName];
-            }
-            return null;
-      };
+  //return the font from the font family or null
+  var getFont = function(fontFamily) {
+        for (var fontName in availableFonts) {
+      if (availableFonts[fontName].value === fontFamily)
+                return availableFonts[fontName];
+        }
+        return null;
+  };
 
   //for each used font family, if a corresponding font is available, load it
   for (var fontFamily in fontFamilies) {
@@ -81820,26 +81890,6 @@ silex.model.File.prototype.setHtml = function(rawHtml) {
  * use the bodyTag and headTag objects
  */
 silex.model.File.prototype.getHtml = function() {
-  /*
-    // handle background url of the body style
-    var style = silex.Helper.stringToStyle(this.getBodyStyle());
-    if (style.backgroundImage) {
-        var url = style.backgroundImage.substring(style.backgroundImage.indexOf('(')+1, style.backgroundImage.indexOf(')'));
-        // also remove '' if needed
-        var quoteIdx = url.indexOf("'");
-        if (quoteIdx>=0) {
-            url = url.substring(quoteIdx+1, url.lastIndexOf("'"));
-        }
-        // absolute to relative
-        url = silex.Helper.getRelativePath(url, this.propertiesTool.getBaseUrl());
-        // put back the url('...')
-        url = 'url(\'' + url + '\')';
-        // set the body style
-        style.backgroundImage = url;
-    }
-  // convert back to string
-  var styleStr = silex.Helper.styleToString(style);
-  */
   // handle background url of the body style
   var styleStr = this.getBodyStyle();
 

@@ -311,6 +311,7 @@ silex.Controller.prototype.menuCallback = function(event) {
             this.tracker.trackAction('controller-events', 'success', event.type, 1);
           }, this),
           ['image/*', 'text/plain'],
+          ['jpg', 'gif', 'png'],
           goog.bind(function(error) {
             this.notifyError('Error: I did not manage to load the image. <br /><br />' + (error.message || ''));
             this.tracker.trackAction('controller-events', 'error', event.type, -1);
@@ -551,6 +552,7 @@ silex.Controller.prototype.publishSettingsCallback = function(event) {
             this.tracker.trackAction('controller-events', 'success', event.type, 1);
           }, this),
           ['image/*', 'text/plain'],
+          ['jpg', 'gif', 'png'],
           goog.bind(function(error) {
             this.notifyError('Error: I could not select the publish path. <br /><br />' + (error.message || ''));
             this.tracker.trackAction('controller-events', 'error', event.type, -1);
@@ -577,16 +579,20 @@ silex.Controller.prototype.propertiesToolCallback = function(event) {
       this.editComponent();
       break;
     case 'selectBgImage':
+      var errCbk = function(error) {
+        this.notifyError('Error: I could not load the image. <br /><br />' + (error.message || ''));
+        this.tracker.trackAction('controller-events', 'error', event.type, -1);
+      };
+      var successCbk = function(blob) {
+        this.propertiesTool.setBgImage(blob.url);
+        this.tracker.trackAction('controller-events', 'success', event.type, 1);
+      };
+      // open the file browser
       this.fileExplorer.openDialog(
-          goog.bind(function(blob) {
-            this.propertiesTool.setBgImage(blob.url);
-            this.tracker.trackAction('controller-events', 'success', event.type, 1);
-          }, this),
-          ['image/*', 'text/plain'],
-          goog.bind(function(error) {
-            this.notifyError('Error: I could not load the image. <br /><br />' + (error.message || ''));
-            this.tracker.trackAction('controller-events', 'error', event.type, -1);
-          }, this)
+        goog.bind(successCbk, this),
+        ['image/*', 'text/plain'],
+        ['jpg', 'gif', 'png'],
+        goog.bind(errCbk, this)
       );
       this.workspace.invalidate();
       break;
@@ -654,6 +660,7 @@ silex.Controller.prototype.editComponent = function() {
             this.propertiesTool.setImage(blob.url);
           }, this),
           ['image/*', 'text/plain'],
+          ['jpg', 'gif', 'png'],
           goog.bind(function(error) {
             this.notifyError('Error: I did not manage to load the image. <br /><br />' + (error.message || ''));
           }, this)

@@ -234,3 +234,18 @@ silex.Helper.rgbaToArray = function(rgba) {
   var result = [r, g, b, a];
   return result;
 };
+/**
+ * check if the file name has the desired extension
+ * @param   {string} filename  the file name to be checked
+ * @param   {array} extArray  the allowed extensions
+ */
+silex.Helper.checkFileExt = function (fileName, extArray){
+  var fileName = fileName;
+  var ext = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
+  for(idx in extArray) {
+    if (extArray[idx].toLowerCase() === ext){
+      return true;
+    }
+  }
+  return false;
+}
