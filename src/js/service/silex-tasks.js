@@ -57,14 +57,12 @@ silex.service.SilexTasks.prototype.publish = function(path, html, css, files, cb
     if (opt_errCbk) opt_errCbk('Param path, html, css or files missing');
     return;
   }
-  console.log('xxx', typeof(path), path);
   var url = '/silex/tasks/publish';
   var qd = new goog.Uri.QueryData();
   qd.add('path', path);
   qd.add('html', html);
   qd.add('css', css);
   qd.add('files', JSON.stringify(files));
-  console.log('sends server', path, qd.toString());
   goog.net.XhrIo.send(url, function(e) {
     // success of the request
     var xhr = e.target;

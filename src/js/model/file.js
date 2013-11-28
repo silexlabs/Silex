@@ -288,7 +288,6 @@ silex.model.File.prototype.refreshFontList = function() {
 
   var fontFamilies = this.getNeededFonts();
 
-  console.log('fonts ', fontFamilies)
   //text styles can also be applied using old-school font tag.
   //Get face attribute values from them
   var fontTags = goog.dom.getElementsByTagNameAndClass('font', null, head);
@@ -340,14 +339,11 @@ silex.model.File.prototype.refreshFontList = function() {
  */
 silex.model.File.prototype.getNeededFonts = function() {
   var innerHTML = this.getStageComponent().getHtml();
-  console.log('getNeededFonts')
   var neededFonts = [];
   innerHTML.replace(/<font.*face="?([^"]*)"/g, function(match, group1, group2) {
-    console.log('found', group1)
     neededFonts[group1] = true;
     return match;
   });
-  console.log('getNeededFonts returns', neededFonts)
   return neededFonts;
 };
 
@@ -739,7 +735,6 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
 
   // image source
   bodyStr = bodyStr.replace(/<img.*src="?([^" ]*)"/g, function(match, group1, group2) {
-    console.log('replace img ', match, group1, group2);
     var absolute = silex.Helper.getAbsolutePath(group1, baseUrl);
     var relative = silex.Helper.getRelativePath(absolute, silex.Helper.BaseUrl);
     // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
@@ -758,7 +753,6 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
   });
   // background-image / url(...)
   bodyStr = bodyStr.replace(/url\((['"])(.+?)\1\)/g, goog.bind(function(match, group1, group2) {
-    console.log('filter', arguments);
     return this.filterBgImage(baseUrl, files, match, group1, group2);
   }, this));
   // css
@@ -985,7 +979,6 @@ silex.model.File.prototype.filterBgImage = function(baseUrl, files, match, group
  *     - srcPath: the source path or relative URL (relative to the current file)
  *
 silex.model.File.prototype.handleNodeUrls = function (node, baseUrl) {
-  console.log('handleNodeUrls', node)
   var filesToBeServedLocally = [];
   switch (node.nodeName){
     case 'IMG':
@@ -1002,11 +995,8 @@ silex.model.File.prototype.handleNodeUrls = function (node, baseUrl) {
       break;
   }
   // background-image / url(...)
-  console.log(node.style.backgroundImage)
   if (node.style.backgroundImage){
-    console.log('yeah')
     // get the ressource URL
-    console.log('start search bg', node.style.backgroundImage)
     var url = node.style.backgroundImage;
     url = url.substr(url.indexOf('url(') + 4);
     url = url.substring(0, url.lastIndexOf(')'));
@@ -1024,7 +1014,6 @@ silex.model.File.prototype.handleNodeUrls = function (node, baseUrl) {
       //goog.style.setStyle(node, 'background-image', undefined);
       console.warn('replace', info.destPath, node.style.backgroundImage)
     }
-    console.log('end search bg', node.style.backgroundImage)
   }
   return filesToBeServedLocally;
 }
@@ -1039,7 +1028,6 @@ silex.model.File.prototype.handleNodeUrls = function (node, baseUrl) {
  *     - srcPath: the source path or relative URL (relative to the current file)
  *
 silex.model.File.prototype.getPublicationInfo = function (url, baseUrl, localFolder) {
-  console.log('getPublicationInfo', arguments)
   var absolute = silex.Helper.getAbsolutePath(url, baseUrl);
   var relative = silex.Helper.getRelativePath(absolute, silex.Helper.BaseUrl);
   // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
@@ -1053,7 +1041,6 @@ silex.model.File.prototype.getPublicationInfo = function (url, baseUrl, localFol
       , destPath: newRelativePath
       , srcPath: relative
   };
-  console.log('getPublicationInfo', res);
   return res;
 }
 /* */
