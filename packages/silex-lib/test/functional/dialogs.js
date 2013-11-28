@@ -1,10 +1,10 @@
 var assert = require('assert')
 , silexServer = require('../../server/api-server.js')
-, webdriver = require('selenium-webdriver')
-, expect = require('chai').expect;
+, expect = require('chai').expect
+, helper = require('../helper.js');
 
 silexServer.setDebugMode(true);
-/* */
+/* *
 //////////////////////////////////////////
 // ChromeDriver
 var driver = new webdriver.Builder().
@@ -26,30 +26,32 @@ var driver = new webdriver.Builder().
     withCapabilities(webdriver.Capabilities.firefox()).
     build();
 /* */
-// write text
-//driver.findElement(webdriver.By.name('q')).sendKeys('webdriver');
+
 //////////////////////////////////////////
 // the tests
 
 describe('Silex', function() {
 
 before(function(done) {
-    // open silex
-    driver.get('http://localhost:6805/silex/debug.html').then(function () {
-        done();
+    this.timeout(30000);
+    helper.startSelenium(function (_) {
+        // open silex
+        helper.driver.get('http://localhost:6805/silex/debug.html').then(function () {
+            done();
+        });
     });
 });
+it('should be able to load', function(done) {
 
-it('should be able to view the home page', function(done) {
-    this.timeout(10000);
+    this.timeout(3000);
     // wait for silex to be loaded
     setTimeout(function () {
         done();
-    }, 3000)
+    }, 2000)
 });
 it('should be able to open the file menu', function(done) {
     // click
-    driver.findElement(webdriver.By.className('menu-item-file')).then(function (element) {
+    helper.driver.findElement(helper.webdriver.By.className('menu-item-file')).then(function (element) {
         element.click().then(function () {
             done();
         })
@@ -58,9 +60,9 @@ it('should be able to open the file menu', function(done) {
 });
 it('should be able to open the file explorer dialog', function(done) {
     // click 
-    driver.findElement(webdriver.By.className('menu-item-file-open')).click();
+    helper.driver.findElement(helper.webdriver.By.className('menu-item-file-open')).click();
     // check visibility
-    driver.findElement(webdriver.By.className('silex-fileexplorer')).isDisplayed().then(function (isDisplayed) {
+    helper.driver.findElement(helper.webdriver.By.className('silex-fileexplorer')).isDisplayed().then(function (isDisplayed) {
         console.log("dialog visibility", isDisplayed);
         if (isDisplayed) done();
         else done('dialog is not visible');
@@ -69,11 +71,11 @@ it('should be able to open the file explorer dialog', function(done) {
 });
 it('should be able to close the file explorer dialog', function(done) {
     // click on close
-    driver.findElement(webdriver.By.className('silex-fileexplorer'))
-    .findElement(webdriver.By.className('close-btn'))
+    helper.driver.findElement(helper.webdriver.By.className('silex-fileexplorer'))
+    .findElement(helper.webdriver.By.className('close-btn'))
     .click();
     // check visibility
-    driver.findElement(webdriver.By.className('silex-fileexplorer'))
+    helper.driver.findElement(helper.webdriver.By.className('silex-fileexplorer'))
     .isDisplayed()
     .then(function (isDisplayed) {
         console.log("dialog visibility", isDisplayed);
@@ -83,10 +85,10 @@ it('should be able to close the file explorer dialog', function(done) {
     });
 });
 after(function(done) {
-    // open silex
-    driver.quit().then(function () {
+   this.timeout(30000);
+    // shut down selenium
+    helper.stopSelenium(function () {
         done();
-        return true;
     });
 });
 });

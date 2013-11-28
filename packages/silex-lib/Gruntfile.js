@@ -18,7 +18,9 @@ Uses:
 
 * check syntax with *lint, compile with google closure builder/compiler, execute functional tests
 
-  $ grunt test
+  $ grunt test -phantomjs
+  $ grunt test -firefox
+  $ grunt test -chrome
 
 * watch and deploy when needed
 
@@ -190,7 +192,6 @@ module.exports = function(grunt) {
     , simplemocha: {
         options: {
           globals: ['should']
-          , timeout: 3000
           , ignoreLeaks: false
           , ui: 'bdd'
           , reporter: 'tap'
