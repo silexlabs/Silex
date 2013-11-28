@@ -204,8 +204,7 @@ silex.model.File.prototype.save = function(cbk, opt_errCbk) {
   var blob = this.getBlob();
   this.setBodyTag(this.getStageComponent().getHtml(blob.url));
   this.setHeadTag(this.stage.getHead());
-  var relativePathStyle = this.getStageComponent().absolute2Relative(this.stage.getBodyStyle(), blob.url);
-  this.setBodyStyle(relativePathStyle);
+  this.setBodyStyle(this.stage.getBodyStyle());
   silex.service.CloudStorage.getInstance().save(blob, this.getHtml(), function() {
     if (cbk) cbk();
   }, opt_errCbk);
@@ -419,7 +418,8 @@ silex.model.File.prototype.setBlob = function(blob) {
  * get the string containing the style attribute of the body tag
  */
 silex.model.File.prototype.getBodyStyle = function() {
-  return this.bodyStyle;
+  var absolutePathStyle = this.getStageComponent().relative2absolute(this.bodyStyle, blob.url);
+  return absolutePathStyle;
 };
 
 
@@ -428,7 +428,8 @@ silex.model.File.prototype.getBodyStyle = function() {
  * @param    bodyStyle     a string containing the style attribute to set on the body tag
  */
 silex.model.File.prototype.setBodyStyle = function(bodyStyle) {
-  this.bodyStyle = bodyStyle;
+  var relativePathStyle = this.getStageComponent().absolute2Relative(bodyStyle, blob.url);
+  this.bodyStyle = relativePathStyle;
 };
 
 
@@ -523,9 +524,9 @@ silex.model.File.prototype.setHtml = function(rawHtml) {
  * use the bodyTag and headTag objects
  */
 silex.model.File.prototype.getHtml = function() {
-  // handle background url of the body style
-  var style = silex.Helper.stringToStyle(this.getBodyStyle());
   /*
+    // handle background url of the body style
+    var style = silex.Helper.stringToStyle(this.getBodyStyle());
     if (style.backgroundImage) {
         var url = style.backgroundImage.substring(style.backgroundImage.indexOf('(')+1, style.backgroundImage.indexOf(')'));
         // also remove '' if needed
@@ -540,8 +541,11 @@ silex.model.File.prototype.getHtml = function() {
         // set the body style
         style.backgroundImage = url;
     }
-  */    // convert back to string
+  // convert back to string
   var styleStr = silex.Helper.styleToString(style);
+  */
+  // handle background url of the body style
+  var styleStr = this.getBodyStyle();
 
   var html = '';
   html += '<html>';
