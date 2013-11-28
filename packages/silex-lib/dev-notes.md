@@ -47,6 +47,7 @@ Suite à la nuit charrette
 
   Bug Firefox
   Bug IE
+  Bug images with %20
 
   Position and size depends on contexts
 

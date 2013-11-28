@@ -1788,57 +1788,6 @@ silex.model.Selection.prototype.setContext = function(context) {
     this.context = context;
 }
 
-// Copyright 2009 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/**
- * @fileoverview Provides a base class for custom Error objects such that the
- * stack is correctly maintained.
- *
- * You should never need to throw goog.debug.Error(msg) directly, Error(msg) is
- * sufficient.
- *
- */
-
-goog.provide('goog.debug.Error');
-
-
-
-/**
- * Base class for custom error objects.
- * @param {*=} opt_msg The message associated with the error.
- * @constructor
- * @extends {Error}
- */
-goog.debug.Error = function(opt_msg) {
-
-  // Ensure there is a stack trace.
-  if (Error.captureStackTrace) {
-    Error.captureStackTrace(this, goog.debug.Error);
-  } else {
-    this.stack = new Error().stack || '';
-  }
-
-  if (opt_msg) {
-    this.message = String(opt_msg);
-  }
-};
-goog.inherits(goog.debug.Error, Error);
-
-
-/** @override */
-goog.debug.Error.prototype.name = 'CustomError';
 // Copyright 2006 The Closure Library Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -3217,6 +3166,1033 @@ goog.string.splitLimit = function(str, separator, limit) {
   return returnVal;
 };
 
+// Copyright 2006 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * @fileoverview Rendering engine detection.
+ * @see <a href="http://www.useragentstring.com/">User agent strings</a>
+ * For information on the browser brand (such as Safari versus Chrome), see
+ * goog.userAgent.product.
+ * @see ../demos/useragent.html
+ */
+
+goog.provide('goog.userAgent');
+
+goog.require('goog.string');
+
+
+/**
+ * @define {boolean} Whether we know at compile-time that the browser is IE.
+ */
+goog.define('goog.userAgent.ASSUME_IE', false);
+
+
+/**
+ * @define {boolean} Whether we know at compile-time that the browser is GECKO.
+ */
+goog.define('goog.userAgent.ASSUME_GECKO', false);
+
+
+/**
+ * @define {boolean} Whether we know at compile-time that the browser is WEBKIT.
+ */
+goog.define('goog.userAgent.ASSUME_WEBKIT', false);
+
+
+/**
+ * @define {boolean} Whether we know at compile-time that the browser is a
+ *     mobile device running WebKit e.g. iPhone or Android.
+ */
+goog.define('goog.userAgent.ASSUME_MOBILE_WEBKIT', false);
+
+
+/**
+ * @define {boolean} Whether we know at compile-time that the browser is OPERA.
+ */
+goog.define('goog.userAgent.ASSUME_OPERA', false);
+
+
+/**
+ * @define {boolean} Whether the
+ *     {@code goog.userAgent.isVersionOrHigher}
+ *     function will return true for any version.
+ */
+goog.define('goog.userAgent.ASSUME_ANY_VERSION', false);
+
+
+/**
+ * Whether we know the browser engine at compile-time.
+ * @type {boolean}
+ * @private
+ */
+goog.userAgent.BROWSER_KNOWN_ =
+    goog.userAgent.ASSUME_IE ||
+    goog.userAgent.ASSUME_GECKO ||
+    goog.userAgent.ASSUME_MOBILE_WEBKIT ||
+    goog.userAgent.ASSUME_WEBKIT ||
+    goog.userAgent.ASSUME_OPERA;
+
+
+/**
+ * Returns the userAgent string for the current browser.
+ * Some user agents (I'm thinking of you, Gears WorkerPool) do not expose a
+ * navigator object off the global scope.  In that case we return null.
+ *
+ * @return {?string} The userAgent string or null if there is none.
+ */
+goog.userAgent.getUserAgentString = function() {
+  return goog.global['navigator'] ? goog.global['navigator'].userAgent : null;
+};
+
+
+/**
+ * @return {Object} The native navigator object.
+ */
+goog.userAgent.getNavigator = function() {
+  // Need a local navigator reference instead of using the global one,
+  // to avoid the rare case where they reference different objects.
+  // (in a WorkerPool, for example).
+  return goog.global['navigator'];
+};
+
+
+/**
+ * Initializer for goog.userAgent.
+ *
+ * This is a named function so that it can be stripped via the jscompiler
+ * option for stripping types.
+ * @private
+ */
+goog.userAgent.init_ = function() {
+  /**
+   * Whether the user agent string denotes Opera.
+   * @type {boolean}
+   * @private
+   */
+  goog.userAgent.detectedOpera_ = false;
+
+  /**
+   * Whether the user agent string denotes Internet Explorer. This includes
+   * other browsers using Trident as its rendering engine. For example AOL
+   * and Netscape 8
+   * @type {boolean}
+   * @private
+   */
+  goog.userAgent.detectedIe_ = false;
+
+  /**
+   * Whether the user agent string denotes WebKit. WebKit is the rendering
+   * engine that Safari, Android and others use.
+   * @type {boolean}
+   * @private
+   */
+  goog.userAgent.detectedWebkit_ = false;
+
+  /**
+   * Whether the user agent string denotes a mobile device.
+   * @type {boolean}
+   * @private
+   */
+  goog.userAgent.detectedMobile_ = false;
+
+  /**
+   * Whether the user agent string denotes Gecko. Gecko is the rendering
+   * engine used by Mozilla, Mozilla Firefox, Camino and many more.
+   * @type {boolean}
+   * @private
+   */
+  goog.userAgent.detectedGecko_ = false;
+
+  var ua;
+  if (!goog.userAgent.BROWSER_KNOWN_ &&
+      (ua = goog.userAgent.getUserAgentString())) {
+    var navigator = goog.userAgent.getNavigator();
+    goog.userAgent.detectedOpera_ = goog.string.startsWith(ua, 'Opera');
+    goog.userAgent.detectedIe_ = !goog.userAgent.detectedOpera_ &&
+        (goog.string.contains(ua, 'MSIE') ||
+         goog.string.contains(ua, 'Trident'));
+    goog.userAgent.detectedWebkit_ = !goog.userAgent.detectedOpera_ &&
+        goog.string.contains(ua, 'WebKit');
+    // WebKit also gives navigator.product string equal to 'Gecko'.
+    goog.userAgent.detectedMobile_ = goog.userAgent.detectedWebkit_ &&
+        goog.string.contains(ua, 'Mobile');
+    goog.userAgent.detectedGecko_ = !goog.userAgent.detectedOpera_ &&
+        !goog.userAgent.detectedWebkit_ && !goog.userAgent.detectedIe_ &&
+        navigator.product == 'Gecko';
+  }
+};
+
+
+if (!goog.userAgent.BROWSER_KNOWN_) {
+  goog.userAgent.init_();
+}
+
+
+/**
+ * Whether the user agent is Opera.
+ * @type {boolean}
+ */
+goog.userAgent.OPERA = goog.userAgent.BROWSER_KNOWN_ ?
+    goog.userAgent.ASSUME_OPERA : goog.userAgent.detectedOpera_;
+
+
+/**
+ * Whether the user agent is Internet Explorer. This includes other browsers
+ * using Trident as its rendering engine. For example AOL and Netscape 8
+ * @type {boolean}
+ */
+goog.userAgent.IE = goog.userAgent.BROWSER_KNOWN_ ?
+    goog.userAgent.ASSUME_IE : goog.userAgent.detectedIe_;
+
+
+/**
+ * Whether the user agent is Gecko. Gecko is the rendering engine used by
+ * Mozilla, Mozilla Firefox, Camino and many more.
+ * @type {boolean}
+ */
+goog.userAgent.GECKO = goog.userAgent.BROWSER_KNOWN_ ?
+    goog.userAgent.ASSUME_GECKO :
+    goog.userAgent.detectedGecko_;
+
+
+/**
+ * Whether the user agent is WebKit. WebKit is the rendering engine that
+ * Safari, Android and others use.
+ * @type {boolean}
+ */
+goog.userAgent.WEBKIT = goog.userAgent.BROWSER_KNOWN_ ?
+    goog.userAgent.ASSUME_WEBKIT || goog.userAgent.ASSUME_MOBILE_WEBKIT :
+    goog.userAgent.detectedWebkit_;
+
+
+/**
+ * Whether the user agent is running on a mobile device.
+ * @type {boolean}
+ */
+goog.userAgent.MOBILE = goog.userAgent.ASSUME_MOBILE_WEBKIT ||
+                        goog.userAgent.detectedMobile_;
+
+
+/**
+ * Used while transitioning code to use WEBKIT instead.
+ * @type {boolean}
+ * @deprecated Use {@link goog.userAgent.product.SAFARI} instead.
+ * TODO(nicksantos): Delete this from goog.userAgent.
+ */
+goog.userAgent.SAFARI = goog.userAgent.WEBKIT;
+
+
+/**
+ * @return {string} the platform (operating system) the user agent is running
+ *     on. Default to empty string because navigator.platform may not be defined
+ *     (on Rhino, for example).
+ * @private
+ */
+goog.userAgent.determinePlatform_ = function() {
+  var navigator = goog.userAgent.getNavigator();
+  return navigator && navigator.platform || '';
+};
+
+
+/**
+ * The platform (operating system) the user agent is running on. Default to
+ * empty string because navigator.platform may not be defined (on Rhino, for
+ * example).
+ * @type {string}
+ */
+goog.userAgent.PLATFORM = goog.userAgent.determinePlatform_();
+
+
+/**
+ * @define {boolean} Whether the user agent is running on a Macintosh operating
+ *     system.
+ */
+goog.define('goog.userAgent.ASSUME_MAC', false);
+
+
+/**
+ * @define {boolean} Whether the user agent is running on a Windows operating
+ *     system.
+ */
+goog.define('goog.userAgent.ASSUME_WINDOWS', false);
+
+
+/**
+ * @define {boolean} Whether the user agent is running on a Linux operating
+ *     system.
+ */
+goog.define('goog.userAgent.ASSUME_LINUX', false);
+
+
+/**
+ * @define {boolean} Whether the user agent is running on a X11 windowing
+ *     system.
+ */
+goog.define('goog.userAgent.ASSUME_X11', false);
+
+
+/**
+ * @define {boolean} Whether the user agent is running on Android.
+ */
+goog.define('goog.userAgent.ASSUME_ANDROID', false);
+
+
+/**
+ * @define {boolean} Whether the user agent is running on an iPhone.
+ */
+goog.define('goog.userAgent.ASSUME_IPHONE', false);
+
+
+/**
+ * @define {boolean} Whether the user agent is running on an iPad.
+ */
+goog.define('goog.userAgent.ASSUME_IPAD', false);
+
+
+/**
+ * @type {boolean}
+ * @private
+ */
+goog.userAgent.PLATFORM_KNOWN_ =
+    goog.userAgent.ASSUME_MAC ||
+    goog.userAgent.ASSUME_WINDOWS ||
+    goog.userAgent.ASSUME_LINUX ||
+    goog.userAgent.ASSUME_X11 ||
+    goog.userAgent.ASSUME_ANDROID ||
+    goog.userAgent.ASSUME_IPHONE ||
+    goog.userAgent.ASSUME_IPAD;
+
+
+/**
+ * Initialize the goog.userAgent constants that define which platform the user
+ * agent is running on.
+ * @private
+ */
+goog.userAgent.initPlatform_ = function() {
+  /**
+   * Whether the user agent is running on a Macintosh operating system.
+   * @type {boolean}
+   * @private
+   */
+  goog.userAgent.detectedMac_ = goog.string.contains(goog.userAgent.PLATFORM,
+      'Mac');
+
+  /**
+   * Whether the user agent is running on a Windows operating system.
+   * @type {boolean}
+   * @private
+   */
+  goog.userAgent.detectedWindows_ = goog.string.contains(
+      goog.userAgent.PLATFORM, 'Win');
+
+  /**
+   * Whether the user agent is running on a Linux operating system.
+   * @type {boolean}
+   * @private
+   */
+  goog.userAgent.detectedLinux_ = goog.string.contains(goog.userAgent.PLATFORM,
+      'Linux');
+
+  /**
+   * Whether the user agent is running on a X11 windowing system.
+   * @type {boolean}
+   * @private
+   */
+  goog.userAgent.detectedX11_ = !!goog.userAgent.getNavigator() &&
+      goog.string.contains(goog.userAgent.getNavigator()['appVersion'] || '',
+          'X11');
+
+  // Need user agent string for Android/IOS detection
+  var ua = goog.userAgent.getUserAgentString();
+
+  /**
+   * Whether the user agent is running on Android.
+   * @type {boolean}
+   * @private
+   */
+  goog.userAgent.detectedAndroid_ = !!ua &&
+      goog.string.contains(ua, 'Android');
+
+  /**
+   * Whether the user agent is running on an iPhone.
+   * @type {boolean}
+   * @private
+   */
+  goog.userAgent.detectedIPhone_ = !!ua && goog.string.contains(ua, 'iPhone');
+
+  /**
+   * Whether the user agent is running on an iPad.
+   * @type {boolean}
+   * @private
+   */
+  goog.userAgent.detectedIPad_ = !!ua && goog.string.contains(ua, 'iPad');
+};
+
+
+if (!goog.userAgent.PLATFORM_KNOWN_) {
+  goog.userAgent.initPlatform_();
+}
+
+
+/**
+ * Whether the user agent is running on a Macintosh operating system.
+ * @type {boolean}
+ */
+goog.userAgent.MAC = goog.userAgent.PLATFORM_KNOWN_ ?
+    goog.userAgent.ASSUME_MAC : goog.userAgent.detectedMac_;
+
+
+/**
+ * Whether the user agent is running on a Windows operating system.
+ * @type {boolean}
+ */
+goog.userAgent.WINDOWS = goog.userAgent.PLATFORM_KNOWN_ ?
+    goog.userAgent.ASSUME_WINDOWS : goog.userAgent.detectedWindows_;
+
+
+/**
+ * Whether the user agent is running on a Linux operating system.
+ * @type {boolean}
+ */
+goog.userAgent.LINUX = goog.userAgent.PLATFORM_KNOWN_ ?
+    goog.userAgent.ASSUME_LINUX : goog.userAgent.detectedLinux_;
+
+
+/**
+ * Whether the user agent is running on a X11 windowing system.
+ * @type {boolean}
+ */
+goog.userAgent.X11 = goog.userAgent.PLATFORM_KNOWN_ ?
+    goog.userAgent.ASSUME_X11 : goog.userAgent.detectedX11_;
+
+
+/**
+ * Whether the user agent is running on Android.
+ * @type {boolean}
+ */
+goog.userAgent.ANDROID = goog.userAgent.PLATFORM_KNOWN_ ?
+    goog.userAgent.ASSUME_ANDROID : goog.userAgent.detectedAndroid_;
+
+
+/**
+ * Whether the user agent is running on an iPhone.
+ * @type {boolean}
+ */
+goog.userAgent.IPHONE = goog.userAgent.PLATFORM_KNOWN_ ?
+    goog.userAgent.ASSUME_IPHONE : goog.userAgent.detectedIPhone_;
+
+
+/**
+ * Whether the user agent is running on an iPad.
+ * @type {boolean}
+ */
+goog.userAgent.IPAD = goog.userAgent.PLATFORM_KNOWN_ ?
+    goog.userAgent.ASSUME_IPAD : goog.userAgent.detectedIPad_;
+
+
+/**
+ * @return {string} The string that describes the version number of the user
+ *     agent.
+ * @private
+ */
+goog.userAgent.determineVersion_ = function() {
+  // All browsers have different ways to detect the version and they all have
+  // different naming schemes.
+
+  // version is a string rather than a number because it may contain 'b', 'a',
+  // and so on.
+  var version = '', re;
+
+  if (goog.userAgent.OPERA && goog.global['opera']) {
+    var operaVersion = goog.global['opera'].version;
+    version = typeof operaVersion == 'function' ? operaVersion() : operaVersion;
+  } else {
+    if (goog.userAgent.GECKO) {
+      re = /rv\:([^\);]+)(\)|;)/;
+    } else if (goog.userAgent.IE) {
+      re = /\b(?:MSIE|rv)\s+([^\);]+)(\)|;)/;
+    } else if (goog.userAgent.WEBKIT) {
+      // WebKit/125.4
+      re = /WebKit\/(\S+)/;
+    }
+    if (re) {
+      var arr = re.exec(goog.userAgent.getUserAgentString());
+      version = arr ? arr[1] : '';
+    }
+  }
+  if (goog.userAgent.IE) {
+    // IE9 can be in document mode 9 but be reporting an inconsistent user agent
+    // version.  If it is identifying as a version lower than 9 we take the
+    // documentMode as the version instead.  IE8 has similar behavior.
+    // It is recommended to set the X-UA-Compatible header to ensure that IE9
+    // uses documentMode 9.
+    var docMode = goog.userAgent.getDocumentMode_();
+    if (docMode > parseFloat(version)) {
+      return String(docMode);
+    }
+  }
+  return version;
+};
+
+
+/**
+ * @return {number|undefined} Returns the document mode (for testing).
+ * @private
+ */
+goog.userAgent.getDocumentMode_ = function() {
+  // NOTE(user): goog.userAgent may be used in context where there is no DOM.
+  var doc = goog.global['document'];
+  return doc ? doc['documentMode'] : undefined;
+};
+
+
+/**
+ * The version of the user agent. This is a string because it might contain
+ * 'b' (as in beta) as well as multiple dots.
+ * @type {string}
+ */
+goog.userAgent.VERSION = goog.userAgent.determineVersion_();
+
+
+/**
+ * Compares two version numbers.
+ *
+ * @param {string} v1 Version of first item.
+ * @param {string} v2 Version of second item.
+ *
+ * @return {number}  1 if first argument is higher
+ *                   0 if arguments are equal
+ *                  -1 if second argument is higher.
+ * @deprecated Use goog.string.compareVersions.
+ */
+goog.userAgent.compare = function(v1, v2) {
+  return goog.string.compareVersions(v1, v2);
+};
+
+
+/**
+ * Cache for {@link goog.userAgent.isVersionOrHigher}.
+ * Calls to compareVersions are surprisingly expensive and, as a browser's
+ * version number is unlikely to change during a session, we cache the results.
+ * @const
+ * @private
+ */
+goog.userAgent.isVersionOrHigherCache_ = {};
+
+
+/**
+ * Whether the user agent version is higher or the same as the given version.
+ * NOTE: When checking the version numbers for Firefox and Safari, be sure to
+ * use the engine's version, not the browser's version number.  For example,
+ * Firefox 3.0 corresponds to Gecko 1.9 and Safari 3.0 to Webkit 522.11.
+ * Opera and Internet Explorer versions match the product release number.<br>
+ * @see <a href="http://en.wikipedia.org/wiki/Safari_version_history">
+ *     Webkit</a>
+ * @see <a href="http://en.wikipedia.org/wiki/Gecko_engine">Gecko</a>
+ *
+ * @param {string|number} version The version to check.
+ * @return {boolean} Whether the user agent version is higher or the same as
+ *     the given version.
+ */
+goog.userAgent.isVersionOrHigher = function(version) {
+  return goog.userAgent.ASSUME_ANY_VERSION ||
+      goog.userAgent.isVersionOrHigherCache_[version] ||
+      (goog.userAgent.isVersionOrHigherCache_[version] =
+          goog.string.compareVersions(goog.userAgent.VERSION, version) >= 0);
+};
+
+
+/**
+ * Deprecated alias to {@code goog.userAgent.isVersionOrHigher}.
+ * @param {string|number} version The version to check.
+ * @return {boolean} Whether the user agent version is higher or the same as
+ *     the given version.
+ * @deprecated Use goog.userAgent.isVersionOrHigher().
+ */
+goog.userAgent.isVersion = goog.userAgent.isVersionOrHigher;
+
+
+/**
+ * Whether the IE effective document mode is higher or the same as the given
+ * document mode version.
+ * NOTE: Only for IE, return false for another browser.
+ *
+ * @param {number} documentMode The document mode version to check.
+ * @return {boolean} Whether the IE effective document mode is higher or the
+ *     same as the given version.
+ */
+goog.userAgent.isDocumentModeOrHigher = function(documentMode) {
+  return goog.userAgent.IE && goog.userAgent.DOCUMENT_MODE >= documentMode;
+};
+
+
+/**
+ * Deprecated alias to {@code goog.userAgent.isDocumentModeOrHigher}.
+ * @param {number} version The version to check.
+ * @return {boolean} Whether the IE effective document mode is higher or the
+ *      same as the given version.
+ * @deprecated Use goog.userAgent.isDocumentModeOrHigher().
+ */
+goog.userAgent.isDocumentMode = goog.userAgent.isDocumentModeOrHigher;
+
+
+/**
+ * For IE version < 7, documentMode is undefined, so attempt to use the
+ * CSS1Compat property to see if we are in standards mode. If we are in
+ * standards mode, treat the browser version as the document mode. Otherwise,
+ * IE is emulating version 5.
+ * @type {number|undefined}
+ * @const
+ */
+goog.userAgent.DOCUMENT_MODE = (function() {
+  var doc = goog.global['document'];
+  if (!doc || !goog.userAgent.IE) {
+    return undefined;
+  }
+  var mode = goog.userAgent.getDocumentMode_();
+  return mode || (doc['compatMode'] == 'CSS1Compat' ?
+      parseInt(goog.userAgent.VERSION, 10) : 5);
+})();
+// Copyright 2006 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * @fileoverview Constant declarations for common key codes.
+ *
+ * @author eae@google.com (Emil A Eklund)
+ * @see ../demos/keyhandler.html
+ */
+
+goog.provide('goog.events.KeyCodes');
+
+goog.require('goog.userAgent');
+
+
+/**
+ * Key codes for common characters.
+ *
+ * This list is not localized and therefore some of the key codes are not
+ * correct for non US keyboard layouts. See comments below.
+ *
+ * @enum {number}
+ */
+goog.events.KeyCodes = {
+  WIN_KEY_FF_LINUX: 0,
+  MAC_ENTER: 3,
+  BACKSPACE: 8,
+  TAB: 9,
+  NUM_CENTER: 12,  // NUMLOCK on FF/Safari Mac
+  ENTER: 13,
+  SHIFT: 16,
+  CTRL: 17,
+  ALT: 18,
+  PAUSE: 19,
+  CAPS_LOCK: 20,
+  ESC: 27,
+  SPACE: 32,
+  PAGE_UP: 33,     // also NUM_NORTH_EAST
+  PAGE_DOWN: 34,   // also NUM_SOUTH_EAST
+  END: 35,         // also NUM_SOUTH_WEST
+  HOME: 36,        // also NUM_NORTH_WEST
+  LEFT: 37,        // also NUM_WEST
+  UP: 38,          // also NUM_NORTH
+  RIGHT: 39,       // also NUM_EAST
+  DOWN: 40,        // also NUM_SOUTH
+  PRINT_SCREEN: 44,
+  INSERT: 45,      // also NUM_INSERT
+  DELETE: 46,      // also NUM_DELETE
+  ZERO: 48,
+  ONE: 49,
+  TWO: 50,
+  THREE: 51,
+  FOUR: 52,
+  FIVE: 53,
+  SIX: 54,
+  SEVEN: 55,
+  EIGHT: 56,
+  NINE: 57,
+  FF_SEMICOLON: 59, // Firefox (Gecko) fires this for semicolon instead of 186
+  FF_EQUALS: 61, // Firefox (Gecko) fires this for equals instead of 187
+  QUESTION_MARK: 63, // needs localization
+  A: 65,
+  B: 66,
+  C: 67,
+  D: 68,
+  E: 69,
+  F: 70,
+  G: 71,
+  H: 72,
+  I: 73,
+  J: 74,
+  K: 75,
+  L: 76,
+  M: 77,
+  N: 78,
+  O: 79,
+  P: 80,
+  Q: 81,
+  R: 82,
+  S: 83,
+  T: 84,
+  U: 85,
+  V: 86,
+  W: 87,
+  X: 88,
+  Y: 89,
+  Z: 90,
+  META: 91, // WIN_KEY_LEFT
+  WIN_KEY_RIGHT: 92,
+  CONTEXT_MENU: 93,
+  NUM_ZERO: 96,
+  NUM_ONE: 97,
+  NUM_TWO: 98,
+  NUM_THREE: 99,
+  NUM_FOUR: 100,
+  NUM_FIVE: 101,
+  NUM_SIX: 102,
+  NUM_SEVEN: 103,
+  NUM_EIGHT: 104,
+  NUM_NINE: 105,
+  NUM_MULTIPLY: 106,
+  NUM_PLUS: 107,
+  NUM_MINUS: 109,
+  NUM_PERIOD: 110,
+  NUM_DIVISION: 111,
+  F1: 112,
+  F2: 113,
+  F3: 114,
+  F4: 115,
+  F5: 116,
+  F6: 117,
+  F7: 118,
+  F8: 119,
+  F9: 120,
+  F10: 121,
+  F11: 122,
+  F12: 123,
+  NUMLOCK: 144,
+  SCROLL_LOCK: 145,
+
+  // OS-specific media keys like volume controls and browser controls.
+  FIRST_MEDIA_KEY: 166,
+  LAST_MEDIA_KEY: 183,
+
+  SEMICOLON: 186,            // needs localization
+  DASH: 189,                 // needs localization
+  EQUALS: 187,               // needs localization
+  COMMA: 188,                // needs localization
+  PERIOD: 190,               // needs localization
+  SLASH: 191,                // needs localization
+  APOSTROPHE: 192,           // needs localization
+  TILDE: 192,                // needs localization
+  SINGLE_QUOTE: 222,         // needs localization
+  OPEN_SQUARE_BRACKET: 219,  // needs localization
+  BACKSLASH: 220,            // needs localization
+  CLOSE_SQUARE_BRACKET: 221, // needs localization
+  WIN_KEY: 224,
+  MAC_FF_META: 224, // Firefox (Gecko) fires this for the meta key instead of 91
+  WIN_IME: 229,
+
+  // We've seen users whose machines fire this keycode at regular one
+  // second intervals. The common thread among these users is that
+  // they're all using Dell Inspiron laptops, so we suspect that this
+  // indicates a hardware/bios problem.
+  // http://en.community.dell.com/support-forums/laptop/f/3518/p/19285957/19523128.aspx
+  PHANTOM: 255
+};
+
+
+/**
+ * Returns true if the event contains a text modifying key.
+ * @param {goog.events.BrowserEvent} e A key event.
+ * @return {boolean} Whether it's a text modifying key.
+ */
+goog.events.KeyCodes.isTextModifyingKeyEvent = function(e) {
+  if (e.altKey && !e.ctrlKey ||
+      e.metaKey ||
+      // Function keys don't generate text
+      e.keyCode >= goog.events.KeyCodes.F1 &&
+      e.keyCode <= goog.events.KeyCodes.F12) {
+    return false;
+  }
+
+  // The following keys are quite harmless, even in combination with
+  // CTRL, ALT or SHIFT.
+  switch (e.keyCode) {
+    case goog.events.KeyCodes.ALT:
+    case goog.events.KeyCodes.CAPS_LOCK:
+    case goog.events.KeyCodes.CONTEXT_MENU:
+    case goog.events.KeyCodes.CTRL:
+    case goog.events.KeyCodes.DOWN:
+    case goog.events.KeyCodes.END:
+    case goog.events.KeyCodes.ESC:
+    case goog.events.KeyCodes.HOME:
+    case goog.events.KeyCodes.INSERT:
+    case goog.events.KeyCodes.LEFT:
+    case goog.events.KeyCodes.MAC_FF_META:
+    case goog.events.KeyCodes.META:
+    case goog.events.KeyCodes.NUMLOCK:
+    case goog.events.KeyCodes.NUM_CENTER:
+    case goog.events.KeyCodes.PAGE_DOWN:
+    case goog.events.KeyCodes.PAGE_UP:
+    case goog.events.KeyCodes.PAUSE:
+    case goog.events.KeyCodes.PHANTOM:
+    case goog.events.KeyCodes.PRINT_SCREEN:
+    case goog.events.KeyCodes.RIGHT:
+    case goog.events.KeyCodes.SCROLL_LOCK:
+    case goog.events.KeyCodes.SHIFT:
+    case goog.events.KeyCodes.UP:
+    case goog.events.KeyCodes.WIN_KEY:
+    case goog.events.KeyCodes.WIN_KEY_RIGHT:
+      return false;
+    case goog.events.KeyCodes.WIN_KEY_FF_LINUX:
+      return !goog.userAgent.GECKO;
+    default:
+      return e.keyCode < goog.events.KeyCodes.FIRST_MEDIA_KEY ||
+          e.keyCode > goog.events.KeyCodes.LAST_MEDIA_KEY;
+  }
+};
+
+
+/**
+ * Returns true if the key fires a keypress event in the current browser.
+ *
+ * Accoridng to MSDN [1] IE only fires keypress events for the following keys:
+ * - Letters: A - Z (uppercase and lowercase)
+ * - Numerals: 0 - 9
+ * - Symbols: ! @ # $ % ^ & * ( ) _ - + = < [ ] { } , . / ? \ | ' ` " ~
+ * - System: ESC, SPACEBAR, ENTER
+ *
+ * That's not entirely correct though, for instance there's no distinction
+ * between upper and lower case letters.
+ *
+ * [1] http://msdn2.microsoft.com/en-us/library/ms536939(VS.85).aspx)
+ *
+ * Safari is similar to IE, but does not fire keypress for ESC.
+ *
+ * Additionally, IE6 does not fire keydown or keypress events for letters when
+ * the control or alt keys are held down and the shift key is not. IE7 does
+ * fire keydown in these cases, though, but not keypress.
+ *
+ * @param {number} keyCode A key code.
+ * @param {number=} opt_heldKeyCode Key code of a currently-held key.
+ * @param {boolean=} opt_shiftKey Whether the shift key is held down.
+ * @param {boolean=} opt_ctrlKey Whether the control key is held down.
+ * @param {boolean=} opt_altKey Whether the alt key is held down.
+ * @return {boolean} Whether it's a key that fires a keypress event.
+ */
+goog.events.KeyCodes.firesKeyPressEvent = function(keyCode, opt_heldKeyCode,
+    opt_shiftKey, opt_ctrlKey, opt_altKey) {
+  if (!goog.userAgent.IE &&
+      !(goog.userAgent.WEBKIT && goog.userAgent.isVersionOrHigher('525'))) {
+    return true;
+  }
+
+  if (goog.userAgent.MAC && opt_altKey) {
+    return goog.events.KeyCodes.isCharacterKey(keyCode);
+  }
+
+  // Alt but not AltGr which is represented as Alt+Ctrl.
+  if (opt_altKey && !opt_ctrlKey) {
+    return false;
+  }
+
+  // Saves Ctrl or Alt + key for IE and WebKit 525+, which won't fire keypress.
+  // Non-IE browsers and WebKit prior to 525 won't get this far so no need to
+  // check the user agent.
+  if (!opt_shiftKey &&
+      (opt_heldKeyCode == goog.events.KeyCodes.CTRL ||
+       opt_heldKeyCode == goog.events.KeyCodes.ALT ||
+       goog.userAgent.MAC &&
+       opt_heldKeyCode == goog.events.KeyCodes.META)) {
+    return false;
+  }
+
+  // Some keys with Ctrl/Shift do not issue keypress in WEBKIT.
+  if (goog.userAgent.WEBKIT && opt_ctrlKey && opt_shiftKey) {
+    switch (keyCode) {
+      case goog.events.KeyCodes.BACKSLASH:
+      case goog.events.KeyCodes.OPEN_SQUARE_BRACKET:
+      case goog.events.KeyCodes.CLOSE_SQUARE_BRACKET:
+      case goog.events.KeyCodes.TILDE:
+      case goog.events.KeyCodes.SEMICOLON:
+      case goog.events.KeyCodes.DASH:
+      case goog.events.KeyCodes.EQUALS:
+      case goog.events.KeyCodes.COMMA:
+      case goog.events.KeyCodes.PERIOD:
+      case goog.events.KeyCodes.SLASH:
+      case goog.events.KeyCodes.APOSTROPHE:
+      case goog.events.KeyCodes.SINGLE_QUOTE:
+        return false;
+    }
+  }
+
+  // When Ctrl+<somekey> is held in IE, it only fires a keypress once, but it
+  // continues to fire keydown events as the event repeats.
+  if (goog.userAgent.IE && opt_ctrlKey && opt_heldKeyCode == keyCode) {
+    return false;
+  }
+
+  switch (keyCode) {
+    case goog.events.KeyCodes.ENTER:
+      // IE9 does not fire KEYPRESS on ENTER.
+      return !(goog.userAgent.IE && goog.userAgent.isDocumentModeOrHigher(9));
+    case goog.events.KeyCodes.ESC:
+      return !goog.userAgent.WEBKIT;
+  }
+
+  return goog.events.KeyCodes.isCharacterKey(keyCode);
+};
+
+
+/**
+ * Returns true if the key produces a character.
+ * This does not cover characters on non-US keyboards (Russian, Hebrew, etc.).
+ *
+ * @param {number} keyCode A key code.
+ * @return {boolean} Whether it's a character key.
+ */
+goog.events.KeyCodes.isCharacterKey = function(keyCode) {
+  if (keyCode >= goog.events.KeyCodes.ZERO &&
+      keyCode <= goog.events.KeyCodes.NINE) {
+    return true;
+  }
+
+  if (keyCode >= goog.events.KeyCodes.NUM_ZERO &&
+      keyCode <= goog.events.KeyCodes.NUM_MULTIPLY) {
+    return true;
+  }
+
+  if (keyCode >= goog.events.KeyCodes.A &&
+      keyCode <= goog.events.KeyCodes.Z) {
+    return true;
+  }
+
+  // Safari sends zero key code for non-latin characters.
+  if (goog.userAgent.WEBKIT && keyCode == 0) {
+    return true;
+  }
+
+  switch (keyCode) {
+    case goog.events.KeyCodes.SPACE:
+    case goog.events.KeyCodes.QUESTION_MARK:
+    case goog.events.KeyCodes.NUM_PLUS:
+    case goog.events.KeyCodes.NUM_MINUS:
+    case goog.events.KeyCodes.NUM_PERIOD:
+    case goog.events.KeyCodes.NUM_DIVISION:
+    case goog.events.KeyCodes.SEMICOLON:
+    case goog.events.KeyCodes.FF_SEMICOLON:
+    case goog.events.KeyCodes.DASH:
+    case goog.events.KeyCodes.EQUALS:
+    case goog.events.KeyCodes.FF_EQUALS:
+    case goog.events.KeyCodes.COMMA:
+    case goog.events.KeyCodes.PERIOD:
+    case goog.events.KeyCodes.SLASH:
+    case goog.events.KeyCodes.APOSTROPHE:
+    case goog.events.KeyCodes.SINGLE_QUOTE:
+    case goog.events.KeyCodes.OPEN_SQUARE_BRACKET:
+    case goog.events.KeyCodes.BACKSLASH:
+    case goog.events.KeyCodes.CLOSE_SQUARE_BRACKET:
+      return true;
+    default:
+      return false;
+  }
+};
+
+
+/**
+ * Normalizes key codes from their Gecko-specific value to the general one.
+ * @param {number} keyCode The native key code.
+ * @return {number} The normalized key code.
+ */
+goog.events.KeyCodes.normalizeGeckoKeyCode = function(keyCode) {
+  switch (keyCode) {
+    case goog.events.KeyCodes.FF_EQUALS:
+      return goog.events.KeyCodes.EQUALS;
+    case goog.events.KeyCodes.FF_SEMICOLON:
+      return goog.events.KeyCodes.SEMICOLON;
+    case goog.events.KeyCodes.MAC_FF_META:
+      return goog.events.KeyCodes.META;
+    case goog.events.KeyCodes.WIN_KEY_FF_LINUX:
+      return goog.events.KeyCodes.WIN_KEY;
+    default:
+      return keyCode;
+  }
+};
+// Copyright 2009 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * @fileoverview Provides a base class for custom Error objects such that the
+ * stack is correctly maintained.
+ *
+ * You should never need to throw goog.debug.Error(msg) directly, Error(msg) is
+ * sufficient.
+ *
+ */
+
+goog.provide('goog.debug.Error');
+
+
+
+/**
+ * Base class for custom error objects.
+ * @param {*=} opt_msg The message associated with the error.
+ * @constructor
+ * @extends {Error}
+ */
+goog.debug.Error = function(opt_msg) {
+
+  // Ensure there is a stack trace.
+  if (Error.captureStackTrace) {
+    Error.captureStackTrace(this, goog.debug.Error);
+  } else {
+    this.stack = new Error().stack || '';
+  }
+
+  if (opt_msg) {
+    this.message = String(opt_msg);
+  }
+};
+goog.inherits(goog.debug.Error, Error);
+
+
+/** @override */
+goog.debug.Error.prototype.name = 'CustomError';
 // Copyright 2008 The Closure Library Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -3509,6 +4485,641 @@ goog.asserts.assertObjectPrototypeIsIntact = function() {
   for (var key in Object.prototype) {
     goog.asserts.fail(key + ' should not be enumerable in Object.prototype.');
   }
+};
+// Copyright 2006 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * @fileoverview Utilities for manipulating objects/maps/hashes.
+ */
+
+goog.provide('goog.object');
+
+
+/**
+ * Calls a function for each element in an object/map/hash.
+ *
+ * @param {Object.<K,V>} obj The object over which to iterate.
+ * @param {function(this:T,V,?,Object.<K,V>):?} f The function to call
+ *     for every element. This function takes 3 arguments (the element, the
+ *     index and the object) and the return value is ignored.
+ * @param {T=} opt_obj This is used as the 'this' object within f.
+ * @template T,K,V
+ */
+goog.object.forEach = function(obj, f, opt_obj) {
+  for (var key in obj) {
+    f.call(opt_obj, obj[key], key, obj);
+  }
+};
+
+
+/**
+ * Calls a function for each element in an object/map/hash. If that call returns
+ * true, adds the element to a new object.
+ *
+ * @param {Object.<K,V>} obj The object over which to iterate.
+ * @param {function(this:T,V,?,Object.<K,V>):boolean} f The function to call
+ *     for every element. This
+ *     function takes 3 arguments (the element, the index and the object)
+ *     and should return a boolean. If the return value is true the
+ *     element is added to the result object. If it is false the
+ *     element is not included.
+ * @param {T=} opt_obj This is used as the 'this' object within f.
+ * @return {!Object.<K,V>} a new object in which only elements that passed the
+ *     test are present.
+ * @template T,K,V
+ */
+goog.object.filter = function(obj, f, opt_obj) {
+  var res = {};
+  for (var key in obj) {
+    if (f.call(opt_obj, obj[key], key, obj)) {
+      res[key] = obj[key];
+    }
+  }
+  return res;
+};
+
+
+/**
+ * For every element in an object/map/hash calls a function and inserts the
+ * result into a new object.
+ *
+ * @param {Object.<K,V>} obj The object over which to iterate.
+ * @param {function(this:T,V,?,Object.<K,V>):R} f The function to call
+ *     for every element. This function
+ *     takes 3 arguments (the element, the index and the object)
+ *     and should return something. The result will be inserted
+ *     into a new object.
+ * @param {T=} opt_obj This is used as the 'this' object within f.
+ * @return {!Object.<K,R>} a new object with the results from f.
+ * @template T,K,V,R
+ */
+goog.object.map = function(obj, f, opt_obj) {
+  var res = {};
+  for (var key in obj) {
+    res[key] = f.call(opt_obj, obj[key], key, obj);
+  }
+  return res;
+};
+
+
+/**
+ * Calls a function for each element in an object/map/hash. If any
+ * call returns true, returns true (without checking the rest). If
+ * all calls return false, returns false.
+ *
+ * @param {Object.<K,V>} obj The object to check.
+ * @param {function(this:T,V,?,Object.<K,V>):boolean} f The function to
+ *     call for every element. This function
+ *     takes 3 arguments (the element, the index and the object) and should
+ *     return a boolean.
+ * @param {T=} opt_obj This is used as the 'this' object within f.
+ * @return {boolean} true if any element passes the test.
+ * @template T,K,V
+ */
+goog.object.some = function(obj, f, opt_obj) {
+  for (var key in obj) {
+    if (f.call(opt_obj, obj[key], key, obj)) {
+      return true;
+    }
+  }
+  return false;
+};
+
+
+/**
+ * Calls a function for each element in an object/map/hash. If
+ * all calls return true, returns true. If any call returns false, returns
+ * false at this point and does not continue to check the remaining elements.
+ *
+ * @param {Object.<K,V>} obj The object to check.
+ * @param {?function(this:T,V,?,Object.<K,V>):boolean} f The function to
+ *     call for every element. This function
+ *     takes 3 arguments (the element, the index and the object) and should
+ *     return a boolean.
+ * @param {T=} opt_obj This is used as the 'this' object within f.
+ * @return {boolean} false if any element fails the test.
+ * @template T,K,V
+ */
+goog.object.every = function(obj, f, opt_obj) {
+  for (var key in obj) {
+    if (!f.call(opt_obj, obj[key], key, obj)) {
+      return false;
+    }
+  }
+  return true;
+};
+
+
+/**
+ * Returns the number of key-value pairs in the object map.
+ *
+ * @param {Object} obj The object for which to get the number of key-value
+ *     pairs.
+ * @return {number} The number of key-value pairs in the object map.
+ */
+goog.object.getCount = function(obj) {
+  // JS1.5 has __count__ but it has been deprecated so it raises a warning...
+  // in other words do not use. Also __count__ only includes the fields on the
+  // actual object and not in the prototype chain.
+  var rv = 0;
+  for (var key in obj) {
+    rv++;
+  }
+  return rv;
+};
+
+
+/**
+ * Returns one key from the object map, if any exists.
+ * For map literals the returned key will be the first one in most of the
+ * browsers (a know exception is Konqueror).
+ *
+ * @param {Object} obj The object to pick a key from.
+ * @return {string|undefined} The key or undefined if the object is empty.
+ */
+goog.object.getAnyKey = function(obj) {
+  for (var key in obj) {
+    return key;
+  }
+};
+
+
+/**
+ * Returns one value from the object map, if any exists.
+ * For map literals the returned value will be the first one in most of the
+ * browsers (a know exception is Konqueror).
+ *
+ * @param {Object.<K,V>} obj The object to pick a value from.
+ * @return {V|undefined} The value or undefined if the object is empty.
+ * @template K,V
+ */
+goog.object.getAnyValue = function(obj) {
+  for (var key in obj) {
+    return obj[key];
+  }
+};
+
+
+/**
+ * Whether the object/hash/map contains the given object as a value.
+ * An alias for goog.object.containsValue(obj, val).
+ *
+ * @param {Object.<K,V>} obj The object in which to look for val.
+ * @param {V} val The object for which to check.
+ * @return {boolean} true if val is present.
+ * @template K,V
+ */
+goog.object.contains = function(obj, val) {
+  return goog.object.containsValue(obj, val);
+};
+
+
+/**
+ * Returns the values of the object/map/hash.
+ *
+ * @param {Object.<K,V>} obj The object from which to get the values.
+ * @return {!Array.<V>} The values in the object/map/hash.
+ * @template K,V
+ */
+goog.object.getValues = function(obj) {
+  var res = [];
+  var i = 0;
+  for (var key in obj) {
+    res[i++] = obj[key];
+  }
+  return res;
+};
+
+
+/**
+ * Returns the keys of the object/map/hash.
+ *
+ * @param {Object} obj The object from which to get the keys.
+ * @return {!Array.<string>} Array of property keys.
+ */
+goog.object.getKeys = function(obj) {
+  var res = [];
+  var i = 0;
+  for (var key in obj) {
+    res[i++] = key;
+  }
+  return res;
+};
+
+
+/**
+ * Get a value from an object multiple levels deep.  This is useful for
+ * pulling values from deeply nested objects, such as JSON responses.
+ * Example usage: getValueByKeys(jsonObj, 'foo', 'entries', 3)
+ *
+ * @param {!Object} obj An object to get the value from.  Can be array-like.
+ * @param {...(string|number|!Array.<number|string>)} var_args A number of keys
+ *     (as strings, or numbers, for array-like objects).  Can also be
+ *     specified as a single array of keys.
+ * @return {*} The resulting value.  If, at any point, the value for a key
+ *     is undefined, returns undefined.
+ */
+goog.object.getValueByKeys = function(obj, var_args) {
+  var isArrayLike = goog.isArrayLike(var_args);
+  var keys = isArrayLike ? var_args : arguments;
+
+  // Start with the 2nd parameter for the variable parameters syntax.
+  for (var i = isArrayLike ? 0 : 1; i < keys.length; i++) {
+    obj = obj[keys[i]];
+    if (!goog.isDef(obj)) {
+      break;
+    }
+  }
+
+  return obj;
+};
+
+
+/**
+ * Whether the object/map/hash contains the given key.
+ *
+ * @param {Object} obj The object in which to look for key.
+ * @param {*} key The key for which to check.
+ * @return {boolean} true If the map contains the key.
+ */
+goog.object.containsKey = function(obj, key) {
+  return key in obj;
+};
+
+
+/**
+ * Whether the object/map/hash contains the given value. This is O(n).
+ *
+ * @param {Object.<K,V>} obj The object in which to look for val.
+ * @param {V} val The value for which to check.
+ * @return {boolean} true If the map contains the value.
+ * @template K,V
+ */
+goog.object.containsValue = function(obj, val) {
+  for (var key in obj) {
+    if (obj[key] == val) {
+      return true;
+    }
+  }
+  return false;
+};
+
+
+/**
+ * Searches an object for an element that satisfies the given condition and
+ * returns its key.
+ * @param {Object.<K,V>} obj The object to search in.
+ * @param {function(this:T,V,string,Object.<K,V>):boolean} f The
+ *      function to call for every element. Takes 3 arguments (the value,
+ *     the key and the object) and should return a boolean.
+ * @param {T=} opt_this An optional "this" context for the function.
+ * @return {string|undefined} The key of an element for which the function
+ *     returns true or undefined if no such element is found.
+ * @template T,K,V
+ */
+goog.object.findKey = function(obj, f, opt_this) {
+  for (var key in obj) {
+    if (f.call(opt_this, obj[key], key, obj)) {
+      return key;
+    }
+  }
+  return undefined;
+};
+
+
+/**
+ * Searches an object for an element that satisfies the given condition and
+ * returns its value.
+ * @param {Object.<K,V>} obj The object to search in.
+ * @param {function(this:T,V,string,Object.<K,V>):boolean} f The function
+ *     to call for every element. Takes 3 arguments (the value, the key
+ *     and the object) and should return a boolean.
+ * @param {T=} opt_this An optional "this" context for the function.
+ * @return {V} The value of an element for which the function returns true or
+ *     undefined if no such element is found.
+ * @template T,K,V
+ */
+goog.object.findValue = function(obj, f, opt_this) {
+  var key = goog.object.findKey(obj, f, opt_this);
+  return key && obj[key];
+};
+
+
+/**
+ * Whether the object/map/hash is empty.
+ *
+ * @param {Object} obj The object to test.
+ * @return {boolean} true if obj is empty.
+ */
+goog.object.isEmpty = function(obj) {
+  for (var key in obj) {
+    return false;
+  }
+  return true;
+};
+
+
+/**
+ * Removes all key value pairs from the object/map/hash.
+ *
+ * @param {Object} obj The object to clear.
+ */
+goog.object.clear = function(obj) {
+  for (var i in obj) {
+    delete obj[i];
+  }
+};
+
+
+/**
+ * Removes a key-value pair based on the key.
+ *
+ * @param {Object} obj The object from which to remove the key.
+ * @param {*} key The key to remove.
+ * @return {boolean} Whether an element was removed.
+ */
+goog.object.remove = function(obj, key) {
+  var rv;
+  if ((rv = key in obj)) {
+    delete obj[key];
+  }
+  return rv;
+};
+
+
+/**
+ * Adds a key-value pair to the object. Throws an exception if the key is
+ * already in use. Use set if you want to change an existing pair.
+ *
+ * @param {Object.<K,V>} obj The object to which to add the key-value pair.
+ * @param {string} key The key to add.
+ * @param {V} val The value to add.
+ * @template K,V
+ */
+goog.object.add = function(obj, key, val) {
+  if (key in obj) {
+    throw Error('The object already contains the key "' + key + '"');
+  }
+  goog.object.set(obj, key, val);
+};
+
+
+/**
+ * Returns the value for the given key.
+ *
+ * @param {Object.<K,V>} obj The object from which to get the value.
+ * @param {string} key The key for which to get the value.
+ * @param {R=} opt_val The value to return if no item is found for the given
+ *     key (default is undefined).
+ * @return {V|R|undefined} The value for the given key.
+ * @template K,V,R
+ */
+goog.object.get = function(obj, key, opt_val) {
+  if (key in obj) {
+    return obj[key];
+  }
+  return opt_val;
+};
+
+
+/**
+ * Adds a key-value pair to the object/map/hash.
+ *
+ * @param {Object.<K,V>} obj The object to which to add the key-value pair.
+ * @param {string} key The key to add.
+ * @param {V} value The value to add.
+ * @template K,V
+ */
+goog.object.set = function(obj, key, value) {
+  obj[key] = value;
+};
+
+
+/**
+ * Adds a key-value pair to the object/map/hash if it doesn't exist yet.
+ *
+ * @param {Object.<K,V>} obj The object to which to add the key-value pair.
+ * @param {string} key The key to add.
+ * @param {V} value The value to add if the key wasn't present.
+ * @return {V} The value of the entry at the end of the function.
+ * @template K,V
+ */
+goog.object.setIfUndefined = function(obj, key, value) {
+  return key in obj ? obj[key] : (obj[key] = value);
+};
+
+
+/**
+ * Does a flat clone of the object.
+ *
+ * @param {Object.<K,V>} obj Object to clone.
+ * @return {!Object.<K,V>} Clone of the input object.
+ * @template K,V
+ */
+goog.object.clone = function(obj) {
+  // We cannot use the prototype trick because a lot of methods depend on where
+  // the actual key is set.
+
+  var res = {};
+  for (var key in obj) {
+    res[key] = obj[key];
+  }
+  return res;
+  // We could also use goog.mixin but I wanted this to be independent from that.
+};
+
+
+/**
+ * Clones a value. The input may be an Object, Array, or basic type. Objects and
+ * arrays will be cloned recursively.
+ *
+ * WARNINGS:
+ * <code>goog.object.unsafeClone</code> does not detect reference loops. Objects
+ * that refer to themselves will cause infinite recursion.
+ *
+ * <code>goog.object.unsafeClone</code> is unaware of unique identifiers, and
+ * copies UIDs created by <code>getUid</code> into cloned results.
+ *
+ * @param {*} obj The value to clone.
+ * @return {*} A clone of the input value.
+ */
+goog.object.unsafeClone = function(obj) {
+  var type = goog.typeOf(obj);
+  if (type == 'object' || type == 'array') {
+    if (obj.clone) {
+      return obj.clone();
+    }
+    var clone = type == 'array' ? [] : {};
+    for (var key in obj) {
+      clone[key] = goog.object.unsafeClone(obj[key]);
+    }
+    return clone;
+  }
+
+  return obj;
+};
+
+
+/**
+ * Returns a new object in which all the keys and values are interchanged
+ * (keys become values and values become keys). If multiple keys map to the
+ * same value, the chosen transposed value is implementation-dependent.
+ *
+ * @param {Object} obj The object to transpose.
+ * @return {!Object} The transposed object.
+ */
+goog.object.transpose = function(obj) {
+  var transposed = {};
+  for (var key in obj) {
+    transposed[obj[key]] = key;
+  }
+  return transposed;
+};
+
+
+/**
+ * The names of the fields that are defined on Object.prototype.
+ * @type {Array.<string>}
+ * @private
+ */
+goog.object.PROTOTYPE_FIELDS_ = [
+  'constructor',
+  'hasOwnProperty',
+  'isPrototypeOf',
+  'propertyIsEnumerable',
+  'toLocaleString',
+  'toString',
+  'valueOf'
+];
+
+
+/**
+ * Extends an object with another object.
+ * This operates 'in-place'; it does not create a new Object.
+ *
+ * Example:
+ * var o = {};
+ * goog.object.extend(o, {a: 0, b: 1});
+ * o; // {a: 0, b: 1}
+ * goog.object.extend(o, {c: 2});
+ * o; // {a: 0, b: 1, c: 2}
+ *
+ * @param {Object} target  The object to modify.
+ * @param {...Object} var_args The objects from which values will be copied.
+ */
+goog.object.extend = function(target, var_args) {
+  var key, source;
+  for (var i = 1; i < arguments.length; i++) {
+    source = arguments[i];
+    for (key in source) {
+      target[key] = source[key];
+    }
+
+    // For IE the for-in-loop does not contain any properties that are not
+    // enumerable on the prototype object (for example isPrototypeOf from
+    // Object.prototype) and it will also not include 'replace' on objects that
+    // extend String and change 'replace' (not that it is common for anyone to
+    // extend anything except Object).
+
+    for (var j = 0; j < goog.object.PROTOTYPE_FIELDS_.length; j++) {
+      key = goog.object.PROTOTYPE_FIELDS_[j];
+      if (Object.prototype.hasOwnProperty.call(source, key)) {
+        target[key] = source[key];
+      }
+    }
+  }
+};
+
+
+/**
+ * Creates a new object built from the key-value pairs provided as arguments.
+ * @param {...*} var_args If only one argument is provided and it is an array
+ *     then this is used as the arguments,  otherwise even arguments are used as
+ *     the property names and odd arguments are used as the property values.
+ * @return {!Object} The new object.
+ * @throws {Error} If there are uneven number of arguments or there is only one
+ *     non array argument.
+ */
+goog.object.create = function(var_args) {
+  var argLength = arguments.length;
+  if (argLength == 1 && goog.isArray(arguments[0])) {
+    return goog.object.create.apply(null, arguments[0]);
+  }
+
+  if (argLength % 2) {
+    throw Error('Uneven number of arguments');
+  }
+
+  var rv = {};
+  for (var i = 0; i < argLength; i += 2) {
+    rv[arguments[i]] = arguments[i + 1];
+  }
+  return rv;
+};
+
+
+/**
+ * Creates a new object where the property names come from the arguments but
+ * the value is always set to true
+ * @param {...*} var_args If only one argument is provided and it is an array
+ *     then this is used as the arguments,  otherwise the arguments are used
+ *     as the property names.
+ * @return {!Object} The new object.
+ */
+goog.object.createSet = function(var_args) {
+  var argLength = arguments.length;
+  if (argLength == 1 && goog.isArray(arguments[0])) {
+    return goog.object.createSet.apply(null, arguments[0]);
+  }
+
+  var rv = {};
+  for (var i = 0; i < argLength; i++) {
+    rv[arguments[i]] = true;
+  }
+  return rv;
+};
+
+
+/**
+ * Creates an immutable view of the underlying object, if the browser
+ * supports immutable objects.
+ *
+ * In default mode, writes to this view will fail silently. In strict mode,
+ * they will throw an error.
+ *
+ * @param {!Object.<K,V>} obj An object.
+ * @return {!Object.<K,V>} An immutable view of that object, or the
+ *     original object if this browser does not support immutables.
+ * @template K,V
+ */
+goog.object.createImmutableView = function(obj) {
+  var result = obj;
+  if (Object.isFrozen && !Object.isFrozen(obj)) {
+    result = Object.create(obj);
+    Object.freeze(result);
+  }
+  return result;
+};
+
+
+/**
+ * @param {!Object} obj An object.
+ * @return {boolean} Whether this is an immutable view of the object.
+ */
+goog.object.isImmutableView = function(obj) {
+  return !!Object.isFrozen && Object.isFrozen(obj);
 };
 // Copyright 2006 The Closure Library Authors. All Rights Reserved.
 //
@@ -5244,641 +6855,6 @@ goog.dom.classes.toggle = function(element, className) {
   goog.dom.classes.enable(element, className, add);
   return add;
 };
-// Copyright 2006 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/**
- * @fileoverview Utilities for manipulating objects/maps/hashes.
- */
-
-goog.provide('goog.object');
-
-
-/**
- * Calls a function for each element in an object/map/hash.
- *
- * @param {Object.<K,V>} obj The object over which to iterate.
- * @param {function(this:T,V,?,Object.<K,V>):?} f The function to call
- *     for every element. This function takes 3 arguments (the element, the
- *     index and the object) and the return value is ignored.
- * @param {T=} opt_obj This is used as the 'this' object within f.
- * @template T,K,V
- */
-goog.object.forEach = function(obj, f, opt_obj) {
-  for (var key in obj) {
-    f.call(opt_obj, obj[key], key, obj);
-  }
-};
-
-
-/**
- * Calls a function for each element in an object/map/hash. If that call returns
- * true, adds the element to a new object.
- *
- * @param {Object.<K,V>} obj The object over which to iterate.
- * @param {function(this:T,V,?,Object.<K,V>):boolean} f The function to call
- *     for every element. This
- *     function takes 3 arguments (the element, the index and the object)
- *     and should return a boolean. If the return value is true the
- *     element is added to the result object. If it is false the
- *     element is not included.
- * @param {T=} opt_obj This is used as the 'this' object within f.
- * @return {!Object.<K,V>} a new object in which only elements that passed the
- *     test are present.
- * @template T,K,V
- */
-goog.object.filter = function(obj, f, opt_obj) {
-  var res = {};
-  for (var key in obj) {
-    if (f.call(opt_obj, obj[key], key, obj)) {
-      res[key] = obj[key];
-    }
-  }
-  return res;
-};
-
-
-/**
- * For every element in an object/map/hash calls a function and inserts the
- * result into a new object.
- *
- * @param {Object.<K,V>} obj The object over which to iterate.
- * @param {function(this:T,V,?,Object.<K,V>):R} f The function to call
- *     for every element. This function
- *     takes 3 arguments (the element, the index and the object)
- *     and should return something. The result will be inserted
- *     into a new object.
- * @param {T=} opt_obj This is used as the 'this' object within f.
- * @return {!Object.<K,R>} a new object with the results from f.
- * @template T,K,V,R
- */
-goog.object.map = function(obj, f, opt_obj) {
-  var res = {};
-  for (var key in obj) {
-    res[key] = f.call(opt_obj, obj[key], key, obj);
-  }
-  return res;
-};
-
-
-/**
- * Calls a function for each element in an object/map/hash. If any
- * call returns true, returns true (without checking the rest). If
- * all calls return false, returns false.
- *
- * @param {Object.<K,V>} obj The object to check.
- * @param {function(this:T,V,?,Object.<K,V>):boolean} f The function to
- *     call for every element. This function
- *     takes 3 arguments (the element, the index and the object) and should
- *     return a boolean.
- * @param {T=} opt_obj This is used as the 'this' object within f.
- * @return {boolean} true if any element passes the test.
- * @template T,K,V
- */
-goog.object.some = function(obj, f, opt_obj) {
-  for (var key in obj) {
-    if (f.call(opt_obj, obj[key], key, obj)) {
-      return true;
-    }
-  }
-  return false;
-};
-
-
-/**
- * Calls a function for each element in an object/map/hash. If
- * all calls return true, returns true. If any call returns false, returns
- * false at this point and does not continue to check the remaining elements.
- *
- * @param {Object.<K,V>} obj The object to check.
- * @param {?function(this:T,V,?,Object.<K,V>):boolean} f The function to
- *     call for every element. This function
- *     takes 3 arguments (the element, the index and the object) and should
- *     return a boolean.
- * @param {T=} opt_obj This is used as the 'this' object within f.
- * @return {boolean} false if any element fails the test.
- * @template T,K,V
- */
-goog.object.every = function(obj, f, opt_obj) {
-  for (var key in obj) {
-    if (!f.call(opt_obj, obj[key], key, obj)) {
-      return false;
-    }
-  }
-  return true;
-};
-
-
-/**
- * Returns the number of key-value pairs in the object map.
- *
- * @param {Object} obj The object for which to get the number of key-value
- *     pairs.
- * @return {number} The number of key-value pairs in the object map.
- */
-goog.object.getCount = function(obj) {
-  // JS1.5 has __count__ but it has been deprecated so it raises a warning...
-  // in other words do not use. Also __count__ only includes the fields on the
-  // actual object and not in the prototype chain.
-  var rv = 0;
-  for (var key in obj) {
-    rv++;
-  }
-  return rv;
-};
-
-
-/**
- * Returns one key from the object map, if any exists.
- * For map literals the returned key will be the first one in most of the
- * browsers (a know exception is Konqueror).
- *
- * @param {Object} obj The object to pick a key from.
- * @return {string|undefined} The key or undefined if the object is empty.
- */
-goog.object.getAnyKey = function(obj) {
-  for (var key in obj) {
-    return key;
-  }
-};
-
-
-/**
- * Returns one value from the object map, if any exists.
- * For map literals the returned value will be the first one in most of the
- * browsers (a know exception is Konqueror).
- *
- * @param {Object.<K,V>} obj The object to pick a value from.
- * @return {V|undefined} The value or undefined if the object is empty.
- * @template K,V
- */
-goog.object.getAnyValue = function(obj) {
-  for (var key in obj) {
-    return obj[key];
-  }
-};
-
-
-/**
- * Whether the object/hash/map contains the given object as a value.
- * An alias for goog.object.containsValue(obj, val).
- *
- * @param {Object.<K,V>} obj The object in which to look for val.
- * @param {V} val The object for which to check.
- * @return {boolean} true if val is present.
- * @template K,V
- */
-goog.object.contains = function(obj, val) {
-  return goog.object.containsValue(obj, val);
-};
-
-
-/**
- * Returns the values of the object/map/hash.
- *
- * @param {Object.<K,V>} obj The object from which to get the values.
- * @return {!Array.<V>} The values in the object/map/hash.
- * @template K,V
- */
-goog.object.getValues = function(obj) {
-  var res = [];
-  var i = 0;
-  for (var key in obj) {
-    res[i++] = obj[key];
-  }
-  return res;
-};
-
-
-/**
- * Returns the keys of the object/map/hash.
- *
- * @param {Object} obj The object from which to get the keys.
- * @return {!Array.<string>} Array of property keys.
- */
-goog.object.getKeys = function(obj) {
-  var res = [];
-  var i = 0;
-  for (var key in obj) {
-    res[i++] = key;
-  }
-  return res;
-};
-
-
-/**
- * Get a value from an object multiple levels deep.  This is useful for
- * pulling values from deeply nested objects, such as JSON responses.
- * Example usage: getValueByKeys(jsonObj, 'foo', 'entries', 3)
- *
- * @param {!Object} obj An object to get the value from.  Can be array-like.
- * @param {...(string|number|!Array.<number|string>)} var_args A number of keys
- *     (as strings, or numbers, for array-like objects).  Can also be
- *     specified as a single array of keys.
- * @return {*} The resulting value.  If, at any point, the value for a key
- *     is undefined, returns undefined.
- */
-goog.object.getValueByKeys = function(obj, var_args) {
-  var isArrayLike = goog.isArrayLike(var_args);
-  var keys = isArrayLike ? var_args : arguments;
-
-  // Start with the 2nd parameter for the variable parameters syntax.
-  for (var i = isArrayLike ? 0 : 1; i < keys.length; i++) {
-    obj = obj[keys[i]];
-    if (!goog.isDef(obj)) {
-      break;
-    }
-  }
-
-  return obj;
-};
-
-
-/**
- * Whether the object/map/hash contains the given key.
- *
- * @param {Object} obj The object in which to look for key.
- * @param {*} key The key for which to check.
- * @return {boolean} true If the map contains the key.
- */
-goog.object.containsKey = function(obj, key) {
-  return key in obj;
-};
-
-
-/**
- * Whether the object/map/hash contains the given value. This is O(n).
- *
- * @param {Object.<K,V>} obj The object in which to look for val.
- * @param {V} val The value for which to check.
- * @return {boolean} true If the map contains the value.
- * @template K,V
- */
-goog.object.containsValue = function(obj, val) {
-  for (var key in obj) {
-    if (obj[key] == val) {
-      return true;
-    }
-  }
-  return false;
-};
-
-
-/**
- * Searches an object for an element that satisfies the given condition and
- * returns its key.
- * @param {Object.<K,V>} obj The object to search in.
- * @param {function(this:T,V,string,Object.<K,V>):boolean} f The
- *      function to call for every element. Takes 3 arguments (the value,
- *     the key and the object) and should return a boolean.
- * @param {T=} opt_this An optional "this" context for the function.
- * @return {string|undefined} The key of an element for which the function
- *     returns true or undefined if no such element is found.
- * @template T,K,V
- */
-goog.object.findKey = function(obj, f, opt_this) {
-  for (var key in obj) {
-    if (f.call(opt_this, obj[key], key, obj)) {
-      return key;
-    }
-  }
-  return undefined;
-};
-
-
-/**
- * Searches an object for an element that satisfies the given condition and
- * returns its value.
- * @param {Object.<K,V>} obj The object to search in.
- * @param {function(this:T,V,string,Object.<K,V>):boolean} f The function
- *     to call for every element. Takes 3 arguments (the value, the key
- *     and the object) and should return a boolean.
- * @param {T=} opt_this An optional "this" context for the function.
- * @return {V} The value of an element for which the function returns true or
- *     undefined if no such element is found.
- * @template T,K,V
- */
-goog.object.findValue = function(obj, f, opt_this) {
-  var key = goog.object.findKey(obj, f, opt_this);
-  return key && obj[key];
-};
-
-
-/**
- * Whether the object/map/hash is empty.
- *
- * @param {Object} obj The object to test.
- * @return {boolean} true if obj is empty.
- */
-goog.object.isEmpty = function(obj) {
-  for (var key in obj) {
-    return false;
-  }
-  return true;
-};
-
-
-/**
- * Removes all key value pairs from the object/map/hash.
- *
- * @param {Object} obj The object to clear.
- */
-goog.object.clear = function(obj) {
-  for (var i in obj) {
-    delete obj[i];
-  }
-};
-
-
-/**
- * Removes a key-value pair based on the key.
- *
- * @param {Object} obj The object from which to remove the key.
- * @param {*} key The key to remove.
- * @return {boolean} Whether an element was removed.
- */
-goog.object.remove = function(obj, key) {
-  var rv;
-  if ((rv = key in obj)) {
-    delete obj[key];
-  }
-  return rv;
-};
-
-
-/**
- * Adds a key-value pair to the object. Throws an exception if the key is
- * already in use. Use set if you want to change an existing pair.
- *
- * @param {Object.<K,V>} obj The object to which to add the key-value pair.
- * @param {string} key The key to add.
- * @param {V} val The value to add.
- * @template K,V
- */
-goog.object.add = function(obj, key, val) {
-  if (key in obj) {
-    throw Error('The object already contains the key "' + key + '"');
-  }
-  goog.object.set(obj, key, val);
-};
-
-
-/**
- * Returns the value for the given key.
- *
- * @param {Object.<K,V>} obj The object from which to get the value.
- * @param {string} key The key for which to get the value.
- * @param {R=} opt_val The value to return if no item is found for the given
- *     key (default is undefined).
- * @return {V|R|undefined} The value for the given key.
- * @template K,V,R
- */
-goog.object.get = function(obj, key, opt_val) {
-  if (key in obj) {
-    return obj[key];
-  }
-  return opt_val;
-};
-
-
-/**
- * Adds a key-value pair to the object/map/hash.
- *
- * @param {Object.<K,V>} obj The object to which to add the key-value pair.
- * @param {string} key The key to add.
- * @param {V} value The value to add.
- * @template K,V
- */
-goog.object.set = function(obj, key, value) {
-  obj[key] = value;
-};
-
-
-/**
- * Adds a key-value pair to the object/map/hash if it doesn't exist yet.
- *
- * @param {Object.<K,V>} obj The object to which to add the key-value pair.
- * @param {string} key The key to add.
- * @param {V} value The value to add if the key wasn't present.
- * @return {V} The value of the entry at the end of the function.
- * @template K,V
- */
-goog.object.setIfUndefined = function(obj, key, value) {
-  return key in obj ? obj[key] : (obj[key] = value);
-};
-
-
-/**
- * Does a flat clone of the object.
- *
- * @param {Object.<K,V>} obj Object to clone.
- * @return {!Object.<K,V>} Clone of the input object.
- * @template K,V
- */
-goog.object.clone = function(obj) {
-  // We cannot use the prototype trick because a lot of methods depend on where
-  // the actual key is set.
-
-  var res = {};
-  for (var key in obj) {
-    res[key] = obj[key];
-  }
-  return res;
-  // We could also use goog.mixin but I wanted this to be independent from that.
-};
-
-
-/**
- * Clones a value. The input may be an Object, Array, or basic type. Objects and
- * arrays will be cloned recursively.
- *
- * WARNINGS:
- * <code>goog.object.unsafeClone</code> does not detect reference loops. Objects
- * that refer to themselves will cause infinite recursion.
- *
- * <code>goog.object.unsafeClone</code> is unaware of unique identifiers, and
- * copies UIDs created by <code>getUid</code> into cloned results.
- *
- * @param {*} obj The value to clone.
- * @return {*} A clone of the input value.
- */
-goog.object.unsafeClone = function(obj) {
-  var type = goog.typeOf(obj);
-  if (type == 'object' || type == 'array') {
-    if (obj.clone) {
-      return obj.clone();
-    }
-    var clone = type == 'array' ? [] : {};
-    for (var key in obj) {
-      clone[key] = goog.object.unsafeClone(obj[key]);
-    }
-    return clone;
-  }
-
-  return obj;
-};
-
-
-/**
- * Returns a new object in which all the keys and values are interchanged
- * (keys become values and values become keys). If multiple keys map to the
- * same value, the chosen transposed value is implementation-dependent.
- *
- * @param {Object} obj The object to transpose.
- * @return {!Object} The transposed object.
- */
-goog.object.transpose = function(obj) {
-  var transposed = {};
-  for (var key in obj) {
-    transposed[obj[key]] = key;
-  }
-  return transposed;
-};
-
-
-/**
- * The names of the fields that are defined on Object.prototype.
- * @type {Array.<string>}
- * @private
- */
-goog.object.PROTOTYPE_FIELDS_ = [
-  'constructor',
-  'hasOwnProperty',
-  'isPrototypeOf',
-  'propertyIsEnumerable',
-  'toLocaleString',
-  'toString',
-  'valueOf'
-];
-
-
-/**
- * Extends an object with another object.
- * This operates 'in-place'; it does not create a new Object.
- *
- * Example:
- * var o = {};
- * goog.object.extend(o, {a: 0, b: 1});
- * o; // {a: 0, b: 1}
- * goog.object.extend(o, {c: 2});
- * o; // {a: 0, b: 1, c: 2}
- *
- * @param {Object} target  The object to modify.
- * @param {...Object} var_args The objects from which values will be copied.
- */
-goog.object.extend = function(target, var_args) {
-  var key, source;
-  for (var i = 1; i < arguments.length; i++) {
-    source = arguments[i];
-    for (key in source) {
-      target[key] = source[key];
-    }
-
-    // For IE the for-in-loop does not contain any properties that are not
-    // enumerable on the prototype object (for example isPrototypeOf from
-    // Object.prototype) and it will also not include 'replace' on objects that
-    // extend String and change 'replace' (not that it is common for anyone to
-    // extend anything except Object).
-
-    for (var j = 0; j < goog.object.PROTOTYPE_FIELDS_.length; j++) {
-      key = goog.object.PROTOTYPE_FIELDS_[j];
-      if (Object.prototype.hasOwnProperty.call(source, key)) {
-        target[key] = source[key];
-      }
-    }
-  }
-};
-
-
-/**
- * Creates a new object built from the key-value pairs provided as arguments.
- * @param {...*} var_args If only one argument is provided and it is an array
- *     then this is used as the arguments,  otherwise even arguments are used as
- *     the property names and odd arguments are used as the property values.
- * @return {!Object} The new object.
- * @throws {Error} If there are uneven number of arguments or there is only one
- *     non array argument.
- */
-goog.object.create = function(var_args) {
-  var argLength = arguments.length;
-  if (argLength == 1 && goog.isArray(arguments[0])) {
-    return goog.object.create.apply(null, arguments[0]);
-  }
-
-  if (argLength % 2) {
-    throw Error('Uneven number of arguments');
-  }
-
-  var rv = {};
-  for (var i = 0; i < argLength; i += 2) {
-    rv[arguments[i]] = arguments[i + 1];
-  }
-  return rv;
-};
-
-
-/**
- * Creates a new object where the property names come from the arguments but
- * the value is always set to true
- * @param {...*} var_args If only one argument is provided and it is an array
- *     then this is used as the arguments,  otherwise the arguments are used
- *     as the property names.
- * @return {!Object} The new object.
- */
-goog.object.createSet = function(var_args) {
-  var argLength = arguments.length;
-  if (argLength == 1 && goog.isArray(arguments[0])) {
-    return goog.object.createSet.apply(null, arguments[0]);
-  }
-
-  var rv = {};
-  for (var i = 0; i < argLength; i++) {
-    rv[arguments[i]] = true;
-  }
-  return rv;
-};
-
-
-/**
- * Creates an immutable view of the underlying object, if the browser
- * supports immutable objects.
- *
- * In default mode, writes to this view will fail silently. In strict mode,
- * they will throw an error.
- *
- * @param {!Object.<K,V>} obj An object.
- * @return {!Object.<K,V>} An immutable view of that object, or the
- *     original object if this browser does not support immutables.
- * @template K,V
- */
-goog.object.createImmutableView = function(obj) {
-  var result = obj;
-  if (Object.isFrozen && !Object.isFrozen(obj)) {
-    result = Object.create(obj);
-    Object.freeze(result);
-  }
-  return result;
-};
-
-
-/**
- * @param {!Object} obj An object.
- * @return {boolean} Whether this is an immutable view of the object.
- */
-goog.object.isImmutableView = function(obj) {
-  return !!Object.isFrozen && Object.isFrozen(obj);
-};
 // Copyright 2007 The Closure Library Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -6038,605 +7014,6 @@ goog.dom.TagName = {
   VIDEO: 'VIDEO',
   WBR: 'WBR'
 };
-// Copyright 2006 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/**
- * @fileoverview Rendering engine detection.
- * @see <a href="http://www.useragentstring.com/">User agent strings</a>
- * For information on the browser brand (such as Safari versus Chrome), see
- * goog.userAgent.product.
- * @see ../demos/useragent.html
- */
-
-goog.provide('goog.userAgent');
-
-goog.require('goog.string');
-
-
-/**
- * @define {boolean} Whether we know at compile-time that the browser is IE.
- */
-goog.define('goog.userAgent.ASSUME_IE', false);
-
-
-/**
- * @define {boolean} Whether we know at compile-time that the browser is GECKO.
- */
-goog.define('goog.userAgent.ASSUME_GECKO', false);
-
-
-/**
- * @define {boolean} Whether we know at compile-time that the browser is WEBKIT.
- */
-goog.define('goog.userAgent.ASSUME_WEBKIT', false);
-
-
-/**
- * @define {boolean} Whether we know at compile-time that the browser is a
- *     mobile device running WebKit e.g. iPhone or Android.
- */
-goog.define('goog.userAgent.ASSUME_MOBILE_WEBKIT', false);
-
-
-/**
- * @define {boolean} Whether we know at compile-time that the browser is OPERA.
- */
-goog.define('goog.userAgent.ASSUME_OPERA', false);
-
-
-/**
- * @define {boolean} Whether the
- *     {@code goog.userAgent.isVersionOrHigher}
- *     function will return true for any version.
- */
-goog.define('goog.userAgent.ASSUME_ANY_VERSION', false);
-
-
-/**
- * Whether we know the browser engine at compile-time.
- * @type {boolean}
- * @private
- */
-goog.userAgent.BROWSER_KNOWN_ =
-    goog.userAgent.ASSUME_IE ||
-    goog.userAgent.ASSUME_GECKO ||
-    goog.userAgent.ASSUME_MOBILE_WEBKIT ||
-    goog.userAgent.ASSUME_WEBKIT ||
-    goog.userAgent.ASSUME_OPERA;
-
-
-/**
- * Returns the userAgent string for the current browser.
- * Some user agents (I'm thinking of you, Gears WorkerPool) do not expose a
- * navigator object off the global scope.  In that case we return null.
- *
- * @return {?string} The userAgent string or null if there is none.
- */
-goog.userAgent.getUserAgentString = function() {
-  return goog.global['navigator'] ? goog.global['navigator'].userAgent : null;
-};
-
-
-/**
- * @return {Object} The native navigator object.
- */
-goog.userAgent.getNavigator = function() {
-  // Need a local navigator reference instead of using the global one,
-  // to avoid the rare case where they reference different objects.
-  // (in a WorkerPool, for example).
-  return goog.global['navigator'];
-};
-
-
-/**
- * Initializer for goog.userAgent.
- *
- * This is a named function so that it can be stripped via the jscompiler
- * option for stripping types.
- * @private
- */
-goog.userAgent.init_ = function() {
-  /**
-   * Whether the user agent string denotes Opera.
-   * @type {boolean}
-   * @private
-   */
-  goog.userAgent.detectedOpera_ = false;
-
-  /**
-   * Whether the user agent string denotes Internet Explorer. This includes
-   * other browsers using Trident as its rendering engine. For example AOL
-   * and Netscape 8
-   * @type {boolean}
-   * @private
-   */
-  goog.userAgent.detectedIe_ = false;
-
-  /**
-   * Whether the user agent string denotes WebKit. WebKit is the rendering
-   * engine that Safari, Android and others use.
-   * @type {boolean}
-   * @private
-   */
-  goog.userAgent.detectedWebkit_ = false;
-
-  /**
-   * Whether the user agent string denotes a mobile device.
-   * @type {boolean}
-   * @private
-   */
-  goog.userAgent.detectedMobile_ = false;
-
-  /**
-   * Whether the user agent string denotes Gecko. Gecko is the rendering
-   * engine used by Mozilla, Mozilla Firefox, Camino and many more.
-   * @type {boolean}
-   * @private
-   */
-  goog.userAgent.detectedGecko_ = false;
-
-  var ua;
-  if (!goog.userAgent.BROWSER_KNOWN_ &&
-      (ua = goog.userAgent.getUserAgentString())) {
-    var navigator = goog.userAgent.getNavigator();
-    goog.userAgent.detectedOpera_ = goog.string.startsWith(ua, 'Opera');
-    goog.userAgent.detectedIe_ = !goog.userAgent.detectedOpera_ &&
-        (goog.string.contains(ua, 'MSIE') ||
-         goog.string.contains(ua, 'Trident'));
-    goog.userAgent.detectedWebkit_ = !goog.userAgent.detectedOpera_ &&
-        goog.string.contains(ua, 'WebKit');
-    // WebKit also gives navigator.product string equal to 'Gecko'.
-    goog.userAgent.detectedMobile_ = goog.userAgent.detectedWebkit_ &&
-        goog.string.contains(ua, 'Mobile');
-    goog.userAgent.detectedGecko_ = !goog.userAgent.detectedOpera_ &&
-        !goog.userAgent.detectedWebkit_ && !goog.userAgent.detectedIe_ &&
-        navigator.product == 'Gecko';
-  }
-};
-
-
-if (!goog.userAgent.BROWSER_KNOWN_) {
-  goog.userAgent.init_();
-}
-
-
-/**
- * Whether the user agent is Opera.
- * @type {boolean}
- */
-goog.userAgent.OPERA = goog.userAgent.BROWSER_KNOWN_ ?
-    goog.userAgent.ASSUME_OPERA : goog.userAgent.detectedOpera_;
-
-
-/**
- * Whether the user agent is Internet Explorer. This includes other browsers
- * using Trident as its rendering engine. For example AOL and Netscape 8
- * @type {boolean}
- */
-goog.userAgent.IE = goog.userAgent.BROWSER_KNOWN_ ?
-    goog.userAgent.ASSUME_IE : goog.userAgent.detectedIe_;
-
-
-/**
- * Whether the user agent is Gecko. Gecko is the rendering engine used by
- * Mozilla, Mozilla Firefox, Camino and many more.
- * @type {boolean}
- */
-goog.userAgent.GECKO = goog.userAgent.BROWSER_KNOWN_ ?
-    goog.userAgent.ASSUME_GECKO :
-    goog.userAgent.detectedGecko_;
-
-
-/**
- * Whether the user agent is WebKit. WebKit is the rendering engine that
- * Safari, Android and others use.
- * @type {boolean}
- */
-goog.userAgent.WEBKIT = goog.userAgent.BROWSER_KNOWN_ ?
-    goog.userAgent.ASSUME_WEBKIT || goog.userAgent.ASSUME_MOBILE_WEBKIT :
-    goog.userAgent.detectedWebkit_;
-
-
-/**
- * Whether the user agent is running on a mobile device.
- * @type {boolean}
- */
-goog.userAgent.MOBILE = goog.userAgent.ASSUME_MOBILE_WEBKIT ||
-                        goog.userAgent.detectedMobile_;
-
-
-/**
- * Used while transitioning code to use WEBKIT instead.
- * @type {boolean}
- * @deprecated Use {@link goog.userAgent.product.SAFARI} instead.
- * TODO(nicksantos): Delete this from goog.userAgent.
- */
-goog.userAgent.SAFARI = goog.userAgent.WEBKIT;
-
-
-/**
- * @return {string} the platform (operating system) the user agent is running
- *     on. Default to empty string because navigator.platform may not be defined
- *     (on Rhino, for example).
- * @private
- */
-goog.userAgent.determinePlatform_ = function() {
-  var navigator = goog.userAgent.getNavigator();
-  return navigator && navigator.platform || '';
-};
-
-
-/**
- * The platform (operating system) the user agent is running on. Default to
- * empty string because navigator.platform may not be defined (on Rhino, for
- * example).
- * @type {string}
- */
-goog.userAgent.PLATFORM = goog.userAgent.determinePlatform_();
-
-
-/**
- * @define {boolean} Whether the user agent is running on a Macintosh operating
- *     system.
- */
-goog.define('goog.userAgent.ASSUME_MAC', false);
-
-
-/**
- * @define {boolean} Whether the user agent is running on a Windows operating
- *     system.
- */
-goog.define('goog.userAgent.ASSUME_WINDOWS', false);
-
-
-/**
- * @define {boolean} Whether the user agent is running on a Linux operating
- *     system.
- */
-goog.define('goog.userAgent.ASSUME_LINUX', false);
-
-
-/**
- * @define {boolean} Whether the user agent is running on a X11 windowing
- *     system.
- */
-goog.define('goog.userAgent.ASSUME_X11', false);
-
-
-/**
- * @define {boolean} Whether the user agent is running on Android.
- */
-goog.define('goog.userAgent.ASSUME_ANDROID', false);
-
-
-/**
- * @define {boolean} Whether the user agent is running on an iPhone.
- */
-goog.define('goog.userAgent.ASSUME_IPHONE', false);
-
-
-/**
- * @define {boolean} Whether the user agent is running on an iPad.
- */
-goog.define('goog.userAgent.ASSUME_IPAD', false);
-
-
-/**
- * @type {boolean}
- * @private
- */
-goog.userAgent.PLATFORM_KNOWN_ =
-    goog.userAgent.ASSUME_MAC ||
-    goog.userAgent.ASSUME_WINDOWS ||
-    goog.userAgent.ASSUME_LINUX ||
-    goog.userAgent.ASSUME_X11 ||
-    goog.userAgent.ASSUME_ANDROID ||
-    goog.userAgent.ASSUME_IPHONE ||
-    goog.userAgent.ASSUME_IPAD;
-
-
-/**
- * Initialize the goog.userAgent constants that define which platform the user
- * agent is running on.
- * @private
- */
-goog.userAgent.initPlatform_ = function() {
-  /**
-   * Whether the user agent is running on a Macintosh operating system.
-   * @type {boolean}
-   * @private
-   */
-  goog.userAgent.detectedMac_ = goog.string.contains(goog.userAgent.PLATFORM,
-      'Mac');
-
-  /**
-   * Whether the user agent is running on a Windows operating system.
-   * @type {boolean}
-   * @private
-   */
-  goog.userAgent.detectedWindows_ = goog.string.contains(
-      goog.userAgent.PLATFORM, 'Win');
-
-  /**
-   * Whether the user agent is running on a Linux operating system.
-   * @type {boolean}
-   * @private
-   */
-  goog.userAgent.detectedLinux_ = goog.string.contains(goog.userAgent.PLATFORM,
-      'Linux');
-
-  /**
-   * Whether the user agent is running on a X11 windowing system.
-   * @type {boolean}
-   * @private
-   */
-  goog.userAgent.detectedX11_ = !!goog.userAgent.getNavigator() &&
-      goog.string.contains(goog.userAgent.getNavigator()['appVersion'] || '',
-          'X11');
-
-  // Need user agent string for Android/IOS detection
-  var ua = goog.userAgent.getUserAgentString();
-
-  /**
-   * Whether the user agent is running on Android.
-   * @type {boolean}
-   * @private
-   */
-  goog.userAgent.detectedAndroid_ = !!ua &&
-      goog.string.contains(ua, 'Android');
-
-  /**
-   * Whether the user agent is running on an iPhone.
-   * @type {boolean}
-   * @private
-   */
-  goog.userAgent.detectedIPhone_ = !!ua && goog.string.contains(ua, 'iPhone');
-
-  /**
-   * Whether the user agent is running on an iPad.
-   * @type {boolean}
-   * @private
-   */
-  goog.userAgent.detectedIPad_ = !!ua && goog.string.contains(ua, 'iPad');
-};
-
-
-if (!goog.userAgent.PLATFORM_KNOWN_) {
-  goog.userAgent.initPlatform_();
-}
-
-
-/**
- * Whether the user agent is running on a Macintosh operating system.
- * @type {boolean}
- */
-goog.userAgent.MAC = goog.userAgent.PLATFORM_KNOWN_ ?
-    goog.userAgent.ASSUME_MAC : goog.userAgent.detectedMac_;
-
-
-/**
- * Whether the user agent is running on a Windows operating system.
- * @type {boolean}
- */
-goog.userAgent.WINDOWS = goog.userAgent.PLATFORM_KNOWN_ ?
-    goog.userAgent.ASSUME_WINDOWS : goog.userAgent.detectedWindows_;
-
-
-/**
- * Whether the user agent is running on a Linux operating system.
- * @type {boolean}
- */
-goog.userAgent.LINUX = goog.userAgent.PLATFORM_KNOWN_ ?
-    goog.userAgent.ASSUME_LINUX : goog.userAgent.detectedLinux_;
-
-
-/**
- * Whether the user agent is running on a X11 windowing system.
- * @type {boolean}
- */
-goog.userAgent.X11 = goog.userAgent.PLATFORM_KNOWN_ ?
-    goog.userAgent.ASSUME_X11 : goog.userAgent.detectedX11_;
-
-
-/**
- * Whether the user agent is running on Android.
- * @type {boolean}
- */
-goog.userAgent.ANDROID = goog.userAgent.PLATFORM_KNOWN_ ?
-    goog.userAgent.ASSUME_ANDROID : goog.userAgent.detectedAndroid_;
-
-
-/**
- * Whether the user agent is running on an iPhone.
- * @type {boolean}
- */
-goog.userAgent.IPHONE = goog.userAgent.PLATFORM_KNOWN_ ?
-    goog.userAgent.ASSUME_IPHONE : goog.userAgent.detectedIPhone_;
-
-
-/**
- * Whether the user agent is running on an iPad.
- * @type {boolean}
- */
-goog.userAgent.IPAD = goog.userAgent.PLATFORM_KNOWN_ ?
-    goog.userAgent.ASSUME_IPAD : goog.userAgent.detectedIPad_;
-
-
-/**
- * @return {string} The string that describes the version number of the user
- *     agent.
- * @private
- */
-goog.userAgent.determineVersion_ = function() {
-  // All browsers have different ways to detect the version and they all have
-  // different naming schemes.
-
-  // version is a string rather than a number because it may contain 'b', 'a',
-  // and so on.
-  var version = '', re;
-
-  if (goog.userAgent.OPERA && goog.global['opera']) {
-    var operaVersion = goog.global['opera'].version;
-    version = typeof operaVersion == 'function' ? operaVersion() : operaVersion;
-  } else {
-    if (goog.userAgent.GECKO) {
-      re = /rv\:([^\);]+)(\)|;)/;
-    } else if (goog.userAgent.IE) {
-      re = /\b(?:MSIE|rv)\s+([^\);]+)(\)|;)/;
-    } else if (goog.userAgent.WEBKIT) {
-      // WebKit/125.4
-      re = /WebKit\/(\S+)/;
-    }
-    if (re) {
-      var arr = re.exec(goog.userAgent.getUserAgentString());
-      version = arr ? arr[1] : '';
-    }
-  }
-  if (goog.userAgent.IE) {
-    // IE9 can be in document mode 9 but be reporting an inconsistent user agent
-    // version.  If it is identifying as a version lower than 9 we take the
-    // documentMode as the version instead.  IE8 has similar behavior.
-    // It is recommended to set the X-UA-Compatible header to ensure that IE9
-    // uses documentMode 9.
-    var docMode = goog.userAgent.getDocumentMode_();
-    if (docMode > parseFloat(version)) {
-      return String(docMode);
-    }
-  }
-  return version;
-};
-
-
-/**
- * @return {number|undefined} Returns the document mode (for testing).
- * @private
- */
-goog.userAgent.getDocumentMode_ = function() {
-  // NOTE(user): goog.userAgent may be used in context where there is no DOM.
-  var doc = goog.global['document'];
-  return doc ? doc['documentMode'] : undefined;
-};
-
-
-/**
- * The version of the user agent. This is a string because it might contain
- * 'b' (as in beta) as well as multiple dots.
- * @type {string}
- */
-goog.userAgent.VERSION = goog.userAgent.determineVersion_();
-
-
-/**
- * Compares two version numbers.
- *
- * @param {string} v1 Version of first item.
- * @param {string} v2 Version of second item.
- *
- * @return {number}  1 if first argument is higher
- *                   0 if arguments are equal
- *                  -1 if second argument is higher.
- * @deprecated Use goog.string.compareVersions.
- */
-goog.userAgent.compare = function(v1, v2) {
-  return goog.string.compareVersions(v1, v2);
-};
-
-
-/**
- * Cache for {@link goog.userAgent.isVersionOrHigher}.
- * Calls to compareVersions are surprisingly expensive and, as a browser's
- * version number is unlikely to change during a session, we cache the results.
- * @const
- * @private
- */
-goog.userAgent.isVersionOrHigherCache_ = {};
-
-
-/**
- * Whether the user agent version is higher or the same as the given version.
- * NOTE: When checking the version numbers for Firefox and Safari, be sure to
- * use the engine's version, not the browser's version number.  For example,
- * Firefox 3.0 corresponds to Gecko 1.9 and Safari 3.0 to Webkit 522.11.
- * Opera and Internet Explorer versions match the product release number.<br>
- * @see <a href="http://en.wikipedia.org/wiki/Safari_version_history">
- *     Webkit</a>
- * @see <a href="http://en.wikipedia.org/wiki/Gecko_engine">Gecko</a>
- *
- * @param {string|number} version The version to check.
- * @return {boolean} Whether the user agent version is higher or the same as
- *     the given version.
- */
-goog.userAgent.isVersionOrHigher = function(version) {
-  return goog.userAgent.ASSUME_ANY_VERSION ||
-      goog.userAgent.isVersionOrHigherCache_[version] ||
-      (goog.userAgent.isVersionOrHigherCache_[version] =
-          goog.string.compareVersions(goog.userAgent.VERSION, version) >= 0);
-};
-
-
-/**
- * Deprecated alias to {@code goog.userAgent.isVersionOrHigher}.
- * @param {string|number} version The version to check.
- * @return {boolean} Whether the user agent version is higher or the same as
- *     the given version.
- * @deprecated Use goog.userAgent.isVersionOrHigher().
- */
-goog.userAgent.isVersion = goog.userAgent.isVersionOrHigher;
-
-
-/**
- * Whether the IE effective document mode is higher or the same as the given
- * document mode version.
- * NOTE: Only for IE, return false for another browser.
- *
- * @param {number} documentMode The document mode version to check.
- * @return {boolean} Whether the IE effective document mode is higher or the
- *     same as the given version.
- */
-goog.userAgent.isDocumentModeOrHigher = function(documentMode) {
-  return goog.userAgent.IE && goog.userAgent.DOCUMENT_MODE >= documentMode;
-};
-
-
-/**
- * Deprecated alias to {@code goog.userAgent.isDocumentModeOrHigher}.
- * @param {number} version The version to check.
- * @return {boolean} Whether the IE effective document mode is higher or the
- *      same as the given version.
- * @deprecated Use goog.userAgent.isDocumentModeOrHigher().
- */
-goog.userAgent.isDocumentMode = goog.userAgent.isDocumentModeOrHigher;
-
-
-/**
- * For IE version < 7, documentMode is undefined, so attempt to use the
- * CSS1Compat property to see if we are in standards mode. If we are in
- * standards mode, treat the browser version as the document mode. Otherwise,
- * IE is emulating version 5.
- * @type {number|undefined}
- * @const
- */
-goog.userAgent.DOCUMENT_MODE = (function() {
-  var doc = goog.global['document'];
-  if (!doc || !goog.userAgent.IE) {
-    return undefined;
-  }
-  var mode = goog.userAgent.getDocumentMode_();
-  return mode || (doc['compatMode'] == 'CSS1Compat' ?
-      parseInt(goog.userAgent.VERSION, 10) : 5);
-})();
 // Copyright 2007 The Closure Library Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -13227,6 +13604,2284 @@ goog.style.getCssTranslation = function(element) {
 // limitations under the License.
 
 /**
+ * @fileoverview Bidi utility functions.
+ *
+ */
+
+goog.provide('goog.style.bidi');
+
+goog.require('goog.dom');
+goog.require('goog.style');
+goog.require('goog.userAgent');
+
+
+/**
+ * Returns the normalized scrollLeft position for a scrolled element.
+ * @param {Element} element The scrolled element.
+ * @return {number} The number of pixels the element is scrolled. 0 indicates
+ *     that the element is not scrolled at all (which, in general, is the
+ *     left-most position in ltr and the right-most position in rtl).
+ */
+goog.style.bidi.getScrollLeft = function(element) {
+  var isRtl = goog.style.isRightToLeft(element);
+  if (isRtl && goog.userAgent.GECKO) {
+    // ScrollLeft starts at 0 and then goes negative as the element is scrolled
+    // towards the left.
+    return -element.scrollLeft;
+  } else if (isRtl &&
+             !(goog.userAgent.IE && goog.userAgent.isVersionOrHigher('8'))) {
+    // ScrollLeft starts at the maximum positive value and decreases towards
+    // 0 as the element is scrolled towards the left. However, for overflow
+    // visible, there is no scrollLeft and the value always stays correctly at 0
+    var overflowX = goog.style.getComputedOverflowX(element);
+    if (overflowX == 'visible') {
+      return element.scrollLeft;
+    } else {
+      return element.scrollWidth - element.clientWidth - element.scrollLeft;
+    }
+  }
+  // ScrollLeft behavior is identical in rtl and ltr, it starts at 0 and
+  // increases as the element is scrolled away from the start.
+  return element.scrollLeft;
+};
+
+
+/**
+ * Returns the "offsetStart" of an element, analagous to offsetLeft but
+ * normalized for right-to-left environments and various browser
+ * inconsistencies. This value returned can always be passed to setScrollOffset
+ * to scroll to an element's left edge in a left-to-right offsetParent or
+ * right edge in a right-to-left offsetParent.
+ *
+ * For example, here offsetStart is 10px in an LTR environment and 5px in RTL:
+ *
+ * <pre>
+ * |          xxxxxxxxxx     |
+ *  ^^^^^^^^^^   ^^^^   ^^^^^
+ *     10px      elem    5px
+ * </pre>
+ *
+ * If an element is positioned before the start of its offsetParent, the
+ * startOffset may be negative.  This can be used with setScrollOffset to
+ * reliably scroll to an element:
+ *
+ * <pre>
+ * var scrollOffset = goog.style.bidi.getOffsetStart(element);
+ * goog.style.bidi.setScrollOffset(element.offsetParent, scrollOffset);
+ * </pre>
+ *
+ * @see setScrollOffset
+ *
+ * @param {Element} element The element for which we need to determine the
+ *     offsetStart position.
+ * @return {number} The offsetStart for that element.
+ */
+goog.style.bidi.getOffsetStart = function(element) {
+  var offsetLeftForReal = element.offsetLeft;
+
+  // The element might not have an offsetParent.
+  // For example, the node might not be attached to the DOM tree,
+  // and position:fixed children do not have an offset parent.
+  // Just try to do the best we can with what we have.
+  var bestParent = element.offsetParent;
+
+  if (!bestParent && goog.style.getComputedPosition(element) == 'fixed') {
+    bestParent = goog.dom.getOwnerDocument(element).documentElement;
+  }
+
+  // Just give up in this case.
+  if (!bestParent) {
+    return offsetLeftForReal;
+  }
+
+  if (goog.userAgent.GECKO) {
+    // When calculating an element's offsetLeft, Firefox erroneously subtracts
+    // the border width from the actual distance.  So we need to add it back.
+    var borderWidths = goog.style.getBorderBox(bestParent);
+    offsetLeftForReal += borderWidths.left;
+  } else if (goog.userAgent.isDocumentModeOrHigher(8)) {
+    // When calculating an element's offsetLeft, IE8-Standards Mode erroneously
+    // adds the border width to the actual distance.  So we need to subtract it.
+    var borderWidths = goog.style.getBorderBox(bestParent);
+    offsetLeftForReal -= borderWidths.left;
+  }
+
+  if (goog.style.isRightToLeft(bestParent)) {
+    // Right edge of the element relative to the left edge of its parent.
+    var elementRightOffset = offsetLeftForReal + element.offsetWidth;
+
+    // Distance from the parent's right edge to the element's right edge.
+    return bestParent.clientWidth - elementRightOffset;
+  }
+
+  return offsetLeftForReal;
+};
+
+
+/**
+ * Sets the element's scrollLeft attribute so it is correctly scrolled by
+ * offsetStart pixels.  This takes into account whether the element is RTL and
+ * the nuances of different browsers.  To scroll to the "beginning" of an
+ * element use getOffsetStart to obtain the element's offsetStart value and then
+ * pass the value to setScrollOffset.
+ * @see getOffsetStart
+ * @param {Element} element The element to set scrollLeft on.
+ * @param {number} offsetStart The number of pixels to scroll the element.
+ *     If this value is < 0, 0 is used.
+ */
+goog.style.bidi.setScrollOffset = function(element, offsetStart) {
+  offsetStart = Math.max(offsetStart, 0);
+  // In LTR and in "mirrored" browser RTL (such as IE), we set scrollLeft to
+  // the number of pixels to scroll.
+  // Otherwise, in RTL, we need to account for different browser behavior.
+  if (!goog.style.isRightToLeft(element)) {
+    element.scrollLeft = offsetStart;
+  } else if (goog.userAgent.GECKO) {
+    // Negative scroll-left positions in RTL.
+    element.scrollLeft = -offsetStart;
+  } else if (!(goog.userAgent.IE && goog.userAgent.isVersionOrHigher('8'))) {
+    // Take the current scrollLeft value and move to the right by the
+    // offsetStart to get to the left edge of the element, and then by
+    // the clientWidth of the element to get to the right edge.
+    element.scrollLeft =
+        element.scrollWidth - offsetStart - element.clientWidth;
+  } else {
+    element.scrollLeft = offsetStart;
+  }
+};
+
+
+/**
+ * Sets the element's left style attribute in LTR or right style attribute in
+ * RTL.  Also clears the left attribute in RTL and the right attribute in LTR.
+ * @param {Element} elem The element to position.
+ * @param {number} left The left position in LTR; will be set as right in RTL.
+ * @param {?number} top The top position.  If null only the left/right is set.
+ * @param {boolean} isRtl Whether we are in RTL mode.
+ */
+goog.style.bidi.setPosition = function(elem, left, top, isRtl) {
+  if (!goog.isNull(top)) {
+    elem.style.top = top + 'px';
+  }
+  if (isRtl) {
+    elem.style.right = left + 'px';
+    elem.style.left = '';
+  } else {
+    elem.style.left = left + 'px';
+    elem.style.right = '';
+  }
+};
+// Copyright 2006 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * @fileoverview Common positioning code.
+ *
+ */
+
+goog.provide('goog.positioning');
+goog.provide('goog.positioning.Corner');
+goog.provide('goog.positioning.CornerBit');
+goog.provide('goog.positioning.Overflow');
+goog.provide('goog.positioning.OverflowStatus');
+
+goog.require('goog.asserts');
+goog.require('goog.dom');
+goog.require('goog.dom.TagName');
+goog.require('goog.math.Box');
+goog.require('goog.math.Coordinate');
+goog.require('goog.math.Size');
+goog.require('goog.style');
+goog.require('goog.style.bidi');
+
+
+/**
+ * Enum for representing an element corner for positioning the popup.
+ *
+ * The START constants map to LEFT if element directionality is left
+ * to right and RIGHT if the directionality is right to left.
+ * Likewise END maps to RIGHT or LEFT depending on the directionality.
+ *
+ * @enum {number}
+ */
+goog.positioning.Corner = {
+  TOP_LEFT: 0,
+  TOP_RIGHT: 2,
+  BOTTOM_LEFT: 1,
+  BOTTOM_RIGHT: 3,
+  TOP_START: 4,
+  TOP_END: 6,
+  BOTTOM_START: 5,
+  BOTTOM_END: 7
+};
+
+
+/**
+ * Enum for bits in the {@see goog.positioning.Corner) bitmap.
+ *
+ * @enum {number}
+ */
+goog.positioning.CornerBit = {
+  BOTTOM: 1,
+  RIGHT: 2,
+  FLIP_RTL: 4
+};
+
+
+/**
+ * Enum for representing position handling in cases where the element would be
+ * positioned outside the viewport.
+ *
+ * @enum {number}
+ */
+goog.positioning.Overflow = {
+  /** Ignore overflow */
+  IGNORE: 0,
+
+  /** Try to fit horizontally in the viewport at all costs. */
+  ADJUST_X: 1,
+
+  /** If the element can't fit horizontally, report positioning failure. */
+  FAIL_X: 2,
+
+  /** Try to fit vertically in the viewport at all costs. */
+  ADJUST_Y: 4,
+
+  /** If the element can't fit vertically, report positioning failure. */
+  FAIL_Y: 8,
+
+  /** Resize the element's width to fit in the viewport. */
+  RESIZE_WIDTH: 16,
+
+  /** Resize the element's height to fit in the viewport. */
+  RESIZE_HEIGHT: 32,
+
+  /**
+   * If the anchor goes off-screen in the x-direction, position the movable
+   * element off-screen. Otherwise, try to fit horizontally in the viewport.
+   */
+  ADJUST_X_EXCEPT_OFFSCREEN: 64 | 1,
+
+  /**
+   * If the anchor goes off-screen in the y-direction, position the movable
+   * element off-screen. Otherwise, try to fit vertically in the viewport.
+   */
+  ADJUST_Y_EXCEPT_OFFSCREEN: 128 | 4
+};
+
+
+/**
+ * Enum for representing the outcome of a positioning call.
+ *
+ * @enum {number}
+ */
+goog.positioning.OverflowStatus = {
+  NONE: 0,
+  ADJUSTED_X: 1,
+  ADJUSTED_Y: 2,
+  WIDTH_ADJUSTED: 4,
+  HEIGHT_ADJUSTED: 8,
+  FAILED_LEFT: 16,
+  FAILED_RIGHT: 32,
+  FAILED_TOP: 64,
+  FAILED_BOTTOM: 128,
+  FAILED_OUTSIDE_VIEWPORT: 256
+};
+
+
+/**
+ * Shorthand to check if a status code contains any fail code.
+ * @type {number}
+ */
+goog.positioning.OverflowStatus.FAILED =
+    goog.positioning.OverflowStatus.FAILED_LEFT |
+    goog.positioning.OverflowStatus.FAILED_RIGHT |
+    goog.positioning.OverflowStatus.FAILED_TOP |
+    goog.positioning.OverflowStatus.FAILED_BOTTOM |
+    goog.positioning.OverflowStatus.FAILED_OUTSIDE_VIEWPORT;
+
+
+/**
+ * Shorthand to check if horizontal positioning failed.
+ * @type {number}
+ */
+goog.positioning.OverflowStatus.FAILED_HORIZONTAL =
+    goog.positioning.OverflowStatus.FAILED_LEFT |
+    goog.positioning.OverflowStatus.FAILED_RIGHT;
+
+
+/**
+ * Shorthand to check if vertical positioning failed.
+ * @type {number}
+ */
+goog.positioning.OverflowStatus.FAILED_VERTICAL =
+    goog.positioning.OverflowStatus.FAILED_TOP |
+    goog.positioning.OverflowStatus.FAILED_BOTTOM;
+
+
+/**
+ * Positions a movable element relative to an anchor element. The caller
+ * specifies the corners that should touch. This functions then moves the
+ * movable element accordingly.
+ *
+ * @param {Element} anchorElement The element that is the anchor for where
+ *    the movable element should position itself.
+ * @param {goog.positioning.Corner} anchorElementCorner The corner of the
+ *     anchorElement for positioning the movable element.
+ * @param {Element} movableElement The element to move.
+ * @param {goog.positioning.Corner} movableElementCorner The corner of the
+ *     movableElement that that should be positioned adjacent to the anchor
+ *     element.
+ * @param {goog.math.Coordinate=} opt_offset An offset specified in pixels.
+ *    After the normal positioning algorithm is applied, the offset is then
+ *    applied. Positive coordinates move the popup closer to the center of the
+ *    anchor element. Negative coordinates move the popup away from the center
+ *    of the anchor element.
+ * @param {goog.math.Box=} opt_margin A margin specified in pixels.
+ *    After the normal positioning algorithm is applied and any offset, the
+ *    margin is then applied. Positive coordinates move the popup away from the
+ *    spot it was positioned towards its center. Negative coordinates move it
+ *    towards the spot it was positioned away from its center.
+ * @param {?number=} opt_overflow Overflow handling mode. Defaults to IGNORE if
+ *     not specified. Bitmap, {@see goog.positioning.Overflow}.
+ * @param {goog.math.Size=} opt_preferredSize The preferred size of the
+ *     movableElement.
+ * @param {goog.math.Box=} opt_viewport Box object describing the dimensions of
+ *     the viewport. The viewport is specified relative to offsetParent of
+ *     {@code movableElement}. In other words, the viewport can be thought of as
+ *     describing a "position: absolute" element contained in the offsetParent.
+ *     It defaults to visible area of nearest scrollable ancestor of
+ *     {@code movableElement} (see {@code goog.style.getVisibleRectForElement}).
+ * @return {goog.positioning.OverflowStatus} Status bitmap,
+ *     {@see goog.positioning.OverflowStatus}.
+ */
+goog.positioning.positionAtAnchor = function(anchorElement,
+                                             anchorElementCorner,
+                                             movableElement,
+                                             movableElementCorner,
+                                             opt_offset,
+                                             opt_margin,
+                                             opt_overflow,
+                                             opt_preferredSize,
+                                             opt_viewport) {
+
+  goog.asserts.assert(movableElement);
+  var movableParentTopLeft =
+      goog.positioning.getOffsetParentPageOffset(movableElement);
+
+  // Get the visible part of the anchor element.  anchorRect is
+  // relative to anchorElement's page.
+  var anchorRect = goog.positioning.getVisiblePart_(anchorElement);
+
+  // Translate anchorRect to be relative to movableElement's page.
+  goog.style.translateRectForAnotherFrame(
+      anchorRect,
+      goog.dom.getDomHelper(anchorElement),
+      goog.dom.getDomHelper(movableElement));
+
+  // Offset based on which corner of the element we want to position against.
+  var corner = goog.positioning.getEffectiveCorner(anchorElement,
+                                                   anchorElementCorner);
+  // absolutePos is a candidate position relative to the
+  // movableElement's window.
+  var absolutePos = new goog.math.Coordinate(
+      corner & goog.positioning.CornerBit.RIGHT ?
+          anchorRect.left + anchorRect.width : anchorRect.left,
+      corner & goog.positioning.CornerBit.BOTTOM ?
+          anchorRect.top + anchorRect.height : anchorRect.top);
+
+  // Translate absolutePos to be relative to the offsetParent.
+  absolutePos =
+      goog.math.Coordinate.difference(absolutePos, movableParentTopLeft);
+
+  // Apply offset, if specified
+  if (opt_offset) {
+    absolutePos.x += (corner & goog.positioning.CornerBit.RIGHT ? -1 : 1) *
+        opt_offset.x;
+    absolutePos.y += (corner & goog.positioning.CornerBit.BOTTOM ? -1 : 1) *
+        opt_offset.y;
+  }
+
+  // Determine dimension of viewport.
+  var viewport;
+  if (opt_overflow) {
+    if (opt_viewport) {
+      viewport = opt_viewport;
+    } else {
+      viewport = goog.style.getVisibleRectForElement(movableElement);
+      if (viewport) {
+        viewport.top -= movableParentTopLeft.y;
+        viewport.right -= movableParentTopLeft.x;
+        viewport.bottom -= movableParentTopLeft.y;
+        viewport.left -= movableParentTopLeft.x;
+      }
+    }
+  }
+
+  return goog.positioning.positionAtCoordinate(absolutePos,
+                                               movableElement,
+                                               movableElementCorner,
+                                               opt_margin,
+                                               viewport,
+                                               opt_overflow,
+                                               opt_preferredSize);
+};
+
+
+/**
+ * Calculates the page offset of the given element's
+ * offsetParent. This value can be used to translate any x- and
+ * y-offset relative to the page to an offset relative to the
+ * offsetParent, which can then be used directly with as position
+ * coordinate for {@code positionWithCoordinate}.
+ * @param {!Element} movableElement The element to calculate.
+ * @return {!goog.math.Coordinate} The page offset, may be (0, 0).
+ */
+goog.positioning.getOffsetParentPageOffset = function(movableElement) {
+  // Ignore offset for the BODY element unless its position is non-static.
+  // For cases where the offset parent is HTML rather than the BODY (such as in
+  // IE strict mode) there's no need to get the position of the BODY as it
+  // doesn't affect the page offset.
+  var movableParentTopLeft;
+  var parent = movableElement.offsetParent;
+  if (parent) {
+    var isBody = parent.tagName == goog.dom.TagName.HTML ||
+        parent.tagName == goog.dom.TagName.BODY;
+    if (!isBody ||
+        goog.style.getComputedPosition(parent) != 'static') {
+      // Get the top-left corner of the parent, in page coordinates.
+      movableParentTopLeft = goog.style.getPageOffset(parent);
+
+      if (!isBody) {
+        movableParentTopLeft = goog.math.Coordinate.difference(
+            movableParentTopLeft,
+            new goog.math.Coordinate(goog.style.bidi.getScrollLeft(parent),
+                parent.scrollTop));
+      }
+    }
+  }
+
+  return movableParentTopLeft || new goog.math.Coordinate();
+};
+
+
+/**
+ * Returns intersection of the specified element and
+ * goog.style.getVisibleRectForElement for it.
+ *
+ * @param {Element} el The target element.
+ * @return {goog.math.Rect} Intersection of getVisibleRectForElement
+ *     and the current bounding rectangle of the element.  If the
+ *     intersection is empty, returns the bounding rectangle.
+ * @private
+ */
+goog.positioning.getVisiblePart_ = function(el) {
+  var rect = goog.style.getBounds(el);
+  var visibleBox = goog.style.getVisibleRectForElement(el);
+  if (visibleBox) {
+    rect.intersection(goog.math.Rect.createFromBox(visibleBox));
+  }
+  return rect;
+};
+
+
+/**
+ * Positions the specified corner of the movable element at the
+ * specified coordinate.
+ *
+ * @param {goog.math.Coordinate} absolutePos The coordinate to position the
+ *     element at.
+ * @param {Element} movableElement The element to be positioned.
+ * @param {goog.positioning.Corner} movableElementCorner The corner of the
+ *     movableElement that that should be positioned.
+ * @param {goog.math.Box=} opt_margin A margin specified in pixels.
+ *    After the normal positioning algorithm is applied and any offset, the
+ *    margin is then applied. Positive coordinates move the popup away from the
+ *    spot it was positioned towards its center. Negative coordinates move it
+ *    towards the spot it was positioned away from its center.
+ * @param {goog.math.Box=} opt_viewport Box object describing the dimensions of
+ *     the viewport. Required if opt_overflow is specified.
+ * @param {?number=} opt_overflow Overflow handling mode. Defaults to IGNORE if
+ *     not specified, {@see goog.positioning.Overflow}.
+ * @param {goog.math.Size=} opt_preferredSize The preferred size of the
+ *     movableElement. Defaults to the current size.
+ * @return {goog.positioning.OverflowStatus} Status bitmap.
+ */
+goog.positioning.positionAtCoordinate = function(absolutePos,
+                                                 movableElement,
+                                                 movableElementCorner,
+                                                 opt_margin,
+                                                 opt_viewport,
+                                                 opt_overflow,
+                                                 opt_preferredSize) {
+  absolutePos = absolutePos.clone();
+  var status = goog.positioning.OverflowStatus.NONE;
+
+  // Offset based on attached corner and desired margin.
+  var corner = goog.positioning.getEffectiveCorner(movableElement,
+                                                   movableElementCorner);
+  var elementSize = goog.style.getSize(movableElement);
+  var size = opt_preferredSize ? opt_preferredSize.clone() :
+      elementSize.clone();
+
+  if (opt_margin || corner != goog.positioning.Corner.TOP_LEFT) {
+    if (corner & goog.positioning.CornerBit.RIGHT) {
+      absolutePos.x -= size.width + (opt_margin ? opt_margin.right : 0);
+    } else if (opt_margin) {
+      absolutePos.x += opt_margin.left;
+    }
+    if (corner & goog.positioning.CornerBit.BOTTOM) {
+      absolutePos.y -= size.height + (opt_margin ? opt_margin.bottom : 0);
+    } else if (opt_margin) {
+      absolutePos.y += opt_margin.top;
+    }
+  }
+
+  // Adjust position to fit inside viewport.
+  if (opt_overflow) {
+    status = opt_viewport ?
+        goog.positioning.adjustForViewport_(
+            absolutePos, size, opt_viewport, opt_overflow) :
+        goog.positioning.OverflowStatus.FAILED_OUTSIDE_VIEWPORT;
+    if (status & goog.positioning.OverflowStatus.FAILED) {
+      return status;
+    }
+  }
+
+  goog.style.setPosition(movableElement, absolutePos);
+  if (!goog.math.Size.equals(elementSize, size)) {
+    goog.style.setBorderBoxSize(movableElement, size);
+  }
+
+  return status;
+};
+
+
+/**
+ * Adjusts the position and/or size of an element, identified by its position
+ * and size, to fit inside the viewport. If the position or size of the element
+ * is adjusted the pos or size objects, respectively, are modified.
+ *
+ * @param {goog.math.Coordinate} pos Position of element, updated if the
+ *     position is adjusted.
+ * @param {goog.math.Size} size Size of element, updated if the size is
+ *     adjusted.
+ * @param {goog.math.Box} viewport Bounding box describing the viewport.
+ * @param {number} overflow Overflow handling mode,
+ *     {@see goog.positioning.Overflow}.
+ * @return {goog.positioning.OverflowStatus} Status bitmap,
+ *     {@see goog.positioning.OverflowStatus}.
+ * @private
+ */
+goog.positioning.adjustForViewport_ = function(pos, size, viewport, overflow) {
+  var status = goog.positioning.OverflowStatus.NONE;
+
+  var ADJUST_X_EXCEPT_OFFSCREEN =
+      goog.positioning.Overflow.ADJUST_X_EXCEPT_OFFSCREEN;
+  var ADJUST_Y_EXCEPT_OFFSCREEN =
+      goog.positioning.Overflow.ADJUST_Y_EXCEPT_OFFSCREEN;
+  if ((overflow & ADJUST_X_EXCEPT_OFFSCREEN) == ADJUST_X_EXCEPT_OFFSCREEN &&
+      (pos.x < viewport.left || pos.x >= viewport.right)) {
+    overflow &= ~goog.positioning.Overflow.ADJUST_X;
+  }
+  if ((overflow & ADJUST_Y_EXCEPT_OFFSCREEN) == ADJUST_Y_EXCEPT_OFFSCREEN &&
+      (pos.y < viewport.top || pos.y >= viewport.bottom)) {
+    overflow &= ~goog.positioning.Overflow.ADJUST_Y;
+  }
+
+  // Left edge outside viewport, try to move it.
+  if (pos.x < viewport.left && overflow & goog.positioning.Overflow.ADJUST_X) {
+    pos.x = viewport.left;
+    status |= goog.positioning.OverflowStatus.ADJUSTED_X;
+  }
+
+  // Left edge inside and right edge outside viewport, try to resize it.
+  if (pos.x < viewport.left &&
+      pos.x + size.width > viewport.right &&
+      overflow & goog.positioning.Overflow.RESIZE_WIDTH) {
+    size.width = Math.max(
+        size.width - ((pos.x + size.width) - viewport.right), 0);
+    status |= goog.positioning.OverflowStatus.WIDTH_ADJUSTED;
+  }
+
+  // Right edge outside viewport, try to move it.
+  if (pos.x + size.width > viewport.right &&
+      overflow & goog.positioning.Overflow.ADJUST_X) {
+    pos.x = Math.max(viewport.right - size.width, viewport.left);
+    status |= goog.positioning.OverflowStatus.ADJUSTED_X;
+  }
+
+  // Left or right edge still outside viewport, fail if the FAIL_X option was
+  // specified, ignore it otherwise.
+  if (overflow & goog.positioning.Overflow.FAIL_X) {
+    status |= (pos.x < viewport.left ?
+                   goog.positioning.OverflowStatus.FAILED_LEFT : 0) |
+              (pos.x + size.width > viewport.right ?
+                   goog.positioning.OverflowStatus.FAILED_RIGHT : 0);
+  }
+
+  // Top edge outside viewport, try to move it.
+  if (pos.y < viewport.top && overflow & goog.positioning.Overflow.ADJUST_Y) {
+    pos.y = viewport.top;
+    status |= goog.positioning.OverflowStatus.ADJUSTED_Y;
+  }
+
+  // Bottom edge inside and top edge outside viewport, try to resize it.
+  if (pos.y <= viewport.top &&
+      pos.y + size.height < viewport.bottom &&
+      overflow & goog.positioning.Overflow.RESIZE_HEIGHT) {
+    size.height = Math.max(size.height - (viewport.top - pos.y), 0);
+    pos.y = viewport.top;
+    status |= goog.positioning.OverflowStatus.HEIGHT_ADJUSTED;
+  }
+
+  // Top edge inside and bottom edge outside viewport, try to resize it.
+  if (pos.y >= viewport.top &&
+      pos.y + size.height > viewport.bottom &&
+      overflow & goog.positioning.Overflow.RESIZE_HEIGHT) {
+    size.height = Math.max(
+        size.height - ((pos.y + size.height) - viewport.bottom), 0);
+    status |= goog.positioning.OverflowStatus.HEIGHT_ADJUSTED;
+  }
+
+  // Bottom edge outside viewport, try to move it.
+  if (pos.y + size.height > viewport.bottom &&
+      overflow & goog.positioning.Overflow.ADJUST_Y) {
+    pos.y = Math.max(viewport.bottom - size.height, viewport.top);
+    status |= goog.positioning.OverflowStatus.ADJUSTED_Y;
+  }
+
+  // Top or bottom edge still outside viewport, fail if the FAIL_Y option was
+  // specified, ignore it otherwise.
+  if (overflow & goog.positioning.Overflow.FAIL_Y) {
+    status |= (pos.y < viewport.top ?
+                   goog.positioning.OverflowStatus.FAILED_TOP : 0) |
+              (pos.y + size.height > viewport.bottom ?
+                   goog.positioning.OverflowStatus.FAILED_BOTTOM : 0);
+  }
+
+  return status;
+};
+
+
+/**
+ * Returns an absolute corner (top/bottom left/right) given an absolute
+ * or relative (top/bottom start/end) corner and the direction of an element.
+ * Absolute corners remain unchanged.
+ * @param {Element} element DOM element to test for RTL direction.
+ * @param {goog.positioning.Corner} corner The popup corner used for
+ *     positioning.
+ * @return {goog.positioning.Corner} Effective corner.
+ */
+goog.positioning.getEffectiveCorner = function(element, corner) {
+  return /** @type {goog.positioning.Corner} */ (
+      (corner & goog.positioning.CornerBit.FLIP_RTL &&
+          goog.style.isRightToLeft(element) ?
+          corner ^ goog.positioning.CornerBit.RIGHT :
+          corner
+      ) & ~goog.positioning.CornerBit.FLIP_RTL);
+};
+
+
+/**
+ * Returns the corner opposite the given one horizontally.
+ * @param {goog.positioning.Corner} corner The popup corner used to flip.
+ * @return {goog.positioning.Corner} The opposite corner horizontally.
+ */
+goog.positioning.flipCornerHorizontal = function(corner) {
+  return /** @type {goog.positioning.Corner} */ (corner ^
+      goog.positioning.CornerBit.RIGHT);
+};
+
+
+/**
+ * Returns the corner opposite the given one vertically.
+ * @param {goog.positioning.Corner} corner The popup corner used to flip.
+ * @return {goog.positioning.Corner} The opposite corner vertically.
+ */
+goog.positioning.flipCornerVertical = function(corner) {
+  return /** @type {goog.positioning.Corner} */ (corner ^
+      goog.positioning.CornerBit.BOTTOM);
+};
+
+
+/**
+ * Returns the corner opposite the given one horizontally and vertically.
+ * @param {goog.positioning.Corner} corner The popup corner used to flip.
+ * @return {goog.positioning.Corner} The opposite corner horizontally and
+ *     vertically.
+ */
+goog.positioning.flipCorner = function(corner) {
+  return /** @type {goog.positioning.Corner} */ (corner ^
+      goog.positioning.CornerBit.BOTTOM ^
+      goog.positioning.CornerBit.RIGHT);
+};
+
+// Copyright 2010 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * @fileoverview Event Types.
+ *
+ * @author arv@google.com (Erik Arvidsson)
+ * @author mirkov@google.com (Mirko Visontai)
+ */
+
+
+goog.provide('goog.events.EventType');
+
+goog.require('goog.userAgent');
+
+
+/**
+ * Constants for event names.
+ * @enum {string}
+ */
+goog.events.EventType = {
+  // Mouse events
+  CLICK: 'click',
+  DBLCLICK: 'dblclick',
+  MOUSEDOWN: 'mousedown',
+  MOUSEUP: 'mouseup',
+  MOUSEOVER: 'mouseover',
+  MOUSEOUT: 'mouseout',
+  MOUSEMOVE: 'mousemove',
+  SELECTSTART: 'selectstart', // IE, Safari, Chrome
+
+  // Key events
+  KEYPRESS: 'keypress',
+  KEYDOWN: 'keydown',
+  KEYUP: 'keyup',
+
+  // Focus
+  BLUR: 'blur',
+  FOCUS: 'focus',
+  DEACTIVATE: 'deactivate', // IE only
+  // NOTE: The following two events are not stable in cross-browser usage.
+  //     WebKit and Opera implement DOMFocusIn/Out.
+  //     IE implements focusin/out.
+  //     Gecko implements neither see bug at
+  //     https://bugzilla.mozilla.org/show_bug.cgi?id=396927.
+  // The DOM Events Level 3 Draft deprecates DOMFocusIn in favor of focusin:
+  //     http://dev.w3.org/2006/webapi/DOM-Level-3-Events/html/DOM3-Events.html
+  // You can use FOCUS in Capture phase until implementations converge.
+  FOCUSIN: goog.userAgent.IE ? 'focusin' : 'DOMFocusIn',
+  FOCUSOUT: goog.userAgent.IE ? 'focusout' : 'DOMFocusOut',
+
+  // Forms
+  CHANGE: 'change',
+  SELECT: 'select',
+  SUBMIT: 'submit',
+  INPUT: 'input',
+  PROPERTYCHANGE: 'propertychange', // IE only
+
+  // Drag and drop
+  DRAGSTART: 'dragstart',
+  DRAG: 'drag',
+  DRAGENTER: 'dragenter',
+  DRAGOVER: 'dragover',
+  DRAGLEAVE: 'dragleave',
+  DROP: 'drop',
+  DRAGEND: 'dragend',
+
+  // WebKit touch events.
+  TOUCHSTART: 'touchstart',
+  TOUCHMOVE: 'touchmove',
+  TOUCHEND: 'touchend',
+  TOUCHCANCEL: 'touchcancel',
+
+  // Misc
+  BEFOREUNLOAD: 'beforeunload',
+  CONSOLEMESSAGE: 'consolemessage',
+  CONTEXTMENU: 'contextmenu',
+  DOMCONTENTLOADED: 'DOMContentLoaded',
+  ERROR: 'error',
+  HELP: 'help',
+  LOAD: 'load',
+  LOSECAPTURE: 'losecapture',
+  READYSTATECHANGE: 'readystatechange',
+  RESIZE: 'resize',
+  SCROLL: 'scroll',
+  UNLOAD: 'unload',
+
+  // HTML 5 History events
+  // See http://www.w3.org/TR/html5/history.html#event-definitions
+  HASHCHANGE: 'hashchange',
+  PAGEHIDE: 'pagehide',
+  PAGESHOW: 'pageshow',
+  POPSTATE: 'popstate',
+
+  // Copy and Paste
+  // Support is limited. Make sure it works on your favorite browser
+  // before using.
+  // http://www.quirksmode.org/dom/events/cutcopypaste.html
+  COPY: 'copy',
+  PASTE: 'paste',
+  CUT: 'cut',
+  BEFORECOPY: 'beforecopy',
+  BEFORECUT: 'beforecut',
+  BEFOREPASTE: 'beforepaste',
+
+  // HTML5 online/offline events.
+  // http://www.w3.org/TR/offline-webapps/#related
+  ONLINE: 'online',
+  OFFLINE: 'offline',
+
+  // HTML 5 worker events
+  MESSAGE: 'message',
+  CONNECT: 'connect',
+
+  // CSS transition events. Based on the browser support described at:
+  // https://developer.mozilla.org/en/css/css_transitions#Browser_compatibility
+  TRANSITIONEND: goog.userAgent.WEBKIT ? 'webkitTransitionEnd' :
+      (goog.userAgent.OPERA ? 'oTransitionEnd' : 'transitionend'),
+
+  // IE specific events.
+  // See http://msdn.microsoft.com/en-us/library/ie/hh673557(v=vs.85).aspx
+  MSGESTURECHANGE: 'MSGestureChange',
+  MSGESTUREEND: 'MSGestureEnd',
+  MSGESTUREHOLD: 'MSGestureHold',
+  MSGESTURESTART: 'MSGestureStart',
+  MSGESTURETAP: 'MSGestureTap',
+  MSGOTPOINTERCAPTURE: 'MSGotPointerCapture',
+  MSINERTIASTART: 'MSInertiaStart',
+  MSLOSTPOINTERCAPTURE: 'MSLostPointerCapture',
+  MSPOINTERCANCEL: 'MSPointerCancel',
+  MSPOINTERDOWN: 'MSPointerDown',
+  MSPOINTERMOVE: 'MSPointerMove',
+  MSPOINTEROVER: 'MSPointerOver',
+  MSPOINTEROUT: 'MSPointerOut',
+  MSPOINTERUP: 'MSPointerUp',
+
+  // Native IMEs/input tools events.
+  TEXTINPUT: 'textinput',
+  COMPOSITIONSTART: 'compositionstart',
+  COMPOSITIONUPDATE: 'compositionupdate',
+  COMPOSITIONEND: 'compositionend',
+
+  // Webview tag events
+  // See http://developer.chrome.com/dev/apps/webview_tag.html
+  EXIT: 'exit',
+  LOADABORT: 'loadabort',
+  LOADCOMMIT: 'loadcommit',
+  LOADREDIRECT: 'loadredirect',
+  LOADSTART: 'loadstart',
+  LOADSTOP: 'loadstop',
+  RESPONSIVE: 'responsive',
+  SIZECHANGED: 'sizechanged',
+  UNRESPONSIVE: 'unresponsive'
+};
+// Copyright 2013 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+/**
+ * @fileoverview The file contains generated enumerations for ARIA states
+ * and properties as defined by W3C ARIA standard:
+ * http://www.w3.org/TR/wai-aria/.
+ *
+ * This is auto-generated code. Do not manually edit! For more details
+ * about how to edit it via the generator check go/closure-ariagen.
+ */
+
+goog.provide('goog.a11y.aria.AutoCompleteValues');
+goog.provide('goog.a11y.aria.CheckedValues');
+goog.provide('goog.a11y.aria.DropEffectValues');
+goog.provide('goog.a11y.aria.ExpandedValues');
+goog.provide('goog.a11y.aria.GrabbedValues');
+goog.provide('goog.a11y.aria.InvalidValues');
+goog.provide('goog.a11y.aria.LivePriority');
+goog.provide('goog.a11y.aria.OrientationValues');
+goog.provide('goog.a11y.aria.PressedValues');
+goog.provide('goog.a11y.aria.RelevantValues');
+goog.provide('goog.a11y.aria.SelectedValues');
+goog.provide('goog.a11y.aria.SortValues');
+goog.provide('goog.a11y.aria.State');
+
+
+/**
+ * ARIA states and properties.
+ * @enum {string}
+ */
+goog.a11y.aria.State = {
+  // ARIA property for setting the currently active descendant of an element,
+  // for example the selected item in a list box. Value: ID of an element.
+  ACTIVEDESCENDANT: 'activedescendant',
+
+  // ARIA property that, if true, indicates that all of a changed region should
+  // be presented, instead of only parts. Value: one of {true, false}.
+  ATOMIC: 'atomic',
+
+  // ARIA property to specify that input completion is provided. Value:
+  // one of {'inline', 'list', 'both', 'none'}.
+  AUTOCOMPLETE: 'autocomplete',
+
+  // ARIA state to indicate that an element and its subtree are being updated.
+  // Value: one of {true, false}.
+  BUSY: 'busy',
+
+  // ARIA state for a checked item. Value: one of {'true', 'false', 'mixed',
+  // undefined}.
+  CHECKED: 'checked',
+
+  // ARIA property that identifies the element or elements whose contents or
+  // presence are controlled by this element.
+  // Value: space-separated IDs of other elements.
+  CONTROLS: 'controls',
+
+  // ARIA property that identifies the element or elements that describe
+  // this element. Value: space-separated IDs of other elements.
+  DESCRIBEDBY: 'describedby',
+
+  // ARIA state for a disabled item. Value: one of {true, false}.
+  DISABLED: 'disabled',
+
+  // ARIA property that indicates what functions can be performed when a
+  // dragged object is released on the drop target.  Value: one of
+  // {'copy', 'move', 'link', 'execute', 'popup', 'none'}.
+  DROPEFFECT: 'dropeffect',
+
+  // ARIA state for setting whether the element like a tree node is expanded.
+  // Value: one of {true, false, undefined}.
+  EXPANDED: 'expanded',
+
+  // ARIA property that identifies the next element (or elements) in the
+  // recommended reading order of content. Value: space-separated ids of
+  // elements to flow to.
+  FLOWTO: 'flowto',
+
+  // ARIA state that indicates an element's "grabbed" state in drag-and-drop.
+  // Value: one of {true, false, undefined}.
+  GRABBED: 'grabbed',
+
+  // ARIA property indicating whether the element has a popup.
+  // Value: one of {true, false}.
+  HASPOPUP: 'haspopup',
+
+  // ARIA state indicating that the element is not visible or perceivable
+  // to any user. Value: one of {true, false}.
+  HIDDEN: 'hidden',
+
+  // ARIA state indicating that the entered value does not conform. Value:
+  // one of {false, true, 'grammar', 'spelling'}
+  INVALID: 'invalid',
+
+  // ARIA property that provides a label to override any other text, value, or
+  // contents used to describe this element. Value: string.
+  LABEL: 'label',
+
+  // ARIA property for setting the element which labels another element.
+  // Value: space-separated IDs of elements.
+  LABELLEDBY: 'labelledby',
+
+  // ARIA property for setting the level of an element in the hierarchy.
+  // Value: integer.
+  LEVEL: 'level',
+
+  // ARIA property indicating that an element will be updated, and
+  // describes the types of updates the user agents, assistive technologies,
+  // and user can expect from the live region. Value: one of {'off', 'polite',
+  // 'assertive'}.
+  LIVE: 'live',
+
+  // ARIA property indicating whether a text box can accept multiline input.
+  // Value: one of {true, false}.
+  MULTILINE: 'multiline',
+
+  // ARIA property indicating if the user may select more than one item.
+  // Value: one of {true, false}.
+  MULTISELECTABLE: 'multiselectable',
+
+  // ARIA property indicating if the element is horizontal or vertical.
+  // Value: one of {'vertical', 'horizontal'}.
+  ORIENTATION: 'orientation',
+
+  // ARIA property creating a visual, functional, or contextual parent/child
+  // relationship when the DOM hierarchy can't be used to represent it.
+  // Value: Space-separated IDs of elements.
+  OWNS: 'owns',
+
+  // ARIA property that defines an element's number of position in a list.
+  // Value: integer.
+  POSINSET: 'posinset',
+
+  // ARIA state for a pressed item.
+  // Value: one of {true, false, undefined, 'mixed'}.
+  PRESSED: 'pressed',
+
+  // ARIA property indicating that an element is not editable.
+  // Value: one of {true, false}.
+  READONLY: 'readonly',
+
+  // ARIA property indicating that change notifications within this subtree
+  // of a live region should be announced. Value: one of {'additions',
+  // 'removals', 'text', 'all', 'additions text'}.
+  RELEVANT: 'relevant',
+
+  // ARIA property indicating that user input is required on this element
+  // before a form may be submitted. Value: one of {true, false}.
+  REQUIRED: 'required',
+
+  // ARIA state for setting the currently selected item in the list.
+  // Value: one of {true, false, undefined}.
+  SELECTED: 'selected',
+
+  // ARIA property defining the number of items in a list. Value: integer.
+  SETSIZE: 'setsize',
+
+  // ARIA property indicating if items are sorted. Value: one of {'ascending',
+  // 'descending', 'none', 'other'}.
+  SORT: 'sort',
+
+  // ARIA property for slider maximum value. Value: number.
+  VALUEMAX: 'valuemax',
+
+  // ARIA property for slider minimum value. Value: number.
+  VALUEMIN: 'valuemin',
+
+  // ARIA property for slider active value. Value: number.
+  VALUENOW: 'valuenow',
+
+  // ARIA property for slider active value represented as text.
+  // Value: string.
+  VALUETEXT: 'valuetext'
+};
+
+
+/**
+ * ARIA state values for AutoCompleteValues.
+ * @enum {string}
+ */
+goog.a11y.aria.AutoCompleteValues = {
+  // The system provides text after the caret as a suggestion
+  // for how to complete the field.
+  INLINE: 'inline',
+  // A list of choices appears from which the user can choose,
+  // but the edit box retains focus.
+  LIST: 'list',
+  // A list of choices appears and the currently selected suggestion
+  // also appears inline.
+  BOTH: 'both',
+  // No input completion suggestions are provided.
+  NONE: 'none'
+};
+
+
+/**
+ * ARIA state values for DropEffectValues.
+ * @enum {string}
+ */
+goog.a11y.aria.DropEffectValues = {
+  // A duplicate of the source object will be dropped into the target.
+  COPY: 'copy',
+  // The source object will be removed from its current location
+  // and dropped into the target.
+  MOVE: 'move',
+  // A reference or shortcut to the dragged object
+  // will be created in the target object.
+  LINK: 'link',
+  // A function supported by the drop target is
+  // executed, using the drag source as an input.
+  EXECUTE: 'execute',
+  // There is a popup menu or dialog that allows the user to choose
+  // one of the drag operations (copy, move, link, execute) and any other
+  // drag functionality, such as cancel.
+  POPUP: 'popup',
+  // No operation can be performed; effectively
+  // cancels the drag operation if an attempt is made to drop on this object.
+  NONE: 'none'
+};
+
+
+/**
+ * ARIA state values for LivePriority.
+ * @enum {string}
+ */
+goog.a11y.aria.LivePriority = {
+  // Updates to the region will not be presented to the user
+  // unless the assitive technology is currently focused on that region.
+  OFF: 'off',
+  // (Background change) Assistive technologies SHOULD announce
+  // updates at the next graceful opportunity, such as at the end of
+  // speaking the current sentence or when the user pauses typing.
+  POLITE: 'polite',
+  // This information has the highest priority and assistive
+  // technologies SHOULD notify the user immediately.
+  // Because an interruption may disorient users or cause them to not complete
+  // their current task, authors SHOULD NOT use the assertive value unless the
+  // interruption is imperative.
+  ASSERTIVE: 'assertive'
+};
+
+
+/**
+ * ARIA state values for OrientationValues.
+ * @enum {string}
+ */
+goog.a11y.aria.OrientationValues = {
+  // The element is oriented vertically.
+  VERTICAL: 'vertical',
+  // The element is oriented horizontally.
+  HORIZONTAL: 'horizontal'
+};
+
+
+/**
+ * ARIA state values for RelevantValues.
+ * @enum {string}
+ */
+goog.a11y.aria.RelevantValues = {
+  // Element nodes are added to the DOM within the live region.
+  ADDITIONS: 'additions',
+  // Text or element nodes within the live region are removed from the DOM.
+  REMOVALS: 'removals',
+  // Text is added to any DOM descendant nodes of the live region.
+  TEXT: 'text',
+  // Equivalent to the combination of all values, "additions removals text".
+  ALL: 'all'
+};
+
+
+/**
+ * ARIA state values for SortValues.
+ * @enum {string}
+ */
+goog.a11y.aria.SortValues = {
+  // Items are sorted in ascending order by this column.
+  ASCENDING: 'ascending',
+  // Items are sorted in descending order by this column.
+  DESCENDING: 'descending',
+  // There is no defined sort applied to the column.
+  NONE: 'none',
+  // A sort algorithm other than ascending or descending has been applied.
+  OTHER: 'other'
+};
+
+
+/**
+ * ARIA state values for CheckedValues.
+ * @enum {string}
+ */
+goog.a11y.aria.CheckedValues = {
+  // The selectable element is checked.
+  TRUE: 'true',
+  // The selectable element is not checked.
+  FALSE: 'false',
+  // Indicates a mixed mode value for a tri-state
+  // checkbox or menuitemcheckbox.
+  MIXED: 'mixed',
+  // The element does not support being checked.
+  UNDEFINED: 'undefined'
+};
+
+
+/**
+ * ARIA state values for ExpandedValues.
+ * @enum {string}
+ */
+goog.a11y.aria.ExpandedValues = {
+  // The element, or another grouping element it controls, is expanded.
+  TRUE: 'true',
+  // The element, or another grouping element it controls, is collapsed.
+  FALSE: 'false',
+  // The element, or another grouping element
+  // it controls, is neither expandable nor collapsible; all its
+  // child elements are shown or there are no child elements.
+  UNDEFINED: 'undefined'
+};
+
+
+/**
+ * ARIA state values for GrabbedValues.
+ * @enum {string}
+ */
+goog.a11y.aria.GrabbedValues = {
+  // Indicates that the element has been "grabbed" for dragging.
+  TRUE: 'true',
+  // Indicates that the element supports being dragged.
+  FALSE: 'false',
+  // Indicates that the element does not support being dragged.
+  UNDEFINED: 'undefined'
+};
+
+
+/**
+ * ARIA state values for InvalidValues.
+ * @enum {string}
+ */
+goog.a11y.aria.InvalidValues = {
+  // There are no detected errors in the value.
+  FALSE: 'false',
+  // The value entered by the user has failed validation.
+  TRUE: 'true',
+  // A grammatical error was detected.
+  GRAMMAR: 'grammar',
+  // A spelling error was detected.
+  SPELLING: 'spelling'
+};
+
+
+/**
+ * ARIA state values for PressedValues.
+ * @enum {string}
+ */
+goog.a11y.aria.PressedValues = {
+  // The element is pressed.
+  TRUE: 'true',
+  // The element supports being pressed but is not currently pressed.
+  FALSE: 'false',
+  // Indicates a mixed mode value for a tri-state toggle button.
+  MIXED: 'mixed',
+  // The element does not support being pressed.
+  UNDEFINED: 'undefined'
+};
+
+
+/**
+ * ARIA state values for SelectedValues.
+ * @enum {string}
+ */
+goog.a11y.aria.SelectedValues = {
+  // The selectable element is selected.
+  TRUE: 'true',
+  // The selectable element is not selected.
+  FALSE: 'false',
+  // The element is not selectable.
+  UNDEFINED: 'undefined'
+};
+// Copyright 2013 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+
+/**
+ * @fileoverview The file contains data tables generated from the ARIA
+ * standard schema http://www.w3.org/TR/wai-aria/.
+ *
+ * This is auto-generated code. Do not manually edit!
+ */
+
+goog.provide('goog.a11y.aria.datatables');
+
+goog.require('goog.a11y.aria.State');
+goog.require('goog.object');
+
+
+/**
+ * A map that contains mapping between an ARIA state and the default value
+ * for it. Note that not all ARIA states have default values.
+ *
+ * @type {Object.<!(goog.a11y.aria.State|string), (string|boolean|number)>}
+ */
+goog.a11y.aria.DefaultStateValueMap_;
+
+
+/**
+ * A method that creates a map that contains mapping between an ARIA state and
+ * the default value for it. Note that not all ARIA states have default values.
+ *
+ * @return {Object.<!(goog.a11y.aria.State|string), (string|boolean|number)>}
+ *      The names for each of the notification methods.
+ */
+goog.a11y.aria.datatables.getDefaultValuesMap = function() {
+  if (!goog.a11y.aria.DefaultStateValueMap_) {
+    goog.a11y.aria.DefaultStateValueMap_ = goog.object.create(
+        goog.a11y.aria.State.ATOMIC, false,
+        goog.a11y.aria.State.AUTOCOMPLETE, 'none',
+        goog.a11y.aria.State.DROPEFFECT, 'none',
+        goog.a11y.aria.State.HASPOPUP, false,
+        goog.a11y.aria.State.LIVE, 'off',
+        goog.a11y.aria.State.MULTILINE, false,
+        goog.a11y.aria.State.MULTISELECTABLE, false,
+        goog.a11y.aria.State.ORIENTATION, 'vertical',
+        goog.a11y.aria.State.READONLY, false,
+        goog.a11y.aria.State.RELEVANT, 'additions text',
+        goog.a11y.aria.State.REQUIRED, false,
+        goog.a11y.aria.State.SORT, 'none',
+        goog.a11y.aria.State.BUSY, false,
+        goog.a11y.aria.State.DISABLED, false,
+        goog.a11y.aria.State.HIDDEN, false,
+        goog.a11y.aria.State.INVALID, 'false');
+  }
+
+  return goog.a11y.aria.DefaultStateValueMap_;
+};
+// Copyright 2013 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+/**
+ * @fileoverview The file contains generated enumerations for ARIA roles
+ * as defined by W3C ARIA standard: http://www.w3.org/TR/wai-aria/.
+ *
+ * This is auto-generated code. Do not manually edit! For more details
+ * about how to edit it via the generator check go/closure-ariagen.
+ */
+
+goog.provide('goog.a11y.aria.Role');
+
+
+/**
+ * ARIA role values.
+ * @enum {string}
+ */
+goog.a11y.aria.Role = {
+  // ARIA role for an alert element that doesn't need to be explicitly closed.
+  ALERT: 'alert',
+
+  // ARIA role for an alert dialog element that takes focus and must be closed.
+  ALERTDIALOG: 'alertdialog',
+
+  // ARIA role for an application that implements its own keyboard navigation.
+  APPLICATION: 'application',
+
+  // ARIA role for an article.
+  ARTICLE: 'article',
+
+  // ARIA role for a banner containing mostly site content, not page content.
+  BANNER: 'banner',
+
+  // ARIA role for a button element.
+  BUTTON: 'button',
+
+  // ARIA role for a checkbox button element; use with the CHECKED state.
+  CHECKBOX: 'checkbox',
+
+  // ARIA role for a column header of a table or grid.
+  COLUMNHEADER: 'columnheader',
+
+  // ARIA role for a combo box element.
+  COMBOBOX: 'combobox',
+
+  // ARIA role for a supporting section of the document.
+  COMPLEMENTARY: 'complementary',
+
+  // ARIA role for a large perceivable region that contains information
+  // about the parent document.
+  CONTENTINFO: 'contentinfo',
+
+  // ARIA role for a definition of a term or concept.
+  DEFINITION: 'definition',
+
+  // ARIA role for a dialog, some descendant must take initial focus.
+  DIALOG: 'dialog',
+
+  // ARIA role for a directory, like a table of contents.
+  DIRECTORY: 'directory',
+
+  // ARIA role for a part of a page that's a document, not a web application.
+  DOCUMENT: 'document',
+
+  // ARIA role for a landmark region logically considered one form.
+  FORM: 'form',
+
+  // ARIA role for an interactive control of tabular data.
+  GRID: 'grid',
+
+  // ARIA role for a cell in a grid.
+  GRIDCELL: 'gridcell',
+
+  // ARIA role for a group of related elements like tree item siblings.
+  GROUP: 'group',
+
+  // ARIA role for a heading element.
+  HEADING: 'heading',
+
+  // ARIA role for a container of elements that together comprise one image.
+  IMG: 'img',
+
+  // ARIA role for a link.
+  LINK: 'link',
+
+  // ARIA role for a list of non-interactive list items.
+  LIST: 'list',
+
+  // ARIA role for a listbox.
+  LISTBOX: 'listbox',
+
+  // ARIA role for a list item.
+  LISTITEM: 'listitem',
+
+  // ARIA role for a live region where new information is added.
+  LOG: 'log',
+
+  // ARIA landmark role for the main content in a document. Use only once.
+  MAIN: 'main',
+
+  // ARIA role for a live region of non-essential information that changes.
+  MARQUEE: 'marquee',
+
+  // ARIA role for a mathematical expression.
+  MATH: 'math',
+
+  // ARIA role for a popup menu.
+  MENU: 'menu',
+
+  // ARIA role for a menubar element containing menu elements.
+  MENUBAR: 'menubar',
+
+  // ARIA role for menu item elements.
+  MENU_ITEM: 'menuitem',
+
+  // ARIA role for a checkbox box element inside a menu.
+  MENU_ITEM_CHECKBOX: 'menuitemcheckbox',
+
+  // ARIA role for a radio button element inside a menu.
+  MENU_ITEM_RADIO: 'menuitemradio',
+
+  // ARIA landmark role for a collection of navigation links.
+  NAVIGATION: 'navigation',
+
+  // ARIA role for a section ancillary to the main content.
+  NOTE: 'note',
+
+  // ARIA role for option items that are  children of combobox, listbox, menu,
+  // radiogroup, or tree elements.
+  OPTION: 'option',
+
+  // ARIA role for ignorable cosmetic elements with no semantic significance.
+  PRESENTATION: 'presentation',
+
+  // ARIA role for a progress bar element.
+  PROGRESSBAR: 'progressbar',
+
+  // ARIA role for a radio button element.
+  RADIO: 'radio',
+
+  // ARIA role for a group of connected radio button elements.
+  RADIOGROUP: 'radiogroup',
+
+  // ARIA role for an important region of the page.
+  REGION: 'region',
+
+  // ARIA role for a row of cells in a grid.
+  ROW: 'row',
+
+  // ARIA role for a group of one or more rows in a grid.
+  ROWGROUP: 'rowgroup',
+
+  // ARIA role for a row header of a table or grid.
+  ROWHEADER: 'rowheader',
+
+  // ARIA role for a scrollbar element.
+  SCROLLBAR: 'scrollbar',
+
+  // ARIA landmark role for a part of the page providing search functionality.
+  SEARCH: 'search',
+
+  // ARIA role for a menu separator.
+  SEPARATOR: 'separator',
+
+  // ARIA role for a slider.
+  SLIDER: 'slider',
+
+  // ARIA role for a spin button.
+  SPINBUTTON: 'spinbutton',
+
+  // ARIA role for a live region with advisory info less severe than an alert.
+  STATUS: 'status',
+
+  // ARIA role for a tab button.
+  TAB: 'tab',
+
+  // ARIA role for a tab bar (i.e. a list of tab buttons).
+  TAB_LIST: 'tablist',
+
+  // ARIA role for a tab page (i.e. the element holding tab contents).
+  TAB_PANEL: 'tabpanel',
+
+  // ARIA role for a textbox element.
+  TEXTBOX: 'textbox',
+
+  // ARIA role for an element displaying elapsed time or time remaining.
+  TIMER: 'timer',
+
+  // ARIA role for a toolbar element.
+  TOOLBAR: 'toolbar',
+
+  // ARIA role for a tooltip element.
+  TOOLTIP: 'tooltip',
+
+  // ARIA role for a tree.
+  TREE: 'tree',
+
+  // ARIA role for a grid whose rows can be expanded and collapsed like a tree.
+  TREEGRID: 'treegrid',
+
+  // ARIA role for a tree item that sometimes may be expanded or collapsed.
+  TREEITEM: 'treeitem'
+};
+// Copyright 2007 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+/**
+ * @fileoverview Utilities for adding, removing and setting ARIA roles and
+ * states as defined by W3C ARIA standard: http://www.w3.org/TR/wai-aria/
+ * All modern browsers have some form of ARIA support, so no browser checks are
+ * performed when adding ARIA to components.
+ *
+ */
+
+goog.provide('goog.a11y.aria');
+
+goog.require('goog.a11y.aria.Role');
+goog.require('goog.a11y.aria.State');
+goog.require('goog.a11y.aria.datatables');
+goog.require('goog.array');
+goog.require('goog.asserts');
+goog.require('goog.dom');
+goog.require('goog.dom.TagName');
+goog.require('goog.object');
+goog.require('goog.string');
+
+
+/**
+ * ARIA states/properties prefix.
+ * @private
+ */
+goog.a11y.aria.ARIA_PREFIX_ = 'aria-';
+
+
+/**
+ * ARIA role attribute.
+ * @private
+ */
+goog.a11y.aria.ROLE_ATTRIBUTE_ = 'role';
+
+
+/**
+ * A list of tag names for which we don't need to set ARIA role and states
+ * because they have well supported semantics for screen readers or because
+ * they don't contain content to be made accessible.
+ * @private
+ */
+goog.a11y.aria.TAGS_WITH_ASSUMED_ROLES_ = [
+  goog.dom.TagName.A,
+  goog.dom.TagName.AREA,
+  goog.dom.TagName.BUTTON,
+  goog.dom.TagName.HEAD,
+  goog.dom.TagName.INPUT,
+  goog.dom.TagName.LINK,
+  goog.dom.TagName.MENU,
+  goog.dom.TagName.META,
+  goog.dom.TagName.OPTGROUP,
+  goog.dom.TagName.OPTION,
+  goog.dom.TagName.PROGRESS,
+  goog.dom.TagName.STYLE,
+  goog.dom.TagName.SELECT,
+  goog.dom.TagName.SOURCE,
+  goog.dom.TagName.TEXTAREA,
+  goog.dom.TagName.TITLE,
+  goog.dom.TagName.TRACK
+];
+
+
+/**
+ * Sets the role of an element. If the roleName is
+ * empty string or null, the role for the element is removed.
+ * We encourage clients to call the goog.a11y.aria.removeRole
+ * method instead of setting null and empty string values.
+ * Special handling for this case is added to ensure
+ * backword compatibility with existing code.
+ *
+ * @param {!Element} element DOM node to set role of.
+ * @param {!goog.a11y.aria.Role|string} roleName role name(s).
+ */
+goog.a11y.aria.setRole = function(element, roleName) {
+  if (!roleName) {
+    // Setting the ARIA role to empty string is not allowed
+    // by the ARIA standard.
+    goog.a11y.aria.removeRole(element);
+  } else {
+    if (goog.asserts.ENABLE_ASSERTS) {
+      goog.asserts.assert(goog.object.containsValue(
+          goog.a11y.aria.Role, roleName), 'No such ARIA role ' + roleName);
+    }
+    element.setAttribute(goog.a11y.aria.ROLE_ATTRIBUTE_, roleName);
+  }
+};
+
+
+/**
+ * Gets role of an element.
+ * @param {!Element} element DOM element to get role of.
+ * @return {?goog.a11y.aria.Role} ARIA Role name.
+ */
+goog.a11y.aria.getRole = function(element) {
+  var role = element.getAttribute(goog.a11y.aria.ROLE_ATTRIBUTE_);
+  return /** @type {goog.a11y.aria.Role} */ (role) || null;
+};
+
+
+/**
+ * Removes role of an element.
+ * @param {!Element} element DOM element to remove the role from.
+ */
+goog.a11y.aria.removeRole = function(element) {
+  element.removeAttribute(goog.a11y.aria.ROLE_ATTRIBUTE_);
+};
+
+
+/**
+ * Sets the state or property of an element.
+ * @param {!Element} element DOM node where we set state.
+ * @param {!(goog.a11y.aria.State|string)} stateName State attribute being set.
+ *     Automatically adds prefix 'aria-' to the state name if the attribute is
+ *     not an extra attribute.
+ * @param {string|boolean|number|!goog.array.ArrayLike.<string>} value Value
+ * for the state attribute.
+ */
+goog.a11y.aria.setState = function(element, stateName, value) {
+  if (goog.isArrayLike(value)) {
+    var array = /** @type {!goog.array.ArrayLike.<string>} */ (value);
+    value = array.join(' ');
+  }
+  var attrStateName = goog.a11y.aria.getAriaAttributeName_(stateName);
+  if (value === '' || value == undefined) {
+    var defaultValueMap = goog.a11y.aria.datatables.getDefaultValuesMap();
+    // Work around for browsers that don't properly support ARIA.
+    // According to the ARIA W3C standard, user agents should allow
+    // setting empty value which results in setting the default value
+    // for the ARIA state if such exists. The exact text from the ARIA W3C
+    // standard (http://www.w3.org/TR/wai-aria/states_and_properties):
+    // "When a value is indicated as the default, the user agent
+    // MUST follow the behavior prescribed by this value when the state or
+    // property is empty or undefined."
+    // The defaultValueMap contains the default values for the ARIA states
+    // and has as a key the goog.a11y.aria.State constant for the state.
+    if (stateName in defaultValueMap) {
+      element.setAttribute(attrStateName, defaultValueMap[stateName]);
+    } else {
+      element.removeAttribute(attrStateName);
+    }
+  } else {
+    element.setAttribute(attrStateName, value);
+  }
+};
+
+
+/**
+ * Remove the state or property for the element.
+ * @param {!Element} element DOM node where we set state.
+ * @param {!goog.a11y.aria.State} stateName State name.
+ */
+goog.a11y.aria.removeState = function(element, stateName) {
+  element.removeAttribute(goog.a11y.aria.getAriaAttributeName_(stateName));
+};
+
+
+/**
+ * Gets value of specified state or property.
+ * @param {!Element} element DOM node to get state from.
+ * @param {!goog.a11y.aria.State|string} stateName State name.
+ * @return {string} Value of the state attribute.
+ */
+goog.a11y.aria.getState = function(element, stateName) {
+  // TODO(user): return properly typed value result --
+  // boolean, number, string, null. We should be able to chain
+  // getState(...) and setState(...) methods.
+
+  var attr =
+      /** @type {string|number|boolean} */ (element.getAttribute(
+      goog.a11y.aria.getAriaAttributeName_(stateName)));
+  var isNullOrUndefined = attr == null || attr == undefined;
+  return isNullOrUndefined ? '' : String(attr);
+};
+
+
+/**
+ * Returns the activedescendant element for the input element by
+ * using the activedescendant ARIA property of the given element.
+ * @param {!Element} element DOM node to get activedescendant
+ *     element for.
+ * @return {?Element} DOM node of the activedescendant, if found.
+ */
+goog.a11y.aria.getActiveDescendant = function(element) {
+  var id = goog.a11y.aria.getState(
+      element, goog.a11y.aria.State.ACTIVEDESCENDANT);
+  return goog.dom.getOwnerDocument(element).getElementById(id);
+};
+
+
+/**
+ * Sets the activedescendant ARIA property value for an element.
+ * If the activeElement is not null, it should have an id set.
+ * @param {!Element} element DOM node to set activedescendant ARIA property to.
+ * @param {?Element} activeElement DOM node being set as activedescendant.
+ */
+goog.a11y.aria.setActiveDescendant = function(element, activeElement) {
+  var id = '';
+  if (activeElement) {
+    id = activeElement.id;
+    goog.asserts.assert(id, 'The active element should have an id.');
+  }
+
+  goog.a11y.aria.setState(element, goog.a11y.aria.State.ACTIVEDESCENDANT, id);
+};
+
+
+/**
+ * Gets the label of the given element.
+ * @param {!Element} element DOM node to get label from.
+ * @return {string} label The label.
+ */
+goog.a11y.aria.getLabel = function(element) {
+  return goog.a11y.aria.getState(element, goog.a11y.aria.State.LABEL);
+};
+
+
+/**
+ * Sets the label of the given element.
+ * @param {!Element} element DOM node to set label to.
+ * @param {string} label The label to set.
+ */
+goog.a11y.aria.setLabel = function(element, label) {
+  goog.a11y.aria.setState(element, goog.a11y.aria.State.LABEL, label);
+};
+
+
+/**
+ * Asserts that the element has a role set if it's not an HTML element whose
+ * semantics is well supported by most screen readers.
+ * Only to be used internally by the ARIA library in goog.a11y.aria.*.
+ * @param {!Element} element The element to assert an ARIA role set.
+ * @param {!goog.array.ArrayLike.<string>} allowedRoles The child roles of
+ * the roles.
+ */
+goog.a11y.aria.assertRoleIsSetInternalUtil = function(element, allowedRoles) {
+  if (goog.array.contains(goog.a11y.aria.TAGS_WITH_ASSUMED_ROLES_,
+      element.tagName)) {
+    return;
+  }
+  var elementRole = /** @type {string}*/ (goog.a11y.aria.getRole(element));
+  goog.asserts.assert(elementRole != null,
+      'The element ARIA role cannot be null.');
+
+  goog.asserts.assert(goog.array.contains(allowedRoles, elementRole),
+      'Non existing or incorrect role set for element.' +
+      'The role set is "' + elementRole +
+      '". The role should be any of "' + allowedRoles +
+      '". Check the ARIA specification for more details ' +
+      'http://www.w3.org/TR/wai-aria/roles.');
+};
+
+
+/**
+ * Gets the boolean value of an ARIA state/property.
+ * Only to be used internally by the ARIA library in goog.a11y.aria.*.
+ * @param {!Element} element The element to get the ARIA state for.
+ * @param {!goog.a11y.aria.State|string} stateName the ARIA state name.
+ * @return {?boolean} Boolean value for the ARIA state value or null if
+ *     the state value is not 'true' or 'false'.
+ */
+goog.a11y.aria.getBooleanStateInternalUtil = function(element, stateName) {
+  var stringValue = goog.a11y.aria.getState(element, stateName);
+  if (stringValue == 'true') {
+    return true;
+  }
+  if (stringValue == 'false') {
+    return false;
+  }
+  return null;
+};
+
+
+/**
+ * Gets the number value of an ARIA state/property.
+ * Only to be used internally by the ARIA library in goog.a11y.aria.*.
+ * @param {!Element} element The element to get the ARIA state for.
+ * @param {!goog.a11y.aria.State|string} stateName the ARIA state name.
+ * @return {?number} Number value for the ARIA state value or null if
+ *     the state value is not a number.
+ */
+goog.a11y.aria.getNumberStateInternalUtil = function(element, stateName) {
+  var stringValue = goog.a11y.aria.getState(element, stateName);
+  if (goog.string.isNumeric(stringValue)) {
+    return goog.string.toNumber(stringValue);
+  }
+  return null;
+};
+
+
+/**
+ * Gets array of strings value of the specified state or
+ * property for the element.
+ * Only to be used internally by the ARIA library in goog.a11y.aria.*.
+ * @param {!Element} element DOM node to get state from.
+ * @param {!goog.a11y.aria.State} stateName State name.
+ * @return {!goog.array.ArrayLike.<string>} string Array
+ *     value of the state attribute.
+ */
+goog.a11y.aria.getStringArrayStateInternalUtil = function(element, stateName) {
+  var attrValue = element.getAttribute(
+      goog.a11y.aria.getAriaAttributeName_(stateName));
+  return goog.a11y.aria.splitStringOnWhitespace_(attrValue);
+};
+
+
+/**
+ * Gets the string value of an ARIA state/property.
+ * Only to be used internally by the ARIA library in goog.a11y.aria.*.
+ * @param {!Element} element The element to get the ARIA state for.
+ * @param {!goog.a11y.aria.State|string} stateName the ARIA state name.
+ * @return {?string} String value for the ARIA state value or null if
+ *     the state value is empty string.
+ */
+goog.a11y.aria.getStringStateInternalUtil = function(element, stateName) {
+  var stringValue = goog.a11y.aria.getState(element, stateName);
+  return stringValue || null;
+};
+
+
+/**
+ * Splits the input stringValue on whitespace.
+ * @param {string} stringValue The value of the string to split.
+ * @return {!goog.array.ArrayLike.<string>} string Array
+ *     value as result of the split.
+ * @private
+ */
+goog.a11y.aria.splitStringOnWhitespace_ = function(stringValue) {
+  return stringValue ? stringValue.split(/\s+/) : [];
+};
+
+
+/**
+ * Adds the 'aria-' prefix to ariaName.
+ * @param {string} ariaName ARIA state/property name.
+ * @private
+ * @return {string} The ARIA attribute name with added 'aria-' prefix.
+ * @throws {Error} If no such attribute exists.
+ */
+goog.a11y.aria.getAriaAttributeName_ = function(ariaName) {
+  if (goog.asserts.ENABLE_ASSERTS) {
+    goog.asserts.assert(ariaName, 'ARIA attribute cannot be empty.');
+    goog.asserts.assert(goog.object.containsValue(
+        goog.a11y.aria.State, ariaName),
+        'No such ARIA attribute ' + ariaName);
+  }
+  return goog.a11y.aria.ARIA_PREFIX_ + ariaName;
+};
+// Copyright 2011 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * @fileoverview Definition of the disposable interface.  A disposable object
+ * has a dispose method to to clean up references and resources.
+ * @author nnaze@google.com (Nathan Naze)
+ */
+
+
+goog.provide('goog.disposable.IDisposable');
+
+
+
+/**
+ * Interface for a disposable object.  If a instance requires cleanup
+ * (references COM objects, DOM notes, or other disposable objects), it should
+ * implement this interface (it may subclass goog.Disposable).
+ * @interface
+ */
+goog.disposable.IDisposable = function() {};
+
+
+/**
+ * Disposes of the object and its resources.
+ * @return {void} Nothing.
+ */
+goog.disposable.IDisposable.prototype.dispose;
+
+
+/**
+ * @return {boolean} Whether the object has been disposed of.
+ */
+goog.disposable.IDisposable.prototype.isDisposed;
+// Copyright 2005 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * @fileoverview Implements the disposable interface. The dispose method is used
+ * to clean up references and resources.
+ * @author arv@google.com (Erik Arvidsson)
+ */
+
+
+goog.provide('goog.Disposable');
+goog.provide('goog.dispose');
+
+goog.require('goog.disposable.IDisposable');
+
+
+
+/**
+ * Class that provides the basic implementation for disposable objects. If your
+ * class holds one or more references to COM objects, DOM nodes, or other
+ * disposable objects, it should extend this class or implement the disposable
+ * interface (defined in goog.disposable.IDisposable).
+ * @constructor
+ * @implements {goog.disposable.IDisposable}
+ */
+goog.Disposable = function() {
+  if (goog.Disposable.MONITORING_MODE != goog.Disposable.MonitoringMode.OFF) {
+    if (goog.Disposable.INCLUDE_STACK_ON_CREATION) {
+      this.creationStack = new Error().stack;
+    }
+    goog.Disposable.instances_[goog.getUid(this)] = this;
+  }
+};
+
+
+/**
+ * @enum {number} Different monitoring modes for Disposable.
+ */
+goog.Disposable.MonitoringMode = {
+  /**
+   * No monitoring.
+   */
+  OFF: 0,
+  /**
+   * Creating and disposing the goog.Disposable instances is monitored. All
+   * disposable objects need to call the {@code goog.Disposable} base
+   * constructor. The PERMANENT mode must bet switched on before creating any
+   * goog.Disposable instances.
+   */
+  PERMANENT: 1,
+  /**
+   * INTERACTIVE mode can be switched on and off on the fly without producing
+   * errors. It also doesn't warn if the disposable objects don't call the
+   * {@code goog.Disposable} base constructor.
+   */
+  INTERACTIVE: 2
+};
+
+
+/**
+ * @define {number} The monitoring mode of the goog.Disposable
+ *     instances. Default is OFF. Switching on the monitoring is only
+ *     recommended for debugging because it has a significant impact on
+ *     performance and memory usage. If switched off, the monitoring code
+ *     compiles down to 0 bytes.
+ */
+goog.define('goog.Disposable.MONITORING_MODE', 0);
+
+
+/**
+ * @define {boolean} Whether to attach creation stack to each created disposable
+ *     instance; This is only relevant for when MonitoringMode != OFF.
+ */
+goog.define('goog.Disposable.INCLUDE_STACK_ON_CREATION', true);
+
+
+/**
+ * Maps the unique ID of every undisposed {@code goog.Disposable} object to
+ * the object itself.
+ * @type {!Object.<number, !goog.Disposable>}
+ * @private
+ */
+goog.Disposable.instances_ = {};
+
+
+/**
+ * @return {!Array.<!goog.Disposable>} All {@code goog.Disposable} objects that
+ *     haven't been disposed of.
+ */
+goog.Disposable.getUndisposedObjects = function() {
+  var ret = [];
+  for (var id in goog.Disposable.instances_) {
+    if (goog.Disposable.instances_.hasOwnProperty(id)) {
+      ret.push(goog.Disposable.instances_[Number(id)]);
+    }
+  }
+  return ret;
+};
+
+
+/**
+ * Clears the registry of undisposed objects but doesn't dispose of them.
+ */
+goog.Disposable.clearUndisposedObjects = function() {
+  goog.Disposable.instances_ = {};
+};
+
+
+/**
+ * Whether the object has been disposed of.
+ * @type {boolean}
+ * @private
+ */
+goog.Disposable.prototype.disposed_ = false;
+
+
+/**
+ * Callbacks to invoke when this object is disposed.
+ * @type {Array.<!Function>}
+ * @private
+ */
+goog.Disposable.prototype.onDisposeCallbacks_;
+
+
+/**
+ * If monitoring the goog.Disposable instances is enabled, stores the creation
+ * stack trace of the Disposable instance.
+ * @type {string}
+ */
+goog.Disposable.prototype.creationStack;
+
+
+/**
+ * @return {boolean} Whether the object has been disposed of.
+ * @override
+ */
+goog.Disposable.prototype.isDisposed = function() {
+  return this.disposed_;
+};
+
+
+/**
+ * @return {boolean} Whether the object has been disposed of.
+ * @deprecated Use {@link #isDisposed} instead.
+ */
+goog.Disposable.prototype.getDisposed = goog.Disposable.prototype.isDisposed;
+
+
+/**
+ * Disposes of the object. If the object hasn't already been disposed of, calls
+ * {@link #disposeInternal}. Classes that extend {@code goog.Disposable} should
+ * override {@link #disposeInternal} in order to delete references to COM
+ * objects, DOM nodes, and other disposable objects. Reentrant.
+ *
+ * @return {void} Nothing.
+ * @override
+ */
+goog.Disposable.prototype.dispose = function() {
+  if (!this.disposed_) {
+    // Set disposed_ to true first, in case during the chain of disposal this
+    // gets disposed recursively.
+    this.disposed_ = true;
+    this.disposeInternal();
+    if (goog.Disposable.MONITORING_MODE != goog.Disposable.MonitoringMode.OFF) {
+      var uid = goog.getUid(this);
+      if (goog.Disposable.MONITORING_MODE ==
+          goog.Disposable.MonitoringMode.PERMANENT &&
+          !goog.Disposable.instances_.hasOwnProperty(uid)) {
+        throw Error(this + ' did not call the goog.Disposable base ' +
+            'constructor or was disposed of after a clearUndisposedObjects ' +
+            'call');
+      }
+      delete goog.Disposable.instances_[uid];
+    }
+  }
+};
+
+
+/**
+ * Associates a disposable object with this object so that they will be disposed
+ * together.
+ * @param {goog.disposable.IDisposable} disposable that will be disposed when
+ *     this object is disposed.
+ */
+goog.Disposable.prototype.registerDisposable = function(disposable) {
+  this.addOnDisposeCallback(goog.partial(goog.dispose, disposable));
+};
+
+
+/**
+ * Invokes a callback function when this object is disposed. Callbacks are
+ * invoked in the order in which they were added.
+ * @param {function(this:T):?} callback The callback function.
+ * @param {T=} opt_scope An optional scope to call the callback in.
+ * @template T
+ */
+goog.Disposable.prototype.addOnDisposeCallback = function(callback, opt_scope) {
+  if (!this.onDisposeCallbacks_) {
+    this.onDisposeCallbacks_ = [];
+  }
+  this.onDisposeCallbacks_.push(goog.bind(callback, opt_scope));
+};
+
+
+/**
+ * Deletes or nulls out any references to COM objects, DOM nodes, or other
+ * disposable objects. Classes that extend {@code goog.Disposable} should
+ * override this method.
+ * Not reentrant. To avoid calling it twice, it must only be called from the
+ * subclass' {@code disposeInternal} method. Everywhere else the public
+ * {@code dispose} method must be used.
+ * For example:
+ * <pre>
+ *   mypackage.MyClass = function() {
+ *     goog.base(this);
+ *     // Constructor logic specific to MyClass.
+ *     ...
+ *   };
+ *   goog.inherits(mypackage.MyClass, goog.Disposable);
+ *
+ *   mypackage.MyClass.prototype.disposeInternal = function() {
+ *     // Dispose logic specific to MyClass.
+ *     ...
+ *     // Call superclass's disposeInternal at the end of the subclass's, like
+ *     // in C++, to avoid hard-to-catch issues.
+ *     goog.base(this, 'disposeInternal');
+ *   };
+ * </pre>
+ * @protected
+ */
+goog.Disposable.prototype.disposeInternal = function() {
+  if (this.onDisposeCallbacks_) {
+    while (this.onDisposeCallbacks_.length) {
+      this.onDisposeCallbacks_.shift()();
+    }
+  }
+};
+
+
+/**
+ * Returns True if we can verify the object is disposed.
+ * Calls {@code isDisposed} on the argument if it supports it.  If obj
+ * is not an object with an isDisposed() method, return false.
+ * @param {*} obj The object to investigate.
+ * @return {boolean} True if we can verify the object is disposed.
+ */
+goog.Disposable.isDisposed = function(obj) {
+  if (obj && typeof obj.isDisposed == 'function') {
+    return obj.isDisposed();
+  }
+  return false;
+};
+
+
+/**
+ * Calls {@code dispose} on the argument if it supports it. If obj is not an
+ *     object with a dispose() method, this is a no-op.
+ * @param {*} obj The object to dispose of.
+ */
+goog.dispose = function(obj) {
+  if (obj && typeof obj.dispose == 'function') {
+    obj.dispose();
+  }
+};
+
+
+/**
+ * Calls {@code dispose} on each member of the list that supports it. (If the
+ * member is an ArrayLike, then {@code goog.disposeAll()} will be called
+ * recursively on each of its members.) If the member is not an object with a
+ * {@code dispose()} method, then it is ignored.
+ * @param {...*} var_args The list.
+ */
+goog.disposeAll = function(var_args) {
+  for (var i = 0, len = arguments.length; i < len; ++i) {
+    var disposable = arguments[i];
+    if (goog.isArrayLike(disposable)) {
+      goog.disposeAll.apply(null, disposable);
+    } else {
+      goog.dispose(disposable);
+    }
+  }
+};
+// Copyright 2012 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
  * @fileoverview An interface for a listenable JavaScript object.
  */
 
@@ -13908,510 +16563,6 @@ goog.debug.entryPointRegistry.unmonitorAllIfPossible = function(monitor) {
     goog.debug.entryPointRegistry.refList_[i](transformer);
   }
   monitors.length--;
-};
-// Copyright 2010 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/**
- * @fileoverview Event Types.
- *
- * @author arv@google.com (Erik Arvidsson)
- * @author mirkov@google.com (Mirko Visontai)
- */
-
-
-goog.provide('goog.events.EventType');
-
-goog.require('goog.userAgent');
-
-
-/**
- * Constants for event names.
- * @enum {string}
- */
-goog.events.EventType = {
-  // Mouse events
-  CLICK: 'click',
-  DBLCLICK: 'dblclick',
-  MOUSEDOWN: 'mousedown',
-  MOUSEUP: 'mouseup',
-  MOUSEOVER: 'mouseover',
-  MOUSEOUT: 'mouseout',
-  MOUSEMOVE: 'mousemove',
-  SELECTSTART: 'selectstart', // IE, Safari, Chrome
-
-  // Key events
-  KEYPRESS: 'keypress',
-  KEYDOWN: 'keydown',
-  KEYUP: 'keyup',
-
-  // Focus
-  BLUR: 'blur',
-  FOCUS: 'focus',
-  DEACTIVATE: 'deactivate', // IE only
-  // NOTE: The following two events are not stable in cross-browser usage.
-  //     WebKit and Opera implement DOMFocusIn/Out.
-  //     IE implements focusin/out.
-  //     Gecko implements neither see bug at
-  //     https://bugzilla.mozilla.org/show_bug.cgi?id=396927.
-  // The DOM Events Level 3 Draft deprecates DOMFocusIn in favor of focusin:
-  //     http://dev.w3.org/2006/webapi/DOM-Level-3-Events/html/DOM3-Events.html
-  // You can use FOCUS in Capture phase until implementations converge.
-  FOCUSIN: goog.userAgent.IE ? 'focusin' : 'DOMFocusIn',
-  FOCUSOUT: goog.userAgent.IE ? 'focusout' : 'DOMFocusOut',
-
-  // Forms
-  CHANGE: 'change',
-  SELECT: 'select',
-  SUBMIT: 'submit',
-  INPUT: 'input',
-  PROPERTYCHANGE: 'propertychange', // IE only
-
-  // Drag and drop
-  DRAGSTART: 'dragstart',
-  DRAG: 'drag',
-  DRAGENTER: 'dragenter',
-  DRAGOVER: 'dragover',
-  DRAGLEAVE: 'dragleave',
-  DROP: 'drop',
-  DRAGEND: 'dragend',
-
-  // WebKit touch events.
-  TOUCHSTART: 'touchstart',
-  TOUCHMOVE: 'touchmove',
-  TOUCHEND: 'touchend',
-  TOUCHCANCEL: 'touchcancel',
-
-  // Misc
-  BEFOREUNLOAD: 'beforeunload',
-  CONSOLEMESSAGE: 'consolemessage',
-  CONTEXTMENU: 'contextmenu',
-  DOMCONTENTLOADED: 'DOMContentLoaded',
-  ERROR: 'error',
-  HELP: 'help',
-  LOAD: 'load',
-  LOSECAPTURE: 'losecapture',
-  READYSTATECHANGE: 'readystatechange',
-  RESIZE: 'resize',
-  SCROLL: 'scroll',
-  UNLOAD: 'unload',
-
-  // HTML 5 History events
-  // See http://www.w3.org/TR/html5/history.html#event-definitions
-  HASHCHANGE: 'hashchange',
-  PAGEHIDE: 'pagehide',
-  PAGESHOW: 'pageshow',
-  POPSTATE: 'popstate',
-
-  // Copy and Paste
-  // Support is limited. Make sure it works on your favorite browser
-  // before using.
-  // http://www.quirksmode.org/dom/events/cutcopypaste.html
-  COPY: 'copy',
-  PASTE: 'paste',
-  CUT: 'cut',
-  BEFORECOPY: 'beforecopy',
-  BEFORECUT: 'beforecut',
-  BEFOREPASTE: 'beforepaste',
-
-  // HTML5 online/offline events.
-  // http://www.w3.org/TR/offline-webapps/#related
-  ONLINE: 'online',
-  OFFLINE: 'offline',
-
-  // HTML 5 worker events
-  MESSAGE: 'message',
-  CONNECT: 'connect',
-
-  // CSS transition events. Based on the browser support described at:
-  // https://developer.mozilla.org/en/css/css_transitions#Browser_compatibility
-  TRANSITIONEND: goog.userAgent.WEBKIT ? 'webkitTransitionEnd' :
-      (goog.userAgent.OPERA ? 'oTransitionEnd' : 'transitionend'),
-
-  // IE specific events.
-  // See http://msdn.microsoft.com/en-us/library/ie/hh673557(v=vs.85).aspx
-  MSGESTURECHANGE: 'MSGestureChange',
-  MSGESTUREEND: 'MSGestureEnd',
-  MSGESTUREHOLD: 'MSGestureHold',
-  MSGESTURESTART: 'MSGestureStart',
-  MSGESTURETAP: 'MSGestureTap',
-  MSGOTPOINTERCAPTURE: 'MSGotPointerCapture',
-  MSINERTIASTART: 'MSInertiaStart',
-  MSLOSTPOINTERCAPTURE: 'MSLostPointerCapture',
-  MSPOINTERCANCEL: 'MSPointerCancel',
-  MSPOINTERDOWN: 'MSPointerDown',
-  MSPOINTERMOVE: 'MSPointerMove',
-  MSPOINTEROVER: 'MSPointerOver',
-  MSPOINTEROUT: 'MSPointerOut',
-  MSPOINTERUP: 'MSPointerUp',
-
-  // Native IMEs/input tools events.
-  TEXTINPUT: 'textinput',
-  COMPOSITIONSTART: 'compositionstart',
-  COMPOSITIONUPDATE: 'compositionupdate',
-  COMPOSITIONEND: 'compositionend',
-
-  // Webview tag events
-  // See http://developer.chrome.com/dev/apps/webview_tag.html
-  EXIT: 'exit',
-  LOADABORT: 'loadabort',
-  LOADCOMMIT: 'loadcommit',
-  LOADREDIRECT: 'loadredirect',
-  LOADSTART: 'loadstart',
-  LOADSTOP: 'loadstop',
-  RESPONSIVE: 'responsive',
-  SIZECHANGED: 'sizechanged',
-  UNRESPONSIVE: 'unresponsive'
-};
-// Copyright 2011 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/**
- * @fileoverview Definition of the disposable interface.  A disposable object
- * has a dispose method to to clean up references and resources.
- * @author nnaze@google.com (Nathan Naze)
- */
-
-
-goog.provide('goog.disposable.IDisposable');
-
-
-
-/**
- * Interface for a disposable object.  If a instance requires cleanup
- * (references COM objects, DOM notes, or other disposable objects), it should
- * implement this interface (it may subclass goog.Disposable).
- * @interface
- */
-goog.disposable.IDisposable = function() {};
-
-
-/**
- * Disposes of the object and its resources.
- * @return {void} Nothing.
- */
-goog.disposable.IDisposable.prototype.dispose;
-
-
-/**
- * @return {boolean} Whether the object has been disposed of.
- */
-goog.disposable.IDisposable.prototype.isDisposed;
-// Copyright 2005 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/**
- * @fileoverview Implements the disposable interface. The dispose method is used
- * to clean up references and resources.
- * @author arv@google.com (Erik Arvidsson)
- */
-
-
-goog.provide('goog.Disposable');
-goog.provide('goog.dispose');
-
-goog.require('goog.disposable.IDisposable');
-
-
-
-/**
- * Class that provides the basic implementation for disposable objects. If your
- * class holds one or more references to COM objects, DOM nodes, or other
- * disposable objects, it should extend this class or implement the disposable
- * interface (defined in goog.disposable.IDisposable).
- * @constructor
- * @implements {goog.disposable.IDisposable}
- */
-goog.Disposable = function() {
-  if (goog.Disposable.MONITORING_MODE != goog.Disposable.MonitoringMode.OFF) {
-    if (goog.Disposable.INCLUDE_STACK_ON_CREATION) {
-      this.creationStack = new Error().stack;
-    }
-    goog.Disposable.instances_[goog.getUid(this)] = this;
-  }
-};
-
-
-/**
- * @enum {number} Different monitoring modes for Disposable.
- */
-goog.Disposable.MonitoringMode = {
-  /**
-   * No monitoring.
-   */
-  OFF: 0,
-  /**
-   * Creating and disposing the goog.Disposable instances is monitored. All
-   * disposable objects need to call the {@code goog.Disposable} base
-   * constructor. The PERMANENT mode must bet switched on before creating any
-   * goog.Disposable instances.
-   */
-  PERMANENT: 1,
-  /**
-   * INTERACTIVE mode can be switched on and off on the fly without producing
-   * errors. It also doesn't warn if the disposable objects don't call the
-   * {@code goog.Disposable} base constructor.
-   */
-  INTERACTIVE: 2
-};
-
-
-/**
- * @define {number} The monitoring mode of the goog.Disposable
- *     instances. Default is OFF. Switching on the monitoring is only
- *     recommended for debugging because it has a significant impact on
- *     performance and memory usage. If switched off, the monitoring code
- *     compiles down to 0 bytes.
- */
-goog.define('goog.Disposable.MONITORING_MODE', 0);
-
-
-/**
- * @define {boolean} Whether to attach creation stack to each created disposable
- *     instance; This is only relevant for when MonitoringMode != OFF.
- */
-goog.define('goog.Disposable.INCLUDE_STACK_ON_CREATION', true);
-
-
-/**
- * Maps the unique ID of every undisposed {@code goog.Disposable} object to
- * the object itself.
- * @type {!Object.<number, !goog.Disposable>}
- * @private
- */
-goog.Disposable.instances_ = {};
-
-
-/**
- * @return {!Array.<!goog.Disposable>} All {@code goog.Disposable} objects that
- *     haven't been disposed of.
- */
-goog.Disposable.getUndisposedObjects = function() {
-  var ret = [];
-  for (var id in goog.Disposable.instances_) {
-    if (goog.Disposable.instances_.hasOwnProperty(id)) {
-      ret.push(goog.Disposable.instances_[Number(id)]);
-    }
-  }
-  return ret;
-};
-
-
-/**
- * Clears the registry of undisposed objects but doesn't dispose of them.
- */
-goog.Disposable.clearUndisposedObjects = function() {
-  goog.Disposable.instances_ = {};
-};
-
-
-/**
- * Whether the object has been disposed of.
- * @type {boolean}
- * @private
- */
-goog.Disposable.prototype.disposed_ = false;
-
-
-/**
- * Callbacks to invoke when this object is disposed.
- * @type {Array.<!Function>}
- * @private
- */
-goog.Disposable.prototype.onDisposeCallbacks_;
-
-
-/**
- * If monitoring the goog.Disposable instances is enabled, stores the creation
- * stack trace of the Disposable instance.
- * @type {string}
- */
-goog.Disposable.prototype.creationStack;
-
-
-/**
- * @return {boolean} Whether the object has been disposed of.
- * @override
- */
-goog.Disposable.prototype.isDisposed = function() {
-  return this.disposed_;
-};
-
-
-/**
- * @return {boolean} Whether the object has been disposed of.
- * @deprecated Use {@link #isDisposed} instead.
- */
-goog.Disposable.prototype.getDisposed = goog.Disposable.prototype.isDisposed;
-
-
-/**
- * Disposes of the object. If the object hasn't already been disposed of, calls
- * {@link #disposeInternal}. Classes that extend {@code goog.Disposable} should
- * override {@link #disposeInternal} in order to delete references to COM
- * objects, DOM nodes, and other disposable objects. Reentrant.
- *
- * @return {void} Nothing.
- * @override
- */
-goog.Disposable.prototype.dispose = function() {
-  if (!this.disposed_) {
-    // Set disposed_ to true first, in case during the chain of disposal this
-    // gets disposed recursively.
-    this.disposed_ = true;
-    this.disposeInternal();
-    if (goog.Disposable.MONITORING_MODE != goog.Disposable.MonitoringMode.OFF) {
-      var uid = goog.getUid(this);
-      if (goog.Disposable.MONITORING_MODE ==
-          goog.Disposable.MonitoringMode.PERMANENT &&
-          !goog.Disposable.instances_.hasOwnProperty(uid)) {
-        throw Error(this + ' did not call the goog.Disposable base ' +
-            'constructor or was disposed of after a clearUndisposedObjects ' +
-            'call');
-      }
-      delete goog.Disposable.instances_[uid];
-    }
-  }
-};
-
-
-/**
- * Associates a disposable object with this object so that they will be disposed
- * together.
- * @param {goog.disposable.IDisposable} disposable that will be disposed when
- *     this object is disposed.
- */
-goog.Disposable.prototype.registerDisposable = function(disposable) {
-  this.addOnDisposeCallback(goog.partial(goog.dispose, disposable));
-};
-
-
-/**
- * Invokes a callback function when this object is disposed. Callbacks are
- * invoked in the order in which they were added.
- * @param {function(this:T):?} callback The callback function.
- * @param {T=} opt_scope An optional scope to call the callback in.
- * @template T
- */
-goog.Disposable.prototype.addOnDisposeCallback = function(callback, opt_scope) {
-  if (!this.onDisposeCallbacks_) {
-    this.onDisposeCallbacks_ = [];
-  }
-  this.onDisposeCallbacks_.push(goog.bind(callback, opt_scope));
-};
-
-
-/**
- * Deletes or nulls out any references to COM objects, DOM nodes, or other
- * disposable objects. Classes that extend {@code goog.Disposable} should
- * override this method.
- * Not reentrant. To avoid calling it twice, it must only be called from the
- * subclass' {@code disposeInternal} method. Everywhere else the public
- * {@code dispose} method must be used.
- * For example:
- * <pre>
- *   mypackage.MyClass = function() {
- *     goog.base(this);
- *     // Constructor logic specific to MyClass.
- *     ...
- *   };
- *   goog.inherits(mypackage.MyClass, goog.Disposable);
- *
- *   mypackage.MyClass.prototype.disposeInternal = function() {
- *     // Dispose logic specific to MyClass.
- *     ...
- *     // Call superclass's disposeInternal at the end of the subclass's, like
- *     // in C++, to avoid hard-to-catch issues.
- *     goog.base(this, 'disposeInternal');
- *   };
- * </pre>
- * @protected
- */
-goog.Disposable.prototype.disposeInternal = function() {
-  if (this.onDisposeCallbacks_) {
-    while (this.onDisposeCallbacks_.length) {
-      this.onDisposeCallbacks_.shift()();
-    }
-  }
-};
-
-
-/**
- * Returns True if we can verify the object is disposed.
- * Calls {@code isDisposed} on the argument if it supports it.  If obj
- * is not an object with an isDisposed() method, return false.
- * @param {*} obj The object to investigate.
- * @return {boolean} True if we can verify the object is disposed.
- */
-goog.Disposable.isDisposed = function(obj) {
-  if (obj && typeof obj.isDisposed == 'function') {
-    return obj.isDisposed();
-  }
-  return false;
-};
-
-
-/**
- * Calls {@code dispose} on the argument if it supports it. If obj is not an
- *     object with a dispose() method, this is a no-op.
- * @param {*} obj The object to dispose of.
- */
-goog.dispose = function(obj) {
-  if (obj && typeof obj.dispose == 'function') {
-    obj.dispose();
-  }
-};
-
-
-/**
- * Calls {@code dispose} on each member of the list that supports it. (If the
- * member is an ArrayLike, then {@code goog.disposeAll()} will be called
- * recursively on each of its members.) If the member is not an object with a
- * {@code dispose()} method, then it is ignored.
- * @param {...*} var_args The list.
- */
-goog.disposeAll = function(var_args) {
-  for (var i = 0, len = arguments.length; i < len; ++i) {
-    var disposable = arguments[i];
-    if (goog.isArrayLike(disposable)) {
-      goog.disposeAll.apply(null, disposable);
-    } else {
-      goog.dispose(disposable);
-    }
-  }
 };
 // Copyright 2005 The Closure Library Authors. All Rights Reserved.
 //
@@ -16150,354 +18301,6 @@ goog.debug.entryPointRegistry.register(
       goog.events.handleBrowserEvent_ = transformer(
           goog.events.handleBrowserEvent_);
     });
-// Copyright 2005 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/**
- * @fileoverview Class to create objects which want to handle multiple events
- * and have their listeners easily cleaned up via a dispose method.
- *
- * Example:
- * <pre>
- * function Something() {
- *   goog.base(this);
- *
- *   ... set up object ...
- *
- *   // Add event listeners
- *   this.listen(this.starEl, goog.events.EventType.CLICK, this.handleStar);
- *   this.listen(this.headerEl, goog.events.EventType.CLICK, this.expand);
- *   this.listen(this.collapseEl, goog.events.EventType.CLICK, this.collapse);
- *   this.listen(this.infoEl, goog.events.EventType.MOUSEOVER, this.showHover);
- *   this.listen(this.infoEl, goog.events.EventType.MOUSEOUT, this.hideHover);
- * }
- * goog.inherits(Something, goog.events.EventHandler);
- *
- * Something.prototype.disposeInternal = function() {
- *   goog.base(this, 'disposeInternal');
- *   goog.dom.removeNode(this.container);
- * };
- *
- *
- * // Then elsewhere:
- *
- * var activeSomething = null;
- * function openSomething() {
- *   activeSomething = new Something();
- * }
- *
- * function closeSomething() {
- *   if (activeSomething) {
- *     activeSomething.dispose();  // Remove event listeners
- *     activeSomething = null;
- *   }
- * }
- * </pre>
- *
- */
-
-goog.provide('goog.events.EventHandler');
-
-goog.require('goog.Disposable');
-goog.require('goog.events');
-goog.require('goog.object');
-
-
-
-/**
- * Super class for objects that want to easily manage a number of event
- * listeners.  It allows a short cut to listen and also provides a quick way
- * to remove all events listeners belonging to this object.
- * @param {Object=} opt_handler Object in whose scope to call the listeners.
- * @constructor
- * @extends {goog.Disposable}
- */
-goog.events.EventHandler = function(opt_handler) {
-  goog.Disposable.call(this);
-  this.handler_ = opt_handler;
-
-  /**
-   * Keys for events that are being listened to.
-   * @type {!Object.<!goog.events.Key>}
-   * @private
-   */
-  this.keys_ = {};
-};
-goog.inherits(goog.events.EventHandler, goog.Disposable);
-
-
-/**
- * Utility array used to unify the cases of listening for an array of types
- * and listening for a single event, without using recursion or allocating
- * an array each time.
- * @type {Array.<string>}
- * @private
- */
-goog.events.EventHandler.typeArray_ = [];
-
-
-/**
- * Listen to an event on a Listenable.  If the function is omitted then the
- * EventHandler's handleEvent method will be used.
- * @param {goog.events.ListenableType} src Event source.
- * @param {string|Array.<string>} type Event type to listen for or array of
- *     event types.
- * @param {Function|Object=} opt_fn Optional callback function to be used as the
- *    listener or an object with handleEvent function.
- * @param {boolean=} opt_capture Optional whether to use capture phase.
- * @param {Object=} opt_handler Object in whose scope to call the listener.
- * @return {goog.events.EventHandler} This object, allowing for chaining of
- *     calls.
- */
-goog.events.EventHandler.prototype.listen = function(src, type, opt_fn,
-                                                     opt_capture,
-                                                     opt_handler) {
-  if (!goog.isArray(type)) {
-    goog.events.EventHandler.typeArray_[0] = /** @type {string} */(type);
-    type = goog.events.EventHandler.typeArray_;
-  }
-  for (var i = 0; i < type.length; i++) {
-    var listenerObj = goog.events.listen(
-        src, type[i], opt_fn || this,
-        opt_capture || false,
-        opt_handler || this.handler_ || this);
-
-    if (goog.DEBUG && !listenerObj) {
-      // Some tests mock goog.events.listen, thus ensuring that
-      // they are never testing the real thing anyway, hence this is safe
-      // (except that #getListenerCount() will return the wrong value).
-      return this;
-    }
-
-    var key = listenerObj.key;
-    this.keys_[key] = listenerObj;
-  }
-
-  return this;
-};
-
-
-/**
- * Listen to an event on a Listenable.  If the function is omitted, then the
- * EventHandler's handleEvent method will be used. After the event has fired the
- * event listener is removed from the target. If an array of event types is
- * provided, each event type will be listened to once.
- * @param {goog.events.ListenableType} src Event source.
- * @param {string|Array.<string>} type Event type to listen for or array of
- *     event types.
- * @param {Function|Object=} opt_fn Optional callback function to be used as the
- *    listener or an object with handleEvent function.
- * @param {boolean=} opt_capture Optional whether to use capture phase.
- * @param {Object=} opt_handler Object in whose scope to call the listener.
- * @return {goog.events.EventHandler} This object, allowing for chaining of
- *     calls.
- */
-goog.events.EventHandler.prototype.listenOnce = function(src, type, opt_fn,
-                                                         opt_capture,
-                                                         opt_handler) {
-  if (goog.isArray(type)) {
-    for (var i = 0; i < type.length; i++) {
-      this.listenOnce(src, type[i], opt_fn, opt_capture, opt_handler);
-    }
-  } else {
-    var listenerObj = goog.events.listenOnce(
-        src, type, opt_fn || this, opt_capture,
-        opt_handler || this.handler_ || this);
-    var key = listenerObj.key;
-    this.keys_[key] = listenerObj;
-  }
-
-  return this;
-};
-
-
-/**
- * Adds an event listener with a specific event wrapper on a DOM Node or an
- * object that has implemented {@link goog.events.EventTarget}. A listener can
- * only be added once to an object.
- *
- * @param {EventTarget|goog.events.EventTarget} src The node to listen to
- *     events on.
- * @param {goog.events.EventWrapper} wrapper Event wrapper to use.
- * @param {Function|Object} listener Callback method, or an object with a
- *     handleEvent function.
- * @param {boolean=} opt_capt Whether to fire in capture phase (defaults to
- *     false).
- * @param {Object=} opt_handler Element in whose scope to call the listener.
- * @return {goog.events.EventHandler} This object, allowing for chaining of
- *     calls.
- */
-goog.events.EventHandler.prototype.listenWithWrapper = function(src, wrapper,
-    listener, opt_capt, opt_handler) {
-  wrapper.listen(src, listener, opt_capt, opt_handler || this.handler_ || this,
-                 this);
-  return this;
-};
-
-
-/**
- * @return {number} Number of listeners registered by this handler.
- */
-goog.events.EventHandler.prototype.getListenerCount = function() {
-  var count = 0;
-  for (var key in this.keys_) {
-    if (Object.prototype.hasOwnProperty.call(this.keys_, key)) {
-      count++;
-    }
-  }
-  return count;
-};
-
-
-/**
- * Unlistens on an event.
- * @param {goog.events.ListenableType} src Event source.
- * @param {string|Array.<string>} type Event type to listen for.
- * @param {Function|Object=} opt_fn Optional callback function to be used as the
- *    listener or an object with handleEvent function.
- * @param {boolean=} opt_capture Optional whether to use capture phase.
- * @param {Object=} opt_handler Object in whose scope to call the listener.
- * @return {goog.events.EventHandler} This object, allowing for chaining of
- *     calls.
- */
-goog.events.EventHandler.prototype.unlisten = function(src, type, opt_fn,
-                                                       opt_capture,
-                                                       opt_handler) {
-  if (goog.isArray(type)) {
-    for (var i = 0; i < type.length; i++) {
-      this.unlisten(src, type[i], opt_fn, opt_capture, opt_handler);
-    }
-  } else {
-    var listener = goog.events.getListener(src, type, opt_fn || this,
-        opt_capture, opt_handler || this.handler_ || this);
-
-    if (listener) {
-      goog.events.unlistenByKey(listener);
-      delete this.keys_[listener.key];
-    }
-  }
-
-  return this;
-};
-
-
-/**
- * Removes an event listener which was added with listenWithWrapper().
- *
- * @param {EventTarget|goog.events.EventTarget} src The target to stop
- *     listening to events on.
- * @param {goog.events.EventWrapper} wrapper Event wrapper to use.
- * @param {Function|Object} listener The listener function to remove.
- * @param {boolean=} opt_capt In DOM-compliant browsers, this determines
- *     whether the listener is fired during the capture or bubble phase of the
- *     event.
- * @param {Object=} opt_handler Element in whose scope to call the listener.
- * @return {goog.events.EventHandler} This object, allowing for chaining of
- *     calls.
- */
-goog.events.EventHandler.prototype.unlistenWithWrapper = function(src, wrapper,
-    listener, opt_capt, opt_handler) {
-  wrapper.unlisten(src, listener, opt_capt,
-                   opt_handler || this.handler_ || this, this);
-  return this;
-};
-
-
-/**
- * Unlistens to all events.
- */
-goog.events.EventHandler.prototype.removeAll = function() {
-  goog.object.forEach(this.keys_, goog.events.unlistenByKey);
-  this.keys_ = {};
-};
-
-
-/**
- * Disposes of this EventHandler and removes all listeners that it registered.
- * @override
- * @protected
- */
-goog.events.EventHandler.prototype.disposeInternal = function() {
-  goog.events.EventHandler.superClass_.disposeInternal.call(this);
-  this.removeAll();
-};
-
-
-/**
- * Default event handler
- * @param {goog.events.Event} e Event object.
- */
-goog.events.EventHandler.prototype.handleEvent = function(e) {
-  throw Error('EventHandler.handleEvent not implemented');
-};
-// Copyright 2008 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/**
- * @fileoverview Generator for unique element IDs.
- *
- */
-
-goog.provide('goog.ui.IdGenerator');
-
-
-
-/**
- * Creates a new id generator.
- * @constructor
- */
-goog.ui.IdGenerator = function() {
-};
-goog.addSingletonGetter(goog.ui.IdGenerator);
-
-
-/**
- * Next unique ID to use
- * @type {number}
- * @private
- */
-goog.ui.IdGenerator.prototype.nextId_ = 0;
-
-
-/**
- * Gets the next unique ID.
- * @return {string} The next unique identifier.
- */
-goog.ui.IdGenerator.prototype.getNextUniqueId = function() {
-  return ':' + (this.nextId_++).toString(36);
-};
-
-
-/**
- * Default instance for id generation. Done as an instance instead of statics
- * so it's possible to inject a mock for unit testing purposes.
- * @type {goog.ui.IdGenerator}
- * @deprecated Use goog.ui.IdGenerator.getInstance() instead and do not refer
- * to goog.ui.IdGenerator.instance anymore.
- */
-goog.ui.IdGenerator.instance = goog.ui.IdGenerator.getInstance();
 // Copyright 2013 The Closure Library Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -17198,6 +19001,645 @@ goog.events.EventTarget.dispatchEventInternal_ = function(
 
   return rv;
 };
+// Copyright 2006 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * @fileoverview A timer class to which other classes and objects can
+ * listen on.  This is only an abstraction above setInterval.
+ *
+ * @see ../demos/timers.html
+ */
+
+goog.provide('goog.Timer');
+
+goog.require('goog.events.EventTarget');
+
+
+
+/**
+ * Class for handling timing events.
+ *
+ * @param {number=} opt_interval Number of ms between ticks (Default: 1ms).
+ * @param {Object=} opt_timerObject  An object that has setTimeout, setInterval,
+ *     clearTimeout and clearInterval (eg Window).
+ * @constructor
+ * @extends {goog.events.EventTarget}
+ */
+goog.Timer = function(opt_interval, opt_timerObject) {
+  goog.events.EventTarget.call(this);
+
+  /**
+   * Number of ms between ticks
+   * @type {number}
+   * @private
+   */
+  this.interval_ = opt_interval || 1;
+
+  /**
+   * An object that implements setTimout, setInterval, clearTimeout and
+   * clearInterval. We default to the window object. Changing this on
+   * goog.Timer.prototype changes the object for all timer instances which can
+   * be useful if your environment has some other implementation of timers than
+   * the window object.
+   * @type {Object}
+   * @private
+   */
+  this.timerObject_ = opt_timerObject || goog.Timer.defaultTimerObject;
+
+  /**
+   * Cached tick_ bound to the object for later use in the timer.
+   * @type {Function}
+   * @private
+   */
+  this.boundTick_ = goog.bind(this.tick_, this);
+
+  /**
+   * Firefox browser often fires the timer event sooner
+   * (sometimes MUCH sooner) than the requested timeout. So we
+   * compare the time to when the event was last fired, and
+   * reschedule if appropriate. See also goog.Timer.intervalScale
+   * @type {number}
+   * @private
+   */
+  this.last_ = goog.now();
+};
+goog.inherits(goog.Timer, goog.events.EventTarget);
+
+
+/**
+ * Maximum timeout value.
+ *
+ * Timeout values too big to fit into a signed 32-bit integer may cause
+ * overflow in FF, Safari, and Chrome, resulting in the timeout being
+ * scheduled immediately.  It makes more sense simply not to schedule these
+ * timeouts, since 24.8 days is beyond a reasonable expectation for the
+ * browser to stay open.
+ *
+ * @type {number}
+ * @private
+ */
+goog.Timer.MAX_TIMEOUT_ = 2147483647;
+
+
+/**
+ * Whether this timer is enabled
+ * @type {boolean}
+ */
+goog.Timer.prototype.enabled = false;
+
+
+/**
+ * An object that implements setTimout, setInterval, clearTimeout and
+ * clearInterval. We default to the global object. Changing
+ * goog.Timer.defaultTimerObject changes the object for all timer instances
+ * which can be useful if your environment has some other implementation of
+ * timers you'd like to use.
+ * @type {Object}
+ */
+goog.Timer.defaultTimerObject = goog.global;
+
+
+/**
+ * A variable that controls the timer error correction. If the
+ * timer is called before the requested interval times
+ * intervalScale, which often happens on mozilla, the timer is
+ * rescheduled. See also this.last_
+ * @type {number}
+ */
+goog.Timer.intervalScale = 0.8;
+
+
+/**
+ * Variable for storing the result of setInterval
+ * @type {?number}
+ * @private
+ */
+goog.Timer.prototype.timer_ = null;
+
+
+/**
+ * Gets the interval of the timer.
+ * @return {number} interval Number of ms between ticks.
+ */
+goog.Timer.prototype.getInterval = function() {
+  return this.interval_;
+};
+
+
+/**
+ * Sets the interval of the timer.
+ * @param {number} interval Number of ms between ticks.
+ */
+goog.Timer.prototype.setInterval = function(interval) {
+  this.interval_ = interval;
+  if (this.timer_ && this.enabled) {
+    // Stop and then start the timer to reset the interval.
+    this.stop();
+    this.start();
+  } else if (this.timer_) {
+    this.stop();
+  }
+};
+
+
+/**
+ * Callback for the setTimeout used by the timer
+ * @private
+ */
+goog.Timer.prototype.tick_ = function() {
+  if (this.enabled) {
+    var elapsed = goog.now() - this.last_;
+    if (elapsed > 0 &&
+        elapsed < this.interval_ * goog.Timer.intervalScale) {
+      this.timer_ = this.timerObject_.setTimeout(this.boundTick_,
+          this.interval_ - elapsed);
+      return;
+    }
+
+    // Prevents setInterval from registering a duplicate timeout when called
+    // in the timer event handler.
+    if (this.timer_) {
+      this.timerObject_.clearTimeout(this.timer_);
+      this.timer_ = null;
+    }
+
+    this.dispatchTick();
+    // The timer could be stopped in the timer event handler.
+    if (this.enabled) {
+      this.timer_ = this.timerObject_.setTimeout(this.boundTick_,
+          this.interval_);
+      this.last_ = goog.now();
+    }
+  }
+};
+
+
+/**
+ * Dispatches the TICK event. This is its own method so subclasses can override.
+ */
+goog.Timer.prototype.dispatchTick = function() {
+  this.dispatchEvent(goog.Timer.TICK);
+};
+
+
+/**
+ * Starts the timer.
+ */
+goog.Timer.prototype.start = function() {
+  this.enabled = true;
+
+  // If there is no interval already registered, start it now
+  if (!this.timer_) {
+    // IMPORTANT!
+    // window.setInterval in FireFox has a bug - it fires based on
+    // absolute time, rather than on relative time. What this means
+    // is that if a computer is sleeping/hibernating for 24 hours
+    // and the timer interval was configured to fire every 1000ms,
+    // then after the PC wakes up the timer will fire, in rapid
+    // succession, 3600*24 times.
+    // This bug is described here and is already fixed, but it will
+    // take time to propagate, so for now I am switching this over
+    // to setTimeout logic.
+    //     https://bugzilla.mozilla.org/show_bug.cgi?id=376643
+    //
+    this.timer_ = this.timerObject_.setTimeout(this.boundTick_,
+        this.interval_);
+    this.last_ = goog.now();
+  }
+};
+
+
+/**
+ * Stops the timer.
+ */
+goog.Timer.prototype.stop = function() {
+  this.enabled = false;
+  if (this.timer_) {
+    this.timerObject_.clearTimeout(this.timer_);
+    this.timer_ = null;
+  }
+};
+
+
+/** @override */
+goog.Timer.prototype.disposeInternal = function() {
+  goog.Timer.superClass_.disposeInternal.call(this);
+  this.stop();
+  delete this.timerObject_;
+};
+
+
+/**
+ * Constant for the timer's event type
+ * @type {string}
+ */
+goog.Timer.TICK = 'tick';
+
+
+/**
+ * Calls the given function once, after the optional pause.
+ *
+ * The function is always called asynchronously, even if the delay is 0. This
+ * is a common trick to schedule a function to run after a batch of browser
+ * event processing.
+ *
+ * @param {Function|{handleEvent:Function}} listener Function or object that
+ *     has a handleEvent method.
+ * @param {number=} opt_delay Milliseconds to wait; default is 0.
+ * @param {Object=} opt_handler Object in whose scope to call the listener.
+ * @return {number} A handle to the timer ID.
+ */
+goog.Timer.callOnce = function(listener, opt_delay, opt_handler) {
+  if (goog.isFunction(listener)) {
+    if (opt_handler) {
+      listener = goog.bind(listener, opt_handler);
+    }
+  } else if (listener && typeof listener.handleEvent == 'function') {
+    // using typeof to prevent strict js warning
+    listener = goog.bind(listener.handleEvent, listener);
+  } else {
+    throw Error('Invalid listener argument');
+  }
+
+  if (opt_delay > goog.Timer.MAX_TIMEOUT_) {
+    // Timeouts greater than MAX_INT return immediately due to integer
+    // overflow in many browsers.  Since MAX_INT is 24.8 days, just don't
+    // schedule anything at all.
+    return -1;
+  } else {
+    return goog.Timer.defaultTimerObject.setTimeout(
+        listener, opt_delay || 0);
+  }
+};
+
+
+/**
+ * Clears a timeout initiated by callOnce
+ * @param {?number} timerId a timer ID.
+ */
+goog.Timer.clear = function(timerId) {
+  goog.Timer.defaultTimerObject.clearTimeout(timerId);
+};
+// Copyright 2005 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * @fileoverview Class to create objects which want to handle multiple events
+ * and have their listeners easily cleaned up via a dispose method.
+ *
+ * Example:
+ * <pre>
+ * function Something() {
+ *   goog.base(this);
+ *
+ *   ... set up object ...
+ *
+ *   // Add event listeners
+ *   this.listen(this.starEl, goog.events.EventType.CLICK, this.handleStar);
+ *   this.listen(this.headerEl, goog.events.EventType.CLICK, this.expand);
+ *   this.listen(this.collapseEl, goog.events.EventType.CLICK, this.collapse);
+ *   this.listen(this.infoEl, goog.events.EventType.MOUSEOVER, this.showHover);
+ *   this.listen(this.infoEl, goog.events.EventType.MOUSEOUT, this.hideHover);
+ * }
+ * goog.inherits(Something, goog.events.EventHandler);
+ *
+ * Something.prototype.disposeInternal = function() {
+ *   goog.base(this, 'disposeInternal');
+ *   goog.dom.removeNode(this.container);
+ * };
+ *
+ *
+ * // Then elsewhere:
+ *
+ * var activeSomething = null;
+ * function openSomething() {
+ *   activeSomething = new Something();
+ * }
+ *
+ * function closeSomething() {
+ *   if (activeSomething) {
+ *     activeSomething.dispose();  // Remove event listeners
+ *     activeSomething = null;
+ *   }
+ * }
+ * </pre>
+ *
+ */
+
+goog.provide('goog.events.EventHandler');
+
+goog.require('goog.Disposable');
+goog.require('goog.events');
+goog.require('goog.object');
+
+
+
+/**
+ * Super class for objects that want to easily manage a number of event
+ * listeners.  It allows a short cut to listen and also provides a quick way
+ * to remove all events listeners belonging to this object.
+ * @param {Object=} opt_handler Object in whose scope to call the listeners.
+ * @constructor
+ * @extends {goog.Disposable}
+ */
+goog.events.EventHandler = function(opt_handler) {
+  goog.Disposable.call(this);
+  this.handler_ = opt_handler;
+
+  /**
+   * Keys for events that are being listened to.
+   * @type {!Object.<!goog.events.Key>}
+   * @private
+   */
+  this.keys_ = {};
+};
+goog.inherits(goog.events.EventHandler, goog.Disposable);
+
+
+/**
+ * Utility array used to unify the cases of listening for an array of types
+ * and listening for a single event, without using recursion or allocating
+ * an array each time.
+ * @type {Array.<string>}
+ * @private
+ */
+goog.events.EventHandler.typeArray_ = [];
+
+
+/**
+ * Listen to an event on a Listenable.  If the function is omitted then the
+ * EventHandler's handleEvent method will be used.
+ * @param {goog.events.ListenableType} src Event source.
+ * @param {string|Array.<string>} type Event type to listen for or array of
+ *     event types.
+ * @param {Function|Object=} opt_fn Optional callback function to be used as the
+ *    listener or an object with handleEvent function.
+ * @param {boolean=} opt_capture Optional whether to use capture phase.
+ * @param {Object=} opt_handler Object in whose scope to call the listener.
+ * @return {goog.events.EventHandler} This object, allowing for chaining of
+ *     calls.
+ */
+goog.events.EventHandler.prototype.listen = function(src, type, opt_fn,
+                                                     opt_capture,
+                                                     opt_handler) {
+  if (!goog.isArray(type)) {
+    goog.events.EventHandler.typeArray_[0] = /** @type {string} */(type);
+    type = goog.events.EventHandler.typeArray_;
+  }
+  for (var i = 0; i < type.length; i++) {
+    var listenerObj = goog.events.listen(
+        src, type[i], opt_fn || this,
+        opt_capture || false,
+        opt_handler || this.handler_ || this);
+
+    if (goog.DEBUG && !listenerObj) {
+      // Some tests mock goog.events.listen, thus ensuring that
+      // they are never testing the real thing anyway, hence this is safe
+      // (except that #getListenerCount() will return the wrong value).
+      return this;
+    }
+
+    var key = listenerObj.key;
+    this.keys_[key] = listenerObj;
+  }
+
+  return this;
+};
+
+
+/**
+ * Listen to an event on a Listenable.  If the function is omitted, then the
+ * EventHandler's handleEvent method will be used. After the event has fired the
+ * event listener is removed from the target. If an array of event types is
+ * provided, each event type will be listened to once.
+ * @param {goog.events.ListenableType} src Event source.
+ * @param {string|Array.<string>} type Event type to listen for or array of
+ *     event types.
+ * @param {Function|Object=} opt_fn Optional callback function to be used as the
+ *    listener or an object with handleEvent function.
+ * @param {boolean=} opt_capture Optional whether to use capture phase.
+ * @param {Object=} opt_handler Object in whose scope to call the listener.
+ * @return {goog.events.EventHandler} This object, allowing for chaining of
+ *     calls.
+ */
+goog.events.EventHandler.prototype.listenOnce = function(src, type, opt_fn,
+                                                         opt_capture,
+                                                         opt_handler) {
+  if (goog.isArray(type)) {
+    for (var i = 0; i < type.length; i++) {
+      this.listenOnce(src, type[i], opt_fn, opt_capture, opt_handler);
+    }
+  } else {
+    var listenerObj = goog.events.listenOnce(
+        src, type, opt_fn || this, opt_capture,
+        opt_handler || this.handler_ || this);
+    var key = listenerObj.key;
+    this.keys_[key] = listenerObj;
+  }
+
+  return this;
+};
+
+
+/**
+ * Adds an event listener with a specific event wrapper on a DOM Node or an
+ * object that has implemented {@link goog.events.EventTarget}. A listener can
+ * only be added once to an object.
+ *
+ * @param {EventTarget|goog.events.EventTarget} src The node to listen to
+ *     events on.
+ * @param {goog.events.EventWrapper} wrapper Event wrapper to use.
+ * @param {Function|Object} listener Callback method, or an object with a
+ *     handleEvent function.
+ * @param {boolean=} opt_capt Whether to fire in capture phase (defaults to
+ *     false).
+ * @param {Object=} opt_handler Element in whose scope to call the listener.
+ * @return {goog.events.EventHandler} This object, allowing for chaining of
+ *     calls.
+ */
+goog.events.EventHandler.prototype.listenWithWrapper = function(src, wrapper,
+    listener, opt_capt, opt_handler) {
+  wrapper.listen(src, listener, opt_capt, opt_handler || this.handler_ || this,
+                 this);
+  return this;
+};
+
+
+/**
+ * @return {number} Number of listeners registered by this handler.
+ */
+goog.events.EventHandler.prototype.getListenerCount = function() {
+  var count = 0;
+  for (var key in this.keys_) {
+    if (Object.prototype.hasOwnProperty.call(this.keys_, key)) {
+      count++;
+    }
+  }
+  return count;
+};
+
+
+/**
+ * Unlistens on an event.
+ * @param {goog.events.ListenableType} src Event source.
+ * @param {string|Array.<string>} type Event type to listen for.
+ * @param {Function|Object=} opt_fn Optional callback function to be used as the
+ *    listener or an object with handleEvent function.
+ * @param {boolean=} opt_capture Optional whether to use capture phase.
+ * @param {Object=} opt_handler Object in whose scope to call the listener.
+ * @return {goog.events.EventHandler} This object, allowing for chaining of
+ *     calls.
+ */
+goog.events.EventHandler.prototype.unlisten = function(src, type, opt_fn,
+                                                       opt_capture,
+                                                       opt_handler) {
+  if (goog.isArray(type)) {
+    for (var i = 0; i < type.length; i++) {
+      this.unlisten(src, type[i], opt_fn, opt_capture, opt_handler);
+    }
+  } else {
+    var listener = goog.events.getListener(src, type, opt_fn || this,
+        opt_capture, opt_handler || this.handler_ || this);
+
+    if (listener) {
+      goog.events.unlistenByKey(listener);
+      delete this.keys_[listener.key];
+    }
+  }
+
+  return this;
+};
+
+
+/**
+ * Removes an event listener which was added with listenWithWrapper().
+ *
+ * @param {EventTarget|goog.events.EventTarget} src The target to stop
+ *     listening to events on.
+ * @param {goog.events.EventWrapper} wrapper Event wrapper to use.
+ * @param {Function|Object} listener The listener function to remove.
+ * @param {boolean=} opt_capt In DOM-compliant browsers, this determines
+ *     whether the listener is fired during the capture or bubble phase of the
+ *     event.
+ * @param {Object=} opt_handler Element in whose scope to call the listener.
+ * @return {goog.events.EventHandler} This object, allowing for chaining of
+ *     calls.
+ */
+goog.events.EventHandler.prototype.unlistenWithWrapper = function(src, wrapper,
+    listener, opt_capt, opt_handler) {
+  wrapper.unlisten(src, listener, opt_capt,
+                   opt_handler || this.handler_ || this, this);
+  return this;
+};
+
+
+/**
+ * Unlistens to all events.
+ */
+goog.events.EventHandler.prototype.removeAll = function() {
+  goog.object.forEach(this.keys_, goog.events.unlistenByKey);
+  this.keys_ = {};
+};
+
+
+/**
+ * Disposes of this EventHandler and removes all listeners that it registered.
+ * @override
+ * @protected
+ */
+goog.events.EventHandler.prototype.disposeInternal = function() {
+  goog.events.EventHandler.superClass_.disposeInternal.call(this);
+  this.removeAll();
+};
+
+
+/**
+ * Default event handler
+ * @param {goog.events.Event} e Event object.
+ */
+goog.events.EventHandler.prototype.handleEvent = function(e) {
+  throw Error('EventHandler.handleEvent not implemented');
+};
+// Copyright 2008 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * @fileoverview Generator for unique element IDs.
+ *
+ */
+
+goog.provide('goog.ui.IdGenerator');
+
+
+
+/**
+ * Creates a new id generator.
+ * @constructor
+ */
+goog.ui.IdGenerator = function() {
+};
+goog.addSingletonGetter(goog.ui.IdGenerator);
+
+
+/**
+ * Next unique ID to use
+ * @type {number}
+ * @private
+ */
+goog.ui.IdGenerator.prototype.nextId_ = 0;
+
+
+/**
+ * Gets the next unique ID.
+ * @return {string} The next unique identifier.
+ */
+goog.ui.IdGenerator.prototype.getNextUniqueId = function() {
+  return ':' + (this.nextId_++).toString(36);
+};
+
+
+/**
+ * Default instance for id generation. Done as an instance instead of statics
+ * so it's possible to inject a mock for unit testing purposes.
+ * @type {goog.ui.IdGenerator}
+ * @deprecated Use goog.ui.IdGenerator.getInstance() instead and do not refer
+ * to goog.ui.IdGenerator.instance anymore.
+ */
+goog.ui.IdGenerator.instance = goog.ui.IdGenerator.getInstance();
 // Copyright 2007 The Closure Library Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -18498,7 +20940,7 @@ goog.ui.Component.prototype.removeChildren = function(opt_unrender) {
   }
   return removedChildren;
 };
-// Copyright 2013 The Closure Library Authors. All Rights Reserved.
+// Copyright 2008 The Closure Library Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18512,1027 +20954,245 @@ goog.ui.Component.prototype.removeChildren = function(opt_unrender) {
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 /**
- * @fileoverview The file contains generated enumerations for ARIA states
- * and properties as defined by W3C ARIA standard:
- * http://www.w3.org/TR/wai-aria/.
- *
- * This is auto-generated code. Do not manually edit! For more details
- * about how to edit it via the generator check go/closure-ariagen.
- */
-
-goog.provide('goog.a11y.aria.AutoCompleteValues');
-goog.provide('goog.a11y.aria.CheckedValues');
-goog.provide('goog.a11y.aria.DropEffectValues');
-goog.provide('goog.a11y.aria.ExpandedValues');
-goog.provide('goog.a11y.aria.GrabbedValues');
-goog.provide('goog.a11y.aria.InvalidValues');
-goog.provide('goog.a11y.aria.LivePriority');
-goog.provide('goog.a11y.aria.OrientationValues');
-goog.provide('goog.a11y.aria.PressedValues');
-goog.provide('goog.a11y.aria.RelevantValues');
-goog.provide('goog.a11y.aria.SelectedValues');
-goog.provide('goog.a11y.aria.SortValues');
-goog.provide('goog.a11y.aria.State');
-
-
-/**
- * ARIA states and properties.
- * @enum {string}
- */
-goog.a11y.aria.State = {
-  // ARIA property for setting the currently active descendant of an element,
-  // for example the selected item in a list box. Value: ID of an element.
-  ACTIVEDESCENDANT: 'activedescendant',
-
-  // ARIA property that, if true, indicates that all of a changed region should
-  // be presented, instead of only parts. Value: one of {true, false}.
-  ATOMIC: 'atomic',
-
-  // ARIA property to specify that input completion is provided. Value:
-  // one of {'inline', 'list', 'both', 'none'}.
-  AUTOCOMPLETE: 'autocomplete',
-
-  // ARIA state to indicate that an element and its subtree are being updated.
-  // Value: one of {true, false}.
-  BUSY: 'busy',
-
-  // ARIA state for a checked item. Value: one of {'true', 'false', 'mixed',
-  // undefined}.
-  CHECKED: 'checked',
-
-  // ARIA property that identifies the element or elements whose contents or
-  // presence are controlled by this element.
-  // Value: space-separated IDs of other elements.
-  CONTROLS: 'controls',
-
-  // ARIA property that identifies the element or elements that describe
-  // this element. Value: space-separated IDs of other elements.
-  DESCRIBEDBY: 'describedby',
-
-  // ARIA state for a disabled item. Value: one of {true, false}.
-  DISABLED: 'disabled',
-
-  // ARIA property that indicates what functions can be performed when a
-  // dragged object is released on the drop target.  Value: one of
-  // {'copy', 'move', 'link', 'execute', 'popup', 'none'}.
-  DROPEFFECT: 'dropeffect',
-
-  // ARIA state for setting whether the element like a tree node is expanded.
-  // Value: one of {true, false, undefined}.
-  EXPANDED: 'expanded',
-
-  // ARIA property that identifies the next element (or elements) in the
-  // recommended reading order of content. Value: space-separated ids of
-  // elements to flow to.
-  FLOWTO: 'flowto',
-
-  // ARIA state that indicates an element's "grabbed" state in drag-and-drop.
-  // Value: one of {true, false, undefined}.
-  GRABBED: 'grabbed',
-
-  // ARIA property indicating whether the element has a popup.
-  // Value: one of {true, false}.
-  HASPOPUP: 'haspopup',
-
-  // ARIA state indicating that the element is not visible or perceivable
-  // to any user. Value: one of {true, false}.
-  HIDDEN: 'hidden',
-
-  // ARIA state indicating that the entered value does not conform. Value:
-  // one of {false, true, 'grammar', 'spelling'}
-  INVALID: 'invalid',
-
-  // ARIA property that provides a label to override any other text, value, or
-  // contents used to describe this element. Value: string.
-  LABEL: 'label',
-
-  // ARIA property for setting the element which labels another element.
-  // Value: space-separated IDs of elements.
-  LABELLEDBY: 'labelledby',
-
-  // ARIA property for setting the level of an element in the hierarchy.
-  // Value: integer.
-  LEVEL: 'level',
-
-  // ARIA property indicating that an element will be updated, and
-  // describes the types of updates the user agents, assistive technologies,
-  // and user can expect from the live region. Value: one of {'off', 'polite',
-  // 'assertive'}.
-  LIVE: 'live',
-
-  // ARIA property indicating whether a text box can accept multiline input.
-  // Value: one of {true, false}.
-  MULTILINE: 'multiline',
-
-  // ARIA property indicating if the user may select more than one item.
-  // Value: one of {true, false}.
-  MULTISELECTABLE: 'multiselectable',
-
-  // ARIA property indicating if the element is horizontal or vertical.
-  // Value: one of {'vertical', 'horizontal'}.
-  ORIENTATION: 'orientation',
-
-  // ARIA property creating a visual, functional, or contextual parent/child
-  // relationship when the DOM hierarchy can't be used to represent it.
-  // Value: Space-separated IDs of elements.
-  OWNS: 'owns',
-
-  // ARIA property that defines an element's number of position in a list.
-  // Value: integer.
-  POSINSET: 'posinset',
-
-  // ARIA state for a pressed item.
-  // Value: one of {true, false, undefined, 'mixed'}.
-  PRESSED: 'pressed',
-
-  // ARIA property indicating that an element is not editable.
-  // Value: one of {true, false}.
-  READONLY: 'readonly',
-
-  // ARIA property indicating that change notifications within this subtree
-  // of a live region should be announced. Value: one of {'additions',
-  // 'removals', 'text', 'all', 'additions text'}.
-  RELEVANT: 'relevant',
-
-  // ARIA property indicating that user input is required on this element
-  // before a form may be submitted. Value: one of {true, false}.
-  REQUIRED: 'required',
-
-  // ARIA state for setting the currently selected item in the list.
-  // Value: one of {true, false, undefined}.
-  SELECTED: 'selected',
-
-  // ARIA property defining the number of items in a list. Value: integer.
-  SETSIZE: 'setsize',
-
-  // ARIA property indicating if items are sorted. Value: one of {'ascending',
-  // 'descending', 'none', 'other'}.
-  SORT: 'sort',
-
-  // ARIA property for slider maximum value. Value: number.
-  VALUEMAX: 'valuemax',
-
-  // ARIA property for slider minimum value. Value: number.
-  VALUEMIN: 'valuemin',
-
-  // ARIA property for slider active value. Value: number.
-  VALUENOW: 'valuenow',
-
-  // ARIA property for slider active value represented as text.
-  // Value: string.
-  VALUETEXT: 'valuetext'
-};
-
-
-/**
- * ARIA state values for AutoCompleteValues.
- * @enum {string}
- */
-goog.a11y.aria.AutoCompleteValues = {
-  // The system provides text after the caret as a suggestion
-  // for how to complete the field.
-  INLINE: 'inline',
-  // A list of choices appears from which the user can choose,
-  // but the edit box retains focus.
-  LIST: 'list',
-  // A list of choices appears and the currently selected suggestion
-  // also appears inline.
-  BOTH: 'both',
-  // No input completion suggestions are provided.
-  NONE: 'none'
-};
-
-
-/**
- * ARIA state values for DropEffectValues.
- * @enum {string}
- */
-goog.a11y.aria.DropEffectValues = {
-  // A duplicate of the source object will be dropped into the target.
-  COPY: 'copy',
-  // The source object will be removed from its current location
-  // and dropped into the target.
-  MOVE: 'move',
-  // A reference or shortcut to the dragged object
-  // will be created in the target object.
-  LINK: 'link',
-  // A function supported by the drop target is
-  // executed, using the drag source as an input.
-  EXECUTE: 'execute',
-  // There is a popup menu or dialog that allows the user to choose
-  // one of the drag operations (copy, move, link, execute) and any other
-  // drag functionality, such as cancel.
-  POPUP: 'popup',
-  // No operation can be performed; effectively
-  // cancels the drag operation if an attempt is made to drop on this object.
-  NONE: 'none'
-};
-
-
-/**
- * ARIA state values for LivePriority.
- * @enum {string}
- */
-goog.a11y.aria.LivePriority = {
-  // Updates to the region will not be presented to the user
-  // unless the assitive technology is currently focused on that region.
-  OFF: 'off',
-  // (Background change) Assistive technologies SHOULD announce
-  // updates at the next graceful opportunity, such as at the end of
-  // speaking the current sentence or when the user pauses typing.
-  POLITE: 'polite',
-  // This information has the highest priority and assistive
-  // technologies SHOULD notify the user immediately.
-  // Because an interruption may disorient users or cause them to not complete
-  // their current task, authors SHOULD NOT use the assertive value unless the
-  // interruption is imperative.
-  ASSERTIVE: 'assertive'
-};
-
-
-/**
- * ARIA state values for OrientationValues.
- * @enum {string}
- */
-goog.a11y.aria.OrientationValues = {
-  // The element is oriented vertically.
-  VERTICAL: 'vertical',
-  // The element is oriented horizontally.
-  HORIZONTAL: 'horizontal'
-};
-
-
-/**
- * ARIA state values for RelevantValues.
- * @enum {string}
- */
-goog.a11y.aria.RelevantValues = {
-  // Element nodes are added to the DOM within the live region.
-  ADDITIONS: 'additions',
-  // Text or element nodes within the live region are removed from the DOM.
-  REMOVALS: 'removals',
-  // Text is added to any DOM descendant nodes of the live region.
-  TEXT: 'text',
-  // Equivalent to the combination of all values, "additions removals text".
-  ALL: 'all'
-};
-
-
-/**
- * ARIA state values for SortValues.
- * @enum {string}
- */
-goog.a11y.aria.SortValues = {
-  // Items are sorted in ascending order by this column.
-  ASCENDING: 'ascending',
-  // Items are sorted in descending order by this column.
-  DESCENDING: 'descending',
-  // There is no defined sort applied to the column.
-  NONE: 'none',
-  // A sort algorithm other than ascending or descending has been applied.
-  OTHER: 'other'
-};
-
-
-/**
- * ARIA state values for CheckedValues.
- * @enum {string}
- */
-goog.a11y.aria.CheckedValues = {
-  // The selectable element is checked.
-  TRUE: 'true',
-  // The selectable element is not checked.
-  FALSE: 'false',
-  // Indicates a mixed mode value for a tri-state
-  // checkbox or menuitemcheckbox.
-  MIXED: 'mixed',
-  // The element does not support being checked.
-  UNDEFINED: 'undefined'
-};
-
-
-/**
- * ARIA state values for ExpandedValues.
- * @enum {string}
- */
-goog.a11y.aria.ExpandedValues = {
-  // The element, or another grouping element it controls, is expanded.
-  TRUE: 'true',
-  // The element, or another grouping element it controls, is collapsed.
-  FALSE: 'false',
-  // The element, or another grouping element
-  // it controls, is neither expandable nor collapsible; all its
-  // child elements are shown or there are no child elements.
-  UNDEFINED: 'undefined'
-};
-
-
-/**
- * ARIA state values for GrabbedValues.
- * @enum {string}
- */
-goog.a11y.aria.GrabbedValues = {
-  // Indicates that the element has been "grabbed" for dragging.
-  TRUE: 'true',
-  // Indicates that the element supports being dragged.
-  FALSE: 'false',
-  // Indicates that the element does not support being dragged.
-  UNDEFINED: 'undefined'
-};
-
-
-/**
- * ARIA state values for InvalidValues.
- * @enum {string}
- */
-goog.a11y.aria.InvalidValues = {
-  // There are no detected errors in the value.
-  FALSE: 'false',
-  // The value entered by the user has failed validation.
-  TRUE: 'true',
-  // A grammatical error was detected.
-  GRAMMAR: 'grammar',
-  // A spelling error was detected.
-  SPELLING: 'spelling'
-};
-
-
-/**
- * ARIA state values for PressedValues.
- * @enum {string}
- */
-goog.a11y.aria.PressedValues = {
-  // The element is pressed.
-  TRUE: 'true',
-  // The element supports being pressed but is not currently pressed.
-  FALSE: 'false',
-  // Indicates a mixed mode value for a tri-state toggle button.
-  MIXED: 'mixed',
-  // The element does not support being pressed.
-  UNDEFINED: 'undefined'
-};
-
-
-/**
- * ARIA state values for SelectedValues.
- * @enum {string}
- */
-goog.a11y.aria.SelectedValues = {
-  // The selectable element is selected.
-  TRUE: 'true',
-  // The selectable element is not selected.
-  FALSE: 'false',
-  // The element is not selectable.
-  UNDEFINED: 'undefined'
-};
-// Copyright 2013 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-
-/**
- * @fileoverview The file contains data tables generated from the ARIA
- * standard schema http://www.w3.org/TR/wai-aria/.
- *
- * This is auto-generated code. Do not manually edit!
- */
-
-goog.provide('goog.a11y.aria.datatables');
-
-goog.require('goog.a11y.aria.State');
-goog.require('goog.object');
-
-
-/**
- * A map that contains mapping between an ARIA state and the default value
- * for it. Note that not all ARIA states have default values.
- *
- * @type {Object.<!(goog.a11y.aria.State|string), (string|boolean|number)>}
- */
-goog.a11y.aria.DefaultStateValueMap_;
-
-
-/**
- * A method that creates a map that contains mapping between an ARIA state and
- * the default value for it. Note that not all ARIA states have default values.
- *
- * @return {Object.<!(goog.a11y.aria.State|string), (string|boolean|number)>}
- *      The names for each of the notification methods.
- */
-goog.a11y.aria.datatables.getDefaultValuesMap = function() {
-  if (!goog.a11y.aria.DefaultStateValueMap_) {
-    goog.a11y.aria.DefaultStateValueMap_ = goog.object.create(
-        goog.a11y.aria.State.ATOMIC, false,
-        goog.a11y.aria.State.AUTOCOMPLETE, 'none',
-        goog.a11y.aria.State.DROPEFFECT, 'none',
-        goog.a11y.aria.State.HASPOPUP, false,
-        goog.a11y.aria.State.LIVE, 'off',
-        goog.a11y.aria.State.MULTILINE, false,
-        goog.a11y.aria.State.MULTISELECTABLE, false,
-        goog.a11y.aria.State.ORIENTATION, 'vertical',
-        goog.a11y.aria.State.READONLY, false,
-        goog.a11y.aria.State.RELEVANT, 'additions text',
-        goog.a11y.aria.State.REQUIRED, false,
-        goog.a11y.aria.State.SORT, 'none',
-        goog.a11y.aria.State.BUSY, false,
-        goog.a11y.aria.State.DISABLED, false,
-        goog.a11y.aria.State.HIDDEN, false,
-        goog.a11y.aria.State.INVALID, 'false');
-  }
-
-  return goog.a11y.aria.DefaultStateValueMap_;
-};
-// Copyright 2013 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * @fileoverview The file contains generated enumerations for ARIA roles
- * as defined by W3C ARIA standard: http://www.w3.org/TR/wai-aria/.
- *
- * This is auto-generated code. Do not manually edit! For more details
- * about how to edit it via the generator check go/closure-ariagen.
- */
-
-goog.provide('goog.a11y.aria.Role');
-
-
-/**
- * ARIA role values.
- * @enum {string}
- */
-goog.a11y.aria.Role = {
-  // ARIA role for an alert element that doesn't need to be explicitly closed.
-  ALERT: 'alert',
-
-  // ARIA role for an alert dialog element that takes focus and must be closed.
-  ALERTDIALOG: 'alertdialog',
-
-  // ARIA role for an application that implements its own keyboard navigation.
-  APPLICATION: 'application',
-
-  // ARIA role for an article.
-  ARTICLE: 'article',
-
-  // ARIA role for a banner containing mostly site content, not page content.
-  BANNER: 'banner',
-
-  // ARIA role for a button element.
-  BUTTON: 'button',
-
-  // ARIA role for a checkbox button element; use with the CHECKED state.
-  CHECKBOX: 'checkbox',
-
-  // ARIA role for a column header of a table or grid.
-  COLUMNHEADER: 'columnheader',
-
-  // ARIA role for a combo box element.
-  COMBOBOX: 'combobox',
-
-  // ARIA role for a supporting section of the document.
-  COMPLEMENTARY: 'complementary',
-
-  // ARIA role for a large perceivable region that contains information
-  // about the parent document.
-  CONTENTINFO: 'contentinfo',
-
-  // ARIA role for a definition of a term or concept.
-  DEFINITION: 'definition',
-
-  // ARIA role for a dialog, some descendant must take initial focus.
-  DIALOG: 'dialog',
-
-  // ARIA role for a directory, like a table of contents.
-  DIRECTORY: 'directory',
-
-  // ARIA role for a part of a page that's a document, not a web application.
-  DOCUMENT: 'document',
-
-  // ARIA role for a landmark region logically considered one form.
-  FORM: 'form',
-
-  // ARIA role for an interactive control of tabular data.
-  GRID: 'grid',
-
-  // ARIA role for a cell in a grid.
-  GRIDCELL: 'gridcell',
-
-  // ARIA role for a group of related elements like tree item siblings.
-  GROUP: 'group',
-
-  // ARIA role for a heading element.
-  HEADING: 'heading',
-
-  // ARIA role for a container of elements that together comprise one image.
-  IMG: 'img',
-
-  // ARIA role for a link.
-  LINK: 'link',
-
-  // ARIA role for a list of non-interactive list items.
-  LIST: 'list',
-
-  // ARIA role for a listbox.
-  LISTBOX: 'listbox',
-
-  // ARIA role for a list item.
-  LISTITEM: 'listitem',
-
-  // ARIA role for a live region where new information is added.
-  LOG: 'log',
-
-  // ARIA landmark role for the main content in a document. Use only once.
-  MAIN: 'main',
-
-  // ARIA role for a live region of non-essential information that changes.
-  MARQUEE: 'marquee',
-
-  // ARIA role for a mathematical expression.
-  MATH: 'math',
-
-  // ARIA role for a popup menu.
-  MENU: 'menu',
-
-  // ARIA role for a menubar element containing menu elements.
-  MENUBAR: 'menubar',
-
-  // ARIA role for menu item elements.
-  MENU_ITEM: 'menuitem',
-
-  // ARIA role for a checkbox box element inside a menu.
-  MENU_ITEM_CHECKBOX: 'menuitemcheckbox',
-
-  // ARIA role for a radio button element inside a menu.
-  MENU_ITEM_RADIO: 'menuitemradio',
-
-  // ARIA landmark role for a collection of navigation links.
-  NAVIGATION: 'navigation',
-
-  // ARIA role for a section ancillary to the main content.
-  NOTE: 'note',
-
-  // ARIA role for option items that are  children of combobox, listbox, menu,
-  // radiogroup, or tree elements.
-  OPTION: 'option',
-
-  // ARIA role for ignorable cosmetic elements with no semantic significance.
-  PRESENTATION: 'presentation',
-
-  // ARIA role for a progress bar element.
-  PROGRESSBAR: 'progressbar',
-
-  // ARIA role for a radio button element.
-  RADIO: 'radio',
-
-  // ARIA role for a group of connected radio button elements.
-  RADIOGROUP: 'radiogroup',
-
-  // ARIA role for an important region of the page.
-  REGION: 'region',
-
-  // ARIA role for a row of cells in a grid.
-  ROW: 'row',
-
-  // ARIA role for a group of one or more rows in a grid.
-  ROWGROUP: 'rowgroup',
-
-  // ARIA role for a row header of a table or grid.
-  ROWHEADER: 'rowheader',
-
-  // ARIA role for a scrollbar element.
-  SCROLLBAR: 'scrollbar',
-
-  // ARIA landmark role for a part of the page providing search functionality.
-  SEARCH: 'search',
-
-  // ARIA role for a menu separator.
-  SEPARATOR: 'separator',
-
-  // ARIA role for a slider.
-  SLIDER: 'slider',
-
-  // ARIA role for a spin button.
-  SPINBUTTON: 'spinbutton',
-
-  // ARIA role for a live region with advisory info less severe than an alert.
-  STATUS: 'status',
-
-  // ARIA role for a tab button.
-  TAB: 'tab',
-
-  // ARIA role for a tab bar (i.e. a list of tab buttons).
-  TAB_LIST: 'tablist',
-
-  // ARIA role for a tab page (i.e. the element holding tab contents).
-  TAB_PANEL: 'tabpanel',
-
-  // ARIA role for a textbox element.
-  TEXTBOX: 'textbox',
-
-  // ARIA role for an element displaying elapsed time or time remaining.
-  TIMER: 'timer',
-
-  // ARIA role for a toolbar element.
-  TOOLBAR: 'toolbar',
-
-  // ARIA role for a tooltip element.
-  TOOLTIP: 'tooltip',
-
-  // ARIA role for a tree.
-  TREE: 'tree',
-
-  // ARIA role for a grid whose rows can be expanded and collapsed like a tree.
-  TREEGRID: 'treegrid',
-
-  // ARIA role for a tree item that sometimes may be expanded or collapsed.
-  TREEITEM: 'treeitem'
-};
-// Copyright 2007 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-/**
- * @fileoverview Utilities for adding, removing and setting ARIA roles and
- * states as defined by W3C ARIA standard: http://www.w3.org/TR/wai-aria/
- * All modern browsers have some form of ARIA support, so no browser checks are
- * performed when adding ARIA to components.
+ * @fileoverview Detects the specific browser and not just the rendering engine.
  *
  */
 
-goog.provide('goog.a11y.aria');
+goog.provide('goog.userAgent.product');
 
-goog.require('goog.a11y.aria.Role');
-goog.require('goog.a11y.aria.State');
-goog.require('goog.a11y.aria.datatables');
-goog.require('goog.array');
-goog.require('goog.asserts');
-goog.require('goog.dom');
-goog.require('goog.dom.TagName');
-goog.require('goog.object');
-goog.require('goog.string');
+goog.require('goog.userAgent');
 
 
 /**
- * ARIA states/properties prefix.
+ * @define {boolean} Whether the code is running on the Firefox web browser.
+ */
+goog.define('goog.userAgent.product.ASSUME_FIREFOX', false);
+
+
+/**
+ * @define {boolean} Whether the code is running on the Camino web browser.
+ */
+goog.define('goog.userAgent.product.ASSUME_CAMINO', false);
+
+
+/**
+ * @define {boolean} Whether we know at compile-time that the product is an
+ *     iPhone.
+ */
+goog.define('goog.userAgent.product.ASSUME_IPHONE', false);
+
+
+/**
+ * @define {boolean} Whether we know at compile-time that the product is an
+ *     iPad.
+ */
+goog.define('goog.userAgent.product.ASSUME_IPAD', false);
+
+
+/**
+ * @define {boolean} Whether we know at compile-time that the product is an
+ *     Android phone.
+ */
+goog.define('goog.userAgent.product.ASSUME_ANDROID', false);
+
+
+/**
+ * @define {boolean} Whether the code is running on the Chrome web browser.
+ */
+goog.define('goog.userAgent.product.ASSUME_CHROME', false);
+
+
+/**
+ * @define {boolean} Whether the code is running on the Safari web browser.
+ */
+goog.define('goog.userAgent.product.ASSUME_SAFARI', false);
+
+
+/**
+ * Whether we know the product type at compile-time.
+ * @type {boolean}
  * @private
  */
-goog.a11y.aria.ARIA_PREFIX_ = 'aria-';
+goog.userAgent.product.PRODUCT_KNOWN_ =
+    goog.userAgent.ASSUME_IE ||
+    goog.userAgent.ASSUME_OPERA ||
+    goog.userAgent.product.ASSUME_FIREFOX ||
+    goog.userAgent.product.ASSUME_CAMINO ||
+    goog.userAgent.product.ASSUME_IPHONE ||
+    goog.userAgent.product.ASSUME_IPAD ||
+    goog.userAgent.product.ASSUME_ANDROID ||
+    goog.userAgent.product.ASSUME_CHROME ||
+    goog.userAgent.product.ASSUME_SAFARI;
 
 
 /**
- * ARIA role attribute.
- * @private
- */
-goog.a11y.aria.ROLE_ATTRIBUTE_ = 'role';
-
-
-/**
- * A list of tag names for which we don't need to set ARIA role and states
- * because they have well supported semantics for screen readers or because
- * they don't contain content to be made accessible.
- * @private
- */
-goog.a11y.aria.TAGS_WITH_ASSUMED_ROLES_ = [
-  goog.dom.TagName.A,
-  goog.dom.TagName.AREA,
-  goog.dom.TagName.BUTTON,
-  goog.dom.TagName.HEAD,
-  goog.dom.TagName.INPUT,
-  goog.dom.TagName.LINK,
-  goog.dom.TagName.MENU,
-  goog.dom.TagName.META,
-  goog.dom.TagName.OPTGROUP,
-  goog.dom.TagName.OPTION,
-  goog.dom.TagName.PROGRESS,
-  goog.dom.TagName.STYLE,
-  goog.dom.TagName.SELECT,
-  goog.dom.TagName.SOURCE,
-  goog.dom.TagName.TEXTAREA,
-  goog.dom.TagName.TITLE,
-  goog.dom.TagName.TRACK
-];
-
-
-/**
- * Sets the role of an element. If the roleName is
- * empty string or null, the role for the element is removed.
- * We encourage clients to call the goog.a11y.aria.removeRole
- * method instead of setting null and empty string values.
- * Special handling for this case is added to ensure
- * backword compatibility with existing code.
+ * Right now we just focus on Tier 1-3 browsers at:
+ * http://wiki/Nonconf/ProductPlatformGuidelines
+ * As well as the YUI grade A browsers at:
+ * http://developer.yahoo.com/yui/articles/gbs/
  *
- * @param {!Element} element DOM node to set role of.
- * @param {!goog.a11y.aria.Role|string} roleName role name(s).
+ * @private
  */
-goog.a11y.aria.setRole = function(element, roleName) {
-  if (!roleName) {
-    // Setting the ARIA role to empty string is not allowed
-    // by the ARIA standard.
-    goog.a11y.aria.removeRole(element);
-  } else {
-    if (goog.asserts.ENABLE_ASSERTS) {
-      goog.asserts.assert(goog.object.containsValue(
-          goog.a11y.aria.Role, roleName), 'No such ARIA role ' + roleName);
-    }
-    element.setAttribute(goog.a11y.aria.ROLE_ATTRIBUTE_, roleName);
-  }
-};
+goog.userAgent.product.init_ = function() {
 
+  /**
+   * Whether the code is running on the Firefox web browser.
+   * @type {boolean}
+   * @private
+   */
+  goog.userAgent.product.detectedFirefox_ = false;
 
-/**
- * Gets role of an element.
- * @param {!Element} element DOM element to get role of.
- * @return {?goog.a11y.aria.Role} ARIA Role name.
- */
-goog.a11y.aria.getRole = function(element) {
-  var role = element.getAttribute(goog.a11y.aria.ROLE_ATTRIBUTE_);
-  return /** @type {goog.a11y.aria.Role} */ (role) || null;
-};
+  /**
+   * Whether the code is running on the Camino web browser.
+   * @type {boolean}
+   * @private
+   */
+  goog.userAgent.product.detectedCamino_ = false;
 
+  /**
+   * Whether the code is running on an iPhone or iPod touch.
+   * @type {boolean}
+   * @private
+   */
+  goog.userAgent.product.detectedIphone_ = false;
 
-/**
- * Removes role of an element.
- * @param {!Element} element DOM element to remove the role from.
- */
-goog.a11y.aria.removeRole = function(element) {
-  element.removeAttribute(goog.a11y.aria.ROLE_ATTRIBUTE_);
-};
+  /**
+   * Whether the code is running on an iPad
+   * @type {boolean}
+   * @private
+   */
+  goog.userAgent.product.detectedIpad_ = false;
 
+  /**
+   * Whether the code is running on the default browser on an Android phone.
+   * @type {boolean}
+   * @private
+   */
+  goog.userAgent.product.detectedAndroid_ = false;
 
-/**
- * Sets the state or property of an element.
- * @param {!Element} element DOM node where we set state.
- * @param {!(goog.a11y.aria.State|string)} stateName State attribute being set.
- *     Automatically adds prefix 'aria-' to the state name if the attribute is
- *     not an extra attribute.
- * @param {string|boolean|number|!goog.array.ArrayLike.<string>} value Value
- * for the state attribute.
- */
-goog.a11y.aria.setState = function(element, stateName, value) {
-  if (goog.isArrayLike(value)) {
-    var array = /** @type {!goog.array.ArrayLike.<string>} */ (value);
-    value = array.join(' ');
-  }
-  var attrStateName = goog.a11y.aria.getAriaAttributeName_(stateName);
-  if (value === '' || value == undefined) {
-    var defaultValueMap = goog.a11y.aria.datatables.getDefaultValuesMap();
-    // Work around for browsers that don't properly support ARIA.
-    // According to the ARIA W3C standard, user agents should allow
-    // setting empty value which results in setting the default value
-    // for the ARIA state if such exists. The exact text from the ARIA W3C
-    // standard (http://www.w3.org/TR/wai-aria/states_and_properties):
-    // "When a value is indicated as the default, the user agent
-    // MUST follow the behavior prescribed by this value when the state or
-    // property is empty or undefined."
-    // The defaultValueMap contains the default values for the ARIA states
-    // and has as a key the goog.a11y.aria.State constant for the state.
-    if (stateName in defaultValueMap) {
-      element.setAttribute(attrStateName, defaultValueMap[stateName]);
-    } else {
-      element.removeAttribute(attrStateName);
-    }
-  } else {
-    element.setAttribute(attrStateName, value);
-  }
-};
+  /**
+   * Whether the code is running on the Chrome web browser.
+   * @type {boolean}
+   * @private
+   */
+  goog.userAgent.product.detectedChrome_ = false;
 
+  /**
+   * Whether the code is running on the Safari web browser.
+   * @type {boolean}
+   * @private
+   */
+  goog.userAgent.product.detectedSafari_ = false;
 
-/**
- * Remove the state or property for the element.
- * @param {!Element} element DOM node where we set state.
- * @param {!goog.a11y.aria.State} stateName State name.
- */
-goog.a11y.aria.removeState = function(element, stateName) {
-  element.removeAttribute(goog.a11y.aria.getAriaAttributeName_(stateName));
-};
-
-
-/**
- * Gets value of specified state or property.
- * @param {!Element} element DOM node to get state from.
- * @param {!goog.a11y.aria.State|string} stateName State name.
- * @return {string} Value of the state attribute.
- */
-goog.a11y.aria.getState = function(element, stateName) {
-  // TODO(user): return properly typed value result --
-  // boolean, number, string, null. We should be able to chain
-  // getState(...) and setState(...) methods.
-
-  var attr =
-      /** @type {string|number|boolean} */ (element.getAttribute(
-      goog.a11y.aria.getAriaAttributeName_(stateName)));
-  var isNullOrUndefined = attr == null || attr == undefined;
-  return isNullOrUndefined ? '' : String(attr);
-};
-
-
-/**
- * Returns the activedescendant element for the input element by
- * using the activedescendant ARIA property of the given element.
- * @param {!Element} element DOM node to get activedescendant
- *     element for.
- * @return {?Element} DOM node of the activedescendant, if found.
- */
-goog.a11y.aria.getActiveDescendant = function(element) {
-  var id = goog.a11y.aria.getState(
-      element, goog.a11y.aria.State.ACTIVEDESCENDANT);
-  return goog.dom.getOwnerDocument(element).getElementById(id);
-};
-
-
-/**
- * Sets the activedescendant ARIA property value for an element.
- * If the activeElement is not null, it should have an id set.
- * @param {!Element} element DOM node to set activedescendant ARIA property to.
- * @param {?Element} activeElement DOM node being set as activedescendant.
- */
-goog.a11y.aria.setActiveDescendant = function(element, activeElement) {
-  var id = '';
-  if (activeElement) {
-    id = activeElement.id;
-    goog.asserts.assert(id, 'The active element should have an id.');
-  }
-
-  goog.a11y.aria.setState(element, goog.a11y.aria.State.ACTIVEDESCENDANT, id);
-};
-
-
-/**
- * Gets the label of the given element.
- * @param {!Element} element DOM node to get label from.
- * @return {string} label The label.
- */
-goog.a11y.aria.getLabel = function(element) {
-  return goog.a11y.aria.getState(element, goog.a11y.aria.State.LABEL);
-};
-
-
-/**
- * Sets the label of the given element.
- * @param {!Element} element DOM node to set label to.
- * @param {string} label The label to set.
- */
-goog.a11y.aria.setLabel = function(element, label) {
-  goog.a11y.aria.setState(element, goog.a11y.aria.State.LABEL, label);
-};
-
-
-/**
- * Asserts that the element has a role set if it's not an HTML element whose
- * semantics is well supported by most screen readers.
- * Only to be used internally by the ARIA library in goog.a11y.aria.*.
- * @param {!Element} element The element to assert an ARIA role set.
- * @param {!goog.array.ArrayLike.<string>} allowedRoles The child roles of
- * the roles.
- */
-goog.a11y.aria.assertRoleIsSetInternalUtil = function(element, allowedRoles) {
-  if (goog.array.contains(goog.a11y.aria.TAGS_WITH_ASSUMED_ROLES_,
-      element.tagName)) {
+  var ua = goog.userAgent.getUserAgentString();
+  if (!ua) {
     return;
   }
-  var elementRole = /** @type {string}*/ (goog.a11y.aria.getRole(element));
-  goog.asserts.assert(elementRole != null,
-      'The element ARIA role cannot be null.');
 
-  goog.asserts.assert(goog.array.contains(allowedRoles, elementRole),
-      'Non existing or incorrect role set for element.' +
-      'The role set is "' + elementRole +
-      '". The role should be any of "' + allowedRoles +
-      '". Check the ARIA specification for more details ' +
-      'http://www.w3.org/TR/wai-aria/roles.');
-};
+  // The order of the if-statements in the following code is important.
+  // For example, in the WebKit section, we put Chrome in front of Safari
+  // because the string 'Safari' is present on both of those browsers'
+  // userAgent strings as well as the string we are looking for.
+  // The idea is to prevent accidental detection of more than one client.
 
-
-/**
- * Gets the boolean value of an ARIA state/property.
- * Only to be used internally by the ARIA library in goog.a11y.aria.*.
- * @param {!Element} element The element to get the ARIA state for.
- * @param {!goog.a11y.aria.State|string} stateName the ARIA state name.
- * @return {?boolean} Boolean value for the ARIA state value or null if
- *     the state value is not 'true' or 'false'.
- */
-goog.a11y.aria.getBooleanStateInternalUtil = function(element, stateName) {
-  var stringValue = goog.a11y.aria.getState(element, stateName);
-  if (stringValue == 'true') {
-    return true;
+  if (ua.indexOf('Firefox') != -1) {
+    goog.userAgent.product.detectedFirefox_ = true;
+  } else if (ua.indexOf('Camino') != -1) {
+    goog.userAgent.product.detectedCamino_ = true;
+  } else if (ua.indexOf('iPhone') != -1 || ua.indexOf('iPod') != -1) {
+    goog.userAgent.product.detectedIphone_ = true;
+  } else if (ua.indexOf('iPad') != -1) {
+    goog.userAgent.product.detectedIpad_ = true;
+  } else if (ua.indexOf('Android') != -1) {
+    goog.userAgent.product.detectedAndroid_ = true;
+  } else if (ua.indexOf('Chrome') != -1) {
+    goog.userAgent.product.detectedChrome_ = true;
+  } else if (ua.indexOf('Safari') != -1) {
+    goog.userAgent.product.detectedSafari_ = true;
   }
-  if (stringValue == 'false') {
-    return false;
-  }
-  return null;
 };
+
+if (!goog.userAgent.product.PRODUCT_KNOWN_) {
+  goog.userAgent.product.init_();
+}
 
 
 /**
- * Gets the number value of an ARIA state/property.
- * Only to be used internally by the ARIA library in goog.a11y.aria.*.
- * @param {!Element} element The element to get the ARIA state for.
- * @param {!goog.a11y.aria.State|string} stateName the ARIA state name.
- * @return {?number} Number value for the ARIA state value or null if
- *     the state value is not a number.
+ * Whether the code is running on the Opera web browser.
+ * @type {boolean}
  */
-goog.a11y.aria.getNumberStateInternalUtil = function(element, stateName) {
-  var stringValue = goog.a11y.aria.getState(element, stateName);
-  if (goog.string.isNumeric(stringValue)) {
-    return goog.string.toNumber(stringValue);
-  }
-  return null;
-};
+goog.userAgent.product.OPERA = goog.userAgent.OPERA;
 
 
 /**
- * Gets array of strings value of the specified state or
- * property for the element.
- * Only to be used internally by the ARIA library in goog.a11y.aria.*.
- * @param {!Element} element DOM node to get state from.
- * @param {!goog.a11y.aria.State} stateName State name.
- * @return {!goog.array.ArrayLike.<string>} string Array
- *     value of the state attribute.
+ * Whether the code is running on an IE web browser.
+ * @type {boolean}
  */
-goog.a11y.aria.getStringArrayStateInternalUtil = function(element, stateName) {
-  var attrValue = element.getAttribute(
-      goog.a11y.aria.getAriaAttributeName_(stateName));
-  return goog.a11y.aria.splitStringOnWhitespace_(attrValue);
-};
+goog.userAgent.product.IE = goog.userAgent.IE;
 
 
 /**
- * Gets the string value of an ARIA state/property.
- * Only to be used internally by the ARIA library in goog.a11y.aria.*.
- * @param {!Element} element The element to get the ARIA state for.
- * @param {!goog.a11y.aria.State|string} stateName the ARIA state name.
- * @return {?string} String value for the ARIA state value or null if
- *     the state value is empty string.
+ * Whether the code is running on the Firefox web browser.
+ * @type {boolean}
  */
-goog.a11y.aria.getStringStateInternalUtil = function(element, stateName) {
-  var stringValue = goog.a11y.aria.getState(element, stateName);
-  return stringValue || null;
-};
+goog.userAgent.product.FIREFOX = goog.userAgent.product.PRODUCT_KNOWN_ ?
+    goog.userAgent.product.ASSUME_FIREFOX :
+    goog.userAgent.product.detectedFirefox_;
 
 
 /**
- * Splits the input stringValue on whitespace.
- * @param {string} stringValue The value of the string to split.
- * @return {!goog.array.ArrayLike.<string>} string Array
- *     value as result of the split.
- * @private
+ * Whether the code is running on the Camino web browser.
+ * @type {boolean}
  */
-goog.a11y.aria.splitStringOnWhitespace_ = function(stringValue) {
-  return stringValue ? stringValue.split(/\s+/) : [];
-};
+goog.userAgent.product.CAMINO = goog.userAgent.product.PRODUCT_KNOWN_ ?
+    goog.userAgent.product.ASSUME_CAMINO :
+    goog.userAgent.product.detectedCamino_;
 
 
 /**
- * Adds the 'aria-' prefix to ariaName.
- * @param {string} ariaName ARIA state/property name.
- * @private
- * @return {string} The ARIA attribute name with added 'aria-' prefix.
- * @throws {Error} If no such attribute exists.
+ * Whether the code is running on an iPhone or iPod touch.
+ * @type {boolean}
  */
-goog.a11y.aria.getAriaAttributeName_ = function(ariaName) {
-  if (goog.asserts.ENABLE_ASSERTS) {
-    goog.asserts.assert(ariaName, 'ARIA attribute cannot be empty.');
-    goog.asserts.assert(goog.object.containsValue(
-        goog.a11y.aria.State, ariaName),
-        'No such ARIA attribute ' + ariaName);
-  }
-  return goog.a11y.aria.ARIA_PREFIX_ + ariaName;
-};
+goog.userAgent.product.IPHONE = goog.userAgent.product.PRODUCT_KNOWN_ ?
+    goog.userAgent.product.ASSUME_IPHONE :
+    goog.userAgent.product.detectedIphone_;
+
+
+/**
+ * Whether the code is running on an iPad.
+ * @type {boolean}
+ */
+goog.userAgent.product.IPAD = goog.userAgent.product.PRODUCT_KNOWN_ ?
+    goog.userAgent.product.ASSUME_IPAD :
+    goog.userAgent.product.detectedIpad_;
+
+
+/**
+ * Whether the code is running on the default browser on an Android phone.
+ * @type {boolean}
+ */
+goog.userAgent.product.ANDROID = goog.userAgent.product.PRODUCT_KNOWN_ ?
+    goog.userAgent.product.ASSUME_ANDROID :
+    goog.userAgent.product.detectedAndroid_;
+
+
+/**
+ * Whether the code is running on the Chrome web browser.
+ * @type {boolean}
+ */
+goog.userAgent.product.CHROME = goog.userAgent.product.PRODUCT_KNOWN_ ?
+    goog.userAgent.product.ASSUME_CHROME :
+    goog.userAgent.product.detectedChrome_;
+
+
+/**
+ * Whether the code is running on the Safari web browser.
+ * @type {boolean}
+ */
+goog.userAgent.product.SAFARI = goog.userAgent.product.PRODUCT_KNOWN_ ?
+    goog.userAgent.product.ASSUME_SAFARI :
+    goog.userAgent.product.detectedSafari_;
 // Copyright 2008 The Closure Library Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -20071,939 +21731,6 @@ goog.ui.ContainerRenderer.prototype.getClassNames = function(container) {
 goog.ui.ContainerRenderer.prototype.getDefaultOrientation = function() {
   return goog.ui.Container.Orientation.VERTICAL;
 };
-// Copyright 2006 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/**
- * @fileoverview Constant declarations for common key codes.
- *
- * @author eae@google.com (Emil A Eklund)
- * @see ../demos/keyhandler.html
- */
-
-goog.provide('goog.events.KeyCodes');
-
-goog.require('goog.userAgent');
-
-
-/**
- * Key codes for common characters.
- *
- * This list is not localized and therefore some of the key codes are not
- * correct for non US keyboard layouts. See comments below.
- *
- * @enum {number}
- */
-goog.events.KeyCodes = {
-  WIN_KEY_FF_LINUX: 0,
-  MAC_ENTER: 3,
-  BACKSPACE: 8,
-  TAB: 9,
-  NUM_CENTER: 12,  // NUMLOCK on FF/Safari Mac
-  ENTER: 13,
-  SHIFT: 16,
-  CTRL: 17,
-  ALT: 18,
-  PAUSE: 19,
-  CAPS_LOCK: 20,
-  ESC: 27,
-  SPACE: 32,
-  PAGE_UP: 33,     // also NUM_NORTH_EAST
-  PAGE_DOWN: 34,   // also NUM_SOUTH_EAST
-  END: 35,         // also NUM_SOUTH_WEST
-  HOME: 36,        // also NUM_NORTH_WEST
-  LEFT: 37,        // also NUM_WEST
-  UP: 38,          // also NUM_NORTH
-  RIGHT: 39,       // also NUM_EAST
-  DOWN: 40,        // also NUM_SOUTH
-  PRINT_SCREEN: 44,
-  INSERT: 45,      // also NUM_INSERT
-  DELETE: 46,      // also NUM_DELETE
-  ZERO: 48,
-  ONE: 49,
-  TWO: 50,
-  THREE: 51,
-  FOUR: 52,
-  FIVE: 53,
-  SIX: 54,
-  SEVEN: 55,
-  EIGHT: 56,
-  NINE: 57,
-  FF_SEMICOLON: 59, // Firefox (Gecko) fires this for semicolon instead of 186
-  FF_EQUALS: 61, // Firefox (Gecko) fires this for equals instead of 187
-  QUESTION_MARK: 63, // needs localization
-  A: 65,
-  B: 66,
-  C: 67,
-  D: 68,
-  E: 69,
-  F: 70,
-  G: 71,
-  H: 72,
-  I: 73,
-  J: 74,
-  K: 75,
-  L: 76,
-  M: 77,
-  N: 78,
-  O: 79,
-  P: 80,
-  Q: 81,
-  R: 82,
-  S: 83,
-  T: 84,
-  U: 85,
-  V: 86,
-  W: 87,
-  X: 88,
-  Y: 89,
-  Z: 90,
-  META: 91, // WIN_KEY_LEFT
-  WIN_KEY_RIGHT: 92,
-  CONTEXT_MENU: 93,
-  NUM_ZERO: 96,
-  NUM_ONE: 97,
-  NUM_TWO: 98,
-  NUM_THREE: 99,
-  NUM_FOUR: 100,
-  NUM_FIVE: 101,
-  NUM_SIX: 102,
-  NUM_SEVEN: 103,
-  NUM_EIGHT: 104,
-  NUM_NINE: 105,
-  NUM_MULTIPLY: 106,
-  NUM_PLUS: 107,
-  NUM_MINUS: 109,
-  NUM_PERIOD: 110,
-  NUM_DIVISION: 111,
-  F1: 112,
-  F2: 113,
-  F3: 114,
-  F4: 115,
-  F5: 116,
-  F6: 117,
-  F7: 118,
-  F8: 119,
-  F9: 120,
-  F10: 121,
-  F11: 122,
-  F12: 123,
-  NUMLOCK: 144,
-  SCROLL_LOCK: 145,
-
-  // OS-specific media keys like volume controls and browser controls.
-  FIRST_MEDIA_KEY: 166,
-  LAST_MEDIA_KEY: 183,
-
-  SEMICOLON: 186,            // needs localization
-  DASH: 189,                 // needs localization
-  EQUALS: 187,               // needs localization
-  COMMA: 188,                // needs localization
-  PERIOD: 190,               // needs localization
-  SLASH: 191,                // needs localization
-  APOSTROPHE: 192,           // needs localization
-  TILDE: 192,                // needs localization
-  SINGLE_QUOTE: 222,         // needs localization
-  OPEN_SQUARE_BRACKET: 219,  // needs localization
-  BACKSLASH: 220,            // needs localization
-  CLOSE_SQUARE_BRACKET: 221, // needs localization
-  WIN_KEY: 224,
-  MAC_FF_META: 224, // Firefox (Gecko) fires this for the meta key instead of 91
-  WIN_IME: 229,
-
-  // We've seen users whose machines fire this keycode at regular one
-  // second intervals. The common thread among these users is that
-  // they're all using Dell Inspiron laptops, so we suspect that this
-  // indicates a hardware/bios problem.
-  // http://en.community.dell.com/support-forums/laptop/f/3518/p/19285957/19523128.aspx
-  PHANTOM: 255
-};
-
-
-/**
- * Returns true if the event contains a text modifying key.
- * @param {goog.events.BrowserEvent} e A key event.
- * @return {boolean} Whether it's a text modifying key.
- */
-goog.events.KeyCodes.isTextModifyingKeyEvent = function(e) {
-  if (e.altKey && !e.ctrlKey ||
-      e.metaKey ||
-      // Function keys don't generate text
-      e.keyCode >= goog.events.KeyCodes.F1 &&
-      e.keyCode <= goog.events.KeyCodes.F12) {
-    return false;
-  }
-
-  // The following keys are quite harmless, even in combination with
-  // CTRL, ALT or SHIFT.
-  switch (e.keyCode) {
-    case goog.events.KeyCodes.ALT:
-    case goog.events.KeyCodes.CAPS_LOCK:
-    case goog.events.KeyCodes.CONTEXT_MENU:
-    case goog.events.KeyCodes.CTRL:
-    case goog.events.KeyCodes.DOWN:
-    case goog.events.KeyCodes.END:
-    case goog.events.KeyCodes.ESC:
-    case goog.events.KeyCodes.HOME:
-    case goog.events.KeyCodes.INSERT:
-    case goog.events.KeyCodes.LEFT:
-    case goog.events.KeyCodes.MAC_FF_META:
-    case goog.events.KeyCodes.META:
-    case goog.events.KeyCodes.NUMLOCK:
-    case goog.events.KeyCodes.NUM_CENTER:
-    case goog.events.KeyCodes.PAGE_DOWN:
-    case goog.events.KeyCodes.PAGE_UP:
-    case goog.events.KeyCodes.PAUSE:
-    case goog.events.KeyCodes.PHANTOM:
-    case goog.events.KeyCodes.PRINT_SCREEN:
-    case goog.events.KeyCodes.RIGHT:
-    case goog.events.KeyCodes.SCROLL_LOCK:
-    case goog.events.KeyCodes.SHIFT:
-    case goog.events.KeyCodes.UP:
-    case goog.events.KeyCodes.WIN_KEY:
-    case goog.events.KeyCodes.WIN_KEY_RIGHT:
-      return false;
-    case goog.events.KeyCodes.WIN_KEY_FF_LINUX:
-      return !goog.userAgent.GECKO;
-    default:
-      return e.keyCode < goog.events.KeyCodes.FIRST_MEDIA_KEY ||
-          e.keyCode > goog.events.KeyCodes.LAST_MEDIA_KEY;
-  }
-};
-
-
-/**
- * Returns true if the key fires a keypress event in the current browser.
- *
- * Accoridng to MSDN [1] IE only fires keypress events for the following keys:
- * - Letters: A - Z (uppercase and lowercase)
- * - Numerals: 0 - 9
- * - Symbols: ! @ # $ % ^ & * ( ) _ - + = < [ ] { } , . / ? \ | ' ` " ~
- * - System: ESC, SPACEBAR, ENTER
- *
- * That's not entirely correct though, for instance there's no distinction
- * between upper and lower case letters.
- *
- * [1] http://msdn2.microsoft.com/en-us/library/ms536939(VS.85).aspx)
- *
- * Safari is similar to IE, but does not fire keypress for ESC.
- *
- * Additionally, IE6 does not fire keydown or keypress events for letters when
- * the control or alt keys are held down and the shift key is not. IE7 does
- * fire keydown in these cases, though, but not keypress.
- *
- * @param {number} keyCode A key code.
- * @param {number=} opt_heldKeyCode Key code of a currently-held key.
- * @param {boolean=} opt_shiftKey Whether the shift key is held down.
- * @param {boolean=} opt_ctrlKey Whether the control key is held down.
- * @param {boolean=} opt_altKey Whether the alt key is held down.
- * @return {boolean} Whether it's a key that fires a keypress event.
- */
-goog.events.KeyCodes.firesKeyPressEvent = function(keyCode, opt_heldKeyCode,
-    opt_shiftKey, opt_ctrlKey, opt_altKey) {
-  if (!goog.userAgent.IE &&
-      !(goog.userAgent.WEBKIT && goog.userAgent.isVersionOrHigher('525'))) {
-    return true;
-  }
-
-  if (goog.userAgent.MAC && opt_altKey) {
-    return goog.events.KeyCodes.isCharacterKey(keyCode);
-  }
-
-  // Alt but not AltGr which is represented as Alt+Ctrl.
-  if (opt_altKey && !opt_ctrlKey) {
-    return false;
-  }
-
-  // Saves Ctrl or Alt + key for IE and WebKit 525+, which won't fire keypress.
-  // Non-IE browsers and WebKit prior to 525 won't get this far so no need to
-  // check the user agent.
-  if (!opt_shiftKey &&
-      (opt_heldKeyCode == goog.events.KeyCodes.CTRL ||
-       opt_heldKeyCode == goog.events.KeyCodes.ALT ||
-       goog.userAgent.MAC &&
-       opt_heldKeyCode == goog.events.KeyCodes.META)) {
-    return false;
-  }
-
-  // Some keys with Ctrl/Shift do not issue keypress in WEBKIT.
-  if (goog.userAgent.WEBKIT && opt_ctrlKey && opt_shiftKey) {
-    switch (keyCode) {
-      case goog.events.KeyCodes.BACKSLASH:
-      case goog.events.KeyCodes.OPEN_SQUARE_BRACKET:
-      case goog.events.KeyCodes.CLOSE_SQUARE_BRACKET:
-      case goog.events.KeyCodes.TILDE:
-      case goog.events.KeyCodes.SEMICOLON:
-      case goog.events.KeyCodes.DASH:
-      case goog.events.KeyCodes.EQUALS:
-      case goog.events.KeyCodes.COMMA:
-      case goog.events.KeyCodes.PERIOD:
-      case goog.events.KeyCodes.SLASH:
-      case goog.events.KeyCodes.APOSTROPHE:
-      case goog.events.KeyCodes.SINGLE_QUOTE:
-        return false;
-    }
-  }
-
-  // When Ctrl+<somekey> is held in IE, it only fires a keypress once, but it
-  // continues to fire keydown events as the event repeats.
-  if (goog.userAgent.IE && opt_ctrlKey && opt_heldKeyCode == keyCode) {
-    return false;
-  }
-
-  switch (keyCode) {
-    case goog.events.KeyCodes.ENTER:
-      // IE9 does not fire KEYPRESS on ENTER.
-      return !(goog.userAgent.IE && goog.userAgent.isDocumentModeOrHigher(9));
-    case goog.events.KeyCodes.ESC:
-      return !goog.userAgent.WEBKIT;
-  }
-
-  return goog.events.KeyCodes.isCharacterKey(keyCode);
-};
-
-
-/**
- * Returns true if the key produces a character.
- * This does not cover characters on non-US keyboards (Russian, Hebrew, etc.).
- *
- * @param {number} keyCode A key code.
- * @return {boolean} Whether it's a character key.
- */
-goog.events.KeyCodes.isCharacterKey = function(keyCode) {
-  if (keyCode >= goog.events.KeyCodes.ZERO &&
-      keyCode <= goog.events.KeyCodes.NINE) {
-    return true;
-  }
-
-  if (keyCode >= goog.events.KeyCodes.NUM_ZERO &&
-      keyCode <= goog.events.KeyCodes.NUM_MULTIPLY) {
-    return true;
-  }
-
-  if (keyCode >= goog.events.KeyCodes.A &&
-      keyCode <= goog.events.KeyCodes.Z) {
-    return true;
-  }
-
-  // Safari sends zero key code for non-latin characters.
-  if (goog.userAgent.WEBKIT && keyCode == 0) {
-    return true;
-  }
-
-  switch (keyCode) {
-    case goog.events.KeyCodes.SPACE:
-    case goog.events.KeyCodes.QUESTION_MARK:
-    case goog.events.KeyCodes.NUM_PLUS:
-    case goog.events.KeyCodes.NUM_MINUS:
-    case goog.events.KeyCodes.NUM_PERIOD:
-    case goog.events.KeyCodes.NUM_DIVISION:
-    case goog.events.KeyCodes.SEMICOLON:
-    case goog.events.KeyCodes.FF_SEMICOLON:
-    case goog.events.KeyCodes.DASH:
-    case goog.events.KeyCodes.EQUALS:
-    case goog.events.KeyCodes.FF_EQUALS:
-    case goog.events.KeyCodes.COMMA:
-    case goog.events.KeyCodes.PERIOD:
-    case goog.events.KeyCodes.SLASH:
-    case goog.events.KeyCodes.APOSTROPHE:
-    case goog.events.KeyCodes.SINGLE_QUOTE:
-    case goog.events.KeyCodes.OPEN_SQUARE_BRACKET:
-    case goog.events.KeyCodes.BACKSLASH:
-    case goog.events.KeyCodes.CLOSE_SQUARE_BRACKET:
-      return true;
-    default:
-      return false;
-  }
-};
-
-
-/**
- * Normalizes key codes from their Gecko-specific value to the general one.
- * @param {number} keyCode The native key code.
- * @return {number} The normalized key code.
- */
-goog.events.KeyCodes.normalizeGeckoKeyCode = function(keyCode) {
-  switch (keyCode) {
-    case goog.events.KeyCodes.FF_EQUALS:
-      return goog.events.KeyCodes.EQUALS;
-    case goog.events.KeyCodes.FF_SEMICOLON:
-      return goog.events.KeyCodes.SEMICOLON;
-    case goog.events.KeyCodes.MAC_FF_META:
-      return goog.events.KeyCodes.META;
-    case goog.events.KeyCodes.WIN_KEY_FF_LINUX:
-      return goog.events.KeyCodes.WIN_KEY;
-    default:
-      return keyCode;
-  }
-};
-// Copyright 2007 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/**
- * @fileoverview This file contains a class for working with keyboard events
- * that repeat consistently across browsers and platforms. It also unifies the
- * key code so that it is the same in all browsers and platforms.
- *
- * Different web browsers have very different keyboard event handling. Most
- * importantly is that only certain browsers repeat keydown events:
- * IE, Opera, FF/Win32, and Safari 3 repeat keydown events.
- * FF/Mac and Safari 2 do not.
- *
- * For the purposes of this code, "Safari 3" means WebKit 525+, when WebKit
- * decided that they should try to match IE's key handling behavior.
- * Safari 3.0.4, which shipped with Leopard (WebKit 523), has the
- * Safari 2 behavior.
- *
- * Firefox, Safari, Opera prevent on keypress
- *
- * IE prevents on keydown
- *
- * Firefox does not fire keypress for shift, ctrl, alt
- * Firefox does fire keydown for shift, ctrl, alt, meta
- * Firefox does not repeat keydown for shift, ctrl, alt, meta
- *
- * Firefox does not fire keypress for up and down in an input
- *
- * Opera fires keypress for shift, ctrl, alt, meta
- * Opera does not repeat keypress for shift, ctrl, alt, meta
- *
- * Safari 2 and 3 do not fire keypress for shift, ctrl, alt
- * Safari 2 does not fire keydown for shift, ctrl, alt
- * Safari 3 *does* fire keydown for shift, ctrl, alt
- *
- * IE provides the keycode for keyup/down events and the charcode (in the
- * keycode field) for keypress.
- *
- * Mozilla provides the keycode for keyup/down and the charcode for keypress
- * unless it's a non text modifying key in which case the keycode is provided.
- *
- * Safari 3 provides the keycode and charcode for all events.
- *
- * Opera provides the keycode for keyup/down event and either the charcode or
- * the keycode (in the keycode field) for keypress events.
- *
- * Firefox x11 doesn't fire keydown events if a another key is already held down
- * until the first key is released. This can cause a key event to be fired with
- * a keyCode for the first key and a charCode for the second key.
- *
- * Safari in keypress
- *
- *        charCode keyCode which
- * ENTER:       13      13    13
- * F1:       63236   63236 63236
- * F8:       63243   63243 63243
- * ...
- * p:          112     112   112
- * P:           80      80    80
- *
- * Firefox, keypress:
- *
- *        charCode keyCode which
- * ENTER:        0      13    13
- * F1:           0     112     0
- * F8:           0     119     0
- * ...
- * p:          112       0   112
- * P:           80       0    80
- *
- * Opera, Mac+Win32, keypress:
- *
- *         charCode keyCode which
- * ENTER: undefined      13    13
- * F1:    undefined     112     0
- * F8:    undefined     119     0
- * ...
- * p:     undefined     112   112
- * P:     undefined      80    80
- *
- * IE7, keydown
- *
- *         charCode keyCode     which
- * ENTER: undefined      13 undefined
- * F1:    undefined     112 undefined
- * F8:    undefined     119 undefined
- * ...
- * p:     undefined      80 undefined
- * P:     undefined      80 undefined
- *
- * @author arv@google.com (Erik Arvidsson)
- * @author eae@google.com (Emil A Eklund)
- * @see ../demos/keyhandler.html
- */
-
-goog.provide('goog.events.KeyEvent');
-goog.provide('goog.events.KeyHandler');
-goog.provide('goog.events.KeyHandler.EventType');
-
-goog.require('goog.events');
-goog.require('goog.events.BrowserEvent');
-goog.require('goog.events.EventTarget');
-goog.require('goog.events.EventType');
-goog.require('goog.events.KeyCodes');
-goog.require('goog.userAgent');
-
-
-
-/**
- * A wrapper around an element that you want to listen to keyboard events on.
- * @param {Element|Document=} opt_element The element or document to listen on.
- * @param {boolean=} opt_capture Whether to listen for browser events in
- *     capture phase (defaults to false).
- * @constructor
- * @extends {goog.events.EventTarget}
- */
-goog.events.KeyHandler = function(opt_element, opt_capture) {
-  goog.events.EventTarget.call(this);
-
-  if (opt_element) {
-    this.attach(opt_element, opt_capture);
-  }
-};
-goog.inherits(goog.events.KeyHandler, goog.events.EventTarget);
-
-
-/**
- * This is the element that we will listen to the real keyboard events on.
- * @type {Element|Document|null}
- * @private
- */
-goog.events.KeyHandler.prototype.element_ = null;
-
-
-/**
- * The key for the key press listener.
- * @type {goog.events.Key}
- * @private
- */
-goog.events.KeyHandler.prototype.keyPressKey_ = null;
-
-
-/**
- * The key for the key down listener.
- * @type {goog.events.Key}
- * @private
- */
-goog.events.KeyHandler.prototype.keyDownKey_ = null;
-
-
-/**
- * The key for the key up listener.
- * @type {goog.events.Key}
- * @private
- */
-goog.events.KeyHandler.prototype.keyUpKey_ = null;
-
-
-/**
- * Used to detect keyboard repeat events.
- * @private
- * @type {number}
- */
-goog.events.KeyHandler.prototype.lastKey_ = -1;
-
-
-/**
- * Keycode recorded for key down events. As most browsers don't report the
- * keycode in the key press event we need to record it in the key down phase.
- * @private
- * @type {number}
- */
-goog.events.KeyHandler.prototype.keyCode_ = -1;
-
-
-/**
- * Alt key recorded for key down events. FF on Mac does not report the alt key
- * flag in the key press event, we need to record it in the key down phase.
- * @type {boolean}
- * @private
- */
-goog.events.KeyHandler.prototype.altKey_ = false;
-
-
-/**
- * Enum type for the events fired by the key handler
- * @enum {string}
- */
-goog.events.KeyHandler.EventType = {
-  KEY: 'key'
-};
-
-
-/**
- * An enumeration of key codes that Safari 2 does incorrectly
- * @type {Object}
- * @private
- */
-goog.events.KeyHandler.safariKey_ = {
-  '3': goog.events.KeyCodes.ENTER, // 13
-  '12': goog.events.KeyCodes.NUMLOCK, // 144
-  '63232': goog.events.KeyCodes.UP, // 38
-  '63233': goog.events.KeyCodes.DOWN, // 40
-  '63234': goog.events.KeyCodes.LEFT, // 37
-  '63235': goog.events.KeyCodes.RIGHT, // 39
-  '63236': goog.events.KeyCodes.F1, // 112
-  '63237': goog.events.KeyCodes.F2, // 113
-  '63238': goog.events.KeyCodes.F3, // 114
-  '63239': goog.events.KeyCodes.F4, // 115
-  '63240': goog.events.KeyCodes.F5, // 116
-  '63241': goog.events.KeyCodes.F6, // 117
-  '63242': goog.events.KeyCodes.F7, // 118
-  '63243': goog.events.KeyCodes.F8, // 119
-  '63244': goog.events.KeyCodes.F9, // 120
-  '63245': goog.events.KeyCodes.F10, // 121
-  '63246': goog.events.KeyCodes.F11, // 122
-  '63247': goog.events.KeyCodes.F12, // 123
-  '63248': goog.events.KeyCodes.PRINT_SCREEN, // 44
-  '63272': goog.events.KeyCodes.DELETE, // 46
-  '63273': goog.events.KeyCodes.HOME, // 36
-  '63275': goog.events.KeyCodes.END, // 35
-  '63276': goog.events.KeyCodes.PAGE_UP, // 33
-  '63277': goog.events.KeyCodes.PAGE_DOWN, // 34
-  '63289': goog.events.KeyCodes.NUMLOCK, // 144
-  '63302': goog.events.KeyCodes.INSERT // 45
-};
-
-
-/**
- * An enumeration of key identifiers currently part of the W3C draft for DOM3
- * and their mappings to keyCodes.
- * http://www.w3.org/TR/DOM-Level-3-Events/keyset.html#KeySet-Set
- * This is currently supported in Safari and should be platform independent.
- * @type {Object}
- * @private
- */
-goog.events.KeyHandler.keyIdentifier_ = {
-  'Up': goog.events.KeyCodes.UP, // 38
-  'Down': goog.events.KeyCodes.DOWN, // 40
-  'Left': goog.events.KeyCodes.LEFT, // 37
-  'Right': goog.events.KeyCodes.RIGHT, // 39
-  'Enter': goog.events.KeyCodes.ENTER, // 13
-  'F1': goog.events.KeyCodes.F1, // 112
-  'F2': goog.events.KeyCodes.F2, // 113
-  'F3': goog.events.KeyCodes.F3, // 114
-  'F4': goog.events.KeyCodes.F4, // 115
-  'F5': goog.events.KeyCodes.F5, // 116
-  'F6': goog.events.KeyCodes.F6, // 117
-  'F7': goog.events.KeyCodes.F7, // 118
-  'F8': goog.events.KeyCodes.F8, // 119
-  'F9': goog.events.KeyCodes.F9, // 120
-  'F10': goog.events.KeyCodes.F10, // 121
-  'F11': goog.events.KeyCodes.F11, // 122
-  'F12': goog.events.KeyCodes.F12, // 123
-  'U+007F': goog.events.KeyCodes.DELETE, // 46
-  'Home': goog.events.KeyCodes.HOME, // 36
-  'End': goog.events.KeyCodes.END, // 35
-  'PageUp': goog.events.KeyCodes.PAGE_UP, // 33
-  'PageDown': goog.events.KeyCodes.PAGE_DOWN, // 34
-  'Insert': goog.events.KeyCodes.INSERT // 45
-};
-
-
-/**
- * If true, the KeyEvent fires on keydown. Otherwise, it fires on keypress.
- *
- * @type {boolean}
- * @private
- */
-goog.events.KeyHandler.USES_KEYDOWN_ = goog.userAgent.IE ||
-    goog.userAgent.WEBKIT && goog.userAgent.isVersionOrHigher('525');
-
-
-/**
- * If true, the alt key flag is saved during the key down and reused when
- * handling the key press. FF on Mac does not set the alt flag in the key press
- * event.
- * @type {boolean}
- * @private
- */
-goog.events.KeyHandler.SAVE_ALT_FOR_KEYPRESS_ = goog.userAgent.MAC &&
-    goog.userAgent.GECKO;
-
-
-/**
- * Records the keycode for browsers that only returns the keycode for key up/
- * down events. For browser/key combinations that doesn't trigger a key pressed
- * event it also fires the patched key event.
- * @param {goog.events.BrowserEvent} e The key down event.
- * @private
- */
-goog.events.KeyHandler.prototype.handleKeyDown_ = function(e) {
-  // Ctrl-Tab and Alt-Tab can cause the focus to be moved to another window
-  // before we've caught a key-up event.  If the last-key was one of these we
-  // reset the state.
-
-  if (goog.userAgent.WEBKIT) {
-    if (this.lastKey_ == goog.events.KeyCodes.CTRL && !e.ctrlKey ||
-        this.lastKey_ == goog.events.KeyCodes.ALT && !e.altKey ||
-        goog.userAgent.MAC &&
-        this.lastKey_ == goog.events.KeyCodes.META && !e.metaKey) {
-      this.lastKey_ = -1;
-      this.keyCode_ = -1;
-    }
-  }
-
-  if (this.lastKey_ == -1) {
-    if (e.ctrlKey && e.keyCode != goog.events.KeyCodes.CTRL) {
-      this.lastKey_ = goog.events.KeyCodes.CTRL;
-    } else if (e.altKey && e.keyCode != goog.events.KeyCodes.ALT) {
-      this.lastKey_ = goog.events.KeyCodes.ALT;
-    } else if (e.metaKey && e.keyCode != goog.events.KeyCodes.META) {
-      this.lastKey_ = goog.events.KeyCodes.META;
-    }
-  }
-
-  if (goog.events.KeyHandler.USES_KEYDOWN_ &&
-      !goog.events.KeyCodes.firesKeyPressEvent(e.keyCode,
-          this.lastKey_, e.shiftKey, e.ctrlKey, e.altKey)) {
-    this.handleEvent(e);
-  } else {
-    this.keyCode_ = goog.userAgent.GECKO ?
-        goog.events.KeyCodes.normalizeGeckoKeyCode(e.keyCode) :
-        e.keyCode;
-    if (goog.events.KeyHandler.SAVE_ALT_FOR_KEYPRESS_) {
-      this.altKey_ = e.altKey;
-    }
-  }
-};
-
-
-/**
- * Resets the stored previous values. Needed to be called for webkit which will
- * not generate a key up for meta key operations. This should only be called
- * when having finished with repeat key possiblities.
- */
-goog.events.KeyHandler.prototype.resetState = function() {
-  this.lastKey_ = -1;
-  this.keyCode_ = -1;
-};
-
-
-/**
- * Clears the stored previous key value, resetting the key repeat status. Uses
- * -1 because the Safari 3 Windows beta reports 0 for certain keys (like Home
- * and End.)
- * @param {goog.events.BrowserEvent} e The keyup event.
- * @private
- */
-goog.events.KeyHandler.prototype.handleKeyup_ = function(e) {
-  this.resetState();
-  this.altKey_ = e.altKey;
-};
-
-
-/**
- * Handles the events on the element.
- * @param {goog.events.BrowserEvent} e  The keyboard event sent from the
- *     browser.
- */
-goog.events.KeyHandler.prototype.handleEvent = function(e) {
-  var be = e.getBrowserEvent();
-  var keyCode, charCode;
-  var altKey = be.altKey;
-
-  // IE reports the character code in the keyCode field for keypress events.
-  // There are two exceptions however, Enter and Escape.
-  if (goog.userAgent.IE && e.type == goog.events.EventType.KEYPRESS) {
-    keyCode = this.keyCode_;
-    charCode = keyCode != goog.events.KeyCodes.ENTER &&
-        keyCode != goog.events.KeyCodes.ESC ?
-            be.keyCode : 0;
-
-  // Safari reports the character code in the keyCode field for keypress
-  // events but also has a charCode field.
-  } else if (goog.userAgent.WEBKIT &&
-      e.type == goog.events.EventType.KEYPRESS) {
-    keyCode = this.keyCode_;
-    charCode = be.charCode >= 0 && be.charCode < 63232 &&
-        goog.events.KeyCodes.isCharacterKey(keyCode) ?
-            be.charCode : 0;
-
-  // Opera reports the keycode or the character code in the keyCode field.
-  } else if (goog.userAgent.OPERA) {
-    keyCode = this.keyCode_;
-    charCode = goog.events.KeyCodes.isCharacterKey(keyCode) ?
-        be.keyCode : 0;
-
-  // Mozilla reports the character code in the charCode field.
-  } else {
-    keyCode = be.keyCode || this.keyCode_;
-    charCode = be.charCode || 0;
-    if (goog.events.KeyHandler.SAVE_ALT_FOR_KEYPRESS_) {
-      altKey = this.altKey_;
-    }
-    // On the Mac, shift-/ triggers a question mark char code and no key code
-    // (normalized to WIN_KEY), so we synthesize the latter.
-    if (goog.userAgent.MAC &&
-        charCode == goog.events.KeyCodes.QUESTION_MARK &&
-        keyCode == goog.events.KeyCodes.WIN_KEY) {
-      keyCode = goog.events.KeyCodes.SLASH;
-    }
-  }
-
-  var key = keyCode;
-  var keyIdentifier = be.keyIdentifier;
-
-  // Correct the key value for certain browser-specific quirks.
-  if (keyCode) {
-    if (keyCode >= 63232 && keyCode in goog.events.KeyHandler.safariKey_) {
-      // NOTE(nicksantos): Safari 3 has fixed this problem,
-      // this is only needed for Safari 2.
-      key = goog.events.KeyHandler.safariKey_[keyCode];
-    } else {
-
-      // Safari returns 25 for Shift+Tab instead of 9.
-      if (keyCode == 25 && e.shiftKey) {
-        key = 9;
-      }
-    }
-  } else if (keyIdentifier &&
-             keyIdentifier in goog.events.KeyHandler.keyIdentifier_) {
-    // This is needed for Safari Windows because it currently doesn't give a
-    // keyCode/which for non printable keys.
-    key = goog.events.KeyHandler.keyIdentifier_[keyIdentifier];
-  }
-
-  // If we get the same keycode as a keydown/keypress without having seen a
-  // keyup event, then this event was caused by key repeat.
-  var repeat = key == this.lastKey_;
-  this.lastKey_ = key;
-
-  var event = new goog.events.KeyEvent(key, charCode, repeat, be);
-  event.altKey = altKey;
-  this.dispatchEvent(event);
-};
-
-
-/**
- * Returns the element listened on for the real keyboard events.
- * @return {Element|Document|null} The element listened on for the real
- *     keyboard events.
- */
-goog.events.KeyHandler.prototype.getElement = function() {
-  return this.element_;
-};
-
-
-/**
- * Adds the proper key event listeners to the element.
- * @param {Element|Document} element The element to listen on.
- * @param {boolean=} opt_capture Whether to listen for browser events in
- *     capture phase (defaults to false).
- */
-goog.events.KeyHandler.prototype.attach = function(element, opt_capture) {
-  if (this.keyUpKey_) {
-    this.detach();
-  }
-
-  this.element_ = element;
-
-  this.keyPressKey_ = goog.events.listen(this.element_,
-                                         goog.events.EventType.KEYPRESS,
-                                         this,
-                                         opt_capture);
-
-  // Most browsers (Safari 2 being the notable exception) doesn't include the
-  // keyCode in keypress events (IE has the char code in the keyCode field and
-  // Mozilla only included the keyCode if there's no charCode). Thus we have to
-  // listen for keydown to capture the keycode.
-  this.keyDownKey_ = goog.events.listen(this.element_,
-                                        goog.events.EventType.KEYDOWN,
-                                        this.handleKeyDown_,
-                                        opt_capture,
-                                        this);
-
-
-  this.keyUpKey_ = goog.events.listen(this.element_,
-                                      goog.events.EventType.KEYUP,
-                                      this.handleKeyup_,
-                                      opt_capture,
-                                      this);
-};
-
-
-/**
- * Removes the listeners that may exist.
- */
-goog.events.KeyHandler.prototype.detach = function() {
-  if (this.keyPressKey_) {
-    goog.events.unlistenByKey(this.keyPressKey_);
-    goog.events.unlistenByKey(this.keyDownKey_);
-    goog.events.unlistenByKey(this.keyUpKey_);
-    this.keyPressKey_ = null;
-    this.keyDownKey_ = null;
-    this.keyUpKey_ = null;
-  }
-  this.element_ = null;
-  this.lastKey_ = -1;
-  this.keyCode_ = -1;
-};
-
-
-/** @override */
-goog.events.KeyHandler.prototype.disposeInternal = function() {
-  goog.events.KeyHandler.superClass_.disposeInternal.call(this);
-  this.detach();
-};
-
-
-
-/**
- * This class is used for the goog.events.KeyHandler.EventType.KEY event and
- * it overrides the key code with the fixed key code.
- * @param {number} keyCode The adjusted key code.
- * @param {number} charCode The unicode character code.
- * @param {boolean} repeat Whether this event was generated by keyboard repeat.
- * @param {Event} browserEvent Browser event object.
- * @constructor
- * @extends {goog.events.BrowserEvent}
- */
-goog.events.KeyEvent = function(keyCode, charCode, repeat, browserEvent) {
-  goog.events.BrowserEvent.call(this, browserEvent);
-  this.type = goog.events.KeyHandler.EventType.KEY;
-
-  /**
-   * Keycode of key press.
-   * @type {number}
-   */
-  this.keyCode = keyCode;
-
-  /**
-   * Unicode character code.
-   * @type {number}
-   */
-  this.charCode = charCode;
-
-  /**
-   * True if this event was generated by keyboard auto-repeat (i.e., the user is
-   * holding the key down.)
-   * @type {boolean}
-   */
-  this.repeat = repeat;
-};
-goog.inherits(goog.events.KeyEvent, goog.events.BrowserEvent);
 // Copyright 2008 The Closure Library Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -21925,6 +22652,562 @@ goog.provide('goog.ui.ControlContent');
  * @typedef {string|Node|Array.<Node>|NodeList}
  */
 goog.ui.ControlContent;
+// Copyright 2007 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * @fileoverview This file contains a class for working with keyboard events
+ * that repeat consistently across browsers and platforms. It also unifies the
+ * key code so that it is the same in all browsers and platforms.
+ *
+ * Different web browsers have very different keyboard event handling. Most
+ * importantly is that only certain browsers repeat keydown events:
+ * IE, Opera, FF/Win32, and Safari 3 repeat keydown events.
+ * FF/Mac and Safari 2 do not.
+ *
+ * For the purposes of this code, "Safari 3" means WebKit 525+, when WebKit
+ * decided that they should try to match IE's key handling behavior.
+ * Safari 3.0.4, which shipped with Leopard (WebKit 523), has the
+ * Safari 2 behavior.
+ *
+ * Firefox, Safari, Opera prevent on keypress
+ *
+ * IE prevents on keydown
+ *
+ * Firefox does not fire keypress for shift, ctrl, alt
+ * Firefox does fire keydown for shift, ctrl, alt, meta
+ * Firefox does not repeat keydown for shift, ctrl, alt, meta
+ *
+ * Firefox does not fire keypress for up and down in an input
+ *
+ * Opera fires keypress for shift, ctrl, alt, meta
+ * Opera does not repeat keypress for shift, ctrl, alt, meta
+ *
+ * Safari 2 and 3 do not fire keypress for shift, ctrl, alt
+ * Safari 2 does not fire keydown for shift, ctrl, alt
+ * Safari 3 *does* fire keydown for shift, ctrl, alt
+ *
+ * IE provides the keycode for keyup/down events and the charcode (in the
+ * keycode field) for keypress.
+ *
+ * Mozilla provides the keycode for keyup/down and the charcode for keypress
+ * unless it's a non text modifying key in which case the keycode is provided.
+ *
+ * Safari 3 provides the keycode and charcode for all events.
+ *
+ * Opera provides the keycode for keyup/down event and either the charcode or
+ * the keycode (in the keycode field) for keypress events.
+ *
+ * Firefox x11 doesn't fire keydown events if a another key is already held down
+ * until the first key is released. This can cause a key event to be fired with
+ * a keyCode for the first key and a charCode for the second key.
+ *
+ * Safari in keypress
+ *
+ *        charCode keyCode which
+ * ENTER:       13      13    13
+ * F1:       63236   63236 63236
+ * F8:       63243   63243 63243
+ * ...
+ * p:          112     112   112
+ * P:           80      80    80
+ *
+ * Firefox, keypress:
+ *
+ *        charCode keyCode which
+ * ENTER:        0      13    13
+ * F1:           0     112     0
+ * F8:           0     119     0
+ * ...
+ * p:          112       0   112
+ * P:           80       0    80
+ *
+ * Opera, Mac+Win32, keypress:
+ *
+ *         charCode keyCode which
+ * ENTER: undefined      13    13
+ * F1:    undefined     112     0
+ * F8:    undefined     119     0
+ * ...
+ * p:     undefined     112   112
+ * P:     undefined      80    80
+ *
+ * IE7, keydown
+ *
+ *         charCode keyCode     which
+ * ENTER: undefined      13 undefined
+ * F1:    undefined     112 undefined
+ * F8:    undefined     119 undefined
+ * ...
+ * p:     undefined      80 undefined
+ * P:     undefined      80 undefined
+ *
+ * @author arv@google.com (Erik Arvidsson)
+ * @author eae@google.com (Emil A Eklund)
+ * @see ../demos/keyhandler.html
+ */
+
+goog.provide('goog.events.KeyEvent');
+goog.provide('goog.events.KeyHandler');
+goog.provide('goog.events.KeyHandler.EventType');
+
+goog.require('goog.events');
+goog.require('goog.events.BrowserEvent');
+goog.require('goog.events.EventTarget');
+goog.require('goog.events.EventType');
+goog.require('goog.events.KeyCodes');
+goog.require('goog.userAgent');
+
+
+
+/**
+ * A wrapper around an element that you want to listen to keyboard events on.
+ * @param {Element|Document=} opt_element The element or document to listen on.
+ * @param {boolean=} opt_capture Whether to listen for browser events in
+ *     capture phase (defaults to false).
+ * @constructor
+ * @extends {goog.events.EventTarget}
+ */
+goog.events.KeyHandler = function(opt_element, opt_capture) {
+  goog.events.EventTarget.call(this);
+
+  if (opt_element) {
+    this.attach(opt_element, opt_capture);
+  }
+};
+goog.inherits(goog.events.KeyHandler, goog.events.EventTarget);
+
+
+/**
+ * This is the element that we will listen to the real keyboard events on.
+ * @type {Element|Document|null}
+ * @private
+ */
+goog.events.KeyHandler.prototype.element_ = null;
+
+
+/**
+ * The key for the key press listener.
+ * @type {goog.events.Key}
+ * @private
+ */
+goog.events.KeyHandler.prototype.keyPressKey_ = null;
+
+
+/**
+ * The key for the key down listener.
+ * @type {goog.events.Key}
+ * @private
+ */
+goog.events.KeyHandler.prototype.keyDownKey_ = null;
+
+
+/**
+ * The key for the key up listener.
+ * @type {goog.events.Key}
+ * @private
+ */
+goog.events.KeyHandler.prototype.keyUpKey_ = null;
+
+
+/**
+ * Used to detect keyboard repeat events.
+ * @private
+ * @type {number}
+ */
+goog.events.KeyHandler.prototype.lastKey_ = -1;
+
+
+/**
+ * Keycode recorded for key down events. As most browsers don't report the
+ * keycode in the key press event we need to record it in the key down phase.
+ * @private
+ * @type {number}
+ */
+goog.events.KeyHandler.prototype.keyCode_ = -1;
+
+
+/**
+ * Alt key recorded for key down events. FF on Mac does not report the alt key
+ * flag in the key press event, we need to record it in the key down phase.
+ * @type {boolean}
+ * @private
+ */
+goog.events.KeyHandler.prototype.altKey_ = false;
+
+
+/**
+ * Enum type for the events fired by the key handler
+ * @enum {string}
+ */
+goog.events.KeyHandler.EventType = {
+  KEY: 'key'
+};
+
+
+/**
+ * An enumeration of key codes that Safari 2 does incorrectly
+ * @type {Object}
+ * @private
+ */
+goog.events.KeyHandler.safariKey_ = {
+  '3': goog.events.KeyCodes.ENTER, // 13
+  '12': goog.events.KeyCodes.NUMLOCK, // 144
+  '63232': goog.events.KeyCodes.UP, // 38
+  '63233': goog.events.KeyCodes.DOWN, // 40
+  '63234': goog.events.KeyCodes.LEFT, // 37
+  '63235': goog.events.KeyCodes.RIGHT, // 39
+  '63236': goog.events.KeyCodes.F1, // 112
+  '63237': goog.events.KeyCodes.F2, // 113
+  '63238': goog.events.KeyCodes.F3, // 114
+  '63239': goog.events.KeyCodes.F4, // 115
+  '63240': goog.events.KeyCodes.F5, // 116
+  '63241': goog.events.KeyCodes.F6, // 117
+  '63242': goog.events.KeyCodes.F7, // 118
+  '63243': goog.events.KeyCodes.F8, // 119
+  '63244': goog.events.KeyCodes.F9, // 120
+  '63245': goog.events.KeyCodes.F10, // 121
+  '63246': goog.events.KeyCodes.F11, // 122
+  '63247': goog.events.KeyCodes.F12, // 123
+  '63248': goog.events.KeyCodes.PRINT_SCREEN, // 44
+  '63272': goog.events.KeyCodes.DELETE, // 46
+  '63273': goog.events.KeyCodes.HOME, // 36
+  '63275': goog.events.KeyCodes.END, // 35
+  '63276': goog.events.KeyCodes.PAGE_UP, // 33
+  '63277': goog.events.KeyCodes.PAGE_DOWN, // 34
+  '63289': goog.events.KeyCodes.NUMLOCK, // 144
+  '63302': goog.events.KeyCodes.INSERT // 45
+};
+
+
+/**
+ * An enumeration of key identifiers currently part of the W3C draft for DOM3
+ * and their mappings to keyCodes.
+ * http://www.w3.org/TR/DOM-Level-3-Events/keyset.html#KeySet-Set
+ * This is currently supported in Safari and should be platform independent.
+ * @type {Object}
+ * @private
+ */
+goog.events.KeyHandler.keyIdentifier_ = {
+  'Up': goog.events.KeyCodes.UP, // 38
+  'Down': goog.events.KeyCodes.DOWN, // 40
+  'Left': goog.events.KeyCodes.LEFT, // 37
+  'Right': goog.events.KeyCodes.RIGHT, // 39
+  'Enter': goog.events.KeyCodes.ENTER, // 13
+  'F1': goog.events.KeyCodes.F1, // 112
+  'F2': goog.events.KeyCodes.F2, // 113
+  'F3': goog.events.KeyCodes.F3, // 114
+  'F4': goog.events.KeyCodes.F4, // 115
+  'F5': goog.events.KeyCodes.F5, // 116
+  'F6': goog.events.KeyCodes.F6, // 117
+  'F7': goog.events.KeyCodes.F7, // 118
+  'F8': goog.events.KeyCodes.F8, // 119
+  'F9': goog.events.KeyCodes.F9, // 120
+  'F10': goog.events.KeyCodes.F10, // 121
+  'F11': goog.events.KeyCodes.F11, // 122
+  'F12': goog.events.KeyCodes.F12, // 123
+  'U+007F': goog.events.KeyCodes.DELETE, // 46
+  'Home': goog.events.KeyCodes.HOME, // 36
+  'End': goog.events.KeyCodes.END, // 35
+  'PageUp': goog.events.KeyCodes.PAGE_UP, // 33
+  'PageDown': goog.events.KeyCodes.PAGE_DOWN, // 34
+  'Insert': goog.events.KeyCodes.INSERT // 45
+};
+
+
+/**
+ * If true, the KeyEvent fires on keydown. Otherwise, it fires on keypress.
+ *
+ * @type {boolean}
+ * @private
+ */
+goog.events.KeyHandler.USES_KEYDOWN_ = goog.userAgent.IE ||
+    goog.userAgent.WEBKIT && goog.userAgent.isVersionOrHigher('525');
+
+
+/**
+ * If true, the alt key flag is saved during the key down and reused when
+ * handling the key press. FF on Mac does not set the alt flag in the key press
+ * event.
+ * @type {boolean}
+ * @private
+ */
+goog.events.KeyHandler.SAVE_ALT_FOR_KEYPRESS_ = goog.userAgent.MAC &&
+    goog.userAgent.GECKO;
+
+
+/**
+ * Records the keycode for browsers that only returns the keycode for key up/
+ * down events. For browser/key combinations that doesn't trigger a key pressed
+ * event it also fires the patched key event.
+ * @param {goog.events.BrowserEvent} e The key down event.
+ * @private
+ */
+goog.events.KeyHandler.prototype.handleKeyDown_ = function(e) {
+  // Ctrl-Tab and Alt-Tab can cause the focus to be moved to another window
+  // before we've caught a key-up event.  If the last-key was one of these we
+  // reset the state.
+
+  if (goog.userAgent.WEBKIT) {
+    if (this.lastKey_ == goog.events.KeyCodes.CTRL && !e.ctrlKey ||
+        this.lastKey_ == goog.events.KeyCodes.ALT && !e.altKey ||
+        goog.userAgent.MAC &&
+        this.lastKey_ == goog.events.KeyCodes.META && !e.metaKey) {
+      this.lastKey_ = -1;
+      this.keyCode_ = -1;
+    }
+  }
+
+  if (this.lastKey_ == -1) {
+    if (e.ctrlKey && e.keyCode != goog.events.KeyCodes.CTRL) {
+      this.lastKey_ = goog.events.KeyCodes.CTRL;
+    } else if (e.altKey && e.keyCode != goog.events.KeyCodes.ALT) {
+      this.lastKey_ = goog.events.KeyCodes.ALT;
+    } else if (e.metaKey && e.keyCode != goog.events.KeyCodes.META) {
+      this.lastKey_ = goog.events.KeyCodes.META;
+    }
+  }
+
+  if (goog.events.KeyHandler.USES_KEYDOWN_ &&
+      !goog.events.KeyCodes.firesKeyPressEvent(e.keyCode,
+          this.lastKey_, e.shiftKey, e.ctrlKey, e.altKey)) {
+    this.handleEvent(e);
+  } else {
+    this.keyCode_ = goog.userAgent.GECKO ?
+        goog.events.KeyCodes.normalizeGeckoKeyCode(e.keyCode) :
+        e.keyCode;
+    if (goog.events.KeyHandler.SAVE_ALT_FOR_KEYPRESS_) {
+      this.altKey_ = e.altKey;
+    }
+  }
+};
+
+
+/**
+ * Resets the stored previous values. Needed to be called for webkit which will
+ * not generate a key up for meta key operations. This should only be called
+ * when having finished with repeat key possiblities.
+ */
+goog.events.KeyHandler.prototype.resetState = function() {
+  this.lastKey_ = -1;
+  this.keyCode_ = -1;
+};
+
+
+/**
+ * Clears the stored previous key value, resetting the key repeat status. Uses
+ * -1 because the Safari 3 Windows beta reports 0 for certain keys (like Home
+ * and End.)
+ * @param {goog.events.BrowserEvent} e The keyup event.
+ * @private
+ */
+goog.events.KeyHandler.prototype.handleKeyup_ = function(e) {
+  this.resetState();
+  this.altKey_ = e.altKey;
+};
+
+
+/**
+ * Handles the events on the element.
+ * @param {goog.events.BrowserEvent} e  The keyboard event sent from the
+ *     browser.
+ */
+goog.events.KeyHandler.prototype.handleEvent = function(e) {
+  var be = e.getBrowserEvent();
+  var keyCode, charCode;
+  var altKey = be.altKey;
+
+  // IE reports the character code in the keyCode field for keypress events.
+  // There are two exceptions however, Enter and Escape.
+  if (goog.userAgent.IE && e.type == goog.events.EventType.KEYPRESS) {
+    keyCode = this.keyCode_;
+    charCode = keyCode != goog.events.KeyCodes.ENTER &&
+        keyCode != goog.events.KeyCodes.ESC ?
+            be.keyCode : 0;
+
+  // Safari reports the character code in the keyCode field for keypress
+  // events but also has a charCode field.
+  } else if (goog.userAgent.WEBKIT &&
+      e.type == goog.events.EventType.KEYPRESS) {
+    keyCode = this.keyCode_;
+    charCode = be.charCode >= 0 && be.charCode < 63232 &&
+        goog.events.KeyCodes.isCharacterKey(keyCode) ?
+            be.charCode : 0;
+
+  // Opera reports the keycode or the character code in the keyCode field.
+  } else if (goog.userAgent.OPERA) {
+    keyCode = this.keyCode_;
+    charCode = goog.events.KeyCodes.isCharacterKey(keyCode) ?
+        be.keyCode : 0;
+
+  // Mozilla reports the character code in the charCode field.
+  } else {
+    keyCode = be.keyCode || this.keyCode_;
+    charCode = be.charCode || 0;
+    if (goog.events.KeyHandler.SAVE_ALT_FOR_KEYPRESS_) {
+      altKey = this.altKey_;
+    }
+    // On the Mac, shift-/ triggers a question mark char code and no key code
+    // (normalized to WIN_KEY), so we synthesize the latter.
+    if (goog.userAgent.MAC &&
+        charCode == goog.events.KeyCodes.QUESTION_MARK &&
+        keyCode == goog.events.KeyCodes.WIN_KEY) {
+      keyCode = goog.events.KeyCodes.SLASH;
+    }
+  }
+
+  var key = keyCode;
+  var keyIdentifier = be.keyIdentifier;
+
+  // Correct the key value for certain browser-specific quirks.
+  if (keyCode) {
+    if (keyCode >= 63232 && keyCode in goog.events.KeyHandler.safariKey_) {
+      // NOTE(nicksantos): Safari 3 has fixed this problem,
+      // this is only needed for Safari 2.
+      key = goog.events.KeyHandler.safariKey_[keyCode];
+    } else {
+
+      // Safari returns 25 for Shift+Tab instead of 9.
+      if (keyCode == 25 && e.shiftKey) {
+        key = 9;
+      }
+    }
+  } else if (keyIdentifier &&
+             keyIdentifier in goog.events.KeyHandler.keyIdentifier_) {
+    // This is needed for Safari Windows because it currently doesn't give a
+    // keyCode/which for non printable keys.
+    key = goog.events.KeyHandler.keyIdentifier_[keyIdentifier];
+  }
+
+  // If we get the same keycode as a keydown/keypress without having seen a
+  // keyup event, then this event was caused by key repeat.
+  var repeat = key == this.lastKey_;
+  this.lastKey_ = key;
+
+  var event = new goog.events.KeyEvent(key, charCode, repeat, be);
+  event.altKey = altKey;
+  this.dispatchEvent(event);
+};
+
+
+/**
+ * Returns the element listened on for the real keyboard events.
+ * @return {Element|Document|null} The element listened on for the real
+ *     keyboard events.
+ */
+goog.events.KeyHandler.prototype.getElement = function() {
+  return this.element_;
+};
+
+
+/**
+ * Adds the proper key event listeners to the element.
+ * @param {Element|Document} element The element to listen on.
+ * @param {boolean=} opt_capture Whether to listen for browser events in
+ *     capture phase (defaults to false).
+ */
+goog.events.KeyHandler.prototype.attach = function(element, opt_capture) {
+  if (this.keyUpKey_) {
+    this.detach();
+  }
+
+  this.element_ = element;
+
+  this.keyPressKey_ = goog.events.listen(this.element_,
+                                         goog.events.EventType.KEYPRESS,
+                                         this,
+                                         opt_capture);
+
+  // Most browsers (Safari 2 being the notable exception) doesn't include the
+  // keyCode in keypress events (IE has the char code in the keyCode field and
+  // Mozilla only included the keyCode if there's no charCode). Thus we have to
+  // listen for keydown to capture the keycode.
+  this.keyDownKey_ = goog.events.listen(this.element_,
+                                        goog.events.EventType.KEYDOWN,
+                                        this.handleKeyDown_,
+                                        opt_capture,
+                                        this);
+
+
+  this.keyUpKey_ = goog.events.listen(this.element_,
+                                      goog.events.EventType.KEYUP,
+                                      this.handleKeyup_,
+                                      opt_capture,
+                                      this);
+};
+
+
+/**
+ * Removes the listeners that may exist.
+ */
+goog.events.KeyHandler.prototype.detach = function() {
+  if (this.keyPressKey_) {
+    goog.events.unlistenByKey(this.keyPressKey_);
+    goog.events.unlistenByKey(this.keyDownKey_);
+    goog.events.unlistenByKey(this.keyUpKey_);
+    this.keyPressKey_ = null;
+    this.keyDownKey_ = null;
+    this.keyUpKey_ = null;
+  }
+  this.element_ = null;
+  this.lastKey_ = -1;
+  this.keyCode_ = -1;
+};
+
+
+/** @override */
+goog.events.KeyHandler.prototype.disposeInternal = function() {
+  goog.events.KeyHandler.superClass_.disposeInternal.call(this);
+  this.detach();
+};
+
+
+
+/**
+ * This class is used for the goog.events.KeyHandler.EventType.KEY event and
+ * it overrides the key code with the fixed key code.
+ * @param {number} keyCode The adjusted key code.
+ * @param {number} charCode The unicode character code.
+ * @param {boolean} repeat Whether this event was generated by keyboard repeat.
+ * @param {Event} browserEvent Browser event object.
+ * @constructor
+ * @extends {goog.events.BrowserEvent}
+ */
+goog.events.KeyEvent = function(keyCode, charCode, repeat, browserEvent) {
+  goog.events.BrowserEvent.call(this, browserEvent);
+  this.type = goog.events.KeyHandler.EventType.KEY;
+
+  /**
+   * Keycode of key press.
+   * @type {number}
+   */
+  this.keyCode = keyCode;
+
+  /**
+   * Unicode character code.
+   * @type {number}
+   */
+  this.charCode = charCode;
+
+  /**
+   * True if this event was generated by keyboard auto-repeat (i.e., the user is
+   * holding the key down.)
+   * @type {boolean}
+   */
+  this.repeat = repeat;
+};
+goog.inherits(goog.events.KeyEvent, goog.events.BrowserEvent);
 // Copyright 2007 The Closure Library Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -23312,6 +24595,964 @@ goog.ui.registry.setDecoratorByClassName(goog.ui.ControlRenderer.CSS_CLASS,
     function() {
       return new goog.ui.Control(null);
     });
+// Copyright 2008 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * @fileoverview Renderer for {@link goog.ui.MenuSeparator}s.
+ *
+ * @author attila@google.com (Attila Bodis)
+ */
+
+goog.provide('goog.ui.MenuSeparatorRenderer');
+
+goog.require('goog.dom');
+goog.require('goog.dom.classes');
+goog.require('goog.ui.ControlContent');
+goog.require('goog.ui.ControlRenderer');
+
+
+
+/**
+ * Renderer for menu separators.
+ * @constructor
+ * @extends {goog.ui.ControlRenderer}
+ */
+goog.ui.MenuSeparatorRenderer = function() {
+  goog.ui.ControlRenderer.call(this);
+};
+goog.inherits(goog.ui.MenuSeparatorRenderer, goog.ui.ControlRenderer);
+goog.addSingletonGetter(goog.ui.MenuSeparatorRenderer);
+
+
+/**
+ * Default CSS class to be applied to the root element of components rendered
+ * by this renderer.
+ * @type {string}
+ */
+goog.ui.MenuSeparatorRenderer.CSS_CLASS = goog.getCssName('goog-menuseparator');
+
+
+/**
+ * Returns an empty, styled menu separator DIV.  Overrides {@link
+ * goog.ui.ControlRenderer#createDom}.
+ * @param {goog.ui.Control} separator goog.ui.Separator to render.
+ * @return {Element} Root element for the separator.
+ * @override
+ */
+goog.ui.MenuSeparatorRenderer.prototype.createDom = function(separator) {
+  return separator.getDomHelper().createDom('div', this.getCssClass());
+};
+
+
+/**
+ * Takes an existing element, and decorates it with the separator.  Overrides
+ * {@link goog.ui.ControlRenderer#decorate}.
+ * @param {goog.ui.Control} separator goog.ui.MenuSeparator to decorate the
+ *     element.
+ * @param {Element} element Element to decorate.
+ * @return {Element} Decorated element.
+ * @override
+ */
+goog.ui.MenuSeparatorRenderer.prototype.decorate = function(separator,
+                                                            element) {
+  // Normally handled in the superclass. But we don't call the superclass.
+  if (element.id) {
+    separator.setId(element.id);
+  }
+
+  if (element.tagName == 'HR') {
+    // Replace HR with separator.
+    var hr = element;
+    element = this.createDom(separator);
+    goog.dom.insertSiblingBefore(element, hr);
+    goog.dom.removeNode(hr);
+  } else {
+    goog.dom.classes.add(element, this.getCssClass());
+  }
+  return element;
+};
+
+
+/**
+ * Overrides {@link goog.ui.ControlRenderer#setContent} to do nothing, since
+ * separators are empty.
+ * @param {Element} separator The separator's root element.
+ * @param {goog.ui.ControlContent} content Text caption or DOM structure to be
+ *    set as the separators's content (ignored).
+ * @override
+ */
+goog.ui.MenuSeparatorRenderer.prototype.setContent = function(separator,
+                                                              content) {
+  // Do nothing.  Separators are empty.
+};
+
+
+/**
+ * Returns the CSS class to be applied to the root element of components
+ * rendered using this renderer.
+ * @return {string} Renderer-specific CSS class.
+ * @override
+ */
+goog.ui.MenuSeparatorRenderer.prototype.getCssClass = function() {
+  return goog.ui.MenuSeparatorRenderer.CSS_CLASS;
+};
+// Copyright 2007 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * @fileoverview A class for representing a separator, with renderers for both
+ * horizontal (menu) and vertical (toolbar) separators.
+ *
+ * @author attila@google.com (Attila Bodis)
+ */
+
+goog.provide('goog.ui.Separator');
+
+goog.require('goog.a11y.aria');
+goog.require('goog.asserts');
+goog.require('goog.ui.Component');
+goog.require('goog.ui.Control');
+goog.require('goog.ui.MenuSeparatorRenderer');
+goog.require('goog.ui.registry');
+
+
+
+/**
+ * Class representing a separator.  Although it extends {@link goog.ui.Control},
+ * the Separator class doesn't allocate any event handlers, nor does it change
+ * its appearance on mouseover, etc.
+ * @param {goog.ui.MenuSeparatorRenderer=} opt_renderer Renderer to render or
+ *    decorate the separator; defaults to {@link goog.ui.MenuSeparatorRenderer}.
+ * @param {goog.dom.DomHelper=} opt_domHelper Optional DOM helper, used for
+ *    document interaction.
+ * @constructor
+ * @extends {goog.ui.Control}
+ */
+goog.ui.Separator = function(opt_renderer, opt_domHelper) {
+  goog.ui.Control.call(this, null, opt_renderer ||
+      goog.ui.MenuSeparatorRenderer.getInstance(), opt_domHelper);
+
+  this.setSupportedState(goog.ui.Component.State.DISABLED, false);
+  this.setSupportedState(goog.ui.Component.State.HOVER, false);
+  this.setSupportedState(goog.ui.Component.State.ACTIVE, false);
+  this.setSupportedState(goog.ui.Component.State.FOCUSED, false);
+
+  // Separators are always considered disabled.
+  this.setStateInternal(goog.ui.Component.State.DISABLED);
+};
+goog.inherits(goog.ui.Separator, goog.ui.Control);
+
+
+/**
+ * Configures the component after its DOM has been rendered.  Overrides
+ * {@link goog.ui.Control#enterDocument} by making sure no event handler
+ * is allocated.
+ * @override
+ */
+goog.ui.Separator.prototype.enterDocument = function() {
+  goog.ui.Separator.superClass_.enterDocument.call(this);
+  var element = this.getElement();
+  goog.asserts.assert(element,
+      'The DOM element for the separator cannot be null.');
+  goog.a11y.aria.setRole(element, 'separator');
+};
+
+
+// Register a decorator factory function for goog.ui.MenuSeparators.
+goog.ui.registry.setDecoratorByClassName(
+    goog.ui.MenuSeparatorRenderer.CSS_CLASS,
+    function() {
+      // Separator defaults to using MenuSeparatorRenderer.
+      return new goog.ui.Separator();
+    });
+// Copyright 2008 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * @fileoverview Renderer for {@link goog.ui.Menu}s.
+ *
+ * @author robbyw@google.com (Robby Walker)
+ * @author pupius@google.com (Daniel Pupius)
+ */
+
+goog.provide('goog.ui.MenuRenderer');
+
+goog.require('goog.a11y.aria');
+goog.require('goog.a11y.aria.Role');
+goog.require('goog.a11y.aria.State');
+goog.require('goog.asserts');
+goog.require('goog.dom');
+goog.require('goog.ui.ContainerRenderer');
+goog.require('goog.ui.Separator');
+
+
+
+/**
+ * Default renderer for {@link goog.ui.Menu}s, based on {@link
+ * goog.ui.ContainerRenderer}.
+ * @constructor
+ * @extends {goog.ui.ContainerRenderer}
+ */
+goog.ui.MenuRenderer = function() {
+  goog.ui.ContainerRenderer.call(this);
+};
+goog.inherits(goog.ui.MenuRenderer, goog.ui.ContainerRenderer);
+goog.addSingletonGetter(goog.ui.MenuRenderer);
+
+
+/**
+ * Default CSS class to be applied to the root element of toolbars rendered
+ * by this renderer.
+ * @type {string}
+ */
+goog.ui.MenuRenderer.CSS_CLASS = goog.getCssName('goog-menu');
+
+
+/**
+ * Returns the ARIA role to be applied to menus.
+ * @return {string} ARIA role.
+ * @override
+ */
+goog.ui.MenuRenderer.prototype.getAriaRole = function() {
+  return goog.a11y.aria.Role.MENU;
+};
+
+
+/**
+ * Returns whether the element is a UL or acceptable to our superclass.
+ * @param {Element} element Element to decorate.
+ * @return {boolean} Whether the renderer can decorate the element.
+ * @override
+ */
+goog.ui.MenuRenderer.prototype.canDecorate = function(element) {
+  return element.tagName == 'UL' ||
+      goog.ui.MenuRenderer.superClass_.canDecorate.call(this, element);
+};
+
+
+/**
+ * Inspects the element, and creates an instance of {@link goog.ui.Control} or
+ * an appropriate subclass best suited to decorate it.  Overrides the superclass
+ * implementation by recognizing HR elements as separators.
+ * @param {Element} element Element to decorate.
+ * @return {goog.ui.Control?} A new control suitable to decorate the element
+ *     (null if none).
+ * @override
+ */
+goog.ui.MenuRenderer.prototype.getDecoratorForChild = function(element) {
+  return element.tagName == 'HR' ?
+      new goog.ui.Separator() :
+      goog.ui.MenuRenderer.superClass_.getDecoratorForChild.call(this,
+          element);
+};
+
+
+/**
+ * Returns whether the given element is contained in the menu's DOM.
+ * @param {goog.ui.Menu} menu The menu to test.
+ * @param {Element} element The element to test.
+ * @return {boolean} Whether the given element is contained in the menu.
+ */
+goog.ui.MenuRenderer.prototype.containsElement = function(menu, element) {
+  return goog.dom.contains(menu.getElement(), element);
+};
+
+
+/**
+ * Returns the CSS class to be applied to the root element of containers
+ * rendered using this renderer.
+ * @return {string} Renderer-specific CSS class.
+ * @override
+ */
+goog.ui.MenuRenderer.prototype.getCssClass = function() {
+  return goog.ui.MenuRenderer.CSS_CLASS;
+};
+
+
+/** @override */
+goog.ui.MenuRenderer.prototype.initializeDom = function(container) {
+  goog.ui.MenuRenderer.superClass_.initializeDom.call(this, container);
+
+  var element = container.getElement();
+  goog.asserts.assert(element, 'The menu DOM element cannot be null.');
+  goog.a11y.aria.setState(element, goog.a11y.aria.State.HASPOPUP, 'true');
+};
+// Copyright 2007 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * @fileoverview A class for representing menu separators.
+ * @see goog.ui.Menu
+ *
+ */
+
+goog.provide('goog.ui.MenuSeparator');
+
+goog.require('goog.ui.MenuSeparatorRenderer');
+goog.require('goog.ui.Separator');
+goog.require('goog.ui.registry');
+
+
+
+/**
+ * Class representing a menu separator.  A menu separator extends {@link
+ * goog.ui.Separator} by always setting its renderer to {@link
+ * goog.ui.MenuSeparatorRenderer}.
+ * @param {goog.dom.DomHelper=} opt_domHelper Optional DOM helper used for
+ *     document interactions.
+ * @constructor
+ * @extends {goog.ui.Separator}
+ */
+goog.ui.MenuSeparator = function(opt_domHelper) {
+  goog.ui.Separator.call(this, goog.ui.MenuSeparatorRenderer.getInstance(),
+      opt_domHelper);
+};
+goog.inherits(goog.ui.MenuSeparator, goog.ui.Separator);
+
+
+// Register a decorator factory function for goog.ui.MenuSeparators.
+goog.ui.registry.setDecoratorByClassName(
+    goog.ui.MenuSeparatorRenderer.CSS_CLASS,
+    function() {
+      // Separator defaults to using MenuSeparatorRenderer.
+      return new goog.ui.Separator();
+    });
+// Copyright 2008 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * @fileoverview Renderer for {@link goog.ui.MenuItem}s.
+ *
+ * @author attila@google.com (Attila Bodis)
+ */
+
+goog.provide('goog.ui.MenuItemRenderer');
+
+goog.require('goog.a11y.aria');
+goog.require('goog.a11y.aria.Role');
+goog.require('goog.dom');
+goog.require('goog.dom.classes');
+goog.require('goog.ui.Component');
+goog.require('goog.ui.ControlRenderer');
+
+
+
+/**
+ * Default renderer for {@link goog.ui.MenuItem}s.  Each item has the following
+ * structure:
+ * <pre>
+ *   <div class="goog-menuitem">
+ *     <div class="goog-menuitem-content">
+ *       ...(menu item contents)...
+ *     </div>
+ *   </div>
+ * </pre>
+ * @constructor
+ * @extends {goog.ui.ControlRenderer}
+ */
+goog.ui.MenuItemRenderer = function() {
+  goog.ui.ControlRenderer.call(this);
+
+  /**
+   * Commonly used CSS class names, cached here for convenience (and to avoid
+   * unnecessary string concatenation).
+   * @type {!Array.<string>}
+   * @private
+   */
+  this.classNameCache_ = [];
+};
+goog.inherits(goog.ui.MenuItemRenderer, goog.ui.ControlRenderer);
+goog.addSingletonGetter(goog.ui.MenuItemRenderer);
+
+
+/**
+ * CSS class name the renderer applies to menu item elements.
+ * @type {string}
+ */
+goog.ui.MenuItemRenderer.CSS_CLASS = goog.getCssName('goog-menuitem');
+
+
+/**
+ * Constants for referencing composite CSS classes.
+ * @enum {number}
+ * @private
+ */
+goog.ui.MenuItemRenderer.CompositeCssClassIndex_ = {
+  HOVER: 0,
+  CHECKBOX: 1,
+  CONTENT: 2
+};
+
+
+/**
+ * Returns the composite CSS class by using the cached value or by constructing
+ * the value from the base CSS class and the passed index.
+ * @param {goog.ui.MenuItemRenderer.CompositeCssClassIndex_} index Index for the
+ *     CSS class - could be highlight, checkbox or content in usual cases.
+ * @return {string} The composite CSS class.
+ * @private
+ */
+goog.ui.MenuItemRenderer.prototype.getCompositeCssClass_ = function(index) {
+  var result = this.classNameCache_[index];
+  if (!result) {
+    switch (index) {
+      case goog.ui.MenuItemRenderer.CompositeCssClassIndex_.HOVER:
+        result = goog.getCssName(this.getStructuralCssClass(), 'highlight');
+        break;
+      case goog.ui.MenuItemRenderer.CompositeCssClassIndex_.CHECKBOX:
+        result = goog.getCssName(this.getStructuralCssClass(), 'checkbox');
+        break;
+      case goog.ui.MenuItemRenderer.CompositeCssClassIndex_.CONTENT:
+        result = goog.getCssName(this.getStructuralCssClass(), 'content');
+        break;
+    }
+    this.classNameCache_[index] = result;
+  }
+
+  return result;
+};
+
+
+/** @override */
+goog.ui.MenuItemRenderer.prototype.getAriaRole = function() {
+  return goog.a11y.aria.Role.MENU_ITEM;
+};
+
+
+/**
+ * Overrides {@link goog.ui.ControlRenderer#createDom} by adding extra markup
+ * and stying to the menu item's element if it is selectable or checkable.
+ * @param {goog.ui.Control} item Menu item to render.
+ * @return {Element} Root element for the item.
+ * @override
+ */
+goog.ui.MenuItemRenderer.prototype.createDom = function(item) {
+  var element = item.getDomHelper().createDom(
+      'div', this.getClassNames(item).join(' '),
+      this.createContent(item.getContent(), item.getDomHelper()));
+  this.setEnableCheckBoxStructure(item, element,
+      item.isSupportedState(goog.ui.Component.State.SELECTED) ||
+      item.isSupportedState(goog.ui.Component.State.CHECKED));
+  this.setAriaStates(item, element);
+  return element;
+};
+
+
+/** @override */
+goog.ui.MenuItemRenderer.prototype.getContentElement = function(element) {
+  return /** @type {Element} */ (element && element.firstChild);
+};
+
+
+/**
+ * Overrides {@link goog.ui.ControlRenderer#decorate} by initializing the
+ * menu item to checkable based on whether the element to be decorated has
+ * extra stying indicating that it should be.
+ * @param {goog.ui.Control} item Menu item instance to decorate the element.
+ * @param {Element} element Element to decorate.
+ * @return {Element} Decorated element.
+ * @override
+ */
+goog.ui.MenuItemRenderer.prototype.decorate = function(item, element) {
+  if (!this.hasContentStructure(element)) {
+    element.appendChild(
+        this.createContent(element.childNodes, item.getDomHelper()));
+  }
+  if (goog.dom.classes.has(element, goog.getCssName('goog-option'))) {
+    (/** @type {goog.ui.MenuItem} */ (item)).setCheckable(true);
+    this.setCheckable(item, element, true);
+  }
+  return goog.ui.MenuItemRenderer.superClass_.decorate.call(this, item,
+      element);
+};
+
+
+/**
+ * Takes a menu item's root element, and sets its content to the given text
+ * caption or DOM structure.  Overrides the superclass immplementation by
+ * making sure that the checkbox structure (for selectable/checkable menu
+ * items) is preserved.
+ * @param {Element} element The item's root element.
+ * @param {goog.ui.ControlContent} content Text caption or DOM structure to be
+ *     set as the item's content.
+ * @override
+ */
+goog.ui.MenuItemRenderer.prototype.setContent = function(element, content) {
+  // Save the checkbox element, if present.
+  var contentElement = this.getContentElement(element);
+  var checkBoxElement = this.hasCheckBoxStructure(element) ?
+      contentElement.firstChild : null;
+  goog.ui.MenuItemRenderer.superClass_.setContent.call(this, element, content);
+  if (checkBoxElement && !this.hasCheckBoxStructure(element)) {
+    // The call to setContent() blew away the checkbox element; reattach it.
+    contentElement.insertBefore(checkBoxElement,
+        contentElement.firstChild || null);
+  }
+};
+
+
+/**
+ * Returns true if the element appears to have a proper menu item structure by
+ * checking whether its first child has the appropriate structural class name.
+ * @param {Element} element Element to check.
+ * @return {boolean} Whether the element appears to have a proper menu item DOM.
+ * @protected
+ */
+goog.ui.MenuItemRenderer.prototype.hasContentStructure = function(element) {
+  var child = goog.dom.getFirstElementChild(element);
+  var contentClassName = this.getCompositeCssClass_(
+      goog.ui.MenuItemRenderer.CompositeCssClassIndex_.CONTENT);
+  return !!child && goog.dom.classes.has(child, contentClassName);
+};
+
+
+/**
+ * Wraps the given text caption or existing DOM node(s) in a structural element
+ * containing the menu item's contents.
+ * @param {goog.ui.ControlContent} content Menu item contents.
+ * @param {goog.dom.DomHelper} dom DOM helper for document interaction.
+ * @return {Element} Menu item content element.
+ * @protected
+ */
+goog.ui.MenuItemRenderer.prototype.createContent = function(content, dom) {
+  var contentClassName = this.getCompositeCssClass_(
+      goog.ui.MenuItemRenderer.CompositeCssClassIndex_.CONTENT);
+  return dom.createDom('div', contentClassName, content);
+};
+
+
+/**
+ * Enables/disables radio button semantics on the menu item.
+ * @param {goog.ui.Control} item Menu item to update.
+ * @param {Element} element Menu item element to update (may be null if the
+ *     item hasn't been rendered yet).
+ * @param {boolean} selectable Whether the item should be selectable.
+ */
+goog.ui.MenuItemRenderer.prototype.setSelectable = function(item, element,
+    selectable) {
+  if (element) {
+    goog.a11y.aria.setRole(element,
+        selectable ?
+        goog.a11y.aria.Role.MENU_ITEM_RADIO :
+        /** @type {string} */ (this.getAriaRole()));
+    this.setEnableCheckBoxStructure(item, element, selectable);
+  }
+};
+
+
+/**
+ * Enables/disables checkbox semantics on the menu item.
+ * @param {goog.ui.Control} item Menu item to update.
+ * @param {Element} element Menu item element to update (may be null if the
+ *     item hasn't been rendered yet).
+ * @param {boolean} checkable Whether the item should be checkable.
+ */
+goog.ui.MenuItemRenderer.prototype.setCheckable = function(item, element,
+    checkable) {
+  if (element) {
+    goog.a11y.aria.setRole(element,
+        checkable ?
+        goog.a11y.aria.Role.MENU_ITEM_CHECKBOX :
+        /** @type {string} */ (this.getAriaRole()));
+    this.setEnableCheckBoxStructure(item, element, checkable);
+  }
+};
+
+
+/**
+ * Determines whether the item contains a checkbox element.
+ * @param {Element} element Menu item root element.
+ * @return {boolean} Whether the element contains a checkbox element.
+ * @protected
+ */
+goog.ui.MenuItemRenderer.prototype.hasCheckBoxStructure = function(element) {
+  var contentElement = this.getContentElement(element);
+  if (contentElement) {
+    var child = contentElement.firstChild;
+    var checkboxClassName = this.getCompositeCssClass_(
+        goog.ui.MenuItemRenderer.CompositeCssClassIndex_.CHECKBOX);
+    return !!child && goog.dom.classes.has(child, checkboxClassName);
+  }
+  return false;
+};
+
+
+/**
+ * Adds or removes extra markup and CSS styling to the menu item to make it
+ * selectable or non-selectable, depending on the value of the
+ * {@code selectable} argument.
+ * @param {goog.ui.Control} item Menu item to update.
+ * @param {Element} element Menu item element to update.
+ * @param {boolean} enable Whether to add or remove the checkbox structure.
+ * @protected
+ */
+goog.ui.MenuItemRenderer.prototype.setEnableCheckBoxStructure = function(item,
+    element, enable) {
+  if (enable != this.hasCheckBoxStructure(element)) {
+    goog.dom.classes.enable(element, goog.getCssName('goog-option'), enable);
+    var contentElement = this.getContentElement(element);
+    if (enable) {
+      // Insert checkbox structure.
+      var checkboxClassName = this.getCompositeCssClass_(
+          goog.ui.MenuItemRenderer.CompositeCssClassIndex_.CHECKBOX);
+      contentElement.insertBefore(
+          item.getDomHelper().createDom('div', checkboxClassName),
+          contentElement.firstChild || null);
+    } else {
+      // Remove checkbox structure.
+      contentElement.removeChild(contentElement.firstChild);
+    }
+  }
+};
+
+
+/**
+ * Takes a single {@link goog.ui.Component.State}, and returns the
+ * corresponding CSS class name (null if none).  Overrides the superclass
+ * implementation by using 'highlight' as opposed to 'hover' as the CSS
+ * class name suffix for the HOVER state, for backwards compatibility.
+ * @param {goog.ui.Component.State} state Component state.
+ * @return {string|undefined} CSS class representing the given state
+ *     (undefined if none).
+ * @override
+ */
+goog.ui.MenuItemRenderer.prototype.getClassForState = function(state) {
+  switch (state) {
+    case goog.ui.Component.State.HOVER:
+      // We use 'highlight' as the suffix, for backwards compatibility.
+      return this.getCompositeCssClass_(
+          goog.ui.MenuItemRenderer.CompositeCssClassIndex_.HOVER);
+    case goog.ui.Component.State.CHECKED:
+    case goog.ui.Component.State.SELECTED:
+      // We use 'goog-option-selected' as the class, for backwards
+      // compatibility.
+      return goog.getCssName('goog-option-selected');
+    default:
+      return goog.ui.MenuItemRenderer.superClass_.getClassForState.call(this,
+          state);
+  }
+};
+
+
+/**
+ * Takes a single CSS class name which may represent a component state, and
+ * returns the corresponding component state (0x00 if none).  Overrides the
+ * superclass implementation by treating 'goog-option-selected' as special,
+ * for backwards compatibility.
+ * @param {string} className CSS class name, possibly representing a component
+ *     state.
+ * @return {goog.ui.Component.State} state Component state corresponding
+ *     to the given CSS class (0x00 if none).
+ * @override
+ */
+goog.ui.MenuItemRenderer.prototype.getStateFromClass = function(className) {
+  var hoverClassName = this.getCompositeCssClass_(
+      goog.ui.MenuItemRenderer.CompositeCssClassIndex_.HOVER);
+  switch (className) {
+    case goog.getCssName('goog-option-selected'):
+      return goog.ui.Component.State.CHECKED;
+    case hoverClassName:
+      return goog.ui.Component.State.HOVER;
+    default:
+      return goog.ui.MenuItemRenderer.superClass_.getStateFromClass.call(this,
+          className);
+  }
+};
+
+
+/** @override */
+goog.ui.MenuItemRenderer.prototype.getCssClass = function() {
+  return goog.ui.MenuItemRenderer.CSS_CLASS;
+};
+// Copyright 2007 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * @fileoverview A class for representing items in menus.
+ * @see goog.ui.Menu
+ *
+ * @see ../demos/menuitem.html
+ */
+
+goog.provide('goog.ui.MenuItem');
+
+goog.require('goog.array');
+goog.require('goog.dom');
+goog.require('goog.dom.classes');
+goog.require('goog.math.Coordinate');
+goog.require('goog.string');
+goog.require('goog.ui.Component');
+goog.require('goog.ui.Control');
+goog.require('goog.ui.MenuItemRenderer');
+goog.require('goog.ui.registry');
+
+
+
+/**
+ * Class representing an item in a menu.
+ *
+ * @param {goog.ui.ControlContent} content Text caption or DOM structure to
+ *     display as the content of the item (use to add icons or styling to
+ *     menus).
+ * @param {*=} opt_model Data/model associated with the menu item.
+ * @param {goog.dom.DomHelper=} opt_domHelper Optional DOM helper used for
+ *     document interactions.
+ * @param {goog.ui.MenuItemRenderer=} opt_renderer Optional renderer.
+ * @constructor
+ * @extends {goog.ui.Control}
+ */
+goog.ui.MenuItem = function(content, opt_model, opt_domHelper, opt_renderer) {
+  goog.ui.Control.call(this, content, opt_renderer ||
+      goog.ui.MenuItemRenderer.getInstance(), opt_domHelper);
+  this.setValue(opt_model);
+};
+goog.inherits(goog.ui.MenuItem, goog.ui.Control);
+
+
+/**
+ * The access key for this menu item. This key allows the user to quickly
+ * trigger this item's action with they keyboard. For example, setting the
+ * mnenomic key to 70 (F), when the user opens the menu and hits "F," the
+ * menu item is triggered.
+ *
+ * @type {goog.events.KeyCodes}
+ * @private
+ */
+goog.ui.MenuItem.mnemonicKey_;
+
+
+/**
+ * The class set on an element that contains a parenthetical mnemonic key hint.
+ * Parenthetical hints are added to items in which the mnemonic key is not found
+ * within the menu item's caption itself. For example, if you have a menu item
+ * with the caption "Record," but its mnemonic key is "I", the caption displayed
+ * in the menu will appear as "Record (I)".
+ *
+ * @type {string}
+ * @private
+ */
+goog.ui.MenuItem.MNEMONIC_WRAPPER_CLASS_ =
+    goog.getCssName('goog-menuitem-mnemonic-separator');
+
+
+/**
+ * The class set on an element that contains a keyboard accelerator hint.
+ * @type {string}
+ * @private
+ */
+goog.ui.MenuItem.ACCELERATOR_CLASS_ = goog.getCssName('goog-menuitem-accel');
+
+
+// goog.ui.Component and goog.ui.Control implementation.
+
+
+/**
+ * Returns the value associated with the menu item.  The default implementation
+ * returns the model object associated with the item (if any), or its caption.
+ * @return {*} Value associated with the menu item, if any, or its caption.
+ */
+goog.ui.MenuItem.prototype.getValue = function() {
+  var model = this.getModel();
+  return model != null ? model : this.getCaption();
+};
+
+
+/**
+ * Sets the value associated with the menu item.  The default implementation
+ * stores the value as the model of the menu item.
+ * @param {*} value Value to be associated with the menu item.
+ */
+goog.ui.MenuItem.prototype.setValue = function(value) {
+  this.setModel(value);
+};
+
+
+/**
+ * Sets the menu item to be selectable or not.  Set to true for menu items
+ * that represent selectable options.
+ * @param {boolean} selectable Whether the menu item is selectable.
+ */
+goog.ui.MenuItem.prototype.setSelectable = function(selectable) {
+  this.setSupportedState(goog.ui.Component.State.SELECTED, selectable);
+  if (this.isChecked() && !selectable) {
+    this.setChecked(false);
+  }
+
+  var element = this.getElement();
+  if (element) {
+    this.getRenderer().setSelectable(this, element, selectable);
+  }
+};
+
+
+/**
+ * Sets the menu item to be checkable or not.  Set to true for menu items
+ * that represent checkable options.
+ * @param {boolean} checkable Whether the menu item is checkable.
+ */
+goog.ui.MenuItem.prototype.setCheckable = function(checkable) {
+  this.setSupportedState(goog.ui.Component.State.CHECKED, checkable);
+
+  var element = this.getElement();
+  if (element) {
+    this.getRenderer().setCheckable(this, element, checkable);
+  }
+};
+
+
+/**
+ * Returns the text caption of the component while ignoring accelerators.
+ * @override
+ */
+goog.ui.MenuItem.prototype.getCaption = function() {
+  var content = this.getContent();
+  if (goog.isArray(content)) {
+    var acceleratorClass = goog.ui.MenuItem.ACCELERATOR_CLASS_;
+    var mnemonicWrapClass = goog.ui.MenuItem.MNEMONIC_WRAPPER_CLASS_;
+    var caption = goog.array.map(content, function(node) {
+      var classes = goog.dom.classes.get(node);
+      if (goog.array.contains(classes, acceleratorClass) ||
+          goog.array.contains(classes, mnemonicWrapClass)) {
+        return '';
+      } else {
+        return goog.dom.getRawTextContent(node);
+      }
+    }).join('');
+    return goog.string.collapseBreakingSpaces(caption);
+  }
+  return goog.ui.MenuItem.superClass_.getCaption.call(this);
+};
+
+
+/** @override */
+goog.ui.MenuItem.prototype.handleMouseUp = function(e) {
+  var parentMenu = /** @type {goog.ui.Menu} */ (this.getParent());
+
+  if (parentMenu) {
+    var oldCoords = parentMenu.openingCoords;
+    // Clear out the saved opening coords immediately so they're not used twice.
+    parentMenu.openingCoords = null;
+
+    if (oldCoords && goog.isNumber(e.clientX)) {
+      var newCoords = new goog.math.Coordinate(e.clientX, e.clientY);
+      if (goog.math.Coordinate.equals(oldCoords, newCoords)) {
+        // This menu was opened by a mousedown and we're handling the consequent
+        // mouseup. The coords haven't changed, meaning this was a simple click,
+        // not a click and drag. Don't do the usual behavior because the menu
+        // just popped up under the mouse and the user didn't mean to activate
+        // this item.
+        return;
+      }
+    }
+  }
+
+  goog.base(this, 'handleMouseUp', e);
+};
+
+
+/** @override */
+goog.ui.MenuItem.prototype.handleKeyEventInternal = function(e) {
+  if (e.keyCode == this.getMnemonic() && this.performActionInternal(e)) {
+    return true;
+  } else {
+    return goog.base(this, 'handleKeyEventInternal', e);
+  }
+};
+
+
+/**
+ * Sets the mnemonic key code. The mnemonic is the key associated with this
+ * action.
+ * @param {goog.events.KeyCodes} key The key code.
+ */
+goog.ui.MenuItem.prototype.setMnemonic = function(key) {
+  this.mnemonicKey_ = key;
+};
+
+
+/**
+ * Gets the mnemonic key code. The mnemonic is the key associated with this
+ * action.
+ * @return {goog.events.KeyCodes} The key code of the mnemonic key.
+ */
+goog.ui.MenuItem.prototype.getMnemonic = function() {
+  return this.mnemonicKey_;
+};
+
+
+// Register a decorator factory function for goog.ui.MenuItems.
+goog.ui.registry.setDecoratorByClassName(goog.ui.MenuItemRenderer.CSS_CLASS,
+    function() {
+      // MenuItem defaults to using MenuItemRenderer.
+      return new goog.ui.MenuItem(null);
+    });
 // Copyright 2007 The Closure Library Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -24634,1082 +26875,6 @@ goog.ui.Container.prototype.isMouseButtonPressed = function() {
 goog.ui.Container.prototype.setMouseButtonPressed = function(pressed) {
   this.mouseButtonPressed_ = pressed;
 };
-// Copyright 2012 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/**
- * @fileoverview Renderer for {@link goog.ui.menuBar}.
- *
- */
-
-goog.provide('goog.ui.MenuBarRenderer');
-
-goog.require('goog.a11y.aria.Role');
-goog.require('goog.ui.Container');
-goog.require('goog.ui.ContainerRenderer');
-
-
-
-/**
- * Default renderer for {@link goog.ui.menuBar}s, based on {@link
- * goog.ui.ContainerRenderer}.
- * @constructor
- * @extends {goog.ui.ContainerRenderer}
- */
-goog.ui.MenuBarRenderer = function() {
-  goog.base(this);
-};
-goog.inherits(goog.ui.MenuBarRenderer, goog.ui.ContainerRenderer);
-goog.addSingletonGetter(goog.ui.MenuBarRenderer);
-
-
-/**
- * Default CSS class to be applied to the root element of elements rendered
- * by this renderer.
- * @type {string}
- */
-goog.ui.MenuBarRenderer.CSS_CLASS = goog.getCssName('goog-menubar');
-
-
-/**
- * @override
- */
-goog.ui.MenuBarRenderer.prototype.getAriaRole = function() {
-  return goog.a11y.aria.Role.MENUBAR;
-};
-
-
-/**
- * @override
- */
-goog.ui.MenuBarRenderer.prototype.getCssClass = function() {
-  return goog.ui.MenuBarRenderer.CSS_CLASS;
-};
-
-
-/**
- * Returns the default orientation of containers rendered or decorated by this
- * renderer.  This implementation returns {@code HORIZONTAL}.
- * @return {goog.ui.Container.Orientation} Default orientation for containers
- *     created or decorated by this renderer.
- * @override
- */
-goog.ui.MenuBarRenderer.prototype.getDefaultOrientation = function() {
-  return goog.ui.Container.Orientation.HORIZONTAL;
-};
-// Copyright 2012 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/**
- * @fileoverview A base menu bar factory. Can be bound to an existing
- * HTML structure or can generate its own DOM.
- *
- * To decorate, the menu bar should be bound to an element containing children
- * with the classname 'goog-menu-button'.  See menubar.html for example.
- *
- * @see ../demos/menubar.html
- */
-
-goog.provide('goog.ui.menuBar');
-
-goog.require('goog.ui.Container');
-goog.require('goog.ui.MenuBarRenderer');
-
-
-/**
- * The menuBar factory creates a new menu bar.
- * @param {goog.ui.ContainerRenderer=} opt_renderer Renderer used to render or
- *     decorate the menu bar; defaults to {@link goog.ui.MenuBarRenderer}.
- * @param {goog.dom.DomHelper=} opt_domHelper DOM helper, used for document
- *     interaction.
- * @return {goog.ui.Container} The created menu bar.
- */
-goog.ui.menuBar.create = function(opt_renderer, opt_domHelper) {
-  return new goog.ui.Container(
-      null,
-      opt_renderer ? opt_renderer : goog.ui.MenuBarRenderer.getInstance(),
-      opt_domHelper);
-};
-// Copyright 2008 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/**
- * @fileoverview Renderer for {@link goog.ui.MenuItem}s.
- *
- * @author attila@google.com (Attila Bodis)
- */
-
-goog.provide('goog.ui.MenuItemRenderer');
-
-goog.require('goog.a11y.aria');
-goog.require('goog.a11y.aria.Role');
-goog.require('goog.dom');
-goog.require('goog.dom.classes');
-goog.require('goog.ui.Component');
-goog.require('goog.ui.ControlRenderer');
-
-
-
-/**
- * Default renderer for {@link goog.ui.MenuItem}s.  Each item has the following
- * structure:
- * <pre>
- *   <div class="goog-menuitem">
- *     <div class="goog-menuitem-content">
- *       ...(menu item contents)...
- *     </div>
- *   </div>
- * </pre>
- * @constructor
- * @extends {goog.ui.ControlRenderer}
- */
-goog.ui.MenuItemRenderer = function() {
-  goog.ui.ControlRenderer.call(this);
-
-  /**
-   * Commonly used CSS class names, cached here for convenience (and to avoid
-   * unnecessary string concatenation).
-   * @type {!Array.<string>}
-   * @private
-   */
-  this.classNameCache_ = [];
-};
-goog.inherits(goog.ui.MenuItemRenderer, goog.ui.ControlRenderer);
-goog.addSingletonGetter(goog.ui.MenuItemRenderer);
-
-
-/**
- * CSS class name the renderer applies to menu item elements.
- * @type {string}
- */
-goog.ui.MenuItemRenderer.CSS_CLASS = goog.getCssName('goog-menuitem');
-
-
-/**
- * Constants for referencing composite CSS classes.
- * @enum {number}
- * @private
- */
-goog.ui.MenuItemRenderer.CompositeCssClassIndex_ = {
-  HOVER: 0,
-  CHECKBOX: 1,
-  CONTENT: 2
-};
-
-
-/**
- * Returns the composite CSS class by using the cached value or by constructing
- * the value from the base CSS class and the passed index.
- * @param {goog.ui.MenuItemRenderer.CompositeCssClassIndex_} index Index for the
- *     CSS class - could be highlight, checkbox or content in usual cases.
- * @return {string} The composite CSS class.
- * @private
- */
-goog.ui.MenuItemRenderer.prototype.getCompositeCssClass_ = function(index) {
-  var result = this.classNameCache_[index];
-  if (!result) {
-    switch (index) {
-      case goog.ui.MenuItemRenderer.CompositeCssClassIndex_.HOVER:
-        result = goog.getCssName(this.getStructuralCssClass(), 'highlight');
-        break;
-      case goog.ui.MenuItemRenderer.CompositeCssClassIndex_.CHECKBOX:
-        result = goog.getCssName(this.getStructuralCssClass(), 'checkbox');
-        break;
-      case goog.ui.MenuItemRenderer.CompositeCssClassIndex_.CONTENT:
-        result = goog.getCssName(this.getStructuralCssClass(), 'content');
-        break;
-    }
-    this.classNameCache_[index] = result;
-  }
-
-  return result;
-};
-
-
-/** @override */
-goog.ui.MenuItemRenderer.prototype.getAriaRole = function() {
-  return goog.a11y.aria.Role.MENU_ITEM;
-};
-
-
-/**
- * Overrides {@link goog.ui.ControlRenderer#createDom} by adding extra markup
- * and stying to the menu item's element if it is selectable or checkable.
- * @param {goog.ui.Control} item Menu item to render.
- * @return {Element} Root element for the item.
- * @override
- */
-goog.ui.MenuItemRenderer.prototype.createDom = function(item) {
-  var element = item.getDomHelper().createDom(
-      'div', this.getClassNames(item).join(' '),
-      this.createContent(item.getContent(), item.getDomHelper()));
-  this.setEnableCheckBoxStructure(item, element,
-      item.isSupportedState(goog.ui.Component.State.SELECTED) ||
-      item.isSupportedState(goog.ui.Component.State.CHECKED));
-  this.setAriaStates(item, element);
-  return element;
-};
-
-
-/** @override */
-goog.ui.MenuItemRenderer.prototype.getContentElement = function(element) {
-  return /** @type {Element} */ (element && element.firstChild);
-};
-
-
-/**
- * Overrides {@link goog.ui.ControlRenderer#decorate} by initializing the
- * menu item to checkable based on whether the element to be decorated has
- * extra stying indicating that it should be.
- * @param {goog.ui.Control} item Menu item instance to decorate the element.
- * @param {Element} element Element to decorate.
- * @return {Element} Decorated element.
- * @override
- */
-goog.ui.MenuItemRenderer.prototype.decorate = function(item, element) {
-  if (!this.hasContentStructure(element)) {
-    element.appendChild(
-        this.createContent(element.childNodes, item.getDomHelper()));
-  }
-  if (goog.dom.classes.has(element, goog.getCssName('goog-option'))) {
-    (/** @type {goog.ui.MenuItem} */ (item)).setCheckable(true);
-    this.setCheckable(item, element, true);
-  }
-  return goog.ui.MenuItemRenderer.superClass_.decorate.call(this, item,
-      element);
-};
-
-
-/**
- * Takes a menu item's root element, and sets its content to the given text
- * caption or DOM structure.  Overrides the superclass immplementation by
- * making sure that the checkbox structure (for selectable/checkable menu
- * items) is preserved.
- * @param {Element} element The item's root element.
- * @param {goog.ui.ControlContent} content Text caption or DOM structure to be
- *     set as the item's content.
- * @override
- */
-goog.ui.MenuItemRenderer.prototype.setContent = function(element, content) {
-  // Save the checkbox element, if present.
-  var contentElement = this.getContentElement(element);
-  var checkBoxElement = this.hasCheckBoxStructure(element) ?
-      contentElement.firstChild : null;
-  goog.ui.MenuItemRenderer.superClass_.setContent.call(this, element, content);
-  if (checkBoxElement && !this.hasCheckBoxStructure(element)) {
-    // The call to setContent() blew away the checkbox element; reattach it.
-    contentElement.insertBefore(checkBoxElement,
-        contentElement.firstChild || null);
-  }
-};
-
-
-/**
- * Returns true if the element appears to have a proper menu item structure by
- * checking whether its first child has the appropriate structural class name.
- * @param {Element} element Element to check.
- * @return {boolean} Whether the element appears to have a proper menu item DOM.
- * @protected
- */
-goog.ui.MenuItemRenderer.prototype.hasContentStructure = function(element) {
-  var child = goog.dom.getFirstElementChild(element);
-  var contentClassName = this.getCompositeCssClass_(
-      goog.ui.MenuItemRenderer.CompositeCssClassIndex_.CONTENT);
-  return !!child && goog.dom.classes.has(child, contentClassName);
-};
-
-
-/**
- * Wraps the given text caption or existing DOM node(s) in a structural element
- * containing the menu item's contents.
- * @param {goog.ui.ControlContent} content Menu item contents.
- * @param {goog.dom.DomHelper} dom DOM helper for document interaction.
- * @return {Element} Menu item content element.
- * @protected
- */
-goog.ui.MenuItemRenderer.prototype.createContent = function(content, dom) {
-  var contentClassName = this.getCompositeCssClass_(
-      goog.ui.MenuItemRenderer.CompositeCssClassIndex_.CONTENT);
-  return dom.createDom('div', contentClassName, content);
-};
-
-
-/**
- * Enables/disables radio button semantics on the menu item.
- * @param {goog.ui.Control} item Menu item to update.
- * @param {Element} element Menu item element to update (may be null if the
- *     item hasn't been rendered yet).
- * @param {boolean} selectable Whether the item should be selectable.
- */
-goog.ui.MenuItemRenderer.prototype.setSelectable = function(item, element,
-    selectable) {
-  if (element) {
-    goog.a11y.aria.setRole(element,
-        selectable ?
-        goog.a11y.aria.Role.MENU_ITEM_RADIO :
-        /** @type {string} */ (this.getAriaRole()));
-    this.setEnableCheckBoxStructure(item, element, selectable);
-  }
-};
-
-
-/**
- * Enables/disables checkbox semantics on the menu item.
- * @param {goog.ui.Control} item Menu item to update.
- * @param {Element} element Menu item element to update (may be null if the
- *     item hasn't been rendered yet).
- * @param {boolean} checkable Whether the item should be checkable.
- */
-goog.ui.MenuItemRenderer.prototype.setCheckable = function(item, element,
-    checkable) {
-  if (element) {
-    goog.a11y.aria.setRole(element,
-        checkable ?
-        goog.a11y.aria.Role.MENU_ITEM_CHECKBOX :
-        /** @type {string} */ (this.getAriaRole()));
-    this.setEnableCheckBoxStructure(item, element, checkable);
-  }
-};
-
-
-/**
- * Determines whether the item contains a checkbox element.
- * @param {Element} element Menu item root element.
- * @return {boolean} Whether the element contains a checkbox element.
- * @protected
- */
-goog.ui.MenuItemRenderer.prototype.hasCheckBoxStructure = function(element) {
-  var contentElement = this.getContentElement(element);
-  if (contentElement) {
-    var child = contentElement.firstChild;
-    var checkboxClassName = this.getCompositeCssClass_(
-        goog.ui.MenuItemRenderer.CompositeCssClassIndex_.CHECKBOX);
-    return !!child && goog.dom.classes.has(child, checkboxClassName);
-  }
-  return false;
-};
-
-
-/**
- * Adds or removes extra markup and CSS styling to the menu item to make it
- * selectable or non-selectable, depending on the value of the
- * {@code selectable} argument.
- * @param {goog.ui.Control} item Menu item to update.
- * @param {Element} element Menu item element to update.
- * @param {boolean} enable Whether to add or remove the checkbox structure.
- * @protected
- */
-goog.ui.MenuItemRenderer.prototype.setEnableCheckBoxStructure = function(item,
-    element, enable) {
-  if (enable != this.hasCheckBoxStructure(element)) {
-    goog.dom.classes.enable(element, goog.getCssName('goog-option'), enable);
-    var contentElement = this.getContentElement(element);
-    if (enable) {
-      // Insert checkbox structure.
-      var checkboxClassName = this.getCompositeCssClass_(
-          goog.ui.MenuItemRenderer.CompositeCssClassIndex_.CHECKBOX);
-      contentElement.insertBefore(
-          item.getDomHelper().createDom('div', checkboxClassName),
-          contentElement.firstChild || null);
-    } else {
-      // Remove checkbox structure.
-      contentElement.removeChild(contentElement.firstChild);
-    }
-  }
-};
-
-
-/**
- * Takes a single {@link goog.ui.Component.State}, and returns the
- * corresponding CSS class name (null if none).  Overrides the superclass
- * implementation by using 'highlight' as opposed to 'hover' as the CSS
- * class name suffix for the HOVER state, for backwards compatibility.
- * @param {goog.ui.Component.State} state Component state.
- * @return {string|undefined} CSS class representing the given state
- *     (undefined if none).
- * @override
- */
-goog.ui.MenuItemRenderer.prototype.getClassForState = function(state) {
-  switch (state) {
-    case goog.ui.Component.State.HOVER:
-      // We use 'highlight' as the suffix, for backwards compatibility.
-      return this.getCompositeCssClass_(
-          goog.ui.MenuItemRenderer.CompositeCssClassIndex_.HOVER);
-    case goog.ui.Component.State.CHECKED:
-    case goog.ui.Component.State.SELECTED:
-      // We use 'goog-option-selected' as the class, for backwards
-      // compatibility.
-      return goog.getCssName('goog-option-selected');
-    default:
-      return goog.ui.MenuItemRenderer.superClass_.getClassForState.call(this,
-          state);
-  }
-};
-
-
-/**
- * Takes a single CSS class name which may represent a component state, and
- * returns the corresponding component state (0x00 if none).  Overrides the
- * superclass implementation by treating 'goog-option-selected' as special,
- * for backwards compatibility.
- * @param {string} className CSS class name, possibly representing a component
- *     state.
- * @return {goog.ui.Component.State} state Component state corresponding
- *     to the given CSS class (0x00 if none).
- * @override
- */
-goog.ui.MenuItemRenderer.prototype.getStateFromClass = function(className) {
-  var hoverClassName = this.getCompositeCssClass_(
-      goog.ui.MenuItemRenderer.CompositeCssClassIndex_.HOVER);
-  switch (className) {
-    case goog.getCssName('goog-option-selected'):
-      return goog.ui.Component.State.CHECKED;
-    case hoverClassName:
-      return goog.ui.Component.State.HOVER;
-    default:
-      return goog.ui.MenuItemRenderer.superClass_.getStateFromClass.call(this,
-          className);
-  }
-};
-
-
-/** @override */
-goog.ui.MenuItemRenderer.prototype.getCssClass = function() {
-  return goog.ui.MenuItemRenderer.CSS_CLASS;
-};
-// Copyright 2007 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/**
- * @fileoverview A class for representing items in menus.
- * @see goog.ui.Menu
- *
- * @see ../demos/menuitem.html
- */
-
-goog.provide('goog.ui.MenuItem');
-
-goog.require('goog.array');
-goog.require('goog.dom');
-goog.require('goog.dom.classes');
-goog.require('goog.math.Coordinate');
-goog.require('goog.string');
-goog.require('goog.ui.Component');
-goog.require('goog.ui.Control');
-goog.require('goog.ui.MenuItemRenderer');
-goog.require('goog.ui.registry');
-
-
-
-/**
- * Class representing an item in a menu.
- *
- * @param {goog.ui.ControlContent} content Text caption or DOM structure to
- *     display as the content of the item (use to add icons or styling to
- *     menus).
- * @param {*=} opt_model Data/model associated with the menu item.
- * @param {goog.dom.DomHelper=} opt_domHelper Optional DOM helper used for
- *     document interactions.
- * @param {goog.ui.MenuItemRenderer=} opt_renderer Optional renderer.
- * @constructor
- * @extends {goog.ui.Control}
- */
-goog.ui.MenuItem = function(content, opt_model, opt_domHelper, opt_renderer) {
-  goog.ui.Control.call(this, content, opt_renderer ||
-      goog.ui.MenuItemRenderer.getInstance(), opt_domHelper);
-  this.setValue(opt_model);
-};
-goog.inherits(goog.ui.MenuItem, goog.ui.Control);
-
-
-/**
- * The access key for this menu item. This key allows the user to quickly
- * trigger this item's action with they keyboard. For example, setting the
- * mnenomic key to 70 (F), when the user opens the menu and hits "F," the
- * menu item is triggered.
- *
- * @type {goog.events.KeyCodes}
- * @private
- */
-goog.ui.MenuItem.mnemonicKey_;
-
-
-/**
- * The class set on an element that contains a parenthetical mnemonic key hint.
- * Parenthetical hints are added to items in which the mnemonic key is not found
- * within the menu item's caption itself. For example, if you have a menu item
- * with the caption "Record," but its mnemonic key is "I", the caption displayed
- * in the menu will appear as "Record (I)".
- *
- * @type {string}
- * @private
- */
-goog.ui.MenuItem.MNEMONIC_WRAPPER_CLASS_ =
-    goog.getCssName('goog-menuitem-mnemonic-separator');
-
-
-/**
- * The class set on an element that contains a keyboard accelerator hint.
- * @type {string}
- * @private
- */
-goog.ui.MenuItem.ACCELERATOR_CLASS_ = goog.getCssName('goog-menuitem-accel');
-
-
-// goog.ui.Component and goog.ui.Control implementation.
-
-
-/**
- * Returns the value associated with the menu item.  The default implementation
- * returns the model object associated with the item (if any), or its caption.
- * @return {*} Value associated with the menu item, if any, or its caption.
- */
-goog.ui.MenuItem.prototype.getValue = function() {
-  var model = this.getModel();
-  return model != null ? model : this.getCaption();
-};
-
-
-/**
- * Sets the value associated with the menu item.  The default implementation
- * stores the value as the model of the menu item.
- * @param {*} value Value to be associated with the menu item.
- */
-goog.ui.MenuItem.prototype.setValue = function(value) {
-  this.setModel(value);
-};
-
-
-/**
- * Sets the menu item to be selectable or not.  Set to true for menu items
- * that represent selectable options.
- * @param {boolean} selectable Whether the menu item is selectable.
- */
-goog.ui.MenuItem.prototype.setSelectable = function(selectable) {
-  this.setSupportedState(goog.ui.Component.State.SELECTED, selectable);
-  if (this.isChecked() && !selectable) {
-    this.setChecked(false);
-  }
-
-  var element = this.getElement();
-  if (element) {
-    this.getRenderer().setSelectable(this, element, selectable);
-  }
-};
-
-
-/**
- * Sets the menu item to be checkable or not.  Set to true for menu items
- * that represent checkable options.
- * @param {boolean} checkable Whether the menu item is checkable.
- */
-goog.ui.MenuItem.prototype.setCheckable = function(checkable) {
-  this.setSupportedState(goog.ui.Component.State.CHECKED, checkable);
-
-  var element = this.getElement();
-  if (element) {
-    this.getRenderer().setCheckable(this, element, checkable);
-  }
-};
-
-
-/**
- * Returns the text caption of the component while ignoring accelerators.
- * @override
- */
-goog.ui.MenuItem.prototype.getCaption = function() {
-  var content = this.getContent();
-  if (goog.isArray(content)) {
-    var acceleratorClass = goog.ui.MenuItem.ACCELERATOR_CLASS_;
-    var mnemonicWrapClass = goog.ui.MenuItem.MNEMONIC_WRAPPER_CLASS_;
-    var caption = goog.array.map(content, function(node) {
-      var classes = goog.dom.classes.get(node);
-      if (goog.array.contains(classes, acceleratorClass) ||
-          goog.array.contains(classes, mnemonicWrapClass)) {
-        return '';
-      } else {
-        return goog.dom.getRawTextContent(node);
-      }
-    }).join('');
-    return goog.string.collapseBreakingSpaces(caption);
-  }
-  return goog.ui.MenuItem.superClass_.getCaption.call(this);
-};
-
-
-/** @override */
-goog.ui.MenuItem.prototype.handleMouseUp = function(e) {
-  var parentMenu = /** @type {goog.ui.Menu} */ (this.getParent());
-
-  if (parentMenu) {
-    var oldCoords = parentMenu.openingCoords;
-    // Clear out the saved opening coords immediately so they're not used twice.
-    parentMenu.openingCoords = null;
-
-    if (oldCoords && goog.isNumber(e.clientX)) {
-      var newCoords = new goog.math.Coordinate(e.clientX, e.clientY);
-      if (goog.math.Coordinate.equals(oldCoords, newCoords)) {
-        // This menu was opened by a mousedown and we're handling the consequent
-        // mouseup. The coords haven't changed, meaning this was a simple click,
-        // not a click and drag. Don't do the usual behavior because the menu
-        // just popped up under the mouse and the user didn't mean to activate
-        // this item.
-        return;
-      }
-    }
-  }
-
-  goog.base(this, 'handleMouseUp', e);
-};
-
-
-/** @override */
-goog.ui.MenuItem.prototype.handleKeyEventInternal = function(e) {
-  if (e.keyCode == this.getMnemonic() && this.performActionInternal(e)) {
-    return true;
-  } else {
-    return goog.base(this, 'handleKeyEventInternal', e);
-  }
-};
-
-
-/**
- * Sets the mnemonic key code. The mnemonic is the key associated with this
- * action.
- * @param {goog.events.KeyCodes} key The key code.
- */
-goog.ui.MenuItem.prototype.setMnemonic = function(key) {
-  this.mnemonicKey_ = key;
-};
-
-
-/**
- * Gets the mnemonic key code. The mnemonic is the key associated with this
- * action.
- * @return {goog.events.KeyCodes} The key code of the mnemonic key.
- */
-goog.ui.MenuItem.prototype.getMnemonic = function() {
-  return this.mnemonicKey_;
-};
-
-
-// Register a decorator factory function for goog.ui.MenuItems.
-goog.ui.registry.setDecoratorByClassName(goog.ui.MenuItemRenderer.CSS_CLASS,
-    function() {
-      // MenuItem defaults to using MenuItemRenderer.
-      return new goog.ui.MenuItem(null);
-    });
-// Copyright 2008 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/**
- * @fileoverview Renderer for {@link goog.ui.MenuSeparator}s.
- *
- * @author attila@google.com (Attila Bodis)
- */
-
-goog.provide('goog.ui.MenuSeparatorRenderer');
-
-goog.require('goog.dom');
-goog.require('goog.dom.classes');
-goog.require('goog.ui.ControlContent');
-goog.require('goog.ui.ControlRenderer');
-
-
-
-/**
- * Renderer for menu separators.
- * @constructor
- * @extends {goog.ui.ControlRenderer}
- */
-goog.ui.MenuSeparatorRenderer = function() {
-  goog.ui.ControlRenderer.call(this);
-};
-goog.inherits(goog.ui.MenuSeparatorRenderer, goog.ui.ControlRenderer);
-goog.addSingletonGetter(goog.ui.MenuSeparatorRenderer);
-
-
-/**
- * Default CSS class to be applied to the root element of components rendered
- * by this renderer.
- * @type {string}
- */
-goog.ui.MenuSeparatorRenderer.CSS_CLASS = goog.getCssName('goog-menuseparator');
-
-
-/**
- * Returns an empty, styled menu separator DIV.  Overrides {@link
- * goog.ui.ControlRenderer#createDom}.
- * @param {goog.ui.Control} separator goog.ui.Separator to render.
- * @return {Element} Root element for the separator.
- * @override
- */
-goog.ui.MenuSeparatorRenderer.prototype.createDom = function(separator) {
-  return separator.getDomHelper().createDom('div', this.getCssClass());
-};
-
-
-/**
- * Takes an existing element, and decorates it with the separator.  Overrides
- * {@link goog.ui.ControlRenderer#decorate}.
- * @param {goog.ui.Control} separator goog.ui.MenuSeparator to decorate the
- *     element.
- * @param {Element} element Element to decorate.
- * @return {Element} Decorated element.
- * @override
- */
-goog.ui.MenuSeparatorRenderer.prototype.decorate = function(separator,
-                                                            element) {
-  // Normally handled in the superclass. But we don't call the superclass.
-  if (element.id) {
-    separator.setId(element.id);
-  }
-
-  if (element.tagName == 'HR') {
-    // Replace HR with separator.
-    var hr = element;
-    element = this.createDom(separator);
-    goog.dom.insertSiblingBefore(element, hr);
-    goog.dom.removeNode(hr);
-  } else {
-    goog.dom.classes.add(element, this.getCssClass());
-  }
-  return element;
-};
-
-
-/**
- * Overrides {@link goog.ui.ControlRenderer#setContent} to do nothing, since
- * separators are empty.
- * @param {Element} separator The separator's root element.
- * @param {goog.ui.ControlContent} content Text caption or DOM structure to be
- *    set as the separators's content (ignored).
- * @override
- */
-goog.ui.MenuSeparatorRenderer.prototype.setContent = function(separator,
-                                                              content) {
-  // Do nothing.  Separators are empty.
-};
-
-
-/**
- * Returns the CSS class to be applied to the root element of components
- * rendered using this renderer.
- * @return {string} Renderer-specific CSS class.
- * @override
- */
-goog.ui.MenuSeparatorRenderer.prototype.getCssClass = function() {
-  return goog.ui.MenuSeparatorRenderer.CSS_CLASS;
-};
-// Copyright 2007 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/**
- * @fileoverview A class for representing a separator, with renderers for both
- * horizontal (menu) and vertical (toolbar) separators.
- *
- * @author attila@google.com (Attila Bodis)
- */
-
-goog.provide('goog.ui.Separator');
-
-goog.require('goog.a11y.aria');
-goog.require('goog.asserts');
-goog.require('goog.ui.Component');
-goog.require('goog.ui.Control');
-goog.require('goog.ui.MenuSeparatorRenderer');
-goog.require('goog.ui.registry');
-
-
-
-/**
- * Class representing a separator.  Although it extends {@link goog.ui.Control},
- * the Separator class doesn't allocate any event handlers, nor does it change
- * its appearance on mouseover, etc.
- * @param {goog.ui.MenuSeparatorRenderer=} opt_renderer Renderer to render or
- *    decorate the separator; defaults to {@link goog.ui.MenuSeparatorRenderer}.
- * @param {goog.dom.DomHelper=} opt_domHelper Optional DOM helper, used for
- *    document interaction.
- * @constructor
- * @extends {goog.ui.Control}
- */
-goog.ui.Separator = function(opt_renderer, opt_domHelper) {
-  goog.ui.Control.call(this, null, opt_renderer ||
-      goog.ui.MenuSeparatorRenderer.getInstance(), opt_domHelper);
-
-  this.setSupportedState(goog.ui.Component.State.DISABLED, false);
-  this.setSupportedState(goog.ui.Component.State.HOVER, false);
-  this.setSupportedState(goog.ui.Component.State.ACTIVE, false);
-  this.setSupportedState(goog.ui.Component.State.FOCUSED, false);
-
-  // Separators are always considered disabled.
-  this.setStateInternal(goog.ui.Component.State.DISABLED);
-};
-goog.inherits(goog.ui.Separator, goog.ui.Control);
-
-
-/**
- * Configures the component after its DOM has been rendered.  Overrides
- * {@link goog.ui.Control#enterDocument} by making sure no event handler
- * is allocated.
- * @override
- */
-goog.ui.Separator.prototype.enterDocument = function() {
-  goog.ui.Separator.superClass_.enterDocument.call(this);
-  var element = this.getElement();
-  goog.asserts.assert(element,
-      'The DOM element for the separator cannot be null.');
-  goog.a11y.aria.setRole(element, 'separator');
-};
-
-
-// Register a decorator factory function for goog.ui.MenuSeparators.
-goog.ui.registry.setDecoratorByClassName(
-    goog.ui.MenuSeparatorRenderer.CSS_CLASS,
-    function() {
-      // Separator defaults to using MenuSeparatorRenderer.
-      return new goog.ui.Separator();
-    });
-// Copyright 2008 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/**
- * @fileoverview Renderer for {@link goog.ui.Menu}s.
- *
- * @author robbyw@google.com (Robby Walker)
- * @author pupius@google.com (Daniel Pupius)
- */
-
-goog.provide('goog.ui.MenuRenderer');
-
-goog.require('goog.a11y.aria');
-goog.require('goog.a11y.aria.Role');
-goog.require('goog.a11y.aria.State');
-goog.require('goog.asserts');
-goog.require('goog.dom');
-goog.require('goog.ui.ContainerRenderer');
-goog.require('goog.ui.Separator');
-
-
-
-/**
- * Default renderer for {@link goog.ui.Menu}s, based on {@link
- * goog.ui.ContainerRenderer}.
- * @constructor
- * @extends {goog.ui.ContainerRenderer}
- */
-goog.ui.MenuRenderer = function() {
-  goog.ui.ContainerRenderer.call(this);
-};
-goog.inherits(goog.ui.MenuRenderer, goog.ui.ContainerRenderer);
-goog.addSingletonGetter(goog.ui.MenuRenderer);
-
-
-/**
- * Default CSS class to be applied to the root element of toolbars rendered
- * by this renderer.
- * @type {string}
- */
-goog.ui.MenuRenderer.CSS_CLASS = goog.getCssName('goog-menu');
-
-
-/**
- * Returns the ARIA role to be applied to menus.
- * @return {string} ARIA role.
- * @override
- */
-goog.ui.MenuRenderer.prototype.getAriaRole = function() {
-  return goog.a11y.aria.Role.MENU;
-};
-
-
-/**
- * Returns whether the element is a UL or acceptable to our superclass.
- * @param {Element} element Element to decorate.
- * @return {boolean} Whether the renderer can decorate the element.
- * @override
- */
-goog.ui.MenuRenderer.prototype.canDecorate = function(element) {
-  return element.tagName == 'UL' ||
-      goog.ui.MenuRenderer.superClass_.canDecorate.call(this, element);
-};
-
-
-/**
- * Inspects the element, and creates an instance of {@link goog.ui.Control} or
- * an appropriate subclass best suited to decorate it.  Overrides the superclass
- * implementation by recognizing HR elements as separators.
- * @param {Element} element Element to decorate.
- * @return {goog.ui.Control?} A new control suitable to decorate the element
- *     (null if none).
- * @override
- */
-goog.ui.MenuRenderer.prototype.getDecoratorForChild = function(element) {
-  return element.tagName == 'HR' ?
-      new goog.ui.Separator() :
-      goog.ui.MenuRenderer.superClass_.getDecoratorForChild.call(this,
-          element);
-};
-
-
-/**
- * Returns whether the given element is contained in the menu's DOM.
- * @param {goog.ui.Menu} menu The menu to test.
- * @param {Element} element The element to test.
- * @return {boolean} Whether the given element is contained in the menu.
- */
-goog.ui.MenuRenderer.prototype.containsElement = function(menu, element) {
-  return goog.dom.contains(menu.getElement(), element);
-};
-
-
-/**
- * Returns the CSS class to be applied to the root element of containers
- * rendered using this renderer.
- * @return {string} Renderer-specific CSS class.
- * @override
- */
-goog.ui.MenuRenderer.prototype.getCssClass = function() {
-  return goog.ui.MenuRenderer.CSS_CLASS;
-};
-
-
-/** @override */
-goog.ui.MenuRenderer.prototype.initializeDom = function(container) {
-  goog.ui.MenuRenderer.superClass_.initializeDom.call(this, container);
-
-  var element = container.getElement();
-  goog.asserts.assert(element, 'The menu DOM element cannot be null.');
-  goog.a11y.aria.setState(element, goog.a11y.aria.State.HASPOPUP, 'true');
-};
-// Copyright 2007 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/**
- * @fileoverview A class for representing menu separators.
- * @see goog.ui.Menu
- *
- */
-
-goog.provide('goog.ui.MenuSeparator');
-
-goog.require('goog.ui.MenuSeparatorRenderer');
-goog.require('goog.ui.Separator');
-goog.require('goog.ui.registry');
-
-
-
-/**
- * Class representing a menu separator.  A menu separator extends {@link
- * goog.ui.Separator} by always setting its renderer to {@link
- * goog.ui.MenuSeparatorRenderer}.
- * @param {goog.dom.DomHelper=} opt_domHelper Optional DOM helper used for
- *     document interactions.
- * @constructor
- * @extends {goog.ui.Separator}
- */
-goog.ui.MenuSeparator = function(opt_domHelper) {
-  goog.ui.Separator.call(this, goog.ui.MenuSeparatorRenderer.getInstance(),
-      opt_domHelper);
-};
-goog.inherits(goog.ui.MenuSeparator, goog.ui.Separator);
-
-
-// Register a decorator factory function for goog.ui.MenuSeparators.
-goog.ui.registry.setDecoratorByClassName(
-    goog.ui.MenuSeparatorRenderer.CSS_CLASS,
-    function() {
-      // Separator defaults to using MenuSeparatorRenderer.
-      return new goog.ui.Separator();
-    });
 // Copyright 2008 The Closure Library Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -26302,1289 +27467,6 @@ goog.ui.Menu.prototype.decorateContent = function(element) {
     renderer.decorateChildren(this, contentElements[i]);
   }
 };
-// Copyright 2012 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/**
- * @fileoverview Bidi utility functions.
- *
- */
-
-goog.provide('goog.style.bidi');
-
-goog.require('goog.dom');
-goog.require('goog.style');
-goog.require('goog.userAgent');
-
-
-/**
- * Returns the normalized scrollLeft position for a scrolled element.
- * @param {Element} element The scrolled element.
- * @return {number} The number of pixels the element is scrolled. 0 indicates
- *     that the element is not scrolled at all (which, in general, is the
- *     left-most position in ltr and the right-most position in rtl).
- */
-goog.style.bidi.getScrollLeft = function(element) {
-  var isRtl = goog.style.isRightToLeft(element);
-  if (isRtl && goog.userAgent.GECKO) {
-    // ScrollLeft starts at 0 and then goes negative as the element is scrolled
-    // towards the left.
-    return -element.scrollLeft;
-  } else if (isRtl &&
-             !(goog.userAgent.IE && goog.userAgent.isVersionOrHigher('8'))) {
-    // ScrollLeft starts at the maximum positive value and decreases towards
-    // 0 as the element is scrolled towards the left. However, for overflow
-    // visible, there is no scrollLeft and the value always stays correctly at 0
-    var overflowX = goog.style.getComputedOverflowX(element);
-    if (overflowX == 'visible') {
-      return element.scrollLeft;
-    } else {
-      return element.scrollWidth - element.clientWidth - element.scrollLeft;
-    }
-  }
-  // ScrollLeft behavior is identical in rtl and ltr, it starts at 0 and
-  // increases as the element is scrolled away from the start.
-  return element.scrollLeft;
-};
-
-
-/**
- * Returns the "offsetStart" of an element, analagous to offsetLeft but
- * normalized for right-to-left environments and various browser
- * inconsistencies. This value returned can always be passed to setScrollOffset
- * to scroll to an element's left edge in a left-to-right offsetParent or
- * right edge in a right-to-left offsetParent.
- *
- * For example, here offsetStart is 10px in an LTR environment and 5px in RTL:
- *
- * <pre>
- * |          xxxxxxxxxx     |
- *  ^^^^^^^^^^   ^^^^   ^^^^^
- *     10px      elem    5px
- * </pre>
- *
- * If an element is positioned before the start of its offsetParent, the
- * startOffset may be negative.  This can be used with setScrollOffset to
- * reliably scroll to an element:
- *
- * <pre>
- * var scrollOffset = goog.style.bidi.getOffsetStart(element);
- * goog.style.bidi.setScrollOffset(element.offsetParent, scrollOffset);
- * </pre>
- *
- * @see setScrollOffset
- *
- * @param {Element} element The element for which we need to determine the
- *     offsetStart position.
- * @return {number} The offsetStart for that element.
- */
-goog.style.bidi.getOffsetStart = function(element) {
-  var offsetLeftForReal = element.offsetLeft;
-
-  // The element might not have an offsetParent.
-  // For example, the node might not be attached to the DOM tree,
-  // and position:fixed children do not have an offset parent.
-  // Just try to do the best we can with what we have.
-  var bestParent = element.offsetParent;
-
-  if (!bestParent && goog.style.getComputedPosition(element) == 'fixed') {
-    bestParent = goog.dom.getOwnerDocument(element).documentElement;
-  }
-
-  // Just give up in this case.
-  if (!bestParent) {
-    return offsetLeftForReal;
-  }
-
-  if (goog.userAgent.GECKO) {
-    // When calculating an element's offsetLeft, Firefox erroneously subtracts
-    // the border width from the actual distance.  So we need to add it back.
-    var borderWidths = goog.style.getBorderBox(bestParent);
-    offsetLeftForReal += borderWidths.left;
-  } else if (goog.userAgent.isDocumentModeOrHigher(8)) {
-    // When calculating an element's offsetLeft, IE8-Standards Mode erroneously
-    // adds the border width to the actual distance.  So we need to subtract it.
-    var borderWidths = goog.style.getBorderBox(bestParent);
-    offsetLeftForReal -= borderWidths.left;
-  }
-
-  if (goog.style.isRightToLeft(bestParent)) {
-    // Right edge of the element relative to the left edge of its parent.
-    var elementRightOffset = offsetLeftForReal + element.offsetWidth;
-
-    // Distance from the parent's right edge to the element's right edge.
-    return bestParent.clientWidth - elementRightOffset;
-  }
-
-  return offsetLeftForReal;
-};
-
-
-/**
- * Sets the element's scrollLeft attribute so it is correctly scrolled by
- * offsetStart pixels.  This takes into account whether the element is RTL and
- * the nuances of different browsers.  To scroll to the "beginning" of an
- * element use getOffsetStart to obtain the element's offsetStart value and then
- * pass the value to setScrollOffset.
- * @see getOffsetStart
- * @param {Element} element The element to set scrollLeft on.
- * @param {number} offsetStart The number of pixels to scroll the element.
- *     If this value is < 0, 0 is used.
- */
-goog.style.bidi.setScrollOffset = function(element, offsetStart) {
-  offsetStart = Math.max(offsetStart, 0);
-  // In LTR and in "mirrored" browser RTL (such as IE), we set scrollLeft to
-  // the number of pixels to scroll.
-  // Otherwise, in RTL, we need to account for different browser behavior.
-  if (!goog.style.isRightToLeft(element)) {
-    element.scrollLeft = offsetStart;
-  } else if (goog.userAgent.GECKO) {
-    // Negative scroll-left positions in RTL.
-    element.scrollLeft = -offsetStart;
-  } else if (!(goog.userAgent.IE && goog.userAgent.isVersionOrHigher('8'))) {
-    // Take the current scrollLeft value and move to the right by the
-    // offsetStart to get to the left edge of the element, and then by
-    // the clientWidth of the element to get to the right edge.
-    element.scrollLeft =
-        element.scrollWidth - offsetStart - element.clientWidth;
-  } else {
-    element.scrollLeft = offsetStart;
-  }
-};
-
-
-/**
- * Sets the element's left style attribute in LTR or right style attribute in
- * RTL.  Also clears the left attribute in RTL and the right attribute in LTR.
- * @param {Element} elem The element to position.
- * @param {number} left The left position in LTR; will be set as right in RTL.
- * @param {?number} top The top position.  If null only the left/right is set.
- * @param {boolean} isRtl Whether we are in RTL mode.
- */
-goog.style.bidi.setPosition = function(elem, left, top, isRtl) {
-  if (!goog.isNull(top)) {
-    elem.style.top = top + 'px';
-  }
-  if (isRtl) {
-    elem.style.right = left + 'px';
-    elem.style.left = '';
-  } else {
-    elem.style.left = left + 'px';
-    elem.style.right = '';
-  }
-};
-// Copyright 2006 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/**
- * @fileoverview Common positioning code.
- *
- */
-
-goog.provide('goog.positioning');
-goog.provide('goog.positioning.Corner');
-goog.provide('goog.positioning.CornerBit');
-goog.provide('goog.positioning.Overflow');
-goog.provide('goog.positioning.OverflowStatus');
-
-goog.require('goog.asserts');
-goog.require('goog.dom');
-goog.require('goog.dom.TagName');
-goog.require('goog.math.Box');
-goog.require('goog.math.Coordinate');
-goog.require('goog.math.Size');
-goog.require('goog.style');
-goog.require('goog.style.bidi');
-
-
-/**
- * Enum for representing an element corner for positioning the popup.
- *
- * The START constants map to LEFT if element directionality is left
- * to right and RIGHT if the directionality is right to left.
- * Likewise END maps to RIGHT or LEFT depending on the directionality.
- *
- * @enum {number}
- */
-goog.positioning.Corner = {
-  TOP_LEFT: 0,
-  TOP_RIGHT: 2,
-  BOTTOM_LEFT: 1,
-  BOTTOM_RIGHT: 3,
-  TOP_START: 4,
-  TOP_END: 6,
-  BOTTOM_START: 5,
-  BOTTOM_END: 7
-};
-
-
-/**
- * Enum for bits in the {@see goog.positioning.Corner) bitmap.
- *
- * @enum {number}
- */
-goog.positioning.CornerBit = {
-  BOTTOM: 1,
-  RIGHT: 2,
-  FLIP_RTL: 4
-};
-
-
-/**
- * Enum for representing position handling in cases where the element would be
- * positioned outside the viewport.
- *
- * @enum {number}
- */
-goog.positioning.Overflow = {
-  /** Ignore overflow */
-  IGNORE: 0,
-
-  /** Try to fit horizontally in the viewport at all costs. */
-  ADJUST_X: 1,
-
-  /** If the element can't fit horizontally, report positioning failure. */
-  FAIL_X: 2,
-
-  /** Try to fit vertically in the viewport at all costs. */
-  ADJUST_Y: 4,
-
-  /** If the element can't fit vertically, report positioning failure. */
-  FAIL_Y: 8,
-
-  /** Resize the element's width to fit in the viewport. */
-  RESIZE_WIDTH: 16,
-
-  /** Resize the element's height to fit in the viewport. */
-  RESIZE_HEIGHT: 32,
-
-  /**
-   * If the anchor goes off-screen in the x-direction, position the movable
-   * element off-screen. Otherwise, try to fit horizontally in the viewport.
-   */
-  ADJUST_X_EXCEPT_OFFSCREEN: 64 | 1,
-
-  /**
-   * If the anchor goes off-screen in the y-direction, position the movable
-   * element off-screen. Otherwise, try to fit vertically in the viewport.
-   */
-  ADJUST_Y_EXCEPT_OFFSCREEN: 128 | 4
-};
-
-
-/**
- * Enum for representing the outcome of a positioning call.
- *
- * @enum {number}
- */
-goog.positioning.OverflowStatus = {
-  NONE: 0,
-  ADJUSTED_X: 1,
-  ADJUSTED_Y: 2,
-  WIDTH_ADJUSTED: 4,
-  HEIGHT_ADJUSTED: 8,
-  FAILED_LEFT: 16,
-  FAILED_RIGHT: 32,
-  FAILED_TOP: 64,
-  FAILED_BOTTOM: 128,
-  FAILED_OUTSIDE_VIEWPORT: 256
-};
-
-
-/**
- * Shorthand to check if a status code contains any fail code.
- * @type {number}
- */
-goog.positioning.OverflowStatus.FAILED =
-    goog.positioning.OverflowStatus.FAILED_LEFT |
-    goog.positioning.OverflowStatus.FAILED_RIGHT |
-    goog.positioning.OverflowStatus.FAILED_TOP |
-    goog.positioning.OverflowStatus.FAILED_BOTTOM |
-    goog.positioning.OverflowStatus.FAILED_OUTSIDE_VIEWPORT;
-
-
-/**
- * Shorthand to check if horizontal positioning failed.
- * @type {number}
- */
-goog.positioning.OverflowStatus.FAILED_HORIZONTAL =
-    goog.positioning.OverflowStatus.FAILED_LEFT |
-    goog.positioning.OverflowStatus.FAILED_RIGHT;
-
-
-/**
- * Shorthand to check if vertical positioning failed.
- * @type {number}
- */
-goog.positioning.OverflowStatus.FAILED_VERTICAL =
-    goog.positioning.OverflowStatus.FAILED_TOP |
-    goog.positioning.OverflowStatus.FAILED_BOTTOM;
-
-
-/**
- * Positions a movable element relative to an anchor element. The caller
- * specifies the corners that should touch. This functions then moves the
- * movable element accordingly.
- *
- * @param {Element} anchorElement The element that is the anchor for where
- *    the movable element should position itself.
- * @param {goog.positioning.Corner} anchorElementCorner The corner of the
- *     anchorElement for positioning the movable element.
- * @param {Element} movableElement The element to move.
- * @param {goog.positioning.Corner} movableElementCorner The corner of the
- *     movableElement that that should be positioned adjacent to the anchor
- *     element.
- * @param {goog.math.Coordinate=} opt_offset An offset specified in pixels.
- *    After the normal positioning algorithm is applied, the offset is then
- *    applied. Positive coordinates move the popup closer to the center of the
- *    anchor element. Negative coordinates move the popup away from the center
- *    of the anchor element.
- * @param {goog.math.Box=} opt_margin A margin specified in pixels.
- *    After the normal positioning algorithm is applied and any offset, the
- *    margin is then applied. Positive coordinates move the popup away from the
- *    spot it was positioned towards its center. Negative coordinates move it
- *    towards the spot it was positioned away from its center.
- * @param {?number=} opt_overflow Overflow handling mode. Defaults to IGNORE if
- *     not specified. Bitmap, {@see goog.positioning.Overflow}.
- * @param {goog.math.Size=} opt_preferredSize The preferred size of the
- *     movableElement.
- * @param {goog.math.Box=} opt_viewport Box object describing the dimensions of
- *     the viewport. The viewport is specified relative to offsetParent of
- *     {@code movableElement}. In other words, the viewport can be thought of as
- *     describing a "position: absolute" element contained in the offsetParent.
- *     It defaults to visible area of nearest scrollable ancestor of
- *     {@code movableElement} (see {@code goog.style.getVisibleRectForElement}).
- * @return {goog.positioning.OverflowStatus} Status bitmap,
- *     {@see goog.positioning.OverflowStatus}.
- */
-goog.positioning.positionAtAnchor = function(anchorElement,
-                                             anchorElementCorner,
-                                             movableElement,
-                                             movableElementCorner,
-                                             opt_offset,
-                                             opt_margin,
-                                             opt_overflow,
-                                             opt_preferredSize,
-                                             opt_viewport) {
-
-  goog.asserts.assert(movableElement);
-  var movableParentTopLeft =
-      goog.positioning.getOffsetParentPageOffset(movableElement);
-
-  // Get the visible part of the anchor element.  anchorRect is
-  // relative to anchorElement's page.
-  var anchorRect = goog.positioning.getVisiblePart_(anchorElement);
-
-  // Translate anchorRect to be relative to movableElement's page.
-  goog.style.translateRectForAnotherFrame(
-      anchorRect,
-      goog.dom.getDomHelper(anchorElement),
-      goog.dom.getDomHelper(movableElement));
-
-  // Offset based on which corner of the element we want to position against.
-  var corner = goog.positioning.getEffectiveCorner(anchorElement,
-                                                   anchorElementCorner);
-  // absolutePos is a candidate position relative to the
-  // movableElement's window.
-  var absolutePos = new goog.math.Coordinate(
-      corner & goog.positioning.CornerBit.RIGHT ?
-          anchorRect.left + anchorRect.width : anchorRect.left,
-      corner & goog.positioning.CornerBit.BOTTOM ?
-          anchorRect.top + anchorRect.height : anchorRect.top);
-
-  // Translate absolutePos to be relative to the offsetParent.
-  absolutePos =
-      goog.math.Coordinate.difference(absolutePos, movableParentTopLeft);
-
-  // Apply offset, if specified
-  if (opt_offset) {
-    absolutePos.x += (corner & goog.positioning.CornerBit.RIGHT ? -1 : 1) *
-        opt_offset.x;
-    absolutePos.y += (corner & goog.positioning.CornerBit.BOTTOM ? -1 : 1) *
-        opt_offset.y;
-  }
-
-  // Determine dimension of viewport.
-  var viewport;
-  if (opt_overflow) {
-    if (opt_viewport) {
-      viewport = opt_viewport;
-    } else {
-      viewport = goog.style.getVisibleRectForElement(movableElement);
-      if (viewport) {
-        viewport.top -= movableParentTopLeft.y;
-        viewport.right -= movableParentTopLeft.x;
-        viewport.bottom -= movableParentTopLeft.y;
-        viewport.left -= movableParentTopLeft.x;
-      }
-    }
-  }
-
-  return goog.positioning.positionAtCoordinate(absolutePos,
-                                               movableElement,
-                                               movableElementCorner,
-                                               opt_margin,
-                                               viewport,
-                                               opt_overflow,
-                                               opt_preferredSize);
-};
-
-
-/**
- * Calculates the page offset of the given element's
- * offsetParent. This value can be used to translate any x- and
- * y-offset relative to the page to an offset relative to the
- * offsetParent, which can then be used directly with as position
- * coordinate for {@code positionWithCoordinate}.
- * @param {!Element} movableElement The element to calculate.
- * @return {!goog.math.Coordinate} The page offset, may be (0, 0).
- */
-goog.positioning.getOffsetParentPageOffset = function(movableElement) {
-  // Ignore offset for the BODY element unless its position is non-static.
-  // For cases where the offset parent is HTML rather than the BODY (such as in
-  // IE strict mode) there's no need to get the position of the BODY as it
-  // doesn't affect the page offset.
-  var movableParentTopLeft;
-  var parent = movableElement.offsetParent;
-  if (parent) {
-    var isBody = parent.tagName == goog.dom.TagName.HTML ||
-        parent.tagName == goog.dom.TagName.BODY;
-    if (!isBody ||
-        goog.style.getComputedPosition(parent) != 'static') {
-      // Get the top-left corner of the parent, in page coordinates.
-      movableParentTopLeft = goog.style.getPageOffset(parent);
-
-      if (!isBody) {
-        movableParentTopLeft = goog.math.Coordinate.difference(
-            movableParentTopLeft,
-            new goog.math.Coordinate(goog.style.bidi.getScrollLeft(parent),
-                parent.scrollTop));
-      }
-    }
-  }
-
-  return movableParentTopLeft || new goog.math.Coordinate();
-};
-
-
-/**
- * Returns intersection of the specified element and
- * goog.style.getVisibleRectForElement for it.
- *
- * @param {Element} el The target element.
- * @return {goog.math.Rect} Intersection of getVisibleRectForElement
- *     and the current bounding rectangle of the element.  If the
- *     intersection is empty, returns the bounding rectangle.
- * @private
- */
-goog.positioning.getVisiblePart_ = function(el) {
-  var rect = goog.style.getBounds(el);
-  var visibleBox = goog.style.getVisibleRectForElement(el);
-  if (visibleBox) {
-    rect.intersection(goog.math.Rect.createFromBox(visibleBox));
-  }
-  return rect;
-};
-
-
-/**
- * Positions the specified corner of the movable element at the
- * specified coordinate.
- *
- * @param {goog.math.Coordinate} absolutePos The coordinate to position the
- *     element at.
- * @param {Element} movableElement The element to be positioned.
- * @param {goog.positioning.Corner} movableElementCorner The corner of the
- *     movableElement that that should be positioned.
- * @param {goog.math.Box=} opt_margin A margin specified in pixels.
- *    After the normal positioning algorithm is applied and any offset, the
- *    margin is then applied. Positive coordinates move the popup away from the
- *    spot it was positioned towards its center. Negative coordinates move it
- *    towards the spot it was positioned away from its center.
- * @param {goog.math.Box=} opt_viewport Box object describing the dimensions of
- *     the viewport. Required if opt_overflow is specified.
- * @param {?number=} opt_overflow Overflow handling mode. Defaults to IGNORE if
- *     not specified, {@see goog.positioning.Overflow}.
- * @param {goog.math.Size=} opt_preferredSize The preferred size of the
- *     movableElement. Defaults to the current size.
- * @return {goog.positioning.OverflowStatus} Status bitmap.
- */
-goog.positioning.positionAtCoordinate = function(absolutePos,
-                                                 movableElement,
-                                                 movableElementCorner,
-                                                 opt_margin,
-                                                 opt_viewport,
-                                                 opt_overflow,
-                                                 opt_preferredSize) {
-  absolutePos = absolutePos.clone();
-  var status = goog.positioning.OverflowStatus.NONE;
-
-  // Offset based on attached corner and desired margin.
-  var corner = goog.positioning.getEffectiveCorner(movableElement,
-                                                   movableElementCorner);
-  var elementSize = goog.style.getSize(movableElement);
-  var size = opt_preferredSize ? opt_preferredSize.clone() :
-      elementSize.clone();
-
-  if (opt_margin || corner != goog.positioning.Corner.TOP_LEFT) {
-    if (corner & goog.positioning.CornerBit.RIGHT) {
-      absolutePos.x -= size.width + (opt_margin ? opt_margin.right : 0);
-    } else if (opt_margin) {
-      absolutePos.x += opt_margin.left;
-    }
-    if (corner & goog.positioning.CornerBit.BOTTOM) {
-      absolutePos.y -= size.height + (opt_margin ? opt_margin.bottom : 0);
-    } else if (opt_margin) {
-      absolutePos.y += opt_margin.top;
-    }
-  }
-
-  // Adjust position to fit inside viewport.
-  if (opt_overflow) {
-    status = opt_viewport ?
-        goog.positioning.adjustForViewport_(
-            absolutePos, size, opt_viewport, opt_overflow) :
-        goog.positioning.OverflowStatus.FAILED_OUTSIDE_VIEWPORT;
-    if (status & goog.positioning.OverflowStatus.FAILED) {
-      return status;
-    }
-  }
-
-  goog.style.setPosition(movableElement, absolutePos);
-  if (!goog.math.Size.equals(elementSize, size)) {
-    goog.style.setBorderBoxSize(movableElement, size);
-  }
-
-  return status;
-};
-
-
-/**
- * Adjusts the position and/or size of an element, identified by its position
- * and size, to fit inside the viewport. If the position or size of the element
- * is adjusted the pos or size objects, respectively, are modified.
- *
- * @param {goog.math.Coordinate} pos Position of element, updated if the
- *     position is adjusted.
- * @param {goog.math.Size} size Size of element, updated if the size is
- *     adjusted.
- * @param {goog.math.Box} viewport Bounding box describing the viewport.
- * @param {number} overflow Overflow handling mode,
- *     {@see goog.positioning.Overflow}.
- * @return {goog.positioning.OverflowStatus} Status bitmap,
- *     {@see goog.positioning.OverflowStatus}.
- * @private
- */
-goog.positioning.adjustForViewport_ = function(pos, size, viewport, overflow) {
-  var status = goog.positioning.OverflowStatus.NONE;
-
-  var ADJUST_X_EXCEPT_OFFSCREEN =
-      goog.positioning.Overflow.ADJUST_X_EXCEPT_OFFSCREEN;
-  var ADJUST_Y_EXCEPT_OFFSCREEN =
-      goog.positioning.Overflow.ADJUST_Y_EXCEPT_OFFSCREEN;
-  if ((overflow & ADJUST_X_EXCEPT_OFFSCREEN) == ADJUST_X_EXCEPT_OFFSCREEN &&
-      (pos.x < viewport.left || pos.x >= viewport.right)) {
-    overflow &= ~goog.positioning.Overflow.ADJUST_X;
-  }
-  if ((overflow & ADJUST_Y_EXCEPT_OFFSCREEN) == ADJUST_Y_EXCEPT_OFFSCREEN &&
-      (pos.y < viewport.top || pos.y >= viewport.bottom)) {
-    overflow &= ~goog.positioning.Overflow.ADJUST_Y;
-  }
-
-  // Left edge outside viewport, try to move it.
-  if (pos.x < viewport.left && overflow & goog.positioning.Overflow.ADJUST_X) {
-    pos.x = viewport.left;
-    status |= goog.positioning.OverflowStatus.ADJUSTED_X;
-  }
-
-  // Left edge inside and right edge outside viewport, try to resize it.
-  if (pos.x < viewport.left &&
-      pos.x + size.width > viewport.right &&
-      overflow & goog.positioning.Overflow.RESIZE_WIDTH) {
-    size.width = Math.max(
-        size.width - ((pos.x + size.width) - viewport.right), 0);
-    status |= goog.positioning.OverflowStatus.WIDTH_ADJUSTED;
-  }
-
-  // Right edge outside viewport, try to move it.
-  if (pos.x + size.width > viewport.right &&
-      overflow & goog.positioning.Overflow.ADJUST_X) {
-    pos.x = Math.max(viewport.right - size.width, viewport.left);
-    status |= goog.positioning.OverflowStatus.ADJUSTED_X;
-  }
-
-  // Left or right edge still outside viewport, fail if the FAIL_X option was
-  // specified, ignore it otherwise.
-  if (overflow & goog.positioning.Overflow.FAIL_X) {
-    status |= (pos.x < viewport.left ?
-                   goog.positioning.OverflowStatus.FAILED_LEFT : 0) |
-              (pos.x + size.width > viewport.right ?
-                   goog.positioning.OverflowStatus.FAILED_RIGHT : 0);
-  }
-
-  // Top edge outside viewport, try to move it.
-  if (pos.y < viewport.top && overflow & goog.positioning.Overflow.ADJUST_Y) {
-    pos.y = viewport.top;
-    status |= goog.positioning.OverflowStatus.ADJUSTED_Y;
-  }
-
-  // Bottom edge inside and top edge outside viewport, try to resize it.
-  if (pos.y <= viewport.top &&
-      pos.y + size.height < viewport.bottom &&
-      overflow & goog.positioning.Overflow.RESIZE_HEIGHT) {
-    size.height = Math.max(size.height - (viewport.top - pos.y), 0);
-    pos.y = viewport.top;
-    status |= goog.positioning.OverflowStatus.HEIGHT_ADJUSTED;
-  }
-
-  // Top edge inside and bottom edge outside viewport, try to resize it.
-  if (pos.y >= viewport.top &&
-      pos.y + size.height > viewport.bottom &&
-      overflow & goog.positioning.Overflow.RESIZE_HEIGHT) {
-    size.height = Math.max(
-        size.height - ((pos.y + size.height) - viewport.bottom), 0);
-    status |= goog.positioning.OverflowStatus.HEIGHT_ADJUSTED;
-  }
-
-  // Bottom edge outside viewport, try to move it.
-  if (pos.y + size.height > viewport.bottom &&
-      overflow & goog.positioning.Overflow.ADJUST_Y) {
-    pos.y = Math.max(viewport.bottom - size.height, viewport.top);
-    status |= goog.positioning.OverflowStatus.ADJUSTED_Y;
-  }
-
-  // Top or bottom edge still outside viewport, fail if the FAIL_Y option was
-  // specified, ignore it otherwise.
-  if (overflow & goog.positioning.Overflow.FAIL_Y) {
-    status |= (pos.y < viewport.top ?
-                   goog.positioning.OverflowStatus.FAILED_TOP : 0) |
-              (pos.y + size.height > viewport.bottom ?
-                   goog.positioning.OverflowStatus.FAILED_BOTTOM : 0);
-  }
-
-  return status;
-};
-
-
-/**
- * Returns an absolute corner (top/bottom left/right) given an absolute
- * or relative (top/bottom start/end) corner and the direction of an element.
- * Absolute corners remain unchanged.
- * @param {Element} element DOM element to test for RTL direction.
- * @param {goog.positioning.Corner} corner The popup corner used for
- *     positioning.
- * @return {goog.positioning.Corner} Effective corner.
- */
-goog.positioning.getEffectiveCorner = function(element, corner) {
-  return /** @type {goog.positioning.Corner} */ (
-      (corner & goog.positioning.CornerBit.FLIP_RTL &&
-          goog.style.isRightToLeft(element) ?
-          corner ^ goog.positioning.CornerBit.RIGHT :
-          corner
-      ) & ~goog.positioning.CornerBit.FLIP_RTL);
-};
-
-
-/**
- * Returns the corner opposite the given one horizontally.
- * @param {goog.positioning.Corner} corner The popup corner used to flip.
- * @return {goog.positioning.Corner} The opposite corner horizontally.
- */
-goog.positioning.flipCornerHorizontal = function(corner) {
-  return /** @type {goog.positioning.Corner} */ (corner ^
-      goog.positioning.CornerBit.RIGHT);
-};
-
-
-/**
- * Returns the corner opposite the given one vertically.
- * @param {goog.positioning.Corner} corner The popup corner used to flip.
- * @return {goog.positioning.Corner} The opposite corner vertically.
- */
-goog.positioning.flipCornerVertical = function(corner) {
-  return /** @type {goog.positioning.Corner} */ (corner ^
-      goog.positioning.CornerBit.BOTTOM);
-};
-
-
-/**
- * Returns the corner opposite the given one horizontally and vertically.
- * @param {goog.positioning.Corner} corner The popup corner used to flip.
- * @return {goog.positioning.Corner} The opposite corner horizontally and
- *     vertically.
- */
-goog.positioning.flipCorner = function(corner) {
-  return /** @type {goog.positioning.Corner} */ (corner ^
-      goog.positioning.CornerBit.BOTTOM ^
-      goog.positioning.CornerBit.RIGHT);
-};
-
-// Copyright 2006 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/**
- * @fileoverview A timer class to which other classes and objects can
- * listen on.  This is only an abstraction above setInterval.
- *
- * @see ../demos/timers.html
- */
-
-goog.provide('goog.Timer');
-
-goog.require('goog.events.EventTarget');
-
-
-
-/**
- * Class for handling timing events.
- *
- * @param {number=} opt_interval Number of ms between ticks (Default: 1ms).
- * @param {Object=} opt_timerObject  An object that has setTimeout, setInterval,
- *     clearTimeout and clearInterval (eg Window).
- * @constructor
- * @extends {goog.events.EventTarget}
- */
-goog.Timer = function(opt_interval, opt_timerObject) {
-  goog.events.EventTarget.call(this);
-
-  /**
-   * Number of ms between ticks
-   * @type {number}
-   * @private
-   */
-  this.interval_ = opt_interval || 1;
-
-  /**
-   * An object that implements setTimout, setInterval, clearTimeout and
-   * clearInterval. We default to the window object. Changing this on
-   * goog.Timer.prototype changes the object for all timer instances which can
-   * be useful if your environment has some other implementation of timers than
-   * the window object.
-   * @type {Object}
-   * @private
-   */
-  this.timerObject_ = opt_timerObject || goog.Timer.defaultTimerObject;
-
-  /**
-   * Cached tick_ bound to the object for later use in the timer.
-   * @type {Function}
-   * @private
-   */
-  this.boundTick_ = goog.bind(this.tick_, this);
-
-  /**
-   * Firefox browser often fires the timer event sooner
-   * (sometimes MUCH sooner) than the requested timeout. So we
-   * compare the time to when the event was last fired, and
-   * reschedule if appropriate. See also goog.Timer.intervalScale
-   * @type {number}
-   * @private
-   */
-  this.last_ = goog.now();
-};
-goog.inherits(goog.Timer, goog.events.EventTarget);
-
-
-/**
- * Maximum timeout value.
- *
- * Timeout values too big to fit into a signed 32-bit integer may cause
- * overflow in FF, Safari, and Chrome, resulting in the timeout being
- * scheduled immediately.  It makes more sense simply not to schedule these
- * timeouts, since 24.8 days is beyond a reasonable expectation for the
- * browser to stay open.
- *
- * @type {number}
- * @private
- */
-goog.Timer.MAX_TIMEOUT_ = 2147483647;
-
-
-/**
- * Whether this timer is enabled
- * @type {boolean}
- */
-goog.Timer.prototype.enabled = false;
-
-
-/**
- * An object that implements setTimout, setInterval, clearTimeout and
- * clearInterval. We default to the global object. Changing
- * goog.Timer.defaultTimerObject changes the object for all timer instances
- * which can be useful if your environment has some other implementation of
- * timers you'd like to use.
- * @type {Object}
- */
-goog.Timer.defaultTimerObject = goog.global;
-
-
-/**
- * A variable that controls the timer error correction. If the
- * timer is called before the requested interval times
- * intervalScale, which often happens on mozilla, the timer is
- * rescheduled. See also this.last_
- * @type {number}
- */
-goog.Timer.intervalScale = 0.8;
-
-
-/**
- * Variable for storing the result of setInterval
- * @type {?number}
- * @private
- */
-goog.Timer.prototype.timer_ = null;
-
-
-/**
- * Gets the interval of the timer.
- * @return {number} interval Number of ms between ticks.
- */
-goog.Timer.prototype.getInterval = function() {
-  return this.interval_;
-};
-
-
-/**
- * Sets the interval of the timer.
- * @param {number} interval Number of ms between ticks.
- */
-goog.Timer.prototype.setInterval = function(interval) {
-  this.interval_ = interval;
-  if (this.timer_ && this.enabled) {
-    // Stop and then start the timer to reset the interval.
-    this.stop();
-    this.start();
-  } else if (this.timer_) {
-    this.stop();
-  }
-};
-
-
-/**
- * Callback for the setTimeout used by the timer
- * @private
- */
-goog.Timer.prototype.tick_ = function() {
-  if (this.enabled) {
-    var elapsed = goog.now() - this.last_;
-    if (elapsed > 0 &&
-        elapsed < this.interval_ * goog.Timer.intervalScale) {
-      this.timer_ = this.timerObject_.setTimeout(this.boundTick_,
-          this.interval_ - elapsed);
-      return;
-    }
-
-    // Prevents setInterval from registering a duplicate timeout when called
-    // in the timer event handler.
-    if (this.timer_) {
-      this.timerObject_.clearTimeout(this.timer_);
-      this.timer_ = null;
-    }
-
-    this.dispatchTick();
-    // The timer could be stopped in the timer event handler.
-    if (this.enabled) {
-      this.timer_ = this.timerObject_.setTimeout(this.boundTick_,
-          this.interval_);
-      this.last_ = goog.now();
-    }
-  }
-};
-
-
-/**
- * Dispatches the TICK event. This is its own method so subclasses can override.
- */
-goog.Timer.prototype.dispatchTick = function() {
-  this.dispatchEvent(goog.Timer.TICK);
-};
-
-
-/**
- * Starts the timer.
- */
-goog.Timer.prototype.start = function() {
-  this.enabled = true;
-
-  // If there is no interval already registered, start it now
-  if (!this.timer_) {
-    // IMPORTANT!
-    // window.setInterval in FireFox has a bug - it fires based on
-    // absolute time, rather than on relative time. What this means
-    // is that if a computer is sleeping/hibernating for 24 hours
-    // and the timer interval was configured to fire every 1000ms,
-    // then after the PC wakes up the timer will fire, in rapid
-    // succession, 3600*24 times.
-    // This bug is described here and is already fixed, but it will
-    // take time to propagate, so for now I am switching this over
-    // to setTimeout logic.
-    //     https://bugzilla.mozilla.org/show_bug.cgi?id=376643
-    //
-    this.timer_ = this.timerObject_.setTimeout(this.boundTick_,
-        this.interval_);
-    this.last_ = goog.now();
-  }
-};
-
-
-/**
- * Stops the timer.
- */
-goog.Timer.prototype.stop = function() {
-  this.enabled = false;
-  if (this.timer_) {
-    this.timerObject_.clearTimeout(this.timer_);
-    this.timer_ = null;
-  }
-};
-
-
-/** @override */
-goog.Timer.prototype.disposeInternal = function() {
-  goog.Timer.superClass_.disposeInternal.call(this);
-  this.stop();
-  delete this.timerObject_;
-};
-
-
-/**
- * Constant for the timer's event type
- * @type {string}
- */
-goog.Timer.TICK = 'tick';
-
-
-/**
- * Calls the given function once, after the optional pause.
- *
- * The function is always called asynchronously, even if the delay is 0. This
- * is a common trick to schedule a function to run after a batch of browser
- * event processing.
- *
- * @param {Function|{handleEvent:Function}} listener Function or object that
- *     has a handleEvent method.
- * @param {number=} opt_delay Milliseconds to wait; default is 0.
- * @param {Object=} opt_handler Object in whose scope to call the listener.
- * @return {number} A handle to the timer ID.
- */
-goog.Timer.callOnce = function(listener, opt_delay, opt_handler) {
-  if (goog.isFunction(listener)) {
-    if (opt_handler) {
-      listener = goog.bind(listener, opt_handler);
-    }
-  } else if (listener && typeof listener.handleEvent == 'function') {
-    // using typeof to prevent strict js warning
-    listener = goog.bind(listener.handleEvent, listener);
-  } else {
-    throw Error('Invalid listener argument');
-  }
-
-  if (opt_delay > goog.Timer.MAX_TIMEOUT_) {
-    // Timeouts greater than MAX_INT return immediately due to integer
-    // overflow in many browsers.  Since MAX_INT is 24.8 days, just don't
-    // schedule anything at all.
-    return -1;
-  } else {
-    return goog.Timer.defaultTimerObject.setTimeout(
-        listener, opt_delay || 0);
-  }
-};
-
-
-/**
- * Clears a timeout initiated by callOnce
- * @param {?number} timerId a timer ID.
- */
-goog.Timer.clear = function(timerId) {
-  goog.Timer.defaultTimerObject.clearTimeout(timerId);
-};
-// Copyright 2008 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/**
- * @fileoverview Detects the specific browser and not just the rendering engine.
- *
- */
-
-goog.provide('goog.userAgent.product');
-
-goog.require('goog.userAgent');
-
-
-/**
- * @define {boolean} Whether the code is running on the Firefox web browser.
- */
-goog.define('goog.userAgent.product.ASSUME_FIREFOX', false);
-
-
-/**
- * @define {boolean} Whether the code is running on the Camino web browser.
- */
-goog.define('goog.userAgent.product.ASSUME_CAMINO', false);
-
-
-/**
- * @define {boolean} Whether we know at compile-time that the product is an
- *     iPhone.
- */
-goog.define('goog.userAgent.product.ASSUME_IPHONE', false);
-
-
-/**
- * @define {boolean} Whether we know at compile-time that the product is an
- *     iPad.
- */
-goog.define('goog.userAgent.product.ASSUME_IPAD', false);
-
-
-/**
- * @define {boolean} Whether we know at compile-time that the product is an
- *     Android phone.
- */
-goog.define('goog.userAgent.product.ASSUME_ANDROID', false);
-
-
-/**
- * @define {boolean} Whether the code is running on the Chrome web browser.
- */
-goog.define('goog.userAgent.product.ASSUME_CHROME', false);
-
-
-/**
- * @define {boolean} Whether the code is running on the Safari web browser.
- */
-goog.define('goog.userAgent.product.ASSUME_SAFARI', false);
-
-
-/**
- * Whether we know the product type at compile-time.
- * @type {boolean}
- * @private
- */
-goog.userAgent.product.PRODUCT_KNOWN_ =
-    goog.userAgent.ASSUME_IE ||
-    goog.userAgent.ASSUME_OPERA ||
-    goog.userAgent.product.ASSUME_FIREFOX ||
-    goog.userAgent.product.ASSUME_CAMINO ||
-    goog.userAgent.product.ASSUME_IPHONE ||
-    goog.userAgent.product.ASSUME_IPAD ||
-    goog.userAgent.product.ASSUME_ANDROID ||
-    goog.userAgent.product.ASSUME_CHROME ||
-    goog.userAgent.product.ASSUME_SAFARI;
-
-
-/**
- * Right now we just focus on Tier 1-3 browsers at:
- * http://wiki/Nonconf/ProductPlatformGuidelines
- * As well as the YUI grade A browsers at:
- * http://developer.yahoo.com/yui/articles/gbs/
- *
- * @private
- */
-goog.userAgent.product.init_ = function() {
-
-  /**
-   * Whether the code is running on the Firefox web browser.
-   * @type {boolean}
-   * @private
-   */
-  goog.userAgent.product.detectedFirefox_ = false;
-
-  /**
-   * Whether the code is running on the Camino web browser.
-   * @type {boolean}
-   * @private
-   */
-  goog.userAgent.product.detectedCamino_ = false;
-
-  /**
-   * Whether the code is running on an iPhone or iPod touch.
-   * @type {boolean}
-   * @private
-   */
-  goog.userAgent.product.detectedIphone_ = false;
-
-  /**
-   * Whether the code is running on an iPad
-   * @type {boolean}
-   * @private
-   */
-  goog.userAgent.product.detectedIpad_ = false;
-
-  /**
-   * Whether the code is running on the default browser on an Android phone.
-   * @type {boolean}
-   * @private
-   */
-  goog.userAgent.product.detectedAndroid_ = false;
-
-  /**
-   * Whether the code is running on the Chrome web browser.
-   * @type {boolean}
-   * @private
-   */
-  goog.userAgent.product.detectedChrome_ = false;
-
-  /**
-   * Whether the code is running on the Safari web browser.
-   * @type {boolean}
-   * @private
-   */
-  goog.userAgent.product.detectedSafari_ = false;
-
-  var ua = goog.userAgent.getUserAgentString();
-  if (!ua) {
-    return;
-  }
-
-  // The order of the if-statements in the following code is important.
-  // For example, in the WebKit section, we put Chrome in front of Safari
-  // because the string 'Safari' is present on both of those browsers'
-  // userAgent strings as well as the string we are looking for.
-  // The idea is to prevent accidental detection of more than one client.
-
-  if (ua.indexOf('Firefox') != -1) {
-    goog.userAgent.product.detectedFirefox_ = true;
-  } else if (ua.indexOf('Camino') != -1) {
-    goog.userAgent.product.detectedCamino_ = true;
-  } else if (ua.indexOf('iPhone') != -1 || ua.indexOf('iPod') != -1) {
-    goog.userAgent.product.detectedIphone_ = true;
-  } else if (ua.indexOf('iPad') != -1) {
-    goog.userAgent.product.detectedIpad_ = true;
-  } else if (ua.indexOf('Android') != -1) {
-    goog.userAgent.product.detectedAndroid_ = true;
-  } else if (ua.indexOf('Chrome') != -1) {
-    goog.userAgent.product.detectedChrome_ = true;
-  } else if (ua.indexOf('Safari') != -1) {
-    goog.userAgent.product.detectedSafari_ = true;
-  }
-};
-
-if (!goog.userAgent.product.PRODUCT_KNOWN_) {
-  goog.userAgent.product.init_();
-}
-
-
-/**
- * Whether the code is running on the Opera web browser.
- * @type {boolean}
- */
-goog.userAgent.product.OPERA = goog.userAgent.OPERA;
-
-
-/**
- * Whether the code is running on an IE web browser.
- * @type {boolean}
- */
-goog.userAgent.product.IE = goog.userAgent.IE;
-
-
-/**
- * Whether the code is running on the Firefox web browser.
- * @type {boolean}
- */
-goog.userAgent.product.FIREFOX = goog.userAgent.product.PRODUCT_KNOWN_ ?
-    goog.userAgent.product.ASSUME_FIREFOX :
-    goog.userAgent.product.detectedFirefox_;
-
-
-/**
- * Whether the code is running on the Camino web browser.
- * @type {boolean}
- */
-goog.userAgent.product.CAMINO = goog.userAgent.product.PRODUCT_KNOWN_ ?
-    goog.userAgent.product.ASSUME_CAMINO :
-    goog.userAgent.product.detectedCamino_;
-
-
-/**
- * Whether the code is running on an iPhone or iPod touch.
- * @type {boolean}
- */
-goog.userAgent.product.IPHONE = goog.userAgent.product.PRODUCT_KNOWN_ ?
-    goog.userAgent.product.ASSUME_IPHONE :
-    goog.userAgent.product.detectedIphone_;
-
-
-/**
- * Whether the code is running on an iPad.
- * @type {boolean}
- */
-goog.userAgent.product.IPAD = goog.userAgent.product.PRODUCT_KNOWN_ ?
-    goog.userAgent.product.ASSUME_IPAD :
-    goog.userAgent.product.detectedIpad_;
-
-
-/**
- * Whether the code is running on the default browser on an Android phone.
- * @type {boolean}
- */
-goog.userAgent.product.ANDROID = goog.userAgent.product.PRODUCT_KNOWN_ ?
-    goog.userAgent.product.ASSUME_ANDROID :
-    goog.userAgent.product.detectedAndroid_;
-
-
-/**
- * Whether the code is running on the Chrome web browser.
- * @type {boolean}
- */
-goog.userAgent.product.CHROME = goog.userAgent.product.PRODUCT_KNOWN_ ?
-    goog.userAgent.product.ASSUME_CHROME :
-    goog.userAgent.product.detectedChrome_;
-
-
-/**
- * Whether the code is running on the Safari web browser.
- * @type {boolean}
- */
-goog.userAgent.product.SAFARI = goog.userAgent.product.PRODUCT_KNOWN_ ?
-    goog.userAgent.product.ASSUME_SAFARI :
-    goog.userAgent.product.detectedSafari_;
 // Copyright 2006 The Closure Library Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -30127,6 +30009,124 @@ goog.ui.registry.setDecoratorByClassName(goog.ui.MenuButtonRenderer.CSS_CLASS,
       // MenuButton defaults to using MenuButtonRenderer.
       return new goog.ui.MenuButton(null);
     });
+// Copyright 2012 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * @fileoverview Renderer for {@link goog.ui.menuBar}.
+ *
+ */
+
+goog.provide('goog.ui.MenuBarRenderer');
+
+goog.require('goog.a11y.aria.Role');
+goog.require('goog.ui.Container');
+goog.require('goog.ui.ContainerRenderer');
+
+
+
+/**
+ * Default renderer for {@link goog.ui.menuBar}s, based on {@link
+ * goog.ui.ContainerRenderer}.
+ * @constructor
+ * @extends {goog.ui.ContainerRenderer}
+ */
+goog.ui.MenuBarRenderer = function() {
+  goog.base(this);
+};
+goog.inherits(goog.ui.MenuBarRenderer, goog.ui.ContainerRenderer);
+goog.addSingletonGetter(goog.ui.MenuBarRenderer);
+
+
+/**
+ * Default CSS class to be applied to the root element of elements rendered
+ * by this renderer.
+ * @type {string}
+ */
+goog.ui.MenuBarRenderer.CSS_CLASS = goog.getCssName('goog-menubar');
+
+
+/**
+ * @override
+ */
+goog.ui.MenuBarRenderer.prototype.getAriaRole = function() {
+  return goog.a11y.aria.Role.MENUBAR;
+};
+
+
+/**
+ * @override
+ */
+goog.ui.MenuBarRenderer.prototype.getCssClass = function() {
+  return goog.ui.MenuBarRenderer.CSS_CLASS;
+};
+
+
+/**
+ * Returns the default orientation of containers rendered or decorated by this
+ * renderer.  This implementation returns {@code HORIZONTAL}.
+ * @return {goog.ui.Container.Orientation} Default orientation for containers
+ *     created or decorated by this renderer.
+ * @override
+ */
+goog.ui.MenuBarRenderer.prototype.getDefaultOrientation = function() {
+  return goog.ui.Container.Orientation.HORIZONTAL;
+};
+// Copyright 2012 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * @fileoverview A base menu bar factory. Can be bound to an existing
+ * HTML structure or can generate its own DOM.
+ *
+ * To decorate, the menu bar should be bound to an element containing children
+ * with the classname 'goog-menu-button'.  See menubar.html for example.
+ *
+ * @see ../demos/menubar.html
+ */
+
+goog.provide('goog.ui.menuBar');
+
+goog.require('goog.ui.Container');
+goog.require('goog.ui.MenuBarRenderer');
+
+
+/**
+ * The menuBar factory creates a new menu bar.
+ * @param {goog.ui.ContainerRenderer=} opt_renderer Renderer used to render or
+ *     decorate the menu bar; defaults to {@link goog.ui.MenuBarRenderer}.
+ * @param {goog.dom.DomHelper=} opt_domHelper DOM helper, used for document
+ *     interaction.
+ * @return {goog.ui.Container} The created menu bar.
+ */
+goog.ui.menuBar.create = function(opt_renderer, opt_domHelper) {
+  return new goog.ui.Container(
+      null,
+      opt_renderer ? opt_renderer : goog.ui.MenuBarRenderer.getInstance(),
+      opt_domHelper);
+};
 //////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
@@ -30148,10 +30148,12 @@ goog.ui.registry.setDecoratorByClassName(goog.ui.MenuButtonRenderer.CSS_CLASS,
 
 goog.provide('silex.view.Menu');
 
-goog.require('goog.ui.menuBar');
 goog.require('goog.ui.Menu');
-goog.require('goog.ui.MenuItem');
 goog.require('goog.ui.MenuButton');
+goog.require('goog.ui.MenuItem');
+goog.require('goog.ui.menuBar');
+
+
 
 //////////////////////////////////////////////////////////////////
 // Menu class
@@ -30160,12 +30162,12 @@ goog.require('goog.ui.MenuButton');
  * @constructor
  */
 silex.view.Menu = function(element, cbk) {
-    this.element = element;
+  this.element = element;
 
-    silex.Helper.loadTemplateFile('templates/menu.html', element, function() {
-        this.buildMenu(element);
-        if (cbk) cbk();
-    }, this);
+  silex.Helper.loadTemplateFile('templates/menu.html', element, function() {
+    this.buildMenu(element);
+    if (cbk) cbk();
+  }, this);
 };
 
 
@@ -30191,102 +30193,102 @@ silex.view.Menu.prototype.onStatus;
  * create the menu with closure API
  */
 silex.view.Menu.prototype.buildMenu = function(rootNode) {
-    this.menu = goog.ui.menuBar.create();
-    var menuNames = [
-         {label: 'File', className: 'menu-item-file'}
-         , {label: 'Edit', className: 'menu-item-edit'}
-         , {label: 'View', className: 'menu-item-view'}
-         , {label: 'Insert', className: 'menu-item-insert'}
-         , {label: 'Tools', className: 'menu-item-tools'}
-         , {label: 'Help', className: 'menu-item-help'}
-    ];
-    var menuOptions = [
-        [
-            {label:'New File', id: 'file.new', className: 'menu-item-file-new'}
-            , {label: 'Open File...', id: 'file.open', className: 'menu-item-file-open'}
-            , {label: 'Save File', id: 'file.save', className: 'menu-item-file-save'}
-            , {label: 'Save As...', id: 'file.saveas', className: 'menu-item-file-saveas'}
-            , null
-            , {label: 'Publish', id: 'file.publish', className: 'menu-item-file-publish'}
-            , {label: 'Settings...', id: 'file.publish.settings', className: 'menu-item-file-publish-settings'}
-            , null
-            , {label: 'Close File', id: 'file.close', className: 'menu-item-file-close'}
-        ]
+  this.menu = goog.ui.menuBar.create();
+  var menuNames = [
+    {label: 'File', className: 'menu-item-file'}
+    , {label: 'Edit', className: 'menu-item-edit'}
+    , {label: 'View', className: 'menu-item-view'}
+    , {label: 'Insert', className: 'menu-item-insert'}
+    , {label: 'Tools', className: 'menu-item-tools'}
+    , {label: 'Help', className: 'menu-item-help'}
+  ];
+  var menuOptions = [
+    [
+     {label: 'New File', id: 'file.new', className: 'menu-item-file-new'}
+     , {label: 'Open File...', id: 'file.open', className: 'menu-item-file-open'}
+     , {label: 'Save File', id: 'file.save', className: 'menu-item-file-save'}
+     , {label: 'Save As...', id: 'file.saveas', className: 'menu-item-file-saveas'}
+     , null
+, {label: 'Publish', id: 'file.publish', className: 'menu-item-file-publish'}
+     , {label: 'Settings...', id: 'file.publish.settings', className: 'menu-item-file-publish-settings'}
+     , null
+, {label: 'Close File', id: 'file.close', className: 'menu-item-file-close'}
+    ]
         , [
-            {label:'Delete selection', id: 'edit.delete.selection', className: 'menu-item-edit-delete-selection'}
-            , null
-            , {label:'Rename page', id: 'edit.rename.page', className: 'menu-item-edit-rename-page'}
-            , {label:'Delete page', id: 'edit.delete.page', className: 'menu-item-edit-delete-page'}
-        ]
+      {label: 'Delete selection', id: 'edit.delete.selection', className: 'menu-item-edit-delete-selection'}
+      , null
+, {label: 'Rename page', id: 'edit.rename.page', className: 'menu-item-edit-rename-page'}
+      , {label: 'Delete page', id: 'edit.delete.page', className: 'menu-item-edit-delete-page'}
+    ]
         , [
-            {label:'View in new window', id: 'view.file', className: 'menu-item-view-file'}
-            , null
-            , {label:'Open text editor', id: 'view.open.textEditor', className: 'menu-item-view-open-textEditor'}
-            , {label:'Open file browser', id: 'view.open.fileExplorer', className: 'menu-item-view-open-fileExplorer'}
-        ]
+      {label: 'View in new window', id: 'view.file', className: 'menu-item-view-file'}
+      , null
+, {label: 'Open text editor', id: 'view.open.textEditor', className: 'menu-item-view-open-textEditor'}
+      , {label: 'Open file browser', id: 'view.open.fileExplorer', className: 'menu-item-view-open-fileExplorer'}
+    ]
         , [
-            {label:'Text box', id: 'insert.text', className: 'menu-item-insert-text'}
-            , {label:'Image...', id: 'insert.image', className: 'menu-item-insert-image'}
-            , {label:'Container', id: 'insert.container', className: 'menu-item-insert-container'}
-            , null
-            , {label:'HTML box', id: 'insert.html', className: 'menu-item-insert-html'}
-            , null
-            , {label:'New page', id: 'insert.page', className: 'menu-item-insert-page'}
-        ]
+      {label: 'Text box', id: 'insert.text', className: 'menu-item-insert-text'}
+      , {label: 'Image...', id: 'insert.image', className: 'menu-item-insert-image'}
+      , {label: 'Container', id: 'insert.container', className: 'menu-item-insert-container'}
+      , null
+, {label: 'HTML box', id: 'insert.html', className: 'menu-item-insert-html'}
+      , null
+, {label: 'New page', id: 'insert.page', className: 'menu-item-insert-page'}
+    ]
         , [
-            {label:'Apollo mode', id: 'tools.advanced.activate', className: 'menu-item-tools-advanced.activate', checkable: true}
-        ]
+      {label: 'Apollo mode', id: 'tools.advanced.activate', className: 'menu-item-tools-advanced.activate', checkable: true}
+    ]
         , [
-            {label:'About Silex', id: 'help.about', className: 'menu-item-help-about'}
-            , {label:'About Silex Labs', id: 'help.aboutSilexLabs', className: 'menu-item-help-aboutSilexLabs'}
-            , {label:'Silex Labs news by email', id: 'help.newsLetter', className: 'menu-item-help-newsLetter'}
-            , null
-            , {label:'Questions and answers', id: 'help.forums', className: 'menu-item-help-forums'}
-            , {label:'Talk with us on twitter', id: 'help.twitter', className: 'menu-item-help-twitter'}
-            , {label:'Talk with us on Google+', id: 'help.googlPlus', className: 'menu-item-help-googlPlus'}
-            , {label:'Talk with us on Facebook', id: 'help.facebook', className: 'menu-item-help-facebook'}
-            , null
-            , {label:'Fork me on github!', id: 'help.forkMe', className: 'menu-item-help-forkMe'}
-        ]
-    ];
+      {label: 'About Silex', id: 'help.about', className: 'menu-item-help-about'}
+      , {label: 'About Silex Labs', id: 'help.aboutSilexLabs', className: 'menu-item-help-aboutSilexLabs'}
+      , {label: 'Silex Labs news by email', id: 'help.newsLetter', className: 'menu-item-help-newsLetter'}
+      , null
+, {label: 'Questions and answers', id: 'help.forums', className: 'menu-item-help-forums'}
+      , {label: 'Talk with us on twitter', id: 'help.twitter', className: 'menu-item-help-twitter'}
+      , {label: 'Talk with us on Google+', id: 'help.googlPlus', className: 'menu-item-help-googlPlus'}
+      , {label: 'Talk with us on Facebook', id: 'help.facebook', className: 'menu-item-help-facebook'}
+      , null
+, {label: 'Fork me on github!', id: 'help.forkMe', className: 'menu-item-help-forkMe'}
+    ]
+  ];
 
-    for (i in menuNames) {
-        // Create the drop down menu with a few suboptions.
-        var menu = new goog.ui.Menu();
-        goog.array.forEach(menuOptions[i],
-            function(itemData) {
-                var item;
-                if (itemData) {
-                    var label = itemData.label;
-                    var id = itemData.id;
-                    var className = itemData.className;
-                    item = new goog.ui.MenuItem(label);
-                    item.setId(id);
-                    item.addClassName(className);
-                    if (itemData.checkable) item.setCheckable(true);
-                } else {
-                    item = new goog.ui.MenuSeparator();
-                }
-                item.setDispatchTransitionEvents(goog.ui.Component.State.ALL, true);
-                menu.addItem(item);
-            }
-        );
+  for (i in menuNames) {
+    // Create the drop down menu with a few suboptions.
+    var menu = new goog.ui.Menu();
+    goog.array.forEach(menuOptions[i],
+        function(itemData) {
+          var item;
+          if (itemData) {
+            var label = itemData.label;
+            var id = itemData.id;
+            var className = itemData.className;
+            item = new goog.ui.MenuItem(label);
+            item.setId(id);
+            item.addClassName(className);
+            if (itemData.checkable) item.setCheckable(true);
+          } else {
+            item = new goog.ui.MenuSeparator();
+          }
+          item.setDispatchTransitionEvents(goog.ui.Component.State.ALL, true);
+          menu.addItem(item);
+        }
+    );
 
-        // Create a button inside menubar.
-        var btn = new goog.ui.MenuButton(menuNames[i].label, menu);
-        btn.addClassName(menuNames[i].className);
-        btn.setDispatchTransitionEvents(goog.ui.Component.State.ALL, true);
-        this.menu.addChild(btn, true);
-    }
-    // render the menu
-    this.menu.render(rootNode);
-    // event handling
-    goog.events.listen(this.menu, goog.ui.Component.EventType.ACTION, function(e) {
-        this.onMenuEvent(e);
-    }, false, this);
-    goog.events.listen(goog.dom.getElementByClass('website-name'), goog.events.EventType.CLICK, function(e) {
-        this.onMenuEvent(e);
-    }, false, this);
+    // Create a button inside menubar.
+    var btn = new goog.ui.MenuButton(menuNames[i].label, menu);
+    btn.addClassName(menuNames[i].className);
+    btn.setDispatchTransitionEvents(goog.ui.Component.State.ALL, true);
+    this.menu.addChild(btn, true);
+  }
+  // render the menu
+  this.menu.render(rootNode);
+  // event handling
+  goog.events.listen(this.menu, goog.ui.Component.EventType.ACTION, function(e) {
+    this.onMenuEvent(e);
+  }, false, this);
+  goog.events.listen(goog.dom.getElementByClass('website-name'), goog.events.EventType.CLICK, function(e) {
+    this.onMenuEvent(e);
+  }, false, this);
 };
 
 
@@ -30295,19 +30297,19 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
  * calls onStatus to notify the controller
  */
 silex.view.Menu.prototype.onMenuEvent = function(e) {
-    if (this.onStatus && e && e.target) {
-        if (goog.dom.classes.has(e.target, 'website-name')) {
-            // notify the controller
-            if (this.onStatus) this.onStatus({
-                type:'title.changed'
-            });
-        }
-        else {
-            this.onStatus({
-                type: e.target.getId()
-            });
-        }
+  if (this.onStatus && e && e.target) {
+    if (goog.dom.classes.has(e.target, 'website-name')) {
+      // notify the controller
+      if (this.onStatus) this.onStatus({
+        type: 'title.changed'
+      });
     }
+    else {
+      this.onStatus({
+        type: e.target.getId()
+      });
+    }
+  }
 };
 
 
@@ -30316,7 +30318,7 @@ silex.view.Menu.prototype.onMenuEvent = function(e) {
  * called by file when updating the website title
  */
 silex.view.Menu.prototype.setWebsiteName = function(name) {
-    goog.dom.getElementByClass('website-name').innerHTML = name;
+  goog.dom.getElementByClass('website-name').innerHTML = name;
 };
 
 
@@ -30324,8 +30326,8 @@ silex.view.Menu.prototype.setWebsiteName = function(name) {
  * website name
  */
 silex.view.Menu.prototype.getWebsiteName = function() {
-    return goog.dom.getElementByClass('website-name').innerHTML;
-}
+  return goog.dom.getElementByClass('website-name').innerHTML;
+};
 //////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
@@ -30357,18 +30359,24 @@ goog.require('goog.object');
  * @param  {Element}  element  DOM element to wich I render the UI
  * @param  {function} propertyChanged   callback which I'll call when the style
  *  has been changed by the user
+ * @param  {function} editHTML   callback which I'll call when
+ *         the HTML of the current component must be edited
+ * @param  {function} editText   callback which I'll call when
+ *         the text of the current component must be edited
+ * @param  {function} selectImage   callback which I'll call when
+ *          the user is supposed to select an image
  */
 silex.view.propertiesTool.PropertyPane = function(element,
-        propertyChanged,
-        editHTML,
-        editText,
-        selectImage) {
-    this.element = element;
-    this.propertyChanged = propertyChanged;
-    this.editText = editText;
-    this.editHTML = editHTML;
-    this.selectImage = selectImage;
-    this.buildUi();
+    propertyChanged,
+    editHTML,
+    editText,
+    selectImage) {
+  this.element = element;
+  this.propertyChanged = propertyChanged;
+  this.editText = editText;
+  this.editHTML = editHTML;
+  this.selectImage = selectImage;
+  this.buildUi();
 };
 
 
@@ -30466,70 +30474,108 @@ silex.view.propertiesTool.PropertyPane.prototype.zIndexInput;
  * build the UI
  */
 silex.view.propertiesTool.PropertyPane.prototype.buildUi = function() {
-    // lock / unlock
-    var lockBtn = goog.dom.getElementByClass('lock-btn');
-    var unlockBtn = goog.dom.getElementByClass('unlock-btn');
-    if (lockBtn) goog.events.listen(lockBtn, goog.events.EventType.CLICK, this.lock, false, this);
-    if (unlockBtn) goog.events.listen(unlockBtn, goog.events.EventType.CLICK, this.unlock, false, this);
+  // lock / unlock
+  var lockBtn = goog.dom.getElementByClass('lock-btn');
+  var unlockBtn = goog.dom.getElementByClass('unlock-btn');
+  if (lockBtn) goog.events.listen(lockBtn,
+                                  goog.events.EventType.CLICK,
+                                  this.lock,
+                                  false,
+                                  this);
+  if (unlockBtn) goog.events.listen(unlockBtn,
+                                    goog.events.EventType.CLICK,
+                                    this.unlock,
+                                    false,
+                                    this);
 
-    // position and size
-    this.leftInput = goog.dom.getElementByClass('left-input');
-    goog.events.listen(this.leftInput, 'change', this.onPositionChanged, false, this);
-    this.widthInput = goog.dom.getElementByClass('width-input');
-    goog.events.listen(this.widthInput, 'change', this.onPositionChanged, false, this);
-    this.bottomInput = goog.dom.getElementByClass('bottom-input');
-    goog.events.listen(this.bottomInput, 'change', this.onPositionChanged, false, this);
-    this.topInput = goog.dom.getElementByClass('top-input');
-    goog.events.listen(this.topInput, 'change', this.onPositionChanged, false, this);
-    this.heightInput = goog.dom.getElementByClass('height-input');
-    goog.events.listen(this.heightInput, 'change', this.onPositionChanged, false, this);
-    this.rightInput = goog.dom.getElementByClass('right-input');
-    goog.events.listen(this.rightInput, 'change', this.onPositionChanged, false, this);
+  // position and size
+  this.leftInput = goog.dom.getElementByClass('left-input');
+  goog.events.listen(this.leftInput,
+      'change',
+      this.onPositionChanged,
+      false,
+      this);
+  this.widthInput = goog.dom.getElementByClass('width-input');
+  goog.events.listen(this.widthInput,
+      'change',
+      this.onPositionChanged,
+      false,
+      this);
+  this.bottomInput = goog.dom.getElementByClass('bottom-input');
+  goog.events.listen(this.bottomInput,
+      'change',
+      this.onPositionChanged,
+      false,
+      this);
+  this.topInput = goog.dom.getElementByClass('top-input');
+  goog.events.listen(this.topInput,
+      'change',
+      this.onPositionChanged,
+      false,
+      this);
+  this.heightInput = goog.dom.getElementByClass('height-input');
+  goog.events.listen(this.heightInput,
+      'change',
+      this.onPositionChanged,
+      false,
+      this);
+  this.rightInput = goog.dom.getElementByClass('right-input');
+  goog.events.listen(this.rightInput,
+      'change',
+      this.onPositionChanged,
+      false,
+      this);
 
-    // z index
-    this.zIndexInput = goog.dom.getElementByClass('z-index-input');
-    goog.events.listen(this.zIndexInput, 'change', this.onPositionChanged, false, this);
+  // z index
+  this.zIndexInput = goog.dom.getElementByClass('z-index-input');
+  goog.events.listen(this.zIndexInput,
+      'change',
+      this.onPositionChanged,
+      false,
+      this);
 };
 
 
 /**
  * look for a locked parent
+ * @return   {boolean}  returns true if the current component
+ *           has a locked parent
  */
 silex.view.propertiesTool.PropertyPane.prototype.hasLockedParent = function() {
-    var element = this.component.element.parentNode;
-    while(element && !goog.dom.classes.has(element, 'locked-style')) {
-        element = element.parentNode;
-    }
-    if (element && goog.dom.classes.has(element, 'locked-style')) {
-        return true;
-    }
-    return false;
+  var element = this.component.element.parentNode;
+  while (element && !goog.dom.classes.has(element, 'locked-style')) {
+    element = element.parentNode;
+  }
+  if (element && goog.dom.classes.has(element, 'locked-style')) {
+    return true;
+  }
+  return false;
 };
 
 
 /**
  * callback for the lock/unlock button
  */
-silex.view.propertiesTool.PropertyPane.prototype.lock = function(event) {
-    if (!this.hasLockedParent()) {
-        this.component.setLocked(true);
-    }
-    else {
-        alert('unlock the parent in order to lock / unlock this component.');
-    }
+silex.view.propertiesTool.PropertyPane.prototype.lock = function() {
+  if (!this.hasLockedParent()) {
+    this.component.setLocked(true);
+  }
+  else {
+    alert('unlock the parent in order to lock / unlock this component.');
+  }
 };
 
 
 /**
  * callback for the lock/unlock button
  */
-silex.view.propertiesTool.PropertyPane.prototype.unlock = function(event) {
-    if (!this.hasLockedParent()) {
-        this.component.setLocked(false);
-    }
-    else {
-        alert('unlock the parent in order to lock / unlock this component.');
-    }
+silex.view.propertiesTool.PropertyPane.prototype.unlock = function() {
+  if (!this.hasLockedParent()) {
+    this.component.setLocked(false);
+  }
+  else {
+    alert('unlock the parent in order to lock / unlock this component.');
+  }
 };
 
 
@@ -30537,65 +30583,73 @@ silex.view.propertiesTool.PropertyPane.prototype.unlock = function(event) {
  * position or size changed
  * callback for number inputs
  */
-silex.view.propertiesTool.PropertyPane.prototype.onPositionChanged = function(event) {
-    if (this.component && !this.isRedraw && goog.dom.classes.has(this.component.element, 'editable-style')) {
-        var bbox = {};
-        if (this.leftInput.value && this.leftInput.value!=='')
-            bbox.left = this.leftInput.value + 'px';
-        if (this.widthInput.value && this.widthInput.value!=='')
-            bbox.width = this.widthInput.value + 'px';
-        if (this.bottomInput.value && this.bottomInput.value!=='')
-            bbox.bottom = this.bottomInput.value + 'px';
-        if (this.topInput.value && this.topInput.value!=='')
-            bbox.top = this.topInput.value + 'px';
-        if (this.heightInput.value && this.heightInput.value!=='')
-            bbox.height = this.heightInput.value + 'px';
-        if (this.rightInput.value && this.rightInput.value!=='')
-            bbox.right = this.rightInput.value + 'px';
-        if (this.zIndexInput.value && this.zIndexInput.value!=='')
-            bbox.zIndex = this.zIndexInput.value;
+silex.view.propertiesTool.PropertyPane.prototype.onPositionChanged =
+    function() {
+  if (this.component &&
+      !this.isRedraw &&
+      goog.dom.classes.has(this.component.element, 'editable-style')) {
+    var bbox = {};
+    if (this.leftInput.value && this.leftInput.value !== '')
+      bbox.left = this.leftInput.value + 'px';
+    if (this.widthInput.value && this.widthInput.value !== '')
+      bbox.width = this.widthInput.value + 'px';
+    if (this.bottomInput.value && this.bottomInput.value !== '')
+      bbox.bottom = this.bottomInput.value + 'px';
+    if (this.topInput.value && this.topInput.value !== '')
+      bbox.top = this.topInput.value + 'px';
+    if (this.heightInput.value && this.heightInput.value !== '')
+      bbox.height = this.heightInput.value + 'px';
+    if (this.rightInput.value && this.rightInput.value !== '')
+      bbox.right = this.rightInput.value + 'px';
+    if (this.zIndexInput.value && this.zIndexInput.value !== '')
+      bbox.zIndex = this.zIndexInput.value;
 
-        this.component.setBoundingBox(bbox);
-    }
-    this.redraw();
+    this.component.setBoundingBox(bbox);
+  }
+  this.redraw();
 };
 
 
 /**
  * display the propertis of the component being edited
+ * @param   {silex.model.component} component being edited
  */
-silex.view.propertiesTool.PropertyPane.prototype.setComponent = function(component) {
-    this.component = component;
-    this.redraw();
+silex.view.propertiesTool.PropertyPane.prototype.setComponent =
+    function(component) {
+  this.component = component;
+  this.redraw();
 };
 
 
 /**
  * base url for abs/rel conversions
+ * @return   {string} the base URL
  */
 silex.view.propertiesTool.PropertyPane.prototype.getBaseUrl = function() {
-    return this.baseUrl;
+  return this.baseUrl;
 };
 
 
 /**
  * base url for abs/rel conversions
+ * @param   {string} url  URL to set as the base URL
  */
 silex.view.propertiesTool.PropertyPane.prototype.setBaseUrl = function(url) {
-    this.baseUrl = url;
-    this.redraw();
+  this.baseUrl = url;
+  this.redraw();
 };
 
 
 /**
  * change current component image
+ * @param   {string} url  URL of the image to set as the src
  */
 silex.view.propertiesTool.PropertyPane.prototype.setImage = function(url) {
-    if (this.baseUrl)
-        this.component.setImageSrc(silex.Helper.getAbsolutePath(url, this.baseUrl));
-    else
-        this.component.setImageSrc(url);
-    this.redraw();
+  if (this.baseUrl)
+    this.component.setImageSrc(silex.Helper.getAbsolutePath(url, this.baseUrl));
+  else
+    this.component.setImageSrc(url);
+  this.redraw();
 };
 
 
@@ -30603,97 +30657,149 @@ silex.view.propertiesTool.PropertyPane.prototype.setImage = function(url) {
  * redraw the properties
  */
 silex.view.propertiesTool.PropertyPane.prototype.redraw = function() {
-    if (this.component && !this.isRedraw) {
-        this.isRedraw = true;
-        // refresh properties
-        var imageUrl = null;
-        if (this.component.type===silex.model.Component.SUBTYPE_IMAGE) {
-            if (this.baseUrl)
-                imageUrl = silex.Helper.getRelativePath(this.component.getImageSrc(), this.baseUrl);
-            else
-                imageUrl = this.component.getImageSrc();
+  if (this.component && !this.isRedraw) {
+    this.isRedraw = true;
+    // refresh properties
+    var imageUrl = null;
+    if (this.component.type === silex.model.Component.SUBTYPE_IMAGE) {
+      if (this.baseUrl)
+        imageUrl = silex.Helper.getRelativePath(this.component.getImageSrc(),
+                                                this.baseUrl);
+      else
+        imageUrl = this.component.getImageSrc();
+    }
+
+    var editionContainer = goog.dom.getElementByClass('edition-container',
+        this.element);
+    if (this.component) {
+      var templateHtml = goog.dom.getElementByClass('edition-template',
+          this.element).innerHTML;
+      silex.Helper.resolveTemplate(editionContainer, templateHtml, {
+        htmlEditor: (this.component.type ===
+            silex.model.Component.SUBTYPE_HTML),
+        textEditor: (this.component.type ===
+            silex.model.Component.SUBTYPE_TEXT),
+        imageUrl: imageUrl
+      });
+
+      // HTML editor
+      var buttonElement = goog.dom.getElementByClass('html-editor-button',
+          editionContainer);
+      if (buttonElement) {
+        var button = new goog.ui.CustomButton();
+        button.decorate(buttonElement);
+        goog.events.listen(buttonElement,
+            goog.events.EventType.CLICK,
+            this.editHTML,
+            false);
+      }
+      // text editor
+      var buttonElement = goog.dom.getElementByClass('text-editor-button',
+          editionContainer);
+      if (buttonElement) {
+        var button = new goog.ui.CustomButton();
+        button.decorate(buttonElement);
+        goog.events.listen(buttonElement,
+            goog.events.EventType.CLICK,
+            this.editText,
+            false);
+      }
+      if (this.component.type === silex.model.Component.SUBTYPE_IMAGE) {
+        // browse for image button
+        var buttonElement = goog.dom.getElementByClass('image-url-button',
+            editionContainer);
+        if (buttonElement) {
+          var button = new goog.ui.CustomButton();
+          button.decorate(buttonElement);
+          goog.events.listen(buttonElement,
+              goog.events.EventType.CLICK,
+              this.selectImage,
+              false);
         }
+        // edit image url text field
+        var inputElement = goog.dom.getElementByClass('image-url-input',
+            editionContainer);
+        if (inputElement) {
+          goog.events.listen(inputElement, 'change', function() {
+            if (this.component && !this.isRedraw) {
+              if (this.component.type === silex.model.Component.SUBTYPE_IMAGE)
+                this.setImage(inputElement.value);
+            }
+          }, false, this);
+        }
+      }
 
-        var editionContainer = goog.dom.getElementByClass('edition-container', this.element);
-        if (this.component) {
-            var templateHtml = goog.dom.getElementByClass('edition-template', this.element).innerHTML;
-            silex.Helper.resolveTemplate(editionContainer, templateHtml, {
-                htmlEditor: (this.component.type===silex.model.Component.SUBTYPE_HTML),
-                textEditor: (this.component.type===silex.model.Component.SUBTYPE_TEXT),
-                imageUrl: imageUrl
-            });
-
-            // HTML editor
-            var buttonElement = goog.dom.getElementByClass('html-editor-button', editionContainer);
-            if (buttonElement) {
-                var button = new goog.ui.CustomButton();
-                button.decorate(buttonElement);
-                goog.events.listen(buttonElement, goog.events.EventType.CLICK, this.editHTML, false);
-            }
-            // text editor
-            var buttonElement = goog.dom.getElementByClass('text-editor-button', editionContainer);
-            if (buttonElement) {
-                var button = new goog.ui.CustomButton();
-                button.decorate(buttonElement);
-                goog.events.listen(buttonElement, goog.events.EventType.CLICK, this.editText, false);
-            }
-            if (this.component.type === silex.model.Component.SUBTYPE_IMAGE) {
-                // browse for image button
-                var buttonElement = goog.dom.getElementByClass('image-url-button', editionContainer);
-                if (buttonElement) {
-                    var button = new goog.ui.CustomButton();
-                    button.decorate(buttonElement);
-                    goog.events.listen(buttonElement, goog.events.EventType.CLICK, this.selectImage, false);
-                }
-                // edit image url text field
-                var inputElement = goog.dom.getElementByClass('image-url-input', editionContainer);
-                if (inputElement) {
-                    goog.events.listen(inputElement, 'change', function(event) {
-                        if (this.component && !this.isRedraw) {
-                            if (this.component.type===silex.model.Component.SUBTYPE_IMAGE)
-                                this.setImage(inputElement.value);
-                        }
-                    }, false, this);
-                }
-            }
-
-            // position and size
-            if (goog.dom.classes.has(this.component.element, 'editable-style')) {
-                var bbox = this.component.getBoundingBox();
-                if (bbox.left !== undefined) this.leftInput.value = bbox.left.substr(0, bbox.left.indexOf('px'));
-                else this.leftInput.value = '';
-                if (bbox.width !== undefined) this.widthInput.value = bbox.width.substr(0, bbox.width.indexOf('px'));
-                else this.widthInput.value = '';
-                if (bbox.bottom !== undefined) this.bottomInput.value = bbox.bottom.substr(0, bbox.bottom.indexOf('px'));
-                else this.bottomInput.value = '';
-                if (bbox.top !== undefined) this.topInput.value = bbox.top.substr(0, bbox.top.indexOf('px'));
-                else this.topInput.value = '';
-                if (bbox.height !== undefined) this.heightInput.value = bbox.height.substr(0, bbox.height.indexOf('px'));
-                else this.heightInput.value = '';
-                if (bbox.right !== undefined) this.rightInput.value = bbox.right.substr(0, bbox.right.indexOf('px'));
-                else this.rightInput.value = '';
-                if (bbox.zIndex !== undefined) this.zIndexInput.value = bbox.zIndex;
-                else this.zIndexInput.value = '';
-            }
-            else {
-                // case of the stage
-                this.leftInput.value = '';
-                this.widthInput.value = '';
-                this.bottomInput.value = '';
-                this.topInput.value = '';
-                this.heightInput.value = '';
-                this.rightInput.value = '';
-                this.zIndexInput.value = '';
-            }
+      // position and size
+      if (goog.dom.classes.has(this.component.element, 'editable-style')) {
+        var bbox = this.component.getBoundingBox();
+        if (bbox.left !== undefined) {
+          this.leftInput.value = bbox.left.substr(0,
+              bbox.left.indexOf('px'));
         }
         else {
-            if (editionContainer) {
-                editionContainer.innerHTML = '';
-            }
+          this.leftInput.value = '';
         }
-        this.isRedraw = false;
+        if (bbox.width !== undefined) {
+          this.widthInput.value = bbox.width.substr(0,
+              bbox.width.indexOf('px'));
+        }
+        else {
+          this.widthInput.value = '';
+        }
+        if (bbox.bottom !== undefined) {
+          this.bottomInput.value = bbox.bottom.substr(0,
+              bbox.bottom.indexOf('px'));
+        }
+        else {
+          this.bottomInput.value = '';
+        }
+        if (bbox.top !== undefined) {
+          this.topInput.value = bbox.top.substr(0,
+              bbox.top.indexOf('px'));
+        }
+        else {
+          this.topInput.value = '';
+        }
+        if (bbox.height !== undefined) {
+          this.heightInput.value = bbox.height.substr(0,
+              bbox.height.indexOf('px'));
+        }
+        else {
+          this.heightInput.value = '';
+        }
+        if (bbox.right !== undefined) {
+          this.rightInput.value = bbox.right.substr(0,
+              bbox.right.indexOf('px'));
+        }
+        else {
+          this.rightInput.value = '';
+        }
+        if (bbox.zIndex !== undefined) {
+          this.zIndexInput.value = bbox.zIndex;
+        }
+        else {
+          this.zIndexInput.value = '';
+        }
+      }
+      else {
+        // case of the stage
+        this.leftInput.value = '';
+        this.widthInput.value = '';
+        this.bottomInput.value = '';
+        this.topInput.value = '';
+        this.heightInput.value = '';
+        this.rightInput.value = '';
+        this.zIndexInput.value = '';
+      }
     }
-}
+    else {
+      if (editionContainer) {
+        editionContainer.innerHTML = '';
+      }
+    }
+    this.isRedraw = false;
+  }
+};
 //////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
@@ -30715,15 +30821,17 @@ silex.view.propertiesTool.PropertyPane.prototype.redraw = function() {
 
 goog.provide('silex.service.Tracker');
 
+
+
 /**
  * the Silex Tracker class hadles user actions tracking
  * this is for us to detect problems and improve user experience
  * @constructor
  */
 silex.service.Tracker = function() {
-    if (!ga) {
-        console.error('google analytcs not loaded');
-    }
+  if (!ga) {
+    console.error('google analytcs not loaded');
+  }
 };
 
 
@@ -30737,9 +30845,9 @@ silex.service.Tracker.SILEX_ACTIONS_CATEGORY = 'silex-event';
  * constant
  */
 silex.service.Tracker.prototype.trackAction = function(category, action, opt_label, opt_value) {
-    //console.info('trackAction', arguments);
-    ga('send', 'event', category, action, opt_label, opt_value, true);
-}
+  //console.info('trackAction', arguments);
+  ga('send', 'event', category, action, opt_label, opt_value, true);
+};
 
 //////////////////////////////////////////////////
 // Silex, live web creation
@@ -30882,26 +30990,26 @@ silex.view.Stage.prototype.removePage = function(page) {
   // remove the DOM element
   $('a[data-silex-type="page"]', this.bodyElement).each(
       function() {
-    if (this.getAttribute('id') === page.name) {
-      $(this).remove();
-    }
-  });
+        if (this.getAttribute('id') === page.name) {
+          $(this).remove();
+        }
+      });
   // remove the links to this page
-  $('*[data-silex-href="#'+page.name+'"]').each(
-    function() {
-      this.removeAttribute('data-silex-href');
-    }
+  $('*[data-silex-href="#' + page.name + '"]').each(
+      function() {
+        this.removeAttribute('data-silex-href');
+      }
   );
   // check elements which were only visible on this page
   // and make them visible everywhere
-  $('.'+page.name).each(
-    function() {
-      $(this).removeClass(page.name);
+  $('.' + page.name).each(
+      function() {
+        $(this).removeClass(page.name);
 
-      var pagesOfElement = silex.model.Page.getPagesForElement(this);
-      if (pagesOfElement.length <= 0)
-        $(this).removeClass(silex.model.Page.PAGE_CLASS);
-    }
+        var pagesOfElement = silex.model.Page.getPagesForElement(this);
+        if (pagesOfElement.length <= 0)
+          $(this).removeClass(silex.model.Page.PAGE_CLASS);
+      }
   );
 };
 
@@ -30928,32 +31036,34 @@ silex.view.Stage.prototype.renamePage = function(page, name) {
   var that = this;
   // update the DOM element
   $('a[data-silex-type="page"]', this.bodyElement).each(
-    function() {
-      if (this.getAttribute('id') === page.name) {
-        this.setAttribute('id', name);
-    }
-  });
+      function() {
+        if (this.getAttribute('id') === page.name) {
+          this.setAttribute('id', name);
+        }
+      });
   // update the links to this page
-  $('*[data-silex-href="#'+page.name+'"]').each(
-    function() {
-      this.setAttribute('data-silex-href', '#'+name);
-    }
+  $('*[data-silex-href="#' + page.name + '"]').each(
+      function() {
+        this.setAttribute('data-silex-href', '#' + name);
+      }
   );
   // update the visibility of the compoents
-  $('.'+page.name).each(
-    function() {
-      $(this).removeClass(page.name);
-      $(this).addClass(name);
-    }
+  $('.' + page.name).each(
+      function() {
+        $(this).removeClass(page.name);
+        $(this).addClass(name);
+      }
   );
 };
 
 
 /**
  * open the page
+ * this is a static method, a helper
+ * @param {silex.model.Page} page   the page to open
  */
 silex.view.Stage.prototype.openPage = function(page) {
-  $(this.bodyElement).pageable({currentPage:page.name});
+  $(this.bodyElement).pageable({currentPage: page.name});
 };
 
 
@@ -30966,18 +31076,18 @@ silex.view.Stage.prototype.setPublicationPath = function(path) {
   var found = false;
   // update the DOM element
   $('meta[name="publicationPath"]', this.headElement).each(
-  function() {
-    if (path && path!=='') {
-      // update path
-      this.setAttribute('content', path);
-    }
-    else {
-      // remove the path
-      $(this).remove();
-    }
-    found = true;
-  });
-  if (!found && path && path!=='') {
+      function() {
+        if (path && path !== '') {
+          // update path
+          this.setAttribute('content', path);
+        }
+        else {
+          // remove the path
+          $(this).remove();
+        }
+        found = true;
+      });
+  if (!found && path && path !== '') {
     // create the DOM element
     var meta = goog.dom.createElement('meta');
     meta.name = 'publicationPath';
@@ -30990,26 +31100,27 @@ silex.view.Stage.prototype.setPublicationPath = function(path) {
 /**
  * get/set the publication path
  * @see silex.model.File
+ * @return {string}   the publication path
  */
 silex.view.Stage.prototype.getPublicationPath = function() {
   var that = this;
   var path = null;
   $('meta[name="publicationPath"]', this.headElement).each(
-  function() {
-    path = this.getAttribute('content');
-  });
+      function() {
+        path = this.getAttribute('content');
+      });
   return path;
 };
 
 
 /**
  * set the html content on the stage
- * @param string containing html
  * warning: you are supposed to do stageComponent.setHtml(bodyHtml, baseUrl);
  * so that it is editable
+ * @param   {string} bodyHtml   HTML string to be stored/displayed as the body
  */
 silex.view.Stage.prototype.setBody = function(bodyHtml) {
-  if (bodyHtml!==''){
+  if (bodyHtml !== '') {
     console.warn('warning: you are supposed to use stageComponent.setHtml');
   }
   this.bodyElement.innerHTML = bodyHtml;
@@ -31018,7 +31129,7 @@ silex.view.Stage.prototype.setBody = function(bodyHtml) {
 
 /**
  * get the html content on the stage
- * @return string containing html
+ * @return {string} containing html
  */
 silex.view.Stage.prototype.getBody = function() {
   return this.bodyElement.innerHTML;
@@ -31027,7 +31138,7 @@ silex.view.Stage.prototype.getBody = function() {
 
 /**
  * set the html content on the stage
- * @param string containing html
+ * @param {string} headHtml containing html
  */
 silex.view.Stage.prototype.setHead = function(headHtml) {
   this.headElement.innerHTML = headHtml;
@@ -31036,7 +31147,7 @@ silex.view.Stage.prototype.setHead = function(headHtml) {
 
 /**
  * get the html content on the stage
- * @return string containing html
+ * @return {string} containing html
  */
 silex.view.Stage.prototype.getHead = function() {
   return this.headElement.innerHTML;
@@ -31045,6 +31156,7 @@ silex.view.Stage.prototype.getHead = function() {
 
 /**
  * set body style from a string
+ * @param {string} styleStr  body style as a string
  */
 silex.view.Stage.prototype.setBodyStyle = function(styleStr) {
   this.bodyElement.setAttribute('data-style-normal', styleStr);
@@ -31053,11 +31165,11 @@ silex.view.Stage.prototype.setBodyStyle = function(styleStr) {
 
 
 /**
- * @return body style as a string
+ * @return {string} body style as a string
  */
 silex.view.Stage.prototype.getBodyStyle = function() {
   return this.bodyElement.getAttribute('data-style-normal');
-}
+};
 //////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
@@ -31109,15 +31221,16 @@ silex.view.PublishSettings = function(element, cbk) {
         var inputPublicationPath =
             goog.dom.getElementByClass('input-publication-path');
         goog.events.listen(
-          inputPublicationPath, goog.ui.Component.EventType.CHANGE, function() {
-          this.onStatus({
+            inputPublicationPath, goog.ui.Component.EventType.CHANGE,
+            function() {
+              this.onStatus({
                 type: 'change',
                 data: inputPublicationPath.value
               });
-          }, false, this);
-    // continue loading
-    if (cbk) cbk();
-  }, this);
+            }, false, this);
+        // continue loading
+        if (cbk) cbk();
+      }, this);
 };
 
 
@@ -31137,6 +31250,7 @@ silex.view.PublishSettings.prototype.onStatus;
 
 /**
  * set publication path
+ * @param   {string} path
  */
 silex.view.PublishSettings.prototype.setPublicationPath = function(path) {
   this.publicationPath = path;
@@ -31155,22 +31269,10 @@ silex.view.PublishSettings.prototype.redraw = function() {
 
 
 /**
- * open settings
- * @param opt_mimetypes   optional array of accepted mimetypes,
- *     e.g. ['text/html', 'text/plain']
+ * open settings dialog
+ * @param {function} cbk   callback to be called when the user closes the dialog
  */
 silex.view.PublishSettings.prototype.openDialog = function(cbk) {
-  // show dialog
-  this.openEditor(cbk);
-  this.redraw();
-};
-
-
-/**
- * open editor
- * this is private method, do not call it
- */
-silex.view.PublishSettings.prototype.openEditor = function(cbk) {
   this.onClose = cbk;
   // background
   var background = goog.dom.getElementByClass('settings-background');
@@ -31179,10 +31281,11 @@ silex.view.PublishSettings.prototype.openEditor = function(cbk) {
   goog.style.setStyle(this.element, 'display', '');
   // close
   goog.events.listen(background,
-    goog.events.EventType.CLICK,
-    this.closeEditor,
-    true,
-    this);
+      goog.events.EventType.CLICK,
+      this.closeEditor,
+      true,
+      this);
+  this.redraw();
 };
 
 
@@ -31199,11 +31302,11 @@ silex.view.PublishSettings.prototype.closeEditor = function() {
   goog.style.setStyle(this.element, 'display', 'none');
   // close
   goog.events.unlisten(background,
-    goog.events.EventType.CLICK,
-    this.closeEditor,
-    true,
-    this);
-}
+      goog.events.EventType.CLICK,
+      this.closeEditor,
+      true,
+      this);
+};
 //////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
@@ -32089,6 +32192,8 @@ goog.provide('silex.view.FileExplorer');
 
 goog.require('goog.async.Delay');
 
+
+
 //////////////////////////////////////////////////////////////////
 // FileExplorer class
 //////////////////////////////////////////////////////////////////
@@ -32097,27 +32202,27 @@ goog.require('goog.async.Delay');
  * @constructor
  */
 silex.view.FileExplorer = function(element, cbk) {
-    var that = this;
-    this.element = element;
-    goog.style.setStyle(this.element, 'display', 'none');
+  var that = this;
+  this.element = element;
+  goog.style.setStyle(this.element, 'display', 'none');
 
-    if (cbk) {
-        new goog.async.Delay(function() {
-            cbk();
-            that.init();
-        }, 10).start();
-    }
+  if (cbk) {
+    new goog.async.Delay(function() {
+      cbk();
+      that.init();
+    }, 10).start();
+  }
 
-    // close button
-    goog.events.listen(goog.dom.getElementByClass('close-btn', this.element), goog.events.EventType.CLICK, function() {
-        this.closeEditor();
-    }, false, this);
+  // close button
+  goog.events.listen(goog.dom.getElementByClass('close-btn', this.element), goog.events.EventType.CLICK, function() {
+    this.closeEditor();
+  }, false, this);
 
   /*    silex.Helper.loadTemplateFile('templates/fileexplorer.html', element, function() {
         that.init();
         if (cbk) cbk();
     });
-*/
+  */
 };
 
 
@@ -32130,7 +32235,7 @@ silex.view.FileExplorer.CONTAINER_TYPE = 'modal';
 /**
  * Contant for file picker config
  */
-silex.view.FileExplorer.SERVICES = ["DROPBOX", "GOOGLE_DRIVE", "EVERNOTE", "FTP"];
+silex.view.FileExplorer.SERVICES = ['DROPBOX', 'GOOGLE_DRIVE', 'EVERNOTE', 'FTP'];
 
 
 /**
@@ -32155,7 +32260,7 @@ silex.view.FileExplorer.prototype.onFileExplorerEvent;
  * init file explorer
  */
 silex.view.FileExplorer.prototype.init = function() {
-    this.filePicker = silex.service.CloudStorage.getInstance().filePicker;
+  this.filePicker = silex.service.CloudStorage.getInstance().filePicker;
 };
 
 
@@ -32164,12 +32269,12 @@ silex.view.FileExplorer.prototype.init = function() {
  * @param opt_mimetypes     optional array of accepted mimetypes, e.g. ['text/html', 'text/plain']
  */
 silex.view.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes, opt_errCbk) {
-    // default is image
-    if (!opt_mimetypes) opt_mimetypes = ['image/*', 'text/plain'];
+  // default is image
+  if (!opt_mimetypes) opt_mimetypes = ['image/*', 'text/plain'];
 
-    // pick it up
-    this.filePicker.pick(
-    goog.bind(function(blob) {
+  // pick it up
+  this.filePicker.pick(
+      goog.bind(function(blob) {
         // hide dialog
         this.closeEditor();
 
@@ -32181,17 +32286,17 @@ silex.view.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes, opt_
         // notify controller
         // workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
         new goog.async.Delay(function() {
-            if (cbk) cbk(blob);
+          if (cbk) cbk(blob);
         }, 10, this).start();
-    }, this),
-    function(FPError) {
+      }, this),
+      function(FPError) {
         console.error(FPError);
         if (opt_errCbk) {
-            opt_errCbk(FPError);
+          opt_errCbk(FPError);
         }
-    });
-    // show dialog
-    this.openEditor();
+      });
+  // show dialog
+  this.openEditor();
 };
 
 
@@ -32200,13 +32305,13 @@ silex.view.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes, opt_
  * @param opt_mimetypes     optional array of accepted mimetypes, e.g. ['text/html', 'text/plain']
  */
 silex.view.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes, opt_errCbk) {
-    // default is html
-    if (!opt_mimetypes) opt_mimetypes = {'mimetype':'text/html'};
+  // default is html
+  if (!opt_mimetypes) opt_mimetypes = {'mimetype': 'text/html'};
 
-    // export dummy data
-    this.filePicker.exportFile( "http://google.com/",
-    opt_mimetypes,
-    goog.bind(function(blob) {
+  // export dummy data
+  this.filePicker.exportFile('http://google.com/',
+      opt_mimetypes,
+      goog.bind(function(blob) {
 
         // hide dialog
         this.closeEditor();
@@ -32219,17 +32324,17 @@ silex.view.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes, op
 
         // workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
         new goog.async.Delay(function() {
-            if (cbk) cbk(blob);
+          if (cbk) cbk(blob);
         }, 10, this).start();
-    }, this),
-    function(FPError) {
+      }, this),
+      function(FPError) {
         console.error(FPError);
         if (opt_errCbk) {
-            opt_errCbk(FPError);
+          opt_errCbk(FPError);
         }
-    });
-    // show dialog
-    this.openEditor();
+      });
+  // show dialog
+  this.openEditor();
 };
 
 
@@ -32238,13 +32343,13 @@ silex.view.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes, op
  * this is private method, do not call it
  */
 silex.view.FileExplorer.prototype.openEditor = function() {
-    // background
-    var background = goog.dom.getElementByClass('dialogs-background');
-    // show
-    goog.style.setStyle(background, 'display', 'inherit');
-    goog.style.setStyle(this.element, 'display', '');
-    // close
-    goog.events.listen(background, goog.events.EventType.CLICK, this.closeEditor, true, this);
+  // background
+  var background = goog.dom.getElementByClass('dialogs-background');
+  // show
+  goog.style.setStyle(background, 'display', 'inherit');
+  goog.style.setStyle(this.element, 'display', '');
+  // close
+  goog.events.listen(background, goog.events.EventType.CLICK, this.closeEditor, true, this);
 };
 
 
@@ -32253,14 +32358,15 @@ silex.view.FileExplorer.prototype.openEditor = function() {
  * this is private method, do not call it
  */
 silex.view.FileExplorer.prototype.closeEditor = function() {
-    // background
-    var background = goog.dom.getElementByClass('dialogs-background');
-    // hide
-    goog.style.setStyle(background, 'display', 'none');
-    goog.style.setStyle(this.element, 'display', 'none');
-    // close
-    goog.events.unlisten(background, goog.events.EventType.CLICK, this.closeEditor, true, this);
-}//////////////////////////////////////////////////
+  // background
+  var background = goog.dom.getElementByClass('dialogs-background');
+  // hide
+  goog.style.setStyle(background, 'display', 'none');
+  goog.style.setStyle(this.element, 'display', 'none');
+  // close
+  goog.events.unlisten(background, goog.events.EventType.CLICK, this.closeEditor, true, this);
+};
+//////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
 //
@@ -32517,15 +32623,19 @@ silex.model.Component.prototype.setStyle = function(style, opt_context) {
         //build the string
         styleStr += goog.string.toSelectorCase(index) + ': ' + val + '; ';
       }
-
-      // apply to the view
-      // compare with current style before applying style
-      // to prevent flickering
-      // remove ' from value because some browsers modifies bg image
-      // and adds ' (e.g. chrome)
-      var sanitized = val.replace(/\'/g, '');
-      if (this.element.style[index] !== sanitized) {
-	            goog.style.setStyle(this.element, index, val);
+      if (val) {
+        // apply to the view
+        // compare with current style before applying style
+        // to prevent flickering
+        // remove ' from value because some browsers modifies bg image
+        // and adds ' (e.g. chrome)
+        var sanitized = val.replace(/\'/g, '');
+        if (this.element.style[index] !== sanitized) { 
+          goog.style.setStyle(this.element, index, val);
+        }
+      }
+      else{
+        goog.style.setStyle(this.element, index, null);
       }
     }
   }, this);
@@ -32872,14 +32982,17 @@ silex.model.Component.prototype.absolute2Relative = function(htmlString, baseUrl
  * convert all URLs to absolute
  */
 silex.model.Component.prototype.relative2absolute = function(htmlString, baseUrl) {
+  console.log('relative2absolute', baseUrl)
   // image source
   htmlString = htmlString.replace(/src="?([^" ]*)" /g, function(match, group1, group2) {
     var res = match.replace(group1, silex.Helper.getAbsolutePath(group1, baseUrl));
+    console.log('relative2absolute', match, group1, res)
     return res;
   });
   // css url()
   htmlString = htmlString.replace(/url\((['"])(.+?)\1\)/g, function(match, group1, group2) {
     var res = "url('" + silex.Helper.getAbsolutePath(group2, baseUrl) + "')";
+    console.log('relative2absolute', group2, res)
     return res;
   });
   return htmlString;
@@ -47037,14 +47150,15 @@ silex.view.propertiesTool.BgPane.prototype.setColorPaletteVisibility =
 
 goog.provide('silex.view.propertiesTool.GeneralStylePane');
 
-goog.require('goog.ui.Checkbox');
-goog.require('goog.ui.CustomButton');
-goog.require('goog.ui.TabBar');
-goog.require('goog.ui.HsvaPalette');
-goog.require('goog.ui.ColorButton');
-
 goog.require('goog.array');
 goog.require('goog.object');
+goog.require('goog.ui.Checkbox');
+goog.require('goog.ui.ColorButton');
+goog.require('goog.ui.CustomButton');
+goog.require('goog.ui.HsvaPalette');
+goog.require('goog.ui.TabBar');
+
+
 
 /**
  * on of Silex Editors class
@@ -47052,9 +47166,9 @@ goog.require('goog.object');
  * @constructor
  */
 silex.view.propertiesTool.GeneralStylePane = function(element, styleChanged) {
-    this.element = element;
-    this.styleChanged = styleChanged;
-    this.buildUi();
+  this.element = element;
+  this.styleChanged = styleChanged;
+  this.buildUi();
 };
 
 
@@ -47092,9 +47206,9 @@ silex.view.propertiesTool.GeneralStylePane.prototype.opacityInput;
  * build the UI
  */
 silex.view.propertiesTool.GeneralStylePane.prototype.buildUi = function() {
-    // opacity
-    this.opacityInput = goog.dom.getElementByClass('opacity-input');
-    goog.events.listen(this.opacityInput, 'change', this.onInputChanged, false, this);
+  // opacity
+  this.opacityInput = goog.dom.getElementByClass('opacity-input');
+  goog.events.listen(this.opacityInput, 'change', this.onInputChanged, false, this);
 };
 
 
@@ -47102,8 +47216,8 @@ silex.view.propertiesTool.GeneralStylePane.prototype.buildUi = function() {
  * display the style of the element being edited
  */
 silex.view.propertiesTool.GeneralStylePane.prototype.setStyle = function(style) {
-    this.style = style;
-    this.redraw();
+  this.style = style;
+  this.redraw();
 };
 
 
@@ -47111,17 +47225,17 @@ silex.view.propertiesTool.GeneralStylePane.prototype.setStyle = function(style) 
  * redraw the properties
  */
 silex.view.propertiesTool.GeneralStylePane.prototype.redraw = function() {
-    if (this.style && !this.isRedraw) {
-        this.isRedraw = true;
+  if (this.style && !this.isRedraw) {
+    this.isRedraw = true;
 
-        if (this.style.opacity) {
-            this.opacityInput.value = this.style.opacity;
-        }
-        else {
-            this.opacityInput.value = '';
-        }
-        this.isRedraw = false;
+    if (this.style.opacity) {
+      this.opacityInput.value = this.style.opacity;
     }
+    else {
+      this.opacityInput.value = '';
+    }
+    this.isRedraw = false;
+  }
 };
 
 
@@ -47129,19 +47243,19 @@ silex.view.propertiesTool.GeneralStylePane.prototype.redraw = function() {
  * User has selected a color
  */
 silex.view.propertiesTool.GeneralStylePane.prototype.onInputChanged = function(event) {
-    if (this.style && !this.isRedraw) {
-         if (this.opacityInput.value && this.opacityInput.value!=='') {
-            this.style.opacity = this.opacityInput.value;
-        }
-        else {
-            this.style.opacity = 'none';
-        }
-        // notify the toolbox
-        this.styleChanged(this.style);
-        // redraw to reflect changes
-        this.redraw();
+  if (this.style && !this.isRedraw) {
+    if (this.opacityInput.value && this.opacityInput.value !== '') {
+      this.style.opacity = this.opacityInput.value;
     }
-}
+    else {
+      this.style.opacity = 'none';
+    }
+    // notify the toolbox
+    this.styleChanged(this.style);
+    // redraw to reflect changes
+    this.redraw();
+  }
+};
 //////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
@@ -47163,6 +47277,8 @@ silex.view.propertiesTool.GeneralStylePane.prototype.onInputChanged = function(e
 
 goog.provide('silex.service.SilexTasks');
 
+
+
 /**
  * the Silex SilexTasks singleton
  * @constructor
@@ -47183,9 +47299,9 @@ silex.service.SilexTasks.instance;
  * singleton implementation
  */
 silex.service.SilexTasks.getInstance = function() {
-    if (!silex.service.SilexTasks.instance)
-        silex.service.SilexTasks.instance = new silex.service.SilexTasks();
-    return silex.service.SilexTasks.instance;
+  if (!silex.service.SilexTasks.instance)
+    silex.service.SilexTasks.instance = new silex.service.SilexTasks();
+  return silex.service.SilexTasks.instance;
 };
 
 
@@ -47193,45 +47309,45 @@ silex.service.SilexTasks.getInstance = function() {
  * publish a website to a given folder
  */
 silex.service.SilexTasks.prototype.publish = function(path, html, css, files, cbk, opt_errCbk) {
-    // check inputs
-    if (!path || !html || !css || !files) {
-        console.error('Param path, html, css or files missing');
-        if (opt_errCbk) opt_errCbk('Param path, html, css or files missing');
-        return;
+  // check inputs
+  if (!path || !html || !css || !files) {
+    console.error('Param path, html, css or files missing');
+    if (opt_errCbk) opt_errCbk('Param path, html, css or files missing');
+    return;
+  }
+  console.log('xxx', typeof(path), path);
+  var url = '/silex/tasks/publish';
+  var qd = new goog.Uri.QueryData();
+  qd.add('path', path);
+  qd.add('html', html);
+  qd.add('css', css);
+  qd.add('files', JSON.stringify(files));
+  console.log('sends server', path, qd.toString());
+  goog.net.XhrIo.send(url, function(e) {
+    // success of the request
+    var xhr = e.target;
+    if (xhr.isSuccess()) {
+      var json = xhr.getResponseJson();
+      if (json.success) {
+        if (cbk) cbk(json);
+      }
+      else {
+        var message = json.code || json.message;
+        console.error(message, xhr, xhr.isSuccess(), xhr.getStatus(), xhr.headers.toString());
+        if (opt_errCbk) {
+          opt_errCbk(message);
+        }
+      }
     }
-    console.log('xxx', typeof(path), path);
-    var url = '/silex/tasks/publish';
-    var qd = new goog.Uri.QueryData();
-    qd.add('path', path);
-    qd.add('html', html);
-    qd.add('css', css);
-    qd.add('files', JSON.stringify(files));
-    console.log('sends server', path, qd.toString());
-    goog.net.XhrIo.send(url, function(e) {
-        // success of the request
-        var xhr = e.target;
-        if (xhr.isSuccess()) {
-            var json = xhr.getResponseJson();
-            if (json.success) {
-                if (cbk) cbk(json);
-            }
-            else {
-                var message = json.code || json.message;
-                console.error(message, xhr, xhr.isSuccess(), xhr.getStatus(), xhr.headers.toString());
-                if (opt_errCbk) {
-                    opt_errCbk(message);
-                }
-            }
-        }
-        else {
-            var message = xhr.getLastError();
-            console.error(xhr.getLastError(), xhr.getLastErrorCode(), xhr.isSuccess(), xhr.getStatus(), xhr.headers);
-            if (opt_errCbk) {
-                opt_errCbk(message);
-            }
-        }
-    }, 'POST', qd.toString());
-}
+    else {
+      var message = xhr.getLastError();
+      console.error(xhr.getLastError(), xhr.getLastErrorCode(), xhr.isSuccess(), xhr.getStatus(), xhr.headers);
+      if (opt_errCbk) {
+        opt_errCbk(message);
+      }
+    }
+  }, 'POST', qd.toString());
+};
 // Copyright 2008 The Closure Library Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -59218,20 +59334,22 @@ silex.view.propertiesTool.BorderPane.prototype.setColorPaletteVisibility =
 
 goog.provide('silex.view.PageTool');
 
+
+
 /**
  * @constructor
  */
 silex.view.PageTool = function(element, cbk) {
-    this.element = element;
-    this.pages = [];
-    this.selectedIndex = -1;
+  this.element = element;
+  this.pages = [];
+  this.selectedIndex = -1;
 
-    silex.Helper.loadTemplateFile('templates/pagetool.html', element, function() {
-        goog.events.listen(this.element, goog.events.EventType.CLICK, function(e) {
-            this.selectionChanged(this.pages[this.getCellIndex(e.target.parentNode)], true);
-        }, false, this);
-        if (cbk) cbk();
-    }, this);
+  silex.Helper.loadTemplateFile('templates/pagetool.html', element, function() {
+    goog.events.listen(this.element, goog.events.EventType.CLICK, function(e) {
+      this.selectionChanged(this.pages[this.getCellIndex(e.target.parentNode)], true);
+    }, false, this);
+    if (cbk) cbk();
+  }, this);
 };
 
 
@@ -59265,33 +59383,33 @@ silex.view.PageTool.prototype.pages;
  * refresh with new page list
  */
 silex.view.PageTool.prototype.setPages = function(pages) {
-    // store pages list
-    this.pages = pages;
+  // store pages list
+  this.pages = pages;
 
-    //$(this.element).find( '.page-tool-container' ).sortable('destroy');
-    //$(this.element).find( '.page-tool-container' ).selectable('destroy');
+  //$(this.element).find( '.page-tool-container' ).sortable('destroy');
+  //$(this.element).find( '.page-tool-container' ).selectable('destroy');
 
-    var container = goog.dom.getElementByClass('page-tool-container', this.element);
-    var templateHtml = goog.dom.getElementByClass('page-tool-template', this.element).innerHTML;
-    silex.Helper.resolveTemplate(container, templateHtml, {pages:pages});
+  var container = goog.dom.getElementByClass('page-tool-container', this.element);
+  var templateHtml = goog.dom.getElementByClass('page-tool-template', this.element).innerHTML;
+  silex.Helper.resolveTemplate(container, templateHtml, {pages: pages});
 
-    var that = this;
-    $(this.element).find( '.page-tool-container .page-container .page-preview .delete' ).click(
-        function(e) {
-            // stop propagation to prevent the general listener to catch it (click on a page)
-            e.stopPropagation();
-            // remove the page
-            that.removePageAtIndex(that.getCellIndex(this.parentNode.parentNode));
-        }
-    );
-    $(this.element).find( '.page-tool-container .page-container .page-preview .label' ).click(
-        function(e) {
-            // stop propagation to prevent the general listener to catch it (click on a page)
-            e.stopPropagation();
-            // rename the page
-            that.renamePageAtIndex(that.getCellIndex(this.parentNode.parentNode));
-        }
-    );
+  var that = this;
+  $(this.element).find('.page-tool-container .page-container .page-preview .delete').click(
+      function(e) {
+        // stop propagation to prevent the general listener to catch it (click on a page)
+        e.stopPropagation();
+        // remove the page
+        that.removePageAtIndex(that.getCellIndex(this.parentNode.parentNode));
+      }
+  );
+  $(this.element).find('.page-tool-container .page-container .page-preview .label').click(
+      function(e) {
+        // stop propagation to prevent the general listener to catch it (click on a page)
+        e.stopPropagation();
+        // rename the page
+        that.renamePageAtIndex(that.getCellIndex(this.parentNode.parentNode));
+      }
+  );
 };
 
 
@@ -59299,10 +59417,10 @@ silex.view.PageTool.prototype.setPages = function(pages) {
  * ask to remove a page
  */
 silex.view.PageTool.prototype.removePageAtIndex = function(idx) {
-    if (this.onStatus) this.onStatus({
-        type:'delete',
-        page: this.pages[idx]
-    });
+  if (this.onStatus) this.onStatus({
+    type: 'delete',
+    page: this.pages[idx]
+  });
 };
 
 
@@ -59310,10 +59428,10 @@ silex.view.PageTool.prototype.removePageAtIndex = function(idx) {
  * ask to rename a page
  */
 silex.view.PageTool.prototype.renamePageAtIndex = function(idx) {
-    if (this.onStatus) this.onStatus({
-        type:'rename',
-        page: this.pages[idx]
-    });
+  if (this.onStatus) this.onStatus({
+    type: 'rename',
+    page: this.pages[idx]
+  });
 };
 
 
@@ -59321,10 +59439,10 @@ silex.view.PageTool.prototype.renamePageAtIndex = function(idx) {
  * selection has changed
  */
 silex.view.PageTool.prototype.selectionChanged = function(page) {
-    if (this.onStatus) this.onStatus({
-        type:'changed',
-        page: page
-    });
+  if (this.onStatus) this.onStatus({
+    type: 'changed',
+    page: page
+  });
 };
 
 
@@ -59332,8 +59450,8 @@ silex.view.PageTool.prototype.selectionChanged = function(page) {
  * set selection
  */
 silex.view.PageTool.prototype.setSelectedItem = function(page, notify) {
-    var idx = silex.model.Page.getPageIndex(page);
-    this.setSelectedIndex(idx, notify);
+  var idx = silex.model.Page.getPageIndex(page);
+  this.setSelectedIndex(idx, notify);
 };
 
 
@@ -59341,21 +59459,21 @@ silex.view.PageTool.prototype.setSelectedItem = function(page, notify) {
  * get selection
  */
 silex.view.PageTool.prototype.getSelectedItem = function() {
-    if (this.pages.length > this.selectedIndex) {
-        return this.pages[this.selectedIndex];
-    }
-    else {
-        return null;
-    }
-}
+  if (this.pages.length > this.selectedIndex) {
+    return this.pages[this.selectedIndex];
+  }
+  else {
+    return null;
+  }
+};
 silex.view.PageTool.prototype.getCellIndex = function(element) {
-    var page = silex.model.Page.getPageByName(element.getAttribute('data-page-name'));
-    if (page) {
-        var idx = silex.model.Page.getPageIndex(page);
-        return idx;
-    }
-    console.error('Page not found for element ', element, silex.model.Page.pages);
-    return -1;
+  var page = silex.model.Page.getPageByName(element.getAttribute('data-page-name'));
+  if (page) {
+    var idx = silex.model.Page.getPageIndex(page);
+    return idx;
+  }
+  console.error('Page not found for element ', element, silex.model.Page.pages);
+  return -1;
 };
 
 
@@ -59364,21 +59482,21 @@ silex.view.PageTool.prototype.getCellIndex = function(element) {
  * @param     notify    if true, then notify by calling the onChanged callback
  */
 silex.view.PageTool.prototype.setSelectedIndex = function(index, notify) {
-    this.selectedIndex = index;
+  this.selectedIndex = index;
 
-    var that = this;
-    var idx = 0;
-    $( '.page-container', this.element ).each(function() {
-        if (index === idx) {
-            $(this).addClass('ui-selected');
-        }
-        else {
-            $(this).removeClass('ui-selected');
-        }
-        idx++;
-    });
-    if (notify!==false) this.selectionChanged(this.getSelectedItem());
-}
+  var that = this;
+  var idx = 0;
+  $('.page-container', this.element).each(function() {
+    if (index === idx) {
+      $(this).addClass('ui-selected');
+    }
+    else {
+      $(this).removeClass('ui-selected');
+    }
+    idx++;
+  });
+  if (notify !== false) this.selectionChanged(this.getSelectedItem());
+};
 // Copyright 2008 The Closure Library Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -80149,6 +80267,7 @@ goog.require('goog.ui.editor.ToolbarController');
 goog.require('silex.model.Config');
 
 
+
 /**
  * the Silex TextEditor class
  * @constructor
@@ -80211,9 +80330,9 @@ silex.view.TextEditor.prototype.initUI = function() {
 
   var availableFonts = silex.model.Config.fonts;
   for (var fontName in availableFonts) {
-      goog.ui.editor.ToolbarFactory.addFont(fontFaceButton,
-          fontName,
-          availableFonts[fontName].value);
+    goog.ui.editor.ToolbarFactory.addFont(fontFaceButton,
+        fontName,
+        availableFonts[fontName].value);
   }
 
   // add font sizes
@@ -80265,10 +80384,10 @@ silex.view.TextEditor.prototype.initUI = function() {
         this.contentChanged();
       }, false, this);
 
-  try{
+  try {
     this.textField.makeEditable();
   }
-  catch(e){
+  catch (e) {
     // goog.editor.BrowserFeature.HAS_STYLE_WITH_CSS = false;
     console.error('error catched', e);
   }
@@ -80353,6 +80472,8 @@ silex.view.TextEditor.prototype.contentChanged = function() {
 
 goog.provide('silex.service.CloudStorage');
 
+
+
 /**
  * the Silex CloudStorage singleton
  * @constructor
@@ -80360,7 +80481,7 @@ goog.provide('silex.service.CloudStorage');
  * load and save data to and from the cloud storage services
  */
 silex.service.CloudStorage = function() {
-    this.filePicker = cloudExplorer;
+  this.filePicker = cloudExplorer;
 };
 
 
@@ -80386,9 +80507,9 @@ silex.service.CloudStorage.instance;
  * singleton implementation
  */
 silex.service.CloudStorage.getInstance = function() {
-    if (!silex.service.CloudStorage.instance)
-        silex.service.CloudStorage.instance = new silex.service.CloudStorage();
-    return silex.service.CloudStorage.instance;
+  if (!silex.service.CloudStorage.instance)
+    silex.service.CloudStorage.instance = new silex.service.CloudStorage();
+  return silex.service.CloudStorage.instance;
 };
 
 
@@ -80396,28 +80517,28 @@ silex.service.CloudStorage.getInstance = function() {
  * save a file
  */
 silex.service.CloudStorage.prototype.save = function(blob, rawData, cbk, opt_errCbk) {
-    // cloud explorer expects relative path
-    var relBlob = {
-        url : silex.Helper.getRelativePath(blob.url, silex.Helper.BaseUrl)
-    }
+  // cloud explorer expects relative path
+  var relBlob = {
+    url: silex.Helper.getRelativePath(blob.url, silex.Helper.BaseUrl)
+  };
 
-    // save the actual data
-    this.filePicker.write(
-    relBlob,
-    rawData,
-    function(blob) {
+  // save the actual data
+  this.filePicker.write(
+      relBlob,
+      rawData,
+      function(blob) {
         // workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
         new goog.async.Delay(function() {
-            if (cbk) cbk();
+          if (cbk) cbk();
         }, 10).start();
-    },
-    function(FPError) {
+      },
+      function(FPError) {
         console.error(FPError);
         if (opt_errCbk) {
-            console.error(FPError);
-            opt_errCbk(FPError);
+          console.error(FPError);
+          opt_errCbk(FPError);
         }
-    });
+      });
 };
 
 
@@ -80426,25 +80547,25 @@ silex.service.CloudStorage.prototype.save = function(blob, rawData, cbk, opt_err
  */
 silex.service.CloudStorage.prototype.load = function(blob, cbk, opt_errCbk) {
 
-    // cloud explorer expects relative path
-    var relBlob = {
-        url : silex.Helper.getRelativePath(blob.url, silex.Helper.BaseUrl)
-    }
-    this.filePicker.read(
-    relBlob,
-    function(data) {
+  // cloud explorer expects relative path
+  var relBlob = {
+    url: silex.Helper.getRelativePath(blob.url, silex.Helper.BaseUrl)
+  };
+  this.filePicker.read(
+      relBlob,
+      function(data) {
         // workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
         new goog.async.Delay(function() {
-            if (cbk) cbk(data);
+          if (cbk) cbk(data);
         }, 10).start();
-    },
-    function(FPError) {
+      },
+      function(FPError) {
         console.error(FPError);
         if (opt_errCbk) {
-            console.error(FPError);
-            opt_errCbk(FPError);
+          console.error(FPError);
+          opt_errCbk(FPError);
         }
-    });
+      });
 };
 
 
@@ -80452,26 +80573,27 @@ silex.service.CloudStorage.prototype.load = function(blob, cbk, opt_errCbk) {
  * load data
  */
 silex.service.CloudStorage.prototype.loadLocal = function(url, cbk, opt_errCbk) {
-    goog.net.XhrIo.send(url, function(e) {
-        // success of the request
-        var xhr = e.target;
-        var rawHtml = xhr.getResponse();
-        if (xhr.isSuccess()) {
-            // workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
-            new goog.async.Delay(function() {
-                if (cbk) cbk(rawHtml);
-            }, 10).start();
-        }
-        else {
-            var message = xhr.getLastError();
-            console.error(message, xhr, xhr.isSuccess(), xhr.getStatus(), xhr.headers.toString());
-            if (opt_errCbk) {
-                console.error(FPError);
-                opt_errCbk(message);
-            }
-        }
-    });
-}//////////////////////////////////////////////////
+  goog.net.XhrIo.send(url, function(e) {
+    // success of the request
+    var xhr = e.target;
+    var rawHtml = xhr.getResponse();
+    if (xhr.isSuccess()) {
+      // workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
+      new goog.async.Delay(function() {
+        if (cbk) cbk(rawHtml);
+      }, 10).start();
+    }
+    else {
+      var message = xhr.getLastError();
+      console.error(message, xhr, xhr.isSuccess(), xhr.getStatus(), xhr.headers.toString());
+      if (opt_errCbk) {
+        console.error(FPError);
+        opt_errCbk(message);
+      }
+    }
+  });
+};
+//////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
 //
@@ -80493,16 +80615,18 @@ silex.service.CloudStorage.prototype.loadLocal = function(url, cbk, opt_errCbk) 
 
 goog.provide('silex.view.HTMLEditor');
 
+
+
 /**
  * @constructor
  */
 silex.view.HTMLEditor = function(element, cbk) {
-    this.element = element;
+  this.element = element;
 
-    silex.Helper.loadTemplateFile('templates/htmleditor.html', element, function() {
-        this.initUI();
-        if (cbk) cbk();
-    }, this);
+  silex.Helper.loadTemplateFile('templates/htmleditor.html', element, function() {
+    this.initUI();
+    if (cbk) cbk();
+  }, this);
 };
 
 
@@ -80534,22 +80658,22 @@ silex.view.HTMLEditor.prototype.iAmSettingValue;
  * init the menu and UIs
  */
 silex.view.HTMLEditor.prototype.initUI = function() {
-    this.ace = ace.edit(goog.dom.getElementByClass('ace-editor', this.element));
-    this.iAmSettingValue = false;
-    //this.ace.setTheme("ace/theme/monokai");
-    this.ace.getSession().setMode("ace/mode/html");
-    this.ace.getSession().on('change', goog.bind(function(e) {
-        if (this.iAmSettingValue === false) {
-            var value = this.ace.getValue();
-            setTimeout(goog.bind(function() {
-                this.contentChanged();
-            }, this), 100);
-        }
-    }, this));
-    // close button
-    goog.events.listen(goog.dom.getElementByClass('close-btn', this.element), goog.events.EventType.CLICK, function() {
-        this.closeEditor();
-    }, false, this);
+  this.ace = ace.edit(goog.dom.getElementByClass('ace-editor', this.element));
+  this.iAmSettingValue = false;
+  //this.ace.setTheme("ace/theme/monokai");
+  this.ace.getSession().setMode('ace/mode/html');
+  this.ace.getSession().on('change', goog.bind(function(e) {
+    if (this.iAmSettingValue === false) {
+      var value = this.ace.getValue();
+      setTimeout(goog.bind(function() {
+        this.contentChanged();
+      }, this), 100);
+    }
+  }, this));
+  // close button
+  goog.events.listen(goog.dom.getElementByClass('close-btn', this.element), goog.events.EventType.CLICK, function() {
+    this.closeEditor();
+  }, false, this);
 };
 
 
@@ -80557,21 +80681,21 @@ silex.view.HTMLEditor.prototype.initUI = function() {
  * Open the editor
  */
 silex.view.HTMLEditor.prototype.openEditor = function(initialHtml) {
-    // background
-    var background = goog.dom.getElementByClass('dialogs-background');
-    // show
-    goog.style.setStyle(background, 'display', 'inherit');
-    goog.style.setStyle(this.element, 'display', 'inherit');
-    // close
-    goog.events.listenOnce(background, goog.events.EventType.CLICK, function(e) {
-        this.closeEditor();
-    }, false, this);
-    // set value
-    this.iAmSettingValue = true;
-    this.ace.setValue(initialHtml);
-    this.iAmSettingValue = false;
-    // force ace redraw
-    this.ace.resize();
+  // background
+  var background = goog.dom.getElementByClass('dialogs-background');
+  // show
+  goog.style.setStyle(background, 'display', 'inherit');
+  goog.style.setStyle(this.element, 'display', 'inherit');
+  // close
+  goog.events.listenOnce(background, goog.events.EventType.CLICK, function(e) {
+    this.closeEditor();
+  }, false, this);
+  // set value
+  this.iAmSettingValue = true;
+  this.ace.setValue(initialHtml);
+  this.iAmSettingValue = false;
+  // force ace redraw
+  this.ace.resize();
 };
 
 
@@ -80579,11 +80703,11 @@ silex.view.HTMLEditor.prototype.openEditor = function(initialHtml) {
  * close text editor
  */
 silex.view.HTMLEditor.prototype.closeEditor = function() {
-    // background
-    var background = goog.dom.getElementByClass('dialogs-background');
-    // hide
-    goog.style.setStyle(background, 'display', 'none');
-    goog.style.setStyle(this.element, 'display', 'none');
+  // background
+  var background = goog.dom.getElementByClass('dialogs-background');
+  // hide
+  goog.style.setStyle(background, 'display', 'none');
+  goog.style.setStyle(this.element, 'display', 'none');
 };
 
 
@@ -80591,7 +80715,7 @@ silex.view.HTMLEditor.prototype.closeEditor = function() {
  * retrieve the editor html content
  */
 silex.view.HTMLEditor.prototype.getData = function() {
-    return this.ace.getValue();
+  return this.ace.getValue();
 };
 
 
@@ -80599,13 +80723,14 @@ silex.view.HTMLEditor.prototype.getData = function() {
  * the content has changed, notify the controler
  */
 silex.view.HTMLEditor.prototype.contentChanged = function() {
-    if (this.onStatus) {
-        this.onStatus({
-            type: 'changed',
-            content: this.getData()
-        });
-    }
-}//////////////////////////////////////////////////
+  if (this.onStatus) {
+    this.onStatus({
+      type: 'changed',
+      content: this.getData()
+    });
+  }
+};
+//////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
 //
@@ -80848,14 +80973,15 @@ silex.view.Workspace.prototype.doRedraw = function() {
 
 goog.provide('silex.view.PropertiesTool');
 
+goog.require('goog.array');
 goog.require('goog.cssom');
+goog.require('goog.editor.Field');
+goog.require('goog.object');
 goog.require('goog.ui.Checkbox');
 goog.require('goog.ui.CustomButton');
 goog.require('goog.ui.TabBar');
-goog.require('goog.editor.Field');
 
-goog.require('goog.array');
-goog.require('goog.object');
+
 
 //////////////////////////////////////////////////////////////////
 // PropertiesTool class
@@ -80865,23 +80991,23 @@ goog.require('goog.object');
  * @constructor
  */
 silex.view.PropertiesTool = function(element, cbk) {
-    this.element = element;
-    this.context = silex.model.Component.CONTEXT_NORMAL;
+  this.element = element;
+  this.context = silex.model.Component.CONTEXT_NORMAL;
 
-    silex.Helper.loadTemplateFile('templates/propertiestool.html', element, function() {
-        this.buildTabs();
-        this.buildPanes();
-        if (cbk) cbk();
-    }, this);
+  silex.Helper.loadTemplateFile('templates/propertiestool.html', element, function() {
+    this.buildTabs();
+    this.buildPanes();
+    if (cbk) cbk();
+  }, this);
 };
 
 
 /**
  * tabs titles
  */
-silex.view.PropertiesTool.TAB_TITLE_NORMAL='Normal';
-silex.view.PropertiesTool.TAB_TITLE_HOVER='Hover';
-silex.view.PropertiesTool.TAB_TITLE_PRESSED='Pressed';
+silex.view.PropertiesTool.TAB_TITLE_NORMAL = 'Normal';
+silex.view.PropertiesTool.TAB_TITLE_HOVER = 'Hover';
+silex.view.PropertiesTool.TAB_TITLE_PRESSED = 'Pressed';
 
 
 /**
@@ -80947,31 +81073,31 @@ silex.view.PropertiesTool.prototype.onStatus;
  * build tabs for the different contexts (normal, pressed, hover)
  */
 silex.view.PropertiesTool.prototype.buildTabs = function() {
-    var tabContainer = goog.dom.getElementByClass('tab-bar-container', this.element);
-    var tabBar = new goog.ui.TabBar();
-    tabBar.decorate(tabContainer);
-    goog.events.listen(tabBar, goog.ui.Component.EventType.ACTION, function(event) {
-        switch (tabBar.getSelectedTab().getCaption()) {
-            case silex.view.PropertiesTool.TAB_TITLE_NORMAL:
-                this.context = silex.model.Component.CONTEXT_NORMAL;
-                break;
-            case silex.view.PropertiesTool.TAB_TITLE_HOVER:
-                this.context = silex.model.Component.CONTEXT_HOVER;
-                break;
-            case silex.view.PropertiesTool.TAB_TITLE_PRESSED:
-                this.context = silex.model.Component.CONTEXT_PRESSED;
-                break;
-        }
-        // notify the controler
-        if (this.onStatus) {
-            this.onStatus({
-                type: 'contextChanged',
-                context: this.context
-            });
-        }
-        // update display
-        this.setComponent(this.component);
-    }, false, this);
+  var tabContainer = goog.dom.getElementByClass('tab-bar-container', this.element);
+  var tabBar = new goog.ui.TabBar();
+  tabBar.decorate(tabContainer);
+  goog.events.listen(tabBar, goog.ui.Component.EventType.ACTION, function(event) {
+    switch (tabBar.getSelectedTab().getCaption()) {
+      case silex.view.PropertiesTool.TAB_TITLE_NORMAL:
+        this.context = silex.model.Component.CONTEXT_NORMAL;
+        break;
+      case silex.view.PropertiesTool.TAB_TITLE_HOVER:
+        this.context = silex.model.Component.CONTEXT_HOVER;
+        break;
+      case silex.view.PropertiesTool.TAB_TITLE_PRESSED:
+        this.context = silex.model.Component.CONTEXT_PRESSED;
+        break;
+    }
+    // notify the controler
+    if (this.onStatus) {
+      this.onStatus({
+        type: 'contextChanged',
+        context: this.context
+      });
+    }
+    // update display
+    this.setComponent(this.component);
+  }, false, this);
 };
 
 
@@ -80979,35 +81105,35 @@ silex.view.PropertiesTool.prototype.buildTabs = function() {
  * build the UI
  */
 silex.view.PropertiesTool.prototype.buildPanes = function() {
-    // background
-    this.bgPane = new silex.view.propertiesTool.BgPane(
-        goog.dom.getElementByClass('background-editor', this.element),
-        goog.bind(this.styleChanged, this),
-        goog.bind(this.selectBgImage, this)
-    );
-    // border
-    this.borderPane = new silex.view.propertiesTool.BorderPane(
-        goog.dom.getElementByClass('border-editor', this.element),
-        goog.bind(this.styleChanged, this)
-    );
-    // property
-    this.propertyPane = new silex.view.propertiesTool.PropertyPane(
-        goog.dom.getElementByClass('property-editor', this.element),
-        goog.bind(this.propertyChanged, this),
-        goog.bind(this.editHTML, this),
-        goog.bind(this.editText, this),
-        goog.bind(this.selectImage, this)
-    );
-    // page
-    this.pagePane = new silex.view.propertiesTool.PagePane(
-        goog.dom.getElementByClass('page-editor', this.element),
-        goog.bind(this.propertyChanged, this)
-    );
-    // general styles
-    this.generalStylePane = new silex.view.propertiesTool.GeneralStylePane(
-        goog.dom.getElementByClass('general-editor', this.element),
-        goog.bind(this.styleChanged, this)
-    );
+  // background
+  this.bgPane = new silex.view.propertiesTool.BgPane(
+      goog.dom.getElementByClass('background-editor', this.element),
+      goog.bind(this.styleChanged, this),
+      goog.bind(this.selectBgImage, this)
+      );
+  // border
+  this.borderPane = new silex.view.propertiesTool.BorderPane(
+      goog.dom.getElementByClass('border-editor', this.element),
+      goog.bind(this.styleChanged, this)
+      );
+  // property
+  this.propertyPane = new silex.view.propertiesTool.PropertyPane(
+      goog.dom.getElementByClass('property-editor', this.element),
+      goog.bind(this.propertyChanged, this),
+      goog.bind(this.editHTML, this),
+      goog.bind(this.editText, this),
+      goog.bind(this.selectImage, this)
+      );
+  // page
+  this.pagePane = new silex.view.propertiesTool.PagePane(
+      goog.dom.getElementByClass('page-editor', this.element),
+      goog.bind(this.propertyChanged, this)
+      );
+  // general styles
+  this.generalStylePane = new silex.view.propertiesTool.GeneralStylePane(
+      goog.dom.getElementByClass('general-editor', this.element),
+      goog.bind(this.styleChanged, this)
+      );
 };
 
 
@@ -81016,9 +81142,9 @@ silex.view.PropertiesTool.prototype.buildPanes = function() {
  * this is called by BgPane
  */
 silex.view.PropertiesTool.prototype.selectBgImage = function() {
-    if (this.onStatus) this.onStatus({
-        type: 'selectBgImage'
-    });
+  if (this.onStatus) this.onStatus({
+    type: 'selectBgImage'
+  });
 };
 
 
@@ -81026,7 +81152,7 @@ silex.view.PropertiesTool.prototype.selectBgImage = function() {
  * let the controller set a bg image
  */
 silex.view.PropertiesTool.prototype.setBgImage = function(url) {
-    this.bgPane.setBgImage(url);
+  this.bgPane.setBgImage(url);
 };
 
 
@@ -81035,9 +81161,9 @@ silex.view.PropertiesTool.prototype.setBgImage = function(url) {
  * this is called by BgPane
  */
 silex.view.PropertiesTool.prototype.selectImage = function() {
-    if (this.onStatus) this.onStatus({
-        type: 'selectImage'
-    });
+  if (this.onStatus) this.onStatus({
+    type: 'selectImage'
+  });
 };
 
 
@@ -81045,7 +81171,7 @@ silex.view.PropertiesTool.prototype.selectImage = function() {
  * let the controller set a bg image
  */
 silex.view.PropertiesTool.prototype.setImage = function(url) {
-    this.propertyPane.setImage(url);
+  this.propertyPane.setImage(url);
 };
 
 
@@ -81054,9 +81180,9 @@ silex.view.PropertiesTool.prototype.setImage = function(url) {
  * this is called by PropertyPane
  */
 silex.view.PropertiesTool.prototype.editHTML = function() {
-    if (this.onStatus) this.onStatus({
-        type: 'editHTML'
-    });
+  if (this.onStatus) this.onStatus({
+    type: 'editHTML'
+  });
 };
 
 
@@ -81065,9 +81191,9 @@ silex.view.PropertiesTool.prototype.editHTML = function() {
  * this is called by PropertyPane
  */
 silex.view.PropertiesTool.prototype.editText = function() {
-    if (this.onStatus) this.onStatus({
-        type: 'editText'
-    });
+  if (this.onStatus) this.onStatus({
+    type: 'editText'
+  });
 };
 
 
@@ -81075,11 +81201,11 @@ silex.view.PropertiesTool.prototype.editText = function() {
  * notify the controller that the style changed
  */
 silex.view.PropertiesTool.prototype.styleChanged = function(style) {
-    if (this.onStatus) this.onStatus({
-        type: 'styleChanged',
-        style: style,
-        context: this.context
-    });
+  if (this.onStatus) this.onStatus({
+    type: 'styleChanged',
+    style: style,
+    context: this.context
+  });
 };
 
 
@@ -81087,13 +81213,13 @@ silex.view.PropertiesTool.prototype.styleChanged = function(style) {
  * notify the controller that the component properties changed
  */
 silex.view.PropertiesTool.prototype.propertyChanged = function() {
-    // notify the controler
-    if (this.onStatus) {
-        this.onStatus({
-            type: 'propertiesChanged',
-            context: this.context
-        });
-    }
+  // notify the controler
+  if (this.onStatus) {
+    this.onStatus({
+      type: 'propertiesChanged',
+      context: this.context
+    });
+  }
 };
 
 
@@ -81101,14 +81227,14 @@ silex.view.PropertiesTool.prototype.propertyChanged = function() {
  * set component
  */
 silex.view.PropertiesTool.prototype.setComponent = function(component) {
-    this.component = component;
-    this.propertyPane.setComponent(component);
-    this.pagePane.setComponent(component);
+  this.component = component;
+  this.propertyPane.setComponent(component);
+  this.pagePane.setComponent(component);
 
-    var style = this.component.getStyle() || {};
-    this.borderPane.setStyle(style);
-    this.bgPane.setStyle(style);
-    this.generalStylePane.setStyle(style);
+  var style = this.component.getStyle() || {};
+  this.borderPane.setStyle(style);
+  this.bgPane.setStyle(style);
+  this.generalStylePane.setStyle(style);
 };
 
 
@@ -81117,11 +81243,11 @@ silex.view.PropertiesTool.prototype.setComponent = function(component) {
  */
 silex.view.PropertiesTool.prototype.redraw = function() {
 
-    this.borderPane.redraw();
-    this.propertyPane.redraw();
-    this.pagePane.redraw();
-    this.generalStylePane.redraw();
-    this.bgPane.redraw();
+  this.borderPane.redraw();
+  this.propertyPane.redraw();
+  this.pagePane.redraw();
+  this.generalStylePane.redraw();
+  this.bgPane.redraw();
 };
 
 
@@ -81129,7 +81255,7 @@ silex.view.PropertiesTool.prototype.redraw = function() {
  * base url for abs/rel conversions
  */
 silex.view.PropertiesTool.prototype.getBaseUrl = function() {
-    return this.propertyPane.getBaseUrl();
+  return this.propertyPane.getBaseUrl();
 };
 
 
@@ -81137,7 +81263,7 @@ silex.view.PropertiesTool.prototype.getBaseUrl = function() {
  * base url for abs/rel conversions
  */
 silex.view.PropertiesTool.prototype.setBaseUrl = function(url) {
-    this.propertyPane.setBaseUrl(url);
+  this.propertyPane.setBaseUrl(url);
 };
 
 
@@ -81145,8 +81271,8 @@ silex.view.PropertiesTool.prototype.setBaseUrl = function(url) {
  * refresh with new data
  */
 silex.view.PropertiesTool.prototype.setPages = function(data) {
-    this.pagePane.setPages(data);
-}
+  this.pagePane.setPages(data);
+};
 //////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
@@ -81353,8 +81479,7 @@ silex.model.File.prototype.save = function(cbk, opt_errCbk) {
   var blob = this.getBlob();
   this.setBodyTag(this.getStageComponent().getHtml(blob.url));
   this.setHeadTag(this.stage.getHead());
-  var relativePathStyle = this.getStageComponent().absolute2Relative(this.stage.getBodyStyle(), blob.url);
-  this.setBodyStyle(relativePathStyle);
+  this.setBodyStyle(this.stage.getBodyStyle());
   silex.service.CloudStorage.getInstance().save(blob, this.getHtml(), function() {
     if (cbk) cbk();
   }, opt_errCbk);
@@ -81414,33 +81539,30 @@ silex.model.File.prototype.refreshFontList = function() {
       link.parentNode.removeChild(link);
     }
   });
-
-  //get all components and get the font family style for each
-  var components = goog.dom.getElementsByClass('editable-style'),
-
-      //holds used font names. Stored as map to prevent duplicated
-      fontFamilies = {};
-
-  goog.array.forEach(components, function(node) {
-    var component = new silex.model.Component(node);
-
-    //for each component, get font family for each style
-    var styles = [
-      component.getStyle(silex.model.Component.CONTEXT_NORMAL),
-      component.getStyle(silex.model.Component.CONTEXT_HOVER),
-      component.getStyle(silex.model.Component.CONTEXT_PRESSED)
-    ];
-
-    goog.array.forEach(styles, function(style) {
-      if (style.fontFamily !== undefined) {
-        fontFamilies[style.fontFamily] = true;
-      }
-    });
+  var head = this.stage.headElement;
+  //detach all previously loaded font before, to avoid duplicate
+  var links = goog.dom.getElementsByTagNameAndClass('link', null, head);
+  goog.array.forEach(links, function(link) {
+    //fonts are loaded used 'links' element pointing to google fonts service
+    if (link.getAttribute('href').indexOf('fonts') !== -1) {
+      link.parentNode.removeChild(link);
+    }
+  });
+  //detach all previously loaded font before, to avoid duplicate
+  var links = goog.dom.getElementsByTagNameAndClass('link', null, head);
+  goog.array.forEach(links, function(link) {
+    //fonts are loaded used 'links' element pointing to google fonts service
+    if (link.getAttribute('href').indexOf('fonts') !== -1) {
+      link.parentNode.removeChild(link);
+    }
   });
 
+  var fontFamilies = this.getNeededFonts();
+
+  console.log('fonts ', fontFamilies)
   //text styles can also be applied using old-school font tag.
   //Get face attribute values from them
-  var fontTags = goog.dom.getElementsByTagNameAndClass('font');
+  var fontTags = goog.dom.getElementsByTagNameAndClass('font', null, head);
   goog.array.forEach(fontTags, function(fontTag) {
     if (null !== fontTag.getAttribute('face')) {
       fontFamilies[fontTag.getAttribute('face')] = true;
@@ -81448,9 +81570,7 @@ silex.model.File.prototype.refreshFontList = function() {
   });
 
   //get authorised fonts
-  var availableFonts = silex.model.Config.fonts,
-      head = document.head,
-
+  var availableFonts = silex.model.Config.fonts;
       //return the font from the font family or null
       getFont = function(fontFamily) {
             for (var fontName in availableFonts) {
@@ -81475,8 +81595,31 @@ silex.model.File.prototype.refreshFontList = function() {
       link.setAttribute('type', 'text/css');
 
       head.appendChild(link);
+
+      // for the editor
+      var link = goog.dom.createElement('link');
+      link.setAttribute('href', font.href);
+      link.setAttribute('rel', 'stylesheet');
+      link.setAttribute('type', 'text/css');
+
+      document.head.appendChild(link);
     }
   }
+};
+/**
+ * @return {object} object of fonts which are used in the text fields (key is the font name)
+ */
+silex.model.File.prototype.getNeededFonts = function() {
+  var innerHTML = this.getStageComponent().getHtml();
+  console.log('getNeededFonts')
+  var neededFonts = [];
+  innerHTML.replace(/<font.*face="?([^"]*)"/g, function(match, group1, group2) {
+    console.log('found', group1)
+    neededFonts[group1] = true;
+    return match;
+  });
+  console.log('getNeededFonts returns', neededFonts)
+  return neededFonts;
 };
 
 
@@ -81568,7 +81711,8 @@ silex.model.File.prototype.setBlob = function(blob) {
  * get the string containing the style attribute of the body tag
  */
 silex.model.File.prototype.getBodyStyle = function() {
-  return this.bodyStyle;
+  var absolutePathStyle = this.getStageComponent().relative2absolute(this.bodyStyle, this.getUrl());
+  return absolutePathStyle;
 };
 
 
@@ -81577,7 +81721,8 @@ silex.model.File.prototype.getBodyStyle = function() {
  * @param    bodyStyle     a string containing the style attribute to set on the body tag
  */
 silex.model.File.prototype.setBodyStyle = function(bodyStyle) {
-  this.bodyStyle = bodyStyle;
+  var relativePathStyle = this.getStageComponent().absolute2Relative(bodyStyle, this.getUrl());
+  this.bodyStyle = relativePathStyle;
 };
 
 
@@ -81662,6 +81807,9 @@ silex.model.File.prototype.setHtml = function(rawHtml) {
   // update publication settings
   this.setPublicationPath(this.getPublicationPath());
 
+  // update fonts
+  this.refreshFontList();
+
   // handle retrocompatibility issues
   this.handleRetrocompatibility();
 };
@@ -81672,9 +81820,9 @@ silex.model.File.prototype.setHtml = function(rawHtml) {
  * use the bodyTag and headTag objects
  */
 silex.model.File.prototype.getHtml = function() {
-  // handle background url of the body style
-  var style = silex.Helper.stringToStyle(this.getBodyStyle());
   /*
+    // handle background url of the body style
+    var style = silex.Helper.stringToStyle(this.getBodyStyle());
     if (style.backgroundImage) {
         var url = style.backgroundImage.substring(style.backgroundImage.indexOf('(')+1, style.backgroundImage.indexOf(')'));
         // also remove '' if needed
@@ -81689,8 +81837,11 @@ silex.model.File.prototype.getHtml = function() {
         // set the body style
         style.backgroundImage = url;
     }
-  */    // convert back to string
+  // convert back to string
   var styleStr = silex.Helper.styleToString(style);
+  */
+  // handle background url of the body style
+  var styleStr = this.getBodyStyle();
 
   var html = '';
   html += '<html>';
@@ -81878,7 +82029,8 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
   baseUrl = baseUrl.substring(0, baseUrl.lastIndexOf('/') + 1);
 
   // image source
-  bodyStr = bodyStr.replace(/<img src="?([^" ]*)" /g, function(match, group1, group2) {
+  bodyStr = bodyStr.replace(/<img.*src="?([^" ]*)"/g, function(match, group1, group2) {
+    console.log('replace img ', match, group1, group2);
     var absolute = silex.Helper.getAbsolutePath(group1, baseUrl);
     var relative = silex.Helper.getRelativePath(absolute, silex.Helper.BaseUrl);
     // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
@@ -81902,21 +82054,31 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
   }, this));
   // css
   headStr = headStr.replace(/href="?([^" ]*)"/g, function(match, group1, group2) {
+    var preventDownload = false;
     var absolute = silex.Helper.getAbsolutePath(group1, baseUrl);
     var relative = silex.Helper.getRelativePath(absolute, silex.Helper.BaseUrl);
     // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
     if (!silex.Helper.isAbsoluteUrl(relative)) {
       relative = relative.replace('../', '/');
     }
-    var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
-    var newRelativePath = 'css/' + fileName;
-    files.push({
-      url: absolute
-, destPath: newRelativePath
-, srcPath: relative
-    });
-    var res = match.replace(group1, newRelativePath);
-    return res;
+    else {
+      // only allowed domains
+      if (absolute.indexOf('http://static.silex.me') !== 0) {
+        preventDownload = true;
+      }
+    }
+    if (!preventDownload) {
+      var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
+      var newRelativePath = 'css/' + fileName;
+      files.push({
+        url: absolute
+        , destPath: newRelativePath
+        , srcPath: relative
+      });
+      var res = match.replace(group1, newRelativePath);
+      return res;
+    }
+    return match;
   });
   // scripts
   headStr = headStr.replace(/src="?([^"]*)"/g, function(match, group1, group2) {
@@ -82207,15 +82369,14 @@ silex.model.File.prototype.getPublicationInfo = function (url, baseUrl, localFol
 
 goog.provide('silex.view.propertiesTool.PagePane');
 
+goog.require('goog.array');
 goog.require('goog.cssom');
+goog.require('goog.editor.Field');
+goog.require('goog.object');
 goog.require('goog.ui.Checkbox');
+goog.require('goog.ui.ColorButton');
 goog.require('goog.ui.CustomButton');
 goog.require('goog.ui.HsvaPalette');
-goog.require('goog.ui.ColorButton');
-goog.require('goog.editor.Field');
-
-goog.require('goog.array');
-goog.require('goog.object');
 
 
 
@@ -82277,43 +82438,53 @@ silex.view.propertiesTool.PagePane.prototype.linkInputTextField;
 silex.view.propertiesTool.PagePane.prototype.buildUi = function() {
   // link, select page or enter custom link
   // handle the dropdown list from the template
-  this.linkDropdown = goog.dom.getElementByClass('link-combo-box', this.element);
+  this.linkDropdown = goog.dom.getElementByClass('link-combo-box',
+      this.element);
   this.linkDropdown.onchange = goog.bind(this.onLinkChanged, this);
 
   // create a text field for custom link
-  var linkInputElement = goog.dom.getElementByClass('link-input-text', this.element);
+  var linkInputElement = goog.dom.getElementByClass('link-input-text',
+      this.element);
   this.linkInputTextField = new goog.editor.Field(linkInputElement);
   // make editable
-  try{
+  try {
     this.linkInputTextField.makeEditable();
   }
-  catch(e){
+  catch (e) {
     // goog.editor.BrowserFeature.HAS_STYLE_WITH_CSS = false;
     console.error('error catched', e);
   }
   // hide by default
-  var linkInputElement = goog.dom.getElementByClass('link-input-text', this.element); // get the new input which may be an iframe
+  var linkInputElement = goog.dom.getElementByClass('link-input-text',
+      this.element); // get the new input which may be an iframe
   goog.style.setStyle(linkInputElement, 'display', 'none');
   // Watch for field changes, to display below.
-  goog.events.listen(this.linkInputTextField, goog.editor.Field.EventType.DELAYEDCHANGE, this.onLinkTextChanged, false, this);
+  goog.events.listen(this.linkInputTextField,
+      goog.editor.Field.EventType.DELAYEDCHANGE,
+      this.onLinkTextChanged,
+      false,
+      this);
 };
 
 
 /**
  * display the propertis of the component being edited
+ * @param   {silex.model.component} component   the component to edit
  */
-silex.view.propertiesTool.PagePane.prototype.setComponent = function(component) {
+silex.view.propertiesTool.PagePane.prototype.setComponent =
+    function(component) {
   this.component = component;
   this.redraw();
 };
 
 
 /**
- * refresh with new data
+ * refresh with new pages
+ * @param   {array} pages   the new list of pages
  */
-silex.view.propertiesTool.PagePane.prototype.setPages = function(data) {
-  // store page data
-  this.pages = data;
+silex.view.propertiesTool.PagePane.prototype.setPages = function(pages) {
+  // store the pages
+  this.pages = pages;
 
   // reset page checkboxes
   if (this.pageCheckboxes) {
@@ -82323,18 +82494,27 @@ silex.view.propertiesTool.PagePane.prototype.setPages = function(data) {
   }
 
   // link selector
-  var linkContainer = goog.dom.getElementByClass('link-combo-box', this.element);
-  var templateHtml = goog.dom.getElementByClass('link-template', this.element).innerHTML;
-  silex.Helper.resolveTemplate(linkContainer, templateHtml, {pages:this.pages});
+  var linkContainer = goog.dom.getElementByClass('link-combo-box',
+      this.element);
+  var templateHtml = goog.dom.getElementByClass('link-template',
+      this.element).innerHTML;
+  silex.Helper.resolveTemplate(linkContainer,
+      templateHtml,
+      {pages: this.pages});
 
   // render page/visibility template
   // init page template
-  var pagesContainer = goog.dom.getElementByClass('pages-container', this.element);
-  var templateHtml = goog.dom.getElementByClass('pages-selector-template', this.element).innerHTML;
-  silex.Helper.resolveTemplate(pagesContainer, templateHtml, {pages:this.pages});
+  var pagesContainer = goog.dom.getElementByClass('pages-container',
+      this.element);
+  var templateHtml = goog.dom.getElementByClass('pages-selector-template',
+      this.element).innerHTML;
+  silex.Helper.resolveTemplate(pagesContainer,
+      templateHtml,
+      {pages: this.pages});
   // create page checkboxes
   this.pageCheckboxes = [];
-  var mainContainer = goog.dom.getElementByClass('pages-container', this.element);
+  var mainContainer = goog.dom.getElementByClass('pages-container',
+      this.element);
   var items = goog.dom.getElementsByClass('page-container', mainContainer);
   var idx = 0;
   goog.array.forEach(items, function(item) {
@@ -82343,17 +82523,19 @@ silex.view.propertiesTool.PagePane.prototype.setPages = function(data) {
     var checkbox = new goog.ui.Checkbox();
     var page = this.pages[idx++];
     checkbox.render(checkboxElement);
-    checkbox.setLabel (labelElement);
+    checkbox.setLabel(labelElement);
     this.pageCheckboxes.push({
       checkbox: checkbox,
       page: page
     });
-    goog.events.listen(checkbox, goog.ui.Component.EventType.CHANGE, function(e) {
-      this.checkPage(page, checkbox);
-    }, false, this);
+    goog.events.listen(checkbox, goog.ui.Component.EventType.CHANGE,
+        function(e) {
+          this.checkPage(page, checkbox);
+        }, false, this);
   }, this);
   // show on all pages button
-  var showAllBtn = goog.dom.getElementByClass('show-on-all-pages-btn', this.element);
+  var showAllBtn = goog.dom.getElementByClass('show-on-all-pages-btn',
+      this.element);
   goog.events.listen(showAllBtn, goog.events.EventType.CLICK, function(e) {
     this.unCheckAll();
   }, false, this);
@@ -82366,21 +82548,21 @@ silex.view.propertiesTool.PagePane.prototype.setPages = function(data) {
 /**
  * the user changed the link drop down
  */
-silex.view.propertiesTool.PagePane.prototype.onLinkChanged = function(event) {
-  if (this.linkDropdown.value==='none') {
+silex.view.propertiesTool.PagePane.prototype.onLinkChanged = function() {
+  if (this.linkDropdown.value === 'none') {
     this.component.removeLink();
   }
-  else if (this.linkDropdown.value==='custom') {
+  else if (this.linkDropdown.value === 'custom') {
     // keep previous link value
     var prevVal = this.linkInputTextField.getCleanContents();
     // reset if it was an internal link
-    if (prevVal.indexOf('#')===0) prevVal = '';
-    if (prevVal==='') prevVal = 'http://www.silex.me/';
+    if (prevVal.indexOf('#') === 0) prevVal = '';
+    if (prevVal === '') prevVal = 'http://www.silex.me/';
     // store in the href attr
     this.component.setLink(prevVal);
   }
   else {
-    this.component.setLink('#'+this.linkDropdown.value);
+    this.component.setLink('#' + this.linkDropdown.value);
   }
   this.pageChanged();
   this.redraw();
@@ -82390,7 +82572,8 @@ silex.view.propertiesTool.PagePane.prototype.onLinkChanged = function(event) {
 /**
  * the user changed the link text field
  */
-silex.view.propertiesTool.PagePane.prototype.onLinkTextChanged = function(event) {
+silex.view.propertiesTool.PagePane.prototype.onLinkTextChanged =
+    function() {
   // update the href attribute
   this.component.setLink(this.linkInputTextField.getCleanContents());
   // notify the controler
@@ -82410,7 +82593,8 @@ silex.view.propertiesTool.PagePane.prototype.redraw = function() {
         // there is a selection
         var pageName = item.page.name;
         item.checkbox.setEnabled(true);
-        item.checkbox.setChecked(goog.dom.classes.has(this.component.element, pageName));
+        item.checkbox.setChecked(goog.dom.classes.has(this.component.element,
+            pageName));
       }
       else {
         // no selected element
@@ -82423,10 +82607,11 @@ silex.view.propertiesTool.PagePane.prototype.redraw = function() {
     // default selection
     var hrefAttr = this.component.getLink();
     if (!hrefAttr) {
-      this.linkDropdown.value='none';
+      this.linkDropdown.value = 'none';
     }
     else {
-      if (hrefAttr.indexOf('#')===0 && silex.model.Page.getPageByName(hrefAttr.substr(1))) {
+      if (hrefAttr.indexOf('#') === 0 &&
+          silex.model.Page.getPageByName(hrefAttr.substr(1))) {
         // case of an internal link
         // select a page
         this.linkDropdown.value = hrefAttr.substr(1);
@@ -82434,12 +82619,13 @@ silex.view.propertiesTool.PagePane.prototype.redraw = function() {
       else {
         // in case it is a custom link
         this.linkInputTextField.setHtml(false, hrefAttr);
-        this.linkDropdown.value='custom';
+        this.linkDropdown.value = 'custom';
       }
     }
     // visibility of the text edit
-    var linkInputElement = goog.dom.getElementByClass('link-input-text', this.element);
-    if (this.linkDropdown.value==='custom') {
+    var linkInputElement = goog.dom.getElementByClass('link-input-text',
+        this.element);
+    if (this.linkDropdown.value === 'custom') {
       goog.style.setStyle(linkInputElement, 'display', 'inherit');
     }
     else {
@@ -82452,8 +82638,12 @@ silex.view.propertiesTool.PagePane.prototype.redraw = function() {
 
 /**
  * callback for checkboxes click event
+ * changes the visibility of the current component for the given page
+ * @param   {silex.model.page} page   the page for wich the visibility changes
+ * @param   {goog.ui.Checkbox} checkbox   the checkbox clicked
  */
-silex.view.propertiesTool.PagePane.prototype.checkPage = function(page, checkbox) {
+silex.view.propertiesTool.PagePane.prototype.checkPage =
+    function(page, checkbox) {
   // apply the page selection
   if (checkbox.isChecked()) {
     page.addComponent(this.component);
@@ -82479,7 +82669,7 @@ silex.view.propertiesTool.PagePane.prototype.unCheckAll = function() {
   this.pageChanged();
   // refresh ui
   this.redraw();
-}
+};
 //////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
@@ -82644,7 +82834,7 @@ silex.boot = function() {
 
 /* *
             // debug: load a file
-            var url = '../api/v1.0/www/exec/get/temp.html';
+            var url = '../api/v1.0/dropbox/exec/get/temp.html';
             //var url = '../api/v1.0/dropbox/exec/get/_test/lexoyo.me.html';
             var blob = {
                 url: url
