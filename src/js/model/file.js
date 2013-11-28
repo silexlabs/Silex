@@ -192,7 +192,9 @@ silex.model.File.prototype.saveAs = function(cbk, opt_errCbk) {
         this.setBlob(blob);
         this.save(cbk, opt_errCbk);
       }, this),
-      {'mimetype': 'text/html'}, opt_errCbk);
+      {'mimetype': 'text/html'}, 
+      ['html', 'htm'],
+      opt_errCbk);
   this.workspace.invalidate();
 };
 
@@ -228,7 +230,9 @@ silex.model.File.prototype.open = function(cbk, opt_errCbk) {
               if (cbk) cbk();
             }, this), opt_errCbk);
       }, this),
-      ['text/html', 'text/plain'], opt_errCbk);
+      ['text/html', 'text/plain'], 
+      ['html', 'htm'],
+      opt_errCbk);
   this.workspace.invalidate();
 };
 
@@ -296,14 +300,14 @@ silex.model.File.prototype.refreshFontList = function() {
 
   //get authorised fonts
   var availableFonts = silex.model.Config.fonts;
-      //return the font from the font family or null
-      getFont = function(fontFamily) {
-            for (var fontName in availableFonts) {
-          if (availableFonts[fontName].value === fontFamily)
-                    return availableFonts[fontName];
-            }
-            return null;
-      };
+  //return the font from the font family or null
+  var getFont = function(fontFamily) {
+        for (var fontName in availableFonts) {
+      if (availableFonts[fontName].value === fontFamily)
+                return availableFonts[fontName];
+        }
+        return null;
+  };
 
   //for each used font family, if a corresponding font is available, load it
   for (var fontFamily in fontFamilies) {
@@ -545,26 +549,6 @@ silex.model.File.prototype.setHtml = function(rawHtml) {
  * use the bodyTag and headTag objects
  */
 silex.model.File.prototype.getHtml = function() {
-  /*
-    // handle background url of the body style
-    var style = silex.Helper.stringToStyle(this.getBodyStyle());
-    if (style.backgroundImage) {
-        var url = style.backgroundImage.substring(style.backgroundImage.indexOf('(')+1, style.backgroundImage.indexOf(')'));
-        // also remove '' if needed
-        var quoteIdx = url.indexOf("'");
-        if (quoteIdx>=0) {
-            url = url.substring(quoteIdx+1, url.lastIndexOf("'"));
-        }
-        // absolute to relative
-        url = silex.Helper.getRelativePath(url, this.propertiesTool.getBaseUrl());
-        // put back the url('...')
-        url = 'url(\'' + url + '\')';
-        // set the body style
-        style.backgroundImage = url;
-    }
-  // convert back to string
-  var styleStr = silex.Helper.styleToString(style);
-  */
   // handle background url of the body style
   var styleStr = this.getBodyStyle();
 
