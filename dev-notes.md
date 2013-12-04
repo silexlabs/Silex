@@ -45,7 +45,7 @@ Stress tests
 
 Suite à la nuit charrette
 
-  Bug Firefox
+  Bug Firefox : text editor
   Bug IE
   Bug images with %20
 

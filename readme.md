@@ -1,5 +1,5 @@
 #Silex, live web creation.
- 
+
 [![Dependency Status](https://gemnasium.com/silexlabs/Silex.png)](https://gemnasium.com/silexlabs/Silex)
 
 ##About Silex
@@ -160,14 +160,15 @@ Continuous integration
 * unit tests http://stackoverflow.com/questions/11520170/unit-testing-oauth-js-with-mocha
 * functional tests
 
-Professional installation
+Automatic installation
 
-* softaculous virtual install
+* softaculous virtual install? vagrant?
 * bower?
 
-Remove handlebars.js (and use jade on the server side instead?)
+Architecture
 
-Unifile archi (cf unifile readme)
+* Remove handlebars.js (and use jade on the server side instead?)
+* Unifile archi (cf unifile readme)
 
 Debuging
 
@@ -177,7 +178,12 @@ Validation
 
 Nice to have :
 
-* file://localhost/Users/lexa/Dropbox/fdt-workspace/Silex/libs/closure/goog/demos/onlinehandler.html
+* save edited parts of the file only (useful to work several people on a file, 1st step to the undo/redo since it implies storing the changes to a file instead of the DOM)
+* store current state on local storage (auto-save, propose to "open latest unsaved version" when opening a document)
+* deeplink to opened file (https://www.silex.me/?file=/dropbox/path/to/file.html)
+* indicates online/offline?
+  file://localhost/Users/lexa/Dropbox/fdt-workspace/Silex/libs/closure/goog/demos/onlinehandler.html
+
 
 ###v2.0.x
 
@@ -222,13 +228,13 @@ Packaging / distribution
 * FB page editor
 
 * add to publish
-  
-  * settings : radio buttons to choose 
+
+  * settings : radio buttons to choose
     * "dropbox apps": combo box with list of services (paperplane.io etc.), combo box to choose a website => set the publish path to Apps/paperplane/the.website.com/
     *and "publish path" (advanced users), the current behavior
 
   * history of the versions published
-  
+
     * ask "what's new in this version"? (=> track versions in a versions.json file)
     * .history/deleted_[date]/
 
@@ -241,10 +247,10 @@ Packaging / distribution
   * close the html tags (e.g. <img /> instead of <img>)
   * create the .hx, .hxml, .nmml files to test
 
-* widgets 
+* widgets
 
   * widget agenda
-  * widget player vidéo 
+  * widget player vidéo
   * webgl (cf open gl editor http://stackoverflow.com/questions/7093354/any-free-open-source-webgl-editors)
 
 * Mobile version
@@ -256,5 +262,5 @@ Packaging / distribution
   * view menu: iPhone, iPad, web
 
 deployment
-  
+
   * https://github.com/lorenwest/node-monitor
