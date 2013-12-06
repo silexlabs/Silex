@@ -82271,7 +82271,8 @@ silex.view.TextEditor.prototype.initUI = function() {
     this.textField.makeEditable();
   }
   catch (e) {
-    console.error('error catched', e, goog.editor.BrowserFeature.HAS_STYLE_WITH_CSS);
+    // goog.editor.BrowserFeature.HAS_STYLE_WITH_CSS = false;
+    console.error('error catched', e);
   }
 
   // close button

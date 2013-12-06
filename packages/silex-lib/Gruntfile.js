@@ -218,7 +218,7 @@ module.exports = function(grunt) {
   grunt.registerTask('default', ['check', 'deploy']);
   grunt.registerTask('runAndWatch', 'Start Silex and watch', function () {
       grunt.task.run([
-          'concurrent:run',
+          'run',
           'watch'
       ]);
   });
