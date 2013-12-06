@@ -63,6 +63,28 @@ Suite à la nuit charrette
 
   Layout
   - none(abs), horizontal, vertical => padding
+  Refactoring
+  - ttes les manip du dom dans un modèle Dom (lister les pages, ajouter un node pour un composant
+  - stage doit juste être là pour capter les actions de l'utilisateur et les transmettre au contrôleur
+  - notion de classe proxy? Pour le contrôleur? Pour propertiesTool
+  - éléments du menu dans la config
+  - validators pour les nom de fichiers? Splitter Helper en classes plus explicites dans utils
+  Fix add comp, take scroll into account
+
+  In the text editor, styles
+
+  In the style editor, hover/Normal /press
+
+  Name and CSS class in main properties pane + type (vbox, hbox...) + scroll / adapt to content
+
+  Vbox, hbox, tilebox, (content pane: v/h align, Datasource )
+
+  In content pane: padding
+  And style/formatting : set style on roll over/out/normal
+  In the menu
+  - style editor = Loren ipsum text and google closure editor + select the style to edit
+  - default styles: normal, title1/2/3/4, quote, code...
+  - todo in the future: add/remove custom styles
 
 * bugs
 * !!! Urgent : in silex.model.File.prototype.setHtml and silex.model.File.prototype.save
