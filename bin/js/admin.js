@@ -83498,7 +83498,7 @@ silex.model.File.prototype.refreshFontList = function() {
 silex.model.File.prototype.getNeededFonts = function() {
   var innerHTML = this.getStageComponent().getHtml();
   var neededFonts = [];
-  innerHTML.replace(/<font.*face="?([^"]*)"/g, function(match, group1, group2) {
+  innerHTML.replace(/<font[^"]*face="?([^"]*)"/g, function(match, group1, group2) {
     neededFonts[group1] = true;
     return match;
   });
@@ -83892,7 +83892,7 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
   baseUrl = baseUrl.substring(0, baseUrl.lastIndexOf('/') + 1);
 
   // image source
-  bodyStr = bodyStr.replace(/<img.*src="?([^" ]*)"/g, function(match, group1, group2) {
+  bodyStr = bodyStr.replace(/<img[^"]*src="?([^" ]*)"/g, function(match, group1, group2) {
     var absolute = silex.Helper.getAbsolutePath(group1, baseUrl);
     var relative = silex.Helper.getRelativePath(absolute, silex.Helper.BaseUrl);
     // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
@@ -84106,6 +84106,7 @@ this does nothing: node.style.backgroundImage = "url('" + info.destPath + "')";
   html += '</html>';
 
   // callback
+  console.info('files to publish', files);
   cbk(html, cssStr, files);
 };
 silex.model.File.prototype.filterBgImage = function(baseUrl, files, match, group1, group2) {
@@ -84688,8 +84689,7 @@ silex.boot = function() {
 
 /* *
             // debug: load a file
-            var url = '../api/v1.0/dropbox/exec/get/temp.html';
-            //var url = '../api/v1.0/dropbox/exec/get/_test/lexoyo.me.html';
+            var url = '../api/v1.0/dropbox/exec/get/Applications/KISSr/sb.kissr.com/editable.html';
             var blob = {
                 url: url
             };
@@ -84700,7 +84700,7 @@ silex.boot = function() {
                     file.setUrl(url);
                     file.setBlob(blob);
                     file.setHtml(rawHtml);
-return;
+//return;
                     controller.menuCallback({type:'file.publish'});
                 }, this));
 /* */

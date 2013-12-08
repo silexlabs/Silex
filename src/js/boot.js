@@ -162,8 +162,7 @@ silex.boot = function() {
 
 /* *
             // debug: load a file
-            var url = '../api/v1.0/dropbox/exec/get/temp.html';
-            //var url = '../api/v1.0/dropbox/exec/get/_test/lexoyo.me.html';
+            var url = '../api/v1.0/dropbox/exec/get/Applications/KISSr/sb.kissr.com/editable.html';
             var blob = {
                 url: url
             };
@@ -174,7 +173,7 @@ silex.boot = function() {
                     file.setUrl(url);
                     file.setBlob(blob);
                     file.setHtml(rawHtml);
-return;
+//return;
                     controller.menuCallback({type:'file.publish'});
                 }, this));
 /* */

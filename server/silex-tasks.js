@@ -173,7 +173,6 @@ exports.getFileFromService = function(req, res, next, srcPath, dstPath, cbk){
 exports.writeFileToService = function(req, res, next, url, data, cbk){
 	req.body.data = data;
 	exports.unifileRoute(req, res, next, url, function(response, status, data, mime_type, responseFilePath) {
-		console.log('writeFileToService, unifileRoute ', url, 'returned', status, data, mime_type, responseFilePath)
 		if (status.success){
 			cbk();
 		}
@@ -186,6 +185,8 @@ exports.writeFileToService = function(req, res, next, url, data, cbk){
  * call unifile as an api
  */
 exports.unifileRoute = function(req, res, next, url, cbk){
+	// url decode the url
+	url = decodeURIComponent(url);
     // split to be able to manipulate each folder
     var url_arr = url.split('/');
     // remove the first empty '' from the path (first slash)
