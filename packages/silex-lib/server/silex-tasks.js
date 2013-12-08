@@ -11,7 +11,13 @@ router = require('unifile/lib/core/router.js');
 exports.route = function(cbk, req, res, next, task){
 	switch(task){
 		case 'publish':
-			exports.publish(cbk, req, res, next, req.body.path, req.body.html, req.body.css, JSON.parse(req.body.files));
+			exports.publish(function(result){
+				// just log the result
+		        if (!result) result = {success:true};
+		        console.log('silex task result', result);
+		    }, req, res, next, req.body.path, req.body.html, req.body.css, JSON.parse(req.body.files));
+			// imediately returns success, to avoid timeout
+		    cbk();
 		break;
 	}
 }
