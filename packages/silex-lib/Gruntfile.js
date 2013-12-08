@@ -25,6 +25,8 @@ Uses:
 * watch and deploy when needed
 
   $ grunt watch
+  or
+  $ grunt runAndWatch
 
 
 
@@ -178,7 +180,7 @@ module.exports = function(grunt) {
     }
     , watch: {
         javascript: {
-            files: ['src/js/**/*.js', 'src/less/*.css', 'bin/**/*.html', 'Gruntfile.js']
+            files: ['src/js/**/*.js', 'server/**/*.js', 'src/less/*.css', 'bin/**/*.html', 'Gruntfile.js']
             //, tasks: ['check', 'deploy']
             , tasks: ['deploy', 'run']
         }
