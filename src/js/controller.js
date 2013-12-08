@@ -200,7 +200,7 @@ silex.Controller.prototype.menuCallback = function(event) {
                 this.tracker.trackAction('controller-events', 'error', event.type, -1);
               }
               else {
-                this.notifySuccess('Your site is published. ');
+                this.notifySuccess('I am about to publish your site. This may take several minutes.');
                 this.tracker.trackAction('controller-events', 'success', event.type, 1);
               }
             }, this),
