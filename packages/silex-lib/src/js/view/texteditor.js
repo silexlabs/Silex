@@ -53,6 +53,7 @@ silex.view.TextEditor = function(element, cbk) {
       element,
       function() {
         this.initUI();
+        this.closeEditor();
         if (cbk) cbk();
       }, this);
 };

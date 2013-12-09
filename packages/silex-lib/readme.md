@@ -170,7 +170,9 @@ Architecture
 * Remove handlebars.js (and use jade on the server side instead?)
 * Unifile archi (cf unifile readme)
 
-Debuging
+Debuging and better error handling
+
+* use sockets instead of http requests for publication and heavy processings
 
 Validation
 
