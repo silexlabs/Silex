@@ -215,6 +215,23 @@ body.loading-pending .loader {
   font-weight: 400;
   font-size-adjust: none;
 }
+.goog-tooltip {
+  background: infobackground;
+  color: infotext;
+  border: 1px solid infotext;
+  padding: 4px;
+  font: menu;
+  z-index: 999999;
+}
+/* the shortcut displayed in the menu items */
+.shortcut-display {
+  position: absolute;
+  right: 10px;
+}
+.goog-menuitem-content {
+  display: inline;
+}
+/* */
 .silex-menu .goog-menu-button {
   display: inline-block;
   cursor: default;

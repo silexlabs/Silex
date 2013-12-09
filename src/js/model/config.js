@@ -17,6 +17,251 @@
 
 goog.provide('silex.model.Config');
 
+function getAllCombinations(menu, option){
+  return [
+    'ctrl+' + option
+    , 'alt+' + option
+    , 'command+' + option
+    , 'ctrl+shift+' + option
+    , 'alt+shift+' + option
+    , 'command+shift+' + option
+    , 'ctrl+' + menu + ' ctrl+' + option
+    , 'alt+' + menu + ' alt+' + option
+    , 'command+' + menu + ' command+' + option
+    , 'ctrl+shift+' + menu + ' ctrl+shift+' + option
+    , 'alt+shift+' + menu + ' alt+shift+' + option
+    , 'command+shift+' + menu + ' command+shift+' + option
+  ];
+}
+/**
+ * The main application menu
+ */
+silex.model.Config.menu = {
+  names: [
+    {
+      label: 'File'
+      , className: 'menu-item-file'
+      , shortcut: ['mod+shift+f']
+      , tooltip: 'ctrl+⇪+f'
+    }
+    , {
+      label: 'Edit'
+      , className: 'menu-item-edit'
+      , shortcut: ['mod+shift+e']
+      , tooltip: 'ctrl+⇪+e'
+    }
+    , {
+      label: 'View'
+      , className: 'menu-item-view'
+      , shortcut: ['mod+shift+v']
+      , tooltip: 'ctrl+⇪+v'
+    }
+    , {
+      label: 'Insert'
+      , className: 'menu-item-insert'
+      , shortcut: ['mod+shift+i']
+      , tooltip: 'ctrl+⇪+i'
+    }
+    , {
+      label: 'Tools'
+      , className: 'menu-item-tools'
+      , shortcut: ['mod+shift+t']
+      , tooltip: 'ctrl+⇪+t'
+    }
+    , {
+      label: 'Help'
+      , className: 'menu-item-help'
+      , shortcut: ['mod+shift+h']
+      , tooltip: 'ctrl+⇪+h'
+    }
+  ]
+  , options: [
+    [
+      {
+        label: 'New File'
+        , id: 'file.new'
+        , className: 'menu-item-file-new'
+        , shortcut: getAllCombinations('f', 'n')
+        , tooltip: 'ctrl+fn'
+      }
+      , {
+        label: 'Open File...'
+        , id: 'file.open'
+        , className: 'menu-item-file-open'
+        , shortcut: getAllCombinations('f', 'o')
+        , tooltip: 'ctrl+fo'
+      }
+      , {
+        label: 'Save File'
+        , id: 'file.save'
+        , className: 'menu-item-file-save'
+        , shortcut: getAllCombinations('f', 's')
+        , tooltip: 'ctrl+fs'
+      }
+      , {
+        label: 'Save As...'
+        , id: 'file.saveas'
+        , className: 'menu-item-file-saveas'
+        , shortcut: getAllCombinations('f', 's')
+        , tooltip: 'ctrl+⇪+fs'
+      }
+      , null
+      , {
+        label: 'Publish'
+        , id: 'file.publish'
+        , className: 'menu-item-file-publish'
+        , shortcut: getAllCombinations('f', 'p')
+        , tooltip: 'ctrl+⇪+fp'
+      }
+      , {
+        label: 'Settings...'
+        , id: 'file.publish.settings'
+        , className: 'menu-item-file-publish-settings'
+      }
+      , null
+      , {
+        label: 'Close File'
+        , id: 'file.close'
+        , className: 'menu-item-file-close'
+        , shortcut: getAllCombinations('f', 'w')
+        , tooltip: 'ctrl+fw'
+      }
+    ]
+    , [
+      {
+        label: 'Delete selection'
+        , id: 'edit.delete.selection'
+        , className: 'menu-item-edit-delete-selection'
+        , shortcut: ['del', 'backspace']
+        , tooltip: 'suppr'
+      }
+      , null
+      , {
+        label: 'Rename page'
+        , id: 'edit.rename.page'
+        , className: 'menu-item-edit-rename-page'
+      }
+      , {
+        label: 'Delete page'
+        , id: 'edit.delete.page'
+        , className: 'menu-item-edit-delete-page'
+      }
+    ]
+    , [
+      {
+        label: 'View in new window'
+        , id: 'view.file'
+        , className: 'menu-item-view-file'
+        , shortcut: getAllCombinations('v', 'n')
+        , tooltip: 'ctrl+⇪+vn'
+      }
+      , null
+      , {
+        label: 'Open text editor'
+        , id: 'view.open.textEditor'
+        , className: 'menu-item-view-open-textEditor'
+        , shortcut: ['enter']
+        , tooltip: '↵'
+      }
+      , {
+        label: 'Open file browser'
+        , id: 'view.open.fileExplorer'
+        , className: 'menu-item-view-open-fileExplorer'
+      }
+    ]
+    , [
+      {
+        label: 'Text box'
+        , id: 'insert.text'
+        , className: 'menu-item-insert-text'
+        , shortcut: getAllCombinations('i', 't')
+        , tooltip: 'ctrl+⇪+it'
+      }
+      , {
+        label: 'Image...'
+        , id: 'insert.image'
+        , className: 'menu-item-insert-image'
+        , shortcut: getAllCombinations('i', 'i')
+        , tooltip: 'ctrl+⇪+ii'
+      }
+      , {
+        label: 'Container'
+        , id: 'insert.container'
+        , className: 'menu-item-insert-container'
+        , shortcut: getAllCombinations('i', 'c')
+        , tooltip: 'ctrl+⇪+ic'
+      }
+      , null
+      , {
+        label: 'HTML box'
+        , id: 'insert.html'
+        , className: 'menu-item-insert-html'
+        , shortcut: getAllCombinations('i', 'h')
+        , tooltip: 'ctrl+⇪+ih'
+      }
+      , null
+      , {
+        label: 'New page'
+        , id: 'insert.page'
+        , className: 'menu-item-insert-page'
+        , shortcut: getAllCombinations('i', 'n')
+        , tooltip: 'ctrl+⇪+in'
+      }
+    ]
+    , [
+      {
+        label: 'Apollo mode'
+        , id: 'tools.advanced.activate'
+        , className: 'menu-item-tools-advanced.activate'
+        , checkable: true
+      }
+    ]
+    , [
+      {
+        label: 'About Silex'
+        , id: 'help.about'
+        , className: 'menu-item-help-about'
+      }
+      , {
+        label: 'About Silex Labs'
+        , id: 'help.aboutSilexLabs'
+        , className: 'menu-item-help-aboutSilexLabs'
+      }
+      , {
+        label: 'Silex Labs news by email'
+        , id: 'help.newsLetter'
+        , className: 'menu-item-help-newsLetter'
+      }
+      , null
+      , {
+        label: 'Questions and answers'
+        , id: 'help.forums'
+        , className: 'menu-item-help-forums'
+      }
+      , {
+        label: 'Talk with us on twitter'
+        , id: 'help.twitter'
+        , className: 'menu-item-help-twitter'
+      }
+      , {
+        label: 'Talk with us on Google+'
+        , id: 'help.googlPlus'
+        , className: 'menu-item-help-googlPlus'
+      }
+      , {
+        label: 'Talk with us on Facebook'
+        , id: 'help.facebook'
+        , className: 'menu-item-help-facebook'
+      }
+      , null
+      , {
+        label: 'Fork me on github!'
+        , id: 'help.forkMe'
+        , className: 'menu-item-help-forkMe'
+      }
+    ]
+  ]
+};
 
 /**
  * The list of fonts the user can select
