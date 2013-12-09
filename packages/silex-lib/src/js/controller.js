@@ -279,12 +279,12 @@ silex.Controller.prototype.menuCallback = function(event) {
       this.editComponent();
       break;
     case 'insert.page':
-      this.createPage(function() {
+      this.createPage(goog.bind(function() {
         this.tracker.trackAction('controller-events', 'success', event.type, 1);
-      },
-      function() {
+      }, this),
+      goog.bind(function() {
         this.tracker.trackAction('controller-events', 'cancel', event.type, 0);
-      });
+      }, this));
       break;
     case 'insert.text':
       var component = this.file.getStageComponent().addText();
