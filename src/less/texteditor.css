@@ -2,8 +2,7 @@
 	position: absolute;
 	width: 90%;
 	height: 90%;
-	display: none;
-	z-index: 110; /* 100 for bg */	
+	z-index: 110; /* 100 for bg */
 }
 .silex-texteditor .text-field{
 	width: 100%;

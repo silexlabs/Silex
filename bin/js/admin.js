@@ -59678,6 +59678,7 @@ goog.editor.Field.prototype.turnOnDesignModeGecko = function() {
   // their fields are valid when they try to make them editable.
   doc.designMode = 'on';
 
+console.log('Use HAS_STYLE_WITH_CSS', goog.editor.BrowserFeature.HAS_STYLE_WITH_CSS+" xxx")
   if (goog.editor.BrowserFeature.HAS_STYLE_WITH_CSS) {
     doc.execCommand('styleWithCSS', false, false);
   }
@@ -69882,6 +69883,7 @@ goog.editor.plugins.BasicTextFormatter.prototype.execCommandInternal = function(
       switch (command) {
         case goog.editor.plugins.BasicTextFormatter.COMMAND.INDENT:
         case goog.editor.plugins.BasicTextFormatter.COMMAND.OUTDENT:
+console.log('Use HAS_STYLE_WITH_CSS', goog.editor.BrowserFeature.HAS_STYLE_WITH_CSS+" xxx")
           if (goog.editor.BrowserFeature.HAS_STYLE_WITH_CSS) {
             if (goog.userAgent.GECKO) {
               styleWithCss = true;
@@ -69961,6 +69963,7 @@ goog.editor.plugins.BasicTextFormatter.prototype.execCommandInternal = function(
           // are unformatting something, we want to have styleWithCSS true so
           // that we can unformat both html tags and inline styling.
           // TODO(user): What about WebKit and Opera?
+console.log('Use HAS_STYLE_WITH_CSS', goog.editor.BrowserFeature.HAS_STYLE_WITH_CSS+" xxx")
           styleWithCss = goog.userAgent.GECKO &&
                          goog.editor.BrowserFeature.HAS_STYLE_WITH_CSS &&
                          this.queryCommandValue(command);
@@ -69973,6 +69976,7 @@ goog.editor.plugins.BasicTextFormatter.prototype.execCommandInternal = function(
           // force FF to use spans.
           // Font size is very expensive too, but FF always uses font tags,
           // regardless of which styleWithCSS value you use.
+console.log('Use HAS_STYLE_WITH_CSS', goog.editor.BrowserFeature.HAS_STYLE_WITH_CSS+" xxx")
           styleWithCss = goog.editor.BrowserFeature.HAS_STYLE_WITH_CSS &&
                          goog.userAgent.GECKO;
       }
@@ -70059,6 +70063,7 @@ goog.editor.plugins.BasicTextFormatter.prototype.queryCommandValue = function(
     case goog.editor.plugins.BasicTextFormatter.COMMAND.BACKGROUND_COLOR:
       // We use queryCommandValue here since we don't just want to know if a
       // color/fontface/fontsize is applied, we want to know WHICH one it is.
+console.log('Use HAS_STYLE_WITH_CSS', goog.editor.BrowserFeature.HAS_STYLE_WITH_CSS+" xxx")
       return this.queryCommandValueInternal_(this.getDocument_(), command,
           goog.editor.BrowserFeature.HAS_STYLE_WITH_CSS &&
           goog.userAgent.GECKO);
@@ -70066,6 +70071,7 @@ goog.editor.plugins.BasicTextFormatter.prototype.queryCommandValue = function(
     case goog.editor.plugins.BasicTextFormatter.COMMAND.UNDERLINE:
     case goog.editor.plugins.BasicTextFormatter.COMMAND.BOLD:
     case goog.editor.plugins.BasicTextFormatter.COMMAND.ITALIC:
+console.log('Use HAS_STYLE_WITH_CSS', goog.editor.BrowserFeature.HAS_STYLE_WITH_CSS+" xxx")
       styleWithCss = goog.editor.BrowserFeature.HAS_STYLE_WITH_CSS &&
                      goog.userAgent.GECKO;
 
@@ -70368,6 +70374,7 @@ goog.editor.plugins.BasicTextFormatter.prototype.justify_ = function(command) {
   // Only for browsers that can't handle this by the styleWithCSS execCommand,
   // which allows us to specify if we should insert align or text-align.
   // TODO(user): What about WebKit or Opera?
+console.log('Use HAS_STYLE_WITH_CSS', goog.editor.BrowserFeature.HAS_STYLE_WITH_CSS+" xxx")
   if (!(goog.editor.BrowserFeature.HAS_STYLE_WITH_CSS &&
         goog.userAgent.GECKO)) {
     goog.iter.forEach(this.getFieldObject().getRange(),
@@ -70451,6 +70458,7 @@ goog.editor.plugins.BasicTextFormatter.prototype.execCommandHelper_ = function(
   }
 
   var doc = this.getDocument_();
+console.log('Use HAS_STYLE_WITH_CSS', goog.editor.BrowserFeature.HAS_STYLE_WITH_CSS+" xxx")
   if (opt_styleWithCss &&
       goog.editor.BrowserFeature.HAS_STYLE_WITH_CSS) {
     doc.execCommand('styleWithCSS', false, true);
@@ -82165,6 +82173,7 @@ silex.view.TextEditor = function(element, cbk) {
       element,
       function() {
         this.initUI();
+        this.closeEditor();
         if (cbk) cbk();
       }, this);
 };
@@ -84542,9 +84551,8 @@ goog.provide('silex.boot');
 goog.require('goog.dom');
 goog.require('goog.events');
 goog.require('goog.style');
+
 goog.require('silex.Controller');
-// debug
-//goog.require('silex.Logger');
 goog.require('silex.Helper');
 goog.require('silex.model.Component');
 goog.require('silex.model.File');
@@ -84668,15 +84676,16 @@ silex.boot = function() {
                                // now create an empty file to let the user start using Silex
                                file.newFile(function() {
 
-                                 /*
-            // debug: insert a text field
-            controller.menuCallback({type:'insert.text'});
+/* *
             controller.menuCallback({type:'insert.container'});
             controller.menuCallback({type:'insert.html'});
 
-            file.getStageComponent().addImage('../silex.png');
+            //file.getStageComponent().addImage('../silex.png');
             //file.setPublicationPath('www/test111/');
+            controller.menuCallback({type:'insert.text'});
+            controller.menuCallback({type:'view.open.textEditor'});
 
+return;
             setTimeout(function() {
                 var blob = {
                     url: silex.Helper.BaseUrl+'/api/v1.0/www/exec/put/temp.html'

@@ -43,6 +43,8 @@ Stress tests
 
 ###en cours
 
+source mapping
+
 Suite à la nuit charrette
 
   Bug Firefox : text editor

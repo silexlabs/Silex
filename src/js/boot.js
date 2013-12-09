@@ -16,9 +16,8 @@ goog.provide('silex.boot');
 goog.require('goog.dom');
 goog.require('goog.events');
 goog.require('goog.style');
+
 goog.require('silex.Controller');
-// debug
-//goog.require('silex.Logger');
 goog.require('silex.Helper');
 goog.require('silex.model.Component');
 goog.require('silex.model.File');
@@ -142,15 +141,16 @@ silex.boot = function() {
                                // now create an empty file to let the user start using Silex
                                file.newFile(function() {
 
-                                 /*
-            // debug: insert a text field
-            controller.menuCallback({type:'insert.text'});
+/* *
             controller.menuCallback({type:'insert.container'});
             controller.menuCallback({type:'insert.html'});
 
-            file.getStageComponent().addImage('../silex.png');
+            //file.getStageComponent().addImage('../silex.png');
             //file.setPublicationPath('www/test111/');
+            controller.menuCallback({type:'insert.text'});
+            controller.menuCallback({type:'view.open.textEditor'});
 
+return;
             setTimeout(function() {
                 var blob = {
                     url: silex.Helper.BaseUrl+'/api/v1.0/www/exec/put/temp.html'
