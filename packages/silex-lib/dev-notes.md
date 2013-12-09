@@ -41,15 +41,32 @@ Stress tests
 
 ##Silex
 
+###funcitonal tests to do
+
+these tests would have avoid me to push bugs in production:
+
+* publication (compare "editable.html" and "index.html", or just check "index.html"?)
+
+  * background style
+  * same number of components
+  * download and store on dropbox (or local www?): all images, the scripts only from local or static.silex.me, all the css, fonts + check when file name and folder has " " and accents
+
+* settings
+
+  * select a "publication path" => stores it in the publication
+
+* consistency in different browsers (ff, chrome, IE)
+
+* text editor
+
+  * change text in the editor => changes the website content
+  * fonts are stored in the publication
+
 ###en cours
 
 source mapping
 
 Suite à la nuit charrette
-
-  Bug Firefox : text editor
-  Bug IE
-  Bug images with %20
 
   Position and size depends on contexts
 
