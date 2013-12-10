@@ -17,22 +17,12 @@
 
 goog.provide('silex.model.Config');
 
-function getAllCombinations(menu, option){
-  return [
-    'ctrl+' + option
-    , 'alt+' + option
-    , 'command+' + option
-    , 'ctrl+shift+' + option
-    , 'alt+shift+' + option
-    , 'command+shift+' + option
-    , 'ctrl+' + menu + ' ctrl+' + option
-    , 'alt+' + menu + ' alt+' + option
-    , 'command+' + menu + ' command+' + option
-    , 'ctrl+shift+' + menu + ' ctrl+shift+' + option
-    , 'alt+shift+' + menu + ' alt+shift+' + option
-    , 'command+shift+' + menu + ' command+shift+' + option
-  ];
-}
+goog.require('goog.events.KeyCodes');
+goog.require('goog.ui.KeyboardShortcutHandler');
+
+var ctrlKeyDisplay = goog.userAgent.MAC ? '⌘' + '' : 'Ctrl+';
+var altKeyDisplay = goog.userAgent.MAC ?  '⌥' + '' : 'Alt+';
+
 /**
  * The main application menu
  */
@@ -41,38 +31,26 @@ silex.model.Config.menu = {
     {
       label: 'File'
       , className: 'menu-item-file'
-      , shortcut: ['mod+shift+f']
-      , tooltip: 'ctrl+⇪+f'
     }
     , {
       label: 'Edit'
       , className: 'menu-item-edit'
-      , shortcut: ['mod+shift+e']
-      , tooltip: 'ctrl+⇪+e'
     }
     , {
       label: 'View'
       , className: 'menu-item-view'
-      , shortcut: ['mod+shift+v']
-      , tooltip: 'ctrl+⇪+v'
     }
     , {
       label: 'Insert'
       , className: 'menu-item-insert'
-      , shortcut: ['mod+shift+i']
-      , tooltip: 'ctrl+⇪+i'
     }
     , {
       label: 'Tools'
       , className: 'menu-item-tools'
-      , shortcut: ['mod+shift+t']
-      , tooltip: 'ctrl+⇪+t'
     }
     , {
       label: 'Help'
       , className: 'menu-item-help'
-      , shortcut: ['mod+shift+h']
-      , tooltip: 'ctrl+⇪+h'
     }
   ]
   , options: [
@@ -81,37 +59,45 @@ silex.model.Config.menu = {
         label: 'New File'
         , id: 'file.new'
         , className: 'menu-item-file-new'
-        , shortcut: getAllCombinations('f', 'n')
-        , tooltip: 'ctrl+fn'
+        , shortcut: [[goog.events.KeyCodes.N, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
+        , tooltip: altKeyDisplay + 'n'
+        , mnemonic: goog.events.KeyCodes.N
+        , accelerator: 'n'
       }
       , {
         label: 'Open File...'
         , id: 'file.open'
         , className: 'menu-item-file-open'
-        , shortcut: getAllCombinations('f', 'o')
-        , tooltip: 'ctrl+fo'
+        , shortcut: [[goog.events.KeyCodes.O, goog.ui.KeyboardShortcutHandler.Modifiers.META]]
+        , tooltip: ctrlKeyDisplay + 'o'
+        , mnemonic: goog.events.KeyCodes.O
+        , accelerator: 'o'
       }
       , {
         label: 'Save File'
         , id: 'file.save'
         , className: 'menu-item-file-save'
-        , shortcut: getAllCombinations('f', 's')
-        , tooltip: 'ctrl+fs'
+        , shortcut: [[goog.events.KeyCodes.S, goog.ui.KeyboardShortcutHandler.Modifiers.META]]
+        , tooltip: ctrlKeyDisplay + 's'
+        , mnemonic: goog.events.KeyCodes.S
+        , accelerator: 's'
       }
       , {
         label: 'Save As...'
         , id: 'file.saveas'
         , className: 'menu-item-file-saveas'
-        , shortcut: getAllCombinations('f', 's')
-        , tooltip: 'ctrl+⇪+fs'
+        , shortcut: [[goog.events.KeyCodes.S, goog.ui.KeyboardShortcutHandler.Modifiers.META+goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT]]
+        , tooltip: ctrlKeyDisplay + '⇧S'
       }
       , null
       , {
         label: 'Publish'
         , id: 'file.publish'
         , className: 'menu-item-file-publish'
-        , shortcut: getAllCombinations('f', 'p')
-        , tooltip: 'ctrl+⇪+fp'
+        , shortcut: [[goog.events.KeyCodes.P, goog.ui.KeyboardShortcutHandler.Modifiers.META]]
+        , tooltip: ctrlKeyDisplay + 'P'
+        , mnemonic: goog.events.KeyCodes.P
+        , accelerator: 'p'
       }
       , {
         label: 'Settings...'
@@ -123,8 +109,10 @@ silex.model.Config.menu = {
         label: 'Close File'
         , id: 'file.close'
         , className: 'menu-item-file-close'
-        , shortcut: getAllCombinations('f', 'w')
-        , tooltip: 'ctrl+fw'
+        , shortcut: [[goog.events.KeyCodes.W, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
+        , tooltip: altKeyDisplay + 'w'
+        , mnemonic: goog.events.KeyCodes.W
+        , accelerator: 'w'
       }
     ]
     , [
@@ -132,8 +120,10 @@ silex.model.Config.menu = {
         label: 'Delete selection'
         , id: 'edit.delete.selection'
         , className: 'menu-item-edit-delete-selection'
-        , shortcut: ['del', 'backspace']
+        , shortcut: [[goog.events.KeyCodes.DELETE], [goog.events.KeyCodes.BACKSPACE]]
         , tooltip: 'suppr'
+        , mnemonic: goog.events.KeyCodes.R
+        , accelerator: 'r'
       }
       , null
       , {
@@ -152,15 +142,17 @@ silex.model.Config.menu = {
         label: 'View in new window'
         , id: 'view.file'
         , className: 'menu-item-view-file'
-        , shortcut: getAllCombinations('v', 'n')
-        , tooltip: 'ctrl+⇪+vn'
+        , shortcut: [[goog.events.KeyCodes.V, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
+        , tooltip: altKeyDisplay + 'V'
+        , mnemonic: goog.events.KeyCodes.V
+        , accelerator: 'v'
       }
       , null
       , {
         label: 'Open text editor'
         , id: 'view.open.textEditor'
         , className: 'menu-item-view-open-textEditor'
-        , shortcut: ['enter']
+        , shortcut: [[goog.events.KeyCodes.ENTER]]
         , tooltip: '↵'
       }
       , {
@@ -174,38 +166,48 @@ silex.model.Config.menu = {
         label: 'Text box'
         , id: 'insert.text'
         , className: 'menu-item-insert-text'
-        , shortcut: getAllCombinations('i', 't')
-        , tooltip: 'ctrl+⇪+it'
+        , shortcut: [[goog.events.KeyCodes.T, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
+        , tooltip: altKeyDisplay + 'T'
+        , mnemonic: goog.events.KeyCodes.T
+        , accelerator: 't'
       }
       , {
         label: 'Image...'
         , id: 'insert.image'
         , className: 'menu-item-insert-image'
-        , shortcut: getAllCombinations('i', 'i')
-        , tooltip: 'ctrl+⇪+ii'
+        , shortcut: [[goog.events.KeyCodes.I, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
+        , tooltip: altKeyDisplay + 'I'
+        , mnemonic: goog.events.KeyCodes.I
+        , accelerator: 'i'
       }
       , {
         label: 'Container'
         , id: 'insert.container'
         , className: 'menu-item-insert-container'
-        , shortcut: getAllCombinations('i', 'c')
-        , tooltip: 'ctrl+⇪+ic'
+        , shortcut: [[goog.events.KeyCodes.C, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
+        , tooltip: altKeyDisplay + 'C'
+        , mnemonic: goog.events.KeyCodes.C
+        , accelerator: 'c'
       }
       , null
       , {
         label: 'HTML box'
         , id: 'insert.html'
         , className: 'menu-item-insert-html'
-        , shortcut: getAllCombinations('i', 'h')
-        , tooltip: 'ctrl+⇪+ih'
+        , shortcut: [[goog.events.KeyCodes.H, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
+        , tooltip: altKeyDisplay + 'H'
+        , mnemonic: goog.events.KeyCodes.H
+        , accelerator: 'h'
       }
       , null
       , {
         label: 'New page'
         , id: 'insert.page'
         , className: 'menu-item-insert-page'
-        , shortcut: getAllCombinations('i', 'n')
-        , tooltip: 'ctrl+⇪+in'
+        , shortcut: [[goog.events.KeyCodes.P, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
+        , tooltip: altKeyDisplay + 'P'
+        , mnemonic: goog.events.KeyCodes.P
+        , accelerator: 'p'
       }
     ]
     , [

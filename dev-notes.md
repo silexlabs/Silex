@@ -64,6 +64,8 @@ these tests would have avoid me to push bugs in production:
 
 ###en cours
 
+Shortcuts bigger + use closure to do that? mnemonic and accelerators, like in gdocs
+
 source mapping
 
 Suite à la nuit charrette

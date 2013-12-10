@@ -584,6 +584,8 @@ body.loading-pending .loader {
   margin-right: 10px;
   height: 30px;
   cursor: pointer;
+  right: 15px;
+  position: absolute;
 }
 .silex-publishsettings .left-pane {
   width: 25%;

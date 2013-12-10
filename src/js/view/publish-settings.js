@@ -16,6 +16,8 @@
 
 
 goog.provide('silex.view.PublishSettings');
+goog.require('goog.events.KeyCodes');
+goog.require('goog.ui.KeyboardShortcutHandler');
 
 
 
@@ -32,6 +34,15 @@ silex.view.PublishSettings = function(element, cbk) {
   this.publicationPath = '';
   goog.style.setStyle(this.element, 'display', 'none');
 
+  // escape key
+  var shortcutHandler = new goog.ui.KeyboardShortcutHandler(document);
+  shortcutHandler.registerShortcut('esc', goog.events.KeyCodes.ESC);
+  goog.events.listen(
+      shortcutHandler,
+      goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED,
+      goog.bind(this.closeEditor, this));
+
+  // load template
   silex.Helper.loadTemplateFile('templates/publishsettings.html',
       element,
       function() {

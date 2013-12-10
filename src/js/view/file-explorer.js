@@ -23,6 +23,8 @@ goog.provide('silex.view.FileExplorer');
 
 
 goog.require('goog.async.Delay');
+goog.require('goog.events.KeyCodes');
+goog.require('goog.ui.KeyboardShortcutHandler');
 
 
 
@@ -49,6 +51,13 @@ silex.view.FileExplorer = function(element, cbk) {
   goog.events.listen(goog.dom.getElementByClass('close-btn', this.element), goog.events.EventType.CLICK, function() {
     this.closeEditor();
   }, false, this);
+  // escape key
+  var shortcutHandler = new goog.ui.KeyboardShortcutHandler(document);
+  shortcutHandler.registerShortcut('esc', goog.events.KeyCodes.ESC);
+  goog.events.listen(
+      shortcutHandler,
+      goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED,
+      goog.bind(this.closeEditor, this));
 
   /*    silex.Helper.loadTemplateFile('templates/fileexplorer.html', element, function() {
         that.init();
@@ -132,9 +141,9 @@ silex.view.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes, opt_
         // check the the file extention is ok
         if (opt_fileExtentions && silex.Helper.checkFileExt(blob.url, opt_fileExtentions) === false){
           var fileName = blob.url.substring(blob.url.lastIndexOf('/') + 1);
-          alertify.confirm('The file name ' + 
-            fileName + 
-            ' does not looks good to me, are you sure you want to select this file?', 
+          alertify.confirm('The file name ' +
+            fileName +
+            ' does not looks good to me, are you sure you want to select this file?',
               function (accept) {
             if (accept) {
               successCbk(blob);
@@ -193,9 +202,9 @@ silex.view.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes, op
         // check the the file extention is ok
         if (opt_fileExtentions && silex.Helper.checkFileExt(blob.url, opt_fileExtentions) === false){
           var fileName = blob.url.substring(blob.url.lastIndexOf('/') + 1);
-          alertify.confirm('The file name ' + 
-            fileName + 
-            ' does not looks good to me, are you sure you want to select this file?', 
+          alertify.confirm('The file name ' +
+            fileName +
+            ' does not looks good to me, are you sure you want to select this file?',
               function (accept) {
             if (accept) {
               successCbk(blob);
