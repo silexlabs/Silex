@@ -32975,7 +32975,6 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
     shortcutHandler,
     goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED,
     goog.bind(function(event) {
-      console.log('shortcut', event.identifier);
       this.onMenuEvent(event.identifier);
     }, this)
   );
@@ -33004,7 +33003,6 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
             // shortcut
             if (itemData.shortcut) {
               for (var idx in itemData.shortcut) {
-                console.log('add shortcut', itemData.tooltip, goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_PREFIX);
                 shortcutHandler.registerShortcut(itemData.id, itemData.shortcut[idx]);
               }
             }
