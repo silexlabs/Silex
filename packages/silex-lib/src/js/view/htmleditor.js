@@ -19,6 +19,8 @@
 
 
 goog.provide('silex.view.HTMLEditor');
+goog.require('goog.events.KeyCodes');
+goog.require('goog.ui.KeyboardShortcutHandler');
 
 
 
@@ -32,6 +34,13 @@ silex.view.HTMLEditor = function(element, cbk) {
     this.initUI();
     if (cbk) cbk();
   }, this);
+  // escape key
+  var shortcutHandler = new goog.ui.KeyboardShortcutHandler(document);
+  shortcutHandler.registerShortcut('esc', goog.events.KeyCodes.ESC);
+  goog.events.listen(
+      shortcutHandler,
+      goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED,
+      goog.bind(this.closeEditor, this));
 };
 
 

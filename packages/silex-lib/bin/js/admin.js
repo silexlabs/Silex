@@ -31208,6 +31208,1189 @@ goog.ui.registry.setDecoratorByClassName(goog.ui.MenuButtonRenderer.CSS_CLASS,
       // MenuButton defaults to using MenuButtonRenderer.
       return new goog.ui.MenuButton(null);
     });
+// Copyright 2006 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * @fileoverview Constant declarations for common key codes.
+ *
+ * @author eae@google.com (Emil A Eklund)
+ */
+
+goog.provide('goog.events.KeyNames');
+
+
+/**
+ * Key names for common characters. These should be used with keyup/keydown
+ * events, since the .keyCode property on those is meant to indicate the
+ * *physical key* the user held down on the keyboard. Hence the mapping uses
+ * only the unshifted version of each key (e.g. no '#', since that's shift+3).
+ * Keypress events on the other hand generate (mostly) ASCII codes since they
+ * correspond to *characters* the user typed.
+ *
+ * For further reference: http://unixpapa.com/js/key.html
+ *
+ * This list is not localized and therefore some of the key codes are not
+ * correct for non-US keyboard layouts.
+ *
+ * @see goog.events.KeyCodes
+ * @enum {string}
+ */
+goog.events.KeyNames = {
+  8: 'backspace',
+  9: 'tab',
+  13: 'enter',
+  16: 'shift',
+  17: 'ctrl',
+  18: 'alt',
+  19: 'pause',
+  20: 'caps-lock',
+  27: 'esc',
+  32: 'space',
+  33: 'pg-up',
+  34: 'pg-down',
+  35: 'end',
+  36: 'home',
+  37: 'left',
+  38: 'up',
+  39: 'right',
+  40: 'down',
+  45: 'insert',
+  46: 'delete',
+  48: '0',
+  49: '1',
+  50: '2',
+  51: '3',
+  52: '4',
+  53: '5',
+  54: '6',
+  55: '7',
+  56: '8',
+  57: '9',
+  59: 'semicolon',
+  61: 'equals',
+  65: 'a',
+  66: 'b',
+  67: 'c',
+  68: 'd',
+  69: 'e',
+  70: 'f',
+  71: 'g',
+  72: 'h',
+  73: 'i',
+  74: 'j',
+  75: 'k',
+  76: 'l',
+  77: 'm',
+  78: 'n',
+  79: 'o',
+  80: 'p',
+  81: 'q',
+  82: 'r',
+  83: 's',
+  84: 't',
+  85: 'u',
+  86: 'v',
+  87: 'w',
+  88: 'x',
+  89: 'y',
+  90: 'z',
+  93: 'context',
+  96: 'num-0',
+  97: 'num-1',
+  98: 'num-2',
+  99: 'num-3',
+  100: 'num-4',
+  101: 'num-5',
+  102: 'num-6',
+  103: 'num-7',
+  104: 'num-8',
+  105: 'num-9',
+  106: 'num-multiply',
+  107: 'num-plus',
+  109: 'num-minus',
+  110: 'num-period',
+  111: 'num-division',
+  112: 'f1',
+  113: 'f2',
+  114: 'f3',
+  115: 'f4',
+  116: 'f5',
+  117: 'f6',
+  118: 'f7',
+  119: 'f8',
+  120: 'f9',
+  121: 'f10',
+  122: 'f11',
+  123: 'f12',
+  186: 'semicolon',
+  187: 'equals',
+  189: 'dash',
+  188: ',',
+  190: '.',
+  191: '/',
+  192: '`',
+  219: 'open-square-bracket',
+  220: '\\',
+  221: 'close-square-bracket',
+  222: 'single-quote',
+  224: 'win'
+};
+// Copyright 2006 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * @fileoverview Generic keyboard shortcut handler.
+ *
+ * @author eae@google.com (Emil A Eklund)
+ * @see ../demos/keyboardshortcuts.html
+ */
+
+goog.provide('goog.ui.KeyboardShortcutEvent');
+goog.provide('goog.ui.KeyboardShortcutHandler');
+goog.provide('goog.ui.KeyboardShortcutHandler.EventType');
+
+goog.require('goog.Timer');
+goog.require('goog.events');
+goog.require('goog.events.Event');
+goog.require('goog.events.EventTarget');
+goog.require('goog.events.EventType');
+goog.require('goog.events.KeyCodes');
+goog.require('goog.events.KeyNames');
+goog.require('goog.object');
+goog.require('goog.userAgent');
+
+
+
+/**
+ * Component for handling keyboard shortcuts. A shortcut is registered and bound
+ * to a specific identifier. Once the shortcut is triggered an event is fired
+ * with the identifier for the shortcut. This allows keyboard shortcuts to be
+ * customized without modifying the code that listens for them.
+ *
+ * Supports keyboard shortcuts triggered by a single key, a stroke stroke (key
+ * plus at least one modifier) and a sequence of keys or strokes.
+ *
+ * @param {goog.events.EventTarget|EventTarget} keyTarget Event target that the
+ *     key event listener is attached to, typically the applications root
+ *     container.
+ * @constructor
+ * @extends {goog.events.EventTarget}
+ */
+goog.ui.KeyboardShortcutHandler = function(keyTarget) {
+  goog.events.EventTarget.call(this);
+
+  /**
+   * Registered keyboard shortcuts tree. Stored as a map with the keyCode and
+   * modifier(s) as the key and either a list of further strokes or the shortcut
+   * task identifier as the value.
+   * @type {Object}
+   * @see #makeKey_
+   * @private
+   */
+  this.shortcuts_ = {};
+
+  /**
+   * List of the last sequence of strokes. Object contains time last key was
+   * pressed and an array of strokes, represented by numeric value.
+   * @type {Object}
+   * @private
+   */
+  this.lastKeys_ = {
+    strokes: [],
+    time: 0
+  };
+
+  /**
+   * List of numeric key codes for keys that are safe to always regarded as
+   * shortcuts, even if entered in a textarea or input field.
+   * @type {Object}
+   * @private
+   */
+  this.globalKeys_ = goog.object.createSet(
+      goog.ui.KeyboardShortcutHandler.DEFAULT_GLOBAL_KEYS_);
+
+  /**
+   * List of input types that should only accept ENTER as a shortcut.
+   * @type {Object}
+   * @private
+   */
+  this.textInputs_ = goog.object.createSet(
+      goog.ui.KeyboardShortcutHandler.DEFAULT_TEXT_INPUTS_);
+
+  /**
+   * Whether to always prevent the default action if a shortcut event is fired.
+   * @type {boolean}
+   * @private
+   */
+  this.alwaysPreventDefault_ = true;
+
+  /**
+   * Whether to always stop propagation if a shortcut event is fired.
+   * @type {boolean}
+   * @private
+   */
+  this.alwaysStopPropagation_ = false;
+
+  /**
+   * Whether to treat all shortcuts as if they had been passed
+   * to setGlobalKeys().
+   * @type {boolean}
+   * @private
+   */
+  this.allShortcutsAreGlobal_ = false;
+
+  /**
+   * Whether to treat shortcuts with modifiers as if they had been passed
+   * to setGlobalKeys().  Ignored if allShortcutsAreGlobal_ is true.  Applies
+   * only to form elements (not content-editable).
+   * @type {boolean}
+   * @private
+   */
+  this.modifierShortcutsAreGlobal_ = true;
+
+  /**
+   * Whether to treat space key as a shortcut when the focused element is a
+   * checkbox, radiobutton or button.
+   * @type {boolean}
+   * @private
+   */
+  this.allowSpaceKeyOnButtons_ = false;
+
+  this.initializeKeyListener(keyTarget);
+};
+goog.inherits(goog.ui.KeyboardShortcutHandler, goog.events.EventTarget);
+
+
+/**
+ * Maximum allowed delay, in milliseconds, allowed between the first and second
+ * key in a key sequence.
+ * @type {number}
+ */
+goog.ui.KeyboardShortcutHandler.MAX_KEY_SEQUENCE_DELAY = 1500; // 1.5 sec
+
+
+/**
+ * Bit values for modifier keys.
+ * @enum {number}
+ */
+goog.ui.KeyboardShortcutHandler.Modifiers = {
+  NONE: 0,
+  SHIFT: 1,
+  CTRL: 2,
+  ALT: 4,
+  META: 8
+};
+
+
+/**
+ * Keys marked as global by default.
+ * @type {Array.<goog.events.KeyCodes>}
+ * @private
+ */
+goog.ui.KeyboardShortcutHandler.DEFAULT_GLOBAL_KEYS_ = [
+  goog.events.KeyCodes.ESC,
+  goog.events.KeyCodes.F1,
+  goog.events.KeyCodes.F2,
+  goog.events.KeyCodes.F3,
+  goog.events.KeyCodes.F4,
+  goog.events.KeyCodes.F5,
+  goog.events.KeyCodes.F6,
+  goog.events.KeyCodes.F7,
+  goog.events.KeyCodes.F8,
+  goog.events.KeyCodes.F9,
+  goog.events.KeyCodes.F10,
+  goog.events.KeyCodes.F11,
+  goog.events.KeyCodes.F12,
+  goog.events.KeyCodes.PAUSE
+];
+
+
+/**
+ * Text input types to allow only ENTER shortcuts.
+ * Web Forms 2.0 for HTML5: Section 4.10.7 from 29 May 2012.
+ * @type {Array.<string>}
+ * @private
+ */
+goog.ui.KeyboardShortcutHandler.DEFAULT_TEXT_INPUTS_ = [
+  'color',
+  'date',
+  'datetime',
+  'datetime-local',
+  'email',
+  'month',
+  'number',
+  'password',
+  'search',
+  'tel',
+  'text',
+  'time',
+  'url',
+  'week'
+];
+
+
+/**
+ * Events.
+ * @enum {string}
+ */
+goog.ui.KeyboardShortcutHandler.EventType = {
+  SHORTCUT_TRIGGERED: 'shortcut',
+  SHORTCUT_PREFIX: 'shortcut_'
+};
+
+
+/**
+ * Cache for name to key code lookup.
+ * @type {Object}
+ * @private
+ */
+goog.ui.KeyboardShortcutHandler.nameToKeyCodeCache_;
+
+
+/**
+ * Target on which to listen for key events.
+ * @type {goog.events.EventTarget|EventTarget}
+ * @private
+ */
+goog.ui.KeyboardShortcutHandler.prototype.keyTarget_;
+
+
+/**
+ * Due to a bug in the way that Gecko v1.8 on Mac handles
+ * cut/copy/paste key events using the meta key, it is necessary to
+ * fake the keydown for the action key (C,V,X) by capturing it on keyup.
+ * Because users will often release the meta key a slight moment
+ * before they release the action key, we need this variable that will
+ * store whether the meta key has been released recently.
+ * It will be cleared after a short delay in the key handling logic.
+ * @type {boolean}
+ * @private
+ */
+goog.ui.KeyboardShortcutHandler.prototype.metaKeyRecentlyReleased_;
+
+
+/**
+ * Whether a key event is a printable-key event. Windows uses ctrl+alt
+ * (alt-graph) keys to type characters on European keyboards. For such keys, we
+ * cannot identify whether these keys are used for typing characters when
+ * receiving keydown events. Therefore, we set this flag when we receive their
+ * respective keypress events and fire shortcut events only when we do not
+ * receive them.
+ * @type {boolean}
+ * @private
+ */
+goog.ui.KeyboardShortcutHandler.prototype.isPrintableKey_;
+
+
+/**
+ * Static method for getting the key code for a given key.
+ * @param {string} name Name of key.
+ * @return {number} The key code.
+ */
+goog.ui.KeyboardShortcutHandler.getKeyCode = function(name) {
+  // Build reverse lookup object the first time this method is called.
+  if (!goog.ui.KeyboardShortcutHandler.nameToKeyCodeCache_) {
+    var map = {};
+    for (var key in goog.events.KeyNames) {
+      map[goog.events.KeyNames[key]] = key;
+    }
+    goog.ui.KeyboardShortcutHandler.nameToKeyCodeCache_ = map;
+  }
+
+  // Check if key is in cache.
+  return goog.ui.KeyboardShortcutHandler.nameToKeyCodeCache_[name];
+};
+
+
+/**
+ * Sets whether to always prevent the default action when a shortcut event is
+ * fired. If false, the default action is prevented only if preventDefault is
+ * called on  either of the corresponding SHORTCUT_TRIGGERED or SHORTCUT_PREFIX
+ * events. If true, the default action is prevented whenever a shortcut event
+ * is fired. The default value is true.
+ * @param {boolean} alwaysPreventDefault Whether to always call preventDefault.
+ */
+goog.ui.KeyboardShortcutHandler.prototype.setAlwaysPreventDefault = function(
+    alwaysPreventDefault) {
+  this.alwaysPreventDefault_ = alwaysPreventDefault;
+};
+
+
+/**
+ * Returns whether the default action will always be prevented when a shortcut
+ * event is fired. The default value is true.
+ * @see #setAlwaysPreventDefault
+ * @return {boolean} Whether preventDefault will always be called.
+ */
+goog.ui.KeyboardShortcutHandler.prototype.getAlwaysPreventDefault = function() {
+  return this.alwaysPreventDefault_;
+};
+
+
+/**
+ * Sets whether to always stop propagation for the event when fired. If false,
+ * the propagation is stopped only if stopPropagation is called on either of the
+ * corresponding SHORT_CUT_TRIGGERED or SHORTCUT_PREFIX events. If true, the
+ * event is prevented from propagating beyond its target whenever it is fired.
+ * The default value is false.
+ * @param {boolean} alwaysStopPropagation Whether to always call
+ *     stopPropagation.
+ */
+goog.ui.KeyboardShortcutHandler.prototype.setAlwaysStopPropagation = function(
+    alwaysStopPropagation) {
+  this.alwaysStopPropagation_ = alwaysStopPropagation;
+};
+
+
+/**
+ * Returns whether the event will always be stopped from propagating beyond its
+ * target when a shortcut event is fired. The default value is false.
+ * @see #setAlwaysStopPropagation
+ * @return {boolean} Whether stopPropagation will always be called.
+ */
+goog.ui.KeyboardShortcutHandler.prototype.getAlwaysStopPropagation =
+    function() {
+  return this.alwaysStopPropagation_;
+};
+
+
+/**
+ * Sets whether to treat all shortcuts (including modifier shortcuts) as if the
+ * keys had been passed to the setGlobalKeys function.
+ * @param {boolean} allShortcutsGlobal Whether to treat all shortcuts as global.
+ */
+goog.ui.KeyboardShortcutHandler.prototype.setAllShortcutsAreGlobal = function(
+    allShortcutsGlobal) {
+  this.allShortcutsAreGlobal_ = allShortcutsGlobal;
+};
+
+
+/**
+ * Returns whether all shortcuts (including modifier shortcuts) are treated as
+ * if the keys had been passed to the setGlobalKeys function.
+ * @see #setAllShortcutsAreGlobal
+ * @return {boolean} Whether all shortcuts are treated as globals.
+ */
+goog.ui.KeyboardShortcutHandler.prototype.getAllShortcutsAreGlobal =
+    function() {
+  return this.allShortcutsAreGlobal_;
+};
+
+
+/**
+ * Sets whether to treat shortcuts with modifiers as if the keys had been
+ * passed to the setGlobalKeys function.  Ignored if you have called
+ * setAllShortcutsAreGlobal(true).  Applies only to form elements (not
+ * content-editable).
+ * @param {boolean} modifierShortcutsGlobal Whether to treat shortcuts with
+ *     modifiers as global.
+ */
+goog.ui.KeyboardShortcutHandler.prototype.setModifierShortcutsAreGlobal =
+    function(modifierShortcutsGlobal) {
+  this.modifierShortcutsAreGlobal_ = modifierShortcutsGlobal;
+};
+
+
+/**
+ * Returns whether shortcuts with modifiers are treated as if the keys had been
+ * passed to the setGlobalKeys function.  Ignored if you have called
+ * setAllShortcutsAreGlobal(true).  Applies only to form elements (not
+ * content-editable).
+ * @see #setModifierShortcutsAreGlobal
+ * @return {boolean} Whether shortcuts with modifiers are treated as globals.
+ */
+goog.ui.KeyboardShortcutHandler.prototype.getModifierShortcutsAreGlobal =
+    function() {
+  return this.modifierShortcutsAreGlobal_;
+};
+
+
+/**
+ * Sets whether to treat space key as a shortcut when the focused element is a
+ * checkbox, radiobutton or button.
+ * @param {boolean} allowSpaceKeyOnButtons Whether to treat space key as a
+ *     shortcut when the focused element is a checkbox, radiobutton or button.
+ */
+goog.ui.KeyboardShortcutHandler.prototype.setAllowSpaceKeyOnButtons = function(
+    allowSpaceKeyOnButtons) {
+  this.allowSpaceKeyOnButtons_ = allowSpaceKeyOnButtons;
+};
+
+
+/**
+ * Registers a keyboard shortcut.
+ * @param {string} identifier Identifier for the task performed by the keyboard
+ *                 combination. Multiple shortcuts can be provided for the same
+ *                 task by specifying the same identifier.
+ * @param {...(number|string|Array.<number>)} var_args See below.
+ *
+ * param {number} keyCode Numeric code for key
+ * param {number=} opt_modifiers Bitmap indicating required modifier keys.
+ *                goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT, CONTROL,
+ *                ALT, or META.
+ *
+ * The last two parameters can be repeated any number of times to create a
+ * shortcut using a sequence of strokes. Instead of varagrs the second parameter
+ * could also be an array where each element would be ragarded as a parameter.
+ *
+ * A string representation of the shortcut can be supplied instead of the last
+ * two parameters. In that case the method only takes two arguments, the
+ * identifier and the string.
+ *
+ * Examples:
+ *   g               registerShortcut(str, G_KEYCODE)
+ *   Ctrl+g          registerShortcut(str, G_KEYCODE, CTRL)
+ *   Ctrl+Shift+g    registerShortcut(str, G_KEYCODE, CTRL | SHIFT)
+ *   Ctrl+g a        registerShortcut(str, G_KEYCODE, CTRL, A_KEYCODE)
+ *   Ctrl+g Shift+a  registerShortcut(str, G_KEYCODE, CTRL, A_KEYCODE, SHIFT)
+ *   g a             registerShortcut(str, G_KEYCODE, NONE, A_KEYCODE)
+ *
+ * Examples using string representation for shortcuts:
+ *   g               registerShortcut(str, 'g')
+ *   Ctrl+g          registerShortcut(str, 'ctrl+g')
+ *   Ctrl+Shift+g    registerShortcut(str, 'ctrl+shift+g')
+ *   Ctrl+g a        registerShortcut(str, 'ctrl+g a')
+ *   Ctrl+g Shift+a  registerShortcut(str, 'ctrl+g shift+a')
+ *   g a             registerShortcut(str, 'g a').
+ */
+goog.ui.KeyboardShortcutHandler.prototype.registerShortcut = function(
+    identifier, var_args) {
+
+  // Add shortcut to shortcuts_ tree
+  goog.ui.KeyboardShortcutHandler.setShortcut_(
+      this.shortcuts_, this.interpretStrokes_(1, arguments), identifier);
+};
+
+
+/**
+ * Unregisters a keyboard shortcut by keyCode and modifiers or string
+ * representation of sequence.
+ *
+ * param {number} keyCode Numeric code for key
+ * param {number=} opt_modifiers Bitmap indicating required modifier keys.
+ *                 goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT, CONTROL,
+ *                 ALT, or META.
+ *
+ * The two parameters can be repeated any number of times to create a shortcut
+ * using a sequence of strokes.
+ *
+ * A string representation of the shortcut can be supplied instead see
+ * {@link #registerShortcut} for syntax. In that case the method only takes one
+ * argument.
+ *
+ * @param {...(number|string|Array.<number>)} var_args String representation, or
+ *     array or list of alternating key codes and modifiers.
+ */
+goog.ui.KeyboardShortcutHandler.prototype.unregisterShortcut = function(
+    var_args) {
+  // Remove shortcut from tree
+  goog.ui.KeyboardShortcutHandler.setShortcut_(
+      this.shortcuts_, this.interpretStrokes_(0, arguments), null);
+};
+
+
+/**
+ * Verifies if a particular keyboard shortcut is registered already. It has
+ * the same interface as the unregistering of shortcuts.
+ *
+ * param {number} keyCode Numeric code for key
+ * param {number=} opt_modifiers Bitmap indicating required modifier keys.
+ *                 goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT, CONTROL,
+ *                 ALT, or META.
+ *
+ * The two parameters can be repeated any number of times to create a shortcut
+ * using a sequence of strokes.
+ *
+ * A string representation of the shortcut can be supplied instead see
+ * {@link #registerShortcut} for syntax. In that case the method only takes one
+ * argument.
+ *
+ * @param {...(number|string|Array.<number>)} var_args String representation, or
+ *     array or list of alternating key codes and modifiers.
+ * @return {boolean} Whether the specified keyboard shortcut is registered.
+ */
+goog.ui.KeyboardShortcutHandler.prototype.isShortcutRegistered = function(
+    var_args) {
+  return this.checkShortcut_(this.interpretStrokes_(0, arguments));
+};
+
+
+/**
+ * Parses the variable arguments for registerShortcut and unregisterShortcut.
+ * @param {number} initialIndex The first index of "args" to treat as
+ *     variable arguments.
+ * @param {Object} args The "arguments" array passed
+ *     to registerShortcut or unregisterShortcut.  Please see the comments in
+ *     registerShortcut for list of allowed forms.
+ * @return {Array.<Object>} The sequence of objects containing the
+ *     keyCode and modifiers of each key in sequence.
+ * @private
+ */
+goog.ui.KeyboardShortcutHandler.prototype.interpretStrokes_ = function(
+    initialIndex, args) {
+  var strokes;
+
+  // Build strokes array from string.
+  if (goog.isString(args[initialIndex])) {
+    strokes = goog.ui.KeyboardShortcutHandler.parseStringShortcut(
+        args[initialIndex]);
+
+  // Build strokes array from arguments list or from array.
+  } else {
+    var strokesArgs = args, i = initialIndex;
+    if (goog.isArray(args[initialIndex])) {
+      strokesArgs = args[initialIndex];
+      i = 0;
+    }
+
+    strokes = [];
+    for (; i < strokesArgs.length; i += 2) {
+      strokes.push({
+        keyCode: strokesArgs[i],
+        modifiers: strokesArgs[i + 1]
+      });
+    }
+  }
+
+  return strokes;
+};
+
+
+/**
+ * Unregisters all keyboard shortcuts.
+ */
+goog.ui.KeyboardShortcutHandler.prototype.unregisterAll = function() {
+  this.shortcuts_ = {};
+};
+
+
+/**
+ * Sets the global keys; keys that are safe to always regarded as shortcuts,
+ * even if entered in a textarea or input field.
+ * @param {Array.<number>} keys List of keys.
+ */
+goog.ui.KeyboardShortcutHandler.prototype.setGlobalKeys = function(keys) {
+  this.globalKeys_ = goog.object.createSet(keys);
+};
+
+
+/**
+ * @return {Array.<string>} The global keys, i.e. keys that are safe to always
+ *     regard as shortcuts, even if entered in a textarea or input field.
+ */
+goog.ui.KeyboardShortcutHandler.prototype.getGlobalKeys = function() {
+  return goog.object.getKeys(this.globalKeys_);
+};
+
+
+/** @override */
+goog.ui.KeyboardShortcutHandler.prototype.disposeInternal = function() {
+  goog.ui.KeyboardShortcutHandler.superClass_.disposeInternal.call(this);
+  this.unregisterAll();
+  this.clearKeyListener();
+};
+
+
+/**
+ * Returns event type for a specific shortcut.
+ * @param {string} identifier Identifier for the shortcut task.
+ * @return {string} Theh event type.
+ */
+goog.ui.KeyboardShortcutHandler.prototype.getEventType =
+    function(identifier) {
+
+  return goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_PREFIX + identifier;
+};
+
+
+/**
+ * Builds stroke array from string representation of shortcut.
+ * @param {string} s String representation of shortcut.
+ * @return {Array.<Object>} The stroke array.
+ */
+goog.ui.KeyboardShortcutHandler.parseStringShortcut = function(s) {
+  // Normalize whitespace and force to lower case.
+  s = s.replace(/[ +]*\+[ +]*/g, '+').replace(/[ ]+/g, ' ').toLowerCase();
+
+  // Build strokes array from string, space separates strokes, plus separates
+  // individual keys.
+  var groups = s.split(' ');
+  var strokes = [];
+  for (var group, i = 0; group = groups[i]; i++) {
+    var keys = group.split('+');
+    var keyCode, modifiers = goog.ui.KeyboardShortcutHandler.Modifiers.NONE;
+    for (var key, j = 0; key = keys[j]; j++) {
+      switch (key) {
+        case 'shift':
+          modifiers |= goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT;
+          continue;
+        case 'ctrl':
+          modifiers |= goog.ui.KeyboardShortcutHandler.Modifiers.CTRL;
+          continue;
+        case 'alt':
+          modifiers |= goog.ui.KeyboardShortcutHandler.Modifiers.ALT;
+          continue;
+        case 'meta':
+          modifiers |= goog.ui.KeyboardShortcutHandler.Modifiers.META;
+          continue;
+      }
+      keyCode = goog.ui.KeyboardShortcutHandler.getKeyCode(key);
+      break;
+    }
+    strokes.push({keyCode: keyCode, modifiers: modifiers});
+  }
+
+  return strokes;
+};
+
+
+/**
+ * Adds a key event listener that triggers {@link #handleKeyDown_} when keys
+ * are pressed.
+ * @param {goog.events.EventTarget|EventTarget} keyTarget Event target that the
+ *     event listener should be attached to.
+ * @protected
+ */
+goog.ui.KeyboardShortcutHandler.prototype.initializeKeyListener =
+    function(keyTarget) {
+  this.keyTarget_ = keyTarget;
+
+  goog.events.listen(this.keyTarget_, goog.events.EventType.KEYDOWN,
+      this.handleKeyDown_, false, this);
+  // Firefox 2 on mac does not fire a keydown event in conjunction with a meta
+  // key if the action involves cutting/copying/pasting text.
+  // In this case we capture the keyup (which is fired) and fake as
+  // if the user had pressed the key to begin with.
+  if (goog.userAgent.MAC &&
+      goog.userAgent.GECKO && goog.userAgent.isVersionOrHigher('1.8')) {
+    goog.events.listen(this.keyTarget_, goog.events.EventType.KEYUP,
+        this.handleMacGeckoKeyUp_, false, this);
+  }
+
+  // Windows uses ctrl+alt keys (a.k.a. alt-graph keys) for typing characters
+  // on European keyboards (e.g. ctrl+alt+e for an an euro sign.) Unfortunately,
+  // Windows browsers except Firefox does not have any methods except listening
+  // keypress and keyup events to identify if ctrl+alt keys are really used for
+  // inputting characters. Therefore, we listen to these events and prevent
+  // firing shortcut-key events if ctrl+alt keys are used for typing characters.
+  if (goog.userAgent.WINDOWS && !goog.userAgent.GECKO) {
+    goog.events.listen(this.keyTarget_, goog.events.EventType.KEYPRESS,
+                       this.handleWindowsKeyPress_, false, this);
+    goog.events.listen(this.keyTarget_, goog.events.EventType.KEYUP,
+                       this.handleWindowsKeyUp_, false, this);
+  }
+};
+
+
+/**
+ * Handler for when a keyup event is fired in Mac FF2 (Gecko 1.8).
+ * @param {goog.events.BrowserEvent} e The key event.
+ * @private
+ */
+goog.ui.KeyboardShortcutHandler.prototype.handleMacGeckoKeyUp_ = function(e) {
+  // Due to a bug in the way that Gecko v1.8 on Mac handles
+  // cut/copy/paste key events using the meta key, it is necessary to
+  // fake the keydown for the action keys (C,V,X) by capturing it on keyup.
+  // This is because the keydown events themselves are not fired by the
+  // browser in this case.
+  // Because users will often release the meta key a slight moment
+  // before they release the action key, we need to store whether the
+  // meta key has been released recently to avoid "flaky" cutting/pasting
+  // behavior.
+  if (e.keyCode == goog.events.KeyCodes.MAC_FF_META) {
+    this.metaKeyRecentlyReleased_ = true;
+    goog.Timer.callOnce(function() {
+      this.metaKeyRecentlyReleased_ = false;
+    }, 400, this);
+    return;
+  }
+
+  var metaKey = e.metaKey || this.metaKeyRecentlyReleased_;
+  if ((e.keyCode == goog.events.KeyCodes.C ||
+      e.keyCode == goog.events.KeyCodes.X ||
+      e.keyCode == goog.events.KeyCodes.V) && metaKey) {
+    e.metaKey = metaKey;
+    this.handleKeyDown_(e);
+  }
+};
+
+
+/**
+ * Returns whether this event is possibly used for typing a printable character.
+ * Windows uses ctrl+alt (a.k.a. alt-graph) keys for typing characters on
+ * European keyboards. Since only Firefox provides a method that can identify
+ * whether ctrl+alt keys are used for typing characters, we need to check
+ * whether Windows sends a keypress event to prevent firing shortcut event if
+ * this event is used for typing characters.
+ * @param {goog.events.BrowserEvent} e The key event.
+ * @return {boolean} Whether this event is a possible printable-key event.
+ * @private
+ */
+goog.ui.KeyboardShortcutHandler.prototype.isPossiblePrintableKey_ =
+    function(e) {
+  return goog.userAgent.WINDOWS && !goog.userAgent.GECKO &&
+      e.ctrlKey && e.altKey && !e.shiftKey;
+};
+
+
+/**
+ * Handler for when a keypress event is fired on Windows.
+ * @param {goog.events.BrowserEvent} e The key event.
+ * @private
+ */
+goog.ui.KeyboardShortcutHandler.prototype.handleWindowsKeyPress_ = function(e) {
+  // When this keypress event consists of a printable character, set the flag to
+  // prevent firing shortcut key events when we receive the succeeding keyup
+  // event. We accept all Unicode characters except control ones since this
+  // keyCode may be a non-ASCII character.
+  if (e.keyCode > 0x20 && this.isPossiblePrintableKey_(e)) {
+    this.isPrintableKey_ = true;
+  }
+};
+
+
+/**
+ * Handler for when a keyup event is fired on Windows.
+ * @param {goog.events.BrowserEvent} e The key event.
+ * @private
+ */
+goog.ui.KeyboardShortcutHandler.prototype.handleWindowsKeyUp_ = function(e) {
+  // For possible printable-key events, try firing a shortcut-key event only
+  // when this event is not used for typing a character.
+  if (!this.isPrintableKey_ && this.isPossiblePrintableKey_(e)) {
+    this.handleKeyDown_(e);
+  }
+};
+
+
+/**
+ * Removes the listener that was added by link {@link #initializeKeyListener}.
+ * @protected
+ */
+goog.ui.KeyboardShortcutHandler.prototype.clearKeyListener = function() {
+  goog.events.unlisten(this.keyTarget_, goog.events.EventType.KEYDOWN,
+      this.handleKeyDown_, false, this);
+  if (goog.userAgent.MAC &&
+      goog.userAgent.GECKO && goog.userAgent.isVersionOrHigher('1.8')) {
+    goog.events.unlisten(this.keyTarget_, goog.events.EventType.KEYUP,
+        this.handleMacGeckoKeyUp_, false, this);
+  }
+  if (goog.userAgent.WINDOWS && !goog.userAgent.GECKO) {
+    goog.events.unlisten(this.keyTarget_, goog.events.EventType.KEYPRESS,
+        this.handleWindowsKeyPress_, false, this);
+    goog.events.unlisten(this.keyTarget_, goog.events.EventType.KEYUP,
+        this.handleWindowsKeyUp_, false, this);
+  }
+  this.keyTarget_ = null;
+};
+
+
+/**
+ * Adds or removes a stroke node to/from the given parent node.
+ * @param {Object} parent Parent node to add/remove stroke to/from.
+ * @param {Array.<Object>} strokes Array of strokes for shortcut.
+ * @param {?string} identifier Identifier for the task performed by shortcut or
+ *     null to clear.
+ * @private
+ */
+goog.ui.KeyboardShortcutHandler.setShortcut_ = function(parent,
+                                                        strokes,
+                                                        identifier) {
+  var stroke = strokes.shift();
+  var key = goog.ui.KeyboardShortcutHandler.makeKey_(stroke.keyCode,
+                                                     stroke.modifiers);
+  var node = parent[key];
+  if (node && identifier && (strokes.length == 0 || goog.isString(node))) {
+    throw Error('Keyboard shortcut conflicts with existing shortcut');
+  }
+
+  if (strokes.length) {
+    if (!node) {
+      node = parent[key] = {};
+    }
+    goog.ui.KeyboardShortcutHandler.setShortcut_(node,
+                                                 strokes,
+                                                 identifier);
+  }
+  else {
+    parent[key] = identifier;
+  }
+};
+
+
+/**
+ * Returns shortcut for a specific set of strokes.
+ * @param {Array.<number>} strokes Strokes array.
+ * @param {number=} opt_index Index in array to start with.
+ * @param {Object=} opt_list List to search for shortcut in.
+ * @return {string|Object} The shortcut.
+ * @private
+ */
+goog.ui.KeyboardShortcutHandler.prototype.getShortcut_ = function(
+    strokes, opt_index, opt_list) {
+
+  var list = opt_list || this.shortcuts_;
+  var index = opt_index || 0;
+  var stroke = strokes[index];
+  var node = list[stroke];
+
+  if (node && !goog.isString(node) && strokes.length - index > 1) {
+    return this.getShortcut_(strokes, index + 1, node);
+  }
+
+  return node;
+};
+
+
+/**
+ * Checks if a particular keyboard shortcut is registered.
+ * @param {Array.<Object>} strokes Strokes array.
+ * @return {boolean} True iff the keyboard is registred.
+ * @private
+ */
+goog.ui.KeyboardShortcutHandler.prototype.checkShortcut_ = function(strokes) {
+  var node = this.shortcuts_;
+  while (strokes.length > 0 && node) {
+    var stroke = strokes.shift();
+    var key = goog.ui.KeyboardShortcutHandler.makeKey_(stroke.keyCode,
+                                                       stroke.modifiers);
+    node = node[key];
+    if (goog.isString(node)) {
+      return true;
+    }
+  }
+  return false;
+};
+
+
+/**
+ * Constructs key from key code and modifiers.
+ *
+ * The lower 8 bits are used for the key code, the following 3 for modifiers and
+ * the remaining bits are unused.
+ *
+ * @param {number} keyCode Numeric key code.
+ * @param {number} modifiers Required modifiers.
+ * @return {number} The key.
+ * @private
+ */
+goog.ui.KeyboardShortcutHandler.makeKey_ = function(keyCode, modifiers) {
+  // Make sure key code is just 8 bits and OR it with the modifiers left shifted
+  // 8 bits.
+  return (keyCode & 255) | (modifiers << 8);
+};
+
+
+/**
+ * Keypress handler.
+ * @param {goog.events.BrowserEvent} event Keypress event.
+ * @private
+ */
+goog.ui.KeyboardShortcutHandler.prototype.handleKeyDown_ = function(event) {
+  if (!this.isValidShortcut_(event)) {
+    return;
+  }
+  // For possible printable-key events, we cannot identify whether the events
+  // are used for typing characters until we receive respective keyup events.
+  // Therefore, we handle this event when we receive a succeeding keyup event
+  // to verify this event is not used for typing characters.
+  if (event.type == 'keydown' && this.isPossiblePrintableKey_(event)) {
+    this.isPrintableKey_ = false;
+    return;
+  }
+
+  var keyCode = goog.userAgent.GECKO ?
+      goog.events.KeyCodes.normalizeGeckoKeyCode(event.keyCode) :
+      event.keyCode;
+
+  var modifiers =
+      (event.shiftKey ? goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT : 0) |
+      (event.ctrlKey ? goog.ui.KeyboardShortcutHandler.Modifiers.CTRL : 0) |
+      (event.altKey ? goog.ui.KeyboardShortcutHandler.Modifiers.ALT : 0) |
+      (event.metaKey ? goog.ui.KeyboardShortcutHandler.Modifiers.META : 0);
+  var stroke = goog.ui.KeyboardShortcutHandler.makeKey_(keyCode, modifiers);
+
+  // Check if any previous strokes where entered within the acceptable time
+  // period.
+  var node, shortcut;
+  var now = goog.now();
+  if (this.lastKeys_.strokes.length && now - this.lastKeys_.time <=
+      goog.ui.KeyboardShortcutHandler.MAX_KEY_SEQUENCE_DELAY) {
+    node = this.getShortcut_(this.lastKeys_.strokes);
+  } else {
+    this.lastKeys_.strokes.length = 0;
+  }
+
+  // Check if this stroke triggers a shortcut, either on its own or combined
+  // with previous strokes.
+  node = node ? node[stroke] : this.shortcuts_[stroke];
+  if (!node) {
+    node = this.shortcuts_[stroke];
+    this.lastKeys_.strokes = [];
+  }
+  // Check if stroke triggers a node.
+  if (node && goog.isString(node)) {
+    shortcut = node;
+  }
+
+  // Entered stroke(s) are a part of a sequence, store stroke and record
+  // time to allow the following stroke(s) to trigger the shortcut.
+  else if (node) {
+    this.lastKeys_.strokes.push(stroke);
+    this.lastKeys_.time = now;
+    // Prevent default action so find-as-you-type doesn't steal keyboard focus.
+    if (goog.userAgent.GECKO) {
+      event.preventDefault();
+    }
+  }
+
+  // No strokes for sequence, clear stored strokes.
+  else {
+    this.lastKeys_.strokes.length = 0;
+  }
+
+  // Dispatch keyboard shortcut event if a shortcut was triggered. In addition
+  // to the generic keyboard shortcut event a more specifc fine grained one,
+  // specific for the shortcut identifier, is fired.
+  if (shortcut) {
+    if (this.alwaysPreventDefault_) {
+      event.preventDefault();
+    }
+
+    if (this.alwaysStopPropagation_) {
+      event.stopPropagation();
+    }
+
+    var types = goog.ui.KeyboardShortcutHandler.EventType;
+
+    // Dispatch SHORTCUT_TRIGGERED event
+    var target = /** @type {Node} */ (event.target);
+    var triggerEvent = new goog.ui.KeyboardShortcutEvent(
+        types.SHORTCUT_TRIGGERED, shortcut, target);
+    var retVal = this.dispatchEvent(triggerEvent);
+
+    // Dispatch SHORTCUT_PREFIX_<identifier> event
+    var prefixEvent = new goog.ui.KeyboardShortcutEvent(
+        types.SHORTCUT_PREFIX + shortcut, shortcut, target);
+    retVal &= this.dispatchEvent(prefixEvent);
+
+    // The default action is prevented if 'preventDefault' was
+    // called on either event, or if a listener returned false.
+    if (!retVal) {
+      event.preventDefault();
+    }
+
+    // Clear stored strokes
+    this.lastKeys_.strokes.length = 0;
+  }
+};
+
+
+/**
+ * Checks if a given keypress event may be treated as a shortcut.
+ * @param {goog.events.BrowserEvent} event Keypress event.
+ * @return {boolean} Whether to attempt to process the event as a shortcut.
+ * @private
+ */
+goog.ui.KeyboardShortcutHandler.prototype.isValidShortcut_ = function(event) {
+  var keyCode = event.keyCode;
+
+  // Ignore Ctrl, Shift and ALT
+  if (keyCode == goog.events.KeyCodes.SHIFT ||
+      keyCode == goog.events.KeyCodes.CTRL ||
+      keyCode == goog.events.KeyCodes.ALT) {
+    return false;
+  }
+  var el = /** @type {Element} */ (event.target);
+  var isFormElement =
+      el.tagName == 'TEXTAREA' || el.tagName == 'INPUT' ||
+      el.tagName == 'BUTTON' || el.tagName == 'SELECT';
+
+  var isContentEditable = !isFormElement && (el.isContentEditable ||
+      (el.ownerDocument && el.ownerDocument.designMode == 'on'));
+
+  if (!isFormElement && !isContentEditable) {
+    return true;
+  }
+  // Always allow keys registered as global to be used (typically Esc, the
+  // F-keys and other keys that are not typically used to manipulate text).
+  if (this.globalKeys_[keyCode] || this.allShortcutsAreGlobal_) {
+    return true;
+  }
+  if (isContentEditable) {
+    // For events originating from an element in editing mode we only let
+    // global key codes through.
+    return false;
+  }
+  // Event target is one of (TEXTAREA, INPUT, BUTTON, SELECT).
+  // Allow modifier shortcuts, unless we shouldn't.
+  if (this.modifierShortcutsAreGlobal_ && (
+      event.altKey || event.ctrlKey || event.metaKey)) {
+    return true;
+  }
+  // Allow ENTER to be used as shortcut for text inputs.
+  if (el.tagName == 'INPUT' && this.textInputs_[el.type]) {
+    return keyCode == goog.events.KeyCodes.ENTER;
+  }
+  // Checkboxes, radiobuttons and buttons. Allow all but SPACE as shortcut.
+  if (el.tagName == 'INPUT' || el.tagName == 'BUTTON') {
+    // TODO(gboyer): If more flexibility is needed, create protected helper
+    // methods for each case (e.g. button, input, etc).
+    if (this.allowSpaceKeyOnButtons_) {
+      return true;
+    } else {
+      return keyCode != goog.events.KeyCodes.SPACE;
+    }
+  }
+  // Don't allow any additional shortcut keys for textareas or selects.
+  return false;
+};
+
+
+
+/**
+ * Object representing a keyboard shortcut event.
+ * @param {string} type Event type.
+ * @param {string} identifier Task identifier for the triggered shortcut.
+ * @param {Node|goog.events.EventTarget} target Target the original key press
+ *     event originated from.
+ * @extends {goog.events.Event}
+ * @constructor
+ * @final
+ */
+goog.ui.KeyboardShortcutEvent = function(type, identifier, target) {
+  goog.events.Event.call(this, type, target);
+
+  /**
+   * Task identifier for the triggered shortcut
+   * @type {string}
+   */
+  this.identifier = identifier;
+};
+goog.inherits(goog.ui.KeyboardShortcutEvent, goog.events.Event);
 
 //////////////////////////////////////////////////
 // Silex, live web creation
@@ -31227,22 +32410,12 @@ goog.ui.registry.setDecoratorByClassName(goog.ui.MenuButtonRenderer.CSS_CLASS,
 
 goog.provide('silex.model.Config');
 
-function getAllCombinations(menu, option){
-  return [
-    'ctrl+' + option
-    , 'alt+' + option
-    , 'command+' + option
-    , 'ctrl+shift+' + option
-    , 'alt+shift+' + option
-    , 'command+shift+' + option
-    , 'ctrl+' + menu + ' ctrl+' + option
-    , 'alt+' + menu + ' alt+' + option
-    , 'command+' + menu + ' command+' + option
-    , 'ctrl+shift+' + menu + ' ctrl+shift+' + option
-    , 'alt+shift+' + menu + ' alt+shift+' + option
-    , 'command+shift+' + menu + ' command+shift+' + option
-  ];
-}
+goog.require('goog.events.KeyCodes');
+goog.require('goog.ui.KeyboardShortcutHandler');
+
+var ctrlKeyDisplay = goog.userAgent.MAC ? '⌘' + '' : 'Ctrl+';
+var altKeyDisplay = goog.userAgent.MAC ?  '⌥' + '' : 'Alt+';
+
 /**
  * The main application menu
  */
@@ -31251,38 +32424,26 @@ silex.model.Config.menu = {
     {
       label: 'File'
       , className: 'menu-item-file'
-      , shortcut: ['mod+shift+f']
-      , tooltip: 'ctrl+⇪+f'
     }
     , {
       label: 'Edit'
       , className: 'menu-item-edit'
-      , shortcut: ['mod+shift+e']
-      , tooltip: 'ctrl+⇪+e'
     }
     , {
       label: 'View'
       , className: 'menu-item-view'
-      , shortcut: ['mod+shift+v']
-      , tooltip: 'ctrl+⇪+v'
     }
     , {
       label: 'Insert'
       , className: 'menu-item-insert'
-      , shortcut: ['mod+shift+i']
-      , tooltip: 'ctrl+⇪+i'
     }
     , {
       label: 'Tools'
       , className: 'menu-item-tools'
-      , shortcut: ['mod+shift+t']
-      , tooltip: 'ctrl+⇪+t'
     }
     , {
       label: 'Help'
       , className: 'menu-item-help'
-      , shortcut: ['mod+shift+h']
-      , tooltip: 'ctrl+⇪+h'
     }
   ]
   , options: [
@@ -31291,37 +32452,45 @@ silex.model.Config.menu = {
         label: 'New File'
         , id: 'file.new'
         , className: 'menu-item-file-new'
-        , shortcut: getAllCombinations('f', 'n')
-        , tooltip: 'ctrl+fn'
+        , shortcut: [[goog.events.KeyCodes.N, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
+        , tooltip: altKeyDisplay + 'n'
+        , mnemonic: goog.events.KeyCodes.N
+        , accelerator: 'n'
       }
       , {
         label: 'Open File...'
         , id: 'file.open'
         , className: 'menu-item-file-open'
-        , shortcut: getAllCombinations('f', 'o')
-        , tooltip: 'ctrl+fo'
+        , shortcut: [[goog.events.KeyCodes.O, goog.ui.KeyboardShortcutHandler.Modifiers.META]]
+        , tooltip: ctrlKeyDisplay + 'o'
+        , mnemonic: goog.events.KeyCodes.O
+        , accelerator: 'o'
       }
       , {
         label: 'Save File'
         , id: 'file.save'
         , className: 'menu-item-file-save'
-        , shortcut: getAllCombinations('f', 's')
-        , tooltip: 'ctrl+fs'
+        , shortcut: [[goog.events.KeyCodes.S, goog.ui.KeyboardShortcutHandler.Modifiers.META]]
+        , tooltip: ctrlKeyDisplay + 's'
+        , mnemonic: goog.events.KeyCodes.S
+        , accelerator: 's'
       }
       , {
         label: 'Save As...'
         , id: 'file.saveas'
         , className: 'menu-item-file-saveas'
-        , shortcut: getAllCombinations('f', 's')
-        , tooltip: 'ctrl+⇪+fs'
+        , shortcut: [[goog.events.KeyCodes.S, goog.ui.KeyboardShortcutHandler.Modifiers.META+goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT]]
+        , tooltip: ctrlKeyDisplay + '⇧S'
       }
       , null
       , {
         label: 'Publish'
         , id: 'file.publish'
         , className: 'menu-item-file-publish'
-        , shortcut: getAllCombinations('f', 'p')
-        , tooltip: 'ctrl+⇪+fp'
+        , shortcut: [[goog.events.KeyCodes.P, goog.ui.KeyboardShortcutHandler.Modifiers.META]]
+        , tooltip: ctrlKeyDisplay + 'P'
+        , mnemonic: goog.events.KeyCodes.P
+        , accelerator: 'p'
       }
       , {
         label: 'Settings...'
@@ -31333,8 +32502,10 @@ silex.model.Config.menu = {
         label: 'Close File'
         , id: 'file.close'
         , className: 'menu-item-file-close'
-        , shortcut: getAllCombinations('f', 'w')
-        , tooltip: 'ctrl+fw'
+        , shortcut: [[goog.events.KeyCodes.W, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
+        , tooltip: altKeyDisplay + 'w'
+        , mnemonic: goog.events.KeyCodes.W
+        , accelerator: 'w'
       }
     ]
     , [
@@ -31342,8 +32513,10 @@ silex.model.Config.menu = {
         label: 'Delete selection'
         , id: 'edit.delete.selection'
         , className: 'menu-item-edit-delete-selection'
-        , shortcut: ['del', 'backspace']
+        , shortcut: [[goog.events.KeyCodes.DELETE], [goog.events.KeyCodes.BACKSPACE]]
         , tooltip: 'suppr'
+        , mnemonic: goog.events.KeyCodes.R
+        , accelerator: 'r'
       }
       , null
       , {
@@ -31362,15 +32535,17 @@ silex.model.Config.menu = {
         label: 'View in new window'
         , id: 'view.file'
         , className: 'menu-item-view-file'
-        , shortcut: getAllCombinations('v', 'n')
-        , tooltip: 'ctrl+⇪+vn'
+        , shortcut: [[goog.events.KeyCodes.V, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
+        , tooltip: altKeyDisplay + 'V'
+        , mnemonic: goog.events.KeyCodes.V
+        , accelerator: 'v'
       }
       , null
       , {
         label: 'Open text editor'
         , id: 'view.open.textEditor'
         , className: 'menu-item-view-open-textEditor'
-        , shortcut: ['enter']
+        , shortcut: [[goog.events.KeyCodes.ENTER]]
         , tooltip: '↵'
       }
       , {
@@ -31384,38 +32559,48 @@ silex.model.Config.menu = {
         label: 'Text box'
         , id: 'insert.text'
         , className: 'menu-item-insert-text'
-        , shortcut: getAllCombinations('i', 't')
-        , tooltip: 'ctrl+⇪+it'
+        , shortcut: [[goog.events.KeyCodes.T, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
+        , tooltip: altKeyDisplay + 'T'
+        , mnemonic: goog.events.KeyCodes.T
+        , accelerator: 't'
       }
       , {
         label: 'Image...'
         , id: 'insert.image'
         , className: 'menu-item-insert-image'
-        , shortcut: getAllCombinations('i', 'i')
-        , tooltip: 'ctrl+⇪+ii'
+        , shortcut: [[goog.events.KeyCodes.I, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
+        , tooltip: altKeyDisplay + 'I'
+        , mnemonic: goog.events.KeyCodes.I
+        , accelerator: 'i'
       }
       , {
         label: 'Container'
         , id: 'insert.container'
         , className: 'menu-item-insert-container'
-        , shortcut: getAllCombinations('i', 'c')
-        , tooltip: 'ctrl+⇪+ic'
+        , shortcut: [[goog.events.KeyCodes.C, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
+        , tooltip: altKeyDisplay + 'C'
+        , mnemonic: goog.events.KeyCodes.C
+        , accelerator: 'c'
       }
       , null
       , {
         label: 'HTML box'
         , id: 'insert.html'
         , className: 'menu-item-insert-html'
-        , shortcut: getAllCombinations('i', 'h')
-        , tooltip: 'ctrl+⇪+ih'
+        , shortcut: [[goog.events.KeyCodes.H, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
+        , tooltip: altKeyDisplay + 'H'
+        , mnemonic: goog.events.KeyCodes.H
+        , accelerator: 'h'
       }
       , null
       , {
         label: 'New page'
         , id: 'insert.page'
         , className: 'menu-item-insert-page'
-        , shortcut: getAllCombinations('i', 'n')
-        , tooltip: 'ctrl+⇪+in'
+        , shortcut: [[goog.events.KeyCodes.P, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
+        , tooltip: altKeyDisplay + 'P'
+        , mnemonic: goog.events.KeyCodes.P
+        , accelerator: 'p'
       }
     ]
     , [
@@ -31712,4936 +32897,6 @@ goog.ui.menuBar.create = function(opt_renderer, opt_domHelper) {
       opt_renderer ? opt_renderer : goog.ui.MenuBarRenderer.getInstance(),
       opt_domHelper);
 };
-// Copyright 2011 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/**
- * @fileoverview An interface for transition animation. This is a simple
- * interface that allows for playing and stopping a transition. It adds
- * a simple event model with BEGIN and END event.
- *
- */
-
-goog.provide('goog.fx.Transition');
-goog.provide('goog.fx.Transition.EventType');
-
-
-
-/**
- * An interface for programmatic transition. Must extend
- * {@code goog.events.EventTarget}.
- * @interface
- */
-goog.fx.Transition = function() {};
-
-
-/**
- * Transition event types.
- * @enum {string}
- */
-goog.fx.Transition.EventType = {
-  /** Dispatched when played for the first time OR when it is resumed. */
-  PLAY: 'play',
-
-  /** Dispatched only when the animation starts from the beginning. */
-  BEGIN: 'begin',
-
-  /** Dispatched only when animation is restarted after a pause. */
-  RESUME: 'resume',
-
-  /**
-   * Dispatched when animation comes to the end of its duration OR stop
-   * is called.
-   */
-  END: 'end',
-
-  /** Dispatched only when stop is called. */
-  STOP: 'stop',
-
-  /** Dispatched only when animation comes to its end naturally. */
-  FINISH: 'finish',
-
-  /** Dispatched when an animation is paused. */
-  PAUSE: 'pause'
-};
-
-
-/**
- * Plays the transition.
- */
-goog.fx.Transition.prototype.play;
-
-
-/**
- * Stops the transition.
- */
-goog.fx.Transition.prototype.stop;
-// Copyright 2006 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/**
- * @fileoverview Definition of the PopupBase class.
- *
- */
-
-goog.provide('goog.ui.PopupBase');
-goog.provide('goog.ui.PopupBase.EventType');
-goog.provide('goog.ui.PopupBase.Type');
-
-goog.require('goog.Timer');
-goog.require('goog.dom');
-goog.require('goog.events');
-goog.require('goog.events.EventHandler');
-goog.require('goog.events.EventTarget');
-goog.require('goog.events.EventType');
-goog.require('goog.events.KeyCodes');
-goog.require('goog.fx.Transition');
-goog.require('goog.style');
-goog.require('goog.userAgent');
-
-
-
-/**
- * The PopupBase class provides functionality for showing and hiding a generic
- * container element. It also provides the option for hiding the popup element
- * if the user clicks outside the popup or the popup loses focus.
- *
- * @constructor
- * @extends {goog.events.EventTarget}
- * @param {Element=} opt_element A DOM element for the popup.
- * @param {goog.ui.PopupBase.Type=} opt_type Type of popup.
- */
-goog.ui.PopupBase = function(opt_element, opt_type) {
-  goog.events.EventTarget.call(this);
-
-  /**
-   * An event handler to manage the events easily
-   * @type {goog.events.EventHandler}
-   * @private
-   */
-  this.handler_ = new goog.events.EventHandler(this);
-
-  this.setElement(opt_element || null);
-  if (opt_type) {
-    this.setType(opt_type);
-  }
-};
-goog.inherits(goog.ui.PopupBase, goog.events.EventTarget);
-
-
-/**
- * Constants for type of Popup
- * @enum {string}
- */
-goog.ui.PopupBase.Type = {
-  TOGGLE_DISPLAY: 'toggle_display',
-  MOVE_OFFSCREEN: 'move_offscreen'
-};
-
-
-/**
- * The popup dom element that this Popup wraps.
- * @type {Element}
- * @private
- */
-goog.ui.PopupBase.prototype.element_ = null;
-
-
-/**
- * Whether the Popup dismisses itself it the user clicks outside of it or the
- * popup loses focus
- * @type {boolean}
- * @private
- */
-goog.ui.PopupBase.prototype.autoHide_ = true;
-
-
-/**
- * Clicks outside the popup but inside this element will cause the popup to
- * hide if autoHide_ is true. If this is null, then the entire document is used.
- * For example, you can use a body-size div so that clicks on the browser
- * scrollbar do not dismiss the popup.
- * @type {Element}
- * @private
- */
-goog.ui.PopupBase.prototype.autoHideRegion_ = null;
-
-
-/**
- * Whether the popup is currently being shown.
- * @type {boolean}
- * @private
- */
-goog.ui.PopupBase.prototype.isVisible_ = false;
-
-
-/**
- * Whether the popup should hide itself asynchrously. This was added because
- * there are cases where hiding the element in mouse down handler in IE can
- * cause textinputs to get into a bad state if the element that had focus is
- * hidden.
- * @type {boolean}
- * @private
- */
-goog.ui.PopupBase.prototype.shouldHideAsync_ = false;
-
-
-/**
- * The time when the popup was last shown.
- * @type {number}
- * @private
- */
-goog.ui.PopupBase.prototype.lastShowTime_ = -1;
-
-
-/**
- * The time when the popup was last hidden.
- * @type {number}
- * @private
- */
-goog.ui.PopupBase.prototype.lastHideTime_ = -1;
-
-
-/**
- * Whether to hide when the escape key is pressed.
- * @type {boolean}
- * @private
- */
-goog.ui.PopupBase.prototype.hideOnEscape_ = false;
-
-
-/**
- * Whether to enable cross-iframe dismissal.
- * @type {boolean}
- * @private
- */
-goog.ui.PopupBase.prototype.enableCrossIframeDismissal_ = true;
-
-
-/**
- * The type of popup
- * @type {goog.ui.PopupBase.Type}
- * @private
- */
-goog.ui.PopupBase.prototype.type_ = goog.ui.PopupBase.Type.TOGGLE_DISPLAY;
-
-
-/**
- * Transition to play on showing the popup.
- * @type {goog.fx.Transition|undefined}
- * @private
- */
-goog.ui.PopupBase.prototype.showTransition_;
-
-
-/**
- * Transition to play on hiding the popup.
- * @type {goog.fx.Transition|undefined}
- * @private
- */
-goog.ui.PopupBase.prototype.hideTransition_;
-
-
-/**
- * Constants for event type fired by Popup
- *
- * @enum {string}
- */
-goog.ui.PopupBase.EventType = {
-  BEFORE_SHOW: 'beforeshow',
-  SHOW: 'show',
-  BEFORE_HIDE: 'beforehide',
-  HIDE: 'hide'
-};
-
-
-/**
- * A time in ms used to debounce events that happen right after each other.
- *
- * A note about why this is necessary. There are two cases to consider.
- * First case, a popup will usually see a focus event right after it's launched
- * because it's typical for it to be launched in a mouse-down event which will
- * then move focus to the launching button. We don't want to think this is a
- * separate user action moving focus. Second case, a user clicks on the
- * launcher button to close the menu. In that case, we'll close the menu in the
- * focus event and then show it again because of the mouse down event, even
- * though the intention is to just close the menu. This workaround appears to
- * be the least intrusive fix.
- *
- * @type {number}
- */
-goog.ui.PopupBase.DEBOUNCE_DELAY_MS = 150;
-
-
-/**
- * @return {goog.ui.PopupBase.Type} The type of popup this is.
- */
-goog.ui.PopupBase.prototype.getType = function() {
-  return this.type_;
-};
-
-
-/**
- * Specifies the type of popup to use.
- *
- * @param {goog.ui.PopupBase.Type} type Type of popup.
- */
-goog.ui.PopupBase.prototype.setType = function(type) {
-  this.type_ = type;
-};
-
-
-/**
- * Returns whether the popup should hide itself asynchronously using a timeout
- * instead of synchronously.
- * @return {boolean} Whether to hide async.
- */
-goog.ui.PopupBase.prototype.shouldHideAsync = function() {
-  return this.shouldHideAsync_;
-};
-
-
-/**
- * Sets whether the popup should hide itself asynchronously using a timeout
- * instead of synchronously.
- * @param {boolean} b Whether to hide async.
- */
-goog.ui.PopupBase.prototype.setShouldHideAsync = function(b) {
-  this.shouldHideAsync_ = b;
-};
-
-
-/**
- * Returns the dom element that should be used for the popup.
- *
- * @return {Element} The popup element.
- */
-goog.ui.PopupBase.prototype.getElement = function() {
-  return this.element_;
-};
-
-
-/**
- * Specifies the dom element that should be used for the popup.
- *
- * @param {Element} elt A DOM element for the popup.
- */
-goog.ui.PopupBase.prototype.setElement = function(elt) {
-  this.ensureNotVisible_();
-  this.element_ = elt;
-};
-
-
-/**
- * Returns whether the Popup dismisses itself when the user clicks outside of
- * it.
- * @return {boolean} Whether the Popup autohides on an external click.
- */
-goog.ui.PopupBase.prototype.getAutoHide = function() {
-  return this.autoHide_;
-};
-
-
-/**
- * Sets whether the Popup dismisses itself when the user clicks outside of it.
- * @param {boolean} autoHide Whether to autohide on an external click.
- */
-goog.ui.PopupBase.prototype.setAutoHide = function(autoHide) {
-  this.ensureNotVisible_();
-  this.autoHide_ = autoHide;
-};
-
-
-/**
- * @return {boolean} Whether the Popup autohides on the escape key.
- */
-goog.ui.PopupBase.prototype.getHideOnEscape = function() {
-  return this.hideOnEscape_;
-};
-
-
-/**
- * Sets whether the Popup dismisses itself on the escape key.
- * @param {boolean} hideOnEscape Whether to autohide on the escape key.
- */
-goog.ui.PopupBase.prototype.setHideOnEscape = function(hideOnEscape) {
-  this.ensureNotVisible_();
-  this.hideOnEscape_ = hideOnEscape;
-};
-
-
-/**
- * @return {boolean} Whether cross iframe dismissal is enabled.
- */
-goog.ui.PopupBase.prototype.getEnableCrossIframeDismissal = function() {
-  return this.enableCrossIframeDismissal_;
-};
-
-
-/**
- * Sets whether clicks in other iframes should dismiss this popup.  In some
- * cases it should be disabled, because it can cause spurious
- * @param {boolean} enable Whether to enable cross iframe dismissal.
- */
-goog.ui.PopupBase.prototype.setEnableCrossIframeDismissal = function(enable) {
-  this.enableCrossIframeDismissal_ = enable;
-};
-
-
-/**
- * Returns the region inside which the Popup dismisses itself when the user
- * clicks, or null if it's the entire document.
- * @return {Element} The DOM element for autohide, or null if it hasn't been
- *     set.
- */
-goog.ui.PopupBase.prototype.getAutoHideRegion = function() {
-  return this.autoHideRegion_;
-};
-
-
-/**
- * Sets the region inside which the Popup dismisses itself when the user
- * clicks.
- * @param {Element} element The DOM element for autohide.
- */
-goog.ui.PopupBase.prototype.setAutoHideRegion = function(element) {
-  this.autoHideRegion_ = element;
-};
-
-
-/**
- * Sets transition animation on showing and hiding the popup.
- * @param {goog.fx.Transition=} opt_showTransition Transition to play on
- *     showing the popup.
- * @param {goog.fx.Transition=} opt_hideTransition Transition to play on
- *     hiding the popup.
- */
-goog.ui.PopupBase.prototype.setTransition = function(
-    opt_showTransition, opt_hideTransition) {
-  this.showTransition_ = opt_showTransition;
-  this.hideTransition_ = opt_hideTransition;
-};
-
-
-/**
- * Returns the time when the popup was last shown.
- *
- * @return {number} time in ms since epoch when the popup was last shown, or
- * -1 if the popup was never shown.
- */
-goog.ui.PopupBase.prototype.getLastShowTime = function() {
-  return this.lastShowTime_;
-};
-
-
-/**
- * Returns the time when the popup was last hidden.
- *
- * @return {number} time in ms since epoch when the popup was last hidden, or
- * -1 if the popup was never hidden or is currently showing.
- */
-goog.ui.PopupBase.prototype.getLastHideTime = function() {
-  return this.lastHideTime_;
-};
-
-
-/**
- * Returns the event handler for the popup. All event listeners belonging to
- * this handler are removed when the tooltip is hidden. Therefore,
- * the recommended usage of this handler is to listen on events in
- * {@link #onShow_}.
- * @return {goog.events.EventHandler} Event handler for this popup.
- * @protected
- */
-goog.ui.PopupBase.prototype.getHandler = function() {
-  return this.handler_;
-};
-
-
-/**
- * Helper to throw exception if the popup is showing.
- * @private
- */
-goog.ui.PopupBase.prototype.ensureNotVisible_ = function() {
-  if (this.isVisible_) {
-    throw Error('Can not change this state of the popup while showing.');
-  }
-};
-
-
-/**
- * Returns whether the popup is currently visible.
- *
- * @return {boolean} whether the popup is currently visible.
- */
-goog.ui.PopupBase.prototype.isVisible = function() {
-  return this.isVisible_;
-};
-
-
-/**
- * Returns whether the popup is currently visible or was visible within about
- * 150 ms ago. This is used by clients to handle a very specific, but common,
- * popup scenario. The button that launches the popup should close the popup
- * on mouse down if the popup is alrady open. The problem is that the popup
- * closes itself during the capture phase of the mouse down and thus the button
- * thinks it's hidden and this should show it again. This method provides a
- * good heuristic for clients. Typically in their event handler they will have
- * code that is:
- *
- * if (menu.isOrWasRecentlyVisible()) {
- *   menu.setVisible(false);
- * } else {
- *   ... // code to position menu and initialize other state
- *   menu.setVisible(true);
- * }
- * @return {boolean} Whether the popup is currently visible or was visible
- *     within about 150 ms ago.
- */
-goog.ui.PopupBase.prototype.isOrWasRecentlyVisible = function() {
-  return this.isVisible_ ||
-         (goog.now() - this.lastHideTime_ <
-          goog.ui.PopupBase.DEBOUNCE_DELAY_MS);
-};
-
-
-/**
- * Sets whether the popup should be visible. After this method
- * returns, isVisible() will always return the new state, even if
- * there is a transition.
- *
- * @param {boolean} visible Desired visibility state.
- */
-goog.ui.PopupBase.prototype.setVisible = function(visible) {
-  // Make sure that any currently running transition is stopped.
-  if (this.showTransition_) this.showTransition_.stop();
-  if (this.hideTransition_) this.hideTransition_.stop();
-
-  if (visible) {
-    this.show_();
-  } else {
-    this.hide_();
-  }
-};
-
-
-/**
- * Repositions the popup according to the current state.
- * Should be overriden by subclases.
- */
-goog.ui.PopupBase.prototype.reposition = goog.nullFunction;
-
-
-/**
- * Does the work to show the popup.
- * @private
- */
-goog.ui.PopupBase.prototype.show_ = function() {
-  // Ignore call if we are already showing.
-  if (this.isVisible_) {
-    return;
-  }
-
-  // Give derived classes and handlers a chance to customize popup.
-  if (!this.onBeforeShow()) {
-    return;
-  }
-
-  // Allow callers to set the element in the BEFORE_SHOW event.
-  if (!this.element_) {
-    throw Error('Caller must call setElement before trying to show the popup');
-  }
-
-  // Call reposition after onBeforeShow, as it may change the style and/or
-  // content of the popup and thereby affecting the size which is used for the
-  // viewport calculation.
-  this.reposition();
-
-  var doc = goog.dom.getOwnerDocument(this.element_);
-
-  if (this.hideOnEscape_) {
-
-    // Handle the escape keys.  Listen in the capture phase so that we can
-    // stop the escape key from propagating to other elements.  For example,
-    // if there is a popup within a dialog box, we want the popup to be
-    // dismissed first, rather than the dialog.
-    this.handler_.listen(doc, goog.events.EventType.KEYDOWN,
-        this.onDocumentKeyDown_, true);
-  }
-
-  // Set up event handlers.
-  if (this.autoHide_) {
-
-    // Even if the popup is not in the focused document, we want to
-    // close it on mousedowns in the document it's in.
-    this.handler_.listen(doc, goog.events.EventType.MOUSEDOWN,
-        this.onDocumentMouseDown_, true);
-
-    if (goog.userAgent.IE) {
-      // We want to know about deactivates/mousedowns on the document with focus
-      // The top-level document won't get a deactivate event if the focus is
-      // in an iframe and the deactivate fires within that iframe.
-      // The active element in the top-level document will remain the iframe
-      // itself.
-      var activeElement;
-      /** @preserveTry */
-      try {
-        activeElement = doc.activeElement;
-      } catch (e) {
-        // There is an IE browser bug which can cause just the reading of
-        // document.activeElement to throw an Unspecified Error.  This
-        // may have to do with loading a popup within a hidden iframe.
-      }
-      while (activeElement && activeElement.nodeName == 'IFRAME') {
-        /** @preserveTry */
-        try {
-          var tempDoc = goog.dom.getFrameContentDocument(activeElement);
-        } catch (e) {
-          // The frame is on a different domain that its parent document
-          // This way, we grab the lowest-level document object we can get
-          // a handle on given cross-domain security.
-          break;
-        }
-        doc = tempDoc;
-        activeElement = doc.activeElement;
-      }
-
-      // Handle mousedowns in the focused document in case the user clicks
-      // on the activeElement (in which case the popup should hide).
-      this.handler_.listen(doc, goog.events.EventType.MOUSEDOWN,
-          this.onDocumentMouseDown_, true);
-
-      // If the active element inside the focused document changes, then
-      // we probably need to hide the popup.
-      this.handler_.listen(doc, goog.events.EventType.DEACTIVATE,
-          this.onDocumentBlur_);
-
-    } else {
-      this.handler_.listen(doc, goog.events.EventType.BLUR,
-          this.onDocumentBlur_);
-    }
-  }
-
-  // Make the popup visible.
-  if (this.type_ == goog.ui.PopupBase.Type.TOGGLE_DISPLAY) {
-    this.showPopupElement();
-  } else if (this.type_ == goog.ui.PopupBase.Type.MOVE_OFFSCREEN) {
-    this.reposition();
-  }
-  this.isVisible_ = true;
-
-  this.lastShowTime_ = goog.now();
-  this.lastHideTime_ = -1;
-
-  // If there is transition to play, we play it and fire SHOW event after
-  // the transition is over.
-  if (this.showTransition_) {
-    goog.events.listenOnce(
-        /** @type {goog.events.EventTarget} */ (this.showTransition_),
-        goog.fx.Transition.EventType.END, this.onShow_, false, this);
-    this.showTransition_.play();
-  } else {
-    // Notify derived classes and handlers.
-    this.onShow_();
-  }
-};
-
-
-/**
- * Hides the popup. This call is idempotent.
- *
- * @param {Object=} opt_target Target of the event causing the hide.
- * @return {boolean} Whether the popup was hidden and not cancelled.
- * @private
- */
-goog.ui.PopupBase.prototype.hide_ = function(opt_target) {
-  // Give derived classes and handlers a chance to cancel hiding.
-  if (!this.isVisible_ || !this.onBeforeHide_(opt_target)) {
-    return false;
-  }
-
-  // Remove any listeners we attached when showing the popup.
-  if (this.handler_) {
-    this.handler_.removeAll();
-  }
-
-  // Set visibility to hidden even if there is a transition.
-  this.isVisible_ = false;
-  this.lastHideTime_ = goog.now();
-
-  // If there is transition to play, we play it and only hide the element
-  // (and fire HIDE event) after the transition is over.
-  if (this.hideTransition_) {
-    goog.events.listenOnce(
-        /** @type {goog.events.EventTarget} */ (this.hideTransition_),
-        goog.fx.Transition.EventType.END,
-        goog.partial(this.continueHidingPopup_, opt_target), false, this);
-    this.hideTransition_.play();
-  } else {
-    this.continueHidingPopup_(opt_target);
-  }
-
-  return true;
-};
-
-
-/**
- * Continues hiding the popup. This is a continuation from hide_. It is
- * a separate method so that we can add a transition before hiding.
- * @param {Object=} opt_target Target of the event causing the hide.
- * @private
- */
-goog.ui.PopupBase.prototype.continueHidingPopup_ = function(opt_target) {
-  // Hide the popup.
-  if (this.type_ == goog.ui.PopupBase.Type.TOGGLE_DISPLAY) {
-    if (this.shouldHideAsync_) {
-      goog.Timer.callOnce(this.hidePopupElement_, 0, this);
-    } else {
-      this.hidePopupElement_();
-    }
-  } else if (this.type_ == goog.ui.PopupBase.Type.MOVE_OFFSCREEN) {
-    this.moveOffscreen_();
-  }
-
-  // Notify derived classes and handlers.
-  this.onHide_(opt_target);
-};
-
-
-/**
- * Shows the popup element.
- * @protected
- */
-goog.ui.PopupBase.prototype.showPopupElement = function() {
-  this.element_.style.visibility = 'visible';
-  goog.style.setElementShown(this.element_, true);
-};
-
-
-/**
- * Hides the popup element.
- * @private
- */
-goog.ui.PopupBase.prototype.hidePopupElement_ = function() {
-  this.element_.style.visibility = 'hidden';
-  goog.style.setElementShown(this.element_, false);
-};
-
-
-/**
- * Hides the popup by moving it offscreen.
- *
- * @private
- */
-goog.ui.PopupBase.prototype.moveOffscreen_ = function() {
-  this.element_.style.top = '-10000px';
-};
-
-
-/**
- * Called before the popup is shown. Derived classes can override to hook this
- * event but should make sure to call the parent class method.
- *
- * @return {boolean} If anyone called preventDefault on the event object (or
- *     if any of the handlers returns false this will also return false.
- * @protected
- */
-goog.ui.PopupBase.prototype.onBeforeShow = function() {
-  return this.dispatchEvent(goog.ui.PopupBase.EventType.BEFORE_SHOW);
-};
-
-
-/**
- * Called after the popup is shown. Derived classes can override to hook this
- * event but should make sure to call the parent class method.
- * @protected
- * @suppress {underscore|visibility}
- */
-goog.ui.PopupBase.prototype.onShow_ = function() {
-  this.dispatchEvent(goog.ui.PopupBase.EventType.SHOW);
-};
-
-
-/**
- * Called before the popup is hidden. Derived classes can override to hook this
- * event but should make sure to call the parent class method.
- *
- * @param {Object=} opt_target Target of the event causing the hide.
- * @return {boolean} If anyone called preventDefault on the event object (or
- *     if any of the handlers returns false this will also return false.
- * @protected
- * @suppress {underscore|visibility}
- */
-goog.ui.PopupBase.prototype.onBeforeHide_ = function(opt_target) {
-  return this.dispatchEvent({
-    type: goog.ui.PopupBase.EventType.BEFORE_HIDE,
-    target: opt_target
-  });
-};
-
-
-/**
- * Called after the popup is hidden. Derived classes can override to hook this
- * event but should make sure to call the parent class method.
- * @param {Object=} opt_target Target of the event causing the hide.
- * @protected
- * @suppress {underscore|visibility}
- */
-goog.ui.PopupBase.prototype.onHide_ = function(opt_target) {
-  this.dispatchEvent({
-    type: goog.ui.PopupBase.EventType.HIDE,
-    target: opt_target
-  });
-};
-
-
-/**
- * Mouse down handler for the document on capture phase. Used to hide the
- * popup for auto-hide mode.
- *
- * @param {goog.events.BrowserEvent} e The event object.
- * @private
- */
-goog.ui.PopupBase.prototype.onDocumentMouseDown_ = function(e) {
-  var target = /** @type {Node} */ (e.target);
-  if (!goog.dom.contains(this.element_, target) &&
-      (!this.autoHideRegion_ || goog.dom.contains(
-      this.autoHideRegion_, target)) &&
-      !this.shouldDebounce_()) {
-    // Mouse click was outside popup, so hide.
-    this.hide_(target);
-  }
-};
-
-
-/**
- * Handles key-downs on the document to handle the escape key.
- *
- * @param {goog.events.BrowserEvent} e The event object.
- * @private
- */
-goog.ui.PopupBase.prototype.onDocumentKeyDown_ = function(e) {
-  if (e.keyCode == goog.events.KeyCodes.ESC) {
-    if (this.hide_(e.target)) {
-      // Eat the escape key, but only if this popup was actually closed.
-      e.preventDefault();
-      e.stopPropagation();
-    }
-  }
-};
-
-
-/**
- * Deactivate handler(IE) and blur handler (other browsers) for document.
- * Used to hide the popup for auto-hide mode.
- *
- * @param {goog.events.BrowserEvent} e The event object.
- * @private
- */
-goog.ui.PopupBase.prototype.onDocumentBlur_ = function(e) {
-  if (!this.enableCrossIframeDismissal_) {
-    return;
-  }
-
-  var doc = goog.dom.getOwnerDocument(this.element_);
-
-  // Ignore blur events if the active element is still inside the popup or if
-  // there is no longer an active element.  For example, a widget like a
-  // goog.ui.Button might programatically blur itself before losing tabIndex.
-  if (typeof document.activeElement != 'undefined') {
-    var activeElement = doc.activeElement;
-    if (!activeElement || goog.dom.contains(this.element_,
-        activeElement) || activeElement.tagName == 'BODY') {
-      return;
-    }
-
-  // Ignore blur events not for the document itself in non-IE browsers.
-  } else if (e.target != doc) {
-    return;
-  }
-
-  // Debounce the initial focus move.
-  if (this.shouldDebounce_()) {
-    return;
-  }
-
-  this.hide_();
-};
-
-
-/**
- * @return {boolean} Whether the time since last show is less than the debounce
- *     delay.
- * @private
- */
-goog.ui.PopupBase.prototype.shouldDebounce_ = function() {
-  return goog.now() - this.lastShowTime_ < goog.ui.PopupBase.DEBOUNCE_DELAY_MS;
-};
-
-
-/** @override */
-goog.ui.PopupBase.prototype.disposeInternal = function() {
-  goog.base(this, 'disposeInternal');
-  this.handler_.dispose();
-  goog.dispose(this.showTransition_);
-  goog.dispose(this.hideTransition_);
-  delete this.element_;
-  delete this.handler_;
-};
-// Copyright 2006 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/**
- * @fileoverview Client positioning class.
- *
- */
-
-goog.provide('goog.positioning.ViewportPosition');
-
-goog.require('goog.math.Box');
-goog.require('goog.math.Coordinate');
-goog.require('goog.math.Size');
-goog.require('goog.positioning.AbstractPosition');
-
-
-
-/**
- * Encapsulates a popup position where the popup is positioned according to
- * coordinates relative to the  element's viewport (page). This calculates the
- * correct position to use even if the element is relatively positioned to some
- * other element.
- *
- * @param {number|goog.math.Coordinate} arg1 Left position or coordinate.
- * @param {number=} opt_arg2 Top position.
- * @constructor
- * @extends {goog.positioning.AbstractPosition}
- */
-goog.positioning.ViewportPosition = function(arg1, opt_arg2) {
-  this.coordinate = arg1 instanceof goog.math.Coordinate ? arg1 :
-      new goog.math.Coordinate(/** @type {number} */ (arg1), opt_arg2);
-};
-goog.inherits(goog.positioning.ViewportPosition,
-              goog.positioning.AbstractPosition);
-
-
-/**
- * Repositions the popup according to the current state
- *
- * @param {Element} element The DOM element of the popup.
- * @param {goog.positioning.Corner} popupCorner The corner of the popup
- *     element that that should be positioned adjacent to the anchorElement.
- * @param {goog.math.Box=} opt_margin A margin specified in pixels.
- * @param {goog.math.Size=} opt_preferredSize Preferred size of the element.
- * @override
- */
-goog.positioning.ViewportPosition.prototype.reposition = function(
-    element, popupCorner, opt_margin, opt_preferredSize) {
-  goog.positioning.positionAtAnchor(
-      goog.style.getClientViewportElement(element),
-      goog.positioning.Corner.TOP_LEFT, element, popupCorner,
-      this.coordinate, opt_margin, null, opt_preferredSize);
-};
-// Copyright 2006 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/**
- * @fileoverview Client positioning class.
- *
- */
-
-goog.provide('goog.positioning.ClientPosition');
-
-goog.require('goog.asserts');
-goog.require('goog.math.Box');
-goog.require('goog.math.Coordinate');
-goog.require('goog.math.Size');
-goog.require('goog.positioning');
-goog.require('goog.positioning.AbstractPosition');
-goog.require('goog.style');
-
-
-
-/**
- * Encapsulates a popup position where the popup is positioned relative to the
- * window (client) coordinates. This calculates the correct position to
- * use even if the element is relatively positioned to some other element. This
- * is for trying to position an element at the spot of the mouse cursor in
- * a MOUSEMOVE event. Just use the event.clientX and event.clientY as the
- * parameters.
- *
- * @param {number|goog.math.Coordinate} arg1 Left position or coordinate.
- * @param {number=} opt_arg2 Top position.
- * @constructor
- * @extends {goog.positioning.AbstractPosition}
- */
-goog.positioning.ClientPosition = function(arg1, opt_arg2) {
-  /**
-   * Coordinate to position popup at.
-   * @type {goog.math.Coordinate}
-   */
-  this.coordinate = arg1 instanceof goog.math.Coordinate ? arg1 :
-      new goog.math.Coordinate(/** @type {number} */ (arg1), opt_arg2);
-};
-goog.inherits(goog.positioning.ClientPosition,
-              goog.positioning.AbstractPosition);
-
-
-/**
- * Repositions the popup according to the current state
- *
- * @param {Element} movableElement The DOM element of the popup.
- * @param {goog.positioning.Corner} movableElementCorner The corner of
- *     the popup element that that should be positioned adjacent to
- *     the anchorElement.  One of the goog.positioning.Corner
- *     constants.
- * @param {goog.math.Box=} opt_margin A margin specified in pixels.
- * @param {goog.math.Size=} opt_preferredSize Preferred size of the element.
- * @override
- */
-goog.positioning.ClientPosition.prototype.reposition = function(
-    movableElement, movableElementCorner, opt_margin, opt_preferredSize) {
-  goog.asserts.assert(movableElement);
-
-  // Translates the coordinate to be relative to the page.
-  var viewportOffset = goog.style.getViewportPageOffset(
-      goog.dom.getOwnerDocument(movableElement));
-  var x = this.coordinate.x + viewportOffset.x;
-  var y = this.coordinate.y + viewportOffset.y;
-
-  // Translates the coordinate to be relative to the offset parent.
-  var movableParentTopLeft =
-      goog.positioning.getOffsetParentPageOffset(movableElement);
-  x -= movableParentTopLeft.x;
-  y -= movableParentTopLeft.y;
-
-  goog.positioning.positionAtCoordinate(
-      new goog.math.Coordinate(x, y), movableElement, movableElementCorner,
-      opt_margin, null, null, opt_preferredSize);
-};
-// Copyright 2006 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/**
- * @fileoverview Client viewport positioning class.
- *
- * @author robbyw@google.com (Robert Walker)
- * @author eae@google.com (Emil A Eklund)
- */
-
-goog.provide('goog.positioning.ViewportClientPosition');
-
-goog.require('goog.math.Box');
-goog.require('goog.math.Coordinate');
-goog.require('goog.math.Size');
-goog.require('goog.positioning.ClientPosition');
-
-
-
-/**
- * Encapsulates a popup position where the popup is positioned relative to the
- * window (client) coordinates, and made to stay within the viewport.
- *
- * @param {number|goog.math.Coordinate} arg1 Left position or coordinate.
- * @param {number=} opt_arg2 Top position if arg1 is a number representing the
- *     left position, ignored otherwise.
- * @constructor
- * @extends {goog.positioning.ClientPosition}
- */
-goog.positioning.ViewportClientPosition = function(arg1, opt_arg2) {
-  goog.positioning.ClientPosition.call(this, arg1, opt_arg2);
-};
-goog.inherits(goog.positioning.ViewportClientPosition,
-              goog.positioning.ClientPosition);
-
-
-/**
- * The last-resort overflow strategy, if the popup fails to fit.
- * @type {number}
- * @private
- */
-goog.positioning.ViewportClientPosition.prototype.lastResortOverflow_ = 0;
-
-
-/**
- * Set the last-resort overflow strategy, if the popup fails to fit.
- * @param {number} overflow A bitmask of goog.positioning.Overflow strategies.
- */
-goog.positioning.ViewportClientPosition.prototype.setLastResortOverflow =
-    function(overflow) {
-  this.lastResortOverflow_ = overflow;
-};
-
-
-/**
- * Repositions the popup according to the current state.
- *
- * @param {Element} element The DOM element of the popup.
- * @param {goog.positioning.Corner} popupCorner The corner of the popup
- *     element that that should be positioned adjacent to the anchorElement.
- *     One of the goog.positioning.Corner constants.
- * @param {goog.math.Box=} opt_margin A margin specified in pixels.
- * @param {goog.math.Size=} opt_preferredSize Preferred size fo the element.
- * @override
- */
-goog.positioning.ViewportClientPosition.prototype.reposition = function(
-    element, popupCorner, opt_margin, opt_preferredSize) {
-  var viewportElt = goog.style.getClientViewportElement(element);
-  var viewport = goog.style.getVisibleRectForElement(viewportElt);
-  var scrollEl = goog.dom.getDomHelper(element).getDocumentScrollElement();
-  var clientPos = new goog.math.Coordinate(
-      this.coordinate.x + scrollEl.scrollLeft,
-      this.coordinate.y + scrollEl.scrollTop);
-
-  var failXY = goog.positioning.Overflow.FAIL_X |
-               goog.positioning.Overflow.FAIL_Y;
-  var corner = popupCorner;
-
-  // Try the requested position.
-  var status = goog.positioning.positionAtCoordinate(clientPos, element, corner,
-      opt_margin, viewport, failXY, opt_preferredSize);
-  if ((status & goog.positioning.OverflowStatus.FAILED) == 0) {
-    return;
-  }
-
-  // Outside left or right edge of viewport, try try to flip it horizontally.
-  if (status & goog.positioning.OverflowStatus.FAILED_LEFT ||
-      status & goog.positioning.OverflowStatus.FAILED_RIGHT) {
-    corner = goog.positioning.flipCornerHorizontal(corner);
-  }
-
-  // Outside top or bottom edge of viewport, try try to flip it vertically.
-  if (status & goog.positioning.OverflowStatus.FAILED_TOP ||
-      status & goog.positioning.OverflowStatus.FAILED_BOTTOM) {
-    corner = goog.positioning.flipCornerVertical(corner);
-  }
-
-  // Try flipped position.
-  status = goog.positioning.positionAtCoordinate(clientPos, element, corner,
-      opt_margin, viewport, failXY, opt_preferredSize);
-  if ((status & goog.positioning.OverflowStatus.FAILED) == 0) {
-    return;
-  }
-
-  // If that failed, the viewport is simply too small to contain the popup.
-  // Revert to the original position.
-  goog.positioning.positionAtCoordinate(
-      clientPos, element, popupCorner, opt_margin, viewport,
-      this.lastResortOverflow_, opt_preferredSize);
-};
-// Copyright 2006 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/**
- * @fileoverview Client viewport positioning class.
- *
- */
-
-goog.provide('goog.positioning.AbsolutePosition');
-
-goog.require('goog.math.Box');
-goog.require('goog.math.Coordinate');
-goog.require('goog.math.Size');
-goog.require('goog.positioning');
-goog.require('goog.positioning.AbstractPosition');
-
-
-
-/**
- * Encapsulates a popup position where the popup absolutely positioned by
- * setting the left/top style elements directly to the specified values.
- * The position is generally relative to the element's offsetParent. Normally,
- * this is the document body, but can be another element if the popup element
- * is scoped by an element with relative position.
- *
- * @param {number|!goog.math.Coordinate} arg1 Left position or coordinate.
- * @param {number=} opt_arg2 Top position.
- * @constructor
- * @extends {goog.positioning.AbstractPosition}
- */
-goog.positioning.AbsolutePosition = function(arg1, opt_arg2) {
-  /**
-   * Coordinate to position popup at.
-   * @type {goog.math.Coordinate}
-   */
-  this.coordinate = arg1 instanceof goog.math.Coordinate ? arg1 :
-      new goog.math.Coordinate(/** @type {number} */ (arg1), opt_arg2);
-};
-goog.inherits(goog.positioning.AbsolutePosition,
-              goog.positioning.AbstractPosition);
-
-
-/**
- * Repositions the popup according to the current state.
- *
- * @param {Element} movableElement The DOM element to position.
- * @param {goog.positioning.Corner} movableCorner The corner of the movable
- *     element that should be positioned at the specified position.
- * @param {goog.math.Box=} opt_margin A margin specified in pixels.
- * @param {goog.math.Size=} opt_preferredSize Prefered size of the
- *     movableElement.
- * @override
- */
-goog.positioning.AbsolutePosition.prototype.reposition = function(
-    movableElement, movableCorner, opt_margin, opt_preferredSize) {
-  goog.positioning.positionAtCoordinate(this.coordinate,
-                                        movableElement,
-                                        movableCorner,
-                                        opt_margin,
-                                        null,
-                                        null,
-                                        opt_preferredSize);
-};
-// Copyright 2006 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/**
- * @fileoverview Definition of the Popup class.
- *
- * @see ../demos/popup.html
- */
-
-goog.provide('goog.ui.Popup');
-goog.provide('goog.ui.Popup.AbsolutePosition');
-goog.provide('goog.ui.Popup.AnchoredPosition');
-goog.provide('goog.ui.Popup.AnchoredViewPortPosition');
-goog.provide('goog.ui.Popup.ClientPosition');
-goog.provide('goog.ui.Popup.Corner');
-goog.provide('goog.ui.Popup.Overflow');
-goog.provide('goog.ui.Popup.ViewPortClientPosition');
-goog.provide('goog.ui.Popup.ViewPortPosition');
-
-goog.require('goog.math.Box');
-goog.require('goog.positioning.AbsolutePosition');
-goog.require('goog.positioning.AnchoredPosition');
-goog.require('goog.positioning.AnchoredViewportPosition');
-goog.require('goog.positioning.ClientPosition');
-goog.require('goog.positioning.Corner');
-goog.require('goog.positioning.Overflow');
-goog.require('goog.positioning.ViewportClientPosition');
-goog.require('goog.positioning.ViewportPosition');
-goog.require('goog.style');
-goog.require('goog.ui.PopupBase');
-
-
-
-/**
- * The Popup class provides functionality for displaying an absolutely
- * positioned element at a particular location in the window. It's designed to
- * be used as the foundation for building controls like a menu or tooltip. The
- * Popup class includes functionality for displaying a Popup near adjacent to
- * an anchor element.
- *
- * This works cross browser and thus does not use IE's createPopup feature
- * which supports extending outside the edge of the brower window.
- *
- * @param {Element=} opt_element A DOM element for the popup.
- * @param {goog.positioning.AbstractPosition=} opt_position A positioning helper
- *     object.
- * @constructor
- * @extends {goog.ui.PopupBase}
- */
-goog.ui.Popup = function(opt_element, opt_position) {
-  /**
-   * Corner of the popup to used in the positioning algorithm.
-   *
-   * @type {goog.positioning.Corner}
-   * @private
-   */
-  this.popupCorner_ = goog.positioning.Corner.TOP_START;
-
-  /**
-   * Positioning helper object.
-   *
-   * @type {goog.positioning.AbstractPosition|undefined}
-   * @protected
-   * @suppress {underscore|visibility}
-   */
-  this.position_ = opt_position || undefined;
-  goog.ui.PopupBase.call(this, opt_element);
-};
-goog.inherits(goog.ui.Popup, goog.ui.PopupBase);
-
-
-/**
- * Enum for representing an element corner for positioning the popup.
- *
- * @enum {number}
- *
- * @deprecated Use {@link goog.positioning.Corner} instead, this alias will be
- *     removed at the end of Q1 2009.
- */
-goog.ui.Popup.Corner = goog.positioning.Corner;
-
-
-/**
- * Enum for representing position handling in cases where the element would be
- * positioned outside the viewport.
- *
- * @enum {number}
- *
- * @deprecated Use {@link goog.positioning.Overflow} instead, this alias will be
- *     removed at the end of Q1 2009.
- */
-goog.ui.Popup.Overflow = goog.positioning.Overflow;
-
-
-/**
- * Margin for the popup used in positioning algorithms.
- *
- * @type {goog.math.Box|undefined}
- * @private
- */
-goog.ui.Popup.prototype.margin_;
-
-
-/**
- * Returns the corner of the popup to used in the positioning algorithm.
- *
- * @return {goog.positioning.Corner} The popup corner used for positioning.
- */
-goog.ui.Popup.prototype.getPinnedCorner = function() {
-  return this.popupCorner_;
-};
-
-
-/**
- * Sets the corner of the popup to used in the positioning algorithm.
- *
- * @param {goog.positioning.Corner} corner The popup corner used for
- *     positioning.
- */
-goog.ui.Popup.prototype.setPinnedCorner = function(corner) {
-  this.popupCorner_ = corner;
-  if (this.isVisible()) {
-    this.reposition();
-  }
-};
-
-
-/**
- * @return {goog.positioning.AbstractPosition} The position helper object
- *     associated with the popup.
- */
-goog.ui.Popup.prototype.getPosition = function() {
-  return this.position_ || null;
-};
-
-
-/**
- * Sets the position helper object associated with the popup.
- *
- * @param {goog.positioning.AbstractPosition} position A position helper object.
- */
-goog.ui.Popup.prototype.setPosition = function(position) {
-  this.position_ = position || undefined;
-  if (this.isVisible()) {
-    this.reposition();
-  }
-};
-
-
-/**
- * Returns the margin to place around the popup.
- *
- * @return {goog.math.Box?} The margin.
- */
-goog.ui.Popup.prototype.getMargin = function() {
-  return this.margin_ || null;
-};
-
-
-/**
- * Sets the margin to place around the popup.
- *
- * @param {goog.math.Box|number|null} arg1 Top value or Box.
- * @param {number=} opt_arg2 Right value.
- * @param {number=} opt_arg3 Bottom value.
- * @param {number=} opt_arg4 Left value.
- */
-goog.ui.Popup.prototype.setMargin = function(arg1, opt_arg2, opt_arg3,
-                                             opt_arg4) {
-  if (arg1 == null || arg1 instanceof goog.math.Box) {
-    this.margin_ = arg1;
-  } else {
-    this.margin_ = new goog.math.Box(arg1,
-        /** @type {number} */ (opt_arg2),
-        /** @type {number} */ (opt_arg3),
-        /** @type {number} */ (opt_arg4));
-  }
-  if (this.isVisible()) {
-    this.reposition();
-  }
-};
-
-
-/**
- * Repositions the popup according to the current state.
- * @override
- */
-goog.ui.Popup.prototype.reposition = function() {
-  if (!this.position_) {
-    return;
-  }
-
-  var hideForPositioning = !this.isVisible() &&
-      this.getType() != goog.ui.PopupBase.Type.MOVE_OFFSCREEN;
-  var el = this.getElement();
-  if (hideForPositioning) {
-    el.style.visibility = 'hidden';
-    goog.style.setElementShown(el, true);
-  }
-
-  this.position_.reposition(el, this.popupCorner_, this.margin_);
-
-  if (hideForPositioning) {
-    // NOTE(eae): The visibility property is reset to 'visible' by the show_
-    // method in PopupBase. Resetting it here causes flickering in some
-    // situations, even if set to visible after the display property has been
-    // set to none by the call below.
-    goog.style.setElementShown(el, false);
-  }
-};
-
-
-
-/**
- * Encapsulates a popup position where the popup is anchored at a corner of
- * an element.
- *
- * When using AnchoredPosition, it is recommended that the popup element
- * specified in the Popup constructor or Popup.setElement be absolutely
- * positioned.
- *
- * @param {Element} element The element to anchor the popup at.
- * @param {goog.positioning.Corner} corner The corner of the element to anchor
- *     the popup at.
- * @constructor
- * @extends {goog.positioning.AbstractPosition}
- *
- * @deprecated Use {@link goog.positioning.AnchoredPosition} instead, this
- *     alias will be removed at the end of Q1 2009.
- * @final
- */
-goog.ui.Popup.AnchoredPosition = goog.positioning.AnchoredPosition;
-
-
-
-/**
- * Encapsulates a popup position where the popup is anchored at a corner of
- * an element. The corners are swapped if dictated by the viewport. For instance
- * if a popup is anchored with its top left corner to the bottom left corner of
- * the anchor the popup is either displayed below the anchor (as specified) or
- * above it if there's not enough room to display it below.
- *
- * When using AnchoredPosition, it is recommended that the popup element
- * specified in the Popup constructor or Popup.setElement be absolutely
- * positioned.
- *
- * @param {Element} element The element to anchor the popup at.
- * @param {goog.positioning.Corner} corner The corner of the element to anchor
- *    the popup at.
- * @param {boolean=} opt_adjust Whether the positioning should be adjusted until
- *    the element fits inside the viewport even if that means that the anchored
- *    corners are ignored.
- * @constructor
- * @extends {goog.ui.Popup.AnchoredPosition}
- *
- * @deprecated Use {@link goog.positioning.AnchoredViewportPosition} instead,
- *     this alias will be removed at the end of Q1 2009.
- */
-goog.ui.Popup.AnchoredViewPortPosition =
-    goog.positioning.AnchoredViewportPosition;
-
-
-
-/**
- * Encapsulates a popup position where the popup absolutely positioned by
- * setting the left/top style elements directly to the specified values.
- * The position is generally relative to the element's offsetParent. Normally,
- * this is the document body, but can be another element if the popup element
- * is scoped by an element with relative position.
- *
- * @param {number|!goog.math.Coordinate} arg1 Left position or coordinate.
- * @param {number=} opt_arg2 Top position.
- * @constructor
- * @extends {goog.positioning.AbstractPosition}
- *
- * @deprecated Use {@link goog.positioning.AbsolutePosition} instead, this alias
- *     will be removed at the end of Q1 2009.
- * @final
- */
-goog.ui.Popup.AbsolutePosition = goog.positioning.AbsolutePosition;
-
-
-
-/**
- * Encapsulates a popup position where the popup is positioned according to
- * coordinates relative to the  element's view port (page). This calculates the
- * correct position to use even if the element is relatively positioned to some
- * other element.
- *
- * @param {number|!goog.math.Coordinate} arg1 Left position or coordinate.
- * @param {number=} opt_arg2 Top position.
- * @constructor
- * @extends {goog.ui.Popup.AbsolutePosition}
- *
- * @deprecated Use {@link goog.positioning.ViewPortPosition} instead, this alias
- *     will be removed at the end of Q1 2009.
- */
-goog.ui.Popup.ViewPortPosition = goog.positioning.ViewportPosition;
-
-
-
-/**
- * Encapsulates a popup position where the popup is positioned relative to the
- * window (client) coordinates. This calculates the correct position to
- * use even if the element is relatively positioned to some other element. This
- * is for trying to position an element at the spot of the mouse cursor in
- * a MOUSEMOVE event. Just use the event.clientX and event.clientY as the
- * parameters.
- *
- * @param {number|!goog.math.Coordinate} arg1 Left position or coordinate.
- * @param {number=} opt_arg2 Top position.
- * @constructor
- * @extends {goog.ui.Popup.AbsolutePosition}
- *
- * @deprecated Use {@link goog.positioning.ClientPosition} instead, this alias
- *     will be removed at the end of Q1 2009.
- * @final
- */
-goog.ui.Popup.ClientPosition = goog.positioning.ClientPosition;
-
-
-
-/**
- * Encapsulates a popup position where the popup is positioned relative to the
- * window (client) coordinates, and made to stay within the viewport.
- *
- * @param {number|!goog.math.Coordinate} arg1 Left position or coordinate.
- * @param {number=} opt_arg2 Top position if arg1 is a number representing the
- *     left position, ignored otherwise.
- * @constructor
- * @extends {goog.ui.Popup.ClientPosition}
- *
- * @deprecated Use {@link goog.positioning.ViewPortClientPosition} instead, this
- *     alias will be removed at the end of Q1 2009.
- */
-goog.ui.Popup.ViewPortClientPosition = goog.positioning.ViewportClientPosition;
-// Copyright 2011 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/**
- * @fileoverview Defines the collection interface.
- *
- * @author nnaze@google.com (Nathan Naze)
- */
-
-goog.provide('goog.structs.Collection');
-
-
-
-/**
- * An interface for a collection of values.
- * @interface
- * @template T
- */
-goog.structs.Collection = function() {};
-
-
-/**
- * @param {T} value Value to add to the collection.
- */
-goog.structs.Collection.prototype.add;
-
-
-/**
- * @param {T} value Value to remove from the collection.
- */
-goog.structs.Collection.prototype.remove;
-
-
-/**
- * @param {T} value Value to find in the collection.
- * @return {boolean} Whether the collection contains the specified value.
- */
-goog.structs.Collection.prototype.contains;
-
-
-/**
- * @return {number} The number of values stored in the collection.
- */
-goog.structs.Collection.prototype.getCount;
-
-// Copyright 2006 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/**
- * @fileoverview Generics method for collection-like classes and objects.
- *
- * @author arv@google.com (Erik Arvidsson)
- *
- * This file contains functions to work with collections. It supports using
- * Map, Set, Array and Object and other classes that implement collection-like
- * methods.
- */
-
-
-goog.provide('goog.structs');
-
-goog.require('goog.array');
-goog.require('goog.object');
-
-
-// We treat an object as a dictionary if it has getKeys or it is an object that
-// isn't arrayLike.
-
-
-/**
- * Returns the number of values in the collection-like object.
- * @param {Object} col The collection-like object.
- * @return {number} The number of values in the collection-like object.
- */
-goog.structs.getCount = function(col) {
-  if (typeof col.getCount == 'function') {
-    return col.getCount();
-  }
-  if (goog.isArrayLike(col) || goog.isString(col)) {
-    return col.length;
-  }
-  return goog.object.getCount(col);
-};
-
-
-/**
- * Returns the values of the collection-like object.
- * @param {Object} col The collection-like object.
- * @return {!Array} The values in the collection-like object.
- */
-goog.structs.getValues = function(col) {
-  if (typeof col.getValues == 'function') {
-    return col.getValues();
-  }
-  if (goog.isString(col)) {
-    return col.split('');
-  }
-  if (goog.isArrayLike(col)) {
-    var rv = [];
-    var l = col.length;
-    for (var i = 0; i < l; i++) {
-      rv.push(col[i]);
-    }
-    return rv;
-  }
-  return goog.object.getValues(col);
-};
-
-
-/**
- * Returns the keys of the collection. Some collections have no notion of
- * keys/indexes and this function will return undefined in those cases.
- * @param {Object} col The collection-like object.
- * @return {!Array|undefined} The keys in the collection.
- */
-goog.structs.getKeys = function(col) {
-  if (typeof col.getKeys == 'function') {
-    return col.getKeys();
-  }
-  // if we have getValues but no getKeys we know this is a key-less collection
-  if (typeof col.getValues == 'function') {
-    return undefined;
-  }
-  if (goog.isArrayLike(col) || goog.isString(col)) {
-    var rv = [];
-    var l = col.length;
-    for (var i = 0; i < l; i++) {
-      rv.push(i);
-    }
-    return rv;
-  }
-
-  return goog.object.getKeys(col);
-};
-
-
-/**
- * Whether the collection contains the given value. This is O(n) and uses
- * equals (==) to test the existence.
- * @param {Object} col The collection-like object.
- * @param {*} val The value to check for.
- * @return {boolean} True if the map contains the value.
- */
-goog.structs.contains = function(col, val) {
-  if (typeof col.contains == 'function') {
-    return col.contains(val);
-  }
-  if (typeof col.containsValue == 'function') {
-    return col.containsValue(val);
-  }
-  if (goog.isArrayLike(col) || goog.isString(col)) {
-    return goog.array.contains(/** @type {Array} */ (col), val);
-  }
-  return goog.object.containsValue(col, val);
-};
-
-
-/**
- * Whether the collection is empty.
- * @param {Object} col The collection-like object.
- * @return {boolean} True if empty.
- */
-goog.structs.isEmpty = function(col) {
-  if (typeof col.isEmpty == 'function') {
-    return col.isEmpty();
-  }
-
-  // We do not use goog.string.isEmpty because here we treat the string as
-  // collection and as such even whitespace matters
-
-  if (goog.isArrayLike(col) || goog.isString(col)) {
-    return goog.array.isEmpty(/** @type {Array} */ (col));
-  }
-  return goog.object.isEmpty(col);
-};
-
-
-/**
- * Removes all the elements from the collection.
- * @param {Object} col The collection-like object.
- */
-goog.structs.clear = function(col) {
-  // NOTE(arv): This should not contain strings because strings are immutable
-  if (typeof col.clear == 'function') {
-    col.clear();
-  } else if (goog.isArrayLike(col)) {
-    goog.array.clear(/** @type {goog.array.ArrayLike} */ (col));
-  } else {
-    goog.object.clear(col);
-  }
-};
-
-
-/**
- * Calls a function for each value in a collection. The function takes
- * three arguments; the value, the key and the collection.
- *
- * @param {S} col The collection-like object.
- * @param {function(this:T,?,?,S):?} f The function to call for every value.
- *     This function takes
- *     3 arguments (the value, the key or undefined if the collection has no
- *     notion of keys, and the collection) and the return value is irrelevant.
- * @param {T=} opt_obj The object to be used as the value of 'this'
- *     within {@code f}.
- * @template T,S
- */
-goog.structs.forEach = function(col, f, opt_obj) {
-  if (typeof col.forEach == 'function') {
-    col.forEach(f, opt_obj);
-  } else if (goog.isArrayLike(col) || goog.isString(col)) {
-    goog.array.forEach(/** @type {Array} */ (col), f, opt_obj);
-  } else {
-    var keys = goog.structs.getKeys(col);
-    var values = goog.structs.getValues(col);
-    var l = values.length;
-    for (var i = 0; i < l; i++) {
-      f.call(opt_obj, values[i], keys && keys[i], col);
-    }
-  }
-};
-
-
-/**
- * Calls a function for every value in the collection. When a call returns true,
- * adds the value to a new collection (Array is returned by default).
- *
- * @param {S} col The collection-like object.
- * @param {function(this:T,?,?,S):boolean} f The function to call for every
- *     value. This function takes
- *     3 arguments (the value, the key or undefined if the collection has no
- *     notion of keys, and the collection) and should return a Boolean. If the
- *     return value is true the value is added to the result collection. If it
- *     is false the value is not included.
- * @param {T=} opt_obj The object to be used as the value of 'this'
- *     within {@code f}.
- * @return {!Object|!Array} A new collection where the passed values are
- *     present. If col is a key-less collection an array is returned.  If col
- *     has keys and values a plain old JS object is returned.
- * @template T,S
- */
-goog.structs.filter = function(col, f, opt_obj) {
-  if (typeof col.filter == 'function') {
-    return col.filter(f, opt_obj);
-  }
-  if (goog.isArrayLike(col) || goog.isString(col)) {
-    return goog.array.filter(/** @type {!Array} */ (col), f, opt_obj);
-  }
-
-  var rv;
-  var keys = goog.structs.getKeys(col);
-  var values = goog.structs.getValues(col);
-  var l = values.length;
-  if (keys) {
-    rv = {};
-    for (var i = 0; i < l; i++) {
-      if (f.call(opt_obj, values[i], keys[i], col)) {
-        rv[keys[i]] = values[i];
-      }
-    }
-  } else {
-    // We should not use goog.array.filter here since we want to make sure that
-    // the index is undefined as well as make sure that col is passed to the
-    // function.
-    rv = [];
-    for (var i = 0; i < l; i++) {
-      if (f.call(opt_obj, values[i], undefined, col)) {
-        rv.push(values[i]);
-      }
-    }
-  }
-  return rv;
-};
-
-
-/**
- * Calls a function for every value in the collection and adds the result into a
- * new collection (defaults to creating a new Array).
- *
- * @param {S} col The collection-like object.
- * @param {function(this:T,?,?,S):V} f The function to call for every value.
- *     This function takes 3 arguments (the value, the key or undefined if the
- *     collection has no notion of keys, and the collection) and should return
- *     something. The result will be used as the value in the new collection.
- * @param {T=} opt_obj  The object to be used as the value of 'this'
- *     within {@code f}.
- * @return {!Object.<V>|!Array.<V>} A new collection with the new values.  If
- *     col is a key-less collection an array is returned.  If col has keys and
- *     values a plain old JS object is returned.
- * @template T,S,V
- */
-goog.structs.map = function(col, f, opt_obj) {
-  if (typeof col.map == 'function') {
-    return col.map(f, opt_obj);
-  }
-  if (goog.isArrayLike(col) || goog.isString(col)) {
-    return goog.array.map(/** @type {!Array} */ (col), f, opt_obj);
-  }
-
-  var rv;
-  var keys = goog.structs.getKeys(col);
-  var values = goog.structs.getValues(col);
-  var l = values.length;
-  if (keys) {
-    rv = {};
-    for (var i = 0; i < l; i++) {
-      rv[keys[i]] = f.call(opt_obj, values[i], keys[i], col);
-    }
-  } else {
-    // We should not use goog.array.map here since we want to make sure that
-    // the index is undefined as well as make sure that col is passed to the
-    // function.
-    rv = [];
-    for (var i = 0; i < l; i++) {
-      rv[i] = f.call(opt_obj, values[i], undefined, col);
-    }
-  }
-  return rv;
-};
-
-
-/**
- * Calls f for each value in a collection. If any call returns true this returns
- * true (without checking the rest). If all returns false this returns false.
- *
- * @param {S} col The collection-like object.
- * @param {function(this:T,?,?,S):boolean} f The function to call for every
- *     value. This function takes 3 arguments (the value, the key or undefined
- *     if the collection has no notion of keys, and the collection) and should
- *     return a boolean.
- * @param {T=} opt_obj  The object to be used as the value of 'this'
- *     within {@code f}.
- * @return {boolean} True if any value passes the test.
- * @template T,S
- */
-goog.structs.some = function(col, f, opt_obj) {
-  if (typeof col.some == 'function') {
-    return col.some(f, opt_obj);
-  }
-  if (goog.isArrayLike(col) || goog.isString(col)) {
-    return goog.array.some(/** @type {!Array} */ (col), f, opt_obj);
-  }
-  var keys = goog.structs.getKeys(col);
-  var values = goog.structs.getValues(col);
-  var l = values.length;
-  for (var i = 0; i < l; i++) {
-    if (f.call(opt_obj, values[i], keys && keys[i], col)) {
-      return true;
-    }
-  }
-  return false;
-};
-
-
-/**
- * Calls f for each value in a collection. If all calls return true this return
- * true this returns true. If any returns false this returns false at this point
- *  and does not continue to check the remaining values.
- *
- * @param {S} col The collection-like object.
- * @param {function(this:T,?,?,S):boolean} f The function to call for every
- *     value. This function takes 3 arguments (the value, the key or
- *     undefined if the collection has no notion of keys, and the collection)
- *     and should return a boolean.
- * @param {T=} opt_obj  The object to be used as the value of 'this'
- *     within {@code f}.
- * @return {boolean} True if all key-value pairs pass the test.
- * @template T,S
- */
-goog.structs.every = function(col, f, opt_obj) {
-  if (typeof col.every == 'function') {
-    return col.every(f, opt_obj);
-  }
-  if (goog.isArrayLike(col) || goog.isString(col)) {
-    return goog.array.every(/** @type {!Array} */ (col), f, opt_obj);
-  }
-  var keys = goog.structs.getKeys(col);
-  var values = goog.structs.getValues(col);
-  var l = values.length;
-  for (var i = 0; i < l; i++) {
-    if (!f.call(opt_obj, values[i], keys && keys[i], col)) {
-      return false;
-    }
-  }
-  return true;
-};
-// Copyright 2007 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/**
- * @fileoverview Python style iteration utilities.
- * @author arv@google.com (Erik Arvidsson)
- */
-
-
-goog.provide('goog.iter');
-goog.provide('goog.iter.Iterable');
-goog.provide('goog.iter.Iterator');
-goog.provide('goog.iter.StopIteration');
-
-goog.require('goog.array');
-goog.require('goog.asserts');
-goog.require('goog.functions');
-goog.require('goog.math');
-
-
-// TODO(nnaze): Add more functions from Python's itertools.
-// http://docs.python.org/library/itertools.html
-
-
-/**
- * @typedef {goog.iter.Iterator|{length:number}|{__iterator__}}
- */
-goog.iter.Iterable;
-
-
-// For script engines that already support iterators.
-if ('StopIteration' in goog.global) {
-  /**
-   * Singleton Error object that is used to terminate iterations.
-   * @type {Error}
-   */
-  goog.iter.StopIteration = goog.global['StopIteration'];
-} else {
-  /**
-   * Singleton Error object that is used to terminate iterations.
-   * @type {Error}
-   * @suppress {duplicate}
-   */
-  goog.iter.StopIteration = Error('StopIteration');
-}
-
-
-
-/**
- * Class/interface for iterators.  An iterator needs to implement a {@code next}
- * method and it needs to throw a {@code goog.iter.StopIteration} when the
- * iteration passes beyond the end.  Iterators have no {@code hasNext} method.
- * It is recommended to always use the helper functions to iterate over the
- * iterator or in case you are only targeting JavaScript 1.7 for in loops.
- * @constructor
- */
-goog.iter.Iterator = function() {};
-
-
-/**
- * Returns the next value of the iteration.  This will throw the object
- * {@see goog.iter#StopIteration} when the iteration passes the end.
- * @return {*} Any object or value.
- */
-goog.iter.Iterator.prototype.next = function() {
-  throw goog.iter.StopIteration;
-};
-
-
-/**
- * Returns the {@code Iterator} object itself.  This is used to implement
- * the iterator protocol in JavaScript 1.7
- * @param {boolean=} opt_keys  Whether to return the keys or values. Default is
- *     to only return the values.  This is being used by the for-in loop (true)
- *     and the for-each-in loop (false).  Even though the param gives a hint
- *     about what the iterator will return there is no guarantee that it will
- *     return the keys when true is passed.
- * @return {!goog.iter.Iterator} The object itself.
- */
-goog.iter.Iterator.prototype.__iterator__ = function(opt_keys) {
-  return this;
-};
-
-
-/**
- * Returns an iterator that knows how to iterate over the values in the object.
- * @param {goog.iter.Iterable} iterable  If the object is an iterator it
- *     will be returned as is.  If the object has a {@code __iterator__} method
- *     that will be called to get the value iterator.  If the object is an
- *     array-like object we create an iterator for that.
- * @return {!goog.iter.Iterator} An iterator that knows how to iterate over the
- *     values in {@code iterable}.
- */
-goog.iter.toIterator = function(iterable) {
-  if (iterable instanceof goog.iter.Iterator) {
-    return iterable;
-  }
-  if (typeof iterable.__iterator__ == 'function') {
-    return iterable.__iterator__(false);
-  }
-  if (goog.isArrayLike(iterable)) {
-    var i = 0;
-    var newIter = new goog.iter.Iterator;
-    newIter.next = function() {
-      while (true) {
-        if (i >= iterable.length) {
-          throw goog.iter.StopIteration;
-        }
-        // Don't include deleted elements.
-        if (!(i in iterable)) {
-          i++;
-          continue;
-        }
-        return iterable[i++];
-      }
-    };
-    return newIter;
-  }
-
-
-  // TODO(arv): Should we fall back on goog.structs.getValues()?
-  throw Error('Not implemented');
-};
-
-
-/**
- * Calls a function for each element in the iterator with the element of the
- * iterator passed as argument.
- *
- * @param {goog.iter.Iterable} iterable  The iterator to iterate
- *     over.  If the iterable is an object {@code toIterator} will be called on
- *     it.
-* @param {function(this:T,?,?,?):?} f  The function to call for every
- *     element.  This function
- *     takes 3 arguments (the element, undefined, and the iterator) and the
- *     return value is irrelevant.  The reason for passing undefined as the
- *     second argument is so that the same function can be used in
- *     {@see goog.array#forEach} as well as others.
- * @param {T=} opt_obj  The object to be used as the value of 'this' within
- *     {@code f}.
- * @template T
- */
-goog.iter.forEach = function(iterable, f, opt_obj) {
-  if (goog.isArrayLike(iterable)) {
-    /** @preserveTry */
-    try {
-      // NOTES: this passes the index number to the second parameter
-      // of the callback contrary to the documentation above.
-      goog.array.forEach(/** @type {goog.array.ArrayLike} */(iterable), f,
-                         opt_obj);
-    } catch (ex) {
-      if (ex !== goog.iter.StopIteration) {
-        throw ex;
-      }
-    }
-  } else {
-    iterable = goog.iter.toIterator(iterable);
-    /** @preserveTry */
-    try {
-      while (true) {
-        f.call(opt_obj, iterable.next(), undefined, iterable);
-      }
-    } catch (ex) {
-      if (ex !== goog.iter.StopIteration) {
-        throw ex;
-      }
-    }
-  }
-};
-
-
-/**
- * Calls a function for every element in the iterator, and if the function
- * returns true adds the element to a new iterator.
- *
- * @param {goog.iter.Iterable} iterable The iterator to iterate over.
- * @param {function(this:T,?,undefined,?):boolean} f The function to call for
- *     every element. This function
- *     takes 3 arguments (the element, undefined, and the iterator) and should
- *     return a boolean.  If the return value is true the element will be
- *     included  in the returned iteror.  If it is false the element is not
- *     included.
- * @param {T=} opt_obj The object to be used as the value of 'this' within
- *     {@code f}.
- * @return {!goog.iter.Iterator} A new iterator in which only elements that
- *     passed the test are present.
- * @template T
- */
-goog.iter.filter = function(iterable, f, opt_obj) {
-  var iterator = goog.iter.toIterator(iterable);
-  var newIter = new goog.iter.Iterator;
-  newIter.next = function() {
-    while (true) {
-      var val = iterator.next();
-      if (f.call(opt_obj, val, undefined, iterator)) {
-        return val;
-      }
-    }
-  };
-  return newIter;
-};
-
-
-/**
- * Creates a new iterator that returns the values in a range.  This function
- * can take 1, 2 or 3 arguments:
- * <pre>
- * range(5) same as range(0, 5, 1)
- * range(2, 5) same as range(2, 5, 1)
- * </pre>
- *
- * @param {number} startOrStop  The stop value if only one argument is provided.
- *     The start value if 2 or more arguments are provided.  If only one
- *     argument is used the start value is 0.
- * @param {number=} opt_stop  The stop value.  If left out then the first
- *     argument is used as the stop value.
- * @param {number=} opt_step  The number to increment with between each call to
- *     next.  This can be negative.
- * @return {!goog.iter.Iterator} A new iterator that returns the values in the
- *     range.
- */
-goog.iter.range = function(startOrStop, opt_stop, opt_step) {
-  var start = 0;
-  var stop = startOrStop;
-  var step = opt_step || 1;
-  if (arguments.length > 1) {
-    start = startOrStop;
-    stop = opt_stop;
-  }
-  if (step == 0) {
-    throw Error('Range step argument must not be zero');
-  }
-
-  var newIter = new goog.iter.Iterator;
-  newIter.next = function() {
-    if (step > 0 && start >= stop || step < 0 && start <= stop) {
-      throw goog.iter.StopIteration;
-    }
-    var rv = start;
-    start += step;
-    return rv;
-  };
-  return newIter;
-};
-
-
-/**
- * Joins the values in a iterator with a delimiter.
- * @param {goog.iter.Iterable} iterable  The iterator to get the values from.
- * @param {string} deliminator  The text to put between the values.
- * @return {string} The joined value string.
- */
-goog.iter.join = function(iterable, deliminator) {
-  return goog.iter.toArray(iterable).join(deliminator);
-};
-
-
-/**
- * For every element in the iterator call a function and return a new iterator
- * with that value.
- *
- * @param {goog.iter.Iterable} iterable The iterator to iterate over.
- * @param {function(this:T,?,undefined,?):?} f The function to call for every
- *     element.  This function
- *     takes 3 arguments (the element, undefined, and the iterator) and should
- *     return a new value.
- * @param {T=} opt_obj The object to be used as the value of 'this' within
- *     {@code f}.
- * @return {!goog.iter.Iterator} A new iterator that returns the results of
- *     applying the function to each element in the original iterator.
- * @template T
- */
-goog.iter.map = function(iterable, f, opt_obj) {
-  var iterator = goog.iter.toIterator(iterable);
-  var newIter = new goog.iter.Iterator;
-  newIter.next = function() {
-    while (true) {
-      var val = iterator.next();
-      return f.call(opt_obj, val, undefined, iterator);
-    }
-  };
-  return newIter;
-};
-
-
-/**
- * Passes every element of an iterator into a function and accumulates the
- * result.
- *
- * @param {goog.iter.Iterable} iterable The iterator to iterate over.
- * @param {function(this:T,V,?):V} f The function to call for every
- *     element. This function takes 2 arguments (the function's previous result
- *     or the initial value, and the value of the current element).
- *     function(previousValue, currentElement) : newValue.
- * @param {V} val The initial value to pass into the function on the first call.
- * @param {T=} opt_obj  The object to be used as the value of 'this'
- *     within f.
- * @return {V} Result of evaluating f repeatedly across the values of
- *     the iterator.
- * @template T,V
- */
-goog.iter.reduce = function(iterable, f, val, opt_obj) {
-  var rval = val;
-  goog.iter.forEach(iterable, function(val) {
-    rval = f.call(opt_obj, rval, val);
-  });
-  return rval;
-};
-
-
-/**
- * Goes through the values in the iterator. Calls f for each these and if any of
- * them returns true, this returns true (without checking the rest). If all
- * return false this will return false.
- *
- * @param {goog.iter.Iterable} iterable  The iterator object.
- * @param {function(this:T,?,undefined,?):boolean} f  The function to call for
- *     every value. This function
- *     takes 3 arguments (the value, undefined, and the iterator) and should
- *     return a boolean.
- * @param {T=} opt_obj The object to be used as the value of 'this' within
- *     {@code f}.
- * @return {boolean} true if any value passes the test.
- * @template T
- */
-goog.iter.some = function(iterable, f, opt_obj) {
-  iterable = goog.iter.toIterator(iterable);
-  /** @preserveTry */
-  try {
-    while (true) {
-      if (f.call(opt_obj, iterable.next(), undefined, iterable)) {
-        return true;
-      }
-    }
-  } catch (ex) {
-    if (ex !== goog.iter.StopIteration) {
-      throw ex;
-    }
-  }
-  return false;
-};
-
-
-/**
- * Goes through the values in the iterator. Calls f for each these and if any of
- * them returns false this returns false (without checking the rest). If all
- * return true this will return true.
- *
- * @param {goog.iter.Iterable} iterable  The iterator object.
- * @param {function(this:T,?,undefined,?):boolean} f  The function to call for
- *     every value. This function
- *     takes 3 arguments (the value, undefined, and the iterator) and should
- *     return a boolean.
- * @param {T=} opt_obj The object to be used as the value of 'this' within
- *     {@code f}.
- * @return {boolean} true if every value passes the test.
- * @template T
- */
-goog.iter.every = function(iterable, f, opt_obj) {
-  iterable = goog.iter.toIterator(iterable);
-  /** @preserveTry */
-  try {
-    while (true) {
-      if (!f.call(opt_obj, iterable.next(), undefined, iterable)) {
-        return false;
-      }
-    }
-  } catch (ex) {
-    if (ex !== goog.iter.StopIteration) {
-      throw ex;
-    }
-  }
-  return true;
-};
-
-
-/**
- * Takes zero or more iterables and returns one iterator that will iterate over
- * them in the order chained.
- * @param {...!goog.iter.Iterable} var_args Any number of iterable objects.
- * @return {!goog.iter.Iterator} Returns a new iterator that will iterate over
- *     all the given iterables' contents.
- */
-goog.iter.chain = function(var_args) {
-  var iterator = goog.iter.toIterator(arguments);
-  var iter = new goog.iter.Iterator();
-  var current = null;
-
-  iter.next = function() {
-    while (true) {
-      if (current == null) {
-        var it = /** @type {!goog.iter.Iterable} */ (iterator.next());
-        current = goog.iter.toIterator(it);
-      }
-      try {
-        return current.next();
-      } catch (ex) {
-        if (ex !== goog.iter.StopIteration) {
-          throw ex;
-        }
-        current = null;
-      }
-    }
-  };
-
-  return iter;
-};
-
-
-/**
- * Takes a single iterable containing zero or more iterables and returns one
- * iterator that will iterate over each one in the order given.
- * @see http://docs.python.org/2/library/itertools.html#itertools.chain.from_iterable
- * @param {!goog.iter.Iterable.<!goog.iter.Iterable>} iterable The iterable of
- *     iterables to chain.
- * @return {!goog.iter.Iterator} Returns a new iterator that will iterate over
- *     all the contents of the iterables contained within {@code iterable}.
- */
-goog.iter.chainFromIterable = function(iterable) {
-  return goog.iter.chain.apply(undefined, iterable);
-};
-
-
-/**
- * Builds a new iterator that iterates over the original, but skips elements as
- * long as a supplied function returns true.
- * @param {goog.iter.Iterable} iterable  The iterator object.
- * @param {function(this:T,?,undefined,?):boolean} f  The function to call for
- *     every value. This function
- *     takes 3 arguments (the value, undefined, and the iterator) and should
- *     return a boolean.
- * @param {T=} opt_obj The object to be used as the value of 'this' within
- *     {@code f}.
- * @return {!goog.iter.Iterator} A new iterator that drops elements from the
- *     original iterator as long as {@code f} is true.
- * @template T
- */
-goog.iter.dropWhile = function(iterable, f, opt_obj) {
-  var iterator = goog.iter.toIterator(iterable);
-  var newIter = new goog.iter.Iterator;
-  var dropping = true;
-  newIter.next = function() {
-    while (true) {
-      var val = iterator.next();
-      if (dropping && f.call(opt_obj, val, undefined, iterator)) {
-        continue;
-      } else {
-        dropping = false;
-      }
-      return val;
-    }
-  };
-  return newIter;
-};
-
-
-/**
- * Builds a new iterator that iterates over the original, but only as long as a
- * supplied function returns true.
- * @param {goog.iter.Iterable} iterable  The iterator object.
- * @param {function(this:T,?,undefined,?):boolean} f  The function to call for
- *     every value. This function
- *     takes 3 arguments (the value, undefined, and the iterator) and should
- *     return a boolean.
- * @param {T=} opt_obj This is used as the 'this' object in f when called.
- * @return {!goog.iter.Iterator} A new iterator that keeps elements in the
- *     original iterator as long as the function is true.
- * @template T
- */
-goog.iter.takeWhile = function(iterable, f, opt_obj) {
-  var iterator = goog.iter.toIterator(iterable);
-  var newIter = new goog.iter.Iterator;
-  var taking = true;
-  newIter.next = function() {
-    while (true) {
-      if (taking) {
-        var val = iterator.next();
-        if (f.call(opt_obj, val, undefined, iterator)) {
-          return val;
-        } else {
-          taking = false;
-        }
-      } else {
-        throw goog.iter.StopIteration;
-      }
-    }
-  };
-  return newIter;
-};
-
-
-/**
- * Converts the iterator to an array
- * @param {goog.iter.Iterable} iterable  The iterator to convert to an array.
- * @return {!Array} An array of the elements the iterator iterates over.
- */
-goog.iter.toArray = function(iterable) {
-  // Fast path for array-like.
-  if (goog.isArrayLike(iterable)) {
-    return goog.array.toArray(/** @type {!goog.array.ArrayLike} */(iterable));
-  }
-  iterable = goog.iter.toIterator(iterable);
-  var array = [];
-  goog.iter.forEach(iterable, function(val) {
-    array.push(val);
-  });
-  return array;
-};
-
-
-/**
- * Iterates over two iterables and returns true if they contain the same
- * sequence of elements and have the same length.
- * @param {!goog.iter.Iterable} iterable1 The first iterable object.
- * @param {!goog.iter.Iterable} iterable2 The second iterable object.
- * @return {boolean} true if the iterables contain the same sequence of
- *     elements and have the same length.
- */
-goog.iter.equals = function(iterable1, iterable2) {
-  var fillValue = {};
-  var pairs = goog.iter.zipLongest(fillValue, iterable1, iterable2);
-  return goog.iter.every(pairs, function(pair) {
-    return pair[0] == pair[1];
-  });
-};
-
-
-/**
- * Advances the iterator to the next position, returning the given default value
- * instead of throwing an exception if the iterator has no more entries.
- * @param {goog.iter.Iterable} iterable The iterable object.
- * @param {*} defaultValue The value to return if the iterator is empty.
- * @return {*} The next item in the iteration, or defaultValue if the iterator
- *     was empty.
- */
-goog.iter.nextOrValue = function(iterable, defaultValue) {
-  try {
-    return goog.iter.toIterator(iterable).next();
-  } catch (e) {
-    if (e != goog.iter.StopIteration) {
-      throw e;
-    }
-    return defaultValue;
-  }
-};
-
-
-/**
- * Cartesian product of zero or more sets.  Gives an iterator that gives every
- * combination of one element chosen from each set.  For example,
- * ([1, 2], [3, 4]) gives ([1, 3], [1, 4], [2, 3], [2, 4]).
- * @see http://docs.python.org/library/itertools.html#itertools.product
- * @param {...!goog.array.ArrayLike.<*>} var_args Zero or more sets, as arrays.
- * @return {!goog.iter.Iterator} An iterator that gives each n-tuple (as an
- *     array).
- */
-goog.iter.product = function(var_args) {
-  var someArrayEmpty = goog.array.some(arguments, function(arr) {
-    return !arr.length;
-  });
-
-  // An empty set in a cartesian product gives an empty set.
-  if (someArrayEmpty || !arguments.length) {
-    return new goog.iter.Iterator();
-  }
-
-  var iter = new goog.iter.Iterator();
-  var arrays = arguments;
-
-  // The first indicies are [0, 0, ...]
-  var indicies = goog.array.repeat(0, arrays.length);
-
-  iter.next = function() {
-
-    if (indicies) {
-      var retVal = goog.array.map(indicies, function(valueIndex, arrayIndex) {
-        return arrays[arrayIndex][valueIndex];
-      });
-
-      // Generate the next-largest indicies for the next call.
-      // Increase the rightmost index. If it goes over, increase the next
-      // rightmost (like carry-over addition).
-      for (var i = indicies.length - 1; i >= 0; i--) {
-        // Assertion prevents compiler warning below.
-        goog.asserts.assert(indicies);
-        if (indicies[i] < arrays[i].length - 1) {
-          indicies[i]++;
-          break;
-        }
-
-        // We're at the last indicies (the last element of every array), so
-        // the iteration is over on the next call.
-        if (i == 0) {
-          indicies = null;
-          break;
-        }
-        // Reset the index in this column and loop back to increment the
-        // next one.
-        indicies[i] = 0;
-      }
-      return retVal;
-    }
-
-    throw goog.iter.StopIteration;
-  };
-
-  return iter;
-};
-
-
-/**
- * Create an iterator to cycle over the iterable's elements indefinitely.
- * For example, ([1, 2, 3]) would return : 1, 2, 3, 1, 2, 3, ...
- * @see: http://docs.python.org/library/itertools.html#itertools.cycle.
- * @param {!goog.iter.Iterable} iterable The iterable object.
- * @return {!goog.iter.Iterator} An iterator that iterates indefinitely over
- * the values in {@code iterable}.
- */
-goog.iter.cycle = function(iterable) {
-
-  var baseIterator = goog.iter.toIterator(iterable);
-
-  // We maintain a cache to store the iterable elements as we iterate
-  // over them. The cache is used to return elements once we have
-  // iterated over the iterable once.
-  var cache = [];
-  var cacheIndex = 0;
-
-  var iter = new goog.iter.Iterator();
-
-  // This flag is set after the iterable is iterated over once
-  var useCache = false;
-
-  iter.next = function() {
-    var returnElement = null;
-
-    // Pull elements off the original iterator if not using cache
-    if (!useCache) {
-      try {
-        // Return the element from the iterable
-        returnElement = baseIterator.next();
-        cache.push(returnElement);
-        return returnElement;
-      } catch (e) {
-        // If an exception other than StopIteration is thrown
-        // or if there are no elements to iterate over (the iterable was empty)
-        // throw an exception
-        if (e != goog.iter.StopIteration || goog.array.isEmpty(cache)) {
-          throw e;
-        }
-        // set useCache to true after we know that a 'StopIteration' exception
-        // was thrown and the cache is not empty (to handle the 'empty iterable'
-        // use case)
-        useCache = true;
-      }
-    }
-
-    returnElement = cache[cacheIndex];
-    cacheIndex = (cacheIndex + 1) % cache.length;
-
-    return returnElement;
-  };
-
-  return iter;
-};
-
-
-/**
- * Creates an iterator that counts indefinitely from a starting value.
- * @see http://docs.python.org/2/library/itertools.html#itertools.count
- * @param {number=} opt_start The starting value. Default is 0.
- * @param {number=} opt_step The number to increment with between each call to
- *     next. Negative and floating point numbers are allowed. Default is 1.
- * @return {!goog.iter.Iterator} A new iterator that returns the values in the
- *     series.
- */
-goog.iter.count = function(opt_start, opt_step) {
-  var counter = opt_start || 0;
-  var step = goog.isDef(opt_step) ? opt_step : 1;
-  var iter = new goog.iter.Iterator();
-
-  iter.next = function() {
-    var returnValue = counter;
-    counter += step;
-    return returnValue;
-  };
-
-  return iter;
-};
-
-
-/**
- * Creates an iterator that returns the same object or value repeatedly.
- * @param {*} value Any object or value to repeat.
- * @return {!goog.iter.Iterator} A new iterator that returns the repeated value.
- */
-goog.iter.repeat = function(value) {
-  var iter = new goog.iter.Iterator();
-
-  iter.next = goog.functions.constant(value);
-
-  return iter;
-};
-
-
-/**
- * Creates an iterator that returns running totals from the numbers in
- * {@code iterable}. For example, the array {@code [1, 2, 3, 4, 5]} yields
- * {@code 1 -> 3 -> 6 -> 10 -> 15}.
- * @see http://docs.python.org/3.2/library/itertools.html#itertools.accumulate
- * @param {!goog.iter.Iterable.<number>} iterable The iterable of numbers to
- *     accumulate.
- * @return {!goog.iter.Iterator.<number>} A new iterator that returns the
- *     numbers in the series.
- */
-goog.iter.accumulate = function(iterable) {
-  var iterator = goog.iter.toIterator(iterable);
-  var total = 0;
-  var iter = new goog.iter.Iterator();
-
-  iter.next = function() {
-    total += iterator.next();
-    return total;
-  };
-
-  return iter;
-};
-
-
-/**
- * Creates an iterator that returns arrays containing the ith elements from the
- * provided iterables. The returned arrays will be the same size as the number
- * of iterables given in {@code var_args}. Once the shortest iterable is
- * exhausted, subsequent calls to {@code next()} will throw
- * {@code goog.iter.StopIteration}.
- * @see http://docs.python.org/2/library/itertools.html#itertools.izip
- * @param {...!goog.iter.Iterable} var_args Any number of iterable objects.
- * @return {!goog.iter.Iterator} A new iterator that returns arrays of elements
- *     from the provided iterables.
- */
-goog.iter.zip = function(var_args) {
-  var args = arguments;
-  var iter = new goog.iter.Iterator();
-
-  if (args.length > 0) {
-    var iterators = goog.array.map(args, goog.iter.toIterator);
-    iter.next = function() {
-      var arr = goog.array.map(iterators, function(it) {
-        return it.next();
-      });
-      return arr;
-    };
-  }
-
-  return iter;
-};
-
-
-/**
- * Creates an iterator that returns arrays containing the ith elements from the
- * provided iterables. The returned arrays will be the same size as the number
- * of iterables given in {@code var_args}. Shorter iterables will be extended
- * with {@code fillValue}. Once the longest iterable is exhausted, subsequent
- * calls to {@code next()} will throw {@code goog.iter.StopIteration}.
- * @see http://docs.python.org/2/library/itertools.html#itertools.izip_longest
- * @param {*} fillValue The object or value used to fill shorter iterables.
- * @param {...!goog.iter.Iterable} var_args Any number of iterable objects.
- * @return {!goog.iter.Iterator} A new iterator that returns arrays of elements
- *     from the provided iterables.
- */
-goog.iter.zipLongest = function(fillValue, var_args) {
-  var args = goog.array.slice(arguments, 1);
-  var iter = new goog.iter.Iterator();
-
-  if (args.length > 0) {
-    var iterators = goog.array.map(args, goog.iter.toIterator);
-
-    iter.next = function() {
-      var iteratorsHaveValues = false;  // false when all iterators are empty.
-      var arr = goog.array.map(iterators, function(it) {
-        var returnValue;
-        try {
-          returnValue = it.next();
-          // Iterator had a value, so we've not exhausted the iterators.
-          // Set flag accordingly.
-          iteratorsHaveValues = true;
-        } catch (ex) {
-          if (ex !== goog.iter.StopIteration) {
-            throw ex;
-          }
-          returnValue = fillValue;
-        }
-        return returnValue;
-      });
-
-      if (!iteratorsHaveValues) {
-        throw goog.iter.StopIteration;
-      }
-      return arr;
-    };
-  }
-
-  return iter;
-};
-
-
-/**
- * Creates an iterator that filters {@code iterable} based on a series of
- * {@code selectors}. On each call to {@code next()}, one item is taken from
- * both the {@code iterable} and {@code selectors} iterators. If the item from
- * {@code selectors} evaluates to true, the item from {@code iterable} is given.
- * Otherwise, it is skipped. Once either {@code iterable} or {@code selectors}
- * is exhausted, subsequent calls to {@code next()} will throw
- * {@code goog.iter.StopIteration}.
- * @see http://docs.python.org/2/library/itertools.html#itertools.compress
- * @param {!goog.iter.Iterable.<T>} iterable The iterable to filter.
- * @param {!goog.iter.Iterable} selectors An iterable of items to be evaluated
- *     in a boolean context to determine if the corresponding element in
- *     {@code iterable} should be included in the result.
- * @return {!goog.iter.Iterable.<T>} A new iterator that returns the filtered
- *    values.
- * @template T
- */
-goog.iter.compress = function(iterable, selectors) {
-  var selectorIterator = goog.iter.toIterator(selectors);
-
-  return goog.iter.filter(iterable, function() {
-    return !!selectorIterator.next();
-  });
-};
-
-
-
-/**
- * Implements the {@code goog.iter.groupBy} iterator.
- * @param {!goog.iter.Iterable} iterable  The iterable to group.
- * @param {Function=} opt_keyFunc  Optional function for determining the key
- *     value for each group in the {@code iterable}. Default is the identity
- *     function.
- * @constructor
- * @extends {goog.iter.Iterator}
- * @private
- */
-goog.iter.GroupByIterator_ = function(iterable, opt_keyFunc) {
-
-  /**
-   * The iterable to group, coerced to an iterator.
-   * @type {!goog.iter.Iterator}
-   */
-  this.iterator = goog.iter.toIterator(iterable);
-
-  /**
-   * A function for determining the key value for each element in the iterable.
-   * If no function is provided, the idenity function is used and returns the
-   * element unchanged.
-   * @type {function(...[*]): *}
-   */
-  this.keyFunc = opt_keyFunc || goog.functions.identity;
-
-  /**
-   * The target key for determining the start of a group.
-   * @type {*}
-   */
-  this.targetKey;
-
-  /**
-   * The current key visited during iteration.
-   * @type {*}
-   */
-  this.currentKey;
-
-  /**
-   * The current value being added to the group.
-   * @type {*}
-   */
-  this.currentValue;
-};
-goog.inherits(goog.iter.GroupByIterator_, goog.iter.Iterator);
-
-
-/** @override */
-goog.iter.GroupByIterator_.prototype.next = function() {
-  while (this.currentKey == this.targetKey) {
-    this.currentValue = this.iterator.next();  // Exits on StopIteration
-    this.currentKey = this.keyFunc(this.currentValue);
-  }
-  this.targetKey = this.currentKey;
-  return [this.currentKey, this.groupItems_(this.targetKey)];
-};
-
-
-/**
- * Performs the grouping of objects using the given key.
- * @param {*} targetKey  The target key object for the group.
- * @return {!Array} An array of grouped objects.
- * @private
- */
-goog.iter.GroupByIterator_.prototype.groupItems_ = function(targetKey) {
-  var arr = [];
-  while (this.currentKey == targetKey) {
-    arr.push(this.currentValue);
-    try {
-      this.currentValue = this.iterator.next();
-    } catch (ex) {
-      if (ex !== goog.iter.StopIteration) {
-        throw ex;
-      }
-      break;
-    }
-    this.currentKey = this.keyFunc(this.currentValue);
-  }
-  return arr;
-};
-
-
-/**
- * Creates an iterator that returns arrays containing elements from the
- * {@code iterable} grouped by a key value. For iterables with repeated
- * elements (i.e. sorted according to a particular key function), this function
- * has a {@code uniq}-like effect. For example, grouping the array:
- * {@code [A, B, B, C, C, A]} produces
- * {@code [A, [A]], [B, [B, B]], [C, [C, C]], [A, [A]]}.
- * @see http://docs.python.org/2/library/itertools.html#itertools.groupby
- * @param {!goog.iter.Iterable} iterable  The iterable to group.
- * @param {Function=} opt_keyFunc  Optional function for determining the key
- *     value for each group in the {@code iterable}. Default is the identity
- *     function.
- * @return {!goog.iter.Iterator} A new iterator that returns arrays of
- *     consecutive key and groups.
- */
-goog.iter.groupBy = function(iterable, opt_keyFunc) {
-  return new goog.iter.GroupByIterator_(iterable, opt_keyFunc);
-};
-
-
-/**
- * Returns an array of iterators each of which can iterate over the values in
- * {@code iterable} without advancing the others.
- * @see http://docs.python.org/2/library/itertools.html#itertools.tee
- * @param {!goog.iter.Iterable} iterable  The iterable to tee.
- * @param {number=} opt_num  The number of iterators to create. Default is 2.
- * @return {!Array.<goog.iter.Iterator>} An array of iterators.
- */
-goog.iter.tee = function(iterable, opt_num) {
-  var iterator = goog.iter.toIterator(iterable);
-  var num = goog.isNumber(opt_num) ? opt_num : 2;
-  var buffers = goog.array.map(goog.array.range(num), function() {
-    return [];
-  });
-
-  var addNextIteratorValueToBuffers = function() {
-    var val = iterator.next();
-    goog.array.forEach(buffers, function(buffer) {
-      buffer.push(val);
-    });
-  };
-
-  var createIterator = function(buffer) {
-    // Each tee'd iterator has an associated buffer (initially empty). When a
-    // tee'd iterator's buffer is empty, it calls
-    // addNextIteratorValueToBuffers(), adding the next value to all tee'd
-    // iterators' buffers, and then returns that value. This allows each
-    // iterator to be advanced independently.
-    var iter = new goog.iter.Iterator();
-
-    iter.next = function() {
-      if (goog.array.isEmpty(buffer)) {
-        addNextIteratorValueToBuffers();
-      }
-      goog.asserts.assert(!goog.array.isEmpty(buffer));
-      return buffer.shift();
-    };
-
-    return iter;
-  };
-
-  return goog.array.map(buffers, createIterator);
-};
-
-
-/**
- * Creates an iterator that returns arrays containing a count and an element
- * obtained from the given {@code iterable}.
- * @see http://docs.python.org/2/library/functions.html#enumerate
- * @param {!goog.iter.Iterable} iterable  The iterable to enumerate.
- * @param {number=} opt_start  Optional starting value. Default is 0.
- * @return {!goog.iter.Iterator} A new iterator containing count/item pairs.
- */
-goog.iter.enumerate = function(iterable, opt_start) {
-  return goog.iter.zip(goog.iter.count(opt_start), iterable);
-};
-
-
-/**
- * Creates an iterator that returns the first {@code limitSize} elements from an
- * iterable. If this number is greater than the number of elements in the
- * iterable, all the elements are returned.
- * @see http://goo.gl/V0sihp Inspired by the limit iterator in Guava.
- * @param {!goog.iter.Iterable} iterable  The iterable to limit.
- * @param {number} limitSize  The maximum number of elements to return.
- * @return {!goog.iter.Iterator} A new iterator containing {@code limitSize}
- *     elements.
- */
-goog.iter.limit = function(iterable, limitSize) {
-  goog.asserts.assert(goog.math.isInt(limitSize) && limitSize >= 0);
-
-  var iterator = goog.iter.toIterator(iterable);
-
-  var iter = new goog.iter.Iterator();
-  var remaining = limitSize;
-
-  iter.next = function() {
-    if (remaining-- > 0) {
-      return iterator.next();
-    }
-    throw goog.iter.StopIteration;
-  };
-
-  return iter;
-};
-
-
-/**
- * Creates an iterator that is advanced {@code count} steps ahead. Consumed
- * values are silently discarded. If {@code count} is greater than the number
- * of elements in {@code iterable}, an empty iterator is returned. Subsequent
- * calls to {@code next()} will throw {@code goog.iter.StopIteration}.
- * @param {!goog.iter.Iterable} iterable  The iterable to consume.
- * @param {number} count  The number of elements to consume from the iterator.
- * @return {!goog.iter.Iterator}  An iterator advanced zero or more steps ahead.
- */
-goog.iter.consume = function(iterable, count) {
-  goog.asserts.assert(goog.math.isInt(count) && count >= 0);
-
-  var iterator = goog.iter.toIterator(iterable);
-
-  while (count-- > 0) {
-    goog.iter.nextOrValue(iterator, null);
-  }
-
-  return iterator;
-};
-
-
-/**
- * Creates an iterator that returns a range of elements from an iterable.
- * Similar to {@see goog.array#slice} but does not support negative indexes.
- * @param {!goog.iter.Iterable} iterable  The iterable to slice.
- * @param {number} start  The index of the first element to return.
- * @param {number=} opt_end  The index after the last element to return. If
- *     defined, must be greater than or equal to {@code start}.
- * @return {!goog.iter.Iterator}  A new iterator containing a slice of the
- *     original.
- */
-goog.iter.slice = function(iterable, start, opt_end) {
-  goog.asserts.assert(goog.math.isInt(start) && start >= 0);
-
-  var iterator = goog.iter.consume(iterable, start);
-
-  if (goog.isNumber(opt_end)) {
-    goog.asserts.assert(
-        goog.math.isInt(/** @type {number} */ (opt_end)) && opt_end >= start);
-    iterator = goog.iter.limit(iterator, opt_end - start /* limitSize */);
-  }
-
-  return iterator;
-};
-
-
-/**
- * Checks an array for duplicate elements.
- * @param {Array.<T>|goog.array.ArrayLike} arr The array to check for
- *     duplicates.
- * @return {boolean} True, if the array contains duplicates, false otherwise.
- * @private
- * @template T
- */
-// TODO(user): Consider moving this into goog.array as a public function.
-goog.iter.hasDuplicates_ = function(arr) {
-  var deduped = [];
-  goog.array.removeDuplicates(arr, deduped);
-  return arr.length != deduped.length;
-};
-
-
-/**
- * Creates an iterator that returns permutations of elements in
- * {@code iterable}.
- *
- * Permutations are obtained by taking the Cartesian product of
- * {@code opt_length} iterables and filtering out those with repeated
- * elements. For example, the permutations of {@code [1,2,3]} are
- * {@code [[1,2,3], [1,3,2], [2,1,3], [2,3,1], [3,1,2], [3,2,1]]}.
- * @see http://docs.python.org/2/library/itertools.html#itertools.permutations
- * @param {!goog.iter.Iterable} iterable The iterable from which to generate
- *    permutations.
- * @param {number=} opt_length Length of each permutation. If omitted, defaults
- *     to the length of {@code iterable}.
- * @return {!goog.iter.Iterator} A new iterator containing the permutations of
- *     {@code iterable}.
- */
-goog.iter.permutations = function(iterable, opt_length) {
-  var elements = goog.iter.toArray(iterable);
-  var length = goog.isNumber(opt_length) ? opt_length : elements.length;
-
-  var sets = goog.array.repeat(elements, length);
-  var product = goog.iter.product.apply(undefined, sets);
-
-  return goog.iter.filter(product, function(arr) {
-    return !goog.iter.hasDuplicates_(arr);
-  });
-};
-
-
-/**
- * Creates an iterator that returns combinations of elements from
- * {@code iterable}.
- *
- * Combinations are obtained by taking the {@see goog.iter#permutations} of
- * {@code iterable} and filtering those whose elements appear in the order they
- * are encountered in {@code iterable}. For example, the 3-length combinations
- * of {@code [0,1,2,3]} are {@code [[0,1,2], [0,1,3], [0,2,3], [1,2,3]]}.
- * @see http://docs.python.org/2/library/itertools.html#itertools.combinations
- * @param {!goog.iter.Iterable} iterable The iterable from which to generate
- *     combinations.
- * @param {number} length The length of each combination.
- * @return {!goog.iter.Iterator} A new iterator containing combinations from
- *     the {@code iterable}.
- */
-goog.iter.combinations = function(iterable, length) {
-  var elements = goog.iter.toArray(iterable);
-  var indexes = goog.iter.range(elements.length);
-  var indexIterator = goog.iter.permutations(indexes, length);
-  // sortedIndexIterator will now give arrays of with the given length that
-  // indicate what indexes into "elements" should be returned on each iteration.
-  var sortedIndexIterator = goog.iter.filter(indexIterator, function(arr) {
-    return goog.array.isSorted(arr);
-  });
-
-  var iter = new goog.iter.Iterator();
-
-  function getIndexFromElements(index) {
-    return elements[index];
-  }
-
-  iter.next = function() {
-    return goog.array.map(
-        /** @type {!Array.<number>} */
-        (sortedIndexIterator.next()), getIndexFromElements);
-  };
-
-  return iter;
-};
-
-
-/**
- * Creates an iterator that returns combinations of elements from
- * {@code iterable}, with repeated elements possible.
- *
- * Combinations are obtained by taking the Cartesian product of {@code length}
- * iterables and filtering those whose elements appear in the order they are
- * encountered in {@code iterable}. For example, the 2-length combinations of
- * {@code [1,2,3]} are {@code [[1,1], [1,2], [1,3], [2,2], [2,3], [3,3]]}.
- * @see http://docs.python.org/2/library/itertools.html#itertools.combinations_with_replacement
- * @see http://en.wikipedia.org/wiki/Combination#Number_of_combinations_with_repetition
- * @param {!goog.iter.Iterable} iterable The iterable to combine.
- * @param {number} length The length of each combination.
- * @return {!goog.iter.Iterator} A new iterator containing combinations from
- *     the {@code iterable}.
- */
-goog.iter.combinationsWithReplacement = function(iterable, length) {
-  var elements = goog.iter.toArray(iterable);
-  var indexes = goog.array.range(elements.length);
-  var sets = goog.array.repeat(indexes, length);
-  var indexIterator = goog.iter.product.apply(undefined, sets);
-  // sortedIndexIterator will now give arrays of with the given length that
-  // indicate what indexes into "elements" should be returned on each iteration.
-  var sortedIndexIterator = goog.iter.filter(indexIterator, function(arr) {
-    return goog.array.isSorted(arr);
-  });
-
-  var iter = new goog.iter.Iterator();
-
-  function getIndexFromElements(index) {
-    return elements[index];
-  }
-
-  iter.next = function() {
-    return goog.array.map(
-        /** @type {!Array.<number>} */
-        (sortedIndexIterator.next()), getIndexFromElements);
-  };
-
-  return iter;
-};
-// Copyright 2006 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/**
- * @fileoverview Datastructure: Hash Map.
- *
- * @author arv@google.com (Erik Arvidsson)
- * @author jonp@google.com (Jon Perlow) Optimized for IE6
- *
- * This file contains an implementation of a Map structure. It implements a lot
- * of the methods used in goog.structs so those functions work on hashes. This
- * is best suited for complex key types. For simple keys such as numbers and
- * strings, and where special names like __proto__ are not a concern, consider
- * using the lighter-weight utilities in goog.object.
- */
-
-
-goog.provide('goog.structs.Map');
-
-goog.require('goog.iter.Iterator');
-goog.require('goog.iter.StopIteration');
-goog.require('goog.object');
-
-
-
-/**
- * Class for Hash Map datastructure.
- * @param {*=} opt_map Map or Object to initialize the map with.
- * @param {...*} var_args If 2 or more arguments are present then they
- *     will be used as key-value pairs.
- * @constructor
- * @template K, V
- */
-goog.structs.Map = function(opt_map, var_args) {
-
-  /**
-   * Underlying JS object used to implement the map.
-   * @private {!Object}
-   */
-  this.map_ = {};
-
-  /**
-   * An array of keys. This is necessary for two reasons:
-   *   1. Iterating the keys using for (var key in this.map_) allocates an
-   *      object for every key in IE which is really bad for IE6 GC perf.
-   *   2. Without a side data structure, we would need to escape all the keys
-   *      as that would be the only way we could tell during iteration if the
-   *      key was an internal key or a property of the object.
-   *
-   * This array can contain deleted keys so it's necessary to check the map
-   * as well to see if the key is still in the map (this doesn't require a
-   * memory allocation in IE).
-   * @private {!Array.<string>}
-   */
-  this.keys_ = [];
-
-  /**
-   * The number of key value pairs in the map.
-   * @private {number}
-   */
-  this.count_ = 0;
-
-  /**
-   * Version used to detect changes while iterating.
-   * @private {number}
-   */
-  this.version_ = 0;
-
-  var argLength = arguments.length;
-
-  if (argLength > 1) {
-    if (argLength % 2) {
-      throw Error('Uneven number of arguments');
-    }
-    for (var i = 0; i < argLength; i += 2) {
-      this.set(arguments[i], arguments[i + 1]);
-    }
-  } else if (opt_map) {
-    this.addAll(/** @type {Object} */ (opt_map));
-  }
-};
-
-
-/**
- * @return {number} The number of key-value pairs in the map.
- */
-goog.structs.Map.prototype.getCount = function() {
-  return this.count_;
-};
-
-
-/**
- * Returns the values of the map.
- * @return {!Array.<V>} The values in the map.
- */
-goog.structs.Map.prototype.getValues = function() {
-  this.cleanupKeysArray_();
-
-  var rv = [];
-  for (var i = 0; i < this.keys_.length; i++) {
-    var key = this.keys_[i];
-    rv.push(this.map_[key]);
-  }
-  return rv;
-};
-
-
-/**
- * Returns the keys of the map.
- * @return {!Array.<string>} Array of string values.
- */
-goog.structs.Map.prototype.getKeys = function() {
-  this.cleanupKeysArray_();
-  return /** @type {!Array.<string>} */ (this.keys_.concat());
-};
-
-
-/**
- * Whether the map contains the given key.
- * @param {*} key The key to check for.
- * @return {boolean} Whether the map contains the key.
- */
-goog.structs.Map.prototype.containsKey = function(key) {
-  return goog.structs.Map.hasKey_(this.map_, key);
-};
-
-
-/**
- * Whether the map contains the given value. This is O(n).
- * @param {V} val The value to check for.
- * @return {boolean} Whether the map contains the value.
- */
-goog.structs.Map.prototype.containsValue = function(val) {
-  for (var i = 0; i < this.keys_.length; i++) {
-    var key = this.keys_[i];
-    if (goog.structs.Map.hasKey_(this.map_, key) && this.map_[key] == val) {
-      return true;
-    }
-  }
-  return false;
-};
-
-
-/**
- * Whether this map is equal to the argument map.
- * @param {goog.structs.Map} otherMap The map against which to test equality.
- * @param {function(V, V): boolean=} opt_equalityFn Optional equality function
- *     to test equality of values. If not specified, this will test whether
- *     the values contained in each map are identical objects.
- * @return {boolean} Whether the maps are equal.
- */
-goog.structs.Map.prototype.equals = function(otherMap, opt_equalityFn) {
-  if (this === otherMap) {
-    return true;
-  }
-
-  if (this.count_ != otherMap.getCount()) {
-    return false;
-  }
-
-  var equalityFn = opt_equalityFn || goog.structs.Map.defaultEquals;
-
-  this.cleanupKeysArray_();
-  for (var key, i = 0; key = this.keys_[i]; i++) {
-    if (!equalityFn(this.get(key), otherMap.get(key))) {
-      return false;
-    }
-  }
-
-  return true;
-};
-
-
-/**
- * Default equality test for values.
- * @param {*} a The first value.
- * @param {*} b The second value.
- * @return {boolean} Whether a and b reference the same object.
- */
-goog.structs.Map.defaultEquals = function(a, b) {
-  return a === b;
-};
-
-
-/**
- * @return {boolean} Whether the map is empty.
- */
-goog.structs.Map.prototype.isEmpty = function() {
-  return this.count_ == 0;
-};
-
-
-/**
- * Removes all key-value pairs from the map.
- */
-goog.structs.Map.prototype.clear = function() {
-  this.map_ = {};
-  this.keys_.length = 0;
-  this.count_ = 0;
-  this.version_ = 0;
-};
-
-
-/**
- * Removes a key-value pair based on the key. This is O(logN) amortized due to
- * updating the keys array whenever the count becomes half the size of the keys
- * in the keys array.
- * @param {*} key  The key to remove.
- * @return {boolean} Whether object was removed.
- */
-goog.structs.Map.prototype.remove = function(key) {
-  if (goog.structs.Map.hasKey_(this.map_, key)) {
-    delete this.map_[key];
-    this.count_--;
-    this.version_++;
-
-    // clean up the keys array if the threshhold is hit
-    if (this.keys_.length > 2 * this.count_) {
-      this.cleanupKeysArray_();
-    }
-
-    return true;
-  }
-  return false;
-};
-
-
-/**
- * Cleans up the temp keys array by removing entries that are no longer in the
- * map.
- * @private
- */
-goog.structs.Map.prototype.cleanupKeysArray_ = function() {
-  if (this.count_ != this.keys_.length) {
-    // First remove keys that are no longer in the map.
-    var srcIndex = 0;
-    var destIndex = 0;
-    while (srcIndex < this.keys_.length) {
-      var key = this.keys_[srcIndex];
-      if (goog.structs.Map.hasKey_(this.map_, key)) {
-        this.keys_[destIndex++] = key;
-      }
-      srcIndex++;
-    }
-    this.keys_.length = destIndex;
-  }
-
-  if (this.count_ != this.keys_.length) {
-    // If the count still isn't correct, that means we have duplicates. This can
-    // happen when the same key is added and removed multiple times. Now we have
-    // to allocate one extra Object to remove the duplicates. This could have
-    // been done in the first pass, but in the common case, we can avoid
-    // allocating an extra object by only doing this when necessary.
-    var seen = {};
-    var srcIndex = 0;
-    var destIndex = 0;
-    while (srcIndex < this.keys_.length) {
-      var key = this.keys_[srcIndex];
-      if (!(goog.structs.Map.hasKey_(seen, key))) {
-        this.keys_[destIndex++] = key;
-        seen[key] = 1;
-      }
-      srcIndex++;
-    }
-    this.keys_.length = destIndex;
-  }
-};
-
-
-/**
- * Returns the value for the given key.  If the key is not found and the default
- * value is not given this will return {@code undefined}.
- * @param {*} key The key to get the value for.
- * @param {DEFAULT=} opt_val The value to return if no item is found for the
- *     given key, defaults to undefined.
- * @return {V|DEFAULT} The value for the given key.
- * @template DEFAULT
- */
-goog.structs.Map.prototype.get = function(key, opt_val) {
-  if (goog.structs.Map.hasKey_(this.map_, key)) {
-    return this.map_[key];
-  }
-  return opt_val;
-};
-
-
-/**
- * Adds a key-value pair to the map.
- * @param {*} key The key.
- * @param {V} value The value to add.
- * @return {*} Some subclasses return a value.
- */
-goog.structs.Map.prototype.set = function(key, value) {
-  if (!(goog.structs.Map.hasKey_(this.map_, key))) {
-    this.count_++;
-    this.keys_.push(key);
-    // Only change the version if we add a new key.
-    this.version_++;
-  }
-  this.map_[key] = value;
-};
-
-
-/**
- * Adds multiple key-value pairs from another goog.structs.Map or Object.
- * @param {Object} map  Object containing the data to add.
- */
-goog.structs.Map.prototype.addAll = function(map) {
-  var keys, values;
-  if (map instanceof goog.structs.Map) {
-    keys = map.getKeys();
-    values = map.getValues();
-  } else {
-    keys = goog.object.getKeys(map);
-    values = goog.object.getValues(map);
-  }
-  // we could use goog.array.forEach here but I don't want to introduce that
-  // dependency just for this.
-  for (var i = 0; i < keys.length; i++) {
-    this.set(keys[i], values[i]);
-  }
-};
-
-
-/**
- * Clones a map and returns a new map.
- * @return {!goog.structs.Map} A new map with the same key-value pairs.
- */
-goog.structs.Map.prototype.clone = function() {
-  return new goog.structs.Map(this);
-};
-
-
-/**
- * Returns a new map in which all the keys and values are interchanged
- * (keys become values and values become keys). If multiple keys map to the
- * same value, the chosen transposed value is implementation-dependent.
- *
- * It acts very similarly to {goog.object.transpose(Object)}.
- *
- * @return {!goog.structs.Map} The transposed map.
- */
-goog.structs.Map.prototype.transpose = function() {
-  var transposed = new goog.structs.Map();
-  for (var i = 0; i < this.keys_.length; i++) {
-    var key = this.keys_[i];
-    var value = this.map_[key];
-    transposed.set(value, key);
-  }
-
-  return transposed;
-};
-
-
-/**
- * @return {!Object} Object representation of the map.
- */
-goog.structs.Map.prototype.toObject = function() {
-  this.cleanupKeysArray_();
-  var obj = {};
-  for (var i = 0; i < this.keys_.length; i++) {
-    var key = this.keys_[i];
-    obj[key] = this.map_[key];
-  }
-  return obj;
-};
-
-
-/**
- * Returns an iterator that iterates over the keys in the map.  Removal of keys
- * while iterating might have undesired side effects.
- * @return {!goog.iter.Iterator} An iterator over the keys in the map.
- */
-goog.structs.Map.prototype.getKeyIterator = function() {
-  return this.__iterator__(true);
-};
-
-
-/**
- * Returns an iterator that iterates over the values in the map.  Removal of
- * keys while iterating might have undesired side effects.
- * @return {!goog.iter.Iterator} An iterator over the values in the map.
- */
-goog.structs.Map.prototype.getValueIterator = function() {
-  return this.__iterator__(false);
-};
-
-
-/**
- * Returns an iterator that iterates over the values or the keys in the map.
- * This throws an exception if the map was mutated since the iterator was
- * created.
- * @param {boolean=} opt_keys True to iterate over the keys. False to iterate
- *     over the values.  The default value is false.
- * @return {!goog.iter.Iterator} An iterator over the values or keys in the map.
- */
-goog.structs.Map.prototype.__iterator__ = function(opt_keys) {
-  // Clean up keys to minimize the risk of iterating over dead keys.
-  this.cleanupKeysArray_();
-
-  var i = 0;
-  var keys = this.keys_;
-  var map = this.map_;
-  var version = this.version_;
-  var selfObj = this;
-
-  var newIter = new goog.iter.Iterator;
-  newIter.next = function() {
-    while (true) {
-      if (version != selfObj.version_) {
-        throw Error('The map has changed since the iterator was created');
-      }
-      if (i >= keys.length) {
-        throw goog.iter.StopIteration;
-      }
-      var key = keys[i++];
-      return opt_keys ? key : map[key];
-    }
-  };
-  return newIter;
-};
-
-
-/**
- * Safe way to test for hasOwnProperty.  It even allows testing for
- * 'hasOwnProperty'.
- * @param {Object} obj The object to test for presence of the given key.
- * @param {*} key The key to check for.
- * @return {boolean} Whether the object has the key.
- * @private
- */
-goog.structs.Map.hasKey_ = function(obj, key) {
-  return Object.prototype.hasOwnProperty.call(obj, key);
-};
-// Copyright 2006 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/**
- * @fileoverview Datastructure: Set.
- *
- * @author arv@google.com (Erik Arvidsson)
- * @author pallosp@google.com (Peter Pallos)
- *
- * This class implements a set data structure. Adding and removing is O(1). It
- * supports both object and primitive values. Be careful because you can add
- * both 1 and new Number(1), because these are not the same. You can even add
- * multiple new Number(1) because these are not equal.
- */
-
-
-goog.provide('goog.structs.Set');
-
-goog.require('goog.structs');
-goog.require('goog.structs.Collection');
-goog.require('goog.structs.Map');
-
-
-
-/**
- * A set that can contain both primitives and objects.  Adding and removing
- * elements is O(1).  Primitives are treated as identical if they have the same
- * type and convert to the same string.  Objects are treated as identical only
- * if they are references to the same object.  WARNING: A goog.structs.Set can
- * contain both 1 and (new Number(1)), because they are not the same.  WARNING:
- * Adding (new Number(1)) twice will yield two distinct elements, because they
- * are two different objects.  WARNING: Any object that is added to a
- * goog.structs.Set will be modified!  Because goog.getUid() is used to
- * identify objects, every object in the set will be mutated.
- * @param {Array.<T>|Object.<?,T>=} opt_values Initial values to start with.
- * @constructor
- * @implements {goog.structs.Collection.<T>}
- * @final
- * @template T
- */
-goog.structs.Set = function(opt_values) {
-  this.map_ = new goog.structs.Map;
-  if (opt_values) {
-    this.addAll(opt_values);
-  }
-};
-
-
-/**
- * Obtains a unique key for an element of the set.  Primitives will yield the
- * same key if they have the same type and convert to the same string.  Object
- * references will yield the same key only if they refer to the same object.
- * @param {*} val Object or primitive value to get a key for.
- * @return {string} A unique key for this value/object.
- * @private
- */
-goog.structs.Set.getKey_ = function(val) {
-  var type = typeof val;
-  if (type == 'object' && val || type == 'function') {
-    return 'o' + goog.getUid(/** @type {Object} */ (val));
-  } else {
-    return type.substr(0, 1) + val;
-  }
-};
-
-
-/**
- * @return {number} The number of elements in the set.
- * @override
- */
-goog.structs.Set.prototype.getCount = function() {
-  return this.map_.getCount();
-};
-
-
-/**
- * Add a primitive or an object to the set.
- * @param {T} element The primitive or object to add.
- * @override
- */
-goog.structs.Set.prototype.add = function(element) {
-  this.map_.set(goog.structs.Set.getKey_(element), element);
-};
-
-
-/**
- * Adds all the values in the given collection to this set.
- * @param {Array.<T>|Object.<?,T>} col A collection containing the elements to
- *     add.
- */
-goog.structs.Set.prototype.addAll = function(col) {
-  var values = goog.structs.getValues(col);
-  var l = values.length;
-  for (var i = 0; i < l; i++) {
-    this.add(values[i]);
-  }
-};
-
-
-/**
- * Removes all values in the given collection from this set.
- * @param {Array.<T>|Object.<?,T>} col A collection containing the elements to
- *     remove.
- */
-goog.structs.Set.prototype.removeAll = function(col) {
-  var values = goog.structs.getValues(col);
-  var l = values.length;
-  for (var i = 0; i < l; i++) {
-    this.remove(values[i]);
-  }
-};
-
-
-/**
- * Removes the given element from this set.
- * @param {T} element The primitive or object to remove.
- * @return {boolean} Whether the element was found and removed.
- * @override
- */
-goog.structs.Set.prototype.remove = function(element) {
-  return this.map_.remove(goog.structs.Set.getKey_(element));
-};
-
-
-/**
- * Removes all elements from this set.
- */
-goog.structs.Set.prototype.clear = function() {
-  this.map_.clear();
-};
-
-
-/**
- * Tests whether this set is empty.
- * @return {boolean} True if there are no elements in this set.
- */
-goog.structs.Set.prototype.isEmpty = function() {
-  return this.map_.isEmpty();
-};
-
-
-/**
- * Tests whether this set contains the given element.
- * @param {T} element The primitive or object to test for.
- * @return {boolean} True if this set contains the given element.
- * @override
- */
-goog.structs.Set.prototype.contains = function(element) {
-  return this.map_.containsKey(goog.structs.Set.getKey_(element));
-};
-
-
-/**
- * Tests whether this set contains all the values in a given collection.
- * Repeated elements in the collection are ignored, e.g.  (new
- * goog.structs.Set([1, 2])).containsAll([1, 1]) is True.
- * @param {Object} col A collection-like object.
- * @return {boolean} True if the set contains all elements.
- */
-goog.structs.Set.prototype.containsAll = function(col) {
-  return goog.structs.every(col, this.contains, this);
-};
-
-
-/**
- * Finds all values that are present in both this set and the given collection.
- * @param {Array.<S>|Object.<?,S>} col A collection.
- * @return {!goog.structs.Set.<T|S>} A new set containing all the values
- *     (primitives or objects) present in both this set and the given
- *     collection.
- * @template S
- */
-goog.structs.Set.prototype.intersection = function(col) {
-  var result = new goog.structs.Set();
-
-  var values = goog.structs.getValues(col);
-  for (var i = 0; i < values.length; i++) {
-    var value = values[i];
-    if (this.contains(value)) {
-      result.add(value);
-    }
-  }
-
-  return result;
-};
-
-
-/**
- * Finds all values that are present in this set and not in the given
- * collection.
- * @param {Array.<T>|Object.<?,T>} col A collection.
- * @return {!goog.structs.Set} A new set containing all the values
- *     (primitives or objects) present in this set but not in the given
- *     collection.
- */
-goog.structs.Set.prototype.difference = function(col) {
-  var result = this.clone();
-  result.removeAll(col);
-  return result;
-};
-
-
-/**
- * Returns an array containing all the elements in this set.
- * @return {!Array.<T>} An array containing all the elements in this set.
- */
-goog.structs.Set.prototype.getValues = function() {
-  return this.map_.getValues();
-};
-
-
-/**
- * Creates a shallow clone of this set.
- * @return {!goog.structs.Set.<T>} A new set containing all the same elements as
- *     this set.
- */
-goog.structs.Set.prototype.clone = function() {
-  return new goog.structs.Set(this);
-};
-
-
-/**
- * Tests whether the given collection consists of the same elements as this set,
- * regardless of order, without repetition.  Primitives are treated as equal if
- * they have the same type and convert to the same string; objects are treated
- * as equal if they are references to the same object.  This operation is O(n).
- * @param {Object} col A collection.
- * @return {boolean} True if the given collection consists of the same elements
- *     as this set, regardless of order, without repetition.
- */
-goog.structs.Set.prototype.equals = function(col) {
-  return this.getCount() == goog.structs.getCount(col) && this.isSubsetOf(col);
-};
-
-
-/**
- * Tests whether the given collection contains all the elements in this set.
- * Primitives are treated as equal if they have the same type and convert to the
- * same string; objects are treated as equal if they are references to the same
- * object.  This operation is O(n).
- * @param {Object} col A collection.
- * @return {boolean} True if this set is a subset of the given collection.
- */
-goog.structs.Set.prototype.isSubsetOf = function(col) {
-  var colCount = goog.structs.getCount(col);
-  if (this.getCount() > colCount) {
-    return false;
-  }
-  // TODO(user) Find the minimal collection size where the conversion makes
-  // the contains() method faster.
-  if (!(col instanceof goog.structs.Set) && colCount > 5) {
-    // Convert to a goog.structs.Set so that goog.structs.contains runs in
-    // O(1) time instead of O(n) time.
-    col = new goog.structs.Set(col);
-  }
-  return goog.structs.every(this, function(value) {
-    return goog.structs.contains(col, value);
-  });
-};
-
-
-/**
- * Returns an iterator that iterates over the elements in this set.
- * @param {boolean=} opt_keys This argument is ignored.
- * @return {!goog.iter.Iterator} An iterator over the elements in this set.
- */
-goog.structs.Set.prototype.__iterator__ = function(opt_keys) {
-  return this.map_.__iterator__(false);
-};
-// Copyright 2007 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/**
- * @fileoverview Tooltip widget implementation.
- *
- * @author eae@google.com (Emil A Eklund)
- * @see ../demos/tooltip.html
- */
-
-goog.provide('goog.ui.Tooltip');
-goog.provide('goog.ui.Tooltip.CursorTooltipPosition');
-goog.provide('goog.ui.Tooltip.ElementTooltipPosition');
-goog.provide('goog.ui.Tooltip.State');
-
-goog.require('goog.Timer');
-goog.require('goog.array');
-goog.require('goog.dom');
-goog.require('goog.events');
-goog.require('goog.events.EventType');
-goog.require('goog.math.Box');
-goog.require('goog.math.Coordinate');
-goog.require('goog.positioning');
-goog.require('goog.positioning.AnchoredPosition');
-goog.require('goog.positioning.Corner');
-goog.require('goog.positioning.Overflow');
-goog.require('goog.positioning.OverflowStatus');
-goog.require('goog.positioning.ViewportPosition');
-goog.require('goog.structs.Set');
-goog.require('goog.style');
-goog.require('goog.ui.Popup');
-goog.require('goog.ui.PopupBase');
-
-
-
-/**
- * Tooltip widget. Can be attached to one or more elements and is shown, with a
- * slight delay, when the the cursor is over the element or the element gains
- * focus.
- *
- * @param {Element|string=} opt_el Element to display tooltip for, either
- *     element reference or string id.
- * @param {?string=} opt_str Text message to display in tooltip.
- * @param {goog.dom.DomHelper=} opt_domHelper Optional DOM helper.
- * @constructor
- * @extends {goog.ui.Popup}
- */
-goog.ui.Tooltip = function(opt_el, opt_str, opt_domHelper) {
-  /**
-   * Dom Helper
-   * @type {goog.dom.DomHelper}
-   * @private
-   */
-  this.dom_ = opt_domHelper || (opt_el ?
-      goog.dom.getDomHelper(goog.dom.getElement(opt_el)) :
-      goog.dom.getDomHelper());
-
-  goog.ui.Popup.call(this, this.dom_.createDom(
-      'div', {'style': 'position:absolute;display:none;'}));
-
-  /**
-   * Cursor position relative to the page.
-   * @type {!goog.math.Coordinate}
-   * @protected
-   */
-  this.cursorPosition = new goog.math.Coordinate(1, 1);
-
-  /**
-   * Elements this widget is attached to.
-   * @type {goog.structs.Set}
-   * @private
-   */
-  this.elements_ = new goog.structs.Set();
-
-  // Attach to element, if specified
-  if (opt_el) {
-    this.attach(opt_el);
-  }
-
-  // Set message, if specified.
-  if (opt_str != null) {
-    this.setText(opt_str);
-  }
-};
-goog.inherits(goog.ui.Tooltip, goog.ui.Popup);
-
-
-/**
- * List of active (open) tooltip widgets. Used to prevent multiple tooltips
- * from appearing at once.
- *
- * @type {!Array.<goog.ui.Tooltip>}
- * @private
- */
-goog.ui.Tooltip.activeInstances_ = [];
-
-
-/**
- * Active element reference. Used by the delayed show functionality to keep
- * track of the element the mouse is over or the element with focus.
- * @type {Element}
- * @private
- */
-goog.ui.Tooltip.prototype.activeEl_ = null;
-
-
-/**
- * CSS class name for tooltip.
- *
- * @type {string}
- */
-goog.ui.Tooltip.prototype.className = goog.getCssName('goog-tooltip');
-
-
-/**
- * Delay in milliseconds since the last mouseover or mousemove before the
- * tooltip is displayed for an element.
- *
- * @type {number}
- * @private
- */
-goog.ui.Tooltip.prototype.showDelayMs_ = 500;
-
-
-/**
- * Timer for when to show.
- *
- * @type {number|undefined}
- * @protected
- */
-goog.ui.Tooltip.prototype.showTimer;
-
-
-/**
- * Delay in milliseconds before tooltips are hidden.
- *
- * @type {number}
- * @private
- */
-goog.ui.Tooltip.prototype.hideDelayMs_ = 0;
-
-
-/**
- * Timer for when to hide.
- *
- * @type {number|undefined}
- * @protected
- */
-goog.ui.Tooltip.prototype.hideTimer;
-
-
-/**
- * Element that triggered the tooltip.  Note that if a second element triggers
- * this tooltip, anchor becomes that second element, even if its show is
- * cancelled and the original tooltip survives.
- *
- * @type {Element|undefined}
- * @protected
- */
-goog.ui.Tooltip.prototype.anchor;
-
-
-/**
- * Possible states for the tooltip to be in.
- * @enum {number}
- */
-goog.ui.Tooltip.State = {
-  INACTIVE: 0,
-  WAITING_TO_SHOW: 1,
-  SHOWING: 2,
-  WAITING_TO_HIDE: 3,
-  UPDATING: 4 // waiting to show new hovercard while old one still showing.
-};
-
-
-/**
- * Popup activation types. Used to select a positioning strategy.
- * @enum {number}
- */
-goog.ui.Tooltip.Activation = {
-  CURSOR: 0,
-  FOCUS: 1
-};
-
-
-/**
- * Whether the anchor has seen the cursor move or has received focus since the
- * tooltip was last shown. Used to ignore mouse over events triggered by view
- * changes and UI updates.
- * @type {boolean|undefined}
- * @private
- */
-goog.ui.Tooltip.prototype.seenInteraction_;
-
-
-/**
- * Whether the cursor must have moved before the tooltip will be shown.
- * @type {boolean|undefined}
- * @private
- */
-goog.ui.Tooltip.prototype.requireInteraction_;
-
-
-/**
- * If this tooltip's element contains another tooltip that becomes active, this
- * property identifies that tooltip so that we can check if this tooltip should
- * not be hidden because the nested tooltip is active.
- * @type {goog.ui.Tooltip}
- * @private
- */
-goog.ui.Tooltip.prototype.childTooltip_;
-
-
-/**
- * If this tooltip is inside another tooltip's element, then it may have
- * prevented that tooltip from hiding.  When this tooltip hides, we'll need
- * to check if the parent should be hidden as well.
- * @type {goog.ui.Tooltip}
- * @private
- */
-goog.ui.Tooltip.prototype.parentTooltip_;
-
-
-/**
- * Returns the dom helper that is being used on this component.
- * @return {goog.dom.DomHelper} The dom helper used on this component.
- */
-goog.ui.Tooltip.prototype.getDomHelper = function() {
-  return this.dom_;
-};
-
-
-/**
- * @return {goog.ui.Tooltip} Active tooltip in a child element, or null if none.
- * @protected
- */
-goog.ui.Tooltip.prototype.getChildTooltip = function() {
-  return this.childTooltip_;
-};
-
-
-/**
- * Attach to element. Tooltip will be displayed when the cursor is over the
- * element or when the element has been active for a few milliseconds.
- *
- * @param {Element|string} el Element to display tooltip for, either element
- *                            reference or string id.
- */
-goog.ui.Tooltip.prototype.attach = function(el) {
-  el = goog.dom.getElement(el);
-
-  this.elements_.add(el);
-  goog.events.listen(el, goog.events.EventType.MOUSEOVER,
-                     this.handleMouseOver, false, this);
-  goog.events.listen(el, goog.events.EventType.MOUSEOUT,
-                     this.handleMouseOutAndBlur, false, this);
-  goog.events.listen(el, goog.events.EventType.MOUSEMOVE,
-                     this.handleMouseMove, false, this);
-  goog.events.listen(el, goog.events.EventType.FOCUS,
-                     this.handleFocus, false, this);
-  goog.events.listen(el, goog.events.EventType.BLUR,
-                     this.handleMouseOutAndBlur, false, this);
-};
-
-
-/**
- * Detach from element(s).
- *
- * @param {Element|string=} opt_el Element to detach from, either element
- *                                reference or string id. If no element is
- *                                specified all are detached.
- */
-goog.ui.Tooltip.prototype.detach = function(opt_el) {
-  if (opt_el) {
-    var el = goog.dom.getElement(opt_el);
-    this.detachElement_(el);
-    this.elements_.remove(el);
-  } else {
-    var a = this.elements_.getValues();
-    for (var el, i = 0; el = a[i]; i++) {
-      this.detachElement_(el);
-    }
-    this.elements_.clear();
-  }
-};
-
-
-/**
- * Detach from element.
- *
- * @param {Element} el Element to detach from.
- * @private
- */
-goog.ui.Tooltip.prototype.detachElement_ = function(el) {
-  goog.events.unlisten(el, goog.events.EventType.MOUSEOVER,
-                       this.handleMouseOver, false, this);
-  goog.events.unlisten(el, goog.events.EventType.MOUSEOUT,
-                       this.handleMouseOutAndBlur, false, this);
-  goog.events.unlisten(el, goog.events.EventType.MOUSEMOVE,
-                       this.handleMouseMove, false, this);
-  goog.events.unlisten(el, goog.events.EventType.FOCUS,
-                       this.handleFocus, false, this);
-  goog.events.unlisten(el, goog.events.EventType.BLUR,
-                       this.handleMouseOutAndBlur, false, this);
-};
-
-
-/**
- * Sets delay in milliseconds before tooltip is displayed for an element.
- *
- * @param {number} delay The delay in milliseconds.
- */
-goog.ui.Tooltip.prototype.setShowDelayMs = function(delay) {
-  this.showDelayMs_ = delay;
-};
-
-
-/**
- * @return {number} The delay in milliseconds before tooltip is displayed for an
- *     element.
- */
-goog.ui.Tooltip.prototype.getShowDelayMs = function() {
-  return this.showDelayMs_;
-};
-
-
-/**
- * Sets delay in milliseconds before tooltip is hidden once the cursor leavs
- * the element.
- *
- * @param {number} delay The delay in milliseconds.
- */
-goog.ui.Tooltip.prototype.setHideDelayMs = function(delay) {
-  this.hideDelayMs_ = delay;
-};
-
-
-/**
- * @return {number} The delay in milliseconds before tooltip is hidden once the
- *     cursor leaves the element.
- */
-goog.ui.Tooltip.prototype.getHideDelayMs = function() {
-  return this.hideDelayMs_;
-};
-
-
-/**
- * Sets tooltip message as plain text.
- *
- * @param {string} str Text message to display in tooltip.
- */
-goog.ui.Tooltip.prototype.setText = function(str) {
-  goog.dom.setTextContent(this.getElement(), str);
-};
-
-
-/**
- * Sets tooltip message as HTML markup.
- *
- * @param {string} str HTML message to display in tooltip.
- */
-goog.ui.Tooltip.prototype.setHtml = function(str) {
-  this.getElement().innerHTML = str;
-};
-
-
-/**
- * Sets tooltip element.
- *
- * @param {Element} el HTML element to use as the tooltip.
- * @override
- */
-goog.ui.Tooltip.prototype.setElement = function(el) {
-  var oldElement = this.getElement();
-  if (oldElement) {
-    goog.dom.removeNode(oldElement);
-  }
-  goog.ui.Tooltip.superClass_.setElement.call(this, el);
-  if (el) {
-    var body = this.dom_.getDocument().body;
-    body.insertBefore(el, body.lastChild);
-  }
-};
-
-
-/**
- * @return {string} The tooltip message as plain text.
- */
-goog.ui.Tooltip.prototype.getText = function() {
-  return goog.dom.getTextContent(this.getElement());
-};
-
-
-/**
- * @return {string} The tooltip message as HTML.
- */
-goog.ui.Tooltip.prototype.getHtml = function() {
-  return this.getElement().innerHTML;
-};
-
-
-/**
- * @return {goog.ui.Tooltip.State} Current state of tooltip.
- */
-goog.ui.Tooltip.prototype.getState = function() {
-  return this.showTimer ?
-             (this.isVisible() ? goog.ui.Tooltip.State.UPDATING :
-                                 goog.ui.Tooltip.State.WAITING_TO_SHOW) :
-         this.hideTimer ? goog.ui.Tooltip.State.WAITING_TO_HIDE :
-         this.isVisible() ? goog.ui.Tooltip.State.SHOWING :
-         goog.ui.Tooltip.State.INACTIVE;
-};
-
-
-/**
- * Sets whether tooltip requires the mouse to have moved or the anchor receive
- * focus before the tooltip will be shown.
- * @param {boolean} requireInteraction Whether tooltip should require some user
- *     interaction before showing tooltip.
- */
-goog.ui.Tooltip.prototype.setRequireInteraction = function(requireInteraction) {
-  this.requireInteraction_ = requireInteraction;
-};
-
-
-/**
- * Returns true if the coord is in the tooltip.
- * @param {goog.math.Coordinate} coord Coordinate being tested.
- * @return {boolean} Whether the coord is in the tooltip.
- */
-goog.ui.Tooltip.prototype.isCoordinateInTooltip = function(coord) {
-  // Check if coord is inside the the tooltip
-  if (!this.isVisible()) {
-    return false;
-  }
-
-  var offset = goog.style.getPageOffset(this.getElement());
-  var size = goog.style.getSize(this.getElement());
-  return offset.x <= coord.x && coord.x <= offset.x + size.width &&
-         offset.y <= coord.y && coord.y <= offset.y + size.height;
-};
-
-
-/**
- * Called before the popup is shown.
- *
- * @return {boolean} Whether tooltip should be shown.
- * @protected
- * @override
- */
-goog.ui.Tooltip.prototype.onBeforeShow = function() {
-  if (!goog.ui.PopupBase.prototype.onBeforeShow.call(this)) {
-    return false;
-  }
-
-  // Hide all open tooltips except if this tooltip is triggered by an element
-  // inside another tooltip.
-  if (this.anchor) {
-    for (var tt, i = 0; tt = goog.ui.Tooltip.activeInstances_[i]; i++) {
-      if (!goog.dom.contains(tt.getElement(), this.anchor)) {
-        tt.setVisible(false);
-      }
-    }
-  }
-  goog.array.insert(goog.ui.Tooltip.activeInstances_, this);
-
-  var element = this.getElement();
-  element.className = this.className;
-  this.clearHideTimer();
-
-  // Register event handlers for tooltip. Used to prevent the tooltip from
-  // closing if the cursor is over the tooltip rather then the element that
-  // triggered it.
-  goog.events.listen(element, goog.events.EventType.MOUSEOVER,
-                     this.handleTooltipMouseOver, false, this);
-  goog.events.listen(element, goog.events.EventType.MOUSEOUT,
-                     this.handleTooltipMouseOut, false, this);
-
-  this.clearShowTimer();
-  return true;
-};
-
-
-/**
- * Called after the popup is hidden.
- *
- * @protected
- * @suppress {underscore|visibility}
- * @override
- */
-goog.ui.Tooltip.prototype.onHide_ = function() {
-  goog.array.remove(goog.ui.Tooltip.activeInstances_, this);
-
-  // Hide all open tooltips triggered by an element inside this tooltip.
-  var element = this.getElement();
-  for (var tt, i = 0; tt = goog.ui.Tooltip.activeInstances_[i]; i++) {
-    if (tt.anchor && goog.dom.contains(element, tt.anchor)) {
-      tt.setVisible(false);
-    }
-  }
-
-  // If this tooltip is inside another tooltip, start hide timer for that
-  // tooltip in case this tooltip was the only reason it was still showing.
-  if (this.parentTooltip_) {
-    this.parentTooltip_.startHideTimer();
-  }
-
-  goog.events.unlisten(element, goog.events.EventType.MOUSEOVER,
-                       this.handleTooltipMouseOver, false, this);
-  goog.events.unlisten(element, goog.events.EventType.MOUSEOUT,
-                       this.handleTooltipMouseOut, false, this);
-
-  this.anchor = undefined;
-  // If we are still waiting to show a different hovercard, don't abort it
-  // because you think you haven't seen a mouse move:
-  if (this.getState() == goog.ui.Tooltip.State.INACTIVE) {
-    this.seenInteraction_ = false;
-  }
-
-  goog.ui.PopupBase.prototype.onHide_.call(this);
-};
-
-
-/**
- * Called by timer from mouse over handler. Shows tooltip if cursor is still
- * over the same element.
- *
- * @param {Element} el Element to show tooltip for.
- * @param {goog.positioning.AbstractPosition=} opt_pos Position to display popup
- *     at.
- */
-goog.ui.Tooltip.prototype.maybeShow = function(el, opt_pos) {
-  // Assert that the mouse is still over the same element, and that we have not
-  // detached from the anchor in the meantime.
-  if (this.anchor == el && this.elements_.contains(this.anchor)) {
-    if (this.seenInteraction_ || !this.requireInteraction_) {
-      // If it is currently showing, then hide it, and abort if it doesn't hide.
-      this.setVisible(false);
-      if (!this.isVisible()) {
-        this.positionAndShow_(el, opt_pos);
-      }
-    } else {
-      this.anchor = undefined;
-    }
-  }
-  this.showTimer = undefined;
-};
-
-
-/**
- * @return {goog.structs.Set} Elements this widget is attached to.
- * @protected
- */
-goog.ui.Tooltip.prototype.getElements = function() {
-  return this.elements_;
-};
-
-
-/**
- * @return {Element} Active element reference.
- */
-goog.ui.Tooltip.prototype.getActiveElement = function() {
-  return this.activeEl_;
-};
-
-
-/**
- * @param {Element} activeEl Active element reference.
- * @protected
- */
-goog.ui.Tooltip.prototype.setActiveElement = function(activeEl) {
-  this.activeEl_ = activeEl;
-};
-
-
-/**
- * Shows tooltip for a specific element.
- *
- * @param {Element} el Element to show tooltip for.
- * @param {goog.positioning.AbstractPosition=} opt_pos Position to display popup
- *     at.
- */
-goog.ui.Tooltip.prototype.showForElement = function(el, opt_pos) {
-  this.attach(el);
-  this.activeEl_ = el;
-
-  this.positionAndShow_(el, opt_pos);
-};
-
-
-/**
- * Sets tooltip position and shows it.
- *
- * @param {Element} el Element to show tooltip for.
- * @param {goog.positioning.AbstractPosition=} opt_pos Position to display popup
- *     at.
- * @private
- */
-goog.ui.Tooltip.prototype.positionAndShow_ = function(el, opt_pos) {
-  this.anchor = el;
-  this.setPosition(opt_pos ||
-      this.getPositioningStrategy(goog.ui.Tooltip.Activation.CURSOR));
-  this.setVisible(true);
-};
-
-
-/**
- * Called by timer from mouse out handler. Hides tooltip if cursor is still
- * outside element and tooltip, or if a child of tooltip has the focus.
- * @param {Element} el Tooltip's anchor when hide timer was started.
- */
-goog.ui.Tooltip.prototype.maybeHide = function(el) {
-  this.hideTimer = undefined;
-  if (el == this.anchor) {
-    if ((this.activeEl_ == null || (this.activeEl_ != this.getElement() &&
-        !this.elements_.contains(this.activeEl_))) &&
-        !this.hasActiveChild()) {
-      this.setVisible(false);
-    }
-  }
-};
-
-
-/**
- * @return {boolean} Whether tooltip element contains an active child tooltip,
- *     and should thus not be hidden.  When the child tooltip is hidden, it
- *     will check if the parent should be hidden, too.
- * @protected
- */
-goog.ui.Tooltip.prototype.hasActiveChild = function() {
-  return !!(this.childTooltip_ && this.childTooltip_.activeEl_);
-};
-
-
-/**
- * Saves the current mouse cursor position to {@code this.cursorPosition}.
- * @param {goog.events.BrowserEvent} event MOUSEOVER or MOUSEMOVE event.
- * @private
- */
-goog.ui.Tooltip.prototype.saveCursorPosition_ = function(event) {
-  var scroll = this.dom_.getDocumentScroll();
-  this.cursorPosition.x = event.clientX + scroll.x;
-  this.cursorPosition.y = event.clientY + scroll.y;
-};
-
-
-/**
- * Handler for mouse over events.
- *
- * @param {goog.events.BrowserEvent} event Event object.
- * @protected
- */
-goog.ui.Tooltip.prototype.handleMouseOver = function(event) {
-  var el = this.getAnchorFromElement(/** @type {Element} */ (event.target));
-  this.activeEl_ = /** @type {Element} */ (el);
-  this.clearHideTimer();
-  if (el != this.anchor) {
-    this.anchor = el;
-    this.startShowTimer(/** @type {Element} */ (el));
-    this.checkForParentTooltip_();
-    this.saveCursorPosition_(event);
-  }
-};
-
-
-/**
- * Find anchor containing the given element, if any.
- *
- * @param {Element} el Element that triggered event.
- * @return {Element} Element in elements_ array that contains given element,
- *     or null if not found.
- * @protected
- */
-goog.ui.Tooltip.prototype.getAnchorFromElement = function(el) {
-  // FireFox has a bug where mouse events relating to <input> elements are
-  // sometimes duplicated (often in FF2, rarely in FF3): once for the
-  // <input> element and once for a magic hidden <div> element.  Javascript
-  // code does not have sufficient permissions to read properties on that
-  // magic element and thus will throw an error in this call to
-  // getAnchorFromElement_().  In that case we swallow the error.
-  // See https://bugzilla.mozilla.org/show_bug.cgi?id=330961
-  try {
-    while (el && !this.elements_.contains(el)) {
-      el = /** @type {Element} */ (el.parentNode);
-    }
-    return el;
-  } catch (e) {
-    return null;
-  }
-};
-
-
-/**
- * Handler for mouse move events.
- *
- * @param {goog.events.BrowserEvent} event MOUSEMOVE event.
- * @protected
- */
-goog.ui.Tooltip.prototype.handleMouseMove = function(event) {
-  this.saveCursorPosition_(event);
-  this.seenInteraction_ = true;
-};
-
-
-/**
- * Handler for focus events.
- *
- * @param {goog.events.BrowserEvent} event Event object.
- * @protected
- */
-goog.ui.Tooltip.prototype.handleFocus = function(event) {
-  var el = this.getAnchorFromElement(/** @type {Element} */ (event.target));
-  this.activeEl_ = el;
-  this.seenInteraction_ = true;
-
-  if (this.anchor != el) {
-    this.anchor = el;
-    var pos = this.getPositioningStrategy(goog.ui.Tooltip.Activation.FOCUS);
-    this.clearHideTimer();
-    this.startShowTimer(/** @type {Element} */ (el), pos);
-
-    this.checkForParentTooltip_();
-  }
-};
-
-
-/**
- * Return a Position instance for repositioning the tooltip. Override in
- * subclasses to customize the way repositioning is done.
- *
- * @param {goog.ui.Tooltip.Activation} activationType Information about what
- *    kind of event caused the popup to be shown.
- * @return {!goog.positioning.AbstractPosition} The position object used
- *    to position the tooltip.
- * @protected
- */
-goog.ui.Tooltip.prototype.getPositioningStrategy = function(activationType) {
-  if (activationType == goog.ui.Tooltip.Activation.CURSOR) {
-    var coord = this.cursorPosition.clone();
-    return new goog.ui.Tooltip.CursorTooltipPosition(coord);
-  }
-  return new goog.ui.Tooltip.ElementTooltipPosition(this.activeEl_);
-};
-
-
-/**
- * Looks for an active tooltip whose element contains this tooltip's anchor.
- * This allows us to prevent hides until they are really necessary.
- *
- * @private
- */
-goog.ui.Tooltip.prototype.checkForParentTooltip_ = function() {
-  if (this.anchor) {
-    for (var tt, i = 0; tt = goog.ui.Tooltip.activeInstances_[i]; i++) {
-      if (goog.dom.contains(tt.getElement(), this.anchor)) {
-        tt.childTooltip_ = this;
-        this.parentTooltip_ = tt;
-      }
-    }
-  }
-};
-
-
-/**
- * Handler for mouse out and blur events.
- *
- * @param {goog.events.BrowserEvent} event Event object.
- * @protected
- */
-goog.ui.Tooltip.prototype.handleMouseOutAndBlur = function(event) {
-  var el = this.getAnchorFromElement(/** @type {Element} */ (event.target));
-  var elTo = this.getAnchorFromElement(
-      /** @type {Element} */ (event.relatedTarget));
-  if (el == elTo) {
-    // We haven't really left the anchor, just moved from one child to
-    // another.
-    return;
-  }
-
-  if (el == this.activeEl_) {
-    this.activeEl_ = null;
-  }
-
-  this.clearShowTimer();
-  this.seenInteraction_ = false;
-  if (this.isVisible() && (!event.relatedTarget ||
-      !goog.dom.contains(this.getElement(), event.relatedTarget))) {
-    this.startHideTimer();
-  } else {
-    this.anchor = undefined;
-  }
-};
-
-
-/**
- * Handler for mouse over events for the tooltip element.
- *
- * @param {goog.events.BrowserEvent} event Event object.
- * @protected
- */
-goog.ui.Tooltip.prototype.handleTooltipMouseOver = function(event) {
-  var element = this.getElement();
-  if (this.activeEl_ != element) {
-    this.clearHideTimer();
-    this.activeEl_ = element;
-  }
-};
-
-
-/**
- * Handler for mouse out events for the tooltip element.
- *
- * @param {goog.events.BrowserEvent} event Event object.
- * @protected
- */
-goog.ui.Tooltip.prototype.handleTooltipMouseOut = function(event) {
-  var element = this.getElement();
-  if (this.activeEl_ == element && (!event.relatedTarget ||
-      !goog.dom.contains(element, event.relatedTarget))) {
-    this.activeEl_ = null;
-    this.startHideTimer();
-  }
-};
-
-
-/**
- * Helper method, starts timer that calls maybeShow. Parameters are passed to
- * the maybeShow method.
- *
- * @param {Element} el Element to show tooltip for.
- * @param {goog.positioning.AbstractPosition=} opt_pos Position to display popup
- *     at.
- * @protected
- */
-goog.ui.Tooltip.prototype.startShowTimer = function(el, opt_pos) {
-  if (!this.showTimer) {
-    this.showTimer = goog.Timer.callOnce(
-        goog.bind(this.maybeShow, this, el, opt_pos), this.showDelayMs_);
-  }
-};
-
-
-/**
- * Helper method called to clear the show timer.
- *
- * @protected
- */
-goog.ui.Tooltip.prototype.clearShowTimer = function() {
-  if (this.showTimer) {
-    goog.Timer.clear(this.showTimer);
-    this.showTimer = undefined;
-  }
-};
-
-
-/**
- * Helper method called to start the close timer.
- * @protected
- */
-goog.ui.Tooltip.prototype.startHideTimer = function() {
-  if (this.getState() == goog.ui.Tooltip.State.SHOWING) {
-    this.hideTimer = goog.Timer.callOnce(
-        goog.bind(this.maybeHide, this, this.anchor), this.getHideDelayMs());
-  }
-};
-
-
-/**
- * Helper method called to clear the close timer.
- * @protected
- */
-goog.ui.Tooltip.prototype.clearHideTimer = function() {
-  if (this.hideTimer) {
-    goog.Timer.clear(this.hideTimer);
-    this.hideTimer = undefined;
-  }
-};
-
-
-/** @override */
-goog.ui.Tooltip.prototype.disposeInternal = function() {
-  this.setVisible(false);
-  this.clearShowTimer();
-  this.detach();
-  if (this.getElement()) {
-    goog.dom.removeNode(this.getElement());
-  }
-  this.activeEl_ = null;
-  delete this.dom_;
-  goog.ui.Tooltip.superClass_.disposeInternal.call(this);
-};
-
-
-
-/**
- * Popup position implementation that positions the popup (the tooltip in this
- * case) based on the cursor position. It's positioned below the cursor to the
- * right if there's enough room to fit all of it inside the Viewport. Otherwise
- * it's displayed as far right as possible either above or below the element.
- *
- * Used to position tooltips triggered by the cursor.
- *
- * @param {number|!goog.math.Coordinate} arg1 Left position or coordinate.
- * @param {number=} opt_arg2 Top position.
- * @constructor
- * @extends {goog.positioning.ViewportPosition}
- * @final
- */
-goog.ui.Tooltip.CursorTooltipPosition = function(arg1, opt_arg2) {
-  goog.positioning.ViewportPosition.call(this, arg1, opt_arg2);
-};
-goog.inherits(goog.ui.Tooltip.CursorTooltipPosition,
-              goog.positioning.ViewportPosition);
-
-
-/**
- * Repositions the popup based on cursor position.
- *
- * @param {Element} element The DOM element of the popup.
- * @param {goog.positioning.Corner} popupCorner The corner of the popup element
- *     that that should be positioned adjacent to the anchorElement.
- * @param {goog.math.Box=} opt_margin A margin specified in pixels.
- * @override
- */
-goog.ui.Tooltip.CursorTooltipPosition.prototype.reposition = function(
-    element, popupCorner, opt_margin) {
-  var viewportElt = goog.style.getClientViewportElement(element);
-  var viewport = goog.style.getVisibleRectForElement(viewportElt);
-  var margin = opt_margin ? new goog.math.Box(opt_margin.top + 10,
-      opt_margin.right, opt_margin.bottom, opt_margin.left + 10) :
-      new goog.math.Box(10, 0, 0, 10);
-
-  if (goog.positioning.positionAtCoordinate(this.coordinate, element,
-      goog.positioning.Corner.TOP_START, margin, viewport,
-      goog.positioning.Overflow.ADJUST_X | goog.positioning.Overflow.FAIL_Y
-      ) & goog.positioning.OverflowStatus.FAILED) {
-    goog.positioning.positionAtCoordinate(this.coordinate, element,
-        goog.positioning.Corner.TOP_START, margin, viewport,
-        goog.positioning.Overflow.ADJUST_X |
-            goog.positioning.Overflow.ADJUST_Y);
-  }
-};
-
-
-
-/**
- * Popup position implementation that positions the popup (the tooltip in this
- * case) based on the element position. It's positioned below the element to the
- * right if there's enough room to fit all of it inside the Viewport. Otherwise
- * it's displayed as far right as possible either above or below the element.
- *
- * Used to position tooltips triggered by focus changes.
- *
- * @param {Element} element The element to anchor the popup at.
- * @constructor
- * @extends {goog.positioning.AnchoredPosition}
- */
-goog.ui.Tooltip.ElementTooltipPosition = function(element) {
-  goog.positioning.AnchoredPosition.call(this, element,
-      goog.positioning.Corner.BOTTOM_RIGHT);
-};
-goog.inherits(goog.ui.Tooltip.ElementTooltipPosition,
-              goog.positioning.AnchoredPosition);
-
-
-/**
- * Repositions the popup based on element position.
- *
- * @param {Element} element The DOM element of the popup.
- * @param {goog.positioning.Corner} popupCorner The corner of the popup element
- *     that should be positioned adjacent to the anchorElement.
- * @param {goog.math.Box=} opt_margin A margin specified in pixels.
- * @override
- */
-goog.ui.Tooltip.ElementTooltipPosition.prototype.reposition = function(
-    element, popupCorner, opt_margin) {
-  var offset = new goog.math.Coordinate(10, 0);
-
-  if (goog.positioning.positionAtAnchor(this.element, this.corner, element,
-      popupCorner, offset, opt_margin,
-      goog.positioning.Overflow.ADJUST_X | goog.positioning.Overflow.FAIL_Y
-      ) & goog.positioning.OverflowStatus.FAILED) {
-    goog.positioning.positionAtAnchor(this.element,
-        goog.positioning.Corner.TOP_RIGHT, element,
-        goog.positioning.Corner.BOTTOM_LEFT, offset, opt_margin,
-        goog.positioning.Overflow.ADJUST_X |
-            goog.positioning.Overflow.ADJUST_Y);
-  }
-};
 //////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
@@ -36668,7 +32923,9 @@ goog.require('goog.ui.Menu');
 goog.require('goog.ui.MenuButton');
 goog.require('goog.ui.MenuItem');
 goog.require('goog.ui.menuBar');
-goog.require('goog.ui.Tooltip');
+//goog.require('goog.ui.Tooltip');
+goog.require('goog.events.KeyCodes');
+goog.require('goog.ui.KeyboardShortcutHandler');
 
 
 
@@ -36712,6 +32969,17 @@ silex.view.Menu.prototype.onStatus;
 silex.view.Menu.prototype.buildMenu = function(rootNode) {
   this.menu = goog.ui.menuBar.create();
 
+  // shortcut handler
+  var shortcutHandler = new goog.ui.KeyboardShortcutHandler(document);
+  goog.events.listen(
+    shortcutHandler,
+    goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED,
+    goog.bind(function(event) {
+      console.log('shortcut', event.identifier);
+      this.onMenuEvent(event.identifier);
+    }, this)
+  );
+  // create the menu items
   for (i in silex.model.Config.menu.names) {
     // Create the drop down menu with a few suboptions.
     var menu = new goog.ui.Menu();
@@ -36719,37 +32987,43 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
         function(itemData) {
           var item;
           if (itemData) {
+            // create the menu item
             var label = itemData.label;
             var id = itemData.id;
-            var className = itemData.className;
             item = new goog.ui.MenuItem(label);
             item.setId(id);
-            item.addClassName(className);
+            item.addClassName(itemData.className);
+            // checkable
             if (itemData.checkable) {
               item.setCheckable(true);
             }
-            // add shortcut
+            // mnemonic (access to an item with keyboard when the menu is open)
+            if (itemData.mnemonic) {
+              item.setMnemonic(itemData.mnemonic);
+            }
+            // shortcut
             if (itemData.shortcut) {
-              Mousetrap.bind(itemData.shortcut, goog.bind(function(e, pattern) {
-                console.log('shortcut', itemData, pattern);
-                e.preventDefault();
-                this.onMenuEvent(itemData.id);
-              }, this));
+              for (var idx in itemData.shortcut) {
+                console.log('add shortcut', itemData.tooltip, goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_PREFIX);
+                shortcutHandler.registerShortcut(itemData.id, itemData.shortcut[idx]);
+              }
             }
           } else {
             item = new goog.ui.MenuSeparator();
           }
-          item.setDispatchTransitionEvents(goog.ui.Component.State.ALL, true);
+          //item.setDispatchTransitionEvents(goog.ui.Component.State.ALL, true);
+          // add the menu item
           menu.addItem(item);
           // add tooltip (has to be after menu.addItem)
+          // TODO: add accelerator (only display shortcut here, could not get it to work automatically with closure's accelerator concept)
           if (itemData && itemData.tooltip) {
-            // add tooltip to the label
-            var div = goog.dom.createElement('small');
+            // add label
+            var div = goog.dom.createElement('span');
             div.innerHTML = itemData.tooltip;
-            div.className = 'shortcut-display';
+            div.className = 'goog-menuitem-accel';
             item.getElement().appendChild(div);
             // add a real tooltip
-            new goog.ui.Tooltip(item.getElement(), itemData.tooltip);
+            //new goog.ui.Tooltip(item.getElement(), itemData.tooltip);
           }
         }, this);
 
@@ -36759,16 +33033,6 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
     btn.addClassName(menuItemData.className);
     btn.setDispatchTransitionEvents(goog.ui.Component.State.ALL, true);
     this.menu.addChild(btn, true);
-/*
-    // add shortcut
-    if (menuItemData.shortcut) {
-      Mousetrap.bind(menuItemData.shortcut, goog.bind(function(e, pattern) {
-        console.log('shortcut for 1st level menu', menuItemData, pattern);
-        e.preventDefault();
-        this.setOpen(true);
-      }, btn));
-    }
-*/
   }
   // render the menu
   this.menu.render(rootNode);
@@ -37684,6 +33948,8 @@ silex.view.Stage.prototype.getBodyStyle = function() {
 
 
 goog.provide('silex.view.PublishSettings');
+goog.require('goog.events.KeyCodes');
+goog.require('goog.ui.KeyboardShortcutHandler');
 
 
 
@@ -37700,6 +33966,15 @@ silex.view.PublishSettings = function(element, cbk) {
   this.publicationPath = '';
   goog.style.setStyle(this.element, 'display', 'none');
 
+  // escape key
+  var shortcutHandler = new goog.ui.KeyboardShortcutHandler(document);
+  shortcutHandler.registerShortcut('esc', goog.events.KeyCodes.ESC);
+  goog.events.listen(
+      shortcutHandler,
+      goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED,
+      goog.bind(this.closeEditor, this));
+
+  // load template
   silex.Helper.loadTemplateFile('templates/publishsettings.html',
       element,
       function() {
@@ -38696,6 +34971,8 @@ goog.provide('silex.view.FileExplorer');
 
 
 goog.require('goog.async.Delay');
+goog.require('goog.events.KeyCodes');
+goog.require('goog.ui.KeyboardShortcutHandler');
 
 
 
@@ -38722,6 +34999,13 @@ silex.view.FileExplorer = function(element, cbk) {
   goog.events.listen(goog.dom.getElementByClass('close-btn', this.element), goog.events.EventType.CLICK, function() {
     this.closeEditor();
   }, false, this);
+  // escape key
+  var shortcutHandler = new goog.ui.KeyboardShortcutHandler(document);
+  shortcutHandler.registerShortcut('esc', goog.events.KeyCodes.ESC);
+  goog.events.listen(
+      shortcutHandler,
+      goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED,
+      goog.bind(this.closeEditor, this));
 
   /*    silex.Helper.loadTemplateFile('templates/fileexplorer.html', element, function() {
         that.init();
@@ -38805,9 +35089,9 @@ silex.view.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes, opt_
         // check the the file extention is ok
         if (opt_fileExtentions && silex.Helper.checkFileExt(blob.url, opt_fileExtentions) === false){
           var fileName = blob.url.substring(blob.url.lastIndexOf('/') + 1);
-          alertify.confirm('The file name ' + 
-            fileName + 
-            ' does not looks good to me, are you sure you want to select this file?', 
+          alertify.confirm('The file name ' +
+            fileName +
+            ' does not looks good to me, are you sure you want to select this file?',
               function (accept) {
             if (accept) {
               successCbk(blob);
@@ -38866,9 +35150,9 @@ silex.view.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes, op
         // check the the file extention is ok
         if (opt_fileExtentions && silex.Helper.checkFileExt(blob.url, opt_fileExtentions) === false){
           var fileName = blob.url.substring(blob.url.lastIndexOf('/') + 1);
-          alertify.confirm('The file name ' + 
-            fileName + 
-            ' does not looks good to me, are you sure you want to select this file?', 
+          alertify.confirm('The file name ' +
+            fileName +
+            ' does not looks good to me, are you sure you want to select this file?',
               function (accept) {
             if (accept) {
               successCbk(blob);
@@ -40878,6 +37162,2008 @@ goog.uri.utils.StandardQueryParam = {
 goog.uri.utils.makeUnique = function(uri) {
   return goog.uri.utils.setParam(uri,
       goog.uri.utils.StandardQueryParam.RANDOM, goog.string.getRandomString());
+};
+// Copyright 2007 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * @fileoverview Python style iteration utilities.
+ * @author arv@google.com (Erik Arvidsson)
+ */
+
+
+goog.provide('goog.iter');
+goog.provide('goog.iter.Iterable');
+goog.provide('goog.iter.Iterator');
+goog.provide('goog.iter.StopIteration');
+
+goog.require('goog.array');
+goog.require('goog.asserts');
+goog.require('goog.functions');
+goog.require('goog.math');
+
+
+// TODO(nnaze): Add more functions from Python's itertools.
+// http://docs.python.org/library/itertools.html
+
+
+/**
+ * @typedef {goog.iter.Iterator|{length:number}|{__iterator__}}
+ */
+goog.iter.Iterable;
+
+
+// For script engines that already support iterators.
+if ('StopIteration' in goog.global) {
+  /**
+   * Singleton Error object that is used to terminate iterations.
+   * @type {Error}
+   */
+  goog.iter.StopIteration = goog.global['StopIteration'];
+} else {
+  /**
+   * Singleton Error object that is used to terminate iterations.
+   * @type {Error}
+   * @suppress {duplicate}
+   */
+  goog.iter.StopIteration = Error('StopIteration');
+}
+
+
+
+/**
+ * Class/interface for iterators.  An iterator needs to implement a {@code next}
+ * method and it needs to throw a {@code goog.iter.StopIteration} when the
+ * iteration passes beyond the end.  Iterators have no {@code hasNext} method.
+ * It is recommended to always use the helper functions to iterate over the
+ * iterator or in case you are only targeting JavaScript 1.7 for in loops.
+ * @constructor
+ */
+goog.iter.Iterator = function() {};
+
+
+/**
+ * Returns the next value of the iteration.  This will throw the object
+ * {@see goog.iter#StopIteration} when the iteration passes the end.
+ * @return {*} Any object or value.
+ */
+goog.iter.Iterator.prototype.next = function() {
+  throw goog.iter.StopIteration;
+};
+
+
+/**
+ * Returns the {@code Iterator} object itself.  This is used to implement
+ * the iterator protocol in JavaScript 1.7
+ * @param {boolean=} opt_keys  Whether to return the keys or values. Default is
+ *     to only return the values.  This is being used by the for-in loop (true)
+ *     and the for-each-in loop (false).  Even though the param gives a hint
+ *     about what the iterator will return there is no guarantee that it will
+ *     return the keys when true is passed.
+ * @return {!goog.iter.Iterator} The object itself.
+ */
+goog.iter.Iterator.prototype.__iterator__ = function(opt_keys) {
+  return this;
+};
+
+
+/**
+ * Returns an iterator that knows how to iterate over the values in the object.
+ * @param {goog.iter.Iterable} iterable  If the object is an iterator it
+ *     will be returned as is.  If the object has a {@code __iterator__} method
+ *     that will be called to get the value iterator.  If the object is an
+ *     array-like object we create an iterator for that.
+ * @return {!goog.iter.Iterator} An iterator that knows how to iterate over the
+ *     values in {@code iterable}.
+ */
+goog.iter.toIterator = function(iterable) {
+  if (iterable instanceof goog.iter.Iterator) {
+    return iterable;
+  }
+  if (typeof iterable.__iterator__ == 'function') {
+    return iterable.__iterator__(false);
+  }
+  if (goog.isArrayLike(iterable)) {
+    var i = 0;
+    var newIter = new goog.iter.Iterator;
+    newIter.next = function() {
+      while (true) {
+        if (i >= iterable.length) {
+          throw goog.iter.StopIteration;
+        }
+        // Don't include deleted elements.
+        if (!(i in iterable)) {
+          i++;
+          continue;
+        }
+        return iterable[i++];
+      }
+    };
+    return newIter;
+  }
+
+
+  // TODO(arv): Should we fall back on goog.structs.getValues()?
+  throw Error('Not implemented');
+};
+
+
+/**
+ * Calls a function for each element in the iterator with the element of the
+ * iterator passed as argument.
+ *
+ * @param {goog.iter.Iterable} iterable  The iterator to iterate
+ *     over.  If the iterable is an object {@code toIterator} will be called on
+ *     it.
+* @param {function(this:T,?,?,?):?} f  The function to call for every
+ *     element.  This function
+ *     takes 3 arguments (the element, undefined, and the iterator) and the
+ *     return value is irrelevant.  The reason for passing undefined as the
+ *     second argument is so that the same function can be used in
+ *     {@see goog.array#forEach} as well as others.
+ * @param {T=} opt_obj  The object to be used as the value of 'this' within
+ *     {@code f}.
+ * @template T
+ */
+goog.iter.forEach = function(iterable, f, opt_obj) {
+  if (goog.isArrayLike(iterable)) {
+    /** @preserveTry */
+    try {
+      // NOTES: this passes the index number to the second parameter
+      // of the callback contrary to the documentation above.
+      goog.array.forEach(/** @type {goog.array.ArrayLike} */(iterable), f,
+                         opt_obj);
+    } catch (ex) {
+      if (ex !== goog.iter.StopIteration) {
+        throw ex;
+      }
+    }
+  } else {
+    iterable = goog.iter.toIterator(iterable);
+    /** @preserveTry */
+    try {
+      while (true) {
+        f.call(opt_obj, iterable.next(), undefined, iterable);
+      }
+    } catch (ex) {
+      if (ex !== goog.iter.StopIteration) {
+        throw ex;
+      }
+    }
+  }
+};
+
+
+/**
+ * Calls a function for every element in the iterator, and if the function
+ * returns true adds the element to a new iterator.
+ *
+ * @param {goog.iter.Iterable} iterable The iterator to iterate over.
+ * @param {function(this:T,?,undefined,?):boolean} f The function to call for
+ *     every element. This function
+ *     takes 3 arguments (the element, undefined, and the iterator) and should
+ *     return a boolean.  If the return value is true the element will be
+ *     included  in the returned iteror.  If it is false the element is not
+ *     included.
+ * @param {T=} opt_obj The object to be used as the value of 'this' within
+ *     {@code f}.
+ * @return {!goog.iter.Iterator} A new iterator in which only elements that
+ *     passed the test are present.
+ * @template T
+ */
+goog.iter.filter = function(iterable, f, opt_obj) {
+  var iterator = goog.iter.toIterator(iterable);
+  var newIter = new goog.iter.Iterator;
+  newIter.next = function() {
+    while (true) {
+      var val = iterator.next();
+      if (f.call(opt_obj, val, undefined, iterator)) {
+        return val;
+      }
+    }
+  };
+  return newIter;
+};
+
+
+/**
+ * Creates a new iterator that returns the values in a range.  This function
+ * can take 1, 2 or 3 arguments:
+ * <pre>
+ * range(5) same as range(0, 5, 1)
+ * range(2, 5) same as range(2, 5, 1)
+ * </pre>
+ *
+ * @param {number} startOrStop  The stop value if only one argument is provided.
+ *     The start value if 2 or more arguments are provided.  If only one
+ *     argument is used the start value is 0.
+ * @param {number=} opt_stop  The stop value.  If left out then the first
+ *     argument is used as the stop value.
+ * @param {number=} opt_step  The number to increment with between each call to
+ *     next.  This can be negative.
+ * @return {!goog.iter.Iterator} A new iterator that returns the values in the
+ *     range.
+ */
+goog.iter.range = function(startOrStop, opt_stop, opt_step) {
+  var start = 0;
+  var stop = startOrStop;
+  var step = opt_step || 1;
+  if (arguments.length > 1) {
+    start = startOrStop;
+    stop = opt_stop;
+  }
+  if (step == 0) {
+    throw Error('Range step argument must not be zero');
+  }
+
+  var newIter = new goog.iter.Iterator;
+  newIter.next = function() {
+    if (step > 0 && start >= stop || step < 0 && start <= stop) {
+      throw goog.iter.StopIteration;
+    }
+    var rv = start;
+    start += step;
+    return rv;
+  };
+  return newIter;
+};
+
+
+/**
+ * Joins the values in a iterator with a delimiter.
+ * @param {goog.iter.Iterable} iterable  The iterator to get the values from.
+ * @param {string} deliminator  The text to put between the values.
+ * @return {string} The joined value string.
+ */
+goog.iter.join = function(iterable, deliminator) {
+  return goog.iter.toArray(iterable).join(deliminator);
+};
+
+
+/**
+ * For every element in the iterator call a function and return a new iterator
+ * with that value.
+ *
+ * @param {goog.iter.Iterable} iterable The iterator to iterate over.
+ * @param {function(this:T,?,undefined,?):?} f The function to call for every
+ *     element.  This function
+ *     takes 3 arguments (the element, undefined, and the iterator) and should
+ *     return a new value.
+ * @param {T=} opt_obj The object to be used as the value of 'this' within
+ *     {@code f}.
+ * @return {!goog.iter.Iterator} A new iterator that returns the results of
+ *     applying the function to each element in the original iterator.
+ * @template T
+ */
+goog.iter.map = function(iterable, f, opt_obj) {
+  var iterator = goog.iter.toIterator(iterable);
+  var newIter = new goog.iter.Iterator;
+  newIter.next = function() {
+    while (true) {
+      var val = iterator.next();
+      return f.call(opt_obj, val, undefined, iterator);
+    }
+  };
+  return newIter;
+};
+
+
+/**
+ * Passes every element of an iterator into a function and accumulates the
+ * result.
+ *
+ * @param {goog.iter.Iterable} iterable The iterator to iterate over.
+ * @param {function(this:T,V,?):V} f The function to call for every
+ *     element. This function takes 2 arguments (the function's previous result
+ *     or the initial value, and the value of the current element).
+ *     function(previousValue, currentElement) : newValue.
+ * @param {V} val The initial value to pass into the function on the first call.
+ * @param {T=} opt_obj  The object to be used as the value of 'this'
+ *     within f.
+ * @return {V} Result of evaluating f repeatedly across the values of
+ *     the iterator.
+ * @template T,V
+ */
+goog.iter.reduce = function(iterable, f, val, opt_obj) {
+  var rval = val;
+  goog.iter.forEach(iterable, function(val) {
+    rval = f.call(opt_obj, rval, val);
+  });
+  return rval;
+};
+
+
+/**
+ * Goes through the values in the iterator. Calls f for each these and if any of
+ * them returns true, this returns true (without checking the rest). If all
+ * return false this will return false.
+ *
+ * @param {goog.iter.Iterable} iterable  The iterator object.
+ * @param {function(this:T,?,undefined,?):boolean} f  The function to call for
+ *     every value. This function
+ *     takes 3 arguments (the value, undefined, and the iterator) and should
+ *     return a boolean.
+ * @param {T=} opt_obj The object to be used as the value of 'this' within
+ *     {@code f}.
+ * @return {boolean} true if any value passes the test.
+ * @template T
+ */
+goog.iter.some = function(iterable, f, opt_obj) {
+  iterable = goog.iter.toIterator(iterable);
+  /** @preserveTry */
+  try {
+    while (true) {
+      if (f.call(opt_obj, iterable.next(), undefined, iterable)) {
+        return true;
+      }
+    }
+  } catch (ex) {
+    if (ex !== goog.iter.StopIteration) {
+      throw ex;
+    }
+  }
+  return false;
+};
+
+
+/**
+ * Goes through the values in the iterator. Calls f for each these and if any of
+ * them returns false this returns false (without checking the rest). If all
+ * return true this will return true.
+ *
+ * @param {goog.iter.Iterable} iterable  The iterator object.
+ * @param {function(this:T,?,undefined,?):boolean} f  The function to call for
+ *     every value. This function
+ *     takes 3 arguments (the value, undefined, and the iterator) and should
+ *     return a boolean.
+ * @param {T=} opt_obj The object to be used as the value of 'this' within
+ *     {@code f}.
+ * @return {boolean} true if every value passes the test.
+ * @template T
+ */
+goog.iter.every = function(iterable, f, opt_obj) {
+  iterable = goog.iter.toIterator(iterable);
+  /** @preserveTry */
+  try {
+    while (true) {
+      if (!f.call(opt_obj, iterable.next(), undefined, iterable)) {
+        return false;
+      }
+    }
+  } catch (ex) {
+    if (ex !== goog.iter.StopIteration) {
+      throw ex;
+    }
+  }
+  return true;
+};
+
+
+/**
+ * Takes zero or more iterables and returns one iterator that will iterate over
+ * them in the order chained.
+ * @param {...!goog.iter.Iterable} var_args Any number of iterable objects.
+ * @return {!goog.iter.Iterator} Returns a new iterator that will iterate over
+ *     all the given iterables' contents.
+ */
+goog.iter.chain = function(var_args) {
+  var iterator = goog.iter.toIterator(arguments);
+  var iter = new goog.iter.Iterator();
+  var current = null;
+
+  iter.next = function() {
+    while (true) {
+      if (current == null) {
+        var it = /** @type {!goog.iter.Iterable} */ (iterator.next());
+        current = goog.iter.toIterator(it);
+      }
+      try {
+        return current.next();
+      } catch (ex) {
+        if (ex !== goog.iter.StopIteration) {
+          throw ex;
+        }
+        current = null;
+      }
+    }
+  };
+
+  return iter;
+};
+
+
+/**
+ * Takes a single iterable containing zero or more iterables and returns one
+ * iterator that will iterate over each one in the order given.
+ * @see http://docs.python.org/2/library/itertools.html#itertools.chain.from_iterable
+ * @param {!goog.iter.Iterable.<!goog.iter.Iterable>} iterable The iterable of
+ *     iterables to chain.
+ * @return {!goog.iter.Iterator} Returns a new iterator that will iterate over
+ *     all the contents of the iterables contained within {@code iterable}.
+ */
+goog.iter.chainFromIterable = function(iterable) {
+  return goog.iter.chain.apply(undefined, iterable);
+};
+
+
+/**
+ * Builds a new iterator that iterates over the original, but skips elements as
+ * long as a supplied function returns true.
+ * @param {goog.iter.Iterable} iterable  The iterator object.
+ * @param {function(this:T,?,undefined,?):boolean} f  The function to call for
+ *     every value. This function
+ *     takes 3 arguments (the value, undefined, and the iterator) and should
+ *     return a boolean.
+ * @param {T=} opt_obj The object to be used as the value of 'this' within
+ *     {@code f}.
+ * @return {!goog.iter.Iterator} A new iterator that drops elements from the
+ *     original iterator as long as {@code f} is true.
+ * @template T
+ */
+goog.iter.dropWhile = function(iterable, f, opt_obj) {
+  var iterator = goog.iter.toIterator(iterable);
+  var newIter = new goog.iter.Iterator;
+  var dropping = true;
+  newIter.next = function() {
+    while (true) {
+      var val = iterator.next();
+      if (dropping && f.call(opt_obj, val, undefined, iterator)) {
+        continue;
+      } else {
+        dropping = false;
+      }
+      return val;
+    }
+  };
+  return newIter;
+};
+
+
+/**
+ * Builds a new iterator that iterates over the original, but only as long as a
+ * supplied function returns true.
+ * @param {goog.iter.Iterable} iterable  The iterator object.
+ * @param {function(this:T,?,undefined,?):boolean} f  The function to call for
+ *     every value. This function
+ *     takes 3 arguments (the value, undefined, and the iterator) and should
+ *     return a boolean.
+ * @param {T=} opt_obj This is used as the 'this' object in f when called.
+ * @return {!goog.iter.Iterator} A new iterator that keeps elements in the
+ *     original iterator as long as the function is true.
+ * @template T
+ */
+goog.iter.takeWhile = function(iterable, f, opt_obj) {
+  var iterator = goog.iter.toIterator(iterable);
+  var newIter = new goog.iter.Iterator;
+  var taking = true;
+  newIter.next = function() {
+    while (true) {
+      if (taking) {
+        var val = iterator.next();
+        if (f.call(opt_obj, val, undefined, iterator)) {
+          return val;
+        } else {
+          taking = false;
+        }
+      } else {
+        throw goog.iter.StopIteration;
+      }
+    }
+  };
+  return newIter;
+};
+
+
+/**
+ * Converts the iterator to an array
+ * @param {goog.iter.Iterable} iterable  The iterator to convert to an array.
+ * @return {!Array} An array of the elements the iterator iterates over.
+ */
+goog.iter.toArray = function(iterable) {
+  // Fast path for array-like.
+  if (goog.isArrayLike(iterable)) {
+    return goog.array.toArray(/** @type {!goog.array.ArrayLike} */(iterable));
+  }
+  iterable = goog.iter.toIterator(iterable);
+  var array = [];
+  goog.iter.forEach(iterable, function(val) {
+    array.push(val);
+  });
+  return array;
+};
+
+
+/**
+ * Iterates over two iterables and returns true if they contain the same
+ * sequence of elements and have the same length.
+ * @param {!goog.iter.Iterable} iterable1 The first iterable object.
+ * @param {!goog.iter.Iterable} iterable2 The second iterable object.
+ * @return {boolean} true if the iterables contain the same sequence of
+ *     elements and have the same length.
+ */
+goog.iter.equals = function(iterable1, iterable2) {
+  var fillValue = {};
+  var pairs = goog.iter.zipLongest(fillValue, iterable1, iterable2);
+  return goog.iter.every(pairs, function(pair) {
+    return pair[0] == pair[1];
+  });
+};
+
+
+/**
+ * Advances the iterator to the next position, returning the given default value
+ * instead of throwing an exception if the iterator has no more entries.
+ * @param {goog.iter.Iterable} iterable The iterable object.
+ * @param {*} defaultValue The value to return if the iterator is empty.
+ * @return {*} The next item in the iteration, or defaultValue if the iterator
+ *     was empty.
+ */
+goog.iter.nextOrValue = function(iterable, defaultValue) {
+  try {
+    return goog.iter.toIterator(iterable).next();
+  } catch (e) {
+    if (e != goog.iter.StopIteration) {
+      throw e;
+    }
+    return defaultValue;
+  }
+};
+
+
+/**
+ * Cartesian product of zero or more sets.  Gives an iterator that gives every
+ * combination of one element chosen from each set.  For example,
+ * ([1, 2], [3, 4]) gives ([1, 3], [1, 4], [2, 3], [2, 4]).
+ * @see http://docs.python.org/library/itertools.html#itertools.product
+ * @param {...!goog.array.ArrayLike.<*>} var_args Zero or more sets, as arrays.
+ * @return {!goog.iter.Iterator} An iterator that gives each n-tuple (as an
+ *     array).
+ */
+goog.iter.product = function(var_args) {
+  var someArrayEmpty = goog.array.some(arguments, function(arr) {
+    return !arr.length;
+  });
+
+  // An empty set in a cartesian product gives an empty set.
+  if (someArrayEmpty || !arguments.length) {
+    return new goog.iter.Iterator();
+  }
+
+  var iter = new goog.iter.Iterator();
+  var arrays = arguments;
+
+  // The first indicies are [0, 0, ...]
+  var indicies = goog.array.repeat(0, arrays.length);
+
+  iter.next = function() {
+
+    if (indicies) {
+      var retVal = goog.array.map(indicies, function(valueIndex, arrayIndex) {
+        return arrays[arrayIndex][valueIndex];
+      });
+
+      // Generate the next-largest indicies for the next call.
+      // Increase the rightmost index. If it goes over, increase the next
+      // rightmost (like carry-over addition).
+      for (var i = indicies.length - 1; i >= 0; i--) {
+        // Assertion prevents compiler warning below.
+        goog.asserts.assert(indicies);
+        if (indicies[i] < arrays[i].length - 1) {
+          indicies[i]++;
+          break;
+        }
+
+        // We're at the last indicies (the last element of every array), so
+        // the iteration is over on the next call.
+        if (i == 0) {
+          indicies = null;
+          break;
+        }
+        // Reset the index in this column and loop back to increment the
+        // next one.
+        indicies[i] = 0;
+      }
+      return retVal;
+    }
+
+    throw goog.iter.StopIteration;
+  };
+
+  return iter;
+};
+
+
+/**
+ * Create an iterator to cycle over the iterable's elements indefinitely.
+ * For example, ([1, 2, 3]) would return : 1, 2, 3, 1, 2, 3, ...
+ * @see: http://docs.python.org/library/itertools.html#itertools.cycle.
+ * @param {!goog.iter.Iterable} iterable The iterable object.
+ * @return {!goog.iter.Iterator} An iterator that iterates indefinitely over
+ * the values in {@code iterable}.
+ */
+goog.iter.cycle = function(iterable) {
+
+  var baseIterator = goog.iter.toIterator(iterable);
+
+  // We maintain a cache to store the iterable elements as we iterate
+  // over them. The cache is used to return elements once we have
+  // iterated over the iterable once.
+  var cache = [];
+  var cacheIndex = 0;
+
+  var iter = new goog.iter.Iterator();
+
+  // This flag is set after the iterable is iterated over once
+  var useCache = false;
+
+  iter.next = function() {
+    var returnElement = null;
+
+    // Pull elements off the original iterator if not using cache
+    if (!useCache) {
+      try {
+        // Return the element from the iterable
+        returnElement = baseIterator.next();
+        cache.push(returnElement);
+        return returnElement;
+      } catch (e) {
+        // If an exception other than StopIteration is thrown
+        // or if there are no elements to iterate over (the iterable was empty)
+        // throw an exception
+        if (e != goog.iter.StopIteration || goog.array.isEmpty(cache)) {
+          throw e;
+        }
+        // set useCache to true after we know that a 'StopIteration' exception
+        // was thrown and the cache is not empty (to handle the 'empty iterable'
+        // use case)
+        useCache = true;
+      }
+    }
+
+    returnElement = cache[cacheIndex];
+    cacheIndex = (cacheIndex + 1) % cache.length;
+
+    return returnElement;
+  };
+
+  return iter;
+};
+
+
+/**
+ * Creates an iterator that counts indefinitely from a starting value.
+ * @see http://docs.python.org/2/library/itertools.html#itertools.count
+ * @param {number=} opt_start The starting value. Default is 0.
+ * @param {number=} opt_step The number to increment with between each call to
+ *     next. Negative and floating point numbers are allowed. Default is 1.
+ * @return {!goog.iter.Iterator} A new iterator that returns the values in the
+ *     series.
+ */
+goog.iter.count = function(opt_start, opt_step) {
+  var counter = opt_start || 0;
+  var step = goog.isDef(opt_step) ? opt_step : 1;
+  var iter = new goog.iter.Iterator();
+
+  iter.next = function() {
+    var returnValue = counter;
+    counter += step;
+    return returnValue;
+  };
+
+  return iter;
+};
+
+
+/**
+ * Creates an iterator that returns the same object or value repeatedly.
+ * @param {*} value Any object or value to repeat.
+ * @return {!goog.iter.Iterator} A new iterator that returns the repeated value.
+ */
+goog.iter.repeat = function(value) {
+  var iter = new goog.iter.Iterator();
+
+  iter.next = goog.functions.constant(value);
+
+  return iter;
+};
+
+
+/**
+ * Creates an iterator that returns running totals from the numbers in
+ * {@code iterable}. For example, the array {@code [1, 2, 3, 4, 5]} yields
+ * {@code 1 -> 3 -> 6 -> 10 -> 15}.
+ * @see http://docs.python.org/3.2/library/itertools.html#itertools.accumulate
+ * @param {!goog.iter.Iterable.<number>} iterable The iterable of numbers to
+ *     accumulate.
+ * @return {!goog.iter.Iterator.<number>} A new iterator that returns the
+ *     numbers in the series.
+ */
+goog.iter.accumulate = function(iterable) {
+  var iterator = goog.iter.toIterator(iterable);
+  var total = 0;
+  var iter = new goog.iter.Iterator();
+
+  iter.next = function() {
+    total += iterator.next();
+    return total;
+  };
+
+  return iter;
+};
+
+
+/**
+ * Creates an iterator that returns arrays containing the ith elements from the
+ * provided iterables. The returned arrays will be the same size as the number
+ * of iterables given in {@code var_args}. Once the shortest iterable is
+ * exhausted, subsequent calls to {@code next()} will throw
+ * {@code goog.iter.StopIteration}.
+ * @see http://docs.python.org/2/library/itertools.html#itertools.izip
+ * @param {...!goog.iter.Iterable} var_args Any number of iterable objects.
+ * @return {!goog.iter.Iterator} A new iterator that returns arrays of elements
+ *     from the provided iterables.
+ */
+goog.iter.zip = function(var_args) {
+  var args = arguments;
+  var iter = new goog.iter.Iterator();
+
+  if (args.length > 0) {
+    var iterators = goog.array.map(args, goog.iter.toIterator);
+    iter.next = function() {
+      var arr = goog.array.map(iterators, function(it) {
+        return it.next();
+      });
+      return arr;
+    };
+  }
+
+  return iter;
+};
+
+
+/**
+ * Creates an iterator that returns arrays containing the ith elements from the
+ * provided iterables. The returned arrays will be the same size as the number
+ * of iterables given in {@code var_args}. Shorter iterables will be extended
+ * with {@code fillValue}. Once the longest iterable is exhausted, subsequent
+ * calls to {@code next()} will throw {@code goog.iter.StopIteration}.
+ * @see http://docs.python.org/2/library/itertools.html#itertools.izip_longest
+ * @param {*} fillValue The object or value used to fill shorter iterables.
+ * @param {...!goog.iter.Iterable} var_args Any number of iterable objects.
+ * @return {!goog.iter.Iterator} A new iterator that returns arrays of elements
+ *     from the provided iterables.
+ */
+goog.iter.zipLongest = function(fillValue, var_args) {
+  var args = goog.array.slice(arguments, 1);
+  var iter = new goog.iter.Iterator();
+
+  if (args.length > 0) {
+    var iterators = goog.array.map(args, goog.iter.toIterator);
+
+    iter.next = function() {
+      var iteratorsHaveValues = false;  // false when all iterators are empty.
+      var arr = goog.array.map(iterators, function(it) {
+        var returnValue;
+        try {
+          returnValue = it.next();
+          // Iterator had a value, so we've not exhausted the iterators.
+          // Set flag accordingly.
+          iteratorsHaveValues = true;
+        } catch (ex) {
+          if (ex !== goog.iter.StopIteration) {
+            throw ex;
+          }
+          returnValue = fillValue;
+        }
+        return returnValue;
+      });
+
+      if (!iteratorsHaveValues) {
+        throw goog.iter.StopIteration;
+      }
+      return arr;
+    };
+  }
+
+  return iter;
+};
+
+
+/**
+ * Creates an iterator that filters {@code iterable} based on a series of
+ * {@code selectors}. On each call to {@code next()}, one item is taken from
+ * both the {@code iterable} and {@code selectors} iterators. If the item from
+ * {@code selectors} evaluates to true, the item from {@code iterable} is given.
+ * Otherwise, it is skipped. Once either {@code iterable} or {@code selectors}
+ * is exhausted, subsequent calls to {@code next()} will throw
+ * {@code goog.iter.StopIteration}.
+ * @see http://docs.python.org/2/library/itertools.html#itertools.compress
+ * @param {!goog.iter.Iterable.<T>} iterable The iterable to filter.
+ * @param {!goog.iter.Iterable} selectors An iterable of items to be evaluated
+ *     in a boolean context to determine if the corresponding element in
+ *     {@code iterable} should be included in the result.
+ * @return {!goog.iter.Iterable.<T>} A new iterator that returns the filtered
+ *    values.
+ * @template T
+ */
+goog.iter.compress = function(iterable, selectors) {
+  var selectorIterator = goog.iter.toIterator(selectors);
+
+  return goog.iter.filter(iterable, function() {
+    return !!selectorIterator.next();
+  });
+};
+
+
+
+/**
+ * Implements the {@code goog.iter.groupBy} iterator.
+ * @param {!goog.iter.Iterable} iterable  The iterable to group.
+ * @param {Function=} opt_keyFunc  Optional function for determining the key
+ *     value for each group in the {@code iterable}. Default is the identity
+ *     function.
+ * @constructor
+ * @extends {goog.iter.Iterator}
+ * @private
+ */
+goog.iter.GroupByIterator_ = function(iterable, opt_keyFunc) {
+
+  /**
+   * The iterable to group, coerced to an iterator.
+   * @type {!goog.iter.Iterator}
+   */
+  this.iterator = goog.iter.toIterator(iterable);
+
+  /**
+   * A function for determining the key value for each element in the iterable.
+   * If no function is provided, the idenity function is used and returns the
+   * element unchanged.
+   * @type {function(...[*]): *}
+   */
+  this.keyFunc = opt_keyFunc || goog.functions.identity;
+
+  /**
+   * The target key for determining the start of a group.
+   * @type {*}
+   */
+  this.targetKey;
+
+  /**
+   * The current key visited during iteration.
+   * @type {*}
+   */
+  this.currentKey;
+
+  /**
+   * The current value being added to the group.
+   * @type {*}
+   */
+  this.currentValue;
+};
+goog.inherits(goog.iter.GroupByIterator_, goog.iter.Iterator);
+
+
+/** @override */
+goog.iter.GroupByIterator_.prototype.next = function() {
+  while (this.currentKey == this.targetKey) {
+    this.currentValue = this.iterator.next();  // Exits on StopIteration
+    this.currentKey = this.keyFunc(this.currentValue);
+  }
+  this.targetKey = this.currentKey;
+  return [this.currentKey, this.groupItems_(this.targetKey)];
+};
+
+
+/**
+ * Performs the grouping of objects using the given key.
+ * @param {*} targetKey  The target key object for the group.
+ * @return {!Array} An array of grouped objects.
+ * @private
+ */
+goog.iter.GroupByIterator_.prototype.groupItems_ = function(targetKey) {
+  var arr = [];
+  while (this.currentKey == targetKey) {
+    arr.push(this.currentValue);
+    try {
+      this.currentValue = this.iterator.next();
+    } catch (ex) {
+      if (ex !== goog.iter.StopIteration) {
+        throw ex;
+      }
+      break;
+    }
+    this.currentKey = this.keyFunc(this.currentValue);
+  }
+  return arr;
+};
+
+
+/**
+ * Creates an iterator that returns arrays containing elements from the
+ * {@code iterable} grouped by a key value. For iterables with repeated
+ * elements (i.e. sorted according to a particular key function), this function
+ * has a {@code uniq}-like effect. For example, grouping the array:
+ * {@code [A, B, B, C, C, A]} produces
+ * {@code [A, [A]], [B, [B, B]], [C, [C, C]], [A, [A]]}.
+ * @see http://docs.python.org/2/library/itertools.html#itertools.groupby
+ * @param {!goog.iter.Iterable} iterable  The iterable to group.
+ * @param {Function=} opt_keyFunc  Optional function for determining the key
+ *     value for each group in the {@code iterable}. Default is the identity
+ *     function.
+ * @return {!goog.iter.Iterator} A new iterator that returns arrays of
+ *     consecutive key and groups.
+ */
+goog.iter.groupBy = function(iterable, opt_keyFunc) {
+  return new goog.iter.GroupByIterator_(iterable, opt_keyFunc);
+};
+
+
+/**
+ * Returns an array of iterators each of which can iterate over the values in
+ * {@code iterable} without advancing the others.
+ * @see http://docs.python.org/2/library/itertools.html#itertools.tee
+ * @param {!goog.iter.Iterable} iterable  The iterable to tee.
+ * @param {number=} opt_num  The number of iterators to create. Default is 2.
+ * @return {!Array.<goog.iter.Iterator>} An array of iterators.
+ */
+goog.iter.tee = function(iterable, opt_num) {
+  var iterator = goog.iter.toIterator(iterable);
+  var num = goog.isNumber(opt_num) ? opt_num : 2;
+  var buffers = goog.array.map(goog.array.range(num), function() {
+    return [];
+  });
+
+  var addNextIteratorValueToBuffers = function() {
+    var val = iterator.next();
+    goog.array.forEach(buffers, function(buffer) {
+      buffer.push(val);
+    });
+  };
+
+  var createIterator = function(buffer) {
+    // Each tee'd iterator has an associated buffer (initially empty). When a
+    // tee'd iterator's buffer is empty, it calls
+    // addNextIteratorValueToBuffers(), adding the next value to all tee'd
+    // iterators' buffers, and then returns that value. This allows each
+    // iterator to be advanced independently.
+    var iter = new goog.iter.Iterator();
+
+    iter.next = function() {
+      if (goog.array.isEmpty(buffer)) {
+        addNextIteratorValueToBuffers();
+      }
+      goog.asserts.assert(!goog.array.isEmpty(buffer));
+      return buffer.shift();
+    };
+
+    return iter;
+  };
+
+  return goog.array.map(buffers, createIterator);
+};
+
+
+/**
+ * Creates an iterator that returns arrays containing a count and an element
+ * obtained from the given {@code iterable}.
+ * @see http://docs.python.org/2/library/functions.html#enumerate
+ * @param {!goog.iter.Iterable} iterable  The iterable to enumerate.
+ * @param {number=} opt_start  Optional starting value. Default is 0.
+ * @return {!goog.iter.Iterator} A new iterator containing count/item pairs.
+ */
+goog.iter.enumerate = function(iterable, opt_start) {
+  return goog.iter.zip(goog.iter.count(opt_start), iterable);
+};
+
+
+/**
+ * Creates an iterator that returns the first {@code limitSize} elements from an
+ * iterable. If this number is greater than the number of elements in the
+ * iterable, all the elements are returned.
+ * @see http://goo.gl/V0sihp Inspired by the limit iterator in Guava.
+ * @param {!goog.iter.Iterable} iterable  The iterable to limit.
+ * @param {number} limitSize  The maximum number of elements to return.
+ * @return {!goog.iter.Iterator} A new iterator containing {@code limitSize}
+ *     elements.
+ */
+goog.iter.limit = function(iterable, limitSize) {
+  goog.asserts.assert(goog.math.isInt(limitSize) && limitSize >= 0);
+
+  var iterator = goog.iter.toIterator(iterable);
+
+  var iter = new goog.iter.Iterator();
+  var remaining = limitSize;
+
+  iter.next = function() {
+    if (remaining-- > 0) {
+      return iterator.next();
+    }
+    throw goog.iter.StopIteration;
+  };
+
+  return iter;
+};
+
+
+/**
+ * Creates an iterator that is advanced {@code count} steps ahead. Consumed
+ * values are silently discarded. If {@code count} is greater than the number
+ * of elements in {@code iterable}, an empty iterator is returned. Subsequent
+ * calls to {@code next()} will throw {@code goog.iter.StopIteration}.
+ * @param {!goog.iter.Iterable} iterable  The iterable to consume.
+ * @param {number} count  The number of elements to consume from the iterator.
+ * @return {!goog.iter.Iterator}  An iterator advanced zero or more steps ahead.
+ */
+goog.iter.consume = function(iterable, count) {
+  goog.asserts.assert(goog.math.isInt(count) && count >= 0);
+
+  var iterator = goog.iter.toIterator(iterable);
+
+  while (count-- > 0) {
+    goog.iter.nextOrValue(iterator, null);
+  }
+
+  return iterator;
+};
+
+
+/**
+ * Creates an iterator that returns a range of elements from an iterable.
+ * Similar to {@see goog.array#slice} but does not support negative indexes.
+ * @param {!goog.iter.Iterable} iterable  The iterable to slice.
+ * @param {number} start  The index of the first element to return.
+ * @param {number=} opt_end  The index after the last element to return. If
+ *     defined, must be greater than or equal to {@code start}.
+ * @return {!goog.iter.Iterator}  A new iterator containing a slice of the
+ *     original.
+ */
+goog.iter.slice = function(iterable, start, opt_end) {
+  goog.asserts.assert(goog.math.isInt(start) && start >= 0);
+
+  var iterator = goog.iter.consume(iterable, start);
+
+  if (goog.isNumber(opt_end)) {
+    goog.asserts.assert(
+        goog.math.isInt(/** @type {number} */ (opt_end)) && opt_end >= start);
+    iterator = goog.iter.limit(iterator, opt_end - start /* limitSize */);
+  }
+
+  return iterator;
+};
+
+
+/**
+ * Checks an array for duplicate elements.
+ * @param {Array.<T>|goog.array.ArrayLike} arr The array to check for
+ *     duplicates.
+ * @return {boolean} True, if the array contains duplicates, false otherwise.
+ * @private
+ * @template T
+ */
+// TODO(user): Consider moving this into goog.array as a public function.
+goog.iter.hasDuplicates_ = function(arr) {
+  var deduped = [];
+  goog.array.removeDuplicates(arr, deduped);
+  return arr.length != deduped.length;
+};
+
+
+/**
+ * Creates an iterator that returns permutations of elements in
+ * {@code iterable}.
+ *
+ * Permutations are obtained by taking the Cartesian product of
+ * {@code opt_length} iterables and filtering out those with repeated
+ * elements. For example, the permutations of {@code [1,2,3]} are
+ * {@code [[1,2,3], [1,3,2], [2,1,3], [2,3,1], [3,1,2], [3,2,1]]}.
+ * @see http://docs.python.org/2/library/itertools.html#itertools.permutations
+ * @param {!goog.iter.Iterable} iterable The iterable from which to generate
+ *    permutations.
+ * @param {number=} opt_length Length of each permutation. If omitted, defaults
+ *     to the length of {@code iterable}.
+ * @return {!goog.iter.Iterator} A new iterator containing the permutations of
+ *     {@code iterable}.
+ */
+goog.iter.permutations = function(iterable, opt_length) {
+  var elements = goog.iter.toArray(iterable);
+  var length = goog.isNumber(opt_length) ? opt_length : elements.length;
+
+  var sets = goog.array.repeat(elements, length);
+  var product = goog.iter.product.apply(undefined, sets);
+
+  return goog.iter.filter(product, function(arr) {
+    return !goog.iter.hasDuplicates_(arr);
+  });
+};
+
+
+/**
+ * Creates an iterator that returns combinations of elements from
+ * {@code iterable}.
+ *
+ * Combinations are obtained by taking the {@see goog.iter#permutations} of
+ * {@code iterable} and filtering those whose elements appear in the order they
+ * are encountered in {@code iterable}. For example, the 3-length combinations
+ * of {@code [0,1,2,3]} are {@code [[0,1,2], [0,1,3], [0,2,3], [1,2,3]]}.
+ * @see http://docs.python.org/2/library/itertools.html#itertools.combinations
+ * @param {!goog.iter.Iterable} iterable The iterable from which to generate
+ *     combinations.
+ * @param {number} length The length of each combination.
+ * @return {!goog.iter.Iterator} A new iterator containing combinations from
+ *     the {@code iterable}.
+ */
+goog.iter.combinations = function(iterable, length) {
+  var elements = goog.iter.toArray(iterable);
+  var indexes = goog.iter.range(elements.length);
+  var indexIterator = goog.iter.permutations(indexes, length);
+  // sortedIndexIterator will now give arrays of with the given length that
+  // indicate what indexes into "elements" should be returned on each iteration.
+  var sortedIndexIterator = goog.iter.filter(indexIterator, function(arr) {
+    return goog.array.isSorted(arr);
+  });
+
+  var iter = new goog.iter.Iterator();
+
+  function getIndexFromElements(index) {
+    return elements[index];
+  }
+
+  iter.next = function() {
+    return goog.array.map(
+        /** @type {!Array.<number>} */
+        (sortedIndexIterator.next()), getIndexFromElements);
+  };
+
+  return iter;
+};
+
+
+/**
+ * Creates an iterator that returns combinations of elements from
+ * {@code iterable}, with repeated elements possible.
+ *
+ * Combinations are obtained by taking the Cartesian product of {@code length}
+ * iterables and filtering those whose elements appear in the order they are
+ * encountered in {@code iterable}. For example, the 2-length combinations of
+ * {@code [1,2,3]} are {@code [[1,1], [1,2], [1,3], [2,2], [2,3], [3,3]]}.
+ * @see http://docs.python.org/2/library/itertools.html#itertools.combinations_with_replacement
+ * @see http://en.wikipedia.org/wiki/Combination#Number_of_combinations_with_repetition
+ * @param {!goog.iter.Iterable} iterable The iterable to combine.
+ * @param {number} length The length of each combination.
+ * @return {!goog.iter.Iterator} A new iterator containing combinations from
+ *     the {@code iterable}.
+ */
+goog.iter.combinationsWithReplacement = function(iterable, length) {
+  var elements = goog.iter.toArray(iterable);
+  var indexes = goog.array.range(elements.length);
+  var sets = goog.array.repeat(indexes, length);
+  var indexIterator = goog.iter.product.apply(undefined, sets);
+  // sortedIndexIterator will now give arrays of with the given length that
+  // indicate what indexes into "elements" should be returned on each iteration.
+  var sortedIndexIterator = goog.iter.filter(indexIterator, function(arr) {
+    return goog.array.isSorted(arr);
+  });
+
+  var iter = new goog.iter.Iterator();
+
+  function getIndexFromElements(index) {
+    return elements[index];
+  }
+
+  iter.next = function() {
+    return goog.array.map(
+        /** @type {!Array.<number>} */
+        (sortedIndexIterator.next()), getIndexFromElements);
+  };
+
+  return iter;
+};
+// Copyright 2006 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * @fileoverview Datastructure: Hash Map.
+ *
+ * @author arv@google.com (Erik Arvidsson)
+ * @author jonp@google.com (Jon Perlow) Optimized for IE6
+ *
+ * This file contains an implementation of a Map structure. It implements a lot
+ * of the methods used in goog.structs so those functions work on hashes. This
+ * is best suited for complex key types. For simple keys such as numbers and
+ * strings, and where special names like __proto__ are not a concern, consider
+ * using the lighter-weight utilities in goog.object.
+ */
+
+
+goog.provide('goog.structs.Map');
+
+goog.require('goog.iter.Iterator');
+goog.require('goog.iter.StopIteration');
+goog.require('goog.object');
+
+
+
+/**
+ * Class for Hash Map datastructure.
+ * @param {*=} opt_map Map or Object to initialize the map with.
+ * @param {...*} var_args If 2 or more arguments are present then they
+ *     will be used as key-value pairs.
+ * @constructor
+ * @template K, V
+ */
+goog.structs.Map = function(opt_map, var_args) {
+
+  /**
+   * Underlying JS object used to implement the map.
+   * @private {!Object}
+   */
+  this.map_ = {};
+
+  /**
+   * An array of keys. This is necessary for two reasons:
+   *   1. Iterating the keys using for (var key in this.map_) allocates an
+   *      object for every key in IE which is really bad for IE6 GC perf.
+   *   2. Without a side data structure, we would need to escape all the keys
+   *      as that would be the only way we could tell during iteration if the
+   *      key was an internal key or a property of the object.
+   *
+   * This array can contain deleted keys so it's necessary to check the map
+   * as well to see if the key is still in the map (this doesn't require a
+   * memory allocation in IE).
+   * @private {!Array.<string>}
+   */
+  this.keys_ = [];
+
+  /**
+   * The number of key value pairs in the map.
+   * @private {number}
+   */
+  this.count_ = 0;
+
+  /**
+   * Version used to detect changes while iterating.
+   * @private {number}
+   */
+  this.version_ = 0;
+
+  var argLength = arguments.length;
+
+  if (argLength > 1) {
+    if (argLength % 2) {
+      throw Error('Uneven number of arguments');
+    }
+    for (var i = 0; i < argLength; i += 2) {
+      this.set(arguments[i], arguments[i + 1]);
+    }
+  } else if (opt_map) {
+    this.addAll(/** @type {Object} */ (opt_map));
+  }
+};
+
+
+/**
+ * @return {number} The number of key-value pairs in the map.
+ */
+goog.structs.Map.prototype.getCount = function() {
+  return this.count_;
+};
+
+
+/**
+ * Returns the values of the map.
+ * @return {!Array.<V>} The values in the map.
+ */
+goog.structs.Map.prototype.getValues = function() {
+  this.cleanupKeysArray_();
+
+  var rv = [];
+  for (var i = 0; i < this.keys_.length; i++) {
+    var key = this.keys_[i];
+    rv.push(this.map_[key]);
+  }
+  return rv;
+};
+
+
+/**
+ * Returns the keys of the map.
+ * @return {!Array.<string>} Array of string values.
+ */
+goog.structs.Map.prototype.getKeys = function() {
+  this.cleanupKeysArray_();
+  return /** @type {!Array.<string>} */ (this.keys_.concat());
+};
+
+
+/**
+ * Whether the map contains the given key.
+ * @param {*} key The key to check for.
+ * @return {boolean} Whether the map contains the key.
+ */
+goog.structs.Map.prototype.containsKey = function(key) {
+  return goog.structs.Map.hasKey_(this.map_, key);
+};
+
+
+/**
+ * Whether the map contains the given value. This is O(n).
+ * @param {V} val The value to check for.
+ * @return {boolean} Whether the map contains the value.
+ */
+goog.structs.Map.prototype.containsValue = function(val) {
+  for (var i = 0; i < this.keys_.length; i++) {
+    var key = this.keys_[i];
+    if (goog.structs.Map.hasKey_(this.map_, key) && this.map_[key] == val) {
+      return true;
+    }
+  }
+  return false;
+};
+
+
+/**
+ * Whether this map is equal to the argument map.
+ * @param {goog.structs.Map} otherMap The map against which to test equality.
+ * @param {function(V, V): boolean=} opt_equalityFn Optional equality function
+ *     to test equality of values. If not specified, this will test whether
+ *     the values contained in each map are identical objects.
+ * @return {boolean} Whether the maps are equal.
+ */
+goog.structs.Map.prototype.equals = function(otherMap, opt_equalityFn) {
+  if (this === otherMap) {
+    return true;
+  }
+
+  if (this.count_ != otherMap.getCount()) {
+    return false;
+  }
+
+  var equalityFn = opt_equalityFn || goog.structs.Map.defaultEquals;
+
+  this.cleanupKeysArray_();
+  for (var key, i = 0; key = this.keys_[i]; i++) {
+    if (!equalityFn(this.get(key), otherMap.get(key))) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
+
+/**
+ * Default equality test for values.
+ * @param {*} a The first value.
+ * @param {*} b The second value.
+ * @return {boolean} Whether a and b reference the same object.
+ */
+goog.structs.Map.defaultEquals = function(a, b) {
+  return a === b;
+};
+
+
+/**
+ * @return {boolean} Whether the map is empty.
+ */
+goog.structs.Map.prototype.isEmpty = function() {
+  return this.count_ == 0;
+};
+
+
+/**
+ * Removes all key-value pairs from the map.
+ */
+goog.structs.Map.prototype.clear = function() {
+  this.map_ = {};
+  this.keys_.length = 0;
+  this.count_ = 0;
+  this.version_ = 0;
+};
+
+
+/**
+ * Removes a key-value pair based on the key. This is O(logN) amortized due to
+ * updating the keys array whenever the count becomes half the size of the keys
+ * in the keys array.
+ * @param {*} key  The key to remove.
+ * @return {boolean} Whether object was removed.
+ */
+goog.structs.Map.prototype.remove = function(key) {
+  if (goog.structs.Map.hasKey_(this.map_, key)) {
+    delete this.map_[key];
+    this.count_--;
+    this.version_++;
+
+    // clean up the keys array if the threshhold is hit
+    if (this.keys_.length > 2 * this.count_) {
+      this.cleanupKeysArray_();
+    }
+
+    return true;
+  }
+  return false;
+};
+
+
+/**
+ * Cleans up the temp keys array by removing entries that are no longer in the
+ * map.
+ * @private
+ */
+goog.structs.Map.prototype.cleanupKeysArray_ = function() {
+  if (this.count_ != this.keys_.length) {
+    // First remove keys that are no longer in the map.
+    var srcIndex = 0;
+    var destIndex = 0;
+    while (srcIndex < this.keys_.length) {
+      var key = this.keys_[srcIndex];
+      if (goog.structs.Map.hasKey_(this.map_, key)) {
+        this.keys_[destIndex++] = key;
+      }
+      srcIndex++;
+    }
+    this.keys_.length = destIndex;
+  }
+
+  if (this.count_ != this.keys_.length) {
+    // If the count still isn't correct, that means we have duplicates. This can
+    // happen when the same key is added and removed multiple times. Now we have
+    // to allocate one extra Object to remove the duplicates. This could have
+    // been done in the first pass, but in the common case, we can avoid
+    // allocating an extra object by only doing this when necessary.
+    var seen = {};
+    var srcIndex = 0;
+    var destIndex = 0;
+    while (srcIndex < this.keys_.length) {
+      var key = this.keys_[srcIndex];
+      if (!(goog.structs.Map.hasKey_(seen, key))) {
+        this.keys_[destIndex++] = key;
+        seen[key] = 1;
+      }
+      srcIndex++;
+    }
+    this.keys_.length = destIndex;
+  }
+};
+
+
+/**
+ * Returns the value for the given key.  If the key is not found and the default
+ * value is not given this will return {@code undefined}.
+ * @param {*} key The key to get the value for.
+ * @param {DEFAULT=} opt_val The value to return if no item is found for the
+ *     given key, defaults to undefined.
+ * @return {V|DEFAULT} The value for the given key.
+ * @template DEFAULT
+ */
+goog.structs.Map.prototype.get = function(key, opt_val) {
+  if (goog.structs.Map.hasKey_(this.map_, key)) {
+    return this.map_[key];
+  }
+  return opt_val;
+};
+
+
+/**
+ * Adds a key-value pair to the map.
+ * @param {*} key The key.
+ * @param {V} value The value to add.
+ * @return {*} Some subclasses return a value.
+ */
+goog.structs.Map.prototype.set = function(key, value) {
+  if (!(goog.structs.Map.hasKey_(this.map_, key))) {
+    this.count_++;
+    this.keys_.push(key);
+    // Only change the version if we add a new key.
+    this.version_++;
+  }
+  this.map_[key] = value;
+};
+
+
+/**
+ * Adds multiple key-value pairs from another goog.structs.Map or Object.
+ * @param {Object} map  Object containing the data to add.
+ */
+goog.structs.Map.prototype.addAll = function(map) {
+  var keys, values;
+  if (map instanceof goog.structs.Map) {
+    keys = map.getKeys();
+    values = map.getValues();
+  } else {
+    keys = goog.object.getKeys(map);
+    values = goog.object.getValues(map);
+  }
+  // we could use goog.array.forEach here but I don't want to introduce that
+  // dependency just for this.
+  for (var i = 0; i < keys.length; i++) {
+    this.set(keys[i], values[i]);
+  }
+};
+
+
+/**
+ * Clones a map and returns a new map.
+ * @return {!goog.structs.Map} A new map with the same key-value pairs.
+ */
+goog.structs.Map.prototype.clone = function() {
+  return new goog.structs.Map(this);
+};
+
+
+/**
+ * Returns a new map in which all the keys and values are interchanged
+ * (keys become values and values become keys). If multiple keys map to the
+ * same value, the chosen transposed value is implementation-dependent.
+ *
+ * It acts very similarly to {goog.object.transpose(Object)}.
+ *
+ * @return {!goog.structs.Map} The transposed map.
+ */
+goog.structs.Map.prototype.transpose = function() {
+  var transposed = new goog.structs.Map();
+  for (var i = 0; i < this.keys_.length; i++) {
+    var key = this.keys_[i];
+    var value = this.map_[key];
+    transposed.set(value, key);
+  }
+
+  return transposed;
+};
+
+
+/**
+ * @return {!Object} Object representation of the map.
+ */
+goog.structs.Map.prototype.toObject = function() {
+  this.cleanupKeysArray_();
+  var obj = {};
+  for (var i = 0; i < this.keys_.length; i++) {
+    var key = this.keys_[i];
+    obj[key] = this.map_[key];
+  }
+  return obj;
+};
+
+
+/**
+ * Returns an iterator that iterates over the keys in the map.  Removal of keys
+ * while iterating might have undesired side effects.
+ * @return {!goog.iter.Iterator} An iterator over the keys in the map.
+ */
+goog.structs.Map.prototype.getKeyIterator = function() {
+  return this.__iterator__(true);
+};
+
+
+/**
+ * Returns an iterator that iterates over the values in the map.  Removal of
+ * keys while iterating might have undesired side effects.
+ * @return {!goog.iter.Iterator} An iterator over the values in the map.
+ */
+goog.structs.Map.prototype.getValueIterator = function() {
+  return this.__iterator__(false);
+};
+
+
+/**
+ * Returns an iterator that iterates over the values or the keys in the map.
+ * This throws an exception if the map was mutated since the iterator was
+ * created.
+ * @param {boolean=} opt_keys True to iterate over the keys. False to iterate
+ *     over the values.  The default value is false.
+ * @return {!goog.iter.Iterator} An iterator over the values or keys in the map.
+ */
+goog.structs.Map.prototype.__iterator__ = function(opt_keys) {
+  // Clean up keys to minimize the risk of iterating over dead keys.
+  this.cleanupKeysArray_();
+
+  var i = 0;
+  var keys = this.keys_;
+  var map = this.map_;
+  var version = this.version_;
+  var selfObj = this;
+
+  var newIter = new goog.iter.Iterator;
+  newIter.next = function() {
+    while (true) {
+      if (version != selfObj.version_) {
+        throw Error('The map has changed since the iterator was created');
+      }
+      if (i >= keys.length) {
+        throw goog.iter.StopIteration;
+      }
+      var key = keys[i++];
+      return opt_keys ? key : map[key];
+    }
+  };
+  return newIter;
+};
+
+
+/**
+ * Safe way to test for hasOwnProperty.  It even allows testing for
+ * 'hasOwnProperty'.
+ * @param {Object} obj The object to test for presence of the given key.
+ * @param {*} key The key to check for.
+ * @return {boolean} Whether the object has the key.
+ * @private
+ */
+goog.structs.Map.hasKey_ = function(obj, key) {
+  return Object.prototype.hasOwnProperty.call(obj, key);
+};
+// Copyright 2006 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * @fileoverview Generics method for collection-like classes and objects.
+ *
+ * @author arv@google.com (Erik Arvidsson)
+ *
+ * This file contains functions to work with collections. It supports using
+ * Map, Set, Array and Object and other classes that implement collection-like
+ * methods.
+ */
+
+
+goog.provide('goog.structs');
+
+goog.require('goog.array');
+goog.require('goog.object');
+
+
+// We treat an object as a dictionary if it has getKeys or it is an object that
+// isn't arrayLike.
+
+
+/**
+ * Returns the number of values in the collection-like object.
+ * @param {Object} col The collection-like object.
+ * @return {number} The number of values in the collection-like object.
+ */
+goog.structs.getCount = function(col) {
+  if (typeof col.getCount == 'function') {
+    return col.getCount();
+  }
+  if (goog.isArrayLike(col) || goog.isString(col)) {
+    return col.length;
+  }
+  return goog.object.getCount(col);
+};
+
+
+/**
+ * Returns the values of the collection-like object.
+ * @param {Object} col The collection-like object.
+ * @return {!Array} The values in the collection-like object.
+ */
+goog.structs.getValues = function(col) {
+  if (typeof col.getValues == 'function') {
+    return col.getValues();
+  }
+  if (goog.isString(col)) {
+    return col.split('');
+  }
+  if (goog.isArrayLike(col)) {
+    var rv = [];
+    var l = col.length;
+    for (var i = 0; i < l; i++) {
+      rv.push(col[i]);
+    }
+    return rv;
+  }
+  return goog.object.getValues(col);
+};
+
+
+/**
+ * Returns the keys of the collection. Some collections have no notion of
+ * keys/indexes and this function will return undefined in those cases.
+ * @param {Object} col The collection-like object.
+ * @return {!Array|undefined} The keys in the collection.
+ */
+goog.structs.getKeys = function(col) {
+  if (typeof col.getKeys == 'function') {
+    return col.getKeys();
+  }
+  // if we have getValues but no getKeys we know this is a key-less collection
+  if (typeof col.getValues == 'function') {
+    return undefined;
+  }
+  if (goog.isArrayLike(col) || goog.isString(col)) {
+    var rv = [];
+    var l = col.length;
+    for (var i = 0; i < l; i++) {
+      rv.push(i);
+    }
+    return rv;
+  }
+
+  return goog.object.getKeys(col);
+};
+
+
+/**
+ * Whether the collection contains the given value. This is O(n) and uses
+ * equals (==) to test the existence.
+ * @param {Object} col The collection-like object.
+ * @param {*} val The value to check for.
+ * @return {boolean} True if the map contains the value.
+ */
+goog.structs.contains = function(col, val) {
+  if (typeof col.contains == 'function') {
+    return col.contains(val);
+  }
+  if (typeof col.containsValue == 'function') {
+    return col.containsValue(val);
+  }
+  if (goog.isArrayLike(col) || goog.isString(col)) {
+    return goog.array.contains(/** @type {Array} */ (col), val);
+  }
+  return goog.object.containsValue(col, val);
+};
+
+
+/**
+ * Whether the collection is empty.
+ * @param {Object} col The collection-like object.
+ * @return {boolean} True if empty.
+ */
+goog.structs.isEmpty = function(col) {
+  if (typeof col.isEmpty == 'function') {
+    return col.isEmpty();
+  }
+
+  // We do not use goog.string.isEmpty because here we treat the string as
+  // collection and as such even whitespace matters
+
+  if (goog.isArrayLike(col) || goog.isString(col)) {
+    return goog.array.isEmpty(/** @type {Array} */ (col));
+  }
+  return goog.object.isEmpty(col);
+};
+
+
+/**
+ * Removes all the elements from the collection.
+ * @param {Object} col The collection-like object.
+ */
+goog.structs.clear = function(col) {
+  // NOTE(arv): This should not contain strings because strings are immutable
+  if (typeof col.clear == 'function') {
+    col.clear();
+  } else if (goog.isArrayLike(col)) {
+    goog.array.clear(/** @type {goog.array.ArrayLike} */ (col));
+  } else {
+    goog.object.clear(col);
+  }
+};
+
+
+/**
+ * Calls a function for each value in a collection. The function takes
+ * three arguments; the value, the key and the collection.
+ *
+ * @param {S} col The collection-like object.
+ * @param {function(this:T,?,?,S):?} f The function to call for every value.
+ *     This function takes
+ *     3 arguments (the value, the key or undefined if the collection has no
+ *     notion of keys, and the collection) and the return value is irrelevant.
+ * @param {T=} opt_obj The object to be used as the value of 'this'
+ *     within {@code f}.
+ * @template T,S
+ */
+goog.structs.forEach = function(col, f, opt_obj) {
+  if (typeof col.forEach == 'function') {
+    col.forEach(f, opt_obj);
+  } else if (goog.isArrayLike(col) || goog.isString(col)) {
+    goog.array.forEach(/** @type {Array} */ (col), f, opt_obj);
+  } else {
+    var keys = goog.structs.getKeys(col);
+    var values = goog.structs.getValues(col);
+    var l = values.length;
+    for (var i = 0; i < l; i++) {
+      f.call(opt_obj, values[i], keys && keys[i], col);
+    }
+  }
+};
+
+
+/**
+ * Calls a function for every value in the collection. When a call returns true,
+ * adds the value to a new collection (Array is returned by default).
+ *
+ * @param {S} col The collection-like object.
+ * @param {function(this:T,?,?,S):boolean} f The function to call for every
+ *     value. This function takes
+ *     3 arguments (the value, the key or undefined if the collection has no
+ *     notion of keys, and the collection) and should return a Boolean. If the
+ *     return value is true the value is added to the result collection. If it
+ *     is false the value is not included.
+ * @param {T=} opt_obj The object to be used as the value of 'this'
+ *     within {@code f}.
+ * @return {!Object|!Array} A new collection where the passed values are
+ *     present. If col is a key-less collection an array is returned.  If col
+ *     has keys and values a plain old JS object is returned.
+ * @template T,S
+ */
+goog.structs.filter = function(col, f, opt_obj) {
+  if (typeof col.filter == 'function') {
+    return col.filter(f, opt_obj);
+  }
+  if (goog.isArrayLike(col) || goog.isString(col)) {
+    return goog.array.filter(/** @type {!Array} */ (col), f, opt_obj);
+  }
+
+  var rv;
+  var keys = goog.structs.getKeys(col);
+  var values = goog.structs.getValues(col);
+  var l = values.length;
+  if (keys) {
+    rv = {};
+    for (var i = 0; i < l; i++) {
+      if (f.call(opt_obj, values[i], keys[i], col)) {
+        rv[keys[i]] = values[i];
+      }
+    }
+  } else {
+    // We should not use goog.array.filter here since we want to make sure that
+    // the index is undefined as well as make sure that col is passed to the
+    // function.
+    rv = [];
+    for (var i = 0; i < l; i++) {
+      if (f.call(opt_obj, values[i], undefined, col)) {
+        rv.push(values[i]);
+      }
+    }
+  }
+  return rv;
+};
+
+
+/**
+ * Calls a function for every value in the collection and adds the result into a
+ * new collection (defaults to creating a new Array).
+ *
+ * @param {S} col The collection-like object.
+ * @param {function(this:T,?,?,S):V} f The function to call for every value.
+ *     This function takes 3 arguments (the value, the key or undefined if the
+ *     collection has no notion of keys, and the collection) and should return
+ *     something. The result will be used as the value in the new collection.
+ * @param {T=} opt_obj  The object to be used as the value of 'this'
+ *     within {@code f}.
+ * @return {!Object.<V>|!Array.<V>} A new collection with the new values.  If
+ *     col is a key-less collection an array is returned.  If col has keys and
+ *     values a plain old JS object is returned.
+ * @template T,S,V
+ */
+goog.structs.map = function(col, f, opt_obj) {
+  if (typeof col.map == 'function') {
+    return col.map(f, opt_obj);
+  }
+  if (goog.isArrayLike(col) || goog.isString(col)) {
+    return goog.array.map(/** @type {!Array} */ (col), f, opt_obj);
+  }
+
+  var rv;
+  var keys = goog.structs.getKeys(col);
+  var values = goog.structs.getValues(col);
+  var l = values.length;
+  if (keys) {
+    rv = {};
+    for (var i = 0; i < l; i++) {
+      rv[keys[i]] = f.call(opt_obj, values[i], keys[i], col);
+    }
+  } else {
+    // We should not use goog.array.map here since we want to make sure that
+    // the index is undefined as well as make sure that col is passed to the
+    // function.
+    rv = [];
+    for (var i = 0; i < l; i++) {
+      rv[i] = f.call(opt_obj, values[i], undefined, col);
+    }
+  }
+  return rv;
+};
+
+
+/**
+ * Calls f for each value in a collection. If any call returns true this returns
+ * true (without checking the rest). If all returns false this returns false.
+ *
+ * @param {S} col The collection-like object.
+ * @param {function(this:T,?,?,S):boolean} f The function to call for every
+ *     value. This function takes 3 arguments (the value, the key or undefined
+ *     if the collection has no notion of keys, and the collection) and should
+ *     return a boolean.
+ * @param {T=} opt_obj  The object to be used as the value of 'this'
+ *     within {@code f}.
+ * @return {boolean} True if any value passes the test.
+ * @template T,S
+ */
+goog.structs.some = function(col, f, opt_obj) {
+  if (typeof col.some == 'function') {
+    return col.some(f, opt_obj);
+  }
+  if (goog.isArrayLike(col) || goog.isString(col)) {
+    return goog.array.some(/** @type {!Array} */ (col), f, opt_obj);
+  }
+  var keys = goog.structs.getKeys(col);
+  var values = goog.structs.getValues(col);
+  var l = values.length;
+  for (var i = 0; i < l; i++) {
+    if (f.call(opt_obj, values[i], keys && keys[i], col)) {
+      return true;
+    }
+  }
+  return false;
+};
+
+
+/**
+ * Calls f for each value in a collection. If all calls return true this return
+ * true this returns true. If any returns false this returns false at this point
+ *  and does not continue to check the remaining values.
+ *
+ * @param {S} col The collection-like object.
+ * @param {function(this:T,?,?,S):boolean} f The function to call for every
+ *     value. This function takes 3 arguments (the value, the key or
+ *     undefined if the collection has no notion of keys, and the collection)
+ *     and should return a boolean.
+ * @param {T=} opt_obj  The object to be used as the value of 'this'
+ *     within {@code f}.
+ * @return {boolean} True if all key-value pairs pass the test.
+ * @template T,S
+ */
+goog.structs.every = function(col, f, opt_obj) {
+  if (typeof col.every == 'function') {
+    return col.every(f, opt_obj);
+  }
+  if (goog.isArrayLike(col) || goog.isString(col)) {
+    return goog.array.every(/** @type {!Array} */ (col), f, opt_obj);
+  }
+  var keys = goog.structs.getKeys(col);
+  var values = goog.structs.getValues(col);
+  var l = values.length;
+  for (var i = 0; i < l; i++) {
+    if (!f.call(opt_obj, values[i], keys && keys[i], col)) {
+      return false;
+    }
+  }
+  return true;
 };
 // Copyright 2006 The Closure Library Authors. All Rights Reserved.
 //
@@ -43507,6 +41793,342 @@ goog.net.EventType = {
   TIMEOUT: 'timeout',
   INCREMENTAL_DATA: 'incrementaldata',
   PROGRESS: 'progress'
+};
+// Copyright 2011 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * @fileoverview Defines the collection interface.
+ *
+ * @author nnaze@google.com (Nathan Naze)
+ */
+
+goog.provide('goog.structs.Collection');
+
+
+
+/**
+ * An interface for a collection of values.
+ * @interface
+ * @template T
+ */
+goog.structs.Collection = function() {};
+
+
+/**
+ * @param {T} value Value to add to the collection.
+ */
+goog.structs.Collection.prototype.add;
+
+
+/**
+ * @param {T} value Value to remove from the collection.
+ */
+goog.structs.Collection.prototype.remove;
+
+
+/**
+ * @param {T} value Value to find in the collection.
+ * @return {boolean} Whether the collection contains the specified value.
+ */
+goog.structs.Collection.prototype.contains;
+
+
+/**
+ * @return {number} The number of values stored in the collection.
+ */
+goog.structs.Collection.prototype.getCount;
+
+// Copyright 2006 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * @fileoverview Datastructure: Set.
+ *
+ * @author arv@google.com (Erik Arvidsson)
+ * @author pallosp@google.com (Peter Pallos)
+ *
+ * This class implements a set data structure. Adding and removing is O(1). It
+ * supports both object and primitive values. Be careful because you can add
+ * both 1 and new Number(1), because these are not the same. You can even add
+ * multiple new Number(1) because these are not equal.
+ */
+
+
+goog.provide('goog.structs.Set');
+
+goog.require('goog.structs');
+goog.require('goog.structs.Collection');
+goog.require('goog.structs.Map');
+
+
+
+/**
+ * A set that can contain both primitives and objects.  Adding and removing
+ * elements is O(1).  Primitives are treated as identical if they have the same
+ * type and convert to the same string.  Objects are treated as identical only
+ * if they are references to the same object.  WARNING: A goog.structs.Set can
+ * contain both 1 and (new Number(1)), because they are not the same.  WARNING:
+ * Adding (new Number(1)) twice will yield two distinct elements, because they
+ * are two different objects.  WARNING: Any object that is added to a
+ * goog.structs.Set will be modified!  Because goog.getUid() is used to
+ * identify objects, every object in the set will be mutated.
+ * @param {Array.<T>|Object.<?,T>=} opt_values Initial values to start with.
+ * @constructor
+ * @implements {goog.structs.Collection.<T>}
+ * @final
+ * @template T
+ */
+goog.structs.Set = function(opt_values) {
+  this.map_ = new goog.structs.Map;
+  if (opt_values) {
+    this.addAll(opt_values);
+  }
+};
+
+
+/**
+ * Obtains a unique key for an element of the set.  Primitives will yield the
+ * same key if they have the same type and convert to the same string.  Object
+ * references will yield the same key only if they refer to the same object.
+ * @param {*} val Object or primitive value to get a key for.
+ * @return {string} A unique key for this value/object.
+ * @private
+ */
+goog.structs.Set.getKey_ = function(val) {
+  var type = typeof val;
+  if (type == 'object' && val || type == 'function') {
+    return 'o' + goog.getUid(/** @type {Object} */ (val));
+  } else {
+    return type.substr(0, 1) + val;
+  }
+};
+
+
+/**
+ * @return {number} The number of elements in the set.
+ * @override
+ */
+goog.structs.Set.prototype.getCount = function() {
+  return this.map_.getCount();
+};
+
+
+/**
+ * Add a primitive or an object to the set.
+ * @param {T} element The primitive or object to add.
+ * @override
+ */
+goog.structs.Set.prototype.add = function(element) {
+  this.map_.set(goog.structs.Set.getKey_(element), element);
+};
+
+
+/**
+ * Adds all the values in the given collection to this set.
+ * @param {Array.<T>|Object.<?,T>} col A collection containing the elements to
+ *     add.
+ */
+goog.structs.Set.prototype.addAll = function(col) {
+  var values = goog.structs.getValues(col);
+  var l = values.length;
+  for (var i = 0; i < l; i++) {
+    this.add(values[i]);
+  }
+};
+
+
+/**
+ * Removes all values in the given collection from this set.
+ * @param {Array.<T>|Object.<?,T>} col A collection containing the elements to
+ *     remove.
+ */
+goog.structs.Set.prototype.removeAll = function(col) {
+  var values = goog.structs.getValues(col);
+  var l = values.length;
+  for (var i = 0; i < l; i++) {
+    this.remove(values[i]);
+  }
+};
+
+
+/**
+ * Removes the given element from this set.
+ * @param {T} element The primitive or object to remove.
+ * @return {boolean} Whether the element was found and removed.
+ * @override
+ */
+goog.structs.Set.prototype.remove = function(element) {
+  return this.map_.remove(goog.structs.Set.getKey_(element));
+};
+
+
+/**
+ * Removes all elements from this set.
+ */
+goog.structs.Set.prototype.clear = function() {
+  this.map_.clear();
+};
+
+
+/**
+ * Tests whether this set is empty.
+ * @return {boolean} True if there are no elements in this set.
+ */
+goog.structs.Set.prototype.isEmpty = function() {
+  return this.map_.isEmpty();
+};
+
+
+/**
+ * Tests whether this set contains the given element.
+ * @param {T} element The primitive or object to test for.
+ * @return {boolean} True if this set contains the given element.
+ * @override
+ */
+goog.structs.Set.prototype.contains = function(element) {
+  return this.map_.containsKey(goog.structs.Set.getKey_(element));
+};
+
+
+/**
+ * Tests whether this set contains all the values in a given collection.
+ * Repeated elements in the collection are ignored, e.g.  (new
+ * goog.structs.Set([1, 2])).containsAll([1, 1]) is True.
+ * @param {Object} col A collection-like object.
+ * @return {boolean} True if the set contains all elements.
+ */
+goog.structs.Set.prototype.containsAll = function(col) {
+  return goog.structs.every(col, this.contains, this);
+};
+
+
+/**
+ * Finds all values that are present in both this set and the given collection.
+ * @param {Array.<S>|Object.<?,S>} col A collection.
+ * @return {!goog.structs.Set.<T|S>} A new set containing all the values
+ *     (primitives or objects) present in both this set and the given
+ *     collection.
+ * @template S
+ */
+goog.structs.Set.prototype.intersection = function(col) {
+  var result = new goog.structs.Set();
+
+  var values = goog.structs.getValues(col);
+  for (var i = 0; i < values.length; i++) {
+    var value = values[i];
+    if (this.contains(value)) {
+      result.add(value);
+    }
+  }
+
+  return result;
+};
+
+
+/**
+ * Finds all values that are present in this set and not in the given
+ * collection.
+ * @param {Array.<T>|Object.<?,T>} col A collection.
+ * @return {!goog.structs.Set} A new set containing all the values
+ *     (primitives or objects) present in this set but not in the given
+ *     collection.
+ */
+goog.structs.Set.prototype.difference = function(col) {
+  var result = this.clone();
+  result.removeAll(col);
+  return result;
+};
+
+
+/**
+ * Returns an array containing all the elements in this set.
+ * @return {!Array.<T>} An array containing all the elements in this set.
+ */
+goog.structs.Set.prototype.getValues = function() {
+  return this.map_.getValues();
+};
+
+
+/**
+ * Creates a shallow clone of this set.
+ * @return {!goog.structs.Set.<T>} A new set containing all the same elements as
+ *     this set.
+ */
+goog.structs.Set.prototype.clone = function() {
+  return new goog.structs.Set(this);
+};
+
+
+/**
+ * Tests whether the given collection consists of the same elements as this set,
+ * regardless of order, without repetition.  Primitives are treated as equal if
+ * they have the same type and convert to the same string; objects are treated
+ * as equal if they are references to the same object.  This operation is O(n).
+ * @param {Object} col A collection.
+ * @return {boolean} True if the given collection consists of the same elements
+ *     as this set, regardless of order, without repetition.
+ */
+goog.structs.Set.prototype.equals = function(col) {
+  return this.getCount() == goog.structs.getCount(col) && this.isSubsetOf(col);
+};
+
+
+/**
+ * Tests whether the given collection contains all the elements in this set.
+ * Primitives are treated as equal if they have the same type and convert to the
+ * same string; objects are treated as equal if they are references to the same
+ * object.  This operation is O(n).
+ * @param {Object} col A collection.
+ * @return {boolean} True if this set is a subset of the given collection.
+ */
+goog.structs.Set.prototype.isSubsetOf = function(col) {
+  var colCount = goog.structs.getCount(col);
+  if (this.getCount() > colCount) {
+    return false;
+  }
+  // TODO(user) Find the minimal collection size where the conversion makes
+  // the contains() method faster.
+  if (!(col instanceof goog.structs.Set) && colCount > 5) {
+    // Convert to a goog.structs.Set so that goog.structs.contains runs in
+    // O(1) time instead of O(n) time.
+    col = new goog.structs.Set(col);
+  }
+  return goog.structs.every(this, function(value) {
+    return goog.structs.contains(col, value);
+  });
+};
+
+
+/**
+ * Returns an iterator that iterates over the elements in this set.
+ * @param {boolean=} opt_keys This argument is ignored.
+ * @return {!goog.iter.Iterator} An iterator over the elements in this set.
+ */
+goog.structs.Set.prototype.__iterator__ = function(opt_keys) {
+  return this.map_.__iterator__(false);
 };
 // Copyright 2006 The Closure Library Authors. All Rights Reserved.
 //
@@ -65133,6 +63755,904 @@ goog.fx.DragEvent = function(type, dragobj, clientX, clientY, browserEvent,
   this.dragCanceled = !!opt_dragCanceled;
 };
 goog.inherits(goog.fx.DragEvent, goog.events.Event);
+// Copyright 2011 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * @fileoverview An interface for transition animation. This is a simple
+ * interface that allows for playing and stopping a transition. It adds
+ * a simple event model with BEGIN and END event.
+ *
+ */
+
+goog.provide('goog.fx.Transition');
+goog.provide('goog.fx.Transition.EventType');
+
+
+
+/**
+ * An interface for programmatic transition. Must extend
+ * {@code goog.events.EventTarget}.
+ * @interface
+ */
+goog.fx.Transition = function() {};
+
+
+/**
+ * Transition event types.
+ * @enum {string}
+ */
+goog.fx.Transition.EventType = {
+  /** Dispatched when played for the first time OR when it is resumed. */
+  PLAY: 'play',
+
+  /** Dispatched only when the animation starts from the beginning. */
+  BEGIN: 'begin',
+
+  /** Dispatched only when animation is restarted after a pause. */
+  RESUME: 'resume',
+
+  /**
+   * Dispatched when animation comes to the end of its duration OR stop
+   * is called.
+   */
+  END: 'end',
+
+  /** Dispatched only when stop is called. */
+  STOP: 'stop',
+
+  /** Dispatched only when animation comes to its end naturally. */
+  FINISH: 'finish',
+
+  /** Dispatched when an animation is paused. */
+  PAUSE: 'pause'
+};
+
+
+/**
+ * Plays the transition.
+ */
+goog.fx.Transition.prototype.play;
+
+
+/**
+ * Stops the transition.
+ */
+goog.fx.Transition.prototype.stop;
+// Copyright 2006 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * @fileoverview Definition of the PopupBase class.
+ *
+ */
+
+goog.provide('goog.ui.PopupBase');
+goog.provide('goog.ui.PopupBase.EventType');
+goog.provide('goog.ui.PopupBase.Type');
+
+goog.require('goog.Timer');
+goog.require('goog.dom');
+goog.require('goog.events');
+goog.require('goog.events.EventHandler');
+goog.require('goog.events.EventTarget');
+goog.require('goog.events.EventType');
+goog.require('goog.events.KeyCodes');
+goog.require('goog.fx.Transition');
+goog.require('goog.style');
+goog.require('goog.userAgent');
+
+
+
+/**
+ * The PopupBase class provides functionality for showing and hiding a generic
+ * container element. It also provides the option for hiding the popup element
+ * if the user clicks outside the popup or the popup loses focus.
+ *
+ * @constructor
+ * @extends {goog.events.EventTarget}
+ * @param {Element=} opt_element A DOM element for the popup.
+ * @param {goog.ui.PopupBase.Type=} opt_type Type of popup.
+ */
+goog.ui.PopupBase = function(opt_element, opt_type) {
+  goog.events.EventTarget.call(this);
+
+  /**
+   * An event handler to manage the events easily
+   * @type {goog.events.EventHandler}
+   * @private
+   */
+  this.handler_ = new goog.events.EventHandler(this);
+
+  this.setElement(opt_element || null);
+  if (opt_type) {
+    this.setType(opt_type);
+  }
+};
+goog.inherits(goog.ui.PopupBase, goog.events.EventTarget);
+
+
+/**
+ * Constants for type of Popup
+ * @enum {string}
+ */
+goog.ui.PopupBase.Type = {
+  TOGGLE_DISPLAY: 'toggle_display',
+  MOVE_OFFSCREEN: 'move_offscreen'
+};
+
+
+/**
+ * The popup dom element that this Popup wraps.
+ * @type {Element}
+ * @private
+ */
+goog.ui.PopupBase.prototype.element_ = null;
+
+
+/**
+ * Whether the Popup dismisses itself it the user clicks outside of it or the
+ * popup loses focus
+ * @type {boolean}
+ * @private
+ */
+goog.ui.PopupBase.prototype.autoHide_ = true;
+
+
+/**
+ * Clicks outside the popup but inside this element will cause the popup to
+ * hide if autoHide_ is true. If this is null, then the entire document is used.
+ * For example, you can use a body-size div so that clicks on the browser
+ * scrollbar do not dismiss the popup.
+ * @type {Element}
+ * @private
+ */
+goog.ui.PopupBase.prototype.autoHideRegion_ = null;
+
+
+/**
+ * Whether the popup is currently being shown.
+ * @type {boolean}
+ * @private
+ */
+goog.ui.PopupBase.prototype.isVisible_ = false;
+
+
+/**
+ * Whether the popup should hide itself asynchrously. This was added because
+ * there are cases where hiding the element in mouse down handler in IE can
+ * cause textinputs to get into a bad state if the element that had focus is
+ * hidden.
+ * @type {boolean}
+ * @private
+ */
+goog.ui.PopupBase.prototype.shouldHideAsync_ = false;
+
+
+/**
+ * The time when the popup was last shown.
+ * @type {number}
+ * @private
+ */
+goog.ui.PopupBase.prototype.lastShowTime_ = -1;
+
+
+/**
+ * The time when the popup was last hidden.
+ * @type {number}
+ * @private
+ */
+goog.ui.PopupBase.prototype.lastHideTime_ = -1;
+
+
+/**
+ * Whether to hide when the escape key is pressed.
+ * @type {boolean}
+ * @private
+ */
+goog.ui.PopupBase.prototype.hideOnEscape_ = false;
+
+
+/**
+ * Whether to enable cross-iframe dismissal.
+ * @type {boolean}
+ * @private
+ */
+goog.ui.PopupBase.prototype.enableCrossIframeDismissal_ = true;
+
+
+/**
+ * The type of popup
+ * @type {goog.ui.PopupBase.Type}
+ * @private
+ */
+goog.ui.PopupBase.prototype.type_ = goog.ui.PopupBase.Type.TOGGLE_DISPLAY;
+
+
+/**
+ * Transition to play on showing the popup.
+ * @type {goog.fx.Transition|undefined}
+ * @private
+ */
+goog.ui.PopupBase.prototype.showTransition_;
+
+
+/**
+ * Transition to play on hiding the popup.
+ * @type {goog.fx.Transition|undefined}
+ * @private
+ */
+goog.ui.PopupBase.prototype.hideTransition_;
+
+
+/**
+ * Constants for event type fired by Popup
+ *
+ * @enum {string}
+ */
+goog.ui.PopupBase.EventType = {
+  BEFORE_SHOW: 'beforeshow',
+  SHOW: 'show',
+  BEFORE_HIDE: 'beforehide',
+  HIDE: 'hide'
+};
+
+
+/**
+ * A time in ms used to debounce events that happen right after each other.
+ *
+ * A note about why this is necessary. There are two cases to consider.
+ * First case, a popup will usually see a focus event right after it's launched
+ * because it's typical for it to be launched in a mouse-down event which will
+ * then move focus to the launching button. We don't want to think this is a
+ * separate user action moving focus. Second case, a user clicks on the
+ * launcher button to close the menu. In that case, we'll close the menu in the
+ * focus event and then show it again because of the mouse down event, even
+ * though the intention is to just close the menu. This workaround appears to
+ * be the least intrusive fix.
+ *
+ * @type {number}
+ */
+goog.ui.PopupBase.DEBOUNCE_DELAY_MS = 150;
+
+
+/**
+ * @return {goog.ui.PopupBase.Type} The type of popup this is.
+ */
+goog.ui.PopupBase.prototype.getType = function() {
+  return this.type_;
+};
+
+
+/**
+ * Specifies the type of popup to use.
+ *
+ * @param {goog.ui.PopupBase.Type} type Type of popup.
+ */
+goog.ui.PopupBase.prototype.setType = function(type) {
+  this.type_ = type;
+};
+
+
+/**
+ * Returns whether the popup should hide itself asynchronously using a timeout
+ * instead of synchronously.
+ * @return {boolean} Whether to hide async.
+ */
+goog.ui.PopupBase.prototype.shouldHideAsync = function() {
+  return this.shouldHideAsync_;
+};
+
+
+/**
+ * Sets whether the popup should hide itself asynchronously using a timeout
+ * instead of synchronously.
+ * @param {boolean} b Whether to hide async.
+ */
+goog.ui.PopupBase.prototype.setShouldHideAsync = function(b) {
+  this.shouldHideAsync_ = b;
+};
+
+
+/**
+ * Returns the dom element that should be used for the popup.
+ *
+ * @return {Element} The popup element.
+ */
+goog.ui.PopupBase.prototype.getElement = function() {
+  return this.element_;
+};
+
+
+/**
+ * Specifies the dom element that should be used for the popup.
+ *
+ * @param {Element} elt A DOM element for the popup.
+ */
+goog.ui.PopupBase.prototype.setElement = function(elt) {
+  this.ensureNotVisible_();
+  this.element_ = elt;
+};
+
+
+/**
+ * Returns whether the Popup dismisses itself when the user clicks outside of
+ * it.
+ * @return {boolean} Whether the Popup autohides on an external click.
+ */
+goog.ui.PopupBase.prototype.getAutoHide = function() {
+  return this.autoHide_;
+};
+
+
+/**
+ * Sets whether the Popup dismisses itself when the user clicks outside of it.
+ * @param {boolean} autoHide Whether to autohide on an external click.
+ */
+goog.ui.PopupBase.prototype.setAutoHide = function(autoHide) {
+  this.ensureNotVisible_();
+  this.autoHide_ = autoHide;
+};
+
+
+/**
+ * @return {boolean} Whether the Popup autohides on the escape key.
+ */
+goog.ui.PopupBase.prototype.getHideOnEscape = function() {
+  return this.hideOnEscape_;
+};
+
+
+/**
+ * Sets whether the Popup dismisses itself on the escape key.
+ * @param {boolean} hideOnEscape Whether to autohide on the escape key.
+ */
+goog.ui.PopupBase.prototype.setHideOnEscape = function(hideOnEscape) {
+  this.ensureNotVisible_();
+  this.hideOnEscape_ = hideOnEscape;
+};
+
+
+/**
+ * @return {boolean} Whether cross iframe dismissal is enabled.
+ */
+goog.ui.PopupBase.prototype.getEnableCrossIframeDismissal = function() {
+  return this.enableCrossIframeDismissal_;
+};
+
+
+/**
+ * Sets whether clicks in other iframes should dismiss this popup.  In some
+ * cases it should be disabled, because it can cause spurious
+ * @param {boolean} enable Whether to enable cross iframe dismissal.
+ */
+goog.ui.PopupBase.prototype.setEnableCrossIframeDismissal = function(enable) {
+  this.enableCrossIframeDismissal_ = enable;
+};
+
+
+/**
+ * Returns the region inside which the Popup dismisses itself when the user
+ * clicks, or null if it's the entire document.
+ * @return {Element} The DOM element for autohide, or null if it hasn't been
+ *     set.
+ */
+goog.ui.PopupBase.prototype.getAutoHideRegion = function() {
+  return this.autoHideRegion_;
+};
+
+
+/**
+ * Sets the region inside which the Popup dismisses itself when the user
+ * clicks.
+ * @param {Element} element The DOM element for autohide.
+ */
+goog.ui.PopupBase.prototype.setAutoHideRegion = function(element) {
+  this.autoHideRegion_ = element;
+};
+
+
+/**
+ * Sets transition animation on showing and hiding the popup.
+ * @param {goog.fx.Transition=} opt_showTransition Transition to play on
+ *     showing the popup.
+ * @param {goog.fx.Transition=} opt_hideTransition Transition to play on
+ *     hiding the popup.
+ */
+goog.ui.PopupBase.prototype.setTransition = function(
+    opt_showTransition, opt_hideTransition) {
+  this.showTransition_ = opt_showTransition;
+  this.hideTransition_ = opt_hideTransition;
+};
+
+
+/**
+ * Returns the time when the popup was last shown.
+ *
+ * @return {number} time in ms since epoch when the popup was last shown, or
+ * -1 if the popup was never shown.
+ */
+goog.ui.PopupBase.prototype.getLastShowTime = function() {
+  return this.lastShowTime_;
+};
+
+
+/**
+ * Returns the time when the popup was last hidden.
+ *
+ * @return {number} time in ms since epoch when the popup was last hidden, or
+ * -1 if the popup was never hidden or is currently showing.
+ */
+goog.ui.PopupBase.prototype.getLastHideTime = function() {
+  return this.lastHideTime_;
+};
+
+
+/**
+ * Returns the event handler for the popup. All event listeners belonging to
+ * this handler are removed when the tooltip is hidden. Therefore,
+ * the recommended usage of this handler is to listen on events in
+ * {@link #onShow_}.
+ * @return {goog.events.EventHandler} Event handler for this popup.
+ * @protected
+ */
+goog.ui.PopupBase.prototype.getHandler = function() {
+  return this.handler_;
+};
+
+
+/**
+ * Helper to throw exception if the popup is showing.
+ * @private
+ */
+goog.ui.PopupBase.prototype.ensureNotVisible_ = function() {
+  if (this.isVisible_) {
+    throw Error('Can not change this state of the popup while showing.');
+  }
+};
+
+
+/**
+ * Returns whether the popup is currently visible.
+ *
+ * @return {boolean} whether the popup is currently visible.
+ */
+goog.ui.PopupBase.prototype.isVisible = function() {
+  return this.isVisible_;
+};
+
+
+/**
+ * Returns whether the popup is currently visible or was visible within about
+ * 150 ms ago. This is used by clients to handle a very specific, but common,
+ * popup scenario. The button that launches the popup should close the popup
+ * on mouse down if the popup is alrady open. The problem is that the popup
+ * closes itself during the capture phase of the mouse down and thus the button
+ * thinks it's hidden and this should show it again. This method provides a
+ * good heuristic for clients. Typically in their event handler they will have
+ * code that is:
+ *
+ * if (menu.isOrWasRecentlyVisible()) {
+ *   menu.setVisible(false);
+ * } else {
+ *   ... // code to position menu and initialize other state
+ *   menu.setVisible(true);
+ * }
+ * @return {boolean} Whether the popup is currently visible or was visible
+ *     within about 150 ms ago.
+ */
+goog.ui.PopupBase.prototype.isOrWasRecentlyVisible = function() {
+  return this.isVisible_ ||
+         (goog.now() - this.lastHideTime_ <
+          goog.ui.PopupBase.DEBOUNCE_DELAY_MS);
+};
+
+
+/**
+ * Sets whether the popup should be visible. After this method
+ * returns, isVisible() will always return the new state, even if
+ * there is a transition.
+ *
+ * @param {boolean} visible Desired visibility state.
+ */
+goog.ui.PopupBase.prototype.setVisible = function(visible) {
+  // Make sure that any currently running transition is stopped.
+  if (this.showTransition_) this.showTransition_.stop();
+  if (this.hideTransition_) this.hideTransition_.stop();
+
+  if (visible) {
+    this.show_();
+  } else {
+    this.hide_();
+  }
+};
+
+
+/**
+ * Repositions the popup according to the current state.
+ * Should be overriden by subclases.
+ */
+goog.ui.PopupBase.prototype.reposition = goog.nullFunction;
+
+
+/**
+ * Does the work to show the popup.
+ * @private
+ */
+goog.ui.PopupBase.prototype.show_ = function() {
+  // Ignore call if we are already showing.
+  if (this.isVisible_) {
+    return;
+  }
+
+  // Give derived classes and handlers a chance to customize popup.
+  if (!this.onBeforeShow()) {
+    return;
+  }
+
+  // Allow callers to set the element in the BEFORE_SHOW event.
+  if (!this.element_) {
+    throw Error('Caller must call setElement before trying to show the popup');
+  }
+
+  // Call reposition after onBeforeShow, as it may change the style and/or
+  // content of the popup and thereby affecting the size which is used for the
+  // viewport calculation.
+  this.reposition();
+
+  var doc = goog.dom.getOwnerDocument(this.element_);
+
+  if (this.hideOnEscape_) {
+
+    // Handle the escape keys.  Listen in the capture phase so that we can
+    // stop the escape key from propagating to other elements.  For example,
+    // if there is a popup within a dialog box, we want the popup to be
+    // dismissed first, rather than the dialog.
+    this.handler_.listen(doc, goog.events.EventType.KEYDOWN,
+        this.onDocumentKeyDown_, true);
+  }
+
+  // Set up event handlers.
+  if (this.autoHide_) {
+
+    // Even if the popup is not in the focused document, we want to
+    // close it on mousedowns in the document it's in.
+    this.handler_.listen(doc, goog.events.EventType.MOUSEDOWN,
+        this.onDocumentMouseDown_, true);
+
+    if (goog.userAgent.IE) {
+      // We want to know about deactivates/mousedowns on the document with focus
+      // The top-level document won't get a deactivate event if the focus is
+      // in an iframe and the deactivate fires within that iframe.
+      // The active element in the top-level document will remain the iframe
+      // itself.
+      var activeElement;
+      /** @preserveTry */
+      try {
+        activeElement = doc.activeElement;
+      } catch (e) {
+        // There is an IE browser bug which can cause just the reading of
+        // document.activeElement to throw an Unspecified Error.  This
+        // may have to do with loading a popup within a hidden iframe.
+      }
+      while (activeElement && activeElement.nodeName == 'IFRAME') {
+        /** @preserveTry */
+        try {
+          var tempDoc = goog.dom.getFrameContentDocument(activeElement);
+        } catch (e) {
+          // The frame is on a different domain that its parent document
+          // This way, we grab the lowest-level document object we can get
+          // a handle on given cross-domain security.
+          break;
+        }
+        doc = tempDoc;
+        activeElement = doc.activeElement;
+      }
+
+      // Handle mousedowns in the focused document in case the user clicks
+      // on the activeElement (in which case the popup should hide).
+      this.handler_.listen(doc, goog.events.EventType.MOUSEDOWN,
+          this.onDocumentMouseDown_, true);
+
+      // If the active element inside the focused document changes, then
+      // we probably need to hide the popup.
+      this.handler_.listen(doc, goog.events.EventType.DEACTIVATE,
+          this.onDocumentBlur_);
+
+    } else {
+      this.handler_.listen(doc, goog.events.EventType.BLUR,
+          this.onDocumentBlur_);
+    }
+  }
+
+  // Make the popup visible.
+  if (this.type_ == goog.ui.PopupBase.Type.TOGGLE_DISPLAY) {
+    this.showPopupElement();
+  } else if (this.type_ == goog.ui.PopupBase.Type.MOVE_OFFSCREEN) {
+    this.reposition();
+  }
+  this.isVisible_ = true;
+
+  this.lastShowTime_ = goog.now();
+  this.lastHideTime_ = -1;
+
+  // If there is transition to play, we play it and fire SHOW event after
+  // the transition is over.
+  if (this.showTransition_) {
+    goog.events.listenOnce(
+        /** @type {goog.events.EventTarget} */ (this.showTransition_),
+        goog.fx.Transition.EventType.END, this.onShow_, false, this);
+    this.showTransition_.play();
+  } else {
+    // Notify derived classes and handlers.
+    this.onShow_();
+  }
+};
+
+
+/**
+ * Hides the popup. This call is idempotent.
+ *
+ * @param {Object=} opt_target Target of the event causing the hide.
+ * @return {boolean} Whether the popup was hidden and not cancelled.
+ * @private
+ */
+goog.ui.PopupBase.prototype.hide_ = function(opt_target) {
+  // Give derived classes and handlers a chance to cancel hiding.
+  if (!this.isVisible_ || !this.onBeforeHide_(opt_target)) {
+    return false;
+  }
+
+  // Remove any listeners we attached when showing the popup.
+  if (this.handler_) {
+    this.handler_.removeAll();
+  }
+
+  // Set visibility to hidden even if there is a transition.
+  this.isVisible_ = false;
+  this.lastHideTime_ = goog.now();
+
+  // If there is transition to play, we play it and only hide the element
+  // (and fire HIDE event) after the transition is over.
+  if (this.hideTransition_) {
+    goog.events.listenOnce(
+        /** @type {goog.events.EventTarget} */ (this.hideTransition_),
+        goog.fx.Transition.EventType.END,
+        goog.partial(this.continueHidingPopup_, opt_target), false, this);
+    this.hideTransition_.play();
+  } else {
+    this.continueHidingPopup_(opt_target);
+  }
+
+  return true;
+};
+
+
+/**
+ * Continues hiding the popup. This is a continuation from hide_. It is
+ * a separate method so that we can add a transition before hiding.
+ * @param {Object=} opt_target Target of the event causing the hide.
+ * @private
+ */
+goog.ui.PopupBase.prototype.continueHidingPopup_ = function(opt_target) {
+  // Hide the popup.
+  if (this.type_ == goog.ui.PopupBase.Type.TOGGLE_DISPLAY) {
+    if (this.shouldHideAsync_) {
+      goog.Timer.callOnce(this.hidePopupElement_, 0, this);
+    } else {
+      this.hidePopupElement_();
+    }
+  } else if (this.type_ == goog.ui.PopupBase.Type.MOVE_OFFSCREEN) {
+    this.moveOffscreen_();
+  }
+
+  // Notify derived classes and handlers.
+  this.onHide_(opt_target);
+};
+
+
+/**
+ * Shows the popup element.
+ * @protected
+ */
+goog.ui.PopupBase.prototype.showPopupElement = function() {
+  this.element_.style.visibility = 'visible';
+  goog.style.setElementShown(this.element_, true);
+};
+
+
+/**
+ * Hides the popup element.
+ * @private
+ */
+goog.ui.PopupBase.prototype.hidePopupElement_ = function() {
+  this.element_.style.visibility = 'hidden';
+  goog.style.setElementShown(this.element_, false);
+};
+
+
+/**
+ * Hides the popup by moving it offscreen.
+ *
+ * @private
+ */
+goog.ui.PopupBase.prototype.moveOffscreen_ = function() {
+  this.element_.style.top = '-10000px';
+};
+
+
+/**
+ * Called before the popup is shown. Derived classes can override to hook this
+ * event but should make sure to call the parent class method.
+ *
+ * @return {boolean} If anyone called preventDefault on the event object (or
+ *     if any of the handlers returns false this will also return false.
+ * @protected
+ */
+goog.ui.PopupBase.prototype.onBeforeShow = function() {
+  return this.dispatchEvent(goog.ui.PopupBase.EventType.BEFORE_SHOW);
+};
+
+
+/**
+ * Called after the popup is shown. Derived classes can override to hook this
+ * event but should make sure to call the parent class method.
+ * @protected
+ * @suppress {underscore|visibility}
+ */
+goog.ui.PopupBase.prototype.onShow_ = function() {
+  this.dispatchEvent(goog.ui.PopupBase.EventType.SHOW);
+};
+
+
+/**
+ * Called before the popup is hidden. Derived classes can override to hook this
+ * event but should make sure to call the parent class method.
+ *
+ * @param {Object=} opt_target Target of the event causing the hide.
+ * @return {boolean} If anyone called preventDefault on the event object (or
+ *     if any of the handlers returns false this will also return false.
+ * @protected
+ * @suppress {underscore|visibility}
+ */
+goog.ui.PopupBase.prototype.onBeforeHide_ = function(opt_target) {
+  return this.dispatchEvent({
+    type: goog.ui.PopupBase.EventType.BEFORE_HIDE,
+    target: opt_target
+  });
+};
+
+
+/**
+ * Called after the popup is hidden. Derived classes can override to hook this
+ * event but should make sure to call the parent class method.
+ * @param {Object=} opt_target Target of the event causing the hide.
+ * @protected
+ * @suppress {underscore|visibility}
+ */
+goog.ui.PopupBase.prototype.onHide_ = function(opt_target) {
+  this.dispatchEvent({
+    type: goog.ui.PopupBase.EventType.HIDE,
+    target: opt_target
+  });
+};
+
+
+/**
+ * Mouse down handler for the document on capture phase. Used to hide the
+ * popup for auto-hide mode.
+ *
+ * @param {goog.events.BrowserEvent} e The event object.
+ * @private
+ */
+goog.ui.PopupBase.prototype.onDocumentMouseDown_ = function(e) {
+  var target = /** @type {Node} */ (e.target);
+  if (!goog.dom.contains(this.element_, target) &&
+      (!this.autoHideRegion_ || goog.dom.contains(
+      this.autoHideRegion_, target)) &&
+      !this.shouldDebounce_()) {
+    // Mouse click was outside popup, so hide.
+    this.hide_(target);
+  }
+};
+
+
+/**
+ * Handles key-downs on the document to handle the escape key.
+ *
+ * @param {goog.events.BrowserEvent} e The event object.
+ * @private
+ */
+goog.ui.PopupBase.prototype.onDocumentKeyDown_ = function(e) {
+  if (e.keyCode == goog.events.KeyCodes.ESC) {
+    if (this.hide_(e.target)) {
+      // Eat the escape key, but only if this popup was actually closed.
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }
+};
+
+
+/**
+ * Deactivate handler(IE) and blur handler (other browsers) for document.
+ * Used to hide the popup for auto-hide mode.
+ *
+ * @param {goog.events.BrowserEvent} e The event object.
+ * @private
+ */
+goog.ui.PopupBase.prototype.onDocumentBlur_ = function(e) {
+  if (!this.enableCrossIframeDismissal_) {
+    return;
+  }
+
+  var doc = goog.dom.getOwnerDocument(this.element_);
+
+  // Ignore blur events if the active element is still inside the popup or if
+  // there is no longer an active element.  For example, a widget like a
+  // goog.ui.Button might programatically blur itself before losing tabIndex.
+  if (typeof document.activeElement != 'undefined') {
+    var activeElement = doc.activeElement;
+    if (!activeElement || goog.dom.contains(this.element_,
+        activeElement) || activeElement.tagName == 'BODY') {
+      return;
+    }
+
+  // Ignore blur events not for the document itself in non-IE browsers.
+  } else if (e.target != doc) {
+    return;
+  }
+
+  // Debounce the initial focus move.
+  if (this.shouldDebounce_()) {
+    return;
+  }
+
+  this.hide_();
+};
+
+
+/**
+ * @return {boolean} Whether the time since last show is less than the debounce
+ *     delay.
+ * @private
+ */
+goog.ui.PopupBase.prototype.shouldDebounce_ = function() {
+  return goog.now() - this.lastShowTime_ < goog.ui.PopupBase.DEBOUNCE_DELAY_MS;
+};
+
+
+/** @override */
+goog.ui.PopupBase.prototype.disposeInternal = function() {
+  goog.base(this, 'disposeInternal');
+  this.handler_.dispose();
+  goog.dispose(this.showTransition_);
+  goog.dispose(this.hideTransition_);
+  delete this.element_;
+  delete this.handler_;
+};
 // Copyright 2006 The Closure Library Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -84066,6 +83586,8 @@ goog.require('goog.editor.plugins.UndoRedo');
 goog.require('goog.events');
 goog.require('goog.ui.editor.DefaultToolbar');
 goog.require('goog.ui.editor.ToolbarController');
+goog.require('goog.events.KeyCodes');
+goog.require('goog.ui.KeyboardShortcutHandler');
 
 goog.require('silex.model.Config');
 
@@ -84088,6 +83610,14 @@ silex.view.TextEditor = function(element, cbk) {
         this.closeEditor();
         if (cbk) cbk();
       }, this);
+
+  // escape key
+  var shortcutHandler = new goog.ui.KeyboardShortcutHandler(document);
+  shortcutHandler.registerShortcut('esc', goog.events.KeyCodes.ESC);
+  goog.events.listen(
+      shortcutHandler,
+      goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED,
+      goog.bind(this.closeEditor, this));
 };
 
 
@@ -84418,6 +83948,8 @@ silex.service.CloudStorage.prototype.loadLocal = function(url, cbk, opt_errCbk) 
 
 
 goog.provide('silex.view.HTMLEditor');
+goog.require('goog.events.KeyCodes');
+goog.require('goog.ui.KeyboardShortcutHandler');
 
 
 
@@ -84431,6 +83963,13 @@ silex.view.HTMLEditor = function(element, cbk) {
     this.initUI();
     if (cbk) cbk();
   }, this);
+  // escape key
+  var shortcutHandler = new goog.ui.KeyboardShortcutHandler(document);
+  shortcutHandler.registerShortcut('esc', goog.events.KeyCodes.ESC);
+  goog.events.listen(
+      shortcutHandler,
+      goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED,
+      goog.bind(this.closeEditor, this));
 };
 
 
@@ -86609,7 +86148,8 @@ return;
 
 /* *
             // debug: load a file
-            var url = '../api/v1.0/dropbox/exec/get/Applications/KISSr/sb.kissr.com/editable.html';
+            //var url = '../api/v1.0/dropbox/exec/get/Applications/KISSr/sb.kissr.com/editable.html';
+            var url = '../api/v1.0/dropbox/exec/get/_test_silex/x.html';
             var blob = {
                 url: url
             };
@@ -86620,7 +86160,7 @@ return;
                     file.setUrl(url);
                     file.setBlob(blob);
                     file.setHtml(rawHtml);
-//return;
+return;
                     controller.menuCallback({type:'file.publish'});
                 }, this));
 /* */

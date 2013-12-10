@@ -24,7 +24,9 @@ goog.require('goog.ui.Menu');
 goog.require('goog.ui.MenuButton');
 goog.require('goog.ui.MenuItem');
 goog.require('goog.ui.menuBar');
-goog.require('goog.ui.Tooltip');
+//goog.require('goog.ui.Tooltip');
+goog.require('goog.events.KeyCodes');
+goog.require('goog.ui.KeyboardShortcutHandler');
 
 
 
@@ -68,6 +70,17 @@ silex.view.Menu.prototype.onStatus;
 silex.view.Menu.prototype.buildMenu = function(rootNode) {
   this.menu = goog.ui.menuBar.create();
 
+  // shortcut handler
+  var shortcutHandler = new goog.ui.KeyboardShortcutHandler(document);
+  goog.events.listen(
+    shortcutHandler,
+    goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED,
+    goog.bind(function(event) {
+      console.log('shortcut', event.identifier);
+      this.onMenuEvent(event.identifier);
+    }, this)
+  );
+  // create the menu items
   for (i in silex.model.Config.menu.names) {
     // Create the drop down menu with a few suboptions.
     var menu = new goog.ui.Menu();
@@ -75,37 +88,43 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
         function(itemData) {
           var item;
           if (itemData) {
+            // create the menu item
             var label = itemData.label;
             var id = itemData.id;
-            var className = itemData.className;
             item = new goog.ui.MenuItem(label);
             item.setId(id);
-            item.addClassName(className);
+            item.addClassName(itemData.className);
+            // checkable
             if (itemData.checkable) {
               item.setCheckable(true);
             }
-            // add shortcut
+            // mnemonic (access to an item with keyboard when the menu is open)
+            if (itemData.mnemonic) {
+              item.setMnemonic(itemData.mnemonic);
+            }
+            // shortcut
             if (itemData.shortcut) {
-              Mousetrap.bind(itemData.shortcut, goog.bind(function(e, pattern) {
-                console.log('shortcut', itemData, pattern);
-                e.preventDefault();
-                this.onMenuEvent(itemData.id);
-              }, this));
+              for (var idx in itemData.shortcut) {
+                console.log('add shortcut', itemData.tooltip, goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_PREFIX);
+                shortcutHandler.registerShortcut(itemData.id, itemData.shortcut[idx]);
+              }
             }
           } else {
             item = new goog.ui.MenuSeparator();
           }
-          item.setDispatchTransitionEvents(goog.ui.Component.State.ALL, true);
+          //item.setDispatchTransitionEvents(goog.ui.Component.State.ALL, true);
+          // add the menu item
           menu.addItem(item);
           // add tooltip (has to be after menu.addItem)
+          // TODO: add accelerator (only display shortcut here, could not get it to work automatically with closure's accelerator concept)
           if (itemData && itemData.tooltip) {
-            // add tooltip to the label
-            var div = goog.dom.createElement('small');
+            // add label
+            var div = goog.dom.createElement('span');
             div.innerHTML = itemData.tooltip;
-            div.className = 'shortcut-display';
+            div.className = 'goog-menuitem-accel';
             item.getElement().appendChild(div);
             // add a real tooltip
-            new goog.ui.Tooltip(item.getElement(), itemData.tooltip);
+            //new goog.ui.Tooltip(item.getElement(), itemData.tooltip);
           }
         }, this);
 
@@ -115,16 +134,6 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
     btn.addClassName(menuItemData.className);
     btn.setDispatchTransitionEvents(goog.ui.Component.State.ALL, true);
     this.menu.addChild(btn, true);
-/*
-    // add shortcut
-    if (menuItemData.shortcut) {
-      Mousetrap.bind(menuItemData.shortcut, goog.bind(function(e, pattern) {
-        console.log('shortcut for 1st level menu', menuItemData, pattern);
-        e.preventDefault();
-        this.setOpen(true);
-      }, btn));
-    }
-*/
   }
   // render the menu
   this.menu.render(rootNode);

@@ -162,7 +162,8 @@ return;
 
 /* *
             // debug: load a file
-            var url = '../api/v1.0/dropbox/exec/get/Applications/KISSr/sb.kissr.com/editable.html';
+            //var url = '../api/v1.0/dropbox/exec/get/Applications/KISSr/sb.kissr.com/editable.html';
+            var url = '../api/v1.0/dropbox/exec/get/_test_silex/x.html';
             var blob = {
                 url: url
             };
@@ -173,7 +174,7 @@ return;
                     file.setUrl(url);
                     file.setBlob(blob);
                     file.setHtml(rawHtml);
-//return;
+return;
                     controller.menuCallback({type:'file.publish'});
                 }, this));
 /* */

@@ -34,6 +34,8 @@ goog.require('goog.editor.plugins.UndoRedo');
 goog.require('goog.events');
 goog.require('goog.ui.editor.DefaultToolbar');
 goog.require('goog.ui.editor.ToolbarController');
+goog.require('goog.events.KeyCodes');
+goog.require('goog.ui.KeyboardShortcutHandler');
 
 goog.require('silex.model.Config');
 
@@ -56,6 +58,14 @@ silex.view.TextEditor = function(element, cbk) {
         this.closeEditor();
         if (cbk) cbk();
       }, this);
+
+  // escape key
+  var shortcutHandler = new goog.ui.KeyboardShortcutHandler(document);
+  shortcutHandler.registerShortcut('esc', goog.events.KeyCodes.ESC);
+  goog.events.listen(
+      shortcutHandler,
+      goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED,
+      goog.bind(this.closeEditor, this));
 };
 
 
