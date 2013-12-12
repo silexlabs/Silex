@@ -31,7 +31,7 @@ function onCatchError(err) {
 exports.setDebugMode = function(debug){
     if(debug && !isDebug){
         process.removeListener('uncaughtException', onCatchError);
-   
+
         // DEBUG ONLY
         console.warn('Running server in debug mode');
         // define users (login/password) wich will be authorized to access the www folder (read and write)
@@ -62,7 +62,7 @@ options.staticFolders.push(
     // file browser
     {
             name: "/cloud-explorer",
-            path: "../../../../cloud-explorer/lib/"
+            path: "../../../../submodules/cloud-explorer/lib/"
     },
     // silex main site
     {

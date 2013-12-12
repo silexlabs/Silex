@@ -31,7 +31,6 @@ module.exports = function(grunt) {
 
   grunt.loadNpmTasks('grunt-closure-tools');
   grunt.loadNpmTasks('grunt-append-sourcemapping');
-  grunt.loadNpmTasks('grunt-contrib-compress');
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-csslint');
   grunt.loadNpmTasks('grunt-contrib-less');
@@ -39,11 +38,11 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-html');
   grunt.loadNpmTasks('grunt-closure-linter');
   grunt.loadNpmTasks('grunt-simple-mocha');
-  grunt.loadNpmTasks('grunt-contrib-jade');
+  //grunt.loadNpmTasks('grunt-contrib-jade');
 
 grunt.task.renameTask('watch', 'doWatch')
 
-  grunt.registerTask('deploy', ['jade', 'concat', 'less:production', 'less:development', 'closureBuilder:debug', 'closureBuilder:release', 'append-sourcemapping', 'compress']);
+  grunt.registerTask('deploy', ['concat', 'less:production', 'less:development', 'closureBuilder:debug', 'closureBuilder:release', 'append-sourcemapping']);
   grunt.registerTask('check', ['htmllint', 'csslint:lax', 'closureLint']);
   grunt.registerTask('test', ['check', 'deploy', 'simplemocha']);
   grunt.registerTask('fix', ['closureFixStyle']);
@@ -77,27 +76,6 @@ grunt.task.renameTask('watch', 'doWatch')
             , "fallback-colors" : false
             , "unqualified-attributes" : false
         }
-      }
-    }
-    , compress: {
-      main: {
-        options: {
-          mode: 'gzip'
-        }
-        , files: [
-          {
-            expand: true
-            , src: ['bin/js/admin.min.js']
-            , dest: ''
-            , ext: '.min.zipped.js'
-          }
-          , {
-            expand: true
-            , src: ['bin/css/admin.min.css']
-            , dest: ''
-            , ext: '.min.zipped.css'
-          }
-        ]
       }
     }
     , concat: {
@@ -146,56 +124,44 @@ grunt.task.renameTask('watch', 'doWatch')
         }
       }
     }
-    , jade: {
-      all: {
-        options: {
-          data: {
-            debug: false
-          }
-          , pretty: true
-        }
-        , files: {
-          "bin/index-new.html": ["src/html/index.jade", "src/html/*.template.jade"]
-        }
-      }
-    }
     , closureBuilder: {
       release: {
         options: {
-          closureLibraryPath: 'build/closure-library/'
+          closureLibraryPath: 'submodules/closure-library'
           , namespaces: ['silex.boot']
-          , builder: 'build/closure-library/closure/bin/build/closurebuilder.py'
+          , builder: 'submodules/closure-library/closure/bin/build/closurebuilder.py'
           , compilerFile: 'build/closure-compiler.jar'
           , compile: true
           , compilerOpts: {
             compilation_level: 'SIMPLE_OPTIMIZATIONS'
             , warning_level: 'QUIET'
-            , externs: 'cloud-explorer/lib/app/js/cloud-explorer.js'
+            , externs: 'submodules/cloud-explorer/lib/app/js/cloud-explorer.js'
             , debug: false
             , create_source_map: 'bin/js/admin.min.js.map'
             , source_map_format: 'V3'
           }
         }
-        , src: ['src/js/', 'build/closure-library/']
+        , src: ['src/js/', 'submodules/closure-library/']
         , dest: 'bin/js/admin.min.js'
       }
       , debug: {
         options: {
-          closureLibraryPath: 'build/closure-library/'
+          closureLibraryPath: 'submodules/closure-library'
           , namespaces: 'silex.boot'
-          , builder: 'build/closure-library/closure/bin/build/closurebuilder.py'
+          , builder: 'submodules/closure-library/closure/bin/build/closurebuilder.py'
           , compilerFile: 'build/closure-compiler.jar'
+          , compile: true // disable if needed?
           , compilerOpts: {
             compilation_level: 'SIMPLE_OPTIMIZATIONS'
-            , externs: 'cloud-explorer/lib/app/js/cloud-explorer.js'
+            , externs: 'submodules/cloud-explorer/lib/app/js/cloud-explorer.js'
             , formatting: 'PRETTY_PRINT'
             , debug: true
-            , use_closure_library: true
+//            , use_closure_library: true // disable if compiled
             , create_source_map: 'bin/js/admin.js.map'
             , source_map_format: 'V3'
           }
         }
-        , src: ['build/closure-library/', 'src/js/']
+        , src: ['submodules/closure-library/', 'src/js/']
         , dest: 'bin/js/admin.js'
       }
     }
