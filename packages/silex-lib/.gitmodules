@@ -1,6 +1,6 @@
-[submodule "cloud-explorer"]
-	path = cloud-explorer
+[submodule "submodules/cloud-explorer"]
+	path = submodules/cloud-explorer
 	url = https://github.com/silexlabs/cloud-explorer.git
-[submodule "build/closure-library"]
-	path = build/closure-library
+[submodule "submodules/closure-library"]
+	path = submodules/closure-library
 	url = https://code.google.com/p/closure-library/

@@ -65,7 +65,7 @@ options.staticFolders.push(
     // file browser
     {
             name: "/cloud-explorer",
-            path: "../../../../cloud-explorer/lib/"
+            path: "../../../../submodules/cloud-explorer/lib/"
     },
     // silex main site
     {
