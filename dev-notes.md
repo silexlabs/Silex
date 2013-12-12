@@ -44,75 +44,78 @@ Stress tests
 ###funcitonal tests to do
 
 these tests would have avoid me to push bugs in production:
-
-* publication (compare "editable.html" and "index.html", or just check "index.html"?)
-
-  * background style
-  * same number of components
-  * download and store on dropbox (or local www?): all images, the scripts only from local or static.silex.me, all the css, fonts + check when file name and folder has " " and accents
-
-* settings
-
-  * select a "publication path" => stores it in the publication
-
-* consistency in different browsers (ff, chrome, IE)
-
-* text editor
-
-  * change text in the editor => changes the website content
-  * fonts are stored in the publication
+https://docs.google.com/spreadsheet/ccc?key=0AhmdV6ktIMy1dGdONzVXSzFWZWdxbTVQamJlMFhVQ2c#gid=0
 
 ###en cours
 
-Shortcuts bigger + use closure to do that? mnemonic and accelerators, like in gdocs
-
 source mapping
 
-Suite à la nuit charrette
+new site size: 424x600
 
-  Position and size depends on contexts
+publish when no publication path => warning => choose publication path
 
-  Text formatting depends on context (prevent changing raw text when in another context)
+gruntfile
 
-  Suppress rigth and bottom
+Refactoring
+- submodules/ <- build/closure-*
+- ttes les manip du dom dans un modèle Dom (lister les pages, ajouter un node pour un composant
+- stage doit juste être là pour capter les actions de l'utilisateur et les transmettre au contrôleur
+- notion de classe proxy? Pour le contrôleur? Pour propertiesTool
+- éléments du menu dans la config
+- validators pour les nom de fichiers? Splitter Helper en classes plus explicites dans utils
 
-  Add padding
+- manip dom => silex.view.FileDom
+- dialogs => silex.view.workspace
+- silex.controller.Workspace
+- silex.controller.Page
+- silex.controller.Stage
+- properties tools
+  - mv silex.view.properties-tool.* => silex.view.*
+  - silex.controller.PropertiesTools
+  - Position and size + Text formatting depends on context (prevent changing raw text when in another context)
+- no more templates loaded at runtime, jade + less
+- bug fix: add comp, take scroll into account
+- bug fix: champs de text "external link" prend du html
+- feature: padding
+- feature: component Name and CSS class
+- services, use http://docs.closure-library.googlecode.com/git/class_goog_ds_JsonDataSource.html
+- feature: goog.ui.FilterObservingMenuItem to filter properties in the toolbox
+- feature: goog.debug.FpsDisplay and goog.events.OnlineHandler
+- feature: new states: active, mobile (use goog.dom.ViewportSizeMonitor)
+- feature: text.LoremIpsum in text field
+- feature: goog.History to reopen a file
+- SplitPane pour les boites a outil? goog.ui.Zippy?
+- goog.ui.TweakUi pour config?
+- goog.color.* instead of custom methods of silex.Helper
 
-  Add box behavior
-  - fix right/lef/top/bottom => margin availability
-  - adapt w/h to content
+Component behavior
+? Suppress rigth and bottom
+- force fixed when right/lef/top/bottom =>
+  => enable/disable margins left/right/top/bottom
+  => enable/disable width/height
+- checkbox to adapt w/h to content
 
-  Layout
-  - none(abs), horizontal, vertical => padding
-  Refactoring
-  - ttes les manip du dom dans un modèle Dom (lister les pages, ajouter un node pour un composant
-  - stage doit juste être là pour capter les actions de l'utilisateur et les transmettre au contrôleur
-  - notion de classe proxy? Pour le contrôleur? Pour propertiesTool
-  - éléments du menu dans la config
-  - validators pour les nom de fichiers? Splitter Helper en classes plus explicites dans utils
-  Fix add comp, take scroll into account
+Container layout
+- none(abs), horizontal, vertical
+  => then enable padding
+  => use goog.fx.DragListGroup + goog.fx.DragScrollSupport
+  in addition to jquery draggable
+OR
+- type (Vbox, hbox, tilebox...)
+ + scroll / adapt to content
+ + v/h align
+ + Datasource
 
-  In the text editor, styles
+Style in Silex
+- In the text editor, styles
+- style editor = Loren ipsum text and google closure editor
+  + select the style to edit
+  + hover/Normal/press
+- default styles: normal, title1/2/3/4, quote, code...
+- todo in the future: add/remove custom styles
 
-  In the style editor, hover/Normal /press
-
-  Name and CSS class in main properties pane + type (vbox, hbox...) + scroll / adapt to content
-
-  Vbox, hbox, tilebox, (content pane: v/h align, Datasource )
-
-  In content pane: padding
-  And style/formatting : set style on roll over/out/normal
-  In the menu
-  - style editor = Loren ipsum text and google closure editor + select the style to edit
-  - default styles: normal, title1/2/3/4, quote, code...
-  - todo in the future: add/remove custom styles
-
-* bugs
-* !!! Urgent : in silex.model.File.prototype.setHtml and silex.model.File.prototype.save
-* borders in ff
+bugs
 - selection de folder dans CE
-- champs de text "external link" prend du html
-- view in new window => voulez vous sauvegarder?
 
 Rename api-server.js in boot.js, like client side
 

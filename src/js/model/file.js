@@ -192,7 +192,7 @@ silex.model.File.prototype.saveAs = function(cbk, opt_errCbk) {
         this.setBlob(blob);
         this.save(cbk, opt_errCbk);
       }, this),
-      {'mimetype': 'text/html'}, 
+      {'mimetype': 'text/html'},
       ['html', 'htm'],
       opt_errCbk);
   this.workspace.invalidate();
@@ -230,7 +230,7 @@ silex.model.File.prototype.open = function(cbk, opt_errCbk) {
               if (cbk) cbk();
             }, this), opt_errCbk);
       }, this),
-      ['text/html', 'text/plain'], 
+      ['text/html', 'text/plain'],
       ['html', 'htm'],
       opt_errCbk);
   this.workspace.invalidate();
@@ -301,11 +301,11 @@ silex.model.File.prototype.refreshFontList = function() {
   var availableFonts = silex.model.Config.fonts;
   //return the font from the font family or null
   var getFont = function(fontFamily) {
-        for (var fontName in availableFonts) {
+    for (var fontName in availableFonts) {
       if (availableFonts[fontName].value === fontFamily)
-                return availableFonts[fontName];
-        }
-        return null;
+        return availableFonts[fontName];
+    }
+    return null;
   };
 
   //for each used font family, if a corresponding font is available, load it
@@ -334,6 +334,8 @@ silex.model.File.prototype.refreshFontList = function() {
     }
   }
 };
+
+
 /**
  * @return {object} object of fonts which are used in the text fields (key is the font name)
  */
@@ -775,8 +777,8 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
       var newRelativePath = 'css/' + fileName;
       files.push({
         url: absolute
-        , destPath: newRelativePath
-        , srcPath: relative
+, destPath: newRelativePath
+, srcPath: relative
       });
       var res = match.replace(group1, newRelativePath);
       return res;

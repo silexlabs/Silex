@@ -589,10 +589,10 @@ silex.Controller.prototype.propertiesToolCallback = function(event) {
       };
       // open the file browser
       this.fileExplorer.openDialog(
-        goog.bind(successCbk, this),
-        ['image/*', 'text/plain'],
-        ['jpg', 'gif', 'png'],
-        goog.bind(errCbk, this)
+          goog.bind(successCbk, this),
+          ['image/*', 'text/plain'],
+          ['jpg', 'gif', 'png'],
+          goog.bind(errCbk, this)
       );
       this.workspace.invalidate();
       break;
