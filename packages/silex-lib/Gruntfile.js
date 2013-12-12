@@ -4,6 +4,20 @@ Inspired by https://gist.github.com/madr/7356170
 
 Uses:
 
+* check syntax with *lint, compile with google closure builder/compiler
+
+  $ grunt deploy
+
+* watch and deploy when needed
+
+  $ grunt watch
+
+* check syntax with *lint, compile with google closure builder/compiler, execute functional tests
+
+  $ grunt test -phantomjs
+  $ grunt test -firefox
+  $ grunt test -chrome
+
 * fix style with google fix style (indentation etc)
 
   $ grunt fix
@@ -12,57 +26,47 @@ Uses:
 
   $ grunt check
 
-* check syntax with *lint, compile with google closure builder/compiler
-
-  $ grunt deploy
-
-* check syntax with *lint, compile with google closure builder/compiler, execute functional tests
-
-  $ grunt test -phantomjs
-  $ grunt test -firefox
-  $ grunt test -chrome
-
-* watch and deploy when needed
-
-  $ grunt watch
-  or
-  $ grunt runAndWatch
-
-
-
-The Following folder structure is required:
-
-./
-  ./bin
-    index.html
-    debug.html
-    ./templates
-      *.html
-    ./bin/js
-      admin.js
-      admin.min.js
-      admin.min.zipped.js
-    ./bin/css
-      admin.css
-      admin.min.css
-      admin.min.zipped.css
-  ./src
-    ./src/js
-      .src/js/
-      .src/js/view
-      .src/js/model
-      .src/js/service
-  ./js
-    *.js
 */
 module.exports = function(grunt) {
+
+  grunt.loadNpmTasks('grunt-closure-tools');
+  grunt.loadNpmTasks('grunt-append-sourcemapping');
+  grunt.loadNpmTasks('grunt-contrib-compress');
+  grunt.loadNpmTasks('grunt-contrib-concat');
+  grunt.loadNpmTasks('grunt-contrib-csslint');
+  grunt.loadNpmTasks('grunt-contrib-less');
+  grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-html');
+  grunt.loadNpmTasks('grunt-closure-linter');
+  grunt.loadNpmTasks('grunt-simple-mocha');
+  grunt.loadNpmTasks('grunt-contrib-jade');
+
+grunt.task.renameTask('watch', 'doWatch')
+
+  grunt.registerTask('deploy', ['jade', 'concat', 'less:production', 'less:development', 'closureBuilder:debug', 'closureBuilder:release', 'append-sourcemapping', 'compress']);
+  grunt.registerTask('check', ['htmllint', 'csslint:lax', 'closureLint']);
+  grunt.registerTask('test', ['check', 'deploy', 'simplemocha']);
+  grunt.registerTask('fix', ['closureFixStyle']);
+
+  grunt.registerTask('default', ['check', 'deploy']);
+
+  grunt.registerTask('watch', 'Start Silex', function () {
+    grunt.task.run([
+        'run',
+        'doWatch'
+    ]);
+  });
+  grunt.registerTask('run', 'Start Silex', function () {
+      var server = require('./server/api-server.js');
+      console.log('Start Silex', server);
+  });
 
   // Project configuration.
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json')
     , csslint: {
       lax: {
-        src: ['src/less/*.css']
+        src: ['src/css/*.css']
         , options: {
           important: false // useful when opening a website in Silex
             , "adjoining-classes" : false
@@ -98,8 +102,8 @@ module.exports = function(grunt) {
     }
     , concat: {
       dist: {
-        src: ['src/less/*.css']
-        , dest: 'src/less/.temp'
+        src: ['src/css/*.css']
+        , dest: 'src/css/.temp'
       }
     }
     , htmllint: {
@@ -133,12 +137,25 @@ module.exports = function(grunt) {
           cleancss: true
         }
         , files: {
-          "bin/css/admin.min.css": "src/less/.temp"
+          "bin/css/admin.min.css": "src/css/.temp"
         }
       }
       , production: {
         files: {
-          "bin/css/admin.css": "src/less/.temp"
+          "bin/css/admin.css": "src/css/.temp"
+        }
+      }
+    }
+    , jade: {
+      all: {
+        options: {
+          data: {
+            debug: false
+          }
+          , pretty: true
+        }
+        , files: {
+          "bin/index-new.html": ["src/html/index.jade", "src/html/*.template.jade"]
         }
       }
     }
@@ -155,6 +172,8 @@ module.exports = function(grunt) {
             , warning_level: 'QUIET'
             , externs: 'cloud-explorer/lib/app/js/cloud-explorer.js'
             , debug: false
+            , create_source_map: 'bin/js/admin.min.js.map'
+            , source_map_format: 'V3'
           }
         }
         , src: ['src/js/', 'build/closure-library/']
@@ -172,23 +191,29 @@ module.exports = function(grunt) {
             , formatting: 'PRETTY_PRINT'
             , debug: true
             , use_closure_library: true
+            , create_source_map: 'bin/js/admin.js.map'
+            , source_map_format: 'V3'
           }
         }
         , src: ['build/closure-library/', 'src/js/']
         , dest: 'bin/js/admin.js'
       }
     }
-    , watch: {
-        javascript: {
-            files: ['src/js/**/*.js', 'server/**/*.js', 'src/less/*.css', 'bin/**/*.html', 'Gruntfile.js']
-            //, tasks: ['check', 'deploy']
-            , tasks: ['deploy', 'run']
-        }
-        , livereload: {
-            files: ['Gruntfile.js', 'bin/js/*.js', 'bin/css/*.css', 'bin/assets/**/*.{png,jpg,jpeg,gif,webp,svg}', 'js/*.js', ]
-            , options: {
-                livereload: true
+    , "append-sourcemapping": {
+        main: {
+            files: {
+                "bin/js/admin.js": "admin.js.map"
             }
+        }
+    }
+    , doWatch: {
+        options: {
+          livereload: true
+          , atBegin: true
+        }
+        , all: {
+            files: ['src/js/**/*.js', 'server/**/*.js', 'src/css/*.css', 'src/css/*.less', 'src/html/*.jade', 'bin/**/*.html', 'Gruntfile.js']
+            , tasks: ['deploy', 'run']
         }
     }
     , simplemocha: {
@@ -200,31 +225,5 @@ module.exports = function(grunt) {
         }
         , all: { src: 'test/**/*.js' }
       }
-  });
-
-  grunt.loadNpmTasks('grunt-closure-tools');
-  grunt.loadNpmTasks('grunt-contrib-compress');
-  grunt.loadNpmTasks('grunt-contrib-concat');
-  grunt.loadNpmTasks('grunt-contrib-csslint');
-  grunt.loadNpmTasks('grunt-contrib-less');
-  grunt.loadNpmTasks('grunt-contrib-watch');
-  grunt.loadNpmTasks('grunt-html');
-  grunt.loadNpmTasks('grunt-closure-linter');
-  grunt.loadNpmTasks('grunt-simple-mocha');
-
-  grunt.registerTask('deploy', ['concat', 'less:production', 'less:development', 'closureBuilder:debug', 'closureBuilder:release', 'compress']);
-  grunt.registerTask('check', ['htmllint', 'csslint:lax', 'closureLint']);
-  grunt.registerTask('test', ['check', 'deploy', 'simplemocha']);
-  grunt.registerTask('fix', ['closureFixStyle']);
-
-  grunt.registerTask('default', ['check', 'deploy']);
-  grunt.registerTask('runAndWatch', 'Start Silex and watch', function () {
-      grunt.task.run([
-          'run',
-          'watch'
-      ]);
-  });
-  grunt.registerTask('run', 'Start Silex', function () {
-      var server = require('./server/api-server.js');
   });
 }

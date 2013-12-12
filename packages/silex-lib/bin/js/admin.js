@@ -32414,7 +32414,8 @@ goog.require('goog.events.KeyCodes');
 goog.require('goog.ui.KeyboardShortcutHandler');
 
 var ctrlKeyDisplay = goog.userAgent.MAC ? '⌘' + '' : 'Ctrl+';
-var altKeyDisplay = goog.userAgent.MAC ?  '⌥' + '' : 'Alt+';
+var altKeyDisplay = goog.userAgent.MAC ? '⌥' + '' : 'Alt+';
+
 
 /**
  * The main application menu
@@ -32455,7 +32456,7 @@ silex.model.Config.menu = {
         , shortcut: [[goog.events.KeyCodes.N, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
         , tooltip: altKeyDisplay + 'n'
         , mnemonic: goog.events.KeyCodes.N
-        , accelerator: 'n'
+, accelerator: 'n'
       }
       , {
         label: 'Open File...'
@@ -32464,7 +32465,7 @@ silex.model.Config.menu = {
         , shortcut: [[goog.events.KeyCodes.O, goog.ui.KeyboardShortcutHandler.Modifiers.META]]
         , tooltip: ctrlKeyDisplay + 'o'
         , mnemonic: goog.events.KeyCodes.O
-        , accelerator: 'o'
+, accelerator: 'o'
       }
       , {
         label: 'Save File'
@@ -32473,24 +32474,24 @@ silex.model.Config.menu = {
         , shortcut: [[goog.events.KeyCodes.S, goog.ui.KeyboardShortcutHandler.Modifiers.META]]
         , tooltip: ctrlKeyDisplay + 's'
         , mnemonic: goog.events.KeyCodes.S
-        , accelerator: 's'
+, accelerator: 's'
       }
       , {
         label: 'Save As...'
         , id: 'file.saveas'
         , className: 'menu-item-file-saveas'
-        , shortcut: [[goog.events.KeyCodes.S, goog.ui.KeyboardShortcutHandler.Modifiers.META+goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT]]
+        , shortcut: [[goog.events.KeyCodes.S, goog.ui.KeyboardShortcutHandler.Modifiers.META + goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT]]
         , tooltip: ctrlKeyDisplay + '⇧S'
       }
       , null
-      , {
+, {
         label: 'Publish'
         , id: 'file.publish'
         , className: 'menu-item-file-publish'
         , shortcut: [[goog.events.KeyCodes.P, goog.ui.KeyboardShortcutHandler.Modifiers.META]]
         , tooltip: ctrlKeyDisplay + 'P'
         , mnemonic: goog.events.KeyCodes.P
-        , accelerator: 'p'
+, accelerator: 'p'
       }
       , {
         label: 'Settings...'
@@ -32498,14 +32499,14 @@ silex.model.Config.menu = {
         , className: 'menu-item-file-publish-settings'
       }
       , null
-      , {
+, {
         label: 'Close File'
         , id: 'file.close'
         , className: 'menu-item-file-close'
         , shortcut: [[goog.events.KeyCodes.W, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
         , tooltip: altKeyDisplay + 'w'
         , mnemonic: goog.events.KeyCodes.W
-        , accelerator: 'w'
+, accelerator: 'w'
       }
     ]
     , [
@@ -32516,10 +32517,10 @@ silex.model.Config.menu = {
         , shortcut: [[goog.events.KeyCodes.DELETE], [goog.events.KeyCodes.BACKSPACE]]
         , tooltip: 'suppr'
         , mnemonic: goog.events.KeyCodes.R
-        , accelerator: 'r'
+, accelerator: 'r'
       }
       , null
-      , {
+, {
         label: 'Rename page'
         , id: 'edit.rename.page'
         , className: 'menu-item-edit-rename-page'
@@ -32538,10 +32539,10 @@ silex.model.Config.menu = {
         , shortcut: [[goog.events.KeyCodes.V, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
         , tooltip: altKeyDisplay + 'V'
         , mnemonic: goog.events.KeyCodes.V
-        , accelerator: 'v'
+, accelerator: 'v'
       }
       , null
-      , {
+, {
         label: 'Open text editor'
         , id: 'view.open.textEditor'
         , className: 'menu-item-view-open-textEditor'
@@ -32562,7 +32563,7 @@ silex.model.Config.menu = {
         , shortcut: [[goog.events.KeyCodes.T, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
         , tooltip: altKeyDisplay + 'T'
         , mnemonic: goog.events.KeyCodes.T
-        , accelerator: 't'
+, accelerator: 't'
       }
       , {
         label: 'Image...'
@@ -32571,7 +32572,7 @@ silex.model.Config.menu = {
         , shortcut: [[goog.events.KeyCodes.I, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
         , tooltip: altKeyDisplay + 'I'
         , mnemonic: goog.events.KeyCodes.I
-        , accelerator: 'i'
+, accelerator: 'i'
       }
       , {
         label: 'Container'
@@ -32580,27 +32581,27 @@ silex.model.Config.menu = {
         , shortcut: [[goog.events.KeyCodes.C, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
         , tooltip: altKeyDisplay + 'C'
         , mnemonic: goog.events.KeyCodes.C
-        , accelerator: 'c'
+, accelerator: 'c'
       }
       , null
-      , {
+, {
         label: 'HTML box'
         , id: 'insert.html'
         , className: 'menu-item-insert-html'
         , shortcut: [[goog.events.KeyCodes.H, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
         , tooltip: altKeyDisplay + 'H'
         , mnemonic: goog.events.KeyCodes.H
-        , accelerator: 'h'
+, accelerator: 'h'
       }
       , null
-      , {
+, {
         label: 'New page'
         , id: 'insert.page'
         , className: 'menu-item-insert-page'
         , shortcut: [[goog.events.KeyCodes.P, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
         , tooltip: altKeyDisplay + 'P'
         , mnemonic: goog.events.KeyCodes.P
-        , accelerator: 'p'
+, accelerator: 'p'
       }
     ]
     , [
@@ -32628,7 +32629,7 @@ silex.model.Config.menu = {
         , className: 'menu-item-help-newsLetter'
       }
       , null
-      , {
+, {
         label: 'Questions and answers'
         , id: 'help.forums'
         , className: 'menu-item-help-forums'
@@ -32649,7 +32650,7 @@ silex.model.Config.menu = {
         , className: 'menu-item-help-facebook'
       }
       , null
-      , {
+, {
         label: 'Fork me on github!'
         , id: 'help.forkMe'
         , className: 'menu-item-help-forkMe'
@@ -32657,6 +32658,7 @@ silex.model.Config.menu = {
     ]
   ]
 };
+
 
 /**
  * The list of fonts the user can select
@@ -34667,10 +34669,10 @@ silex.Controller.prototype.propertiesToolCallback = function(event) {
       };
       // open the file browser
       this.fileExplorer.openDialog(
-        goog.bind(successCbk, this),
-        ['image/*', 'text/plain'],
-        ['jpg', 'gif', 'png'],
-        goog.bind(errCbk, this)
+          goog.bind(successCbk, this),
+          ['image/*', 'text/plain'],
+          ['jpg', 'gif', 'png'],
+          goog.bind(errCbk, this)
       );
       this.workspace.invalidate();
       break;
@@ -35460,11 +35462,11 @@ silex.model.Component.prototype.setStyle = function(style, opt_context) {
         // remove ' from value because some browsers modifies bg image
         // and adds ' (e.g. chrome)
         var sanitized = val.replace(/\'/g, '');
-        if (this.element.style[index] !== sanitized) { 
+        if (this.element.style[index] !== sanitized) {
           goog.style.setStyle(this.element, index, val);
         }
       }
-      else{
+      else {
         goog.style.setStyle(this.element, index, null);
       }
     }
@@ -45601,21 +45603,24 @@ silex.Helper.rgbaToArray = function(rgba) {
   var result = [r, g, b, a];
   return result;
 };
+
+
 /**
  * check if the file name has the desired extension
  * @param   {string} filename  the file name to be checked
  * @param   {array} extArray  the allowed extensions
  */
-silex.Helper.checkFileExt = function (fileName, extArray){
+silex.Helper.checkFileExt = function(fileName, extArray) {
   var fileName = fileName;
   var ext = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
-  for(idx in extArray) {
-    if (extArray[idx].toLowerCase() === ext){
+  for (idx in extArray) {
+    if (extArray[idx].toLowerCase() === ext) {
       return true;
     }
   }
   return false;
-}//////////////////////////////////////////////////
+};
+//////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
 //
@@ -84808,7 +84813,7 @@ silex.model.File.prototype.saveAs = function(cbk, opt_errCbk) {
         this.setBlob(blob);
         this.save(cbk, opt_errCbk);
       }, this),
-      {'mimetype': 'text/html'}, 
+      {'mimetype': 'text/html'},
       ['html', 'htm'],
       opt_errCbk);
   this.workspace.invalidate();
@@ -84846,7 +84851,7 @@ silex.model.File.prototype.open = function(cbk, opt_errCbk) {
               if (cbk) cbk();
             }, this), opt_errCbk);
       }, this),
-      ['text/html', 'text/plain'], 
+      ['text/html', 'text/plain'],
       ['html', 'htm'],
       opt_errCbk);
   this.workspace.invalidate();
@@ -84917,11 +84922,11 @@ silex.model.File.prototype.refreshFontList = function() {
   var availableFonts = silex.model.Config.fonts;
   //return the font from the font family or null
   var getFont = function(fontFamily) {
-        for (var fontName in availableFonts) {
+    for (var fontName in availableFonts) {
       if (availableFonts[fontName].value === fontFamily)
-                return availableFonts[fontName];
-        }
-        return null;
+        return availableFonts[fontName];
+    }
+    return null;
   };
 
   //for each used font family, if a corresponding font is available, load it
@@ -84950,6 +84955,8 @@ silex.model.File.prototype.refreshFontList = function() {
     }
   }
 };
+
+
 /**
  * @return {object} object of fonts which are used in the text fields (key is the font name)
  */
@@ -85391,8 +85398,8 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
       var newRelativePath = 'css/' + fileName;
       files.push({
         url: absolute
-        , destPath: newRelativePath
-        , srcPath: relative
+, destPath: newRelativePath
+, srcPath: relative
       });
       var res = match.replace(group1, newRelativePath);
       return res;
@@ -86125,7 +86132,7 @@ silex.boot = function() {
                                // now create an empty file to let the user start using Silex
                                file.newFile(function() {
 
-/* *
+                                 /* *
             controller.menuCallback({type:'insert.container'});
             controller.menuCallback({type:'insert.html'});
 
@@ -86176,3 +86183,6 @@ return;
 
 // Ensures the symbol will be visible after compiler renaming.
 goog.exportSymbol('silex.boot', silex.boot);
+/*
+//@ sourceMappingURL=admin.js.map
+*/

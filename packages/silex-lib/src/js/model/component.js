@@ -260,11 +260,11 @@ silex.model.Component.prototype.setStyle = function(style, opt_context) {
         // remove ' from value because some browsers modifies bg image
         // and adds ' (e.g. chrome)
         var sanitized = val.replace(/\'/g, '');
-        if (this.element.style[index] !== sanitized) { 
+        if (this.element.style[index] !== sanitized) {
           goog.style.setStyle(this.element, index, val);
         }
       }
-      else{
+      else {
         goog.style.setStyle(this.element, index, null);
       }
     }
