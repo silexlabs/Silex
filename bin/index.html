@@ -25,7 +25,7 @@
 
 	<!-- Normalize -->
 	<link href="libs/normalize.css" rel="stylesheet">
-	<!-- google closure patches -->
+	<!-- google closure -->
 	<link rel="stylesheet" type="text/css" href="css/closure/common.css">
 
 </head>
@@ -87,8 +87,10 @@
 
 	<!-- Silex compiled -->
 	<script type="text/javascript" src="js/admin.min.js"></script>
-	<!-- google closure patches -->
-	<script type="text/javascript" src="js/closure-patches.js"></script>
+  <!-- google closure css patches
+    to be included after the other includes -->
+  <link rel="stylesheet" type="text/css" href="css/closure-patches.css">
+  <script type="text/javascript" src="js/closure-patches.js"></script>
 	<!-- start Silex -->
 	<script type="text/javascript">
 		// redirect /silex to /silex/
