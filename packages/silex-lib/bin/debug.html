@@ -27,7 +27,6 @@
 	<link href="libs/normalize.css" rel="stylesheet">
 	<!-- google closure patches -->
 	<link rel="stylesheet" type="text/css" href="css/closure/common.css">
-	<link rel="stylesheet" type="text/css" href="css/closure-patches.css">
 
 </head>
 <body class="loading-pending advanced-mode-off">
@@ -89,18 +88,20 @@
 
 	<!-- Silex compiled -->
 	<script type="text/javascript" src="js/admin.js"></script>
-	<!-- google closure patches -->
+  <!-- google closure css patches
+    to be included after the other includes -->
+  <link rel="stylesheet" type="text/css" href="css/closure-patches.css">
 	<script type="text/javascript" src="js/closure-patches.js"></script>
-	<!-- start Silex -->
-	<script type="text/javascript">
-		// redirect /silex to /silex/
-		if(window.location.href.slice(-5) === 'silex'){
-			window.location.href += '/';
-		}
-		// remove hash added by cloud explorer
-		window.location.hash = '';
-		// boot silex app
-		silex.boot();
-	</script>
+  <!-- start Silex -->
+  <script type="text/javascript">
+    // redirect /silex to /silex/
+    if(window.location.href.slice(-5) === 'silex'){
+      window.location.href += '/';
+    }
+    // remove hash added by cloud explorer
+    window.location.hash = '';
+    // boot silex app
+    silex.boot();
+  </script>
 </body>
 </html>
