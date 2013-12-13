@@ -48,45 +48,39 @@ https://docs.google.com/spreadsheet/ccc?key=0AhmdV6ktIMy1dGdONzVXSzFWZWdxbTVQamJ
 
 ###en cours
 
-source mapping
-
-new site size: 424x600
-
-publish when no publication path => warning => choose publication path
-
-gruntfile
+ne pas commiter les js générés
+/bin
+/bin/server
+/bin/client
 
 Refactoring
-- submodules/ <- build/closure-*
-- ttes les manip du dom dans un modèle Dom (lister les pages, ajouter un node pour un composant
-- stage doit juste être là pour capter les actions de l'utilisateur et les transmettre au contrôleur
-- notion de classe proxy? Pour le contrôleur? Pour propertiesTool
-- éléments du menu dans la config
 - validators pour les nom de fichiers? Splitter Helper en classes plus explicites dans utils
 
-- manip dom => silex.view.FileDom
-- dialogs => silex.view.workspace
+- manip dom => silex.model.Dom
+- ttes les manip du dom dans un modèle Dom (lister les pages, ajouter un node pour un composant
+- stage doit juste être là pour capter les actions de l'utilisateur et les transmettre au contrôleur
+
 - silex.controller.Workspace
 - silex.controller.Page
 - silex.controller.Stage
+- dialogs => silex.view.workspace
+
 - properties tools
   - mv silex.view.properties-tool.* => silex.view.*
   - silex.controller.PropertiesTools
   - Position and size + Text formatting depends on context (prevent changing raw text when in another context)
+
 - no more templates loaded at runtime, jade + less
-- bug fix: add comp, take scroll into account
-- bug fix: champs de text "external link" prend du html
 - feature: padding
 - feature: component Name and CSS class
 - services, use http://docs.closure-library.googlecode.com/git/class_goog_ds_JsonDataSource.html
-- feature: goog.ui.FilterObservingMenuItem to filter properties in the toolbox
-- feature: goog.debug.FpsDisplay and goog.events.OnlineHandler
 - feature: new states: active, mobile (use goog.dom.ViewportSizeMonitor)
-- feature: text.LoremIpsum in text field
 - feature: goog.History to reopen a file
 - SplitPane pour les boites a outil? goog.ui.Zippy?
-- goog.ui.TweakUi pour config?
 - goog.color.* instead of custom methods of silex.Helper
+- goog.ui.TweakUi pour config?
+- feature: goog.ui.FilterObservingMenuItem to filter properties in the toolbox
+- feature: goog.debug.FpsDisplay and goog.events.OnlineHandler
 
 Component behavior
 ? Suppress rigth and bottom
@@ -168,14 +162,6 @@ Bugs
 
 * set viewport size to background?
 * bg properties: manque background-size? scalemode?
-* il y a des images en ligne pour la palette, les mettre en local
-  GET http://ssl.gstatic.com/editor/editortoolbar.png  (index):1
-  GET http://ssl.gstatic.com/editor/button-bg.png  admin.js:172
-  GET http://ssl.gstatic.com/closure/hsva-sprite-sm.png  ace.js:1
-  GET http://ssl.gstatic.com/editor/button-bg.png  ace.js:1
-  GET http://ssl.gstatic.com/closure/check-sprite.gif  admin.js:71
-  GET http://ssl.gstatic.com/editor/toolbar-bg.png  admin.js:194
-  GET http://ssl.gstatic.com/editor/editortoolbar.png
 
 ##Notes
 

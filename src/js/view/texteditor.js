@@ -36,7 +36,8 @@ goog.require('goog.ui.editor.DefaultToolbar');
 goog.require('goog.ui.editor.ToolbarController');
 goog.require('goog.events.KeyCodes');
 goog.require('goog.ui.KeyboardShortcutHandler');
-
+goog.require('goog.text.LoremIpsum');
+goog.require('goog.ui.ToolbarSeparator');
 goog.require('silex.model.Config');
 
 
@@ -147,13 +148,24 @@ silex.view.TextEditor.prototype.initUI = function() {
     goog.editor.Command.JUSTIFY_LEFT,
     goog.editor.Command.JUSTIFY_CENTER,
     goog.editor.Command.JUSTIFY_RIGHT,
-    goog.editor.Command.SUBSCRIPT,
-    goog.editor.Command.SUPERSCRIPT,
     goog.editor.Command.STRIKE_THROUGH,
     goog.editor.Command.REMOVE_FORMAT
   ];
   var myToolbar = goog.ui.editor.DefaultToolbar.makeToolbar(buttons,
       goog.dom.getElementByClass('toolbar', this.element));
+
+  // lorem ipsum button
+  var generator = new goog.text.LoremIpsum();
+  var button = goog.ui.editor.ToolbarFactory.makeButton('loremIpsumBtn', 'insert lorem ipsum text', 'L');
+  goog.events.listen(button,
+    goog.ui.Component.EventType.ACTION, function () {
+      var text = generator.generateParagraph(true);
+      var div = goog.dom.createElement('div');
+      div.innerHTML = text;
+      this.textField.getRange().replaceContentsWithNode(div);
+    }, false, this);
+  myToolbar.addChild(new goog.ui.ToolbarSeparator(), true);
+  myToolbar.addChild(button, true);
 
   // Hook the toolbar into the field.
   var myToolbarController = new goog.ui.editor.ToolbarController(this.textField,
@@ -190,6 +202,7 @@ silex.view.TextEditor.prototype.initUI = function() {
  */
 silex.view.TextEditor.prototype.openEditor = function(initialHtml) {
   this.textField.setHtml(false, initialHtml);
+  this.textField.focusAndPlaceCursorAtStart();
   // background
   var background = goog.dom.getElementByClass('dialogs-background');
   // show
