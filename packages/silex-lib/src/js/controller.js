@@ -187,8 +187,13 @@ silex.Controller.prototype.menuCallback = function(event) {
       break;
     case 'file.publish':
       if (!this.file.getPublicationPath()) {
-        this.publishSettings.openDialog();
-        this.workspace.invalidate();
+        alertify.alert('I do not know where to publish your site. \
+            Select a folder in the settings pannel and do "publish" again. \
+            <br /><br />Now I will open the publish settings.',
+          goog.bind(function () {
+            this.publishSettings.openDialog();
+            this.workspace.invalidate();
+          }, this))
       }
       else
       {
