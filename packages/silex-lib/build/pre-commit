@@ -1,10 +1,11 @@
 #!/bin/sh
 
 # Retrieve the absolute paths
-SCRIPT_PATH="`dirname $0`"
-ROOT=$(cd $SCRIPT_PATH"/../.."; pwd)
+#SCRIPT_PATH="`dirname $0`"
+#ROOT=$(cd $SCRIPT_PATH"/../.."; pwd)
 
 # Build
-echo "Building silex bin/js/admin.js"
-$ROOT/build/build.sh debug
+echo "Building silex before commit..."
+make
+exit $?
 

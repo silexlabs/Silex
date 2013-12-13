@@ -7,3 +7,5 @@
 .temp
 .cache
 node_modules
+dist/client/js/admin*
+dist/client/css/admin*

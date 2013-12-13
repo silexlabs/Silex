@@ -53,6 +53,8 @@ ne pas commiter les js générés
 /bin/server
 /bin/client
 
+precomit hook => deploy
+
 Refactoring
 - validators pour les nom de fichiers? Splitter Helper en classes plus explicites dans utils
 
@@ -110,8 +112,6 @@ Style in Silex
 
 bugs
 - selection de folder dans CE
-
-Rename api-server.js in boot.js, like client side
 
 a finir
 
