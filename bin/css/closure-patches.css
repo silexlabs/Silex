@@ -14,7 +14,7 @@
 }
 .goog-custom-button,
 .goog-menu-button {
-  background: url(../assets/ui/button-bg.png);
+  background: url(../assets/ui/button-bg.png) !important;
 }
 .goog-hsva-palette-sm-hs-image,
 .goog-hsva-palette-sm-v-image,
