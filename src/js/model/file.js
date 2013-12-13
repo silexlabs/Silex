@@ -231,7 +231,6 @@ silex.model.File.prototype.open = function(cbk, opt_errCbk) {
             }, this), opt_errCbk);
       }, this),
       ['text/html', 'text/plain'],
-      ['html', 'htm'],
       opt_errCbk);
   this.workspace.invalidate();
 };

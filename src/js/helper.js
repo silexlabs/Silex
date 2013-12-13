@@ -245,7 +245,7 @@ silex.Helper.checkFileExt = function(fileName, extArray) {
   var fileName = fileName;
   var ext = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
   for (idx in extArray) {
-    if (extArray[idx].toLowerCase() === ext) {
+    if (extArray[idx] === ext) {
       return true;
     }
   }

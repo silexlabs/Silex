@@ -38,7 +38,7 @@
   {
     "deploy": "grunt deploy"
     , "watch": "grunt watch"
-    , "test": "grunt test --force"
+    , "test": "grunt test"
   }
   , "devDependencies": {
     "grunt": "~0.4.1"
