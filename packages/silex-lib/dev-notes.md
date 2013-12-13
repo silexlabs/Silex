@@ -48,15 +48,9 @@ https://docs.google.com/spreadsheet/ccc?key=0AhmdV6ktIMy1dGdONzVXSzFWZWdxbTVQamJ
 
 ###en cours
 
-ne pas commiter les js générés
-/bin
-/bin/server
-/bin/client
-
-precomit hook => deploy
-
 Refactoring
-- validators pour les nom de fichiers? Splitter Helper en classes plus explicites dans utils
+- bug: validators pour les nom de fichiers?
+- Splitter Helper en classes plus explicites dans utils
 
 - manip dom => silex.model.Dom
 - ttes les manip du dom dans un modèle Dom (lister les pages, ajouter un node pour un composant

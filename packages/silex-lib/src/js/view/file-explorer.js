@@ -109,9 +109,16 @@ silex.view.FileExplorer.prototype.init = function() {
  * pick a file
  * @param opt_mimetypes     optional array of accepted mimetypes, e.g. ['text/html', 'text/plain']
  */
-silex.view.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes, opt_fileExtentions, opt_errCbk) {
+silex.view.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes, opt_errCbk) {
   // default is image
   if (!opt_mimetypes) opt_mimetypes = ['image/*', 'text/plain'];
+  var fileExtentions;
+  if (opt_mimetypes[0].indexOf('image') === 0){
+    fileExtentions = ['jpg', 'jpeg', 'gif', 'png'];
+  }
+  else if (opt_mimetypes[0].indexOf('text/html') === 0){
+    fileExtentions = ['html', 'htm'];
+  }
 
   var errCbk = function(FPError) {
     console.error(FPError);
@@ -139,7 +146,7 @@ silex.view.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes, opt_
         blob.url = silex.Helper.getAbsolutePath(blob.url, silex.Helper.BaseUrl);
 
         // check the the file extention is ok
-        if (opt_fileExtentions && silex.Helper.checkFileExt(blob.url, opt_fileExtentions) === false){
+        if (fileExtentions && silex.Helper.checkFileExt(blob.url, fileExtentions) === false){
           var fileName = blob.url.substring(blob.url.lastIndexOf('/') + 1);
           alertify.confirm('The file name ' +
             fileName +
@@ -167,7 +174,7 @@ silex.view.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes, opt_
  * save as dialog
  * @param opt_mimetypes     optional array of accepted mimetypes, e.g. ['text/html', 'text/plain']
  */
-silex.view.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes, opt_fileExtentions, opt_errCbk) {
+silex.view.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes, opt_errCbk) {
   // default is html
   if (!opt_mimetypes) opt_mimetypes = {'mimetype': 'text/html'};
 
@@ -200,7 +207,7 @@ silex.view.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes, op
         blob.url = silex.Helper.getAbsolutePath(blob.url, silex.Helper.BaseUrl);
 
         // check the the file extention is ok
-        if (opt_fileExtentions && silex.Helper.checkFileExt(blob.url, opt_fileExtentions) === false){
+        if (fileExtentions && silex.Helper.checkFileExt(blob.url, fileExtentions) === false){
           var fileName = blob.url.substring(blob.url.lastIndexOf('/') + 1);
           alertify.confirm('The file name ' +
             fileName +

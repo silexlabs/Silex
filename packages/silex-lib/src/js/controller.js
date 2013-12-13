@@ -316,7 +316,6 @@ silex.Controller.prototype.menuCallback = function(event) {
             this.tracker.trackAction('controller-events', 'success', event.type, 1);
           }, this),
           ['image/*', 'text/plain'],
-          ['jpg', 'gif', 'png'],
           goog.bind(function(error) {
             this.notifyError('Error: I did not manage to load the image. <br /><br />' + (error.message || ''));
             this.tracker.trackAction('controller-events', 'error', event.type, -1);
@@ -557,7 +556,7 @@ silex.Controller.prototype.publishSettingsCallback = function(event) {
             this.tracker.trackAction('controller-events', 'success', event.type, 1);
           }, this),
           ['image/*', 'text/plain'],
-          ['jpg', 'gif', 'png'],
+          null,
           goog.bind(function(error) {
             this.notifyError('Error: I could not select the publish path. <br /><br />' + (error.message || ''));
             this.tracker.trackAction('controller-events', 'error', event.type, -1);
@@ -596,7 +595,6 @@ silex.Controller.prototype.propertiesToolCallback = function(event) {
       this.fileExplorer.openDialog(
           goog.bind(successCbk, this),
           ['image/*', 'text/plain'],
-          ['jpg', 'gif', 'png'],
           goog.bind(errCbk, this)
       );
       this.workspace.invalidate();
@@ -665,7 +663,6 @@ silex.Controller.prototype.editComponent = function() {
             this.propertiesTool.setImage(blob.url);
           }, this),
           ['image/*', 'text/plain'],
-          ['jpg', 'gif', 'png'],
           goog.bind(function(error) {
             this.notifyError('Error: I did not manage to load the image. <br /><br />' + (error.message || ''));
           }, this)

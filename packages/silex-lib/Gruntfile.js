@@ -52,13 +52,18 @@ module.exports = function(grunt) {
 
   grunt.registerTask('watch', 'Start Silex', function () {
     grunt.task.run([
-        'run',
+        'runDebug',
         'doWatch'
     ]);
   });
   grunt.registerTask('run', 'Start Silex', function () {
       var server = require('./dist/server/server.js');
       console.log('Start Silex', server);
+  });
+  grunt.registerTask('runDebug', 'Start Silex', function () {
+      var server = require('./dist/server/server.js');
+      server.setDebugMode(true);
+      console.log('Start Silex in debug mode', server);
   });
 
   grunt.registerTask('install', function() {
