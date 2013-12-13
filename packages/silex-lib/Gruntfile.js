@@ -43,6 +43,7 @@ module.exports = function(grunt) {
 grunt.task.renameTask('watch', 'doWatch')
 
   grunt.registerTask('deploy', ['concat', 'less:production', 'less:development', 'closureBuilder:debug', 'closureBuilder:release', 'append-sourcemapping']);
+  grunt.registerTask('debugDeploy', ['concat', 'less:development', 'closureBuilder:debug', 'append-sourcemapping']);
   grunt.registerTask('check', ['htmllint', 'csslint:lax', 'closureLint']);
   grunt.registerTask('test', ['check', 'deploy', 'simplemocha']);
   grunt.registerTask('fix', ['closureFixStyle']);
@@ -179,7 +180,7 @@ grunt.task.renameTask('watch', 'doWatch')
         }
         , all: {
             files: ['src/js/**/*.js', 'server/**/*.js', 'src/css/*.css', 'src/css/*.less', 'src/html/*.jade', 'bin/**/*.html', 'Gruntfile.js']
-            , tasks: ['deploy', 'run']
+            , tasks: ['debugDeploy', 'run']
         }
     }
     , simplemocha: {
