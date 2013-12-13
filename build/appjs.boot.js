@@ -74,7 +74,7 @@ options.staticFolders.push(
     // silex editor
     {
         name: "/silex",
-        path: "../../../../bin/"
+        path: "../../../../dist/client/"
     },
     // debug silex
     {

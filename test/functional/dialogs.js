@@ -1,5 +1,5 @@
 var assert = require('assert')
-, silexServer = require('../../server/api-server.js')
+, silexServer = require('../../dist/server/server.js')
 , expect = require('chai').expect
 , helper = require('../helper.js');
 
@@ -59,7 +59,7 @@ it('should be able to open the file menu', function(done) {
     });
 });
 it('should be able to open the file explorer dialog', function(done) {
-    // click 
+    // click
     helper.driver.findElement(helper.webdriver.By.className('menu-item-file-open')).click();
     // check visibility
     helper.driver.findElement(helper.webdriver.By.className('silex-fileexplorer')).isDisplayed().then(function (isDisplayed) {

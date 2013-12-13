@@ -664,7 +664,7 @@ silex.model.Component.prototype.addContainer = function() {
   // set bounding box
   var bb = {};
   bb.left = (100 + this.element.scrollLeft) + 'px';
-  bb.top = (100+ this.element.scrollTop) + 'px';
+  bb.top = (100 + this.element.scrollTop) + 'px';
   bb.height = '100px';
   bb.width = '100px';
   component.setBoundingBox(bb);
@@ -703,7 +703,7 @@ silex.model.Component.prototype.addText = function() {
   // set bounding box
   var bb = {};
   bb.left = (100 + this.element.scrollLeft) + 'px';
-  bb.top = (100+ this.element.scrollTop) + 'px';
+  bb.top = (100 + this.element.scrollTop) + 'px';
   bb.height = '100px';
   bb.width = '100px';
   component.setBoundingBox(bb);
@@ -750,7 +750,7 @@ silex.model.Component.prototype.addHtml = function() {
   // set bounding box
   var bb = {};
   bb.left = (100 + this.element.scrollLeft) + 'px';
-  bb.top = (100+ this.element.scrollTop) + 'px';
+  bb.top = (100 + this.element.scrollTop) + 'px';
   bb.height = '100px';
   bb.width = '100px';
   component.setBoundingBox(bb);
@@ -795,7 +795,7 @@ silex.model.Component.prototype.addImage = function(url) {
   // set bounding box
   var bb = {};
   bb.left = (100 + this.element.scrollLeft) + 'px';
-  bb.top = (100+ this.element.scrollTop) + 'px';
+  bb.top = (100 + this.element.scrollTop) + 'px';
   component.setBoundingBox(bb);
 
   // start loading

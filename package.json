@@ -28,7 +28,7 @@
     , "filepicker"
     , "api"
   ]
-  , "main": "./server/api-server.js"
+  , "main": "dist/server/server.js"
   , "license": "GPL"
   , "engines": {
     "node": "0.10.x"

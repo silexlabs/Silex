@@ -8,7 +8,7 @@ Uses:
 
   $ grunt deploy
 
-* watch and deploy when needed
+* watch and build the debug version when file changes, also use livereload
 
   $ grunt watch
 
@@ -40,15 +40,15 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-simple-mocha');
   //grunt.loadNpmTasks('grunt-contrib-jade');
 
-grunt.task.renameTask('watch', 'doWatch')
+  grunt.task.renameTask('watch', 'doWatch')
 
   grunt.registerTask('deploy', ['concat', 'less:production', 'less:development', 'closureBuilder:debug', 'closureBuilder:release', 'append-sourcemapping']);
   grunt.registerTask('debugDeploy', ['concat', 'less:development', 'closureBuilder:debug', 'append-sourcemapping']);
   grunt.registerTask('check', ['htmllint', 'csslint:lax', 'closureLint']);
-  grunt.registerTask('test', ['check', 'deploy', 'simplemocha']);
+  grunt.registerTask('test', ['deploy', 'simplemocha']);
   grunt.registerTask('fix', ['closureFixStyle']);
 
-  grunt.registerTask('default', ['check', 'deploy']);
+  grunt.registerTask('default', ['deploy']);
 
   grunt.registerTask('watch', 'Start Silex', function () {
     grunt.task.run([
@@ -57,9 +57,16 @@ grunt.task.renameTask('watch', 'doWatch')
     ]);
   });
   grunt.registerTask('run', 'Start Silex', function () {
-      var server = require('./server/api-server.js');
+      var server = require('./dist/server/server.js');
       console.log('Start Silex', server);
   });
+
+  grunt.registerTask('install', function() {
+      var fs = require('fs');
+      grunt.file.copy('build/pre-commit', '.git/hooks/pre-commit');
+      fs.chmodSync('.git/hooks/pre-commit', '755');
+  });
+  grunt.task.run('install');
 
   // Project configuration.
   grunt.initConfig({
@@ -86,11 +93,11 @@ grunt.task.renameTask('watch', 'doWatch')
       }
     }
     , htmllint: {
-        all: ["bin/*.html"]
+        all: ["dist/client/*.html"]
     }
     , closureLint: {
       app:{
-        closureLinterPath : 'build/closure-linter/closure_linter'
+        closureLinterPath : 'submodules/closure-linter/closure_linter'
         , command: 'gjslint.py'
         , src: [ 'src/js/**/*.js' ]
         , options: {
@@ -101,7 +108,7 @@ grunt.task.renameTask('watch', 'doWatch')
     }
     , closureFixStyle: {
       app:{
-        closureLinterPath : 'build/closure-linter/closure_linter'
+        closureLinterPath : 'submodules/closure-linter/closure_linter'
         , command: 'fixjsstyle.py'
         , src: [ 'src/js/**/*.js' ]
         , options: {
@@ -116,12 +123,12 @@ grunt.task.renameTask('watch', 'doWatch')
           cleancss: true
         }
         , files: {
-          "bin/css/admin.min.css": "src/css/.temp"
+          "dist/client/css/admin.min.css": "src/css/.temp"
         }
       }
       , production: {
         files: {
-          "bin/css/admin.css": "src/css/.temp"
+          "dist/client/css/admin.css": "src/css/.temp"
         }
       }
     }
@@ -138,12 +145,12 @@ grunt.task.renameTask('watch', 'doWatch')
             , warning_level: 'QUIET'
             , externs: 'submodules/cloud-explorer/lib/app/js/cloud-explorer.js'
             , debug: false
-            , create_source_map: 'bin/js/admin.min.js.map'
+            , create_source_map: 'dist/client/js/admin.min.js.map'
             , source_map_format: 'V3'
           }
         }
         , src: ['src/js/', 'submodules/closure-library/']
-        , dest: 'bin/js/admin.min.js'
+        , dest: 'dist/client/js/admin.min.js'
       }
       , debug: {
         options: {
@@ -158,18 +165,18 @@ grunt.task.renameTask('watch', 'doWatch')
             , formatting: 'PRETTY_PRINT'
             , debug: true
 //            , use_closure_library: true // disable if compiled
-            , create_source_map: 'bin/js/admin.js.map'
+            , create_source_map: 'dist/client/js/admin.js.map'
             , source_map_format: 'V3'
           }
         }
         , src: ['submodules/closure-library/', 'src/js/']
-        , dest: 'bin/js/admin.js'
+        , dest: 'dist/client/js/admin.js'
       }
     }
     , "append-sourcemapping": {
         main: {
             files: {
-                "bin/js/admin.js": "admin.js.map"
+                "dist/client/js/admin.js": "admin.js.map"
             }
         }
     }
@@ -179,7 +186,7 @@ grunt.task.renameTask('watch', 'doWatch')
           , atBegin: true
         }
         , all: {
-            files: ['src/js/**/*.js', 'server/**/*.js', 'src/css/*.css', 'src/css/*.less', 'src/html/*.jade', 'bin/**/*.html', 'Gruntfile.js']
+            files: ['src/js/**/*.js', 'dist/server/**/*.js', 'src/css/*.css', 'src/css/*.less', 'src/html/*.jade', 'dist/client/**/*.html', 'Gruntfile.js']
             , tasks: ['debugDeploy', 'run']
         }
     }

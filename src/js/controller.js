@@ -190,10 +190,10 @@ silex.Controller.prototype.menuCallback = function(event) {
         alertify.alert('I do not know where to publish your site. \
             Select a folder in the settings pannel and do "publish" again. \
             <br /><br />Now I will open the publish settings.',
-          goog.bind(function () {
-            this.publishSettings.openDialog();
-            this.workspace.invalidate();
-          }, this))
+            goog.bind(function() {
+              this.publishSettings.openDialog();
+              this.workspace.invalidate();
+            }, this));
       }
       else
       {
