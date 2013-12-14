@@ -555,7 +555,6 @@ silex.Controller.prototype.publishSettingsCallback = function(event) {
             this.file.setPublicationPath(url);
             this.tracker.trackAction('controller-events', 'success', event.type, 1);
           }, this),
-          ['image/*', 'text/plain'],
           null,
           goog.bind(function(error) {
             this.notifyError('Error: I could not select the publish path. <br /><br />' + (error.message || ''));
