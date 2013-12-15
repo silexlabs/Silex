@@ -282,3 +282,29 @@ Contribute - add functional tests
 - install grunt and mocha and web drivers 
 - run tests
 - write tests
+
+# change logs
+
+## bug fixes
+
+* file extension validator
+* use Silex in local while offline
+* add comp, take scroll into account
+* text editor in ff
+* publication for URLs with non ascii chars
+
+## features
+
+*keyboard shortcuts
+*changed size of new website
+*lorem ipsum button in text editor
+*user does "publish" when there is no publication path set => warning before opening settings pannel
+
+## code
+
+* code refactoring
+* cleanup repo
+* source mapping
+* better grunt file
+* added make file...
+
