@@ -1,7 +1,7 @@
 all:
 	npm install
 	grunt install
-	grunt test
+	grunt releaseDeploy
 
 test:
 	grunt test
