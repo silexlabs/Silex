@@ -13,6 +13,24 @@
     , "node-oauth": "0.1.x"
     , "oauth": ""
     , "path": ""
+    , "grunt": "~0.4.1"
+    , "grunt-npm": ""
+    , "grunt-contrib-csslint": "~0.1.2"
+    , "grunt-contrib-concat": "~0.3.0"
+    , "grunt-contrib-compress": "~0.5.2"
+    , "grunt-contrib-less": "~0.8.1"
+    , "grunt-closure-tools": "~0.8.4"
+  }
+  , "devDependencies": {
+    "grunt-contrib-watch": "~0.5.3"
+    , "grunt-contrib-jshint": "~0.7.2"
+    , "grunt-append-sourcemapping": "~0.0.2"
+    , "grunt-closure-linter": "~0.1.0"
+    , "grunt-simple-mocha": "~0.4.0"
+    , "mocha": "~1.14.0"
+    , "chai": "~1.8.1"
+    , "webdriverjs": "~0.7.14"
+    , "phantomjs": "~1.9.2"
   }
   , "repository": {
     "type": "git"
@@ -36,27 +54,10 @@
   }
   , "scripts" :
   {
-    "deploy": "grunt deploy"
+    "update": "grunt releaseDeploy"
+    , "start": "node dist/server/server.js"
+    , "deploy": "grunt deploy"
     , "watch": "grunt watch"
     , "test": "grunt test"
-  }
-  , "devDependencies": {
-    "grunt": "~0.4.1"
-    , "grunt-npm": "*"
-    , "grunt-contrib-csslint": "~0.1.2"
-    , "grunt-contrib-concat": "~0.3.0"
-    , "grunt-contrib-compress": "~0.5.2"
-    , "grunt-contrib-less": "~0.8.1"
-    , "grunt-contrib-watch": "~0.5.3"
-    , "grunt-contrib-jshint": "~0.7.2"
-    , "grunt-html": "~0.3.4"
-    , "grunt-closure-tools": "~0.8.4"
-    , "grunt-append-sourcemapping": "~0.0.2"
-    , "grunt-closure-linter": "~0.1.0"
-    , "grunt-simple-mocha": "~0.4.0"
-    , "mocha": "~1.14.0"
-    , "chai": "~1.8.1"
-    , "webdriverjs": "~0.7.14"
-    , "phantomjs": "~1.9.2"
   }
 }

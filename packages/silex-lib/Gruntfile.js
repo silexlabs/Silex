@@ -35,14 +35,14 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-csslint');
   grunt.loadNpmTasks('grunt-contrib-less');
   grunt.loadNpmTasks('grunt-contrib-watch');
-  grunt.loadNpmTasks('grunt-html');
   grunt.loadNpmTasks('grunt-closure-linter');
   grunt.loadNpmTasks('grunt-simple-mocha');
   //grunt.loadNpmTasks('grunt-contrib-jade');
 
   grunt.task.renameTask('watch', 'doWatch')
 
-  grunt.registerTask('deploy', ['concat', 'less:production', 'less:development', 'closureBuilder:debug', 'closureBuilder:release', 'append-sourcemapping']);
+  grunt.registerTask('deploy', ['debugDeploy', 'releaseDeploy']);
+  grunt.registerTask('releaseDeploy', ['concat', 'less:production', 'closureBuilder:release']);
   grunt.registerTask('debugDeploy', ['concat', 'less:development', 'closureBuilder:debug', 'append-sourcemapping']);
   grunt.registerTask('check', ['htmllint', 'csslint:lax', 'closureLint']);
   grunt.registerTask('test', ['deploy', 'simplemocha']);
@@ -128,12 +128,12 @@ module.exports = function(grunt) {
           cleancss: true
         }
         , files: {
-          "dist/client/css/admin.min.css": "src/css/.temp"
+          "dist/client/css/admin.css": "src/css/.temp"
         }
       }
       , production: {
         files: {
-          "dist/client/css/admin.css": "src/css/.temp"
+          "dist/client/css/admin.min.css": "src/css/.temp"
         }
       }
     }
