@@ -192,8 +192,7 @@ silex.model.File.prototype.saveAs = function(cbk, opt_errCbk) {
         this.setBlob(blob);
         this.save(cbk, opt_errCbk);
       }, this),
-      {'mimetype': 'text/html'},
-      ['html', 'htm'],
+      ['text/html', 'text/plain'],
       opt_errCbk);
   this.workspace.invalidate();
 };
