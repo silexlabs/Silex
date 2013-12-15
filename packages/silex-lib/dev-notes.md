@@ -6,6 +6,9 @@
 
 
 BUGS
+* use heroku build pack
+ https://devcenter.heroku.com/articles/buildpacks
+ https://github.com/heroku/heroku-buildpack-nodejs#readme
 * ? Lorsque l'on colle un lien externe à une image ?
 * Lorsque l'on colle un lien externe pour la deuxième fois = on retrouve le lien précédemment collé
 * lors de l'import de "grands" (?) média = la boite à outil Position & size n'affiche pas la size du média.
@@ -282,3 +285,31 @@ Contribute - add functional tests
 - install grunt and mocha and web drivers 
 - run tests
 - write tests
+
+# change logs
+
+## 2013/12/15
+
+bug fixes
+
+* file extension validator
+* use Silex in local while offline
+* add comp, take scroll into account
+* text editor in ff
+* publication for URLs with non ascii chars
+
+features
+
+* keyboard shortcuts
+* changed size of new website
+* lorem ipsum button in text editor
+* user does "publish" when there is no publication path set => warning before opening settings pannel
+
+code
+
+* code refactoring
+* cleanup repo
+* source mapping
+* better grunt file
+* added make file...
+

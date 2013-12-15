@@ -4,3 +4,6 @@
 [submodule "submodules/closure-library"]
 	path = submodules/closure-library
 	url = https://code.google.com/p/closure-library/
+[submodule "submodules/closure-compiler"]
+	path = submodules/closure-compiler
+	url = https://code.google.com/p/closure-compiler/
