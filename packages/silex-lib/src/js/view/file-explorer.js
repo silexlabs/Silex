@@ -110,14 +110,14 @@ silex.view.FileExplorer.prototype.init = function() {
  * @param opt_mimetypes     optional array of accepted mimetypes, e.g. ['text/html', 'text/plain']
  */
 silex.view.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes, opt_errCbk) {
-  // default is image
-  if (!opt_mimetypes) opt_mimetypes = ['image/*', 'text/plain'];
   var fileExtentions;
-  if (opt_mimetypes[0].indexOf('image') === 0){
-    fileExtentions = ['jpg', 'jpeg', 'gif', 'png'];
-  }
-  else if (opt_mimetypes[0].indexOf('text/html') === 0){
-    fileExtentions = ['html', 'htm'];
+  if (opt_mimetypes){
+    if (opt_mimetypes[0].indexOf('image') === 0){
+      fileExtentions = ['jpg', 'jpeg', 'gif', 'png'];
+    }
+    else if (opt_mimetypes[0].indexOf('text/html') === 0){
+      fileExtentions = ['html', 'htm'];
+    }
   }
 
   var errCbk = function(FPError) {
@@ -175,8 +175,15 @@ silex.view.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes, opt_
  * @param opt_mimetypes     optional array of accepted mimetypes, e.g. ['text/html', 'text/plain']
  */
 silex.view.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes, opt_errCbk) {
-  // default is html
-  if (!opt_mimetypes) opt_mimetypes = {'mimetype': 'text/html'};
+  var fileExtentions;
+  if (opt_mimetypes){
+    if (opt_mimetypes[0].indexOf('image') === 0){
+      fileExtentions = ['jpg', 'jpeg', 'gif', 'png'];
+    }
+    else if (opt_mimetypes[0].indexOf('text/html') === 0){
+      fileExtentions = ['html', 'htm'];
+    }
+  }
 
   var errCbk = function(FPError) {
     console.error(FPError);

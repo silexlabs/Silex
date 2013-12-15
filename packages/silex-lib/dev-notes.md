@@ -6,10 +6,11 @@
 
 
 BUGS
+* ? Lorsque l'on colle un lien externe à une image ?
+* Lorsque l'on colle un lien externe pour la deuxième fois = on retrouve le lien précédemment collé
 * lors de l'import de "grands" (?) média = la boite à outil Position & size n'affiche pas la size du média.
 exemple 960 x 73 dans la LP SV2
-* Lorsque l'on colle un lien externe pour la deuxième fois = on retrouve le lien précédemment collé
-* ? Lorsque l'on colle un lien externe à une image ?
+* esc = deselect
 
 URGENT
 
@@ -254,3 +255,30 @@ Pour le point précis de proposer d'utiliser une url: moi ça m'aide, mais je ne
 et pour "l'edition du html container", je parle de insert > container
 
 Ariel
+
+
+##Readme
+
+for wikipedia
+
+About
+- what
+- how (techno, third party, silex labs for community/communication)
+- who (contributors for tests, core, CE)
+- for whom (designers, nonprofits, webmasters)
+- where and when 
+- why (learn, teach, sell website, showcase skills, meet great people to work with or hire)
+
+Contribute docs and design
+- cf doc nuit charrette
+
+Contribute - develop or fix bugs
+- install (vagrant+virtualbox, virtualbox, manually)
+- edit code (sublime, shared folder with vagrant, auto compile etc.)
+- fork (optional, install git on github and update remote with git, change code, commit, push, pull request)
+
+Contribute - add functional tests
+- install silex
+- install grunt and mocha and web drivers 
+- run tests
+- write tests
