@@ -22,6 +22,7 @@ goog.provide('silex.view.propertiesTool.PagePane');
 goog.require('goog.array');
 goog.require('goog.cssom');
 goog.require('goog.editor.Field');
+goog.require('goog.ui.LabelInput');
 goog.require('goog.object');
 goog.require('goog.ui.Checkbox');
 goog.require('goog.ui.ColorButton');
@@ -95,27 +96,20 @@ silex.view.propertiesTool.PagePane.prototype.buildUi = function() {
   // create a text field for custom link
   var linkInputElement = goog.dom.getElementByClass('link-input-text',
       this.element);
-  this.linkInputTextField = new goog.editor.Field(linkInputElement);
-  // make editable
-  try {
-    this.linkInputTextField.makeEditable();
-  }
-  catch (e) {
-    // goog.editor.BrowserFeature.HAS_STYLE_WITH_CSS = false;
-    console.error('error catched', e);
-  }
+  this.linkInputTextField = new goog.ui.LabelInput();
+  this.linkInputTextField.decorate(linkInputElement);
+
   // hide by default
-  var linkInputElement = goog.dom.getElementByClass('link-input-text',
-      this.element); // get the new input which may be an iframe
   goog.style.setStyle(linkInputElement, 'display', 'none');
+
   // Watch for field changes, to display below.
-  goog.events.listen(this.linkInputTextField,
-      goog.editor.Field.EventType.DELAYEDCHANGE,
+  goog.events.listen(linkInputElement,
+      goog.ui.Component.EventType.CHANGE,
       this.onLinkTextChanged,
       false,
       this);
-};
 
+};
 
 /**
  * display the propertis of the component being edited
@@ -204,7 +198,7 @@ silex.view.propertiesTool.PagePane.prototype.onLinkChanged = function() {
   }
   else if (this.linkDropdown.value === 'custom') {
     // keep previous link value
-    var prevVal = this.linkInputTextField.getCleanContents();
+    var prevVal = this.linkInputTextField.getValue();
     // reset if it was an internal link
     if (prevVal.indexOf('#') === 0) prevVal = '';
     if (prevVal === '') prevVal = 'http://www.silex.me/';
@@ -225,7 +219,7 @@ silex.view.propertiesTool.PagePane.prototype.onLinkChanged = function() {
 silex.view.propertiesTool.PagePane.prototype.onLinkTextChanged =
     function() {
   // update the href attribute
-  this.component.setLink(this.linkInputTextField.getCleanContents());
+  this.component.setLink(this.linkInputTextField.getValue());
   // notify the controler
   this.pageChanged();
 };
@@ -268,7 +262,7 @@ silex.view.propertiesTool.PagePane.prototype.redraw = function() {
       }
       else {
         // in case it is a custom link
-        this.linkInputTextField.setHtml(false, hrefAttr);
+        this.linkInputTextField.setValue(hrefAttr);
         this.linkDropdown.value = 'custom';
       }
     }
