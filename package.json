@@ -54,8 +54,7 @@
   }
   , "scripts" :
   {
-    "install": "grunt releaseDeploy"
-    , "start": "node dist/server/server.js"
+    "start": "node dist/server/server.js"
     , "deploy": "grunt deploy"
     , "watch": "grunt watch"
     , "test": "grunt test"
