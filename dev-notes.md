@@ -6,10 +6,6 @@
 
 
 BUGS
-* use heroku build pack
- https://devcenter.heroku.com/articles/buildpacks
- https://github.com/heroku/heroku-buildpack-nodejs#readme
-* ? Lorsque l'on colle un lien externe à une image ?
 * Lorsque l'on colle un lien externe pour la deuxième fois = on retrouve le lien précédemment collé
 * lors de l'import de "grands" (?) média = la boite à outil Position & size n'affiche pas la size du média.
 exemple 960 x 73 dans la LP SV2
@@ -17,14 +13,20 @@ exemple 960 x 73 dans la LP SV2
 
 URGENT
 
-* view/hide markers (en mode édition les éléments importées ont un contour gris)
+bug: lorem ipsum do not send change event
+bug: ancres html 
+=> use #! instead of #
+=> add "scroll to" in links?
+
+* view/hide markers 
+  en mode édition les éléments importées ont un contour gris
   hide = markers visible only on roll over
+  tab shortcut + in the menu
 * selection marker moves the element
 * test shortcuts on windows
 * tab devrait passer de X à Y puis hauteur / largeur (on manipule la résolution puis la position)
 * les champs proposant les valeurs X Y - Hauteur - largeur, ne sont pas assez large
 * Quand on édite les valeurs X et Y <retour> cela ouvre le browser de fichier
-
 
 Feature requests
 
@@ -36,10 +38,9 @@ Cloud explorer
 * refresh button
 
 
-bug: lorem ipsum do not send change event
-bug: ancres html 
-=> use #! instead of #
-=> add "scroll to" in links?
+* use heroku build pack
+ https://devcenter.heroku.com/articles/buildpacks
+ https://github.com/heroku/heroku-buildpack-nodejs#readme
 
 Refactoring
 - bug: validators pour les nom de fichiers?
