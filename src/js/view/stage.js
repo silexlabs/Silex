@@ -19,7 +19,8 @@
 
 goog.provide('silex.view.Stage');
 
-
+goog.require('goog.events');
+goog.require('goog.events.MouseWheelHandler');
 
 /**
  * the Silex stage class
@@ -89,6 +90,18 @@ silex.view.Stage = function(element, cbk) {
       type: 'edit'
     });
   }, false, this);
+  // Disable horizontal scrolling for Back page in Mac
+  handleMouseWheel = goog.bind(function (e) {
+    if (e.deltaX<0 && this.element.scrollLeft<=0){
+      console.log('prevent mouse wheel', e, this.element.scrollLeft);
+      e.preventDefault();
+    }
+  }, this);
+  var mwh = new goog.events.MouseWheelHandler(this.element);
+  goog.events.listen(mwh, goog.events.MouseWheelHandler.EventType.MOUSEWHEEL, handleMouseWheel);
+  goog.events.listen(window, 'unload', function(e) {
+    goog.events.unlisten(mwh, goog.events.MouseWheelHandler.EventType.MOUSEWHEEL, handleMouseWheel);
+  });
 };
 
 
