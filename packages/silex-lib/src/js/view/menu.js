@@ -142,7 +142,6 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
     shortcutHandler,
     goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED,
     goog.bind(function(event) {
-      console.log('key', arguments, event.target.tagName, goog.events.KeyCodes.ENTER);
       event.preventDefault();
       this.onMenuEvent(event.identifier);
     }, this)
@@ -150,12 +149,10 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
   // enter and escape shortcuts
   var keyHandler = new goog.events.KeyHandler(document);
   goog.events.listen(keyHandler, 'key', goog.bind(function(event) {
-    console.log('key', arguments, event.target.tagName, goog.events.KeyCodes.ENTER);
     // Allow ENTER to be used as shortcut for silex
     if (event.keyCode === goog.events.KeyCodes.ENTER){
       // but not in text inputs
       if(event.target.tagName === 'INPUT' || event.target.tagName === shortcutHandler.textInputs_[event.target.type]) {
-        console.log('stop', event.target.tagName, event.target.type);
         // let browser handle
       }
       else{

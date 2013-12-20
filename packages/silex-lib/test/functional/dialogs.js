@@ -1,36 +1,8 @@
 var assert = require('assert')
-, silexServer = require('../../dist/server/server.js')
 , expect = require('chai').expect
 , helper = require('../helper.js');
 
-silexServer.setDebugMode(true);
-/* *
-//////////////////////////////////////////
-// ChromeDriver
-var driver = new webdriver.Builder().
-   withCapabilities(webdriver.Capabilities.chrome()).
-   build();
-/* *
-// Stand-alone Selenium Server
-var webdriver = require('selenium-webdriver'),
-    SeleniumServer = require('selenium-webdriver/remote').SeleniumServer;
-
-var server = new SeleniumServer('selenium-server-standalone-2.37.0.jar', {
-  port: 4444
-});
-
-server.start();
-
-var driver = new webdriver.Builder().
-    usingServer(server.address()).
-    withCapabilities(webdriver.Capabilities.firefox()).
-    build();
-/* */
-
-//////////////////////////////////////////
-// the tests
-
-describe('Silex', function() {
+describe('Test dialogs', function() {
 
 before(function(done) {
     this.timeout(30000);

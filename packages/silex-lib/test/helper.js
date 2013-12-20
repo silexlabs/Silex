@@ -8,6 +8,15 @@ exports.driver = null;
 exports.webdriver = null;
 
 /**
+ * start Silex server once
+ */
+var silexServer = require('../dist/server/server.js');
+console.log('-----');
+console.log('Silex start');
+console.log('-----');
+silexServer.setDebugMode(true);
+
+/**
  * start selenium driver
  * @param        cbk         callback which takes the selenium driver in param
  */

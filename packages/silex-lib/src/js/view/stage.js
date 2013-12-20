@@ -93,7 +93,6 @@ silex.view.Stage = function(element, cbk) {
   // Disable horizontal scrolling for Back page in Mac
   handleMouseWheel = goog.bind(function (e) {
     if (e.deltaX<0 && this.element.scrollLeft<=0){
-      console.log('prevent mouse wheel', e, this.element.scrollLeft);
       e.preventDefault();
     }
   }, this);
