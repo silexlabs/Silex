@@ -183,7 +183,7 @@ silex.view.Workspace.prototype.doRedraw = function() {
   goog.style.setHeight(this.propertiesTool.element, toolsHeight);
   goog.style.setHeight(this.stage.element, toolsHeight);
 
-  goog.style.setPosition(this.pageTool.element, null, menuSize.height);
+  //goog.style.setPosition(this.pageTool.element, null, menuSize.height);
 
   // htmlEditor
   if (this.htmlEditor.element) {

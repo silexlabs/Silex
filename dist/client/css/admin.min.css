@@ -244,6 +244,8 @@ body.loading-pending .loader {
   text-overflow: ellipsis;
   opacity: 0.5;
   margin: 25px 4px 1px 45px;
+  padding-right: 5px;
+  /* because the last letter is cut otherwise (italic text) */
   overflow-x: hidden;
   overflow-y: hidden;
   white-space: nowrap;
@@ -304,9 +306,8 @@ body.loading-pending .loader {
 }
 .silex-pagetool {
   padding: 0;
-  position: fixed;
+  float: left;
   left: 0;
-  top: 90px;
   width: 220px;
   height: 95%;
   overflow-y: scroll;

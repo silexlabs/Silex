@@ -1,9 +1,8 @@
 
 .silex-pagetool {
 	padding: 0;
-	position:fixed;
+	float: left;
 	left:0;
-	top:90px;
 	width:220px;
 	height: 95%;
 	overflow-y: scroll;
