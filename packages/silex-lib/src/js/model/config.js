@@ -60,45 +60,50 @@ silex.model.Config.menu = {
         label: 'New File'
         , id: 'file.new'
         , className: 'menu-item-file-new'
+        , globalKey: goog.events.KeyCodes.N
         , shortcut: [[goog.events.KeyCodes.N, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
         , tooltip: altKeyDisplay + 'n'
         , mnemonic: goog.events.KeyCodes.N
-, accelerator: 'n'
+        , accelerator: 'n'
       }
       , {
         label: 'Open File...'
         , id: 'file.open'
         , className: 'menu-item-file-open'
+        , globalKey: goog.events.KeyCodes.O
         , shortcut: [[goog.events.KeyCodes.O, goog.ui.KeyboardShortcutHandler.Modifiers.META]]
         , tooltip: ctrlKeyDisplay + 'o'
         , mnemonic: goog.events.KeyCodes.O
-, accelerator: 'o'
+        , accelerator: 'o'
       }
       , {
         label: 'Save File'
         , id: 'file.save'
         , className: 'menu-item-file-save'
+        , globalKey: goog.events.KeyCodes.S
         , shortcut: [[goog.events.KeyCodes.S, goog.ui.KeyboardShortcutHandler.Modifiers.META]]
         , tooltip: ctrlKeyDisplay + 's'
         , mnemonic: goog.events.KeyCodes.S
-, accelerator: 's'
+        , accelerator: 's'
       }
       , {
         label: 'Save As...'
         , id: 'file.saveas'
         , className: 'menu-item-file-saveas'
+        , globalKey: goog.events.KeyCodes.S
         , shortcut: [[goog.events.KeyCodes.S, goog.ui.KeyboardShortcutHandler.Modifiers.META + goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT]]
         , tooltip: ctrlKeyDisplay + '⇧S'
       }
       , null
-, {
+      , {
         label: 'Publish'
         , id: 'file.publish'
         , className: 'menu-item-file-publish'
+        , globalKey: goog.events.KeyCodes.P
         , shortcut: [[goog.events.KeyCodes.P, goog.ui.KeyboardShortcutHandler.Modifiers.META]]
         , tooltip: ctrlKeyDisplay + 'P'
         , mnemonic: goog.events.KeyCodes.P
-, accelerator: 'p'
+        , accelerator: 'p'
       }
       , {
         label: 'Settings...'
@@ -106,14 +111,15 @@ silex.model.Config.menu = {
         , className: 'menu-item-file-publish-settings'
       }
       , null
-, {
+      , {
         label: 'Close File'
         , id: 'file.close'
         , className: 'menu-item-file-close'
+        , globalKey: goog.events.KeyCodes.W
         , shortcut: [[goog.events.KeyCodes.W, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
         , tooltip: altKeyDisplay + 'w'
         , mnemonic: goog.events.KeyCodes.W
-, accelerator: 'w'
+        , accelerator: 'w'
       }
     ]
     , [
@@ -124,10 +130,10 @@ silex.model.Config.menu = {
         , shortcut: [[goog.events.KeyCodes.DELETE], [goog.events.KeyCodes.BACKSPACE]]
         , tooltip: 'suppr'
         , mnemonic: goog.events.KeyCodes.R
-, accelerator: 'r'
+        , accelerator: 'r'
       }
       , null
-, {
+      , {
         label: 'Rename page'
         , id: 'edit.rename.page'
         , className: 'menu-item-edit-rename-page'
@@ -143,17 +149,17 @@ silex.model.Config.menu = {
         label: 'View in new window'
         , id: 'view.file'
         , className: 'menu-item-view-file'
+        , globalKey: goog.events.KeyCodes.V
         , shortcut: [[goog.events.KeyCodes.V, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
         , tooltip: altKeyDisplay + 'V'
         , mnemonic: goog.events.KeyCodes.V
-, accelerator: 'v'
+        , accelerator: 'v'
       }
       , null
-, {
+      , {
         label: 'Open text editor'
         , id: 'view.open.textEditor'
         , className: 'menu-item-view-open-textEditor'
-        , shortcut: [[goog.events.KeyCodes.ENTER]]
         , tooltip: '↵'
       }
       , {
@@ -167,48 +173,53 @@ silex.model.Config.menu = {
         label: 'Text box'
         , id: 'insert.text'
         , className: 'menu-item-insert-text'
+        , globalKey: goog.events.KeyCodes.T
         , shortcut: [[goog.events.KeyCodes.T, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
         , tooltip: altKeyDisplay + 'T'
         , mnemonic: goog.events.KeyCodes.T
-, accelerator: 't'
+        , accelerator: 't'
       }
       , {
         label: 'Image...'
         , id: 'insert.image'
         , className: 'menu-item-insert-image'
+        , globalKey: goog.events.KeyCodes.I
         , shortcut: [[goog.events.KeyCodes.I, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
         , tooltip: altKeyDisplay + 'I'
         , mnemonic: goog.events.KeyCodes.I
-, accelerator: 'i'
+        , accelerator: 'i'
       }
       , {
         label: 'Container'
         , id: 'insert.container'
         , className: 'menu-item-insert-container'
+        , globalKey: goog.events.KeyCodes.C
         , shortcut: [[goog.events.KeyCodes.C, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
         , tooltip: altKeyDisplay + 'C'
         , mnemonic: goog.events.KeyCodes.C
-, accelerator: 'c'
+        , accelerator: 'c'
       }
       , null
-, {
+      , {
         label: 'HTML box'
         , id: 'insert.html'
         , className: 'menu-item-insert-html'
+        , globalKey: goog.events.KeyCodes.H
         , shortcut: [[goog.events.KeyCodes.H, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
         , tooltip: altKeyDisplay + 'H'
         , mnemonic: goog.events.KeyCodes.H
-, accelerator: 'h'
+        , accelerator: 'h'
       }
       , null
-, {
+      , {
         label: 'New page'
         , id: 'insert.page'
         , className: 'menu-item-insert-page'
+        , globalKey: goog.events.KeyCodes.P
         , shortcut: [[goog.events.KeyCodes.P, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
         , tooltip: altKeyDisplay + 'P'
         , mnemonic: goog.events.KeyCodes.P
-, accelerator: 'p'
+        , accelerator: 'p'
       }
     ]
     , [
@@ -236,7 +247,7 @@ silex.model.Config.menu = {
         , className: 'menu-item-help-newsLetter'
       }
       , null
-, {
+      , {
         label: 'Questions and answers'
         , id: 'help.forums'
         , className: 'menu-item-help-forums'
@@ -257,7 +268,7 @@ silex.model.Config.menu = {
         , className: 'menu-item-help-facebook'
       }
       , null
-, {
+      , {
         label: 'Fork me on github!'
         , id: 'help.forkMe'
         , className: 'menu-item-help-forkMe'
