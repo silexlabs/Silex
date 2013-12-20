@@ -310,7 +310,8 @@ body.loading-pending .loader {
   width: 220px;
   height: 95%;
   overflow-y: scroll;
-  background-color: #ffffff;
+  background-color: #EDEDED;
+  border: 1px solid #D9D9D9;
 }
 .silex-pagetool .page-tool-container {
   padding-left: 25px;
@@ -332,13 +333,17 @@ body.loading-pending .loader {
   position: absolute;
   cursor: text;
 }
+.silex-pagetool .page-preview:hover {
+  outline-width: 2px;
+}
 .silex-pagetool .page-preview {
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  outline: 1px solid #D9D9D9;
   width: 131px;
-  height: 99px;
+  height: 80px;
   position: relative;
   margin: auto;
   cursor: default;
+  background-color: #FFFFFF;
 }
 .silex-pagetool .page-preview .delete {
   right: 10px;
@@ -500,6 +505,7 @@ body.loading-pending .loader {
   color: #FFFFFF;
   margin: 0;
   font-weight: bold;
+  padding: 10px 0 10px 12px;
 }
 .silex-propertiestool .title1 {
   padding: 10 0 10 12px;
@@ -657,7 +663,7 @@ body.loading-pending .loader {
   opacity: 1 !important;
 }
 .editable-style.silex-selected {
-  border: 1px solid #666666;
+  outline: 1px solid #666666;
 }
 .editable-style.locked-style,
 .editable-style.locked-style .editable-style,
@@ -670,10 +676,11 @@ body.loading-pending .loader {
   height: 100%;
   position: absolute;
   left: 220px;
+  overflow: auto;
+  border: 1px solid #D9D9D9;
 }
 .silex-stage-body {
   height: 100%;
-  overflow: auto;
   padding: 5px;
   padding-bottom: 0;
   position: relative !important;
