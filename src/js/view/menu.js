@@ -27,7 +27,7 @@ goog.require('goog.ui.menuBar');
 //goog.require('goog.ui.Tooltip');
 goog.require('goog.events.KeyCodes');
 goog.require('goog.ui.KeyboardShortcutHandler');
-
+goog.require('goog.events.KeyHandler');
 
 
 //////////////////////////////////////////////////////////////////
@@ -72,22 +72,8 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
 
   // shortcut handler
   var shortcutHandler = new goog.ui.KeyboardShortcutHandler(document);
-  shortcutHandler.setAlwaysPreventDefault(false);
-  
-  goog.events.listen(
-    shortcutHandler,
-    goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED,
-    goog.bind(function(event) {
-      console.log('key', event.target, event.target.tagName);
-      // Allow ENTER to be used as shortcut for text inputs
-      if (event.keyCode === goog.events.KeyCodes.ENTER && event.target.tagName === 'INPUT' || shortcutHandler.textInputs_[event.target.type]) {
-        console.log('stop', event.target.tagName, event.target.type);
-        return;
-      }
-      event.preventDefault();
-      this.onMenuEvent(event.identifier);
-    }, this)
-  );
+  var globalKeys = [];
+
   // create the menu items
   for (i in silex.model.Config.menu.names) {
     // Create the drop down menu with a few suboptions.
@@ -114,6 +100,9 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
             if (itemData.shortcut) {
               for (var idx in itemData.shortcut) {
                 shortcutHandler.registerShortcut(itemData.id, itemData.shortcut[idx]);
+                if (itemData.globalKey){
+                  globalKeys.push(itemData.globalKey);
+                }
               }
             }
           } else {
@@ -142,6 +131,42 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
     btn.setDispatchTransitionEvents(goog.ui.Component.State.ALL, true);
     this.menu.addChild(btn, true);
   }
+
+  shortcutHandler.setAlwaysPreventDefault(false);
+//  shortcutHandler.setAllShortcutsAreGlobal(false);
+  shortcutHandler.setModifierShortcutsAreGlobal(false);
+
+  // shortcuts
+  shortcutHandler.setGlobalKeys(globalKeys);
+  goog.events.listen(
+    shortcutHandler,
+    goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED,
+    goog.bind(function(event) {
+      console.log('key', arguments, event.target.tagName, goog.events.KeyCodes.ENTER);
+      event.preventDefault();
+      this.onMenuEvent(event.identifier);
+    }, this)
+  );
+  // enter and escape shortcuts
+  var keyHandler = new goog.events.KeyHandler(document);
+  goog.events.listen(keyHandler, 'key', goog.bind(function(event) {
+    console.log('key', arguments, event.target.tagName, goog.events.KeyCodes.ENTER);
+    // Allow ENTER to be used as shortcut for silex
+    if (event.keyCode === goog.events.KeyCodes.ENTER){
+      // but not in text inputs
+      if(event.target.tagName === 'INPUT' || event.target.tagName === shortcutHandler.textInputs_[event.target.type]) {
+        console.log('stop', event.target.tagName, event.target.type);
+        // let browser handle
+      }
+      else{
+        // silex takes an action
+        event.preventDefault();
+        this.onMenuEvent('view.open.textEditor');
+      }
+    }
+  }, this));
+
+
   // render the menu
   this.menu.render(rootNode);
   // event handling
