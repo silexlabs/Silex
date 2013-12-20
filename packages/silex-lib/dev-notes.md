@@ -4,21 +4,25 @@
 
 #dev notes
 
-
 BUGS
+
+* New site => BG size depends on the stage size
+* Add shadow to the stage
 * Lorsque l'on colle un lien externe pour la deuxième fois = on retrouve le lien précédemment collé
 * lors de l'import de "grands" (?) média = la boite à outil Position & size n'affiche pas la size du média.
 exemple 960 x 73 dans la LP SV2
 * esc = deselect
+lorem ipsum do not send change event
+ancres html  => use #! instead of # => add "scroll to" in links?
+* zindex negatif d'un élément "sous" le BG => non sélectionnable
+* ?validators pour les nom de fichiers?
 
 URGENT
 
-bug: lorem ipsum do not send change event
-bug: ancres html 
-=> use #! instead of #
-=> add "scroll to" in links?
+styles?
+refacto
 
-* view/hide markers 
+* view/hide markers
   en mode édition les éléments importées ont un contour gris
   hide = markers visible only on roll over
   tab shortcut + in the menu
@@ -37,13 +41,44 @@ Feature requests
 Cloud explorer
 * refresh button
 
-
 * use heroku build pack
  https://devcenter.heroku.com/articles/buildpacks
  https://github.com/heroku/heroku-buildpack-nodejs#readme
 
+________________
+Styles
+
+properties
+* view all CSS defined in "head #silex-element-style"
+* or view normal tool box
+*
+
+text editor
+* view all CSS defined in "head #silex-element-style"
+* combo box with styles - detect style names from CSS (regexp)
+
+
+________________
+
 Refactoring
-- bug: validators pour les nom de fichiers?
+
+  Model:
+  Element, innerhtml
+  Body, add/remove element
+  Head, title, fonts, ...
+  File, load, save...
+  State, loading, appolo
+  Selection, file, page, element (references)
+
+  Utils
+  Pageable, add/remove/open page
+  Editable
+
+  View
+  Stage, resize
+  Workspace
+
+
 - Splitter Helper en classes plus explicites dans utils
 
 - manip dom => silex.model.Dom
@@ -270,7 +305,7 @@ About
 - how (techno, third party, silex labs for community/communication)
 - who (contributors for tests, core, CE)
 - for whom (designers, nonprofits, webmasters)
-- where and when 
+- where and when
 - why (learn, teach, sell website, showcase skills, meet great people to work with or hire)
 
 Contribute docs and design
@@ -283,7 +318,7 @@ Contribute - develop or fix bugs
 
 Contribute - add functional tests
 - install silex
-- install grunt and mocha and web drivers 
+- install grunt and mocha and web drivers
 - run tests
 - write tests
 
