@@ -69,7 +69,6 @@ exports.startSelenium = function (cbk) {
     else if (driverName==='firefox'){
         // with firefox (which must be installed)
         capabilities = exports.webdriver.Capabilities.firefox();
-        if (!fs.existsSync(phantomjs.path)) throw new Error('Phantom js is needed, please do "npm install"');
     }
     else if (driverName==='chrome'){
         // with firefox (which must be installed)
