@@ -6,6 +6,4 @@
 
 # Build
 echo "Building silex before commit..."
-make
-exit $?
-
+make precommit

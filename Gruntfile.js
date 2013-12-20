@@ -45,7 +45,7 @@ module.exports = function(grunt) {
   grunt.registerTask('releaseDeploy', ['concat', 'less:production', 'closureBuilder:release']);
   grunt.registerTask('debugDeploy', ['concat', 'less:development', 'closureBuilder:debug', 'append-sourcemapping']);
   grunt.registerTask('check', ['htmllint', 'csslint:lax', 'closureLint']);
-  grunt.registerTask('test', ['deploy', 'simplemocha']);
+  grunt.registerTask('test', ['simplemocha']);
   grunt.registerTask('fix', ['closureFixStyle']);
 
   grunt.registerTask('default', ['deploy']);
@@ -71,12 +71,12 @@ module.exports = function(grunt) {
       var fs = require('fs');
       grunt.file.copy('build/pre-commit', '.git/hooks/pre-commit');
       fs.chmodSync('.git/hooks/pre-commit', '755');
+      console.log('.git/hooks/pre-commit file written');
     }
     catch(e){
       console.log('not able to add precommit hook.');
     }
   });
-  grunt.task.run('install');
 
   // Project configuration.
   grunt.initConfig({
@@ -205,7 +205,7 @@ module.exports = function(grunt) {
           globals: ['should']
           , ignoreLeaks: false
           , ui: 'bdd'
-          , reporter: 'tap'
+          , reporter: 'nyan'
         }
         , all: { src: 'test/**/*.js' }
       }

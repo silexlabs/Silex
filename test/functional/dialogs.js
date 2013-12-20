@@ -2,7 +2,7 @@ var assert = require('assert')
 , expect = require('chai').expect
 , helper = require('../helper.js');
 
-describe('Test dialogs', function() {
+describe('Silex dialogs', function() {
 
 before(function(done) {
     this.timeout(30000);
