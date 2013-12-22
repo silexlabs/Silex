@@ -25,6 +25,20 @@ var altKeyDisplay = goog.userAgent.MAC ? '⌥' + '' : 'Alt+';
 
 
 /**
+ * The debug data
+ * {boolean} debugMode      true if the app is in debug mode 
+ *                          if false, then all other params are not used 
+ *                          debug mode is set to true in debug.html
+ * {boolean} preventQuit   
+ * {function} doAfterReady  callback executed when Silex has launched and is ready
+ *                          it is defined in debug.js loaded only in debug.html
+ */
+silex.model.Config.debug = {
+  debugMode: false
+  , showPreventQuitMessage: false
+  , doAfterReady: null
+}
+/**
  * The main application menu
  */
 silex.model.Config.menu = {
