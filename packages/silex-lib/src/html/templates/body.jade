@@ -1,0 +1,29 @@
+include ./workspace.jade
+
+// jquery related lib
+script(type='text/javascript', src='libs/jquery/jquery.js')
+script(type='text/javascript', src='libs/jquery/jquery-ui.js')
+script(type='text/javascript', src='libs/jquery/jquery.ui.touch-punch.min.js')
+script(type='text/javascript', src='libs/jquery/editable.js')
+script(type='text/javascript', src='libs/jquery/pageable.js')
+
+// alertify.js
+script(type='text/javascript', src='libs/alertify/alertify.min.js')
+link(rel='stylesheet', href='libs/alertify/alertify.core.css')
+link(rel='stylesheet', href='libs/alertify/alertify.bootstrap.css')
+
+// ace
+script(type='text/javascript', src='libs/ace/ace.js')
+
+// Cloud explorer
+script(src='libs/angular.js')
+script(src='libs/angular-resource.js')
+script(src='../cloud-explorer/app/js/cloud-explorer.js')
+
+// Silex styles and code
+link(rel='stylesheet', type='text/css', href='css/admin.min.css')
+script(type='text/javascript', src='js/admin.min.js')
+
+// google closure css patches, to be included after the other includes
+link(rel='stylesheet', type='text/css', href='css/closure-patches.css')
+script(type='text/javascript', src='js/closure-patches.js')

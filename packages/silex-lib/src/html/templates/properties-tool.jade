@@ -1,0 +1,174 @@
+link(rel='stylesheet', href='css/closure/checkbox.css')
+link(rel='stylesheet', href='css/closure/button.css')
+link(rel='stylesheet', href='css/closure/custombutton.css')
+link(rel='stylesheet', href='css/closure/flatbutton.css')
+link(rel='stylesheet', href='css/closure/linkbutton.css')
+link(rel='stylesheet', href='css/closure/tab.css')
+link(rel='stylesheet', href='css/closure/tabbar.css')
+link(rel='stylesheet', href='css/closure/hsvapalette.css')
+link(rel='stylesheet', href='css/closure/palette.css')
+link(rel='stylesheet', href='css/closure/colorpalette.css')
+link(rel='stylesheet', href='css/closure/colormenubutton.css')
+h1.title1 Properties
+.main-container
+  span.position-editor
+    fieldset.small-font
+      legend Position and size
+      div
+        label X
+        input.position-input.left-input(placeholder='-', type='number')
+        label W
+        input.position-input.width-input(placeholder='-', type='number')
+        label.right-bottom.advanced-only Right
+        input.position-input.right-input.advanced-only(placeholder='-', type='number')
+        label.new-line Y
+        input.position-input.top-input(placeholder='-', type='number')
+        label H
+        input.position-input.height-input(placeholder='-', type='number')
+        label.right-bottom.advanced-only Btm.
+        input.position-input.bottom-input.advanced-only(placeholder='-', type='number')
+      div
+        label.z-index-label.advanced-only Z index
+        input.position-input.z-index-input.advanced-only(placeholder='-', type='number')
+
+
+  span.page-editor
+    script.pages-selector-template(type='text/x-handlebars-template')
+      {{#each pages}}
+      <div class="page-container">
+      <span class="page-check" />
+      <label class="page-label xsmall-font">{{this.name}}</label>
+      </div>
+      {{/each}}
+    p here template to do
+
+    script.link-template(type='text/x-handlebars-template')
+      <option value="none">Link to ...</option>
+      <option value="none">Nothing</option>
+      <option value="custom">External link</option>
+      {{each pages}}
+      <option value="{{this.name}}">{{this.name}}</option>
+      {{/each}}
+    p here template to do
+    fieldset.small-font
+      legend
+        | Show only on
+        span.show-on-all-pages-btn.link-small-btn.advanced-only (show on all pages)
+      .pages-container
+    fieldset.small-font
+      legend Link
+      div
+        select.link-combo-box
+      input.link-input-text(placeholder='-', type='text')
+
+
+
+
+  span.property-editor
+    script.edition-template(type='text/x-handlebars-template')
+      {{#if htmlEditor}}
+      <div class="button small-font html-editor-button" title="Open HTML editor">Edit HTML</div>
+      {{/if}}
+      {{#if textEditor}}
+      <div class="button small-font text-editor-button" title="Open text editor">Edit text</div>
+      {{/if}}
+      {{#if imageUrl}}
+      <input placeholder="-" class="image-url-input advanced-only" value="{{imageUrl}}" />
+      <div class="button small-font image-url-button" title="Open file browser">Swap image</div>
+      {{/if}}
+
+    fieldset.small-font
+      legend Content
+      .edition-container
+  span.style-container
+    .tab-bar-container.goog-tab-bar.goog-tab-bar-top.small-font
+      .goog-tab.goog-tab-selected Normal
+      .goog-tab Hover
+      .goog-tab Pressed
+    span.tab-page
+      .general-editor
+        fieldset.small-font.opacity-property.advanced-only
+          legend
+            | Opacity
+            small between 0 and 1
+          input.opacity-input(placeholder='-', type='number')
+      .background-editor
+        fieldset.small-font.background-property
+          legend Background Color
+          span.color-bg-button.color-button
+          span.color-bg-palette
+          span.enable-color-bg-button
+          | Transparent
+        fieldset.small-font.background-image
+          legend Background Image
+          div
+            .button.bg-image-button Select image
+            .button.clear-bg-image-button Clear image
+          .advanced-only
+            label Position
+            .bg-position-h-combo-box.combobox.goog-select
+              ul.goog-menu
+                li#left.goog-menuitem left
+                li#center.goog-menuitem center
+                li#right.goog-menuitem right
+            .bg-position-v-combo-box.combobox.goog-select
+              ul.goog-menu
+                li#top.goog-menuitem top
+                li#center.goog-menuitem center
+                li#bottom.goog-menuitem bottom
+          .advanced-only
+            label Properties
+            .bg-attachement-combo-box.combobox.goog-select
+              ul.goog-menu
+                li#scroll.goog-menuitem(title='The background scrolls along with the element') scroll
+                li#fixed.goog-menuitem(title='The background is fixed with regard to the viewport') fixed
+            .bg-repeat-combo-box.combobox.goog-select
+              ul.goog-menu
+                li#repeat.goog-menuitem(title='The background image is repeated both vertically and horizontally') repeat
+                li#repeat-x.goog-menuitem(title='The background image is only repeated horizontally') repeat-x
+                li#repeat-y.goog-menuitem(title='The background image is only repeated vertically') repeat-y
+                li#no-repeat.goog-menuitem(title='The background-image is not repeated') no-repeat
+      .border-editor
+        fieldset.small-font.border-property
+          legend
+            | Border
+            span.enable-border-color-button.link-small-btn.advanced-only (No border)
+          label Width
+          input.border-width-input(placeholder='-', type='number')
+          label Color
+          span.border-color-button.color-button
+          span.border-color-palette
+          label.advanced-only Type
+          .border-type-combo-box.combobox.goog-select.advanced-only
+            ul.goog-menu
+              li#solid.goog-menuitem solid
+              li#dotted.goog-menuitem dotted
+              li#dashed.goog-menuitem dashed
+              li#double.goog-menuitem double
+              li#groove.goog-menuitem groove
+              li#ridge.goog-menuitem ridge
+              li#inset.goog-menuitem inset
+              li#outset.goog-menuitem outset
+          .border-placement-container.advanced-only
+            span.border-placement-check.goog-checkbox
+            label.border-placement-label Top
+            span.border-placement-check.goog-checkbox
+            label.border-placement-label Right
+            span.border-placement-check.goog-checkbox
+            label.border-placement-label Bottom
+            span.border-placement-check.goog-checkbox
+            label.border-placement-label Left
+        fieldset.small-font.corner-property
+          legend Corners
+          label Radius
+          input.corner-radius-input(placeholder='-', type='number')
+          label.advanced-only Applys to
+          .corner-placement-container.advanced-only
+            span.corner-placement-check.goog-checkbox
+            label.corner-placement-label Top Left
+            span.corner-placement-check.goog-checkbox
+            label.corner-placement-label Top Right
+            span.corner-placement-check.goog-checkbox
+            label.corner-placement-label Btm. Left
+            span.corner-placement-check.goog-checkbox
+            label.corner-placement-label Btm. Right

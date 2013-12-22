@@ -1,0 +1,54 @@
+var assert = require('assert')
+, expect = require('chai').expect
+, helper = require('../helper.js');
+
+describe('Silex config', function() {
+
+before(function(done) {
+    this.timeout(30000);
+    helper.startSelenium(function (_) {
+        // open silex
+        helper.driver.get('http://localhost:6805/silex/index.html').then(function () {
+            done();
+        });
+    });
+});
+it('should wait to load', function(done) {
+    this.timeout(3000);
+    // wait for silex to be loaded
+    setTimeout(function () {
+        done();
+    }, 2000)
+});
+
+var config;
+
+it('should be valid', function(done) {
+    helper.driver.executeScript('return silex.model.Config.debug;').then(function (res){
+        config = res;
+        if(config){
+            done();
+        }
+        else{
+            done('could not retrieve config from Silex');
+        }
+    });
+});
+it('should not be in debug mode', function(done) {
+    if (config.debugMode === true){
+        done('silex is in debug mode');
+    }
+    else{
+        done();
+    }
+});
+
+after(function(done) {
+   this.timeout(30000);
+    // shut down selenium
+    helper.stopSelenium(function () {
+        done();
+    });
+});
+
+});

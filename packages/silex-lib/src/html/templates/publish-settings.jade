@@ -1,0 +1,49 @@
+div.dialog
+  div.header
+    div.title
+      | Website settings
+      button.close-btn(type='button')
+  div.body
+    div.left-pane
+      ul.tree
+        li.selected
+          span Publish settings
+    div.right-pane
+      ul
+        li
+          fieldset
+            legend Info
+            strong Settings of the publication process.
+            p
+              | Your site can publish to a location (publication path), which means to generate an optimized version of your site, without the data needed by Silex to edit the file.
+            p
+              | If you want to make your site available to anyone online, publish to a Dropbox folder, and use a service like
+              a(target='blank', href='http://www.site44.com/') Site 44
+              | ,
+              a(target='blank', href='http://www.kissr.com/') Kissr
+              | , or
+              a(target='blank', href='http://www.paperplane.io/') Paper Plane
+              | , to get it live on the web.
+            p
+              | If you want to host your site yourself, publish to a location of your choice, and use an FTP client to transfer all the files to your server. Any web host can host Silex sites, since it is only HTML, CSS and Javascript files. We recommand these hosting companies:
+              ul
+                li
+                  a(target='blank', href='http://www.ouvaton.org/') Ouvaton
+                  | and
+                  a(target='blank', href='http://www.toile-libre.org/') Toile libre
+                  | , french non profit organization with a "pay what you can afford" policy.
+                li
+                  a(target='blank', href='') Arvixe
+                  | which support Silex development since 2010.
+            p
+              | If you have instaleld Silex (the website editor, not your site) on your own server (advanced users only), publish to www/ so that your site will be
+              a(target='blank', href='../') available directly here
+              | .
+      ul
+        li
+          fieldset
+            legend Publication Path
+            p
+              | Path to the folder in wich I will publish the website. This folder content will be deleted.
+            input.input-url.input-publication-path(type='text', value='')
+            button.browse-btn(type='button') ...
