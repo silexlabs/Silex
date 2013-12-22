@@ -1,0 +1,14 @@
+!!! 5
+head
+  include ./templates/head.jade
+
+body
+  include ./templates/body.jade
+
+  // debug script
+  script(type='text/javascript', src='js/debug.js')
+
+  // start Silex
+  script(type='text/javascript').
+    // boot silex app
+    silex.boot();

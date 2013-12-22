@@ -1,0 +1,46 @@
+.silex-workspace
+  // publish settings
+  .settings-background
+  .silex-publishsettings
+    include ./publish-settings.jade
+
+  // file explorer
+  .silex-fileexplorer
+    link(rel='stylesheet', href='../cloud-explorer/app/css/style.css')
+    #CE(data-ng-app='ceDirectives')
+      .ce-browser
+
+  // menu
+  .silex-menu
+    link(rel='stylesheet', href='css/closure/menu.css')
+    link(rel='stylesheet', href='css/closure/menubar.css')
+    link(rel='stylesheet', href='css/closure/menubutton.css')
+    link(rel='stylesheet', href='css/closure/menuitem.css')
+    link(rel='stylesheet', href='css/closure/menuseparator.css')
+    a.website-name Untitled website
+
+  // page tool
+  .silex-pagetool
+    include ./page-tool.jade
+
+  // properties tool
+  .silex-propertiestool
+    include ./properties-tool.jade
+
+  // stage
+  .silex-stage
+    link(rel='stylesheet', type='text/css', href='libs/jquery/jquery-ui.css')
+    .silex-stage-body(data-silex-type='container')
+
+  // dialogs background
+  .dialogs-background
+
+  // html editor
+  .silex-htmleditor
+    .title-bar Edit the HTML content
+    .ace-editor
+    .close-btn
+
+
+  // text editor
+  .silex-texteditor

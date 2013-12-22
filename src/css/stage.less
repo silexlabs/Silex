@@ -1,0 +1,71 @@
+.editable-style.silex-selected {
+  outline: 1px solid #666666;
+  & > .ui-resizable-ne {
+    top: -7px;
+    right: -7px;
+  }
+  & > .ui-resizable-sw {
+    bottom: -7px;
+    left: -7px;
+  }
+  & > .ui-resizable-se {
+    bottom: -7px;
+    right: -7px;
+  }
+  & > .ui-resizable-nw {
+    top: -7px;
+    left: -7px;
+  }
+}
+.editable-style[data-silex-sub-type="html"]:hover {
+  .html-content {
+    display: none;
+  }
+}
+.editable-style {
+  box-shadow: 0 0 1px #888888;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: moz-none;
+  -ms-user-select: none;
+  user-select: none;
+  cursor: move;
+}
+.editable-style.silex-selected &>.ui-resizable-se,.editable-style.silex-selected &>.ui-resizable-sw,.editable-style.silex-selected &>.ui-resizable-ne,.editable-style.silex-selected &>.ui-resizable-nw {
+  background-color: #333333;
+  border: 1px solid #666666;
+  width: 5px !important;
+  height: 5px !important;
+}
+.silex-stage-body {
+  height: 100%;
+  padding: 5px;
+  padding-bottom: 0;
+  position: relative !important;
+}
+.silex-stage {
+  background-color: #CCCCCC;
+  height: 100%;
+  position: absolute;
+  left: 220px;
+  overflow: auto;
+  border: 1px solid #D9D9D9;
+}
+.editable-style:hover {
+  box-shadow: 0 0 5px #888888;
+  opacity: 1 !important;
+}
+.ui-icon-gripsmall-diagonal-se {
+  background-image: none;
+}
+.editable-style.locked-style,.editable-style.locked-style .editable-style,.editable-style.background {
+  cursor: pointer;
+  margin-bottom: 30px;
+}
+.editable-style[data-silex-sub-type="image"] {
+  overflow: visible;
+  img {
+    border-radius: inherit;
+  }
+}

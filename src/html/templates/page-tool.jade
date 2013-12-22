@@ -1,0 +1,9 @@
+script.page-tool-template(type='text/x-handlebars-template').
+  {{#each pages}}
+  a.page-container(href='{{name}}', data-page-name='{{name}}')
+    p todo add a # in href
+  div.page-preview.xsmall-font
+    small.delete x
+    div.label {{name}}
+  {{/each}}
+.page-tool-container

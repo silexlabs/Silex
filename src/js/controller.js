@@ -71,11 +71,12 @@ silex.Controller = function(
   this.htmlEditor.onStatus = goog.bind(this.htmlEditorCallback, this);
   this.textEditor.onStatus = goog.bind(this.textEditorCallback, this);
 
-  function closeEditorWarning() {
-    return 'Are you sure?';
+  if(!silex.model.Config.debug.debugMode || silex.model.Config.debug.preventQuit){
+    function closeEditorWarning() {
+      return 'Are you sure?';
+    }
+    window.onbeforeunload = closeEditorWarning;
   }
-  window.onbeforeunload = closeEditorWarning;
-
 };
 
 
