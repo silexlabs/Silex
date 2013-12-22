@@ -6,3 +6,5 @@
 .temp
 .cache
 node_modules
+dist/client/js/debug.js
+test/selenium-server-standalone-2.37.0.jar
