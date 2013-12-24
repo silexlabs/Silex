@@ -45,7 +45,7 @@ module.exports = function(grunt) {
   grunt.registerTask('releaseDeploy', ['concat', 'less:production', 'closureBuilder:release']);
   grunt.registerTask('debugDeploy', ['concat', 'less:development', 'closureBuilder:debug', 'append-sourcemapping']);
   grunt.registerTask('check', ['htmllint', 'csslint:lax', 'closureLint']);
-  grunt.registerTask('test', ['simplemocha']);
+  grunt.registerTask('test', ['releaseDeploy', 'simplemocha']);
   grunt.registerTask('fix', ['closureFixStyle']);
 
   grunt.registerTask('default', ['deploy']);
