@@ -46,23 +46,46 @@ Main contributors
 
 This is for developers only, since our beloved designers can use the [online version](http://www.silex.me/).
 
-Developers you can clone this repository and start the serveur (unifile), the back end of Silex, with nodejs. See instructions bellow.
+Developers you can clone this repository and start Silex, with nodejs. See instructions bellow.
 
 ### local installation on linux or macos
 
 Prerequisite :
 
 * [node.js](http://nodejs.org/) installed
-* [NPM installed](https://npmjs.org/)
+* [NPM](https://npmjs.org/) installed
 
 Clone this repository, and do not forget the sub modules (cloud-explorer and unifile)
 
-Install node modules: npm install
+  $ git clone --recursive https://github.com/silexlabs/Silex.git
 
-Start the server: node dist/server/server.js
-Or use: foreman start (useful on heroku platform for example)
+Install all needed modules
 
-And open http://localhost:6805/silex/ or http://localhost:5000/silex/ in a browser (depending on your computer's config) - note that 6805 is the date of sexual revolution started in paris france 8-)
+  $ make
+
+Start the server and then open http://localhost:6805/silex/ - note that 6805 is easy to remember, since it is the date of sexual revolution started in paris france 8-)
+
+  $ node dist/server/server.js
+
+Or with grunt you can use
+
+* Build, i.e. check syntax with *lint, compile with google closure builder/compiler
+
+  $ grunt deploy
+
+* Watch, i.e. watch for changing files and build the debug version when files change, also use livereload
+
+  $ grunt watch
+
+* Test, i.e. check syntax with *lint, compile the release version with google closure, and execute functional tests
+
+  $ grunt test -phantomjs
+  $ grunt test -firefox
+  $ grunt test -chrome
+  
+> Note for cloud9 users: you may want to activate python
+
+  $ nada-nix install python
 
 ### local installation on Windows
 
