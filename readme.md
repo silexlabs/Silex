@@ -82,6 +82,10 @@ Or with grunt you can use
   $ grunt test -phantomjs
   $ grunt test -firefox
   $ grunt test -chrome
+  
+> Note for cloud9 users: you may want to activate python
+
+  $ nada-nix install python
 
 ### local installation on Windows
 
