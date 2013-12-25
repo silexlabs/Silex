@@ -7,7 +7,6 @@
 BUGS
 
 * New site => BG size depends on the stage size
-* Add shadow to the stage
 * Lorsque l'on colle un lien externe pour la deuxième fois = on retrouve le lien précédemment collé
 * lors de l'import de "grands" (?) média = la boite à outil Position & size n'affiche pas la size du média.
 exemple 960 x 73 dans la LP SV2
@@ -51,7 +50,6 @@ Styles
 properties
 * view all CSS defined in "head #silex-element-style"
 * or view normal tool box
-*
 
 text editor
 * view all CSS defined in "head #silex-element-style"
@@ -62,13 +60,21 @@ ________________
 
 Refactoring
 
+  View = html Dom read only
+  Model = html Dom write only
+  Utils = reusable
+  Controller = high level concepts, File, Page, Selection
+
   Model:
   Element, innerhtml
-  Body, add/remove element
+  Body, add/remove element, cleanup
   Head, title, fonts, ...
   File, load, save...
-  State, loading, appolo
+
+  Controller
+  State, loading, appolo, dirty
   Selection, file, page, element (references)
+  Page
 
   Utils
   Pageable, add/remove/open page

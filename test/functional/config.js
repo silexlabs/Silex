@@ -24,7 +24,7 @@ it('should wait to load', function(done) {
 var config;
 
 it('should be valid', function(done) {
-    helper.driver.executeScript('return silex.model.Config.debug;').then(function (res){
+    helper.driver.executeScript('return silex.Config.debug;').then(function (res){
         config = res;
         if(config){
             done();

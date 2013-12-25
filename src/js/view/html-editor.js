@@ -28,13 +28,11 @@ goog.require('goog.ui.KeyboardShortcutHandler');
  * @constructor
  */
 silex.view.HTMLEditor = function(element, cbk) {
+  // store the container
   this.element = element;
-
-  silex.Helper.loadTemplateFile('templates/htmleditor.html', element, function() {
-    this.initUI();
-    if (cbk) cbk();
-  }, this);
-  // escape key
+  // init the editor
+  this.initUI();
+  // handle escape key
   var shortcutHandler = new goog.ui.KeyboardShortcutHandler(document);
   shortcutHandler.registerShortcut('esc', goog.events.KeyCodes.ESC);
   goog.events.listen(

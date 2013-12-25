@@ -5,10 +5,18 @@ head
 body
   include ./templates/body.jade
 
+  // Silex styles and code
+  link(rel='stylesheet', type='text/css', href='css/admin.css')
+  script(type='text/javascript', src='js/admin.js')
+
+  // google closure css patches, to be included after the other includes
+  link(rel='stylesheet', type='text/css', href='css/closure-patches.css')
+  script(type='text/javascript', src='js/closure-patches.js')
+
   // debug script
   script(type='text/javascript', src='js/debug.js')
 
   // start Silex
   script(type='text/javascript').
     // boot silex app
-    silex.boot();
+    new silex.App();
