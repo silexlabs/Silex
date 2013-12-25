@@ -21,6 +21,7 @@
 
 goog.provide('silex.view.FileExplorer');
 
+goog.require('silex.service.CloudStorage');
 
 goog.require('goog.async.Delay');
 goog.require('goog.events.KeyCodes');
@@ -35,23 +36,16 @@ goog.require('goog.ui.KeyboardShortcutHandler');
  * the Silex FileExplorer class
  * @constructor
  */
-silex.view.FileExplorer = function(element, cbk) {
-  var that = this;
+silex.view.FileExplorer = function(element) {
+  // store the container
   this.element = element;
+  // hide the at start
   goog.style.setStyle(this.element, 'display', 'none');
-
-  if (cbk) {
-    new goog.async.Delay(function() {
-      cbk();
-      that.init();
-    }, 10).start();
-  }
-
-  // close button
-  goog.events.listen(goog.dom.getElementByClass('close-btn', this.element), goog.events.EventType.CLICK, function() {
-    this.closeEditor();
-  }, false, this);
-  // escape key
+  // init the dialog
+  new goog.async.Delay(function() {
+    this.init();
+  }, 10, this).start();
+  // handle escape key
   var shortcutHandler = new goog.ui.KeyboardShortcutHandler(document);
   shortcutHandler.registerShortcut('esc', goog.events.KeyCodes.ESC);
   goog.events.listen(
@@ -59,11 +53,6 @@ silex.view.FileExplorer = function(element, cbk) {
       goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED,
       goog.bind(this.closeEditor, this));
 
-  /*    silex.Helper.loadTemplateFile('templates/fileexplorer.html', element, function() {
-        that.init();
-        if (cbk) cbk();
-    });
-  */
 };
 
 
@@ -92,16 +81,15 @@ silex.view.FileExplorer.prototype.element;
 
 
 /**
- * callback for FileExplorer events, set by the controller
- *
-silex.view.FileExplorer.prototype.onFileExplorerEvent;
-
-
-/**
  * init file explorer
  */
 silex.view.FileExplorer.prototype.init = function() {
+  // get the global variable of Cloud Explorer
   this.filePicker = silex.service.CloudStorage.getInstance().filePicker;
+  // close button
+  goog.events.listen(goog.dom.getElementByClass('close-btn', this.element), goog.events.EventType.CLICK, function() {
+    this.closeEditor();
+  }, false, this);
 };
 
 

@@ -15,7 +15,7 @@
  */
 
 
-goog.provide('silex.model.Config');
+goog.provide('silex.Config');
 
 goog.require('goog.events.KeyCodes');
 goog.require('goog.ui.KeyboardShortcutHandler');
@@ -26,14 +26,14 @@ var altKeyDisplay = goog.userAgent.MAC ? '⌥' + '' : 'Alt+';
 
 /**
  * The debug data
- * {boolean} debugMode      true if the app is in debug mode 
- *                          if false, then all other params are not used 
+ * {boolean} debugMode      true if the app is in debug mode
+ *                          if false, then all other params are not used
  *                          debug mode is set to true in debug.html
- * {boolean} preventQuit   
+ * {boolean} preventQuit
  * {function} doAfterReady  callback executed when Silex has launched and is ready
  *                          it is defined in debug.js loaded only in debug.html
  */
-silex.model.Config.debug = {
+silex.Config.debug = {
   debugMode: false
   , showPreventQuitMessage: false
   , doAfterReady: null
@@ -41,7 +41,7 @@ silex.model.Config.debug = {
 /**
  * The main application menu
  */
-silex.model.Config.menu = {
+silex.Config.menu = {
   names: [
     {
       label: 'File'
@@ -295,7 +295,7 @@ silex.model.Config.menu = {
 /**
  * The list of fonts the user can select
  */
-silex.model.Config.fonts = {
+silex.Config.fonts = {
 
 
   'Roboto Condensed' : {

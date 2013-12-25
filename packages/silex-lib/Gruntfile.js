@@ -37,13 +37,13 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-closure-linter');
   grunt.loadNpmTasks('grunt-simple-mocha');
-  //grunt.loadNpmTasks('grunt-contrib-jade');
+  grunt.loadNpmTasks('grunt-contrib-jade');
 
   grunt.task.renameTask('watch', 'doWatch')
 
   grunt.registerTask('deploy', ['debugDeploy', 'releaseDeploy']);
-  grunt.registerTask('releaseDeploy', ['concat', 'less:production', 'closureBuilder:release']);
-  grunt.registerTask('debugDeploy', ['concat', 'less:development', 'closureBuilder:debug', 'append-sourcemapping']);
+  grunt.registerTask('releaseDeploy', ['concat', 'less:production', 'jade:release', 'closureBuilder:release']);
+  grunt.registerTask('debugDeploy', ['concat', 'less:development', 'jade:debug', 'closureBuilder:debug', 'append-sourcemapping']);
   grunt.registerTask('check', ['htmllint', 'csslint:lax', 'closureLint']);
   grunt.registerTask('test', ['releaseDeploy', 'simplemocha']);
   grunt.registerTask('fix', ['closureFixStyle']);
@@ -142,11 +142,33 @@ module.exports = function(grunt) {
         }
       }
     }
+    , jade: {
+      release: {
+        options: {
+          data: {
+            debug: false
+          }
+        }
+        , files: {
+          "dist/client/index.html": ["src/html/release.jade"]
+        }
+      }
+      , debug: {
+        options: {
+          data: {
+            debug: true
+          }
+        }
+        , files: {
+          "dist/client/debug.html": ["src/html/debug.jade"]
+        }
+      }
+    }
     , closureBuilder: {
       release: {
         options: {
           closureLibraryPath: 'submodules/closure-library'
-          , namespaces: ['silex.boot']
+          , namespaces: ['silex.App']
           , builder: 'submodules/closure-library/closure/bin/build/closurebuilder.py'
           , compilerFile: 'build/closure-compiler.jar'
           , compile: true
@@ -165,7 +187,7 @@ module.exports = function(grunt) {
       , debug: {
         options: {
           closureLibraryPath: 'submodules/closure-library'
-          , namespaces: 'silex.boot'
+          , namespaces: 'silex.App'
           , builder: 'submodules/closure-library/closure/bin/build/closurebuilder.py'
           , compilerFile: 'build/closure-compiler.jar'
           , compile: true // disable if needed?
@@ -196,7 +218,7 @@ module.exports = function(grunt) {
           , atBegin: true
         }
         , all: {
-            files: ['src/js/**/*.js', 'dist/server/**/*.js', 'src/css/*.css', 'src/css/*.less', 'src/html/*.jade', 'dist/client/**/*.html', 'Gruntfile.js']
+            files: ['src/js/**/*.js', 'dist/server/**/*.js', 'src/css/*.css', 'src/css/*.less', 'src/html/**/*.jade', 'dist/client/**/*.html', 'Gruntfile.js']
             , tasks: ['debugDeploy', 'run']
         }
     }

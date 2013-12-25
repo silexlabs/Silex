@@ -18,7 +18,7 @@
 
 
 goog.provide('silex.view.Menu');
-goog.require('silex.model.Config');
+goog.require('silex.Config');
 
 goog.require('goog.ui.Menu');
 goog.require('goog.ui.MenuButton');
@@ -36,13 +36,9 @@ goog.require('goog.events.KeyHandler');
 /**
  * @constructor
  */
-silex.view.Menu = function(element, cbk) {
+silex.view.Menu = function(element) {
   this.element = element;
-
-  silex.Helper.loadTemplateFile('templates/menu.html', element, function() {
-    this.buildMenu(element);
-    if (cbk) cbk();
-  }, this);
+  this.buildMenu(element);
 };
 
 
@@ -75,10 +71,10 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
   var globalKeys = [];
 
   // create the menu items
-  for (i in silex.model.Config.menu.names) {
+  for (i in silex.Config.menu.names) {
     // Create the drop down menu with a few suboptions.
     var menu = new goog.ui.Menu();
-    goog.array.forEach(silex.model.Config.menu.options[i],
+    goog.array.forEach(silex.Config.menu.options[i],
         function(itemData) {
           var item;
           if (itemData) {
@@ -125,7 +121,7 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
         }, this);
 
     // Create a button inside menubar.
-    var menuItemData = silex.model.Config.menu.names[i];
+    var menuItemData = silex.Config.menu.names[i];
     var btn = new goog.ui.MenuButton(menuItemData.label, menu);
     btn.addClassName(menuItemData.className);
     btn.setDispatchTransitionEvents(goog.ui.Component.State.ALL, true);

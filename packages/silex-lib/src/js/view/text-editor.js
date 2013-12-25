@@ -38,7 +38,7 @@ goog.require('goog.events.KeyCodes');
 goog.require('goog.ui.KeyboardShortcutHandler');
 goog.require('goog.text.LoremIpsum');
 goog.require('goog.ui.ToolbarSeparator');
-goog.require('silex.model.Config');
+goog.require('silex.Config');
 
 
 
@@ -49,18 +49,14 @@ goog.require('silex.model.Config');
  * @param  {function} cbk   callback which I'll call when the text
  *  has been changed by the user
  */
-silex.view.TextEditor = function(element, cbk) {
+silex.view.TextEditor = function(element) {
+  // store the container
   this.element = element;
-
-  silex.Helper.loadTemplateFile('templates/texteditor.html',
-      element,
-      function() {
-        this.initUI();
-        this.closeEditor();
-        if (cbk) cbk();
-      }, this);
-
-  // escape key
+  // init the editor
+  this.initUI();
+  // hide the at start
+  this.closeEditor();
+  // handle escape key
   var shortcutHandler = new goog.ui.KeyboardShortcutHandler(document);
   shortcutHandler.registerShortcut('esc', goog.events.KeyCodes.ESC);
   goog.events.listen(
@@ -111,7 +107,7 @@ silex.view.TextEditor.prototype.initUI = function() {
   var fontFaceButton = goog.ui.editor.DefaultToolbar.makeBuiltInToolbarButton(
       goog.editor.Command.FONT_FACE);
 
-  var availableFonts = silex.model.Config.fonts;
+  var availableFonts = silex.Config.fonts;
   for (var fontName in availableFonts) {
     goog.ui.editor.ToolbarFactory.addFont(fontFaceButton,
         fontName,
@@ -192,6 +188,11 @@ silex.view.TextEditor.prototype.initUI = function() {
       function() {
         this.closeEditor();
       }, false, this);
+  // close on background click
+  var background = goog.dom.getElementByClass('dialogs-background');
+  goog.events.listen(background, goog.events.EventType.CLICK, function(e) {
+    this.closeEditor();
+  }, false, this);
 
 };
 
@@ -200,7 +201,11 @@ silex.view.TextEditor.prototype.initUI = function() {
  * Open the editor
  * @param    {string} initialHtml    HTML to display at start
  */
-silex.view.TextEditor.prototype.openEditor = function(initialHtml) {
+silex.view.TextEditor.prototype.openEditor = function() {
+  // retrieve selection text content
+  var container = silex.utils.JQueryEditable.getContainer();
+  var initialHtml = getElementByClass(silex.model.Element.SELECTED_CLASS_NAME);
+  // init editable text input
   this.textField.setHtml(false, initialHtml);
   this.textField.focusAndPlaceCursorAtStart();
   // background
@@ -208,10 +213,6 @@ silex.view.TextEditor.prototype.openEditor = function(initialHtml) {
   // show
   goog.style.setStyle(background, 'display', 'inherit');
   goog.style.setStyle(this.element, 'display', 'inherit');
-  // close
-  goog.events.listenOnce(background, goog.events.EventType.CLICK, function(e) {
-    this.closeEditor();
-  }, false, this);
 };
 
 

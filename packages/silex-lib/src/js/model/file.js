@@ -19,7 +19,7 @@
 
 
 goog.provide('silex.model.File');
-goog.require('silex.model.Config');
+goog.require('silex.Config');
 
 
 
@@ -38,88 +38,9 @@ goog.require('silex.model.Config');
  * @param  {silex.view.FileExplorer}  fileExplorer  reference to the view
  * @param  {silex.view.PublishSettings}  publishSettings  reference to the view
  */
-silex.model.File = function(
-    workspace,
-    menu,
-    stage,
-    pageTool,
-    propertiesTool,
-    htmlEditor,
-    textEditor,
-    fileExplorer,
-    publishSettings) {
+silex.model.File = function() {
 
-  // store references to the view components
-  this.workspace = workspace;
-  this.menu = menu;
-  this.stage = stage;
-  this.pageTool = pageTool;
-  this.propertiesTool = propertiesTool;
-  this.htmlEditor = htmlEditor;
-  this.textEditor = textEditor;
-  this.fileExplorer = fileExplorer;
-  this.publishSettings = publishSettings;
 };
-
-
-/**
- * creation template URL constant
- */
-silex.model.File.CREATION_TEMPLATE = 'creation-template.html';
-
-
-/**
- * element of the view, to be updated by this model
- */
-silex.model.File.prototype.workspace;
-
-
-/**
- * element of the view, to be updated by this model
- */
-silex.model.File.prototype.menu;
-
-
-/**
- * element of the view, to be updated by this model
- */
-silex.model.File.prototype.stage;
-
-
-/**
- * element of the view, to be updated by this model
- */
-silex.model.File.prototype.pageTool;
-
-
-/**
- * element of the view, to be updated by this model
- */
-silex.model.File.prototype.propertiesTool;
-
-
-/**
- * element of the view, to be updated by this model
- */
-silex.model.File.prototype.htmlEditor;
-
-
-/**
- * element of the view, to be updated by this model
- */
-silex.model.File.prototype.textEditor;
-
-
-/**
- * element of the view, to be updated by this model
- */
-silex.model.File.prototype.fileExplorer;
-
-
-/**
- * element of the view, to be updated by this model
- */
-silex.model.File.prototype.publishSettings;
 
 
 /**
@@ -136,23 +57,49 @@ silex.model.File.prototype.blob;
 
 
 /**
- * current file head content (string)
+ * get/set the publication path
+ * @see silex.model.File
  */
-silex.model.File.prototype.headTag;
+silex.model.File.prototype.setPublicationPath = function(path) {
+  var that = this;
+  var found = false;
+  // update the DOM element
+  $('meta[name="publicationPath"]', this.headElement).each(
+      function() {
+        if (path && path !== '') {
+          // update path
+          this.setAttribute('content', path);
+        }
+        else {
+          // remove the path
+          $(this).remove();
+        }
+        found = true;
+      });
+  if (!found && path && path !== '') {
+    // create the DOM element
+    var meta = goog.dom.createElement('meta');
+    meta.name = 'publicationPath';
+    meta.content = path;
+    goog.dom.appendChild(this.headElement, meta);
+  }
+};
 
 
 /**
- * current file body content (string)
+ * get/set the publication path
+ * @see silex.model.File
+ * @return {string}   the publication path
  */
-silex.model.File.prototype.bodyTag;
-
-
-/**
- * current file body style (string)
- */
-silex.model.File.prototype.bodyStyle;
-
-
+silex.model.File.prototype.getPublicationPath = function() {
+  var that = this;
+  var path = null;
+  $('meta[name="publicationPath"]', this.headElement).each(
+      function() {
+        path = this.getAttribute('content');
+      });
+  return path;
+};
 ////////////////////////////////////////////////
 // File management methods
 ////////////////////////////////////////////////
@@ -296,7 +243,7 @@ silex.model.File.prototype.refreshFontList = function() {
   });
 
   //get authorised fonts
-  var availableFonts = silex.model.Config.fonts;
+  var availableFonts = silex.Config.fonts;
   //return the font from the font family or null
   var getFont = function(fontFamily) {
     for (var fontName in availableFonts) {

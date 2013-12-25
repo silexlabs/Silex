@@ -29,47 +29,43 @@ goog.require('goog.ui.KeyboardShortcutHandler');
  * load the template and make it a PublishSettings dialog
  * this is only the UI part, to let user setup publish functionnality
  */
-silex.view.PublishSettings = function(element, cbk) {
+silex.view.PublishSettings = function(element) {
+  // store the container
   this.element = element;
+  // init the editor
   this.publicationPath = '';
+  // hide the at start
   goog.style.setStyle(this.element, 'display', 'none');
-
-  // escape key
+  // handle escape key
   var shortcutHandler = new goog.ui.KeyboardShortcutHandler(document);
   shortcutHandler.registerShortcut('esc', goog.events.KeyCodes.ESC);
   goog.events.listen(
       shortcutHandler,
       goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED,
       goog.bind(this.closeEditor, this));
-
-  // load template
-  silex.Helper.loadTemplateFile('templates/publishsettings.html',
-      element,
+  // close button
+  var btn = goog.dom.getElementByClass('close-btn', this.element);
+  goog.events.listen(btn, goog.events.EventType.CLICK, function() {
+    this.closeEditor();
+  }, false, this);
+  // publication path browse button
+  var btn = goog.dom.getElementByClass('browse-btn', this.element);
+  goog.events.listen(btn, goog.events.EventType.CLICK, function() {
+    this.onStatus({
+      type: 'browsePublishPath'
+    });
+  }, false, this);
+  // publication path input field
+  var inputPublicationPath =
+      goog.dom.getElementByClass('input-publication-path');
+  goog.events.listen(
+      inputPublicationPath, goog.ui.Component.EventType.CHANGE,
       function() {
-        // close button
-        var btn = goog.dom.getElementByClass('close-btn', this.element);
-        goog.events.listen(btn, goog.events.EventType.CLICK, function() {
-          this.closeEditor();
-        }, false, this);
-        var btn = goog.dom.getElementByClass('browse-btn', this.element);
-        goog.events.listen(btn, goog.events.EventType.CLICK, function() {
-          this.onStatus({
-            type: 'browsePublishPath'
-          });
-        }, false, this);
-        var inputPublicationPath =
-            goog.dom.getElementByClass('input-publication-path');
-        goog.events.listen(
-            inputPublicationPath, goog.ui.Component.EventType.CHANGE,
-            function() {
-              this.onStatus({
-                type: 'change',
-                data: inputPublicationPath.value
-              });
-            }, false, this);
-        // continue loading
-        if (cbk) cbk();
-      }, this);
+        this.onStatus({
+          type: 'change',
+          data: inputPublicationPath.value
+        });
+      }, false, this);
 };
 
 
@@ -88,24 +84,28 @@ silex.view.PublishSettings.prototype.onStatus;
 
 
 /**
- * set publication path
- * @param   {string} path
- */
-silex.view.PublishSettings.prototype.setPublicationPath = function(path) {
-  this.publicationPath = path;
-  this.redraw();
-};
-
-
-/**
  * render the template
  */
 silex.view.PublishSettings.prototype.redraw = function() {
   var inputPublicationPath =
       goog.dom.getElementByClass('input-publication-path');
-  inputPublicationPath.value = this.publicationPath;
+  inputPublicationPath.value = this.getPublicationPath();
 };
 
+
+/**
+ * get/set the publication path
+ * @see silex.model.File
+ */
+silex.view.PublishSettings.prototype.getPublicationPath = function(){
+  var that = this;
+  var path = null;
+  $('meta[name="publicationPath"]', this.headElement).each(
+  function () {
+    path = this.getAttribute('content');
+  });
+  return path;
+}
 
 /**
  * open settings dialog

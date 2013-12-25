@@ -28,36 +28,37 @@ goog.require('goog.dom.ViewportSizeMonitor');
 /**
  * @constructor
  * @param  {Element}  element    DOM element containing the UIs
- * @param  {silex.view.Menu}  menu  reference to the view
- * @param  {silex.view.Stage}  stage  reference to the view
- * @param  {silex.view.PageTool}  pageTool  reference to the view
- * @param  {silex.view.PropertiesTool}  propertiesTool  reference to the view
- * @param  {silex.view.HtmlEditor}  htmlEditor  reference to the view
- * @param  {silex.view.TextEditor}  textEditor  reference to the view
- * @param  {silex.view.FileExplorer}  fileExplorer  reference to the view
- * @param  {silex.view.PublishSettings}  publishSettings  reference to the view
+ * @param  {Element}  menu  reference to the view
+ * @param  {Element}  stage  reference to the view
+ * @param  {Element}  pageTool  reference to the view
+ * @param  {Element}  propertiesTool  reference to the view
+ * @param  {Element}  htmlEditor  reference to the view
+ * @param  {Element}  textEditor  reference to the view
+ * @param  {Element}  fileExplorer  reference to the view
+ * @param  {Element}  publishSettings  reference to the view
  */
 silex.view.Workspace = function(element,
-                                menu,
-                                stage,
-                                pageTool,
-                                propertiesTool,
-                                htmlEditor,
-                                textEditor,
-                                fileExplorer,
-                                publishSettings) {
+                                menuElement,
+                                stageElement,
+                                pageToolElement,
+                                propertiesToolElement,
+                                htmlEditorElement,
+                                textEditorElement,
+                                fileExplorerElement,
+                                publishSettingsElement) {
+  // store references
   this.element = element;
-  this.menu = menu;
-  this.stage = stage;
-  this.pageTool = pageTool;
-  this.propertiesTool = propertiesTool;
-  this.htmlEditor = htmlEditor;
-  this.textEditor = textEditor;
-  this.fileExplorer = fileExplorer;
-  this.publishSettings = publishSettings;
+  this.menuElement = menuElement;
+  this.stageElement = stageElement;
+  this.pageToolElement = pageToolElement;
+  this.propertiesToolElement = propertiesToolElement;
+  this.htmlEditorElement = htmlEditorElement;
+  this.textEditorElement = textEditorElement;
+  this.fileExplorerElement = fileExplorerElement;
+  this.publishSettingsElement = publishSettingsElement;
 
+  // handle resize
   this.viewport = new goog.dom.ViewportSizeMonitor();
-
   goog.events.listen(this.viewport, goog.events.EventType.RESIZE,
       function(e) {
         this.invalidate();
@@ -76,49 +77,49 @@ silex.view.Workspace.prototype.viewport;
 /**
  * reference to the silex.view.Menu class
  */
-silex.view.Workspace.prototype.menu;
+silex.view.Workspace.prototype.menuElement;
 
 
 /**
  * reference to the silex.view.Stage class
  */
-silex.view.Workspace.prototype.stage;
+silex.view.Workspace.prototype.stageElement;
 
 
 /**
  * reference to the silex.view.PageTool class
  */
-silex.view.Workspace.prototype.pageTool;
+silex.view.Workspace.prototype.pageToolElement;
 
 
 /**
  * reference to the silex.view.PropertiesTool class
  */
-silex.view.Workspace.prototype.propertiesTool;
+silex.view.Workspace.prototype.propertiesToolElement;
 
 
 /**
  * reference to the silex.view.HTMLEditor class
  */
-silex.view.Workspace.prototype.htmlEditor;
+silex.view.Workspace.prototype.htmlEditorElement;
 
 
 /**
  * reference to the silex.view.TextEditor class
  */
-silex.view.Workspace.prototype.textEditor;
+silex.view.Workspace.prototype.textEditorElement;
 
 
 /**
  * reference to the silex.view.FileExplorer class
  */
-silex.view.Workspace.prototype.fileExplorer;
+silex.view.Workspace.prototype.fileExplorerElement;
 
 
 /**
  * reference to the silex.view.PublishSettings class
  */
-silex.view.Workspace.prototype.publishSettings;
+silex.view.Workspace.prototype.publishSettingsElement;
 
 
 /**
@@ -168,51 +169,51 @@ silex.view.Workspace.prototype.doRedraw = function() {
   this.isDirty = false;
 
   var viewportSize = this.viewport.getSize();
-  var pageToolSize = goog.style.getSize(this.pageTool.element);
-  var propertiesToolSize = goog.style.getSize(this.propertiesTool.element);
-  var menuSize = goog.style.getSize(this.menu.element);
+  var pageToolSize = goog.style.getSize(this.pageToolElement);
+  var propertiesToolSize = goog.style.getSize(this.propertiesToolElement);
+  var menuSize = goog.style.getSize(this.menuElement);
 
   // stage
   var stageWidth = viewportSize.width -
       pageToolSize.width - propertiesToolSize.width;
-  goog.style.setWidth(this.stage.element, stageWidth);
+  goog.style.setWidth(this.stageElement, stageWidth);
 
   // menu offset
   var toolsHeight = viewportSize.height - menuSize.height;
-  goog.style.setHeight(this.pageTool.element, toolsHeight);
-  goog.style.setHeight(this.propertiesTool.element, toolsHeight);
-  goog.style.setHeight(this.stage.element, toolsHeight);
+  goog.style.setHeight(this.pageToolElement, toolsHeight);
+  goog.style.setHeight(this.propertiesToolElement, toolsHeight);
+  goog.style.setHeight(this.stageElement, toolsHeight);
 
-  //goog.style.setPosition(this.pageTool.element, null, menuSize.height);
+  //goog.style.setPosition(this.pageToolElement, null, menuSize.height);
 
   // htmlEditor
-  if (this.htmlEditor.element) {
-    var htmlEditorSize = goog.style.getSize(this.htmlEditor.element);
+  if (this.htmlEditorElement) {
+    var htmlEditorSize = goog.style.getSize(this.htmlEditorElement);
     var posX = (viewportSize.width - htmlEditorSize.width) / 2;
     var posY = (viewportSize.height - htmlEditorSize.height) / 2;
-    goog.style.setPosition(this.htmlEditor.element, posX, posY);
+    goog.style.setPosition(this.htmlEditorElement, posX, posY);
   }
   // texteditor
-  if (this.textEditor.element) {
-    var textEditorSize = goog.style.getSize(this.textEditor.element);
+  if (this.textEditorElement) {
+    var textEditorSize = goog.style.getSize(this.textEditorElement);
     var posX = (viewportSize.width - textEditorSize.width) / 2;
     var posY = (viewportSize.height - textEditorSize.height) / 2;
-    goog.style.setPosition(this.textEditor.element, posX, posY);
+    goog.style.setPosition(this.textEditorElement, posX, posY);
   }
   // fileExplorer
-  if (this.fileExplorer.element) {
-    var fileExplorerSize = goog.style.getSize(this.fileExplorer.element);
+  if (this.fileExplorerElement) {
+    var fileExplorerSize = goog.style.getSize(this.fileExplorerElement);
     var posX = (viewportSize.width - fileExplorerSize.width) / 2;
     var posY = (viewportSize.height - fileExplorerSize.height) / 2;
-    goog.style.setPosition(this.fileExplorer.element, posX, posY);
+    goog.style.setPosition(this.fileExplorerElement, posX, posY);
   }
   // publishSettings
-  if (this.publishSettings.element) {
+  if (this.publishSettingsElement) {
     var publishSettingsSize = goog.style.getSize(
-        this.publishSettings.element);
+        this.publishSettingsElement);
     var posX = (viewportSize.width - publishSettingsSize.width) / 2;
     var posY = (viewportSize.height - publishSettingsSize.height) / 2;
-    goog.style.setPosition(this.publishSettings.element, posX, posY);
+    goog.style.setPosition(this.publishSettingsElement, posX, posY);
   }
   // no more loading
   if (goog.dom.classes.has(document.body, 'loading-pending')) {
