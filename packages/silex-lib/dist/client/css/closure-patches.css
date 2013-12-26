@@ -1,5 +1,5 @@
 .goog-toolbar {
-  background-image: url(../assets/ui/toolbar-bg.png) !important;
+  background-image: url(../assets/goog-ui/toolbar-bg.png) !important;
 }
 .goog-palette-cell-selected .goog-palette-colorswatch,
 .goog-css3-button-dropdown,
@@ -10,11 +10,11 @@
 .goog-menu-button-dropdown,
 .goog-option-selected .goog-menuitem-icon,
 .goog-toolbar-menu-button-dropdown {
-  background-image: url(../assets/ui/editortoolbar.png) !important;
+  background-image: url(../assets/goog-ui/editortoolbar.png) !important;
 }
 .goog-custom-button,
 .goog-menu-button {
-  background: url(../assets/ui/button-bg.png);
+  background: url(../assets/goog-ui/button-bg.png);
 }
 .goog-hsva-palette-sm-hs-image,
 .goog-hsva-palette-sm-v-image,
@@ -23,9 +23,9 @@
 .goog-hsva-palette-sm-v-handle,
 .goog-hsva-palette-sm-a-handle,
 .goog-hsva-palette-sm-swatch-backdrop {
-  background-image: url(../assets/ui/hsva-sprite-sm.png) !important;
+  background-image: url(../assets/goog-ui/hsva-sprite-sm.png) !important;
 }
 .goog-checkbox-checked,
 .goog-checkbox-undetermined {
-  background-image: url(../assets/ui/check-sprite.gif) !important;
+  background-image: url(../assets/goog-ui/check-sprite.gif) !important;
 }

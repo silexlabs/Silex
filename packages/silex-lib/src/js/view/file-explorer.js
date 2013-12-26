@@ -136,7 +136,7 @@ silex.view.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes, opt_
         // check the the file extention is ok
         if (fileExtentions && silex.Helper.checkFileExt(blob.url, fileExtentions) === false){
           var fileName = blob.url.substring(blob.url.lastIndexOf('/') + 1);
-          alertify.confirm('The file name ' +
+          silex.utils.Notification.confirm('The file name ' +
             fileName +
             ' does not looks good to me, are you sure you want to select this file?',
               function (accept) {
@@ -204,7 +204,7 @@ silex.view.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes, op
         // check the the file extention is ok
         if (fileExtentions && silex.Helper.checkFileExt(blob.url, fileExtentions) === false){
           var fileName = blob.url.substring(blob.url.lastIndexOf('/') + 1);
-          alertify.confirm('The file name ' +
+          silex.utils.Notification.confirm('The file name ' +
             fileName +
             ' does not looks good to me, are you sure you want to select this file?',
               function (accept) {

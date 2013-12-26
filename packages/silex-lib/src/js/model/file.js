@@ -22,24 +22,31 @@ goog.provide('silex.model.File');
 goog.require('silex.Config');
 
 
-
-//////////////////////////////////////////////////////////////////
-// File class
-//////////////////////////////////////////////////////////////////
 /**
  * @constructor
- * @param  {silex.view.Workspace}  workspace  reference to the view
- * @param  {silex.view.Menu}  menu  reference to the view
- * @param  {silex.view.Stage}  stage  reference to the view
- * @param  {silex.view.PageTool}  pageTool  reference to the view
- * @param  {silex.view.PropertiesTool}  propertiesTool  reference to the view
- * @param  {silex.view.HtmlEditor}  htmlEditor  reference to the view
- * @param  {silex.view.TextEditor}  textEditor  reference to the view
- * @param  {silex.view.FileExplorer}  fileExplorer  reference to the view
- * @param  {silex.view.PublishSettings}  publishSettings  reference to the view
+ * Never call this directly nor do new File,
+ * Rather use silex.model.File.getInstance()
  */
 silex.model.File = function() {
+};
 
+
+/**
+ * Singleton pattern
+ * reference to the only {silex.model.File} File instance of the application
+ */
+silex.model.File.instance;
+
+
+/**
+ * Singleton pattern
+ * @return {silex.model.File} a file instance
+ */
+silex.model.File.getInstance = function() {
+  if (!silex.model.File.instance){
+    silex.model.File.instance = new silex.model.File();
+  }
+  return silex.model.File.instance;
 };
 
 
@@ -48,12 +55,6 @@ silex.model.File = function() {
  * if the current file is a new file, it has no url
  */
 silex.model.File.prototype.url;
-
-
-/**
- * current file blob
- */
-silex.model.File.prototype.blob;
 
 
 /**
@@ -92,7 +93,6 @@ silex.model.File.prototype.setPublicationPath = function(path) {
  * @return {string}   the publication path
  */
 silex.model.File.prototype.getPublicationPath = function() {
-  var that = this;
   var path = null;
   $('meta[name="publicationPath"]', this.headElement).each(
       function() {
@@ -118,9 +118,8 @@ silex.model.File.prototype.newFile = function(cbk, opt_errCbk) {
 silex.model.File.prototype.openFromUrl = function(url, cbk, opt_errCbk) {
   silex.service.CloudStorage.getInstance().loadLocal(url,
       goog.bind(function(rawHtml) {
-        this.setUrl(url);
+        this.setUrl(null);
         this.setHtml(rawHtml);
-        this.setBlob(null); // will not be able to save
         if (cbk) cbk();
       }, this), opt_errCbk);
 };
@@ -129,19 +128,10 @@ silex.model.File.prototype.openFromUrl = function(url, cbk, opt_errCbk) {
 /**
  * save a file with a new name
  */
-silex.model.File.prototype.saveAs = function(cbk, opt_errCbk) {
-  // choose a new name
-  this.fileExplorer.saveAsDialog(
-      goog.bind(function(blob) {
-
-        // save the data
-        this.setUrl(blob.url);
-        this.setBlob(blob);
-        this.save(cbk, opt_errCbk);
-      }, this),
-      ['text/html', 'text/plain'],
-      opt_errCbk);
-  this.workspace.invalidate();
+silex.model.File.prototype.saveAs = function(url, cbk, opt_errCbk) {
+  // save the data
+  this.setUrl(url);
+  this.save(cbk, opt_errCbk);
 };
 
 
@@ -162,7 +152,7 @@ silex.model.File.prototype.save = function(cbk, opt_errCbk) {
 /**
  * load a new file
  */
-silex.model.File.prototype.open = function(cbk, opt_errCbk) {
+silex.model.File.prototype.open = function(url cbk, opt_errCbk) {
   // let the user choose the file
   this.fileExplorer.openDialog(
       goog.bind(function(blob) {
@@ -196,102 +186,6 @@ silex.model.File.prototype.close = function() {
   this.stage.setHead('');
   this.stage.setBodyStyle('');
   this.workspace.invalidate();
-};
-
-
-/**
- * refresh the list of loaded fonts. When a user changes the font family
- * of a text, the corresponding font file is loaded if available
- */
-silex.model.File.prototype.refreshFontList = function() {
-
-  //detach all previously loaded font before, to avoid duplicate
-  var links = goog.dom.getElementsByTagNameAndClass('link');
-  goog.array.forEach(links, function(link) {
-    //fonts are loaded used 'links' element pointing to google fonts service
-    if (link.getAttribute('href').indexOf('fonts') !== -1) {
-      link.parentNode.removeChild(link);
-    }
-  });
-  var head = this.stage.headElement;
-  //detach all previously loaded font before, to avoid duplicate
-  var links = goog.dom.getElementsByTagNameAndClass('link', null, head);
-  goog.array.forEach(links, function(link) {
-    //fonts are loaded used 'links' element pointing to google fonts service
-    if (link.getAttribute('href').indexOf('fonts') !== -1) {
-      link.parentNode.removeChild(link);
-    }
-  });
-  //detach all previously loaded font before, to avoid duplicate
-  var links = goog.dom.getElementsByTagNameAndClass('link', null, head);
-  goog.array.forEach(links, function(link) {
-    //fonts are loaded used 'links' element pointing to google fonts service
-    if (link.getAttribute('href').indexOf('fonts') !== -1) {
-      link.parentNode.removeChild(link);
-    }
-  });
-
-  var fontFamilies = this.getNeededFonts();
-
-  //text styles can also be applied using old-school font tag.
-  //Get face attribute values from them
-  var fontTags = goog.dom.getElementsByTagNameAndClass('font', null, head);
-  goog.array.forEach(fontTags, function(fontTag) {
-    if (null !== fontTag.getAttribute('face')) {
-      fontFamilies[fontTag.getAttribute('face')] = true;
-    }
-  });
-
-  //get authorised fonts
-  var availableFonts = silex.Config.fonts;
-  //return the font from the font family or null
-  var getFont = function(fontFamily) {
-    for (var fontName in availableFonts) {
-      if (availableFonts[fontName].value === fontFamily)
-        return availableFonts[fontName];
-    }
-    return null;
-  };
-
-  //for each used font family, if a corresponding font is available, load it
-  for (var fontFamily in fontFamilies) {
-
-    var font = getFont(fontFamily);
-    //check that a URL to load is available. There is none for system font (serif, sans-serif...)
-    if (font && font.href !== undefined) {
-
-      //load the font by appending a link, which will load a CSS file containing the
-      //font rules
-      var link = goog.dom.createElement('link');
-      link.setAttribute('href', font.href);
-      link.setAttribute('rel', 'stylesheet');
-      link.setAttribute('type', 'text/css');
-
-      head.appendChild(link);
-
-      // for the editor
-      var link = goog.dom.createElement('link');
-      link.setAttribute('href', font.href);
-      link.setAttribute('rel', 'stylesheet');
-      link.setAttribute('type', 'text/css');
-
-      document.head.appendChild(link);
-    }
-  }
-};
-
-
-/**
- * @return {object} object of fonts which are used in the text fields (key is the font name)
- */
-silex.model.File.prototype.getNeededFonts = function() {
-  var innerHTML = this.getStageComponent().getHtml();
-  var neededFonts = [];
-  innerHTML.replace(/<font[^"]*face="?([^"]*)"/g, function(match, group1, group2) {
-    neededFonts[group1] = true;
-    return match;
-  });
-  return neededFonts;
 };
 
 
@@ -355,27 +249,6 @@ silex.model.File.prototype.getUrl = function() {
  */
 silex.model.File.prototype.setUrl = function(url) {
   this.url = url;
-};
-
-
-/**
- * get the blob of the file
- */
-silex.model.File.prototype.getBlob = function() {
-  return this.blob;
-};
-
-
-/**
- * store blob of this file
- */
-silex.model.File.prototype.setBlob = function(blob) {
-  this.blob = blob;
-  // update tools
-  if (blob)
-    this.propertiesTool.setBaseUrl(blob.url);
-  else
-    this.propertiesTool.setBaseUrl(null);
 };
 
 
@@ -479,9 +352,6 @@ silex.model.File.prototype.setHtml = function(rawHtml) {
   // update publication settings
   this.setPublicationPath(this.getPublicationPath());
 
-  // update fonts
-  this.refreshFontList();
-
   // handle retrocompatibility issues
   this.handleRetrocompatibility();
 };
@@ -508,24 +378,6 @@ silex.model.File.prototype.getHtml = function() {
 ////////////////////////////////////////////////
 // Website related methods
 ////////////////////////////////////////////////
-/**
- * view this file in a new window
- */
-silex.model.File.prototype.view = function() {
-  if (!this.getBlob()) {
-    alertify.confirm('The file has to be saved first. Save the file now?', goog.bind(function(accept) {
-      if (accept) {
-        this.saveAs(goog.bind(function() {
-          window.open(this.getUrl());
-        }, this));
-      }
-    }, this));
-  }
-  else {
-    window.open(this.getUrl());
-  }
-};
-
 
 /**
  * website title
@@ -558,39 +410,6 @@ silex.model.File.prototype.setTitle = function(name) {
   }
   // update menu
   this.menu.setWebsiteName(name);
-};
-
-
-//////////////////////////////////////////////////////////////////
-// retrocompatibility process
-// called after opening a file
-//////////////////////////////////////////////////////////////////
-/**
- * handle retrocompatibility issues
- */
-silex.model.File.prototype.handleRetrocompatibility = function() {
-  var that = this;
-  // handle older page system
-  $('meta[name="page"]', this.stage.headElement).each(function() {
-    // old fashion way to get the name
-    var pageName = this.getAttribute('content');
-    // create a page object
-    var page = new silex.model.Page(
-        pageName,
-        that.workspace,
-        that.menu,
-        that.stage,
-        that.pageTool,
-        that.propertiesTool,
-        that.textEditor,
-        that.fileExplorer
-        );
-    console.warn('retro compat in action', this, page);
-    // add in new page system
-    page.attach();
-    // remove the old tag
-    $(this).remove();
-  });
 };
 
 

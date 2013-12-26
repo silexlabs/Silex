@@ -171,8 +171,8 @@ silex.Config.menu = {
       }
       , null
       , {
-        label: 'Open text editor'
-        , id: 'view.open.textEditor'
+        label: 'Edit selection'
+        , id: 'view.open.editor'
         , className: 'menu-item-view-open-textEditor'
         , tooltip: '↵'
       }
