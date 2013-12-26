@@ -35,6 +35,8 @@ silex.service.Tracker = function() {
 
 /**
  * constant
+ * @const
+ * @type {string}
  */
 silex.service.Tracker.SILEX_ACTIONS_CATEGORY = 'silex-event';
 

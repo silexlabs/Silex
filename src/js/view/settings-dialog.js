@@ -15,21 +15,21 @@
  */
 
 
-goog.provide('silex.view.PublishSettings');
+goog.provide('silex.view.SettingsDialog');
 goog.require('goog.events.KeyCodes');
 goog.require('goog.ui.KeyboardShortcutHandler');
 
 
 
 /**
- * the Silex PublishSettings class
+ * the Silex SettingsDialog class
  * @constructor
  * @param  {Element}  element  DOM element to wich I render the UI
  * @param  {function} cbk   callback which I'll call when the elements
- * load the template and make it a PublishSettings dialog
+ * load the template and make it a SettingsDialog dialog
  * this is only the UI part, to let user setup publish functionnality
  */
-silex.view.PublishSettings = function(element) {
+silex.view.SettingsDialog = function(element) {
   // store the container
   this.element = element;
   // init the editor
@@ -72,7 +72,7 @@ silex.view.PublishSettings = function(element) {
 /**
  * element of the dom to which the component is rendered
  */
-silex.view.PublishSettings.prototype.element;
+silex.view.SettingsDialog.prototype.element;
 
 
 /**
@@ -80,13 +80,13 @@ silex.view.PublishSettings.prototype.element;
  * called to notify the controller that the file browser should be opened to
  * select the publish path
  */
-silex.view.PublishSettings.prototype.onStatus;
+silex.view.SettingsDialog.prototype.onStatus;
 
 
 /**
  * render the template
  */
-silex.view.PublishSettings.prototype.redraw = function() {
+silex.view.SettingsDialog.prototype.redraw = function() {
   var inputPublicationPath =
       goog.dom.getElementByClass('input-publication-path');
   inputPublicationPath.value = this.getPublicationPath();
@@ -97,7 +97,7 @@ silex.view.PublishSettings.prototype.redraw = function() {
  * get/set the publication path
  * @see silex.model.File
  */
-silex.view.PublishSettings.prototype.getPublicationPath = function(){
+silex.view.SettingsDialog.prototype.getPublicationPath = function(){
   var that = this;
   var path = null;
   $('meta[name="publicationPath"]', this.headElement).each(
@@ -111,7 +111,7 @@ silex.view.PublishSettings.prototype.getPublicationPath = function(){
  * open settings dialog
  * @param {function} cbk   callback to be called when the user closes the dialog
  */
-silex.view.PublishSettings.prototype.openDialog = function(cbk) {
+silex.view.SettingsDialog.prototype.openDialog = function(cbk) {
   this.onClose = cbk;
   // background
   var background = goog.dom.getElementByClass('settings-background');
@@ -132,7 +132,7 @@ silex.view.PublishSettings.prototype.openDialog = function(cbk) {
  * close editor
  * this is private method, do not call it
  */
-silex.view.PublishSettings.prototype.closeEditor = function() {
+silex.view.SettingsDialog.prototype.closeEditor = function() {
   if (this.onClose) this.onClose();
   // background
   var background = goog.dom.getElementByClass('settings-background');

@@ -31,6 +31,7 @@ silex.view.PageTool = function(element) {
 
 /**
  * reference to the element to render to
+ * @type element
  */
 silex.view.PageTool.prototype.element;
 
