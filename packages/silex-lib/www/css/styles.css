@@ -3,21 +3,36 @@
 	background-color: transparent; background-image: url('../assets/silex.png'); background-position: center center; background-repeat: no-repeat; border-color: rgba(173,173,173,1); border-width: 0px 0px 0px 0px; border-style: solid; border-radius: 0 10px 10px 10px; top: 5px; left: 5px; width: 932px; height: 603px; position: absolute; 
 }
 .component-1{
-	background-color: transparent; background-position: top left; background-repeat: repeat; top: 421px; left: -21px; width: 616px; height: 190px; position: absolute; 
+	background-color: transparent; background-position: top left; background-repeat: repeat; top: 421px; left: -21px; width: 947px; height: 190px; position: absolute; 
 }
 .component-2{
-	background-color: transparent; background-position: top left; background-repeat: repeat; top: 17px; left: 33px; width: 406px; height: 65px; position: absolute; 
+	background-color: transparent; background-position: top left; background-repeat: repeat; top: 17px; left: 33px; width: 456px; height: 65px; position: absolute; 
 }
 .component-3{
 	background-color: transparent; background-position: top left; background-repeat: repeat; top: 83px; left: 21.3px; width: 408px; height: 213px; position: absolute; 
 }
 .component-4{
-	background-color: transparent; background-position: top left; background-repeat: repeat; top: 19px; left: 19px; width: 100px; height: 100px; position: absolute; 
+	background-color: transparent; top: 17px; left: 489px; width: 451px; height: 165px; position: absolute; 
 }
 .component-5{
-	background-color: transparent; background-position: top left; background-repeat: repeat; top: 0px; width: 401px; height: 164px; right: 0px; position: absolute; 
+	border-radius: 10px 10px 10px 10px; background-position: top left; background-repeat: repeat; top: 113px; left: 699px; width: 55px; height: 55px; position: absolute; 
 }
 .component-6{
+	border-radius: 12px 12px 12px 12px; top: 112px; left: 780.203125px; width: 55.78181818181818px; height: 59px; position: absolute; 
+}
+.component-7{
+	top: 116px; left: 862.078125px; width: 63.91666666666667px; height: 52px; position: absolute; 
+}
+.component-8{
+	top: 108px; left: 606px; width: 68px; height: 68px; position: absolute; 
+}
+.component-9{
+	background-color: transparent; background-position: top left; background-repeat: repeat; top: 19px; left: 19px; width: 100px; height: 100px; position: absolute; 
+}
+.component-10{
+	background-color: transparent; background-position: top left; background-repeat: repeat; top: 0px; width: 401px; height: 164px; right: 0px; position: absolute; 
+}
+.component-11{
 	background-color: transparent; background-position: top left; background-repeat: repeat; left: 20px; bottom: 20px; position: absolute; 
 }
 body{
