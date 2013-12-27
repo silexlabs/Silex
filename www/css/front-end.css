@@ -26,3 +26,8 @@ body{
 a[data-silex-type="page"]{
 	display: none;
 }
+/* prevent links default formatting */
+.silex-text{
+	color: inherit;
+	text-decoration: inherit;
+}
