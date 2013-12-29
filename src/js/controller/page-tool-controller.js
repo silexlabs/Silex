@@ -45,15 +45,15 @@ silex.controller.PageToolController.prototype.pageToolCallback = function(type, 
   switch (type) {
     case 'changed':
       // open the page
-      this.controller.mainController.openPage(page);
+      this.openPage(page);
       break;
     case 'delete':
       // delete the page
-      this.controller.mainController.removePage(page);
+      this.removePage(page);
       break;
     case 'rename':
       // rename the page
-      this.controller.mainController.renamePage(page);
+      this.renamePage(page);
       break;
   }
 };

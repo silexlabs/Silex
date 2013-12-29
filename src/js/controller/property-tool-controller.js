@@ -44,10 +44,10 @@ silex.controller.PropertyToolController.prototype.propertyToolCallback = functio
   //this.tracker.trackAction('controller-events', 'request', type, 0);
   switch (type) {
     case 'editHTML':
-      this.controller.mainController.editElement();
+      this.editElement();
       break;
     case 'editText':
-      this.controller.mainController.editElement();
+      this.editElement();
       break;
     case 'selectBgImage':
       var errCbk = function(error) {
@@ -71,7 +71,7 @@ silex.controller.PropertyToolController.prototype.propertyToolCallback = functio
       this.view.workspace.invalidate();
       break;
     case 'selectImage':
-      this.controller.mainController.editElement();
+      this.editElement();
       break;
     case 'styleChanged':
       // style of the element has changed

@@ -31,18 +31,9 @@ goog.require('silex.Config');
  */
 silex.model.Body = function(bodyElement, headElement) {
   // call super
-  silex.model.ModelBase.call(this, bodyElement, headElement);
+  goog.base(this, bodyElement, headElement);
 };
 
 // inherit from silex.model.ModelBase
 goog.inherits(silex.model.Body, silex.model.ModelBase);
-
-
-
-  this.headElement = goog.dom.createElement('div');
-  this.bodyElement = goog.dom.getElementByClass('silex-stage-body', this.element);
-  // make the body pageable
-  silex.model.Element.prototype.setPageable(this.bodyElement, true);
-  // allow drops
-  silex.utils.JQueryEditable.setDropableOnly(this.bodyElement);
 

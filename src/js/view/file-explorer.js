@@ -41,7 +41,7 @@ goog.require('goog.ui.KeyboardShortcutHandler');
  * @param  {element} bodyElement  HTML element which holds the body section of the opened file
  * @param  {element} headElement  HTML element which holds the head section of the opened file
  */
-silex.view.FileExplorer = function(element, headElement, bodyElement) {
+silex.view.FileExplorer = function(element, bodyElement, headElement) {
   // call super
   silex.view.ViewBase.call(this, element, headElement, bodyElement);
   // hide the at start
@@ -125,7 +125,7 @@ silex.view.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes, opt_
     // notify controller
     // workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
     new goog.async.Delay(function() {
-      if (cbk) cbk(blob);
+      if (cbk) cbk(blob.url);
     }, 10, this).start();
   };
 
@@ -135,10 +135,8 @@ silex.view.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes, opt_
         // hide dialog
         this.closeEditor();
 
+        // no https, because it creates security issues
         blob.url = blob.url.replace('https://', 'http://');
-
-        // we are supposed to return an absolute URL
-        blob.url = silex.Helper.getAbsolutePath(blob.url, silex.Helper.BaseUrl);
 
         // check the the file extention is ok
         if (fileExtentions && silex.Helper.checkFileExt(blob.url, fileExtentions) === false){
@@ -148,7 +146,7 @@ silex.view.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes, opt_
             ' does not looks good to me, are you sure you want to select this file?',
               function (accept) {
             if (accept) {
-              successCbk(blob);
+              successCbk(blob.url);
             }
             else{
               errCbk({message: 'Wrong file type.'})
@@ -156,7 +154,7 @@ silex.view.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes, opt_
           });
         }
         else{
-          successCbk(blob);
+          successCbk(blob.url);
         }
       }, this),
       errCbk);
@@ -190,7 +188,7 @@ silex.view.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes, op
     // notify controller
     // workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
     new goog.async.Delay(function() {
-      if (cbk) cbk(blob);
+      if (cbk) cbk(blob.url);
     }, 10, this).start();
   };
 
@@ -202,11 +200,8 @@ silex.view.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes, op
         // hide dialog
         this.closeEditor();
 
-        // notify controller
+        // no https, because it creates security issues
         blob.url = blob.url.replace('https://', 'http://');
-
-        // we are supposed to return an absolute URL
-        blob.url = silex.Helper.getAbsolutePath(blob.url, silex.Helper.BaseUrl);
 
         // check the the file extention is ok
         if (fileExtentions && silex.Helper.checkFileExt(blob.url, fileExtentions) === false){

@@ -41,15 +41,15 @@ goog.require('goog.ui.HsvaPalette');
  * @param  {element} bodyElement  HTML element which holds the body section of the opened file
  * @param  {element} headElement  HTML element which holds the head section of the opened file
  */
-silex.view.pane.BorderPane = function(element, headElement, bodyElement) {
+silex.view.pane.PagePane = function(element, bodyElement, headElement) {
   // call super
-  goog.base(this, element, headElement, bodyElement);
+  goog.base(this, element, bodyElement, headElement);
 
   this.buildUi();
 };
 
 // inherit from silex.view.ViewBase
-goog.inherits(silex.view.pane.BgPane, silex.view.pane.PaneBase);
+goog.inherits(silex.view.pane.PagePane, silex.view.pane.PaneBase);
 
 
 /**

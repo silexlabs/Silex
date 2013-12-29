@@ -1,4 +1,21 @@
-goog.provide('silex.utils.Page');
+//////////////////////////////////////////////////
+// Silex, live web creation
+// http://projects.silexlabs.org/?/silex/
+//
+// Copyright (c) 2012 Silex Labs
+// http://www.silexlabs.org/
+//
+// Silex is available under the GPL license
+// http://www.silexlabs.org/silex/silex-licensing/
+//////////////////////////////////////////////////
+
+/**
+ * @fileoverview Helper class for common tasks
+ *
+ */
+
+
+goog.provide('silex.utils.JQueryPageable');
 
 /**
  * @constructor
@@ -6,9 +23,8 @@ goog.provide('silex.utils.Page');
  * @param {string} name
  * @param {string} displayName
  */
-silex.utils.Page = function(name, displayName) {
-  this.name = name;
-  this.displayName = displayName;
+silex.utils.JQueryPageable = function() {
+  throw('this is a static class and it canot be instanciated');
 }
 
 
@@ -184,7 +200,7 @@ silex.utils.JQueryPageable.removePage = function(pageableRootElement, page) {
 /**
  * add a page to the dom
  */
-silex.utils.JQueryPageable.addPage = function(pageableRootElement, name, displayName) {
+silex.utils.JQueryPageable.createPage = function(pageableRootElement, name, displayName) {
   if(!silex.utils.JQueryPageable.getPageable(pageableRootElement)){
     throw new Error('Operation failed, root pageable element is required.');
   }

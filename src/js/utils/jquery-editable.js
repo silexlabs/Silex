@@ -1,4 +1,31 @@
+//////////////////////////////////////////////////
+// Silex, live web creation
+// http://projects.silexlabs.org/?/silex/
+//
+// Copyright (c) 2012 Silex Labs
+// http://www.silexlabs.org/
+//
+// Silex is available under the GPL license
+// http://www.silexlabs.org/silex/silex-licensing/
+//////////////////////////////////////////////////
 
+/**
+ * @fileoverview Helper class for common tasks
+ *
+ */
+
+
+goog.provide('silex.utils.JQueryEditable');
+
+/**
+ * @constructor
+ * @struct
+ * @param {string} name
+ * @param {string} displayName
+ */
+silex.utils.JQueryEditable = function() {
+  throw('this is a static class and it canot be instanciated');
+}
 
 
 silex.utils.JQueryEditable.EDITABLE_CLASS_NAME = 'editable-style';
@@ -115,7 +142,7 @@ silex.utils.JQueryEditable.setEditableHtml = function(element, htmlString, opt_h
  * @param   {boolean} opt_hasChildContainer   if true, set the html into the first child
  * @return   {string} the html content without traces of the editable component
  */
-silex.model.Component.prototype.getEditableHtml = function(element, opt_hasChildContainer) {
+silex.utils.JQueryEditable.getEditableHtml = function(element, opt_hasChildContainer) {
   // unregister jquery plugin
   silex.utils.JQueryEditable.setEditable(element, false);
 

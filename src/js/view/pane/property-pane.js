@@ -32,15 +32,15 @@ goog.require('goog.object');
  * @param  {element} bodyElement  HTML element which holds the body section of the opened file
  * @param  {element} headElement  HTML element which holds the head section of the opened file
  */
-silex.view.pane.BorderPane = function(element, headElement, bodyElement) {
+silex.view.pane.PropertyPane = function(element, bodyElement, headElement) {
   // call super
-  goog.base(this, element, headElement, bodyElement);
+  goog.base(this, element, bodyElement, headElement);
 
   this.buildUi();
 };
 
 // inherit from silex.view.ViewBase
-goog.inherits(silex.view.pane.BgPane, silex.view.pane.PaneBase);
+goog.inherits(silex.view.pane.PropertyPane, silex.view.pane.PaneBase);
 
 /**
  * callback to call to let the user edit the HTML content of the component
@@ -106,19 +106,6 @@ silex.view.pane.PropertyPane.prototype.zIndexInput;
  * build the UI
  */
 silex.view.pane.PropertyPane.prototype.buildUi = function() {
-  // lock / unlock
-  var lockBtn = goog.dom.getElementByClass('lock-btn');
-  var unlockBtn = goog.dom.getElementByClass('unlock-btn');
-  if (lockBtn) goog.events.listen(lockBtn,
-                                  goog.events.EventType.CLICK,
-                                  this.lock,
-                                  false,
-                                  this);
-  if (unlockBtn) goog.events.listen(unlockBtn,
-                                    goog.events.EventType.CLICK,
-                                    this.unlock,
-                                    false,
-                                    this);
 
   // position and size
   this.leftInput = goog.dom.getElementByClass('left-input');
@@ -169,119 +156,58 @@ silex.view.pane.PropertyPane.prototype.buildUi = function() {
 
 
 /**
- * look for a locked parent
- * @return   {boolean}  returns true if the current component
- *           has a locked parent
- */
-silex.view.pane.PropertyPane.prototype.hasLockedParent = function() {
-  var element = this.component.element.parentNode;
-  while (element && !goog.dom.classes.has(element, 'locked-style')) {
-    element = element.parentNode;
-  }
-  if (element && goog.dom.classes.has(element, 'locked-style')) {
-    return true;
-  }
-  return false;
-};
-
-
-/**
- * callback for the lock/unlock button
- */
-silex.view.pane.PropertyPane.prototype.lock = function() {
-  if (!this.hasLockedParent()) {
-    this.component.setLocked(true);
-  }
-  else {
-    alert('unlock the parent in order to lock / unlock this component.');
-  }
-};
-
-
-/**
- * callback for the lock/unlock button
- */
-silex.view.pane.PropertyPane.prototype.unlock = function() {
-  if (!this.hasLockedParent()) {
-    this.component.setLocked(false);
-  }
-  else {
-    alert('unlock the parent in order to lock / unlock this component.');
-  }
-};
-
-
-/**
  * position or size changed
  * callback for number inputs
  */
 silex.view.pane.PropertyPane.prototype.onPositionChanged =
     function() {
-  if (this.component &&
-      !this.isRedraw &&
-      goog.dom.classes.has(this.component.element, 'editable-style')) {
-    var bbox = {};
-    if (this.leftInput.value && this.leftInput.value !== '')
-      bbox.left = this.leftInput.value + 'px';
-    if (this.widthInput.value && this.widthInput.value !== '')
-      bbox.width = this.widthInput.value + 'px';
-    if (this.bottomInput.value && this.bottomInput.value !== '')
-      bbox.bottom = this.bottomInput.value + 'px';
-    if (this.topInput.value && this.topInput.value !== '')
-      bbox.top = this.topInput.value + 'px';
-    if (this.heightInput.value && this.heightInput.value !== '')
-      bbox.height = this.heightInput.value + 'px';
-    if (this.rightInput.value && this.rightInput.value !== '')
-      bbox.right = this.rightInput.value + 'px';
-    if (this.zIndexInput.value && this.zIndexInput.value !== '')
-      bbox.zIndex = this.zIndexInput.value;
+  // get the selected element
+  var element = this.getSelection()[0];
 
-    this.component.setBoundingBox(bbox);
+  if (element){
+    if (this.leftInput.value && this.leftInput.value !== ''){
+      this.styleChanged('left', this.leftInput.value + 'px');
+    }
+    else{
+      this.styleChanged('left');
+    }
+    if (this.widthInput.value && this.widthInput.value !== ''){
+      this.styleChanged('width', tthis.widthInput.value + 'px');
+    }
+    else{
+      this.styleChanged('width');
+    }
+    if (this.bottomInput.value && this.bottomInput.value !== ''){
+      this.styleChanged('bottom', ththis.bottomInput.value + 'px');
+    }
+    else{
+      this.styleChanged('bottom');
+    }
+    if (this.topInput.value && this.topInput.value !== ''){
+      this.styleChanged('top',this.topInput.value + 'px');
+    }
+    else{
+      this.styleChanged('top');
+    }
+    if (this.heightInput.value && this.heightInput.value !== ''){
+      this.styleChanged('height', ththis.heightInput.value + 'px');
+    }
+    else{
+      this.styleChanged('height');
+    }
+    if (this.rightInput.value && this.rightInput.value !== ''){
+      this.styleChanged('right', tthis.rightInput.value + 'px');
+    }
+    else{
+      this.styleChanged('right');
+    }
+    if (this.zIndexInput.value && this.zIndexInput.value !== ''){
+      this.styleChanged('zIndex', ththis.zIndexInput.value + 'px');
+    }
+    else{
+      this.styleChanged('zIndex');
+    }
   }
-  this.redraw();
-};
-
-
-/**
- * display the propertis of the component being edited
- * @param   {silex.model.component} component being edited
- */
-silex.view.pane.PropertyPane.prototype.setComponent =
-    function(component) {
-  this.component = component;
-  this.redraw();
-};
-
-
-/**
- * base url for abs/rel conversions
- * @return   {string} the base URL
- */
-silex.view.pane.PropertyPane.prototype.getBaseUrl = function() {
-  return this.baseUrl;
-};
-
-
-/**
- * base url for abs/rel conversions
- * @param   {string} url  URL to set as the base URL
- */
-silex.view.pane.PropertyPane.prototype.setBaseUrl = function(url) {
-  this.baseUrl = url;
-  this.redraw();
-};
-
-
-/**
- * change current component image
- * @param   {string} url  URL of the image to set as the src
- */
-silex.view.pane.PropertyPane.prototype.setImage = function(url) {
-  if (this.baseUrl)
-    this.component.setImageSrc(silex.Helper.getAbsolutePath(url, this.baseUrl));
-  else
-    this.component.setImageSrc(url);
-  this.redraw();
 };
 
 
@@ -296,32 +222,29 @@ silex.view.pane.PropertyPane.prototype.redraw = function() {
   var element = this.getSelection()[0];
 
   if (element){
+
+    var type = element.getAttribute(silex.model.Element.TYPE_ATTR);
     // refresh properties
     var imageUrl = null;
-    if (this.component.type === silex.model.Component.SUBTYPE_IMAGE) {
+    if (type === silex.model.Element.SUBTYPE_IMAGE) {
       if (this.baseUrl)
-        imageUrl = silex.Helper.getRelativePath(this.component.getImageSrc(),
-                                                this.baseUrl);
+        imageUrl = silex.utils.Style.getRelativePath(element.getAttribute('src'), this.baseUrl);
       else
         imageUrl = this.component.getImageSrc();
     }
 
-    var editionContainer = goog.dom.getElementByClass('edition-container',
-        this.element);
-    if (this.component) {
-      var templateHtml = goog.dom.getElementByClass('edition-template',
-          this.element).innerHTML;
-      silex.Helper.resolveTemplate(editionContainer, templateHtml, {
-        htmlEditor: (this.component.type ===
-            silex.model.Component.SUBTYPE_HTML),
-        textEditor: (this.component.type ===
-            silex.model.Component.SUBTYPE_TEXT),
+    // resolve the template
+    var editionContainer = goog.dom.getElementByClass('edition-container', this.element);
+    if (this.element) {
+      var templateHtml = goog.dom.getElementByClass('edition-template', this.element).innerHTML;
+      silex.utils.Dom.resolveTemplate(editionContainer, templateHtml, {
+        htmlEditor: (type === silex.model.Element.SUBTYPE_HTML),
+        textEditor: (type === silex.model.Element.SUBTYPE_TEXT),
         imageUrl: imageUrl
       });
 
       // HTML editor
-      var buttonElement = goog.dom.getElementByClass('html-editor-button',
-          editionContainer);
+      var buttonElement = goog.dom.getElementByClass('html-editor-button', editionContainer);
       if (buttonElement) {
         var button = new goog.ui.CustomButton();
         button.decorate(buttonElement);
@@ -331,8 +254,7 @@ silex.view.pane.PropertyPane.prototype.redraw = function() {
             false);
       }
       // text editor
-      var buttonElement = goog.dom.getElementByClass('text-editor-button',
-          editionContainer);
+      var buttonElement = goog.dom.getElementByClass('text-editor-button', editionContainer);
       if (buttonElement) {
         var button = new goog.ui.CustomButton();
         button.decorate(buttonElement);
@@ -341,10 +263,9 @@ silex.view.pane.PropertyPane.prototype.redraw = function() {
             this.editText,
             false);
       }
-      if (this.component.type === silex.model.Component.SUBTYPE_IMAGE) {
+      if (type === silex.model.Element.SUBTYPE_IMAGE) {
         // browse for image button
-        var buttonElement = goog.dom.getElementByClass('image-url-button',
-            editionContainer);
+        var buttonElement = goog.dom.getElementByClass('image-url-button', editionContainer);
         if (buttonElement) {
           var button = new goog.ui.CustomButton();
           button.decorate(buttonElement);
@@ -359,7 +280,7 @@ silex.view.pane.PropertyPane.prototype.redraw = function() {
         if (inputElement) {
           goog.events.listen(inputElement, 'change', function() {
             if (this.component && !this.isRedraw) {
-              if (this.component.type === silex.model.Component.SUBTYPE_IMAGE)
+              if (type === silex.model.Element.SUBTYPE_IMAGE)
                 this.setImage(inputElement.value);
             }
           }, false, this);
@@ -367,52 +288,51 @@ silex.view.pane.PropertyPane.prototype.redraw = function() {
       }
 
       // position and size
-      if (goog.dom.classes.has(this.component.element, 'editable-style')) {
-        var bbox = this.component.getBoundingBox();
-        if (bbox.left !== undefined) {
-          this.leftInput.value = bbox.left.substr(0,
-              bbox.left.indexOf('px'));
+      if (goog.dom.classes.has(element, 'editable-style')) {
+        if (element.style.left !== undefined) {
+          this.leftInput.value = element.style.left.substr(0,
+              element.style.left.indexOf('px'));
         }
         else {
           this.leftInput.value = '';
         }
-        if (bbox.width !== undefined) {
-          this.widthInput.value = bbox.width.substr(0,
-              bbox.width.indexOf('px'));
+        if (element.style.width !== undefined) {
+          this.widthInput.value = element.style.width.substr(0,
+              element.style.width.indexOf('px'));
         }
         else {
           this.widthInput.value = '';
         }
-        if (bbox.bottom !== undefined) {
-          this.bottomInput.value = bbox.bottom.substr(0,
-              bbox.bottom.indexOf('px'));
+        if (element.style.bottom !== undefined) {
+          this.bottomInput.value = element.style.bottom.substr(0,
+              element.style.bottom.indexOf('px'));
         }
         else {
           this.bottomInput.value = '';
         }
-        if (bbox.top !== undefined) {
-          this.topInput.value = bbox.top.substr(0,
-              bbox.top.indexOf('px'));
+        if (element.style.top !== undefined) {
+          this.topInput.value = element.style.top.substr(0,
+              element.style.top.indexOf('px'));
         }
         else {
           this.topInput.value = '';
         }
-        if (bbox.height !== undefined) {
-          this.heightInput.value = bbox.height.substr(0,
-              bbox.height.indexOf('px'));
+        if (element.style.height !== undefined) {
+          this.heightInput.value = element.style.height.substr(0,
+              element.style.height.indexOf('px'));
         }
         else {
           this.heightInput.value = '';
         }
-        if (bbox.right !== undefined) {
-          this.rightInput.value = bbox.right.substr(0,
-              bbox.right.indexOf('px'));
+        if (element.style.right !== undefined) {
+          this.rightInput.value = element.style.right.substr(0,
+              element.style.right.indexOf('px'));
         }
         else {
           this.rightInput.value = '';
         }
-        if (bbox.zIndex !== undefined) {
-          this.zIndexInput.value = bbox.zIndex;
+        if (element.style.zIndex !== undefined) {
+          this.zIndexInput.value = element.style.zIndex;
         }
         else {
           this.zIndexInput.value = '';

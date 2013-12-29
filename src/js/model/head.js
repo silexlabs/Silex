@@ -30,7 +30,7 @@ goog.require('silex.Config');
  */
 silex.model.Head = function(bodyElement, headElement) {
   // call super
-  silex.model.ModelBase.call(this, bodyElement, headElement);
+  goog.base(this, bodyElement, headElement);
 };
 
 // inherit from silex.model.ModelBase
@@ -120,9 +120,6 @@ silex.model.Head.prototype.refreshFontList = function() {
  * get/set the publication path
  */
 silex.model.Head.prototype.setPublicationPath = function(path) {
-  if (path === '') {
-    path = null;
-  }
 
   var that = this;
   var found = false;
@@ -151,9 +148,47 @@ silex.model.Head.prototype.setPublicationPath = function(path) {
 
 /**
  * get/set the publication path
+ * @return {string}   the publication path
  */
 silex.model.Head.prototype.getPublicationPath = function() {
-  return this.stage.getPublicationPath();
+  var path = null;
+  $('meta[name="publicationPath"]', this.headElement).each(
+      function() {
+        path = this.getAttribute('content');
+      });
+  return path;
 };
 
+/**
+ * website title
+ */
+silex.model.Head.prototype.getTitle = function() {
+  var elements = this.stage.headElement.getElementsByTagName('title');
+  if (elements && elements.length > 0) {
+    return elements[0].innerHTML;
+  }
+  else {
+    return null;
+  }
+};
+
+
+/**
+ * website title
+ */
+silex.model.Head.prototype.setTitle = function(name) {
+  // update website title
+  var elements = this.stage.headElement.getElementsByTagName('title');
+  if (elements && elements.length > 0) {
+    elements[0].innerHTML = name;
+  }
+// new website title
+  else {
+    var child = goog.dom.createElement('title');
+    child.innerHTML = name;
+    this.stage.headElement.appendChild(child);
+  }
+  // update menu
+  this.menu.setWebsiteName(name);
+};
 

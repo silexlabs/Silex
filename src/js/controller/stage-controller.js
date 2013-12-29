@@ -44,17 +44,18 @@ silex.controller.StageController.prototype.stageCallback = function(type, opt_ta
   switch (type) {
     case 'select': // the user has selected an element
       this.model.element.setSelected(opt_target, true);
+      this.view.propertyTool.redraw();
       break;
     case 'change': // size or position of the element has changed
       this.view.propertyTool.redraw();
       break;
     case 'newContainer': // an element is dropped in a new container
       var element = this.view.stage.getSelection()[0];
-      this.controller.mainController.checkPageVisibility(element);
+      this.checkPageVisibility(element);
       break;
     case 'edit':
       // size or position of the element has changed
-      this.controller.mainController.editSelection();
+      this.editSelection();
       break;
   }
 };
