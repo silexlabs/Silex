@@ -18,35 +18,23 @@
  */
 
 
+goog.require('silex.model.ModelBase');
 goog.provide('silex.model.Element');
 
 
 /**
  * @constructor
- * Never call this directly nor do new Element,
- * Rather use silex.model.Element.getInstance()
+ * @param  {element} bodyElement  HTML element which holds the body section of the opened file
+ * @param  {element} headElement  HTML element which holds the head section of the opened file
  */
-silex.model.Element = function() {
+silex.model.Element = function(bodyElement, headElement) {
+  // call super
+  silex.model.ModelBase.call(this, bodyElement, headElement);
 };
 
+// inherit from silex.model.ModelBase
+goog.inherits(silex.model.Element, silex.model.ModelBase);
 
-/**
- * Singleton pattern
- * reference to the only {silex.model.Element} Element instance of the application
- */
-silex.model.Element.instance;
-
-
-/**
- * Singleton pattern
- * @return {silex.model.Element} a Element instance
- */
-silex.model.Element.getInstance = function() {
-  if (!silex.model.Element.instance){
-    silex.model.Element.instance = new silex.model.Element();
-  }
-  return silex.model.Element.instance;
-};
 
 
 /**
@@ -101,7 +89,7 @@ silex.model.Element.ELEMENT_CONTENT_CLASS_NAME = 'silex-element-content';
  * constant for the attribute name of the links
  * @const
  * @type {string}
- */
+ * in pageable plugin
 silex.model.Element.LINK_ATTR = 'data-silex-href';
 
 
@@ -119,6 +107,66 @@ silex.model.Element.SELECTED_CLASS_NAME = 'silex-selected';
  * @type {string}
  */
 silex.model.Element.LOADING_IMAGE = 'assets/image-loader.gif';
+
+
+/**
+ * get/set type of the element
+ * @param  {element} element   created by silex, either a text box, image, ...
+ * @return  {string}           the style of the element
+ */
+silex.model.Element.prototype.getType = function(element) {
+  //return goog.style.getStyle(element, styleName);
+  return element.getAttribute(silex.model.Element.TYPE_ATTR);
+};
+
+
+/**
+ * get/set type of the element
+ * @param  {element} element    created by silex, either a text box, image, ...
+ * @param  {string}  type      the new type for this element
+ */
+silex.model.Element.prototype.setType = function(element, type) {
+  console.error('Error: not implemented');
+  throw('Error: not implemented');
+  element.setAttribute(silex.model.Element.TYPE_ATTR, type);
+};
+
+
+/**
+ * get/set style of the element
+ * @param  {element} element   created by silex, either a text box, image, ...
+ * @param  {string} styleName  the style name
+ * @return  {string}           the style of the element
+ */
+silex.model.Element.prototype.getStyle = function(element, styleName) {
+  //return goog.style.getStyle(element, styleName);
+  return element.style[styleName];
+};
+
+
+/**
+ * get/set style of element from a container created by silex
+ * @param  {element} element            created by silex, either a text box, image, ...
+ * @param  {string}  styleName          the style name, camel case, not css with dashes
+ * @param  {string}  opt_styleValue     the value for this styleName
+ */
+silex.model.Element.prototype.setStyle = function(element, styleName, opt_styleValue) {
+  if (opt_styleValue){
+    element.style[styleName] = opt_styleValue;
+  }
+  else{
+   element.style[styleName] = '';
+  }
+};
+
+
+/**
+ * User has selected an image
+ * @param    {string} url    URL of the image chosen by the user
+ */
+silex.model.Element.prototype.setBgImage = function(element, url) {
+  this.setStyle(element, 'backgroundImage', url);
+};
 
 
 /**
@@ -178,7 +226,7 @@ silex.model.Element.prototype.getContentNode = function(element) {
  */
 silex.model.Element.prototype.setContentNode = function(element, content) {
   // get the content to replace
-  var initialContent = silex.model.Element.getContentNode(element);
+  var initialContent = this.getContentNode(element);
   // replace in function of the element type
   if (initialContent === element) {
     // disable editable
@@ -203,7 +251,7 @@ silex.model.Element.prototype.getImageUrl = function(element) {
   var url = '';
   if (element.getAttribute(silex.model.Element.TYPE_ATTR) === silex.model.Element.TYPE_IMAGE) {
     // get the image tag
-    var img = silex.model.Element.getContentNode(element);
+    var img = this.getContentNode(element);
     if (img) {
       url = img.getAttribute('src');
     }
@@ -222,25 +270,37 @@ silex.model.Element.prototype.getImageUrl = function(element) {
  * @param  {string} url  the url of the image
  * @param  {function}  the opt_callback to be notified when the image is loaded
  */
-silex.model.Element.prototype.setImageUrl = function(element, url, opt_callback) {
+silex.model.Element.prototype.setImageUrl = function(element, url, opt_callback, opt_errorCallback) {
   if (element.getAttribute(silex.model.Element.TYPE_ATTR) === silex.model.Element.TYPE_IMAGE) {
     // get the image tag
-    var img = silex.model.Element.getContentNode(element);
+    var img = this.getContentNode(element);
     if (img) {
       // listen to the complete event
       var imageLoader = new goog.net.ImageLoader();
-      goog.events.listenOnce(imageLoader, goog.net.EventType.COMPLETE,
+      goog.events.listenOnce(imageLoader, goog.net.EventType.SUCCESS,
       function(e) {
         // update element size
         goog.style.setStyle(element, {
           width: e.target.naturalWidth,
-          height: e.target.naturalHeight,
+          height: e.target.naturalHeight
         });
         // image tak all room available
         goog.style.setStyle(e.target, 'width', '100%');
         goog.style.setStyle(e.target, 'height', '100%');
         // replace the element current img tag
         element.setContentNode(e.target);
+        // callback
+        if (opt_callback){
+          opt_callback(element);
+        }
+      });
+      goog.events.listenOnce(imageLoader, goog.net.EventType.ERROR,
+      function(e) {
+        console.error('An error occured while loading the image.', element);
+        // callback
+        if(opt_errorCallback){
+          opt_errorCallback(element, 'An error occured while loading the image.')
+        }
       });
       // load the image
       imageLoader.addImage(url, url);
@@ -248,23 +308,37 @@ silex.model.Element.prototype.setImageUrl = function(element, url, opt_callback)
     }
     else {
       console.error('The image could not be retrieved from the element.', element);
+      if(opt_errorCallback){
+        opt_errorCallback(element, 'The image could not be retrieved from the element.')
+      }
     }
   }
   else {
     console.error('The element is not an image.', element);
+    if(opt_errorCallback){
+      opt_errorCallback(element, 'The element is not an image.')
+    }
   }
 };
 
 
 /**
- * component creation
+ * remove a DOM element
+ * @param  {element} element   the element to remove
+ */
+silex.model.Element.removeElement = function(element) {
+  goog.dom.removeNode(element);
+}
+
+/**
+ * element creation
  * create a DOM element, attach it to this container
  * and returns a new component for the element
  * @param  {string} type  the type of the element to create,
  *	  see TYPE_* constants of the class @see silex.model.Element
  * @return 	{element} 	the newly created element
  */
-silex.model.Element.createElement = function(type) {
+silex.model.Element.createElement = function(type, opt_container) {
 
   var element;
 
@@ -330,31 +404,13 @@ silex.model.Element.createElement = function(type) {
     width: '100px',
     backgroundColor: 'rgba(255, 255, 255, 1)'
   });
+  // add to stage
+  if(opt_container){
+    goog.dom.appendChild(opt_container, element);
+  }
+
   // return the element
   return element;
-};
-
-
-/**
- * link
- * @param   url   the url for the link, or null to remove the link
- */
-silex.model.Element.prototype.setLink = function(element, url) {
-  if (url){
-    element.setAttribute(silex.model.Element.LINK_ATTR, url);
-  }
-  else{
-    element.removeAttribute(silex.model.Element.LINK_ATTR);
-  }
-};
-
-
-/**
- * link
- * @return  the link set on the attribute, or null
- */
-silex.model.Element.prototype.getLink = function(element) {
-  return element.getAttribute(silex.model.Element.LINK_ATTR);
 };
 
 
@@ -364,7 +420,7 @@ silex.model.Element.prototype.getLink = function(element) {
 silex.model.Element.prototype.setSelected = function(element, isSelected) {
   if (isSelected) {
     // remove all others
-    silex.model.Element.resetSelection();
+    this.resetSelection();
     // set as selected
     goog.dom.classes.add(element, silex.model.Element.SELECTED_CLASS_NAME);
   }
@@ -380,4 +436,3 @@ silex.model.Element.prototype.setSelected = function(element, isSelected) {
 silex.model.Element.prototype.getSelected = function(element) {
   return goog.dom.classes.has(element, silex.model.Element.SELECTED_CLASS_NAME);
 };
-

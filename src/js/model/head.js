@@ -18,36 +18,24 @@
  */
 
 
+goog.require('silex.model.ModelBase');
 goog.provide('silex.model.Head');
 goog.require('silex.Config');
 
 
 /**
  * @constructor
- * Never call this directly nor do new Head,
- * Rather use silex.model.Head.getInstance()
+ * @param  {element} bodyElement  HTML element which holds the body section of the opened file
+ * @param  {element} headElement  HTML element which holds the head section of the opened file
  */
-silex.model.Head = function() {
+silex.model.Head = function(bodyElement, headElement) {
+  // call super
+  silex.model.ModelBase.call(this, bodyElement, headElement);
 };
 
+// inherit from silex.model.ModelBase
+goog.inherits(silex.model.Head, silex.model.ModelBase);
 
-/**
- * Singleton pattern
- * reference to the only {silex.model.Head} Head instance of the application
- */
-silex.model.Head.instance;
-
-
-/**
- * Singleton pattern
- * @return {silex.model.Head} a Head instance
- */
-silex.model.Head.getInstance = function(neededFonts) {
-  if (!silex.model.Head.instance){
-    silex.model.Head.instance = new silex.model.Head();
-  }
-  return silex.model.Head.instance;
-};
 
 /**
  * refresh the list of loaded fonts. When a user changes the font family
@@ -63,7 +51,7 @@ silex.model.Head.prototype.refreshFontList = function() {
       link.parentNode.removeChild(link);
     }
   });
-  var head = this.stage.headElement;
+  var head = this.headElement;
   //detach all previously loaded font before, to avoid duplicate
   var links = goog.dom.getElementsByTagNameAndClass('link', null, head);
   goog.array.forEach(links, function(link) {
@@ -127,3 +115,45 @@ silex.model.Head.prototype.refreshFontList = function() {
     }
   }
 };
+
+/**
+ * get/set the publication path
+ */
+silex.model.Head.prototype.setPublicationPath = function(path) {
+  if (path === '') {
+    path = null;
+  }
+
+  var that = this;
+  var found = false;
+  // update the DOM element
+  $('meta[name="publicationPath"]', this.headElement).each(
+      function() {
+        if (path && path !== '') {
+          // update path
+          this.setAttribute('content', path);
+        }
+        else {
+          // remove the path
+          $(this).remove();
+        }
+        found = true;
+      });
+  if (!found && path && path !== '') {
+    // create the DOM element
+    var meta = goog.dom.createElement('meta');
+    meta.name = 'publicationPath';
+    meta.content = path;
+    goog.dom.appendChild(this.headElement, meta);
+  }
+};
+
+
+/**
+ * get/set the publication path
+ */
+silex.model.Head.prototype.getPublicationPath = function() {
+  return this.stage.getPublicationPath();
+};
+
+

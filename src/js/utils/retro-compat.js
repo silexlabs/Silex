@@ -22,7 +22,7 @@ silex.model.File.prototype.handleRetrocompatibility = function() {
         that.menu,
         that.stage,
         that.pageTool,
-        that.propertiesTool,
+        that.propertyTool,
         that.textEditor,
         that.fileExplorer
         );

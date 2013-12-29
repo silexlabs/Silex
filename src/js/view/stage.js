@@ -17,6 +17,7 @@
  */
 
 
+goog.require('silex.view.ViewBase');
 goog.provide('silex.view.Stage');
 
 goog.require('goog.events');
@@ -29,18 +30,16 @@ goog.require('goog.events.MouseWheelHandler');
  * @param  {Element}  element  DOM element to wich I render the UI
  *  has been changed by the user
  */
-silex.view.Stage = function(element) {
-  // store the container
-  this.element = element;
+silex.view.Stage = function(element, headElement, bodyElement) {
+  // call super
+  silex.view.ViewBase.call(this, element, headElement, bodyElement);
+
   // init the view
   this.initEvents()
 }
 
-/**
- * callback set by the controller
- */
-silex.view.Stage.prototype.onStatus;
-
+// inherit from silex.view.ViewBase
+goog.inherits(silex.view.Stage, silex.view.ViewBase);
 
 /**
  * reference to the element to render to
@@ -59,47 +58,34 @@ silex.view.Stage.prototype.initEvents = function () {
 
   // detect mouse down
   goog.events.listen(this.element, 'mousedown', function(e) {
-    if (this.onStatus) this.onStatus({
-      type: 'select',
-      element: e.target
-    });
+    if (this.onStatus) this.onStatus('select', e.target);
     this.isDragging = true;
   }, false, this);
   // listen on body instead of element because user can release
   // on the tool boxes
   goog.events.listen(document.body, 'mouseup', function(e) {
     if (this.isDragging) {
-      if (this.onStatus) this.onStatus({
-        type: 'change'
-      });
+      if (this.onStatus) this.onStatus('change', e.target);
       this.isDragging = false;
     }
   }, false, this);
   // dispatch event when an element has been moved
   goog.events.listen(this.element, 'dragstop', function(e) {
-    if (this.onStatus) this.onStatus({
-      type: 'change'
-    });
+    if (this.onStatus) this.onStatus('change', e.target);
     this.isDragging = false;
   }, false, this);
   // dispatch event when an element has been moved or resized
   goog.events.listen(this.element, 'resize', function(e) {
-    if (this.onStatus) this.onStatus({
-      type: 'change'
-    });
+    if (this.onStatus) this.onStatus('change', e.target);
     this.isDragging = false;
   }, false, this);
   // dispatch event when an element is dropped in a new container
   goog.events.listen(this.element, 'newContainer', function(e) {
-    if (this.onStatus) this.onStatus({
-      type: 'newContainer'
-    });
+    if (this.onStatus) this.onStatus('newContainer');
   }, false, this);
   // detect double click
   goog.events.listen(this.element, goog.events.EventType.DBLCLICK, function(e) {
-    if (this.onStatus) this.onStatus({
-      type: 'edit'
-    });
+    if (this.onStatus) this.onStatus('edit');
   }, false, this);
   // Disable horizontal scrolling for Back page on Mac OS
   var mwh = new goog.events.MouseWheelHandler(this.element);
@@ -110,19 +96,12 @@ silex.view.Stage.prototype.initEvents = function () {
   }, false, this);
 };
 
-/**
- * @return {array} array of selected {element} elements on the stage
- */
-silex.view.Stage.prototype.getSelection = function () {
-  return goog.dom.getElementsByClass(silex.model.Element.SELECTED_CLASS_NAME);
-};
-
 
 /**
  * @return {object} object of fonts which are used in the text fields (key is the font name)
  */
 silex.view.Stage.prototype.getNeededFonts = function() {
-  var innerHTML = this.getStageComponent().getHtml();
+  var innerHTML = this.getStageElement().innerHTML;
   var neededFonts = [];
   innerHTML.replace(/<font[^"]*face="?([^"]*)"/g, function(match, group1, group2) {
     neededFonts[group1] = true;

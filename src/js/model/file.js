@@ -18,36 +18,36 @@
  */
 
 
+goog.require('silex.model.ModelBase');
 goog.provide('silex.model.File');
 goog.require('silex.Config');
 
 
 /**
  * @constructor
- * Never call this directly nor do new File,
- * Rather use silex.model.File.getInstance()
+ * @param  {element} bodyElement  HTML element which holds the body section of the opened file
+ * @param  {element} headElement  HTML element which holds the head section of the opened file
  */
-silex.model.File = function() {
+silex.model.File = function(bodyElement, headElement) {
+  // call super
+  silex.model.ModelBase.call(this, bodyElement, headElement);
 };
+
+// inherit from silex.model.ModelBase
+goog.inherits(silex.model.File, silex.model.ModelBase);
+
 
 
 /**
- * Singleton pattern
- * reference to the only {silex.model.File} File instance of the application
+ * reference to the {element} stage, which is a pageable root
  */
-silex.model.File.instance;
+silex.controller.ControllerBase.prototype.bodyElement;
 
 
 /**
- * Singleton pattern
- * @return {silex.model.File} a file instance
+ * reference to the {element} element which holds the head of the opened file
  */
-silex.model.File.getInstance = function() {
-  if (!silex.model.File.instance){
-    silex.model.File.instance = new silex.model.File();
-  }
-  return silex.model.File.instance;
-};
+silex.controller.ControllerBase.prototype.headElement;
 
 
 /**
@@ -140,7 +140,7 @@ silex.model.File.prototype.saveAs = function(url, cbk, opt_errCbk) {
  */
 silex.model.File.prototype.save = function(cbk, opt_errCbk) {
   var blob = this.getBlob();
-  this.setBodyTag(this.getStageComponent().getHtml(blob.url));
+  this.setBodyTag(this.bodyElement.getHtml(blob.url));
   this.setHeadTag(this.stage.getHead());
   this.setBodyStyle(this.stage.getBodyStyle());
   silex.service.CloudStorage.getInstance().save(blob, this.getHtml(), function() {
@@ -152,7 +152,7 @@ silex.model.File.prototype.save = function(cbk, opt_errCbk) {
 /**
  * load a new file
  */
-silex.model.File.prototype.open = function(url cbk, opt_errCbk) {
+silex.model.File.prototype.open = function(url, cbk, opt_errCbk) {
   // let the user choose the file
   this.fileExplorer.openDialog(
       goog.bind(function(blob) {
@@ -192,12 +192,6 @@ silex.model.File.prototype.close = function() {
 ////////////////////////////////////////////////
 // DOM related methods
 ////////////////////////////////////////////////
-/**
- * get the HtmlDom element containing the body tag
- */
-silex.model.File.prototype.getStageComponent = function() {
-  return new silex.model.Component(this.stage.bodyElement);
-};
 
 
 /**
@@ -256,7 +250,7 @@ silex.model.File.prototype.setUrl = function(url) {
  * get the string containing the style attribute of the body tag
  */
 silex.model.File.prototype.getBodyStyle = function() {
-  var absolutePathStyle = this.getStageComponent().relative2absolute(this.bodyStyle, this.getUrl());
+  var absolutePathStyle = this.bodyElement.relative2absolute(this.bodyStyle, this.getUrl());
   return absolutePathStyle;
 };
 
@@ -266,7 +260,7 @@ silex.model.File.prototype.getBodyStyle = function() {
  * @param    bodyStyle     a string containing the style attribute to set on the body tag
  */
 silex.model.File.prototype.setBodyStyle = function(bodyStyle) {
-  var relativePathStyle = this.getStageComponent().absolute2Relative(bodyStyle, this.getUrl());
+  var relativePathStyle = this.bodyElement.absolute2Relative(bodyStyle, this.getUrl());
   this.bodyStyle = relativePathStyle;
 };
 
@@ -309,11 +303,11 @@ silex.model.File.prototype.setHtml = function(rawHtml) {
   var styleStart = bodyTag.indexOf('"');
   var styleEnd = bodyTag.indexOf('"', styleStart + 1);
   this.bodyStyle = bodyTag.substring(styleStart + 1, styleEnd);
-  var absolutePathStyle = this.getStageComponent().relative2absolute(this.bodyStyle, this.getUrl());
+  var absolutePathStyle = this.bodyElement.relative2absolute(this.bodyStyle, this.getUrl());
   this.bodyStyle = absolutePathStyle;
 
   // update view
-  this.getStageComponent().setHtml(this.bodyTag, this.getUrl());
+  this.bodyElement.setHtml(this.bodyTag, this.getUrl());
   this.stage.setHead(this.headTag);
   this.stage.setBodyStyle(this.bodyStyle);
 
@@ -328,7 +322,7 @@ silex.model.File.prototype.setHtml = function(rawHtml) {
         this.menu,
         this.stage,
         this.pageTool,
-        this.propertiesTool,
+        this.propertyTool,
         this.textEditor,
         this.fileExplorer
         );
@@ -339,7 +333,7 @@ silex.model.File.prototype.setHtml = function(rawHtml) {
   // update tools
   var pages = silex.model.Page.getPages();
   this.pageTool.setPages(pages);
-  this.propertiesTool.setPages(pages);
+  this.propertyTool.setPages(pages);
 
   // open default page
   this.pageTool.setSelectedIndex(0);
@@ -419,27 +413,6 @@ silex.model.File.prototype.setTitle = function(name) {
 // call the silex-task service, publish task
 //////////////////////////////////////////////////////////////////
 /**
- * get/set the publication path
- */
-silex.model.File.prototype.setPublicationPath = function(path) {
-  if (path === '') {
-    path = null;
-  }
-
-  this.publishSettings.setPublicationPath(path);
-  this.stage.setPublicationPath(path);
-};
-
-
-/**
- * get/set the publication path
- */
-silex.model.File.prototype.getPublicationPath = function() {
-  return this.stage.getPublicationPath();
-};
-
-
-/**
  * publish html page
  * cleanup HTML
  * send data to server side export script
@@ -476,7 +449,7 @@ silex.model.File.prototype.publish = function(cbk, opt_errCbk) {
  */
 silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
   // build a clean body clone
-  var bodyComponent = this.getStageComponent();
+  var bodyComponent = this.bodyElement;
   var bodyStr = bodyComponent.getHtml();
 
   // head

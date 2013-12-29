@@ -17,7 +17,8 @@
  */
 
 
-goog.provide('silex.view.propertiesTool.PagePane');
+goog.require('silex.view.pane.PaneBase');
+goog.provide('silex.view.pane.PagePane');
 
 goog.require('goog.array');
 goog.require('goog.cssom');
@@ -35,58 +36,38 @@ goog.require('goog.ui.HsvaPalette');
  * on of Silex Editors class
  * let user edit style of components
  * @constructor
- * @param  {Element}  element  DOM element to wich I render the UI
- * @param  {function} pageChanged   callback which I'll call when the style
- *  has been changed by the user
+ * @extend silex.view.PaneBase
+ * @param {element} element   container to render the UI
+ * @param  {element} bodyElement  HTML element which holds the body section of the opened file
+ * @param  {element} headElement  HTML element which holds the head section of the opened file
  */
-silex.view.propertiesTool.PagePane = function(element, pageChanged) {
-  this.element = element;
-  this.pageCheckboxes = [];
-  this.pageChanged = pageChanged;
+silex.view.pane.BorderPane = function(element, headElement, bodyElement) {
+  // call super
+  goog.base(this, element, headElement, bodyElement);
+
   this.buildUi();
 };
 
-
-/**
- * element of the dom to which the component is rendered
- */
-silex.view.propertiesTool.PagePane.prototype.element;
-
-
-/**
- * component to be edited
- */
-silex.view.propertiesTool.PagePane.prototype.component;
-
-
-/**
- * callback to notify the tool box
- */
-silex.view.propertiesTool.PagePane.prototype.pageChanged;
-
-
-/**
- * avoid loops on redraw
- */
-silex.view.propertiesTool.PagePane.prototype.isRedraw;
+// inherit from silex.view.ViewBase
+goog.inherits(silex.view.pane.BgPane, silex.view.pane.PaneBase);
 
 
 /**
  * dropdown list to select a link
  */
-silex.view.propertiesTool.PagePane.prototype.linkDropdown;
+silex.view.pane.PagePane.prototype.linkDropdown;
 
 
 /**
  * text field used to type an external link
  */
-silex.view.propertiesTool.PagePane.prototype.linkInputTextField;
+silex.view.pane.PagePane.prototype.linkInputTextField;
 
 
 /**
  * build the UI
  */
-silex.view.propertiesTool.PagePane.prototype.buildUi = function() {
+silex.view.pane.PagePane.prototype.buildUi = function() {
   // link, select page or enter custom link
   // handle the dropdown list from the template
   this.linkDropdown = goog.dom.getElementByClass('link-combo-box',
@@ -120,7 +101,7 @@ silex.view.propertiesTool.PagePane.prototype.buildUi = function() {
  * display the propertis of the component being edited
  * @param   {silex.model.component} component   the component to edit
  */
-silex.view.propertiesTool.PagePane.prototype.setComponent =
+silex.view.pane.PagePane.prototype.setComponent =
     function(component) {
   this.component = component;
   this.redraw();
@@ -131,7 +112,7 @@ silex.view.propertiesTool.PagePane.prototype.setComponent =
  * refresh with new pages
  * @param   {array} pages   the new list of pages
  */
-silex.view.propertiesTool.PagePane.prototype.setPages = function(pages) {
+silex.view.pane.PagePane.prototype.setPages = function(pages) {
   // store the pages
   this.pages = pages;
 
@@ -197,7 +178,7 @@ silex.view.propertiesTool.PagePane.prototype.setPages = function(pages) {
 /**
  * the user changed the link drop down
  */
-silex.view.propertiesTool.PagePane.prototype.onLinkChanged = function() {
+silex.view.pane.PagePane.prototype.onLinkChanged = function() {
   if (this.linkDropdown.value === 'none') {
     this.component.removeLink();
     this.redraw();
@@ -219,7 +200,7 @@ silex.view.propertiesTool.PagePane.prototype.onLinkChanged = function() {
 /**
  * the user changed the link text field
  */
-silex.view.propertiesTool.PagePane.prototype.onLinkTextChanged =
+silex.view.pane.PagePane.prototype.onLinkTextChanged =
     function() {
       console.log('xxx');
   // update the href attribute
@@ -232,9 +213,14 @@ silex.view.propertiesTool.PagePane.prototype.onLinkTextChanged =
 /**
  * redraw the properties
  */
-silex.view.propertiesTool.PagePane.prototype.redraw = function() {
-  if (this.component && this.pageCheckboxes && !this.isRedraw) {
-    this.isRedraw = true;
+silex.view.pane.PagePane.prototype.redraw = function() {
+  // call super
+  goog.base(this, 'redraw');
+
+  // get the selected element
+  var element = this.getSelection()[0];
+
+  if (element){
     // refresh page checkboxes
     goog.array.forEach(this.pageCheckboxes, function(item) {
       if (this.component) {
@@ -291,8 +277,7 @@ silex.view.propertiesTool.PagePane.prototype.redraw = function() {
  * @param   {silex.model.page} page   the page for wich the visibility changes
  * @param   {goog.ui.Checkbox} checkbox   the checkbox clicked
  */
-silex.view.propertiesTool.PagePane.prototype.checkPage =
-    function(page, checkbox) {
+silex.view.pane.PagePane.prototype.checkPage = function(page, checkbox) {
   // apply the page selection
   if (checkbox.isChecked()) {
     page.addComponent(this.component);
@@ -310,7 +295,7 @@ silex.view.propertiesTool.PagePane.prototype.checkPage =
 /**
  * callback for checkboxes click event
  */
-silex.view.propertiesTool.PagePane.prototype.unCheckAll = function() {
+silex.view.pane.PagePane.prototype.unCheckAll = function() {
   goog.array.forEach(this.pages, function(page) {
     page.removeComponent(this.component);
   }, this);

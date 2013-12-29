@@ -16,58 +16,54 @@
  */
 goog.provide('silex.controller.MenuController');
 
-goog.require('silex.controller.UiControllerBase');
-goog.require('silex.Model');
-goog.require('silex.View');
-goog.require('silex.Controller');
+goog.require('silex.controller.ControllerBase');
 
 
 /**
  * @constructor
- * @extends silex.controller.UiControllerBase
+ * @extends silex.controller.ControllerBase
  * listen to the view events and call the main controller's methods
- * @param {silex.Model} model
- * @param {silex.View} view
- * @param {silex.Controller} controller
+ * @param {silex.types.Model} model
+ * @param {silex.types.View} view
  */
-silex.controller.MenuController = function (model, view, controller) {
+silex.controller.MenuController = function (model, view) {
   // call super
-  silex.controller.UiControllerBase.call(this, model, view, controller);
+  silex.controller.ControllerBase.call(this, model, view);
   // attach events to the view
   view.menu.onStatus = goog.bind(this.menuCallback, this);
 };
 
-// inherit from silex.controller.UiControllerBase
-goog.inherits(silex.controller.UiControllerBase);
+// inherit from silex.controller.ControllerBase
+goog.inherits(silex.controller.MenuController, silex.controller.ControllerBase);
 
 
 /**
  * menu event handler
  */
-silex.controller.MenuController.prototype.menuCallback = function(event) {
-  this.tracker.trackAction('controller-events', 'request', event.type, 0);
-  switch (event.type) {
+silex.controller.MenuController.prototype.menuCallback = function(type) {
+  this.tracker.trackAction('controller-events', 'request', type, 0);
+  switch (type) {
     case 'title.changed':
-      this.controller.promptTitle();
+      this.controller.mainController.promptTitle();
       break;
     case 'file.new':
       this.model.file.newFile();
       break;
     case 'file.saveas':
-      this.controller.save();
+      this.controller.mainController.save();
       break;
     case 'file.publish.settings':
       this.view.settingsDialog.openDialog();
       this.view.workspace.invalidate();
       break;
     case 'file.publish':
-      this.controller.publish();
+      this.controller.mainController.publish();
       break;
     case 'file.save':
-      this.controller.save(this.model.file.getUrl());
+      this.controller.mainController.save(this.model.file.getUrl());
       break;
     case 'file.open':
-      this.controller.openFile();
+      this.controller.mainController.openFile();
       break;
     case 'file.close':
       this.model.file.newFile();
@@ -90,91 +86,77 @@ silex.controller.MenuController.prototype.menuCallback = function(event) {
       this.view.workspace.invalidate();
       break;
     case 'view.open.editor':
-      this.controller.editComponent();
+      this.controller.mainController.editComponent();
       break;
     case 'insert.page':
-      this.controller.createPage(goog.bind(function() {
-        this.controller.tracker.trackAction('controller-events', 'success', event.type, 1);
-      }, this),
-      goog.bind(function() {
-        this.controller.tracker.trackAction('controller-events', 'cancel', event.type, 0);
-      }, this));
+      this.controller.mainController.createPage();
       break;
     case 'insert.text':
-      var element = this.model.element.getStageComponent().addText();
-      // only visible on the current page
-      this.view.selection.getPage().addComponent(component);
-      // select the component
-      this.view.selection.setComponent(component);
+      this.controller.mainController.addElement(silex.model.Element.TYPE_TEXT);
       break;
     case 'insert.html':
-      var component = this.model.file.getStageComponent().addHtml();
-      // only visible on the current page
-      this.view.selection.getPage().addComponent(component);
-      // select the component
-      this.view.selection.setComponent(component);
+      this.controller.mainController.addElement(silex.model.Element.TYPE_IMAGE);
       break;
     case 'insert.image':
       this.model.fileExplorer.openDialog(
-          goog.bind(function(blob) {
-            var component = this.model.file.getStageComponent().addImage(blob.url);
-            // only visible on the current page
-            this.view.selection.getPage().addComponent(component);
-            // select the component
-            this.view.selection.setComponent(component);
-            this.tracker.trackAction('controller-events', 'success', event.type, 1);
+          goog.bind(function(url) {
+            // create the element
+            var img = this.controller.mainController.addElement(silex.model.Element.TYPE_IMAGE);
+            // loads the image
+            this.model.element.setImageUrl(img, url,
+              goog.bind(function(element){
+                this.view.workspace.invalidate();
+                this.tracker.trackAction('controller-events', 'success', type, 1);
+              }),
+              goog.bind(function(element, message){
+                silex.utils.Notification.notifyError('Error: I did not manage to load the image. <br /><br />' + message);
+                this.controller.mainController.removeElement(element);
+                this.tracker.trackAction('controller-events', 'error', type, 1);
+              })
+            );
           }, this),
           ['image/*', 'text/plain'],
           goog.bind(function(error) {
-            this.notifyError('Error: I did not manage to load the image. <br /><br />' + (error.message || ''));
-            this.tracker.trackAction('controller-events', 'error', event.type, -1);
+            silex.utils.Notification.notifyError('Error: I did not manage to load the image. <br /><br />' + (error.message || ''));
+            this.tracker.trackAction('controller-events', 'error', type, -1);
           }, this)
       );
       this.view.workspace.invalidate();
       break;
     case 'insert.container':
-      var component = this.model.file.getStageComponent().addContainer();
-      // only visible on the current page
-      this.view.selection.getPage().addComponent(component);
-      // select the component
-      this.view.selection.setComponent(component);
+      this.controller.mainController.addElement(silex.model.Element.TYPE_CONTAINER);
       break;
     case 'edit.delete.selection':
       // delete component
-      this.model.file.getStageComponent().remove(this.view.selection.getComponent());
-      // select stage
-      this.view.selection.setComponent(this.model.file.getStageComponent());
+      this.controller.mainController.removeElement();
       break;
     case 'edit.delete.page':
-      this.removePage(this.view.selection.getPage());
+      this.controller.mainController.removePage();
       break;
     case 'edit.rename.page':
-      this.renamePage(this.view.selection.getPage());
+      this.renamePage();
       break;
     // Help menu
     case 'help.about':
-      window.open('http://www.silexlabs.org/silex/');
+      window.open(silex.Config.ABOUT_SILEX);
       break;
     case 'help.aboutSilexLabs':
-      window.open('http://www.silexlabs.org/silexlabs/');
-      break;
-    case 'help.forums':
-      window.open('http://graphicdesign.stackexchange.com/questions/tagged/silex');
+      window.open(silex.Config.ABOUT_SILEX_LABS);
       break;
     case 'help.newsLetter':
-      window.open('http://eepurl.com/F48q5');
+      window.open(silex.Config.SUBSCRIBE_SILEX_LABS);
       break;
     case 'help.googlPlus':
-      window.open('https://plus.google.com/communities/107373636457908189681');
+      window.open(silex.Config.SOCIAL_GPLUS);
       break;
     case 'help.twitter':
-      window.open('http://twitter.com/silexlabs');
+      window.open(silex.Config.SOCIAL_TWITTER);
       break;
     case 'help.facebook':
-      window.open('http://www.facebook.com/silexlabs');
+      window.open(silex.Config.SOCIAL_FB);
       break;
     case 'help.forkMe':
-      window.open('https://github.com/silexlabs/Silex');
+      window.open(silex.Config.FORK_CODE);
       break;
   }
 };

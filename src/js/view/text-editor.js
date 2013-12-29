@@ -17,6 +17,7 @@
  */
 
 
+goog.require('silex.view.ViewBase');
 goog.provide('silex.view.TextEditor');
 
 goog.require('goog.dom');
@@ -49,9 +50,10 @@ goog.require('silex.Config');
  * @param  {function} cbk   callback which I'll call when the text
  *  has been changed by the user
  */
-silex.view.TextEditor = function(element) {
-  // store the container
-  this.element = element;
+silex.view.TextEditor = function(element, headElement, bodyElement) {
+  // call super
+  silex.view.ViewBase.call(this, element, headElement, bodyElement);
+
   // init the editor
   this.initUI();
   // hide the at start
@@ -65,17 +67,14 @@ silex.view.TextEditor = function(element) {
       goog.bind(this.closeEditor, this));
 };
 
+// inherit from silex.view.ViewBase
+goog.inherits(silex.view.TextEditor, silex.view.ViewBase);
+
 
 /**
  * element of the dom to which the component is rendered
  */
 silex.view.TextEditor.prototype.element;
-
-
-/**
- * callback for the events, set by the controller
- */
-silex.view.TextEditor.prototype.onStatus;
 
 
 /**
@@ -242,9 +241,6 @@ silex.view.TextEditor.prototype.getData = function() {
  */
 silex.view.TextEditor.prototype.contentChanged = function() {
   if (this.onStatus) {
-    this.onStatus({
-      type: 'changed',
-      content: this.getData()
-    });
+    this.onStatus('changed', this.getData());
   }
 };

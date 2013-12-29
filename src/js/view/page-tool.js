@@ -16,30 +16,32 @@
  *
  */
 
+goog.require('silex.view.ViewBase');
 goog.provide('silex.view.PageTool');
 
 /**
  * @constructor
+ * @extend silex.view.ViewBase
+ * @param {element} element   container to render the UI
+ * @param  {element} bodyElement  HTML element which holds the body section of the opened file
+ * @param  {element} headElement  HTML element which holds the head section of the opened file
  */
-silex.view.PageTool = function(element) {
-  // store the tool container
-  this.element = element;
+silex.view.PageTool = function(element, headElement, bodyElement) {
+  // call super
+  silex.view.ViewBase.call(this, element, headElement, bodyElement);
+
   // init the tool
   this.initEvents();
 };
 
+// inherit from silex.view.ViewBase
+goog.inherits(silex.view.PageTool, silex.view.ViewBase);
 
 /**
  * reference to the element to render to
  * @type element
  */
 silex.view.PageTool.prototype.element;
-
-
-/**
- * callback for the events, passed by the controller
- */
-silex.view.PageTool.prototype.onStatus;
 
 
 /**
@@ -81,10 +83,7 @@ silex.view.PageTool.prototype.refresh = function() {
  * ask to remove a page
  */
 silex.view.PageTool.prototype.removePageAtIndex = function(idx) {
-  if (this.onStatus) this.onStatus({
-    type: 'delete',
-    page: this.pages[idx]
-  });
+  if (this.onStatus) this.onStatus('delete', this.pages[idx]);
   this.refresh();
 };
 
@@ -93,10 +92,7 @@ silex.view.PageTool.prototype.removePageAtIndex = function(idx) {
  * ask to rename a page
  */
 silex.view.PageTool.prototype.renamePageAtIndex = function(idx) {
-  if (this.onStatus) this.onStatus({
-    type: 'rename',
-    page: this.pages[idx]
-  });
+  if (this.onStatus) this.onStatus('rename', this.pages[idx]);
   this.refresh();
 };
 
@@ -118,10 +114,7 @@ silex.view.PageTool.prototype.setSelectedIndex = function(index, opt_notify) {
     }
   }, this);
   // notify the controller
-  if (opt_notify && this.onStatus) this.onStatus({
-    type: 'changed',
-    page: page
-  });
+  if (opt_notify && this.onStatus) this.onStatus('changed', page);
 };
 
 

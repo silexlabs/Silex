@@ -18,6 +18,7 @@
  */
 
 
+goog.require('silex.view.ViewBase');
 goog.provide('silex.view.HTMLEditor');
 goog.require('goog.events.KeyCodes');
 goog.require('goog.ui.KeyboardShortcutHandler');
@@ -26,10 +27,15 @@ goog.require('goog.ui.KeyboardShortcutHandler');
 
 /**
  * @constructor
+ * @extend silex.view.ViewBase
+ * @param {element} element   container to render the UI
+ * @param  {element} bodyElement  HTML element which holds the body section of the opened file
+ * @param  {element} headElement  HTML element which holds the head section of the opened file
  */
-silex.view.HTMLEditor = function(element, cbk) {
-  // store the container
-  this.element = element;
+silex.view.HTMLEditor = function(element, headElement, bodyElement) {
+  // call super
+  silex.view.ViewBase.call(this, element, headElement, bodyElement);
+
   // init the editor
   this.initUI();
   // handle escape key
@@ -41,17 +47,14 @@ silex.view.HTMLEditor = function(element, cbk) {
       goog.bind(this.closeEditor, this));
 };
 
+// inherit from silex.view.ViewBase
+goog.inherits(silex.view.HTMLEditor, silex.view.ViewBase);
+
 
 /**
  * element of the dom to which the component is rendered
  */
 silex.view.HTMLEditor.prototype.element;
-
-
-/**
- * callback for the events, set by the controller
- */
-silex.view.HTMLEditor.prototype.onStatus;
 
 
 /**
@@ -136,9 +139,6 @@ silex.view.HTMLEditor.prototype.getData = function() {
  */
 silex.view.HTMLEditor.prototype.contentChanged = function() {
   if (this.onStatus) {
-    this.onStatus({
-      type: 'changed',
-      content: this.getData()
-    });
+    this.onStatus('changed', this.getData());
   }
 };

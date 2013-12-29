@@ -15,7 +15,8 @@
  */
 
 
-goog.provide('silex.view.propertiesTool.PropertyPane');
+goog.require('silex.view.pane.PaneBase');
+goog.provide('silex.view.pane.PropertyPane');
 
 goog.require('goog.array');
 goog.require('goog.object');
@@ -26,124 +27,85 @@ goog.require('goog.object');
  * on of Silex Editors class
  * let user edit style of components
  * @constructor
- * @param  {Element}  element  DOM element to wich I render the UI
- * @param  {function} propertyChanged   callback which I'll call when the style
- *  has been changed by the user
- * @param  {function} editHTML   callback which I'll call when
- *         the HTML of the current component must be edited
- * @param  {function} editText   callback which I'll call when
- *         the text of the current component must be edited
- * @param  {function} selectImage   callback which I'll call when
- *          the user is supposed to select an image
+ * @extend silex.view.PaneBase
+ * @param {element} element   container to render the UI
+ * @param  {element} bodyElement  HTML element which holds the body section of the opened file
+ * @param  {element} headElement  HTML element which holds the head section of the opened file
  */
-silex.view.propertiesTool.PropertyPane = function(element,
-    propertyChanged,
-    editHTML,
-    editText,
-    selectImage) {
-  this.element = element;
-  this.propertyChanged = propertyChanged;
-  this.editText = editText;
-  this.editHTML = editHTML;
-  this.selectImage = selectImage;
+silex.view.pane.BorderPane = function(element, headElement, bodyElement) {
+  // call super
+  goog.base(this, element, headElement, bodyElement);
+
   this.buildUi();
 };
 
-
-/**
- * element of the dom to which the component is rendered
- */
-silex.view.propertiesTool.PropertyPane.prototype.element;
-
-
-/**
- * component to be edited
- */
-silex.view.propertiesTool.PropertyPane.prototype.component;
-
-
-/**
- * callback to notify the tool box
- */
-silex.view.propertiesTool.PropertyPane.prototype.propertyChanged;
-
+// inherit from silex.view.ViewBase
+goog.inherits(silex.view.pane.BgPane, silex.view.pane.PaneBase);
 
 /**
  * callback to call to let the user edit the HTML content of the component
  */
-silex.view.propertiesTool.PropertyPane.prototype.editHTML;
+silex.view.pane.PropertyPane.prototype.editHTML;
 
 
 /**
  * callback to call to let the user edit the text content of the component
  */
-silex.view.propertiesTool.PropertyPane.prototype.editText;
+silex.view.pane.PropertyPane.prototype.editText;
 
 
 /**
  * callback to call to let the user edit the image url
  */
-silex.view.propertiesTool.PropertyPane.prototype.selectImage;
-
-
-/**
- * base url for relative/absolute urls
- */
-silex.view.propertiesTool.PropertyPane.prototype.baseUrl;
-
-
-/**
- * avoid loops on redraw
- */
-silex.view.propertiesTool.PropertyPane.prototype.isRedraw;
+silex.view.pane.PropertyPane.prototype.selectImage;
 
 
 /**
  * UI for position and size
  */
-silex.view.propertiesTool.PropertyPane.prototype.leftInput;
+silex.view.pane.PropertyPane.prototype.leftInput;
 
 
 /**
  * UI for position and size
  */
-silex.view.propertiesTool.PropertyPane.prototype.rightInput;
+silex.view.pane.PropertyPane.prototype.rightInput;
 
 
 /**
  * UI for position and size
  */
-silex.view.propertiesTool.PropertyPane.prototype.topInput;
+silex.view.pane.PropertyPane.prototype.topInput;
 
 
 /**
  * UI for position and size
  */
-silex.view.propertiesTool.PropertyPane.prototype.bottomInput;
+silex.view.pane.PropertyPane.prototype.bottomInput;
 
 
 /**
  * UI for position and size
  */
-silex.view.propertiesTool.PropertyPane.prototype.widthInput;
+silex.view.pane.PropertyPane.prototype.widthInput;
 
 
 /**
  * UI for position and size
  */
-silex.view.propertiesTool.PropertyPane.prototype.heightInput;
+silex.view.pane.PropertyPane.prototype.heightInput;
 
 
 /**
  * UI for position and size
  */
-silex.view.propertiesTool.PropertyPane.prototype.zIndexInput;
+silex.view.pane.PropertyPane.prototype.zIndexInput;
 
 
 /**
  * build the UI
  */
-silex.view.propertiesTool.PropertyPane.prototype.buildUi = function() {
+silex.view.pane.PropertyPane.prototype.buildUi = function() {
   // lock / unlock
   var lockBtn = goog.dom.getElementByClass('lock-btn');
   var unlockBtn = goog.dom.getElementByClass('unlock-btn');
@@ -211,7 +173,7 @@ silex.view.propertiesTool.PropertyPane.prototype.buildUi = function() {
  * @return   {boolean}  returns true if the current component
  *           has a locked parent
  */
-silex.view.propertiesTool.PropertyPane.prototype.hasLockedParent = function() {
+silex.view.pane.PropertyPane.prototype.hasLockedParent = function() {
   var element = this.component.element.parentNode;
   while (element && !goog.dom.classes.has(element, 'locked-style')) {
     element = element.parentNode;
@@ -226,7 +188,7 @@ silex.view.propertiesTool.PropertyPane.prototype.hasLockedParent = function() {
 /**
  * callback for the lock/unlock button
  */
-silex.view.propertiesTool.PropertyPane.prototype.lock = function() {
+silex.view.pane.PropertyPane.prototype.lock = function() {
   if (!this.hasLockedParent()) {
     this.component.setLocked(true);
   }
@@ -239,7 +201,7 @@ silex.view.propertiesTool.PropertyPane.prototype.lock = function() {
 /**
  * callback for the lock/unlock button
  */
-silex.view.propertiesTool.PropertyPane.prototype.unlock = function() {
+silex.view.pane.PropertyPane.prototype.unlock = function() {
   if (!this.hasLockedParent()) {
     this.component.setLocked(false);
   }
@@ -253,7 +215,7 @@ silex.view.propertiesTool.PropertyPane.prototype.unlock = function() {
  * position or size changed
  * callback for number inputs
  */
-silex.view.propertiesTool.PropertyPane.prototype.onPositionChanged =
+silex.view.pane.PropertyPane.prototype.onPositionChanged =
     function() {
   if (this.component &&
       !this.isRedraw &&
@@ -284,7 +246,7 @@ silex.view.propertiesTool.PropertyPane.prototype.onPositionChanged =
  * display the propertis of the component being edited
  * @param   {silex.model.component} component being edited
  */
-silex.view.propertiesTool.PropertyPane.prototype.setComponent =
+silex.view.pane.PropertyPane.prototype.setComponent =
     function(component) {
   this.component = component;
   this.redraw();
@@ -295,7 +257,7 @@ silex.view.propertiesTool.PropertyPane.prototype.setComponent =
  * base url for abs/rel conversions
  * @return   {string} the base URL
  */
-silex.view.propertiesTool.PropertyPane.prototype.getBaseUrl = function() {
+silex.view.pane.PropertyPane.prototype.getBaseUrl = function() {
   return this.baseUrl;
 };
 
@@ -304,7 +266,7 @@ silex.view.propertiesTool.PropertyPane.prototype.getBaseUrl = function() {
  * base url for abs/rel conversions
  * @param   {string} url  URL to set as the base URL
  */
-silex.view.propertiesTool.PropertyPane.prototype.setBaseUrl = function(url) {
+silex.view.pane.PropertyPane.prototype.setBaseUrl = function(url) {
   this.baseUrl = url;
   this.redraw();
 };
@@ -314,7 +276,7 @@ silex.view.propertiesTool.PropertyPane.prototype.setBaseUrl = function(url) {
  * change current component image
  * @param   {string} url  URL of the image to set as the src
  */
-silex.view.propertiesTool.PropertyPane.prototype.setImage = function(url) {
+silex.view.pane.PropertyPane.prototype.setImage = function(url) {
   if (this.baseUrl)
     this.component.setImageSrc(silex.Helper.getAbsolutePath(url, this.baseUrl));
   else
@@ -326,9 +288,14 @@ silex.view.propertiesTool.PropertyPane.prototype.setImage = function(url) {
 /**
  * redraw the properties
  */
-silex.view.propertiesTool.PropertyPane.prototype.redraw = function() {
-  if (this.component && !this.isRedraw) {
-    this.isRedraw = true;
+silex.view.pane.PropertyPane.prototype.redraw = function() {
+  // call super
+  goog.base(this, 'redraw');
+
+  // get the selected element
+  var element = this.getSelection()[0];
+
+  if (element){
     // refresh properties
     var imageUrl = null;
     if (this.component.type === silex.model.Component.SUBTYPE_IMAGE) {

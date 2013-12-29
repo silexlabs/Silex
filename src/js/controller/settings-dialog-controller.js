@@ -16,55 +16,49 @@
  */
 goog.provide('silex.controller.SettingsDialogController');
 
-goog.require('silex.controller.UiControllerBase');
-goog.require('silex.Model');
-goog.require('silex.View');
-goog.require('silex.Controller');
+goog.require('silex.controller.ControllerBase');
 
 
 /**
  * @constructor
- * @extends silex.controller.UiControllerBase
+ * @extends silex.controller.ControllerBase
  * listen to the view events and call the main controller's methods
- * @param {silex.Model} model
- * @param {silex.View} view
- * @param {silex.Controller} controller
+ * @param {silex.types.Model} model
+ * @param {silex.types.View} view
  */
-silex.controller.SettingsDialogController = function (model, view, controller) {
+silex.controller.SettingsDialogController = function (model, view) {
   // call super
-  silex.controller.UiControllerBase.call(this, model, view, controller);
+  silex.controller.ControllerBase.call(this, model, view);
   // attach events to the view
-  this.app.settingsDialog.onStatus = goog.bind(this.settingsDialogCallback, this);
+  this.view.settingsDialog.onStatus = goog.bind(this.settingsDialogCallback, this);
 };
 
-// inherit from silex.controller.UiControllerBase
-goog.inherits(silex.controller.UiControllerBase);
+// inherit from silex.controller.ControllerBase
+goog.inherits(silex.controller.SettingsDialogController, silex.controller.ControllerBase);
 
 
 /**
  * settingsDialog event handler
  */
-silex.controller.MainController.prototype.settingsDialogCallback = function(event) {
-  switch (event.type) {
+silex.controller.SettingsDialogController.prototype.settingsDialogCallback = function(type, opt_data) {
+  switch (type) {
     case 'browsePublishPath':
-      this.app.fileExplorer.openDialog(
-          goog.bind(function(blob) {
-            var url = blob.url.substring(blob.url.indexOf('/api/v1.0/'), blob.url.lastIndexOf('/'));
-            //var url = blob.url.substring(blob.url.indexOf('api/v1.0/')+9, blob.url.lastIndexOf('/'));
-            //var url = blob.url.substr(blob.url.indexOf('api/v1.0/')+9);
+      this.view.fileExplorer.openDialog(
+          goog.bind(function(url) {
+            url = url.substring(url.indexOf('/api/v1.0/'), url.lastIndexOf('/'));
             url = url.replace('/exec/get', '/exec/put');
             this.app.file.setPublicationPath(url);
-            this.tracker.trackAction('controller-events', 'success', event.type, 1);
+            this.tracker.trackAction('controller-events', 'success', type, 1);
           }, this),
           null,
           goog.bind(function(error) {
-            this.notifyError('Error: I could not select the publish path. <br /><br />' + (error.message || ''));
-            this.tracker.trackAction('controller-events', 'error', event.type, -1);
+            silex.utils.Notification.notifyError('Error: I could not select the publish path. <br /><br />' + (error.message || ''));
+            this.tracker.trackAction('controller-events', 'error', type, -1);
           }, this)
       );
       break;
     case 'change':
-      this.app.file.setPublicationPath(event.data);
+      this.app.file.setPublicationPath(opt_data);
       break;
   }
 };

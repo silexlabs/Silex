@@ -16,40 +16,36 @@
  */
 goog.provide('silex.controller.TextEditorController');
 
-goog.require('silex.controller.UiControllerBase');
-goog.require('silex.Model');
-goog.require('silex.View');
-goog.require('silex.Controller');
+goog.require('silex.controller.ControllerBase');
 
 
 /**
  * @constructor
- * @extends silex.controller.UiControllerBase
+ * @extends silex.controller.ControllerBase
  * listen to the view events and call the main controller's methods
- * @param {silex.Model} model
- * @param {silex.View} view
- * @param {silex.Controller} controller
+ * @param {silex.types.Model} model
+ * @param {silex.types.View} view
  */
-silex.controller.TextEditorController = function (model, view, controller) {
+silex.controller.TextEditorController = function (model, view) {
   // call super
-  silex.controller.UiControllerBase.call(this, model, view, controller);
+  silex.controller.ControllerBase.call(this, model, view);
   // attach events to the view
   view.textEditor.onStatus = goog.bind(this.textEditorCallback, this);
 };
 
-// inherit from silex.controller.UiControllerBase
-goog.inherits(silex.controller.UiControllerBase);
+// inherit from silex.controller.ControllerBase
+goog.inherits(silex.controller.TextEditorController, silex.controller.ControllerBase);
 
 
 /**
  * textEditor event handler
  */
-silex.controller.MainController.prototype.textEditorCallback = function(event) {
-  switch (event.type) {
+silex.controller.TextEditorController.prototype.textEditorCallback = function(type, content) {
+  switch (type) {
     case 'changed':
       // update content
       var element = this.view.stage.getSelection()[0];
-      this.model.element.setInnerHtml(element, event.content);
+      this.model.element.setInnerHtml(element, content);
       // update fonts
       this.controller.mainController.refreshFonts();
       break;

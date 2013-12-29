@@ -6,6 +6,7 @@
 
 BUGS
 
+* open a non-silex site => warn
 * New site => BG size depends on the stage size
 * Lorsque l'on colle un lien externe pour la deuxième fois = on retrouve le lien précédemment collé
 * lors de l'import de "grands" (?) média = la boite à outil Position & size n'affiche pas la size du média.

@@ -20,7 +20,6 @@
 goog.provide('silex.service.Tracker');
 
 
-
 /**
  * the Silex Tracker class hadles user actions tracking
  * this is for us to detect problems and improve user experience
@@ -31,7 +30,7 @@ silex.service.Tracker = function() {
     console.error('google analytcs not loaded');
   }
 };
-
+goog.addSingletonGetter(silex.service.Tracker);
 
 /**
  * constant
