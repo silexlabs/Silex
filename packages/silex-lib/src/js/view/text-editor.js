@@ -50,7 +50,7 @@ goog.require('silex.Config');
  * @param  {function} cbk   callback which I'll call when the text
  *  has been changed by the user
  */
-silex.view.TextEditor = function(element, headElement, bodyElement) {
+silex.view.TextEditor = function(element, bodyElement, headElement) {
   // call super
   silex.view.ViewBase.call(this, element, headElement, bodyElement);
 

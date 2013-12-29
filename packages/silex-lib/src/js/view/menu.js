@@ -35,7 +35,7 @@ goog.require('goog.events.KeyHandler');
  * @constructor
  * @param {element} element   container to render the UI
  */
-silex.view.Menu = function(element, headElement, bodyElement) {
+silex.view.Menu = function(element, bodyElement, headElement) {
   // call super
   silex.view.ViewBase.call(this, element, headElement, bodyElement);
   this.buildMenu(element);
@@ -55,6 +55,14 @@ silex.view.Menu.prototype.menu;
  * element of the dom to which the component is rendered
  */
 silex.view.Menu.prototype.element;
+
+
+/**
+ * refresh the displayed data
+ */
+silex.view.Menu.prototype.redraw = function() {
+  this.setWebsiteName(this.getWebsiteName());
+}
 
 
 /**
@@ -183,6 +191,8 @@ silex.view.Menu.prototype.onClick = function(e) {
     }
   }
 };
+
+
 /**
  * handles menu events
  * calls onStatus to notify the controller
@@ -205,7 +215,9 @@ silex.view.Menu.prototype.setWebsiteName = function(name) {
 
 /**
  * website name
+ * for internal use only, you should use silex.model.Head
  */
 silex.view.Menu.prototype.getWebsiteName = function() {
   return goog.dom.getElementByClass('website-name').innerHTML;
 };
+

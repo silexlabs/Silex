@@ -29,7 +29,7 @@ goog.provide('silex.model.Element');
  */
 silex.model.Element = function(bodyElement, headElement) {
   // call super
-  silex.model.ModelBase.call(this, bodyElement, headElement);
+  goog.base(this, bodyElement, headElement);
 };
 
 // inherit from silex.model.ModelBase

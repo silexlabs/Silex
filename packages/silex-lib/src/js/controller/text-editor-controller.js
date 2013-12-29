@@ -47,7 +47,7 @@ silex.controller.TextEditorController.prototype.textEditorCallback = function(ty
       var element = this.view.stage.getSelection()[0];
       this.model.element.setInnerHtml(element, content);
       // update fonts
-      this.controller.mainController.refreshFonts();
+      this.refreshFonts();
       break;
   }
 };

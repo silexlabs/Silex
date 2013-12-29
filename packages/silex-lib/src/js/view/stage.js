@@ -20,6 +20,8 @@
 goog.require('silex.view.ViewBase');
 goog.provide('silex.view.Stage');
 
+goog.require('silex.utils.JQueryEditable');
+
 goog.require('goog.events');
 goog.require('goog.events.MouseWheelHandler');
 
@@ -30,12 +32,15 @@ goog.require('goog.events.MouseWheelHandler');
  * @param  {Element}  element  DOM element to wich I render the UI
  *  has been changed by the user
  */
-silex.view.Stage = function(element, headElement, bodyElement) {
+silex.view.Stage = function(element, bodyElement, headElement) {
   // call super
   silex.view.ViewBase.call(this, element, headElement, bodyElement);
 
   // init the view
   this.initEvents()
+
+  // allow drops
+  silex.utils.JQueryEditable.setDropableOnly(bodyElement, true);
 }
 
 // inherit from silex.view.ViewBase

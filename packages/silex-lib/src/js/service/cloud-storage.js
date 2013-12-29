@@ -18,6 +18,8 @@
 
 goog.provide('silex.service.CloudStorage');
 
+goog.require('goog.net.XhrIo');
+
 
 /**
  * the Silex CloudStorage singleton
@@ -38,15 +40,28 @@ silex.service.CloudStorage.prototype.filePicker;
 
 
 /**
+ * create a blob out of an url
+ */
+silex.service.CloudStorage.prototype.createBlob = function(url) {
+  // cloud explorer expects relative path
+  if (silex.utils.Url.isAbsoluteUrl(url)){
+    console.error('cloud explorer expects relative path');
+    throw new Error('cloud explorer expects relative path');
+  }
+  // create the blob
+  var relBlob = {
+    url: url
+  };
+  return relBlob;
+}
+/**
  * save a file
  */
-silex.service.CloudStorage.prototype.save = function(blob, rawData, cbk, opt_errCbk) {
-  // cloud explorer expects relative path
-  var relBlob = {
-    url: silex.Helper.getRelativePath(blob.url, silex.Helper.BaseUrl)
-  };
+silex.service.CloudStorage.prototype.save = function(url, rawData, cbk, opt_errCbk) {
+  // get teh blob corresponding to the url
+  var relBlob = this.createBlob(url);
 
-  // save the actual data
+  // save the data
   this.filePicker.write(
       relBlob,
       rawData,
@@ -69,12 +84,11 @@ silex.service.CloudStorage.prototype.save = function(blob, rawData, cbk, opt_err
 /**
  * load data
  */
-silex.service.CloudStorage.prototype.load = function(blob, cbk, opt_errCbk) {
+silex.service.CloudStorage.prototype.load = function(url, cbk, opt_errCbk) {
+  // get teh blob corresponding to the url
+  var relBlob = this.createBlob(url);
 
-  // cloud explorer expects relative path
-  var relBlob = {
-    url: silex.Helper.getRelativePath(blob.url, silex.Helper.BaseUrl)
-  };
+  // load the data
   this.filePicker.read(
       relBlob,
       function(data) {

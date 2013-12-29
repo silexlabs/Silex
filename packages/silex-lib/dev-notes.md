@@ -60,6 +60,13 @@ text editor
 ________________
 
 Refactoring
+to do
+  body::publish
+  head::setHtml
+  controllerbase
+  retro compat
+
+retorcompat silex-sub-type
 
   View = html Dom read only
   Model = html Dom write only

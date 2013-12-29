@@ -30,7 +30,7 @@ goog.require('goog.ui.KeyboardShortcutHandler');
  * load the template and make it a SettingsDialog dialog
  * this is only the UI part, to let user setup publish functionnality
  */
-silex.view.SettingsDialog = function(element, headElement, bodyElement) {
+silex.view.SettingsDialog = function(element, bodyElement, headElement) {
   // call super
   silex.view.ViewBase.call(this, element, headElement, bodyElement);
 

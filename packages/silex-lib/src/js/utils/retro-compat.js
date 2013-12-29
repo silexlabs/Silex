@@ -1,15 +1,38 @@
-silex-sub-type
+//////////////////////////////////////////////////
+// Silex, live web creation
+// http://projects.silexlabs.org/?/silex/
+//
+// Copyright (c) 2012 Silex Labs
+// http://www.silexlabs.org/
+//
+// Silex is available under the GPL license
+// http://www.silexlabs.org/silex/silex-licensing/
+//////////////////////////////////////////////////
+
+/**
+ * @fileoverview Helper class for common tasks
+ *
+ */
 
 
+goog.provide('silex.utils.RetroCompat');
 
-//////////////////////////////////////////////////////////////////
-// retrocompatibility process
-// called after opening a file
-//////////////////////////////////////////////////////////////////
+/**
+ * @constructor
+ * @struct
+ * @param {string} name
+ * @param {string} displayName
+ */
+silex.utils.RetroCompat = function() {
+  throw('this is a static class and it canot be instanciated');
+}
+
+
 /**
  * handle retrocompatibility issues
+ * retrocompatibility process takes place after opening a file
  */
-silex.model.File.prototype.handleRetrocompatibility = function() {
+silex.utils.RetroCompat.process = function(bodyElement, headElement) {
   var that = this;
   // handle older page system
   $('meta[name="page"]', this.stage.headElement).each(function() {
@@ -32,4 +55,7 @@ silex.model.File.prototype.handleRetrocompatibility = function() {
     // remove the old tag
     $(this).remove();
   });
+
+  // todo: retorcompat silex-sub-type
+
 };

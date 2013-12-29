@@ -44,26 +44,26 @@ silex.controller.MenuController.prototype.menuCallback = function(type) {
   this.tracker.trackAction('controller-events', 'request', type, 0);
   switch (type) {
     case 'title.changed':
-      this.controller.mainController.promptTitle();
+      this.promptTitle();
       break;
     case 'file.new':
       this.model.file.newFile();
       break;
     case 'file.saveas':
-      this.controller.mainController.save();
+      this.save();
       break;
     case 'file.publish.settings':
       this.view.settingsDialog.openDialog();
       this.view.workspace.invalidate();
       break;
     case 'file.publish':
-      this.controller.mainController.publish();
+      this.publish();
       break;
     case 'file.save':
-      this.controller.mainController.save(this.model.file.getUrl());
+      this.save(this.model.file.getUrl());
       break;
     case 'file.open':
-      this.controller.mainController.openFile();
+      this.openFile();
       break;
     case 'file.close':
       this.model.file.newFile();
@@ -86,22 +86,22 @@ silex.controller.MenuController.prototype.menuCallback = function(type) {
       this.view.workspace.invalidate();
       break;
     case 'view.open.editor':
-      this.controller.mainController.editComponent();
+      this.editComponent();
       break;
     case 'insert.page':
-      this.controller.mainController.createPage();
+      this.createPage();
       break;
     case 'insert.text':
-      this.controller.mainController.addElement(silex.model.Element.TYPE_TEXT);
+      this.addElement(silex.model.Element.TYPE_TEXT);
       break;
     case 'insert.html':
-      this.controller.mainController.addElement(silex.model.Element.TYPE_IMAGE);
+      this.addElement(silex.model.Element.TYPE_IMAGE);
       break;
     case 'insert.image':
       this.model.fileExplorer.openDialog(
           goog.bind(function(url) {
             // create the element
-            var img = this.controller.mainController.addElement(silex.model.Element.TYPE_IMAGE);
+            var img = this.addElement(silex.model.Element.TYPE_IMAGE);
             // loads the image
             this.model.element.setImageUrl(img, url,
               goog.bind(function(element){
@@ -110,7 +110,7 @@ silex.controller.MenuController.prototype.menuCallback = function(type) {
               }),
               goog.bind(function(element, message){
                 silex.utils.Notification.notifyError('Error: I did not manage to load the image. <br /><br />' + message);
-                this.controller.mainController.removeElement(element);
+                this.removeElement(element);
                 this.tracker.trackAction('controller-events', 'error', type, 1);
               })
             );
@@ -124,14 +124,14 @@ silex.controller.MenuController.prototype.menuCallback = function(type) {
       this.view.workspace.invalidate();
       break;
     case 'insert.container':
-      this.controller.mainController.addElement(silex.model.Element.TYPE_CONTAINER);
+      this.addElement(silex.model.Element.TYPE_CONTAINER);
       break;
     case 'edit.delete.selection':
       // delete component
-      this.controller.mainController.removeElement();
+      this.removeElement();
       break;
     case 'edit.delete.page':
-      this.controller.mainController.removePage();
+      this.removePage();
       break;
     case 'edit.rename.page':
       this.renamePage();

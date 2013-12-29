@@ -26,7 +26,7 @@ goog.provide('silex.view.PageTool');
  * @param  {element} bodyElement  HTML element which holds the body section of the opened file
  * @param  {element} headElement  HTML element which holds the head section of the opened file
  */
-silex.view.PageTool = function(element, headElement, bodyElement) {
+silex.view.PageTool = function(element, bodyElement, headElement) {
   // call super
   silex.view.ViewBase.call(this, element, headElement, bodyElement);
 
@@ -36,6 +36,7 @@ silex.view.PageTool = function(element, headElement, bodyElement) {
 
 // inherit from silex.view.ViewBase
 goog.inherits(silex.view.PageTool, silex.view.ViewBase);
+
 
 /**
  * reference to the element to render to
@@ -52,11 +53,11 @@ silex.view.PageTool.prototype.initEvents = function(pages) {
   goog.events.listen(this.element, goog.events.EventType.CLICK, function(e) {
     if (goog.dom.classes.has(e.target, 'delete')){
       // remove the page
-      this.removePageAtIndex(this.getCellIndex(this.parentNode));
+      this.removePageAtIndex(this.getCellIndex(e.target.parentNode));
     }
     else if (goog.dom.classes.has(e.target, 'label')){
       // rename the page
-      this.renamePageAtIndex(this.getCellIndex(this.parentNode));
+      this.renamePageAtIndex(this.getCellIndex(e.target.parentNode));
     }
     else{
       // select page
@@ -69,13 +70,13 @@ silex.view.PageTool.prototype.initEvents = function(pages) {
  * refresh the pages
  * find all pages in the dom and call setPages
  */
-silex.view.PageTool.prototype.refresh = function() {
+silex.view.PageTool.prototype.redraw = function() {
   var pages = silex.view.JQueryPageable.getPages();
 
   // refresh the list with new pages
   var container = goog.dom.getElementByClass('page-tool-container', this.element);
   var templateHtml = goog.dom.getElementByClass('page-tool-template', this.element).innerHTML;
-  container.innerHTML = silex.utils.dom.resolveTemplate(templateHtml, pages);
+  container.innerHTML = silex.utils.Dom.resolveTemplate(templateHtml, pages);
 };
 
 
@@ -84,7 +85,7 @@ silex.view.PageTool.prototype.refresh = function() {
  */
 silex.view.PageTool.prototype.removePageAtIndex = function(idx) {
   if (this.onStatus) this.onStatus('delete', this.pages[idx]);
-  this.refresh();
+  this.redraw();
 };
 
 
@@ -93,7 +94,7 @@ silex.view.PageTool.prototype.removePageAtIndex = function(idx) {
  */
 silex.view.PageTool.prototype.renamePageAtIndex = function(idx) {
   if (this.onStatus) this.onStatus('rename', this.pages[idx]);
-  this.refresh();
+  this.redraw();
 };
 
 

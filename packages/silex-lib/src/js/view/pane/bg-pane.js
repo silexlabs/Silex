@@ -40,9 +40,9 @@ goog.require('goog.ui.TabBar');
  * @param  {element} bodyElement  HTML element which holds the body section of the opened file
  * @param  {element} headElement  HTML element which holds the head section of the opened file
  */
-silex.view.pane.BgPane = function(element, headElement, bodyElement) {
+silex.view.pane.BgPane = function(element, bodyElement, headElement) {
   // call super
-  goog.base(this, element, headElement, bodyElement);
+  goog.base(this, element, bodyElement, headElement);
 
   this.buildUi();
 };

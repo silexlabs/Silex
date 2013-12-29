@@ -30,24 +30,11 @@ goog.require('silex.Config');
  */
 silex.model.File = function(bodyElement, headElement) {
   // call super
-  silex.model.ModelBase.call(this, bodyElement, headElement);
+  goog.base(this, bodyElement, headElement);
 };
 
 // inherit from silex.model.ModelBase
 goog.inherits(silex.model.File, silex.model.ModelBase);
-
-
-
-/**
- * reference to the {element} stage, which is a pageable root
- */
-silex.controller.ControllerBase.prototype.bodyElement;
-
-
-/**
- * reference to the {element} element which holds the head of the opened file
- */
-silex.controller.ControllerBase.prototype.headElement;
 
 
 /**
@@ -58,51 +45,74 @@ silex.model.File.prototype.url;
 
 
 /**
- * get/set the publication path
- * @see silex.model.File
+ * build the html content
+ * Parse the raw html and fill the bodyElement and headElement
  */
-silex.model.File.prototype.setPublicationPath = function(path) {
-  var that = this;
-  var found = false;
-  // update the DOM element
-  $('meta[name="publicationPath"]', this.headElement).each(
-      function() {
-        if (path && path !== '') {
-          // update path
-          this.setAttribute('content', path);
-        }
-        else {
-          // remove the path
-          $(this).remove();
-        }
-        found = true;
-      });
-  if (!found && path && path !== '') {
-    // create the DOM element
-    var meta = goog.dom.createElement('meta');
-    meta.name = 'publicationPath';
-    meta.content = path;
-    goog.dom.appendChild(this.headElement, meta);
+silex.model.File.prototype.setHtml = function(rawHtml) {
+  // reset the previous page model
+  var pages = silex.model.Page.getPages();
+  while (pages.length > 0) {
+    var page = pages[0];
+    page.detach();
   }
+
+  var bodyHtml, headHtml;
+
+  // use lower case to find head and body tags
+  var lowerCaseHtml = rawHtml.toLowerCase();
+  // split head and body tags
+  var headOpenIdx = lowerCaseHtml.indexOf('<head>');
+  if (headOpenIdx === -1) headOpenIdx = lowerCaseHtml.indexOf('<head ');
+  var headCloseIdx = lowerCaseHtml.indexOf('</head>');
+  var bodyOpenIdx = lowerCaseHtml.indexOf('<body>');
+  if (bodyOpenIdx === -1) bodyOpenIdx = lowerCaseHtml.indexOf('<body ');
+  var bodyCloseIdx = lowerCaseHtml.indexOf('</body>');
+
+  if (headOpenIdx > -1 && headCloseIdx > -1) {
+    // look for the first ">" after "<head"
+    var closingTagIdx = lowerCaseHtml.indexOf('>', headOpenIdx);
+    // extract the head section
+    headHtml = rawHtml.substring(closingTagIdx + 1, headCloseIdx);
+  }
+  if (bodyOpenIdx > -1 && bodyCloseIdx > -1) {
+    // look for the first ">" after "<body"
+    var closingTagIdx = lowerCaseHtml.indexOf('>', bodyOpenIdx);
+    // extract the body section
+    bodyHtml = rawHtml.substring(closingTagIdx + 1, bodyCloseIdx);
+  }
+  // extract body style
+  var bodyHtml = rawHtml.substring(bodyOpenIdx, bodyCloseIdx + 1);
+  var styleStart = bodyHtml.indexOf('"');
+  var styleEnd = bodyHtml.indexOf('"', styleStart + 1);
+  var bodyStyle = bodyHtml.substring(styleStart + 1, styleEnd);
+  var absolutePathStyle = this.bodyElement.relative2absolute(this.bodyStyle, this.getUrl());
+  bodyStyle = absolutePathStyle;
+
+  // update model
+  this.bodyElement.innerHTML = bodyHtml;
+  this.bodyElement.setAttribute('style', bodyStyle);
+  this.headElement.innerHTML = headHtml;
 };
 
 
 /**
- * get/set the publication path
- * @see silex.model.File
- * @return {string}   the publication path
+ * build a string of the raw html content
+ * use the bodyTag and headTag objects
  */
-silex.model.File.prototype.getPublicationPath = function() {
-  var path = null;
-  $('meta[name="publicationPath"]', this.headElement).each(
-      function() {
-        path = this.getAttribute('content');
-      });
-  return path;
+silex.model.File.prototype.getHtml = function() {
+  // handle background url of the body style
+  var styleStr = this.bodyElement.getAttribute('style');
+
+  var html = '';
+  html += '<html>';
+  html += '<head>' + this.headElement.innerHTML + '</head>';
+  html += '<body style="' + styleStr + '">' + this.bodyElement.innerHTML + '</body>';
+  html += '</html>';
+
+  return html;
 };
-////////////////////////////////////////////////
-// File management methods
-////////////////////////////////////////////////
+
+
 /**
  * load an empty new file
  */
@@ -119,8 +129,7 @@ silex.model.File.prototype.openFromUrl = function(url, cbk, opt_errCbk) {
   silex.service.CloudStorage.getInstance().loadLocal(url,
       goog.bind(function(rawHtml) {
         this.setUrl(null);
-        this.setHtml(rawHtml);
-        if (cbk) cbk();
+        if (cbk) cbk(rawHtml);
       }, this), opt_errCbk);
 };
 
@@ -128,24 +137,24 @@ silex.model.File.prototype.openFromUrl = function(url, cbk, opt_errCbk) {
 /**
  * save a file with a new name
  */
-silex.model.File.prototype.saveAs = function(url, cbk, opt_errCbk) {
+silex.model.File.prototype.saveAs = function(url, rawHtml, cbk, opt_errCbk) {
   // save the data
   this.setUrl(url);
-  this.save(cbk, opt_errCbk);
+  this.save(rawHtml, cbk, opt_errCbk);
 };
 
 
 /**
  * write content to the file
  */
-silex.model.File.prototype.save = function(cbk, opt_errCbk) {
-  var blob = this.getBlob();
-  this.setBodyTag(this.bodyElement.getHtml(blob.url));
-  this.setHeadTag(this.stage.getHead());
-  this.setBodyStyle(this.stage.getBodyStyle());
-  silex.service.CloudStorage.getInstance().save(blob, this.getHtml(), function() {
-    if (cbk) cbk();
-  }, opt_errCbk);
+silex.model.File.prototype.save = function(rawHtml, cbk, opt_errCbk) {
+  silex.service.CloudStorage.getInstance().save(
+    this.getUrl(), 
+    rawHtml, 
+    function() {
+      if (cbk) cbk();
+    }, 
+    opt_errCbk);
 };
 
 
@@ -155,20 +164,18 @@ silex.model.File.prototype.save = function(cbk, opt_errCbk) {
 silex.model.File.prototype.open = function(url, cbk, opt_errCbk) {
   // let the user choose the file
   this.fileExplorer.openDialog(
-      goog.bind(function(blob) {
-        silex.service.CloudStorage.getInstance().load(blob,
-            goog.bind(function(rawHtml) {
-              // update model
-              this.close();
-              this.setUrl(blob.url);
-              this.setBlob(blob);
-              this.setHtml(rawHtml);
-              if (cbk) cbk();
-            }, this), opt_errCbk);
+      goog.bind(function(url) {
+        silex.service.CloudStorage.getInstance().load(
+          url,
+          goog.bind(function(rawHtml) {
+            // update model
+            this.close();
+            this.setUrl(url);
+            if (cbk) cbk(rawHtml);
+          }, this), opt_errCbk);
       }, this),
       ['text/html', 'text/plain'],
       opt_errCbk);
-  this.workspace.invalidate();
 };
 
 
@@ -177,54 +184,6 @@ silex.model.File.prototype.open = function(url, cbk, opt_errCbk) {
  */
 silex.model.File.prototype.close = function() {
   this.url = null;
-  this.blob = null;
-  this.headTag = '';
-  this.bodyTag = '';
-  this.setHtml('');
-  //
-  this.stage.setBody('');
-  this.stage.setHead('');
-  this.stage.setBodyStyle('');
-  this.workspace.invalidate();
-};
-
-
-////////////////////////////////////////////////
-// DOM related methods
-////////////////////////////////////////////////
-
-
-/**
- * get the HtmlDom element containing the body tag
- */
-silex.model.File.prototype.getBodyTag = function() {
-  return this.bodyTag;
-};
-
-
-/**
- * store new data in memory
- * @param    body     an HtmlDom element containing a new version of the body tag
- */
-silex.model.File.prototype.setBodyTag = function(body) {
-  this.bodyTag = body;
-};
-
-
-/**
- * get the HtmlDom element containing the head tag
- */
-silex.model.File.prototype.getHeadTag = function() {
-  return this.headTag;
-};
-
-
-/**
- * store new data in memory
- * @param    head     an HtmlDom element containing a new version of the head tag
- */
-silex.model.File.prototype.setHeadTag = function(head) {
-  this.headTag = head;
 };
 
 
@@ -247,189 +206,12 @@ silex.model.File.prototype.setUrl = function(url) {
 
 
 /**
- * get the string containing the style attribute of the body tag
+ * publish the file to a folder
  */
-silex.model.File.prototype.getBodyStyle = function() {
-  var absolutePathStyle = this.bodyElement.relative2absolute(this.bodyStyle, this.getUrl());
-  return absolutePathStyle;
-};
-
-
-/**
- * store new data in memory
- * @param    bodyStyle     a string containing the style attribute to set on the body tag
- */
-silex.model.File.prototype.setBodyStyle = function(bodyStyle) {
-  var relativePathStyle = this.bodyElement.absolute2Relative(bodyStyle, this.getUrl());
-  this.bodyStyle = relativePathStyle;
-};
-
-
-/**
- * build the html content
- * Parse the raw html and set the bodyTag and headTag strings
- */
-silex.model.File.prototype.setHtml = function(rawHtml) {
-  // reset the previous page model
-  var pages = silex.model.Page.getPages();
-  while (pages.length > 0) {
-    var page = pages[0];
-    page.detach();
-  }
-  // use lower case to find head and body tags
-  var lowerCaseHtml = rawHtml.toLowerCase();
-  // split head and body tags
-  var headOpenIdx = lowerCaseHtml.indexOf('<head>');
-  if (headOpenIdx === -1) headOpenIdx = lowerCaseHtml.indexOf('<head ');
-  var headCloseIdx = lowerCaseHtml.indexOf('</head>');
-  var bodyOpenIdx = lowerCaseHtml.indexOf('<body>');
-  if (bodyOpenIdx === -1) bodyOpenIdx = lowerCaseHtml.indexOf('<body ');
-  var bodyCloseIdx = lowerCaseHtml.indexOf('</body>');
-
-  if (headOpenIdx > -1 && headCloseIdx > -1) {
-    // look for the first ">" after "<head"
-    var closingTagIdx = lowerCaseHtml.indexOf('>', headOpenIdx);
-    // extract the head section
-    this.headTag = rawHtml.substring(closingTagIdx + 1, headCloseIdx);
-  }
-  if (bodyOpenIdx > -1 && bodyCloseIdx > -1) {
-    // look for the first ">" after "<body"
-    var closingTagIdx = lowerCaseHtml.indexOf('>', bodyOpenIdx);
-    // extract the body section
-    this.bodyTag = rawHtml.substring(closingTagIdx + 1, bodyCloseIdx);
-  }
-  // extract body style
-  var bodyTag = rawHtml.substring(bodyOpenIdx, bodyCloseIdx + 1);
-  var styleStart = bodyTag.indexOf('"');
-  var styleEnd = bodyTag.indexOf('"', styleStart + 1);
-  this.bodyStyle = bodyTag.substring(styleStart + 1, styleEnd);
-  var absolutePathStyle = this.bodyElement.relative2absolute(this.bodyStyle, this.getUrl());
-  this.bodyStyle = absolutePathStyle;
-
-  // update view
-  this.bodyElement.setHtml(this.bodyTag, this.getUrl());
-  this.stage.setHead(this.headTag);
-  this.stage.setBodyStyle(this.bodyStyle);
-
-  // handle pages of the loaded html
-  var pagesNames = this.stage.getPagesNamesFromDom();
-
-  // update model
-  goog.array.forEach(pagesNames, function(pageName) {
-    var page = new silex.model.Page(
-        pageName,
-        this.workspace,
-        this.menu,
-        this.stage,
-        this.pageTool,
-        this.propertyTool,
-        this.textEditor,
-        this.fileExplorer
-        );
-    // no, because it is allready attached to the stage: page.attach();
-    silex.model.Page.addPage(page);
-  }, this);
-
-  // update tools
-  var pages = silex.model.Page.getPages();
-  this.pageTool.setPages(pages);
-  this.propertyTool.setPages(pages);
-
-  // open default page
-  this.pageTool.setSelectedIndex(0);
-
-  // update website title
-  var title = this.getTitle();
-  if (title) {
-    this.menu.setWebsiteName(title);
-  }
-  // update publication settings
-  this.setPublicationPath(this.getPublicationPath());
-
-  // handle retrocompatibility issues
-  this.handleRetrocompatibility();
-};
-
-
-/**
- * build a string of the raw html content
- * use the bodyTag and headTag objects
- */
-silex.model.File.prototype.getHtml = function() {
-  // handle background url of the body style
-  var styleStr = this.getBodyStyle();
-
-  var html = '';
-  html += '<html>';
-  html += '<head>' + this.headTag + '</head>';
-  html += '<body style="' + styleStr + '">' + this.bodyTag + '</body>';
-  html += '</html>';
-
-  return html;
-};
-
-
-////////////////////////////////////////////////
-// Website related methods
-////////////////////////////////////////////////
-
-/**
- * website title
- */
-silex.model.File.prototype.getTitle = function() {
-  var elements = this.stage.headElement.getElementsByTagName('title');
-  if (elements && elements.length > 0) {
-    return elements[0].innerHTML;
-  }
-  else {
-    return null;
-  }
-};
-
-
-/**
- * website title
- */
-silex.model.File.prototype.setTitle = function(name) {
-  // update website title
-  var elements = this.stage.headElement.getElementsByTagName('title');
-  if (elements && elements.length > 0) {
-    elements[0].innerHTML = name;
-  }
-// new website title
-  else {
-    var child = goog.dom.createElement('title');
-    child.innerHTML = name;
-    this.stage.headElement.appendChild(child);
-  }
-  // update menu
-  this.menu.setWebsiteName(name);
-};
-
-
-//////////////////////////////////////////////////////////////////
-// publication process
-// cleanup html and generate assets/ and css/ and js/ folders
-// call the silex-task service, publish task
-//////////////////////////////////////////////////////////////////
-/**
- * publish html page
- * cleanup HTML
- * send data to server side export script
- * @return
- */
-silex.model.File.prototype.publish = function(cbk, opt_errCbk) {
-  if (!this.getPublicationPath()) {
-    if (opt_errCbk) {
-      opt_errCbk({
-        message: 'The publication path must be set before I can clean it up for you.'
-      });
-    }
-    return;
-  }
+silex.model.File.prototype.publish = function(url) {
   this.cleanup(
       goog.bind(function(html, css, files) {
-        silex.service.SilexTasks.getInstance().publish(this.getPublicationPath(), html, css, files, cbk, opt_errCbk);
+        silex.service.SilexTasks.getInstance().publish(url, html, css, files, cbk, opt_errCbk);
       }, this),
       goog.bind(function(error) {
         console.error('publish cleanup error', error);
@@ -447,13 +229,12 @@ silex.model.File.prototype.publish = function(cbk, opt_errCbk) {
  * generates a list of js scripts and assets to be eported with the file
  * @return
  */
-silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
+silex.model.Body.prototype.cleanup = function(cbk, opt_errCbk) {
   // build a clean body clone
-  var bodyComponent = this.bodyElement;
-  var bodyStr = bodyComponent.getHtml();
+  var bodyStr = goog.dom.getOuterHtml(this.bodyElement);
 
   // head
-  var headStr = this.stage.getHead();
+  var headStr = this.headElement.innerHTML;
 
   // list of css and files (assets, scripts...)
   var cssArray = [];
@@ -461,7 +242,7 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
 
   // **
   // get all files and put them into assets/ or scripts/
-  if (!this.getBlob()) {
+  if (!this.getUrl()) {
     if (opt_errCbk) {
       opt_errCbk({
         message: 'The file must be saved before I can clean it up for you.'
@@ -469,13 +250,12 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
     }
     return;
   }
-  var baseUrl = this.getBlob().url;
-  baseUrl = baseUrl.substring(0, baseUrl.lastIndexOf('/') + 1);
+  var baseUrl = silex.utils.Url.getBaseUrl(this.getUrl());
 
   // image source
   bodyStr = bodyStr.replace(/<img[^"]*src="?([^" ]*)"/g, function(match, group1, group2) {
-    var absolute = silex.Helper.getAbsolutePath(group1, baseUrl);
-    var relative = silex.Helper.getRelativePath(absolute, silex.Helper.BaseUrl);
+    var absolute = silex.utils.Url.getAbsolutePath(group1, baseUrl);
+    var relative = silex.utils.Url.getRelativePath(absolute, silex.Helper.BaseUrl);
     // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
     if (!silex.Helper.isAbsoluteUrl(relative)) {
       relative = relative.replace('../', '/');
@@ -497,8 +277,8 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
   // css
   headStr = headStr.replace(/href="?([^" ]*)"/g, function(match, group1, group2) {
     var preventDownload = false;
-    var absolute = silex.Helper.getAbsolutePath(group1, baseUrl);
-    var relative = silex.Helper.getRelativePath(absolute, silex.Helper.BaseUrl);
+    var absolute = silex.utils.Url.getAbsolutePath(group1, baseUrl);
+    var relative = silex.utils.Url.getRelativePath(absolute, silex.Helper.BaseUrl);
     // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
     if (!silex.Helper.isAbsoluteUrl(relative)) {
       relative = relative.replace('../', '/');
@@ -525,8 +305,8 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
   // scripts
   headStr = headStr.replace(/src="?([^"]*)"/g, function(match, group1, group2) {
     var preventDownload = false;
-    var absolute = silex.Helper.getAbsolutePath(group1, baseUrl);
-    var relative = silex.Helper.getRelativePath(absolute, silex.Helper.BaseUrl);
+    var absolute = silex.utils.Url.getAbsolutePath(group1, baseUrl);
+    var relative = silex.utils.Url.getRelativePath(absolute, silex.Helper.BaseUrl);
     // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
     if (!silex.Helper.isAbsoluteUrl(relative)) {
       relative = relative.replace('../', '/');
@@ -689,9 +469,9 @@ this does nothing: node.style.backgroundImage = "url('" + info.destPath + "')";
   // callback
   cbk(html, cssStr, files);
 };
-silex.model.File.prototype.filterBgImage = function(baseUrl, files, match, group1, group2) {
-  var absolute = silex.Helper.getAbsolutePath(group2, baseUrl);
-  var relative = silex.Helper.getRelativePath(absolute, silex.Helper.BaseUrl);
+silex.model.Body.prototype.filterBgImage = function(baseUrl, files, match, group1, group2) {
+  var absolute = silex.utils.Url.getAbsolutePath(group2, baseUrl);
+  var relative = silex.utils.Url.getRelativePath(absolute, silex.Helper.BaseUrl);
   // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
   if (!silex.Helper.isAbsoluteUrl(relative)) {
     relative = relative.replace('../', '/');
@@ -717,7 +497,7 @@ silex.model.File.prototype.filterBgImage = function(baseUrl, files, match, group
  *     - destPath: the destination path (local, relative to the published file)
  *     - srcPath: the source path or relative URL (relative to the current file)
  *
-silex.model.File.prototype.handleNodeUrls = function (node, baseUrl) {
+silex.model.Body.prototype.handleNodeUrls = function (node, baseUrl) {
   var filesToBeServedLocally = [];
   switch (node.nodeName){
     case 'IMG':
@@ -766,9 +546,9 @@ silex.model.File.prototype.handleNodeUrls = function (node, baseUrl) {
  *     - destPath: the destination path (local, relative to the published file)
  *     - srcPath: the source path or relative URL (relative to the current file)
  *
-silex.model.File.prototype.getPublicationInfo = function (url, baseUrl, localFolder) {
-  var absolute = silex.Helper.getAbsolutePath(url, baseUrl);
-  var relative = silex.Helper.getRelativePath(absolute, silex.Helper.BaseUrl);
+silex.model.Body.prototype.getPublicationInfo = function (url, baseUrl, localFolder) {
+  var absolute = silex.utils.Url.getAbsolutePath(url, baseUrl);
+  var relative = silex.utils.Url.getRelativePath(absolute, silex.Helper.BaseUrl);
   // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
   if (!silex.Helper.isAbsoluteUrl(relative)) {
       relative = relative.replace('../', '/');

@@ -22,7 +22,20 @@ goog.require('goog.Uri');
 goog.require('goog.net.XhrIo');
 
 
-silex.utils.Url.BaseUrl = window.location.href.substr(0, window.location.href.lastIndexOf('/') + 1);
+
+/**
+ * Get base URL corresponding to a file URL
+ * @param {string} opt_url  the URL of the file, or null to get the base URL of silex editor e.g. http://www.silex.me/silex/
+ * @return  {string} the base url
+ */
+silex.utils.Url.getBaseUrl = function(opt_url) {
+  // default value is silex editor URL
+  if (!opt_url){
+    opt_url = window.location.href;
+  }
+  return opt_url.substr(0, opt_url.lastIndexOf('/') + 1);
+};
+
 
 /**
  * Check if an URL is relative or absolute
