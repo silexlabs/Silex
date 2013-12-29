@@ -16,50 +16,44 @@
  */
 goog.provide('silex.controller.PageToolController');
 
-goog.require('silex.controller.UiControllerBase');
-goog.require('silex.Model');
-goog.require('silex.View');
-goog.require('silex.Controller');
+goog.require('silex.controller.ControllerBase');
 
 
 /**
  * @constructor
- * @extends silex.controller.UiControllerBase
+ * @extends silex.controller.ControllerBase
  * listen to the view events and call the main controller's methods
- * @param {silex.Model} model
- * @param {silex.View} view
- * @param {silex.Controller} controller
+ * @param {silex.types.Model} model
+ * @param {silex.types.View} view
  */
-silex.controller.PageToolController = function (model, view, controller) {
+silex.controller.PageToolController = function (model, view) {
   // call super
-  silex.controller.UiControllerBase.call(this, model, view, controller);
+  silex.controller.ControllerBase.call(this, model, view);
   // attach events to the view
   view.pageTool.onStatus = goog.bind(this.pageToolCallback, this);
 };
 
-// inherit from silex.controller.UiControllerBase
-goog.inherits(silex.controller.UiControllerBase);
+// inherit from silex.controller.ControllerBase
+goog.inherits(silex.controller.PageToolController, silex.controller.ControllerBase);
 
 
 /**
  * pageTool event handler
  */
-silex.controller.MainController.prototype.pageToolCallback = function(event) {
-  this.tracker.trackAction('controller-events', 'request', event.type, 0);
-  switch (event.type) {
+silex.controller.PageToolController.prototype.pageToolCallback = function(type, page) {
+  this.tracker.trackAction('controller-events', 'request', type, 0);
+  switch (type) {
     case 'changed':
-      this.app.selection.setPage(event.page);
-      if (event.page) {
-        event.page.open();
-      }
+      // open the page
+      this.controller.mainController.openPage(page);
       break;
     case 'delete':
-      // delete the page from the model
-      this.removePage(event.page);
+      // delete the page
+      this.controller.mainController.removePage(page);
       break;
     case 'rename':
-      // delete the page from the model
-      this.renamePage(event.page);
+      // rename the page
+      this.controller.mainController.renamePage(page);
       break;
   }
 };

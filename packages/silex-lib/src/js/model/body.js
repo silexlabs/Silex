@@ -18,6 +18,7 @@
  */
 
 
+goog.require('silex.model.ModelBase');
 goog.provide('silex.model.Body');
 goog.require('silex.Config');
 
@@ -25,31 +26,16 @@ goog.require('silex.Config');
 
 /**
  * @constructor
- * Never call this directly nor do new Body,
- * Rather use silex.model.Body.getInstance()
+ * @param  {element} bodyElement  HTML element which holds the body section of the opened file
+ * @param  {element} headElement  HTML element which holds the head section of the opened file
  */
-silex.model.Body = function() {
+silex.model.Body = function(bodyElement, headElement) {
+  // call super
+  silex.model.ModelBase.call(this, bodyElement, headElement);
 };
 
-
-/**
- * Singleton pattern
- * reference to the only {silex.model.Body} Body instance of the application
- */
-silex.model.Body.instance;
-
-
-/**
- * Singleton pattern
- * @return {silex.model.Body} a Body instance
- */
-silex.model.Body.getInstance = function() {
-  if (!silex.model.Body.instance){
-    silex.model.Body.instance = new silex.model.Body();
-  }
-  return silex.model.Body.instance;
-};
-
+// inherit from silex.model.ModelBase
+goog.inherits(silex.model.Body, silex.model.ModelBase);
 
 
 

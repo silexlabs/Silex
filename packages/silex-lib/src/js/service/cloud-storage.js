@@ -19,7 +19,6 @@
 goog.provide('silex.service.CloudStorage');
 
 
-
 /**
  * the Silex CloudStorage singleton
  * @constructor
@@ -29,34 +28,13 @@ goog.provide('silex.service.CloudStorage');
 silex.service.CloudStorage = function() {
   this.filePicker = cloudExplorer;
 };
+goog.addSingletonGetter(silex.service.CloudStorage);
 
 
 /**
  * reference to the filepicker instance
  */
 silex.service.CloudStorage.prototype.filePicker;
-
-
-/**
- * constant
- */
-//silex.service.CloudStorage.BACK_END_URL = "../unifile/v1.0/services/list/";
-
-
-/**
- * singleton implementation
- */
-silex.service.CloudStorage.instance;
-
-
-/**
- * singleton implementation
- */
-silex.service.CloudStorage.getInstance = function() {
-  if (!silex.service.CloudStorage.instance)
-    silex.service.CloudStorage.instance = new silex.service.CloudStorage();
-  return silex.service.CloudStorage.instance;
-};
 
 
 /**

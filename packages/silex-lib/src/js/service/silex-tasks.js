@@ -28,23 +28,9 @@ goog.provide('silex.service.SilexTasks');
  * load and save data to and from the cloud storage services
  */
 silex.service.SilexTasks = function() {
+
 };
-
-
-/**
- * singleton implementation
- */
-silex.service.SilexTasks.instance;
-
-
-/**
- * singleton implementation
- */
-silex.service.SilexTasks.getInstance = function() {
-  if (!silex.service.SilexTasks.instance)
-    silex.service.SilexTasks.instance = new silex.service.SilexTasks();
-  return silex.service.SilexTasks.instance;
-};
+goog.addSingletonGetter(silex.service.SilexTasks);
 
 
 /**

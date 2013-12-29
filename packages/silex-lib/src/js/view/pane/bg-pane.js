@@ -16,7 +16,10 @@
  */
 
 
-goog.provide('silex.view.propertiesTool.BgPane');
+goog.require('silex.view.pane.PaneBase');
+goog.provide('silex.view.pane.BgPane');
+
+goog.require('silex.utils.Style');
 
 goog.require('goog.array');
 goog.require('goog.object');
@@ -32,110 +35,26 @@ goog.require('goog.ui.TabBar');
  * on of Silex Editors class
  * let user edit style of components
  * @constructor
- * @param    {Element}  element        DOM element to wich I render the UI
- * @param    {function} styleChanged   callback which I'll call when the style
- *        has been changed by the user
- * @param    {function} selectImage    callback which I'll call when the user
- *        needs to select an image with the file picker
+ * @extend silex.view.PaneBase
+ * @param {element} element   container to render the UI
+ * @param  {element} bodyElement  HTML element which holds the body section of the opened file
+ * @param  {element} headElement  HTML element which holds the head section of the opened file
  */
-silex.view.propertiesTool.BgPane = function(element,
-                                            styleChanged,
-                                            selectImage) {
-  this.element = element;
-  this.styleChanged = styleChanged;
-  this.selectImage = selectImage;
+silex.view.pane.BgPane = function(element, headElement, bodyElement) {
+  // call super
+  goog.base(this, element, headElement, bodyElement);
+
   this.buildUi();
 };
 
-
-/**
- * element of the dom to which the component is rendered
- */
-silex.view.propertiesTool.BgPane.prototype.element;
-
-
-/**
- * style to be edited
- */
-silex.view.propertiesTool.BgPane.prototype.style;
-
-
-/**
- * avoid loops on redraw
- */
-silex.view.propertiesTool.BgPane.prototype.isRedraw;
-
-
-/**
- * callback to notify the tool box
- */
-silex.view.propertiesTool.BgPane.prototype.styleChanged;
-
-
-/**
- * callback to call to let the user choose a background image
- */
-silex.view.propertiesTool.BgPane.prototype.selectImage;
-
-
-/**
- * color picker for background color
- */
-silex.view.propertiesTool.BgPane.prototype.bgColorPicker;
-
-
-/**
- * color picker for background color
- */
-silex.view.propertiesTool.BgPane.prototype.hsvPalette;
-
-
-/**
- * check box for background color transparency
- */
-silex.view.propertiesTool.BgPane.prototype.transparentBgCheckbox;
-
-
-/**
- * controls for background image
- */
-silex.view.propertiesTool.BgPane.prototype.bgSelectBgImage;
-
-
-/**
- * controls for background image
- */
-silex.view.propertiesTool.BgPane.prototype.bgClearBgImage;
-
-
-/**
- * controls for background image
- */
-silex.view.propertiesTool.BgPane.prototype.attachementComboBox;
-
-
-/**
- * controls for background image
- */
-silex.view.propertiesTool.BgPane.prototype.vPositionComboBox;
-
-
-/**
- * controls for background image
- */
-silex.view.propertiesTool.BgPane.prototype.hPositionComboBox;
-
-
-/**
- * controls for background image
- */
-silex.view.propertiesTool.BgPane.prototype.repeatComboBox;
+// inherit from silex.view.ViewBase
+goog.inherits(silex.view.pane.BgPane, silex.view.pane.PaneBase);
 
 
 /**
  * build the UI
  */
-silex.view.propertiesTool.BgPane.prototype.buildUi = function() {
+silex.view.pane.BgPane.prototype.buildUi = function() {
   // BG color
   var hsvPaletteElement = goog.dom.getElementByClass('color-bg-palette',
                                                      this.element);
@@ -215,57 +134,50 @@ silex.view.propertiesTool.BgPane.prototype.buildUi = function() {
   goog.events.listen(this.attachementComboBox,
       goog.ui.Component.EventType.CHANGE,
       function(event) {
-        this.setBgImageAttachement(event.target.getSelectedItem().getId());
+        this.styleChanged('backgroundAttachment', event.target.getSelectedItem().getId());
       }, false, this);
   goog.events.listen(this.vPositionComboBox,
       goog.ui.Component.EventType.CHANGE,
       function(event) {
         var hPosition = this.hPositionComboBox.getSelectedItem().getId();
         var vPosition = this.vPositionComboBox.getSelectedItem().getId();
-        this.setBgImagePosition(vPosition + ' ' + hPosition);
+        this.styleChanged('backgroundPosition', vPosition + ' ' + hPosition);
       }, false, this);
   goog.events.listen(this.hPositionComboBox,
       goog.ui.Component.EventType.CHANGE,
       function(event) {
         var hPosition = this.hPositionComboBox.getSelectedItem().getId();
         var vPosition = this.vPositionComboBox.getSelectedItem().getId();
-        this.setBgImagePosition(vPosition + ' ' + hPosition);
+        this.styleChanged('backgroundPosition', vPosition + ' ' + hPosition);
       }, false, this);
   goog.events.listen(this.repeatComboBox,
       goog.ui.Component.EventType.CHANGE,
       function(event) {
-        this.setBgImageRepeat(event.target.getSelectedItem().getId());
+        this.styleChanged('backgroundRepeat', event.target.getSelectedItem().getId());
       }, false, this);
-};
-
-
-/**
- * display the style of the element being edited
- * @param    {object}    style    object containing the styles
- *      (key/value pairs) to apply
- */
-silex.view.propertiesTool.BgPane.prototype.setStyle = function(style) {
-  this.style = style;
-  this.redraw();
 };
 
 
 /**
  * redraw the properties
  */
-silex.view.propertiesTool.BgPane.prototype.redraw = function() {
-  if (this.style && !this.isRedraw && this.transparentBgCheckbox) {
-    this.isRedraw = true;
+silex.view.pane.BgPane.prototype.redraw = function() {
+  // call super
+  goog.base(this, 'redraw');
 
+  // get the selected element
+  var element = this.getSelection()[0];
+
+  if (element){
     // BG color
-    var color = this.style.backgroundColor;
+    var color = element.style.backgroundColor;
     if (color === undefined || color === 'transparent' || color === '') {
       this.transparentBgCheckbox.setChecked(true);
       this.bgColorPicker.setEnabled(false);
       this.setColorPaletteVisibility(false);
     }
     else {
-      var hex = silex.Helper.rgbaToHex(color);
+      var hex = silex.utils.Style.rgbaToHex(color);
 
       this.transparentBgCheckbox.setChecked(false);
       this.bgColorPicker.setEnabled(true);
@@ -273,9 +185,9 @@ silex.view.propertiesTool.BgPane.prototype.redraw = function() {
       this.hsvPalette.setColorRgbaHex(hex);
     }
     // BG image
-    if (this.style.backgroundImage !== null &&
-        this.style.backgroundImage !== 'none' &&
-        this.style.backgroundImage !== '') {
+    if (element.style.backgroundImage !== null &&
+        element.style.backgroundImage !== 'none' &&
+        element.style.backgroundImage !== '') {
       this.bgClearBgImage.setEnabled(true);
     }
     else {
@@ -283,8 +195,8 @@ silex.view.propertiesTool.BgPane.prototype.redraw = function() {
     }
     // workaround "backgroundImage not set"
     this.bgClearBgImage.setEnabled(true);
-    if (this.style.backgroundAttachement) {
-      switch (this.style.backgroundAttachement) {
+    if (element.style.backgroundAttachement) {
+      switch (element.style.backgroundAttachement) {
         case 'scroll':
           this.attachementComboBox.setSelectedIndex(0);
           break;
@@ -299,8 +211,8 @@ silex.view.propertiesTool.BgPane.prototype.redraw = function() {
     else {
       this.attachementComboBox.setSelectedIndex(0);
     }
-    if (this.style.backgroundPosition) {
-      var posArr = this.style.backgroundPosition.split(' ');
+    if (element.style.backgroundPosition) {
+      var posArr = element.style.backgroundPosition.split(' ');
       var vPosition = posArr[0];
       var hPosition = posArr[1];
       switch (vPosition) {
@@ -330,8 +242,8 @@ silex.view.propertiesTool.BgPane.prototype.redraw = function() {
       this.vPositionComboBox.setSelectedIndex(0);
       this.hPositionComboBox.setSelectedIndex(0);
     }
-    if (this.style.backgroundRepeat) {
-      switch (this.style.backgroundRepeat) {
+    if (element.style.backgroundRepeat) {
+      switch (element.style.backgroundRepeat) {
         case 'repeat':
           this.repeatComboBox.setSelectedIndex(0);
           break;
@@ -360,15 +272,10 @@ silex.view.propertiesTool.BgPane.prototype.redraw = function() {
 /**
  * User has selected a color
  */
-silex.view.propertiesTool.BgPane.prototype.onColorChanged = function() {
-  // update style
-  var color = silex.Helper.hexToRgba(this.hsvPalette.getColorRgbaHex());
-  if (!this.style) this.style = {};
-  this.style.backgroundColor = color;
+silex.view.pane.BgPane.prototype.onColorChanged = function() {
+  var color = silex.utils.Style.hexToRgba(this.hsvPalette.getColorRgbaHex());
   // notify the toolbox
-  this.styleChanged(this.style);
-  // redraw to reflect changes
-  this.redraw();
+  this.styleChanged('backgroundColor', color);
 };
 
 
@@ -376,11 +283,11 @@ silex.view.propertiesTool.BgPane.prototype.onColorChanged = function() {
  * User has clicked on the color button
  * open or close the palete
  */
-silex.view.propertiesTool.BgPane.prototype.onBgColorButton = function() {
+silex.view.pane.BgPane.prototype.onBgColorButton = function() {
   // show the palette
   if (this.getColorPaletteVisibility() === false) {
     this.hsvPalette.setColorRgbaHex(
-        silex.Helper.rgbaToHex(this.style.backgroundColor)
+        silex.utils.Style.rgbaToHex(this.style.backgroundColor)
     );
     this.setColorPaletteVisibility(true);
   }
@@ -393,108 +300,33 @@ silex.view.propertiesTool.BgPane.prototype.onBgColorButton = function() {
 /**
  * User has clicked the transparent checkbox
  */
-silex.view.propertiesTool.BgPane.prototype.onTransparentChanged =
-    function() {
-  // update style
+silex.view.pane.BgPane.prototype.onTransparentChanged = function() {
+  var color = 'transparent';
   if (this.transparentBgCheckbox.getChecked() === false) {
-    var color = silex.Helper.hexToRgba(this.hsvPalette.getColorRgbaHex());
+    var color = silex.utils.Style.hexToRgba(this.hsvPalette.getColorRgbaHex());
     if (!color) {
       //color='#FFFFFF';
       color = 'rgba(255, 255, 255, 1)';
     }
-    this.style.backgroundColor = color;
-  }
-  else {
-    this.style.backgroundColor = 'transparent';
   }
   // notify the toolbox
-  this.styleChanged(this.style);
-  // redraw to reflect changes
-  this.redraw();
+  this.styleChanged('backgroundColor', color);
 };
 
 
 /**
  * User has clicked the select image button
  */
-silex.view.propertiesTool.BgPane.prototype.onSelectImageButton =
-    function() {
-  this.selectImage();
-};
-
-
-/**
- * User has selected an image
- * called by controller
- * @param    {string} url    URL of the image chosen by the user
- */
-silex.view.propertiesTool.BgPane.prototype.setBgImage = function(url) {
-  // update style
-  var backgroundImage = url;
-  this.style.backgroundImage = 'url(\'' + backgroundImage + '\')';
-  // apply to the element and store it in the context attribute
-  this.styleChanged(this.style);
-  // redraw to reflect changes
-  this.redraw();
-};
-
-
-/**
- * Property changed callback
- * @param    {string} value    Value of the parameter chosen by the user
- */
-silex.view.propertiesTool.BgPane.prototype.setBgImageAttachement =
-    function(value) {
-  // update style
-  this.style.backgroundAttachment = value;
-  // apply to the element and store it in the context attribute
-  this.styleChanged(this.style);
-  // redraw to reflect changes
-  this.redraw();
-};
-
-
-/**
- * Property changed callback
- * @param    {string} value    Value of the parameter chosen by the user
- */
-silex.view.propertiesTool.BgPane.prototype.setBgImagePosition =
-    function(value) {
-  // update style
-  this.style.backgroundPosition = value;
-  // apply to the element and store it in the context attribute
-  this.styleChanged(this.style);
-  // redraw to reflect changes
-  this.redraw();
-};
-
-
-/**
- * Property changed callback
- * @param    {string} value    Value of the parameter chosen by the user
- */
-silex.view.propertiesTool.BgPane.prototype.setBgImageRepeat =
-    function(value) {
-  // update style
-  this.style.backgroundRepeat = value;
-  // apply to the element and store it in the context attribute
-  this.styleChanged(this.style);
-  // redraw to reflect changes
-  this.redraw();
+silex.view.pane.BgPane.prototype.onSelectImageButton = function() {
+  this.selectBgImage();
 };
 
 
 /**
  * User has clicked the clear image button
  */
-silex.view.propertiesTool.BgPane.prototype.onClearImageButton =
-    function() {
-  // update style
-  this.style.backgroundImage = 'none';
-  // apply to the element and store it in the context attribute
-  this.styleChanged(this.style);
-  // redraw to reflect changes
-  this.redraw();
+silex.view.pane.BgPane.prototype.onClearImageButton = function() {
+  this.styleChanged('backgroundImage', 'none');
 };
 
 
@@ -504,8 +336,7 @@ silex.view.propertiesTool.BgPane.prototype.onClearImageButton =
  * because the setColor then leave the color palette UI unchanged
  * @return    {boolean} true if the color palete is visible
  */
-silex.view.propertiesTool.BgPane.prototype.getColorPaletteVisibility =
-    function() {
+silex.view.pane.BgPane.prototype.getColorPaletteVisibility = function() {
   return goog.style.getStyle(this.hsvPalette.getElement(),
       'visibility') !== 'hidden';
 };
@@ -517,8 +348,7 @@ silex.view.propertiesTool.BgPane.prototype.getColorPaletteVisibility =
  * because the setColor then leave the color palette UI unchanged
  * @param {boolean} isVisible    The desired visibility
  */
-silex.view.propertiesTool.BgPane.prototype.setColorPaletteVisibility =
-    function(isVisible) {
+silex.view.pane.BgPane.prototype.setColorPaletteVisibility = function(isVisible) {
   if (isVisible) {
     if (!this.getColorPaletteVisibility()) {
       goog.style.setStyle(this.hsvPalette.getElement(),

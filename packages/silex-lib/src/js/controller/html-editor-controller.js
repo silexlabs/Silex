@@ -16,40 +16,37 @@
  */
 goog.provide('silex.controller.HtmlEditorController');
 
-goog.require('silex.controller.UiControllerBase');
-goog.require('silex.Model');
-goog.require('silex.View');
-goog.require('silex.Controller');
+goog.require('silex.controller.ControllerBase');
 
 
 /**
  * @constructor
- * @extends silex.controller.UiControllerBase
+ * @extends silex.controller.ControllerBase
  * listen to the view events and call the main controller's methods
- * @param {silex.Model} model
- * @param {silex.View} view
- * @param {silex.Controller} controller
+ * @param {silex.types.Model} model
+ * @param {silex.types.View} view
+ * @param {silex.types.Controller} controller
  */
-silex.controller.HtmlEditorController = function (model, view, controller) {
+silex.controller.HtmlEditorController = function (model, view) {
   // call super
-  silex.controller.UiControllerBase.call(this, model, view, controller);
+  silex.controller.ControllerBase.call(this, model, view);
   // attach events to the view
   view.htmlEditor.onStatus = goog.bind(this.htmlEditorCallback, this);
 };
 
-// inherit from silex.controller.UiControllerBase
-goog.inherits(silex.controller.UiControllerBase);
+// inherit from silex.controller.ControllerBase
+goog.inherits(silex.controller.HtmlEditorController, silex.controller.ControllerBase);
 
 
 /**
  * htmlEditor event handler
  */
-silex.controller.MainController.prototype.htmlEditorCallback = function(event) {
-  switch (event.type) {
+silex.controller.HtmlEditorController.prototype.htmlEditorCallback = function(type, content) {
+  switch (type) {
     case 'changed':
       // update content
       var element = this.view.stage.getSelection()[0];
-      this.model.element.setInnerHtml(element, event.content);
+      this.model.element.setInnerHtml(element, content);
       break;
   }
 };

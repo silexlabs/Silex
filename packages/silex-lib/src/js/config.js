@@ -39,6 +39,41 @@ silex.Config.debug = {
   , doAfterReady: null
 }
 /**
+ * Link of the menu
+ * @const constant
+ */
+silex.Config.ABOUT_SILEX = 'http://www.silexlabs.org/silex/';
+/**
+ * Link of the menu
+ * @const constant
+ */
+silex.Config.ABOUT_SILEX_LABS = 'http://www.silexlabs.org/';
+/**
+ * Link of the menu
+ * @const constant
+ */
+silex.Config.SUBSCRIBE_SILEX_LABS = 'http://eepurl.com/F48q5';
+/**
+ * Link of the menu
+ * @const constant
+ */
+silex.Config.SOCIAL_GPLUS = 'https://plus.google.com/communities/107373636457908189681';
+/**
+ * Link of the menu
+ * @const constant
+ */
+silex.Config.SOCIAL_TWITTER = 'http://twitter.com/silexlabs';
+/**
+ * Link of the menu
+ * @const constant
+ */
+silex.Config.SOCIAL_FB = 'http://www.facebook.com/silexlabs';
+/**
+ * Link of the menu
+ * @const constant
+ */
+silex.Config.FORK_CODE = 'https://github.com/silexlabs/Silex';
+/**
  * The main application menu
  */
 silex.Config.menu = {
@@ -261,11 +296,6 @@ silex.Config.menu = {
         , className: 'menu-item-help-newsLetter'
       }
       , null
-      , {
-        label: 'Questions and answers'
-        , id: 'help.forums'
-        , className: 'menu-item-help-forums'
-      }
       , {
         label: 'Talk with us on twitter'
         , id: 'help.twitter'

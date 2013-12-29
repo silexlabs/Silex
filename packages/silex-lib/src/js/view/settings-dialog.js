@@ -15,6 +15,7 @@
  */
 
 
+goog.require('silex.view.ViewBase');
 goog.provide('silex.view.SettingsDialog');
 goog.require('goog.events.KeyCodes');
 goog.require('goog.ui.KeyboardShortcutHandler');
@@ -29,9 +30,10 @@ goog.require('goog.ui.KeyboardShortcutHandler');
  * load the template and make it a SettingsDialog dialog
  * this is only the UI part, to let user setup publish functionnality
  */
-silex.view.SettingsDialog = function(element) {
-  // store the container
-  this.element = element;
+silex.view.SettingsDialog = function(element, headElement, bodyElement) {
+  // call super
+  silex.view.ViewBase.call(this, element, headElement, bodyElement);
+
   // init the editor
   this.publicationPath = '';
   // hide the at start
@@ -51,9 +53,7 @@ silex.view.SettingsDialog = function(element) {
   // publication path browse button
   var btn = goog.dom.getElementByClass('browse-btn', this.element);
   goog.events.listen(btn, goog.events.EventType.CLICK, function() {
-    this.onStatus({
-      type: 'browsePublishPath'
-    });
+    this.onStatus('browsePublishPath');
   }, false, this);
   // publication path input field
   var inputPublicationPath =
@@ -61,12 +61,12 @@ silex.view.SettingsDialog = function(element) {
   goog.events.listen(
       inputPublicationPath, goog.ui.Component.EventType.CHANGE,
       function() {
-        this.onStatus({
-          type: 'change',
-          data: inputPublicationPath.value
-        });
+        this.onStatus('change', inputPublicationPath.value);
       }, false, this);
 };
+
+// inherit from silex.view.ViewBase
+goog.inherits(silex.view.SettingsDialog, silex.view.ViewBase);
 
 
 /**
@@ -76,36 +76,29 @@ silex.view.SettingsDialog.prototype.element;
 
 
 /**
- * callback set by the controller
- * called to notify the controller that the file browser should be opened to
- * select the publish path
+ * get/set the publication path
+ * @see silex.model.File
+ * @return {string}   the publication path
  */
-silex.view.SettingsDialog.prototype.onStatus;
+silex.view.Stage.prototype.getPublicationPath = function() {
+  var that = this;
+  var path = null;
+  $('meta[name="publicationPath"]', headElement).each(
+      function() {
+        path = this.getAttribute('content');
+      });
+  return path;
+};
 
 
 /**
  * render the template
  */
 silex.view.SettingsDialog.prototype.redraw = function() {
-  var inputPublicationPath =
-      goog.dom.getElementByClass('input-publication-path');
+  var inputPublicationPath = goog.dom.getElementByClass('input-publication-path');
   inputPublicationPath.value = this.getPublicationPath();
 };
 
-
-/**
- * get/set the publication path
- * @see silex.model.File
- */
-silex.view.SettingsDialog.prototype.getPublicationPath = function(){
-  var that = this;
-  var path = null;
-  $('meta[name="publicationPath"]', this.headElement).each(
-  function () {
-    path = this.getAttribute('content');
-  });
-  return path;
-}
 
 /**
  * open settings dialog

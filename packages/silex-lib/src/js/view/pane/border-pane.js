@@ -16,7 +16,8 @@
  */
 
 
-goog.provide('silex.view.propertiesTool.BorderPane');
+goog.require('silex.view.pane.PaneBase');
+goog.provide('silex.view.pane.BorderPane');
 
 goog.require('goog.array');
 goog.require('goog.cssom');
@@ -33,93 +34,80 @@ goog.require('goog.ui.HsvaPalette');
  * on of Silex Editors class
  * let user edit style of components
  * @constructor
- * @param  {Element}  element    DOM element to wich I render the UI
- * @param  {function} onChanged   callback which I'll call when the style
- *    has been changed by the user
+ * @extend silex.view.PaneBase
+ * @param {element} element   container to render the UI
+ * @param  {element} bodyElement  HTML element which holds the body section of the opened file
+ * @param  {element} headElement  HTML element which holds the head section of the opened file
  */
-silex.view.propertiesTool.BorderPane = function(element, onChanged) {
-  this.element = element;
-  this.onChanged = onChanged;
+silex.view.pane.BorderPane = function(element, headElement, bodyElement) {
+  // call super
+  goog.base(this, element, headElement, bodyElement);
+
   this.buildUi();
 };
 
-
-/**
- * element of the dom to which the component is rendered
- */
-silex.view.propertiesTool.BorderPane.prototype.element;
-
-
-/**
- * style to be edited
- */
-silex.view.propertiesTool.BorderPane.prototype.style;
-
-
-/**
- * callback to notify the tool box
- */
-silex.view.propertiesTool.BorderPane.prototype.onChanged;
+// inherit from silex.view.ViewBase
+goog.inherits(silex.view.pane.BgPane, silex.view.pane.PaneBase);
 
 
 /**
  * input element
  */
-silex.view.propertiesTool.BorderPane.prototype.borderWidthInput;
+silex.view.pane.BorderPane.prototype.borderWidthInput;
 
 
 /**
  * input element
  */
-silex.view.propertiesTool.BorderPane.prototype.borderStyleComboBox;
+silex.view.pane.BorderPane.prototype.borderStyleComboBox;
 
 
 /**
  * input element
  */
-silex.view.propertiesTool.BorderPane.prototype.borderPlacementCheckBoxes;
+silex.view.pane.BorderPane.prototype.borderPlacementCheckBoxes;
 
 
 /**
  * input element
  */
-silex.view.propertiesTool.BorderPane.prototype.cornerRadiusInput;
+silex.view.pane.BorderPane.prototype.cornerRadiusInput;
 
 
 /**
  * input element
  */
-silex.view.propertiesTool.BorderPane.prototype.cornerPlacementCheckBoxes;
+silex.view.pane.BorderPane.prototype.cornerPlacementCheckBoxes;
 
 
 /**
  * color picker for border color
  */
-silex.view.propertiesTool.BorderPane.prototype.borderColorPicker;
+silex.view.pane.BorderPane.prototype.borderColorPicker;
 
 
 /**
  * color picker for border color
  */
-silex.view.propertiesTool.BorderPane.prototype.hsvPalette;
+silex.view.pane.BorderPane.prototype.hsvPalette;
 
 
 /**
  * button to disable border
  */
-silex.view.propertiesTool.BorderPane.prototype.noBorderButton;
+silex.view.pane.BorderPane.prototype.noBorderButton;
 
 
 /**
  * avoid loops on redraw
  */
-silex.view.propertiesTool.BorderPane.prototype.isRedraw;
+silex.view.pane.BorderPane.prototype.isRedraw;
 
 
 /**
  * build the UI
  */
-silex.view.propertiesTool.BorderPane.prototype.buildUi = function() {
+silex.view.pane.BorderPane.prototype.buildUi = function() {
   // border width
   this.borderWidthInput = goog.dom.getElementByClass('border-width-input',
       this.element);
@@ -219,25 +207,19 @@ silex.view.propertiesTool.BorderPane.prototype.buildUi = function() {
 
 
 /**
- * display the propertis of the component being edited
- * @param    {object}    style    object containing the styles
- *      (key/value pairs) to apply
- */
-silex.view.propertiesTool.BorderPane.prototype.setStyle = function(style) {
-  this.style = style;
-  this.redraw();
-};
-
-
-/**
  * redraw the properties
  */
-silex.view.propertiesTool.BorderPane.prototype.redraw = function() {
-  if (this.style && !this.isRedraw) {
-    this.isRedraw = true;
+silex.view.pane.BorderPane.prototype.redraw = function() {
+  // call super
+  goog.base(this, 'redraw');
+
+  // get the selected element
+  var element = this.getSelection()[0];
+
+  if (element){
     // border width
-    if (this.style.borderWidth) {
-      var values = this.style.borderWidth.split(' ');
+    if (element.style.borderWidth) {
+      var values = element.style.borderWidth.split(' ');
       var val = values[0];
       this.borderWidthInput.value = val.substr(0, val.indexOf('px'));
       // border placement
@@ -251,7 +233,7 @@ silex.view.propertiesTool.BorderPane.prototype.redraw = function() {
           checkBox.setChecked(false);
       }
       // border color
-      var color = this.style.borderColor;
+      var color = element.style.borderColor;
       if (color === undefined || color === 'transparent' || color === '') {
         this.bgColorPicker.setEnabled(false);
         this.setColorPaletteVisibility(false);
@@ -274,15 +256,15 @@ silex.view.propertiesTool.BorderPane.prototype.redraw = function() {
       }
     }
     // border style
-    if (this.style.borderStyle) {
-      this.borderStyleComboBox.setValue(this.style.borderStyle);
+    if (element.style.borderStyle) {
+      this.borderStyleComboBox.setValue(element.style.borderStyle);
     }
     else {
       this.borderStyleComboBox.setSelectedIndex(0);
     }
     // border radius
-    if (this.style.borderRadius) {
-      var values = this.style.borderRadius.split(' ');
+    if (element.style.borderRadius) {
+      var values = element.style.borderRadius.split(' ');
       var val = values[0];
       this.cornerRadiusInput.value = val.substr(0, val.indexOf('px'));
       // corner placement
@@ -315,8 +297,8 @@ silex.view.propertiesTool.BorderPane.prototype.redraw = function() {
  * property changed
  * callback for number inputs
  */
-silex.view.propertiesTool.BorderPane.prototype.onBorderChanged = function() {
-  if (this.style && !this.isRedraw) {
+silex.view.pane.BorderPane.prototype.onBorderChanged = function() {
+  if (element.style && !this.isRedraw) {
     if (this.borderWidthInput.value && this.borderWidthInput.value !== '') {
       // border placement
       var borderWidthStr = '';
@@ -332,19 +314,18 @@ silex.view.propertiesTool.BorderPane.prototype.onBorderChanged = function() {
         }
       }
       // border width
-      this.style.borderWidth = borderWidthStr;
+      this.styleChanged('borderWidth', borderWidthStr);
       // border style
-      this.style.borderStyle =
-          this.borderStyleComboBox.getSelectedItem().getValue();
+      this.styleChanged('borderStyle', this.borderStyleComboBox.getSelectedItem().getValue());
       // border color
       var hex = this.hsvPalette.getColorRgbaHex();
       var color = silex.Helper.hexToRgba(hex);
-      this.style.borderColor = color;
+      this.styleChanged('borderColor', color);
       this.bgColorPicker.setValue(hex.substring(0, 7));
     }
     else {
-      this.style.borderWidth = 'none';
-      this.style.borderStyle = 'none';
+      this.styleChanged('borderWidth', 'none');
+      this.styleChanged('borderStyle', 'none');
     }
     // corner radius
     if (this.cornerRadiusInput.value && this.cornerRadiusInput.value !== '') {
@@ -361,12 +342,11 @@ silex.view.propertiesTool.BorderPane.prototype.onBorderChanged = function() {
           borderWidthStr += '0 ';
         }
       }
-      this.style.borderRadius = borderWidthStr;
+      this.styleChanged('borderRadius', borderWidthStr);
     }
     else {
-      this.style.borderRadius = 'none';
+      this.styleChanged('borderRadius', 'none');
     }
-    this.onChanged(this.style);
   }
 };
 
@@ -374,7 +354,7 @@ silex.view.propertiesTool.BorderPane.prototype.onBorderChanged = function() {
 /**
  * reset borders
  */
-silex.view.propertiesTool.BorderPane.prototype.onResetBorder = function() {
+silex.view.pane.BorderPane.prototype.onResetBorder = function() {
   this.borderWidthInput.value = '';
   this.onBorderChanged();
 };
@@ -383,8 +363,7 @@ silex.view.propertiesTool.BorderPane.prototype.onResetBorder = function() {
 /**
  * color palette visibility
  */
-silex.view.propertiesTool.BorderPane.prototype.toggleColorPaletteVisibility =
-    function() {
+silex.view.pane.BorderPane.prototype.toggleColorPaletteVisibility = function() {
   this.setColorPaletteVisibility(!this.getColorPaletteVisibility());
 };
 
@@ -395,8 +374,7 @@ silex.view.propertiesTool.BorderPane.prototype.toggleColorPaletteVisibility =
  * because the setColor then leave the color palette UI unchanged
  * @return    {boolean} true if the color palete is visible
  */
-silex.view.propertiesTool.BorderPane.prototype.getColorPaletteVisibility =
-    function() {
+silex.view.pane.BorderPane.prototype.getColorPaletteVisibility = function() {
   return goog.style.getStyle(this.hsvPalette.getElement(),
       'visibility') !== 'hidden';
 };
@@ -408,7 +386,7 @@ silex.view.propertiesTool.BorderPane.prototype.getColorPaletteVisibility =
  *     because the setColor then leave the color palette UI unchanged
  * @param {boolean} isVisible    The desired visibility
  */
-silex.view.propertiesTool.BorderPane.prototype.setColorPaletteVisibility =
+silex.view.pane.BorderPane.prototype.setColorPaletteVisibility =
     function(isVisible) {
   if (isVisible) {
     if (!this.getColorPaletteVisibility()) {

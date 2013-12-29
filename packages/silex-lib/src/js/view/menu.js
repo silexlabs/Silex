@@ -17,6 +17,7 @@
  */
 
 
+goog.require('silex.view.ViewBase');
 goog.provide('silex.view.Menu');
 goog.require('silex.Config');
 
@@ -30,16 +31,18 @@ goog.require('goog.ui.KeyboardShortcutHandler');
 goog.require('goog.events.KeyHandler');
 
 
-//////////////////////////////////////////////////////////////////
-// Menu class
-//////////////////////////////////////////////////////////////////
 /**
  * @constructor
+ * @param {element} element   container to render the UI
  */
-silex.view.Menu = function(element) {
-  this.element = element;
+silex.view.Menu = function(element, headElement, bodyElement) {
+  // call super
+  silex.view.ViewBase.call(this, element, headElement, bodyElement);
   this.buildMenu(element);
 };
+
+// inherit from silex.view.ViewBase
+goog.inherits(silex.view.Menu, silex.view.ViewBase);
 
 
 /**
@@ -52,12 +55,6 @@ silex.view.Menu.prototype.menu;
  * element of the dom to which the component is rendered
  */
 silex.view.Menu.prototype.element;
-
-
-/**
- * callback for menu events, set by the controller
- */
-silex.view.Menu.prototype.onStatus;
 
 
 /**
@@ -192,9 +189,7 @@ silex.view.Menu.prototype.onClick = function(e) {
  */
 silex.view.Menu.prototype.onMenuEvent = function(type) {
   if (this.onStatus) {
-    this.onStatus({
-      type: type
-    });
+    this.onStatus(type);
   }
 };
 

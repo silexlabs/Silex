@@ -19,6 +19,7 @@
  */
 
 
+goog.require('silex.view.ViewBase');
 goog.provide('silex.view.FileExplorer');
 
 goog.require('silex.service.CloudStorage');
@@ -35,10 +36,14 @@ goog.require('goog.ui.KeyboardShortcutHandler');
 /**
  * the Silex FileExplorer class
  * @constructor
+ * @extend silex.view.ViewBase
+ * @param {element} element   container to render the UI
+ * @param  {element} bodyElement  HTML element which holds the body section of the opened file
+ * @param  {element} headElement  HTML element which holds the head section of the opened file
  */
-silex.view.FileExplorer = function(element) {
-  // store the container
-  this.element = element;
+silex.view.FileExplorer = function(element, headElement, bodyElement) {
+  // call super
+  silex.view.ViewBase.call(this, element, headElement, bodyElement);
   // hide the at start
   goog.style.setStyle(this.element, 'display', 'none');
   // init the dialog
@@ -55,6 +60,8 @@ silex.view.FileExplorer = function(element) {
 
 };
 
+// inherit from silex.view.ViewBase
+goog.inherits(silex.view.FileExplorer, silex.view.ViewBase);
 
 /**
  * Contant for file picker config

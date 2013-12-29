@@ -19,6 +19,7 @@
  */
 
 
+goog.require('silex.view.ViewBase');
 goog.provide('silex.view.Workspace');
 
 goog.require('goog.dom.ViewportSizeMonitor');
@@ -31,7 +32,7 @@ goog.require('goog.dom.ViewportSizeMonitor');
  * @param  {Element}  menu  reference to the view
  * @param  {Element}  stage  reference to the view
  * @param  {Element}  pageTool  reference to the view
- * @param  {Element}  propertiesTool  reference to the view
+ * @param  {Element}  propertyTool  reference to the view
  * @param  {Element}  htmlEditor  reference to the view
  * @param  {Element}  textEditor  reference to the view
  * @param  {Element}  fileExplorer  reference to the view
@@ -41,7 +42,7 @@ silex.view.Workspace = function(element,
                                 menuElement,
                                 stageElement,
                                 pageToolElement,
-                                propertiesToolElement,
+                                propertyToolElement,
                                 htmlEditorElement,
                                 textEditorElement,
                                 fileExplorerElement,
@@ -51,7 +52,7 @@ silex.view.Workspace = function(element,
   this.menuElement = menuElement;
   this.stageElement = stageElement;
   this.pageToolElement = pageToolElement;
-  this.propertiesToolElement = propertiesToolElement;
+  this.propertyToolElement = propertyToolElement;
   this.htmlEditorElement = htmlEditorElement;
   this.textEditorElement = textEditorElement;
   this.fileExplorerElement = fileExplorerElement;
@@ -93,9 +94,9 @@ silex.view.Workspace.prototype.pageToolElement;
 
 
 /**
- * reference to the silex.view.PropertiesTool class
+ * reference to the silex.view.PropertyTool class
  */
-silex.view.Workspace.prototype.propertiesToolElement;
+silex.view.Workspace.prototype.propertyToolElement;
 
 
 /**
@@ -170,18 +171,18 @@ silex.view.Workspace.prototype.doRedraw = function() {
 
   var viewportSize = this.viewport.getSize();
   var pageToolSize = goog.style.getSize(this.pageToolElement);
-  var propertiesToolSize = goog.style.getSize(this.propertiesToolElement);
+  var propertyToolSize = goog.style.getSize(this.propertyToolElement);
   var menuSize = goog.style.getSize(this.menuElement);
 
   // stage
   var stageWidth = viewportSize.width -
-      pageToolSize.width - propertiesToolSize.width;
+      pageToolSize.width - propertyToolSize.width;
   goog.style.setWidth(this.stageElement, stageWidth);
 
   // menu offset
   var toolsHeight = viewportSize.height - menuSize.height;
   goog.style.setHeight(this.pageToolElement, toolsHeight);
-  goog.style.setHeight(this.propertiesToolElement, toolsHeight);
+  goog.style.setHeight(this.propertyToolElement, toolsHeight);
   goog.style.setHeight(this.stageElement, toolsHeight);
 
   //goog.style.setPosition(this.pageToolElement, null, menuSize.height);
