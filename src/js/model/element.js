@@ -326,7 +326,7 @@ silex.model.Element.prototype.setImageUrl = function(element, url, opt_callback,
  * remove a DOM element
  * @param  {element} element   the element to remove
  */
-silex.model.Element.removeElement = function(element) {
+silex.model.Element.prototype.removeElement = function(element) {
   goog.dom.removeNode(element);
 }
 
@@ -338,7 +338,7 @@ silex.model.Element.removeElement = function(element) {
  *	  see TYPE_* constants of the class @see silex.model.Element
  * @return 	{element} 	the newly created element
  */
-silex.model.Element.createElement = function(type, opt_container) {
+silex.model.Element.prototype.createElement = function(type, opt_container) {
 
   var element;
 
@@ -427,6 +427,17 @@ silex.model.Element.prototype.setSelected = function(element, isSelected) {
   else {
     goog.dom.classes.remove(element, silex.model.Element.SELECTED_CLASS_NAME);
   }
+};
+
+
+/**
+ * get/set selection
+ */
+silex.model.Element.prototype.resetSelection = function() {
+  var elements = goog.dom.getElementsByClass(silex.model.Element.SELECTED_CLASS_NAME, this.bodyElement);
+  goog.array.forEach(elements, function(element) {
+    goog.dom.classes.remove(element, silex.model.Element.SELECTED_CLASS_NAME);
+  }, this);
 };
 
 

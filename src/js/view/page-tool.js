@@ -28,7 +28,7 @@ goog.provide('silex.view.PageTool');
  */
 silex.view.PageTool = function(element, bodyElement, headElement) {
   // call super
-  silex.view.ViewBase.call(this, element, headElement, bodyElement);
+  silex.view.ViewBase.call(this, element, bodyElement, headElement);
 
   // init the tool
   this.initEvents();

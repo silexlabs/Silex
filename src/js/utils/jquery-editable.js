@@ -20,8 +20,6 @@ goog.provide('silex.utils.JQueryEditable');
 /**
  * @constructor
  * @struct
- * @param {string} name
- * @param {string} displayName
  */
 silex.utils.JQueryEditable = function() {
   throw('this is a static class and it canot be instanciated');

@@ -18,6 +18,8 @@
 goog.require('silex.view.pane.PaneBase');
 goog.provide('silex.view.pane.PropertyPane');
 
+goog.require('silex.utils.Dom');
+
 goog.require('goog.array');
 goog.require('goog.object');
 
@@ -225,8 +227,8 @@ silex.view.pane.PropertyPane.prototype.redraw = function() {
 
     var type = element.getAttribute(silex.model.Element.TYPE_ATTR);
     // refresh properties
-    var imageUrl = null;
-    if (type === silex.model.Element.SUBTYPE_IMAGE) {
+    var imageUrl = '';
+    if (type === silex.model.Element.TYPE_IMAGE) {
       if (this.baseUrl)
         imageUrl = silex.utils.Style.getRelativePath(element.getAttribute('src'), this.baseUrl);
       else
@@ -237,11 +239,12 @@ silex.view.pane.PropertyPane.prototype.redraw = function() {
     var editionContainer = goog.dom.getElementByClass('edition-container', this.element);
     if (this.element) {
       var templateHtml = goog.dom.getElementByClass('edition-template', this.element).innerHTML;
-      silex.utils.Dom.resolveTemplate(editionContainer, templateHtml, {
-        htmlEditor: (type === silex.model.Element.SUBTYPE_HTML),
-        textEditor: (type === silex.model.Element.SUBTYPE_TEXT),
+      editionContainer.innerHTML = silex.utils.Dom.renderList(templateHtml, [{
+        htmlEditor: (type === silex.model.Element.TYPE_HTML)?'inherit':'none',
+        textEditor: (type === silex.model.Element.TYPE_TEXT)?'inherit':'none',
+        imageEditor: (type === silex.model.Element.TYPE_IMAGE)?'inherit':'none',
         imageUrl: imageUrl
-      });
+      }]);
 
       // HTML editor
       var buttonElement = goog.dom.getElementByClass('html-editor-button', editionContainer);
@@ -263,7 +266,7 @@ silex.view.pane.PropertyPane.prototype.redraw = function() {
             this.editText,
             false);
       }
-      if (type === silex.model.Element.SUBTYPE_IMAGE) {
+      if (type === silex.model.Element.TYPE_IMAGE) {
         // browse for image button
         var buttonElement = goog.dom.getElementByClass('image-url-button', editionContainer);
         if (buttonElement) {
@@ -280,7 +283,7 @@ silex.view.pane.PropertyPane.prototype.redraw = function() {
         if (inputElement) {
           goog.events.listen(inputElement, 'change', function() {
             if (this.component && !this.isRedraw) {
-              if (type === silex.model.Element.SUBTYPE_IMAGE)
+              if (type === silex.model.Element.TYPE_IMAGE)
                 this.setImage(inputElement.value);
             }
           }, false, this);

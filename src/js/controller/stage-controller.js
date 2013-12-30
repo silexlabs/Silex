@@ -55,7 +55,7 @@ silex.controller.StageController.prototype.stageCallback = function(type, opt_ta
       break;
     case 'edit':
       // size or position of the element has changed
-      this.editSelection();
+      this.editElement();
       break;
   }
 };
