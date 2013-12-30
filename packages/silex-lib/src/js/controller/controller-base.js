@@ -19,7 +19,8 @@
  */
 goog.provide('silex.controller.ControllerBase');
 
-
+goog.require('silex.utils.Notification');
+goog.require('silex.utils.JQueryPageable');
 
 /**
  * @constructor
@@ -66,7 +67,7 @@ silex.controller.ControllerBase.prototype.removeElement = function(opt_element) 
   // remove the element
   this.model.element.removeElement(opt_element);
   // update view
-  this.view.propertyTool.refresh();
+  this.view.propertyTool.redraw();
 }
 
 
@@ -76,16 +77,16 @@ silex.controller.ControllerBase.prototype.removeElement = function(opt_element) 
  */
 silex.controller.ControllerBase.prototype.addElement = function(type) {
   // create the element and add it to the stage
-  var element = this.model.element.createElement(type, this.bodyElement);
+  var element = this.model.element.createElement(type, this.model.body.bodyElement);
   // only visible on the current page
-  var currentPage = silex.utils.JQueryPageable.getCurrentPage(this.bodyElement);
-  silex.utils.JQueryPageable.addToPage(element, currentPage);
+  var currentPageName = silex.utils.JQueryPageable.getCurrentPageName(this.model.body.bodyElement);
+  silex.utils.JQueryPageable.addToPage(element, currentPageName);
   // unless one of its parents is in a page already
   this.checkElementVisibility(element);
   // select the component
   this.model.element.setSelected(element);
   // update view
-  this.view.propertyTool.refresh();
+  this.view.propertyTool.redraw();
   return element;
 }
 
@@ -99,13 +100,13 @@ silex.controller.ControllerBase.prototype.editElement = function(opt_element) {
   if(!opt_element) opt_element = this.view.stage.getSelection()[0];
 
   switch (this.model.element.getType(opt_element)) {
-    case silex.model.Component.SUBTYPE_TEXT:
+    case silex.model.Element.SUBTYPE_TEXT:
       this.view.textEditor.openEditor(this.model.Element.getInnerHtml(opt_element));
       break;
-    case silex.model.Component.SUBTYPE_HTML:
+    case silex.model.Element.SUBTYPE_HTML:
       this.view.htmlEditor.openEditor(this.model.Element.getInnerHtml(opt_element));
       break;
-    case silex.model.Component.SUBTYPE_IMAGE:
+    case silex.model.Element.SUBTYPE_IMAGE:
       this.view.fileExplorer.openDialog(
           goog.bind(function(url) {
             this.view.propertyTool.setImage(url);
@@ -115,7 +116,7 @@ silex.controller.ControllerBase.prototype.editElement = function(opt_element) {
             silex.utils.Notification.notifyError('Error: I did not manage to load the image. <br /><br />' + (error.message || ''));
           }, this)
       );
-      this.app.workspace.invalidate();
+      this.view.workspace.invalidate();
       break;
   }
 };
@@ -124,25 +125,29 @@ silex.controller.ControllerBase.prototype.editElement = function(opt_element) {
 /**
  * open a page
  */
-silex.controller.ControllerBase.prototype.openPage = function(page) {
-  silex.utils.JQueryPageable.setCurrentPage(this.bodyElement, page);
+silex.controller.ControllerBase.prototype.openPage = function(pageName) {
+  silex.utils.JQueryPageable.setCurrentPage(this.model.body.bodyElement, pageName);
   // update view
   this.view.pageTool.refresh();
 }
 /**
  * rename a page
  */
-silex.controller.ControllerBase.prototype.renamePage = function(opt_page) {
+silex.controller.ControllerBase.prototype.renamePage = function(opt_pageName) {
+  console.log(arguments);
   // default to the current page
-  if (!opt_page){
-    opt_page = silex.utils.JQueryPageable.getCurrentPage(this.bodyElement);
+  if (!opt_pageName){
+    opt_pageName = silex.utils.JQueryPageable.getCurrentPageName(this.model.body.bodyElement);
   }
-  this.getUserInputPageName(page.displayName, goog.bind(function(name, newDisplayName) {
+  this.getUserInputPageName(
+    silex.utils.JQueryPageable.getDisplayName(
+      this.model.body.bodyElement, opt_pageName),
+      goog.bind(function(name, newDisplayName) {
     if (newDisplayName) {
       // update model
-      silex.utils.JQueryPageable.renamePage(this.bodyElement, opt_page, name, newDisplayName);
+      silex.utils.JQueryPageable.renamePage(this.model.body.bodyElement, opt_pageName, name, newDisplayName);
       // open the new page
-      this.openPage(silex.utils.JQueryPageable.getPageByName(this.bodyElement, name));
+      this.openPage(name);
     }
   }, this));
 };
@@ -151,19 +156,20 @@ silex.controller.ControllerBase.prototype.renamePage = function(opt_page) {
 /**
  * remvove a page
  */
-silex.controller.ControllerBase.prototype.removePage = function(opt_page) {
+silex.controller.ControllerBase.prototype.removePage = function(opt_pageName) {
   // default to the current page
-  if (!opt_page){
-    opt_page = silex.utils.JQueryPageable.getCurrentPage(this.bodyElement);
+  if (!opt_pageName){
+    opt_pageName = silex.utils.JQueryPageable.getCurrentPage(this.model.body.bodyElement);
   }
   // confirm and delete
-  silex.utils.Notification.confirm('I am about to delete the page "' + opt_page.displayName + '", are you sure?', function(accept) {
+  silex.utils.Notification.confirm('I am about to delete the page "' + silex.utils.JQueryPageable.getDisplayName(opt_pageName) + '", are you sure?',
+    function(accept) {
     if (accept) {
       // update model
-      silex.utils.JQueryPageable.removePage(opt_page);
+      silex.utils.JQueryPageable.removePage(opt_pageName);
       // update view
       this.view.pageTool.refresh();
-      this.view.propertyTool.refresh(); // css class of selected element may have chenged
+      this.view.propertyTool.redraw(); // css class of selected element may have chenged
     }
   });
 };
@@ -185,14 +191,14 @@ silex.controller.ControllerBase.prototype.getUserInputPageName = function(defaul
                 .replace(/"/g, '-')
                 .toLowerCase();
           // check if a page with this name exists
-          var pages = silex.model.Page.getPages();
-          var exists = null;
-          goog.array.forEach(pages, function(page) {
-            if (page.name === name)
-              exists = page;
+          var pages = silex.utils.JQueryPageable.getPages();
+          var exists = false;
+          goog.array.forEach(pages, function(pageName) {
+            if (pageName === name)
+              exists = true;
           });
           if (exists) {
-            exists.open();
+            silex.utils.JQueryPageable.openPage(name);
           }
           else {
             cbk(name, displayName);
@@ -211,14 +217,14 @@ silex.controller.ControllerBase.prototype.getUserInputPageName = function(defaul
  * then the element should be visible everywhere, i.e. in the same pages as its parent
  */
 silex.controller.ControllerBase.prototype.checkElementVisibility = function(element) {
-  var parentPage = silex.utils.JQueryEditable.getParentPage(element);
+  var parentPage = silex.utils.JQueryPageable.getParentPage(element);
   if (parentPage !== null) {
-    // get all the pages 
-    var pages = silex.view.JQueryPageable.getPages(this.rootPageable);
+    // get all the pages
+    var pages = silex.utils.JQueryPageable.getPagesForElement(this.rootPageable);
     for (idx in pages) {
       // remove the component from the page
-      var page = pages[idx];
-      silex.view.JQueryPageable.removeFromPage(element, page);
+      var pageName = pages[idx];
+      silex.utils.JQueryPageable.removeFromPage(element, pageName);
     }
     // redraw the tool box in order to reflect the changes
     this.view.propertyTool.redraw();
@@ -233,8 +239,8 @@ silex.controller.ControllerBase.prototype.createPage = function(successCbk, erro
   this.getUserInputPageName('Your new page name', goog.bind(function(name, displayName) {
     if (name) {
       // create the page model
-      var page = silex.utils.JQueryPageable.createPage(this.bodyElement, name, displayName);
-      this.openPage(page);
+      silex.utils.JQueryPageable.createPage(this.model.body.bodyElement, name, displayName);
+      this.openPage(name);
       this.tracker.trackAction('controller-events', 'success', event.type, 0);
       if (successCbk) successCbk();
     }
@@ -249,7 +255,7 @@ silex.controller.ControllerBase.prototype.createPage = function(successCbk, erro
 /**
  * view this file in a new window
  */
-silex.controller.ControllerBase.prototype.view = function() {
+silex.controller.ControllerBase.prototype.preview = function() {
   if (!this.model.file.getUrl()) {
     silex.utils.Notification.confirm('Save your file before preview?', goog.bind(function(accept) {
       if (accept) {
@@ -305,7 +311,7 @@ silex.controller.ControllerBase.prototype.openFile = function(url, opt_cbk, opt_
 silex.controller.ControllerBase.prototype.save = function(opt_url, opt_cbk, opt_errorCbk){
 
   if (opt_url){
-    this.app.file.save(
+    this.model.file.save(
       opt_url,
       goog.bind(function() {
         this.fileOperationSuccess('File is saved.', false)
@@ -319,10 +325,9 @@ silex.controller.ControllerBase.prototype.save = function(opt_url, opt_cbk, opt_
   }
   else{
     // choose a new name
-    this.fileExplorer.saveAsDialog(
+    this.view.fileExplorer.saveAsDialog(
       goog.bind(function(url) {
-        this.app.file.saveAs(
-          url,
+        this.model.file.saveAs(
           goog.bind(function() {
             this.fileOperationSuccess('File is saved.', false)
             if (opt_cbk) opt_cbk();
@@ -375,13 +380,13 @@ silex.controller.ControllerBase.prototype.publish = function(){
       Select a folder in the settings pannel and do "publish" again. \
       <br /><br />Now I will open the publish settings.',
       goog.bind(function() {
-        this.app.settingsDialog.openDialog();
-        this.app.workspace.invalidate();
+        this.view.settingsDialog.openDialog();
+        this.view.workspace.invalidate();
       }, this));
   }
   else
   {
-    this.app.file.publish(
+    this.model.file.publish(
       goog.bind(function(status) {
       if (status && status.success == false) {
         console.error('Error: I did not manage to publish the file. (1)');

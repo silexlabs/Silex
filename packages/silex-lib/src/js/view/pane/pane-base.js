@@ -30,7 +30,7 @@ goog.provide('silex.view.pane.PaneBase');
  */
 silex.view.pane.PaneBase = function (element, bodyElement, headElement) {
   // call super
-  silex.view.ViewBase.call(this, element, headElement, bodyElement);
+  silex.view.ViewBase.call(this, element, bodyElement, headElement);
 
 };
 

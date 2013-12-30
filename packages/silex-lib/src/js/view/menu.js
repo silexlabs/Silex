@@ -37,7 +37,7 @@ goog.require('goog.events.KeyHandler');
  */
 silex.view.Menu = function(element, bodyElement, headElement) {
   // call super
-  silex.view.ViewBase.call(this, element, headElement, bodyElement);
+  silex.view.ViewBase.call(this, element, bodyElement, headElement);
   this.buildMenu(element);
 };
 
@@ -61,7 +61,13 @@ silex.view.Menu.prototype.element;
  * refresh the displayed data
  */
 silex.view.Menu.prototype.redraw = function() {
-  this.setWebsiteName(this.getWebsiteName());
+  var title = null;
+  $('meta[name="title"]', this.headElement).each(
+    function() {
+      title = this.getAttribute('content');
+    });
+
+  this.setWebsiteName(title);
 }
 
 
@@ -218,6 +224,6 @@ silex.view.Menu.prototype.setWebsiteName = function(name) {
  * for internal use only, you should use silex.model.Head
  */
 silex.view.Menu.prototype.getWebsiteName = function() {
-  return goog.dom.getElementByClass('website-name').innerHTML;
+  return goog.dom.getElementByClass(headElement, 'website-name').innerHTML;
 };
 

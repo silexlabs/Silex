@@ -40,20 +40,32 @@ goog.inherits(silex.controller.PageToolController, silex.controller.ControllerBa
 /**
  * pageTool event handler
  */
-silex.controller.PageToolController.prototype.pageToolCallback = function(type, page) {
+silex.controller.PageToolController.prototype.pageToolCallback = function(type, pageName) {
   this.tracker.trackAction('controller-events', 'request', type, 0);
   switch (type) {
     case 'changed':
       // open the page
-      this.openPage(page);
+      this.openPage(pageName);
       break;
     case 'delete':
       // delete the page
-      this.removePage(page);
+      this.removePage(pageName);
       break;
     case 'rename':
       // rename the page
-      this.renamePage(page);
+      this.renamePage(pageName);
+      break;
+    case 'addToPage':
+      silex.utils.JQueryPageable.addToPage(this.view.stage.getSelection()[0], pageName);
+      break;
+    case 'removeFromPage':
+      silex.utils.JQueryPageable.removeFromPage(this.view.stage.getSelection()[0], pageName);
+      break;
+    case 'addLink':
+      silex.utils.JQueryPageable.setLink(this.view.stage.getSelection()[0], pageName);
+      break;
+    case 'removeLink':
+      silex.utils.JQueryPageable.setLink(this.view.stage.getSelection()[0]);
       break;
   }
 };

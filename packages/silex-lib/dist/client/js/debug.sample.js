@@ -13,8 +13,8 @@ silex.model.Config.debug.doAfterReady = function (
       selection
     ) {
     // insert elements
-    controller.menuCallback({type:'insert.container'});
-    controller.menuCallback({type:'insert.html'});
-    controller.menuCallback({type:'insert.text'});
-    controller.menuCallback({type:'view.open.textEditor'});
+    controller.menuController.menuCallback('insert.container');
+    controller.menuController.menuCallback('insert.html');
+    controller.menuController.menuCallback('insert.text');
+    controller.menuController.menuCallback('view.open.textEditor');
   }

@@ -10,7 +10,7 @@
 //////////////////////////////////////////////////
 
 /**
- * @fileoverview This class handles the property panes, 
+ * @fileoverview This class handles the property panes,
  * Property panes displayed in the property tool box.
  * Controls the params of the selected component.
  *
@@ -49,7 +49,7 @@ goog.require('goog.ui.TabBar');
  */
 silex.view.PropertyTool = function(element, bodyElement, headElement) {
   // call super
-  silex.view.ViewBase.call(this, element, headElement, bodyElement);
+  silex.view.ViewBase.call(this, element, bodyElement, headElement);
 
   this.buildTabs();
   this.buildPanes();
@@ -157,40 +157,40 @@ silex.view.PropertyTool.prototype.buildPanes = function() {
       this.bodyElement, this.headElement);
 
   this.bgPane.onStatus = onStatusCbk;
-  
+
   // border
   this.borderPane = new silex.view.pane.BorderPane(
       goog.dom.getElementByClass('border-editor', this.element),
       this.bodyElement, this.headElement);
 
   this.borderPane.onStatus = onStatusCbk;
-  
+
   // property
   this.propertyPane = new silex.view.pane.PropertyPane(
       goog.dom.getElementByClass('property-editor', this.element),
       this.bodyElement, this.headElement);
 
   this.propertyPane.onStatus = onStatusCbk;
-  
+
   // page
   this.pagePane = new silex.view.pane.PagePane(
       goog.dom.getElementByClass('page-editor', this.element),
       this.bodyElement, this.headElement);
 
   this.pagePane.onStatus = onStatusCbk;
-  
+
   // general styles
   this.generalStylePane = new silex.view.pane.GeneralStylePane(
       goog.dom.getElementByClass('general-editor', this.element),
       this.bodyElement, this.headElement);
 
   this.generalStylePane.onStatus = onStatusCbk;
-  
+
 };
 
 
 /**
- * redraw all panes 
+ * redraw all panes
  */
 silex.view.PropertyTool.prototype.redraw = function() {
   this.borderPane.redraw();
@@ -216,7 +216,7 @@ silex.view.PropertyTool.prototype.setBaseUrl = function(url) {
   // store the new base url
   this.baseUrl = url;
 
-  // update base url, which will redraw all panes 
+  // update base url, which will redraw all panes
   this.borderPane.setBaseUrl(url);
   this.propertyPane.setBaseUrl(url);
   this.pagePane.setBaseUrl(url);

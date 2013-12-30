@@ -102,7 +102,7 @@ silex.App = function() {
   // create Menu
   var menuElement = goog.dom.getElementByClass('silex-menu');
   /** @type {silex.view.Menu} */
-  var menu = new silex.view.Menu(menuElement);
+  var menu = new silex.view.Menu(menuElement, bodyElement, headElement);
 
   // create Stage
   var stageElement = goog.dom.getElementByClass('silex-stage');
@@ -110,7 +110,7 @@ silex.App = function() {
   var stage = new silex.view.Stage(stageElement, bodyElement, headElement);
 
   // create PageTool
-  var pageToolElement = goog.dom.getElementByClass('silex-pagetool');
+  var pageToolElement = goog.dom.getElementByClass('silex-page-tool');
   /** @type {silex.view.PageTool} */
   var pageTool = new silex.view.PageTool(pageToolElement, bodyElement, headElement);
 
@@ -135,7 +135,7 @@ silex.App = function() {
   var settingsDialog = new silex.view.SettingsDialog(settingsDialogElement, bodyElement, headElement);
 
   // create PropertyTool
-  var propertyToolElement = goog.dom.getElementByClass('silex-propertyTool');
+  var propertyToolElement = goog.dom.getElementByClass('silex-property-tool');
   /** @type {silex.view.PropertyTool} */
   var propertyTool = new silex.view.PropertyTool(propertyToolElement, bodyElement, headElement);
 
@@ -156,9 +156,9 @@ silex.App = function() {
   /** @type {silex.types.Model} */
   var model = new silex.types.Model(
     new silex.model.File(bodyElement, headElement)
-    , new silex.model.Head(headElement)
-    , new silex.model.Body(bodyElement)
-    , new silex.model.Element()
+    , new silex.model.Head(bodyElement, headElement)
+    , new silex.model.Body(bodyElement, headElement)
+    , new silex.model.Element(bodyElement, headElement)
   );
 
   /** @type {silex.types.View} */
@@ -188,7 +188,7 @@ silex.App = function() {
   // now create an empty file to let the user start using Silex
   model.file.newFile(function() {
     if(silex.Config.debug.debugMode && silex.Config.debug.doAfterReady) {
-      silex.Config.debug.doAfterReady(this);
+      silex.Config.debug.doAfterReady(model, view, controller);
     }
   });
 };

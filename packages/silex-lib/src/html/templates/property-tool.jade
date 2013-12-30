@@ -34,21 +34,14 @@ h1.title1 Properties
 
   span.page-editor
     script.pages-selector-template(type='text/x-handlebars-template')
-      {{#each pages}}
       <div class="page-container">
       <span class="page-check" />
-      <label class="page-label xsmall-font">{{this.name}}</label>
+      <label class="page-label xsmall-font">{{displayName}} <small>({{name}})</small></label>
       </div>
-      {{/each}}
     p here template to do
 
     script.link-template(type='text/x-handlebars-template')
-      <option value="none">Link to ...</option>
-      <option value="none">Nothing</option>
-      <option value="custom">External link</option>
-      {{each pages}}
-      <option value="{{this.name}}">{{this.name}}</option>
-      {{/each}}
+      <option value="{{name}}">{{displayName}}</option>
     p here template to do
     fieldset.small-font
       legend
@@ -66,16 +59,12 @@ h1.title1 Properties
 
   span.property-editor
     script.edition-template(type='text/x-handlebars-template')
-      {{#if htmlEditor}}
-      <div class="button small-font html-editor-button" title="Open HTML editor">Edit HTML</div>
-      {{/if}}
-      {{#if textEditor}}
-      <div class="button small-font text-editor-button" title="Open text editor">Edit text</div>
-      {{/if}}
-      {{#if imageUrl}}
+      <div style="display:{{htmlEditor}}" class="button small-font html-editor-button" title="Open HTML editor">Edit HTML</div>
+      <div style="display:{{textEditor}}" class="button small-font text-editor-button" title="Open text editor">Edit text</div>
+      <div style="display:{{imageEditor}}">
       <input placeholder="-" class="image-url-input advanced-only" value="{{imageUrl}}" />
       <div class="button small-font image-url-button" title="Open file browser">Swap image</div>
-      {{/if}}
+      </div>
 
     fieldset.small-font
       legend Content

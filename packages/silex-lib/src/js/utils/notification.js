@@ -1,4 +1,29 @@
+//////////////////////////////////////////////////
+// Silex, live web creation
+// http://projects.silexlabs.org/?/silex/
+//
+// Copyright (c) 2012 Silex Labs
+// http://www.silexlabs.org/
+//
+// Silex is available under the GPL license
+// http://www.silexlabs.org/silex/silex-licensing/
+//////////////////////////////////////////////////
 
+/**
+ * @fileoverview Helper class for common tasks
+ *
+ */
+
+
+goog.provide('silex.utils.Notification');
+
+/**
+ * @constructor
+ * @struct
+ */
+silex.utils.Notification = function() {
+  throw('this is a static class and it canot be instanciated');
+}
 
 /**
  * constant for the url of the icon

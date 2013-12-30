@@ -34,13 +34,16 @@ goog.require('goog.events.MouseWheelHandler');
  */
 silex.view.Stage = function(element, bodyElement, headElement) {
   // call super
-  silex.view.ViewBase.call(this, element, headElement, bodyElement);
+  silex.view.ViewBase.call(this, element, bodyElement, headElement);
 
   // init the view
   this.initEvents()
 
   // allow drops
   silex.utils.JQueryEditable.setDropableOnly(bodyElement, true);
+
+  // activate pageable plugin
+  silex.utils.JQueryPageable.setPageable(bodyElement, true);
 }
 
 // inherit from silex.view.ViewBase
@@ -99,6 +102,14 @@ silex.view.Stage.prototype.initEvents = function () {
       e.preventDefault();
     }
   }, false, this);
+};
+
+
+/**
+ * @return {array} currently selected elements
+ */
+silex.view.Stage.prototype.getSelection = function() {
+  return goog.dom.getElementsByClass(silex.model.Element.SELECTED_CLASS_NAME, this.bodyElement);
 };
 
 

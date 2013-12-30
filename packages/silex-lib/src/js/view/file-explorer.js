@@ -43,7 +43,7 @@ goog.require('goog.ui.KeyboardShortcutHandler');
  */
 silex.view.FileExplorer = function(element, bodyElement, headElement) {
   // call super
-  silex.view.ViewBase.call(this, element, headElement, bodyElement);
+  silex.view.ViewBase.call(this, element, bodyElement, headElement);
   // hide the at start
   goog.style.setStyle(this.element, 'display', 'none');
   // init the dialog
@@ -139,7 +139,7 @@ silex.view.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes, opt_
         blob.url = blob.url.replace('https://', 'http://');
 
         // check the the file extention is ok
-        if (fileExtentions && silex.Helper.checkFileExt(blob.url, fileExtentions) === false){
+        if (fileExtentions && silex.utils.Url.checkFileExt(blob.url, fileExtentions) === false){
           var fileName = blob.url.substring(blob.url.lastIndexOf('/') + 1);
           silex.utils.Notification.confirm('The file name ' +
             fileName +
@@ -192,10 +192,14 @@ silex.view.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes, op
     }, 10, this).start();
   };
 
+console.log('call exportFile', Array.isArray(opt_mimetypes), opt_mimetypes);
+
   // export dummy data
   this.filePicker.exportFile('http://google.com/',
       opt_mimetypes,
       goog.bind(function(blob) {
+
+console.log('ok', blob);
 
         // hide dialog
         this.closeEditor();
@@ -204,7 +208,7 @@ silex.view.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes, op
         blob.url = blob.url.replace('https://', 'http://');
 
         // check the the file extention is ok
-        if (fileExtentions && silex.Helper.checkFileExt(blob.url, fileExtentions) === false){
+        if (fileExtentions && silex.utils.Url.checkFileExt(blob.url, fileExtentions) === false){
           var fileName = blob.url.substring(blob.url.lastIndexOf('/') + 1);
           silex.utils.Notification.confirm('The file name ' +
             fileName +

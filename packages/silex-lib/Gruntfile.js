@@ -98,7 +98,7 @@ module.exports = function(grunt) {
     }
     , concat: {
       dist: {
-        src: ['src/css/*.css']
+        src: ['src/css/*.less']
         , dest: 'src/css/.temp'
       }
     }

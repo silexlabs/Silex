@@ -20,8 +20,6 @@ goog.provide('silex.utils.JQueryPageable');
 /**
  * @constructor
  * @struct
- * @param {string} name
- * @param {string} displayName
  */
 silex.utils.JQueryPageable = function() {
   throw('this is a static class and it canot be instanciated');
@@ -102,10 +100,7 @@ silex.utils.JQueryPageable.getPages = function(pageableRootElement) {
   // retrieve all page names from the head section
   var pages = [];
   $('a[data-silex-type="page"]', pageableRootElement).each(function() {
-    pages.push({
-      name: this.getAttribute('id')
-      displayName: this.getAttribute('data-silex-name')
-    });
+    pages.push(this.getAttribute('id'));
   });
   return pages;
 };
@@ -114,27 +109,27 @@ silex.utils.JQueryPageable.getPages = function(pageableRootElement) {
 /**
  * get the currently opened page from the dom
  * @param {element} pageableRootElement the pageable root element
- * @return {silex.utils.Page} the currently opened page
+ * @return {string} name of the page currently opened
  */
-silex.utils.JQueryPageable.getCurrentPage = function(pageableRootElement) {
+silex.utils.JQueryPageable.getCurrentPageName = function(pageableRootElement) {
   if(!silex.utils.JQueryPageable.getPageable(pageableRootElement)){
     throw new Error('Operation failed, root pageable element is required.');
   }
-  var pageName = $(pageableRootElement).data('options').currentPage;
-  return silex.utils.JQueryPageable.getPageByName(pageableRootElement, pageName);
+  var pageName = $(pageableRootElement).pageable('option', 'currentPage');
+  return pageName;
 };
 
 
 /**
  * open the page
  * this is a static method, a helper
- * @param {silex.utils.JQueryPageable} page   the page to open
+ * @param {string} pageName   name of the page to open
  */
-silex.utils.JQueryPageable.setCurrentPage = function(pageableRootElement, page) {
+silex.utils.JQueryPageable.setCurrentPage = function(pageableRootElement, pageName) {
   if(!silex.utils.JQueryPageable.getPageable(pageableRootElement)){
     throw new Error('Operation failed, root pageable element is required.');
   }
-  $(pageableRootElement).pageable({currentPage: page.name});
+  $(pageableRootElement).pageable({currentPage: pageName});
 };
 
 
@@ -143,51 +138,48 @@ silex.utils.JQueryPageable.setCurrentPage = function(pageableRootElement, page) 
  * @param  {string} pageName  a page name
  * @return {silex.utils.Page} the page corresponding to the given page name
  */
-silex.utils.JQueryPageable.getPageByName = function(pageableRootElement, pageName) {
+silex.utils.JQueryPageable.getDisplayName = function(pageableRootElement, pageName) {
   if(!silex.utils.JQueryPageable.getPageable(pageableRootElement)){
     throw new Error('Operation failed, root pageable element is required.');
   }
-  var page = null;
+  var displayName = '';
   $('a[data-silex-type="page"]', pageableRootElement).each(
     function() {
       if (this.getAttribute('id') === pageName) {
-        page = {
-          name: this.getAttribute('id')
-          displayName: this.getAttribute('data-silex-name')
-        };
+        displayName = this.getAttribute('data-silex-name');
         return;
       }
     }
   );
-  return page;
+  return displayName;
 }
 
 
 /**
  * remove a page from the dom
  */
-silex.utils.JQueryPageable.removePage = function(pageableRootElement, page) {
+silex.utils.JQueryPageable.removePage = function(pageableRootElement, pageName) {
   if(!silex.utils.JQueryPageable.getPageable(pageableRootElement)){
     throw new Error('Operation failed, root pageable element is required.');
   }
   // remove the DOM element
   $('a[data-silex-type="page"]', pageableRootElement).each(
       function() {
-        if (this.getAttribute('id') === page.name) {
+        if (this.getAttribute('id') === pageName) {
           $(this).remove();
         }
       });
   // remove the links to this page
-  $('*[data-silex-href="#!' + page.name + '"]').each(
+  $('*[data-silex-href="#!' + pageName + '"]').each(
       function() {
         this.removeAttribute('data-silex-href');
       }
   );
   // check elements which were only visible on this page
   // and make them visible everywhere
-  $('.' + page.name).each(
+  $('.' + pageName).each(
       function() {
-        $(this).removeClass(page.name);
+        $(this).removeClass(pageName);
 
         var pagesOfElement = silex.utils.JQueryPageable.getPagesForElement(this);
         if (pagesOfElement.length <= 0)
@@ -199,6 +191,8 @@ silex.utils.JQueryPageable.removePage = function(pageableRootElement, page) {
 
 /**
  * add a page to the dom
+ * @param {string} name
+ * @param {string} displayName
  */
 silex.utils.JQueryPageable.createPage = function(pageableRootElement, name, displayName) {
   if(!silex.utils.JQueryPageable.getPageable(pageableRootElement)){
@@ -211,18 +205,13 @@ silex.utils.JQueryPageable.createPage = function(pageableRootElement, name, disp
   aTag.setAttribute('data-silex-type', 'page');
   aTag.innerHTML = displayName;
   goog.dom.appendChild(pageableRootElement, aTag);
-
-  return {
-    name: name,
-    displayName: displayName
-  };
 };
 
 
 /**
  * rename a page in the dom
  */
-silex.utils.JQueryPageable.renamePage = function(pageableRootElement, page, name) {
+silex.utils.JQueryPageable.renamePage = function(pageableRootElement, oldName, newName, newDisplayName) {
   if(!silex.utils.JQueryPageable.getPageable(pageableRootElement)){
     throw new Error('Operation failed, root pageable element is required.');
   }
@@ -230,21 +219,22 @@ silex.utils.JQueryPageable.renamePage = function(pageableRootElement, page, name
   // update the DOM element
   $('a[data-silex-type="page"]', pageableRootElement).each(
       function() {
-        if (this.getAttribute('id') === page.name) {
-          this.setAttribute('id', name);
+        if (this.getAttribute('id') === oldName) {
+          this.setAttribute('id', newName);
+          this.setAttribute('data-silex-name', newDisplayName);
         }
       });
   // update the links to this page
-  $('*[data-silex-href="#!' + page.name + '"]').each(
+  $('*[data-silex-href="#!' + oldName + '"]').each(
       function() {
-        this.setAttribute('data-silex-href', '#!' + name);
+        this.setAttribute('data-silex-href', '#!' + newName);
       }
   );
   // update the visibility of the compoents
-  $('.' + page.name).each(
+  $('.' + oldName).each(
       function() {
-        $(this).removeClass(page.name);
-        $(this).addClass(name);
+        $(this).removeClass(oldName);
+        $(this).addClass(newName);
       }
   );
 };
@@ -253,9 +243,9 @@ silex.utils.JQueryPageable.renamePage = function(pageableRootElement, page, name
 /**
  * set/get a "silex style link" on an element
  */
-silex.utils.JQueryPageable.setLink = function(element, page) {
+silex.utils.JQueryPageable.setLink = function(element, pageName) {
   if (url){
-    element.setAttribute(silex.utils.JQueryPageable.LINK_ATTR, '#!' + page.name);
+    element.setAttribute(silex.utils.JQueryPageable.LINK_ATTR, '#!' + pageName);
   }
   else{
     element.removeAttribute(silex.utils.JQueryPageable.LINK_ATTR);
@@ -268,7 +258,7 @@ silex.utils.JQueryPageable.setLink = function(element, page) {
 silex.utils.JQueryPageable.getLink = function(element) {
   var link = element.getAttribute('data-silex-href');
   // remove the hash
-  if (link.indexOf('#!') === 0){
+  if (link && link.indexOf('#!') === 0){
     link = link.substring(2);
   }
   return link;
@@ -278,14 +268,37 @@ silex.utils.JQueryPageable.getLink = function(element) {
 /**
  * set/get a the visibility of an element in the given page
  */
-silex.utils.JQueryPageable.addToPage = function(element, page) {
-  goog.dom.classes.add(element, page.name);
+silex.utils.JQueryPageable.addToPage = function(element, pageName) {
+  goog.dom.classes.add(element, pageName);
+  goog.dom.classes.add(element, silex.utils.JQueryPageable.PAGE_CLASS);
 };
 
 /**
  * set/get a "silex style link" on an element
  */
-silex.utils.JQueryPageable.removeFromPage = function(element, page) {
-  goog.dom.classes.remove(element, page.name);
+silex.utils.JQueryPageable.removeFromPage = function(element, pageName) {
+  goog.dom.classes.remove(element, pageName);
+  if (!silex.utils.JQueryPageable.getPagesForElement(element).length>0){
+    goog.dom.classes.remove(element, silex.utils.JQueryPageable.PAGE_CLASS);
+  }
 };
 
+
+/**
+ * set/get a "silex style link" on an element
+ */
+silex.utils.JQueryPageable.getPagesForElement = function(pageableRootElement, element) {
+  if(!silex.utils.JQueryPageable.getPageable(pageableRootElement)){
+    throw new Error('Operation failed, root pageable element is required.');
+  }
+  var res = [];
+  // get all the pages
+  var pages = silex.view.JQueryPageable.getPages(pageableRootElement);
+  for (idx in pages) {
+    var pageName = pages[idx];
+    // remove the component from the page
+    if (goog.dom.classes.has(element, pageName)){
+      res.push(pageName);
+    }
+  }
+};

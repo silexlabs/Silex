@@ -52,6 +52,9 @@ silex.controller.MenuController.prototype.menuCallback = function(type) {
     case 'file.saveas':
       this.save();
       break;
+    case 'file.rename':
+      this.promptTitle();
+      break;
     case 'file.publish.settings':
       this.view.settingsDialog.openDialog();
       this.view.workspace.invalidate();
@@ -69,7 +72,7 @@ silex.controller.MenuController.prototype.menuCallback = function(type) {
       this.model.file.newFile();
       break;
     case 'view.file':
-      this.model.file.view();
+      this.preview();
       break;
     case 'tools.advanced.activate':
       if (!goog.dom.classes.has(document.body, 'advanced-mode-on')) {

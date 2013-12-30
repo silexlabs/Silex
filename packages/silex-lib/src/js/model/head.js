@@ -159,17 +159,17 @@ silex.model.Head.prototype.getPublicationPath = function() {
   return path;
 };
 
+
 /**
  * website title
  */
 silex.model.Head.prototype.getTitle = function() {
-  var elements = this.stage.headElement.getElementsByTagName('title');
-  if (elements && elements.length > 0) {
-    return elements[0].innerHTML;
-  }
-  else {
-    return null;
-  }
+  var title = null;
+  $('meta[name="title"]', this.headElement).each(
+    function() {
+      title = this.getAttribute('content');
+    });
+  return title;
 };
 
 
@@ -177,18 +177,18 @@ silex.model.Head.prototype.getTitle = function() {
  * website title
  */
 silex.model.Head.prototype.setTitle = function(name) {
+  var found = false;
   // update website title
-  var elements = this.stage.headElement.getElementsByTagName('title');
-  if (elements && elements.length > 0) {
-    elements[0].innerHTML = name;
+  $('meta[name="title"]', this.headElement).each(
+      function() {
+        this.setAttribute('content', name);
+        found = true;
+      });
+  if(!found) {
+    var meta = goog.dom.createElement('meta');
+    meta.name = 'title';
+    meta.content = name;
+    goog.dom.appendChild(this.headElement, meta);
   }
-// new website title
-  else {
-    var child = goog.dom.createElement('title');
-    child.innerHTML = name;
-    this.stage.headElement.appendChild(child);
-  }
-  // update menu
-  this.menu.setWebsiteName(name);
 };
 

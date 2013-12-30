@@ -52,7 +52,7 @@ goog.require('silex.Config');
  */
 silex.view.TextEditor = function(element, bodyElement, headElement) {
   // call super
-  silex.view.ViewBase.call(this, element, headElement, bodyElement);
+  silex.view.ViewBase.call(this, element, bodyElement, headElement);
 
   // init the editor
   this.initUI();
