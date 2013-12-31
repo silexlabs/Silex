@@ -19,6 +19,8 @@
 goog.require('silex.view.ViewBase');
 goog.provide('silex.view.PageTool');
 
+goog.require('silex.utils.JQueryPageable');
+
 /**
  * @constructor
  * @extend silex.view.ViewBase
@@ -71,12 +73,12 @@ silex.view.PageTool.prototype.initEvents = function(pages) {
  * find all pages in the dom and call setPages
  */
 silex.view.PageTool.prototype.redraw = function() {
-  var pages = silex.view.JQueryPageable.getPages();
+  var pages = silex.utils.JQueryPageable.getPages(this.bodyElement);
 
   // refresh the list with new pages
   var container = goog.dom.getElementByClass('page-tool-container', this.element);
   var templateHtml = goog.dom.getElementByClass('page-tool-template', this.element).innerHTML;
-  container.innerHTML = silex.utils.Dom.resolveTemplate(templateHtml, pages);
+  container.innerHTML = silex.utils.Dom.renderList(templateHtml, pages);
 };
 
 

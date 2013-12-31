@@ -21,6 +21,10 @@
 goog.require('silex.model.ModelBase');
 goog.provide('silex.model.Element');
 
+goog.require('goog.dom.classes');
+goog.require('goog.net.ImageLoader');
+goog.require('goog.net.EventType');
+
 
 /**
  * @constructor
@@ -102,14 +106,6 @@ silex.model.Element.SELECTED_CLASS_NAME = 'silex-selected';
 
 
 /**
- * constant for silex element type
- * @const
- * @type {string}
- */
-silex.model.Element.LOADING_IMAGE = 'assets/image-loader.gif';
-
-
-/**
  * get/set type of the element
  * @param  {element} element   created by silex, either a text box, image, ...
  * @return  {string}           the style of the element
@@ -151,7 +147,7 @@ silex.model.Element.prototype.getStyle = function(element, styleName) {
  * @param  {string}  opt_styleValue     the value for this styleName
  */
 silex.model.Element.prototype.setStyle = function(element, styleName, opt_styleValue) {
-  if (opt_styleValue){
+  if (goog.isDef(opt_styleValue)){
     element.style[styleName] = opt_styleValue;
   }
   else{
@@ -277,18 +273,24 @@ silex.model.Element.prototype.setImageUrl = function(element, url, opt_callback,
     if (img) {
       // listen to the complete event
       var imageLoader = new goog.net.ImageLoader();
-      goog.events.listenOnce(imageLoader, goog.net.EventType.SUCCESS,
+      goog.events.listenOnce(imageLoader, goog.events.EventType.LOAD,
       function(e) {
+        // remove loading asset
+        goog.dom.classes.remove(element, 'loading-image');
+        // handle the loaded image
+        var img = e.target;
         // update element size
         goog.style.setStyle(element, {
-          width: e.target.naturalWidth,
-          height: e.target.naturalHeight
+          width: img.naturalWidth,
+          height: img.naturalHeight
         });
         // image tak all room available
-        goog.style.setStyle(e.target, 'width', '100%');
-        goog.style.setStyle(e.target, 'height', '100%');
-        // replace the element current img tag
-        element.setContentNode(e.target);
+        goog.style.setStyle(img, 'width', '100%');
+        goog.style.setStyle(img, 'height', '100%');
+        // add the image to the element
+        goog.dom.appendChild(element, img);
+        // add a marker to find the inner content afterwards, with getContent
+        goog.dom.classes.add(img, silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
         // callback
         if (opt_callback){
           opt_callback(element);
@@ -338,7 +340,7 @@ silex.model.Element.prototype.removeElement = function(element) {
  *	  see TYPE_* constants of the class @see silex.model.Element
  * @return 	{element} 	the newly created element
  */
-silex.model.Element.prototype.createElement = function(type, opt_container) {
+silex.model.Element.prototype.createElement = function(type) {
 
   var element;
 
@@ -367,11 +369,12 @@ silex.model.Element.prototype.createElement = function(type, opt_container) {
       element.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_HTML);
       // create the container for html content
       var htmlContent = goog.dom.createElement('div');
-      goog.dom.classes.add(htmlContent, silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
       htmlContent.innerHTML = '<p>New HTML box</p>';
       goog.style.setStyle(htmlContent, 'width', '100%');
       goog.style.setStyle(htmlContent, 'height', '100%');
       goog.dom.appendChild(element, htmlContent);
+      // add a marker to find the inner content afterwards, with getContent
+      goog.dom.classes.add(htmlContent, silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
     break;
 
     // Image
@@ -380,14 +383,8 @@ silex.model.Element.prototype.createElement = function(type, opt_container) {
       element = goog.dom.createElement('div');
       element.className = silex.utils.JQueryEditable.EDITABLE_CLASS_NAME;
       element.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_IMAGE);
-      // create the container for the image element
-      var img = goog.dom.createElement('img');
-      goog.dom.classes.add(img, silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
-      goog.style.setStyle(img, 'width', '100%');
-      goog.style.setStyle(img, 'height', '100%');
-      goog.dom.appendChild(element, img);
-      // set default value
-      img.setAttribute('src', silex.model.Element.LOADING_IMAGE);
+      // add loading asset
+      goog.dom.classes.add(element, 'loading-image');
     break;
 
   }
@@ -398,16 +395,27 @@ silex.model.Element.prototype.createElement = function(type, opt_container) {
   // make it editable
   silex.utils.JQueryEditable.setEditable(element, true);
 
+  // find the container (main background container or the stage)
+  var container = goog.dom.getElementByClass('background', this.bodyElement);
+  if(!container){
+    container = this.bodyElement;
+  }
+
+  // take the scroll into account (drop at (100, 100) from top left corner of the window, not the stage)
+  var offsetX = 100 + this.bodyElement.scrollLeft;
+  var offsetY = 100 + this.bodyElement.scrollTop;
+
   // set bounding box
   goog.style.setStyle(element, {
     height: '100px',
     width: '100px',
-    backgroundColor: 'rgba(255, 255, 255, 1)'
+    top: offsetY + 'px',
+    left: offsetX + 'px',
+    backgroundColor: 'rgba(255, 255, 255, 1)',
+    position: 'absolute'
   });
   // add to stage
-  if(opt_container){
-    goog.dom.appendChild(opt_container, element);
-  }
+  goog.dom.appendChild(container, element);
 
   // return the element
   return element;

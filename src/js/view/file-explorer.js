@@ -23,6 +23,7 @@ goog.require('silex.view.ViewBase');
 goog.provide('silex.view.FileExplorer');
 
 goog.require('silex.service.CloudStorage');
+goog.require('silex.utils.Url');
 
 goog.require('goog.async.Delay');
 goog.require('goog.events.KeyCodes');
@@ -121,11 +122,11 @@ silex.view.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes, opt_
       opt_errCbk(FPError);
     }
   };
-  var successCbk = function (blob) {
+  var successCbk = function (url) {
     // notify controller
     // workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
     new goog.async.Delay(function() {
-      if (cbk) cbk(blob.url);
+      if (cbk) cbk(url);
     }, 10, this).start();
   };
 
@@ -192,14 +193,10 @@ silex.view.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes, op
     }, 10, this).start();
   };
 
-console.log('call exportFile', Array.isArray(opt_mimetypes), opt_mimetypes);
-
   // export dummy data
   this.filePicker.exportFile('http://google.com/',
       opt_mimetypes,
       goog.bind(function(blob) {
-
-console.log('ok', blob);
 
         // hide dialog
         this.closeEditor();

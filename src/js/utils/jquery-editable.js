@@ -60,41 +60,44 @@ silex.utils.JQueryEditable.getFirstEditableParent = function(element) {
 
 /**
  * init, activate and remove the "editable" jquery plugin
- * only dropable, not fully editable
  */
-silex.utils.JQueryEditable.setDropableOnly = function(element, isDroppable) {
-    if (isDroppable){
-        // allow drops
-        $(this.bodyElement).editable({
-          isContainer: true,
-          isResizable: false,
-          isDroppable: true,
-          isDraggable: false
-        });
-    }
-    else{
-        silex.utils.JQueryEditable.setEditable(element, false);
-    }
-}
-/**
- * init, activate and remove the "editable" jquery plugin
- */
-silex.utils.JQueryEditable.setEditable = function(element, isEditable) {
+silex.utils.JQueryEditable.setEditable = function(element, isEditable, opt_isRootDroppableOnly) {
   // activate editable plugin
   if (isEditable) {
     // containers
     $('.editable-style[data-silex-type="container"]', element).editable({
       isContainer: true
     });
+
     // elements
     $('.editable-style[data-silex-type="element"]', element).editable();
+
     // handle the root element itself
-    $(element).editable();
+    if (element.getAttribute('data-silex-type') === 'container'){
+      if (opt_isRootDroppableOnly){
+        // allow drops only
+        $(element).editable({
+          isContainer: true,
+          isResizable: false,
+          isDroppable: true,
+          isDraggable: false
+        });
+      }
+      else{
+        $(element).editable({
+          isContainer: true
+        });
+      }
+    }
+    else{
+      $(element).editable();
+    }
   }
   // activate editable plugin
   else {
     // deactivate editable plugin
     $('.editable-style', element).editable('destroy');
+
     // handle the element itself
     $(element).editable('destroy');
 

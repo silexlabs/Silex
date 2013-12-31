@@ -61,7 +61,12 @@ silex.view.ViewBase.prototype.headElement;
  * @return {array} array of selected {element} elements on the stage
  */
 silex.view.ViewBase.prototype.getSelection = function () {
-  return goog.dom.getElementsByClass(silex.model.Element.SELECTED_CLASS_NAME, this.bodyElement);
+  var elements = goog.dom.getElementsByClass(silex.model.Element.SELECTED_CLASS_NAME, this.bodyElement);
+  if (!elements || elements.length === 0){
+    // default, return body
+    return [this.bodyElement];
+  }
+  return elements;
 };
 
 

@@ -82,7 +82,7 @@ Or with grunt you can use
   $ grunt test -phantomjs
   $ grunt test -firefox
   $ grunt test -chrome
-  
+
 > Note for cloud9 users: you may want to activate python
 
   $ nada-nix install python
@@ -203,7 +203,8 @@ Validation
 
 Nice to have :
 
-* save edited parts of the file only (useful to work several people on a file, 1st step to the undo/redo since it implies storing the changes to a file instead of the DOM)
+* publication: optimize and use soscket.io to be notified when job is done + stop a job
+* multi user editing (save edited parts of the file only + socket.io notifications)
 * store current state on local storage (auto-save, propose to "open latest unsaved version" when opening a document)
 * deeplink to opened file (https://www.silex.me/?file=/dropbox/path/to/file.html)
 * indicates online/offline?

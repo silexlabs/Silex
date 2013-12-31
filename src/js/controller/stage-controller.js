@@ -51,7 +51,7 @@ silex.controller.StageController.prototype.stageCallback = function(type, opt_ta
       break;
     case 'newContainer': // an element is dropped in a new container
       var element = this.view.stage.getSelection()[0];
-      this.checkPageVisibility(element);
+      this.checkElementVisibility(element);
       break;
     case 'edit':
       // size or position of the element has changed

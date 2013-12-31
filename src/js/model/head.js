@@ -41,7 +41,7 @@ goog.inherits(silex.model.Head, silex.model.ModelBase);
  * refresh the list of loaded fonts. When a user changes the font family
  * of a text, the corresponding font file is loaded if available
  */
-silex.model.Head.prototype.refreshFontList = function() {
+silex.model.Head.prototype.refreshFontList = function(neededFonts) {
 
   //detach all previously loaded font before, to avoid duplicate
   var links = goog.dom.getElementsByTagNameAndClass('link');

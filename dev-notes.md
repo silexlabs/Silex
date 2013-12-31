@@ -61,10 +61,8 @@ ________________
 
 Refactoring
 to do
+  remove UI of appolo 
   body::publish
-  head::setHtml
-  controllerbase
-  retro compat
 
 retorcompat silex-sub-type
 

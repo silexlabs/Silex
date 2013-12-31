@@ -2,12 +2,12 @@
 head
   include ./templates/head.jade
 
-body
-  include ./templates/body.jade
-
   // Silex styles and code
   link(rel='stylesheet', type='text/css', href='css/admin.min.css')
   script(type='text/javascript', src='js/admin.min.js')
+
+body.loading-pending
+  include ./templates/body.jade
 
   // google closure css patches, to be included after the other includes
   link(rel='stylesheet', type='text/css', href='css/closure-patches.css')

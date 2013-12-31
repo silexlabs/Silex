@@ -68,15 +68,15 @@ options.staticFolders.push(
     {
         path: "../../../../www/"
     },
+    // debug silex
+    {
+        name: "/silex/js/src",
+        path: "../../../../src/"
+    },
     // silex editor
     {
         name: "/silex",
         path: "../../../../dist/client/"
-    },
-    // debug silex
-    {
-        name: "/src",
-        path: "../../../../src/"
     },
     {
         name: "/build",

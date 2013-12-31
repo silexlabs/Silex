@@ -64,8 +64,8 @@ $.widget('silexlabs.editable', {
 			this.element.resizable({
 				handles : 'all'
 			});
-		//this.element.draggable({ revert: 'invalid', snap: true });
-		//this.element.draggable({ revert: 'invalid', grid: [ 20, 20 ] });
+		//this.element.draggable({ revert: 'invalid', snap: true, scroll: true });
+		//this.element.draggable({ revert: 'invalid', grid: [ 20, 20 ], scroll: true });
 		if (this.options.isDraggable != false)
 			this.element.draggable({ revert: 'invalid' });
 		if (this.options.isResizable != false)
@@ -81,23 +81,19 @@ $.widget('silexlabs.editable', {
 					var droppedFrom = $(dropped).parent()[0];
 					var droppedTo = this;
 
-					// compute new position in the container
 
-					// keep initial position
+					// compute new position in the container
 					var initialOffset = $(dropped).offset();
 
 					// move to the new container
+					var oldPos = $(dropped).offset();
+					// round position and size to integers
+					//oldPos.left = Math.round(oldPos.left);
+					//oldPos.top = Math.round(oldPos.top);
+					// move to the new container
 					$(dropped).detach().appendTo($(droppedTo));
-
-					// compute new position
-					var newOffset = $(dropped).offset();
-					var deltaTop = initialOffset.top - newOffset.top;
-					var deltaLeft = initialOffset.left - newOffset.left;
-					var newPosTop = $(dropped).position().top + deltaTop;
-					var newPosLeft = $(dropped).position().left + deltaLeft;
-
-					// put back at the same position
-					$(dropped).css({top: newPosTop+'px',left: newPosLeft+'px'});
+					// keep initial position
+					$(dropped).offset(oldPos);
 
 					// dispatch event to notify that the element changed container
 					if (droppedTo !== droppedFrom){

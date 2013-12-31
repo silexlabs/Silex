@@ -34,8 +34,13 @@ silex.utils.RetroCompat = function() {
  */
 silex.utils.RetroCompat.process = function(bodyElement, headElement) {
   var that = this;
+  // handle older style system
+  $('[data-style-normal]', bodyElement).each(function() {
+    this.setAttribute('style', this.getAttribute('data-style-normal'));
+    this.removeAttribute('data-style-normal');
+  });
   // handle older page system
-  $('meta[name="page"]', this.stage.headElement).each(function() {
+  $('meta[name="page"]', headElement).each(function() {
     // old fashion way to get the name
     var pageName = this.getAttribute('content');
     // create a page object

@@ -186,11 +186,10 @@ silex.App = function() {
   );
 
   // now create an empty file to let the user start using Silex
-  model.file.newFile(function() {
-    if(silex.Config.debug.debugMode && silex.Config.debug.doAfterReady) {
-      silex.Config.debug.doAfterReady(model, view, controller);
+  controller.menuController.menuCallback('file.new');
+  if(silex.Config.debug.debugMode && silex.Config.debug.doAfterReady) {
+    silex.Config.debug.doAfterReady(model, view, controller);
     }
-  });
 };
 
 // Ensures the symbol will be visible after compiler renaming.

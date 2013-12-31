@@ -32,6 +32,12 @@ goog.require('silex.Config');
 silex.model.Body = function(bodyElement, headElement) {
   // call super
   goog.base(this, bodyElement, headElement);
+
+  // allow drops
+  silex.utils.JQueryEditable.setEditable(bodyElement, true, true);
+
+  // activate pageable plugin
+  silex.utils.JQueryPageable.setPageable(bodyElement, true);
 };
 
 // inherit from silex.model.ModelBase
