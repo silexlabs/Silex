@@ -1,17 +1,4 @@
-silex.model.Config.debug.doAfterReady = function (
-      controller,
-      workspace,
-      menu,
-      stage,
-      pageTool,
-      propertiesTool,
-      htmlEditor,
-      textEditor,
-      fileExplorer,
-      publishSettings,
-      file,
-      selection
-    ) {
+silex.Config.debug.doAfterReady = function (model, view, controller) {
     // insert elements
     controller.menuController.menuCallback('insert.container');
     controller.menuController.menuCallback('insert.html');

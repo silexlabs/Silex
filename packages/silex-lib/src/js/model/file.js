@@ -55,13 +55,6 @@ silex.model.File.prototype.url;
  * Parse the raw html and fill the bodyElement and headElement
  */
 silex.model.File.prototype.setHtml = function(rawHtml) {
-  // reset the previous page model
-  var pages = silex.model.Page.getPages();
-  while (pages.length > 0) {
-    var page = pages[0];
-    page.detach();
-  }
-
   var bodyHtml, headHtml;
 
   // use lower case to find head and body tags
@@ -86,18 +79,15 @@ silex.model.File.prototype.setHtml = function(rawHtml) {
     // extract the body section
     bodyHtml = rawHtml.substring(closingTagIdx + 1, bodyCloseIdx);
   }
-  // extract body style
-  var bodyHtml = rawHtml.substring(bodyOpenIdx, bodyCloseIdx + 1);
-  var styleStart = bodyHtml.indexOf('"');
-  var styleEnd = bodyHtml.indexOf('"', styleStart + 1);
-  var bodyStyle = bodyHtml.substring(styleStart + 1, styleEnd);
-  var absolutePathStyle = this.bodyElement.relative2absolute(this.bodyStyle, this.getUrl());
-  bodyStyle = absolutePathStyle;
+  // extract the hole body with body tags
+  var bodyHtml = rawHtml.substring(bodyOpenIdx, bodyCloseIdx + 7);
 
   // update model
   this.bodyElement.innerHTML = bodyHtml;
-  this.bodyElement.setAttribute('style', bodyStyle);
   this.headElement.innerHTML = headHtml;
+  // set body editable
+  silex.utils.JQueryEditable.setEditable(this.bodyElement, true, true);
+
 };
 
 

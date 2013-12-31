@@ -293,7 +293,7 @@ silex.utils.JQueryPageable.getPagesForElement = function(pageableRootElement, el
   }
   var res = [];
   // get all the pages
-  var pages = silex.view.JQueryPageable.getPages(pageableRootElement);
+  var pages = silex.utils.JQueryPageable.getPages(pageableRootElement);
   for (idx in pages) {
     var pageName = pages[idx];
     // remove the component from the page

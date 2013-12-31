@@ -82,12 +82,11 @@ silex.view.pane.PaneBase.prototype.editText = function() {
 
 /**
  * notify the controller that the style changed
+ * @param   styleName   not css style but camel case
  */
-silex.view.pane.PaneBase.prototype.styleChanged = function(styleName, styleValue) {
+silex.view.pane.PaneBase.prototype.styleChanged = function(styleName, opt_styleValue) {
   // notify the controller
-  if (this.onStatus) this.onStatus('styleChanged', styleName, styleValue);
-  // redraw to reflect changes
-  this.redraw();
+  if (this.onStatus) this.onStatus('styleChanged', styleName, opt_styleValue);
 };
 
 

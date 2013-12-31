@@ -64,23 +64,10 @@ silex.view.pane.BgPane.prototype.buildUi = function() {
                                             'goog-hsva-palette-sm');
   this.hsvPalette.render(hsvPaletteElement);
 
-  // User has selected a color
-  goog.events.listen(this.hsvPalette,
-                     goog.ui.Component.EventType.ACTION,
-                     this.onColorChanged,
-                     false,
-                     this);
-
   // init button which shows/hides the palete
   this.bgColorPicker = new goog.ui.ColorButton();
   this.bgColorPicker.setTooltip('Click to select color');
   this.bgColorPicker.render(goog.dom.getElementByClass('color-bg-button'));
-  goog.events.listen(this.bgColorPicker,
-                     goog.ui.Component.EventType.ACTION,
-                     this.onBgColorButton,
-                     false,
-                     this);
-
   // init palette
   this.hsvPalette.setColorRgbaHex('#FFFFFFFF');
   this.setColorPaletteVisibility(false);
@@ -90,33 +77,23 @@ silex.view.pane.BgPane.prototype.buildUi = function() {
   this.transparentBgCheckbox.decorate(
       goog.dom.getElementByClass('enable-color-bg-button'), this.element
   );
-  goog.events.listen(this.transparentBgCheckbox,
-                     goog.ui.Component.EventType.CHANGE,
-                     this.onTransparentChanged,
-                     false,
-                     this);
 
   // add bg image
   var buttonElement = goog.dom.getElementByClass('bg-image-button');
   this.bgSelectBgImage = new goog.ui.CustomButton();
   this.bgSelectBgImage.decorate(buttonElement);
   this.bgSelectBgImage.setTooltip('Click to select a file');
-  goog.events.listen(buttonElement,
-      goog.events.EventType.CLICK,
-      this.onSelectImageButton,
-      false,
-      this);
-
+  // User has selected a color
+  goog.events.listen(this.hsvPalette,
+                     goog.ui.Component.EventType.ACTION,
+                     this.onColorChanged,
+                     false,
+                     this);
   // remove bg image
   var buttonElement = goog.dom.getElementByClass('clear-bg-image-button');
   this.bgClearBgImage = new goog.ui.CustomButton();
   this.bgClearBgImage.setTooltip('Click to select a file');
   this.bgClearBgImage.decorate(buttonElement);
-  goog.events.listen(buttonElement,
-      goog.events.EventType.CLICK,
-      this.onClearImageButton,
-      false,
-      this);
 
   // bg image properties
   this.attachementComboBox = goog.ui.decorate(
@@ -131,6 +108,30 @@ silex.view.pane.BgPane.prototype.buildUi = function() {
   this.repeatComboBox = goog.ui.decorate(
       goog.dom.getElementByClass('bg-repeat-combo-box')
       );
+  // the user opens/closes the palete
+  goog.events.listen(this.bgColorPicker,
+                     goog.ui.Component.EventType.ACTION,
+                     this.onBgColorButton,
+                     false,
+                     this);
+  // user set transparent bg
+  goog.events.listen(this.transparentBgCheckbox,
+                     goog.ui.Component.EventType.CHANGE,
+                     this.onTransparentChanged,
+                     false,
+                     this);
+  // user wants to select a bg image
+  goog.events.listen(buttonElement,
+      goog.events.EventType.CLICK,
+      this.onSelectImageButton,
+      false,
+      this);
+
+  goog.events.listen(buttonElement,
+      goog.events.EventType.CLICK,
+      this.onClearImageButton,
+      false,
+      this);
   goog.events.listen(this.attachementComboBox,
       goog.ui.Component.EventType.CHANGE,
       function(event) {
@@ -164,7 +165,6 @@ silex.view.pane.BgPane.prototype.buildUi = function() {
 silex.view.pane.BgPane.prototype.redraw = function() {
   // call super
   goog.base(this, 'redraw');
-
   // get the selected element
   var element = this.getSelection()[0];
 
@@ -284,10 +284,11 @@ silex.view.pane.BgPane.prototype.onColorChanged = function() {
  * open or close the palete
  */
 silex.view.pane.BgPane.prototype.onBgColorButton = function() {
+  var element = this.getSelection()[0];
   // show the palette
   if (this.getColorPaletteVisibility() === false) {
     this.hsvPalette.setColorRgbaHex(
-        silex.utils.Style.rgbaToHex(this.style.backgroundColor)
+        silex.utils.Style.rgbaToHex(element.style.backgroundColor)
     );
     this.setColorPaletteVisibility(true);
   }

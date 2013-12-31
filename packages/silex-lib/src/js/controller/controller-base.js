@@ -21,6 +21,7 @@ goog.provide('silex.controller.ControllerBase');
 
 goog.require('silex.utils.Notification');
 goog.require('silex.utils.JQueryPageable');
+goog.require('silex.utils.RetroCompat');
 
 /**
  * @constructor
@@ -77,14 +78,14 @@ silex.controller.ControllerBase.prototype.removeElement = function(opt_element) 
  */
 silex.controller.ControllerBase.prototype.addElement = function(type) {
   // create the element and add it to the stage
-  var element = this.model.element.createElement(type, this.model.body.bodyElement);
+  var element = this.model.element.createElement(type);
   // only visible on the current page
   var currentPageName = silex.utils.JQueryPageable.getCurrentPageName(this.model.body.bodyElement);
   silex.utils.JQueryPageable.addToPage(element, currentPageName);
   // unless one of its parents is in a page already
   this.checkElementVisibility(element);
   // select the component
-  this.model.element.setSelected(element);
+  this.model.element.setSelected(element, true);
   // update view
   this.view.propertyTool.redraw();
   return element;
@@ -100,16 +101,16 @@ silex.controller.ControllerBase.prototype.editElement = function(opt_element) {
   if(!opt_element) opt_element = this.view.stage.getSelection()[0];
 
   switch (this.model.element.getType(opt_element)) {
-    case silex.model.Element.SUBTYPE_TEXT:
+    case silex.model.Element.TYPE_TEXT:
       this.view.textEditor.openEditor(this.model.Element.getInnerHtml(opt_element));
       break;
-    case silex.model.Element.SUBTYPE_HTML:
+    case silex.model.Element.TYPE_HTML:
       this.view.htmlEditor.openEditor(this.model.Element.getInnerHtml(opt_element));
       break;
-    case silex.model.Element.SUBTYPE_IMAGE:
+    case silex.model.Element.TYPE_IMAGE:
       this.view.fileExplorer.openDialog(
           goog.bind(function(url) {
-            this.view.propertyTool.setImage(url);
+            this.model.element.setImageUrl(opt_element, url);
           }, this),
           ['image/*', 'text/plain'],
           goog.bind(function(error) {
@@ -134,7 +135,6 @@ silex.controller.ControllerBase.prototype.openPage = function(pageName) {
  * rename a page
  */
 silex.controller.ControllerBase.prototype.renamePage = function(opt_pageName) {
-  console.log(arguments);
   // default to the current page
   if (!opt_pageName){
     opt_pageName = silex.utils.JQueryPageable.getCurrentPageName(this.model.body.bodyElement);
@@ -293,6 +293,20 @@ silex.controller.ControllerBase.prototype.refreshFonts = function(){
 /**
  * open a file
  */
+silex.controller.ControllerBase.prototype.newFile = function(opt_cbk, opt_errorCbk){
+  this.model.file.newFile(goog.bind(function (rawHtml) {
+    this.model.file.setHtml(rawHtml);
+    this.fileOperationSuccess(null, true);
+    // handle retrocompatibility issues
+    silex.utils.RetroCompat.process(this.model.body.bodyElement, this.model.head.headElement);
+    if (opt_cbk) {
+      opt_cbk();
+    }
+  }, this), opt_errorCbk);
+}
+/**
+ * open a file
+ */
 silex.controller.ControllerBase.prototype.openFile = function(url, opt_cbk, opt_errorCbk){
   this.model.file.open(url, goog.bind(function(rawHtml) {
     this.model.body.setHtml(rawHtml);
@@ -346,10 +360,10 @@ silex.controller.ControllerBase.prototype.save = function(opt_url, opt_cbk, opt_
 /**
  * publish html page
  */
-silex.controller.ControllerBase.prototype.fileOperationSuccess = function(message, updateTools) {
+silex.controller.ControllerBase.prototype.fileOperationSuccess = function(opt_message, opt_updateTools) {
 
   // update tools
-  if (updateTools){
+  if (opt_updateTools){
     this.view.pageTool.redraw();
     this.view.propertyTool.redraw();
     this.view.menu.redraw();
@@ -358,17 +372,12 @@ silex.controller.ControllerBase.prototype.fileOperationSuccess = function(messag
     this.refreshFonts();
 
     // open default page
-    this.pageTool.setSelectedIndex(0);
-
-    // handle retrocompatibility issues
-    silex.utils.RetroCompat.process(this.model.body.bodyElement, this.model.head.headElement);
+    this.view.pageTool.setSelectedIndex(0);
   }
-
-  // notify user
-  silex.utils.Notification.notifySuccess(message);
-
-  // QOS, track success
-  this.tracker.trackAction('controller-events', 'success', event.type, 1);
+  if(opt_message){
+    // notify user
+    silex.utils.Notification.notifySuccess(opt_message);
+  }
 }
 
 /**

@@ -38,12 +38,6 @@ silex.view.Stage = function(element, bodyElement, headElement) {
 
   // init the view
   this.initEvents()
-
-  // allow drops
-  silex.utils.JQueryEditable.setDropableOnly(bodyElement, true);
-
-  // activate pageable plugin
-  silex.utils.JQueryPageable.setPageable(bodyElement, true);
 }
 
 // inherit from silex.view.ViewBase
@@ -66,7 +60,7 @@ silex.view.Stage.prototype.initEvents = function () {
 
   // detect mouse down
   goog.events.listen(this.element, 'mousedown', function(e) {
-    if (this.onStatus) this.onStatus('select', e.target);
+    if (this.onStatus) this.onStatus('select', silex.utils.JQueryEditable.getFirstEditableParent(e.target));
     this.isDragging = true;
   }, false, this);
   // listen on body instead of element because user can release
@@ -117,7 +111,7 @@ silex.view.Stage.prototype.getSelection = function() {
  * @return {object} object of fonts which are used in the text fields (key is the font name)
  */
 silex.view.Stage.prototype.getNeededFonts = function() {
-  var innerHTML = this.getStageElement().innerHTML;
+  var innerHTML = this.bodyElement.innerHTML;
   var neededFonts = [];
   innerHTML.replace(/<font[^"]*face="?([^"]*)"/g, function(match, group1, group2) {
     neededFonts[group1] = true;

@@ -174,13 +174,13 @@ silex.view.pane.PropertyPane.prototype.onPositionChanged =
       this.styleChanged('left');
     }
     if (this.widthInput.value && this.widthInput.value !== ''){
-      this.styleChanged('width', tthis.widthInput.value + 'px');
+      this.styleChanged('width', this.widthInput.value + 'px');
     }
     else{
       this.styleChanged('width');
     }
     if (this.bottomInput.value && this.bottomInput.value !== ''){
-      this.styleChanged('bottom', ththis.bottomInput.value + 'px');
+      this.styleChanged('bottom', this.bottomInput.value + 'px');
     }
     else{
       this.styleChanged('bottom');
@@ -192,19 +192,20 @@ silex.view.pane.PropertyPane.prototype.onPositionChanged =
       this.styleChanged('top');
     }
     if (this.heightInput.value && this.heightInput.value !== ''){
-      this.styleChanged('height', ththis.heightInput.value + 'px');
+      console.log('height changed', this.heightInput.value);
+      this.styleChanged('height', this.heightInput.value + 'px');
     }
     else{
       this.styleChanged('height');
     }
     if (this.rightInput.value && this.rightInput.value !== ''){
-      this.styleChanged('right', tthis.rightInput.value + 'px');
+      this.styleChanged('right', this.rightInput.value + 'px');
     }
     else{
       this.styleChanged('right');
     }
     if (this.zIndexInput.value && this.zIndexInput.value !== ''){
-      this.styleChanged('zIndex', ththis.zIndexInput.value + 'px');
+      this.styleChanged('zIndex', this.zIndexInput.value + 'px');
     }
     else{
       this.styleChanged('zIndex');
@@ -229,10 +230,13 @@ silex.view.pane.PropertyPane.prototype.redraw = function() {
     // refresh properties
     var imageUrl = '';
     if (type === silex.model.Element.TYPE_IMAGE) {
-      if (this.baseUrl)
-        imageUrl = silex.utils.Style.getRelativePath(element.getAttribute('src'), this.baseUrl);
-      else
-        imageUrl = this.component.getImageSrc();
+      var img = goog.dom.getElement(silex.model.Element.ELEMENT_CONTENT_CLASS_NAME, element);
+      if (img){
+        if (this.baseUrl)
+          imageUrl = silex.utils.Style.getRelativePath(img.getAttribute('src'), this.baseUrl);
+        else
+          imageUrl = img.getAttribute('src');
+      }
     }
 
     // resolve the template

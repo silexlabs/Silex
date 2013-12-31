@@ -80,7 +80,7 @@ silex.controller.PropertyToolController.prototype.propertyToolCallback = functio
         // update the model
         this.model.element.setStyle(element, opt_styleName, opt_styleValue);
         // redraw the data
-        this.view.propertyTool.redraw();
+        //this.view.propertyTool.redraw();
       }
       else{
         console.error('can not set style ', opt_styleName, ' on element ', element);

@@ -46,11 +46,18 @@ silex.controller.MenuController.prototype.menuCallback = function(type) {
     case 'title.changed':
       this.promptTitle();
       break;
+    case 'file.close':
     case 'file.new':
-      this.model.file.newFile();
+      this.newFile(goog.bind(function () {
+        // QOS, track success
+        this.tracker.trackAction('controller-events', 'success', type, 1);
+      }, this));
       break;
     case 'file.saveas':
-      this.save();
+      this.save(goog.bind(function () {
+        // QOS, track success
+        this.tracker.trackAction('controller-events', 'success', type, 1);
+      }, this));
       break;
     case 'file.rename':
       this.promptTitle();
@@ -66,10 +73,10 @@ silex.controller.MenuController.prototype.menuCallback = function(type) {
       this.save(this.model.file.getUrl());
       break;
     case 'file.open':
-      this.openFile();
-      break;
-    case 'file.close':
-      this.model.file.newFile();
+      this.openFile(goog.bind(function () {
+        // QOS, track success
+        this.tracker.trackAction('controller-events', 'success', type, 1);
+      }, this));
       break;
     case 'view.file':
       this.preview();
@@ -85,7 +92,7 @@ silex.controller.MenuController.prototype.menuCallback = function(type) {
       }
       break;
     case 'view.open.fileExplorer':
-      this.model.fileExplorer.openDialog();
+      this.view.fileExplorer.openDialog();
       this.view.workspace.invalidate();
       break;
     case 'view.open.editor':
@@ -101,7 +108,7 @@ silex.controller.MenuController.prototype.menuCallback = function(type) {
       this.addElement(silex.model.Element.TYPE_IMAGE);
       break;
     case 'insert.image':
-      this.model.fileExplorer.openDialog(
+      this.view.fileExplorer.openDialog(
           goog.bind(function(url) {
             // create the element
             var img = this.addElement(silex.model.Element.TYPE_IMAGE);
@@ -110,12 +117,12 @@ silex.controller.MenuController.prototype.menuCallback = function(type) {
               goog.bind(function(element){
                 this.view.workspace.invalidate();
                 this.tracker.trackAction('controller-events', 'success', type, 1);
-              }),
+              }, this),
               goog.bind(function(element, message){
                 silex.utils.Notification.notifyError('Error: I did not manage to load the image. <br /><br />' + message);
                 this.removeElement(element);
                 this.tracker.trackAction('controller-events', 'error', type, 1);
-              })
+              }, this)
             );
           }, this),
           ['image/*', 'text/plain'],

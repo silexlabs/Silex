@@ -1,3 +1,9 @@
+.loading-image {
+  background-image: url(../assets/image-loader.gif);
+  background-repeat: no-repeat;
+  background-position: 50%;
+}
+
 .editable-style.silex-selected {
   outline: 1px solid #666666;
   & > .ui-resizable-ne {
@@ -31,6 +37,8 @@
   -ms-user-select: none;
   user-select: none;
   cursor: move;
+  min-width: 20px;
+  min-height: 20px;
 }
 .editable-style.silex-selected &>.ui-resizable-se,.editable-style.silex-selected &>.ui-resizable-sw,.editable-style.silex-selected &>.ui-resizable-ne,.editable-style.silex-selected &>.ui-resizable-nw {
   background-color: #333333;
@@ -43,13 +51,13 @@
   padding: 5px;
   padding-bottom: 0;
   position: relative !important;
+  overflow: auto;
 }
 .silex-stage {
   background-color: #CCCCCC;
   height: 100%;
   position: absolute;
   left: 220px;
-  overflow: auto;
   border: 1px solid #D9D9D9;
 }
 .editable-style:hover {
