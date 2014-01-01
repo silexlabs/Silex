@@ -115,13 +115,14 @@ silex.view.pane.PagePane.prototype.setPages = function(pages) {
   this.pages = pages;
 
   // build an array of obects with name and displayName properties
-  var pageData = [];
-  goog.array.forEach(pages, function(name) {
-    pageData.push({
-      name: name,
-      displayName: silex.utils.JQueryPageable.getDisplayName(this.bodyElement, name)
-    });
-  }, this);
+  var pageData = pages.map(goog.bind(function (pageName) {
+    return {
+      name: pageName,
+      displayName: silex.utils.JQueryPageable.getDisplayName(this.bodyElement, pageName),
+      linkName: '#!' + pageName
+    };
+  }, this));
+
   // reset page checkboxes
   if (this.pageCheckboxes) {
     goog.array.forEach(this.pageCheckboxes, function(item) {
@@ -130,16 +131,18 @@ silex.view.pane.PagePane.prototype.setPages = function(pages) {
   }
 
   // link selector
-  var pageDataWithDefaultOptions = pageData.concat([
+  var pageDataWithDefaultOptions = ([
     {
       name: 'none',
-      displayName: 'None'
+      displayName: 'None',
+      linkName: 'none'
     },
     {
       name: 'custom',
-      displayName: 'External link'
+      displayName: 'External link',
+      linkName: 'custom'
     }
-  ]);
+  ]).concat(pageData);
   var linkContainer = goog.dom.getElementByClass('link-combo-box',
       this.element);
   var templateHtml = goog.dom.getElementByClass('link-template',
@@ -176,15 +179,9 @@ silex.view.pane.PagePane.prototype.setPages = function(pages) {
     });
     goog.events.listen(checkbox, goog.ui.Component.EventType.CHANGE,
         function(e) {
-          this.checkPage(pageName, checkbox);
+          this.checkPage(name, checkbox);
         }, false, this);
   }, this);
-  // show on all pages button
-  var showAllBtn = goog.dom.getElementByClass('show-on-all-pages-btn',
-      this.element);
-  goog.events.listen(showAllBtn, goog.events.EventType.CLICK, function(e) {
-    this.unCheckAll();
-  }, false, this);
 };
 
 
@@ -229,27 +226,27 @@ silex.view.pane.PagePane.prototype.redraw = function() {
   var element = this.getSelection()[0];
 
   if (element){
-    // get the link of the element
-    var elementLink = silex.utils.JQueryPageable.getLink(element);
     // refresh page checkboxes
     goog.array.forEach(this.pageCheckboxes, function(item) {
       // there is a selection
       item.checkbox.setEnabled(true);
-      item.checkbox.setChecked(elementLink === item.pageName);
+      item.checkbox.setChecked(silex.utils.JQueryPageable.isInPage(this.bodyElement, element, item.pageName));
     }, this);
 
     // refresh the link inputs
+    // get the link of the element
+    var elementLink = silex.utils.JQueryPageable.getLink(element);
+    console.log(elementLink);
     // default selection
-    if (!elementLink) {
+    if (!elementLink || elementLink === '') {
       this.linkDropdown.value = 'none';
       this.linkInputTextField.setValue('');
     }
     else {
-      if (elementLink.indexOf('#') === 0 &&
-          silex.model.Page.getPageByName(elementLink.substr(1))) {
+      if (elementLink.indexOf('#!') === 0) {
         // case of an internal link
         // select a page
-        this.linkDropdown.value = elementLink.substr(1);
+        this.linkDropdown.value = elementLink;
       }
       else {
         // in case it is a custom link
@@ -290,7 +287,7 @@ silex.view.pane.PagePane.prototype.checkPage = function(pageName, checkbox) {
 
 /**
  * callback for checkboxes click event
- */
+ *
 silex.view.pane.PagePane.prototype.unCheckAll = function() {
   goog.array.forEach(this.pages, function(pageName) {
     page.removeComponent(this.component);
@@ -300,3 +297,4 @@ silex.view.pane.PagePane.prototype.unCheckAll = function() {
   // refresh ui
   this.redraw();
 };
+/* */

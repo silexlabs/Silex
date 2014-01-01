@@ -40,7 +40,7 @@ goog.inherits(silex.controller.PropertyToolController, silex.controller.Controll
 /**
  * propertyTool event handler
  */
-silex.controller.PropertyToolController.prototype.propertyToolCallback = function(type, opt_styleName, opt_styleValue) {
+silex.controller.PropertyToolController.prototype.propertyToolCallback = function(type, opt_name, opt_value) {
   //this.tracker.trackAction('controller-events', 'request', type, 0);
   switch (type) {
     case 'editHTML':
@@ -76,18 +76,30 @@ silex.controller.PropertyToolController.prototype.propertyToolCallback = functio
     case 'styleChanged':
       // style of the element has changed
       var element = this.view.stage.getSelection()[0];
-      if (element && opt_styleName){
+      if (element && opt_name){
         // update the model
-        this.model.element.setStyle(element, opt_styleName, opt_styleValue);
+        this.model.element.setStyle(element, opt_name, opt_value);
         // redraw the data
-        //this.view.propertyTool.redraw();
+        this.view.propertyTool.redraw();
       }
       else{
-        console.error('can not set style ', opt_styleName, ' on element ', element);
+        console.error('can not set style ', opt_name, ' on element ', element);
       }
       break;
     case 'propertyChanged':
       console.error('not implemented');
+      break;
+    case 'addToPage':
+      silex.utils.JQueryPageable.addToPage(this.model.body.bodyElement, this.view.stage.getSelection()[0], opt_name);
+      break;
+    case 'removeFromPage':
+      silex.utils.JQueryPageable.removeFromPage(this.model.body.bodyElement, this.view.stage.getSelection()[0], opt_name);
+      break;
+    case 'addLink':
+      silex.utils.JQueryPageable.setLink(this.view.stage.getSelection()[0], opt_name);
+      break;
+    case 'removeLink':
+      silex.utils.JQueryPageable.setLink(this.view.stage.getSelection()[0]);
       break;
   }
 };

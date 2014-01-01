@@ -1,5 +1,4 @@
 .silex-property-tool .tab-page .border-placement-container label,.silex-property-tool .tab-page .corner-placement-container label {
-  display: inline-block;
   margin: 4px 2px 0;
   width: 35%;
 }
@@ -8,6 +7,8 @@
   right: 0;
   width: 250px;
   height: 95%;
+  overflow-x: hidden;
+  overflow-y: auto;
   .color-button {
     .goog-inline-block {
       display: block;
@@ -36,47 +37,31 @@
   .goog-checkbox {
     float: left;
   }
-  .goog-tab {
-    color: black;
-    font-weight: normal;
-    text-decoration: none;
-    cursor: pointer;
-  }
   .tab-page {
-    background-color: #F3F3F3;
-    border-bottom: 1px solid #6B90DA;
-    border-left: 1px solid #6B90DA;
-    border-right: 1px solid #6B90DA;
-    bottom: 10px;
-    display: block;
-    left: 10px;
-    overflow-x: hidden;
-    overflow-y: auto;
-    padding: 5px;
-    position: absolute;
-    right: 10px;
-    top: 310px;
-    label {
+    label.corner-placement-label,
+    label.border-placement-label {
       display: block;
-      margin: 4px 2px 0;
-    }
-    .button {
-      text-align: center;
-      width: 45%;
+      width: 100%;
+      margin: 0;
     }
     fieldset {
       margin-top: 10px;
     }
   }
+  .background-editor{
+    .background-image{
+      .goog-menu-button-caption{
+        width: 75px;
+      }
+    }
+  }
+
   .opacity-input {
     width: 47px;
   }
   .goog-color-menu-button-indicator {
     font-size: 12px;
     border-bottom-width: 10px;
-  }
-  .style-container {
-    bottom: 0;
   }
   .goog-hsva-palette-sm-input {
     font-size: 13px;
@@ -141,15 +126,10 @@
   .main-container {
     padding: 5px;
     margin: 5px;
-    height: 225px;
-    overflow-y: auto;
   }
   .goog-tab-bar {
     background-color: transparent;
     padding-left: 1px;
-    position: absolute;
-    top: 279px;
-    width: 225px;
     .goog-tab-selected {
       background-color: #f3f3f3;
     }

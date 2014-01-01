@@ -62,9 +62,9 @@ silex.view.Menu.prototype.element;
  */
 silex.view.Menu.prototype.redraw = function() {
   var title = null;
-  $('meta[name="title"]', this.headElement).each(
+  $('title', this.headElement).each(
     function() {
-      title = this.getAttribute('content');
+      title = this.innerHTML;
     });
 
   this.setWebsiteName(title);
@@ -215,6 +215,7 @@ silex.view.Menu.prototype.onMenuEvent = function(type) {
  * called by file when updating the website title
  */
 silex.view.Menu.prototype.setWebsiteName = function(name) {
+  if (!name || name === '') name = 'Untitled website';
   goog.dom.getElementByClass('website-name').innerHTML = name;
 };
 

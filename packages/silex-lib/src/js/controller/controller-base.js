@@ -81,7 +81,7 @@ silex.controller.ControllerBase.prototype.addElement = function(type) {
   var element = this.model.element.createElement(type);
   // only visible on the current page
   var currentPageName = silex.utils.JQueryPageable.getCurrentPageName(this.model.body.bodyElement);
-  silex.utils.JQueryPageable.addToPage(element, currentPageName);
+  silex.utils.JQueryPageable.addToPage(this.model.body.bodyElement, element, currentPageName);
   // unless one of its parents is in a page already
   this.checkElementVisibility(element);
   // select the component
@@ -129,7 +129,7 @@ silex.controller.ControllerBase.prototype.editElement = function(opt_element) {
 silex.controller.ControllerBase.prototype.openPage = function(pageName) {
   silex.utils.JQueryPageable.setCurrentPage(this.model.body.bodyElement, pageName);
   // update view
-  this.view.pageTool.refresh();
+  this.view.pageTool.redraw();
 }
 /**
  * rename a page
@@ -162,16 +162,18 @@ silex.controller.ControllerBase.prototype.removePage = function(opt_pageName) {
     opt_pageName = silex.utils.JQueryPageable.getCurrentPage(this.model.body.bodyElement);
   }
   // confirm and delete
-  silex.utils.Notification.confirm('I am about to delete the page "' + silex.utils.JQueryPageable.getDisplayName(opt_pageName) + '", are you sure?',
-    function(accept) {
-    if (accept) {
-      // update model
-      silex.utils.JQueryPageable.removePage(opt_pageName);
-      // update view
-      this.view.pageTool.refresh();
-      this.view.propertyTool.redraw(); // css class of selected element may have chenged
-    }
-  });
+  silex.utils.Notification.confirm('I am about to delete the page "'
+    + silex.utils.JQueryPageable.getDisplayName(this.model.body.bodyElement, opt_pageName)
+    + '", are you sure?',
+    goog.bind(function(accept) {
+      if (accept) {
+        // update model
+        silex.utils.JQueryPageable.removePage(this.model.body.bodyElement, opt_pageName);
+        // update view
+        this.view.pageTool.redraw();
+        this.view.propertyTool.redraw(); // css class of selected element may have chenged
+      }
+  }, this));
 };
 
 
@@ -180,7 +182,7 @@ silex.controller.ControllerBase.prototype.removePage = function(opt_pageName) {
  */
 silex.controller.ControllerBase.prototype.getUserInputPageName = function(defaultName, cbk) {
   silex.utils.Notification.prompt('Enter a name for your page!',
-      function(accept, name) {
+      goog.bind(function(accept, name) {
         if (accept && name && name.length > 0) {
           // keep the full name
           var displayName = name;
@@ -191,21 +193,21 @@ silex.controller.ControllerBase.prototype.getUserInputPageName = function(defaul
                 .replace(/"/g, '-')
                 .toLowerCase();
           // check if a page with this name exists
-          var pages = silex.utils.JQueryPageable.getPages();
+          var pages = silex.utils.JQueryPageable.getPages(this.model.body.bodyElement);
           var exists = false;
           goog.array.forEach(pages, function(pageName) {
             if (pageName === name)
               exists = true;
           });
           if (exists) {
-            silex.utils.JQueryPageable.openPage(name);
+            this.openPage(name);
           }
           else {
             cbk(name, displayName);
           }
         }
         cbk(null);
-      }, defaultName);
+      }, this), defaultName);
 };
 
 
@@ -220,11 +222,11 @@ silex.controller.ControllerBase.prototype.checkElementVisibility = function(elem
   var parentPage = silex.utils.JQueryPageable.getParentPage(element);
   if (parentPage !== null) {
     // get all the pages
-    var pages = silex.utils.JQueryPageable.getPagesForElement(this.rootPageable);
+    var pages = silex.utils.JQueryPageable.getPagesForElement(this.model.body.bodyElement, element);
     for (idx in pages) {
       // remove the component from the page
       var pageName = pages[idx];
-      silex.utils.JQueryPageable.removeFromPage(element, pageName);
+      silex.utils.JQueryPageable.removeFromPage(this.model.body.bodyElement, element, pageName);
     }
     // redraw the tool box in order to reflect the changes
     this.view.propertyTool.redraw();
@@ -307,17 +309,24 @@ silex.controller.ControllerBase.prototype.newFile = function(opt_cbk, opt_errorC
 /**
  * open a file
  */
-silex.controller.ControllerBase.prototype.openFile = function(url, opt_cbk, opt_errorCbk){
-  this.model.file.open(url, goog.bind(function(rawHtml) {
-    this.model.body.setHtml(rawHtml);
-    this.fileOperationSuccess(this.model.head.getTitle() + ' opened.', true)
-    if(opt_cbk) opt_cbk();
-  }, this),
-  goog.bind(function(error) {
-    silex.utils.Notification.notifyError('Error: I did not manage to open this file. <br /><br />' + (error.message || ''));
-    this.tracker.trackAction('controller-events', 'error', event.type, -1);
-    if(opt_errorCbk) opt_errorCbk(error);
-  }, this));
+silex.controller.ControllerBase.prototype.openFile = function(opt_cbk, opt_errorCbk){
+  // let the user choose the file
+  this.view.fileExplorer.openDialog(
+    goog.bind(function(url) {
+      this.model.file.open(url, goog.bind(function(rawHtml) {
+        rawHtml = silex.utils.Url.relative2absolute(rawHtml, silex.utils.Url.getBaseUrl(url));
+        this.model.file.setHtml(rawHtml);
+        this.fileOperationSuccess(this.model.head.getTitle() + ' opened.', true)
+        if(opt_cbk) opt_cbk();
+      }, this),
+      goog.bind(function(error) {
+        silex.utils.Notification.notifyError('Error: I did not manage to open this file. <br /><br />' + (error.message || ''));
+        this.tracker.trackAction('controller-events', 'error', event.type, -1);
+        if(opt_errorCbk) opt_errorCbk(error);
+      }, this));
+    }, this),
+    ['text/html', 'text/plain'],
+    opt_errorCbk);
 }
 /**
  * save or save-as
@@ -342,6 +351,8 @@ silex.controller.ControllerBase.prototype.save = function(opt_url, opt_cbk, opt_
     this.view.fileExplorer.saveAsDialog(
       goog.bind(function(url) {
         this.model.file.saveAs(
+          url,
+          this.model.file.getHtml(),
           goog.bind(function() {
             this.fileOperationSuccess('File is saved.', false)
             if (opt_cbk) opt_cbk();
@@ -362,6 +373,10 @@ silex.controller.ControllerBase.prototype.save = function(opt_url, opt_cbk, opt_
  */
 silex.controller.ControllerBase.prototype.fileOperationSuccess = function(opt_message, opt_updateTools) {
 
+  // find default first page
+  var pages = silex.utils.JQueryPageable.getPages(this.model.body.bodyElement);
+  // open default page
+  silex.utils.JQueryPageable.setCurrentPage(this.model.body.bodyElement, pages[0]);
   // update tools
   if (opt_updateTools){
     this.view.pageTool.redraw();
@@ -370,9 +385,6 @@ silex.controller.ControllerBase.prototype.fileOperationSuccess = function(opt_me
 
     // update fonts
     this.refreshFonts();
-
-    // open default page
-    this.view.pageTool.setSelectedIndex(0);
   }
   if(opt_message){
     // notify user

@@ -54,7 +54,7 @@ silex.controller.MenuController.prototype.menuCallback = function(type) {
       }, this));
       break;
     case 'file.saveas':
-      this.save(goog.bind(function () {
+      this.save(null, goog.bind(function () {
         // QOS, track success
         this.tracker.trackAction('controller-events', 'success', type, 1);
       }, this));
@@ -114,8 +114,12 @@ silex.controller.MenuController.prototype.menuCallback = function(type) {
             var img = this.addElement(silex.model.Element.TYPE_IMAGE);
             // loads the image
             this.model.element.setImageUrl(img, url,
-              goog.bind(function(element){
-                this.view.workspace.invalidate();
+              goog.bind(function(element, img){
+                // update element size
+                goog.style.setStyle(element, {
+                  width: img.naturalWidth + 'px',
+                  height: img.naturalHeight + 'px'
+                });
                 this.tracker.trackAction('controller-events', 'success', type, 1);
               }, this),
               goog.bind(function(element, message){

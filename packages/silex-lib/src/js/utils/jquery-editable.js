@@ -52,7 +52,7 @@ silex.utils.JQueryEditable.getFirstEditableParent = function(element) {
   else {
     // The component has no editable parent
     // This is the case of the stage
-    console.log('this element has no editable parent', element);
+    console.warn('this element has no editable parent', element);
   }
   return element;
 };

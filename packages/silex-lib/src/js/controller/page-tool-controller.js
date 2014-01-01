@@ -55,18 +55,6 @@ silex.controller.PageToolController.prototype.pageToolCallback = function(type, 
       // rename the page
       this.renamePage(pageName);
       break;
-    case 'addToPage':
-      silex.utils.JQueryPageable.addToPage(this.view.stage.getSelection()[0], pageName);
-      break;
-    case 'removeFromPage':
-      silex.utils.JQueryPageable.removeFromPage(this.view.stage.getSelection()[0], pageName);
-      break;
-    case 'addLink':
-      silex.utils.JQueryPageable.setLink(this.view.stage.getSelection()[0], pageName);
-      break;
-    case 'removeLink':
-      silex.utils.JQueryPageable.setLink(this.view.stage.getSelection()[0]);
-      break;
   }
 };
 

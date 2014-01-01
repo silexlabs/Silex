@@ -71,19 +71,7 @@ silex.view.pane.PropertyPane.prototype.leftInput;
 /**
  * UI for position and size
  */
-silex.view.pane.PropertyPane.prototype.rightInput;
-
-
-/**
- * UI for position and size
- */
 silex.view.pane.PropertyPane.prototype.topInput;
-
-
-/**
- * UI for position and size
- */
-silex.view.pane.PropertyPane.prototype.bottomInput;
 
 
 /**
@@ -100,7 +88,19 @@ silex.view.pane.PropertyPane.prototype.heightInput;
 
 /**
  * UI for position and size
- */
+ *
+silex.view.pane.PropertyPane.prototype.rightInput;
+
+
+/**
+ * UI for position and size
+ *
+silex.view.pane.PropertyPane.prototype.bottomInput;
+
+
+/**
+ * UI for position and size
+ *
 silex.view.pane.PropertyPane.prototype.zIndexInput;
 
 
@@ -111,36 +111,49 @@ silex.view.pane.PropertyPane.prototype.buildUi = function() {
 
   // position and size
   this.leftInput = goog.dom.getElementByClass('left-input');
+  this.leftInput.setAttribute('data-style-name', 'left');
+  this.leftInput.setAttribute('data-style-unit', 'px');
   goog.events.listen(this.leftInput,
       'change',
       this.onPositionChanged,
       false,
       this);
   this.widthInput = goog.dom.getElementByClass('width-input');
+  this.widthInput.setAttribute('data-style-name', 'width');
+  this.widthInput.setAttribute('data-style-unit', 'px');
   goog.events.listen(this.widthInput,
       'change',
       this.onPositionChanged,
       false,
       this);
-  this.bottomInput = goog.dom.getElementByClass('bottom-input');
-  goog.events.listen(this.bottomInput,
-      'change',
-      this.onPositionChanged,
-      false,
-      this);
   this.topInput = goog.dom.getElementByClass('top-input');
+  this.topInput.setAttribute('data-style-name', 'top');
+  this.topInput.setAttribute('data-style-unit', 'px');
   goog.events.listen(this.topInput,
       'change',
       this.onPositionChanged,
       false,
       this);
   this.heightInput = goog.dom.getElementByClass('height-input');
+  this.heightInput.setAttribute('data-style-name', 'height');
+  this.heightInput.setAttribute('data-style-unit', 'px');
   goog.events.listen(this.heightInput,
       'change',
       this.onPositionChanged,
       false,
       this);
+/*
+  this.bottomInput = goog.dom.getElementByClass('bottom-input');
+  this.bottomInput.setAttribute('data-style-name', 'bottom');
+  this.bottomInput.setAttribute('data-style-unit', 'px');
+  goog.events.listen(this.bottomInput,
+      'change',
+      this.onPositionChanged,
+      false,
+      this);
   this.rightInput = goog.dom.getElementByClass('right-input');
+  this.rightInput.setAttribute('data-style-name', 'right');
+  this.rightInput.setAttribute('data-style-unit', 'px');
   goog.events.listen(this.rightInput,
       'change',
       this.onPositionChanged,
@@ -149,11 +162,14 @@ silex.view.pane.PropertyPane.prototype.buildUi = function() {
 
   // z index
   this.zIndexInput = goog.dom.getElementByClass('z-index-input');
+  this.zIndexInput.setAttribute('data-style-name', 'zIndex');
+  this.zIndexInput.setAttribute('data-style-unit', '');
   goog.events.listen(this.zIndexInput,
       'change',
       this.onPositionChanged,
       false,
       this);
+*/
 };
 
 
@@ -162,54 +178,16 @@ silex.view.pane.PropertyPane.prototype.buildUi = function() {
  * callback for number inputs
  */
 silex.view.pane.PropertyPane.prototype.onPositionChanged =
-    function() {
+    function(e) {
   // get the selected element
   var element = this.getSelection()[0];
-
-  if (element){
-    if (this.leftInput.value && this.leftInput.value !== ''){
-      this.styleChanged('left', this.leftInput.value + 'px');
-    }
-    else{
-      this.styleChanged('left');
-    }
-    if (this.widthInput.value && this.widthInput.value !== ''){
-      this.styleChanged('width', this.widthInput.value + 'px');
-    }
-    else{
-      this.styleChanged('width');
-    }
-    if (this.bottomInput.value && this.bottomInput.value !== ''){
-      this.styleChanged('bottom', this.bottomInput.value + 'px');
-    }
-    else{
-      this.styleChanged('bottom');
-    }
-    if (this.topInput.value && this.topInput.value !== ''){
-      this.styleChanged('top',this.topInput.value + 'px');
-    }
-    else{
-      this.styleChanged('top');
-    }
-    if (this.heightInput.value && this.heightInput.value !== ''){
-      console.log('height changed', this.heightInput.value);
-      this.styleChanged('height', this.heightInput.value + 'px');
-    }
-    else{
-      this.styleChanged('height');
-    }
-    if (this.rightInput.value && this.rightInput.value !== ''){
-      this.styleChanged('right', this.rightInput.value + 'px');
-    }
-    else{
-      this.styleChanged('right');
-    }
-    if (this.zIndexInput.value && this.zIndexInput.value !== ''){
-      this.styleChanged('zIndex', this.zIndexInput.value + 'px');
-    }
-    else{
-      this.styleChanged('zIndex');
-    }
+  var input = e.target;
+  if (input.value && input.value!=''){
+    this.styleChanged(input.getAttribute('data-style-name'),
+      input.value + input.getAttribute('data-style-unit'));
+  }
+  else{
+    this.styleChanged(input.getAttribute('data-style-name'));
   }
 };
 
@@ -240,8 +218,9 @@ silex.view.pane.PropertyPane.prototype.redraw = function() {
     }
 
     // resolve the template
-    var editionContainer = goog.dom.getElementByClass('edition-container', this.element);
     if (this.element) {
+/*
+    var editionContainer = goog.dom.getElementByClass('edition-container', this.element);
       var templateHtml = goog.dom.getElementByClass('edition-template', this.element).innerHTML;
       editionContainer.innerHTML = silex.utils.Dom.renderList(templateHtml, [{
         htmlEditor: (type === silex.model.Element.TYPE_HTML)?'inherit':'none',
@@ -293,7 +272,7 @@ silex.view.pane.PropertyPane.prototype.redraw = function() {
           }, false, this);
         }
       }
-
+*/
       // position and size
       if (goog.dom.classes.has(element, 'editable-style')) {
         if (element.style.left !== undefined) {
@@ -310,13 +289,6 @@ silex.view.pane.PropertyPane.prototype.redraw = function() {
         else {
           this.widthInput.value = '';
         }
-        if (element.style.bottom !== undefined) {
-          this.bottomInput.value = element.style.bottom.substr(0,
-              element.style.bottom.indexOf('px'));
-        }
-        else {
-          this.bottomInput.value = '';
-        }
         if (element.style.top !== undefined) {
           this.topInput.value = element.style.top.substr(0,
               element.style.top.indexOf('px'));
@@ -331,6 +303,14 @@ silex.view.pane.PropertyPane.prototype.redraw = function() {
         else {
           this.heightInput.value = '';
         }
+/*
+        if (element.style.bottom !== undefined) {
+          this.bottomInput.value = element.style.bottom.substr(0,
+              element.style.bottom.indexOf('px'));
+        }
+        else {
+          this.bottomInput.value = '';
+        }
         if (element.style.right !== undefined) {
           this.rightInput.value = element.style.right.substr(0,
               element.style.right.indexOf('px'));
@@ -344,23 +324,25 @@ silex.view.pane.PropertyPane.prototype.redraw = function() {
         else {
           this.zIndexInput.value = '';
         }
+*/
       }
       else {
         // case of the stage
         this.leftInput.value = '';
         this.widthInput.value = '';
-        this.bottomInput.value = '';
         this.topInput.value = '';
         this.heightInput.value = '';
+/*
+        this.bottomInput.value = '';
         this.rightInput.value = '';
         this.zIndexInput.value = '';
+*/
       }
     }
     else {
-      if (editionContainer) {
-        editionContainer.innerHTML = '';
-      }
+//      if (editionContainer) {
+//        editionContainer.innerHTML = '';
+//      }
     }
-    this.isRedraw = false;
   }
 };

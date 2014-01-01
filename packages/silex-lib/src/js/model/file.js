@@ -158,20 +158,14 @@ silex.model.File.prototype.save = function(rawHtml, cbk, opt_errCbk) {
  * load a new file
  */
 silex.model.File.prototype.open = function(url, cbk, opt_errCbk) {
-  // let the user choose the file
-  this.fileExplorer.openDialog(
-      goog.bind(function(url) {
-        silex.service.CloudStorage.getInstance().load(
-          url,
-          goog.bind(function(rawHtml) {
-            // update model
-            this.close();
-            this.setUrl(url);
-            if (cbk) cbk(rawHtml);
-          }, this), opt_errCbk);
-      }, this),
-      ['text/html', 'text/plain'],
-      opt_errCbk);
+  silex.service.CloudStorage.getInstance().load(
+    url,
+    goog.bind(function(rawHtml) {
+      // update model
+      this.close();
+      this.setUrl(url);
+      if (cbk) cbk(rawHtml);
+    }, this), opt_errCbk);
 };
 
 
