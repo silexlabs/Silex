@@ -161,7 +161,7 @@ silex.model.Element.prototype.setStyle = function(element, styleName, opt_styleV
  * @param    {string} url    URL of the image chosen by the user
  */
 silex.model.Element.prototype.setBgImage = function(element, url) {
-  this.setStyle(element, 'backgroundImage', url);
+  this.setStyle(element, 'backgroundImage', 'url(' + url + ')');
 };
 
 
@@ -279,11 +279,6 @@ silex.model.Element.prototype.setImageUrl = function(element, url, opt_callback,
         goog.dom.classes.remove(element, 'loading-image');
         // handle the loaded image
         var img = e.target;
-        // update element size
-        goog.style.setStyle(element, {
-          width: img.naturalWidth,
-          height: img.naturalHeight
-        });
         // image tak all room available
         goog.style.setStyle(img, 'width', '100%');
         goog.style.setStyle(img, 'height', '100%');
@@ -293,7 +288,7 @@ silex.model.Element.prototype.setImageUrl = function(element, url, opt_callback,
         goog.dom.classes.add(img, silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
         // callback
         if (opt_callback){
-          opt_callback(element);
+          opt_callback(element, img);
         }
       });
       goog.events.listenOnce(imageLoader, goog.net.EventType.ERROR,
@@ -304,6 +299,13 @@ silex.model.Element.prototype.setImageUrl = function(element, url, opt_callback,
           opt_errorCallback(element, 'An error occured while loading the image.')
         }
       });
+      // add loading asset
+      goog.dom.classes.add(element, 'loading-image');
+      // remove previous img tag
+      var imgTags = goog.dom.getElementsByTagNameAndClass('img', silex.model.Element.ELEMENT_CONTENT_CLASS_NAME, element);
+      if (imgTags.length > 0) {
+        goog.dom.removeNode(imgTags[0]);
+      }
       // load the image
       imageLoader.addImage(url, url);
       imageLoader.start();
@@ -383,8 +385,6 @@ silex.model.Element.prototype.createElement = function(type) {
       element = goog.dom.createElement('div');
       element.className = silex.utils.JQueryEditable.EDITABLE_CLASS_NAME;
       element.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_IMAGE);
-      // add loading asset
-      goog.dom.classes.add(element, 'loading-image');
     break;
 
   }

@@ -19,34 +19,32 @@ h1.title1 Properties
         input.position-input.left-input(placeholder='-', type='number')
         label W
         input.position-input.width-input(placeholder='-', type='number')
-        label.right-bottom.advanced-only Right
-        input.position-input.right-input.advanced-only(placeholder='-', type='number')
+        // label.right-bottom.advanced-only Right
+        // input.position-input.right-input.advanced-only(placeholder='-', type='number')
         label.new-line Y
         input.position-input.top-input(placeholder='-', type='number')
         label H
         input.position-input.height-input(placeholder='-', type='number')
-        label.right-bottom.advanced-only Btm.
-        input.position-input.bottom-input.advanced-only(placeholder='-', type='number')
-      div
-        label.z-index-label.advanced-only Z index
-        input.position-input.z-index-input.advanced-only(placeholder='-', type='number')
+        // label.right-bottom.advanced-only Btm.
+        // input.position-input.bottom-input.advanced-only(placeholder='-', type='number')
+        //   div
+        // label.z-index-label.advanced-only Z index
+        // input.position-input.z-index-input.advanced-only(placeholder='-', type='number')
 
 
   span.page-editor
     script.pages-selector-template(type='text/x-handlebars-template')
       <div class="page-container">
       <span class="page-check" />
-      <label class="page-label xsmall-font">{{displayName}} <small>({{name}})</small></label>
+      <label class="page-label xsmall-font">{{displayName}}</label>
       </div>
-    p here template to do
 
     script.link-template(type='text/x-handlebars-template')
-      <option value="{{name}}">{{displayName}}</option>
-    p here template to do
+      <option value="{{linkName}}">{{displayName}}</option>
+
     fieldset.small-font
       legend
         | Show only on
-        span.show-on-all-pages-btn.link-small-btn.advanced-only (show on all pages)
       .pages-container
     fieldset.small-font
       legend Link
@@ -58,22 +56,17 @@ h1.title1 Properties
 
 
   span.property-editor
-    script.edition-template(type='text/x-handlebars-template')
-      <div style="display:{{htmlEditor}}" class="button small-font html-editor-button" title="Open HTML editor">Edit HTML</div>
-      <div style="display:{{textEditor}}" class="button small-font text-editor-button" title="Open text editor">Edit text</div>
-      <div style="display:{{imageEditor}}">
-      <input placeholder="-" class="image-url-input advanced-only" value="{{imageUrl}}" />
-      <div class="button small-font image-url-button" title="Open file browser">Swap image</div>
-      </div>
-
-    fieldset.small-font
-      legend Content
-      .edition-container
+    // script.edition-template(type='text/x-handlebars-template')
+    //   <div style="display:{{htmlEditor}}" class="button small-font html-editor-button" title="Open HTML editor">Edit HTML</div>
+    //   <div style="display:{{textEditor}}" class="button small-font text-editor-button" title="Open text editor">Edit text</div>
+    //   <div style="display:{{imageEditor}}">
+    //   <input placeholder="-" class="image-url-input advanced-only" value="{{imageUrl}}" />
+    //   <div class="button small-font image-url-button" title="Open file browser">Swap image</div>
+    //   </div>
+    // fieldset.small-font
+    //   legend Content
+    //   .edition-container
   span.style-container
-    .tab-bar-container.goog-tab-bar.goog-tab-bar-top.small-font
-      .goog-tab.goog-tab-selected Normal
-      .goog-tab Hover
-      .goog-tab Pressed
     span.tab-page
       .general-editor
         fieldset.small-font.opacity-property.advanced-only
@@ -93,8 +86,7 @@ h1.title1 Properties
           div
             .button.bg-image-button Select image
             .button.clear-bg-image-button Clear image
-          .advanced-only
-            label Position
+          div
             .bg-position-h-combo-box.combobox.goog-select
               ul.goog-menu
                 li#left.goog-menuitem left
@@ -105,8 +97,7 @@ h1.title1 Properties
                 li#top.goog-menuitem top
                 li#center.goog-menuitem center
                 li#bottom.goog-menuitem bottom
-          .advanced-only
-            label Properties
+          .background-image
             .bg-attachement-combo-box.combobox.goog-select
               ul.goog-menu
                 li#scroll.goog-menuitem(title='The background scrolls along with the element') scroll
@@ -121,13 +112,11 @@ h1.title1 Properties
         fieldset.small-font.border-property
           legend
             | Border
-            span.enable-border-color-button.link-small-btn.advanced-only (No border)
           label Width
           input.border-width-input(placeholder='-', type='number')
           label Color
           span.border-color-button.color-button
           span.border-color-palette
-          label.advanced-only Type
           .border-type-combo-box.combobox.goog-select.advanced-only
             ul.goog-menu
               li#solid.goog-menuitem solid
@@ -151,7 +140,7 @@ h1.title1 Properties
           legend Corners
           label Radius
           input.corner-radius-input(placeholder='-', type='number')
-          label.advanced-only Applys to
+          label.advanced-only
           .corner-placement-container.advanced-only
             span.corner-placement-check.goog-checkbox
             label.corner-placement-label Top Left

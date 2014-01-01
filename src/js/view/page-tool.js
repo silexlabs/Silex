@@ -55,15 +55,15 @@ silex.view.PageTool.prototype.initEvents = function(pages) {
   goog.events.listen(this.element, goog.events.EventType.CLICK, function(e) {
     if (goog.dom.classes.has(e.target, 'delete')){
       // remove the page
-      this.removePageAtIndex(this.getCellIndex(e.target.parentNode));
+      this.removePageAtIndex(this.getCellIndex(e.target.parentNode.parentNode));
     }
     else if (goog.dom.classes.has(e.target, 'label')){
       // rename the page
-      this.renamePageAtIndex(this.getCellIndex(e.target.parentNode));
+      this.renamePageAtIndex(this.getCellIndex(e.target.parentNode.parentNode));
     }
     else{
       // select page
-      this.setSelectedIndex(this.getCellIndex(e.target), true);
+      this.setSelectedIndex(this.getCellIndex(e.target.parentNode), true);
     }
   }, false, this);
 }
@@ -73,7 +73,26 @@ silex.view.PageTool.prototype.initEvents = function(pages) {
  * find all pages in the dom and call setPages
  */
 silex.view.PageTool.prototype.redraw = function() {
-  var pages = silex.utils.JQueryPageable.getPages(this.bodyElement);
+  var pageNames = silex.utils.JQueryPageable.getPages(this.bodyElement);
+  var currentPageName = silex.utils.JQueryPageable.getCurrentPageName(this.bodyElement);
+  // prepare the data for the template
+  // make an array with name, displayName, linkName and className
+  var idx = 0;
+  var pages = pageNames.map(goog.bind(function (pageName) {
+    var res = {
+      name: pageName,
+      displayName: silex.utils.JQueryPageable.getDisplayName(this.bodyElement, pageName),
+      linkName: '#!' + pageName,
+      idx: idx++
+    };
+    if (currentPageName === pageName){
+      res.className = 'ui-selected';
+    }
+    else{
+      res.className = '';
+    }
+    return res;
+  }, this));
 
   // refresh the list with new pages
   var container = goog.dom.getElementByClass('page-tool-container', this.element);
@@ -86,7 +105,8 @@ silex.view.PageTool.prototype.redraw = function() {
  * ask to remove a page
  */
 silex.view.PageTool.prototype.removePageAtIndex = function(idx) {
-  if (this.onStatus) this.onStatus('delete', this.pages[idx]);
+  var pageNames = silex.utils.JQueryPageable.getPages(this.bodyElement);
+  if (this.onStatus) this.onStatus('delete', pageNames[idx]);
   this.redraw();
 };
 
@@ -95,7 +115,8 @@ silex.view.PageTool.prototype.removePageAtIndex = function(idx) {
  * ask to rename a page
  */
 silex.view.PageTool.prototype.renamePageAtIndex = function(idx) {
-  if (this.onStatus) this.onStatus('rename', this.pages[idx]);
+  var pageNames = silex.utils.JQueryPageable.getPages(this.bodyElement);
+  if (this.onStatus) this.onStatus('rename', pageNames[idx]);
   this.redraw();
 };
 
@@ -107,30 +128,22 @@ silex.view.PageTool.prototype.renamePageAtIndex = function(idx) {
 silex.view.PageTool.prototype.setSelectedIndex = function(index, opt_notify) {
   // mark selection
   var items = goog.dom.getElementsByClass('page-container', this.element);
+  var pageName = '';
   goog.array.forEach(items, function(item) {
     var idx = this.getCellIndex(item);
     if (index === idx) {
       goog.dom.classes.add(item, 'ui-selected');
+      pageName = item.getAttribute('data-page-name');
     }
     else {
       goog.dom.classes.remove(item, 'ui-selected');
     }
   }, this);
   // notify the controller
-  if (opt_notify && this.onStatus) this.onStatus('changed', page);
+  if (opt_notify && this.onStatus) this.onStatus('changed', pageName);
 };
 
 
 silex.view.PageTool.prototype.getCellIndex = function(element) {
-
-  var items = goog.dom.getElementsByClass('page-container', this.element);
-  var idx=0;
-  while (idx<items.length && items[idx] != element){
-    idx++;
-  }
-  if (idx >= items.length){
-    idx = -1;
-    console.error('Page not found for element ', element);
-  }
-  return idx;
+  return parseInt(element.getAttribute('data-page-idx'));
 };

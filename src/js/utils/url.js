@@ -33,6 +33,9 @@ silex.utils.Url.getBaseUrl = function(opt_url) {
   if (!opt_url){
     opt_url = window.location.href;
   }
+  else{
+    opt_url = silex.utils.Url.getAbsolutePath(opt_url, window.location.href);
+  }
   return opt_url.substr(0, opt_url.lastIndexOf('/') + 1);
 };
 

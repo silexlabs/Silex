@@ -264,7 +264,22 @@ Packaging / distribution
     * ask "what's new in this version"? (=> track versions in a versions.json file)
     * .history/deleted_[date]/
 
-  * SEO: https://developers.google.com/webmasters/ajax-crawling/docs/specification
+  * SEO:
+    use _escaped_fragment_ - see https://developers.google.com/webmasters/ajax-crawling/docs/specification
+
+    Robot.txt
+
+    .htaccess for redirections
+    + pass param to redirect in js
+    => /pagex serves /#!pagex (or /?redirect=pagex
+    => js (if not Google bot) redirects to /#!pagex
+    + href attr. set to /pagex and re-written in js to /#!pagex
+
+    OR
+
+    No .htaccess
+    render all pages with phantomjs to /pagex.html
+    Js redirects to /#!pagex
 
 * Expot to use in haxe with cocktail
 

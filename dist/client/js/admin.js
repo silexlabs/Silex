@@ -7334,7 +7334,7 @@ silex.model.Element.prototype.setStyle = function $silex$model$Element$$setStyle
   goog.isDef($opt_styleValue$$) ? $element$$.style[$styleName$$] = $opt_styleValue$$ : $element$$.style[$styleName$$] = ""
 };
 silex.model.Element.prototype.setBgImage = function $silex$model$Element$$setBgImage$($element$$, $url$$) {
-  this.setStyle($element$$, "backgroundImage", $url$$)
+  this.setStyle($element$$, "backgroundImage", "url(" + $url$$ + ")")
 };
 silex.model.Element.prototype.getInnerHtml = function $silex$model$Element$$getInnerHtml$($element$$) {
   silex.utils.JQueryEditable.setEditable($element$$, !1);
@@ -7372,17 +7372,19 @@ silex.model.Element.prototype.setImageUrl = function $silex$model$Element$$setIm
       goog.events.listenOnce($imageLoader$$, goog.events.EventType.LOAD, function($e$$92_img$$) {
         goog.dom.classes.remove($element$$, "loading-image");
         $e$$92_img$$ = $e$$92_img$$.target;
-        goog.style.setStyle($element$$, {width:$e$$92_img$$.naturalWidth, height:$e$$92_img$$.naturalHeight});
         goog.style.setStyle($e$$92_img$$, "width", "100%");
         goog.style.setStyle($e$$92_img$$, "height", "100%");
         goog.dom.appendChild($element$$, $e$$92_img$$);
         goog.dom.classes.add($e$$92_img$$, silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
-        $opt_callback$$ && $opt_callback$$($element$$)
+        $opt_callback$$ && $opt_callback$$($element$$, $e$$92_img$$)
       });
       goog.events.listenOnce($imageLoader$$, goog.net.EventType.ERROR, function($e$$) {
         console.error("An error occured while loading the image.", $element$$);
         $opt_errorCallback$$ && $opt_errorCallback$$($element$$, "An error occured while loading the image.")
       });
+      goog.dom.classes.add($element$$, "loading-image");
+      var $imgTags$$ = goog.dom.getElementsByTagNameAndClass("img", silex.model.Element.ELEMENT_CONTENT_CLASS_NAME, $element$$);
+      0 < $imgTags$$.length && goog.dom.removeNode($imgTags$$[0]);
       $imageLoader$$.addImage($url$$, $url$$);
       $imageLoader$$.start()
     }else {
@@ -7419,7 +7421,7 @@ silex.model.Element.prototype.createElement = function $silex$model$Element$$cre
       goog.dom.classes.add($container$$10_htmlContent_type$$, silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
       break;
     case silex.model.Element.TYPE_IMAGE:
-      $element$$ = goog.dom.createElement("div"), $element$$.className = silex.utils.JQueryEditable.EDITABLE_CLASS_NAME, $element$$.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_IMAGE), goog.dom.classes.add($element$$, "loading-image")
+      $element$$ = goog.dom.createElement("div"), $element$$.className = silex.utils.JQueryEditable.EDITABLE_CLASS_NAME, $element$$.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_IMAGE)
   }
   goog.dom.classes.add($element$$, silex.utils.JQueryEditable.EDITABLE_CLASS_NAME);
   silex.utils.JQueryEditable.setEditable($element$$, !0);
@@ -7458,8 +7460,8 @@ silex.view.Menu = function $silex$view$Menu$($element$$, $bodyElement$$, $headEl
 goog.inherits(silex.view.Menu, silex.view.ViewBase);
 silex.view.Menu.prototype.redraw = function $silex$view$Menu$$redraw$() {
   var $title$$ = null;
-  $('meta[name="title"]', this.headElement).each(function() {
-    $title$$ = this.getAttribute("content")
+  $("title", this.headElement).each(function() {
+    $title$$ = this.innerHTML
   });
   this.setWebsiteName($title$$)
 };
@@ -7527,6 +7529,7 @@ silex.view.Menu.prototype.onMenuEvent = function $silex$view$Menu$$onMenuEvent$(
   }
 };
 silex.view.Menu.prototype.setWebsiteName = function $silex$view$Menu$$setWebsiteName$($name$$) {
+  $name$$ && "" !== $name$$ || ($name$$ = "Untitled website");
   goog.dom.getElementByClass("website-name").innerHTML = $name$$
 };
 silex.view.Menu.prototype.getWebsiteName = function $silex$view$Menu$$getWebsiteName$() {
@@ -7549,7 +7552,13 @@ silex.utils.JQueryPageable.getPageable = function $silex$utils$JQueryPageable$ge
   return $pageableRootElement$$ && $($pageableRootElement$$).hasClass(silex.utils.JQueryPageable.PAGEABLE_ROOT_CLASS)
 };
 silex.utils.JQueryPageable.setPageable = function $silex$utils$JQueryPageable$setPageable$($pageableRootElement$$, $isPageable$$) {
-  $isPageable$$ ? ($($pageableRootElement$$).pageable({useDeeplink:!1}), $($pageableRootElement$$).addClass(silex.utils.JQueryPageable.PAGEABLE_ROOT_CLASS)) : ($($pageableRootElement$$).pageable("destroy"), $($pageableRootElement$$).removeClass(silex.utils.JQueryPageable.PAGEABLE_ROOT_CLASS))
+  if($isPageable$$) {
+    $($pageableRootElement$$).addClass(silex.utils.JQueryPageable.PAGEABLE_ROOT_CLASS);
+    var $pages$$ = silex.utils.JQueryPageable.getPages($pageableRootElement$$);
+    $($pageableRootElement$$).pageable({currentPage:$pages$$[0], useDeeplink:!1})
+  }else {
+    $($pageableRootElement$$).pageable("destroy"), $($pageableRootElement$$).removeClass(silex.utils.JQueryPageable.PAGEABLE_ROOT_CLASS)
+  }
 };
 silex.utils.JQueryPageable.getPages = function $silex$utils$JQueryPageable$getPages$($pageableRootElement$$) {
   if(!silex.utils.JQueryPageable.getPageable($pageableRootElement$$)) {
@@ -7579,7 +7588,7 @@ silex.utils.JQueryPageable.getDisplayName = function $silex$utils$JQueryPageable
   }
   var $displayName$$ = "";
   $('a[data-silex-type="page"]', $pageableRootElement$$).each(function() {
-    this.getAttribute("id") === $pageName$$ && ($displayName$$ = this.getAttribute("data-silex-name"))
+    this.getAttribute("id") === $pageName$$ && ($displayName$$ = this.innerHTML)
   });
   return $displayName$$
 };
@@ -7595,7 +7604,7 @@ silex.utils.JQueryPageable.removePage = function $silex$utils$JQueryPageable$rem
   });
   $("." + $pageName$$).each(function() {
     $(this).removeClass($pageName$$);
-    0 >= silex.utils.JQueryPageable.getPagesForElement(this).length && $(this).removeClass(silex.utils.JQueryPageable.PAGE_CLASS)
+    0 >= silex.utils.JQueryPageable.getPagesForElement($pageableRootElement$$, this).length && $(this).removeClass(silex.utils.JQueryPageable.PAGE_CLASS)
   })
 };
 silex.utils.JQueryPageable.createPage = function $silex$utils$JQueryPageable$createPage$($pageableRootElement$$, $name$$, $displayName$$) {
@@ -7604,7 +7613,6 @@ silex.utils.JQueryPageable.createPage = function $silex$utils$JQueryPageable$cre
   }
   var $aTag$$ = goog.dom.createElement("a");
   $aTag$$.setAttribute("id", $name$$);
-  $aTag$$.setAttribute("data-silex-name", $displayName$$);
   $aTag$$.setAttribute("data-silex-type", "page");
   $aTag$$.innerHTML = $displayName$$;
   goog.dom.appendChild($pageableRootElement$$, $aTag$$)
@@ -7614,7 +7622,7 @@ silex.utils.JQueryPageable.renamePage = function $silex$utils$JQueryPageable$ren
     throw Error("Operation failed, root pageable element is required.");
   }
   $('a[data-silex-type="page"]', $pageableRootElement$$).each(function() {
-    this.getAttribute("id") === $oldName$$ && (this.setAttribute("id", $newName$$), this.setAttribute("data-silex-name", $newDisplayName$$))
+    this.getAttribute("id") === $oldName$$ && (this.setAttribute("id", $newName$$), this.innerHTML = $newDisplayName$$)
   });
   $('*[data-silex-href="#!' + $oldName$$ + '"]').each(function() {
     this.setAttribute("data-silex-href", "#!" + $newName$$)
@@ -7624,20 +7632,19 @@ silex.utils.JQueryPageable.renamePage = function $silex$utils$JQueryPageable$ren
     $(this).addClass($newName$$)
   })
 };
-silex.utils.JQueryPageable.setLink = function $silex$utils$JQueryPageable$setLink$($element$$, $pageName$$) {
-  url ? $element$$.setAttribute(silex.utils.JQueryPageable.LINK_ATTR, "#!" + $pageName$$) : $element$$.removeAttribute(silex.utils.JQueryPageable.LINK_ATTR)
+silex.utils.JQueryPageable.setLink = function $silex$utils$JQueryPageable$setLink$($element$$, $link$$) {
+  $link$$ ? $element$$.setAttribute(silex.utils.JQueryPageable.LINK_ATTR, $link$$) : $element$$.removeAttribute(silex.utils.JQueryPageable.LINK_ATTR)
 };
 silex.utils.JQueryPageable.getLink = function $silex$utils$JQueryPageable$getLink$($element$$) {
-  ($element$$ = $element$$.getAttribute("data-silex-href")) && 0 === $element$$.indexOf("#!") && ($element$$ = $element$$.substring(2));
-  return $element$$
+  return $element$$.getAttribute("data-silex-href")
 };
-silex.utils.JQueryPageable.addToPage = function $silex$utils$JQueryPageable$addToPage$($element$$, $pageName$$) {
+silex.utils.JQueryPageable.addToPage = function $silex$utils$JQueryPageable$addToPage$($pageableRootElement$$, $element$$, $pageName$$) {
   goog.dom.classes.add($element$$, $pageName$$);
   goog.dom.classes.add($element$$, silex.utils.JQueryPageable.PAGE_CLASS)
 };
-silex.utils.JQueryPageable.removeFromPage = function $silex$utils$JQueryPageable$removeFromPage$($element$$, $pageName$$) {
+silex.utils.JQueryPageable.removeFromPage = function $silex$utils$JQueryPageable$removeFromPage$($pageableRootElement$$, $element$$, $pageName$$) {
   goog.dom.classes.remove($element$$, $pageName$$);
-  0 < !silex.utils.JQueryPageable.getPagesForElement($element$$).length && goog.dom.classes.remove($element$$, silex.utils.JQueryPageable.PAGE_CLASS)
+  0 < !silex.utils.JQueryPageable.getPagesForElement($pageableRootElement$$, $element$$).length && goog.dom.classes.remove($element$$, silex.utils.JQueryPageable.PAGE_CLASS)
 };
 silex.utils.JQueryPageable.getPagesForElement = function $silex$utils$JQueryPageable$getPagesForElement$($pageableRootElement$$, $element$$) {
   if(!silex.utils.JQueryPageable.getPageable($pageableRootElement$$)) {
@@ -7648,6 +7655,11 @@ silex.utils.JQueryPageable.getPagesForElement = function $silex$utils$JQueryPage
     var $pageName$$ = $pages$$[idx];
     goog.dom.classes.has($element$$, $pageName$$) && $res$$.push($pageName$$)
   }
+  return $res$$
+};
+silex.utils.JQueryPageable.isInPage = function $silex$utils$JQueryPageable$isInPage$($pageableRootElement$$, $element$$, $opt_pageName$$) {
+  $opt_pageName$$ || ($opt_pageName$$ = silex.utils.JQueryPageable.getCurrentPageName($pageableRootElement$$));
+  return goog.dom.classes.has($element$$, $opt_pageName$$)
 };
 silex.utils.Notification = function $silex$utils$Notification$() {
   throw"this is a static class and it canot be instanciated";
@@ -7692,9 +7704,9 @@ silex.utils.RetroCompat.process = function $silex$utils$RetroCompat$process$($bo
     this.removeAttribute("data-style-normal")
   });
   $('meta[name="page"]', $headElement$$).each(function() {
-    var $page$$1_pageName$$ = this.getAttribute("content"), $page$$1_pageName$$ = new silex.model.Page($page$$1_pageName$$, $that$$.workspace, $that$$.menu, $that$$.stage, $that$$.pageTool, $that$$.propertyTool, $that$$.textEditor, $that$$.fileExplorer);
-    console.warn("retro compat in action", this, $page$$1_pageName$$);
-    $page$$1_pageName$$.attach();
+    var $page_pageName$$ = this.getAttribute("content"), $page_pageName$$ = new silex.model.Page($page_pageName$$, $that$$.workspace, $that$$.menu, $that$$.stage, $that$$.pageTool, $that$$.propertyTool, $that$$.textEditor, $that$$.fileExplorer);
+    console.warn("retro compat in action", this, $page_pageName$$);
+    $page_pageName$$.attach();
     $(this).remove()
   })
 };
@@ -7709,14 +7721,14 @@ silex.controller.ControllerBase.prototype.removeElement = function $silex$contro
   this.model.element.removeElement($opt_element$$);
   this.view.propertyTool.redraw()
 };
-silex.controller.ControllerBase.prototype.addElement = function $silex$controller$ControllerBase$$addElement$($element$$222_type$$) {
-  $element$$222_type$$ = this.model.element.createElement($element$$222_type$$);
+silex.controller.ControllerBase.prototype.addElement = function $silex$controller$ControllerBase$$addElement$($element$$223_type$$) {
+  $element$$223_type$$ = this.model.element.createElement($element$$223_type$$);
   var $currentPageName$$ = silex.utils.JQueryPageable.getCurrentPageName(this.model.body.bodyElement);
-  silex.utils.JQueryPageable.addToPage($element$$222_type$$, $currentPageName$$);
-  this.checkElementVisibility($element$$222_type$$);
-  this.model.element.setSelected($element$$222_type$$, !0);
+  silex.utils.JQueryPageable.addToPage(this.model.body.bodyElement, $element$$223_type$$, $currentPageName$$);
+  this.checkElementVisibility($element$$223_type$$);
+  this.model.element.setSelected($element$$223_type$$, !0);
   this.view.propertyTool.redraw();
-  return $element$$222_type$$
+  return $element$$223_type$$
 };
 silex.controller.ControllerBase.prototype.editElement = function $silex$controller$ControllerBase$$editElement$($opt_element$$) {
   $opt_element$$ || ($opt_element$$ = this.view.stage.getSelection()[0]);
@@ -7737,7 +7749,7 @@ silex.controller.ControllerBase.prototype.editElement = function $silex$controll
 };
 silex.controller.ControllerBase.prototype.openPage = function $silex$controller$ControllerBase$$openPage$($pageName$$) {
   silex.utils.JQueryPageable.setCurrentPage(this.model.body.bodyElement, $pageName$$);
-  this.view.pageTool.refresh()
+  this.view.pageTool.redraw()
 };
 silex.controller.ControllerBase.prototype.renamePage = function $silex$controller$ControllerBase$$renamePage$($opt_pageName$$) {
   $opt_pageName$$ || ($opt_pageName$$ = silex.utils.JQueryPageable.getCurrentPageName(this.model.body.bodyElement));
@@ -7747,29 +7759,29 @@ silex.controller.ControllerBase.prototype.renamePage = function $silex$controlle
 };
 silex.controller.ControllerBase.prototype.removePage = function $silex$controller$ControllerBase$$removePage$($opt_pageName$$) {
   $opt_pageName$$ || ($opt_pageName$$ = silex.utils.JQueryPageable.getCurrentPage(this.model.body.bodyElement));
-  silex.utils.Notification.confirm('I am about to delete the page "' + silex.utils.JQueryPageable.getDisplayName($opt_pageName$$) + '", are you sure?', function($accept$$) {
-    $accept$$ && (silex.utils.JQueryPageable.removePage($opt_pageName$$), this.view.pageTool.refresh(), this.view.propertyTool.redraw())
-  })
+  silex.utils.Notification.confirm('I am about to delete the page "' + silex.utils.JQueryPageable.getDisplayName(this.model.body.bodyElement, $opt_pageName$$) + '", are you sure?', goog.bind(function($accept$$) {
+    $accept$$ && (silex.utils.JQueryPageable.removePage(this.model.body.bodyElement, $opt_pageName$$), this.view.pageTool.redraw(), this.view.propertyTool.redraw())
+  }, this))
 };
 silex.controller.ControllerBase.prototype.getUserInputPageName = function $silex$controller$ControllerBase$$getUserInputPageName$($defaultName$$, $cbk$$) {
-  silex.utils.Notification.prompt("Enter a name for your page!", function($accept$$, $name$$) {
+  silex.utils.Notification.prompt("Enter a name for your page!", goog.bind(function($accept$$, $name$$) {
     if($accept$$ && $name$$ && 0 < $name$$.length) {
       var $displayName$$ = $name$$;
       $name$$ = $name$$.replace(/\ /g, "-").replace(/\./g, "-").replace(/'/g, "-").replace(/"/g, "-").toLowerCase();
-      var $pages$$ = silex.utils.JQueryPageable.getPages(), $exists$$ = !1;
+      var $pages$$ = silex.utils.JQueryPageable.getPages(this.model.body.bodyElement), $exists$$ = !1;
       goog.array.forEach($pages$$, function($pageName$$) {
         $pageName$$ === $name$$ && ($exists$$ = !0)
       });
-      $exists$$ ? silex.utils.JQueryPageable.openPage($name$$) : $cbk$$($name$$, $displayName$$)
+      $exists$$ ? this.openPage($name$$) : $cbk$$($name$$, $displayName$$)
     }
     $cbk$$(null)
-  }, $defaultName$$)
+  }, this), $defaultName$$)
 };
 silex.controller.ControllerBase.prototype.checkElementVisibility = function $silex$controller$ControllerBase$$checkElementVisibility$($element$$) {
   if(null !== silex.utils.JQueryPageable.getParentPage($element$$)) {
-    var $pages$$ = silex.utils.JQueryPageable.getPagesForElement(this.rootPageable);
+    var $pages$$ = silex.utils.JQueryPageable.getPagesForElement(this.model.body.bodyElement, $element$$);
     for(idx in $pages$$) {
-      silex.utils.JQueryPageable.removeFromPage($element$$, $pages$$[idx])
+      silex.utils.JQueryPageable.removeFromPage(this.model.body.bodyElement, $element$$, $pages$$[idx])
     }
     this.view.propertyTool.redraw()
   }
@@ -7803,16 +7815,19 @@ silex.controller.ControllerBase.prototype.newFile = function $silex$controller$C
     $opt_cbk$$ && $opt_cbk$$()
   }, this), $opt_errorCbk$$)
 };
-silex.controller.ControllerBase.prototype.openFile = function $silex$controller$ControllerBase$$openFile$($url$$, $opt_cbk$$, $opt_errorCbk$$) {
-  this.model.file.open($url$$, goog.bind(function($rawHtml$$) {
-    this.model.body.setHtml($rawHtml$$);
-    this.fileOperationSuccess(this.model.head.getTitle() + " opened.", !0);
-    $opt_cbk$$ && $opt_cbk$$()
-  }, this), goog.bind(function($error$$) {
-    silex.utils.Notification.notifyError("Error: I did not manage to open this file. <br /><br />" + ($error$$.message || ""));
-    this.tracker.trackAction("controller-events", "error", event.type, -1);
-    $opt_errorCbk$$ && $opt_errorCbk$$($error$$)
-  }, this))
+silex.controller.ControllerBase.prototype.openFile = function $silex$controller$ControllerBase$$openFile$($opt_cbk$$, $opt_errorCbk$$) {
+  this.view.fileExplorer.openDialog(goog.bind(function($url$$) {
+    this.model.file.open($url$$, goog.bind(function($rawHtml$$) {
+      $rawHtml$$ = silex.utils.Url.relative2absolute($rawHtml$$, silex.utils.Url.getBaseUrl($url$$));
+      this.model.file.setHtml($rawHtml$$);
+      this.fileOperationSuccess(this.model.head.getTitle() + " opened.", !0);
+      $opt_cbk$$ && $opt_cbk$$()
+    }, this), goog.bind(function($error$$) {
+      silex.utils.Notification.notifyError("Error: I did not manage to open this file. <br /><br />" + ($error$$.message || ""));
+      this.tracker.trackAction("controller-events", "error", event.type, -1);
+      $opt_errorCbk$$ && $opt_errorCbk$$($error$$)
+    }, this))
+  }, this), ["text/html", "text/plain"], $opt_errorCbk$$)
 };
 silex.controller.ControllerBase.prototype.save = function $silex$controller$ControllerBase$$save$($opt_url$$, $opt_cbk$$, $opt_errorCbk$$) {
   $opt_url$$ ? this.model.file.save($opt_url$$, goog.bind(function() {
@@ -7823,7 +7838,7 @@ silex.controller.ControllerBase.prototype.save = function $silex$controller$Cont
     $opt_errorCbk$$ && $opt_errorCbk$$($error$$);
     this.tracker.trackAction("controller-events", "error", event.type, -1)
   }, this)) : this.view.fileExplorer.saveAsDialog(goog.bind(function($url$$) {
-    this.model.file.saveAs(goog.bind(function() {
+    this.model.file.saveAs($url$$, this.model.file.getHtml(), goog.bind(function() {
       this.fileOperationSuccess("File is saved.", !1);
       $opt_cbk$$ && $opt_cbk$$()
     }, this), goog.bind(function($error$$) {
@@ -7834,7 +7849,9 @@ silex.controller.ControllerBase.prototype.save = function $silex$controller$Cont
   }, this), ["text/html", "text/plain"])
 };
 silex.controller.ControllerBase.prototype.fileOperationSuccess = function $silex$controller$ControllerBase$$fileOperationSuccess$($opt_message$$, $opt_updateTools$$) {
-  $opt_updateTools$$ && (this.view.pageTool.redraw(), this.view.propertyTool.redraw(), this.view.menu.redraw(), this.refreshFonts(), this.view.pageTool.setSelectedIndex(0));
+  var $pages$$ = silex.utils.JQueryPageable.getPages(this.model.body.bodyElement);
+  silex.utils.JQueryPageable.setCurrentPage(this.model.body.bodyElement, $pages$$[0]);
+  $opt_updateTools$$ && (this.view.pageTool.redraw(), this.view.propertyTool.redraw(), this.view.menu.redraw(), this.refreshFonts());
   $opt_message$$ && silex.utils.Notification.notifySuccess($opt_message$$)
 };
 silex.controller.ControllerBase.prototype.publish = function $silex$controller$ControllerBase$$publish$() {
@@ -7949,7 +7966,7 @@ silex.utils.JQueryEditable.getFirstEditableParent = function $silex$utils$JQuery
   if($child$$ && $child$$.getAttribute && $($child$$).hasClass("editable-style")) {
     return $child$$
   }
-  console.log("this element has no editable parent", $element$$);
+  console.warn("this element has no editable parent", $element$$);
   return $element$$
 };
 silex.utils.JQueryEditable.setEditable = function $silex$utils$JQueryEditable$setEditable$($element$$, $isEditable$$, $opt_isRootDroppableOnly$$) {
@@ -8076,19 +8093,7 @@ silex.controller.PageToolController.prototype.pageToolCallback = function $silex
       this.removePage($pageName$$);
       break;
     case "rename":
-      this.renamePage($pageName$$);
-      break;
-    case "addToPage":
-      silex.utils.JQueryPageable.addToPage(this.view.stage.getSelection()[0], $pageName$$);
-      break;
-    case "removeFromPage":
-      silex.utils.JQueryPageable.removeFromPage(this.view.stage.getSelection()[0], $pageName$$);
-      break;
-    case "addLink":
-      silex.utils.JQueryPageable.setLink(this.view.stage.getSelection()[0], $pageName$$);
-      break;
-    case "removeLink":
-      silex.utils.JQueryPageable.setLink(this.view.stage.getSelection()[0])
+      this.renamePage($pageName$$)
   }
 };
 silex.controller.StageController = function $silex$controller$StageController$($model$$, $view$$) {
@@ -8118,7 +8123,7 @@ silex.controller.PropertyToolController = function $silex$controller$PropertyToo
   $view$$.propertyTool.onStatus = goog.bind(this.propertyToolCallback, this)
 };
 goog.inherits(silex.controller.PropertyToolController, silex.controller.ControllerBase);
-silex.controller.PropertyToolController.prototype.propertyToolCallback = function $silex$controller$PropertyToolController$$propertyToolCallback$($type$$, $opt_styleName$$, $opt_styleValue$$) {
+silex.controller.PropertyToolController.prototype.propertyToolCallback = function $silex$controller$PropertyToolController$$propertyToolCallback$($type$$, $opt_name$$, $opt_value$$) {
   switch($type$$) {
     case "editHTML":
       this.editElement();
@@ -8143,10 +8148,22 @@ silex.controller.PropertyToolController.prototype.propertyToolCallback = functio
       break;
     case "styleChanged":
       var $element$$0$$ = this.view.stage.getSelection()[0];
-      $element$$0$$ && $opt_styleName$$ ? this.model.element.setStyle($element$$0$$, $opt_styleName$$, $opt_styleValue$$) : console.error("can not set style ", $opt_styleName$$, " on element ", $element$$0$$);
+      $element$$0$$ && $opt_name$$ ? (this.model.element.setStyle($element$$0$$, $opt_name$$, $opt_value$$), this.view.propertyTool.redraw()) : console.error("can not set style ", $opt_name$$, " on element ", $element$$0$$);
       break;
     case "propertyChanged":
-      console.error("not implemented")
+      console.error("not implemented");
+      break;
+    case "addToPage":
+      silex.utils.JQueryPageable.addToPage(this.model.body.bodyElement, this.view.stage.getSelection()[0], $opt_name$$);
+      break;
+    case "removeFromPage":
+      silex.utils.JQueryPageable.removeFromPage(this.model.body.bodyElement, this.view.stage.getSelection()[0], $opt_name$$);
+      break;
+    case "addLink":
+      silex.utils.JQueryPageable.setLink(this.view.stage.getSelection()[0], $opt_name$$);
+      break;
+    case "removeLink":
+      silex.utils.JQueryPageable.setLink(this.view.stage.getSelection()[0])
   }
 };
 silex.controller.MenuController = function $silex$controller$MenuController$($model$$, $view$$) {
@@ -8168,7 +8185,7 @@ silex.controller.MenuController.prototype.menuCallback = function $silex$control
       }, this));
       break;
     case "file.saveas":
-      this.save(goog.bind(function() {
+      this.save(null, goog.bind(function() {
         this.tracker.trackAction("controller-events", "success", $type$$, 1)
       }, this));
       break;
@@ -8214,9 +8231,9 @@ silex.controller.MenuController.prototype.menuCallback = function $silex$control
       break;
     case "insert.image":
       this.view.fileExplorer.openDialog(goog.bind(function($url$$) {
-        var $img$$ = this.addElement(silex.model.Element.TYPE_IMAGE);
-        this.model.element.setImageUrl($img$$, $url$$, goog.bind(function($element$$) {
-          this.view.workspace.invalidate();
+        var $img$$0$$ = this.addElement(silex.model.Element.TYPE_IMAGE);
+        this.model.element.setImageUrl($img$$0$$, $url$$, goog.bind(function($element$$, $img$$) {
+          goog.style.setStyle($element$$, {width:$img$$.naturalWidth + "px", height:$img$$.naturalHeight + "px"});
           this.tracker.trackAction("controller-events", "success", $type$$, 1)
         }, this), goog.bind(function($element$$, $message$$) {
           silex.utils.Notification.notifyError("Error: I did not manage to load the image. <br /><br />" + $message$$);
@@ -8290,19 +8307,19 @@ silex.types.View = function $silex$types$View$($workspace$$, $menu$$, $stage$$, 
   this.fileExplorer = $fileExplorer$$;
   this.settingsDialog = $settingsDialog$$
 };
-silex.view.SettingsDialog = function $silex$view$SettingsDialog$($btn$$1_element$$238_shortcutHandler$$, $bodyElement$$, $headElement$$) {
-  silex.view.ViewBase.call(this, $btn$$1_element$$238_shortcutHandler$$, $bodyElement$$, $headElement$$);
+silex.view.SettingsDialog = function $silex$view$SettingsDialog$($btn$$1_element$$239_shortcutHandler$$, $bodyElement$$, $headElement$$) {
+  silex.view.ViewBase.call(this, $btn$$1_element$$239_shortcutHandler$$, $bodyElement$$, $headElement$$);
   this.publicationPath = "";
   goog.style.setStyle(this.element, "display", "none");
-  $btn$$1_element$$238_shortcutHandler$$ = new goog.ui.KeyboardShortcutHandler(document);
-  $btn$$1_element$$238_shortcutHandler$$.registerShortcut("esc", goog.events.KeyCodes.ESC);
-  goog.events.listen($btn$$1_element$$238_shortcutHandler$$, goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED, goog.bind(this.closeEditor, this));
-  $btn$$1_element$$238_shortcutHandler$$ = goog.dom.getElementByClass("close-btn", this.element);
-  goog.events.listen($btn$$1_element$$238_shortcutHandler$$, goog.events.EventType.CLICK, function() {
+  $btn$$1_element$$239_shortcutHandler$$ = new goog.ui.KeyboardShortcutHandler(document);
+  $btn$$1_element$$239_shortcutHandler$$.registerShortcut("esc", goog.events.KeyCodes.ESC);
+  goog.events.listen($btn$$1_element$$239_shortcutHandler$$, goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED, goog.bind(this.closeEditor, this));
+  $btn$$1_element$$239_shortcutHandler$$ = goog.dom.getElementByClass("close-btn", this.element);
+  goog.events.listen($btn$$1_element$$239_shortcutHandler$$, goog.events.EventType.CLICK, function() {
     this.closeEditor()
   }, !1, this);
-  $btn$$1_element$$238_shortcutHandler$$ = goog.dom.getElementByClass("browse-btn", this.element);
-  goog.events.listen($btn$$1_element$$238_shortcutHandler$$, goog.events.EventType.CLICK, function() {
+  $btn$$1_element$$239_shortcutHandler$$ = goog.dom.getElementByClass("browse-btn", this.element);
+  goog.events.listen($btn$$1_element$$239_shortcutHandler$$, goog.events.EventType.CLICK, function() {
     this.onStatus("browsePublishPath")
   }, !1, this);
   var $inputPublicationPath$$ = goog.dom.getElementByClass("input-publication-path");
@@ -10916,7 +10933,7 @@ goog.Uri.QueryData.prototype.extend = function $goog$Uri$QueryData$$extend$($var
 };
 silex.utils.Url = {};
 silex.utils.Url.getBaseUrl = function $silex$utils$Url$getBaseUrl$($opt_url$$) {
-  $opt_url$$ || ($opt_url$$ = window.location.href);
+  $opt_url$$ = $opt_url$$ ? silex.utils.Url.getAbsolutePath($opt_url$$, window.location.href) : window.location.href;
   return $opt_url$$.substr(0, $opt_url$$.lastIndexOf("/") + 1)
 };
 silex.utils.Url.isAbsoluteUrl = function $silex$utils$Url$isAbsoluteUrl$($url$$) {
@@ -10973,15 +10990,15 @@ silex.utils.Url.checkFileExt = function $silex$utils$Url$checkFileExt$($fileName
   }
   return!1
 };
-silex.view.FileExplorer = function $silex$view$FileExplorer$($element$$242_shortcutHandler$$, $bodyElement$$, $headElement$$) {
-  silex.view.ViewBase.call(this, $element$$242_shortcutHandler$$, $bodyElement$$, $headElement$$);
+silex.view.FileExplorer = function $silex$view$FileExplorer$($element$$243_shortcutHandler$$, $bodyElement$$, $headElement$$) {
+  silex.view.ViewBase.call(this, $element$$243_shortcutHandler$$, $bodyElement$$, $headElement$$);
   goog.style.setStyle(this.element, "display", "none");
   (new goog.async.Delay(function() {
     this.init()
   }, 10, this)).start();
-  $element$$242_shortcutHandler$$ = new goog.ui.KeyboardShortcutHandler(document);
-  $element$$242_shortcutHandler$$.registerShortcut("esc", goog.events.KeyCodes.ESC);
-  goog.events.listen($element$$242_shortcutHandler$$, goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED, goog.bind(this.closeEditor, this))
+  $element$$243_shortcutHandler$$ = new goog.ui.KeyboardShortcutHandler(document);
+  $element$$243_shortcutHandler$$.registerShortcut("esc", goog.events.KeyCodes.ESC);
+  goog.events.listen($element$$243_shortcutHandler$$, goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED, goog.bind(this.closeEditor, this))
 };
 goog.inherits(silex.view.FileExplorer, silex.view.ViewBase);
 silex.view.FileExplorer.CONTAINER_TYPE = "modal";
@@ -11127,22 +11144,21 @@ silex.model.Head.prototype.getPublicationPath = function $silex$model$Head$$getP
 };
 silex.model.Head.prototype.getTitle = function $silex$model$Head$$getTitle$() {
   var $title$$ = null;
-  $('meta[name="title"]', this.headElement).each(function() {
-    $title$$ = this.getAttribute("content")
+  $("title", this.headElement).each(function() {
+    $title$$ = this.innerHTML
   });
   return $title$$
 };
 silex.model.Head.prototype.setTitle = function $silex$model$Head$$setTitle$($name$$) {
   var $found$$ = !1;
-  $('meta[name="title"]', this.headElement).each(function() {
-    this.setAttribute("content", $name$$);
+  $("title", this.headElement).each(function() {
+    this.innerHTML = $name$$;
     $found$$ = !0
   });
   if(!$found$$) {
-    var $meta$$ = goog.dom.createElement("meta");
-    $meta$$.name = "title";
-    $meta$$.content = $name$$;
-    goog.dom.appendChild(this.headElement, $meta$$)
+    var $title$$ = goog.dom.createElement("title");
+    $title$$.innerHTML = $name$$;
+    goog.dom.appendChild(this.headElement, $title$$)
   }
 };
 silex.utils.Dom = function $silex$utils$Dom$() {
@@ -11153,7 +11169,7 @@ silex.utils.Dom.renderList = function $silex$utils$Dom$renderList$($itemTemplate
   for(itemIdx in $data$$) {
     var $item$$ = $itemTemplateString$$;
     for(key in $data$$[itemIdx]) {
-      $item$$ = $item$$.replace("{{" + key + "}}", $data$$[itemIdx][key])
+      $item$$ = $item$$.replace(RegExp("{{" + key + "}}", "g"), $data$$[itemIdx][key])
     }
     $res$$ += $item$$
   }
@@ -11210,60 +11226,37 @@ silex.view.pane.PropertyPane = function $silex$view$pane$PropertyPane$($element$
 goog.inherits(silex.view.pane.PropertyPane, silex.view.pane.PaneBase);
 silex.view.pane.PropertyPane.prototype.buildUi = function $silex$view$pane$PropertyPane$$buildUi$() {
   this.leftInput = goog.dom.getElementByClass("left-input");
+  this.leftInput.setAttribute("data-style-name", "left");
+  this.leftInput.setAttribute("data-style-unit", "px");
   goog.events.listen(this.leftInput, "change", this.onPositionChanged, !1, this);
   this.widthInput = goog.dom.getElementByClass("width-input");
+  this.widthInput.setAttribute("data-style-name", "width");
+  this.widthInput.setAttribute("data-style-unit", "px");
   goog.events.listen(this.widthInput, "change", this.onPositionChanged, !1, this);
-  this.bottomInput = goog.dom.getElementByClass("bottom-input");
-  goog.events.listen(this.bottomInput, "change", this.onPositionChanged, !1, this);
   this.topInput = goog.dom.getElementByClass("top-input");
+  this.topInput.setAttribute("data-style-name", "top");
+  this.topInput.setAttribute("data-style-unit", "px");
   goog.events.listen(this.topInput, "change", this.onPositionChanged, !1, this);
   this.heightInput = goog.dom.getElementByClass("height-input");
-  goog.events.listen(this.heightInput, "change", this.onPositionChanged, !1, this);
-  this.rightInput = goog.dom.getElementByClass("right-input");
-  goog.events.listen(this.rightInput, "change", this.onPositionChanged, !1, this);
-  this.zIndexInput = goog.dom.getElementByClass("z-index-input");
-  goog.events.listen(this.zIndexInput, "change", this.onPositionChanged, !1, this)
+  this.heightInput.setAttribute("data-style-name", "height");
+  this.heightInput.setAttribute("data-style-unit", "px");
+  goog.events.listen(this.heightInput, "change", this.onPositionChanged, !1, this)
 };
-silex.view.pane.PropertyPane.prototype.onPositionChanged = function $silex$view$pane$PropertyPane$$onPositionChanged$() {
-  this.getSelection()[0] && (this.leftInput.value && "" !== this.leftInput.value ? this.styleChanged("left", this.leftInput.value + "px") : this.styleChanged("left"), this.widthInput.value && "" !== this.widthInput.value ? this.styleChanged("width", this.widthInput.value + "px") : this.styleChanged("width"), this.bottomInput.value && "" !== this.bottomInput.value ? this.styleChanged("bottom", this.bottomInput.value + "px") : this.styleChanged("bottom"), this.topInput.value && "" !== this.topInput.value ? 
-  this.styleChanged("top", this.topInput.value + "px") : this.styleChanged("top"), this.heightInput.value && "" !== this.heightInput.value ? (console.log("height changed", this.heightInput.value), this.styleChanged("height", this.heightInput.value + "px")) : this.styleChanged("height"), this.rightInput.value && "" !== this.rightInput.value ? this.styleChanged("right", this.rightInput.value + "px") : this.styleChanged("right"), this.zIndexInput.value && "" !== this.zIndexInput.value ? this.styleChanged("zIndex", 
-  this.zIndexInput.value + "px") : this.styleChanged("zIndex"))
+silex.view.pane.PropertyPane.prototype.onPositionChanged = function $silex$view$pane$PropertyPane$$onPositionChanged$($e$$123_input$$) {
+  this.getSelection();
+  $e$$123_input$$ = $e$$123_input$$.target;
+  $e$$123_input$$.value && "" != $e$$123_input$$.value ? this.styleChanged($e$$123_input$$.getAttribute("data-style-name"), $e$$123_input$$.value + $e$$123_input$$.getAttribute("data-style-unit")) : this.styleChanged($e$$123_input$$.getAttribute("data-style-name"))
 };
 silex.view.pane.PropertyPane.prototype.redraw = function $silex$view$pane$PropertyPane$$redraw$() {
   silex.view.pane.PropertyPane.superClass_.redraw.call(this);
   var $element$$ = this.getSelection()[0];
   if($element$$) {
-    var $type$$ = $element$$.getAttribute(silex.model.Element.TYPE_ATTR), $buttonElement$$ = "";
-    if($type$$ === silex.model.Element.TYPE_IMAGE) {
-      var $editionContainer_img$$ = goog.dom.getElement(silex.model.Element.ELEMENT_CONTENT_CLASS_NAME, $element$$);
-      $editionContainer_img$$ && ($buttonElement$$ = this.baseUrl ? silex.utils.Style.getRelativePath($editionContainer_img$$.getAttribute("src"), this.baseUrl) : $editionContainer_img$$.getAttribute("src"))
+    if($element$$.getAttribute(silex.model.Element.TYPE_ATTR) === silex.model.Element.TYPE_IMAGE) {
+      var $img$$ = goog.dom.getElement(silex.model.Element.ELEMENT_CONTENT_CLASS_NAME, $element$$);
+      $img$$ && (this.baseUrl ? silex.utils.Style.getRelativePath($img$$.getAttribute("src"), this.baseUrl) : $img$$.getAttribute("src"))
     }
-    $editionContainer_img$$ = goog.dom.getElementByClass("edition-container", this.element);
-    if(this.element) {
-      var $button$$ = goog.dom.getElementByClass("edition-template", this.element).innerHTML;
-      $editionContainer_img$$.innerHTML = silex.utils.Dom.renderList($button$$, [{htmlEditor:$type$$ === silex.model.Element.TYPE_HTML ? "inherit" : "none", textEditor:$type$$ === silex.model.Element.TYPE_TEXT ? "inherit" : "none", imageEditor:$type$$ === silex.model.Element.TYPE_IMAGE ? "inherit" : "none", imageUrl:$buttonElement$$}]);
-      if($buttonElement$$ = goog.dom.getElementByClass("html-editor-button", $editionContainer_img$$)) {
-        $button$$ = new goog.ui.CustomButton, $button$$.decorate($buttonElement$$), goog.events.listen($buttonElement$$, goog.events.EventType.CLICK, this.editHTML, !1)
-      }
-      if($buttonElement$$ = goog.dom.getElementByClass("text-editor-button", $editionContainer_img$$)) {
-        $button$$ = new goog.ui.CustomButton, $button$$.decorate($buttonElement$$), goog.events.listen($buttonElement$$, goog.events.EventType.CLICK, this.editText, !1)
-      }
-      if($type$$ === silex.model.Element.TYPE_IMAGE) {
-        if($buttonElement$$ = goog.dom.getElementByClass("image-url-button", $editionContainer_img$$)) {
-          $button$$ = new goog.ui.CustomButton, $button$$.decorate($buttonElement$$), goog.events.listen($buttonElement$$, goog.events.EventType.CLICK, this.selectImage, !1)
-        }
-        var $inputElement$$ = goog.dom.getElementByClass("image-url-input", $editionContainer_img$$);
-        $inputElement$$ && goog.events.listen($inputElement$$, "change", function() {
-          this.component && !this.isRedraw && $type$$ === silex.model.Element.TYPE_IMAGE && this.setImage($inputElement$$.value)
-        }, !1, this)
-      }
-      goog.dom.classes.has($element$$, "editable-style") ? (this.leftInput.value = void 0 !== $element$$.style.left ? $element$$.style.left.substr(0, $element$$.style.left.indexOf("px")) : "", this.widthInput.value = void 0 !== $element$$.style.width ? $element$$.style.width.substr(0, $element$$.style.width.indexOf("px")) : "", this.bottomInput.value = void 0 !== $element$$.style.bottom ? $element$$.style.bottom.substr(0, $element$$.style.bottom.indexOf("px")) : "", this.topInput.value = void 0 !== 
-      $element$$.style.top ? $element$$.style.top.substr(0, $element$$.style.top.indexOf("px")) : "", this.heightInput.value = void 0 !== $element$$.style.height ? $element$$.style.height.substr(0, $element$$.style.height.indexOf("px")) : "", this.rightInput.value = void 0 !== $element$$.style.right ? $element$$.style.right.substr(0, $element$$.style.right.indexOf("px")) : "", this.zIndexInput.value = void 0 !== $element$$.style.zIndex ? $element$$.style.zIndex : "") : (this.leftInput.value = "", 
-      this.widthInput.value = "", this.bottomInput.value = "", this.topInput.value = "", this.heightInput.value = "", this.rightInput.value = "", this.zIndexInput.value = "")
-    }else {
-      $editionContainer_img$$ && ($editionContainer_img$$.innerHTML = "")
-    }
-    this.isRedraw = !1
+    this.element && (goog.dom.classes.has($element$$, "editable-style") ? (this.leftInput.value = void 0 !== $element$$.style.left ? $element$$.style.left.substr(0, $element$$.style.left.indexOf("px")) : "", this.widthInput.value = void 0 !== $element$$.style.width ? $element$$.style.width.substr(0, $element$$.style.width.indexOf("px")) : "", this.topInput.value = void 0 !== $element$$.style.top ? $element$$.style.top.substr(0, $element$$.style.top.indexOf("px")) : "", this.heightInput.value = void 0 !== 
+    $element$$.style.height ? $element$$.style.height.substr(0, $element$$.style.height.indexOf("px")) : "") : (this.leftInput.value = "", this.widthInput.value = "", this.topInput.value = "", this.heightInput.value = ""))
   }
 };
 goog.editor = {};
@@ -12415,10 +12408,10 @@ goog.dom.TextRange.prototype.removeContents = function $goog$dom$TextRange$$remo
   this.getBrowserRangeWrapper_().removeContents();
   this.clearCachedValues_()
 };
-goog.dom.TextRange.prototype.surroundContents = function $goog$dom$TextRange$$surroundContents$($element$$250_output$$) {
-  $element$$250_output$$ = this.getBrowserRangeWrapper_().surroundContents($element$$250_output$$);
+goog.dom.TextRange.prototype.surroundContents = function $goog$dom$TextRange$$surroundContents$($element$$251_output$$) {
+  $element$$251_output$$ = this.getBrowserRangeWrapper_().surroundContents($element$$251_output$$);
   this.clearCachedValues_();
-  return $element$$250_output$$
+  return $element$$251_output$$
 };
 goog.dom.TextRange.prototype.insertNode = function $goog$dom$TextRange$$insertNode$($node$$, $before$$) {
   var $output$$ = this.getBrowserRangeWrapper_().insertNode($node$$, $before$$);
@@ -14792,8 +14785,8 @@ goog.ui.HsvaPalette.prototype.handleMouseMoveA_ = function $goog$ui$HsvaPalette$
   var $newA_vportPos$$ = this.getDomHelper().getDocumentScroll(), $newA_vportPos$$ = ($b$$.top + $b$$.height - Math.min(Math.max($newA_vportPos$$.y + $e$$.clientY, $b$$.top), $b$$.top + $b$$.height)) / $b$$.height;
   this.setAlpha($newA_vportPos$$)
 };
-goog.ui.HsvaPalette.prototype.handleInput = function $goog$ui$HsvaPalette$$handleInput$($e$$164_parsed$$) {
-  ($e$$164_parsed$$ = goog.ui.HsvaPalette.parseUserInput_(this.inputElement.value)) && this.setColorAlphaHelper_($e$$164_parsed$$[0], $e$$164_parsed$$[1])
+goog.ui.HsvaPalette.prototype.handleInput = function $goog$ui$HsvaPalette$$handleInput$($e$$165_parsed$$) {
+  ($e$$165_parsed$$ = goog.ui.HsvaPalette.parseUserInput_(this.inputElement.value)) && this.setColorAlphaHelper_($e$$165_parsed$$[0], $e$$165_parsed$$[1])
 };
 goog.ui.HsvaPalette.parseUserInput_ = function $goog$ui$HsvaPalette$parseUserInput_$($value$$) {
   return/^#[0-9a-f]{8}$/i.test($value$$) ? goog.ui.HsvaPalette.parseColorRgbaHex_($value$$) : /^#[0-9a-f]{6}$/i.test($value$$) ? [$value$$, 1] : null
@@ -14930,88 +14923,130 @@ silex.view.pane.BorderPane.prototype.buildUi = function $silex$view$pane$BorderP
   this.bgColorPicker.render(goog.dom.getElementByClass("border-color-button", this.element));
   this.hsvPalette.setColorRgbaHex("#000000FF");
   this.setColorPaletteVisibility(!1);
-  this.noBorderButton = goog.dom.getElementByClass("enable-border-color-button", this.element);
   this.borderPlacementCheckBoxes = [];
   var $decorateNodes_hsvPaletteElement$$ = goog.dom.getElementsByTagNameAndClass("span", null, goog.dom.getElementByClass("border-placement-container", this.element)), $idx$$, $len$$ = $decorateNodes_hsvPaletteElement$$.length;
   for($idx$$ = 0;$idx$$ < $len$$;$idx$$++) {
     var $checkBox$$ = goog.ui.decorate($decorateNodes_hsvPaletteElement$$[$idx$$]);
     this.borderPlacementCheckBoxes.push($checkBox$$);
-    goog.events.listen($checkBox$$, goog.ui.Component.EventType.CHANGE, this.onBorderChanged, !1, this)
+    goog.events.listen($checkBox$$, goog.ui.Component.EventType.CHANGE, this.onBorderWidthChanged, !1, this)
   }
   this.cornerRadiusInput = goog.dom.getElementByClass("corner-radius-input", this.element);
   this.cornerPlacementCheckBoxes = [];
   $decorateNodes_hsvPaletteElement$$ = goog.dom.getElementsByTagNameAndClass("span", null, goog.dom.getElementByClass("corner-placement-container", this.element));
   $len$$ = $decorateNodes_hsvPaletteElement$$.length;
   for($idx$$ = 0;$idx$$ < $len$$;$idx$$++) {
-    $checkBox$$ = goog.ui.decorate($decorateNodes_hsvPaletteElement$$[$idx$$]), this.cornerPlacementCheckBoxes.push($checkBox$$), goog.events.listen($checkBox$$, goog.ui.Component.EventType.CHANGE, this.onBorderChanged, !1, this)
+    $checkBox$$ = goog.ui.decorate($decorateNodes_hsvPaletteElement$$[$idx$$]), this.cornerPlacementCheckBoxes.push($checkBox$$), goog.events.listen($checkBox$$, goog.ui.Component.EventType.CHANGE, this.onBorderCornerChanged, !1, this)
   }
-  goog.events.listen(this.borderWidthInput, "change", this.onBorderChanged, !1, this);
-  goog.events.listen(this.borderStyleComboBox, goog.ui.Component.EventType.CHANGE, this.onBorderChanged, !1, this);
-  goog.events.listen(this.hsvPalette, goog.ui.Component.EventType.ACTION, this.onBorderChanged, !1, this);
+  goog.events.listen(this.borderWidthInput, "change", this.onBorderWidthChanged, !1, this);
+  goog.events.listen(this.borderStyleComboBox, goog.ui.Component.EventType.CHANGE, this.onBorderStyleChanged, !1, this);
+  goog.events.listen(this.hsvPalette, goog.ui.Component.EventType.ACTION, this.onBorderColorChanged, !1, this);
   goog.events.listen(this.bgColorPicker, goog.ui.Component.EventType.ACTION, this.toggleColorPaletteVisibility, !1, this);
-  goog.events.listen(this.noBorderButton, goog.events.EventType.CLICK, this.onResetBorder, !1, this);
-  goog.events.listen(this.cornerRadiusInput, "change", this.onBorderChanged, !1, this)
+  goog.events.listen(this.cornerRadiusInput, "change", this.onBorderCornerChanged, !1, this)
 };
 silex.view.pane.BorderPane.prototype.redraw = function $silex$view$pane$BorderPane$$redraw$() {
   silex.view.pane.BorderPane.superClass_.redraw.call(this);
   var $element$$ = this.getSelection()[0];
   if($element$$) {
     if($element$$.style.borderWidth) {
-      var $color$$8_hex$$5_values$$ = $element$$.style.borderWidth.split(" "), $idx$$4_val$$ = $color$$8_hex$$5_values$$[0];
-      this.borderWidthInput.value = $idx$$4_val$$.substr(0, $idx$$4_val$$.indexOf("px"));
-      for(var $len$$ = this.borderPlacementCheckBoxes.length, $idx$$4_val$$ = 0;$idx$$4_val$$ < $len$$;$idx$$4_val$$++) {
-        var $checkBox$$ = this.borderPlacementCheckBoxes[$idx$$4_val$$];
-        $color$$8_hex$$5_values$$.length > $idx$$4_val$$ && "0" !== $color$$8_hex$$5_values$$[$idx$$4_val$$] ? $checkBox$$.setChecked(!0) : $checkBox$$.setChecked(!1)
+      var $color$$8_hex$$5_values$$ = $element$$.style.borderWidth.split(" ");
+      1 === $color$$8_hex$$5_values$$.length ? $color$$8_hex$$5_values$$[1] = $color$$8_hex$$5_values$$[2] = $color$$8_hex$$5_values$$[3] = $color$$8_hex$$5_values$$[0] : 2 === $color$$8_hex$$5_values$$.length ? ($color$$8_hex$$5_values$$[2] = $color$$8_hex$$5_values$$[0], $color$$8_hex$$5_values$$[3] = $color$$8_hex$$5_values$$[1]) : 3 === $color$$8_hex$$5_values$$.length && ($color$$8_hex$$5_values$$[0], $color$$8_hex$$5_values$$[3] = $color$$8_hex$$5_values$$[1]);
+      var $idx$$4_val$$ = $color$$8_hex$$5_values$$[0];
+      if(goog.isDef($color$$8_hex$$5_values$$[1]) && "0" === $idx$$4_val$$ || "0px" === $idx$$4_val$$) {
+        $idx$$4_val$$ = $color$$8_hex$$5_values$$[1]
+      }
+      if(goog.isDef($color$$8_hex$$5_values$$[2]) && "0" === $idx$$4_val$$ || "0px" === $idx$$4_val$$) {
+        $idx$$4_val$$ = $color$$8_hex$$5_values$$[2]
+      }
+      if(goog.isDef($color$$8_hex$$5_values$$[3]) && "0" === $idx$$4_val$$ || "0px" === $idx$$4_val$$) {
+        $idx$$4_val$$ = $color$$8_hex$$5_values$$[3]
+      }
+      if(goog.isDef($idx$$4_val$$) && "0" !== $idx$$4_val$$ && "0px" !== $idx$$4_val$$) {
+        this.borderWidthInput.value = $idx$$4_val$$.substr(0, $idx$$4_val$$.indexOf("px"));
+        for(var $len$$ = this.borderPlacementCheckBoxes.length, $idx$$4_val$$ = 0;$idx$$4_val$$ < $len$$;$idx$$4_val$$++) {
+          var $checkBox$$ = this.borderPlacementCheckBoxes[$idx$$4_val$$];
+          $color$$8_hex$$5_values$$.length > $idx$$4_val$$ && "0" !== $color$$8_hex$$5_values$$[$idx$$4_val$$] && "0px" !== $color$$8_hex$$5_values$$[$idx$$4_val$$] ? $checkBox$$.setChecked(!0) : $checkBox$$.setChecked(!1)
+        }
+      }else {
+        this.resetBorder()
       }
       $color$$8_hex$$5_values$$ = $element$$.style.borderColor;
-      void 0 === $color$$8_hex$$5_values$$ || "transparent" === $color$$8_hex$$5_values$$ || "" === $color$$8_hex$$5_values$$ ? (this.bgColorPicker.setEnabled(!1), this.setColorPaletteVisibility(!1)) : ($color$$8_hex$$5_values$$ = silex.Helper.rgbaToHex($color$$8_hex$$5_values$$), this.bgColorPicker.setEnabled(!0), this.bgColorPicker.setValue($color$$8_hex$$5_values$$.substring(0, 7)), this.hsvPalette.setColorRgbaHex($color$$8_hex$$5_values$$))
+      void 0 === $color$$8_hex$$5_values$$ || "transparent" === $color$$8_hex$$5_values$$ || "" === $color$$8_hex$$5_values$$ ? this.setColorPaletteVisibility(!1) : ($color$$8_hex$$5_values$$ = silex.utils.Style.rgbaToHex($color$$8_hex$$5_values$$), this.bgColorPicker.setValue($color$$8_hex$$5_values$$.substring(0, 7)), this.hsvPalette.setColorRgbaHex($color$$8_hex$$5_values$$))
     }else {
-      for(this.borderWidthInput.value = "", $len$$ = this.borderPlacementCheckBoxes.length, $idx$$4_val$$ = 0;$idx$$4_val$$ < $len$$;$idx$$4_val$$++) {
-        $checkBox$$ = this.borderPlacementCheckBoxes[$idx$$4_val$$], $checkBox$$.setChecked(!0)
-      }
+      this.resetBorder()
     }
     $element$$.style.borderStyle ? this.borderStyleComboBox.setValue($element$$.style.borderStyle) : this.borderStyleComboBox.setSelectedIndex(0);
     if($element$$.style.borderRadius) {
-      for($color$$8_hex$$5_values$$ = $element$$.style.borderRadius.split(" "), $idx$$4_val$$ = $color$$8_hex$$5_values$$[0], this.cornerRadiusInput.value = $idx$$4_val$$.substr(0, $idx$$4_val$$.indexOf("px")), $len$$ = this.cornerPlacementCheckBoxes.length, $idx$$4_val$$ = 0;$idx$$4_val$$ < $len$$;$idx$$4_val$$++) {
-        $checkBox$$ = this.cornerPlacementCheckBoxes[$idx$$4_val$$], $color$$8_hex$$5_values$$.length > $idx$$4_val$$ && "0" !== $color$$8_hex$$5_values$$[$idx$$4_val$$] ? $checkBox$$.setChecked(!0) : $checkBox$$.setChecked(!1)
+      $color$$8_hex$$5_values$$ = $element$$.style.borderRadius.split(" ");
+      goog.isDef($color$$8_hex$$5_values$$[1]) || ($color$$8_hex$$5_values$$[1] = $color$$8_hex$$5_values$$[0]);
+      goog.isDef($color$$8_hex$$5_values$$[2]) || ($color$$8_hex$$5_values$$[2] = $color$$8_hex$$5_values$$[0]);
+      goog.isDef($color$$8_hex$$5_values$$[3]) || ($color$$8_hex$$5_values$$[3] = $color$$8_hex$$5_values$$[1]);
+      $idx$$4_val$$ = $color$$8_hex$$5_values$$[0];
+      if(goog.isDef($color$$8_hex$$5_values$$[1]) && "0" === $idx$$4_val$$ || "0px" === $idx$$4_val$$) {
+        $idx$$4_val$$ = $color$$8_hex$$5_values$$[1]
+      }
+      if(goog.isDef($color$$8_hex$$5_values$$[2]) && "0" === $idx$$4_val$$ || "0px" === $idx$$4_val$$) {
+        $idx$$4_val$$ = $color$$8_hex$$5_values$$[2]
+      }
+      if(goog.isDef($color$$8_hex$$5_values$$[3]) && "0" === $idx$$4_val$$ || "0px" === $idx$$4_val$$) {
+        $idx$$4_val$$ = $color$$8_hex$$5_values$$[3]
+      }
+      if(goog.isDef($idx$$4_val$$) && "0" !== $idx$$4_val$$ && "0px" !== $idx$$4_val$$) {
+        for(this.cornerRadiusInput.value = $idx$$4_val$$.substr(0, $idx$$4_val$$.indexOf("px")), $len$$ = this.cornerPlacementCheckBoxes.length, $idx$$4_val$$ = 0;$idx$$4_val$$ < $len$$;$idx$$4_val$$++) {
+          $checkBox$$ = this.cornerPlacementCheckBoxes[$idx$$4_val$$], "0" !== $color$$8_hex$$5_values$$[$idx$$4_val$$] && "0px" !== $color$$8_hex$$5_values$$[$idx$$4_val$$] ? $checkBox$$.setChecked(!0) : $checkBox$$.setChecked(!1)
+        }
+      }else {
+        this.resetBorderRadius()
       }
     }else {
-      for(this.cornerRadiusInput.value = "", $len$$ = this.cornerPlacementCheckBoxes.length, $idx$$4_val$$ = 0;$idx$$4_val$$ < $len$$;$idx$$4_val$$++) {
-        $checkBox$$ = this.cornerPlacementCheckBoxes[$idx$$4_val$$], $checkBox$$.setChecked(!0)
-      }
+      this.resetBorderRadius()
     }
     this.isRedraw = !1
   }
 };
-silex.view.pane.BorderPane.prototype.onBorderChanged = function $silex$view$pane$BorderPane$$onBorderChanged$() {
-  if(this.borderWidthInput.value && "" !== this.borderWidthInput.value) {
-    var $borderWidthStr_hex$$ = "", $color$$9_idx$$, $len$$ = this.borderPlacementCheckBoxes.length;
-    for($color$$9_idx$$ = 0;$color$$9_idx$$ < $len$$;$color$$9_idx$$++) {
-      var $checkBox$$ = this.borderPlacementCheckBoxes[$color$$9_idx$$], $borderWidthStr_hex$$ = $checkBox$$.getChecked() ? $borderWidthStr_hex$$ + (this.borderWidthInput.value + "px ") : $borderWidthStr_hex$$ + "0 "
-    }
-    this.styleChanged("borderWidth", $borderWidthStr_hex$$);
-    this.styleChanged("borderStyle", this.borderStyleComboBox.getSelectedItem().getValue());
-    $borderWidthStr_hex$$ = this.hsvPalette.getColorRgbaHex();
-    $color$$9_idx$$ = silex.Helper.hexToRgba($borderWidthStr_hex$$);
-    this.styleChanged("borderColor", $color$$9_idx$$);
-    this.bgColorPicker.setValue($borderWidthStr_hex$$.substring(0, 7))
-  }else {
-    this.styleChanged("borderWidth", "none"), this.styleChanged("borderStyle", "none")
-  }
-  if(this.cornerRadiusInput.value && "" !== this.cornerRadiusInput.value) {
-    $borderWidthStr_hex$$ = "";
-    $len$$ = this.cornerPlacementCheckBoxes.length;
-    for($color$$9_idx$$ = 0;$color$$9_idx$$ < $len$$;$color$$9_idx$$++) {
-      $checkBox$$ = this.cornerPlacementCheckBoxes[$color$$9_idx$$], $borderWidthStr_hex$$ = $checkBox$$.getChecked() ? $borderWidthStr_hex$$ + (this.cornerRadiusInput.value + "px ") : $borderWidthStr_hex$$ + "0 "
-    }
-    this.styleChanged("borderRadius", $borderWidthStr_hex$$)
-  }else {
-    this.styleChanged("borderRadius", "none")
+silex.view.pane.BorderPane.prototype.resetBorderRadius = function $silex$view$pane$BorderPane$$resetBorderRadius$() {
+  this.cornerRadiusInput.value = "";
+  var $idx$$, $len$$ = this.cornerPlacementCheckBoxes.length;
+  for($idx$$ = 0;$idx$$ < $len$$;$idx$$++) {
+    this.cornerPlacementCheckBoxes[$idx$$].setChecked(!0)
   }
 };
-silex.view.pane.BorderPane.prototype.onResetBorder = function $silex$view$pane$BorderPane$$onResetBorder$() {
+silex.view.pane.BorderPane.prototype.resetBorder = function $silex$view$pane$BorderPane$$resetBorder$() {
   this.borderWidthInput.value = "";
-  this.onBorderChanged()
+  var $idx$$, $len$$ = this.borderPlacementCheckBoxes.length;
+  for($idx$$ = 0;$idx$$ < $len$$;$idx$$++) {
+    this.borderPlacementCheckBoxes[$idx$$].setChecked(!0)
+  }
+};
+silex.view.pane.BorderPane.prototype.onBorderWidthChanged = function $silex$view$pane$BorderPane$$onBorderWidthChanged$() {
+  if(this.borderWidthInput.value && "" !== this.borderWidthInput.value) {
+    var $borderWidthStr$$ = "", $idx$$, $len$$ = this.borderPlacementCheckBoxes.length;
+    for($idx$$ = 0;$idx$$ < $len$$;$idx$$++) {
+      $borderWidthStr$$ = this.borderPlacementCheckBoxes[$idx$$].getChecked() ? $borderWidthStr$$ + (this.borderWidthInput.value + "px ") : $borderWidthStr$$ + "0 "
+    }
+    this.styleChanged("borderWidth", $borderWidthStr$$);
+    this.onBorderStyleChanged()
+  }else {
+    this.styleChanged("borderWidth", ""), this.styleChanged("borderStyle", "")
+  }
+};
+silex.view.pane.BorderPane.prototype.onBorderStyleChanged = function $silex$view$pane$BorderPane$$onBorderStyleChanged$() {
+  this.styleChanged("borderStyle", this.borderStyleComboBox.getSelectedItem().getValue())
+};
+silex.view.pane.BorderPane.prototype.onBorderColorChanged = function $silex$view$pane$BorderPane$$onBorderColorChanged$() {
+  var $hex$$ = this.hsvPalette.getColorRgbaHex(), $color$$ = silex.utils.Style.hexToRgba($hex$$);
+  this.styleChanged("borderColor", $color$$);
+  this.bgColorPicker.setValue($hex$$.substring(0, 7))
+};
+silex.view.pane.BorderPane.prototype.onBorderCornerChanged = function $silex$view$pane$BorderPane$$onBorderCornerChanged$() {
+  if(goog.isDef(this.cornerRadiusInput.value) && "" !== this.cornerRadiusInput.value) {
+    var $borderWidthStr$$ = "", $idx$$, $len$$ = this.cornerPlacementCheckBoxes.length;
+    for($idx$$ = 0;$idx$$ < $len$$;$idx$$++) {
+      $borderWidthStr$$ = this.cornerPlacementCheckBoxes[$idx$$].getChecked() ? $borderWidthStr$$ + (this.cornerRadiusInput.value + "px ") : $borderWidthStr$$ + "0 "
+    }
+    this.styleChanged("borderRadius", $borderWidthStr$$)
+  }else {
+    this.styleChanged("borderRadius", "")
+  }
 };
 silex.view.pane.BorderPane.prototype.toggleColorPaletteVisibility = function $silex$view$pane$BorderPane$$toggleColorPaletteVisibility$() {
   this.setColorPaletteVisibility(!this.getColorPaletteVisibility())
@@ -15076,17 +15111,17 @@ goog.ui.LabelInput.prototype.disposeInternal = function $goog$ui$LabelInput$$dis
   this.detachEvents_()
 };
 goog.ui.LabelInput.prototype.LABEL_CLASS_NAME = "label-input-label";
-goog.ui.LabelInput.prototype.handleFocus_ = function $goog$ui$LabelInput$$handleFocus_$($clearValue_e$$167_el$$) {
+goog.ui.LabelInput.prototype.handleFocus_ = function $goog$ui$LabelInput$$handleFocus_$($clearValue_e$$168_el$$) {
   this.hasFocus_ = !0;
-  $clearValue_e$$167_el$$ = this.getElement();
-  goog.asserts.assert($clearValue_e$$167_el$$);
-  goog.dom.classlist.remove($clearValue_e$$167_el$$, this.LABEL_CLASS_NAME);
+  $clearValue_e$$168_el$$ = this.getElement();
+  goog.asserts.assert($clearValue_e$$168_el$$);
+  goog.dom.classlist.remove($clearValue_e$$168_el$$, this.LABEL_CLASS_NAME);
   if(!goog.ui.LabelInput.SUPPORTS_PLACEHOLDER_ && !this.hasChanged() && !this.inFocusAndSelect_) {
     var $me$$ = this;
-    $clearValue_e$$167_el$$ = function $$clearValue_e$$167_el$$$() {
+    $clearValue_e$$168_el$$ = function $$clearValue_e$$168_el$$$() {
       $me$$.getElement() && ($me$$.getElement().value = "")
     };
-    goog.userAgent.IE ? goog.Timer.callOnce($clearValue_e$$167_el$$, 10) : $clearValue_e$$167_el$$()
+    goog.userAgent.IE ? goog.Timer.callOnce($clearValue_e$$168_el$$, 10) : $clearValue_e$$168_el$$()
   }
 };
 goog.ui.LabelInput.prototype.handleBlur_ = function $goog$ui$LabelInput$$handleBlur_$($e$$) {
@@ -15178,26 +15213,24 @@ silex.view.pane.PagePane.prototype.buildUi = function $silex$view$pane$PagePane$
   goog.events.listen($linkInputElement$$, goog.ui.Component.EventType.CHANGE, this.onLinkTextChanged, !1, this);
   goog.events.listen($linkInputElement$$, goog.events.EventType.KEYDOWN, this.onLinkTextChanged, !1, this)
 };
-silex.view.pane.PagePane.prototype.setPages = function $silex$view$pane$PagePane$$setPages$($items_mainContainer_pages$$4_showAllBtn_templateHtml$$) {
-  this.pages = $items_mainContainer_pages$$4_showAllBtn_templateHtml$$;
-  var $pageData$$ = [];
-  goog.array.forEach($items_mainContainer_pages$$4_showAllBtn_templateHtml$$, function($name$$) {
-    $pageData$$.push({name:$name$$, displayName:silex.utils.JQueryPageable.getDisplayName(this.bodyElement, $name$$)})
-  }, this);
+silex.view.pane.PagePane.prototype.setPages = function $silex$view$pane$PagePane$$setPages$($items_mainContainer_pageData_pages$$) {
+  this.pages = $items_mainContainer_pageData_pages$$;
+  $items_mainContainer_pageData_pages$$ = $items_mainContainer_pageData_pages$$.map(goog.bind(function($pageName$$) {
+    return{name:$pageName$$, displayName:silex.utils.JQueryPageable.getDisplayName(this.bodyElement, $pageName$$), linkName:"#!" + $pageName$$}
+  }, this));
   this.pageCheckboxes && goog.array.forEach(this.pageCheckboxes, function($item$$) {
     $item$$.checkbox.dispose()
   });
-  var $pageDataWithDefaultOptions_pagesContainer$$ = $pageData$$.concat([{name:"none", displayName:"None"}, {name:"custom", displayName:"External link"}]), $linkContainer$$ = goog.dom.getElementByClass("link-combo-box", this.element);
-  $items_mainContainer_pages$$4_showAllBtn_templateHtml$$ = goog.dom.getElementByClass("link-template", this.element).innerHTML;
-  $linkContainer$$.innerHTML = silex.utils.Dom.renderList($items_mainContainer_pages$$4_showAllBtn_templateHtml$$, $pageDataWithDefaultOptions_pagesContainer$$);
+  var $pageDataWithDefaultOptions_pagesContainer$$ = [{name:"none", displayName:"None", linkName:"none"}, {name:"custom", displayName:"External link", linkName:"custom"}].concat($items_mainContainer_pageData_pages$$), $linkContainer$$ = goog.dom.getElementByClass("link-combo-box", this.element), $templateHtml$$ = goog.dom.getElementByClass("link-template", this.element).innerHTML;
+  $linkContainer$$.innerHTML = silex.utils.Dom.renderList($templateHtml$$, $pageDataWithDefaultOptions_pagesContainer$$);
   $pageDataWithDefaultOptions_pagesContainer$$ = goog.dom.getElementByClass("pages-container", this.element);
-  $items_mainContainer_pages$$4_showAllBtn_templateHtml$$ = goog.dom.getElementByClass("pages-selector-template", this.element).innerHTML;
-  $pageDataWithDefaultOptions_pagesContainer$$.innerHTML = silex.utils.Dom.renderList($items_mainContainer_pages$$4_showAllBtn_templateHtml$$, $pageData$$);
+  $templateHtml$$ = goog.dom.getElementByClass("pages-selector-template", this.element).innerHTML;
+  $pageDataWithDefaultOptions_pagesContainer$$.innerHTML = silex.utils.Dom.renderList($templateHtml$$, $items_mainContainer_pageData_pages$$);
   this.pageCheckboxes = [];
-  $items_mainContainer_pages$$4_showAllBtn_templateHtml$$ = goog.dom.getElementByClass("pages-container", this.element);
-  $items_mainContainer_pages$$4_showAllBtn_templateHtml$$ = goog.dom.getElementsByClass("page-container", $items_mainContainer_pages$$4_showAllBtn_templateHtml$$);
+  $items_mainContainer_pageData_pages$$ = goog.dom.getElementByClass("pages-container", this.element);
+  $items_mainContainer_pageData_pages$$ = goog.dom.getElementsByClass("page-container", $items_mainContainer_pageData_pages$$);
   var $idx$$ = 0;
-  goog.array.forEach($items_mainContainer_pages$$4_showAllBtn_templateHtml$$, function($item$$21_labelElement$$) {
+  goog.array.forEach($items_mainContainer_pageData_pages$$, function($item$$21_labelElement$$) {
     var $checkboxElement$$ = goog.dom.getElementByClass("page-check", $item$$21_labelElement$$);
     $item$$21_labelElement$$ = goog.dom.getElementByClass("page-label", $item$$21_labelElement$$);
     var $checkbox$$ = new goog.ui.Checkbox, $name$$ = this.pages[$idx$$++];
@@ -15205,13 +15238,9 @@ silex.view.pane.PagePane.prototype.setPages = function $silex$view$pane$PagePane
     $checkbox$$.setLabel($item$$21_labelElement$$);
     this.pageCheckboxes.push({checkbox:$checkbox$$, pageName:$name$$});
     goog.events.listen($checkbox$$, goog.ui.Component.EventType.CHANGE, function($e$$) {
-      this.checkPage(pageName, $checkbox$$)
+      this.checkPage($name$$, $checkbox$$)
     }, !1, this)
-  }, this);
-  $items_mainContainer_pages$$4_showAllBtn_templateHtml$$ = goog.dom.getElementByClass("show-on-all-pages-btn", this.element);
-  goog.events.listen($items_mainContainer_pages$$4_showAllBtn_templateHtml$$, goog.events.EventType.CLICK, function($e$$) {
-    this.unCheckAll()
-  }, !1, this)
+  }, this)
 };
 silex.view.pane.PagePane.prototype.onLinkChanged = function $silex$view$pane$PagePane$$onLinkChanged$() {
   if("none" === this.linkDropdown.value) {
@@ -15232,16 +15261,17 @@ silex.view.pane.PagePane.prototype.onLinkTextChanged = function $silex$view$pane
 silex.view.pane.PagePane.prototype.redraw = function $silex$view$pane$PagePane$$redraw$() {
   silex.view.pane.PagePane.superClass_.redraw.call(this);
   this.setPages(silex.utils.JQueryPageable.getPages(this.bodyElement));
-  var $element$$268_linkInputElement$$ = this.getSelection()[0];
-  if($element$$268_linkInputElement$$) {
-    var $elementLink$$ = silex.utils.JQueryPageable.getLink($element$$268_linkInputElement$$);
+  var $element$$ = this.getSelection()[0];
+  if($element$$) {
     goog.array.forEach(this.pageCheckboxes, function($item$$) {
       $item$$.checkbox.setEnabled(!0);
-      $item$$.checkbox.setChecked($elementLink$$ === $item$$.pageName)
+      $item$$.checkbox.setChecked(silex.utils.JQueryPageable.isInPage(this.bodyElement, $element$$, $item$$.pageName))
     }, this);
-    $elementLink$$ ? 0 === $elementLink$$.indexOf("#") && silex.model.Page.getPageByName($elementLink$$.substr(1)) ? this.linkDropdown.value = $elementLink$$.substr(1) : (this.linkInputTextField.setValue($elementLink$$), this.linkDropdown.value = "custom") : (this.linkDropdown.value = "none", this.linkInputTextField.setValue(""));
-    $element$$268_linkInputElement$$ = goog.dom.getElementByClass("link-input-text", this.element);
-    "custom" === this.linkDropdown.value ? goog.style.setStyle($element$$268_linkInputElement$$, "display", "inherit") : goog.style.setStyle($element$$268_linkInputElement$$, "display", "none");
+    var $elementLink_linkInputElement$$ = silex.utils.JQueryPageable.getLink($element$$);
+    console.log($elementLink_linkInputElement$$);
+    $elementLink_linkInputElement$$ && "" !== $elementLink_linkInputElement$$ ? 0 === $elementLink_linkInputElement$$.indexOf("#!") ? this.linkDropdown.value = $elementLink_linkInputElement$$ : (this.linkInputTextField.setValue($elementLink_linkInputElement$$), this.linkDropdown.value = "custom") : (this.linkDropdown.value = "none", this.linkInputTextField.setValue(""));
+    $elementLink_linkInputElement$$ = goog.dom.getElementByClass("link-input-text", this.element);
+    "custom" === this.linkDropdown.value ? goog.style.setStyle($elementLink_linkInputElement$$, "display", "inherit") : goog.style.setStyle($elementLink_linkInputElement$$, "display", "none");
     this.isRedraw = !1
   }
 };
@@ -15251,13 +15281,6 @@ silex.view.pane.PagePane.prototype.checkPage = function $silex$view$pane$PagePan
   }else {
     this.onStatus("removeFromPage", $pageName$$)
   }
-};
-silex.view.pane.PagePane.prototype.unCheckAll = function $silex$view$pane$PagePane$$unCheckAll$() {
-  goog.array.forEach(this.pages, function($pageName$$) {
-    page.removeComponent(this.component)
-  }, this);
-  this.pageChanged();
-  this.redraw()
 };
 silex.utils.Style = {};
 silex.utils.Style.styleToString = function $silex$utils$Style$styleToString$($style$$) {
@@ -15505,9 +15528,9 @@ silex.view.pane.BgPane = function $silex$view$pane$BgPane$($element$$, $bodyElem
 };
 goog.inherits(silex.view.pane.BgPane, silex.view.pane.PaneBase);
 silex.view.pane.BgPane.prototype.buildUi = function $silex$view$pane$BgPane$$buildUi$() {
-  var $buttonElement$$2_hsvPaletteElement$$ = goog.dom.getElementByClass("color-bg-palette", this.element);
+  var $buttonAddImage_hsvPaletteElement$$ = goog.dom.getElementByClass("color-bg-palette", this.element);
   this.hsvPalette = new goog.ui.HsvaPalette(null, null, null, "goog-hsva-palette-sm");
-  this.hsvPalette.render($buttonElement$$2_hsvPaletteElement$$);
+  this.hsvPalette.render($buttonAddImage_hsvPaletteElement$$);
   this.bgColorPicker = new goog.ui.ColorButton;
   this.bgColorPicker.setTooltip("Click to select color");
   this.bgColorPicker.render(goog.dom.getElementByClass("color-bg-button"));
@@ -15515,23 +15538,23 @@ silex.view.pane.BgPane.prototype.buildUi = function $silex$view$pane$BgPane$$bui
   this.setColorPaletteVisibility(!1);
   this.transparentBgCheckbox = new goog.ui.Checkbox;
   this.transparentBgCheckbox.decorate(goog.dom.getElementByClass("enable-color-bg-button"), this.element);
-  $buttonElement$$2_hsvPaletteElement$$ = goog.dom.getElementByClass("bg-image-button");
+  $buttonAddImage_hsvPaletteElement$$ = goog.dom.getElementByClass("bg-image-button");
   this.bgSelectBgImage = new goog.ui.CustomButton;
-  this.bgSelectBgImage.decorate($buttonElement$$2_hsvPaletteElement$$);
+  this.bgSelectBgImage.decorate($buttonAddImage_hsvPaletteElement$$);
   this.bgSelectBgImage.setTooltip("Click to select a file");
-  goog.events.listen(this.hsvPalette, goog.ui.Component.EventType.ACTION, this.onColorChanged, !1, this);
-  $buttonElement$$2_hsvPaletteElement$$ = goog.dom.getElementByClass("clear-bg-image-button");
+  var $buttonClearImage$$ = goog.dom.getElementByClass("clear-bg-image-button");
   this.bgClearBgImage = new goog.ui.CustomButton;
   this.bgClearBgImage.setTooltip("Click to select a file");
-  this.bgClearBgImage.decorate($buttonElement$$2_hsvPaletteElement$$);
+  this.bgClearBgImage.decorate($buttonClearImage$$);
   this.attachementComboBox = goog.ui.decorate(goog.dom.getElementByClass("bg-attachement-combo-box"));
   this.vPositionComboBox = goog.ui.decorate(goog.dom.getElementByClass("bg-position-v-combo-box"));
   this.hPositionComboBox = goog.ui.decorate(goog.dom.getElementByClass("bg-position-h-combo-box"));
   this.repeatComboBox = goog.ui.decorate(goog.dom.getElementByClass("bg-repeat-combo-box"));
+  goog.events.listen(this.hsvPalette, goog.ui.Component.EventType.ACTION, this.onColorChanged, !1, this);
   goog.events.listen(this.bgColorPicker, goog.ui.Component.EventType.ACTION, this.onBgColorButton, !1, this);
   goog.events.listen(this.transparentBgCheckbox, goog.ui.Component.EventType.CHANGE, this.onTransparentChanged, !1, this);
-  goog.events.listen($buttonElement$$2_hsvPaletteElement$$, goog.events.EventType.CLICK, this.onSelectImageButton, !1, this);
-  goog.events.listen($buttonElement$$2_hsvPaletteElement$$, goog.events.EventType.CLICK, this.onClearImageButton, !1, this);
+  goog.events.listen($buttonAddImage_hsvPaletteElement$$, goog.events.EventType.CLICK, this.onSelectImageButton, !1, this);
+  goog.events.listen($buttonClearImage$$, goog.events.EventType.CLICK, this.onClearImageButton, !1, this);
   goog.events.listen(this.attachementComboBox, goog.ui.Component.EventType.CHANGE, function($event$$) {
     this.styleChanged("backgroundAttachment", $event$$.target.getSelectedItem().getId())
   }, !1, this);
@@ -15663,24 +15686,9 @@ silex.view.pane.GeneralStylePane.prototype.onInputChanged = function $silex$view
 };
 silex.view.PropertyTool = function $silex$view$PropertyTool$($element$$, $bodyElement$$, $headElement$$) {
   silex.view.ViewBase.call(this, $element$$, $bodyElement$$, $headElement$$);
-  this.buildTabs();
   this.buildPanes()
 };
 goog.inherits(silex.view.PropertyTool, silex.view.ViewBase);
-silex.view.PropertyTool.TAB_TITLE_NORMAL = "Normal";
-silex.view.PropertyTool.TAB_TITLE_HOVER = "Hover";
-silex.view.PropertyTool.TAB_TITLE_PRESSED = "Pressed";
-silex.view.PropertyTool.prototype.buildTabs = function $silex$view$PropertyTool$$buildTabs$() {
-  var $tabContainer$$ = goog.dom.getElementByClass("tab-bar-container", this.element), $tabBar$$ = new goog.ui.TabBar;
-  $tabBar$$.decorate($tabContainer$$);
-  goog.events.listen($tabBar$$, goog.ui.Component.EventType.ACTION, function($event$$) {
-    $tabBar$$.getSelectedTab().getCaption();
-    if(this.onStatus) {
-      this.onStatus("contextChanged")
-    }
-    this.setComponent(this.component)
-  }, !1, this)
-};
 silex.view.PropertyTool.prototype.buildPanes = function $silex$view$PropertyTool$$buildPanes$() {
   var $onStatusCbk$$ = goog.bind(function($type$$, $opt_styleName$$, $opt_styleValue$$) {
     this.onStatus($type$$, $opt_styleName$$, $opt_styleValue$$)
@@ -15721,41 +15729,43 @@ silex.view.PageTool = function $silex$view$PageTool$($element$$, $bodyElement$$,
 goog.inherits(silex.view.PageTool, silex.view.ViewBase);
 silex.view.PageTool.prototype.initEvents = function $silex$view$PageTool$$initEvents$($pages$$) {
   goog.events.listen(this.element, goog.events.EventType.CLICK, function($e$$) {
-    goog.dom.classes.has($e$$.target, "delete") ? this.removePageAtIndex(this.getCellIndex($e$$.target.parentNode)) : goog.dom.classes.has($e$$.target, "label") ? this.renamePageAtIndex(this.getCellIndex($e$$.target.parentNode)) : this.setSelectedIndex(this.getCellIndex($e$$.target), !0)
+    goog.dom.classes.has($e$$.target, "delete") ? this.removePageAtIndex(this.getCellIndex($e$$.target.parentNode.parentNode)) : goog.dom.classes.has($e$$.target, "label") ? this.renamePageAtIndex(this.getCellIndex($e$$.target.parentNode.parentNode)) : this.setSelectedIndex(this.getCellIndex($e$$.target.parentNode), !0)
   }, !1, this)
 };
 silex.view.PageTool.prototype.redraw = function $silex$view$PageTool$$redraw$() {
-  var $pages$$ = silex.utils.JQueryPageable.getPages(this.bodyElement), $container$$ = goog.dom.getElementByClass("page-tool-container", this.element), $templateHtml$$ = goog.dom.getElementByClass("page-tool-template", this.element).innerHTML;
-  $container$$.innerHTML = silex.utils.Dom.renderList($templateHtml$$, $pages$$)
+  var $pageNames_pages$$ = silex.utils.JQueryPageable.getPages(this.bodyElement), $currentPageName$$ = silex.utils.JQueryPageable.getCurrentPageName(this.bodyElement), $idx$$ = 0, $pageNames_pages$$ = $pageNames_pages$$.map(goog.bind(function($pageName$$) {
+    var $res$$ = {name:$pageName$$, displayName:silex.utils.JQueryPageable.getDisplayName(this.bodyElement, $pageName$$), linkName:"#!" + $pageName$$, idx:$idx$$++};
+    $res$$.className = $currentPageName$$ === $pageName$$ ? "ui-selected" : "";
+    return $res$$
+  }, this)), $container$$ = goog.dom.getElementByClass("page-tool-container", this.element), $templateHtml$$ = goog.dom.getElementByClass("page-tool-template", this.element).innerHTML;
+  $container$$.innerHTML = silex.utils.Dom.renderList($templateHtml$$, $pageNames_pages$$)
 };
 silex.view.PageTool.prototype.removePageAtIndex = function $silex$view$PageTool$$removePageAtIndex$($idx$$) {
+  var $pageNames$$ = silex.utils.JQueryPageable.getPages(this.bodyElement);
   if(this.onStatus) {
-    this.onStatus("delete", this.pages[$idx$$])
+    this.onStatus("delete", $pageNames$$[$idx$$])
   }
   this.redraw()
 };
 silex.view.PageTool.prototype.renamePageAtIndex = function $silex$view$PageTool$$renamePageAtIndex$($idx$$) {
+  var $pageNames$$ = silex.utils.JQueryPageable.getPages(this.bodyElement);
   if(this.onStatus) {
-    this.onStatus("rename", this.pages[$idx$$])
+    this.onStatus("rename", $pageNames$$[$idx$$])
   }
   this.redraw()
 };
 silex.view.PageTool.prototype.setSelectedIndex = function $silex$view$PageTool$$setSelectedIndex$($index$$, $opt_notify$$) {
-  var $items$$ = goog.dom.getElementsByClass("page-container", this.element);
+  var $items$$ = goog.dom.getElementsByClass("page-container", this.element), $pageName$$ = "";
   goog.array.forEach($items$$, function($item$$) {
     var $idx$$ = this.getCellIndex($item$$);
-    $index$$ === $idx$$ ? goog.dom.classes.add($item$$, "ui-selected") : goog.dom.classes.remove($item$$, "ui-selected")
+    $index$$ === $idx$$ ? (goog.dom.classes.add($item$$, "ui-selected"), $pageName$$ = $item$$.getAttribute("data-page-name")) : goog.dom.classes.remove($item$$, "ui-selected")
   }, this);
   if($opt_notify$$ && this.onStatus) {
-    this.onStatus("changed", page)
+    this.onStatus("changed", $pageName$$)
   }
 };
 silex.view.PageTool.prototype.getCellIndex = function $silex$view$PageTool$$getCellIndex$($element$$) {
-  for(var $items$$ = goog.dom.getElementsByClass("page-container", this.element), $idx$$ = 0;$idx$$ < $items$$.length && $items$$[$idx$$] != $element$$;) {
-    $idx$$++
-  }
-  $idx$$ >= $items$$.length && ($idx$$ = -1, console.error("Page not found for element ", $element$$));
-  return $idx$$
+  return parseInt($element$$.getAttribute("data-page-idx"))
 };
 goog.ui.ToolbarSeparatorRenderer = function $goog$ui$ToolbarSeparatorRenderer$() {
   goog.ui.MenuSeparatorRenderer.call(this)
@@ -16697,11 +16707,11 @@ goog.ui.Dialog.prototype.setButtonSet = function $goog$ui$Dialog$$setButtonSet$(
 goog.ui.Dialog.prototype.getButtonSet = function $goog$ui$Dialog$$getButtonSet$() {
   return this.buttons_
 };
-goog.ui.Dialog.prototype.onButtonClick_ = function $goog$ui$Dialog$$onButtonClick_$($button$$18_e$$204_key$$) {
-  if(($button$$18_e$$204_key$$ = this.findParentButton_($button$$18_e$$204_key$$.target)) && !$button$$18_e$$204_key$$.disabled) {
-    $button$$18_e$$204_key$$ = $button$$18_e$$204_key$$.name;
-    var $caption$$ = this.getButtonSet().get($button$$18_e$$204_key$$);
-    this.dispatchEvent(new goog.ui.Dialog.Event($button$$18_e$$204_key$$, $caption$$)) && this.setVisible(!1)
+goog.ui.Dialog.prototype.onButtonClick_ = function $goog$ui$Dialog$$onButtonClick_$($button$$17_e$$204_key$$) {
+  if(($button$$17_e$$204_key$$ = this.findParentButton_($button$$17_e$$204_key$$.target)) && !$button$$17_e$$204_key$$.disabled) {
+    $button$$17_e$$204_key$$ = $button$$17_e$$204_key$$.name;
+    var $caption$$ = this.getButtonSet().get($button$$17_e$$204_key$$);
+    this.dispatchEvent(new goog.ui.Dialog.Event($button$$17_e$$204_key$$, $caption$$)) && this.setVisible(!1)
   }
 };
 goog.ui.Dialog.prototype.findParentButton_ = function $goog$ui$Dialog$$findParentButton_$($el$$44_element$$) {
@@ -17990,9 +18000,9 @@ goog.editor.plugins.BasicTextFormatter.prototype.applyBgColorManually_ = functio
 };
 goog.editor.plugins.BasicTextFormatter.prototype.toggleLink_ = function $goog$editor$plugins$BasicTextFormatter$$toggleLink_$($editableLink_opt_target$$) {
   this.getFieldObject().isSelectionEditable() || this.focusField_();
-  var $range$$79_savedRange$$3_url$$ = this.getRange_(), $link$$7_parent$$ = $range$$79_savedRange$$3_url$$ && $range$$79_savedRange$$3_url$$.getContainerElement();
-  if(($link$$7_parent$$ = goog.dom.getAncestorByTagNameAndClass($link$$7_parent$$, goog.dom.TagName.A)) && goog.editor.node.isEditable($link$$7_parent$$)) {
-    goog.dom.flattenElement($link$$7_parent$$)
+  var $range$$79_savedRange$$3_url$$ = this.getRange_(), $link$$8_parent$$ = $range$$79_savedRange$$3_url$$ && $range$$79_savedRange$$3_url$$.getContainerElement();
+  if(($link$$8_parent$$ = goog.dom.getAncestorByTagNameAndClass($link$$8_parent$$, goog.dom.TagName.A)) && goog.editor.node.isEditable($link$$8_parent$$)) {
+    goog.dom.flattenElement($link$$8_parent$$)
   }else {
     if($editableLink_opt_target$$ = this.createLink_($range$$79_savedRange$$3_url$$, "/", $editableLink_opt_target$$)) {
       if(!this.getFieldObject().execCommand(goog.editor.Command.MODAL_LINK_EDITOR, $editableLink_opt_target$$)) {
@@ -18621,8 +18631,8 @@ goog.ui.Palette.prototype.performActionInternal = function $goog$ui$Palette$$per
   return $item$$ ? (this.setSelectedItem($item$$), goog.ui.Palette.superClass_.performActionInternal.call(this, $e$$)) : !1
 };
 goog.ui.Palette.prototype.handleKeyEvent = function $goog$ui$Palette$$handleKeyEvent$($e$$) {
-  var $items$$8_numItems$$ = this.getContent(), $items$$8_numItems$$ = $items$$8_numItems$$ ? $items$$8_numItems$$.length : 0, $numColumns$$ = this.size_.width;
-  if(0 == $items$$8_numItems$$ || !this.isEnabled()) {
+  var $items$$7_numItems$$ = this.getContent(), $items$$7_numItems$$ = $items$$7_numItems$$ ? $items$$7_numItems$$.length : 0, $numColumns$$ = this.size_.width;
+  if(0 == $items$$7_numItems$$ || !this.isEnabled()) {
     return!1
   }
   if($e$$.keyCode == goog.events.KeyCodes.ENTER || $e$$.keyCode == goog.events.KeyCodes.SPACE) {
@@ -18632,27 +18642,27 @@ goog.ui.Palette.prototype.handleKeyEvent = function $goog$ui$Palette$$handleKeyE
     return this.setHighlightedIndex(0), !0
   }
   if($e$$.keyCode == goog.events.KeyCodes.END) {
-    return this.setHighlightedIndex($items$$8_numItems$$ - 1), !0
+    return this.setHighlightedIndex($items$$7_numItems$$ - 1), !0
   }
   var $highlightedIndex$$ = 0 > this.highlightedIndex_ ? this.getSelectedIndex() : this.highlightedIndex_;
   switch($e$$.keyCode) {
     case goog.events.KeyCodes.LEFT:
       if(-1 == $highlightedIndex$$ || 0 == $highlightedIndex$$) {
-        $highlightedIndex$$ = $items$$8_numItems$$
+        $highlightedIndex$$ = $items$$7_numItems$$
       }
       this.setHighlightedIndex($highlightedIndex$$ - 1);
       $e$$.preventDefault();
       return!0;
     case goog.events.KeyCodes.RIGHT:
-      return $highlightedIndex$$ == $items$$8_numItems$$ - 1 && ($highlightedIndex$$ = -1), this.setHighlightedIndex($highlightedIndex$$ + 1), $e$$.preventDefault(), !0;
+      return $highlightedIndex$$ == $items$$7_numItems$$ - 1 && ($highlightedIndex$$ = -1), this.setHighlightedIndex($highlightedIndex$$ + 1), $e$$.preventDefault(), !0;
     case goog.events.KeyCodes.UP:
-      -1 == $highlightedIndex$$ && ($highlightedIndex$$ = $items$$8_numItems$$ + $numColumns$$ - 1);
+      -1 == $highlightedIndex$$ && ($highlightedIndex$$ = $items$$7_numItems$$ + $numColumns$$ - 1);
       if($highlightedIndex$$ >= $numColumns$$) {
         return this.setHighlightedIndex($highlightedIndex$$ - $numColumns$$), $e$$.preventDefault(), !0
       }
       break;
     case goog.events.KeyCodes.DOWN:
-      if(-1 == $highlightedIndex$$ && ($highlightedIndex$$ = -$numColumns$$), $highlightedIndex$$ < $items$$8_numItems$$ - $numColumns$$) {
+      if(-1 == $highlightedIndex$$ && ($highlightedIndex$$ = -$numColumns$$), $highlightedIndex$$ < $items$$7_numItems$$ - $numColumns$$) {
         return this.setHighlightedIndex($highlightedIndex$$ + $numColumns$$), $e$$.preventDefault(), !0
       }
   }
@@ -18713,14 +18723,14 @@ goog.ui.Palette.prototype.selectItem_ = function $goog$ui$Palette$$selectItem_$(
   this.getElement() && this.getRenderer().selectCell(this, $item$$, $select$$)
 };
 goog.ui.Palette.prototype.adjustSize_ = function $goog$ui$Palette$$adjustSize_$() {
-  var $items$$12_length$$ = this.getContent();
-  if($items$$12_length$$) {
+  var $items$$11_length$$ = this.getContent();
+  if($items$$11_length$$) {
     if(this.size_ && this.size_.width) {
-      if($items$$12_length$$ = Math.ceil($items$$12_length$$.length / this.size_.width), !goog.isNumber(this.size_.height) || this.size_.height < $items$$12_length$$) {
-        this.size_.height = $items$$12_length$$
+      if($items$$11_length$$ = Math.ceil($items$$11_length$$.length / this.size_.width), !goog.isNumber(this.size_.height) || this.size_.height < $items$$11_length$$) {
+        this.size_.height = $items$$11_length$$
       }
     }else {
-      $items$$12_length$$ = Math.ceil(Math.sqrt($items$$12_length$$.length)), this.size_ = new goog.math.Size($items$$12_length$$, $items$$12_length$$)
+      $items$$11_length$$ = Math.ceil(Math.sqrt($items$$11_length$$.length)), this.size_ = new goog.math.Size($items$$11_length$$, $items$$11_length$$)
     }
   }else {
     this.size_ = new goog.math.Size(0, 0)
@@ -18895,12 +18905,12 @@ goog.ui.editor.ToolbarFactory.addFontSizes = function $goog$ui$editor$ToolbarFac
     goog.ui.editor.ToolbarFactory.addFontSize($button$$, $size$$.caption, $size$$.value)
   })
 };
-goog.ui.editor.ToolbarFactory.addFontSize = function $goog$ui$editor$ToolbarFactory$addFontSize$($button$$30_content$$, $caption$$19_option$$, $value$$) {
-  $caption$$19_option$$ = new goog.ui.Option($caption$$19_option$$, $value$$, $button$$30_content$$.getDomHelper());
-  $button$$30_content$$.addItem($caption$$19_option$$);
-  $button$$30_content$$ = $caption$$19_option$$.getContentElement();
-  $button$$30_content$$.style.fontSize = goog.ui.editor.ToolbarFactory.getPxFromLegacySize($value$$) + "px";
-  $button$$30_content$$.firstChild.style.height = "1.1em"
+goog.ui.editor.ToolbarFactory.addFontSize = function $goog$ui$editor$ToolbarFactory$addFontSize$($button$$29_content$$, $caption$$19_option$$, $value$$) {
+  $caption$$19_option$$ = new goog.ui.Option($caption$$19_option$$, $value$$, $button$$29_content$$.getDomHelper());
+  $button$$29_content$$.addItem($caption$$19_option$$);
+  $button$$29_content$$ = $caption$$19_option$$.getContentElement();
+  $button$$29_content$$.style.fontSize = goog.ui.editor.ToolbarFactory.getPxFromLegacySize($value$$) + "px";
+  $button$$29_content$$.firstChild.style.height = "1.1em"
 };
 goog.ui.editor.ToolbarFactory.getPxFromLegacySize = function $goog$ui$editor$ToolbarFactory$getPxFromLegacySize$($fontSize$$) {
   return goog.ui.editor.ToolbarFactory.LEGACY_SIZE_TO_PX_MAP_[$fontSize$$] || 10
@@ -18931,37 +18941,37 @@ goog.ui.editor.ToolbarFactory.makeToolbar = function $goog$ui$editor$ToolbarFact
   $domHelper$$.render($elem$$);
   return $domHelper$$
 };
-goog.ui.editor.ToolbarFactory.makeButton = function $goog$ui$editor$ToolbarFactory$makeButton$($id$$, $tooltip$$, $button$$34_caption$$, $opt_classNames$$, $opt_renderer$$, $opt_domHelper$$) {
-  $button$$34_caption$$ = new goog.ui.ToolbarButton(goog.ui.editor.ToolbarFactory.createContent_($button$$34_caption$$, $opt_classNames$$, $opt_domHelper$$), $opt_renderer$$, $opt_domHelper$$);
-  $button$$34_caption$$.setId($id$$);
-  $button$$34_caption$$.setTooltip($tooltip$$);
-  return $button$$34_caption$$
+goog.ui.editor.ToolbarFactory.makeButton = function $goog$ui$editor$ToolbarFactory$makeButton$($id$$, $tooltip$$, $button$$33_caption$$, $opt_classNames$$, $opt_renderer$$, $opt_domHelper$$) {
+  $button$$33_caption$$ = new goog.ui.ToolbarButton(goog.ui.editor.ToolbarFactory.createContent_($button$$33_caption$$, $opt_classNames$$, $opt_domHelper$$), $opt_renderer$$, $opt_domHelper$$);
+  $button$$33_caption$$.setId($id$$);
+  $button$$33_caption$$.setTooltip($tooltip$$);
+  return $button$$33_caption$$
 };
-goog.ui.editor.ToolbarFactory.makeToggleButton = function $goog$ui$editor$ToolbarFactory$makeToggleButton$($button$$35_id$$, $tooltip$$, $caption$$, $opt_classNames$$, $opt_renderer$$, $opt_domHelper$$) {
-  $button$$35_id$$ = goog.ui.editor.ToolbarFactory.makeButton($button$$35_id$$, $tooltip$$, $caption$$, $opt_classNames$$, $opt_renderer$$, $opt_domHelper$$);
-  $button$$35_id$$.setSupportedState(goog.ui.Component.State.CHECKED, !0);
-  return $button$$35_id$$
+goog.ui.editor.ToolbarFactory.makeToggleButton = function $goog$ui$editor$ToolbarFactory$makeToggleButton$($button$$34_id$$, $tooltip$$, $caption$$, $opt_classNames$$, $opt_renderer$$, $opt_domHelper$$) {
+  $button$$34_id$$ = goog.ui.editor.ToolbarFactory.makeButton($button$$34_id$$, $tooltip$$, $caption$$, $opt_classNames$$, $opt_renderer$$, $opt_domHelper$$);
+  $button$$34_id$$.setSupportedState(goog.ui.Component.State.CHECKED, !0);
+  return $button$$34_id$$
 };
-goog.ui.editor.ToolbarFactory.makeMenuButton = function $goog$ui$editor$ToolbarFactory$makeMenuButton$($id$$, $tooltip$$, $button$$36_caption$$, $opt_classNames$$, $opt_renderer$$, $opt_domHelper$$) {
-  $button$$36_caption$$ = new goog.ui.ToolbarMenuButton(goog.ui.editor.ToolbarFactory.createContent_($button$$36_caption$$, $opt_classNames$$, $opt_domHelper$$), null, $opt_renderer$$, $opt_domHelper$$);
-  $button$$36_caption$$.setId($id$$);
-  $button$$36_caption$$.setTooltip($tooltip$$);
-  return $button$$36_caption$$
+goog.ui.editor.ToolbarFactory.makeMenuButton = function $goog$ui$editor$ToolbarFactory$makeMenuButton$($id$$, $tooltip$$, $button$$35_caption$$, $opt_classNames$$, $opt_renderer$$, $opt_domHelper$$) {
+  $button$$35_caption$$ = new goog.ui.ToolbarMenuButton(goog.ui.editor.ToolbarFactory.createContent_($button$$35_caption$$, $opt_classNames$$, $opt_domHelper$$), null, $opt_renderer$$, $opt_domHelper$$);
+  $button$$35_caption$$.setId($id$$);
+  $button$$35_caption$$.setTooltip($tooltip$$);
+  return $button$$35_caption$$
 };
-goog.ui.editor.ToolbarFactory.makeSelectButton = function $goog$ui$editor$ToolbarFactory$makeSelectButton$($id$$, $tooltip$$, $caption$$, $opt_classNames$$, $button$$37_opt_renderer$$, $opt_domHelper$$) {
-  $button$$37_opt_renderer$$ = new goog.ui.ToolbarSelect(null, null, $button$$37_opt_renderer$$, $opt_domHelper$$);
-  $opt_classNames$$ && goog.array.forEach($opt_classNames$$.split(/\s+/), $button$$37_opt_renderer$$.addClassName, $button$$37_opt_renderer$$);
-  $button$$37_opt_renderer$$.addClassName("goog-toolbar-select");
-  $button$$37_opt_renderer$$.setDefaultCaption($caption$$);
-  $button$$37_opt_renderer$$.setId($id$$);
-  $button$$37_opt_renderer$$.setTooltip($tooltip$$);
-  return $button$$37_opt_renderer$$
+goog.ui.editor.ToolbarFactory.makeSelectButton = function $goog$ui$editor$ToolbarFactory$makeSelectButton$($id$$, $tooltip$$, $caption$$, $opt_classNames$$, $button$$36_opt_renderer$$, $opt_domHelper$$) {
+  $button$$36_opt_renderer$$ = new goog.ui.ToolbarSelect(null, null, $button$$36_opt_renderer$$, $opt_domHelper$$);
+  $opt_classNames$$ && goog.array.forEach($opt_classNames$$.split(/\s+/), $button$$36_opt_renderer$$.addClassName, $button$$36_opt_renderer$$);
+  $button$$36_opt_renderer$$.addClassName("goog-toolbar-select");
+  $button$$36_opt_renderer$$.setDefaultCaption($caption$$);
+  $button$$36_opt_renderer$$.setId($id$$);
+  $button$$36_opt_renderer$$.setTooltip($tooltip$$);
+  return $button$$36_opt_renderer$$
 };
-goog.ui.editor.ToolbarFactory.makeColorMenuButton = function $goog$ui$editor$ToolbarFactory$makeColorMenuButton$($id$$, $tooltip$$, $button$$38_caption$$, $opt_classNames$$, $opt_renderer$$, $opt_domHelper$$) {
-  $button$$38_caption$$ = new goog.ui.ToolbarColorMenuButton(goog.ui.editor.ToolbarFactory.createContent_($button$$38_caption$$, $opt_classNames$$, $opt_domHelper$$), null, $opt_renderer$$, $opt_domHelper$$);
-  $button$$38_caption$$.setId($id$$);
-  $button$$38_caption$$.setTooltip($tooltip$$);
-  return $button$$38_caption$$
+goog.ui.editor.ToolbarFactory.makeColorMenuButton = function $goog$ui$editor$ToolbarFactory$makeColorMenuButton$($id$$, $tooltip$$, $button$$37_caption$$, $opt_classNames$$, $opt_renderer$$, $opt_domHelper$$) {
+  $button$$37_caption$$ = new goog.ui.ToolbarColorMenuButton(goog.ui.editor.ToolbarFactory.createContent_($button$$37_caption$$, $opt_classNames$$, $opt_domHelper$$), null, $opt_renderer$$, $opt_domHelper$$);
+  $button$$37_caption$$.setId($id$$);
+  $button$$37_caption$$.setTooltip($tooltip$$);
+  return $button$$37_caption$$
 };
 goog.ui.editor.ToolbarFactory.createContent_ = function $goog$ui$editor$ToolbarFactory$createContent_$($caption$$, $opt_classNames$$, $opt_domHelper$$) {
   $caption$$ && "" != $caption$$ || (!goog.userAgent.GECKO || goog.userAgent.isVersionOrHigher("1.9a")) || ($caption$$ = goog.string.Unicode.NBSP);
@@ -19010,14 +19020,14 @@ goog.ui.editor.DefaultToolbar.makeToolbar = function $goog$ui$editor$DefaultTool
   return goog.ui.editor.ToolbarFactory.makeToolbar($controls$$, $elem$$, $opt_isRightToLeft$$)
 };
 goog.ui.editor.DefaultToolbar.makeBuiltInToolbarButton = function $goog$ui$editor$DefaultToolbar$makeBuiltInToolbarButton$($command$$, $opt_domHelper$$) {
-  var $button$$43_factory$$, $descriptor$$ = goog.ui.editor.DefaultToolbar.buttons_[$command$$];
+  var $button$$42_factory$$, $descriptor$$ = goog.ui.editor.DefaultToolbar.buttons_[$command$$];
   if($descriptor$$) {
-    $button$$43_factory$$ = $descriptor$$.factory || goog.ui.editor.ToolbarFactory.makeToggleButton;
+    $button$$42_factory$$ = $descriptor$$.factory || goog.ui.editor.ToolbarFactory.makeToggleButton;
     var $id$$ = $descriptor$$.command, $tooltip$$ = $descriptor$$.tooltip, $caption$$ = $descriptor$$.caption, $classNames$$ = $descriptor$$.classes, $domHelper$$ = $opt_domHelper$$ || goog.dom.getDomHelper();
-    $button$$43_factory$$ = $button$$43_factory$$($id$$, $tooltip$$, $caption$$, $classNames$$, null, $domHelper$$);
-    $descriptor$$.queryable && ($button$$43_factory$$.queryable = !0)
+    $button$$42_factory$$ = $button$$42_factory$$($id$$, $tooltip$$, $caption$$, $classNames$$, null, $domHelper$$);
+    $descriptor$$.queryable && ($button$$42_factory$$.queryable = !0)
   }
-  return $button$$43_factory$$
+  return $button$$42_factory$$
 };
 goog.ui.editor.DefaultToolbar.DEFAULT_BUTTONS = [goog.editor.Command.IMAGE, goog.editor.Command.LINK, goog.editor.Command.BOLD, goog.editor.Command.ITALIC, goog.editor.Command.UNORDERED_LIST, goog.editor.Command.FONT_COLOR, goog.editor.Command.FONT_FACE, goog.editor.Command.FONT_SIZE, goog.editor.Command.JUSTIFY_LEFT, goog.editor.Command.JUSTIFY_CENTER, goog.editor.Command.JUSTIFY_RIGHT, goog.editor.Command.EDIT_HTML];
 goog.ui.editor.DefaultToolbar.DEFAULT_BUTTONS_RTL = [goog.editor.Command.IMAGE, goog.editor.Command.LINK, goog.editor.Command.BOLD, goog.editor.Command.ITALIC, goog.editor.Command.UNORDERED_LIST, goog.editor.Command.FONT_COLOR, goog.editor.Command.FONT_FACE, goog.editor.Command.FONT_SIZE, goog.editor.Command.JUSTIFY_RIGHT, goog.editor.Command.JUSTIFY_CENTER, goog.editor.Command.JUSTIFY_LEFT, goog.editor.Command.DIR_RTL, goog.editor.Command.DIR_LTR, goog.editor.Command.EDIT_HTML];
@@ -19072,17 +19082,17 @@ goog.ui.editor.DefaultToolbar.colorUpdateFromValue_ = function $goog$ui$editor$D
   }catch($ex$$) {
   }
 };
-goog.ui.editor.DefaultToolbar.fontColorFactory_ = function $goog$ui$editor$DefaultToolbar$fontColorFactory_$($button$$49_id$$, $tooltip$$, $caption$$, $opt_classNames$$, $opt_renderer$$, $opt_domHelper$$) {
+goog.ui.editor.DefaultToolbar.fontColorFactory_ = function $goog$ui$editor$DefaultToolbar$fontColorFactory_$($button$$48_id$$, $tooltip$$, $caption$$, $opt_classNames$$, $opt_renderer$$, $opt_domHelper$$) {
+  $button$$48_id$$ = goog.ui.editor.ToolbarFactory.makeColorMenuButton($button$$48_id$$, $tooltip$$, $caption$$, $opt_classNames$$, $opt_renderer$$, $opt_domHelper$$);
+  $button$$48_id$$.setSelectedColor("#000");
+  $button$$48_id$$.updateFromValue = goog.partial(goog.ui.editor.DefaultToolbar.colorUpdateFromValue_, $button$$48_id$$);
+  return $button$$48_id$$
+};
+goog.ui.editor.DefaultToolbar.backgroundColorFactory_ = function $goog$ui$editor$DefaultToolbar$backgroundColorFactory_$($button$$49_id$$, $tooltip$$, $caption$$, $opt_classNames$$, $opt_renderer$$, $opt_domHelper$$) {
   $button$$49_id$$ = goog.ui.editor.ToolbarFactory.makeColorMenuButton($button$$49_id$$, $tooltip$$, $caption$$, $opt_classNames$$, $opt_renderer$$, $opt_domHelper$$);
-  $button$$49_id$$.setSelectedColor("#000");
+  $button$$49_id$$.setSelectedColor("#FFF");
   $button$$49_id$$.updateFromValue = goog.partial(goog.ui.editor.DefaultToolbar.colorUpdateFromValue_, $button$$49_id$$);
   return $button$$49_id$$
-};
-goog.ui.editor.DefaultToolbar.backgroundColorFactory_ = function $goog$ui$editor$DefaultToolbar$backgroundColorFactory_$($button$$50_id$$, $tooltip$$, $caption$$, $opt_classNames$$, $opt_renderer$$, $opt_domHelper$$) {
-  $button$$50_id$$ = goog.ui.editor.ToolbarFactory.makeColorMenuButton($button$$50_id$$, $tooltip$$, $caption$$, $opt_classNames$$, $opt_renderer$$, $opt_domHelper$$);
-  $button$$50_id$$.setSelectedColor("#FFF");
-  $button$$50_id$$.updateFromValue = goog.partial(goog.ui.editor.DefaultToolbar.colorUpdateFromValue_, $button$$50_id$$);
-  return $button$$50_id$$
 };
 goog.ui.editor.DefaultToolbar.formatBlockFactory_ = function $goog$ui$editor$DefaultToolbar$formatBlockFactory_$($id$$, $tooltip$$, $caption$$, $opt_classNames$$, $opt_renderer$$, $opt_domHelper$$) {
   var $button$$ = goog.ui.editor.ToolbarFactory.makeSelectButton($id$$, $tooltip$$, $caption$$, $opt_classNames$$, $opt_renderer$$, $opt_domHelper$$);
@@ -19200,9 +19210,9 @@ goog.dom.ViewportSizeMonitor.prototype.disposeInternal = function $goog$dom$View
   this.listenerKey_ && (goog.events.unlistenByKey(this.listenerKey_), this.listenerKey_ = null);
   this.size_ = this.window_ = null
 };
-goog.dom.ViewportSizeMonitor.prototype.handleResize_ = function $goog$dom$ViewportSizeMonitor$$handleResize_$($event$$17_size$$) {
-  $event$$17_size$$ = goog.dom.getViewportSize(this.window_);
-  goog.math.Size.equals($event$$17_size$$, this.size_) || (this.size_ = $event$$17_size$$, this.dispatchEvent(goog.events.EventType.RESIZE))
+goog.dom.ViewportSizeMonitor.prototype.handleResize_ = function $goog$dom$ViewportSizeMonitor$$handleResize_$($event$$16_size$$) {
+  $event$$16_size$$ = goog.dom.getViewportSize(this.window_);
+  goog.math.Size.equals($event$$16_size$$, this.size_) || (this.size_ = $event$$16_size$$, this.dispatchEvent(goog.events.EventType.RESIZE))
 };
 goog.ui.editor.Bubble = function $goog$ui$editor$Bubble$($parent$$, $zIndex$$) {
   goog.events.EventTarget.call(this);
@@ -19381,9 +19391,9 @@ goog.editor.plugins.AbstractBubblePlugin.prototype.handleSelectionChange = funct
     }else {
       var $range$$ = this.getFieldObject().getRange();
       if($range$$) {
-        var $element$$307_startNode$$ = $range$$.getStartNode(), $endNode$$ = $range$$.getEndNode(), $startOffset$$ = $range$$.getStartOffset(), $endOffset$$ = $range$$.getEndOffset();
-        goog.userAgent.IE && ($range$$.isCollapsed() && $element$$307_startNode$$ != $endNode$$) && ($range$$ = goog.dom.Range.createCaret($element$$307_startNode$$, $startOffset$$));
-        $element$$307_startNode$$.nodeType == goog.dom.NodeType.ELEMENT && ($element$$307_startNode$$ == $endNode$$ && $startOffset$$ == $endOffset$$ - 1) && ($element$$307_startNode$$ = $element$$307_startNode$$.childNodes[$startOffset$$], $element$$307_startNode$$.nodeType == goog.dom.NodeType.ELEMENT && ($selectedElement$$ = $element$$307_startNode$$))
+        var $element$$308_startNode$$ = $range$$.getStartNode(), $endNode$$ = $range$$.getEndNode(), $startOffset$$ = $range$$.getStartOffset(), $endOffset$$ = $range$$.getEndOffset();
+        goog.userAgent.IE && ($range$$.isCollapsed() && $element$$308_startNode$$ != $endNode$$) && ($range$$ = goog.dom.Range.createCaret($element$$308_startNode$$, $startOffset$$));
+        $element$$308_startNode$$.nodeType == goog.dom.NodeType.ELEMENT && ($element$$308_startNode$$ == $endNode$$ && $startOffset$$ == $endOffset$$ - 1) && ($element$$308_startNode$$ = $element$$308_startNode$$.childNodes[$startOffset$$], $element$$308_startNode$$.nodeType == goog.dom.NodeType.ELEMENT && ($selectedElement$$ = $element$$308_startNode$$))
       }
       $selectedElement$$ = $selectedElement$$ || $range$$ && $range$$.getContainerElement()
     }
@@ -19470,13 +19480,13 @@ goog.editor.plugins.AbstractBubblePlugin.prototype.createLink = function $goog$e
   $opt_onClick$$ && this.registerActionHandler($link$$, $opt_onClick$$);
   return $link$$
 };
-goog.editor.plugins.AbstractBubblePlugin.prototype.createLinkHelper = function $goog$editor$plugins$AbstractBubblePlugin$$createLinkHelper$($linkId$$, $link$$9_linkText$$, $isAnchor$$, $opt_container$$) {
-  $link$$9_linkText$$ = this.dom_.createDom($isAnchor$$ ? goog.dom.TagName.A : goog.dom.TagName.SPAN, {className:goog.editor.plugins.AbstractBubblePlugin.LINK_CLASSNAME_}, $link$$9_linkText$$);
-  this.keyboardNavigationEnabled_ && $link$$9_linkText$$.setAttribute("tabindex", 0);
-  $link$$9_linkText$$.setAttribute("role", "link");
-  this.setupLink($link$$9_linkText$$, $linkId$$, $opt_container$$);
-  goog.editor.style.makeUnselectable($link$$9_linkText$$, this.eventRegister);
-  return $link$$9_linkText$$
+goog.editor.plugins.AbstractBubblePlugin.prototype.createLinkHelper = function $goog$editor$plugins$AbstractBubblePlugin$$createLinkHelper$($linkId$$, $link$$10_linkText$$, $isAnchor$$, $opt_container$$) {
+  $link$$10_linkText$$ = this.dom_.createDom($isAnchor$$ ? goog.dom.TagName.A : goog.dom.TagName.SPAN, {className:goog.editor.plugins.AbstractBubblePlugin.LINK_CLASSNAME_}, $link$$10_linkText$$);
+  this.keyboardNavigationEnabled_ && $link$$10_linkText$$.setAttribute("tabindex", 0);
+  $link$$10_linkText$$.setAttribute("role", "link");
+  this.setupLink($link$$10_linkText$$, $linkId$$, $opt_container$$);
+  goog.editor.style.makeUnselectable($link$$10_linkText$$, this.eventRegister);
+  return $link$$10_linkText$$
 };
 goog.editor.plugins.AbstractBubblePlugin.prototype.setupLink = function $goog$editor$plugins$AbstractBubblePlugin$$setupLink$($link$$, $linkId$$, $oldLink_opt_container$$) {
   $oldLink_opt_container$$ ? $oldLink_opt_container$$.appendChild($link$$) : ($oldLink_opt_container$$ = this.dom_.getElement($linkId$$)) && goog.dom.replaceNode($link$$, $oldLink_opt_container$$);
@@ -20768,13 +20778,13 @@ goog.editor.plugins.SpacesTabHandler.prototype.handleTabKey = function $goog$edi
   return goog.editor.range.intersectsTag($range$$, goog.dom.TagName.LI) ? !1 : ($e$$.shiftKey || (this.getFieldObject().stopChangeEvents(!0, !0), $range$$.isCollapsed() || ($dh$$10_elem$$.getDocument().execCommand("delete", !1, null), $range$$ = this.getFieldObject().getRange()), $dh$$10_elem$$ = $dh$$10_elem$$.createDom("span", null, "\u00a0\u00a0 \u00a0"), $dh$$10_elem$$ = $range$$.insertNode($dh$$10_elem$$, !1), this.getFieldObject().dispatchChange(), goog.editor.range.placeCursorNextTo($dh$$10_elem$$, 
   !1), this.getFieldObject().dispatchSelectionChangeEvent()), $e$$.preventDefault(), !0)
 };
-silex.view.TextEditor = function $silex$view$TextEditor$($element$$308_shortcutHandler$$, $bodyElement$$, $headElement$$) {
-  silex.view.ViewBase.call(this, $element$$308_shortcutHandler$$, $bodyElement$$, $headElement$$);
+silex.view.TextEditor = function $silex$view$TextEditor$($element$$309_shortcutHandler$$, $bodyElement$$, $headElement$$) {
+  silex.view.ViewBase.call(this, $element$$309_shortcutHandler$$, $bodyElement$$, $headElement$$);
   this.initUI();
   this.closeEditor();
-  $element$$308_shortcutHandler$$ = new goog.ui.KeyboardShortcutHandler(document);
-  $element$$308_shortcutHandler$$.registerShortcut("esc", goog.events.KeyCodes.ESC);
-  goog.events.listen($element$$308_shortcutHandler$$, goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED, goog.bind(this.closeEditor, this))
+  $element$$309_shortcutHandler$$ = new goog.ui.KeyboardShortcutHandler(document);
+  $element$$309_shortcutHandler$$.registerShortcut("esc", goog.events.KeyCodes.ESC);
+  goog.events.listen($element$$309_shortcutHandler$$, goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED, goog.bind(this.closeEditor, this))
 };
 goog.inherits(silex.view.TextEditor, silex.view.ViewBase);
 silex.view.TextEditor.prototype.initUI = function $silex$view$TextEditor$$initUI$() {
@@ -20848,12 +20858,12 @@ silex.view.TextEditor.prototype.contentChanged = function $silex$view$TextEditor
     this.onStatus("changed", this.getData())
   }
 };
-silex.view.HTMLEditor = function $silex$view$HTMLEditor$($element$$309_shortcutHandler$$, $bodyElement$$, $headElement$$) {
-  silex.view.ViewBase.call(this, $element$$309_shortcutHandler$$, $bodyElement$$, $headElement$$);
+silex.view.HTMLEditor = function $silex$view$HTMLEditor$($element$$310_shortcutHandler$$, $bodyElement$$, $headElement$$) {
+  silex.view.ViewBase.call(this, $element$$310_shortcutHandler$$, $bodyElement$$, $headElement$$);
   this.initUI();
-  $element$$309_shortcutHandler$$ = new goog.ui.KeyboardShortcutHandler(document);
-  $element$$309_shortcutHandler$$.registerShortcut("esc", goog.events.KeyCodes.ESC);
-  goog.events.listen($element$$309_shortcutHandler$$, goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED, goog.bind(this.closeEditor, this))
+  $element$$310_shortcutHandler$$ = new goog.ui.KeyboardShortcutHandler(document);
+  $element$$310_shortcutHandler$$.registerShortcut("esc", goog.events.KeyCodes.ESC);
+  goog.events.listen($element$$310_shortcutHandler$$, goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED, goog.bind(this.closeEditor, this))
 };
 goog.inherits(silex.view.HTMLEditor, silex.view.ViewBase);
 silex.view.HTMLEditor.prototype.initUI = function $silex$view$HTMLEditor$$initUI$() {
@@ -20981,14 +20991,12 @@ silex.model.File.prototype.save = function $silex$model$File$$save$($rawHtml$$, 
     $cbk$$ && $cbk$$()
   }, $opt_errCbk$$)
 };
-silex.model.File.prototype.open = function $silex$model$File$$open$($url$$0$$, $cbk$$, $opt_errCbk$$) {
-  this.fileExplorer.openDialog(goog.bind(function($url$$) {
-    silex.service.CloudStorage.getInstance().load($url$$, goog.bind(function($rawHtml$$) {
-      this.close();
-      this.setUrl($url$$);
-      $cbk$$ && $cbk$$($rawHtml$$)
-    }, this), $opt_errCbk$$)
-  }, this), ["text/html", "text/plain"], $opt_errCbk$$)
+silex.model.File.prototype.open = function $silex$model$File$$open$($url$$, $cbk$$, $opt_errCbk$$) {
+  silex.service.CloudStorage.getInstance().load($url$$, goog.bind(function($rawHtml$$) {
+    this.close();
+    this.setUrl($url$$);
+    $cbk$$ && $cbk$$($rawHtml$$)
+  }, this), $opt_errCbk$$)
 };
 silex.model.File.prototype.close = function $silex$model$File$$close$() {
   this.url = null

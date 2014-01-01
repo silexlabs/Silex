@@ -79,21 +79,15 @@ silex.view.pane.BgPane.prototype.buildUi = function() {
   );
 
   // add bg image
-  var buttonElement = goog.dom.getElementByClass('bg-image-button');
+  var buttonAddImage = goog.dom.getElementByClass('bg-image-button');
   this.bgSelectBgImage = new goog.ui.CustomButton();
-  this.bgSelectBgImage.decorate(buttonElement);
+  this.bgSelectBgImage.decorate(buttonAddImage);
   this.bgSelectBgImage.setTooltip('Click to select a file');
-  // User has selected a color
-  goog.events.listen(this.hsvPalette,
-                     goog.ui.Component.EventType.ACTION,
-                     this.onColorChanged,
-                     false,
-                     this);
   // remove bg image
-  var buttonElement = goog.dom.getElementByClass('clear-bg-image-button');
+  var buttonClearImage = goog.dom.getElementByClass('clear-bg-image-button');
   this.bgClearBgImage = new goog.ui.CustomButton();
   this.bgClearBgImage.setTooltip('Click to select a file');
-  this.bgClearBgImage.decorate(buttonElement);
+  this.bgClearBgImage.decorate(buttonClearImage);
 
   // bg image properties
   this.attachementComboBox = goog.ui.decorate(
@@ -108,6 +102,12 @@ silex.view.pane.BgPane.prototype.buildUi = function() {
   this.repeatComboBox = goog.ui.decorate(
       goog.dom.getElementByClass('bg-repeat-combo-box')
       );
+  // User has selected a color
+  goog.events.listen(this.hsvPalette,
+                     goog.ui.Component.EventType.ACTION,
+                     this.onColorChanged,
+                     false,
+                     this);
   // the user opens/closes the palete
   goog.events.listen(this.bgColorPicker,
                      goog.ui.Component.EventType.ACTION,
@@ -121,13 +121,13 @@ silex.view.pane.BgPane.prototype.buildUi = function() {
                      false,
                      this);
   // user wants to select a bg image
-  goog.events.listen(buttonElement,
+  goog.events.listen(buttonAddImage,
       goog.events.EventType.CLICK,
       this.onSelectImageButton,
       false,
       this);
 
-  goog.events.listen(buttonElement,
+  goog.events.listen(buttonClearImage,
       goog.events.EventType.CLICK,
       this.onClearImageButton,
       false,

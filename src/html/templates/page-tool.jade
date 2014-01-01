@@ -1,6 +1,8 @@
-script.page-tool-template(type="text/x-handlebars-template")
-  :cdata
-    <a class="page-container" href="{{name}}" data-page-name="{{name}}">
-      <small class="delete">x<small>
-      <div class="label">{{name}}</div>
+script.page-tool-template(type="text/x-handlebars-template").
+  <a class="page-container {{className}}" href="{{linkName}}" data-page-name="{{name}}" data-page-idx="{{idx}}">
+    <div class="page-preview xsmall-font">
+      <small class="delete">x</small>
+      <div class="label">{{displayName}}</div>
+    </div>
+  </a>
 .page-tool-container

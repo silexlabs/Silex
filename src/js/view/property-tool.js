@@ -51,20 +51,11 @@ silex.view.PropertyTool = function(element, bodyElement, headElement) {
   // call super
   silex.view.ViewBase.call(this, element, bodyElement, headElement);
 
-  this.buildTabs();
   this.buildPanes();
 };
 
 // inherit from silex.view.ViewBase
 goog.inherits(silex.view.PropertyTool, silex.view.ViewBase);
-
-
-/**
- * tabs titles
- */
-silex.view.PropertyTool.TAB_TITLE_NORMAL = 'Normal';
-silex.view.PropertyTool.TAB_TITLE_HOVER = 'Hover';
-silex.view.PropertyTool.TAB_TITLE_PRESSED = 'Pressed';
 
 
 /**
@@ -113,31 +104,6 @@ silex.view.PropertyTool.prototype.pagePane;
  */
 silex.view.PropertyTool.prototype.generalStylePane;
 
-
-/**
- * build tabs for the different contexts (normal, pressed, hover)
- */
-silex.view.PropertyTool.prototype.buildTabs = function() {
-  var tabContainer = goog.dom.getElementByClass('tab-bar-container', this.element);
-  var tabBar = new goog.ui.TabBar();
-  tabBar.decorate(tabContainer);
-  goog.events.listen(tabBar, goog.ui.Component.EventType.ACTION, function(event) {
-    switch (tabBar.getSelectedTab().getCaption()) {
-      case silex.view.PropertyTool.TAB_TITLE_NORMAL:
-        break;
-      case silex.view.PropertyTool.TAB_TITLE_HOVER:
-        break;
-      case silex.view.PropertyTool.TAB_TITLE_PRESSED:
-        break;
-    }
-    // notify the controler
-    if (this.onStatus) {
-      this.onStatus('contextChanged');
-    }
-    // update display
-    this.setComponent(this.component);
-  }, false, this);
-};
 
 
 /**

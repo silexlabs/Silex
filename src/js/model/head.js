@@ -165,9 +165,9 @@ silex.model.Head.prototype.getPublicationPath = function() {
  */
 silex.model.Head.prototype.getTitle = function() {
   var title = null;
-  $('meta[name="title"]', this.headElement).each(
+  $('title', this.headElement).each(
     function() {
-      title = this.getAttribute('content');
+      title = this.innerHTML;
     });
   return title;
 };
@@ -179,16 +179,15 @@ silex.model.Head.prototype.getTitle = function() {
 silex.model.Head.prototype.setTitle = function(name) {
   var found = false;
   // update website title
-  $('meta[name="title"]', this.headElement).each(
+  $('title', this.headElement).each(
       function() {
-        this.setAttribute('content', name);
+        this.innerHTML = name;
         found = true;
       });
   if(!found) {
-    var meta = goog.dom.createElement('meta');
-    meta.name = 'title';
-    meta.content = name;
-    goog.dom.appendChild(this.headElement, meta);
+    var title = goog.dom.createElement('title');
+    title.innerHTML = name;
+    goog.dom.appendChild(this.headElement, title);
   }
 };
 

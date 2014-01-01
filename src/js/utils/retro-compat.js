@@ -62,5 +62,6 @@ silex.utils.RetroCompat.process = function(bodyElement, headElement) {
   });
 
   // todo: retorcompat silex-sub-type
+  // todo: retorcompat silex links with #!
 
 };

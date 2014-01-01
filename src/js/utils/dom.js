@@ -40,7 +40,7 @@ silex.utils.Dom.renderList = function (itemTemplateString, data) {
     // replace each key by its value
     for (key in data[itemIdx]){
       var value = data[itemIdx][key];
-      item = item.replace('{{'+key+'}}', value);
+      item = item.replace(new RegExp('{{'+key+'}}', 'g'), value);
     }
     // add the item to the rendered template
     res += item;
