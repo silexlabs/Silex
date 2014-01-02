@@ -32,7 +32,7 @@ goog.require('goog.ui.KeyboardShortcutHandler');
  */
 silex.view.SettingsDialog = function(element, bodyElement, headElement) {
   // call super
-  silex.view.ViewBase.call(this, element, bodyElement, headElement);
+  goog.base(this, element, bodyElement, headElement);
 
   // init the editor
   this.publicationPath = '';
@@ -80,10 +80,10 @@ silex.view.SettingsDialog.prototype.element;
  * @see silex.model.File
  * @return {string}   the publication path
  */
-silex.view.Stage.prototype.getPublicationPath = function() {
+silex.view.SettingsDialog.prototype.getPublicationPath = function() {
   var that = this;
   var path = null;
-  $('meta[name="publicationPath"]', headElement).each(
+  $('meta[name="publicationPath"]', this.headElement).each(
       function() {
         path = this.getAttribute('content');
       });

@@ -7855,7 +7855,7 @@ silex.controller.ControllerBase.prototype.fileOperationSuccess = function $silex
   $opt_message$$ && silex.utils.Notification.notifySuccess($opt_message$$)
 };
 silex.controller.ControllerBase.prototype.publish = function $silex$controller$ControllerBase$$publish$() {
-  this.model.head.getPublicationPath() ? this.model.file.publish(goog.bind(function($status$$) {
+  this.model.head.getPublicationPath() ? this.model.file.publish(this.model.head.getPublicationPath(), goog.bind(function($status$$) {
     $status$$ && !1 == $status$$.success ? (console.error("Error: I did not manage to publish the file. (1)"), silex.utils.Notification.notifyError("I did not manage to publish the file. You may want to check the publication settings and your internet connection. <br /><br />Error message: " + ($status$$.message || $status$$.code || "")), this.tracker.trackAction("controller-events", "error", event.type, -1)) : (silex.utils.Notification.notifySuccess("I am about to publish your site. This may take several minutes."), 
     this.tracker.trackAction("controller-events", "success", event.type, 1))
   }, this), goog.bind(function($error$$) {
@@ -8062,12 +8062,14 @@ silex.controller.SettingsDialogController = function $silex$controller$SettingsD
 };
 goog.inherits(silex.controller.SettingsDialogController, silex.controller.ControllerBase);
 silex.controller.SettingsDialogController.prototype.settingsDialogCallback = function $silex$controller$SettingsDialogController$$settingsDialogCallback$($type$$, $opt_data$$) {
+  console.log(arguments);
   switch($type$$) {
     case "browsePublishPath":
       this.view.fileExplorer.openDialog(goog.bind(function($url$$) {
         $url$$ = $url$$.substring($url$$.indexOf("/api/v1.0/"), $url$$.lastIndexOf("/"));
         $url$$ = $url$$.replace("/exec/get", "/exec/put");
-        this.app.file.setPublicationPath($url$$);
+        this.model.head.setPublicationPath($url$$);
+        this.view.settingsDialog.redraw();
         this.tracker.trackAction("controller-events", "success", $type$$, 1)
       }, this), null, goog.bind(function($error$$) {
         silex.utils.Notification.notifyError("Error: I could not select the publish path. <br /><br />" + ($error$$.message || ""));
@@ -8075,7 +8077,7 @@ silex.controller.SettingsDialogController.prototype.settingsDialogCallback = fun
       }, this));
       break;
     case "change":
-      this.app.file.setPublicationPath($opt_data$$)
+      this.model.head.setPublicationPath($opt_data$$), this.view.settingsDialog.redraw()
   }
 };
 silex.controller.PageToolController = function $silex$controller$PageToolController$($model$$, $view$$) {
@@ -8328,9 +8330,9 @@ silex.view.SettingsDialog = function $silex$view$SettingsDialog$($btn$$1_element
   }, !1, this)
 };
 goog.inherits(silex.view.SettingsDialog, silex.view.ViewBase);
-silex.view.Stage.prototype.getPublicationPath = function $silex$view$Stage$$getPublicationPath$() {
+silex.view.SettingsDialog.prototype.getPublicationPath = function $silex$view$SettingsDialog$$getPublicationPath$() {
   var $path$$ = null;
-  $('meta[name="publicationPath"]', headElement).each(function() {
+  $('meta[name="publicationPath"]', this.headElement).each(function() {
     $path$$ = this.getAttribute("content")
   });
   return $path$$
@@ -20949,6 +20951,29 @@ silex.view.Workspace.prototype.doRedraw = function $silex$view$Workspace$$doRedr
   2, goog.style.setPosition(this.publishSettingsElement, $pageToolSize_posX_toolsHeight$$, $fileExplorerSize_htmlEditorSize_posY_propertyToolSize_publishSettingsSize_textEditorSize$$));
   goog.dom.classes.has(document.body, "loading-pending") && goog.dom.classes.remove(document.body, "loading-pending")
 };
+silex.service.SilexTasks = function $silex$service$SilexTasks$() {
+};
+goog.addSingletonGetter(silex.service.SilexTasks);
+silex.service.SilexTasks.prototype.publish = function $silex$service$SilexTasks$$publish$($path$$, $html$$, $css$$, $files$$, $cbk$$, $opt_errCbk$$) {
+  if($path$$ && $html$$ && $css$$ && $files$$) {
+    var $qd$$ = new goog.Uri.QueryData;
+    $qd$$.add("path", $path$$);
+    $qd$$.add("html", $html$$);
+    $qd$$.add("css", $css$$);
+    $qd$$.add("files", JSON.stringify($files$$));
+    goog.net.XhrIo.send("/silex/tasks/publish", function($e$$258_xhr$$) {
+      $e$$258_xhr$$ = $e$$258_xhr$$.target;
+      if($e$$258_xhr$$.isSuccess()) {
+        var $json_message$$ = $e$$258_xhr$$.getResponseJson();
+        $json_message$$.success ? $cbk$$ && $cbk$$($json_message$$) : ($json_message$$ = $json_message$$.code || $json_message$$.message, console.error($json_message$$, $e$$258_xhr$$, $e$$258_xhr$$.isSuccess(), $e$$258_xhr$$.getStatus(), $e$$258_xhr$$.headers.toString()), $opt_errCbk$$ && $opt_errCbk$$($json_message$$))
+      }else {
+        $json_message$$ = $e$$258_xhr$$.getLastError(), console.error($e$$258_xhr$$.getLastError(), $e$$258_xhr$$.getLastErrorCode(), $e$$258_xhr$$.isSuccess(), $e$$258_xhr$$.getStatus(), $e$$258_xhr$$.headers), $opt_errCbk$$ && $opt_errCbk$$($json_message$$)
+      }
+    }, "POST", $qd$$.toString())
+  }else {
+    console.error("Param path, html, css or files missing"), $opt_errCbk$$ && $opt_errCbk$$("Param path, html, css or files missing")
+  }
+};
 silex.model.File = function $silex$model$File$($bodyElement$$, $headElement$$) {
   silex.model.ModelBase.call(this, $bodyElement$$, $headElement$$)
 };
@@ -21007,73 +21032,65 @@ silex.model.File.prototype.getUrl = function $silex$model$File$$getUrl$() {
 silex.model.File.prototype.setUrl = function $silex$model$File$$setUrl$($url$$) {
   this.url = $url$$
 };
-silex.model.File.prototype.publish = function $silex$model$File$$publish$($url$$) {
+silex.model.File.prototype.publish = function $silex$model$File$$publish$($url$$, $cbk$$, $opt_errCbk$$) {
   this.cleanup(goog.bind(function($html$$, $css$$, $files$$) {
-    silex.service.SilexTasks.getInstance().publish($url$$, $html$$, $css$$, $files$$, cbk, opt_errCbk)
+    silex.service.SilexTasks.getInstance().publish($url$$, $html$$, $css$$, $files$$, $cbk$$, $opt_errCbk$$)
   }, this), goog.bind(function($error$$) {
     console.error("publish cleanup error", $error$$);
-    opt_errCbk && opt_errCbk($error$$)
+    $opt_errCbk$$ && $opt_errCbk$$($error$$)
   }, this))
 };
-silex.model.Body.prototype.cleanup = function $silex$model$Body$$cleanup$($cbk$$, $opt_errCbk$$) {
-  var $bodyStr_headElement$$22_html$$ = goog.dom.getOuterHtml(this.bodyElement), $bodyStyleStr_components_headStr$$ = this.headElement.innerHTML, $cssArray$$ = [], $files$$ = [];
+silex.model.File.prototype.cleanup = function $silex$model$File$$cleanup$($cbk$$, $opt_errCbk$$) {
+  var $bodyStr_headElement$$22_html$$ = goog.dom.getOuterHtml(this.bodyElement);
+  $bodyStr_headElement$$22_html$$.replace("<div", "<body");
+  $bodyStr_headElement$$22_html$$.replace(/<\/div$/, "</body");
+  var $components_elements$$ = this.headElement.innerHTML, $cssArray$$ = [], $files$$ = [];
   if(this.getUrl()) {
-    var $baseUrl$$ = silex.utils.Url.getBaseUrl(this.getUrl()), $bodyStr_headElement$$22_html$$ = $bodyStr_headElement$$22_html$$.replace(/<img[^"]*src="?([^" ]*)"/g, function($match$$, $group1$$, $absolute_group2$$) {
+    var $baseUrl$$ = silex.utils.Url.getBaseUrl(this.getUrl());
+    console.log($baseUrl$$, $bodyStr_headElement$$22_html$$);
+    var $bodyStr_headElement$$22_html$$ = $bodyStr_headElement$$22_html$$.replace(/<img[^"]*src="?([^" ]*)"/g, function($match$$, $group1$$, $absolute_group2$$) {
       $absolute_group2$$ = silex.utils.Url.getAbsolutePath($group1$$, $baseUrl$$);
-      var $relative$$ = silex.utils.Url.getRelativePath($absolute_group2$$, silex.Helper.BaseUrl);
-      silex.Helper.isAbsoluteUrl($relative$$) || ($relative$$ = $relative$$.replace("../", "/"));
+      var $relative$$ = silex.utils.Url.getRelativePath($absolute_group2$$, silex.utils.Url.getBaseUrl());
+      silex.utils.Url.isAbsoluteUrl($relative$$) || ($relative$$ = $relative$$.replace("../", "/"));
       var $newRelativePath$$ = "assets/" + $absolute_group2$$.substr($absolute_group2$$.lastIndexOf("/") + 1);
       $files$$.push({url:$absolute_group2$$, destPath:$newRelativePath$$, srcPath:$relative$$});
       return $match$$.replace($group1$$, $newRelativePath$$)
     }), $bodyStr_headElement$$22_html$$ = $bodyStr_headElement$$22_html$$.replace(/url\((['"])(.+?)\1\)/g, goog.bind(function($match$$, $group1$$, $group2$$) {
       return this.filterBgImage($baseUrl$$, $files$$, $match$$, $group1$$, $group2$$)
-    }, this)), $bodyStyleStr_components_headStr$$ = $bodyStyleStr_components_headStr$$.replace(/href="?([^" ]*)"/g, function($match$$, $group1$$, $absolute$$1_group2$$) {
+    }, this)), $components_elements$$ = $components_elements$$.replace(/href="?([^" ]*)"/g, function($match$$, $group1$$, $absolute$$1_group2$$) {
       var $newRelativePath$$ = !1;
       $absolute$$1_group2$$ = silex.utils.Url.getAbsolutePath($group1$$, $baseUrl$$);
-      var $relative$$ = silex.utils.Url.getRelativePath($absolute$$1_group2$$, silex.Helper.BaseUrl);
-      silex.Helper.isAbsoluteUrl($relative$$) ? 0 !== $absolute$$1_group2$$.indexOf("http://static.silex.me") && ($newRelativePath$$ = !0) : $relative$$ = $relative$$.replace("../", "/");
+      var $relative$$ = silex.utils.Url.getRelativePath($absolute$$1_group2$$, silex.utils.Url.getBaseUrl());
+      silex.utils.Url.isAbsoluteUrl($relative$$) ? 0 !== $absolute$$1_group2$$.indexOf("http://static.silex.me") && ($newRelativePath$$ = !0) : $relative$$ = $relative$$.replace("../", "/");
       return $newRelativePath$$ ? $match$$ : ($newRelativePath$$ = "css/" + $absolute$$1_group2$$.substr($absolute$$1_group2$$.lastIndexOf("/") + 1), $files$$.push({url:$absolute$$1_group2$$, destPath:$newRelativePath$$, srcPath:$relative$$}), $match$$.replace($group1$$, $newRelativePath$$))
-    }), $bodyStyleStr_components_headStr$$ = $bodyStyleStr_components_headStr$$.replace(/src="?([^"]*)"/g, function($match$$, $group1$$, $absolute$$2_group2$$) {
+    }), $components_elements$$ = $components_elements$$.replace(/src="?([^"]*)"/g, function($match$$, $group1$$, $absolute$$2_group2$$) {
       var $newRelativePath$$2_preventDownload$$ = !1;
       $absolute$$2_group2$$ = silex.utils.Url.getAbsolutePath($group1$$, $baseUrl$$);
-      var $relative$$ = silex.utils.Url.getRelativePath($absolute$$2_group2$$, silex.Helper.BaseUrl);
-      silex.Helper.isAbsoluteUrl($relative$$) ? 0 !== $absolute$$2_group2$$.indexOf("http://static.silex.me") && ($newRelativePath$$2_preventDownload$$ = !0) : $relative$$ = $relative$$.replace("../", "/");
+      var $relative$$ = silex.utils.Url.getRelativePath($absolute$$2_group2$$, silex.utils.Url.getBaseUrl());
+      silex.utils.Url.isAbsoluteUrl($relative$$) ? 0 !== $absolute$$2_group2$$.indexOf("http://static.silex.me") && ($newRelativePath$$2_preventDownload$$ = !0) : $relative$$ = $relative$$.replace("../", "/");
       return $newRelativePath$$2_preventDownload$$ ? $match$$ : ($newRelativePath$$2_preventDownload$$ = "js/" + $absolute$$2_group2$$.substr($absolute$$2_group2$$.lastIndexOf("/") + 1), $files$$.push({url:$absolute$$2_group2$$, destPath:$newRelativePath$$2_preventDownload$$, srcPath:$relative$$}), $match$$.replace($group1$$, $newRelativePath$$2_preventDownload$$))
     }), $bodyElement$$ = goog.dom.createElement("div");
     $bodyElement$$.innerHTML = $bodyStr_headElement$$22_html$$;
     $bodyStr_headElement$$22_html$$ = goog.dom.createElement("div");
-    $bodyStr_headElement$$22_html$$.innerHTML = $bodyStyleStr_components_headStr$$;
+    $bodyStr_headElement$$22_html$$.innerHTML = $components_elements$$;
     $('meta[name="publicationPath"]', $bodyStr_headElement$$22_html$$).remove();
-    $bodyStyleStr_components_headStr$$ = goog.dom.getElementsByClass("editable-style", $bodyElement$$);
-    goog.array.forEach($bodyStyleStr_components_headStr$$, function($component_node$$) {
-      $component_node$$ = new silex.model.Component($component_node$$);
-      var $fragment$$3_href$$ = $component_node$$.element.getAttribute("data-silex-href");
-      $fragment$$3_href$$ && ($component_node$$.element.setAttribute("href", $fragment$$3_href$$), $component_node$$.element.removeAttribute("data-silex-href"), $fragment$$3_href$$ = goog.dom.getOuterHtml($component_node$$.element), $fragment$$3_href$$ = "<a" + $fragment$$3_href$$.substring(4, $fragment$$3_href$$.length - 6) + "</a>", $fragment$$3_href$$ = goog.dom.htmlToDocumentFragment($fragment$$3_href$$), goog.dom.insertSiblingBefore($fragment$$3_href$$, $component_node$$.element), goog.dom.removeNode($component_node$$.element), 
-      $component_node$$.element = $fragment$$3_href$$)
+    $components_elements$$ = goog.dom.getElementsByClass("editable-style", $bodyElement$$);
+    goog.array.forEach($components_elements$$, function($element$$) {
+      var $fragment$$3_href$$ = $element$$.getAttribute("data-silex-href");
+      $fragment$$3_href$$ && ($element$$.setAttribute("href", $fragment$$3_href$$), $element$$.removeAttribute("data-silex-href"), $fragment$$3_href$$ = goog.dom.getOuterHtml($element$$), $fragment$$3_href$$ = "<a" + $fragment$$3_href$$.substring(4, $fragment$$3_href$$.length - 6) + "</a>", $fragment$$3_href$$ = goog.dom.htmlToDocumentFragment($fragment$$3_href$$), goog.dom.insertSiblingBefore($fragment$$3_href$$, $element$$), goog.dom.removeNode($element$$))
     }, this);
-    var $bodyStyleStr_components_headStr$$ = goog.dom.getElementsByClass("editable-style", $bodyElement$$), $componentIdx$$ = 0;
-    goog.array.forEach($bodyStyleStr_components_headStr$$, function($component$$1_node$$) {
-      $component$$1_node$$ = new silex.model.Component($component$$1_node$$);
-      $component$$1_node$$.addClass("silex-" + $component$$1_node$$.type);
-      var $className$$ = "component-" + $componentIdx$$++;
-      $component$$1_node$$.addClass($className$$);
-      var $cssHover_cssNormal_cssPressed$$ = $component$$1_node$$.getCss(silex.model.Component.CONTEXT_NORMAL);
-      $cssArray$$.push({classNames:["." + $className$$], styles:$cssHover_cssNormal_cssPressed$$});
-      $component$$1_node$$.hasStyle(silex.model.Component.CONTEXT_HOVER) && ($cssHover_cssNormal_cssPressed$$ = $component$$1_node$$.getCss(silex.model.Component.CONTEXT_HOVER), $cssArray$$.push({classNames:["." + $className$$ + ":hover"], styles:$cssHover_cssNormal_cssPressed$$}));
-      $component$$1_node$$.hasStyle(silex.model.Component.CONTEXT_PRESSED) && ($cssHover_cssNormal_cssPressed$$ = $component$$1_node$$.getCss(silex.model.Component.CONTEXT_PRESSED), $cssArray$$.push({classNames:["." + $className$$ + ":pressed"], styles:$cssHover_cssNormal_cssPressed$$}));
-      $component$$1_node$$.removeClass("editable-style");
-      $component$$1_node$$.element.removeAttribute("data-silex-type");
-      $component$$1_node$$.element.removeAttribute("data-silex-sub-type");
-      $component$$1_node$$.element.removeAttribute("data-style-" + silex.model.Component.CONTEXT_NORMAL);
-      $component$$1_node$$.element.removeAttribute("data-style-" + silex.model.Component.CONTEXT_HOVER);
-      $component$$1_node$$.element.removeAttribute("data-style-" + silex.model.Component.CONTEXT_PRESSED);
-      $component$$1_node$$.element.removeAttribute("style")
+    var $components_elements$$ = goog.dom.getElementsByClass("editable-style", $bodyElement$$), $elementIdx$$ = 0;
+    goog.array.forEach($components_elements$$, function($element$$) {
+      var $className$$ = "silex-" + $element$$.getAttribute(silex.model.Element.TYPE_ATTR);
+      goog.dom.classes.add($element$$, $className$$);
+      $className$$ = "element-" + $elementIdx$$++;
+      goog.dom.classes.add($element$$, $className$$);
+      var $cssNormal$$ = $element$$.getAttribute("style");
+      $cssArray$$.push({classNames:["." + $className$$], styles:$cssNormal$$});
+      goog.dom.classes.remove($element$$, "editable-style");
+      $element$$.removeAttribute("data-silex-type");
+      $element$$.removeAttribute("style")
     }, this);
-    $bodyStyleStr_components_headStr$$ = this.stage.getBodyStyle();
-    $bodyStyleStr_components_headStr$$ = $bodyStyleStr_components_headStr$$.replace(/url\((['"])(.+?)\1\)/g, goog.bind(function($match$$, $group1$$, $group2$$) {
-      return this.filterBgImage($baseUrl$$, $files$$, $match$$, $group1$$, $group2$$)
-    }, this));
-    $cssArray$$.push({classNames:["body"], styles:silex.Helper.stringToStyle($bodyStyleStr_components_headStr$$)});
     var $cssStr$$ = "";
     goog.array.forEach($cssArray$$, function($cssData$$) {
       var $elementCssStr$$ = "";
@@ -21081,26 +21098,27 @@ silex.model.Body.prototype.cleanup = function $silex$model$Body$$cleanup$($cbk$$
         "" != $elementCssStr$$ && ($elementCssStr$$ += ", ");
         $elementCssStr$$ += $className$$
       }, this);
-      $elementCssStr$$ += "{\n\t" + silex.Helper.styleToString($cssData$$.styles) + "\n}";
+      $elementCssStr$$ += "{\n\t" + silex.utils.Style.styleToString($cssData$$.styles) + "\n}";
       $cssStr$$ += "\n" + $elementCssStr$$
     }, this);
     $cssStr$$.replace("; ", ";\n\t");
     $bodyStr_headElement$$22_html$$ = "<html>" + ('<head><link href="css/styles.css" rel="stylesheet">' + $bodyStr_headElement$$22_html$$.innerHTML + "</head>");
     $bodyStr_headElement$$22_html$$ += "<body>" + $bodyElement$$.innerHTML + "</body>";
     $bodyStr_headElement$$22_html$$ += "</html>";
+    console.log($bodyStr_headElement$$22_html$$, $cssStr$$, $files$$);
     $cbk$$($bodyStr_headElement$$22_html$$, $cssStr$$, $files$$)
   }else {
     $opt_errCbk$$ && $opt_errCbk$$({message:"The file must be saved before I can clean it up for you."})
   }
 };
-silex.model.Body.prototype.filterBgImage = function $silex$model$Body$$filterBgImage$($absolute$$3_baseUrl$$, $files$$, $match$$12_relative$$, $group1$$10_newRelativePath$$, $group2$$10_res$$) {
-  $absolute$$3_baseUrl$$ = silex.utils.Url.getAbsolutePath($group2$$10_res$$, $absolute$$3_baseUrl$$);
-  $match$$12_relative$$ = silex.utils.Url.getRelativePath($absolute$$3_baseUrl$$, silex.Helper.BaseUrl);
-  silex.Helper.isAbsoluteUrl($match$$12_relative$$) || ($match$$12_relative$$ = $match$$12_relative$$.replace("../", "/"));
-  $group1$$10_newRelativePath$$ = "assets/" + $absolute$$3_baseUrl$$.substr($absolute$$3_baseUrl$$.lastIndexOf("/") + 1);
-  $group2$$10_res$$ = "url('../" + $group1$$10_newRelativePath$$ + "')";
-  $files$$.push({url:$absolute$$3_baseUrl$$, destPath:$group1$$10_newRelativePath$$, srcPath:$match$$12_relative$$});
-  return $group2$$10_res$$
+silex.model.Body.prototype.filterBgImage = function $silex$model$Body$$filterBgImage$($absolute$$3_baseUrl$$, $files$$, $match$$11_relative$$, $group1$$9_newRelativePath$$, $group2$$9_res$$) {
+  $absolute$$3_baseUrl$$ = silex.utils.Url.getAbsolutePath($group2$$9_res$$, $absolute$$3_baseUrl$$);
+  $match$$11_relative$$ = silex.utils.Url.getRelativePath($absolute$$3_baseUrl$$, silex.utils.Url.getBaseUrl());
+  silex.utils.Url.isAbsoluteUrl($match$$11_relative$$) || ($match$$11_relative$$ = $match$$11_relative$$.replace("../", "/"));
+  $group1$$9_newRelativePath$$ = "assets/" + $absolute$$3_baseUrl$$.substr($absolute$$3_baseUrl$$.lastIndexOf("/") + 1);
+  $group2$$9_res$$ = "url('../" + $group1$$9_newRelativePath$$ + "')";
+  $files$$.push({url:$absolute$$3_baseUrl$$, destPath:$group1$$9_newRelativePath$$, srcPath:$match$$11_relative$$});
+  return $group2$$9_res$$
 };
 silex.App = function $silex$App$() {
   silex.service.Tracker.getInstance().trackAction("app-events", "start", null, 2);

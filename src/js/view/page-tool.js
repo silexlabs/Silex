@@ -30,7 +30,7 @@ goog.require('silex.utils.JQueryPageable');
  */
 silex.view.PageTool = function(element, bodyElement, headElement) {
   // call super
-  silex.view.ViewBase.call(this, element, bodyElement, headElement);
+  goog.base(this, element, bodyElement, headElement);
 
   // init the tool
   this.initEvents();
