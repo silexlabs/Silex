@@ -369,7 +369,7 @@ silex.controller.ControllerBase.prototype.save = function(opt_url, opt_cbk, opt_
 }
 
 /**
- * publish html page
+ * success of an operation involving changing the file model
  */
 silex.controller.ControllerBase.prototype.fileOperationSuccess = function(opt_message, opt_updateTools) {
 
@@ -408,6 +408,7 @@ silex.controller.ControllerBase.prototype.publish = function(){
   else
   {
     this.model.file.publish(
+      this.model.head.getPublicationPath(),
       goog.bind(function(status) {
       if (status && status.success == false) {
         console.error('Error: I did not manage to publish the file. (1)');

@@ -339,10 +339,13 @@ body.loading-pending > div {
   padding: 5px;
   position: absolute;
   cursor: text;
+  white-space: nowrap;
+  width: 90%;
+  overflow: auto;
+  text-overflow: ellipsis;
 }
 .silex-property-tool .tab-page .border-placement-container label,
 .silex-property-tool .tab-page .corner-placement-container label {
-  display: inline-block;
   margin: 4px 2px 0;
   width: 35%;
 }
@@ -351,6 +354,8 @@ body.loading-pending > div {
   right: 0;
   width: 250px;
   height: 95%;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 .silex-property-tool .color-button .goog-inline-block {
   display: block;
@@ -374,37 +379,17 @@ body.loading-pending > div {
 .silex-property-tool .goog-checkbox {
   float: left;
 }
-.silex-property-tool .goog-tab {
-  color: black;
-  font-weight: normal;
-  text-decoration: none;
-  cursor: pointer;
-}
-.silex-property-tool .tab-page {
-  background-color: #F3F3F3;
-  border-bottom: 1px solid #6B90DA;
-  border-left: 1px solid #6B90DA;
-  border-right: 1px solid #6B90DA;
-  bottom: 10px;
+.silex-property-tool .tab-page label.corner-placement-label,
+.silex-property-tool .tab-page label.border-placement-label {
   display: block;
-  left: 10px;
-  overflow-x: hidden;
-  overflow-y: auto;
-  padding: 5px;
-  position: absolute;
-  right: 10px;
-  top: 310px;
-}
-.silex-property-tool .tab-page label {
-  display: block;
-  margin: 4px 2px 0;
-}
-.silex-property-tool .tab-page .button {
-  text-align: center;
-  width: 45%;
+  width: 100%;
+  margin: 0;
 }
 .silex-property-tool .tab-page fieldset {
   margin-top: 10px;
+}
+.silex-property-tool .background-editor .background-image .goog-menu-button-caption {
+  width: 75px;
 }
 .silex-property-tool .opacity-input {
   width: 47px;
@@ -412,9 +397,6 @@ body.loading-pending > div {
 .silex-property-tool .goog-color-menu-button-indicator {
   font-size: 12px;
   border-bottom-width: 10px;
-}
-.silex-property-tool .style-container {
-  bottom: 0;
 }
 .silex-property-tool .goog-hsva-palette-sm-input {
   font-size: 13px;
@@ -477,15 +459,10 @@ body.loading-pending > div {
 .silex-property-tool .main-container {
   padding: 5px;
   margin: 5px;
-  height: 225px;
-  overflow-y: auto;
 }
 .silex-property-tool .goog-tab-bar {
   background-color: transparent;
   padding-left: 1px;
-  position: absolute;
-  top: 279px;
-  width: 225px;
 }
 .silex-property-tool .goog-tab-bar .goog-tab-selected {
   background-color: #f3f3f3;
@@ -515,31 +492,31 @@ body.loading-pending > div {
   z-index: 105;
   cursor: pointer;
 }
-.silex-publishsettings {
+.silex-settings-dialog {
   position: absolute;
   width: 80%;
   max-width: 929px;
   z-index: 106;
 }
-.silex-publishsettings .left-pane {
+.silex-settings-dialog .left-pane {
   width: 25%;
   height: 100%;
   border-right: 1px solid #e5e5e5;
   float: left;
 }
-.silex-publishsettings .left-pane ul {
+.silex-settings-dialog .left-pane ul {
   list-style: none;
   margin: 0;
   padding: 0;
 }
-.silex-publishsettings .left-pane ul li.selected {
+.silex-settings-dialog .left-pane ul li.selected {
   font-weight: bold;
 }
-.silex-publishsettings .left-pane ul li {
+.silex-settings-dialog .left-pane ul li {
   padding: 15px;
   cursor: pointer;
 }
-.silex-publishsettings .dialog {
+.silex-settings-dialog .dialog {
   color: #727271;
   font-style: normal;
   font-size: 13px;
@@ -557,7 +534,7 @@ body.loading-pending > div {
   -webkit-box-shadow: rgba(0, 0, 0, 0.2) 0 4px 16px 0;
   box-shadow: rgba(0, 0, 0, 0.2) 0 4px 16px 0;
 }
-.silex-publishsettings .close-btn {
+.silex-settings-dialog .close-btn {
   background: url("/cloud-explorer/app/assets/close.png") no-repeat center center;
   background-size: 11px 11px;
   width: 30px;
@@ -571,43 +548,43 @@ body.loading-pending > div {
   right: 15px;
   position: absolute;
 }
-.silex-publishsettings .body {
+.silex-settings-dialog .body {
   border-top: 1px solid #e5e5e5;
   overflow-y: auto;
   overflow-x: hidden;
   height: 524px;
   width: 100%;
 }
-.silex-publishsettings .right-pane {
+.silex-settings-dialog .right-pane {
   float: left;
   overflow-y: auto;
   overflow-x: hidden;
   height: 524px;
   width: 74%;
 }
-.silex-publishsettings .right-pane ul {
+.silex-settings-dialog .right-pane ul {
   list-style: none;
   margin: 0;
   padding: 0;
 }
-.silex-publishsettings .right-pane ul li {
+.silex-settings-dialog .right-pane ul li {
   color: #727271;
   font-style: normal;
   font-size: 13px;
   font-family: arial, sans-serif;
   line-height: normal;
 }
-.silex-publishsettings .right-pane ul li .browse-btn {
+.silex-settings-dialog .right-pane ul li .browse-btn {
   width: 10%;
 }
-.silex-publishsettings .right-pane ul li .input-url {
+.silex-settings-dialog .right-pane ul li .input-url {
   width: 85%;
 }
-.silex-publishsettings .right-pane ul li fieldset {
+.silex-settings-dialog .right-pane ul li fieldset {
   margin: 10px;
   padding: 10px;
 }
-.silex-publishsettings .title {
+.silex-settings-dialog .title {
   border-top: 1px solid #e5e5e5;
   height: 20px;
   padding: 17px 20px;

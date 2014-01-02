@@ -37,7 +37,7 @@ goog.require('goog.events.KeyHandler');
  */
 silex.view.Menu = function(element, bodyElement, headElement) {
   // call super
-  silex.view.ViewBase.call(this, element, bodyElement, headElement);
+  goog.base(this, element, bodyElement, headElement);
   this.buildMenu(element);
 };
 

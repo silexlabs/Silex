@@ -41,13 +41,15 @@ goog.inherits(silex.controller.SettingsDialogController, silex.controller.Contro
  * settingsDialog event handler
  */
 silex.controller.SettingsDialogController.prototype.settingsDialogCallback = function(type, opt_data) {
+  console.log(arguments);
   switch (type) {
     case 'browsePublishPath':
       this.view.fileExplorer.openDialog(
           goog.bind(function(url) {
             url = url.substring(url.indexOf('/api/v1.0/'), url.lastIndexOf('/'));
             url = url.replace('/exec/get', '/exec/put');
-            this.app.file.setPublicationPath(url);
+            this.model.head.setPublicationPath(url);
+            this.view.settingsDialog.redraw();
             this.tracker.trackAction('controller-events', 'success', type, 1);
           }, this),
           null,
@@ -58,7 +60,8 @@ silex.controller.SettingsDialogController.prototype.settingsDialogCallback = fun
       );
       break;
     case 'change':
-      this.app.file.setPublicationPath(opt_data);
+      this.model.head.setPublicationPath(opt_data);
+      this.view.settingsDialog.redraw();
       break;
   }
 };

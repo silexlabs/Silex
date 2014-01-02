@@ -44,7 +44,7 @@ goog.require('goog.ui.KeyboardShortcutHandler');
  */
 silex.view.FileExplorer = function(element, bodyElement, headElement) {
   // call super
-  silex.view.ViewBase.call(this, element, bodyElement, headElement);
+  goog.base(this, element, bodyElement, headElement);
   // hide the at start
   goog.style.setStyle(this.element, 'display', 'none');
   // init the dialog

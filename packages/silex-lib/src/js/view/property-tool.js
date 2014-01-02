@@ -49,7 +49,7 @@ goog.require('goog.ui.TabBar');
  */
 silex.view.PropertyTool = function(element, bodyElement, headElement) {
   // call super
-  silex.view.ViewBase.call(this, element, bodyElement, headElement);
+  goog.base(this, element, bodyElement, headElement);
 
   this.buildPanes();
 };

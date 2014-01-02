@@ -34,7 +34,7 @@ goog.require('goog.events.MouseWheelHandler');
  */
 silex.view.Stage = function(element, bodyElement, headElement) {
   // call super
-  silex.view.ViewBase.call(this, element, bodyElement, headElement);
+  goog.base(this, element, bodyElement, headElement);
 
   // init the view
   this.initEvents()
