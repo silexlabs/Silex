@@ -8228,7 +8228,7 @@ silex.controller.MenuController.prototype.menuCallback = function $silex$control
       this.addElement(silex.model.Element.TYPE_TEXT);
       break;
     case "insert.html":
-      this.addElement(silex.model.Element.TYPE_IMAGE);
+      this.addElement(silex.model.Element.TYPE_HTML);
       break;
     case "insert.image":
       this.view.fileExplorer.openDialog(goog.bind(function($url$$) {
