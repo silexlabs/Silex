@@ -7557,10 +7557,11 @@ silex.utils.RetroCompat.process = function $silex$utils$RetroCompat$process$($bo
   });
   $("[href]", $bodyElement$$).each(function() {
     var $href$$ = this.getAttribute("href");
-    0 === $href$$.indexof("#") && 0 !== $href$$.indexof("#!") && this.setAttribute("href", $href$$.substr(2))
+    0 === $href$$.indexOf("#") && 0 !== $href$$.indexOf("#!") && this.setAttribute("href", $href$$.substr(2))
   });
   $("[data-silex-type]", $bodyElement$$).each(function() {
-    $(this).addClass(this.getAttribute("data-silex-type") + "-element")
+    $(this).addClass(this.getAttribute("data-silex-type") + "-element");
+    console.log("add class", this.getAttribute("data-silex-type"))
   });
   $("[src]", $headElement$$).each(function() {
     var $src$$ = this.getAttribute("src");
@@ -7871,7 +7872,6 @@ silex.controller.ControllerBase.prototype.newFile = function $silex$controller$C
   this.model.file.newFile(goog.bind(function($rawHtml$$) {
     this.model.file.setHtml($rawHtml$$);
     this.fileOperationSuccess(null, !0);
-    silex.utils.RetroCompat.process(this.model.body.bodyElement, this.model.head.headElement);
     this.tracker.trackAction("controller-events", "success", "file.new", 1);
     $opt_cbk$$ && $opt_cbk$$()
   }, this), function($error$$) {
@@ -7886,6 +7886,7 @@ silex.controller.ControllerBase.prototype.openFile = function $silex$controller$
       $rawHtml$$ = silex.utils.Url.relative2absolute($rawHtml$$, silex.utils.Url.getBaseUrl($url$$));
       this.model.file.setHtml($rawHtml$$);
       this.fileOperationSuccess(this.model.head.getTitle() + " opened.", !0);
+      silex.utils.RetroCompat.process(this.model.body.bodyElement, this.model.head.headElement);
       this.tracker.trackAction("controller-events", "success", "file.open", 1);
       $opt_cbk$$ && $opt_cbk$$()
     }, this), goog.bind(function($error$$) {
@@ -21253,7 +21254,7 @@ silex.model.File.prototype.cleanup = function $silex$model$File$$cleanup$($cbk$$
     $opt_errCbk$$ && $opt_errCbk$$({message:"The file must be saved before I can clean it up for you."})
   }
 };
-silex.model.Body.prototype.filterBgImage = function $silex$model$Body$$filterBgImage$($absolute$$3_baseUrl$$, $files$$, $match$$11_relative$$, $group1$$9_newRelativePath$$, $group2$$9_res$$) {
+silex.model.File.prototype.filterBgImage = function $silex$model$File$$filterBgImage$($absolute$$3_baseUrl$$, $files$$, $match$$11_relative$$, $group1$$9_newRelativePath$$, $group2$$9_res$$) {
   $absolute$$3_baseUrl$$ = silex.utils.Url.getAbsolutePath($group2$$9_res$$, $absolute$$3_baseUrl$$);
   $match$$11_relative$$ = silex.utils.Url.getRelativePath($absolute$$3_baseUrl$$, silex.utils.Url.getBaseUrl());
   silex.utils.Url.isAbsoluteUrl($match$$11_relative$$) || ($match$$11_relative$$ = $match$$11_relative$$.replace("../", "/"));

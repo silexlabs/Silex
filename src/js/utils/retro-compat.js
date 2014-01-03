@@ -52,13 +52,14 @@ silex.utils.RetroCompat.process = function(bodyElement, headElement) {
   // retorcompat silex links with #!
   $('[href]', bodyElement).each(function() {
     var href = this.getAttribute('href');
-    if (href.indexof('#') === 0 && href.indexof('#!') !== 0){
+    if (href.indexOf('#') === 0 && href.indexOf('#!') !== 0){
       this.setAttribute('href', href.substr(2));
     }
   });
   // css class on elements with [type]-element
   $('[data-silex-type]', bodyElement).each(function() {
     $(this).addClass(this.getAttribute('data-silex-type') + '-element');
+    console.log('add class', this.getAttribute('data-silex-type'));
   });
   // static.silex.me 2.0 -> 2.1
   $('[src]', headElement).each(function() {
