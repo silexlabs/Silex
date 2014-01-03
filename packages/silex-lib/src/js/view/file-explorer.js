@@ -102,10 +102,10 @@ silex.view.FileExplorer.prototype.init = function() {
 silex.view.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes, opt_errCbk) {
   var fileExtentions;
   if (opt_mimetypes){
-    if (opt_mimetypes[0].indexOf('image') === 0){
+    if (opt_mimetypes['mimetype'].indexOf('image') === 0){
       fileExtentions = ['jpg', 'jpeg', 'gif', 'png'];
     }
-    else if (opt_mimetypes[0].indexOf('text/html') === 0){
+    else if (opt_mimetypes['mimetype'].indexOf('text/html') === 0){
       fileExtentions = ['html', 'htm'];
     }
   }
@@ -165,10 +165,10 @@ silex.view.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes, opt_
 silex.view.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes, opt_errCbk) {
   var fileExtentions;
   if (opt_mimetypes){
-    if (opt_mimetypes[0].indexOf('image') === 0){
+    if (opt_mimetypes['mimetype'].indexOf('image') === 0){
       fileExtentions = ['jpg', 'jpeg', 'gif', 'png'];
     }
-    else if (opt_mimetypes[0].indexOf('text/html') === 0){
+    else if (opt_mimetypes['mimetype'].indexOf('text/html') === 0){
       fileExtentions = ['html', 'htm'];
     }
   }
