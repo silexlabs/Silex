@@ -188,6 +188,18 @@ silex.Config.menu = {
       }
       , null
       , {
+        label: 'Edit selection'
+        , id: 'view.open.editor'
+        , className: 'menu-item-view-open-textEditor'
+        , tooltip: '↵'
+      }
+      , {
+        label: 'Edit CSS styles'
+        , id: 'view.open.cssEditor'
+        , className: 'menu-item-view-open-cssEditor'
+      }
+      , null
+      , {
         label: 'Rename page'
         , id: 'edit.rename.page'
         , className: 'menu-item-edit-rename-page'
@@ -210,12 +222,6 @@ silex.Config.menu = {
         , accelerator: 'v'
       }
       , null
-      , {
-        label: 'Edit selection'
-        , id: 'view.open.editor'
-        , className: 'menu-item-view-open-textEditor'
-        , tooltip: '↵'
-      }
       , {
         label: 'Open file browser'
         , id: 'view.open.fileExplorer'

@@ -83,12 +83,6 @@ silex.view.FileExplorer.prototype.filePicker;
 
 
 /**
- * element of the dom to which the component is rendered
- */
-silex.view.FileExplorer.prototype.element;
-
-
-/**
  * init file explorer
  */
 silex.view.FileExplorer.prototype.init = function() {

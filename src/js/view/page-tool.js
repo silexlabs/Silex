@@ -41,13 +41,6 @@ goog.inherits(silex.view.PageTool, silex.view.ViewBase);
 
 
 /**
- * reference to the element to render to
- * @type element
- */
-silex.view.PageTool.prototype.element;
-
-
-/**
  * add listeners on the tool container
  */
 silex.view.PageTool.prototype.initEvents = function(pages) {

@@ -63,5 +63,6 @@ silex.utils.RetroCompat.process = function(bodyElement, headElement) {
 
   // todo: retorcompat silex-sub-type
   // todo: retorcompat silex links with #!
+  // todo: css class on elements with [type]-element
 
 };

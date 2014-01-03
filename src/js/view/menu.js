@@ -52,12 +52,6 @@ silex.view.Menu.prototype.menu;
 
 
 /**
- * element of the dom to which the component is rendered
- */
-silex.view.Menu.prototype.element;
-
-
-/**
  * refresh the displayed data
  */
 silex.view.Menu.prototype.redraw = function() {

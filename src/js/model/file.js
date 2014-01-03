@@ -98,14 +98,14 @@ silex.model.File.prototype.setHtml = function(rawHtml) {
  */
 silex.model.File.prototype.getHtml = function() {
   // handle background url of the body style
-  var styleStr = this.bodyElement.getAttribute('style');
+  var styleStr = this.bodyElement.getAttribute('style') || '';
 
   var html = '';
   html += '<html>';
   html += '<head>' + this.headElement.innerHTML + '</head>';
   html += '<body style="' + styleStr + '">' + this.bodyElement.innerHTML + '</body>';
   html += '</html>';
-
+console.log('getHtml', html, this.headElement);
   return html;
 };
 

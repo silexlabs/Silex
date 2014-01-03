@@ -135,6 +135,12 @@ silex.controller.ControllerBase.prototype.addElement = function(type) {
 
 
 /**
+ * edit Silex editable css styles
+ */
+silex.controller.ControllerBase.prototype.openCssEditor = function(opt_element) {
+  this.view.cssEditor.openEditor(this.model.head.getHeadStyle());
+}
+/**
  * edit an {element} element
  * take its type into account and open the corresponding editor
  */
@@ -401,7 +407,7 @@ silex.controller.ControllerBase.prototype.save = function(opt_url, opt_cbk, opt_
 
   if (opt_url){
     this.model.file.save(
-      opt_url,
+      this.model.file.getHtml(),
       goog.bind(function() {
         this.fileOperationSuccess('File is saved.', false)
         this.tracker.trackAction('controller-events', 'success', 'file.save', 1);
@@ -458,6 +464,9 @@ silex.controller.ControllerBase.prototype.fileOperationSuccess = function(opt_me
     // notify user
     silex.utils.Notification.notifySuccess(opt_message);
   }
+  // update Silex editable style
+  this.model.head.updateBrowserStyle();
+  this.view.textEditor.redraw();
 }
 
 /**
