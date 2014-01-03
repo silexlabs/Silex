@@ -358,8 +358,6 @@ silex.controller.ControllerBase.prototype.newFile = function(opt_cbk, opt_errorC
   this.model.file.newFile(goog.bind(function (rawHtml) {
     this.model.file.setHtml(rawHtml);
     this.fileOperationSuccess(null, true);
-    // handle retrocompatibility issues
-    silex.utils.RetroCompat.process(this.model.body.bodyElement, this.model.head.headElement);
     // QOS, track success
     this.tracker.trackAction('controller-events', 'success', 'file.new', 1);
     if (opt_cbk) {
@@ -383,6 +381,9 @@ silex.controller.ControllerBase.prototype.openFile = function(opt_cbk, opt_error
         rawHtml = silex.utils.Url.relative2absolute(rawHtml, silex.utils.Url.getBaseUrl(url));
         this.model.file.setHtml(rawHtml);
         this.fileOperationSuccess(this.model.head.getTitle() + ' opened.', true)
+        // handle retrocompatibility issues
+        silex.utils.RetroCompat.process(this.model.body.bodyElement, this.model.head.headElement);
+        // QOS, track success
         this.tracker.trackAction('controller-events', 'success', 'file.open', 1);
         if(opt_cbk) opt_cbk();
       }, this),

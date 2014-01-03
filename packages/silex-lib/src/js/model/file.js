@@ -427,7 +427,7 @@ this does nothing: node.style.backgroundImage = "url('" + info.destPath + "')";
   // callback
   cbk(html, cssStr, files);
 };
-silex.model.Body.prototype.filterBgImage = function(baseUrl, files, match, group1, group2) {
+silex.model.File.prototype.filterBgImage = function(baseUrl, files, match, group1, group2) {
   var absolute = silex.utils.Url.getAbsolutePath(group2, baseUrl);
   var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
   // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
@@ -455,7 +455,7 @@ silex.model.Body.prototype.filterBgImage = function(baseUrl, files, match, group
  *     - destPath: the destination path (local, relative to the published file)
  *     - srcPath: the source path or relative URL (relative to the current file)
  *
-silex.model.Body.prototype.handleNodeUrls = function (node, baseUrl) {
+silex.model.File.prototype.handleNodeUrls = function (node, baseUrl) {
   var filesToBeServedLocally = [];
   switch (node.nodeName){
     case 'IMG':
@@ -504,7 +504,7 @@ silex.model.Body.prototype.handleNodeUrls = function (node, baseUrl) {
  *     - destPath: the destination path (local, relative to the published file)
  *     - srcPath: the source path or relative URL (relative to the current file)
  *
-silex.model.Body.prototype.getPublicationInfo = function (url, baseUrl, localFolder) {
+silex.model.File.prototype.getPublicationInfo = function (url, baseUrl, localFolder) {
   var absolute = silex.utils.Url.getAbsolutePath(url, baseUrl);
   var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
   // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
