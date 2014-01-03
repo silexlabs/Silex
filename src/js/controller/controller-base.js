@@ -98,7 +98,7 @@ silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
           }, this)
         );
       }, this),
-      ['image/*', 'text/plain'],
+      {'mimetype': 'image/*'},
       goog.bind(function(error) {
         silex.utils.Notification.notifyError('Error: I did not manage to load the image. <br /><br />' + (error.message || ''));
         this.tracker.trackAction('controller-events', 'error', 'insert.image', -1);
@@ -160,7 +160,7 @@ silex.controller.ControllerBase.prototype.editElement = function(opt_element) {
           goog.bind(function(url) {
             this.model.element.setImageUrl(opt_element, url);
           }, this),
-          ['image/*', 'text/plain'],
+          {'mimetype': 'image/*'},
           goog.bind(function(error) {
             silex.utils.Notification.notifyError('Error: I did not manage to load the image. <br /><br />' + (error.message || ''));
           }, this)
@@ -392,7 +392,7 @@ silex.controller.ControllerBase.prototype.openFile = function(opt_cbk, opt_error
         if(opt_errorCbk) opt_errorCbk(error);
       }, this));
     }, this),
-    ['text/html', 'text/plain'],
+    {'mimetype': 'text/html'},
     function (error) {
       this.tracker.trackAction('controller-events', 'error', 'file.open', -1);
       if(opt_errorCbk) opt_errorCbk(error);
@@ -437,7 +437,7 @@ silex.controller.ControllerBase.prototype.save = function(opt_url, opt_cbk, opt_
             if (opt_errorCbk) opt_errorCbk(error);
           }, this));
       }, this),
-      ['text/html', 'text/plain']
+      {'mimetype': 'text/html'}
     );
   }
 }

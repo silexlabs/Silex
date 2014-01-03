@@ -7759,7 +7759,7 @@ silex.controller.ControllerBase.prototype.browseAndAddImage = function $silex$co
       this.removeElement($element$$);
       this.tracker.trackAction("controller-events", "error", "insert.image", 1)
     }, this))
-  }, this), ["image/*", "text/plain"], goog.bind(function($error$$) {
+  }, this), {mimetype:"image/*"}, goog.bind(function($error$$) {
     silex.utils.Notification.notifyError("Error: I did not manage to load the image. <br /><br />" + ($error$$.message || ""));
     this.tracker.trackAction("controller-events", "error", "insert.image", -1)
   }, this));
@@ -7794,7 +7794,7 @@ silex.controller.ControllerBase.prototype.editElement = function $silex$controll
     case silex.model.Element.TYPE_IMAGE:
       this.view.fileExplorer.openDialog(goog.bind(function($url$$) {
         this.model.element.setImageUrl($opt_element$$, $url$$)
-      }, this), ["image/*", "text/plain"], goog.bind(function($error$$) {
+      }, this), {mimetype:"image/*"}, goog.bind(function($error$$) {
         silex.utils.Notification.notifyError("Error: I did not manage to load the image. <br /><br />" + ($error$$.message || ""))
       }, this)), this.view.workspace.invalidate()
   }
@@ -7893,7 +7893,7 @@ silex.controller.ControllerBase.prototype.openFile = function $silex$controller$
       this.tracker.trackAction("controller-events", "error", "file.open", -1);
       $opt_errorCbk$$ && $opt_errorCbk$$($error$$)
     }, this))
-  }, this), ["text/html", "text/plain"], function($error$$) {
+  }, this), {mimetype:"text/html"}, function($error$$) {
     this.tracker.trackAction("controller-events", "error", "file.open", -1);
     $opt_errorCbk$$ && $opt_errorCbk$$($error$$)
   })
@@ -7918,7 +7918,7 @@ silex.controller.ControllerBase.prototype.save = function $silex$controller$Cont
       this.tracker.trackAction("controller-events", "error", "file.save", -1);
       $opt_errorCbk$$ && $opt_errorCbk$$($error$$)
     }, this))
-  }, this), ["text/html", "text/plain"])
+  }, this), {mimetype:"text/html"})
 };
 silex.controller.ControllerBase.prototype.fileOperationSuccess = function $silex$controller$ControllerBase$$fileOperationSuccess$($opt_message$$, $opt_updateTools$$) {
   var $pages$$ = silex.utils.PageablePlugin.getPages();
@@ -8185,7 +8185,7 @@ silex.controller.SettingsDialogController.prototype.settingsDialogCallback = fun
         this.model.head.setPublicationPath($url$$);
         this.view.settingsDialog.redraw();
         this.tracker.trackAction("controller-events", "success", $type$$, 1)
-      }, this), null, goog.bind(function($error$$) {
+      }, this), {mimetype:"folder"}, goog.bind(function($error$$) {
         silex.utils.Notification.notifyError("Error: I could not select the publish path. <br /><br />" + ($error$$.message || ""));
         this.tracker.trackAction("controller-events", "error", $type$$, -1)
       }, this));
@@ -8253,7 +8253,7 @@ silex.controller.PropertyToolController.prototype.propertyToolCallback = functio
         this.model.element.setBgImage($element$$, $url$$);
         this.view.propertyTool.redraw();
         this.tracker.trackAction("controller-events", "success", $type$$, 1)
-      }, this), ["image/*", "text/plain"], goog.bind(function($error$$) {
+      }, this), {mimetype:"image/*"}, goog.bind(function($error$$) {
         silex.utils.Notification.notifyError("Error: I could not load the image. <br /><br />" + ($error$$.message || ""));
         this.tracker.trackAction("controller-events", "error", $type$$, -1)
       }, this));
@@ -11124,7 +11124,7 @@ silex.view.FileExplorer.prototype.init = function $silex$view$FileExplorer$$init
 };
 silex.view.FileExplorer.prototype.openDialog = function $silex$view$FileExplorer$$openDialog$($cbk$$, $opt_mimetypes$$, $opt_errCbk$$) {
   var $fileExtentions$$;
-  $opt_mimetypes$$ && (0 === $opt_mimetypes$$[0].indexOf("image") ? $fileExtentions$$ = ["jpg", "jpeg", "gif", "png"] : 0 === $opt_mimetypes$$[0].indexOf("text/html") && ($fileExtentions$$ = ["html", "htm"]));
+  $opt_mimetypes$$ && (0 === $opt_mimetypes$$.mimetype.indexOf("image") ? $fileExtentions$$ = ["jpg", "jpeg", "gif", "png"] : 0 === $opt_mimetypes$$.mimetype.indexOf("text/html") && ($fileExtentions$$ = ["html", "htm"]));
   var $errCbk$$ = function $$errCbk$$$($FPError$$) {
     console.error($FPError$$);
     $opt_errCbk$$ && $opt_errCbk$$($FPError$$)
@@ -11149,7 +11149,7 @@ silex.view.FileExplorer.prototype.openDialog = function $silex$view$FileExplorer
 };
 silex.view.FileExplorer.prototype.saveAsDialog = function $silex$view$FileExplorer$$saveAsDialog$($cbk$$, $opt_mimetypes$$, $opt_errCbk$$) {
   var $fileExtentions$$;
-  $opt_mimetypes$$ && (0 === $opt_mimetypes$$[0].indexOf("image") ? $fileExtentions$$ = ["jpg", "jpeg", "gif", "png"] : 0 === $opt_mimetypes$$[0].indexOf("text/html") && ($fileExtentions$$ = ["html", "htm"]));
+  $opt_mimetypes$$ && (0 === $opt_mimetypes$$.mimetype.indexOf("image") ? $fileExtentions$$ = ["jpg", "jpeg", "gif", "png"] : 0 === $opt_mimetypes$$.mimetype.indexOf("text/html") && ($fileExtentions$$ = ["html", "htm"]));
   var $errCbk$$ = function $$errCbk$$$($FPError$$) {
     console.error($FPError$$);
     $opt_errCbk$$ && $opt_errCbk$$($FPError$$)

@@ -65,7 +65,7 @@ silex.controller.PropertyToolController.prototype.propertyToolCallback = functio
       // open the file browser
       this.view.fileExplorer.openDialog(
           goog.bind(successCbk, this),
-          ['image/*', 'text/plain'],
+          {'mimetype': 'image/*'},
           goog.bind(errCbk, this)
       );
       this.view.workspace.invalidate();

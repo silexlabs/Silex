@@ -51,7 +51,7 @@ silex.controller.SettingsDialogController.prototype.settingsDialogCallback = fun
             this.view.settingsDialog.redraw();
             this.tracker.trackAction('controller-events', 'success', type, 1);
           }, this),
-          null,
+          {'mimetype': 'folder'},
           goog.bind(function(error) {
             silex.utils.Notification.notifyError('Error: I could not select the publish path. <br /><br />' + (error.message || ''));
             this.tracker.trackAction('controller-events', 'error', type, -1);
