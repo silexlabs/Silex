@@ -73,21 +73,63 @@ silex.controller.ControllerBase.prototype.removeElement = function(opt_element) 
 
 
 /**
+ * open file explorer, choose an image and add it to the stage
+ */
+silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
+  this.tracker.trackAction('controller-events', 'request', 'insert.image', 0);
+  this.view.fileExplorer.openDialog(
+      goog.bind(function(url) {
+        // create the element
+        var img = this.addElement(silex.model.Element.TYPE_IMAGE);
+        // loads the image
+        this.model.element.setImageUrl(img, url,
+          goog.bind(function(element, img){
+            // update element size
+            goog.style.setStyle(element, {
+              width: img.naturalWidth + 'px',
+              height: img.naturalHeight + 'px'
+            });
+            this.tracker.trackAction('controller-events', 'success', 'insert.image', 1);
+          }, this),
+          goog.bind(function(element, message){
+            silex.utils.Notification.notifyError('Error: I did not manage to load the image. <br /><br />' + message);
+            this.removeElement(element);
+            this.tracker.trackAction('controller-events', 'error', 'insert.image', 1);
+          }, this)
+        );
+      }, this),
+      ['image/*', 'text/plain'],
+      goog.bind(function(error) {
+        silex.utils.Notification.notifyError('Error: I did not manage to load the image. <br /><br />' + (error.message || ''));
+        this.tracker.trackAction('controller-events', 'error', 'insert.image', -1);
+      }, this)
+  );
+  this.view.workspace.invalidate();
+}
+/**
  * create an element and add it to the stage
  * @return {element} the new element
  */
 silex.controller.ControllerBase.prototype.addElement = function(type) {
-  // create the element and add it to the stage
-  var element = this.model.element.createElement(type);
-  // only visible on the current page
-  var currentPageName = silex.utils.PageablePlugin.getCurrentPageName();
-  silex.utils.PageablePlugin.addToPage(element, currentPageName);
-  // unless one of its parents is in a page already
-  this.checkElementVisibility(element);
-  // select the component
-  this.model.element.setSelected(element, true);
-  // update view
-  this.view.propertyTool.redraw();
+  this.tracker.trackAction('controller-events', 'request', 'insert.'+type, 0);
+  try{
+    // create the element and add it to the stage
+    var element = this.model.element.createElement(type);
+    // only visible on the current page
+    var currentPageName = silex.utils.PageablePlugin.getCurrentPageName();
+    silex.utils.PageablePlugin.addToPage(element, currentPageName);
+    // unless one of its parents is in a page already
+    this.checkElementVisibility(element);
+    // select the component
+    this.model.element.setSelected(element, true);
+    // update view
+    this.view.propertyTool.redraw();
+    this.tracker.trackAction('controller-events', 'success', 'insert.'+type, 1);
+  }
+  catch(e){
+    this.tracker.trackAction('controller-events', 'error', 'insert.'+type, -1);
+    console.error('could not add element of type', type, ' - ', error);
+  }
   return element;
 }
 
@@ -236,18 +278,19 @@ silex.controller.ControllerBase.prototype.checkElementVisibility = function(elem
 /**
  * create a page
  */
-silex.controller.ControllerBase.prototype.createPage = function(successCbk, errorCbk) {
+silex.controller.ControllerBase.prototype.createPage = function(successCbk, cancelCbk) {
+  this.tracker.trackAction('controller-events', 'request', 'insert.page', 0);
   this.getUserInputPageName('Your new page name', goog.bind(function(name, displayName) {
     if (name) {
       // create the page model
       silex.utils.PageablePlugin.createPage(name, displayName);
       this.openPage(name);
-      this.tracker.trackAction('controller-events', 'success', event.type, 0);
       if (successCbk) successCbk();
+      this.tracker.trackAction('controller-events', 'success', 'insert.page', 1);
     }
     else {
-      this.tracker.trackAction('controller-events', 'cancel', event.type, 0);
-      if (errorCbk) errorCbk();
+      if (cancelCbk) cancelCbk();
+      this.tracker.trackAction('controller-events', 'cancel', 'insert.page', 0);
     }
   }, this));
 };
@@ -257,17 +300,25 @@ silex.controller.ControllerBase.prototype.createPage = function(successCbk, erro
  * view this file in a new window
  */
 silex.controller.ControllerBase.prototype.preview = function() {
-  if (!this.model.file.getUrl()) {
-    silex.utils.Notification.confirm('Save your file before preview?', goog.bind(function(accept) {
-      if (accept) {
-        this.save(null, goog.bind(function() {
-          window.open(this.model.file.getUrl());
-        }, this));
-      }
-    }, this));
+  this.tracker.trackAction('controller-events', 'request', 'view.file', 0);
+  try{
+    if (!this.model.file.getUrl()) {
+      silex.utils.Notification.confirm('Save your file before preview?', goog.bind(function(accept) {
+        if (accept) {
+          this.save(null, goog.bind(function() {
+            window.open(this.model.file.getUrl());
+            this.tracker.trackAction('controller-events', 'success', 'view.file', 1);
+          }, this));
+        }
+      }, this));
+    }
+    else {
+      window.open(this.model.file.getUrl());
+      this.tracker.trackAction('controller-events', 'success', 'view.file', 1);
+    }
   }
-  else {
-    window.open(this.model.file.getUrl());
+  catch(e){
+      this.tracker.trackAction('controller-events', 'error', 'view.file', -1);
   }
 };
 
@@ -295,20 +346,30 @@ silex.controller.ControllerBase.prototype.refreshFonts = function(){
  * open a file
  */
 silex.controller.ControllerBase.prototype.newFile = function(opt_cbk, opt_errorCbk){
+
+  this.tracker.trackAction('controller-events', 'request', 'file.new', 0);
+
   this.model.file.newFile(goog.bind(function (rawHtml) {
     this.model.file.setHtml(rawHtml);
     this.fileOperationSuccess(null, true);
     // handle retrocompatibility issues
     silex.utils.RetroCompat.process(this.model.body.bodyElement, this.model.head.headElement);
+    // QOS, track success
+    this.tracker.trackAction('controller-events', 'success', 'file.new', 1);
     if (opt_cbk) {
       opt_cbk();
     }
-  }, this), opt_errorCbk);
+  }, this), function (error) {
+    this.tracker.trackAction('controller-events', 'error', 'file.new', -1);
+    if(opt_errorCbk) opt_errorCbk(error);
+  });
 }
 /**
  * open a file
  */
 silex.controller.ControllerBase.prototype.openFile = function(opt_cbk, opt_errorCbk){
+  // QOS, track success
+  this.tracker.trackAction('controller-events', 'request', 'file.open', 0);
   // let the user choose the file
   this.view.fileExplorer.openDialog(
     goog.bind(function(url) {
@@ -316,33 +377,40 @@ silex.controller.ControllerBase.prototype.openFile = function(opt_cbk, opt_error
         rawHtml = silex.utils.Url.relative2absolute(rawHtml, silex.utils.Url.getBaseUrl(url));
         this.model.file.setHtml(rawHtml);
         this.fileOperationSuccess(this.model.head.getTitle() + ' opened.', true)
+        this.tracker.trackAction('controller-events', 'success', 'file.open', 1);
         if(opt_cbk) opt_cbk();
       }, this),
       goog.bind(function(error) {
         silex.utils.Notification.notifyError('Error: I did not manage to open this file. <br /><br />' + (error.message || ''));
-        this.tracker.trackAction('controller-events', 'error', event.type, -1);
+        this.tracker.trackAction('controller-events', 'error', 'file.open', -1);
         if(opt_errorCbk) opt_errorCbk(error);
       }, this));
     }, this),
     ['text/html', 'text/plain'],
-    opt_errorCbk);
+    function (error) {
+      this.tracker.trackAction('controller-events', 'error', 'file.open', -1);
+      if(opt_errorCbk) opt_errorCbk(error);
+    });
 }
 /**
  * save or save-as
  */
 silex.controller.ControllerBase.prototype.save = function(opt_url, opt_cbk, opt_errorCbk){
 
+  this.tracker.trackAction('controller-events', 'request', 'file.save', 0);
+
   if (opt_url){
     this.model.file.save(
       opt_url,
       goog.bind(function() {
         this.fileOperationSuccess('File is saved.', false)
+        this.tracker.trackAction('controller-events', 'success', 'file.save', 1);
         if (opt_cbk) opt_cbk();
       }, this),
       goog.bind(function(error) {
         silex.utils.Notification.notifyError('Error: I did not manage to save the file. <br /><br />' + (error.message || ''));
+        this.tracker.trackAction('controller-events', 'error', 'file.save', -1);
         if (opt_errorCbk) opt_errorCbk(error);
-        this.tracker.trackAction('controller-events', 'error', event.type, -1);
       }, this));
   }
   else{
@@ -353,13 +421,14 @@ silex.controller.ControllerBase.prototype.save = function(opt_url, opt_cbk, opt_
           url,
           this.model.file.getHtml(),
           goog.bind(function() {
+            this.tracker.trackAction('controller-events', 'success', 'file.save', 1);
             this.fileOperationSuccess('File is saved.', false)
             if (opt_cbk) opt_cbk();
           }, this),
           goog.bind(function(error) {
             silex.utils.Notification.notifyError('Error: I did not manage to save the file. <br /><br />' + (error.message || ''));
+            this.tracker.trackAction('controller-events', 'error', 'file.save', -1);
             if (opt_errorCbk) opt_errorCbk(error);
-            this.tracker.trackAction('controller-events', 'error', event.type, -1);
           }, this));
       }, this),
       ['text/html', 'text/plain']
@@ -395,6 +464,7 @@ silex.controller.ControllerBase.prototype.fileOperationSuccess = function(opt_me
  * ask the user for a new file title
  */
 silex.controller.ControllerBase.prototype.publish = function(){
+  this.tracker.trackAction('controller-events', 'request', 'file.publish', 0);
   if (!this.model.head.getPublicationPath()) {
     silex.utils.Notification.alert('I do not know where to publish your site. \
       Select a folder in the settings pannel and do "publish" again. \
@@ -402,6 +472,7 @@ silex.controller.ControllerBase.prototype.publish = function(){
       goog.bind(function() {
         this.view.settingsDialog.openDialog();
         this.view.workspace.invalidate();
+        this.tracker.trackAction('controller-events', 'cancel', 'file.publish', 0);
       }, this));
   }
   else
@@ -412,17 +483,17 @@ silex.controller.ControllerBase.prototype.publish = function(){
       if (status && status.success == false) {
         console.error('Error: I did not manage to publish the file. (1)');
         silex.utils.Notification.notifyError('I did not manage to publish the file. You may want to check the publication settings and your internet connection. <br /><br />Error message: ' + (status.message || status.code || ''));
-        this.tracker.trackAction('controller-events', 'error', event.type, -1);
+        this.tracker.trackAction('controller-events', 'error', 'file.publish', -1);
       }
       else {
         silex.utils.Notification.notifySuccess('I am about to publish your site. This may take several minutes.');
-        this.tracker.trackAction('controller-events', 'success', event.type, 1);
+        this.tracker.trackAction('controller-events', 'success', 'file.publish', 1);
       }
       }, this),
       goog.bind(function(error) {
         console.error('Error: I did not manage to publish the file. (2)', error);
         silex.utils.Notification.notifyError('I did not manage to publish the file. You may want to check the publication settings and your internet connection. <br /><br />Error message: ' + error);
-        this.tracker.trackAction('controller-events', 'error', event.type, -1);
+        this.tracker.trackAction('controller-events', 'error', 'file.publish', -1);
       }, this));
   }
 }

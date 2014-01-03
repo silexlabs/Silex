@@ -42,17 +42,13 @@ goog.inherits(silex.controller.MenuController, silex.controller.ControllerBase);
  */
 silex.controller.MenuController.prototype.menuCallback = function(type) {
   console.log(arguments);
-  this.tracker.trackAction('controller-events', 'request', type, 0);
   switch (type) {
     case 'title.changed':
       this.promptTitle();
       break;
     case 'file.close':
     case 'file.new':
-      this.newFile(goog.bind(function () {
-        // QOS, track success
-        this.tracker.trackAction('controller-events', 'success', type, 1);
-      }, this));
+      this.newFile();
       break;
     case 'file.saveas':
       this.save(null, goog.bind(function () {
@@ -74,10 +70,7 @@ silex.controller.MenuController.prototype.menuCallback = function(type) {
       this.save(this.model.file.getUrl());
       break;
     case 'file.open':
-      this.openFile(goog.bind(function () {
-        // QOS, track success
-        this.tracker.trackAction('controller-events', 'success', type, 1);
-      }, this));
+      this.openFile();
       break;
     case 'view.file':
       this.preview();
@@ -109,34 +102,7 @@ silex.controller.MenuController.prototype.menuCallback = function(type) {
       this.addElement(silex.model.Element.TYPE_HTML);
       break;
     case 'insert.image':
-      this.view.fileExplorer.openDialog(
-          goog.bind(function(url) {
-            // create the element
-            var img = this.addElement(silex.model.Element.TYPE_IMAGE);
-            // loads the image
-            this.model.element.setImageUrl(img, url,
-              goog.bind(function(element, img){
-                // update element size
-                goog.style.setStyle(element, {
-                  width: img.naturalWidth + 'px',
-                  height: img.naturalHeight + 'px'
-                });
-                this.tracker.trackAction('controller-events', 'success', type, 1);
-              }, this),
-              goog.bind(function(element, message){
-                silex.utils.Notification.notifyError('Error: I did not manage to load the image. <br /><br />' + message);
-                this.removeElement(element);
-                this.tracker.trackAction('controller-events', 'error', type, 1);
-              }, this)
-            );
-          }, this),
-          ['image/*', 'text/plain'],
-          goog.bind(function(error) {
-            silex.utils.Notification.notifyError('Error: I did not manage to load the image. <br /><br />' + (error.message || ''));
-            this.tracker.trackAction('controller-events', 'error', type, -1);
-          }, this)
-      );
-      this.view.workspace.invalidate();
+      this.browseAndAddImage(silex.model.Element.TYPE_IMAGE);
       break;
     case 'insert.container':
       this.addElement(silex.model.Element.TYPE_CONTAINER);
