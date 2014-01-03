@@ -20,7 +20,7 @@
 goog.require('silex.view.pane.PaneBase');
 goog.provide('silex.view.pane.PagePane');
 
-goog.require('silex.utils.JQueryPageable');
+goog.require('silex.utils.PageablePlugin');
 
 goog.require('goog.array');
 goog.require('goog.cssom');
@@ -118,7 +118,7 @@ silex.view.pane.PagePane.prototype.setPages = function(pages) {
   var pageData = pages.map(goog.bind(function (pageName) {
     return {
       name: pageName,
-      displayName: silex.utils.JQueryPageable.getDisplayName(this.bodyElement, pageName),
+      displayName: silex.utils.PageablePlugin.getDisplayName(this.bodyElement, pageName),
       linkName: '#!' + pageName
     };
   }, this));
@@ -220,7 +220,7 @@ silex.view.pane.PagePane.prototype.redraw = function() {
   goog.base(this, 'redraw');
 
   // update page list
-  this.setPages(silex.utils.JQueryPageable.getPages(this.bodyElement));
+  this.setPages(silex.utils.PageablePlugin.getPages(this.bodyElement));
 
   // get the selected element
   var element = this.getSelection()[0];
@@ -230,12 +230,12 @@ silex.view.pane.PagePane.prototype.redraw = function() {
     goog.array.forEach(this.pageCheckboxes, function(item) {
       // there is a selection
       item.checkbox.setEnabled(true);
-      item.checkbox.setChecked(silex.utils.JQueryPageable.isInPage(this.bodyElement, element, item.pageName));
+      item.checkbox.setChecked(silex.utils.PageablePlugin.isInPage(element, item.pageName));
     }, this);
 
     // refresh the link inputs
     // get the link of the element
-    var elementLink = silex.utils.JQueryPageable.getLink(element);
+    var elementLink = silex.utils.PageablePlugin.getLink(element);
     console.log(elementLink);
     // default selection
     if (!elementLink || elementLink === '') {

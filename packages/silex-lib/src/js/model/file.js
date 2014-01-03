@@ -87,7 +87,7 @@ silex.model.File.prototype.setHtml = function(rawHtml) {
   this.bodyElement.innerHTML = bodyHtml;
   this.headElement.innerHTML = headHtml;
   // set body editable
-  silex.utils.JQueryEditable.setEditable(this.bodyElement, true, true);
+  silex.utils.EditablePlugin.setEditable(this.bodyElement, true, true);
 
 };
 

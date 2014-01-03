@@ -10,43 +10,34 @@
 //////////////////////////////////////////////////
 
 /**
- * @fileoverview Helper class for common tasks
+ * @fileoverview Helper class for common tasks of the editable jquery plugin
  *
  */
 
 
-goog.provide('silex.utils.JQueryEditable');
+goog.provide('silex.utils.EditablePlugin');
 
 /**
  * @constructor
  * @struct
  */
-silex.utils.JQueryEditable = function() {
-  throw('this is a static class and it canot be instanciated');
+silex.utils.EditablePlugin = function() {
 }
 
 
-silex.utils.JQueryEditable.EDITABLE_CLASS_NAME = 'editable-style';
+silex.utils.EditablePlugin.EDITABLE_CLASS_NAME = 'editable-style';
 
 /**
  * find the first parent wich has the 'editable-style' cdss class
  */
-silex.utils.JQueryEditable.getContainer = function() {
-  return getElementByClass('editable-style');
-};
-
-
-/**
- * find the first parent wich has the 'editable-style' cdss class
- */
-silex.utils.JQueryEditable.getFirstEditableParent = function(element) {
+silex.utils.EditablePlugin.getFirstEditableParent = function(element) {
   var child = element;
   // go through all parents untill it is editable
-  while (child && child.getAttribute && !$(child).hasClass('editable-style')) {
+  while (child && child.getAttribute && !$(child).hasClass(silex.utils.EditablePlugin.EDITABLE_CLASS_NAME)) {
     child = child.parentNode;
   }
   // return the first editable element
-  if (child && child.getAttribute && $(child).hasClass('editable-style')) {
+  if (child && child.getAttribute && $(child).hasClass(silex.utils.EditablePlugin.EDITABLE_CLASS_NAME)) {
     return child;
   }
   else {
@@ -61,7 +52,7 @@ silex.utils.JQueryEditable.getFirstEditableParent = function(element) {
 /**
  * init, activate and remove the "editable" jquery plugin
  */
-silex.utils.JQueryEditable.setEditable = function(element, isEditable, opt_isRootDroppableOnly) {
+silex.utils.EditablePlugin.setEditable = function(element, isEditable, opt_isRootDroppableOnly) {
   // activate editable plugin
   if (isEditable) {
     // containers
@@ -117,9 +108,9 @@ silex.utils.JQueryEditable.setEditable = function(element, isEditable, opt_isRoo
  * @param   {string} htmlString  the html content to set
  * @param   {boolean} opt_hasChildContainer   if true, set the html into the first child
  */
-silex.utils.JQueryEditable.setEditableHtml = function(element, htmlString, opt_hasChildContainer) {
+silex.utils.EditablePlugin.setEditableHtml = function(element, htmlString, opt_hasChildContainer) {
   // unregister jquery plugin
-  silex.utils.JQueryEditable.setEditable(element, false);
+  silex.utils.EditablePlugin.setEditable(element, false);
 
   // set the html content
   if (opt_hasChildContainer) {
@@ -134,7 +125,7 @@ silex.utils.JQueryEditable.setEditableHtml = function(element, htmlString, opt_h
     element.innerHTML = htmlString;
   }
   // restore editing
-  silex.utils.JQueryEditable.setEditable(element, true);
+  silex.utils.EditablePlugin.setEditable(element, true);
 };
 
 /**
@@ -143,15 +134,15 @@ silex.utils.JQueryEditable.setEditableHtml = function(element, htmlString, opt_h
  * @param   {boolean} opt_hasChildContainer   if true, set the html into the first child
  * @return   {string} the html content without traces of the editable component
  */
-silex.utils.JQueryEditable.getEditableHtml = function(element, opt_hasChildContainer) {
+silex.utils.EditablePlugin.getEditableHtml = function(element, opt_hasChildContainer) {
   // unregister jquery plugin
-  silex.utils.JQueryEditable.setEditable(element, false);
+  silex.utils.EditablePlugin.setEditable(element, false);
 
   // remove all markup linked to the "editable" jquery plugin
   var cleanContainer = element.cloneNode(true);
 
   // restore editing
-  silex.utils.JQueryEditable.setEditable(element, true);
+  silex.utils.EditablePlugin.setEditable(element, true);
 
   // get the result as a string
   var htmlString = '';

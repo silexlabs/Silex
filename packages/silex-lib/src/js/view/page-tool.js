@@ -19,7 +19,7 @@
 goog.require('silex.view.ViewBase');
 goog.provide('silex.view.PageTool');
 
-goog.require('silex.utils.JQueryPageable');
+goog.require('silex.utils.PageablePlugin');
 
 /**
  * @constructor
@@ -73,15 +73,15 @@ silex.view.PageTool.prototype.initEvents = function(pages) {
  * find all pages in the dom and call setPages
  */
 silex.view.PageTool.prototype.redraw = function() {
-  var pageNames = silex.utils.JQueryPageable.getPages(this.bodyElement);
-  var currentPageName = silex.utils.JQueryPageable.getCurrentPageName(this.bodyElement);
+  var pageNames = silex.utils.PageablePlugin.getPages();
+  var currentPageName = silex.utils.PageablePlugin.getCurrentPageName();
   // prepare the data for the template
   // make an array with name, displayName, linkName and className
   var idx = 0;
   var pages = pageNames.map(goog.bind(function (pageName) {
     var res = {
       name: pageName,
-      displayName: silex.utils.JQueryPageable.getDisplayName(this.bodyElement, pageName),
+      displayName: silex.utils.PageablePlugin.getDisplayName(pageName),
       linkName: '#!' + pageName,
       idx: idx++
     };
@@ -105,7 +105,7 @@ silex.view.PageTool.prototype.redraw = function() {
  * ask to remove a page
  */
 silex.view.PageTool.prototype.removePageAtIndex = function(idx) {
-  var pageNames = silex.utils.JQueryPageable.getPages(this.bodyElement);
+  var pageNames = silex.utils.PageablePlugin.getPages();
   if (this.onStatus) this.onStatus('delete', pageNames[idx]);
   this.redraw();
 };
@@ -115,7 +115,7 @@ silex.view.PageTool.prototype.removePageAtIndex = function(idx) {
  * ask to rename a page
  */
 silex.view.PageTool.prototype.renamePageAtIndex = function(idx) {
-  var pageNames = silex.utils.JQueryPageable.getPages(this.bodyElement);
+  var pageNames = silex.utils.PageablePlugin.getPages();
   if (this.onStatus) this.onStatus('rename', pageNames[idx]);
   this.redraw();
 };

@@ -90,16 +90,16 @@ silex.controller.PropertyToolController.prototype.propertyToolCallback = functio
       console.error('not implemented');
       break;
     case 'addToPage':
-      silex.utils.JQueryPageable.addToPage(this.model.body.bodyElement, this.view.stage.getSelection()[0], opt_name);
+      silex.utils.PageablePlugin.addToPage(this.view.stage.getSelection()[0], opt_name);
       break;
     case 'removeFromPage':
-      silex.utils.JQueryPageable.removeFromPage(this.model.body.bodyElement, this.view.stage.getSelection()[0], opt_name);
+      silex.utils.PageablePlugin.removeFromPage(this.view.stage.getSelection()[0], opt_name);
       break;
     case 'addLink':
-      silex.utils.JQueryPageable.setLink(this.view.stage.getSelection()[0], opt_name);
+      silex.utils.PageablePlugin.setLink(this.view.stage.getSelection()[0], opt_name);
       break;
     case 'removeLink':
-      silex.utils.JQueryPageable.setLink(this.view.stage.getSelection()[0]);
+      silex.utils.PageablePlugin.setLink(this.view.stage.getSelection()[0]);
       break;
   }
 };
