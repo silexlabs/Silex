@@ -32,7 +32,6 @@ goog.require('goog.editor.plugins.ListTabHandler');
 goog.require('goog.editor.plugins.RemoveFormatting');
 goog.require('goog.editor.plugins.SpacesTabHandler');
 goog.require('goog.editor.plugins.UndoRedo');
-goog.require('goog.editor.plugins.HeaderFormatter');
 goog.require('goog.events');
 goog.require('goog.ui.editor.DefaultToolbar');
 goog.require('goog.ui.editor.ToolbarController');
@@ -73,12 +72,6 @@ goog.inherits(silex.view.TextEditor, silex.view.ViewBase);
 
 
 /**
- * element of the dom to which the component is rendered
- */
-silex.view.TextEditor.prototype.element;
-
-
-/**
  * the editable text field
  */
 silex.view.TextEditor.prototype.textField;
@@ -102,7 +95,6 @@ silex.view.TextEditor.prototype.initUI = function() {
   this.textField.registerPlugin(new goog.editor.plugins.HeaderFormatter());
   this.textField.registerPlugin(new goog.editor.plugins.LinkDialogPlugin());
   this.textField.registerPlugin(new goog.editor.plugins.LinkBubble());
-  this.textField.registerPlugin(new goog.editor.plugins.HeaderFormatter());
 
   // add fonts
   var fontFaceButton = goog.ui.editor.DefaultToolbar.makeBuiltInToolbarButton(
@@ -126,15 +118,31 @@ silex.view.TextEditor.prototype.initUI = function() {
   goog.ui.editor.ToolbarFactory.addFontSize(fontSizeButton, '6', '6');
   goog.ui.editor.ToolbarFactory.addFontSize(fontSizeButton, '7', '7');
 
+  var formatButton = goog.ui.editor.DefaultToolbar.makeBuiltInToolbarButton(
+      goog.editor.Command.FORMAT_BLOCK);
+  console.log(formatButton.getItemCount());
+  while (formatButton.getItemCount()>0){
+    formatButton.removeItemAt(0);
+  }
+  // add our styles
+  goog.ui.editor.ToolbarFactory.addFormatOption(formatButton, 'Normal text', 'P');
+  goog.ui.editor.ToolbarFactory.addFormatOption(formatButton, 'Title', 'HEADER');
+  goog.ui.editor.ToolbarFactory.addFormatOption(formatButton, 'Subtitle', 'DIV');
+  goog.ui.editor.ToolbarFactory.addFormatOption(formatButton, 'Heading 1', 'H1');
+  goog.ui.editor.ToolbarFactory.addFormatOption(formatButton, 'Heading 2', 'H2');
+  goog.ui.editor.ToolbarFactory.addFormatOption(formatButton, 'Heading 3', 'H3');
+  goog.ui.editor.ToolbarFactory.addFormatOption(formatButton, 'Quote', 'BLOCKQUOTE');
+
   // Specify the buttons to add to the toolbar, using built in default buttons.
   var buttons = [
+    formatButton,
+    fontFaceButton,
+    fontSizeButton,
     goog.editor.Command.BOLD,
     goog.editor.Command.ITALIC,
     goog.editor.Command.UNDERLINE,
     goog.editor.Command.FONT_COLOR,
     goog.editor.Command.BACKGROUND_COLOR,
-    fontFaceButton,
-    fontSizeButton,
     goog.editor.Command.LINK,
     goog.editor.Command.UNDO,
     goog.editor.Command.REDO,
@@ -148,6 +156,7 @@ silex.view.TextEditor.prototype.initUI = function() {
     goog.editor.Command.STRIKE_THROUGH,
     goog.editor.Command.REMOVE_FORMAT
   ];
+  console.log(buttons);
   var myToolbar = goog.ui.editor.DefaultToolbar.makeToolbar(buttons,
       goog.dom.getElementByClass('toolbar', this.element));
 
@@ -211,6 +220,43 @@ silex.view.TextEditor.prototype.openEditor = function(initialHtml) {
   // show
   goog.style.setStyle(background, 'display', 'inherit');
   goog.style.setStyle(this.element, 'display', 'inherit');
+
+  this.redraw();
+}
+/**
+ * Redraw the editor, update silex styles
+ */
+silex.view.TextEditor.prototype.redraw = function() {
+  // get the iframe document
+  var iframe = goog.dom.getElementsByTagNameAndClass('iframe', null, this.element)[0];
+  var iframeDoc = goog.dom.getFrameContentDocument(iframe);
+  var iframeBody = iframeDoc.body;
+  var iframeHead = iframeDoc.head;
+
+  // get silex styles from the DOM
+  var silexStyle = goog.dom.getElementByClass(
+    silex.model.Head.SILEX_STYLE_ELEMENT_ID,
+    this.headElement);
+  var cssString = '';
+  if (silexStyle){
+    cssString = silexStyle.innerHTML;
+  }
+
+  // add Silex css to the iframe
+  var silexStyle = goog.dom.getElementByClass(
+    silex.model.Head.SILEX_STYLE_ELEMENT_ID,
+    iframeHead);
+
+  // update iframe css 
+  if (!silexStyle){
+    silexStyle = iframeDoc.createElement('style');
+    silexStyle.type = 'text/css';
+    goog.dom.classes.add(silexStyle, silex.model.Head.SILEX_STYLE_ELEMENT_ID);
+    goog.dom.appendChild(iframeHead, silexStyle);
+  }
+  silexStyle.innerHTML = cssString;
+  // also set the class name on the iframe body so that it matches css rule ".text-element"
+  goog.dom.classes.add(iframeBody, 'text-element');
 };
 
 

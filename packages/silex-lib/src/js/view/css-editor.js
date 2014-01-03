@@ -11,7 +11,7 @@
 
 /**
  * @fileoverview
- * the Silex HTMLEditor class, based on ace editor
+ * the Silex CssEditor class, based on ace editor
  * @see     http://ace.c9.io/
  *
  *
@@ -19,7 +19,7 @@
 
 
 goog.require('silex.view.ViewBase');
-goog.provide('silex.view.HTMLEditor');
+goog.provide('silex.view.CssEditor');
 goog.require('goog.events.KeyCodes');
 goog.require('goog.ui.KeyboardShortcutHandler');
 
@@ -32,7 +32,7 @@ goog.require('goog.ui.KeyboardShortcutHandler');
  * @param  {element} bodyElement  HTML element which holds the body section of the opened file
  * @param  {element} headElement  HTML element which holds the head section of the opened file
  */
-silex.view.HTMLEditor = function(element, bodyElement, headElement) {
+silex.view.CssEditor = function(element, bodyElement, headElement) {
   // call super
   goog.base(this, element, bodyElement, headElement);
 
@@ -48,29 +48,29 @@ silex.view.HTMLEditor = function(element, bodyElement, headElement) {
 };
 
 // inherit from silex.view.ViewBase
-goog.inherits(silex.view.HTMLEditor, silex.view.ViewBase);
+goog.inherits(silex.view.CssEditor, silex.view.ViewBase);
 
 
 /**
  * the editable text field
  */
-silex.view.HTMLEditor.prototype.textField;
+silex.view.CssEditor.prototype.textField;
 
 
 /**
  * flag to prevent looping with event
  */
-silex.view.HTMLEditor.prototype.iAmSettingValue;
+silex.view.CssEditor.prototype.iAmSettingValue;
 
 
 /**
  * init the menu and UIs
  */
-silex.view.HTMLEditor.prototype.initUI = function() {
+silex.view.CssEditor.prototype.initUI = function() {
   this.ace = ace.edit(goog.dom.getElementByClass('ace-editor', this.element));
   this.iAmSettingValue = false;
   //this.ace.setTheme("ace/theme/monokai");
-  this.ace.getSession().setMode('ace/mode/html');
+  this.ace.getSession().setMode('ace/mode/css');
   this.ace.getSession().on('change', goog.bind(function(e) {
     if (this.iAmSettingValue === false) {
       var value = this.ace.getValue();
@@ -89,7 +89,7 @@ silex.view.HTMLEditor.prototype.initUI = function() {
 /**
  * Open the editor
  */
-silex.view.HTMLEditor.prototype.openEditor = function(initialHtml) {
+silex.view.CssEditor.prototype.openEditor = function(initialCss) {
   // background
   var background = goog.dom.getElementByClass('dialogs-background');
   // show
@@ -101,7 +101,7 @@ silex.view.HTMLEditor.prototype.openEditor = function(initialHtml) {
   }, false, this);
   // set value
   this.iAmSettingValue = true;
-  this.ace.setValue(initialHtml);
+  this.ace.setValue(initialCss);
   this.iAmSettingValue = false;
   // force ace redraw
   this.ace.resize();
@@ -111,7 +111,7 @@ silex.view.HTMLEditor.prototype.openEditor = function(initialHtml) {
 /**
  * close text editor
  */
-silex.view.HTMLEditor.prototype.closeEditor = function() {
+silex.view.CssEditor.prototype.closeEditor = function() {
   // background
   var background = goog.dom.getElementByClass('dialogs-background');
   // hide
@@ -121,9 +121,9 @@ silex.view.HTMLEditor.prototype.closeEditor = function() {
 
 
 /**
- * retrieve the editor html content
+ * retrieve the editor css content
  */
-silex.view.HTMLEditor.prototype.getData = function() {
+silex.view.CssEditor.prototype.getData = function() {
   return this.ace.getValue();
 };
 
@@ -131,7 +131,7 @@ silex.view.HTMLEditor.prototype.getData = function() {
 /**
  * the content has changed, notify the controler
  */
-silex.view.HTMLEditor.prototype.contentChanged = function() {
+silex.view.CssEditor.prototype.contentChanged = function() {
   if (this.onStatus) {
     this.onStatus('changed', this.getData());
   }

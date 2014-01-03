@@ -59,12 +59,6 @@ goog.inherits(silex.view.PropertyTool, silex.view.ViewBase);
 
 
 /**
- * element of the dom to which the component is rendered
- */
-silex.view.PropertyTool.prototype.element;
-
-
-/**
  * base url for relative/absolute urls
  */
 silex.view.PropertyTool.prototype.baseUrl;

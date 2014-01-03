@@ -362,7 +362,7 @@ silex.model.Element.prototype.createElement = function(type) {
       // create the element
       element = goog.dom.createElement('div');
       element.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_TEXT);
-      element.innerHTML = 'New text box';
+      element.innerHTML = '<p>New text box</p>';
     break;
 
     // HTML box
@@ -416,6 +416,8 @@ silex.model.Element.prototype.createElement = function(type) {
     backgroundColor: 'rgba(255, 255, 255, 1)',
     position: 'absolute'
   });
+  // add css class for Silex styles
+  goog.dom.classes.add(element, type + '-element');
   // add to stage
   goog.dom.appendChild(container, element);
 

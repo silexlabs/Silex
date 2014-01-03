@@ -38,6 +38,68 @@ goog.inherits(silex.model.Head, silex.model.ModelBase);
 
 
 /**
+ * id of the style element which holds silex editable css styles
+ */
+silex.model.Head.SILEX_STYLE_ELEMENT_ID = 'silex-style';
+
+
+/**
+ * set/get silex editable css styles
+ * @return {string} the css string defining all Silex styles
+ */
+silex.model.Head.prototype.getHeadStyle = function() {
+  // get silex styles from the DOM
+  var silexStyle = goog.dom.getElementByClass(
+    silex.model.Head.SILEX_STYLE_ELEMENT_ID,
+    this.headElement);
+  if (!silexStyle){
+    console.warn('no silex editable styles defined');
+    return '';
+  }
+  return silexStyle.innerHTML;
+}
+
+
+/**
+ * set/get silex editable css styles
+ * @param {string} cssString   the css string defining all Silex styles
+ */
+silex.model.Head.prototype.setHeadStyle = function(cssString) {
+  var silexStyle = goog.dom.getElementByClass(
+    silex.model.Head.SILEX_STYLE_ELEMENT_ID,
+    this.headElement);
+
+  if (!silexStyle){
+    silexStyle = goog.dom.createElement('style');
+    silexStyle.type = 'text/css';
+    silexStyle.className = silex.model.Head.SILEX_STYLE_ELEMENT_ID;
+    goog.dom.appendChild(this.headElement, silexStyle);
+  }
+  silexStyle.innerHTML = cssString;
+}
+
+
+/**
+ * update the browser style to match silex editable css styles
+ */
+silex.model.Head.prototype.updateBrowserStyle = function() {
+  var silexStyle = goog.dom.getElementByClass(
+    silex.model.Head.SILEX_STYLE_ELEMENT_ID,
+    document.head);
+
+  // also update Silex editor css
+  if (!silexStyle){
+    silexStyle = goog.dom.createElement('style');
+    silexStyle.type = 'text/css';
+    silexStyle.className = silex.model.Head.SILEX_STYLE_ELEMENT_ID;
+    goog.dom.appendChild(document.head, silexStyle);
+  }
+
+  silexStyle.innerHTML = this.getHeadStyle();
+}
+
+
+/**
  * refresh the list of loaded fonts. When a user changes the font family
  * of a text, the corresponding font file is loaded if available
  */

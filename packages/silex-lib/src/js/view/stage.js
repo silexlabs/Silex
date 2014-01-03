@@ -44,12 +44,6 @@ silex.view.Stage = function(element, bodyElement, headElement) {
 goog.inherits(silex.view.Stage, silex.view.ViewBase);
 
 /**
- * reference to the element to render to
- * @type element
- */
-silex.view.Stage.prototype.element;
-
-/**
  * init stage events
  * handle mouse events for selection,
  * events of the jquery editable plugin,

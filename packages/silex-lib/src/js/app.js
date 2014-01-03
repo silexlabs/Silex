@@ -48,6 +48,7 @@ goog.require('silex.controller.PageToolController');
 goog.require('silex.controller.PropertyToolController');
 goog.require('silex.controller.SettingsDialogController');
 goog.require('silex.controller.HtmlEditorController');
+goog.require('silex.controller.CssEditorController');
 goog.require('silex.controller.TextEditorController');
 
 // display
@@ -61,6 +62,7 @@ goog.require('silex.view.PropertyTool');
 
 // editors
 goog.require('silex.view.HTMLEditor');
+goog.require('silex.view.CssEditor');
 goog.require('silex.view.TextEditor');
 
 // dialogs
@@ -118,9 +120,14 @@ silex.App = function() {
   var pageTool = new silex.view.PageTool(pageToolElement, bodyElement, headElement);
 
   // create HTMLEditor
-  var htmlEditorElement = goog.dom.getElementByClass('silex-htmleditor');
+  var htmlEditorElement = goog.dom.getElementByClass('silex-html-editor');
   /** @type {silex.view.HTMLEditor} */
   var htmlEditor = new silex.view.HTMLEditor(htmlEditorElement, bodyElement, headElement);
+
+  // create CssEditor
+  var cssEditorElement = goog.dom.getElementByClass('silex-css-editor');
+  /** @type {silex.view.CssEditor} */
+  var cssEditor = new silex.view.CssEditor(cssEditorElement, bodyElement, headElement);
 
   // create TextEditor
   var textEditorElement = goog.dom.getElementByClass('silex-texteditor');
@@ -152,6 +159,7 @@ silex.App = function() {
     , pageToolElement
     , propertyToolElement
     , htmlEditorElement
+    , cssEditorElement
     , textEditorElement
     , fileExplorerElement
     , settingsDialogElement);
@@ -172,6 +180,7 @@ silex.App = function() {
     , pageTool
     , propertyTool
     , htmlEditor
+    , cssEditor
     , textEditor
     , fileExplorer
     , settingsDialog
@@ -185,6 +194,7 @@ silex.App = function() {
     , new silex.controller.PropertyToolController(model, view)
     , new silex.controller.SettingsDialogController(model, view)
     , new silex.controller.HtmlEditorController(model, view)
+    , new silex.controller.CssEditorController(model, view)
     , new silex.controller.TextEditorController(model, view)
   );
 
