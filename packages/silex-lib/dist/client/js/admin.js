@@ -7541,16 +7541,34 @@ silex.utils.RetroCompat = function $silex$utils$RetroCompat$() {
   throw"this is a static class and it canot be instanciated";
 };
 silex.utils.RetroCompat.process = function $silex$utils$RetroCompat$process$($bodyElement$$, $headElement$$) {
-  var $that$$ = this;
   $("[data-style-normal]", $bodyElement$$).each(function() {
     this.setAttribute("style", this.getAttribute("data-style-normal"));
     this.removeAttribute("data-style-normal")
   });
-  $('meta[name="page"]', $headElement$$).each(function() {
-    var $page_pageName$$ = this.getAttribute("content"), $page_pageName$$ = new silex.model.Page($page_pageName$$, $that$$.workspace, $that$$.menu, $that$$.stage, $that$$.pageTool, $that$$.propertyTool, $that$$.textEditor, $that$$.fileExplorer);
-    console.warn("retro compat in action", this, $page_pageName$$);
-    $page_pageName$$.attach();
-    $(this).remove()
+  $("[data-style-hover]", $bodyElement$$).each(function() {
+    this.removeAttribute("data-style-hover")
+  });
+  $("[data-style-pressed]", $bodyElement$$).each(function() {
+    this.removeAttribute("data-style-pressed")
+  });
+  $("[data-silex-sub-type]", $bodyElement$$).each(function() {
+    this.setAttribute("data-silex-type", this.getAttribute("data-silex-sub-type"));
+    this.removeAttribute("data-silex-sub-type")
+  });
+  $("[href]", $bodyElement$$).each(function() {
+    var $href$$ = this.getAttribute("href");
+    0 === $href$$.indexof("#") && 0 !== $href$$.indexof("#!") && this.setAttribute("href", $href$$.substr(2))
+  });
+  $("[data-silex-type]", $bodyElement$$).each(function() {
+    $(this).addClass(this.getAttribute("data-silex-type") + "-element")
+  });
+  $("[src]", $headElement$$).each(function() {
+    var $src$$ = this.getAttribute("src");
+    this.setAttribute("src", $src$$.replace("http://static.silex.me/2.0", "http://static.silex.me/2.1"))
+  });
+  $("[href]", $headElement$$).each(function() {
+    var $href$$ = this.getAttribute("href");
+    this.setAttribute("href", $href$$.replace("http://static.silex.me/2.0", "http://static.silex.me/2.1"))
   })
 };
 silex.utils.Notification = function $silex$utils$Notification$() {
@@ -7671,7 +7689,8 @@ silex.utils.PageablePlugin.createPage = function $silex$utils$PageablePlugin$cre
   $aTag$$.setAttribute("id", $name$$);
   $aTag$$.setAttribute("data-silex-type", "page");
   $aTag$$.innerHTML = $displayName$$;
-  goog.dom.appendChild(silex.utils.PageablePlugin.bodyElement, $aTag$$)
+  goog.dom.appendChild(silex.utils.PageablePlugin.bodyElement, $aTag$$);
+  goog.dom.classes.add($aTag$$, "page-element")
 };
 silex.utils.PageablePlugin.renamePage = function $silex$utils$PageablePlugin$renamePage$($oldName$$, $newName$$, $newDisplayName$$) {
   if(!silex.utils.PageablePlugin.getPageable(silex.utils.PageablePlugin.bodyElement)) {
@@ -14210,8 +14229,8 @@ goog.cssom.addCssText = function $goog$cssom$addCssText$($cssText$$, $opt_domHel
   $cssNode$$.styleSheet ? $cssNode$$.styleSheet.cssText = $cssText$$ : ($cssTextNode_document$$ = $cssTextNode_document$$.createTextNode($cssText$$), $cssNode$$.appendChild($cssTextNode_document$$));
   return $cssNode$$
 };
-goog.cssom.getFileNameFromStyleSheet = function $goog$cssom$getFileNameFromStyleSheet$($href$$2_styleSheet$$) {
-  return($href$$2_styleSheet$$ = $href$$2_styleSheet$$.href) ? /([^\/\?]+)[^\/]*$/.exec($href$$2_styleSheet$$)[1] : null
+goog.cssom.getFileNameFromStyleSheet = function $goog$cssom$getFileNameFromStyleSheet$($href$$4_styleSheet$$) {
+  return($href$$4_styleSheet$$ = $href$$4_styleSheet$$.href) ? /([^\/\?]+)[^\/]*$/.exec($href$$4_styleSheet$$)[1] : null
 };
 goog.cssom.getAllCss_ = function $goog$cssom$getAllCss_$($styleSheet$$, $isTextOutput$$) {
   for(var $cssOut$$ = [], $styleSheets$$ = goog.cssom.getAllCssStyleSheets($styleSheet$$), $i$$ = 0;$styleSheet$$ = $styleSheets$$[$i$$];$i$$++) {

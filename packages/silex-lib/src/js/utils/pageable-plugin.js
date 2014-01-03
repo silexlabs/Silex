@@ -235,6 +235,8 @@ silex.utils.PageablePlugin.createPage = function(name, displayName) {
   aTag.setAttribute('data-silex-type', 'page');
   aTag.innerHTML = displayName;
   goog.dom.appendChild(silex.utils.PageablePlugin.bodyElement, aTag);
+  // for coherence with other silex elements
+  goog.dom.classes.add(aTag, 'page-element');
 };
 
 
