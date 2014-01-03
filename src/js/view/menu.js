@@ -159,7 +159,9 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
     // Allow ENTER to be used as shortcut for silex
     if (event.keyCode === goog.events.KeyCodes.ENTER){
       // but not in text inputs
-      if(event.target.tagName === 'INPUT' || event.target.tagName === shortcutHandler.textInputs_[event.target.type]) {
+      if(event.target.tagName.toUpperCase() === 'INPUT'
+        || event.target.tagName.toUpperCase() === 'TEXTAREA'
+        || event.target.tagName === shortcutHandler.textInputs_[event.target.type]) {
         // let browser handle
       }
       else{
