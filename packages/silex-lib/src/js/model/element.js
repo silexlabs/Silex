@@ -186,7 +186,6 @@ silex.model.Element.prototype.getInnerHtml = function(element) {
  * @param  {string}  the html content
  */
 silex.model.Element.prototype.setInnerHtml = function(element, innerHTML) {
-  console.log(arguments);
   // disable editable
   silex.utils.EditablePlugin.setEditable(element, false);
   var contentNode = this.getContentNode(element);
@@ -201,7 +200,6 @@ silex.model.Element.prototype.setInnerHtml = function(element, innerHTML) {
  * @return  {element}  the element which holds the content, i.e. a div, an image, ...
  */
 silex.model.Element.prototype.getContentNode = function(element) {
-  console.log(arguments);
   var content;
   // find the content elements
   var contentElements = goog.dom.getElementsByClass(

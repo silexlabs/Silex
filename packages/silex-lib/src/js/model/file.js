@@ -244,9 +244,7 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
     }
     return;
   }
-  var baseUrl = silex.utils.Url.getBaseUrl(this.getUrl());
-console.log(baseUrl, bodyStr);
-  // image source
+  var baseUrl = silex.utils.Url.getBaseUrl(this.getUrl());  // image source
   bodyStr = bodyStr.replace(/<img[^"]*src="?([^" ]*)"/g, function(match, group1, group2) {
     var absolute = silex.utils.Url.getAbsolutePath(group1, baseUrl);
     var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
@@ -426,8 +424,6 @@ this does nothing: node.style.backgroundImage = "url('" + info.destPath + "')";
   html += '<head><link href="css/styles.css" rel="stylesheet">' + headElement.innerHTML + '</head>';
   html += '<body>' + bodyElement.innerHTML + '</body>';
   html += '</html>';
-
-console.log(html, cssStr, files);
 
   // callback
   cbk(html, cssStr, files);

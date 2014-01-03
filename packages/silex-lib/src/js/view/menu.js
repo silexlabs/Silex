@@ -167,7 +167,7 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
       else{
         // silex takes an action
         event.preventDefault();
-        this.onMenuEvent('view.open.textEditor');
+        this.onMenuEvent('view.open.editor');
       }
     }
   }, this));

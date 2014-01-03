@@ -25,7 +25,6 @@ goog.require('silex.controller.ControllerBase');
  * listen to the view events and call the main controller's methods
  * @param {silex.types.Model} model
  * @param {silex.types.View} view
- * @param {silex.types.Controller} controller
  */
 silex.controller.HtmlEditorController = function (model, view) {
   // call super

@@ -202,11 +202,7 @@ silex.view.TextEditor.prototype.initUI = function() {
  * Open the editor
  * @param    {string} initialHtml    HTML to display at start
  */
-silex.view.TextEditor.prototype.openEditor = function() {
-  // retrieve selection text content
-  var element = this.getSelection()[0];
-  var container = goog.dom.getElementByClass(silex.model.Element.ELEMENT_CONTENT_CLASS_NAME, element);
-  var initialHtml = container.innerHTML;
+silex.view.TextEditor.prototype.openEditor = function(initialHtml) {
   // init editable text input
   this.textField.setHtml(false, initialHtml);
   this.textField.focusAndPlaceCursorAtStart();
