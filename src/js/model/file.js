@@ -105,7 +105,6 @@ silex.model.File.prototype.getHtml = function() {
   html += '<head>' + this.headElement.innerHTML + '</head>';
   html += '<body style="' + styleStr + '">' + this.bodyElement.innerHTML + '</body>';
   html += '</html>';
-console.log('getHtml', html, this.headElement);
   return html;
 };
 
