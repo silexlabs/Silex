@@ -43,14 +43,16 @@ a[data-silex-type="page"] {
   color: inherit;
   text-decoration: inherit;
 }
-.silex-htmleditor {
+.silex-html-editor,
+.silex-css-editor {
   position: absolute;
   width: 90%;
   height: 90%;
   display: none;
   z-index: 110;
 }
-.silex-htmleditor .close-btn {
+.silex-html-editor .close-btn,
+.silex-css-editor .close-btn {
   background-image: url("../assets/goog-ui/close.png");
   cursor: pointer;
   height: 38px;
@@ -59,12 +61,14 @@ a[data-silex-type="page"] {
   top: 11px;
   width: 39px;
 }
-.silex-htmleditor .ace-editor {
+.silex-html-editor .ace-editor,
+.silex-css-editor .ace-editor {
   width: 100%;
   height: 90%;
   position: inherit;
 }
-.silex-htmleditor .title-bar {
+.silex-html-editor .title-bar,
+.silex-css-editor .title-bar {
   border-top: 1px solid #E5E5E5;
   font-size: 20px;
   height: 20px;
