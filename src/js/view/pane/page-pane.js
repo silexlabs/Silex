@@ -236,7 +236,6 @@ silex.view.pane.PagePane.prototype.redraw = function() {
     // refresh the link inputs
     // get the link of the element
     var elementLink = silex.utils.PageablePlugin.getLink(element);
-    console.log(elementLink);
     // default selection
     if (!elementLink || elementLink === '') {
       this.linkDropdown.value = 'none';

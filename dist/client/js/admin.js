@@ -7343,13 +7343,11 @@ silex.model.Element.prototype.getInnerHtml = function $silex$model$Element$$getI
   return $innerHTML$$
 };
 silex.model.Element.prototype.setInnerHtml = function $silex$model$Element$$setInnerHtml$($element$$, $innerHTML$$) {
-  console.log(arguments);
   silex.utils.EditablePlugin.setEditable($element$$, !1);
   this.getContentNode($element$$).innerHTML = $innerHTML$$;
   silex.utils.EditablePlugin.setEditable($element$$, !0)
 };
 silex.model.Element.prototype.getContentNode = function $silex$model$Element$$getContentNode$($element$$) {
-  console.log(arguments);
   var $contentElements$$ = goog.dom.getElementsByClass(silex.model.Element.ELEMENT_CONTENT_CLASS_NAME, $element$$);
   return $contentElements$$ && 1 === $contentElements$$.length ? $contentElements$$[0] : $element$$
 };
@@ -7506,7 +7504,7 @@ silex.view.Menu.prototype.buildMenu = function $silex$view$Menu$$buildMenu$($roo
   }, this));
   $keyHandler$$ = new goog.events.KeyHandler(document);
   goog.events.listen($keyHandler$$, "key", goog.bind(function($event$$) {
-    $event$$.keyCode === goog.events.KeyCodes.ENTER && ("INPUT" !== $event$$.target.tagName.toUpperCase() && "TEXTAREA" !== $event$$.target.tagName.toUpperCase() && $event$$.target.tagName !== $shortcutHandler$$.textInputs_[$event$$.target.type]) && ($event$$.preventDefault(), this.onMenuEvent("view.open.textEditor"))
+    $event$$.keyCode === goog.events.KeyCodes.ENTER && ("INPUT" !== $event$$.target.tagName.toUpperCase() && "TEXTAREA" !== $event$$.target.tagName.toUpperCase() && $event$$.target.tagName !== $shortcutHandler$$.textInputs_[$event$$.target.type]) && ($event$$.preventDefault(), this.onMenuEvent("view.open.editor"))
   }, this));
   this.menu.render($rootNode$$);
   goog.events.listen(this.menu, goog.ui.Component.EventType.ACTION, function($e$$) {
@@ -8063,7 +8061,6 @@ silex.controller.SettingsDialogController = function $silex$controller$SettingsD
 };
 goog.inherits(silex.controller.SettingsDialogController, silex.controller.ControllerBase);
 silex.controller.SettingsDialogController.prototype.settingsDialogCallback = function $silex$controller$SettingsDialogController$$settingsDialogCallback$($type$$, $opt_data$$) {
-  console.log(arguments);
   switch($type$$) {
     case "browsePublishPath":
       this.view.fileExplorer.openDialog(goog.bind(function($url$$) {
@@ -8175,6 +8172,7 @@ silex.controller.MenuController = function $silex$controller$MenuController$($mo
 };
 goog.inherits(silex.controller.MenuController, silex.controller.ControllerBase);
 silex.controller.MenuController.prototype.menuCallback = function $silex$controller$MenuController$$menuCallback$($type$$) {
+  console.log(arguments);
   this.tracker.trackAction("controller-events", "request", $type$$, 0);
   switch($type$$) {
     case "title.changed":
@@ -15271,7 +15269,6 @@ silex.view.pane.PagePane.prototype.redraw = function $silex$view$pane$PagePane$$
       $item$$.checkbox.setChecked(silex.utils.PageablePlugin.isInPage($element$$, $item$$.pageName))
     }, this);
     var $elementLink_linkInputElement$$ = silex.utils.PageablePlugin.getLink($element$$);
-    console.log($elementLink_linkInputElement$$);
     $elementLink_linkInputElement$$ && "" !== $elementLink_linkInputElement$$ ? 0 === $elementLink_linkInputElement$$.indexOf("#!") ? this.linkDropdown.value = $elementLink_linkInputElement$$ : (this.linkInputTextField.setValue($elementLink_linkInputElement$$), this.linkDropdown.value = "custom") : (this.linkDropdown.value = "none", this.linkInputTextField.setValue(""));
     $elementLink_linkInputElement$$ = goog.dom.getElementByClass("link-input-text", this.element);
     "custom" === this.linkDropdown.value ? goog.style.setStyle($elementLink_linkInputElement$$, "display", "inherit") : goog.style.setStyle($elementLink_linkInputElement$$, "display", "none");
@@ -20840,12 +20837,11 @@ silex.view.TextEditor.prototype.initUI = function $silex$view$TextEditor$$initUI
     this.closeEditor()
   }, !1, this)
 };
-silex.view.TextEditor.prototype.openEditor = function $silex$view$TextEditor$$openEditor$() {
-  var $background$$5_element$$ = this.getSelection()[0], $background$$5_element$$ = goog.dom.getElementByClass(silex.model.Element.ELEMENT_CONTENT_CLASS_NAME, $background$$5_element$$).innerHTML;
-  this.textField.setHtml(!1, $background$$5_element$$);
+silex.view.TextEditor.prototype.openEditor = function $silex$view$TextEditor$$openEditor$($background$$) {
+  this.textField.setHtml(!1, $background$$);
   this.textField.focusAndPlaceCursorAtStart();
-  $background$$5_element$$ = goog.dom.getElementByClass("dialogs-background");
-  goog.style.setStyle($background$$5_element$$, "display", "inherit");
+  $background$$ = goog.dom.getElementByClass("dialogs-background");
+  goog.style.setStyle($background$$, "display", "inherit");
   goog.style.setStyle(this.element, "display", "inherit")
 };
 silex.view.TextEditor.prototype.closeEditor = function $silex$view$TextEditor$$closeEditor$() {
@@ -20861,12 +20857,12 @@ silex.view.TextEditor.prototype.contentChanged = function $silex$view$TextEditor
     this.onStatus("changed", this.getData())
   }
 };
-silex.view.HTMLEditor = function $silex$view$HTMLEditor$($element$$311_shortcutHandler$$, $bodyElement$$, $headElement$$) {
-  silex.view.ViewBase.call(this, $element$$311_shortcutHandler$$, $bodyElement$$, $headElement$$);
+silex.view.HTMLEditor = function $silex$view$HTMLEditor$($element$$310_shortcutHandler$$, $bodyElement$$, $headElement$$) {
+  silex.view.ViewBase.call(this, $element$$310_shortcutHandler$$, $bodyElement$$, $headElement$$);
   this.initUI();
-  $element$$311_shortcutHandler$$ = new goog.ui.KeyboardShortcutHandler(document);
-  $element$$311_shortcutHandler$$.registerShortcut("esc", goog.events.KeyCodes.ESC);
-  goog.events.listen($element$$311_shortcutHandler$$, goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED, goog.bind(this.closeEditor, this))
+  $element$$310_shortcutHandler$$ = new goog.ui.KeyboardShortcutHandler(document);
+  $element$$310_shortcutHandler$$.registerShortcut("esc", goog.events.KeyCodes.ESC);
+  goog.events.listen($element$$310_shortcutHandler$$, goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED, goog.bind(this.closeEditor, this))
 };
 goog.inherits(silex.view.HTMLEditor, silex.view.ViewBase);
 silex.view.HTMLEditor.prototype.initUI = function $silex$view$HTMLEditor$$initUI$() {
@@ -21047,9 +21043,7 @@ silex.model.File.prototype.cleanup = function $silex$model$File$$cleanup$($cbk$$
   $bodyStr_headElement$$22_html$$.replace(/<\/div$/, "</body");
   var $components_elements$$ = this.headElement.innerHTML, $cssArray$$ = [], $files$$ = [];
   if(this.getUrl()) {
-    var $baseUrl$$ = silex.utils.Url.getBaseUrl(this.getUrl());
-    console.log($baseUrl$$, $bodyStr_headElement$$22_html$$);
-    var $bodyStr_headElement$$22_html$$ = $bodyStr_headElement$$22_html$$.replace(/<img[^"]*src="?([^" ]*)"/g, function($match$$, $group1$$, $absolute_group2$$) {
+    var $baseUrl$$ = silex.utils.Url.getBaseUrl(this.getUrl()), $bodyStr_headElement$$22_html$$ = $bodyStr_headElement$$22_html$$.replace(/<img[^"]*src="?([^" ]*)"/g, function($match$$, $group1$$, $absolute_group2$$) {
       $absolute_group2$$ = silex.utils.Url.getAbsolutePath($group1$$, $baseUrl$$);
       var $relative$$ = silex.utils.Url.getRelativePath($absolute_group2$$, silex.utils.Url.getBaseUrl());
       silex.utils.Url.isAbsoluteUrl($relative$$) || ($relative$$ = $relative$$.replace("../", "/"));
@@ -21106,7 +21100,6 @@ silex.model.File.prototype.cleanup = function $silex$model$File$$cleanup$($cbk$$
     $bodyStr_headElement$$22_html$$ = "<html>" + ('<head><link href="css/styles.css" rel="stylesheet">' + $bodyStr_headElement$$22_html$$.innerHTML + "</head>");
     $bodyStr_headElement$$22_html$$ += "<body>" + $bodyElement$$.innerHTML + "</body>";
     $bodyStr_headElement$$22_html$$ += "</html>";
-    console.log($bodyStr_headElement$$22_html$$, $cssStr$$, $files$$);
     $cbk$$($bodyStr_headElement$$22_html$$, $cssStr$$, $files$$)
   }else {
     $opt_errCbk$$ && $opt_errCbk$$({message:"The file must be saved before I can clean it up for you."})

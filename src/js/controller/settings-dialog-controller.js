@@ -41,7 +41,6 @@ goog.inherits(silex.controller.SettingsDialogController, silex.controller.Contro
  * settingsDialog event handler
  */
 silex.controller.SettingsDialogController.prototype.settingsDialogCallback = function(type, opt_data) {
-  console.log(arguments);
   switch (type) {
     case 'browsePublishPath':
       this.view.fileExplorer.openDialog(

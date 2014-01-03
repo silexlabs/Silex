@@ -41,6 +41,7 @@ goog.inherits(silex.controller.MenuController, silex.controller.ControllerBase);
  * menu event handler
  */
 silex.controller.MenuController.prototype.menuCallback = function(type) {
+  console.log(arguments);
   this.tracker.trackAction('controller-events', 'request', type, 0);
   switch (type) {
     case 'title.changed':
