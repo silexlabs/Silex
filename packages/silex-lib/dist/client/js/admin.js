@@ -8269,7 +8269,6 @@ silex.controller.MenuController = function $silex$controller$MenuController$($mo
 };
 goog.inherits(silex.controller.MenuController, silex.controller.ControllerBase);
 silex.controller.MenuController.prototype.menuCallback = function $silex$controller$MenuController$$menuCallback$($type$$) {
-  console.log(arguments);
   switch($type$$) {
     case "title.changed":
       this.promptTitle();
@@ -20907,9 +20906,9 @@ silex.view.TextEditor.prototype.initUI = function $silex$view$TextEditor$$initUI
   this.textField.registerPlugin(new goog.editor.plugins.HeaderFormatter);
   this.textField.registerPlugin(new goog.editor.plugins.LinkDialogPlugin);
   this.textField.registerPlugin(new goog.editor.plugins.LinkBubble);
-  var $background$$6_buttons$$ = goog.ui.editor.DefaultToolbar.makeBuiltInToolbarButton(goog.editor.Command.FONT_FACE), $availableFonts$$1_button$$ = silex.Config.fonts, $fontName$$;
+  var $background$$ = goog.ui.editor.DefaultToolbar.makeBuiltInToolbarButton(goog.editor.Command.FONT_FACE), $availableFonts$$1_button$$ = silex.Config.fonts, $fontName$$;
   for($fontName$$ in $availableFonts$$1_button$$) {
-    goog.ui.editor.ToolbarFactory.addFont($background$$6_buttons$$, $fontName$$, $availableFonts$$1_button$$[$fontName$$].value)
+    goog.ui.editor.ToolbarFactory.addFont($background$$, $fontName$$, $availableFonts$$1_button$$[$fontName$$].value)
   }
   $availableFonts$$1_button$$ = goog.ui.editor.DefaultToolbar.makeBuiltInToolbarButton(goog.editor.Command.FONT_SIZE);
   goog.ui.editor.ToolbarFactory.addFontSize($availableFonts$$1_button$$, "1", "1");
@@ -20919,8 +20918,7 @@ silex.view.TextEditor.prototype.initUI = function $silex$view$TextEditor$$initUI
   goog.ui.editor.ToolbarFactory.addFontSize($availableFonts$$1_button$$, "5", "5");
   goog.ui.editor.ToolbarFactory.addFontSize($availableFonts$$1_button$$, "6", "6");
   goog.ui.editor.ToolbarFactory.addFontSize($availableFonts$$1_button$$, "7", "7");
-  $fontName$$ = goog.ui.editor.DefaultToolbar.makeBuiltInToolbarButton(goog.editor.Command.FORMAT_BLOCK);
-  for(console.log($fontName$$.getItemCount());0 < $fontName$$.getItemCount();) {
+  for($fontName$$ = goog.ui.editor.DefaultToolbar.makeBuiltInToolbarButton(goog.editor.Command.FORMAT_BLOCK);0 < $fontName$$.getItemCount();) {
     $fontName$$.removeItemAt(0)
   }
   goog.ui.editor.ToolbarFactory.addFormatOption($fontName$$, "Normal text", "P");
@@ -20930,18 +20928,16 @@ silex.view.TextEditor.prototype.initUI = function $silex$view$TextEditor$$initUI
   goog.ui.editor.ToolbarFactory.addFormatOption($fontName$$, "Heading 2", "H2");
   goog.ui.editor.ToolbarFactory.addFormatOption($fontName$$, "Heading 3", "H3");
   goog.ui.editor.ToolbarFactory.addFormatOption($fontName$$, "Quote", "BLOCKQUOTE");
-  $background$$6_buttons$$ = [$fontName$$, $background$$6_buttons$$, $availableFonts$$1_button$$, goog.editor.Command.BOLD, goog.editor.Command.ITALIC, goog.editor.Command.UNDERLINE, goog.editor.Command.FONT_COLOR, goog.editor.Command.BACKGROUND_COLOR, goog.editor.Command.LINK, goog.editor.Command.UNDO, goog.editor.Command.REDO, goog.editor.Command.UNORDERED_LIST, goog.editor.Command.ORDERED_LIST, goog.editor.Command.INDENT, goog.editor.Command.OUTDENT, goog.editor.Command.JUSTIFY_LEFT, goog.editor.Command.JUSTIFY_CENTER, 
-  goog.editor.Command.JUSTIFY_RIGHT, goog.editor.Command.STRIKE_THROUGH, goog.editor.Command.REMOVE_FORMAT];
-  console.log($background$$6_buttons$$);
-  var $background$$6_buttons$$ = goog.ui.editor.DefaultToolbar.makeToolbar($background$$6_buttons$$, goog.dom.getElementByClass("toolbar", this.element)), $generator$$ = new goog.text.LoremIpsum, $availableFonts$$1_button$$ = goog.ui.editor.ToolbarFactory.makeButton("loremIpsumBtn", "insert lorem ipsum text", "L");
+  var $background$$ = goog.ui.editor.DefaultToolbar.makeToolbar([$fontName$$, $background$$, $availableFonts$$1_button$$, goog.editor.Command.BOLD, goog.editor.Command.ITALIC, goog.editor.Command.UNDERLINE, goog.editor.Command.FONT_COLOR, goog.editor.Command.BACKGROUND_COLOR, goog.editor.Command.LINK, goog.editor.Command.UNDO, goog.editor.Command.REDO, goog.editor.Command.UNORDERED_LIST, goog.editor.Command.ORDERED_LIST, goog.editor.Command.INDENT, goog.editor.Command.OUTDENT, goog.editor.Command.JUSTIFY_LEFT, 
+  goog.editor.Command.JUSTIFY_CENTER, goog.editor.Command.JUSTIFY_RIGHT, goog.editor.Command.STRIKE_THROUGH, goog.editor.Command.REMOVE_FORMAT], goog.dom.getElementByClass("toolbar", this.element)), $generator$$ = new goog.text.LoremIpsum, $availableFonts$$1_button$$ = goog.ui.editor.ToolbarFactory.makeButton("loremIpsumBtn", "insert lorem ipsum text", "L");
   goog.events.listen($availableFonts$$1_button$$, goog.ui.Component.EventType.ACTION, function() {
     var $text$$ = $generator$$.generateParagraph(!0), $div$$ = goog.dom.createElement("div");
     $div$$.innerHTML = $text$$;
     this.textField.getRange().replaceContentsWithNode($div$$)
   }, !1, this);
-  $background$$6_buttons$$.addChild(new goog.ui.ToolbarSeparator, !0);
-  $background$$6_buttons$$.addChild($availableFonts$$1_button$$, !0);
-  new goog.ui.editor.ToolbarController(this.textField, $background$$6_buttons$$);
+  $background$$.addChild(new goog.ui.ToolbarSeparator, !0);
+  $background$$.addChild($availableFonts$$1_button$$, !0);
+  new goog.ui.editor.ToolbarController(this.textField, $background$$);
   goog.events.listen(this.textField, goog.editor.Field.EventType.DELAYEDCHANGE, function() {
     this.contentChanged()
   }, !1, this);
@@ -20953,8 +20949,8 @@ silex.view.TextEditor.prototype.initUI = function $silex$view$TextEditor$$initUI
   goog.events.listen(goog.dom.getElementByClass("close-btn", this.element), goog.events.EventType.CLICK, function() {
     this.closeEditor()
   }, !1, this);
-  $background$$6_buttons$$ = goog.dom.getElementByClass("dialogs-background");
-  goog.events.listen($background$$6_buttons$$, goog.events.EventType.CLICK, function($e$$) {
+  $background$$ = goog.dom.getElementByClass("dialogs-background");
+  goog.events.listen($background$$, goog.events.EventType.CLICK, function($e$$) {
     this.closeEditor()
   }, !1, this)
 };
@@ -21126,9 +21122,7 @@ silex.model.File.prototype.getHtml = function $silex$model$File$$getHtml$() {
   var $styleStr$$ = this.bodyElement.getAttribute("style") || "", $html$$;
   $html$$ = "<html>" + ("<head>" + this.headElement.innerHTML + "</head>");
   $html$$ += '<body style="' + $styleStr$$ + '">' + this.bodyElement.innerHTML + "</body>";
-  $html$$ += "</html>";
-  console.log("getHtml", $html$$, this.headElement);
-  return $html$$
+  return $html$$ += "</html>"
 };
 silex.model.File.prototype.newFile = function $silex$model$File$$newFile$($cbk$$, $opt_errCbk$$) {
   this.openFromUrl(silex.model.File.CREATION_TEMPLATE, $cbk$$, $opt_errCbk$$)

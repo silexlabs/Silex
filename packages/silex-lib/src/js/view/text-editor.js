@@ -120,7 +120,6 @@ silex.view.TextEditor.prototype.initUI = function() {
 
   var formatButton = goog.ui.editor.DefaultToolbar.makeBuiltInToolbarButton(
       goog.editor.Command.FORMAT_BLOCK);
-  console.log(formatButton.getItemCount());
   while (formatButton.getItemCount()>0){
     formatButton.removeItemAt(0);
   }
@@ -156,7 +155,6 @@ silex.view.TextEditor.prototype.initUI = function() {
     goog.editor.Command.STRIKE_THROUGH,
     goog.editor.Command.REMOVE_FORMAT
   ];
-  console.log(buttons);
   var myToolbar = goog.ui.editor.DefaultToolbar.makeToolbar(buttons,
       goog.dom.getElementByClass('toolbar', this.element));
 
