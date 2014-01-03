@@ -7337,15 +7337,15 @@ silex.model.Element.prototype.setBgImage = function $silex$model$Element$$setBgI
   this.setStyle($element$$, "backgroundImage", "url(" + $url$$ + ")")
 };
 silex.model.Element.prototype.getInnerHtml = function $silex$model$Element$$getInnerHtml$($element$$) {
-  silex.utils.JQueryEditable.setEditable($element$$, !1);
+  silex.utils.EditablePlugin.setEditable($element$$, !1);
   var $innerHTML$$ = this.getContentNode($element$$).innerHTML;
-  silex.utils.JQueryEditable.setEditable($element$$, !0);
+  silex.utils.EditablePlugin.setEditable($element$$, !0);
   return $innerHTML$$
 };
 silex.model.Element.prototype.setInnerHtml = function $silex$model$Element$$setInnerHtml$($element$$, $innerHTML$$) {
-  silex.utils.JQueryEditable.setEditable($element$$, !1);
+  silex.utils.EditablePlugin.setEditable($element$$, !1);
   this.getContentNode($element$$).innerHTML = $innerHTML$$;
-  silex.utils.JQueryEditable.setEditable($element$$, !0)
+  silex.utils.EditablePlugin.setEditable($element$$, !0)
 };
 silex.model.Element.prototype.getContentNode = function $silex$model$Element$$getContentNode$($element$$) {
   var $contentElements$$ = goog.dom.getElementsByClass(silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
@@ -7353,7 +7353,7 @@ silex.model.Element.prototype.getContentNode = function $silex$model$Element$$ge
 };
 silex.model.Element.prototype.setContentNode = function $silex$model$Element$$setContentNode$($element$$, $content$$) {
   var $initialContent$$ = this.getContentNode($element$$);
-  $initialContent$$ === $element$$ ? (silex.utils.JQueryEditable.setEditable($element$$, !1), $element$$.innerhtml = $content$$.innerhtml, silex.utils.JQueryEditable.setEditable($element$$, !0)) : goog.dom.replaceNode($content$$, $initialContent$$)
+  $initialContent$$ === $element$$ ? (silex.utils.EditablePlugin.setEditable($element$$, !1), $element$$.innerhtml = $content$$.innerhtml, silex.utils.EditablePlugin.setEditable($element$$, !0)) : goog.dom.replaceNode($content$$, $initialContent$$)
 };
 silex.model.Element.prototype.getImageUrl = function $silex$model$Element$$getImageUrl$($element$$) {
   var $url$$ = "";
@@ -7411,7 +7411,7 @@ silex.model.Element.prototype.createElement = function $silex$model$Element$$cre
       break;
     case silex.model.Element.TYPE_HTML:
       $element$$ = goog.dom.createElement("div");
-      $element$$.className = silex.utils.JQueryEditable.EDITABLE_CLASS_NAME;
+      $element$$.className = silex.utils.EditablePlugin.EDITABLE_CLASS_NAME;
       $element$$.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_HTML);
       $container$$10_htmlContent_type$$ = goog.dom.createElement("div");
       $container$$10_htmlContent_type$$.innerHTML = "<p>New HTML box</p>";
@@ -7421,10 +7421,10 @@ silex.model.Element.prototype.createElement = function $silex$model$Element$$cre
       goog.dom.classes.add($container$$10_htmlContent_type$$, silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
       break;
     case silex.model.Element.TYPE_IMAGE:
-      $element$$ = goog.dom.createElement("div"), $element$$.className = silex.utils.JQueryEditable.EDITABLE_CLASS_NAME, $element$$.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_IMAGE)
+      $element$$ = goog.dom.createElement("div"), $element$$.className = silex.utils.EditablePlugin.EDITABLE_CLASS_NAME, $element$$.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_IMAGE)
   }
-  goog.dom.classes.add($element$$, silex.utils.JQueryEditable.EDITABLE_CLASS_NAME);
-  silex.utils.JQueryEditable.setEditable($element$$, !0);
+  goog.dom.classes.add($element$$, silex.utils.EditablePlugin.EDITABLE_CLASS_NAME);
+  silex.utils.EditablePlugin.setEditable($element$$, !0);
   $container$$10_htmlContent_type$$ = goog.dom.getElementByClass("background", this.bodyElement);
   $container$$10_htmlContent_type$$ || ($container$$10_htmlContent_type$$ = this.bodyElement);
   goog.style.setStyle($element$$, {height:"100px", width:"100px", top:100 + this.bodyElement.scrollTop + "px", left:100 + this.bodyElement.scrollLeft + "px", backgroundColor:"rgba(255, 255, 255, 1)", position:"absolute"});
@@ -7536,130 +7536,21 @@ silex.view.Menu.prototype.getWebsiteName = function $silex$view$Menu$$getWebsite
   return goog.dom.getElementByClass(headElement, "website-name").innerHTML
 };
 silex.utils = {};
-silex.utils.JQueryPageable = function $silex$utils$JQueryPageable$() {
+silex.utils.RetroCompat = function $silex$utils$RetroCompat$() {
   throw"this is a static class and it canot be instanciated";
 };
-silex.utils.JQueryPageable.LINK_ATTR = "data-silex-href";
-silex.utils.JQueryPageable.PAGEABLE_ROOT_CLASS = "pageable-root-class";
-silex.utils.JQueryPageable.PAGE_CLASS = "silex-page";
-silex.utils.JQueryPageable.getParentPage = function $silex$utils$JQueryPageable$getParentPage$($element$$216_parent$$) {
-  for($element$$216_parent$$ = $element$$216_parent$$.parentNode;$element$$216_parent$$ && !goog.dom.classes.has($element$$216_parent$$, silex.utils.JQueryPageable.PAGE_CLASS);) {
-    $element$$216_parent$$ = $element$$216_parent$$.parentNode
-  }
-  return $element$$216_parent$$
-};
-silex.utils.JQueryPageable.getPageable = function $silex$utils$JQueryPageable$getPageable$($pageableRootElement$$) {
-  return $pageableRootElement$$ && $($pageableRootElement$$).hasClass(silex.utils.JQueryPageable.PAGEABLE_ROOT_CLASS)
-};
-silex.utils.JQueryPageable.setPageable = function $silex$utils$JQueryPageable$setPageable$($pageableRootElement$$, $isPageable$$) {
-  if($isPageable$$) {
-    $($pageableRootElement$$).addClass(silex.utils.JQueryPageable.PAGEABLE_ROOT_CLASS);
-    var $pages$$ = silex.utils.JQueryPageable.getPages($pageableRootElement$$);
-    $($pageableRootElement$$).pageable({currentPage:$pages$$[0], useDeeplink:!1})
-  }else {
-    $($pageableRootElement$$).pageable("destroy"), $($pageableRootElement$$).removeClass(silex.utils.JQueryPageable.PAGEABLE_ROOT_CLASS)
-  }
-};
-silex.utils.JQueryPageable.getPages = function $silex$utils$JQueryPageable$getPages$($pageableRootElement$$) {
-  if(!silex.utils.JQueryPageable.getPageable($pageableRootElement$$)) {
-    throw Error("Operation failed, root pageable element is required.");
-  }
-  var $pages$$ = [];
-  $('a[data-silex-type="page"]', $pageableRootElement$$).each(function() {
-    $pages$$.push(this.getAttribute("id"))
+silex.utils.RetroCompat.process = function $silex$utils$RetroCompat$process$($bodyElement$$, $headElement$$) {
+  var $that$$ = this;
+  $("[data-style-normal]", $bodyElement$$).each(function() {
+    this.setAttribute("style", this.getAttribute("data-style-normal"));
+    this.removeAttribute("data-style-normal")
   });
-  return $pages$$
-};
-silex.utils.JQueryPageable.getCurrentPageName = function $silex$utils$JQueryPageable$getCurrentPageName$($pageableRootElement$$) {
-  if(!silex.utils.JQueryPageable.getPageable($pageableRootElement$$)) {
-    throw Error("Operation failed, root pageable element is required.");
-  }
-  return $($pageableRootElement$$).pageable("option", "currentPage")
-};
-silex.utils.JQueryPageable.setCurrentPage = function $silex$utils$JQueryPageable$setCurrentPage$($pageableRootElement$$, $pageName$$) {
-  if(!silex.utils.JQueryPageable.getPageable($pageableRootElement$$)) {
-    throw Error("Operation failed, root pageable element is required.");
-  }
-  $($pageableRootElement$$).pageable({currentPage:$pageName$$})
-};
-silex.utils.JQueryPageable.getDisplayName = function $silex$utils$JQueryPageable$getDisplayName$($pageableRootElement$$, $pageName$$) {
-  if(!silex.utils.JQueryPageable.getPageable($pageableRootElement$$)) {
-    throw Error("Operation failed, root pageable element is required.");
-  }
-  var $displayName$$ = "";
-  $('a[data-silex-type="page"]', $pageableRootElement$$).each(function() {
-    this.getAttribute("id") === $pageName$$ && ($displayName$$ = this.innerHTML)
-  });
-  return $displayName$$
-};
-silex.utils.JQueryPageable.removePage = function $silex$utils$JQueryPageable$removePage$($pageableRootElement$$, $pageName$$) {
-  if(!silex.utils.JQueryPageable.getPageable($pageableRootElement$$)) {
-    throw Error("Operation failed, root pageable element is required.");
-  }
-  $('a[data-silex-type="page"]', $pageableRootElement$$).each(function() {
-    this.getAttribute("id") === $pageName$$ && $(this).remove()
-  });
-  $('*[data-silex-href="#!' + $pageName$$ + '"]').each(function() {
-    this.removeAttribute("data-silex-href")
-  });
-  $("." + $pageName$$).each(function() {
-    $(this).removeClass($pageName$$);
-    0 >= silex.utils.JQueryPageable.getPagesForElement($pageableRootElement$$, this).length && $(this).removeClass(silex.utils.JQueryPageable.PAGE_CLASS)
+  $('meta[name="page"]', $headElement$$).each(function() {
+    var $page_pageName$$ = this.getAttribute("content"), $page_pageName$$ = new silex.model.Page($page_pageName$$, $that$$.workspace, $that$$.menu, $that$$.stage, $that$$.pageTool, $that$$.propertyTool, $that$$.textEditor, $that$$.fileExplorer);
+    console.warn("retro compat in action", this, $page_pageName$$);
+    $page_pageName$$.attach();
+    $(this).remove()
   })
-};
-silex.utils.JQueryPageable.createPage = function $silex$utils$JQueryPageable$createPage$($pageableRootElement$$, $name$$, $displayName$$) {
-  if(!silex.utils.JQueryPageable.getPageable($pageableRootElement$$)) {
-    throw Error("Operation failed, root pageable element is required.");
-  }
-  var $aTag$$ = goog.dom.createElement("a");
-  $aTag$$.setAttribute("id", $name$$);
-  $aTag$$.setAttribute("data-silex-type", "page");
-  $aTag$$.innerHTML = $displayName$$;
-  goog.dom.appendChild($pageableRootElement$$, $aTag$$)
-};
-silex.utils.JQueryPageable.renamePage = function $silex$utils$JQueryPageable$renamePage$($pageableRootElement$$, $oldName$$, $newName$$, $newDisplayName$$) {
-  if(!silex.utils.JQueryPageable.getPageable($pageableRootElement$$)) {
-    throw Error("Operation failed, root pageable element is required.");
-  }
-  $('a[data-silex-type="page"]', $pageableRootElement$$).each(function() {
-    this.getAttribute("id") === $oldName$$ && (this.setAttribute("id", $newName$$), this.innerHTML = $newDisplayName$$)
-  });
-  $('*[data-silex-href="#!' + $oldName$$ + '"]').each(function() {
-    this.setAttribute("data-silex-href", "#!" + $newName$$)
-  });
-  $("." + $oldName$$).each(function() {
-    $(this).removeClass($oldName$$);
-    $(this).addClass($newName$$)
-  })
-};
-silex.utils.JQueryPageable.setLink = function $silex$utils$JQueryPageable$setLink$($element$$, $link$$) {
-  $link$$ ? $element$$.setAttribute(silex.utils.JQueryPageable.LINK_ATTR, $link$$) : $element$$.removeAttribute(silex.utils.JQueryPageable.LINK_ATTR)
-};
-silex.utils.JQueryPageable.getLink = function $silex$utils$JQueryPageable$getLink$($element$$) {
-  return $element$$.getAttribute("data-silex-href")
-};
-silex.utils.JQueryPageable.addToPage = function $silex$utils$JQueryPageable$addToPage$($pageableRootElement$$, $element$$, $pageName$$) {
-  goog.dom.classes.add($element$$, $pageName$$);
-  goog.dom.classes.add($element$$, silex.utils.JQueryPageable.PAGE_CLASS)
-};
-silex.utils.JQueryPageable.removeFromPage = function $silex$utils$JQueryPageable$removeFromPage$($pageableRootElement$$, $element$$, $pageName$$) {
-  goog.dom.classes.remove($element$$, $pageName$$);
-  0 < !silex.utils.JQueryPageable.getPagesForElement($pageableRootElement$$, $element$$).length && goog.dom.classes.remove($element$$, silex.utils.JQueryPageable.PAGE_CLASS)
-};
-silex.utils.JQueryPageable.getPagesForElement = function $silex$utils$JQueryPageable$getPagesForElement$($pageableRootElement$$, $element$$) {
-  if(!silex.utils.JQueryPageable.getPageable($pageableRootElement$$)) {
-    throw Error("Operation failed, root pageable element is required.");
-  }
-  var $res$$ = [], $pages$$ = silex.utils.JQueryPageable.getPages($pageableRootElement$$);
-  for(idx in $pages$$) {
-    var $pageName$$ = $pages$$[idx];
-    goog.dom.classes.has($element$$, $pageName$$) && $res$$.push($pageName$$)
-  }
-  return $res$$
-};
-silex.utils.JQueryPageable.isInPage = function $silex$utils$JQueryPageable$isInPage$($pageableRootElement$$, $element$$, $opt_pageName$$) {
-  $opt_pageName$$ || ($opt_pageName$$ = silex.utils.JQueryPageable.getCurrentPageName($pageableRootElement$$));
-  return goog.dom.classes.has($element$$, $opt_pageName$$)
 };
 silex.utils.Notification = function $silex$utils$Notification$() {
   throw"this is a static class and it canot be instanciated";
@@ -7694,21 +7585,136 @@ silex.utils.Notification.notifyInfo = function $silex$utils$Notification$notifyI
   silex.utils.Notification.nativeNotification($message$$, silex.utils.Notification.INFO_ICON);
   alertify.log($message$$)
 };
-silex.utils.RetroCompat = function $silex$utils$RetroCompat$() {
+silex.utils.PageablePlugin = function $silex$utils$PageablePlugin$() {
   throw"this is a static class and it canot be instanciated";
 };
-silex.utils.RetroCompat.process = function $silex$utils$RetroCompat$process$($bodyElement$$, $headElement$$) {
-  var $that$$ = this;
-  $("[data-style-normal]", $bodyElement$$).each(function() {
-    this.setAttribute("style", this.getAttribute("data-style-normal"));
-    this.removeAttribute("data-style-normal")
+silex.utils.PageablePlugin.getBodyElement = function $silex$utils$PageablePlugin$getBodyElement$() {
+  return silex.utils.PageablePlugin.bodyElement
+};
+silex.utils.PageablePlugin.setBodyElement = function $silex$utils$PageablePlugin$setBodyElement$($bodyElement$$) {
+  silex.utils.PageablePlugin.bodyElement = $bodyElement$$
+};
+silex.utils.PageablePlugin.LINK_ATTR = "data-silex-href";
+silex.utils.PageablePlugin.PAGEABLE_ROOT_CLASS = "pageable-root-class";
+silex.utils.PageablePlugin.PAGE_CLASS = "silex-page";
+silex.utils.PageablePlugin.getParentPage = function $silex$utils$PageablePlugin$getParentPage$($element$$216_parent$$) {
+  for($element$$216_parent$$ = $element$$216_parent$$.parentNode;$element$$216_parent$$ && !goog.dom.classes.has($element$$216_parent$$, silex.utils.PageablePlugin.PAGE_CLASS);) {
+    $element$$216_parent$$ = $element$$216_parent$$.parentNode
+  }
+  return $element$$216_parent$$
+};
+silex.utils.PageablePlugin.getPageable = function $silex$utils$PageablePlugin$getPageable$($bodyElement$$) {
+  return $bodyElement$$ && $($bodyElement$$).hasClass(silex.utils.PageablePlugin.PAGEABLE_ROOT_CLASS)
+};
+silex.utils.PageablePlugin.setPageable = function $silex$utils$PageablePlugin$setPageable$($bodyElement$$, $isPageable$$) {
+  if($isPageable$$) {
+    $($bodyElement$$).addClass(silex.utils.PageablePlugin.PAGEABLE_ROOT_CLASS);
+    var $pages$$ = silex.utils.PageablePlugin.getPages();
+    $($bodyElement$$).pageable({currentPage:$pages$$[0], useDeeplink:!1})
+  }else {
+    $($bodyElement$$).pageable("destroy"), $($bodyElement$$).removeClass(silex.utils.PageablePlugin.PAGEABLE_ROOT_CLASS)
+  }
+};
+silex.utils.PageablePlugin.getPages = function $silex$utils$PageablePlugin$getPages$() {
+  if(!silex.utils.PageablePlugin.getPageable(silex.utils.PageablePlugin.bodyElement)) {
+    throw Error("Operation failed, root pageable element is required.");
+  }
+  var $pages$$ = [];
+  $('a[data-silex-type="page"]', silex.utils.PageablePlugin.bodyElement).each(function() {
+    $pages$$.push(this.getAttribute("id"))
   });
-  $('meta[name="page"]', $headElement$$).each(function() {
-    var $page_pageName$$ = this.getAttribute("content"), $page_pageName$$ = new silex.model.Page($page_pageName$$, $that$$.workspace, $that$$.menu, $that$$.stage, $that$$.pageTool, $that$$.propertyTool, $that$$.textEditor, $that$$.fileExplorer);
-    console.warn("retro compat in action", this, $page_pageName$$);
-    $page_pageName$$.attach();
-    $(this).remove()
+  return $pages$$
+};
+silex.utils.PageablePlugin.getCurrentPageName = function $silex$utils$PageablePlugin$getCurrentPageName$() {
+  if(!silex.utils.PageablePlugin.getPageable(silex.utils.PageablePlugin.bodyElement)) {
+    throw Error("Operation failed, root pageable element is required.");
+  }
+  return $(silex.utils.PageablePlugin.bodyElement).pageable("option", "currentPage")
+};
+silex.utils.PageablePlugin.setCurrentPage = function $silex$utils$PageablePlugin$setCurrentPage$($pageName$$) {
+  if(!silex.utils.PageablePlugin.getPageable(silex.utils.PageablePlugin.bodyElement)) {
+    throw Error("Operation failed, root pageable element is required.");
+  }
+  $(silex.utils.PageablePlugin.bodyElement).pageable({currentPage:$pageName$$})
+};
+silex.utils.PageablePlugin.getDisplayName = function $silex$utils$PageablePlugin$getDisplayName$($pageName$$) {
+  if(!silex.utils.PageablePlugin.getPageable(silex.utils.PageablePlugin.bodyElement)) {
+    throw Error("Operation failed, root pageable element is required.");
+  }
+  var $displayName$$ = "";
+  $('a[data-silex-type="page"]', silex.utils.PageablePlugin.bodyElement).each(function() {
+    this.getAttribute("id") === $pageName$$ && ($displayName$$ = this.innerHTML)
+  });
+  return $displayName$$
+};
+silex.utils.PageablePlugin.removePage = function $silex$utils$PageablePlugin$removePage$($pageName$$) {
+  if(!silex.utils.PageablePlugin.getPageable(silex.utils.PageablePlugin.bodyElement)) {
+    throw Error("Operation failed, root pageable element is required.");
+  }
+  $('a[data-silex-type="page"]', silex.utils.PageablePlugin.bodyElement).each(function() {
+    this.getAttribute("id") === $pageName$$ && $(this).remove()
+  });
+  $('*[data-silex-href="#!' + $pageName$$ + '"]').each(function() {
+    this.removeAttribute("data-silex-href")
+  });
+  $("." + $pageName$$).each(function() {
+    $(this).removeClass($pageName$$);
+    0 >= silex.utils.PageablePlugin.getPagesForElement(this).length && $(this).removeClass(silex.utils.PageablePlugin.PAGE_CLASS)
   })
+};
+silex.utils.PageablePlugin.createPage = function $silex$utils$PageablePlugin$createPage$($name$$, $displayName$$) {
+  if(!silex.utils.PageablePlugin.getPageable(silex.utils.PageablePlugin.bodyElement)) {
+    throw Error("Operation failed, root pageable element is required.");
+  }
+  var $aTag$$ = goog.dom.createElement("a");
+  $aTag$$.setAttribute("id", $name$$);
+  $aTag$$.setAttribute("data-silex-type", "page");
+  $aTag$$.innerHTML = $displayName$$;
+  goog.dom.appendChild(silex.utils.PageablePlugin.bodyElement, $aTag$$)
+};
+silex.utils.PageablePlugin.renamePage = function $silex$utils$PageablePlugin$renamePage$($oldName$$, $newName$$, $newDisplayName$$) {
+  if(!silex.utils.PageablePlugin.getPageable(silex.utils.PageablePlugin.bodyElement)) {
+    throw Error("Operation failed, root pageable element is required.");
+  }
+  $('a[data-silex-type="page"]', silex.utils.PageablePlugin.bodyElement).each(function() {
+    this.getAttribute("id") === $oldName$$ && (this.setAttribute("id", $newName$$), this.innerHTML = $newDisplayName$$)
+  });
+  $('*[data-silex-href="#!' + $oldName$$ + '"]').each(function() {
+    this.setAttribute("data-silex-href", "#!" + $newName$$)
+  });
+  $("." + $oldName$$).each(function() {
+    $(this).removeClass($oldName$$);
+    $(this).addClass($newName$$)
+  })
+};
+silex.utils.PageablePlugin.setLink = function $silex$utils$PageablePlugin$setLink$($element$$, $link$$) {
+  $link$$ ? $element$$.setAttribute(silex.utils.PageablePlugin.LINK_ATTR, $link$$) : $element$$.removeAttribute(silex.utils.PageablePlugin.LINK_ATTR)
+};
+silex.utils.PageablePlugin.getLink = function $silex$utils$PageablePlugin$getLink$($element$$) {
+  return $element$$.getAttribute("data-silex-href")
+};
+silex.utils.PageablePlugin.addToPage = function $silex$utils$PageablePlugin$addToPage$($element$$, $pageName$$) {
+  goog.dom.classes.add($element$$, $pageName$$);
+  goog.dom.classes.add($element$$, silex.utils.PageablePlugin.PAGE_CLASS)
+};
+silex.utils.PageablePlugin.removeFromPage = function $silex$utils$PageablePlugin$removeFromPage$($element$$, $pageName$$) {
+  goog.dom.classes.remove($element$$, $pageName$$);
+  0 < !silex.utils.PageablePlugin.getPagesForElement($element$$).length && goog.dom.classes.remove($element$$, silex.utils.PageablePlugin.PAGE_CLASS)
+};
+silex.utils.PageablePlugin.getPagesForElement = function $silex$utils$PageablePlugin$getPagesForElement$($element$$) {
+  if(!silex.utils.PageablePlugin.getPageable(silex.utils.PageablePlugin.bodyElement)) {
+    throw Error("Operation failed, root pageable element is required.");
+  }
+  var $res$$ = [], $pages$$ = silex.utils.PageablePlugin.getPages();
+  for(idx in $pages$$) {
+    var $pageName$$ = $pages$$[idx];
+    goog.dom.classes.has($element$$, $pageName$$) && $res$$.push($pageName$$)
+  }
+  return $res$$
+};
+silex.utils.PageablePlugin.isInPage = function $silex$utils$PageablePlugin$isInPage$($element$$, $opt_pageName$$) {
+  $opt_pageName$$ || ($opt_pageName$$ = silex.utils.PageablePlugin.getCurrentPageName());
+  return goog.dom.classes.has($element$$, $opt_pageName$$)
 };
 silex.controller = {};
 silex.controller.ControllerBase = function $silex$controller$ControllerBase$($model$$, $view$$) {
@@ -7723,8 +7729,8 @@ silex.controller.ControllerBase.prototype.removeElement = function $silex$contro
 };
 silex.controller.ControllerBase.prototype.addElement = function $silex$controller$ControllerBase$$addElement$($element$$223_type$$) {
   $element$$223_type$$ = this.model.element.createElement($element$$223_type$$);
-  var $currentPageName$$ = silex.utils.JQueryPageable.getCurrentPageName(this.model.body.bodyElement);
-  silex.utils.JQueryPageable.addToPage(this.model.body.bodyElement, $element$$223_type$$, $currentPageName$$);
+  var $currentPageName$$ = silex.utils.PageablePlugin.getCurrentPageName();
+  silex.utils.PageablePlugin.addToPage($element$$223_type$$, $currentPageName$$);
   this.checkElementVisibility($element$$223_type$$);
   this.model.element.setSelected($element$$223_type$$, !0);
   this.view.propertyTool.redraw();
@@ -7748,19 +7754,19 @@ silex.controller.ControllerBase.prototype.editElement = function $silex$controll
   }
 };
 silex.controller.ControllerBase.prototype.openPage = function $silex$controller$ControllerBase$$openPage$($pageName$$) {
-  silex.utils.JQueryPageable.setCurrentPage(this.model.body.bodyElement, $pageName$$);
+  silex.utils.PageablePlugin.setCurrentPage($pageName$$);
   this.view.pageTool.redraw()
 };
 silex.controller.ControllerBase.prototype.renamePage = function $silex$controller$ControllerBase$$renamePage$($opt_pageName$$) {
-  $opt_pageName$$ || ($opt_pageName$$ = silex.utils.JQueryPageable.getCurrentPageName(this.model.body.bodyElement));
-  this.getUserInputPageName(silex.utils.JQueryPageable.getDisplayName(this.model.body.bodyElement, $opt_pageName$$), goog.bind(function($name$$, $newDisplayName$$) {
-    $newDisplayName$$ && (silex.utils.JQueryPageable.renamePage(this.model.body.bodyElement, $opt_pageName$$, $name$$, $newDisplayName$$), this.openPage($name$$))
+  $opt_pageName$$ || ($opt_pageName$$ = silex.utils.PageablePlugin.getCurrentPageName());
+  this.getUserInputPageName(silex.utils.PageablePlugin.getDisplayName($opt_pageName$$), goog.bind(function($name$$, $newDisplayName$$) {
+    $newDisplayName$$ && (silex.utils.PageablePlugin.renamePage($opt_pageName$$, $name$$, $newDisplayName$$), this.openPage($name$$))
   }, this))
 };
 silex.controller.ControllerBase.prototype.removePage = function $silex$controller$ControllerBase$$removePage$($opt_pageName$$) {
-  $opt_pageName$$ || ($opt_pageName$$ = silex.utils.JQueryPageable.getCurrentPage(this.model.body.bodyElement));
-  silex.utils.Notification.confirm('I am about to delete the page "' + silex.utils.JQueryPageable.getDisplayName(this.model.body.bodyElement, $opt_pageName$$) + '", are you sure?', goog.bind(function($accept$$) {
-    $accept$$ && (silex.utils.JQueryPageable.removePage(this.model.body.bodyElement, $opt_pageName$$), this.view.pageTool.redraw(), this.view.propertyTool.redraw())
+  $opt_pageName$$ || ($opt_pageName$$ = silex.utils.PageablePlugin.getCurrentPage(this.model.body.bodyElement));
+  silex.utils.Notification.confirm('I am about to delete the page "' + silex.utils.PageablePlugin.getDisplayName($opt_pageName$$) + '", are you sure?', goog.bind(function($accept$$) {
+    $accept$$ && (silex.utils.PageablePlugin.removePage($opt_pageName$$), this.view.pageTool.redraw(), this.view.propertyTool.redraw())
   }, this))
 };
 silex.controller.ControllerBase.prototype.getUserInputPageName = function $silex$controller$ControllerBase$$getUserInputPageName$($defaultName$$, $cbk$$) {
@@ -7768,7 +7774,7 @@ silex.controller.ControllerBase.prototype.getUserInputPageName = function $silex
     if($accept$$ && $name$$ && 0 < $name$$.length) {
       var $displayName$$ = $name$$;
       $name$$ = $name$$.replace(/\ /g, "-").replace(/\./g, "-").replace(/'/g, "-").replace(/"/g, "-").toLowerCase();
-      var $pages$$ = silex.utils.JQueryPageable.getPages(this.model.body.bodyElement), $exists$$ = !1;
+      var $pages$$ = silex.utils.PageablePlugin.getPages(), $exists$$ = !1;
       goog.array.forEach($pages$$, function($pageName$$) {
         $pageName$$ === $name$$ && ($exists$$ = !0)
       });
@@ -7778,17 +7784,17 @@ silex.controller.ControllerBase.prototype.getUserInputPageName = function $silex
   }, this), $defaultName$$)
 };
 silex.controller.ControllerBase.prototype.checkElementVisibility = function $silex$controller$ControllerBase$$checkElementVisibility$($element$$) {
-  if(null !== silex.utils.JQueryPageable.getParentPage($element$$)) {
-    var $pages$$ = silex.utils.JQueryPageable.getPagesForElement(this.model.body.bodyElement, $element$$);
+  if(null !== silex.utils.PageablePlugin.getParentPage($element$$)) {
+    var $pages$$ = silex.utils.PageablePlugin.getPagesForElement($element$$);
     for(idx in $pages$$) {
-      silex.utils.JQueryPageable.removeFromPage(this.model.body.bodyElement, $element$$, $pages$$[idx])
+      silex.utils.PageablePlugin.removeFromPage($element$$, $pages$$[idx])
     }
     this.view.propertyTool.redraw()
   }
 };
 silex.controller.ControllerBase.prototype.createPage = function $silex$controller$ControllerBase$$createPage$($successCbk$$, $errorCbk$$) {
   this.getUserInputPageName("Your new page name", goog.bind(function($name$$, $displayName$$) {
-    $name$$ ? (silex.utils.JQueryPageable.createPage(this.model.body.bodyElement, $name$$, $displayName$$), this.openPage($name$$), this.tracker.trackAction("controller-events", "success", event.type, 0), $successCbk$$ && $successCbk$$()) : (this.tracker.trackAction("controller-events", "cancel", event.type, 0), $errorCbk$$ && $errorCbk$$())
+    $name$$ ? (silex.utils.PageablePlugin.createPage($name$$, $displayName$$), this.openPage($name$$), this.tracker.trackAction("controller-events", "success", event.type, 0), $successCbk$$ && $successCbk$$()) : (this.tracker.trackAction("controller-events", "cancel", event.type, 0), $errorCbk$$ && $errorCbk$$())
   }, this))
 };
 silex.controller.ControllerBase.prototype.preview = function $silex$controller$ControllerBase$$preview$() {
@@ -7849,8 +7855,8 @@ silex.controller.ControllerBase.prototype.save = function $silex$controller$Cont
   }, this), ["text/html", "text/plain"])
 };
 silex.controller.ControllerBase.prototype.fileOperationSuccess = function $silex$controller$ControllerBase$$fileOperationSuccess$($opt_message$$, $opt_updateTools$$) {
-  var $pages$$ = silex.utils.JQueryPageable.getPages(this.model.body.bodyElement);
-  silex.utils.JQueryPageable.setCurrentPage(this.model.body.bodyElement, $pages$$[0]);
+  var $pages$$ = silex.utils.PageablePlugin.getPages();
+  silex.utils.PageablePlugin.setCurrentPage($pages$$[0]);
   $opt_updateTools$$ && (this.view.pageTool.redraw(), this.view.propertyTool.redraw(), this.view.menu.redraw(), this.refreshFonts());
   $opt_message$$ && silex.utils.Notification.notifySuccess($opt_message$$)
 };
@@ -7952,29 +7958,25 @@ goog.events.MouseWheelEvent = function $goog$events$MouseWheelEvent$($detail$$, 
   this.deltaY = $deltaY$$
 };
 goog.inherits(goog.events.MouseWheelEvent, goog.events.BrowserEvent);
-silex.utils.JQueryEditable = function $silex$utils$JQueryEditable$() {
-  throw"this is a static class and it canot be instanciated";
+silex.utils.EditablePlugin = function $silex$utils$EditablePlugin$() {
 };
-silex.utils.JQueryEditable.EDITABLE_CLASS_NAME = "editable-style";
-silex.utils.JQueryEditable.getContainer = function $silex$utils$JQueryEditable$getContainer$() {
-  return getElementByClass("editable-style")
-};
-silex.utils.JQueryEditable.getFirstEditableParent = function $silex$utils$JQueryEditable$getFirstEditableParent$($element$$) {
-  for(var $child$$ = $element$$;$child$$ && $child$$.getAttribute && !$($child$$).hasClass("editable-style");) {
+silex.utils.EditablePlugin.EDITABLE_CLASS_NAME = "editable-style";
+silex.utils.EditablePlugin.getFirstEditableParent = function $silex$utils$EditablePlugin$getFirstEditableParent$($element$$) {
+  for(var $child$$ = $element$$;$child$$ && $child$$.getAttribute && !$($child$$).hasClass(silex.utils.EditablePlugin.EDITABLE_CLASS_NAME);) {
     $child$$ = $child$$.parentNode
   }
-  if($child$$ && $child$$.getAttribute && $($child$$).hasClass("editable-style")) {
+  if($child$$ && $child$$.getAttribute && $($child$$).hasClass(silex.utils.EditablePlugin.EDITABLE_CLASS_NAME)) {
     return $child$$
   }
   console.warn("this element has no editable parent", $element$$);
   return $element$$
 };
-silex.utils.JQueryEditable.setEditable = function $silex$utils$JQueryEditable$setEditable$($element$$, $isEditable$$, $opt_isRootDroppableOnly$$) {
+silex.utils.EditablePlugin.setEditable = function $silex$utils$EditablePlugin$setEditable$($element$$, $isEditable$$, $opt_isRootDroppableOnly$$) {
   $isEditable$$ ? ($('.editable-style[data-silex-type="container"]', $element$$).editable({isContainer:!0}), $('.editable-style[data-silex-type="element"]', $element$$).editable(), "container" === $element$$.getAttribute("data-silex-type") ? $opt_isRootDroppableOnly$$ ? $($element$$).editable({isContainer:!0, isResizable:!1, isDroppable:!0, isDraggable:!1}) : $($element$$).editable({isContainer:!0}) : $($element$$).editable()) : ($(".editable-style", $element$$).editable("destroy"), $($element$$).editable("destroy"), 
   $($element$$).find(".silex-selected").removeClass("silex-selected"), $($element$$).find(".ui-resizable").removeClass("ui-resizable"), $($element$$).find(".ui-draggable").removeClass("ui-draggable"), $($element$$).find(".ui-droppable").removeClass("ui-droppable"), $($element$$).find("[aria-disabled]").removeAttr("aria-disabled"), $($element$$).find(".ui-resizable-handle").remove())
 };
-silex.utils.JQueryEditable.setEditableHtml = function $silex$utils$JQueryEditable$setEditableHtml$($element$$, $htmlString$$, $htmlContainer_opt_hasChildContainer$$) {
-  silex.utils.JQueryEditable.setEditable($element$$, !1);
+silex.utils.EditablePlugin.setEditableHtml = function $silex$utils$EditablePlugin$setEditableHtml$($element$$, $htmlString$$, $htmlContainer_opt_hasChildContainer$$) {
+  silex.utils.EditablePlugin.setEditable($element$$, !1);
   if($htmlContainer_opt_hasChildContainer$$) {
     if($htmlContainer_opt_hasChildContainer$$ = goog.dom.getFirstElementChild($element$$)) {
       $htmlContainer_opt_hasChildContainer$$.innerHTML = $htmlString$$
@@ -7982,12 +7984,12 @@ silex.utils.JQueryEditable.setEditableHtml = function $silex$utils$JQueryEditabl
   }else {
     $element$$.innerHTML = $htmlString$$
   }
-  silex.utils.JQueryEditable.setEditable($element$$, !0)
+  silex.utils.EditablePlugin.setEditable($element$$, !0)
 };
-silex.utils.JQueryEditable.getEditableHtml = function $silex$utils$JQueryEditable$getEditableHtml$($element$$, $opt_hasChildContainer$$) {
-  silex.utils.JQueryEditable.setEditable($element$$, !1);
+silex.utils.EditablePlugin.getEditableHtml = function $silex$utils$EditablePlugin$getEditableHtml$($element$$, $opt_hasChildContainer$$) {
+  silex.utils.EditablePlugin.setEditable($element$$, !1);
   var $cleanContainer_htmlContainer$$ = $element$$.cloneNode(!0);
-  silex.utils.JQueryEditable.setEditable($element$$, !0);
+  silex.utils.EditablePlugin.setEditable($element$$, !0);
   var $htmlString$$ = "";
   if($opt_hasChildContainer$$) {
     if($cleanContainer_htmlContainer$$ = goog.dom.getFirstElementChild($cleanContainer_htmlContainer$$)) {
@@ -8006,7 +8008,7 @@ goog.inherits(silex.view.Stage, silex.view.ViewBase);
 silex.view.Stage.prototype.initEvents = function $silex$view$Stage$$initEvents$() {
   goog.events.listen(this.element, "mousedown", function($e$$) {
     if(this.onStatus) {
-      this.onStatus("select", silex.utils.JQueryEditable.getFirstEditableParent($e$$.target))
+      this.onStatus("select", silex.utils.EditablePlugin.getFirstEditableParent($e$$.target))
     }
     this.isDragging = !0
   }, !1, this);
@@ -8042,11 +8044,8 @@ silex.view.Stage.prototype.initEvents = function $silex$view$Stage$$initEvents$(
   }, !1, this);
   var $mwh$$ = new goog.events.MouseWheelHandler(this.element);
   goog.events.listen($mwh$$, goog.events.MouseWheelHandler.EventType.MOUSEWHEEL, function($e$$) {
-    0 > $e$$.deltaX && 0 >= this.element.scrollLeft && $e$$.preventDefault()
+    0 > $e$$.deltaX && 0 >= this.bodyElement.scrollLeft && $e$$.preventDefault()
   }, !1, this)
-};
-silex.view.Stage.prototype.getSelection = function $silex$view$Stage$$getSelection$() {
-  return goog.dom.getElementsByClass(silex.model.Element.SELECTED_CLASS_NAME, this.bodyElement)
 };
 silex.view.Stage.prototype.getNeededFonts = function $silex$view$Stage$$getNeededFonts$() {
   var $neededFonts$$ = [];
@@ -8156,16 +8155,16 @@ silex.controller.PropertyToolController.prototype.propertyToolCallback = functio
       console.error("not implemented");
       break;
     case "addToPage":
-      silex.utils.JQueryPageable.addToPage(this.model.body.bodyElement, this.view.stage.getSelection()[0], $opt_name$$);
+      silex.utils.PageablePlugin.addToPage(this.view.stage.getSelection()[0], $opt_name$$);
       break;
     case "removeFromPage":
-      silex.utils.JQueryPageable.removeFromPage(this.model.body.bodyElement, this.view.stage.getSelection()[0], $opt_name$$);
+      silex.utils.PageablePlugin.removeFromPage(this.view.stage.getSelection()[0], $opt_name$$);
       break;
     case "addLink":
-      silex.utils.JQueryPageable.setLink(this.view.stage.getSelection()[0], $opt_name$$);
+      silex.utils.PageablePlugin.setLink(this.view.stage.getSelection()[0], $opt_name$$);
       break;
     case "removeLink":
-      silex.utils.JQueryPageable.setLink(this.view.stage.getSelection()[0])
+      silex.utils.PageablePlugin.setLink(this.view.stage.getSelection()[0])
   }
 };
 silex.controller.MenuController = function $silex$controller$MenuController$($model$$, $view$$) {
@@ -11075,8 +11074,8 @@ silex.view.FileExplorer.prototype.closeEditor = function $silex$view$FileExplore
 };
 silex.model.Body = function $silex$model$Body$($bodyElement$$, $headElement$$) {
   silex.model.ModelBase.call(this, $bodyElement$$, $headElement$$);
-  silex.utils.JQueryEditable.setEditable($bodyElement$$, !0, !0);
-  silex.utils.JQueryPageable.setPageable($bodyElement$$, !0)
+  silex.utils.EditablePlugin.setEditable($bodyElement$$, !0, !0);
+  silex.utils.PageablePlugin.setPageable($bodyElement$$, !0)
 };
 goog.inherits(silex.model.Body, silex.model.ModelBase);
 silex.model.Head = function $silex$model$Head$($bodyElement$$, $headElement$$) {
@@ -15218,7 +15217,7 @@ silex.view.pane.PagePane.prototype.buildUi = function $silex$view$pane$PagePane$
 silex.view.pane.PagePane.prototype.setPages = function $silex$view$pane$PagePane$$setPages$($items_mainContainer_pageData_pages$$) {
   this.pages = $items_mainContainer_pageData_pages$$;
   $items_mainContainer_pageData_pages$$ = $items_mainContainer_pageData_pages$$.map(goog.bind(function($pageName$$) {
-    return{name:$pageName$$, displayName:silex.utils.JQueryPageable.getDisplayName(this.bodyElement, $pageName$$), linkName:"#!" + $pageName$$}
+    return{name:$pageName$$, displayName:silex.utils.PageablePlugin.getDisplayName(this.bodyElement, $pageName$$), linkName:"#!" + $pageName$$}
   }, this));
   this.pageCheckboxes && goog.array.forEach(this.pageCheckboxes, function($item$$) {
     $item$$.checkbox.dispose()
@@ -15262,14 +15261,14 @@ silex.view.pane.PagePane.prototype.onLinkTextChanged = function $silex$view$pane
 };
 silex.view.pane.PagePane.prototype.redraw = function $silex$view$pane$PagePane$$redraw$() {
   silex.view.pane.PagePane.superClass_.redraw.call(this);
-  this.setPages(silex.utils.JQueryPageable.getPages(this.bodyElement));
+  this.setPages(silex.utils.PageablePlugin.getPages(this.bodyElement));
   var $element$$ = this.getSelection()[0];
   if($element$$) {
     goog.array.forEach(this.pageCheckboxes, function($item$$) {
       $item$$.checkbox.setEnabled(!0);
-      $item$$.checkbox.setChecked(silex.utils.JQueryPageable.isInPage(this.bodyElement, $element$$, $item$$.pageName))
+      $item$$.checkbox.setChecked(silex.utils.PageablePlugin.isInPage($element$$, $item$$.pageName))
     }, this);
-    var $elementLink_linkInputElement$$ = silex.utils.JQueryPageable.getLink($element$$);
+    var $elementLink_linkInputElement$$ = silex.utils.PageablePlugin.getLink($element$$);
     console.log($elementLink_linkInputElement$$);
     $elementLink_linkInputElement$$ && "" !== $elementLink_linkInputElement$$ ? 0 === $elementLink_linkInputElement$$.indexOf("#!") ? this.linkDropdown.value = $elementLink_linkInputElement$$ : (this.linkInputTextField.setValue($elementLink_linkInputElement$$), this.linkDropdown.value = "custom") : (this.linkDropdown.value = "none", this.linkInputTextField.setValue(""));
     $elementLink_linkInputElement$$ = goog.dom.getElementByClass("link-input-text", this.element);
@@ -15735,22 +15734,22 @@ silex.view.PageTool.prototype.initEvents = function $silex$view$PageTool$$initEv
   }, !1, this)
 };
 silex.view.PageTool.prototype.redraw = function $silex$view$PageTool$$redraw$() {
-  var $pageNames_pages$$ = silex.utils.JQueryPageable.getPages(this.bodyElement), $currentPageName$$ = silex.utils.JQueryPageable.getCurrentPageName(this.bodyElement), $idx$$ = 0, $pageNames_pages$$ = $pageNames_pages$$.map(goog.bind(function($pageName$$) {
-    var $res$$ = {name:$pageName$$, displayName:silex.utils.JQueryPageable.getDisplayName(this.bodyElement, $pageName$$), linkName:"#!" + $pageName$$, idx:$idx$$++};
+  var $pageNames_pages$$ = silex.utils.PageablePlugin.getPages(), $currentPageName$$ = silex.utils.PageablePlugin.getCurrentPageName(), $idx$$ = 0, $pageNames_pages$$ = $pageNames_pages$$.map(goog.bind(function($pageName$$) {
+    var $res$$ = {name:$pageName$$, displayName:silex.utils.PageablePlugin.getDisplayName($pageName$$), linkName:"#!" + $pageName$$, idx:$idx$$++};
     $res$$.className = $currentPageName$$ === $pageName$$ ? "ui-selected" : "";
     return $res$$
   }, this)), $container$$ = goog.dom.getElementByClass("page-tool-container", this.element), $templateHtml$$ = goog.dom.getElementByClass("page-tool-template", this.element).innerHTML;
   $container$$.innerHTML = silex.utils.Dom.renderList($templateHtml$$, $pageNames_pages$$)
 };
 silex.view.PageTool.prototype.removePageAtIndex = function $silex$view$PageTool$$removePageAtIndex$($idx$$) {
-  var $pageNames$$ = silex.utils.JQueryPageable.getPages(this.bodyElement);
+  var $pageNames$$ = silex.utils.PageablePlugin.getPages();
   if(this.onStatus) {
     this.onStatus("delete", $pageNames$$[$idx$$])
   }
   this.redraw()
 };
 silex.view.PageTool.prototype.renamePageAtIndex = function $silex$view$PageTool$$renamePageAtIndex$($idx$$) {
-  var $pageNames$$ = silex.utils.JQueryPageable.getPages(this.bodyElement);
+  var $pageNames$$ = silex.utils.PageablePlugin.getPages();
   if(this.onStatus) {
     this.onStatus("rename", $pageNames$$[$idx$$])
   }
@@ -20839,12 +20838,11 @@ silex.view.TextEditor.prototype.initUI = function $silex$view$TextEditor$$initUI
   }, !1, this)
 };
 silex.view.TextEditor.prototype.openEditor = function $silex$view$TextEditor$$openEditor$() {
-  silex.utils.JQueryEditable.getContainer();
-  var $background$$ = getElementByClass(silex.model.Element.SELECTED_CLASS_NAME);
-  this.textField.setHtml(!1, $background$$);
+  var $background$$5_element$$ = this.getSelection()[0], $background$$5_element$$ = goog.dom.getElementByClass(silex.model.Element.ELEMENT_CONTENT_CLASS_NAME, $background$$5_element$$).innerHTML;
+  this.textField.setHtml(!1, $background$$5_element$$);
   this.textField.focusAndPlaceCursorAtStart();
-  $background$$ = goog.dom.getElementByClass("dialogs-background");
-  goog.style.setStyle($background$$, "display", "inherit");
+  $background$$5_element$$ = goog.dom.getElementByClass("dialogs-background");
+  goog.style.setStyle($background$$5_element$$, "display", "inherit");
   goog.style.setStyle(this.element, "display", "inherit")
 };
 silex.view.TextEditor.prototype.closeEditor = function $silex$view$TextEditor$$closeEditor$() {
@@ -20860,12 +20858,12 @@ silex.view.TextEditor.prototype.contentChanged = function $silex$view$TextEditor
     this.onStatus("changed", this.getData())
   }
 };
-silex.view.HTMLEditor = function $silex$view$HTMLEditor$($element$$310_shortcutHandler$$, $bodyElement$$, $headElement$$) {
-  silex.view.ViewBase.call(this, $element$$310_shortcutHandler$$, $bodyElement$$, $headElement$$);
+silex.view.HTMLEditor = function $silex$view$HTMLEditor$($element$$311_shortcutHandler$$, $bodyElement$$, $headElement$$) {
+  silex.view.ViewBase.call(this, $element$$311_shortcutHandler$$, $bodyElement$$, $headElement$$);
   this.initUI();
-  $element$$310_shortcutHandler$$ = new goog.ui.KeyboardShortcutHandler(document);
-  $element$$310_shortcutHandler$$.registerShortcut("esc", goog.events.KeyCodes.ESC);
-  goog.events.listen($element$$310_shortcutHandler$$, goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED, goog.bind(this.closeEditor, this))
+  $element$$311_shortcutHandler$$ = new goog.ui.KeyboardShortcutHandler(document);
+  $element$$311_shortcutHandler$$.registerShortcut("esc", goog.events.KeyCodes.ESC);
+  goog.events.listen($element$$311_shortcutHandler$$, goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED, goog.bind(this.closeEditor, this))
 };
 goog.inherits(silex.view.HTMLEditor, silex.view.ViewBase);
 silex.view.HTMLEditor.prototype.initUI = function $silex$view$HTMLEditor$$initUI$() {
@@ -20990,7 +20988,7 @@ silex.model.File.prototype.setHtml = function $silex$model$File$$setHtml$($bodyH
   $bodyHtml$$4_rawHtml$$ = $bodyHtml$$4_rawHtml$$.substring($bodyOpenIdx$$, $bodyCloseIdx$$ + 7);
   this.bodyElement.innerHTML = $bodyHtml$$4_rawHtml$$;
   this.headElement.innerHTML = $headHtml$$;
-  silex.utils.JQueryEditable.setEditable(this.bodyElement, !0, !0)
+  silex.utils.EditablePlugin.setEditable(this.bodyElement, !0, !0)
 };
 silex.model.File.prototype.getHtml = function $silex$model$File$$getHtml$() {
   var $styleStr$$ = this.bodyElement.getAttribute("style"), $html$$;
@@ -21129,14 +21127,16 @@ silex.App = function $silex$App$() {
       return"Are you sure you want to leave me?"
     }
   }
-  var $bodyElement$$22_model$$ = goog.dom.getElementByClass("silex-stage-body"), $headElement$$ = goog.dom.createElement("div"), $menuElement$$2_workspace$$ = goog.dom.getElementByClass("silex-menu"), $menu$$8_view$$ = new silex.view.Menu($menuElement$$2_workspace$$, $bodyElement$$22_model$$, $headElement$$), $stageElement$$ = goog.dom.getElementByClass("silex-stage"), $controller_stage$$ = new silex.view.Stage($stageElement$$, $bodyElement$$22_model$$, $headElement$$), $pageToolElement$$ = goog.dom.getElementByClass("silex-page-tool"), 
-  $pageTool$$ = new silex.view.PageTool($pageToolElement$$, $bodyElement$$22_model$$, $headElement$$), $htmlEditorElement$$ = goog.dom.getElementByClass("silex-htmleditor"), $htmlEditor$$ = new silex.view.HTMLEditor($htmlEditorElement$$, $bodyElement$$22_model$$, $headElement$$), $textEditorElement$$ = goog.dom.getElementByClass("silex-texteditor"), $textEditor$$ = new silex.view.TextEditor($textEditorElement$$, $bodyElement$$22_model$$, $headElement$$), $fileExplorerElement$$ = goog.dom.getElementByClass("silex-fileexplorer"), 
-  $fileExplorer$$ = new silex.view.FileExplorer($fileExplorerElement$$, $bodyElement$$22_model$$, $headElement$$), $settingsDialogElement$$ = goog.dom.getElementByClass("silex-settings-dialog"), $settingsDialog$$ = new silex.view.SettingsDialog($settingsDialogElement$$, $bodyElement$$22_model$$, $headElement$$), $propertyToolElement$$ = goog.dom.getElementByClass("silex-property-tool"), $propertyTool$$ = new silex.view.PropertyTool($propertyToolElement$$, $bodyElement$$22_model$$, $headElement$$), 
-  $workspaceElement$$ = goog.dom.getElementByClass("silex-workspace"), $menuElement$$2_workspace$$ = new silex.view.Workspace($workspaceElement$$, $menuElement$$2_workspace$$, $stageElement$$, $pageToolElement$$, $propertyToolElement$$, $htmlEditorElement$$, $textEditorElement$$, $fileExplorerElement$$, $settingsDialogElement$$), $bodyElement$$22_model$$ = new silex.types.Model(new silex.model.File($bodyElement$$22_model$$, $headElement$$), new silex.model.Head($bodyElement$$22_model$$, $headElement$$), 
-  new silex.model.Body($bodyElement$$22_model$$, $headElement$$), new silex.model.Element($bodyElement$$22_model$$, $headElement$$)), $menu$$8_view$$ = new silex.types.View($menuElement$$2_workspace$$, $menu$$8_view$$, $controller_stage$$, $pageTool$$, $propertyTool$$, $htmlEditor$$, $textEditor$$, $fileExplorer$$, $settingsDialog$$), $controller_stage$$ = new silex.types.Controller(new silex.controller.MenuController($bodyElement$$22_model$$, $menu$$8_view$$), new silex.controller.StageController($bodyElement$$22_model$$, 
-  $menu$$8_view$$), new silex.controller.PageToolController($bodyElement$$22_model$$, $menu$$8_view$$), new silex.controller.PropertyToolController($bodyElement$$22_model$$, $menu$$8_view$$), new silex.controller.SettingsDialogController($bodyElement$$22_model$$, $menu$$8_view$$), new silex.controller.HtmlEditorController($bodyElement$$22_model$$, $menu$$8_view$$), new silex.controller.TextEditorController($bodyElement$$22_model$$, $menu$$8_view$$));
+  var $bodyElement$$25_model$$ = goog.dom.getElementByClass("silex-stage-body");
+  silex.utils.PageablePlugin.setBodyElement($bodyElement$$25_model$$);
+  var $headElement$$ = goog.dom.createElement("div"), $menuElement$$2_workspace$$ = goog.dom.getElementByClass("silex-menu"), $menu$$8_view$$ = new silex.view.Menu($menuElement$$2_workspace$$, $bodyElement$$25_model$$, $headElement$$), $stageElement$$ = goog.dom.getElementByClass("silex-stage"), $controller_stage$$ = new silex.view.Stage($stageElement$$, $bodyElement$$25_model$$, $headElement$$), $pageToolElement$$ = goog.dom.getElementByClass("silex-page-tool"), $pageTool$$ = new silex.view.PageTool($pageToolElement$$, 
+  $bodyElement$$25_model$$, $headElement$$), $htmlEditorElement$$ = goog.dom.getElementByClass("silex-htmleditor"), $htmlEditor$$ = new silex.view.HTMLEditor($htmlEditorElement$$, $bodyElement$$25_model$$, $headElement$$), $textEditorElement$$ = goog.dom.getElementByClass("silex-texteditor"), $textEditor$$ = new silex.view.TextEditor($textEditorElement$$, $bodyElement$$25_model$$, $headElement$$), $fileExplorerElement$$ = goog.dom.getElementByClass("silex-fileexplorer"), $fileExplorer$$ = new silex.view.FileExplorer($fileExplorerElement$$, 
+  $bodyElement$$25_model$$, $headElement$$), $settingsDialogElement$$ = goog.dom.getElementByClass("silex-settings-dialog"), $settingsDialog$$ = new silex.view.SettingsDialog($settingsDialogElement$$, $bodyElement$$25_model$$, $headElement$$), $propertyToolElement$$ = goog.dom.getElementByClass("silex-property-tool"), $propertyTool$$ = new silex.view.PropertyTool($propertyToolElement$$, $bodyElement$$25_model$$, $headElement$$), $workspaceElement$$ = goog.dom.getElementByClass("silex-workspace"), 
+  $menuElement$$2_workspace$$ = new silex.view.Workspace($workspaceElement$$, $menuElement$$2_workspace$$, $stageElement$$, $pageToolElement$$, $propertyToolElement$$, $htmlEditorElement$$, $textEditorElement$$, $fileExplorerElement$$, $settingsDialogElement$$), $bodyElement$$25_model$$ = new silex.types.Model(new silex.model.File($bodyElement$$25_model$$, $headElement$$), new silex.model.Head($bodyElement$$25_model$$, $headElement$$), new silex.model.Body($bodyElement$$25_model$$, $headElement$$), 
+  new silex.model.Element($bodyElement$$25_model$$, $headElement$$)), $menu$$8_view$$ = new silex.types.View($menuElement$$2_workspace$$, $menu$$8_view$$, $controller_stage$$, $pageTool$$, $propertyTool$$, $htmlEditor$$, $textEditor$$, $fileExplorer$$, $settingsDialog$$), $controller_stage$$ = new silex.types.Controller(new silex.controller.MenuController($bodyElement$$25_model$$, $menu$$8_view$$), new silex.controller.StageController($bodyElement$$25_model$$, $menu$$8_view$$), new silex.controller.PageToolController($bodyElement$$25_model$$, 
+  $menu$$8_view$$), new silex.controller.PropertyToolController($bodyElement$$25_model$$, $menu$$8_view$$), new silex.controller.SettingsDialogController($bodyElement$$25_model$$, $menu$$8_view$$), new silex.controller.HtmlEditorController($bodyElement$$25_model$$, $menu$$8_view$$), new silex.controller.TextEditorController($bodyElement$$25_model$$, $menu$$8_view$$));
   $controller_stage$$.menuController.menuCallback("file.new");
-  silex.Config.debug.debugMode && silex.Config.debug.doAfterReady && silex.Config.debug.doAfterReady($bodyElement$$22_model$$, $menu$$8_view$$, $controller_stage$$)
+  silex.Config.debug.debugMode && silex.Config.debug.doAfterReady && silex.Config.debug.doAfterReady($bodyElement$$25_model$$, $menu$$8_view$$, $controller_stage$$)
 };
 goog.exportSymbol("silex.App", silex.App);
 

@@ -149,6 +149,12 @@ Edition
 
 * copy/cut/paste
 * undo/redo
+
+  * Ids set on all silex elements
+  * Keyframes structure with an actions array
+  * Actions structure with time, element id, method to call on the controller
+  * the class controller base manage the undo and redo keyframes and actions
+
 * autosave
 * multiple selection https://github.com/someshwara/MultiDraggable
 * better text editor?
@@ -204,7 +210,20 @@ Validation
 Nice to have :
 
 * publication: optimize and use soscket.io to be notified when job is done + stop a job
-* multi user editing (save edited parts of the file only + socket.io notifications)
+* multi user editing
+
+  * save edited parts of the file only + socket.io notifications
+  * OR WebRTC: http://www.youtube.com/watch?v=p2HzZkd2A40
+  * possible scenario:
+
+    * ad a unique ID to all files (update when rename, create, ...)
+    * ask all clients editing the same file permission to share
+    * if file is different, break the synch or update?
+    * use the undo/redo actions
+    * some actions will need to be validated by the server: lock an element for editing, add element, change the dom outside an element
+    * relay changes to an element to all clients
+
+
 * store current state on local storage (auto-save, propose to "open latest unsaved version" when opening a document)
 * deeplink to opened file (https://www.silex.me/?file=/dropbox/path/to/file.html)
 * indicates online/offline?
@@ -305,3 +324,18 @@ Packaging / distribution
 deployment
 
   * https://github.com/lorenwest/node-monitor
+
+Internationalization
+
+  * select "gettext" .po files from DB
+  * mark text fields as translatable (will translate each p element of the text field)
+  * a widget to display the languages and load the needed files, and translate dynamically the website (jquery plugin)
+  * links
+
+    * http://i18next.com/
+    * http://www.poedit.net/screenshots.php
+    * http://zanata.org/
+    * http://stackoverflow.com/questions/7175597/internationalizaton-of-html-files
+    * http://www.grails.org/plugin/i18n-gettext
+    * http://slexaxton.github.io/Jed/
+

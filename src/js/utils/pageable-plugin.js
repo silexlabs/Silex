@@ -10,19 +10,43 @@
 //////////////////////////////////////////////////
 
 /**
- * @fileoverview Helper class for common tasks
+ * @fileoverview Helper class for common tasks of the pageable jquery plugin
  *
  */
 
 
-goog.provide('silex.utils.JQueryPageable');
+goog.provide('silex.utils.PageablePlugin');
+
 
 /**
  * @constructor
  * @struct
  */
-silex.utils.JQueryPageable = function() {
+silex.utils.PageablePlugin = function() {
   throw('this is a static class and it canot be instanciated');
+}
+
+
+/**
+ * reference to the stage / body of the edited website
+ * @type element
+ */
+silex.utils.PageablePlugin.bodyElement;
+
+
+/**
+ * get/set the stage
+ */
+silex.utils.PageablePlugin.getBodyElement = function() {
+  return silex.utils.PageablePlugin.bodyElement;
+}
+
+
+/**
+ * get/set the stage
+ */
+silex.utils.PageablePlugin.setBodyElement = function(bodyElement) {
+  silex.utils.PageablePlugin.bodyElement = bodyElement;
 }
 
 
@@ -31,7 +55,7 @@ silex.utils.JQueryPageable = function() {
  * @const
  * @type {string}
  */
-silex.utils.JQueryPageable.LINK_ATTR = 'data-silex-href';
+silex.utils.PageablePlugin.LINK_ATTR = 'data-silex-href';
 
 
 /**
@@ -39,7 +63,7 @@ silex.utils.JQueryPageable.LINK_ATTR = 'data-silex-href';
  * @const
  * @type {string}
  */
-silex.utils.JQueryPageable.PAGEABLE_ROOT_CLASS = 'pageable-root-class';
+silex.utils.PageablePlugin.PAGEABLE_ROOT_CLASS = 'pageable-root-class';
 
 
 /**
@@ -47,16 +71,16 @@ silex.utils.JQueryPageable.PAGEABLE_ROOT_CLASS = 'pageable-root-class';
  * @const
  * @type {string}
  */
-silex.utils.JQueryPageable.PAGE_CLASS = 'silex-page';
+silex.utils.PageablePlugin.PAGE_CLASS = 'silex-page';
 
 
 /**
  * retrieve the first parent which is visible only on some pages
- * @return null or the element or one of its parents which has the css class silex.utils.JQueryPageable.PAGE_CLASS
+ * @return null or the element or one of its parents which has the css class silex.utils.PageablePlugin.PAGE_CLASS
  */
-silex.utils.JQueryPageable.getParentPage = function(element) {
+silex.utils.PageablePlugin.getParentPage = function(element) {
   var parent = element.parentNode;
-  while (parent && !goog.dom.classes.has(parent, silex.utils.JQueryPageable.PAGE_CLASS)) {
+  while (parent && !goog.dom.classes.has(parent, silex.utils.PageablePlugin.PAGE_CLASS)) {
     parent = parent.parentNode;
   }
   return parent;
@@ -65,49 +89,48 @@ silex.utils.JQueryPageable.getParentPage = function(element) {
 
 /**
  * retrieve the first parent which is visible only on some pages
- * @return true if the pageableRootElement has the css class silex.utils.JQueryPageable.PAGEABLE_ROOT_CLASS
+ * @return true if the {element} bodyElement has the css class silex.utils.PageablePlugin.PAGEABLE_ROOT_CLASS
  */
-silex.utils.JQueryPageable.getPageable = function(pageableRootElement) {
-  return pageableRootElement && $(pageableRootElement).hasClass(silex.utils.JQueryPageable.PAGEABLE_ROOT_CLASS);
+silex.utils.PageablePlugin.getPageable = function(bodyElement) {
+  return bodyElement && $(bodyElement).hasClass(silex.utils.PageablePlugin.PAGEABLE_ROOT_CLASS);
 };
 
 
 /**
  * retrieve the first parent which is visible only on some pages
- * @param {element} pageableRootElement which has the css class silex.utils.JQueryPageable.PAGEABLE_ROOT_CLASS
+ * @param {element} bodyElement which has the css class silex.utils.PageablePlugin.PAGEABLE_ROOT_CLASS
  */
-silex.utils.JQueryPageable.setPageable = function(pageableRootElement, isPageable) {
+silex.utils.PageablePlugin.setPageable = function(bodyElement, isPageable) {
     if (isPageable){
       // add the class, to validate this is a root pageable element in other methods
-      $(pageableRootElement).addClass(silex.utils.JQueryPageable.PAGEABLE_ROOT_CLASS);
+      $(bodyElement).addClass(silex.utils.PageablePlugin.PAGEABLE_ROOT_CLASS);
       // find default first page
-      var pages = silex.utils.JQueryPageable.getPages(pageableRootElement);
+      var pages = silex.utils.PageablePlugin.getPages();
       // enable jquery plugin
-      $(pageableRootElement).pageable(
+      $(bodyElement).pageable(
         {
           currentPage: pages[0],
           useDeeplink: false
         });
     }
     else{
-        $(pageableRootElement).pageable('destroy');
-        $(pageableRootElement).removeClass(silex.utils.JQueryPageable.PAGEABLE_ROOT_CLASS);
+        $(bodyElement).pageable('destroy');
+        $(bodyElement).removeClass(silex.utils.PageablePlugin.PAGEABLE_ROOT_CLASS);
     }
 };
 
 
 /**
  * get the pages from the dom
- * @param {element} pageableRootElement the pageable root element
  * @return {array} an array of the page names I have found in the DOM
  */
-silex.utils.JQueryPageable.getPages = function(pageableRootElement) {
-  if(!silex.utils.JQueryPageable.getPageable(pageableRootElement)){
+silex.utils.PageablePlugin.getPages = function() {
+  if(!silex.utils.PageablePlugin.getPageable(silex.utils.PageablePlugin.bodyElement)){
     throw new Error('Operation failed, root pageable element is required.');
   }
   // retrieve all page names from the head section
   var pages = [];
-  $('a[data-silex-type="page"]', pageableRootElement).each(function() {
+  $('a[data-silex-type="page"]', silex.utils.PageablePlugin.bodyElement).each(function() {
     pages.push(this.getAttribute('id'));
   });
   return pages;
@@ -116,14 +139,13 @@ silex.utils.JQueryPageable.getPages = function(pageableRootElement) {
 
 /**
  * get the currently opened page from the dom
- * @param {element} pageableRootElement the pageable root element
  * @return {string} name of the page currently opened
  */
-silex.utils.JQueryPageable.getCurrentPageName = function(pageableRootElement) {
-  if(!silex.utils.JQueryPageable.getPageable(pageableRootElement)){
+silex.utils.PageablePlugin.getCurrentPageName = function() {
+  if(!silex.utils.PageablePlugin.getPageable(silex.utils.PageablePlugin.bodyElement)){
     throw new Error('Operation failed, root pageable element is required.');
   }
-  var pageName = $(pageableRootElement).pageable('option', 'currentPage');
+  var pageName = $(silex.utils.PageablePlugin.bodyElement).pageable('option', 'currentPage');
   return pageName;
 };
 
@@ -133,11 +155,11 @@ silex.utils.JQueryPageable.getCurrentPageName = function(pageableRootElement) {
  * this is a static method, a helper
  * @param {string} pageName   name of the page to open
  */
-silex.utils.JQueryPageable.setCurrentPage = function(pageableRootElement, pageName) {
-  if(!silex.utils.JQueryPageable.getPageable(pageableRootElement)){
+silex.utils.PageablePlugin.setCurrentPage = function(pageName) {
+  if(!silex.utils.PageablePlugin.getPageable(silex.utils.PageablePlugin.bodyElement)){
     throw new Error('Operation failed, root pageable element is required.');
   }
-  $(pageableRootElement).pageable({currentPage: pageName});
+  $(silex.utils.PageablePlugin.bodyElement).pageable({currentPage: pageName});
 };
 
 
@@ -146,12 +168,12 @@ silex.utils.JQueryPageable.setCurrentPage = function(pageableRootElement, pageNa
  * @param  {string} pageName  a page name
  * @return {silex.utils.Page} the page corresponding to the given page name
  */
-silex.utils.JQueryPageable.getDisplayName = function(pageableRootElement, pageName) {
-  if(!silex.utils.JQueryPageable.getPageable(pageableRootElement)){
+silex.utils.PageablePlugin.getDisplayName = function(pageName) {
+  if(!silex.utils.PageablePlugin.getPageable(silex.utils.PageablePlugin.bodyElement)){
     throw new Error('Operation failed, root pageable element is required.');
   }
   var displayName = '';
-  $('a[data-silex-type="page"]', pageableRootElement).each(
+  $('a[data-silex-type="page"]', silex.utils.PageablePlugin.bodyElement).each(
     function() {
       if (this.getAttribute('id') === pageName) {
         displayName = this.innerHTML;
@@ -166,12 +188,12 @@ silex.utils.JQueryPageable.getDisplayName = function(pageableRootElement, pageNa
 /**
  * remove a page from the dom
  */
-silex.utils.JQueryPageable.removePage = function(pageableRootElement, pageName) {
-  if(!silex.utils.JQueryPageable.getPageable(pageableRootElement)){
+silex.utils.PageablePlugin.removePage = function(pageName) {
+  if(!silex.utils.PageablePlugin.getPageable(silex.utils.PageablePlugin.bodyElement)){
     throw new Error('Operation failed, root pageable element is required.');
   }
   // remove the DOM element
-  $('a[data-silex-type="page"]', pageableRootElement).each(
+  $('a[data-silex-type="page"]', silex.utils.PageablePlugin.bodyElement).each(
       function() {
         if (this.getAttribute('id') === pageName) {
           $(this).remove();
@@ -189,10 +211,10 @@ silex.utils.JQueryPageable.removePage = function(pageableRootElement, pageName) 
       function() {
         $(this).removeClass(pageName);
 
-        var pagesOfElement = silex.utils.JQueryPageable.getPagesForElement(pageableRootElement, this);
+        var pagesOfElement = silex.utils.PageablePlugin.getPagesForElement(this);
 
         if (pagesOfElement.length <= 0)
-          $(this).removeClass(silex.utils.JQueryPageable.PAGE_CLASS);
+          $(this).removeClass(silex.utils.PageablePlugin.PAGE_CLASS);
       }
   );
 };
@@ -203,8 +225,8 @@ silex.utils.JQueryPageable.removePage = function(pageableRootElement, pageName) 
  * @param {string} name
  * @param {string} displayName
  */
-silex.utils.JQueryPageable.createPage = function(pageableRootElement, name, displayName) {
-  if(!silex.utils.JQueryPageable.getPageable(pageableRootElement)){
+silex.utils.PageablePlugin.createPage = function(name, displayName) {
+  if(!silex.utils.PageablePlugin.getPageable(silex.utils.PageablePlugin.bodyElement)){
     throw new Error('Operation failed, root pageable element is required.');
   }
   // create the DOM element
@@ -212,20 +234,20 @@ silex.utils.JQueryPageable.createPage = function(pageableRootElement, name, disp
   aTag.setAttribute('id', name);
   aTag.setAttribute('data-silex-type', 'page');
   aTag.innerHTML = displayName;
-  goog.dom.appendChild(pageableRootElement, aTag);
+  goog.dom.appendChild(silex.utils.PageablePlugin.bodyElement, aTag);
 };
 
 
 /**
  * rename a page in the dom
  */
-silex.utils.JQueryPageable.renamePage = function(pageableRootElement, oldName, newName, newDisplayName) {
-  if(!silex.utils.JQueryPageable.getPageable(pageableRootElement)){
+silex.utils.PageablePlugin.renamePage = function(oldName, newName, newDisplayName) {
+  if(!silex.utils.PageablePlugin.getPageable(silex.utils.PageablePlugin.bodyElement)){
     throw new Error('Operation failed, root pageable element is required.');
   }
   var that = this;
   // update the DOM element
-  $('a[data-silex-type="page"]', pageableRootElement).each(
+  $('a[data-silex-type="page"]', silex.utils.PageablePlugin.bodyElement).each(
       function() {
         if (this.getAttribute('id') === oldName) {
           this.setAttribute('id', newName);
@@ -254,19 +276,19 @@ silex.utils.JQueryPageable.renamePage = function(pageableRootElement, oldName, n
  *         or an internal link (beginning with #!)
  *         or null to remove the link
  */
-silex.utils.JQueryPageable.setLink = function(element, link) {
+silex.utils.PageablePlugin.setLink = function(element, link) {
   if (link){
-    element.setAttribute(silex.utils.JQueryPageable.LINK_ATTR, link);
+    element.setAttribute(silex.utils.PageablePlugin.LINK_ATTR, link);
   }
   else{
-    element.removeAttribute(silex.utils.JQueryPageable.LINK_ATTR);
+    element.removeAttribute(silex.utils.PageablePlugin.LINK_ATTR);
   }
 };
 
 /**
  * set/get a "silex style link" on an element
  */
-silex.utils.JQueryPageable.getLink = function(element) {
+silex.utils.PageablePlugin.getLink = function(element) {
   var link = element.getAttribute('data-silex-href');
   return link;
 };
@@ -275,18 +297,18 @@ silex.utils.JQueryPageable.getLink = function(element) {
 /**
  * set/get a the visibility of an element in the given page
  */
-silex.utils.JQueryPageable.addToPage = function(pageableRootElement, element, pageName) {
+silex.utils.PageablePlugin.addToPage = function(element, pageName) {
   goog.dom.classes.add(element, pageName);
-  goog.dom.classes.add(element, silex.utils.JQueryPageable.PAGE_CLASS);
+  goog.dom.classes.add(element, silex.utils.PageablePlugin.PAGE_CLASS);
 };
 
 /**
  * set/get a "silex style link" on an element
  */
-silex.utils.JQueryPageable.removeFromPage = function(pageableRootElement, element, pageName) {
+silex.utils.PageablePlugin.removeFromPage = function(element, pageName) {
   goog.dom.classes.remove(element, pageName);
-  if (!silex.utils.JQueryPageable.getPagesForElement(pageableRootElement, element).length>0){
-    goog.dom.classes.remove(element, silex.utils.JQueryPageable.PAGE_CLASS);
+  if (!silex.utils.PageablePlugin.getPagesForElement(element).length>0){
+    goog.dom.classes.remove(element, silex.utils.PageablePlugin.PAGE_CLASS);
   }
 };
 
@@ -294,13 +316,13 @@ silex.utils.JQueryPageable.removeFromPage = function(pageableRootElement, elemen
 /**
  * set/get a "silex style link" on an element
  */
-silex.utils.JQueryPageable.getPagesForElement = function(pageableRootElement, element) {
-  if(!silex.utils.JQueryPageable.getPageable(pageableRootElement)){
+silex.utils.PageablePlugin.getPagesForElement = function(element) {
+  if(!silex.utils.PageablePlugin.getPageable(silex.utils.PageablePlugin.bodyElement)){
     throw new Error('Operation failed, root pageable element is required.');
   }
   var res = [];
   // get all the pages
-  var pages = silex.utils.JQueryPageable.getPages(pageableRootElement);
+  var pages = silex.utils.PageablePlugin.getPages();
   for (idx in pages) {
     var pageName = pages[idx];
     // remove the component from the page
@@ -314,9 +336,9 @@ silex.utils.JQueryPageable.getPagesForElement = function(pageableRootElement, el
 /**
  * check if an element is in the given page (current page by default)
  */
-silex.utils.JQueryPageable.isInPage = function(pageableRootElement, element, opt_pageName) {
+silex.utils.PageablePlugin.isInPage = function(element, opt_pageName) {
   if (!opt_pageName){
-    opt_pageName = silex.utils.JQueryPageable.getCurrentPageName(pageableRootElement);
+    opt_pageName = silex.utils.PageablePlugin.getCurrentPageName();
   }
   return goog.dom.classes.has(element, opt_pageName);
 }

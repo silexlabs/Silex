@@ -202,8 +202,9 @@ silex.view.TextEditor.prototype.initUI = function() {
  */
 silex.view.TextEditor.prototype.openEditor = function() {
   // retrieve selection text content
-  var container = silex.utils.JQueryEditable.getContainer();
-  var initialHtml = getElementByClass(silex.model.Element.SELECTED_CLASS_NAME);
+  var element = this.getSelection()[0];
+  var container = goog.dom.getElementByClass(silex.model.Element.ELEMENT_CONTENT_CLASS_NAME, element);
+  var initialHtml = container.innerHTML;
   // init editable text input
   this.textField.setHtml(false, initialHtml);
   this.textField.focusAndPlaceCursorAtStart();

@@ -61,7 +61,7 @@ ________________
 
 Refactoring
 to do
-  remove UI of appolo 
+  remove UI of appolo
   body::publish
 
 retorcompat silex-sub-type
@@ -259,6 +259,20 @@ Stress tests
     * https://everhour.com/#individual (a utiliser pour tracker le temps)
     * http://dribbble.com/adamgedney/tags/landing
     * http://dribbble.com/shots/965728-FREE-Icon-Backgrounds (Pour lexoyo.me? Attention lisence)
+
+
+* Idée anims css pour Silex LP
+
+  Scroll -> tout se “casse” au fur et a mesure
+  Macaron se décroche
+  Titres s’éteignent et deviennent n&b
+  Images moisissent
+  Tout en bas, un verre posé, avec mention “all this is ... unbreakable”. Le verre est une vidéo. Un gars bourré passe, le remplis et le casse, puis le repose au même endroit cassée.
+  Le bg autour de la vidéo évolue avec la vidéo et le “un” de unbreakable s’éteint
+
+  This is all breakable ... try it on mobile
+  Site responsive et multilingue
+
 
 * envoi a EO de MS (contact lex)?
 * Alternatives.to wikipedia readme

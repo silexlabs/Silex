@@ -172,10 +172,10 @@ silex.model.Element.prototype.setBgImage = function(element, url) {
  */
 silex.model.Element.prototype.getInnerHtml = function(element) {
   // disable editable
-  silex.utils.JQueryEditable.setEditable(element, false);
+  silex.utils.EditablePlugin.setEditable(element, false);
   var innerHTML = this.getContentNode(element).innerHTML;
   // re-enable editable
-  silex.utils.JQueryEditable.setEditable(element, true);
+  silex.utils.EditablePlugin.setEditable(element, true);
   return innerHTML;
 };
 
@@ -187,11 +187,11 @@ silex.model.Element.prototype.getInnerHtml = function(element) {
  */
 silex.model.Element.prototype.setInnerHtml = function(element, innerHTML) {
   // disable editable
-  silex.utils.JQueryEditable.setEditable(element, false);
+  silex.utils.EditablePlugin.setEditable(element, false);
   var contentNode = this.getContentNode(element);
   contentNode.innerHTML = innerHTML;
   // re-enable editable
-  silex.utils.JQueryEditable.setEditable(element, true);
+  silex.utils.EditablePlugin.setEditable(element, true);
 };
 
 /**
@@ -226,11 +226,11 @@ silex.model.Element.prototype.setContentNode = function(element, content) {
   // replace in function of the element type
   if (initialContent === element) {
     // disable editable
-    silex.utils.JQueryEditable.setEditable(element, false);
+    silex.utils.EditablePlugin.setEditable(element, false);
     // containers and text
     element.innerhtml = content.innerhtml;
     // re-enable editable
-    silex.utils.JQueryEditable.setEditable(element, true);
+    silex.utils.EditablePlugin.setEditable(element, true);
   }
   else {
     // html and images
@@ -367,7 +367,7 @@ silex.model.Element.prototype.createElement = function(type) {
     case silex.model.Element.TYPE_HTML:
       // create the element
       element = goog.dom.createElement('div');
-      element.className = silex.utils.JQueryEditable.EDITABLE_CLASS_NAME;
+      element.className = silex.utils.EditablePlugin.EDITABLE_CLASS_NAME;
       element.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_HTML);
       // create the container for html content
       var htmlContent = goog.dom.createElement('div');
@@ -383,17 +383,17 @@ silex.model.Element.prototype.createElement = function(type) {
     case silex.model.Element.TYPE_IMAGE:
       // create the element
       element = goog.dom.createElement('div');
-      element.className = silex.utils.JQueryEditable.EDITABLE_CLASS_NAME;
+      element.className = silex.utils.EditablePlugin.EDITABLE_CLASS_NAME;
       element.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_IMAGE);
     break;
 
   }
 
   // init the element
-  goog.dom.classes.add(element, silex.utils.JQueryEditable.EDITABLE_CLASS_NAME);
+  goog.dom.classes.add(element, silex.utils.EditablePlugin.EDITABLE_CLASS_NAME);
 
   // make it editable
-  silex.utils.JQueryEditable.setEditable(element, true);
+  silex.utils.EditablePlugin.setEditable(element, true);
 
   // find the container (main background container or the stage)
   var container = goog.dom.getElementByClass('background', this.bodyElement);

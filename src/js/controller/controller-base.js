@@ -20,7 +20,7 @@
 goog.provide('silex.controller.ControllerBase');
 
 goog.require('silex.utils.Notification');
-goog.require('silex.utils.JQueryPageable');
+goog.require('silex.utils.PageablePlugin');
 goog.require('silex.utils.RetroCompat');
 
 /**
@@ -80,8 +80,8 @@ silex.controller.ControllerBase.prototype.addElement = function(type) {
   // create the element and add it to the stage
   var element = this.model.element.createElement(type);
   // only visible on the current page
-  var currentPageName = silex.utils.JQueryPageable.getCurrentPageName(this.model.body.bodyElement);
-  silex.utils.JQueryPageable.addToPage(this.model.body.bodyElement, element, currentPageName);
+  var currentPageName = silex.utils.PageablePlugin.getCurrentPageName();
+  silex.utils.PageablePlugin.addToPage(element, currentPageName);
   // unless one of its parents is in a page already
   this.checkElementVisibility(element);
   // select the component
@@ -127,7 +127,7 @@ silex.controller.ControllerBase.prototype.editElement = function(opt_element) {
  * open a page
  */
 silex.controller.ControllerBase.prototype.openPage = function(pageName) {
-  silex.utils.JQueryPageable.setCurrentPage(this.model.body.bodyElement, pageName);
+  silex.utils.PageablePlugin.setCurrentPage(pageName);
   // update view
   this.view.pageTool.redraw();
 }
@@ -137,15 +137,14 @@ silex.controller.ControllerBase.prototype.openPage = function(pageName) {
 silex.controller.ControllerBase.prototype.renamePage = function(opt_pageName) {
   // default to the current page
   if (!opt_pageName){
-    opt_pageName = silex.utils.JQueryPageable.getCurrentPageName(this.model.body.bodyElement);
+    opt_pageName = silex.utils.PageablePlugin.getCurrentPageName();
   }
   this.getUserInputPageName(
-    silex.utils.JQueryPageable.getDisplayName(
-      this.model.body.bodyElement, opt_pageName),
+    silex.utils.PageablePlugin.getDisplayName(opt_pageName),
       goog.bind(function(name, newDisplayName) {
     if (newDisplayName) {
       // update model
-      silex.utils.JQueryPageable.renamePage(this.model.body.bodyElement, opt_pageName, name, newDisplayName);
+      silex.utils.PageablePlugin.renamePage(opt_pageName, name, newDisplayName);
       // open the new page
       this.openPage(name);
     }
@@ -159,16 +158,16 @@ silex.controller.ControllerBase.prototype.renamePage = function(opt_pageName) {
 silex.controller.ControllerBase.prototype.removePage = function(opt_pageName) {
   // default to the current page
   if (!opt_pageName){
-    opt_pageName = silex.utils.JQueryPageable.getCurrentPage(this.model.body.bodyElement);
+    opt_pageName = silex.utils.PageablePlugin.getCurrentPage(this.model.body.bodyElement);
   }
   // confirm and delete
   silex.utils.Notification.confirm('I am about to delete the page "'
-    + silex.utils.JQueryPageable.getDisplayName(this.model.body.bodyElement, opt_pageName)
+    + silex.utils.PageablePlugin.getDisplayName(opt_pageName)
     + '", are you sure?',
     goog.bind(function(accept) {
       if (accept) {
         // update model
-        silex.utils.JQueryPageable.removePage(this.model.body.bodyElement, opt_pageName);
+        silex.utils.PageablePlugin.removePage(opt_pageName);
         // update view
         this.view.pageTool.redraw();
         this.view.propertyTool.redraw(); // css class of selected element may have chenged
@@ -193,7 +192,7 @@ silex.controller.ControllerBase.prototype.getUserInputPageName = function(defaul
                 .replace(/"/g, '-')
                 .toLowerCase();
           // check if a page with this name exists
-          var pages = silex.utils.JQueryPageable.getPages(this.model.body.bodyElement);
+          var pages = silex.utils.PageablePlugin.getPages();
           var exists = false;
           goog.array.forEach(pages, function(pageName) {
             if (pageName === name)
@@ -219,14 +218,14 @@ silex.controller.ControllerBase.prototype.getUserInputPageName = function(defaul
  * then the element should be visible everywhere, i.e. in the same pages as its parent
  */
 silex.controller.ControllerBase.prototype.checkElementVisibility = function(element) {
-  var parentPage = silex.utils.JQueryPageable.getParentPage(element);
+  var parentPage = silex.utils.PageablePlugin.getParentPage(element);
   if (parentPage !== null) {
     // get all the pages
-    var pages = silex.utils.JQueryPageable.getPagesForElement(this.model.body.bodyElement, element);
+    var pages = silex.utils.PageablePlugin.getPagesForElement(element);
     for (idx in pages) {
       // remove the component from the page
       var pageName = pages[idx];
-      silex.utils.JQueryPageable.removeFromPage(this.model.body.bodyElement, element, pageName);
+      silex.utils.PageablePlugin.removeFromPage(element, pageName);
     }
     // redraw the tool box in order to reflect the changes
     this.view.propertyTool.redraw();
@@ -241,7 +240,7 @@ silex.controller.ControllerBase.prototype.createPage = function(successCbk, erro
   this.getUserInputPageName('Your new page name', goog.bind(function(name, displayName) {
     if (name) {
       // create the page model
-      silex.utils.JQueryPageable.createPage(this.model.body.bodyElement, name, displayName);
+      silex.utils.PageablePlugin.createPage(name, displayName);
       this.openPage(name);
       this.tracker.trackAction('controller-events', 'success', event.type, 0);
       if (successCbk) successCbk();
@@ -374,9 +373,9 @@ silex.controller.ControllerBase.prototype.save = function(opt_url, opt_cbk, opt_
 silex.controller.ControllerBase.prototype.fileOperationSuccess = function(opt_message, opt_updateTools) {
 
   // find default first page
-  var pages = silex.utils.JQueryPageable.getPages(this.model.body.bodyElement);
+  var pages = silex.utils.PageablePlugin.getPages();
   // open default page
-  silex.utils.JQueryPageable.setCurrentPage(this.model.body.bodyElement, pages[0]);
+  silex.utils.PageablePlugin.setCurrentPage(pages[0]);
   // update tools
   if (opt_updateTools){
     this.view.pageTool.redraw();

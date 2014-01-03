@@ -20,7 +20,7 @@
 goog.require('silex.view.ViewBase');
 goog.provide('silex.view.Stage');
 
-goog.require('silex.utils.JQueryEditable');
+goog.require('silex.utils.EditablePlugin');
 
 goog.require('goog.events');
 goog.require('goog.events.MouseWheelHandler');
@@ -60,7 +60,7 @@ silex.view.Stage.prototype.initEvents = function () {
 
   // detect mouse down
   goog.events.listen(this.element, 'mousedown', function(e) {
-    if (this.onStatus) this.onStatus('select', silex.utils.JQueryEditable.getFirstEditableParent(e.target));
+    if (this.onStatus) this.onStatus('select', silex.utils.EditablePlugin.getFirstEditableParent(e.target));
     this.isDragging = true;
   }, false, this);
   // listen on body instead of element because user can release
@@ -92,18 +92,10 @@ silex.view.Stage.prototype.initEvents = function () {
   // Disable horizontal scrolling for Back page on Mac OS
   var mwh = new goog.events.MouseWheelHandler(this.element);
   goog.events.listen(mwh, goog.events.MouseWheelHandler.EventType.MOUSEWHEEL, function (e) {
-    if (e.deltaX<0 && this.element.scrollLeft<=0){
+    if (e.deltaX<0 && this.bodyElement.scrollLeft<=0){
       e.preventDefault();
     }
   }, false, this);
-};
-
-
-/**
- * @return {array} currently selected elements
- */
-silex.view.Stage.prototype.getSelection = function() {
-  return goog.dom.getElementsByClass(silex.model.Element.SELECTED_CLASS_NAME, this.bodyElement);
 };
 
 
