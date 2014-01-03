@@ -102,10 +102,10 @@ silex.controller.ControllerBase.prototype.editElement = function(opt_element) {
 
   switch (this.model.element.getType(opt_element)) {
     case silex.model.Element.TYPE_TEXT:
-      this.view.textEditor.openEditor(this.model.Element.getInnerHtml(opt_element));
+      this.view.textEditor.openEditor(this.model.element.getInnerHtml(opt_element));
       break;
     case silex.model.Element.TYPE_HTML:
-      this.view.htmlEditor.openEditor(this.model.Element.getInnerHtml(opt_element));
+      this.view.htmlEditor.openEditor(this.model.element.getInnerHtml(opt_element));
       break;
     case silex.model.Element.TYPE_IMAGE:
       this.view.fileExplorer.openDialog(

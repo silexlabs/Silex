@@ -7343,12 +7343,14 @@ silex.model.Element.prototype.getInnerHtml = function $silex$model$Element$$getI
   return $innerHTML$$
 };
 silex.model.Element.prototype.setInnerHtml = function $silex$model$Element$$setInnerHtml$($element$$, $innerHTML$$) {
+  console.log(arguments);
   silex.utils.EditablePlugin.setEditable($element$$, !1);
   this.getContentNode($element$$).innerHTML = $innerHTML$$;
   silex.utils.EditablePlugin.setEditable($element$$, !0)
 };
 silex.model.Element.prototype.getContentNode = function $silex$model$Element$$getContentNode$($element$$) {
-  var $contentElements$$ = goog.dom.getElementsByClass(silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
+  console.log(arguments);
+  var $contentElements$$ = goog.dom.getElementsByClass(silex.model.Element.ELEMENT_CONTENT_CLASS_NAME, $element$$);
   return $contentElements$$ && 1 === $contentElements$$.length ? $contentElements$$[0] : $element$$
 };
 silex.model.Element.prototype.setContentNode = function $silex$model$Element$$setContentNode$($element$$, $content$$) {
@@ -7504,7 +7506,7 @@ silex.view.Menu.prototype.buildMenu = function $silex$view$Menu$$buildMenu$($roo
   }, this));
   $keyHandler$$ = new goog.events.KeyHandler(document);
   goog.events.listen($keyHandler$$, "key", goog.bind(function($event$$) {
-    $event$$.keyCode === goog.events.KeyCodes.ENTER && ("INPUT" !== $event$$.target.tagName && $event$$.target.tagName !== $shortcutHandler$$.textInputs_[$event$$.target.type]) && ($event$$.preventDefault(), this.onMenuEvent("view.open.textEditor"))
+    $event$$.keyCode === goog.events.KeyCodes.ENTER && ("INPUT" !== $event$$.target.tagName.toUpperCase() && "TEXTAREA" !== $event$$.target.tagName.toUpperCase() && $event$$.target.tagName !== $shortcutHandler$$.textInputs_[$event$$.target.type]) && ($event$$.preventDefault(), this.onMenuEvent("view.open.textEditor"))
   }, this));
   this.menu.render($rootNode$$);
   goog.events.listen(this.menu, goog.ui.Component.EventType.ACTION, function($e$$) {
@@ -7740,10 +7742,10 @@ silex.controller.ControllerBase.prototype.editElement = function $silex$controll
   $opt_element$$ || ($opt_element$$ = this.view.stage.getSelection()[0]);
   switch(this.model.element.getType($opt_element$$)) {
     case silex.model.Element.TYPE_TEXT:
-      this.view.textEditor.openEditor(this.model.Element.getInnerHtml($opt_element$$));
+      this.view.textEditor.openEditor(this.model.element.getInnerHtml($opt_element$$));
       break;
     case silex.model.Element.TYPE_HTML:
-      this.view.htmlEditor.openEditor(this.model.Element.getInnerHtml($opt_element$$));
+      this.view.htmlEditor.openEditor(this.model.element.getInnerHtml($opt_element$$));
       break;
     case silex.model.Element.TYPE_IMAGE:
       this.view.fileExplorer.openDialog(goog.bind(function($url$$) {
@@ -8219,7 +8221,7 @@ silex.controller.MenuController.prototype.menuCallback = function $silex$control
       this.view.workspace.invalidate();
       break;
     case "view.open.editor":
-      this.editComponent();
+      this.editElement();
       break;
     case "insert.page":
       this.createPage();
@@ -20799,6 +20801,7 @@ silex.view.TextEditor.prototype.initUI = function $silex$view$TextEditor$$initUI
   this.textField.registerPlugin(new goog.editor.plugins.HeaderFormatter);
   this.textField.registerPlugin(new goog.editor.plugins.LinkDialogPlugin);
   this.textField.registerPlugin(new goog.editor.plugins.LinkBubble);
+  this.textField.registerPlugin(new goog.editor.plugins.HeaderFormatter);
   var $background$$ = goog.ui.editor.DefaultToolbar.makeBuiltInToolbarButton(goog.editor.Command.FONT_FACE), $availableFonts$$1_button$$ = silex.Config.fonts, $fontName$$;
   for($fontName$$ in $availableFonts$$1_button$$) {
     goog.ui.editor.ToolbarFactory.addFont($background$$, $fontName$$, $availableFonts$$1_button$$[$fontName$$].value)

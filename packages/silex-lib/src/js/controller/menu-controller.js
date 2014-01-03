@@ -96,7 +96,7 @@ silex.controller.MenuController.prototype.menuCallback = function(type) {
       this.view.workspace.invalidate();
       break;
     case 'view.open.editor':
-      this.editComponent();
+      this.editElement();
       break;
     case 'insert.page':
       this.createPage();

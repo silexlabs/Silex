@@ -32,6 +32,7 @@ goog.require('goog.editor.plugins.ListTabHandler');
 goog.require('goog.editor.plugins.RemoveFormatting');
 goog.require('goog.editor.plugins.SpacesTabHandler');
 goog.require('goog.editor.plugins.UndoRedo');
+goog.require('goog.editor.plugins.HeaderFormatter');
 goog.require('goog.events');
 goog.require('goog.ui.editor.DefaultToolbar');
 goog.require('goog.ui.editor.ToolbarController');
@@ -101,6 +102,7 @@ silex.view.TextEditor.prototype.initUI = function() {
   this.textField.registerPlugin(new goog.editor.plugins.HeaderFormatter());
   this.textField.registerPlugin(new goog.editor.plugins.LinkDialogPlugin());
   this.textField.registerPlugin(new goog.editor.plugins.LinkBubble());
+  this.textField.registerPlugin(new goog.editor.plugins.HeaderFormatter());
 
   // add fonts
   var fontFaceButton = goog.ui.editor.DefaultToolbar.makeBuiltInToolbarButton(
