@@ -47,11 +47,29 @@ silex.view.pane.StylePane.prototype.cssClassesInput;
 
 
 /**
+ * instance of ace editor
+ */
+silex.view.CssEditor.prototype.ace;
+
+
+/**
  * build the UI
  */
 silex.view.pane.StylePane.prototype.buildUi = function() {
-  this.cssClassesInput = goog.dom.getElementByClass('style-css-classes-input');
+  this.cssClassesInput = goog.dom.getElementByClass('style-css-classes-input', this.element);
   goog.events.listen(this.cssClassesInput, 'change', this.onInputChanged, false, this);
+
+  this.ace = ace.edit(goog.dom.getElementByClass('element-style-editor', this.element));
+  this.iAmSettingValue = false;
+  //this.ace.setTheme("ace/theme/monokai");
+  this.ace.getSession().setMode('ace/mode/css');
+  this.ace.getSession().on('change', goog.bind(function(e) {
+    if (this.iAmSettingValue === false) {
+      setTimeout(goog.bind(function() {
+        this.contentChanged();
+      }, this), 100);
+    }
+  }, this));
 };
 
 
@@ -67,6 +85,21 @@ silex.view.pane.StylePane.prototype.redraw = function() {
 
   if (element){
     this.cssClassesInput.value = silex.utils.Style.getClassName(element);
+    // set value
+    var value = element.getAttribute('style');
+    if (value){
+      this.iAmSettingValue = true;
+      var str = '.element{\n'+value.replace(/; /g, ';\n')+'\n}';
+      var pos = this.ace.getCursorPosition();
+      this.ace.setValue(str);
+      this.ace.gotoLine(pos.row + 1, pos.column, false);
+      this.iAmSettingValue = false;
+    }
+    else{
+      this.iAmSettingValue = true;
+      this.ace.setValue('');
+      this.iAmSettingValue = false;
+    }
   }
 };
 
@@ -76,4 +109,19 @@ silex.view.pane.StylePane.prototype.redraw = function() {
  */
 silex.view.pane.StylePane.prototype.onInputChanged = function(event) {
   if (this.onStatus) this.onStatus('classNameChanged', this.cssClassesInput.value);
+};
+
+/**
+ * the content has changed, notify the controler
+ */
+silex.view.pane.StylePane.prototype.contentChanged = function() {
+  var value = this.ace.getValue();
+  if(value){
+    value = value.replace('.element{\n', '');
+    value = value.replace('\n}', '');
+    value = value.replace(/\n/, ' ');
+  }
+  if (this.onStatus) {
+    this.onStatus('propertyChanged', 'style', value);
+  }
 };

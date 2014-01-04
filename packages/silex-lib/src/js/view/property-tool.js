@@ -156,7 +156,7 @@ silex.view.PropertyTool.prototype.buildPanes = function() {
 
   // silex styles
   this.stylePane = new silex.view.pane.StylePane(
-      goog.dom.getElementByClass('general-editor', this.element),
+      goog.dom.getElementByClass('style-editor', this.element),
       this.bodyElement, this.headElement);
 
   this.stylePane.onStatus = onStatusCbk;

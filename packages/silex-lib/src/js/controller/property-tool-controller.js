@@ -80,7 +80,7 @@ silex.controller.PropertyToolController.prototype.propertyToolCallback = functio
       this.setClassName(opt_name);
       break;
     case 'propertyChanged':
-      console.error('not implemented');
+      this.propertyChanged(opt_name, opt_value);
       break;
     case 'addToPage':
       silex.utils.PageablePlugin.addToPage(this.view.stage.getSelection()[0], opt_name);

@@ -77,7 +77,6 @@ silex.view.Stage.prototype.initEvents = function () {
   }, false, this);
   // dispatch event when an element is dropped in a new container
   goog.events.listen(this.element, 'newContainer', function(e) {
-    console.log('newContainer');
     if (this.onStatus) this.onStatus('newContainer');
   }, false, this);
   // detect double click

@@ -52,9 +52,9 @@ goog.inherits(silex.view.CssEditor, silex.view.ViewBase);
 
 
 /**
- * the editable text field
+ * instance of ace editor
  */
-silex.view.CssEditor.prototype.textField;
+silex.view.CssEditor.prototype.ace;
 
 
 /**
