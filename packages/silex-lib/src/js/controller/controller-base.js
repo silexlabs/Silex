@@ -135,11 +135,49 @@ silex.controller.ControllerBase.prototype.addElement = function(type) {
 
 
 /**
+ * set a given style to the current selection
+ */
+silex.controller.ControllerBase.prototype.styleChanged = function(name, value) {
+  // style of the element has changed
+  var element = this.view.stage.getSelection()[0];
+  if (element && name){
+    // update the model
+    this.model.element.setStyle(element, name, value);
+    // redraw the data
+    this.view.propertyTool.redraw();
+  }
+  else{
+    console.error('can not set style ', name, ' on element ', element);
+  }
+}
+
+
+/**
  * edit Silex editable css styles
  */
-silex.controller.ControllerBase.prototype.openCssEditor = function(opt_element) {
+silex.controller.ControllerBase.prototype.openCssEditor = function() {
   this.view.cssEditor.openEditor(this.model.head.getHeadStyle());
 }
+
+
+/**
+ * set css class names
+ */
+silex.controller.ControllerBase.prototype.setClassName = function(name) {
+  // style of the element has changed
+  var element = this.view.stage.getSelection()[0];
+  if (element && name){
+    // update the model
+    silex.utils.Style.setClassName(element, name);
+    // redraw the data
+    this.view.propertyTool.redraw();
+  }
+  else{
+    console.error('can not add class ', name, ' to element ', element);
+  }
+}
+
+
 /**
  * edit an {element} element
  * take its type into account and open the corresponding editor
