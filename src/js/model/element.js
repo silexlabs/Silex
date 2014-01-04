@@ -147,10 +147,8 @@ silex.model.Element.prototype.getStyle = function(element, styleName) {
  * @param  {string}  opt_styleValue     the value for this styleName
  */
 silex.model.Element.prototype.setStyle = function(element, styleName, opt_styleValue) {
-  console.log(element, styleName, opt_styleValue, element.style[styleName], goog.isDef(opt_styleValue));
   if (goog.isDef(opt_styleValue)){
     element.style[styleName] = opt_styleValue;
-    console.log(element, styleName, opt_styleValue, element.style.backgroundAttachment, goog.isDef(opt_styleValue));
   }
   else{
    element.style[styleName] = '';

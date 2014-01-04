@@ -18,6 +18,79 @@
 goog.provide('silex.utils.Style');
 
 goog.require('goog.style');
+goog.require('goog.array');
+
+
+/**
+ * constant for the class names which are of internal use in Silex
+ * @const
+ * @type {string}
+ */
+silex.utils.Style.SILEX_CLASS_NAMES = [
+  silex.utils.EditablePlugin.EDITABLE_CLASS_NAME,
+  silex.utils.EditablePlugin.UI_RESIZABLE_CLASS_NAME,
+  silex.utils.EditablePlugin.UI_DRAGGABLE_CLASS_NAME,
+  silex.utils.EditablePlugin.UI_DROPPABLE_CLASS_NAME,
+  silex.utils.EditablePlugin.UI_DRAGGABLE_DRAGGING_CLASS_NAME,
+  silex.utils.PageablePlugin.PAGEABLE_ROOT_CLASS_NAME,
+  silex.utils.PageablePlugin.PAGE_CLASS_NAME,
+  silex.model.Element.SELECTED_CLASS_NAME,
+  silex.model.Element.TYPE_CONTAINER + '-element',
+  silex.model.Element.TYPE_IMAGE + '-element',
+  silex.model.Element.TYPE_TEXT + '-element',
+  silex.model.Element.TYPE_HTML + '-element'
+];
+
+
+/**
+ * get/set class name of the element of a container created by silex
+ * remove all silex internal classes
+ * @param  {element} element   created by silex, either a text box, image, ...
+ * @return  {string}           the value for this styleName
+ */
+silex.utils.Style.getClassName = function(element) {
+  var pages = silex.utils.PageablePlugin.getPages();
+  return  goog.array.map(element.className.split(' '), function (name) {
+    if(goog.array.contains(silex.utils.Style.SILEX_CLASS_NAMES, name)
+      || goog.array.contains(pages, name)){
+      return;
+    }
+    return name;
+  }).join(' ').trim();
+};
+
+
+/**
+ * get/set class name of the element of a container created by silex
+ * remove all silex internal classes
+ * @param  {element} element   created by silex, either a text box, image, ...
+ * @param  {string} opt_className  the class names, or null to reset
+ */
+silex.utils.Style.setClassName = function(element, opt_className) {
+  // compute class names to keep, no matter what
+  // i.e. the one which are in element.className + in Silex internal classes
+  var pages = silex.utils.PageablePlugin.getPages();
+  var classNamesToKeep = goog.array.map(element.className.split(' '), function (name) {
+    if(goog.array.contains(silex.utils.Style.SILEX_CLASS_NAMES, name)
+      || goog.array.contains(pages, name)){
+      return name;
+    }
+    return;
+  });
+
+  // reset element class name
+  element.className = classNamesToKeep.join(' ');
+  if (opt_className){
+    // apply classes from opt_className
+    goog.array.forEach(opt_className.split(' '), function (name) {
+      name = name.trim();
+      if (name && name !== ''){
+        goog.dom.classes.add(element, name);
+      }
+    });
+  }
+};
+
 
 /**
  * convert style object to string

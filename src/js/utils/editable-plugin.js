@@ -27,6 +27,12 @@ silex.utils.EditablePlugin = function() {
 
 silex.utils.EditablePlugin.EDITABLE_CLASS_NAME = 'editable-style';
 
+silex.utils.EditablePlugin.UI_RESIZABLE_CLASS_NAME = 'ui-resizable';
+silex.utils.EditablePlugin.UI_DRAGGABLE_CLASS_NAME = 'ui-draggable';
+silex.utils.EditablePlugin.UI_DROPPABLE_CLASS_NAME = 'ui-droppable';
+silex.utils.EditablePlugin.UI_DRAGGABLE_DRAGGING_CLASS_NAME = 'ui-draggable-dragging';
+
+
 /**
  * find the first parent wich has the 'editable-style' cdss class
  */
@@ -58,14 +64,14 @@ silex.utils.EditablePlugin.setEditable = function(element, isEditable, opt_isRoo
 
     $('.editable-style', element).each(function () {
       // elements
-      if (element.getAttribute('data-silex-type') === 'container'){
-        $(this).editable();
-      }
-      else{
+      if (this.getAttribute('data-silex-type') === 'container'){
         // containers
         $(this).editable({
           isContainer: true
         });
+      }
+      else{
+        $(this).editable();
       }
     });
 
@@ -99,10 +105,16 @@ silex.utils.EditablePlugin.setEditable = function(element, isEditable, opt_isRoo
     $(element).editable('destroy');
 
     // cleanup the dom
-    $(element).find('.silex-selected').removeClass('silex-selected');
-    $(element).find('.ui-resizable').removeClass('ui-resizable');
-    $(element).find('.ui-draggable').removeClass('ui-draggable');
-    $(element).find('.ui-droppable').removeClass('ui-droppable');
+    $(element).find(silex.model.Element.SELECTED_CLASS_NAME)
+      .removeClass(silex.utils.EditablePlugin.SILEX_SELECTED_CLASS_NAME);
+    $(element).find(silex.utils.EditablePlugin.UI_RESIZABLE_CLASS_NAME)
+      .removeClass(silex.utils.EditablePlugin.UI_RESIZABLE_CLASS_NAME);
+    $(element).find(silex.utils.EditablePlugin.UI_DRAGGABLE_CLASS_NAME)
+      .removeClass(silex.utils.EditablePlugin.UI_DRAGGABLE_CLASS_NAME);
+    $(element).find(silex.utils.EditablePlugin.UI_DROPPABLE_CLASS_NAME)
+      .removeClass(silex.utils.EditablePlugin.UI_DROPPABLE_CLASS_NAME);
+    $(element).find(silex.utils.EditablePlugin.UI_DRAGGABLE_DRAGGING_CLASS_NAME)
+      .removeClass(silex.utils.EditablePlugin.UI_DRAGGABLE_DRAGGING_CLASS_NAME);
     $(element).find('[aria-disabled]').removeAttr('aria-disabled');
     $(element).find('.ui-resizable-handle').remove();
   }

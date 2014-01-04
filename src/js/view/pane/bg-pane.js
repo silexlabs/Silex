@@ -135,7 +135,6 @@ silex.view.pane.BgPane.prototype.buildUi = function() {
   goog.events.listen(this.attachementComboBox,
       goog.ui.Component.EventType.CHANGE,
       function(event) {
-        console.log('backgroundAttachment', event.target.getSelectedItem().getId());
         this.styleChanged('backgroundAttachment', event.target.getSelectedItem().getId());
       }, false, this);
   goog.events.listen(this.vPositionComboBox,
@@ -196,7 +195,6 @@ silex.view.pane.BgPane.prototype.redraw = function() {
     }
     // workaround "backgroundImage not set"
     this.bgClearBgImage.setEnabled(true);
-    console.log(element.style.backgroundAttachment);
     if (element.style.backgroundAttachment) {
       switch (element.style.backgroundAttachment) {
         case 'scroll':

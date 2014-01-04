@@ -25,6 +25,7 @@ goog.require('silex.view.pane.BorderPane');
 goog.require('silex.view.pane.PropertyPane');
 goog.require('silex.view.pane.PagePane');
 goog.require('silex.view.pane.GeneralStylePane');
+goog.require('silex.view.pane.StylePane');
 
 goog.require('goog.array');
 goog.require('goog.cssom');
@@ -99,6 +100,13 @@ silex.view.PropertyTool.prototype.pagePane;
 silex.view.PropertyTool.prototype.generalStylePane;
 
 
+/**
+ * property editor
+ * @see     silex.view.pane.StylePane
+ */
+silex.view.PropertyTool.prototype.stylePane;
+
+
 
 /**
  * build the UI
@@ -146,6 +154,13 @@ silex.view.PropertyTool.prototype.buildPanes = function() {
 
   this.generalStylePane.onStatus = onStatusCbk;
 
+  // silex styles
+  this.stylePane = new silex.view.pane.StylePane(
+      goog.dom.getElementByClass('general-editor', this.element),
+      this.bodyElement, this.headElement);
+
+  this.stylePane.onStatus = onStatusCbk;
+
 };
 
 
@@ -157,6 +172,7 @@ silex.view.PropertyTool.prototype.redraw = function() {
   this.propertyPane.redraw();
   this.pagePane.redraw();
   this.generalStylePane.redraw();
+  this.stylePane.redraw();
   this.bgPane.redraw();
 };
 
@@ -181,6 +197,7 @@ silex.view.PropertyTool.prototype.setBaseUrl = function(url) {
   this.propertyPane.setBaseUrl(url);
   this.pagePane.setBaseUrl(url);
   this.generalStylePane.setBaseUrl(url);
+  this.stylePane.setBaseUrl(url);
   this.bgPane.setBaseUrl(url);
 };
 

@@ -63,7 +63,7 @@ silex.utils.PageablePlugin.LINK_ATTR = 'data-silex-href';
  * @const
  * @type {string}
  */
-silex.utils.PageablePlugin.PAGEABLE_ROOT_CLASS = 'pageable-root-class';
+silex.utils.PageablePlugin.PAGEABLE_ROOT_CLASS_NAME = 'pageable-root-class';
 
 
 /**
@@ -71,16 +71,16 @@ silex.utils.PageablePlugin.PAGEABLE_ROOT_CLASS = 'pageable-root-class';
  * @const
  * @type {string}
  */
-silex.utils.PageablePlugin.PAGE_CLASS = 'silex-page';
+silex.utils.PageablePlugin.PAGE_CLASS_NAME = 'silex-page';
 
 
 /**
  * retrieve the first parent which is visible only on some pages
- * @return null or the element or one of its parents which has the css class silex.utils.PageablePlugin.PAGE_CLASS
+ * @return null or the element or one of its parents which has the css class silex.utils.PageablePlugin.PAGE_CLASS_NAME
  */
 silex.utils.PageablePlugin.getParentPage = function(element) {
   var parent = element.parentNode;
-  while (parent && !goog.dom.classes.has(parent, silex.utils.PageablePlugin.PAGE_CLASS)) {
+  while (parent && !goog.dom.classes.has(parent, silex.utils.PageablePlugin.PAGE_CLASS_NAME)) {
     parent = parent.parentNode;
   }
   return parent;
@@ -89,21 +89,21 @@ silex.utils.PageablePlugin.getParentPage = function(element) {
 
 /**
  * retrieve the first parent which is visible only on some pages
- * @return true if the {element} bodyElement has the css class silex.utils.PageablePlugin.PAGEABLE_ROOT_CLASS
+ * @return true if the {element} bodyElement has the css class silex.utils.PageablePlugin.PAGEABLE_ROOT_CLASS_NAME
  */
 silex.utils.PageablePlugin.getPageable = function(bodyElement) {
-  return bodyElement && $(bodyElement).hasClass(silex.utils.PageablePlugin.PAGEABLE_ROOT_CLASS);
+  return bodyElement && $(bodyElement).hasClass(silex.utils.PageablePlugin.PAGEABLE_ROOT_CLASS_NAME);
 };
 
 
 /**
  * retrieve the first parent which is visible only on some pages
- * @param {element} bodyElement which has the css class silex.utils.PageablePlugin.PAGEABLE_ROOT_CLASS
+ * @param {element} bodyElement which has the css class silex.utils.PageablePlugin.PAGEABLE_ROOT_CLASS_NAME
  */
 silex.utils.PageablePlugin.setPageable = function(bodyElement, isPageable) {
     if (isPageable){
       // add the class, to validate this is a root pageable element in other methods
-      $(bodyElement).addClass(silex.utils.PageablePlugin.PAGEABLE_ROOT_CLASS);
+      $(bodyElement).addClass(silex.utils.PageablePlugin.PAGEABLE_ROOT_CLASS_NAME);
       // find default first page
       var pages = silex.utils.PageablePlugin.getPages();
       // enable jquery plugin
@@ -115,7 +115,7 @@ silex.utils.PageablePlugin.setPageable = function(bodyElement, isPageable) {
     }
     else{
         $(bodyElement).pageable('destroy');
-        $(bodyElement).removeClass(silex.utils.PageablePlugin.PAGEABLE_ROOT_CLASS);
+        $(bodyElement).removeClass(silex.utils.PageablePlugin.PAGEABLE_ROOT_CLASS_NAME);
     }
 };
 
@@ -214,7 +214,7 @@ silex.utils.PageablePlugin.removePage = function(pageName) {
         var pagesOfElement = silex.utils.PageablePlugin.getPagesForElement(this);
 
         if (pagesOfElement.length <= 0)
-          $(this).removeClass(silex.utils.PageablePlugin.PAGE_CLASS);
+          $(this).removeClass(silex.utils.PageablePlugin.PAGE_CLASS_NAME);
       }
   );
 };
@@ -301,7 +301,7 @@ silex.utils.PageablePlugin.getLink = function(element) {
  */
 silex.utils.PageablePlugin.addToPage = function(element, pageName) {
   goog.dom.classes.add(element, pageName);
-  goog.dom.classes.add(element, silex.utils.PageablePlugin.PAGE_CLASS);
+  goog.dom.classes.add(element, silex.utils.PageablePlugin.PAGE_CLASS_NAME);
 };
 
 /**
@@ -310,7 +310,7 @@ silex.utils.PageablePlugin.addToPage = function(element, pageName) {
 silex.utils.PageablePlugin.removeFromPage = function(element, pageName) {
   goog.dom.classes.remove(element, pageName);
   if (!silex.utils.PageablePlugin.getPagesForElement(element).length>0){
-    goog.dom.classes.remove(element, silex.utils.PageablePlugin.PAGE_CLASS);
+    goog.dom.classes.remove(element, silex.utils.PageablePlugin.PAGE_CLASS_NAME);
   }
 };
 

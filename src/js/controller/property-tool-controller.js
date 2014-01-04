@@ -74,20 +74,10 @@ silex.controller.PropertyToolController.prototype.propertyToolCallback = functio
       this.editElement();
       break;
     case 'styleChanged':
-      // style of the element has changed
-      var element = this.view.stage.getSelection()[0];
-      if (element && opt_name){
-        // update the model
-        console.log(arguments);
-        console.log(element.style.backgroundAttachment);
-        this.model.element.setStyle(element, opt_name, opt_value);
-        console.log(element.style.backgroundAttachment);
-        // redraw the data
-        this.view.propertyTool.redraw();
-      }
-      else{
-        console.error('can not set style ', opt_name, ' on element ', element);
-      }
+      this.styleChanged(opt_name, opt_value);
+      break;
+    case 'classNameChanged':
+      this.setClassName(opt_name);
       break;
     case 'propertyChanged':
       console.error('not implemented');
