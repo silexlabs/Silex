@@ -196,6 +196,9 @@ silex.controller.ControllerBase.prototype.renamePage = function(opt_pageName) {
       // open the new page
       this.openPage(name);
     }
+    // update view
+    this.view.pageTool.redraw();
+    this.view.propertyTool.redraw(); // css class of selected element may have chenged
   }, this));
 };
 
@@ -291,6 +294,9 @@ silex.controller.ControllerBase.prototype.createPage = function(successCbk, canc
       // create the page model
       silex.utils.PageablePlugin.createPage(name, displayName);
       this.openPage(name);
+      // update view
+      this.view.pageTool.redraw();
+      this.view.propertyTool.redraw(); // css class of selected element may have chenged
       if (successCbk) successCbk();
       this.tracker.trackAction('controller-events', 'success', 'insert.page', 1);
     }
