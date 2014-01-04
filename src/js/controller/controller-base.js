@@ -448,16 +448,16 @@ silex.controller.ControllerBase.prototype.save = function(opt_url, opt_cbk, opt_
  */
 silex.controller.ControllerBase.prototype.fileOperationSuccess = function(opt_message, opt_updateTools) {
 
-  // find default first page
-  var pages = silex.utils.PageablePlugin.getPages();
-  // open default page
-  silex.utils.PageablePlugin.setCurrentPage(pages[0]);
   // update tools
   if (opt_updateTools){
+    // find default first page
+    var pages = silex.utils.PageablePlugin.getPages();
+    // open default page
+    silex.utils.PageablePlugin.setCurrentPage(pages[0]);
+
     this.view.pageTool.redraw();
     this.view.propertyTool.redraw();
     this.view.menu.redraw();
-
     // update fonts
     this.refreshFonts();
   }
@@ -467,7 +467,6 @@ silex.controller.ControllerBase.prototype.fileOperationSuccess = function(opt_me
   }
   // update Silex editable style
   this.model.head.updateBrowserStyle();
-  this.view.textEditor.redraw();
 }
 
 /**

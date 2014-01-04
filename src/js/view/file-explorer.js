@@ -50,7 +50,8 @@ silex.view.FileExplorer = function(element, bodyElement, headElement) {
   // init the dialog
   new goog.async.Delay(function() {
     this.init();
-  }, 10, this).start();
+  }, 1000, this).start();
+
   // handle escape key
   var shortcutHandler = new goog.ui.KeyboardShortcutHandler(document);
   shortcutHandler.registerShortcut('esc', goog.events.KeyCodes.ESC);
