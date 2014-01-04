@@ -55,13 +55,19 @@ silex.utils.EditablePlugin.getFirstEditableParent = function(element) {
 silex.utils.EditablePlugin.setEditable = function(element, isEditable, opt_isRootDroppableOnly) {
   // activate editable plugin
   if (isEditable) {
-    // containers
-    $('.editable-style[data-silex-type="container"]', element).editable({
-      isContainer: true
-    });
 
-    // elements
-    $('.editable-style[data-silex-type="element"]', element).editable();
+    $('.editable-style', element).each(function () {
+      // elements
+      if (element.getAttribute('data-silex-type') === 'container'){
+        $(this).editable();
+      }
+      else{
+        // containers
+        $(this).editable({
+          isContainer: true
+        });
+      }
+    });
 
     // handle the root element itself
     if (element.getAttribute('data-silex-type') === 'container'){
@@ -108,24 +114,15 @@ silex.utils.EditablePlugin.setEditable = function(element, isEditable, opt_isRoo
  * @param   {string} htmlString  the html content to set
  * @param   {boolean} opt_hasChildContainer   if true, set the html into the first child
  */
-silex.utils.EditablePlugin.setEditableHtml = function(element, htmlString, opt_hasChildContainer) {
+silex.utils.EditablePlugin.setEditableHtml = function(element, htmlString, opt_isRootDroppableOnly) {
   // unregister jquery plugin
-  silex.utils.EditablePlugin.setEditable(element, false);
+  silex.utils.EditablePlugin.setEditable(element, false, opt_isRootDroppableOnly);
 
   // set the html content
-  if (opt_hasChildContainer) {
-    // html boxes have a container for the html
-    var htmlContainer = goog.dom.getFirstElementChild(element);
-    if (htmlContainer) {
-      htmlContainer.innerHTML = htmlString;
-    }
-  }
-  else {
-    // others have their content right inside the element
-    element.innerHTML = htmlString;
-  }
+  element.innerHTML = htmlString;
+
   // restore editing
-  silex.utils.EditablePlugin.setEditable(element, true);
+  silex.utils.EditablePlugin.setEditable(element, true, opt_isRootDroppableOnly);
 };
 
 /**
@@ -134,30 +131,16 @@ silex.utils.EditablePlugin.setEditableHtml = function(element, htmlString, opt_h
  * @param   {boolean} opt_hasChildContainer   if true, set the html into the first child
  * @return   {string} the html content without traces of the editable component
  */
-silex.utils.EditablePlugin.getEditableHtml = function(element, opt_hasChildContainer) {
+silex.utils.EditablePlugin.getEditableHtml = function(element, opt_isRootDroppableOnly) {
   // unregister jquery plugin
-  silex.utils.EditablePlugin.setEditable(element, false);
+  silex.utils.EditablePlugin.setEditable(element, false, opt_isRootDroppableOnly);
 
   // remove all markup linked to the "editable" jquery plugin
   var cleanContainer = element.cloneNode(true);
 
   // restore editing
-  silex.utils.EditablePlugin.setEditable(element, true);
-
-  // get the result as a string
-  var htmlString = '';
-  if (opt_hasChildContainer) {
-    // html boxes have a container for the html
-    var htmlContainer = goog.dom.getFirstElementChild(cleanContainer);
-    if (htmlContainer) {
-      htmlString = htmlContainer.innerHTML;
-    }
-  }
-  else {
-    // others have their content right inside the element
-    htmlString = cleanContainer.innerHTML;
-  }
+  silex.utils.EditablePlugin.setEditable(element, true, opt_isRootDroppableOnly);
 
   // return the html content
-  return htmlString;
+  return cleanContainer.innerHTML;
 };

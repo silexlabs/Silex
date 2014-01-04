@@ -186,12 +186,8 @@ silex.model.Element.prototype.getInnerHtml = function(element) {
  * @param  {string}  the html content
  */
 silex.model.Element.prototype.setInnerHtml = function(element, innerHTML) {
-  // disable editable
-  silex.utils.EditablePlugin.setEditable(element, false);
   var contentNode = this.getContentNode(element);
-  contentNode.innerHTML = innerHTML;
-  // re-enable editable
-  silex.utils.EditablePlugin.setEditable(element, true);
+  silex.utils.EditablePlugin.setEditableHtml(contentNode, innerHTML);
 };
 
 /**

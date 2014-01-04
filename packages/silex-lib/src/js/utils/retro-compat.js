@@ -59,7 +59,6 @@ silex.utils.RetroCompat.process = function(bodyElement, headElement) {
   // css class on elements with [type]-element
   $('[data-silex-type]', bodyElement).each(function() {
     $(this).addClass(this.getAttribute('data-silex-type') + '-element');
-    console.log('add class', this.getAttribute('data-silex-type'));
   });
   // static.silex.me 2.0 -> 2.1
   $('[src]', headElement).each(function() {

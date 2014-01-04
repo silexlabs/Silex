@@ -82,12 +82,9 @@ silex.model.File.prototype.setHtml = function(rawHtml) {
   }
   // extract the hole body with body tags
   var bodyHtml = rawHtml.substring(bodyOpenIdx, bodyCloseIdx + 7);
-
   // update model
-  this.bodyElement.innerHTML = bodyHtml;
+  silex.utils.EditablePlugin.setEditableHtml(this.bodyElement, bodyHtml);
   this.headElement.innerHTML = headHtml;
-  // set body editable
-  silex.utils.EditablePlugin.setEditable(this.bodyElement, true, true);
 
 };
 
@@ -99,11 +96,11 @@ silex.model.File.prototype.setHtml = function(rawHtml) {
 silex.model.File.prototype.getHtml = function() {
   // handle background url of the body style
   var styleStr = this.bodyElement.getAttribute('style') || '';
-
+  var bodyStr = silex.utils.EditablePlugin.getEditableHtml(this.bodyElement);
   var html = '';
   html += '<html>';
   html += '<head>' + this.headElement.innerHTML + '</head>';
-  html += '<body style="' + styleStr + '">' + this.bodyElement.innerHTML + '</body>';
+  html += '<body style="' + styleStr + '">' + bodyStr + '</body>';
   html += '</html>';
   return html;
 };

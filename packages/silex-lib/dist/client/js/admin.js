@@ -7343,9 +7343,8 @@ silex.model.Element.prototype.getInnerHtml = function $silex$model$Element$$getI
   return $innerHTML$$
 };
 silex.model.Element.prototype.setInnerHtml = function $silex$model$Element$$setInnerHtml$($element$$, $innerHTML$$) {
-  silex.utils.EditablePlugin.setEditable($element$$, !1);
-  this.getContentNode($element$$).innerHTML = $innerHTML$$;
-  silex.utils.EditablePlugin.setEditable($element$$, !0)
+  var $contentNode$$ = this.getContentNode($element$$);
+  silex.utils.EditablePlugin.setEditableHtml($contentNode$$, $innerHTML$$)
 };
 silex.model.Element.prototype.getContentNode = function $silex$model$Element$$getContentNode$($element$$) {
   var $contentElements$$ = goog.dom.getElementsByClass(silex.model.Element.ELEMENT_CONTENT_CLASS_NAME, $element$$);
@@ -7560,8 +7559,7 @@ silex.utils.RetroCompat.process = function $silex$utils$RetroCompat$process$($bo
     0 === $href$$.indexOf("#") && 0 !== $href$$.indexOf("#!") && this.setAttribute("href", $href$$.substr(2))
   });
   $("[data-silex-type]", $bodyElement$$).each(function() {
-    $(this).addClass(this.getAttribute("data-silex-type") + "-element");
-    console.log("add class", this.getAttribute("data-silex-type"))
+    $(this).addClass(this.getAttribute("data-silex-type") + "-element")
   });
   $("[src]", $headElement$$).each(function() {
     var $src$$ = this.getAttribute("src");
@@ -7922,12 +7920,16 @@ silex.controller.ControllerBase.prototype.save = function $silex$controller$Cont
   }, this), {mimetype:"text/html"})
 };
 silex.controller.ControllerBase.prototype.fileOperationSuccess = function $silex$controller$ControllerBase$$fileOperationSuccess$($opt_message$$, $opt_updateTools$$) {
-  var $pages$$ = silex.utils.PageablePlugin.getPages();
-  silex.utils.PageablePlugin.setCurrentPage($pages$$[0]);
-  $opt_updateTools$$ && (this.view.pageTool.redraw(), this.view.propertyTool.redraw(), this.view.menu.redraw(), this.refreshFonts());
+  if($opt_updateTools$$) {
+    var $pages$$ = silex.utils.PageablePlugin.getPages();
+    silex.utils.PageablePlugin.setCurrentPage($pages$$[0]);
+    this.view.pageTool.redraw();
+    this.view.propertyTool.redraw();
+    this.view.menu.redraw();
+    this.refreshFonts()
+  }
   $opt_message$$ && silex.utils.Notification.notifySuccess($opt_message$$);
-  this.model.head.updateBrowserStyle();
-  this.view.textEditor.redraw()
+  this.model.head.updateBrowserStyle()
 };
 silex.controller.ControllerBase.prototype.publish = function $silex$controller$ControllerBase$$publish$() {
   this.tracker.trackAction("controller-events", "request", "file.publish", 0);
@@ -8089,33 +8091,21 @@ silex.utils.EditablePlugin.getFirstEditableParent = function $silex$utils$Editab
   return $element$$
 };
 silex.utils.EditablePlugin.setEditable = function $silex$utils$EditablePlugin$setEditable$($element$$, $isEditable$$, $opt_isRootDroppableOnly$$) {
-  $isEditable$$ ? ($('.editable-style[data-silex-type="container"]', $element$$).editable({isContainer:!0}), $('.editable-style[data-silex-type="element"]', $element$$).editable(), "container" === $element$$.getAttribute("data-silex-type") ? $opt_isRootDroppableOnly$$ ? $($element$$).editable({isContainer:!0, isResizable:!1, isDroppable:!0, isDraggable:!1}) : $($element$$).editable({isContainer:!0}) : $($element$$).editable()) : ($(".editable-style", $element$$).editable("destroy"), $($element$$).editable("destroy"), 
-  $($element$$).find(".silex-selected").removeClass("silex-selected"), $($element$$).find(".ui-resizable").removeClass("ui-resizable"), $($element$$).find(".ui-draggable").removeClass("ui-draggable"), $($element$$).find(".ui-droppable").removeClass("ui-droppable"), $($element$$).find("[aria-disabled]").removeAttr("aria-disabled"), $($element$$).find(".ui-resizable-handle").remove())
+  $isEditable$$ ? ($(".editable-style", $element$$).each(function() {
+    "container" === $element$$.getAttribute("data-silex-type") ? $(this).editable() : $(this).editable({isContainer:!0})
+  }), "container" === $element$$.getAttribute("data-silex-type") ? $opt_isRootDroppableOnly$$ ? $($element$$).editable({isContainer:!0, isResizable:!1, isDroppable:!0, isDraggable:!1}) : $($element$$).editable({isContainer:!0}) : $($element$$).editable()) : ($(".editable-style", $element$$).editable("destroy"), $($element$$).editable("destroy"), $($element$$).find(".silex-selected").removeClass("silex-selected"), $($element$$).find(".ui-resizable").removeClass("ui-resizable"), $($element$$).find(".ui-draggable").removeClass("ui-draggable"), 
+  $($element$$).find(".ui-droppable").removeClass("ui-droppable"), $($element$$).find("[aria-disabled]").removeAttr("aria-disabled"), $($element$$).find(".ui-resizable-handle").remove())
 };
-silex.utils.EditablePlugin.setEditableHtml = function $silex$utils$EditablePlugin$setEditableHtml$($element$$, $htmlString$$, $htmlContainer_opt_hasChildContainer$$) {
-  silex.utils.EditablePlugin.setEditable($element$$, !1);
-  if($htmlContainer_opt_hasChildContainer$$) {
-    if($htmlContainer_opt_hasChildContainer$$ = goog.dom.getFirstElementChild($element$$)) {
-      $htmlContainer_opt_hasChildContainer$$.innerHTML = $htmlString$$
-    }
-  }else {
-    $element$$.innerHTML = $htmlString$$
-  }
-  silex.utils.EditablePlugin.setEditable($element$$, !0)
+silex.utils.EditablePlugin.setEditableHtml = function $silex$utils$EditablePlugin$setEditableHtml$($element$$, $htmlString$$, $opt_isRootDroppableOnly$$) {
+  silex.utils.EditablePlugin.setEditable($element$$, !1, $opt_isRootDroppableOnly$$);
+  $element$$.innerHTML = $htmlString$$;
+  silex.utils.EditablePlugin.setEditable($element$$, !0, $opt_isRootDroppableOnly$$)
 };
-silex.utils.EditablePlugin.getEditableHtml = function $silex$utils$EditablePlugin$getEditableHtml$($element$$, $opt_hasChildContainer$$) {
-  silex.utils.EditablePlugin.setEditable($element$$, !1);
-  var $cleanContainer_htmlContainer$$ = $element$$.cloneNode(!0);
-  silex.utils.EditablePlugin.setEditable($element$$, !0);
-  var $htmlString$$ = "";
-  if($opt_hasChildContainer$$) {
-    if($cleanContainer_htmlContainer$$ = goog.dom.getFirstElementChild($cleanContainer_htmlContainer$$)) {
-      $htmlString$$ = $cleanContainer_htmlContainer$$.innerHTML
-    }
-  }else {
-    $htmlString$$ = $cleanContainer_htmlContainer$$.innerHTML
-  }
-  return $htmlString$$
+silex.utils.EditablePlugin.getEditableHtml = function $silex$utils$EditablePlugin$getEditableHtml$($element$$, $opt_isRootDroppableOnly$$) {
+  silex.utils.EditablePlugin.setEditable($element$$, !1, $opt_isRootDroppableOnly$$);
+  var $cleanContainer$$ = $element$$.cloneNode(!0);
+  silex.utils.EditablePlugin.setEditable($element$$, !0, $opt_isRootDroppableOnly$$);
+  return $cleanContainer$$.innerHTML
 };
 silex.view.Stage = function $silex$view$Stage$($element$$, $bodyElement$$, $headElement$$) {
   silex.view.ViewBase.call(this, $element$$, $bodyElement$$, $headElement$$);
@@ -11109,7 +11099,7 @@ silex.view.FileExplorer = function $silex$view$FileExplorer$($element$$244_short
   goog.style.setStyle(this.element, "display", "none");
   (new goog.async.Delay(function() {
     this.init()
-  }, 10, this)).start();
+  }, 1E3, this)).start();
   $element$$244_shortcutHandler$$ = new goog.ui.KeyboardShortcutHandler(document);
   $element$$244_shortcutHandler$$.registerShortcut("esc", goog.events.KeyCodes.ESC);
   goog.events.listen($element$$244_shortcutHandler$$, goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED, goog.bind(this.closeEditor, this))
@@ -21134,14 +21124,13 @@ silex.model.File.prototype.setHtml = function $silex$model$File$$setHtml$($bodyH
   -1 < $closingTagIdx_headOpenIdx$$ && -1 < $headCloseIdx$$ && ($closingTagIdx_headOpenIdx$$ = $lowerCaseHtml$$.indexOf(">", $closingTagIdx_headOpenIdx$$), $headHtml$$ = $bodyHtml$$4_rawHtml$$.substring($closingTagIdx_headOpenIdx$$ + 1, $headCloseIdx$$));
   -1 < $bodyOpenIdx$$ && -1 < $bodyCloseIdx$$ && ($closingTagIdx_headOpenIdx$$ = $lowerCaseHtml$$.indexOf(">", $bodyOpenIdx$$), $bodyHtml$$4_rawHtml$$.substring($closingTagIdx_headOpenIdx$$ + 1, $bodyCloseIdx$$));
   $bodyHtml$$4_rawHtml$$ = $bodyHtml$$4_rawHtml$$.substring($bodyOpenIdx$$, $bodyCloseIdx$$ + 7);
-  this.bodyElement.innerHTML = $bodyHtml$$4_rawHtml$$;
-  this.headElement.innerHTML = $headHtml$$;
-  silex.utils.EditablePlugin.setEditable(this.bodyElement, !0, !0)
+  silex.utils.EditablePlugin.setEditableHtml(this.bodyElement, $bodyHtml$$4_rawHtml$$);
+  this.headElement.innerHTML = $headHtml$$
 };
 silex.model.File.prototype.getHtml = function $silex$model$File$$getHtml$() {
-  var $styleStr$$ = this.bodyElement.getAttribute("style") || "", $html$$;
+  var $styleStr$$ = this.bodyElement.getAttribute("style") || "", $bodyStr$$ = silex.utils.EditablePlugin.getEditableHtml(this.bodyElement), $html$$;
   $html$$ = "<html>" + ("<head>" + this.headElement.innerHTML + "</head>");
-  $html$$ += '<body style="' + $styleStr$$ + '">' + this.bodyElement.innerHTML + "</body>";
+  $html$$ += '<body style="' + $styleStr$$ + '">' + $bodyStr$$ + "</body>";
   return $html$$ += "</html>"
 };
 silex.model.File.prototype.newFile = function $silex$model$File$$newFile$($cbk$$, $opt_errCbk$$) {
@@ -21187,19 +21176,19 @@ silex.model.File.prototype.publish = function $silex$model$File$$publish$($url$$
   }, this))
 };
 silex.model.File.prototype.cleanup = function $silex$model$File$$cleanup$($cbk$$, $opt_errCbk$$) {
-  var $bodyStr_headElement$$23_html$$ = goog.dom.getOuterHtml(this.bodyElement);
-  $bodyStr_headElement$$23_html$$.replace("<div", "<body");
-  $bodyStr_headElement$$23_html$$.replace(/<\/div$/, "</body");
+  var $bodyStr$$1_headElement$$23_html$$ = goog.dom.getOuterHtml(this.bodyElement);
+  $bodyStr$$1_headElement$$23_html$$.replace("<div", "<body");
+  $bodyStr$$1_headElement$$23_html$$.replace(/<\/div$/, "</body");
   var $components_elements$$ = this.headElement.innerHTML, $cssArray$$ = [], $files$$ = [];
   if(this.getUrl()) {
-    var $baseUrl$$ = silex.utils.Url.getBaseUrl(this.getUrl()), $bodyStr_headElement$$23_html$$ = $bodyStr_headElement$$23_html$$.replace(/<img[^"]*src="?([^" ]*)"/g, function($match$$, $group1$$, $absolute_group2$$) {
+    var $baseUrl$$ = silex.utils.Url.getBaseUrl(this.getUrl()), $bodyStr$$1_headElement$$23_html$$ = $bodyStr$$1_headElement$$23_html$$.replace(/<img[^"]*src="?([^" ]*)"/g, function($match$$, $group1$$, $absolute_group2$$) {
       $absolute_group2$$ = silex.utils.Url.getAbsolutePath($group1$$, $baseUrl$$);
       var $relative$$ = silex.utils.Url.getRelativePath($absolute_group2$$, silex.utils.Url.getBaseUrl());
       silex.utils.Url.isAbsoluteUrl($relative$$) || ($relative$$ = $relative$$.replace("../", "/"));
       var $newRelativePath$$ = "assets/" + $absolute_group2$$.substr($absolute_group2$$.lastIndexOf("/") + 1);
       $files$$.push({url:$absolute_group2$$, destPath:$newRelativePath$$, srcPath:$relative$$});
       return $match$$.replace($group1$$, $newRelativePath$$)
-    }), $bodyStr_headElement$$23_html$$ = $bodyStr_headElement$$23_html$$.replace(/url\((['"])(.+?)\1\)/g, goog.bind(function($match$$, $group1$$, $group2$$) {
+    }), $bodyStr$$1_headElement$$23_html$$ = $bodyStr$$1_headElement$$23_html$$.replace(/url\((['"])(.+?)\1\)/g, goog.bind(function($match$$, $group1$$, $group2$$) {
       return this.filterBgImage($baseUrl$$, $files$$, $match$$, $group1$$, $group2$$)
     }, this)), $components_elements$$ = $components_elements$$.replace(/href="?([^" ]*)"/g, function($match$$, $group1$$, $absolute$$1_group2$$) {
       var $newRelativePath$$ = !1;
@@ -21214,10 +21203,10 @@ silex.model.File.prototype.cleanup = function $silex$model$File$$cleanup$($cbk$$
       silex.utils.Url.isAbsoluteUrl($relative$$) ? 0 !== $absolute$$2_group2$$.indexOf("http://static.silex.me") && ($newRelativePath$$2_preventDownload$$ = !0) : $relative$$ = $relative$$.replace("../", "/");
       return $newRelativePath$$2_preventDownload$$ ? $match$$ : ($newRelativePath$$2_preventDownload$$ = "js/" + $absolute$$2_group2$$.substr($absolute$$2_group2$$.lastIndexOf("/") + 1), $files$$.push({url:$absolute$$2_group2$$, destPath:$newRelativePath$$2_preventDownload$$, srcPath:$relative$$}), $match$$.replace($group1$$, $newRelativePath$$2_preventDownload$$))
     }), $bodyElement$$ = goog.dom.createElement("div");
-    $bodyElement$$.innerHTML = $bodyStr_headElement$$23_html$$;
-    $bodyStr_headElement$$23_html$$ = goog.dom.createElement("div");
-    $bodyStr_headElement$$23_html$$.innerHTML = $components_elements$$;
-    $('meta[name="publicationPath"]', $bodyStr_headElement$$23_html$$).remove();
+    $bodyElement$$.innerHTML = $bodyStr$$1_headElement$$23_html$$;
+    $bodyStr$$1_headElement$$23_html$$ = goog.dom.createElement("div");
+    $bodyStr$$1_headElement$$23_html$$.innerHTML = $components_elements$$;
+    $('meta[name="publicationPath"]', $bodyStr$$1_headElement$$23_html$$).remove();
     $components_elements$$ = goog.dom.getElementsByClass("editable-style", $bodyElement$$);
     goog.array.forEach($components_elements$$, function($element$$) {
       var $fragment$$3_href$$ = $element$$.getAttribute("data-silex-href");
@@ -21246,10 +21235,10 @@ silex.model.File.prototype.cleanup = function $silex$model$File$$cleanup$($cbk$$
       $cssStr$$ += "\n" + $elementCssStr$$
     }, this);
     $cssStr$$.replace("; ", ";\n\t");
-    $bodyStr_headElement$$23_html$$ = "<html>" + ('<head><link href="css/styles.css" rel="stylesheet">' + $bodyStr_headElement$$23_html$$.innerHTML + "</head>");
-    $bodyStr_headElement$$23_html$$ += "<body>" + $bodyElement$$.innerHTML + "</body>";
-    $bodyStr_headElement$$23_html$$ += "</html>";
-    $cbk$$($bodyStr_headElement$$23_html$$, $cssStr$$, $files$$)
+    $bodyStr$$1_headElement$$23_html$$ = "<html>" + ('<head><link href="css/styles.css" rel="stylesheet">' + $bodyStr$$1_headElement$$23_html$$.innerHTML + "</head>");
+    $bodyStr$$1_headElement$$23_html$$ += "<body>" + $bodyElement$$.innerHTML + "</body>";
+    $bodyStr$$1_headElement$$23_html$$ += "</html>";
+    $cbk$$($bodyStr$$1_headElement$$23_html$$, $cssStr$$, $files$$)
   }else {
     $opt_errCbk$$ && $opt_errCbk$$({message:"The file must be saved before I can clean it up for you."})
   }
