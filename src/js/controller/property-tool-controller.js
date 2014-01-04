@@ -78,7 +78,10 @@ silex.controller.PropertyToolController.prototype.propertyToolCallback = functio
       var element = this.view.stage.getSelection()[0];
       if (element && opt_name){
         // update the model
+        console.log(arguments);
+        console.log(element.style.backgroundAttachment);
         this.model.element.setStyle(element, opt_name, opt_value);
+        console.log(element.style.backgroundAttachment);
         // redraw the data
         this.view.propertyTool.redraw();
       }
