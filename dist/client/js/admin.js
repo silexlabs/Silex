@@ -7805,7 +7805,9 @@ silex.controller.ControllerBase.prototype.openPage = function $silex$controller$
 silex.controller.ControllerBase.prototype.renamePage = function $silex$controller$ControllerBase$$renamePage$($opt_pageName$$) {
   $opt_pageName$$ || ($opt_pageName$$ = silex.utils.PageablePlugin.getCurrentPageName());
   this.getUserInputPageName(silex.utils.PageablePlugin.getDisplayName($opt_pageName$$), goog.bind(function($name$$, $newDisplayName$$) {
-    $newDisplayName$$ && (silex.utils.PageablePlugin.renamePage($opt_pageName$$, $name$$, $newDisplayName$$), this.openPage($name$$))
+    $newDisplayName$$ && (silex.utils.PageablePlugin.renamePage($opt_pageName$$, $name$$, $newDisplayName$$), this.openPage($name$$));
+    this.view.pageTool.redraw();
+    this.view.propertyTool.redraw()
   }, this))
 };
 silex.controller.ControllerBase.prototype.removePage = function $silex$controller$ControllerBase$$removePage$($opt_pageName$$) {
@@ -7840,7 +7842,7 @@ silex.controller.ControllerBase.prototype.checkElementVisibility = function $sil
 silex.controller.ControllerBase.prototype.createPage = function $silex$controller$ControllerBase$$createPage$($successCbk$$, $cancelCbk$$) {
   this.tracker.trackAction("controller-events", "request", "insert.page", 0);
   this.getUserInputPageName("Your new page name", goog.bind(function($name$$, $displayName$$) {
-    $name$$ ? (silex.utils.PageablePlugin.createPage($name$$, $displayName$$), this.openPage($name$$), $successCbk$$ && $successCbk$$(), this.tracker.trackAction("controller-events", "success", "insert.page", 1)) : ($cancelCbk$$ && $cancelCbk$$(), this.tracker.trackAction("controller-events", "cancel", "insert.page", 0))
+    $name$$ ? (silex.utils.PageablePlugin.createPage($name$$, $displayName$$), this.openPage($name$$), this.view.pageTool.redraw(), this.view.propertyTool.redraw(), $successCbk$$ && $successCbk$$(), this.tracker.trackAction("controller-events", "success", "insert.page", 1)) : ($cancelCbk$$ && $cancelCbk$$(), this.tracker.trackAction("controller-events", "cancel", "insert.page", 0))
   }, this))
 };
 silex.controller.ControllerBase.prototype.preview = function $silex$controller$ControllerBase$$preview$() {
@@ -15335,12 +15337,13 @@ silex.view.pane.PagePane.prototype.buildUi = function $silex$view$pane$PagePane$
 silex.view.pane.PagePane.prototype.setPages = function $silex$view$pane$PagePane$$setPages$($items_mainContainer_pageData_pages$$) {
   this.pages = $items_mainContainer_pageData_pages$$;
   $items_mainContainer_pageData_pages$$ = $items_mainContainer_pageData_pages$$.map(goog.bind(function($pageName$$) {
-    return{name:$pageName$$, displayName:silex.utils.PageablePlugin.getDisplayName(this.bodyElement, $pageName$$), linkName:"#!" + $pageName$$}
+    return{name:$pageName$$, displayName:silex.utils.PageablePlugin.getDisplayName($pageName$$), linkName:"#!" + $pageName$$}
   }, this));
   this.pageCheckboxes && goog.array.forEach(this.pageCheckboxes, function($item$$) {
     $item$$.checkbox.dispose()
   });
   var $pageDataWithDefaultOptions_pagesContainer$$ = [{name:"none", displayName:"None", linkName:"none"}, {name:"custom", displayName:"External link", linkName:"custom"}].concat($items_mainContainer_pageData_pages$$), $linkContainer$$ = goog.dom.getElementByClass("link-combo-box", this.element), $templateHtml$$ = goog.dom.getElementByClass("link-template", this.element).innerHTML;
+  console.log($templateHtml$$, $pageDataWithDefaultOptions_pagesContainer$$);
   $linkContainer$$.innerHTML = silex.utils.Dom.renderList($templateHtml$$, $pageDataWithDefaultOptions_pagesContainer$$);
   $pageDataWithDefaultOptions_pagesContainer$$ = goog.dom.getElementByClass("pages-container", this.element);
   $templateHtml$$ = goog.dom.getElementByClass("pages-selector-template", this.element).innerHTML;

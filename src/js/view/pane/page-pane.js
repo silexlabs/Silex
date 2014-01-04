@@ -118,7 +118,7 @@ silex.view.pane.PagePane.prototype.setPages = function(pages) {
   var pageData = pages.map(goog.bind(function (pageName) {
     return {
       name: pageName,
-      displayName: silex.utils.PageablePlugin.getDisplayName(this.bodyElement, pageName),
+      displayName: silex.utils.PageablePlugin.getDisplayName(pageName),
       linkName: '#!' + pageName
     };
   }, this));
@@ -147,6 +147,7 @@ silex.view.pane.PagePane.prototype.setPages = function(pages) {
       this.element);
   var templateHtml = goog.dom.getElementByClass('link-template',
       this.element).innerHTML;
+  console.log(templateHtml, pageDataWithDefaultOptions);
   linkContainer.innerHTML = silex.utils.Dom.renderList(
       templateHtml,
       pageDataWithDefaultOptions);

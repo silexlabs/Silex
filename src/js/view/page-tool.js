@@ -63,7 +63,7 @@ silex.view.PageTool.prototype.initEvents = function(pages) {
 
 /**
  * refresh the pages
- * find all pages in the dom and call setPages
+ * find all pages in the dom
  */
 silex.view.PageTool.prototype.redraw = function() {
   var pageNames = silex.utils.PageablePlugin.getPages();
