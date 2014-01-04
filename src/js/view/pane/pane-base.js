@@ -91,14 +91,6 @@ silex.view.pane.PaneBase.prototype.styleChanged = function(styleName, opt_styleV
 
 
 /**
- * notify the controller that the component properties changed
- */
-silex.view.pane.PaneBase.prototype.propertyChanged = function() {
-  if (this.onStatus) this.onStatus('propertyChanged');
-};
-
-
-/**
  * refresh the displayed data
  */
 silex.view.pane.PaneBase.prototype.redraw = function() {

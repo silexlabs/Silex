@@ -312,10 +312,6 @@ body.loading-pending > div {
   overflow: auto;
   text-overflow: ellipsis;
 }
-.silex-property-tool .border-placement-container label {
-  margin: 4px 2px 0;
-  width: 35%;
-}
 .silex-property-tool {
   position: absolute;
   right: 0;
@@ -323,6 +319,10 @@ body.loading-pending > div {
   height: 95%;
   overflow-x: hidden;
   overflow-y: auto;
+}
+.silex-property-tool .border-placement-container label {
+  margin: 4px 2px 0;
+  width: 35%;
 }
 .silex-property-tool .color-button .goog-inline-block {
   display: block;
@@ -436,6 +436,10 @@ body.loading-pending > div {
 }
 .silex-property-tool .link-small-btn:hover {
   text-decoration: underline;
+}
+.silex-property-tool .element-style-editor {
+  margin-top: 10px;
+  height: 150px;
 }
 .silex-property-tool .link-input-text,
 .silex-property-tool input {
