@@ -147,7 +147,6 @@ silex.view.pane.PagePane.prototype.setPages = function(pages) {
       this.element);
   var templateHtml = goog.dom.getElementByClass('link-template',
       this.element).innerHTML;
-  console.log(templateHtml, pageDataWithDefaultOptions);
   linkContainer.innerHTML = silex.utils.Dom.renderList(
       templateHtml,
       pageDataWithDefaultOptions);

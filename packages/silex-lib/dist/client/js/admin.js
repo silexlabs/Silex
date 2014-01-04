@@ -7331,7 +7331,8 @@ silex.model.Element.prototype.getStyle = function $silex$model$Element$$getStyle
   return $element$$.style[$styleName$$]
 };
 silex.model.Element.prototype.setStyle = function $silex$model$Element$$setStyle$($element$$, $styleName$$, $opt_styleValue$$) {
-  goog.isDef($opt_styleValue$$) ? $element$$.style[$styleName$$] = $opt_styleValue$$ : $element$$.style[$styleName$$] = ""
+  console.log($element$$, $styleName$$, $opt_styleValue$$, $element$$.style[$styleName$$], goog.isDef($opt_styleValue$$));
+  goog.isDef($opt_styleValue$$) ? ($element$$.style[$styleName$$] = $opt_styleValue$$, console.log($element$$, $styleName$$, $opt_styleValue$$, $element$$.style.backgroundAttachment, goog.isDef($opt_styleValue$$))) : $element$$.style[$styleName$$] = ""
 };
 silex.model.Element.prototype.setBgImage = function $silex$model$Element$$setBgImage$($element$$, $url$$) {
   this.setStyle($element$$, "backgroundImage", "url(" + $url$$ + ")")
@@ -8257,7 +8258,7 @@ silex.controller.PropertyToolController.prototype.propertyToolCallback = functio
       break;
     case "styleChanged":
       var $element$$0$$ = this.view.stage.getSelection()[0];
-      $element$$0$$ && $opt_name$$ ? (this.model.element.setStyle($element$$0$$, $opt_name$$, $opt_value$$), this.view.propertyTool.redraw()) : console.error("can not set style ", $opt_name$$, " on element ", $element$$0$$);
+      $element$$0$$ && $opt_name$$ ? (console.log(arguments), console.log($element$$0$$.style.backgroundAttachment), this.model.element.setStyle($element$$0$$, $opt_name$$, $opt_value$$), console.log($element$$0$$.style.backgroundAttachment), this.view.propertyTool.redraw()) : console.error("can not set style ", $opt_name$$, " on element ", $element$$0$$);
       break;
     case "propertyChanged":
       console.error("not implemented");
@@ -15343,7 +15344,6 @@ silex.view.pane.PagePane.prototype.setPages = function $silex$view$pane$PagePane
     $item$$.checkbox.dispose()
   });
   var $pageDataWithDefaultOptions_pagesContainer$$ = [{name:"none", displayName:"None", linkName:"none"}, {name:"custom", displayName:"External link", linkName:"custom"}].concat($items_mainContainer_pageData_pages$$), $linkContainer$$ = goog.dom.getElementByClass("link-combo-box", this.element), $templateHtml$$ = goog.dom.getElementByClass("link-template", this.element).innerHTML;
-  console.log($templateHtml$$, $pageDataWithDefaultOptions_pagesContainer$$);
   $linkContainer$$.innerHTML = silex.utils.Dom.renderList($templateHtml$$, $pageDataWithDefaultOptions_pagesContainer$$);
   $pageDataWithDefaultOptions_pagesContainer$$ = goog.dom.getElementByClass("pages-container", this.element);
   $templateHtml$$ = goog.dom.getElementByClass("pages-selector-template", this.element).innerHTML;
@@ -15677,6 +15677,7 @@ silex.view.pane.BgPane.prototype.buildUi = function $silex$view$pane$BgPane$$bui
   goog.events.listen($buttonAddImage_hsvPaletteElement$$, goog.events.EventType.CLICK, this.onSelectImageButton, !1, this);
   goog.events.listen($buttonClearImage$$, goog.events.EventType.CLICK, this.onClearImageButton, !1, this);
   goog.events.listen(this.attachementComboBox, goog.ui.Component.EventType.CHANGE, function($event$$) {
+    console.log("backgroundAttachment", $event$$.target.getSelectedItem().getId());
     this.styleChanged("backgroundAttachment", $event$$.target.getSelectedItem().getId())
   }, !1, this);
   goog.events.listen(this.vPositionComboBox, goog.ui.Component.EventType.CHANGE, function($event$$) {
@@ -15701,8 +15702,9 @@ silex.view.pane.BgPane.prototype.redraw = function $silex$view$pane$BgPane$$redr
     void 0 === $color$$10_hex$$ || "transparent" === $color$$10_hex$$ || "" === $color$$10_hex$$ ? (this.transparentBgCheckbox.setChecked(!0), this.bgColorPicker.setEnabled(!1), this.setColorPaletteVisibility(!1)) : ($color$$10_hex$$ = silex.utils.Style.rgbaToHex($color$$10_hex$$), this.transparentBgCheckbox.setChecked(!1), this.bgColorPicker.setEnabled(!0), this.bgColorPicker.setValue($color$$10_hex$$.substring(0, 7)), this.hsvPalette.setColorRgbaHex($color$$10_hex$$));
     null !== $element$$.style.backgroundImage && "none" !== $element$$.style.backgroundImage && "" !== $element$$.style.backgroundImage ? this.bgClearBgImage.setEnabled(!0) : this.bgClearBgImage.setEnabled(!1);
     this.bgClearBgImage.setEnabled(!0);
-    if($element$$.style.backgroundAttachement) {
-      switch($element$$.style.backgroundAttachement) {
+    console.log($element$$.style.backgroundAttachment);
+    if($element$$.style.backgroundAttachment) {
+      switch($element$$.style.backgroundAttachment) {
         case "scroll":
           this.attachementComboBox.setSelectedIndex(0);
           break;
