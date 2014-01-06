@@ -83,7 +83,13 @@ silex.model.File.prototype.setHtml = function(rawHtml) {
   // extract the hole body with body tags
   var bodyHtml = rawHtml.substring(bodyOpenIdx, bodyCloseIdx + 7);
   // update model
-  silex.utils.EditablePlugin.setEditableHtml(this.bodyElement, bodyHtml);
+  // cleanup
+  silex.utils.EditablePlugin.setEditable(this.bodyElement, false);
+  // set html
+  this.bodyElement.innerHTML = bodyHtml;
+  // make editable again
+  silex.utils.EditablePlugin.setEditable(this.bodyElement, true);
+  // set head content
   this.headElement.innerHTML = headHtml;
 
 };
@@ -94,9 +100,15 @@ silex.model.File.prototype.setHtml = function(rawHtml) {
  * use the bodyTag and headTag objects
  */
 silex.model.File.prototype.getHtml = function() {
+  // cleanup
+  silex.utils.EditablePlugin.setEditable(this.bodyElement, false);
+  // get html
+  var bodyStr = this.bodyElement.innerHTML;
+  // make editable again
+  silex.utils.EditablePlugin.setEditable(this.bodyElement, true);
   // handle background url of the body style
   var styleStr = this.bodyElement.getAttribute('style') || '';
-  var bodyStr = silex.utils.EditablePlugin.getEditableHtml(this.bodyElement);
+  // retruns the html page
   var html = '';
   html += '<html>';
   html += '<head>' + this.headElement.innerHTML + '</head>';

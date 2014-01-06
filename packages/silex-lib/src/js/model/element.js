@@ -202,8 +202,14 @@ silex.model.Element.prototype.getInnerHtml = function(element) {
  * @param  {string}  the html content
  */
 silex.model.Element.prototype.setInnerHtml = function(element, innerHTML) {
+  // get the container of the html content of the element
   var contentNode = this.getContentNode(element);
-  silex.utils.EditablePlugin.setEditableHtml(contentNode, innerHTML);
+  // cleanup
+  silex.utils.EditablePlugin.setEditable(element, false);
+  // set html
+  contentNode.innerHTML = innerHTML;
+  // make editable again
+  silex.utils.EditablePlugin.setEditable(element, true);
 };
 
 /**

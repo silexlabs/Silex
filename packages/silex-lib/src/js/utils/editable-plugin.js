@@ -59,6 +59,7 @@ silex.utils.EditablePlugin.getFirstEditableParent = function(element) {
  * init, activate and remove the "editable" jquery plugin
  */
 silex.utils.EditablePlugin.setEditable = function(element, isEditable, opt_isRootDroppableOnly) {
+  console.log('setEditable', arguments);
   // activate editable plugin
   if (isEditable) {
 
@@ -125,8 +126,9 @@ silex.utils.EditablePlugin.setEditable = function(element, isEditable, opt_isRoo
  * @param   {element} element    the editable element, i.e. wich has been setEditable(true)
  * @param   {string} htmlString  the html content to set
  * @param   {boolean} opt_hasChildContainer   if true, set the html into the first child
- */
+ *
 silex.utils.EditablePlugin.setEditableHtml = function(element, htmlString, opt_isRootDroppableOnly) {
+  console.log('setEditableHtml', arguments);
   // unregister jquery plugin
   silex.utils.EditablePlugin.setEditable(element, false, opt_isRootDroppableOnly);
 
@@ -142,7 +144,7 @@ silex.utils.EditablePlugin.setEditableHtml = function(element, htmlString, opt_i
  * @param   {element} element    the editable element, i.e. wich has been setEditable(true)
  * @param   {boolean} opt_hasChildContainer   if true, set the html into the first child
  * @return   {string} the html content without traces of the editable component
- */
+ *
 silex.utils.EditablePlugin.getEditableHtml = function(element, opt_isRootDroppableOnly) {
   // unregister jquery plugin
   silex.utils.EditablePlugin.setEditable(element, false, opt_isRootDroppableOnly);
@@ -156,3 +158,5 @@ silex.utils.EditablePlugin.getEditableHtml = function(element, opt_isRootDroppab
   // return the html content
   return cleanHtml;
 };
+
+/* */

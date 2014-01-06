@@ -7347,7 +7347,9 @@ silex.model.Element.prototype.getInnerHtml = function $silex$model$Element$$getI
 };
 silex.model.Element.prototype.setInnerHtml = function $silex$model$Element$$setInnerHtml$($element$$, $innerHTML$$) {
   var $contentNode$$ = this.getContentNode($element$$);
-  silex.utils.EditablePlugin.setEditableHtml($contentNode$$, $innerHTML$$)
+  silex.utils.EditablePlugin.setEditable($element$$, !1);
+  $contentNode$$.innerHTML = $innerHTML$$;
+  silex.utils.EditablePlugin.setEditable($element$$, !0)
 };
 silex.model.Element.prototype.getContentNode = function $silex$model$Element$$getContentNode$($element$$) {
   var $contentElements$$ = goog.dom.getElementsByClass(silex.model.Element.ELEMENT_CONTENT_CLASS_NAME, $element$$);
@@ -8128,21 +8130,11 @@ silex.utils.EditablePlugin.getFirstEditableParent = function $silex$utils$Editab
   return $element$$
 };
 silex.utils.EditablePlugin.setEditable = function $silex$utils$EditablePlugin$setEditable$($element$$, $isEditable$$, $opt_isRootDroppableOnly$$) {
+  console.log("setEditable", arguments);
   $isEditable$$ ? ($(".editable-style", $element$$).each(function() {
     "container" === this.getAttribute("data-silex-type") ? $(this).editable({isContainer:!0}) : $(this).editable()
   }), "container" === $element$$.getAttribute("data-silex-type") ? $opt_isRootDroppableOnly$$ ? $($element$$).editable({isContainer:!0, isResizable:!1, isDroppable:!0, isDraggable:!1}) : $($element$$).editable({isContainer:!0}) : $($element$$).editable()) : ($(".editable-style", $element$$).editable("destroy"), $($element$$).editable("destroy"), $($element$$).find(silex.model.Element.SELECTED_CLASS_NAME).removeClass(silex.utils.EditablePlugin.SILEX_SELECTED_CLASS_NAME), $($element$$).find(silex.utils.EditablePlugin.UI_RESIZABLE_CLASS_NAME).removeClass(silex.utils.EditablePlugin.UI_RESIZABLE_CLASS_NAME), 
   $($element$$).find(silex.utils.EditablePlugin.UI_DRAGGABLE_CLASS_NAME).removeClass(silex.utils.EditablePlugin.UI_DRAGGABLE_CLASS_NAME), $($element$$).find(silex.utils.EditablePlugin.UI_DROPPABLE_CLASS_NAME).removeClass(silex.utils.EditablePlugin.UI_DROPPABLE_CLASS_NAME), $($element$$).find(silex.utils.EditablePlugin.UI_DRAGGABLE_DRAGGING_CLASS_NAME).removeClass(silex.utils.EditablePlugin.UI_DRAGGABLE_DRAGGING_CLASS_NAME), $($element$$).find("[aria-disabled]").removeAttr("aria-disabled"), $($element$$).find(".ui-resizable-handle").remove())
-};
-silex.utils.EditablePlugin.setEditableHtml = function $silex$utils$EditablePlugin$setEditableHtml$($element$$, $htmlString$$, $opt_isRootDroppableOnly$$) {
-  silex.utils.EditablePlugin.setEditable($element$$, !1, $opt_isRootDroppableOnly$$);
-  $element$$.innerHTML = $htmlString$$;
-  silex.utils.EditablePlugin.setEditable($element$$, !0, $opt_isRootDroppableOnly$$)
-};
-silex.utils.EditablePlugin.getEditableHtml = function $silex$utils$EditablePlugin$getEditableHtml$($element$$, $opt_isRootDroppableOnly$$) {
-  silex.utils.EditablePlugin.setEditable($element$$, !1, $opt_isRootDroppableOnly$$);
-  var $cleanHtml$$ = $element$$.innerHTML;
-  silex.utils.EditablePlugin.setEditable($element$$, !0, $opt_isRootDroppableOnly$$);
-  return $cleanHtml$$
 };
 silex.view.Stage = function $silex$view$Stage$($element$$, $bodyElement$$, $headElement$$) {
   silex.view.ViewBase.call(this, $element$$, $bodyElement$$, $headElement$$);
@@ -8441,19 +8433,19 @@ silex.types.View = function $silex$types$View$($workspace$$, $menu$$, $stage$$, 
   this.fileExplorer = $fileExplorer$$;
   this.settingsDialog = $settingsDialog$$
 };
-silex.view.SettingsDialog = function $silex$view$SettingsDialog$($btn$$1_element$$243_shortcutHandler$$, $bodyElement$$, $headElement$$) {
-  silex.view.ViewBase.call(this, $btn$$1_element$$243_shortcutHandler$$, $bodyElement$$, $headElement$$);
+silex.view.SettingsDialog = function $silex$view$SettingsDialog$($btn$$1_element$$241_shortcutHandler$$, $bodyElement$$, $headElement$$) {
+  silex.view.ViewBase.call(this, $btn$$1_element$$241_shortcutHandler$$, $bodyElement$$, $headElement$$);
   this.publicationPath = "";
   goog.style.setStyle(this.element, "display", "none");
-  $btn$$1_element$$243_shortcutHandler$$ = new goog.ui.KeyboardShortcutHandler(document);
-  $btn$$1_element$$243_shortcutHandler$$.registerShortcut("esc", goog.events.KeyCodes.ESC);
-  goog.events.listen($btn$$1_element$$243_shortcutHandler$$, goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED, goog.bind(this.closeEditor, this));
-  $btn$$1_element$$243_shortcutHandler$$ = goog.dom.getElementByClass("close-btn", this.element);
-  goog.events.listen($btn$$1_element$$243_shortcutHandler$$, goog.events.EventType.CLICK, function() {
+  $btn$$1_element$$241_shortcutHandler$$ = new goog.ui.KeyboardShortcutHandler(document);
+  $btn$$1_element$$241_shortcutHandler$$.registerShortcut("esc", goog.events.KeyCodes.ESC);
+  goog.events.listen($btn$$1_element$$241_shortcutHandler$$, goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED, goog.bind(this.closeEditor, this));
+  $btn$$1_element$$241_shortcutHandler$$ = goog.dom.getElementByClass("close-btn", this.element);
+  goog.events.listen($btn$$1_element$$241_shortcutHandler$$, goog.events.EventType.CLICK, function() {
     this.closeEditor()
   }, !1, this);
-  $btn$$1_element$$243_shortcutHandler$$ = goog.dom.getElementByClass("browse-btn", this.element);
-  goog.events.listen($btn$$1_element$$243_shortcutHandler$$, goog.events.EventType.CLICK, function() {
+  $btn$$1_element$$241_shortcutHandler$$ = goog.dom.getElementByClass("browse-btn", this.element);
+  goog.events.listen($btn$$1_element$$241_shortcutHandler$$, goog.events.EventType.CLICK, function() {
     this.onStatus("browsePublishPath")
   }, !1, this);
   var $inputPublicationPath$$ = goog.dom.getElementByClass("input-publication-path");
@@ -11127,15 +11119,15 @@ silex.utils.Url.checkFileExt = function $silex$utils$Url$checkFileExt$($fileName
   }
   return!1
 };
-silex.view.FileExplorer = function $silex$view$FileExplorer$($element$$247_shortcutHandler$$, $bodyElement$$, $headElement$$) {
-  silex.view.ViewBase.call(this, $element$$247_shortcutHandler$$, $bodyElement$$, $headElement$$);
+silex.view.FileExplorer = function $silex$view$FileExplorer$($element$$245_shortcutHandler$$, $bodyElement$$, $headElement$$) {
+  silex.view.ViewBase.call(this, $element$$245_shortcutHandler$$, $bodyElement$$, $headElement$$);
   goog.style.setStyle(this.element, "display", "none");
   (new goog.async.Delay(function() {
     this.init()
   }, 1E3, this)).start();
-  $element$$247_shortcutHandler$$ = new goog.ui.KeyboardShortcutHandler(document);
-  $element$$247_shortcutHandler$$.registerShortcut("esc", goog.events.KeyCodes.ESC);
-  goog.events.listen($element$$247_shortcutHandler$$, goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED, goog.bind(this.closeEditor, this))
+  $element$$245_shortcutHandler$$ = new goog.ui.KeyboardShortcutHandler(document);
+  $element$$245_shortcutHandler$$.registerShortcut("esc", goog.events.KeyCodes.ESC);
+  goog.events.listen($element$$245_shortcutHandler$$, goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED, goog.bind(this.closeEditor, this))
 };
 goog.inherits(silex.view.FileExplorer, silex.view.ViewBase);
 silex.view.FileExplorer.CONTAINER_TYPE = "modal";
@@ -12555,10 +12547,10 @@ goog.dom.TextRange.prototype.removeContents = function $goog$dom$TextRange$$remo
   this.getBrowserRangeWrapper_().removeContents();
   this.clearCachedValues_()
 };
-goog.dom.TextRange.prototype.surroundContents = function $goog$dom$TextRange$$surroundContents$($element$$255_output$$) {
-  $element$$255_output$$ = this.getBrowserRangeWrapper_().surroundContents($element$$255_output$$);
+goog.dom.TextRange.prototype.surroundContents = function $goog$dom$TextRange$$surroundContents$($element$$253_output$$) {
+  $element$$253_output$$ = this.getBrowserRangeWrapper_().surroundContents($element$$253_output$$);
   this.clearCachedValues_();
-  return $element$$255_output$$
+  return $element$$253_output$$
 };
 goog.dom.TextRange.prototype.insertNode = function $goog$dom$TextRange$$insertNode$($node$$, $before$$) {
   var $output$$ = this.getBrowserRangeWrapper_().insertNode($node$$, $before$$);
@@ -15853,13 +15845,13 @@ silex.view.pane.StylePane.prototype.buildUi = function $silex$view$pane$StylePan
 };
 silex.view.pane.StylePane.prototype.redraw = function $silex$view$pane$StylePane$$redraw$() {
   silex.view.pane.StylePane.superClass_.redraw.call(this);
-  var $element$$284_str$$66_value$$ = this.getSelection()[0];
-  if($element$$284_str$$66_value$$) {
-    this.cssClassesInput.value = silex.utils.Style.getClassName($element$$284_str$$66_value$$);
-    if($element$$284_str$$66_value$$ = $element$$284_str$$66_value$$.getAttribute("style")) {
+  var $element$$282_str$$66_value$$ = this.getSelection()[0];
+  if($element$$282_str$$66_value$$) {
+    this.cssClassesInput.value = silex.utils.Style.getClassName($element$$282_str$$66_value$$);
+    if($element$$282_str$$66_value$$ = $element$$282_str$$66_value$$.getAttribute("style")) {
       this.iAmSettingValue = !0;
-      var $element$$284_str$$66_value$$ = ".element{\n" + $element$$284_str$$66_value$$.replace(/; /g, ";\n") + "\n}", $pos$$ = this.ace.getCursorPosition();
-      this.ace.setValue($element$$284_str$$66_value$$);
+      var $element$$282_str$$66_value$$ = ".element{\n" + $element$$282_str$$66_value$$.replace(/; /g, ";\n") + "\n}", $pos$$ = this.ace.getCursorPosition();
+      this.ace.setValue($element$$282_str$$66_value$$);
       this.ace.gotoLine($pos$$.row + 1, $pos$$.column, !1)
     }else {
       this.iAmSettingValue = !0, this.ace.setValue("")
@@ -19607,9 +19599,9 @@ goog.editor.plugins.AbstractBubblePlugin.prototype.handleSelectionChange = funct
     }else {
       var $range$$ = this.getFieldObject().getRange();
       if($range$$) {
-        var $element$$316_startNode$$ = $range$$.getStartNode(), $endNode$$ = $range$$.getEndNode(), $startOffset$$ = $range$$.getStartOffset(), $endOffset$$ = $range$$.getEndOffset();
-        goog.userAgent.IE && ($range$$.isCollapsed() && $element$$316_startNode$$ != $endNode$$) && ($range$$ = goog.dom.Range.createCaret($element$$316_startNode$$, $startOffset$$));
-        $element$$316_startNode$$.nodeType == goog.dom.NodeType.ELEMENT && ($element$$316_startNode$$ == $endNode$$ && $startOffset$$ == $endOffset$$ - 1) && ($element$$316_startNode$$ = $element$$316_startNode$$.childNodes[$startOffset$$], $element$$316_startNode$$.nodeType == goog.dom.NodeType.ELEMENT && ($selectedElement$$ = $element$$316_startNode$$))
+        var $element$$314_startNode$$ = $range$$.getStartNode(), $endNode$$ = $range$$.getEndNode(), $startOffset$$ = $range$$.getStartOffset(), $endOffset$$ = $range$$.getEndOffset();
+        goog.userAgent.IE && ($range$$.isCollapsed() && $element$$314_startNode$$ != $endNode$$) && ($range$$ = goog.dom.Range.createCaret($element$$314_startNode$$, $startOffset$$));
+        $element$$314_startNode$$.nodeType == goog.dom.NodeType.ELEMENT && ($element$$314_startNode$$ == $endNode$$ && $startOffset$$ == $endOffset$$ - 1) && ($element$$314_startNode$$ = $element$$314_startNode$$.childNodes[$startOffset$$], $element$$314_startNode$$.nodeType == goog.dom.NodeType.ELEMENT && ($selectedElement$$ = $element$$314_startNode$$))
       }
       $selectedElement$$ = $selectedElement$$ || $range$$ && $range$$.getContainerElement()
     }
@@ -20994,13 +20986,13 @@ goog.editor.plugins.SpacesTabHandler.prototype.handleTabKey = function $goog$edi
   return goog.editor.range.intersectsTag($range$$, goog.dom.TagName.LI) ? !1 : ($e$$.shiftKey || (this.getFieldObject().stopChangeEvents(!0, !0), $range$$.isCollapsed() || ($dh$$10_elem$$.getDocument().execCommand("delete", !1, null), $range$$ = this.getFieldObject().getRange()), $dh$$10_elem$$ = $dh$$10_elem$$.createDom("span", null, "\u00a0\u00a0 \u00a0"), $dh$$10_elem$$ = $range$$.insertNode($dh$$10_elem$$, !1), this.getFieldObject().dispatchChange(), goog.editor.range.placeCursorNextTo($dh$$10_elem$$, 
   !1), this.getFieldObject().dispatchSelectionChangeEvent()), $e$$.preventDefault(), !0)
 };
-silex.view.TextEditor = function $silex$view$TextEditor$($element$$317_shortcutHandler$$, $bodyElement$$, $headElement$$) {
-  silex.view.ViewBase.call(this, $element$$317_shortcutHandler$$, $bodyElement$$, $headElement$$);
+silex.view.TextEditor = function $silex$view$TextEditor$($element$$315_shortcutHandler$$, $bodyElement$$, $headElement$$) {
+  silex.view.ViewBase.call(this, $element$$315_shortcutHandler$$, $bodyElement$$, $headElement$$);
   this.initUI();
   this.closeEditor();
-  $element$$317_shortcutHandler$$ = new goog.ui.KeyboardShortcutHandler(document);
-  $element$$317_shortcutHandler$$.registerShortcut("esc", goog.events.KeyCodes.ESC);
-  goog.events.listen($element$$317_shortcutHandler$$, goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED, goog.bind(this.closeEditor, this))
+  $element$$315_shortcutHandler$$ = new goog.ui.KeyboardShortcutHandler(document);
+  $element$$315_shortcutHandler$$.registerShortcut("esc", goog.events.KeyCodes.ESC);
+  goog.events.listen($element$$315_shortcutHandler$$, goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED, goog.bind(this.closeEditor, this))
 };
 goog.inherits(silex.view.TextEditor, silex.view.ViewBase);
 silex.view.TextEditor.prototype.initUI = function $silex$view$TextEditor$$initUI$() {
@@ -21091,12 +21083,12 @@ silex.view.TextEditor.prototype.contentChanged = function $silex$view$TextEditor
     this.onStatus("changed", this.getData())
   }
 };
-silex.view.HTMLEditor = function $silex$view$HTMLEditor$($element$$318_shortcutHandler$$, $bodyElement$$, $headElement$$) {
-  silex.view.ViewBase.call(this, $element$$318_shortcutHandler$$, $bodyElement$$, $headElement$$);
+silex.view.HTMLEditor = function $silex$view$HTMLEditor$($element$$316_shortcutHandler$$, $bodyElement$$, $headElement$$) {
+  silex.view.ViewBase.call(this, $element$$316_shortcutHandler$$, $bodyElement$$, $headElement$$);
   this.initUI();
-  $element$$318_shortcutHandler$$ = new goog.ui.KeyboardShortcutHandler(document);
-  $element$$318_shortcutHandler$$.registerShortcut("esc", goog.events.KeyCodes.ESC);
-  goog.events.listen($element$$318_shortcutHandler$$, goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED, goog.bind(this.closeEditor, this))
+  $element$$316_shortcutHandler$$ = new goog.ui.KeyboardShortcutHandler(document);
+  $element$$316_shortcutHandler$$.registerShortcut("esc", goog.events.KeyCodes.ESC);
+  goog.events.listen($element$$316_shortcutHandler$$, goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED, goog.bind(this.closeEditor, this))
 };
 goog.inherits(silex.view.HTMLEditor, silex.view.ViewBase);
 silex.view.HTMLEditor.prototype.initUI = function $silex$view$HTMLEditor$$initUI$() {
@@ -21222,11 +21214,16 @@ silex.model.File.prototype.setHtml = function $silex$model$File$$setHtml$($bodyH
   -1 < $closingTagIdx_headOpenIdx$$ && -1 < $headCloseIdx$$ && ($closingTagIdx_headOpenIdx$$ = $lowerCaseHtml$$.indexOf(">", $closingTagIdx_headOpenIdx$$), $headHtml$$ = $bodyHtml$$4_rawHtml$$.substring($closingTagIdx_headOpenIdx$$ + 1, $headCloseIdx$$));
   -1 < $bodyOpenIdx$$ && -1 < $bodyCloseIdx$$ && ($closingTagIdx_headOpenIdx$$ = $lowerCaseHtml$$.indexOf(">", $bodyOpenIdx$$), $bodyHtml$$4_rawHtml$$.substring($closingTagIdx_headOpenIdx$$ + 1, $bodyCloseIdx$$));
   $bodyHtml$$4_rawHtml$$ = $bodyHtml$$4_rawHtml$$.substring($bodyOpenIdx$$, $bodyCloseIdx$$ + 7);
-  silex.utils.EditablePlugin.setEditableHtml(this.bodyElement, $bodyHtml$$4_rawHtml$$);
+  silex.utils.EditablePlugin.setEditable(this.bodyElement, !1);
+  this.bodyElement.innerHTML = $bodyHtml$$4_rawHtml$$;
+  silex.utils.EditablePlugin.setEditable(this.bodyElement, !0);
   this.headElement.innerHTML = $headHtml$$
 };
 silex.model.File.prototype.getHtml = function $silex$model$File$$getHtml$() {
-  var $styleStr$$ = this.bodyElement.getAttribute("style") || "", $bodyStr$$ = silex.utils.EditablePlugin.getEditableHtml(this.bodyElement), $html$$;
+  silex.utils.EditablePlugin.setEditable(this.bodyElement, !1);
+  var $bodyStr$$ = this.bodyElement.innerHTML;
+  silex.utils.EditablePlugin.setEditable(this.bodyElement, !0);
+  var $styleStr$$ = this.bodyElement.getAttribute("style") || "", $html$$;
   $html$$ = "<html>" + ("<head>" + this.headElement.innerHTML + "</head>");
   $html$$ += '<body style="' + $styleStr$$ + '">' + $bodyStr$$ + "</body>";
   return $html$$ += "</html>"
