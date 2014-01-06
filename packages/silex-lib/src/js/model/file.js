@@ -92,7 +92,6 @@ silex.model.File.prototype.setHtml = function(rawHtml) {
   var styleEnd = bodyHtml.indexOf('"', styleStart + 1);
   var bodyStyle = bodyHtml.substring(styleStart + 1, styleEnd);
   var bodyStyleAbsolute = silex.utils.Url.relative2absolute(bodyStyle, this.getUrl());
-  console.log(bodyHtml, bodyStyle);
   // set body style
   this.bodyElement.setAttribute('style', bodyStyleAbsolute);
   // make editable again

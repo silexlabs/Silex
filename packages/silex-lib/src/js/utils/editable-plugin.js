@@ -137,7 +137,6 @@ silex.utils.EditablePlugin.setEditable = function(element, isEditable, opt_isRoo
  * @param   {boolean} opt_hasChildContainer   if true, set the html into the first child
  *
 silex.utils.EditablePlugin.setEditableHtml = function(element, htmlString, opt_isRootDroppableOnly) {
-  console.log('setEditableHtml', arguments);
   // unregister jquery plugin
   silex.utils.EditablePlugin.setEditable(element, false, opt_isRootDroppableOnly);
 
