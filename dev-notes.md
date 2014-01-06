@@ -9,8 +9,6 @@ BUGS
 !!!! update front-end.css
 
 bugs
-* css in ff
-* drop and z-index?
 * links color & format
 * img bg should be transparent
 * new file => reset body style
