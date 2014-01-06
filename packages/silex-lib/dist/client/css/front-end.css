@@ -13,9 +13,6 @@ body{
 	margin-right: auto;
 	z-index: 1;
 }
-.editable-style{
-	position: absolute;
-}
 .silex-element-content{
 	overflow: hidden;
   border-radius: inherit;

@@ -9,8 +9,6 @@ BUGS
 !!!! update front-end.css
 
 bugs
-* text links
-* new file
 * css in ff
 * drop and z-index?
 * links color & format
@@ -21,6 +19,9 @@ bugs
 * focus stays on text fiels when click on stage
 * clear bg image => remove style instead of background-image: none;
 * remove console logs
+* css class to prevent edit (no-resize-w, no-move, no-edit ...)
+* all front-end.css should be in head section
+!!!! update front-end.css
 
 * open a non-silex site => warn
 * New site => BG size depends on the stage size
