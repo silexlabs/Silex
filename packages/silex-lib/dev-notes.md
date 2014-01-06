@@ -9,6 +9,7 @@ BUGS
 !!!! update front-end.css
 
 bugs
+* text links
 * new file
 * css in ff
 * drop and z-index?
