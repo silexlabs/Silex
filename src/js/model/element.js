@@ -382,7 +382,14 @@ silex.model.Element.prototype.createElement = function(type) {
       // create the element
       element = goog.dom.createElement('div');
       element.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_TEXT);
-      element.innerHTML = '<p>New text box</p>';
+      // create the container for text content
+      var textContent = goog.dom.createElement('div');
+      textContent.innerHTML = '<p>New text box</p>';
+      goog.style.setStyle(textContent, 'width', '100%');
+      goog.style.setStyle(textContent, 'height', '100%');
+      goog.dom.appendChild(element, textContent);
+      // add a marker to find the inner content afterwards, with getContent
+      goog.dom.classes.add(textContent, silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
     break;
 
     // HTML box
