@@ -338,4 +338,7 @@ Internationalization
     * http://stackoverflow.com/questions/7175597/internationalizaton-of-html-files
     * http://www.grails.org/plugin/i18n-gettext
     * http://slexaxton.github.io/Jed/
+    * http://code.google.com/p/jquery-i18n-properties/
+    * http://stackoverflow.com/questions/13895012/what-plugin-to-use-for-internationalization-with-jquery-mobile-and-requirejs
+    * http://blogs.technet.com/b/port25/archive/2010/06/15/new-open-source-jquery-globalization-plugin-released.aspx
 
