@@ -7828,7 +7828,10 @@ silex.controller.ControllerBase.prototype.editElement = function $silex$controll
   $opt_element$$ || ($opt_element$$ = this.view.stage.getSelection()[0]);
   switch(this.model.element.getType($opt_element$$)) {
     case silex.model.Element.TYPE_TEXT:
-      this.view.textEditor.openEditor(this.model.element.getInnerHtml($opt_element$$));
+      for(var $tmpElement$$ = $opt_element$$, $bgColor$$;$tmpElement$$ && (!$bgColor$$ || "transparent" == $bgColor$$);) {
+        $tmpElement$$.style && ($bgColor$$ = $tmpElement$$.style.backgroundColor), $tmpElement$$ = $tmpElement$$.parentNode
+      }
+      this.view.textEditor.openEditor(this.model.element.getInnerHtml($opt_element$$), $bgColor$$);
       break;
     case silex.model.Element.TYPE_HTML:
       this.view.htmlEditor.openEditor(this.model.element.getInnerHtml($opt_element$$));
@@ -21070,12 +21073,14 @@ silex.view.TextEditor.prototype.initUI = function $silex$view$TextEditor$$initUI
     this.closeEditor()
   }, !1, this)
 };
-silex.view.TextEditor.prototype.openEditor = function $silex$view$TextEditor$$openEditor$($background$$) {
-  this.textField.setHtml(!1, $background$$);
+silex.view.TextEditor.prototype.openEditor = function $silex$view$TextEditor$$openEditor$($initialHtml$$, $opt_bgColor$$) {
+  this.textField.setHtml(!1, $initialHtml$$);
   this.textField.focusAndPlaceCursorAtStart();
-  $background$$ = goog.dom.getElementByClass("dialogs-background");
+  var $background$$ = goog.dom.getElementByClass("dialogs-background");
   goog.style.setStyle($background$$, "display", "inherit");
   goog.style.setStyle(this.element, "display", "inherit");
+  $opt_bgColor$$ || ($opt_bgColor$$ = "white");
+  goog.dom.getElementsByTagNameAndClass("iframe", null, this.element)[0].style.backgroundColor = $opt_bgColor$$;
   this.redraw()
 };
 silex.view.TextEditor.prototype.redraw = function $silex$view$TextEditor$$redraw$() {

@@ -248,7 +248,17 @@ silex.controller.ControllerBase.prototype.editElement = function(opt_element) {
 
   switch (this.model.element.getType(opt_element)) {
     case silex.model.Element.TYPE_TEXT:
-      this.view.textEditor.openEditor(this.model.element.getInnerHtml(opt_element));
+      // get the component bg color, or one of it's parent's bg color
+      var tmpElement = opt_element;
+      var bgColor;
+      while(tmpElement && (!bgColor || bgColor == 'transparent')){
+        if (tmpElement.style){
+          bgColor = tmpElement.style.backgroundColor;
+        }
+        tmpElement = tmpElement.parentNode;
+      }
+      // open the text editor with the same bg color
+      this.view.textEditor.openEditor(this.model.element.getInnerHtml(opt_element), bgColor);
       break;
     case silex.model.Element.TYPE_HTML:
       this.view.htmlEditor.openEditor(this.model.element.getInnerHtml(opt_element));
