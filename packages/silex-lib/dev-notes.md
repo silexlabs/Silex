@@ -9,7 +9,6 @@ BUGS
 !!!! update front-end.css
 
 bugs
-* html box editor
 * new file
 * css in ff
 * drop and z-index?
@@ -19,10 +18,8 @@ bugs
 * css editor in tools or view + shortcut
 * bg text editor
 * focus stays on text fiels when click on stage
-* text field overflow
 * clear bg image => remove style instead of background-image: none;
 * remove console logs
-* missing knob to resize w&h?
 
 * open a non-silex site => warn
 * New site => BG size depends on the stage size
