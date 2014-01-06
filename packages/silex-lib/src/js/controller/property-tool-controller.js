@@ -50,25 +50,7 @@ silex.controller.PropertyToolController.prototype.propertyToolCallback = functio
       this.editElement();
       break;
     case 'selectBgImage':
-      var errCbk = function(error) {
-        silex.utils.Notification.notifyError('Error: I could not load the image. <br /><br />' + (error.message || ''));
-        this.tracker.trackAction('controller-events', 'error', type, -1);
-      };
-      var successCbk = function(url) {
-        // update the model
-        var element = this.view.stage.getSelection()[0];
-        this.model.element.setBgImage(element, url);
-        // redraw the data
-        this.view.propertyTool.redraw();
-        this.tracker.trackAction('controller-events', 'success', type, 1);
-      };
-      // open the file browser
-      this.view.fileExplorer.openDialog(
-          goog.bind(successCbk, this),
-          {'mimetype': 'image/*'},
-          goog.bind(errCbk, this)
-      );
-      this.view.workspace.invalidate();
+      this.browseBgImage();
       break;
     case 'selectImage':
       this.editElement();

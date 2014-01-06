@@ -300,6 +300,8 @@ silex.model.Element.prototype.setImageUrl = function(element, url, opt_callback,
         goog.dom.appendChild(element, img);
         // add a marker to find the inner content afterwards, with getContent
         goog.dom.classes.add(img, silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
+        // remove the id set by the loader (it needs it to know what has already been loaded?)
+        img.removeAttribute('id');
         // callback
         if (opt_callback){
           opt_callback(element, img);

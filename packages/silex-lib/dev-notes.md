@@ -6,6 +6,20 @@
 
 BUGS
 
+bugs
+* html box editor
+* css in ff
+* drop and z-index?
+* links color & format
+* img bg should be transparent
+* new file => reset body style
+* css editor in tools or view + shortcut
+* bg text editor
+* focus stays on text fiels when click on stage
+* text field overflow
+* clear bg image => remove style instead of background-image: none;
+* remove console logs
+
 * open a non-silex site => warn
 * New site => BG size depends on the stage size
 * Lorsque l'on colle un lien externe pour la deuxième fois = on retrouve le lien précédemment collé

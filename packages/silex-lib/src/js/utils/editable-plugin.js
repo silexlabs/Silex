@@ -148,11 +148,11 @@ silex.utils.EditablePlugin.getEditableHtml = function(element, opt_isRootDroppab
   silex.utils.EditablePlugin.setEditable(element, false, opt_isRootDroppableOnly);
 
   // remove all markup linked to the "editable" jquery plugin
-  var cleanContainer = element.cloneNode(true);
+  var cleanHtml = element.innerHTML;
 
   // restore editing
   silex.utils.EditablePlugin.setEditable(element, true, opt_isRootDroppableOnly);
 
   // return the html content
-  return cleanContainer.innerHTML;
+  return cleanHtml;
 };
