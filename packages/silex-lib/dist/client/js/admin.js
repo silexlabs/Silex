@@ -7403,11 +7403,12 @@ silex.model.Element.prototype.removeElement = function $silex$model$Element$$rem
   goog.dom.removeNode($element$$)
 };
 silex.model.Element.prototype.createElement = function $silex$model$Element$$createElement$($type$$) {
-  var $element$$;
+  var $element$$, $styleObject$$ = {height:"100px", width:"100px", top:100 + this.bodyElement.scrollTop + "px", left:100 + this.bodyElement.scrollLeft + "px", position:"absolute"};
   switch($type$$) {
     case silex.model.Element.TYPE_CONTAINER:
       $element$$ = goog.dom.createElement("div");
       $element$$.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_CONTAINER);
+      $styleObject$$.backgroundColor = "white";
       break;
     case silex.model.Element.TYPE_TEXT:
       $element$$ = goog.dom.createElement("div");
@@ -7418,6 +7419,7 @@ silex.model.Element.prototype.createElement = function $silex$model$Element$$cre
       goog.style.setStyle($container$$10_htmlContent_textContent$$, "height", "100%");
       goog.dom.appendChild($element$$, $container$$10_htmlContent_textContent$$);
       goog.dom.classes.add($container$$10_htmlContent_textContent$$, silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
+      $styleObject$$.backgroundColor = "white";
       break;
     case silex.model.Element.TYPE_HTML:
       $element$$ = goog.dom.createElement("div");
@@ -7429,6 +7431,7 @@ silex.model.Element.prototype.createElement = function $silex$model$Element$$cre
       goog.style.setStyle($container$$10_htmlContent_textContent$$, "height", "100%");
       goog.dom.appendChild($element$$, $container$$10_htmlContent_textContent$$);
       goog.dom.classes.add($container$$10_htmlContent_textContent$$, silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
+      $styleObject$$.backgroundColor = "white";
       break;
     case silex.model.Element.TYPE_IMAGE:
       $element$$ = goog.dom.createElement("div"), $element$$.className = silex.utils.EditablePlugin.EDITABLE_CLASS_NAME, $element$$.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_IMAGE)
@@ -7437,7 +7440,7 @@ silex.model.Element.prototype.createElement = function $silex$model$Element$$cre
   silex.utils.EditablePlugin.setEditable($element$$, !0);
   $container$$10_htmlContent_textContent$$ = goog.dom.getElementByClass("background", this.bodyElement);
   $container$$10_htmlContent_textContent$$ || ($container$$10_htmlContent_textContent$$ = this.bodyElement);
-  goog.style.setStyle($element$$, {height:"100px", width:"100px", top:100 + this.bodyElement.scrollTop + "px", left:100 + this.bodyElement.scrollLeft + "px", backgroundColor:"rgba(255, 255, 255, 1)", position:"absolute"});
+  goog.style.setStyle($element$$, $styleObject$$);
   goog.dom.classes.add($element$$, $type$$ + "-element");
   goog.dom.appendChild($container$$10_htmlContent_textContent$$, $element$$);
   return $element$$

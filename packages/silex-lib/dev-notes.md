@@ -9,8 +9,6 @@ BUGS
 !!!! update front-end.css
 
 bugs
-* links color & format
-* img bg should be transparent
 * new file => reset body style
 * css editor in tools or view + shortcut
 * bg text editor
