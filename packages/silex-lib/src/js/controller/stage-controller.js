@@ -48,10 +48,14 @@ silex.controller.StageController.prototype.stageCallback = function(type, opt_ta
       break;
     case 'change': // size or position of the element has changed
       this.view.propertyTool.redraw();
+      // update drop zones z index
+      silex.utils.EditablePlugin.resetEditable(this.model.body.bodyElement);
       break;
     case 'newContainer': // an element is dropped in a new container
       var element = this.view.stage.getSelection()[0];
       this.checkElementVisibility(element);
+      // update drop zones z index
+      silex.utils.EditablePlugin.resetEditable(this.model.body.bodyElement);
       break;
     case 'edit':
       // size or position of the element has changed

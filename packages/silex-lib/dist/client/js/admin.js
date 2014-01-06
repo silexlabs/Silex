@@ -7799,6 +7799,7 @@ silex.controller.ControllerBase.prototype.addElement = function $silex$controlle
     this.checkElementVisibility($element$$);
     this.model.element.setSelected($element$$, !0);
     this.view.propertyTool.redraw();
+    silex.utils.EditablePlugin.resetEditable(this.model.body.bodyElement);
     this.tracker.trackAction("controller-events", "success", "insert." + $type$$, 1)
   }catch($e$$) {
     this.tracker.trackAction("controller-events", "error", "insert." + $type$$, -1), console.error("could not add element of type", $type$$, " - ", error)
@@ -7807,7 +7808,7 @@ silex.controller.ControllerBase.prototype.addElement = function $silex$controlle
 };
 silex.controller.ControllerBase.prototype.styleChanged = function $silex$controller$ControllerBase$$styleChanged$($name$$, $value$$) {
   var $element$$ = this.view.stage.getSelection()[0];
-  $element$$ && $name$$ ? (this.model.element.setStyle($element$$, $name$$, $value$$), this.view.propertyTool.redraw()) : console.error("can not set style ", $name$$, " on element ", $element$$)
+  $element$$ && $name$$ ? (this.model.element.setStyle($element$$, $name$$, $value$$), this.view.propertyTool.redraw(), silex.utils.EditablePlugin.resetEditable(this.model.body.bodyElement)) : console.error("can not set style ", $name$$, " on element ", $element$$)
 };
 silex.controller.ControllerBase.prototype.propertyChanged = function $silex$controller$ControllerBase$$propertyChanged$($name$$, $value$$) {
   var $element$$ = this.view.stage.getSelection()[0];
@@ -8134,8 +8135,13 @@ silex.utils.EditablePlugin.getFirstEditableParent = function $silex$utils$Editab
   console.warn("this element has no editable parent", $element$$);
   return $element$$
 };
+silex.utils.EditablePlugin.resetEditable = function $silex$utils$EditablePlugin$resetEditable$($element$$) {
+  setTimeout(function() {
+    silex.utils.EditablePlugin.setEditable($element$$, !1);
+    silex.utils.EditablePlugin.setEditable($element$$, !0)
+  }, 10)
+};
 silex.utils.EditablePlugin.setEditable = function $silex$utils$EditablePlugin$setEditable$($element$$, $isEditable$$, $opt_isRootDroppableOnly$$) {
-  console.log("setEditable", arguments);
   $isEditable$$ ? ($(".editable-style", $element$$).each(function() {
     "container" === this.getAttribute("data-silex-type") ? $(this).editable({isContainer:!0}) : $(this).editable()
   }), "container" === $element$$.getAttribute("data-silex-type") ? $opt_isRootDroppableOnly$$ ? $($element$$).editable({isContainer:!0, isResizable:!1, isDroppable:!0, isDraggable:!1}) : $($element$$).editable({isContainer:!0}) : $($element$$).editable()) : ($(".editable-style", $element$$).editable("destroy"), $($element$$).editable("destroy"), $($element$$).find(silex.model.Element.SELECTED_CLASS_NAME).removeClass(silex.utils.EditablePlugin.SILEX_SELECTED_CLASS_NAME), $($element$$).find(silex.utils.EditablePlugin.UI_RESIZABLE_CLASS_NAME).removeClass(silex.utils.EditablePlugin.UI_RESIZABLE_CLASS_NAME), 
@@ -8250,10 +8256,12 @@ silex.controller.StageController.prototype.stageCallback = function $silex$contr
       break;
     case "change":
       this.view.propertyTool.redraw();
+      silex.utils.EditablePlugin.resetEditable(this.model.body.bodyElement);
       break;
     case "newContainer":
       var $element$$ = this.view.stage.getSelection()[0];
       this.checkElementVisibility($element$$);
+      silex.utils.EditablePlugin.resetEditable(this.model.body.bodyElement);
       break;
     case "edit":
       this.editElement()
@@ -8438,19 +8446,19 @@ silex.types.View = function $silex$types$View$($workspace$$, $menu$$, $stage$$, 
   this.fileExplorer = $fileExplorer$$;
   this.settingsDialog = $settingsDialog$$
 };
-silex.view.SettingsDialog = function $silex$view$SettingsDialog$($btn$$1_element$$241_shortcutHandler$$, $bodyElement$$, $headElement$$) {
-  silex.view.ViewBase.call(this, $btn$$1_element$$241_shortcutHandler$$, $bodyElement$$, $headElement$$);
+silex.view.SettingsDialog = function $silex$view$SettingsDialog$($btn$$1_element$$242_shortcutHandler$$, $bodyElement$$, $headElement$$) {
+  silex.view.ViewBase.call(this, $btn$$1_element$$242_shortcutHandler$$, $bodyElement$$, $headElement$$);
   this.publicationPath = "";
   goog.style.setStyle(this.element, "display", "none");
-  $btn$$1_element$$241_shortcutHandler$$ = new goog.ui.KeyboardShortcutHandler(document);
-  $btn$$1_element$$241_shortcutHandler$$.registerShortcut("esc", goog.events.KeyCodes.ESC);
-  goog.events.listen($btn$$1_element$$241_shortcutHandler$$, goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED, goog.bind(this.closeEditor, this));
-  $btn$$1_element$$241_shortcutHandler$$ = goog.dom.getElementByClass("close-btn", this.element);
-  goog.events.listen($btn$$1_element$$241_shortcutHandler$$, goog.events.EventType.CLICK, function() {
+  $btn$$1_element$$242_shortcutHandler$$ = new goog.ui.KeyboardShortcutHandler(document);
+  $btn$$1_element$$242_shortcutHandler$$.registerShortcut("esc", goog.events.KeyCodes.ESC);
+  goog.events.listen($btn$$1_element$$242_shortcutHandler$$, goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED, goog.bind(this.closeEditor, this));
+  $btn$$1_element$$242_shortcutHandler$$ = goog.dom.getElementByClass("close-btn", this.element);
+  goog.events.listen($btn$$1_element$$242_shortcutHandler$$, goog.events.EventType.CLICK, function() {
     this.closeEditor()
   }, !1, this);
-  $btn$$1_element$$241_shortcutHandler$$ = goog.dom.getElementByClass("browse-btn", this.element);
-  goog.events.listen($btn$$1_element$$241_shortcutHandler$$, goog.events.EventType.CLICK, function() {
+  $btn$$1_element$$242_shortcutHandler$$ = goog.dom.getElementByClass("browse-btn", this.element);
+  goog.events.listen($btn$$1_element$$242_shortcutHandler$$, goog.events.EventType.CLICK, function() {
     this.onStatus("browsePublishPath")
   }, !1, this);
   var $inputPublicationPath$$ = goog.dom.getElementByClass("input-publication-path");
@@ -11124,15 +11132,15 @@ silex.utils.Url.checkFileExt = function $silex$utils$Url$checkFileExt$($fileName
   }
   return!1
 };
-silex.view.FileExplorer = function $silex$view$FileExplorer$($element$$245_shortcutHandler$$, $bodyElement$$, $headElement$$) {
-  silex.view.ViewBase.call(this, $element$$245_shortcutHandler$$, $bodyElement$$, $headElement$$);
+silex.view.FileExplorer = function $silex$view$FileExplorer$($element$$246_shortcutHandler$$, $bodyElement$$, $headElement$$) {
+  silex.view.ViewBase.call(this, $element$$246_shortcutHandler$$, $bodyElement$$, $headElement$$);
   goog.style.setStyle(this.element, "display", "none");
   (new goog.async.Delay(function() {
     this.init()
   }, 1E3, this)).start();
-  $element$$245_shortcutHandler$$ = new goog.ui.KeyboardShortcutHandler(document);
-  $element$$245_shortcutHandler$$.registerShortcut("esc", goog.events.KeyCodes.ESC);
-  goog.events.listen($element$$245_shortcutHandler$$, goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED, goog.bind(this.closeEditor, this))
+  $element$$246_shortcutHandler$$ = new goog.ui.KeyboardShortcutHandler(document);
+  $element$$246_shortcutHandler$$.registerShortcut("esc", goog.events.KeyCodes.ESC);
+  goog.events.listen($element$$246_shortcutHandler$$, goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED, goog.bind(this.closeEditor, this))
 };
 goog.inherits(silex.view.FileExplorer, silex.view.ViewBase);
 silex.view.FileExplorer.CONTAINER_TYPE = "modal";
@@ -12552,10 +12560,10 @@ goog.dom.TextRange.prototype.removeContents = function $goog$dom$TextRange$$remo
   this.getBrowserRangeWrapper_().removeContents();
   this.clearCachedValues_()
 };
-goog.dom.TextRange.prototype.surroundContents = function $goog$dom$TextRange$$surroundContents$($element$$253_output$$) {
-  $element$$253_output$$ = this.getBrowserRangeWrapper_().surroundContents($element$$253_output$$);
+goog.dom.TextRange.prototype.surroundContents = function $goog$dom$TextRange$$surroundContents$($element$$254_output$$) {
+  $element$$254_output$$ = this.getBrowserRangeWrapper_().surroundContents($element$$254_output$$);
   this.clearCachedValues_();
-  return $element$$253_output$$
+  return $element$$254_output$$
 };
 goog.dom.TextRange.prototype.insertNode = function $goog$dom$TextRange$$insertNode$($node$$, $before$$) {
   var $output$$ = this.getBrowserRangeWrapper_().insertNode($node$$, $before$$);
@@ -15850,13 +15858,13 @@ silex.view.pane.StylePane.prototype.buildUi = function $silex$view$pane$StylePan
 };
 silex.view.pane.StylePane.prototype.redraw = function $silex$view$pane$StylePane$$redraw$() {
   silex.view.pane.StylePane.superClass_.redraw.call(this);
-  var $element$$282_str$$66_value$$ = this.getSelection()[0];
-  if($element$$282_str$$66_value$$) {
-    this.cssClassesInput.value = silex.utils.Style.getClassName($element$$282_str$$66_value$$);
-    if($element$$282_str$$66_value$$ = $element$$282_str$$66_value$$.getAttribute("style")) {
+  var $element$$283_str$$66_value$$ = this.getSelection()[0];
+  if($element$$283_str$$66_value$$) {
+    this.cssClassesInput.value = silex.utils.Style.getClassName($element$$283_str$$66_value$$);
+    if($element$$283_str$$66_value$$ = $element$$283_str$$66_value$$.getAttribute("style")) {
       this.iAmSettingValue = !0;
-      var $element$$282_str$$66_value$$ = ".element{\n" + $element$$282_str$$66_value$$.replace(/; /g, ";\n") + "\n}", $pos$$ = this.ace.getCursorPosition();
-      this.ace.setValue($element$$282_str$$66_value$$);
+      var $element$$283_str$$66_value$$ = ".element{\n" + $element$$283_str$$66_value$$.replace(/; /g, ";\n") + "\n}", $pos$$ = this.ace.getCursorPosition();
+      this.ace.setValue($element$$283_str$$66_value$$);
       this.ace.gotoLine($pos$$.row + 1, $pos$$.column, !1)
     }else {
       this.iAmSettingValue = !0, this.ace.setValue("")
@@ -19604,9 +19612,9 @@ goog.editor.plugins.AbstractBubblePlugin.prototype.handleSelectionChange = funct
     }else {
       var $range$$ = this.getFieldObject().getRange();
       if($range$$) {
-        var $element$$314_startNode$$ = $range$$.getStartNode(), $endNode$$ = $range$$.getEndNode(), $startOffset$$ = $range$$.getStartOffset(), $endOffset$$ = $range$$.getEndOffset();
-        goog.userAgent.IE && ($range$$.isCollapsed() && $element$$314_startNode$$ != $endNode$$) && ($range$$ = goog.dom.Range.createCaret($element$$314_startNode$$, $startOffset$$));
-        $element$$314_startNode$$.nodeType == goog.dom.NodeType.ELEMENT && ($element$$314_startNode$$ == $endNode$$ && $startOffset$$ == $endOffset$$ - 1) && ($element$$314_startNode$$ = $element$$314_startNode$$.childNodes[$startOffset$$], $element$$314_startNode$$.nodeType == goog.dom.NodeType.ELEMENT && ($selectedElement$$ = $element$$314_startNode$$))
+        var $element$$315_startNode$$ = $range$$.getStartNode(), $endNode$$ = $range$$.getEndNode(), $startOffset$$ = $range$$.getStartOffset(), $endOffset$$ = $range$$.getEndOffset();
+        goog.userAgent.IE && ($range$$.isCollapsed() && $element$$315_startNode$$ != $endNode$$) && ($range$$ = goog.dom.Range.createCaret($element$$315_startNode$$, $startOffset$$));
+        $element$$315_startNode$$.nodeType == goog.dom.NodeType.ELEMENT && ($element$$315_startNode$$ == $endNode$$ && $startOffset$$ == $endOffset$$ - 1) && ($element$$315_startNode$$ = $element$$315_startNode$$.childNodes[$startOffset$$], $element$$315_startNode$$.nodeType == goog.dom.NodeType.ELEMENT && ($selectedElement$$ = $element$$315_startNode$$))
       }
       $selectedElement$$ = $selectedElement$$ || $range$$ && $range$$.getContainerElement()
     }
@@ -20991,13 +20999,13 @@ goog.editor.plugins.SpacesTabHandler.prototype.handleTabKey = function $goog$edi
   return goog.editor.range.intersectsTag($range$$, goog.dom.TagName.LI) ? !1 : ($e$$.shiftKey || (this.getFieldObject().stopChangeEvents(!0, !0), $range$$.isCollapsed() || ($dh$$10_elem$$.getDocument().execCommand("delete", !1, null), $range$$ = this.getFieldObject().getRange()), $dh$$10_elem$$ = $dh$$10_elem$$.createDom("span", null, "\u00a0\u00a0 \u00a0"), $dh$$10_elem$$ = $range$$.insertNode($dh$$10_elem$$, !1), this.getFieldObject().dispatchChange(), goog.editor.range.placeCursorNextTo($dh$$10_elem$$, 
   !1), this.getFieldObject().dispatchSelectionChangeEvent()), $e$$.preventDefault(), !0)
 };
-silex.view.TextEditor = function $silex$view$TextEditor$($element$$315_shortcutHandler$$, $bodyElement$$, $headElement$$) {
-  silex.view.ViewBase.call(this, $element$$315_shortcutHandler$$, $bodyElement$$, $headElement$$);
+silex.view.TextEditor = function $silex$view$TextEditor$($element$$316_shortcutHandler$$, $bodyElement$$, $headElement$$) {
+  silex.view.ViewBase.call(this, $element$$316_shortcutHandler$$, $bodyElement$$, $headElement$$);
   this.initUI();
   this.closeEditor();
-  $element$$315_shortcutHandler$$ = new goog.ui.KeyboardShortcutHandler(document);
-  $element$$315_shortcutHandler$$.registerShortcut("esc", goog.events.KeyCodes.ESC);
-  goog.events.listen($element$$315_shortcutHandler$$, goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED, goog.bind(this.closeEditor, this))
+  $element$$316_shortcutHandler$$ = new goog.ui.KeyboardShortcutHandler(document);
+  $element$$316_shortcutHandler$$.registerShortcut("esc", goog.events.KeyCodes.ESC);
+  goog.events.listen($element$$316_shortcutHandler$$, goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED, goog.bind(this.closeEditor, this))
 };
 goog.inherits(silex.view.TextEditor, silex.view.ViewBase);
 silex.view.TextEditor.prototype.initUI = function $silex$view$TextEditor$$initUI$() {
@@ -21088,12 +21096,12 @@ silex.view.TextEditor.prototype.contentChanged = function $silex$view$TextEditor
     this.onStatus("changed", this.getData())
   }
 };
-silex.view.HTMLEditor = function $silex$view$HTMLEditor$($element$$316_shortcutHandler$$, $bodyElement$$, $headElement$$) {
-  silex.view.ViewBase.call(this, $element$$316_shortcutHandler$$, $bodyElement$$, $headElement$$);
+silex.view.HTMLEditor = function $silex$view$HTMLEditor$($element$$317_shortcutHandler$$, $bodyElement$$, $headElement$$) {
+  silex.view.ViewBase.call(this, $element$$317_shortcutHandler$$, $bodyElement$$, $headElement$$);
   this.initUI();
-  $element$$316_shortcutHandler$$ = new goog.ui.KeyboardShortcutHandler(document);
-  $element$$316_shortcutHandler$$.registerShortcut("esc", goog.events.KeyCodes.ESC);
-  goog.events.listen($element$$316_shortcutHandler$$, goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED, goog.bind(this.closeEditor, this))
+  $element$$317_shortcutHandler$$ = new goog.ui.KeyboardShortcutHandler(document);
+  $element$$317_shortcutHandler$$.registerShortcut("esc", goog.events.KeyCodes.ESC);
+  goog.events.listen($element$$317_shortcutHandler$$, goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED, goog.bind(this.closeEditor, this))
 };
 goog.inherits(silex.view.HTMLEditor, silex.view.ViewBase);
 silex.view.HTMLEditor.prototype.initUI = function $silex$view$HTMLEditor$$initUI$() {
