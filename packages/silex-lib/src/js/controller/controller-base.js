@@ -75,7 +75,7 @@ silex.controller.ControllerBase.prototype.removeElement = function(opt_element) 
 /**
  * open file explorer, choose an image and set it as the background image of the current selection
  */
-silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
+silex.controller.ControllerBase.prototype.browseBgImage = function() {
   this.tracker.trackAction('controller-events', 'request', 'selectBgImage', 0);
 
   var errCbk = function(error) {

@@ -7412,29 +7412,34 @@ silex.model.Element.prototype.createElement = function $silex$model$Element$$cre
     case silex.model.Element.TYPE_TEXT:
       $element$$ = goog.dom.createElement("div");
       $element$$.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_TEXT);
-      $element$$.innerHTML = "<p>New text box</p>";
+      var $container$$10_htmlContent_textContent$$ = goog.dom.createElement("div");
+      $container$$10_htmlContent_textContent$$.innerHTML = "<p>New text box</p>";
+      goog.style.setStyle($container$$10_htmlContent_textContent$$, "width", "100%");
+      goog.style.setStyle($container$$10_htmlContent_textContent$$, "height", "100%");
+      goog.dom.appendChild($element$$, $container$$10_htmlContent_textContent$$);
+      goog.dom.classes.add($container$$10_htmlContent_textContent$$, silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
       break;
     case silex.model.Element.TYPE_HTML:
       $element$$ = goog.dom.createElement("div");
       $element$$.className = silex.utils.EditablePlugin.EDITABLE_CLASS_NAME;
       $element$$.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_HTML);
-      var $container$$ = goog.dom.createElement("div");
-      $container$$.innerHTML = "<p>New HTML box</p>";
-      goog.style.setStyle($container$$, "width", "100%");
-      goog.style.setStyle($container$$, "height", "100%");
-      goog.dom.appendChild($element$$, $container$$);
-      goog.dom.classes.add($container$$, silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
+      $container$$10_htmlContent_textContent$$ = goog.dom.createElement("div");
+      $container$$10_htmlContent_textContent$$.innerHTML = "<p>New HTML box</p>";
+      goog.style.setStyle($container$$10_htmlContent_textContent$$, "width", "100%");
+      goog.style.setStyle($container$$10_htmlContent_textContent$$, "height", "100%");
+      goog.dom.appendChild($element$$, $container$$10_htmlContent_textContent$$);
+      goog.dom.classes.add($container$$10_htmlContent_textContent$$, silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
       break;
     case silex.model.Element.TYPE_IMAGE:
       $element$$ = goog.dom.createElement("div"), $element$$.className = silex.utils.EditablePlugin.EDITABLE_CLASS_NAME, $element$$.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_IMAGE)
   }
   goog.dom.classes.add($element$$, silex.utils.EditablePlugin.EDITABLE_CLASS_NAME);
   silex.utils.EditablePlugin.setEditable($element$$, !0);
-  $container$$ = goog.dom.getElementByClass("background", this.bodyElement);
-  $container$$ || ($container$$ = this.bodyElement);
+  $container$$10_htmlContent_textContent$$ = goog.dom.getElementByClass("background", this.bodyElement);
+  $container$$10_htmlContent_textContent$$ || ($container$$10_htmlContent_textContent$$ = this.bodyElement);
   goog.style.setStyle($element$$, {height:"100px", width:"100px", top:100 + this.bodyElement.scrollTop + "px", left:100 + this.bodyElement.scrollLeft + "px", backgroundColor:"rgba(255, 255, 255, 1)", position:"absolute"});
   goog.dom.classes.add($element$$, $type$$ + "-element");
-  goog.dom.appendChild($container$$, $element$$);
+  goog.dom.appendChild($container$$10_htmlContent_textContent$$, $element$$);
   return $element$$
 };
 silex.model.Element.prototype.setSelected = function $silex$model$Element$$setSelected$($element$$, $isSelected$$) {
@@ -7752,7 +7757,7 @@ silex.controller.ControllerBase.prototype.removeElement = function $silex$contro
   this.model.element.removeElement($opt_element$$);
   this.view.propertyTool.redraw()
 };
-silex.controller.ControllerBase.prototype.browseAndAddImage = function $silex$controller$ControllerBase$$browseAndAddImage$() {
+silex.controller.ControllerBase.prototype.browseBgImage = function $silex$controller$ControllerBase$$browseBgImage$() {
   this.tracker.trackAction("controller-events", "request", "selectBgImage", 0);
   this.view.fileExplorer.openDialog(goog.bind(function($url$$) {
     var $element$$ = this.view.stage.getSelection()[0], $baseUrl$$ = silex.utils.Url.getBaseUrl();
