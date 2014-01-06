@@ -208,8 +208,10 @@ silex.view.TextEditor.prototype.initUI = function() {
 /**
  * Open the editor
  * @param    {string} initialHtml    HTML to display at start
+ * @param    {string} opt_bgColor    desired color for the editor background
+ *            which is useful to edit white text on a black bacground for example
  */
-silex.view.TextEditor.prototype.openEditor = function(initialHtml) {
+silex.view.TextEditor.prototype.openEditor = function(initialHtml, opt_bgColor) {
   // init editable text input
   this.textField.setHtml(false, initialHtml);
   this.textField.focusAndPlaceCursorAtStart();
@@ -218,6 +220,12 @@ silex.view.TextEditor.prototype.openEditor = function(initialHtml) {
   // show
   goog.style.setStyle(background, 'display', 'inherit');
   goog.style.setStyle(this.element, 'display', 'inherit');
+  // editor bg color
+  if (!opt_bgColor){
+    opt_bgColor = 'white';
+  }
+  var iframe = goog.dom.getElementsByTagNameAndClass('iframe', null, this.element)[0];
+  iframe.style.backgroundColor = opt_bgColor;
 
   this.redraw();
 }
@@ -245,7 +253,7 @@ silex.view.TextEditor.prototype.redraw = function() {
     silex.model.Head.SILEX_STYLE_ELEMENT_ID,
     iframeHead);
 
-  // update iframe css 
+  // update iframe css
   if (!silexStyle){
     silexStyle = iframeDoc.createElement('style');
     silexStyle.type = 'text/css';
