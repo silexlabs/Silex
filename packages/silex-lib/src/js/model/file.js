@@ -78,7 +78,7 @@ silex.model.File.prototype.setHtml = function(rawHtml) {
     // look for the first ">" after "<body"
     var closingTagIdx = lowerCaseHtml.indexOf('>', bodyOpenIdx);
     // extract the body section
-    bodyHtml = rawHtml.substring(closingTagIdx + 1, bodyCloseIdx);
+    //bodyHtml = rawHtml.substring(closingTagIdx + 1, bodyCloseIdx);
   }
   // extract the hole body with body tags
   var bodyHtml = rawHtml.substring(bodyOpenIdx, bodyCloseIdx + 7);
@@ -87,6 +87,14 @@ silex.model.File.prototype.setHtml = function(rawHtml) {
   silex.utils.EditablePlugin.setEditable(this.bodyElement, false);
   // set html
   this.bodyElement.innerHTML = bodyHtml;
+  // body style
+  var styleStart = bodyHtml.indexOf('"');
+  var styleEnd = bodyHtml.indexOf('"', styleStart + 1);
+  var bodyStyle = bodyHtml.substring(styleStart + 1, styleEnd);
+  var bodyStyleAbsolute = silex.utils.Url.relative2absolute(bodyStyle, this.getUrl());
+  console.log(bodyHtml, bodyStyle);
+  // set body style
+  this.bodyElement.setAttribute('style', bodyStyleAbsolute);
   // make editable again
   silex.utils.EditablePlugin.setEditable(this.bodyElement, true);
   // set head content
@@ -107,6 +115,7 @@ silex.model.File.prototype.getHtml = function() {
   // make editable again
   silex.utils.EditablePlugin.setEditable(this.bodyElement, true);
   // handle background url of the body style
+  //var styleStr = this.bodyElement.getAttribute('style') || '';
   var styleStr = this.bodyElement.getAttribute('style') || '';
   // retruns the html page
   var html = '';

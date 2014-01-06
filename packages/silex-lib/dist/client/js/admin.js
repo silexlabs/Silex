@@ -21222,18 +21222,24 @@ silex.model.File = function $silex$model$File$($bodyElement$$, $headElement$$) {
 goog.inherits(silex.model.File, silex.model.ModelBase);
 silex.model.File.CREATION_TEMPLATE = "creation-template.html";
 silex.model.File.prototype.setHtml = function $silex$model$File$$setHtml$($bodyHtml$$4_rawHtml$$) {
-  var $headHtml$$, $lowerCaseHtml$$ = $bodyHtml$$4_rawHtml$$.toLowerCase(), $closingTagIdx_headOpenIdx$$ = $lowerCaseHtml$$.indexOf("<head>");
-  -1 === $closingTagIdx_headOpenIdx$$ && ($closingTagIdx_headOpenIdx$$ = $lowerCaseHtml$$.indexOf("<head "));
-  var $headCloseIdx$$ = $lowerCaseHtml$$.indexOf("</head>"), $bodyOpenIdx$$ = $lowerCaseHtml$$.indexOf("<body>");
-  -1 === $bodyOpenIdx$$ && ($bodyOpenIdx$$ = $lowerCaseHtml$$.indexOf("<body "));
-  var $bodyCloseIdx$$ = $lowerCaseHtml$$.indexOf("</body>");
-  -1 < $closingTagIdx_headOpenIdx$$ && -1 < $headCloseIdx$$ && ($closingTagIdx_headOpenIdx$$ = $lowerCaseHtml$$.indexOf(">", $closingTagIdx_headOpenIdx$$), $headHtml$$ = $bodyHtml$$4_rawHtml$$.substring($closingTagIdx_headOpenIdx$$ + 1, $headCloseIdx$$));
-  -1 < $bodyOpenIdx$$ && -1 < $bodyCloseIdx$$ && ($closingTagIdx_headOpenIdx$$ = $lowerCaseHtml$$.indexOf(">", $bodyOpenIdx$$), $bodyHtml$$4_rawHtml$$.substring($closingTagIdx_headOpenIdx$$ + 1, $bodyCloseIdx$$));
+  var $closingTagIdx_headHtml$$, $bodyStyle_lowerCaseHtml_styleStart$$ = $bodyHtml$$4_rawHtml$$.toLowerCase(), $headOpenIdx$$ = $bodyStyle_lowerCaseHtml_styleStart$$.indexOf("<head>");
+  -1 === $headOpenIdx$$ && ($headOpenIdx$$ = $bodyStyle_lowerCaseHtml_styleStart$$.indexOf("<head "));
+  var $bodyStyleAbsolute_headCloseIdx_styleEnd$$ = $bodyStyle_lowerCaseHtml_styleStart$$.indexOf("</head>"), $bodyOpenIdx$$ = $bodyStyle_lowerCaseHtml_styleStart$$.indexOf("<body>");
+  -1 === $bodyOpenIdx$$ && ($bodyOpenIdx$$ = $bodyStyle_lowerCaseHtml_styleStart$$.indexOf("<body "));
+  var $bodyCloseIdx$$ = $bodyStyle_lowerCaseHtml_styleStart$$.indexOf("</body>");
+  -1 < $headOpenIdx$$ && -1 < $bodyStyleAbsolute_headCloseIdx_styleEnd$$ && ($closingTagIdx_headHtml$$ = $bodyStyle_lowerCaseHtml_styleStart$$.indexOf(">", $headOpenIdx$$), $closingTagIdx_headHtml$$ = $bodyHtml$$4_rawHtml$$.substring($closingTagIdx_headHtml$$ + 1, $bodyStyleAbsolute_headCloseIdx_styleEnd$$));
+  -1 < $bodyOpenIdx$$ && -1 < $bodyCloseIdx$$ && $bodyStyle_lowerCaseHtml_styleStart$$.indexOf(">", $bodyOpenIdx$$);
   $bodyHtml$$4_rawHtml$$ = $bodyHtml$$4_rawHtml$$.substring($bodyOpenIdx$$, $bodyCloseIdx$$ + 7);
   silex.utils.EditablePlugin.setEditable(this.bodyElement, !1);
   this.bodyElement.innerHTML = $bodyHtml$$4_rawHtml$$;
+  $bodyStyle_lowerCaseHtml_styleStart$$ = $bodyHtml$$4_rawHtml$$.indexOf('"');
+  $bodyStyleAbsolute_headCloseIdx_styleEnd$$ = $bodyHtml$$4_rawHtml$$.indexOf('"', $bodyStyle_lowerCaseHtml_styleStart$$ + 1);
+  $bodyStyle_lowerCaseHtml_styleStart$$ = $bodyHtml$$4_rawHtml$$.substring($bodyStyle_lowerCaseHtml_styleStart$$ + 1, $bodyStyleAbsolute_headCloseIdx_styleEnd$$);
+  $bodyStyleAbsolute_headCloseIdx_styleEnd$$ = silex.utils.Url.relative2absolute($bodyStyle_lowerCaseHtml_styleStart$$, this.getUrl());
+  console.log($bodyHtml$$4_rawHtml$$, $bodyStyle_lowerCaseHtml_styleStart$$);
+  this.bodyElement.setAttribute("style", $bodyStyleAbsolute_headCloseIdx_styleEnd$$);
   silex.utils.EditablePlugin.setEditable(this.bodyElement, !0);
-  this.headElement.innerHTML = $headHtml$$
+  this.headElement.innerHTML = $closingTagIdx_headHtml$$
 };
 silex.model.File.prototype.getHtml = function $silex$model$File$$getHtml$() {
   silex.utils.EditablePlugin.setEditable(this.bodyElement, !1);
