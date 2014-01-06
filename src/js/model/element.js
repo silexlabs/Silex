@@ -368,6 +368,18 @@ silex.model.Element.prototype.createElement = function(type) {
 
   var element;
 
+  // take the scroll into account (drop at (100, 100) from top left corner of the window, not the stage)
+  var offsetX = 100 + this.bodyElement.scrollLeft;
+  var offsetY = 100 + this.bodyElement.scrollTop;
+  // default style
+  var styleObject = {
+    height: '100px',
+    width: '100px',
+    top: offsetY + 'px',
+    left: offsetX + 'px',
+    position: 'absolute'
+  };
+
   switch (type){
 
     // container
@@ -375,6 +387,8 @@ silex.model.Element.prototype.createElement = function(type) {
       // create the conatiner
       element = goog.dom.createElement('div');
       element.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_CONTAINER);
+      // add a default style
+      styleObject.backgroundColor = 'white';
     break;
 
     // text
@@ -390,6 +404,8 @@ silex.model.Element.prototype.createElement = function(type) {
       goog.dom.appendChild(element, textContent);
       // add a marker to find the inner content afterwards, with getContent
       goog.dom.classes.add(textContent, silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
+      // add a default style
+      styleObject.backgroundColor = 'white';
     break;
 
     // HTML box
@@ -406,6 +422,8 @@ silex.model.Element.prototype.createElement = function(type) {
       goog.dom.appendChild(element, htmlContent);
       // add a marker to find the inner content afterwards, with getContent
       goog.dom.classes.add(htmlContent, silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
+      // add a default style
+      styleObject.backgroundColor = 'white';
     break;
 
     // Image
@@ -430,19 +448,8 @@ silex.model.Element.prototype.createElement = function(type) {
     container = this.bodyElement;
   }
 
-  // take the scroll into account (drop at (100, 100) from top left corner of the window, not the stage)
-  var offsetX = 100 + this.bodyElement.scrollLeft;
-  var offsetY = 100 + this.bodyElement.scrollTop;
-
-  // set bounding box
-  goog.style.setStyle(element, {
-    height: '100px',
-    width: '100px',
-    top: offsetY + 'px',
-    left: offsetX + 'px',
-    backgroundColor: 'rgba(255, 255, 255, 1)',
-    position: 'absolute'
-  });
+  // set the default styles
+  goog.style.setStyle(element, styleObject);
   // add css class for Silex styles
   goog.dom.classes.add(element, type + '-element');
   // add to stage
