@@ -73,15 +73,52 @@ silex.controller.ControllerBase.prototype.removeElement = function(opt_element) 
 
 
 /**
+ * open file explorer, choose an image and set it as the background image of the current selection
+ */
+silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
+  this.tracker.trackAction('controller-events', 'request', 'selectBgImage', 0);
+
+  var errCbk = function(error) {
+    silex.utils.Notification.notifyError('Error: I could not load the image. <br /><br />' + (error.message || ''));
+    this.tracker.trackAction('controller-events', 'error', type, -1);
+  };
+
+  var successCbk = function(url) {
+    // update the model
+    var element = this.view.stage.getSelection()[0];
+    // absolute url only on stage
+    var baseUrl = silex.utils.Url.getBaseUrl();
+    url = silex.utils.Url.getAbsolutePath(url, baseUrl);
+    // load the image
+    this.model.element.setBgImage(element, url);
+    // redraw the data
+    this.view.propertyTool.redraw();
+    this.tracker.trackAction('controller-events', 'success', type, 1);
+  };
+
+  // open the file browser
+  this.view.fileExplorer.openDialog(
+      goog.bind(successCbk, this),
+      {'mimetype': 'image/*'},
+      goog.bind(errCbk, this)
+  );
+  this.view.workspace.invalidate();
+}
+
+
+/**
  * open file explorer, choose an image and add it to the stage
  */
 silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
   this.tracker.trackAction('controller-events', 'request', 'insert.image', 0);
   this.view.fileExplorer.openDialog(
       goog.bind(function(url) {
+        // absolute url only on stage
+        var baseUrl = silex.utils.Url.getBaseUrl();
+        url = silex.utils.Url.getAbsolutePath(url, baseUrl);
         // create the element
         var img = this.addElement(silex.model.Element.TYPE_IMAGE);
-        // loads the image
+        // load the image
         this.model.element.setImageUrl(img, url,
           goog.bind(function(element, img){
             // update element size
@@ -214,6 +251,10 @@ silex.controller.ControllerBase.prototype.editElement = function(opt_element) {
     case silex.model.Element.TYPE_IMAGE:
       this.view.fileExplorer.openDialog(
           goog.bind(function(url) {
+            // absolute url only on stage
+            var baseUrl = silex.utils.Url.getBaseUrl();
+            url = silex.utils.Url.getAbsolutePath(url, baseUrl);
+            // load the image
             this.model.element.setImageUrl(opt_element, url);
           }, this),
           {'mimetype': 'image/*'},
@@ -440,6 +481,7 @@ silex.controller.ControllerBase.prototype.openFile = function(opt_cbk, opt_error
   this.view.fileExplorer.openDialog(
     goog.bind(function(url) {
       this.model.file.open(url, goog.bind(function(rawHtml) {
+        console.log(url, silex.utils.Url.getBaseUrl(url));
         rawHtml = silex.utils.Url.relative2absolute(rawHtml, silex.utils.Url.getBaseUrl(url));
         this.model.file.setHtml(rawHtml);
         this.fileOperationSuccess(this.model.head.getTitle() + ' opened.', true)
@@ -464,41 +506,43 @@ silex.controller.ControllerBase.prototype.openFile = function(opt_cbk, opt_error
 /**
  * save or save-as
  */
+silex.controller.ControllerBase.prototype.doSave = function(url, opt_cbk, opt_errorCbk){
+  // urls will be relative to the html file url
+  var baseUrl = silex.utils.Url.getBaseUrl(url);
+  // relative urls only in the files
+  var rawHtml = this.model.file.getHtml();
+  rawHtml = silex.utils.Url.absolute2Relative(rawHtml, baseUrl);
+  // save to file
+  this.model.file.saveAs(
+    url,
+    rawHtml,
+    goog.bind(function() {
+      this.tracker.trackAction('controller-events', 'success', 'file.save', 1);
+      this.fileOperationSuccess('File is saved.', false)
+      if (opt_cbk) opt_cbk();
+    }, this),
+    goog.bind(function(error) {
+      silex.utils.Notification.notifyError('Error: I did not manage to save the file. <br /><br />' + (error.message || ''));
+      this.tracker.trackAction('controller-events', 'error', 'file.save', -1);
+      if (opt_errorCbk) opt_errorCbk(error);
+    }, this));
+}
+
+
+/**
+ * save or save-as
+ */
 silex.controller.ControllerBase.prototype.save = function(opt_url, opt_cbk, opt_errorCbk){
-
+console.log(this.model.file.getUrl());
   this.tracker.trackAction('controller-events', 'request', 'file.save', 0);
-
   if (opt_url){
-    this.model.file.save(
-      this.model.file.getHtml(),
-      goog.bind(function() {
-        this.fileOperationSuccess('File is saved.', false)
-        this.tracker.trackAction('controller-events', 'success', 'file.save', 1);
-        if (opt_cbk) opt_cbk();
-      }, this),
-      goog.bind(function(error) {
-        silex.utils.Notification.notifyError('Error: I did not manage to save the file. <br /><br />' + (error.message || ''));
-        this.tracker.trackAction('controller-events', 'error', 'file.save', -1);
-        if (opt_errorCbk) opt_errorCbk(error);
-      }, this));
+    this.doSave(opt_url, opt_cbk, opt_errorCbk);
   }
   else{
     // choose a new name
     this.view.fileExplorer.saveAsDialog(
       goog.bind(function(url) {
-        this.model.file.saveAs(
-          url,
-          this.model.file.getHtml(),
-          goog.bind(function() {
-            this.tracker.trackAction('controller-events', 'success', 'file.save', 1);
-            this.fileOperationSuccess('File is saved.', false)
-            if (opt_cbk) opt_cbk();
-          }, this),
-          goog.bind(function(error) {
-            silex.utils.Notification.notifyError('Error: I did not manage to save the file. <br /><br />' + (error.message || ''));
-            this.tracker.trackAction('controller-events', 'error', 'file.save', -1);
-            if (opt_errorCbk) opt_errorCbk(error);
-          }, this));
+        this.doSave(url, opt_cbk, opt_errorCbk);
       }, this),
       {'mimetype': 'text/html'}
     );

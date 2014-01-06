@@ -7378,6 +7378,7 @@ silex.model.Element.prototype.setImageUrl = function $silex$model$Element$$setIm
         goog.style.setStyle($e$$92_img$$, "height", "100%");
         goog.dom.appendChild($element$$, $e$$92_img$$);
         goog.dom.classes.add($e$$92_img$$, silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
+        $e$$92_img$$.removeAttribute("id");
         $opt_callback$$ && $opt_callback$$($element$$, $e$$92_img$$)
       });
       goog.events.listenOnce($imageLoader$$, goog.net.EventType.ERROR, function($e$$) {
@@ -7750,10 +7751,26 @@ silex.controller.ControllerBase.prototype.removeElement = function $silex$contro
   this.view.propertyTool.redraw()
 };
 silex.controller.ControllerBase.prototype.browseAndAddImage = function $silex$controller$ControllerBase$$browseAndAddImage$() {
+  this.tracker.trackAction("controller-events", "request", "selectBgImage", 0);
+  this.view.fileExplorer.openDialog(goog.bind(function($url$$) {
+    var $element$$ = this.view.stage.getSelection()[0], $baseUrl$$ = silex.utils.Url.getBaseUrl();
+    $url$$ = silex.utils.Url.getAbsolutePath($url$$, $baseUrl$$);
+    this.model.element.setBgImage($element$$, $url$$);
+    this.view.propertyTool.redraw();
+    this.tracker.trackAction("controller-events", "success", type, 1)
+  }, this), {mimetype:"image/*"}, goog.bind(function($error$$) {
+    silex.utils.Notification.notifyError("Error: I could not load the image. <br /><br />" + ($error$$.message || ""));
+    this.tracker.trackAction("controller-events", "error", type, -1)
+  }, this));
+  this.view.workspace.invalidate()
+};
+silex.controller.ControllerBase.prototype.browseAndAddImage = function $silex$controller$ControllerBase$$browseAndAddImage$() {
   this.tracker.trackAction("controller-events", "request", "insert.image", 0);
   this.view.fileExplorer.openDialog(goog.bind(function($url$$) {
-    var $img$$0$$ = this.addElement(silex.model.Element.TYPE_IMAGE);
-    this.model.element.setImageUrl($img$$0$$, $url$$, goog.bind(function($element$$, $img$$) {
+    var $baseUrl$$1_img$$ = silex.utils.Url.getBaseUrl();
+    $url$$ = silex.utils.Url.getAbsolutePath($url$$, $baseUrl$$1_img$$);
+    $baseUrl$$1_img$$ = this.addElement(silex.model.Element.TYPE_IMAGE);
+    this.model.element.setImageUrl($baseUrl$$1_img$$, $url$$, goog.bind(function($element$$, $img$$) {
       goog.style.setStyle($element$$, {width:$img$$.naturalWidth + "px", height:$img$$.naturalHeight + "px"});
       this.tracker.trackAction("controller-events", "success", "insert.image", 1)
     }, this), goog.bind(function($element$$, $message$$) {
@@ -7807,6 +7824,8 @@ silex.controller.ControllerBase.prototype.editElement = function $silex$controll
       break;
     case silex.model.Element.TYPE_IMAGE:
       this.view.fileExplorer.openDialog(goog.bind(function($url$$) {
+        var $baseUrl$$ = silex.utils.Url.getBaseUrl();
+        $url$$ = silex.utils.Url.getAbsolutePath($url$$, $baseUrl$$);
         this.model.element.setImageUrl($opt_element$$, $url$$)
       }, this), {mimetype:"image/*"}, goog.bind(function($error$$) {
         silex.utils.Notification.notifyError("Error: I did not manage to load the image. <br /><br />" + ($error$$.message || ""))
@@ -7898,6 +7917,7 @@ silex.controller.ControllerBase.prototype.openFile = function $silex$controller$
   this.tracker.trackAction("controller-events", "request", "file.open", 0);
   this.view.fileExplorer.openDialog(goog.bind(function($url$$) {
     this.model.file.open($url$$, goog.bind(function($rawHtml$$) {
+      console.log($url$$, silex.utils.Url.getBaseUrl($url$$));
       $rawHtml$$ = silex.utils.Url.relative2absolute($rawHtml$$, silex.utils.Url.getBaseUrl($url$$));
       this.model.file.setHtml($rawHtml$$);
       this.fileOperationSuccess(this.model.head.getTitle() + " opened.", !0);
@@ -7914,26 +7934,23 @@ silex.controller.ControllerBase.prototype.openFile = function $silex$controller$
     $opt_errorCbk$$ && $opt_errorCbk$$($error$$)
   })
 };
-silex.controller.ControllerBase.prototype.save = function $silex$controller$ControllerBase$$save$($opt_url$$, $opt_cbk$$, $opt_errorCbk$$) {
-  this.tracker.trackAction("controller-events", "request", "file.save", 0);
-  $opt_url$$ ? this.model.file.save(this.model.file.getHtml(), goog.bind(function() {
-    this.fileOperationSuccess("File is saved.", !1);
+silex.controller.ControllerBase.prototype.doSave = function $silex$controller$ControllerBase$$doSave$($url$$, $opt_cbk$$, $opt_errorCbk$$) {
+  var $baseUrl$$ = silex.utils.Url.getBaseUrl($url$$), $rawHtml$$ = this.model.file.getHtml(), $rawHtml$$ = silex.utils.Url.absolute2Relative($rawHtml$$, $baseUrl$$);
+  this.model.file.saveAs($url$$, $rawHtml$$, goog.bind(function() {
     this.tracker.trackAction("controller-events", "success", "file.save", 1);
+    this.fileOperationSuccess("File is saved.", !1);
     $opt_cbk$$ && $opt_cbk$$()
   }, this), goog.bind(function($error$$) {
     silex.utils.Notification.notifyError("Error: I did not manage to save the file. <br /><br />" + ($error$$.message || ""));
     this.tracker.trackAction("controller-events", "error", "file.save", -1);
     $opt_errorCbk$$ && $opt_errorCbk$$($error$$)
-  }, this)) : this.view.fileExplorer.saveAsDialog(goog.bind(function($url$$) {
-    this.model.file.saveAs($url$$, this.model.file.getHtml(), goog.bind(function() {
-      this.tracker.trackAction("controller-events", "success", "file.save", 1);
-      this.fileOperationSuccess("File is saved.", !1);
-      $opt_cbk$$ && $opt_cbk$$()
-    }, this), goog.bind(function($error$$) {
-      silex.utils.Notification.notifyError("Error: I did not manage to save the file. <br /><br />" + ($error$$.message || ""));
-      this.tracker.trackAction("controller-events", "error", "file.save", -1);
-      $opt_errorCbk$$ && $opt_errorCbk$$($error$$)
-    }, this))
+  }, this))
+};
+silex.controller.ControllerBase.prototype.save = function $silex$controller$ControllerBase$$save$($opt_url$$, $opt_cbk$$, $opt_errorCbk$$) {
+  console.log(this.model.file.getUrl());
+  this.tracker.trackAction("controller-events", "request", "file.save", 0);
+  $opt_url$$ ? this.doSave($opt_url$$, $opt_cbk$$, $opt_errorCbk$$) : this.view.fileExplorer.saveAsDialog(goog.bind(function($url$$) {
+    this.doSave($url$$, $opt_cbk$$, $opt_errorCbk$$)
   }, this), {mimetype:"text/html"})
 };
 silex.controller.ControllerBase.prototype.fileOperationSuccess = function $silex$controller$ControllerBase$$fileOperationSuccess$($opt_message$$, $opt_updateTools$$) {
@@ -7985,12 +8002,12 @@ silex.service.Tracker.SILEX_ACTIONS_CATEGORY = "silex-event";
 silex.service.Tracker.prototype.trackAction = function $silex$service$Tracker$$trackAction$($category$$, $action$$, $opt_label$$, $opt_value$$) {
   ga("send", "event", $category$$, $action$$, $opt_label$$, $opt_value$$, !0)
 };
-silex.view.CssEditor = function $silex$view$CssEditor$($element$$232_shortcutHandler$$, $bodyElement$$, $headElement$$) {
-  silex.view.ViewBase.call(this, $element$$232_shortcutHandler$$, $bodyElement$$, $headElement$$);
+silex.view.CssEditor = function $silex$view$CssEditor$($element$$233_shortcutHandler$$, $bodyElement$$, $headElement$$) {
+  silex.view.ViewBase.call(this, $element$$233_shortcutHandler$$, $bodyElement$$, $headElement$$);
   this.initUI();
-  $element$$232_shortcutHandler$$ = new goog.ui.KeyboardShortcutHandler(document);
-  $element$$232_shortcutHandler$$.registerShortcut("esc", goog.events.KeyCodes.ESC);
-  goog.events.listen($element$$232_shortcutHandler$$, goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED, goog.bind(this.closeEditor, this))
+  $element$$233_shortcutHandler$$ = new goog.ui.KeyboardShortcutHandler(document);
+  $element$$233_shortcutHandler$$.registerShortcut("esc", goog.events.KeyCodes.ESC);
+  goog.events.listen($element$$233_shortcutHandler$$, goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED, goog.bind(this.closeEditor, this))
 };
 goog.inherits(silex.view.CssEditor, silex.view.ViewBase);
 silex.view.CssEditor.prototype.initUI = function $silex$view$CssEditor$$initUI$() {
@@ -8123,9 +8140,9 @@ silex.utils.EditablePlugin.setEditableHtml = function $silex$utils$EditablePlugi
 };
 silex.utils.EditablePlugin.getEditableHtml = function $silex$utils$EditablePlugin$getEditableHtml$($element$$, $opt_isRootDroppableOnly$$) {
   silex.utils.EditablePlugin.setEditable($element$$, !1, $opt_isRootDroppableOnly$$);
-  var $cleanContainer$$ = $element$$.cloneNode(!0);
+  var $cleanHtml$$ = $element$$.innerHTML;
   silex.utils.EditablePlugin.setEditable($element$$, !0, $opt_isRootDroppableOnly$$);
-  return $cleanContainer$$.innerHTML
+  return $cleanHtml$$
 };
 silex.view.Stage = function $silex$view$Stage$($element$$, $bodyElement$$, $headElement$$) {
   silex.view.ViewBase.call(this, $element$$, $bodyElement$$, $headElement$$);
@@ -8259,16 +8276,7 @@ silex.controller.PropertyToolController.prototype.propertyToolCallback = functio
       this.editElement();
       break;
     case "selectBgImage":
-      this.view.fileExplorer.openDialog(goog.bind(function($url$$) {
-        var $element$$ = this.view.stage.getSelection()[0];
-        this.model.element.setBgImage($element$$, $url$$);
-        this.view.propertyTool.redraw();
-        this.tracker.trackAction("controller-events", "success", $type$$, 1)
-      }, this), {mimetype:"image/*"}, goog.bind(function($error$$) {
-        silex.utils.Notification.notifyError("Error: I could not load the image. <br /><br />" + ($error$$.message || ""));
-        this.tracker.trackAction("controller-events", "error", $type$$, -1)
-      }, this));
-      this.view.workspace.invalidate();
+      this.browseBgImage();
       break;
     case "selectImage":
       this.editElement();
@@ -11102,9 +11110,12 @@ silex.utils.Url.getRelativePath = function $silex$utils$Url$getRelativePath$($ur
     $relativePath$$ += "../"
   }
   0 < $urlArr$$.length && ($relativePath$$ += $urlArr$$.join("/") + "/");
-  return $relativePath$$ + $fileName$$
+  $relativePath$$ += $fileName$$;
+  console.log("getRelativePath", $url$$, $base$$, $relativePath$$);
+  return $relativePath$$
 };
 silex.utils.Url.getAbsolutePath = function $silex$utils$Url$getAbsolutePath$($url$$, $base$$) {
+  console.log("getAbsolutePath", $url$$, $base$$, goog.Uri.resolve($base$$, $url$$).toString());
   return goog.Uri.resolve($base$$, $url$$).toString()
 };
 silex.utils.Url.checkFileExt = function $silex$utils$Url$checkFileExt$($fileName$$, $extArray$$) {
