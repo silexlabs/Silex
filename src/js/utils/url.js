@@ -145,7 +145,6 @@ silex.utils.Url.getRelativePath = function(url, base) {
   }
   relativePath += fileName;
 
-  console.log('getRelativePath', url, base, relativePath);
   return relativePath;
 };
 
@@ -155,7 +154,6 @@ silex.utils.Url.getRelativePath = function(url, base) {
  * use http://docs.closure-library.googlecode.com/git/class_goog_Uri.html
  */
 silex.utils.Url.getAbsolutePath = function(url, base) {
-  console.log('getAbsolutePath', url, base, goog.Uri.resolve(base, url).toString());
   return goog.Uri.resolve(base, url).toString();
 };
 

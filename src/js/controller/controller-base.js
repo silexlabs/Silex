@@ -496,7 +496,6 @@ silex.controller.ControllerBase.prototype.openFile = function(opt_cbk, opt_error
   this.view.fileExplorer.openDialog(
     goog.bind(function(url) {
       this.model.file.open(url, goog.bind(function(rawHtml) {
-        console.log(url, silex.utils.Url.getBaseUrl(url));
         rawHtml = silex.utils.Url.relative2absolute(rawHtml, silex.utils.Url.getBaseUrl(url));
         this.model.file.setHtml(rawHtml);
         this.fileOperationSuccess(this.model.head.getTitle() + ' opened.', true)
@@ -548,7 +547,6 @@ silex.controller.ControllerBase.prototype.doSave = function(url, opt_cbk, opt_er
  * save or save-as
  */
 silex.controller.ControllerBase.prototype.save = function(opt_url, opt_cbk, opt_errorCbk){
-console.log(this.model.file.getUrl());
   this.tracker.trackAction('controller-events', 'request', 'file.save', 0);
   if (opt_url){
     this.doSave(opt_url, opt_cbk, opt_errorCbk);

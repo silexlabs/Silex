@@ -13,6 +13,7 @@ bugs
 * remove console logs
 * css class to prevent edit (no-resize-w, no-move, no-edit ...)
 * all front-end.css should be in head section
+* notifications?
 !!!! update front-end.css
 
 * open a non-silex site => warn
