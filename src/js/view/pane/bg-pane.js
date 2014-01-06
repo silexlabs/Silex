@@ -327,7 +327,7 @@ silex.view.pane.BgPane.prototype.onSelectImageButton = function() {
  * User has clicked the clear image button
  */
 silex.view.pane.BgPane.prototype.onClearImageButton = function() {
-  this.styleChanged('backgroundImage', 'none');
+  this.styleChanged('backgroundImage', '');
 };
 
 

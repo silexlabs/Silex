@@ -7337,7 +7337,7 @@ silex.model.Element.prototype.setProperty = function $silex$model$Element$$setPr
   goog.isDef($opt_propertyValue$$) ? $element$$.setAttribute($propertyName$$, $opt_propertyValue$$) : $element$$.removeAttribute($propertyName$$)
 };
 silex.model.Element.prototype.setBgImage = function $silex$model$Element$$setBgImage$($element$$, $url$$) {
-  this.setStyle($element$$, "backgroundImage", "url(" + $url$$ + ")")
+  $url$$ ? this.setStyle($element$$, "backgroundImage", "url(" + $url$$ + ")") : this.setStyle($element$$, "backgroundImage")
 };
 silex.model.Element.prototype.getInnerHtml = function $silex$model$Element$$getInnerHtml$($element$$) {
   silex.utils.EditablePlugin.setEditable($element$$, !1);
@@ -7767,7 +7767,7 @@ silex.controller.ControllerBase.prototype.browseBgImage = function $silex$contro
     $url$$ = silex.utils.Url.getAbsolutePath($url$$, $baseUrl$$);
     this.model.element.setBgImage($element$$, $url$$);
     this.view.propertyTool.redraw();
-    this.tracker.trackAction("controller-events", "success", type, 1)
+    this.tracker.trackAction("controller-events", "success", "selectBgImage", 1)
   }, this), {mimetype:"image/*"}, goog.bind(function($error$$) {
     silex.utils.Notification.notifyError("Error: I could not load the image. <br /><br />" + ($error$$.message || ""));
     this.tracker.trackAction("controller-events", "error", type, -1)
@@ -8160,6 +8160,7 @@ silex.view.Stage = function $silex$view$Stage$($element$$, $bodyElement$$, $head
 goog.inherits(silex.view.Stage, silex.view.ViewBase);
 silex.view.Stage.prototype.initEvents = function $silex$view$Stage$$initEvents$() {
   goog.events.listen(this.element, "mousedown", function($e$$) {
+    this.element.focus();
     if(this.onStatus) {
       this.onStatus("select", silex.utils.EditablePlugin.getFirstEditableParent($e$$.target))
     }
@@ -15837,7 +15838,7 @@ silex.view.pane.BgPane.prototype.onSelectImageButton = function $silex$view$pane
   this.selectBgImage()
 };
 silex.view.pane.BgPane.prototype.onClearImageButton = function $silex$view$pane$BgPane$$onClearImageButton$() {
-  this.styleChanged("backgroundImage", "none")
+  this.styleChanged("backgroundImage", "")
 };
 silex.view.pane.BgPane.prototype.getColorPaletteVisibility = function $silex$view$pane$BgPane$$getColorPaletteVisibility$() {
   return"hidden" !== goog.style.getStyle(this.hsvPalette.getElement(), "visibility")
