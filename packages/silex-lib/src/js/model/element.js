@@ -177,7 +177,12 @@ silex.model.Element.prototype.setProperty = function(element, propertyName, opt_
  * @param    {string} url    URL of the image chosen by the user
  */
 silex.model.Element.prototype.setBgImage = function(element, url) {
-  this.setStyle(element, 'backgroundImage', 'url(' + url + ')');
+  if (url){
+    this.setStyle(element, 'backgroundImage', 'url(' + url + ')');
+  }
+  else{
+    this.setStyle(element, 'backgroundImage');
+  }
 };
 
 

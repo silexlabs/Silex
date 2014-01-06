@@ -54,6 +54,13 @@ silex.view.Stage.prototype.initEvents = function () {
 
   // detect mouse down
   goog.events.listen(this.element, 'mousedown', function(e) {
+    this.element.focus();
+/*
+    var focused = goog.dom.getActiveElement();
+    if (focused) {
+      focused.setFocus(false);
+    }
+*/
     if (this.onStatus) this.onStatus('select', silex.utils.EditablePlugin.getFirstEditableParent(e.target));
     this.isDragging = true;
   }, false, this);

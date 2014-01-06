@@ -93,7 +93,7 @@ silex.controller.ControllerBase.prototype.browseBgImage = function() {
     this.model.element.setBgImage(element, url);
     // redraw the data
     this.view.propertyTool.redraw();
-    this.tracker.trackAction('controller-events', 'success', type, 1);
+    this.tracker.trackAction('controller-events', 'success', 'selectBgImage', 1);
   };
 
   // open the file browser

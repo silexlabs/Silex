@@ -9,9 +9,7 @@ BUGS
 !!!! update front-end.css
 
 bugs
-* bg text editor
 * focus stays on text fiels when click on stage
-* clear bg image => remove style instead of background-image: none;
 * remove console logs
 * css class to prevent edit (no-resize-w, no-move, no-edit ...)
 * all front-end.css should be in head section
