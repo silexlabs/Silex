@@ -44,6 +44,48 @@ silex.model.Head.SILEX_STYLE_ELEMENT_ID = 'silex-style';
 
 
 /**
+ * id of the style element which holds silex editable css styles
+ */
+silex.model.Head.SILEX_SCRIPT_ELEMENT_ID = 'silex-script';
+
+
+/**
+ * set/get silex editable js scripts
+ * @return {string} the string defining the js script
+ */
+silex.model.Head.prototype.getHeadScript = function() {
+  // get silex scripts from the DOM
+  var silexScript = goog.dom.getElementByClass(
+    silex.model.Head.SILEX_SCRIPT_ELEMENT_ID,
+    this.headElement);
+  if (!silexScript){
+    console.warn('no silex editable styles defined');
+    return '';
+  }
+  return silexScript.innerHTML;
+}
+
+
+/**
+ * set/get silex editable js script
+ * @param {string} jsString   the string defining Silex script
+ */
+silex.model.Head.prototype.setHeadScript = function(jsString) {
+  var silexScript = goog.dom.getElementByClass(
+    silex.model.Head.SILEX_SCRIPT_ELEMENT_ID,
+    this.headElement);
+
+  if (!silexScript){
+    silexScript = goog.dom.createElement('script');
+    silexScript.type = 'text/javascript';
+    silexScript.className = silex.model.Head.SILEX_SCRIPT_ELEMENT_ID;
+    goog.dom.appendChild(this.headElement, silexScript);
+  }
+  silexScript.innerHTML = jsString;
+}
+
+
+/**
  * set/get silex editable css styles
  * @return {string} the css string defining all Silex styles
  */

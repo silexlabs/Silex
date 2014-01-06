@@ -49,6 +49,7 @@ goog.require('silex.controller.PropertyToolController');
 goog.require('silex.controller.SettingsDialogController');
 goog.require('silex.controller.HtmlEditorController');
 goog.require('silex.controller.CssEditorController');
+goog.require('silex.controller.JsEditorController');
 goog.require('silex.controller.TextEditorController');
 
 // display
@@ -63,6 +64,7 @@ goog.require('silex.view.PropertyTool');
 // editors
 goog.require('silex.view.HTMLEditor');
 goog.require('silex.view.CssEditor');
+goog.require('silex.view.JsEditor');
 goog.require('silex.view.TextEditor');
 
 // dialogs
@@ -129,6 +131,11 @@ silex.App = function() {
   /** @type {silex.view.CssEditor} */
   var cssEditor = new silex.view.CssEditor(cssEditorElement, bodyElement, headElement);
 
+  // create JsEditor
+  var jsEditorElement = goog.dom.getElementByClass('silex-js-editor');
+  /** @type {silex.view.JsEditor} */
+  var jsEditor = new silex.view.JsEditor(jsEditorElement, bodyElement, headElement);
+
   // create TextEditor
   var textEditorElement = goog.dom.getElementByClass('silex-texteditor');
   /** @type {silex.view.TextEditor} */
@@ -160,6 +167,7 @@ silex.App = function() {
     , propertyToolElement
     , htmlEditorElement
     , cssEditorElement
+    , jsEditorElement
     , textEditorElement
     , fileExplorerElement
     , settingsDialogElement);
@@ -181,6 +189,7 @@ silex.App = function() {
     , propertyTool
     , htmlEditor
     , cssEditor
+    , jsEditor
     , textEditor
     , fileExplorer
     , settingsDialog
@@ -195,6 +204,7 @@ silex.App = function() {
     , new silex.controller.SettingsDialogController(model, view)
     , new silex.controller.HtmlEditorController(model, view)
     , new silex.controller.CssEditorController(model, view)
+    , new silex.controller.JsEditorController(model, view)
     , new silex.controller.TextEditorController(model, view)
   );
 

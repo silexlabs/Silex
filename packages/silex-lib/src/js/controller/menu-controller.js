@@ -91,6 +91,9 @@ silex.controller.MenuController.prototype.menuCallback = function(type) {
     case 'view.open.cssEditor':
       this.openCssEditor();
       break;
+    case 'view.open.jsEditor':
+      this.openJsEditor();
+      break;
     case 'view.open.editor':
       this.editElement();
       break;

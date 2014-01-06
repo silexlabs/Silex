@@ -218,6 +218,16 @@ silex.Config.menu = {
       }
       , null
       , {
+        label: 'JS scripts editor'
+        , id: 'view.open.jsEditor'
+        , className: 'menu-item-view-open-jsEditor'
+        , globalKey: goog.events.KeyCodes.J
+        , shortcut: [[goog.events.KeyCodes.J, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
+        , tooltip: altKeyDisplay + 'J'
+        , mnemonic: goog.events.KeyCodes.J
+        , accelerator: 'j'
+      }
+      , {
         label: 'CSS styles editor'
         , id: 'view.open.cssEditor'
         , className: 'menu-item-view-open-cssEditor'

@@ -221,6 +221,14 @@ silex.controller.ControllerBase.prototype.openCssEditor = function() {
 
 
 /**
+ * edit Silex editable js scripts
+ */
+silex.controller.ControllerBase.prototype.openJsEditor = function() {
+  this.view.jsEditor.openEditor(this.model.head.getHeadScript());
+}
+
+
+/**
  * set css class names
  */
 silex.controller.ControllerBase.prototype.setClassName = function(name) {

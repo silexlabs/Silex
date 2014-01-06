@@ -11,7 +11,7 @@
 
 /**
  * @fileoverview
- * the Silex CssEditor class, based on ace editor
+ * the Silex JsEditor class, based on ace editor
  * @see     http://ace.c9.io/
  *
  *
@@ -19,7 +19,7 @@
 
 
 goog.require('silex.view.AceEditorBase');
-goog.provide('silex.view.CssEditor');
+goog.provide('silex.view.JsEditor');
 goog.require('goog.events.KeyCodes');
 goog.require('goog.ui.KeyboardShortcutHandler');
 
@@ -32,21 +32,21 @@ goog.require('goog.ui.KeyboardShortcutHandler');
  * @param  {element} bodyElement  HTML element which holds the body section of the opened file
  * @param  {element} headElement  HTML element which holds the head section of the opened file
  */
-silex.view.CssEditor = function(element, bodyElement, headElement) {
+silex.view.JsEditor = function(element, bodyElement, headElement) {
   // call super
   goog.base(this, element, bodyElement, headElement);
 };
 
 // inherit from silex.view.AceEditorBase
-goog.inherits(silex.view.CssEditor, silex.view.AceEditorBase);
+goog.inherits(silex.view.JsEditor, silex.view.AceEditorBase);
 
 
 /**
  * init the menu and UIs
  */
-silex.view.CssEditor.prototype.initUI = function() {
+silex.view.JsEditor.prototype.initUI = function() {
   // call super
   goog.base(this, 'initUI');
   // set mode
-  this.ace.getSession().setMode('ace/mode/css');
+  this.ace.getSession().setMode('ace/mode/javascript');
 };

@@ -21,7 +21,8 @@ bugs
 * esc = deselect
 * lorem ipsum do not send change event
 * zindex negatif d'un élément "sous" le BG => non sélectionnable
-* ?validators pour les nom de fichiers?
+* file::isDirty => message to prevent quit
+
 
 URGENT
 
