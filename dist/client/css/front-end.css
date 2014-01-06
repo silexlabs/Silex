@@ -25,6 +25,11 @@ body{
 }
 /* prevent links default formatting */
 .text-element{
+  color: inherit;
+  text-decoration: inherit;
+}
+.text-element .silex-element-content{
 	color: inherit;
 	text-decoration: inherit;
+  overflow: auto;
 }
