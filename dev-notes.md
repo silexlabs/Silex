@@ -9,8 +9,6 @@ BUGS
 !!!! update front-end.css
 
 bugs
-* new file => reset body style
-* css editor in tools or view + shortcut
 * bg text editor
 * focus stays on text fiels when click on stage
 * clear bg image => remove style instead of background-image: none;

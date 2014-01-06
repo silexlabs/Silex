@@ -168,7 +168,7 @@ silex.controller.ControllerBase.prototype.addElement = function(type) {
   }
   catch(e){
     this.tracker.trackAction('controller-events', 'error', 'insert.'+type, -1);
-    console.error('could not add element of type', type, ' - ', error);
+    console.error('could not add element of type', type, ' - ', e.message);
   }
   return element;
 }

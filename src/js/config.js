@@ -193,11 +193,6 @@ silex.Config.menu = {
         , className: 'menu-item-view-open-textEditor'
         , tooltip: '↵'
       }
-      , {
-        label: 'Edit CSS styles'
-        , id: 'view.open.cssEditor'
-        , className: 'menu-item-view-open-cssEditor'
-      }
       , null
       , {
         label: 'Rename page'
@@ -222,6 +217,16 @@ silex.Config.menu = {
         , accelerator: 'v'
       }
       , null
+      , {
+        label: 'CSS styles editor'
+        , id: 'view.open.cssEditor'
+        , className: 'menu-item-view-open-cssEditor'
+        , globalKey: goog.events.KeyCodes.D
+        , shortcut: [[goog.events.KeyCodes.D, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
+        , tooltip: altKeyDisplay + 'D'
+        , mnemonic: goog.events.KeyCodes.D
+        , accelerator: 'd'
+      }
       , {
         label: 'Open file browser'
         , id: 'view.open.fileExplorer'

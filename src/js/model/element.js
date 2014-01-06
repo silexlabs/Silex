@@ -388,7 +388,7 @@ silex.model.Element.prototype.createElement = function(type) {
       element = goog.dom.createElement('div');
       element.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_CONTAINER);
       // add a default style
-      styleObject.backgroundColor = 'white';
+      styleObject.backgroundColor = '#FFFFFF';
     break;
 
     // text
@@ -405,7 +405,7 @@ silex.model.Element.prototype.createElement = function(type) {
       // add a marker to find the inner content afterwards, with getContent
       goog.dom.classes.add(textContent, silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
       // add a default style
-      styleObject.backgroundColor = 'white';
+      styleObject.backgroundColor = '#FFFFFF';
     break;
 
     // HTML box
@@ -423,7 +423,7 @@ silex.model.Element.prototype.createElement = function(type) {
       // add a marker to find the inner content afterwards, with getContent
       goog.dom.classes.add(htmlContent, silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
       // add a default style
-      styleObject.backgroundColor = 'white';
+      styleObject.backgroundColor = '#FFFFFF';
     break;
 
     // Image
