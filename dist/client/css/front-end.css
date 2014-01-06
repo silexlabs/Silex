@@ -16,9 +16,9 @@ body{
 .editable-style{
 	position: absolute;
 }
-.editable-style.image-element,
-.editable-style.html-element{
+.silex-element-content{
 	overflow: hidden;
+  border-radius: inherit;
 }
 .editable-style[data-silex-href]{
 	cursor: pointer;
