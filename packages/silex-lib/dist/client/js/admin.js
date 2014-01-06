@@ -7931,7 +7931,6 @@ silex.controller.ControllerBase.prototype.openFile = function $silex$controller$
   this.tracker.trackAction("controller-events", "request", "file.open", 0);
   this.view.fileExplorer.openDialog(goog.bind(function($url$$) {
     this.model.file.open($url$$, goog.bind(function($rawHtml$$) {
-      console.log($url$$, silex.utils.Url.getBaseUrl($url$$));
       $rawHtml$$ = silex.utils.Url.relative2absolute($rawHtml$$, silex.utils.Url.getBaseUrl($url$$));
       this.model.file.setHtml($rawHtml$$);
       this.fileOperationSuccess(this.model.head.getTitle() + " opened.", !0);
@@ -7961,7 +7960,6 @@ silex.controller.ControllerBase.prototype.doSave = function $silex$controller$Co
   }, this))
 };
 silex.controller.ControllerBase.prototype.save = function $silex$controller$ControllerBase$$save$($opt_url$$, $opt_cbk$$, $opt_errorCbk$$) {
-  console.log(this.model.file.getUrl());
   this.tracker.trackAction("controller-events", "request", "file.save", 0);
   $opt_url$$ ? this.doSave($opt_url$$, $opt_cbk$$, $opt_errorCbk$$) : this.view.fileExplorer.saveAsDialog(goog.bind(function($url$$) {
     this.doSave($url$$, $opt_cbk$$, $opt_errorCbk$$)
@@ -11122,12 +11120,9 @@ silex.utils.Url.getRelativePath = function $silex$utils$Url$getRelativePath$($ur
     $relativePath$$ += "../"
   }
   0 < $urlArr$$.length && ($relativePath$$ += $urlArr$$.join("/") + "/");
-  $relativePath$$ += $fileName$$;
-  console.log("getRelativePath", $url$$, $base$$, $relativePath$$);
-  return $relativePath$$
+  return $relativePath$$ + $fileName$$
 };
 silex.utils.Url.getAbsolutePath = function $silex$utils$Url$getAbsolutePath$($url$$, $base$$) {
-  console.log("getAbsolutePath", $url$$, $base$$, goog.Uri.resolve($base$$, $url$$).toString());
   return goog.Uri.resolve($base$$, $url$$).toString()
 };
 silex.utils.Url.checkFileExt = function $silex$utils$Url$checkFileExt$($fileName$$, $extArray$$) {
@@ -21227,23 +21222,22 @@ silex.model.File = function $silex$model$File$($bodyElement$$, $headElement$$) {
 };
 goog.inherits(silex.model.File, silex.model.ModelBase);
 silex.model.File.CREATION_TEMPLATE = "creation-template.html";
-silex.model.File.prototype.setHtml = function $silex$model$File$$setHtml$($bodyHtml$$4_rawHtml$$) {
-  var $closingTagIdx_headHtml$$, $bodyStyle_lowerCaseHtml_styleStart$$ = $bodyHtml$$4_rawHtml$$.toLowerCase(), $headOpenIdx$$ = $bodyStyle_lowerCaseHtml_styleStart$$.indexOf("<head>");
-  -1 === $headOpenIdx$$ && ($headOpenIdx$$ = $bodyStyle_lowerCaseHtml_styleStart$$.indexOf("<head "));
-  var $bodyStyleAbsolute_headCloseIdx_styleEnd$$ = $bodyStyle_lowerCaseHtml_styleStart$$.indexOf("</head>"), $bodyOpenIdx$$ = $bodyStyle_lowerCaseHtml_styleStart$$.indexOf("<body>");
-  -1 === $bodyOpenIdx$$ && ($bodyOpenIdx$$ = $bodyStyle_lowerCaseHtml_styleStart$$.indexOf("<body "));
-  var $bodyCloseIdx$$ = $bodyStyle_lowerCaseHtml_styleStart$$.indexOf("</body>");
-  -1 < $headOpenIdx$$ && -1 < $bodyStyleAbsolute_headCloseIdx_styleEnd$$ && ($closingTagIdx_headHtml$$ = $bodyStyle_lowerCaseHtml_styleStart$$.indexOf(">", $headOpenIdx$$), $closingTagIdx_headHtml$$ = $bodyHtml$$4_rawHtml$$.substring($closingTagIdx_headHtml$$ + 1, $bodyStyleAbsolute_headCloseIdx_styleEnd$$));
-  -1 < $bodyOpenIdx$$ && -1 < $bodyCloseIdx$$ && $bodyStyle_lowerCaseHtml_styleStart$$.indexOf(">", $bodyOpenIdx$$);
-  $bodyHtml$$4_rawHtml$$ = $bodyHtml$$4_rawHtml$$.substring($bodyOpenIdx$$, $bodyCloseIdx$$ + 7);
+silex.model.File.prototype.setHtml = function $silex$model$File$$setHtml$($bodyHtml$$4_bodyStyle_bodyStyleAbsolute_rawHtml$$) {
+  var $closingTagIdx_headHtml$$, $lowerCaseHtml_styleStart$$ = $bodyHtml$$4_bodyStyle_bodyStyleAbsolute_rawHtml$$.toLowerCase(), $headOpenIdx$$ = $lowerCaseHtml_styleStart$$.indexOf("<head>");
+  -1 === $headOpenIdx$$ && ($headOpenIdx$$ = $lowerCaseHtml_styleStart$$.indexOf("<head "));
+  var $headCloseIdx_styleEnd$$ = $lowerCaseHtml_styleStart$$.indexOf("</head>"), $bodyOpenIdx$$ = $lowerCaseHtml_styleStart$$.indexOf("<body>");
+  -1 === $bodyOpenIdx$$ && ($bodyOpenIdx$$ = $lowerCaseHtml_styleStart$$.indexOf("<body "));
+  var $bodyCloseIdx$$ = $lowerCaseHtml_styleStart$$.indexOf("</body>");
+  -1 < $headOpenIdx$$ && -1 < $headCloseIdx_styleEnd$$ && ($closingTagIdx_headHtml$$ = $lowerCaseHtml_styleStart$$.indexOf(">", $headOpenIdx$$), $closingTagIdx_headHtml$$ = $bodyHtml$$4_bodyStyle_bodyStyleAbsolute_rawHtml$$.substring($closingTagIdx_headHtml$$ + 1, $headCloseIdx_styleEnd$$));
+  -1 < $bodyOpenIdx$$ && -1 < $bodyCloseIdx$$ && $lowerCaseHtml_styleStart$$.indexOf(">", $bodyOpenIdx$$);
+  $bodyHtml$$4_bodyStyle_bodyStyleAbsolute_rawHtml$$ = $bodyHtml$$4_bodyStyle_bodyStyleAbsolute_rawHtml$$.substring($bodyOpenIdx$$, $bodyCloseIdx$$ + 7);
   silex.utils.EditablePlugin.setEditable(this.bodyElement, !1);
-  this.bodyElement.innerHTML = $bodyHtml$$4_rawHtml$$;
-  $bodyStyle_lowerCaseHtml_styleStart$$ = $bodyHtml$$4_rawHtml$$.indexOf('"');
-  $bodyStyleAbsolute_headCloseIdx_styleEnd$$ = $bodyHtml$$4_rawHtml$$.indexOf('"', $bodyStyle_lowerCaseHtml_styleStart$$ + 1);
-  $bodyStyle_lowerCaseHtml_styleStart$$ = $bodyHtml$$4_rawHtml$$.substring($bodyStyle_lowerCaseHtml_styleStart$$ + 1, $bodyStyleAbsolute_headCloseIdx_styleEnd$$);
-  $bodyStyleAbsolute_headCloseIdx_styleEnd$$ = silex.utils.Url.relative2absolute($bodyStyle_lowerCaseHtml_styleStart$$, this.getUrl());
-  console.log($bodyHtml$$4_rawHtml$$, $bodyStyle_lowerCaseHtml_styleStart$$);
-  this.bodyElement.setAttribute("style", $bodyStyleAbsolute_headCloseIdx_styleEnd$$);
+  this.bodyElement.innerHTML = $bodyHtml$$4_bodyStyle_bodyStyleAbsolute_rawHtml$$;
+  $lowerCaseHtml_styleStart$$ = $bodyHtml$$4_bodyStyle_bodyStyleAbsolute_rawHtml$$.indexOf('"');
+  $headCloseIdx_styleEnd$$ = $bodyHtml$$4_bodyStyle_bodyStyleAbsolute_rawHtml$$.indexOf('"', $lowerCaseHtml_styleStart$$ + 1);
+  $bodyHtml$$4_bodyStyle_bodyStyleAbsolute_rawHtml$$ = $bodyHtml$$4_bodyStyle_bodyStyleAbsolute_rawHtml$$.substring($lowerCaseHtml_styleStart$$ + 1, $headCloseIdx_styleEnd$$);
+  $bodyHtml$$4_bodyStyle_bodyStyleAbsolute_rawHtml$$ = silex.utils.Url.relative2absolute($bodyHtml$$4_bodyStyle_bodyStyleAbsolute_rawHtml$$, this.getUrl());
+  this.bodyElement.setAttribute("style", $bodyHtml$$4_bodyStyle_bodyStyleAbsolute_rawHtml$$);
   silex.utils.EditablePlugin.setEditable(this.bodyElement, !0);
   this.headElement.innerHTML = $closingTagIdx_headHtml$$
 };

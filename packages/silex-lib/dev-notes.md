@@ -10,27 +10,36 @@ BUGS
 
 bugs
 * focus stays on text fiels when click on stage
-* remove console logs
-* css class to prevent edit (no-resize-w, no-move, no-edit ...)
 * all front-end.css should be in head section
 * notifications?
+* ancres html?
 !!!! update front-end.css
 
+* css class to prevent edit (no-resize-w, no-move, no-edit ...) - Class css pour lock w/h/x/y... Display none  de l ui
 * open a non-silex site => warn
-* New site => BG size depends on the stage size
-* Lorsque l'on colle un lien externe pour la deuxième fois = on retrouve le lien précédemment collé
-* lors de l'import de "grands" (?) média = la boite à outil Position & size n'affiche pas la size du média.
-exemple 960 x 73 dans la LP SV2
+* ?? New site => BG size depends on the stage size
 * esc = deselect
-lorem ipsum do not send change event
-ancres html  => use #! instead of # => add "scroll to" in links?
+* lorem ipsum do not send change event
 * zindex negatif d'un élément "sous" le BG => non sélectionnable
 * ?validators pour les nom de fichiers?
 
 URGENT
 
-styles?
-refacto
+reste a faire sur le site wwx
+- links & anchors
+- roll over sur links
+- liquid layout
+
+
+
+script editor
+head editor
+
+travis
+
+Undoredo
+
+Silex styles
 
 * view/hide markers
   en mode édition les éléments importées ont un contour gris
