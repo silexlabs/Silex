@@ -27,6 +27,7 @@ goog.require('silex.controller.PropertyToolController');
 goog.require('silex.controller.SettingsDialogController');
 goog.require('silex.controller.HtmlEditorController');
 goog.require('silex.controller.CssEditorController');
+goog.require('silex.controller.JsEditorController');
 goog.require('silex.controller.TextEditorController');
 
 /**
@@ -54,6 +55,7 @@ silex.types.Model = function(file, head, body, element) {
  * @param {silex.model.SettingsDialogController} settingsDialogController
  * @param {silex.model.HtmlEditorController} htmlEditorController
  * @param {silex.model.CssEditorController} cssEditorController
+ * @param {silex.model.JsEditorController} jsEditorController
  * @param {silex.model.TextEditorController} textEditorController
  */
 silex.types.Controller = function(
@@ -64,6 +66,7 @@ silex.types.Controller = function(
   settingsDialogController,
   htmlEditorController,
   cssEditorController,
+  jsEditorController,
   textEditorController)
 {
   this.menuController = menuController;
@@ -73,6 +76,7 @@ silex.types.Controller = function(
   this.settingsDialogController = settingsDialogController;
   this.htmlEditorController = htmlEditorController;
   this.cssEditorController = cssEditorController;
+  this.jsEditorController = jsEditorController;
   this.textEditorController = textEditorController;
 }
 
@@ -85,6 +89,7 @@ silex.types.Controller = function(
  * @param {silex.view.PropertyTool} propertyTool
  * @param {silex.view.HtmlEditor} htmlEditor
  * @param {silex.view.CssEditor} cssEditor
+ * @param {silex.view.JsEditor} jsEditor
  * @param {silex.view.TextEditor} textEditor
  * @param {silex.view.FileExplorer} fileExplorer
  * @param {silex.view.SettingsDialog} settingsDialog
@@ -98,6 +103,7 @@ silex.types.View = function(
   propertyTool,
   htmlEditor,
   cssEditor,
+  jsEditor,
   textEditor,
   fileExplorer,
   settingsDialog) {
@@ -108,6 +114,7 @@ silex.types.View = function(
   this.propertyTool = propertyTool;
   this.htmlEditor = htmlEditor;
   this.cssEditor = cssEditor;
+  this.jsEditor = jsEditor;
   this.textEditor = textEditor;
   this.fileExplorer = fileExplorer;
   this.settingsDialog = settingsDialog;
