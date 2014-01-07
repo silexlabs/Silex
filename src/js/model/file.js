@@ -113,7 +113,6 @@ silex.model.File.prototype.setHtml = function(rawHtml) {
 silex.model.File.prototype.getHtml = function() {
   // cleanup
   silex.utils.EditablePlugin.setEditable(this.bodyElement, false);
-
   // get html
   var bodyStr = this.bodyElement.innerHTML;
   // make editable again
@@ -267,7 +266,6 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
   var bodyStr = '<body style="' + styleStr + '">' + this.bodyElement.innerHTML + '</body>';
   // make editable again
   silex.utils.EditablePlugin.setEditable(this.bodyElement, true);
-
   // head
   var headStr = this.headElement.innerHTML;
 

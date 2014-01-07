@@ -1,22 +1,11 @@
-.silex-fileexplorer {
-  position: absolute;
-  z-index: 210;
-  width: 80%;
-  max-width: 929px;
-  /* defined in the cloud explorer css */
-  height: 574px;
-  /* defined in the cloud explorer css */
-}
-.silex-html-editor,
-.silex-css-editor {
+.ace-editor-container {
   position: absolute;
   width: 90%;
   height: 90%;
   display: none;
   z-index: 110;
 }
-.silex-html-editor .close-btn,
-.silex-css-editor .close-btn {
+.ace-editor-container .close-btn {
   background-image: url("../assets/goog-ui/close.png");
   cursor: pointer;
   height: 38px;
@@ -25,14 +14,12 @@
   top: 11px;
   width: 39px;
 }
-.silex-html-editor .ace-editor,
-.silex-css-editor .ace-editor {
+.ace-editor-container .ace-editor {
   width: 100%;
   height: 90%;
   position: inherit;
 }
-.silex-html-editor .title-bar,
-.silex-css-editor .title-bar {
+.ace-editor-container .title-bar {
   border-top: 1px solid #E5E5E5;
   font-size: 20px;
   height: 20px;
@@ -41,6 +28,15 @@
 }
 .tr_bubble {
   z-index: 999 !important;
+}
+.silex-fileexplorer {
+  position: absolute;
+  z-index: 210;
+  width: 80%;
+  max-width: 929px;
+  /* defined in the cloud explorer css */
+  height: 574px;
+  /* defined in the cloud explorer css */
 }
 .noTrespassingAnimationG {
   width: 148px;
@@ -585,9 +581,6 @@ body.loading-pending > div {
   top: -7px;
   left: -7px;
 }
-.editable-style[data-silex-sub-type="html"]:hover .html-content {
-  display: none;
-}
 .editable-style {
   box-shadow: 0 0 1px #D9D9D9;
   -webkit-touch-callout: none;
@@ -599,6 +592,13 @@ body.loading-pending > div {
   cursor: move;
   min-width: 20px;
   min-height: 20px;
+}
+.editable-style:hover {
+  box-shadow: 0 0 2px black;
+  opacity: 1 !important;
+}
+.editable-style.html-element:hover .silex-element-content {
+  display: none;
 }
 .editable-style.silex-selected  > .ui-resizable-se,
 .editable-style.silex-selected  > .ui-resizable-sw,
@@ -622,10 +622,6 @@ body.loading-pending > div {
   position: absolute;
   left: 220px;
   border: 1px solid #D9D9D9;
-}
-.editable-style:hover {
-  box-shadow: 0 0 2px black;
-  opacity: 1 !important;
 }
 .ui-icon-gripsmall-diagonal-se {
   background-image: none;
