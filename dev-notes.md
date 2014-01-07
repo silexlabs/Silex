@@ -9,6 +9,7 @@ BUGS
 !!!! update front-end.css
 
 bugs
+* !! publication
 * focus stays on text fiels when click on stage
 * all front-end.css should be in head section
 * notifications?
@@ -56,7 +57,15 @@ Feature requests
 
 * Sélection multiple hors container / plusieurs containers
 * open recent files
+* responsive mode
 * better HTML = ré-édition par des intégrateurs
+
+Layout box qui n accepte que des containers layout item qui ne se déplacent pas hors de la boite
+Quand ine layout box est sélectionnée, dans le Menu, on peut ajouter  des layout items, mais pas dropper d éléments dans la layout box. Drag drop au sein du layout box?
+
+composant pour intégration de blog dans une page silex?
+pareil pour vente en ligne? des widgets?
+
 
 Cloud explorer
 * refresh button

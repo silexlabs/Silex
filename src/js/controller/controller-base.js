@@ -504,7 +504,6 @@ silex.controller.ControllerBase.prototype.openFile = function(opt_cbk, opt_error
   this.view.fileExplorer.openDialog(
     goog.bind(function(url) {
       this.model.file.open(url, goog.bind(function(rawHtml) {
-        rawHtml = silex.utils.Url.relative2absolute(rawHtml, silex.utils.Url.getBaseUrl(url));
         this.model.file.setHtml(rawHtml);
         this.fileOperationSuccess(this.model.head.getTitle() + ' opened.', true)
         // handle retrocompatibility issues
@@ -530,10 +529,9 @@ silex.controller.ControllerBase.prototype.openFile = function(opt_cbk, opt_error
  */
 silex.controller.ControllerBase.prototype.doSave = function(url, opt_cbk, opt_errorCbk){
   // urls will be relative to the html file url
-  var baseUrl = silex.utils.Url.getBaseUrl(url);
+  this.model.file.setUrl(url);
   // relative urls only in the files
   var rawHtml = this.model.file.getHtml();
-  rawHtml = silex.utils.Url.absolute2Relative(rawHtml, baseUrl);
   // save to file
   this.model.file.saveAs(
     url,
