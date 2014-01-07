@@ -82,6 +82,11 @@ silex.model.File.prototype.setHtml = function(rawHtml) {
   }
   // extract the hole body with body tags
   var bodyHtml = rawHtml.substring(bodyOpenIdx, bodyCloseIdx + 7);
+  // deal with absolute urls
+  if (this.getUrl()){
+    var baseUrl = silex.utils.Url.getBaseUrl(this.getUrl());
+    bodyHtml = silex.utils.Url.relative2absolute(bodyHtml, baseUrl);
+  }
   // update model
   // cleanup
   silex.utils.EditablePlugin.setEditable(this.bodyElement, false);
@@ -91,9 +96,8 @@ silex.model.File.prototype.setHtml = function(rawHtml) {
   var styleStart = bodyHtml.indexOf('"');
   var styleEnd = bodyHtml.indexOf('"', styleStart + 1);
   var bodyStyle = bodyHtml.substring(styleStart + 1, styleEnd);
-  var bodyStyleAbsolute = silex.utils.Url.relative2absolute(bodyStyle, this.getUrl());
   // set body style
-  this.bodyElement.setAttribute('style', bodyStyleAbsolute);
+  this.bodyElement.setAttribute('style', bodyStyle);
   // make editable again
   silex.utils.EditablePlugin.setEditable(this.bodyElement, true);
   // set head content
@@ -109,19 +113,27 @@ silex.model.File.prototype.setHtml = function(rawHtml) {
 silex.model.File.prototype.getHtml = function() {
   // cleanup
   silex.utils.EditablePlugin.setEditable(this.bodyElement, false);
+
   // get html
   var bodyStr = this.bodyElement.innerHTML;
   // make editable again
   silex.utils.EditablePlugin.setEditable(this.bodyElement, true);
-  // handle background url of the body style
-  //var styleStr = this.bodyElement.getAttribute('style') || '';
+  // handle the body style
   var styleStr = this.bodyElement.getAttribute('style') || '';
+
   // retruns the html page
   var html = '';
   html += '<html>';
   html += '<head>' + this.headElement.innerHTML + '</head>';
   html += '<body style="' + styleStr + '">' + bodyStr + '</body>';
   html += '</html>';
+
+  // return relative urls when possible
+  if (this.getUrl()){
+    var baseUrl = silex.utils.Url.getBaseUrl(this.getUrl());
+    html = silex.utils.Url.absolute2Relative(html, baseUrl);
+  }
+
   return html;
 };
 
@@ -198,7 +210,13 @@ silex.model.File.prototype.close = function() {
  * get the url of the file
  * @param    head     an HtmlDom element containing a new version of the head tag
  */
+
 silex.model.File.prototype.getUrl = function() {
+  // revert to relative URL
+  if (this.url){
+    var baseUrl = silex.utils.Url.getBaseUrl();
+    this.url = silex.utils.Url.getRelativePath(this.url, baseUrl);
+  }
   return this.url;
 };
 
@@ -208,6 +226,10 @@ silex.model.File.prototype.getUrl = function() {
  * @param    head     an HtmlDom element containing a new version of the head tag
  */
 silex.model.File.prototype.setUrl = function(url) {
+  if (url){
+    var baseUrl = silex.utils.Url.getBaseUrl();
+    url = silex.utils.Url.getAbsolutePath(url, baseUrl);
+  }
   this.url = url;
 };
 
@@ -237,11 +259,14 @@ silex.model.File.prototype.publish = function(url, cbk, opt_errCbk) {
  * @return
  */
 silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
-  // build a clean body clone
-  var bodyStr = goog.dom.getOuterHtml(this.bodyElement);
-  // replace the first div container with a body tag
-  bodyStr.replace('<div', '<body');
-  bodyStr.replace(new RegExp('</div$'), '</body');
+  // handle background url of the body style
+  var styleStr = this.bodyElement.getAttribute('style') || '';
+  // cleanup
+  silex.utils.EditablePlugin.setEditable(this.bodyElement, false);
+  // get html
+  var bodyStr = '<body style="' + styleStr + '">' + this.bodyElement.innerHTML + '</body>';
+  // make editable again
+  silex.utils.EditablePlugin.setEditable(this.bodyElement, true);
 
   // head
   var headStr = this.headElement.innerHTML;
