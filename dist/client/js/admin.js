@@ -21244,7 +21244,7 @@ silex.model.File.prototype.setHtml = function $silex$model$File$$setHtml$($bodyH
   -1 < $headOpenIdx$$ && -1 < $headCloseIdx_styleEnd$$ && ($closingTagIdx_headHtml$$ = $baseUrl$$.indexOf(">", $headOpenIdx$$), $closingTagIdx_headHtml$$ = $bodyHtml$$4_bodyStyle_rawHtml$$.substring($closingTagIdx_headHtml$$ + 1, $headCloseIdx_styleEnd$$));
   -1 < $bodyOpenIdx$$ && -1 < $bodyCloseIdx$$ && $baseUrl$$.indexOf(">", $bodyOpenIdx$$);
   $bodyHtml$$4_bodyStyle_rawHtml$$ = $bodyHtml$$4_bodyStyle_rawHtml$$.substring($bodyOpenIdx$$, $bodyCloseIdx$$ + 7);
-  this.getUrl() && ($baseUrl$$ = silex.utils.Url.getBaseUrl(this.getUrl()), console.log("setHtml", this.getUrl(), $baseUrl$$), $bodyHtml$$4_bodyStyle_rawHtml$$ = silex.utils.Url.relative2absolute($bodyHtml$$4_bodyStyle_rawHtml$$, $baseUrl$$));
+  this.getUrl() && ($baseUrl$$ = silex.utils.Url.getBaseUrl(this.getUrl()), $bodyHtml$$4_bodyStyle_rawHtml$$ = silex.utils.Url.relative2absolute($bodyHtml$$4_bodyStyle_rawHtml$$, $baseUrl$$));
   silex.utils.EditablePlugin.setEditable(this.bodyElement, !1);
   this.bodyElement.innerHTML = $bodyHtml$$4_bodyStyle_rawHtml$$;
   $baseUrl$$ = $bodyHtml$$4_bodyStyle_rawHtml$$.indexOf('"');
@@ -21309,7 +21309,6 @@ silex.model.File.prototype.setUrl = function $silex$model$File$$setUrl$($url$$) 
 };
 silex.model.File.prototype.publish = function $silex$model$File$$publish$($url$$, $cbk$$, $opt_errCbk$$) {
   this.cleanup(goog.bind(function($html$$, $css$$, $js$$, $files$$) {
-    console.log($js$$);
     silex.service.SilexTasks.getInstance().publish($url$$, $html$$, $css$$, $js$$, $files$$, $cbk$$, $opt_errCbk$$)
   }, this), goog.bind(function($error$$) {
     console.error("publish cleanup error", $error$$);
@@ -21390,15 +21389,16 @@ silex.model.File.prototype.cleanup = function $silex$model$File$$cleanup$($cbk$$
     $opt_errCbk$$ && $opt_errCbk$$({message:"The file must be saved before I can clean it up for you."})
   }
 };
-silex.model.File.prototype.filterBgImage = function $silex$model$File$$filterBgImage$($baseUrl$$, $files$$, $match$$, $group1$$, $group2$$) {
-  0 === $group2$$.indexOf("'") && ($group2$$ = $group2$$.substr(1));
-  $group2$$.lastIndexOf("'") === $group2$$.length - 1 && ($group2$$ = $group2$$.substr(0, $group2$$.length - 1));
-  var $absolute$$ = silex.utils.Url.getAbsolutePath($group2$$, $baseUrl$$), $relative$$ = silex.utils.Url.getRelativePath($absolute$$, silex.utils.Url.getBaseUrl());
-  console.log(arguments, $relative$$, $absolute$$);
-  silex.utils.Url.isAbsoluteUrl($relative$$) || ($relative$$ = $relative$$.replace("../", "/"));
-  var $newRelativePath$$ = "assets/" + $absolute$$.substr($absolute$$.lastIndexOf("/") + 1), $res$$ = "url('../" + $newRelativePath$$ + "')";
-  $files$$.push({url:$absolute$$, destPath:$newRelativePath$$, srcPath:$relative$$});
-  return $res$$
+silex.model.File.prototype.filterBgImage = function $silex$model$File$$filterBgImage$($absolute$$3_baseUrl$$, $files$$, $match$$11_relative$$, $group1$$9_newRelativePath$$, $group2$$9_res$$) {
+  0 === $group2$$9_res$$.indexOf("'") && ($group2$$9_res$$ = $group2$$9_res$$.substr(1));
+  $group2$$9_res$$.lastIndexOf("'") === $group2$$9_res$$.length - 1 && ($group2$$9_res$$ = $group2$$9_res$$.substr(0, $group2$$9_res$$.length - 1));
+  $absolute$$3_baseUrl$$ = silex.utils.Url.getAbsolutePath($group2$$9_res$$, $absolute$$3_baseUrl$$);
+  $match$$11_relative$$ = silex.utils.Url.getRelativePath($absolute$$3_baseUrl$$, silex.utils.Url.getBaseUrl());
+  silex.utils.Url.isAbsoluteUrl($match$$11_relative$$) || ($match$$11_relative$$ = $match$$11_relative$$.replace("../", "/"));
+  $group1$$9_newRelativePath$$ = "assets/" + $absolute$$3_baseUrl$$.substr($absolute$$3_baseUrl$$.lastIndexOf("/") + 1);
+  $group2$$9_res$$ = "url('../" + $group1$$9_newRelativePath$$ + "')";
+  $files$$.push({url:$absolute$$3_baseUrl$$, destPath:$group1$$9_newRelativePath$$, srcPath:$match$$11_relative$$});
+  return $group2$$9_res$$
 };
 silex.App = function $silex$App$() {
   silex.service.Tracker.getInstance().trackAction("app-events", "start", null, 2);

@@ -85,7 +85,6 @@ silex.model.File.prototype.setHtml = function(rawHtml) {
   // deal with absolute urls
   if (this.getUrl()){
     var baseUrl = silex.utils.Url.getBaseUrl(this.getUrl());
-    console.log('setHtml', this.getUrl(), baseUrl);
     bodyHtml = silex.utils.Url.relative2absolute(bodyHtml, baseUrl);
   }
   // update model
@@ -240,7 +239,6 @@ silex.model.File.prototype.setUrl = function(url) {
 silex.model.File.prototype.publish = function(url, cbk, opt_errCbk) {
   this.cleanup(
       goog.bind(function(html, css, js, files) {
-        console.log(js);
         silex.service.SilexTasks.getInstance().publish(url, html, css, js, files, cbk, opt_errCbk);
       }, this),
       goog.bind(function(error) {
@@ -498,7 +496,6 @@ silex.model.File.prototype.filterBgImage = function(baseUrl, files, match, group
   if (group2.lastIndexOf("'") === group2.length-1) group2 = group2.substr(0, group2.length-1);
   var absolute = silex.utils.Url.getAbsolutePath(group2, baseUrl);
   var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
-  console.log(arguments, relative, absolute);
   // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
   if (!silex.utils.Url.isAbsoluteUrl(relative)) {
     relative = relative.replace('../', '/');
