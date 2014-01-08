@@ -62,7 +62,11 @@ silex.utils.Url.absolute2Relative = function(htmlString, baseUrl) {
     return res;
   });
   // css url()
-  htmlString = htmlString.replace(/url\((['"])(.+?)\1\)/g, function(match, group1, group2) {
+  htmlString = htmlString.replace(/url\(()(.+?)\1\)/g, function(match, group1, group2) {
+    // remove the ''
+    if (group2.indexOf("'") === 0) group2 = group2.substr(1);
+    if (group2.lastIndexOf("'") === group2.length-1) group2 = group2.substr(0, group2.length-1);
+    // rebuild url('') with the relative path
     var res = "url('" + silex.utils.Url.getRelativePath(group2, baseUrl) + "')";
     return res;
   });
@@ -82,7 +86,11 @@ silex.utils.Url.relative2absolute = function(htmlString, baseUrl) {
     return res;
   });
   // css url()
-  htmlString = htmlString.replace(/url\((['"])(.+?)\1\)/g, function(match, group1, group2) {
+  htmlString = htmlString.replace(/url\(()(.+?)\1\)/g, function(match, group1, group2) {
+    // remove the ''
+    if (group2.indexOf("'") === 0) group2 = group2.substr(1);
+    if (group2.lastIndexOf("'") === group2.length-1) group2 = group2.substr(0, group2.length-1);
+    // rebuild url('') with the absolute path
     var res = "url('" + silex.utils.Url.getAbsolutePath(group2, baseUrl) + "')";
     return res;
   });

@@ -312,6 +312,8 @@ Packaging / distribution
   * widget agenda
   * widget player vidéo
   * webgl (cf open gl editor http://stackoverflow.com/questions/7093354/any-free-open-source-webgl-editors)
+  * ajout roadmap : menus et sous menu
+  * https://docs.google.com/spreadsheet/ccc?key=0AhmdV6ktIMy1dE1VTVZMa3NkZjNNRmdWOGd0MzRkUXc&usp=drive_web#gid=3
 
 * Mobile version
 

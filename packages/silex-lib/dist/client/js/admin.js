@@ -11115,7 +11115,9 @@ silex.utils.Url.absolute2Relative = function $silex$utils$Url$absolute2Relative$
   $htmlString$$ = $htmlString$$.replace(/src="?([^" ]*)" /g, function($match$$, $group1$$, $group2$$) {
     return $match$$.replace($group1$$, silex.utils.Url.getRelativePath($group1$$, $baseUrl$$))
   });
-  return $htmlString$$ = $htmlString$$.replace(/url\((['"])(.+?)\1\)/g, function($match$$, $group1$$, $group2$$) {
+  return $htmlString$$ = $htmlString$$.replace(/url\(()(.+?)\1\)/g, function($match$$, $group1$$, $group2$$) {
+    0 === $group2$$.indexOf("'") && ($group2$$ = $group2$$.substr(1));
+    $group2$$.lastIndexOf("'") === $group2$$.length - 1 && ($group2$$ = $group2$$.substr(0, $group2$$.length - 1));
     return"url('" + silex.utils.Url.getRelativePath($group2$$, $baseUrl$$) + "')"
   })
 };
@@ -11123,7 +11125,9 @@ silex.utils.Url.relative2absolute = function $silex$utils$Url$relative2absolute$
   $htmlString$$ = $htmlString$$.replace(/src="?([^" ]*)" /g, function($match$$, $group1$$, $group2$$) {
     return $match$$.replace($group1$$, silex.utils.Url.getAbsolutePath($group1$$, $baseUrl$$))
   });
-  return $htmlString$$ = $htmlString$$.replace(/url\((['"])(.+?)\1\)/g, function($match$$, $group1$$, $group2$$) {
+  return $htmlString$$ = $htmlString$$.replace(/url\(()(.+?)\1\)/g, function($match$$, $group1$$, $group2$$) {
+    0 === $group2$$.indexOf("'") && ($group2$$ = $group2$$.substr(1));
+    $group2$$.lastIndexOf("'") === $group2$$.length - 1 && ($group2$$ = $group2$$.substr(0, $group2$$.length - 1));
     return"url('" + silex.utils.Url.getAbsolutePath($group2$$, $baseUrl$$) + "')"
   })
 };
@@ -11256,13 +11260,13 @@ goog.inherits(silex.model.Head, silex.model.ModelBase);
 silex.model.Head.SILEX_STYLE_ELEMENT_ID = "silex-style";
 silex.model.Head.SILEX_SCRIPT_ELEMENT_ID = "silex-script";
 silex.model.Head.prototype.getHeadScript = function $silex$model$Head$$getHeadScript$() {
-  var $silexScript$$ = goog.dom.getElementByClass(silex.model.Head.SILEX_SCRIPT_ELEMENT_ID, this.headElement);
-  return $silexScript$$ ? $silexScript$$.innerHTML : (console.warn("no silex editable styles defined"), "")
+  var $scriptTag$$ = goog.dom.getElementByClass(silex.model.Head.SILEX_SCRIPT_ELEMENT_ID, this.headElement);
+  return $scriptTag$$ ? $scriptTag$$.innerHTML : (console.warn("no silex editable styles defined"), "")
 };
 silex.model.Head.prototype.setHeadScript = function $silex$model$Head$$setHeadScript$($jsString$$) {
-  var $silexScript$$ = goog.dom.getElementByClass(silex.model.Head.SILEX_SCRIPT_ELEMENT_ID, this.headElement);
-  $silexScript$$ || ($silexScript$$ = goog.dom.createElement("script"), $silexScript$$.type = "text/javascript", $silexScript$$.className = silex.model.Head.SILEX_SCRIPT_ELEMENT_ID, goog.dom.appendChild(this.headElement, $silexScript$$));
-  $silexScript$$.innerHTML = $jsString$$
+  var $scriptTag$$ = goog.dom.getElementByClass(silex.model.Head.SILEX_SCRIPT_ELEMENT_ID, this.headElement);
+  $scriptTag$$ || ($scriptTag$$ = goog.dom.createElement("script"), $scriptTag$$.type = "text/javascript", $scriptTag$$.className = silex.model.Head.SILEX_SCRIPT_ELEMENT_ID, goog.dom.appendChild(this.headElement, $scriptTag$$));
+  $scriptTag$$.innerHTML = $jsString$$
 };
 silex.model.Head.prototype.getHeadStyle = function $silex$model$Head$$getHeadStyle$() {
   var $silexStyle$$ = goog.dom.getElementByClass(silex.model.Head.SILEX_STYLE_ELEMENT_ID, this.headElement);
@@ -21205,12 +21209,15 @@ silex.view.Workspace.prototype.doRedraw = function $silex$view$Workspace$$doRedr
 silex.service.SilexTasks = function $silex$service$SilexTasks$() {
 };
 goog.addSingletonGetter(silex.service.SilexTasks);
-silex.service.SilexTasks.prototype.publish = function $silex$service$SilexTasks$$publish$($path$$, $html$$, $css$$, $files$$, $cbk$$, $opt_errCbk$$) {
-  if($path$$ && $html$$ && $css$$ && $files$$) {
+silex.service.SilexTasks.prototype.publish = function $silex$service$SilexTasks$$publish$($path$$, $html$$, $css$$, $js$$, $files$$, $cbk$$, $opt_errCbk$$) {
+  if(goog.isNull($path$$) || goog.isNull($html$$) || goog.isNull($css$$) || goog.isNull($js$$) || goog.isNull($files$$)) {
+    console.error("Param path, html, css, js or files missing"), $opt_errCbk$$ && $opt_errCbk$$("Param path, html, css, js or files missing")
+  }else {
     var $qd$$ = new goog.Uri.QueryData;
     $qd$$.add("path", $path$$);
     $qd$$.add("html", $html$$);
     $qd$$.add("css", $css$$);
+    $qd$$.add("js", $js$$);
     $qd$$.add("files", JSON.stringify($files$$));
     goog.net.XhrIo.send("/silex/tasks/publish", function($e$$261_xhr$$) {
       $e$$261_xhr$$ = $e$$261_xhr$$.target;
@@ -21221,8 +21228,6 @@ silex.service.SilexTasks.prototype.publish = function $silex$service$SilexTasks$
         $json_message$$ = $e$$261_xhr$$.getLastError(), console.error($e$$261_xhr$$.getLastError(), $e$$261_xhr$$.getLastErrorCode(), $e$$261_xhr$$.isSuccess(), $e$$261_xhr$$.getStatus(), $e$$261_xhr$$.headers), $opt_errCbk$$ && $opt_errCbk$$($json_message$$)
       }
     }, "POST", $qd$$.toString())
-  }else {
-    console.error("Param path, html, css or files missing"), $opt_errCbk$$ && $opt_errCbk$$("Param path, html, css or files missing")
   }
 };
 silex.model.File = function $silex$model$File$($bodyElement$$, $headElement$$) {
@@ -21239,7 +21244,7 @@ silex.model.File.prototype.setHtml = function $silex$model$File$$setHtml$($bodyH
   -1 < $headOpenIdx$$ && -1 < $headCloseIdx_styleEnd$$ && ($closingTagIdx_headHtml$$ = $baseUrl$$.indexOf(">", $headOpenIdx$$), $closingTagIdx_headHtml$$ = $bodyHtml$$4_bodyStyle_rawHtml$$.substring($closingTagIdx_headHtml$$ + 1, $headCloseIdx_styleEnd$$));
   -1 < $bodyOpenIdx$$ && -1 < $bodyCloseIdx$$ && $baseUrl$$.indexOf(">", $bodyOpenIdx$$);
   $bodyHtml$$4_bodyStyle_rawHtml$$ = $bodyHtml$$4_bodyStyle_rawHtml$$.substring($bodyOpenIdx$$, $bodyCloseIdx$$ + 7);
-  this.getUrl() && ($baseUrl$$ = silex.utils.Url.getBaseUrl(this.getUrl()), $bodyHtml$$4_bodyStyle_rawHtml$$ = silex.utils.Url.relative2absolute($bodyHtml$$4_bodyStyle_rawHtml$$, $baseUrl$$));
+  this.getUrl() && ($baseUrl$$ = silex.utils.Url.getBaseUrl(this.getUrl()), console.log("setHtml", this.getUrl(), $baseUrl$$), $bodyHtml$$4_bodyStyle_rawHtml$$ = silex.utils.Url.relative2absolute($bodyHtml$$4_bodyStyle_rawHtml$$, $baseUrl$$));
   silex.utils.EditablePlugin.setEditable(this.bodyElement, !1);
   this.bodyElement.innerHTML = $bodyHtml$$4_bodyStyle_rawHtml$$;
   $baseUrl$$ = $bodyHtml$$4_bodyStyle_rawHtml$$.indexOf('"');
@@ -21303,8 +21308,9 @@ silex.model.File.prototype.setUrl = function $silex$model$File$$setUrl$($url$$) 
   this.url = $url$$
 };
 silex.model.File.prototype.publish = function $silex$model$File$$publish$($url$$, $cbk$$, $opt_errCbk$$) {
-  this.cleanup(goog.bind(function($html$$, $css$$, $files$$) {
-    silex.service.SilexTasks.getInstance().publish($url$$, $html$$, $css$$, $files$$, $cbk$$, $opt_errCbk$$)
+  this.cleanup(goog.bind(function($html$$, $css$$, $js$$, $files$$) {
+    console.log($js$$);
+    silex.service.SilexTasks.getInstance().publish($url$$, $html$$, $css$$, $js$$, $files$$, $cbk$$, $opt_errCbk$$)
   }, this), goog.bind(function($error$$) {
     console.error("publish cleanup error", $error$$);
     $opt_errCbk$$ && $opt_errCbk$$($error$$)
@@ -21315,7 +21321,7 @@ silex.model.File.prototype.cleanup = function $silex$model$File$$cleanup$($cbk$$
   silex.utils.EditablePlugin.setEditable(this.bodyElement, !1);
   var $bodyStr$$1_headElement$$26_html$$ = '<body style="' + $bodyElement$$28_styleStr$$ + '">' + this.bodyElement.innerHTML + "</body>";
   silex.utils.EditablePlugin.setEditable(this.bodyElement, !0);
-  var $components_elements$$ = this.headElement.innerHTML, $cssArray$$ = [], $files$$ = [];
+  var $components_cssTag_elements$$6_headStr_jsString$$ = this.headElement.innerHTML, $cssArray$$ = [], $files$$ = [];
   if(this.getUrl()) {
     var $baseUrl$$ = silex.utils.Url.getBaseUrl(this.getUrl()), $bodyStr$$1_headElement$$26_html$$ = $bodyStr$$1_headElement$$26_html$$.replace(/<img[^"]*src="?([^" ]*)"/g, function($match$$, $group1$$, $absolute_group2$$) {
       $absolute_group2$$ = silex.utils.Url.getAbsolutePath($group1$$, $baseUrl$$);
@@ -21324,15 +21330,15 @@ silex.model.File.prototype.cleanup = function $silex$model$File$$cleanup$($cbk$$
       var $newRelativePath$$ = "assets/" + $absolute_group2$$.substr($absolute_group2$$.lastIndexOf("/") + 1);
       $files$$.push({url:$absolute_group2$$, destPath:$newRelativePath$$, srcPath:$relative$$});
       return $match$$.replace($group1$$, $newRelativePath$$)
-    }), $bodyStr$$1_headElement$$26_html$$ = $bodyStr$$1_headElement$$26_html$$.replace(/url\((['"])(.+?)\1\)/g, goog.bind(function($match$$, $group1$$, $group2$$) {
+    }), $bodyStr$$1_headElement$$26_html$$ = $bodyStr$$1_headElement$$26_html$$.replace(/url\(()(.+?)\1\)/g, goog.bind(function($match$$, $group1$$, $group2$$) {
       return this.filterBgImage($baseUrl$$, $files$$, $match$$, $group1$$, $group2$$)
-    }, this)), $components_elements$$ = $components_elements$$.replace(/href="?([^" ]*)"/g, function($match$$, $group1$$, $absolute$$1_group2$$) {
+    }, this)), $components_cssTag_elements$$6_headStr_jsString$$ = $components_cssTag_elements$$6_headStr_jsString$$.replace(/href="?([^" ]*)"/g, function($match$$, $group1$$, $absolute$$1_group2$$) {
       var $newRelativePath$$ = !1;
       $absolute$$1_group2$$ = silex.utils.Url.getAbsolutePath($group1$$, $baseUrl$$);
       var $relative$$ = silex.utils.Url.getRelativePath($absolute$$1_group2$$, silex.utils.Url.getBaseUrl());
       silex.utils.Url.isAbsoluteUrl($relative$$) ? 0 !== $absolute$$1_group2$$.indexOf("http://static.silex.me") && ($newRelativePath$$ = !0) : $relative$$ = $relative$$.replace("../", "/");
       return $newRelativePath$$ ? $match$$ : ($newRelativePath$$ = "css/" + $absolute$$1_group2$$.substr($absolute$$1_group2$$.lastIndexOf("/") + 1), $files$$.push({url:$absolute$$1_group2$$, destPath:$newRelativePath$$, srcPath:$relative$$}), $match$$.replace($group1$$, $newRelativePath$$))
-    }), $components_elements$$ = $components_elements$$.replace(/src="?([^"]*)"/g, function($match$$, $group1$$, $absolute$$2_group2$$) {
+    }), $components_cssTag_elements$$6_headStr_jsString$$ = $components_cssTag_elements$$6_headStr_jsString$$.replace(/src="?([^"]*)"/g, function($match$$, $group1$$, $absolute$$2_group2$$) {
       var $newRelativePath$$2_preventDownload$$ = !1;
       $absolute$$2_group2$$ = silex.utils.Url.getAbsolutePath($group1$$, $baseUrl$$);
       var $relative$$ = silex.utils.Url.getRelativePath($absolute$$2_group2$$, silex.utils.Url.getBaseUrl());
@@ -21341,15 +21347,15 @@ silex.model.File.prototype.cleanup = function $silex$model$File$$cleanup$($cbk$$
     }), $bodyElement$$28_styleStr$$ = goog.dom.createElement("div");
     $bodyElement$$28_styleStr$$.innerHTML = $bodyStr$$1_headElement$$26_html$$;
     $bodyStr$$1_headElement$$26_html$$ = goog.dom.createElement("div");
-    $bodyStr$$1_headElement$$26_html$$.innerHTML = $components_elements$$;
+    $bodyStr$$1_headElement$$26_html$$.innerHTML = $components_cssTag_elements$$6_headStr_jsString$$;
     $('meta[name="publicationPath"]', $bodyStr$$1_headElement$$26_html$$).remove();
-    $components_elements$$ = goog.dom.getElementsByClass("editable-style", $bodyElement$$28_styleStr$$);
-    goog.array.forEach($components_elements$$, function($element$$) {
+    $components_cssTag_elements$$6_headStr_jsString$$ = goog.dom.getElementsByClass("editable-style", $bodyElement$$28_styleStr$$);
+    goog.array.forEach($components_cssTag_elements$$6_headStr_jsString$$, function($element$$) {
       var $fragment$$3_href$$ = $element$$.getAttribute("data-silex-href");
       $fragment$$3_href$$ && ($element$$.setAttribute("href", $fragment$$3_href$$), $element$$.removeAttribute("data-silex-href"), $fragment$$3_href$$ = goog.dom.getOuterHtml($element$$), $fragment$$3_href$$ = "<a" + $fragment$$3_href$$.substring(4, $fragment$$3_href$$.length - 6) + "</a>", $fragment$$3_href$$ = goog.dom.htmlToDocumentFragment($fragment$$3_href$$), goog.dom.insertSiblingBefore($fragment$$3_href$$, $element$$), goog.dom.removeNode($element$$))
     }, this);
-    var $components_elements$$ = goog.dom.getElementsByClass("editable-style", $bodyElement$$28_styleStr$$), $elementIdx$$ = 0;
-    goog.array.forEach($components_elements$$, function($element$$) {
+    var $components_cssTag_elements$$6_headStr_jsString$$ = goog.dom.getElementsByClass("editable-style", $bodyElement$$28_styleStr$$), $elementIdx$$ = 0;
+    goog.array.forEach($components_cssTag_elements$$6_headStr_jsString$$, function($element$$) {
       var $className$$ = "silex-" + $element$$.getAttribute(silex.model.Element.TYPE_ATTR);
       goog.dom.classes.add($element$$, $className$$);
       $className$$ = "element-" + $elementIdx$$++;
@@ -21367,26 +21373,32 @@ silex.model.File.prototype.cleanup = function $silex$model$File$$cleanup$($cbk$$
         "" != $elementCssStr$$ && ($elementCssStr$$ += ", ");
         $elementCssStr$$ += $className$$
       }, this);
-      $elementCssStr$$ += "{\n\t" + silex.utils.Style.styleToString($cssData$$.styles) + "\n}";
+      $elementCssStr$$ += "{\n\t" + $cssData$$.styles + "\n}";
       $cssStr$$ += "\n" + $elementCssStr$$
     }, this);
     $cssStr$$.replace("; ", ";\n\t");
-    $bodyStr$$1_headElement$$26_html$$ = "<html>" + ('<head><link href="css/styles.css" rel="stylesheet">' + $bodyStr$$1_headElement$$26_html$$.innerHTML + "</head>");
+    if($components_cssTag_elements$$6_headStr_jsString$$ = goog.dom.getElementByClass(silex.model.Head.SILEX_STYLE_ELEMENT_ID, $bodyStr$$1_headElement$$26_html$$)) {
+      $cssStr$$ += $components_cssTag_elements$$6_headStr_jsString$$.innerHTML, goog.dom.removeNode($components_cssTag_elements$$6_headStr_jsString$$)
+    }
+    var $components_cssTag_elements$$6_headStr_jsString$$ = "", $scriptTag$$ = goog.dom.getElementByClass(silex.model.Head.SILEX_SCRIPT_ELEMENT_ID, $bodyStr$$1_headElement$$26_html$$);
+    $scriptTag$$ && ($components_cssTag_elements$$6_headStr_jsString$$ = $scriptTag$$.innerHTML, goog.dom.removeNode($scriptTag$$));
+    $bodyStr$$1_headElement$$26_html$$ = "<html>" + ("<head>      " + $bodyStr$$1_headElement$$26_html$$.innerHTML + '      <link href="css/styles.css" rel="stylesheet">      <script src="js/script.js" type="text/javascript">\x3c/script>  </head>');
     $bodyStr$$1_headElement$$26_html$$ += "<body>" + $bodyElement$$28_styleStr$$.innerHTML + "</body>";
     $bodyStr$$1_headElement$$26_html$$ += "</html>";
-    $cbk$$($bodyStr$$1_headElement$$26_html$$, $cssStr$$, $files$$)
+    $cbk$$($bodyStr$$1_headElement$$26_html$$, $cssStr$$, $components_cssTag_elements$$6_headStr_jsString$$, $files$$)
   }else {
     $opt_errCbk$$ && $opt_errCbk$$({message:"The file must be saved before I can clean it up for you."})
   }
 };
-silex.model.File.prototype.filterBgImage = function $silex$model$File$$filterBgImage$($absolute$$3_baseUrl$$, $files$$, $match$$11_relative$$, $group1$$9_newRelativePath$$, $group2$$9_res$$) {
-  $absolute$$3_baseUrl$$ = silex.utils.Url.getAbsolutePath($group2$$9_res$$, $absolute$$3_baseUrl$$);
-  $match$$11_relative$$ = silex.utils.Url.getRelativePath($absolute$$3_baseUrl$$, silex.utils.Url.getBaseUrl());
-  silex.utils.Url.isAbsoluteUrl($match$$11_relative$$) || ($match$$11_relative$$ = $match$$11_relative$$.replace("../", "/"));
-  $group1$$9_newRelativePath$$ = "assets/" + $absolute$$3_baseUrl$$.substr($absolute$$3_baseUrl$$.lastIndexOf("/") + 1);
-  $group2$$9_res$$ = "url('../" + $group1$$9_newRelativePath$$ + "')";
-  $files$$.push({url:$absolute$$3_baseUrl$$, destPath:$group1$$9_newRelativePath$$, srcPath:$match$$11_relative$$});
-  return $group2$$9_res$$
+silex.model.File.prototype.filterBgImage = function $silex$model$File$$filterBgImage$($baseUrl$$, $files$$, $match$$, $group1$$, $group2$$) {
+  0 === $group2$$.indexOf("'") && ($group2$$ = $group2$$.substr(1));
+  $group2$$.lastIndexOf("'") === $group2$$.length - 1 && ($group2$$ = $group2$$.substr(0, $group2$$.length - 1));
+  var $absolute$$ = silex.utils.Url.getAbsolutePath($group2$$, $baseUrl$$), $relative$$ = silex.utils.Url.getRelativePath($absolute$$, silex.utils.Url.getBaseUrl());
+  console.log(arguments, $relative$$, $absolute$$);
+  silex.utils.Url.isAbsoluteUrl($relative$$) || ($relative$$ = $relative$$.replace("../", "/"));
+  var $newRelativePath$$ = "assets/" + $absolute$$.substr($absolute$$.lastIndexOf("/") + 1), $res$$ = "url('../" + $newRelativePath$$ + "')";
+  $files$$.push({url:$absolute$$, destPath:$newRelativePath$$, srcPath:$relative$$});
+  return $res$$
 };
 silex.App = function $silex$App$() {
   silex.service.Tracker.getInstance().trackAction("app-events", "start", null, 2);

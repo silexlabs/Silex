@@ -85,6 +85,7 @@ silex.model.File.prototype.setHtml = function(rawHtml) {
   // deal with absolute urls
   if (this.getUrl()){
     var baseUrl = silex.utils.Url.getBaseUrl(this.getUrl());
+    console.log('setHtml', this.getUrl(), baseUrl);
     bodyHtml = silex.utils.Url.relative2absolute(bodyHtml, baseUrl);
   }
   // update model
@@ -238,8 +239,9 @@ silex.model.File.prototype.setUrl = function(url) {
  */
 silex.model.File.prototype.publish = function(url, cbk, opt_errCbk) {
   this.cleanup(
-      goog.bind(function(html, css, files) {
-        silex.service.SilexTasks.getInstance().publish(url, html, css, files, cbk, opt_errCbk);
+      goog.bind(function(html, css, js, files) {
+        console.log(js);
+        silex.service.SilexTasks.getInstance().publish(url, html, css, js, files, cbk, opt_errCbk);
       }, this),
       goog.bind(function(error) {
         console.error('publish cleanup error', error);
@@ -283,6 +285,7 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
     }
     return;
   }
+  // images to download and put to assets/
   var baseUrl = silex.utils.Url.getBaseUrl(this.getUrl());  // image source
   bodyStr = bodyStr.replace(/<img[^"]*src="?([^" ]*)"/g, function(match, group1, group2) {
     var absolute = silex.utils.Url.getAbsolutePath(group1, baseUrl);
@@ -295,17 +298,17 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
     var newRelativePath = 'assets/' + fileName;
     files.push({
       url: absolute
-, destPath: newRelativePath
-, srcPath: relative
+      , destPath: newRelativePath
+      , srcPath: relative
     });
     var res = match.replace(group1, newRelativePath);
     return res;
   });
   // background-image / url(...)
-  bodyStr = bodyStr.replace(/url\((['"])(.+?)\1\)/g, goog.bind(function(match, group1, group2) {
+  bodyStr = bodyStr.replace(/url\(()(.+?)\1\)/g, goog.bind(function(match, group1, group2) {
     return this.filterBgImage(baseUrl, files, match, group1, group2);
   }, this));
-  // css
+  // css to download and put to css/
   headStr = headStr.replace(/href="?([^" ]*)"/g, function(match, group1, group2) {
     var preventDownload = false;
     var absolute = silex.utils.Url.getAbsolutePath(group1, baseUrl);
@@ -325,15 +328,15 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
       var newRelativePath = 'css/' + fileName;
       files.push({
         url: absolute
-, destPath: newRelativePath
-, srcPath: relative
+        , destPath: newRelativePath
+        , srcPath: relative
       });
       var res = match.replace(group1, newRelativePath);
       return res;
     }
     return match;
   });
-  // scripts
+  // scripts to download and put to js/
   headStr = headStr.replace(/src="?([^"]*)"/g, function(match, group1, group2) {
     var preventDownload = false;
     var absolute = silex.utils.Url.getAbsolutePath(group1, baseUrl);
@@ -353,8 +356,8 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
       var newRelativePath = 'js/' + fileName;
       files.push({
         url: absolute
-, destPath: newRelativePath
-, srcPath: relative
+        , destPath: newRelativePath
+        , srcPath: relative
       });
       var res = match.replace(group1, newRelativePath);
       return res;
@@ -451,25 +454,51 @@ this does nothing: node.style.backgroundImage = "url('" + info.destPath + "')";
       elementCssStr += className;
     }, this);
     // compute styles
-    elementCssStr += '{\n\t' + silex.utils.Style.styleToString(cssData.styles) + '\n}';
+    elementCssStr += '{\n\t' + cssData.styles + '\n}';
     cssStr += '\n' + elementCssStr;
   }, this);
   // format css
   cssStr.replace('; ', ';\n\t');
+  // add head css
+  var cssTag = goog.dom.getElementByClass(
+    silex.model.Head.SILEX_STYLE_ELEMENT_ID,
+    headElement);
+  if (cssTag){
+    cssStr += cssTag.innerHTML;
+    goog.dom.removeNode(cssTag);
+  }
+
+  // js script
+  var jsString = '';
+  var scriptTag = goog.dom.getElementByClass(
+    silex.model.Head.SILEX_SCRIPT_ELEMENT_ID,
+    headElement);
+  if (scriptTag){
+    jsString = scriptTag.innerHTML;
+    goog.dom.removeNode(scriptTag);
+  }
 
   // final html page
   var html = '';
   html += '<html>';
-  html += '<head><link href="css/styles.css" rel="stylesheet">' + headElement.innerHTML + '</head>';
+  html += '<head>\
+      ' + headElement.innerHTML + '\
+      <link href="css/styles.css" rel="stylesheet">\
+      <script src="js/script.js" type="text/javascript"></script>\
+  </head>';
   html += '<body>' + bodyElement.innerHTML + '</body>';
   html += '</html>';
 
   // callback
-  cbk(html, cssStr, files);
+  cbk(html, cssStr, jsString, files);
 };
 silex.model.File.prototype.filterBgImage = function(baseUrl, files, match, group1, group2) {
+  // remove the ''
+  if (group2.indexOf("'") === 0) group2 = group2.substr(1);
+  if (group2.lastIndexOf("'") === group2.length-1) group2 = group2.substr(0, group2.length-1);
   var absolute = silex.utils.Url.getAbsolutePath(group2, baseUrl);
   var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
+  console.log(arguments, relative, absolute);
   // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
   if (!silex.utils.Url.isAbsoluteUrl(relative)) {
     relative = relative.replace('../', '/');
@@ -479,8 +508,8 @@ silex.model.File.prototype.filterBgImage = function(baseUrl, files, match, group
   var res = "url('../" + newRelativePath + "')";
   files.push({
     url: absolute
-, destPath: newRelativePath
-, srcPath: relative
+    , destPath: newRelativePath
+    , srcPath: relative
   });
   return res;
 };
