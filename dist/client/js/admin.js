@@ -21322,12 +21322,12 @@ silex.model.File.prototype.cleanup = function $silex$model$File$$cleanup$($cbk$$
   silex.utils.EditablePlugin.setEditable(this.bodyElement, !0);
   var $components_cssTag_elements$$6_headStr_jsString$$ = this.headElement.innerHTML, $cssArray$$ = [], $files$$ = [];
   if(this.getUrl()) {
-    var $baseUrl$$ = silex.utils.Url.getBaseUrl(this.getUrl()), $bodyStr$$1_headElement$$26_html$$ = $bodyStr$$1_headElement$$26_html$$.replace(/<img[^"]*src="?([^" ]*)"/g, function($match$$, $group1$$, $absolute_group2$$) {
-      $absolute_group2$$ = silex.utils.Url.getAbsolutePath($group1$$, $baseUrl$$);
-      var $relative$$ = silex.utils.Url.getRelativePath($absolute_group2$$, silex.utils.Url.getBaseUrl());
+    var $baseUrl$$ = silex.utils.Url.getBaseUrl(this.getUrl()), $bodyStr$$1_headElement$$26_html$$ = $bodyStr$$1_headElement$$26_html$$.replace(/<img[^"]*src="?([^" ]*)"/g, function($match$$, $group1$$, $group2$$) {
+      var $absolute$$ = silex.utils.Url.getAbsolutePath($group1$$, $baseUrl$$), $relative$$ = silex.utils.Url.getRelativePath($absolute$$, silex.utils.Url.getBaseUrl());
+      console.log(arguments, $relative$$, $absolute$$);
       silex.utils.Url.isAbsoluteUrl($relative$$) || ($relative$$ = $relative$$.replace("../", "/"));
-      var $newRelativePath$$ = "assets/" + $absolute_group2$$.substr($absolute_group2$$.lastIndexOf("/") + 1);
-      $files$$.push({url:$absolute_group2$$, destPath:$newRelativePath$$, srcPath:$relative$$});
+      var $newRelativePath$$ = "assets/" + $absolute$$.substr($absolute$$.lastIndexOf("/") + 1);
+      $files$$.push({url:$absolute$$, destPath:$newRelativePath$$, srcPath:$relative$$});
       return $match$$.replace($group1$$, $newRelativePath$$)
     }), $bodyStr$$1_headElement$$26_html$$ = $bodyStr$$1_headElement$$26_html$$.replace(/url\(()(.+?)\1\)/g, goog.bind(function($match$$, $group1$$, $group2$$) {
       return this.filterBgImage($baseUrl$$, $files$$, $match$$, $group1$$, $group2$$)
