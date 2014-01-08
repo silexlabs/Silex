@@ -55,14 +55,14 @@ silex.model.Head.SILEX_SCRIPT_ELEMENT_ID = 'silex-script';
  */
 silex.model.Head.prototype.getHeadScript = function() {
   // get silex scripts from the DOM
-  var silexScript = goog.dom.getElementByClass(
+  var scriptTag = goog.dom.getElementByClass(
     silex.model.Head.SILEX_SCRIPT_ELEMENT_ID,
     this.headElement);
-  if (!silexScript){
+  if (!scriptTag){
     console.warn('no silex editable styles defined');
     return '';
   }
-  return silexScript.innerHTML;
+  return scriptTag.innerHTML;
 }
 
 
@@ -71,17 +71,17 @@ silex.model.Head.prototype.getHeadScript = function() {
  * @param {string} jsString   the string defining Silex script
  */
 silex.model.Head.prototype.setHeadScript = function(jsString) {
-  var silexScript = goog.dom.getElementByClass(
+  var scriptTag = goog.dom.getElementByClass(
     silex.model.Head.SILEX_SCRIPT_ELEMENT_ID,
     this.headElement);
 
-  if (!silexScript){
-    silexScript = goog.dom.createElement('script');
-    silexScript.type = 'text/javascript';
-    silexScript.className = silex.model.Head.SILEX_SCRIPT_ELEMENT_ID;
-    goog.dom.appendChild(this.headElement, silexScript);
+  if (!scriptTag){
+    scriptTag = goog.dom.createElement('script');
+    scriptTag.type = 'text/javascript';
+    scriptTag.className = silex.model.Head.SILEX_SCRIPT_ELEMENT_ID;
+    goog.dom.appendChild(this.headElement, scriptTag);
   }
-  silexScript.innerHTML = jsString;
+  scriptTag.innerHTML = jsString;
 }
 
 

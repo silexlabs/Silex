@@ -36,11 +36,11 @@ goog.addSingletonGetter(silex.service.SilexTasks);
 /**
  * publish a website to a given folder
  */
-silex.service.SilexTasks.prototype.publish = function(path, html, css, files, cbk, opt_errCbk) {
+silex.service.SilexTasks.prototype.publish = function(path, html, css, js, files, cbk, opt_errCbk) {
   // check inputs
-  if (!path || !html || !css || !files) {
-    console.error('Param path, html, css or files missing');
-    if (opt_errCbk) opt_errCbk('Param path, html, css or files missing');
+  if (goog.isNull(path) || goog.isNull(html) || goog.isNull(css) || goog.isNull(js) || goog.isNull(files)) {
+    console.error('Param path, html, css, js or files missing');
+    if (opt_errCbk) opt_errCbk('Param path, html, css, js or files missing');
     return;
   }
   var url = '/silex/tasks/publish';
@@ -48,6 +48,7 @@ silex.service.SilexTasks.prototype.publish = function(path, html, css, files, cb
   qd.add('path', path);
   qd.add('html', html);
   qd.add('css', css);
+  qd.add('js', js);
   qd.add('files', JSON.stringify(files));
   goog.net.XhrIo.send(url, function(e) {
     // success of the request

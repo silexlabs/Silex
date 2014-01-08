@@ -9,13 +9,14 @@ router = require('unifile/lib/core/router.js');
  * route the call to a silex task
  */
 exports.route = function(cbk, req, res, next, task){
+    console.log('route');
 	switch(task){
 		case 'publish':
 			exports.publish(function(result){
 				// just log the result
 		        if (!result) result = {success:true};
 		        console.log('silex task result', result);
-		    }, req, res, next, req.body.path, req.body.html, req.body.css, JSON.parse(req.body.files));
+		    }, req, res, next, req.body.path, req.body.html, req.body.css, req.body.js, JSON.parse(req.body.files));
 			// imediately returns success, to avoid timeout
 		    cbk();
 		break;
@@ -25,6 +26,7 @@ exports.route = function(cbk, req, res, next, task){
  * create folders needed for publishing
  */
 exports.createFolders = function(req, res, next, folders, errCbk, cbk){
+    console.log('createFolder');
 	if (folders.length>0){
 		var folder = folders.shift();
 		folder = folder.replace('/exec/put/', '/exec/mkdir/')
@@ -42,18 +44,20 @@ exports.createFolders = function(req, res, next, folders, errCbk, cbk){
  * copy assets and files to and from unifile services
  * write css and html data to a unifile service
  */
-exports.publish = function(cbk, req, res, next, path, html, css, files){
+exports.publish = function(cbk, req, res, next, path, html, css, js, files){
+    console.log('publish');
 	// check inputs
-	if (!cbk || !req || !res || !next || !path || !html || !css || !files){
-		console.error('All attributes needed: cbk, req, res, next, path, html, css, files', !!cbk, !!req, !!res, !!next, !!path, !!html, !!css, !!files)
+	if (cbk === undefined || req === undefined || res === undefined || next === undefined || path === undefined || html === undefined || css === undefined || js === undefined || files === undefined){
+		console.error('All attributes needed: cbk, req, res, next, path, html, css, js, files', !!cbk, !!req, !!res, !!next, !!path, !!html, !!css, !!js, !!files)
 		cbk({
 			success: false
-			, code: 'All attributes needed: cbk, req, res, next, path, html, css, files ('+(!!cbk)+', '+(!!req)+', '+(!!res)+', '+(!!next)+', '+(!!path)+', '+(!!html)+', '+(!!css)+', '+(!!files)+')'
+			, code: 'All attributes needed: cbk, req, res, next, path, html, css, js, files ('+(!!cbk)+', '+(!!req)+', '+(!!res)+', '+(!!next)+', '+(!!path)+', '+(!!html)+', '+(!!css)+', '+(!!js)+', '+(!!files)+')'
 		});
 		return;
 	}
 	// folder to store files
 	exports.createFolders(req, res, next, [path + '/js', path + '/css', path + '/assets'], cbk, function (){
+        console.log('xxx');
 		// get all files data and copy it to destination service
 		exports.publishFiles(req, res, next, files, path, function(error){
 			if (error){
@@ -63,35 +67,47 @@ exports.publish = function(cbk, req, res, next, path, html, css, files){
 			else{
 				// write the css
 		    	exports.writeFileToService(req, res, next, path + '/css/styles.css', css, function (error){
-		    		if(error){
+                    console.log('xxx css', error);
+            if(error){
 		    			cbk({success:false, code: error.code});
 		    		}
 		    		else{
-						// write the html
-				    	exports.writeFileToService(req, res, next, path + '/index.html', html, function (error){
-				    		if(error){
-				    			cbk({success:false, code: error.code});
-				    		}
-				    		else{
-				    			cbk();
-				    		}
-						});
-		    		}
-		    	});
-			}
-		});
+                if (js === '') js = '/* */';
+                console.log('about to write ', js, 'to ', path + '/js/script.js');
+                    // write the js
+                    exports.writeFileToService(req, res, next, path + '/js/script.js', js, function (error){
+                      console.log('xxx js', error);
+                        if(error){
+                            cbk({success:false, code: error.code});
+                        }
+                        else{
+                            // write the html
+                            exports.writeFileToService(req, res, next, path + '/index.html', html, function (error){
+                                if(error){
+                                    cbk({success:false, code: error.code});
+                                }
+                                else{
+                                    cbk();
+                                }
+                            });
+                        }
+                    });
+			     }
+            });
+	 	  }
+	  });
 	});
-
 }
 /**
  * get all files data and copy it to destination service
  */
 exports.publishFiles = function(req, res, next, files, dstPath, cbk){
-	if(files.length>0){
-		var file = files.shift();
+  if(files.length>0){
+    var file = files.shift();
+    console.log('publishFiles', file.srcPath);
 		exports.getFile(req, res, next, file.srcPath, dstPath + '/' + file.destPath, function (error) {
 			if (error){
-				console.error('Error in getFile', error);
+				console.error('Error in getFile', error, file.srcPath);
 				cbk({success:false, code: error.code});
 			}
 			else{
@@ -166,9 +182,9 @@ exports.getFileFromService = function(req, res, next, srcPath, dstPath, cbk){
 		    });
     	}
     	else{
-            console.error('Error, no data in result of '+serviceName);
+            console.error('Error, no data in result of getFileFromService for ' + srcPath);
             cbk({
-            	code: 'Error, no data in result of '+serviceName
+            	code: 'Error, no data in result of getFileFromService for ' + srcPath
             });
     	}
     });

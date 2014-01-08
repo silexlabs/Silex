@@ -9,21 +9,25 @@ BUGS
 !!!! update front-end.css
 
 bugs
-* !! publication
+* save before publish
+* publication dialog centered
+* bg text editor should never be transparent
 * focus stays on text fiels when click on stage
 * all front-end.css should be in head section
 * notifications?
-* ancres html?
+* travis + build on heroku (no more commit build)
 !!!! update front-end.css
 
 * css class to prevent edit (no-resize-w, no-move, no-edit ...) - Class css pour lock w/h/x/y... Display none  de l ui
 * open a non-silex site => warn
-* ?? New site => BG size depends on the stage size
 * esc = deselect
 * lorem ipsum do not send change event
 * zindex negatif d'un élément "sous" le BG => non sélectionnable
+* ancres html?
+* ?? New site => BG size depends on the stage size
 * file::isDirty => message to prevent quit
 
+retro compat texts in containers?
 
 URGENT
 
