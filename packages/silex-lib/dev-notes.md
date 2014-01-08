@@ -9,9 +9,10 @@ BUGS
 !!!! update front-end.css
 
 bugs
+* bg text editor should never be transparent
+* body 100% of viewport
 * save before publish
 * publication dialog centered
-* bg text editor should never be transparent
 * focus stays on text fiels when click on stage
 * all front-end.css should be in head section
 * notifications?
