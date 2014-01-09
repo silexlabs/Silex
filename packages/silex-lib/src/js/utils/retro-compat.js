@@ -33,7 +33,7 @@ silex.utils.RetroCompat = function() {
  * retrocompatibility process takes place after opening a file
  */
 silex.utils.RetroCompat.process = function(bodyElement, headElement) {
-  // handle older style system
+  // handle older style system (2.0)
   $('[data-style-normal]', bodyElement).each(function() {
     this.setAttribute('style', this.getAttribute('data-style-normal'));
     this.removeAttribute('data-style-normal');
@@ -44,19 +44,27 @@ silex.utils.RetroCompat.process = function(bodyElement, headElement) {
   $('[data-style-pressed]', bodyElement).each(function() {
     this.removeAttribute('data-style-pressed');
   });
-  // retorcompat silex-sub-type
+  // retorcompat silex-sub-type (2.0)
   $('[data-silex-sub-type]', bodyElement).each(function() {
     this.setAttribute('data-silex-type', this.getAttribute('data-silex-sub-type'));
     this.removeAttribute('data-silex-sub-type');
   });
-  // retorcompat silex links with #!
+  // old page system (2.0)
+  // <meta name="page" content="page1">
+  $('meta[name="page"]', headElement).each(function() {
+    var pageName = this.getAttribute('content');
+    console.log('meta page', pageName);
+    $(bodyElement).append('<a id="'+pageName+'" data-silex-type="page">'+pageName+'</a>');
+    $(this).remove();
+  });
+  // retorcompat silex links with #! (2.0)
   $('[href]', bodyElement).each(function() {
     var href = this.getAttribute('href');
     if (href.indexOf('#') === 0 && href.indexOf('#!') !== 0){
       this.setAttribute('href', href.substr(2));
     }
   });
-  // css class on elements with [type]-element
+  // css class on elements with [type]-element (2.0)
   $('[data-silex-type]', bodyElement).each(function() {
     $(this).addClass(this.getAttribute('data-silex-type') + '-element');
   });

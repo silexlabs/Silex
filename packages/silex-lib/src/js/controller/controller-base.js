@@ -505,9 +505,10 @@ silex.controller.ControllerBase.prototype.openFile = function(opt_cbk, opt_error
     goog.bind(function(url) {
       this.model.file.open(url, goog.bind(function(rawHtml) {
         this.model.file.setHtml(rawHtml);
-        this.fileOperationSuccess(this.model.head.getTitle() + ' opened.', true)
         // handle retrocompatibility issues
         silex.utils.RetroCompat.process(this.model.body.bodyElement, this.model.head.headElement);
+        // display and redraw
+        this.fileOperationSuccess(this.model.head.getTitle() + ' opened.', true)
         // QOS, track success
         this.tracker.trackAction('controller-events', 'success', 'file.open', 1);
         if(opt_cbk) opt_cbk();
@@ -572,7 +573,7 @@ silex.controller.ControllerBase.prototype.save = function(opt_url, opt_cbk, opt_
  * success of an operation involving changing the file model
  */
 silex.controller.ControllerBase.prototype.fileOperationSuccess = function(opt_message, opt_updateTools) {
-
+console.log(arguments);
   // update tools
   if (opt_updateTools){
     // find default first page

@@ -148,6 +148,7 @@ File
 Edition
 
 * copy/cut/paste
+* manual z-index (bring to front/back instead of change the z-index on drop)
 * undo/redo
 
   * Ids set on all silex elements

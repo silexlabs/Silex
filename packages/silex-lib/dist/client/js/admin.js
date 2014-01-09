@@ -412,6 +412,12 @@ silex.utils.RetroCompat.process = function $silex$utils$RetroCompat$process$($bo
     this.setAttribute("data-silex-type", this.getAttribute("data-silex-sub-type"));
     this.removeAttribute("data-silex-sub-type")
   });
+  $('meta[name="page"]', $headElement$$).each(function() {
+    var $pageName$$ = this.getAttribute("content");
+    console.log("meta page", $pageName$$);
+    $($bodyElement$$).append('<a id="' + $pageName$$ + '" data-silex-type="page">' + $pageName$$ + "</a>");
+    $(this).remove()
+  });
   $("[href]", $bodyElement$$).each(function() {
     var $href$$ = this.getAttribute("href");
     0 === $href$$.indexOf("#") && 0 !== $href$$.indexOf("#!") && this.setAttribute("href", $href$$.substr(2))
@@ -779,8 +785,8 @@ silex.controller.ControllerBase.prototype.openFile = function $silex$controller$
   this.view.fileExplorer.openDialog(goog.bind(function($url$$) {
     this.model.file.open($url$$, goog.bind(function($rawHtml$$) {
       this.model.file.setHtml($rawHtml$$);
-      this.fileOperationSuccess(this.model.head.getTitle() + " opened.", !0);
       silex.utils.RetroCompat.process(this.model.body.bodyElement, this.model.head.headElement);
+      this.fileOperationSuccess(this.model.head.getTitle() + " opened.", !0);
       this.tracker.trackAction("controller-events", "success", "file.open", 1);
       $opt_cbk$$ && $opt_cbk$$()
     }, this), goog.bind(function($error$$) {
@@ -813,6 +819,7 @@ silex.controller.ControllerBase.prototype.save = function $silex$controller$Cont
   }, this), {mimetype:"text/html"})
 };
 silex.controller.ControllerBase.prototype.fileOperationSuccess = function $silex$controller$ControllerBase$$fileOperationSuccess$($opt_message$$, $opt_updateTools$$) {
+  console.log(arguments);
   if($opt_updateTools$$) {
     var $pages$$ = silex.utils.PageablePlugin.getPages();
     silex.utils.PageablePlugin.setCurrentPage($pages$$[0]);

@@ -11,8 +11,9 @@ BUGS
 bugs
 * bg text editor should never be transparent
 * body 100% of viewport
-* save before publish
+* retro compat: site de la pote de nico
 * publication dialog centered
+* save before publish
 * focus stays on text fiels when click on stage
 * all front-end.css should be in head section
 * notifications?
