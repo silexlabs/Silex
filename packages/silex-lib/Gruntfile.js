@@ -41,6 +41,7 @@ module.exports = function(grunt) {
 
   grunt.task.renameTask('watch', 'doWatch')
 
+  grunt.registerTask('heroku', ['deploy']);
   grunt.registerTask('deploy', ['debugDeploy', 'releaseDeploy']);
   grunt.registerTask('releaseDeploy', ['concat', 'less:production', 'jade:release', 'closureBuilder:release']);
   grunt.registerTask('debugDeploy', ['concat', 'less:development', 'jade:debug', 'closureBuilder:debug', 'append-sourcemapping']);
