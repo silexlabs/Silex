@@ -68,5 +68,6 @@
     , "deploy": "grunt deploy"
     , "watch": "grunt watch"
     , "test": "grunt test"
+    , "postinstall": "./node_modules/grunt/bin/grunt deploy"
   }
 }
