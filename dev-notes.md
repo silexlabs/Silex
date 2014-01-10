@@ -9,7 +9,8 @@ BUGS
 !!!! update front-end.css
 
 bugs
-* retro compat: site de la pote de nico
+* mettre en ligne pageable
+* page-element is used for pages and elements + probleme dans backward compat?
 * publication dialog centered
 * save before publish
 * focus stays on text fiels when click on stage
