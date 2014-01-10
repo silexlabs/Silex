@@ -21,7 +21,7 @@ goog.provide('silex.controller.ControllerBase');
 
 goog.require('silex.utils.Notification');
 goog.require('silex.utils.PageablePlugin');
-goog.require('silex.utils.RetroCompat');
+goog.require('silex.utils.BackwardCompat');
 
 /**
  * @constructor
@@ -503,7 +503,7 @@ silex.controller.ControllerBase.prototype.openFile = function(opt_cbk, opt_error
       this.model.file.open(url, goog.bind(function(rawHtml) {
         this.model.file.setHtml(rawHtml);
         // handle retrocompatibility issues
-        silex.utils.RetroCompat.process(this.model.body.bodyElement, this.model.head.headElement);
+        silex.utils.BackwardCompat.process(this.model.body.bodyElement, this.model.head.headElement);
         // display and redraw
         this.fileOperationSuccess(this.model.head.getTitle() + ' opened.', true)
         // QOS, track success

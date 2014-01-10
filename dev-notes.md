@@ -9,7 +9,6 @@ BUGS
 !!!! update front-end.css
 
 bugs
-* bg text editor should never be transparent
 * retro compat: site de la pote de nico
 * publication dialog centered
 * save before publish

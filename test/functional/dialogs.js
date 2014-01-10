@@ -5,7 +5,7 @@ var assert = require('assert')
 describe('Silex dialogs', function() {
 
 before(function(done) {
-    this.timeout(30000);
+    this.timeout(60000);
     helper.startSelenium(function (_) {
         // open silex
         helper.driver.get('http://localhost:6805/silex/index.html').then(function () {
@@ -41,6 +41,19 @@ it('should be able to open the file explorer dialog', function(done) {
         return isDisplayed;
     });
 });
+/*
+it('should open the login popup', function(done) {
+    // click
+    helper.driver.findElement(helper.webdriver.By.css('img[title="Edit files on the server where Silex is installed."]')).click();
+    helper.driver.findElement(helper.webdriver.By.linkText("CLICK HERE")).click();
+    console.log('xxxx 1');
+    // check visibility
+    helper.driver.selectWindow('authPopup').then(function () {
+      console.log('AAAAA ', arguments);
+    });
+    console.log('xxxx 2');
+});
+*/
 it('should be able to close the file explorer dialog', function(done) {
     // click on close
     helper.driver.findElement(helper.webdriver.By.className('silex-fileexplorer'))
@@ -57,7 +70,7 @@ it('should be able to close the file explorer dialog', function(done) {
     });
 });
 after(function(done) {
-   this.timeout(30000);
+   this.timeout(60000);
     // shut down selenium
     helper.stopSelenium(function () {
         done();

@@ -71,7 +71,7 @@ silex.utils.PageablePlugin.PAGEABLE_ROOT_CLASS_NAME = 'pageable-root-class';
  * @const
  * @type {string}
  */
-silex.utils.PageablePlugin.PAGE_CLASS_NAME = 'silex-page';
+silex.utils.PageablePlugin.PAGE_CLASS_NAME = 'page-element';
 
 
 /**
