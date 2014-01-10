@@ -10,7 +10,6 @@ BUGS
 
 bugs
 * bg text editor should never be transparent
-* body 100% of viewport
 * retro compat: site de la pote de nico
 * publication dialog centered
 * save before publish
