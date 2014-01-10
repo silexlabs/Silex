@@ -17,6 +17,7 @@ Uses:
   $ grunt test -phantomjs
   $ grunt test -firefox
   $ grunt test -chrome
+  $ grunt doWatch:test
 
 * fix style with google fix style (indentation etc)
 
@@ -54,7 +55,7 @@ module.exports = function(grunt) {
   grunt.registerTask('watch', 'Start Silex', function () {
     grunt.task.run([
         'runDebug',
-        'doWatch'
+        'doWatch:main'
     ]);
   });
   grunt.registerTask('run', 'Start Silex', function () {
@@ -218,9 +219,13 @@ module.exports = function(grunt) {
           livereload: true
           , atBegin: true
         }
-        , all: {
+        , main: {
             files: ['src/js/**/*.js', 'dist/server/**/*.js', 'src/css/*.css', 'src/css/*.less', 'src/html/**/*.jade', 'dist/client/**/*.html', 'Gruntfile.js']
             , tasks: ['debugDeploy', 'run']
+        }
+        , test: {
+            files: ['test/**/*.js', 'src/js/**/*.js', 'dist/server/**/*.js', 'src/css/*.css', 'src/css/*.less', 'src/html/**/*.jade', 'dist/client/**/*.html', 'Gruntfile.js']
+            , tasks: ['simplemocha']
         }
     }
     , simplemocha: {
