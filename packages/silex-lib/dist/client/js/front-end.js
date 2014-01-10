@@ -25,7 +25,8 @@ $(function() {
    */
   $( 'body' ).pageable({
     currentPage: firstPageName,
-    useDeeplink:true
+    useDeeplink:true,
+    pageClass: 'page-element'
   });
   /**
    * silex links
@@ -33,48 +34,6 @@ $(function() {
   $('[data-silex-href]').click(function () {
     window.location.href = this.getAttribute('data-silex-href');
   });
-  /**
-   * apply the default style to all elements
-   */
-  $('[data-style-normal]').each(function () {
-    silexSetState(this, 'normal')
-  });
-  /**
-   * handle states depending on mouse events
-   */
-  $('[data-style-normal]').mouseout(function () {
-    silexSetState(this, 'normal');
-  });
-  $('[data-style-hover]').mouseover(function () {
-    silexSetState(this, 'hover');
-  });
-  $('[data-style-pressed]').mousedown(function () {
-    silexSetState(this, 'pressed');
-    $(this).mouseup(function () {
-      if (this.getAttribute('data-style-hover'))
-        silexSetState(this, 'hover');
-      else
-        silexSetState(this, 'normal');
-    });
-  });
-  /**
-   * set silex state to an element, e.g. normal, hover, pressed states
-   */
-  function silexSetState (element, state) {
-    // apply normal style first
-    element.setAttribute('style', element.getAttribute('data-style-normal'));
-
-    // apply specific style
-    if (state != 'normal'){
-      var stylesStr = element.getAttribute('data-style-'+state).split(';');
-      var styles = {};
-      for (var idx=0; idx<stylesStr.length; idx++){
-        var pair = stylesStr[idx].split(':');
-        styles[pair[0]] = pair[1];
-      }
-      $(element).css(styles);
-    }
-  }
   /**
    * resize body to the size of its content
    */
