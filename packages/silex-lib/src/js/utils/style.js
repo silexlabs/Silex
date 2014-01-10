@@ -115,6 +115,88 @@ silex.utils.Style.stringToStyle = function(styleStr) {
 
 
 /**
+ * Compute background color
+ * Takes the opacity of the backgrounds into account
+ * Recursively compute parents background colors
+ * @param {element} element the element which bg color we want
+ * @return {!goog.color.Rgb} the element bg color
+ */
+silex.utils.Style.computeBgColor = function(element) {
+ var parentColorArray;
+  // retrieve the parents blended colors
+  if(!goog.dom.classes.has(element, 'silex-stage-body')){
+    parentColorArray = silex.utils.Style.computeBgColor(element.parentNode);
+  }
+  else{
+    parentColorArray = null;
+  }
+   // rgba array
+  var elementColorArray;
+  if (element && element.style && element.style.backgroundColor && element.style.backgroundColor != ''){
+    var elementColorStr = element.style.backgroundColor;
+    // convert bg color from rgba to array
+    if (elementColorStr.indexOf('rgba') >= 0){
+      // rgba case
+      alpha = parseFloat(elementColorStr.substring(
+        elementColorStr.lastIndexOf(',') + 1,
+        elementColorStr.lastIndexOf(')')));
+      elementColorStr = elementColorStr.replace('rgba', 'rgb');
+      elementColorStr = elementColorStr.substring(0,
+        elementColorStr.lastIndexOf(',')) + ')';
+      elementColorArray = goog.color.hexToRgb(goog.color.parse(elementColorStr).hex);
+      elementColorArray.push(alpha);
+    }
+    else if (elementColorStr.indexOf('transparent') >= 0){
+      // transparent case
+      elementColorArray = null;
+    }
+    else if (elementColorStr.indexOf('rgb') >= 0){
+      // rgb case
+      elementColorArray = goog.color.hexToRgb(
+        goog.color.parse(elementColorStr).hex
+      );
+      elementColorArray.push(1);
+    }
+    else{
+      // hex case
+      elementColorArray = goog.color.hexToRgb(elementColorStr);
+      elementColorArray.push(1);
+    }
+  }
+  else{
+    console.warn('was not able to take the element bg color into account', element);
+    elementColorArray = null;
+  }
+  var res;
+  // handle the case where there is no need to blend
+  if (elementColorArray === null && parentColorArray === null){
+    // there is no need to blend
+    res = null;
+  }
+  else if (elementColorArray === null){
+    // there is no need to blend
+    res = parentColorArray;
+  }
+  else if (parentColorArray === null){
+    // there is no need to blend
+    res = elementColorArray;
+  }
+  else{
+    // blend the parents and the element's bg colors
+    // f = (e*ae + p*(1-ae))
+    var complement = 1 - elementColorArray[3];
+    res = [
+      (elementColorArray[0]*elementColorArray[3] + parentColorArray[0]*complement),
+      (elementColorArray[1]*elementColorArray[3] + parentColorArray[1]*complement),
+      (elementColorArray[2]*elementColorArray[3] + parentColorArray[2]*complement),
+      1
+    ];
+  }
+  return res;
+};
+
+
+/**
  * convert hex color to rgba values
  * @example  #000000FF will return rgba(0, 0, 0, 1)
  */

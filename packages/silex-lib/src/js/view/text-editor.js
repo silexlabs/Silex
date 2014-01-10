@@ -222,8 +222,9 @@ silex.view.TextEditor.prototype.openEditor = function(initialHtml, opt_bgColor) 
   goog.style.setStyle(this.element, 'display', 'inherit');
   // editor bg color
   if (!opt_bgColor){
-    opt_bgColor = 'white';
+    opt_bgColor = '#FFFFFF';
   }
+  // apply to the bg
   var iframe = goog.dom.getElementsByTagNameAndClass('iframe', null, this.element)[0];
   iframe.style.backgroundColor = opt_bgColor;
 

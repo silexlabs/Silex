@@ -256,17 +256,14 @@ silex.controller.ControllerBase.prototype.editElement = function(opt_element) {
 
   switch (this.model.element.getType(opt_element)) {
     case silex.model.Element.TYPE_TEXT:
-      // get the component bg color, or one of it's parent's bg color
-      var tmpElement = opt_element;
-      var bgColor;
-      while(tmpElement && (!bgColor || bgColor == 'transparent')){
-        if (tmpElement.style){
-          bgColor = tmpElement.style.backgroundColor;
-        }
-        tmpElement = tmpElement.parentNode;
-      }
-      // open the text editor with the same bg color
-      this.view.textEditor.openEditor(this.model.element.getInnerHtml(opt_element), bgColor);
+      var bgColor = silex.utils.Style.computeBgColor(opt_element);
+      // open the text editor with the same bg color as the element
+      this.view.textEditor.openEditor(this.model.element.getInnerHtml(opt_element),
+        goog.color.rgbToHex(
+          Math.round(bgColor[0]),
+          Math.round(bgColor[1]),
+          Math.round(bgColor[2])
+        ));
       break;
     case silex.model.Element.TYPE_HTML:
       this.view.htmlEditor.openEditor(this.model.element.getInnerHtml(opt_element));
@@ -573,7 +570,6 @@ silex.controller.ControllerBase.prototype.save = function(opt_url, opt_cbk, opt_
  * success of an operation involving changing the file model
  */
 silex.controller.ControllerBase.prototype.fileOperationSuccess = function(opt_message, opt_updateTools) {
-console.log(arguments);
   // update tools
   if (opt_updateTools){
     // find default first page
