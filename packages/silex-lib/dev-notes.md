@@ -10,141 +10,46 @@ get travis selenium tests to work: http://about.travis-ci.org/docs/user/gui-and-
 selenium in npm https://npmjs.org/package/selenium-webdriver
 
 bugs
+
+* retro compat: texts were in containers?
 * page-element is used for pages and elements + probleme dans backward compat?
 * focus stays on text fields when click on stage
 * remove front-end.css from head section
-* notifications?
-
-* css class to prevent edit (no-resize-w, no-move, no-edit ...) - Class css pour lock w/h/x/y... Display none  de l ui
 * open a non-silex site => warn
 * esc = deselect
 * lorem ipsum do not send change event
-* zindex negatif d'un élément "sous" le BG => non sélectionnable
 * ancres html?
-* ?? New site => BG size depends on the stage size
 * file::isDirty => message to prevent quit
-
-retro compat texts in containers?
-
-URGENT
-
-reste a faire sur le site wwx
-- links & anchors
-- roll over sur links
-- liquid layout
+* notifications?
+* ?? New site => BG size depends on the stage size
 
 
-
-script editor
-head editor
-
-travis
-
-Undoredo
-
-Silex styles
-
-* view/hide markers
-  en mode édition les éléments importées ont un contour gris
-  hide = markers visible only on roll over
-  tab shortcut + in the menu
 * selection marker moves the element
 * test shortcuts on windows
 * tab devrait passer de X à Y puis hauteur / largeur (on manipule la résolution puis la position)
 * les champs proposant les valeurs X Y - Hauteur - largeur, ne sont pas assez large
 * Quand on édite les valeurs X et Y <retour> cela ouvre le browser de fichier
 
-Feature requests
-
-* Sélection multiple hors container / plusieurs containers
-* open recent files
-* responsive mode
-* better HTML = ré-édition par des intégrateurs
-
-Layout box qui n accepte que des containers layout item qui ne se déplacent pas hors de la boite
-Quand ine layout box est sélectionnée, dans le Menu, on peut ajouter  des layout items, mais pas dropper d éléments dans la layout box. Drag drop au sein du layout box?
-
-composant pour intégration de blog dans une page silex?
-pareil pour vente en ligne? des widgets?
-
-
 Cloud explorer
+* select folder
 * refresh button
+* path (fil d'ariane)
 
-* use heroku build pack
- https://devcenter.heroku.com/articles/buildpacks
- https://github.com/heroku/heroku-buildpack-nodejs#readme
-
-________________
-Styles
-
-properties
-* view all CSS defined in "head #silex-element-style"
-* or view normal tool box
-
-text editor
-* view all CSS defined in "head #silex-element-style"
-* combo box with styles - detect style names from CSS (regexp)
-
-
-________________
-
-Refactoring
-to do
-  remove UI of appolo
-  body::publish
-
-retorcompat silex-sub-type
+Explain this in a readme
 
   View = html Dom read only
   Model = html Dom write only
+  Controller = behavior of the view
   Utils = reusable
-  Controller = high level concepts, File, Page, Selection
-
-  Model:
-  Element, innerhtml
-  Body, add/remove element, cleanup
-  Head, title, fonts, ...
-  File, load, save...
-
-  Controller
-  State, loading, appolo, dirty
-  Selection, file, page, element (references)
-  Page
-
-  Utils
-  Pageable, add/remove/open page
-  Editable
-
-  View
-  Stage, resize
-  Workspace
 
 
-- Splitter Helper en classes plus explicites dans utils
-
-- manip dom => silex.model.Dom
-- ttes les manip du dom dans un modèle Dom (lister les pages, ajouter un node pour un composant
-- stage doit juste être là pour capter les actions de l'utilisateur et les transmettre au contrôleur
-
-- silex.controller.Workspace
-- silex.controller.Page
-- silex.controller.Stage
-- dialogs => silex.view.workspace
-
-- properties tools
-  - mv silex.view.properties-tool.* => silex.view.*
-  - silex.controller.PropertiesTools
-  - Position and size + Text formatting depends on context (prevent changing raw text when in another context)
-
-- no more templates loaded at runtime, jade + less
 - feature: padding
 - feature: component Name and CSS class
+
 - services, use http://docs.closure-library.googlecode.com/git/class_goog_ds_JsonDataSource.html
-- feature: new states: active, mobile (use goog.dom.ViewportSizeMonitor)
-- feature: goog.History to reopen a file
+- feature: new states: active, mobile
+- use goog.dom.ViewportSizeMonitor
 - SplitPane pour les boites a outil? goog.ui.Zippy?
-- goog.color.* instead of custom methods of silex.Helper
 - goog.ui.TweakUi pour config?
 - feature: goog.ui.FilterObservingMenuItem to filter properties in the toolbox
 - feature: goog.debug.FpsDisplay and goog.events.OnlineHandler

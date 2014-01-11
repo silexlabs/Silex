@@ -1,5 +1,6 @@
 #Silex, live web creation.
 
+[![Build Status](https://travis-ci.org/silexlabs/Silex.png?branch=master)](https://travis-ci.org/silexlabs/Silex)
 [![Dependency Status](https://gemnasium.com/silexlabs/Silex.png)](https://gemnasium.com/silexlabs/Silex)
 
 ##About Silex
@@ -131,8 +132,7 @@ WYSIWYG
 Texte
 
 * difference entre typo dans l’editeur text et sur la scene
-* detecter la couleur de fond (chercher le background color ou image dans les parents)
-* padding
+* (done) detecter la couleur de fond (chercher le background color ou image dans les parents)
 
 Components
 
@@ -140,8 +140,7 @@ Components
 
 File
 
-* group images on the same drive as the html page?
-* export (cleanup html, make zip with .html, .js, .css, all media)? + host on github or other free hosts?
+* (done) export (cleanup html, make zip with .html, .js, .css, all media)? + host on github or other free hosts?
 
 ###v2.0.0alpha5
 
@@ -181,8 +180,14 @@ Properties
 * cursor
 * scroll?
 
+* provide css classes
+
+  * to prevent edit (no-resize-w, no-move, no-edit ...) - Class css pour lock w/h/x/y... Display none  de l ui
+  * to animate page transitions (from-left, from-right ...)
 
 ###v2.0.0beta1
+
+Guarantee backward compatibility: notify users a new version is in production, offer ways to use older versions of Silex?
 
 Continuous integration
 
@@ -232,8 +237,6 @@ Nice to have :
 
 
 ###v2.0.x
-
-Guarantee backward compatibility: notify users a new version is in production, offer ways to use older versions of Silex?
 
 Packaging / distribution
 
@@ -346,4 +349,21 @@ Internationalization
     * http://code.google.com/p/jquery-i18n-properties/
     * http://stackoverflow.com/questions/13895012/what-plugin-to-use-for-internationalization-with-jquery-mobile-and-requirejs
     * http://blogs.technet.com/b/port25/archive/2010/06/15/new-open-source-jquery-globalization-plugin-released.aspx
+
+Feature requests to considere
+
+* view/hide markers = preview mode?
+  en mode édition les éléments importées ont un contour gris
+  hide = markers visible only on roll over
+  tab shortcut + in the menu
+* Sélection multiple hors container / plusieurs containers
+* open recent files (use goog.History)
+* responsive mode
+* better HTML = ré-édition par des intégrateurs
+
+* Layout box: n accepte que des containers layout item qui ne se déplacent pas hors de la boite
+Quand ine layout box est sélectionnée, dans le Menu, on peut ajouter  des layout items, mais pas dropper d éléments dans la layout box. Drag drop au sein du layout box?
+
+* composant pour intégration de blog dans une page silex?
+* pareil pour vente en ligne? des widgets?
 
