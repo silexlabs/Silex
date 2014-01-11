@@ -37,7 +37,7 @@ goog.require('goog.dom.ViewportSizeMonitor');
  * @param  {Element}  cssEditor  reference to the view
  * @param  {Element}  textEditor  reference to the view
  * @param  {Element}  fileExplorer  reference to the view
- * @param  {Element}  publishSettings  reference to the view
+ * @param  {Element}  settingsDialog  reference to the view
  */
 silex.view.Workspace = function(element,
                                 menuElement,
@@ -46,9 +46,10 @@ silex.view.Workspace = function(element,
                                 propertyToolElement,
                                 htmlEditorElement,
                                 cssEditorElement,
+                                jsEditorElement,
                                 textEditorElement,
                                 fileExplorerElement,
-                                publishSettingsElement) {
+                                settingsDialogElement) {
   // store references
   this.element = element;
   this.menuElement = menuElement;
@@ -57,9 +58,10 @@ silex.view.Workspace = function(element,
   this.propertyToolElement = propertyToolElement;
   this.htmlEditorElement = htmlEditorElement;
   this.cssEditorElement = cssEditorElement;
+  this.jsEditorElement = jsEditorElement;
   this.textEditorElement = textEditorElement;
   this.fileExplorerElement = fileExplorerElement;
-  this.publishSettingsElement = publishSettingsElement;
+  this.settingsDialogElement = settingsDialogElement;
 
   // handle resize
   this.viewport = new goog.dom.ViewportSizeMonitor();
@@ -121,6 +123,13 @@ silex.view.Workspace.prototype.cssEditorElement;
 
 
 /**
+ * reference to the element used to display the silex.view.jsEditor class
+ * @type element
+ */
+silex.view.Workspace.prototype.jsEditorElement;
+
+
+/**
  * reference to the element used to display the silex.view.TextEditor class
  * @type element
  */
@@ -135,10 +144,10 @@ silex.view.Workspace.prototype.fileExplorerElement;
 
 
 /**
- * reference to the element used to display the silex.view.PublishSettings class
+ * reference to the element used to display the silex.view.settingsDialog class
  * @type element
  */
-silex.view.Workspace.prototype.publishSettingsElement;
+silex.view.Workspace.prototype.settingsDialogElement;
 
 
 /**
@@ -219,6 +228,13 @@ silex.view.Workspace.prototype.doRedraw = function() {
     var posY = (viewportSize.height - cssEditorSize.height) / 2;
     goog.style.setPosition(this.cssEditorElement, posX, posY);
   }
+  // jsEditor
+  if (this.jsEditorElement) {
+    var jsEditorSize = goog.style.getSize(this.jsEditorElement);
+    var posX = (viewportSize.width - jsEditorSize.width) / 2;
+    var posY = (viewportSize.height - jsEditorSize.height) / 2;
+    goog.style.setPosition(this.jsEditorElement, posX, posY);
+  }
   // texteditor
   if (this.textEditorElement) {
     var textEditorSize = goog.style.getSize(this.textEditorElement);
@@ -233,13 +249,14 @@ silex.view.Workspace.prototype.doRedraw = function() {
     var posY = (viewportSize.height - fileExplorerSize.height) / 2;
     goog.style.setPosition(this.fileExplorerElement, posX, posY);
   }
-  // publishSettings
-  if (this.publishSettingsElement) {
-    var publishSettingsSize = goog.style.getSize(
-        this.publishSettingsElement);
-    var posX = (viewportSize.width - publishSettingsSize.width) / 2;
-    var posY = (viewportSize.height - publishSettingsSize.height) / 2;
-    goog.style.setPosition(this.publishSettingsElement, posX, posY);
+  // settingsDialog
+  if (this.settingsDialogElement) {
+    var settingsDialogSize = goog.style.getSize(
+        this.settingsDialogElement);
+  console.log(this.settingsDialogElement, settingsDialogSize);
+    var posX = (viewportSize.width - settingsDialogSize.width) / 2;
+    var posY = (viewportSize.height - settingsDialogSize.height) / 2;
+    goog.style.setPosition(this.settingsDialogElement, posX, posY);
   }
   // no more loading
   if (goog.dom.classes.has(document.body, 'loading-pending')) {

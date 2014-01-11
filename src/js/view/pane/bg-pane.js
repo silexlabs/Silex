@@ -189,12 +189,18 @@ silex.view.pane.BgPane.prototype.redraw = function() {
         element.style.backgroundImage !== 'none' &&
         element.style.backgroundImage !== '') {
       this.bgClearBgImage.setEnabled(true);
+      this.attachementComboBox.setEnabled(true);
+      this.vPositionComboBox.setEnabled(true);
+      this.hPositionComboBox.setEnabled(true);
+      this.repeatComboBox.setEnabled(true);
     }
     else {
       this.bgClearBgImage.setEnabled(false);
+      this.attachementComboBox.setEnabled(false);
+      this.vPositionComboBox.setEnabled(false);
+      this.hPositionComboBox.setEnabled(false);
+      this.repeatComboBox.setEnabled(false);
     }
-    // workaround "backgroundImage not set"
-    this.bgClearBgImage.setEnabled(true);
     if (element.style.backgroundAttachment) {
       switch (element.style.backgroundAttachment) {
         case 'scroll':
