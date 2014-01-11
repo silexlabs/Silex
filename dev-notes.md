@@ -6,18 +6,14 @@
 
 BUGS
 
-!!!! update front-end.css
+get travis selenium tests to work: http://about.travis-ci.org/docs/user/gui-and-headless-browsers/
+selenium in npm https://npmjs.org/package/selenium-webdriver
 
 bugs
-* mettre en ligne pageable
 * page-element is used for pages and elements + probleme dans backward compat?
-* publication dialog centered
-* save before publish
-* focus stays on text fiels when click on stage
-* all front-end.css should be in head section
+* focus stays on text fields when click on stage
+* remove front-end.css from head section
 * notifications?
-* travis + build on heroku (no more commit build)
-!!!! update front-end.css
 
 * css class to prevent edit (no-resize-w, no-move, no-edit ...) - Class css pour lock w/h/x/y... Display none  de l ui
 * open a non-silex site => warn
