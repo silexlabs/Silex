@@ -1,5 +1,5 @@
 var fs = require('fs')
-, path = require('path'); 
+, path = require('path');
 
 /**
  * ref to selenium driver
@@ -17,17 +17,20 @@ console.log('-----');
 silexServer.setDebugMode(true);
 
 /**
- * start selenium driver
- * @param        cbk         callback which takes the selenium driver in param
+ * check if we will be able to start selenium driver
+ * @return  true if it's ok
  */
-exports.startSelenium = function (cbk) {
-    if (exports.driver){
-            console.warn('selenium already started, restart');
-            exports.stopSelenium(function () {
-                    startSelenium(cbk);
-            });
-            return;
-    }
+exports.checkParams = function () {
+  if (exports.getDriverName() !== null){
+    return true;
+  }
+  return false;
+}
+/**
+ * get the driver name from the input params
+ * @return  the driver name (phantomjs, firefox...)
+ */
+exports.getDriverName = function () {
     // get command line args to det which driver to call
     var driverName = null;
     for (var i in process.argv){
@@ -42,10 +45,22 @@ exports.startSelenium = function (cbk) {
             driverName = 'phantomjs';
         }
     }
-    if (!driverName){
-        console.warn('You are supposed to call grunt with param \'-firefox\', \'-chrome\' or \'-phantomjs\'. Assuming \'phantomjs\'.');
-        driverName = 'phantomjs';
+    return driverName;
+}
+/**
+ * start selenium driver
+ * @param        cbk         callback which takes the selenium driver in param
+ */
+exports.startSelenium = function (cbk) {
+    if (exports.driver){
+            console.warn('selenium already started, restart');
+            exports.stopSelenium(function () {
+                    startSelenium(cbk);
+            });
+            return;
     }
+    // get command line args to det which driver to call
+    var driverName = exports.getDriverName();
     // start selenium
     exports.webdriver = require('selenium-webdriver'),
         SeleniumServer = require('selenium-webdriver/remote').SeleniumServer;

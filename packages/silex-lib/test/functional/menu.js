@@ -2,6 +2,11 @@ var assert = require('assert')
 , expect = require('chai').expect
 , helper = require('../helper.js');
 
+if (!helper.checkParams()){
+  console.error('You are supposed to call grunt with param \'-firefox\', \'-chrome\' or \'-phantomjs\'. Canceling tests.');
+  return;
+}
+
 /**
  * helper function
  */
