@@ -233,6 +233,8 @@ Nice to have :
 
 ###v2.0.x
 
+Guarantee backward compatibility: notify users a new version is in production, offer ways to use older versions of Silex?
+
 Packaging / distribution
 
 * cf dev-notes.md
