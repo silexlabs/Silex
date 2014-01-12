@@ -253,7 +253,6 @@ silex.view.Workspace.prototype.doRedraw = function() {
   if (this.settingsDialogElement) {
     var settingsDialogSize = goog.style.getSize(
         this.settingsDialogElement);
-  console.log(this.settingsDialogElement, settingsDialogSize);
     var posX = (viewportSize.width - settingsDialogSize.width) / 2;
     var posY = (viewportSize.height - settingsDialogSize.height) / 2;
     goog.style.setPosition(this.settingsDialogElement, posX, posY);
