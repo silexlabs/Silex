@@ -6,14 +6,6 @@ This is where you will find the recent changes made to Silex, and available on h
 
 bug fixes
 
-features
-
-code
-
-## 2014/01
-
-bug fixes
-
 * CSS/UI display bugs
 * text editor background color should be the same as the text field bg color
 * body size in front end (when the viewport is smaller than the site)
