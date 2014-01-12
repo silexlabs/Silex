@@ -55,7 +55,7 @@ exports.startSelenium = function (cbk) {
     if (exports.driver){
             console.warn('selenium already started, restart');
             exports.stopSelenium(function () {
-                    startSelenium(cbk);
+                exports.startSelenium(cbk);
             });
             return;
     }
