@@ -352,6 +352,9 @@ Internationalization
 
 Feature requests to considere
 
+* checkbox to adapt w/h to content
+* save offline and wait to be online
+* multi-user
 * view/hide markers = preview mode?
   en mode édition les éléments importées ont un contour gris
   hide = markers visible only on roll over
