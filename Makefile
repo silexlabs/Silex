@@ -4,13 +4,13 @@ all:
 	grunt releaseDeploy
 
 tests:
-	grunt test -phantom
+	grunt test -phantomjs
 	grunt test -chrome
 	grunt test -firefox
 
 test:
-	grunt test -phantom
+	grunt test -phantomjs
 
 precommit:
-	grunt test -phantom
+	grunt test -phantomjs
 
