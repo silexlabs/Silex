@@ -33,7 +33,6 @@ silex.utils.BackwardCompat = function() {
  * Backwardcompatibility process takes place after opening a file
  */
 silex.utils.BackwardCompat.process = function(bodyElement, headElement) {
-  console.log('BackwardCompat.process');
 
   // handle older style system (2.0)
   if (bodyElement.getAttribute('data-style-normal')){
@@ -58,17 +57,21 @@ silex.utils.BackwardCompat.process = function(bodyElement, headElement) {
   // old page system (2.0)
   // <meta name="page" content="page1">
   $('meta[name="page"]', headElement).each(function() {
-    console.log('found old meta', this);
     var pageName = this.getAttribute('content');
-    console.log('meta page', pageName);
     $(bodyElement).append('<a id="'+pageName+'" data-silex-type="page">'+pageName+'</a>');
     $(this).remove();
   });
+  // fixes bug "confusion between pages and paged elements"
+  $('.page-element', bodyElement).each(function() {
+    if (this.getAttribute('data-silex-type') !== 'page'){
+      $(this).removeClass('page-element');
+      $(this).addClass('paged-element');
+    }
+  });
   // silex-page class becomes page-element
   $('.silex-page', bodyElement).each(function() {
-    console.log('found old page', this);
     $(this).removeClass('silex-page');
-    $(this).addClass('page-element');
+    $(this).addClass('paged-element');
   });
   // retorcompat silex links with #! (2.0)
   $('[data-silex-href]', bodyElement).each(function() {

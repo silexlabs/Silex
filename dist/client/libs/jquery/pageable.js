@@ -4,7 +4,7 @@ $.widget('silexlabs.pageable', {
   options: {
     currentPage:"home",
     useDeeplink:true,
-    pageClass: 'page-element'
+    pageClass: 'paged-element'
   },
   // _setOption is called for each individual option that is changing
   _setOption: function( key, value ) {
@@ -37,8 +37,8 @@ $.widget('silexlabs.pageable', {
     }
     // mark these elements as visible
     $('.' + this.options.pageClass).each(function() {
-      if (!$(this).hasClass('page-element-hidden'))
-        $(this).addClass('page-element-hidden');
+      if (!$(this).hasClass('paged-element-hidden'))
+        $(this).addClass('paged-element-hidden');
     });
     this.updatePage();
   },
@@ -63,17 +63,17 @@ $.widget('silexlabs.pageable', {
     $('#current-page-style').remove();
     $('head').append('<style id="current-page-style">.'+this.options.currentPage+'{display:inherit !important; opacity:inherit; }</style>');
     // mark these elements as visible
-    $('.page-element-visible').each(function() {
-      if ($(this).hasClass('page-element-visible'))
-          $(this).removeClass('page-element-visible');
-      if (!$(this).hasClass('page-element-hidden'))
-        $(this).addClass('page-element-hidden');
+    $('.paged-element-visible').each(function() {
+      if ($(this).hasClass('paged-element-visible'))
+          $(this).removeClass('paged-element-visible');
+      if (!$(this).hasClass('paged-element-hidden'))
+        $(this).addClass('paged-element-hidden');
     });
     $('.'+this.options.currentPage).each(function() {
-      if (!$(this).hasClass('page-element-visible'))
-        $(this).addClass('page-element-visible');
-      if ($(this).hasClass('page-element-hidden'))
-        $(this).removeClass('page-element-hidden');
+      if (!$(this).hasClass('paged-element-visible'))
+        $(this).addClass('paged-element-visible');
+      if ($(this).hasClass('paged-element-hidden'))
+        $(this).removeClass('paged-element-hidden');
     });
   }
 });
