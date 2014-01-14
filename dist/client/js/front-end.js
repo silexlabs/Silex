@@ -26,7 +26,7 @@ $(function() {
   $( 'body' ).pageable({
     currentPage: firstPageName,
     useDeeplink:true,
-    pageClass: 'page-element'
+    pageClass: 'paged-element'
   });
   /**
    * silex links

@@ -67,11 +67,19 @@ silex.utils.PageablePlugin.PAGEABLE_ROOT_CLASS_NAME = 'pageable-root-class';
 
 
 /**
- * constant for the class name
+ * constant for the class name of the pages
  * @const
  * @type {string}
  */
 silex.utils.PageablePlugin.PAGE_CLASS_NAME = 'page-element';
+
+
+/**
+ * constant for the class name of elements visible only on some pages
+ * @const
+ * @type {string}
+ */
+silex.utils.PageablePlugin.PAGED_CLASS_NAME = 'paged-element';
 
 
 /**
@@ -236,7 +244,7 @@ silex.utils.PageablePlugin.createPage = function(name, displayName) {
   aTag.innerHTML = displayName;
   goog.dom.appendChild(silex.utils.PageablePlugin.bodyElement, aTag);
   // for coherence with other silex elements
-  goog.dom.classes.add(aTag, 'page-element');
+  goog.dom.classes.add(aTag, silex.utils.PageablePlugin.PAGE_CLASS_NAME);
 };
 
 

@@ -6,6 +6,9 @@ body{
 }
 /* pages */
 .page-element{
+  display: none;
+}
+.paged-element{
 	display: none;
 }
 /* background */
