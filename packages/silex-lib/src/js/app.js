@@ -98,7 +98,7 @@ silex.App = function() {
   }
 
   // retrieve the element which will hold the body of the opened file
-  var bodyElement = goog.dom.getElementByClass('silex-stage-body');
+  var bodyElement = goog.dom.getElementByClass(silex.view.Stage.STAGE_CLASS_NAME);
 
   // init helper static class
   silex.utils.PageablePlugin.setBodyElement(bodyElement);
