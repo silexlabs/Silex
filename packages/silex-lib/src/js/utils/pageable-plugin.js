@@ -84,11 +84,11 @@ silex.utils.PageablePlugin.PAGED_CLASS_NAME = 'paged-element';
 
 /**
  * retrieve the first parent which is visible only on some pages
- * @return null or the element or one of its parents which has the css class silex.utils.PageablePlugin.PAGE_CLASS_NAME
+ * @return null or the element or one of its parents which has the css class silex.utils.PageablePlugin.PAGED_CLASS_NAME
  */
 silex.utils.PageablePlugin.getParentPage = function(element) {
   var parent = element.parentNode;
-  while (parent && !goog.dom.classes.has(parent, silex.utils.PageablePlugin.PAGE_CLASS_NAME)) {
+  while (parent && !goog.dom.classes.has(parent, silex.utils.PageablePlugin.PAGED_CLASS_NAME)) {
     parent = parent.parentNode;
   }
   return parent;
@@ -222,7 +222,7 @@ silex.utils.PageablePlugin.removePage = function(pageName) {
         var pagesOfElement = silex.utils.PageablePlugin.getPagesForElement(this);
 
         if (pagesOfElement.length <= 0)
-          $(this).removeClass(silex.utils.PageablePlugin.PAGE_CLASS_NAME);
+          $(this).removeClass(silex.utils.PageablePlugin.PAGED_CLASS_NAME);
       }
   );
 };
@@ -309,7 +309,7 @@ silex.utils.PageablePlugin.getLink = function(element) {
  */
 silex.utils.PageablePlugin.addToPage = function(element, pageName) {
   goog.dom.classes.add(element, pageName);
-  goog.dom.classes.add(element, silex.utils.PageablePlugin.PAGE_CLASS_NAME);
+  goog.dom.classes.add(element, silex.utils.PageablePlugin.PAGED_CLASS_NAME);
 };
 
 /**
@@ -318,7 +318,7 @@ silex.utils.PageablePlugin.addToPage = function(element, pageName) {
 silex.utils.PageablePlugin.removeFromPage = function(element, pageName) {
   goog.dom.classes.remove(element, pageName);
   if (!silex.utils.PageablePlugin.getPagesForElement(element).length>0){
-    goog.dom.classes.remove(element, silex.utils.PageablePlugin.PAGE_CLASS_NAME);
+    goog.dom.classes.remove(element, silex.utils.PageablePlugin.PAGED_CLASS_NAME);
   }
 };
 
