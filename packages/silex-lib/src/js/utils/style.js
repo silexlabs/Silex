@@ -32,8 +32,10 @@ silex.utils.Style.SILEX_CLASS_NAMES = [
   silex.utils.EditablePlugin.UI_DRAGGABLE_CLASS_NAME,
   silex.utils.EditablePlugin.UI_DROPPABLE_CLASS_NAME,
   silex.utils.EditablePlugin.UI_DRAGGABLE_DRAGGING_CLASS_NAME,
+  silex.utils.EditablePlugin.UI_DRAGGABLE_RESIZING_CLASS_NAME,
   silex.utils.PageablePlugin.PAGEABLE_ROOT_CLASS_NAME,
   silex.utils.PageablePlugin.PAGE_CLASS_NAME,
+  silex.view.Stage.STAGE_CLASS_NAME,
   silex.model.Element.SELECTED_CLASS_NAME,
   silex.model.Element.TYPE_CONTAINER + '-element',
   silex.model.Element.TYPE_IMAGE + '-element',
@@ -124,7 +126,7 @@ silex.utils.Style.stringToStyle = function(styleStr) {
 silex.utils.Style.computeBgColor = function(element) {
  var parentColorArray;
   // retrieve the parents blended colors
-  if(!goog.dom.classes.has(element, 'silex-stage-body')){
+  if(!goog.dom.classes.has(element, silex.view.Stage.STAGE_CLASS_NAME)){
     parentColorArray = silex.utils.Style.computeBgColor(element.parentNode);
   }
   else{
