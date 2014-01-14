@@ -11,8 +11,7 @@ selenium in npm https://npmjs.org/package/selenium-webdriver
 
 bugs
 
-* no more tests grunt test -phantom
-* page-element is used for pages and elements + probleme dans backward compat?
+* Invalid CSS selector pseudoclass warnings at runtime
 * retro compat: texts were in containers?
 * focus stays on text fields when click on stage
 * open a non-silex site => warn
