@@ -11,7 +11,7 @@ selenium in npm https://npmjs.org/package/selenium-webdriver
 
 bugs
 
-* Invalid CSS selector pseudoclass warnings at runtime
+* log CE bugs/feature requests in github
 * retro compat: texts were in containers?
 * focus stays on text fields when click on stage
 * open a non-silex site => warn
@@ -38,6 +38,7 @@ Cloud explorer
 * select folder
 * refresh button
 * errors reporting (at least 503 from dropbox)
+* drop files from OS file browser: wrong mouse cursor
 * path (fil d'ariane)
 
 Explain this in a readme
