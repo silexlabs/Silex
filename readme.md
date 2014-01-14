@@ -137,6 +137,7 @@ Texte
 Components
 
 * nav bar
+* vbox/hbox
 
 File
 
@@ -178,7 +179,6 @@ Properties
 * shadows
 * font-*
 * cursor
-* scroll?
 
 * provide css classes
 
