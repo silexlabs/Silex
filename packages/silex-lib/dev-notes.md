@@ -11,20 +11,25 @@ selenium in npm https://npmjs.org/package/selenium-webdriver
 
 bugs
 
-* retro compat: texts were in containers?
+* no more tests grunt test -phantom
 * page-element is used for pages and elements + probleme dans backward compat?
+* retro compat: texts were in containers?
 * focus stays on text fields when click on stage
-* remove front-end.css from head section
 * open a non-silex site => warn
 * esc = deselect
+* focus on css and js editors when open
 * lorem ipsum do not send change event
 * ancres html?
 * file::isDirty => message to prevent quit
 * notifications?
 * ?? New site => BG size depends on the stage size
 
+> texte :
+> - pas de justification
+> - pas de possibilité de désactiver la couleur choisie, ex. surlignage (sauf en cliquant sur remise à remove formatting)
 
-* selection marker moves the element
+* background-size dans les combo box du bg editor
+
 * test shortcuts on windows
 * tab devrait passer de X à Y puis hauteur / largeur (on manipule la résolution puis la position)
 * les champs proposant les valeurs X Y - Hauteur - largeur, ne sont pas assez large

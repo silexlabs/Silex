@@ -1,10 +1,14 @@
+/* the body covers the whole available space */
+/* the body is resized to its content size when needed in front-end.js */
 body{
 	width: 100%;
 	height: 100%;
 }
+/* pages */
 .page-element{
 	display: none;
 }
+/* background */
 .background{
 	position: relative !important;
 	left: inherit !important;
@@ -13,13 +17,37 @@ body{
 	margin-right: auto;
 	z-index: 1;
 }
+/* default style for silex elements */
 .silex-element-content{
 	overflow: hidden;
-  border-radius: inherit;
-}
-.editable-style[data-silex-href]{
-	cursor: pointer;
+	border-radius: inherit;
 }
 .text-element .silex-element-content{
   overflow: auto;
+}
+/* links default formatting */
+.editable-style[data-silex-href]{
+	cursor: pointer;
+}
+.text-element a{
+  color: inherit;
+  text-decoration: inherit;
+}
+.text-element a:hover{
+  color: inherit;
+  text-decoration: underline;
+}
+/* text styles formatting */
+.text-element HEADER,
+.text-element H1,
+.text-element H2,
+.text-element H3,
+.text-element DIV,
+.text-element P,
+.text-element QUOTE {
+	color: #666666;
+	font-family: verdana, arial;
+}
+.text-element HEADER {
+	font-size: 45px;
 }
