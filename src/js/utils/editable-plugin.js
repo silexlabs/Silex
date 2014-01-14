@@ -31,6 +31,7 @@ silex.utils.EditablePlugin.UI_RESIZABLE_CLASS_NAME = 'ui-resizable';
 silex.utils.EditablePlugin.UI_DRAGGABLE_CLASS_NAME = 'ui-draggable';
 silex.utils.EditablePlugin.UI_DROPPABLE_CLASS_NAME = 'ui-droppable';
 silex.utils.EditablePlugin.UI_DRAGGABLE_DRAGGING_CLASS_NAME = 'ui-draggable-dragging';
+silex.utils.EditablePlugin.UI_DRAGGABLE_RESIZING_CLASS_NAME = 'ui-resizable-resizing';
 
 
 /**
