@@ -12,6 +12,7 @@ bug fixes
 * text links formatting is blue with underline
 * scroll combo box and backgroundAttachment style
 * better QOS/user actions tracking
+* remove focus from UI text fields when you click on the stage (used to cause many strange behaviors in editors and to interact with shortcuts)
 
 features
 
