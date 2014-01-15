@@ -83,7 +83,6 @@ silex.view.Stage.prototype.initEvents = function () {
       // remove the focus from text fields
       this.focusInput.focus();
       this.focusInput.blur();
-      console.log(this.focusInput);
     }
   }, false, this);
   // dispatch event when an element has been moved
