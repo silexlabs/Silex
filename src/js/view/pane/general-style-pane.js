@@ -61,7 +61,7 @@ silex.view.pane.GeneralStylePane.prototype.opacityInput;
 silex.view.pane.GeneralStylePane.prototype.buildUi = function() {
   // opacity
   this.opacityInput = goog.dom.getElementByClass('opacity-input');
-  goog.events.listen(this.opacityInput, 'change', this.onInputChanged, false, this);
+  goog.events.listen(this.opacityInput, goog.events.EventType.INPUT, this.onInputChanged, false, this);
 };
 
 
@@ -69,6 +69,7 @@ silex.view.pane.GeneralStylePane.prototype.buildUi = function() {
  * redraw the properties
  */
 silex.view.pane.GeneralStylePane.prototype.redraw = function() {
+  if (this.iAmSettingValue) return;
   // call super
   goog.base(this, 'redraw');
 
@@ -78,10 +79,10 @@ silex.view.pane.GeneralStylePane.prototype.redraw = function() {
   if (element){
 
     if (element.style.opacity) {
-      this.opacityInput.value = element.style.opacity;
+      this.opacityInput.value = Math.round(parseFloat(element.style.opacity)*100);
     }
     else {
-      this.opacityInput.value = '';
+      this.opacityInput.value = '100';
     }
   }
 };
@@ -92,7 +93,10 @@ silex.view.pane.GeneralStylePane.prototype.redraw = function() {
  */
 silex.view.pane.GeneralStylePane.prototype.onInputChanged = function(event) {
   if (this.opacityInput.value && this.opacityInput.value !== '') {
-    this.styleChanged('opacity', this.opacityInput.value);
+    var val = parseFloat(this.opacityInput.value)/100.0;
+    if (val < 0) val = 0;
+    if (val > 1) val = 1;
+    this.styleChanged('opacity', val);
   }
   else {
     this.styleChanged('opacity');

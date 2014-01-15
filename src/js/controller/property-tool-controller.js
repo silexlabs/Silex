@@ -66,15 +66,19 @@ silex.controller.PropertyToolController.prototype.propertyToolCallback = functio
       break;
     case 'addToPage':
       silex.utils.PageablePlugin.addToPage(this.view.stage.getSelection()[0], opt_name);
+      this.view.propertyTool.redraw();
       break;
     case 'removeFromPage':
       silex.utils.PageablePlugin.removeFromPage(this.view.stage.getSelection()[0], opt_name);
+      this.view.propertyTool.redraw();
       break;
     case 'addLink':
       silex.utils.PageablePlugin.setLink(this.view.stage.getSelection()[0], opt_name);
+      this.view.propertyTool.redraw();
       break;
     case 'removeLink':
       silex.utils.PageablePlugin.setLink(this.view.stage.getSelection()[0]);
+      this.view.propertyTool.redraw();
       break;
   }
 };

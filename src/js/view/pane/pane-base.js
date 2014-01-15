@@ -45,6 +45,12 @@ silex.view.pane.PaneBase.prototype.baseUrl;
 
 
 /**
+ * {bool} flag to prevent redraw while changing a value myself
+ */
+silex.view.pane.PaneBase.prototype.iAmSettingValue;
+
+
+/**
  * notify the controller that the user needs to select a bg image
  * this is called by BgPane
  */
@@ -86,7 +92,15 @@ silex.view.pane.PaneBase.prototype.editText = function() {
  */
 silex.view.pane.PaneBase.prototype.styleChanged = function(styleName, opt_styleValue) {
   // notify the controller
-  if (this.onStatus) this.onStatus('styleChanged', styleName, opt_styleValue);
+  this.iAmSettingValue = true;
+  try{
+    if (this.onStatus) this.onStatus('styleChanged', styleName, opt_styleValue);
+  }
+  catch(err){
+    // error which will not keep this.iAmSettingValue to true
+    console.log('an error occured while editing the value', err);
+  }
+  this.iAmSettingValue = false;
 };
 
 

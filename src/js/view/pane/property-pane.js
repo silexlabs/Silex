@@ -45,18 +45,6 @@ silex.view.pane.PropertyPane = function(element, bodyElement, headElement) {
 goog.inherits(silex.view.pane.PropertyPane, silex.view.pane.PaneBase);
 
 /**
- * callback to call to let the user edit the HTML content of the component
- */
-silex.view.pane.PropertyPane.prototype.editHTML;
-
-
-/**
- * callback to call to let the user edit the text content of the component
- */
-silex.view.pane.PropertyPane.prototype.editText;
-
-
-/**
  * callback to call to let the user edit the image url
  */
 silex.view.pane.PropertyPane.prototype.selectImage;
@@ -114,7 +102,7 @@ silex.view.pane.PropertyPane.prototype.buildUi = function() {
   this.leftInput.setAttribute('data-style-name', 'left');
   this.leftInput.setAttribute('data-style-unit', 'px');
   goog.events.listen(this.leftInput,
-      'change',
+      goog.events.EventType.INPUT,
       this.onPositionChanged,
       false,
       this);
@@ -122,7 +110,7 @@ silex.view.pane.PropertyPane.prototype.buildUi = function() {
   this.widthInput.setAttribute('data-style-name', 'width');
   this.widthInput.setAttribute('data-style-unit', 'px');
   goog.events.listen(this.widthInput,
-      'change',
+      goog.events.EventType.INPUT,
       this.onPositionChanged,
       false,
       this);
@@ -130,7 +118,7 @@ silex.view.pane.PropertyPane.prototype.buildUi = function() {
   this.topInput.setAttribute('data-style-name', 'top');
   this.topInput.setAttribute('data-style-unit', 'px');
   goog.events.listen(this.topInput,
-      'change',
+      goog.events.EventType.INPUT,
       this.onPositionChanged,
       false,
       this);
@@ -138,38 +126,10 @@ silex.view.pane.PropertyPane.prototype.buildUi = function() {
   this.heightInput.setAttribute('data-style-name', 'height');
   this.heightInput.setAttribute('data-style-unit', 'px');
   goog.events.listen(this.heightInput,
-      'change',
+      goog.events.EventType.INPUT,
       this.onPositionChanged,
       false,
       this);
-/*
-  this.bottomInput = goog.dom.getElementByClass('bottom-input');
-  this.bottomInput.setAttribute('data-style-name', 'bottom');
-  this.bottomInput.setAttribute('data-style-unit', 'px');
-  goog.events.listen(this.bottomInput,
-      'change',
-      this.onPositionChanged,
-      false,
-      this);
-  this.rightInput = goog.dom.getElementByClass('right-input');
-  this.rightInput.setAttribute('data-style-name', 'right');
-  this.rightInput.setAttribute('data-style-unit', 'px');
-  goog.events.listen(this.rightInput,
-      'change',
-      this.onPositionChanged,
-      false,
-      this);
-
-  // z index
-  this.zIndexInput = goog.dom.getElementByClass('z-index-input');
-  this.zIndexInput.setAttribute('data-style-name', 'zIndex');
-  this.zIndexInput.setAttribute('data-style-unit', '');
-  goog.events.listen(this.zIndexInput,
-      'change',
-      this.onPositionChanged,
-      false,
-      this);
-*/
 };
 
 
@@ -196,6 +156,7 @@ silex.view.pane.PropertyPane.prototype.onPositionChanged =
  * redraw the properties
  */
 silex.view.pane.PropertyPane.prototype.redraw = function() {
+  if (this.iAmSettingValue) return;
   // call super
   goog.base(this, 'redraw');
 
@@ -219,60 +180,6 @@ silex.view.pane.PropertyPane.prototype.redraw = function() {
 
     // resolve the template
     if (this.element) {
-/*
-    var editionContainer = goog.dom.getElementByClass('edition-container', this.element);
-      var templateHtml = goog.dom.getElementByClass('edition-template', this.element).innerHTML;
-      editionContainer.innerHTML = silex.utils.Dom.renderList(templateHtml, [{
-        htmlEditor: (type === silex.model.Element.TYPE_HTML)?'inherit':'none',
-        textEditor: (type === silex.model.Element.TYPE_TEXT)?'inherit':'none',
-        imageEditor: (type === silex.model.Element.TYPE_IMAGE)?'inherit':'none',
-        imageUrl: imageUrl
-      }]);
-
-      // HTML editor
-      var buttonElement = goog.dom.getElementByClass('html-editor-button', editionContainer);
-      if (buttonElement) {
-        var button = new goog.ui.CustomButton();
-        button.decorate(buttonElement);
-        goog.events.listen(buttonElement,
-            goog.events.EventType.CLICK,
-            this.editHTML,
-            false);
-      }
-      // text editor
-      var buttonElement = goog.dom.getElementByClass('text-editor-button', editionContainer);
-      if (buttonElement) {
-        var button = new goog.ui.CustomButton();
-        button.decorate(buttonElement);
-        goog.events.listen(buttonElement,
-            goog.events.EventType.CLICK,
-            this.editText,
-            false);
-      }
-      if (type === silex.model.Element.TYPE_IMAGE) {
-        // browse for image button
-        var buttonElement = goog.dom.getElementByClass('image-url-button', editionContainer);
-        if (buttonElement) {
-          var button = new goog.ui.CustomButton();
-          button.decorate(buttonElement);
-          goog.events.listen(buttonElement,
-              goog.events.EventType.CLICK,
-              this.selectImage,
-              false);
-        }
-        // edit image url text field
-        var inputElement = goog.dom.getElementByClass('image-url-input',
-            editionContainer);
-        if (inputElement) {
-          goog.events.listen(inputElement, 'change', function() {
-            if (this.component && !this.isRedraw) {
-              if (type === silex.model.Element.TYPE_IMAGE)
-                this.setImage(inputElement.value);
-            }
-          }, false, this);
-        }
-      }
-*/
       // position and size
       if (goog.dom.classes.has(element, 'editable-style')) {
         if (element.style.left !== undefined) {
@@ -303,28 +210,6 @@ silex.view.pane.PropertyPane.prototype.redraw = function() {
         else {
           this.heightInput.value = '';
         }
-/*
-        if (element.style.bottom !== undefined) {
-          this.bottomInput.value = element.style.bottom.substr(0,
-              element.style.bottom.indexOf('px'));
-        }
-        else {
-          this.bottomInput.value = '';
-        }
-        if (element.style.right !== undefined) {
-          this.rightInput.value = element.style.right.substr(0,
-              element.style.right.indexOf('px'));
-        }
-        else {
-          this.rightInput.value = '';
-        }
-        if (element.style.zIndex !== undefined) {
-          this.zIndexInput.value = element.style.zIndex;
-        }
-        else {
-          this.zIndexInput.value = '';
-        }
-*/
       }
       else {
         // case of the stage
@@ -332,17 +217,7 @@ silex.view.pane.PropertyPane.prototype.redraw = function() {
         this.widthInput.value = '';
         this.topInput.value = '';
         this.heightInput.value = '';
-/*
-        this.bottomInput.value = '';
-        this.rightInput.value = '';
-        this.zIndexInput.value = '';
-*/
       }
-    }
-    else {
-//      if (editionContainer) {
-//        editionContainer.innerHTML = '';
-//      }
     }
   }
 };
