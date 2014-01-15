@@ -38,15 +38,27 @@ silex.view.Stage = function(element, bodyElement, headElement) {
 
   // init the view
   this.initEvents()
+
+  // create an input element to get the focus
+  this.focusInput = goog.dom.createElement('input');
+  //this.focusInput.style.visibility = 'hidden';
+  this.focusInput.style.left = '-1000px';
+  this.focusInput.style.position = 'absolute';
+  document.body.appendChild(this.focusInput);
 }
 
 // inherit from silex.view.ViewBase
 goog.inherits(silex.view.Stage, silex.view.ViewBase);
 
 /**
- * class name for the stage element
+ * input element to get the focus
  */
 silex.view.Stage.STAGE_CLASS_NAME = 'silex-stage-body';
+
+/**
+ * class name for the stage element
+ */
+silex.view.Stage.prototype.focusInput;
 
 /**
  * init stage events
@@ -59,13 +71,6 @@ silex.view.Stage.prototype.initEvents = function () {
 
   // detect mouse down
   goog.events.listen(this.element, 'mousedown', function(e) {
-    this.element.focus();
-/*
-    var focused = goog.dom.getActiveElement();
-    if (focused) {
-      focused.setFocus(false);
-    }
-*/
     if (this.onStatus) this.onStatus('select', silex.utils.EditablePlugin.getFirstEditableParent(e.target));
     this.isDragging = true;
   }, false, this);
@@ -75,6 +80,10 @@ silex.view.Stage.prototype.initEvents = function () {
     if (this.isDragging) {
       if (this.onStatus) this.onStatus('change', e.target);
       this.isDragging = false;
+      // remove the focus from text fields
+      this.focusInput.focus();
+      this.focusInput.blur();
+      console.log(this.focusInput);
     }
   }, false, this);
   // dispatch event when an element has been moved
