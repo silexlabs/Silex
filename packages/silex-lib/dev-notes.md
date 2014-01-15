@@ -11,17 +11,24 @@ selenium in npm https://npmjs.org/package/selenium-webdriver
 
 bugs
 
-* log CE bugs/feature requests in github
-* retro compat: texts were in containers?
+* css classes text field need to hit enter, same for border width
 * focus stays on text fields when click on stage
+
+* h scroll when trying to grab the right of the bg
+
+* drop zone highlight http://jqueryui.com/droppable/#accepted-elements
+* paged-element-visible class visible in the inline editor
+* retro compat: texts were in containers?
 * open a non-silex site => warn
 * esc = deselect
-* focus on css and js editors when open
 * lorem ipsum do not send change event
 * ancres html?
+* log CE bugs/feature requests in github
 * file::isDirty => message to prevent quit
 * notifications?
 * ?? New site => BG size depends on the stage size
+
+* setClassName dans model.element, pas dans helper.Style
 
 > texte :
 > - pas de justification
@@ -65,6 +72,19 @@ Explain this in a readme
 
 ####Container layout
 
+####solution with bootstrap
+
+* each element has the option to be responsive/positioned
+* then elements are draggable like in a list inside their containers and canot be resized (content det the height)
+* for containers it means to have class row + col-***-* and for other comps to have a col-***-* class (body should always have row)
+* user can choose in funtion of the viewport size: the number of col, the visibility (the offset? makes it more complicated for drag/drop)
+* drop an element in responsive container => makes it responsive
+* silex warning when a responsive element is in or contains non responsive elements
+* display the 12 col grind when a container is responsive?
+* preview at the site in a phone, tablet, desktop
+
+####other solution
+
 * none(abs), horizontal, vertical
   => then enable padding
   => use goog.fx.DragListGroup + goog.fx.DragScrollSupport
@@ -74,17 +94,6 @@ OR
  + scroll / adapt to content
  + v/h align
  + Datasource
-
-Style in Silex
-- In the text editor, styles
-- style editor = Loren ipsum text and google closure editor
-  + select the style to edit
-  + hover/Normal/press
-- default styles: normal, title1/2/3/4, quote, code...
-- todo in the future: add/remove custom styles
-
-bugs
-- selection de folder dans CE
 
 ####2nd step of publish
 
@@ -252,6 +261,44 @@ et pour "l'edition du html container", je parle de insert > container
 
 Ariel
 
+
+••••••••••••••••••••••• POINT FORT ••••••••••••••••
+
+- Espace de travail bien pensé.
+- Sensation d'utilisation agréable et réactif.
+- La publication (exportation) est agréable à utiliser.
+
+
+
+••••••••••••••••••••••• ERGONOMIE •••••••••••••••••••••••••
+
+- Difficulté à sélectionner les éléments, parfois impossible avec des éléments de même taille sur la même position (ex: image avec par dessus une texture).
+
+- Ajouter peut être un "nom/titre" visible sur la scène sur les container
+
+- Pas de Copier/Coller
+
+- Menu rapide avec des pictos … serai un plus ?
+
+- Pouvoir modifier la dimension des fenêtres de l'espace de travail … serai un plus ?
+
+- Ajout d'un avatar avec le silex serveur peut rendre le compte d'un utilisateur plus personnel) et d'une certaine façon s'approprier plus intimement Silex ??
+
+
+
+••••••••••••••••••••••• SUGJESTION + ••••••••••••••••
+
+- Des Plugins Element & container (ex: SlideShow, bouton à plusieurs état, et des chose plus complexe: menu déroulant, bouton image+fond+texte, ...)
+
+- Pourquoi pas une scène dédier à la création du footer qui se "colle" à chaque bas de page (je sais pas si c'est possible et utile ?)
+
+- Pas de rotation des éléments en mode Normal
+
+- Ajout de Web-font sur le texte-edit, il y a quelques webfont sur le texte-edit mais ne fonctionne pas.
+
+- Cadenat & Hide-show icône sur les éléments … serai un plus ?
+
+- La publication directement sur le FTP.
 
 ##Readme
 

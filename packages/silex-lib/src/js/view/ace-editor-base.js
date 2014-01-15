@@ -103,6 +103,7 @@ silex.view.AceEditorBase.prototype.openEditor = function(initialValue) {
   // set value
   this.iAmSettingValue = true;
   this.ace.setValue(initialValue);
+  this.ace.focus();
   this.iAmSettingValue = false;
   // force ace redraw
   this.ace.resize();
