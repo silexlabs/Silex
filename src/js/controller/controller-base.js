@@ -180,7 +180,7 @@ silex.controller.ControllerBase.prototype.addElement = function(type) {
 silex.controller.ControllerBase.prototype.styleChanged = function(name, value) {
   // style of the element has changed
   var element = this.view.stage.getSelection()[0];
-  if (element && name){
+  if (element){
     // update the model
     this.model.element.setStyle(element, name, value);
     // redraw the data
@@ -200,7 +200,7 @@ silex.controller.ControllerBase.prototype.styleChanged = function(name, value) {
 silex.controller.ControllerBase.prototype.propertyChanged = function(name, value) {
   // style of the element has changed
   var element = this.view.stage.getSelection()[0];
-  if (element && name){
+  if (element){
     // update the model
     this.model.element.setProperty(element, name, value);
     // redraw the data
@@ -234,7 +234,7 @@ silex.controller.ControllerBase.prototype.openJsEditor = function() {
 silex.controller.ControllerBase.prototype.setClassName = function(name) {
   // style of the element has changed
   var element = this.view.stage.getSelection()[0];
-  if (element && name){
+  if (element){
     // update the model
     silex.utils.Style.setClassName(element, name);
     // redraw the data

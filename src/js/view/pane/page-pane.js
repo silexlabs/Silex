@@ -93,16 +93,10 @@ silex.view.pane.PagePane.prototype.buildUi = function() {
 
   // Watch for field changes, to display below.
   goog.events.listen(linkInputElement,
-      goog.ui.Component.EventType.CHANGE,
+      goog.events.EventType.INPUT,
       this.onLinkTextChanged,
       false,
       this);
-  goog.events.listen(linkInputElement,
-      goog.events.EventType.KEYDOWN,
-      this.onLinkTextChanged,
-      false,
-      this);
-
 };
 
 
@@ -208,7 +202,15 @@ silex.view.pane.PagePane.prototype.onLinkChanged = function() {
  * the user changed the link text field
  */
 silex.view.pane.PagePane.prototype.onLinkTextChanged = function() {
-  this.onStatus('addLink', this.linkInputTextField.getValue());
+  this.iAmSettingValue = true;
+  try{
+    this.onStatus('addLink', this.linkInputTextField.getValue());
+  }
+  catch(err){
+    // error which will not keep this.iAmSettingValue to true
+    console.log('an error occured while editing the value', err);
+  }
+  this.iAmSettingValue = false;
 };
 
 
@@ -216,6 +218,7 @@ silex.view.pane.PagePane.prototype.onLinkTextChanged = function() {
  * redraw the properties
  */
 silex.view.pane.PagePane.prototype.redraw = function() {
+  if (this.iAmSettingValue) return;
   // call super
   goog.base(this, 'redraw');
 
