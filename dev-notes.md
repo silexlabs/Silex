@@ -11,9 +11,6 @@ selenium in npm https://npmjs.org/package/selenium-webdriver
 
 bugs
 
-* css classes text field need to hit enter, same for border width
-* focus stays on text fields when click on stage
-
 * h scroll when trying to grab the right of the bg
 
 * drop zone highlight http://jqueryui.com/droppable/#accepted-elements
