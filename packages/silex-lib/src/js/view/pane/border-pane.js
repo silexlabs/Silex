@@ -164,7 +164,7 @@ silex.view.pane.BorderPane.prototype.buildUi = function() {
         this);
   }
   goog.events.listen(this.borderWidthInput,
-      'change',
+      goog.events.EventType.INPUT,
       this.onBorderWidthChanged,
       false,
       this);
@@ -184,7 +184,7 @@ silex.view.pane.BorderPane.prototype.buildUi = function() {
       false,
       this);
   goog.events.listen(this.cornerRadiusInput,
-      'change',
+      goog.events.EventType.INPUT,
       this.onBorderCornerChanged,
       false,
       this);
@@ -195,6 +195,7 @@ silex.view.pane.BorderPane.prototype.buildUi = function() {
  * redraw the properties
  */
 silex.view.pane.BorderPane.prototype.redraw = function() {
+  if (this.iAmSettingValue) return;
   // call super
   goog.base(this, 'redraw');
 
@@ -269,13 +270,13 @@ silex.view.pane.BorderPane.prototype.redraw = function() {
     // border radius
     if (element.style.borderRadius) {
       var values = element.style.borderRadius.split(' ');
-      // The four values for each radii are given in the order 
-      // top-left, top-right, bottom-right, bottom-left. 
+      // The four values for each radii are given in the order
+      // top-left, top-right, bottom-right, bottom-left.
       // If top-right is omitted it is the same as top-left.
       if (!goog.isDef(values[1])) values[1] = values[0];
-      // If bottom-right is omitted it is the same as top-left. 
+      // If bottom-right is omitted it is the same as top-left.
       if (!goog.isDef(values[2])) values[2] = values[0];
-      // If bottom-left is omitted it is the same as top-right. 
+      // If bottom-left is omitted it is the same as top-right.
       if (!goog.isDef(values[3])) values[3] = values[1];
       // get corner radius value
       var val = values[0];
@@ -298,7 +299,7 @@ silex.view.pane.BorderPane.prototype.redraw = function() {
       }
       else{
         this.resetBorderRadius();
-      } 
+      }
     }
     else {
       this.resetBorderRadius();
@@ -308,7 +309,7 @@ silex.view.pane.BorderPane.prototype.redraw = function() {
 };
 
 /**
- * reset UI 
+ * reset UI
  */
 silex.view.pane.BorderPane.prototype.resetBorderRadius = function() {
   this.cornerRadiusInput.value = '';
@@ -323,7 +324,7 @@ silex.view.pane.BorderPane.prototype.resetBorderRadius = function() {
 
 
 /**
- * reset UI 
+ * reset UI
  */
 silex.view.pane.BorderPane.prototype.resetBorder = function() {
   this.borderWidthInput.value = '';

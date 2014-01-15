@@ -57,8 +57,7 @@ silex.view.CssEditor.prototype.ace;
  */
 silex.view.pane.StylePane.prototype.buildUi = function() {
   this.cssClassesInput = goog.dom.getElementByClass('style-css-classes-input', this.element);
-  goog.events.listen(this.cssClassesInput, 'change', this.onInputChanged, false, this);
-
+  goog.events.listen(this.cssClassesInput, goog.events.EventType.INPUT, this.onInputChanged, false, this);
   this.ace = ace.edit(goog.dom.getElementByClass('element-style-editor', this.element));
   this.iAmSettingValue = false;
   //this.ace.setTheme("ace/theme/monokai");
@@ -77,6 +76,7 @@ silex.view.pane.StylePane.prototype.buildUi = function() {
  * redraw the properties
  */
 silex.view.pane.StylePane.prototype.redraw = function() {
+  if (this.iAmSettingValue) return;
   // call super
   goog.base(this, 'redraw');
 
@@ -89,15 +89,27 @@ silex.view.pane.StylePane.prototype.redraw = function() {
     var value = element.getAttribute('style');
     if (value){
       this.iAmSettingValue = true;
-      var str = '.element{\n'+value.replace(/; /g, ';\n')+'\n}';
-      var pos = this.ace.getCursorPosition();
-      this.ace.setValue(str);
-      this.ace.gotoLine(pos.row + 1, pos.column, false);
+      try{
+        var str = '.element{\n'+value.replace(/; /g, ';\n')+'\n}';
+        var pos = this.ace.getCursorPosition();
+        this.ace.setValue(str);
+        this.ace.gotoLine(pos.row + 1, pos.column, false);
+      }
+      catch(err){
+        // error which will not keep this.iAmSettingValue to true
+        console.log('an error occured while editing the value', err);
+      }
       this.iAmSettingValue = false;
     }
     else{
       this.iAmSettingValue = true;
-      this.ace.setValue('');
+      try{
+        this.ace.setValue('.element{\n\n}');
+      }
+      catch(err){
+        // error which will not keep this.iAmSettingValue to true
+        console.log('an error occured while editing the value', err);
+      }
       this.iAmSettingValue = false;
     }
   }
@@ -108,13 +120,25 @@ silex.view.pane.StylePane.prototype.redraw = function() {
  * User has selected a color
  */
 silex.view.pane.StylePane.prototype.onInputChanged = function(event) {
-  if (this.onStatus) this.onStatus('classNameChanged', this.cssClassesInput.value);
+  if (this.iAmSettingValue) return;
+  if (this.onStatus){
+    this.iAmSettingValue = true;
+    try{
+      this.onStatus('classNameChanged', this.cssClassesInput.value);
+    }
+    catch(err){
+      // error which will not keep this.iAmSettingValue to true
+      console.log('an error occured while editing the value', err);
+    }
+    this.iAmSettingValue = false;
+  }
 };
 
 /**
  * the content has changed, notify the controler
  */
 silex.view.pane.StylePane.prototype.contentChanged = function() {
+  if (this.iAmSettingValue) return;
   var value = this.ace.getValue();
   if(value){
     value = value.replace('.element{\n', '');
@@ -122,6 +146,14 @@ silex.view.pane.StylePane.prototype.contentChanged = function() {
     value = value.replace(/\n/, ' ');
   }
   if (this.onStatus) {
-    this.onStatus('propertyChanged', 'style', value);
+    this.iAmSettingValue = true;
+    try{
+      this.onStatus('propertyChanged', 'style', value);
+    }
+    catch(err){
+      // error which will not keep this.iAmSettingValue to true
+      console.log('an error occured while editing the value', err);
+    }
+    this.iAmSettingValue = false;
   }
 };
