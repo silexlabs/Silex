@@ -11,7 +11,6 @@ selenium in npm https://npmjs.org/package/selenium-webdriver
 
 bugs
 
-* log CE bugs/feature requests in github
 * retro compat: texts were in containers?
 * focus stays on text fields when click on stage
 * open a non-silex site => warn
@@ -83,17 +82,12 @@ Style in Silex
 - default styles: normal, title1/2/3/4, quote, code...
 - todo in the future: add/remove custom styles
 
-bugs
-- selection de folder dans CE
-
 ####2nd step of publish
 
 * ? publish super lent => plusieurs opérations en parallele
 * add links to sync DB folder with an FTP FTPBox and http://alternativeto.net/software/ftpbox/
-* missing in CE: choose a folder in CE
 * publish settings = choose a folder in CE
 * publish in the file menu => check that CE is logged in and do the export to clean html
-* missing in CE: check logged in and relogin
 
 ####Containers evolution
 
