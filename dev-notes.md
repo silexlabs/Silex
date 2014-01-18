@@ -15,6 +15,7 @@ bugs
 
 * drop zone highlight http://jqueryui.com/droppable/#accepted-elements
 * paged-element-visible class visible in the inline editor
+
 * retro compat: texts were in containers?
 * open a non-silex site => warn
 * esc = deselect
@@ -92,14 +93,23 @@ OR
  + v/h align
  + Datasource
 
+<<<<<<< HEAD
+=======
+Style in Silex
+- In the text editor, styles
+- style editor = Loren ipsum text and google closure editor
+  + select the style to edit
+  + hover/Normal/press
+- default styles: normal, title1/2/3/4, quote, code...
+- todo in the future: add/remove custom styles
+
+>>>>>>> 530a43a111f2188102c7ace32f3cf0d8d249fb53
 ####2nd step of publish
 
 * ? publish super lent => plusieurs opérations en parallele
 * add links to sync DB folder with an FTP FTPBox and http://alternativeto.net/software/ftpbox/
-* missing in CE: choose a folder in CE
 * publish settings = choose a folder in CE
 * publish in the file menu => check that CE is logged in and do the export to clean html
-* missing in CE: check logged in and relogin
 
 ####Containers evolution
 
