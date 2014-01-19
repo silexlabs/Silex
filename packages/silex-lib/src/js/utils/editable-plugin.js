@@ -26,6 +26,7 @@ silex.utils.EditablePlugin = function() {
 
 
 silex.utils.EditablePlugin.EDITABLE_CLASS_NAME = 'editable-style';
+silex.utils.EditablePlugin.EDITABLE_CREATED_CLASS_NAME = 'editable-plugin-created';
 
 silex.utils.EditablePlugin.UI_RESIZABLE_CLASS_NAME = 'ui-resizable';
 silex.utils.EditablePlugin.UI_DRAGGABLE_CLASS_NAME = 'ui-draggable';

@@ -83,6 +83,15 @@ silex.utils.PageablePlugin.PAGED_CLASS_NAME = 'paged-element';
 
 
 /**
+ * constant for the class name of elements when it is in a visible page
+ * this css class is set in pageable.js
+ * @const
+ * @type {string}
+ */
+silex.utils.PageablePlugin.PAGED_VISIBLE_CLASS_NAME = 'paged-element-visible';
+
+
+/**
  * retrieve the first parent which is visible only on some pages
  * @return null or the element or one of its parents which has the css class silex.utils.PageablePlugin.PAGED_CLASS_NAME
  */
