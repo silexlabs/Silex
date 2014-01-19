@@ -33,9 +33,6 @@ silex.model.Body = function(bodyElement, headElement) {
   // call super
   goog.base(this, bodyElement, headElement);
 
-  // allow drops
-  silex.utils.EditablePlugin.setEditable(bodyElement, true, true);
-
   // activate pageable plugin
   silex.utils.PageablePlugin.setPageable(bodyElement, true);
 };

@@ -10,3 +10,9 @@ dist/client/js/debug.js
 dist/client/js/admin*
 dist/client/css/admin*
 test/selenium-server-standalone-2.37.0.jar
+www/*
+!www/index.html
+!www/editable.html
+!www/assets
+!www/js
+!www/css

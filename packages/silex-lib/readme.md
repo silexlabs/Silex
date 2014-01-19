@@ -335,6 +335,8 @@ deployment
 
 Internationalization
 
+  * see this, used by etherpad http://translatewiki.net/
+
   * select "gettext" .po files from DB
   * mark text fields as translatable (will translate each p element of the text field)
   * a widget to display the languages and load the needed files, and translate dynamically the website (jquery plugin)

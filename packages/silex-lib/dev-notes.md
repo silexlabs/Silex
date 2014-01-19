@@ -15,7 +15,7 @@ bugs
 
 * drop zone highlight http://jqueryui.com/droppable/#accepted-elements
 * paged-element-visible class visible in the inline editor
-
+* silex.io -> silex.me
 * retro compat: texts were in containers?
 * open a non-silex site => warn
 * esc = deselect
@@ -27,6 +27,13 @@ bugs
 * ?? New site => BG size depends on the stage size
 
 * setClassName dans model.element, pas dans helper.Style
+
+* move static.silex.io to dist/
+
+widgets to do
+
+* add a list of the scripts and css files to include, in settings
+* add a "widgets/" folder with the contributed folders in git repo (in static?)
 
 > texte :
 > - pas de justification
@@ -67,6 +74,8 @@ Explain this in a readme
 * ?qos, système de logs/bug report http://jserrlog.appspot.com/
 
 
+How good is your website?
+https://plus.google.com/u/0/+PolGoasdou%C3%A9/posts/aZast8CsUsH?cfem=1
 
 ####Container layout
 

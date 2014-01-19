@@ -162,7 +162,7 @@ silex.controller.ControllerBase.prototype.addElement = function(type) {
     // update view
     this.view.propertyTool.redraw();
     // update drop zones z index
-    silex.utils.EditablePlugin.resetEditable(this.model.body.bodyElement);
+    silex.utils.EditablePlugin.resetEditable(this.model.body.bodyElement, true);
     // tracking / qos
     this.tracker.trackAction('controller-events', 'success', 'insert.'+type, 1);
   }
@@ -186,7 +186,7 @@ silex.controller.ControllerBase.prototype.styleChanged = function(name, value) {
     // redraw the data
     this.view.propertyTool.redraw();
     // update drop zones z index
-    silex.utils.EditablePlugin.resetEditable(this.model.body.bodyElement);
+    silex.utils.EditablePlugin.resetEditable(this.model.body.bodyElement, true);
   }
   else{
     console.error('can not set style ', name, ' on element ', element);
