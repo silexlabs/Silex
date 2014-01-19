@@ -37,9 +37,11 @@ $.widget('silexlabs.editable', {
 		}
 	},
 	_create: function() {
-		this.enableEditable();
-	},
-	_destroy: function() {
+    $(this.element).addClass('editable-plugin-created')
+    this.enableEditable();
+  },
+  _destroy: function() {
+    $(this.element).removeClass('editable-plugin-created')
 		if (this.options.isDraggable != false)
 			this.element.draggable('destroy');
 		if (this.options.isResizable != false)

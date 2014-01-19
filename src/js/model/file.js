@@ -99,7 +99,7 @@ silex.model.File.prototype.setHtml = function(rawHtml) {
   // set body style
   this.bodyElement.setAttribute('style', bodyStyle);
   // make editable again
-  silex.utils.EditablePlugin.setEditable(this.bodyElement, true);
+  silex.utils.EditablePlugin.setEditable(this.bodyElement, true, true);
   // set head content
   this.headElement.innerHTML = headHtml;
 
@@ -116,7 +116,7 @@ silex.model.File.prototype.getHtml = function() {
   // get html
   var bodyStr = this.bodyElement.innerHTML;
   // make editable again
-  silex.utils.EditablePlugin.setEditable(this.bodyElement, true);
+  silex.utils.EditablePlugin.setEditable(this.bodyElement, true, true);
   // handle the body style
   var styleStr = this.bodyElement.getAttribute('style') || '';
 

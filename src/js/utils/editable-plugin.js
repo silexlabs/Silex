@@ -59,17 +59,18 @@ silex.utils.EditablePlugin.getFirstEditableParent = function(element) {
 /**
  * update drop zones z index
  */
-silex.utils.EditablePlugin.resetEditable = function(element) {
+silex.utils.EditablePlugin.resetEditable = function(element, opt_isRootDroppableOnly) {
   // without timer, set style is not applyed, related to stageCallback change event
   setTimeout(function() {
     silex.utils.EditablePlugin.setEditable(element, false);
-    silex.utils.EditablePlugin.setEditable(element, true);
+    silex.utils.EditablePlugin.setEditable(element, true, opt_isRootDroppableOnly);
   }, 10);
 }
 /**
  * init, activate and remove the "editable" jquery plugin
  */
 silex.utils.EditablePlugin.setEditable = function(element, isEditable, opt_isRootDroppableOnly) {
+  console.log('setEditable', arguments);
   // activate editable plugin
   if (isEditable) {
 
@@ -110,10 +111,12 @@ silex.utils.EditablePlugin.setEditable = function(element, isEditable, opt_isRoo
   // activate editable plugin
   else {
     // deactivate editable plugin
-    $('.editable-style', element).editable('destroy');
+    $('.editable-plugin-created', element).editable('destroy');
 
     // handle the element itself
-    $(element).editable('destroy');
+    if($(element).hasClass('editable-plugin-created')){
+      $(element).editable('destroy');
+    }
 
     // cleanup the dom
     $(element).find(silex.model.Element.SELECTED_CLASS_NAME)
