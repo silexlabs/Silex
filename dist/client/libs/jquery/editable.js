@@ -76,6 +76,8 @@ $.widget('silexlabs.editable', {
 			this.element.droppable({
 				// prevent propagation
 				greedy: true,
+        // display drop zone highlight
+        hoverClass: "ui-dropzone-active",
 
 				drop: function( event, ui ) {
 					// reference to the elements

@@ -11,7 +11,6 @@ selenium in npm https://npmjs.org/package/selenium-webdriver
 
 bugs
 
-* drop zone highlight http://jqueryui.com/droppable/#accepted-elements
 * paged-element-visible class visible in the inline editor
 * silex.io -> silex.me
 * retro compat: texts were in containers?
