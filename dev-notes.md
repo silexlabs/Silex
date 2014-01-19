@@ -11,8 +11,6 @@ selenium in npm https://npmjs.org/package/selenium-webdriver
 
 bugs
 
-* h scroll when trying to grab the right of the bg
-
 * drop zone highlight http://jqueryui.com/droppable/#accepted-elements
 * paged-element-visible class visible in the inline editor
 * silex.io -> silex.me
