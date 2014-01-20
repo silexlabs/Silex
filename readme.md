@@ -36,12 +36,7 @@ GPL license
 
 * http://www.silexlabs.org/silex/silex-licensing/
 
-Main contributors
-
-* Alex lexoyo Hoyau @lexoyo
-* Thomas zabojad Fetiveau http://www.tokom.fr/
-* Pol superwup Goasdoué @superwup
-* Nicolas "silex" Masson @NicoSilex‎
+[Contributors list](https://github.com/silexlabs/Silex/blob/master/contributors.md)
 
 ##Installation on your local computer
 
@@ -333,25 +328,6 @@ deployment
 
   * https://github.com/lorenwest/node-monitor
 
-Internationalization
-
-  * see this, used by etherpad http://translatewiki.net/
-
-  * select "gettext" .po files from DB
-  * mark text fields as translatable (will translate each p element of the text field)
-  * a widget to display the languages and load the needed files, and translate dynamically the website (jquery plugin)
-  * links
-
-    * http://i18next.com/
-    * http://www.poedit.net/screenshots.php
-    * http://zanata.org/
-    * http://stackoverflow.com/questions/7175597/internationalizaton-of-html-files
-    * http://www.grails.org/plugin/i18n-gettext
-    * http://slexaxton.github.io/Jed/
-    * http://code.google.com/p/jquery-i18n-properties/
-    * http://stackoverflow.com/questions/13895012/what-plugin-to-use-for-internationalization-with-jquery-mobile-and-requirejs
-    * http://blogs.technet.com/b/port25/archive/2010/06/15/new-open-source-jquery-globalization-plugin-released.aspx
-
 Feature requests to considere
 
 * checkbox to adapt w/h to content
@@ -372,3 +348,13 @@ Quand ine layout box est sélectionnée, dans le Menu, on peut ajouter  des layo
 * composant pour intégration de blog dans une page silex?
 * pareil pour vente en ligne? des widgets?
 
+##Dev tools to do
+
+Pour readme de unifies et silex
+https://github.com/ether/etherpad-lite
+
+Plugin request, and features request
+https://github.com/ether/etherpad-lite/issues/1853
+
+Pour page contribute
+http://blog.etherpad.org/2013/11/11/getting-started-contributing/
