@@ -237,6 +237,8 @@ silex.model.File.prototype.setUrl = function(url) {
  * publish the file to a folder
  */
 silex.model.File.prototype.publish = function(url, cbk, opt_errCbk) {
+  console.log('publish to ', url);
+
   this.cleanup(
       goog.bind(function(html, css, js, files) {
         silex.service.SilexTasks.getInstance().publish(url, html, css, js, files, cbk, opt_errCbk);
@@ -367,6 +369,36 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
   // build a clean body clone
   var bodyElement = goog.dom.createElement('div');
   bodyElement.innerHTML = bodyStr;
+  // insert couchcms tags inside containers
+  var elements = goog.dom.getElementsByClass('couchcms-element', bodyElement);
+  goog.array.forEach(elements, function(element) {
+    console.log('couchcms container', element);
+    var elementInnerHTML = element.innerHTML;
+    var couchcmsType;
+    switch(element.getAttribute(silex.model.Element.TYPE_ATTR)){
+      case silex.model.Element.TYPE_TEXT:
+        couchcmsType = "richtext";
+        var editableName = couchcmsType+"_"+goog.dom.getTextContent(element);
+        editableName = editableName.replace(/\W/g, '');
+        element.innerHTML = "<cms:editable name='"+editableName+"' type='"+couchcmsType+"' width='100%' height='100%'>"+elementInnerHTML+"</cms:editable>";
+        break;
+      case silex.model.Element.TYPE_HTML:
+        couchcmsType = "text";
+        var editableName = couchcmsType+"_"+goog.dom.getTextContent(element);
+        editableName = editableName.replace(/\W/g, '');
+        element.innerHTML = "<cms:editable name='"+editableName+"' type='"+couchcmsType+"' width='100%' height='100%'>"+elementInnerHTML+"</cms:editable>";
+        break;
+      case silex.model.Element.TYPE_IMAGE:
+        couchcmsType = "image";
+        var img = goog.dom.getElementsByTagNameAndClass('img', null, element)[0];
+        var editableName = couchcmsType+"_"+img.getAttribute('src');
+        editableName = editableName.replace(/\W/g, '');
+        img.setAttribute('src',
+          "<cms:editable name='"+editableName+"' type='"+couchcmsType+"' width='100%' height='100%'></cms:editable>"
+          );
+        break;
+    }
+  }, this);
 
   // head
   var headElement = goog.dom.createElement('div');
@@ -479,14 +511,14 @@ this does nothing: node.style.backgroundImage = "url('" + info.destPath + "')";
 
   // final html page
   var html = '';
-  html += '<html>';
+  html += "<?php require_once( 'couch/cms.php' ); ?><cms:template title='"+goog.dom.getElementsByTagNameAndClass('title', null, this.headElement)[0].innerHTML+"' /><html>";
   html += '<head>\
       ' + headElement.innerHTML + '\
       <link href="css/styles.css" rel="stylesheet">\
       <script src="js/script.js" type="text/javascript"></script>\
   </head>';
   html += '<body>' + bodyElement.innerHTML + '</body>';
-  html += '</html>';
+  html += '</html><?php COUCH::invoke(); ?>';
 
   // callback
   cbk(html, cssStr, jsString, files);

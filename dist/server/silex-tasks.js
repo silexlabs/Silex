@@ -82,7 +82,7 @@ exports.publish = function(cbk, req, res, next, path, html, css, js, files){
                         }
                         else{
                             // write the html
-                            exports.writeFileToService(req, res, next, path + '/index.html', html, function (error){
+                            exports.writeFileToService(req, res, next, path + '/index.php', html, function (error){
                                 if(error){
                                     cbk({success:false, code: error.code});
                                 }
