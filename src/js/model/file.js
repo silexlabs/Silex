@@ -379,22 +379,28 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
       case silex.model.Element.TYPE_TEXT:
         couchcmsType = "richtext";
         editableName = couchcmsType+"_"+goog.dom.getTextContent(element);
+        var elementInnerHTML = element.innerHTML;
+        editableName = editableName.replace(/\W/g, '');
+        if (editableName.length>30) editableName = editableName.substr(0, 30);
+        element.innerHTML = "<cms:editable name='"+editableName+"' type='"+couchcmsType+"'>"+elementInnerHTML+"</cms:editable>";
         break;
       case silex.model.Element.TYPE_HTML:
-        couchcmsType = "text";
+        couchcmsType = "textarea";
         editableName = couchcmsType+"_"+goog.dom.getTextContent(element);
+        var elementInnerHTML = element.innerHTML;
+        editableName = editableName.replace(/\W/g, '');
+        if (editableName.length>30) editableName = editableName.substr(0, 30);
+        element.innerHTML = "<cms:editable no_xss_check='1' name='"+editableName+"' type='"+couchcmsType+"'>"+elementInnerHTML+"</cms:editable>";
         break;
       case silex.model.Element.TYPE_IMAGE:
         couchcmsType = "image";
         var img = goog.dom.getElementsByTagNameAndClass('img', null, element)[0];
         editableName = couchcmsType+"_"+img.getAttribute('src');
         editableName = editableName.replace(/\W/g, '');
-        img.setAttribute('src', "__TO_BE_REPLACED__");
+        if (editableName.length>30) editableName = editableName.substr(0, 30);
+        img.setAttribute('src', "__TO_BE_REPLACED_START__"+editableName+"__TO_BE_REPLACED_END__");
         break;
     }
-    var elementInnerHTML = element.innerHTML;
-    editableName = editableName.replace(/\W/g, '');
-    element.innerHTML = "<cms:editable name='"+editableName+"' type='"+couchcmsType+"' width='100%' height='100%'>"+elementInnerHTML+"</cms:editable>";
   }, this);
 
   // head
@@ -508,7 +514,9 @@ this does nothing: node.style.backgroundImage = "url('" + info.destPath + "')";
 
   // final html page
   var html = '';
-  var bodyElementStr = bodyElement.innerHTML.replace(/__TO_BE_REPLACED__/g, '<cms:show editableName />');
+  var bodyElementStr = bodyElement.innerHTML;
+  bodyElementStr = bodyElementStr.replace(/__TO_BE_REPLACED_START__/g, "<cms:editable name='");
+  bodyElementStr = bodyElementStr.replace(/__TO_BE_REPLACED_END__/g, "' type='image' />");
   html += "<?php require_once( 'couch/cms.php' ); ?><cms:template title='"+goog.dom.getElementsByTagNameAndClass('title', null, this.headElement)[0].innerHTML+"' /><html>";
   html += '<head>\
       ' + headElement.innerHTML + '\
