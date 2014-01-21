@@ -24,6 +24,10 @@ UX & UI designer / Graphic designer
 
 ###[Thomas Fetiveau](http://www.tokom.fr/)
 
+Developped Cloud Explorer (the heart of Silex)
+
+Architect, consultant and developer for mobile and web [@zab0jad](https://twitter.com/zab0jad)
+
 ##One time contributors
 
 ###Régis
