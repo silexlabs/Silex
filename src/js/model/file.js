@@ -371,33 +371,30 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
   bodyElement.innerHTML = bodyStr;
   // insert couchcms tags inside containers
   var elements = goog.dom.getElementsByClass('couchcms-element', bodyElement);
+  var editableName;
   goog.array.forEach(elements, function(element) {
     console.log('couchcms container', element);
-    var elementInnerHTML = element.innerHTML;
     var couchcmsType;
     switch(element.getAttribute(silex.model.Element.TYPE_ATTR)){
       case silex.model.Element.TYPE_TEXT:
         couchcmsType = "richtext";
-        var editableName = couchcmsType+"_"+goog.dom.getTextContent(element);
-        editableName = editableName.replace(/\W/g, '');
-        element.innerHTML = "<cms:editable name='"+editableName+"' type='"+couchcmsType+"' width='100%' height='100%'>"+elementInnerHTML+"</cms:editable>";
+        editableName = couchcmsType+"_"+goog.dom.getTextContent(element);
         break;
       case silex.model.Element.TYPE_HTML:
         couchcmsType = "text";
-        var editableName = couchcmsType+"_"+goog.dom.getTextContent(element);
-        editableName = editableName.replace(/\W/g, '');
-        element.innerHTML = "<cms:editable name='"+editableName+"' type='"+couchcmsType+"' width='100%' height='100%'>"+elementInnerHTML+"</cms:editable>";
+        editableName = couchcmsType+"_"+goog.dom.getTextContent(element);
         break;
       case silex.model.Element.TYPE_IMAGE:
         couchcmsType = "image";
         var img = goog.dom.getElementsByTagNameAndClass('img', null, element)[0];
-        var editableName = couchcmsType+"_"+img.getAttribute('src');
+        editableName = couchcmsType+"_"+img.getAttribute('src');
         editableName = editableName.replace(/\W/g, '');
-        img.setAttribute('src',
-          "<cms:editable name='"+editableName+"' type='"+couchcmsType+"' width='100%' height='100%'></cms:editable>"
-          );
+        img.setAttribute('src', "__TO_BE_REPLACED__");
         break;
     }
+    var elementInnerHTML = element.innerHTML;
+    editableName = editableName.replace(/\W/g, '');
+    element.innerHTML = "<cms:editable name='"+editableName+"' type='"+couchcmsType+"' width='100%' height='100%'>"+elementInnerHTML+"</cms:editable>";
   }, this);
 
   // head
@@ -511,13 +508,14 @@ this does nothing: node.style.backgroundImage = "url('" + info.destPath + "')";
 
   // final html page
   var html = '';
+  var bodyElementStr = bodyElement.innerHTML.replace(/__TO_BE_REPLACED__/g, '<cms:show editableName />');
   html += "<?php require_once( 'couch/cms.php' ); ?><cms:template title='"+goog.dom.getElementsByTagNameAndClass('title', null, this.headElement)[0].innerHTML+"' /><html>";
   html += '<head>\
       ' + headElement.innerHTML + '\
       <link href="css/styles.css" rel="stylesheet">\
       <script src="js/script.js" type="text/javascript"></script>\
   </head>';
-  html += '<body>' + bodyElement.innerHTML + '</body>';
+  html += '<body>' + bodyElementStr + '</body>';
   html += '</html><?php COUCH::invoke(); ?>';
 
   // callback
