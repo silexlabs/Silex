@@ -40,17 +40,3 @@ body{
   color: inherit;
   text-decoration: underline;
 }
-/* text styles formatting */
-.text-element HEADER,
-.text-element H1,
-.text-element H2,
-.text-element H3,
-.text-element DIV,
-.text-element P,
-.text-element QUOTE {
-	color: #666666;
-	font-family: verdana, arial;
-}
-.text-element HEADER {
-	font-size: 45px;
-}
