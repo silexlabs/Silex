@@ -30,20 +30,27 @@ Uses:
 */
 module.exports = function(grunt) {
 
+  var production = false;
+  if (!grunt.file.exists('node_modules/grunt-contrib-watch')) {
+    production = true;
+  }
   grunt.loadNpmTasks('grunt-closure-tools');
-  grunt.loadNpmTasks('grunt-append-sourcemapping');
   grunt.loadNpmTasks('grunt-contrib-concat');
-  grunt.loadNpmTasks('grunt-contrib-csslint');
   grunt.loadNpmTasks('grunt-contrib-less');
-  grunt.loadNpmTasks('grunt-contrib-watch');
-  grunt.loadNpmTasks('grunt-closure-linter');
-  grunt.loadNpmTasks('grunt-simple-mocha');
   grunt.loadNpmTasks('grunt-contrib-jade');
 
-  grunt.task.renameTask('watch', 'doWatch')
+  if (!production){
+      grunt.loadNpmTasks('grunt-contrib-csslint');
+      grunt.loadNpmTasks('grunt-append-sourcemapping');
+      grunt.loadNpmTasks('grunt-contrib-watch');
+      grunt.loadNpmTasks('grunt-closure-linter');
+      grunt.loadNpmTasks('grunt-simple-mocha');
+      grunt.task.renameTask('watch', 'doWatch')
+  }
 
-  grunt.registerTask('heroku', ['deploy']);
-  grunt.registerTask('deploy', ['debugDeploy', 'releaseDeploy']);
+
+  grunt.registerTask('heroku', ['releaseDeploy']);
+  grunt.registerTask('deploy', ['releaseDeploy']);
   grunt.registerTask('releaseDeploy', ['concat', 'less:production', 'jade:release', 'closureBuilder:release']);
   grunt.registerTask('debugDeploy', ['concat', 'less:development', 'jade:debug', 'closureBuilder:debug', 'append-sourcemapping']);
   grunt.registerTask('check', ['htmllint', 'csslint:lax', 'closureLint']);

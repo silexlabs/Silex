@@ -1,6 +1,4 @@
 
-Refaire un tour sur les Articles atelier
-Refaire un tour sur newsletter (1 seule case par ligne, intro explicite) puis envoi newsletter
 Donner contenu newletter liste silex
 - changelog
 - ateliers
@@ -13,11 +11,8 @@ Donner contenu newletter liste silex
 #dev notes
 
 BUGS
-
-
-
-
-bugs
+paged-element-visible sauvegardé dans le html
+!! body 100% is not coverng the whole page in editor
 link to github issues in help
 https://github.com/silexlabs/Silex/issues/
 * set viewport size to background?
@@ -50,6 +45,14 @@ https://github.com/chrismear/github-issues-widget
 these tests would have avoid me to push bugs in production:
 https://docs.google.com/spreadsheet/ccc?key=0AhmdV6ktIMy1dGdONzVXSzFWZWdxbTVQamJlMFhVQ2c#gid=0
 
+Est ce que ce bouton te plait pour le bouton download? (on changera les couleurs bien sur)
+http://tympanus.net/Tutorials/CSSButtonsPseudoElements/index4.html#
+
+Et veux tu des boutons comme ca pour la nav?
+http://www.joepettersson.com/demo/css3-buttons/#
+
+Dans l'itération 2, on aura pas mal de trucs aussi à ajouter, genre des effets comme ca
+http://tympanus.net/Development/CreativeLinkEffects/
 
 ##Notes
 
