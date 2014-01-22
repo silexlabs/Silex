@@ -124,7 +124,7 @@ silex.model.File.prototype.getHtml = function() {
   var html = '';
   html += '<html>';
   html += '<head>' + this.headElement.innerHTML + '</head>';
-  html += '<body style="' + styleStr + '">' + bodyStr + '</body>';
+  html += '<body style="' + styleStr + '" class="silex-runtime">' + bodyStr + '</body>';
   html += '</html>';
 
   // return relative urls when possible
