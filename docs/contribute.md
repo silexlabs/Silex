@@ -8,7 +8,7 @@ Here is how to help and become a [Silex contributor](https://github.com/silexlab
 
 We have more and more people using the online version of Silex. Here you will find [instructions to install Silex](https://github.com/silexlabs/Silex) on a server you own or on a node.js hosting. If you do so, and you feel like maintaining your server over the years, Silex Labs will help you advertise your Silex instance and attract people.
 
-##Let the world know about Silex
+##Show us that you like Silex
 
 **Share Silex with the ones you love**. If someone you have informed about Silex releases a website, claim your free t-shirt :)
 

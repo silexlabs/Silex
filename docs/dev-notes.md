@@ -1,4 +1,8 @@
 
+
+class silex-runtime
+
+
 Donner contenu newletter liste silex
 - changelog
 - ateliers
@@ -11,6 +15,10 @@ Donner contenu newletter liste silex
 #dev notes
 
 BUGS
+text fields overflow
+delete stage => no more open files
+prevent links while editing
+suppr console traces
 paged-element-visible sauvegardé dans le html
 !! body 100% is not coverng the whole page in editor
 link to github issues in help

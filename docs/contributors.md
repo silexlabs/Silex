@@ -12,7 +12,7 @@ Javascript and node.js
 
 [@lexoyo](https://twitter.com/lexoyo)
 
-###Pol Goasdoué
+###[Pol Goasdoué](http://superwup.me)
 
 UX & UI designer / Graphic designer
 
