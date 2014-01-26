@@ -15,9 +15,12 @@ Donner contenu newletter liste silex
 #dev notes
 
 BUGS
+issues dans menu help
+piublish: bg color et silex-runtime
 text fields overflow
 delete stage => no more open files
 prevent links while editing
+mise en page page settings
 suppr console traces
 paged-element-visible sauvegardé dans le html
 !! body 100% is not coverng the whole page in editor
@@ -41,31 +44,6 @@ Cloud explorer
 
 
 
-####Silex LP
-
-share buttons
-http://www.creativesorcerers.com/tutorials/social-sharing-button-using-css3/
-
-github widget
-http://mkla.bz/gh-issues-widget/
-https://github.com/chrismear/github-issues-widget
-
-these tests would have avoid me to push bugs in production:
-https://docs.google.com/spreadsheet/ccc?key=0AhmdV6ktIMy1dGdONzVXSzFWZWdxbTVQamJlMFhVQ2c#gid=0
-
-Est ce que ce bouton te plait pour le bouton download? (on changera les couleurs bien sur)
-http://tympanus.net/Tutorials/CSSButtonsPseudoElements/index4.html#
-
-Et veux tu des boutons comme ca pour la nav?
-http://www.joepettersson.com/demo/css3-buttons/#
-
-Dans l'itération 2, on aura pas mal de trucs aussi à ajouter, genre des effets comme ca
-http://tympanus.net/Development/CreativeLinkEffects/
-
-##Notes
-
-Usability tests
-https://docs.google.com/document/d/1PVGgSq8XTFSHrqOtLx8B5cY7l9HnDO74mhGhODZLZyY/edit#
 
 ##cloud explorer
 
