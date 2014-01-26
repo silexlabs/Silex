@@ -126,6 +126,9 @@ silex.controller.MenuController.prototype.menuCallback = function(type) {
     case 'help.about':
       window.open(silex.Config.ABOUT_SILEX);
       break;
+    case 'help.issues':
+      window.open(silex.Config.ISSUES_SILEX);
+      break;
     case 'help.aboutSilexLabs':
       window.open(silex.Config.ABOUT_SILEX_LABS);
       break;
