@@ -165,7 +165,7 @@ File properties (in the settings dialog)
 Contextual menu on the elements (menu bar under the menu like google?)
 
 * delete
-* lock/unlock
+* lock/unlock position/size/in its container
 * up/down (z-index)
 * rotation
 
@@ -179,6 +179,7 @@ Properties
 
   * to prevent edit (no-resize-w, no-move, no-edit ...) - Class css pour lock w/h/x/y... Display none  de l ui
   * to animate page transitions (from-left, from-right ...)
+  * to layout content: static
 
 ###v2.0.0beta1
 
@@ -247,43 +248,6 @@ Packaging / distribution
 
 ###other features and ideas for plugins
 
-* edit local website
-
-  * http://devcenter.kinvey.com/nodejs/guides/users
-  * http://stackoverflow.com/questions/11534412/any-good-user-management-framework-for-node-js
-  * http://usercake.com/docs.php#3
-  * http://www.bittorrent.com/sync
-
-* edit ftp
-
-  * http://www.goodsync.com/how-to-sync/ftp
-  * https://github.com/FTPbox
-
-* analytics
-
-  * in the settings dialog
-  * tracking code + select google, yahoo, piwik
-  * track links http://www.seosite.co.uk/outgoing-links-on-google-analytics
-
-* mobile optimized version of Silex editor
-
-* sites dynamiques ou administrables
-  Google mbaas
-  Ou un cms backend only
-
-* FB page editor
-
-* add to publish
-
-  * settings : radio buttons to choose
-    * "dropbox apps": combo box with list of services (paperplane.io etc.), combo box to choose a website => set the publish path to Apps/paperplane/the.website.com/
-    *and "publish path" (advanced users), the current behavior
-
-  * history of the versions published
-
-    * ask "what's new in this version"? (=> track versions in a versions.json file)
-    * .history/deleted_[date]/
-
   * SEO:
     use _escaped_fragment_ - see https://developers.google.com/webmasters/ajax-crawling/docs/specification
 
@@ -310,11 +274,11 @@ Packaging / distribution
 
 * widgets
 
-  * widget agenda
-  * widget player vidéo
-  * webgl (cf open gl editor http://stackoverflow.com/questions/7093354/any-free-open-source-webgl-editors)
-  * ajout roadmap : menus et sous menu
-  * https://docs.google.com/spreadsheet/ccc?key=0AhmdV6ktIMy1dE1VTVZMa3NkZjNNRmdWOGd0MzRkUXc&usp=drive_web#gid=3
+* widget agenda
+* widget player vidéo
+* webgl (cf open gl editor http://stackoverflow.com/questions/7093354/any-free-open-source-webgl-editors)
+* ajout roadmap : menus et sous menu
+* https://docs.google.com/spreadsheet/ccc?key=0AhmdV6ktIMy1dE1VTVZMa3NkZjNNRmdWOGd0MzRkUXc&usp=drive_web#gid=3
 
 * Mobile version
 
@@ -323,10 +287,6 @@ Packaging / distribution
   * data-style-mobile-v, data-style-mobile-h complement of data-style-normal, with position and size and URL (...) data only
   * better design for the toolbox
   * view menu: iPhone, iPad, web
-
-deployment
-
-  * https://github.com/lorenwest/node-monitor
 
 Feature requests to considere
 
@@ -345,16 +305,3 @@ Feature requests to considere
 * Layout box: n accepte que des containers layout item qui ne se déplacent pas hors de la boite
 Quand ine layout box est sélectionnée, dans le Menu, on peut ajouter  des layout items, mais pas dropper d éléments dans la layout box. Drag drop au sein du layout box?
 
-* composant pour intégration de blog dans une page silex?
-* pareil pour vente en ligne? des widgets?
-
-##Dev tools to do
-
-Pour readme de unifies et silex
-https://github.com/ether/etherpad-lite
-
-Plugin request, and features request
-https://github.com/ether/etherpad-lite/issues/1853
-
-Pour page contribute
-http://blog.etherpad.org/2013/11/11/getting-started-contributing/
