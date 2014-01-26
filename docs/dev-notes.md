@@ -15,8 +15,6 @@ Donner contenu newletter liste silex
 #dev notes
 
 BUGS
-prevent links while editing
-mise en page page settings
 suppr console traces client and server
 paged-element-visible sauvegardé dans le html
 !! body 100% is not coverng the whole page in editor
