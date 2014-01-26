@@ -47,6 +47,50 @@ silex.utils.Style.SILEX_CLASS_NAMES = [
 
 
 /**
+ * constant for the class names which are of internal use in Silex
+ * only the classes which are temporary and useless to store
+ * @const
+ * @type {string}
+ */
+silex.utils.Style.SILEX_TEMP_CLASS_NAMES = [
+  silex.utils.EditablePlugin.UI_RESIZABLE_CLASS_NAME,
+  silex.utils.EditablePlugin.UI_DRAGGABLE_CLASS_NAME,
+  silex.utils.EditablePlugin.UI_DROPPABLE_CLASS_NAME,
+  silex.utils.EditablePlugin.UI_DRAGGABLE_DRAGGING_CLASS_NAME,
+  silex.utils.EditablePlugin.UI_DRAGGABLE_RESIZING_CLASS_NAME,
+  silex.utils.PageablePlugin.PAGED_VISIBLE_CLASS_NAME,
+  silex.model.Element.SELECTED_CLASS_NAME
+];
+
+
+/**
+ * remove useless class names of an element created by silex
+ * remove all silex internal classes
+ * @param  {element} element   created by silex, either a text box, image, ...
+ * @param  {boolean} opt_allClasses   if true, remove all Silex classes, not only the classes which are temporary and useless to store
+ * @param  {boolean} opt_isRecursive  if true, remove classes from the element and its children
+ */
+silex.utils.Style.removeInternalClasses = function(element, opt_allClasses, opt_isRecursive) {
+  var classes = silex.utils.Style.SILEX_TEMP_CLASS_NAMES;
+  if (opt_allClasses){
+    classes = silex.utils.Style.SILEX_CLASS_NAMES;
+  }
+  for (idx in classes){
+    var className = classes[idx];
+    goog.dom.classes.remove(element, className);
+    console.log('remove class', className);
+    if (opt_isRecursive){
+      console.log('remove class', className);
+      var elements = goog.dom.getElementsByClass(className, element);
+      goog.array.forEach(elements, function(child) {
+        goog.dom.classes.remove(child, className);
+      });
+    }
+  }
+};
+
+
+/**
  * get/set class name of the element of a container created by silex
  * remove all silex internal classes
  * @param  {element} element   created by silex, either a text box, image, ...
