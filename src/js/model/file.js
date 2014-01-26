@@ -266,8 +266,33 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
   var bodyStr = '<body style="' + styleStr + '">' + this.bodyElement.innerHTML + '</body>';
   // make editable again
   silex.utils.EditablePlugin.setEditable(this.bodyElement, true);
-  // head
+
+  // cleanup head
   var headStr = this.headElement.innerHTML;
+  var headElement = goog.dom.createElement('div');
+  headElement.innerHTML = headStr;
+  $('meta[name="publicationPath"]', headElement).remove();
+
+  // js script
+  var jsString = '';
+  var scriptTag = goog.dom.getElementByClass(
+    silex.model.Head.SILEX_SCRIPT_ELEMENT_ID,
+    headElement);
+  if (scriptTag){
+    jsString = scriptTag.innerHTML;
+    goog.dom.removeNode(scriptTag);
+  }
+  // final css
+  var cssStr = '';
+  // add head css
+  var cssTag = goog.dom.getElementByClass(
+    silex.model.Head.SILEX_STYLE_ELEMENT_ID,
+    headElement);
+  if (cssTag){
+    cssStr += cssTag.innerHTML;
+    goog.dom.removeNode(cssTag);
+  }
+  headStr = headElement.innerHTML;
 
   // list of css and files (assets, scripts...)
   var cssArray = [];
@@ -288,7 +313,6 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
   bodyStr = bodyStr.replace(/<img[^"]*src="?([^" ]*)"/g, function(match, group1, group2) {
     var absolute = silex.utils.Url.getAbsolutePath(group1, baseUrl);
     var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
-    console.log(arguments, relative, absolute);
     // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
     if (!silex.utils.Url.isAbsoluteUrl(relative)) {
       relative = relative.replace('../', '/');
@@ -368,11 +392,6 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
   var bodyElement = goog.dom.createElement('div');
   bodyElement.innerHTML = bodyStr;
 
-  // head
-  var headElement = goog.dom.createElement('div');
-  headElement.innerHTML = headStr;
-  $('meta[name="publicationPath"]', headElement).remove();
-
   // **
   // replace internal links <div data-silex-href="..." by <a href="..."
   // do a first pass, in order to avoid replacing the elements in the <a> containers
@@ -389,12 +408,12 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
       outerHtml = '<a' + outerHtml.substring(4, outerHtml.length - 6) + '</a>'; // 4 is for <div and 6 for </div>
 
       // insert the clone at the place of the original and remove the original
+      // FIXME: bug when there is a link in the content of an element with an external link set
+      // see issue https://github.com/silexlabs/Silex/issues/56
       var fragment = goog.dom.htmlToDocumentFragment(outerHtml);
+      var parentNode = element.parentNode;
       goog.dom.insertSiblingBefore(fragment, element);
       goog.dom.removeNode(element);
-
-      // store the reference to the new node
-      element = fragment;
     }
   }, this);
   // **
@@ -443,16 +462,6 @@ this does nothing: node.style.backgroundImage = "url('" + info.destPath + "')";
   }, this);
 
   // todo: find patterns to reduce the number of css classes
-  // final css
-  var cssStr = '';
-  // add head css
-  var cssTag = goog.dom.getElementByClass(
-    silex.model.Head.SILEX_STYLE_ELEMENT_ID,
-    headElement);
-  if (cssTag){
-    cssStr += cssTag.innerHTML;
-    goog.dom.removeNode(cssTag);
-  }
   goog.array.forEach(cssArray, function(cssData) {
     var elementCssStr = '';
     // compute class names
@@ -467,25 +476,15 @@ this does nothing: node.style.backgroundImage = "url('" + info.destPath + "')";
   // format css
   cssStr.replace('; ', ';\n\t');
 
-  // js script
-  var jsString = '';
-  var scriptTag = goog.dom.getElementByClass(
-    silex.model.Head.SILEX_SCRIPT_ELEMENT_ID,
-    headElement);
-  if (scriptTag){
-    jsString = scriptTag.innerHTML;
-    goog.dom.removeNode(scriptTag);
-  }
-
   // final html page
   var html = '';
   html += '<html>';
   html += '<head>\
-      ' + headElement.innerHTML + '\
+      ' + headStr + '\
       <link href="css/styles.css" rel="stylesheet">\
       <script src="js/script.js" type="text/javascript"></script>\
   </head>';
-  html += '<body>' + bodyElement.innerHTML + '</body>';
+  html += '<body style="' + styleStr + '" class="silex-runtime">' + bodyElement.innerHTML + '</body>';
   html += '</html>';
 
   // callback
