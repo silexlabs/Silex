@@ -65,10 +65,17 @@ silex.controller.ControllerBase.prototype.model;
 silex.controller.ControllerBase.prototype.removeElement = function(opt_element) {
   // default is selected element
   if(!opt_element) opt_element = this.view.stage.getSelection()[0];
-  // remove the element
-  this.model.element.removeElement(opt_element);
-  // update view
-  this.view.propertyTool.redraw();
+  // check this is allowed, i.e. an element inside the stage container
+  if (silex.utils.PageablePlugin.getBodyElement() != opt_element
+    && goog.dom.contains(silex.utils.PageablePlugin.getBodyElement(), opt_element)){
+    // remove the element
+    this.model.element.removeElement(opt_element);
+    // update view
+    this.view.propertyTool.redraw();
+  }
+  else{
+    console.error('could not delete', opt_element, 'because it is not in the stage element');
+  }
 }
 
 

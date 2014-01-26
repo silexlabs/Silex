@@ -15,16 +15,13 @@ Donner contenu newletter liste silex
 #dev notes
 
 BUGS
-
-piublish: bg color et silex-runtime
-text fields overflow
-delete stage => no more open files
 prevent links while editing
 mise en page page settings
-suppr console traces
+suppr console traces client and server
 paged-element-visible sauvegardé dans le html
 !! body 100% is not coverng the whole page in editor
 link to github issues in help
+text fields overflow?? check that text is normal, not h1?
 https://github.com/silexlabs/Silex/issues/
 * set viewport size to background?
 * setClassName dans model.element, pas dans helper.Style
