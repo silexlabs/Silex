@@ -445,6 +445,14 @@ this does nothing: node.style.backgroundImage = "url('" + info.destPath + "')";
   // todo: find patterns to reduce the number of css classes
   // final css
   var cssStr = '';
+  // add head css
+  var cssTag = goog.dom.getElementByClass(
+    silex.model.Head.SILEX_STYLE_ELEMENT_ID,
+    headElement);
+  if (cssTag){
+    cssStr += cssTag.innerHTML;
+    goog.dom.removeNode(cssTag);
+  }
   goog.array.forEach(cssArray, function(cssData) {
     var elementCssStr = '';
     // compute class names
@@ -458,14 +466,6 @@ this does nothing: node.style.backgroundImage = "url('" + info.destPath + "')";
   }, this);
   // format css
   cssStr.replace('; ', ';\n\t');
-  // add head css
-  var cssTag = goog.dom.getElementByClass(
-    silex.model.Head.SILEX_STYLE_ELEMENT_ID,
-    headElement);
-  if (cssTag){
-    cssStr += cssTag.innerHTML;
-    goog.dom.removeNode(cssTag);
-  }
 
   // js script
   var jsString = '';
