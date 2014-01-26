@@ -6,6 +6,8 @@
 .temp
 .cache
 node_modules
+dist/client/debug.html
+dist/client/index.html
 dist/client/js/debug.js
 dist/client/js/admin*
 dist/client/css/admin*

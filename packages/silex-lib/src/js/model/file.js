@@ -113,12 +113,16 @@ silex.model.File.prototype.setHtml = function(rawHtml) {
 silex.model.File.prototype.getHtml = function() {
   // cleanup
   silex.utils.EditablePlugin.setEditable(this.bodyElement, false);
-  // get html
-  var bodyStr = this.bodyElement.innerHTML;
+  // clone
+  var bodyElement = this.bodyElement.cloneNode(true);
   // make editable again
   silex.utils.EditablePlugin.setEditable(this.bodyElement, true, true);
+  // cleanup
+  silex.utils.Style.removeInternalClasses(bodyElement, false, true);
+  // get html
+  var bodyStr = bodyElement.innerHTML;
   // handle the body style
-  var styleStr = this.bodyElement.getAttribute('style') || '';
+  var styleStr = bodyElement.getAttribute('style') || '';
 
   // retruns the html page
   var html = '';
@@ -391,6 +395,8 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
   // build a clean body clone
   var bodyElement = goog.dom.createElement('div');
   bodyElement.innerHTML = bodyStr;
+  // cleanup
+  silex.utils.Style.removeInternalClasses(bodyElement, false, true);
 
   // **
   // replace internal links <div data-silex-href="..." by <a href="..."
