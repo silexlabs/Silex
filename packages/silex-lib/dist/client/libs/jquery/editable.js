@@ -1,7 +1,7 @@
 (function( $, undefined ) {
 
 $.widget('silexlabs.editable', {
-	version: '1.0.0',
+	version: '1.0.1',
 	options: {
         isContainer: false,
         isResizable: true,
@@ -58,10 +58,17 @@ $.widget('silexlabs.editable', {
 		}
 		if (this.options.isDraggable != false)
 			this.element.draggable('disable');
-		if (this.options.isResizable != false)
-			this.element.resizable('disable');
-	},
-	enableEditable: function(){
+    if (this.options.isResizable != false)
+      this.element.resizable('disable');
+    // restore links
+    $('a').unbind('click');
+  },
+  enableEditable: function(){
+    // prevent links while editing
+    $('a').bind('click', function(e){
+        e.preventDefault();
+    })
+    // handle resizeable options
 		if (this.options.isResizable != false)
 			this.element.resizable({
 				handles : 'all'
