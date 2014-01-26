@@ -15,7 +15,7 @@ Donner contenu newletter liste silex
 #dev notes
 
 BUGS
-issues dans menu help
+
 piublish: bg color et silex-runtime
 text fields overflow
 delete stage => no more open files

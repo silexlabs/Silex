@@ -42,7 +42,12 @@ silex.Config.debug = {
  * Link of the menu
  * @const constant
  */
-silex.Config.ABOUT_SILEX = 'http://www.silexlabs.org/silex/';
+silex.Config.ABOUT_SILEX = 'http://www.silex.me/';
+/**
+ * Link of the menu
+ * @const constant
+ */
+silex.Config.ISSUES_SILEX = 'https://github.com/silexlabs/Silex/issues?state=open';
 /**
  * Link of the menu
  * @const constant
@@ -311,6 +316,12 @@ silex.Config.menu = {
         , id: 'help.about'
         , className: 'menu-item-help-about'
       }
+      , {
+        label: 'Report a bug or ask a question'
+        , id: 'help.issues'
+        , className: 'menu-item-help-issues'
+      }
+      , null
       , {
         label: 'About Silex Labs'
         , id: 'help.aboutSilexLabs'
