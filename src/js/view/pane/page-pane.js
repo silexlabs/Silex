@@ -208,7 +208,7 @@ silex.view.pane.PagePane.prototype.onLinkTextChanged = function() {
   }
   catch(err){
     // error which will not keep this.iAmSettingValue to true
-    console.log('an error occured while editing the value', err);
+    console.error('an error occured while editing the value', err);
   }
   this.iAmSettingValue = false;
 };

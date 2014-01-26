@@ -71,7 +71,6 @@ silex.utils.EditablePlugin.resetEditable = function(element, opt_isRootDroppable
  * init, activate and remove the "editable" jquery plugin
  */
 silex.utils.EditablePlugin.setEditable = function(element, isEditable, opt_isRootDroppableOnly) {
-  console.log('setEditable', arguments);
   // activate editable plugin
   if (isEditable) {
 

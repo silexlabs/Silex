@@ -78,9 +78,7 @@ silex.utils.Style.removeInternalClasses = function(element, opt_allClasses, opt_
   for (idx in classes){
     var className = classes[idx];
     goog.dom.classes.remove(element, className);
-    console.log('remove class', className);
     if (opt_isRecursive){
-      console.log('remove class', className);
       var elements = goog.dom.getElementsByClass(className, element);
       goog.array.forEach(elements, function(child) {
         goog.dom.classes.remove(child, className);

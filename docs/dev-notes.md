@@ -16,8 +16,7 @@ Donner contenu newletter liste silex
 
 BUGS
 suppr console traces client and server
-paged-element-visible sauvegardé dans le html
-!! body 100% is not coverng the whole page in editor
+!! body 100% is not coverng the whole page on mobiles
 link to github issues in help
 text fields overflow?? check that text is normal, not h1?
 https://github.com/silexlabs/Silex/issues/

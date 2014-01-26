@@ -9,13 +9,11 @@ router = require('unifile/lib/core/router.js');
  * route the call to a silex task
  */
 exports.route = function(cbk, req, res, next, task){
-    console.log('route');
 	switch(task){
 		case 'publish':
 			exports.publish(function(result){
 				// just log the result
 		        if (!result) result = {success:true};
-		        console.log('silex task result', result);
 		    }, req, res, next, req.body.path, req.body.html, req.body.css, req.body.js, JSON.parse(req.body.files));
 			// imediately returns success, to avoid timeout
 		    cbk();
@@ -26,7 +24,6 @@ exports.route = function(cbk, req, res, next, task){
  * create folders needed for publishing
  */
 exports.createFolders = function(req, res, next, folders, errCbk, cbk){
-    console.log('createFolder');
 	if (folders.length>0){
 		var folder = folders.shift();
 		folder = folder.replace('/exec/put/', '/exec/mkdir/')
@@ -45,7 +42,6 @@ exports.createFolders = function(req, res, next, folders, errCbk, cbk){
  * write css and html data to a unifile service
  */
 exports.publish = function(cbk, req, res, next, path, html, css, js, files){
-    console.log('publish');
 	// check inputs
 	if (cbk === undefined || req === undefined || res === undefined || next === undefined || path === undefined || html === undefined || css === undefined || js === undefined || files === undefined){
 		console.error('All attributes needed: cbk, req, res, next, path, html, css, js, files', !!cbk, !!req, !!res, !!next, !!path, !!html, !!css, !!js, !!files)
@@ -57,7 +53,6 @@ exports.publish = function(cbk, req, res, next, path, html, css, js, files){
 	}
 	// folder to store files
 	exports.createFolders(req, res, next, [path + '/js', path + '/css', path + '/assets'], cbk, function (){
-        console.log('xxx');
 		// get all files data and copy it to destination service
 		exports.publishFiles(req, res, next, files, path, function(error){
 			if (error){
@@ -67,16 +62,13 @@ exports.publish = function(cbk, req, res, next, path, html, css, js, files){
 			else{
 				// write the css
 		    	exports.writeFileToService(req, res, next, path + '/css/styles.css', css, function (error){
-                    console.log('xxx css', error);
             if(error){
 		    			cbk({success:false, code: error.code});
 		    		}
 		    		else{
                 if (js === '') js = '/* */';
-                console.log('about to write ', js, 'to ', path + '/js/script.js');
                     // write the js
                     exports.writeFileToService(req, res, next, path + '/js/script.js', js, function (error){
-                      console.log('xxx js', error);
                         if(error){
                             cbk({success:false, code: error.code});
                         }
@@ -104,7 +96,6 @@ exports.publish = function(cbk, req, res, next, path, html, css, js, files){
 exports.publishFiles = function(req, res, next, files, dstPath, cbk){
   if(files.length>0){
     var file = files.shift();
-    console.log('publishFiles', file.srcPath);
 		exports.getFile(req, res, next, file.srcPath, dstPath + '/' + file.destPath, function (error) {
 			if (error){
 				console.error('Error in getFile', error, file.srcPath);
