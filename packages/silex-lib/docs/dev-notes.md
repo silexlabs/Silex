@@ -1,23 +1,12 @@
-
-
-class silex-runtime
-
-
-Donner contenu newletter liste silex
-- changelog
-- ateliers
-- passed events
-
-##Silex
+##Silex pending tasks
 
 ###en cours
 
 #dev notes
 
 BUGS
-suppr console traces client and server
+containers in the bg take drop instead of the main container over it
 !! body 100% is not coverng the whole page on mobiles
-link to github issues in help
 text fields overflow?? check that text is normal, not h1?
 https://github.com/silexlabs/Silex/issues/
 * set viewport size to background?
@@ -25,10 +14,23 @@ https://github.com/silexlabs/Silex/issues/
 * move static.silex.io to dist/
 - services, use http://docs.closure-library.googlecode.com/git/class_goog_ds_JsonDataSource.html
 
+publish dialog: add links to
+* http://validator.w3.org/check?uri=http%3A%2F%2Fsilex-v2.kissr.com
+* http://developers.google.com/speed/pagespeed/insights/?url=http%3A%2F%2Fsilex-v2.kissr.com%2F
+* http://www.brokenlinkcheck.com/
+* http://www.criticue.com/
+
+envoi mail beta testers silex
+
 How good is your website?
 https://plus.google.com/u/0/+PolGoasdou%C3%A9/posts/aZast8CsUsH?cfem=1
-
-
+  http://validator.w3.org/check?uri=http%3A%2F%2Fsilex-v2.kissr.com
+    An img element must have an alt attribute, except under certain conditions. For details, consult guidance on providing text alternatives for images.
+    The font element is obsolete. Use CSS instead.
+    Bad value http://#home for attribute href on element a: A component that is required by the scheme is missing.
+  http://developers.google.com/speed/pagespeed/insights/?url=http%3A%2F%2Fsilex-v2.kissr.com%2F
+  http://www.brokenlinkcheck.com/
+  http://www.digbacklink.com/ or http://www.iwebtool.com/backlink_checker or http://www.backlinkwatch.com/
 Cloud explorer
 * select folder
 * refresh button

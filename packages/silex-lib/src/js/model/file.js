@@ -126,7 +126,7 @@ silex.model.File.prototype.getHtml = function() {
 
   // retruns the html page
   var html = '';
-  html += '<html>';
+  html += '<!DOCTYPE html><html>';
   html += '<head>' + this.headElement.innerHTML + '</head>';
   html += '<body style="' + styleStr + '" class="silex-runtime">' + bodyStr + '</body>';
   html += '</html>';
@@ -411,7 +411,7 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
 
       // create a clone with a different tagname
       var outerHtml = goog.dom.getOuterHtml(element);
-      outerHtml = '<a' + outerHtml.substring(4, outerHtml.length - 6) + '</a>'; // 4 is for <div and 6 for </div>
+      outerHtml = '<a target="_blank" ' + outerHtml.substring(4, outerHtml.length - 6) + '</a>'; // 4 is for <div and 6 for </div>
 
       // insert the clone at the place of the original and remove the original
       // FIXME: bug when there is a link in the content of an element with an external link set
@@ -484,7 +484,7 @@ this does nothing: node.style.backgroundImage = "url('" + info.destPath + "')";
 
   // final html page
   var html = '';
-  html += '<html>';
+  html += '<!DOCTYPE html><html>';
   html += '<head>\
       ' + headStr + '\
       <link href="css/styles.css" rel="stylesheet">\
