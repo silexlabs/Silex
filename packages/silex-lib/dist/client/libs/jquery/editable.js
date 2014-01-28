@@ -92,6 +92,17 @@ $.widget('silexlabs.editable', {
 					var droppedFrom = $(dropped).parent()[0];
 					var droppedTo = this;
 
+          // **
+          // prevent drop on every container beneeth the dropped element
+          // greedy: true should do that, but it only works with parent elements,
+          // not with overlapping simblings
+          if (dropped.dropPending) return false;
+          dropped.dropPending = true;
+          var resetPending = function () {
+            this.dropPending = false;
+          };
+          setTimeout(resetPending.bind(dropped), 1);
+          // **
 
 					// compute new position in the container
 					var initialOffset = $(dropped).offset();
@@ -116,9 +127,9 @@ $.widget('silexlabs.editable', {
 					}
 					else{
 					}
-		    	}
-		    });
-		    this.element.droppable('enable');
+        }
+	    });
+	    this.element.droppable('enable');
 		}
 	},
 });
