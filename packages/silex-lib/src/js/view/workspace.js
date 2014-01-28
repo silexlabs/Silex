@@ -210,7 +210,7 @@ silex.view.Workspace.prototype.doRedraw = function() {
   var toolsHeight = viewportSize.height - menuSize.height;
   goog.style.setHeight(this.pageToolElement, toolsHeight);
   goog.style.setHeight(this.propertyToolElement, toolsHeight);
-  goog.style.setHeight(this.stageElement, toolsHeight-10); // -10 is because of padding on .silex-stage-body (5px x2)
+  goog.style.setHeight(this.stageElement, toolsHeight);
 
   //goog.style.setPosition(this.pageToolElement, null, menuSize.height);
 
