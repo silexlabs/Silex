@@ -4,25 +4,27 @@ Feel free to congratulate each one of these exceptional people, and also to hire
 
 ##The core contributors
 
-###[Alex Hoyau](http://lexoyo.me)
+###[Alex Hoyau, front-end architect](http://lexoyo.me)
 
-Architect and lead developer
-
-Javascript and node.js
+Contribution: lead developer, Javascript and node.js coder
 
 [@lexoyo](https://twitter.com/lexoyo)
 
-###[Pol Goasdoué](http://superwup.me)
+###[Pol Goasdoué, freelance UI designer](http://superwup.me)
 
-UX & UI designer / Graphic designer
+Contribution: design, leadership, simplification
 
 [@superwup](https://twitter.com/superwup)
 
-###Nicolas Masson
+###Nicolas Masson, 3D graphics
+
+Contribution: 3D logs and graphic arts, representation
 
 [@NicoSilex‎](https://twitter.com/NicoSilex‎)
 
-###[Thomas Fetiveau](http://www.tokom.fr/)
+###[Thomas Fetiveau, freelance developer](http://www.tokom.fr/)
+
+Contribution: lead developer of Cloud Explorer, Javascript and AngularJS code
 
 ##One time contributors
 
