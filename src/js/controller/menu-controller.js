@@ -116,6 +116,12 @@ silex.controller.MenuController.prototype.menuCallback = function(type) {
       // delete component
       this.removeElement();
       break;
+    case 'edit.copy.selection':
+      this.copyElement();
+      break;
+    case 'edit.paste.selection':
+      this.pasteElement();
+      break;
     case 'edit.delete.page':
       this.removePage();
       break;
