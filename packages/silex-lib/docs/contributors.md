@@ -12,13 +12,19 @@ Contribution: lead developer, Javascript and node.js coder
 
 ###[Pol Goasdoué, freelance UI designer](http://superwup.me)
 
-Contribution: design, leadership, simplification
+Contribution: design, leadership, consulting for Silex UI
 
 [@superwup](https://twitter.com/superwup)
 
 ###Nicolas Masson, 3D graphics
 
 Contribution: 3D logs and graphic arts, representation
+
+[@NicoSilex‎](https://twitter.com/NicoSilex‎)
+
+###Léo Francia, web designer
+
+Contribution: templates, tests and consulting for Silex UI and communication
 
 [@NicoSilex‎](https://twitter.com/NicoSilex‎)
 
