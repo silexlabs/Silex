@@ -92,17 +92,25 @@ $.widget('silexlabs.editable', {
 					var droppedFrom = $(dropped).parent()[0];
 					var droppedTo = this;
 
+          /*
           // **
           // prevent drop on every container beneeth the dropped element
           // greedy: true should do that, but it only works with parent elements,
           // not with overlapping simblings
-          if (dropped.dropPending) return false;
-          dropped.dropPending = true;
+          if (dropped.dropPending) {
+            var comparedPosition = dropped.dropPending.compareDocumentPosition(droppedTo);
+            if ((comparedPosition & 2) !== 0){
+              // block becaus the new container is bellow the old one
+              return false;
+            }
+          }
+          dropped.dropPending = droppedTo;
           var resetPending = function () {
-            this.dropPending = false;
+            this.dropPending = null;
           };
           setTimeout(resetPending.bind(dropped), 1);
           // **
+          /* */
 
 					// compute new position in the container
 					var initialOffset = $(dropped).offset();
