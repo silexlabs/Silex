@@ -1,40 +1,344 @@
 
-.component-0{
-	background-color: transparent; background-image: url('../assets/silex.png'); background-position: center center; background-repeat: no-repeat; border-color: rgba(173,173,173,1); border-width: 0px 0px 0px 0px; border-style: solid; border-radius: 0 10px 10px 10px; top: 5px; left: 5px; width: 932px; height: 603px; position: absolute; 
+@import url('http://fonts.googleapis.com/css?family=Abel');
+@import url('http://fonts.googleapis.com/css?family=Oswald:400,300');
+
+.oswald.text-element, .oswald .text-element {
+    font-family: 'Oswald', sans-serif;
 }
-.component-1{
-	background-color: transparent; background-position: top left; background-repeat: repeat; top: 421px; left: -21px; width: 947px; height: 190px; position: absolute; 
+
+.abel.text-element, .abel .text-element {
+    font-family: 'Abel', sans-serif;
 }
-.component-2{
-	background-color: transparent; background-position: top left; background-repeat: repeat; top: 17px; left: 33px; width: 456px; height: 65px; position: absolute; 
+.links a{
+    color:#006CB2;
 }
-.component-3{
-	background-color: transparent; background-position: top left; background-repeat: repeat; top: 83px; left: 21.3px; width: 408px; height: 213px; position: absolute; 
+
+/* text styles formatting */
+.text-element HEADER,
+.text-element H1,
+.text-element H2,
+.text-element H3,
+.text-element DIV,
+.text-element P,
+.text-element QUOTE {
+  color: #FF3200;
+
 }
-.component-4{
-	background-color: transparent; top: 17px; left: 489px; width: 451px; height: 165px; position: absolute; 
+.text-element HEADER {
+  font-size: 45px;
 }
-.component-5{
-	border-radius: 10px 10px 10px 10px; background-position: top left; background-repeat: repeat; top: 113px; left: 699px; width: 55px; height: 55px; position: absolute; 
+/* background element */
+.background{
+
 }
-.component-6{
-	border-radius: 12px 12px 12px 12px; top: 112px; left: 780.203125px; width: 55.78181818181818px; height: 59px; position: absolute; 
+.text-element.very-big *{
+    font-size: 80px !important;
 }
-.component-7{
-	top: 116px; left: 862.078125px; width: 63.91666666666667px; height: 52px; position: absolute; 
+.text-shadow{
+    text-shadow: -1px 2px #ff0000;
 }
-.component-8{
-	top: 108px; left: 606px; width: 68px; height: 68px; position: absolute; 
+.full-width{
+    width:100% !important;
 }
-.component-9{
-	background-color: transparent; background-position: top left; background-repeat: repeat; top: 19px; left: 19px; width: 100px; height: 100px; position: absolute; 
+.centered{
+   margin: auto !important;
+   position: relative !important;
 }
-.component-10{
-	background-color: transparent; background-position: top left; background-repeat: repeat; top: 0px; width: 401px; height: 164px; right: 0px; position: absolute; 
+.top{
+    z-index: 100;
 }
-.component-11{
-	background-color: transparent; background-position: top left; background-repeat: repeat; left: 20px; bottom: 20px; position: absolute; 
+.silex-runtime .fixed-menu{
+    position: fixed !important;
+    z-index: 120;
 }
-body{
-	background-color: rgba(188,188,188,1); background-position: top left; background-repeat: repeat; position: absolute; 
+/* *************************** *
+.layout-h div{
+    position: static !important;
+    display: inline-block !important;
+}
+
+.animated.paged-element-hidden{
+    display: inherit !important;
+    position: absolute !important;
+    left: -5000px !important;
+    opacity: 0 !important;
+}
+.animated.paged-element{
+    transition: left 0.8s !important;
+}
+/* *************************** */
+.call-to-action-button div{
+    overflow: hidden !important;
+}
+.call-to-action-button{
+  -moz-box-shadow:inset 0px 1px 10px 0px #FF55AAEE;
+  -webkit-box-shadow:inset 0px 1px 10px 0px #FF55AAEE;
+  box-shadow:inset 0px 1px 10px 0px #FF55AAEE;
+
+/* SVG fallback(Opera 11.10-, IE9) */
+background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxkZWZzPjxsaW5lYXJHcmFkaWVudCBpZD0iZ3JhZGllbnQiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjpyZ2JhKDAsNTEsMTAyLDEpOyIgLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOnJnYmEoODUsMTcwLDIzOCwxKTsiIC8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3QgZmlsbD0idXJsKCNncmFkaWVudCkiIGhlaWdodD0iMTAwJSIgd2lkdGg9IjEwMCUiIC8+PC9zdmc+');
+
+/* Opera 11.10+ */
+background: -o-linear-gradient(top, rgba(0,51,102,1), rgba(85,170,238,1));
+
+/* Firefox 3.6+ */
+background: -moz-linear-gradient(top, rgba(0,51,102,1), rgba(85,170,238,1));
+
+/* Chrome 7+ & Safari 5.03+ */
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0, rgba(0,51,102,1)), color-stop(1, rgba(85,170,238,1)));
+
+/* Newer Browsers */
+background: linear-gradient(top, rgba(0,51,102,1), rgba(85,170,238,1));
+
+/* IE5.5 - IE7 */
+filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0,StartColorStr=#FF003366,EndColorStr=#FF55AAEE);
+
+/* IE8 */
+-ms-filter: "progid:DXImageTransform.Microsoft.Gradient(GradientType=0,StartColorStr=#FF003366,EndColorStr=#FF55AAEE)";
+
+  background-color:#FF003366;
+  -webkit-border-top-left-radius:23px;
+  -moz-border-radius-topleft:23px;
+  border-top-left-radius:23px;
+  -webkit-border-top-right-radius:0px;
+  -moz-border-radius-topright:0px;
+  border-top-right-radius:0px;
+  -webkit-border-bottom-right-radius:23px;
+  -moz-border-radius-bottomright:23px;
+  border-bottom-right-radius:23px;
+  -webkit-border-bottom-left-radius:0px;
+  -moz-border-radius-bottomleft:0px;
+  border-bottom-left-radius:0px;
+  text-indent:0;
+  border:1px solid #FF55AAEE;
+  display:inline-block;
+  color:#306108;
+  font-family:Arial;
+  font-size:15px;
+  font-weight:bold;
+  font-style:normal;
+  height:50px;
+  line-height:50px;
+  width:147px;
+  text-decoration:none;
+  text-align:center;
+  text-shadow:1px 1px 0px #FF55AAEE;
+}
+.classname:hover {
+  background:gradient( linear, left top, left bottom, color-stop(0.05, #5cb811), color-stop(1, #77d42a) );
+  background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #5cb811), color-stop(1, #77d42a) );
+  background:-moz-linear-gradient( center top, #5cb811 5%, #77d42a 100% );
+  filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#5cb811', endColorstr='#77d42a');
+  background-color:#5cb811;
+}.classname:active {
+  position:relative;
+  top:1px;
+}
+
+.element-0{
+	background-color: rgb(255, 255, 255); width: 960px; height: 1885px; position: absolute; top: 0px; left: 0.5px; box-shadow: rgba(0, 0, 0, 0.498039) 1px 0px 10px 0px; border-top-left-radius: 0px; border-top-right-radius: 0px; border-bottom-right-radius: 0px; border-bottom-left-radius: 0px;
+}
+.element-1{
+	position: absolute; height: 80px; width: 294px; top: 1075px; left: 20px; background-color: transparent;
+}
+.element-2{
+	position: absolute; height: 80px; width: 294px; top: 1075px; left: 333px; background-color: transparent;
+}
+.element-3{
+	position: absolute; height: 80px; width: 294px; top: 1300px; left: 20px; background-color: transparent;
+}
+.element-4{
+	position: absolute; height: 200px; width: 294px; top: 1120px; left: 20px; background-color: transparent;
+}
+.element-5{
+	position: absolute; height: 80px; width: 294px; top: 1300px; left: 333px; background-color: transparent;
+}
+.element-6{
+	position: absolute; height: 180px; width: 294px; top: 1345px; left: 333px; background-color: transparent;
+}
+.element-7{
+	position: absolute; height: 80px; width: 294px; top: 1300px; left: 645px; background-color: transparent;
+}
+.element-8{
+	position: absolute; height: 14px; width: 920px; top: 1500px; left: 20px; background-color: transparent; border-width: 1px 0px 0px; border-style: solid; border-color: rgb(0, 155, 255);
+}
+.element-9{
+	position: absolute; height: 80px; width: 294px; top: 1500px; left: 20px; background-color: transparent;
+}
+.element-10{
+	position: absolute; height: 200px; width: 294px; top: 1545px; left: 20px; background-color: transparent;
+}
+.element-11{
+	position: absolute; width: 294px; top: 1500px; left: 645px; background-color: transparent; height: 80px;
+}
+.element-12{
+	position: absolute; height: 100px; width: 960px; top: 1725px; left: 0px; background-color: rgb(0, 155, 255);
+}
+.element-13{
+	position: absolute; width: 960px; top: 0px; left: 0px; background-color: rgb(0, 60, 100); height: 160px; border-radius: 0px;
+}
+.element-14{
+	position: absolute; height: 70px; width: 70px; top: 25px; left: 500px;
+}
+.element-15{
+	position: absolute; height: 70px; width: 70px; top: 25px; left: 410px;
+}
+.element-16{
+	position: absolute; height: 70px; width: 70px; top: 25px; left: 320px;
+}
+.element-17{
+	position: absolute; height: 70px; width: 70px; top: 24px; left: 590px;
+}
+.element-18{
+	position: absolute; height: 70px; width: 70px; top: 23px; left: 680px;
+}
+.element-19{
+	position: absolute; height: 79px; width: 265px; top: 20px; left: 20px;
+}
+.element-20{
+	position: absolute; width: 920px; top: 110px; left: 20px; background-color: transparent; height: 55px;
+}
+.element-21{
+	position: absolute; height: 70px; width: 70px; top: 23px; left: 770px;
+}
+.element-22{
+	position: absolute; height: 70px; width: 70px; top: 23px; left: 860px;
+}
+.element-23{
+	position: absolute; height: 80px; width: 294px; top: 1075px; left: 646px; background-color: transparent;
+}
+.element-24{
+	position: absolute; top: 875px; left: 0px; background-color: transparent; height: 100px; width: 960px;
+}
+.element-25{
+	position: absolute; height: 200px; width: 294px; top: 1545px; left: 644px; background-color: transparent;
+}
+.element-26{
+	position: absolute; height: 148px; width: 294px; top: 1120px; left: 333px; background-color: transparent;
+}
+.element-27{
+	position: absolute; height: 10px; width: 920px; top: 1300px; left: 20px; background-color: rgb(255, 255, 255); border-width: 1px 0px 0px; border-style: solid; border-color: rgb(0, 155, 255);
+}
+.element-28{
+	position: absolute; height: 10px; width: 920px; left: 20px; background-color: transparent; border-width: 1px 0px 0px; border-style: solid; border-color: rgb(0, 155, 255); top: 1075px;
+}
+.element-29{
+	position: absolute; height: 210px; width: 960px; top: 670px; left: 0px; background-color: rgb(0, 155, 255);
+}
+.element-30{
+	position: absolute; height: 190px; width: 315px; top: 14px; left: 5px;
+}
+.element-31{
+	position: absolute; height: 190px; width: 315px; top: 14px; left: 322px;
+}
+.element-32{
+	position: absolute; height: 190px; width: 315px; top: 14px; left: 640px;
+}
+.element-33{
+	position: absolute; left: 0px; background-color: rgb(0, 155, 255); height: 42px; box-shadow: 0px 1px 3px black; top: -5px;
+}
+.element-34{
+	height: 50px; top: -5px; width: 926px; background-color: transparent; position: absolute; left: 0px;
+}
+.element-35{
+	height: 70px; width: 163px; left: 769px; background-color: transparent; position: absolute; top: 0px;
+}
+.element-36{
+	height: 70px; width: 140px; left: 616px; background-color: transparent; top: 0px; position: absolute;
+}
+.element-37{
+	height: 70px; width: 140px; left: 124px; background-color: transparent; top: 0px; position: relative;
+}
+.element-38{
+	height: 78px; width: 159px; background-color: transparent; top: 0px; position: absolute; left: 452px;
+}
+.element-39{
+	height: 70px; width: 140px; background-color: transparent; top: 0px; position: absolute; left: -20px;
+}
+.element-40{
+	height: 70px; width: 140px; left: 278px; background-color: transparent; top: 0px; position: absolute;
+}
+.element-41{
+	position: absolute; height: 224px; width: 371px; top: 80px; left: 29px;
+}
+.element-42{
+	position: absolute; height: 383px; width: 313px; top: 50px; left: 400px;
+}
+.element-43{
+	position: absolute; height: 290px; width: 960px; top: 290px; left: 0px; background-color: transparent; background-image: url('../assets/nuages-01.png'); background-position: 0% 100%; background-repeat: no-repeat no-repeat;
+}
+.element-44{
+	position: absolute; height: 254px; width: 960px; top: 37px; left: 2px; background-position: 0% 0%;
+}
+.element-45{
+	height: 30px; width: 92px; top: 632px; left: 15px; position: absolute; background-color: transparent;
+}
+.element-46{
+	height: 30px; width: 98px; top: 632px; left: 265px; position: absolute; background-color: transparent;
+}
+.element-47{
+	height: 30px; width: 132px; top: 632px; left: 376px; position: absolute; background-color: transparent;
+}
+.element-48{
+	height: 30px; width: 119px; top: 632px; left: 511px; position: absolute; background-color: transparent;
+}
+.element-49{
+	position: absolute; height: 180px; width: 294px; top: 1120px; left: 645px; background-color: transparent;
+}
+.element-50{
+	height: 120px; width: 960px; top: 980px; left: -1px; position: absolute; background-color: transparent;
+}
+.element-51{
+	position: absolute; height: 160px; width: 294px; top: 1344px; left: 19px; background-color: transparent;
+}
+.element-52{
+	position: absolute; height: 180px; width: 294px; top: 1345px; left: 646px; background-color: transparent;
+}
+.element-53{
+	position: absolute; height: 80px; width: 294px; top: 1500px; left: 331px; background-color: transparent;
+}
+.element-54{
+	position: absolute; height: 55px; width: 212px; top: 203px; left: 720px; background-color: transparent;
+}
+.element-55{
+	position: absolute; height: 29px; width: 102px; top: 246px; left: 770px;
+}
+.element-56{
+	position: absolute; height: 200px; width: 294px; top: 1546px; left: 333px; background-color: transparent;
+}
+.element-57{
+	position: absolute; height: 65px; width: 175px; top: 589px; left: 781px; background-color: transparent; background-position: 0% 0%;
+}
+.element-58{
+	position: absolute; height: 50px; width: 212px; top: 90px; left: 720px; background-color: transparent;
+}
+.element-59{
+	position: absolute; height: 31px; width: 115px; top: 632px; left: 636px; background-color: transparent;
+}
+.element-60{
+	height: 30px; width: 97px; top: 632px; left: 140px; position: absolute; background-color: transparent;
+}
+.element-61{
+	position: absolute; height: 85px; width: 212px; top: 135px; left: 720px;
+}
+.element-62{
+	position: absolute; height: 30px; width: 52px; top: 597px; left: 416px;
+}
+.element-63{
+	position: absolute; height: 47px; width: 47px; top: 586px; left: 165px;
+}
+.element-64{
+	position: absolute; height: 39px; width: 39px; top: 592px; left: 551px;
+}
+.element-65{
+	position: absolute; height: 42px; width: 42px; top: 588px; left: 40px;
+}
+.element-66{
+	position: absolute; height: 38px; width: 38px; top: 589px; left: 295px;
+}
+.element-67{
+	position: absolute; height: 40px; width: 40px; top: 591px; left: 673px;
+}
+.element-68{
+	position: absolute; height: 158px; width: 100px; top: 1733px; left: 0px; background-color: rgb(0, 60, 100);
 }
