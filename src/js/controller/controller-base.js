@@ -59,6 +59,61 @@ silex.controller.ControllerBase.prototype.model;
 
 
 /**
+ * the {element} element in the clipboard
+ * this is a static attribute
+ */
+silex.controller.ControllerBase.clipboard;
+
+
+/**
+ * copy the selection for later paste
+ * @param {element} opt_element    the element to copy
+ */
+silex.controller.ControllerBase.prototype.copyElement = function(opt_element) {
+  // default is selected element
+  if(!opt_element) opt_element = this.view.stage.getSelection()[0];
+  // disable editable
+  silex.utils.EditablePlugin.setEditable(opt_element, false);
+  // duplicate the node
+  silex.controller.ControllerBase.clipboard = opt_element.cloneNode(true);
+  // re-enable editable
+  silex.utils.EditablePlugin.setEditable(opt_element, true);
+}
+
+
+/**
+ * paste the previously copied element
+ * @param {element} opt_element    the element into which to add the clipboard
+ *     if this element is not a container, we will take the element parent
+ */
+silex.controller.ControllerBase.prototype.pasteElement = function(opt_element) {
+  // default is selected element
+  if(!opt_element) opt_element = this.view.stage.getSelection()[0];
+  // default is selected element
+  if(silex.controller.ControllerBase.clipboard) {
+    // paste in the parent
+    if(!goog.dom.classes.has(opt_element, silex.view.Stage.STAGE_CLASS_NAME)){
+      // but not if the selection is the background
+      if(!goog.dom.classes.has(opt_element, silex.view.Stage.BACKGROUND_CLASS_NAME)){
+        opt_element = opt_element.parentNode;
+      }
+    }
+    else{
+      // case of the stage selected
+      // find the container (main background container or the stage)
+      var container = goog.dom.getElementByClass(silex.view.Stage.BACKGROUND_CLASS_NAME, this.bodyElement);
+      if(container){
+        opt_element = container;
+      }
+    }
+    var element = silex.controller.ControllerBase.clipboard.cloneNode(true);
+    goog.dom.appendChild(opt_element, element);
+    this.doAddElement(element);
+  }
+}
+
+
+/**
  * remove an element from the stage
  * @param {element} element    the element to remove
  */
@@ -152,35 +207,42 @@ silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
 }
 /**
  * create an element and add it to the stage
+ * @param {string} the desired type for the new element
  * @return {element} the new element
  */
 silex.controller.ControllerBase.prototype.addElement = function(type) {
+  console.log('controller-events', 'request', 'insert.'+type, 0);
   this.tracker.trackAction('controller-events', 'request', 'insert.'+type, 0);
   try{
     // create the element and add it to the stage
     var element = this.model.element.createElement(type);
-    // only visible on the current page
-    var currentPageName = silex.utils.PageablePlugin.getCurrentPageName();
-    silex.utils.PageablePlugin.addToPage(element, currentPageName);
-    // unless one of its parents is in a page already
-    this.checkElementVisibility(element);
-    // select the component
-    this.model.element.setSelected(element, true);
-    // update view
-    this.view.propertyTool.redraw();
-    // update drop zones z index
-    silex.utils.EditablePlugin.resetEditable(this.model.body.bodyElement, true);
-    // tracking / qos
-    this.tracker.trackAction('controller-events', 'success', 'insert.'+type, 1);
+    this.doAddElement(element);
   }
   catch(e){
     this.tracker.trackAction('controller-events', 'error', 'insert.'+type, -1);
     console.error('could not add element of type', type, ' - ', e.message);
   }
+  // tracking / qos
+  this.tracker.trackAction('controller-events', 'success', 'insert.', 1);
   return element;
 }
-
-
+/**
+ * create an element and add it to the stage
+ * @param {element} the element to add
+ */
+silex.controller.ControllerBase.prototype.doAddElement = function(element) {
+  // only visible on the current page
+  var currentPageName = silex.utils.PageablePlugin.getCurrentPageName();
+  silex.utils.PageablePlugin.addToPage(element, currentPageName);
+  // unless one of its parents is in a page already
+  this.checkElementVisibility(element);
+  // select the component
+  this.model.element.setSelected(element, true);
+  // update view
+  this.view.propertyTool.redraw();
+  // update drop zones z index
+  silex.utils.EditablePlugin.resetEditable(this.model.body.bodyElement, true);
+}
 /**
  * set a given style to the current selection
  */
