@@ -448,7 +448,7 @@ silex.model.Element.prototype.createElement = function(type) {
   silex.utils.EditablePlugin.setEditable(element, true);
 
   // find the container (main background container or the stage)
-  var container = goog.dom.getElementByClass('background', this.bodyElement);
+  var container = goog.dom.getElementByClass(silex.view.Stage.BACKGROUND_CLASS_NAME, this.bodyElement);
   if(!container){
     container = this.bodyElement;
   }

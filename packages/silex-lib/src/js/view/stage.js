@@ -51,12 +51,17 @@ silex.view.Stage = function(element, bodyElement, headElement) {
 goog.inherits(silex.view.Stage, silex.view.ViewBase);
 
 /**
- * input element to get the focus
+ * class name for the stage element
  */
 silex.view.Stage.STAGE_CLASS_NAME = 'silex-stage-body';
 
 /**
- * class name for the stage element
+ * input element to get the focus
+ */
+silex.view.Stage.BACKGROUND_CLASS_NAME = 'background';
+
+/**
+ * input element to get the focus
  */
 silex.view.Stage.prototype.focusInput;
 

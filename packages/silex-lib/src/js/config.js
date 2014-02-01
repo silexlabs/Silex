@@ -183,6 +183,26 @@ silex.Config.menu = {
     ]
     , [
       {
+        label: 'Copy'
+        , id: 'edit.copy.selection'
+        , className: 'menu-item-edit-copy-selection'
+        , globalKey: goog.events.KeyCodes.C
+        , shortcut: [[goog.events.KeyCodes.C, goog.ui.KeyboardShortcutHandler.Modifiers.META]]
+        , tooltip: ctrlKeyDisplay + 'C'
+        , mnemonic: goog.events.KeyCodes.C
+        , accelerator: 'c'
+      }
+      , {
+        label: 'Paste'
+        , id: 'edit.paste.selection'
+        , className: 'menu-item-edit-paste-selection'
+        , globalKey: goog.events.KeyCodes.V
+        , shortcut: [[goog.events.KeyCodes.V, goog.ui.KeyboardShortcutHandler.Modifiers.META]]
+        , tooltip: ctrlKeyDisplay + 'V'
+        , mnemonic: goog.events.KeyCodes.V
+        , accelerator: 'v'
+      }
+      , {
         label: 'Delete selection'
         , id: 'edit.delete.selection'
         , className: 'menu-item-edit-delete-selection'

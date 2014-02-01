@@ -4,6 +4,11 @@
 
 #dev notes
 
+refacto
+- attachElement in body?
+- copy/paste (stage.getElementClone then body.attachElement(doClone) => duplicate)
+
+
 BUGS
 containers in the bg take drop instead of the main container over it
 text fields overflow?? check that text is normal, not h1?
