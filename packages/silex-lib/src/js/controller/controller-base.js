@@ -108,6 +108,7 @@ silex.controller.ControllerBase.prototype.pasteElement = function(opt_element) {
     }
     var element = silex.controller.ControllerBase.clipboard.cloneNode(true);
     goog.dom.appendChild(opt_element, element);
+
     this.doAddElement(element);
   }
 }
