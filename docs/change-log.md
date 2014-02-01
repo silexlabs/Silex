@@ -17,6 +17,7 @@ bug fixes
 features
 
 * added js editor and css editor
+* copy / paste
 * added inline style editor (css of the selected element in apolo mode)
 * added css class name of the selected element (apolo mode)
 * added predefined styles in the text editor (Title, quotes...)

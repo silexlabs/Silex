@@ -63,6 +63,11 @@ silex.controller.ControllerBase.prototype.model;
  * this is a static attribute
  */
 silex.controller.ControllerBase.clipboard;
+/**
+ * the {element} element wich is the origin container of the element in the clipboard
+ * this is a static attribute
+ */
+silex.controller.ControllerBase.clipboardParent;
 
 
 /**
@@ -70,46 +75,45 @@ silex.controller.ControllerBase.clipboard;
  * @param {element} opt_element    the element to copy
  */
 silex.controller.ControllerBase.prototype.copyElement = function(opt_element) {
+  this.tracker.trackAction('controller-events', 'request', 'copy', 0);
   // default is selected element
   if(!opt_element) opt_element = this.view.stage.getSelection()[0];
   // disable editable
   silex.utils.EditablePlugin.setEditable(opt_element, false);
   // duplicate the node
   silex.controller.ControllerBase.clipboard = opt_element.cloneNode(true);
+  silex.controller.ControllerBase.clipboardParent = opt_element.parentNode;
   // re-enable editable
   silex.utils.EditablePlugin.setEditable(opt_element, true);
+  this.tracker.trackAction('controller-events', 'success', 'copy', 1);
 }
 
 
 /**
  * paste the previously copied element
- * @param {element} opt_element    the element into which to add the clipboard
- *     if this element is not a container, we will take the element parent
  */
-silex.controller.ControllerBase.prototype.pasteElement = function(opt_element) {
-  // default is selected element
-  if(!opt_element) opt_element = this.view.stage.getSelection()[0];
+silex.controller.ControllerBase.prototype.pasteElement = function() {
+  this.tracker.trackAction('controller-events', 'request', 'paste', 0);
   // default is selected element
   if(silex.controller.ControllerBase.clipboard) {
-    // paste in the parent
-    if(!goog.dom.classes.has(opt_element, silex.view.Stage.STAGE_CLASS_NAME)){
-      // but not if the selection is the background
-      if(!goog.dom.classes.has(opt_element, silex.view.Stage.BACKGROUND_CLASS_NAME)){
-        opt_element = opt_element.parentNode;
-      }
+    // find the container: original container, main background container or the stage
+    var container;
+    if (silex.controller.ControllerBase.clipboardParent
+      && goog.dom.contains(silex.utils.PageablePlugin.getBodyElement(), silex.controller.ControllerBase.clipboardParent)){
+      container = silex.controller.ControllerBase.clipboardParent;
     }
     else{
-      // case of the stage selected
-      // find the container (main background container or the stage)
-      var container = goog.dom.getElementByClass(silex.view.Stage.BACKGROUND_CLASS_NAME, this.bodyElement);
-      if(container){
-        opt_element = container;
+      container = goog.dom.getElementByClass(silex.view.Stage.BACKGROUND_CLASS_NAME, silex.utils.PageablePlugin.getBodyElement());
+      if(!container){
+        container = silex.utils.PageablePlugin.getBodyElement();
       }
     }
+    // duplicate and add to the container
     var element = silex.controller.ControllerBase.clipboard.cloneNode(true);
-    goog.dom.appendChild(opt_element, element);
-
+    goog.dom.appendChild(container, element);
+    // reset editable option
     this.doAddElement(element);
+    this.tracker.trackAction('controller-events', 'success', 'paste', 1);
   }
 }
 
@@ -212,7 +216,6 @@ silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
  * @return {element} the new element
  */
 silex.controller.ControllerBase.prototype.addElement = function(type) {
-  console.log('controller-events', 'request', 'insert.'+type, 0);
   this.tracker.trackAction('controller-events', 'request', 'insert.'+type, 0);
   try{
     // create the element and add it to the stage
