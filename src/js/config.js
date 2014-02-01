@@ -186,7 +186,6 @@ silex.Config.menu = {
         label: 'Copy'
         , id: 'edit.copy.selection'
         , className: 'menu-item-edit-copy-selection'
-        , globalKey: goog.events.KeyCodes.C
         , shortcut: [[goog.events.KeyCodes.C, goog.ui.KeyboardShortcutHandler.Modifiers.META]]
         , tooltip: ctrlKeyDisplay + 'C'
         , mnemonic: goog.events.KeyCodes.C
@@ -196,7 +195,6 @@ silex.Config.menu = {
         label: 'Paste'
         , id: 'edit.paste.selection'
         , className: 'menu-item-edit-paste-selection'
-        , globalKey: goog.events.KeyCodes.V
         , shortcut: [[goog.events.KeyCodes.V, goog.ui.KeyboardShortcutHandler.Modifiers.META]]
         , tooltip: ctrlKeyDisplay + 'V'
         , mnemonic: goog.events.KeyCodes.V
@@ -235,7 +233,6 @@ silex.Config.menu = {
         label: 'View in new window'
         , id: 'view.file'
         , className: 'menu-item-view-file'
-        , globalKey: goog.events.KeyCodes.V
         , shortcut: [[goog.events.KeyCodes.V, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
         , tooltip: altKeyDisplay + 'V'
         , mnemonic: goog.events.KeyCodes.V
@@ -293,7 +290,6 @@ silex.Config.menu = {
         label: 'Container'
         , id: 'insert.container'
         , className: 'menu-item-insert-container'
-        , globalKey: goog.events.KeyCodes.C
         , shortcut: [[goog.events.KeyCodes.C, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
         , tooltip: altKeyDisplay + 'C'
         , mnemonic: goog.events.KeyCodes.C
