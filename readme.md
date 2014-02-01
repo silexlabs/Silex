@@ -2,11 +2,6 @@
 [![Build Status](https://travis-ci.org/silexlabs/Silex.png?branch=master)](https://travis-ci.org/silexlabs/Silex)
 [![Dependency Status](https://gemnasium.com/silexlabs/Silex.png)](https://gemnasium.com/silexlabs/Silex)
 
-<!-- MarkdownTOC -->
-- local installation on linux or macos
-- local installation on Windows
-<!-- /MarkdownTOC -->
-
 ##About Silex, live web creation.
 
 Silex, is a free and open source website builder in the cloud. Create websites directly in the browser without writing code. And it is suitable for professional designers to produce great websites without constraints. Silex is also known as the HTML5 editor.
