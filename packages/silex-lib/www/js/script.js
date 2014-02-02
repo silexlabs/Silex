@@ -27,12 +27,13 @@ ga('create', 'UA-19608894-18', 'silex.me');
 ga('send', 'pageview');
 ////////////////////////////////////
 // fade in for images
+/*
 $(function(){
-    //$("img").css('opacity', '0');
     $("img").hide().bind("load", function () { 
         $(this).fadeIn(); 
     }).each(function(){
-        if(this.complete) $(this).trigger("load");
+        if(this.complete || $(this).height() <= 0) $(this).trigger("load");
     });
 });
+*/
 ////////////////////////////////////
