@@ -27,10 +27,6 @@
 .text-element HEADER {
   font-size: 45px;
 }
-/* background element */
-.background{
-
-}
 .text-element.very-big *{
     font-size: 80px !important;
 }
