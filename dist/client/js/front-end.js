@@ -32,8 +32,13 @@ $(function() {
    * silex links
    */
   $('[data-silex-href]').click(function () {
-    //window.location.href = this.getAttribute('data-silex-href');
-    window.open(this.getAttribute('data-silex-href'), '_blank');
+    var href = this.getAttribute('data-silex-href');
+    if (href.indexOf('#!') === 0){
+      window.location.href = href;
+    }
+    else{
+      window.open(href, '_blank');
+    }
   });
   /**
    * resize body to the size of its content

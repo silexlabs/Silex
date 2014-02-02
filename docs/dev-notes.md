@@ -8,6 +8,9 @@ refacto
 - attachElement in body?
 - copy/paste (stage.getElementClone then body.attachElement(doClone) => duplicate)
 
+still in css classes: paged-element-hidden ?
+in published site: page-element-hidden
+add page-element-hidden to links to a page
 
 BUGS
 containers in the bg take drop instead of the main container over it
