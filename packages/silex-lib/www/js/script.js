@@ -31,6 +31,8 @@ $(function(){
     //$("img").css('opacity', '0');
     $("img").hide().bind("load", function () { 
         $(this).fadeIn(); 
+    }).each(function(){
+        if(this.complete) $(this).trigger("load");
     });
 });
 ////////////////////////////////////
