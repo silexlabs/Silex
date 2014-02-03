@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /js/
+Disallow: /demos/
+Disallow: /css/
+Disallow: /tests/
+Sitemap: /sitemap_index.xml
