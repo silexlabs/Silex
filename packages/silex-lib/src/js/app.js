@@ -172,16 +172,14 @@ silex.App = function() {
     , fileExplorerElement
     , settingsDialogElement);
 
-  /** @type {silex.types.Model} */
-  var model = new silex.types.Model(
+  this.model = new silex.types.Model(
     new silex.model.File(bodyElement, headElement)
     , new silex.model.Head(bodyElement, headElement)
     , new silex.model.Body(bodyElement, headElement)
     , new silex.model.Element(bodyElement, headElement)
   );
 
-  /** @type {silex.types.View} */
-  var view = new silex.types.View(
+  this.view = new silex.types.View(
     workspace
     , menu
     , stage
@@ -195,25 +193,42 @@ silex.App = function() {
     , settingsDialog
   );
 
-  /** @type {silex.types.Controller} */
-  var controller = new silex.types.Controller(
-    new silex.controller.MenuController(model, view)
-    , new silex.controller.StageController(model, view)
-    , new silex.controller.PageToolController(model, view)
-    , new silex.controller.PropertyToolController(model, view)
-    , new silex.controller.SettingsDialogController(model, view)
-    , new silex.controller.HtmlEditorController(model, view)
-    , new silex.controller.CssEditorController(model, view)
-    , new silex.controller.JsEditorController(model, view)
-    , new silex.controller.TextEditorController(model, view)
+  this.controller = new silex.types.Controller(
+    new silex.controller.MenuController(this.model, this.view)
+    , new silex.controller.StageController(this.model, this.view)
+    , new silex.controller.PageToolController(this.model, this.view)
+    , new silex.controller.PropertyToolController(this.model, this.view)
+    , new silex.controller.SettingsDialogController(this.model, this.view)
+    , new silex.controller.HtmlEditorController(this.model, this.view)
+    , new silex.controller.CssEditorController(this.model, this.view)
+    , new silex.controller.JsEditorController(this.model, this.view)
+    , new silex.controller.TextEditorController(this.model, this.view)
   );
 
   // now create an empty file to let the user start using Silex
-  controller.menuController.menuCallback('file.new');
+  this.controller.menuController.menuCallback('file.new');
   if(silex.Config.debug.debugMode && silex.Config.debug.doAfterReady) {
-    silex.Config.debug.doAfterReady(model, view, controller);
+    silex.Config.debug.doAfterReady(this.model, this.view, this.controller);
     }
 };
+
+/**
+ * store the main structures to ease debugging in browser console
+ * @type {silex.types.Model}
+ */
+silex.App.prototype.model;
+
+/**
+ * store the main structures to ease debugging in browser console
+ * @type {silex.types.View}
+ */
+silex.App.prototype.view;
+
+/**
+ * store the main structures to ease debugging in browser console
+ * @type {silex.types.Controller}
+ */
+silex.App.prototype.controller;
 
 // Ensures the symbol will be visible after compiler renaming.
 goog.exportSymbol('silex.App', silex.App);

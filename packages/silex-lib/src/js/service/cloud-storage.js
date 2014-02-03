@@ -125,7 +125,6 @@ silex.service.CloudStorage.prototype.loadLocal = function(url, cbk, opt_errCbk) 
       var message = xhr.getLastError();
       console.error(message, xhr, xhr.isSuccess(), xhr.getStatus(), xhr.headers.toString());
       if (opt_errCbk) {
-        console.error(FPError);
         opt_errCbk(message);
       }
     }

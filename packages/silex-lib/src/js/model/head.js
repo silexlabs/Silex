@@ -40,13 +40,13 @@ goog.inherits(silex.model.Head, silex.model.ModelBase);
 /**
  * id of the style element which holds silex editable css styles
  */
-silex.model.Head.SILEX_STYLE_ELEMENT_ID = 'silex-style';
+silex.model.Head.SILEX_STYLE_ELEMENT_CSS_CLASS = 'silex-style';
 
 
 /**
  * id of the style element which holds silex editable css styles
  */
-silex.model.Head.SILEX_SCRIPT_ELEMENT_ID = 'silex-script';
+silex.model.Head.SILEX_SCRIPT_ELEMENT_CSS_CLASS = 'silex-script';
 
 
 /**
@@ -56,7 +56,7 @@ silex.model.Head.SILEX_SCRIPT_ELEMENT_ID = 'silex-script';
 silex.model.Head.prototype.getHeadScript = function() {
   // get silex scripts from the DOM
   var scriptTag = goog.dom.getElementByClass(
-    silex.model.Head.SILEX_SCRIPT_ELEMENT_ID,
+    silex.model.Head.SILEX_SCRIPT_ELEMENT_CSS_CLASS,
     this.headElement);
   if (!scriptTag){
     console.warn('no silex editable styles defined');
@@ -72,13 +72,13 @@ silex.model.Head.prototype.getHeadScript = function() {
  */
 silex.model.Head.prototype.setHeadScript = function(jsString) {
   var scriptTag = goog.dom.getElementByClass(
-    silex.model.Head.SILEX_SCRIPT_ELEMENT_ID,
+    silex.model.Head.SILEX_SCRIPT_ELEMENT_CSS_CLASS,
     this.headElement);
 
   if (!scriptTag){
     scriptTag = goog.dom.createElement('script');
     scriptTag.type = 'text/javascript';
-    scriptTag.className = silex.model.Head.SILEX_SCRIPT_ELEMENT_ID;
+    scriptTag.className = silex.model.Head.SILEX_SCRIPT_ELEMENT_CSS_CLASS;
     goog.dom.appendChild(this.headElement, scriptTag);
   }
   scriptTag.innerHTML = jsString;
@@ -92,7 +92,7 @@ silex.model.Head.prototype.setHeadScript = function(jsString) {
 silex.model.Head.prototype.getHeadStyle = function() {
   // get silex styles from the DOM
   var silexStyle = goog.dom.getElementByClass(
-    silex.model.Head.SILEX_STYLE_ELEMENT_ID,
+    silex.model.Head.SILEX_STYLE_ELEMENT_CSS_CLASS,
     this.headElement);
   if (!silexStyle){
     console.warn('no silex editable styles defined');
@@ -108,13 +108,13 @@ silex.model.Head.prototype.getHeadStyle = function() {
  */
 silex.model.Head.prototype.setHeadStyle = function(cssString) {
   var silexStyle = goog.dom.getElementByClass(
-    silex.model.Head.SILEX_STYLE_ELEMENT_ID,
+    silex.model.Head.SILEX_STYLE_ELEMENT_CSS_CLASS,
     this.headElement);
 
   if (!silexStyle){
     silexStyle = goog.dom.createElement('style');
     silexStyle.type = 'text/css';
-    silexStyle.className = silex.model.Head.SILEX_STYLE_ELEMENT_ID;
+    silexStyle.className = silex.model.Head.SILEX_STYLE_ELEMENT_CSS_CLASS;
     goog.dom.appendChild(this.headElement, silexStyle);
   }
   silexStyle.innerHTML = cssString;
@@ -126,14 +126,14 @@ silex.model.Head.prototype.setHeadStyle = function(cssString) {
  */
 silex.model.Head.prototype.updateBrowserStyle = function() {
   var silexStyle = goog.dom.getElementByClass(
-    silex.model.Head.SILEX_STYLE_ELEMENT_ID,
+    silex.model.Head.SILEX_STYLE_ELEMENT_CSS_CLASS,
     document.head);
 
   // also update Silex editor css
   if (!silexStyle){
     silexStyle = goog.dom.createElement('style');
     silexStyle.type = 'text/css';
-    silexStyle.className = silex.model.Head.SILEX_STYLE_ELEMENT_ID;
+    silexStyle.className = silex.model.Head.SILEX_STYLE_ELEMENT_CSS_CLASS;
     goog.dom.appendChild(document.head, silexStyle);
   }
 
