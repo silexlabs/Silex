@@ -92,6 +92,15 @@ silex.utils.PageablePlugin.PAGED_VISIBLE_CLASS_NAME = 'paged-element-visible';
 
 
 /**
+ * constant for the class name of links when it links to a visible page
+ * this css class is set in pageable.js
+ * @const
+ * @type {string}
+ */
+silex.utils.PageablePlugin.PAGE_LINK_ACTIVE_CLASS_NAME = 'page-link-active';
+
+
+/**
  * retrieve the first parent which is visible only on some pages
  * @return null or the element or one of its parents which has the css class silex.utils.PageablePlugin.PAGED_CLASS_NAME
  */
@@ -127,7 +136,11 @@ silex.utils.PageablePlugin.setPageable = function(bodyElement, isPageable) {
       $(bodyElement).pageable(
         {
           currentPage: pages[0],
-          useDeeplink: false
+          useDeeplink: false,
+          onPageChanged: function(pageName){
+            // do the same as in front-end.js
+            $('[data-silex-href="#!'+pageName+'"]').addClass('page-link-active');
+          }
         });
     }
     else{

@@ -37,6 +37,7 @@ silex.utils.Style.SILEX_CLASS_NAMES = [
   silex.utils.EditablePlugin.EDITABLE_CREATED_CLASS_NAME,
   silex.utils.PageablePlugin.PAGED_CLASS_NAME,
   silex.utils.PageablePlugin.PAGED_VISIBLE_CLASS_NAME,
+  silex.utils.PageablePlugin.PAGE_LINK_ACTIVE_CLASS_NAME,
   silex.view.Stage.STAGE_CLASS_NAME,
   silex.model.Element.SELECTED_CLASS_NAME,
   silex.model.Element.TYPE_CONTAINER + '-element',

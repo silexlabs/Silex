@@ -21,12 +21,21 @@ $(function() {
     firstPageName = firstPage.getAttribute('id');
   }
   /**
+   * callback for change events
+   * called when a page is opened
+   */
+  $('body').on('pageChanged', function (event, pageName) {
+    console.log(arguments);
+    // mark links to the current page as active
+    $('[data-silex-href="#!'+pageName+'"]').addClass('page-link-active');
+  });
+  /**
    * init page system
    */
-  $( 'body' ).pageable({
+  $('body').pageable({
     currentPage: firstPageName,
     useDeeplink:true,
-    pageClass: 'paged-element'
+    pageClass: 'paged-element',
   });
   /**
    * silex links
