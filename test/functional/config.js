@@ -13,7 +13,7 @@ before(function(done) {
     this.timeout(30000);
     helper.startSelenium(function (_) {
         // open silex
-        helper.driver.get('http://localhost:6805/silex/index.html').then(function () {
+        helper.driver.get('http://localhost:6805/silex/').then(function () {
             done();
         });
     });

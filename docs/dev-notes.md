@@ -6,22 +6,15 @@
 
 !!!!!!!!! static.silex.me => pageable.js !!!!!!!!!
 
-refacto
-- attachElement in body?
-- copy/paste (stage.getElementClone then body.attachElement(doClone))
-
-still in css classes: paged-element-hidden ?
-in published site: page-element-hidden
-add page-element-hidden to links to a page
+next refacto
+* attachElement in body?
+* copy/paste (stage.getElementClone then body.attachElement(doClone))
+* setClassName dans model.element, pas dans helper.Style
 
 BUGS
-containers in the bg take drop instead of the main container over it
-text fields overflow?? check that text is normal, not h1?
-https://github.com/silexlabs/Silex/issues/
-* set viewport size to background?
-* setClassName dans model.element, pas dans helper.Style
-* move static.silex.io to dist/
-- services, use http://docs.closure-library.googlecode.com/git/class_goog_ds_JsonDataSource.html
+* text fields overflow?? check that text is normal, not h1?
+* https://github.com/silexlabs/Silex/issues/
+* services, use http://docs.closure-library.googlecode.com/git/class_goog_ds_JsonDataSource.html
 
 publish dialog: add links to
 * http://validator.w3.org/check?uri=http%3A%2F%2Fsilex-v2.kissr.com
