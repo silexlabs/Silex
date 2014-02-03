@@ -4,9 +4,11 @@
 
 #dev notes
 
+!!!!!!!!! static.silex.me => pageable.js !!!!!!!!!
+
 refacto
 - attachElement in body?
-- copy/paste (stage.getElementClone then body.attachElement(doClone) => duplicate)
+- copy/paste (stage.getElementClone then body.attachElement(doClone))
 
 still in css classes: paged-element-hidden ?
 in published site: page-element-hidden
