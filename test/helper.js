@@ -1,3 +1,5 @@
+// doc: see https://code.google.com/p/selenium/source/browse/javascript/webdriver/webdriver.js
+
 var fs = require('fs')
 , path = require('path');
 
