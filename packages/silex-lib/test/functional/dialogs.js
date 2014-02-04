@@ -40,25 +40,27 @@ it('should be able to open the file explorer dialog', function(done) {
     helper.driver.findElement(helper.webdriver.By.className('menu-item-file-open')).click();
     // check visibility
     helper.driver.findElement(helper.webdriver.By.className('silex-fileexplorer')).isDisplayed().then(function (isDisplayed) {
-        console.log("dialog visibility", isDisplayed);
         if (isDisplayed) done();
         else done('dialog is not visible');
         return isDisplayed;
     });
 });
-/*
 it('should open the login popup', function(done) {
+    var originWindow = helper.driver.getWindowHandle();
     // click
     helper.driver.findElement(helper.webdriver.By.css('img[title="Edit files on the server where Silex is installed."]')).click();
     helper.driver.findElement(helper.webdriver.By.linkText("CLICK HERE")).click();
-    console.log('xxxx 1');
     // check visibility
-    helper.driver.selectWindow('authPopup').then(function () {
-      console.log('AAAAA ', arguments);
+    helper.driver.switchTo().window('authPopup');
+    var input = helper.driver.findElement(helper.webdriver.By.name('username'));
+    input.sendKeys('admin');
+    input = helper.driver.findElement(helper.webdriver.By.name('password'));
+    input.sendKeys('admin');
+    input.sendKeys(String.fromCharCode('13'));
+    helper.driver.switchTo().window(originWindow).then(function () {
+      done();
     });
-    console.log('xxxx 2');
 });
-*/
 it('should be able to close the file explorer dialog', function(done) {
     // click on close
     helper.driver.findElement(helper.webdriver.By.className('silex-fileexplorer'))
@@ -68,10 +70,12 @@ it('should be able to close the file explorer dialog', function(done) {
     helper.driver.findElement(helper.webdriver.By.className('silex-fileexplorer'))
     .isDisplayed()
     .then(function (isDisplayed) {
-        console.log("dialog visibility", isDisplayed);
-        if (!isDisplayed) done();
-        else done('dialog is still visible');
-        return !isDisplayed;
+        if (!isDisplayed){
+          done();
+        }
+        else {
+          done('dialog is still visible');
+        }
     });
 });
 after(function(done) {
