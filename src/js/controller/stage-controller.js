@@ -43,7 +43,13 @@ silex.controller.StageController.prototype.stageCallback = function(type, opt_ta
   //this.tracker.trackAction('controller-events', 'request', event.type, 0);
   switch (type) {
     case 'select': // the user has selected an element
+      this.model.element.resetSelection();
+    case 'selectMultiple': // the user has selected an element
       this.model.element.setSelected(opt_target, true);
+      this.view.propertyTool.redraw();
+      break;
+    case 'deselect': // the user has selected an element
+      this.model.element.setSelected(opt_target, false);
       this.view.propertyTool.redraw();
       break;
     case 'change': // size or position of the element has changed
@@ -52,8 +58,7 @@ silex.controller.StageController.prototype.stageCallback = function(type, opt_ta
       //silex.utils.EditablePlugin.resetEditable(this.model.body.bodyElement, true);
       break;
     case 'newContainer': // an element is dropped in a new container
-      var element = this.view.stage.getSelection()[0];
-      this.checkElementVisibility(element);
+      this.checkElementVisibility(opt_target);
       // update drop zones z index
       //silex.utils.EditablePlugin.resetEditable(this.model.body.bodyElement, true);
       break;

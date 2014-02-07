@@ -66,6 +66,21 @@ silex.view.Stage.BACKGROUND_CLASS_NAME = 'background';
 silex.view.Stage.prototype.focusInput;
 
 /**
+ * flag to store the state
+ */
+silex.view.Stage.prototype.isResizing = false;
+
+/**
+ * flag to store the state
+ */
+silex.view.Stage.prototype.isDragging = false;
+
+/**
+ * flag to store the state
+ */
+silex.view.Stage.prototype.isDown = false;
+
+/**
  * init stage events
  * handle mouse events for selection,
  * events of the jquery editable plugin,
@@ -74,18 +89,102 @@ silex.view.Stage.prototype.focusInput;
  */
 silex.view.Stage.prototype.initEvents = function () {
 
+  // multiple selection move
+  goog.events.listen(this.element, 'mousemove', function(e) {
+    // update states
+    if (this.isDown){
+      // update states
+      if (!this.isDragging && !this.isResizing){
+        if (goog.dom.classes.has(e.target, 'ui-resizable-handle')){
+          this.isResizing = true;
+        }
+        else{
+          this.isDragging = true;
+        }
+      }
+      // compute the offset compared to the last mouse move
+      var offsetX = e.screenX - this.lastPosX;
+      var offsetY = e.screenY - this.lastPosY;
+      this.lastPosX = e.screenX;
+      this.lastPosY = e.screenY;
+      // apply offset to other selected element
+      var dragged = silex.utils.EditablePlugin.getFirstEditableParent(e.target);
+      var elements = goog.dom.getElementsByClass(silex.model.Element.SELECTED_CLASS_NAME, this.bodyElement);
+      goog.array.forEach(elements, function(element) {
+        if (element !== dragged){
+          if (this.isResizing){
+            var pos = goog.style.getSize(element);
+            //goog.style.setSize(element, pos.width + offsetX, pos.height + offsetY);
+          }
+          else if (this.isDragging){
+            // do not move an element if one of its parent is already being moved
+            if (!goog.dom.getAncestorByClass(element.parentNode, silex.model.Element.SELECTED_CLASS_NAME)){
+              var pos = goog.style.getPosition(element);
+              goog.style.setPosition(element, pos.x + offsetX, pos.y + offsetY);
+            }
+          }
+        }
+      }, this);
+    }
+  }, false, this);
   // detect mouse down
   goog.events.listen(this.element, 'mousedown', function(e) {
-    if (this.onStatus) this.onStatus('select', silex.utils.EditablePlugin.getFirstEditableParent(e.target));
-    this.isDragging = true;
+    // get the first parent node which is editable (silex-editable css class)
+    var editableElement = silex.utils.EditablePlugin.getFirstEditableParent(e.target);
+    this.lastSelected = null;
+    // if the element was not already selected
+    if (!goog.dom.classes.has(editableElement, silex.model.Element.SELECTED_CLASS_NAME)){
+      this.lastSelected = editableElement;
+      // notify the controller
+      if (this.onStatus){
+        if (e.shiftKey){
+          this.onStatus('selectMultiple', editableElement);
+        }
+        else{
+          this.onStatus('select', editableElement);
+        }
+      }
+    }
+    // keep track of the last maouse position
+    this.lastPosX = e.screenX;
+    this.lastPosY = e.screenY;
+    // update state
+    this.isDown = true;
   }, false, this);
   // listen on body instead of element because user can release
   // on the tool boxes
   goog.events.listen(document.body, 'mouseup', function(e) {
-    if (this.isDragging) {
+    // update state
+    this.isDown = false;
+    // handle selection
+    if (this.isDragging || this.isResizing) {
       if (this.onStatus) this.onStatus('change', e.target);
       this.isDragging = false;
-      // remove the focus from text fields
+      this.isResizing = false;
+    }
+    // do nothing if it is mousup outside the stage
+    else if(goog.dom.contains(this.element, e.target)){
+      if(e.shiftKey === true){
+        // if the element is selected, then unselect it
+        if (this.onStatus){
+          // get the first parent node which is editable (silex-editable css class)
+          var editableElement = silex.utils.EditablePlugin.getFirstEditableParent(e.target);
+          if (this.lastSelected != editableElement){
+            this.onStatus('deselect', editableElement);
+          }
+        }
+      }
+      else{
+        // if the user did not move the element select it in case other elements were selected
+        if (this.onStatus){
+          // get the first parent node which is editable (silex-editable css class)
+          var editableElement = silex.utils.EditablePlugin.getFirstEditableParent(e.target);
+          this.onStatus('select', editableElement);
+        }
+      }
+    }
+    // remove the focus from text fields
+    if(goog.dom.contains(this.element, e.target)){
       this.focusInput.focus();
       this.focusInput.blur();
     }
@@ -102,7 +201,20 @@ silex.view.Stage.prototype.initEvents = function () {
   }, false, this);
   // dispatch event when an element is dropped in a new container
   goog.events.listen(this.element, 'newContainer', function(e) {
-    if (this.onStatus) this.onStatus('newContainer');
+    var newContainer = e.target.parentNode;
+    // move all selected elements to the new container
+    var elements = this.getSelection();
+    goog.array.forEach(elements, function(element) {
+      if (element.parentNode !== newContainer){
+        // store initial position
+        var pos = goog.style.getPageOffset(element);
+        // move to the new container
+        goog.dom.appendChild(newContainer, element);
+        // restore position
+        goog.style.setPageOffset(element, pos);
+      }
+      if (this.onStatus) this.onStatus('newContainer', element);
+    }, this);
   }, false, this);
   // detect double click
   goog.events.listen(this.element, goog.events.EventType.DBLCLICK, function(e) {
@@ -111,7 +223,7 @@ silex.view.Stage.prototype.initEvents = function () {
   // Disable horizontal scrolling for Back page on Mac OS
   var mwh = new goog.events.MouseWheelHandler(this.element);
   goog.events.listen(mwh, goog.events.MouseWheelHandler.EventType.MOUSEWHEEL, function (e) {
-    if (e.deltaX<0 && this.bodyElement.scrollLeft<=0){
+    if (e.deltaX<0 && this.bodyElement.parentNode.scrollLeft<=0){
       e.preventDefault();
     }
   }, false, this);

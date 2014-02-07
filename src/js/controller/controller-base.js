@@ -59,7 +59,7 @@ silex.controller.ControllerBase.prototype.model;
 
 
 /**
- * the {element} element in the clipboard
+ * the {array} array of elements in the clipboard
  * this is a static attribute
  */
 silex.controller.ControllerBase.clipboard;
@@ -72,30 +72,38 @@ silex.controller.ControllerBase.clipboardParent;
 
 /**
  * copy the selection for later paste
- * @param {element} opt_element    the element to copy
  */
-silex.controller.ControllerBase.prototype.copyElement = function(opt_element) {
+silex.controller.ControllerBase.prototype.copySelection = function() {
   this.tracker.trackAction('controller-events', 'request', 'copy', 0);
   // default is selected element
-  if(!opt_element) opt_element = this.view.stage.getSelection()[0];
-  // disable editable
-  silex.utils.EditablePlugin.setEditable(opt_element, false);
-  // duplicate the node
-  silex.controller.ControllerBase.clipboard = opt_element.cloneNode(true);
-  silex.controller.ControllerBase.clipboardParent = opt_element.parentNode;
-  // re-enable editable
-  silex.utils.EditablePlugin.setEditable(opt_element, true);
-  this.tracker.trackAction('controller-events', 'success', 'copy', 1);
+  var elements = this.view.stage.getSelection();
+  if (elements.length>0){
+    // reset clipboard
+    silex.controller.ControllerBase.clipboard = [];
+    // add each selected element to the clipboard
+    goog.array.forEach(elements, function(element) {
+      // disable editable
+      silex.utils.EditablePlugin.setEditable(element, false);
+      // duplicate the node
+      silex.controller.ControllerBase.clipboard.push(element.cloneNode(true));
+      silex.controller.ControllerBase.clipboardParent = element.parentNode;
+      // re-enable editable
+      silex.utils.EditablePlugin.setEditable(element, true);
+    }, this);
+    this.tracker.trackAction('controller-events', 'success', 'copy', 1);
+  }
 }
 
 
 /**
  * paste the previously copied element
  */
-silex.controller.ControllerBase.prototype.pasteElement = function() {
+silex.controller.ControllerBase.prototype.pasteSelection = function() {
   this.tracker.trackAction('controller-events', 'request', 'paste', 0);
   // default is selected element
   if(silex.controller.ControllerBase.clipboard) {
+    // reset selection
+    this.model.element.resetSelection();
     // find the container: original container, main background container or the stage
     var container;
     if (silex.controller.ControllerBase.clipboardParent
@@ -109,12 +117,14 @@ silex.controller.ControllerBase.prototype.pasteElement = function() {
       }
     }
     // duplicate and add to the container
-    var element = silex.controller.ControllerBase.clipboard.cloneNode(true);
-    goog.dom.appendChild(container, element);
-    // reset editable option
-    this.doAddElement(element);
-    this.tracker.trackAction('controller-events', 'success', 'paste', 1);
+    goog.array.forEach(silex.controller.ControllerBase.clipboard, function (clipboardElement) {
+      var element = clipboardElement.cloneNode(true);
+      goog.dom.appendChild(container, element);
+      // reset editable option
+      this.doAddElement(element);
+    }, this);
   }
+  this.tracker.trackAction('controller-events', 'success', 'paste', 1);
 }
 
 
@@ -122,20 +132,30 @@ silex.controller.ControllerBase.prototype.pasteElement = function() {
  * remove an element from the stage
  * @param {element} element    the element to remove
  */
-silex.controller.ControllerBase.prototype.removeElement = function(opt_element) {
-  // default is selected element
-  if(!opt_element) opt_element = this.view.stage.getSelection()[0];
+silex.controller.ControllerBase.prototype.removeElement = function(element) {
   // check this is allowed, i.e. an element inside the stage container
-  if (silex.utils.PageablePlugin.getBodyElement() != opt_element
-    && goog.dom.contains(silex.utils.PageablePlugin.getBodyElement(), opt_element)){
+  if (silex.utils.PageablePlugin.getBodyElement() != element
+    && goog.dom.contains(silex.utils.PageablePlugin.getBodyElement(), element)){
     // remove the element
-    this.model.element.removeElement(opt_element);
+    this.model.element.removeElement(element);
     // update view
     this.view.propertyTool.redraw();
   }
   else{
-    console.error('could not delete', opt_element, 'because it is not in the stage element');
+    console.error('could not delete', element, 'because it is not in the stage element');
   }
+}
+
+
+/**
+ * remove selected elements from the stage
+ */
+silex.controller.ControllerBase.prototype.removeSelection = function() {
+  // default is selected element
+  var elements = this.view.stage.getSelection();
+  goog.array.forEach(elements, function(element) {
+    this.removeElement(element);
+  },this);
 }
 
 
@@ -220,6 +240,7 @@ silex.controller.ControllerBase.prototype.addElement = function(type) {
   try{
     // create the element and add it to the stage
     var element = this.model.element.createElement(type);
+    this.model.element.resetSelection();
     this.doAddElement(element);
   }
   catch(e){
@@ -245,25 +266,22 @@ silex.controller.ControllerBase.prototype.doAddElement = function(element) {
   // update view
   this.view.propertyTool.redraw();
   // update drop zones z index
-  //silex.utils.EditablePlugin.resetEditable(this.model.body.bodyElement, true);
+  silex.utils.EditablePlugin.resetEditable(this.model.body.bodyElement, true);
 }
 /**
  * set a given style to the current selection
  */
 silex.controller.ControllerBase.prototype.styleChanged = function(name, value) {
-  // style of the element has changed
-  var element = this.view.stage.getSelection()[0];
-  if (element){
+  // apply the change to all elements
+  var elements = this.view.stage.getSelection();
+  goog.array.forEach(elements, function (element) {
     // update the model
     this.model.element.setStyle(element, name, value);
     // redraw the data
     this.view.propertyTool.redraw();
     // update drop zones z index
     //silex.utils.EditablePlugin.resetEditable(this.model.body.bodyElement, true);
-  }
-  else{
-    console.error('can not set style ', name, ' on element ', element);
-  }
+  }, this);
 }
 
 
@@ -271,17 +289,14 @@ silex.controller.ControllerBase.prototype.styleChanged = function(name, value) {
  * set a given property to the current selection
  */
 silex.controller.ControllerBase.prototype.propertyChanged = function(name, value) {
-  // style of the element has changed
-  var element = this.view.stage.getSelection()[0];
-  if (element){
+  // apply the change to all elements
+  var elements = this.view.stage.getSelection();
+  goog.array.forEach(elements, function (element) {
     // update the model
     this.model.element.setProperty(element, name, value);
     // redraw the data
     this.view.propertyTool.redraw();
-  }
-  else{
-    console.error('can not set style ', name, ' on element ', element);
-  }
+  }, this);
 }
 
 
@@ -305,17 +320,14 @@ silex.controller.ControllerBase.prototype.openJsEditor = function() {
  * set css class names
  */
 silex.controller.ControllerBase.prototype.setClassName = function(name) {
-  // style of the element has changed
-  var element = this.view.stage.getSelection()[0];
-  if (element){
+  // apply the change to all elements
+  var elements = this.view.stage.getSelection();
+  goog.array.forEach(elements, function (element) {
     // update the model
     silex.utils.Style.setClassName(element, name);
     // redraw the data
     this.view.propertyTool.redraw();
-  }
-  else{
-    console.error('can not add class ', name, ' to element ', element);
-  }
+  }, this);
 }
 
 

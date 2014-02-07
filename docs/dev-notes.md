@@ -4,7 +4,7 @@
 
 #dev notes
 
-!!!!!!!!! static.silex.me => pageable.js !!!!!!!!!
+goog.fx.Dragger instead of editable?
 
 next refacto
 * attachElement in body?
