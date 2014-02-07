@@ -1,4 +1,6 @@
-// doc: see https://code.google.com/p/selenium/source/browse/javascript/webdriver/webdriver.js
+// docs:
+// * https://code.google.com/p/selenium/source/browse/javascript/webdriver/webdriver.js
+// * http://selenium.googlecode.com/git/docs/api/javascript/namespace_webdriver.html
 
 var fs = require('fs')
 , path = require('path');

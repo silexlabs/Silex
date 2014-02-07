@@ -135,6 +135,12 @@ silex.controller.MenuController.prototype.menuCallback = function(type) {
     case 'help.issues':
       window.open(silex.Config.ISSUES_SILEX);
       break;
+    case 'help.widgets':
+      window.open(silex.Config.WIDGETS_SILEX);
+      break;
+    case 'help.templates':
+      window.open(silex.Config.TEMPLATES_SILEX);
+      break;
     case 'help.aboutSilexLabs':
       window.open(silex.Config.ABOUT_SILEX_LABS);
       break;
@@ -152,6 +158,12 @@ silex.controller.MenuController.prototype.menuCallback = function(type) {
       break;
     case 'help.forkMe':
       window.open(silex.Config.FORK_CODE);
+      break;
+    case 'help.contribute':
+      window.open(silex.Config.CONTRIBUTE);
+      break;
+    case 'help.contributors':
+      window.open(silex.Config.CONTRIBUTORS);
       break;
   }
 };

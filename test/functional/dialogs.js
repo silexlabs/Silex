@@ -26,15 +26,6 @@ it('should be able to load', function(done) {
         done();
     }, 2000)
 });
-it('should be able to open the file menu', function(done) {
-    // click
-    helper.driver.findElement(helper.webdriver.By.className('menu-item-file')).then(function (element) {
-        element.click().then(function () {
-            done();
-        })
-        return true;
-    });
-});
 it('should be able to open the file explorer dialog', function(done) {
     // click
     helper.driver.findElement(helper.webdriver.By.className('menu-item-file-open')).click();
