@@ -245,7 +245,7 @@ silex.controller.ControllerBase.prototype.doAddElement = function(element) {
   // update view
   this.view.propertyTool.redraw();
   // update drop zones z index
-  silex.utils.EditablePlugin.resetEditable(this.model.body.bodyElement, true);
+  //silex.utils.EditablePlugin.resetEditable(this.model.body.bodyElement, true);
 }
 /**
  * set a given style to the current selection
@@ -259,7 +259,7 @@ silex.controller.ControllerBase.prototype.styleChanged = function(name, value) {
     // redraw the data
     this.view.propertyTool.redraw();
     // update drop zones z index
-    silex.utils.EditablePlugin.resetEditable(this.model.body.bodyElement, true);
+    //silex.utils.EditablePlugin.resetEditable(this.model.body.bodyElement, true);
   }
   else{
     console.error('can not set style ', name, ' on element ', element);
