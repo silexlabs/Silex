@@ -4,10 +4,6 @@ We really appreciate having you involved! Do not hesitate to contact us by email
 
 Here is how to help and become a [Silex contributor](https://github.com/silexlabs/Silex/blob/master/docs/contributors.md). For people wanting to invest a significant amount of time, there are also [open positions in Silex team](https://github.com/silexlabs/Silex/issues?labels=help+wanted&state=open)
 
-##Host an instance of Silex
-
-We have more and more people using the online version of Silex. Here you will find [instructions to install Silex](https://github.com/silexlabs/Silex) on a server you own or on a node.js hosting. If you do so, and you feel like maintaining your server over the years, Silex Labs will help you advertise your Silex instance and attract people.
-
 ##Show us that you like Silex
 
 **Share Silex with the ones you love**. If someone you have informed about Silex releases a website, claim your free t-shirt :)
@@ -25,6 +21,10 @@ We have more and more people using the online version of Silex. Here you will fi
 **Create tutorials**. Create text or video guides and upload them to your favorite video sharing website. We have a [blog section for Silex tutorials](http://www.silexlabs.org/category/silex/tutorials-silex/), where we can add your creations if you like!
 
 **Create marketing tools**. Create some marketing material such as memes from the 90s, put it online and send it through to us and we will spam it about on social media and other places.
+
+##Host an instance of Silex
+
+We have more and more people using the online version of Silex. Here you will find [instructions to install Silex](https://github.com/silexlabs/Silex) on a server you own or on a node.js hosting. If you do so, and you feel like maintaining your server over the years, Silex Labs will help you advertise your Silex instance and attract people.
 
 ##Help improve Silex code
 
