@@ -471,7 +471,7 @@ silex.model.Element.prototype.createElement = function(type) {
 silex.model.Element.prototype.setSelected = function(element, isSelected) {
   if (isSelected) {
     // remove all others
-    this.resetSelection();
+    // this.resetSelection();
     // set as selected
     goog.dom.classes.add(element, silex.model.Element.SELECTED_CLASS_NAME);
   }

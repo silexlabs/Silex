@@ -65,22 +65,36 @@ silex.controller.PropertyToolController.prototype.propertyToolCallback = functio
       this.propertyChanged(opt_name, opt_value);
       break;
     case 'addToPage':
-      silex.utils.PageablePlugin.addToPage(this.view.stage.getSelection()[0], opt_name);
+      // apply the change to all elements
+      var elements = this.view.stage.getSelection();
+      goog.array.forEach(elements, function (element) {
+        silex.utils.PageablePlugin.addToPage(element, opt_name);
+      }, this);
       this.view.propertyTool.redraw();
       break;
     case 'removeFromPage':
-      silex.utils.PageablePlugin.removeFromPage(this.view.stage.getSelection()[0], opt_name);
+      // apply the change to all elements
+      var elements = this.view.stage.getSelection();
+      goog.array.forEach(elements, function (element) {
+        silex.utils.PageablePlugin.removeFromPage(element, opt_name);
+      }, this);
       this.view.propertyTool.redraw();
       break;
     case 'addLink':
-      silex.utils.PageablePlugin.setLink(this.view.stage.getSelection()[0], opt_name);
+      // apply the change to all elements
+      var elements = this.view.stage.getSelection();
+      goog.array.forEach(elements, function (element) {
+        silex.utils.PageablePlugin.setLink(element, opt_name);
+      }, this);
       this.view.propertyTool.redraw();
       break;
     case 'removeLink':
-      silex.utils.PageablePlugin.setLink(this.view.stage.getSelection()[0]);
+      // apply the change to all elements
+      var elements = this.view.stage.getSelection();
+      goog.array.forEach(elements, function (element) {
+        silex.utils.PageablePlugin.setLink(element);
+      }, this);
       this.view.propertyTool.redraw();
       break;
   }
 };
-
-

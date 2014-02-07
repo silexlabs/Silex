@@ -163,6 +163,8 @@ silex.view.pane.BgPane.prototype.buildUi = function() {
  * redraw the properties
  */
 silex.view.pane.BgPane.prototype.redraw = function() {
+  if (this.iAmSettingValue) return;
+  this.iAmSettingValue = true;
   // call super
   goog.base(this, 'redraw');
   // get the selected element
@@ -272,6 +274,7 @@ silex.view.pane.BgPane.prototype.redraw = function() {
     }
     this.isRedraw = false;
   }
+  this.iAmSettingValue = false;
 };
 
 
