@@ -47,7 +47,17 @@ silex.Config.ABOUT_SILEX = 'http://www.silex.me/';
  * Link of the menu
  * @const constant
  */
-silex.Config.ISSUES_SILEX = 'https://github.com/silexlabs/Silex/issues?state=open';
+silex.Config.ISSUES_SILEX = 'https://github.com/silexlabs/Silex/issues?labels=bug&state=open';
+/**
+ * Link of the menu
+ * @const constant
+ */
+silex.Config.WIDGETS_SILEX = 'https://github.com/silexlabs/Silex/issues?labels=widget&state=open';
+/**
+ * Link of the menu
+ * @const constant
+ */
+silex.Config.TEMPLATES_SILEX = 'https://github.com/silexlabs/Silex/issues?labels=template&state=open';
 /**
  * Link of the menu
  * @const constant
@@ -78,6 +88,16 @@ silex.Config.SOCIAL_FB = 'http://www.facebook.com/silexlabs';
  * @const constant
  */
 silex.Config.FORK_CODE = 'https://github.com/silexlabs/Silex';
+/**
+ * Link of the menu
+ * @const constant
+ */
+silex.Config.CONTRIBUTE = 'https://github.com/silexlabs/Silex/blob/master/docs/contribute.md';
+/**
+ * Link of the menu
+ * @const constant
+ */
+silex.Config.CONTRIBUTORS = 'https://github.com/silexlabs/Silex/blob/master/docs/contributors.md';
 /**
  * The main application menu
  */
@@ -133,7 +153,7 @@ silex.Config.menu = {
       , {
         label: 'Save File'
         , id: 'file.save'
-        , className: 'menu-item-file-save'
+        , className: 'f'
         , globalKey: goog.events.KeyCodes.S
         , shortcut: [[goog.events.KeyCodes.S, goog.ui.KeyboardShortcutHandler.Modifiers.META]]
         , tooltip: ctrlKeyDisplay + 's'
@@ -328,7 +348,7 @@ silex.Config.menu = {
     ]
     , [
       {
-        label: 'About Silex'
+        label: 'About me, Silex'
         , id: 'help.about'
         , className: 'menu-item-help-about'
       }
@@ -337,37 +357,57 @@ silex.Config.menu = {
         , id: 'help.issues'
         , className: 'menu-item-help-issues'
       }
+      , {
+        label: 'Widgets for your website'
+        , id: 'help.widgets'
+        , className: 'menu-item-help-widgets'
+      }
+      , {
+        label: 'Templates for your website'
+        , id: 'help.templates'
+        , className: 'menu-item-help-templates'
+      }
       , null
       , {
-        label: 'About Silex Labs'
+        label: 'Visit Silex Labs, our foundation'
         , id: 'help.aboutSilexLabs'
         , className: 'menu-item-help-aboutSilexLabs'
       }
       , {
-        label: 'Silex Labs news by email'
+        label: 'Receive news by email'
         , id: 'help.newsLetter'
         , className: 'menu-item-help-newsLetter'
       }
       , null
       , {
-        label: 'Talk with us on twitter'
+        label: 'Twitter'
         , id: 'help.twitter'
         , className: 'menu-item-help-twitter'
       }
       , {
-        label: 'Talk with us on Google+'
+        label: 'Google+'
         , id: 'help.googlPlus'
         , className: 'menu-item-help-googlPlus'
       }
       , {
-        label: 'Talk with us on Facebook'
+        label: 'Facebook'
         , id: 'help.facebook'
         , className: 'menu-item-help-facebook'
       }
       , null
       , {
-        label: 'Fork me on github!'
+        label: 'Give me 5 minutes of your time!'
+        , id: 'help.contribute'
+        , className: 'menu-item-help-contribute'
+      }
+      , {
+        label: 'See my DNA / source code'
         , id: 'help.forkMe'
+        , className: 'menu-item-help-forkMe'
+      }
+      , {
+        label: 'Meet my fathers'
+        , id: 'help.contributors'
         , className: 'menu-item-help-forkMe'
       }
     ]
