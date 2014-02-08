@@ -221,6 +221,22 @@ silex.Config.menu = {
         , accelerator: 'v'
       }
       , {
+        label: 'Undo'
+        , id: 'edit.undo'
+        , className: 'menu-item-edit-undo'
+        , shortcut: [[goog.events.KeyCodes.Z, goog.ui.KeyboardShortcutHandler.Modifiers.META]]
+        , tooltip: ctrlKeyDisplay + 'Z'
+        , mnemonic: goog.events.KeyCodes.Z
+        , accelerator: 'z'
+      }
+      , {
+        label: 'Redo'
+        , id: 'edit.redo'
+        , className: 'menu-item-edit-redo'
+        , shortcut: [[goog.events.KeyCodes.V, goog.ui.KeyboardShortcutHandler.Modifiers.META + goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT]]
+        , tooltip: ctrlKeyDisplay + '⇧Z'
+      }
+      , {
         label: 'Delete selection'
         , id: 'edit.delete.selection'
         , className: 'menu-item-edit-delete-selection'

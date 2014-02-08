@@ -13,7 +13,7 @@
  * @fileoverview
  *   This class is used to manage Silex elements
  *   It has methods to manipulate the DOM elements
- *      created by silex.model.Element.createElement
+ *      created by new silex.model.Element().createElement
  *
  */
 
@@ -147,12 +147,21 @@ silex.model.Element.prototype.getStyle = function(element, styleName) {
  * @param  {string}  opt_styleValue     the value for this styleName
  */
 silex.model.Element.prototype.setStyle = function(element, styleName, opt_styleValue) {
-  if (goog.isDef(opt_styleValue)){
-    element.style[styleName] = opt_styleValue;
-  }
-  else{
-   element.style[styleName] = '';
-  }
+  var oldStyle = this.getStyle(element, styleName);
+  var undoableAction = new silex.model.UndoableAction(function(){
+    console.log('do setStyle');
+    if (goog.isDef(opt_styleValue)){
+      element.style[styleName] = opt_styleValue;
+    }
+    else{
+     element.style[styleName] = '';
+    }
+  }, function(){
+    console.log('undo setStyle');
+    element.style[styleName] = oldStyle;
+  });
+  this.undoRedoManager.add(undoableAction);
+  undoableAction.redoCallback();
 };
 
 
@@ -360,6 +369,15 @@ silex.model.Element.prototype.setImageUrl = function(element, url, opt_callback,
 silex.model.Element.prototype.removeElement = function(element) {
   goog.dom.removeNode(element);
 }
+
+
+/**
+ * append a child to the stage
+ */
+silex.model.Element.prototype.appendChild = function(container, element){
+  goog.dom.appendChild(container, element);
+}
+
 
 /**
  * element creation
