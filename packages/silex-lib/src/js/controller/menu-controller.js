@@ -122,6 +122,12 @@ silex.controller.MenuController.prototype.menuCallback = function(type) {
     case 'edit.paste.selection':
       this.pasteSelection();
       break;
+    case 'edit.undo':
+      this.undo();
+      break;
+    case 'edit.redo':
+      this.redo();
+      break;
     case 'edit.delete.page':
       this.removePage();
       break;

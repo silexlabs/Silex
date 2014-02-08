@@ -18,6 +18,8 @@
 
 goog.provide('silex.model.ModelBase');
 
+goog.require('silex.model.UndoableAction');
+goog.require('silex.model.UndoRedoManager');
 
 /**
  * @constructor
@@ -27,7 +29,14 @@ goog.provide('silex.model.ModelBase');
 silex.model.ModelBase = function(bodyElement, headElement) {
   this.bodyElement = bodyElement;
   this.headElement = headElement;
+  this.undoRedoManager = new silex.model.UndoRedoManager();
 };
+
+
+/**
+ * reference to the undo / redo manager
+ */
+silex.model.ModelBase.prototype.undoRedoManager;
 
 
 /**
@@ -40,5 +49,21 @@ silex.model.ModelBase.prototype.bodyElement;
  * reference to the {element} element which holds the head of the opened file
  */
 silex.model.ModelBase.prototype.headElement;
+
+
+/**
+ * undo
+ */
+silex.model.ModelBase.prototype.undo = function(){
+  this.undoRedoManager.undo();
+};
+
+
+/**
+ * redo
+ */
+silex.model.ModelBase.prototype.redo = function(){
+  this.undoRedoManager.redo();
+};
 
 

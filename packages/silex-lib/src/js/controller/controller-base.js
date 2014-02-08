@@ -71,6 +71,22 @@ silex.controller.ControllerBase.clipboardParent;
 
 
 /**
+ * undo
+ */
+silex.controller.ControllerBase.prototype.undo = function() {
+  this.model.element.undo();
+}
+
+
+/**
+ * redo
+ */
+silex.controller.ControllerBase.prototype.redo = function() {
+  this.model.element.redo();
+}
+
+
+/**
  * copy the selection for later paste
  */
 silex.controller.ControllerBase.prototype.copySelection = function() {
@@ -119,7 +135,7 @@ silex.controller.ControllerBase.prototype.pasteSelection = function() {
     // duplicate and add to the container
     goog.array.forEach(silex.controller.ControllerBase.clipboard, function (clipboardElement) {
       var element = clipboardElement.cloneNode(true);
-      goog.dom.appendChild(container, element);
+      this.model.element.appendChild(container, element);
       // reset editable option
       this.doAddElement(element);
     }, this);
