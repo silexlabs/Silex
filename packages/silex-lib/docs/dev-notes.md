@@ -5,6 +5,18 @@
 #dev notes
 
 goog.fx.Dragger instead of editable?
+send an email after first user connexion? in unifile
+props intéressantes à exposer en wysiwyg?
+  http://www.w3.org/TR/2011/REC-CSS2-20110607/visufx.html
+  http://www.w3.org/TR/2011/REC-CSS2-20110607/ui.html
+  http://www.w3.org/TR/2011/REC-CSS2-20110607/colors.html
+  http://www.w3.org/TR/2011/REC-CSS2-20110607/text.html
+  http://www.w3.org/TR/2011/REC-CSS2-20110607/fonts.html
+  http://www.w3.org/TR/2011/REC-CSS2-20110607/visufx.html
+
+Behance, Comme dans adobe Cloud, publier site dans behance
+  http://www.behance.net/dev
+  Showcase and discover the latest work from top online portfolios by creative professionals across industries.
 
 next refacto
 * attachElement in body?
