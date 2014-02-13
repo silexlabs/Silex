@@ -26,8 +26,6 @@ Contribution: 3D logs and graphic arts, representation
 
 Contribution: templates, tests and consulting for Silex UI and communication
 
-[Léo Francia](https://twitter.com/NicoSilex‎)
-
 ###[Thomas Fetiveau, freelance developer](http://www.tokom.fr/)
 
 Contribution: lead developer of Cloud Explorer, Javascript and AngularJS code
