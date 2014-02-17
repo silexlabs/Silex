@@ -20,8 +20,12 @@ goog.provide('silex.Config');
 goog.require('goog.events.KeyCodes');
 goog.require('goog.ui.KeyboardShortcutHandler');
 
-var ctrlKeyDisplay = goog.userAgent.MAC ? '⌘' + '' : 'Ctrl+';
-var altKeyDisplay = goog.userAgent.MAC ? '⌥' + '' : 'Alt+';
+// display an apple on mac and ctrl on windows and linux
+var ctrlKeyDisplay = goog.userAgent.MAC ? '⌘' + '' : 'Ctrl';
+var altKeyDisplay = goog.userAgent.MAC ? '⌥' + '' : 'Ctrl';
+// for shortcuts, use "apple key" on mac and ctrl on windows and linux
+var ctrlKeyModifyer = goog.userAgent.MAC ? goog.ui.KeyboardShortcutHandler.Modifiers.META : goog.ui.KeyboardShortcutHandler.Modifiers.CTRL;
+var altKeyModifyer = goog.userAgent.MAC ? goog.ui.KeyboardShortcutHandler.Modifiers.ALT : goog.ui.KeyboardShortcutHandler.Modifiers.CTRL;
 
 
 /**
@@ -135,7 +139,7 @@ silex.Config.menu = {
         , id: 'file.new'
         , className: 'menu-item-file-new'
         , globalKey: goog.events.KeyCodes.N
-        , shortcut: [[goog.events.KeyCodes.N, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
+        , shortcut: [[goog.events.KeyCodes.N, altKeyModifyer]]
         , tooltip: altKeyDisplay + 'n'
         , mnemonic: goog.events.KeyCodes.N
         , accelerator: 'n'
@@ -145,7 +149,7 @@ silex.Config.menu = {
         , id: 'file.open'
         , className: 'menu-item-file-open'
         , globalKey: goog.events.KeyCodes.O
-        , shortcut: [[goog.events.KeyCodes.O, goog.ui.KeyboardShortcutHandler.Modifiers.META]]
+        , shortcut: [[goog.events.KeyCodes.O, ctrlKeyModifyer]]
         , tooltip: ctrlKeyDisplay + 'o'
         , mnemonic: goog.events.KeyCodes.O
         , accelerator: 'o'
@@ -155,7 +159,7 @@ silex.Config.menu = {
         , id: 'file.save'
         , className: 'menu-item-file-save'
         , globalKey: goog.events.KeyCodes.S
-        , shortcut: [[goog.events.KeyCodes.S, goog.ui.KeyboardShortcutHandler.Modifiers.META]]
+        , shortcut: [[goog.events.KeyCodes.S, ctrlKeyModifyer]]
         , tooltip: ctrlKeyDisplay + 's'
         , mnemonic: goog.events.KeyCodes.S
         , accelerator: 's'
@@ -164,9 +168,6 @@ silex.Config.menu = {
         label: 'Save As...'
         , id: 'file.saveas'
         , className: 'menu-item-file-saveas'
-        , globalKey: goog.events.KeyCodes.S
-        , shortcut: [[goog.events.KeyCodes.S, goog.ui.KeyboardShortcutHandler.Modifiers.META + goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT]]
-        , tooltip: ctrlKeyDisplay + '⇧S'
       }
       , null
       , {
@@ -179,7 +180,7 @@ silex.Config.menu = {
         , id: 'file.publish'
         , className: 'menu-item-file-publish'
         , globalKey: goog.events.KeyCodes.P
-        , shortcut: [[goog.events.KeyCodes.P, goog.ui.KeyboardShortcutHandler.Modifiers.META]]
+        , shortcut: [[goog.events.KeyCodes.P, ctrlKeyModifyer]]
         , tooltip: ctrlKeyDisplay + 'P'
         , mnemonic: goog.events.KeyCodes.P
         , accelerator: 'p'
@@ -195,7 +196,7 @@ silex.Config.menu = {
         , id: 'file.close'
         , className: 'menu-item-file-close'
         , globalKey: goog.events.KeyCodes.W
-        , shortcut: [[goog.events.KeyCodes.W, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
+        , shortcut: [[goog.events.KeyCodes.W, altKeyModifyer]]
         , tooltip: altKeyDisplay + 'w'
         , mnemonic: goog.events.KeyCodes.W
         , accelerator: 'w'
@@ -206,7 +207,7 @@ silex.Config.menu = {
         label: 'Copy'
         , id: 'edit.copy.selection'
         , className: 'menu-item-edit-copy-selection'
-        , shortcut: [[goog.events.KeyCodes.C, goog.ui.KeyboardShortcutHandler.Modifiers.META]]
+        , shortcut: [[goog.events.KeyCodes.C, ctrlKeyModifyer]]
         , tooltip: ctrlKeyDisplay + 'C'
         , mnemonic: goog.events.KeyCodes.C
         , accelerator: 'c'
@@ -215,7 +216,7 @@ silex.Config.menu = {
         label: 'Paste'
         , id: 'edit.paste.selection'
         , className: 'menu-item-edit-paste-selection'
-        , shortcut: [[goog.events.KeyCodes.V, goog.ui.KeyboardShortcutHandler.Modifiers.META]]
+        , shortcut: [[goog.events.KeyCodes.V, ctrlKeyModifyer]]
         , tooltip: ctrlKeyDisplay + 'V'
         , mnemonic: goog.events.KeyCodes.V
         , accelerator: 'v'
@@ -224,7 +225,7 @@ silex.Config.menu = {
         label: 'Undo'
         , id: 'edit.undo'
         , className: 'menu-item-edit-undo'
-        , shortcut: [[goog.events.KeyCodes.Z, goog.ui.KeyboardShortcutHandler.Modifiers.META]]
+        , shortcut: [[goog.events.KeyCodes.Z, ctrlKeyModifyer]]
         , tooltip: ctrlKeyDisplay + 'Z'
         , mnemonic: goog.events.KeyCodes.Z
         , accelerator: 'z'
@@ -233,8 +234,8 @@ silex.Config.menu = {
         label: 'Redo'
         , id: 'edit.redo'
         , className: 'menu-item-edit-redo'
-        , shortcut: [[goog.events.KeyCodes.V, goog.ui.KeyboardShortcutHandler.Modifiers.META + goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT]]
-        , tooltip: ctrlKeyDisplay + '⇧Z'
+        , shortcut: [[goog.events.KeyCodes.Y, ctrlKeyModifyer]]
+        , tooltip: ctrlKeyDisplay + 'Y'
       }
       , {
         label: 'Delete selection'
@@ -269,8 +270,8 @@ silex.Config.menu = {
         label: 'View in new window'
         , id: 'view.file'
         , className: 'menu-item-view-file'
-        , shortcut: [[goog.events.KeyCodes.V, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
-        , tooltip: altKeyDisplay + 'V'
+        , shortcut: [[goog.events.KeyCodes.V, altKeyModifyer + goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT]]
+        , tooltip: altKeyDisplay + '⇧V'
         , mnemonic: goog.events.KeyCodes.V
         , accelerator: 'v'
       }
@@ -280,7 +281,7 @@ silex.Config.menu = {
         , id: 'view.open.jsEditor'
         , className: 'menu-item-view-open-jsEditor'
         , globalKey: goog.events.KeyCodes.J
-        , shortcut: [[goog.events.KeyCodes.J, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
+        , shortcut: [[goog.events.KeyCodes.J, altKeyModifyer]]
         , tooltip: altKeyDisplay + 'J'
         , mnemonic: goog.events.KeyCodes.J
         , accelerator: 'j'
@@ -290,7 +291,7 @@ silex.Config.menu = {
         , id: 'view.open.cssEditor'
         , className: 'menu-item-view-open-cssEditor'
         , globalKey: goog.events.KeyCodes.D
-        , shortcut: [[goog.events.KeyCodes.D, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
+        , shortcut: [[goog.events.KeyCodes.D, altKeyModifyer]]
         , tooltip: altKeyDisplay + 'D'
         , mnemonic: goog.events.KeyCodes.D
         , accelerator: 'd'
@@ -307,7 +308,7 @@ silex.Config.menu = {
         , id: 'insert.text'
         , className: 'menu-item-insert-text'
         , globalKey: goog.events.KeyCodes.T
-        , shortcut: [[goog.events.KeyCodes.T, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
+        , shortcut: [[goog.events.KeyCodes.T, altKeyModifyer]]
         , tooltip: altKeyDisplay + 'T'
         , mnemonic: goog.events.KeyCodes.T
         , accelerator: 't'
@@ -317,7 +318,7 @@ silex.Config.menu = {
         , id: 'insert.image'
         , className: 'menu-item-insert-image'
         , globalKey: goog.events.KeyCodes.I
-        , shortcut: [[goog.events.KeyCodes.I, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
+        , shortcut: [[goog.events.KeyCodes.I, altKeyModifyer]]
         , tooltip: altKeyDisplay + 'I'
         , mnemonic: goog.events.KeyCodes.I
         , accelerator: 'i'
@@ -326,8 +327,8 @@ silex.Config.menu = {
         label: 'Container'
         , id: 'insert.container'
         , className: 'menu-item-insert-container'
-        , shortcut: [[goog.events.KeyCodes.C, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
-        , tooltip: altKeyDisplay + 'C'
+        , shortcut: [[goog.events.KeyCodes.C, altKeyModifyer + goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT]]
+        , tooltip: altKeyDisplay + '⇧C'
         , mnemonic: goog.events.KeyCodes.C
         , accelerator: 'c'
       }
@@ -337,7 +338,7 @@ silex.Config.menu = {
         , id: 'insert.html'
         , className: 'menu-item-insert-html'
         , globalKey: goog.events.KeyCodes.H
-        , shortcut: [[goog.events.KeyCodes.H, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
+        , shortcut: [[goog.events.KeyCodes.H, altKeyModifyer]]
         , tooltip: altKeyDisplay + 'H'
         , mnemonic: goog.events.KeyCodes.H
         , accelerator: 'h'
@@ -348,8 +349,8 @@ silex.Config.menu = {
         , id: 'insert.page'
         , className: 'menu-item-insert-page'
         , globalKey: goog.events.KeyCodes.P
-        , shortcut: [[goog.events.KeyCodes.P, goog.ui.KeyboardShortcutHandler.Modifiers.ALT]]
-        , tooltip: altKeyDisplay + 'P'
+        , shortcut: [[goog.events.KeyCodes.P, altKeyModifyer + goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT]]
+        , tooltip: altKeyDisplay + '⇧P'
         , mnemonic: goog.events.KeyCodes.P
         , accelerator: 'p'
       }
