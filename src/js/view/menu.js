@@ -69,6 +69,41 @@ silex.view.Menu.prototype.redraw = function() {
  * create the menu with closure API
  */
 silex.view.Menu.prototype.buildMenu = function(rootNode) {
+
+        /* *
+        ////////////////////////////////////////////////////////////////////////////////
+        // test of surtcuts
+        ////////////////////////////////////////////////////////////////////////////////
+        var shortcutHandler = new goog.ui.KeyboardShortcutHandler(document);
+        var globalKeys = [];
+        var tmp = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
+
+        // create the menu items
+        for (i in tmp) {
+          shortcutHandler.registerShortcut('meta-'+tmp[i], [goog.events.KeyCodes[tmp[i].toUpperCase()], goog.ui.KeyboardShortcutHandler.Modifiers.META]);
+          shortcutHandler.registerShortcut('alt-'+tmp[i], [goog.events.KeyCodes[tmp[i].toUpperCase()], goog.ui.KeyboardShortcutHandler.Modifiers.ALT]);
+          shortcutHandler.registerShortcut('ctrl-'+tmp[i], [goog.events.KeyCodes[tmp[i].toUpperCase()], goog.ui.KeyboardShortcutHandler.Modifiers.CTRL]);
+          shortcutHandler.registerShortcut('meta-shift-'+tmp[i], [goog.events.KeyCodes[tmp[i].toUpperCase()], goog.ui.KeyboardShortcutHandler.Modifiers.META + goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT]);
+          shortcutHandler.registerShortcut('alt-shift-'+tmp[i], [goog.events.KeyCodes[tmp[i].toUpperCase()], goog.ui.KeyboardShortcutHandler.Modifiers.ALT + goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT]);
+          shortcutHandler.registerShortcut('ctrl-shift-'+tmp[i], [goog.events.KeyCodes[tmp[i].toUpperCase()], goog.ui.KeyboardShortcutHandler.Modifiers.CTRL + goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT]);
+          console.log('added shortcut', tmp[i]);
+        }
+        shortcutHandler.setAlwaysPreventDefault(false);
+        //  shortcutHandler.setAllShortcutsAreGlobal(false);
+        shortcutHandler.setModifierShortcutsAreGlobal(false);
+        shortcutHandler.setGlobalKeys(globalKeys);
+        goog.events.listen(
+          shortcutHandler,
+          goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED,
+          goog.bind(function(event) {
+            console.log('received shortcut', event.identifier);
+            event.preventDefault();
+            event.stopPropagation();
+          }, this)
+        );
+        return;
+        /* */
+
   this.menu = goog.ui.menuBar.create();
 
   // shortcut handler
@@ -100,7 +135,12 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
             // shortcut
             if (itemData.shortcut) {
               for (var idx in itemData.shortcut) {
-                shortcutHandler.registerShortcut(itemData.id, itemData.shortcut[idx]);
+                try{
+                  shortcutHandler.registerShortcut(itemData.id, itemData.shortcut[idx]);
+                }
+                catch(e){
+                  console.log('Catched error for shortcut', id, '. Error: ', e);
+                }
                 if (itemData.globalKey){
                   globalKeys.push(itemData.globalKey);
                 }
