@@ -20,13 +20,11 @@ Contribution: design, leadership, consulting for Silex UI
 
 Contribution: 3D logs and graphic arts, representation
 
-[@NicoSilex‎](https://twitter.com/NicoSilex‎)
+[@NicoSilex](https://twitter.com/NicoSilex)
 
-###Léo Francia, web designer
+###[Léo Francia, web designer](http://www.leofrancia.fr)
 
 Contribution: templates, tests and consulting for Silex UI and communication
-
-[@NicoSilex‎](https://twitter.com/NicoSilex‎)
 
 ###[Thomas Fetiveau, freelance developer](http://www.tokom.fr/)
 
