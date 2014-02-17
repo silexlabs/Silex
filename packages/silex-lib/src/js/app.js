@@ -22,12 +22,16 @@
 
 goog.provide('silex.App');
 
+// google closure
 goog.require('goog.dom');
 goog.require('goog.events');
 goog.require('goog.style');
 
 // service qos
 goog.require('silex.service.Tracker');
+
+// utils / helpers
+goog.require('silex.utils.Polyfills');
 
 // types
 goog.require('silex.types.Model');
@@ -81,6 +85,9 @@ silex.App = function() {
 
   // tracker / qos
   silex.service.Tracker.getInstance().trackAction('app-events', 'start', null, 2);
+
+  // polyfills
+  silex.utils.Polyfills.init();
 
   // redirect /silex to /silex/
   if(window.location.href.slice(-5) === 'silex'){
