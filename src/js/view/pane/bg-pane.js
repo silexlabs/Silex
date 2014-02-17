@@ -363,10 +363,10 @@ silex.view.pane.BgPane.prototype.setColorPaletteVisibility = function(isVisible)
     if (!this.getColorPaletteVisibility()) {
       goog.style.setStyle(this.hsvPalette.getElement(),
           'visibility',
-          null);
+          '');
       goog.style.setStyle(this.hsvPalette.getElement(),
           'position',
-          null);
+          '');
     }
   }
   else {
