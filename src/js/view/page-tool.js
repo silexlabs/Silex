@@ -56,7 +56,10 @@ silex.view.PageTool.prototype.initEvents = function(pages) {
     }
     else{
       // select page
-      this.setSelectedIndex(this.getCellIndex(e.target.parentNode), true);
+      var cellIndex = this.getCellIndex(e.target.parentNode);
+      if (cellIndex >= 0){
+        this.setSelectedIndex(cellIndex, true);
+      }
     }
   }, false, this);
 }
@@ -138,5 +141,11 @@ silex.view.PageTool.prototype.setSelectedIndex = function(index, opt_notify) {
 
 
 silex.view.PageTool.prototype.getCellIndex = function(element) {
-  return parseInt(element.getAttribute('data-page-idx'));
+  var pageIdx = element.getAttribute('data-page-idx');
+  if (pageIdx){
+    return parseInt(pageIdx);
+  }
+  else{
+    return -1;
+  }
 };
