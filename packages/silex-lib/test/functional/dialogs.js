@@ -28,6 +28,7 @@ it('should be able to load', function(done) {
 });
 it('should be able to open the file explorer dialog', function(done) {
     // click
+    helper.driver.findElement(helper.webdriver.By.className('menu-item-file')).click();
     helper.driver.findElement(helper.webdriver.By.className('menu-item-file-open')).click();
     // check visibility
     helper.driver.findElement(helper.webdriver.By.className('silex-fileexplorer')).isDisplayed().then(function (isDisplayed) {
