@@ -153,7 +153,7 @@ silex.Config.menu = {
       , {
         label: 'Save File'
         , id: 'file.save'
-        , className: 'f'
+        , className: 'menu-item-file-save'
         , globalKey: goog.events.KeyCodes.S
         , shortcut: [[goog.events.KeyCodes.S, goog.ui.KeyboardShortcutHandler.Modifiers.META]]
         , tooltip: ctrlKeyDisplay + 's'
