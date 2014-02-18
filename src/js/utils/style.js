@@ -169,6 +169,7 @@ silex.utils.Style.stringToStyle = function(styleStr) {
  * @return {!goog.color.Rgb} the element bg color
  */
 silex.utils.Style.computeBgColor = function(element) {
+  console.log('computeBgColor', arguments);
  var parentColorArray;
   // retrieve the parents blended colors
   if(!goog.dom.classes.has(element, silex.view.Stage.STAGE_CLASS_NAME)){
@@ -204,9 +205,18 @@ silex.utils.Style.computeBgColor = function(element) {
       );
       elementColorArray.push(1);
     }
-    else{
+    else if (elementColorStr.indexOf('#') >= 0){
       // hex case
       elementColorArray = goog.color.hexToRgb(elementColorStr);
+      elementColorArray.push(1);
+    }
+    else{
+      // handle all colors, including the named colors
+      elementColorStr = goog.style.getBackgroundColor(element);
+      // named color case
+      elementColorArray = goog.color.hexToRgb(
+        goog.color.parse(elementColorStr).hex
+      );
       elementColorArray.push(1);
     }
   }

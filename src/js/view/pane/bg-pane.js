@@ -173,12 +173,15 @@ silex.view.pane.BgPane.prototype.redraw = function() {
   if (element){
     // BG color
     var color = element.style.backgroundColor;
+    console.log(color);
     if (color === undefined || color === 'transparent' || color === '') {
       this.transparentBgCheckbox.setChecked(true);
       this.bgColorPicker.setEnabled(false);
       this.setColorPaletteVisibility(false);
     }
     else {
+      // handle all colors, including the named colors
+      color = goog.style.getBackgroundColor(element);
       var hex = silex.utils.Style.rgbaToHex(color);
 
       this.transparentBgCheckbox.setChecked(false);
@@ -313,7 +316,7 @@ silex.view.pane.BgPane.prototype.onBgColorButton = function() {
 silex.view.pane.BgPane.prototype.onTransparentChanged = function() {
   var color = 'transparent';
   if (this.transparentBgCheckbox.getChecked() === false) {
-    var color = silex.utils.Style.hexToRgba(this.hsvPalette.getColorRgbaHex());
+    color = silex.utils.Style.hexToRgba(this.hsvPalette.getColorRgbaHex());
     if (!color) {
       //color='#FFFFFF';
       color = 'rgba(255, 255, 255, 1)';
@@ -321,6 +324,7 @@ silex.view.pane.BgPane.prototype.onTransparentChanged = function() {
   }
   // notify the toolbox
   this.styleChanged('backgroundColor', color);
+  this.redraw();
 };
 
 
