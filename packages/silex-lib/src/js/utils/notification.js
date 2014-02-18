@@ -26,6 +26,14 @@ silex.utils.Notification = function() {
 }
 
 /**
+ * constant for the duration of the notifications, in ms
+ * @const
+ * @type {number}
+ */
+silex.utils.Notification.NOTIFICATION_DURATION_MS = 4000;
+
+
+/**
  * constant for the url of the icon
  * @const
  * @type {string}
@@ -63,15 +71,15 @@ silex.utils.Notification.useNative = function () {
  */
 silex.utils.Notification.activateNative = function(){
   if (window.webkitNotifications) {
-    console.log("Native notifications are supported!");
     if (silex.utils.Notification.useNative()) {
-      console.log("Native notifications are active!");
     } else {
-      window.webkitNotifications.requestPermission();
+      goog.events.listenOnce(document, goog.events.EventType.CLICK, function(e) {
+        window.webkitNotifications.requestPermission();
+      });
     }
   }
   else {
-    console.log("Notifications are not supported for this Browser/OS version yet.");
+    console.warn("Notifications are not supported for this Browser/OS version yet.");
   }
 };
 
@@ -84,6 +92,9 @@ silex.utils.Notification.nativeNotification = function(message, iconUrl){
     var notification = window.webkitNotifications.createNotification(
       iconUrl, 'Silex speaking...', message);
     notification.show();
+    setTimeout(function () {
+      notification.cancel();
+    }, silex.utils.Notification.NOTIFICATION_DURATION_MS)
   }
   else{
     silex.utils.Notification.activateNative();
@@ -113,6 +124,7 @@ silex.utils.Notification.confirm = alertify.confirm;
  */
 silex.utils.Notification.notifySuccess = function(message) {
   console.info(message);
+  alertify.set({ delay: silex.utils.Notification.NOTIFICATION_DURATION_MS });
   silex.utils.Notification.nativeNotification(message, silex.utils.Notification.SUCCESS_ICON);
   alertify.success(message);
 };
@@ -123,6 +135,7 @@ silex.utils.Notification.notifySuccess = function(message) {
  */
 silex.utils.Notification.notifyError = function(message) {
   console.error(message);
+  alertify.set({ delay: silex.utils.Notification.NOTIFICATION_DURATION_MS });
   silex.utils.Notification.nativeNotification(message, silex.utils.Notification.ERROR_ICON);
   alertify.error(message);
 };
@@ -133,6 +146,7 @@ silex.utils.Notification.notifyError = function(message) {
  */
 silex.utils.Notification.notifyInfo = function(message) {
   console.info(message);
+  alertify.set({ delay: silex.utils.Notification.NOTIFICATION_DURATION_MS });
   silex.utils.Notification.nativeNotification(message, silex.utils.Notification.INFO_ICON);
   alertify.log(message);
 };

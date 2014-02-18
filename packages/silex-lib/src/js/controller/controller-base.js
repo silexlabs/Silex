@@ -182,7 +182,7 @@ silex.controller.ControllerBase.prototype.browseBgImage = function() {
   this.tracker.trackAction('controller-events', 'request', 'selectBgImage', 0);
 
   var errCbk = function(error) {
-    silex.utils.Notification.notifyError('Error: I could not load the image. <br /><br />' + (error.message || ''));
+    silex.utils.Notification.notifyError('Error: I could not load the image. \n' + (error.message || ''));
     this.tracker.trackAction('controller-events', 'error', type, -1);
   };
 
@@ -232,7 +232,7 @@ silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
             this.tracker.trackAction('controller-events', 'success', 'insert.image', 1);
           }, this),
           goog.bind(function(element, message){
-            silex.utils.Notification.notifyError('Error: I did not manage to load the image. <br /><br />' + message);
+            silex.utils.Notification.notifyError('Error: I did not manage to load the image. \n' + message);
             this.removeElement(element);
             this.tracker.trackAction('controller-events', 'error', 'insert.image', 1);
           }, this)
@@ -240,7 +240,7 @@ silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
       }, this),
       {'mimetype': 'image/*'},
       goog.bind(function(error) {
-        silex.utils.Notification.notifyError('Error: I did not manage to load the image. <br /><br />' + (error.message || ''));
+        silex.utils.Notification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''));
         this.tracker.trackAction('controller-events', 'error', 'insert.image', -1);
       }, this)
   );
@@ -379,7 +379,7 @@ silex.controller.ControllerBase.prototype.editElement = function(opt_element) {
           }, this),
           {'mimetype': 'image/*'},
           goog.bind(function(error) {
-            silex.utils.Notification.notifyError('Error: I did not manage to load the image. <br /><br />' + (error.message || ''));
+            silex.utils.Notification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''));
           }, this)
       );
       this.view.workspace.invalidate();
@@ -611,7 +611,7 @@ silex.controller.ControllerBase.prototype.openFile = function(opt_cbk, opt_error
         if(opt_cbk) opt_cbk();
       }, this),
       goog.bind(function(error) {
-        silex.utils.Notification.notifyError('Error: I did not manage to open this file. <br /><br />' + (error.message || ''));
+        silex.utils.Notification.notifyError('Error: I did not manage to open this file. \n' + (error.message || ''));
         this.tracker.trackAction('controller-events', 'error', 'file.open', -1);
         if(opt_errorCbk) opt_errorCbk(error);
       }, this));
@@ -640,7 +640,7 @@ silex.controller.ControllerBase.prototype.doSave = function(url, opt_cbk, opt_er
       if (opt_cbk) opt_cbk();
     }, this),
     goog.bind(function(error) {
-      silex.utils.Notification.notifyError('Error: I did not manage to save the file. <br /><br />' + (error.message || ''));
+      silex.utils.Notification.notifyError('Error: I did not manage to save the file. \n' + (error.message || ''));
       this.tracker.trackAction('controller-events', 'error', 'file.save', -1);
       if (opt_errorCbk) opt_errorCbk(error);
     }, this));
@@ -699,7 +699,7 @@ silex.controller.ControllerBase.prototype.publish = function(){
   if (!this.model.head.getPublicationPath()) {
     silex.utils.Notification.alert('I do not know where to publish your site. \
       Select a folder in the settings pannel and do "publish" again. \
-      <br /><br />Now I will open the publish settings.',
+      \nNow I will open the publish settings.',
       goog.bind(function() {
         this.view.settingsDialog.openDialog();
         this.view.workspace.invalidate();
@@ -713,7 +713,7 @@ silex.controller.ControllerBase.prototype.publish = function(){
       goog.bind(function(status) {
       if (status && status.success == false) {
         console.error('Error: I did not manage to publish the file. (1)');
-        silex.utils.Notification.notifyError('I did not manage to publish the file. You may want to check the publication settings and your internet connection. <br /><br />Error message: ' + (status.message || status.code || ''));
+        silex.utils.Notification.notifyError('I did not manage to publish the file. You may want to check the publication settings and your internet connection. \nError message: ' + (status.message || status.code || ''));
         this.tracker.trackAction('controller-events', 'error', 'file.publish', -1);
       }
       else {
@@ -723,7 +723,7 @@ silex.controller.ControllerBase.prototype.publish = function(){
       }, this),
       goog.bind(function(error) {
         console.error('Error: I did not manage to publish the file. (2)', error);
-        silex.utils.Notification.notifyError('I did not manage to publish the file. You may want to check the publication settings and your internet connection. <br /><br />Error message: ' + error);
+        silex.utils.Notification.notifyError('I did not manage to publish the file. You may want to check the publication settings and your internet connection. \nError message: ' + error);
         this.tracker.trackAction('controller-events', 'error', 'file.publish', -1);
       }, this));
   }
