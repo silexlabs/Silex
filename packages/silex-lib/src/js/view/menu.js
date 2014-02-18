@@ -139,7 +139,7 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
                   shortcutHandler.registerShortcut(itemData.id, itemData.shortcut[idx]);
                 }
                 catch(e){
-                  console.log('Catched error for shortcut', id, '. Error: ', e);
+                  console.error('Catched error for shortcut', id, '. Error: ', e);
                 }
                 if (itemData.globalKey){
                   globalKeys.push(itemData.globalKey);

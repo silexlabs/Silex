@@ -169,7 +169,6 @@ silex.utils.Style.stringToStyle = function(styleStr) {
  * @return {!goog.color.Rgb} the element bg color
  */
 silex.utils.Style.computeBgColor = function(element) {
-  console.log('computeBgColor', arguments);
  var parentColorArray;
   // retrieve the parents blended colors
   if(!goog.dom.classes.has(element, silex.view.Stage.STAGE_CLASS_NAME)){
