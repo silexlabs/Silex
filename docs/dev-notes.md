@@ -1,3 +1,29 @@
+
+!!!! commit & push unifile
+commit silex
+
+bugs
+- H1 font in text editor
+- cf github issues
+
+should not be commited?!
+https://github.com/silexlabs/Silex/search?l=python
+
+in-browser editors
+http://stackoverflow.com/questions/2282833/free-open-source-in-browser-image-editors
+http://code.google.com/p/svg-edit/
+https://www.google.fr/?gws_rd=cr&ei=VGj5UpHFGqXmywPxh4GIAg#q=open+source+%22in+browser%22+editor
+https://www.google.fr/?gws_rd=cr&ei=fmH5UtyyOIzHsgbh8IGQCw#q=open+source+cloud+based+editor
+
+RT collaboration
+http://stackoverflow.com/questions/10149861/does-operational-transformation-work-on-structured-documents-such-as-html-if-sim
+http://sharejs.org/
+http://operational-transformation.github.io/ot-for-javascript.html
+
+salle de cours partagée
+http://bigbluebutton.org/
+
+
 ##Silex pending tasks
 
 ###en cours
