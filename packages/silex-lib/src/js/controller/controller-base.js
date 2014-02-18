@@ -354,10 +354,11 @@ silex.controller.ControllerBase.prototype.setClassName = function(name) {
 silex.controller.ControllerBase.prototype.editElement = function(opt_element) {
   // default is selected element
   if(!opt_element) opt_element = this.view.stage.getSelection()[0];
-
+  console.log('editElement', arguments);
   switch (this.model.element.getType(opt_element)) {
     case silex.model.Element.TYPE_TEXT:
       var bgColor = silex.utils.Style.computeBgColor(opt_element);
+      console.log('bgColor', bgColor);
       // open the text editor with the same bg color as the element
       this.view.textEditor.openEditor(this.model.element.getInnerHtml(opt_element),
         goog.color.rgbToHex(

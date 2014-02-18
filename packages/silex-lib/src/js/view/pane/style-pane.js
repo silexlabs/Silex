@@ -15,9 +15,9 @@
  *
  */
 
-
 goog.require('silex.view.pane.PaneBase');
 goog.provide('silex.view.pane.StylePane');
+
 
 
 /**
