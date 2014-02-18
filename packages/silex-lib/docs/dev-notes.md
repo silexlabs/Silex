@@ -3,7 +3,6 @@
 commit silex
 
 bugs
-- H1 font in text editor
 - cf github issues
 
 should not be commited?!
