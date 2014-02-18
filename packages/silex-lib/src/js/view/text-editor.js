@@ -242,7 +242,7 @@ silex.view.TextEditor.prototype.redraw = function() {
 
   // get silex styles from the DOM
   var silexStyle = goog.dom.getElementByClass(
-    silex.model.Head.SILEX_STYLE_ELEMENT_ID,
+    silex.model.Head.SILEX_STYLE_ELEMENT_CSS_CLASS,
     this.headElement);
   var cssString = '';
   if (silexStyle){
@@ -251,14 +251,14 @@ silex.view.TextEditor.prototype.redraw = function() {
 
   // add Silex css to the iframe
   var silexStyle = goog.dom.getElementByClass(
-    silex.model.Head.SILEX_STYLE_ELEMENT_ID,
+    silex.model.Head.SILEX_STYLE_ELEMENT_CSS_CLASS,
     iframeHead);
 
   // update iframe css
   if (!silexStyle){
     silexStyle = iframeDoc.createElement('style');
     silexStyle.type = 'text/css';
-    goog.dom.classes.add(silexStyle, silex.model.Head.SILEX_STYLE_ELEMENT_ID);
+    goog.dom.classes.add(silexStyle, silex.model.Head.SILEX_STYLE_ELEMENT_CSS_CLASS);
     goog.dom.appendChild(iframeHead, silexStyle);
   }
   silexStyle.innerHTML = cssString;

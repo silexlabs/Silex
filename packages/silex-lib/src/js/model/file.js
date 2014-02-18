@@ -290,7 +290,7 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
   var cssStr = '';
   // add head css
   var cssTag = goog.dom.getElementByClass(
-    silex.model.Head.SILEX_STYLE_ELEMENT_ID,
+    silex.model.Head.SILEX_STYLE_ELEMENT_CSS_CLASS,
     headElement);
   if (cssTag){
     cssStr += cssTag.innerHTML;
