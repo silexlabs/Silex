@@ -76,7 +76,18 @@ $.widget('silexlabs.editable', {
 		//this.element.draggable({ revert: 'invalid', snap: true, scroll: true });
 		//this.element.draggable({ revert: 'invalid', grid: [ 20, 20 ], scroll: true });
 		if (this.options.isDraggable != false)
-			this.element.draggable({ revert: 'invalid' });
+			this.element.draggable({
+        revert: (function(droppedTo) {
+          if (!droppedTo){
+            // dropped out of the stage, so just move it to stage
+            // usually this is because the stage was too small, and it will make it bigger
+            // trigger an event the old fashion way because it has to be catched by old fashioned addEventListener
+            var event = document.createEvent('CustomEvent');
+            event.initCustomEvent('droppedOutOfStage', true, true);
+            this.get(0).dispatchEvent(event);
+          }
+        })
+     });
 		if (this.options.isResizable != false)
 			this.element.resizable('enable').draggable('enable');
 		if (this.options.isContainer && this.options.isDroppable != false){
@@ -86,7 +97,7 @@ $.widget('silexlabs.editable', {
         // display drop zone highlight
         hoverClass: "ui-dropzone-active",
 
-				drop: function( event, ui ) {
+        drop: function( event, ui ) {
 					// reference to the elements
 					var dropped = ui.draggable[0];
 					var droppedFrom = $(dropped).parent()[0];

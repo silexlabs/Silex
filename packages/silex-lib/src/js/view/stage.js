@@ -216,6 +216,16 @@ silex.view.Stage.prototype.initEvents = function () {
       if (this.onStatus) this.onStatus('newContainer', element);
     }, this);
   }, false, this);
+  // dispatch event when an element is dropped in a new container
+  goog.events.listen(this.element, 'droppedOutOfStage', function(e) {
+    var element = e.target;
+    // store initial position
+    var pos = goog.style.getPageOffset(element);
+    // move to the new container (the stage)
+    goog.dom.appendChild(this.bodyElement, element);
+    // restore position
+    goog.style.setPageOffset(element, pos);
+  }, false, this);
   // detect double click
   goog.events.listen(this.element, goog.events.EventType.DBLCLICK, function(e) {
     if (this.onStatus) this.onStatus('edit');
