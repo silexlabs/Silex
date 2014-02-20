@@ -288,16 +288,22 @@ silex.controller.ControllerBase.prototype.doAddElement = function(element) {
  * set a given style to the current selection
  */
 silex.controller.ControllerBase.prototype.styleChanged = function(name, value) {
-  // apply the change to all elements
   var elements = this.view.stage.getSelection();
-  goog.array.forEach(elements, function (element) {
-    // update the model
-    this.model.element.setStyle(element, name, value);
-    // redraw the data
-    this.view.propertyTool.redraw();
-    // update drop zones z index
-    //silex.utils.EditablePlugin.resetEditable(this.model.body.bodyElement, true);
-  }, this);
+  if (name === 'left'){
+    // apply ofset
+    console.log('styleChanged', elements);
+  }
+  else{
+    // apply the change to all elements
+    goog.array.forEach(elements, function (element) {
+      // update the model
+      this.model.element.setStyle(element, name, value);
+      // redraw the data
+      this.view.propertyTool.redraw();
+      // update drop zones z index
+      //silex.utils.EditablePlugin.resetEditable(this.model.body.bodyElement, true);
+    }, this);
+  }
 }
 
 

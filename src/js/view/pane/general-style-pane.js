@@ -74,16 +74,19 @@ silex.view.pane.GeneralStylePane.prototype.redraw = function() {
   goog.base(this, 'redraw');
 
   // get the selected element
-  var element = this.getSelection()[0];
+  var elements = this.getSelection();
 
-  if (element){
-
-    if (element.style.opacity) {
-      this.opacityInput.value = Math.round(parseFloat(element.style.opacity)*100);
-    }
-    else {
-      this.opacityInput.value = '100';
-    }
+  var opacity = this.getCommonProperty(elements, function (element) {
+    return element.style.opacity;
+  });
+  if (goog.isNull(opacity)) {
+    this.opacityInput.value = '';
+  }
+  else if (opacity === ''){
+    this.opacityInput.value = '100';
+  }
+  else {
+    this.opacityInput.value = Math.round(parseFloat(opacity)*100);
   }
 };
 
