@@ -90,8 +90,8 @@ silex.view.pane.BgPane.prototype.buildUi = function() {
   this.bgClearBgImage.decorate(buttonClearImage);
 
   // bg image properties
-  this.attachementComboBox = goog.ui.decorate(
-      goog.dom.getElementByClass('bg-attachement-combo-box')
+  this.attachmentComboBox = goog.ui.decorate(
+      goog.dom.getElementByClass('bg-attachment-combo-box')
       );
   this.vPositionComboBox = goog.ui.decorate(
       goog.dom.getElementByClass('bg-position-v-combo-box')
@@ -132,7 +132,7 @@ silex.view.pane.BgPane.prototype.buildUi = function() {
       this.onClearImageButton,
       false,
       this);
-  goog.events.listen(this.attachementComboBox,
+  goog.events.listen(this.attachmentComboBox,
       goog.ui.Component.EventType.CHANGE,
       function(event) {
         this.styleChanged('backgroundAttachment', event.target.getSelectedItem().getId());
@@ -167,115 +167,136 @@ silex.view.pane.BgPane.prototype.redraw = function() {
   this.iAmSettingValue = true;
   // call super
   goog.base(this, 'redraw');
-  // get the selected element
-  var element = this.getSelection()[0];
 
-  if (element){
-    // BG color
-    var color = element.style.backgroundColor;
-    if (color === undefined || color === 'transparent' || color === '') {
-      this.transparentBgCheckbox.setChecked(true);
-      this.bgColorPicker.setEnabled(false);
-      this.setColorPaletteVisibility(false);
-    }
-    else {
-      // handle all colors, including the named colors
-      color = goog.style.getBackgroundColor(element);
-      var hex = silex.utils.Style.rgbaToHex(color);
+  // get the selected elements
+  var elements = this.getSelection();
 
-      this.transparentBgCheckbox.setChecked(false);
-      this.bgColorPicker.setEnabled(true);
-      this.bgColorPicker.setValue(hex.substring(0, 7));
-      this.hsvPalette.setColorRgbaHex(hex);
-    }
-    // BG image
-    if (element.style.backgroundImage !== null &&
-        element.style.backgroundImage !== 'none' &&
-        element.style.backgroundImage !== '') {
-      this.bgClearBgImage.setEnabled(true);
-      this.attachementComboBox.setEnabled(true);
-      this.vPositionComboBox.setEnabled(true);
-      this.hPositionComboBox.setEnabled(true);
-      this.repeatComboBox.setEnabled(true);
-    }
-    else {
-      this.bgClearBgImage.setEnabled(false);
-      this.attachementComboBox.setEnabled(false);
-      this.vPositionComboBox.setEnabled(false);
-      this.hPositionComboBox.setEnabled(false);
-      this.repeatComboBox.setEnabled(false);
-    }
-    if (element.style.backgroundAttachment) {
-      switch (element.style.backgroundAttachment) {
-        case 'scroll':
-          this.attachementComboBox.setSelectedIndex(0);
-          break;
-        case 'fixed':
-          this.attachementComboBox.setSelectedIndex(1);
-          break;
-        case 'local':
-          this.attachementComboBox.setSelectedIndex(2);
-          break;
-      }
-    }
-    else {
-      this.attachementComboBox.setSelectedIndex(0);
-    }
-    if (element.style.backgroundPosition) {
-      var posArr = element.style.backgroundPosition.split(' ');
-      var vPosition = posArr[0];
-      var hPosition = posArr[1];
-      switch (vPosition) {
-        case 'top':
-          this.vPositionComboBox.setSelectedIndex(0);
-          break;
-        case 'center':
-          this.vPositionComboBox.setSelectedIndex(1);
-          break;
-        case 'bottom':
-          this.vPositionComboBox.setSelectedIndex(2);
-          break;
-      }
-      switch (hPosition) {
-        case 'left':
-          this.hPositionComboBox.setSelectedIndex(0);
-          break;
-        case 'center':
-          this.hPositionComboBox.setSelectedIndex(1);
-          break;
-        case 'right':
-          this.hPositionComboBox.setSelectedIndex(2);
-          break;
-      }
-    }
-    else {
-      this.vPositionComboBox.setSelectedIndex(0);
-      this.hPositionComboBox.setSelectedIndex(0);
-    }
-    if (element.style.backgroundRepeat) {
-      switch (element.style.backgroundRepeat) {
-        case 'repeat':
-          this.repeatComboBox.setSelectedIndex(0);
-          break;
-        case 'repeat-x':
-          this.repeatComboBox.setSelectedIndex(1);
-          break;
-        case 'repeat-y':
-          this.repeatComboBox.setSelectedIndex(2);
-          break;
-        case 'no-repeat':
-          this.repeatComboBox.setSelectedIndex(3);
-          break;
-        case 'inherit':
-          this.repeatComboBox.setSelectedIndex(4);
-          break;
-      }
-    }
-    else {
-      this.repeatComboBox.setSelectedIndex(0);
-    }
-    this.isRedraw = false;
+  // BG color
+  var color = this.getCommonProperty(elements, function (element) {
+    return element.style.backgroundColor;
+  });
+
+  if (color === 'transparent' || color === '') {
+    this.transparentBgCheckbox.setChecked(true);
+    this.bgColorPicker.setEnabled(false);
+    this.setColorPaletteVisibility(false);
   }
+  else if(goog.isNull(color)) {
+    // display a "no color" in the button
+    this.bgColorPicker.setValue('');
+  }
+  else {
+    // handle all colors, including the named colors
+    var color = goog.color.parse(color);
+
+    this.transparentBgCheckbox.setChecked(false);
+    this.bgColorPicker.setEnabled(true);
+    this.bgColorPicker.setValue(color.hex);
+    this.hsvPalette.setColor(color.hex);
+  }
+  // BG image
+  var bgImage = this.getCommonProperty(elements, function (element) {
+    return element.style.backgroundImage;
+  });
+  if (bgImage !== null &&
+      bgImage !== 'none' &&
+      bgImage !== '') {
+    this.bgClearBgImage.setEnabled(true);
+    this.attachmentComboBox.setEnabled(true);
+    this.vPositionComboBox.setEnabled(true);
+    this.hPositionComboBox.setEnabled(true);
+    this.repeatComboBox.setEnabled(true);
+  }
+  else {
+    this.bgClearBgImage.setEnabled(false);
+    this.attachmentComboBox.setEnabled(false);
+    this.vPositionComboBox.setEnabled(false);
+    this.hPositionComboBox.setEnabled(false);
+    this.repeatComboBox.setEnabled(false);
+  }
+  // bg image attachment
+  var bgImageAttachment = this.getCommonProperty(elements, function (element) {
+    return element.style.backgroundAttachment;
+  });
+  if (bgImageAttachment) {
+    switch (bgImageAttachment) {
+      case 'scroll':
+        this.attachmentComboBox.setSelectedIndex(0);
+        break;
+      case 'fixed':
+        this.attachmentComboBox.setSelectedIndex(1);
+        break;
+      case 'local':
+        this.attachmentComboBox.setSelectedIndex(2);
+        break;
+    }
+  }
+  else {
+    this.attachmentComboBox.setSelectedIndex(0);
+  }
+  // bg image position
+  var bgImagePosition = this.getCommonProperty(elements, function (element) {
+    return element.style.backgroundPosition;
+  });
+  if (bgImagePosition) {
+    var posArr = bgImagePosition.split(' ');
+    var vPosition = posArr[0];
+    var hPosition = posArr[1];
+    switch (vPosition) {
+      case 'top':
+        this.vPositionComboBox.setSelectedIndex(0);
+        break;
+      case 'center':
+        this.vPositionComboBox.setSelectedIndex(1);
+        break;
+      case 'bottom':
+        this.vPositionComboBox.setSelectedIndex(2);
+        break;
+    }
+    switch (hPosition) {
+      case 'left':
+        this.hPositionComboBox.setSelectedIndex(0);
+        break;
+      case 'center':
+        this.hPositionComboBox.setSelectedIndex(1);
+        break;
+      case 'right':
+        this.hPositionComboBox.setSelectedIndex(2);
+        break;
+    }
+  }
+  else {
+    this.vPositionComboBox.setSelectedIndex(0);
+    this.hPositionComboBox.setSelectedIndex(0);
+  }
+  // bg image position
+  var bgImageRepeat = this.getCommonProperty(elements, function (element) {
+    return element.style.backgroundRepeat;
+  });
+  if (bgImageRepeat) {
+    switch (bgImageRepeat) {
+      case 'repeat':
+        this.repeatComboBox.setSelectedIndex(0);
+        break;
+      case 'repeat-x':
+        this.repeatComboBox.setSelectedIndex(1);
+        break;
+      case 'repeat-y':
+        this.repeatComboBox.setSelectedIndex(2);
+        break;
+      case 'no-repeat':
+        this.repeatComboBox.setSelectedIndex(3);
+        break;
+      case 'inherit':
+        this.repeatComboBox.setSelectedIndex(4);
+        break;
+    }
+  }
+  else {
+    this.repeatComboBox.setSelectedIndex(0);
+  }
+  this.isRedraw = false;
+
   this.iAmSettingValue = false;
 };
 
@@ -285,6 +306,9 @@ silex.view.pane.BgPane.prototype.redraw = function() {
  */
 silex.view.pane.BgPane.prototype.onColorChanged = function() {
   var color = silex.utils.Style.hexToRgba(this.hsvPalette.getColorRgbaHex());
+  // update the button
+  this.bgColorPicker.setValue(this.hsvPalette.getColor());
+
   // notify the toolbox
   this.styleChanged('backgroundColor', color);
 };

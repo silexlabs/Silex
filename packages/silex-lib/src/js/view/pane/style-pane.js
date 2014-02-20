@@ -81,37 +81,47 @@ silex.view.pane.StylePane.prototype.redraw = function() {
   goog.base(this, 'redraw');
 
   // get the selected element
-  var element = this.getSelection()[0];
+  var elements = this.getSelection();
 
-  if (element){
-    this.cssClassesInput.value = silex.utils.Style.getClassName(element);
-    // set value
-    var value = element.getAttribute('style');
-    if (value){
-      this.iAmSettingValue = true;
-      try{
-        var str = '.element{\n'+value.replace(/; /g, ';\n')+'\n}';
-        var pos = this.ace.getCursorPosition();
-        this.ace.setValue(str);
-        this.ace.gotoLine(pos.row + 1, pos.column, false);
-      }
-      catch(err){
-        // error which will not keep this.iAmSettingValue to true
-        console.error('an error occured while editing the value', err);
-      }
-      this.iAmSettingValue = false;
+  // css classes
+  var cssClasses = this.getCommonProperty(elements, function (element) {
+    return silex.utils.Style.getClassName(element);
+  });
+  if (cssClasses){
+    this.cssClassesInput.value = cssClasses;
+  }
+  else{
+    this.cssClassesInput.value = '';
+  }
+
+  // css inline style
+  var cssInlineStyle = this.getCommonProperty(elements, function (element) {
+    return element.getAttribute('style');
+  });
+  if (cssInlineStyle){
+    this.iAmSettingValue = true;
+    try{
+      var str = '.element{\n'+cssInlineStyle.replace(/; /g, ';\n')+'\n}';
+      var pos = this.ace.getCursorPosition();
+      this.ace.setValue(str);
+      this.ace.gotoLine(pos.row + 1, pos.column, false);
     }
-    else{
-      this.iAmSettingValue = true;
-      try{
-        this.ace.setValue('.element{\n\n}');
-      }
-      catch(err){
-        // error which will not keep this.iAmSettingValue to true
-        console.error('an error occured while editing the value', err);
-      }
-      this.iAmSettingValue = false;
+    catch(err){
+      // error which will not keep this.iAmSettingValue to true
+      console.error('an error occured while editing the value', err);
     }
+    this.iAmSettingValue = false;
+  }
+  else{
+    this.iAmSettingValue = true;
+    try{
+      this.ace.setValue('.element{\n/'+'* multiple elements selected *'+'/\n}');
+    }
+    catch(err){
+      // error which will not keep this.iAmSettingValue to true
+      console.error('an error occured while editing the value', err);
+    }
+    this.iAmSettingValue = false;
   }
 };
 

@@ -129,3 +129,32 @@ silex.view.pane.PaneBase.prototype.setBaseUrl = function(url) {
   this.redraw();
 };
 
+
+/**
+ * get the common property of a group of elements
+ * @return  the value or null if the value is not the same for all elements
+ */
+silex.view.pane.PaneBase.prototype.getCommonProperty = function(elements, getPropertyFunction) {
+  var value = null;
+  var hasCommonValue = true;
+  var isFirstValue = true;
+  goog.array.forEach(elements, function (element) {
+    var elementValue = getPropertyFunction(element);
+    if (isFirstValue){
+      isFirstValue = false;
+      // init value
+      value = elementValue;
+    }
+    else{
+      // check if there is a common type
+      if(elementValue !== value){
+        hasCommonValue = false;
+      }
+    }
+  }, this);
+  if(hasCommonValue === false){
+    value = null;
+  }
+  return value;
+};
+

@@ -128,7 +128,7 @@ silex.view.pane.PagePane.prototype.setPages = function(pages) {
   var pageDataWithDefaultOptions = ([
     {
       name: 'none',
-      displayName: 'None',
+      displayName: '-',
       linkName: 'none'
     },
     {
@@ -226,47 +226,58 @@ silex.view.pane.PagePane.prototype.redraw = function() {
   this.setPages(silex.utils.PageablePlugin.getPages(this.bodyElement));
 
   // get the selected element
-  var element = this.getSelection()[0];
+  var elements = this.getSelection();
 
-  if (element){
-    // refresh page checkboxes
-    goog.array.forEach(this.pageCheckboxes, function(item) {
-      // there is a selection
-      item.checkbox.setEnabled(true);
-      item.checkbox.setChecked(silex.utils.PageablePlugin.isInPage(element, item.pageName));
-    }, this);
+  // refresh page checkboxes
+  goog.array.forEach(this.pageCheckboxes, function(item) {
+    // there is a selection
+    item.checkbox.setEnabled(true);
+    // compute common pages
+    var isInPage = this.getCommonProperty(elements, function (element) {
+      return silex.utils.PageablePlugin.isInPage(element, item.pageName)
+    });
+    // set visibility
+    if (goog.isNull(isInPage)){
+      // multiple elements selected with different values
+      item.checkbox.setChecked(goog.ui.Checkbox.State.UNDETERMINED);
+    }
+    else{
+      item.checkbox.setChecked(isInPage);
+    }
+  }, this);
 
-    // refresh the link inputs
-    // get the link of the element
-    var elementLink = silex.utils.PageablePlugin.getLink(element);
-    // default selection
-    if (!elementLink || elementLink === '') {
-      this.linkDropdown.value = 'none';
-      this.linkInputTextField.setValue('');
-    }
-    else {
-      if (elementLink.indexOf('#!') === 0) {
-        // case of an internal link
-        // select a page
-        this.linkDropdown.value = elementLink;
-      }
-      else {
-        // in case it is a custom link
-        this.linkInputTextField.setValue(elementLink);
-        this.linkDropdown.value = 'custom';
-      }
-    }
-    // visibility of the text edit
-    var linkInputElement = goog.dom.getElementByClass('link-input-text',
-        this.element);
-    if (this.linkDropdown.value === 'custom') {
-      goog.style.setStyle(linkInputElement, 'display', 'inherit');
-    }
-    else {
-      goog.style.setStyle(linkInputElement, 'display', 'none');
-    }
-    this.isRedraw = false;
+  // refresh the link inputs
+  // get the link of the element
+  var elementLink = this.getCommonProperty(elements, function (element) {
+    return silex.utils.PageablePlugin.getLink(element);
+  });
+  // default selection
+  if (!elementLink || elementLink === '') {
+    this.linkDropdown.value = 'none';
+    this.linkInputTextField.setValue('');
   }
+  else {
+    if (elementLink.indexOf('#!') === 0) {
+      // case of an internal link
+      // select a page
+      this.linkDropdown.value = elementLink;
+    }
+    else {
+      // in case it is a custom link
+      this.linkInputTextField.setValue(elementLink);
+      this.linkDropdown.value = 'custom';
+    }
+  }
+  // visibility of the text edit
+  var linkInputElement = goog.dom.getElementByClass('link-input-text',
+      this.element);
+  if (this.linkDropdown.value === 'custom') {
+    goog.style.setStyle(linkInputElement, 'display', 'inherit');
+  }
+  else {
+    goog.style.setStyle(linkInputElement, 'display', 'none');
+  }
+  this.isRedraw = false;
 };
 
 

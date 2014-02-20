@@ -3,6 +3,7 @@
 commit silex
 
 bugs
+- pages checkboxes enabled when stage is selected, same for link, x, y, w, h, border, corners, css class
 - cf github issues
 
 should not be commited?!

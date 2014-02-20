@@ -160,64 +160,13 @@ silex.view.pane.PropertyPane.prototype.redraw = function() {
   // call super
   goog.base(this, 'redraw');
 
-  // get the selected element
-  var element = this.getSelection()[0];
+  // get the selected elements
+  var elements = this.getSelection();
+  var bb = silex.utils.Dom.getBoundingBox(elements);
 
-  if (element){
-
-    var type = element.getAttribute(silex.model.Element.TYPE_ATTR);
-    // refresh properties
-    var imageUrl = '';
-    if (type === silex.model.Element.TYPE_IMAGE) {
-      var img = goog.dom.getElement(silex.model.Element.ELEMENT_CONTENT_CLASS_NAME, element);
-      if (img){
-        if (this.baseUrl)
-          imageUrl = silex.utils.Style.getRelativePath(img.getAttribute('src'), this.baseUrl);
-        else
-          imageUrl = img.getAttribute('src');
-      }
-    }
-
-    // resolve the template
-    if (this.element) {
-      // position and size
-      if (goog.dom.classes.has(element, 'editable-style')) {
-        if (element.style.left !== undefined) {
-          this.leftInput.value = element.style.left.substr(0,
-              element.style.left.indexOf('px'));
-        }
-        else {
-          this.leftInput.value = '';
-        }
-        if (element.style.width !== undefined) {
-          this.widthInput.value = element.style.width.substr(0,
-              element.style.width.indexOf('px'));
-        }
-        else {
-          this.widthInput.value = '';
-        }
-        if (element.style.top !== undefined) {
-          this.topInput.value = element.style.top.substr(0,
-              element.style.top.indexOf('px'));
-        }
-        else {
-          this.topInput.value = '';
-        }
-        if (element.style.height !== undefined) {
-          this.heightInput.value = element.style.height.substr(0,
-              element.style.height.indexOf('px'));
-        }
-        else {
-          this.heightInput.value = '';
-        }
-      }
-      else {
-        // case of the stage
-        this.leftInput.value = '';
-        this.widthInput.value = '';
-        this.topInput.value = '';
-        this.heightInput.value = '';
-      }
-    }
-  }
+  // display position and size
+  this.topInput.value = bb.top;
+  this.leftInput.value = bb.left;
+  this.widthInput.value = bb.width;
+  this.heightInput.value = bb.height;
 };

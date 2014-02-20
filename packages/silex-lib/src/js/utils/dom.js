@@ -47,3 +47,38 @@ silex.utils.Dom.renderList = function (itemTemplateString, data) {
   }
   return res;
 }
+
+/**
+ * compute the bounding box of the given elements
+ * use only element.style.* to compute this, not the real positions and sizes
+ * so it takes into account only the elements which have top, left, width and height set in px
+ * @return the bounding box containing all the elements
+ */
+silex.utils.Dom.getBoundingBox = function (elements) {
+  // compute the positions and sizes
+  var top = NaN,
+      left = NaN,
+      right = NaN,
+      bottom = NaN;
+
+  goog.array.forEach(elements, function (element) {
+    // commpute the values, which may end up to be NaN or a number
+    var elementTop = parseFloat(element.style.top.substr(0, element.style.top.indexOf('px')));
+    var elementLeft = parseFloat(element.style.left.substr(0, element.style.left.indexOf('px')));
+    var elementRight = elementLeft + parseFloat(element.style.width.substr(0, element.style.width.indexOf('px')));
+    var elementBottom = elementTop + parseFloat(element.style.height.substr(0, element.style.height.indexOf('px')));
+    // take the smallest top and left
+    top = isNaN(top) ? elementTop : Math.min(top, elementTop);
+    left = isNaN(left) ? elementLeft : Math.min(left, elementLeft);
+    // take the bigger bottom and rigth
+    bottom = isNaN(bottom) ? elementBottom : Math.max(bottom, elementBottom);
+    right = isNaN(right) ? elementRight : Math.max(right, elementRight);
+  }, this);
+
+  var res = {};
+  if (!isNaN(top)) res.top = top;
+  if (!isNaN(left)) res.left = left;
+  if (!isNaN(top) && !isNaN(bottom)) res.height = bottom - top;
+  if (!isNaN(left) && !isNaN(right)) res.width = right - left;
+  return res;
+}
