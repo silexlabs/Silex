@@ -1,10 +1,17 @@
 
-!!!! commit & push unifile
-commit silex
-
 bugs
+- x/y/w/h fin selection multiple
+- !!! left not working
+- sometimes resize also moves
+- ff: undefined in the position text fields
+- scroll bars on texts (in ie mostl)
+- opacity not kept after publish
 - pages checkboxes enabled when stage is selected, same for link, x, y, w, h, border, corners, css class
 - cf github issues
+
+feature request:
+- anchors
+- favicon
 
 should not be commited?!
 https://github.com/silexlabs/Silex/search?l=python

@@ -287,23 +287,17 @@ silex.controller.ControllerBase.prototype.doAddElement = function(element) {
 /**
  * set a given style to the current selection
  */
-silex.controller.ControllerBase.prototype.styleChanged = function(name, value) {
-  var elements = this.view.stage.getSelection();
-  if (name === 'left'){
-    // apply ofset
-    console.log('styleChanged', elements);
-  }
-  else{
-    // apply the change to all elements
-    goog.array.forEach(elements, function (element) {
-      // update the model
-      this.model.element.setStyle(element, name, value);
-      // redraw the data
-      this.view.propertyTool.redraw();
-      // update drop zones z index
-      //silex.utils.EditablePlugin.resetEditable(this.model.body.bodyElement, true);
-    }, this);
-  }
+silex.controller.ControllerBase.prototype.styleChanged = function(name, value, opt_elements) {
+  if (!opt_elements) opt_elements = this.view.stage.getSelection();
+  // apply the change to all elements
+  goog.array.forEach(opt_elements, function (element) {
+    // update the model
+    this.model.element.setStyle(element, name, value);
+    // update drop zones z index
+    //silex.utils.EditablePlugin.resetEditable(this.model.body.bodyElement, true);
+  }, this);
+  // redraw the data
+  this.view.propertyTool.redraw();
 }
 
 
@@ -316,9 +310,9 @@ silex.controller.ControllerBase.prototype.propertyChanged = function(name, value
   goog.array.forEach(elements, function (element) {
     // update the model
     this.model.element.setProperty(element, name, value);
-    // redraw the data
-    this.view.propertyTool.redraw();
   }, this);
+  // redraw the data
+  this.view.propertyTool.redraw();
 }
 
 
@@ -347,9 +341,9 @@ silex.controller.ControllerBase.prototype.setClassName = function(name) {
   goog.array.forEach(elements, function (element) {
     // update the model
     silex.utils.Style.setClassName(element, name);
-    // redraw the data
-    this.view.propertyTool.redraw();
   }, this);
+  // redraw the data
+  this.view.propertyTool.redraw();
 }
 
 

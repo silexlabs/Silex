@@ -90,12 +90,12 @@ silex.view.pane.PaneBase.prototype.editText = function() {
  * notify the controller that the style changed
  * @param   styleName   not css style but camel case
  */
-silex.view.pane.PaneBase.prototype.styleChanged = function(styleName, opt_styleValue) {
+silex.view.pane.PaneBase.prototype.styleChanged = function(styleName, opt_styleValue, opt_elements) {
   if (this.iAmSettingValue) return;
   // notify the controller
   this.iAmSettingValue = true;
   try{
-    if (this.onStatus) this.onStatus('styleChanged', styleName, opt_styleValue);
+    if (this.onStatus) this.onStatus('styleChanged', styleName, opt_styleValue, opt_elements);
   }
   catch(err){
     // error which will not keep this.iAmSettingValue to true
