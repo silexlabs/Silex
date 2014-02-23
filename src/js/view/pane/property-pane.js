@@ -140,15 +140,27 @@ silex.view.pane.PropertyPane.prototype.buildUi = function() {
 silex.view.pane.PropertyPane.prototype.onPositionChanged =
     function(e) {
   // get the selected element
-  var element = this.getSelection()[0];
+  var elements = this.getSelection();
   var input = e.target;
-  if (input.value && input.value!=''){
-    this.styleChanged(input.getAttribute('data-style-name'),
-      input.value + input.getAttribute('data-style-unit'));
-  }
-  else{
-    this.styleChanged(input.getAttribute('data-style-name'));
-  }
+  // the name of the property to change
+  var name = input.getAttribute('data-style-name');
+  // the bounding box of all elements
+  var bb = silex.utils.Dom.getBoundingBox(elements);
+
+  // apply the change to all elements
+  goog.array.forEach(elements, function (element) {
+    if (input.value != ''){
+      var initialValue = parseFloat(element.style[name].substr(0, element.style[name].indexOf('px')));
+      // compute the value relative to the group value
+      var value = initialValue + parseFloat(input.value) - bb[name];
+      this.styleChanged(name,
+        value + input.getAttribute('data-style-unit'),
+        [element]);
+    }
+    else{
+      this.styleChanged(name);
+    }
+  }, this);
 };
 
 
