@@ -177,8 +177,8 @@ silex.view.pane.PropertyPane.prototype.redraw = function() {
   var bb = silex.utils.Dom.getBoundingBox(elements);
 
   // display position and size
-  this.topInput.value = bb.top;
-  this.leftInput.value = bb.left;
-  this.widthInput.value = bb.width;
-  this.heightInput.value = bb.height;
+  this.topInput.value = bb.top || '';
+  this.leftInput.value = bb.left || '';
+  this.widthInput.value = bb.width || '';
+  this.heightInput.value = bb.height || '';
 };
