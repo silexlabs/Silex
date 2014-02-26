@@ -1,7 +1,5 @@
 
 bugs
-- x/y/w/h fin selection multiple
-- !!! left not working
 - sometimes resize also moves
 - ff: undefined in the position text fields
 - scroll bars on texts (in ie mostl)
@@ -9,9 +7,16 @@ bugs
 - pages checkboxes enabled when stage is selected, same for link, x, y, w, h, border, corners, css class
 - cf github issues
 
+Paste: Prendre en compte scroll et page, et décaler un peu
+Et effacement d'une page : si un élément doit etre effacé avertir
+
+
 feature request:
 - anchors
 - favicon
+- floating menu widget
+  http://outyear.co.uk/smint/
+  http://avathemes.com/WP/Hexic/
 
 should not be commited?!
 https://github.com/silexlabs/Silex/search?l=python
