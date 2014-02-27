@@ -105,19 +105,37 @@ silex.utils.Notification.nativeNotification = function(message, iconUrl){
 /**
  * display a message
  */
-silex.utils.Notification.alert = alertify.alert;
+silex.utils.Notification.alert = function (msg, cbk, opt_okLabel, opt_cancelLabel) {
+  alertify.set({ labels: {
+    ok     : opt_okLabel || 'ok',
+    cancel : opt_cancelLabel || 'cancel'
+  }});
+  alertify.alert(msg, cbk);
+}
 
 
 /**
  * display a message
  */
-silex.utils.Notification.prompt = alertify.prompt;
+silex.utils.Notification.prompt = function (msg, text, cbk, opt_okLabel, opt_cancelLabel) {
+  alertify.set({ labels: {
+    ok     : opt_okLabel || 'ok',
+    cancel : opt_cancelLabel || 'cancel'
+  }});
+  alertify.prompt(msg, text, cbk);
+}
 
 
 /**
  * display a message
  */
-silex.utils.Notification.confirm = alertify.confirm;
+silex.utils.Notification.confirm = function (msg, cbk, opt_okLabel, opt_cancelLabel) {
+  alertify.set({ labels: {
+    ok     : opt_okLabel || 'ok',
+    cancel : opt_cancelLabel || 'cancel'
+  }});
+  alertify.confirm(msg, cbk);
+}
 
 /**
  * notify the user with success formatting

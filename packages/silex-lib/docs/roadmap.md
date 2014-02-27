@@ -1,5 +1,7 @@
 ##Road map
 
+Todo: make this roadmap issues in github
+
 ###v2.0.0alpha4
 
 WYSIWYG

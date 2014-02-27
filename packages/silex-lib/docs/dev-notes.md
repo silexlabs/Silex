@@ -1,14 +1,11 @@
 
 bugs
+- Et effacement d'une page : si un élément doit etre effacé avertir
 - sometimes resize also moves
-- ff: undefined in the position text fields
-- scroll bars on texts (in ie mostl)
 - opacity not kept after publish
 - pages checkboxes enabled when stage is selected, same for link, x, y, w, h, border, corners, css class
 - cf github issues
 
-Paste: Prendre en compte scroll et page, et décaler un peu
-Et effacement d'une page : si un élément doit etre effacé avertir
 
 
 feature request:
