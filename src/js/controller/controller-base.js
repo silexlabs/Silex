@@ -132,10 +132,18 @@ silex.controller.ControllerBase.prototype.pasteSelection = function() {
         container = silex.utils.PageablePlugin.getBodyElement();
       }
     }
+    // take the scroll into account (drop at (100, 100) from top left corner of the window, not the stage)
+    var bb = silex.utils.Dom.getBoundingBox(silex.controller.ControllerBase.clipboard);
+    var offsetX = 100 + this.model.body.bodyElement.parentNode.scrollLeft - bb.left;
+    var offsetY = 100 + this.model.body.bodyElement.parentNode.scrollTop - bb.top;
     // duplicate and add to the container
     goog.array.forEach(silex.controller.ControllerBase.clipboard, function (clipboardElement) {
       var element = clipboardElement.cloneNode(true);
       this.model.element.appendChild(container, element);
+      // apply the offset to the element, ccording to the scroll position
+      var bbElement = silex.utils.Dom.getBoundingBox([element]);
+      element.style.left = (bbElement.left + offsetX) + 'px';
+      element.style.top = (bbElement.top + offsetY) + 'px';
       // reset editable option
       this.doAddElement(element);
     }, this);
@@ -268,12 +276,15 @@ silex.controller.ControllerBase.prototype.addElement = function(type) {
   return element;
 }
 /**
- * create an element and add it to the stage
+ * called after an element has been created
+ * add the element to the current page (only if it has not a container which is in a page)
+ * redraw the tools and set the element as editable
  * @param {element} the element to add
  */
 silex.controller.ControllerBase.prototype.doAddElement = function(element) {
   // only visible on the current page
   var currentPageName = silex.utils.PageablePlugin.getCurrentPageName();
+  silex.utils.PageablePlugin.removeFromAllPages(element);
   silex.utils.PageablePlugin.addToPage(element, currentPageName);
   // unless one of its parents is in a page already
   this.checkElementVisibility(element);
@@ -435,7 +446,23 @@ silex.controller.ControllerBase.prototype.removePage = function(opt_pageName) {
     goog.bind(function(accept) {
       if (accept) {
         // update model
-        silex.utils.PageablePlugin.removePage(opt_pageName);
+        var elementsOnlyOnThisPage = silex.utils.PageablePlugin.removePage(opt_pageName);
+        console.log('removed page', elementsOnlyOnThisPage);
+        // handle elements which should be deleted
+        if (elementsOnlyOnThisPage.length > 0){
+          silex.utils.Notification.confirm('This page has elements which are only visible here. Should I delete them or keep them and make them visible everywhere?', goog.bind(function(accept) {
+            goog.array.forEach(elementsOnlyOnThisPage, function(element) {
+              if (accept){
+                // remove these elements
+                this.removeElement(element);
+              }
+              else{
+                // remove from this page
+                silex.utils.PageablePlugin.removeFromAllPages(element);
+              }
+            }, this);
+          }, this), 'delete', 'keep');
+        }
         // update view
         this.view.pageTool.redraw();
         this.view.propertyTool.redraw(); // css class of selected element may have chenged

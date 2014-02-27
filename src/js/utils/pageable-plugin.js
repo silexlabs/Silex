@@ -217,6 +217,7 @@ silex.utils.PageablePlugin.getDisplayName = function(pageName) {
 
 /**
  * remove a page from the dom
+ * @return the {element} elements which are only in this page (they probably should be deleted?)
  */
 silex.utils.PageablePlugin.removePage = function(pageName) {
   if(!silex.utils.PageablePlugin.getPageable(silex.utils.PageablePlugin.bodyElement)){
@@ -236,17 +237,26 @@ silex.utils.PageablePlugin.removePage = function(pageName) {
       }
   );
   // check elements which were only visible on this page
-  // and make them visible everywhere
+  // and returns them in this case
+  var elementsOnlyOnThisPage = [];
   $('.' + pageName).each(
       function() {
         $(this).removeClass(pageName);
 
         var pagesOfElement = silex.utils.PageablePlugin.getPagesForElement(this);
 
-        if (pagesOfElement.length <= 0)
-          $(this).removeClass(silex.utils.PageablePlugin.PAGED_CLASS_NAME);
+        if (pagesOfElement.length <= 0){
+          //$(this).removeClass(silex.utils.PageablePlugin.PAGED_CLASS_NAME);
+          elementsOnlyOnThisPage.push(this);
+        }
       }
   );
+  // find default first page
+  var pages = silex.utils.PageablePlugin.getPages();
+  // open default page
+  silex.utils.PageablePlugin.setCurrentPage(pages[0]);
+
+  return elementsOnlyOnThisPage;
 };
 
 
@@ -342,6 +352,19 @@ silex.utils.PageablePlugin.removeFromPage = function(element, pageName) {
   if (!silex.utils.PageablePlugin.getPagesForElement(element).length>0){
     goog.dom.classes.remove(element, silex.utils.PageablePlugin.PAGED_CLASS_NAME);
   }
+};
+
+
+/**
+ * set/get a "silex style link" on an element
+ */
+silex.utils.PageablePlugin.removeFromAllPages = function(element) {
+  var pages = silex.utils.PageablePlugin.getPagesForElement(element);
+  goog.array.forEach(pages, function (pageName) {
+    goog.dom.classes.remove(element, pageName);
+  }, this);
+  // the element is not "paged" anymore
+  goog.dom.classes.remove(element, silex.utils.PageablePlugin.PAGED_CLASS_NAME);
 };
 
 

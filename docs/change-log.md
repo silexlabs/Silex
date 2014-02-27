@@ -2,6 +2,30 @@
 
 This is where you will find the recent changes made to Silex, and available on http://www.silex.me/
 
+## Feb 2014
+
+bug fixes
+
+* fixed bugs and inconsistencies in firefox
+* fixed bugs and inconsistencies in IE
+* fixed publish settings popin
+* fixed stage size on mobiles and when trying to put an element under the main container
+
+features
+
+* multi selection
+* desktop notifications for chrome
+* improved UI and stability
+* added waffle.io badge
+* new links in the help menu
+* a css class is applyed to active links
+* docs folder in the source, with contributors, roadmap etc
+
+code and doc
+
+* more functional tests
+* docs and new silex site
+
 ## Jan 2014
 
 bug fixes
