@@ -3,4 +3,4 @@ Disallow: /js/
 Disallow: /demos/
 Disallow: /css/
 Disallow: /tests/
-Sitemap: /sitemap_index.xml
+Sitemap: http://www.silex.me/sitemap_index.xml
