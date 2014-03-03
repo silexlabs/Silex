@@ -1,6 +1,6 @@
 
 bugs
-- Et effacement d'une page : si un élément doit etre effacé avertir
+- no size when you select main container
 - sometimes resize also moves
 - opacity not kept after publish
 - pages checkboxes enabled when stage is selected, same for link, x, y, w, h, border, corners, css class
