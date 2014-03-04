@@ -225,6 +225,7 @@ it('should should contain the new text', function(done) {
   });
 });
 it('should edit an html element in the HTML editor', function(done) {
+  this.timeout(4000);
   // insert a new element
   insertElement('html');
   // open the text editor

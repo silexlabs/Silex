@@ -133,39 +133,49 @@ it('should be able to make a publication with basic elements', function(done) {
 });
 /* */
 it('should be able to save the file', function(done) {
-    this.timeout(15000);
-    // save
-    helper.driver.findElement(helper.webdriver.By.className('menu-item-file')).click();
-    helper.driver.findElement(helper.webdriver.By.className('menu-item-file-save')).click();
+  this.timeout(15000);
+  // save
+  helper.driver.findElement(helper.webdriver.By.className('menu-item-file')).click();
+  helper.driver.findElement(helper.webdriver.By.className('menu-item-file-save')).click();
 
-    // login
-    var originWindow = helper.driver.getWindowHandle();
-    // click
-    helper.driver.findElement(helper.webdriver.By.css('img[title="Edit files on the server where Silex is installed."]')).click();
-    helper.driver.findElement(helper.webdriver.By.linkText("CLICK HERE")).click();
+  var doAfterLoggedIn = function (done) {
+    // wait for the files to show up
+    setTimeout(function () {
+      // type a name
+      helper.driver.findElement(helper.webdriver.By.className('ce-saveas-btn'))
+        .findElement(helper.webdriver.By.tagName('input'))
+        .sendKeys('tmp-test-files');
+      // click ok
+      helper.driver.findElement(helper.webdriver.By.xpath('//button[@ng-click="saveAs(saveAsName)"]')).click().then(function () {
+        setTimeout(function () {
+          console.log('done');
+          done();
+        }, 2000);
+      });
+    }, 2000);
+  };
+
+  // login
+  var originWindow = helper.driver.getWindowHandle();
+  // click
+  helper.driver.findElement(helper.webdriver.By.css('img[title="Edit files on the server where Silex is installed."]')).click();
+  helper.driver.findElement(helper.webdriver.By.linkText("CLICK HERE")).click().then(function (findElement) {
+    // now login in auth popup
     helper.driver.switchTo().window('authPopup');
     var input = helper.driver.findElement(helper.webdriver.By.name('username'));
     input.sendKeys('admin');
     input = helper.driver.findElement(helper.webdriver.By.name('password'));
     input.sendKeys('admin');
-    //input.sendKeys(String.fromCharCode('13'));
     helper.driver.findElement(helper.webdriver.By.xpath('//input[@type="submit"]')).click();
+    // back to main window
     helper.driver.switchTo().window(originWindow).then(function () {
-      // wait for the files to show up
-      setTimeout(function () {
-        // type a name
-        helper.driver.findElement(helper.webdriver.By.className('ce-saveas-btn'))
-          .findElement(helper.webdriver.By.tagName('input'))
-          .sendKeys('tmp-test-files');
-        // click ok
-        helper.driver.findElement(helper.webdriver.By.xpath('//button[@ng-click="saveAs(saveAsName)"]')).click().then(function () {
-          setTimeout(function () {
-            console.log('done');
-            done();
-          }, 2000);
-        });
-      }, 2000);
+      doAfterLoggedIn(done);
     });
+  }, function (err) {
+    // already logged in
+    console.log('already logged in');
+    doAfterLoggedIn(done);
+  });
 });
 /* */
 after(function(done) {

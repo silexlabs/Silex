@@ -38,22 +38,33 @@ it('should be able to open the file explorer dialog', function(done) {
     });
 });
 it('should open the login popup', function(done) {
-    var originWindow = helper.driver.getWindowHandle();
-    // click
-    helper.driver.findElement(helper.webdriver.By.css('img[title="Edit files on the server where Silex is installed."]')).click();
-    helper.driver.findElement(helper.webdriver.By.linkText("CLICK HERE")).click();
-    // check visibility
+  console.log('should open the login popup');
+  var originWindow = helper.driver.getWindowHandle();
+  // click
+  helper.driver.findElement(helper.webdriver.By.css('img[title="Edit files on the server where Silex is installed."]')).click();
+  helper.driver.findElement(helper.webdriver.By.linkText("CLICK HERE")).click().then(function (findElement) {
+    console.log('should open the login popup', findElement);
+    // now login in auth popup
     helper.driver.switchTo().window('authPopup');
     var input = helper.driver.findElement(helper.webdriver.By.name('username'));
     input.sendKeys('admin');
     input = helper.driver.findElement(helper.webdriver.By.name('password'));
     input.sendKeys('admin');
-    input.sendKeys(String.fromCharCode('13'));
+    helper.driver.findElement(helper.webdriver.By.xpath('//input[@type="submit"]')).click();
+    // back to main window
     helper.driver.switchTo().window(originWindow).then(function () {
       done();
     });
+  }, function (err) {
+    // already logged in
+    console.log('already logged in');
+    done();
+  });
 });
 it('should be able to close the file explorer dialog', function(done) {
+  console.log('should be able to close the file explorer dialog');
+  // wait for the "CLICK HERE" dialog to hide
+  setTimeout(function () {
     // click on close
     helper.driver.findElement(helper.webdriver.By.className('silex-fileexplorer'))
     .findElement(helper.webdriver.By.className('close-btn'))
@@ -62,13 +73,15 @@ it('should be able to close the file explorer dialog', function(done) {
     helper.driver.findElement(helper.webdriver.By.className('silex-fileexplorer'))
     .isDisplayed()
     .then(function (isDisplayed) {
-        if (!isDisplayed){
-          done();
-        }
-        else {
-          done('dialog is still visible');
-        }
+      console.log('should be able to close the file explorer dialog 2', isDisplayed);
+      if (!isDisplayed){
+        done();
+      }
+      else {
+        done('dialog is still visible');
+      }
     });
+  }, 1000);
 });
 after(function(done) {
    this.timeout(60000);
