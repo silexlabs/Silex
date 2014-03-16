@@ -176,6 +176,8 @@ silex.view.pane.PropertyPane.prototype.redraw = function() {
   var elements = this.getSelection();
   var bb = silex.utils.Dom.getBoundingBox(elements);
 
+console.log('PropertyPane redraw', elements);
+
   // display position and size
   this.topInput.value = bb.top || '';
   this.leftInput.value = bb.left || '';
