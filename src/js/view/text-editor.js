@@ -124,13 +124,11 @@ silex.view.TextEditor.prototype.initUI = function() {
     formatButton.removeItemAt(0);
   }
   // add our styles
-  goog.ui.editor.ToolbarFactory.addFormatOption(formatButton, 'Normal text', 'P');
+  goog.ui.editor.ToolbarFactory.addFormatOption(formatButton, 'Normal', 'P');
   goog.ui.editor.ToolbarFactory.addFormatOption(formatButton, 'Title', 'HEADER');
-  goog.ui.editor.ToolbarFactory.addFormatOption(formatButton, 'Subtitle', 'DIV');
   goog.ui.editor.ToolbarFactory.addFormatOption(formatButton, 'Heading 1', 'H1');
   goog.ui.editor.ToolbarFactory.addFormatOption(formatButton, 'Heading 2', 'H2');
   goog.ui.editor.ToolbarFactory.addFormatOption(formatButton, 'Heading 3', 'H3');
-  goog.ui.editor.ToolbarFactory.addFormatOption(formatButton, 'Quote', 'BLOCKQUOTE');
 
   // Specify the buttons to add to the toolbar, using built in default buttons.
   var buttons = [
@@ -164,9 +162,10 @@ silex.view.TextEditor.prototype.initUI = function() {
   goog.events.listen(button,
     goog.ui.Component.EventType.ACTION, function () {
       var text = generator.generateParagraph(true);
-      var div = goog.dom.createElement('div');
-      div.innerHTML = text;
-      this.textField.getRange().replaceContentsWithNode(div);
+      var container = goog.dom.createElement('p');
+      container.innerHTML = text;
+      this.textField.getRange().replaceContentsWithNode(container);
+      this.contentChanged();
     }, false, this);
   myToolbar.addChild(new goog.ui.ToolbarSeparator(), true);
   myToolbar.addChild(button, true);
