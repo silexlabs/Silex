@@ -73,21 +73,23 @@ it('should be able to load', function() {
 ////////////////////////////////////////
 // insert menu
 it('should create a new page', function(done) {
-  this.timeout(5000);
+  this.timeout(15000);
   // insert a new element
   insertElement('html');
   // open the text editor
   driver.findElement(webdriver.By.className('menu-item-insert')).click();
   driver.findElement(webdriver.By.className('menu-item-insert-page')).click().then(function(){
     // wait for alertify to appear
+    // FIXME use wait instead of setTimeout
     setTimeout(function () {
       // type text
       driver.findElement(webdriver.By.className('alertify-text')).click().then(function(){
         var input = driver.switchTo().activeElement();
-        input.sendKeys('\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\bTEST PAGE');
+        input.sendKeys('\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\bTEST ?@~!. PAGE');
         // press ok
         driver.findElement(webdriver.By.id('alertify-ok')).click().then(function(){
           // wait for silex to apply changes
+          // FIXME use wait instead of setTimeout
           setTimeout(function () {
             done();
           }, 1000);
@@ -97,7 +99,7 @@ it('should create a new page', function(done) {
   });
 });
 it('should contain the new text', function(done) {
-  driver.executeScript('return $("a#test-page") && $("a#test-page").html() && $("a#test-page").html().indexOf("TEST PAGE") >= 0;').then(function (isUpdated){
+  driver.executeScript('return $("a#page-test-page") && $("a#page-test-page").html() && $("a#page-test-page").html().indexOf("TEST ?@~!. PAGE") >= 0;').then(function (isUpdated){
     if(isUpdated){
       done();
     }

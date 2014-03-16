@@ -85,14 +85,14 @@ it('should be able to close the file explorer dialog', function(done) {
   // click on close
   var closeBtn;
   if (helper.getDriverName() === 'phantomjs') {
-    // FIXEME: do not work in chrome
+    // FIXME: do not work in chrome
     closeBtn = driver.findElement(webdriver.By.className('dialogs-background'));
   }
   else {
     // Fixme: timer is needed, but I do not understand why
     // for chrome only (use of wait will not help here)
     driver.sleep(500);
-    // FIXEME: do not work in phantomjs
+    // FIXME: do not work in phantomjs
     closeBtn = driver.findElement(webdriver.By.css('.silex-fileexplorer .close-btn'));
   }
   closeBtn.click();

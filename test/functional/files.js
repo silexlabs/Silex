@@ -154,12 +154,12 @@ it('should be able to save the file', function(done) {
     driver.sleep(500);
     // type a name
     if (helper.getDriverName() === 'phantomjs') {
-      // FIXEME: do not work in chrome
+      // FIXME: do not work in chrome
       driver.findElement(webdriver.By.css('.ce-saveas-btn'))
       .sendKeys('\t\t\t\ttmp-test-files');
     }
     else {
-      // FIXEME: do not work in phantomjs
+      // FIXME: do not work in phantomjs
       driver.findElement(webdriver.By.css('.ce-saveas-btn input'))
       .sendKeys('tmp-test-files');
     }
