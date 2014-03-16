@@ -486,7 +486,7 @@ silex.controller.ControllerBase.prototype.removePage = function(opt_pageName) {
  * input a page name
  */
 silex.controller.ControllerBase.prototype.getUserInputPageName = function(defaultName, cbk) {
-  silex.utils.Notification.prompt('Enter a name for your page!',
+  silex.utils.Notification.prompt('Enter a name for your page!', defaultName,
       goog.bind(function(accept, name) {
         if (accept && name && name.length > 0) {
           // keep the full name
@@ -510,7 +510,7 @@ silex.controller.ControllerBase.prototype.getUserInputPageName = function(defaul
           }
         }
         cbk(null);
-      }, this), defaultName);
+      }, this));
 };
 
 
@@ -592,12 +592,14 @@ silex.controller.ControllerBase.prototype.preview = function() {
  * ask the user for a new file title
  */
 silex.controller.ControllerBase.prototype.promptTitle = function(){
-  silex.utils.Notification.prompt('What is the name of your website?', goog.bind(function(accept, name) {
+  silex.utils.Notification.prompt('What is the name of your website?',
+    this.model.head.getTitle(),
+    goog.bind(function(accept, name) {
     if (accept) {
       this.model.head.setTitle(name);
       this.view.menu.redraw();
     }
-  }, this), this.model.head.getTitle());
+  }, this));
 }
 /**
  * refresh font list in the text editor, and in the head tag
