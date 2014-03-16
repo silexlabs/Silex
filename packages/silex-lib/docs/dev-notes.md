@@ -1,12 +1,26 @@
+commit / push CE & unifile
+
 
 bugs
 - no size when you select main container
 - sometimes resize also moves
 - opacity not kept after publish
 - pages checkboxes enabled when stage is selected, same for link, x, y, w, h, border, corners, css class
+- il y a un truc etonnant dans l'interface dans les valeurs de positions j'ai des 370.000154187888
 - cf github issues
 
+tests to do
+- tests/App.js qui lance les tests sans reouvrir de fenetre ou relacer sélénium, et passe a chaque test la variable webdrlver et driver
 
+docs to do
+* Styles silex
+  * Texts, h1, P, ...
+  * Élément types
+  * Élément content
+* Docs css
+* Inclure css externe
+* Libs css
+* Silex css experts, yannick camille
 
 feature request:
 - anchors
@@ -14,6 +28,19 @@ feature request:
 - floating menu widget
   http://outyear.co.uk/smint/
   http://avathemes.com/WP/Hexic/
+- script et style externes
+  In CSS editor : external CSS (URL or browse)
+  Js editor: external script
+  réunir les 2 en 1 paneau avec onglets
+- Manque silex pour layouts
+  Lock (drag, resize)
+  Lock children (drag, resize)
+  Lock drag out / drop in ??
+  Move selection up / down (Dom)
+
+  Layout: remove position in CSS
+  Resize to content: remove height in CSS
+  Change order: use move up / down
 
 should not be commited?!
 https://github.com/silexlabs/Silex/search?l=python
@@ -47,7 +74,6 @@ props intéressantes à exposer en wysiwyg?
   http://www.w3.org/TR/2011/REC-CSS2-20110607/colors.html
   http://www.w3.org/TR/2011/REC-CSS2-20110607/text.html
   http://www.w3.org/TR/2011/REC-CSS2-20110607/fonts.html
-  http://www.w3.org/TR/2011/REC-CSS2-20110607/visufx.html
 
 Behance, Comme dans adobe Cloud, publier site dans behance
   http://www.behance.net/dev
