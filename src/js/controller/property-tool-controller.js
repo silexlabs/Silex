@@ -68,7 +68,12 @@ silex.controller.PropertyToolController.prototype.propertyToolCallback = functio
       // apply the change to all elements
       var elements = this.view.stage.getSelection();
       goog.array.forEach(elements, function (element) {
-        silex.utils.PageablePlugin.addToPage(element, opt_name);
+        if (silex.utils.PageablePlugin.getBodyElement() != element) {
+          silex.utils.PageablePlugin.addToPage(element, opt_name);
+        }
+        else{
+          console.error('could not add this element (', element, ') to a page because it is the stage element');
+        }
       }, this);
       this.view.propertyTool.redraw();
       break;
@@ -76,7 +81,12 @@ silex.controller.PropertyToolController.prototype.propertyToolCallback = functio
       // apply the change to all elements
       var elements = this.view.stage.getSelection();
       goog.array.forEach(elements, function (element) {
-        silex.utils.PageablePlugin.removeFromPage(element, opt_name);
+        if (silex.utils.PageablePlugin.getBodyElement() != element) {
+          silex.utils.PageablePlugin.removeFromPage(element, opt_name);
+        }
+        else{
+          console.error('could not remove this element (', element, ') from a page because it is the stage element');
+        }
       }, this);
       this.view.propertyTool.redraw();
       break;
@@ -84,7 +94,12 @@ silex.controller.PropertyToolController.prototype.propertyToolCallback = functio
       // apply the change to all elements
       var elements = this.view.stage.getSelection();
       goog.array.forEach(elements, function (element) {
-        silex.utils.PageablePlugin.setLink(element, opt_name);
+        if (silex.utils.PageablePlugin.getBodyElement() != element) {
+          silex.utils.PageablePlugin.setLink(element, opt_name);
+        }
+        else{
+          console.error('could not add a link to this element (', element, ') because it is the stage element');
+        }
       }, this);
       this.view.propertyTool.redraw();
       break;
@@ -92,7 +107,12 @@ silex.controller.PropertyToolController.prototype.propertyToolCallback = functio
       // apply the change to all elements
       var elements = this.view.stage.getSelection();
       goog.array.forEach(elements, function (element) {
-        silex.utils.PageablePlugin.setLink(element);
+        if (silex.utils.PageablePlugin.getBodyElement() != element) {
+          silex.utils.PageablePlugin.setLink(element);
+        }
+        else{
+          console.error('could not remove link of this element (', element, ') because it is the stage element');
+        }
       }, this);
       this.view.propertyTool.redraw();
       break;
