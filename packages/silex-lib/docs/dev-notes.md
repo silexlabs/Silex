@@ -1,15 +1,22 @@
 commit / push CE & unifile
 
+pour v2 site simon
+- formulaire de contact
+- footer
+- partage
+- diaporama
+
 bugs
 ?- sometimes resize also moves
-- pas de undo dans le menu
-- opacity not kept after publish
 - pages checkboxes enabled when stage is selected, same for link, x, y, w, h, border, corners, css class
+- pages with "?"
 - delete BG?
+- confirm delete?
 - il y a un truc etonnant dans l'interface dans les valeurs de positions j'ai des 370.000154187888
 - publication dans rep avec des "." ??
 - cf github issues
 - getBoundingBox devrait utiliser goog et prendre en compte les css
+- publish: dowload static.silex.me/* to local
 
 tests to do
 - tests/App.js qui lance les tests sans reouvrir de fenetre ou relacer sélénium, et passe a chaque test la variable webdrlver et driver
