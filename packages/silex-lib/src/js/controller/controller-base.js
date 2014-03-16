@@ -165,10 +165,16 @@ silex.controller.ControllerBase.prototype.removeElement = function(element) {
   // check this is allowed, i.e. an element inside the stage container
   if (silex.utils.PageablePlugin.getBodyElement() != element
     && goog.dom.contains(silex.utils.PageablePlugin.getBodyElement(), element)){
-    // remove the element
-    this.model.element.removeElement(element);
-    // update view
-    this.view.propertyTool.redraw();
+    // confirm and delete
+    silex.utils.Notification.confirm('I am about to delete the selected element(s)", are you sure?',
+      goog.bind(function(accept) {
+        if (accept) {
+          // remove the element
+          this.model.element.removeElement(element);
+          // update view
+          this.view.propertyTool.redraw();
+        }
+      }, this));
   }
   else{
     console.error('could not delete', element, 'because it is not in the stage element');
