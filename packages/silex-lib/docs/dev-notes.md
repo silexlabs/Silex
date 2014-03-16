@@ -2,6 +2,7 @@ commit / push CE & unifile
 
 bugs
 ?- sometimes resize also moves
+- pas de undo dans le menu
 - opacity not kept after publish
 - pages checkboxes enabled when stage is selected, same for link, x, y, w, h, border, corners, css class
 - delete BG?
@@ -9,7 +10,6 @@ bugs
 - publication dans rep avec des "." ??
 - cf github issues
 - getBoundingBox devrait utiliser goog et prendre en compte les css
-- pas de undo dans le menu
 
 tests to do
 - tests/App.js qui lance les tests sans reouvrir de fenetre ou relacer sélénium, et passe a chaque test la variable webdrlver et driver
