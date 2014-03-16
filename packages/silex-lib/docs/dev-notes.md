@@ -8,7 +8,6 @@ pour v2 site simon
 
 bugs
 ?- sometimes resize also moves
-- pages checkboxes enabled when stage is selected, same for link, x, y, w, h, border, corners, css class
 - pages with "?"
 - delete BG?
 - confirm delete?

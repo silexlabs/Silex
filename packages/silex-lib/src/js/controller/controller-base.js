@@ -98,13 +98,18 @@ silex.controller.ControllerBase.prototype.copySelection = function() {
     silex.controller.ControllerBase.clipboard = [];
     // add each selected element to the clipboard
     goog.array.forEach(elements, function(element) {
-      // disable editable
-      silex.utils.EditablePlugin.setEditable(element, false);
-      // duplicate the node
-      silex.controller.ControllerBase.clipboard.push(element.cloneNode(true));
-      silex.controller.ControllerBase.clipboardParent = element.parentNode;
-      // re-enable editable
-      silex.utils.EditablePlugin.setEditable(element, true);
+      if (silex.utils.PageablePlugin.getBodyElement() != element) {
+        // disable editable
+        silex.utils.EditablePlugin.setEditable(element, false);
+        // duplicate the node
+        silex.controller.ControllerBase.clipboard.push(element.cloneNode(true));
+        silex.controller.ControllerBase.clipboardParent = element.parentNode;
+        // re-enable editable
+        silex.utils.EditablePlugin.setEditable(element, true);
+      }
+      else{
+        console.error('could not copy this element (', element, ') because it is the stage element');
+      }
     }, this);
     this.tracker.trackAction('controller-events', 'success', 'copy', 1);
   }
