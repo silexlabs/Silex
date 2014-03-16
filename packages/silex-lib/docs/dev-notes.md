@@ -8,14 +8,12 @@ pour v2 site simon
 
 bugs
 ?- sometimes resize also moves
-- il y a un truc etonnant dans l'interface dans les valeurs de positions j'ai des 370.000154187888
-- publication dans rep avec des "." ??
+   => sous windows?
+?- publication dans rep avec des "." ??
+   => sous windows?
+- enter when alertify is displayed => should always take it
+-
 - cf github issues
-- getBoundingBox devrait utiliser goog et prendre en compte les css
-- publish: dowload static.silex.me/* to local
-
-tests to do
-- tests/App.js qui lance les tests sans reouvrir de fenetre ou relacer sélénium, et passe a chaque test la variable webdrlver et driver
 
 docs to do
 * Styles silex
