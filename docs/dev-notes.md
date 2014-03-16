@@ -8,9 +8,6 @@ pour v2 site simon
 
 bugs
 ?- sometimes resize also moves
-- pages with "?"
-- delete BG?
-- confirm delete?
 - il y a un truc etonnant dans l'interface dans les valeurs de positions j'ai des 370.000154187888
 - publication dans rep avec des "." ??
 - cf github issues
