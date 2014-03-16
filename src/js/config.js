@@ -221,7 +221,7 @@ silex.Config.menu = {
         , mnemonic: goog.events.KeyCodes.V
         , accelerator: 'v'
       }
-      , {
+/*      , {
         label: 'Undo'
         , id: 'edit.undo'
         , className: 'menu-item-edit-undo'
@@ -237,7 +237,7 @@ silex.Config.menu = {
         , shortcut: [[goog.events.KeyCodes.Y, ctrlKeyModifyer]]
         , tooltip: ctrlKeyDisplay + 'Y'
       }
-      , {
+  */    , {
         label: 'Delete selection'
         , id: 'edit.delete.selection'
         , className: 'menu-item-edit-delete-selection'
