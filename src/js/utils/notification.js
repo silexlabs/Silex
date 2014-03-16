@@ -58,6 +58,13 @@ silex.utils.Notification.INFO_ICON = 'assets/notifications/info.png';
 
 
 /**
+ * flag to indicate wether a modal dialog is opened
+ * @type {boolean}
+ */
+silex.utils.Notification.isActive = false;
+
+
+/**
  * use native alerts vs alertify
  */
 silex.utils.Notification.useNative = function () {
@@ -110,7 +117,14 @@ silex.utils.Notification.alert = function (msg, cbk, opt_okLabel, opt_cancelLabe
     ok     : opt_okLabel || 'ok',
     cancel : opt_cancelLabel || 'cancel'
   }});
-  alertify.alert(msg, cbk);
+  // set the flag while the modal dialog is opened
+  silex.utils.Notification.isActive = true;
+  alertify.alert(msg, function () {
+    // reset the flag
+    silex.utils.Notification.isActive = false;
+    // call the callback
+    cbk.apply(this, arguments);
+  });
 }
 
 
@@ -122,7 +136,14 @@ silex.utils.Notification.prompt = function (msg, text, cbk, opt_okLabel, opt_can
     ok     : opt_okLabel || 'ok',
     cancel : opt_cancelLabel || 'cancel'
   }});
-  alertify.prompt(msg, text, cbk);
+  // set the flag while the modal dialog is opened
+  silex.utils.Notification.isActive = true;
+  alertify.prompt(msg, function () {
+    // reset the flag
+    silex.utils.Notification.isActive = false;
+    // call the callback
+    cbk.apply(this, arguments);
+  }, text);
 }
 
 
@@ -134,7 +155,14 @@ silex.utils.Notification.confirm = function (msg, cbk, opt_okLabel, opt_cancelLa
     ok     : opt_okLabel || 'ok',
     cancel : opt_cancelLabel || 'cancel'
   }});
-  alertify.confirm(msg, cbk);
+  // set the flag while the modal dialog is opened
+  silex.utils.Notification.isActive = true;
+  alertify.confirm(msg, function () {
+    // reset the flag
+    silex.utils.Notification.isActive = false;
+    // call the callback
+    cbk.apply(this, arguments);
+  });
 }
 
 /**

@@ -11,8 +11,6 @@ bugs
    => sous windows?
 ?- publication dans rep avec des "." ??
    => sous windows?
-- enter when alertify is displayed => should always take it
--
 - cf github issues
 
 docs to do

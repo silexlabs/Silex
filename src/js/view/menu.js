@@ -183,25 +183,29 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
     shortcutHandler,
     goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED,
     goog.bind(function(event) {
-      event.preventDefault();
-      this.onMenuEvent(event.identifier);
+      if (!silex.utils.Notification.isActive) {
+        event.preventDefault();
+        this.onMenuEvent(event.identifier);
+      }
     }, this)
   );
   // enter and escape shortcuts
   var keyHandler = new goog.events.KeyHandler(document);
   goog.events.listen(keyHandler, 'key', goog.bind(function(event) {
-    // Allow ENTER to be used as shortcut for silex
-    if (event.keyCode === goog.events.KeyCodes.ENTER){
-      // but not in text inputs
-      if(event.target.tagName.toUpperCase() === 'INPUT'
-        || event.target.tagName.toUpperCase() === 'TEXTAREA'
-        || event.target.tagName === shortcutHandler.textInputs_[event.target.type]) {
-        // let browser handle
-      }
-      else{
-        // silex takes an action
-        event.preventDefault();
-        this.onMenuEvent('view.open.editor');
+    if (!silex.utils.Notification.isActive) {
+      // Allow ENTER to be used as shortcut for silex
+      if (event.keyCode === goog.events.KeyCodes.ENTER){
+        // but not in text inputs
+        if(event.target.tagName.toUpperCase() === 'INPUT'
+          || event.target.tagName.toUpperCase() === 'TEXTAREA'
+          || event.target.tagName === shortcutHandler.textInputs_[event.target.type]) {
+          // let browser handle
+        }
+        else{
+          // silex takes an action
+          event.preventDefault();
+          this.onMenuEvent('view.open.editor');
+        }
       }
     }
   }, this));
