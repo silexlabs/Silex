@@ -642,11 +642,21 @@ silex.controller.ControllerBase.prototype.openFile = function(opt_cbk, opt_error
         this.model.file.setHtml(rawHtml);
         // handle retrocompatibility issues
         silex.utils.BackwardCompat.process(this.model.body.bodyElement, this.model.head.headElement);
-        // display and redraw
-        this.fileOperationSuccess(this.model.head.getTitle() + ' opened.', true)
-        // QOS, track success
-        this.tracker.trackAction('controller-events', 'success', 'file.open', 1);
-        if(opt_cbk) opt_cbk();
+        // check that it is a Silex website
+        if (goog.dom.getElementByClass('editable-style', this.model.body.bodyElement)){
+          // display and redraw
+          this.fileOperationSuccess(this.model.head.getTitle() + ' opened.', true)
+          // QOS, track success
+          this.tracker.trackAction('controller-events', 'success', 'file.open', 1);
+          if(opt_cbk) opt_cbk();
+        }
+        else {
+          // this website is not an editable Silex website?
+          var message = 'This file is not an editable Silex website.';
+          silex.utils.Notification.notifyError('Error: ' + message);
+          this.tracker.trackAction('controller-events', 'error', 'file.open_not.editable', -1);
+          if(opt_errorCbk) opt_errorCbk({message: message});
+        }
       }, this),
       goog.bind(function(error) {
         silex.utils.Notification.notifyError('Error: I did not manage to open this file. \n' + (error.message || ''));

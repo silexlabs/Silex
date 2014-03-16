@@ -11,6 +11,7 @@ bugs
    => sous windows?
 ?- publication dans rep avec des "." ??
    => sous windows?
+- anchors
 - cf github issues
 
 docs to do
