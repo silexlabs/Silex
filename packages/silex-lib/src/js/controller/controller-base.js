@@ -486,11 +486,9 @@ silex.controller.ControllerBase.prototype.getUserInputPageName = function(defaul
           // keep the full name
           var displayName = name;
           // cleanup the page name
-          name = name.replace(/\ /g, '-')
-                .replace(/\./g, '-')
-                .replace(/'/g, '-')
-                .replace(/"/g, '-')
-                .toLowerCase();
+          name = name.replace(/\W+/g, '-').toLowerCase();
+          // do not allow to start with an dash or number (see css specifications)
+          name = 'page-' + name;
           // check if a page with this name exists
           var pages = silex.utils.PageablePlugin.getPages();
           var exists = false;
