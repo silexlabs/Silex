@@ -1,13 +1,15 @@
 commit / push CE & unifile
 
-
 bugs
-- no size when you select main container
-- sometimes resize also moves
+?- sometimes resize also moves
 - opacity not kept after publish
 - pages checkboxes enabled when stage is selected, same for link, x, y, w, h, border, corners, css class
+- delete BG?
 - il y a un truc etonnant dans l'interface dans les valeurs de positions j'ai des 370.000154187888
+- publication dans rep avec des "." ??
 - cf github issues
+- getBoundingBox devrait utiliser goog et prendre en compte les css
+- pas de undo dans le menu
 
 tests to do
 - tests/App.js qui lance les tests sans reouvrir de fenetre ou relacer sélénium, et passe a chaque test la variable webdrlver et driver
