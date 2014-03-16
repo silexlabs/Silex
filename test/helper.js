@@ -102,7 +102,7 @@ exports.startSelenium = function (cbk) {
         withCapabilities(capabilities).
         build();
 
-    if (cbk) cbk(exports.driver);
+    if (cbk) cbk(exports.driver, exports.webdriver);
 }
 /**
  * stop selenium driver
