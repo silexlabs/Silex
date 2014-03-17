@@ -19,6 +19,7 @@
 
 goog.require('silex.view.ViewBase');
 goog.provide('silex.view.TextEditor');
+goog.require('silex.view.LinkDialogPlugin');
 
 goog.require('goog.dom');
 goog.require('goog.editor.Command');
@@ -27,7 +28,6 @@ goog.require('goog.editor.plugins.BasicTextFormatter');
 goog.require('goog.editor.plugins.EnterHandler');
 goog.require('goog.editor.plugins.HeaderFormatter');
 goog.require('goog.editor.plugins.LinkBubble');
-goog.require('goog.editor.plugins.LinkDialogPlugin');
 goog.require('goog.editor.plugins.ListTabHandler');
 goog.require('goog.editor.plugins.RemoveFormatting');
 goog.require('goog.editor.plugins.SpacesTabHandler');
@@ -93,7 +93,7 @@ silex.view.TextEditor.prototype.initUI = function() {
   this.textField.registerPlugin(new goog.editor.plugins.SpacesTabHandler());
   this.textField.registerPlugin(new goog.editor.plugins.EnterHandler());
   this.textField.registerPlugin(new goog.editor.plugins.HeaderFormatter());
-  this.textField.registerPlugin(new goog.editor.plugins.LinkDialogPlugin());
+  this.textField.registerPlugin(new silex.view.LinkDialogPlugin());
   this.textField.registerPlugin(new goog.editor.plugins.LinkBubble());
 
   // add fonts
