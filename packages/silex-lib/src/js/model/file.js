@@ -347,7 +347,8 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
     else {
       // only allowed domains
       if (absolute.indexOf('//static.silex.me') !== 0) {
-        preventDownload = true;
+        // now we want to have static files downloaded to the published site
+        // preventDownload = true;
       }
     }
     if (!preventDownload) {
@@ -375,7 +376,8 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
     else {
       // only allowed domains
       if (absolute.indexOf('//static.silex.me') !== 0) {
-        preventDownload = true;
+        // now we want to have static files downloaded to the published site
+        // preventDownload = true;
       }
     }
     if (!preventDownload) {
