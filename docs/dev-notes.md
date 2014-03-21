@@ -8,7 +8,6 @@ publier
 - widget parallaxe
 
 bugs
-- x = 0 => x = ''
 - https://codeclimate.com/github/silexlabs/Silex
 ?- sometimes resize also moves
    => sous windows?
