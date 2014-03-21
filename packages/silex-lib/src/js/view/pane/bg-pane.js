@@ -164,7 +164,7 @@ silex.view.pane.BgPane.prototype.buildUi = function() {
  */
 silex.view.pane.BgPane.prototype.redraw = function() {
   if (this.iAmSettingValue) return;
-  this.iAmSettingValue = true;
+  this.iAmRedrawing = true;
   // call super
   goog.base(this, 'redraw');
 
@@ -295,9 +295,7 @@ silex.view.pane.BgPane.prototype.redraw = function() {
   else {
     this.repeatComboBox.setSelectedIndex(0);
   }
-  this.isRedraw = false;
-
-  this.iAmSettingValue = false;
+  this.iAmRedrawing = false;
 };
 
 

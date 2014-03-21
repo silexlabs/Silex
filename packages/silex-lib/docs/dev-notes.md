@@ -3,14 +3,13 @@ commit / push
 - unifile
 - BackNode
 
-
-pour v2 site simon
-- formulaire de contact
-- footer
-- partage
-- diaporama
+publier
+- widget helloasso.com à publier (api key?)
+- widget parallaxe
 
 bugs
+- x = 0 => x = ''
+- https://codeclimate.com/github/silexlabs/Silex
 ?- sometimes resize also moves
    => sous windows?
 ?- publication dans rep avec des "." ??

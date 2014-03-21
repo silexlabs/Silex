@@ -169,6 +169,7 @@ silex.view.pane.PropertyPane.prototype.onPositionChanged =
  */
 silex.view.pane.PropertyPane.prototype.redraw = function() {
   if (this.iAmSettingValue) return;
+  this.iAmRedrawing = true;
   // call super
   goog.base(this, 'redraw');
 
@@ -181,4 +182,5 @@ silex.view.pane.PropertyPane.prototype.redraw = function() {
   this.leftInput.value = bb.left || '';
   this.widthInput.value = bb.width || '';
   this.heightInput.value = bb.height || '';
+  this.iAmRedrawing = false;
 };
