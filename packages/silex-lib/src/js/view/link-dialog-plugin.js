@@ -58,7 +58,7 @@ silex.view.LinkDialogPlugin.prototype.handleOk = function(e) {
   goog.base(this, 'handleOk', e, linkUrl);
   // allow internal links
   var linkUrl = e.target.urlInputHandler_.element_.value;
-  if (linkUrl && linkUrl.indexOf('#!') === 0) {
+  if (linkUrl && linkUrl.indexOf('#') === 0) {
     // this is an internal link
     this.currentLink_.getAnchor().href = linkUrl;
   }
