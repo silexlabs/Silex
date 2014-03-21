@@ -124,7 +124,7 @@ $.widget('silexlabs.editable', {
           /* */
 
 					// compute new position in the container
-					var initialOffset = $(dropped).offset();
+					// var initialOffset = $(dropped).offset();
 
 					// move to the new container
 					var oldPos = $(dropped).offset();

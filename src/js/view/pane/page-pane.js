@@ -219,6 +219,7 @@ silex.view.pane.PagePane.prototype.onLinkTextChanged = function() {
  */
 silex.view.pane.PagePane.prototype.redraw = function() {
   if (this.iAmSettingValue) return;
+  this.iAmRedrawing = true;
   // call super
   goog.base(this, 'redraw');
 
@@ -277,7 +278,7 @@ silex.view.pane.PagePane.prototype.redraw = function() {
   else {
     goog.style.setStyle(linkInputElement, 'display', 'none');
   }
-  this.isRedraw = false;
+  this.iAmRedrawing = false;
 };
 
 

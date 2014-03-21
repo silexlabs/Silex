@@ -70,6 +70,7 @@ silex.view.pane.GeneralStylePane.prototype.buildUi = function() {
  */
 silex.view.pane.GeneralStylePane.prototype.redraw = function() {
   if (this.iAmSettingValue) return;
+  this.iAmRedrawing = true;
   // call super
   goog.base(this, 'redraw');
 
@@ -88,6 +89,7 @@ silex.view.pane.GeneralStylePane.prototype.redraw = function() {
   else {
     this.opacityInput.value = Math.round(parseFloat(opacity)*100);
   }
+  this.iAmRedrawing = false;
 };
 
 

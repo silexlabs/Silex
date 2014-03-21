@@ -93,12 +93,6 @@ silex.view.pane.BorderPane.prototype.hsvPalette;
 
 
 /**
- * avoid loops on redraw
- */
-silex.view.pane.BorderPane.prototype.isRedraw;
-
-
-/**
  * build the UI
  */
 silex.view.pane.BorderPane.prototype.buildUi = function() {
@@ -196,6 +190,7 @@ silex.view.pane.BorderPane.prototype.buildUi = function() {
  */
 silex.view.pane.BorderPane.prototype.redraw = function() {
   if (this.iAmSettingValue) return;
+  this.iAmRedrawing = true;
   // call super
   goog.base(this, 'redraw');
 
@@ -318,7 +313,7 @@ silex.view.pane.BorderPane.prototype.redraw = function() {
   else {
     this.resetBorderRadius();
   }
-  this.isRedraw = false;
+  this.iAmRedrawing = false;
 };
 
 /**

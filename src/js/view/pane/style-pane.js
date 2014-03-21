@@ -77,6 +77,7 @@ silex.view.pane.StylePane.prototype.buildUi = function() {
  */
 silex.view.pane.StylePane.prototype.redraw = function() {
   if (this.iAmSettingValue) return;
+  this.iAmRedrawing = true;
   // call super
   goog.base(this, 'redraw');
 
@@ -123,6 +124,7 @@ silex.view.pane.StylePane.prototype.redraw = function() {
     }
     this.iAmSettingValue = false;
   }
+  this.iAmRedrawing = false;
 };
 
 

@@ -46,8 +46,19 @@ silex.view.pane.PaneBase.prototype.baseUrl;
 
 /**
  * {bool} flag to prevent redraw while changing a value myself
+ *        this is true when the user has used the toolbox to change a value,
+ *        while the call to notify the controller is processed
  */
 silex.view.pane.PaneBase.prototype.iAmSettingValue;
+
+
+/**
+ * {bool} flag to prevent notifying the controller while changing a value myself
+ *        this is true during redraw
+ *        it is useful because setting a value of an input element
+ *        automatically triggers a change event
+ */
+silex.view.pane.PaneBase.prototype.iAmRedrawing;
 
 
 /**
@@ -91,7 +102,7 @@ silex.view.pane.PaneBase.prototype.editText = function() {
  * @param   styleName   not css style but camel case
  */
 silex.view.pane.PaneBase.prototype.styleChanged = function(styleName, opt_styleValue, opt_elements) {
-  if (this.iAmSettingValue) return;
+  if (this.iAmRedrawing) return;
   // notify the controller
   this.iAmSettingValue = true;
   try{
@@ -109,7 +120,12 @@ silex.view.pane.PaneBase.prototype.styleChanged = function(styleName, opt_styleV
  * refresh the displayed data
  */
 silex.view.pane.PaneBase.prototype.redraw = function() {
-
+/*
+  // to be placed in all redraw methods to avoid loops
+  if (this.iAmSettingValue) return;
+  this.iAmRedrawing = true;
+  this.iAmRedrawing = false;
+*/
 };
 
 
