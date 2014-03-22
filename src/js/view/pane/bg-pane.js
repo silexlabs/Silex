@@ -102,6 +102,9 @@ silex.view.pane.BgPane.prototype.buildUi = function() {
   this.repeatComboBox = goog.ui.decorate(
       goog.dom.getElementByClass('bg-repeat-combo-box')
       );
+  this.sizeComboBox = goog.ui.decorate(
+      goog.dom.getElementByClass('bg-size-combo-box')
+      );
   // User has selected a color
   goog.events.listen(this.hsvPalette,
                      goog.ui.Component.EventType.ACTION,
@@ -156,6 +159,11 @@ silex.view.pane.BgPane.prototype.buildUi = function() {
       function(event) {
         this.styleChanged('backgroundRepeat', event.target.getSelectedItem().getId());
       }, false, this);
+  goog.events.listen(this.sizeComboBox,
+      goog.ui.Component.EventType.CHANGE,
+      function(event) {
+        this.styleChanged('backgroundSize', event.target.getSelectedItem().getId());
+      }, false, this);
 };
 
 
@@ -206,6 +214,7 @@ silex.view.pane.BgPane.prototype.redraw = function() {
     this.vPositionComboBox.setEnabled(true);
     this.hPositionComboBox.setEnabled(true);
     this.repeatComboBox.setEnabled(true);
+    this.sizeComboBox.setEnabled(true);
   }
   else {
     this.bgClearBgImage.setEnabled(false);
@@ -213,6 +222,7 @@ silex.view.pane.BgPane.prototype.redraw = function() {
     this.vPositionComboBox.setEnabled(false);
     this.hPositionComboBox.setEnabled(false);
     this.repeatComboBox.setEnabled(false);
+    this.sizeComboBox.setEnabled(false);
   }
   // bg image attachment
   var bgImageAttachment = this.getCommonProperty(elements, function (element) {
@@ -239,9 +249,23 @@ silex.view.pane.BgPane.prototype.redraw = function() {
     return element.style.backgroundPosition;
   });
   if (bgImagePosition) {
+    // convert 50% in cennter
     var posArr = bgImagePosition.split(' ');
-    var vPosition = posArr[0];
-    var hPosition = posArr[1];
+    var hPosition = posArr[0];
+    var vPosition = posArr[1];
+
+    // convert 0% by left, 50% by center, 100% by right
+    hPosition = hPosition
+    .replace('100%', 'right')
+    .replace('50%', 'center')
+    .replace('0%', 'left');
+
+    // convert 0% by top, 50% by center, 100% by bottom
+    vPosition = vPosition
+    .replace('100%', 'bottom')
+    .replace('50%', 'center')
+    .replace('0%', 'top');
+
     switch (vPosition) {
       case 'top':
         this.vPositionComboBox.setSelectedIndex(0);
@@ -269,7 +293,7 @@ silex.view.pane.BgPane.prototype.redraw = function() {
     this.vPositionComboBox.setSelectedIndex(0);
     this.hPositionComboBox.setSelectedIndex(0);
   }
-  // bg image position
+  // bg image repeat
   var bgImageRepeat = this.getCommonProperty(elements, function (element) {
     return element.style.backgroundRepeat;
   });
@@ -294,6 +318,26 @@ silex.view.pane.BgPane.prototype.redraw = function() {
   }
   else {
     this.repeatComboBox.setSelectedIndex(0);
+  }
+  // bg image size
+  var bgImageSize = this.getCommonProperty(elements, function (element) {
+    return element.style.backgroundSize;
+  });
+  if (bgImageSize) {
+    switch (bgImageSize) {
+      case 'auto':
+        this.sizeComboBox.setSelectedIndex(0);
+        break;
+      case 'contain':
+        this.sizeComboBox.setSelectedIndex(1);
+        break;
+      case 'cover':
+        this.sizeComboBox.setSelectedIndex(2);
+        break;
+    }
+  }
+  else {
+    this.sizeComboBox.setSelectedIndex(0);
   }
   this.iAmRedrawing = false;
 };
