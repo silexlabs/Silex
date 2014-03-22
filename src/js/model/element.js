@@ -172,7 +172,8 @@ silex.model.Element.prototype.setStyle = function(element, styleName, opt_styleV
  * @param  {string}  opt_propertyValue     the value for this propertyName
  * @example element.setProperty(imgElement, 'style', 'top: 5px; left: 30px;')
  */
-silex.model.Element.prototype.setProperty = function(element, propertyName, opt_propertyValue) {
+silex.model.Element.prototype.setProperty = function(element, propertyName, opt_propertyValue, opt_applyToContent) {
+  if (opt_applyToContent) element = this.getContentNode(element);
   if (goog.isDef(opt_propertyValue)){
     element.setAttribute(propertyName, opt_propertyValue);
   }

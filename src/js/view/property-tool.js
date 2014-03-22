@@ -113,9 +113,9 @@ silex.view.PropertyTool.prototype.stylePane;
  */
 silex.view.PropertyTool.prototype.buildPanes = function() {
   // create a binded callback for allpanes
-  var onStatusCbk = goog.bind(function (type, opt_styleName, opt_styleValue, opt_elements)
+  var onStatusCbk = goog.bind(function (type, opt_styleName, opt_styleValue, opt_elements, opt_applyToContent)
     {
-      this.onStatus(type, opt_styleName, opt_styleValue, opt_elements);
+      this.onStatus.apply(this, arguments);
     }, this
   );
 
