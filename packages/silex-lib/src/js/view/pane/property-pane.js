@@ -75,21 +75,17 @@ silex.view.pane.PropertyPane.prototype.heightInput;
 
 
 /**
- * UI for position and size
- *
-silex.view.pane.PropertyPane.prototype.rightInput;
+ * UI for alt and title
+ * only used for images
+ */
+silex.view.pane.PropertyPane.prototype.altInput;
 
 
 /**
- * UI for position and size
- *
-silex.view.pane.PropertyPane.prototype.bottomInput;
+ * UI for alt and title
+ */
+silex.view.pane.PropertyPane.prototype.titleInput;
 
-
-/**
- * UI for position and size
- *
-silex.view.pane.PropertyPane.prototype.zIndexInput;
 
 
 /**
@@ -130,6 +126,19 @@ silex.view.pane.PropertyPane.prototype.buildUi = function() {
       this.onPositionChanged,
       false,
       this);
+
+  this.altInput = goog.dom.getElementByClass('alt-input');
+  goog.events.listen(this.altInput,
+      goog.events.EventType.INPUT,
+      this.onAltChanged,
+      false,
+      this);
+  this.titleInput = goog.dom.getElementByClass('title-input');
+  goog.events.listen(this.titleInput,
+      goog.events.EventType.INPUT,
+      this.onTitleChanged,
+      false,
+      this);
 };
 
 
@@ -165,6 +174,44 @@ silex.view.pane.PropertyPane.prototype.onPositionChanged =
 
 
 /**
+ * alt changed
+ * callback for inputs
+ */
+silex.view.pane.PropertyPane.prototype.onAltChanged =
+    function(e) {
+  // get the selected element
+  var input = e.target;
+
+  // apply the change to all elements
+  if (input.value != ''){
+    this.propertyChanged('alt', input.value, undefined, true);
+  }
+  else{
+    this.propertyChanged('alt', undefined, undefined, true);
+  }
+};
+
+
+/**
+ * title changed
+ * callback for inputs
+ */
+silex.view.pane.PropertyPane.prototype.onTitleChanged =
+    function(e) {
+  // get the selected element
+  var input = e.target;
+
+  // apply the change to all elements
+  if (input.value != ''){
+    this.propertyChanged('title', input.value);
+  }
+  else{
+    this.propertyChanged('title');
+  }
+};
+
+
+/**
  * redraw the properties
  */
 silex.view.pane.PropertyPane.prototype.redraw = function() {
@@ -186,5 +233,56 @@ silex.view.pane.PropertyPane.prototype.redraw = function() {
   }
   this.widthInput.value = bb.width || '';
   this.heightInput.value = bb.height || '';
+
+  // alt, only for images
+  var elementsType = this.getCommonProperty(elements, function (element) {
+    return element.getAttribute(silex.model.Element.TYPE_ATTR);
+  });
+  if (elementsType === silex.model.Element.TYPE_IMAGE) {
+    this.altInput.removeAttribute('disabled');
+    var alt = this.getCommonProperty(elements, function (element) {
+      var content = goog.dom.getElementByClass(silex.model.Element.ELEMENT_CONTENT_CLASS_NAME, element);
+      if (content) {
+        return content.getAttribute('alt');
+      }
+      return null;
+    });
+    if (alt){
+      this.altInput.value = alt;
+    }
+    else{
+      this.altInput.value = '';
+    }
+  }
+  else{
+    this.altInput.value = '';
+    this.altInput.setAttribute('disabled', true);
+  }
+  // title
+  // not available for stage element
+  var elements = this.getSelection();
+  var elementsNoStage = [];
+  goog.array.forEach(elements, function (element) {
+    if (silex.utils.PageablePlugin.getBodyElement() != element) {
+      elementsNoStage.push(element);
+    }
+  }, this);
+  if (elementsNoStage.length > 0) {
+    this.titleInput.removeAttribute('disabled');
+    var title = this.getCommonProperty(elements, function (element) {
+      return element.getAttribute('title');
+    });
+    if (title){
+      this.titleInput.value = title;
+    }
+    else{
+      this.titleInput.value = '';
+    }
+  }
+  else{
+    this.titleInput.value = '';
+    this.titleInput.setAttribute('disabled', true);
+  }
+
   this.iAmRedrawing = false;
 };

@@ -117,6 +117,25 @@ silex.view.pane.PaneBase.prototype.styleChanged = function(styleName, opt_styleV
 
 
 /**
+ * notify the controller that a property has changed
+ * @param   propertyName   property name, e.g. 'src'
+ */
+silex.view.pane.PaneBase.prototype.propertyChanged = function(propertyName, opt_propertyValue, opt_elements, opt_applyToContent) {
+  if (this.iAmRedrawing) return;
+  // notify the controller
+  this.iAmSettingValue = true;
+  try{
+    if (this.onStatus) this.onStatus('propertyChanged', propertyName, opt_propertyValue, opt_elements, opt_applyToContent);
+  }
+  catch(err){
+    // error which will not keep this.iAmSettingValue to true
+    console.error('an error occured while editing the value', err);
+  }
+  this.iAmSettingValue = false;
+};
+
+
+/**
  * refresh the displayed data
  */
 silex.view.pane.PaneBase.prototype.redraw = function() {

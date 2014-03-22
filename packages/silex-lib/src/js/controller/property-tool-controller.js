@@ -40,7 +40,7 @@ goog.inherits(silex.controller.PropertyToolController, silex.controller.Controll
 /**
  * propertyTool event handler
  */
-silex.controller.PropertyToolController.prototype.propertyToolCallback = function(type, opt_name, opt_value, opt_elements) {
+silex.controller.PropertyToolController.prototype.propertyToolCallback = function(type, opt_name, opt_value, opt_elements, opt_applyToContent) {
   //this.tracker.trackAction('controller-events', 'request', type, 0);
   switch (type) {
     case 'editHTML':
@@ -62,7 +62,7 @@ silex.controller.PropertyToolController.prototype.propertyToolCallback = functio
       this.setClassName(opt_name);
       break;
     case 'propertyChanged':
-      this.propertyChanged(opt_name, opt_value);
+      this.propertyChanged(opt_name, opt_value, opt_elements, opt_applyToContent);
       break;
     case 'addToPage':
       // apply the change to all elements

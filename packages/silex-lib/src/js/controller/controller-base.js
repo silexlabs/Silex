@@ -326,12 +326,12 @@ silex.controller.ControllerBase.prototype.styleChanged = function(name, value, o
 /**
  * set a given property to the current selection
  */
-silex.controller.ControllerBase.prototype.propertyChanged = function(name, value) {
+silex.controller.ControllerBase.prototype.propertyChanged = function(name, value, opt_elements, opt_applyToContent) {
+  if (!opt_elements) opt_elements = this.view.stage.getSelection();
   // apply the change to all elements
-  var elements = this.view.stage.getSelection();
-  goog.array.forEach(elements, function (element) {
+  goog.array.forEach(opt_elements, function (element) {
     // update the model
-    this.model.element.setProperty(element, name, value);
+    this.model.element.setProperty(element, name, value, opt_applyToContent);
   }, this);
   // redraw the data
   this.view.propertyTool.redraw();
@@ -458,7 +458,6 @@ silex.controller.ControllerBase.prototype.removePage = function(opt_pageName) {
       if (accept) {
         // update model
         var elementsOnlyOnThisPage = silex.utils.PageablePlugin.removePage(opt_pageName);
-        console.log('removed page', elementsOnlyOnThisPage);
         // handle elements which should be deleted
         if (elementsOnlyOnThisPage.length > 0){
           silex.utils.Notification.confirm('This page has elements which are only visible here. Should I delete them or keep them and make them visible everywhere?', goog.bind(function(accept) {
