@@ -51,17 +51,12 @@ silex.Config.ABOUT_SILEX = 'http://www.silex.me/';
  * Link of the menu
  * @const constant
  */
-silex.Config.ISSUES_SILEX = 'https://github.com/silexlabs/Silex/issues?labels=bug&state=open';
+silex.Config.ISSUES_SILEX = 'https://github.com/silexlabs/Silex/issues?state=open';
 /**
  * Link of the menu
  * @const constant
  */
-silex.Config.WIDGETS_SILEX = 'https://github.com/silexlabs/Silex/issues?labels=widget&state=open';
-/**
- * Link of the menu
- * @const constant
- */
-silex.Config.TEMPLATES_SILEX = 'https://github.com/silexlabs/Silex/issues?labels=template&state=open';
+silex.Config.DOWNLOADS_SILEX = 'https://github.com/silexlabs/Silex/issues?labels=widget+template&state=open';
 /**
  * Link of the menu
  * @const constant
@@ -365,7 +360,7 @@ silex.Config.menu = {
     ]
     , [
       {
-        label: 'About me, Silex'
+        label: 'About Silex'
         , id: 'help.about'
         , className: 'menu-item-help-about'
       }
@@ -375,23 +370,18 @@ silex.Config.menu = {
         , className: 'menu-item-help-issues'
       }
       , {
-        label: 'Widgets for your website'
-        , id: 'help.widgets'
-        , className: 'menu-item-help-widgets'
-      }
-      , {
-        label: 'Templates for your website'
-        , id: 'help.templates'
-        , className: 'menu-item-help-templates'
+        label: 'Download widgets and templates'
+        , id: 'help.downloads'
+        , className: 'menu-item-help-downloads'
       }
       , null
       , {
-        label: 'Visit Silex Labs, our foundation'
+        label: 'Silex Labs foundation'
         , id: 'help.aboutSilexLabs'
         , className: 'menu-item-help-aboutSilexLabs'
       }
       , {
-        label: 'Receive news by email'
+        label: 'News letter subscription'
         , id: 'help.newsLetter'
         , className: 'menu-item-help-newsLetter'
       }
@@ -413,17 +403,17 @@ silex.Config.menu = {
       }
       , null
       , {
-        label: 'Give me 5 minutes of your time!'
+        label: 'Give 5 minutes of your time!'
         , id: 'help.contribute'
         , className: 'menu-item-help-contribute'
       }
       , {
-        label: 'See my DNA / source code'
+        label: 'Source code and download Silex'
         , id: 'help.forkMe'
         , className: 'menu-item-help-forkMe'
       }
       , {
-        label: 'Meet my fathers'
+        label: 'Contributors'
         , id: 'help.contributors'
         , className: 'menu-item-help-forkMe'
       }
