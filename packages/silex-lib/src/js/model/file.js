@@ -15,10 +15,9 @@
  *   which is rendered by the Stage class
  *   It has methods to manipulate the File
  *
+ *   All model classes are singletons
  */
 
-
-goog.require('silex.model.ModelBase');
 goog.provide('silex.model.File');
 goog.require('silex.Config');
 goog.require('silex.service.SilexTasks');
@@ -26,16 +25,13 @@ goog.require('silex.service.SilexTasks');
 
 /**
  * @constructor
- * @param  {element} bodyElement  HTML element which holds the body section of the opened file
- * @param  {element} headElement  HTML element which holds the head section of the opened file
+ * @param  {silex.types.View} view  view class which holds the other views
+ * @param  {silex.types.Model} model  model class which holds the other models
  */
-silex.model.File = function(bodyElement, headElement) {
-  // call super
-  goog.base(this, bodyElement, headElement);
+silex.model.File = function(model, view) {
+    this.model = model;
+    this.view = view;
 };
-
-// inherit from silex.model.ModelBase
-goog.inherits(silex.model.File, silex.model.ModelBase);
 
 
 /**
@@ -48,61 +44,63 @@ silex.model.File.CREATION_TEMPLATE = 'creation-template.html';
  * current file url
  * if the current file is a new file, it has no url
  */
-silex.model.File.prototype.url;
+silex.model.File.prototype.url = null;
 
 
 /**
  * build the html content
  * Parse the raw html and fill the bodyElement and headElement
  */
-silex.model.File.prototype.setHtml = function(rawHtml) {
-  var bodyHtml, headHtml;
-
-  // use lower case to find head and body tags
-  var lowerCaseHtml = rawHtml.toLowerCase();
-  // split head and body tags
-  var headOpenIdx = lowerCaseHtml.indexOf('<head>');
-  if (headOpenIdx === -1) headOpenIdx = lowerCaseHtml.indexOf('<head ');
-  var headCloseIdx = lowerCaseHtml.indexOf('</head>');
-  var bodyOpenIdx = lowerCaseHtml.indexOf('<body>');
-  if (bodyOpenIdx === -1) bodyOpenIdx = lowerCaseHtml.indexOf('<body ');
-  var bodyCloseIdx = lowerCaseHtml.indexOf('</body>');
-
-  if (headOpenIdx > -1 && headCloseIdx > -1) {
-    // look for the first ">" after "<head"
-    var closingTagIdx = lowerCaseHtml.indexOf('>', headOpenIdx);
-    // extract the head section
-    headHtml = rawHtml.substring(closingTagIdx + 1, headCloseIdx);
-  }
-  if (bodyOpenIdx > -1 && bodyCloseIdx > -1) {
-    // look for the first ">" after "<body"
-    var closingTagIdx = lowerCaseHtml.indexOf('>', bodyOpenIdx);
-    // extract the body section
-    //bodyHtml = rawHtml.substring(closingTagIdx + 1, bodyCloseIdx);
-  }
-  // extract the hole body with body tags
-  var bodyHtml = rawHtml.substring(bodyOpenIdx, bodyCloseIdx + 7);
-  // deal with absolute urls
-  if (this.getUrl()){
-    var baseUrl = silex.utils.Url.getBaseUrl(this.getUrl());
-    bodyHtml = silex.utils.Url.relative2absolute(bodyHtml, baseUrl);
-  }
-  // update model
+silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk) {
+  var iframeElement = goog.dom.getElementByClass(silex.view.Stage.STAGE_CLASS_NAME);
   // cleanup
-  silex.utils.EditablePlugin.setEditable(this.bodyElement, false);
+  this.model.body.setEditable(iframeElement.contentDocument.body, false);
+  this.view.stage.removeEvents(iframeElement.contentDocument.body);
+  // when the iframe content has changed
+  goog.events.listenOnce(iframeElement, 'load', function(e) {
+    // let the time for the scripts to execute (e.g. pageable)
+    setTimeout(goog.bind(function() {
+      // load scripts for edition in the iframe
+      var scriptTag = document.createElement('script');
+      scriptTag.type = 'text/javascript';
+      scriptTag.src = 'libs/jquery/editable.js';
+      this.model.head.addTempTag(scriptTag, goog.bind(function () {
+        // load css for editable plugin
+        var cssTag = document.createElement('link');
+        cssTag.rel = 'stylesheet';
+        cssTag.href = 'libs/jquery/editable.css';
+        this.model.head.addTempTag(cssTag);
+        cssTag = document.createElement('link');
+        cssTag.rel = 'stylesheet';
+        cssTag.href = 'libs/jquery/jquery.ui.core.css';
+        this.model.head.addTempTag(cssTag);
+        cssTag = document.createElement('link');
+        cssTag.rel = 'stylesheet';
+        cssTag.href = 'libs/jquery/jquery-ui.css';
+        this.model.head.addTempTag(cssTag);
+        // select the body
+        this.model.body.setSelection([iframeElement.contentDocument.body]);
+        // make editable again
+        this.model.body.setEditable(iframeElement.contentDocument.body, true, true);
+        // restore event listeners
+        this.view.stage.initEvents(iframeElement.contentDocument.body);
+        // refresh the view
+        var pages = this.model.page.getPages();
+        var page = this.model.page.getCurrentPageName();
+        this.view.pageTool.redraw([], iframeElement.contentDocument, pages, page);
+        this.view.propertyTool.redraw([], iframeElement.contentDocument, pages, page);
+        this.view.stage.redraw([], iframeElement.contentDocument, pages, page);
+        // notify the caller
+        if (opt_cbk) opt_cbk();
+        console.log('file loading done');
+      }, this), goog.bind(function () {
+        // error loading editable script
+        console.error('error loading editable script');
+      }, this));
+    }, this), 100);
+  }, false, this);
   // set html
-  this.bodyElement.innerHTML = bodyHtml;
-  // body style
-  var styleStart = bodyHtml.indexOf('"');
-  var styleEnd = bodyHtml.indexOf('"', styleStart + 1);
-  var bodyStyle = bodyHtml.substring(styleStart + 1, styleEnd);
-  // set body style
-  this.bodyElement.setAttribute('style', bodyStyle);
-  // make editable again
-  silex.utils.EditablePlugin.setEditable(this.bodyElement, true, true);
-  // set head content
-  this.headElement.innerHTML = headHtml;
-
+  goog.dom.iframe.writeContent(iframeElement, rawHtml);
 };
 
 
@@ -111,33 +109,25 @@ silex.model.File.prototype.setHtml = function(rawHtml) {
  * use the bodyTag and headTag objects
  */
 silex.model.File.prototype.getHtml = function() {
+  var iframeElement = goog.dom.getElementByClass(silex.view.Stage.STAGE_CLASS_NAME);
   // cleanup
-  silex.utils.EditablePlugin.setEditable(this.bodyElement, false);
+  this.model.body.setEditable(iframeElement.contentDocument.body, false);
   // clone
-  var bodyElement = this.bodyElement.cloneNode(true);
+  var cleanFile = iframeElement.contentDocument.cloneNode(true);
   // make editable again
-  silex.utils.EditablePlugin.setEditable(this.bodyElement, true, true);
+  this.model.body.setEditable(iframeElement.contentDocument.body, true, true);
+  // load css for editable plugin
+  var cssTag = document.createElement('link');
+  cssTag.rel = 'stylesheet';
+  cssTag.href = 'libs/jquery/editable.css';
+  this.model.head.addTempTag(cssTag);
   // cleanup
-  silex.utils.Style.removeInternalClasses(bodyElement, false, true);
+  silex.utils.Style.removeInternalClasses(cleanFile, false, true);
   // get html
-  var bodyStr = bodyElement.innerHTML;
-  // handle the body style
-  var styleStr = bodyElement.getAttribute('style') || '';
+  var cleanFileStr = cleanFile.innerHTML;
+  // TODO: handle silex-runtime css class
 
-  // retruns the html page
-  var html = '';
-  html += '<!DOCTYPE html><html>';
-  html += '<head>' + this.headElement.innerHTML + '</head>';
-  html += '<body style="' + styleStr + '" class="silex-runtime">' + bodyStr + '</body>';
-  html += '</html>';
-
-  // return relative urls when possible
-  if (this.getUrl()){
-    var baseUrl = silex.utils.Url.getBaseUrl(this.getUrl());
-    html = silex.utils.Url.absolute2Relative(html, baseUrl);
-  }
-
-  return html;
+  return cleanFile.innerHTML;
 };
 
 
@@ -262,20 +252,30 @@ silex.model.File.prototype.publish = function(url, cbk, opt_errCbk) {
  * @return
  */
 silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
-  // handle background url of the body style
-  var styleStr = this.bodyElement.getAttribute('style') || '';
-  // cleanup
-  silex.utils.EditablePlugin.setEditable(this.bodyElement, false);
+  // **
+  // get all files and put them into assets/ or scripts/
+  if (!this.getUrl()) {
+    if (opt_errCbk) {
+      opt_errCbk({
+        message: 'The file must be saved before I can clean it up for you.'
+      });
+    }
+    return;
+  }
   // get html
-  var bodyStr = '<body style="' + styleStr + '">' + this.bodyElement.innerHTML + '</body>';
-  // make editable again
-  silex.utils.EditablePlugin.setEditable(this.bodyElement, true);
+  var cleanFileStr = this.getHtml();
+  var iframe = goog.dom.createElement('iframe');
+  goog.dom.iframe.writeContent(headElement, cleanFileStr);
+  var headElement = iframe.dcontentDocument.head;
+  var bodyElement = iframe.dcontentDocument.body;
 
-  // cleanup head
-  var headStr = this.headElement.innerHTML;
-  var headElement = goog.dom.createElement('div');
-  headElement.innerHTML = headStr;
-  $('meta[name="publicationPath"]', headElement).remove();
+  // **
+  var metaNode = goog.dom.findNode(headElement, function (node) {
+    return node && node.tagName === 'meta' && node.getAttribute('name') === 'publicationPath';
+  });
+  if (metaNode){
+    goog.dom.removeNode(metaNode);
+  }
 
   // js script
   var jsString = '';
@@ -296,24 +296,13 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
     cssStr += cssTag.innerHTML;
     goog.dom.removeNode(cssTag);
   }
-  headStr = headElement.innerHTML;
 
+  // **
   // list of css and files (assets, scripts...)
   var cssArray = [];
   var files = [];
 
-  // **
-  // get all files and put them into assets/ or scripts/
-  if (!this.getUrl()) {
-    if (opt_errCbk) {
-      opt_errCbk({
-        message: 'The file must be saved before I can clean it up for you.'
-      });
-    }
-    return;
-  }
   // images to download and put to assets/
-  var baseUrl = silex.utils.Url.getBaseUrl(this.getUrl());  // image source
   bodyStr = bodyStr.replace(/<img[^"]*src="?([^" ]*)"/g, function(match, group1, group2) {
     var absolute = silex.utils.Url.getAbsolutePath(group1, baseUrl);
     var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
@@ -526,7 +515,7 @@ silex.model.File.prototype.filterBgImage = function(baseUrl, files, match, group
  * Determine what to do with a node in function of the URLs it carries
  *
  * @param     {Element} node    the node
- * @return    {array} an array of info about the URLs of the element,
+ * @return    {Array} an array of info about the URLs of the element,
  *     which will be served locally.
  *     This objects in this array have these parameters
  *     - url: the absolute url

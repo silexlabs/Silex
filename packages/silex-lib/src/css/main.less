@@ -13,6 +13,7 @@ body {
   z-index: 120;
 }
 body.loading-pending {
+  height: 100%; /* without this, the body is short in height and the loading anim is aligned on top */
   .loader {
     display: inherit;
     visibility: inherit;
@@ -43,11 +44,6 @@ body.loading-pending {
 }
 .goog-toolbar-menu-button-dropdown, .tr-icon {
   background-image: url(../assets/goog-ui/editortoolbar.png);
-}
-.background {
-  position: relative !important;
-  left: inherit !important;
-  top: 0 !important;
 }
 .xsmall-font {
   font-size: 13px;

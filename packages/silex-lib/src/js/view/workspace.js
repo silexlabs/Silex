@@ -19,7 +19,6 @@
  */
 
 
-goog.require('silex.view.ViewBase');
 goog.provide('silex.view.Workspace');
 
 goog.require('goog.dom.ViewportSizeMonitor');
@@ -28,40 +27,15 @@ goog.require('goog.dom.ViewportSizeMonitor');
 
 /**
  * @constructor
- * @param  {Element}  element    DOM element containing the UIs
- * @param  {Element}  menu  reference to the view
- * @param  {Element}  stage  reference to the view
- * @param  {Element}  pageTool  reference to the view
- * @param  {Element}  propertyTool  reference to the view
- * @param  {Element}  htmlEditor  reference to the view
- * @param  {Element}  cssEditor  reference to the view
- * @param  {Element}  textEditor  reference to the view
- * @param  {Element}  fileExplorer  reference to the view
- * @param  {Element}  settingsDialog  reference to the view
+ * @param {Element} element   container to render the UI
+ * @param  {silex.types.View} view  view class which holds the other views
+ * @param  {silex.types.Controller} controller  controller class which holds the other controllers
  */
-silex.view.Workspace = function(element,
-                                menuElement,
-                                stageElement,
-                                pageToolElement,
-                                propertyToolElement,
-                                htmlEditorElement,
-                                cssEditorElement,
-                                jsEditorElement,
-                                textEditorElement,
-                                fileExplorerElement,
-                                settingsDialogElement) {
+silex.view.Workspace = function(element, view, controller) {
   // store references
   this.element = element;
-  this.menuElement = menuElement;
-  this.stageElement = stageElement;
-  this.pageToolElement = pageToolElement;
-  this.propertyToolElement = propertyToolElement;
-  this.htmlEditorElement = htmlEditorElement;
-  this.cssEditorElement = cssEditorElement;
-  this.jsEditorElement = jsEditorElement;
-  this.textEditorElement = textEditorElement;
-  this.fileExplorerElement = fileExplorerElement;
-  this.settingsDialogElement = settingsDialogElement;
+  this.controller = controller;
+  this.view = view;
 
   // handle resize
   this.viewport = new goog.dom.ViewportSizeMonitor();
@@ -69,7 +43,6 @@ silex.view.Workspace = function(element,
       function(e) {
         this.invalidate();
       }, false, this);
-  this.isDirty = false;
   this.invalidate();
 };
 
@@ -77,89 +50,13 @@ silex.view.Workspace = function(element,
 /**
  * closure goog.dom.ViewportSizeMonitor object
  */
-silex.view.Workspace.prototype.viewport;
-
-
-/**
- * reference to the element used to display the silex.view.Menu class
- * @type element
- */
-silex.view.Workspace.prototype.menuElement;
-
-
-/**
- * reference to the element used to display the silex.view.Stage class
- * @type element
- */
-silex.view.Workspace.prototype.stageElement;
-
-
-/**
- * reference to the element used to display the silex.view.PageTool class
- * @type element
- */
-silex.view.Workspace.prototype.pageToolElement;
-
-
-/**
- * reference to the element used to display the silex.view.PropertyTool class
- * @type element
- */
-silex.view.Workspace.prototype.propertyToolElement;
-
-
-/**
- * reference to the element used to display the silex.view.HTMLEditor class
- * @type element
- */
-silex.view.Workspace.prototype.htmlEditorElement;
-
-
-/**
- * reference to the element used to display the silex.view.CssEditor class
- * @type element
- */
-silex.view.Workspace.prototype.cssEditorElement;
-
-
-/**
- * reference to the element used to display the silex.view.jsEditor class
- * @type element
- */
-silex.view.Workspace.prototype.jsEditorElement;
-
-
-/**
- * reference to the element used to display the silex.view.TextEditor class
- * @type element
- */
-silex.view.Workspace.prototype.textEditorElement;
-
-
-/**
- * reference to the element used to display the silex.view.FileExplorer class
- * @type element
- */
-silex.view.Workspace.prototype.fileExplorerElement;
-
-
-/**
- * reference to the element used to display the silex.view.settingsDialog class
- * @type element
- */
-silex.view.Workspace.prototype.settingsDialogElement;
-
-
-/**
- * element of the dom to which the component is rendered
- */
-silex.view.Workspace.prototype.element;
+silex.view.Workspace.prototype.viewport = null;
 
 
 /**
  * invalidation mechanism
  */
-silex.view.Workspace.prototype.isDirty;
+silex.view.Workspace.prototype.isDirty = false;
 
 
 /**
@@ -197,65 +94,65 @@ silex.view.Workspace.prototype.doRedraw = function() {
   this.isDirty = false;
 
   var viewportSize = this.viewport.getSize();
-  var pageToolSize = goog.style.getSize(this.pageToolElement);
-  var propertyToolSize = goog.style.getSize(this.propertyToolElement);
-  var menuSize = goog.style.getSize(this.menuElement);
+  var pageToolSize = goog.style.getSize(this.view.pageTool.element);
+  var propertyToolSize = goog.style.getSize(this.view.propertyTool.element);
+  var menuSize = goog.style.getSize(this.view.menu.element);
 
   // stage
   var stageWidth = viewportSize.width -
-      pageToolSize.width - propertyToolSize.width;
-  goog.style.setWidth(this.stageElement, stageWidth);
+      pageToolSize.width - propertyToolSize.width - 25; // why 25?! It works but hum... //
+  goog.style.setWidth(this.view.stage.element, stageWidth);
 
   // menu offset
   var toolsHeight = viewportSize.height - menuSize.height;
-  goog.style.setHeight(this.pageToolElement, toolsHeight);
-  goog.style.setHeight(this.propertyToolElement, toolsHeight);
-  goog.style.setHeight(this.stageElement, toolsHeight);
+  goog.style.setHeight(this.view.pageTool.element, toolsHeight);
+  goog.style.setHeight(this.view.propertyTool.element, toolsHeight);
+  goog.style.setHeight(this.view.stage.element, toolsHeight);
 
-  //goog.style.setPosition(this.pageToolElement, null, menuSize.height);
+  //goog.style.setPosition(this.view.pageTool.element, null, menuSize.height);
 
   // htmlEditor
-  if (this.htmlEditorElement) {
-    var htmlEditorSize = goog.style.getSize(this.htmlEditorElement);
+  if (this.view.htmlEditor.element) {
+    var htmlEditorSize = goog.style.getSize(this.view.htmlEditor.element);
     var posX = (viewportSize.width - htmlEditorSize.width) / 2;
     var posY = (viewportSize.height - htmlEditorSize.height) / 2;
-    goog.style.setPosition(this.htmlEditorElement, posX, posY);
+    goog.style.setPosition(this.view.htmlEditor.element, posX, posY);
   }
   // cssEditor
-  if (this.cssEditorElement) {
-    var cssEditorSize = goog.style.getSize(this.cssEditorElement);
+  if (this.view.cssEditor.element) {
+    var cssEditorSize = goog.style.getSize(this.view.cssEditor.element);
     var posX = (viewportSize.width - cssEditorSize.width) / 2;
     var posY = (viewportSize.height - cssEditorSize.height) / 2;
-    goog.style.setPosition(this.cssEditorElement, posX, posY);
+    goog.style.setPosition(this.view.cssEditor.element, posX, posY);
   }
   // jsEditor
-  if (this.jsEditorElement) {
-    var jsEditorSize = goog.style.getSize(this.jsEditorElement);
+  if (this.view.jsEditor.element) {
+    var jsEditorSize = goog.style.getSize(this.view.jsEditor.element);
     var posX = (viewportSize.width - jsEditorSize.width) / 2;
     var posY = (viewportSize.height - jsEditorSize.height) / 2;
-    goog.style.setPosition(this.jsEditorElement, posX, posY);
+    goog.style.setPosition(this.view.jsEditor.element, posX, posY);
   }
   // texteditor
-  if (this.textEditorElement) {
-    var textEditorSize = goog.style.getSize(this.textEditorElement);
+  if (this.view.textEditor.element) {
+    var textEditorSize = goog.style.getSize(this.view.textEditor.element);
     var posX = (viewportSize.width - textEditorSize.width) / 2;
     var posY = (viewportSize.height - textEditorSize.height) / 2;
-    goog.style.setPosition(this.textEditorElement, posX, posY);
+    goog.style.setPosition(this.view.textEditor.element, posX, posY);
   }
   // fileExplorer
-  if (this.fileExplorerElement) {
-    var fileExplorerSize = goog.style.getSize(this.fileExplorerElement);
+  if (this.view.fileExplorer.element) {
+    var fileExplorerSize = goog.style.getSize(this.view.fileExplorer.element);
     var posX = (viewportSize.width - fileExplorerSize.width) / 2;
     var posY = (viewportSize.height - fileExplorerSize.height) / 2;
-    goog.style.setPosition(this.fileExplorerElement, posX, posY);
+    goog.style.setPosition(this.view.fileExplorer.element, posX, posY);
   }
   // settingsDialog
-  if (this.settingsDialogElement) {
+  if (this.view.settingsDialog.element) {
     var settingsDialogSize = goog.style.getSize(
-        this.settingsDialogElement);
+        this.view.settingsDialog.element);
     var posX = (viewportSize.width - settingsDialogSize.width) / 2;
     var posY = (viewportSize.height - settingsDialogSize.height) / 2;
-    goog.style.setPosition(this.settingsDialogElement, posX, posY);
+    goog.style.setPosition(this.view.settingsDialog.element, posX, posY);
   }
   // no more loading
   if (goog.dom.classes.has(document.body, 'loading-pending')) {
