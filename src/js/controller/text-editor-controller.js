@@ -23,14 +23,13 @@ goog.require('silex.controller.ControllerBase');
  * @constructor
  * @extends silex.controller.ControllerBase
  * listen to the view events and call the main controller's methods
+ * @param  {silex.types.Controller} controller  structure which holds the controller instances
  * @param {silex.types.Model} model
- * @param {silex.types.View} view
+ * @param  {silex.types.View} view  view class which holds the other views
  */
-silex.controller.TextEditorController = function (model, view) {
+silex.controller.TextEditorController = function (controller, model, view) {
   // call super
-  silex.controller.ControllerBase.call(this, model, view);
-  // attach events to the view
-  view.textEditor.onStatus = goog.bind(this.textEditorCallback, this);
+  silex.controller.ControllerBase.call(this, controller, model, view);
 };
 
 // inherit from silex.controller.ControllerBase
@@ -40,16 +39,10 @@ goog.inherits(silex.controller.TextEditorController, silex.controller.Controller
 /**
  * textEditor event handler
  */
-silex.controller.TextEditorController.prototype.textEditorCallback = function(type, content) {
-  switch (type) {
-    case 'changed':
-      // update content
-      var element = this.view.stage.getSelection()[0];
-      this.model.element.setInnerHtml(element, content);
-      // update fonts
-      this.refreshFonts();
-      break;
-  }
+silex.controller.TextEditorController.prototype.changed = function(content){
+  // update content
+  var element = this.view.stage.getSelection()[0];
+  this.model.element.setInnerHtml(element, content);
+  // update fonts
+  this.refreshFonts();
 };
-
-

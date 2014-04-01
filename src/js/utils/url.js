@@ -169,7 +169,7 @@ silex.utils.Url.getAbsolutePath = function(url, base) {
 /**
  * check if the file name has the desired extension
  * @param   {string} filename  the file name to be checked
- * @param   {array} extArray  the allowed extensions
+ * @param   {Array<string>} extArray  the allowed extensions
  */
 silex.utils.Url.checkFileExt = function(fileName, extArray) {
   var fileName = fileName;

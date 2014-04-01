@@ -36,18 +36,19 @@ goog.require('goog.ui.TabBar');
  * let user edit style of components
  * @constructor
  * @extend silex.view.PaneBase
- * @param {element} element   container to render the UI
- * @param  {element} bodyElement  HTML element which holds the body section of the opened file
- * @param  {element} headElement  HTML element which holds the head section of the opened file
+ * @param {Element} element   container to render the UI
+ * @param  {Element} bodyElement  HTML element which holds the body section of the opened file
+ * @param  {silex.types.View} view  view class which holds the other views
+ * @param  {silex.types.Controller} controller  structure which holds the controller instances
  */
-silex.view.pane.BgPane = function(element, bodyElement, headElement) {
+silex.view.pane.BgPane = function(element, view, controller) {
   // call super
-  goog.base(this, element, bodyElement, headElement);
+  goog.base(this, element, view, controller);
 
   this.buildUi();
 };
 
-// inherit from silex.view.ViewBase
+// inherit from silex.view.PaneBase
 goog.inherits(silex.view.pane.BgPane, silex.view.pane.PaneBase);
 
 
@@ -169,21 +170,29 @@ silex.view.pane.BgPane.prototype.buildUi = function() {
 
 /**
  * redraw the properties
+ * @param   {Array<element>} selectedElements the elements currently selected
+ * @param   {HTMLDocument} document  the document to use
+ * @param   {Array<string>} pageNames   the names of the pages which appear in the current HTML file
+ * @param   {string}  currentPageName   the name of the current page
  */
-silex.view.pane.BgPane.prototype.redraw = function() {
+silex.view.pane.BgPane.prototype.redraw = function(selectedElements, document, pageNames, currentPageName) {
   if (this.iAmSettingValue) return;
   this.iAmRedrawing = true;
   // call super
-  goog.base(this, 'redraw');
+  goog.base(this, 'redraw', selectedElements);
 
-  // get the selected elements
-  var elements = this.getSelection();
+  // remember selection
+  this.selectedElements = selectedElements;
+  this.document = document;
+  this.pageNames = pageNames;
+  this.currentPageName = currentPageName;
 
   // BG color
-  var color = this.getCommonProperty(elements, function (element) {
+  var color = this.getCommonProperty(selectedElements, function (element) {
     return element.style.backgroundColor;
   });
 
+  console.log(arguments, color);
   if (color === 'transparent' || color === '') {
     this.transparentBgCheckbox.setChecked(true);
     this.bgColorPicker.setEnabled(false);
@@ -203,7 +212,7 @@ silex.view.pane.BgPane.prototype.redraw = function() {
     this.hsvPalette.setColor(color.hex);
   }
   // BG image
-  var bgImage = this.getCommonProperty(elements, function (element) {
+  var bgImage = this.getCommonProperty(selectedElements, function (element) {
     return element.style.backgroundImage;
   });
   if (bgImage !== null &&
@@ -225,7 +234,7 @@ silex.view.pane.BgPane.prototype.redraw = function() {
     this.sizeComboBox.setEnabled(false);
   }
   // bg image attachment
-  var bgImageAttachment = this.getCommonProperty(elements, function (element) {
+  var bgImageAttachment = this.getCommonProperty(selectedElements, function (element) {
     return element.style.backgroundAttachment;
   });
   if (bgImageAttachment) {
@@ -245,7 +254,7 @@ silex.view.pane.BgPane.prototype.redraw = function() {
     this.attachmentComboBox.setSelectedIndex(0);
   }
   // bg image position
-  var bgImagePosition = this.getCommonProperty(elements, function (element) {
+  var bgImagePosition = this.getCommonProperty(selectedElements, function (element) {
     return element.style.backgroundPosition;
   });
   if (bgImagePosition) {
@@ -294,7 +303,7 @@ silex.view.pane.BgPane.prototype.redraw = function() {
     this.hPositionComboBox.setSelectedIndex(0);
   }
   // bg image repeat
-  var bgImageRepeat = this.getCommonProperty(elements, function (element) {
+  var bgImageRepeat = this.getCommonProperty(selectedElements, function (element) {
     return element.style.backgroundRepeat;
   });
   if (bgImageRepeat) {
@@ -320,7 +329,7 @@ silex.view.pane.BgPane.prototype.redraw = function() {
     this.repeatComboBox.setSelectedIndex(0);
   }
   // bg image size
-  var bgImageSize = this.getCommonProperty(elements, function (element) {
+  var bgImageSize = this.getCommonProperty(selectedElements, function (element) {
     return element.style.backgroundSize;
   });
   if (bgImageSize) {
@@ -361,7 +370,7 @@ silex.view.pane.BgPane.prototype.onColorChanged = function() {
  * open or close the palete
  */
 silex.view.pane.BgPane.prototype.onBgColorButton = function() {
-  var element = this.getSelection()[0];
+  var element = this.selectedElements[0];
   // show the palette
   if (this.getColorPaletteVisibility() === false) {
     this.hsvPalette.setColorRgbaHex(
@@ -389,7 +398,8 @@ silex.view.pane.BgPane.prototype.onTransparentChanged = function() {
   }
   // notify the toolbox
   this.styleChanged('backgroundColor', color);
-  this.redraw();
+  // redraw myself (styleChange prevent myself to redraw)
+  //this.redraw(this.selectedElements, this.document, this.pageNames, this.currentPageName);
 };
 
 

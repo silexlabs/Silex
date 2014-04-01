@@ -69,14 +69,14 @@ $.widget('silexlabs.editable', {
         e.preventDefault();
     })
     // handle resizeable options
-		if (this.options.isResizable != false)
-			this.element.resizable({
-				handles : 'all'
-			});
-		//this.element.draggable({ revert: 'invalid', snap: true, scroll: true });
-		//this.element.draggable({ revert: 'invalid', grid: [ 20, 20 ], scroll: true });
-		if (this.options.isDraggable != false)
-			this.element.draggable({
+    if (this.options.isResizable != false)
+      this.element.resizable({
+        handles : 'all'
+      });
+    //this.element.draggable({ revert: 'invalid', snap: true, scroll: true });
+    //this.element.draggable({ revert: 'invalid', grid: [ 20, 20 ], scroll: true });
+    if (this.options.isDraggable != false)
+      this.element.draggable({
         revert: (function(droppedTo) {
           if (!droppedTo){
             // dropped out of the stage, so just move it to stage

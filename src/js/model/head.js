@@ -15,26 +15,27 @@
  *   which is rendered by the Stage class
  *   It has methods to manipulate the dom
  *
+ *   All model classes are singletons
  */
 
 
-goog.require('silex.model.ModelBase');
 goog.provide('silex.model.Head');
+
+goog.require('silex.types.Model');
 goog.require('silex.Config');
 
 
 /**
  * @constructor
- * @param  {element} bodyElement  HTML element which holds the body section of the opened file
- * @param  {element} headElement  HTML element which holds the head section of the opened file
+ * @param  {silex.types.Model} model  model class which holds the other models
+ * @param  {silex.types.View} view  view class which holds the other views
  */
-silex.model.Head = function(bodyElement, headElement) {
-  // call super
-  goog.base(this, bodyElement, headElement);
+silex.model.Head = function(model, view) {
+  this.model = model;
+  this.view = view;
+  // retrieve the element which will hold the body of the opened file
+  this.iframeElement = goog.dom.getElementByClass(silex.view.Stage.STAGE_CLASS_NAME);
 };
-
-// inherit from silex.model.ModelBase
-goog.inherits(silex.model.Head, silex.model.ModelBase);
 
 
 /**
@@ -50,6 +51,13 @@ silex.model.Head.SILEX_SCRIPT_ELEMENT_CSS_CLASS = 'silex-script';
 
 
 /**
+ * {Array<Element>} elements to be removed before save
+ * these are added by addTempTags
+ */
+silex.model.Head.prototype.tempTags = [];
+
+
+/**
  * set/get silex editable js scripts
  * @return {string} the string defining the js script
  */
@@ -57,7 +65,7 @@ silex.model.Head.prototype.getHeadScript = function() {
   // get silex scripts from the DOM
   var scriptTag = goog.dom.getElementByClass(
     silex.model.Head.SILEX_SCRIPT_ELEMENT_CSS_CLASS,
-    this.headElement);
+    this.getHeadElement());
   if (!scriptTag){
     console.warn('no silex editable styles defined');
     return '';
@@ -73,13 +81,13 @@ silex.model.Head.prototype.getHeadScript = function() {
 silex.model.Head.prototype.setHeadScript = function(jsString) {
   var scriptTag = goog.dom.getElementByClass(
     silex.model.Head.SILEX_SCRIPT_ELEMENT_CSS_CLASS,
-    this.headElement);
+    this.getHeadElement());
 
   if (!scriptTag){
     scriptTag = goog.dom.createElement('script');
     scriptTag.type = 'text/javascript';
     scriptTag.className = silex.model.Head.SILEX_SCRIPT_ELEMENT_CSS_CLASS;
-    goog.dom.appendChild(this.headElement, scriptTag);
+    goog.dom.appendChild(this.getHeadElement(), scriptTag);
   }
   scriptTag.innerHTML = jsString;
 }
@@ -93,7 +101,7 @@ silex.model.Head.prototype.getHeadStyle = function() {
   // get silex styles from the DOM
   var silexStyle = goog.dom.getElementByClass(
     silex.model.Head.SILEX_STYLE_ELEMENT_CSS_CLASS,
-    this.headElement);
+    this.getHeadElement());
   if (!silexStyle){
     console.warn('no silex editable styles defined');
     return '';
@@ -109,13 +117,13 @@ silex.model.Head.prototype.getHeadStyle = function() {
 silex.model.Head.prototype.setHeadStyle = function(cssString) {
   var silexStyle = goog.dom.getElementByClass(
     silex.model.Head.SILEX_STYLE_ELEMENT_CSS_CLASS,
-    this.headElement);
+    this.getHeadElement());
 
   if (!silexStyle){
     silexStyle = goog.dom.createElement('style');
     silexStyle.type = 'text/css';
     silexStyle.className = silex.model.Head.SILEX_STYLE_ELEMENT_CSS_CLASS;
-    goog.dom.appendChild(this.headElement, silexStyle);
+    goog.dom.appendChild(this.getHeadElement(), silexStyle);
   }
   silexStyle.innerHTML = cssString;
 }
@@ -155,7 +163,7 @@ silex.model.Head.prototype.refreshFontList = function(neededFonts) {
       link.parentNode.removeChild(link);
     }
   });
-  var head = this.headElement;
+  var head = this.getHeadElement();
   //detach all previously loaded font before, to avoid duplicate
   var links = goog.dom.getElementsByTagNameAndClass('link', null, head);
   goog.array.forEach(links, function(link) {
@@ -228,25 +236,27 @@ silex.model.Head.prototype.setPublicationPath = function(path) {
   var that = this;
   var found = false;
   // update the DOM element
-  $('meta[name="publicationPath"]', this.headElement).each(
-      function() {
-        if (path && path !== '') {
-          // update path
-          this.setAttribute('content', path);
-        }
-        else {
-          // remove the path
-          $(this).remove();
-        }
-        found = true;
-      });
-  if (!found && path && path !== '') {
+  var metaNode = goog.dom.findNode(this.getHeadElement(), function (node) {
+    return node && node.tagName === 'meta' && node.getAttribute('name') === 'publicationPath';
+  });
+  if (!metaNode && path && path !== ''){
     // create the DOM element
-    var meta = goog.dom.createElement('meta');
-    meta.name = 'publicationPath';
-    meta.content = path;
-    goog.dom.appendChild(this.headElement, meta);
+    metaNode = goog.dom.createElement('meta');
+    metaNode.name = 'publicationPath';
+    metaNode.content = path;
+    goog.dom.appendChild(this.getHeadElement(), metaNode);
   }
+  else{
+    if (path && path !== '') {
+      // update path
+      metaNode.setAttribute('content', path);
+    }
+    else {
+      // remove the path
+      goog.dom.removeNode(metaNode);
+    }
+  }
+  this.view.settingsDialog.redraw();
 };
 
 
@@ -255,12 +265,15 @@ silex.model.Head.prototype.setPublicationPath = function(path) {
  * @return {string}   the publication path
  */
 silex.model.Head.prototype.getPublicationPath = function() {
-  var path = null;
-  $('meta[name="publicationPath"]', this.headElement).each(
-      function() {
-        path = this.getAttribute('content');
-      });
-  return path;
+  var metaNode = goog.dom.findNode(this.getHeadElement(), function (node) {
+    return node && node.tagName === 'meta' && node.getAttribute('name') === 'publicationPath';
+  });
+  if (metaNode){
+    return metaNode.getAttribute('content');
+  }
+  else{
+    return null
+  }
 };
 
 
@@ -268,12 +281,13 @@ silex.model.Head.prototype.getPublicationPath = function() {
  * website title
  */
 silex.model.Head.prototype.getTitle = function() {
-  var title = null;
-  $('title', this.headElement).each(
-    function() {
-      title = this.innerHTML;
-    });
-  return title;
+  var titleNodes = goog.dom.getElementsByTagNameAndClass('title', null, this.getHeadElement());
+  if (titleNodes.length > 0){
+    return titleNodes[0].innerHTML;
+  }
+  else{
+    return null;
+  }
 };
 
 
@@ -281,17 +295,53 @@ silex.model.Head.prototype.getTitle = function() {
  * website title
  */
 silex.model.Head.prototype.setTitle = function(name) {
-  var found = false;
-  // update website title
-  $('title', this.headElement).each(
-      function() {
-        this.innerHTML = name;
-        found = true;
-      });
-  if(!found) {
-    var title = goog.dom.createElement('title');
-    title.innerHTML = name;
-    goog.dom.appendChild(this.headElement, title);
+  // find or create the title tag in the head section
+  var titleNodes = goog.dom.getElementsByTagNameAndClass('title', null, this.getHeadElement());
+  var titleNode;
+  if (titleNodes.length === 0){
+    titleNode = goog.dom.createElement('title');
+    goog.dom.appendChild(this.getHeadElement(), title);
   }
+  else{
+    titleNode = titleNodes[0];
+  }
+  // update website title
+  titleNode.innerHTML = name;
 };
 
+
+/**
+ * @return  {Element}   head element of the loaded site
+ */
+silex.model.Head.prototype.getHeadElement = function() {
+  if (!this.iframeElement || !this.iframeElement.contentDocument || !this.iframeElement.contentDocument.head){
+    return null;
+  }
+  // returns the head of the document in the iframe
+  return this.iframeElement.contentDocument.head;
+};
+
+
+/**
+ * load temp tags (js and css) to be removed before save
+ */
+silex.model.Head.prototype.addTempTag = function(tag, opt_onSuccess, opt_onError) {
+  tag.onload = function () {
+    if(opt_onSuccess) opt_onSuccess();
+  }
+  tag.onerror = function () {
+    if(opt_onError) opt_onError();
+  }
+  goog.dom.appendChild(this.getHeadElement(), tag);
+  this.tempTags.push(tag);
+};
+
+
+/**
+ * remove temp tags
+ */
+silex.model.Head.prototype.removeTempTags = function() {
+  goog.array.forEach(this.tempTags, function(tag) {
+    goog.dom.removeNode(tag);
+  });
+};

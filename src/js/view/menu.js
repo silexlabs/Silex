@@ -17,7 +17,6 @@
  */
 
 
-goog.require('silex.view.ViewBase');
 goog.provide('silex.view.Menu');
 goog.require('silex.Config');
 
@@ -33,36 +32,25 @@ goog.require('goog.events.KeyHandler');
 
 /**
  * @constructor
- * @param {element} element   container to render the UI
+ * @param {Element} element   container to render the UI
+ * @param  {silex.types.View} view  view class which holds the other views
+ * @param  {silex.types.Controller} controller  structure which holds the controller instances
  */
-silex.view.Menu = function(element, bodyElement, headElement) {
-  // call super
-  goog.base(this, element, bodyElement, headElement);
+silex.view.Menu = function(element, view, controller) {
+  // store references
+  this.element = element;
+  this.view = view;
+  this.controller = controller;
+
+  // build the UI
   this.buildMenu(element);
 };
-
-// inherit from silex.view.ViewBase
-goog.inherits(silex.view.Menu, silex.view.ViewBase);
 
 
 /**
  * reference to the menu class of the closure library
  */
-silex.view.Menu.prototype.menu;
-
-
-/**
- * refresh the displayed data
- */
-silex.view.Menu.prototype.redraw = function() {
-  var title = null;
-  $('title', this.headElement).each(
-    function() {
-      title = this.innerHTML;
-    });
-
-  this.setWebsiteName(title);
-}
+silex.view.Menu.prototype.menu = null;
 
 
 /**
@@ -215,10 +203,10 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
   this.menu.render(rootNode);
   // event handling
   goog.events.listen(this.menu, goog.ui.Component.EventType.ACTION, function(e) {
-    this.onClick(e);
+    this.onMenuEvent(e.target.getId());
   }, false, this);
   goog.events.listen(goog.dom.getElementByClass('website-name'), goog.events.EventType.CLICK, function(e) {
-    this.onClick(e);
+    this.controller.menuController.promptTitle();
   }, false, this);
 };
 
@@ -227,44 +215,123 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
  * handles click events
  * calls onStatus to notify the controller
  */
-silex.view.Menu.prototype.onClick = function(e) {
-  if (this.onStatus && e && e.target) {
-    if (goog.dom.classes.has(e.target, 'website-name')) {
-      this.onMenuEvent('title.changed');
-    }
-    else {
-      this.onMenuEvent(e.target.getId());
-    }
-  }
-};
-
-
-/**
- * handles menu events
- * calls onStatus to notify the controller
- */
 silex.view.Menu.prototype.onMenuEvent = function(type) {
-  if (this.onStatus) {
-    this.onStatus(type);
+  switch(type){
+    case 'title.changed':
+      this.controller.menuController.promptTitle();
+      break;
+    case 'file.close':
+    case 'file.new':
+      this.controller.menuController.newFile();
+      break;
+    case 'file.saveas':
+      this.controller.menuController.save();
+      break;
+    case 'file.rename':
+      this.controller.menuController.promptTitle();
+      break;
+    case 'file.publish.settings':
+      this.controller.menuController.view.settingsDialog.openDialog();
+      this.controller.menuController.view.workspace.invalidate();
+      break;
+    case 'file.publish':
+      this.controller.menuController.publish();
+      break;
+    case 'file.save':
+      this.controller.menuController.save(this.controller.menuController.model.file.getUrl());
+      break;
+    case 'file.open':
+      this.controller.menuController.openFile();
+      break;
+    case 'view.file':
+      this.controller.menuController.preview();
+      break;
+    case 'tools.advanced.activate':
+      this.controller.menuController.toggleAdvanced();
+      break;
+    case 'view.open.fileExplorer':
+      this.controller.menuController.view.fileExplorer.openDialog();
+      this.controller.menuController.view.workspace.invalidate();
+      break;
+    case 'view.open.cssEditor':
+      this.controller.menuController.openCssEditor();
+      break;
+    case 'view.open.jsEditor':
+      this.controller.menuController.openJsEditor();
+      break;
+    case 'view.open.editor':
+      this.controller.menuController.editElement();
+      break;
+    case 'insert.page':
+      this.controller.menuController.createPage();
+      break;
+    case 'insert.text':
+      this.controller.menuController.addElement(silex.model.Element.TYPE_TEXT);
+      break;
+    case 'insert.html':
+      this.controller.menuController.addElement(silex.model.Element.TYPE_HTML);
+      break;
+    case 'insert.image':
+      this.controller.menuController.browseAndAddImage(silex.model.Element.TYPE_IMAGE);
+      break;
+    case 'insert.container':
+      this.controller.menuController.addElement(silex.model.Element.TYPE_CONTAINER);
+      break;
+    case 'edit.delete.selection':
+      // delete component
+      this.controller.menuController.removeSelection();
+      break;
+    case 'edit.copy.selection':
+      this.controller.menuController.copySelection();
+      break;
+    case 'edit.paste.selection':
+      this.controller.menuController.pasteSelection();
+      break;
+    case 'edit.undo':
+      this.controller.menuController.undo();
+      break;
+    case 'edit.redo':
+      this.controller.menuController.redo();
+      break;
+    case 'edit.delete.page':
+      this.controller.menuController.removePage();
+      break;
+    case 'edit.rename.page':
+      this.controller.menuController.renamePage();
+      break;
+    // Help menu
+    case 'help.about':
+      window.open(silex.Config.ABOUT_SILEX);
+      break;
+    case 'help.issues':
+      window.open(silex.Config.ISSUES_SILEX);
+      break;
+    case 'help.downloads':
+      window.open(silex.Config.DOWNLOADS_SILEX);
+      break;
+    case 'help.aboutSilexLabs':
+      window.open(silex.Config.ABOUT_SILEX_LABS);
+      break;
+    case 'help.newsLetter':
+      window.open(silex.Config.SUBSCRIBE_SILEX_LABS);
+      break;
+    case 'help.googlPlus':
+      window.open(silex.Config.SOCIAL_GPLUS);
+      break;
+    case 'help.twitter':
+      window.open(silex.Config.SOCIAL_TWITTER);
+      break;
+    case 'help.facebook':
+      window.open(silex.Config.SOCIAL_FB);
+      break;
+    case 'help.forkMe':
+      window.open(silex.Config.FORK_CODE);
+      break;
+    case 'help.contribute':
+      window.open(silex.Config.CONTRIBUTE);
+      break;
+    case 'help.contributors':
+      window.open(silex.Config.CONTRIBUTORS);
+      break;
   }
 };
-
-
-/**
- * website name
- * called by file when updating the website title
- */
-silex.view.Menu.prototype.setWebsiteName = function(name) {
-  if (!name || name === '') name = 'Untitled website';
-  goog.dom.getElementByClass('website-name').innerHTML = name;
-};
-
-
-/**
- * website name
- * for internal use only, you should use silex.model.Head
- */
-silex.view.Menu.prototype.getWebsiteName = function() {
-  return goog.dom.getElementByClass(headElement, 'website-name').innerHTML;
-};
-

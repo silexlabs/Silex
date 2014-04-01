@@ -15,11 +15,12 @@
  *   It has methods to manipulate the DOM elements
  *      created by new silex.model.Element().createElement
  *
+ *   All model classes are singletons
  */
 
-
-goog.require('silex.model.ModelBase');
 goog.provide('silex.model.Element');
+
+goog.require('silex.types.Model');
 
 goog.require('goog.dom.classes');
 goog.require('goog.net.ImageLoader');
@@ -28,17 +29,15 @@ goog.require('goog.net.EventType');
 
 /**
  * @constructor
- * @param  {element} bodyElement  HTML element which holds the body section of the opened file
- * @param  {element} headElement  HTML element which holds the head section of the opened file
+ * @param  {silex.types.Model} model  model class which holds the other models
+ * @param  {silex.types.View} view  view class which holds the other views
  */
-silex.model.Element = function(bodyElement, headElement) {
-  // call super
-  goog.base(this, bodyElement, headElement);
+silex.model.Element = function(model, view) {
+  this.view = view;
+  this.model = model;
+  // retrieve the element which will hold the body of the opened file
+  this.iframeElement = goog.dom.getElementByClass(silex.view.Stage.STAGE_CLASS_NAME);
 };
-
-// inherit from silex.model.ModelBase
-goog.inherits(silex.model.Element, silex.model.ModelBase);
-
 
 
 /**
@@ -93,7 +92,7 @@ silex.model.Element.ELEMENT_CONTENT_CLASS_NAME = 'silex-element-content';
  * constant for the attribute name of the links
  * @const
  * @type {string}
- * in pageable plugin
+ */
 silex.model.Element.LINK_ATTR = 'data-silex-href';
 
 
@@ -107,7 +106,7 @@ silex.model.Element.SELECTED_CLASS_NAME = 'silex-selected';
 
 /**
  * get/set type of the element
- * @param  {element} element   created by silex, either a text box, image, ...
+ * @param  {Element} element   created by silex, either a text box, image, ...
  * @return  {string}           the style of the element
  */
 silex.model.Element.prototype.getType = function(element) {
@@ -118,7 +117,7 @@ silex.model.Element.prototype.getType = function(element) {
 
 /**
  * get/set type of the element
- * @param  {element} element    created by silex, either a text box, image, ...
+ * @param  {Element} element    created by silex, either a text box, image, ...
  * @param  {string}  type      the new type for this element
  */
 silex.model.Element.prototype.setType = function(element, type) {
@@ -130,7 +129,7 @@ silex.model.Element.prototype.setType = function(element, type) {
 
 /**
  * get/set style of the element
- * @param  {element} element   created by silex, either a text box, image, ...
+ * @param  {Element} element   created by silex, either a text box, image, ...
  * @param  {string} styleName  the style name
  * @return  {string}           the style of the element
  */
@@ -142,32 +141,31 @@ silex.model.Element.prototype.getStyle = function(element, styleName) {
 
 /**
  * get/set style of element from a container created by silex
- * @param  {element} element            created by silex, either a text box, image, ...
+ * @param  {Element} element            created by silex, either a text box, image, ...
  * @param  {string}  styleName          the style name, camel case, not css with dashes
  * @param  {string}  opt_styleValue     the value for this styleName
  */
 silex.model.Element.prototype.setStyle = function(element, styleName, opt_styleValue) {
-  var oldStyle = this.getStyle(element, styleName);
-  var undoableAction = new silex.model.UndoableAction(function(){
-    console.log('do setStyle');
+  console.log(arguments);
+  if(element.style[styleName] !== opt_styleValue){
     if (goog.isDef(opt_styleValue)){
       element.style[styleName] = opt_styleValue;
     }
     else{
-     element.style[styleName] = '';
+      element.style[styleName] = '';
     }
-  }, function(){
-    console.log('undo setStyle');
-    element.style[styleName] = oldStyle;
-  });
-  this.undoRedoManager.add(undoableAction);
-  undoableAction.redoCallback();
+    // update the view
+    var pages = this.model.page.getPages();
+    var page = this.model.page.getCurrentPageName();
+    var selectedElements = this.model.body.getSelection();
+    this.view.propertyTool.redraw(selectedElements, this.iframeElement.contentDocument, pages, page);
+  }
 };
 
 
 /**
  * get/set a property of an element from a container created by silex
- * @param  {element} element            created by silex, either a text box, image, ...
+ * @param  {Element} element            created by silex, either a text box, image, ...
  * @param  {string}  propertyName          the property name
  * @param  {string}  opt_propertyValue     the value for this propertyName
  * @example element.setProperty(imgElement, 'style', 'top: 5px; left: 30px;')
@@ -184,7 +182,6 @@ silex.model.Element.prototype.setProperty = function(element, propertyName, opt_
 
 
 /**
- * User has selected an image
  * @param    {string} url    URL of the image chosen by the user
  */
 silex.model.Element.prototype.setBgImage = function(element, url) {
@@ -199,39 +196,39 @@ silex.model.Element.prototype.setBgImage = function(element, url) {
 
 /**
  * get/set html from a container created by silex
- * @param  {element} element  created by silex, either a text box, image, ...
+ * @param  {Element} element  created by silex, either a text box, image, ...
  * @return  {string}  the html content
  */
 silex.model.Element.prototype.getInnerHtml = function(element) {
   // disable editable
-  silex.utils.EditablePlugin.setEditable(element, false);
+  this.model.body.setEditable(element, false);
   var innerHTML = this.getContentNode(element).innerHTML;
   // re-enable editable
-  silex.utils.EditablePlugin.setEditable(element, true);
+  this.model.body.setEditable(element, true);
   return innerHTML;
 };
 
 
 /**
  * get/set element from a container created by silex
- * @param  {element} element  created by silex, either a text box, image, ...
+ * @param  {Element} element  created by silex, either a text box, image, ...
  * @param  {string}  the html content
  */
 silex.model.Element.prototype.setInnerHtml = function(element, innerHTML) {
   // get the container of the html content of the element
   var contentNode = this.getContentNode(element);
   // cleanup
-  silex.utils.EditablePlugin.setEditable(element, false);
+  this.model.body.setEditable(element, false);
   // set html
   contentNode.innerHTML = innerHTML;
   // make editable again
-  silex.utils.EditablePlugin.setEditable(element, true);
+  this.model.body.setEditable(element, true);
 };
 
 /**
  * get/set element from a container created by silex
- * @param  {element} element  created by silex, either a text box, image, ...
- * @return  {element}  the element which holds the content, i.e. a div, an image, ...
+ * @param  {Element} element  created by silex, either a text box, image, ...
+ * @return  {Element}  the element which holds the content, i.e. a div, an image, ...
  */
 silex.model.Element.prototype.getContentNode = function(element) {
   var content;
@@ -253,8 +250,8 @@ silex.model.Element.prototype.getContentNode = function(element) {
 
 /**
  * get/set element from a container created by silex
- * @param  {element} element  created by silex, either a text box, image, ...
- * @param  {element} content  the element which holds the content, i.e. a div, an image, ...
+ * @param  {Element} element  created by silex, either a text box, image, ...
+ * @param  {Element} content  the element which holds the content, i.e. a div, an image, ...
  */
 silex.model.Element.prototype.setContentNode = function(element, content) {
   // get the content to replace
@@ -262,11 +259,11 @@ silex.model.Element.prototype.setContentNode = function(element, content) {
   // replace in function of the element type
   if (initialContent === element) {
     // disable editable
-    silex.utils.EditablePlugin.setEditable(element, false);
+    this.model.body.setEditable(element, false);
     // containers and text
     element.innerhtml = content.innerhtml;
     // re-enable editable
-    silex.utils.EditablePlugin.setEditable(element, true);
+    this.model.body.setEditable(element, true);
   }
   else {
     // html and images
@@ -276,7 +273,7 @@ silex.model.Element.prototype.setContentNode = function(element, content) {
 
 /**
  * set/get the image URL of an image element
- * @param  {element} element  container created by silex which contains an image
+ * @param  {Element} element  container created by silex which contains an image
  * @return  {string}  the url of the image
  */
 silex.model.Element.prototype.getImageUrl = function(element) {
@@ -298,11 +295,12 @@ silex.model.Element.prototype.getImageUrl = function(element) {
 }
 /**
  * set/get the image URL of an image element
- * @param  {element} element  container created by silex which contains an image
+ * @param  {Element} element  container created by silex which contains an image
  * @param  {string} url  the url of the image
  * @param  {function}  the opt_callback to be notified when the image is loaded
  */
 silex.model.Element.prototype.setImageUrl = function(element, url, opt_callback, opt_errorCallback) {
+  console.log(arguments);
   if (element.getAttribute(silex.model.Element.TYPE_ATTR) === silex.model.Element.TYPE_IMAGE) {
     // get the image tag
     var img = this.getContentNode(element);
@@ -311,24 +309,24 @@ silex.model.Element.prototype.setImageUrl = function(element, url, opt_callback,
       var imageLoader = new goog.net.ImageLoader();
       goog.events.listenOnce(imageLoader, goog.events.EventType.LOAD,
       function(e) {
-        // remove loading asset
-        goog.dom.classes.remove(element, 'loading-image');
         // handle the loaded image
         var img = e.target;
-        // image tak all room available
-        goog.style.setStyle(img, 'width', '100%');
-        goog.style.setStyle(img, 'height', '100%');
-        // add the image to the element
-        goog.dom.appendChild(element, img);
-        // add a marker to find the inner content afterwards, with getContent
-        goog.dom.classes.add(img, silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
-        // remove the id set by the loader (it needs it to know what has already been loaded?)
-        img.removeAttribute('id');
         // callback
         if (opt_callback){
           opt_callback(element, img);
         }
-      });
+        // add the image to the element
+        goog.dom.appendChild(element, img);
+        // image tak all room available !! has to be after the callback because img.naturalWidth is used
+        goog.style.setStyle(img, 'width', '100%');
+        goog.style.setStyle(img, 'height', '100%');
+        // add a marker to find the inner content afterwards, with getContent
+        goog.dom.classes.add(img, silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
+        // remove the id set by the loader (it needs it to know what has already been loaded?)
+        img.removeAttribute('id');
+        // remove loading asset
+        goog.dom.classes.remove(element, 'loading-image');
+      }, true, this);
       goog.events.listenOnce(imageLoader, goog.net.EventType.ERROR,
       function(e) {
         console.error('An error occured while loading the image.', element);
@@ -336,7 +334,7 @@ silex.model.Element.prototype.setImageUrl = function(element, url, opt_callback,
         if(opt_errorCallback){
           opt_errorCallback(element, 'An error occured while loading the image.')
         }
-      });
+      }, true, this);
       // add loading asset
       goog.dom.classes.add(element, 'loading-image');
       // remove previous img tag
@@ -366,7 +364,7 @@ silex.model.Element.prototype.setImageUrl = function(element, url, opt_callback,
 
 /**
  * remove a DOM element
- * @param  {element} element   the element to remove
+ * @param  {Element} element   the element to remove
  */
 silex.model.Element.prototype.removeElement = function(element) {
   goog.dom.removeNode(element);
@@ -387,15 +385,18 @@ silex.model.Element.prototype.appendChild = function(container, element){
  * and returns a new component for the element
  * @param  {string} type  the type of the element to create,
  *	  see TYPE_* constants of the class @see silex.model.Element
- * @return 	{element} 	the newly created element
+ * @return 	{Element} 	the newly created element
  */
 silex.model.Element.prototype.createElement = function(type) {
 
   var element;
+  var bodyElement = this.model.body.getBodyElement();
+
+  console.log(arguments, bodyElement);
 
   // take the scroll into account (drop at (100, 100) from top left corner of the window, not the stage)
-  var offsetX = 100 + this.bodyElement.parentNode.scrollLeft;
-  var offsetY = 100 + this.bodyElement.parentNode.scrollTop;
+  var offsetX = 100 + bodyElement.scrollLeft;
+  var offsetY = 100 + bodyElement.scrollTop;
   // default style
   var styleObject = {
     height: '100px',
@@ -437,7 +438,6 @@ silex.model.Element.prototype.createElement = function(type) {
     case silex.model.Element.TYPE_HTML:
       // create the element
       element = goog.dom.createElement('div');
-      element.className = silex.utils.EditablePlugin.EDITABLE_CLASS_NAME;
       element.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_HTML);
       // create the container for html content
       var htmlContent = goog.dom.createElement('div');
@@ -455,22 +455,22 @@ silex.model.Element.prototype.createElement = function(type) {
     case silex.model.Element.TYPE_IMAGE:
       // create the element
       element = goog.dom.createElement('div');
-      element.className = silex.utils.EditablePlugin.EDITABLE_CLASS_NAME;
       element.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_IMAGE);
     break;
 
   }
 
   // init the element
-  goog.dom.classes.add(element, silex.utils.EditablePlugin.EDITABLE_CLASS_NAME);
+  element.className = silex.model.Body.EDITABLE_CLASS_NAME + ' xxx';
+  goog.dom.classes.add(element, silex.model.Body.EDITABLE_CLASS_NAME);
 
   // make it editable
-  silex.utils.EditablePlugin.setEditable(element, true);
+  this.model.body.setEditable(element, true);
 
   // find the container (main background container or the stage)
-  var container = goog.dom.getElementByClass(silex.view.Stage.BACKGROUND_CLASS_NAME, this.bodyElement);
+  var container = goog.dom.getElementByClass(silex.view.Stage.BACKGROUND_CLASS_NAME, bodyElement);
   if(!container){
-    container = this.bodyElement;
+    container = bodyElement;
   }
 
   // set the default styles
@@ -479,19 +479,18 @@ silex.model.Element.prototype.createElement = function(type) {
   goog.dom.classes.add(element, type + '-element');
   // add to stage
   goog.dom.appendChild(container, element);
-
   // return the element
   return element;
 };
 
 
 /**
- * get/set selection
- */
+ * get/set selection for the given element
+ *
 silex.model.Element.prototype.setSelected = function(element, isSelected) {
   if (isSelected) {
     // stage can not be multi-selected
-    goog.dom.classes.remove(this.bodyElement, silex.model.Element.SELECTED_CLASS_NAME);
+    goog.dom.classes.remove(bodyElement, silex.model.Element.SELECTED_CLASS_NAME);
     // set as selected
     goog.dom.classes.add(element, silex.model.Element.SELECTED_CLASS_NAME);
   }
@@ -502,19 +501,82 @@ silex.model.Element.prototype.setSelected = function(element, isSelected) {
 
 
 /**
- * get/set selection
+ * get/set selection for the given element
+ *
+silex.model.Element.prototype.getSelected = function(element) {
+  return goog.dom.classes.has(element, silex.model.Element.SELECTED_CLASS_NAME);
+};
+/* */
+
+/**
+ * set/get a "silex style link" on an element
+ * @param  {string} link  a link (absolute or relative)
+ *         or an internal link (beginning with #!)
+ *         or null to remove the link
  */
-silex.model.Element.prototype.resetSelection = function() {
-  var elements = goog.dom.getElementsByClass(silex.model.Element.SELECTED_CLASS_NAME, this.bodyElement);
-  goog.array.forEach(elements, function(element) {
-    goog.dom.classes.remove(element, silex.model.Element.SELECTED_CLASS_NAME);
-  }, this);
+silex.model.Element.prototype.setLink = function(element, link) {
+  if (link){
+    element.setAttribute(silex.model.Element.LINK_ATTR, link);
+  }
+  else{
+    element.removeAttribute(silex.model.Element.LINK_ATTR);
+  }
+};
+
+/**
+ * set/get a "silex style link" on an element
+ */
+silex.model.Element.prototype.getLink = function(element) {
+  var link = element.getAttribute('data-silex-href');
+  return link;
 };
 
 
 /**
- * get/set selection
+ * get/set class name of the element of a container created by silex
+ * remove all silex internal classes
+ * @param  {Element} element   created by silex, either a text box, image, ...
+ * @return  {string}           the value for this styleName
  */
-silex.model.Element.prototype.getSelected = function(element) {
-  return goog.dom.classes.has(element, silex.model.Element.SELECTED_CLASS_NAME);
+silex.model.Element.prototype.getClassName = function(element) {
+  var pages = this.model.page.getPages();
+  return  goog.array.map(element.className.split(' '), function (name) {
+    if(goog.array.contains(silex.utils.Style.SILEX_CLASS_NAMES, name)
+      || goog.array.contains(pages, name)){
+      return;
+    }
+    return name;
+  }).join(' ').trim();
+};
+
+
+/**
+ * get/set class name of the element of a container created by silex
+ * remove all silex internal classes
+ * @param  {Element} element   created by silex, either a text box, image, ...
+ * @param  {string} opt_className  the class names, or null to reset
+ */
+silex.model.Element.prototype.setClassName = function(element, opt_className) {
+  // compute class names to keep, no matter what
+  // i.e. the one which are in element.className + in Silex internal classes
+  var pages = this.model.page.getPages();
+  var classNamesToKeep = goog.array.map(element.className.split(' '), function (name) {
+    if(goog.array.contains(silex.utils.Style.SILEX_CLASS_NAMES, name)
+      || goog.array.contains(pages, name)){
+      return name;
+    }
+    return;
+  });
+
+  // reset element class name
+  element.className = classNamesToKeep.join(' ');
+  if (opt_className){
+    // apply classes from opt_className
+    goog.array.forEach(opt_className.split(' '), function (name) {
+      name = name.trim();
+      if (name && name !== ''){
+        goog.dom.classes.add(element, name);
+      }
+    });
+  }
 };

@@ -32,7 +32,7 @@ silex.utils.BackwardCompat = function() {
  * handle backward compatibility issues
  * Backwardcompatibility process takes place after opening a file
  */
-silex.utils.BackwardCompat.process = function(bodyElement, headElement) {
+silex.utils.BackwardCompat.process = function(model) {
 
   // handle older style system (2.0)
   if (bodyElement.getAttribute('data-style-normal')){
@@ -87,10 +87,12 @@ silex.utils.BackwardCompat.process = function(bodyElement, headElement) {
   // static.silex.me 2.0 -> 2.1
   $('[src]', headElement).each(function() {
     var src = this.getAttribute('src');
-    this.setAttribute('src', src.replace('//static.silex.me/2.0', '//static.silex.me/2.1'));
+    this.setAttribute('src', src.replace('//static.silex.me/2.0', '//static.silex.me/2.2'));
+    this.setAttribute('src', src.replace('//static.silex.me/2.1', '//static.silex.me/2.2'));
   });
   $('[href]', headElement).each(function() {
     var href = this.getAttribute('href');
-    this.setAttribute('href', href.replace('//static.silex.me/2.0', '//static.silex.me/2.1'));
+    this.setAttribute('href', href.replace('//static.silex.me/2.0', '//static.silex.me/2.2'));
+    this.setAttribute('href', href.replace('//static.silex.me/2.1', '//static.silex.me/2.2'));
   });
 };

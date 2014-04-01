@@ -25,31 +25,31 @@ goog.provide('silex.view.pane.StylePane');
  * let user edit style of components
  * @constructor
  * @extend silex.view.PaneBase
- * @param {element} element   container to render the UI
- * @param  {element} bodyElement  HTML element which holds the body section of the opened file
- * @param  {element} headElement  HTML element which holds the head section of the opened file
+ * @param {Element} element   container to render the UI
+ * @param  {silex.types.View} view  view class which holds the other views
+ * @param  {silex.types.Controller} controller  structure which holds the controller instances
  */
-silex.view.pane.StylePane = function(element, bodyElement, headElement) {
+silex.view.pane.StylePane = function(element, view, controller) {
   // call super
-  goog.base(this, element, bodyElement, headElement);
+  goog.base(this, element, view, controller);
 
   this.buildUi();
 };
 
-// inherit from silex.view.ViewBase
+// inherit from silex.view.PaneBase
 goog.inherits(silex.view.pane.StylePane, silex.view.pane.PaneBase);
 
 
 /**
  * css classe name input
  */
-silex.view.pane.StylePane.prototype.cssClassesInput;
+silex.view.pane.StylePane.prototype.cssClassesInput = null;
 
 
 /**
  * instance of ace editor
  */
-silex.view.CssEditor.prototype.ace;
+silex.view.pane.StylePane.prototype.ace = null;
 
 
 /**
@@ -74,20 +74,21 @@ silex.view.pane.StylePane.prototype.buildUi = function() {
 
 /**
  * redraw the properties
+ * @param   {Array<element>} selectedElements the elements currently selected
+ * @param   {HTMLDocument} document  the document to use
+ * @param   {Array<string>} pageNames   the names of the pages which appear in the current HTML file
+ * @param   {string}  currentPageName   the name of the current page
  */
-silex.view.pane.StylePane.prototype.redraw = function() {
+silex.view.pane.StylePane.prototype.redraw = function(selectedElements) {
   if (this.iAmSettingValue) return;
   this.iAmRedrawing = true;
   // call super
-  goog.base(this, 'redraw');
-
-  // get the selected element
-  var elements = this.getSelection();
+  goog.base(this, 'redraw', selectedElements);
 
   // css classes
-  var cssClasses = this.getCommonProperty(elements, function (element) {
-    return silex.utils.Style.getClassName(element);
-  });
+  var cssClasses = this.getCommonProperty(selectedElements, goog.bind(function (element) {
+    return this.controller.propertyToolController.getClassName(element);
+  }, this));
   if (cssClasses){
     this.cssClassesInput.value = cssClasses;
   }
@@ -96,7 +97,7 @@ silex.view.pane.StylePane.prototype.redraw = function() {
   }
 
   // css inline style
-  var cssInlineStyle = this.getCommonProperty(elements, function (element) {
+  var cssInlineStyle = this.getCommonProperty(selectedElements, function (element) {
     return element.getAttribute('style');
   });
   if (cssInlineStyle){
@@ -133,17 +134,15 @@ silex.view.pane.StylePane.prototype.redraw = function() {
  */
 silex.view.pane.StylePane.prototype.onInputChanged = function(event) {
   if (this.iAmSettingValue) return;
-  if (this.onStatus){
-    this.iAmSettingValue = true;
-    try{
-      this.onStatus('classNameChanged', this.cssClassesInput.value);
-    }
-    catch(err){
-      // error which will not keep this.iAmSettingValue to true
-      console.error('an error occured while editing the value', err);
-    }
-    this.iAmSettingValue = false;
+  this.iAmSettingValue = true;
+  try{
+    this.controller.propertyToolController.classNameChanged(this.cssClassesInput.value);
   }
+  catch(err){
+    // error which will not keep this.iAmSettingValue to true
+    console.error('an error occured while editing the value', err);
+  }
+  this.iAmSettingValue = false;
 };
 
 /**
@@ -157,15 +156,13 @@ silex.view.pane.StylePane.prototype.contentChanged = function() {
     value = value.replace('\n}', '');
     value = value.replace(/\n/, ' ');
   }
-  if (this.onStatus) {
-    this.iAmSettingValue = true;
-    try{
-      this.onStatus('propertyChanged', 'style', value);
-    }
-    catch(err){
-      // error which will not keep this.iAmSettingValue to true
-      console.error('an error occured while editing the value', err);
-    }
-    this.iAmSettingValue = false;
+  this.iAmSettingValue = true;
+  try{
+    this.controller.propertyToolController.propertyChanged('style', value);
   }
+  catch(err){
+    // error which will not keep this.iAmSettingValue to true
+    console.error('an error occured while editing the value', err);
+  }
+  this.iAmSettingValue = false;
 };

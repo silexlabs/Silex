@@ -17,7 +17,6 @@
  */
 
 
-goog.require('silex.view.ViewBase');
 goog.provide('silex.view.PropertyTool');
 
 goog.require('silex.view.pane.BgPane');
@@ -43,68 +42,67 @@ goog.require('goog.ui.TabBar');
 /**
  * the Silex PropertyTool class handles the panes actually displaying the properties
  * @constructor
- * @extend silex.view.ViewBase
- * @param {element} element   container to render the UI
- * @param  {element} bodyElement  HTML element which holds the body section of the opened file
- * @param  {element} headElement  HTML element which holds the head section of the opened file
+ *
+ * @param {Element} element   container to render the UI
+ * @param  {silex.types.Controller} controller  structure which holds the controller instances
  */
-silex.view.PropertyTool = function(element, bodyElement, headElement) {
-  // call super
-  goog.base(this, element, bodyElement, headElement);
+silex.view.PropertyTool = function(element, view , controller) {
+  // store references
+  this.element = element;
+  this.view = view;
+  this.controller = controller;
 
+  // build the UI
   this.buildPanes();
 };
-
-// inherit from silex.view.ViewBase
-goog.inherits(silex.view.PropertyTool, silex.view.ViewBase);
 
 
 /**
  * base url for relative/absolute urls
  */
-silex.view.PropertyTool.prototype.baseUrl;
+silex.view.PropertyTool.prototype.baseUrl = null;
 
 
 /**
  * bg editor
  * @see     silex.view.pane.BgPane
  */
-silex.view.PropertyTool.prototype.bgPane;
+silex.view.PropertyTool.prototype.bgPane = null;
 
 
 /**
  * property editor
  * @see     silex.view.pane.PropertyPane
  */
-silex.view.PropertyTool.prototype.propertyPane;
+silex.view.PropertyTool.prototype.propertyPane = null;
 
 
 /**
  * editor
  * @see     silex.view.pane.BorderPane
  */
-silex.view.PropertyTool.prototype.borderPane;
+silex.view.PropertyTool.prototype.borderPane = null;
 
 
 /**
  * property editor
  * @see     silex.view.pane.PagePane
  */
-silex.view.PropertyTool.prototype.pagePane;
+silex.view.PropertyTool.prototype.pagePane = null;
 
 
 /**
  * property editor
  * @see     silex.view.pane.GeneralStylePane
  */
-silex.view.PropertyTool.prototype.generalStylePane;
+silex.view.PropertyTool.prototype.generalStylePane = null;
 
 
 /**
  * property editor
  * @see     silex.view.pane.StylePane
  */
-silex.view.PropertyTool.prototype.stylePane;
+silex.view.PropertyTool.prototype.stylePane = null;
 
 
 
@@ -112,93 +110,49 @@ silex.view.PropertyTool.prototype.stylePane;
  * build the UI
  */
 silex.view.PropertyTool.prototype.buildPanes = function() {
-  // create a binded callback for allpanes
-  var onStatusCbk = goog.bind(function (type, opt_styleName, opt_styleValue, opt_elements, opt_applyToContent)
-    {
-      this.onStatus.apply(this, arguments);
-    }, this
-  );
-
   // background
   this.bgPane = new silex.view.pane.BgPane(
       goog.dom.getElementByClass('background-editor', this.element),
-      this.bodyElement, this.headElement);
-
-  this.bgPane.onStatus = onStatusCbk;
+      this.view, this.controller);
 
   // border
   this.borderPane = new silex.view.pane.BorderPane(
       goog.dom.getElementByClass('border-editor', this.element),
-      this.bodyElement, this.headElement);
-
-  this.borderPane.onStatus = onStatusCbk;
+      this.view, this.controller);
 
   // property
   this.propertyPane = new silex.view.pane.PropertyPane(
       goog.dom.getElementByClass('property-editor', this.element),
-      this.bodyElement, this.headElement);
-
-  this.propertyPane.onStatus = onStatusCbk;
+      this.view, this.controller);
 
   // page
   this.pagePane = new silex.view.pane.PagePane(
       goog.dom.getElementByClass('page-editor', this.element),
-      this.bodyElement, this.headElement);
-
-  this.pagePane.onStatus = onStatusCbk;
+      this.view, this.controller);
 
   // general styles
   this.generalStylePane = new silex.view.pane.GeneralStylePane(
       goog.dom.getElementByClass('general-editor', this.element),
-      this.bodyElement, this.headElement);
-
-  this.generalStylePane.onStatus = onStatusCbk;
+      this.view, this.controller);
 
   // silex styles
   this.stylePane = new silex.view.pane.StylePane(
       goog.dom.getElementByClass('style-editor', this.element),
-      this.bodyElement, this.headElement);
-
-  this.stylePane.onStatus = onStatusCbk;
+      this.view, this.controller);
 
 };
 
 
 /**
  * redraw all panes
+ * @param  {Array.<Element>} selectedElements  array of elements which are currently selected
  */
-silex.view.PropertyTool.prototype.redraw = function() {
-  this.borderPane.redraw();
-  this.propertyPane.redraw();
-  this.pagePane.redraw();
-  this.generalStylePane.redraw();
-  this.stylePane.redraw();
-  this.bgPane.redraw();
+silex.view.PropertyTool.prototype.redraw = function(selectedElements, document, pageNames, currentPage) {
+  // refresh panes
+  this.borderPane.redraw(selectedElements, document, pageNames, currentPage);
+  this.propertyPane.redraw(selectedElements, document, pageNames, currentPage);
+  this.pagePane.redraw(selectedElements, document, pageNames, currentPage);
+  this.generalStylePane.redraw(selectedElements, document, pageNames, currentPage);
+  this.stylePane.redraw(selectedElements, document, pageNames, currentPage);
+  this.bgPane.redraw(selectedElements, document, pageNames, currentPage);
 };
-
-
-/**
- * base url for abs/rel conversions
- */
-silex.view.PropertyTool.prototype.getBaseUrl = function() {
-  return this.baseUrl;
-};
-
-
-/**
- * base url for abs/rel conversions
- */
-silex.view.PropertyTool.prototype.setBaseUrl = function(url) {
-  // store the new base url
-  this.baseUrl = url;
-
-  // update base url, which will redraw all panes
-  this.borderPane.setBaseUrl(url);
-  this.propertyPane.setBaseUrl(url);
-  this.pagePane.setBaseUrl(url);
-  this.generalStylePane.setBaseUrl(url);
-  this.stylePane.setBaseUrl(url);
-  this.bgPane.setBaseUrl(url);
-};
-
-

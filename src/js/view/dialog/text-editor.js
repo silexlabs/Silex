@@ -16,10 +16,10 @@
  *
  */
 
+goog.provide('silex.view.dialog.TextEditor');
 
-goog.require('silex.view.ViewBase');
-goog.provide('silex.view.TextEditor');
-goog.require('silex.view.LinkDialogPlugin');
+goog.require('silex.view.dialog.DialogBase');
+goog.require('silex.view.dialog.LinkDialogPlugin');
 
 goog.require('goog.dom');
 goog.require('goog.editor.Command');
@@ -47,40 +47,31 @@ goog.require('silex.Config');
  * the Silex TextEditor class
  * @constructor
  * @param  {Element}  element  DOM element to wich I render the UI
- * @param  {function} cbk   callback which I'll call when the text
- *  has been changed by the user
+ * @param  {silex.types.View} view  view class which holds the other views
+ * @param  {silex.types.Controller} controller  structure which holds the controller instances
  */
-silex.view.TextEditor = function(element, bodyElement, headElement) {
+silex.view.dialog.TextEditor = function(element, view, controller) {
   // call super
-  goog.base(this, element, bodyElement, headElement);
-
-  // init the editor
-  this.initUI();
-  // hide the at start
-  this.closeEditor();
-  // handle escape key
-  var shortcutHandler = new goog.ui.KeyboardShortcutHandler(document);
-  shortcutHandler.registerShortcut('esc', goog.events.KeyCodes.ESC);
-  goog.events.listen(
-      shortcutHandler,
-      goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED,
-      goog.bind(this.closeEditor, this));
+  goog.base(this, element, view, controller);
 };
 
-// inherit from silex.view.ViewBase
-goog.inherits(silex.view.TextEditor, silex.view.ViewBase);
+// inherit from silex.view.dialog.DialogBase
+goog.inherits(silex.view.dialog.TextEditor, silex.view.dialog.DialogBase);
 
 
 /**
  * the editable text field
  */
-silex.view.TextEditor.prototype.textField;
+silex.view.dialog.TextEditor.prototype.textField = null;
 
 
 /**
  * init the menu and UIs
  */
-silex.view.TextEditor.prototype.initUI = function() {
+silex.view.dialog.TextEditor.prototype.initUI = function() {
+  // call super
+  goog.base(this, 'initUI');
+
   // Create an editable field.
   this.textField = new goog.editor.Field(
       goog.dom.getElementByClass('text-field', this.element));
@@ -93,7 +84,7 @@ silex.view.TextEditor.prototype.initUI = function() {
   this.textField.registerPlugin(new goog.editor.plugins.SpacesTabHandler());
   this.textField.registerPlugin(new goog.editor.plugins.EnterHandler());
   this.textField.registerPlugin(new goog.editor.plugins.HeaderFormatter());
-  this.textField.registerPlugin(new silex.view.LinkDialogPlugin());
+  this.textField.registerPlugin(new silex.view.dialog.LinkDialogPlugin());
   this.textField.registerPlugin(new goog.editor.plugins.LinkBubble());
 
   // add fonts
@@ -188,19 +179,6 @@ silex.view.TextEditor.prototype.initUI = function() {
     // goog.editor.BrowserFeature.HAS_STYLE_WITH_CSS = false;
     console.error('error catched', e);
   }
-
-  // close button
-  goog.events.listen(goog.dom.getElementByClass('close-btn', this.element),
-      goog.events.EventType.CLICK,
-      function() {
-        this.closeEditor();
-      }, false, this);
-  // close on background click
-  var background = goog.dom.getElementByClass('dialogs-background');
-  goog.events.listen(background, goog.events.EventType.CLICK, function(e) {
-    this.closeEditor();
-  }, false, this);
-
 };
 
 
@@ -210,15 +188,12 @@ silex.view.TextEditor.prototype.initUI = function() {
  * @param    {string} opt_bgColor    desired color for the editor background
  *            which is useful to edit white text on a black bacground for example
  */
-silex.view.TextEditor.prototype.openEditor = function(initialHtml, opt_bgColor) {
+silex.view.dialog.TextEditor.prototype.openEditor = function(initialHtml, opt_bgColor) {
+  // call super
+  goog.base(this, 'openEditor');
   // init editable text input
   this.textField.setHtml(false, initialHtml);
   this.textField.focusAndPlaceCursorAtStart();
-  // background
-  var background = goog.dom.getElementByClass('dialogs-background');
-  // show
-  goog.style.setStyle(background, 'display', 'inherit');
-  goog.style.setStyle(this.element, 'display', 'inherit');
   // editor bg color
   if (!opt_bgColor){
     opt_bgColor = '#FFFFFF';
@@ -229,10 +204,12 @@ silex.view.TextEditor.prototype.openEditor = function(initialHtml, opt_bgColor) 
 
   this.redraw();
 }
+
+
 /**
  * Redraw the editor, update silex styles
  */
-silex.view.TextEditor.prototype.redraw = function() {
+silex.view.dialog.TextEditor.prototype.redraw = function() {
   // get the iframe document
   var iframe = goog.dom.getElementsByTagNameAndClass('iframe', null, this.element)[0];
   var iframeDoc = goog.dom.getFrameContentDocument(iframe);
@@ -267,31 +244,8 @@ silex.view.TextEditor.prototype.redraw = function() {
 
 
 /**
- * close text editor
- */
-silex.view.TextEditor.prototype.closeEditor = function() {
-  // background
-  var background = goog.dom.getElementByClass('dialogs-background');
-  // hide
-  goog.style.setStyle(background, 'display', 'none');
-  goog.style.setStyle(this.element, 'display', 'none');
-};
-
-
-/**
- * retrieve the editor html content
- * @return     {string}     the text as it is currently in the editor
- */
-silex.view.TextEditor.prototype.getData = function() {
-  return this.textField.getCleanContents();
-};
-
-
-/**
  * the content has changed, notify the controler
  */
-silex.view.TextEditor.prototype.contentChanged = function() {
-  if (this.onStatus) {
-    this.onStatus('changed', this.getData());
-  }
+silex.view.dialog.TextEditor.prototype.contentChanged = function() {
+  this.controller.textEditorController.changed(this.textField.getCleanContents());
 };

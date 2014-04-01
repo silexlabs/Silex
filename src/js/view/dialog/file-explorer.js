@@ -19,8 +19,8 @@
  */
 
 
-goog.require('silex.view.ViewBase');
-goog.provide('silex.view.FileExplorer');
+goog.require('silex.view.dialog.DialogBase');
+goog.provide('silex.view.dialog.FileExplorer');
 
 goog.require('silex.service.CloudStorage');
 goog.require('silex.utils.Url');
@@ -37,70 +37,33 @@ goog.require('goog.ui.KeyboardShortcutHandler');
 /**
  * the Silex FileExplorer class
  * @constructor
- * @extend silex.view.ViewBase
- * @param {element} element   container to render the UI
- * @param  {element} bodyElement  HTML element which holds the body section of the opened file
- * @param  {element} headElement  HTML element which holds the head section of the opened file
+ * @extend silex.view.dialog.DialogBase
+ * @param {Element} element   container to render the UI
+ * @param  {silex.types.View} view  view class which holds the other views
+ * @param  {silex.types.Controller} controller  structure which holds the controller instances
  */
-silex.view.FileExplorer = function(element, bodyElement, headElement) {
+silex.view.dialog.FileExplorer = function(element, view, controller) {
   // call super
-  goog.base(this, element, bodyElement, headElement);
-  // hide the at start
-  goog.style.setStyle(this.element, 'display', 'none');
-  // init the dialog
-  new goog.async.Delay(function() {
-    this.init();
-  }, 1000, this).start();
-
-  // handle escape key
-  var shortcutHandler = new goog.ui.KeyboardShortcutHandler(document);
-  shortcutHandler.registerShortcut('esc', goog.events.KeyCodes.ESC);
-  goog.events.listen(
-      shortcutHandler,
-      goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED,
-      goog.bind(this.closeEditor, this));
-
+  goog.base(this, element, view, controller);
+  // get the global variable of Cloud Explorer
+  this.filePicker = silex.service.CloudStorage.getInstance().filePicker;
 };
 
-// inherit from silex.view.ViewBase
-goog.inherits(silex.view.FileExplorer, silex.view.ViewBase);
-
-/**
- * Contant for file picker config
- */
-silex.view.FileExplorer.CONTAINER_TYPE = 'modal';
-
-
-/**
- * Contant for file picker config
- */
-silex.view.FileExplorer.SERVICES = ['DROPBOX', 'GOOGLE_DRIVE', 'EVERNOTE', 'FTP'];
+// inherit from silex.view.dialog.DialogBase
+goog.inherits(silex.view.dialog.FileExplorer, silex.view.dialog.DialogBase);
 
 
 /**
  * reference to the filepicker instance
  */
-silex.view.FileExplorer.prototype.filePicker;
-
-
-/**
- * init file explorer
- */
-silex.view.FileExplorer.prototype.init = function() {
-  // get the global variable of Cloud Explorer
-  this.filePicker = silex.service.CloudStorage.getInstance().filePicker;
-  // close button
-  goog.events.listen(goog.dom.getElementByClass('close-btn', this.element), goog.events.EventType.CLICK, function() {
-    this.closeEditor();
-  }, false, this);
-};
+silex.view.dialog.FileExplorer.prototype.filePicker;
 
 
 /**
  * pick a file
  * @param opt_mimetypes     optional array of accepted mimetypes, e.g. ['text/html', 'text/plain']
  */
-silex.view.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes, opt_errCbk) {
+silex.view.dialog.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes, opt_errCbk) {
   var fileExtentions;
   if (opt_mimetypes){
     if (opt_mimetypes['mimetype'].indexOf('image') === 0){
@@ -163,7 +126,7 @@ silex.view.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes, opt_
  * save as dialog
  * @param opt_mimetypes     optional array of accepted mimetypes, e.g. ['text/html', 'text/plain']
  */
-silex.view.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes, opt_errCbk) {
+silex.view.dialog.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes, opt_errCbk) {
   var fileExtentions;
   if (opt_mimetypes){
     if (opt_mimetypes['mimetype'].indexOf('image') === 0){
@@ -221,34 +184,4 @@ silex.view.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes, op
       errCbk);
   // show dialog
   this.openEditor();
-};
-
-
-/**
- * open editor
- * this is private method, do not call it
- */
-silex.view.FileExplorer.prototype.openEditor = function() {
-  // background
-  var background = goog.dom.getElementByClass('dialogs-background');
-  // show
-  goog.style.setStyle(background, 'display', 'inherit');
-  goog.style.setStyle(this.element, 'display', '');
-  // close
-  goog.events.listen(background, goog.events.EventType.CLICK, this.closeEditor, true, this);
-};
-
-
-/**
- * close editor
- * this is private method, do not call it
- */
-silex.view.FileExplorer.prototype.closeEditor = function() {
-  // background
-  var background = goog.dom.getElementByClass('dialogs-background');
-  // hide
-  goog.style.setStyle(background, 'display', 'none');
-  goog.style.setStyle(this.element, 'display', 'none');
-  // close
-  goog.events.unlisten(background, goog.events.EventType.CLICK, this.closeEditor, true, this);
 };
