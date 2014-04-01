@@ -280,12 +280,16 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
   // js script
   var jsString = '';
   var scriptTag = goog.dom.getElementByClass(
-    silex.model.Head.SILEX_SCRIPT_ELEMENT_ID,
+    silex.model.Head.SILEX_SCRIPT_ELEMENT_CSS_CLASS,
     headElement);
   if (scriptTag){
     jsString = scriptTag.innerHTML;
     goog.dom.removeNode(scriptTag);
   }
+  else {
+    console.warn('no silex script found');
+  }
+
   // final css
   var cssStr = '';
   // add head css
@@ -337,61 +341,39 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
   }, this));
   // css to download and put to css/
   headStr = headStr.replace(/href="?([^" ]*)"/g, function(match, group1, group2) {
-    var preventDownload = false;
     var absolute = silex.utils.Url.getAbsolutePath(group1, baseUrl);
     var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
     // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
     if (!silex.utils.Url.isAbsoluteUrl(relative)) {
       relative = relative.replace('../', '/');
     }
-    else {
-      // only allowed domains
-      if (absolute.indexOf('//static.silex.me') !== 0) {
-        // now we want to have static files downloaded to the published site
-        // preventDownload = true;
-      }
-    }
-    if (!preventDownload) {
-      var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
-      var newRelativePath = 'css/' + fileName;
-      files.push({
-        url: absolute
-        , destPath: newRelativePath
-        , srcPath: relative
-      });
-      var res = match.replace(group1, newRelativePath);
-      return res;
-    }
-    return match;
+    var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
+    var newRelativePath = 'css/' + fileName;
+    files.push({
+      url: absolute
+      , destPath: newRelativePath
+      , srcPath: relative
+    });
+    var res = match.replace(group1, newRelativePath);
+    return res;
   });
   // scripts to download and put to js/
   headStr = headStr.replace(/src="?([^"]*)"/g, function(match, group1, group2) {
-    var preventDownload = false;
     var absolute = silex.utils.Url.getAbsolutePath(group1, baseUrl);
     var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
     // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
     if (!silex.utils.Url.isAbsoluteUrl(relative)) {
       relative = relative.replace('../', '/');
     }
-    else {
-      // only allowed domains
-      if (absolute.indexOf('//static.silex.me') !== 0) {
-        // now we want to have static files downloaded to the published site
-        // preventDownload = true;
-      }
-    }
-    if (!preventDownload) {
-      var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
-      var newRelativePath = 'js/' + fileName;
-      files.push({
-        url: absolute
-        , destPath: newRelativePath
-        , srcPath: relative
-      });
-      var res = match.replace(group1, newRelativePath);
-      return res;
-    }
-    return match;
+    var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
+    var newRelativePath = 'js/' + fileName;
+    files.push({
+      url: absolute
+      , destPath: newRelativePath
+      , srcPath: relative
+    });
+    var res = match.replace(group1, newRelativePath);
+    return res;
   });
 
   // build a clean body clone
