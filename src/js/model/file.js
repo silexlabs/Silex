@@ -449,7 +449,7 @@ this does nothing: node.style.backgroundImage = "url('" + info.destPath + "')";
             , styles: cssNormal
     });
     // cleanup styles used during edition
-    goog.dom.classes.remove (element, 'editable-style');
+    //goog.dom.classes.remove (element, 'editable-style');
     element.removeAttribute('data-silex-type');
     // remove inline css styles
     element.removeAttribute('style');
