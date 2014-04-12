@@ -4,14 +4,17 @@
  * license: GPL v2
  */
 // node modules
-var express = require('express');
+var express = require('express')
+    , bodyParser = require('body-parser')
+    , cookieParser = require('cookie-parser')
+    , cookieSession = require('cookie-session');
 var app = express();
 var unifile = require('unifile');
 
 // use express for silex tasks (has to be done before app.use(unifile.middleware(...))
-app.use('/silex/tasks', express.bodyParser());
-app.use('/silex/tasks', express.cookieParser());
-app.use('/silex/tasks', express.cookieSession({ secret: 'plum plum plum'}));
+app.use('/silex/tasks', bodyParser());
+app.use('/silex/tasks', cookieParser());
+app.use('/silex/tasks', cookieSession({ secret: 'plum plum plum'}));
 
 // ********************************
 // production
