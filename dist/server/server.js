@@ -5,14 +5,15 @@
  */
 // node modules
 var express = require('express')
-    , bodyParser = require('body-parser')
     , cookieParser = require('cookie-parser')
-    , cookieSession = require('cookie-session');
+    , cookieSession = require('cookie-session')
+    , multipart = require('connect-multiparty');
+
 var app = express();
 var unifile = require('unifile');
 
 // use express for silex tasks (has to be done before app.use(unifile.middleware(...))
-app.use('/silex/tasks', bodyParser());
+app.use('/silex/tasks',  multipart());
 app.use('/silex/tasks', cookieParser());
 app.use('/silex/tasks', cookieSession({ secret: 'plum plum plum'}));
 
