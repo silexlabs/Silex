@@ -98,12 +98,13 @@ exports.publishFiles = function(req, res, next, files, dstPath, cbk){
     var file = files.shift();
 		exports.getFile(req, res, next, file.srcPath, dstPath + '/' + file.destPath, function (error) {
 			if (error){
-				console.error('Error in getFile', error, file.srcPath);
-				cbk({success:false, code: error.code});
+				console.error('Error in getFile', error, file.srcPath, dstPath);
+				// no, continue on error
+        // cbk({success:false, code: error.code});
 			}
 			else{
-				exports.publishFiles(req, res, next, files, dstPath, cbk);
-			}
+      }
+			exports.publishFiles(req, res, next, files, dstPath, cbk);
 		});
 	}
 	else{
