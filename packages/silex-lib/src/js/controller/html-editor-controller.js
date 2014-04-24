@@ -43,7 +43,7 @@ silex.controller.HtmlEditorController.prototype.htmlEditorCallback = function(ty
   switch (type) {
     case 'changed':
       // update content
-      var element = this.view.stage.getSelection()[0];
+      var element = this.model.body.getSelection()[0];
       this.model.element.setInnerHtml(element, content);
       break;
   }

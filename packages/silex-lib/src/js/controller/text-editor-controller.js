@@ -41,7 +41,7 @@ goog.inherits(silex.controller.TextEditorController, silex.controller.Controller
  */
 silex.controller.TextEditorController.prototype.changed = function(content){
   // update content
-  var element = this.view.stage.getSelection()[0];
+  var element = this.model.body.getSelection()[0];
   this.model.element.setInnerHtml(element, content);
   // update fonts
   this.refreshFonts();
