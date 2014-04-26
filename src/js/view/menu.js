@@ -212,6 +212,22 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
 
 
 /**
+ * redraw the menu
+ * @param   {Array<element>} selectedElements the elements currently selected
+ * @param   {HTMLDocument} document  the document to use
+ * @param   {Array<string>} pageNames   the names of the pages which appear in the current HTML file
+ * @param   {string}  currentPageName   the name of the current page
+ */
+silex.view.Menu.prototype.redraw = function(selectedElements, document, pageNames, currentPageName) {
+  // update website title
+  var titleElements = goog.dom.getElementsByTagNameAndClass('title', null, document.head);
+  if (titleElements && titleElements.length > 0){
+    goog.dom.getElementByClass('website-name').innerHTML = titleElements[0].innerHTML;
+  }
+};
+
+
+/**
  * handles click events
  * calls onStatus to notify the controller
  */

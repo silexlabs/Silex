@@ -53,43 +53,53 @@ silex.model.File.prototype.url = null;
  */
 silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk) {
   var iframeElement = goog.dom.getElementByClass(silex.view.Stage.STAGE_CLASS_NAME);
+  var contentDocument = goog.dom.getFrameContentDocument(iframeElement);
   // cleanup
-  this.model.body.setEditable(iframeElement.contentDocument.body, false);
-  this.view.stage.removeEvents(iframeElement.contentDocument.body);
+  this.model.body.setEditable(contentDocument.body, false);
+  this.view.stage.removeEvents(contentDocument.body);
   // when the iframe content has changed
   goog.events.listenOnce(iframeElement, 'load', function(e) {
+    // set base tag
+    if (this.url){
+      var baseTag = contentDocument.createElement('base');
+      baseTag.target = '_blank';
+      baseTag.href = this.url;
+      this.model.head.addTempTag(baseTag);
+      console.log('add base tag', this.url);
+    }
+    console.log(this.url);
     // let the time for the scripts to execute (e.g. pageable)
     setTimeout(goog.bind(function() {
       // load scripts for edition in the iframe
-      var scriptTag = document.createElement('script');
+      var scriptTag = contentDocument.createElement('script');
       scriptTag.type = 'text/javascript';
-      scriptTag.src = 'libs/jquery/editable.js';
+      scriptTag.src = silex.utils.Url.getAbsolutePath('libs/jquery/editable.js', window.location.href);
       this.model.head.addTempTag(scriptTag, goog.bind(function () {
         // load css for editable plugin
-        var cssTag = document.createElement('link');
+        var cssTag = contentDocument.createElement('link');
         cssTag.rel = 'stylesheet';
-        cssTag.href = 'libs/jquery/editable.css';
+        cssTag.href = silex.utils.Url.getAbsolutePath('libs/jquery/editable.css', window.location.href);
         this.model.head.addTempTag(cssTag);
-        cssTag = document.createElement('link');
+        cssTag = contentDocument.createElement('link');
         cssTag.rel = 'stylesheet';
-        cssTag.href = 'libs/jquery/jquery.ui.core.css';
+        cssTag.href = silex.utils.Url.getAbsolutePath('libs/jquery/jquery.ui.core.css', window.location.href);
         this.model.head.addTempTag(cssTag);
-        cssTag = document.createElement('link');
+        cssTag = contentDocument.createElement('link');
         cssTag.rel = 'stylesheet';
-        cssTag.href = 'libs/jquery/jquery-ui.css';
+        cssTag.href = silex.utils.Url.getAbsolutePath('libs/jquery/jquery-ui.css', window.location.href);
         this.model.head.addTempTag(cssTag);
         // select the body
-        this.model.body.setSelection([iframeElement.contentDocument.body]);
+        this.model.body.setSelection([contentDocument.body]);
         // make editable again
-        this.model.body.setEditable(iframeElement.contentDocument.body, true, true);
+        this.model.body.setEditable(contentDocument.body, true, true);
         // restore event listeners
-        this.view.stage.initEvents(iframeElement.contentDocument.body);
+        this.view.stage.initEvents(contentDocument.body);
         // refresh the view
         var pages = this.model.page.getPages();
         var page = this.model.page.getCurrentPageName();
-        this.view.pageTool.redraw([], iframeElement.contentDocument, pages, page);
-        this.view.propertyTool.redraw([], iframeElement.contentDocument, pages, page);
-        this.view.stage.redraw([], iframeElement.contentDocument, pages, page);
+        this.view.pageTool.redraw([], contentDocument, pages, page);
+        this.view.propertyTool.redraw([], contentDocument, pages, page);
+        this.view.stage.redraw([], contentDocument, pages, page);
         // notify the caller
         if (opt_cbk) opt_cbk();
         console.log('file loading done');
@@ -97,9 +107,11 @@ silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk) {
         // error loading editable script
         console.error('error loading editable script');
       }, this));
-    }, this), 100);
+    }, this), 200);
   }, false, this);
-  // set html
+  // add base tag from the beginning
+  if (this.url) rawHtml = rawHtml.replace('<head>', '<head><base href="'+this.url+'" target="_blank">')
+  // write the content
   goog.dom.iframe.writeContent(iframeElement, rawHtml);
 };
 
@@ -110,24 +122,34 @@ silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk) {
  */
 silex.model.File.prototype.getHtml = function() {
   var iframeElement = goog.dom.getElementByClass(silex.view.Stage.STAGE_CLASS_NAME);
+  var contentDocument = goog.dom.getFrameContentDocument(iframeElement);
   // cleanup
-  this.model.body.setEditable(iframeElement.contentDocument.body, false);
+  this.model.body.setEditable(contentDocument.body, false);
   // clone
-  var cleanFile = iframeElement.contentDocument.cloneNode(true);
+  var cleanFile = contentDocument.cloneNode(true);
   // make editable again
-  this.model.body.setEditable(iframeElement.contentDocument.body, true, true);
+  this.model.body.setEditable(contentDocument.body, true, true);
   // load css for editable plugin
   var cssTag = document.createElement('link');
   cssTag.rel = 'stylesheet';
-  cssTag.href = 'libs/jquery/editable.css';
+  cssTag.href = silex.utils.Url.getAbsolutePath('libs/jquery/editable.css', window.location.href);
   this.model.head.addTempTag(cssTag);
+  // set base tag
+  if (this.url){
+    var baseTag = contentDocument.createElement('base');
+    baseTag.target = '_blank';
+    baseTag.href = this.url;
+    this.model.head.addTempTag(baseTag);
+    console.log('add base tag', this.url);
+  }
   // cleanup
   silex.utils.Style.removeInternalClasses(cleanFile, false, true);
+  window.cleanFile = cleanFile;
   // get html
-  var cleanFileStr = cleanFile.innerHTML;
+  var cleanFileStr = cleanFile.documentElement.innerHTML;
   // TODO: handle silex-runtime css class
 
-  return cleanFile.innerHTML;
+  return cleanFileStr;
 };
 
 
@@ -166,6 +188,7 @@ silex.model.File.prototype.saveAs = function(url, rawHtml, cbk, opt_errCbk) {
  * write content to the file
  */
 silex.model.File.prototype.save = function(rawHtml, cbk, opt_errCbk) {
+  console.log('save', arguments);
   silex.service.CloudStorage.getInstance().save(
     this.getUrl(),
     rawHtml,
@@ -265,9 +288,10 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
   // get html
   var cleanFileStr = this.getHtml();
   var iframe = goog.dom.createElement('iframe');
+  var contentDocument = goog.dom.getFrameContentDocument(iframe);
   goog.dom.iframe.writeContent(headElement, cleanFileStr);
-  var headElement = iframe.dcontentDocument.head;
-  var bodyElement = iframe.dcontentDocument.body;
+  var headElement = contentDocument.head;
+  var bodyElement = contentDocument.body;
 
   // **
   var metaNode = goog.dom.findNode(headElement, function (node) {
