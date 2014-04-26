@@ -307,6 +307,10 @@ silex.model.Head.prototype.setTitle = function(name) {
   }
   // update website title
   titleNode.innerHTML = name;
+  // update view
+  var pages = this.model.page.getPages();
+  var page = this.model.page.getCurrentPageName();
+  this.view.menu.redraw(this.model.body.getSelection(), goog.dom.getFrameContentDocument(this.iframeElement), pages, page);
 };
 
 
@@ -314,11 +318,12 @@ silex.model.Head.prototype.setTitle = function(name) {
  * @return  {Element}   head element of the loaded site
  */
 silex.model.Head.prototype.getHeadElement = function() {
-  if (!this.iframeElement || !this.iframeElement.contentDocument || !this.iframeElement.contentDocument.head){
+  var contentDocument = goog.dom.getFrameContentDocument(this.iframeElement);
+  if (!contentDocument || !contentDocument.head){
     return null;
   }
   // returns the head of the document in the iframe
-  return this.iframeElement.contentDocument.head;
+  return contentDocument.head;
 };
 
 

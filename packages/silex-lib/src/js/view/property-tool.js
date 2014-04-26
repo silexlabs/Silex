@@ -145,7 +145,10 @@ silex.view.PropertyTool.prototype.buildPanes = function() {
 
 /**
  * redraw all panes
- * @param  {Array.<Element>} selectedElements  array of elements which are currently selected
+* @param   {Array<element>} selectedElements the elements currently selected
+* @param   {HTMLDocument} document  the document to use
+* @param   {Array<string>} pageNames   the names of the pages which appear in the current HTML file
+* @param   {string}  currentPageName   the name of the current page
  */
 silex.view.PropertyTool.prototype.redraw = function(selectedElements, document, pageNames, currentPage) {
   // refresh panes

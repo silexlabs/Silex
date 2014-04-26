@@ -624,7 +624,7 @@ silex.controller.ControllerBase.prototype.openFile = function(opt_cbk, opt_error
       this.model.file.open(url, goog.bind(function(rawHtml) {
         this.model.file.setHtml(rawHtml, goog.bind(function() {
           // handle retrocompatibility issues
-          silex.utils.BackwardCompat.process(this.model.body.getBodyElement(), this.model.head.headElement);
+          silex.utils.BackwardCompat.process(this.model.body.getBodyElement(), this.model.head.getHeadElement());
           // check that it is a Silex website
           if (goog.dom.getElementByClass('editable-style', this.model.body.getBodyElement())){
             // display and redraw
@@ -662,6 +662,7 @@ silex.controller.ControllerBase.prototype.doSave = function(url, opt_cbk, opt_er
   this.model.file.setUrl(url);
   // relative urls only in the files
   var rawHtml = this.model.file.getHtml();
+  console.log('save', rawHtml);
   // save to file
   this.model.file.saveAs(
     url,

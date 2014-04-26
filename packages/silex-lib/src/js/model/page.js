@@ -93,7 +93,7 @@ silex.model.Page.prototype.getParentPage = function(element) {
  * @return {Element} the body element of the iframe
  */
 silex.model.Page.prototype.getWindow = function() {
-  return this.iframeElement.contentWindow;
+  return goog.dom.getFrameContentWindow(this.iframeElement);
 }
 
 

@@ -104,7 +104,7 @@ silex.model.Body.UI_DRAGGABLE_RESIZING_CLASS_NAME = 'ui-resizable-resizing';
  * @return  {Element}   body element
  */
 silex.model.Body.prototype.getBodyElement = function() {
-  return this.iframeElement.contentDocument.body;
+  return goog.dom.getFrameContentDocument(this.iframeElement).body;
 };
 
 
@@ -112,7 +112,7 @@ silex.model.Body.prototype.getBodyElement = function() {
  * @return  {Element}   body element
  */
 silex.model.Body.prototype.getWindow = function() {
-  return this.iframeElement.contentWindow;
+  return goog.dom.getFrameContentWindow(this.iframeElement);
 };
 
 
