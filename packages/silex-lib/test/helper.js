@@ -60,31 +60,44 @@ exports.getDriverName = function () {
  */
 exports.createClient = function (webdriverjs) {
 
-  var rootPath = path.resolve(__dirname, '..');
-  var phantomjsPath = rootPath + '/node_modules/phantomjs/bin/phantomjs';
+    var rootPath = path.resolve(__dirname, '..');
+    var phantomjsPath = rootPath + '/node_modules/phantomjs/bin/phantomjs';
 
-  var client = webdriverjs.remote({
-    desiredCapabilities: {
-      browserName: exports.getDriverName() || 'phantomjs'
-      , 'phantomjs.binary.path': phantomjsPath
+    var driverName = exports.getDriverName();
+    if (driverName){
+
+    if (driverName==='firefox'){
+      // with firefox (which must be installed)
     }
-  });
+    else if (driverName==='chrome'){
+      if (!fs.existsSync(rootPath+'/chromedriver')) throw new Error('Chrome driver for selenium is needed in '+rootPath);
+    }
 
-  client.on('error',function(e) {
-    //console.error('an error occured in the client connected to the selenium server')
-    if (e && e.err && e.err.code){
-      switch(e.err.code) {
-        case 'ECONNREFUSED':
-          console.error("couldn't connect to selenium server, please run the command: \n $ java -jar test/selenium-server-standalone-2.37.0.jar");
-        break;
-        case 'NOSESSIONID':
-           // session not available
-           // ...
-        break;
+    var client = webdriverjs.remote({
+      desiredCapabilities: {
+        browserName: driverName
+        , 'phantomjs.binary.path': phantomjsPath
       }
-    }
-  });
-  return client;
+    });
+
+    client.on('error',function(e) {
+      //console.error('an error occured in the client connected to the selenium server')
+      if (e && e.err && e.err.code){
+        switch(e.err.code) {
+          case 'ECONNREFUSED':
+            console.error("couldn't connect to selenium server, please run the command: \n $ java -jar test/selenium-server-standalone-2.37.0.jar");
+          break;
+          case 'NOSESSIONID':
+             // session not available
+             // ...
+          break;
+        }
+      }
+    });
+    return client;
+  }
+  console.error('You are supposed to call grunt with param \'-firefox\', \'-chrome\' or \'-phantomjs\'. Canceling tests.');
+  return null;
 }
 
 

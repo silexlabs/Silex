@@ -4,6 +4,11 @@ var webdriverjs = require('webdriverjs'),
 // dummy function used when the result is an expected error
 function _(){}
 
+if (!helper.getDriverName()){
+  console.error('You are supposed to call grunt with param \'-firefox\', \'-chrome\' or \'-phantomjs\'. Canceling tests.');
+  return;
+}
+
 // start the test
 describe('Silex file explorer dialog test', function(){
   var client = {};
