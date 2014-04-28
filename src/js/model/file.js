@@ -48,72 +48,152 @@ silex.model.File.prototype.url = null;
 
 
 /**
+ * true if the temp tags used for edition
+ * have been loaded once already in the iframe
+ * this is because the second time, no load event is catched
+ */
+silex.model.File.prototype.hasLoadedTmpTags = false;
+
+
+/**
  * build the html content
  * Parse the raw html and fill the bodyElement and headElement
  */
 silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk) {
   var iframeElement = goog.dom.getElementByClass(silex.view.Stage.STAGE_CLASS_NAME);
   var contentDocument = goog.dom.getFrameContentDocument(iframeElement);
+  // loading
+  goog.dom.classes.add(iframeElement.parentNode, silex.model.Element.LOADING_ELEMENT_CSS_CLASS);
   // cleanup
   this.model.body.setEditable(contentDocument.body, false);
   this.view.stage.removeEvents(contentDocument.body);
   // when the iframe content has changed
   goog.events.listenOnce(iframeElement, 'load', function(e) {
-    // set base tag
-    if (this.url){
-      var baseTag = contentDocument.createElement('base');
-      baseTag.target = '_blank';
-      baseTag.href = this.url;
-      this.model.head.addTempTag(baseTag);
-      console.log('add base tag', this.url);
+    // remove the "silex-runtime" css class from the body while editing
+    goog.dom.classes.remove(contentDocument.body, 'silex-runtime');
+    // include edition tags and call onContentLoaded
+    if (this.hasLoadedTmpTags === true){
+      // call include scripts with no callback
+      this.includeEditionTags();
+      // let the time for the scripts to execute (e.g. pageable)
+      setTimeout(goog.bind(function() {
+        // force the call
+        this.onContentLoaded(opt_cbk);
+      }, this), 200);
     }
-    console.log(this.url);
-    // let the time for the scripts to execute (e.g. pageable)
-    setTimeout(goog.bind(function() {
-      // load scripts for edition in the iframe
-      var scriptTag = contentDocument.createElement('script');
-      scriptTag.type = 'text/javascript';
-      scriptTag.src = silex.utils.Url.getAbsolutePath('libs/jquery/editable.js', window.location.href);
-      this.model.head.addTempTag(scriptTag, goog.bind(function () {
-        // load css for editable plugin
-        var cssTag = contentDocument.createElement('link');
-        cssTag.rel = 'stylesheet';
-        cssTag.href = silex.utils.Url.getAbsolutePath('libs/jquery/editable.css', window.location.href);
-        this.model.head.addTempTag(cssTag);
-        cssTag = contentDocument.createElement('link');
-        cssTag.rel = 'stylesheet';
-        cssTag.href = silex.utils.Url.getAbsolutePath('libs/jquery/jquery.ui.core.css', window.location.href);
-        this.model.head.addTempTag(cssTag);
-        cssTag = contentDocument.createElement('link');
-        cssTag.rel = 'stylesheet';
-        cssTag.href = silex.utils.Url.getAbsolutePath('libs/jquery/jquery-ui.css', window.location.href);
-        this.model.head.addTempTag(cssTag);
-        // select the body
-        this.model.body.setSelection([contentDocument.body]);
-        // make editable again
-        this.model.body.setEditable(contentDocument.body, true, true);
-        // restore event listeners
-        this.view.stage.initEvents(contentDocument.body);
-        // refresh the view
-        var pages = this.model.page.getPages();
-        var page = this.model.page.getCurrentPageName();
-        this.view.pageTool.redraw([], contentDocument, pages, page);
-        this.view.propertyTool.redraw([], contentDocument, pages, page);
-        this.view.stage.redraw([], contentDocument, pages, page);
-        // notify the caller
-        if (opt_cbk) opt_cbk();
-        console.log('file loading done');
-      }, this), goog.bind(function () {
-        // error loading editable script
-        console.error('error loading editable script');
-      }, this));
-    }, this), 200);
+    else{
+      // only the first time wait for tags to be loaded
+      this.hasLoadedTmpTags = true;
+      // let the time for the scripts to execute (e.g. pageable)
+      setTimeout(goog.bind(function() {
+        // load scripts for edition in the iframe
+        this.includeEditionTags(goog.bind(function (){
+          this.onContentLoaded(opt_cbk);
+        }, this), goog.bind(function () {
+          // error loading editable script
+          console.error('error loading editable script');
+          throw new Error('error loading editable script');
+        }, this));
+      }, this), 200);
+    }
   }, false, this);
   // add base tag from the beginning
-  if (this.url) rawHtml = rawHtml.replace('<head>', '<head><base href="'+this.url+'" target="_blank">')
+  // Not needed since we change all  the URLs to absolute
+  //  if (this.url) rawHtml = rawHtml.replace('<head>', '<head><base class="'+silex.model.Head.SILEX_TEMP_TAGS_CSS_CLASS+'" href="'+this.url+'" target="_blank">')
+  // prevent scripts from executing
+  rawHtml = rawHtml.replace(/type=\"text\/javascript\"/g, 'type="text/notjavascript"')
+  // convert to absolute urls
+  if (this.url){
+    rawHtml = silex.utils.Url.relative2Absolute(rawHtml, this.url);
+  }
   // write the content
   goog.dom.iframe.writeContent(iframeElement, rawHtml);
 };
+
+
+/**
+ * copntent successfully changed in the iframe
+ */
+silex.model.File.prototype.onContentLoaded = function (opt_cbk) {
+  var iframeElement = goog.dom.getElementByClass(silex.view.Stage.STAGE_CLASS_NAME);
+  var contentDocument = goog.dom.getFrameContentDocument(iframeElement);
+  // select the body
+  this.model.body.setSelection([contentDocument.body]);
+  // make editable again
+  this.model.body.setEditable(contentDocument.body, true, true);
+  // restore event listeners
+  this.view.stage.initEvents(contentDocument.body);
+  // refresh the view
+  var pages = this.model.page.getPages();
+  var page = this.model.page.getCurrentPageName();
+  this.view.pageTool.redraw([], contentDocument, pages, page);
+  this.view.propertyTool.redraw([], contentDocument, pages, page);
+  this.view.stage.redraw([], contentDocument, pages, page);
+  if (opt_cbk) opt_cbk();
+  // loading
+  setTimeout(goog.bind(function() {
+    goog.dom.classes.remove(iframeElement.parentNode, silex.model.Element.LOADING_ELEMENT_CSS_CLASS);
+    // notify the caller
+    console.log('file loading done');
+  }, this), 200);
+};
+
+
+/**
+ * load all scripts needed for edit and display
+ * in the iframe
+ */
+silex.model.File.prototype.includeEditionTags = function(onSuccess, onError) {
+  var iframeElement = goog.dom.getElementByClass(silex.view.Stage.STAGE_CLASS_NAME);
+  var contentDocument = goog.dom.getFrameContentDocument(iframeElement);
+  // js script tags
+  var jQueryScriptTag = contentDocument.createElement('script');
+  jQueryScriptTag.type = 'text/javascript';
+  jQueryScriptTag.src = silex.utils.Url.getAbsolutePath('libs/jquery/jquery.js', window.location.href);
+  var jQueryUiScriptTag = contentDocument.createElement('script');
+  jQueryUiScriptTag.type = 'text/javascript';
+  jQueryUiScriptTag.src = silex.utils.Url.getAbsolutePath('libs/jquery/jquery-ui.js', window.location.href);
+  var pageableScriptTag = contentDocument.createElement('script');
+  pageableScriptTag.type = 'text/javascript';
+  pageableScriptTag.src = silex.utils.Url.getAbsolutePath('libs/jquery/pageable.js', window.location.href);
+  var editableScriptTag = contentDocument.createElement('script');
+  editableScriptTag.type = 'text/javascript';
+  editableScriptTag.src = silex.utils.Url.getAbsolutePath('libs/jquery/editable.js', window.location.href);
+  var frontEndScriptTag = contentDocument.createElement('script');
+  frontEndScriptTag.type = 'text/javascript';
+  frontEndScriptTag.src = silex.utils.Url.getAbsolutePath('js/front-end.js', window.location.href);
+  // css tags
+  var editableCssTag = contentDocument.createElement('link');
+  editableCssTag.rel = 'stylesheet';
+  editableCssTag.href = silex.utils.Url.getAbsolutePath('libs/jquery/editable.css', window.location.href);
+  var jQueryUiCoreCssTag = contentDocument.createElement('link');
+  jQueryUiCoreCssTag.rel = 'stylesheet';
+  jQueryUiCoreCssTag.href = silex.utils.Url.getAbsolutePath('libs/jquery/jquery.ui.core.css', window.location.href);
+  var jQueryUiCssTag = contentDocument.createElement('link');
+  jQueryUiCssTag.rel = 'stylesheet';
+  jQueryUiCssTag.href = silex.utils.Url.getAbsolutePath('libs/jquery/jquery-ui.css', window.location.href);
+  // load them all
+  var tags = [
+    jQueryScriptTag,
+    jQueryUiScriptTag,
+    pageableScriptTag,
+    editableScriptTag,
+    editableCssTag,
+    jQueryUiCoreCssTag,
+    jQueryUiCssTag,
+    frontEndScriptTag
+  ];
+  // add base tag
+  if (this.url){
+    var baseTag = contentDocument.createElement('base');
+    baseTag.target = '_blank';
+    baseTag.href = this.url;
+    this.model.head.addTempTag(baseTag);
+    tags.push(baseTag);
+  }
+  // do the loading for good
+  this.model.head.addTempTag(tags, onSuccess, onError);
+}
 
 
 /**
@@ -129,26 +209,20 @@ silex.model.File.prototype.getHtml = function() {
   var cleanFile = contentDocument.cloneNode(true);
   // make editable again
   this.model.body.setEditable(contentDocument.body, true, true);
-  // load css for editable plugin
-  var cssTag = document.createElement('link');
-  cssTag.rel = 'stylesheet';
-  cssTag.href = silex.utils.Url.getAbsolutePath('libs/jquery/editable.css', window.location.href);
-  this.model.head.addTempTag(cssTag);
-  // set base tag
-  if (this.url){
-    var baseTag = contentDocument.createElement('base');
-    baseTag.target = '_blank';
-    baseTag.href = this.url;
-    this.model.head.addTempTag(baseTag);
-    console.log('add base tag', this.url);
-  }
   // cleanup
+  this.model.head.removeTempTag(contentDocument.head);
   silex.utils.Style.removeInternalClasses(cleanFile, false, true);
   window.cleanFile = cleanFile;
+  // put back the "silex-runtime" css class after editing
+  goog.dom.classes.add(contentDocument.body, 'silex-runtime');
   // get html
   var cleanFileStr = cleanFile.documentElement.innerHTML;
-  // TODO: handle silex-runtime css class
-
+  // put back the scripts
+  rawHtml = rawHtml.replace(/type=\"text\/notjavascript\"/g, 'type="text/javascript"')
+  // convert to relative urls
+  if (this.url){
+    cleanFileStr = silex.utils.Url.absolute2Relative(cleanFileStr, this.url);
+  }
   return cleanFileStr;
 };
 
@@ -577,7 +651,7 @@ silex.model.File.prototype.handleNodeUrls = function (node, baseUrl) {
       // update with local path
       //bug: do nothing:
       node.style.backgroundImage = "url('" + info.destPath + "')";
-      //goog.style.setStyle(node, 'background-image', "xxxurl('xxxxx" + info.destPath + "')");
+      //goog.style.setStyle(node, 'background-image', "url('xxxxx" + info.destPath + "')");
       //node.style.backgroundImage = undefined;
       //goog.style.setStyle(node, 'background-image', undefined);
       console.warn('replace', info.destPath, node.style.backgroundImage)

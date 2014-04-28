@@ -41,6 +41,14 @@ silex.model.Element = function(model, view) {
 
 
 /**
+ * constant for loader on elements
+ * @const
+ * @type {string}
+ */
+silex.model.Element.LOADING_ELEMENT_CSS_CLASS = 'loading-image';
+
+
+/**
  * constant for silex element type
  * @const
  * @type {string}
@@ -325,7 +333,7 @@ silex.model.Element.prototype.setImageUrl = function(element, url, opt_callback,
         // remove the id set by the loader (it needs it to know what has already been loaded?)
         img.removeAttribute('id');
         // remove loading asset
-        goog.dom.classes.remove(element, 'loading-image');
+        goog.dom.classes.remove(element, silex.model.Element.LOADING_ELEMENT_CSS_CLASS);
       }, true, this);
       goog.events.listenOnce(imageLoader, goog.net.EventType.ERROR,
       function(e) {
@@ -336,7 +344,7 @@ silex.model.Element.prototype.setImageUrl = function(element, url, opt_callback,
         }
       }, true, this);
       // add loading asset
-      goog.dom.classes.add(element, 'loading-image');
+      goog.dom.classes.add(element, silex.model.Element.LOADING_ELEMENT_CSS_CLASS);
       // remove previous img tag
       var imgTags = goog.dom.getElementsByTagNameAndClass('img', silex.model.Element.ELEMENT_CONTENT_CLASS_NAME, element);
       if (imgTags.length > 0) {
@@ -461,7 +469,7 @@ silex.model.Element.prototype.createElement = function(type) {
   }
 
   // init the element
-  element.className = silex.model.Body.EDITABLE_CLASS_NAME + ' xxx';
+  element.className = silex.model.Body.EDITABLE_CLASS_NAME;
   goog.dom.classes.add(element, silex.model.Body.EDITABLE_CLASS_NAME);
 
   // make it editable

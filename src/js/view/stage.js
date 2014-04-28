@@ -52,6 +52,18 @@ silex.view.Stage = function(element, view , controller) {
       e.preventDefault();
     }
   }, false, this);
+
+  // listen on body too because user can release
+  // on the tool boxes
+  goog.events.listen(document.body, 'mouseup', function(){
+    // force drop the selected elements
+    if (this.bodyElement && (this.isDragging || this.isResizing)){
+      // simulate the mous up on the iframe body
+      var evObj = document.createEvent('MouseEvents');
+      evObj.initEvent( 'mouseup', true, true);
+      this.bodyElement.dispatchEvent(evObj);
+    }
+  }, false, this);
 }
 
 /**
@@ -100,6 +112,7 @@ silex.view.Stage.prototype.removeEvents = function (bodyElement) {
  * @param {Element}  bodyElement   the element which contains the body of the website
  */
 silex.view.Stage.prototype.initEvents = function (bodyElement) {
+  this.bodyElement = bodyElement;
 
   // listen on body instead of element because user can release
   // on the tool boxes

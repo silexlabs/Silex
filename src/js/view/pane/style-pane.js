@@ -136,7 +136,7 @@ silex.view.pane.StylePane.prototype.onInputChanged = function(event) {
   if (this.iAmSettingValue) return;
   this.iAmSettingValue = true;
   try{
-    this.controller.propertyToolController.classNameChanged(this.cssClassesInput.value);
+    this.controller.propertyToolController.setClassName(this.cssClassesInput.value);
   }
   catch(err){
     // error which will not keep this.iAmSettingValue to true
