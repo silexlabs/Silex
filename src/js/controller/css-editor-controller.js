@@ -22,14 +22,13 @@ goog.require('silex.controller.ControllerBase');
  * @constructor
  * @extends silex.controller.ControllerBase
  * listen to the view events and call the main controller's methods
+ * @param  {silex.types.Controller} controller  structure which holds the controller instances
  * @param {silex.types.Model} model
- * @param {silex.types.View} view
+ * @param  {silex.types.View} view  view class which holds the other views
  */
-silex.controller.CssEditorController = function (model, view) {
+silex.controller.CssEditorController = function (controller, model, view) {
   // call super
-  silex.controller.ControllerBase.call(this, model, view);
-  // attach events to the view
-  view.cssEditor.onStatus = goog.bind(this.cssEditorCallback, this);
+  silex.controller.ControllerBase.call(this, controller, model, view);
 };
 
 
@@ -40,14 +39,8 @@ goog.inherits(silex.controller.CssEditorController, silex.controller.ControllerB
 /**
  * cssEditor event handler
  */
-silex.controller.CssEditorController.prototype.cssEditorCallback = function(type, content) {
-  switch (type) {
-    case 'changed':
-      // update content
-      this.model.head.setHeadStyle(content);
-      this.model.head.updateBrowserStyle();
-      // update view
-      this.view.textEditor.redraw();
-      break;
-  }
+silex.controller.CssEditorController.prototype.changed = function(content) {
+  // update content
+  this.model.head.setHeadStyle(content);
+  this.model.head.updateBrowserStyle();
 };

@@ -39,58 +39,82 @@ silex.utils.BackwardCompat.process = function(bodyElement, headElement) {
     bodyElement.setAttribute('data-style-normal', bodyElement.getAttribute('data-style-normal'));
     bodyElement.removeAttribute('data-style-normal');
   }
-  $('[data-style-normal]', bodyElement).each(function() {
-    this.setAttribute('style', this.getAttribute('data-style-normal'));
-    this.removeAttribute('data-style-normal');
+  var elements = null;
+  elements = goog.dom.query('[data-style-normal]', bodyElement);
+  goog.array.forEach(elements, function(element) {
+    element.setAttribute('style', element.getAttribute('data-style-normal'));
+    element.removeAttribute('data-style-normal');
   });
-  $('[data-style-hover]', bodyElement).each(function() {
-    this.removeAttribute('data-style-hover');
+  elements = goog.dom.query('[data-style-hover]', bodyElement);
+  goog.array.forEach(elements, function(element) {
+    element.removeAttribute('data-style-hover');
   });
-  $('[data-style-pressed]', bodyElement).each(function() {
-    this.removeAttribute('data-style-pressed');
+  elements = goog.dom.query('[data-style-pressed]', bodyElement);
+  goog.array.forEach(elements, function(element) {
+    element.removeAttribute('data-style-pressed');
   });
   // retorcompat silex-sub-type (2.0)
-  $('[data-silex-sub-type]', bodyElement).each(function() {
-    this.setAttribute('data-silex-type', this.getAttribute('data-silex-sub-type'));
-    this.removeAttribute('data-silex-sub-type');
+  elements = goog.dom.query('[data-silex-sub-type]', bodyElement);
+  goog.array.forEach(elements, function(element) {
+    element.setAttribute('data-silex-type', element.getAttribute('data-silex-sub-type'));
+    element.removeAttribute('data-silex-sub-type');
   });
   // old page system (2.0)
   // <meta name="page" content="page1">
-  $('meta[name="page"]', headElement).each(function() {
-    var pageName = this.getAttribute('content');
-    $(bodyElement).append('<a id="'+pageName+'" data-silex-type="page">'+pageName+'</a>');
-    $(this).remove();
+  elements = goog.dom.query('meta[name="page"]', headElement);
+  goog.array.forEach(elements, function(element) {
+    var pageName = element.getAttribute('content');
+    var a = document.createElement('a');
+    a.id = pageName;
+    a.setAttribute('data-silex-type', 'page');
+    a.innerHTML = pageName;
+    goog.dom.appendChild(bodyElement, a);
+    goog.dom.removeNode(element);
   });
   // fixes bug "confusion between pages and paged elements"
-  $('.page-element', bodyElement).each(function() {
-    if (this.getAttribute('data-silex-type') !== 'page'){
-      $(this).removeClass('page-element');
-      $(this).addClass('paged-element');
+  elements = goog.dom.query('.page-element', bodyElement);
+  goog.array.forEach(elements, function(element) {
+    if (element.getAttribute('data-silex-type') !== 'page'){
+      goog.dom.classes.remove(element, 'page-element');
+      goog.dom.classes.add(element, 'paged-element');
     }
   });
   // silex-page class becomes page-element
-  $('.silex-page', bodyElement).each(function() {
-    $(this).removeClass('silex-page');
-    $(this).addClass('paged-element');
+  elements = goog.dom.query('.silex-page', bodyElement);
+  goog.array.forEach(elements, function(element) {
+    goog.dom.classes.remove(element, 'silex-page');
+    goog.dom.classes.add(element, 'paged-element');
   });
   // retorcompat silex links with #! (2.0)
-  $('[data-silex-href]', bodyElement).each(function() {
-    var href = this.getAttribute('data-silex-href');
+  elements = goog.dom.query('[data-silex-href]', bodyElement);
+  goog.array.forEach(elements, function(element) {
+    var href = element.getAttribute('data-silex-href');
     if (href.indexOf('#') === 0 && href.indexOf('#!') !== 0){
-      this.setAttribute('data-silex-href', '#!' + href.substr(1));
+      element.setAttribute('data-silex-href', '#!' + href.substr(1));
     }
   });
   // css class on elements with [type]-element (2.0)
-  $('[data-silex-type]', bodyElement).each(function() {
-    $(this).addClass(this.getAttribute('data-silex-type') + '-element');
+  elements = goog.dom.query('[data-silex-type]', bodyElement);
+  goog.array.forEach(elements, function(element) {
+    goog.dom.classes.add(element, element.getAttribute('data-silex-type') + '-element');
   });
   // static.silex.me 2.0 -> 2.1
-  $('[src]', headElement).each(function() {
-    var src = this.getAttribute('src');
-    this.setAttribute('src', src.replace('//static.silex.me/2.0', '//static.silex.me/2.1'));
+  elements = goog.dom.query('[src]', headElement);
+  goog.array.forEach(elements, function(element) {
+    var src = element.getAttribute('src');
+    element.setAttribute('src', src.replace('//static.silex.me/2.0', '//static.silex.me/2.2'));
+    element.setAttribute('src', src.replace('//static.silex.me/2.1', '//static.silex.me/2.2'));
   });
-  $('[href]', headElement).each(function() {
-    var href = this.getAttribute('href');
-    this.setAttribute('href', href.replace('//static.silex.me/2.0', '//static.silex.me/2.1'));
+  elements = goog.dom.query('[href]', headElement);
+  goog.array.forEach(elements, function(element) {
+    var href = element.getAttribute('href');
+    element.setAttribute('href', href.replace('//static.silex.me/2.0', '//static.silex.me/2.2'));
+    element.setAttribute('href', href.replace('//static.silex.me/2.1', '//static.silex.me/2.2'));
+  });
+  elements = goog.dom.query('[data-silex-href]', headElement);
+  goog.array.forEach(elements, function(element) {
+    var href = element.getAttribute('data-silex-href');
+    element.setAttribute('data-silex-href', href.replace('//static.silex.me/2.0', '//static.silex.me/2.2'));
+    element.setAttribute('data-silex-href', href.replace('//static.silex.me/2.1', '//static.silex.me/2.2'));
   });
 };

@@ -23,14 +23,13 @@ goog.require('silex.controller.ControllerBase');
  * @constructor
  * @extends silex.controller.ControllerBase
  * listen to the view events and call the main controller's methods
+ * @param  {silex.types.Controller} controller  structure which holds the controller instances
  * @param {silex.types.Model} model
- * @param {silex.types.View} view
+ * @param  {silex.types.View} view  view class which holds the other views
  */
-silex.controller.HtmlEditorController = function (model, view) {
+silex.controller.HtmlEditorController = function (controller, model, view) {
   // call super
-  silex.controller.ControllerBase.call(this, model, view);
-  // attach events to the view
-  view.htmlEditor.onStatus = goog.bind(this.htmlEditorCallback, this);
+  silex.controller.ControllerBase.call(this, controller, model, view);
 };
 
 // inherit from silex.controller.ControllerBase
@@ -44,10 +43,8 @@ silex.controller.HtmlEditorController.prototype.htmlEditorCallback = function(ty
   switch (type) {
     case 'changed':
       // update content
-      var element = this.view.stage.getSelection()[0];
+      var element = this.model.body.getSelection()[0];
       this.model.element.setInnerHtml(element, content);
       break;
   }
 };
-
-

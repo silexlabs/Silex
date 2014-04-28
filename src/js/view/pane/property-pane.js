@@ -30,61 +30,61 @@ goog.require('goog.object');
  * let user edit style of components
  * @constructor
  * @extend silex.view.PaneBase
- * @param {element} element   container to render the UI
- * @param  {element} bodyElement  HTML element which holds the body section of the opened file
- * @param  {element} headElement  HTML element which holds the head section of the opened file
+ * @param {Element} element   container to render the UI
+ * @param  {silex.types.View} view  view class which holds the other views
+ * @param  {silex.types.Controller} controller  structure which holds the controller instances
  */
-silex.view.pane.PropertyPane = function(element, bodyElement, headElement) {
+silex.view.pane.PropertyPane = function(element, view, controller) {
   // call super
-  goog.base(this, element, bodyElement, headElement);
+  goog.base(this, element, view, controller);
 
   this.buildUi();
 };
 
-// inherit from silex.view.ViewBase
+// inherit from silex.view.PaneBase
 goog.inherits(silex.view.pane.PropertyPane, silex.view.pane.PaneBase);
 
 /**
  * callback to call to let the user edit the image url
  */
-silex.view.pane.PropertyPane.prototype.selectImage;
+silex.view.pane.PropertyPane.prototype.selectImage = null;
 
 
 /**
  * UI for position and size
  */
-silex.view.pane.PropertyPane.prototype.leftInput;
+silex.view.pane.PropertyPane.prototype.leftInput = null;
 
 
 /**
  * UI for position and size
  */
-silex.view.pane.PropertyPane.prototype.topInput;
+silex.view.pane.PropertyPane.prototype.topInput = null;
 
 
 /**
  * UI for position and size
  */
-silex.view.pane.PropertyPane.prototype.widthInput;
+silex.view.pane.PropertyPane.prototype.widthInput = null;
 
 
 /**
  * UI for position and size
  */
-silex.view.pane.PropertyPane.prototype.heightInput;
+silex.view.pane.PropertyPane.prototype.heightInput = null;
 
 
 /**
  * UI for alt and title
  * only used for images
  */
-silex.view.pane.PropertyPane.prototype.altInput;
+silex.view.pane.PropertyPane.prototype.altInput = null;
 
 
 /**
  * UI for alt and title
  */
-silex.view.pane.PropertyPane.prototype.titleInput;
+silex.view.pane.PropertyPane.prototype.titleInput = null;
 
 
 
@@ -149,15 +149,14 @@ silex.view.pane.PropertyPane.prototype.buildUi = function() {
 silex.view.pane.PropertyPane.prototype.onPositionChanged =
     function(e) {
   // get the selected element
-  var elements = this.getSelection();
   var input = e.target;
   // the name of the property to change
   var name = input.getAttribute('data-style-name');
   // the bounding box of all elements
-  var bb = silex.utils.Dom.getBoundingBox(elements);
+  var bb = silex.utils.Dom.getBoundingBox(this.selectedElements);
 
   // apply the change to all elements
-  goog.array.forEach(elements, function (element) {
+  goog.array.forEach(this.selectedElements, function (element) {
     if (input.value != ''){
       var initialValue = parseFloat(element.style[name].substr(0, element.style[name].indexOf('px')));
       // compute the value relative to the group value
@@ -213,16 +212,21 @@ silex.view.pane.PropertyPane.prototype.onTitleChanged =
 
 /**
  * redraw the properties
+ * @param   {Array<element>} selectedElements the elements currently selected
+ * @param   {HTMLDocument} document  the document to use
+ * @param   {Array<string>} pageNames   the names of the pages which appear in the current HTML file
+ * @param   {string}  currentPageName   the name of the current page
  */
-silex.view.pane.PropertyPane.prototype.redraw = function() {
+silex.view.pane.PropertyPane.prototype.redraw = function(selectedElements, document, pageNames, currentPageName) {
   if (this.iAmSettingValue) return;
   this.iAmRedrawing = true;
   // call super
-  goog.base(this, 'redraw');
+  goog.base(this, 'redraw', selectedElements);
 
-  // get the selected elements
-  var elements = this.getSelection();
-  var bb = silex.utils.Dom.getBoundingBox(elements);
+  // remember selection
+  this.selectedElements = selectedElements;
+
+  var bb = silex.utils.Dom.getBoundingBox(selectedElements);
 
   // display position and size
   if (!goog.isNull(bb.top)){
@@ -235,12 +239,12 @@ silex.view.pane.PropertyPane.prototype.redraw = function() {
   this.heightInput.value = bb.height || '';
 
   // alt, only for images
-  var elementsType = this.getCommonProperty(elements, function (element) {
+  var elementsType = this.getCommonProperty(selectedElements, function (element) {
     return element.getAttribute(silex.model.Element.TYPE_ATTR);
   });
   if (elementsType === silex.model.Element.TYPE_IMAGE) {
     this.altInput.removeAttribute('disabled');
-    var alt = this.getCommonProperty(elements, function (element) {
+    var alt = this.getCommonProperty(selectedElements, function (element) {
       var content = goog.dom.getElementByClass(silex.model.Element.ELEMENT_CONTENT_CLASS_NAME, element);
       if (content) {
         return content.getAttribute('alt');
@@ -260,16 +264,15 @@ silex.view.pane.PropertyPane.prototype.redraw = function() {
   }
   // title
   // not available for stage element
-  var elements = this.getSelection();
   var elementsNoStage = [];
-  goog.array.forEach(elements, function (element) {
-    if (silex.utils.PageablePlugin.getBodyElement() != element) {
+  goog.array.forEach(selectedElements, function (element) {
+    if (document.body != element) {
       elementsNoStage.push(element);
     }
   }, this);
   if (elementsNoStage.length > 0) {
     this.titleInput.removeAttribute('disabled');
-    var title = this.getCommonProperty(elements, function (element) {
+    var title = this.getCommonProperty(selectedElements, function (element) {
       return element.getAttribute('title');
     });
     if (title){

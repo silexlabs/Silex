@@ -17,6 +17,10 @@
 
 goog.provide('silex.utils.Style');
 
+goog.require('silex.model.Page');
+goog.require('silex.model.Element');
+goog.require('silex.model.Body');
+
 goog.require('goog.style');
 goog.require('goog.array');
 
@@ -27,18 +31,16 @@ goog.require('goog.array');
  * @type {string}
  */
 silex.utils.Style.SILEX_CLASS_NAMES = [
-  silex.utils.EditablePlugin.EDITABLE_CLASS_NAME,
-  silex.utils.EditablePlugin.UI_RESIZABLE_CLASS_NAME,
-  silex.utils.EditablePlugin.UI_DRAGGABLE_CLASS_NAME,
-  silex.utils.EditablePlugin.UI_DROPPABLE_CLASS_NAME,
-  silex.utils.EditablePlugin.UI_DRAGGABLE_DRAGGING_CLASS_NAME,
-  silex.utils.EditablePlugin.UI_DRAGGABLE_RESIZING_CLASS_NAME,
-  silex.utils.PageablePlugin.PAGEABLE_ROOT_CLASS_NAME,
-  silex.utils.EditablePlugin.EDITABLE_CREATED_CLASS_NAME,
-  silex.utils.PageablePlugin.PAGED_CLASS_NAME,
-  silex.utils.PageablePlugin.PAGED_VISIBLE_CLASS_NAME,
-  silex.utils.PageablePlugin.PAGE_LINK_ACTIVE_CLASS_NAME,
-  silex.view.Stage.STAGE_CLASS_NAME,
+  silex.model.Body.EDITABLE_CLASS_NAME,
+  silex.model.Body.UI_RESIZABLE_CLASS_NAME,
+  silex.model.Body.UI_DRAGGABLE_CLASS_NAME,
+  silex.model.Body.UI_DROPPABLE_CLASS_NAME,
+  silex.model.Body.UI_DRAGGABLE_DRAGGING_CLASS_NAME,
+  silex.model.Body.UI_DRAGGABLE_RESIZING_CLASS_NAME,
+  silex.model.Body.EDITABLE_CREATED_CLASS_NAME,
+  silex.model.Page.PAGED_CLASS_NAME,
+  silex.model.Page.PAGED_VISIBLE_CLASS_NAME,
+  silex.model.Page.PAGE_LINK_ACTIVE_CLASS_NAME,
   silex.model.Element.SELECTED_CLASS_NAME,
   silex.model.Element.TYPE_CONTAINER + '-element',
   silex.model.Element.TYPE_IMAGE + '-element',
@@ -54,12 +56,12 @@ silex.utils.Style.SILEX_CLASS_NAMES = [
  * @type {string}
  */
 silex.utils.Style.SILEX_TEMP_CLASS_NAMES = [
-  silex.utils.EditablePlugin.UI_RESIZABLE_CLASS_NAME,
-  silex.utils.EditablePlugin.UI_DRAGGABLE_CLASS_NAME,
-  silex.utils.EditablePlugin.UI_DROPPABLE_CLASS_NAME,
-  silex.utils.EditablePlugin.UI_DRAGGABLE_DRAGGING_CLASS_NAME,
-  silex.utils.EditablePlugin.UI_DRAGGABLE_RESIZING_CLASS_NAME,
-  silex.utils.PageablePlugin.PAGED_VISIBLE_CLASS_NAME,
+  silex.model.Body.UI_RESIZABLE_CLASS_NAME,
+  silex.model.Body.UI_DRAGGABLE_CLASS_NAME,
+  silex.model.Body.UI_DROPPABLE_CLASS_NAME,
+  silex.model.Body.UI_DRAGGABLE_DRAGGING_CLASS_NAME,
+  silex.model.Body.UI_DRAGGABLE_RESIZING_CLASS_NAME,
+  silex.model.Page.PAGED_VISIBLE_CLASS_NAME,
   silex.model.Element.SELECTED_CLASS_NAME
 ];
 
@@ -67,7 +69,7 @@ silex.utils.Style.SILEX_TEMP_CLASS_NAMES = [
 /**
  * remove useless class names of an element created by silex
  * remove all silex internal classes
- * @param  {element} element   created by silex, either a text box, image, ...
+ * @param  {Element} element   created by silex, either a text box, image, ...
  * @param  {boolean} opt_allClasses   if true, remove all Silex classes, not only the classes which are temporary and useless to store
  * @param  {boolean} opt_isRecursive  if true, remove classes from the element and its children
  */
@@ -85,56 +87,6 @@ silex.utils.Style.removeInternalClasses = function(element, opt_allClasses, opt_
         goog.dom.classes.remove(child, className);
       });
     }
-  }
-};
-
-
-/**
- * get/set class name of the element of a container created by silex
- * remove all silex internal classes
- * @param  {element} element   created by silex, either a text box, image, ...
- * @return  {string}           the value for this styleName
- */
-silex.utils.Style.getClassName = function(element) {
-  var pages = silex.utils.PageablePlugin.getPages();
-  return  goog.array.map(element.className.split(' '), function (name) {
-    if(goog.array.contains(silex.utils.Style.SILEX_CLASS_NAMES, name)
-      || goog.array.contains(pages, name)){
-      return;
-    }
-    return name;
-  }).join(' ').trim();
-};
-
-
-/**
- * get/set class name of the element of a container created by silex
- * remove all silex internal classes
- * @param  {element} element   created by silex, either a text box, image, ...
- * @param  {string} opt_className  the class names, or null to reset
- */
-silex.utils.Style.setClassName = function(element, opt_className) {
-  // compute class names to keep, no matter what
-  // i.e. the one which are in element.className + in Silex internal classes
-  var pages = silex.utils.PageablePlugin.getPages();
-  var classNamesToKeep = goog.array.map(element.className.split(' '), function (name) {
-    if(goog.array.contains(silex.utils.Style.SILEX_CLASS_NAMES, name)
-      || goog.array.contains(pages, name)){
-      return name;
-    }
-    return;
-  });
-
-  // reset element class name
-  element.className = classNamesToKeep.join(' ');
-  if (opt_className){
-    // apply classes from opt_className
-    goog.array.forEach(opt_className.split(' '), function (name) {
-      name = name.trim();
-      if (name && name !== ''){
-        goog.dom.classes.add(element, name);
-      }
-    });
   }
 };
 
@@ -165,13 +117,13 @@ silex.utils.Style.stringToStyle = function(styleStr) {
  * Compute background color
  * Takes the opacity of the backgrounds into account
  * Recursively compute parents background colors
- * @param {element} element the element which bg color we want
+ * @param {Element} element the element which bg color we want
  * @return {!goog.color.Rgb} the element bg color
  */
 silex.utils.Style.computeBgColor = function(element) {
  var parentColorArray;
   // retrieve the parents blended colors
-  if(!goog.dom.classes.has(element, silex.view.Stage.STAGE_CLASS_NAME)){
+  if(element.parentNode){
     parentColorArray = silex.utils.Style.computeBgColor(element.parentNode);
   }
   else{

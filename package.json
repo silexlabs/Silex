@@ -7,19 +7,13 @@
     "Thomas Fetiveau aka zabojad"
   ]
   , "dependencies": {
-    "unifile": "~0.0.x"
+    "unifile": "~0.0.19"
     , "minimatch": "~0.2.14"
     , "glob": "~3.2.7"
     , "lodash": "~2.4.1"
-    , "grunt-lib-contrib": "~0.6.1"
     , "bytes": "~0.2.1"
     , "qs": "~0.6.6"
     , "multiparty": "~3.1.1"
-    , "raw-body": "~1.1.2"
-    , "express": "~3.4.x"
-    , "dbox": "~0.6.x"
-    , "node-oauth": "0.1.x"
-    , "oauth": ""
     , "path": ""
     , "grunt": "~0.4.1"
     , "grunt-cli": "~0.1.11"
@@ -37,10 +31,8 @@
     , "grunt-append-sourcemapping": "~0.0.2"
     , "grunt-closure-linter": "~0.1.0"
     , "grunt-simple-mocha": "~0.4.0"
-    , "mocha": "~1.14.0"
-    , "chai": "~1.8.1"
-    , "webdriverjs": "~0.7.14"
-    , "phantomjs": "~1.9.2"
+    , "webdriverjs": "~1.6.*"
+    , "phantomjs": "~1.9.*"
   }
   , "repository": {
     "type": "git"

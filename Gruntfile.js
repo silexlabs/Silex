@@ -17,7 +17,7 @@ Uses:
   $ grunt test -phantomjs
   $ grunt test -firefox
   $ grunt test -chrome
-  $ grunt doWatch:test
+  $ grunt doWatch:test -phantomjs
 
 * fix style with google fix style (indentation etc)
 
@@ -199,7 +199,7 @@ module.exports = function(grunt) {
           , namespaces: 'silex.App'
           , builder: 'submodules/closure-library/closure/bin/build/closurebuilder.py'
           , compilerFile: 'build/closure-compiler.jar'
-          , compile: true // disable if needed?
+          , compile: true // disable to speedup the compilation but also disable source map
           , compilerOpts: {
             compilation_level: 'SIMPLE_OPTIMIZATIONS'
             , externs: 'submodules/cloud-explorer/lib/app/js/cloud-explorer.js'
@@ -243,6 +243,7 @@ module.exports = function(grunt) {
           , reporter: 'nyan'
         }
         , all: { src: 'test/**/*.js' }
+//        , all: { src: 'test/**/file-explorer.js' }
       }
   });
 }
