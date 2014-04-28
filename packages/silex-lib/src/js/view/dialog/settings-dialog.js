@@ -15,8 +15,9 @@
  */
 
 
-goog.require('silex.view.ViewBase');
-goog.provide('silex.view.SettingsDialog');
+goog.provide('silex.view.dialog.SettingsDialog');
+
+goog.require('silex.view.dialog.DialogBase');
 goog.require('goog.events.KeyCodes');
 goog.require('goog.ui.KeyboardShortcutHandler');
 
@@ -26,30 +27,19 @@ goog.require('goog.ui.KeyboardShortcutHandler');
  * the Silex SettingsDialog class
  * @constructor
  * @param  {Element}  element  DOM element to wich I render the UI
- * @param  {function} cbk   callback which I'll call when the elements
+ * @param  {silex.types.View} view  view class which holds the other views
+ * @param  {silex.types.Controller} controller  structure which holds the controller instances
  * load the template and make it a SettingsDialog dialog
  * this is only the UI part, to let user setup publish functionnality
  */
-silex.view.SettingsDialog = function(element, bodyElement, headElement) {
+silex.view.dialog.SettingsDialog = function(element, view, controller) {
   // call super
-  goog.base(this, element, bodyElement, headElement);
+  goog.base(this, element, view, controller);
 
   // init the editor
   this.publicationPath = '';
   // hide the at start
   goog.style.setStyle(this.element, 'display', 'none');
-  // handle escape key
-  var shortcutHandler = new goog.ui.KeyboardShortcutHandler(document);
-  shortcutHandler.registerShortcut('esc', goog.events.KeyCodes.ESC);
-  goog.events.listen(
-      shortcutHandler,
-      goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED,
-      goog.bind(this.closeEditor, this));
-  // close button
-  var btn = goog.dom.getElementByClass('close-btn', this.element);
-  goog.events.listen(btn, goog.events.EventType.CLICK, function() {
-    this.closeEditor();
-  }, false, this);
   // publication path browse button
   var btn = goog.dom.getElementByClass('browse-btn', this.element);
   goog.events.listen(btn, goog.events.EventType.CLICK, function() {
@@ -65,8 +55,8 @@ silex.view.SettingsDialog = function(element, bodyElement, headElement) {
       }, false, this);
 };
 
-// inherit from silex.view.ViewBase
-goog.inherits(silex.view.SettingsDialog, silex.view.ViewBase);
+// inherit from silex.view.dialog.DialogBase
+goog.inherits(silex.view.dialog.SettingsDialog, silex.view.dialog.DialogBase);
 
 
 /**
@@ -74,21 +64,23 @@ goog.inherits(silex.view.SettingsDialog, silex.view.ViewBase);
  * @see silex.model.File
  * @return {string}   the publication path
  */
-silex.view.SettingsDialog.prototype.getPublicationPath = function() {
-  var that = this;
-  var path = null;
-  $('meta[name="publicationPath"]', this.headElement).each(
-      function() {
-        path = this.getAttribute('content');
-      });
-  return path;
+silex.view.dialog.SettingsDialog.prototype.getPublicationPath = function() {
+  var metaNode = goog.dom.findNode(this.headElement, function (node) {
+    return node && node.tagName === 'meta' && node.getAttribute('name') === 'publicationPath';
+  });
+  if (metaNode){
+    return metaNode.getAttribute('content');
+  }
+  else{
+    return null;
+  }
 };
 
 
 /**
  * render the template
  */
-silex.view.SettingsDialog.prototype.redraw = function() {
+silex.view.dialog.SettingsDialog.prototype.redraw = function() {
   var inputPublicationPath = goog.dom.getElementByClass('input-publication-path');
   inputPublicationPath.value = this.getPublicationPath();
 };
@@ -98,19 +90,8 @@ silex.view.SettingsDialog.prototype.redraw = function() {
  * open settings dialog
  * @param {function} cbk   callback to be called when the user closes the dialog
  */
-silex.view.SettingsDialog.prototype.openDialog = function(cbk) {
+silex.view.dialog.SettingsDialog.prototype.openDialog = function(cbk) {
   this.onClose = cbk;
-  // background
-  var background = goog.dom.getElementByClass('settings-background');
-  // show
-  goog.style.setStyle(background, 'display', 'inherit');
-  goog.style.setStyle(this.element, 'display', '');
-  // close
-  goog.events.listen(background,
-      goog.events.EventType.CLICK,
-      this.closeEditor,
-      true,
-      this);
   this.redraw();
 };
 
@@ -119,17 +100,7 @@ silex.view.SettingsDialog.prototype.openDialog = function(cbk) {
  * close editor
  * this is private method, do not call it
  */
-silex.view.SettingsDialog.prototype.closeEditor = function() {
+silex.view.dialog.SettingsDialog.prototype.closeEditor  = function() {
+  goog.base(this, 'closeEditor');
   if (this.onClose) this.onClose();
-  // background
-  var background = goog.dom.getElementByClass('settings-background');
-  // hide
-  goog.style.setStyle(background, 'display', 'none');
-  goog.style.setStyle(this.element, 'display', 'none');
-  // close
-  goog.events.unlisten(background,
-      goog.events.EventType.CLICK,
-      this.closeEditor,
-      true,
-      this);
 };

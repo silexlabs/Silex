@@ -34,25 +34,25 @@ goog.require('goog.ui.TabBar');
  * let user edit style of components
  * @constructor
  * @extend silex.view.PaneBase
- * @param {element} element   container to render the UI
- * @param  {element} bodyElement  HTML element which holds the body section of the opened file
- * @param  {element} headElement  HTML element which holds the head section of the opened file
+ * @param {Element} element   container to render the UI
+ * @param  {silex.types.View} view  view class which holds the other views
+ * @param  {silex.types.Controller} controller  structure which holds the controller instances
  */
-silex.view.pane.GeneralStylePane = function(element, bodyElement, headElement) {
+silex.view.pane.GeneralStylePane = function(element, view, controller) {
   // call super
-  goog.base(this, element, bodyElement, headElement);
+  goog.base(this, element, view, controller);
 
   this.buildUi();
 };
 
-// inherit from silex.view.ViewBase
+// inherit from silex.view.PaneBase
 goog.inherits(silex.view.pane.GeneralStylePane, silex.view.pane.PaneBase);
 
 
 /**
  * opacity input
  */
-silex.view.pane.GeneralStylePane.prototype.opacityInput;
+silex.view.pane.GeneralStylePane.prototype.opacityInput = null;
 
 
 /**
@@ -67,17 +67,18 @@ silex.view.pane.GeneralStylePane.prototype.buildUi = function() {
 
 /**
  * redraw the properties
+ * @param   {Array<element>} selectedElements the elements currently selected
+ * @param   {HTMLDocument} document  the document to use
+ * @param   {Array<string>} pageNames   the names of the pages which appear in the current HTML file
+ * @param   {string}  currentPageName   the name of the current page
  */
-silex.view.pane.GeneralStylePane.prototype.redraw = function() {
+silex.view.pane.GeneralStylePane.prototype.redraw = function(selectedElements) {
   if (this.iAmSettingValue) return;
   this.iAmRedrawing = true;
   // call super
-  goog.base(this, 'redraw');
+  goog.base(this, 'redraw', selectedElements);
 
-  // get the selected element
-  var elements = this.getSelection();
-
-  var opacity = this.getCommonProperty(elements, function (element) {
+  var opacity = this.getCommonProperty(selectedElements, function (element) {
     return element.style.opacity;
   });
   if (goog.isNull(opacity)) {

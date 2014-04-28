@@ -19,7 +19,7 @@
  * @author a.hoyau@silexlabs.org
  */
 
-goog.provide('silex.view.LinkDialogPlugin');
+goog.provide('silex.view.dialog.LinkDialogPlugin');
 
 goog.require('goog.editor.plugins.LinkDialogPlugin');
 goog.require('goog.array');
@@ -41,10 +41,10 @@ goog.require('goog.uri.utils');
  * @constructor
  * @extends {goog.editor.plugins.AbstractDialogPlugin}
  */
-silex.view.LinkDialogPlugin = function() {
+silex.view.dialog.LinkDialogPlugin = function() {
   goog.base(this);
 };
-goog.inherits(silex.view.LinkDialogPlugin,
+goog.inherits(silex.view.dialog.LinkDialogPlugin,
     goog.editor.plugins.LinkDialogPlugin);
 
 /**
@@ -53,7 +53,7 @@ goog.inherits(silex.view.LinkDialogPlugin,
  * @protected
  * @override
  */
-silex.view.LinkDialogPlugin.prototype.handleOk = function(e) {
+silex.view.dialog.LinkDialogPlugin.prototype.handleOk = function(e) {
   // call parent class
   goog.base(this, 'handleOk', e, linkUrl);
   // allow internal links

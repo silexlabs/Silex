@@ -18,8 +18,9 @@
  */
 
 
-goog.require('silex.view.AceEditorBase');
-goog.provide('silex.view.JsEditor');
+goog.provide('silex.view.dialog.JsEditor');
+
+goog.require('silex.view.dialog.AceEditorBase');
 goog.require('goog.events.KeyCodes');
 goog.require('goog.ui.KeyboardShortcutHandler');
 
@@ -27,24 +28,24 @@ goog.require('goog.ui.KeyboardShortcutHandler');
 
 /**
  * @constructor
- * @extend silex.view.AceEditorBase
- * @param {element} element   container to render the UI
- * @param  {element} bodyElement  HTML element which holds the body section of the opened file
- * @param  {element} headElement  HTML element which holds the head section of the opened file
+ * @extend silex.view.dialog.AceEditorBase
+ * @param {Element} element   container to render the UI
+ * @param  {silex.types.View} view  view class which holds the other views
+ * @param  {silex.types.Controller} controller  structure which holds the controller instances
  */
-silex.view.JsEditor = function(element, bodyElement, headElement) {
+silex.view.dialog.JsEditor = function(element, view, controller) {
   // call super
-  goog.base(this, element, bodyElement, headElement);
+  goog.base(this, element, view, controller);
 };
 
-// inherit from silex.view.AceEditorBase
-goog.inherits(silex.view.JsEditor, silex.view.AceEditorBase);
+// inherit from silex.view.dialog.AceEditorBase
+goog.inherits(silex.view.dialog.JsEditor, silex.view.dialog.AceEditorBase);
 
 
 /**
  * init the menu and UIs
  */
-silex.view.JsEditor.prototype.initUI = function() {
+silex.view.dialog.JsEditor.prototype.initUI = function() {
   // call super
   goog.base(this, 'initUI');
   // set mode

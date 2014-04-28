@@ -35,61 +35,61 @@ goog.require('goog.ui.HsvaPalette');
  * let user edit style of components
  * @constructor
  * @extend silex.view.PaneBase
- * @param {element} element   container to render the UI
- * @param  {element} bodyElement  HTML element which holds the body section of the opened file
- * @param  {element} headElement  HTML element which holds the head section of the opened file
+ * @param {Element} element   container to render the UI
+ * @param  {silex.types.View} view  view class which holds the other views
+ * @param  {silex.types.Controller} controller  structure which holds the controller instances
  */
-silex.view.pane.BorderPane = function(element, bodyElement, headElement) {
+silex.view.pane.BorderPane = function(element, view, controller) {
   // call super
-  goog.base(this, element, bodyElement, headElement);
+  goog.base(this, element, view, controller);
 
   this.buildUi();
 };
 
-// inherit from silex.view.ViewBase
+// inherit from silex.view.PaneBase
 goog.inherits(silex.view.pane.BorderPane, silex.view.pane.PaneBase);
 
 
 /**
  * input element
  */
-silex.view.pane.BorderPane.prototype.borderWidthInput;
+silex.view.pane.BorderPane.prototype.borderWidthInput = null;
 
 
 /**
  * input element
  */
-silex.view.pane.BorderPane.prototype.borderStyleComboBox;
+silex.view.pane.BorderPane.prototype.borderStyleComboBox = null;
 
 
 /**
  * input element
  */
-silex.view.pane.BorderPane.prototype.borderPlacementCheckBoxes;
+silex.view.pane.BorderPane.prototype.borderPlacementCheckBoxes = null;
 
 
 /**
  * input element
  */
-silex.view.pane.BorderPane.prototype.cornerRadiusInput;
+silex.view.pane.BorderPane.prototype.cornerRadiusInput = null;
 
 
 /**
  * input element
  */
-silex.view.pane.BorderPane.prototype.cornerPlacementCheckBoxes;
+silex.view.pane.BorderPane.prototype.cornerPlacementCheckBoxes = null;
 
 
 /**
  * color picker for border color
  */
-silex.view.pane.BorderPane.prototype.borderColorPicker;
+silex.view.pane.BorderPane.prototype.borderColorPicker = null;
 
 
 /**
  * color picker for border color
  */
-silex.view.pane.BorderPane.prototype.hsvPalette;
+silex.view.pane.BorderPane.prototype.hsvPalette = null;
 
 
 /**
@@ -188,17 +188,14 @@ silex.view.pane.BorderPane.prototype.buildUi = function() {
 /**
  * redraw the properties
  */
-silex.view.pane.BorderPane.prototype.redraw = function() {
+silex.view.pane.BorderPane.prototype.redraw = function(selectedElements) {
   if (this.iAmSettingValue) return;
   this.iAmRedrawing = true;
   // call super
-  goog.base(this, 'redraw');
-
-  // get the selected elements
-  var elements = this.getSelection();
+  goog.base(this, 'redraw', selectedElements);
 
   // border width
-  var borderWidth = this.getCommonProperty(elements, function (element) {
+  var borderWidth = this.getCommonProperty(selectedElements, function (element) {
     return element.style.borderWidth;
   });
   if (borderWidth) {
@@ -215,7 +212,6 @@ silex.view.pane.BorderPane.prototype.redraw = function() {
     }
     // Three-value syntax - top vertical bottom
     else if (values.length === 3) {
-      values[0];
       values[3] = values[1];
     }
     // Four-value syntax - top right bottom left
@@ -242,7 +238,7 @@ silex.view.pane.BorderPane.prototype.redraw = function() {
       this.resetBorder();
     }
     // border color
-    var borderColor = this.getCommonProperty(elements, function (element) {
+    var borderColor = this.getCommonProperty(selectedElements, function (element) {
       return element.style.borderColor;
     });
     if (borderColor === 'transparent' || borderColor === '') {
@@ -264,7 +260,7 @@ silex.view.pane.BorderPane.prototype.redraw = function() {
       this.resetBorder();
   }
   // border style
-  var borderStyle = this.getCommonProperty(elements, function (element) {
+  var borderStyle = this.getCommonProperty(selectedElements, function (element) {
     return element.style.borderStyle;
   });
   if (borderStyle) {
@@ -274,7 +270,7 @@ silex.view.pane.BorderPane.prototype.redraw = function() {
     this.borderStyleComboBox.setSelectedIndex(0);
   }
   // border radius
-  var borderRadius = this.getCommonProperty(elements, function (element) {
+  var borderRadius = this.getCommonProperty(selectedElements, function (element) {
     return element.style.borderRadius;
   });
   if (borderRadius) {

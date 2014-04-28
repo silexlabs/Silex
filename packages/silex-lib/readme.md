@@ -41,6 +41,7 @@ Prerequisite :
 
 * [node.js](http://nodejs.org/) installed
 * [NPM](https://npmjs.org/) installed
+* [python](https://www.python.org/downloads/)
 
 Clone this repository, and do not forget the sub modules (cloud-explorer and unifile)
 
@@ -83,6 +84,7 @@ Prerequisite :
 * [node.js](http://nodejs.org/) installed
 * Git Client installed (e.g. [windows github client](http://windows.github.com/))
 * [NPM installed](https://npmjs.org/)
+* [python](https://www.python.org/downloads/)
 
 Installation of Silex:
 

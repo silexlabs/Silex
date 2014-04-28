@@ -28,7 +28,7 @@ silex.utils.Dom = function() {
 /**
  * render a template by duplicating the itemTemplateString and inserting the data in it
  * @param {string} itemTemplateString   the template containing \{\{markers\}\}
- * @param {array}  data                 the array of strings conaining the data
+ * @param {Array<string>}  data                 the array of strings conaining the data
  * @return {string} the template string with the data in it
  */
 silex.utils.Dom.renderList = function (itemTemplateString, data) {
