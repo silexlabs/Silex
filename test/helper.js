@@ -30,6 +30,8 @@ exports.checkParams = function () {
   }
   return false;
 }
+
+
 /**
  * get the driver name from the input params
  * @return  the driver name (phantomjs, firefox...)
@@ -51,10 +53,58 @@ exports.getDriverName = function () {
     }
     return driverName;
 }
+
+
+/**
+ * create the webdriver client
+ */
+exports.createClient = function (webdriverjs) {
+
+    var rootPath = path.resolve(__dirname, '..');
+    var phantomjsPath = rootPath + '/node_modules/phantomjs/bin/phantomjs';
+
+    var driverName = exports.getDriverName();
+    if (driverName){
+
+    if (driverName==='firefox'){
+      // with firefox (which must be installed)
+    }
+    else if (driverName==='chrome'){
+      if (!fs.existsSync(rootPath+'/chromedriver')) throw new Error('Chrome driver for selenium is needed in '+rootPath);
+    }
+
+    var client = webdriverjs.remote({
+      desiredCapabilities: {
+        browserName: driverName
+        , 'phantomjs.binary.path': phantomjsPath
+      }
+    });
+
+    client.on('error',function(e) {
+      //console.error('an error occured in the client connected to the selenium server')
+      if (e && e.err && e.err.code){
+        switch(e.err.code) {
+          case 'ECONNREFUSED':
+            console.error("couldn't connect to selenium server, please run the command: \n $ java -jar test/selenium-server-standalone-2.37.0.jar");
+          break;
+          case 'NOSESSIONID':
+             // session not available
+             // ...
+          break;
+        }
+      }
+    });
+    return client;
+  }
+  console.error('You are supposed to call grunt with param \'-firefox\', \'-chrome\' or \'-phantomjs\'. Canceling tests.');
+  return null;
+}
+
+
 /**
  * start selenium driver
  * @param        cbk         callback which takes the selenium driver in param
- */
+ *
 exports.startSelenium = function (cbk) {
     if (exports.driver){
             console.warn('selenium already started, restart');
@@ -107,10 +157,11 @@ exports.startSelenium = function (cbk) {
 /**
  * stop selenium driver
  * @param        cbk         callback fired after shutdown
- */
+ *
 exports.stopSelenium = function (cbk) {
         exports.driver.quit().then(function () {
                 exports.driver = null;
                 if (cbk) cbk();
         });
 }
+/* */

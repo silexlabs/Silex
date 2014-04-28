@@ -11,7 +11,7 @@
 
 
 /**
- * @fileoverview This file contains the definitions several useful structures
+ * @fileoverview This file contains the definitions of the Model, View and Controller structures
  *
  */
 
@@ -33,21 +33,38 @@ goog.require('silex.controller.TextEditorController');
 /**
  * @constructor
  * @struct
+ */
+silex.types.Model = function() {
+};
+
+
+/**
+ * store references
  * @param {silex.model.File} file
  * @param {silex.model.Head} head
  * @param {silex.model.Body} body
  * @param {silex.model.Element} element
+ * @param {silex.model.Page} page
  */
-silex.types.Model = function(file, head, body, element) {
+silex.types.Model.prototype.init = function(file, head, body, page, element) {
   this.file = file;
   this.head = head;
   this.body = body;
+  this.page = page;
   this.element = element;
-}
+};
 
 /**
  * @constructor
  * @struct
+ */
+silex.types.Controller = function() {
+
+};
+
+
+/**
+ * store references
  * @param {silex.model.MenuController} menuController
  * @param {silex.model.StageController} stageController
  * @param {silex.model.PageToolController} pageToolController
@@ -58,7 +75,7 @@ silex.types.Model = function(file, head, body, element) {
  * @param {silex.model.JsEditorController} jsEditorController
  * @param {silex.model.TextEditorController} textEditorController
  */
-silex.types.Controller = function(
+silex.types.Controller.prototype.init = function (
   menuController,
   stageController,
   pageToolController,
@@ -82,7 +99,13 @@ silex.types.Controller = function(
 
 /**
  * @constructor
- * @param {silex.view.Workspace} workspace
+ * @struct
+ */
+silex.types.View = function() {
+}
+
+/**
+ * store references
  * @param {silex.view.Menu} menu
  * @param {silex.view.Stage} stage
  * @param {silex.view.PageTool} pageTool
@@ -93,10 +116,10 @@ silex.types.Controller = function(
  * @param {silex.view.TextEditor} textEditor
  * @param {silex.view.FileExplorer} fileExplorer
  * @param {silex.view.SettingsDialog} settingsDialog
+ * @param {silex.view.Workspace} workspace
  * @struct
  */
-silex.types.View = function(
-  workspace,
+silex.types.View.prototype.init = function(
   menu,
   stage,
   pageTool,
@@ -106,8 +129,8 @@ silex.types.View = function(
   jsEditor,
   textEditor,
   fileExplorer,
-  settingsDialog) {
-  this.workspace = workspace;
+  settingsDialog,
+  workspace) {
   this.menu = menu;
   this.stage = stage;
   this.pageTool = pageTool;
@@ -118,5 +141,5 @@ silex.types.View = function(
   this.textEditor = textEditor;
   this.fileExplorer = fileExplorer;
   this.settingsDialog = settingsDialog;
+  this.workspace = workspace;
 }
-

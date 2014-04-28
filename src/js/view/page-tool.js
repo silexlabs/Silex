@@ -16,29 +16,35 @@
  *
  */
 
-goog.require('silex.view.ViewBase');
 goog.provide('silex.view.PageTool');
 
-goog.require('silex.utils.PageablePlugin');
+goog.require('goog.dom');
 
 /**
  * @constructor
- * @extend silex.view.ViewBase
- * @param {element} element   container to render the UI
- * @param  {element} bodyElement  HTML element which holds the body section of the opened file
- * @param  {element} headElement  HTML element which holds the head section of the opened file
+ *
+ * @param {Element} element   container to render the UI
+ * @param  {silex.types.Controller} controller  structure which holds the controller instances
  */
-silex.view.PageTool = function(element, bodyElement, headElement) {
-  // call super
-  goog.base(this, element, bodyElement, headElement);
+silex.view.PageTool = function(element, view, controller) {
+  // store references
+  this.element = element;
+  this.view = view;
+  this.controller = controller;
 
   // init the tool
   this.initEvents();
 };
 
-// inherit from silex.view.ViewBase
-goog.inherits(silex.view.PageTool, silex.view.ViewBase);
-
+/**
+ * page list based on what is passed to redraw
+ * {Array.<{name: string, displayName: string, linkName: string, idx: number}>} of objects with these attributes
+ *  * name
+ *  * displayName
+ *  * linkName
+ *  * idx
+ */
+silex.view.PageTool.prototype.pages = [];
 
 /**
  * add listeners on the tool container
@@ -67,17 +73,19 @@ silex.view.PageTool.prototype.initEvents = function(pages) {
 /**
  * refresh the pages
  * find all pages in the dom
+* @param   {Array<element>} selectedElements the elements currently selected
+* @param   {HTMLDocument} contentDocument  the document to use
+* @param   {Array<string>} pageNames   the names of the pages which appear in the current HTML file
+* @param   {string}  currentPageName   the name of the current page
  */
-silex.view.PageTool.prototype.redraw = function() {
-  var pageNames = silex.utils.PageablePlugin.getPages();
-  var currentPageName = silex.utils.PageablePlugin.getCurrentPageName();
+silex.view.PageTool.prototype.redraw = function(selectedElements, contentDocument, pageNames, currentPageName) {
   // prepare the data for the template
   // make an array with name, displayName, linkName and className
   var idx = 0;
-  var pages = pageNames.map(goog.bind(function (pageName) {
+  this.pages = pageNames.map(goog.bind(function (pageName) {
     var res = {
       name: pageName,
-      displayName: silex.utils.PageablePlugin.getDisplayName(pageName),
+      displayName: contentDocument.getElementById(pageName).innerHTML,
       linkName: '#!' + pageName,
       idx: idx++
     };
@@ -93,7 +101,7 @@ silex.view.PageTool.prototype.redraw = function() {
   // refresh the list with new pages
   var container = goog.dom.getElementByClass('page-tool-container', this.element);
   var templateHtml = goog.dom.getElementByClass('page-tool-template', this.element).innerHTML;
-  container.innerHTML = silex.utils.Dom.renderList(templateHtml, pages);
+  container.innerHTML = silex.utils.Dom.renderList(templateHtml, this.pages);
 };
 
 
@@ -101,9 +109,7 @@ silex.view.PageTool.prototype.redraw = function() {
  * ask to remove a page
  */
 silex.view.PageTool.prototype.removePageAtIndex = function(idx) {
-  var pageNames = silex.utils.PageablePlugin.getPages();
-  if (this.onStatus) this.onStatus('delete', pageNames[idx]);
-  this.redraw();
+  this.controller.pageToolController.removePage(this.pages[idx].name);
 };
 
 
@@ -111,9 +117,7 @@ silex.view.PageTool.prototype.removePageAtIndex = function(idx) {
  * ask to rename a page
  */
 silex.view.PageTool.prototype.renamePageAtIndex = function(idx) {
-  var pageNames = silex.utils.PageablePlugin.getPages();
-  if (this.onStatus) this.onStatus('rename', pageNames[idx]);
-  this.redraw();
+  this.controller.pageToolController.renamePage(this.pages[idx].name);
 };
 
 
@@ -136,7 +140,7 @@ silex.view.PageTool.prototype.setSelectedIndex = function(index, opt_notify) {
     }
   }, this);
   // notify the controller
-  if (opt_notify && this.onStatus) this.onStatus('changed', pageName);
+  if (opt_notify) this.controller.pageToolController.openPage(pageName);
 };
 
 
