@@ -20,8 +20,6 @@
 goog.require('silex.view.pane.PaneBase');
 goog.provide('silex.view.pane.PagePane');
 
-goog.require('silex.utils.PageablePlugin');
-
 goog.require('goog.array');
 goog.require('goog.cssom');
 goog.require('goog.editor.Field');
@@ -39,37 +37,37 @@ goog.require('goog.ui.HsvaPalette');
  * let user edit style of components
  * @constructor
  * @extend silex.view.PaneBase
- * @param {element} element   container to render the UI
- * @param  {element} bodyElement  HTML element which holds the body section of the opened file
- * @param  {element} headElement  HTML element which holds the head section of the opened file
+ * @param {Element} element   container to render the UI
+ * @param  {silex.types.View} view  view class which holds the other views
+ * @param  {silex.types.Controller} controller  structure which holds the controller instances
  */
-silex.view.pane.PagePane = function(element, bodyElement, headElement) {
+silex.view.pane.PagePane = function(element, view, controller) {
   // call super
-  goog.base(this, element, bodyElement, headElement);
+  goog.base(this, element, view, controller);
 
   this.buildUi();
 };
 
-// inherit from silex.view.ViewBase
+// inherit from silex.view.PaneBase
 goog.inherits(silex.view.pane.PagePane, silex.view.pane.PaneBase);
 
 
 /**
  * dropdown list to select a link
  */
-silex.view.pane.PagePane.prototype.linkDropdown;
+silex.view.pane.PagePane.prototype.linkDropdown = null;
 
 
 /**
  * text field used to type an external link
  */
-silex.view.pane.PagePane.prototype.linkInputTextField;
+silex.view.pane.PagePane.prototype.linkInputTextField = null;
 
 
 /**
- * {array} of checkboxes used to add/remove the element from pages
+ * {Array} of checkboxes used to add/remove the element from pages
  */
-silex.view.pane.PagePane.prototype.pageCheckboxes;
+silex.view.pane.PagePane.prototype.pageCheckboxes = null;
 
 
 /**
@@ -102,17 +100,18 @@ silex.view.pane.PagePane.prototype.buildUi = function() {
 
 /**
  * refresh with new pages
- * @param   {array} pages   the new list of pages
+ * @param   {Array} pages   the new list of pages
  */
-silex.view.pane.PagePane.prototype.setPages = function(pages) {
+silex.view.pane.PagePane.prototype.setPages = function(pages, document) {
   // store the pages
   this.pages = pages;
 
   // build an array of obects with name and displayName properties
   var pageData = pages.map(goog.bind(function (pageName) {
+    console.log('setPages', pageName, document, document.getElementById);
     return {
       name: pageName,
-      displayName: silex.utils.PageablePlugin.getDisplayName(pageName),
+      displayName: document.getElementById(pageName).innerHTML,
       linkName: '#!' + pageName
     };
   }, this));
@@ -184,7 +183,7 @@ silex.view.pane.PagePane.prototype.setPages = function(pages) {
  */
 silex.view.pane.PagePane.prototype.onLinkChanged = function() {
   if (this.linkDropdown.value === 'none') {
-    this.onStatus('removeLink');
+    this.controller.propertyToolController.removeLink(this.selectedElements);
   }
   else if (this.linkDropdown.value === 'custom') {
     this.linkInputTextField.setValue('');
@@ -193,7 +192,7 @@ silex.view.pane.PagePane.prototype.onLinkChanged = function() {
     goog.style.setStyle(linkInputElement, 'display', 'inherit');
   }
   else {
-    this.onStatus('addLink', this.linkDropdown.value);
+    this.controller.propertyToolController.addLink(this.selectedElements, this.linkDropdown.value);
   }
 };
 
@@ -204,7 +203,7 @@ silex.view.pane.PagePane.prototype.onLinkChanged = function() {
 silex.view.pane.PagePane.prototype.onLinkTextChanged = function() {
   this.iAmSettingValue = true;
   try{
-    this.onStatus('addLink', this.linkInputTextField.getValue());
+    this.controller.propertyToolController.addLink(this.selectedElements, this.linkInputTextField.getValue());
   }
   catch(err){
     // error which will not keep this.iAmSettingValue to true
@@ -216,26 +215,30 @@ silex.view.pane.PagePane.prototype.onLinkTextChanged = function() {
 
 /**
  * redraw the properties
+ * @param   {Array<element>} selectedElements the elements currently selected
+ * @param   {HTMLDocument} document  the document to use
+ * @param   {Array<string>} pageNames   the names of the pages which appear in the current HTML file
+ * @param   {string}  currentPageName   the name of the current page
  */
-silex.view.pane.PagePane.prototype.redraw = function() {
+silex.view.pane.PagePane.prototype.redraw = function(selectedElements, document, pageNames, currentPageName) {
   if (this.iAmSettingValue) return;
   this.iAmRedrawing = true;
   // call super
-  goog.base(this, 'redraw');
+  goog.base(this, 'redraw', selectedElements);
+
+  // remember selection
+  this.selectedElements = selectedElements;
 
   // update page list
-  this.setPages(silex.utils.PageablePlugin.getPages(this.bodyElement));
-
-  // get the selected element
-  var elements = this.getSelection();
+  this.setPages(pageNames, document);
 
   // refresh page checkboxes
   goog.array.forEach(this.pageCheckboxes, function(item) {
     // there is a selection
     item.checkbox.setEnabled(true);
     // compute common pages
-    var isInPage = this.getCommonProperty(elements, function (element) {
-      return silex.utils.PageablePlugin.isInPage(element, item.pageName)
+    var isInPage = this.getCommonProperty(selectedElements, function (element) {
+      return goog.dom.classes.has(element, item.pageName)
     });
     // set visibility
     if (goog.isNull(isInPage)){
@@ -249,8 +252,8 @@ silex.view.pane.PagePane.prototype.redraw = function() {
 
   // refresh the link inputs
   // get the link of the element
-  var elementLink = this.getCommonProperty(elements, function (element) {
-    return silex.utils.PageablePlugin.getLink(element);
+  var elementLink = this.getCommonProperty(selectedElements, function (element) {
+    return element.getAttribute('data-silex-href');
   });
   // default selection
   if (!elementLink || elementLink === '') {
@@ -291,24 +294,9 @@ silex.view.pane.PagePane.prototype.redraw = function() {
 silex.view.pane.PagePane.prototype.checkPage = function(pageName, checkbox) {
   // notify the toolbox
   if (checkbox.isChecked()) {
-    this.onStatus('addToPage', pageName);
+    this.controller.propertyToolController.addToPage(this.selectedElements, pageName);
   }
   else {
-    this.onStatus('removeFromPage', pageName);
+    this.controller.propertyToolController.removeFromPage(this.selectedElements, pageName);
   }
 };
-
-
-/**
- * callback for checkboxes click event
- *
-silex.view.pane.PagePane.prototype.unCheckAll = function() {
-  goog.array.forEach(this.pages, function(pageName) {
-    page.removeComponent(this.component);
-  }, this);
-  // notify the toolbox
-  this.pageChanged();
-  // refresh ui
-  this.redraw();
-};
-/* */

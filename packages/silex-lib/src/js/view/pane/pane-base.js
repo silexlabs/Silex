@@ -17,25 +17,22 @@
  */
 
 
-goog.require('silex.view.ViewBase');
 goog.provide('silex.view.pane.PaneBase');
 
 /**
  * base class for all UI panes of the view.pane package
  * @constructor
- * @extend silex.view.ViewBase
- * @param {element} element   container to render the UI
- * @param  {element} bodyElement  HTML element which holds the body section of the opened file
- * @param  {element} headElement  HTML element which holds the head section of the opened file
+ *
+ * @param {Element} element   container to render the UI
+ * @param  {silex.types.View} view  view class which holds the other views
+ * @param  {silex.types.Controller} controller  structure which holds the controller instances
  */
-silex.view.pane.PaneBase = function (element, bodyElement, headElement) {
-  // call super
-  goog.base(this, element, bodyElement, headElement);
-
+silex.view.pane.PaneBase = function (element, view, controller) {
+  // store references
+  this.element = element;
+  this.view = view;
+  this.controller = controller;
 };
-
-// inherit from silex.view.ViewBase
-goog.inherits(silex.view.pane.PaneBase, silex.view.ViewBase);
 
 
 /**
@@ -62,57 +59,23 @@ silex.view.pane.PaneBase.prototype.iAmRedrawing;
 
 
 /**
- * notify the controller that the user needs to select a bg image
- * this is called by BgPane
- */
-silex.view.pane.PaneBase.prototype.selectBgImage = function() {
-  if (this.onStatus) this.onStatus('selectBgImage');
-};
-
-
-/**
- * notify the controller that the user needs to select a bg image
- * this is called by BgPane
- */
-silex.view.pane.PaneBase.prototype.selectImage = function() {
-  if (this.onStatus) this.onStatus('selectImage');
-};
-
-
-/**
- * notify the controller that the user needs to edit the html content of the component
- * this is called by PropertyPane
- */
-silex.view.pane.PaneBase.prototype.editHTML = function() {
-  if (this.onStatus) this.onStatus('editHTML');
-};
-
-
-/**
- * notify the controller that the user needs to edit the html content of the component
- * this is called by PropertyPane
- */
-silex.view.pane.PaneBase.prototype.editText = function() {
-  if (this.onStatus) this.onStatus('editText');
-};
-
-
-/**
  * notify the controller that the style changed
  * @param   styleName   not css style but camel case
  */
 silex.view.pane.PaneBase.prototype.styleChanged = function(styleName, opt_styleValue, opt_elements) {
-  if (this.iAmRedrawing) return;
+  console.log(arguments);
+//  if (this.iAmRedrawing) return;
   // notify the controller
-  this.iAmSettingValue = true;
+//  this.iAmSettingValue = true;
   try{
-    if (this.onStatus) this.onStatus('styleChanged', styleName, opt_styleValue, opt_elements);
+    this.controller.propertyToolController.styleChanged(styleName, opt_styleValue, opt_elements);
   }
   catch(err){
     // error which will not keep this.iAmSettingValue to true
     console.error('an error occured while editing the value', err);
   }
-  this.iAmSettingValue = false;
+//  this.iAmSettingValue = false;
+  console.warn('styleChanged done');
 };
 
 
@@ -125,7 +88,7 @@ silex.view.pane.PaneBase.prototype.propertyChanged = function(propertyName, opt_
   // notify the controller
   this.iAmSettingValue = true;
   try{
-    if (this.onStatus) this.onStatus('propertyChanged', propertyName, opt_propertyValue, opt_elements, opt_applyToContent);
+    this.controller.propertyToolController.propertyChanged(propertyName, opt_propertyValue, opt_elements, opt_applyToContent);
   }
   catch(err){
     // error which will not keep this.iAmSettingValue to true
@@ -137,31 +100,21 @@ silex.view.pane.PaneBase.prototype.propertyChanged = function(propertyName, opt_
 
 /**
  * refresh the displayed data
+ * @param   {Array<element>} selectedElements the elements currently selected
+ * @param   {HTMLDocument} document  the document to use
+ * @param   {Array<string>} pageNames   the names of the pages which appear in the current HTML file
+ * @param   {string}  currentPageName   the name of the current page
  */
-silex.view.pane.PaneBase.prototype.redraw = function() {
+silex.view.pane.PaneBase.prototype.redraw = function(selectedElements, document, pageNames, currentPageName) {
+  if (!selectedElements){
+    throw(new Error('selection array is undefined'));
+  }
 /*
   // to be placed in all redraw methods to avoid loops
   if (this.iAmSettingValue) return;
   this.iAmRedrawing = true;
   this.iAmRedrawing = false;
 */
-};
-
-
-/**
- * base url for abs/rel conversions
- */
-silex.view.pane.PaneBase.prototype.getBaseUrl = function() {
-  return this.baseUrl;
-};
-
-
-/**
- * base url for abs/rel conversions
- */
-silex.view.pane.PaneBase.prototype.setBaseUrl = function(url) {
-  this.baseUrl = url;
-  this.redraw();
 };
 
 
@@ -192,4 +145,3 @@ silex.view.pane.PaneBase.prototype.getCommonProperty = function(elements, getPro
   }
   return value;
 };
-

@@ -23,14 +23,13 @@ goog.require('silex.controller.ControllerBase');
  * @constructor
  * @extends silex.controller.ControllerBase
  * listen to the view events and call the main controller's methods
+ * @param  {silex.types.Controller} controller  structure which holds the controller instances
  * @param {silex.types.Model} model
- * @param {silex.types.View} view
+ * @param  {silex.types.View} view  view class which holds the other views
  */
-silex.controller.PropertyToolController = function (model, view) {
+silex.controller.PropertyToolController = function (controller, model, view) {
   // call super
-  silex.controller.ControllerBase.call(this, model, view);
-  // attach events to the view
-  view.propertyTool.onStatus = goog.bind(this.propertyToolCallback, this);
+  silex.controller.ControllerBase.call(this, controller, model, view);
 };
 
 // inherit from silex.controller.ControllerBase
@@ -38,83 +37,42 @@ goog.inherits(silex.controller.PropertyToolController, silex.controller.Controll
 
 
 /**
- * propertyTool event handler
+ * add the provided element to a given page
  */
-silex.controller.PropertyToolController.prototype.propertyToolCallback = function(type, opt_name, opt_value, opt_elements, opt_applyToContent) {
-  //this.tracker.trackAction('controller-events', 'request', type, 0);
-  switch (type) {
-    case 'editHTML':
-      this.editElement();
-      break;
-    case 'editText':
-      this.editElement();
-      break;
-    case 'selectBgImage':
-      this.browseBgImage();
-      break;
-    case 'selectImage':
-      this.editElement();
-      break;
-    case 'styleChanged':
-      this.styleChanged(opt_name, opt_value, opt_elements);
-      break;
-    case 'classNameChanged':
-      this.setClassName(opt_name);
-      break;
-    case 'propertyChanged':
-      this.propertyChanged(opt_name, opt_value, opt_elements, opt_applyToContent);
-      break;
-    case 'addToPage':
-      // apply the change to all elements
-      var elements = this.view.stage.getSelection();
-      goog.array.forEach(elements, function (element) {
-        if (silex.utils.PageablePlugin.getBodyElement() != element) {
-          silex.utils.PageablePlugin.addToPage(element, opt_name);
-        }
-        else{
-          console.error('could not add this element (', element, ') to a page because it is the stage element');
-        }
-      }, this);
-      this.view.propertyTool.redraw();
-      break;
-    case 'removeFromPage':
-      // apply the change to all elements
-      var elements = this.view.stage.getSelection();
-      goog.array.forEach(elements, function (element) {
-        if (silex.utils.PageablePlugin.getBodyElement() != element) {
-          silex.utils.PageablePlugin.removeFromPage(element, opt_name);
-        }
-        else{
-          console.error('could not remove this element (', element, ') from a page because it is the stage element');
-        }
-      }, this);
-      this.view.propertyTool.redraw();
-      break;
-    case 'addLink':
-      // apply the change to all elements
-      var elements = this.view.stage.getSelection();
-      goog.array.forEach(elements, function (element) {
-        if (silex.utils.PageablePlugin.getBodyElement() != element) {
-          silex.utils.PageablePlugin.setLink(element, opt_name);
-        }
-        else{
-          console.error('could not add a link to this element (', element, ') because it is the stage element');
-        }
-      }, this);
-      this.view.propertyTool.redraw();
-      break;
-    case 'removeLink':
-      // apply the change to all elements
-      var elements = this.view.stage.getSelection();
-      goog.array.forEach(elements, function (element) {
-        if (silex.utils.PageablePlugin.getBodyElement() != element) {
-          silex.utils.PageablePlugin.setLink(element);
-        }
-        else{
-          console.error('could not remove link of this element (', element, ') because it is the stage element');
-        }
-      }, this);
-      this.view.propertyTool.redraw();
-      break;
-  }
+silex.controller.PropertyToolController.prototype.addToPage = function (elements, name) {
+  goog.array.forEach(elements, function (element) {
+    this.model.page.addToPage(element, name)
+  }, this);
+};
+
+
+/**
+ * remove the provided element from a given page
+ */
+silex.controller.PropertyToolController.prototype.removeFromPage = function (elements, name) {
+  goog.array.forEach(elements, function (element) {
+    this.model.page.removeFromPage(element, name)
+  }, this);
+};
+
+
+/**
+ * add link to the provided element
+ */
+silex.controller.PropertyToolController.prototype.addLink = function (elements, name) {
+  console.log(arguments);
+  goog.array.forEach(elements, function (element) {
+    console.log('setLink', element, name);
+    this.model.element.setLink(element, name)
+  }, this);
+};
+
+
+/**
+ * remove link from the provided element
+ */
+silex.controller.PropertyToolController.prototype.removeLink = function (elements) {
+  goog.array.forEach(elements, function (element) {
+    this.model.element.removeLink(element)
+  }, this);
 };
