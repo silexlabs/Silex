@@ -51,10 +51,10 @@ silex.model.Head.SILEX_SCRIPT_ELEMENT_CSS_CLASS = 'silex-script';
 
 
 /**
- * {Array<Element>} elements to be removed before save
- * these are added by addTempTags
+ * css class which marks the temporary tags, i.e. the tags inserted while editing a file
+ * only for tags in the head section
  */
-silex.model.Head.prototype.tempTags = [];
+silex.model.Head.SILEX_TEMP_TAGS_CSS_CLASS = 'silex-temp-tag';
 
 
 /**
@@ -328,25 +328,51 @@ silex.model.Head.prototype.getHeadElement = function() {
 
 
 /**
- * load temp tags (js and css) to be removed before save
+ * load temp tags (js and css) to be removed later
+ * @param   {Array<Element>|Element} the tag(s) to add
  */
-silex.model.Head.prototype.addTempTag = function(tag, opt_onSuccess, opt_onError) {
-  tag.onload = function () {
-    if(opt_onSuccess) opt_onSuccess();
+silex.model.Head.prototype.addTempTag = function(tags, opt_onSuccess, opt_onError) {
+  if (typeof(tags) === "string"){
+    // convert tags to an array
+    tags = [tags];
   }
-  tag.onerror = function () {
+  var addNextTag = goog.bind(function() {
+    var tag = tags.shift();
+    tag.onload = function () {
+      if (tags.length > 0) {
+        addNextTag();
+      }
+      else{
+        console.log('scripts loaded')
+        if(opt_onSuccess) opt_onSuccess();
+      }
+    }
+    tag.onerror = function () {
+      console.error('scripts loading error')
+      if(opt_onError) opt_onError();
+    }
+    goog.dom.classes.add(tag, silex.model.Head.SILEX_TEMP_TAGS_CSS_CLASS);
+    goog.dom.appendChild(this.getHeadElement(), tag);
+  }, this);
+  if (tags.length > 0){
+    console.log('scripts loading start')
+    addNextTag();
+  }
+  else{
     if(opt_onError) opt_onError();
   }
-  goog.dom.appendChild(this.getHeadElement(), tag);
-  this.tempTags.push(tag);
 };
 
 
 /**
  * remove temp tags
  */
-silex.model.Head.prototype.removeTempTags = function() {
-  goog.array.forEach(this.tempTags, function(tag) {
+silex.model.Head.prototype.removeTempTags = function(opt_headElement) {
+  if (!opt_headElement) opt_headElement = this.getHeadElement();
+  // remove tags marked as silex-temp-tag
+  var tags = goog.dom.getElementsByTagNameAndClass(silex.model.Head.SILEX_TEMP_TAGS_CSS_CLASS, opt_headElement);
+  goog.array.forEach(tags, function(tag) {
     goog.dom.removeNode(tag);
   });
+
 };

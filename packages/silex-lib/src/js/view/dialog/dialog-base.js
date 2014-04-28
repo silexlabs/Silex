@@ -83,7 +83,7 @@ silex.view.dialog.DialogBase.prototype.openEditor = function() {
   console.log('openEditor', background);
     // show
     goog.style.setStyle(background, 'display', 'inherit');
-    goog.style.setStyle(this.element, 'display', '');
+    goog.style.setStyle(this.element, 'display', 'inherit');
     // flag to remember if the dialog is opened
     this.isOpened = true;
   }

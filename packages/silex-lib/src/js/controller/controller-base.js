@@ -348,7 +348,7 @@ silex.controller.ControllerBase.prototype.setClassName = function(name) {
   var elements = this.model.body.getSelection();
   goog.array.forEach(elements, function (element) {
     // update the model
-    silex.utils.Style.setClassName(element, name);
+    this.model.element.setClassName(element, name);
   }, this);
 }
 
