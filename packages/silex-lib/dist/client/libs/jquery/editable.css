@@ -25,26 +25,26 @@ body{
   box-shadow: 0 0 4px #333333;
   opacity: 1 !important;
 }
-.silex-selected {
+.editable-style.silex-selected {
   box-shadow: 0 0 4px #333333;
   opacity: 1 !important;
 }
-.silex-selected > .ui-resizable-ne {
+.editable-style.silex-selected > .ui-resizable-ne {
   top: -7px;
   right: -7px;
   cursor: ne-resize;
 }
-.silex-selected > .ui-resizable-sw {
+.editable-style.silex-selected > .ui-resizable-sw {
   bottom: -7px;
   left: -7px;
   cursor: sw-resize;
 }
-.silex-selected > .ui-resizable-se {
+.editable-style.silex-selected > .ui-resizable-se {
   bottom: -7px;
   right: -7px;
   cursor: se-resize;
 }
-.silex-selected > .ui-resizable-nw {
+.editable-style.silex-selected > .ui-resizable-nw {
   top: -7px;
   left: -7px;
   cursor: nw-resize;
@@ -56,10 +56,10 @@ body{
 .editable-style.ui-dropzone-active {
   box-shadow: 0 0 4px #333333;
 }
-.silex-selected > .ui-resizable-se,
-.silex-selected > .ui-resizable-sw,
-.silex-selected > .ui-resizable-ne,
-.silex-selected > .ui-resizable-nw {
+.editable-style.silex-selected > .ui-resizable-se,
+.editable-style.silex-selected > .ui-resizable-sw,
+.editable-style.silex-selected > .ui-resizable-ne,
+.editable-style.silex-selected > .ui-resizable-nw {
   display: inherit;
   position: absolute;
   background-color: #333333;

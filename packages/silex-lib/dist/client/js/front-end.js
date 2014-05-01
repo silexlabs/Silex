@@ -38,8 +38,9 @@ $(function() {
   });
   /**
    * silex links
+   * only when the classname .silex-runtime is defined on the body (not while editing)
    */
-  $('[data-silex-href]').click(function () {
+  $('.silex-runtime [data-silex-href]').click(function () {
     var href = this.getAttribute('data-silex-href');
     if (href.indexOf('#!') === 0){
       window.location.href = href;
@@ -50,7 +51,7 @@ $(function() {
   });
   /**
    * resize body to the size of its content
-   *
+   */
   function onResize(event){
     var width = 0;
     var height = 0;
@@ -62,8 +63,8 @@ $(function() {
       if (height < bottom) height = bottom;
     });
     $("body").css({
-      "min-width": width + "px",
-      "min-height": height + "px"
+      "width": width + "px",
+      "height": height + "px"
     });
   }
   // call it at start

@@ -88,9 +88,9 @@ silex.utils.BackwardCompat.process = function(bodyElement, headElement) {
   // retorcompat silex links with #! (2.0)
   elements = goog.dom.query('[data-silex-href]', bodyElement);
   goog.array.forEach(elements, function(element) {
-    var href = element.getAttribute('data-silex-href');
+    var href = element.getAttribute(silex.model.Element.LINK_ATTR);
     if (href.indexOf('#') === 0 && href.indexOf('#!') !== 0){
-      element.setAttribute('data-silex-href', '#!' + href.substr(1));
+      element.setAttribute(silex.model.Element.LINK_ATTR, '#!' + href.substr(1));
     }
   });
   // css class on elements with [type]-element (2.0)
@@ -113,8 +113,8 @@ silex.utils.BackwardCompat.process = function(bodyElement, headElement) {
   });
   elements = goog.dom.query('[data-silex-href]', headElement);
   goog.array.forEach(elements, function(element) {
-    var href = element.getAttribute('data-silex-href');
-    element.setAttribute('data-silex-href', href.replace('//static.silex.me/2.0', '//static.silex.me/2.2'));
-    element.setAttribute('data-silex-href', href.replace('//static.silex.me/2.1', '//static.silex.me/2.2'));
+    var href = element.getAttribute(silex.model.Element.LINK_ATTR);
+    element.setAttribute(silex.model.Element.LINK_ATTR, href.replace('//static.silex.me/2.0', '//static.silex.me/2.2'));
+    element.setAttribute(silex.model.Element.LINK_ATTR, href.replace('//static.silex.me/2.1', '//static.silex.me/2.2'));
   });
 };

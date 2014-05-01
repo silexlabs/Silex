@@ -50,3 +50,10 @@ silex.view.dialog.HTMLEditor.prototype.initUI = function() {
   // set mode
   this.ace.getSession().setMode('ace/mode/html');
 };
+
+/**
+ * the content has changed, notify the controler
+ */
+silex.view.dialog.HTMLEditor.prototype.contentChanged = function() {
+  this.controller.htmlEditorController.changed(this.ace.getValue());
+};

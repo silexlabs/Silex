@@ -94,5 +94,5 @@ silex.view.dialog.AceEditorBase.prototype.openEditor = function(initialValue) {
  * the content has changed, notify the controler
  */
 silex.view.dialog.AceEditorBase.prototype.contentChanged = function() {
-  this.controller.cssEditorController.changed(this.ace.getValue());
+  throw('to be overridden in sub classes');
 };

@@ -39,11 +39,7 @@ goog.inherits(silex.controller.JsEditorController, silex.controller.ControllerBa
 /**
  * JsEditor event handler
  */
-silex.controller.JsEditorController.prototype.jsEditorCallback = function(type, content) {
-  switch (type) {
-    case 'changed':
-      // update content
-      this.model.head.setHeadScript(content);
-      break;
-  }
+silex.controller.JsEditorController.prototype.changed = function(content) {
+  // update content
+  this.model.head.setHeadScript(content);
 };

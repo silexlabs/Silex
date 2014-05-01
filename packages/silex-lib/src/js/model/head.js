@@ -71,7 +71,7 @@ silex.model.Head.prototype.getHeadScript = function() {
     return '';
   }
   return scriptTag.innerHTML;
-}
+};
 
 
 /**
@@ -90,7 +90,7 @@ silex.model.Head.prototype.setHeadScript = function(jsString) {
     goog.dom.appendChild(this.getHeadElement(), scriptTag);
   }
   scriptTag.innerHTML = jsString;
-}
+};
 
 
 /**
@@ -107,7 +107,7 @@ silex.model.Head.prototype.getHeadStyle = function() {
     return '';
   }
   return silexStyle.innerHTML;
-}
+};
 
 
 /**
@@ -126,27 +126,7 @@ silex.model.Head.prototype.setHeadStyle = function(cssString) {
     goog.dom.appendChild(this.getHeadElement(), silexStyle);
   }
   silexStyle.innerHTML = cssString;
-}
-
-
-/**
- * update the browser style to match silex editable css styles
- */
-silex.model.Head.prototype.updateBrowserStyle = function() {
-  var silexStyle = goog.dom.getElementByClass(
-    silex.model.Head.SILEX_STYLE_ELEMENT_CSS_CLASS,
-    document.head);
-
-  // also update Silex editor css
-  if (!silexStyle){
-    silexStyle = goog.dom.createElement('style');
-    silexStyle.type = 'text/css';
-    silexStyle.className = silex.model.Head.SILEX_STYLE_ELEMENT_CSS_CLASS;
-    goog.dom.appendChild(document.head, silexStyle);
-  }
-
-  silexStyle.innerHTML = this.getHeadStyle();
-}
+};
 
 
 /**
@@ -368,11 +348,16 @@ silex.model.Head.prototype.addTempTag = function(tags, opt_onSuccess, opt_onErro
  * remove temp tags
  */
 silex.model.Head.prototype.removeTempTags = function(opt_headElement) {
+  console.log('removeTempTags', opt_headElement);
   if (!opt_headElement) opt_headElement = this.getHeadElement();
   // remove tags marked as silex-temp-tag
-  var tags = goog.dom.getElementsByTagNameAndClass(silex.model.Head.SILEX_TEMP_TAGS_CSS_CLASS, opt_headElement);
+  var tags = goog.dom.getElementsByTagNameAndClass(null, silex.model.Head.SILEX_TEMP_TAGS_CSS_CLASS, opt_headElement);
+  console.log('removeTempTags tags found', tags);
   goog.array.forEach(tags, function(tag) {
+    console.log('removeTempTags tag removed', tag);
     goog.dom.removeNode(tag);
   });
+  var tags = goog.dom.getElementsByTagNameAndClass(null, silex.model.Head.SILEX_TEMP_TAGS_CSS_CLASS, opt_headElement);
+  console.log('removeTempTags AFTER tags found', tags);
 
 };
