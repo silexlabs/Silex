@@ -104,7 +104,7 @@ silex.view.Workspace.prototype.doRedraw = function() {
   goog.style.setWidth(this.view.stage.element, stageWidth);
 
   // menu offset
-  var toolsHeight = viewportSize.height - menuSize.height;
+  var toolsHeight = viewportSize.height - menuSize.height - 20; // why?! It works but hum... //
   goog.style.setHeight(this.view.pageTool.element, toolsHeight);
   goog.style.setHeight(this.view.propertyTool.element, toolsHeight);
   goog.style.setHeight(this.view.stage.element, toolsHeight);

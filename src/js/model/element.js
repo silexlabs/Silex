@@ -313,6 +313,7 @@ silex.model.Element.prototype.setImageUrl = function(element, url, opt_callback,
     // get the image tag
     var img = this.getContentNode(element);
     if (img) {
+      //img.innerHTML = '';
       // listen to the complete event
       var imageLoader = new goog.net.ImageLoader();
       goog.events.listenOnce(imageLoader, goog.events.EventType.LOAD,
@@ -535,7 +536,7 @@ silex.model.Element.prototype.setLink = function(element, link) {
  * set/get a "silex style link" on an element
  */
 silex.model.Element.prototype.getLink = function(element) {
-  var link = element.getAttribute('data-silex-href');
+  var link = element.getAttribute(silex.model.Element.LINK_ATTR);
   return link;
 };
 

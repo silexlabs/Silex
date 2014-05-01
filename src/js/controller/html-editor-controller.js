@@ -39,12 +39,8 @@ goog.inherits(silex.controller.HtmlEditorController, silex.controller.Controller
 /**
  * htmlEditor event handler
  */
-silex.controller.HtmlEditorController.prototype.htmlEditorCallback = function(type, content) {
-  switch (type) {
-    case 'changed':
-      // update content
-      var element = this.model.body.getSelection()[0];
-      this.model.element.setInnerHtml(element, content);
-      break;
-  }
+silex.controller.HtmlEditorController.prototype.changed = function(content) {
+  // update content
+  var element = this.model.body.getSelection()[0];
+  this.model.element.setInnerHtml(element, content);
 };

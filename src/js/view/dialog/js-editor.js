@@ -51,3 +51,10 @@ silex.view.dialog.JsEditor.prototype.initUI = function() {
   // set mode
   this.ace.getSession().setMode('ace/mode/javascript');
 };
+
+/**
+ * the content has changed, notify the controler
+ */
+silex.view.dialog.JsEditor.prototype.contentChanged = function() {
+  this.controller.jsEditorController.changed(this.ace.getValue());
+};

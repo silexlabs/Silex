@@ -253,7 +253,7 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, document,
   // refresh the link inputs
   // get the link of the element
   var elementLink = this.getCommonProperty(selectedElements, function (element) {
-    return element.getAttribute('data-silex-href');
+    return element.getAttribute(silex.model.Element.LINK_ATTR);
   });
   // default selection
   if (!elementLink || elementLink === '') {

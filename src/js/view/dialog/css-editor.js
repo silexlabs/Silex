@@ -48,3 +48,11 @@ silex.view.dialog.CssEditor.prototype.initUI = function() {
   // set mode
   this.ace.getSession().setMode('ace/mode/css');
 };
+
+
+/**
+ * the content has changed, notify the controler
+ */
+silex.view.dialog.CssEditor.prototype.contentChanged = function() {
+  this.controller.cssEditorController.changed(this.ace.getValue());
+};

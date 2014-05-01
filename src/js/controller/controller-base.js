@@ -380,7 +380,7 @@ silex.controller.ControllerBase.prototype.editElement = function(opt_element) {
         ));
       break;
     case silex.model.Element.TYPE_HTML:
-      this.view.hTMLEditor.openEditor(this.model.element.getInnerHtml(opt_element));
+      this.view.htmlEditor.openEditor(this.model.element.getInnerHtml(opt_element));
       break;
     case silex.model.Element.TYPE_IMAGE:
       this.view.fileExplorer.openDialog(
@@ -396,7 +396,6 @@ silex.controller.ControllerBase.prototype.editElement = function(opt_element) {
             silex.utils.Notification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''));
           }, this)
       );
-      this.view.lidate.openEditor();
       break;
   }
 };
@@ -717,7 +716,7 @@ silex.controller.ControllerBase.prototype.fileOperationSuccess = function(opt_me
     silex.utils.Notification.notifySuccess(opt_message);
   }
   // update Silex editable style
-  this.model.head.updateBrowserStyle();
+  this.view.textEditor.redraw();
 }
 
 /**
