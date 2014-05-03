@@ -201,29 +201,48 @@ silex.view.dialog.TextEditor.prototype.openEditor = function(initialHtml, opt_bg
   // apply to the bg
   var iframe = goog.dom.getElementsByTagNameAndClass('iframe', null, this.element)[0];
   iframe.style.backgroundColor = opt_bgColor;
-
-  this.redraw();
 }
 
 
 /**
- * Redraw the editor, update silex styles
+ * set the list of custom fonts
+ * @param {Array<string>} the custom fonts used in the text fields
  */
-silex.view.dialog.TextEditor.prototype.redraw = function() {
+silex.view.dialog.TextEditor.prototype.setCustomFonts = function(customFonts) {
+  console.log('setCustomFonts', customFonts);
   // get the iframe document
   var iframe = goog.dom.getElementsByTagNameAndClass('iframe', null, this.element)[0];
   var iframeDoc = goog.dom.getFrameContentDocument(iframe);
   var iframeBody = iframeDoc.body;
   var iframeHead = iframeDoc.head;
+  //detach all previously loaded font before, to avoid duplicate
+  var links = goog.dom.getElementsByClass(silex.model.Head.CUSTOM_FONTS_CSS_CLASS, iframeHead);
+  goog.array.forEach(links, function(link) {
+    link.parentNode.removeChild(link);
+  });
+  goog.array.forEach(customFonts, function(font) {
+    console.log('setCustomFonts found ', font);
+    var link = goog.dom.createElement('link');
+    link.setAttribute('href', font.href);
+    link.setAttribute('rel', 'stylesheet');
+    link.setAttribute('type', 'text/css');
+    link.setAttribute('class', silex.model.Head.CUSTOM_FONTS_CSS_CLASS);
+    iframeHead.appendChild(link);
+  }, this);
+};
 
-  // get silex styles from the DOM
-  var silexStyle = goog.dom.getElementByClass(
-    silex.model.Head.SILEX_STYLE_ELEMENT_CSS_CLASS,
-    this.headElement);
-  var cssString = '';
-  if (silexStyle){
-    cssString = silexStyle.innerHTML;
-  }
+
+/**
+ * set the list of custom css styles
+ * @param {string} customCssStyles   the styles written by the user in the css editor
+ */
+silex.view.dialog.TextEditor.prototype.setCustomCssStyles = function(customCssStyles) {
+  console.log('setCustomCssStyles', customCssStyles);
+  // get the iframe document
+  var iframe = goog.dom.getElementsByTagNameAndClass('iframe', null, this.element)[0];
+  var iframeDoc = goog.dom.getFrameContentDocument(iframe);
+  var iframeBody = iframeDoc.body;
+  var iframeHead = iframeDoc.head;
 
   // add Silex css to the iframe
   var silexStyle = goog.dom.getElementByClass(
@@ -237,7 +256,7 @@ silex.view.dialog.TextEditor.prototype.redraw = function() {
     goog.dom.classes.add(silexStyle, silex.model.Head.SILEX_STYLE_ELEMENT_CSS_CLASS);
     goog.dom.appendChild(iframeHead, silexStyle);
   }
-  silexStyle.innerHTML = cssString;
+  silexStyle.innerHTML = customCssStyles;
   // also set the class name on the iframe body so that it matches css rule ".text-element"
   goog.dom.classes.add(iframeBody, 'text-element');
 };

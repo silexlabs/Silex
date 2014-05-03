@@ -42,5 +42,4 @@ goog.inherits(silex.controller.CssEditorController, silex.controller.ControllerB
 silex.controller.CssEditorController.prototype.changed = function(content) {
   // update content
   this.model.head.setHeadStyle(content);
-  this.view.textEditor.redraw();
 };

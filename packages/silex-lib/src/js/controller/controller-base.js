@@ -699,8 +699,6 @@ silex.controller.ControllerBase.prototype.fileOperationSuccess = function(opt_me
     // notify user
     silex.utils.Notification.notifySuccess(opt_message);
   }
-  // update Silex editable style
-  this.view.textEditor.redraw();
 }
 
 /**
