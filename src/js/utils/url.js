@@ -59,7 +59,6 @@ silex.utils.Url.absolute2Relative = function(htmlString, baseUrl) {
   // image source
   htmlString = htmlString.replace(/src="?([^" ]*)"/g, function(match, group1, group2) {
     var res = match.replace(group1, silex.utils.Url.getRelativePath(group1, baseUrl));
-    console.log('absolute2Relative src', arguments, baseUrl, res);
     return res;
   });
   // css url()
@@ -69,7 +68,6 @@ silex.utils.Url.absolute2Relative = function(htmlString, baseUrl) {
     if (group2.lastIndexOf("'") === group2.length-1) group2 = group2.substr(0, group2.length-1);
     // rebuild url('') with the relative path
     var res = "url('" + silex.utils.Url.getRelativePath(group2, baseUrl) + "')";
-    console.log('absolute2Relative url', arguments, baseUrl, res);
     return res;
   });
   return htmlString;

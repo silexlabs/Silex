@@ -108,7 +108,6 @@ silex.view.pane.PagePane.prototype.setPages = function(pages, document) {
 
   // build an array of obects with name and displayName properties
   var pageData = pages.map(goog.bind(function (pageName) {
-    console.log('setPages', pageName, document, document.getElementById);
     return {
       name: pageName,
       displayName: document.getElementById(pageName).innerHTML,
@@ -232,54 +231,80 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, document,
   // update page list
   this.setPages(pageNames, document);
 
-  // refresh page checkboxes
-  goog.array.forEach(this.pageCheckboxes, function(item) {
-    // there is a selection
-    item.checkbox.setEnabled(true);
-    // compute common pages
-    var isInPage = this.getCommonProperty(selectedElements, function (element) {
-      return goog.dom.classes.has(element, item.pageName)
-    });
-    // set visibility
-    if (goog.isNull(isInPage)){
-      // multiple elements selected with different values
-      item.checkbox.setChecked(goog.ui.Checkbox.State.UNDETERMINED);
-    }
-    else{
-      item.checkbox.setChecked(isInPage);
+  // not available for stage element
+  var elementsNoStage = [];
+  goog.array.forEach(selectedElements, function (element) {
+    if (document.body != element) {
+      elementsNoStage.push(element);
     }
   }, this);
-
-  // refresh the link inputs
-  // get the link of the element
-  var elementLink = this.getCommonProperty(selectedElements, function (element) {
-    return element.getAttribute(silex.model.Element.LINK_ATTR);
-  });
-  // default selection
-  if (!elementLink || elementLink === '') {
-    this.linkDropdown.value = 'none';
-    this.linkInputTextField.setValue('');
+  // special case of the background / main container only selected element
+  var bgOnly = false;
+  if(selectedElements.length === 1 && goog.dom.classes.has(selectedElements[0], 'background')){
+    bgOnly = true;
   }
-  else {
-    if (elementLink.indexOf('#!') === 0) {
-      // case of an internal link
-      // select a page
-      this.linkDropdown.value = elementLink;
+  if (elementsNoStage.length > 0 && bgOnly === false) {
+    // not stage element only
+    this.linkDropdown.removeAttribute('disabled');
+    // refresh page checkboxes
+    goog.array.forEach(this.pageCheckboxes, function(item) {
+      // there is a selection
+      item.checkbox.setEnabled(true);
+      // compute common pages
+      var isInPage = this.getCommonProperty(selectedElements, function (element) {
+        return goog.dom.classes.has(element, item.pageName)
+      });
+      // set visibility
+      if (goog.isNull(isInPage)){
+        // multiple elements selected with different values
+        item.checkbox.setChecked(goog.ui.Checkbox.State.UNDETERMINED);
+      }
+      else{
+        item.checkbox.setChecked(isInPage);
+      }
+    }, this);
+
+    // refresh the link inputs
+    // get the link of the element
+    var elementLink = this.getCommonProperty(selectedElements, function (element) {
+      return element.getAttribute(silex.model.Element.LINK_ATTR);
+    });
+    // default selection
+    if (!elementLink || elementLink === '') {
+      this.linkDropdown.value = 'none';
+      this.linkInputTextField.setValue('');
     }
     else {
-      // in case it is a custom link
-      this.linkInputTextField.setValue(elementLink);
-      this.linkDropdown.value = 'custom';
+      if (elementLink.indexOf('#!') === 0) {
+        // case of an internal link
+        // select a page
+        this.linkDropdown.value = elementLink;
+      }
+      else {
+        // in case it is a custom link
+        this.linkInputTextField.setValue(elementLink);
+        this.linkDropdown.value = 'custom';
+      }
+    }
+    // visibility of the text edit
+    var linkInputElement = goog.dom.getElementByClass('link-input-text',
+        this.element);
+    if (this.linkDropdown.value === 'custom') {
+      goog.style.setStyle(linkInputElement, 'display', 'inherit');
+    }
+    else {
+      goog.style.setStyle(linkInputElement, 'display', 'none');
     }
   }
-  // visibility of the text edit
-  var linkInputElement = goog.dom.getElementByClass('link-input-text',
-      this.element);
-  if (this.linkDropdown.value === 'custom') {
-    goog.style.setStyle(linkInputElement, 'display', 'inherit');
-  }
-  else {
-    goog.style.setStyle(linkInputElement, 'display', 'none');
+  else{
+    // stage element only
+    goog.array.forEach(this.pageCheckboxes, function(item) {
+      item.checkbox.setEnabled(false);
+      item.checkbox.setChecked(goog.ui.Checkbox.State.UNDETERMINED);
+    }, this);
+    this.linkDropdown.value = 'none';
+    this.linkDropdown.setAttribute('disabled', true);
+
   }
   this.iAmRedrawing = false;
 };

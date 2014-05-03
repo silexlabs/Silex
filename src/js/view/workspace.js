@@ -98,18 +98,19 @@ silex.view.Workspace.prototype.doRedraw = function() {
   var propertyToolSize = goog.style.getSize(this.view.propertyTool.element);
   var menuSize = goog.style.getSize(this.view.menu.element);
 
+/*
   // stage
   var stageWidth = viewportSize.width -
-      pageToolSize.width - propertyToolSize.width - 25; // why 25?! It works but hum... //
+      pageToolSize.width - propertyToolSize.width;
   goog.style.setWidth(this.view.stage.element, stageWidth);
 
   // menu offset
-  var toolsHeight = viewportSize.height - menuSize.height - 20; // why?! It works but hum... //
+  var toolsHeight = viewportSize.height - menuSize.height; // why?! It works but hum... //
   goog.style.setHeight(this.view.pageTool.element, toolsHeight);
   goog.style.setHeight(this.view.propertyTool.element, toolsHeight);
   goog.style.setHeight(this.view.stage.element, toolsHeight);
-
   //goog.style.setPosition(this.view.pageTool.element, null, menuSize.height);
+*/
 
   // htmlEditor
   if (this.view.htmlEditor.element) {

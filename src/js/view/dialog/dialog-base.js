@@ -80,7 +80,6 @@ silex.view.dialog.DialogBase.prototype.openEditor = function() {
   if (this.isOpened === false) {
     // background
     var background = goog.dom.getElementByClass('dialogs-background');
-  console.log('openEditor', background);
     // show
     goog.style.setStyle(background, 'display', 'inherit');
     goog.style.setStyle(this.element, 'display', 'inherit');

@@ -118,20 +118,6 @@ silex.model.File.prototype.onContentLoaded = function (opt_cbk) {
   var iframeElement = goog.dom.getElementByClass(silex.view.Stage.STAGE_CLASS_NAME);
   var contentDocument = goog.dom.getFrameContentDocument(iframeElement);
   var contentWindow = goog.dom.getFrameContentWindow(iframeElement);
-  // prevent opening links
-/*  var elements = goog.dom.query(silex.model.Element.LINK_ATTR, contentDocument.body);
-  goog.array.forEach(elements, function(element) {
-    goog.events.listenOnce(element, goog.events.EventType.CLICK, function(e) {
-      console.log('closure click', e);
-      e.stopPropagation();
-    }, false, this);
-    contentWindow.jQuery(silex.model.Element.LINK_ATTR).bind('click', function(e){
-      console.log('jquery click', e);
-      e.stopPropagation();
-      e.stopImmediatePropagation();
-    });
-  }, this);
-*/
   // select the body
   this.model.body.setSelection([contentDocument.body]);
   // make editable again
@@ -149,7 +135,6 @@ silex.model.File.prototype.onContentLoaded = function (opt_cbk) {
   setTimeout(goog.bind(function() {
     goog.dom.classes.remove(iframeElement.parentNode, silex.model.Element.LOADING_ELEMENT_CSS_CLASS);
     // notify the caller
-    console.log('file loading done');
   }, this), 200);
 };
 
@@ -285,7 +270,6 @@ silex.model.File.prototype.saveAs = function(url, rawHtml, cbk, opt_errCbk) {
  * write content to the file
  */
 silex.model.File.prototype.save = function(rawHtml, cbk, opt_errCbk) {
-  console.log('save', arguments);
   silex.service.CloudStorage.getInstance().save(
     this.getUrl(),
     rawHtml,

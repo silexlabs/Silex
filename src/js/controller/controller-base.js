@@ -62,24 +62,6 @@ silex.controller.ControllerBase.clipboardParent;
 
 
 /**
- * undo
-* TODO: Move this elsewhere?
- */
-silex.controller.ControllerBase.prototype.undo = function() {
-  this.model.element.undo();
-}
-
-
-/**
- * redo
-* TODO: Move this elsewhere?
- */
-silex.controller.ControllerBase.prototype.redo = function() {
-  this.model.element.redo();
-}
-
-
-/**
  * copy the selection for later paste
 * TODO: Move this elsewhere?
  */
@@ -140,7 +122,7 @@ silex.controller.ControllerBase.prototype.pasteSelection = function() {
     goog.array.forEach(silex.controller.ControllerBase.clipboard, function (clipboardElement) {
       var element = clipboardElement.cloneNode(true);
       this.model.element.appendChild(container, element);
-      // apply the offset to the element, ccording to the scroll position
+      // apply the offset to the element, according to the scroll position
       var bbElement = silex.utils.Dom.getBoundingBox([element]);
       element.style.left = (bbElement.left + offsetX) + 'px';
       element.style.top = (bbElement.top + offsetY) + 'px';
@@ -231,11 +213,9 @@ silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
         url = silex.utils.Url.getAbsolutePath(url, baseUrl);
         // create the element
         var img = this.addElement(silex.model.Element.TYPE_IMAGE);
-        console.log("image");
         // load the image
         this.model.element.setImageUrl(img, url,
           goog.bind(function(element, img){
-          console.log("image2", img, img.naturalWidth);
             // update element size
             goog.style.setStyle(element, {
               width: img.naturalWidth + 'px',
@@ -244,7 +224,6 @@ silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
             this.tracker.trackAction('controller-events', 'success', 'insert.image', 1);
           }, this),
           goog.bind(function(element, message){
-            console.log('error');
             silex.utils.Notification.notifyError('Error: I did not manage to load the image. \n' + message);
             this.removeElement(element);
             this.tracker.trackAction('controller-events', 'error', 'insert.image', 1);
@@ -259,6 +238,8 @@ silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
   );
   this.view.workspace.invalidate();
 }
+
+
 /**
  * create an element and add it to the stage
  * @param {string} the desired type for the new element
@@ -278,6 +259,8 @@ silex.controller.ControllerBase.prototype.addElement = function(type) {
   }
   return element;
 }
+
+
 /**
  * called after an element has been created
  * add the element to the current page (only if it has not a container which is in a page)
@@ -295,6 +278,8 @@ silex.controller.ControllerBase.prototype.doAddElement = function(element) {
   this.model.body.setSelection([element]);
   // update drop zones z index
   //this.model.body.resetEditable(this.model.body.getBodyElement(), true);
+  // set element editable
+  this.model.body.setEditable(element, true);
 }
 /**
  * set a given style to the current selection
@@ -661,7 +646,6 @@ silex.controller.ControllerBase.prototype.doSave = function(url, opt_cbk, opt_er
   this.model.file.setUrl(url);
   // relative urls only in the files
   var rawHtml = this.model.file.getHtml();
-  console.log('save', rawHtml);
   // save to file
   this.model.file.saveAs(
     url,

@@ -63,7 +63,6 @@ silex.view.pane.PaneBase.prototype.iAmRedrawing;
  * @param   styleName   not css style but camel case
  */
 silex.view.pane.PaneBase.prototype.styleChanged = function(styleName, opt_styleValue, opt_elements) {
-  console.log(arguments);
 //  if (this.iAmRedrawing) return;
   // notify the controller
 //  this.iAmSettingValue = true;
