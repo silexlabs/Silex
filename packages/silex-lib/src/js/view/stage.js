@@ -139,7 +139,6 @@ silex.view.Stage.prototype.initEvents = function (bodyElement) {
         // if the user did not move the element select it in case other elements were selected
         // get the first parent node which is editable (silex-editable css class)
         var editableElement = goog.dom.getAncestorByClass(e.target, silex.model.Body.EDITABLE_CLASS_NAME) || bodyElement;
-        console.log('editable ancester:', editableElement, e.target, e.target.parentNode.parentNode, typeof(e.target), silex.model.Body.EDITABLE_CLASS_NAME);
         this.controller.stageController.select(editableElement);
       }
     }

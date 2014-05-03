@@ -323,7 +323,6 @@ silex.model.Head.prototype.addTempTag = function(tags, opt_onSuccess, opt_onErro
         addNextTag();
       }
       else{
-        console.log('scripts loaded')
         if(opt_onSuccess) opt_onSuccess();
       }
     }
@@ -335,7 +334,6 @@ silex.model.Head.prototype.addTempTag = function(tags, opt_onSuccess, opt_onErro
     goog.dom.appendChild(this.getHeadElement(), tag);
   }, this);
   if (tags.length > 0){
-    console.log('scripts loading start')
     addNextTag();
   }
   else{
@@ -348,16 +346,10 @@ silex.model.Head.prototype.addTempTag = function(tags, opt_onSuccess, opt_onErro
  * remove temp tags
  */
 silex.model.Head.prototype.removeTempTags = function(opt_headElement) {
-  console.log('removeTempTags', opt_headElement);
   if (!opt_headElement) opt_headElement = this.getHeadElement();
   // remove tags marked as silex-temp-tag
   var tags = goog.dom.getElementsByTagNameAndClass(null, silex.model.Head.SILEX_TEMP_TAGS_CSS_CLASS, opt_headElement);
-  console.log('removeTempTags tags found', tags);
   goog.array.forEach(tags, function(tag) {
-    console.log('removeTempTags tag removed', tag);
     goog.dom.removeNode(tag);
   });
-  var tags = goog.dom.getElementsByTagNameAndClass(null, silex.model.Head.SILEX_TEMP_TAGS_CSS_CLASS, opt_headElement);
-  console.log('removeTempTags AFTER tags found', tags);
-
 };

@@ -96,7 +96,6 @@ silex.view.pane.PropertyPane.prototype.buildUi = function() {
   // position and size
   this.leftInput = goog.dom.getElementByClass('left-input');
   this.leftInput.setAttribute('data-style-name', 'left');
-  this.leftInput.setAttribute('data-style-unit', 'px');
   goog.events.listen(this.leftInput,
       goog.events.EventType.INPUT,
       this.onPositionChanged,
@@ -104,7 +103,6 @@ silex.view.pane.PropertyPane.prototype.buildUi = function() {
       this);
   this.widthInput = goog.dom.getElementByClass('width-input');
   this.widthInput.setAttribute('data-style-name', 'width');
-  this.widthInput.setAttribute('data-style-unit', 'px');
   goog.events.listen(this.widthInput,
       goog.events.EventType.INPUT,
       this.onPositionChanged,
@@ -112,7 +110,6 @@ silex.view.pane.PropertyPane.prototype.buildUi = function() {
       this);
   this.topInput = goog.dom.getElementByClass('top-input');
   this.topInput.setAttribute('data-style-name', 'top');
-  this.topInput.setAttribute('data-style-unit', 'px');
   goog.events.listen(this.topInput,
       goog.events.EventType.INPUT,
       this.onPositionChanged,
@@ -120,7 +117,6 @@ silex.view.pane.PropertyPane.prototype.buildUi = function() {
       this);
   this.heightInput = goog.dom.getElementByClass('height-input');
   this.heightInput.setAttribute('data-style-name', 'height');
-  this.heightInput.setAttribute('data-style-unit', 'px');
   goog.events.listen(this.heightInput,
       goog.events.EventType.INPUT,
       this.onPositionChanged,
@@ -220,49 +216,10 @@ silex.view.pane.PropertyPane.prototype.onTitleChanged =
 silex.view.pane.PropertyPane.prototype.redraw = function(selectedElements, document, pageNames, currentPageName) {
   if (this.iAmSettingValue) return;
   this.iAmRedrawing = true;
+
   // call super
   goog.base(this, 'redraw', selectedElements);
 
-  // remember selection
-  this.selectedElements = selectedElements;
-
-  var bb = silex.utils.Dom.getBoundingBox(selectedElements);
-
-  // display position and size
-  if (!goog.isNull(bb.top)){
-    this.topInput.value = bb.top;
-  }
-  if (!goog.isNull(bb.left)){
-    this.leftInput.value = bb.left;
-  }
-  this.widthInput.value = bb.width || '';
-  this.heightInput.value = bb.height || '';
-
-  // alt, only for images
-  var elementsType = this.getCommonProperty(selectedElements, function (element) {
-    return element.getAttribute(silex.model.Element.TYPE_ATTR);
-  });
-  if (elementsType === silex.model.Element.TYPE_IMAGE) {
-    this.altInput.removeAttribute('disabled');
-    var alt = this.getCommonProperty(selectedElements, function (element) {
-      var content = goog.dom.getElementByClass(silex.model.Element.ELEMENT_CONTENT_CLASS_NAME, element);
-      if (content) {
-        return content.getAttribute('alt');
-      }
-      return null;
-    });
-    if (alt){
-      this.altInput.value = alt;
-    }
-    else{
-      this.altInput.value = '';
-    }
-  }
-  else{
-    this.altInput.value = '';
-    this.altInput.setAttribute('disabled', true);
-  }
-  // title
   // not available for stage element
   var elementsNoStage = [];
   goog.array.forEach(selectedElements, function (element) {
@@ -271,7 +228,56 @@ silex.view.pane.PropertyPane.prototype.redraw = function(selectedElements, docum
     }
   }, this);
   if (elementsNoStage.length > 0) {
+    // not stage element only
+    this.leftInput.removeAttribute('disabled');
+    this.topInput.removeAttribute('disabled');
+    this.widthInput.removeAttribute('disabled');
+    this.heightInput.removeAttribute('disabled');
+    this.altInput.removeAttribute('disabled');
     this.titleInput.removeAttribute('disabled');
+
+    // remember selection
+    this.selectedElements = selectedElements;
+
+    var bb = silex.utils.Dom.getBoundingBox(selectedElements);
+
+    // display position and size
+    this.topInput.value = bb.top || '';
+    this.leftInput.value = bb.left || '';
+    this.widthInput.value = bb.width || '';
+    this.heightInput.value = bb.height || '';
+
+    // special case of the background / main container only selected element
+    if(selectedElements.length === 1 && goog.dom.classes.has(selectedElements[0], 'background')){
+      this.topInput.value = '';
+      this.leftInput.value = '';
+    }
+
+    // alt, only for images
+    var elementsType = this.getCommonProperty(selectedElements, function (element) {
+      return element.getAttribute(silex.model.Element.TYPE_ATTR);
+    });
+    if (elementsType === silex.model.Element.TYPE_IMAGE) {
+      this.altInput.removeAttribute('disabled');
+      var alt = this.getCommonProperty(selectedElements, function (element) {
+        var content = goog.dom.getElementByClass(silex.model.Element.ELEMENT_CONTENT_CLASS_NAME, element);
+        if (content) {
+          return content.getAttribute('alt');
+        }
+        return null;
+      });
+      if (alt){
+        this.altInput.value = alt;
+      }
+      else{
+        this.altInput.value = '';
+      }
+    }
+    else{
+      this.altInput.value = '';
+      this.altInput.setAttribute('disabled', true);
+    }
+    // title
     var title = this.getCommonProperty(selectedElements, function (element) {
       return element.getAttribute('title');
     });
@@ -283,8 +289,19 @@ silex.view.pane.PropertyPane.prototype.redraw = function(selectedElements, docum
     }
   }
   else{
-    this.titleInput.value = '';
+    // stage element only
+    this.leftInput.setAttribute('disabled', true);
+    this.leftInput.value = '';
+    this.topInput.setAttribute('disabled', true);
+    this.topInput.value = '';
+    this.widthInput.setAttribute('disabled', true);
+    this.widthInput.value = '';
+    this.heightInput.setAttribute('disabled', true);
+    this.heightInput.value = '';
+    this.altInput.setAttribute('disabled', true);
+    this.altInput.value = '';
     this.titleInput.setAttribute('disabled', true);
+    this.titleInput.value = '';
   }
 
   this.iAmRedrawing = false;

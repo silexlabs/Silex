@@ -72,23 +72,41 @@ silex.view.pane.GeneralStylePane.prototype.buildUi = function() {
  * @param   {Array<string>} pageNames   the names of the pages which appear in the current HTML file
  * @param   {string}  currentPageName   the name of the current page
  */
-silex.view.pane.GeneralStylePane.prototype.redraw = function(selectedElements) {
+silex.view.pane.GeneralStylePane.prototype.redraw = function(selectedElements, document, pageNames, currentPageName) {
   if (this.iAmSettingValue) return;
   this.iAmRedrawing = true;
+
   // call super
   goog.base(this, 'redraw', selectedElements);
 
-  var opacity = this.getCommonProperty(selectedElements, function (element) {
-    return element.style.opacity;
-  });
-  if (goog.isNull(opacity)) {
+  // not available for stage element
+  var elementsNoStage = [];
+  goog.array.forEach(selectedElements, function (element) {
+    if (document.body != element) {
+      elementsNoStage.push(element);
+    }
+  }, this);
+  if (elementsNoStage.length > 0) {
+    // not stage element only
+    this.opacityInput.removeAttribute('disabled');
+    // get the opacity
+    var opacity = this.getCommonProperty(selectedElements, function (element) {
+      return element.style.opacity;
+    });
+    if (goog.isNull(opacity)) {
+      this.opacityInput.value = '';
+    }
+    else if (opacity === ''){
+      this.opacityInput.value = '100';
+    }
+    else {
+      this.opacityInput.value = Math.round(parseFloat(opacity)*100);
+    }
+  }
+  else{
+    // stage element only
     this.opacityInput.value = '';
-  }
-  else if (opacity === ''){
-    this.opacityInput.value = '100';
-  }
-  else {
-    this.opacityInput.value = Math.round(parseFloat(opacity)*100);
+    this.opacityInput.setAttribute('disabled', true);
   }
   this.iAmRedrawing = false;
 };

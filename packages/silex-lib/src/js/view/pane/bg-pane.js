@@ -191,8 +191,6 @@ silex.view.pane.BgPane.prototype.redraw = function(selectedElements, document, p
   var color = this.getCommonProperty(selectedElements, function (element) {
     return element.style.backgroundColor;
   });
-
-  console.log(arguments, color);
   if (color === 'transparent' || color === '') {
     this.transparentBgCheckbox.setChecked(true);
     this.bgColorPicker.setEnabled(false);

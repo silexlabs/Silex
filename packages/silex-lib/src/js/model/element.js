@@ -154,7 +154,6 @@ silex.model.Element.prototype.getStyle = function(element, styleName) {
  * @param  {string}  opt_styleValue     the value for this styleName
  */
 silex.model.Element.prototype.setStyle = function(element, styleName, opt_styleValue) {
-  console.log(arguments);
   if(element.style[styleName] !== opt_styleValue){
     if (goog.isDef(opt_styleValue)){
       element.style[styleName] = opt_styleValue;
@@ -308,7 +307,6 @@ silex.model.Element.prototype.getImageUrl = function(element) {
  * @param  {function}  the opt_callback to be notified when the image is loaded
  */
 silex.model.Element.prototype.setImageUrl = function(element, url, opt_callback, opt_errorCallback) {
-  console.log(arguments);
   if (element.getAttribute(silex.model.Element.TYPE_ATTR) === silex.model.Element.TYPE_IMAGE) {
     // get the image tag
     var img = this.getContentNode(element);
@@ -400,8 +398,6 @@ silex.model.Element.prototype.createElement = function(type) {
 
   var element;
   var bodyElement = this.model.body.getBodyElement();
-
-  console.log(arguments, bodyElement);
 
   // take the scroll into account (drop at (100, 100) from top left corner of the window, not the stage)
   var offsetX = 100 + bodyElement.scrollLeft;

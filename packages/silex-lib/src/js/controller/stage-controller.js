@@ -49,7 +49,6 @@ silex.controller.StageController.prototype.select = function(target) {
 silex.controller.StageController.prototype.selectMultiple = function(target) {
   var selection = this.model.body.getSelection();
   selection.push(target);
-  console.log('selectMultiple', selection, target);
   this.model.body.setSelection(selection);
 }
 /**

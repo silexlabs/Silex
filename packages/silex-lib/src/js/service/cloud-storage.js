@@ -60,9 +60,6 @@ silex.service.CloudStorage.prototype.createBlob = function(url) {
 silex.service.CloudStorage.prototype.save = function(url, rawData, cbk, opt_errCbk) {
   // get teh blob corresponding to the url
   var relBlob = this.createBlob(url);
-
-  console.log('save', arguments);
-
   // save the data
   this.filePicker.write(
       relBlob,

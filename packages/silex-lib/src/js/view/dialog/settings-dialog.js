@@ -93,6 +93,24 @@ silex.view.dialog.SettingsDialog.prototype.redraw = function() {
 silex.view.dialog.SettingsDialog.prototype.openDialog = function(cbk) {
   this.onClose = cbk;
   this.redraw();
+  this.openEditor();
+};
+
+
+/**
+ * Open the editor
+ */
+silex.view.dialog.SettingsDialog.prototype.openEditor = function() {
+  if (this.isOpened === false) {
+    this.isOpened = false;
+    // background
+    var background = goog.dom.getElementByClass('settings-background');
+    // show
+    goog.style.setStyle(background, 'display', 'inherit');
+    goog.style.setStyle(this.element, 'display', 'inherit');
+    // flag to remember if the dialog is opened
+    this.isOpened = true;
+  }
 };
 
 
@@ -101,6 +119,13 @@ silex.view.dialog.SettingsDialog.prototype.openDialog = function(cbk) {
  * this is private method, do not call it
  */
 silex.view.dialog.SettingsDialog.prototype.closeEditor  = function() {
-  goog.base(this, 'closeEditor');
+  if (this.isOpened === true) {
+    // flag to remember if the dialog is opened
+    this.isOpened = false;
+    // hide dialog and background
+    var background = goog.dom.getElementByClass('settings-background');
+    goog.style.setStyle(background, 'display', 'none');
+    goog.style.setStyle(this.element, 'display', 'none');
+  }
   if (this.onClose) this.onClose();
 };
