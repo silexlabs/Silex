@@ -58,6 +58,12 @@ silex.model.Head.SILEX_TEMP_TAGS_CSS_CLASS = 'silex-temp-tag';
 
 
 /**
+ * css class which marks the tags added to load a custom font
+ */
+silex.model.Head.CUSTOM_FONTS_CSS_CLASS = 'silex-custom-font';
+
+
+/**
  * set/get silex editable js scripts
  * @return {string} the string defining the js script
  */
@@ -126,6 +132,8 @@ silex.model.Head.prototype.setHeadStyle = function(cssString) {
     goog.dom.appendChild(this.getHeadElement(), silexStyle);
   }
   silexStyle.innerHTML = cssString;
+  // refresh the text editor's styles
+  this.view.textEditor.setCustomCssStyles(cssString);
 };
 
 
@@ -134,31 +142,12 @@ silex.model.Head.prototype.setHeadStyle = function(cssString) {
  * of a text, the corresponding font file is loaded if available
  */
 silex.model.Head.prototype.refreshFontList = function(neededFonts) {
-
-  //detach all previously loaded font before, to avoid duplicate
-  var links = goog.dom.getElementsByTagNameAndClass('link');
-  goog.array.forEach(links, function(link) {
-    //fonts are loaded used 'links' element pointing to google fonts service
-    if (link.getAttribute('href').indexOf('fonts') !== -1) {
-      link.parentNode.removeChild(link);
-    }
-  });
+  console.log('refreshFontList', neededFonts);
   var head = this.getHeadElement();
   //detach all previously loaded font before, to avoid duplicate
-  var links = goog.dom.getElementsByTagNameAndClass('link', null, head);
+  var links = goog.dom.getElementsByClass(silex.model.Head.CUSTOM_FONTS_CSS_CLASS, head);
   goog.array.forEach(links, function(link) {
-    //fonts are loaded used 'links' element pointing to google fonts service
-    if (link.getAttribute('href').indexOf('fonts') !== -1) {
-      link.parentNode.removeChild(link);
-    }
-  });
-  //detach all previously loaded font before, to avoid duplicate
-  var links = goog.dom.getElementsByTagNameAndClass('link', null, head);
-  goog.array.forEach(links, function(link) {
-    //fonts are loaded used 'links' element pointing to google fonts service
-    if (link.getAttribute('href').indexOf('fonts') !== -1) {
-      link.parentNode.removeChild(link);
-    }
+    link.parentNode.removeChild(link);
   });
 
   //text styles can also be applied using old-school font tag.
@@ -180,13 +169,13 @@ silex.model.Head.prototype.refreshFontList = function(neededFonts) {
     }
     return null;
   };
-
+  var customFontsForTextEditor = [];
   //for each used font family, if a corresponding font is available, load it
   for (var fontFamily in neededFonts) {
 
     var font = getFont(fontFamily);
     //check that a URL to load is available. There is none for system font (serif, sans-serif...)
-    if (font && font.href !== undefined) {
+    if (font && font.href) {
 
       //load the font by appending a link, which will load a CSS file containing the
       //font rules
@@ -194,18 +183,18 @@ silex.model.Head.prototype.refreshFontList = function(neededFonts) {
       link.setAttribute('href', font.href);
       link.setAttribute('rel', 'stylesheet');
       link.setAttribute('type', 'text/css');
+      link.setAttribute('class', silex.model.Head.CUSTOM_FONTS_CSS_CLASS);
 
       head.appendChild(link);
 
-      // for the editor
-      var link = goog.dom.createElement('link');
-      link.setAttribute('href', font.href);
-      link.setAttribute('rel', 'stylesheet');
-      link.setAttribute('type', 'text/css');
-
-      document.head.appendChild(link);
+      customFontsForTextEditor.push({
+        name: fontFamily,
+        href: font.href
+      });
     }
   }
+  // refresh the font list in the text editor
+  this.view.textEditor.setCustomFonts(customFontsForTextEditor);
 };
 
 /**

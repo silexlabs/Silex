@@ -122,6 +122,11 @@ silex.model.File.prototype.onContentLoaded = function (opt_cbk) {
   this.model.body.setSelection([contentDocument.body]);
   // make editable again
   this.model.body.setEditable(contentDocument.body, true, true);
+  // update text editor with the sebsite custom style
+  this.model.head.setHeadStyle(this.model.head.getHeadStyle());
+  //update loaded font list, as user might have choose a new one
+  var neededFonts = this.model.body.getNeededFonts();
+  this.model.head.refreshFontList(neededFonts);
   // restore event listeners
   this.view.stage.initEvents(contentDocument.body);
   // refresh the view
