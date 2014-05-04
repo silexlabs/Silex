@@ -209,7 +209,6 @@ silex.view.dialog.TextEditor.prototype.openEditor = function(initialHtml, opt_bg
  * @param {Array<string>} the custom fonts used in the text fields
  */
 silex.view.dialog.TextEditor.prototype.setCustomFonts = function(customFonts) {
-  console.log('setCustomFonts', customFonts);
   // get the iframe document
   var iframe = goog.dom.getElementsByTagNameAndClass('iframe', null, this.element)[0];
   var iframeDoc = goog.dom.getFrameContentDocument(iframe);
@@ -221,7 +220,6 @@ silex.view.dialog.TextEditor.prototype.setCustomFonts = function(customFonts) {
     link.parentNode.removeChild(link);
   });
   goog.array.forEach(customFonts, function(font) {
-    console.log('setCustomFonts found ', font);
     var link = goog.dom.createElement('link');
     link.setAttribute('href', font.href);
     link.setAttribute('rel', 'stylesheet');
@@ -237,7 +235,6 @@ silex.view.dialog.TextEditor.prototype.setCustomFonts = function(customFonts) {
  * @param {string} customCssStyles   the styles written by the user in the css editor
  */
 silex.view.dialog.TextEditor.prototype.setCustomCssStyles = function(customCssStyles) {
-  console.log('setCustomCssStyles', customCssStyles);
   // get the iframe document
   var iframe = goog.dom.getElementsByTagNameAndClass('iframe', null, this.element)[0];
   var iframeDoc = goog.dom.getFrameContentDocument(iframe);

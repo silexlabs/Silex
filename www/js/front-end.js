@@ -21,19 +21,33 @@ $(function() {
     firstPageName = firstPage.getAttribute('id');
   }
   /**
+   * callback for change events
+   * called when a page is opened
+   */
+  $('body').on('pageChanged', function (event, pageName) {
+    // mark links to the current page as active
+    $('[data-silex-href="#!'+pageName+'"]').addClass('page-link-active');
+  });
+  /**
    * init page system
    */
-  $( 'body' ).pageable({
+  $('body').pageable({
     currentPage: firstPageName,
     useDeeplink:true,
-    pageClass: 'paged-element'
+    pageClass: 'paged-element',
   });
   /**
    * silex links
+   * only when the classname .silex-runtime is defined on the body (not while editing)
    */
-  $('[data-silex-href]').click(function () {
-    //window.location.href = this.getAttribute('data-silex-href');
-    window.open(this.getAttribute('data-silex-href'), '_blank');
+  $('.silex-runtime [data-silex-href]').click(function () {
+    var href = this.getAttribute('data-silex-href');
+    if (href.indexOf('#!') === 0){
+      window.location.href = href;
+    }
+    else{
+      window.open(href, '_blank');
+    }
   });
   /**
    * resize body to the size of its content
@@ -55,4 +69,5 @@ $(function() {
   }
   // call it at start
   onResize();
+  /* */
 })

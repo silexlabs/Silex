@@ -1,10 +1,11 @@
 (function( $, undefined ) {
 $.widget('silexlabs.pageable', {
-  version: '1.0.0',
+  version: '1.0.1',
   options: {
     currentPage:"home",
     useDeeplink:true,
-    pageClass: 'page-element'
+    pageClass: 'paged-element',
+    onPageChanged: null
   },
   // _setOption is called for each individual option that is changing
   _setOption: function( key, value ) {
@@ -35,10 +36,10 @@ $.widget('silexlabs.pageable', {
         });
       });
     }
-    // mark these elements as visible
+    // mark all paged elements as hidden
     $('.' + this.options.pageClass).each(function() {
-      if (!$(this).hasClass('page-element-hidden'))
-        $(this).addClass('page-element-hidden');
+      if (!$(this).hasClass('paged-element-hidden'))
+        $(this).addClass('paged-element-hidden');
     });
     this.updatePage();
   },
@@ -52,7 +53,7 @@ $.widget('silexlabs.pageable', {
       });
     }
   },
-  updatePage: function (event){
+  updatePage: function (){
     if(this.options.useDeeplink){
       if (window.location.hash)
         this.options.currentPage = window.location.hash;
@@ -61,20 +62,23 @@ $.widget('silexlabs.pageable', {
 
     // show elements which belong to this page
     $('#current-page-style').remove();
-    $('head').append('<style id="current-page-style">.'+this.options.currentPage+'{display:inherit !important; opacity:inherit; }</style>');
+    $('head').append('<style id="current-page-style">.'+this.options.currentPage+'{display:inherit !important; }</style>');
     // mark these elements as visible
-    $('.page-element-visible').each(function() {
-      if ($(this).hasClass('page-element-visible'))
-          $(this).removeClass('page-element-visible');
-      if (!$(this).hasClass('page-element-hidden'))
-        $(this).addClass('page-element-hidden');
+    $('.paged-element-visible').each(function() {
+      $(this).removeClass('paged-element-visible');
+      $(this).addClass('paged-element-hidden');
     });
     $('.'+this.options.currentPage).each(function() {
-      if (!$(this).hasClass('page-element-visible'))
-        $(this).addClass('page-element-visible');
-      if ($(this).hasClass('page-element-hidden'))
-        $(this).removeClass('page-element-hidden');
+      $(this).addClass('paged-element-visible');
+      $(this).removeClass('paged-element-hidden');
     });
+    // mark all links as not active
+    $('.page-link-active').removeClass('page-link-active');
+    // mark links to the current page as active
+    $('[href="#!'+this.options.currentPage+'"]').addClass('page-link-active');
+    // dispatch a change event
+    $(this.element).trigger('pageChanged', [this.options.currentPage]);
+    if (this.options.onPageChanged) this.options.onPageChanged(this.options.currentPage);
   }
 });
 })(jQuery);
