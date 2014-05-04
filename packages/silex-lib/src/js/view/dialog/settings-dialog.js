@@ -43,7 +43,7 @@ silex.view.dialog.SettingsDialog = function(element, view, controller) {
   // publication path browse button
   var btn = goog.dom.getElementByClass('browse-btn', this.element);
   goog.events.listen(btn, goog.events.EventType.CLICK, function() {
-    this.onStatus('browsePublishPath');
+    this.controller.settingsDialogController.browsePublishPath();
   }, false, this);
   // publication path input field
   var inputPublicationPath =
@@ -51,7 +51,7 @@ silex.view.dialog.SettingsDialog = function(element, view, controller) {
   goog.events.listen(
       inputPublicationPath, goog.ui.Component.EventType.CHANGE,
       function() {
-        this.onStatus('change', inputPublicationPath.value);
+        this.controller.settingsDialogController.change(inputPublicationPath.value);
       }, false, this);
 };
 
@@ -60,29 +60,22 @@ goog.inherits(silex.view.dialog.SettingsDialog, silex.view.dialog.DialogBase);
 
 
 /**
- * get/set the publication path
- * @see silex.model.File
- * @return {string}   the publication path
+ * render the template
+* @see silex.model.Head
+* @param {string}   the publication path
  */
-silex.view.dialog.SettingsDialog.prototype.getPublicationPath = function() {
-  var metaNode = goog.dom.findNode(this.headElement, function (node) {
-    return node && node.tagName === 'meta' && node.getAttribute('name') === 'publicationPath';
-  });
-  if (metaNode){
-    return metaNode.getAttribute('content');
+silex.view.dialog.SettingsDialog.prototype.redraw = function(path) {
+console.log('redraw', path);
+  if (!path){
+    console.warn('no value for publication path');
+  }
+  var inputPublicationPath = goog.dom.getElementByClass('input-publication-path');
+  if (path){
+    inputPublicationPath.value = path;
   }
   else{
-    return null;
+    inputPublicationPath.value = '';
   }
-};
-
-
-/**
- * render the template
- */
-silex.view.dialog.SettingsDialog.prototype.redraw = function() {
-  var inputPublicationPath = goog.dom.getElementByClass('input-publication-path');
-  inputPublicationPath.value = this.getPublicationPath();
 };
 
 
@@ -92,7 +85,6 @@ silex.view.dialog.SettingsDialog.prototype.redraw = function() {
  */
 silex.view.dialog.SettingsDialog.prototype.openDialog = function(cbk) {
   this.onClose = cbk;
-  this.redraw();
   this.openEditor();
 };
 

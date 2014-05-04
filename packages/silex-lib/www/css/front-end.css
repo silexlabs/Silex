@@ -1,8 +1,8 @@
 /* the body covers the whole available space */
 /* the body is resized to its content size when needed in front-end.js */
 body{
-  width: 98%;
-  height: 98%;
+  min-width: 98%;
+  min-height: 98%;
   position: absolute;
   padding: 5px;
 }

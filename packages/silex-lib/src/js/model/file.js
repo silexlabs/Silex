@@ -124,6 +124,8 @@ silex.model.File.prototype.onContentLoaded = function (opt_cbk) {
   this.model.body.setEditable(contentDocument.body, true, true);
   // update text editor with the sebsite custom style
   this.model.head.setHeadStyle(this.model.head.getHeadStyle());
+  // update the settings dialog
+  this.model.head.setPublicationPath(this.model.head.getPublicationPath());
   //update loaded font list, as user might have choose a new one
   var neededFonts = this.model.body.getNeededFonts();
   this.model.head.refreshFontList(neededFonts);
@@ -373,215 +375,229 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
   }
   // get html
   var cleanFileStr = this.getHtml();
-  var iframe = goog.dom.createElement('iframe');
-  var contentDocument = goog.dom.getFrameContentDocument(iframe);
-  goog.dom.iframe.writeContent(headElement, cleanFileStr);
-  var headElement = contentDocument.head;
-  var bodyElement = contentDocument.body;
+  var iframe = goog.dom.iframe.createBlank(goog.dom.getDomHelper(), 'position: absolute; left: -99999px; ');
+  goog.dom.appendChild(document.body, iframe);
+  // prevent scripts from executing
+  cleanFileStr = cleanFileStr.replace(/type=\"text\/javascript\"/g, 'type="text/notjavascript"')
+  // write the content
+  goog.dom.iframe.writeContent(iframe, cleanFileStr);
+  // cleanup when done
+  goog.events.listenOnce(iframe, 'load', function(e) {
+    var contentDocument = goog.dom.getFrameContentDocument(iframe);
+    var headElement = contentDocument.head;
+    var bodyElement = contentDocument.body;
+    var bodyStr = bodyElement.innerHTML;
+    var headStr = headElement.innerHTML;
 
-  // **
-  var metaNode = goog.dom.findNode(headElement, function (node) {
-    return node && node.tagName === 'meta' && node.getAttribute('name') === 'publicationPath';
-  });
-  if (metaNode){
-    goog.dom.removeNode(metaNode);
-  }
-
-  // js script
-  var jsString = '';
-  var scriptTag = goog.dom.getElementByClass(
-    silex.model.Head.SILEX_SCRIPT_ELEMENT_CSS_CLASS,
-    headElement);
-  if (scriptTag){
-    jsString = scriptTag.innerHTML;
-    goog.dom.removeNode(scriptTag);
-  }
-  else {
-    console.warn('no silex script found');
-  }
-
-  // final css
-  var cssStr = '';
-  // add head css
-  var cssTag = goog.dom.getElementByClass(
-    silex.model.Head.SILEX_STYLE_ELEMENT_CSS_CLASS,
-    headElement);
-  if (cssTag){
-    cssStr += cssTag.innerHTML;
-    goog.dom.removeNode(cssTag);
-  }
-
-  // **
-  // list of css and files (assets, scripts...)
-  var cssArray = [];
-  var files = [];
-
-  // images to download and put to assets/
-  bodyStr = bodyStr.replace(/<img[^"]*src="?([^" ]*)"/g, function(match, group1, group2) {
-    var absolute = silex.utils.Url.getAbsolutePath(group1, baseUrl);
-    var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
-    // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
-    if (!silex.utils.Url.isAbsoluteUrl(relative)) {
-      relative = relative.replace('../', '/');
-    }
-    var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
-    var newRelativePath = 'assets/' + fileName;
-    files.push({
-      url: absolute
-      , destPath: newRelativePath
-      , srcPath: relative
+    // **
+    var metaNode = goog.dom.findNode(headElement, function (node) {
+      return node && node.tagName === 'meta' && node.getAttribute('name') === 'publicationPath';
     });
-    var res = match.replace(group1, newRelativePath);
-    return res;
-  });
-  // background-image / url(...)
-  bodyStr = bodyStr.replace(/url\(()(.+?)\1\)/g, goog.bind(function(match, group1, group2) {
-    return this.filterBgImage(baseUrl, files, match, group1, group2);
-  }, this));
-  // css to download and put to css/
-  headStr = headStr.replace(/href="?([^" ]*)"/g, function(match, group1, group2) {
-    var absolute = silex.utils.Url.getAbsolutePath(group1, baseUrl);
-    var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
-    // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
-    if (!silex.utils.Url.isAbsoluteUrl(relative)) {
-      relative = relative.replace('../', '/');
+    if (metaNode){
+      goog.dom.removeNode(metaNode);
     }
-    var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
-    var newRelativePath = 'css/' + fileName;
-    files.push({
-      url: absolute
-      , destPath: newRelativePath
-      , srcPath: relative
-    });
-    var res = match.replace(group1, newRelativePath);
-    return res;
-  });
-  // scripts to download and put to js/
-  headStr = headStr.replace(/src="?([^"]*)"/g, function(match, group1, group2) {
-    var absolute = silex.utils.Url.getAbsolutePath(group1, baseUrl);
-    var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
-    // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
-    if (!silex.utils.Url.isAbsoluteUrl(relative)) {
-      relative = relative.replace('../', '/');
+
+    // js script
+    var jsString = '';
+    var scriptTag = goog.dom.getElementByClass(
+      silex.model.Head.SILEX_SCRIPT_ELEMENT_CSS_CLASS,
+      headElement);
+    if (scriptTag){
+      jsString = scriptTag.innerHTML;
+      goog.dom.removeNode(scriptTag);
     }
-    var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
-    var newRelativePath = 'js/' + fileName;
-    files.push({
-      url: absolute
-      , destPath: newRelativePath
-      , srcPath: relative
-    });
-    var res = match.replace(group1, newRelativePath);
-    return res;
-  });
+    else {
+      console.warn('no silex script found');
+    }
 
-  // build a clean body clone
-  var bodyElement = goog.dom.createElement('div');
-  bodyElement.innerHTML = bodyStr;
-  // cleanup
-  silex.utils.Style.removeInternalClasses(bodyElement, false, true);
+    // final css
+    var cssStr = '';
+    // add head css
+    var cssTag = goog.dom.getElementByClass(
+      silex.model.Head.SILEX_STYLE_ELEMENT_CSS_CLASS,
+      headElement);
+    if (cssTag){
+      cssStr += cssTag.innerHTML;
+      goog.dom.removeNode(cssTag);
+    }
 
-  // **
-  // replace internal links <div data-silex-href="..." by <a href="..."
-  // do a first pass, in order to avoid replacing the elements in the <a> containers
-  var components = goog.dom.getElementsByClass('editable-style', bodyElement);
-  goog.array.forEach(components, function(element) {
-    var href = element.getAttribute('data-silex-href');
-    if (href)
-    {
-      element.setAttribute('href', href);
-      element.removeAttribute('data-silex-href');
+    // **
+    // list of css and files (assets, scripts...)
+    var cssArray = [];
+    var files = [];
+    var baseUrl = this.url;
 
-      // create a clone with a different tagname
-      var outerHtml = goog.dom.getOuterHtml(element);
-      var newHtml = '<a ';
-      if (href.indexOf('#!') !== 0){
-        newHtml += 'target="_blank" ';
+    // images to download and put to assets/
+    bodyStr = bodyStr.replace(/<img[^"]*src="?([^" ]*)"/g, function(match, group1, group2) {
+      var absolute = silex.utils.Url.getAbsolutePath(group1, baseUrl);
+      var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
+      // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
+      if (!silex.utils.Url.isAbsoluteUrl(relative)) {
+        relative = relative.replace('../', '/');
       }
-      newHtml += outerHtml.substring(4, outerHtml.length - 6) + '</a>'; // 4 is for <div and 6 for </div>
-
-      // insert the clone at the place of the original and remove the original
-      // FIXME: bug when there is a link in the content of an element with an external link set
-      // see issue https://github.com/silexlabs/Silex/issues/56
-      var fragment = goog.dom.htmlToDocumentFragment(newHtml);
-      var parentNode = element.parentNode;
-      goog.dom.insertSiblingBefore(fragment, element);
-      goog.dom.removeNode(element);
-    }
-  }, this);
-  // **
-  // URLs
-  /* better than to replace in the html string: goes through each node
-does not work because
-this does nothing: node.style.backgroundImage = "url('" + info.destPath + "')";
-
-    // apply body style
-    var s = silex.utils.Style.stringToStyle(this.stage.getBodyStyle());
-    goog.object.forEach(s, function(val, index, obj) {
-      if(val) goog.style.setStyle(bodyElement, index, val);
-    }, this);
-
-    var components = goog.dom.getElementsByTagNameAndClass(null, null, bodyElement);
-    goog.array.forEach(components, function(node) {
-      console.info(node.nodeType, node.nodeName)
-      files.concat(this.handleNodeUrls(node, baseUrl));
-    }, this);
-    // handle also the body
-    files.concat(this.handleNodeUrls(bodyElement, baseUrl));
-  */
-
-  // **
-  // extract the elements styles to external .css file
-  var elements = goog.dom.getElementsByClass('editable-style', bodyElement);
-  var elementIdx = 0;
-  goog.array.forEach(elements, function(element) {
-    // add the element type
-    var classNameType = 'silex-' + element.getAttribute(silex.model.Element.TYPE_ATTR);
-    goog.dom.classes.add(element, classNameType);
-    // create a class name for this css
-    var className = 'element-' + (elementIdx++);
-    goog.dom.classes.add(element, className);
-    // add the css for this context
-    var cssNormal = element.getAttribute('style');
-    cssArray.push({
-      classNames: ['.' + className]
-            , styles: cssNormal
+      var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
+      var newRelativePath = 'assets/' + fileName;
+      files.push({
+        url: absolute
+        , destPath: newRelativePath
+        , srcPath: relative
+      });
+      var res = match.replace(group1, newRelativePath);
+      return res;
     });
-    // cleanup styles used during edition
-    //goog.dom.classes.remove (element, 'editable-style');
-    element.removeAttribute('data-silex-type');
-    // remove inline css styles
-    element.removeAttribute('style');
-  }, this);
+    // background-image / url(...)
+    bodyStr = bodyStr.replace(/url\(()(.+?)\1\)/g, goog.bind(function(match, group1, group2) {
+      return this.filterBgImage(baseUrl, files, match, group1, group2);
+    }, this));
+    // css to download and put to css/
+    headStr = headStr.replace(/href="?([^" ]*)"/g, function(match, group1, group2) {
+      var absolute = silex.utils.Url.getAbsolutePath(group1, baseUrl);
+      var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
+      // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
+      if (!silex.utils.Url.isAbsoluteUrl(relative)) {
+        relative = relative.replace('../', '/');
+      }
+      var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
+      var newRelativePath = 'css/' + fileName;
+      files.push({
+        url: absolute
+        , destPath: newRelativePath
+        , srcPath: relative
+      });
+      var res = match.replace(group1, newRelativePath);
+      return res;
+    });
+    // scripts to download and put to js/
+    headStr = headStr.replace(/src="?([^"]*)"/g, function(match, group1, group2) {
+      var absolute = silex.utils.Url.getAbsolutePath(group1, baseUrl);
+      var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
+      // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
+      if (!silex.utils.Url.isAbsoluteUrl(relative)) {
+        relative = relative.replace('../', '/');
+      }
+      var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
+      var newRelativePath = 'js/' + fileName;
+      files.push({
+        url: absolute
+        , destPath: newRelativePath
+        , srcPath: relative
+      });
+      var res = match.replace(group1, newRelativePath);
+      return res;
+    });
 
-  // todo: find patterns to reduce the number of css classes
-  goog.array.forEach(cssArray, function(cssData) {
-    var elementCssStr = '';
-    // compute class names
-    goog.array.forEach(cssData.classNames, function(className) {
-      if (elementCssStr != '') elementCssStr += ', ';
-      elementCssStr += className;
+    // build a clean body clone
+    bodyElement.innerHTML = bodyStr;
+    // cleanup
+    silex.utils.Style.removeInternalClasses(bodyElement, false, true);
+
+    // **
+    // replace internal links <div data-silex-href="..." by <a href="..."
+    // do a first pass, in order to avoid replacing the elements in the <a> containers
+    var components = goog.dom.getElementsByClass('editable-style', bodyElement);
+    goog.array.forEach(components, function(element) {
+      var href = element.getAttribute('data-silex-href');
+      if (href)
+      {
+        element.setAttribute('href', href);
+        element.removeAttribute('data-silex-href');
+
+        // create a clone with a different tagname
+        var outerHtml = goog.dom.getOuterHtml(element);
+        var newHtml = '<a ';
+        if (href.indexOf('#!') !== 0){
+          newHtml += 'target="_blank" ';
+        }
+        newHtml += outerHtml.substring(4, outerHtml.length - 6) + '</a>'; // 4 is for <div and 6 for </div>
+
+        // insert the clone at the place of the original and remove the original
+        // FIXME: bug when there is a link in the content of an element with an external link set
+        // see issue https://github.com/silexlabs/Silex/issues/56
+        var fragment = goog.dom.htmlToDocumentFragment(newHtml);
+        var parentNode = element.parentNode;
+        goog.dom.insertSiblingBefore(fragment, element);
+        goog.dom.removeNode(element);
+      }
     }, this);
-    // compute styles
-    elementCssStr += '{\n\t' + cssData.styles + '\n}';
-    cssStr += '\n' + elementCssStr;
-  }, this);
-  // format css
-  cssStr.replace('; ', ';\n\t');
+    // **
+    // URLs
+    /* better than to replace in the html string: goes through each node
+  does not work because
+  this does nothing: node.style.backgroundImage = "url('" + info.destPath + "')";
 
-  // final html page
-  var html = '';
-  html += '<!DOCTYPE html><html>';
-  html += '<head>\
-      ' + headStr + '\
-      <link href="css/styles.css" rel="stylesheet">\
-      <script src="js/script.js" type="text/javascript"></script>\
-  </head>';
-  html += '<body style="' + styleStr + '" class="silex-runtime">' + bodyElement.innerHTML + '</body>';
-  html += '</html>';
+      // apply body style
+      var s = silex.utils.Style.stringToStyle(this.stage.getBodyStyle());
+      goog.object.forEach(s, function(val, index, obj) {
+        if(val) goog.style.setStyle(bodyElement, index, val);
+      }, this);
 
-  // callback
-  cbk(html, cssStr, jsString, files);
+      var components = goog.dom.getElementsByTagNameAndClass(null, null, bodyElement);
+      goog.array.forEach(components, function(node) {
+        console.info(node.nodeType, node.nodeName)
+        files.concat(this.handleNodeUrls(node, baseUrl));
+      }, this);
+      // handle also the body
+      files.concat(this.handleNodeUrls(bodyElement, baseUrl));
+    */
+
+    // **
+    // extract the elements styles to external .css file
+    var elements = goog.dom.getElementsByClass('editable-style', bodyElement);
+    var elementIdx = 0;
+    goog.array.forEach(elements, function(element) {
+      // add the element type
+      var classNameType = 'silex-' + element.getAttribute(silex.model.Element.TYPE_ATTR);
+      goog.dom.classes.add(element, classNameType);
+      // create a class name for this css
+      var className = 'element-' + (elementIdx++);
+      goog.dom.classes.add(element, className);
+      // add the css for this context
+      var cssNormal = element.getAttribute('style');
+      cssArray.push({
+        classNames: ['.' + className]
+              , styles: cssNormal
+      });
+      // cleanup styles used during edition
+      //goog.dom.classes.remove (element, 'editable-style');
+      element.removeAttribute('data-silex-type');
+      // remove inline css styles
+      element.removeAttribute('style');
+    }, this);
+
+    // todo: find patterns to reduce the number of css classes
+    goog.array.forEach(cssArray, function(cssData) {
+      var elementCssStr = '';
+      // compute class names
+      goog.array.forEach(cssData.classNames, function(className) {
+        if (elementCssStr != '') elementCssStr += ', ';
+        elementCssStr += className;
+      }, this);
+      // compute styles
+      elementCssStr += '{\n\t' + cssData.styles + '\n}';
+      cssStr += '\n' + elementCssStr;
+    }, this);
+    // format css
+    cssStr.replace('; ', ';\n\t');
+
+    // put back the scripts
+    headStr = headStr.replace(/type=\"text\/notjavascript\"/g, 'type="text/javascript"')
+    bodyStr = bodyElement.innerHTML.replace(/type=\"text\/notjavascript\"/g, 'type="text/javascript"')
+    var bodyStyle = bodyElement.getAttribute('style');
+
+    // final html page
+    var html = '';
+    html += '<!DOCTYPE html><html>';
+    html += '<head>\
+        ' + headStr + '\
+        <link href="css/styles.css" rel="stylesheet">\
+        <script src="js/script.js" type="text/javascript"></script>\
+    </head>';
+    html += '<body style="' + bodyStyle + '" class="silex-runtime">' + bodyStr + '</body>';
+    html += '</html>';
+
+    // callback
+    cbk(html, cssStr, jsString, files);
+  }, false, this);
 };
 silex.model.File.prototype.filterBgImage = function(baseUrl, files, match, group1, group2) {
   // remove the ''

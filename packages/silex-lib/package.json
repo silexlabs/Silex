@@ -15,6 +15,7 @@
     , "qs": "~0.6.6"
     , "express": "~4.0.x"
     , "connect-multiparty": "~1.0.x"
+    , "body-parser": "~1.0.x"
     , "cookie-parser": "~1.0.x"
     , "cookie-session": "~1.0.x"
     , "dbox": "~0.6.x"

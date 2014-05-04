@@ -142,7 +142,6 @@ silex.model.Head.prototype.setHeadStyle = function(cssString) {
  * of a text, the corresponding font file is loaded if available
  */
 silex.model.Head.prototype.refreshFontList = function(neededFonts) {
-  console.log('refreshFontList', neededFonts);
   var head = this.getHeadElement();
   //detach all previously loaded font before, to avoid duplicate
   var links = goog.dom.getElementsByClass(silex.model.Head.CUSTOM_FONTS_CSS_CLASS, head);
@@ -201,7 +200,7 @@ silex.model.Head.prototype.refreshFontList = function(neededFonts) {
  * get/set the publication path
  */
 silex.model.Head.prototype.setPublicationPath = function(path) {
-
+console.log('setPublicationPath', path);
   var that = this;
   var found = false;
   // update the DOM element
@@ -225,7 +224,7 @@ silex.model.Head.prototype.setPublicationPath = function(path) {
       goog.dom.removeNode(metaNode);
     }
   }
-  this.view.settingsDialog.redraw();
+  this.view.settingsDialog.redraw(path);
 };
 
 
@@ -234,9 +233,8 @@ silex.model.Head.prototype.setPublicationPath = function(path) {
  * @return {string}   the publication path
  */
 silex.model.Head.prototype.getPublicationPath = function() {
-  var metaNode = goog.dom.findNode(this.getHeadElement(), function (node) {
-    return node && node.tagName === 'meta' && node.getAttribute('name') === 'publicationPath';
-  });
+  var metaNode = goog.dom.getFrameContentDocument(this.iframeElement).querySelector('meta[name="publicationPath"]');
+console.log('getPublicationPath found', metaNode);
   if (metaNode){
     return metaNode.getAttribute('content');
   }
