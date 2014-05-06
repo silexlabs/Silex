@@ -79,11 +79,11 @@ silex.view.pane.StylePane.prototype.buildUi = function() {
  * @param   {Array<string>} pageNames   the names of the pages which appear in the current HTML file
  * @param   {string}  currentPageName   the name of the current page
  */
-silex.view.pane.StylePane.prototype.redraw = function(selectedElements) {
+silex.view.pane.StylePane.prototype.redraw = function(selectedElements, document, pageNames, currentPageName) {
   if (this.iAmSettingValue) return;
   this.iAmRedrawing = true;
   // call super
-  goog.base(this, 'redraw', selectedElements);
+  goog.base(this, 'redraw', selectedElements, document, pageNames, currentPageName);
 
   // css classes
   var cssClasses = this.getCommonProperty(selectedElements, goog.bind(function (element) {

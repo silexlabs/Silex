@@ -43,6 +43,7 @@ silex.model.File.CREATION_TEMPLATE = 'creation-template.html';
 /**
  * current file url
  * if the current file is a new file, it has no url
+ * if set, this is an absolute URL, use silex.model.File::getUrl to get the relatvie URL
  */
 silex.model.File.prototype.url = null;
 
@@ -124,6 +125,8 @@ silex.model.File.prototype.onContentLoaded = function (opt_cbk) {
   this.model.body.setEditable(contentDocument.body, true, true);
   // update text editor with the sebsite custom style
   this.model.head.setHeadStyle(this.model.head.getHeadStyle());
+  // update site title
+  this.model.head.setTitle(this.model.head.getTitle());
   // update the settings dialog
   this.model.head.setPublicationPath(this.model.head.getPublicationPath());
   //update loaded font list, as user might have choose a new one
@@ -133,7 +136,7 @@ silex.model.File.prototype.onContentLoaded = function (opt_cbk) {
   this.view.stage.initEvents(contentDocument.body);
   // refresh the view
   var pages = this.model.page.getPages();
-  var page = this.model.page.getCurrentPageName();
+  var page = this.model.page.getCurrentPage();
   this.view.pageTool.redraw([], contentDocument, pages, page);
   this.view.propertyTool.redraw([], contentDocument, pages, page);
   this.view.stage.redraw([], contentDocument, pages, page);
@@ -386,13 +389,9 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
     var contentDocument = goog.dom.getFrameContentDocument(iframe);
     var headElement = contentDocument.head;
     var bodyElement = contentDocument.body;
-    var bodyStr = bodyElement.innerHTML;
-    var headStr = headElement.innerHTML;
-
     // **
-    var metaNode = goog.dom.findNode(headElement, function (node) {
-      return node && node.tagName === 'meta' && node.getAttribute('name') === 'publicationPath';
-    });
+    // remove publication path
+    var metaNode = contentDocument.querySelector('meta[name="publicationPath"]');
     if (metaNode){
       goog.dom.removeNode(metaNode);
     }
@@ -420,6 +419,10 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
       cssStr += cssTag.innerHTML;
       goog.dom.removeNode(cssTag);
     }
+
+    // convert to strings
+    var bodyStr = bodyElement.innerHTML;
+    var headStr = headElement.innerHTML;
 
     // **
     // list of css and files (assets, scripts...)

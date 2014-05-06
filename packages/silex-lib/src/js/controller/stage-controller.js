@@ -52,10 +52,14 @@ silex.controller.StageController.prototype.selectMultiple = function(target) {
   this.model.body.setSelection(selection);
 }
 /**
- * the user has clicked in the background
+ * the user has clicked on an element
+ * which was already selected,
+ * with the shift key down
  */
-silex.controller.StageController.prototype.deselect = function() {
-  this.model.body.setSelection([]);
+silex.controller.StageController.prototype.deselect = function(target) {
+  var selection = this.model.body.getSelection();
+  goog.array.remove(selection, target);
+  this.model.body.setSelection(selection);
 }
 silex.controller.StageController.prototype.change = function(target) {
   // refresh the toolboxes

@@ -23,9 +23,6 @@ goog.require('silex.types.Model');
 goog.provide('silex.model.Body');
 goog.require('silex.Config');
 
-
-goog.require('goog.testing.stacktrace');
-
 /**
  * @constructor
  * @param  {silex.types.Model} model  model class which holds the other models
@@ -151,7 +148,7 @@ silex.model.Body.prototype.setSelection = function(selectedElements) {
   }, this);
   // refresh views
   var pages = this.model.page.getPages();
-  var page = this.model.page.getCurrentPageName();
+  var page = this.model.page.getCurrentPage();
   this.view.pageTool.redraw(selectedElements, this.getWindow().document, pages, page);
   this.view.propertyTool.redraw(selectedElements, this.getWindow().document, pages, page);
   this.view.stage.redraw(selectedElements, this.getWindow().document, pages, page);
@@ -275,7 +272,7 @@ silex.model.Body.prototype.removeEditableClasses = function(rootElement) {
     goog.dom.classes.remove(element, silex.model.Body.UI_DRAGGABLE_DRAGGING_CLASS_NAME);
   }, this);
 
-  elements = goog.dom.query('[aria-disabled]', rootElement);
+  elements = this.getWindow().document.querySelectorAll('[aria-disabled]');
   goog.array.forEach(elements, function(element) {
     element.removeAttribute('aria-disabled');
   }, this);

@@ -163,7 +163,7 @@ silex.model.Element.prototype.setStyle = function(element, styleName, opt_styleV
     }
     // update the view
     var pages = this.model.page.getPages();
-    var page = this.model.page.getCurrentPageName();
+    var page = this.model.page.getCurrentPage();
     var selectedElements = this.model.body.getSelection();
     this.view.propertyTool.redraw(selectedElements, goog.dom.getFrameContentDocument(this.iframeElement), pages, page);
   }

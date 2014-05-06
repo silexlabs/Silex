@@ -149,16 +149,26 @@ silex.view.pane.PropertyPane.prototype.onPositionChanged =
   // the name of the property to change
   var name = input.getAttribute('data-style-name');
   // the bounding box of all elements
-  var bb = silex.utils.Dom.getBoundingBox(this.selectedElements);
+  var bb = {};
 
   // apply the change to all elements
   goog.array.forEach(this.selectedElements, function (element) {
     if (input.value != ''){
-      var initialValue = parseFloat(element.style[name].substr(0, element.style[name].indexOf('px')));
-      // compute the value relative to the group value
+      // compute the initial value of this style for the given element
+      var initialValue;
+      if (!element.style[name] || element.style[name] === '' || element.style[name] === '0'){
+        initialValue = 0;
+        bb[name] = 0;
+      }
+      else{
+        initialValue = parseFloat(element.style[name].substr(0, element.style[name].indexOf('px')));
+        bb = silex.utils.Dom.getBoundingBox(this.selectedElements);
+      }
+      // compute the new value relatively to the old value,
+      // in order to match the group movement
       var value = initialValue + parseFloat(input.value) - bb[name];
       this.styleChanged(name,
-        value + input.getAttribute('data-style-unit'),
+        value + 'px',
         [element]);
     }
     else{
@@ -218,7 +228,7 @@ silex.view.pane.PropertyPane.prototype.redraw = function(selectedElements, docum
   this.iAmRedrawing = true;
 
   // call super
-  goog.base(this, 'redraw', selectedElements);
+  goog.base(this, 'redraw', selectedElements, document, pageNames, currentPageName);
 
   // not available for stage element
   var elementsNoStage = [];

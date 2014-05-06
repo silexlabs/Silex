@@ -77,7 +77,7 @@ silex.view.pane.GeneralStylePane.prototype.redraw = function(selectedElements, d
   this.iAmRedrawing = true;
 
   // call super
-  goog.base(this, 'redraw', selectedElements);
+  goog.base(this, 'redraw', selectedElements, document, pageNames, currentPageName);
 
   // not available for stage element
   var elementsNoStage = [];
