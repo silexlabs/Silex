@@ -65,8 +65,8 @@ silex.utils.Dom.getBoundingBox = function (elements) {
     // commpute the values, which may end up to be NaN or a number
     var elementTop = parseFloat(element.style.top.substr(0, element.style.top.indexOf('px')));
     var elementLeft = parseFloat(element.style.left.substr(0, element.style.left.indexOf('px')));
-    var elementRight = elementLeft + parseFloat(element.style.width.substr(0, element.style.width.indexOf('px')));
-    var elementBottom = elementTop + parseFloat(element.style.height.substr(0, element.style.height.indexOf('px')));
+    var elementRight = (elementLeft || 0) + parseFloat(element.style.width.substr(0, element.style.width.indexOf('px')));
+    var elementBottom = (elementTop || 0) + parseFloat(element.style.height.substr(0, element.style.height.indexOf('px')));
     // take the smallest top and left
     top = isNaN(top) ? elementTop : Math.min(top, elementTop);
     left = isNaN(left) ? elementLeft : Math.min(left, elementLeft);
@@ -76,9 +76,13 @@ silex.utils.Dom.getBoundingBox = function (elements) {
   }, this);
 
   var res = {};
+  // top left
   if (!isNaN(top)) res.top = top;
   if (!isNaN(left)) res.left = left;
-  if (!isNaN(top) && !isNaN(bottom)) res.height = bottom - top;
-  if (!isNaN(left) && !isNaN(right)) res.width = right - left;
+  // bottom right
+  if (isNaN(top)) top = 0;
+  if (isNaN(left)) left = 0;
+  if (!isNaN(bottom)) res.height = bottom - top;
+  if (!isNaN(right)) res.width = right - left;
   return res;
 }

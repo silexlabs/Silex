@@ -29,8 +29,8 @@ ga('send', 'pageview');
 // fade in for images
 /*
 $(function(){
-    $("img").hide().bind("load", function () {
-        $(this).fadeIn();
+    $("img").hide().bind("load", function () { 
+        $(this).fadeIn(); 
     }).each(function(){
         if(this.complete || $(this).height() <= 0) $(this).trigger("load");
     });

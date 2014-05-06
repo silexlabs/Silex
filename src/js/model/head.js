@@ -200,13 +200,10 @@ silex.model.Head.prototype.refreshFontList = function(neededFonts) {
  * get/set the publication path
  */
 silex.model.Head.prototype.setPublicationPath = function(path) {
-console.log('setPublicationPath', path);
   var that = this;
   var found = false;
   // update the DOM element
-  var metaNode = goog.dom.findNode(this.getHeadElement(), function (node) {
-    return node && node.tagName === 'meta' && node.getAttribute('name') === 'publicationPath';
-  });
+  var metaNode = goog.dom.getFrameContentDocument(this.iframeElement).querySelector('meta[name="publicationPath"]');
   if (!metaNode && path && path !== ''){
     // create the DOM element
     metaNode = goog.dom.createElement('meta');
@@ -234,7 +231,6 @@ console.log('setPublicationPath', path);
  */
 silex.model.Head.prototype.getPublicationPath = function() {
   var metaNode = goog.dom.getFrameContentDocument(this.iframeElement).querySelector('meta[name="publicationPath"]');
-console.log('getPublicationPath found', metaNode);
   if (metaNode){
     return metaNode.getAttribute('content');
   }
@@ -276,7 +272,7 @@ silex.model.Head.prototype.setTitle = function(name) {
   titleNode.innerHTML = name;
   // update view
   var pages = this.model.page.getPages();
-  var page = this.model.page.getCurrentPageName();
+  var page = this.model.page.getCurrentPage();
   this.view.menu.redraw(this.model.body.getSelection(), goog.dom.getFrameContentDocument(this.iframeElement), pages, page);
 };
 

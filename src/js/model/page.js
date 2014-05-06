@@ -25,9 +25,6 @@ goog.provide('silex.model.Page');
 goog.require('silex.types.Model');
 goog.require('silex.Config');
 
-goog.require('goog.dom.query');
-
-
 /**
  * @constructor
  * @param  {silex.types.Model} model  model class which holds the other models
@@ -102,10 +99,9 @@ silex.model.Page.prototype.getWindow = function() {
  * @return {Array<string>} an array of the page names I have found in the DOM
  */
 silex.model.Page.prototype.getPages = function() {
-  var bodyElement = this.getWindow().document.body;
   // retrieve all page names from the head section
   var pages = [];
-  elements = goog.dom.query('a[data-silex-type="page"]', bodyElement);
+  elements = this.getWindow().document.querySelectorAll('a[data-silex-type="page"]');
   goog.array.forEach(elements, function(element) {
     pages.push(element.getAttribute('id'));
   }, this);
@@ -117,7 +113,7 @@ silex.model.Page.prototype.getPages = function() {
  * get the currently opened page from the dom
  * @return {string} name of the page currently opened
  */
-silex.model.Page.prototype.getCurrentPageName = function() {
+silex.model.Page.prototype.getCurrentPage = function() {
   var bodyElement = this.getWindow().document.body;
   var pageName = this.getWindow().jQuery(bodyElement).pageable('option', 'currentPage');
   return pageName;
@@ -132,6 +128,11 @@ silex.model.Page.prototype.getCurrentPageName = function() {
 silex.model.Page.prototype.setCurrentPage = function(pageName) {
   var bodyElement = this.getWindow().document.body;
   this.getWindow().jQuery(bodyElement).pageable({currentPage: pageName});
+  // refresh the view
+  var pages = this.getPages();
+  this.view.pageTool.redraw([], this.getWindow().document, pages, pageName);
+  this.view.propertyTool.redraw([], this.getWindow().document, pages, pageName);
+  this.view.stage.redraw([], this.getWindow().document, pages, pageName);
 };
 
 
@@ -142,8 +143,7 @@ silex.model.Page.prototype.setCurrentPage = function(pageName) {
  */
 silex.model.Page.prototype.getDisplayName = function(pageName) {
   var displayName = '';
-  var bodyElement = this.getWindow().document.body;
-  var pageElement = goog.dom.getElement(pageName, bodyElement);
+  var pageElement = this.getWindow().document.getElementById(pageName);
   if (pageElement) {
     displayName = pageElement.innerHTML;
   }
@@ -158,37 +158,33 @@ silex.model.Page.prototype.getDisplayName = function(pageName) {
 silex.model.Page.prototype.removePage = function(pageName) {
   var bodyElement = this.getWindow().document.body;
   // remove the DOM element
-  this.getWindow().jQuery('a[data-silex-type="page"]', bodyElement).each(
-      function() {
-        if (this.getAttribute('id') === pageName) {
-          this.getWindow().jQuery(this).remove();
-        }
-      });
+  var elements = this.getWindow().document.querySelectorAll('a[data-silex-type="page"]');
+  goog.array.forEach(elements, function(element) {
+    if (element.getAttribute('id') === pageName) {
+      goog.dom.removeNode(element);
+    }
+  }, this);
   // remove the links to this page
-  this.getWindow().jQuery('*[data-silex-href="#!' + pageName + '"]').each(
-      function() {
-        this.removeAttribute('data-silex-href');
-      }
-  );
+  var elements = this.getWindow().document.querySelectorAll('*[data-silex-href="#!' + pageName + '"]');
+  goog.array.forEach(elements, function(element) {
+    element.removeAttribute('data-silex-href');
+  }, this);
   // check elements which were only visible on this page
   // and returns them in this case
   var elementsOnlyOnThisPage = [];
-  this.getWindow().jQuery('.' + pageName).each(
-      function() {
-        this.getWindow().jQuery(this).removeClass(pageName);
-
-        var pagesOfElement = this.getPagesForElement(this, this.getWindow());
-
-        if (pagesOfElement.length <= 0){
-          //this.getWindow().jQuery(this).removeClass(silex.model.Page.PAGED_CLASS_NAME);
-          elementsOnlyOnThisPage.push(this);
-        }
-      }
-  );
+  var elements = goog.dom.getElementsByClass(pageName, this.getWindow().document.body);
+  goog.array.forEach(elements, function(element) {
+    goog.dom.classes.remove(element, pageName);
+    var pagesOfElement = this.getPagesForElement(element);
+    if (pagesOfElement.length <= 0){
+      //this.getWindow().jQuery(this).removeClass(silex.model.Page.PAGED_CLASS_NAME);
+      elementsOnlyOnThisPage.push(element);
+    }
+  }, this);
   // find default first page
   var pages = this.getPages(this.getWindow());
   // open default page
-  silex.model.Page.setCurrentPage(pages[0]);
+  this.setCurrentPage(pages[0]);
 
   return elementsOnlyOnThisPage;
 };
@@ -209,6 +205,8 @@ silex.model.Page.prototype.createPage = function(name, displayName) {
   goog.dom.appendChild(bodyElement, aTag);
   // for coherence with other silex elements
   goog.dom.classes.add(aTag, silex.model.Page.PAGE_CLASS_NAME);
+  // select this page
+  this.setCurrentPage(name);
 };
 
 
@@ -217,28 +215,26 @@ silex.model.Page.prototype.createPage = function(name, displayName) {
  */
 silex.model.Page.prototype.renamePage = function(oldName, newName, newDisplayName) {
   var bodyElement = this.getWindow().document.body;
-  var that = this;
   // update the DOM element
-  this.getWindow().jQuery('a[data-silex-type="page"]', bodyElement).each(
-      function() {
-        if (this.getAttribute('id') === oldName) {
-          this.setAttribute('id', newName);
-          this.innerHTML = newDisplayName;
-        }
-      });
+  var elements = this.getWindow().document.querySelectorAll('a[data-silex-type="page"]');
+  goog.array.forEach(elements, function(element) {
+    if (element.getAttribute('id') === oldName) {
+      element.setAttribute('id', newName);
+      element.innerHTML = newDisplayName;
+    }
+  }, this);
   // update the links to this page
-  this.getWindow().jQuery('*[data-silex-href="#!' + oldName + '"]').each(
-      function() {
-        this.setAttribute('data-silex-href', '#!' + newName);
-      }
-  );
+  var elements = this.getWindow().document.querySelectorAll('*[data-silex-href="#!' + oldName + '"]');
+  goog.array.forEach(elements, function(element) {
+      element.setAttribute('data-silex-href', '#!' + newName);
+  }, this);
   // update the visibility of the compoents
-  this.getWindow().jQuery('.' + oldName).each(
-      function() {
-        this.getWindow().jQuery(this).removeClass(oldName);
-        this.getWindow().jQuery(this).addClass(newName);
-      }
-  );
+  var elements = goog.dom.getElementsByClass(oldName, this.getWindow().document.body);
+  goog.array.forEach(elements, function(element) {
+    goog.dom.classes.swap(element, oldName, newName);
+  }, this);
+  // select this page
+  this.setCurrentPage(newName);
 };
 
 
@@ -297,7 +293,7 @@ silex.model.Page.prototype.getPagesForElement = function(element) {
 silex.model.Page.prototype.isInPage = function(element, opt_pageName) {
   var bodyElement = this.getWindow().document.body;
   if (!opt_pageName){
-    opt_pageName = this.getCurrentPageName(bodyElement);
+    opt_pageName = this.getCurrentPage(bodyElement);
   }
   return goog.dom.classes.has(element, opt_pageName);
 }

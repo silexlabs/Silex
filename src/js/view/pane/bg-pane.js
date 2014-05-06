@@ -179,7 +179,7 @@ silex.view.pane.BgPane.prototype.redraw = function(selectedElements, document, p
   if (this.iAmSettingValue) return;
   this.iAmRedrawing = true;
   // call super
-  goog.base(this, 'redraw', selectedElements);
+  goog.base(this, 'redraw', selectedElements, document, pageNames, currentPageName);
 
   // remember selection
   this.selectedElements = selectedElements;
@@ -405,7 +405,7 @@ silex.view.pane.BgPane.prototype.onTransparentChanged = function() {
  * User has clicked the select image button
  */
 silex.view.pane.BgPane.prototype.onSelectImageButton = function() {
-  this.selectBgImage();
+  this.controller.propertyToolController.browseBgImage();
 };
 
 

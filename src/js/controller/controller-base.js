@@ -269,7 +269,7 @@ silex.controller.ControllerBase.prototype.addElement = function(type) {
  */
 silex.controller.ControllerBase.prototype.doAddElement = function(element) {
   // only visible on the current page
-  var currentPageName = this.model.page.getCurrentPageName();
+  var currentPageName = this.model.page.getCurrentPage();
   this.model.page.removeFromAllPages(element);
   this.model.page.addToPage(element, currentPageName);
   // unless one of its parents is in a page already
@@ -356,6 +356,10 @@ silex.controller.ControllerBase.prototype.editElement = function(opt_element) {
   switch (this.model.element.getType(opt_element)) {
     case silex.model.Element.TYPE_TEXT:
       var bgColor = silex.utils.Style.computeBgColor(opt_element);
+      if (!bgColor){
+        // case where all parents are transparent
+        bgColor = [255, 255, 255, 255]
+      }
       // open the text editor with the same bg color as the element
       this.view.textEditor.openEditor(this.model.element.getInnerHtml(opt_element),
         goog.color.rgbToHex(
@@ -391,7 +395,6 @@ silex.controller.ControllerBase.prototype.editElement = function(opt_element) {
  */
 silex.controller.ControllerBase.prototype.openPage = function(pageName) {
   this.model.page.setCurrentPage(pageName);
-  // update view
 }
 /**
  * rename a page
@@ -399,7 +402,7 @@ silex.controller.ControllerBase.prototype.openPage = function(pageName) {
 silex.controller.ControllerBase.prototype.renamePage = function(opt_pageName) {
   // default to the current page
   if (!opt_pageName){
-    opt_pageName = this.model.page.getCurrentPageName();
+    opt_pageName = this.model.page.getCurrentPage();
   }
   this.getUserInputPageName(
     this.model.page.getDisplayName(opt_pageName),
@@ -407,8 +410,10 @@ silex.controller.ControllerBase.prototype.renamePage = function(opt_pageName) {
     if (newDisplayName) {
       // update model
       this.model.page.renamePage(opt_pageName, name, newDisplayName);
-      // open the new page
-      this.openPage(name);
+    }
+    else {
+      // just open the new page
+      this.openPage(opt_pageName);
     }
     // update view
   }, this));
@@ -473,6 +478,7 @@ silex.controller.ControllerBase.prototype.getUserInputPageName = function(defaul
               exists = true;
           });
           if (exists) {
+            // just open the new page
             this.openPage(name);
           }
           else {
@@ -499,7 +505,7 @@ silex.controller.ControllerBase.prototype.checkElementVisibility = function(elem
     for (idx in pages) {
       // remove the component from the page
       var pageName = pages[idx];
-      this.model.element.removeFromPage(element, pageName);
+      this.model.page.removeFromPage(element, pageName);
     }
     // redraw the tool box in order to reflect the changes
   }
@@ -515,7 +521,6 @@ silex.controller.ControllerBase.prototype.createPage = function(successCbk, canc
     if (name) {
       // create the page model
       this.model.page.createPage(name, displayName);
-      this.openPage(name);
       // update view
       if (successCbk) successCbk();
       this.tracker.trackAction('controller-events', 'success', 'insert.page', 1);
@@ -608,7 +613,7 @@ silex.controller.ControllerBase.prototype.openFile = function(opt_cbk, opt_error
       this.model.file.open(url, goog.bind(function(rawHtml) {
         this.model.file.setHtml(rawHtml, goog.bind(function() {
           // handle retrocompatibility issues
-          silex.utils.BackwardCompat.process(this.model.body.getBodyElement(), this.model.head.getHeadElement());
+          silex.utils.BackwardCompat.process(this.model.body.getWindow().document);
           // check that it is a Silex website
           if (goog.dom.getElementByClass('editable-style', this.model.body.getBodyElement())){
             // display and redraw
@@ -673,7 +678,7 @@ silex.controller.ControllerBase.prototype.save = function(opt_url, opt_cbk, opt_
   }
   else{
     // choose a new name
-    this.view.fileExplorer.openDialog(
+    this.view.fileExplorer.saveAsDialog(
       goog.bind(function(url) {
         this.doSave(url, opt_cbk, opt_errorCbk);
       }, this),

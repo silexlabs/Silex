@@ -63,8 +63,8 @@ $(function() {
       if (height < bottom) height = bottom;
     });
     $("body").css({
-      "width": width + "px",
-      "height": height + "px"
+      "min-width": width + "px",
+      "min-height": height + "px"
     });
   }
   // call it at start

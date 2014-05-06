@@ -46,9 +46,18 @@ silex.view.Stage = function(element, view , controller) {
 
 
   // Disable horizontal scrolling for Back page on Mac OS
+  // on Silex UI
   var mwh = new goog.events.MouseWheelHandler(document.body);
   goog.events.listen(mwh, goog.events.MouseWheelHandler.EventType.MOUSEWHEEL, function (e) {
     if (e.deltaX<0 && document.body.parentNode.scrollLeft<=0){
+      e.preventDefault();
+    }
+  }, false, this);
+  // Disable horizontal scrolling for Back page on Mac OS
+  // on the iframe
+  var mwh = new goog.events.MouseWheelHandler(element);
+  goog.events.listen(mwh, goog.events.MouseWheelHandler.EventType.MOUSEWHEEL, function (e) {
+    if (e.deltaX<0 && element.scrollLeft<=0){
       e.preventDefault();
     }
   }, false, this);
@@ -139,7 +148,13 @@ silex.view.Stage.prototype.initEvents = function (bodyElement) {
         // if the user did not move the element select it in case other elements were selected
         // get the first parent node which is editable (silex-editable css class)
         var editableElement = goog.dom.getAncestorByClass(e.target, silex.model.Body.EDITABLE_CLASS_NAME) || bodyElement;
-        this.controller.stageController.select(editableElement);
+        // check if selection has changed
+        // ?? do not check if selection has changed, becaus it causes refresh bugs (apply border to the next selected element)
+        var hasChanged = (this.selectedElements.length === 1 && this.selectedElements[0] === editableElement);
+        if (!hasChanged){
+          // update selection
+          this.controller.stageController.select(editableElement);
+        }
       }
     }
     // remove the focus from text fields

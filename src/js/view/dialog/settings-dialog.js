@@ -60,15 +60,27 @@ goog.inherits(silex.view.dialog.SettingsDialog, silex.view.dialog.DialogBase);
 
 
 /**
+ * init the menu and UIs
+ */
+silex.view.dialog.SettingsDialog.prototype.initUI = function() {
+  // call super
+  goog.base(this, 'initUI');
+
+  // background
+  var background = goog.dom.getElementByClass('settings-background');
+  // dialogs background
+  goog.events.listen(background, goog.events.EventType.CLICK, function(e) {
+    this.closeEditor();
+  }, false, this);
+};
+
+
+/**
  * render the template
 * @see silex.model.Head
 * @param {string}   the publication path
  */
 silex.view.dialog.SettingsDialog.prototype.redraw = function(path) {
-console.log('redraw', path);
-  if (!path){
-    console.warn('no value for publication path');
-  }
   var inputPublicationPath = goog.dom.getElementByClass('input-publication-path');
   if (path){
     inputPublicationPath.value = path;

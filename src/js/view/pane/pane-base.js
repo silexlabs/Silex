@@ -65,7 +65,7 @@ silex.view.pane.PaneBase.prototype.iAmRedrawing;
 silex.view.pane.PaneBase.prototype.styleChanged = function(styleName, opt_styleValue, opt_elements) {
 //  if (this.iAmRedrawing) return;
   // notify the controller
-//  this.iAmSettingValue = true;
+  this.iAmSettingValue = true;
   try{
     this.controller.propertyToolController.styleChanged(styleName, opt_styleValue, opt_elements);
   }
@@ -73,7 +73,7 @@ silex.view.pane.PaneBase.prototype.styleChanged = function(styleName, opt_styleV
     // error which will not keep this.iAmSettingValue to true
     console.error('an error occured while editing the value', err);
   }
-//  this.iAmSettingValue = false;
+  this.iAmSettingValue = false;
   console.warn('styleChanged done');
 };
 

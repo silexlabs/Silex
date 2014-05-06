@@ -188,11 +188,11 @@ silex.view.pane.BorderPane.prototype.buildUi = function() {
 /**
  * redraw the properties
  */
-silex.view.pane.BorderPane.prototype.redraw = function(selectedElements) {
+silex.view.pane.BorderPane.prototype.redraw = function(selectedElements, document, pageNames, currentPageName) {
   if (this.iAmSettingValue) return;
   this.iAmRedrawing = true;
   // call super
-  goog.base(this, 'redraw', selectedElements);
+  goog.base(this, 'redraw', selectedElements, document, pageNames, currentPageName);
 
   // border width
   var borderWidth = this.getCommonProperty(selectedElements, function (element) {
@@ -347,7 +347,9 @@ silex.view.pane.BorderPane.prototype.resetBorder = function() {
  * callback for number inputs
  */
 silex.view.pane.BorderPane.prototype.onBorderWidthChanged = function() {
-  if (this.borderWidthInput.value && this.borderWidthInput.value !== '') {
+  if (this.borderWidthInput.value
+    && this.borderWidthInput.value !== ''
+    && this.borderWidthInput.value !== '0') {
     // border placement
     var borderWidthStr = '';
     var idx;

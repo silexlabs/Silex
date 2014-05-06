@@ -111,6 +111,12 @@ silex.App = function() {
     }
     window.onbeforeunload = closeEditorWarning;
   }
+  // warning when IE
+  if (navigator.appName === "Microsoft Internet Explorer") {
+    silex.utils.Notification.alert('Your browser is not supported yet.<br>Please use chrome or firefox.',
+      goog.bind(function(accept) {
+    }, this));
+  }
   // **
   // creation of the main MVC structures
   // **

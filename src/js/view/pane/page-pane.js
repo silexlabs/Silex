@@ -223,7 +223,7 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, document,
   if (this.iAmSettingValue) return;
   this.iAmRedrawing = true;
   // call super
-  goog.base(this, 'redraw', selectedElements);
+  goog.base(this, 'redraw', selectedElements, document, pageNames, currentPageName);
 
   // remember selection
   this.selectedElements = selectedElements;
