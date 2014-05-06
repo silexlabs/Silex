@@ -124,18 +124,6 @@ silex.model.Element.prototype.getType = function(element) {
 
 
 /**
- * get/set type of the element
- * @param  {Element} element    created by silex, either a text box, image, ...
- * @param  {string}  type      the new type for this element
- */
-silex.model.Element.prototype.setType = function(element, type) {
-  console.error('Error: not implemented');
-  throw('Error: not implemented');
-  element.setAttribute(silex.model.Element.TYPE_ATTR, type);
-};
-
-
-/**
  * get/set style of the element
  * @param  {Element} element   created by silex, either a text box, image, ...
  * @param  {string} styleName  the style name

@@ -215,8 +215,9 @@ silex.view.pane.BorderPane.prototype.redraw = function(selectedElements, documen
       values[3] = values[1];
     }
     // Four-value syntax - top right bottom left
-    else if (values.length  === 4) {
-    }
+    // else if (values.length  === 4) {
+      // do nothing, we're good!
+    // }
     var val = values[0];
     if (goog.isDef(values[1]) && val === '0' || val === '0px') val = values[1];
     if (goog.isDef(values[2]) && val === '0' || val === '0px') val = values[2];

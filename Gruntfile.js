@@ -183,8 +183,6 @@ module.exports = function(grunt) {
           , compile: true
           , compilerOpts: {
             compilation_level: 'SIMPLE_OPTIMIZATIONS'
-            , warning_level: 'QUIET'
-            , externs: 'submodules/cloud-explorer/lib/app/js/cloud-explorer.js'
             , debug: false
             , create_source_map: 'dist/client/js/admin.min.js.map'
             , source_map_format: 'V3'
@@ -202,10 +200,8 @@ module.exports = function(grunt) {
           , compile: true // disable to speedup the compilation but also disable source map
           , compilerOpts: {
             compilation_level: 'SIMPLE_OPTIMIZATIONS'
-            , externs: 'submodules/cloud-explorer/lib/app/js/cloud-explorer.js'
             , formatting: 'PRETTY_PRINT'
             , debug: true
-//            , use_closure_library: true // disable if compiled
             , create_source_map: 'dist/client/js/admin.js.map'
             , source_map_format: 'V3'
           }
