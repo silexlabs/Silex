@@ -51,7 +51,8 @@ $(function() {
   });
   /**
    * resize body to the size of its content
-   */
+   * This causes the main container to be left aligned
+   *
   function onResize(event){
     var width = 0;
     var height = 0;
@@ -63,8 +64,8 @@ $(function() {
       if (height < bottom) height = bottom;
     });
     $("body").css({
-      "width": width + "px",
-      "height": height + "px"
+      "min-width": width + "px",
+      "min-height": height + "px"
     });
   }
   // call it at start

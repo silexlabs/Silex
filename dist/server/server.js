@@ -80,10 +80,15 @@ options.staticFolders.push(
     {
         path: "../../../../www/"
     },
-    // debug silex
+    // debug silex, for js source map
     {
         name: "/silex/js/src",
         path: "../../../../src/"
+    },
+    // debug silex, for offline work
+    {
+        name: "/static.silex.me",
+        path: "../../../../static.silex.me/"
     },
     // silex editor
     {

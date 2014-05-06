@@ -143,13 +143,13 @@ silex.controller.ControllerBase.prototype.removeElement = function(element) {
   if (this.model.body.getBodyElement() != element
     && goog.dom.contains(this.model.body.getBodyElement(), element)){
     // confirm and delete
-    silex.utils.Notification.confirm('I am about to delete the selected element(s)", are you sure?',
+    silex.utils.Notification.confirm('I am about to <strong>delete the selected element(s)</strong>, are you sure?',
       goog.bind(function(accept) {
         if (accept) {
           // remove the element
           this.model.element.removeElement(element);
         }
-      }, this));
+      }, this), 'delete', 'cancel');
   }
   else{
     console.error('could not delete', element, 'because it is not in the stage element');
@@ -429,31 +429,15 @@ silex.controller.ControllerBase.prototype.removePage = function(opt_pageName) {
     opt_pageName = this.model.page.getCurrentPage(this.model.body.getBodyElement());
   }
   // confirm and delete
-  silex.utils.Notification.confirm('I am about to delete the page "'
+  silex.utils.Notification.confirm('I am about to <strong>delete the page "'
     + this.model.page.getDisplayName(opt_pageName)
-    + '", are you sure?',
+    + '"</strong>, are you sure?',
     goog.bind(function(accept) {
       if (accept) {
         // update model
-        var elementsOnlyOnThisPage = this.model.page.removePage(opt_pageName);
-        // handle elements which should be deleted
-        if (elementsOnlyOnThisPage.length > 0){
-          silex.utils.Notification.confirm('This page has elements which are only visible here. Should I delete them or keep them and make them visible everywhere?', goog.bind(function(accept) {
-            goog.array.forEach(elementsOnlyOnThisPage, function(element) {
-              if (accept){
-                // remove these elements
-                this.removeElement(element);
-              }
-              else{
-                // remove from this page
-                this.model.page.removeFromAllPages(element);
-              }
-            }, this);
-          }, this), 'delete', 'keep');
-        }
-        // update view
+        this.model.page.removePage(opt_pageName);
       }
-  }, this));
+  }, this), 'delete', 'cancel');
 };
 
 
@@ -540,14 +524,14 @@ silex.controller.ControllerBase.prototype.preview = function() {
   this.tracker.trackAction('controller-events', 'request', 'view.file', 0);
   try{
     if (!this.model.file.getUrl()) {
-      silex.utils.Notification.confirm('Save your file before preview?', goog.bind(function(accept) {
+      silex.utils.Notification.confirm('You need to save your file before it can be opened in a new windo. Do you want me to <strong>save this file</strong> for you?', goog.bind(function(accept) {
         if (accept) {
           this.save(null, goog.bind(function() {
             window.open(this.model.file.getUrl());
             this.tracker.trackAction('controller-events', 'success', 'view.file', 1);
           }, this));
         }
-      }, this));
+      }, this), 'save', 'cancel');
     }
     else {
       window.open(this.model.file.getUrl());

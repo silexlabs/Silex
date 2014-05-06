@@ -71,6 +71,6 @@ silex.controller.PropertyToolController.prototype.addLink = function (elements, 
  */
 silex.controller.PropertyToolController.prototype.removeLink = function (elements) {
   goog.array.forEach(elements, function (element) {
-    this.model.element.removeLink(element)
+    this.model.element.setLink(element)
   }, this);
 };
