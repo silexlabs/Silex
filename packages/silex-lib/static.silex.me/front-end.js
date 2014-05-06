@@ -51,7 +51,8 @@ $(function() {
   });
   /**
    * resize body to the size of its content
-   */
+   * This causes the main container to be left aligned
+   *
   function onResize(event){
     var width = 0;
     var height = 0;

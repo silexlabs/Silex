@@ -153,9 +153,10 @@ silex.model.Page.prototype.getDisplayName = function(pageName) {
 
 /**
  * remove a page from the dom
- * @return the {Element} elements which are only in this page (they probably should be deleted?)
+ * elements which are only in this page should be deleted
  */
 silex.model.Page.prototype.removePage = function(pageName) {
+  var pageDisplayName = this.getDisplayName(pageName);
   var bodyElement = this.getWindow().document.body;
   // remove the DOM element
   var elements = this.getWindow().document.querySelectorAll('a[data-silex-type="page"]');
@@ -186,7 +187,24 @@ silex.model.Page.prototype.removePage = function(pageName) {
   // open default page
   this.setCurrentPage(pages[0]);
 
-  return elementsOnlyOnThisPage;
+  // handle elements which should be deleted
+  if (elementsOnlyOnThisPage.length > 0){
+    silex.utils.Notification.confirm(
+      elementsOnlyOnThisPage.length + ' elements were only visible on this page ('+
+      pageDisplayName + '). <br /><ul><li>Do you want me to <strong>delete these elements?</strong><br /></li><li>or keep them and <strong>make them visible on all pages?</strong></li></ul>', goog.bind(function(accept) {
+      goog.array.forEach(elementsOnlyOnThisPage, function(element) {
+        if (accept){
+          // remove these elements
+          this.model.element.removeElement(element);
+        }
+        else{
+          // remove from this page
+          this.model.page.removeFromAllPages(element);
+        }
+      }, this);
+    }, this), 'delete', 'keep');
+  }
+
 };
 
 
