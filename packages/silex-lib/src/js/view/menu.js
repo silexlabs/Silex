@@ -295,7 +295,7 @@ silex.view.Menu.prototype.onMenuEvent = function(type) {
       break;
     case 'edit.delete.selection':
       // delete component
-      this.controller.menuController.removeSelection();
+      this.controller.menuController.removeSelectedElements();
       break;
     case 'edit.copy.selection':
       this.controller.menuController.copySelection();
