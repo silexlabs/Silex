@@ -133,7 +133,7 @@ silex.model.File.prototype.onContentLoaded = function (opt_cbk) {
   var neededFonts = this.model.body.getNeededFonts();
   this.model.head.refreshFontList(neededFonts);
   // restore event listeners
-  this.view.stage.initEvents(contentDocument.body);
+  this.view.stage.initEvents(contentWindow);
   // refresh the view
   var pages = this.model.page.getPages();
   var page = this.model.page.getCurrentPage();
@@ -231,6 +231,9 @@ silex.model.File.prototype.getHtml = function() {
   // cleanup
   this.model.head.removeTempTags(cleanFile.head);
   silex.utils.Style.removeInternalClasses(cleanFile, false, true);
+  // reset the style set by stage on the body
+  cleanFile.body.style.minWidth = '';
+  cleanFile.body.style.minHeight = '';
   // put back the "silex-runtime" css class after editing
   goog.dom.classes.add(cleanFile.body, 'silex-runtime');
   // get html

@@ -156,53 +156,58 @@ silex.model.Page.prototype.getDisplayName = function(pageName) {
  * elements which are only in this page should be deleted
  */
 silex.model.Page.prototype.removePage = function(pageName) {
-  var pageDisplayName = this.getDisplayName(pageName);
-  var bodyElement = this.getWindow().document.body;
-  // remove the DOM element
-  var elements = this.getWindow().document.querySelectorAll('a[data-silex-type="page"]');
-  goog.array.forEach(elements, function(element) {
-    if (element.getAttribute('id') === pageName) {
-      goog.dom.removeNode(element);
-    }
-  }, this);
-  // remove the links to this page
-  var elements = this.getWindow().document.querySelectorAll('*[data-silex-href="#!' + pageName + '"]');
-  goog.array.forEach(elements, function(element) {
-    element.removeAttribute('data-silex-href');
-  }, this);
-  // check elements which were only visible on this page
-  // and returns them in this case
-  var elementsOnlyOnThisPage = [];
-  var elements = goog.dom.getElementsByClass(pageName, this.getWindow().document.body);
-  goog.array.forEach(elements, function(element) {
-    goog.dom.classes.remove(element, pageName);
-    var pagesOfElement = this.getPagesForElement(element);
-    if (pagesOfElement.length <= 0){
-      //this.getWindow().jQuery(this).removeClass(silex.model.Page.PAGED_CLASS_NAME);
-      elementsOnlyOnThisPage.push(element);
-    }
-  }, this);
-  // find default first page
   var pages = this.getPages(this.getWindow());
-  // open default page
-  this.setCurrentPage(pages[0]);
+  var pageDisplayName = this.getDisplayName(pageName);
+  if (pages.length < 2){
+      silex.utils.Notification.notifyError('I could not delete this page because <strong>it is the only page!</strong>');
+  }
+  else{
+    // remove the DOM element
+    var elements = this.getWindow().document.querySelectorAll('a[data-silex-type="page"]');
+    goog.array.forEach(elements, function(element) {
+      if (element.getAttribute('id') === pageName) {
+        goog.dom.removeNode(element);
+      }
+    }, this);
+    // remove the links to this page
+    var elements = this.getWindow().document.querySelectorAll('*[data-silex-href="#!' + pageName + '"]');
+    goog.array.forEach(elements, function(element) {
+      element.removeAttribute('data-silex-href');
+    }, this);
+    // check elements which were only visible on this page
+    // and returns them in this case
+    var elementsOnlyOnThisPage = [];
+    var elements = goog.dom.getElementsByClass(pageName, this.getWindow().document.body);
+    goog.array.forEach(elements, function(element) {
+      goog.dom.classes.remove(element, pageName);
+      var pagesOfElement = this.getPagesForElement(element);
+      if (pagesOfElement.length <= 0){
+        //this.getWindow().jQuery(this).removeClass(silex.model.Page.PAGED_CLASS_NAME);
+        elementsOnlyOnThisPage.push(element);
+      }
+    }, this);
+    // update the page list
+    pages = this.getPages(this.getWindow());
+    // open default/first page
+    this.setCurrentPage(pages[0]);
 
-  // handle elements which should be deleted
-  if (elementsOnlyOnThisPage.length > 0){
-    silex.utils.Notification.confirm(
-      elementsOnlyOnThisPage.length + ' elements were only visible on this page ('+
-      pageDisplayName + '). <br /><ul><li>Do you want me to <strong>delete these elements?</strong><br /></li><li>or keep them and <strong>make them visible on all pages?</strong></li></ul>', goog.bind(function(accept) {
-      goog.array.forEach(elementsOnlyOnThisPage, function(element) {
-        if (accept){
-          // remove these elements
-          this.model.element.removeElement(element);
-        }
-        else{
-          // remove from this page
-          this.model.page.removeFromAllPages(element);
-        }
-      }, this);
-    }, this), 'delete', 'keep');
+    // handle elements which should be deleted
+    if (elementsOnlyOnThisPage.length > 0){
+      silex.utils.Notification.confirm(
+        elementsOnlyOnThisPage.length + ' elements were only visible on this page ('+
+        pageDisplayName + '). <br /><ul><li>Do you want me to <strong>delete these elements?</strong><br /></li><li>or keep them and <strong>make them visible on all pages?</strong></li></ul>', goog.bind(function(accept) {
+        goog.array.forEach(elementsOnlyOnThisPage, function(element) {
+          if (accept){
+            // remove these elements
+            this.model.element.removeElement(element);
+          }
+          else{
+            // remove from this page
+            this.model.page.removeFromAllPages(element);
+          }
+        }, this);
+      }, this), 'delete', 'keep');
+    }
   }
 
 };

@@ -135,37 +135,19 @@ silex.controller.ControllerBase.prototype.pasteSelection = function() {
 
 
 /**
- * remove an element from the stage
- * @param {Element} element    the element to remove
- */
-silex.controller.ControllerBase.prototype.removeElement = function(element) {
-  // check this is allowed, i.e. an element inside the stage container
-  if (this.model.body.getBodyElement() != element
-    && goog.dom.contains(this.model.body.getBodyElement(), element)){
-    // confirm and delete
-    silex.utils.Notification.confirm('I am about to <strong>delete the selected element(s)</strong>, are you sure?',
-      goog.bind(function(accept) {
-        if (accept) {
-          // remove the element
-          this.model.element.removeElement(element);
-        }
-      }, this), 'delete', 'cancel');
-  }
-  else{
-    console.error('could not delete', element, 'because it is not in the stage element');
-  }
-}
-
-
-/**
  * remove selected elements from the stage
  */
-silex.controller.ControllerBase.prototype.removeSelection = function() {
-  // default is selected element
+silex.controller.ControllerBase.prototype.removeSelectedElements = function() {
   var elements = this.model.body.getSelection();
-  goog.array.forEach(elements, function(element) {
-    this.removeElement(element);
-  },this);
+  // confirm and delete
+  silex.utils.Notification.confirm('I am about to <strong>delete the selected element(s)</strong>, are you sure?',
+    goog.bind(function(accept) {
+      if (accept) {
+        goog.array.forEach(elements, function(element) {
+          this.model.element.removeElement(element);
+        },this);
+      }
+    }, this), 'delete', 'cancel');
 }
 
 
@@ -225,7 +207,7 @@ silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
           }, this),
           goog.bind(function(element, message){
             silex.utils.Notification.notifyError('Error: I did not manage to load the image. \n' + message);
-            this.removeElement(element);
+            this.model.element.removeElement(element);
             this.tracker.trackAction('controller-events', 'error', 'insert.image', 1);
           }, this)
         );
@@ -580,10 +562,10 @@ silex.controller.ControllerBase.prototype.newFile = function(opt_cbk, opt_errorC
         opt_cbk();
       }
     }, this));
-  }, this), function (error) {
+  }, this), goog.bind(function (error) {
     this.tracker.trackAction('controller-events', 'error', 'file.new', -1);
     if(opt_errorCbk) opt_errorCbk(error);
-  });
+  }, this));
 }
 /**
  * open a file
