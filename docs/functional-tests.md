@@ -61,3 +61,11 @@ QA - google analytics is used to track users actions in Silex and detect anomali
 
 * for all the actions tested, add test that they are tracked
 * test that errors are tracked
+
+backward compatibility
+
+* load old sites
+* save with new URLs
+
+
+
