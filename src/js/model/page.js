@@ -114,6 +114,18 @@ silex.model.Page.prototype.getCurrentPage = function() {
 
 
 /**
+ * refresh the view
+ */
+silex.model.Page.prototype.refreshView = function() {
+  var pages = this.getPages();
+  var currentPage = this.getCurrentPage();
+  this.view.pageTool.redraw(this.model.body.getSelection(), this.view.workspace.getWindow().document, pages, currentPage);
+  this.view.propertyTool.redraw(this.model.body.getSelection(), this.view.workspace.getWindow().document, pages, currentPage);
+  this.view.stage.redraw(this.model.body.getSelection(), this.view.workspace.getWindow().document, pages, currentPage);
+};
+
+
+/**
  * open the page
  * this is a static method, a helper
  * @param {string} pageName   name of the page to open
@@ -121,12 +133,8 @@ silex.model.Page.prototype.getCurrentPage = function() {
 silex.model.Page.prototype.setCurrentPage = function(pageName) {
   var bodyElement = this.view.workspace.getWindow().document.body;
   this.view.workspace.getWindow().jQuery(bodyElement).pageable({currentPage: pageName});
-  // refresh the view
-  var pages = this.getPages();
-  this.view.pageTool.redraw([], this.view.workspace.getWindow().document, pages, pageName);
-  this.view.propertyTool.redraw([], this.view.workspace.getWindow().document, pages, pageName);
-  this.view.stage.redraw([], this.view.workspace.getWindow().document, pages, pageName);
-};
+  this.refreshView();
+}
 
 
 /**
@@ -260,6 +268,7 @@ silex.model.Page.prototype.renamePage = function(oldName, newName, newDisplayNam
 silex.model.Page.prototype.addToPage = function(element, pageName) {
   goog.dom.classes.add(element, pageName);
   goog.dom.classes.add(element, silex.model.Page.PAGED_CLASS_NAME);
+  this.refreshView();
 };
 
 /**
@@ -270,6 +279,7 @@ silex.model.Page.prototype.removeFromPage = function(element, pageName) {
   if (!this.getPagesForElement(element).length>0){
     goog.dom.classes.remove(element, silex.model.Page.PAGED_CLASS_NAME);
   }
+  this.refreshView();
 };
 
 
@@ -283,6 +293,8 @@ silex.model.Page.prototype.removeFromAllPages = function(element) {
   }, this);
   // the element is not "paged" anymore
   goog.dom.classes.remove(element, silex.model.Page.PAGED_CLASS_NAME);
+  
+  this.refreshView();
 };
 
 

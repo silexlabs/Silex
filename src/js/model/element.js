@@ -425,12 +425,17 @@ silex.model.Element.prototype.createElement = function(type) {
       element.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_TEXT);
       // create the container for text content
       var textContent = goog.dom.createElement('div');
-      textContent.innerHTML = '<p>New text box</p>';
+      // add empty content
+      textContent.innerHTML = 'New text box';
       goog.style.setStyle(textContent, 'width', '100%');
       goog.style.setStyle(textContent, 'height', '100%');
       goog.dom.appendChild(element, textContent);
       // add a marker to find the inner content afterwards, with getContent
       goog.dom.classes.add(textContent, silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
+      // add normal class for default text formatting
+      // sometimes there is only in text node in textContent
+      // e.g. whe select all + remove formatting
+      goog.dom.classes.add(textContent, 'normal');
       // add a default style
       styleObject.backgroundColor = '#FFFFFF';
     break;
@@ -484,30 +489,6 @@ silex.model.Element.prototype.createElement = function(type) {
   return element;
 };
 
-
-/**
- * get/set selection for the given element
- *
-silex.model.Element.prototype.setSelected = function(element, isSelected) {
-  if (isSelected) {
-    // stage can not be multi-selected
-    goog.dom.classes.remove(bodyElement, silex.model.Element.SELECTED_CLASS_NAME);
-    // set as selected
-    goog.dom.classes.add(element, silex.model.Element.SELECTED_CLASS_NAME);
-  }
-  else {
-    goog.dom.classes.remove(element, silex.model.Element.SELECTED_CLASS_NAME);
-  }
-};
-
-
-/**
- * get/set selection for the given element
- *
-silex.model.Element.prototype.getSelected = function(element) {
-  return goog.dom.classes.has(element, silex.model.Element.SELECTED_CLASS_NAME);
-};
-/* */
 
 /**
  * set/get a "silex style link" on an element

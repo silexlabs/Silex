@@ -10,6 +10,10 @@
 //////////////////////////////////////////////////
 
 $(function() {
+  // allow HTML5 tags used by Silex to be styled with CSS (polyfill)
+  document.createElement('HEADER');
+  document.createElement('VIDEO');
+
   /**
    * list all pages from the head section
    * and open the 1st one by default

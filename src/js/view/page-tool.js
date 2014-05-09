@@ -102,6 +102,18 @@ silex.view.PageTool.prototype.redraw = function(selectedElements, contentDocumen
   var container = goog.dom.getElementByClass('page-tool-container', this.element);
   var templateHtml = goog.dom.getElementByClass('page-tool-template', this.element).innerHTML;
   container.innerHTML = silex.utils.Dom.renderList(templateHtml, this.pages);
+
+  // mark selection
+  var items = goog.dom.getElementsByClass('page-container', this.element);
+  goog.array.forEach(items, function(item) {
+    var pageName = item.getAttribute('data-page-name');
+    if (pageName === currentPageName) {
+      goog.dom.classes.add(item, 'ui-selected');
+    }
+    else {
+      goog.dom.classes.remove(item, 'ui-selected');
+    }
+  }, this);
 };
 
 
@@ -125,22 +137,9 @@ silex.view.PageTool.prototype.renamePageAtIndex = function(idx) {
  * set the selection of pages
  * @param     notify    if true, then notify by calling the onChanged callback
  */
-silex.view.PageTool.prototype.setSelectedIndex = function(index, opt_notify) {
-  // mark selection
-  var items = goog.dom.getElementsByClass('page-container', this.element);
-  var pageName = '';
-  goog.array.forEach(items, function(item) {
-    var idx = this.getCellIndex(item);
-    if (index === idx) {
-      goog.dom.classes.add(item, 'ui-selected');
-      pageName = item.getAttribute('data-page-name');
-    }
-    else {
-      goog.dom.classes.remove(item, 'ui-selected');
-    }
-  }, this);
+silex.view.PageTool.prototype.setSelectedIndex = function(idx, opt_notify) {
   // notify the controller
-  if (opt_notify) this.controller.pageToolController.openPage(pageName);
+  if (opt_notify) this.controller.pageToolController.openPage(this.pages[idx].name);
 };
 
 

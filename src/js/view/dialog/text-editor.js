@@ -121,6 +121,40 @@ silex.view.dialog.TextEditor.prototype.initUI = function() {
   goog.ui.editor.ToolbarFactory.addFormatOption(formatButton, 'Heading 2', 'H2');
   goog.ui.editor.ToolbarFactory.addFormatOption(formatButton, 'Heading 3', 'H3');
 
+  // apply a class when the format changes
+  // silex convention is ".normal" class for "Normal" style
+  goog.events.listen(formatButton,
+    goog.ui.Component.EventType.ACTION, function (e) {
+      // let time for the editor to replace the node by the desired node (P, H1, H2...)
+      setTimeout(goog.bind(function(){
+        var container = this.textField.getRange().getContainerElement();
+        if (container.tagName.toLowerCase() !== 'body'){
+          // cleanup, remove previous classes
+          var allClasses = ['normal', 'title', 'heading1', 'heading2', 'heading3'];
+          goog.dom.classes.addRemove(container, allClasses);
+          // add the desired class
+          switch(e.target.getContent()){
+            case 'Normal':
+              goog.dom.classes.add(container, 'normal');
+              break;
+            case 'Title':
+              goog.dom.classes.add(container, 'title');
+              break;
+            case 'Heading 1':
+              goog.dom.classes.add(container, 'heading1');
+              break;
+            case 'Heading 2':
+              goog.dom.classes.add(container, 'heading2');
+              break;
+            case 'Heading 3':
+              goog.dom.classes.add(container, 'heading3');
+              break;
+          }
+        }
+      }, this), 10);
+    }, false, this);
+
+
   // Specify the buttons to add to the toolbar, using built in default buttons.
   var buttons = [
     formatButton,
@@ -153,7 +187,9 @@ silex.view.dialog.TextEditor.prototype.initUI = function() {
   goog.events.listen(button,
     goog.ui.Component.EventType.ACTION, function () {
       var text = generator.generateParagraph(true);
-      var container = goog.dom.createElement('p');
+      var container = goog.dom.createElement('P');
+      // add normal style
+      goog.dom.classes.add(container, 'normal');
       container.innerHTML = text;
       this.textField.getRange().replaceContentsWithNode(container);
       this.contentChanged();
@@ -169,6 +205,17 @@ silex.view.dialog.TextEditor.prototype.initUI = function() {
   goog.events.listen(this.textField,
       goog.editor.Field.EventType.DELAYEDCHANGE,
       function() {
+/*
+        // prevent text only
+        var content = this.textField.getEditableIframe().contentDocument.body;
+        for (var idx in content.childNodes){
+          if (content.childNodes[idx].nodeType === 3){
+            content.innerHTML = '<P class="normal">'+content.innerHTML+'<P>';
+            break;
+          }
+        }
+*/
+        // notify the controller
         this.contentChanged();
       }, false, this);
 
@@ -185,10 +232,12 @@ silex.view.dialog.TextEditor.prototype.initUI = function() {
 /**
  * Open the editor
  * @param    {string} initialHtml    HTML to display at start
+ * @param    {string} elementClassName    css classes of the element being edited,
+ *                                               so that css rules apply in the editor too
  * @param    {string} opt_bgColor    desired color for the editor background
  *            which is useful to edit white text on a black bacground for example
  */
-silex.view.dialog.TextEditor.prototype.openEditor = function(initialHtml, opt_bgColor) {
+silex.view.dialog.TextEditor.prototype.openEditor = function(initialHtml, elementClassName, opt_bgColor) {
   // call super
   goog.base(this, 'openEditor');
   // init editable text input
@@ -201,6 +250,17 @@ silex.view.dialog.TextEditor.prototype.openEditor = function(initialHtml, opt_bg
   // apply to the bg
   var iframe = goog.dom.getElementsByTagNameAndClass('iframe', null, this.element)[0];
   iframe.style.backgroundColor = opt_bgColor;
+  // get the iframe document
+  var iframe = goog.dom.getElementsByTagNameAndClass('iframe', null, this.element)[0];
+  var iframeDoc = goog.dom.getFrameContentDocument(iframe);
+  // apply css classes of the element
+  // apply it on <html> tag instead of body,
+  // because body represents the '.silex-element-content' element of Silex text elements
+  // so it has these classes: 'silex-element-content normal'
+  iframeDoc.getElementsByTagName("html")[0].className = elementClassName;
+  // body represents the '.silex-element-content' element of Silex text elements
+  // so it has these classes: 'silex-element-content normal'
+  iframeDoc.body.className = 'silex-element-content normal';
 }
 
 
@@ -212,7 +272,6 @@ silex.view.dialog.TextEditor.prototype.setCustomFonts = function(customFonts) {
   // get the iframe document
   var iframe = goog.dom.getElementsByTagNameAndClass('iframe', null, this.element)[0];
   var iframeDoc = goog.dom.getFrameContentDocument(iframe);
-  var iframeBody = iframeDoc.body;
   var iframeHead = iframeDoc.head;
   //detach all previously loaded font before, to avoid duplicate
   var links = goog.dom.getElementsByClass(silex.model.Head.CUSTOM_FONTS_CSS_CLASS, iframeHead);
@@ -238,14 +297,11 @@ silex.view.dialog.TextEditor.prototype.setCustomCssStyles = function(customCssSt
   // get the iframe document
   var iframe = goog.dom.getElementsByTagNameAndClass('iframe', null, this.element)[0];
   var iframeDoc = goog.dom.getFrameContentDocument(iframe);
-  var iframeBody = iframeDoc.body;
   var iframeHead = iframeDoc.head;
-
   // add Silex css to the iframe
   var silexStyle = goog.dom.getElementByClass(
     silex.model.Head.SILEX_STYLE_ELEMENT_CSS_CLASS,
     iframeHead);
-
   // update iframe css
   if (!silexStyle){
     silexStyle = iframeDoc.createElement('style');
@@ -254,8 +310,6 @@ silex.view.dialog.TextEditor.prototype.setCustomCssStyles = function(customCssSt
     goog.dom.appendChild(iframeHead, silexStyle);
   }
   silexStyle.innerHTML = customCssStyles;
-  // also set the class name on the iframe body so that it matches css rule ".text-element"
-  goog.dom.classes.add(iframeBody, 'text-element');
 };
 
 

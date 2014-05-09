@@ -344,6 +344,7 @@ silex.controller.ControllerBase.prototype.editElement = function(opt_element) {
       }
       // open the text editor with the same bg color as the element
       this.view.textEditor.openEditor(this.model.element.getInnerHtml(opt_element),
+        opt_element.className,
         goog.color.rgbToHex(
           Math.round(bgColor[0]),
           Math.round(bgColor[1]),
@@ -473,7 +474,6 @@ silex.controller.ControllerBase.prototype.checkElementVisibility = function(elem
       var pageName = pages[idx];
       this.model.page.removeFromPage(element, pageName);
     }
-    // redraw the tool box in order to reflect the changes
   }
 }
 
