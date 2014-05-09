@@ -116,8 +116,8 @@ silex.controller.ControllerBase.prototype.pasteSelection = function() {
     }
     // take the scroll into account (drop at (100, 100) from top left corner of the window, not the stage)
     var bb = silex.utils.Dom.getBoundingBox(silex.controller.ControllerBase.clipboard);
-    var offsetX = 100 + this.model.body.getBodyElement().parentNode.scrollLeft - bb.left;
-    var offsetY = 100 + this.model.body.getBodyElement().parentNode.scrollTop - bb.top;
+    var offsetX = 100 + this.view.workspace.getWindow().document.body.scrollLeft - bb.left;
+    var offsetY = 100 + this.view.workspace.getWindow().document.body.scrollTop - bb.top;
     // duplicate and add to the container
     goog.array.forEach(silex.controller.ControllerBase.clipboard, function (clipboardElement) {
       var element = clipboardElement.cloneNode(true);
@@ -579,7 +579,7 @@ silex.controller.ControllerBase.prototype.openFile = function(opt_cbk, opt_error
       this.model.file.open(url, goog.bind(function(rawHtml) {
         this.model.file.setHtml(rawHtml, goog.bind(function() {
           // handle retrocompatibility issues
-          silex.utils.BackwardCompat.process(this.model.body.getWindow().document);
+          silex.utils.BackwardCompat.process(this.view.workspace.getWindow().document);
           // check that it is a Silex website
           if (goog.dom.getElementByClass('editable-style', this.model.body.getBodyElement())){
             // display and redraw

@@ -29,8 +29,8 @@ goog.require('silex.service.SilexTasks');
  * @param  {silex.types.Model} model  model class which holds the other models
  */
 silex.model.File = function(model, view) {
-    this.model = model;
-    this.view = view;
+  this.model = model;
+  this.view = view;
 };
 
 

@@ -37,6 +37,9 @@ silex.view.Workspace = function(element, view, controller) {
   this.controller = controller;
   this.view = view;
 
+  // retrieve the element which will hold the body of the opened file
+  this.iframeElement = goog.dom.getElementByClass(silex.view.Stage.STAGE_CLASS_NAME);
+
   // handle resize
   this.viewport = new goog.dom.ViewportSizeMonitor();
   goog.events.listen(this.viewport, goog.events.EventType.RESIZE,
@@ -57,6 +60,20 @@ silex.view.Workspace.prototype.viewport = null;
  * invalidation mechanism
  */
 silex.view.Workspace.prototype.isDirty = false;
+
+
+/**
+ * element which holds the opened website
+ */
+silex.view.Workspace.prototype.iframeElement = null;
+
+
+/**
+ * @return  {Element}   body element
+ */
+silex.view.Workspace.prototype.getWindow = function() {
+  return goog.dom.getFrameContentWindow(this.iframeElement);
+};
 
 
 /**
