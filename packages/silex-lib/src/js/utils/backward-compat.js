@@ -95,7 +95,28 @@ silex.utils.BackwardCompat.process = function(document) {
       element.setAttribute(silex.model.Element.LINK_ATTR, '#!' + href.substr(1));
     }
   });
-  // css class on elements with [type]-element (2.0)
+  // add css class on elements with [type]-element (starting from 2.0)
+  elements = document.querySelectorAll('.text-element *');
+  goog.array.forEach(elements, function(element) {
+    switch(element.nodeName.toLowerCase()){
+      case 'p':
+        goog.dom.classes.add(element, 'normal');
+        break;
+      case 'HEADER':
+        goog.dom.classes.add(element, 'title');
+        break;
+      case 'H1':
+        goog.dom.classes.add(element, 'heading1');
+        break;
+      case 'H2':
+        goog.dom.classes.add(element, 'heading2');
+        break;
+      case 'H3':
+        goog.dom.classes.add(element, 'heading3');
+        break;
+    }
+  });
+  // css class on text elements P, HEAD, H1, H2, H3 (2.2)
   elements = document.querySelectorAll('[data-silex-type]');
   goog.array.forEach(elements, function(element) {
     goog.dom.classes.add(element, element.getAttribute('data-silex-type') + '-element');

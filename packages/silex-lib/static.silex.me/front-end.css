@@ -27,9 +27,6 @@ body{
   overflow: hidden;
   border-radius: inherit;
 }
-.text-element .silex-element-content{
-  overflow: hidden;
-}
 /* links default formatting */
 .editable-style[data-silex-href]{
   cursor: pointer;
