@@ -106,14 +106,6 @@ silex.model.Body.prototype.getBodyElement = function() {
 
 
 /**
- * @return  {Element}   body element
- */
-silex.model.Body.prototype.getWindow = function() {
-  return goog.dom.getFrameContentWindow(this.iframeElement);
-};
-
-
-/**
  * @return  {Array.<Element>}   array of elements which are currently selected
  */
 silex.model.Body.prototype.getSelection = function() {
@@ -149,9 +141,9 @@ silex.model.Body.prototype.setSelection = function(selectedElements) {
   // refresh views
   var pages = this.model.page.getPages();
   var page = this.model.page.getCurrentPage();
-  this.view.pageTool.redraw(selectedElements, this.getWindow().document, pages, page);
-  this.view.propertyTool.redraw(selectedElements, this.getWindow().document, pages, page);
-  this.view.stage.redraw(selectedElements, this.getWindow().document, pages, page);
+  this.view.pageTool.redraw(selectedElements, this.view.workspace.getWindow().document, pages, page);
+  this.view.propertyTool.redraw(selectedElements, this.view.workspace.getWindow().document, pages, page);
+  this.view.stage.redraw(selectedElements, this.view.workspace.getWindow().document, pages, page);
 };
 
 
@@ -193,17 +185,17 @@ silex.model.Body.prototype.setEditable = function(rootElement, isEditable, opt_i
     if (isEditable) {
       if (element.getAttribute(silex.model.Body.SILEX_TYPE_ATTR_NAME) === silex.model.Body.SILEX_TYPE_CONTAINER){
         // containers
-        this.getWindow().jQuery(element).editable({
+        this.view.workspace.getWindow().jQuery(element).editable({
           isContainer: true
         });
       }
       else{
-        this.getWindow().jQuery(element).editable();
+        this.view.workspace.getWindow().jQuery(element).editable();
       }
     }
     else{
       if(goog.dom.classes.has(element, silex.model.Body.EDITABLE_CREATED_CLASS_NAME)){
-        this.getWindow().jQuery(element).editable('destroy');
+        this.view.workspace.getWindow().jQuery(element).editable('destroy');
         this.removeEditableClasses(element);
       }
     }
@@ -214,7 +206,7 @@ silex.model.Body.prototype.setEditable = function(rootElement, isEditable, opt_i
     if (rootElement.getAttribute(silex.model.Body.SILEX_TYPE_ATTR_NAME) === silex.model.Body.SILEX_TYPE_CONTAINER){
       if (opt_isRootDroppableOnly){
         // allow drops only
-        this.getWindow().jQuery(rootElement).editable({
+        this.view.workspace.getWindow().jQuery(rootElement).editable({
           isContainer: true,
           isResizable: false,
           isDroppable: true,
@@ -222,19 +214,19 @@ silex.model.Body.prototype.setEditable = function(rootElement, isEditable, opt_i
         });
       }
       else{
-        this.getWindow().jQuery(rootElement).editable({
+        this.view.workspace.getWindow().jQuery(rootElement).editable({
           isContainer: true
         });
       }
     }
     else{
-      this.getWindow().jQuery(rootElement).editable();
+      this.view.workspace.getWindow().jQuery(rootElement).editable();
     }
   }
   else {
     // deactivate editable plugin
     if(goog.dom.classes.has(rootElement, silex.model.Body.EDITABLE_CREATED_CLASS_NAME)){
-      this.getWindow().jQuery(rootElement).editable('destroy');
+      this.view.workspace.getWindow().jQuery(rootElement).editable('destroy');
       this.removeEditableClasses(rootElement);
     }
   }
@@ -272,7 +264,7 @@ silex.model.Body.prototype.removeEditableClasses = function(rootElement) {
     goog.dom.classes.remove(element, silex.model.Body.UI_DRAGGABLE_DRAGGING_CLASS_NAME);
   }, this);
 
-  elements = this.getWindow().document.querySelectorAll('[aria-disabled]');
+  elements = this.view.workspace.getWindow().document.querySelectorAll('[aria-disabled]');
   goog.array.forEach(elements, function(element) {
     element.removeAttribute('aria-disabled');
   }, this);

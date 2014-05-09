@@ -73,6 +73,7 @@ silex.view.Stage = function(element, view , controller) {
       this.bodyElement.dispatchEvent(evObj);
     }
   }, false, this);
+/* TODO: simulate the mous up on the iframe body
   // listen on body too because user can release
   // on the tool boxes
   goog.events.listen(document.body, 'mousemove', function(evObj){
@@ -83,10 +84,10 @@ silex.view.Stage = function(element, view , controller) {
       newEvObj.initEvent( 'mousemove', true, true);
       newEvObj.screenX = evObj.screenX - this.element.offsetLeft;
       newEvObj.screenY = evObj.screenY - this.element.offsetTop;
-      console.log('mousemove', evObj.screenX - this.element.offsetLeft, newEvObj.screenX, this.element.offsetLeft);
       this.bodyElement.dispatchEvent(newEvObj);
     }
   }, false, this);
+*/
 }
 
 
@@ -136,13 +137,11 @@ silex.view.Stage.prototype.bodyElementSizeToContent = function(event){
       if (desiredBodyWidth < viewportSize.width) {
         // let the css handle a body of the size of the stage
         this.bodyElement.style.minWidth = '';
-        console.log('aaa');
       }
       else {
         // we want the body to be this size
         // we use minWidth/minHeight in order to leave width/height to the user
         this.bodyElement.style.minWidth = desiredBodyWidth + 'px';
-        console.log('bbb', desiredBodyWidth);
       }
       var desiredBodyHeight = bb.height + 100;
       if (desiredBodyHeight < viewportSize.height) {
@@ -154,7 +153,6 @@ silex.view.Stage.prototype.bodyElementSizeToContent = function(event){
         // we use minWidth/minHeight in order to leave width/height to the user
         this.bodyElement.style.minHeight = desiredBodyHeight + 'px';
       }
-      console.log('xxx', bb.width, bb.left, bb.left + bb.width + 100, this.bodyElement.style.minWidth);
     }
   }
   else{
@@ -252,7 +250,6 @@ silex.view.Stage.prototype.initEvents = function (contentWindow) {
         this.bodyElementSizeToContent();
       }
       // compute the offset compared to the last mouse move
-      console.log('ccccc', e.screenX);
       var offsetX = e.screenX - this.lastPosX;
       var offsetY = e.screenY - this.lastPosY;
       this.lastPosX = e.screenX;

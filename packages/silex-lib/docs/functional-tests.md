@@ -37,6 +37,7 @@ edit content
 * move, resize
 * drag / drop to change container
 * change properties from the tool box
+* copy / paste / insert with scroll
 
 pages
 
@@ -66,6 +67,3 @@ backward compatibility
 
 * load old sites
 * save with new URLs
-
-
-
