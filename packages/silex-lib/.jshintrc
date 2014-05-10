@@ -1,0 +1,7 @@
+{
+  "comment" : "this file is made to configure jshint for Silex, which is useful for codeclimate.com analysis (Silex uses google closure linter, not jshint)"
+  , "predef": [
+    "goog"
+    , "silex"
+  ]
+}
