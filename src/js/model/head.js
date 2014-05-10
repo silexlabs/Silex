@@ -73,7 +73,7 @@ silex.model.Head.prototype.getHeadScript = function() {
     silex.model.Head.SILEX_SCRIPT_ELEMENT_CSS_CLASS,
     this.getHeadElement());
   if (!scriptTag){
-    console.warn('no silex editable styles defined');
+    console.warn('no silex editable script defined');
     return '';
   }
   return scriptTag.innerHTML;

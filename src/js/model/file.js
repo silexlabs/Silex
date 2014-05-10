@@ -325,7 +325,7 @@ silex.model.File.prototype.getUrl = function() {
   // revert to relative URL
   if (this.url){
     var baseUrl = silex.utils.Url.getBaseUrl();
-    this.url = silex.utils.Url.getRelativePath(this.url, baseUrl);
+    return silex.utils.Url.getRelativePath(this.url, baseUrl);
   }
   return this.url;
 };
@@ -385,9 +385,7 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
   goog.dom.appendChild(document.body, iframe);
   // prevent scripts from executing
   cleanFileStr = cleanFileStr.replace(/type=\"text\/javascript\"/g, 'type="text/notjavascript"')
-  // write the content
-  goog.dom.iframe.writeContent(iframe, cleanFileStr);
-  // cleanup when done
+  // wait untill iframe is ready
   goog.events.listenOnce(iframe, 'load', function(e) {
     var contentDocument = goog.dom.getFrameContentDocument(iframe);
     var headElement = contentDocument.head;
@@ -432,7 +430,6 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
     var cssArray = [];
     var files = [];
     var baseUrl = this.url;
-
     // images to download and put to assets/
     bodyStr = bodyStr.replace(/<img[^"]*src="?([^" ]*)"/g, function(match, group1, group2) {
       var absolute = silex.utils.Url.getAbsolutePath(group1, baseUrl);
@@ -604,6 +601,8 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
     // callback
     cbk(html, cssStr, jsString, files);
   }, false, this);
+  // write the content (leave this after "listen")
+  goog.dom.iframe.writeContent(iframe, cleanFileStr);
 };
 silex.model.File.prototype.filterBgImage = function(baseUrl, files, match, group1, group2) {
   // remove the ''
