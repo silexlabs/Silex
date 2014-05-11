@@ -41,6 +41,19 @@ silex.model.File.CREATION_TEMPLATE = 'creation-template.html';
 
 
 /**
+ * List of URLs from which we are allowed to download the content locally
+ * during the process of publishing the file
+ * This is made to prevent trying to download locally fonts from google fonts
+ * or scripts from an embed code
+ */
+silex.model.File.DOWNLOAD_LOCALLY_FROM = [
+  'http://static.silex.me'
+  , 'http://www.silex.me'
+  , 'http://localhost:6805/'
+];
+
+
+/**
  * current file url
  * if the current file is a new file, it has no url
  * if set, this is an absolute URL, use silex.model.File::getUrl to get the relatvie URL
@@ -410,26 +423,32 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
       console.warn('no silex script found');
     }
 
+    // **
     // final css
     var cssStr = '';
+    // list of css and files (assets, scripts...)
+    var cssArray = [];
+    var files = [];
+    var baseUrl = this.url;
+
     // add head css
     var cssTag = goog.dom.getElementByClass(
       silex.model.Head.SILEX_STYLE_ELEMENT_CSS_CLASS,
       headElement);
     if (cssTag){
-      cssStr += cssTag.innerHTML;
+      var tmpStr = cssTag.innerHTML;
       goog.dom.removeNode(cssTag);
+      // background-image / url(...)
+      tmpStr = tmpStr.replace(/url\(()(.+?)\1\)/g, goog.bind(function(match, group1, group2) {
+        return this.filterBgImage(baseUrl, files, match, group1, group2);
+      }, this));
+      cssStr += tmpStr;
     }
 
     // convert to strings
     var bodyStr = bodyElement.innerHTML;
     var headStr = headElement.innerHTML;
 
-    // **
-    // list of css and files (assets, scripts...)
-    var cssArray = [];
-    var files = [];
-    var baseUrl = this.url;
     // images to download and put to assets/
     bodyStr = bodyStr.replace(/<img[^"]*src="?([^" ]*)"/g, function(match, group1, group2) {
       var absolute = silex.utils.Url.getAbsolutePath(group1, baseUrl);
@@ -604,26 +623,59 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
   // write the content (leave this after "listen")
   goog.dom.iframe.writeContent(iframe, cleanFileStr);
 };
+
+
+/**
+ * takes a matching pattern "url(...)"" and convert the absolute URLs to relative once,
+ * take into account that these will be referenced in css/style.css,
+ * so they must be relative to "css/"
+ */
 silex.model.File.prototype.filterBgImage = function(baseUrl, files, match, group1, group2) {
   // remove the ''
   if (group2.indexOf("'") === 0) group2 = group2.substr(1);
   if (group2.lastIndexOf("'") === group2.length-1) group2 = group2.substr(0, group2.length-1);
+  console.log('convert url', arguments);
+  // only if we are supposed to download this url locally
   var absolute = silex.utils.Url.getAbsolutePath(group2, baseUrl);
   var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
   // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
   if (!silex.utils.Url.isAbsoluteUrl(relative)) {
     relative = relative.replace('../', '/');
   }
-  var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
-  var newRelativePath = 'assets/' + fileName;
-  var res = "url('../" + newRelativePath + "')";
-  files.push({
-    url: absolute
-    , destPath: newRelativePath
-    , srcPath: relative
-  });
-  return res;
+  if (!silex.utils.Url.isAbsoluteUrl(relative) || this.isDownloadable(group2)){
+    var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
+    var newRelativePath = 'assets/' + fileName;
+    var res = "url('../" + newRelativePath + "')";
+    files.push({
+      url: absolute
+      , destPath: newRelativePath
+      , srcPath: relative
+    });
+    return res;
+  }
+  return match;
 };
+
+
+/**
+ * det if a given URL is supposed to be downloaded locally
+ * right now it is useless since we only have relative path to download
+ * TODO: either use it also for scripts or remove this
+ */
+silex.model.File.prototype.isDownloadable = function(url) {
+  goog.array.forEach (silex.model.File.DOWNLOAD_LOCALLY_FROM, function(baseUrl){
+    if (url.indexOf(baseUrl) === 0){
+      // url starts by the base url, so it is downloadable
+      console.log('url is downloadable', url);
+      return true;
+    }
+  }, this);
+  console.log('url is NOT downloadable', url);
+  return false;
+}
+
+
+
 /**
  * Determine what to do with a node in function of the URLs it carries
  *

@@ -397,7 +397,7 @@ silex.view.pane.BgPane.prototype.onTransparentChanged = function() {
   // notify the toolbox
   this.styleChanged('backgroundColor', color);
   // redraw myself (styleChange prevent myself to redraw)
-  //this.redraw(this.selectedElements, this.document, this.pageNames, this.currentPageName);
+  this.redraw(this.selectedElements, this.document, this.pageNames, this.currentPageName);
 };
 
 

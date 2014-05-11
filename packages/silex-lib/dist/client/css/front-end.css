@@ -39,3 +39,6 @@ body{
   color: inherit;
   text-decoration: underline;
 }
+/* Remove dots surrounding links in Firefox
+    because of normalize.css */
+a:focus{ outline: none;}
