@@ -1,8 +1,17 @@
-/**
- * A simple unifile server to expose unifile api and nothing else
- * https://github.com/silexlabs/unifile/
- * license: GPL v2
- */
+//////////////////////////////////////////////////
+// Silex, live web creation
+// http://projects.silexlabs.org/?/silex/
+//
+// Copyright (c) 2012 Silex Labs
+// http://www.silexlabs.org/
+//
+// Silex is available under the GPL license
+// http://www.silexlabs.org/silex/silex-licensing/
+//////////////////////////////////////////////////
+
+// newrelic debug tool
+require('newrelic');
+
 // node modules
 var express = require('express')
     , bodyParser = require('body-parser')
