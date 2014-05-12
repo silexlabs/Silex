@@ -40,6 +40,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jade');
 
   if (!production){
+      grunt.loadNpmTasks('grunt-selenium-webdriver');
       grunt.loadNpmTasks('grunt-contrib-csslint');
       grunt.loadNpmTasks('grunt-append-sourcemapping');
       grunt.loadNpmTasks('grunt-contrib-watch');
@@ -54,7 +55,7 @@ module.exports = function(grunt) {
   grunt.registerTask('releaseDeploy', ['concat', 'less:production', 'jade:release', 'closureBuilder:release']);
   grunt.registerTask('debugDeploy', ['concat', 'less:development', 'jade:debug', 'closureBuilder:debug', 'append-sourcemapping']);
   grunt.registerTask('check', ['htmllint', 'csslint:lax', 'closureLint']);
-  grunt.registerTask('test', ['releaseDeploy', 'simplemocha']);
+  grunt.registerTask('test', ['releaseDeploy', 'selenium_start', 'simplemocha', 'selenium_stop']);
   grunt.registerTask('fix', ['closureFixStyle']);
 
   grunt.registerTask('default', ['deploy']);
