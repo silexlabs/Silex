@@ -23,6 +23,9 @@ $.widget('silexlabs.pageable', {
   },
   _create: function() {
 
+    // mark the body
+    $(document.body).addClass('pageable-plugin-created');
+    // listen for page change
     var that=this;
     if(this.options.useDeeplink){
       $(window).bind( 'hashchange', this.cbk = function(){that.updatePage()});

@@ -86,16 +86,10 @@ silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk) {
     // remove the "silex-runtime" css class from the body while editing
     goog.dom.classes.remove(contentDocument.body, 'silex-runtime');
     // include edition tags and call onContentLoaded
-    if (this.hasLoadedTmpTags === true){
-      // call include scripts with no callback
-      this.includeEditionTags();
-      // let the time for the scripts to execute (e.g. pageable)
-      setTimeout(goog.bind(function() {
-        // force the call
-        this.onContentLoaded(opt_cbk);
-      }, this), 500);
-    }
-    else{
+    // the first time, it takes time to load the scripts
+    // the second time, no load event, and jquery is already loaded
+    if (this.hasLoadedTmpTags != true){
+      // first time
       // only the first time wait for tags to be loaded
       this.hasLoadedTmpTags = true;
       // let the time for the scripts to execute (e.g. pageable)
@@ -109,6 +103,14 @@ silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk) {
           throw new Error('error loading editable script');
         }, this));
       }, this), 500);
+    }
+    else{
+      // second time
+      // call include scripts with no callback
+      this.includeEditionTags();
+      iframeElement.contentWindow.jQuery(goog.bind(function (){
+        this.onContentLoaded(opt_cbk);
+      }, this));
     }
   }, false, this);
   // add base tag from the beginning
@@ -132,6 +134,15 @@ silex.model.File.prototype.onContentLoaded = function (opt_cbk) {
   var iframeElement = goog.dom.getElementByClass(silex.view.Stage.STAGE_CLASS_NAME);
   var contentDocument = goog.dom.getFrameContentDocument(iframeElement);
   var contentWindow = goog.dom.getFrameContentWindow(iframeElement);
+
+  if (!goog.dom.classes.has(contentDocument.body, 'pageable-plugin-created')){
+    // let the time for the scripts to execute (e.g. pageable)
+    setTimeout(goog.bind(function() {
+      this.onContentLoaded(opt_cbk);
+    }, this), 500);
+    return;
+  }
+
   // select the body
   this.model.body.setSelection([contentDocument.body]);
   // make editable again
@@ -634,7 +645,6 @@ silex.model.File.prototype.filterBgImage = function(baseUrl, files, match, group
   // remove the ''
   if (group2.indexOf("'") === 0) group2 = group2.substr(1);
   if (group2.lastIndexOf("'") === group2.length-1) group2 = group2.substr(0, group2.length-1);
-  console.log('convert url', arguments);
   // only if we are supposed to download this url locally
   var absolute = silex.utils.Url.getAbsolutePath(group2, baseUrl);
   var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
@@ -666,11 +676,9 @@ silex.model.File.prototype.isDownloadable = function(url) {
   goog.array.forEach (silex.model.File.DOWNLOAD_LOCALLY_FROM, function(baseUrl){
     if (url.indexOf(baseUrl) === 0){
       // url starts by the base url, so it is downloadable
-      console.log('url is downloadable', url);
       return true;
     }
   }, this);
-  console.log('url is NOT downloadable', url);
   return false;
 }
 
