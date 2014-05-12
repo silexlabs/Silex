@@ -56,6 +56,14 @@ silex.model.Page.PAGED_CLASS_NAME = 'paged-element';
 
 
 /**
+ * constant for the class name set on the body when the pageable plugin is initialized
+ * @const
+ * @type {string}
+ */
+silex.model.Page.PAGEABLE_PLUGIN_READY_CLASS_NAME = 'pageable-plugin-created';
+
+
+/**
  * constant for the class name of elements when it is in a visible page
  * this css class is set in pageable.js
  * @const
@@ -183,7 +191,6 @@ silex.model.Page.prototype.removePage = function(pageName) {
       goog.dom.classes.remove(element, pageName);
       var pagesOfElement = this.getPagesForElement(element);
       if (pagesOfElement.length <= 0){
-        //this.view.workspace.getWindow().jQuery(this).removeClass(silex.model.Page.PAGED_CLASS_NAME);
         elementsOnlyOnThisPage.push(element);
       }
     }, this);
@@ -293,7 +300,7 @@ silex.model.Page.prototype.removeFromAllPages = function(element) {
   }, this);
   // the element is not "paged" anymore
   goog.dom.classes.remove(element, silex.model.Page.PAGED_CLASS_NAME);
-  
+
   this.refreshView();
 };
 
