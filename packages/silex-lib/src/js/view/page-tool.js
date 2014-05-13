@@ -102,18 +102,6 @@ silex.view.PageTool.prototype.redraw = function(selectedElements, contentDocumen
   var container = goog.dom.getElementByClass('page-tool-container', this.element);
   var templateHtml = goog.dom.getElementByClass('page-tool-template', this.element).innerHTML;
   container.innerHTML = silex.utils.Dom.renderList(templateHtml, this.pages);
-
-  // mark selection
-  var items = goog.dom.getElementsByClass('page-container', this.element);
-  goog.array.forEach(items, function(item) {
-    var pageName = item.getAttribute('data-page-name');
-    if (pageName === currentPageName) {
-      goog.dom.classes.add(item, 'ui-selected');
-    }
-    else {
-      goog.dom.classes.remove(item, 'ui-selected');
-    }
-  }, this);
 };
 
 

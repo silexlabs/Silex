@@ -244,6 +244,11 @@ silex.model.Body.prototype.removeEditableClasses = function(rootElement) {
   }, this);
 
   // remove classes set by the editable.js plugin
+  elements = goog.dom.getElementsByClass(silex.model.Body.EDITABLE_CREATED_CLASS_NAME, rootElement);
+  goog.array.forEach(elements, function(element) {
+    goog.dom.classes.remove(element, silex.model.Body.EDITABLE_CREATED_CLASS_NAME);
+  }, this);
+
   elements = goog.dom.getElementsByClass(silex.model.Element.UI_RESIZABLE_CLASS_NAME, rootElement);
   goog.array.forEach(elements, function(element) {
     goog.dom.classes.remove(element, silex.model.Element.UI_RESIZABLE_CLASS_NAME);
@@ -264,7 +269,7 @@ silex.model.Body.prototype.removeEditableClasses = function(rootElement) {
     goog.dom.classes.remove(element, silex.model.Body.UI_DRAGGABLE_DRAGGING_CLASS_NAME);
   }, this);
 
-  elements = this.view.workspace.getWindow().document.querySelectorAll('[aria-disabled]');
+  elements = rootElement.querySelectorAll('[aria-disabled]');
   goog.array.forEach(elements, function(element) {
     element.removeAttribute('aria-disabled');
   }, this);

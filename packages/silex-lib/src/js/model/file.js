@@ -247,13 +247,14 @@ silex.model.File.prototype.getHtml = function() {
   var iframeElement = goog.dom.getElementByClass(silex.view.Stage.STAGE_CLASS_NAME);
   var contentDocument = goog.dom.getFrameContentDocument(iframeElement);
   // cleanup
-  this.model.body.setEditable(contentDocument.body, false);
+  //this.model.body.setEditable(contentDocument.body, false);
   // clone
   var cleanFile = contentDocument.cloneNode(true);
   // make editable again
-  this.model.body.setEditable(contentDocument.body, true, true);
+  //this.model.body.setEditable(contentDocument.body, true, true);
   // cleanup
   this.model.head.removeTempTags(cleanFile.head);
+  this.model.body.removeEditableClasses(cleanFile);
   silex.utils.Style.removeInternalClasses(cleanFile, false, true);
   // reset the style set by stage on the body
   cleanFile.body.style.minWidth = '';
