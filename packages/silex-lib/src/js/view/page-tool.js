@@ -67,6 +67,7 @@ silex.view.PageTool.prototype.initEvents = function(pages) {
         this.setSelectedIndex(cellIndex, true);
       }
     }
+    e.preventDefault();
   }, false, this);
 }
 

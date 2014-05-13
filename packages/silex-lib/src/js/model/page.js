@@ -263,8 +263,11 @@ silex.model.Page.prototype.renamePage = function(oldName, newName, newDisplayNam
   goog.array.forEach(elements, function(element) {
     goog.dom.classes.swap(element, oldName, newName);
   }, this);
-  // select this page
-  this.setCurrentPage(newName);
+  // wait until the dom reflects the changes 
+  setTimeout(goog.bind(function (){
+    // select this page
+    this.setCurrentPage(newName);
+  }, this), 100);
 };
 
 

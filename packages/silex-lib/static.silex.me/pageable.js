@@ -5,7 +5,8 @@ $.widget('silexlabs.pageable', {
     currentPage:"home",
     useDeeplink:true,
     pageClass: 'paged-element',
-    onPageChanged: null
+    onPageChanged: null,
+    window: window // useful if you are in an iframe to set window = window.parent
   },
   // _setOption is called for each individual option that is changing
   _setOption: function( key, value ) {
@@ -28,7 +29,7 @@ $.widget('silexlabs.pageable', {
     // listen for page change
     var that=this;
     if(this.options.useDeeplink){
-      $(window).bind( 'hashchange', this.cbk = function(){that.updatePage()});
+      $(this.options.window).bind( 'hashchange', this.cbk = function(){that.updatePage()});
     }
     else{
       this.element.find('a').each(function(){
@@ -48,7 +49,7 @@ $.widget('silexlabs.pageable', {
   },
   _destroy: function() {
     if(this.options.useDeeplink){
-      $(window).unbind( 'hashchange', this.cbk);
+      $(this.options.window).unbind( 'hashchange', this.cbk);
     }
     else{
       this.element.find('a').each(function(){
@@ -58,14 +59,14 @@ $.widget('silexlabs.pageable', {
   },
   updatePage: function (){
     if(this.options.useDeeplink){
-      if (window.location.hash)
-        this.options.currentPage = window.location.hash;
+      if (this.options.window.location.hash)
+        this.options.currentPage = this.options.window.location.hash;
     }
     if (this.options.currentPage.indexOf('#!') === 0) this.options.currentPage = this.options.currentPage.substr(2);
 
     // show elements which belong to this page
     $('#current-page-style').remove();
-    $('head').append('<style id="current-page-style">.'+this.options.currentPage+'{display:inherit !important; }</style>');
+    $('head').append('<style id="current-page-style">.'+this.options.currentPage+'{display:inherit; }</style>');
     // mark these elements as visible
     $('.paged-element-visible').each(function() {
       $(this).removeClass('paged-element-visible');

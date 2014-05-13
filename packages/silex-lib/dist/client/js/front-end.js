@@ -39,6 +39,7 @@ $(function() {
     currentPage: firstPageName,
     useDeeplink:true,
     pageClass: 'paged-element',
+    window: window.top || window
   });
   /**
    * silex links
