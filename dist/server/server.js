@@ -28,7 +28,9 @@ var unifile = require('unifile');
 app.use('/silex/tasks', multipart());
 
 // parse data for post data
-app.use('/silex/tasks', bodyParser());
+app.use('/silex/tasks', bodyParser({
+  limit: 10000000
+}));
 
 // start session
 app.use('/silex/tasks', cookieParser());
