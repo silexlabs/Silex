@@ -16,7 +16,6 @@
  *
  *   All model classes are singletons
  *
- * FIXME: use jquery only to access the pageable-plugin, not when google closure could be used
  */
 
 
@@ -102,7 +101,7 @@ silex.model.Page.prototype.getParentPage = function(element) {
 silex.model.Page.prototype.getPages = function() {
   // retrieve all page names from the head section
   var pages = [];
-  elements = this.view.workspace.getWindow().document.querySelectorAll('a[data-silex-type="page"]');
+  elements = this.view.workspace.getWindow().document.body.querySelectorAll('a[data-silex-type="page"]');
   goog.array.forEach(elements, function(element) {
     pages.push(element.getAttribute('id'));
   }, this);
@@ -172,14 +171,14 @@ silex.model.Page.prototype.removePage = function(pageName) {
   }
   else{
     // remove the DOM element
-    var elements = this.view.workspace.getWindow().document.querySelectorAll('a[data-silex-type="page"]');
+    var elements = this.view.workspace.getWindow().document.body.querySelectorAll('a[data-silex-type="page"]');
     goog.array.forEach(elements, function(element) {
       if (element.getAttribute('id') === pageName) {
         goog.dom.removeNode(element);
       }
     }, this);
     // remove the links to this page
-    var elements = this.view.workspace.getWindow().document.querySelectorAll('*[data-silex-href="#!' + pageName + '"]');
+    var elements = this.view.workspace.getWindow().document.body.querySelectorAll('*[data-silex-href="#!' + pageName + '"]');
     goog.array.forEach(elements, function(element) {
       element.removeAttribute('data-silex-href');
     }, this);
@@ -247,7 +246,7 @@ silex.model.Page.prototype.createPage = function(name, displayName) {
 silex.model.Page.prototype.renamePage = function(oldName, newName, newDisplayName) {
   var bodyElement = this.view.workspace.getWindow().document.body;
   // update the DOM element
-  var elements = this.view.workspace.getWindow().document.querySelectorAll('a[data-silex-type="page"]');
+  var elements = this.view.workspace.getWindow().document.body.querySelectorAll('a[data-silex-type="page"]');
   goog.array.forEach(elements, function(element) {
     if (element.getAttribute('id') === oldName) {
       element.setAttribute('id', newName);
@@ -255,7 +254,7 @@ silex.model.Page.prototype.renamePage = function(oldName, newName, newDisplayNam
     }
   }, this);
   // update the links to this page
-  var elements = this.view.workspace.getWindow().document.querySelectorAll('*[data-silex-href="#!' + oldName + '"]');
+  var elements = this.view.workspace.getWindow().document.body.querySelectorAll('*[data-silex-href="#!' + oldName + '"]');
   goog.array.forEach(elements, function(element) {
       element.setAttribute('data-silex-href', '#!' + newName);
   }, this);

@@ -100,8 +100,6 @@ silex.controller.ControllerBase.prototype.pasteSelection = function() {
   this.tracker.trackAction('controller-events', 'request', 'paste', 0);
   // default is selected element
   if(silex.controller.ControllerBase.clipboard) {
-    // reset selection
-    this.model.body.setSelection([]);
     // find the container: original container, main background container or the stage
     var container;
     if (silex.controller.ControllerBase.clipboardParent
@@ -118,10 +116,13 @@ silex.controller.ControllerBase.prototype.pasteSelection = function() {
     var bb = silex.utils.Dom.getBoundingBox(silex.controller.ControllerBase.clipboard);
     var offsetX = 100 + this.view.workspace.getWindow().document.body.scrollLeft - bb.left;
     var offsetY = 100 + this.view.workspace.getWindow().document.body.scrollTop - bb.top;
+    var selection = [];
     // duplicate and add to the container
     goog.array.forEach(silex.controller.ControllerBase.clipboard, function (clipboardElement) {
       var element = clipboardElement.cloneNode(true);
       this.model.element.appendChild(container, element);
+      // add to the selection
+      selection.push(element);
       // apply the offset to the element, according to the scroll position
       var bbElement = silex.utils.Dom.getBoundingBox([element]);
       element.style.left = (bbElement.left + offsetX) + 'px';
@@ -129,6 +130,8 @@ silex.controller.ControllerBase.prototype.pasteSelection = function() {
       // reset editable option
       this.doAddElement(element);
     }, this);
+    // reset selection
+    this.model.body.setSelection(selection);
   }
   this.tracker.trackAction('controller-events', 'success', 'paste', 1);
 }
