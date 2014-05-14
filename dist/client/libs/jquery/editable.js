@@ -66,7 +66,6 @@ $.widget('silexlabs.editable', {
   enableEditable: function(){
     // prevent links while editing
     $('a', this.element).bind('click', function(e){
-        console.log('editable click', e);
         e.preventDefault();
     })
     // handle resizeable options
