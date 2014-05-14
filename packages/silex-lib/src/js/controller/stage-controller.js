@@ -61,7 +61,7 @@ silex.controller.StageController.prototype.deselect = function(target) {
   goog.array.remove(selection, target);
   this.model.body.setSelection(selection);
 }
-silex.controller.StageController.prototype.change = function(target) {
+silex.controller.StageController.prototype.change = function() {
   // refresh the toolboxes
   var selection = this.model.body.getSelection();
   this.model.body.setSelection(selection);

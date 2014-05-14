@@ -154,6 +154,7 @@ silex.model.Element.prototype.setStyle = function(element, styleName, opt_styleV
     var page = this.model.page.getCurrentPage();
     var selectedElements = this.model.body.getSelection();
     this.view.propertyTool.redraw(selectedElements, goog.dom.getFrameContentDocument(this.iframeElement), pages, page);
+    this.view.stage.redraw(selectedElements, goog.dom.getFrameContentDocument(this.iframeElement), pages, page);
   }
 };
 

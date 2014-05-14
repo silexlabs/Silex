@@ -62,32 +62,27 @@ silex.view.Stage = function(element, view , controller) {
     }
   }, false, this);
 
+  var stagePosition = goog.style.getPosition(this.element);
   // listen on body too because user can release
   // on the tool boxes
-  goog.events.listen(document.body, 'mouseup', function(){
-    // force drop the selected elements
-    if (this.bodyElement && (this.isDragging || this.isResizing)){
-      // simulate the mous up on the iframe body
-      var evObj = document.createEvent('MouseEvents');
-      evObj.initEvent( 'mouseup', true, true);
-      this.bodyElement.dispatchEvent(evObj);
-    }
+  goog.events.listen(document.body, 'mouseup', function(e){
+    // if out of stage, release from drag of the plugin
+    // simulate the mouse up on the iframe body
+    var newEvObj = document.createEvent('MouseEvents');
+    newEvObj.initEvent( 'mouseup', true, true);
+    newEvObj.screenX = e.screenX;
+    newEvObj.screenY = e.screenY;
+    this.iAmClicking = true;
+    this.bodyElement.dispatchEvent(newEvObj);
+    this.iAmClicking = false;
   }, false, this);
-/* TODO: simulate the mous up on the iframe body
   // listen on body too because user can release
   // on the tool boxes
-  goog.events.listen(document.body, 'mousemove', function(evObj){
-    // force drop the selected elements
-    if (this.bodyElement && (this.isDragging || this.isResizing)){
-      // simulate the mous up on the iframe body
-      var newEvObj = document.createEvent('MouseEvents');
-      newEvObj.initEvent( 'mousemove', true, true);
-      newEvObj.screenX = evObj.screenX - this.element.offsetLeft;
-      newEvObj.screenY = evObj.screenY - this.element.offsetTop;
-      this.bodyElement.dispatchEvent(newEvObj);
-    }
+  goog.events.listen(document.body, 'mousemove', function(e){
+    var x = e.screenX;// - stagePosition.x;
+    var y = e.screenY;// - stagePosition.y - 70;
+    this.handleMouseMove(e.target, x, y);
   }, false, this);
-*/
 }
 
 
@@ -194,106 +189,25 @@ silex.view.Stage.prototype.initEvents = function (contentWindow) {
   // listen on body instead of element because user can release
   // on the tool boxes
   goog.events.listen(this.bodyElement, 'mouseup', function(e) {
-    // update state
-    this.isDown = false;
-    // handle selection
-    if (this.isDragging || this.isResizing) {
-      this.controller.stageController.change(e.target);
-      this.isDragging = false;
-      this.isResizing = false;
-    }
-    // do nothing if it is mousup outside the stage
-    else if(goog.dom.contains(this.bodyElement, e.target)){
-      if(e.shiftKey === true){
-        // if the element is selected, then unselect it
-        // get the first parent node which is editable (silex-editable css class)
-        var editableElement = goog.dom.getAncestorByClass(e.target, silex.model.Body.EDITABLE_CLASS_NAME) || this.bodyElement;
-        if (this.lastSelected != editableElement){
-          this.controller.stageController.deselect(editableElement);
-        }
-      }
-      else{
-        // if the user did not move the element select it in case other elements were selected
-        // get the first parent node which is editable (silex-editable css class)
-        var editableElement = goog.dom.getAncestorByClass(e.target, silex.model.Body.EDITABLE_CLASS_NAME) || this.bodyElement;
-        // check if selection has changed
-        // ?? do not check if selection has changed, becaus it causes refresh bugs (apply border to the next selected element)
-        var hasChanged = (this.selectedElements.length === 1 && this.selectedElements[0] === editableElement);
-        if (!hasChanged){
-          // update selection
-          this.controller.stageController.select(editableElement);
-        }
-      }
-    }
-    // remove the focus from text fields
-    if(goog.dom.contains(this.bodyElement, e.target)){
-      this.focusInput.focus();
-      this.focusInput.blur();
-    }
+    var x = e.screenX;
+    var y = e.screenY;
+    this.handleMouseUp(e.target, e.shiftKey);
   }, false, this);
 
   // multiple selection move
   goog.events.listen(this.bodyElement, 'mousemove', function(e) {
-    // update states
-    if (this.isDown){
-      // update states
-      if (!this.isDragging && !this.isResizing){
-        if (goog.dom.classes.has(e.target, 'ui-resizable-handle')){
-          this.isResizing = true;
-        }
-        else{
-          this.isDragging = true;
-        }
-      }
-      else{
-        // keep the body size while dragging or resizing
-        this.bodyElementSizeToContent();
-      }
-      // compute the offset compared to the last mouse move
-      var offsetX = e.screenX - this.lastPosX;
-      var offsetY = e.screenY - this.lastPosY;
-      this.lastPosX = e.screenX;
-      this.lastPosY = e.screenY;
-      // apply offset to other selected element
-      var dragged = goog.dom.getAncestorByClass(e.target, silex.model.Body.EDITABLE_CLASS_NAME) || this.bodyElement;
-      goog.array.forEach(this.selectedElements, function(element) {
-        if (element !== dragged){
-          if (this.isResizing){
-            var pos = goog.style.getSize(element);
-            //goog.style.setSize(element, pos.width + offsetX, pos.height + offsetY);
-          }
-          else if (this.isDragging){
-            // do not move an element if one of its parent is already being moved
-            if (!goog.dom.getAncestorByClass(element.parentNode, silex.model.Element.SELECTED_CLASS_NAME)){
-              var pos = goog.style.getPosition(element);
-              goog.style.setPosition(element, pos.x + offsetX, pos.y + offsetY);
-            }
-          }
-        }
-      }, this);
-    }
+    var x = e.screenX;
+    var y = e.screenY;
+    this.handleMouseMove(e.target, x, y);
   }, false, this);
   // detect mouse down
   goog.events.listen(this.bodyElement, 'mousedown', function(e) {
+    this.lastClickWasResize = goog.dom.classes.has(e.target, 'ui-resizable-handle');
+    var x = e.screenX;
+    var y = e.screenY;
     // get the first parent node which is editable (silex-editable css class)
     var editableElement = goog.dom.getAncestorByClass(e.target, silex.model.Body.EDITABLE_CLASS_NAME) || this.bodyElement;
-    this.lastSelected = null;
-    // if the element was not already selected
-    if (!goog.dom.classes.has(editableElement, silex.model.Element.SELECTED_CLASS_NAME)){
-      this.lastSelected = editableElement;
-      // notify the controller
-      if (e.shiftKey){
-        this.controller.stageController.selectMultiple(editableElement);
-      }
-      else{
-        this.controller.stageController.select(editableElement);
-      }
-    }
-    // keep track of the last maouse position
-    this.lastPosX = e.screenX;
-    this.lastPosY = e.screenY;
-    // update state
-    this.isDown = true;
+    this.handleMouseDown(editableElement, x, y, e.shiftKey);
   }, false, this);
   // dispatch event when an element has been moved
   goog.events.listen(this.bodyElement, 'dragstop', function(e) {
@@ -321,9 +235,9 @@ silex.view.Stage.prototype.initEvents = function (contentWindow) {
       this.controller.stageController.newContainer(element);
     }, this);
   }, false, this);
-  // dispatch event when an element is dropped on the background
+  // when an element is dropped on the background
+  // move it to the body
   goog.events.listen(this.bodyElement, 'droppedOutOfStage', function(e) {
-/*
     var element = e.target;
     // store initial position
     var pos = goog.style.getPageOffset(element);
@@ -331,7 +245,6 @@ silex.view.Stage.prototype.initEvents = function (contentWindow) {
     goog.dom.appendChild(this.bodyElement, element);
     // restore position
     goog.style.setPageOffset(element, pos);
-*/
   }, false, this);
   // detect double click
   goog.events.listen(this.bodyElement, goog.events.EventType.DBLCLICK, function(e) {
@@ -349,4 +262,105 @@ silex.view.Stage.prototype.initEvents = function (contentWindow) {
 silex.view.Stage.prototype.redraw = function(selectedElements, document, pageNames, currentPageName) {
   // remember selection
   this.selectedElements = selectedElements;
+  this.bodyElementSizeToContent();
+};
+
+silex.view.Stage.prototype.handleMouseUp = function(target, shiftKey) {
+  // update state
+  this.isDown = false;
+  // handle selection
+  if (this.isDragging || this.isResizing) {
+    this.controller.stageController.change();
+    this.isDragging = false;
+    this.isResizing = false;
+  }
+  // if not dragging, and on stage, then change selection
+  else if (this.iAmClicking != true){
+    // get the first parent node which is editable (silex-editable css class)
+    var editableElement = goog.dom.getAncestorByClass(target, silex.model.Body.EDITABLE_CLASS_NAME) || this.bodyElement;
+    // single or multiple selection
+    if(shiftKey === true){
+      // if the element is selected, then unselect it
+      if (this.lastSelected != editableElement){
+        this.controller.stageController.deselect(editableElement);
+      }
+    }
+    else{
+      // if the user did not move the element select it in case other elements were selected
+      // check if selection has changed
+      // ?? do not check if selection has changed, because it causes refresh bugs (apply border to the next selected element)
+      var hasChanged = (this.selectedElements.length === 1 && this.selectedElements[0] === editableElement);
+      if (!hasChanged){
+        // update selection
+        this.controller.stageController.select(editableElement);
+      }
+    }
+  }
+  // remove the focus from text fields
+  if(this.iAmClicking != true){ // && goog.dom.contains(this.bodyElement, target)
+    this.focusInput.focus();
+    this.focusInput.blur();
+  }
+};
+
+silex.view.Stage.prototype.handleMouseMove = function(target, x, y) {
+  // update states
+  if (this.isDown){
+    // update states
+    if (!this.isDragging && !this.isResizing){
+      if (this.lastClickWasResize){
+        this.isResizing = true;
+      }
+      else{
+        this.isDragging = true;
+      }
+    }
+    else{
+      // keep the body size while dragging or resizing
+      this.bodyElementSizeToContent();
+    }
+    // compute the offset compared to the last mouse move
+    var offsetX = x - this.lastPosX;
+    var offsetY = y - this.lastPosY;
+    this.lastPosX = x;
+    this.lastPosY = y;
+
+    // apply offset to other selected element
+    goog.array.forEach(this.selectedElements, function(element) {
+      if (element !== this.lastSelected){
+        if (this.isResizing){
+          var pos = goog.style.getSize(element);
+          //goog.style.setSize(element, pos.width + offsetX, pos.height + offsetY);
+        }
+        else if (this.isDragging){
+          // do not move an element if one of its parent is already being moved
+          // TODO: do not need to set position if the element is the one draged by the editable plugin
+          if (!goog.dom.getAncestorByClass(element.parentNode, silex.model.Element.SELECTED_CLASS_NAME)){
+            var pos = goog.style.getPosition(element);
+            goog.style.setPosition(element, pos.x + offsetX, pos.y + offsetY);
+          }
+        }
+      }
+    }, this);
+  }
+};
+
+silex.view.Stage.prototype.handleMouseDown = function(target, x, y, shiftKey) {
+  this.lastSelected = null;
+  // if the element was not already selected
+  if (!goog.dom.classes.has(target, silex.model.Element.SELECTED_CLASS_NAME)){
+    this.lastSelected = target;
+    // notify the controller
+    if (shiftKey){
+      this.controller.stageController.selectMultiple(target);
+    }
+    else{
+      this.controller.stageController.select(target);
+    }
+  }
+  // keep track of the last maouse position
+  this.lastPosX = x;
+  this.lastPosY = y;
+  // update state
+  this.isDown = true;
 };
