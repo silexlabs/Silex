@@ -23,7 +23,7 @@ $(function(){
     newAnchorLink('contact', 135+2710);
 });
 function newAnchorLink(link, pos){
-    $('a[href="http://#'+link+'"]').click(function(){
+    $('a[href="#'+link+'"]').click(function(){
         $('html, body').animate({
             scrollTop: pos
         }, 500);
