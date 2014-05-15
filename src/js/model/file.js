@@ -502,23 +502,26 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
       return res;
     });
     // scripts to download and put to js/
-    headStr = headStr.replace(/src="?([^"]*)"/g, function(match, group1, group2) {
+    headStr = headStr.replace(/src="?([^"]*)"/g, goog.bind(function(match, group1, group2) {
       var absolute = silex.utils.Url.getAbsolutePath(group1, baseUrl);
-      var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
-      // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
-      if (!silex.utils.Url.isAbsoluteUrl(relative)) {
-        relative = relative.replace('../', '/');
+      if (this.isDownloadable(absolute)){
+        var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
+        // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
+        if (!silex.utils.Url.isAbsoluteUrl(relative)) {
+          relative = relative.replace('../', '/');
+        }
+        var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
+        var newRelativePath = 'js/' + fileName;
+        files.push({
+          url: absolute
+          , destPath: newRelativePath
+          , srcPath: relative
+        });
+        var res = match.replace(group1, newRelativePath);
+        return res;
       }
-      var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
-      var newRelativePath = 'js/' + fileName;
-      files.push({
-        url: absolute
-        , destPath: newRelativePath
-        , srcPath: relative
-      });
-      var res = match.replace(group1, newRelativePath);
-      return res;
-    });
+      return match;
+    }, this));
 
     // build a clean body clone
     bodyElement.innerHTML = bodyStr;
@@ -671,16 +674,16 @@ silex.model.File.prototype.filterBgImage = function(baseUrl, files, match, group
 /**
  * det if a given URL is supposed to be downloaded locally
  * right now it is useless since we only have relative path to download
- * TODO: either use it also for scripts or remove this
  */
 silex.model.File.prototype.isDownloadable = function(url) {
+  var found = false;
   goog.array.forEach (silex.model.File.DOWNLOAD_LOCALLY_FROM, function(baseUrl){
     if (url.indexOf(baseUrl) === 0){
       // url starts by the base url, so it is downloadable
-      return true;
+      found = true;
     }
   }, this);
-  return false;
+  return found;
 }
 
 

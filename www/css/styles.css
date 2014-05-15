@@ -54,7 +54,16 @@
     position: fixed !important;
     z-index: 120;
 }
-
+/* keywords of the footer */
+.discret li{
+    color: black !important;
+    font-size: 14px !important;
+    float: left !important;
+}
+.discret H1{
+    color: black !important;
+    font-size: 16px !important;
+}
 /* *************************** *
 .layout-h div{
     position: static !important;
@@ -91,9 +100,15 @@
   text-decoration: none;
   color: black;
 }
+.github-issues.github-issues-white *{
+  color: white;
+}
+.github-issues.github-issues-white li {
+    border-bottom-color: #999999;
+}
 
 .element-0{
-	background-color: rgb(255, 255, 255); width: 960px; height: 2994px; position: absolute; top: 5px; left: 5px; box-shadow: rgba(0, 0, 0, 0.498039) 1px 0px 10px 0px; border-top-left-radius: 0px; border-top-right-radius: 0px; border-bottom-right-radius: 0px; border-bottom-left-radius: 0px;
+	background-color: rgb(255, 255, 255); width: 960px; height: 3196px; position: absolute; top: 5px; left: 2px; box-shadow: rgba(0, 0, 0, 0.498039) 1px 0px 10px 0px; border-top-left-radius: 0px; border-top-right-radius: 0px; border-bottom-right-radius: 0px; border-bottom-left-radius: 0px;
 }
 .element-1{
 	position: absolute; height: 80px; width: 294px; top: 1075px; left: 20px; background-color: transparent;
@@ -261,89 +276,92 @@
 	position: absolute; height: 40px; width: 40px; top: 591px; left: 673px;
 }
 .element-56{
-	position: absolute; height: 174px; width: 290px; top: 1787px; left: 336px; background-color: transparent;
-}
-.element-57{
-	position: absolute; height: 174px; width: 290px; top: 1788px; left: 647px; background-color: transparent;
-}
-.element-58{
 	position: absolute; top: 872px; background-color: transparent; height: 124px; width: 960px; left: 0px;
 }
-.element-59{
+.element-57{
 	position: absolute; height: 417px; width: 300px; top: 2380px; left: 27px; background-color: rgb(255, 255, 255);
 }
-.element-60{
+.element-58{
 	position: absolute; height: 450px; width: 300px; top: 2380px; left: 335px; background-color: rgb(255, 255, 255);
 }
-.element-61{
-	position: absolute; height: 80px; width: 294px; top: 1720px; left: 21px; background-color: transparent;
-}
-.element-62{
-	position: absolute; height: 80px; width: 294px; top: 1720px; left: 332px; background-color: transparent;
-}
-.element-63{
-	position: absolute; width: 294px; top: 1720px; left: 646px; background-color: transparent; height: 80px;
-}
-.element-64{
-	position: absolute; height: 181px; width: 290px; top: 1783px; left: 23px; background-color: transparent;
-}
-.element-65{
+.element-59{
 	position: absolute; height: 10px; width: 920px; left: 25px; background-color: transparent; border-width: 1px 0px 0px; border-style: solid; border-color: rgb(0, 155, 255); top: 2088px;
 }
-.element-66{
+.element-60{
 	position: absolute; height: 417px; width: 300px; top: 2380px; left: 645px; background-color: rgb(255, 255, 255); border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-right-radius: 5px; border-bottom-left-radius: 5px; border: 1px solid rgb(232, 232, 232);
 }
-.element-67{
+.element-61{
 	position: absolute; height: 80px; width: 294px; top: 2091px; left: 25px; background-color: transparent;
 }
-.element-68{
+.element-62{
 	position: absolute; height: 80px; width: 294px; top: 2091px; left: 336px; background-color: transparent;
 }
-.element-69{
+.element-63{
 	position: absolute; width: 294px; top: 2091px; left: 650px; background-color: transparent; height: 80px;
 }
-.element-70{
+.element-64{
 	position: absolute; height: 174px; width: 290px; top: 2159px; left: 651px; background-color: rgb(255, 255, 255);
 }
-.element-71{
+.element-65{
 	position: absolute; height: 181px; width: 290px; top: 2159px; left: 338px; background-color: rgb(255, 255, 255);
 }
-.element-72{
+.element-66{
 	position: absolute; height: 181px; width: 290px; top: 2159px; left: 28px; background-color: rgb(255, 255, 255);
 }
-.element-73{
-	position: absolute; width: 960px; top: 2838px; left: 0px; background-color: rgb(0, 60, 100); height: 160px; border-top-left-radius: 0px; border-top-right-radius: 0px; border-bottom-right-radius: 0px; border-bottom-left-radius: 0px;
+.element-67{
+	position: absolute; width: 960px; top: 2838px; left: 0px; background-color: rgb(0, 60, 100); height: 364px; border-top-left-radius: 0px; border-top-right-radius: 0px; border-bottom-right-radius: 0px; border-bottom-left-radius: 0px;
 }
-.element-74{
+.element-68{
 	position: absolute; height: 70px; width: 70px; top: 25px; left: 500px;
 }
-.element-75{
+.element-69{
 	position: absolute; height: 70px; width: 70px; top: 25px; left: 410px;
 }
-.element-76{
+.element-70{
 	position: absolute; height: 70px; width: 70px; top: 25px; left: 320px;
 }
-.element-77{
+.element-71{
 	position: absolute; height: 70px; width: 70px; top: 24px; left: 590px;
 }
-.element-78{
+.element-72{
 	position: absolute; height: 70px; width: 70px; top: 23px; left: 680px;
 }
-.element-79{
+.element-73{
 	position: absolute; height: 79px; width: 265px; top: 20px; left: 20px;
 }
-.element-80{
-	position: absolute; width: 920px; top: 110px; left: 20px; background-color: transparent; height: 55px;
+.element-74{
+	position: absolute; width: 920px; top: 110px; left: 20px; background-color: transparent; height: 45px;
 }
-.element-81{
+.element-75{
 	position: absolute; height: 70px; width: 70px; top: 23px; left: 770px;
 }
-.element-82{
+.element-76{
 	position: absolute; height: 70px; width: 70px; top: 23px; left: 860px;
 }
-.element-83{
+.element-77{
+	position: absolute; height: 137px; width: 946px; top: 220px; left: 9px; background-color: transparent;
+}
+.element-78{
 	position: absolute; top: 1965px; background-color: transparent; height: 124px; width: 960px; left: 25px;
 }
-.element-84{
+.element-79{
 	position: absolute; height: 251px; width: 960px; top: 1722px; left: 0px; background-color: rgb(0, 155, 255);
+}
+.element-80{
+	position: absolute; width: 294px; top: -1px; left: 646px; background-color: transparent; height: 80px;
+}
+.element-81{
+	position: absolute; height: 174px; width: 290px; top: 66px; left: 336px; background-color: transparent;
+}
+.element-82{
+	position: absolute; height: 174px; width: 290px; top: 67px; left: 647px; background-color: transparent;
+}
+.element-83{
+	position: absolute; height: 80px; width: 294px; top: -1px; left: 21px; background-color: transparent;
+}
+.element-84{
+	position: absolute; height: 80px; width: 294px; top: -1px; left: 332px; background-color: transparent;
+}
+.element-85{
+	position: absolute; height: 181px; width: 290px; top: 62px; left: 23px; background-color: transparent;
 }
