@@ -70,7 +70,9 @@ exports.createClient = function (webdriverjs) {
       // with firefox (which must be installed)
     }
     else if (driverName==='chrome'){
-      if (!fs.existsSync(rootPath+'/chromedriver')) throw new Error('Chrome driver for selenium is needed in '+rootPath);
+      if (!fs.existsSync(rootPath+'/chromedriver')) {
+        throw new Error('Chrome driver for selenium is needed in '+rootPath);
+      }
     }
 
     var client = webdriverjs.remote({
@@ -79,9 +81,8 @@ exports.createClient = function (webdriverjs) {
         , 'phantomjs.binary.path': phantomjsPath
       }
     });
-
-    client.on('error',function(e) {
-      //console.error('an error occured in the client connected to the selenium server')
+    client.on('error', function(e) {
+      console.error('an error occured in the client connected to the selenium server')
       if (e && e.err && e.err.code){
         switch(e.err.code) {
           case 'ECONNREFUSED':
