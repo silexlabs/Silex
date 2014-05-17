@@ -40,7 +40,7 @@ function silex_github_widget(containerSelector, labels, imageMode, cbk){
           var imageUrlArray = issue.body.match(re);
           if (imageUrlArray && imageUrlArray.length > 0){
             var firstImageUrl = imageUrlArray[0];
-            issueHtml += '<img src="' + firstImageUrl + '" alt="' + issue.html_url + '" />';
+            issueHtml += '<img src="' + firstImageUrl + '" alt="download ' + issue.title + '" title="' + issue.title + '" />';
           }
         }
         else{
