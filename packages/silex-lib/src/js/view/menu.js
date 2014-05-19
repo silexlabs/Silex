@@ -322,8 +322,11 @@ silex.view.Menu.prototype.onMenuEvent = function(type) {
     case 'help.issues':
       window.open(silex.Config.ISSUES_SILEX);
       break;
-    case 'help.downloads':
-      window.open(silex.Config.DOWNLOADS_SILEX);
+    case 'help.downloads.widget':
+      window.open(silex.Config.DOWNLOADS_WIDGET_SILEX);
+      break;
+    case 'help.downloads.template':
+      window.open(silex.Config.DOWNLOADS_TEMPLATE_SILEX);
       break;
     case 'help.aboutSilexLabs':
       window.open(silex.Config.ABOUT_SILEX_LABS);

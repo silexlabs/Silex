@@ -56,7 +56,12 @@ silex.Config.ISSUES_SILEX = 'https://github.com/silexlabs/Silex/issues?state=ope
  * Link of the menu
  * @const constant
  */
-silex.Config.DOWNLOADS_SILEX = 'https://github.com/silexlabs/Silex/issues?labels=widget+template&state=open';
+silex.Config.DOWNLOADS_TEMPLATE_SILEX = 'https://github.com/silexlabs/Silex/issues?labels=template&state=open';
+/**
+ * Link of the menu
+ * @const constant
+ */
+silex.Config.DOWNLOADS_WIDGET_SILEX = 'https://github.com/silexlabs/Silex/issues?labels=widget&state=open';
 /**
  * Link of the menu
  * @const constant
@@ -370,9 +375,14 @@ silex.Config.menu = {
         , className: 'menu-item-help-issues'
       }
       , {
-        label: 'Download widgets and templates'
-        , id: 'help.downloads'
-        , className: 'menu-item-help-downloads'
+        label: 'Download templates'
+        , id: 'help.downloads.template'
+        , className: 'menu-item-help-downloads-template'
+      }
+      , {
+        label: 'Download widgets'
+        , id: 'help.downloads.widget'
+        , className: 'menu-item-help-downloads-widget'
       }
       , null
       , {
