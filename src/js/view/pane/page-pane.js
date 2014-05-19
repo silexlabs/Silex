@@ -181,13 +181,13 @@ silex.view.pane.PagePane.prototype.setPages = function(pages, document) {
  * the user changed the link drop down
  */
 silex.view.pane.PagePane.prototype.onLinkChanged = function() {
+  var linkInputElement = goog.dom.getElementByClass('link-input-text', this.element);
   if (this.linkDropdown.value === 'none') {
     this.controller.propertyToolController.removeLink(this.selectedElements);
+    goog.style.setStyle(linkInputElement, 'display', 'none');
   }
   else if (this.linkDropdown.value === 'custom') {
     this.linkInputTextField.setValue('');
-    var linkInputElement = goog.dom.getElementByClass('link-input-text',
-        this.element);
     goog.style.setStyle(linkInputElement, 'display', 'inherit');
   }
   else {
@@ -227,6 +227,8 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, document,
 
   // remember selection
   this.selectedElements = selectedElements;
+  // visibility of the text edit
+  var linkInputElement = goog.dom.getElementByClass('link-input-text', this.element);
 
   // update page list
   this.setPages(pageNames, document);
@@ -286,9 +288,6 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, document,
         this.linkDropdown.value = 'custom';
       }
     }
-    // visibility of the text edit
-    var linkInputElement = goog.dom.getElementByClass('link-input-text',
-        this.element);
     if (this.linkDropdown.value === 'custom') {
       goog.style.setStyle(linkInputElement, 'display', 'inherit');
     }
@@ -304,6 +303,7 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, document,
     }, this);
     this.linkDropdown.value = 'none';
     this.linkDropdown.setAttribute('disabled', true);
+    goog.style.setStyle(linkInputElement, 'display', 'none');
 
   }
   this.iAmRedrawing = false;
