@@ -59,7 +59,7 @@ exports.setDebugMode = function(debug){
         console.warn('Running server in debug mode');
         // define users (login/password) wich will be authorized to access the www folder (read and write)
         options.www.USERS = {
-            "admin": "admin"
+            'admin': 'admin'
         }
     }
     if(!debug && isDebug){
@@ -78,37 +78,37 @@ exports.setDebugMode = function(debug){
 var options = unifile.defaultConfig;
 
 // change www root
-options.www.ROOT = "../../../../www";
+options.www.ROOT = __dirname + '/../../www';
 
 // add static folders
 options.staticFolders.push(
     // file browser
     {
-            name: "/cloud-explorer",
-            path: "../../../../submodules/cloud-explorer/lib/"
+            name: '/cloud-explorer',
+            path: __dirname + '/../../submodules/cloud-explorer/lib'
     },
     // silex main site
     {
-        path: "../../../../www/"
+        path: __dirname + '/../../www'
     },
     // debug silex, for js source map
     {
-        name: "/silex/js/src",
-        path: "../../../../src/"
+        name: '/silex/js/src',
+        path: __dirname + '/../../src'
     },
     // debug silex, for offline work
     {
-        name: "/static.silex.me",
-        path: "../../../../static.silex.me/"
+        name: '/static.silex.me',
+        path: __dirname + '/../../static.silex.me'
     },
     // silex editor
     {
-        name: "/silex",
-        path: "../../../../dist/client/"
+        name: '/silex',
+        path: __dirname + '/../../dist/client'
     },
     {
-        name: "/build",
-        path: "../../../../build/"
+        name: '/build',
+        path: __dirname + '/../../build'
     }
 );
 

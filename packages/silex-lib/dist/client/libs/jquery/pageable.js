@@ -62,7 +62,7 @@ $.widget('silexlabs.pageable', {
       if (this.options.window.location.hash)
         this.options.currentPage = this.options.window.location.hash;
     }
-    if (this.options.currentPage.indexOf('#!') === 0) this.options.currentPage = this.options.currentPage.substr(2);
+    if (this.options.currentPage && this.options.currentPage.indexOf('#!') === 0) this.options.currentPage = this.options.currentPage.substr(2);
 
     // show elements which belong to this page
     $('#current-page-style').remove();
