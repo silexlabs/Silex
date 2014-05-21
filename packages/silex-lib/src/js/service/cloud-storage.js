@@ -28,7 +28,7 @@ goog.require('goog.net.XhrIo');
  * load and save data to and from the cloud storage services
  */
 silex.service.CloudStorage = function() {
-  this.filePicker = cloudExplorer;
+  this.filePicker = ce.api.CloudExplorer.get('silex-file-explorer');
 };
 goog.addSingletonGetter(silex.service.CloudStorage);
 
@@ -65,10 +65,7 @@ silex.service.CloudStorage.prototype.save = function(url, rawData, cbk, opt_errC
       relBlob,
       rawData,
       function(blob) {
-        // workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
-        new goog.async.Delay(function() {
-          if (cbk) cbk();
-        }, 10).start();
+        if (cbk) cbk();
       },
       function(FPError) {
         console.error(FPError);
@@ -91,10 +88,7 @@ silex.service.CloudStorage.prototype.load = function(url, cbk, opt_errCbk) {
   this.filePicker.read(
       relBlob,
       function(data) {
-        // workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
-        new goog.async.Delay(function() {
-          if (cbk) cbk(data);
-        }, 10).start();
+        if (cbk) cbk(data);
       },
       function(FPError) {
         console.error(FPError);
@@ -115,10 +109,7 @@ silex.service.CloudStorage.prototype.loadLocal = function(url, cbk, opt_errCbk) 
     var xhr = e.target;
     var rawHtml = xhr.getResponse();
     if (xhr.isSuccess()) {
-      // workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
-      new goog.async.Delay(function() {
-        if (cbk) cbk(rawHtml);
-      }, 10).start();
+      if (cbk) cbk(rawHtml);
     }
     else {
       var message = xhr.getLastError();

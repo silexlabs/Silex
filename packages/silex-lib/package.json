@@ -1,74 +1,73 @@
 {
-  "name": "Silex"
-  , "description": "Website builder for designers."
-  , "version": "0.8.0"
-  , "author": "Alex Hoyau aka lexoyo"
-  , "contributors": [
+  "name": "Silex",
+  "description": "Website builder for designers.",
+  "version": "0.8.0",
+  "author": "Alex Hoyau aka lexoyo",
+  "contributors": [
     "Thomas Fetiveau aka zabojad"
-  ]
-  , "dependencies": {
-    "unifile": "~0.0.19"
-    , "minimatch": "~0.2.14"
-    , "glob": "~3.2.7"
-    , "lodash": "~2.4.1"
-    , "bytes": "~0.2.1"
-    , "qs": "~0.6.6"
-    , "express": "~4.0.x"
-    , "connect-multiparty": "~1.0.x"
-    , "body-parser": "~1.0.x"
-    , "cookie-parser": "~1.0.x"
-    , "cookie-session": "~1.0.x"
-    , "dbox": "~0.6.x"
-    , "node-oauth": "0.1.x"
-    , "oauth": ""
-    , "path": ""
-    , "grunt": "~0.4.1"
-    , "grunt-cli": "~0.1.11"
-    , "grunt-npm": ""
-    , "grunt-contrib-csslint": "~0.1.2"
-    , "grunt-contrib-concat": "~0.3.0"
-    , "grunt-contrib-compress": "~0.5.2"
-    , "grunt-contrib-less": "~0.8.1"
-    , "grunt-closure-tools": "~0.8.4"
-    , "grunt-contrib-jade": "~0.8.0"
-    , "newrelic": "~1.5.4"
-  }
-  , "devDependencies": {
-    "grunt-contrib-watch": "~0.5.3"
-    , "grunt-contrib-jshint": "~0.7.2"
-    , "grunt-append-sourcemapping": "~0.0.2"
-    , "grunt-closure-linter": "~0.1.0"
-    , "grunt-simple-mocha": "~0.4.0"
-    , "webdriverjs": "~1.6.*"
-    , "phantomjs": "~1.9.*"
-    , "grunt-selenium-webdriver": "~0.2.392"
-  }
-  , "repository": {
-    "type": "git"
-    , "url": "https://github.com/silexlabs/cloud-explorer.git"
-  }
-  , "keywords": [
-    "express"
-    , "cloud"
-    , "cms"
-    , "rest"
-    , "dropbox"
-    , "storage"
-    , "filepicker"
-    , "api"
-  ]
-  , "main": "dist/server/server.js"
-  , "license": "GPL"
-  , "engines": {
-    "node": "0.10.x"
-    , "npm": "1.3.x"
-  }
-  , "scripts" :
-  {
-    "start": "node dist/server/server.js"
-    , "deploy": "grunt deploy"
-    , "watch": "grunt watch"
-    , "test": "grunt test"
-    , "postinstall": "./node_modules/.bin/grunt deploy"
+  ],
+  "dependencies": {
+    "unifile": "~0.0.19",
+    "minimatch": "~0.2.14",
+    "glob": "~3.2.7",
+    "lodash": "~2.4.1",
+    "bytes": "~0.2.1",
+    "qs": "~0.6.6",
+    "express": "~4.0.x",
+    "connect-multiparty": "~1.0.x",
+    "body-parser": "~1.0.x",
+    "cookie-parser": "~1.0.x",
+    "cookie-session": "~1.0.x",
+    "dbox": "~0.6.x",
+    "node-oauth": "0.1.x",
+    "oauth": "",
+    "path": "",
+    "grunt": "~0.4.1",
+    "grunt-cli": "~0.1.11",
+    "grunt-npm": "",
+    "grunt-contrib-csslint": "~0.1.2",
+    "grunt-contrib-concat": "~0.3.0",
+    "grunt-contrib-compress": "~0.5.2",
+    "grunt-contrib-less": "~0.8.1",
+    "grunt-closure-tools": "~0.8.4",
+    "grunt-contrib-jade": "~0.8.0",
+    "newrelic": "~1.5.5"
+  },
+  "devDependencies": {
+    "grunt-contrib-watch": "~0.5.3",
+    "grunt-contrib-jshint": "~0.7.2",
+    "grunt-append-sourcemapping": "~0.0.2",
+    "grunt-closure-linter": "~0.1.0",
+    "grunt-simple-mocha": "~0.4.0",
+    "webdriverjs": "~1.6.*",
+    "phantomjs": "~1.9.*",
+    "grunt-selenium-webdriver": "~0.2.392"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/silexlabs/cloud-explorer.git"
+  },
+  "keywords": [
+    "express",
+    "cloud",
+    "cms",
+    "rest",
+    "dropbox",
+    "storage",
+    "filepicker",
+    "api"
+  ],
+  "main": "dist/server/server.js",
+  "license": "GPL",
+  "engines": {
+    "node": "0.10.x",
+    "npm": "1.3.x"
+  },
+  "scripts": {
+    "start": "node dist/server/server.js",
+    "deploy": "grunt deploy",
+    "watch": "grunt watch",
+    "test": "grunt test",
+    "postinstall": "./node_modules/.bin/grunt deploy"
   }
 }

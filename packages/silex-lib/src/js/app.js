@@ -165,15 +165,15 @@ silex.App = function() {
   /** @type {silex.view.dialog.TextEditor} */
   var textEditor = new silex.view.dialog.TextEditor(textEditorElement, this.view, this.controller);
 
-  // create FileExplorer
-  var fileExplorerElement = goog.dom.getElementByClass('silex-fileexplorer');
-  /** @type {silex.view.dialog.FileExplorer} */
-  var fileExplorer = new silex.view.dialog.FileExplorer(fileExplorerElement, this.view, this.controller);
-
   // create SettingsDialog
   var settingsDialogElement = goog.dom.getElementByClass('silex-settings-dialog');
   /** @type {silex.view.dialog.SettingsDialog} */
   var settingsDialog = new silex.view.dialog.SettingsDialog(settingsDialogElement, this.view, this.controller);
+
+  // create SettingsDialog
+  var fileExplorerElement = document.getElementById('silex-file-explorer');
+  /** @type {silex.view.dialog.FileExplorer} */
+  var fileExplorer = new silex.view.dialog.FileExplorer(fileExplorerElement, this.view, this.controller);
 
   // create PropertyTool
   var propertyToolElement = goog.dom.getElementByClass('silex-property-tool');
