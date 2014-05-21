@@ -306,6 +306,10 @@ silex.view.Stage.prototype.handleMouseUp = function(target, shiftKey) {
 silex.view.Stage.prototype.handleMouseMove = function(target, x, y) {
   // update states
   if (this.isDown){
+    if (this.lastSelected === null) {
+      var editableElement = goog.dom.getAncestorByClass(target, silex.model.Body.EDITABLE_CLASS_NAME) || this.bodyElement;
+      this.lastSelected = editableElement;
+    }
     // update states
     if (!this.isDragging && !this.isResizing){
       if (this.lastClickWasResize){
@@ -335,7 +339,8 @@ silex.view.Stage.prototype.handleMouseMove = function(target, x, y) {
         else if (this.isDragging){
           // do not move an element if one of its parent is already being moved
           // TODO: do not need to set position if the element is the one draged by the editable plugin
-          if (!goog.dom.getAncestorByClass(element.parentNode, silex.model.Element.SELECTED_CLASS_NAME)){
+          if (!goog.dom.getAncestorByClass(element.parentNode, silex.model.Element.SELECTED_CLASS_NAME))
+          {
             var pos = goog.style.getPosition(element);
             goog.style.setPosition(element, pos.x + offsetX, pos.y + offsetY);
           }

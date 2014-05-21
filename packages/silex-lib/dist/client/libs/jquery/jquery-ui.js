@@ -1498,20 +1498,24 @@ $.widget("ui.draggable", $.ui.mouse, {
 		}
 
 		return {
-			top: (
-				pageY -																	// The absolute mouse position
-				this.offset.click.top	-												// Click offset (relative to the element)
-				this.offset.relative.top -												// Only for relative positioned nodes: Relative offset from element to offset parent
-				this.offset.parent.top +												// The offsetParent's offset without borders (offset + border)
-				( this.cssPosition === "fixed" ? -this.scrollParent.scrollTop() : this.offset.scroll.top )
-			),
-			left: (
-				pageX -																	// The absolute mouse position
-				this.offset.click.left -												// Click offset (relative to the element)
-				this.offset.relative.left -												// Only for relative positioned nodes: Relative offset from element to offset parent
-				this.offset.parent.left +												// The offsetParent's offset without borders (offset + border)
-				( this.cssPosition === "fixed" ? -this.scrollParent.scrollLeft() : this.offset.scroll.left )
-			)
+      top: (
+        pageY -                                 // The absolute mouse position
+        this.offset.click.top -                       // Click offset (relative to the element)
+        // MD by lexoyo : makes the drag/drop on the body with scroll buggy
+        // this.offset.relative.top -                        // Only for relative positioned nodes: Relative offset from element to offset parent
+        this.offset.parent.top                        // The offsetParent's offset without borders (offset + border)
+        // MD by lexoyo : makes the drag/drop on the body with scroll buggy
+        //+ ( this.cssPosition === "fixed" ? -this.scrollParent.scrollTop() : this.offset.scroll.top )
+      ),
+      left: (
+        pageX -                                 // The absolute mouse position
+        this.offset.click.left -                        // Click offset (relative to the element)
+        // MD by lexoyo : makes the drag/drop on the body with scroll buggy
+        // this.offset.relative.left -                       // Only for relative positioned nodes: Relative offset from element to offset parent
+        this.offset.parent.left                       // The offsetParent's offset without borders (offset + border)
+        // MD by lexoyo : makes the drag/drop on the body with scroll buggy
+        //+ ( this.cssPosition === "fixed" ? -this.scrollParent.scrollLeft() : this.offset.scroll.left )
+      )
 		};
 
 	},

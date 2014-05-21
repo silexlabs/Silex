@@ -200,7 +200,6 @@ silex.model.Head.prototype.refreshFontList = function(neededFonts) {
  * get/set the publication path
  */
 silex.model.Head.prototype.setPublicationPath = function(path) {
-  console.log('setPublicationPath', path);
   var found = false;
   // update the DOM element
   var metaNode = goog.dom.getFrameContentDocument(this.iframeElement).querySelector('meta[name="publicationPath"]');

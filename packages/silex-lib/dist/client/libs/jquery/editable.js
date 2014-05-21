@@ -75,8 +75,10 @@ $.widget('silexlabs.editable', {
       });
     //this.element.draggable({ revert: 'invalid', snap: true, scroll: true });
     //this.element.draggable({ revert: 'invalid', grid: [ 20, 20 ], scroll: true });
+//        helper: "clone",
     if (this.options.isDraggable != false)
       this.element.draggable({
+        scroll: true,
         revert: (function(droppedTo) {
           if (!droppedTo){
             // dropped out of the stage, so just move it to stage

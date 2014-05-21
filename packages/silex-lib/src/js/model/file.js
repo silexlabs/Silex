@@ -308,7 +308,6 @@ silex.model.File.prototype.saveAs = function(url, rawHtml, cbk, opt_errCbk) {
  * write content to the file
  */
 silex.model.File.prototype.save = function(rawHtml, cbk, opt_errCbk) {
-  console.log('save', this.getUrl());
   silex.service.CloudStorage.getInstance().save(
     this.getUrl(),
     rawHtml,
