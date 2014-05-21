@@ -19,7 +19,6 @@
  */
 
 
-goog.require('silex.view.dialog.DialogBase');
 goog.provide('silex.view.dialog.FileExplorer');
 
 goog.require('silex.service.CloudStorage');
@@ -37,20 +36,15 @@ goog.require('goog.ui.KeyboardShortcutHandler');
 /**
  * the Silex FileExplorer class
  * @constructor
- * @extend silex.view.dialog.DialogBase
  * @param {Element} element   container to render the UI
  * @param  {silex.types.View} view  view class which holds the other views
  * @param  {silex.types.Controller} controller  structure which holds the controller instances
  */
 silex.view.dialog.FileExplorer = function(element, view, controller) {
-  // call super
-  goog.base(this, element, view, controller);
   // get the global variable of Cloud Explorer
   this.filePicker = silex.service.CloudStorage.getInstance().filePicker;
+  element.src = "../cloud-explorer/cloud-explorer.html";
 };
-
-// inherit from silex.view.dialog.DialogBase
-goog.inherits(silex.view.dialog.FileExplorer, silex.view.dialog.DialogBase);
 
 
 /**
@@ -82,18 +76,12 @@ silex.view.dialog.FileExplorer.prototype.openDialog = function(cbk, opt_mimetype
   };
   var successCbk = function (url) {
     // notify controller
-    // workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
-    new goog.async.Delay(function() {
-      if (cbk) cbk(url);
-    }, 10, this).start();
+    if (cbk) cbk(url);
   };
 
   // pick it up
   this.filePicker.pick(
       goog.bind(function(blob) {
-        // hide dialog
-        this.closeEditor();
-
         // no https, because it creates security issues
         blob.url = blob.url.replace('https://', 'http://');
 
@@ -117,8 +105,6 @@ silex.view.dialog.FileExplorer.prototype.openDialog = function(cbk, opt_mimetype
         }
       }, this),
       errCbk);
-  // show dialog
-  this.openEditor();
 };
 
 
@@ -145,19 +131,13 @@ silex.view.dialog.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimety
   };
   var successCbk = function (blob) {
     // notify controller
-    // workaround: cloud explorer issue https://github.com/silexlabs/cloud-explorer/issues/2
-    new goog.async.Delay(function() {
-      if (cbk) cbk(blob.url);
-    }, 10, this).start();
+    if (cbk) cbk(blob.url);
   };
 
   // export dummy data
   this.filePicker.exportFile('http://google.com/',
       opt_mimetypes,
       goog.bind(function(blob) {
-
-        // hide dialog
-        this.closeEditor();
 
         // no https, because it creates security issues
         blob.url = blob.url.replace('https://', 'http://');
@@ -182,6 +162,4 @@ silex.view.dialog.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimety
         }
       }, this),
       errCbk);
-  // show dialog
-  this.openEditor();
 };

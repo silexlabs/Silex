@@ -1,14 +1,15 @@
 .silex-workspace
+  // file explorer
+  iframe#silex-file-explorer.notranslate(
+    frameborder='no',
+    scrolling='no',
+    allowfullscreen='yes',
+    data-ce-unifile-url='../api/1.0/')
+
   // settings
   .settings-background
   .silex-settings-dialog
     include ./settings-dialog.jade
-
-  // file explorer
-  .silex-fileexplorer.notranslate
-    link(rel='stylesheet', href='../cloud-explorer/app/css/style.css')
-    #CE(data-ng-app='ceDirectives')
-      .ce-browser
 
   // menu
   .silex-menu
