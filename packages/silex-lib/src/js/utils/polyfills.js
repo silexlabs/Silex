@@ -24,7 +24,7 @@ goog.provide('silex.utils.Polyfills');
  */
 silex.utils.Polyfills.init = function () {
   // console object, do nothing
-  console = console || {
+  window.console = window.console || {
     log: function () {}
     , warn: function () {}
     , error: function () {}
