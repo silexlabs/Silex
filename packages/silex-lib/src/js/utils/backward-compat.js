@@ -36,6 +36,12 @@ silex.utils.BackwardCompat.process = function(document) {
   var bodyElement = document.body;
   var headElement = document.head;
 
+  // critical bug fix (2.2)
+  // text editor sets the body class to "silex-element-content normal" instead of the text editor's class
+  if (goog.dom.classes.has(bodyElement, 'silex-element-content')){
+    bodyElement.className = 'pageable-plugin-created editable-plugin-created ui-droppable';
+  }
+
   // handle older style system (2.0)
   if (bodyElement.getAttribute('data-style-normal')){
     bodyElement.setAttribute('data-style-normal', bodyElement.getAttribute('data-style-normal'));

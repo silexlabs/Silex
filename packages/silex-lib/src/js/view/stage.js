@@ -334,6 +334,8 @@ silex.view.Stage.prototype.handleMouseMove = function(target, x, y) {
       if (element !== this.lastSelected){
         if (this.isResizing){
           var pos = goog.style.getSize(element);
+          // FIXME: this works but depending on the handle which is dragged,
+          // only width and/or height should be set
           //goog.style.setSize(element, pos.width + offsetX, pos.height + offsetY);
         }
         else if (this.isDragging){
