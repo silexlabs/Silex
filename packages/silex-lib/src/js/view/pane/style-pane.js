@@ -103,7 +103,7 @@ silex.view.pane.StylePane.prototype.redraw = function(selectedElements, document
   if (cssInlineStyle){
     this.iAmSettingValue = true;
     try{
-      var str = '.element{\n'+cssInlineStyle.replace(/; /g, ';\n')+'\n}';
+      var str = '.element{\n'+cssInlineStyle.replace(/; /gi, ';\n')+'\n}';
       var pos = this.ace.getCursorPosition();
       this.ace.setValue(str);
       this.ace.gotoLine(pos.row + 1, pos.column, false);

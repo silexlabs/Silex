@@ -57,12 +57,12 @@ silex.utils.Url.isAbsoluteUrl = function(url) {
  */
 silex.utils.Url.absolute2Relative = function(htmlString, baseUrl) {
   // image source
-  htmlString = htmlString.replace(/src="?([^" ]*)"/g, function(match, group1, group2) {
+  htmlString = htmlString.replace(/src="?([^" ]*)"/gi, function(match, group1, group2) {
     var res = match.replace(group1, silex.utils.Url.getRelativePath(group1, baseUrl));
     return res;
   });
   // css url()
-  htmlString = htmlString.replace(/url\(()(.+?)\1\)/g, function(match, group1, group2) {
+  htmlString = htmlString.replace(/url\(()(.+?)\1\)/gi, function(match, group1, group2) {
     // remove the ''
     if (group2.indexOf("'") === 0) group2 = group2.substr(1);
     if (group2.lastIndexOf("'") === group2.length-1) group2 = group2.substr(0, group2.length-1);
@@ -81,12 +81,12 @@ silex.utils.Url.absolute2Relative = function(htmlString, baseUrl) {
  */
 silex.utils.Url.relative2Absolute = function(htmlString, baseUrl) {
   // image source
-  htmlString = htmlString.replace(/src="?([^" ]*)" /g, function(match, group1, group2) {
+  htmlString = htmlString.replace(/src="?([^" ]*)" /gi, function(match, group1, group2) {
     var res = match.replace(group1, silex.utils.Url.getAbsolutePath(group1, baseUrl));
     return res;
   });
   // css url()
-  htmlString = htmlString.replace(/url\(()(.+?)\1\)/g, function(match, group1, group2) {
+  htmlString = htmlString.replace(/url\(()(.+?)\1\)/gi, function(match, group1, group2) {
     // remove the ''
     if (group2.indexOf("'") === 0) group2 = group2.substr(1);
     if (group2.lastIndexOf("'") === group2.length-1) group2 = group2.substr(0, group2.length-1);
