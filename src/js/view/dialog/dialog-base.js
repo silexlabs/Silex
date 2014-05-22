@@ -46,7 +46,7 @@ silex.view.dialog.DialogBase = function(element, view, controller) {
   setTimeout(goog.bind(function() {
     // init the editor
     this.initUI();
-  }, this), 100);
+  }, this), 1000);
 };
 
 /**

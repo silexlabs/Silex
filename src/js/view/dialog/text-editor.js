@@ -252,10 +252,9 @@ silex.view.dialog.TextEditor.prototype.openEditor = function(initialHtml, elemen
   }
   // apply to the bg
   var iframe = goog.dom.getElementsByTagNameAndClass('iframe', null, this.element)[0];
-  iframe.style.backgroundColor = opt_bgColor;
   // get the iframe document
-  var iframe = goog.dom.getElementsByTagNameAndClass('iframe', null, this.element)[0];
   var iframeDoc = goog.dom.getFrameContentDocument(iframe);
+  iframe.style.backgroundColor = opt_bgColor;
   // apply css classes of the element
   // apply it on <html> tag instead of body,
   // because body represents the '.silex-element-content' element of Silex text elements
@@ -274,6 +273,12 @@ silex.view.dialog.TextEditor.prototype.openEditor = function(initialHtml, elemen
 silex.view.dialog.TextEditor.prototype.setCustomFonts = function(customFonts) {
   // get the iframe document
   var iframe = goog.dom.getElementsByTagNameAndClass('iframe', null, this.element)[0];
+  if (!iframe){
+    // iframe not yet defined, the text editor is loading
+    setTimeout(goog.bind(function(){this.setCustomFonts(customFonts);}, this), 100);
+    return;
+  }
+
   var iframeDoc = goog.dom.getFrameContentDocument(iframe);
   var iframeHead = iframeDoc.head;
   //detach all previously loaded font before, to avoid duplicate
@@ -299,6 +304,12 @@ silex.view.dialog.TextEditor.prototype.setCustomFonts = function(customFonts) {
 silex.view.dialog.TextEditor.prototype.setCustomCssStyles = function(customCssStyles) {
   // get the iframe document
   var iframe = goog.dom.getElementsByTagNameAndClass('iframe', null, this.element)[0];
+  if (!iframe){
+    // iframe not yet defined, the text editor is loading
+    setTimeout(goog.bind(function(){this.setCustomCssStyles(customCssStyles);}, this), 100);
+    return;
+  }
+
   var iframeDoc = goog.dom.getFrameContentDocument(iframe);
   var iframeHead = iframeDoc.head;
   // add Silex css to the iframe
