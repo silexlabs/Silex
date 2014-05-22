@@ -154,7 +154,7 @@ silex.model.Body.prototype.getNeededFonts = function() {
   var neededFonts = [];
   if (this.getBodyElement()){
     var innerHTML = this.getBodyElement().innerHTML;
-    innerHTML.replace(/<font[^"]*face="?([^"]*)"/g, function(match, group1, group2) {
+    innerHTML.replace(/<font[^"]*face="?([^"]*)"/gi, function(match, group1, group2) {
       neededFonts[group1] = true;
       return match;
     });
