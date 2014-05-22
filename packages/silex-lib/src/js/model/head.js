@@ -294,19 +294,30 @@ silex.model.Head.prototype.getHeadElement = function() {
  * @param   {Array<Element>|Element} the tag(s) to add
  */
 silex.model.Head.prototype.addTempTag = function(tags, opt_onSuccess, opt_onError) {
+  var tagsWichSupportOnload = ['link', 'script'];
   if (typeof(tags) === "string"){
     // convert tags to an array
     tags = [tags];
   }
+  // onload callback
+  var onload = goog.bind(function () {
+    if (tags.length > 0) {
+      addNextTag();
+    }
+    else{
+      if(opt_onSuccess) opt_onSuccess();
+    }
+  }, this);
+  // nex tag function
   var addNextTag = goog.bind(function() {
     var tag = tags.shift();
-    tag.onload = function () {
-      if (tags.length > 0) {
-        addNextTag();
-      }
-      else{
-        if(opt_onSuccess) opt_onSuccess();
-      }
+    if (goog.array.contains(tagsWichSupportOnload, tag.tagName.toLowerCase())){
+      // use onload
+      tag.onload = onload;
+    }
+    else{
+      // no onload for this kind of tags, load right away
+      onload();
     }
     tag.onerror = function () {
       console.error('scripts loading error')
@@ -315,6 +326,7 @@ silex.model.Head.prototype.addTempTag = function(tags, opt_onSuccess, opt_onErro
     goog.dom.classes.add(tag, silex.model.Head.SILEX_TEMP_TAGS_CSS_CLASS);
     goog.dom.appendChild(this.getHeadElement(), tag);
   }, this);
+  // start the loading process: call next tag
   if (tags.length > 0){
     addNextTag();
   }

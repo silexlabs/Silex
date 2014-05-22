@@ -88,24 +88,19 @@ silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk) {
     // include edition tags and call onContentLoaded
     // the first time, it takes time to load the scripts
     // the second time, no load event, and jquery is already loaded
-    if (this.hasLoadedTmpTags != true){
-      // first time
-      // only the first time wait for tags to be loaded
-      this.hasLoadedTmpTags = true;
-      // let the time for the scripts to execute (e.g. pageable)
-      setTimeout(goog.bind(function() {
-        // load scripts for edition in the iframe
-        this.includeEditionTags(goog.bind(function (){
-          this.onContentLoaded(opt_cbk);
-        }, this), goog.bind(function () {
-          // error loading editable script
-          console.error('error loading editable script');
-          throw new Error('error loading editable script');
-        }, this));
-      }, this), 500);
+    if (!iframeElement.contentWindow.jQuery){
+      // first time in chrome, and always in firefox
+      // load scripts for edition in the iframe
+      this.includeEditionTags(goog.bind(function (){
+        this.onContentLoaded(opt_cbk);
+      }, this), goog.bind(function () {
+        // error loading editable script
+        console.error('error loading editable script');
+        throw new Error('error loading editable script');
+      }, this));
     }
     else{
-      // second time
+      // second time in chrome, jquery already loaded
       // call include scripts with no callback
       this.includeEditionTags();
       iframeElement.contentWindow.jQuery(goog.bind(function (){
