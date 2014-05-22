@@ -117,7 +117,7 @@ silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk) {
   // Not needed since we change all  the URLs to absolute
   //  if (this.url) rawHtml = rawHtml.replace('<head>', '<head><base class="'+silex.model.Head.SILEX_TEMP_TAGS_CSS_CLASS+'" href="'+this.url+'" target="_blank">')
   // prevent scripts from executing
-  rawHtml = rawHtml.replace(/type=\"text\/javascript\"/g, 'type="text/notjavascript"')
+  rawHtml = rawHtml.replace(/type=\"text\/javascript\"/gi, 'type="text/notjavascript"')
   // convert to absolute urls
   if (this.url){
     rawHtml = silex.utils.Url.relative2Absolute(rawHtml, this.url);
@@ -264,7 +264,7 @@ silex.model.File.prototype.getHtml = function() {
   // get html
   var rawHtml = cleanFile.documentElement.innerHTML;
   // put back the scripts
-  rawHtml = rawHtml.replace(/type=\"text\/notjavascript\"/g, 'type="text/javascript"')
+  rawHtml = rawHtml.replace(/type=\"text\/notjavascript\"/gi, 'type="text/javascript"')
   // convert to relative urls
   if (this.url){
     rawHtml = silex.utils.Url.absolute2Relative(rawHtml, this.url);
@@ -409,7 +409,7 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
   var iframe = goog.dom.iframe.createBlank(goog.dom.getDomHelper(), 'position: absolute; left: -99999px; ');
   goog.dom.appendChild(document.body, iframe);
   // prevent scripts from executing
-  cleanFileStr = cleanFileStr.replace(/type=\"text\/javascript\"/g, 'type="text/notjavascript"')
+  cleanFileStr = cleanFileStr.replace(/type=\"text\/javascript\"/gi, 'type="text/notjavascript"')
   // wait untill iframe is ready
   goog.events.listenOnce(iframe, 'load', function(e) {
     var contentDocument = goog.dom.getFrameContentDocument(iframe);
@@ -462,47 +462,53 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
     var headStr = headElement.innerHTML;
 
     // images to download and put to assets/
-    bodyStr = bodyStr.replace(/<img[^"]*src="?([^" ]*)"/g, function(match, group1, group2) {
+    bodyStr = bodyStr.replace(/<img.*src="?([^"]*)"/gi, goog.bind(function(match, group1, group2) {
       var absolute = silex.utils.Url.getAbsolutePath(group1, baseUrl);
       var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
       // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
       if (!silex.utils.Url.isAbsoluteUrl(relative)) {
         relative = relative.replace('../', '/');
       }
-      var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
-      var newRelativePath = 'assets/' + fileName;
-      files.push({
-        url: absolute
-        , destPath: newRelativePath
-        , srcPath: relative
-      });
-      var res = match.replace(group1, newRelativePath);
-      return res;
-    });
+      if (!silex.utils.Url.isAbsoluteUrl(relative) && this.isDownloadable(absolute)){
+        var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
+        var newRelativePath = 'assets/' + fileName;
+        files.push({
+          url: absolute
+          , destPath: newRelativePath
+          , srcPath: relative
+        });
+        var res = match.replace(group1, newRelativePath);
+        return res;
+      }
+      return match;
+    }, this));
     // background-image / url(...)
     bodyStr = bodyStr.replace(/url\(()(.+?)\1\)/g, goog.bind(function(match, group1, group2) {
       return this.filterBgImage(baseUrl, files, match, group1, group2);
     }, this));
     // css to download and put to css/
-    headStr = headStr.replace(/href="?([^" ]*)"/g, function(match, group1, group2) {
+    headStr = headStr.replace(/href="?([^" ]*)"/gi, goog.bind(function(match, group1, group2) {
       var absolute = silex.utils.Url.getAbsolutePath(group1, baseUrl);
       var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
       // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
       if (!silex.utils.Url.isAbsoluteUrl(relative)) {
         relative = relative.replace('../', '/');
       }
-      var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
-      var newRelativePath = 'css/' + fileName;
-      files.push({
-        url: absolute
-        , destPath: newRelativePath
-        , srcPath: relative
-      });
-      var res = match.replace(group1, newRelativePath);
-      return res;
-    });
+      if (!silex.utils.Url.isAbsoluteUrl(relative) && this.isDownloadable(absolute)){
+        var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
+        var newRelativePath = 'css/' + fileName;
+        files.push({
+          url: absolute
+          , destPath: newRelativePath
+          , srcPath: relative
+        });
+        var res = match.replace(group1, newRelativePath);
+        return res;
+      }
+      return match;
+    }, this));
     // scripts to download and put to js/
-    headStr = headStr.replace(/src="?([^"]*)"/g, goog.bind(function(match, group1, group2) {
+    headStr = headStr.replace(/src="?([^"]*)"/gi, goog.bind(function(match, group1, group2) {
       var absolute = silex.utils.Url.getAbsolutePath(group1, baseUrl);
       if (this.isDownloadable(absolute)){
         var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
@@ -617,8 +623,8 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
     cssStr.replace('; ', ';\n\t');
 
     // put back the scripts
-    headStr = headStr.replace(/type=\"text\/notjavascript\"/g, 'type="text/javascript"')
-    bodyStr = bodyElement.innerHTML.replace(/type=\"text\/notjavascript\"/g, 'type="text/javascript"')
+    headStr = headStr.replace(/type=\"text\/notjavascript\"/gi, 'type="text/javascript"')
+    bodyStr = bodyElement.innerHTML.replace(/type=\"text\/notjavascript\"/gi, 'type="text/javascript"')
     var bodyStyle = bodyElement.getAttribute('style');
 
     // final html page
@@ -656,7 +662,7 @@ silex.model.File.prototype.filterBgImage = function(baseUrl, files, match, group
   if (!silex.utils.Url.isAbsoluteUrl(relative)) {
     relative = relative.replace('../', '/');
   }
-  if (!silex.utils.Url.isAbsoluteUrl(relative) || this.isDownloadable(group2)){
+  if (!silex.utils.Url.isAbsoluteUrl(relative) && this.isDownloadable(absolute)){
     var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
     var newRelativePath = 'assets/' + fileName;
     var res = "url('../" + newRelativePath + "')";
@@ -676,6 +682,9 @@ silex.model.File.prototype.filterBgImage = function(baseUrl, files, match, group
  * right now it is useless since we only have relative path to download
  */
 silex.model.File.prototype.isDownloadable = function(url) {
+  if (url.indexOf('?') >= 0 || url.indexOf('&') >= 0){
+    return false;
+  }
   var found = false;
   goog.array.forEach (silex.model.File.DOWNLOAD_LOCALLY_FROM, function(baseUrl){
     if (url.indexOf(baseUrl) === 0){
