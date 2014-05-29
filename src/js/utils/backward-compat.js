@@ -69,7 +69,7 @@ silex.utils.BackwardCompat.process = function(document) {
   });
   // old page system (2.0)
   // <meta name="page" content="page1">
-  elements = bodyElement.querySelectorAll('meta[name="page"]');
+  elements = headElement.querySelectorAll('meta[name="page"]');
   goog.array.forEach(elements, function(element) {
     var pageName = element.getAttribute('content');
     var a = document.createElement('a');
@@ -128,22 +128,28 @@ silex.utils.BackwardCompat.process = function(document) {
     goog.dom.classes.add(element, element.getAttribute('data-silex-type') + '-element');
   });
   // static.silex.me 2.0 -> 2.1
-  elements = bodyElement.querySelectorAll('[src]');
+  elements = document.querySelectorAll('[src]');
   goog.array.forEach(elements, function(element) {
     var src = element.getAttribute('src');
-    element.setAttribute('src', src.replace('//static.silex.me/2.0', '//static.silex.me/2.2'));
-    element.setAttribute('src', src.replace('//static.silex.me/2.1', '//static.silex.me/2.2'));
+    src = src.replace('static.silex.io', 'static.silex.me');
+    src = src.replace('//static.silex.me/2.0', '//static.silex.me/2.2');
+    src = src.replace('//static.silex.me/2.1', '//static.silex.me/2.2');
+    element.setAttribute('src', src);
   });
-  elements = bodyElement.querySelectorAll('[href]');
+  elements = document.querySelectorAll('[href]');
   goog.array.forEach(elements, function(element) {
     var href = element.getAttribute('href');
-    element.setAttribute('href', href.replace('//static.silex.me/2.0', '//static.silex.me/2.2'));
-    element.setAttribute('href', href.replace('//static.silex.me/2.1', '//static.silex.me/2.2'));
+    href = href.replace('static.silex.io', 'static.silex.me');
+    href = href.replace('//static.silex.me/2.0', '//static.silex.me/2.2');
+    href = href.replace('//static.silex.me/2.1', '//static.silex.me/2.2');
+    element.setAttribute('href', href);
   });
-  elements = bodyElement.querySelectorAll('[data-silex-href]');
+  elements = document.querySelectorAll('[data-silex-href]');
   goog.array.forEach(elements, function(element) {
     var href = element.getAttribute(silex.model.Element.LINK_ATTR);
-    element.setAttribute(silex.model.Element.LINK_ATTR, href.replace('//static.silex.me/2.0', '//static.silex.me/2.2'));
-    element.setAttribute(silex.model.Element.LINK_ATTR, href.replace('//static.silex.me/2.1', '//static.silex.me/2.2'));
+    href = href.replace('static.silex.io', 'static.silex.me');
+    href = href.replace('//static.silex.me/2.0', '//static.silex.me/2.2');
+    href = href.replace('//static.silex.me/2.1', '//static.silex.me/2.2');
+    element.setAttribute(silex.model.Element.LINK_ATTR, href);
   });
 };
