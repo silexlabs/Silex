@@ -138,6 +138,8 @@ silex.model.File.prototype.onContentLoaded = function (opt_cbk) {
     return;
   }
 
+  // handle retrocompatibility issues
+  silex.utils.BackwardCompat.process(contentDocument);
   // select the body
   this.model.body.setSelection([contentDocument.body]);
   // make editable again

@@ -581,8 +581,6 @@ silex.controller.ControllerBase.prototype.openFile = function(opt_cbk, opt_error
     goog.bind(function(url) {
       this.model.file.open(url, goog.bind(function(rawHtml) {
         this.model.file.setHtml(rawHtml, goog.bind(function() {
-          // handle retrocompatibility issues
-          silex.utils.BackwardCompat.process(this.view.workspace.getWindow().document);
           // check that it is a Silex website
           if (goog.dom.getElementByClass('editable-style', this.model.body.getBodyElement())){
             // display and redraw
