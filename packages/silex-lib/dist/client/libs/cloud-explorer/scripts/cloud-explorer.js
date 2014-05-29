@@ -1,0 +1,2958 @@
+(function ($hx_exports) { "use strict";
+$hx_exports.ce = $hx_exports.ce || {};
+$hx_exports.ce.api = $hx_exports.ce.api || {};
+var $estr = function() { return js.Boot.__string_rec(this,''); };
+var DateTools = function() { };
+DateTools.__name__ = true;
+DateTools.__format_get = function(d,e) {
+	switch(e) {
+	case "%":
+		return "%";
+	case "C":
+		return StringTools.lpad(Std.string(Std["int"](d.getFullYear() / 100)),"0",2);
+	case "d":
+		return StringTools.lpad(Std.string(d.getDate()),"0",2);
+	case "D":
+		return DateTools.__format(d,"%m/%d/%y");
+	case "e":
+		return Std.string(d.getDate());
+	case "H":case "k":
+		return StringTools.lpad(Std.string(d.getHours()),e == "H"?"0":" ",2);
+	case "I":case "l":
+		var hour = d.getHours() % 12;
+		return StringTools.lpad(Std.string(hour == 0?12:hour),e == "I"?"0":" ",2);
+	case "m":
+		return StringTools.lpad(Std.string(d.getMonth() + 1),"0",2);
+	case "M":
+		return StringTools.lpad(Std.string(d.getMinutes()),"0",2);
+	case "n":
+		return "\n";
+	case "p":
+		if(d.getHours() > 11) return "PM"; else return "AM";
+		break;
+	case "r":
+		return DateTools.__format(d,"%I:%M:%S %p");
+	case "R":
+		return DateTools.__format(d,"%H:%M");
+	case "s":
+		return Std.string(Std["int"](d.getTime() / 1000));
+	case "S":
+		return StringTools.lpad(Std.string(d.getSeconds()),"0",2);
+	case "t":
+		return "\t";
+	case "T":
+		return DateTools.__format(d,"%H:%M:%S");
+	case "u":
+		var t = d.getDay();
+		if(t == 0) return "7"; else if(t == null) return "null"; else return "" + t;
+		break;
+	case "w":
+		return Std.string(d.getDay());
+	case "y":
+		return StringTools.lpad(Std.string(d.getFullYear() % 100),"0",2);
+	case "Y":
+		return Std.string(d.getFullYear());
+	default:
+		throw "Date.format %" + e + "- not implemented yet.";
+	}
+};
+DateTools.__format = function(d,f) {
+	var r = new StringBuf();
+	var p = 0;
+	while(true) {
+		var np = f.indexOf("%",p);
+		if(np < 0) break;
+		r.addSub(f,p,np - p);
+		r.add(DateTools.__format_get(d,HxOverrides.substr(f,np + 1,1)));
+		p = np + 2;
+	}
+	r.addSub(f,p,f.length - p);
+	return r.b;
+};
+DateTools.format = function(d,f) {
+	return DateTools.__format(d,f);
+};
+var HxOverrides = function() { };
+HxOverrides.__name__ = true;
+HxOverrides.cca = function(s,index) {
+	var x = s.charCodeAt(index);
+	if(x != x) return undefined;
+	return x;
+};
+HxOverrides.substr = function(s,pos,len) {
+	if(pos != null && pos != 0 && len != null && len < 0) return "";
+	if(len == null) len = s.length;
+	if(pos < 0) {
+		pos = s.length + pos;
+		if(pos < 0) pos = 0;
+	} else if(len < 0) len = s.length + len - pos;
+	return s.substr(pos,len);
+};
+HxOverrides.indexOf = function(a,obj,i) {
+	var len = a.length;
+	if(i < 0) {
+		i += len;
+		if(i < 0) i = 0;
+	}
+	while(i < len) {
+		if(a[i] === obj) return i;
+		i++;
+	}
+	return -1;
+};
+HxOverrides.remove = function(a,obj) {
+	var i = HxOverrides.indexOf(a,obj,0);
+	if(i == -1) return false;
+	a.splice(i,1);
+	return true;
+};
+HxOverrides.iter = function(a) {
+	return { cur : 0, arr : a, hasNext : function() {
+		return this.cur < this.arr.length;
+	}, next : function() {
+		return this.arr[this.cur++];
+	}};
+};
+var Lambda = function() { };
+Lambda.__name__ = true;
+Lambda.has = function(it,elt) {
+	var $it0 = $iterator(it)();
+	while( $it0.hasNext() ) {
+		var x = $it0.next();
+		if(x == elt) return true;
+	}
+	return false;
+};
+Lambda.exists = function(it,f) {
+	var $it0 = $iterator(it)();
+	while( $it0.hasNext() ) {
+		var x = $it0.next();
+		if(f(x)) return true;
+	}
+	return false;
+};
+Lambda.count = function(it,pred) {
+	var n = 0;
+	if(pred == null) {
+		var $it0 = $iterator(it)();
+		while( $it0.hasNext() ) {
+			var _ = $it0.next();
+			n++;
+		}
+	} else {
+		var $it1 = $iterator(it)();
+		while( $it1.hasNext() ) {
+			var x = $it1.next();
+			if(pred(x)) n++;
+		}
+	}
+	return n;
+};
+var List = function() {
+	this.length = 0;
+};
+List.__name__ = true;
+List.prototype = {
+	iterator: function() {
+		return { h : this.h, hasNext : function() {
+			return this.h != null;
+		}, next : function() {
+			if(this.h == null) return null;
+			var x = this.h[0];
+			this.h = this.h[1];
+			return x;
+		}};
+	}
+};
+var IMap = function() { };
+IMap.__name__ = true;
+var Reflect = function() { };
+Reflect.__name__ = true;
+Reflect.field = function(o,field) {
+	try {
+		return o[field];
+	} catch( e ) {
+		return null;
+	}
+};
+Reflect.getProperty = function(o,field) {
+	var tmp;
+	if(o == null) return null; else if(o.__properties__ && (tmp = o.__properties__["get_" + field])) return o[tmp](); else return o[field];
+};
+Reflect.isObject = function(v) {
+	if(v == null) return false;
+	var t = typeof(v);
+	return t == "string" || t == "object" && v.__enum__ == null || t == "function" && (v.__name__ || v.__ename__) != null;
+};
+var Std = function() { };
+Std.__name__ = true;
+Std.string = function(s) {
+	return js.Boot.__string_rec(s,"");
+};
+Std["int"] = function(x) {
+	return x | 0;
+};
+Std.parseInt = function(x) {
+	var v = parseInt(x,10);
+	if(v == 0 && (HxOverrides.cca(x,1) == 120 || HxOverrides.cca(x,1) == 88)) v = parseInt(x);
+	if(isNaN(v)) return null;
+	return v;
+};
+Std.parseFloat = function(x) {
+	return parseFloat(x);
+};
+var StringBuf = function() {
+	this.b = "";
+};
+StringBuf.__name__ = true;
+StringBuf.prototype = {
+	add: function(x) {
+		this.b += Std.string(x);
+	}
+	,addSub: function(s,pos,len) {
+		if(len == null) this.b += HxOverrides.substr(s,pos,null); else this.b += HxOverrides.substr(s,pos,len);
+	}
+};
+var StringTools = function() { };
+StringTools.__name__ = true;
+StringTools.isSpace = function(s,pos) {
+	var c = HxOverrides.cca(s,pos);
+	return c > 8 && c < 14 || c == 32;
+};
+StringTools.ltrim = function(s) {
+	var l = s.length;
+	var r = 0;
+	while(r < l && StringTools.isSpace(s,r)) r++;
+	if(r > 0) return HxOverrides.substr(s,r,l - r); else return s;
+};
+StringTools.rtrim = function(s) {
+	var l = s.length;
+	var r = 0;
+	while(r < l && StringTools.isSpace(s,l - r - 1)) r++;
+	if(r > 0) return HxOverrides.substr(s,0,l - r); else return s;
+};
+StringTools.trim = function(s) {
+	return StringTools.ltrim(StringTools.rtrim(s));
+};
+StringTools.lpad = function(s,c,l) {
+	if(c.length <= 0) return s;
+	while(s.length < l) s = c + s;
+	return s;
+};
+StringTools.replace = function(s,sub,by) {
+	return s.split(sub).join(by);
+};
+var ce = {};
+ce.api = {};
+ce.api.CloudExplorer = $hx_exports.ce.api.CloudExplorer = function(iframeEltId) {
+	var ceIframe;
+	if(iframeEltId != null) ceIframe = window.document.getElementById(iframeEltId); else ceIframe = null;
+	var config = new ce.core.config.Config();
+	if(ceIframe == null) {
+		var _this = window.document;
+		ceIframe = _this.createElement("iframe");
+		window.document.body.appendChild(ceIframe);
+	} else if(ceIframe.src != null) {
+		var _g = 0;
+		var _g1 = ceIframe.attributes;
+		while(_g < _g1.length) {
+			var ca = _g1[_g];
+			++_g;
+			if(ca.nodeName.indexOf("data-ce-") == 0) config.readProperty(HxOverrides.substr(ca.nodeName,8,null),ca.nodeValue);
+		}
+	}
+	this.ctrl = new ce.core.Controller(config,ceIframe);
+};
+ce.api.CloudExplorer.__name__ = true;
+ce.api.CloudExplorer.get = function(iframeEltId) {
+	return new ce.api.CloudExplorer(iframeEltId);
+};
+ce.api.CloudExplorer.prototype = {
+	pick: function(options,onSuccess,onError) {
+		if(onError == null) {
+			onError = onSuccess;
+			onSuccess = options;
+			options = null;
+		}
+		if(onError == null) throw "Missing mandatory parameters for CloudExplorer.pick(onSuccess : CEBlob -> Void, onError : CEError -> Void)";
+		console.log("options: " + Std.string(options) + "  onSuccess: " + Std.string(onSuccess) + "  onError: " + Std.string(onError));
+		this.ctrl.pick(options,onSuccess,onError);
+	}
+	,read: function(arg1,arg2,arg3,arg4,arg5) {
+		var input = arg1;
+		var options;
+		if(Reflect.isObject(arg2)) options = arg2; else options = null;
+		var onSuccess;
+		if(options == null) onSuccess = arg2; else onSuccess = arg3;
+		var onError;
+		if(options == null) onError = arg3; else onError = arg4;
+		var onProgress;
+		if(options == null) onProgress = arg4; else onProgress = arg5;
+		this.ctrl.read(input,options,onSuccess,onError,onProgress);
+	}
+	,exportFile: function(arg1,arg2,arg3,arg4) {
+		var input = arg1;
+		var options;
+		if(Reflect.isObject(arg2)) options = arg2; else options = null;
+		var onSuccess;
+		if(options == null) onSuccess = arg2; else onSuccess = arg3;
+		var onError;
+		if(options == null) onError = arg3; else onError = arg4;
+		this.ctrl.exportFile(input,options,onSuccess,onError);
+	}
+	,write: function(arg1,arg2,arg3,arg4,arg5,arg6) {
+		var target = arg1;
+		var data = arg2;
+		var options;
+		if(Reflect.isObject(arg3)) options = arg3; else options = null;
+		var onSuccess;
+		if(options == null) onSuccess = arg3; else onSuccess = arg4;
+		var onError;
+		if(options == null) onError = arg4; else onError = arg5;
+		var onProgress;
+		if(options == null) onProgress = arg5; else onProgress = arg6;
+		this.ctrl.write(target,data,options,onSuccess,onError,onProgress);
+	}
+};
+ce.core = {};
+ce.core.Controller = function(config,iframe) {
+	this.config = config;
+	this.state = new ce.core.model.State();
+	this.unifileSrv = new ce.core.service.UnifileSrv(config);
+	this.fileSrv = new ce.core.service.FileSrv();
+	this.application = new ce.core.view.Application(iframe,config);
+	this.initMvc();
+};
+ce.core.Controller.__name__ = true;
+ce.core.Controller.prototype = {
+	pick: function(options,onSuccess,onError) {
+		this.state.set_currentMode(ce.core.model.Mode.SingleFileSelection(onSuccess,onError));
+		this.show();
+	}
+	,read: function(input,options,onSuccess,onError,onProgress) {
+		this.fileSrv.get(input.url,onSuccess,$bind(this,this.setError));
+	}
+	,exportFile: function(input,options,onSuccess,onError) {
+		this.state.set_currentMode(ce.core.model.Mode.SingleFileExport(onSuccess,onError,input,options));
+		this.show();
+	}
+	,write: function(target,data,options,onSuccess,onError,onProgress) {
+		var _g1 = this;
+		var explodedUrl = this.unifileSrv.explodeUrl(target.url);
+		var fileBlob = new Blob([data],{ type : target.mimetype});
+		this.unifileSrv.upload((function($this) {
+			var $r;
+			var _g = new haxe.ds.StringMap();
+			_g.set(explodedUrl.filename,fileBlob);
+			$r = _g;
+			return $r;
+		}(this)),null,explodedUrl.srv,explodedUrl.path,function() {
+			if(_g1.state.currentFileList.get(explodedUrl.filename) == null) _g1.refreshFilesList();
+			onSuccess(target);
+		},$bind(this,this.setError));
+	}
+	,setAlert: function(msg,level,choices) {
+		if(level == null) level = 2;
+		var _g = this;
+		if(choices == null || choices.length == 0) this.application.onClicked = function() {
+			_g.application.setAlertPopupDisplayed(false);
+		}; else this.application.onClicked = function() {
+		};
+		this.application.alertPopup.setMsg(msg,level,choices);
+		this.application.setAlertPopupDisplayed(true);
+	}
+	,setError: function(msg) {
+		var _g = this;
+		this.application.setLoaderDisplayed(false);
+		console.log("ERROR HAPPENED");
+		this.application.alertPopup.setMsg(msg,0,[{ msg : "Continue", cb : function() {
+			_g.application.setAlertPopupDisplayed(false);
+		}}]);
+		this.application.setAlertPopupDisplayed(true);
+	}
+	,initMvc: function() {
+		var _g = this;
+		this.application.onViewReady = function() {
+			_g.state.set_readyState(true);
+		};
+		this.application.onLogoutClicked = function() {
+			if(_g.state.currentLocation != null && _g.state.serviceList.get(_g.state.currentLocation.service).isLoggedIn) _g.unifileSrv.logout(_g.state.currentLocation.service,function(lr) {
+				_g.state.serviceList.get(_g.state.currentLocation.service).set_isLoggedIn(false);
+				if(!lr.success) _g.setError(lr.message);
+			},$bind(_g,_g.setError));
+		};
+		this.application.onCloseClicked = function() {
+			_g.hide();
+		};
+		this.application.onServiceClicked = function(name) {
+			if(_g.state.serviceList.get(name).isLoggedIn) _g.state.set_currentLocation(new ce.core.model.Location(name,"/")); else {
+				_g.application.setLoaderDisplayed(true);
+				_g.unifileSrv.connect(name,function(cr) {
+					if(cr.success) {
+						_g.state.serviceList.get(name).isConnected = true;
+						_g.application.authPopup.setServerName(_g.state.serviceList.get(name).displayName);
+						_g.application.authPopup.onClicked = function() {
+							_g.application.onAuthorizationWindowBlocked = function() {
+								_g.application.setAuthPopupDisplayed(false);
+								_g.setAlert("Popup Blocker is enabled! Please add this site to your exception list and reload the page.",0);
+							};
+							_g.application.onServiceAuthorizationDone = function() {
+								_g.application.setAuthPopupDisplayed(false);
+								_g.login(name);
+							};
+							_g.application.openAuthorizationWindow(cr.authorizeUrl);
+						};
+						_g.application.setAuthPopupDisplayed(true);
+					} else {
+						_g.state.serviceList.get(name).isConnected = false;
+						_g.setError(cr.message);
+					}
+				},$bind(_g,_g.setError));
+			}
+		};
+		this.application.onFileClicked = function(id) {
+			if(id == "..") _g.cpd(_g.state.currentLocation.service,_g.state.currentLocation.path); else {
+				var f = _g.state.currentFileList.get(id);
+				if(_g.state.currentMode == null) {
+					if(f.isDir) {
+						var _g1 = _g.state.currentLocation;
+						_g1.set_path(_g1.path + (_g.state.currentFileList.get(id).name + "/"));
+					}
+					return;
+				}
+				{
+					var _g11 = _g.state.currentMode;
+					switch(_g11[1]) {
+					case 0:
+						var onError = _g11[3];
+						var onSuccess = _g11[2];
+						if(!f.isDir) {
+							onSuccess({ url : _g.unifileSrv.generateUrl(_g.state.currentLocation.service,_g.state.currentLocation.path,f.name), filename : f.name, mimetype : ce.util.FileTools.getMimeType(f.name), size : f.bytes, key : null, container : null, isWriteable : true, path : _g.state.currentLocation.path});
+							_g.hide();
+						} else {
+							var _g2 = _g.state.currentLocation;
+							_g2.set_path(_g2.path + (_g.state.currentFileList.get(id).name + "/"));
+						}
+						break;
+					default:
+						var _g2 = _g.state.currentLocation;
+						_g2.set_path(_g2.path + (_g.state.currentFileList.get(id).name + "/"));
+					}
+				}
+			}
+		};
+		this.application.onFileDeleteClicked = function(id1) {
+			var f1 = _g.state.currentFileList.get(id1);
+			_g.setAlert("Are you sure you want to delete " + f1.name + " from your " + _g.state.serviceList.get(_g.state.currentLocation.service).displayName + " storage?",1,[{ msg : "Yes, delete it", cb : function() {
+				_g.application.setAlertPopupDisplayed(false);
+				_g.deleteFile(id1);
+			}},{ msg : "No, do not delete it", cb : function() {
+				_g.application.setAlertPopupDisplayed(false);
+			}}]);
+		};
+		this.application.onFileCheckedStatusChanged = function(_) {
+			var _g12 = 0;
+			var _g21 = _g.application.fileBrowser.fileListItems;
+			while(_g12 < _g21.length) {
+				var f2 = _g21[_g12];
+				++_g12;
+				if(f2.get_isChecked()) {
+					_g.application.setSelecting(true);
+					return;
+				}
+			}
+			_g.application.setSelecting(false);
+		};
+		this.application.onFileRenameRequested = function(id2,value) {
+			var f3 = _g.state.currentFileList.get(id2);
+			if(value != f3.name) {
+				var oldPath = _g.state.currentLocation.path;
+				var newPath = _g.state.currentLocation.path;
+				if(oldPath == "/" || oldPath == "") oldPath = f3.name; else oldPath = oldPath + "/" + f3.name;
+				if(newPath == "/" || newPath == "") newPath = value; else newPath = newPath + "/" + value;
+				_g.application.setLoaderDisplayed(true);
+				_g.unifileSrv.mv(_g.state.currentLocation.service,oldPath,newPath,function() {
+					_g.application.setLoaderDisplayed(false);
+					_g.refreshFilesList();
+				},$bind(_g,_g.setError));
+			}
+		};
+		this.application.onOverwriteExportClicked = function() {
+			{
+				var _g13 = _g.state.currentMode;
+				switch(_g13[1]) {
+				case 1:
+					var options = _g13[5];
+					var input = _g13[4];
+					var onError1 = _g13[3];
+					var onSuccess1 = _g13[2];
+					var fname = _g.application["export"].get_exportName();
+					if(options != null) {
+						if(options.mimetype != null && ce.util.FileTools.getExtension(options.mimetype) != null) fname += ce.util.FileTools.getExtension(options.mimetype); else if(options.extension != null) if(options.extension.indexOf(".") != 0) fname += "." + options.extension; else fname += options.extension;
+					}
+					_g.setAlert("Do you confirm overwriting of " + fname + "?",1,[{ msg : "Yes, do overwrite it.", cb : function() {
+						_g.application.setAlertPopupDisplayed(false);
+						_g.doExportFile();
+						_g.hide();
+					}},{ msg : "No, do not overwrite it.", cb : function() {
+						_g.application.setAlertPopupDisplayed(false);
+					}}]);
+					break;
+				default:
+					throw "unexpected mode " + Std.string(_g.state.currentMode);
+				}
+			}
+		};
+		this.application.onSaveExportClicked = function() {
+			_g.doExportFile();
+			_g.hide();
+		};
+		this.application.onExportNameChanged = function() {
+			if(_g.application["export"].get_exportName() != "") {
+				var _g14 = _g.state.currentMode;
+				switch(_g14[1]) {
+				case 1:
+					var options1 = _g14[5];
+					var input1 = _g14[4];
+					var onError2 = _g14[3];
+					var onSuccess2 = _g14[2];
+					var fname1 = _g.application["export"].get_exportName();
+					if(options1 != null) {
+						if(options1.mimetype != null && ce.util.FileTools.getExtension(options1.mimetype) != null) fname1 += ce.util.FileTools.getExtension(options1.mimetype); else if(options1.extension != null) if(options1.extension.indexOf(".") != 0) fname1 += "." + options1.extension; else fname1 += options1.extension;
+					}
+					var $it0 = _g.state.currentFileList.iterator();
+					while( $it0.hasNext() ) {
+						var f4 = $it0.next();
+						if(f4.name == fname1) {
+							_g.application.setExportOverwriteDisplayed(true);
+							return;
+						}
+					}
+					_g.application.setExportOverwriteDisplayed(false);
+					break;
+				default:
+					throw "unexpected mode " + Std.string(_g.state.currentMode);
+				}
+			}
+		};
+		this.application.onInputFilesChanged = function() {
+			_g.unifileSrv.upload(null,_g.application.dropzone.inputElt.files,_g.state.currentLocation.service,_g.state.currentLocation.path,function() {
+				_g.refreshFilesList();
+			},$bind(_g,_g.setError));
+		};
+		this.application.onNavBtnClicked = function(srv,path) {
+			_g.state.set_currentLocation(new ce.core.model.Location(srv,path));
+		};
+		this.application.onNewFolderClicked = function() {
+			_g.application.setNewFolderDisplayed(true);
+		};
+		this.application.onDeleteClicked = function() {
+			_g.setAlert("Are you sure you want to delete the selected files from your " + _g.state.serviceList.get(_g.state.currentLocation.service).displayName + " storage?",1,[{ msg : "Yes, delete the selected files", cb : function() {
+				_g.application.setAlertPopupDisplayed(false);
+				_g.deleteSelectedFiles();
+			}},{ msg : "No, do not delete the selected files", cb : function() {
+				_g.application.setAlertPopupDisplayed(false);
+			}}]);
+		};
+		this.application.onNewFolderName = function() {
+			var name1 = _g.application.fileBrowser.get_newFolderName();
+			if(StringTools.trim(name1) == "") _g.application.setNewFolderDisplayed(false); else {
+				var mkDirPath = _g.state.currentLocation.path;
+				if(mkDirPath == "/" || mkDirPath == "") mkDirPath = name1; else mkDirPath = mkDirPath + "/" + name1;
+				_g.unifileSrv.mkdir(_g.state.currentLocation.service,mkDirPath,function() {
+					_g.application.setNewFolderDisplayed(false);
+					_g.refreshFilesList();
+				},function(e) {
+					_g.application.setNewFolderDisplayed(false);
+					_g.setError(e);
+				});
+			}
+		};
+		this.state.onServiceListChanged = function() {
+			var lastConnectedService = null;
+			_g.application.home.resetList();
+			var $it1 = _g.state.serviceList.iterator();
+			while( $it1.hasNext() ) {
+				var s = $it1.next();
+				_g.application.home.addService(s.name,s.displayName,s.description);
+				if(s.isLoggedIn) lastConnectedService = s.name;
+				_g.application.fileBrowser.addService(s.name,s.displayName);
+			}
+			if(lastConnectedService != null) {
+				if(_g.state.currentLocation == null) _g.state.set_currentLocation(new ce.core.model.Location(lastConnectedService,"/"));
+				_g.application.setLogoutButtonDisplayed(true);
+				_g.application.setFileBrowserDisplayed(true);
+			} else {
+				_g.application.setLogoutButtonDisplayed(false);
+				_g.application.setHomeDisplayed(true);
+			}
+		};
+		this.state.onDisplayStateChanged = function() {
+			_g.application.setDisplayed(_g.state.displayState);
+		};
+		this.state.onReadyStateChanged = function() {
+		};
+		this.state.onServiceLoginStateChanged = function(srvName) {
+			if(!_g.state.serviceList.get(srvName).isLoggedIn) {
+				if(_g.state.currentLocation.service == srvName) {
+					var $it2 = _g.state.serviceList.iterator();
+					while( $it2.hasNext() ) {
+						var s1 = $it2.next();
+						if(s1.isLoggedIn) {
+							_g.state.set_currentLocation(new ce.core.model.Location(s1.name,"/"));
+							return;
+						}
+					}
+					_g.state.set_currentLocation(null);
+				}
+			} else {
+				if(_g.state.serviceList.get(srvName).account == null) _g.unifileSrv.account(srvName,function(a) {
+					_g.state.serviceList.get(srvName).set_account(a);
+				},$bind(_g,_g.setError));
+				_g.state.set_currentLocation(new ce.core.model.Location(srvName,"/"));
+			}
+		};
+		this.state.onServiceAccountChanged = function(srvName1) {
+			_g.setLogoutBtnContent(srvName1);
+		};
+		this.state.onCurrentLocationChanged = function() {
+			if(_g.state.currentLocation == null) {
+				_g.state.set_currentFileList(null);
+				_g.application.setLogoutButtonDisplayed(false);
+				_g.application.setHomeDisplayed(true);
+			} else {
+				var p = _g.state.currentLocation.path;
+				while(p.length > 0 && p.lastIndexOf("/") == p.length - 1) p = HxOverrides.substr(p,0,p.length - 1);
+				_g.application.breadcrumb.setTitle(p.length > 1?(function($this) {
+					var $r;
+					var pos = p.lastIndexOf("/") + 1;
+					$r = HxOverrides.substr(p,pos,null);
+					return $r;
+				}(this)):_g.state.currentLocation.service);
+				_g.application.breadcrumb.setBreadcrumbPath(_g.state.currentLocation.service,_g.state.currentLocation.path);
+				if(_g.state.serviceList.get(_g.state.currentLocation.service).isLoggedIn) {
+					_g.setLogoutBtnContent(_g.state.currentLocation.service);
+					_g.application.setLogoutButtonDisplayed(true);
+				}
+				_g.cd(_g.state.currentLocation.service,_g.state.currentLocation.path);
+			}
+		};
+		this.state.onCurrentFileListChanged = function() {
+			_g.application.fileBrowser.resetFileList();
+			_g.application.setSelecting(false);
+			if(_g.state.currentFileList == null) {
+			} else {
+				if(_g.state.currentLocation.path != "/") _g.application.fileBrowser.addFolder("..","..",null,false);
+				var $it3 = _g.state.currentFileList.keys();
+				while( $it3.hasNext() ) {
+					var fid = $it3.next();
+					if(_g.state.currentFileList.get(fid).isDir) _g.application.fileBrowser.addFolder(fid,_g.state.currentFileList.get(fid).name,_g.state.currentFileList.get(fid).modified); else _g.application.fileBrowser.addFile(fid,_g.state.currentFileList.get(fid).name,ce.util.FileTools.getMimeType(_g.state.currentFileList.get(fid).name),_g.state.currentFileList.get(fid).modified);
+				}
+			}
+		};
+		this.state.onCurrentModeChanged = function() {
+			if(_g.state.currentMode != null) {
+				var _g15 = _g.state.currentMode;
+				switch(_g15[1]) {
+				case 0:
+					var onError3 = _g15[3];
+					var onSuccess3 = _g15[2];
+					break;
+				case 1:
+					var options2 = _g15[5];
+					var input2 = _g15[4];
+					var onError4 = _g15[3];
+					var onSuccess4 = _g15[2];
+					var ext;
+					if(options2 != null && options2.mimetype != null) ext = ce.util.FileTools.getExtension(options2.mimetype); else ext = null;
+					if(ext == null && options2 != null && options2.extension != null) if(options2.extension.indexOf(".") == 0) ext = options2.extension; else ext = "." + options2.extension;
+					_g.application["export"].set_ext(ext != null?ext:"");
+					_g.application["export"].set_exportName("");
+					_g.application.setExportOverwriteDisplayed(false);
+					break;
+				}
+			}
+			_g.application.setModeState(_g.state.currentMode);
+		};
+	}
+	,setLogoutBtnContent: function(srvName) {
+		var logoutStr = this.state.serviceList.get(srvName).displayName;
+		if(this.state.serviceList.get(srvName).account != null && this.state.serviceList.get(srvName).account.displayName != null) logoutStr += " - " + this.state.serviceList.get(srvName).account.displayName;
+		this.application.setLogoutButtonContent(logoutStr);
+	}
+	,deleteSelectedFiles: function() {
+		var _g2 = this;
+		var toDelCnt = 0;
+		var _g = 0;
+		var _g1 = this.application.fileBrowser.fileListItems;
+		while(_g < _g1.length) {
+			var f = _g1[_g];
+			++_g;
+			if(f.get_isChecked()) {
+				toDelCnt++;
+				var rmDirPath = this.state.currentLocation.path;
+				if(rmDirPath == "/" || rmDirPath == "") rmDirPath = f.get_name(); else rmDirPath = rmDirPath + "/" + f.get_name();
+				this.application.setLoaderDisplayed(true);
+				this.unifileSrv.rm(this.state.currentLocation.service,rmDirPath,function() {
+					toDelCnt--;
+					if(toDelCnt == 0) {
+						_g2.application.setLoaderDisplayed(false);
+						_g2.refreshFilesList();
+					}
+				},$bind(this,this.setError));
+			}
+		}
+	}
+	,deleteFile: function(id) {
+		var _g = this;
+		var f = this.state.currentFileList.get(id);
+		var rmDirPath = this.state.currentLocation.path;
+		if(rmDirPath == "/" || rmDirPath == "") rmDirPath = f.name; else rmDirPath = rmDirPath + "/" + f.name;
+		this.application.setLoaderDisplayed(true);
+		this.unifileSrv.rm(this.state.currentLocation.service,rmDirPath,function() {
+			_g.application.setLoaderDisplayed(false);
+			_g.refreshFilesList();
+		},$bind(this,this.setError));
+	}
+	,doExportFile: function() {
+		{
+			var _g = this.state.currentMode;
+			switch(_g[1]) {
+			case 1:
+				var options = _g[5];
+				var input = _g[4];
+				var onError = _g[3];
+				var onSuccess = _g[2];
+				var fname = this.application["export"].get_exportName();
+				if(options != null) {
+					if(options.mimetype != null && ce.util.FileTools.getExtension(options.mimetype) != null) fname += ce.util.FileTools.getExtension(options.mimetype); else if(options.extension != null) if(options.extension.indexOf(".") != 0) fname += "." + options.extension; else fname += options.extension;
+				}
+				onSuccess({ url : this.unifileSrv.generateUrl(this.state.currentLocation.service,this.state.currentLocation.path,fname), filename : fname, mimetype : options != null && options.mimetype != null?options.mimetype:ce.util.FileTools.getMimeType(fname), size : null, key : null, container : null, isWriteable : true, path : null});
+				break;
+			default:
+			}
+		}
+	}
+	,cpd: function(srvName,path) {
+		if(path.length > 1) {
+			if(path.lastIndexOf("/") == path.length - 1) path = HxOverrides.substr(path,0,path.length - 2);
+			var len = path.lastIndexOf("/") + 1;
+			path = HxOverrides.substr(path,0,len);
+			this.state.currentLocation.set_service(srvName);
+			this.state.currentLocation.set_path(path);
+		}
+	}
+	,refreshFilesList: function() {
+		this.cd(this.state.currentLocation.service,this.state.currentLocation.path);
+	}
+	,cd: function(srvName,path) {
+		var _g = this;
+		this.application.setLoaderDisplayed(true);
+		this.unifileSrv.ls(srvName,path,function(files) {
+			_g.state.set_currentFileList(files);
+			_g.application.setFileBrowserDisplayed(true);
+			_g.application.setLoaderDisplayed(false);
+		},$bind(this,this.setError));
+	}
+	,login: function(srvName) {
+		var _g = this;
+		if(!this.state.serviceList.get(srvName).isLoggedIn) {
+			this.application.setLoaderDisplayed(true);
+			this.unifileSrv.login(srvName,function(lr) {
+				if(lr.success) _g.state.serviceList.get(srvName).set_isLoggedIn(true); else {
+					_g.state.serviceList.get(srvName).set_isLoggedIn(false);
+					_g.setError("Could not login. Please try again.");
+				}
+				_g.application.setLoaderDisplayed(false);
+			},$bind(this,this.setError));
+		} else console.log("WON'T LOGIN " + srvName + " AS ALREADY LOGGED IN !!!");
+	}
+	,hide: function() {
+		this.state.set_displayState(false);
+	}
+	,show: function() {
+		var _g = this;
+		var goHome = true;
+		if(this.state.serviceList != null) {
+			var $it0 = this.state.serviceList.iterator();
+			while( $it0.hasNext() ) {
+				var s = $it0.next();
+				if(s.isLoggedIn) {
+					goHome = false;
+					break;
+				}
+			}
+		}
+		if(goHome || this.state.currentFileList == null) {
+			this.application.setLoaderDisplayed(true);
+			this.unifileSrv.listServices(function(slm) {
+				_g.application.setLoaderDisplayed(false);
+				_g.state.set_serviceList(slm);
+			},$bind(this,this.setError));
+		} else this.application.setFileBrowserDisplayed(true);
+		this.state.set_displayState(true);
+	}
+};
+ce.core.config = {};
+ce.core.config.Config = function() {
+	this.path = "";
+	this.unifileEndpoint = "http://localhost:6805/api/1.0/";
+};
+ce.core.config.Config.__name__ = true;
+ce.core.config.Config.prototype = {
+	readProperty: function(name,value) {
+		switch(name) {
+		case "unifile-url":
+			this.unifileEndpoint = value;
+			break;
+		case "path":
+			this.path = value;
+			break;
+		default:
+			throw "Unexpected configuration property " + name;
+		}
+	}
+};
+ce.core.model = {};
+ce.core.model.CEError = function(code) {
+};
+ce.core.model.CEError.__name__ = true;
+ce.core.model.CEError.prototype = {
+	toString: function() {
+		return Std.string(this.code);
+	}
+};
+ce.core.model.Location = function(s,p) {
+	this.set_service(s);
+	this.set_path(p);
+};
+ce.core.model.Location.__name__ = true;
+ce.core.model.Location.prototype = {
+	onChanged: function() {
+	}
+	,set_service: function(v) {
+		if(v == this.service) return v;
+		this.service = v;
+		this.onChanged();
+		return this.service;
+	}
+	,set_path: function(v) {
+		if(v == this.path) return v;
+		this.path = v;
+		this.onChanged();
+		return this.path;
+	}
+	,__properties__: {set_path:"set_path",set_service:"set_service"}
+};
+ce.core.model.Mode = { __ename__ : true, __constructs__ : ["SingleFileSelection","SingleFileExport"] };
+ce.core.model.Mode.SingleFileSelection = function(onSuccess,onError) { var $x = ["SingleFileSelection",0,onSuccess,onError]; $x.__enum__ = ce.core.model.Mode; $x.toString = $estr; return $x; };
+ce.core.model.Mode.SingleFileExport = function(onSuccess,onError,input,options) { var $x = ["SingleFileExport",1,onSuccess,onError,input,options]; $x.__enum__ = ce.core.model.Mode; $x.toString = $estr; return $x; };
+ce.core.model.State = function() {
+	this.currentMode = null;
+	this.currentFileList = null;
+	this.currentLocation = null;
+	this.serviceList = null;
+	this.displayState = false;
+	this.readyState = false;
+};
+ce.core.model.State.__name__ = true;
+ce.core.model.State.prototype = {
+	onReadyStateChanged: function() {
+	}
+	,onDisplayStateChanged: function() {
+	}
+	,onServiceListChanged: function() {
+	}
+	,onCurrentLocationChanged: function() {
+	}
+	,onCurrentFileListChanged: function() {
+	}
+	,onCurrentModeChanged: function() {
+	}
+	,onServiceLoginStateChanged: function(srvName) {
+	}
+	,onServiceAccountChanged: function(srvName) {
+	}
+	,set_serviceList: function(v) {
+		var _g = this;
+		if(v == this.serviceList) return v;
+		this.serviceList = v;
+		var $it0 = this.serviceList.iterator();
+		while( $it0.hasNext() ) {
+			var s = $it0.next();
+			var s1 = [s];
+			s1[0].onLoginStateChanged = (function(s1) {
+				return function() {
+					_g.onServiceLoginStateChanged(s1[0].name);
+				};
+			})(s1);
+			s1[0].onAccountChanged = (function(s1) {
+				return function() {
+					_g.onServiceAccountChanged(s1[0].name);
+				};
+			})(s1);
+			if(s1[0].account != null) this.onServiceAccountChanged(s1[0].name);
+		}
+		this.onServiceListChanged();
+		return this.serviceList;
+	}
+	,set_currentFileList: function(v) {
+		if(v == this.currentFileList) return v;
+		this.currentFileList = v;
+		this.onCurrentFileListChanged();
+		return this.currentFileList;
+	}
+	,set_currentMode: function(v) {
+		if(v == this.currentMode) return v;
+		this.currentMode = v;
+		this.onCurrentModeChanged();
+		return this.currentMode;
+	}
+	,set_readyState: function(v) {
+		if(v == this.readyState) return v;
+		this.readyState = v;
+		this.onReadyStateChanged();
+		return this.readyState;
+	}
+	,set_displayState: function(v) {
+		if(v == this.displayState) return v;
+		this.displayState = v;
+		this.onDisplayStateChanged();
+		return this.displayState;
+	}
+	,set_currentLocation: function(v) {
+		var _g = this;
+		if(v == this.currentLocation) return v;
+		this.currentLocation = v;
+		if(this.currentLocation != null) this.currentLocation.onChanged = function() {
+			_g.onCurrentLocationChanged();
+		};
+		this.onCurrentLocationChanged();
+		return this.currentLocation;
+	}
+	,__properties__: {set_currentMode:"set_currentMode",set_currentFileList:"set_currentFileList",set_currentLocation:"set_currentLocation",set_serviceList:"set_serviceList",set_displayState:"set_displayState",set_readyState:"set_readyState"}
+};
+ce.core.model.unifile = {};
+ce.core.model.unifile.Service = function(n,dn,$is,d,v,il,ic,a) {
+	this.name = n;
+	this.displayName = dn;
+	this.imageSmall = $is;
+	this.description = d;
+	this.visible = v;
+	this.set_isLoggedIn(il);
+	this.isConnected = ic;
+	this.set_account(a);
+};
+ce.core.model.unifile.Service.__name__ = true;
+ce.core.model.unifile.Service.prototype = {
+	onLoginStateChanged: function() {
+	}
+	,onAccountChanged: function() {
+	}
+	,set_isLoggedIn: function(v) {
+		if(v == this.isLoggedIn) return v;
+		this.isLoggedIn = v;
+		this.onLoginStateChanged();
+		return this.isLoggedIn;
+	}
+	,set_account: function(v) {
+		if(v == this.account) return v;
+		this.account = v;
+		this.onAccountChanged();
+		return this.account;
+	}
+	,__properties__: {set_account:"set_account",set_isLoggedIn:"set_isLoggedIn"}
+};
+ce.core.parser = {};
+ce.core.parser.json = {};
+ce.core.parser.json.Json2Primitive = function() { };
+ce.core.parser.json.Json2Primitive.__name__ = true;
+ce.core.parser.json.Json2Primitive.checkPath = function(node,path,optional) {
+	if(optional == null) optional = false;
+	var pathes = path.split(".");
+	var n = ce.core.parser.json.Json2Primitive.doCheckPath(node,pathes,optional);
+	if(n == null && !optional) console.log(path + " not found !");
+	return n;
+};
+ce.core.parser.json.Json2Primitive.doCheckPath = function(node,pathes,optional) {
+	if(optional == null) optional = false;
+	var p = pathes.shift();
+	if(!Object.prototype.hasOwnProperty.call(node,p) || Reflect.field(node,p) == null) {
+		if(!optional) console.log(p + " not found !");
+		return null;
+	}
+	if(pathes.length > 0) return ce.core.parser.json.Json2Primitive.doCheckPath(Reflect.field(node,p),pathes,optional);
+	return Reflect.field(node,p);
+};
+ce.core.parser.json.Json2Primitive.node2String = function(node,path,nullable) {
+	if(nullable == null) nullable = false;
+	var n = ce.core.parser.json.Json2Primitive.checkPath(node,path,nullable);
+	if(n == null) {
+		if(!nullable) {
+		}
+		return null;
+	}
+	return Std.string(n);
+};
+ce.core.parser.json.Json2Primitive.node2Float = function(node,path,nullable) {
+	if(nullable == null) nullable = false;
+	return Std.parseFloat(ce.core.parser.json.Json2Primitive.node2String(node,path,nullable));
+};
+ce.core.parser.json.Json2Primitive.node2Int = function(node,path,nullable) {
+	if(nullable == null) nullable = false;
+	return Std.parseInt(ce.core.parser.json.Json2Primitive.node2String(node,path,nullable));
+};
+ce.core.parser.json.Json2Primitive.node2Bool = function(node,path,nullable) {
+	if(nullable == null) nullable = false;
+	var v = ce.core.parser.json.Json2Primitive.node2String(node,path,nullable);
+	if(v != null) return v == "true" || v == "1"; else return false;
+};
+ce.core.parser.unifile = {};
+ce.core.parser.unifile.Json2Account = function() { };
+ce.core.parser.unifile.Json2Account.__name__ = true;
+ce.core.parser.unifile.Json2Account.parseAccount = function(dataStr,obj) {
+	if(obj == null) {
+		if(dataStr == null) return null;
+		obj = JSON.parse(dataStr);
+	}
+	return { displayName : ce.core.parser.json.Json2Primitive.node2String(obj,"display_name",false), quotaInfo : Object.prototype.hasOwnProperty.call(obj,"quota_info")?ce.core.parser.unifile.Json2Account.parseQuotaInfo(Reflect.field(obj,"quota_info")):null};
+};
+ce.core.parser.unifile.Json2Account.parseQuotaInfo = function(obj) {
+	return { available : ce.core.parser.json.Json2Primitive.node2Int(obj,"available",false), used : ce.core.parser.json.Json2Primitive.node2Int(obj,"used",false)};
+};
+ce.core.parser.unifile.Json2ConnectResult = function() { };
+ce.core.parser.unifile.Json2ConnectResult.__name__ = true;
+ce.core.parser.unifile.Json2ConnectResult.parse = function(dataStr) {
+	var obj = JSON.parse(dataStr);
+	return { success : ce.core.parser.json.Json2Primitive.node2Bool(obj,"success",false), message : ce.core.parser.json.Json2Primitive.node2String(obj,"message",false), authorizeUrl : ce.core.parser.json.Json2Primitive.node2String(obj,"authorize_url",false)};
+};
+ce.core.parser.unifile.Json2File = function() { };
+ce.core.parser.unifile.Json2File.__name__ = true;
+ce.core.parser.unifile.Json2File.parseFileCollection = function(dataStr) {
+	var col = JSON.parse(dataStr);
+	var fileCol = new Array();
+	var _g = 0;
+	while(_g < col.length) {
+		var f = col[_g];
+		++_g;
+		fileCol.push(ce.core.parser.unifile.Json2File.parseFile(f));
+	}
+	return fileCol;
+};
+ce.core.parser.unifile.Json2File.parseFile = function(obj) {
+	var dStr = ce.core.parser.json.Json2Primitive.node2String(obj,"modified",false);
+	return { name : ce.core.parser.json.Json2Primitive.node2String(obj,"name",false), bytes : ce.core.parser.json.Json2Primitive.node2Int(obj,"bytes",false), modified : dStr != null?(function($this) {
+		var $r;
+		var t = new Date(dStr).getTime();
+		var d = new Date();
+		d.setTime(t);
+		$r = d;
+		return $r;
+	}(this)):null, isDir : ce.core.parser.json.Json2Primitive.node2Bool(obj,"is_dir",false)};
+};
+ce.core.parser.unifile.Json2LoginResult = function() { };
+ce.core.parser.unifile.Json2LoginResult.__name__ = true;
+ce.core.parser.unifile.Json2LoginResult.parse = function(dataStr) {
+	var obj = JSON.parse(dataStr);
+	return { success : ce.core.parser.json.Json2Primitive.node2Bool(obj,"success",false)};
+};
+ce.core.parser.unifile.Json2LogoutResult = function() { };
+ce.core.parser.unifile.Json2LogoutResult.__name__ = true;
+ce.core.parser.unifile.Json2LogoutResult.parse = function(dataStr) {
+	var obj = JSON.parse(dataStr);
+	return { success : ce.core.parser.json.Json2Primitive.node2Bool(obj,"success",false), message : ce.core.parser.json.Json2Primitive.node2String(obj,"message",false)};
+};
+ce.core.parser.unifile.Json2Service = function() { };
+ce.core.parser.unifile.Json2Service.__name__ = true;
+ce.core.parser.unifile.Json2Service.parseServiceCollection = function(dataStr) {
+	var col = JSON.parse(dataStr);
+	var serviceCol = new Array();
+	var _g = 0;
+	while(_g < col.length) {
+		var s = col[_g];
+		++_g;
+		serviceCol.push(ce.core.parser.unifile.Json2Service.parseService(s));
+	}
+	return serviceCol;
+};
+ce.core.parser.unifile.Json2Service.parseService = function(obj) {
+	return new ce.core.model.unifile.Service(ce.core.parser.json.Json2Primitive.node2String(obj,"name",false),ce.core.parser.json.Json2Primitive.node2String(obj,"display_name",false),ce.core.parser.json.Json2Primitive.node2String(obj,"image_small",false),ce.core.parser.json.Json2Primitive.node2String(obj,"description",false),ce.core.parser.json.Json2Primitive.node2Bool(obj,"visible",false),ce.core.parser.json.Json2Primitive.node2Bool(obj,"isLoggedIn",false),ce.core.parser.json.Json2Primitive.node2Bool(obj,"isConnected",false),Object.prototype.hasOwnProperty.call(obj,"user")?ce.core.parser.unifile.Json2Account.parseAccount(null,Reflect.field(obj,"user")):null);
+};
+ce.core.parser.unifile.Json2UploadResult = function() { };
+ce.core.parser.unifile.Json2UploadResult.__name__ = true;
+ce.core.parser.unifile.Json2UploadResult.parse = function(dataStr) {
+	var obj = JSON.parse(dataStr);
+	return { success : ce.core.parser.json.Json2Primitive.node2Bool(obj,"success",false)};
+};
+ce.core.service = {};
+ce.core.service.FileSrv = function() {
+};
+ce.core.service.FileSrv.__name__ = true;
+ce.core.service.FileSrv.prototype = {
+	get: function(url,onSuccess,onError) {
+		var http = new haxe.Http(url);
+		http.onData = onSuccess;
+		http.onError = onError;
+		http.onStatus = function(s) {
+			console.log("status " + s);
+		};
+		http.request(false);
+	}
+};
+ce.core.service.UnifileSrv = function(config) {
+	this.config = config;
+};
+ce.core.service.UnifileSrv.__name__ = true;
+ce.core.service.UnifileSrv.prototype = {
+	generateUrl: function(srv,path,filename) {
+		return this.config.unifileEndpoint + StringTools.replace(StringTools.replace("{srv}/exec/get/{uri}","{srv}",srv),"{uri}",path.length > 1?path + "/" + filename:filename);
+	}
+	,explodeUrl: function(url) {
+		if(url.indexOf(this.config.unifileEndpoint) != 0) throw "ERROR: can't convert url to path: " + url;
+		var parsedUrl = HxOverrides.substr(url,this.config.unifileEndpoint.length,null);
+		if(parsedUrl.indexOf("/exec/get/") != parsedUrl.indexOf("/")) throw "ERROR: can't convert url to path: " + url;
+		var srv;
+		var len = parsedUrl.indexOf("/");
+		srv = HxOverrides.substr(parsedUrl,0,len);
+		var pos = parsedUrl.indexOf("/exec/get/") + "/exec/get/".length;
+		parsedUrl = HxOverrides.substr(parsedUrl,pos,null);
+		var filename = "";
+		var path = "";
+		if(parsedUrl.lastIndexOf("/") > -1) {
+			var pos1 = parsedUrl.lastIndexOf("/") + 1;
+			filename = HxOverrides.substr(parsedUrl,pos1,null);
+			var len1 = parsedUrl.lastIndexOf("/") + 1;
+			path = HxOverrides.substr(parsedUrl,0,len1);
+		} else filename = parsedUrl;
+		return { srv : srv, path : path, filename : filename};
+	}
+	,listServices: function(onSuccess,onError) {
+		var http = new haxe.Http(this.config.unifileEndpoint + "services/list");
+		http.onData = function(data) {
+			var sl = ce.core.parser.unifile.Json2Service.parseServiceCollection(data);
+			var slm = new haxe.ds.StringMap();
+			var _g = 0;
+			while(_g < sl.length) {
+				var s = sl[_g];
+				++_g;
+				slm.set(s.name,s);
+			}
+			onSuccess(slm);
+		};
+		http.onError = onError;
+		http.request(false);
+	}
+	,connect: function(srv,onSuccess,onError) {
+		var http = new haxe.Http(this.config.unifileEndpoint + StringTools.replace("{srv}/connect","{srv}",srv));
+		http.onData = function(data) {
+			onSuccess(ce.core.parser.unifile.Json2ConnectResult.parse(data));
+		};
+		http.onError = onError;
+		http.request(false);
+	}
+	,login: function(srv,onSuccess,onError) {
+		var http = new haxe.Http(this.config.unifileEndpoint + StringTools.replace("{srv}/login","{srv}",srv));
+		http.onData = function(data) {
+			onSuccess(ce.core.parser.unifile.Json2LoginResult.parse(data));
+		};
+		http.onError = onError;
+		http.request(false);
+	}
+	,account: function(srv,onSuccess,onError) {
+		var http = new haxe.Http(this.config.unifileEndpoint + StringTools.replace("{srv}/account","{srv}",srv));
+		http.onData = function(data) {
+			onSuccess(ce.core.parser.unifile.Json2Account.parseAccount(data));
+		};
+		http.onError = onError;
+		http.request(true);
+	}
+	,logout: function(srv,onSuccess,onError) {
+		var http = new haxe.Http(this.config.unifileEndpoint + StringTools.replace("{srv}/logout","{srv}",srv));
+		http.onData = function(data) {
+			onSuccess(ce.core.parser.unifile.Json2LogoutResult.parse(data));
+		};
+		http.onError = onError;
+		http.request(false);
+	}
+	,ls: function(srv,path,onSuccess,onError) {
+		var http = new haxe.Http(this.config.unifileEndpoint + StringTools.replace(StringTools.replace("{srv}/exec/ls/{path}","{srv}",srv),"{path}",path));
+		http.onData = function(data) {
+			var fa = ce.core.parser.unifile.Json2File.parseFileCollection(data);
+			var fsm = new haxe.ds.StringMap();
+			var _g = 0;
+			while(_g < fa.length) {
+				var f = fa[_g];
+				++_g;
+				fsm.set(f.name,f);
+			}
+			onSuccess(fsm);
+		};
+		http.onError = onError;
+		http.request(false);
+	}
+	,rm: function(srv,path,onSuccess,onError) {
+		var http = new haxe.Http(this.config.unifileEndpoint + StringTools.replace(StringTools.replace("{srv}/exec/rm/{path}","{srv}",srv),"{path}",path));
+		http.onData = function(_) {
+			onSuccess();
+		};
+		http.onError = onError;
+		http.request(false);
+	}
+	,mkdir: function(srv,path,onSuccess,onError) {
+		var http = new haxe.Http(this.config.unifileEndpoint + StringTools.replace(StringTools.replace("{srv}/exec/mkdir/{path}","{srv}",srv),"{path}",path));
+		http.onData = function(data) {
+			console.log("data= " + data);
+			onSuccess();
+		};
+		http.onError = onError;
+		http.request(false);
+	}
+	,cp: function() {
+	}
+	,mv: function(srv,oldPath,newPath,onSuccess,onError) {
+		var http = new haxe.Http(this.config.unifileEndpoint + StringTools.replace(StringTools.replace("{srv}/exec/mv/{path}","{srv}",srv),"{path}",oldPath + ":" + newPath));
+		http.onData = function(_) {
+			onSuccess();
+		};
+		http.onError = onError;
+		http.request(false);
+	}
+	,upload: function(blobs,files,srv,path,onSuccess,onError) {
+		if(path != "" && path.lastIndexOf("/") != path.length - 1) path += "/";
+		var formData = new FormData();
+		if(files != null) {
+			var _g = 0;
+			while(_g < files.length) {
+				var f = files[_g];
+				++_g;
+				if(Reflect.isObject(f)) {
+					formData.append('data', f, f.name);;
+				}
+			}
+		}
+		if(blobs != null) {
+			if(Lambda.count(blobs) == 1) path += blobs.keys().next();
+			var $it0 = blobs.keys();
+			while( $it0.hasNext() ) {
+				var fn = $it0.next();
+				formData.append('data', blobs.get(fn), fn);;
+			}
+		}
+		var xhttp = new XMLHttpRequest();
+		xhttp.open("POST",this.config.unifileEndpoint + StringTools.replace(StringTools.replace("{srv}/exec/put/{path}","{srv}",srv),"{path}",path));
+		xhttp.onload = function(_) {
+			if(xhttp.status == 200) onSuccess(); else onError("Error " + xhttp.status + " occurred uploading your file(s)");
+		};
+		xhttp.onerror = function(_1) {
+			onError("Error " + xhttp.status + " occurred uploading your file(s)");
+		};
+		xhttp.send(formData);
+	}
+};
+ce.core.view = {};
+ce.core.view.AlertPopup = function(elt) {
+	this.elt = elt;
+	this.txtElt = elt.querySelector(".txt");
+	this.choiceTmpl = this.txtElt.querySelector(".choice");
+	this.txtElt.removeChild(this.choiceTmpl);
+	this.choicesElts = [];
+};
+ce.core.view.AlertPopup.__name__ = true;
+ce.core.view.AlertPopup.prototype = {
+	setMsg: function(msg,level,choices) {
+		if(level == null) level = 2;
+		var _g = this;
+		while(this.choicesElts.length > 0) this.txtElt.removeChild(this.choicesElts.pop());
+		this.txtElt.textContent = msg;
+		if(choices != null) {
+			var _g1 = 0;
+			while(_g1 < choices.length) {
+				var c = choices[_g1];
+				++_g1;
+				var nc = this.choiceTmpl.cloneNode(true);
+				var tc = [c];
+				nc.textContent = tc[0].msg;
+				nc.addEventListener("click",(function(tc) {
+					return function(_) {
+						tc[0].cb();
+					};
+				})(tc));
+				this.txtElt.appendChild(nc);
+			}
+		}
+		switch(level) {
+		case 0:
+			ce.util.HtmlTools.toggleClass(this.elt,"error",true);
+			ce.util.HtmlTools.toggleClass(this.elt,"warning",false);
+			break;
+		case 1:
+			ce.util.HtmlTools.toggleClass(this.elt,"error",false);
+			ce.util.HtmlTools.toggleClass(this.elt,"warning",true);
+			break;
+		default:
+			ce.util.HtmlTools.toggleClass(this.elt,"error",false);
+			ce.util.HtmlTools.toggleClass(this.elt,"warning",false);
+		}
+		haxe.Timer.delay(function() {
+			_g.txtElt.style.marginTop = "-" + Std.string(_g.txtElt.offsetHeight / 2 + 20) + "px";
+		},0);
+	}
+};
+ce.core.view.Application = function(iframe,config) {
+	this.iframe = iframe;
+	this.config = config;
+	this.initFrame();
+};
+ce.core.view.Application.__name__ = true;
+ce.core.view.Application.prototype = {
+	onClicked: function() {
+	}
+	,onViewReady: function() {
+	}
+	,onLogoutClicked: function() {
+	}
+	,onCloseClicked: function() {
+	}
+	,onServiceClicked: function(name) {
+	}
+	,onFileClicked: function(id) {
+	}
+	,onFileDeleteClicked: function(id) {
+	}
+	,onFileRenameRequested: function(id,value) {
+	}
+	,onFileCheckedStatusChanged: function(id) {
+	}
+	,onNavBtnClicked: function(srv,path) {
+	}
+	,onAuthorizationWindowBlocked: function() {
+	}
+	,onServiceAuthorizationDone: function() {
+	}
+	,onSaveExportClicked: function() {
+	}
+	,onOverwriteExportClicked: function() {
+	}
+	,onExportNameChanged: function() {
+	}
+	,onInputFilesChanged: function() {
+	}
+	,onNewFolderClicked: function() {
+	}
+	,onDeleteClicked: function() {
+	}
+	,onNewFolderName: function() {
+	}
+	,setLogoutButtonContent: function(v) {
+		this.logoutBtn.textContent = StringTools.replace(this.logoutContentTmpl,"{name}",v != null?v:"");
+	}
+	,setDisplayed: function(v) {
+		if(v) this.iframe.style.display = "block"; else this.iframe.style.display = "none";
+	}
+	,setLoaderDisplayed: function(v) {
+		ce.util.HtmlTools.toggleClass(this.rootElt,"loading",v);
+	}
+	,setLogoutButtonDisplayed: function(v) {
+		ce.util.HtmlTools.toggleClass(this.rootElt,"loggedin",v);
+	}
+	,setHomeDisplayed: function(v) {
+		if(v) this.cleanPreviousState();
+		ce.util.HtmlTools.toggleClass(this.rootElt,"starting",v);
+	}
+	,setFileBrowserDisplayed: function(v) {
+		if(v) this.cleanPreviousState();
+		ce.util.HtmlTools.toggleClass(this.rootElt,"browsing",v);
+	}
+	,setExportOverwriteDisplayed: function(v) {
+		ce.util.HtmlTools.toggleClass(this.rootElt,"export-overwriting",v);
+	}
+	,setAuthPopupDisplayed: function(v) {
+		ce.util.HtmlTools.toggleClass(this.rootElt,"authorizing",v);
+	}
+	,setAlertPopupDisplayed: function(v) {
+		ce.util.HtmlTools.toggleClass(this.rootElt,"alerting",v);
+	}
+	,setNewFolderDisplayed: function(v) {
+		if(!v) this.fileBrowser.set_newFolderName("");
+		ce.util.HtmlTools.toggleClass(this.rootElt,"making-new-folder",v);
+		if(v) this.fileBrowser.focusOnNewFolder();
+	}
+	,setSelecting: function(v) {
+		ce.util.HtmlTools.toggleClass(this.rootElt,"selecting",v);
+	}
+	,openAuthorizationWindow: function(url) {
+		var _g = this;
+		var authPopup = window.open(url,"authPopup","height=829,width=1035");
+		if(authPopup == null || authPopup.closed || authPopup.closed == null) this.onAuthorizationWindowBlocked(); else {
+			if($bind(authPopup,authPopup.focus) != null) authPopup.focus();
+			var timer = new haxe.Timer(500);
+			timer.run = function() {
+				console.log("authPopup= " + Std.string(authPopup) + "  authPopup.closed= " + (authPopup.closed == null?"null":"" + authPopup.closed));
+				if(authPopup.closed) {
+					timer.stop();
+					_g.onServiceAuthorizationDone();
+				}
+			};
+		}
+	}
+	,setModeState: function(v) {
+		var cms = this.currentModeState();
+		console.log("current UI mode is: " + cms);
+		if(cms != null) ce.util.HtmlTools.toggleClass(this.rootElt,cms,false);
+		if(v != null) switch(v[1]) {
+		case 0:
+			ce.util.HtmlTools.toggleClass(this.rootElt,"single-file-sel-mode",true);
+			break;
+		case 1:
+			ce.util.HtmlTools.toggleClass(this.rootElt,"single-file-exp-mode",true);
+			break;
+		}
+	}
+	,currentModeState: function() {
+		var _g = 0;
+		var _g1 = this.rootElt.className.split(" ");
+		while(_g < _g1.length) {
+			var c = _g1[_g];
+			++_g;
+			if(Lambda.has(["single-file-sel-mode","single-file-exp-mode"],c)) return c;
+		}
+		return null;
+	}
+	,currentState: function() {
+		var _g = 0;
+		var _g1 = this.rootElt.className.split(" ");
+		while(_g < _g1.length) {
+			var c = _g1[_g];
+			++_g;
+			if(Lambda.has(["starting","browsing"],c)) return c;
+		}
+		return null;
+	}
+	,cleanPreviousState: function() {
+		var cs = this.currentState();
+		console.log("current state = " + cs);
+		ce.util.HtmlTools.toggleClass(this.rootElt,"authorizing",false);
+		if(cs != null) ce.util.HtmlTools.toggleClass(this.rootElt,cs,false);
+	}
+	,initFrame: function() {
+		var _g = this;
+		this.iframe.style.display = "none";
+		this.iframe.style.position = "absolute";
+		this.iframe.style.top = this.iframe.style.left = "0";
+		this.iframe.style.width = this.iframe.style.height = "100%";
+		this.iframe.onload = function(_) {
+			_g.initElts();
+		};
+		this.iframe.src = this.config.path + "cloud-explorer.html";
+	}
+	,initElts: function() {
+		var _g = this;
+		this.rootElt = this.iframe.contentDocument.getElementById("cloud-explorer");
+		this.logoutBtn = this.rootElt.querySelector(".logoutBtn");
+		this.logoutContentTmpl = this.logoutBtn.textContent;
+		this.logoutBtn.addEventListener("click",function(_) {
+			_g.onLogoutClicked();
+		});
+		this.closeBtn = this.rootElt.querySelector(".closeBtn");
+		this.closeBtn.addEventListener("click",function(_1) {
+			_g.onCloseClicked();
+		});
+		this.breadcrumb = new ce.core.view.Breadcrumb(this.rootElt.querySelector(".breadcrumb"));
+		this.breadcrumb.onNavBtnClicked = function(srv,path) {
+			_g.onNavBtnClicked(srv,path);
+		};
+		this["export"] = new ce.core.view.Export(this.rootElt.querySelector(".export"));
+		this["export"].onSaveBtnClicked = function() {
+			_g.onSaveExportClicked();
+		};
+		this["export"].onOverwriteBtnClicked = function() {
+			_g.onOverwriteExportClicked();
+		};
+		this["export"].onExportNameChanged = function() {
+			_g.onExportNameChanged();
+		};
+		this.home = new ce.core.view.Home(this.rootElt.querySelector(".home"));
+		this.home.onServiceClicked = function(name) {
+			_g.onServiceClicked(name);
+		};
+		this.fileBrowser = new ce.core.view.FileBrowser(this.rootElt.querySelector(".fileBrowser"));
+		this.fileBrowser.onServiceClicked = function(name1) {
+			_g.onServiceClicked(name1);
+		};
+		this.fileBrowser.onFileClicked = function(id) {
+			_g.onFileClicked(id);
+		};
+		this.fileBrowser.onFileDeleteClicked = function(id1) {
+			_g.onFileDeleteClicked(id1);
+		};
+		this.fileBrowser.onFileCheckedStatusChanged = function(id2) {
+			_g.onFileCheckedStatusChanged(id2);
+		};
+		this.fileBrowser.onFileRenameRequested = function(id3,value) {
+			_g.onFileRenameRequested(id3,value);
+		};
+		this.fileBrowser.onNewFolderName = function() {
+			_g.onNewFolderName();
+		};
+		this.dropzone = new ce.core.view.DropZone(this.rootElt.querySelector(".dropzone"));
+		this.dropzone.onInputFilesChanged = function() {
+			_g.onInputFilesChanged();
+		};
+		this.authPopup = new ce.core.view.AuthPopup(this.rootElt.querySelector(".authPopup"));
+		this.alertPopup = new ce.core.view.AlertPopup(this.rootElt.querySelector(".alertPopup"));
+		var newFolderBtnElt = this.rootElt.querySelector(".newFolderBtn");
+		newFolderBtnElt.addEventListener("click",function(_2) {
+			_g.onNewFolderClicked();
+		});
+		var deleteBtnElt = this.rootElt.querySelector(".deleteBtn");
+		deleteBtnElt.addEventListener("click",function(_3) {
+			_g.onDeleteClicked();
+		});
+		this.rootElt.addEventListener("click",function(_4) {
+			_g.onClicked();
+		});
+		this.onViewReady();
+	}
+};
+ce.core.view.AuthPopup = function(elt) {
+	var _g = this;
+	this.elt = elt;
+	this.linkElt = elt.querySelector("a");
+	this.linkElt.addEventListener("click",function(_) {
+		_g.onClicked();
+	});
+	this.textElt = elt.querySelector("span");
+	this.txtTmpl = this.textElt.textContent;
+};
+ce.core.view.AuthPopup.__name__ = true;
+ce.core.view.AuthPopup.prototype = {
+	onClicked: function() {
+	}
+	,setServerName: function(srvName) {
+		this.textElt.textContent = StringTools.replace(this.txtTmpl,"{srvName}",srvName);
+	}
+};
+ce.core.view.Breadcrumb = function(elt) {
+	this.elt = elt;
+	this.pathElt = elt.querySelector("span.path");
+	this.pathItemTmpl = this.pathElt.querySelector("span.pathIt");
+	this.pathElt.removeChild(this.pathItemTmpl);
+	this.pathSepTmpl = this.pathElt.querySelector("span.sep");
+	this.pathElt.removeChild(this.pathSepTmpl);
+	this.titleElt = elt.querySelector(".title span");
+};
+ce.core.view.Breadcrumb.__name__ = true;
+ce.core.view.Breadcrumb.prototype = {
+	onNavBtnClicked: function(srv,path) {
+	}
+	,setTitle: function(v) {
+		this.titleElt.textContent = v;
+	}
+	,setBreadcrumbPath: function(srv,path) {
+		var _g = this;
+		while(this.pathElt.childNodes.length > 0) this.pathElt.removeChild(this.pathElt.firstChild);
+		var srvIt = this.pathItemTmpl.cloneNode(true);
+		srvIt.addEventListener("click",function(_) {
+			_g.onNavBtnClicked(srv,"/");
+		});
+		srvIt.textContent = srv;
+		this.pathElt.appendChild(srvIt);
+		var pathItems = [];
+		if(path.length > 0) {
+			var parr = path.split("/");
+			while(parr.length > 0) {
+				var itPath = ["/" + parr.join("/")];
+				var pit = parr.pop();
+				if(StringTools.trim(pit) != "") {
+					var nit = this.pathItemTmpl.cloneNode(true);
+					nit.addEventListener("click",(function(itPath) {
+						return function(_1) {
+							_g.onNavBtnClicked(srv,itPath[0]);
+						};
+					})(itPath));
+					nit.textContent = pit;
+					pathItems.push(nit);
+				}
+			}
+		}
+		while(pathItems.length > 0) {
+			this.pathElt.appendChild(this.pathSepTmpl.cloneNode(true));
+			this.pathElt.appendChild(pathItems.pop());
+		}
+	}
+};
+ce.core.view.DropZone = function(elt) {
+	var _g = this;
+	this.elt = elt;
+	this.inputElt = elt.querySelector("div input");
+	this.inputElt.addEventListener("change",function(_) {
+		_g.onInputFilesChanged();
+	});
+	this.btnElt = elt.querySelector("div button");
+	this.btnElt.addEventListener("click",function(_1) {
+		_g.onBtnClicked();
+	});
+};
+ce.core.view.DropZone.__name__ = true;
+ce.core.view.DropZone.prototype = {
+	onInputFilesChanged: function() {
+	}
+	,onBtnClicked: function() {
+		this.inputElt.click();
+	}
+};
+ce.core.view.Export = function(elt) {
+	var _g = this;
+	this.elt = elt;
+	this.inputElt = elt.querySelector("input");
+	this.inputElt.addEventListener("input",function(_) {
+		_g.onExportNameChanged();
+	});
+	this.pathElt = elt.querySelector("span.path");
+	this.extElt = elt.querySelector("span.ext");
+	this.saveBtnElt = elt.querySelector(".saveBtn");
+	this.saveBtnElt.addEventListener("click",function(_1) {
+		_g.onSaveBtnClicked();
+	});
+	this.overwriteBtnElt = elt.querySelector(".overwriteBtn");
+	this.overwriteBtnElt.addEventListener("click",function(_2) {
+		_g.onOverwriteBtnClicked();
+	});
+};
+ce.core.view.Export.__name__ = true;
+ce.core.view.Export.prototype = {
+	onNavBtnClicked: function(srv,path) {
+	}
+	,onSaveBtnClicked: function() {
+	}
+	,onOverwriteBtnClicked: function() {
+	}
+	,onExportNameChanged: function() {
+	}
+	,get_exportName: function() {
+		return this.inputElt.value;
+	}
+	,set_exportName: function(v) {
+		this.inputElt.value = v;
+		return v;
+	}
+	,set_ext: function(v) {
+		this.extElt.textContent = v;
+		return v;
+	}
+	,set_path: function(v) {
+		this.pathElt.textContent = v;
+		return v;
+	}
+	,__properties__: {set_path:"set_path",set_ext:"set_ext",set_exportName:"set_exportName",get_exportName:"get_exportName"}
+};
+ce.core.view.FileBrowser = function(elt) {
+	var _g = this;
+	this.elt = elt;
+	this.srvItemElts = new haxe.ds.StringMap();
+	this.srvListElt = elt.querySelector(".services ul");
+	this.srvItemTmpl = this.srvListElt.querySelector("li");
+	this.srvListElt.removeChild(this.srvItemTmpl);
+	this.fileListElt = elt.querySelector(".files ul");
+	this.fileItemTmpl = this.fileListElt.querySelector(".file");
+	this.fileListElt.removeChild(this.fileItemTmpl);
+	this.newFolderItem = this.fileListElt.querySelector(".folder.new");
+	this.newFolderInput = this.newFolderItem.querySelector("input");
+	this.newFolderInput.addEventListener("keydown",function(e) {
+		if(e.keyIdentifier != null && e.keyIdentifier.toLowerCase() == "enter" || e.key != null && e.key.toLowerCase() == "enter") _g.onNewFolderName();
+	});
+	this.newFolderInput.addEventListener("focusout",function(_) {
+		_g.onNewFolderName();
+	});
+	this.folderItemTmpl = this.fileListElt.querySelector(".folder:nth-last-child(-n+1)");
+	this.fileListElt.removeChild(this.folderItemTmpl);
+	var nameBtn = elt.querySelector(".titles .fileName");
+	nameBtn.addEventListener("click",function(_1) {
+		_g.toggleSort("name");
+	});
+	var typeBtn = elt.querySelector(".titles .fileType");
+	typeBtn.addEventListener("click",function(_2) {
+		_g.toggleSort("type");
+	});
+	var dateBtn = elt.querySelector(".titles .lastUpdate");
+	dateBtn.addEventListener("click",function(_3) {
+		_g.toggleSort("lastUpdate");
+	});
+	this.fileListItems = [];
+};
+ce.core.view.FileBrowser.__name__ = true;
+ce.core.view.FileBrowser.prototype = {
+	get_newFolderName: function() {
+		return this.newFolderInput.value;
+	}
+	,set_newFolderName: function(v) {
+		this.newFolderInput.value = v;
+		return v;
+	}
+	,onServiceClicked: function(name) {
+	}
+	,onFileSelected: function(id) {
+	}
+	,onFileClicked: function(id) {
+	}
+	,onFileDeleteClicked: function(id) {
+	}
+	,onFileCheckedStatusChanged: function(id) {
+	}
+	,onFileRenameRequested: function(id,value) {
+	}
+	,onNewFolderName: function() {
+	}
+	,removeService: function(name) {
+		this.srvListElt.removeChild(this.srvItemElts.get(name));
+	}
+	,addService: function(name,displayName) {
+		var _g = this;
+		var newItem = this.srvItemTmpl.cloneNode(true);
+		newItem.className = name;
+		newItem.textContent = displayName;
+		newItem.addEventListener("click",function(_) {
+			_g.onServiceClicked(name);
+		});
+		this.srvListElt.appendChild(newItem);
+		this.srvItemElts.set(name,newItem);
+	}
+	,resetFileList: function() {
+		while(this.fileListItems.length > 0) this.fileListElt.removeChild(this.fileListItems.pop().elt);
+	}
+	,addFolder: function(id,name,lastUpdate,selectable) {
+		if(selectable == null) selectable = true;
+		var _g = this;
+		var newItem = this.folderItemTmpl.cloneNode(true);
+		var fli = new ce.core.view.FileListItem(newItem);
+		fli.set_name(name);
+		fli.set_lastUpdate(lastUpdate);
+		fli.onClicked = function() {
+			_g.onFileClicked(id);
+		};
+		fli.onDeleteClicked = function() {
+			_g.onFileDeleteClicked(id);
+		};
+		fli.onRenameRequested = function() {
+			_g.onFileRenameRequested(id,fli.get_renameValue());
+		};
+		fli.onCheckedStatusChanged = function() {
+			_g.onFileCheckedStatusChanged(id);
+		};
+		fli.set_selectable(selectable);
+		this.fileListItems.push(fli);
+		this.fileListElt.insertBefore(newItem,this.newFolderItem);
+	}
+	,addFile: function(id,name,type,lastUpdate) {
+		var _g = this;
+		var newItem = this.fileItemTmpl.cloneNode(true);
+		var fli = new ce.core.view.FileListItem(newItem);
+		fli.set_name(name);
+		if(type != null) fli.set_type(type);
+		fli.set_lastUpdate(lastUpdate);
+		fli.onClicked = function() {
+			_g.onFileClicked(id);
+		};
+		fli.onDeleteClicked = function() {
+			_g.onFileDeleteClicked(id);
+		};
+		fli.onRenameRequested = function() {
+			_g.onFileRenameRequested(id,fli.get_renameValue());
+		};
+		fli.onCheckedStatusChanged = function() {
+			_g.onFileCheckedStatusChanged(id);
+		};
+		this.fileListItems.push(fli);
+		this.fileListElt.insertBefore(newItem,this.newFolderItem);
+	}
+	,focusOnNewFolder: function() {
+		this.newFolderInput.focus();
+	}
+	,currentSortBy: function() {
+		var _g = 0;
+		var _g1 = this.elt.className.split(" ");
+		while(_g < _g1.length) {
+			var c = _g1[_g];
+			++_g;
+			if(Lambda.has(["sortby-" + "name","sortby-" + "type","sortby-" + "lastupdate"],c)) return c;
+		}
+		return null;
+	}
+	,currentSortOrder: function() {
+		var _g = 0;
+		var _g1 = this.elt.className.split(" ");
+		while(_g < _g1.length) {
+			var c = _g1[_g];
+			++_g;
+			if(Lambda.has(["asc","desc"],c)) return c;
+		}
+		return null;
+	}
+	,toggleSort: function(by) {
+		if(by == null) by = "name";
+		var csb = this.currentSortBy();
+		var cso = this.currentSortOrder();
+		if(csb == "sortby-" + by.toLowerCase()) {
+			if(cso == "asc") {
+				ce.util.HtmlTools.toggleClass(this.elt,"asc",false);
+				ce.util.HtmlTools.toggleClass(this.elt,"desc",true);
+				this.sort(by,false);
+			} else {
+				ce.util.HtmlTools.toggleClass(this.elt,"asc",true);
+				ce.util.HtmlTools.toggleClass(this.elt,"desc",false);
+				this.sort(by,true);
+			}
+		} else {
+			if(csb != null) ce.util.HtmlTools.toggleClass(this.elt,csb,false);
+			if(cso != null) ce.util.HtmlTools.toggleClass(this.elt,cso,false);
+			ce.util.HtmlTools.toggleClass(this.elt,"sortby-" + by,true);
+			ce.util.HtmlTools.toggleClass(this.elt,"asc",true);
+			this.sort(by,true);
+		}
+	}
+	,sort: function(by,ascOrder) {
+		if(ascOrder == null) ascOrder = true;
+		if(by == null) by = "name";
+		this.fileListItems.sort(function(a,b) {
+			if(ascOrder) if(Reflect.getProperty(a,by) > Reflect.getProperty(b,by)) return 1; else return -1; else if(Reflect.getProperty(a,by) < Reflect.getProperty(b,by)) return 1; else return -1;
+		});
+		var parentFolderItem = null;
+		var _g = 0;
+		var _g1 = this.fileListItems;
+		while(_g < _g1.length) {
+			var fit = _g1[_g];
+			++_g;
+			if(fit.get_name() == "..") parentFolderItem = fit; else this.fileListElt.insertBefore(fit.elt,this.newFolderItem);
+		}
+		if(parentFolderItem != null && this.fileListItems[0] != parentFolderItem) this.fileListElt.insertBefore(parentFolderItem.elt,this.fileListItems[0].elt);
+	}
+	,__properties__: {set_newFolderName:"set_newFolderName",get_newFolderName:"get_newFolderName"}
+};
+ce.core.view.FileListItem = function(elt) {
+	var _g = this;
+	this.elt = elt;
+	this.checkBoxElt = elt.querySelector("input[type='checkbox']");
+	this.checkBoxElt.addEventListener("change",function(_) {
+		_g.onCheckedStatusChanged();
+	});
+	this.nameElt = elt.querySelector("span.fileName");
+	this.nameElt.addEventListener("click",function(_1) {
+		_g.onClicked();
+	});
+	this.renameInput = elt.querySelector("input[type='text']");
+	this.renameInput.addEventListener("keydown",function(e) {
+		if(e.keyIdentifier != null && e.keyIdentifier.toLowerCase() == "enter" || e.key != null && e.key.toLowerCase() == "enter") {
+			ce.util.HtmlTools.toggleClass(elt,"renaming",false);
+			_g.onRenameRequested();
+		}
+	});
+	this.renameInput.addEventListener("focusout",function(_2) {
+		ce.util.HtmlTools.toggleClass(elt,"renaming",false);
+		_g.onRenameRequested();
+	});
+	this.typeElt = elt.querySelector("span.fileType");
+	this.dateElt = elt.querySelector("span.lastUpdate");
+	this.renameBtn = elt.querySelector("button.rename");
+	this.renameBtn.addEventListener("click",function(_3) {
+		ce.util.HtmlTools.toggleClass(elt,"renaming",true);
+		_g.renameInput.value = _g.nameElt.textContent;
+		_g.renameInput.focus();
+	});
+	this.deleteBtn = elt.querySelector("button.delete");
+	this.deleteBtn.addEventListener("click",function(_4) {
+		_g.onDeleteClicked();
+	});
+};
+ce.core.view.FileListItem.__name__ = true;
+ce.core.view.FileListItem.prototype = {
+	get_isChecked: function() {
+		return this.checkBoxElt.checked;
+	}
+	,get_renameValue: function() {
+		return this.renameInput.value;
+	}
+	,set_renameValue: function(v) {
+		this.renameInput.value = v;
+		return v;
+	}
+	,get_name: function() {
+		return this.nameElt.textContent;
+	}
+	,set_name: function(v) {
+		this.nameElt.textContent = v;
+		return v;
+	}
+	,get_type: function() {
+		return this.typeElt.textContent;
+	}
+	,set_type: function(v) {
+		this.typeElt.textContent = v;
+		return v;
+	}
+	,get_lastUpdate: function() {
+		return this.lastUpdate;
+	}
+	,set_lastUpdate: function(v) {
+		this.lastUpdate = v;
+		if(v != null) this.dateElt.textContent = DateTools.format(this.get_lastUpdate(),"%d/%m/%Y"); else this.dateElt.innerHTML = "&nbsp;";
+		return v;
+	}
+	,get_selectable: function() {
+		return !Lambda.has(ce.util.HtmlTools.classes(this.elt),"nosel".toLowerCase());
+	}
+	,set_selectable: function(v) {
+		ce.util.HtmlTools.toggleClass(this.elt,"nosel",!v);
+		return v;
+	}
+	,onCheckedStatusChanged: function() {
+	}
+	,onDeleteClicked: function() {
+	}
+	,onRenameRequested: function() {
+	}
+	,onClicked: function() {
+	}
+	,__properties__: {set_selectable:"set_selectable",get_selectable:"get_selectable",set_lastUpdate:"set_lastUpdate",get_lastUpdate:"get_lastUpdate",set_type:"set_type",get_type:"get_type",set_renameValue:"set_renameValue",get_renameValue:"get_renameValue",set_name:"set_name",get_name:"get_name",get_isChecked:"get_isChecked"}
+};
+ce.core.view.Home = function(elt) {
+	this.elt = elt;
+	this.listElt = elt.querySelector("ul");
+	this.srvItemTmpl = elt.querySelector("li");
+	this.listElt.removeChild(this.srvItemTmpl);
+};
+ce.core.view.Home.__name__ = true;
+ce.core.view.Home.prototype = {
+	onServiceClicked: function(name) {
+	}
+	,resetList: function() {
+		while(this.listElt.childNodes.length > 0) this.listElt.removeChild(this.listElt.firstChild);
+	}
+	,addService: function(name,displayName,description) {
+		var _g = this;
+		var newSrvIt = this.srvItemTmpl.cloneNode(true);
+		newSrvIt.textContent = displayName;
+		newSrvIt.className = name;
+		newSrvIt.addEventListener("click",function(_) {
+			_g.onServiceClicked(name);
+		});
+		this.listElt.appendChild(newSrvIt);
+	}
+};
+ce.util = {};
+ce.util.FileTools = function() { };
+ce.util.FileTools.__name__ = true;
+ce.util.FileTools.mimeTypeByExt = function() {
+	var _g = new haxe.ds.StringMap();
+	_g.set(".323","text/h323");
+	_g.set(".3g2","video/3gpp2");
+	_g.set(".3gp","video/3gpp");
+	_g.set(".3gp2","video/3gpp2");
+	_g.set(".3gpp","video/3gpp");
+	_g.set(".7z","application/x-7z-compressed");
+	_g.set(".aa","audio/audible");
+	_g.set(".AAC","audio/aac");
+	_g.set(".aaf","application/octet-stream");
+	_g.set(".aax","audio/vnd.audible.aax");
+	_g.set(".ac3","audio/ac3");
+	_g.set(".aca","application/octet-stream");
+	_g.set(".accda","application/msaccess.addin");
+	_g.set(".accdb","application/msaccess");
+	_g.set(".accdc","application/msaccess.cab");
+	_g.set(".accde","application/msaccess");
+	_g.set(".accdr","application/msaccess.runtime");
+	_g.set(".accdt","application/msaccess");
+	_g.set(".accdw","application/msaccess.webapplication");
+	_g.set(".accft","application/msaccess.ftemplate");
+	_g.set(".acx","application/internet-property-stream");
+	_g.set(".AddIn","text/xml");
+	_g.set(".ade","application/msaccess");
+	_g.set(".adobebridge","application/x-bridge-url");
+	_g.set(".adp","application/msaccess");
+	_g.set(".ADT","audio/vnd.dlna.adts");
+	_g.set(".ADTS","audio/aac");
+	_g.set(".afm","application/octet-stream");
+	_g.set(".ai","application/postscript");
+	_g.set(".aif","audio/x-aiff");
+	_g.set(".aifc","audio/aiff");
+	_g.set(".aiff","audio/aiff");
+	_g.set(".air","application/vnd.adobe.air-application-installer-package+zip");
+	_g.set(".amc","application/x-mpeg");
+	_g.set(".application","application/x-ms-application");
+	_g.set(".art","image/x-jg");
+	_g.set(".asa","application/xml");
+	_g.set(".asax","application/xml");
+	_g.set(".ascx","application/xml");
+	_g.set(".asd","application/octet-stream");
+	_g.set(".asf","video/x-ms-asf");
+	_g.set(".ashx","application/xml");
+	_g.set(".asi","application/octet-stream");
+	_g.set(".asm","text/plain");
+	_g.set(".asmx","application/xml");
+	_g.set(".aspx","application/xml");
+	_g.set(".asr","video/x-ms-asf");
+	_g.set(".asx","video/x-ms-asf");
+	_g.set(".atom","application/atom+xml");
+	_g.set(".au","audio/basic");
+	_g.set(".avi","video/x-msvideo");
+	_g.set(".axs","application/olescript");
+	_g.set(".bas","text/plain");
+	_g.set(".bcpio","application/x-bcpio");
+	_g.set(".bin","application/octet-stream");
+	_g.set(".bmp","image/bmp");
+	_g.set(".c","text/plain");
+	_g.set(".cab","application/octet-stream");
+	_g.set(".caf","audio/x-caf");
+	_g.set(".calx","application/vnd.ms-office.calx");
+	_g.set(".cat","application/vnd.ms-pki.seccat");
+	_g.set(".cc","text/plain");
+	_g.set(".cd","text/plain");
+	_g.set(".cdda","audio/aiff");
+	_g.set(".cdf","application/x-cdf");
+	_g.set(".cer","application/x-x509-ca-cert");
+	_g.set(".chm","application/octet-stream");
+	_g.set(".class","application/x-java-applet");
+	_g.set(".clp","application/x-msclip");
+	_g.set(".cmx","image/x-cmx");
+	_g.set(".cnf","text/plain");
+	_g.set(".cod","image/cis-cod");
+	_g.set(".config","application/xml");
+	_g.set(".contact","text/x-ms-contact");
+	_g.set(".coverage","application/xml");
+	_g.set(".cpio","application/x-cpio");
+	_g.set(".cpp","text/plain");
+	_g.set(".crd","application/x-mscardfile");
+	_g.set(".crl","application/pkix-crl");
+	_g.set(".crt","application/x-x509-ca-cert");
+	_g.set(".cs","text/plain");
+	_g.set(".csdproj","text/plain");
+	_g.set(".csh","application/x-csh");
+	_g.set(".csproj","text/plain");
+	_g.set(".css","text/css");
+	_g.set(".csv","text/csv");
+	_g.set(".cur","application/octet-stream");
+	_g.set(".cxx","text/plain");
+	_g.set(".dat","application/octet-stream");
+	_g.set(".datasource","application/xml");
+	_g.set(".dbproj","text/plain");
+	_g.set(".dcr","application/x-director");
+	_g.set(".def","text/plain");
+	_g.set(".deploy","application/octet-stream");
+	_g.set(".der","application/x-x509-ca-cert");
+	_g.set(".dgml","application/xml");
+	_g.set(".dib","image/bmp");
+	_g.set(".dif","video/x-dv");
+	_g.set(".dir","application/x-director");
+	_g.set(".disco","text/xml");
+	_g.set(".dll","application/x-msdownload");
+	_g.set(".dll.config","text/xml");
+	_g.set(".dlm","text/dlm");
+	_g.set(".doc","application/msword");
+	_g.set(".docm","application/vnd.ms-word.document.macroEnabled.12");
+	_g.set(".docx","application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+	_g.set(".dot","application/msword");
+	_g.set(".dotm","application/vnd.ms-word.template.macroEnabled.12");
+	_g.set(".dotx","application/vnd.openxmlformats-officedocument.wordprocessingml.template");
+	_g.set(".dsp","application/octet-stream");
+	_g.set(".dsw","text/plain");
+	_g.set(".dtd","text/xml");
+	_g.set(".dtsConfig","text/xml");
+	_g.set(".dv","video/x-dv");
+	_g.set(".dvi","application/x-dvi");
+	_g.set(".dwf","drawing/x-dwf");
+	_g.set(".dwp","application/octet-stream");
+	_g.set(".dxr","application/x-director");
+	_g.set(".eml","message/rfc822");
+	_g.set(".emz","application/octet-stream");
+	_g.set(".eot","application/octet-stream");
+	_g.set(".eps","application/postscript");
+	_g.set(".etl","application/etl");
+	_g.set(".etx","text/x-setext");
+	_g.set(".evy","application/envoy");
+	_g.set(".exe","application/octet-stream");
+	_g.set(".exe.config","text/xml");
+	_g.set(".fdf","application/vnd.fdf");
+	_g.set(".fif","application/fractals");
+	_g.set(".filters","Application/xml");
+	_g.set(".fla","application/octet-stream");
+	_g.set(".flr","x-world/x-vrml");
+	_g.set(".flv","video/x-flv");
+	_g.set(".fsscript","application/fsharp-script");
+	_g.set(".fsx","application/fsharp-script");
+	_g.set(".generictest","application/xml");
+	_g.set(".gif","image/gif");
+	_g.set(".group","text/x-ms-group");
+	_g.set(".gsm","audio/x-gsm");
+	_g.set(".gtar","application/x-gtar");
+	_g.set(".gz","application/x-gzip");
+	_g.set(".h","text/plain");
+	_g.set(".hdf","application/x-hdf");
+	_g.set(".hdml","text/x-hdml");
+	_g.set(".hhc","application/x-oleobject");
+	_g.set(".hhk","application/octet-stream");
+	_g.set(".hhp","application/octet-stream");
+	_g.set(".hlp","application/winhlp");
+	_g.set(".hpp","text/plain");
+	_g.set(".hqx","application/mac-binhex40");
+	_g.set(".hta","application/hta");
+	_g.set(".htc","text/x-component");
+	_g.set(".htm","text/html");
+	_g.set(".html","text/html");
+	_g.set(".htt","text/webviewhtml");
+	_g.set(".hxa","application/xml");
+	_g.set(".hxc","application/xml");
+	_g.set(".hxd","application/octet-stream");
+	_g.set(".hxe","application/xml");
+	_g.set(".hxf","application/xml");
+	_g.set(".hxh","application/octet-stream");
+	_g.set(".hxi","application/octet-stream");
+	_g.set(".hxk","application/xml");
+	_g.set(".hxq","application/octet-stream");
+	_g.set(".hxr","application/octet-stream");
+	_g.set(".hxs","application/octet-stream");
+	_g.set(".hxt","text/html");
+	_g.set(".hxv","application/xml");
+	_g.set(".hxw","application/octet-stream");
+	_g.set(".hxx","text/plain");
+	_g.set(".i","text/plain");
+	_g.set(".ico","image/x-icon");
+	_g.set(".ics","application/octet-stream");
+	_g.set(".idl","text/plain");
+	_g.set(".ief","image/ief");
+	_g.set(".iii","application/x-iphone");
+	_g.set(".inc","text/plain");
+	_g.set(".inf","application/octet-stream");
+	_g.set(".inl","text/plain");
+	_g.set(".ins","application/x-internet-signup");
+	_g.set(".ipa","application/x-itunes-ipa");
+	_g.set(".ipg","application/x-itunes-ipg");
+	_g.set(".ipproj","text/plain");
+	_g.set(".ipsw","application/x-itunes-ipsw");
+	_g.set(".iqy","text/x-ms-iqy");
+	_g.set(".isp","application/x-internet-signup");
+	_g.set(".ite","application/x-itunes-ite");
+	_g.set(".itlp","application/x-itunes-itlp");
+	_g.set(".itms","application/x-itunes-itms");
+	_g.set(".itpc","application/x-itunes-itpc");
+	_g.set(".IVF","video/x-ivf");
+	_g.set(".jar","application/java-archive");
+	_g.set(".java","application/octet-stream");
+	_g.set(".jck","application/liquidmotion");
+	_g.set(".jcz","application/liquidmotion");
+	_g.set(".jfif","image/pjpeg");
+	_g.set(".jnlp","application/x-java-jnlp-file");
+	_g.set(".jpb","application/octet-stream");
+	_g.set(".jpe","image/jpeg");
+	_g.set(".jpeg","image/jpeg");
+	_g.set(".jpg","image/jpeg");
+	_g.set(".js","application/x-javascript");
+	_g.set(".jsx","text/jscript");
+	_g.set(".jsxbin","text/plain");
+	_g.set(".latex","application/x-latex");
+	_g.set(".library-ms","application/windows-library+xml");
+	_g.set(".lit","application/x-ms-reader");
+	_g.set(".loadtest","application/xml");
+	_g.set(".lpk","application/octet-stream");
+	_g.set(".lsf","video/x-la-asf");
+	_g.set(".lst","text/plain");
+	_g.set(".lsx","video/x-la-asf");
+	_g.set(".lzh","application/octet-stream");
+	_g.set(".m13","application/x-msmediaview");
+	_g.set(".m14","application/x-msmediaview");
+	_g.set(".m1v","video/mpeg");
+	_g.set(".m2t","video/vnd.dlna.mpeg-tts");
+	_g.set(".m2ts","video/vnd.dlna.mpeg-tts");
+	_g.set(".m2v","video/mpeg");
+	_g.set(".m3u","audio/x-mpegurl");
+	_g.set(".m3u8","audio/x-mpegurl");
+	_g.set(".m4a","audio/m4a");
+	_g.set(".m4b","audio/m4b");
+	_g.set(".m4p","audio/m4p");
+	_g.set(".m4r","audio/x-m4r");
+	_g.set(".m4v","video/x-m4v");
+	_g.set(".mac","image/x-macpaint");
+	_g.set(".mak","text/plain");
+	_g.set(".man","application/x-troff-man");
+	_g.set(".manifest","application/x-ms-manifest");
+	_g.set(".map","text/plain");
+	_g.set(".master","application/xml");
+	_g.set(".mda","application/msaccess");
+	_g.set(".mdb","application/x-msaccess");
+	_g.set(".mde","application/msaccess");
+	_g.set(".mdp","application/octet-stream");
+	_g.set(".me","application/x-troff-me");
+	_g.set(".mfp","application/x-shockwave-flash");
+	_g.set(".mht","message/rfc822");
+	_g.set(".mhtml","message/rfc822");
+	_g.set(".mid","audio/mid");
+	_g.set(".midi","audio/mid");
+	_g.set(".mix","application/octet-stream");
+	_g.set(".mk","text/plain");
+	_g.set(".mmf","application/x-smaf");
+	_g.set(".mno","text/xml");
+	_g.set(".mny","application/x-msmoney");
+	_g.set(".mod","video/mpeg");
+	_g.set(".mov","video/quicktime");
+	_g.set(".movie","video/x-sgi-movie");
+	_g.set(".mp2","video/mpeg");
+	_g.set(".mp2v","video/mpeg");
+	_g.set(".mp3","audio/mpeg");
+	_g.set(".mp4","video/mp4");
+	_g.set(".mp4v","video/mp4");
+	_g.set(".mpa","video/mpeg");
+	_g.set(".mpe","video/mpeg");
+	_g.set(".mpeg","video/mpeg");
+	_g.set(".mpf","application/vnd.ms-mediapackage");
+	_g.set(".mpg","video/mpeg");
+	_g.set(".mpp","application/vnd.ms-project");
+	_g.set(".mpv2","video/mpeg");
+	_g.set(".mqv","video/quicktime");
+	_g.set(".ms","application/x-troff-ms");
+	_g.set(".msi","application/octet-stream");
+	_g.set(".mso","application/octet-stream");
+	_g.set(".mts","video/vnd.dlna.mpeg-tts");
+	_g.set(".mtx","application/xml");
+	_g.set(".mvb","application/x-msmediaview");
+	_g.set(".mvc","application/x-miva-compiled");
+	_g.set(".mxp","application/x-mmxp");
+	_g.set(".nc","application/x-netcdf");
+	_g.set(".nsc","video/x-ms-asf");
+	_g.set(".nws","message/rfc822");
+	_g.set(".ocx","application/octet-stream");
+	_g.set(".oda","application/oda");
+	_g.set(".odc","text/x-ms-odc");
+	_g.set(".odh","text/plain");
+	_g.set(".odl","text/plain");
+	_g.set(".odp","application/vnd.oasis.opendocument.presentation");
+	_g.set(".ods","application/oleobject");
+	_g.set(".odt","application/vnd.oasis.opendocument.text");
+	_g.set(".one","application/onenote");
+	_g.set(".onea","application/onenote");
+	_g.set(".onepkg","application/onenote");
+	_g.set(".onetmp","application/onenote");
+	_g.set(".onetoc","application/onenote");
+	_g.set(".onetoc2","application/onenote");
+	_g.set(".orderedtest","application/xml");
+	_g.set(".osdx","application/opensearchdescription+xml");
+	_g.set(".p10","application/pkcs10");
+	_g.set(".p12","application/x-pkcs12");
+	_g.set(".p7b","application/x-pkcs7-certificates");
+	_g.set(".p7c","application/pkcs7-mime");
+	_g.set(".p7m","application/pkcs7-mime");
+	_g.set(".p7r","application/x-pkcs7-certreqresp");
+	_g.set(".p7s","application/pkcs7-signature");
+	_g.set(".pbm","image/x-portable-bitmap");
+	_g.set(".pcast","application/x-podcast");
+	_g.set(".pct","image/pict");
+	_g.set(".pcx","application/octet-stream");
+	_g.set(".pcz","application/octet-stream");
+	_g.set(".pdf","application/pdf");
+	_g.set(".pfb","application/octet-stream");
+	_g.set(".pfm","application/octet-stream");
+	_g.set(".pfx","application/x-pkcs12");
+	_g.set(".pgm","image/x-portable-graymap");
+	_g.set(".pic","image/pict");
+	_g.set(".pict","image/pict");
+	_g.set(".pkgdef","text/plain");
+	_g.set(".pkgundef","text/plain");
+	_g.set(".pko","application/vnd.ms-pki.pko");
+	_g.set(".pls","audio/scpls");
+	_g.set(".pma","application/x-perfmon");
+	_g.set(".pmc","application/x-perfmon");
+	_g.set(".pml","application/x-perfmon");
+	_g.set(".pmr","application/x-perfmon");
+	_g.set(".pmw","application/x-perfmon");
+	_g.set(".png","image/png");
+	_g.set(".pnm","image/x-portable-anymap");
+	_g.set(".pnt","image/x-macpaint");
+	_g.set(".pntg","image/x-macpaint");
+	_g.set(".pnz","image/png");
+	_g.set(".pot","application/vnd.ms-powerpoint");
+	_g.set(".potm","application/vnd.ms-powerpoint.template.macroEnabled.12");
+	_g.set(".potx","application/vnd.openxmlformats-officedocument.presentationml.template");
+	_g.set(".ppa","application/vnd.ms-powerpoint");
+	_g.set(".ppam","application/vnd.ms-powerpoint.addin.macroEnabled.12");
+	_g.set(".ppm","image/x-portable-pixmap");
+	_g.set(".pps","application/vnd.ms-powerpoint");
+	_g.set(".ppsm","application/vnd.ms-powerpoint.slideshow.macroEnabled.12");
+	_g.set(".ppsx","application/vnd.openxmlformats-officedocument.presentationml.slideshow");
+	_g.set(".ppt","application/vnd.ms-powerpoint");
+	_g.set(".pptm","application/vnd.ms-powerpoint.presentation.macroEnabled.12");
+	_g.set(".pptx","application/vnd.openxmlformats-officedocument.presentationml.presentation");
+	_g.set(".prf","application/pics-rules");
+	_g.set(".prm","application/octet-stream");
+	_g.set(".prx","application/octet-stream");
+	_g.set(".ps","application/postscript");
+	_g.set(".psc1","application/PowerShell");
+	_g.set(".psd","application/octet-stream");
+	_g.set(".psess","application/xml");
+	_g.set(".psm","application/octet-stream");
+	_g.set(".psp","application/octet-stream");
+	_g.set(".pub","application/x-mspublisher");
+	_g.set(".pwz","application/vnd.ms-powerpoint");
+	_g.set(".qht","text/x-html-insertion");
+	_g.set(".qhtm","text/x-html-insertion");
+	_g.set(".qt","video/quicktime");
+	_g.set(".qti","image/x-quicktime");
+	_g.set(".qtif","image/x-quicktime");
+	_g.set(".qtl","application/x-quicktimeplayer");
+	_g.set(".qxd","application/octet-stream");
+	_g.set(".ra","audio/x-pn-realaudio");
+	_g.set(".ram","audio/x-pn-realaudio");
+	_g.set(".rar","application/octet-stream");
+	_g.set(".ras","image/x-cmu-raster");
+	_g.set(".rat","application/rat-file");
+	_g.set(".rc","text/plain");
+	_g.set(".rc2","text/plain");
+	_g.set(".rct","text/plain");
+	_g.set(".rdlc","application/xml");
+	_g.set(".resx","application/xml");
+	_g.set(".rf","image/vnd.rn-realflash");
+	_g.set(".rgb","image/x-rgb");
+	_g.set(".rgs","text/plain");
+	_g.set(".rm","application/vnd.rn-realmedia");
+	_g.set(".rmi","audio/mid");
+	_g.set(".rmp","application/vnd.rn-rn_music_package");
+	_g.set(".roff","application/x-troff");
+	_g.set(".rpm","audio/x-pn-realaudio-plugin");
+	_g.set(".rqy","text/x-ms-rqy");
+	_g.set(".rtf","application/rtf");
+	_g.set(".rtx","text/richtext");
+	_g.set(".ruleset","application/xml");
+	_g.set(".s","text/plain");
+	_g.set(".safariextz","application/x-safari-safariextz");
+	_g.set(".scd","application/x-msschedule");
+	_g.set(".sct","text/scriptlet");
+	_g.set(".sd2","audio/x-sd2");
+	_g.set(".sdp","application/sdp");
+	_g.set(".sea","application/octet-stream");
+	_g.set(".searchConnector-ms","application/windows-search-connector+xml");
+	_g.set(".setpay","application/set-payment-initiation");
+	_g.set(".setreg","application/set-registration-initiation");
+	_g.set(".settings","application/xml");
+	_g.set(".sgimb","application/x-sgimb");
+	_g.set(".sgml","text/sgml");
+	_g.set(".sh","application/x-sh");
+	_g.set(".shar","application/x-shar");
+	_g.set(".shtml","text/html");
+	_g.set(".sit","application/x-stuffit");
+	_g.set(".sitemap","application/xml");
+	_g.set(".skin","application/xml");
+	_g.set(".sldm","application/vnd.ms-powerpoint.slide.macroEnabled.12");
+	_g.set(".sldx","application/vnd.openxmlformats-officedocument.presentationml.slide");
+	_g.set(".slk","application/vnd.ms-excel");
+	_g.set(".sln","text/plain");
+	_g.set(".slupkg-ms","application/x-ms-license");
+	_g.set(".smd","audio/x-smd");
+	_g.set(".smi","application/octet-stream");
+	_g.set(".smx","audio/x-smd");
+	_g.set(".smz","audio/x-smd");
+	_g.set(".snd","audio/basic");
+	_g.set(".snippet","application/xml");
+	_g.set(".snp","application/octet-stream");
+	_g.set(".sol","text/plain");
+	_g.set(".sor","text/plain");
+	_g.set(".spc","application/x-pkcs7-certificates");
+	_g.set(".spl","application/futuresplash");
+	_g.set(".src","application/x-wais-source");
+	_g.set(".srf","text/plain");
+	_g.set(".SSISDeploymentManifest","text/xml");
+	_g.set(".ssm","application/streamingmedia");
+	_g.set(".sst","application/vnd.ms-pki.certstore");
+	_g.set(".stl","application/vnd.ms-pki.stl");
+	_g.set(".sv4cpio","application/x-sv4cpio");
+	_g.set(".sv4crc","application/x-sv4crc");
+	_g.set(".svc","application/xml");
+	_g.set(".swf","application/x-shockwave-flash");
+	_g.set(".t","application/x-troff");
+	_g.set(".tar","application/x-tar");
+	_g.set(".tcl","application/x-tcl");
+	_g.set(".testrunconfig","application/xml");
+	_g.set(".testsettings","application/xml");
+	_g.set(".tex","application/x-tex");
+	_g.set(".texi","application/x-texinfo");
+	_g.set(".texinfo","application/x-texinfo");
+	_g.set(".tgz","application/x-compressed");
+	_g.set(".thmx","application/vnd.ms-officetheme");
+	_g.set(".thn","application/octet-stream");
+	_g.set(".tif","image/tiff");
+	_g.set(".tiff","image/tiff");
+	_g.set(".tlh","text/plain");
+	_g.set(".tli","text/plain");
+	_g.set(".toc","application/octet-stream");
+	_g.set(".tr","application/x-troff");
+	_g.set(".trm","application/x-msterminal");
+	_g.set(".trx","application/xml");
+	_g.set(".ts","video/vnd.dlna.mpeg-tts");
+	_g.set(".tsv","text/tab-separated-values");
+	_g.set(".ttf","application/octet-stream");
+	_g.set(".tts","video/vnd.dlna.mpeg-tts");
+	_g.set(".txt","text/plain");
+	_g.set(".u32","application/octet-stream");
+	_g.set(".uls","text/iuls");
+	_g.set(".user","text/plain");
+	_g.set(".ustar","application/x-ustar");
+	_g.set(".vb","text/plain");
+	_g.set(".vbdproj","text/plain");
+	_g.set(".vbk","video/mpeg");
+	_g.set(".vbproj","text/plain");
+	_g.set(".vbs","text/vbscript");
+	_g.set(".vcf","text/x-vcard");
+	_g.set(".vcproj","Application/xml");
+	_g.set(".vcs","text/plain");
+	_g.set(".vcxproj","Application/xml");
+	_g.set(".vddproj","text/plain");
+	_g.set(".vdp","text/plain");
+	_g.set(".vdproj","text/plain");
+	_g.set(".vdx","application/vnd.ms-visio.viewer");
+	_g.set(".vml","text/xml");
+	_g.set(".vscontent","application/xml");
+	_g.set(".vsct","text/xml");
+	_g.set(".vsd","application/vnd.visio");
+	_g.set(".vsi","application/ms-vsi");
+	_g.set(".vsix","application/vsix");
+	_g.set(".vsixlangpack","text/xml");
+	_g.set(".vsixmanifest","text/xml");
+	_g.set(".vsmdi","application/xml");
+	_g.set(".vspscc","text/plain");
+	_g.set(".vss","application/vnd.visio");
+	_g.set(".vsscc","text/plain");
+	_g.set(".vssettings","text/xml");
+	_g.set(".vssscc","text/plain");
+	_g.set(".vst","application/vnd.visio");
+	_g.set(".vstemplate","text/xml");
+	_g.set(".vsto","application/x-ms-vsto");
+	_g.set(".vsw","application/vnd.visio");
+	_g.set(".vsx","application/vnd.visio");
+	_g.set(".vtx","application/vnd.visio");
+	_g.set(".wav","audio/wav");
+	_g.set(".wave","audio/wav");
+	_g.set(".wax","audio/x-ms-wax");
+	_g.set(".wbk","application/msword");
+	_g.set(".wbmp","image/vnd.wap.wbmp");
+	_g.set(".wcm","application/vnd.ms-works");
+	_g.set(".wdb","application/vnd.ms-works");
+	_g.set(".wdp","image/vnd.ms-photo");
+	_g.set(".webarchive","application/x-safari-webarchive");
+	_g.set(".webtest","application/xml");
+	_g.set(".wiq","application/xml");
+	_g.set(".wiz","application/msword");
+	_g.set(".wks","application/vnd.ms-works");
+	_g.set(".WLMP","application/wlmoviemaker");
+	_g.set(".wlpginstall","application/x-wlpg-detect");
+	_g.set(".wlpginstall3","application/x-wlpg3-detect");
+	_g.set(".wm","video/x-ms-wm");
+	_g.set(".wma","audio/x-ms-wma");
+	_g.set(".wmd","application/x-ms-wmd");
+	_g.set(".wmf","application/x-msmetafile");
+	_g.set(".wml","text/vnd.wap.wml");
+	_g.set(".wmlc","application/vnd.wap.wmlc");
+	_g.set(".wmls","text/vnd.wap.wmlscript");
+	_g.set(".wmlsc","application/vnd.wap.wmlscriptc");
+	_g.set(".wmp","video/x-ms-wmp");
+	_g.set(".wmv","video/x-ms-wmv");
+	_g.set(".wmx","video/x-ms-wmx");
+	_g.set(".wmz","application/x-ms-wmz");
+	_g.set(".wpl","application/vnd.ms-wpl");
+	_g.set(".wps","application/vnd.ms-works");
+	_g.set(".wri","application/x-mswrite");
+	_g.set(".wrl","x-world/x-vrml");
+	_g.set(".wrz","x-world/x-vrml");
+	_g.set(".wsc","text/scriptlet");
+	_g.set(".wsdl","text/xml");
+	_g.set(".wvx","video/x-ms-wvx");
+	_g.set(".x","application/directx");
+	_g.set(".xaf","x-world/x-vrml");
+	_g.set(".xaml","application/xaml+xml");
+	_g.set(".xap","application/x-silverlight-app");
+	_g.set(".xbap","application/x-ms-xbap");
+	_g.set(".xbm","image/x-xbitmap");
+	_g.set(".xdr","text/plain");
+	_g.set(".xht","application/xhtml+xml");
+	_g.set(".xhtml","application/xhtml+xml");
+	_g.set(".xla","application/vnd.ms-excel");
+	_g.set(".xlam","application/vnd.ms-excel.addin.macroEnabled.12");
+	_g.set(".xlc","application/vnd.ms-excel");
+	_g.set(".xld","application/vnd.ms-excel");
+	_g.set(".xlk","application/vnd.ms-excel");
+	_g.set(".xll","application/vnd.ms-excel");
+	_g.set(".xlm","application/vnd.ms-excel");
+	_g.set(".xls","application/vnd.ms-excel");
+	_g.set(".xlsb","application/vnd.ms-excel.sheet.binary.macroEnabled.12");
+	_g.set(".xlsm","application/vnd.ms-excel.sheet.macroEnabled.12");
+	_g.set(".xlsx","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+	_g.set(".xlt","application/vnd.ms-excel");
+	_g.set(".xltm","application/vnd.ms-excel.template.macroEnabled.12");
+	_g.set(".xltx","application/vnd.openxmlformats-officedocument.spreadsheetml.template");
+	_g.set(".xlw","application/vnd.ms-excel");
+	_g.set(".xml","text/xml");
+	_g.set(".xmta","application/xml");
+	_g.set(".xof","x-world/x-vrml");
+	_g.set(".XOML","text/plain");
+	_g.set(".xpm","image/x-xpixmap");
+	_g.set(".xps","application/vnd.ms-xpsdocument");
+	_g.set(".xrm-ms","text/xml");
+	_g.set(".xsc","application/xml");
+	_g.set(".xsd","text/xml");
+	_g.set(".xsf","text/xml");
+	_g.set(".xsl","text/xml");
+	_g.set(".xslt","text/xml");
+	_g.set(".xsn","application/octet-stream");
+	_g.set(".xss","application/xml");
+	_g.set(".xtp","application/octet-stream");
+	_g.set(".xwd","image/x-xwindowdump");
+	_g.set(".z","application/x-compress");
+	_g.set(".zip","application/x-zip-compressed");
+	return _g;
+};
+ce.util.FileTools.getMimeType = function(filename) {
+	var se = filename.lastIndexOf(".");
+	if(se == -1) return null; else return ce.util.FileTools.mimeTypeByExt().get(HxOverrides.substr(filename,se,null));
+};
+ce.util.FileTools.getExtension = function(mimetype) {
+	var mtc = ce.util.FileTools.mimeTypeByExt();
+	var $it0 = mtc.keys();
+	while( $it0.hasNext() ) {
+		var ext = $it0.next();
+		if(mtc.get(ext) == mimetype.toLowerCase()) return ext;
+	}
+	return null;
+};
+ce.util.HtmlTools = function() { };
+ce.util.HtmlTools.__name__ = true;
+ce.util.HtmlTools.classes = function(el,cl) {
+	if(cl != null) el.className = cl.join(" ");
+	return el.className.split(" ").filter(function(s) {
+		return s != "";
+	}).map(function(s1) {
+		return s1.toLowerCase();
+	});
+};
+ce.util.HtmlTools.toggleClass = function(el,cl,flag) {
+	if(flag) ce.util.HtmlTools.addClass(el,cl); else ce.util.HtmlTools.removeClass(el,cl);
+	return el;
+};
+ce.util.HtmlTools.hasClass = function(el,cl) {
+	return Lambda.has(ce.util.HtmlTools.classes(el),cl.toLowerCase());
+};
+ce.util.HtmlTools.addClass = function(el,cl) {
+	var cls = ce.util.HtmlTools.classes(el);
+	var changed = false;
+	var _g = 0;
+	var _g1 = cl.split(" ");
+	while(_g < _g1.length) {
+		var c = _g1[_g];
+		++_g;
+		if(!Lambda.has(cls,c.toLowerCase())) {
+			cls.push(c.toLowerCase());
+			changed = true;
+		}
+	}
+	if(changed) ce.util.HtmlTools.classes(el,cls);
+	return el;
+};
+ce.util.HtmlTools.removeClass = function(el,cl) {
+	var cls = ce.util.HtmlTools.classes(el);
+	var changed = false;
+	var _g = 0;
+	var _g1 = cl.split(" ");
+	while(_g < _g1.length) {
+		var c = _g1[_g];
+		++_g;
+		if((function($this) {
+			var $r;
+			var x = c.toLowerCase();
+			$r = HxOverrides.remove(cls,x);
+			return $r;
+		}(this))) changed = true;
+	}
+	if(changed) ce.util.HtmlTools.classes(el,cls);
+	return el;
+};
+ce.util.HtmlTools.offset = function(el) {
+	var pos = { x : el.offsetLeft, y : el.offsetTop};
+	var parent = ce.util.HtmlTools.parentElement(el);
+	while(parent != null) {
+		pos.x += parent.offsetLeft;
+		pos.y += parent.offsetTop;
+		parent = ce.util.HtmlTools.parentElement(parent);
+	}
+	return pos;
+};
+ce.util.HtmlTools.parentElement = function(el) {
+	var parent = el.parentNode;
+	if(parent != null && parent.nodeType == 1) return parent;
+	return null;
+};
+ce.util.HtmlTools.vendorPrefixCall = function(el,field,args) {
+	if(args == null) args = [];
+	var _g = 0;
+	var _g1 = ce.util.HtmlTools.vendorPrefix(field);
+	while(_g < _g1.length) {
+		var prefixed = _g1[_g];
+		++_g;
+		var v = Reflect.field(el,prefixed);
+		if(typeof v != "undefined") return v.apply(el,args);
+	}
+	return null;
+};
+ce.util.HtmlTools.vendorPrefix = function(field,capitalize) {
+	if(capitalize == null) capitalize = true;
+	var prefixes = ["","webkit","moz","ms","o"];
+	var fields = [field];
+	if(field == "fullScreen") fields.push("isFullScreen");
+	var prefixed = [];
+	var _g = 0;
+	while(_g < prefixes.length) {
+		var p = prefixes[_g];
+		++_g;
+		var _g1 = 0;
+		while(_g1 < fields.length) {
+			var f = fields[_g1];
+			++_g1;
+			prefixed.push(p + (capitalize?HxOverrides.substr(f,0,1).toUpperCase() + HxOverrides.substr(f,1,null):f));
+		}
+	}
+	return prefixed;
+};
+ce.util.HtmlTools.vendorPrefixProperty = function(el,field) {
+	var _g = 0;
+	var _g1 = ce.util.HtmlTools.vendorPrefix(field);
+	while(_g < _g1.length) {
+		var prefixed = _g1[_g];
+		++_g;
+		var v = Reflect.field(el,prefixed);
+		if(typeof v != "undefined") return v;
+	}
+	return null;
+};
+ce.util.HtmlTools.addEvent = function(el,event,callback) {
+	ce.util.HtmlTools.addEvents(el,event.split(" "),callback);
+};
+ce.util.HtmlTools.addEvents = function(el,events,callback) {
+	var _g = 0;
+	while(_g < events.length) {
+		var e = events[_g];
+		++_g;
+		el.addEventListener(e,callback);
+	}
+};
+var haxe = {};
+haxe.Http = function(url) {
+	this.url = url;
+	this.headers = new List();
+	this.params = new List();
+	this.async = true;
+};
+haxe.Http.__name__ = true;
+haxe.Http.prototype = {
+	request: function(post) {
+		var me = this;
+		me.responseData = null;
+		var r = this.req = js.Browser.createXMLHttpRequest();
+		var onreadystatechange = function(_) {
+			if(r.readyState != 4) return;
+			var s;
+			try {
+				s = r.status;
+			} catch( e ) {
+				s = null;
+			}
+			if(s == undefined) s = null;
+			if(s != null) me.onStatus(s);
+			if(s != null && s >= 200 && s < 400) {
+				me.req = null;
+				me.onData(me.responseData = r.responseText);
+			} else if(s == null) {
+				me.req = null;
+				me.onError("Failed to connect or resolve host");
+			} else switch(s) {
+			case 12029:
+				me.req = null;
+				me.onError("Failed to connect to host");
+				break;
+			case 12007:
+				me.req = null;
+				me.onError("Unknown host");
+				break;
+			default:
+				me.req = null;
+				me.responseData = r.responseText;
+				me.onError("Http Error #" + r.status);
+			}
+		};
+		if(this.async) r.onreadystatechange = onreadystatechange;
+		var uri = this.postData;
+		if(uri != null) post = true; else {
+			var $it0 = this.params.iterator();
+			while( $it0.hasNext() ) {
+				var p = $it0.next();
+				if(uri == null) uri = ""; else uri += "&";
+				uri += encodeURIComponent(p.param) + "=" + encodeURIComponent(p.value);
+			}
+		}
+		try {
+			if(post) r.open("POST",this.url,this.async); else if(uri != null) {
+				var question = this.url.split("?").length <= 1;
+				r.open("GET",this.url + (question?"?":"&") + uri,this.async);
+				uri = null;
+			} else r.open("GET",this.url,this.async);
+		} catch( e1 ) {
+			me.req = null;
+			this.onError(e1.toString());
+			return;
+		}
+		if(!Lambda.exists(this.headers,function(h) {
+			return h.header == "Content-Type";
+		}) && post && this.postData == null) r.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+		var $it1 = this.headers.iterator();
+		while( $it1.hasNext() ) {
+			var h1 = $it1.next();
+			r.setRequestHeader(h1.header,h1.value);
+		}
+		r.send(uri);
+		if(!this.async) onreadystatechange(null);
+	}
+	,onData: function(data) {
+	}
+	,onError: function(msg) {
+	}
+	,onStatus: function(status) {
+	}
+};
+haxe.Timer = function(time_ms) {
+	var me = this;
+	this.id = setInterval(function() {
+		me.run();
+	},time_ms);
+};
+haxe.Timer.__name__ = true;
+haxe.Timer.delay = function(f,time_ms) {
+	var t = new haxe.Timer(time_ms);
+	t.run = function() {
+		t.stop();
+		f();
+	};
+	return t;
+};
+haxe.Timer.prototype = {
+	stop: function() {
+		if(this.id == null) return;
+		clearInterval(this.id);
+		this.id = null;
+	}
+	,run: function() {
+	}
+};
+haxe.ds = {};
+haxe.ds.StringMap = function() {
+	this.h = { };
+};
+haxe.ds.StringMap.__name__ = true;
+haxe.ds.StringMap.__interfaces__ = [IMap];
+haxe.ds.StringMap.prototype = {
+	set: function(key,value) {
+		this.h["$" + key] = value;
+	}
+	,get: function(key) {
+		return this.h["$" + key];
+	}
+	,keys: function() {
+		var a = [];
+		for( var key in this.h ) {
+		if(this.h.hasOwnProperty(key)) a.push(key.substr(1));
+		}
+		return HxOverrides.iter(a);
+	}
+	,iterator: function() {
+		return { ref : this.h, it : this.keys(), hasNext : function() {
+			return this.it.hasNext();
+		}, next : function() {
+			var i = this.it.next();
+			return this.ref["$" + i];
+		}};
+	}
+};
+var js = {};
+js.Boot = function() { };
+js.Boot.__name__ = true;
+js.Boot.__string_rec = function(o,s) {
+	if(o == null) return "null";
+	if(s.length >= 5) return "<...>";
+	var t = typeof(o);
+	if(t == "function" && (o.__name__ || o.__ename__)) t = "object";
+	switch(t) {
+	case "object":
+		if(o instanceof Array) {
+			if(o.__enum__) {
+				if(o.length == 2) return o[0];
+				var str = o[0] + "(";
+				s += "\t";
+				var _g1 = 2;
+				var _g = o.length;
+				while(_g1 < _g) {
+					var i = _g1++;
+					if(i != 2) str += "," + js.Boot.__string_rec(o[i],s); else str += js.Boot.__string_rec(o[i],s);
+				}
+				return str + ")";
+			}
+			var l = o.length;
+			var i1;
+			var str1 = "[";
+			s += "\t";
+			var _g2 = 0;
+			while(_g2 < l) {
+				var i2 = _g2++;
+				str1 += (i2 > 0?",":"") + js.Boot.__string_rec(o[i2],s);
+			}
+			str1 += "]";
+			return str1;
+		}
+		var tostr;
+		try {
+			tostr = o.toString;
+		} catch( e ) {
+			return "???";
+		}
+		if(tostr != null && tostr != Object.toString) {
+			var s2 = o.toString();
+			if(s2 != "[object Object]") return s2;
+		}
+		var k = null;
+		var str2 = "{\n";
+		s += "\t";
+		var hasp = o.hasOwnProperty != null;
+		for( var k in o ) {
+		if(hasp && !o.hasOwnProperty(k)) {
+			continue;
+		}
+		if(k == "prototype" || k == "__class__" || k == "__super__" || k == "__interfaces__" || k == "__properties__") {
+			continue;
+		}
+		if(str2.length != 2) str2 += ", \n";
+		str2 += s + k + " : " + js.Boot.__string_rec(o[k],s);
+		}
+		s = s.substring(1);
+		str2 += "\n" + s + "}";
+		return str2;
+	case "function":
+		return "<function>";
+	case "string":
+		return o;
+	default:
+		return String(o);
+	}
+};
+js.Browser = function() { };
+js.Browser.__name__ = true;
+js.Browser.createXMLHttpRequest = function() {
+	if(typeof XMLHttpRequest != "undefined") return new XMLHttpRequest();
+	if(typeof ActiveXObject != "undefined") return new ActiveXObject("Microsoft.XMLHTTP");
+	throw "Unable to create XMLHttpRequest object.";
+};
+function $iterator(o) { if( o instanceof Array ) return function() { return HxOverrides.iter(o); }; return typeof(o.iterator) == 'function' ? $bind(o,o.iterator) : o.iterator; }
+var $_, $fid = 0;
+function $bind(o,m) { if( m == null ) return null; if( m.__id__ == null ) m.__id__ = $fid++; var f; if( o.hx__closures__ == null ) o.hx__closures__ = {}; else f = o.hx__closures__[m.__id__]; if( f == null ) { f = function(){ return f.method.apply(f.scope, arguments); }; f.scope = o; f.method = m; o.hx__closures__[m.__id__] = f; } return f; }
+if(Array.prototype.indexOf) HxOverrides.indexOf = function(a,o,i) {
+	return Array.prototype.indexOf.call(a,o,i);
+};
+String.__name__ = true;
+Array.__name__ = true;
+Date.__name__ = ["Date"];
+if(Array.prototype.map == null) Array.prototype.map = function(f) {
+	var a = [];
+	var _g1 = 0;
+	var _g = this.length;
+	while(_g1 < _g) {
+		var i = _g1++;
+		a[i] = f(this[i]);
+	}
+	return a;
+};
+if(Array.prototype.filter == null) Array.prototype.filter = function(f1) {
+	var a1 = [];
+	var _g11 = 0;
+	var _g2 = this.length;
+	while(_g11 < _g2) {
+		var i1 = _g11++;
+		var e = this[i1];
+		if(f1(e)) a1.push(e);
+	}
+	return a1;
+};
+ce.core.config.Config.PROP_NAME_UNIFILE_ENDPOINT = "unifile-url";
+ce.core.config.Config.PROP_NAME_CE_PATH = "path";
+ce.core.config.Config.PROP_VALUE_DEFAULT_UNIFILE_ENDPOINT = "http://localhost:6805/api/1.0/";
+ce.core.config.Config.PROP_VALUE_DEFAULT_CE_PATH = "";
+ce.core.model.CEError.CODE_BAD_PARAMETERS = 400;
+ce.core.model.CEError.CODE_INVALID_REQUEST = 403;
+ce.core.service.UnifileSrv.ENDPOINT_LIST_SERVICES = "services/list";
+ce.core.service.UnifileSrv.ENDPOINT_CONNECT = "{srv}/connect";
+ce.core.service.UnifileSrv.ENDPOINT_LOGIN = "{srv}/login";
+ce.core.service.UnifileSrv.ENDPOINT_ACCOUNT = "{srv}/account";
+ce.core.service.UnifileSrv.ENDPOINT_LOGOUT = "{srv}/logout";
+ce.core.service.UnifileSrv.ENDPOINT_LS = "{srv}/exec/ls/{path}";
+ce.core.service.UnifileSrv.ENDPOINT_RM = "{srv}/exec/rm/{path}";
+ce.core.service.UnifileSrv.ENDPOINT_MKDIR = "{srv}/exec/mkdir/{path}";
+ce.core.service.UnifileSrv.ENDPOINT_CP = "exec/cp";
+ce.core.service.UnifileSrv.ENDPOINT_MV = "{srv}/exec/mv/{path}";
+ce.core.service.UnifileSrv.ENDPOINT_GET = "{srv}/exec/get/{uri}";
+ce.core.service.UnifileSrv.ENDPOINT_PUT = "{srv}/exec/put/{path}";
+ce.core.view.AlertPopup.CLASS_ERROR = "error";
+ce.core.view.AlertPopup.CLASS_WARNING = "warning";
+ce.core.view.AlertPopup.SELECTOR_TEXT = ".txt";
+ce.core.view.AlertPopup.SELECTOR_CHOICE_TMPL = ".choice";
+ce.core.view.Application.PLACE_HOLDER_LOGOUT_NAME = "{name}";
+ce.core.view.Application.ID_APPLICATION = "cloud-explorer";
+ce.core.view.Application.CLASS_LOADING = "loading";
+ce.core.view.Application.CLASS_STARTING = "starting";
+ce.core.view.Application.CLASS_BROWSING = "browsing";
+ce.core.view.Application.CLASS_AUTHORIZING = "authorizing";
+ce.core.view.Application.CLASS_LOGGED_IN = "loggedin";
+ce.core.view.Application.CLASS_ALERTING = "alerting";
+ce.core.view.Application.CLASS_MAKING_NEW_FOLDER = "making-new-folder";
+ce.core.view.Application.CLASS_SELECTING = "selecting";
+ce.core.view.Application.CLASS_EXPORT_OVERWRITING = "export-overwriting";
+ce.core.view.Application.CLASS_MODE_SINGLE_FILE_SELECTION = "single-file-sel-mode";
+ce.core.view.Application.CLASS_MODE_SINGLE_FILE_EXPORT = "single-file-exp-mode";
+ce.core.view.Application.SELECTOR_LOGOUT_BTN = ".logoutBtn";
+ce.core.view.Application.SELECTOR_CLOSE_BTN = ".closeBtn";
+ce.core.view.Application.SELECTOR_HOME = ".home";
+ce.core.view.Application.SELECTOR_FILE_BROWSER = ".fileBrowser";
+ce.core.view.Application.SELECTOR_ALERT_POPUP = ".alertPopup";
+ce.core.view.Application.SELECTOR_AUTH_POPUP = ".authPopup";
+ce.core.view.Application.SELECTOR_BREADCRUMB = ".breadcrumb";
+ce.core.view.Application.SELECTOR_DROPZONE = ".dropzone";
+ce.core.view.Application.SELECTOR_EXPORT = ".export";
+ce.core.view.Application.SELECTOR_NEW_FOLDER_BTN = ".newFolderBtn";
+ce.core.view.Application.SELECTOR_DELETE_BTN = ".deleteBtn";
+ce.core.view.AuthPopup.SELECTOR_LINK = "a";
+ce.core.view.AuthPopup.SELECTOR_TEXT = "span";
+ce.core.view.AuthPopup.PLACE_HOLDER_SRV_NAME = "{srvName}";
+ce.core.view.Breadcrumb.SELECTOR_PATH = "span.path";
+ce.core.view.Breadcrumb.SELECTOR_PATH_ITEM_TMPL = "span.pathIt";
+ce.core.view.Breadcrumb.SELECTOR_PATH_SEP_TMPL = "span.sep";
+ce.core.view.Breadcrumb.SELECTOR_TITLE = ".title span";
+ce.core.view.DropZone.SELECTOR_INPUT = "div input";
+ce.core.view.DropZone.SELECTOR_BUTTON = "div button";
+ce.core.view.Export.SELECTOR_INPUT = "input";
+ce.core.view.Export.SELECTOR_PATH = "span.path";
+ce.core.view.Export.SELECTOR_EXT = "span.ext";
+ce.core.view.Export.SELECTOR_SAVE_BUTTON = ".saveBtn";
+ce.core.view.Export.SELECTOR_OVERWRITE_BUTTON = ".overwriteBtn";
+ce.core.view.FileBrowser.SELECTOR_SRV_LIST = ".services ul";
+ce.core.view.FileBrowser.SELECTOR_FILES_LIST = ".files ul";
+ce.core.view.FileBrowser.SELECTOR_SRV_ITEM_TMPL = "li";
+ce.core.view.FileBrowser.SELECTOR_NEW_FOLDER_ITEM = ".folder.new";
+ce.core.view.FileBrowser.SELECTOR_FOLDER_ITEM_TMPL = ".folder:nth-last-child(-n+1)";
+ce.core.view.FileBrowser.SELECTOR_FILE_ITEM_TMPL = ".file";
+ce.core.view.FileBrowser.SELECTOR_NAME_BTN = ".titles .fileName";
+ce.core.view.FileBrowser.SELECTOR_TYPE_BTN = ".titles .fileType";
+ce.core.view.FileBrowser.SELECTOR_DATE_BTN = ".titles .lastUpdate";
+ce.core.view.FileBrowser.CLASS_SORT_ORDER_ASC = "asc";
+ce.core.view.FileBrowser.CLASS_SORT_ORDER_DESC = "desc";
+ce.core.view.FileBrowser.CLASS_PREFIX_SORTBY = "sortby-";
+ce.core.view.FileListItem.CLASS_RENAMING = "renaming";
+ce.core.view.FileListItem.CLASS_NOT_SELECTABLE = "nosel";
+ce.core.view.Home.SELECTOR_SRV_LIST = "ul";
+ce.core.view.Home.SELECTOR_SRV_ITEM_TMPL = "li";
+})(typeof window != "undefined" ? window : exports);

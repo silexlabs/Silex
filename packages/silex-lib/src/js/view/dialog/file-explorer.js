@@ -43,7 +43,6 @@ goog.require('goog.ui.KeyboardShortcutHandler');
 silex.view.dialog.FileExplorer = function(element, view, controller) {
   // get the global variable of Cloud Explorer
   this.filePicker = silex.service.CloudStorage.getInstance().filePicker;
-  element.src = "../cloud-explorer/cloud-explorer.html";
 };
 
 
