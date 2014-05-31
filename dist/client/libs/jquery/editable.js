@@ -67,7 +67,10 @@ $.widget('silexlabs.editable', {
     // prevent links while editing
     $('a', this.element).bind('click', function(e){
         e.preventDefault();
-    })
+    });
+    // prevent interactions with iframes and html content while editing
+    $('.html-element>.temp-editable-cover').remove();
+    $('.html-element>.silex-element-content.html-content').before('<div class="temp-editable-cover"><div>');
     // handle resizeable options
     if (this.options.isResizable != false)
       this.element.resizable({
@@ -124,23 +127,18 @@ $.widget('silexlabs.editable', {
           setTimeout(resetPending.bind(dropped), 1);
           // **
           /* */
-
-					// compute new position in the container
-					// var initialOffset = $(dropped).offset();
-
-					// move to the new container
-					var oldPos = $(dropped).offset();
-					// round position and size to integers
-					//oldPos.left = Math.round(oldPos.left);
-					//oldPos.top = Math.round(oldPos.top);
-					// move to the new container
-					$(dropped).detach().appendTo($(droppedTo));
-					// keep initial position
-					$(dropped).offset(oldPos);
-
-					// dispatch event to notify that the element changed container
-					if (droppedTo !== droppedFrom){
-						// trigger an event the old fashion way because it has to be catched by old fashioned addEventListener
+          // the element changed container
+          if (droppedTo !== droppedFrom){
+  					// move to the new container
+  					var oldPos = $(dropped).offset();
+  					// round position and size to integers
+  					//oldPos.left = Math.round(oldPos.left);
+  					//oldPos.top = Math.round(oldPos.top);
+  					// move to the new container
+  					$(dropped).detach().appendTo($(droppedTo));
+  					// keep initial position
+  					$(dropped).offset(oldPos);
+            // trigger an event the old fashion way because it has to be catched by old fashioned addEventListener
 						//$(dropped).trigger('newContainer', [dropped, droppedTo, droppedFrom]);
 						var event = document.createEvent('Event');
 						event.initEvent('newContainer', true, true);

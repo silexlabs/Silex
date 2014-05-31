@@ -101,6 +101,11 @@ silex.utils.BackwardCompat.process = function(document) {
       element.setAttribute(silex.model.Element.LINK_ATTR, '#!' + href.substr(1));
     }
   });
+  // add css class 'silex-element-content' on 'html-content' elements (starting from 2.1)
+  elements = bodyElement.querySelectorAll('.html-element .html-content');
+  goog.array.forEach(elements, function(element) {
+    goog.dom.classes.add(element, 'silex-element-content');
+  });
   // add css class on elements with [type]-element (starting from 2.0)
   elements = bodyElement.querySelectorAll('.text-element *');
   goog.array.forEach(elements, function(element) {
