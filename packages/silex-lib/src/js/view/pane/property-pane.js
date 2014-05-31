@@ -148,28 +148,30 @@ silex.view.pane.PropertyPane.prototype.onPositionChanged =
   var input = e.target;
   // the name of the property to change
   var name = input.getAttribute('data-style-name');
+  // get the value
+  var value = parseFloat(input.value);
+  // get the old value
+  var oldValue = parseFloat(input.getAttribute('data-prev-value') || 0);
+  input.setAttribute('data-prev-value', value);
+  // compute the offset
+  var offset = value - oldValue;
   // the bounding box of all elements
   var bb = {};
-
   // apply the change to all elements
   goog.array.forEach(this.selectedElements, function (element) {
-    if (input.value != ''){
-      // compute the initial value of this style for the given element
-      var initialValue;
-      if (!element.style[name] || element.style[name] === '' || element.style[name] === '0'){
-        initialValue = 0;
-        bb[name] = 0;
+    if (goog.isNumber(value)){
+      if (goog.isNumber(oldValue)){
+        bb = silex.utils.Dom.getBoundingBox([element]);
+        // compute the new value relatively to the old value,
+        // in order to match the group movement
+        var newValue = bb[name] + offset;
+        this.styleChanged(name,
+          newValue + 'px',
+          [element]);
       }
       else{
-        initialValue = parseFloat(element.style[name].substr(0, element.style[name].indexOf('px')));
-        bb = silex.utils.Dom.getBoundingBox(this.selectedElements);
+        this.styleChanged(name, value + 'px');
       }
-      // compute the new value relatively to the old value,
-      // in order to match the group movement
-      var value = initialValue + parseFloat(input.value) - bb[name];
-      this.styleChanged(name,
-        value + 'px',
-        [element]);
     }
     else{
       this.styleChanged(name);
@@ -313,6 +315,11 @@ silex.view.pane.PropertyPane.prototype.redraw = function(selectedElements, docum
     this.titleInput.setAttribute('disabled', true);
     this.titleInput.value = '';
   }
+  // keep track of old position and size
+  this.topInput.setAttribute('data-prev-value', this.topInput.value);
+  this.leftInput.setAttribute('data-prev-value', this.leftInput.value);
+  this.widthInput.setAttribute('data-prev-value', this.widthInput.value);
+  this.heightInput.setAttribute('data-prev-value', this.heightInput.value);
 
   this.iAmRedrawing = false;
 };
