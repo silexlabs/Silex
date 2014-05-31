@@ -279,4 +279,8 @@ silex.model.Body.prototype.removeEditableClasses = function(rootElement) {
   goog.array.forEach(elements, function(element) {
     goog.dom.removeNode(element);
   }, this);
+  elements = goog.dom.getElementsByClass('temp-editable-cover', rootElement);
+  goog.array.forEach(elements, function(element) {
+    goog.dom.removeNode(element);
+  }, this);
 };

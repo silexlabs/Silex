@@ -266,7 +266,7 @@ silex.view.dialog.TextEditor.prototype.closeEditor = function() {
   // call super
   goog.base(this, 'closeEditor');
   // remove editable before it goes "display: none"
-  that.textField.makeUneditable();
+  this.textField.makeUneditable();
 }
 
 
