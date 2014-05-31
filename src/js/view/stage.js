@@ -327,10 +327,14 @@ silex.view.Stage.prototype.handleMouseMove = function(target, x, y) {
       this.bodyElementSizeToContent();
     }
     // compute the offset compared to the last mouse move
-    var offsetX = x - this.lastPosX;
-    var offsetY = y - this.lastPosY;
+    // take the scroll delta into account (changes when dragging outside the stage)
+    var offsetX = x - this.lastPosX + (this.bodyElement.scrollLeft - this.lastScrollLeft);
+    var offsetY = y - this.lastPosY + (this.bodyElement.scrollTop - this.lastScrollTop);
+    // update the latest position and scroll
     this.lastPosX = x;
     this.lastPosY = y;
+    this.lastScrollLeft = this.bodyElement.scrollLeft;
+    this.lastScrollTop = this.bodyElement.scrollTop;
 
     // apply offset to other selected element
     goog.array.forEach(this.selectedElements, function(element) {
@@ -387,9 +391,11 @@ silex.view.Stage.prototype.handleMouseDown = function(target, x, y, shiftKey) {
       this.controller.stageController.select(target);
     }
   }
-  // keep track of the last maouse position
+  // keep track of the last mouse position and body scroll
   this.lastPosX = x;
   this.lastPosY = y;
+  this.lastScrollLeft = this.bodyElement.scrollLeft;
+  this.lastScrollTop = this.bodyElement.scrollTop;
   // update state
   this.isDown = true;
 };
