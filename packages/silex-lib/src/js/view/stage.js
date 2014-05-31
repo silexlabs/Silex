@@ -310,6 +310,9 @@ silex.view.Stage.prototype.handleMouseMove = function(target, x, y) {
       var editableElement = goog.dom.getAncestorByClass(target, silex.model.Body.EDITABLE_CLASS_NAME) || this.bodyElement;
       this.lastSelected = editableElement;
     }
+    if (this.resizeDirection === null){
+      this.resizeDirection = this.getResizeDirection(target);
+    }
     // update states
     if (!this.isDragging && !this.isResizing){
       if (this.lastClickWasResize){
@@ -333,10 +336,28 @@ silex.view.Stage.prototype.handleMouseMove = function(target, x, y) {
     goog.array.forEach(this.selectedElements, function(element) {
       if (element !== this.lastSelected){
         if (this.isResizing){
-          var pos = goog.style.getSize(element);
-          // FIXME: this works but depending on the handle which is dragged,
+          var size = goog.style.getSize(element);
+          // depending on the handle which is dragged,
           // only width and/or height should be set
-          //goog.style.setSize(element, pos.width + offsetX, pos.height + offsetY);
+          if (this.resizeDirection === 's'){
+            offsetX = 0;
+          }
+          else if (this.resizeDirection === 'n'){
+            var pos = goog.style.getPosition(element);
+            goog.style.setPosition(element, pos.x, pos.y + offsetY);
+            offsetY = -offsetY;
+            offsetX = 0;
+          }
+          else if (this.resizeDirection === 'w'){
+            var pos = goog.style.getPosition(element);
+            goog.style.setPosition(element, pos.x + offsetX, pos.y);
+            offsetX = -offsetX;
+            offsetY = 0;
+          }
+          else if (this.resizeDirection === 'e'){
+            offsetY = 0;
+          }
+          goog.style.setSize(element, size.width + offsetX, size.height + offsetY);
         }
         else if (this.isDragging){
           // do not move an element if one of its parent is already being moved
@@ -354,6 +375,7 @@ silex.view.Stage.prototype.handleMouseMove = function(target, x, y) {
 
 silex.view.Stage.prototype.handleMouseDown = function(target, x, y, shiftKey) {
   this.lastSelected = null;
+  this.resizeDirection = null;
   // if the element was not already selected
   if (!goog.dom.classes.has(target, silex.model.Element.SELECTED_CLASS_NAME)){
     this.lastSelected = target;
@@ -371,3 +393,17 @@ silex.view.Stage.prototype.handleMouseDown = function(target, x, y, shiftKey) {
   // update state
   this.isDown = true;
 };
+
+
+silex.view.Stage.prototype.getResizeDirection = function(target) {
+  if(goog.dom.classes.has(target, 'ui-resizable-s')) return 's';
+  else if (goog.dom.classes.has(target, 'ui-resizable-n')) return 'n';
+  else if (goog.dom.classes.has(target, 'ui-resizable-e')) return 'e';
+  else if (goog.dom.classes.has(target, 'ui-resizable-w')) return 'w';
+  else if (goog.dom.classes.has(target, 'ui-resizable-se')) return 'se';
+  else if (goog.dom.classes.has(target, 'ui-resizable-sw')) return 'sw';
+  else if (goog.dom.classes.has(target, 'ui-resizable-ne')) return 'ne';
+  else if (goog.dom.classes.has(target, 'ui-resizable-nw')) return 'nw';
+  // Target is not a resize handle
+  return null;
+}
