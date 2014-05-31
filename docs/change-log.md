@@ -2,6 +2,57 @@
 
 This is where you will find the recent changes made to Silex, and available on http://www.silex.me/
 
+## May 2014
+
+bug fixes
+
+* heavy websites publication
+
+features
+
+* new version of cloud explorer, with new UI
+* loading while loading a new website
+
+code quality and doc
+
+* refactored to a better mvc design pattern
+* website loaded in an iframe instead of div
+* new website
+* support for newrelic monitoring
+
+## April 2014
+
+bug fixes
+
+* support for google chrome automatic translation
+
+features
+
+* updated [unifile](https://github.com/silexlabs/unifile) version, with FTP support
+
+code quality and doc
+
+* refactored functional tests with webdriver.js
+* closure linter and compiler as submodules
+* fixed build warnings
+* cleanup
+
+## March 2014
+
+bug fixes
+
+* many bug fixes in publication algorythm
+* page names starting with number or with a question mark
+
+features
+
+* seo properties alt and title
+* added background image size options
+* link editor support for deeplinks (internal page links)
+* allow HTML anchors in addition to deep links
+* downlaods silex static files to dropbox when publishing a site
+* added an error message when trying to open a non-editable website
+
 ## Feb 2014
 
 bug fixes
@@ -21,7 +72,7 @@ features
 * a css class is applyed to active links
 * docs folder in the source, with contributors, roadmap etc
 
-code and doc
+code quality and doc
 
 * more functional tests
 * docs and new silex site
