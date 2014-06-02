@@ -180,7 +180,7 @@ silex.controller.ControllerBase.prototype.browseBgImage = function() {
   // open the file browser
   this.view.fileExplorer.openDialog(
       goog.bind(successCbk, this),
-      {'mimetype': 'image/*'},
+      { mimetypes: ["image/jpeg", "image/png", "image/gif"] },
       goog.bind(errCbk, this)
   );
 }
@@ -215,7 +215,7 @@ silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
           }, this)
         );
       }, this),
-      {'mimetype': 'image/*'},
+      { mimetypes: ["image/jpeg", "image/png", "image/gif"] },
       goog.bind(function(error) {
         silex.utils.Notification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''));
         this.tracker.trackAction('controller-events', 'error', 'insert.image', -1);
@@ -366,7 +366,7 @@ silex.controller.ControllerBase.prototype.editElement = function(opt_element) {
             // load the image
             this.model.element.setImageUrl(opt_element, url);
           }, this),
-          {'mimetype': 'image/*'},
+          { mimetypes: ["image/jpeg", "image/png", "image/gif"] },
           goog.bind(function(error) {
             silex.utils.Notification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''));
           }, this)

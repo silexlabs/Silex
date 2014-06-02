@@ -215,6 +215,9 @@ StringBuf.prototype = {
 };
 var StringTools = function() { };
 StringTools.__name__ = true;
+StringTools.urlEncode = function(s) {
+	return encodeURIComponent(s);
+};
 StringTools.isSpace = function(s,pos) {
 	var c = HxOverrides.cca(s,pos);
 	return c > 8 && c < 14 || c == 32;
@@ -268,13 +271,14 @@ ce.api.CloudExplorer.get = function(iframeEltId) {
 	return new ce.api.CloudExplorer(iframeEltId);
 };
 ce.api.CloudExplorer.prototype = {
-	pick: function(options,onSuccess,onError) {
-		if(onError == null) {
-			onError = onSuccess;
-			onSuccess = options;
-			options = null;
-		}
-		if(onError == null) throw "Missing mandatory parameters for CloudExplorer.pick(onSuccess : CEBlob -> Void, onError : CEError -> Void)";
+	pick: function(arg1,arg2,arg3) {
+		if(arg1 == null || arg2 == null) throw "Missing mandatory parameters for CloudExplorer.pick(onSuccess : CEBlob -> Void, onError : CEError -> Void)";
+		var options;
+		if(arg3 != null) options = arg1; else options = null;
+		var onSuccess;
+		if(options != null) onSuccess = arg2; else onSuccess = arg1;
+		var onError;
+		if(options != null) onError = arg3; else onError = arg2;
 		console.log("options: " + Std.string(options) + "  onSuccess: " + Std.string(onSuccess) + "  onError: " + Std.string(onError));
 		this.ctrl.pick(options,onSuccess,onError);
 	}
@@ -326,7 +330,7 @@ ce.core.Controller = function(config,iframe) {
 ce.core.Controller.__name__ = true;
 ce.core.Controller.prototype = {
 	pick: function(options,onSuccess,onError) {
-		this.state.set_currentMode(ce.core.model.Mode.SingleFileSelection(onSuccess,onError));
+		this.state.set_currentMode(ce.core.model.Mode.SingleFileSelection(onSuccess,onError,options));
 		this.show();
 	}
 	,read: function(input,options,onSuccess,onError,onProgress) {
@@ -400,6 +404,7 @@ ce.core.Controller.prototype = {
 								_g.application.setAuthPopupDisplayed(false);
 								_g.login(name);
 							};
+							var url = cr.authorizeUrl + "&oauth_callback=" + StringTools.urlEncode(_g.application.get_location() + "/" + _g.config.path + "/oauth-cb.html");
 							_g.application.openAuthorizationWindow(cr.authorizeUrl);
 						};
 						_g.application.setAuthPopupDisplayed(true);
@@ -410,65 +415,89 @@ ce.core.Controller.prototype = {
 				},$bind(_g,_g.setError));
 			}
 		};
-		this.application.onFileClicked = function(id) {
-			if(id == "..") _g.cpd(_g.state.currentLocation.service,_g.state.currentLocation.path); else {
-				var f = _g.state.currentFileList.get(id);
-				if(_g.state.currentMode == null) {
+		this.application.onFileSelectClicked = function(id) {
+			var f = _g.state.currentFileList.get(id);
+			{
+				var _g1 = _g.state.currentMode;
+				switch(_g1[1]) {
+				case 0:
+					var options = _g1[4];
+					var onError = _g1[3];
+					var onSuccess = _g1[2];
 					if(f.isDir) {
-						var _g1 = _g.state.currentLocation;
-						_g1.set_path(_g1.path + (_g.state.currentFileList.get(id).name + "/"));
+						onSuccess({ url : _g.unifileSrv.generateUrl(_g.state.currentLocation.service,_g.state.currentLocation.path,f.name), filename : f.name, mimetype : "text/directory", size : null, key : null, container : null, isWriteable : true, path : _g.state.currentLocation.path});
+						_g.hide();
+					} else {
+						var _g2 = _g.state.currentLocation;
+						_g2.set_path(_g2.path + (_g.state.currentFileList.get(id).name + "/"));
+					}
+					break;
+				default:
+					var _g2 = _g.state.currentLocation;
+					_g2.set_path(_g2.path + (_g.state.currentFileList.get(id).name + "/"));
+				}
+			}
+		};
+		this.application.onFileClicked = function(id1) {
+			if(id1 == "..") _g.cpd(_g.state.currentLocation.service,_g.state.currentLocation.path); else {
+				var f1 = _g.state.currentFileList.get(id1);
+				if(_g.state.currentMode == null) {
+					if(f1.isDir) {
+						var _g11 = _g.state.currentLocation;
+						_g11.set_path(_g11.path + (_g.state.currentFileList.get(id1).name + "/"));
 					}
 					return;
 				}
 				{
-					var _g11 = _g.state.currentMode;
-					switch(_g11[1]) {
+					var _g12 = _g.state.currentMode;
+					switch(_g12[1]) {
 					case 0:
-						var onError = _g11[3];
-						var onSuccess = _g11[2];
-						if(!f.isDir) {
-							onSuccess({ url : _g.unifileSrv.generateUrl(_g.state.currentLocation.service,_g.state.currentLocation.path,f.name), filename : f.name, mimetype : ce.util.FileTools.getMimeType(f.name), size : f.bytes, key : null, container : null, isWriteable : true, path : _g.state.currentLocation.path});
+						var options1 = _g12[4];
+						var onError1 = _g12[3];
+						var onSuccess1 = _g12[2];
+						if(!f1.isDir) {
+							onSuccess1({ url : _g.unifileSrv.generateUrl(_g.state.currentLocation.service,_g.state.currentLocation.path,f1.name), filename : f1.name, mimetype : ce.util.FileTools.getMimeType(f1.name), size : f1.bytes, key : null, container : null, isWriteable : true, path : _g.state.currentLocation.path});
 							_g.hide();
 						} else {
-							var _g2 = _g.state.currentLocation;
-							_g2.set_path(_g2.path + (_g.state.currentFileList.get(id).name + "/"));
+							var _g21 = _g.state.currentLocation;
+							_g21.set_path(_g21.path + (_g.state.currentFileList.get(id1).name + "/"));
 						}
 						break;
 					default:
-						var _g2 = _g.state.currentLocation;
-						_g2.set_path(_g2.path + (_g.state.currentFileList.get(id).name + "/"));
+						var _g21 = _g.state.currentLocation;
+						_g21.set_path(_g21.path + (_g.state.currentFileList.get(id1).name + "/"));
 					}
 				}
 			}
 		};
-		this.application.onFileDeleteClicked = function(id1) {
-			var f1 = _g.state.currentFileList.get(id1);
-			_g.setAlert("Are you sure you want to delete " + f1.name + " from your " + _g.state.serviceList.get(_g.state.currentLocation.service).displayName + " storage?",1,[{ msg : "Yes, delete it", cb : function() {
+		this.application.onFileDeleteClicked = function(id2) {
+			var f2 = _g.state.currentFileList.get(id2);
+			_g.setAlert("Are you sure you want to delete " + f2.name + " from your " + _g.state.serviceList.get(_g.state.currentLocation.service).displayName + " storage?",1,[{ msg : "Yes, delete it", cb : function() {
 				_g.application.setAlertPopupDisplayed(false);
-				_g.deleteFile(id1);
+				_g.deleteFile(id2);
 			}},{ msg : "No, do not delete it", cb : function() {
 				_g.application.setAlertPopupDisplayed(false);
 			}}]);
 		};
 		this.application.onFileCheckedStatusChanged = function(_) {
-			var _g12 = 0;
-			var _g21 = _g.application.fileBrowser.fileListItems;
-			while(_g12 < _g21.length) {
-				var f2 = _g21[_g12];
-				++_g12;
-				if(f2.get_isChecked()) {
+			var _g13 = 0;
+			var _g22 = _g.application.fileBrowser.fileListItems;
+			while(_g13 < _g22.length) {
+				var f3 = _g22[_g13];
+				++_g13;
+				if(f3.get_isChecked()) {
 					_g.application.setSelecting(true);
 					return;
 				}
 			}
 			_g.application.setSelecting(false);
 		};
-		this.application.onFileRenameRequested = function(id2,value) {
-			var f3 = _g.state.currentFileList.get(id2);
-			if(value != f3.name) {
+		this.application.onFileRenameRequested = function(id3,value) {
+			var f4 = _g.state.currentFileList.get(id3);
+			if(value != f4.name) {
 				var oldPath = _g.state.currentLocation.path;
 				var newPath = _g.state.currentLocation.path;
-				if(oldPath == "/" || oldPath == "") oldPath = f3.name; else oldPath = oldPath + "/" + f3.name;
+				if(oldPath == "/" || oldPath == "") oldPath = f4.name; else oldPath = oldPath + "/" + f4.name;
 				if(newPath == "/" || newPath == "") newPath = value; else newPath = newPath + "/" + value;
 				_g.application.setLoaderDisplayed(true);
 				_g.unifileSrv.mv(_g.state.currentLocation.service,oldPath,newPath,function() {
@@ -479,16 +508,16 @@ ce.core.Controller.prototype = {
 		};
 		this.application.onOverwriteExportClicked = function() {
 			{
-				var _g13 = _g.state.currentMode;
-				switch(_g13[1]) {
+				var _g14 = _g.state.currentMode;
+				switch(_g14[1]) {
 				case 1:
-					var options = _g13[5];
-					var input = _g13[4];
-					var onError1 = _g13[3];
-					var onSuccess1 = _g13[2];
+					var options2 = _g14[5];
+					var input = _g14[4];
+					var onError2 = _g14[3];
+					var onSuccess2 = _g14[2];
 					var fname = _g.application["export"].get_exportName();
-					if(options != null) {
-						if(options.mimetype != null && ce.util.FileTools.getExtension(options.mimetype) != null) fname += ce.util.FileTools.getExtension(options.mimetype); else if(options.extension != null) if(options.extension.indexOf(".") != 0) fname += "." + options.extension; else fname += options.extension;
+					if(options2 != null) {
+						if(options2.mimetype != null && ce.util.FileTools.getExtension(options2.mimetype) != null) fname += ce.util.FileTools.getExtension(options2.mimetype); else if(options2.extension != null) if(options2.extension.indexOf(".") != 0) fname += "." + options2.extension; else fname += options2.extension;
 					}
 					_g.setAlert("Do you confirm overwriting of " + fname + "?",1,[{ msg : "Yes, do overwrite it.", cb : function() {
 						_g.application.setAlertPopupDisplayed(false);
@@ -509,21 +538,21 @@ ce.core.Controller.prototype = {
 		};
 		this.application.onExportNameChanged = function() {
 			if(_g.application["export"].get_exportName() != "") {
-				var _g14 = _g.state.currentMode;
-				switch(_g14[1]) {
+				var _g15 = _g.state.currentMode;
+				switch(_g15[1]) {
 				case 1:
-					var options1 = _g14[5];
-					var input1 = _g14[4];
-					var onError2 = _g14[3];
-					var onSuccess2 = _g14[2];
+					var options3 = _g15[5];
+					var input1 = _g15[4];
+					var onError3 = _g15[3];
+					var onSuccess3 = _g15[2];
 					var fname1 = _g.application["export"].get_exportName();
-					if(options1 != null) {
-						if(options1.mimetype != null && ce.util.FileTools.getExtension(options1.mimetype) != null) fname1 += ce.util.FileTools.getExtension(options1.mimetype); else if(options1.extension != null) if(options1.extension.indexOf(".") != 0) fname1 += "." + options1.extension; else fname1 += options1.extension;
+					if(options3 != null) {
+						if(options3.mimetype != null && ce.util.FileTools.getExtension(options3.mimetype) != null) fname1 += ce.util.FileTools.getExtension(options3.mimetype); else if(options3.extension != null) if(options3.extension.indexOf(".") != 0) fname1 += "." + options3.extension; else fname1 += options3.extension;
 					}
 					var $it0 = _g.state.currentFileList.iterator();
 					while( $it0.hasNext() ) {
-						var f4 = $it0.next();
-						if(f4.name == fname1) {
+						var f5 = $it0.next();
+						if(f5.name == fname1) {
 							_g.application.setExportOverwriteDisplayed(true);
 							return;
 						}
@@ -652,24 +681,55 @@ ce.core.Controller.prototype = {
 		};
 		this.state.onCurrentModeChanged = function() {
 			if(_g.state.currentMode != null) {
-				var _g15 = _g.state.currentMode;
-				switch(_g15[1]) {
-				case 0:
-					var onError3 = _g15[3];
-					var onSuccess3 = _g15[2];
-					break;
-				case 1:
-					var options2 = _g15[5];
-					var input2 = _g15[4];
-					var onError4 = _g15[3];
-					var onSuccess4 = _g15[2];
-					var ext;
-					if(options2 != null && options2.mimetype != null) ext = ce.util.FileTools.getExtension(options2.mimetype); else ext = null;
-					if(ext == null && options2 != null && options2.extension != null) if(options2.extension.indexOf(".") == 0) ext = options2.extension; else ext = "." + options2.extension;
-					_g.application["export"].set_ext(ext != null?ext:"");
-					_g.application["export"].set_exportName("");
-					_g.application.setExportOverwriteDisplayed(false);
-					break;
+				_g.application.fileBrowser.set_filters(null);
+				{
+					var _g16 = _g.state.currentMode;
+					switch(_g16[1]) {
+					case 0:
+						var options4 = _g16[4];
+						var onError4 = _g16[3];
+						var onSuccess4 = _g16[2];
+						if(options4 != null) {
+							if((options4.mimetype != null || options4.mimetypes != null) && (options4.extension != null || options4.extensions != null)) throw "Cannot pass in both mimetype(s) and extension(s) parameters to the pick function";
+							var filters = null;
+							if(options4.mimetype != null || options4.mimetypes != null) {
+								if(options4.mimetype != null) {
+									if(options4.mimetypes != null) throw "Cannot pass in both mimetype and mimetypes parameters to the pick function";
+									filters = [options4.mimetype];
+								} else filters = options4.mimetypes;
+							} else {
+								var extensions = null;
+								if(options4.extension != null) {
+									if(options4.extensions != null) throw "Cannot pass in both extension and extensions parameters to the pick function";
+									extensions = [options4.extension];
+								} else extensions = options4.extensions;
+								if(extensions != null && extensions.length > 0) {
+									filters = [];
+									var _g23 = 0;
+									while(_g23 < extensions.length) {
+										var e1 = extensions[_g23];
+										++_g23;
+										var mimetype = ce.util.FileTools.getMimeType(e1.indexOf(".") == 0?e1:"." + e1);
+										if(mimetype != null && HxOverrides.indexOf(filters,e1,0) == -1) filters.push(mimetype);
+									}
+								}
+							}
+							if(filters != null) _g.application.fileBrowser.set_filters(filters);
+						}
+						break;
+					case 1:
+						var options5 = _g16[5];
+						var input2 = _g16[4];
+						var onError5 = _g16[3];
+						var onSuccess5 = _g16[2];
+						var ext;
+						if(options5 != null && options5.mimetype != null) ext = ce.util.FileTools.getExtension(options5.mimetype); else ext = null;
+						if(ext == null && options5 != null && options5.extension != null) if(options5.extension.indexOf(".") == 0) ext = options5.extension; else ext = "." + options5.extension;
+						_g.application["export"].set_ext(ext != null?ext:"");
+						_g.application["export"].set_exportName("");
+						_g.application.setExportOverwriteDisplayed(false);
+						break;
+					}
 				}
 			}
 			_g.application.setModeState(_g.state.currentMode);
@@ -845,7 +905,7 @@ ce.core.model.Location.prototype = {
 	,__properties__: {set_path:"set_path",set_service:"set_service"}
 };
 ce.core.model.Mode = { __ename__ : true, __constructs__ : ["SingleFileSelection","SingleFileExport"] };
-ce.core.model.Mode.SingleFileSelection = function(onSuccess,onError) { var $x = ["SingleFileSelection",0,onSuccess,onError]; $x.__enum__ = ce.core.model.Mode; $x.toString = $estr; return $x; };
+ce.core.model.Mode.SingleFileSelection = function(onSuccess,onError,options) { var $x = ["SingleFileSelection",0,onSuccess,onError,options]; $x.__enum__ = ce.core.model.Mode; $x.toString = $estr; return $x; };
 ce.core.model.Mode.SingleFileExport = function(onSuccess,onError,input,options) { var $x = ["SingleFileExport",1,onSuccess,onError,input,options]; $x.__enum__ = ce.core.model.Mode; $x.toString = $estr; return $x; };
 ce.core.model.State = function() {
 	this.currentMode = null;
@@ -1317,6 +1377,8 @@ ce.core.view.Application.prototype = {
 	}
 	,onFileClicked: function(id) {
 	}
+	,onFileSelectClicked: function(id) {
+	}
 	,onFileDeleteClicked: function(id) {
 	}
 	,onFileRenameRequested: function(id,value) {
@@ -1342,6 +1404,10 @@ ce.core.view.Application.prototype = {
 	,onDeleteClicked: function() {
 	}
 	,onNewFolderName: function() {
+	}
+	,get_location: function() {
+		if(this.iframe == null) return null;
+		return this.iframe.contentDocument.location.origin;
 	}
 	,setLogoutButtonContent: function(v) {
 		this.logoutBtn.textContent = StringTools.replace(this.logoutContentTmpl,"{name}",v != null?v:"");
@@ -1482,14 +1548,17 @@ ce.core.view.Application.prototype = {
 		this.fileBrowser.onFileClicked = function(id) {
 			_g.onFileClicked(id);
 		};
-		this.fileBrowser.onFileDeleteClicked = function(id1) {
-			_g.onFileDeleteClicked(id1);
+		this.fileBrowser.onFileSelectClicked = function(id1) {
+			_g.onFileSelectClicked(id1);
 		};
-		this.fileBrowser.onFileCheckedStatusChanged = function(id2) {
-			_g.onFileCheckedStatusChanged(id2);
+		this.fileBrowser.onFileDeleteClicked = function(id2) {
+			_g.onFileDeleteClicked(id2);
 		};
-		this.fileBrowser.onFileRenameRequested = function(id3,value) {
-			_g.onFileRenameRequested(id3,value);
+		this.fileBrowser.onFileCheckedStatusChanged = function(id3) {
+			_g.onFileCheckedStatusChanged(id3);
+		};
+		this.fileBrowser.onFileRenameRequested = function(id4,value) {
+			_g.onFileRenameRequested(id4,value);
 		};
 		this.fileBrowser.onNewFolderName = function() {
 			_g.onNewFolderName();
@@ -1513,6 +1582,7 @@ ce.core.view.Application.prototype = {
 		});
 		this.onViewReady();
 	}
+	,__properties__: {get_location:"get_location"}
 };
 ce.core.view.AuthPopup = function(elt) {
 	var _g = this;
@@ -1679,6 +1749,7 @@ ce.core.view.FileBrowser = function(elt) {
 		_g.toggleSort("lastUpdate");
 	});
 	this.fileListItems = [];
+	this.set_filters(null);
 };
 ce.core.view.FileBrowser.__name__ = true;
 ce.core.view.FileBrowser.prototype = {
@@ -1689,11 +1760,26 @@ ce.core.view.FileBrowser.prototype = {
 		this.newFolderInput.value = v;
 		return v;
 	}
+	,set_filters: function(v) {
+		if(this.filters == v) return v;
+		this.filters = v;
+		if(this.filters != null && HxOverrides.indexOf(this.filters,"text/directory",0) > -1) ce.util.HtmlTools.toggleClass(this.elt,"selectFolders",true); else ce.util.HtmlTools.toggleClass(this.elt,"selectFolders",false);
+		var _g = 0;
+		var _g1 = this.fileListItems;
+		while(_g < _g1.length) {
+			var f = _g1[_g];
+			++_g;
+			this.applyFilters(f);
+		}
+		return this.filters;
+	}
 	,onServiceClicked: function(name) {
 	}
 	,onFileSelected: function(id) {
 	}
 	,onFileClicked: function(id) {
+	}
+	,onFileSelectClicked: function(id) {
 	}
 	,onFileDeleteClicked: function(id) {
 	}
@@ -1730,6 +1816,9 @@ ce.core.view.FileBrowser.prototype = {
 		fli.onClicked = function() {
 			_g.onFileClicked(id);
 		};
+		fli.onSelectClicked = function() {
+			_g.onFileSelectClicked(id);
+		};
 		fli.onDeleteClicked = function() {
 			_g.onFileDeleteClicked(id);
 		};
@@ -1763,10 +1852,21 @@ ce.core.view.FileBrowser.prototype = {
 			_g.onFileCheckedStatusChanged(id);
 		};
 		this.fileListItems.push(fli);
+		this.applyFilters(fli);
 		this.fileListElt.insertBefore(newItem,this.newFolderItem);
 	}
 	,focusOnNewFolder: function() {
 		this.newFolderInput.focus();
+	}
+	,applyFilters: function(f) {
+		if(f.get_type() != "text/directory") {
+			if(this.filters == null || (function($this) {
+				var $r;
+				var x = f.get_type();
+				$r = HxOverrides.indexOf($this.filters,x,0);
+				return $r;
+			}(this)) != -1) f.set_filteredOut(false); else f.set_filteredOut(true);
+		}
 	}
 	,currentSortBy: function() {
 		var _g = 0;
@@ -1826,7 +1926,7 @@ ce.core.view.FileBrowser.prototype = {
 		}
 		if(parentFolderItem != null && this.fileListItems[0] != parentFolderItem) this.fileListElt.insertBefore(parentFolderItem.elt,this.fileListItems[0].elt);
 	}
-	,__properties__: {set_newFolderName:"set_newFolderName",get_newFolderName:"get_newFolderName"}
+	,__properties__: {set_newFolderName:"set_newFolderName",get_newFolderName:"get_newFolderName",set_filters:"set_filters"}
 };
 ce.core.view.FileListItem = function(elt) {
 	var _g = this;
@@ -1862,6 +1962,10 @@ ce.core.view.FileListItem = function(elt) {
 	this.deleteBtn.addEventListener("click",function(_4) {
 		_g.onDeleteClicked();
 	});
+	this.selectBtn = elt.querySelector("button.select");
+	if(this.selectBtn != null) this.selectBtn.addEventListener("click",function(_5) {
+		_g.onSelectClicked();
+	});
 };
 ce.core.view.FileListItem.__name__ = true;
 ce.core.view.FileListItem.prototype = {
@@ -1883,6 +1987,7 @@ ce.core.view.FileListItem.prototype = {
 		return v;
 	}
 	,get_type: function() {
+		if(Lambda.has(ce.util.HtmlTools.classes(this.elt),"folder".toLowerCase())) return "text/directory";
 		return this.typeElt.textContent;
 	}
 	,set_type: function(v) {
@@ -1904,15 +2009,24 @@ ce.core.view.FileListItem.prototype = {
 		ce.util.HtmlTools.toggleClass(this.elt,"nosel",!v);
 		return v;
 	}
+	,get_filteredOut: function() {
+		return Lambda.has(ce.util.HtmlTools.classes(this.elt),"filteredOut".toLowerCase());
+	}
+	,set_filteredOut: function(v) {
+		ce.util.HtmlTools.toggleClass(this.elt,"filteredOut",v);
+		return v;
+	}
 	,onCheckedStatusChanged: function() {
 	}
 	,onDeleteClicked: function() {
 	}
 	,onRenameRequested: function() {
 	}
+	,onSelectClicked: function() {
+	}
 	,onClicked: function() {
 	}
-	,__properties__: {set_selectable:"set_selectable",get_selectable:"get_selectable",set_lastUpdate:"set_lastUpdate",get_lastUpdate:"get_lastUpdate",set_type:"set_type",get_type:"get_type",set_renameValue:"set_renameValue",get_renameValue:"get_renameValue",set_name:"set_name",get_name:"get_name",get_isChecked:"get_isChecked"}
+	,__properties__: {set_filteredOut:"set_filteredOut",get_filteredOut:"get_filteredOut",set_selectable:"set_selectable",get_selectable:"get_selectable",set_lastUpdate:"set_lastUpdate",get_lastUpdate:"get_lastUpdate",set_type:"set_type",get_type:"get_type",set_renameValue:"set_renameValue",get_renameValue:"get_renameValue",set_name:"set_name",get_name:"get_name",get_isChecked:"get_isChecked"}
 };
 ce.core.view.Home = function(elt) {
 	this.elt = elt;
@@ -2095,8 +2209,8 @@ ce.util.FileTools.mimeTypeByExt = function() {
 	_g.set(".hqx","application/mac-binhex40");
 	_g.set(".hta","application/hta");
 	_g.set(".htc","text/x-component");
-	_g.set(".htm","text/html");
 	_g.set(".html","text/html");
+	_g.set(".htm","text/html");
 	_g.set(".htt","text/webviewhtml");
 	_g.set(".hxa","application/xml");
 	_g.set(".hxc","application/xml");
@@ -2950,9 +3064,13 @@ ce.core.view.FileBrowser.SELECTOR_TYPE_BTN = ".titles .fileType";
 ce.core.view.FileBrowser.SELECTOR_DATE_BTN = ".titles .lastUpdate";
 ce.core.view.FileBrowser.CLASS_SORT_ORDER_ASC = "asc";
 ce.core.view.FileBrowser.CLASS_SORT_ORDER_DESC = "desc";
+ce.core.view.FileBrowser.CLASS_SELECT_FOLDER = "selectFolders";
 ce.core.view.FileBrowser.CLASS_PREFIX_SORTBY = "sortby-";
 ce.core.view.FileListItem.CLASS_RENAMING = "renaming";
 ce.core.view.FileListItem.CLASS_NOT_SELECTABLE = "nosel";
+ce.core.view.FileListItem.CLASS_FILTERED_OUT = "filteredOut";
+ce.core.view.FileListItem.CLASS_FOLDER = "folder";
 ce.core.view.Home.SELECTOR_SRV_LIST = "ul";
 ce.core.view.Home.SELECTOR_SRV_ITEM_TMPL = "li";
+ce.util.FileTools.DIRECTORY_MIME_TYPE = "text/directory";
 })(typeof window != "undefined" ? window : exports);
