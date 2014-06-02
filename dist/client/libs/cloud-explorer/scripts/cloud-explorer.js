@@ -400,12 +400,15 @@ ce.core.Controller.prototype = {
 								_g.application.setAuthPopupDisplayed(false);
 								_g.setAlert("Popup Blocker is enabled! Please add this site to your exception list and reload the page.",0);
 							};
-							_g.application.onServiceAuthorizationDone = function() {
+							_g.application.onServiceAuthorizationDone = function(result) {
 								_g.application.setAuthPopupDisplayed(false);
-								_g.login(name);
+								if(_g.state.serviceList.get(name).isOAuth) {
+									if(result != null && result.notApproved != true) _g.login(name); else _g.application.setLoaderDisplayed(false);
+								} else _g.login(name);
 							};
-							var url = cr.authorizeUrl + "&oauth_callback=" + StringTools.urlEncode(_g.application.get_location() + "/" + _g.config.path + "/oauth-cb.html");
-							_g.application.openAuthorizationWindow(cr.authorizeUrl);
+							var authUrl;
+							authUrl = cr.authorizeUrl + (cr.authorizeUrl.indexOf("?") > -1?"&":"?") + "oauth_callback=" + StringTools.urlEncode(_g.application.get_location() + "/" + _g.config.path + "/oauth-cb.html");
+							_g.application.openAuthorizationWindow(authUrl);
 						};
 						_g.application.setAuthPopupDisplayed(true);
 					} else {
@@ -993,7 +996,7 @@ ce.core.model.State.prototype = {
 	,__properties__: {set_currentMode:"set_currentMode",set_currentFileList:"set_currentFileList",set_currentLocation:"set_currentLocation",set_serviceList:"set_serviceList",set_displayState:"set_displayState",set_readyState:"set_readyState"}
 };
 ce.core.model.unifile = {};
-ce.core.model.unifile.Service = function(n,dn,$is,d,v,il,ic,a) {
+ce.core.model.unifile.Service = function(n,dn,$is,d,v,il,ic,ioa,a) {
 	this.name = n;
 	this.displayName = dn;
 	this.imageSmall = $is;
@@ -1001,6 +1004,7 @@ ce.core.model.unifile.Service = function(n,dn,$is,d,v,il,ic,a) {
 	this.visible = v;
 	this.set_isLoggedIn(il);
 	this.isConnected = ic;
+	this.isOAuth = ioa;
 	this.set_account(a);
 };
 ce.core.model.unifile.Service.__name__ = true;
@@ -1066,6 +1070,38 @@ ce.core.parser.json.Json2Primitive.node2Bool = function(node,path,nullable) {
 	if(nullable == null) nullable = false;
 	var v = ce.core.parser.json.Json2Primitive.node2String(node,path,nullable);
 	if(v != null) return v == "true" || v == "1"; else return false;
+};
+ce.core.parser.oauth = {};
+ce.core.parser.oauth.Str2OAuthResult = function() { };
+ce.core.parser.oauth.Str2OAuthResult.__name__ = true;
+ce.core.parser.oauth.Str2OAuthResult.parse = function(dataStr) {
+	if(dataStr.indexOf("?") == 0) dataStr = HxOverrides.substr(dataStr,1,null);
+	var dataArr = dataStr.split("&");
+	var res = { };
+	var _g = 0;
+	while(_g < dataArr.length) {
+		var pStr = dataArr[_g];
+		++_g;
+		var kv = pStr.split("=");
+		res = ce.core.parser.oauth.Str2OAuthResult.parseValue(res,kv[0],kv[1]);
+	}
+	return res;
+};
+ce.core.parser.oauth.Str2OAuthResult.parseValue = function(obj,key,value) {
+	switch(key) {
+	case "not_approved":
+		if(value.toLowerCase() == "true" || value == "1") obj.notApproved = true; else obj.notApproved = false;
+		break;
+	case "oauth_token":
+		obj.oauthToken = value;
+		break;
+	case "uid":
+		obj.uid = value;
+		break;
+	default:
+		throw "unexpected parameter " + key;
+	}
+	return obj;
 };
 ce.core.parser.unifile = {};
 ce.core.parser.unifile.Json2Account = function() { };
@@ -1136,7 +1172,7 @@ ce.core.parser.unifile.Json2Service.parseServiceCollection = function(dataStr) {
 	return serviceCol;
 };
 ce.core.parser.unifile.Json2Service.parseService = function(obj) {
-	return new ce.core.model.unifile.Service(ce.core.parser.json.Json2Primitive.node2String(obj,"name",false),ce.core.parser.json.Json2Primitive.node2String(obj,"display_name",false),ce.core.parser.json.Json2Primitive.node2String(obj,"image_small",false),ce.core.parser.json.Json2Primitive.node2String(obj,"description",false),ce.core.parser.json.Json2Primitive.node2Bool(obj,"visible",false),ce.core.parser.json.Json2Primitive.node2Bool(obj,"isLoggedIn",false),ce.core.parser.json.Json2Primitive.node2Bool(obj,"isConnected",false),Object.prototype.hasOwnProperty.call(obj,"user")?ce.core.parser.unifile.Json2Account.parseAccount(null,Reflect.field(obj,"user")):null);
+	return new ce.core.model.unifile.Service(ce.core.parser.json.Json2Primitive.node2String(obj,"name",false),ce.core.parser.json.Json2Primitive.node2String(obj,"display_name",false),ce.core.parser.json.Json2Primitive.node2String(obj,"image_small",false),ce.core.parser.json.Json2Primitive.node2String(obj,"description",false),ce.core.parser.json.Json2Primitive.node2Bool(obj,"visible",false),ce.core.parser.json.Json2Primitive.node2Bool(obj,"isLoggedIn",false),ce.core.parser.json.Json2Primitive.node2Bool(obj,"isConnected",false),ce.core.parser.json.Json2Primitive.node2Bool(obj,"isOAuth",false),Object.prototype.hasOwnProperty.call(obj,"user")?ce.core.parser.unifile.Json2Account.parseAccount(null,Reflect.field(obj,"user")):null);
 };
 ce.core.parser.unifile.Json2UploadResult = function() { };
 ce.core.parser.unifile.Json2UploadResult.__name__ = true;
@@ -1362,8 +1398,12 @@ ce.core.view.Application = function(iframe,config) {
 	this.iframe = iframe;
 	this.config = config;
 	this.initFrame();
+	ce.core.view.Application.oauthCbListener = $bind(this,this.listenOAuthCb);
 };
 ce.core.view.Application.__name__ = true;
+ce.core.view.Application.oauthCb = $hx_exports.CEoauthCb = function(pStr) {
+	if(ce.core.view.Application.oauthCbListener != null) ce.core.view.Application.oauthCbListener(pStr);
+};
 ce.core.view.Application.prototype = {
 	onClicked: function() {
 	}
@@ -1389,7 +1429,7 @@ ce.core.view.Application.prototype = {
 	}
 	,onAuthorizationWindowBlocked: function() {
 	}
-	,onServiceAuthorizationDone: function() {
+	,onServiceAuthorizationDone: function(r) {
 	}
 	,onSaveExportClicked: function() {
 	}
@@ -1453,7 +1493,6 @@ ce.core.view.Application.prototype = {
 			if($bind(authPopup,authPopup.focus) != null) authPopup.focus();
 			var timer = new haxe.Timer(500);
 			timer.run = function() {
-				console.log("authPopup= " + Std.string(authPopup) + "  authPopup.closed= " + (authPopup.closed == null?"null":"" + authPopup.closed));
 				if(authPopup.closed) {
 					timer.stop();
 					_g.onServiceAuthorizationDone();
@@ -1463,7 +1502,6 @@ ce.core.view.Application.prototype = {
 	}
 	,setModeState: function(v) {
 		var cms = this.currentModeState();
-		console.log("current UI mode is: " + cms);
 		if(cms != null) ce.util.HtmlTools.toggleClass(this.rootElt,cms,false);
 		if(v != null) switch(v[1]) {
 		case 0:
@@ -1473,6 +1511,10 @@ ce.core.view.Application.prototype = {
 			ce.util.HtmlTools.toggleClass(this.rootElt,"single-file-exp-mode",true);
 			break;
 		}
+	}
+	,listenOAuthCb: function(pStr) {
+		var o = ce.core.parser.oauth.Str2OAuthResult.parse(pStr);
+		this.onServiceAuthorizationDone(o);
 	}
 	,currentModeState: function() {
 		var _g = 0;
@@ -1496,7 +1538,6 @@ ce.core.view.Application.prototype = {
 	}
 	,cleanPreviousState: function() {
 		var cs = this.currentState();
-		console.log("current state = " + cs);
 		ce.util.HtmlTools.toggleClass(this.rootElt,"authorizing",false);
 		if(cs != null) ce.util.HtmlTools.toggleClass(this.rootElt,cs,false);
 	}
@@ -2999,6 +3040,9 @@ ce.core.config.Config.PROP_VALUE_DEFAULT_UNIFILE_ENDPOINT = "http://localhost:68
 ce.core.config.Config.PROP_VALUE_DEFAULT_CE_PATH = "";
 ce.core.model.CEError.CODE_BAD_PARAMETERS = 400;
 ce.core.model.CEError.CODE_INVALID_REQUEST = 403;
+ce.core.parser.oauth.Str2OAuthResult.PARAM_NOT_APPROVED = "not_approved";
+ce.core.parser.oauth.Str2OAuthResult.PARAM_OAUTH_TOKEN = "oauth_token";
+ce.core.parser.oauth.Str2OAuthResult.PARAM_UID = "uid";
 ce.core.service.UnifileSrv.ENDPOINT_LIST_SERVICES = "services/list";
 ce.core.service.UnifileSrv.ENDPOINT_CONNECT = "{srv}/connect";
 ce.core.service.UnifileSrv.ENDPOINT_LOGIN = "{srv}/login";
