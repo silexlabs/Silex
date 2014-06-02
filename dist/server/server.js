@@ -82,11 +82,6 @@ options.www.ROOT = __dirname + '/../../www';
 
 // add static folders
 options.staticFolders.push(
-    // file browser
-    {
-            name: '/cloud-explorer',
-            path: __dirname + '/../../submodules/cloud-explorer/app'
-    },
     // silex main site
     {
         path: __dirname + '/../../www'
@@ -96,19 +91,10 @@ options.staticFolders.push(
         name: '/silex/js/src',
         path: __dirname + '/../../src'
     },
-    // debug silex, for offline work
-    {
-        name: '/static.silex.me',
-        path: __dirname + '/../../static.silex.me'
-    },
     // silex editor
     {
         name: '/silex',
         path: __dirname + '/../../dist/client'
-    },
-    {
-        name: '/build',
-        path: __dirname + '/../../build'
     }
 );
 
