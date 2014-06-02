@@ -512,7 +512,13 @@ input[type="text"] {
   font-weight: 600;
 }
 
-/* line 155, ../../app/styles/default/theme.scss */
+/* line 152, ../../app/styles/default/theme.scss */
+
+.explorer .home ul li.ftp {
+  background: url("../images/default/ftp.png") no-repeat 50% 70%/60% auto;
+}
+
+/* line 158, ../../app/styles/default/theme.scss */
 
 .explorer .header {
   background: #282828;
@@ -522,14 +528,14 @@ input[type="text"] {
   font-size: 20px;
 }
 
-/* line 163, ../../app/styles/default/theme.scss */
+/* line 166, ../../app/styles/default/theme.scss */
 
 .explorer .header img {
   display: block;
   margin-left: 25%;
 }
 
-/* line 167, ../../app/styles/default/theme.scss */
+/* line 170, ../../app/styles/default/theme.scss */
 
 .explorer .header button {
   border: 0;
@@ -542,7 +548,7 @@ input[type="text"] {
   color: #fff;
 }
 
-/* line 175, ../../app/styles/default/theme.scss */
+/* line 178, ../../app/styles/default/theme.scss */
 
 .explorer .header .closeBtn {
   background: url("../images/default/close.png") no-repeat center center;
@@ -552,13 +558,13 @@ input[type="text"] {
   border-radius: 15px;
 }
 
-/* line 183, ../../app/styles/default/theme.scss */
+/* line 186, ../../app/styles/default/theme.scss */
 
 .explorer .logoutBtn {
   font-size: 16px;
 }
 
-/* line 188, ../../app/styles/default/theme.scss */
+/* line 191, ../../app/styles/default/theme.scss */
 
 .explorer .authPopup {
   position: absolute;
@@ -571,7 +577,7 @@ input[type="text"] {
   border-radius: 15px;
 }
 
-/* line 195, ../../app/styles/default/theme.scss */
+/* line 198, ../../app/styles/default/theme.scss */
 
 .explorer .authPopup div {
   position: absolute;
@@ -590,7 +596,7 @@ input[type="text"] {
   font-size: 20px;
 }
 
-/* line 211, ../../app/styles/default/theme.scss */
+/* line 214, ../../app/styles/default/theme.scss */
 
 .explorer .breadcrumb {
   padding: 10px;
@@ -598,7 +604,7 @@ input[type="text"] {
   font-size: 14px;
 }
 
-/* line 218, ../../app/styles/default/theme.scss */
+/* line 221, ../../app/styles/default/theme.scss */
 
 .explorer .breadcrumb .path .pathIt {
   font-style: italic;
@@ -606,13 +612,13 @@ input[type="text"] {
   color: #727271;
 }
 
-/* line 223, ../../app/styles/default/theme.scss */
+/* line 226, ../../app/styles/default/theme.scss */
 
 .explorer .breadcrumb .path .pathIt:hover {
   text-decoration: underline;
 }
 
-/* line 227, ../../app/styles/default/theme.scss */
+/* line 230, ../../app/styles/default/theme.scss */
 
 .explorer .breadcrumb .title {
   font-size: 22px;
@@ -620,7 +626,7 @@ input[type="text"] {
   padding: 10px 0 0 10px;
 }
 
-/* line 232, ../../app/styles/default/theme.scss */
+/* line 235, ../../app/styles/default/theme.scss */
 
 .explorer .breadcrumb .title .icon-folder {
   font-size: 32px;
@@ -629,7 +635,7 @@ input[type="text"] {
   margin-right: 5px;
 }
 
-/* line 242, ../../app/styles/default/theme.scss */
+/* line 245, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser {
   position: relative;
@@ -637,7 +643,7 @@ input[type="text"] {
   height: 600px;
 }
 
-/* line 246, ../../app/styles/default/theme.scss */
+/* line 249, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .services,
 .explorer .fileBrowser .files {
@@ -646,7 +652,7 @@ input[type="text"] {
   height: 557px;
 }
 
-/* line 252, ../../app/styles/default/theme.scss */
+/* line 255, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .services {
   width: 15%;
@@ -654,14 +660,14 @@ input[type="text"] {
   border-right: 1px solid #e5e5e5;
 }
 
-/* line 257, ../../app/styles/default/theme.scss */
+/* line 260, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .services ul {
   height: 100%;
   overflow-y: auto;
 }
 
-/* line 260, ../../app/styles/default/theme.scss */
+/* line 263, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .services ul li {
   height: 36px;
@@ -675,32 +681,38 @@ input[type="text"] {
   cursor: pointer;
 }
 
-/* line 266, ../../app/styles/default/theme.scss */
+/* line 269, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .services ul li.dropbox {
   background: url("../images/default/dropbox.png") no-repeat 6px 50%/auto 50%;
 }
 
-/* line 270, ../../app/styles/default/theme.scss */
+/* line 273, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .services ul li.www {
   background: url("../images/default/www.png") no-repeat 8px 50%/auto 40%;
 }
 
-/* line 275, ../../app/styles/default/theme.scss */
+/* line 276, ../../app/styles/default/theme.scss */
+
+.explorer .fileBrowser .services ul li.ftp {
+  background: url("../images/default/ftp.png") no-repeat 8px 50%/auto 40%;
+}
+
+/* line 281, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .files {
   width: 85%;
 }
 
-/* line 279, ../../app/styles/default/theme.scss */
+/* line 285, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .files .list {
   display: block;
   height: 336px;
 }
 
-/* line 283, ../../app/styles/default/theme.scss */
+/* line 289, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .files .list .titles {
   color: #dd4b39;
@@ -709,7 +721,7 @@ input[type="text"] {
   padding-bottom: 10px;
 }
 
-/* line 286, ../../app/styles/default/theme.scss */
+/* line 292, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .files .list .titles span {
   display: inline-block;
@@ -720,19 +732,19 @@ input[type="text"] {
   user-select: none;
 }
 
-/* line 290, ../../app/styles/default/theme.scss */
+/* line 296, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .files .list .titles span:hover {
   text-decoration: underline;
 }
 
-/* line 293, ../../app/styles/default/theme.scss */
+/* line 299, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .files .list .titles .lastUpdate {
   width: 150px;
 }
 
-/* line 296, ../../app/styles/default/theme.scss */
+/* line 302, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .files .list .titles .fileName {
   margin-left: 20px;
@@ -740,13 +752,13 @@ input[type="text"] {
   width: 210px;
 }
 
-/* line 300, ../../app/styles/default/theme.scss */
+/* line 306, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .files .list .titles .fileType {
   width: 60px;
 }
 
-/* line 303, ../../app/styles/default/theme.scss */
+/* line 309, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .files .list .titles .lastUpdate,
 .explorer .fileBrowser .files .list .titles .fileType {
@@ -754,7 +766,7 @@ input[type="text"] {
   text-align: center;
 }
 
-/* line 307, ../../app/styles/default/theme.scss */
+/* line 313, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .files .list ul {
   height: 304px;
@@ -762,7 +774,7 @@ input[type="text"] {
   border-top: 1px solid #e5e5e5;
 }
 
-/* line 311, ../../app/styles/default/theme.scss */
+/* line 317, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .files .list ul li .fileName {
   cursor: pointer;
@@ -773,19 +785,19 @@ input[type="text"] {
   text-overflow: ellipsis;
 }
 
-/* line 315, ../../app/styles/default/theme.scss */
+/* line 321, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .files .list ul li .fileType {
   width: 60px;
 }
 
-/* line 318, ../../app/styles/default/theme.scss */
+/* line 324, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .files .list ul li .lastUpdate {
   width: 150px;
 }
 
-/* line 321, ../../app/styles/default/theme.scss */
+/* line 327, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .files .list ul li .fileType,
 .explorer .fileBrowser .files .list ul li .lastUpdate {
@@ -793,7 +805,7 @@ input[type="text"] {
   text-align: center;
 }
 
-/* line 324, ../../app/styles/default/theme.scss */
+/* line 330, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .files .list ul li span {
   display: inline-block;
@@ -801,7 +813,7 @@ input[type="text"] {
   white-space: nowrap;
 }
 
-/* line 328, ../../app/styles/default/theme.scss */
+/* line 334, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .files .list ul li {
   clear: both;
@@ -811,62 +823,77 @@ input[type="text"] {
   border-bottom: 1px solid #e5e5e5;
 }
 
-/* line 331, ../../app/styles/default/theme.scss */
+/* line 337, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .files .list ul li input {
   vertical-align: top;
 }
 
-/* line 334, ../../app/styles/default/theme.scss */
+/* line 340, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .files .list ul li input[type="text"] {
   border: 0;
   margin: 0;
 }
 
-/* line 337, ../../app/styles/default/theme.scss */
+/* line 343, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .files .list ul li button {
   display: none;
-  background: url("../images/default/editortoolbar.png") no-repeat;
   width: 16px;
   height: 16px;
   border: 0;
   padding: 0;
   margin-left: 10px;
+  cursor: pointer;
 }
 
-/* line 343, ../../app/styles/default/theme.scss */
+/* line 349, ../../app/styles/default/theme.scss */
+
+.explorer .fileBrowser .files .list ul li button.select {
+  background: url("../images/default/select.png") no-repeat;
+  background-size: auto 100%;
+}
+
+/* line 353, ../../app/styles/default/theme.scss */
+
+.explorer .fileBrowser .files .list ul li button.rename,
+.explorer .fileBrowser .files .list ul li button.delete {
+  background: url("../images/default/editortoolbar.png") no-repeat;
+}
+
+/* line 356, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .files .list ul li button.rename {
   background-position: -336px 0;
 }
 
-/* line 346, ../../app/styles/default/theme.scss */
+/* line 359, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .files .list ul li button.delete {
   background-position: -528px 0;
 }
 
-/* line 351, ../../app/styles/default/theme.scss */
+/* line 364, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .files .list ul li.nosel input[type="checkbox"] {
   display: none;
 }
 
-/* line 354, ../../app/styles/default/theme.scss */
+/* line 367, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .files .list ul li.nosel .fileName {
   margin-left: 25px;
 }
 
-/* line 359, ../../app/styles/default/theme.scss */
+/* line 372, ../../app/styles/default/theme.scss */
 
-.explorer .fileBrowser .files .list ul li:hover button {
+.explorer .fileBrowser .files .list ul li:hover button.rename,
+.explorer .fileBrowser .files .list ul li:hover button.delete {
   display: inline-block;
 }
 
-/* line 365, ../../app/styles/default/theme.scss */
+/* line 378, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .files .list ul .folder span.fileName,
 .explorer .fileBrowser .files .list ul .folder input[type="text"] {
@@ -875,13 +902,13 @@ input[type="text"] {
   cursor: pointer;
 }
 
-/* line 373, ../../app/styles/default/theme.scss */
+/* line 386, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .files .list ul .folder.new input[type="text"] {
   margin-left: 20px;
 }
 
-/* line 381, ../../app/styles/default/theme.scss */
+/* line 394, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .files .list ul .file span.fileName,
 .explorer .fileBrowser .files .list ul .file input[type="text"] {
@@ -890,7 +917,13 @@ input[type="text"] {
   cursor: pointer;
 }
 
-/* line 390, ../../app/styles/default/theme.scss */
+/* line 401, ../../app/styles/default/theme.scss */
+
+.explorer .fileBrowser .files .list ul li.filteredOut {
+  display: none;
+}
+
+/* line 406, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .files .controls {
   min-height: 60px;
@@ -899,7 +932,7 @@ input[type="text"] {
   font-size: 18px;
 }
 
-/* line 397, ../../app/styles/default/theme.scss */
+/* line 413, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .files .controls button.newFolderBtn,
 .explorer .fileBrowser .files .controls button.deleteBtn,
@@ -916,13 +949,13 @@ input[type="text"] {
   text-transform: lowercase;
 }
 
-/* line 407, ../../app/styles/default/theme.scss */
+/* line 423, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .files .controls button.deleteBtn {
   float: right;
 }
 
-/* line 413, ../../app/styles/default/theme.scss */
+/* line 429, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .files .controls button.newFolderBtn .icon-add_folder {
   vertical-align: middle;
@@ -930,26 +963,32 @@ input[type="text"] {
   top: -2px;
 }
 
-/* line 422, ../../app/styles/default/theme.scss */
+/* line 438, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .files .controls div.export .saveBtn,
 .explorer .fileBrowser .files .controls div.export .overwriteBtn {
   color: #FFF;
 }
 
-/* line 425, ../../app/styles/default/theme.scss */
+/* line 441, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .files .controls div.export .overwriteBtn {
   background: orange;
 }
 
-/* line 428, ../../app/styles/default/theme.scss */
+/* line 444, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .files .controls div.export .saveBtn {
   background: green;
 }
 
-/* line 436, ../../app/styles/default/theme.scss */
+/* line 455, ../../app/styles/default/theme.scss */
+
+.explorer .fileBrowser.selectFolders .files .list ul li:hover button.select {
+  display: inline-block;
+}
+
+/* line 465, ../../app/styles/default/theme.scss */
 
 .explorer .dropzone {
   position: relative;
@@ -959,7 +998,7 @@ input[type="text"] {
   text-align: center;
 }
 
-/* line 441, ../../app/styles/default/theme.scss */
+/* line 470, ../../app/styles/default/theme.scss */
 
 .explorer .dropzone h2 {
   top: 37px;
@@ -969,7 +1008,7 @@ input[type="text"] {
   color: #ccc;
 }
 
-/* line 450, ../../app/styles/default/theme.scss */
+/* line 479, ../../app/styles/default/theme.scss */
 
 .explorer .dropzone div {
   position: absolute;
@@ -978,7 +1017,7 @@ input[type="text"] {
   right: 0;
 }
 
-/* line 453, ../../app/styles/default/theme.scss */
+/* line 482, ../../app/styles/default/theme.scss */
 
 .explorer .dropzone div,
 .explorer .dropzone div button {
@@ -989,7 +1028,7 @@ input[type="text"] {
   cursor: pointer;
 }
 
-/* line 458, ../../app/styles/default/theme.scss */
+/* line 487, ../../app/styles/default/theme.scss */
 
 .explorer .dropzone div button {
   position: absolute;
@@ -997,19 +1036,19 @@ input[type="text"] {
   left: 0;
 }
 
-/* line 469, ../../app/styles/default/theme.scss */
+/* line 498, ../../app/styles/default/theme.scss */
 
 .explorer.browsing.single-file-exp-mode .dropzone {
   display: none;
 }
 
-/* line 472, ../../app/styles/default/theme.scss */
+/* line 501, ../../app/styles/default/theme.scss */
 
 .explorer.browsing.single-file-exp-mode .list {
   height: 428px;
 }
 
-/* line 474, ../../app/styles/default/theme.scss */
+/* line 503, ../../app/styles/default/theme.scss */
 
 .explorer.browsing.single-file-exp-mode .list ul {
   height: 396px;

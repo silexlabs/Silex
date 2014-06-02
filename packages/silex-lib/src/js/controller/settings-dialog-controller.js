@@ -39,12 +39,12 @@ goog.inherits(silex.controller.SettingsDialogController, silex.controller.Contro
 silex.controller.SettingsDialogController.prototype.browsePublishPath = function (type){
   this.view.fileExplorer.openDialog(
       goog.bind(function(url) {
-        url = url.substring(url.indexOf('/api/v1.0/'), url.lastIndexOf('/'));
+        //url = url.substring(url.indexOf('/api/v1.0/'), url.lastIndexOf('/'));
         url = url.replace('/exec/get', '/exec/put');
         this.model.head.setPublicationPath(url);
         this.tracker.trackAction('controller-events', 'success', type, 1);
       }, this),
-      { folders: true },
+      { mimetype: "text/directory" },
       goog.bind(function(error) {
         silex.utils.Notification.notifyError('Error: I could not select the publish path. <br /><br />' + (error.message || ''));
         this.tracker.trackAction('controller-events', 'error', type, -1);
