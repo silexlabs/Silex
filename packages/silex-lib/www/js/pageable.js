@@ -59,11 +59,12 @@ $.widget('silexlabs.pageable', {
   },
   updatePage: function (){
     if(this.options.useDeeplink){
-      if (this.options.window.location.hash)
+      if (this.options.window.location.hash && this.options.window.location.hash.indexOf('#!') >= 0)
         this.options.currentPage = this.options.window.location.hash;
     }
-    if (this.options.currentPage.indexOf('#!') === 0) this.options.currentPage = this.options.currentPage.substr(2);
-
+    if (this.options.currentPage && this.options.currentPage.indexOf('#!') >= 0){
+      this.options.currentPage = this.options.currentPage.substr(this.options.currentPage.indexOf('#!') + 2);
+    }
     // show elements which belong to this page
     $('#current-page-style').remove();
     $('head').append('<style id="current-page-style">.'+this.options.currentPage+'{display:inherit; }</style>');
