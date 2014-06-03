@@ -218,6 +218,14 @@ StringTools.__name__ = true;
 StringTools.urlEncode = function(s) {
 	return encodeURIComponent(s);
 };
+StringTools.startsWith = function(s,start) {
+	return s.length >= start.length && HxOverrides.substr(s,0,start.length) == start;
+};
+StringTools.endsWith = function(s,end) {
+	var elen = end.length;
+	var slen = s.length;
+	return slen >= elen && HxOverrides.substr(s,slen - elen,elen) == end;
+};
 StringTools.isSpace = function(s,pos) {
 	var c = HxOverrides.cca(s,pos);
 	return c > 8 && c < 14 || c == 32;
@@ -407,7 +415,7 @@ ce.core.Controller.prototype = {
 								} else _g.login(name);
 							};
 							var authUrl;
-							authUrl = cr.authorizeUrl + (cr.authorizeUrl.indexOf("?") > -1?"&":"?") + "oauth_callback=" + StringTools.urlEncode(_g.application.get_location() + "/" + _g.config.path + "/oauth-cb.html");
+							authUrl = cr.authorizeUrl + (cr.authorizeUrl.indexOf("?") > -1?"&":"?") + "oauth_callback=" + StringTools.urlEncode(_g.application.get_location() + (!StringTools.endsWith(_g.application.get_location(),"/") && !StringTools.startsWith(_g.config.path,"/")?"/":"") + _g.config.path + (!StringTools.endsWith(_g.config.path,"/") && _g.config.path.length > 0?"/":"") + "oauth-cb.html");
 							_g.application.openAuthorizationWindow(authUrl);
 						};
 						_g.application.setAuthPopupDisplayed(true);
@@ -1271,6 +1279,7 @@ ce.core.service.UnifileSrv.prototype = {
 		http.request(false);
 	}
 	,ls: function(srv,path,onSuccess,onError) {
+		if(path == "/") path = ""; else path = path;
 		var http = new haxe.Http(this.config.unifileEndpoint + StringTools.replace(StringTools.replace("{srv}/exec/ls/{path}","{srv}",srv),"{path}",path));
 		http.onData = function(data) {
 			var fa = ce.core.parser.unifile.Json2File.parseFileCollection(data);
