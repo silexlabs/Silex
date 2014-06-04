@@ -581,8 +581,8 @@ silex.controller.ControllerBase.prototype.openFile = function(opt_cbk, opt_error
     goog.bind(function(url) {
       this.model.file.open(url, goog.bind(function(rawHtml) {
         this.model.file.setHtml(rawHtml, goog.bind(function() {
-          // check that it is a Silex website
-          if (goog.dom.getElementByClass('editable-style', this.model.body.getBodyElement())){
+          // check that it is a Silex website (if we have at least 1 page and not the silex-published class)
+          if (goog.dom.getElementByClass('page-element', this.model.body.getBodyElement()) && !goog.dom.classes.has(this.model.body.getBodyElement(), 'silex-published')){
             // display and redraw
             this.fileOperationSuccess(this.model.head.getTitle() + ' opened.', true)
             // QOS, track success
