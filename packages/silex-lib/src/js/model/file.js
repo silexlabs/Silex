@@ -459,7 +459,7 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
     var headStr = headElement.innerHTML;
 
     // images to download and put to assets/
-    bodyStr = bodyStr.replace(/<img[.^!>]* src="?([^"]*)"/gi, goog.bind(function(match, group1, group2) {
+    bodyStr = bodyStr.replace(/src="?([^" ]*)"/gi, goog.bind(function(match, group1, group2) {
       var absolute = silex.utils.Url.getAbsolutePath(group1, baseUrl);
       var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
       // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
@@ -632,7 +632,7 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
         <link href="css/styles.css" rel="stylesheet">\
         <script src="js/script.js" type="text/javascript"></script>\
     </head>';
-    html += '<body style="' + bodyStyle + '" class="silex-runtime">' + bodyStr + '</body>';
+    html += '<body style="' + bodyStyle + '" class="silex-runtime silex-published">' + bodyStr + '</body>';
     html += '</html>';
 
     // callback

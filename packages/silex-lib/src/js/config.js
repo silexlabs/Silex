@@ -267,7 +267,7 @@ silex.Config.menu = {
     ]
     , [
       {
-        label: 'View in new window'
+        label: 'Preview (new window)'
         , id: 'view.file'
         , className: 'menu-item-view-file'
         , shortcut: [[goog.events.KeyCodes.V, altKeyModifyer + goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT]]
