@@ -296,13 +296,23 @@ silex.view.Stage.prototype.handleMouseUp = function(target, shiftKey) {
       }
     }
   }
-  // remove the focus from text fields
-  if(this.iAmClicking != true){ // && goog.dom.contains(this.bodyElement, target)
-    this.focusInput.focus();
-    this.focusInput.blur();
+  if(this.iAmClicking != true){
+    this.resetFocus();
   }
 };
 
+/**
+ * remove the focus from text fields
+ */
+silex.view.Stage.prototype.resetFocus = function() {
+  console.log('resetFocus');
+  this.focusInput.focus();
+  this.focusInput.blur();
+}
+
+/**
+ * handle mouse down
+ */
 silex.view.Stage.prototype.handleMouseMove = function(target, x, y) {
   // update states
   if (this.isDown){

@@ -43,6 +43,9 @@ goog.require('goog.ui.KeyboardShortcutHandler');
 silex.view.dialog.FileExplorer = function(element, view, controller) {
   // get the global variable of Cloud Explorer
   this.filePicker = silex.service.CloudStorage.getInstance().filePicker;
+  // store the constructor params
+  this.view = view;
+  this.controller = controller;
 };
 
 
@@ -82,6 +85,8 @@ silex.view.dialog.FileExplorer.prototype.openDialog = function(cbk, opt_mimetype
   this.filePicker.pick(
     opt_mimetypes,
     goog.bind(function(blob) {
+      // give back focus to Silex
+      this.view.stage.resetFocus();
       // no https, because it creates security issues
       blob.url = blob.url.replace('https://', 'http://');
 
@@ -138,7 +143,8 @@ silex.view.dialog.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimety
   this.filePicker.exportFile('http://google.com/',
       opt_mimetypes,
       goog.bind(function(blob) {
-
+        // give back focus to Silex
+        this.view.stage.resetFocus();
         // no https, because it creates security issues
         blob.url = blob.url.replace('https://', 'http://');
 
