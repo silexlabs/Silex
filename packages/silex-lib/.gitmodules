@@ -1,7 +1,3 @@
-[submodule "submodules/cloud-explorer"]
-	path = submodules/cloud-explorer
-	url = https://github.com/silexlabs/cloud-explorer.git
-	ignore = dirty
 [submodule "submodules/closure-library"]
 	path = submodules/closure-library
 	url = https://code.google.com/p/closure-library/
@@ -10,7 +6,6 @@
 	path = submodules/closure-compiler
 	url = https://code.google.com/p/closure-compiler/
 	ignore = dirty
-
 [submodule "submodules/closure-linter"]
 	path = submodules/closure-linter
 	url = https://github.com/silexlabs/google-closure-linter.git

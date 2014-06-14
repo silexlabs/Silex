@@ -1,7 +1,6 @@
 all:
 	npm install
 	grunt install
-	grunt releaseDeploy
 
 tests:
 	grunt test -phantomjs
