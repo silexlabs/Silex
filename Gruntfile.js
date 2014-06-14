@@ -34,11 +34,11 @@ module.exports = function(grunt) {
   if (!grunt.file.exists('node_modules/grunt-contrib-watch')) {
     production = true;
   }
-  grunt.loadNpmTasks('grunt-closure-tools');
-  grunt.loadNpmTasks('grunt-contrib-concat');
-  grunt.loadNpmTasks('grunt-contrib-less');
-  grunt.loadNpmTasks('grunt-contrib-jade');
 
+  // default grunt task
+  grunt.registerTask('default', ['deploy']);
+
+  // when debug mode, allows debug tastks like source maps, test tools...
   if (!production){
       grunt.loadNpmTasks('grunt-selenium-webdriver');
       grunt.loadNpmTasks('grunt-contrib-csslint');
@@ -49,33 +49,45 @@ module.exports = function(grunt) {
       grunt.task.renameTask('watch', 'doWatch')
   }
 
+  // build tasks
+  grunt.loadNpmTasks('grunt-closure-tools');
+  grunt.loadNpmTasks('grunt-contrib-concat');
+  grunt.loadNpmTasks('grunt-contrib-less');
+  grunt.loadNpmTasks('grunt-contrib-jade');
 
+  // deploy tasks
   grunt.registerTask('heroku', ['releaseDeploy']);
   grunt.registerTask('deploy', ['releaseDeploy']);
   grunt.registerTask('releaseDeploy', ['concat', 'less:production', 'jade:release', 'closureBuilder:release']);
   grunt.registerTask('debugDeploy', ['concat', 'less:development', 'jade:debug', 'closureBuilder:debug', 'append-sourcemapping']);
+
+  // test and check tasks
   grunt.registerTask('check', ['htmllint', 'csslint:lax', 'closureLint']);
   grunt.registerTask('test', ['releaseDeploy', 'selenium_start', 'simplemocha', 'selenium_stop']);
   grunt.registerTask('fix', ['closureFixStyle']);
 
-  grunt.registerTask('default', ['deploy']);
-
+  // watch for file modifications and then build Silex and restart Silex server
   grunt.registerTask('watch', 'Start Silex', function () {
     grunt.task.run([
-        'runDebug',
-        'doWatch:main'
+      'runDebug',
+      'doWatch:main'
     ]);
   });
+
+  // Start Silex server
   grunt.registerTask('run', 'Start Silex', function () {
       var server = require('./dist/server/server.js');
       console.log('Start Silex', server);
   });
+
+  // Start Silex server in debug mode
   grunt.registerTask('runDebug', 'Start Silex', function () {
       var server = require('./dist/server/server.js');
       server.setDebugMode(true);
       console.log('Start Silex in debug mode', server);
   });
 
+  // Install Silex git hooks
   grunt.registerTask('install', function() {
     try{
       var fs = require('fs');
