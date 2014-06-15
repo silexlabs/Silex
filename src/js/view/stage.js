@@ -265,17 +265,6 @@ silex.view.Stage.prototype.redraw = function(selectedElements, document, pageNam
   this.bodyElementSizeToContent();
 };
 
-/**
- * handle mouse up
- * notify the controller to select/deselect the element (multiple or single)
- * reset state:
- * - clicked DOM element
- * - mouse position
- * - scroll position
- * - isDown
- * @param   {element} target a DOM element clicked by the user
- * @param   {boolean} shiftKey state of the shift key
- */
 silex.view.Stage.prototype.handleMouseUp = function(target, shiftKey) {
   // update state
   this.isDown = false;
@@ -312,7 +301,6 @@ silex.view.Stage.prototype.handleMouseUp = function(target, shiftKey) {
   }
 };
 
-
 /**
  * remove the focus from text fields
  */
@@ -323,14 +311,7 @@ silex.view.Stage.prototype.resetFocus = function() {
 }
 
 /**
- * handle mouse move
- * if the mouse button isDown, then
- * - compute the offset of the mouse from the last known position
- * - handle the scroll position changes (while dragging an element near the border of the stage, it may scroll)
- * - apply the ofset to the dragged or resized element(s)
- * @param   {element} target a DOM element clicked by the user
- * @param   {number} x position of the mouse, relatively to the screen
- * @param   {number} y position of the mouse, relatively to the screen
+ * handle mouse down
  */
 silex.view.Stage.prototype.handleMouseMove = function(target, x, y) {
   // update states
@@ -406,32 +387,18 @@ silex.view.Stage.prototype.handleMouseMove = function(target, x, y) {
   }
 };
 
-
-/**
- * handle mouse down
- * notify the controller to select the element (multiple or single)
- * store state:
- * - clicked DOM element
- * - mouse position
- * - scroll position
- * - isDown
- * @param   {element} element Silex element currently selected (text, image, html box...)
- * @param   {number} x position of the mouse, relatively to the screen
- * @param   {number} y position of the mouse, relatively to the screen
- * @param   {boolean} shiftKey state of the shift key
- */
-silex.view.Stage.prototype.handleMouseDown = function(element, x, y, shiftKey) {
+silex.view.Stage.prototype.handleMouseDown = function(target, x, y, shiftKey) {
   this.lastSelected = null;
   this.resizeDirection = null;
   // if the element was not already selected
-  if (!goog.dom.classes.has(element, silex.model.Element.SELECTED_CLASS_NAME)){
-    this.lastSelected = element;
+  if (!goog.dom.classes.has(target, silex.model.Element.SELECTED_CLASS_NAME)){
+    this.lastSelected = target;
     // notify the controller
     if (shiftKey){
-      this.controller.stageController.selectMultiple(element);
+      this.controller.stageController.selectMultiple(target);
     }
     else{
-      this.controller.stageController.select(element);
+      this.controller.stageController.select(target);
     }
   }
   // keep track of the last mouse position and body scroll
@@ -444,10 +411,6 @@ silex.view.Stage.prototype.handleMouseDown = function(element, x, y, shiftKey) {
 };
 
 
-/**
- * check if the target is a UI handle to resize or move (draggable jquery plugin)
- * @param   {element} target a DOM element clicked by the user, which may be a handle to resize or move
- */
 silex.view.Stage.prototype.getResizeDirection = function(target) {
   if(goog.dom.classes.has(target, 'ui-resizable-s')) return 's';
   else if (goog.dom.classes.has(target, 'ui-resizable-n')) return 'n';
