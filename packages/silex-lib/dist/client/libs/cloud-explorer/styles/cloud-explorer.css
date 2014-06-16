@@ -44,7 +44,7 @@ body {
   	**/
 }
 
-/* line 34, ../../app/styles/base.scss */
+/* line 40, ../../app/styles/base.scss */
 
 .explorer .loader,
 .explorer .closeBtn,
@@ -55,145 +55,161 @@ body {
 .explorer .fileBrowser,
 .explorer .alertPopup,
 .explorer .authPopup,
+.explorer .footer,
+.explorer .parentFolderBtn,
+.explorer .newFolderBtn,
+.explorer .listItemsBtn,
+.explorer .iconItemsBtn,
+.explorer .deleteBtn,
 .explorer .fileBrowser .files ul .folder.new {
   display: none;
 }
 
-/* line 47, ../../app/styles/base.scss */
+/* line 53, ../../app/styles/base.scss */
 
 .explorer.loading .loader {
   display: block;
 }
 
-/* line 53, ../../app/styles/base.scss */
+/* line 59, ../../app/styles/base.scss */
 
 .explorer.loading .fileBrowser .dropzone {
   display: none;
 }
 
-/* line 62, ../../app/styles/base.scss */
+/* line 68, ../../app/styles/base.scss */
 
 .explorer.starting .home {
   display: block;
 }
 
-/* line 66, ../../app/styles/base.scss */
+/* line 72, ../../app/styles/base.scss */
 
 .explorer.starting .closeBtn {
-  display: block;
+  display: inline-block;
 }
 
-/* line 74, ../../app/styles/base.scss */
+/* line 80, ../../app/styles/base.scss */
 
 .explorer.browsing .fileBrowser {
   display: block;
 }
 
-/* line 78, ../../app/styles/base.scss */
+/* line 88, ../../app/styles/base.scss */
 
+.explorer.browsing .parentFolderBtn,
+.explorer.browsing .newFolderBtn,
+.explorer.browsing .listItemsBtn,
+.explorer.browsing .iconItemsBtn,
 .explorer.browsing .closeBtn {
-  display: block;
+  display: inline-block;
 }
 
-/* line 82, ../../app/styles/base.scss */
+/* line 92, ../../app/styles/base.scss */
 
 .explorer.browsing .breadcrumb {
   display: block;
 }
 
-/* line 88, ../../app/styles/base.scss */
+/* line 98, ../../app/styles/base.scss */
 
 .explorer.browsing .export button {
   display: none;
 }
 
-/* line 102, ../../app/styles/base.scss */
+/* line 112, ../../app/styles/base.scss */
+
+.explorer.browsing.single-file-exp-mode .footer {
+  display: block;
+}
+
+/* line 116, ../../app/styles/base.scss */
 
 .explorer.browsing.single-file-exp-mode .export {
   display: inline-block;
 }
 
-/* line 106, ../../app/styles/base.scss */
+/* line 120, ../../app/styles/base.scss */
 
 .explorer.browsing.single-file-exp-mode .export .saveBtn {
   display: inline-block;
 }
 
-/* line 110, ../../app/styles/base.scss */
+/* line 124, ../../app/styles/base.scss */
 
 .explorer.browsing.single-file-exp-mode .export .overwriteBtn {
   display: none;
 }
 
-/* line 120, ../../app/styles/base.scss */
+/* line 134, ../../app/styles/base.scss */
 
 .explorer.browsing.single-file-exp-mode.export-overwriting .export .saveBtn {
   display: none;
 }
 
-/* line 124, ../../app/styles/base.scss */
+/* line 138, ../../app/styles/base.scss */
 
 .explorer.browsing.single-file-exp-mode.export-overwriting .export .overwriteBtn {
   display: inline-block;
 }
 
-/* line 134, ../../app/styles/base.scss */
+/* line 148, ../../app/styles/base.scss */
 
 .explorer.browsing.making-new-folder .fileBrowser .files ul .folder.new {
   display: block;
 }
 
-/* line 142, ../../app/styles/base.scss */
+/* line 156, ../../app/styles/base.scss */
 
 .explorer.authorizing .authPopup {
   display: block;
 }
 
-/* line 150, ../../app/styles/base.scss */
+/* line 164, ../../app/styles/base.scss */
 
 .explorer.alerting .alertPopup {
   display: block;
 }
 
-/* line 158, ../../app/styles/base.scss */
+/* line 172, ../../app/styles/base.scss */
 
 .explorer.loggedin .logoutBtn {
   display: block;
 }
 
-/* line 181, ../../app/styles/base.scss */
+/* line 195, ../../app/styles/base.scss */
 
 .explorer .fileBrowser .files .list ul li input[type="text"] {
   display: none;
 }
 
-/* line 188, ../../app/styles/base.scss */
+/* line 202, ../../app/styles/base.scss */
 
 .explorer .fileBrowser .files .list ul li.renaming .fileName {
   display: none;
 }
 
-/* line 192, ../../app/styles/base.scss */
+/* line 206, ../../app/styles/base.scss */
 
 .explorer .fileBrowser .files .list ul li.renaming input[type="text"] {
   display: inline-block;
 }
 
-/* line 200, ../../app/styles/base.scss */
+/* line 214, ../../app/styles/base.scss */
 
 .explorer .fileBrowser .files .list ul li.new input[type="text"] {
   display: inline-block;
 }
 
-/* line 209, ../../app/styles/base.scss */
+/* line 226, ../../app/styles/base.scss */
 
-.explorer .fileBrowser .files .controls button.deleteBtn {
-  display: none;
+.explorer.selecting .footer {
+  display: block;
 }
 
-/* line 225, ../../app/styles/base.scss */
+/* line 230, ../../app/styles/base.scss */
 
-.explorer.selecting .fileBrowser .files .controls button.deleteBtn {
+.explorer.selecting button.deleteBtn {
   display: inline-block;
 }
 
@@ -214,7 +230,7 @@ ul {
   box-sizing: border-box;
 }
 
-/* line 4, ../../app/styles/default/theme.scss */
+/* line 5, ../../app/styles/default/theme.scss */
 
 body,
 input[type="text"] {
@@ -223,95 +239,7 @@ input[type="text"] {
   color: #727271;
 }
 
-@font-face {
-  font-family: 'icomoon';
-  src: url("../fonts/icomoon.eot?-s81k15");
-  src: url("../fonts/icomoon.eot?#iefix-s81k15") format("embedded-opentype"), url("../fonts/icomoon.woff?-s81k15") format("woff"), url("../fonts/icomoon.ttf?-s81k15") format("truetype"), url("../fonts/icomoon.svg?-s81k15#icomoon") format("svg");
-  font-weight: normal;
-  font-style: normal;
-}
-
-/* line 19, ../../app/styles/default/theme.scss */
-
-[class^="icon-"],
-[class*=" icon-"] {
-  font-family: 'icomoon';
-  speak: none;
-  font-style: normal;
-  font-weight: normal;
-  font-variant: normal;
-  text-transform: none;
-  line-height: 1;
-  /* Better Font Rendering =========== */
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* line 27, ../../app/styles/default/theme.scss */
-
-.icon-folder:before {
-  content: "\e601";
-}
-
-/* line 28, ../../app/styles/default/theme.scss */
-
-.icon-add_folder:before {
-  content: "\e602";
-}
-
-/* line 29, ../../app/styles/default/theme.scss */
-
-.icon-cloud:before {
-  content: "\e603";
-}
-
-/* line 30, ../../app/styles/default/theme.scss */
-
-.icon-suppr:before {
-  content: "\e604";
-}
-
-/* line 31, ../../app/styles/default/theme.scss */
-
-.icon-import:before {
-  content: "\e605";
-}
-
-/* line 32, ../../app/styles/default/theme.scss */
-
-.icon-export:before {
-  content: "\e606";
-}
-
-/* line 33, ../../app/styles/default/theme.scss */
-
-.icon-cloudexplorer:before {
-  content: "\e600";
-}
-
-/* line 35, ../../app/styles/default/theme.scss */
-
-.clearfix:before,
-.clearfix:after {
-  content: " ";
-  display: table;
-}
-
-/* line 36, ../../app/styles/default/theme.scss */
-
-.clearfix:after {
-  clear: both;
-}
-
-/* IE6/7 support */
-
-/* line 38, ../../app/styles/default/theme.scss */
-
-.clearfix {
-  *zoom: 1;
-}
-
-/* line 40, ../../app/styles/default/theme.scss */
+/* line 9, ../../app/styles/default/theme.scss */
 
 .explorer-bg {
   background-color: black;
@@ -324,7 +252,7 @@ input[type="text"] {
   z-index: 0;
 }
 
-/* line 45, ../../app/styles/default/theme.scss */
+/* line 15, ../../app/styles/default/theme.scss */
 
 .explorer {
   position: relative;
@@ -336,13 +264,14 @@ input[type="text"] {
   min-width: 640px;
   background-color: white;
   opacity: 1;
-  border-radius: 15px;
+  border-radius: 5px;
+  overflow: hidden;
   /*
   	STYLING BY STATE
   */
 }
 
-/* line 51, ../../app/styles/default/theme.scss */
+/* line 22, ../../app/styles/default/theme.scss */
 
 .explorer .loader,
 .explorer .alertPopup {
@@ -355,7 +284,7 @@ input[type="text"] {
   vertical-align: middle;
 }
 
-/* line 56, ../../app/styles/default/theme.scss */
+/* line 27, ../../app/styles/default/theme.scss */
 
 .explorer .loader div.bg,
 .explorer .alertPopup div.bg {
@@ -365,12 +294,11 @@ input[type="text"] {
   z-index: -1;
   width: 100%;
   height: 100%;
-  border-radius: 15px;
   background-color: black;
   opacity: .5;
 }
 
-/* line 61, ../../app/styles/default/theme.scss */
+/* line 32, ../../app/styles/default/theme.scss */
 
 .explorer .loader div.txt,
 .explorer .alertPopup div.txt {
@@ -387,21 +315,21 @@ input[type="text"] {
   font-size: 20px;
 }
 
-/* line 75, ../../app/styles/default/theme.scss */
+/* line 46, ../../app/styles/default/theme.scss */
 
 .explorer .loader div.txt {
   height: 80px;
   margin-top: -40px;
 }
 
-/* line 80, ../../app/styles/default/theme.scss */
+/* line 52, ../../app/styles/default/theme.scss */
 
 .explorer .alertPopup div.txt {
   height: 160px;
   margin-top: -80px;
 }
 
-/* line 82, ../../app/styles/default/theme.scss */
+/* line 56, ../../app/styles/default/theme.scss */
 
 .explorer .alertPopup div.txt .choice {
   padding: 6px;
@@ -414,51 +342,51 @@ input[type="text"] {
   border-radius: 5px;
 }
 
-/* line 88, ../../app/styles/default/theme.scss */
+/* line 62, ../../app/styles/default/theme.scss */
 
 .explorer .alertPopup div.txt .choice:nth-of-type(1) {
   border: 2px solid red;
 }
 
-/* line 91, ../../app/styles/default/theme.scss */
+/* line 65, ../../app/styles/default/theme.scss */
 
 .explorer .alertPopup div.txt .choice:nth-of-type(2) {
   border: 2px solid green;
 }
 
-/* line 94, ../../app/styles/default/theme.scss */
+/* line 68, ../../app/styles/default/theme.scss */
 
 .explorer .alertPopup div.txt .choice:nth-of-type(1):hover {
   background: red;
   color: #FFF;
 }
 
-/* line 97, ../../app/styles/default/theme.scss */
+/* line 71, ../../app/styles/default/theme.scss */
 
 .explorer .alertPopup div.txt .choice:nth-of-type(2):hover {
   background: green;
   color: #FFF;
 }
 
-/* line 103, ../../app/styles/default/theme.scss */
+/* line 78, ../../app/styles/default/theme.scss */
 
 .explorer .alertPopup.warning div.txt {
   background-color: orange;
 }
 
-/* line 108, ../../app/styles/default/theme.scss */
+/* line 85, ../../app/styles/default/theme.scss */
 
 .explorer .alertPopup.error div.txt {
   background-color: red;
 }
 
-/* line 113, ../../app/styles/default/theme.scss */
+/* line 91, ../../app/styles/default/theme.scss */
 
 .explorer .home {
   text-align: center;
 }
 
-/* line 117, ../../app/styles/default/theme.scss */
+/* line 95, ../../app/styles/default/theme.scss */
 
 .explorer .home span {
   display: inline-block;
@@ -466,7 +394,7 @@ input[type="text"] {
   margin-top: 180px;
 }
 
-/* line 121, ../../app/styles/default/theme.scss */
+/* line 99, ../../app/styles/default/theme.scss */
 
 .explorer .home ul {
   display: block;
@@ -475,96 +403,151 @@ input[type="text"] {
   margin-top: 15px;
 }
 
-/* line 124, ../../app/styles/default/theme.scss */
+/* line 102, ../../app/styles/default/theme.scss */
 
 .explorer .home ul li {
   display: inline-block;
-  width: 100px;
-  height: 100px;
+  width: 110px;
+  height: 110px;
   vertical-align: top;
-  margin: 4px;
-  border-radius: 10px;
+  margin: 10px;
   cursor: pointer;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+  padding-top: 90px;
+  background-repeat: no-repeat;
+  background-size: auto 110px;
+  background-position: 0px -8px;
+  border: 1px solid 34b7ea;
+  font-size: 16;
 }
 
-/* line 133, ../../app/styles/default/theme.scss */
+/* line 120, ../../app/styles/default/theme.scss */
+
+.explorer .home ul li:hover {
+  background-position: -110px -8px;
+  border: 1px solid 288cb3;
+}
+
+/* line 124, ../../app/styles/default/theme.scss */
+
+.explorer .home ul li:active {
+  background-position: -220px -8px;
+  border: 1px solid 195a73;
+}
+
+/* line 128, ../../app/styles/default/theme.scss */
 
 .explorer .home ul li.dropbox {
-  padding-top: 5px;
-  color: white;
-  font-size: 18px;
-  font-weight: 500;
-  background: #007ee5 url("../images/default/dropbox-white.png") no-repeat 50% 70%/70% auto;
+  background-image: url("../images/default/home-dropbox.png");
 }
 
-/* line 142, ../../app/styles/default/theme.scss */
+/* line 131, ../../app/styles/default/theme.scss */
 
 .explorer .home ul li.www {
-  background: url("../images/default/www.png") no-repeat 50% 70%/60% auto;
-  border: 2px solid #333333;
-  color: #333333;
-  padding-top: 5px;
-  font-size: 15px;
-  font-weight: 600;
+  background-image: url("../images/default/home-www.png");
 }
 
-/* line 152, ../../app/styles/default/theme.scss */
+/* line 134, ../../app/styles/default/theme.scss */
 
 .explorer .home ul li.ftp {
-  background: url("../images/default/ftp.png") no-repeat 50% 70%/60% auto;
+  background-image: url("../images/default/home-ftp.png");
 }
 
-/* line 158, ../../app/styles/default/theme.scss */
+/* line 140, ../../app/styles/default/theme.scss */
 
 .explorer .header {
-  background: #282828;
-  border-radius: 15px 15px 0px 0px;
-  color: #fff;
-  padding: 10px;
-  font-size: 20px;
+  position: relative;
+  z-index: 2;
+  height: 104px;
+  background-color: #282828;
+  background-image: url("../images/default/ce-header.png");
+  background-repeat: no-repeat;
+  background-size: auto 70%;
+  background-position: 20px 50%;
+}
+
+/* line 151, ../../app/styles/default/theme.scss */
+
+.explorer .header .controls {
+  position: absolute;
+  top: 26px;
+  right: 10px;
+  width: 310px;
+  height: 52px;
+}
+
+/* line 156, ../../app/styles/default/theme.scss */
+
+.explorer .header .controls button {
+  float: left;
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  border: 0;
+  margin: 0;
+  background-repeat: no-repeat;
+  background-position: 0px 0px;
+  background-color: transparent;
+  cursor: pointer;
 }
 
 /* line 166, ../../app/styles/default/theme.scss */
 
-.explorer .header img {
-  display: block;
-  margin-left: 25%;
+.explorer .header .controls button:hover {
+  background-position: -52px 0px;
 }
 
 /* line 170, ../../app/styles/default/theme.scss */
 
-.explorer .header button {
-  border: 0;
-  padding: 0;
-  margin-left: 15px;
-  float: right;
-  height: 30px;
-  cursor: pointer;
-  background: #282828;
-  color: #fff;
+.explorer .header .controls button:active {
+  background-position: -104px 0px;
 }
 
-/* line 178, ../../app/styles/default/theme.scss */
+/* line 174, ../../app/styles/default/theme.scss */
 
-.explorer .header .closeBtn {
-  background: url("../images/default/close.png") no-repeat center center;
-  background-size: 11px 11px;
-  width: 30px;
-  border: 2px solid #fff;
-  border-radius: 15px;
+.explorer .header .controls button:disabled {
+  background-position: -208px 0px;
+  cursor: not-allowed;
 }
 
-/* line 186, ../../app/styles/default/theme.scss */
+/* line 179, ../../app/styles/default/theme.scss */
 
-.explorer .logoutBtn {
-  font-size: 16px;
+.explorer .header .controls button.parentFolderBtn {
+  background-image: url("../images/default/btn-parent-folder.png");
+  margin-right: 10px;
 }
 
-/* line 191, ../../app/styles/default/theme.scss */
+/* line 184, ../../app/styles/default/theme.scss */
+
+.explorer .header .controls button.newFolderBtn {
+  background-image: url("../images/default/btn-new-folder.png");
+  margin-right: 20px;
+}
+
+/* line 189, ../../app/styles/default/theme.scss */
+
+.explorer .header .controls button.listItemsBtn {
+  background-image: url("../images/default/btn-list-items.png");
+  margin-right: 10px;
+}
+
+/* line 194, ../../app/styles/default/theme.scss */
+
+.explorer .header .controls button.iconItemsBtn {
+  background-image: url("../images/default/btn-icon-items.png");
+  margin-right: 10px;
+}
+
+/* line 199, ../../app/styles/default/theme.scss */
+
+.explorer .header .controls button.closeBtn {
+  background-image: url("../images/default/btn-close.png");
+}
+
+/* line 206, ../../app/styles/default/theme.scss */
 
 .explorer .authPopup {
   position: absolute;
@@ -574,10 +557,9 @@ input[type="text"] {
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.4);
-  border-radius: 15px;
 }
 
-/* line 198, ../../app/styles/default/theme.scss */
+/* line 213, ../../app/styles/default/theme.scss */
 
 .explorer .authPopup div {
   position: absolute;
@@ -596,43 +578,27 @@ input[type="text"] {
   font-size: 20px;
 }
 
-/* line 214, ../../app/styles/default/theme.scss */
+/* line 229, ../../app/styles/default/theme.scss */
 
 .explorer .breadcrumb {
-  padding: 10px;
-  padding-bottom: 0px;
+  padding: 6px;
+  padding-left: 50px;
   font-size: 14px;
+  background: url("../images/default/breadcrumb.png") no-repeat 10px 50%/auto 65%;
 }
 
-/* line 221, ../../app/styles/default/theme.scss */
+/* line 235, ../../app/styles/default/theme.scss */
 
-.explorer .breadcrumb .path .pathIt {
+.explorer .breadcrumb .pathIt {
   font-style: italic;
   cursor: pointer;
   color: #727271;
 }
 
-/* line 226, ../../app/styles/default/theme.scss */
+/* line 240, ../../app/styles/default/theme.scss */
 
-.explorer .breadcrumb .path .pathIt:hover {
+.explorer .breadcrumb .pathIt:hover {
   text-decoration: underline;
-}
-
-/* line 230, ../../app/styles/default/theme.scss */
-
-.explorer .breadcrumb .title {
-  font-size: 22px;
-  color: #222;
-  padding: 10px 0 0 10px;
-}
-
-/* line 235, ../../app/styles/default/theme.scss */
-
-.explorer .breadcrumb .title .icon-folder {
-  font-size: 32px;
-  color: #dd4b39;
-  vertical-align: middle;
-  margin-right: 5px;
 }
 
 /* line 245, ../../app/styles/default/theme.scss */
@@ -640,88 +606,212 @@ input[type="text"] {
 .explorer .fileBrowser {
   position: relative;
   width: 100%;
-  height: 600px;
+  height: 100%;
+  margin-top: -104px;
+  padding-top: 104px;
+  padding-bottom: 0px;
 }
 
-/* line 249, ../../app/styles/default/theme.scss */
+/* line 251, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .services,
 .explorer .fileBrowser .files {
   float: left;
-  overflow: hidden;
-  height: 557px;
+  height: 100%;
+  /* overflow: hidden; */
 }
 
-/* line 255, ../../app/styles/default/theme.scss */
+/* line 257, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .services {
-  width: 15%;
-  overflow-y: auto;
-  border-right: 1px solid #e5e5e5;
+  position: relative;
+  width: 53px;
+  z-index: 10;
+  border-right: 1px solid #282828;
 }
 
-/* line 260, ../../app/styles/default/theme.scss */
+/* line 262, ../../app/styles/default/theme.scss */
 
-.explorer .fileBrowser .services ul {
-  height: 100%;
-  overflow-y: auto;
-}
-
-/* line 263, ../../app/styles/default/theme.scss */
-
-.explorer .fileBrowser .services ul li {
-  height: 36px;
-  padding-left: 30px;
-  padding-top: 10px;
-  padding-bottom: 10px;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
+.explorer .fileBrowser .services .logoutBtn {
+  height: 52px;
+  margin: 0px;
+  padding: 0px;
   cursor: pointer;
 }
 
-/* line 269, ../../app/styles/default/theme.scss */
+/* line 267, ../../app/styles/default/theme.scss */
 
-.explorer .fileBrowser .services ul li.dropbox {
-  background: url("../images/default/dropbox.png") no-repeat 6px 50%/auto 50%;
+.explorer .fileBrowser .services > ul {
+  height: 100%;
+  width: 100%;
+  padding-bottom: 52px;
 }
 
-/* line 273, ../../app/styles/default/theme.scss */
+/* line 270, ../../app/styles/default/theme.scss */
 
-.explorer .fileBrowser .services ul li.www {
-  background: url("../images/default/www.png") no-repeat 8px 50%/auto 40%;
-}
-
-/* line 276, ../../app/styles/default/theme.scss */
-
-.explorer .fileBrowser .services ul li.ftp {
-  background: url("../images/default/ftp.png") no-repeat 8px 50%/auto 40%;
-}
-
-/* line 281, ../../app/styles/default/theme.scss */
-
-.explorer .fileBrowser .files {
-  width: 85%;
-}
-
-/* line 285, ../../app/styles/default/theme.scss */
-
-.explorer .fileBrowser .files .list {
+.explorer .fileBrowser .services > ul > li {
   display: block;
-  height: 336px;
+  float: left;
+  height: 52px;
+  width: 52px;
+  border-bottom: 1px solid #666666;
+  cursor: pointer;
+  background-repeat: no-repeat, no-repeat;
+  background-position: 32px 9px, 0px 0px;
+  background-size: 11px 11px, auto 52px;
+}
+
+/* line 279, ../../app/styles/default/theme.scss */
+
+.explorer .fileBrowser .services > ul > li:hover {
+  background-position: 32px 9px, -52px 0px;
+}
+
+/* line 282, ../../app/styles/default/theme.scss */
+
+.explorer .fileBrowser .services > ul > li:hover ul.contextMenu {
+  /* display: block; WIP */
+}
+
+/* line 286, ../../app/styles/default/theme.scss */
+
+.explorer .fileBrowser .services > ul > li:active {
+  background-position: 32px 9px, -104px 0px;
 }
 
 /* line 289, ../../app/styles/default/theme.scss */
 
-.explorer .fileBrowser .files .list .titles {
-  color: #dd4b39;
-  font-size: 14px;
-  padding-top: 6px;
-  padding-bottom: 10px;
+.explorer .fileBrowser .services > ul > li.dropbox {
+  background-image: url("../images/default/srv-state-disconnected.png"), url("../images/default/srv-dropbox.png");
 }
 
 /* line 292, ../../app/styles/default/theme.scss */
+
+.explorer .fileBrowser .services > ul > li.dropbox.connected {
+  background-image: url("../images/default/srv-state-connected.png"), url("../images/default/srv-dropbox.png");
+}
+
+/* line 295, ../../app/styles/default/theme.scss */
+
+.explorer .fileBrowser .services > ul > li.www {
+  background-image: url("../images/default/srv-state-disconnected.png"), url("../images/default/srv-www.png");
+}
+
+/* line 298, ../../app/styles/default/theme.scss */
+
+.explorer .fileBrowser .services > ul > li.www.connected {
+  background-image: url("../images/default/srv-state-connected.png"), url("../images/default/srv-www.png");
+}
+
+/* line 301, ../../app/styles/default/theme.scss */
+
+.explorer .fileBrowser .services > ul > li.ftp {
+  background-image: url("../images/default/srv-state-disconnected.png"), url("../images/default/srv-ftp.png");
+}
+
+/* line 304, ../../app/styles/default/theme.scss */
+
+.explorer .fileBrowser .services > ul > li.ftp.connected {
+  background-image: url("../images/default/srv-state-connected.png"), url("../images/default/srv-ftp.png");
+}
+
+/* line 308, ../../app/styles/default/theme.scss */
+
+.explorer .fileBrowser .services > ul ul.contextMenu {
+  position: absolute;
+  z-index: 20;
+  width: 170px;
+  left: 50px;
+  margin-top: 4px;
+  display: none;
+  padding: 0px;
+  background-color: #fcf6d6;
+  border-left: 1px solid black;
+  border-top: 1px solid black;
+  border-right: 1px solid black;
+}
+
+/* line 323, ../../app/styles/default/theme.scss */
+
+.explorer .fileBrowser .services > ul ul.contextMenu li {
+  height: 27px;
+  line-height: 26px;
+  margin: 0px;
+  padding: 0px;
+  padding-left: 6px;
+  border-bottom: 1px solid black;
+}
+
+/* line 328, ../../app/styles/default/theme.scss */
+
+.explorer .fileBrowser .services > ul ul.contextMenu li:hover {
+  text-decoration: underline;
+}
+
+/* line 331, ../../app/styles/default/theme.scss */
+
+.explorer .fileBrowser .services > ul ul.contextMenu li.logout {
+  display: none;
+}
+
+/* line 335, ../../app/styles/default/theme.scss */
+
+.explorer .fileBrowser .services > ul ul.contextMenu::before {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 0;
+  margin-left: -12px;
+  margin-top: 8px;
+  border-width: 6px;
+  border-style: solid;
+  border-color: transparent black transparent transparent;
+}
+
+/* line 348, ../../app/styles/default/theme.scss */
+
+.explorer .fileBrowser .services > ul li.connected li.login {
+  display: none;
+}
+
+/* line 351, ../../app/styles/default/theme.scss */
+
+.explorer .fileBrowser .services > ul li.connected li.logout {
+  display: block;
+}
+
+/* line 357, ../../app/styles/default/theme.scss */
+
+.explorer .fileBrowser .files {
+  position: absolute;
+  width: 100%;
+  top: 104px;
+  left: 0;
+  padding-left: 52px;
+}
+
+/* line 362, ../../app/styles/default/theme.scss */
+
+.explorer .fileBrowser .files .list {
+  padding-left: 10px;
+  padding-right: 10px;
+  display: block;
+  height: 100%;
+  padding-bottom: 224px;
+}
+
+/* line 367, ../../app/styles/default/theme.scss */
+
+.explorer .fileBrowser .files .list .titles {
+  color: #34B8EB;
+  font-size: 14px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  border-top: 1px solid #34B8EB;
+  border-bottom: 1px solid #34B8EB;
+}
+
+/* line 372, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .files .list .titles span {
   display: inline-block;
@@ -732,19 +822,43 @@ input[type="text"] {
   user-select: none;
 }
 
-/* line 296, ../../app/styles/default/theme.scss */
+/* line 376, ../../app/styles/default/theme.scss */
+
+.explorer .fileBrowser .files .list .titles span.sortArrow {
+  width: 6px;
+  height: 6px;
+  margin-right: 6px;
+  background-image: url("../images/default/btn-sort.png");
+  background-size: auto 6px;
+  background-position: 0px 0px;
+  background-repeat: no-repeat;
+}
+
+/* line 385, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .files .list .titles span:hover {
   text-decoration: underline;
 }
 
-/* line 299, ../../app/styles/default/theme.scss */
+/* line 387, ../../app/styles/default/theme.scss */
+
+.explorer .fileBrowser .files .list .titles span:hover .sortArrow {
+  background-position: -6px 0px;
+}
+
+/* line 392, ../../app/styles/default/theme.scss */
+
+.explorer .fileBrowser .files .list .titles span:active .sortArrow {
+  background-position: -12px 0px;
+}
+
+/* line 396, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .files .list .titles .lastUpdate {
   width: 150px;
 }
 
-/* line 302, ../../app/styles/default/theme.scss */
+/* line 399, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .files .list .titles .fileName {
   margin-left: 20px;
@@ -752,13 +866,13 @@ input[type="text"] {
   width: 210px;
 }
 
-/* line 306, ../../app/styles/default/theme.scss */
+/* line 403, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .files .list .titles .fileType {
   width: 60px;
 }
 
-/* line 309, ../../app/styles/default/theme.scss */
+/* line 406, ../../app/styles/default/theme.scss */
 
 .explorer .fileBrowser .files .list .titles .lastUpdate,
 .explorer .fileBrowser .files .list .titles .fileType {
@@ -766,182 +880,328 @@ input[type="text"] {
   text-align: center;
 }
 
-/* line 313, ../../app/styles/default/theme.scss */
+/* line 410, ../../app/styles/default/theme.scss */
 
-.explorer .fileBrowser .files .list ul {
-  height: 304px;
+.explorer .fileBrowser .files .list div.items {
+  height: 100%;
+  padding-bottom: 30px;
+}
+
+/* line 412, ../../app/styles/default/theme.scss */
+
+.explorer .fileBrowser .files .list div.items ul {
+  height: 100%;
   overflow-y: auto;
-  border-top: 1px solid #e5e5e5;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
-/* line 317, ../../app/styles/default/theme.scss */
+/* line 416, ../../app/styles/default/theme.scss */
 
-.explorer .fileBrowser .files .list ul li .fileName {
+.explorer .fileBrowser .files .list div.items ul li .fileName {
   cursor: pointer;
-  -ms-text-overflow: ellipsis;
-  /* Required for IE8 */
-  -o-text-overflow: ellipsis;
-  /* Required for Opera */
-  text-overflow: ellipsis;
 }
 
-/* line 321, ../../app/styles/default/theme.scss */
+/* line 419, ../../app/styles/default/theme.scss */
 
-.explorer .fileBrowser .files .list ul li .fileType {
+.explorer .fileBrowser .files .list div.items ul li .fileType {
   width: 60px;
 }
 
-/* line 324, ../../app/styles/default/theme.scss */
+/* line 422, ../../app/styles/default/theme.scss */
 
-.explorer .fileBrowser .files .list ul li .lastUpdate {
+.explorer .fileBrowser .files .list div.items ul li .lastUpdate {
   width: 150px;
 }
 
-/* line 327, ../../app/styles/default/theme.scss */
+/* line 425, ../../app/styles/default/theme.scss */
 
-.explorer .fileBrowser .files .list ul li .fileType,
-.explorer .fileBrowser .files .list ul li .lastUpdate {
+.explorer .fileBrowser .files .list div.items ul li .fileType,
+.explorer .fileBrowser .files .list div.items ul li .lastUpdate {
   float: right;
   text-align: center;
 }
 
-/* line 330, ../../app/styles/default/theme.scss */
+/* line 428, ../../app/styles/default/theme.scss */
 
-.explorer .fileBrowser .files .list ul li span {
+.explorer .fileBrowser .files .list div.items ul li span {
   display: inline-block;
   overflow: hidden;
   white-space: nowrap;
 }
 
-/* line 334, ../../app/styles/default/theme.scss */
+/* line 432, ../../app/styles/default/theme.scss */
 
-.explorer .fileBrowser .files .list ul li {
+.explorer .fileBrowser .files .list div.items ul li {
   clear: both;
-  height: 36px;
-  padding-top: 10px;
-  padding-bottom: 10px;
+  height: 35px;
+  line-height: 35px;
   border-bottom: 1px solid #e5e5e5;
+  -ms-text-overflow: ellipsis;
+  -o-text-overflow: ellipsis;
+  text-overflow: ellipsis;
 }
 
-/* line 337, ../../app/styles/default/theme.scss */
+/* line 437, ../../app/styles/default/theme.scss */
 
-.explorer .fileBrowser .files .list ul li input {
-  vertical-align: top;
+.explorer .fileBrowser .files .list div.items ul li span.icon {
+  width: 34px;
+  height: 34px;
+  background-repeat: no-repeat;
+  background-size: auto 34px;
+  background-position: 0px 0px;
 }
 
-/* line 340, ../../app/styles/default/theme.scss */
+/* line 445, ../../app/styles/default/theme.scss */
 
-.explorer .fileBrowser .files .list ul li input[type="text"] {
+.explorer .fileBrowser .files .list div.items ul li input,
+.explorer .fileBrowser .files .list div.items ul li button,
+.explorer .fileBrowser .files .list div.items ul li span {
+  vertical-align: middle;
+}
+
+/* line 448, ../../app/styles/default/theme.scss */
+
+.explorer .fileBrowser .files .list div.items ul li span.fileName,
+.explorer .fileBrowser .files .list div.items ul li input[type="text"] {
+  cursor: pointer;
+}
+
+/* line 451, ../../app/styles/default/theme.scss */
+
+.explorer .fileBrowser .files .list div.items ul li input[type="text"] {
   border: 0;
   margin: 0;
 }
 
-/* line 343, ../../app/styles/default/theme.scss */
+/* line 454, ../../app/styles/default/theme.scss */
 
-.explorer .fileBrowser .files .list ul li button {
+.explorer .fileBrowser .files .list div.items ul li button {
   display: none;
-  width: 16px;
-  height: 16px;
+  width: 34px;
+  height: 34px;
   border: 0;
   padding: 0;
   margin-left: 10px;
   cursor: pointer;
+  background-color: transparent;
+  background-size: auto 34px;
+  background-position: 0px 0px;
+  background-repeat: no-repeat;
 }
 
-/* line 349, ../../app/styles/default/theme.scss */
+/* line 466, ../../app/styles/default/theme.scss */
 
-.explorer .fileBrowser .files .list ul li button.select {
-  background: url("../images/default/select.png") no-repeat;
-  background-size: auto 100%;
+.explorer .fileBrowser .files .list div.items ul li button:hover {
+  background-position: -34px 0px;
 }
 
-/* line 353, ../../app/styles/default/theme.scss */
+/* line 469, ../../app/styles/default/theme.scss */
 
-.explorer .fileBrowser .files .list ul li button.rename,
-.explorer .fileBrowser .files .list ul li button.delete {
-  background: url("../images/default/editortoolbar.png") no-repeat;
+.explorer .fileBrowser .files .list div.items ul li button:active {
+  background-position: -68px 0px;
 }
 
-/* line 356, ../../app/styles/default/theme.scss */
+/* line 472, ../../app/styles/default/theme.scss */
 
-.explorer .fileBrowser .files .list ul li button.rename {
-  background-position: -336px 0;
+.explorer .fileBrowser .files .list div.items ul li button.select {
+  background-image: url("../images/default/btn-item-select.png");
 }
 
-/* line 359, ../../app/styles/default/theme.scss */
+/* line 475, ../../app/styles/default/theme.scss */
 
-.explorer .fileBrowser .files .list ul li button.delete {
-  background-position: -528px 0;
+.explorer .fileBrowser .files .list div.items ul li button.rename {
+  background-image: url("../images/default/btn-item-rename.png");
 }
 
-/* line 364, ../../app/styles/default/theme.scss */
+/* line 478, ../../app/styles/default/theme.scss */
 
-.explorer .fileBrowser .files .list ul li.nosel input[type="checkbox"] {
+.explorer .fileBrowser .files .list div.items ul li button.delete {
+  background-image: url("../images/default/btn-item-delete.png");
+}
+
+/* line 483, ../../app/styles/default/theme.scss */
+
+.explorer .fileBrowser .files .list div.items ul li.nosel input[type="checkbox"] {
   display: none;
 }
 
-/* line 367, ../../app/styles/default/theme.scss */
+/* line 486, ../../app/styles/default/theme.scss */
 
-.explorer .fileBrowser .files .list ul li.nosel .fileName {
+.explorer .fileBrowser .files .list div.items ul li.nosel .fileName {
   margin-left: 25px;
 }
 
-/* line 372, ../../app/styles/default/theme.scss */
+/* line 491, ../../app/styles/default/theme.scss */
 
-.explorer .fileBrowser .files .list ul li:hover button.rename,
-.explorer .fileBrowser .files .list ul li:hover button.delete {
+.explorer .fileBrowser .files .list div.items ul li:hover span.icon {
+  background-position: -34px 0px;
+}
+
+/* line 494, ../../app/styles/default/theme.scss */
+
+.explorer .fileBrowser .files .list div.items ul li:hover button.rename,
+.explorer .fileBrowser .files .list div.items ul li:hover button.delete {
   display: inline-block;
 }
 
-/* line 378, ../../app/styles/default/theme.scss */
+/* line 499, ../../app/styles/default/theme.scss */
 
-.explorer .fileBrowser .files .list ul .folder span.fileName,
-.explorer .fileBrowser .files .list ul .folder input[type="text"] {
-  background: url("../images/default/folder.png") no-repeat;
-  padding-left: 20px;
-  cursor: pointer;
+.explorer .fileBrowser .files .list div.items ul li:active span.icon {
+  background-position: -68px 0px;
 }
 
-/* line 386, ../../app/styles/default/theme.scss */
+/* line 504, ../../app/styles/default/theme.scss */
 
-.explorer .fileBrowser .files .list ul .folder.new input[type="text"] {
+.explorer .fileBrowser .files .list div.items ul li.folder span.icon {
+  background-image: url("../images/default/icon-folder.png");
+}
+
+/* line 508, ../../app/styles/default/theme.scss */
+
+.explorer .fileBrowser .files .list div.items ul li.folder.new input[type="text"] {
   margin-left: 20px;
 }
 
-/* line 394, ../../app/styles/default/theme.scss */
+/* line 514, ../../app/styles/default/theme.scss */
 
-.explorer .fileBrowser .files .list ul .file span.fileName,
-.explorer .fileBrowser .files .list ul .file input[type="text"] {
-  background: url("../images/default/file.png") no-repeat;
-  padding-left: 20px;
-  cursor: pointer;
+.explorer .fileBrowser .files .list div.items ul li.file span.icon {
+  background-image: url("../images/default/icon-file.png");
 }
 
-/* line 401, ../../app/styles/default/theme.scss */
+/* line 519, ../../app/styles/default/theme.scss */
 
-.explorer .fileBrowser .files .list ul li.filteredOut {
+.explorer .fileBrowser .files .list div.items ul li.file.image span.icon {
+  background-image: url("../images/default/icon-image.png");
+}
+
+/* line 524, ../../app/styles/default/theme.scss */
+
+.explorer .fileBrowser .files .list div.items ul li.file.sound span.icon {
+  background-image: url("../images/default/icon-sound.png");
+}
+
+/* line 529, ../../app/styles/default/theme.scss */
+
+.explorer .fileBrowser .files .list div.items ul li.file.video span.icon {
+  background-image: url("../images/default/icon-video.png");
+}
+
+/* line 533, ../../app/styles/default/theme.scss */
+
+.explorer .fileBrowser .files .list div.items ul li.filteredOut {
+  /* display: none; */
+  color: grey;
+  font-style: italic;
+  cursor: not-allowed;
+}
+
+/* line 538, ../../app/styles/default/theme.scss */
+
+.explorer .fileBrowser .files .list div.items ul li.filteredOut span.fileName {
+  cursor: not-allowed;
+}
+
+/* line 543, ../../app/styles/default/theme.scss */
+
+.explorer .fileBrowser .files .list div.items ul li.filteredOut:hover span.icon {
+  background-position: 0px 0px;
+}
+
+/* line 546, ../../app/styles/default/theme.scss */
+
+.explorer .fileBrowser .files .list div.items ul li.filteredOut:hover button.rename,
+.explorer .fileBrowser .files .list div.items ul li.filteredOut:hover button.delete {
   display: none;
 }
 
-/* line 406, ../../app/styles/default/theme.scss */
+/* line 559, ../../app/styles/default/theme.scss */
 
-.explorer .fileBrowser .files .controls {
-  min-height: 60px;
-  padding: 10px 10px 10px 10px;
-  background: #b4dff8;
-  font-size: 18px;
+.explorer .fileBrowser.selectFolders .files .list ul li:hover button.select {
+  display: inline-block;
 }
 
-/* line 413, ../../app/styles/default/theme.scss */
+/* line 569, ../../app/styles/default/theme.scss */
 
-.explorer .fileBrowser .files .controls button.newFolderBtn,
-.explorer .fileBrowser .files .controls button.deleteBtn,
-.explorer .fileBrowser .files .controls div.export .saveBtn,
-.explorer .fileBrowser .files .controls div.export .overwriteBtn {
-  border-radius: 5px;
+.explorer .dropzone {
+  position: relative;
+  height: 92px;
+  z-index: 10;
+  margin-top: -224px;
+  border-top: 1px dashed #34B8EB;
+  background: url("../images/default/dropzone.png") no-repeat center/auto 50%;
+  text-align: center;
+  color: #34B7EA;
+}
+
+/* line 577, ../../app/styles/default/theme.scss */
+
+.explorer .dropzone h2 {
+  margin-top: 4px;
+  margin-bottom: 11px;
+  position: relative;
+  font-weight: 300;
+  font-size: 14pt;
+}
+
+/* line 585, ../../app/styles/default/theme.scss */
+
+.explorer .dropzone div,
+.explorer .dropzone div button {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+
+/* line 589, ../../app/styles/default/theme.scss */
+
+.explorer .dropzone div button {
+  background: transparent;
+  color: #34B7EA;
+  line-height: 150px;
+  font-weight: 300;
+  font-size: 11pt;
+  cursor: pointer;
+}
+
+/* line 599, ../../app/styles/default/theme.scss */
+
+.explorer .dropzone div button:hover {
+  text-decoration: underline;
+}
+
+/* line 602, ../../app/styles/default/theme.scss */
+
+.explorer .dropzone div input {
+  opacity: 0;
+}
+
+/* line 607, ../../app/styles/default/theme.scss */
+
+.explorer .footer {
+  position: relative;
+  height: 52px;
+  margin-top: -52px;
+  background: #34B8EB;
+  border-top: 1px solid #282828;
+  text-align: center;
+}
+
+/* line 615, ../../app/styles/default/theme.scss */
+
+.explorer .footer button.deleteBtn,
+.explorer .footer div.export .saveBtn,
+.explorer .footer div.export .overwriteBtn {
   background: #fff;
   height: 40px;
-  padding: 10px;
+  padding: 8px;
   border: 0;
   font-weight: 300;
   font-size: 18px;
@@ -949,107 +1209,174 @@ input[type="text"] {
   text-transform: lowercase;
 }
 
-/* line 423, ../../app/styles/default/theme.scss */
+/* line 625, ../../app/styles/default/theme.scss */
 
-.explorer .fileBrowser .files .controls button.deleteBtn {
+.explorer .footer button.deleteBtn,
+.explorer .footer div.export {
+  margin-top: 6px;
+}
+
+/* line 628, ../../app/styles/default/theme.scss */
+
+.explorer .footer button.deleteBtn {
   float: right;
+  margin-right: 10px;
 }
 
-/* line 429, ../../app/styles/default/theme.scss */
+/* line 634, ../../app/styles/default/theme.scss */
 
-.explorer .fileBrowser .files .controls button.newFolderBtn .icon-add_folder {
-  vertical-align: middle;
-  position: relative;
-  top: -2px;
-}
-
-/* line 438, ../../app/styles/default/theme.scss */
-
-.explorer .fileBrowser .files .controls div.export .saveBtn,
-.explorer .fileBrowser .files .controls div.export .overwriteBtn {
+.explorer .footer div.export .saveBtn,
+.explorer .footer div.export .overwriteBtn {
   color: #FFF;
 }
 
-/* line 441, ../../app/styles/default/theme.scss */
+/* line 637, ../../app/styles/default/theme.scss */
 
-.explorer .fileBrowser .files .controls div.export .overwriteBtn {
+.explorer .footer div.export .overwriteBtn {
   background: orange;
 }
 
-/* line 444, ../../app/styles/default/theme.scss */
+/* line 640, ../../app/styles/default/theme.scss */
 
-.explorer .fileBrowser .files .controls div.export .saveBtn {
+.explorer .footer div.export .saveBtn {
   background: green;
 }
 
-/* line 455, ../../app/styles/default/theme.scss */
+/* line 653, ../../app/styles/default/theme.scss */
 
-.explorer .fileBrowser.selectFolders .files .list ul li:hover button.select {
-  display: inline-block;
+.explorer.starting .header .controls {
+  width: 52px;
 }
 
-/* line 465, ../../app/styles/default/theme.scss */
+/* line 659, ../../app/styles/default/theme.scss */
 
-.explorer .dropzone {
-  position: relative;
-  height: 92px;
-  border-top: 1px solid #e5e5e5;
-  background: url("../images/default/dragzone.png") no-repeat center/auto 90%;
-  text-align: center;
+.explorer.selecting,
+.explorer.browsing.single-file-exp-mode {
+  /* footer <+ ?> */
 }
 
-/* line 470, ../../app/styles/default/theme.scss */
+/* line 661, ../../app/styles/default/theme.scss */
 
-.explorer .dropzone h2 {
-  top: 37px;
-  position: relative;
-  font-weight: 300;
-  font-size: 115%;
-  color: #ccc;
+.explorer.selecting .fileBrowser,
+.explorer.browsing.single-file-exp-mode .fileBrowser {
+  padding-bottom: 52px;
+  /* for footer */
 }
 
-/* line 479, ../../app/styles/default/theme.scss */
+/* line 666, ../../app/styles/default/theme.scss */
 
-.explorer .dropzone div {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+.explorer.selecting.browsing.single-file-sel-mode {
+  /* dropzone + footer */
 }
 
-/* line 482, ../../app/styles/default/theme.scss */
+/* line 672, ../../app/styles/default/theme.scss */
 
-.explorer .dropzone div,
-.explorer .dropzone div button {
-  height: 100%;
-  width: 100%;
-  opacity: 0;
-  filter: progid:DXImageTransform.Microsoft.Alpha(opacity=0);
-  cursor: pointer;
+.explorer.selecting.browsing.single-file-sel-mode .fileBrowser .files .list {
+  padding-bottom: 276px;
+  /* for footer + dropzone + titles + header */
 }
 
-/* line 487, ../../app/styles/default/theme.scss */
+/* line 677, ../../app/styles/default/theme.scss */
 
-.explorer .dropzone div button {
-  position: absolute;
-  top: 0;
-  left: 0;
+.explorer.selecting.browsing.single-file-sel-mode .fileBrowser .dropzone {
+  margin-top: -276px;
 }
 
-/* line 498, ../../app/styles/default/theme.scss */
+/* line 683, ../../app/styles/default/theme.scss */
 
-.explorer.browsing.single-file-exp-mode .dropzone {
+.explorer.browsing.single-file-exp-mode {
+  /* footer (no dropzone) */
+}
+
+/* line 689, ../../app/styles/default/theme.scss */
+
+.explorer.browsing.single-file-exp-mode .fileBrowser .files .list {
+  padding-bottom: 184px;
+}
+
+/* line 694, ../../app/styles/default/theme.scss */
+
+.explorer.browsing.single-file-exp-mode .fileBrowser .dropzone {
   display: none;
 }
 
-/* line 501, ../../app/styles/default/theme.scss */
+/* line 704, ../../app/styles/default/theme.scss */
 
-.explorer.browsing.single-file-exp-mode .list {
-  height: 428px;
+.explorer.items-list .header .listItemsBtn,
+.explorer.items-list .header .listItemsBtn:hover {
+  background-position: -156px 0px;
 }
 
-/* line 503, ../../app/styles/default/theme.scss */
+/* line 713, ../../app/styles/default/theme.scss */
 
-.explorer.browsing.single-file-exp-mode .list ul {
-  height: 396px;
+.explorer.items-icons .header .iconItemsBtn,
+.explorer.items-icons .header .iconItemsBtn:hover {
+  background-position: -156px 0px;
+}
+
+/* line 722, ../../app/styles/default/theme.scss */
+
+.explorer.browsing.making-new-folder .header .newFolderBtn,
+.explorer.browsing.making-new-folder .header .newFolderBtn:hover {
+  background-position: -156px 0px;
+}
+
+/* line 732, ../../app/styles/default/theme.scss */
+
+.explorer.sortedby-name.asc .files .list .titles .fileName span.sortArrow {
+  background-position: -18px 0px;
+}
+
+/* line 745, ../../app/styles/default/theme.scss */
+
+.explorer.sortedby-name.desc .files .list .titles .fileName span.sortArrow {
+  background-position: -18px 0px;
+  -webkit-transform: rotate(0.5turn);
+  transform: rotate(0.5turn);
+}
+
+/* line 759, ../../app/styles/default/theme.scss */
+
+.explorer.sortedby-type.asc .files .list .titles .fileType span.sortArrow {
+  background-position: -18px 0px;
+}
+
+/* line 772, ../../app/styles/default/theme.scss */
+
+.explorer.sortedby-type.desc .files .list .titles .fileType span.sortArrow {
+  background-position: -18px 0px;
+  -webkit-transform: rotate(0.5turn);
+  transform: rotate(0.5turn);
+}
+
+/* line 786, ../../app/styles/default/theme.scss */
+
+.explorer.sortedby-lastUpdate.asc .files .list .titles .lastUpdate span.sortArrow {
+  background-position: -18px 0px;
+}
+
+/* line 799, ../../app/styles/default/theme.scss */
+
+.explorer.sortedby-lastUpdate.desc .files .list .titles .lastUpdate span.sortArrow {
+  background-position: -18px 0px;
+  -webkit-transform: rotate(0.5turn);
+  transform: rotate(0.5turn);
+}
+
+/* line 811, ../../app/styles/default/theme.scss */
+
+.explorer.srv-dropbox .fileBrowser .services li.dropbox {
+  background-position: 32px 9px, -156px 0px;
+}
+
+/* line 820, ../../app/styles/default/theme.scss */
+
+.explorer.srv-ftp .fileBrowser .services li.ftp {
+  background-position: 32px 9px, -156px 0px;
+}
+
+/* line 829, ../../app/styles/default/theme.scss */
+
+.explorer.srv-www .fileBrowser .services li.www {
+  background-position: 32px 9px, -156px 0px;
 }

@@ -31,8 +31,8 @@ describe('Silex file explorer dialog test', function(){
       .click('.menu-item-file')
       .click('.menu-item-file-open')
       // check that the file explorer is opened
-      .waitFor('.silex-fileexplorer', 200)
-      .isVisible('.silex-fileexplorer')
+      .waitFor('#silex-file-explorer', 200)
+      .isVisible('#silex-file-explorer')
       .call(done);
   });
 
