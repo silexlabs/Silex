@@ -338,18 +338,22 @@ ce.core.Controller = function(config,iframe) {
 ce.core.Controller.__name__ = true;
 ce.core.Controller.prototype = {
 	pick: function(options,onSuccess,onError) {
+		ce.util.OptionTools.normalizePickOptions(options);
 		this.state.set_currentMode(ce.core.model.Mode.SingleFileSelection(onSuccess,onError,options));
 		this.show();
 	}
 	,read: function(input,options,onSuccess,onError,onProgress) {
+		ce.util.OptionTools.normalizeReadOptions(options);
 		this.fileSrv.get(input.url,onSuccess,$bind(this,this.setError));
 	}
 	,exportFile: function(input,options,onSuccess,onError) {
+		ce.util.OptionTools.normalizeExportOptions(options);
 		this.state.set_currentMode(ce.core.model.Mode.SingleFileExport(onSuccess,onError,input,options));
 		this.show();
 	}
 	,write: function(target,data,options,onSuccess,onError,onProgress) {
 		var _g1 = this;
+		ce.util.OptionTools.normalizeWriteOptions(options);
 		var explodedUrl = this.unifileSrv.explodeUrl(target.url);
 		var fileBlob = new Blob([data],{ type : target.mimetype});
 		this.unifileSrv.upload((function($this) {
@@ -385,46 +389,25 @@ ce.core.Controller.prototype = {
 	,initMvc: function() {
 		var _g = this;
 		this.application.onViewReady = function() {
+			_g.state.set_displayMode(ce.core.model.DisplayMode.List);
+			_g.state.set_currentSortField("name");
 			_g.state.set_readyState(true);
 		};
 		this.application.onLogoutClicked = function() {
-			if(_g.state.currentLocation != null && _g.state.serviceList.get(_g.state.currentLocation.service).isLoggedIn) _g.unifileSrv.logout(_g.state.currentLocation.service,function(lr) {
-				_g.state.serviceList.get(_g.state.currentLocation.service).set_isLoggedIn(false);
-				if(!lr.success) _g.setError(lr.message);
-			},$bind(_g,_g.setError));
+			_g.logoutAll();
 		};
 		this.application.onCloseClicked = function() {
 			_g.hide();
 		};
-		this.application.onServiceClicked = function(name) {
-			if(_g.state.serviceList.get(name).isLoggedIn) _g.state.set_currentLocation(new ce.core.model.Location(name,"/")); else {
-				_g.application.setLoaderDisplayed(true);
-				_g.unifileSrv.connect(name,function(cr) {
-					if(cr.success) {
-						_g.state.serviceList.get(name).isConnected = true;
-						_g.application.authPopup.setServerName(_g.state.serviceList.get(name).displayName);
-						_g.application.authPopup.onClicked = function() {
-							_g.application.onAuthorizationWindowBlocked = function() {
-								_g.application.setAuthPopupDisplayed(false);
-								_g.setAlert("Popup Blocker is enabled! Please add this site to your exception list and reload the page.",0);
-							};
-							_g.application.onServiceAuthorizationDone = function(result) {
-								_g.application.setAuthPopupDisplayed(false);
-								if(_g.state.serviceList.get(name).isOAuth) {
-									if(result != null && result.notApproved != true) _g.login(name); else _g.application.setLoaderDisplayed(false);
-								} else _g.login(name);
-							};
-							var authUrl;
-							authUrl = cr.authorizeUrl + (cr.authorizeUrl.indexOf("?") > -1?"&":"?") + "oauth_callback=" + StringTools.urlEncode(_g.application.get_location() + (!StringTools.endsWith(_g.application.get_location(),"/") && !StringTools.startsWith(_g.config.path,"/")?"/":"") + _g.config.path + (!StringTools.endsWith(_g.config.path,"/") && _g.config.path.length > 0?"/":"") + "oauth-cb.html");
-							_g.application.openAuthorizationWindow(authUrl);
-						};
-						_g.application.setAuthPopupDisplayed(true);
-					} else {
-						_g.state.serviceList.get(name).isConnected = false;
-						_g.setError(cr.message);
-					}
-				},$bind(_g,_g.setError));
-			}
+		this.application.onServiceLoginRequest = function(name) {
+			if(_g.state.serviceList.get(name).isLoggedIn) throw "unexpected call to login " + name; else _g.connect(name);
+		};
+		this.application.onServiceLogoutRequest = function(name1) {
+			if(!_g.state.serviceList.get(name1).isLoggedIn) throw "unexpected call to logout " + name1;
+			_g.logout(name1);
+		};
+		this.application.onServiceClicked = function(name2) {
+			if(_g.state.serviceList.get(name2).isLoggedIn) _g.state.set_currentLocation(new ce.core.model.Location(name2,"/")); else _g.connect(name2);
 		};
 		this.application.onFileSelectClicked = function(id) {
 			var f = _g.state.currentFileList.get(id);
@@ -449,35 +432,36 @@ ce.core.Controller.prototype = {
 				}
 			}
 		};
+		this.application.onParentFolderClicked = function() {
+			_g.cpd(_g.state.currentLocation.service,_g.state.currentLocation.path);
+		};
 		this.application.onFileClicked = function(id1) {
-			if(id1 == "..") _g.cpd(_g.state.currentLocation.service,_g.state.currentLocation.path); else {
-				var f1 = _g.state.currentFileList.get(id1);
-				if(_g.state.currentMode == null) {
-					if(f1.isDir) {
-						var _g11 = _g.state.currentLocation;
-						_g11.set_path(_g11.path + (_g.state.currentFileList.get(id1).name + "/"));
-					}
-					return;
+			var f1 = _g.state.currentFileList.get(id1);
+			if(_g.state.currentMode == null) {
+				if(f1.isDir) {
+					var _g11 = _g.state.currentLocation;
+					_g11.set_path(_g11.path + (_g.state.currentFileList.get(id1).name + "/"));
 				}
-				{
-					var _g12 = _g.state.currentMode;
-					switch(_g12[1]) {
-					case 0:
-						var options1 = _g12[4];
-						var onError1 = _g12[3];
-						var onSuccess1 = _g12[2];
-						if(!f1.isDir) {
-							onSuccess1({ url : _g.unifileSrv.generateUrl(_g.state.currentLocation.service,_g.state.currentLocation.path,f1.name), filename : f1.name, mimetype : ce.util.FileTools.getMimeType(f1.name), size : f1.bytes, key : null, container : null, isWriteable : true, path : _g.state.currentLocation.path});
-							_g.hide();
-						} else {
-							var _g21 = _g.state.currentLocation;
-							_g21.set_path(_g21.path + (_g.state.currentFileList.get(id1).name + "/"));
-						}
-						break;
-					default:
+				return;
+			}
+			{
+				var _g12 = _g.state.currentMode;
+				switch(_g12[1]) {
+				case 0:
+					var options1 = _g12[4];
+					var onError1 = _g12[3];
+					var onSuccess1 = _g12[2];
+					if(!f1.isDir) {
+						onSuccess1({ url : _g.unifileSrv.generateUrl(_g.state.currentLocation.service,_g.state.currentLocation.path,f1.name), filename : f1.name, mimetype : ce.util.FileTools.getMimeType(f1.name), size : f1.bytes, key : null, container : null, isWriteable : true, path : _g.state.currentLocation.path});
+						_g.hide();
+					} else {
 						var _g21 = _g.state.currentLocation;
 						_g21.set_path(_g21.path + (_g.state.currentFileList.get(id1).name + "/"));
 					}
+					break;
+				default:
+					var _g21 = _g.state.currentLocation;
+					_g21.set_path(_g21.path + (_g.state.currentFileList.get(id1).name + "/"));
 				}
 			}
 		};
@@ -584,7 +568,7 @@ ce.core.Controller.prototype = {
 			_g.state.set_currentLocation(new ce.core.model.Location(srv,path));
 		};
 		this.application.onNewFolderClicked = function() {
-			_g.application.setNewFolderDisplayed(true);
+			_g.state.set_newFolderMode(!_g.state.newFolderMode);
 		};
 		this.application.onDeleteClicked = function() {
 			_g.setAlert("Are you sure you want to delete the selected files from your " + _g.state.serviceList.get(_g.state.currentLocation.service).displayName + " storage?",1,[{ msg : "Yes, delete the selected files", cb : function() {
@@ -595,28 +579,39 @@ ce.core.Controller.prototype = {
 			}}]);
 		};
 		this.application.onNewFolderName = function() {
-			var name1 = _g.application.fileBrowser.get_newFolderName();
-			if(StringTools.trim(name1) == "") _g.application.setNewFolderDisplayed(false); else {
+			var name3 = _g.application.fileBrowser.get_newFolderName();
+			if(StringTools.trim(name3) == "") _g.state.set_newFolderMode(false); else {
 				var mkDirPath = _g.state.currentLocation.path;
-				if(mkDirPath == "/" || mkDirPath == "") mkDirPath = name1; else mkDirPath = mkDirPath + "/" + name1;
+				if(mkDirPath == "/" || mkDirPath == "") mkDirPath = name3; else mkDirPath = mkDirPath + "/" + name3;
 				_g.unifileSrv.mkdir(_g.state.currentLocation.service,mkDirPath,function() {
-					_g.application.setNewFolderDisplayed(false);
+					_g.state.set_newFolderMode(false);
 					_g.refreshFilesList();
 				},function(e) {
-					_g.application.setNewFolderDisplayed(false);
+					_g.state.set_newFolderMode(false);
 					_g.setError(e);
 				});
 			}
 		};
+		this.application.onItemsListClicked = function() {
+			_g.state.set_displayMode(ce.core.model.DisplayMode.List);
+		};
+		this.application.onItemsIconClicked = function() {
+			_g.state.set_displayMode(ce.core.model.DisplayMode.Icons);
+		};
+		this.application.onSortBtnClicked = function(field) {
+			if(_g.state.currentSortField == field) _g.state.set_currentSortOrder(_g.state.currentSortOrder == "asc"?"desc":"asc"); else _g.state.set_currentSortField(field);
+		};
 		this.state.onServiceListChanged = function() {
 			var lastConnectedService = null;
 			_g.application.home.resetList();
+			_g.application.fileBrowser.resetList();
+			_g.application.fileBrowser.resetFileList();
 			var $it1 = _g.state.serviceList.iterator();
 			while( $it1.hasNext() ) {
 				var s = $it1.next();
 				_g.application.home.addService(s.name,s.displayName,s.description);
 				if(s.isLoggedIn) lastConnectedService = s.name;
-				_g.application.fileBrowser.addService(s.name,s.displayName);
+				_g.application.fileBrowser.addService(s.name,s.displayName,s.isLoggedIn);
 			}
 			if(lastConnectedService != null) {
 				if(_g.state.currentLocation == null) _g.state.set_currentLocation(new ce.core.model.Location(lastConnectedService,"/"));
@@ -633,6 +628,7 @@ ce.core.Controller.prototype = {
 		this.state.onReadyStateChanged = function() {
 		};
 		this.state.onServiceLoginStateChanged = function(srvName) {
+			_g.application.fileBrowser.setSrvConnected(srvName,_g.state.serviceList.get(srvName).isLoggedIn);
 			if(!_g.state.serviceList.get(srvName).isLoggedIn) {
 				if(_g.state.currentLocation.service == srvName) {
 					var $it2 = _g.state.serviceList.iterator();
@@ -646,14 +642,23 @@ ce.core.Controller.prototype = {
 					_g.state.set_currentLocation(null);
 				}
 			} else {
+				_g.application.setLogoutButtonDisplayed(true);
 				if(_g.state.serviceList.get(srvName).account == null) _g.unifileSrv.account(srvName,function(a) {
 					_g.state.serviceList.get(srvName).set_account(a);
 				},$bind(_g,_g.setError));
 				_g.state.set_currentLocation(new ce.core.model.Location(srvName,"/"));
 			}
 		};
-		this.state.onServiceAccountChanged = function(srvName1) {
-			_g.setLogoutBtnContent(srvName1);
+		this.state.onDisplayModeChanged = function() {
+			var _g16 = _g.state.displayMode;
+			switch(_g16[1]) {
+			case 0:
+				_g.application.setListDisplayMode();
+				break;
+			case 1:
+				_g.application.setIconDisplayMode();
+				break;
+			}
 		};
 		this.state.onCurrentLocationChanged = function() {
 			if(_g.state.currentLocation == null) {
@@ -663,26 +668,19 @@ ce.core.Controller.prototype = {
 			} else {
 				var p = _g.state.currentLocation.path;
 				while(p.length > 0 && p.lastIndexOf("/") == p.length - 1) p = HxOverrides.substr(p,0,p.length - 1);
-				_g.application.breadcrumb.setTitle(p.length > 1?(function($this) {
-					var $r;
-					var pos = p.lastIndexOf("/") + 1;
-					$r = HxOverrides.substr(p,pos,null);
-					return $r;
-				}(this)):_g.state.currentLocation.service);
 				_g.application.breadcrumb.setBreadcrumbPath(_g.state.currentLocation.service,_g.state.currentLocation.path);
-				if(_g.state.serviceList.get(_g.state.currentLocation.service).isLoggedIn) {
-					_g.setLogoutBtnContent(_g.state.currentLocation.service);
-					_g.application.setLogoutButtonDisplayed(true);
-				}
+				_g.application.setCurrentService(_g.state.currentLocation.service);
 				_g.cd(_g.state.currentLocation.service,_g.state.currentLocation.path);
 			}
 		};
 		this.state.onCurrentFileListChanged = function() {
 			_g.application.fileBrowser.resetFileList();
 			_g.application.setSelecting(false);
+			_g.application.setSortField(_g.state.currentSortField);
+			_g.application.setSortOrder(_g.state.currentSortOrder);
 			if(_g.state.currentFileList == null) {
 			} else {
-				if(_g.state.currentLocation.path != "/") _g.application.fileBrowser.addFolder("..","..",null,false);
+				if(_g.state.currentLocation.path != "/") _g.application.parentFolderBtn.set_enabled(true); else _g.application.parentFolderBtn.set_enabled(false);
 				var $it3 = _g.state.currentFileList.keys();
 				while( $it3.hasNext() ) {
 					var fid = $it3.next();
@@ -694,12 +692,12 @@ ce.core.Controller.prototype = {
 			if(_g.state.currentMode != null) {
 				_g.application.fileBrowser.set_filters(null);
 				{
-					var _g16 = _g.state.currentMode;
-					switch(_g16[1]) {
+					var _g17 = _g.state.currentMode;
+					switch(_g17[1]) {
 					case 0:
-						var options4 = _g16[4];
-						var onError4 = _g16[3];
-						var onSuccess4 = _g16[2];
+						var options4 = _g17[4];
+						var onError4 = _g17[3];
+						var onSuccess4 = _g17[2];
 						if(options4 != null) {
 							if((options4.mimetype != null || options4.mimetypes != null) && (options4.extension != null || options4.extensions != null)) throw "Cannot pass in both mimetype(s) and extension(s) parameters to the pick function";
 							var filters = null;
@@ -729,10 +727,10 @@ ce.core.Controller.prototype = {
 						}
 						break;
 					case 1:
-						var options5 = _g16[5];
-						var input2 = _g16[4];
-						var onError5 = _g16[3];
-						var onSuccess5 = _g16[2];
+						var options5 = _g17[5];
+						var input2 = _g17[4];
+						var onError5 = _g17[3];
+						var onSuccess5 = _g17[2];
 						var ext;
 						if(options5 != null && options5.mimetype != null) ext = ce.util.FileTools.getExtension(options5.mimetype); else ext = null;
 						if(ext == null && options5 != null && options5.extension != null) if(options5.extension.indexOf(".") == 0) ext = options5.extension; else ext = "." + options5.extension;
@@ -745,11 +743,18 @@ ce.core.Controller.prototype = {
 			}
 			_g.application.setModeState(_g.state.currentMode);
 		};
-	}
-	,setLogoutBtnContent: function(srvName) {
-		var logoutStr = this.state.serviceList.get(srvName).displayName;
-		if(this.state.serviceList.get(srvName).account != null && this.state.serviceList.get(srvName).account.displayName != null) logoutStr += " - " + this.state.serviceList.get(srvName).account.displayName;
-		this.application.setLogoutButtonContent(logoutStr);
+		this.state.onNewFolderModeChanged = function() {
+			_g.application.setNewFolderDisplayed(_g.state.newFolderMode);
+		};
+		this.state.onCurrentSortOrderChanged = function() {
+			_g.application.setSortOrder(_g.state.currentSortOrder);
+			_g.application.fileBrowser.sort(_g.state.currentSortField,_g.state.currentSortOrder);
+		};
+		this.state.onCurrentSortFieldChanged = function() {
+			_g.application.setSortField(_g.state.currentSortField);
+			_g.application.setSortOrder(_g.state.currentSortOrder);
+			_g.application.fileBrowser.sort(_g.state.currentSortField,_g.state.currentSortOrder);
+		};
 	}
 	,deleteSelectedFiles: function() {
 		var _g2 = this;
@@ -825,24 +830,101 @@ ce.core.Controller.prototype = {
 			_g.application.setLoaderDisplayed(false);
 		},$bind(this,this.setError));
 	}
-	,login: function(srvName) {
+	,connect: function(srv) {
 		var _g = this;
-		if(!this.state.serviceList.get(srvName).isLoggedIn) {
+		if(this.state.serviceList.get(srv).isLoggedIn) {
+			console.log("unexpected call to connect " + Std.string(srv));
+			return;
+		}
+		this.application.setLoaderDisplayed(true);
+		this.unifileSrv.connect(srv,function(cr) {
+			if(cr.success) {
+				_g.state.serviceList.get(srv).isConnected = true;
+				_g.application.authPopup.setServerName(_g.state.serviceList.get(srv).displayName);
+				_g.application.authPopup.onClicked = function() {
+					_g.application.onAuthorizationWindowBlocked = function() {
+						_g.application.setAuthPopupDisplayed(false);
+						_g.setAlert("Popup Blocker is enabled! Please add this site to your exception list and reload the page.",0);
+					};
+					_g.application.onServiceAuthorizationDone = function(result) {
+						_g.application.setAuthPopupDisplayed(false);
+						if(_g.state.serviceList.get(srv).isOAuth) {
+							if(result != null && result.notApproved != true) _g.login(srv); else _g.application.setLoaderDisplayed(false);
+						} else _g.login(srv);
+					};
+					var authUrl;
+					authUrl = cr.authorizeUrl + (cr.authorizeUrl.indexOf("?") > -1?"&":"?") + "oauth_callback=" + StringTools.urlEncode(_g.application.get_location() + (!StringTools.endsWith(_g.application.get_location(),"/") && !StringTools.startsWith(_g.config.path,"/")?"/":"") + _g.config.path + (!StringTools.endsWith(_g.config.path,"/") && _g.config.path.length > 0?"/":"") + "oauth-cb.html");
+					_g.application.openAuthorizationWindow(authUrl);
+				};
+				_g.application.setAuthPopupDisplayed(true);
+			} else {
+				_g.state.serviceList.get(srv).isConnected = false;
+				_g.setError(cr.message);
+			}
+		},$bind(this,this.setError));
+	}
+	,login: function(srv) {
+		var _g = this;
+		if(!this.state.serviceList.get(srv).isLoggedIn) {
 			this.application.setLoaderDisplayed(true);
-			this.unifileSrv.login(srvName,function(lr) {
-				if(lr.success) _g.state.serviceList.get(srvName).set_isLoggedIn(true); else {
-					_g.state.serviceList.get(srvName).set_isLoggedIn(false);
+			this.unifileSrv.login(srv,function(lr) {
+				if(lr.success) _g.state.serviceList.get(srv).set_isLoggedIn(true); else {
+					_g.state.serviceList.get(srv).set_isLoggedIn(false);
 					_g.setError("Could not login. Please try again.");
 				}
 				_g.application.setLoaderDisplayed(false);
 			},$bind(this,this.setError));
-		} else console.log("WON'T LOGIN " + srvName + " AS ALREADY LOGGED IN !!!");
+		} else console.log("can't log into " + Std.string(srv) + " as user already logged in!");
+	}
+	,logout: function(srv) {
+		var _g = this;
+		if(this.state.serviceList.get(srv).isLoggedIn) {
+			this.application.setLoaderDisplayed(true);
+			this.unifileSrv.logout(srv,function(lr) {
+				_g.application.setLoaderDisplayed(false);
+				if(!lr.success) _g.setError(lr.message); else _g.state.serviceList.get(srv).set_isLoggedIn(false);
+			},$bind(this,this.setError));
+		} else console.log("can't log out from " + Std.string(srv) + " as user not yet logged in!");
+	}
+	,logoutAll: function() {
+		var _g1 = this;
+		this.application.setLoaderDisplayed(true);
+		var loggedInSrvs = [];
+		var $it0 = this.state.serviceList.iterator();
+		while( $it0.hasNext() ) {
+			var srv = $it0.next();
+			if(srv.isLoggedIn) loggedInSrvs.push(srv.name);
+		}
+		var _g = 0;
+		while(_g < loggedInSrvs.length) {
+			var srv1 = loggedInSrvs[_g];
+			++_g;
+			var s = [srv1];
+			this.unifileSrv.logout(s[0],(function(s) {
+				return function(lr) {
+					if(!lr.success) _g1.setError(lr.message); else {
+						HxOverrides.remove(loggedInSrvs,s[0]);
+						if(loggedInSrvs.length == 0) {
+							_g1.application.setLoaderDisplayed(false);
+							_g1.listServices();
+						}
+					}
+				};
+			})(s),$bind(this,this.setError));
+		}
+	}
+	,listServices: function() {
+		var _g = this;
+		this.application.setLoaderDisplayed(true);
+		this.unifileSrv.listServices(function(slm) {
+			_g.application.setLoaderDisplayed(false);
+			_g.state.set_serviceList(slm);
+		},$bind(this,this.setError));
 	}
 	,hide: function() {
 		this.state.set_displayState(false);
 	}
 	,show: function() {
-		var _g = this;
 		var goHome = true;
 		if(this.state.serviceList != null) {
 			var $it0 = this.state.serviceList.iterator();
@@ -854,13 +936,7 @@ ce.core.Controller.prototype = {
 				}
 			}
 		}
-		if(goHome || this.state.currentFileList == null) {
-			this.application.setLoaderDisplayed(true);
-			this.unifileSrv.listServices(function(slm) {
-				_g.application.setLoaderDisplayed(false);
-				_g.state.set_serviceList(slm);
-			},$bind(this,this.setError));
-		} else this.application.setFileBrowserDisplayed(true);
+		if(goHome || this.state.currentFileList == null) this.listServices(); else this.application.setFileBrowserDisplayed(true);
 		this.state.set_displayState(true);
 	}
 };
@@ -893,6 +969,13 @@ ce.core.model.CEError.prototype = {
 		return Std.string(this.code);
 	}
 };
+ce.core.model.DisplayMode = { __ename__ : true, __constructs__ : ["List","Icons"] };
+ce.core.model.DisplayMode.List = ["List",0];
+ce.core.model.DisplayMode.List.toString = $estr;
+ce.core.model.DisplayMode.List.__enum__ = ce.core.model.DisplayMode;
+ce.core.model.DisplayMode.Icons = ["Icons",1];
+ce.core.model.DisplayMode.Icons.toString = $estr;
+ce.core.model.DisplayMode.Icons.__enum__ = ce.core.model.DisplayMode;
 ce.core.model.Location = function(s,p) {
 	this.set_service(s);
 	this.set_path(p);
@@ -918,11 +1001,24 @@ ce.core.model.Location.prototype = {
 ce.core.model.Mode = { __ename__ : true, __constructs__ : ["SingleFileSelection","SingleFileExport"] };
 ce.core.model.Mode.SingleFileSelection = function(onSuccess,onError,options) { var $x = ["SingleFileSelection",0,onSuccess,onError,options]; $x.__enum__ = ce.core.model.Mode; $x.toString = $estr; return $x; };
 ce.core.model.Mode.SingleFileExport = function(onSuccess,onError,input,options) { var $x = ["SingleFileExport",1,onSuccess,onError,input,options]; $x.__enum__ = ce.core.model.Mode; $x.toString = $estr; return $x; };
+ce.core.model._Service = {};
+ce.core.model._Service.Service_Impl_ = function() { };
+ce.core.model._Service.Service_Impl_.__name__ = true;
+ce.core.model._SortField = {};
+ce.core.model._SortField.SortField_Impl_ = function() { };
+ce.core.model._SortField.SortField_Impl_.__name__ = true;
+ce.core.model._SortOrder = {};
+ce.core.model._SortOrder.SortOrder_Impl_ = function() { };
+ce.core.model._SortOrder.SortOrder_Impl_.__name__ = true;
 ce.core.model.State = function() {
+	this.currentSortOrder = null;
+	this.currentSortField = null;
 	this.currentMode = null;
 	this.currentFileList = null;
 	this.currentLocation = null;
 	this.serviceList = null;
+	this.displayMode = null;
+	this.newFolderMode = false;
 	this.displayState = false;
 	this.readyState = false;
 };
@@ -940,9 +1036,40 @@ ce.core.model.State.prototype = {
 	}
 	,onCurrentModeChanged: function() {
 	}
+	,onNewFolderModeChanged: function() {
+	}
+	,onDisplayModeChanged: function() {
+	}
+	,onCurrentSortFieldChanged: function() {
+	}
+	,onCurrentSortOrderChanged: function() {
+	}
 	,onServiceLoginStateChanged: function(srvName) {
 	}
-	,onServiceAccountChanged: function(srvName) {
+	,set_currentSortField: function(v) {
+		if(v == this.currentSortField) return this.currentSortField;
+		this.currentSortField = v;
+		this.set_currentSortOrder("asc");
+		this.onCurrentSortFieldChanged();
+		return this.currentSortField;
+	}
+	,set_currentSortOrder: function(v) {
+		if(v == this.currentSortOrder) return this.currentSortOrder;
+		this.currentSortOrder = v;
+		this.onCurrentSortOrderChanged();
+		return this.currentSortOrder;
+	}
+	,set_newFolderMode: function(v) {
+		if(v == this.newFolderMode) return this.newFolderMode;
+		this.newFolderMode = v;
+		this.onNewFolderModeChanged();
+		return this.newFolderMode;
+	}
+	,set_displayMode: function(v) {
+		if(v == this.displayMode) return this.displayMode;
+		this.displayMode = v;
+		this.onDisplayModeChanged();
+		return this.displayMode;
 	}
 	,set_serviceList: function(v) {
 		var _g = this;
@@ -957,12 +1084,6 @@ ce.core.model.State.prototype = {
 					_g.onServiceLoginStateChanged(s1[0].name);
 				};
 			})(s1);
-			s1[0].onAccountChanged = (function(s1) {
-				return function() {
-					_g.onServiceAccountChanged(s1[0].name);
-				};
-			})(s1);
-			if(s1[0].account != null) this.onServiceAccountChanged(s1[0].name);
 		}
 		this.onServiceListChanged();
 		return this.serviceList;
@@ -970,6 +1091,8 @@ ce.core.model.State.prototype = {
 	,set_currentFileList: function(v) {
 		if(v == this.currentFileList) return v;
 		this.currentFileList = v;
+		this.set_currentSortField("name");
+		this.set_currentSortOrder("asc");
 		this.onCurrentFileListChanged();
 		return this.currentFileList;
 	}
@@ -1001,7 +1124,7 @@ ce.core.model.State.prototype = {
 		this.onCurrentLocationChanged();
 		return this.currentLocation;
 	}
-	,__properties__: {set_currentMode:"set_currentMode",set_currentFileList:"set_currentFileList",set_currentLocation:"set_currentLocation",set_serviceList:"set_serviceList",set_displayState:"set_displayState",set_readyState:"set_readyState"}
+	,__properties__: {set_currentSortOrder:"set_currentSortOrder",set_currentSortField:"set_currentSortField",set_currentMode:"set_currentMode",set_currentFileList:"set_currentFileList",set_currentLocation:"set_currentLocation",set_serviceList:"set_serviceList",set_displayMode:"set_displayMode",set_newFolderMode:"set_newFolderMode",set_displayState:"set_displayState",set_readyState:"set_readyState"}
 };
 ce.core.model.unifile = {};
 ce.core.model.unifile.Service = function(n,dn,$is,d,v,il,ic,ioa,a) {
@@ -1209,7 +1332,7 @@ ce.core.service.UnifileSrv = function(config) {
 ce.core.service.UnifileSrv.__name__ = true;
 ce.core.service.UnifileSrv.prototype = {
 	generateUrl: function(srv,path,filename) {
-		return this.config.unifileEndpoint + StringTools.replace(StringTools.replace("{srv}/exec/get/{uri}","{srv}",srv),"{uri}",path.length > 1?path + "/" + filename:filename);
+		return this.config.unifileEndpoint + StringTools.replace(StringTools.replace("{srv}/exec/get/{uri}","{srv}",srv),"{uri}",path.length > 1?HxOverrides.substr(path,1,null) + filename:filename);
 	}
 	,explodeUrl: function(url) {
 		if(url.indexOf(this.config.unifileEndpoint) != 0) throw "ERROR: can't convert url to path: " + url;
@@ -1416,11 +1539,17 @@ ce.core.view.Application.oauthCb = $hx_exports.CEoauthCb = function(pStr) {
 ce.core.view.Application.prototype = {
 	onClicked: function() {
 	}
+	,onSortBtnClicked: function(f) {
+	}
 	,onViewReady: function() {
 	}
 	,onLogoutClicked: function() {
 	}
 	,onCloseClicked: function() {
+	}
+	,onServiceLoginRequest: function(name) {
+	}
+	,onServiceLogoutRequest: function(name) {
 	}
 	,onServiceClicked: function(name) {
 	}
@@ -1450,16 +1579,40 @@ ce.core.view.Application.prototype = {
 	}
 	,onNewFolderClicked: function() {
 	}
+	,onParentFolderClicked: function() {
+	}
+	,onItemsListClicked: function() {
+	}
+	,onItemsIconClicked: function() {
+	}
 	,onDeleteClicked: function() {
 	}
 	,onNewFolderName: function() {
 	}
-	,get_location: function() {
-		if(this.iframe == null) return null;
-		return this.iframe.contentDocument.location.origin;
+	,setCurrentService: function(s) {
+		ce.util.HtmlTools.toggleClass(this.rootElt,"srv-" + Std.string("dropbox"),false);
+		ce.util.HtmlTools.toggleClass(this.rootElt,"srv-" + Std.string("ftp"),false);
+		ce.util.HtmlTools.toggleClass(this.rootElt,"srv-" + Std.string("www"),false);
+		ce.util.HtmlTools.toggleClass(this.rootElt,"srv-" + Std.string(s),true);
 	}
-	,setLogoutButtonContent: function(v) {
-		this.logoutBtn.textContent = StringTools.replace(this.logoutContentTmpl,"{name}",v != null?v:"");
+	,setSortField: function(v) {
+		ce.util.HtmlTools.toggleClass(this.rootElt,"sortedby-" + Std.string("name"),false);
+		ce.util.HtmlTools.toggleClass(this.rootElt,"sortedby-" + Std.string("type"),false);
+		ce.util.HtmlTools.toggleClass(this.rootElt,"sortedby-" + Std.string("lastUpdate"),false);
+		ce.util.HtmlTools.toggleClass(this.rootElt,"sortedby-" + v,true);
+	}
+	,setSortOrder: function(v) {
+		ce.util.HtmlTools.toggleClass(this.rootElt,"asc",false);
+		ce.util.HtmlTools.toggleClass(this.rootElt,"desc",false);
+		ce.util.HtmlTools.toggleClass(this.rootElt,v,true);
+	}
+	,setListDisplayMode: function() {
+		ce.util.HtmlTools.toggleClass(this.rootElt,"items-list",true);
+		ce.util.HtmlTools.toggleClass(this.rootElt,"items-icons",false);
+	}
+	,setIconDisplayMode: function() {
+		ce.util.HtmlTools.toggleClass(this.rootElt,"items-icons",true);
+		ce.util.HtmlTools.toggleClass(this.rootElt,"items-list",false);
 	}
 	,setDisplayed: function(v) {
 		if(v) this.iframe.style.display = "block"; else this.iframe.style.display = "none";
@@ -1521,6 +1674,10 @@ ce.core.view.Application.prototype = {
 			break;
 		}
 	}
+	,get_location: function() {
+		if(this.iframe == null) return null;
+		return this.iframe.contentDocument.location.origin;
+	}
 	,listenOAuthCb: function(pStr) {
 		var o = ce.core.parser.oauth.Str2OAuthResult.parse(pStr);
 		this.onServiceAuthorizationDone(o);
@@ -1564,15 +1721,10 @@ ce.core.view.Application.prototype = {
 	,initElts: function() {
 		var _g = this;
 		this.rootElt = this.iframe.contentDocument.getElementById("cloud-explorer");
-		this.logoutBtn = this.rootElt.querySelector(".logoutBtn");
-		this.logoutContentTmpl = this.logoutBtn.textContent;
-		this.logoutBtn.addEventListener("click",function(_) {
-			_g.onLogoutClicked();
-		});
-		this.closeBtn = this.rootElt.querySelector(".closeBtn");
-		this.closeBtn.addEventListener("click",function(_1) {
-			_g.onCloseClicked();
-		});
+		this.logoutBtn = new ce.core.view.Button(this.rootElt.querySelector(".logoutBtn"));
+		this.logoutBtn.onClicked = $bind(this,this.onLogoutClicked);
+		this.closeBtn = new ce.core.view.Button(this.rootElt.querySelector(".closeBtn"));
+		this.closeBtn.onClicked = $bind(this,this.onCloseClicked);
 		this.breadcrumb = new ce.core.view.Breadcrumb(this.rootElt.querySelector(".breadcrumb"));
 		this.breadcrumb.onNavBtnClicked = function(srv,path) {
 			_g.onNavBtnClicked(srv,path);
@@ -1592,8 +1744,14 @@ ce.core.view.Application.prototype = {
 			_g.onServiceClicked(name);
 		};
 		this.fileBrowser = new ce.core.view.FileBrowser(this.rootElt.querySelector(".fileBrowser"));
-		this.fileBrowser.onServiceClicked = function(name1) {
-			_g.onServiceClicked(name1);
+		this.fileBrowser.onServiceLogoutRequest = function(name1) {
+			_g.onServiceLogoutRequest(name1);
+		};
+		this.fileBrowser.onServiceLoginRequest = function(name2) {
+			_g.onServiceLoginRequest(name2);
+		};
+		this.fileBrowser.onServiceClicked = function(name3) {
+			_g.onServiceClicked(name3);
 		};
 		this.fileBrowser.onFileClicked = function(id) {
 			_g.onFileClicked(id);
@@ -1613,21 +1771,26 @@ ce.core.view.Application.prototype = {
 		this.fileBrowser.onNewFolderName = function() {
 			_g.onNewFolderName();
 		};
+		this.fileBrowser.onSortBtnClicked = function(f) {
+			_g.onSortBtnClicked(f);
+		};
 		this.dropzone = new ce.core.view.DropZone(this.rootElt.querySelector(".dropzone"));
 		this.dropzone.onInputFilesChanged = function() {
 			_g.onInputFilesChanged();
 		};
 		this.authPopup = new ce.core.view.AuthPopup(this.rootElt.querySelector(".authPopup"));
 		this.alertPopup = new ce.core.view.AlertPopup(this.rootElt.querySelector(".alertPopup"));
-		var newFolderBtnElt = this.rootElt.querySelector(".newFolderBtn");
-		newFolderBtnElt.addEventListener("click",function(_2) {
-			_g.onNewFolderClicked();
-		});
-		var deleteBtnElt = this.rootElt.querySelector(".deleteBtn");
-		deleteBtnElt.addEventListener("click",function(_3) {
-			_g.onDeleteClicked();
-		});
-		this.rootElt.addEventListener("click",function(_4) {
+		this.newFolderBtn = new ce.core.view.Button(this.rootElt.querySelector(".newFolderBtn"));
+		this.newFolderBtn.onClicked = $bind(this,this.onNewFolderClicked);
+		this.parentFolderBtn = new ce.core.view.Button(this.rootElt.querySelector(".parentFolderBtn"));
+		this.parentFolderBtn.onClicked = $bind(this,this.onParentFolderClicked);
+		this.itemsListBtn = new ce.core.view.Button(this.rootElt.querySelector(".listItemsBtn"));
+		this.itemsListBtn.onClicked = $bind(this,this.onItemsListClicked);
+		this.itemsIconBtn = new ce.core.view.Button(this.rootElt.querySelector(".iconItemsBtn"));
+		this.itemsIconBtn.onClicked = $bind(this,this.onItemsIconClicked);
+		this.deleteBtn = new ce.core.view.Button(this.rootElt.querySelector(".deleteBtn"));
+		this.deleteBtn.onClicked = $bind(this,this.onDeleteClicked);
+		this.rootElt.addEventListener("click",function(_) {
 			_g.onClicked();
 		});
 		this.onViewReady();
@@ -1654,29 +1817,24 @@ ce.core.view.AuthPopup.prototype = {
 };
 ce.core.view.Breadcrumb = function(elt) {
 	this.elt = elt;
-	this.pathElt = elt.querySelector("span.path");
-	this.pathItemTmpl = this.pathElt.querySelector("span.pathIt");
-	this.pathElt.removeChild(this.pathItemTmpl);
-	this.pathSepTmpl = this.pathElt.querySelector("span.sep");
-	this.pathElt.removeChild(this.pathSepTmpl);
-	this.titleElt = elt.querySelector(".title span");
+	this.pathItemTmpl = elt.querySelector("span.pathIt");
+	elt.removeChild(this.pathItemTmpl);
+	this.pathSepTmpl = elt.querySelector("span.sep");
+	elt.removeChild(this.pathSepTmpl);
 };
 ce.core.view.Breadcrumb.__name__ = true;
 ce.core.view.Breadcrumb.prototype = {
 	onNavBtnClicked: function(srv,path) {
 	}
-	,setTitle: function(v) {
-		this.titleElt.textContent = v;
-	}
 	,setBreadcrumbPath: function(srv,path) {
 		var _g = this;
-		while(this.pathElt.childNodes.length > 0) this.pathElt.removeChild(this.pathElt.firstChild);
+		while(this.elt.childNodes.length > 0) this.elt.removeChild(this.elt.firstChild);
 		var srvIt = this.pathItemTmpl.cloneNode(true);
 		srvIt.addEventListener("click",function(_) {
 			_g.onNavBtnClicked(srv,"/");
 		});
 		srvIt.textContent = srv;
-		this.pathElt.appendChild(srvIt);
+		this.elt.appendChild(srvIt);
 		var pathItems = [];
 		if(path.length > 0) {
 			var parr = path.split("/");
@@ -1696,10 +1854,31 @@ ce.core.view.Breadcrumb.prototype = {
 			}
 		}
 		while(pathItems.length > 0) {
-			this.pathElt.appendChild(this.pathSepTmpl.cloneNode(true));
-			this.pathElt.appendChild(pathItems.pop());
+			this.elt.appendChild(this.pathSepTmpl.cloneNode(true));
+			this.elt.appendChild(pathItems.pop());
 		}
 	}
+};
+ce.core.view.Button = function(elt) {
+	var _g = this;
+	this.elt = elt;
+	this.elt.addEventListener("click",function(_) {
+		_g.onClicked();
+	});
+};
+ce.core.view.Button.__name__ = true;
+ce.core.view.Button.prototype = {
+	onClicked: function() {
+	}
+	,get_enabled: function() {
+		return !this.elt.hasAttribute("disabled");
+	}
+	,set_enabled: function(v) {
+		if(v && this.elt.hasAttribute("disabled")) this.elt.removeAttribute("disabled");
+		if(!v && !this.elt.hasAttribute("disabled")) this.elt.setAttribute("disabled","disabled");
+		return v;
+	}
+	,__properties__: {set_enabled:"set_enabled",get_enabled:"get_enabled"}
 };
 ce.core.view.DropZone = function(elt) {
 	var _g = this;
@@ -1788,40 +1967,24 @@ ce.core.view.FileBrowser = function(elt) {
 	this.fileListElt.removeChild(this.folderItemTmpl);
 	var nameBtn = elt.querySelector(".titles .fileName");
 	nameBtn.addEventListener("click",function(_1) {
-		_g.toggleSort("name");
+		_g.onSortBtnClicked("name");
 	});
 	var typeBtn = elt.querySelector(".titles .fileType");
 	typeBtn.addEventListener("click",function(_2) {
-		_g.toggleSort("type");
+		_g.onSortBtnClicked("type");
 	});
 	var dateBtn = elt.querySelector(".titles .lastUpdate");
 	dateBtn.addEventListener("click",function(_3) {
-		_g.toggleSort("lastUpdate");
+		_g.onSortBtnClicked("lastUpdate");
 	});
 	this.fileListItems = [];
 	this.set_filters(null);
 };
 ce.core.view.FileBrowser.__name__ = true;
 ce.core.view.FileBrowser.prototype = {
-	get_newFolderName: function() {
-		return this.newFolderInput.value;
+	onServiceLoginRequest: function(name) {
 	}
-	,set_newFolderName: function(v) {
-		this.newFolderInput.value = v;
-		return v;
-	}
-	,set_filters: function(v) {
-		if(this.filters == v) return v;
-		this.filters = v;
-		if(this.filters != null && HxOverrides.indexOf(this.filters,"text/directory",0) > -1) ce.util.HtmlTools.toggleClass(this.elt,"selectFolders",true); else ce.util.HtmlTools.toggleClass(this.elt,"selectFolders",false);
-		var _g = 0;
-		var _g1 = this.fileListItems;
-		while(_g < _g1.length) {
-			var f = _g1[_g];
-			++_g;
-			this.applyFilters(f);
-		}
-		return this.filters;
+	,onServiceLogoutRequest: function(name) {
 	}
 	,onServiceClicked: function(name) {
 	}
@@ -1839,19 +2002,41 @@ ce.core.view.FileBrowser.prototype = {
 	}
 	,onNewFolderName: function() {
 	}
+	,onSortBtnClicked: function(field) {
+	}
+	,resetList: function() {
+		while(this.srvListElt.childNodes.length > 0) this.srvListElt.removeChild(this.srvListElt.childNodes.item(0));
+	}
 	,removeService: function(name) {
 		this.srvListElt.removeChild(this.srvItemElts.get(name));
 	}
-	,addService: function(name,displayName) {
+	,addService: function(name,displayName,connected) {
 		var _g = this;
 		var newItem = this.srvItemTmpl.cloneNode(true);
 		newItem.className = name;
-		newItem.textContent = displayName;
 		newItem.addEventListener("click",function(_) {
 			_g.onServiceClicked(name);
 		});
+		var lis = newItem.querySelectorAll("ul.contextMenu li");
+		var _g1 = 0;
+		var _g2 = lis.length;
+		while(_g1 < _g2) {
+			var i = _g1++;
+			var li = [lis[i]];
+			li[0].textContent = StringTools.replace(li[0].textContent,"{srvName}",displayName);
+			li[0].addEventListener("click",(function(li) {
+				return function(e) {
+					e.stopPropagation();
+					if(li[0].classList.contains("login")) _g.onServiceLoginRequest(name); else if(li[0].classList.contains("logout")) _g.onServiceLogoutRequest(name);
+				};
+			})(li));
+		}
 		this.srvListElt.appendChild(newItem);
 		this.srvItemElts.set(name,newItem);
+		if(connected) this.setSrvConnected(name,connected);
+	}
+	,setSrvConnected: function(name,connected) {
+		ce.util.HtmlTools.toggleClass(this.srvItemElts.get(name),"connected",connected);
 	}
 	,resetFileList: function() {
 		while(this.fileListItems.length > 0) this.fileListElt.removeChild(this.fileListItems.pop().elt);
@@ -1908,6 +2093,45 @@ ce.core.view.FileBrowser.prototype = {
 	,focusOnNewFolder: function() {
 		this.newFolderInput.focus();
 	}
+	,sort: function(byField,order) {
+		this.fileListItems.sort(function(a,b) {
+			switch(order) {
+			case "asc":
+				if(Reflect.getProperty(a,byField) > Reflect.getProperty(b,byField)) return 1; else return -1;
+				break;
+			case "desc":
+				if(Reflect.getProperty(a,byField) < Reflect.getProperty(b,byField)) return 1; else return -1;
+				break;
+			}
+		});
+		var _g = 0;
+		var _g1 = this.fileListItems;
+		while(_g < _g1.length) {
+			var fit = _g1[_g];
+			++_g;
+			this.fileListElt.insertBefore(fit.elt,this.newFolderItem);
+		}
+	}
+	,get_newFolderName: function() {
+		return this.newFolderInput.value;
+	}
+	,set_newFolderName: function(v) {
+		this.newFolderInput.value = v;
+		return v;
+	}
+	,set_filters: function(v) {
+		if(this.filters == v) return v;
+		this.filters = v;
+		if(this.filters != null && HxOverrides.indexOf(this.filters,"text/directory",0) > -1) ce.util.HtmlTools.toggleClass(this.elt,"selectFolders",true); else ce.util.HtmlTools.toggleClass(this.elt,"selectFolders",false);
+		var _g = 0;
+		var _g1 = this.fileListItems;
+		while(_g < _g1.length) {
+			var f = _g1[_g];
+			++_g;
+			this.applyFilters(f);
+		}
+		return this.filters;
+	}
 	,applyFilters: function(f) {
 		if(f.get_type() != "text/directory") {
 			if(this.filters == null || (function($this) {
@@ -1917,64 +2141,6 @@ ce.core.view.FileBrowser.prototype = {
 				return $r;
 			}(this)) != -1) f.set_filteredOut(false); else f.set_filteredOut(true);
 		}
-	}
-	,currentSortBy: function() {
-		var _g = 0;
-		var _g1 = this.elt.className.split(" ");
-		while(_g < _g1.length) {
-			var c = _g1[_g];
-			++_g;
-			if(Lambda.has(["sortby-" + "name","sortby-" + "type","sortby-" + "lastupdate"],c)) return c;
-		}
-		return null;
-	}
-	,currentSortOrder: function() {
-		var _g = 0;
-		var _g1 = this.elt.className.split(" ");
-		while(_g < _g1.length) {
-			var c = _g1[_g];
-			++_g;
-			if(Lambda.has(["asc","desc"],c)) return c;
-		}
-		return null;
-	}
-	,toggleSort: function(by) {
-		if(by == null) by = "name";
-		var csb = this.currentSortBy();
-		var cso = this.currentSortOrder();
-		if(csb == "sortby-" + by.toLowerCase()) {
-			if(cso == "asc") {
-				ce.util.HtmlTools.toggleClass(this.elt,"asc",false);
-				ce.util.HtmlTools.toggleClass(this.elt,"desc",true);
-				this.sort(by,false);
-			} else {
-				ce.util.HtmlTools.toggleClass(this.elt,"asc",true);
-				ce.util.HtmlTools.toggleClass(this.elt,"desc",false);
-				this.sort(by,true);
-			}
-		} else {
-			if(csb != null) ce.util.HtmlTools.toggleClass(this.elt,csb,false);
-			if(cso != null) ce.util.HtmlTools.toggleClass(this.elt,cso,false);
-			ce.util.HtmlTools.toggleClass(this.elt,"sortby-" + by,true);
-			ce.util.HtmlTools.toggleClass(this.elt,"asc",true);
-			this.sort(by,true);
-		}
-	}
-	,sort: function(by,ascOrder) {
-		if(ascOrder == null) ascOrder = true;
-		if(by == null) by = "name";
-		this.fileListItems.sort(function(a,b) {
-			if(ascOrder) if(Reflect.getProperty(a,by) > Reflect.getProperty(b,by)) return 1; else return -1; else if(Reflect.getProperty(a,by) < Reflect.getProperty(b,by)) return 1; else return -1;
-		});
-		var parentFolderItem = null;
-		var _g = 0;
-		var _g1 = this.fileListItems;
-		while(_g < _g1.length) {
-			var fit = _g1[_g];
-			++_g;
-			if(fit.get_name() == "..") parentFolderItem = fit; else this.fileListElt.insertBefore(fit.elt,this.newFolderItem);
-		}
-		if(parentFolderItem != null && this.fileListItems[0] != parentFolderItem) this.fileListElt.insertBefore(parentFolderItem.elt,this.fileListItems[0].elt);
 	}
 	,__properties__: {set_newFolderName:"set_newFolderName",get_newFolderName:"get_newFolderName",set_filters:"set_filters"}
 };
@@ -1987,6 +2153,7 @@ ce.core.view.FileListItem = function(elt) {
 	});
 	this.nameElt = elt.querySelector("span.fileName");
 	this.nameElt.addEventListener("click",function(_1) {
+		if(_g.get_filteredOut()) return;
 		_g.onClicked();
 	});
 	this.renameInput = elt.querySelector("input[type='text']");
@@ -2014,6 +2181,7 @@ ce.core.view.FileListItem = function(elt) {
 	});
 	this.selectBtn = elt.querySelector("button.select");
 	if(this.selectBtn != null) this.selectBtn.addEventListener("click",function(_5) {
+		if(_g.get_filteredOut()) return;
 		_g.onSelectClicked();
 	});
 };
@@ -2042,6 +2210,9 @@ ce.core.view.FileListItem.prototype = {
 	}
 	,set_type: function(v) {
 		this.typeElt.textContent = v;
+		ce.util.HtmlTools.toggleClass(this.elt,"image",v.indexOf("image/") == 0);
+		ce.util.HtmlTools.toggleClass(this.elt,"sound",v.indexOf("audio/") == 0);
+		ce.util.HtmlTools.toggleClass(this.elt,"video",v.indexOf("video/") == 0);
 		return v;
 	}
 	,get_lastUpdate: function() {
@@ -2800,6 +2971,42 @@ ce.util.HtmlTools.addEvents = function(el,events,callback) {
 		el.addEventListener(e,callback);
 	}
 };
+ce.util.OptionTools = function() { };
+ce.util.OptionTools.__name__ = true;
+ce.util.OptionTools.normalizePickOptions = function(o) {
+	if(o == null) return o;
+	if(o.mimetype != null) o.mimetype = o.mimetype.toLowerCase();
+	if(o.extension != null) o.extension = o.extension.toLowerCase();
+	if(o.mimetypes != null) {
+		var _g1 = 0;
+		var _g = o.mimetypes.length;
+		while(_g1 < _g) {
+			var mi = _g1++;
+			o.mimetypes[mi] = o.mimetypes[mi].toLowerCase();
+		}
+	}
+	if(o.extensions != null) {
+		var _g11 = 0;
+		var _g2 = o.extensions.length;
+		while(_g11 < _g2) {
+			var ei = _g11++;
+			o.extensions[ei] = o.extensions[ei].toLowerCase();
+		}
+	}
+	return o;
+};
+ce.util.OptionTools.normalizeExportOptions = function(o) {
+	if(o == null) return o;
+	if(o.mimetype != null) o.mimetype = o.mimetype.toLowerCase();
+	if(o.extension != null) o.extension = o.extension.toLowerCase();
+	return o;
+};
+ce.util.OptionTools.normalizeReadOptions = function(o) {
+	return o;
+};
+ce.util.OptionTools.normalizeWriteOptions = function(o) {
+	return o;
+};
 var haxe = {};
 haxe.Http = function(url) {
 	this.url = url;
@@ -3049,6 +3256,14 @@ ce.core.config.Config.PROP_VALUE_DEFAULT_UNIFILE_ENDPOINT = "http://localhost:68
 ce.core.config.Config.PROP_VALUE_DEFAULT_CE_PATH = "";
 ce.core.model.CEError.CODE_BAD_PARAMETERS = 400;
 ce.core.model.CEError.CODE_INVALID_REQUEST = 403;
+ce.core.model._Service.Service_Impl_.Dropbox = "dropbox";
+ce.core.model._Service.Service_Impl_.Www = "www";
+ce.core.model._Service.Service_Impl_.Ftp = "ftp";
+ce.core.model._SortField.SortField_Impl_.Name = "name";
+ce.core.model._SortField.SortField_Impl_.Type = "type";
+ce.core.model._SortField.SortField_Impl_.LastUpdate = "lastUpdate";
+ce.core.model._SortOrder.SortOrder_Impl_.Asc = "asc";
+ce.core.model._SortOrder.SortOrder_Impl_.Desc = "desc";
 ce.core.parser.oauth.Str2OAuthResult.PARAM_NOT_APPROVED = "not_approved";
 ce.core.parser.oauth.Str2OAuthResult.PARAM_OAUTH_TOKEN = "oauth_token";
 ce.core.parser.oauth.Str2OAuthResult.PARAM_UID = "uid";
@@ -3081,6 +3296,10 @@ ce.core.view.Application.CLASS_SELECTING = "selecting";
 ce.core.view.Application.CLASS_EXPORT_OVERWRITING = "export-overwriting";
 ce.core.view.Application.CLASS_MODE_SINGLE_FILE_SELECTION = "single-file-sel-mode";
 ce.core.view.Application.CLASS_MODE_SINGLE_FILE_EXPORT = "single-file-exp-mode";
+ce.core.view.Application.CLASS_ITEMS_LIST = "items-list";
+ce.core.view.Application.CLASS_ITEMS_ICONS = "items-icons";
+ce.core.view.Application.CLASS_PREFIX_SORTEDBY = "sortedby-";
+ce.core.view.Application.CLASS_PREFIX_SERVICE = "srv-";
 ce.core.view.Application.SELECTOR_LOGOUT_BTN = ".logoutBtn";
 ce.core.view.Application.SELECTOR_CLOSE_BTN = ".closeBtn";
 ce.core.view.Application.SELECTOR_HOME = ".home";
@@ -3091,14 +3310,17 @@ ce.core.view.Application.SELECTOR_BREADCRUMB = ".breadcrumb";
 ce.core.view.Application.SELECTOR_DROPZONE = ".dropzone";
 ce.core.view.Application.SELECTOR_EXPORT = ".export";
 ce.core.view.Application.SELECTOR_NEW_FOLDER_BTN = ".newFolderBtn";
+ce.core.view.Application.SELECTOR_PARENT_FOLDER_BTN = ".parentFolderBtn";
 ce.core.view.Application.SELECTOR_DELETE_BTN = ".deleteBtn";
+ce.core.view.Application.SELECTOR_ITEMS_LIST_BTN = ".listItemsBtn";
+ce.core.view.Application.SELECTOR_ITEMS_ICON_BTN = ".iconItemsBtn";
 ce.core.view.AuthPopup.SELECTOR_LINK = "a";
 ce.core.view.AuthPopup.SELECTOR_TEXT = "span";
 ce.core.view.AuthPopup.PLACE_HOLDER_SRV_NAME = "{srvName}";
-ce.core.view.Breadcrumb.SELECTOR_PATH = "span.path";
 ce.core.view.Breadcrumb.SELECTOR_PATH_ITEM_TMPL = "span.pathIt";
 ce.core.view.Breadcrumb.SELECTOR_PATH_SEP_TMPL = "span.sep";
-ce.core.view.Breadcrumb.SELECTOR_TITLE = ".title span";
+ce.core.view.Button.ATTR_DISABLED = "disabled";
+ce.core.view.Button.ATTR_VALUE_DISABLED = "disabled";
 ce.core.view.DropZone.SELECTOR_INPUT = "div input";
 ce.core.view.DropZone.SELECTOR_BUTTON = "div button";
 ce.core.view.Export.SELECTOR_INPUT = "input";
@@ -3112,17 +3334,19 @@ ce.core.view.FileBrowser.SELECTOR_SRV_ITEM_TMPL = "li";
 ce.core.view.FileBrowser.SELECTOR_NEW_FOLDER_ITEM = ".folder.new";
 ce.core.view.FileBrowser.SELECTOR_FOLDER_ITEM_TMPL = ".folder:nth-last-child(-n+1)";
 ce.core.view.FileBrowser.SELECTOR_FILE_ITEM_TMPL = ".file";
+ce.core.view.FileBrowser.SELECTOR_CONTEXT_MENU_ITEMS = "ul.contextMenu li";
 ce.core.view.FileBrowser.SELECTOR_NAME_BTN = ".titles .fileName";
 ce.core.view.FileBrowser.SELECTOR_TYPE_BTN = ".titles .fileType";
 ce.core.view.FileBrowser.SELECTOR_DATE_BTN = ".titles .lastUpdate";
-ce.core.view.FileBrowser.CLASS_SORT_ORDER_ASC = "asc";
-ce.core.view.FileBrowser.CLASS_SORT_ORDER_DESC = "desc";
 ce.core.view.FileBrowser.CLASS_SELECT_FOLDER = "selectFolders";
-ce.core.view.FileBrowser.CLASS_PREFIX_SORTBY = "sortby-";
+ce.core.view.FileBrowser.CLASS_SRV_CONNECTED = "connected";
 ce.core.view.FileListItem.CLASS_RENAMING = "renaming";
 ce.core.view.FileListItem.CLASS_NOT_SELECTABLE = "nosel";
 ce.core.view.FileListItem.CLASS_FILTERED_OUT = "filteredOut";
 ce.core.view.FileListItem.CLASS_FOLDER = "folder";
+ce.core.view.FileListItem.CLASS_IMAGE = "image";
+ce.core.view.FileListItem.CLASS_SOUND = "sound";
+ce.core.view.FileListItem.CLASS_VIDEO = "video";
 ce.core.view.Home.SELECTOR_SRV_LIST = "ul";
 ce.core.view.Home.SELECTOR_SRV_ITEM_TMPL = "li";
 ce.util.FileTools.DIRECTORY_MIME_TYPE = "text/directory";

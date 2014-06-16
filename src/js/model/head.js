@@ -262,7 +262,7 @@ silex.model.Head.prototype.setTitle = function(name) {
   var titleNode;
   if (titleNodes.length === 0){
     titleNode = goog.dom.createElement('title');
-    goog.dom.appendChild(this.getHeadElement(), title);
+    goog.dom.appendChild(this.getHeadElement(), titleNode);
   }
   else{
     titleNode = titleNodes[0];
