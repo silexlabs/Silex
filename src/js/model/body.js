@@ -230,6 +230,30 @@ silex.model.Body.prototype.setEditable = function(rootElement, isEditable, opt_i
       this.removeEditableClasses(rootElement);
     }
   }
+  // add a div on top of the HTML content elements in order to
+  // prevent interactions with iframes and html content while editing
+  // start by removing all
+  var coverElements = rootElement.querySelectorAll('.html-element>.temp-editable-cover');
+  goog.array.forEach(coverElements, function(element) {
+    goog.dom.removeNode(element);
+  }, this);
+  // then add one in each HTML element
+  var htmlContentElements = rootElement.querySelectorAll('.html-element');
+  goog.array.forEach(htmlContentElements, function(element) {
+    // create the cover element
+    var cover = goog.dom.createElement('div');
+    goog.dom.classes.add(cover, 'temp-editable-cover');
+    // insert cover on top of all elements
+    goog.dom.insertChildAt(element, cover, 0);
+  }, this);
+  // handle the root element itself
+  if (rootElement.getAttribute(silex.model.Body.SILEX_TYPE_ATTR_NAME) === silex.model.Element.TYPE_HTML){
+    // create the cover element
+    var cover = goog.dom.createElement('div');
+    goog.dom.classes.add(cover, 'temp-editable-cover');
+    // insert cover on top of all elements
+    goog.dom.insertChildAt(rootElement, cover, 0);
+  }
 };
 
 /**
