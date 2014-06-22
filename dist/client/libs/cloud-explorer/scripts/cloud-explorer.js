@@ -325,6 +325,18 @@ ce.api.CloudExplorer.prototype = {
 		if(options == null) onProgress = arg5; else onProgress = arg6;
 		this.ctrl.write(target,data,options,onSuccess,onError,onProgress);
 	}
+	,isLoggedIn: function(arg1,arg2,arg3) {
+		var srvName = arg1;
+		var onSuccess = arg2;
+		var onError = arg3;
+		return this.ctrl.isLoggedIn(srvName,onSuccess,onError);
+	}
+	,requestAuthorize: function(arg1,arg2,arg3) {
+		var srvName = arg1;
+		var onSuccess = arg2;
+		var onError = arg3;
+		this.ctrl.requestAuthorize(srvName,onSuccess,onError);
+	}
 };
 ce.core = {};
 ce.core.Controller = function(config,iframe) {
@@ -333,6 +345,7 @@ ce.core.Controller = function(config,iframe) {
 	this.unifileSrv = new ce.core.service.UnifileSrv(config);
 	this.fileSrv = new ce.core.service.FileSrv();
 	this.application = new ce.core.view.Application(iframe,config);
+	this.errorCtrl = new ce.core.ctrl.ErrorCtrl(this.state,this.application);
 	this.initMvc();
 };
 ce.core.Controller.__name__ = true;
@@ -344,7 +357,7 @@ ce.core.Controller.prototype = {
 	}
 	,read: function(input,options,onSuccess,onError,onProgress) {
 		ce.util.OptionTools.normalizeReadOptions(options);
-		this.fileSrv.get(input.url,onSuccess,$bind(this,this.setError));
+		this.fileSrv.get(input.url,onSuccess,($_=this.errorCtrl,$bind($_,$_.setError)));
 	}
 	,exportFile: function(input,options,onSuccess,onError) {
 		ce.util.OptionTools.normalizeExportOptions(options);
@@ -365,7 +378,27 @@ ce.core.Controller.prototype = {
 		}(this)),null,explodedUrl.srv,explodedUrl.path,function() {
 			if(_g1.state.currentFileList.get(explodedUrl.filename) == null) _g1.refreshFilesList();
 			onSuccess(target);
-		},$bind(this,this.setError));
+		},($_=this.errorCtrl,$bind($_,$_.setError)));
+	}
+	,isLoggedIn: function(srvName,onSuccess,onError) {
+		this.state.set_currentMode(ce.core.model.Mode.IsLoggedIn(onSuccess,onError,srvName));
+		if(this.state.serviceList == null) this.listServices(); else if(this.state.serviceList.get(srvName) == null) {
+			console.log("unknown service " + srvName);
+			onError(new ce.core.model.CEError(400));
+		} else onSuccess(this.state.serviceList.get(srvName).isLoggedIn);
+	}
+	,requestAuthorize: function(srvName,onSuccess,onError) {
+		this.state.set_currentMode(ce.core.model.Mode.RequestAuthorize(onSuccess,onError,srvName));
+		if(this.state.serviceList == null) this.listServices(); else if(this.state.serviceList.get(srvName) == null) {
+			console.log("unknown service " + srvName);
+			onError(new ce.core.model.CEError(400));
+		} else if(this.state.serviceList.get(srvName).isLoggedIn) {
+			console.log("user already logged into " + srvName);
+			onSuccess();
+		} else {
+			this.state.set_displayState(true);
+			this.connect(srvName);
+		}
 	}
 	,setAlert: function(msg,level,choices) {
 		if(level == null) level = 2;
@@ -375,15 +408,6 @@ ce.core.Controller.prototype = {
 		}; else this.application.onClicked = function() {
 		};
 		this.application.alertPopup.setMsg(msg,level,choices);
-		this.application.setAlertPopupDisplayed(true);
-	}
-	,setError: function(msg) {
-		var _g = this;
-		this.application.setLoaderDisplayed(false);
-		console.log("ERROR HAPPENED");
-		this.application.alertPopup.setMsg(msg,0,[{ msg : "Continue", cb : function() {
-			_g.application.setAlertPopupDisplayed(false);
-		}}]);
 		this.application.setAlertPopupDisplayed(true);
 	}
 	,initMvc: function() {
@@ -498,7 +522,7 @@ ce.core.Controller.prototype = {
 				_g.unifileSrv.mv(_g.state.currentLocation.service,oldPath,newPath,function() {
 					_g.application.setLoaderDisplayed(false);
 					_g.refreshFilesList();
-				},$bind(_g,_g.setError));
+				},($_=_g.errorCtrl,$bind($_,$_.setError)));
 			}
 		};
 		this.application.onOverwriteExportClicked = function() {
@@ -562,7 +586,7 @@ ce.core.Controller.prototype = {
 		this.application.onInputFilesChanged = function() {
 			_g.unifileSrv.upload(null,_g.application.dropzone.inputElt.files,_g.state.currentLocation.service,_g.state.currentLocation.path,function() {
 				_g.refreshFilesList();
-			},$bind(_g,_g.setError));
+			},($_=_g.errorCtrl,$bind($_,$_.setError)));
 		};
 		this.application.onNavBtnClicked = function(srv,path) {
 			_g.state.set_currentLocation(new ce.core.model.Location(srv,path));
@@ -588,7 +612,7 @@ ce.core.Controller.prototype = {
 					_g.refreshFilesList();
 				},function(e) {
 					_g.state.set_newFolderMode(false);
-					_g.setError(e);
+					_g.errorCtrl.setError(e);
 				});
 			}
 		};
@@ -602,6 +626,25 @@ ce.core.Controller.prototype = {
 			if(_g.state.currentSortField == field) _g.state.set_currentSortOrder(_g.state.currentSortOrder == "asc"?"desc":"asc"); else _g.state.set_currentSortField(field);
 		};
 		this.state.onServiceListChanged = function() {
+			{
+				var _g16 = _g.state.currentMode;
+				switch(_g16[1]) {
+				case 2:
+					var srvName = _g16[4];
+					var onError4 = _g16[3];
+					var onSuccess4 = _g16[2];
+					_g.isLoggedIn(srvName,onSuccess4,onError4);
+					break;
+				case 3:
+					var srvName1 = _g16[4];
+					var onError5 = _g16[3];
+					var onSuccess5 = _g16[2];
+					_g.requestAuthorize(srvName1,onSuccess5,onError5);
+					break;
+				case 0:case 1:
+					break;
+				}
+			}
 			var lastConnectedService = null;
 			_g.application.home.resetList();
 			_g.application.fileBrowser.resetList();
@@ -627,10 +670,25 @@ ce.core.Controller.prototype = {
 		};
 		this.state.onReadyStateChanged = function() {
 		};
-		this.state.onServiceLoginStateChanged = function(srvName) {
-			_g.application.fileBrowser.setSrvConnected(srvName,_g.state.serviceList.get(srvName).isLoggedIn);
-			if(!_g.state.serviceList.get(srvName).isLoggedIn) {
-				if(_g.state.currentLocation.service == srvName) {
+		this.state.onServiceLoginStateChanged = function(srvName2) {
+			_g.application.fileBrowser.setSrvConnected(srvName2,_g.state.serviceList.get(srvName2).isLoggedIn);
+			{
+				var _g17 = _g.state.currentMode;
+				switch(_g17[1]) {
+				case 0:case 1:
+					break;
+				case 2:
+					throw "unexpected mode: " + Std.string(_g.state.currentMode);
+					break;
+				case 3:
+					var onSuccess6 = _g17[2];
+					onSuccess6();
+					_g.hide();
+					break;
+				}
+			}
+			if(!_g.state.serviceList.get(srvName2).isLoggedIn) {
+				if(_g.state.currentLocation.service == srvName2) {
 					var $it2 = _g.state.serviceList.iterator();
 					while( $it2.hasNext() ) {
 						var s1 = $it2.next();
@@ -643,15 +701,15 @@ ce.core.Controller.prototype = {
 				}
 			} else {
 				_g.application.setLogoutButtonDisplayed(true);
-				if(_g.state.serviceList.get(srvName).account == null) _g.unifileSrv.account(srvName,function(a) {
-					_g.state.serviceList.get(srvName).set_account(a);
-				},$bind(_g,_g.setError));
-				_g.state.set_currentLocation(new ce.core.model.Location(srvName,"/"));
+				if(_g.state.serviceList.get(srvName2).account == null) _g.unifileSrv.account(srvName2,function(a) {
+					_g.state.serviceList.get(srvName2).set_account(a);
+				},($_=_g.errorCtrl,$bind($_,$_.setError)));
+				_g.state.set_currentLocation(new ce.core.model.Location(srvName2,"/"));
 			}
 		};
 		this.state.onDisplayModeChanged = function() {
-			var _g16 = _g.state.displayMode;
-			switch(_g16[1]) {
+			var _g18 = _g.state.displayMode;
+			switch(_g18[1]) {
 			case 0:
 				_g.application.setListDisplayMode();
 				break;
@@ -692,12 +750,14 @@ ce.core.Controller.prototype = {
 			if(_g.state.currentMode != null) {
 				_g.application.fileBrowser.set_filters(null);
 				{
-					var _g17 = _g.state.currentMode;
-					switch(_g17[1]) {
+					var _g19 = _g.state.currentMode;
+					switch(_g19[1]) {
+					case 2:case 3:
+						break;
 					case 0:
-						var options4 = _g17[4];
-						var onError4 = _g17[3];
-						var onSuccess4 = _g17[2];
+						var options4 = _g19[4];
+						var onError6 = _g19[3];
+						var onSuccess7 = _g19[2];
 						if(options4 != null) {
 							if((options4.mimetype != null || options4.mimetypes != null) && (options4.extension != null || options4.extensions != null)) throw "Cannot pass in both mimetype(s) and extension(s) parameters to the pick function";
 							var filters = null;
@@ -727,10 +787,10 @@ ce.core.Controller.prototype = {
 						}
 						break;
 					case 1:
-						var options5 = _g17[5];
-						var input2 = _g17[4];
-						var onError5 = _g17[3];
-						var onSuccess5 = _g17[2];
+						var options5 = _g19[5];
+						var input2 = _g19[4];
+						var onError7 = _g19[3];
+						var onSuccess8 = _g19[2];
 						var ext;
 						if(options5 != null && options5.mimetype != null) ext = ce.util.FileTools.getExtension(options5.mimetype); else ext = null;
 						if(ext == null && options5 != null && options5.extension != null) if(options5.extension.indexOf(".") == 0) ext = options5.extension; else ext = "." + options5.extension;
@@ -775,7 +835,7 @@ ce.core.Controller.prototype = {
 						_g2.application.setLoaderDisplayed(false);
 						_g2.refreshFilesList();
 					}
-				},$bind(this,this.setError));
+				},($_=this.errorCtrl,$bind($_,$_.setError)));
 			}
 		}
 	}
@@ -788,7 +848,7 @@ ce.core.Controller.prototype = {
 		this.unifileSrv.rm(this.state.currentLocation.service,rmDirPath,function() {
 			_g.application.setLoaderDisplayed(false);
 			_g.refreshFilesList();
-		},$bind(this,this.setError));
+		},($_=this.errorCtrl,$bind($_,$_.setError)));
 	}
 	,doExportFile: function() {
 		{
@@ -828,7 +888,7 @@ ce.core.Controller.prototype = {
 			_g.state.set_currentFileList(files);
 			_g.application.setFileBrowserDisplayed(true);
 			_g.application.setLoaderDisplayed(false);
-		},$bind(this,this.setError));
+		},($_=this.errorCtrl,$bind($_,$_.setError)));
 	}
 	,connect: function(srv) {
 		var _g = this;
@@ -859,21 +919,25 @@ ce.core.Controller.prototype = {
 				_g.application.setAuthPopupDisplayed(true);
 			} else {
 				_g.state.serviceList.get(srv).isConnected = false;
-				_g.setError(cr.message);
+				_g.errorCtrl.manageConnectError(cr.message);
 			}
-		},$bind(this,this.setError));
+		},function(msg) {
+			_g.errorCtrl.manageConnectError(msg);
+		});
 	}
 	,login: function(srv) {
 		var _g = this;
 		if(!this.state.serviceList.get(srv).isLoggedIn) {
 			this.application.setLoaderDisplayed(true);
 			this.unifileSrv.login(srv,function(lr) {
+				_g.application.setLoaderDisplayed(false);
 				if(lr.success) _g.state.serviceList.get(srv).set_isLoggedIn(true); else {
 					_g.state.serviceList.get(srv).set_isLoggedIn(false);
-					_g.setError("Could not login. Please try again.");
+					_g.errorCtrl.manageLoginError("Could not login. Please try again.");
 				}
-				_g.application.setLoaderDisplayed(false);
-			},$bind(this,this.setError));
+			},function(msg) {
+				_g.errorCtrl.manageLoginError(msg);
+			});
 		} else console.log("can't log into " + Std.string(srv) + " as user already logged in!");
 	}
 	,logout: function(srv) {
@@ -882,8 +946,8 @@ ce.core.Controller.prototype = {
 			this.application.setLoaderDisplayed(true);
 			this.unifileSrv.logout(srv,function(lr) {
 				_g.application.setLoaderDisplayed(false);
-				if(!lr.success) _g.setError(lr.message); else _g.state.serviceList.get(srv).set_isLoggedIn(false);
-			},$bind(this,this.setError));
+				if(!lr.success) _g.errorCtrl.setError(lr.message); else _g.state.serviceList.get(srv).set_isLoggedIn(false);
+			},($_=this.errorCtrl,$bind($_,$_.setError)));
 		} else console.log("can't log out from " + Std.string(srv) + " as user not yet logged in!");
 	}
 	,logoutAll: function() {
@@ -902,7 +966,7 @@ ce.core.Controller.prototype = {
 			var s = [srv1];
 			this.unifileSrv.logout(s[0],(function(s) {
 				return function(lr) {
-					if(!lr.success) _g1.setError(lr.message); else {
+					if(!lr.success) _g1.errorCtrl.setError(lr.message); else {
 						HxOverrides.remove(loggedInSrvs,s[0]);
 						if(loggedInSrvs.length == 0) {
 							_g1.application.setLoaderDisplayed(false);
@@ -910,7 +974,7 @@ ce.core.Controller.prototype = {
 						}
 					}
 				};
-			})(s),$bind(this,this.setError));
+			})(s),($_=this.errorCtrl,$bind($_,$_.setError)));
 		}
 	}
 	,listServices: function() {
@@ -919,7 +983,9 @@ ce.core.Controller.prototype = {
 		this.unifileSrv.listServices(function(slm) {
 			_g.application.setLoaderDisplayed(false);
 			_g.state.set_serviceList(slm);
-		},$bind(this,this.setError));
+		},function(msg) {
+			_g.errorCtrl.manageListSrvError(msg);
+		});
 	}
 	,hide: function() {
 		this.state.set_displayState(false);
@@ -960,6 +1026,77 @@ ce.core.config.Config.prototype = {
 		}
 	}
 };
+ce.core.ctrl = {};
+ce.core.ctrl.ErrorCtrl = function(state,application) {
+	this.state = state;
+	this.application = application;
+};
+ce.core.ctrl.ErrorCtrl.__name__ = true;
+ce.core.ctrl.ErrorCtrl.prototype = {
+	manageListSrvError: function(msg) {
+		{
+			var _g = this.state.currentMode;
+			switch(_g[1]) {
+			case 0:case 1:
+				this.setError(msg);
+				break;
+			case 2:
+				var onError = _g[3];
+				onError(new ce.core.model.CEError(500));
+				break;
+			case 3:
+				var onError1 = _g[3];
+				onError1(new ce.core.model.CEError(500));
+				this.state.set_displayState(false);
+				break;
+			}
+		}
+	}
+	,manageConnectError: function(msg) {
+		{
+			var _g = this.state.currentMode;
+			switch(_g[1]) {
+			case 0:case 1:
+				this.setError(msg);
+				break;
+			case 3:
+				var onError = _g[3];
+				onError(new ce.core.model.CEError(500));
+				this.state.set_displayState(false);
+				break;
+			case 2:
+				throw "unexpected mode " + Std.string(this.state.currentMode);
+				break;
+			}
+		}
+	}
+	,manageLoginError: function(msg) {
+		{
+			var _g = this.state.currentMode;
+			switch(_g[1]) {
+			case 0:case 1:
+				this.setError(msg);
+				break;
+			case 3:
+				var onError = _g[3];
+				onError(new ce.core.model.CEError(500));
+				this.state.set_displayState(false);
+				break;
+			case 2:
+				throw "unexpected mode " + Std.string(this.state.currentMode);
+				break;
+			}
+		}
+	}
+	,setError: function(msg) {
+		var _g = this;
+		this.application.setLoaderDisplayed(false);
+		this.application.alertPopup.setMsg(msg,0,[{ msg : "Continue", cb : function() {
+			_g.application.setAlertPopupDisplayed(false);
+		}}]);
+		this.application.setAlertPopupDisplayed(true);
+	}
+};
 ce.core.model = {};
 ce.core.model.CEError = function(code) {
 };
@@ -998,9 +1135,11 @@ ce.core.model.Location.prototype = {
 	}
 	,__properties__: {set_path:"set_path",set_service:"set_service"}
 };
-ce.core.model.Mode = { __ename__ : true, __constructs__ : ["SingleFileSelection","SingleFileExport"] };
+ce.core.model.Mode = { __ename__ : true, __constructs__ : ["SingleFileSelection","SingleFileExport","IsLoggedIn","RequestAuthorize"] };
 ce.core.model.Mode.SingleFileSelection = function(onSuccess,onError,options) { var $x = ["SingleFileSelection",0,onSuccess,onError,options]; $x.__enum__ = ce.core.model.Mode; $x.toString = $estr; return $x; };
 ce.core.model.Mode.SingleFileExport = function(onSuccess,onError,input,options) { var $x = ["SingleFileExport",1,onSuccess,onError,input,options]; $x.__enum__ = ce.core.model.Mode; $x.toString = $estr; return $x; };
+ce.core.model.Mode.IsLoggedIn = function(onSuccess,onError,srvName) { var $x = ["IsLoggedIn",2,onSuccess,onError,srvName]; $x.__enum__ = ce.core.model.Mode; $x.toString = $estr; return $x; };
+ce.core.model.Mode.RequestAuthorize = function(onSuccess,onError,srvName) { var $x = ["RequestAuthorize",3,onSuccess,onError,srvName]; $x.__enum__ = ce.core.model.Mode; $x.toString = $estr; return $x; };
 ce.core.model._Service = {};
 ce.core.model._Service.Service_Impl_ = function() { };
 ce.core.model._Service.Service_Impl_.__name__ = true;
@@ -1672,6 +1811,12 @@ ce.core.view.Application.prototype = {
 		case 1:
 			ce.util.HtmlTools.toggleClass(this.rootElt,"single-file-exp-mode",true);
 			break;
+		case 2:
+			ce.util.HtmlTools.toggleClass(this.rootElt,"is-logged-in-mode",true);
+			break;
+		case 3:
+			ce.util.HtmlTools.toggleClass(this.rootElt,"request-authorize-mode",true);
+			break;
 		}
 	}
 	,get_location: function() {
@@ -1839,7 +1984,7 @@ ce.core.view.Breadcrumb.prototype = {
 		if(path.length > 0) {
 			var parr = path.split("/");
 			while(parr.length > 0) {
-				var itPath = ["/" + parr.join("/")];
+				var itPath = ["/" + parr.join("/") + "/"];
 				var pit = parr.pop();
 				if(StringTools.trim(pit) != "") {
 					var nit = this.pathItemTmpl.cloneNode(true);
@@ -3296,6 +3441,8 @@ ce.core.view.Application.CLASS_SELECTING = "selecting";
 ce.core.view.Application.CLASS_EXPORT_OVERWRITING = "export-overwriting";
 ce.core.view.Application.CLASS_MODE_SINGLE_FILE_SELECTION = "single-file-sel-mode";
 ce.core.view.Application.CLASS_MODE_SINGLE_FILE_EXPORT = "single-file-exp-mode";
+ce.core.view.Application.CLASS_MODE_IS_LOGGED_IN = "is-logged-in-mode";
+ce.core.view.Application.CLASS_MODE_REQUEST_AUTHORIZE = "request-authorize-mode";
 ce.core.view.Application.CLASS_ITEMS_LIST = "items-list";
 ce.core.view.Application.CLASS_ITEMS_ICONS = "items-icons";
 ce.core.view.Application.CLASS_PREFIX_SORTEDBY = "sortedby-";
