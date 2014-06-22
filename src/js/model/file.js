@@ -158,9 +158,9 @@ silex.model.File.prototype.onContentLoaded = function (opt_cbk) {
   // refresh the view
   var pages = this.model.page.getPages();
   var page = this.model.page.getCurrentPage();
-  this.view.pageTool.redraw([], contentDocument, pages, page);
-  this.view.propertyTool.redraw([], contentDocument, pages, page);
-  this.view.stage.redraw([], contentDocument, pages, page);
+  this.view.pageTool.redraw(this.model.body.getSelection(), contentDocument, pages, page);
+  this.view.propertyTool.redraw(this.model.body.getSelection(), contentDocument, pages, page);
+  this.view.stage.redraw(this.model.body.getSelection(), contentDocument, pages, page);
   if (opt_cbk) opt_cbk();
   // loading
   setTimeout(goog.bind(function() {

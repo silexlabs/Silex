@@ -317,7 +317,6 @@ silex.view.Stage.prototype.handleMouseUp = function(target, shiftKey) {
  * remove the focus from text fields
  */
 silex.view.Stage.prototype.resetFocus = function() {
-  console.log('resetFocus');
   this.focusInput.focus();
   this.focusInput.blur();
 }
