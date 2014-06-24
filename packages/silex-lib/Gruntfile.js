@@ -237,7 +237,7 @@ module.exports = function(grunt) {
         }
         , main: {
             files: ['src/js/**/*.js', 'dist/server/**/*.js', 'src/css/*.css', 'src/css/*.less', 'src/html/**/*.jade', 'dist/client/**/*.html', 'Gruntfile.js']
-            , tasks: ['debugDeploy', 'run']
+            , tasks: ['debugDeploy']
         }
         , test: {
             files: ['test/**/*.js', 'src/js/**/*.js', 'dist/server/**/*.js', 'src/css/*.css', 'src/css/*.less', 'src/html/**/*.jade', 'dist/client/**/*.html', 'Gruntfile.js']
