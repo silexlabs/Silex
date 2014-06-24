@@ -158,9 +158,9 @@ silex.model.File.prototype.onContentLoaded = function (opt_cbk) {
   // refresh the view
   var pages = this.model.page.getPages();
   var page = this.model.page.getCurrentPage();
-  this.view.pageTool.redraw([], contentDocument, pages, page);
-  this.view.propertyTool.redraw([], contentDocument, pages, page);
-  this.view.stage.redraw([], contentDocument, pages, page);
+  this.view.pageTool.redraw(this.model.body.getSelection(), contentDocument, pages, page);
+  this.view.propertyTool.redraw(this.model.body.getSelection(), contentDocument, pages, page);
+  this.view.stage.redraw(this.model.body.getSelection(), contentDocument, pages, page);
   if (opt_cbk) opt_cbk();
   // loading
   setTimeout(goog.bind(function() {
@@ -483,6 +483,13 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
     bodyStr = bodyStr.replace(/url\(()(.+?)\1\)/gi, goog.bind(function(match, group1, group2) {
       return this.filterBgImage(baseUrl, files, match, group1, group2);
     }, this));
+    // handle the body itself
+    var oldStyle = bodyElement.getAttribute('style');
+    var newStyle = oldStyle.replace(/url\(()(.+?)\1\)/gi, goog.bind(function(match, group1, group2) {
+      return this.filterBgImage(baseUrl, files, match, group1, group2);
+    }, this));
+    bodyElement.setAttribute('style', newStyle);
+
     // css to download and put to css/
     headStr = headStr.replace(/href="?([^" ]*)"/gi, goog.bind(function(match, group1, group2) {
       var absolute = silex.utils.Url.getAbsolutePath(group1, baseUrl);
@@ -584,9 +591,9 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
     // extract the elements styles to external .css file
     var elements = goog.dom.getElementsByClass('editable-style', bodyElement);
     var elementIdx = 0;
-    goog.array.forEach(elements, function(element) {
+    var cleanupElement = function(element) {
       // add the element type
-      var classNameType = 'silex-' + element.getAttribute(silex.model.Element.TYPE_ATTR);
+      var classNameType = 'silex-' + (element.getAttribute(silex.model.Element.TYPE_ATTR) || 'body');
       goog.dom.classes.add(element, classNameType);
       // create a class name for this css
       var className = 'element-' + (elementIdx++);
@@ -602,7 +609,11 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
       element.removeAttribute('data-silex-type');
       // remove inline css styles
       element.removeAttribute('style');
-    }, this);
+    };
+    // handle body itself
+    cleanupElement(bodyElement);
+    // handle all other editable elements
+    goog.array.forEach(elements, cleanupElement, this);
 
     // todo: find patterns to reduce the number of css classes
     goog.array.forEach(cssArray, function(cssData) {
@@ -622,7 +633,9 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
     // put back the scripts
     headStr = headStr.replace(/type=\"text\/notjavascript\"/gi, 'type="text/javascript"')
     bodyStr = bodyElement.innerHTML.replace(/type=\"text\/notjavascript\"/gi, 'type="text/javascript"')
+    // handle the body style
     var bodyStyle = bodyElement.getAttribute('style');
+    var bodyClass = bodyElement.getAttribute('class');
 
     // final html page
     var html = '';
@@ -632,7 +645,7 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
         <link href="css/styles.css" rel="stylesheet">\
         <script src="js/script.js" type="text/javascript"></script>\
     </head>';
-    html += '<body style="' + bodyStyle + '" class="silex-runtime silex-published">' + bodyStr + '</body>';
+    html += '<body class="'+bodyClass+' silex-runtime silex-published">' + bodyStr + '</body>';
     html += '</html>';
 
     // callback

@@ -139,11 +139,13 @@ silex.view.pane.BgPane.prototype.buildUi = function() {
   goog.events.listen(this.attachmentComboBox,
       goog.ui.Component.EventType.CHANGE,
       function(event) {
+        if (this.iAmRedrawing) return;
         this.styleChanged('backgroundAttachment', event.target.getSelectedItem().getId());
       }, false, this);
   goog.events.listen(this.vPositionComboBox,
       goog.ui.Component.EventType.CHANGE,
       function(event) {
+        if (this.iAmRedrawing) return;
         var hPosition = this.hPositionComboBox.getSelectedItem().getId();
         var vPosition = this.vPositionComboBox.getSelectedItem().getId();
         this.styleChanged('backgroundPosition', vPosition + ' ' + hPosition);
@@ -151,6 +153,7 @@ silex.view.pane.BgPane.prototype.buildUi = function() {
   goog.events.listen(this.hPositionComboBox,
       goog.ui.Component.EventType.CHANGE,
       function(event) {
+        if (this.iAmRedrawing) return;
         var hPosition = this.hPositionComboBox.getSelectedItem().getId();
         var vPosition = this.vPositionComboBox.getSelectedItem().getId();
         this.styleChanged('backgroundPosition', vPosition + ' ' + hPosition);
@@ -158,11 +161,13 @@ silex.view.pane.BgPane.prototype.buildUi = function() {
   goog.events.listen(this.repeatComboBox,
       goog.ui.Component.EventType.CHANGE,
       function(event) {
+        if (this.iAmRedrawing) return;
         this.styleChanged('backgroundRepeat', event.target.getSelectedItem().getId());
       }, false, this);
   goog.events.listen(this.sizeComboBox,
       goog.ui.Component.EventType.CHANGE,
       function(event) {
+        if (this.iAmRedrawing) return;
         this.styleChanged('backgroundSize', event.target.getSelectedItem().getId());
       }, false, this);
 };

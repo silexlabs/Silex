@@ -68,10 +68,6 @@ $.widget('silexlabs.editable', {
     $('a', this.element).bind('click', function(e){
         e.preventDefault();
     });
-    console.log('add temp-editable-cover');
-    // prevent interactions with iframes and html content while editing
-    $('.html-element>.temp-editable-cover').remove();
-    $('.html-element>.silex-element-content.html-content').before('<div class="temp-editable-cover"><div>');
     // handle resizeable options
     if (this.options.isResizable != false)
       this.element.resizable({
