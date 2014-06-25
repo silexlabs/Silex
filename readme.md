@@ -41,7 +41,7 @@ Prerequisite :
 
 * [node.js](http://nodejs.org/) installed
 * [NPM](https://npmjs.org/) installed
-* [python](https://www.python.org/downloads/)
+* [python](https://www.python.org/downloads/) (V.2.7)
 
 Clone this repository, and do not forget the sub modules (cloud-explorer and unifile)
 
