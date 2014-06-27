@@ -7,7 +7,7 @@
     "Thomas Fetiveau aka zabojad"
   ],
   "dependencies": {
-    "unifile": "^0.0.33",
+    "unifile": "~0.0.*",
     "minimatch": "~0.2.14",
     "glob": "~3.2.7",
     "lodash": "~2.4.1",

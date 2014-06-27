@@ -27,7 +27,19 @@ if (isWebWorker){
 ////////////////////////////////////
 // github issues
 function silex_github_widget(containerSelector, labels, imageMode, cbk){
-    getJSON('https://api.github.com/repos/silexlabs/Silex/issues?labels='+labels, function (data) {
+    var g = getJSON;
+    var githubUrl = 'https://api.github.com/repos/silexlabs/Silex/issues?labels='+labels;
+    if (!isWebWorker) {
+      g = $.getJSON;
+      githubUrl += '&callback=?';
+    }
+    g(githubUrl, function (data) {
+      if (!isWebWorker) {
+        for (idx in data){
+          data = data[idx];
+          break;
+        }
+      }
       var listHtml = '<ul>';
       for (issueIndex in data){
         var issue = data[issueIndex];
