@@ -1,3 +1,9 @@
+/*
+  for webdriver.io documentation
+  https://github.com/camme/webdriverjs
+*/
+
+
 var webdriverjs = require('webdriverjs'),
     helper = require('../helper.js');
 
@@ -14,12 +20,14 @@ describe('Silex file explorer dialog test', function(){
   var client = {};
   this.timeout(10000);
 
+  // before tests, setup
   before(function(){
     this.timeout(99999999);
     client = helper.createClient(webdriverjs);
     client.init().windowHandleSize({width: 1024, height: 768});
   });
 
+  // open Silex file explorer dialog
   it('should open Silex file explorer dialog',function(done) {
     client
       // load silex
@@ -36,43 +44,54 @@ describe('Silex file explorer dialog test', function(){
       .call(done);
   });
 
-  it('should open the login popup',function(done) {
-    // Silex main window Id
-    var mainWindowId = null;
-
+  // in the file explorer: login to the "www" service and display files
+  it('login to the "www" service and display files',function(done) {
+    // store the original main window Id
+    var originalTabId = null;
+    // start the test
     client
       // store reference to Silex main window
       .getCurrentTabId(function(err, windowId){
-        mainWindowId = windowId;
+        originalTabId = windowId;
       })
+      // enter the cloud explorer frame
+      .frame('silex-file-explorer')
       // click the www image
-      .click('.ce-left-pane ul li:nth-of-type(2) span')
+      .click('.home ul .www')
       // click the "CLICK HERE" text to open the login popup
       .waitFor('.authPopup>div', 2000, _)
       .waitFor('.not-exist', 200, _)
-      .click('.authPopup>div')
+      .click('.authPopup a')
       .waitFor('.not-exist', 200, _)
-      // switch to auth popup
-      .switchTab('authPopup')
+      // switch to new winfow
+      .getCurrentTabId (function(err, id){
+        originalTabId = id
+      })
+      .getTabIds (function(err, ids) {
+        client.switchTab(ids[1])
+      })
       // type login and password then validate
       .addValue('input', 'admin')
       .addValue('div:nth-of-type(2) input', 'admin')
+      .saveScreenshot ('auto-test-tmp.png')
       .submitForm('input')
       .waitFor('.not-exist', 2000, _)
+      // switch back to current tab
+      //    keep the call to switchTab in a function because originalTabId is set in a callback
+      //    and is null in the main "flow"
       .call(function(){
-        // switch back to main window
-        // - keep this in the call function because mainWindowId is set in a callback
-        // and is null in the main "flow"
-        client.switchTab(mainWindowId);
+        client.switchTab(originalTabId);
       })
       .waitFor('.not-exist', 200, _)
+      // enter the cloud explorer frame
+      .frame('silex-file-explorer')
       // close the file explorer
-      .isVisible('.ce-browser .close-btn')
-      .click('.ce-browser .close-btn')
+      .isVisible('.closeBtn')
+      .click('.closeBtn')
       .waitFor('.not-exist', 200, _)
       .call(done);
   });
-
+  // After tests, cleanup
   after(function(done) {
       client.end(done);
   });

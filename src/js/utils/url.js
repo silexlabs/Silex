@@ -81,7 +81,7 @@ silex.utils.Url.absolute2Relative = function(htmlString, baseUrl) {
  */
 silex.utils.Url.relative2Absolute = function(htmlString, baseUrl) {
   // image source
-  htmlString = htmlString.replace(/src="?([^" ]*)" /gi, function(match, group1, group2) {
+  htmlString = htmlString.replace(/src="?([^" ]*)"/gi, function(match, group1, group2) {
     var res = match.replace(group1, silex.utils.Url.getAbsolutePath(group1, baseUrl));
     return res;
   });
