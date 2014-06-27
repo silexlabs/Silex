@@ -109,8 +109,9 @@ silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk) {
     }
   }, false, this);
   // add base tag from the beginning
-  // Not needed since we change all  the URLs to absolute
-  //  if (this.url) rawHtml = rawHtml.replace('<head>', '<head><base class="'+silex.model.Head.SILEX_TEMP_TAGS_CSS_CLASS+'" href="'+this.url+'" target="_blank">')
+  // should not be needed since we change all  the URLs to absolute
+  // but just in case abs/rel conversion bugs
+  if (this.url) rawHtml = rawHtml.replace('<head>', '<head><base class="'+silex.model.Head.SILEX_TEMP_TAGS_CSS_CLASS+'" href="'+this.url+'" target="_blank">')
   // prevent scripts from executing
   rawHtml = rawHtml.replace(/type=\"text\/javascript\"/gi, 'type="text/notjavascript"')
   // convert to absolute urls
@@ -223,14 +224,20 @@ silex.model.File.prototype.includeEditionTags = function(onSuccess, onError) {
     frontEndCssTag,
     normalizeCssTag
   ];
+/*
   // add base tag
+  // do not do that anymore, since :
+  // * the urls are supposed to be absolute
+  // * when they are not, the base tag has to be inserted before loading images, see rawHtml.replace above
   if (this.url){
+    console.log('add base tag', this.url);
     var baseTag = contentDocument.createElement('base');
     baseTag.target = '_blank';
     baseTag.href = this.url;
     this.model.head.addTempTag(baseTag);
     tags.push(baseTag);
   }
+*/
   // do the loading for good
   this.model.head.addTempTag(tags, onSuccess, onError);
 }

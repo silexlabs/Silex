@@ -20,16 +20,16 @@ function newAnchorLink(link, pos){
 }
 /*
 window.onscroll = function(e){
-    console.log(document.body.scrollTop)
+    if (typeof console !== "undefined") console.log(document.body.scrollTop)
 }
 */
 ////////////////////////////////////
 // github issues
 var widgetScriptUrl = 'js/widgets.js';
-if(typeof(worker) == "undefined"){
+if(typeof(Worker) !== 'undefined'){
   // web workers supported
   // create the worker
-  worker = new Worker(widgetScriptUrl);
+  var worker = new Worker(widgetScriptUrl);
   // define silex_github_widget
   window.silex_github_widget = function (containerSelector, labels, imageMode) {
     $(containerSelector).append('<p class="loading">Loading...</p>');
@@ -58,7 +58,7 @@ if(typeof(worker) == "undefined"){
 }
 else{
   // no web workers, so load the script
-  console.error('NO WEBWORKER');
+  if (typeof console !== "undefined") console.error('NO WEBWORKER');
   document.write('<script src="'+widgetScriptUrl+'"></'+'script>')
 }
 

@@ -2,6 +2,31 @@
 
 This is where you will find the recent changes made to Silex, and available on http://www.silex.me/
 
+## June 2014
+
+bug fixes
+
+* fixed bugs which prevent images to show up
+* fixed "iframe can not be dragged when youtube player in it"
+
+features
+
+* changed tabulation order in property pane, propery pane bugs
+* updated cloud explorer
+* fixed folder selection, and file extensions filter
+
+code quality
+
+* code cleanup
+* fixed functional tests
+* fixed npm, grunt and errors when running Silex in local
+* added monitis and newrelic monitoring
+
+silex website
+
+* added tags
+* favicon
+
 ## May 2014
 
 bug fixes

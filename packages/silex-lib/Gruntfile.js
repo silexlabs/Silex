@@ -64,6 +64,7 @@ module.exports = function(grunt) {
   // test and check tasks
   grunt.registerTask('check', ['htmllint', 'csslint:lax', 'closureLint']);
   grunt.registerTask('test', ['releaseDeploy', 'selenium_start', 'simplemocha', 'selenium_stop']);
+  grunt.registerTask('test-no-build', ['selenium_start', 'simplemocha', 'selenium_stop']);
   grunt.registerTask('fix', ['closureFixStyle']);
 
   // watch for file modifications and then build Silex and restart Silex server

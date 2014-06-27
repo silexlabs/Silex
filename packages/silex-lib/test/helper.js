@@ -8,7 +8,6 @@ var fs = require('fs')
 /**
  * ref to selenium driver
  */
-exports.driver = null;
 exports.webdriver = null;
 
 /**
@@ -82,15 +81,12 @@ exports.createClient = function (webdriverjs) {
       }
     });
     client.on('error', function(e) {
-      console.error('an error occured in the client connected to the selenium server')
+      // happens all the time, when waiting for timeout for example (.waitFor('.not-exist', 2000, _))
+      // console.error('an error occured in the client connected to the selenium server', e)
       if (e && e.err && e.err.code){
         switch(e.err.code) {
           case 'ECONNREFUSED':
             console.error("couldn't connect to selenium server, please run the command: \n $ java -jar test/selenium-server-standalone-2.37.0.jar");
-          break;
-          case 'NOSESSIONID':
-             // session not available
-             // ...
           break;
         }
       }
