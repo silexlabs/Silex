@@ -84,8 +84,8 @@ $.widget('silexlabs.editable', {
             // dropped out of the stage, so just move it to stage
             // usually this is because the stage was too small, and it will make it bigger
             // trigger an event the old fashion way because it has to be catched by old fashioned addEventListener
-            var event = document.createEvent('CustomEvent');
-            event.initCustomEvent('droppedOutOfStage', true, true);
+            var event = document.createEvent('Event');
+            event.initEvent('droppedOutOfStage', true, true);
             this.get(0).dispatchEvent(event);
           }
         })
