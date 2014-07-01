@@ -27,6 +27,7 @@ goog.require('goog.array');
 
 /**
  * constant for the class names which are of internal use in Silex
+ * they do not appear in the "css classes" text field of the style-pane
  * @const
  * @type {string}
  */
@@ -40,6 +41,7 @@ silex.utils.Style.SILEX_CLASS_NAMES = [
   silex.model.Body.EDITABLE_CREATED_CLASS_NAME,
   silex.model.Page.PAGED_CLASS_NAME,
   silex.model.Page.PAGED_VISIBLE_CLASS_NAME,
+  silex.model.Page.PAGEABLE_PLUGIN_READY_CLASS_NAME,
   silex.model.Page.PAGE_LINK_ACTIVE_CLASS_NAME,
   silex.model.Element.SELECTED_CLASS_NAME,
   silex.model.Element.TYPE_CONTAINER + '-element',
