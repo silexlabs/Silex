@@ -63,6 +63,14 @@ silex.model.Page.PAGEABLE_PLUGIN_READY_CLASS_NAME = 'pageable-plugin-created';
 
 
 /**
+ * constant for the class name of elements visible only on some pages
+ * @const
+ * @type {string}
+ */
+silex.model.Page.PAGED_HIDDEN_CLASS_NAME = 'paged-element-hidden';
+
+
+/**
  * constant for the class name of elements when it is in a visible page
  * this css class is set in pageable.js
  * @const
@@ -263,7 +271,7 @@ silex.model.Page.prototype.renamePage = function(oldName, newName, newDisplayNam
   goog.array.forEach(elements, function(element) {
     goog.dom.classes.swap(element, oldName, newName);
   }, this);
-  // wait until the dom reflects the changes 
+  // wait until the dom reflects the changes
   setTimeout(goog.bind(function (){
     // select this page
     this.setCurrentPage(newName);
