@@ -207,12 +207,12 @@ silex.view.pane.BgPane.prototype.redraw = function(selectedElements, document, p
   }
   else {
     // handle all colors, including the named colors
-    var color = goog.color.parse(color);
+    var color = silex.utils.Style.rgbaToHex(color);
 
     this.transparentBgCheckbox.setChecked(false);
     this.bgColorPicker.setEnabled(true);
-    this.bgColorPicker.setValue(color.hex);
-    this.hsvPalette.setColor(color.hex);
+    this.hsvPalette.setColorRgbaHex(color);
+    this.bgColorPicker.setValue(this.hsvPalette.getColor());
   }
   // BG image
   var bgImage = this.getCommonProperty(selectedElements, function (element) {
