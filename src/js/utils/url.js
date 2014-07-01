@@ -111,7 +111,6 @@ silex.utils.Url.relative2Absolute = function(htmlString, baseUrl) {
 silex.utils.Url.getRelativePath = function(url, base) {
   // check if they are both absolute urls
   if (base.indexOf('http') !== 0 || url.indexOf('http') !== 0) {
-    console.warn('Warning: the URL is not absolute ', url, base);
     return url;
   }
   // get an array out of the URLs
@@ -129,7 +128,6 @@ silex.utils.Url.getRelativePath = function(url, base) {
   baseArr.shift();
   // check if they are on the same domain
   if (baseArr[0] !== urlArr[0]) {
-    console.warn('Warning: the URL is not on the same domain as the base url ', url, base);
     return url;
   }
   // remove the common part

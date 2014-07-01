@@ -151,7 +151,8 @@ silex.view.Stage.prototype.bodyElementSizeToContent = function(event){
     }
   }
   else{
-    console.warn('could not resize body to match content because this.bodyElement is undefined');
+    // could not resize body to match content because this.bodyElement is undefined
+    // this happens at startup
   }
 }
 

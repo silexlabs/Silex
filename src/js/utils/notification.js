@@ -86,7 +86,7 @@ silex.utils.Notification.activateNative = function(){
     }
   }
   else {
-    console.warn("Notifications are not supported for this Browser/OS version yet.");
+    // Notifications are not supported for this Browser/OS version yet
   }
 };
 
