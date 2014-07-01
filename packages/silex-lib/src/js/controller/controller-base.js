@@ -618,6 +618,13 @@ silex.controller.ControllerBase.prototype.doSave = function(url, opt_cbk, opt_er
   this.model.file.setUrl(url);
   // relative urls only in the files
   var rawHtml = this.model.file.getHtml();
+  // look for bug of firefox inserting quotes in url("")
+  if (rawHtml.indexOf("url('&quot;") > -1){
+    this.tracker.trackAction('controller-events', 'warning', 'file.save.corrupted', -1);
+    rawHtml = rawHtml.replace(/url\('&quot;()(.+?)\1&quot;'\)/gi, goog.bind(function(match, group1, group2) {
+        return 'url(\'' + group2 + '\')';
+      }, this));
+  }
   // save to file
   this.model.file.saveAs(
     url,
