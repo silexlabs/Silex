@@ -36,7 +36,25 @@ silex.utils.Url.getBaseUrl = function(opt_url) {
   else{
     opt_url = silex.utils.Url.getAbsolutePath(opt_url, window.location.href);
   }
+  // remove the hash
+  if (opt_url.indexOf('#') > 0){
+    opt_url = opt_url.substr(0, opt_url.indexOf('#'));
+  }
+  // return the URL but the file name
   return opt_url.substr(0, opt_url.lastIndexOf('/') + 1);
+};
+
+
+/**
+ * Get root URL of Silex app
+ * @return  {string} the base url
+ * @example https://duckduckgo.com returns https://duckduckgo.com
+ * @example https://duckduckgo.com/ returns https://duckduckgo.com
+ * @example https://duckduckgo.com/?q=javascript returns https://duckduckgo.com
+ * @example https://duckduckgo.com/abc/ returns https://duckduckgo.com
+ */
+silex.utils.Url.getRootUrl = function() {
+  return window.location.href.substr(0, window.location.href.lastIndexOf(window.location.pathname));
 };
 
 
