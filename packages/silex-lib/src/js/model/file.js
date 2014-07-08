@@ -48,8 +48,7 @@ silex.model.File.CREATION_TEMPLATE = 'creation-template.html';
  */
 silex.model.File.DOWNLOAD_LOCALLY_FROM = [
   'http://static.silex.me'
-  , 'http://www.silex.me'
-  , 'http://localhost:6805/'
+  , silex.utils.Url.getRootUrl()
 ];
 
 
