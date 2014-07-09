@@ -48,8 +48,7 @@ silex.model.File.CREATION_TEMPLATE = 'creation-template.html';
  */
 silex.model.File.DOWNLOAD_LOCALLY_FROM = [
   'http://static.silex.me'
-  , 'http://www.silex.me'
-  , 'http://localhost:6805/'
+  , silex.utils.Url.getRootUrl()
 ];
 
 
@@ -230,7 +229,6 @@ silex.model.File.prototype.includeEditionTags = function(onSuccess, onError) {
   // * the urls are supposed to be absolute
   // * when they are not, the base tag has to be inserted before loading images, see rawHtml.replace above
   if (this.url){
-    console.log('add base tag', this.url);
     var baseTag = contentDocument.createElement('base');
     baseTag.target = '_blank';
     baseTag.href = this.url;
@@ -473,7 +471,7 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
       if (!silex.utils.Url.isAbsoluteUrl(relative)) {
         relative = relative.replace('../', '/');
       }
-      if (!silex.utils.Url.isAbsoluteUrl(relative) && this.isDownloadable(absolute)){
+      if (this.isDownloadable(absolute)){
         var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
         var newRelativePath = 'assets/' + fileName;
         files.push({
@@ -505,7 +503,7 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
       if (!silex.utils.Url.isAbsoluteUrl(relative)) {
         relative = relative.replace('../', '/');
       }
-      if (!silex.utils.Url.isAbsoluteUrl(relative) && this.isDownloadable(absolute)){
+      if (this.isDownloadable(absolute)){
         var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
         var newRelativePath = 'css/' + fileName;
         files.push({
@@ -679,7 +677,7 @@ silex.model.File.prototype.filterBgImage = function(baseUrl, files, match, group
   if (!silex.utils.Url.isAbsoluteUrl(relative)) {
     relative = relative.replace('../', '/');
   }
-  if (!silex.utils.Url.isAbsoluteUrl(relative) && this.isDownloadable(absolute)){
+  if (this.isDownloadable(absolute)){
     var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
     var newRelativePath = '../assets/' + fileName;
     var res = "url('" + newRelativePath + "')";
@@ -696,12 +694,18 @@ silex.model.File.prototype.filterBgImage = function(baseUrl, files, match, group
 
 /**
  * det if a given URL is supposed to be downloaded locally
- * right now it is useless since we only have relative path to download
+ * @return true if the url is relative or it is a known domain (sttic.silex.me)
  */
 silex.model.File.prototype.isDownloadable = function(url) {
+  // do not download files with ? or & since it is probably dynamic
   if (url.indexOf('?') >= 0 || url.indexOf('&') >= 0){
     return false;
   }
+  // download relative paths
+  if (!silex.utils.Url.isAbsoluteUrl(url)){
+    return true;
+  }
+  // download files from a known domain (sttic.silex.me)
   var found = false;
   goog.array.forEach (silex.model.File.DOWNLOAD_LOCALLY_FROM, function(baseUrl){
     if (url.indexOf(baseUrl) === 0){

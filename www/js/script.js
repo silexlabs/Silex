@@ -8,7 +8,7 @@ $(function(){
     newAnchorLink('showcase', 641);
     newAnchorLink('silex', 1134);
     newAnchorLink('templates', 1782);
-    newAnchorLink('contact', 2162);
+    newAnchorLink('contact', 2215);
 });
 function newAnchorLink(link, pos){
     $('a[href="#'+link+'"]').click(function(){
