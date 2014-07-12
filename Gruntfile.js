@@ -253,7 +253,7 @@ module.exports = function(grunt) {
           , reporter: 'nyan'
         }
         , all: { src: 'test/**/*.js' }
-//        , all: { src: 'test/**/file-explorer.js' }
+        , ce: { src: 'test/**/file-explorer.js' }
       }
   });
 }

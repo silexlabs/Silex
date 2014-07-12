@@ -71,10 +71,7 @@ describe('Silex file explorer dialog test', function(){
         client.switchTab(ids[1])
       })
       // type login and password then validate
-      .addValue('input', 'admin')
-      .addValue('div:nth-of-type(2) input', 'admin')
-      .saveScreenshot ('auto-test-tmp.png')
-      .submitForm('input')
+      .addValue('input', 'admin\tadmin\n')
       .waitFor('.not-exist', 2000, _)
       // switch back to current tab
       //    keep the call to switchTab in a function because originalTabId is set in a callback
