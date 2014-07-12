@@ -252,8 +252,16 @@ module.exports = function(grunt) {
           , ui: 'bdd'
           , reporter: 'nyan'
         }
-        , all: { src: 'test/**/*.js' }
-        , ce: { src: 'test/**/file-explorer.js' }
+        , all: {
+            src: [
+                'test/functional/file-explorer.js'
+                , 'test/functional/save.js'
+                , 'test/functional/publish.js'
+            ]
+        }
+        , ce: { src: 'test/functional/file-explorer.js' }
+        , save: { src: 'test/functional/save.js' }
+        , publish: { src: 'test/functional/publish.js' }
       }
   });
 }
