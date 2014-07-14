@@ -80,6 +80,7 @@ exports.createClient = function (webdriverjs) {
         , 'phantomjs.binary.path': phantomjsPath
       }
     });
+    client.init().windowHandleSize({width: 1024, height: 768});
     client.on('error', function(e) {
       // happens all the time, when waiting for timeout for example (.waitFor('.not-exist', 2000, _))
       // console.error('an error occured in the client connected to the selenium server', e)

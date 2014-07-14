@@ -259,9 +259,6 @@ module.exports = function(grunt) {
                 , 'test/functional/publish.js'
             ]
         }
-        , ce: { src: 'test/functional/file-explorer.js' }
-        , save: { src: 'test/functional/save.js' }
-        , publish: { src: 'test/functional/publish.js' }
       }
   });
 }

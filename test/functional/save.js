@@ -25,7 +25,6 @@ describe('Silex insert and publish test', function(){
   before(function(){
     this.timeout(99999999);
     client = helper.createClient(webdriverjs);
-    client.init().windowHandleSize({width: 1024, height: 768});
   });
 
   // insert an image
@@ -45,6 +44,7 @@ describe('Silex insert and publish test', function(){
         });
     })
   });
+
   // set a backgound image on the main container
   it('should set a backgound image on the main container',function(done) {
     actions.switchFrame(client, 'silex-stage-iframe', function () {
@@ -59,6 +59,7 @@ describe('Silex insert and publish test', function(){
             });
     })
   });
+
   // set a backgound image on the body
   it('should set a backgound image on the body',function(done) {
     actions.insertContainer(client, function (err, res) {
@@ -69,19 +70,24 @@ describe('Silex insert and publish test', function(){
         });
     });
   });
+
   // save the website
   it('should save the website',function(done) {
     // FIXME: check if exist and remove editable.html
     actions.saveAs(client, 'editable', function () {
         done();
     });
+    // FIXME: check if editable.html exists and contains the images urls
   });
+
   // overrite an existing file
   it('should save the website',function(done) {
     actions.saveAs(client, 'editable', function () {
         done();
     });
+    // FIXME: check if editable.html exists and contains the images urls
   });
+
   // After tests, cleanup
   after(function(done) {
       client.end(done);

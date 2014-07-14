@@ -23,7 +23,6 @@ describe('Silex file explorer dialog test', function(){
   before(function(){
     this.timeout(99999999);
     client = helper.createClient(webdriverjs);
-    client.init().windowHandleSize({width: 1024, height: 768});
   });
 
   // open Silex file explorer dialog
