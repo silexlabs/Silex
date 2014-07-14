@@ -10,11 +10,11 @@
 //////////////////////////////////////////////////
 
 // useful modules
-pathModule = require('path');
-fs = require('fs');
-http = require('http');
-https = require('https');
-router = require('unifile/lib/core/router.js');
+var pathModule = require('path');
+var fs = require('fs');
+var http = require('http');
+var https = require('https');
+var router = require('unifile/lib/core/router.js');
 
 /**
  * route the call to a silex task
@@ -226,7 +226,7 @@ exports.unifileRoute = function(req, res, next, url, cbk){
         if (serviceName){
             var routed = router.route(serviceName, url_arr, req, res, next, cbk);
             if (!routed){
-                console.error('Unknown service '+serviceName);
+                console.error('Unknown service ', serviceName, ' (', url, ')');
 	            cbk(res, {
 	            	success: false
 	            	, code: 'Unknown service '+serviceName
@@ -234,7 +234,7 @@ exports.unifileRoute = function(req, res, next, url, cbk){
             }
         }
         else{
-            console.error('Unknown service '+serviceName);
+            console.error('Unknown service ', serviceName, ' (', url, ')');
             cbk(res, {
             	success: false
 	        	, code: 'Unknown service '+serviceName

@@ -6,7 +6,8 @@
 
 var webdriverjs = require('webdriverjs'),
     helper = require('../helper.js'),
-    actions = require('../actions.js');
+    actions = require('../actions.js'),
+    fs = require('fs');
 
 // dummy function used when the result is an expected error
 function _(){}
@@ -18,15 +19,57 @@ if (!helper.getDriverName()){
 
 // start the test
 describe('Silex insert and publish test', function(){
+  var publishFolder = __dirname + '/../../www/functional-tests/publish';
+
   var client = {};
   this.timeout(100000);
 
   // before tests, setup
-  before(function(){
+  before(function(done){
     this.timeout(99999999);
-    client = helper.createClient(webdriverjs);
-    client.init().windowHandleSize({width: 1024, height: 768});
+    console.log('publishFolder', publishFolder);
+    var next = function () {
+//return;
+        console.log('next');
+        // create the client
+        client = helper.createClient(webdriverjs);
+        done();
+    }
+    // cleanup the content of the publish folder
+    fs.exists(publishFolder, function (exists) {
+        if (exists){
+            // delete the files in the folder
+            fs.exists(publishFolder + '/index.html', function (exists) {
+                console.log('exists '+ publishFolder + '/index.html', arguments);
+                if(exists){
+                    fs.chmod(publishFolder, 777, function () {
+                        console.log('chmod done', arguments);
+                        fs.unlink(publishFolder, function () {
+                            console.log('unlink done', arguments);
+                            // recreate the publish folder
+                            fs.mkdir(publishFolder, function () {
+                                console.log('cleanup done', arguments);
+                                next();
+                            });
+                        });
+                    });
+                }
+                else{
+                    console.log('cleanup: not exists', publishFolder + '/index.html');
+                    next();
+                }
+            });
+        }
+        else{
+            console.log('cleanup: not exists', publishFolder);
+            fs.mkdir(publishFolder, function () {
+                console.log('cleanup done', arguments);
+                next();
+            });
+        }
+    });
   });
+
   // publish the website
   it('should publish the website',function(done) {
     // FIXME: check that editable.html exists
@@ -34,16 +77,19 @@ describe('Silex insert and publish test', function(){
         actions.openFile(client, function () {
             actions.enterWwwService(client, function () {
                 actions.selectFile(client, 'functional-tests', function () {
-                    actions.selectFile(client, 'editable.html', function () {
-                        // set the publication path
-                        actions.setPublicationPath(client, '../api/1.0/www/exec/put/functional-tests/publish', function () {
-                            actions.publish(client, function () {
-                                done();
-                                // wait
-                                // check images are in test/functional-tests
-                                // check index.html contains no images
-                                // check style.css contains the images
-                            });
+                    actions.selectFile(client, 'editable-publish.html', function () {
+                        actions.switchFrame(client, null, function () {
+                            // ici bug dans phantomjs
+                            client
+                                .waitFor('.alertify-log-success', 4000)
+                                .call(function () {
+                                    // set the publication path
+                                    actions.setPublicationPath(client, '../api/1.0/www/exec/put/functional-tests/publish', function () {
+                                        actions.publish(client, function () {
+                                            done();
+                                        });
+                                    });
+                                })
                         });
                     });
                 });
@@ -51,6 +97,25 @@ describe('Silex insert and publish test', function(){
         });
     });
   });
+  it('should create index.html',function(done) {
+      var waitForFile = function (path) {
+          fs.exists(path, function (exists) {
+              if(exists){
+                  done();
+              }
+              else{
+                  setTimeout(waitForFile, 200);
+              }
+          });
+      };
+      waitForFile(publishFolder + '/index.html');
+  });
+
+// wait for index.html
+// check images are in test/functional-tests
+// check index.html contains no images
+// check style.css contains the images
+
   // After tests, cleanup
   after(function(done) {
       client.end(done);
