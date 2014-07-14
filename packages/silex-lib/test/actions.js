@@ -214,7 +214,7 @@ exports.enterWwwService = function(client, cbk){
           .waitFor('.not-exist', 2000, _)
           // switch back to current tab
           .call(function(){
-            exports.switchToMainTab(client, function(){console.log('xxx');});
+            exports.switchToMainTab(client, function(){});
           })
           .pause(200)
           .call(function () {
