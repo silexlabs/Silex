@@ -679,8 +679,8 @@ silex.model.File.prototype.filterBgImage = function(baseUrl, files, match, group
   }
   if (this.isDownloadable(absolute)){
     var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
-    var newRelativePath = '../assets/' + fileName;
-    var res = "url('" + newRelativePath + "')";
+    var newRelativePath = 'assets/' + fileName;
+    var res = "url('../" + newRelativePath + "')";
     files.push({
       url: absolute
       , destPath: newRelativePath
