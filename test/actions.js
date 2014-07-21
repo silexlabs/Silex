@@ -189,14 +189,11 @@ exports.publish = function(client, cbk){
         client
           // open the file menu and click open
           .click('.menu-item-file')
-          .call(function(){console.log('-- publish 1');})
           .click('.menu-item-file-publish')
-          .call(function(){console.log('-- publish 2');})
-        .saveScreenshot ('auto-test-tmp.png')
+          //.saveScreenshot ('auto-test-tmp.png')
           .waitFor('.alertify-log-success', 2000)
-          .call(function(){console.log('-- publish 4');})
           .pause(2000)
-          .call(function(){console.log('-- publish(', argsToString(arguments));})
+          .call(function(){console.log('-- publish(');})
           .call(cbk);
     });
 }
