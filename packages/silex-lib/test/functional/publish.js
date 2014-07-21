@@ -97,6 +97,7 @@ describe('Silex insert and publish test', function(){
         });
     });
   });
+  // wait for index.html
   it('should create index.html',function(done) {
       var waitForFile = function (path) {
           fs.exists(path, function (exists) {
@@ -110,11 +111,50 @@ describe('Silex insert and publish test', function(){
       };
       waitForFile(publishFolder + '/index.html');
   });
+  // check images are in test/functional-tests
+  it('should create index.html',function(done) {
+      var checkForFile = function (path, next) {
+          fs.exists(path, function (exists) {
+              if(exists){
+                  next();
+              }
+              else{
+                  console.error('Error: ' + path + ' do not exist');
+                  done(path + ' do not exist');
+              }
+          });
+      };
+      checkForFile(publishFolder + '/assets/image1.png', function () {
+          checkForFile(publishFolder + '/assets/image2.png', function () {
+            checkForFile(publishFolder + '/assets/image3.png', function () {
+                done();
+            });
+        });
+      });
+  });
+  // check index.html contains no images, no 'notjavascript'
+  it('should generate a clean index.html file',function(done) {
+    fs.readFile(publishFolder + '/index.html', function (err, data) {
+      if (err) {
+        console.error('Error: ', err);
+        done(err);
+      }
+      else{
+          console.log(data);
+          if (data.toString().indexOf('notjavascript') >= 0){
+            var msg = 'Error: notjavascript scripts remain in published html file';
+            console.error(msg);
+            done(msg);
+          }
+          else{
+            done();
+          }
+      }
+    });
+  });
 
-// wait for index.html
-// check images are in test/functional-tests
-// check index.html contains no images
-// check style.css contains the images
+
+// TODO: check style.css contains the images
 
   // After tests, cleanup
   after(function(done) {
