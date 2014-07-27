@@ -18,6 +18,7 @@ if (!helper.getDriverName()){
 
 // start the test
 describe('Silex insert and publish test', function(){
+  var publishFolder = __dirname + '/../../www/functional-tests';
   var client = {};
   this.timeout(100000);
 
@@ -75,7 +76,7 @@ describe('Silex insert and publish test', function(){
   it('should save the website',function(done) {
     // FIXME: check if exist and remove editable.html
     actions.saveAs(client, 'editable', function () {
-        done();
+        actions.checkForFile(publishFolder + '/editable.html', done);
     });
     // FIXME: check if editable.html exists and contains the images urls
   });
@@ -83,7 +84,7 @@ describe('Silex insert and publish test', function(){
   // overrite an existing file
   it('should save the website',function(done) {
     actions.saveAs(client, 'editable', function () {
-        done();
+        actions.checkForFile(publishFolder + '/editable.html', done);
     });
     // FIXME: check if editable.html exists and contains the images urls
   });

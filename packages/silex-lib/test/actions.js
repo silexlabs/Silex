@@ -1,5 +1,7 @@
 // automate tasks in Silex
 
+var fs = require('fs');
+
 // dummy function used when the result is an expected error
 function _(){}
 
@@ -112,6 +114,36 @@ exports.openSelectBackgroundImage = function(client, cbk){
     });
 }
 
+exports.checkForFile = function (path, cbk) {
+    fs.exists(path, function (exists) {
+        if(exists){
+            cbk();
+        }
+        else{
+            console.error('Error: ' + path + ' do not exist');
+            cbk(path + ' do not exist');
+        }
+    });
+};
+
+exports.waitForFile = function (path, cbk) {
+    var count = 0;
+    var doWaitForFile = function () {
+        fs.exists(path, function (exists) {
+            if(exists){
+                cbk();
+            }
+            else if (count++ > 100){
+                console.error('Error: ' + path + ' do not exist');
+                cbk(path + ' do not exist');
+            }
+            else{
+                setTimeout(doWaitForFile, 200);
+            }
+        });
+    };
+    doWaitForFile();
+};
 /**
  * open ce and save the website in the current directory with the given file name
  * @param   name    the name of the file to save, without extension
@@ -120,7 +152,7 @@ exports.saveAs = function(client, name, cbk){
     var continueSaveAs = function() {
         exports.switchFrame(client, null, function () {
             client
-                .waitFor('.alertify-log-success', 2000)
+                .pause(2000)
                 .call(function(){console.log('-- saveAs(', argsToString(arguments));})
                 .call(cbk);
         });
@@ -184,14 +216,14 @@ exports.setPublicationPath = function(client, path, cbk){
  * publish website
  */
 exports.publish = function(client, cbk){
-    console.log('publish(' + argsToString(arguments));
+    console.log('publish');
     exports.switchFrame(client, null, function () {
+        console.log('publish 1');
         client
           // open the file menu and click open
           .click('.menu-item-file')
           .click('.menu-item-file-publish')
-          //.saveScreenshot ('auto-test-tmp.png')
-          .waitFor('.alertify-log-success', 2000)
+          .saveScreenshot ('auto-test-tmp.png')
           .pause(2000)
           .call(function(){console.log('-- publish(');})
           .call(cbk);
