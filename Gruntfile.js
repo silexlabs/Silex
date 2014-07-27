@@ -255,8 +255,8 @@ module.exports = function(grunt) {
         , all: {
             src: [
                 'test/functional/file-explorer.js'
-                , 'test/functional/save.js'
-                , 'test/functional/publish.js'
+                ,'test/functional/save.js'
+                ,'test/functional/publish.js'
             ]
         }
       }

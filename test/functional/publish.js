@@ -42,16 +42,16 @@ describe('Silex insert and publish test', function(){
             fs.exists(publishFolder + '/index.html', function (exists) {
                 console.log('exists '+ publishFolder + '/index.html', arguments);
                 if(exists){
-                    fs.chmod(publishFolder, 777, function () {
-                        console.log('chmod done', arguments);
-                        fs.unlink(publishFolder, function () {
-                            console.log('unlink done', arguments);
+                    console.log('chmod done', arguments);
+                    fs.unlink(publishFolder, function () {
+                        console.log('unlink done', arguments);
+                        setTimeout(function () {
                             // recreate the publish folder
-                            fs.mkdir(publishFolder, function () {
+                            fs.mkdir(publishFolder, 0777, function () {
                                 console.log('cleanup done', arguments);
                                 next();
                             });
-                        });
+                        }, 200);
                     });
                 }
                 else{
@@ -81,7 +81,7 @@ describe('Silex insert and publish test', function(){
                         actions.switchFrame(client, null, function () {
                             // ici bug dans phantomjs
                             client
-                                .waitFor('.alertify-log-success', 4000)
+                                .saveScreenshot ('auto-test-tmp.png')
                                 .call(function () {
                                     // set the publication path
                                     actions.setPublicationPath(client, '../api/1.0/www/exec/put/functional-tests/publish', function () {
@@ -99,35 +99,19 @@ describe('Silex insert and publish test', function(){
   });
   // wait for index.html
   it('should create index.html',function(done) {
-      var waitForFile = function (path) {
-          fs.exists(path, function (exists) {
-              if(exists){
-                  done();
-              }
-              else{
-                  setTimeout(waitForFile, 200);
-              }
-          });
-      };
-      waitForFile(publishFolder + '/index.html');
+      actions.waitForFile(publishFolder + '/index.html', done);
   });
   // check images are in test/functional-tests
-  it('should create index.html',function(done) {
-      var checkForFile = function (path, next) {
-          fs.exists(path, function (exists) {
-              if(exists){
-                  next();
-              }
-              else{
-                  console.error('Error: ' + path + ' do not exist');
-                  done(path + ' do not exist');
-              }
-          });
-      };
-      checkForFile(publishFolder + '/assets/image1.png', function () {
-          checkForFile(publishFolder + '/assets/image2.png', function () {
-            checkForFile(publishFolder + '/assets/image3.png', function () {
-                done();
+  it('should create assets folder with the images',function(done) {
+      actions.checkForFile(publishFolder + '/assets/image1.png', function (err) {
+          actions.checkForFile(publishFolder + '/assets/image2.png', function (err) {
+            actions.checkForFile(publishFolder + '/assets/image3.png', function (err) {
+                if (err) {
+                    done(err);
+                }
+                else {
+                    done();
+                }
             });
         });
       });
