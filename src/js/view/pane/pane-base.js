@@ -19,6 +19,8 @@
 
 goog.provide('silex.view.pane.PaneBase');
 
+
+
 /**
  * base class for all UI panes of the view.pane package
  * @constructor
@@ -27,7 +29,7 @@ goog.provide('silex.view.pane.PaneBase');
  * @param  {silex.types.View} view  view class which holds the other views
  * @param  {silex.types.Controller} controller  structure which holds the controller instances
  */
-silex.view.pane.PaneBase = function (element, view, controller) {
+silex.view.pane.PaneBase = function(element, view, controller) {
   // store references
   this.element = element;
   this.view = view;
@@ -63,13 +65,13 @@ silex.view.pane.PaneBase.prototype.iAmRedrawing;
  * @param   styleName   not css style but camel case
  */
 silex.view.pane.PaneBase.prototype.styleChanged = function(styleName, opt_styleValue, opt_elements) {
-//  if (this.iAmRedrawing) return;
+  //  if (this.iAmRedrawing) return;
   // notify the controller
   this.iAmSettingValue = true;
-  try{
+  try {
     this.controller.propertyToolController.styleChanged(styleName, opt_styleValue, opt_elements);
   }
-  catch(err){
+  catch (err) {
     // error which will not keep this.iAmSettingValue to true
     console.error('an error occured while editing the value', err);
   }
@@ -85,10 +87,10 @@ silex.view.pane.PaneBase.prototype.propertyChanged = function(propertyName, opt_
   if (this.iAmRedrawing) return;
   // notify the controller
   this.iAmSettingValue = true;
-  try{
+  try {
     this.controller.propertyToolController.propertyChanged(propertyName, opt_propertyValue, opt_elements, opt_applyToContent);
   }
-  catch(err){
+  catch (err) {
     // error which will not keep this.iAmSettingValue to true
     console.error('an error occured while editing the value', err);
   }
@@ -104,15 +106,15 @@ silex.view.pane.PaneBase.prototype.propertyChanged = function(propertyName, opt_
  * @param   {string}  currentPageName   the name of the current page
  */
 silex.view.pane.PaneBase.prototype.redraw = function(selectedElements, document, pageNames, currentPageName) {
-  if (!selectedElements){
-    throw(new Error('selection array is undefined'));
+  if (!selectedElements) {
+    throw (new Error('selection array is undefined'));
   }
-/*
+  /*
   // to be placed in all redraw methods to avoid loops
   if (this.iAmSettingValue) return;
   this.iAmRedrawing = true;
   this.iAmRedrawing = false;
-*/
+  */
 };
 
 
@@ -124,21 +126,21 @@ silex.view.pane.PaneBase.prototype.getCommonProperty = function(elements, getPro
   var value = null;
   var hasCommonValue = true;
   var isFirstValue = true;
-  goog.array.forEach(elements, function (element) {
+  goog.array.forEach(elements, function(element) {
     var elementValue = getPropertyFunction(element);
-    if (isFirstValue){
+    if (isFirstValue) {
       isFirstValue = false;
       // init value
       value = elementValue;
     }
-    else{
+    else {
       // check if there is a common type
-      if(elementValue !== value){
+      if (elementValue !== value) {
         hasCommonValue = false;
       }
     }
   }, this);
-  if(hasCommonValue === false){
+  if (hasCommonValue === false) {
     value = null;
   }
   return value;

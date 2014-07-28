@@ -17,13 +17,16 @@
 
 goog.provide('silex.utils.Notification');
 
+
+
 /**
  * @constructor
  * @struct
  */
 silex.utils.Notification = function() {
-  throw('this is a static class and it canot be instanciated');
-}
+  throw ('this is a static class and it canot be instanciated');
+};
+
 
 /**
  * constant for the duration of the notifications, in ms
@@ -67,7 +70,7 @@ silex.utils.Notification.isActive = false;
 /**
  * use native alerts vs alertify
  */
-silex.utils.Notification.useNative = function () {
+silex.utils.Notification.useNative = function() {
   // 0 is PERMISSION_ALLOWED
   return (window.webkitNotifications && window.webkitNotifications.checkPermission() === 0);
 };
@@ -76,7 +79,7 @@ silex.utils.Notification.useNative = function () {
 /**
  * activate native alerts if available
  */
-silex.utils.Notification.activateNative = function(){
+silex.utils.Notification.activateNative = function() {
   if (window.webkitNotifications) {
     if (silex.utils.Notification.useNative()) {
     } else {
@@ -94,82 +97,69 @@ silex.utils.Notification.activateNative = function(){
 /**
  * display a native notification, or ask for permission
  */
-silex.utils.Notification.nativeNotification = function(message, iconUrl){
-  if (silex.utils.Notification.useNative()){
+silex.utils.Notification.nativeNotification = function(message, iconUrl) {
+  if (silex.utils.Notification.useNative()) {
     var notification = window.webkitNotifications.createNotification(
-      iconUrl, 'Silex speaking...', message);
+        iconUrl, 'Silex speaking...', message);
     notification.show();
-    setTimeout(function () {
+    setTimeout(function() {
       notification.cancel();
-    }, silex.utils.Notification.NOTIFICATION_DURATION_MS)
+    }, silex.utils.Notification.NOTIFICATION_DURATION_MS);
   }
-  else{
+  else {
     silex.utils.Notification.activateNative();
   }
-}
+};
 
 
 /**
- * display a message
+ * core method for alert, prompt and confirm
  */
-silex.utils.Notification.alert = function (msg, cbk, opt_okLabel, opt_cancelLabel) {
+silex.utils.Notification.dialog = function(dialogMethod, msg, cbk, opt_okLabel, opt_cancelLabel) {
   alertify.set({ labels: {
-    ok     : opt_okLabel || 'ok',
-    cancel : opt_cancelLabel || 'cancel'
+    ok: opt_okLabel || 'ok',
+    cancel: opt_cancelLabel || 'cancel'
   }});
   // set the flag while the modal dialog is opened
   silex.utils.Notification.isActive = true;
-  alertify.alert(msg, function () {
+  dialogMethod(msg, function() {
     // reset the flag
     silex.utils.Notification.isActive = false;
     // call the callback
     cbk.apply(this, arguments);
   });
-}
+};
 
 
 /**
  * display a message
  */
-silex.utils.Notification.prompt = function (msg, text, cbk, opt_okLabel, opt_cancelLabel) {
-  alertify.set({ labels: {
-    ok     : opt_okLabel || 'ok',
-    cancel : opt_cancelLabel || 'cancel'
-  }});
-  // set the flag while the modal dialog is opened
-  silex.utils.Notification.isActive = true;
-  alertify.prompt(msg, function () {
-    // reset the flag
-    silex.utils.Notification.isActive = false;
-    // call the callback
-    cbk.apply(this, arguments);
-  }, text);
-}
+silex.utils.Notification.alert = function(msg, cbk, opt_okLabel, opt_cancelLabel) {
+  silex.utils.Notification.dialog(alertify.alert, msg, cbk, opt_okLabel, opt_cancelLabel);
+};
 
 
 /**
  * display a message
  */
-silex.utils.Notification.confirm = function (msg, cbk, opt_okLabel, opt_cancelLabel) {
-  alertify.set({ labels: {
-    ok     : opt_okLabel || 'ok',
-    cancel : opt_cancelLabel || 'cancel'
-  }});
-  // set the flag while the modal dialog is opened
-  silex.utils.Notification.isActive = true;
-  alertify.confirm(msg, function () {
-    // reset the flag
-    silex.utils.Notification.isActive = false;
-    // call the callback
-    cbk.apply(this, arguments);
-  });
-}
+silex.utils.Notification.prompt = function(msg, text, cbk, opt_okLabel, opt_cancelLabel) {
+  silex.utils.Notification.dialog(alertify.prompt, msg, cbk, opt_okLabel, opt_cancelLabel);
+};
+
+
+/**
+ * display a message
+ */
+silex.utils.Notification.confirm = function(msg, cbk, opt_okLabel, opt_cancelLabel) {
+  silex.utils.Notification.dialog(alertify.confirm, msg, cbk, opt_okLabel, opt_cancelLabel);
+};
+
 
 /**
  * notify the user with success formatting
  */
 silex.utils.Notification.notifySuccess = function(message) {
-  console.info(message);
+  console.log(message);
   alertify.set({ delay: silex.utils.Notification.NOTIFICATION_DURATION_MS });
   silex.utils.Notification.nativeNotification(message, silex.utils.Notification.SUCCESS_ICON);
   alertify.success(message);

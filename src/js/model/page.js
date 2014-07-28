@@ -21,8 +21,10 @@
 
 goog.provide('silex.model.Page');
 
-goog.require('silex.types.Model');
 goog.require('silex.Config');
+goog.require('silex.types.Model');
+
+
 
 /**
  * @constructor
@@ -35,7 +37,6 @@ silex.model.Page = function(model, view) {
   // retrieve the element which will hold the body of the opened file
   this.iframeElement = goog.dom.getElementByClass(silex.view.Stage.STAGE_CLASS_NAME);
 };
-
 
 
 /**
@@ -101,7 +102,6 @@ silex.model.Page.prototype.getParentPage = function(element) {
 };
 
 
-
 /**
  * get the pages from the dom
  * @return {Array<string>} an array of the page names I have found in the DOM
@@ -149,7 +149,7 @@ silex.model.Page.prototype.setCurrentPage = function(pageName) {
   var bodyElement = this.view.workspace.getWindow().document.body;
   this.view.workspace.getWindow().jQuery(bodyElement).pageable({currentPage: pageName});
   this.refreshView();
-}
+};
 
 
 /**
@@ -164,7 +164,7 @@ silex.model.Page.prototype.getDisplayName = function(pageName) {
     displayName = pageElement.innerHTML;
   }
   return displayName;
-}
+};
 
 
 /**
@@ -174,10 +174,10 @@ silex.model.Page.prototype.getDisplayName = function(pageName) {
 silex.model.Page.prototype.removePage = function(pageName) {
   var pages = this.getPages(this.view.workspace.getWindow());
   var pageDisplayName = this.getDisplayName(pageName);
-  if (pages.length < 2){
-      silex.utils.Notification.notifyError('I could not delete this page because <strong>it is the only page!</strong>');
+  if (pages.length < 2) {
+    silex.utils.Notification.notifyError('I could not delete this page because <strong>it is the only page!</strong>');
   }
-  else{
+  else {
     // remove the DOM element
     var elements = this.view.workspace.getWindow().document.body.querySelectorAll('a[data-silex-type="page"]');
     goog.array.forEach(elements, function(element) {
@@ -197,7 +197,7 @@ silex.model.Page.prototype.removePage = function(pageName) {
     goog.array.forEach(elements, function(element) {
       goog.dom.classes.remove(element, pageName);
       var pagesOfElement = this.getPagesForElement(element);
-      if (pagesOfElement.length <= 0){
+      if (pagesOfElement.length <= 0) {
         elementsOnlyOnThisPage.push(element);
       }
     }, this);
@@ -207,21 +207,21 @@ silex.model.Page.prototype.removePage = function(pageName) {
     this.setCurrentPage(pages[0]);
 
     // handle elements which should be deleted
-    if (elementsOnlyOnThisPage.length > 0){
+    if (elementsOnlyOnThisPage.length > 0) {
       silex.utils.Notification.confirm(
-        elementsOnlyOnThisPage.length + ' elements were only visible on this page ('+
-        pageDisplayName + '). <br /><ul><li>Do you want me to <strong>delete these elements?</strong><br /></li><li>or keep them and <strong>make them visible on all pages?</strong></li></ul>', goog.bind(function(accept) {
-        goog.array.forEach(elementsOnlyOnThisPage, function(element) {
-          if (accept){
-            // remove these elements
-            this.model.element.removeElement(element);
-          }
-          else{
-            // remove from this page
-            this.model.page.removeFromAllPages(element);
-          }
-        }, this);
-      }, this), 'delete', 'keep');
+          elementsOnlyOnThisPage.length + ' elements were only visible on this page (' +
+          pageDisplayName + '). <br /><ul><li>Do you want me to <strong>delete these elements?</strong><br /></li><li>or keep them and <strong>make them visible on all pages?</strong></li></ul>', goog.bind(function(accept) {
+            goog.array.forEach(elementsOnlyOnThisPage, function(element) {
+              if (accept) {
+                // remove these elements
+                this.model.element.removeElement(element);
+              }
+              else {
+                // remove from this page
+                this.model.page.removeFromAllPages(element);
+              }
+            }, this);
+          }, this), 'delete', 'keep');
     }
   }
 
@@ -264,7 +264,7 @@ silex.model.Page.prototype.renamePage = function(oldName, newName, newDisplayNam
   // update the links to this page
   var elements = this.view.workspace.getWindow().document.body.querySelectorAll('*[data-silex-href="#!' + oldName + '"]');
   goog.array.forEach(elements, function(element) {
-      element.setAttribute('data-silex-href', '#!' + newName);
+    element.setAttribute('data-silex-href', '#!' + newName);
   }, this);
   // update the visibility of the compoents
   var elements = goog.dom.getElementsByClass(oldName, this.view.workspace.getWindow().document.body);
@@ -272,7 +272,7 @@ silex.model.Page.prototype.renamePage = function(oldName, newName, newDisplayNam
     goog.dom.classes.swap(element, oldName, newName);
   }, this);
   // wait until the dom reflects the changes
-  setTimeout(goog.bind(function (){
+  setTimeout(goog.bind(function() {
     // select this page
     this.setCurrentPage(newName);
   }, this), 100);
@@ -288,12 +288,13 @@ silex.model.Page.prototype.addToPage = function(element, pageName) {
   this.refreshView();
 };
 
+
 /**
  * set/get a "silex style link" on an element
  */
 silex.model.Page.prototype.removeFromPage = function(element, pageName) {
   goog.dom.classes.remove(element, pageName);
-  if (!this.getPagesForElement(element).length>0){
+  if (!this.getPagesForElement(element).length > 0) {
     goog.dom.classes.remove(element, silex.model.Page.PAGED_CLASS_NAME);
   }
   this.refreshView();
@@ -305,7 +306,7 @@ silex.model.Page.prototype.removeFromPage = function(element, pageName) {
  */
 silex.model.Page.prototype.removeFromAllPages = function(element) {
   var pages = this.getPagesForElement(element);
-  goog.array.forEach(pages, function (pageName) {
+  goog.array.forEach(pages, function(pageName) {
     goog.dom.classes.remove(element, pageName);
   }, this);
   // the element is not "paged" anymore
@@ -322,23 +323,24 @@ silex.model.Page.prototype.getPagesForElement = function(element) {
   var res = [];
   // get all the pages
   var pages = this.getPages();
-  for (idx in pages) {
+  for (var idx in pages) {
     var pageName = pages[idx];
     // remove the component from the page
-    if (goog.dom.classes.has(element, pageName)){
+    if (goog.dom.classes.has(element, pageName)) {
       res.push(pageName);
     }
   }
   return res;
 };
 
+
 /**
  * check if an element is in the given page (current page by default)
  */
 silex.model.Page.prototype.isInPage = function(element, opt_pageName) {
   var bodyElement = this.view.workspace.getWindow().document.body;
-  if (!opt_pageName){
+  if (!opt_pageName) {
     opt_pageName = this.getCurrentPage(bodyElement);
   }
   return goog.dom.classes.has(element, opt_pageName);
-}
+};

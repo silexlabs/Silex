@@ -19,13 +19,6 @@
 
 goog.provide('silex.view.PropertyTool');
 
-goog.require('silex.view.pane.BgPane');
-goog.require('silex.view.pane.BorderPane');
-goog.require('silex.view.pane.PropertyPane');
-goog.require('silex.view.pane.PagePane');
-goog.require('silex.view.pane.GeneralStylePane');
-goog.require('silex.view.pane.StylePane');
-
 goog.require('goog.array');
 goog.require('goog.cssom');
 goog.require('goog.editor.Field');
@@ -33,6 +26,12 @@ goog.require('goog.object');
 goog.require('goog.ui.Checkbox');
 goog.require('goog.ui.CustomButton');
 goog.require('goog.ui.TabBar');
+goog.require('silex.view.pane.BgPane');
+goog.require('silex.view.pane.BorderPane');
+goog.require('silex.view.pane.GeneralStylePane');
+goog.require('silex.view.pane.PagePane');
+goog.require('silex.view.pane.PropertyPane');
+goog.require('silex.view.pane.StylePane');
 
 
 
@@ -103,7 +102,6 @@ silex.view.PropertyTool.prototype.generalStylePane = null;
  * @see     silex.view.pane.StylePane
  */
 silex.view.PropertyTool.prototype.stylePane = null;
-
 
 
 /**

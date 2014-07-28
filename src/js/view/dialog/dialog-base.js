@@ -50,6 +50,7 @@ silex.view.dialog.DialogBase = function(element, view, controller) {
   }, this), 1000);
 };
 
+
 /**
  * init the menu and UIs
  */

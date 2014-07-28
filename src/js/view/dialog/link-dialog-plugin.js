@@ -21,11 +21,11 @@
 
 goog.provide('silex.view.dialog.LinkDialogPlugin');
 
-goog.require('goog.editor.plugins.LinkDialogPlugin');
 goog.require('goog.array');
 goog.require('goog.dom');
 goog.require('goog.editor.Command');
 goog.require('goog.editor.plugins.AbstractDialogPlugin');
+goog.require('goog.editor.plugins.LinkDialogPlugin');
 goog.require('goog.events.EventHandler');
 goog.require('goog.functions');
 goog.require('goog.ui.editor.AbstractDialog.EventType');
@@ -46,6 +46,7 @@ silex.view.dialog.LinkDialogPlugin = function() {
 };
 goog.inherits(silex.view.dialog.LinkDialogPlugin,
     goog.editor.plugins.LinkDialogPlugin);
+
 
 /**
  * Handles the OK event from the dialog by updating the link in the field.

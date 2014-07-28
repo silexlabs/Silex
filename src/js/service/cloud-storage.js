@@ -21,6 +21,7 @@ goog.provide('silex.service.CloudStorage');
 goog.require('goog.net.XhrIo');
 
 
+
 /**
  * the Silex CloudStorage singleton
  * @constructor
@@ -44,7 +45,7 @@ silex.service.CloudStorage.prototype.filePicker;
  */
 silex.service.CloudStorage.prototype.createBlob = function(url) {
   // cloud explorer expects relative path
-  if (silex.utils.Url.isAbsoluteUrl(url)){
+  if (silex.utils.Url.isAbsoluteUrl(url)) {
     console.error('cloud explorer expects relative path');
     throw new Error('cloud explorer expects relative path');
   }
@@ -53,7 +54,9 @@ silex.service.CloudStorage.prototype.createBlob = function(url) {
     url: url
   };
   return relBlob;
-}
+};
+
+
 /**
  * save a file
  */

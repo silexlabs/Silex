@@ -17,6 +17,8 @@
 
 goog.provide('silex.utils.BackwardCompat');
 
+
+
 /**
  * @constructor
  * @struct
@@ -24,8 +26,8 @@ goog.provide('silex.utils.BackwardCompat');
  * @param {string} displayName
  */
 silex.utils.BackwardCompat = function() {
-  throw('this is a static class and it canot be instanciated');
-}
+  throw ('this is a static class and it canot be instanciated');
+};
 
 
 /**
@@ -38,12 +40,12 @@ silex.utils.BackwardCompat.process = function(document) {
 
   // critical bug fix (2.2)
   // text editor sets the body class to "silex-element-content normal" instead of the text editor's class
-  if (goog.dom.classes.has(bodyElement, 'silex-element-content')){
+  if (goog.dom.classes.has(bodyElement, 'silex-element-content')) {
     bodyElement.className = 'pageable-plugin-created editable-plugin-created ui-droppable';
   }
 
   // handle older style system (2.0)
-  if (bodyElement.getAttribute('data-style-normal')){
+  if (bodyElement.getAttribute('data-style-normal')) {
     bodyElement.setAttribute('data-style-normal', bodyElement.getAttribute('data-style-normal'));
     bodyElement.removeAttribute('data-style-normal');
   }
@@ -82,7 +84,7 @@ silex.utils.BackwardCompat.process = function(document) {
   // fixes bug "confusion between pages and paged elements"
   elements = bodyElement.querySelectorAll('.page-element');
   goog.array.forEach(elements, function(element) {
-    if (element.getAttribute('data-silex-type') !== 'page'){
+    if (element.getAttribute('data-silex-type') !== 'page') {
       goog.dom.classes.remove(element, 'page-element');
       goog.dom.classes.add(element, 'paged-element');
     }
@@ -97,7 +99,7 @@ silex.utils.BackwardCompat.process = function(document) {
   elements = bodyElement.querySelectorAll('[data-silex-href]');
   goog.array.forEach(elements, function(element) {
     var href = element.getAttribute(silex.model.Element.LINK_ATTR);
-    if (href.indexOf('#') === 0 && href.indexOf('#!') !== 0){
+    if (href.indexOf('#') === 0 && href.indexOf('#!') !== 0) {
       element.setAttribute(silex.model.Element.LINK_ATTR, '#!' + href.substr(1));
     }
   });
@@ -109,7 +111,7 @@ silex.utils.BackwardCompat.process = function(document) {
   // add css class on elements with [type]-element (starting from 2.0)
   elements = bodyElement.querySelectorAll('.text-element *');
   goog.array.forEach(elements, function(element) {
-    switch(element.nodeName.toLowerCase()){
+    switch (element.nodeName.toLowerCase()) {
       case 'p':
         goog.dom.classes.add(element, 'normal');
         break;

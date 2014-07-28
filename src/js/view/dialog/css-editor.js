@@ -19,9 +19,9 @@
 
 goog.provide('silex.view.dialog.CssEditor');
 
-goog.require('silex.view.dialog.AceEditorBase');
 goog.require('goog.events.KeyCodes');
 goog.require('goog.ui.KeyboardShortcutHandler');
+goog.require('silex.view.dialog.AceEditorBase');
 
 
 
@@ -38,6 +38,7 @@ silex.view.dialog.CssEditor = function(element, view, controller) {
 };
 // inherit from silex.view.dialog.DialogBase
 goog.inherits(silex.view.dialog.CssEditor, silex.view.dialog.AceEditorBase);
+
 
 /**
  * init the menu and UIs

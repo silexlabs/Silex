@@ -17,13 +17,16 @@
 
 goog.provide('silex.utils.Dom');
 
+
+
 /**
  * @constructor
  * @struct
  */
 silex.utils.Dom = function() {
-  throw('this is a static class and it canot be instanciated');
-}
+  throw ('this is a static class and it canot be instanciated');
+};
+
 
 /**
  * refresh an image
@@ -34,14 +37,14 @@ silex.utils.Dom.refreshImage = function(img, cbk) {
     // stop the process
     img.onload = null;
     // setTimeout(function (){
-      // restore url
-      // img.src = initialUrl;
-      // done
-      cbk();
+    // restore url
+    // img.src = initialUrl;
+    // done
+    cbk();
     // }, 5000);
   };
   img.src = silex.utils.Dom.addCacheControl(initialUrl);
-}
+};
 
 
 /**
@@ -60,17 +63,17 @@ silex.utils.Dom.addCacheControl = function(url) {
   // remove existing cache control if any
   url = silex.utils.Dom.removeCacheControl(url);
   // add an url separator
-  if (url.indexOf('?')>0){
+  if (url.indexOf('?') > 0) {
     url += '&';
   }
-  else{
+  else {
     url += '?';
   }
   // add the timestamp
   url += silex.utils.Dom.CACHE_CONTROL_PARAM_NAME + '=' + Date.now();
   // return the new url
   return url;
-}
+};
 
 
 /**
@@ -81,7 +84,7 @@ silex.utils.Dom.addCacheControl = function(url) {
  */
 silex.utils.Dom.removeCacheControl = function(url) {
   // only when there is an existing cache control
-  if (url.indexOf(silex.utils.Dom.CACHE_CONTROL_PARAM_NAME)>0){
+  if (url.indexOf(silex.utils.Dom.CACHE_CONTROL_PARAM_NAME) > 0) {
     var re = new RegExp('([\?|&|&amp;]' + silex.utils.Dom.CACHE_CONTROL_PARAM_NAME + '=[0-9]*[&*]?)', 'gi');
     url = url.replace(re, function(match, group1, group2) {
       // if there is a ? or & then return ?
@@ -89,10 +92,10 @@ silex.utils.Dom.removeCacheControl = function(url) {
       // aaaaaaaa.com?silex-cache-control=09238734099890
       // aaaaaaaa.com?silex-cache-control=09238734&ccsqcqsc&
       // aaaaaaaa.com?xxx&silex-cache-control=09238734&ccsqcqsc&
-      if (group1.charAt(0) === '?' && group1.charAt(group1.length - 1) === '&'){
+      if (group1.charAt(0) === '?' && group1.charAt(group1.length - 1) === '&') {
         return '?';
       }
-      else if (group1.charAt(group1.length - 1) === '&' || group1.charAt(0) === '&'){
+      else if (group1.charAt(group1.length - 1) === '&' || group1.charAt(0) === '&') {
         return '&';
       }
       else {
@@ -102,7 +105,7 @@ silex.utils.Dom.removeCacheControl = function(url) {
   }
   // return the new url
   return url;
-}
+};
 
 
 /**
@@ -111,22 +114,23 @@ silex.utils.Dom.removeCacheControl = function(url) {
  * @param {Array<string>}  data                 the array of strings conaining the data
  * @return {string} the template string with the data in it
  */
-silex.utils.Dom.renderList = function (itemTemplateString, data) {
+silex.utils.Dom.renderList = function(itemTemplateString, data) {
   var res = '';
   // for each item in data, e.g. each page in the list
-  for (itemIdx in data){
+  for (itemIdx in data) {
     // build an item
     var item = itemTemplateString;
     // replace each key by its value
-    for (key in data[itemIdx]){
+    for (key in data[itemIdx]) {
       var value = data[itemIdx][key];
-      item = item.replace(new RegExp('{{'+key+'}}', 'g'), value);
+      item = item.replace(new RegExp('{{' + key + '}}', 'g'), value);
     }
     // add the item to the rendered template
     res += item;
   }
   return res;
-}
+};
+
 
 /**
  * compute the bounding box of the given elements
@@ -134,14 +138,14 @@ silex.utils.Dom.renderList = function (itemTemplateString, data) {
  * so it takes into account only the elements which have top, left, width and height set in px
  * @return the bounding box containing all the elements
  */
-silex.utils.Dom.getBoundingBox = function (elements) {
+silex.utils.Dom.getBoundingBox = function(elements) {
   // compute the positions and sizes
   var top = NaN,
       left = NaN,
       right = NaN,
       bottom = NaN;
 
-  goog.array.forEach(elements, function (element) {
+  goog.array.forEach(elements, function(element) {
     // commpute the values, which may end up to be NaN or a number
     var elementTop = parseFloat(element.style.top.substr(0, element.style.top.indexOf('px')));
     var elementLeft = parseFloat(element.style.left.substr(0, element.style.left.indexOf('px')));
@@ -165,4 +169,44 @@ silex.utils.Dom.getBoundingBox = function (elements) {
   if (!isNaN(bottom)) res.height = bottom - top;
   if (!isNaN(right)) res.width = right - left;
   return res;
-}
+};
+
+
+/**
+ * publish the file to a folder
+ * get all the website included files and put them into assets/ or js/ or css/
+ * the HTML file must be saved somewhere because all URLs are made relative
+ * This method creates an iframe with the temporary dom
+ */
+silex.utils.Dom.prototype.publish = function(url, cbk, opt_errCbk) {
+  // the file must be saved somewhere because all URLs are made relative
+  if (!this.getUrl()) {
+    if (opt_errCbk) {
+      opt_errCbk({
+        message: 'The file must be saved before I can clean it up for you.'
+      });
+    }
+    return;
+  }
+  // store the files to download and copy to assets, scripts...
+  var css = [];
+  var js = [];
+  var files = [];
+  // create the iframe used to compute temporary dom
+  var iframe = goog.dom.iframe.createBlank(goog.dom.getDomHelper(), 'position: absolute; left: -99999px; ');
+  goog.dom.appendChild(document.body, iframe);
+  // wait untill iframe is ready
+  goog.events.listenOnce(iframe, 'load', function(e) {
+    // clean up the DOM
+    var contentDocument = goog.dom.getFrameContentDocument(iframe);
+    var html = this.cleanup(contentDocument, css, js, files);
+    // call the publish service
+    silex.service.SilexTasks.getInstance().publish(url, html, css, js, files, cbk, opt_errCbk);
+  }, false, this);
+  // start the process
+  var html = this.getHtml();
+  // prevent scripts from executing
+  html = html.replace(/type=\"text\/javascript\"/gi, 'type="text/notjavascript"');
+  // write the content (leave this after "listen")
+  goog.dom.iframe.writeContent(iframe, html);
+};

@@ -22,22 +22,21 @@ goog.require('goog.Uri');
 goog.require('goog.net.XhrIo');
 
 
-
 /**
  * Get base URL corresponding to a file URL
- * @param {string} opt_url  the URL of the file, or null to get the base URL of silex editor e.g. http://www.silex.me/
+ * @param {string=} opt_url  the URL of the file, or null to get the base URL of silex editor e.g. http://www.silex.me/
  * @return  {string} the base url
  */
 silex.utils.Url.getBaseUrl = function(opt_url) {
   // default value is silex editor URL
-  if (!opt_url){
+  if (!opt_url) {
     opt_url = window.location.href;
   }
-  else{
+  else {
     opt_url = silex.utils.Url.getAbsolutePath(opt_url, window.location.href);
   }
   // remove the hash
-  if (opt_url.indexOf('#') > 0){
+  if (opt_url.indexOf('#') > 0) {
     opt_url = opt_url.substr(0, opt_url.indexOf('#'));
   }
   // return the URL but the file name
@@ -83,7 +82,7 @@ silex.utils.Url.absolute2Relative = function(htmlString, baseUrl) {
   htmlString = htmlString.replace(/url\(()(.+?)\1\)/gi, function(match, group1, group2) {
     // remove the ''
     if (group2.indexOf("'") === 0) group2 = group2.substr(1);
-    if (group2.lastIndexOf("'") === group2.length-1) group2 = group2.substr(0, group2.length-1);
+    if (group2.lastIndexOf("'") === group2.length - 1) group2 = group2.substr(0, group2.length - 1);
     // rebuild url('') with the relative path
     var res = "url('" + silex.utils.Url.getRelativePath(group2, baseUrl) + "')";
     return res;
@@ -107,7 +106,7 @@ silex.utils.Url.relative2Absolute = function(htmlString, baseUrl) {
   htmlString = htmlString.replace(/url\(()(.+?)\1\)/gi, function(match, group1, group2) {
     // remove the ''
     if (group2.indexOf("'") === 0) group2 = group2.substr(1);
-    if (group2.lastIndexOf("'") === group2.length-1) group2 = group2.substr(0, group2.length-1);
+    if (group2.lastIndexOf("'") === group2.length - 1) group2 = group2.substr(0, group2.length - 1);
     // rebuild url('') with the absolute path
     var res = "url('" + silex.utils.Url.getAbsolutePath(group2, baseUrl) + "')";
     return res;
@@ -151,8 +150,7 @@ silex.utils.Url.getRelativePath = function(url, base) {
   // remove the common part
   var baseElement;
   var urlElement;
-  while (baseArr.length > 0 && urlArr.length > 0
-        && baseArr[0] === urlArr[0]) {
+  while (baseArr.length > 0 && urlArr.length > 0 && baseArr[0] === urlArr[0]) {
     baseArr.shift();
     urlArr.shift();
   }
@@ -184,13 +182,12 @@ silex.utils.Url.getAbsolutePath = function(url, base) {
 
 /**
  * check if the file name has the desired extension
- * @param   {string} filename  the file name to be checked
+ * @param   {string} fileName  the file name to be checked
  * @param   {Array<string>} extArray  the allowed extensions
  */
 silex.utils.Url.checkFileExt = function(fileName, extArray) {
-  var fileName = fileName;
   var ext = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
-  for (idx in extArray) {
+  for (var idx in extArray) {
     if (extArray[idx] === ext) {
       return true;
     }

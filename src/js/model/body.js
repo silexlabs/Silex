@@ -19,9 +19,11 @@
  */
 
 
-goog.require('silex.types.Model');
 goog.provide('silex.model.Body');
 goog.require('silex.Config');
+goog.require('silex.types.Model');
+
+
 
 /**
  * @constructor
@@ -110,12 +112,12 @@ silex.model.Body.prototype.getBodyElement = function() {
  */
 silex.model.Body.prototype.getSelection = function() {
   var elements = goog.dom.getElementsByClass(silex.model.Element.SELECTED_CLASS_NAME, this.getBodyElement());
-  if (!elements || elements.length === 0){
+  if (!elements || elements.length === 0) {
     // default, return the body
     return [this.getBodyElement()];
   }
   // build the result array
-  var res =[];
+  var res = [];
   goog.array.forEach(elements, function(element) {
     res.push(element);
   }, this);
@@ -152,7 +154,7 @@ silex.model.Body.prototype.setSelection = function(selectedElements) {
  */
 silex.model.Body.prototype.getNeededFonts = function() {
   var neededFonts = [];
-  if (this.getBodyElement()){
+  if (this.getBodyElement()) {
     var innerHTML = this.getBodyElement().innerHTML;
     innerHTML.replace(/<font[^"]*face="?([^"]*)"/gi, function(match, group1, group2) {
       neededFonts[group1] = true;
@@ -172,7 +174,7 @@ silex.model.Body.prototype.resetEditable = function(element, opt_isRootDroppable
     this.setEditable(element, false);
     this.setEditable(element, true, opt_isRootDroppableOnly);
   }, this), 10);
-}
+};
 
 
 /**
@@ -183,18 +185,18 @@ silex.model.Body.prototype.setEditable = function(rootElement, isEditable, opt_i
   var elements = goog.dom.getElementsByClass(silex.model.Body.EDITABLE_CLASS_NAME, rootElement);
   goog.array.forEach(elements, function(element) {
     if (isEditable) {
-      if (element.getAttribute(silex.model.Body.SILEX_TYPE_ATTR_NAME) === silex.model.Body.SILEX_TYPE_CONTAINER){
+      if (element.getAttribute(silex.model.Body.SILEX_TYPE_ATTR_NAME) === silex.model.Body.SILEX_TYPE_CONTAINER) {
         // containers
         this.view.workspace.getWindow().jQuery(element).editable({
           isContainer: true
         });
       }
-      else{
+      else {
         this.view.workspace.getWindow().jQuery(element).editable();
       }
     }
-    else{
-      if(goog.dom.classes.has(element, silex.model.Body.EDITABLE_CREATED_CLASS_NAME)){
+    else {
+      if (goog.dom.classes.has(element, silex.model.Body.EDITABLE_CREATED_CLASS_NAME)) {
         this.view.workspace.getWindow().jQuery(element).editable('destroy');
         this.removeEditableClasses(element);
       }
@@ -203,8 +205,8 @@ silex.model.Body.prototype.setEditable = function(rootElement, isEditable, opt_i
 
   // handle the root element itself
   if (isEditable) {
-    if (rootElement.getAttribute(silex.model.Body.SILEX_TYPE_ATTR_NAME) === silex.model.Body.SILEX_TYPE_CONTAINER){
-      if (opt_isRootDroppableOnly){
+    if (rootElement.getAttribute(silex.model.Body.SILEX_TYPE_ATTR_NAME) === silex.model.Body.SILEX_TYPE_CONTAINER) {
+      if (opt_isRootDroppableOnly) {
         // allow drops only
         this.view.workspace.getWindow().jQuery(rootElement).editable({
           isContainer: true,
@@ -213,19 +215,19 @@ silex.model.Body.prototype.setEditable = function(rootElement, isEditable, opt_i
           isDraggable: false
         });
       }
-      else{
+      else {
         this.view.workspace.getWindow().jQuery(rootElement).editable({
           isContainer: true
         });
       }
     }
-    else{
+    else {
       this.view.workspace.getWindow().jQuery(rootElement).editable();
     }
   }
   else {
     // deactivate editable plugin
-    if(goog.dom.classes.has(rootElement, silex.model.Body.EDITABLE_CREATED_CLASS_NAME)){
+    if (goog.dom.classes.has(rootElement, silex.model.Body.EDITABLE_CREATED_CLASS_NAME)) {
       this.view.workspace.getWindow().jQuery(rootElement).editable('destroy');
       this.removeEditableClasses(rootElement);
     }
@@ -247,7 +249,7 @@ silex.model.Body.prototype.setEditable = function(rootElement, isEditable, opt_i
     goog.dom.insertChildAt(element, cover, 0);
   }, this);
   // handle the root element itself
-  if (rootElement.getAttribute(silex.model.Body.SILEX_TYPE_ATTR_NAME) === silex.model.Element.TYPE_HTML){
+  if (rootElement.getAttribute(silex.model.Body.SILEX_TYPE_ATTR_NAME) === silex.model.Element.TYPE_HTML) {
     // create the cover element
     var cover = goog.dom.createElement('div');
     goog.dom.classes.add(cover, 'temp-editable-cover');
@@ -255,6 +257,7 @@ silex.model.Body.prototype.setEditable = function(rootElement, isEditable, opt_i
     goog.dom.insertChildAt(rootElement, cover, 0);
   }
 };
+
 
 /**
  * remove the classes set by Silex and the editable.js plugin

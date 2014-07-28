@@ -18,16 +18,16 @@
 
 
 goog.provide('silex.view.Menu');
-goog.require('silex.Config');
-
+//goog.require('goog.ui.Tooltip');
+goog.require('goog.events.KeyCodes');
+goog.require('goog.events.KeyHandler');
+goog.require('goog.ui.KeyboardShortcutHandler');
 goog.require('goog.ui.Menu');
 goog.require('goog.ui.MenuButton');
 goog.require('goog.ui.MenuItem');
 goog.require('goog.ui.menuBar');
-//goog.require('goog.ui.Tooltip');
-goog.require('goog.events.KeyCodes');
-goog.require('goog.ui.KeyboardShortcutHandler');
-goog.require('goog.events.KeyHandler');
+goog.require('silex.Config');
+
 
 
 /**
@@ -58,7 +58,7 @@ silex.view.Menu.prototype.menu = null;
  */
 silex.view.Menu.prototype.buildMenu = function(rootNode) {
 
-        /* *
+  /* *
         ////////////////////////////////////////////////////////////////////////////////
         // test of surtcuts
         ////////////////////////////////////////////////////////////////////////////////
@@ -123,13 +123,13 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
             // shortcut
             if (itemData.shortcut) {
               for (var idx in itemData.shortcut) {
-                try{
+                try {
                   shortcutHandler.registerShortcut(itemData.id, itemData.shortcut[idx]);
                 }
-                catch(e){
+                catch (e) {
                   console.error('Catched error for shortcut', id, '. Error: ', e);
                 }
-                if (itemData.globalKey){
+                if (itemData.globalKey) {
                   globalKeys.push(itemData.globalKey);
                 }
               }
@@ -162,20 +162,20 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
   }
 
   shortcutHandler.setAlwaysPreventDefault(false);
-//  shortcutHandler.setAllShortcutsAreGlobal(false);
+  //  shortcutHandler.setAllShortcutsAreGlobal(false);
   shortcutHandler.setModifierShortcutsAreGlobal(false);
 
   // shortcuts
   shortcutHandler.setGlobalKeys(globalKeys);
   goog.events.listen(
-    shortcutHandler,
-    goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED,
-    goog.bind(function(event) {
-      if (!silex.utils.Notification.isActive) {
-        event.preventDefault();
-        this.onMenuEvent(event.identifier);
-      }
-    }, this)
+      shortcutHandler,
+      goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED,
+      goog.bind(function(event) {
+        if (!silex.utils.Notification.isActive) {
+          event.preventDefault();
+          this.onMenuEvent(event.identifier);
+        }
+      }, this)
   );
   // enter and escape shortcuts
   var keyHandler = new goog.events.KeyHandler(document);
@@ -185,14 +185,14 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
       if (event.keyCode === goog.events.KeyCodes.ENTER
         && event.shiftKey === false
         && event.altKey === false
-        && event.ctrlKey === false){
+        && event.ctrlKey === false) {
         // but not in text inputs
-        if(event.target.tagName.toUpperCase() === 'INPUT'
+        if (event.target.tagName.toUpperCase() === 'INPUT'
           || event.target.tagName.toUpperCase() === 'TEXTAREA'
           || event.target.tagName === shortcutHandler.textInputs_[event.target.type]) {
           // let browser handle
         }
-        else{
+        else {
           // silex takes an action
           event.preventDefault();
           this.onMenuEvent('view.open.editor');
@@ -209,7 +209,7 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
     this.onMenuEvent(e.target.getId());
   }, false, this);
   goog.events.listen(goog.dom.getElementByClass('website-name'), goog.events.EventType.CLICK, function(e) {
-    this.controller.menuController.promptTitle();
+    this.controller.fileMenuController.promptTitle();
   }, false, this);
 };
 
@@ -224,7 +224,7 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
 silex.view.Menu.prototype.redraw = function(selectedElements, document, pageNames, currentPageName) {
   // update website title
   var titleElements = goog.dom.getElementsByTagNameAndClass('title', null, document.head);
-  if (titleElements && titleElements.length > 0){
+  if (titleElements && titleElements.length > 0) {
     goog.dom.getElementByClass('website-name').innerHTML = titleElements[0].innerHTML;
   }
 };
@@ -235,87 +235,87 @@ silex.view.Menu.prototype.redraw = function(selectedElements, document, pageName
  * calls onStatus to notify the controller
  */
 silex.view.Menu.prototype.onMenuEvent = function(type) {
-  switch(type){
+  switch (type) {
     case 'title.changed':
-      this.controller.menuController.promptTitle();
+      this.controller.fileMenuController.promptTitle();
       break;
     case 'file.close':
     case 'file.new':
-      this.controller.menuController.newFile();
+      this.controller.fileMenuController.newFile();
       break;
     case 'file.saveas':
-      this.controller.menuController.save();
+      this.controller.fileMenuController.save();
       break;
     case 'file.rename':
-      this.controller.menuController.promptTitle();
+      this.controller.fileMenuController.promptTitle();
       break;
     case 'file.publish.settings':
-      this.controller.menuController.view.settingsDialog.openDialog();
-      this.controller.menuController.view.workspace.invalidate();
+      this.controller.fileMenuController.view.settingsDialog.openDialog();
+      this.controller.fileMenuController.view.workspace.invalidate();
       break;
     case 'file.publish':
-      this.controller.menuController.publish();
+      this.controller.fileMenuController.publish();
       break;
     case 'file.save':
-      this.controller.menuController.save(this.controller.menuController.model.file.getUrl());
+      this.controller.fileMenuController.save(this.controller.fileMenuController.model.file.getUrl());
       break;
     case 'file.open':
-      this.controller.menuController.openFile();
+      this.controller.fileMenuController.openFile();
       break;
     case 'view.file':
-      this.controller.menuController.preview();
-      break;
-    case 'tools.advanced.activate':
-      this.controller.menuController.toggleAdvanced();
+      this.controller.viewMenuController.preview();
       break;
     case 'view.open.fileExplorer':
-      this.controller.menuController.view.fileExplorer.openDialog(function(url) {}, function(error) {});
+      this.controller.viewMenuController.view.fileExplorer.openDialog(function(url) {}, function(error) {});
       break;
     case 'view.open.cssEditor':
-      this.controller.menuController.openCssEditor();
+      this.controller.viewMenuController.openCssEditor();
       break;
     case 'view.open.jsEditor':
-      this.controller.menuController.openJsEditor();
+      this.controller.viewMenuController.openJsEditor();
       break;
     case 'view.open.editor':
-      this.controller.menuController.editElement();
+      this.controller.editMenuController.editElement();
+    case 'tools.advanced.activate':
+      this.controller.toolMenuController.toggleAdvanced();
+      break;
       break;
     case 'insert.page':
-      this.controller.menuController.createPage();
+      this.controller.insertMenuController.createPage();
       break;
     case 'insert.text':
-      this.controller.menuController.addElement(silex.model.Element.TYPE_TEXT);
+      this.controller.insertMenuController.addElement(silex.model.Element.TYPE_TEXT);
       break;
     case 'insert.html':
-      this.controller.menuController.addElement(silex.model.Element.TYPE_HTML);
+      this.controller.insertMenuController.addElement(silex.model.Element.TYPE_HTML);
       break;
     case 'insert.image':
-      this.controller.menuController.browseAndAddImage(silex.model.Element.TYPE_IMAGE);
+      this.controller.insertMenuController.browseAndAddImage(silex.model.Element.TYPE_IMAGE);
       break;
     case 'insert.container':
-      this.controller.menuController.addElement(silex.model.Element.TYPE_CONTAINER);
+      this.controller.insertMenuController.addElement(silex.model.Element.TYPE_CONTAINER);
       break;
     case 'edit.delete.selection':
       // delete component
-      this.controller.menuController.removeSelectedElements();
+      this.controller.editMenuController.removeSelectedElements();
       break;
     case 'edit.copy.selection':
-      this.controller.menuController.copySelection();
+      this.controller.editMenuController.copySelection();
       break;
     case 'edit.paste.selection':
-      this.controller.menuController.pasteSelection();
+      this.controller.editMenuController.pasteSelection();
       break;
     case 'edit.undo':
-      this.controller.menuController.undo();
+      this.controller.editMenuController.undo();
       break;
     case 'edit.redo':
-      this.controller.menuController.redo();
+      this.controller.editMenuController.redo();
       break;
     case 'edit.delete.page':
-      this.controller.menuController.removePage();
+      this.controller.editMenuController.removePage();
       break;
     case 'edit.rename.page':
-      this.controller.menuController.renamePage();
+      this.controller.editMenuController.renamePage();
       break;
     // Help menu
     case 'help.about':
@@ -355,10 +355,10 @@ silex.view.Menu.prototype.onMenuEvent = function(type) {
       window.open(silex.Config.CONTRIBUTORS);
       break;
     case 'tools.pixlr.express':
-      this.controller.menuController.pixlrExpress();
+      this.controller.toolMenuController.pixlrExpress();
       break;
     case 'tools.pixlr.edit':
-      this.controller.menuController.pixlrEdit();
+      this.controller.toolMenuController.pixlrEdit();
       break;
     default:
       console.warn('menu type not found', type);

@@ -21,12 +21,11 @@
 
 goog.provide('silex.view.dialog.FileExplorer');
 
-goog.require('silex.service.CloudStorage');
-goog.require('silex.utils.Url');
-
 goog.require('goog.async.Delay');
 goog.require('goog.events.KeyCodes');
 goog.require('goog.ui.KeyboardShortcutHandler');
+goog.require('silex.service.CloudStorage');
+goog.require('silex.utils.Url');
 
 
 
@@ -61,11 +60,11 @@ silex.view.dialog.FileExplorer.prototype.filePicker;
  */
 silex.view.dialog.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes, opt_errCbk) {
   var fileExtentions;
-  if (opt_mimetypes){
-    if (opt_mimetypes['mimetype'] && opt_mimetypes['mimetype'].indexOf('image') === 0){
+  if (opt_mimetypes) {
+    if (opt_mimetypes['mimetype'] && opt_mimetypes['mimetype'].indexOf('image') === 0) {
       fileExtentions = ['jpg', 'jpeg', 'gif', 'png'];
     }
-    else if (opt_mimetypes['mimetype'] && opt_mimetypes['mimetype'].indexOf('text/html') === 0){
+    else if (opt_mimetypes['mimetype'] && opt_mimetypes['mimetype'].indexOf('text/html') === 0) {
       fileExtentions = ['html', 'htm'];
     }
   }
@@ -76,40 +75,40 @@ silex.view.dialog.FileExplorer.prototype.openDialog = function(cbk, opt_mimetype
       opt_errCbk(FPError);
     }
   };
-  var successCbk = function (url) {
+  var successCbk = function(url) {
     // notify controller
     if (cbk) cbk(url);
   };
 
   // pick it up
   this.filePicker.pick(
-    opt_mimetypes,
-    goog.bind(function(blob) {
-      // give back focus to Silex
-      this.view.stage.resetFocus();
-      // no https, because it creates security issues
-      blob.url = blob.url.replace('https://', 'http://');
+      opt_mimetypes,
+      goog.bind(function(blob) {
+        // give back focus to Silex
+        this.view.stage.resetFocus();
+        // no https, because it creates security issues
+        blob.url = blob.url.replace('https://', 'http://');
 
-      // check the the file extention is ok
-      if (fileExtentions && silex.utils.Url.checkFileExt(blob.url, fileExtentions) === false){
-        var fileName = blob.url.substring(blob.url.lastIndexOf('/') + 1);
-        silex.utils.Notification.confirm('The file name ' +
-          fileName +
-          ' does not looks good to me, are you sure you want to select this file?',
-            function (accept) {
-          if (accept) {
-            successCbk(blob.url);
-          }
-          else{
-            errCbk({message: 'Wrong file type.'})
-          }
-        });
-      }
-      else{
-        successCbk(blob.url);
-      }
-    }, this),
-    errCbk);
+        // check the the file extention is ok
+        if (fileExtentions && silex.utils.Url.checkFileExt(blob.url, fileExtentions) === false) {
+          var fileName = blob.url.substring(blob.url.lastIndexOf('/') + 1);
+          silex.utils.Notification.confirm('The file name ' +
+              fileName +
+              ' does not looks good to me, are you sure you want to select this file?',
+              function(accept) {
+                if (accept) {
+                  successCbk(blob.url);
+                }
+                else {
+                  errCbk({message: 'Wrong file type.'});
+                }
+              });
+        }
+        else {
+          successCbk(blob.url);
+        }
+      }, this),
+      errCbk);
 };
 
 
@@ -119,11 +118,11 @@ silex.view.dialog.FileExplorer.prototype.openDialog = function(cbk, opt_mimetype
  */
 silex.view.dialog.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes, opt_errCbk) {
   var fileExtentions;
-  if (opt_mimetypes){
-    if (opt_mimetypes['mimetype'].indexOf('image') === 0){
+  if (opt_mimetypes) {
+    if (opt_mimetypes['mimetype'].indexOf('image') === 0) {
       fileExtentions = ['jpg', 'jpeg', 'gif', 'png'];
     }
-    else if (opt_mimetypes['mimetype'].indexOf('text/html') === 0){
+    else if (opt_mimetypes['mimetype'].indexOf('text/html') === 0) {
       fileExtentions = ['html', 'htm'];
     }
   }
@@ -134,7 +133,7 @@ silex.view.dialog.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimety
       opt_errCbk(FPError);
     }
   };
-  var successCbk = function (blob) {
+  var successCbk = function(blob) {
     // notify controller
     if (cbk) cbk(blob.url);
   };
@@ -149,21 +148,21 @@ silex.view.dialog.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimety
         blob.url = blob.url.replace('https://', 'http://');
 
         // check the the file extention is ok
-        if (fileExtentions && silex.utils.Url.checkFileExt(blob.url, fileExtentions) === false){
+        if (fileExtentions && silex.utils.Url.checkFileExt(blob.url, fileExtentions) === false) {
           var fileName = blob.url.substring(blob.url.lastIndexOf('/') + 1);
           silex.utils.Notification.confirm('The file name ' +
-            fileName +
-            ' does not looks good to me, are you sure you want to select this file?',
-              function (accept) {
-            if (accept) {
-              successCbk(blob);
-            }
-            else{
-              errCbk({message: 'Wrong file type.'})
-            }
-          });
+              fileName +
+              ' does not looks good to me, are you sure you want to select this file?',
+              function(accept) {
+                if (accept) {
+                  successCbk(blob);
+                }
+                else {
+                  errCbk({message: 'Wrong file type.'});
+                }
+              });
         }
-        else{
+        else {
           successCbk(blob);
         }
       }, this),

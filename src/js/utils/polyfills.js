@@ -22,11 +22,11 @@ goog.provide('silex.utils.Polyfills');
  * @fileoverview add polyfills to the browser if needed
  *
  */
-silex.utils.Polyfills.init = function () {
+silex.utils.Polyfills.init = function() {
   // console object, do nothing
   window.console = window.console || {
-    log: function () {}
-    , warn: function () {}
-    , error: function () {}
+    log: function() {},
+    warn: function() {},
+    error: function() {}
   };
 };

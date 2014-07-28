@@ -15,13 +15,11 @@
  */
 
 
-goog.require('silex.view.pane.PaneBase');
 goog.provide('silex.view.pane.PropertyPane');
-
-goog.require('silex.utils.Dom');
-
 goog.require('goog.array');
 goog.require('goog.object');
+goog.require('silex.utils.Dom');
+goog.require('silex.view.pane.PaneBase');
 
 
 
@@ -43,6 +41,7 @@ silex.view.pane.PropertyPane = function(element, view, controller) {
 
 // inherit from silex.view.PaneBase
 goog.inherits(silex.view.pane.PropertyPane, silex.view.pane.PaneBase);
+
 
 /**
  * callback to call to let the user edit the image url
@@ -85,7 +84,6 @@ silex.view.pane.PropertyPane.prototype.altInput = null;
  * UI for alt and title
  */
 silex.view.pane.PropertyPane.prototype.titleInput = null;
-
 
 
 /**
@@ -160,22 +158,22 @@ silex.view.pane.PropertyPane.prototype.onPositionChanged =
   // the bounding box of all elements
   var bb = {};
   // apply the change to all elements
-  goog.array.forEach(this.selectedElements, function (element) {
-    if (goog.isNumber(value)){
-      if (goog.isNumber(oldValue)){
+  goog.array.forEach(this.selectedElements, function(element) {
+    if (goog.isNumber(value)) {
+      if (goog.isNumber(oldValue)) {
         bb = silex.utils.Dom.getBoundingBox([element]);
         // compute the new value relatively to the old value,
         // in order to match the group movement
         var newValue = bb[name] + offset;
         this.styleChanged(name,
-          newValue + 'px',
-          [element]);
+            newValue + 'px',
+            [element]);
       }
-      else{
+      else {
         this.styleChanged(name, value + 'px');
       }
     }
-    else{
+    else {
       this.styleChanged(name);
     }
   }, this);
@@ -192,10 +190,10 @@ silex.view.pane.PropertyPane.prototype.onAltChanged =
   var input = e.target;
 
   // apply the change to all elements
-  if (input.value != ''){
+  if (input.value !== '') {
     this.propertyChanged('alt', input.value, undefined, true);
   }
-  else{
+  else {
     this.propertyChanged('alt', undefined, undefined, true);
   }
 };
@@ -211,10 +209,10 @@ silex.view.pane.PropertyPane.prototype.onTitleChanged =
   var input = e.target;
 
   // apply the change to all elements
-  if (input.value != ''){
+  if (input.value !== '') {
     this.propertyChanged('title', input.value);
   }
-  else{
+  else {
     this.propertyChanged('title');
   }
 };
@@ -236,7 +234,7 @@ silex.view.pane.PropertyPane.prototype.redraw = function(selectedElements, docum
 
   // not available for stage element
   var elementsNoStage = [];
-  goog.array.forEach(selectedElements, function (element) {
+  goog.array.forEach(selectedElements, function(element) {
     if (document.body != element) {
       elementsNoStage.push(element);
     }
@@ -262,47 +260,47 @@ silex.view.pane.PropertyPane.prototype.redraw = function(selectedElements, docum
     this.heightInput.value = bb.height || '';
 
     // special case of the background / main container only selected element
-    if(selectedElements.length === 1 && goog.dom.classes.has(selectedElements[0], 'background')){
+    if (selectedElements.length === 1 && goog.dom.classes.has(selectedElements[0], 'background')) {
       this.topInput.value = '';
       this.leftInput.value = '';
     }
 
     // alt, only for images
-    var elementsType = this.getCommonProperty(selectedElements, function (element) {
+    var elementsType = this.getCommonProperty(selectedElements, function(element) {
       return element.getAttribute(silex.model.Element.TYPE_ATTR);
     });
     if (elementsType === silex.model.Element.TYPE_IMAGE) {
       this.altInput.removeAttribute('disabled');
-      var alt = this.getCommonProperty(selectedElements, function (element) {
+      var alt = this.getCommonProperty(selectedElements, function(element) {
         var content = goog.dom.getElementByClass(silex.model.Element.ELEMENT_CONTENT_CLASS_NAME, element);
         if (content) {
           return content.getAttribute('alt');
         }
         return null;
       });
-      if (alt){
+      if (alt) {
         this.altInput.value = alt;
       }
-      else{
+      else {
         this.altInput.value = '';
       }
     }
-    else{
+    else {
       this.altInput.value = '';
       this.altInput.setAttribute('disabled', true);
     }
     // title
-    var title = this.getCommonProperty(selectedElements, function (element) {
+    var title = this.getCommonProperty(selectedElements, function(element) {
       return element.getAttribute('title');
     });
-    if (title){
+    if (title) {
       this.titleInput.value = title;
     }
-    else{
+    else {
       this.titleInput.value = '';
     }
   }
-  else{
+  else {
     // stage element only
     this.leftInput.setAttribute('disabled', true);
     this.leftInput.value = '';

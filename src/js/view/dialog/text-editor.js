@@ -18,9 +18,6 @@
 
 goog.provide('silex.view.dialog.TextEditor');
 
-goog.require('silex.view.dialog.DialogBase');
-goog.require('silex.view.dialog.LinkDialogPlugin');
-
 goog.require('goog.dom');
 goog.require('goog.editor.Command');
 goog.require('goog.editor.Field');
@@ -33,13 +30,15 @@ goog.require('goog.editor.plugins.RemoveFormatting');
 goog.require('goog.editor.plugins.SpacesTabHandler');
 goog.require('goog.editor.plugins.UndoRedo');
 goog.require('goog.events');
+goog.require('goog.events.KeyCodes');
+goog.require('goog.text.LoremIpsum');
+goog.require('goog.ui.KeyboardShortcutHandler');
+goog.require('goog.ui.ToolbarSeparator');
 goog.require('goog.ui.editor.DefaultToolbar');
 goog.require('goog.ui.editor.ToolbarController');
-goog.require('goog.events.KeyCodes');
-goog.require('goog.ui.KeyboardShortcutHandler');
-goog.require('goog.text.LoremIpsum');
-goog.require('goog.ui.ToolbarSeparator');
 goog.require('silex.Config');
+goog.require('silex.view.dialog.DialogBase');
+goog.require('silex.view.dialog.LinkDialogPlugin');
 
 
 
@@ -111,7 +110,7 @@ silex.view.dialog.TextEditor.prototype.initUI = function() {
 
   var formatButton = goog.ui.editor.DefaultToolbar.makeBuiltInToolbarButton(
       goog.editor.Command.FORMAT_BLOCK);
-  while (formatButton.getItemCount()>0){
+  while (formatButton.getItemCount() > 0) {
     formatButton.removeItemAt(0);
   }
   // add our styles
@@ -123,36 +122,7 @@ silex.view.dialog.TextEditor.prototype.initUI = function() {
 
   // apply a class when the format changes
   // silex convention is ".normal" class for "Normal" style
-  goog.events.listen(formatButton,
-    goog.ui.Component.EventType.ACTION, function (e) {
-      // let time for the editor to replace the node by the desired node (P, H1, H2...)
-      setTimeout(goog.bind(function(){
-        var container = this.textField.getRange().getContainerElement();
-        if (container.tagName.toLowerCase() !== 'body'){
-          // cleanup, remove previous classes
-          var allClasses = ['normal', 'title', 'heading1', 'heading2', 'heading3'];
-          goog.dom.classes.addRemove(container, allClasses);
-          // add the desired class
-          switch(e.target.getContent()){
-            case 'Normal':
-              goog.dom.classes.add(container, 'normal');
-              break;
-            case 'Title':
-              goog.dom.classes.add(container, 'title');
-              break;
-            case 'Heading 1':
-              goog.dom.classes.add(container, 'heading1');
-              break;
-            case 'Heading 2':
-              goog.dom.classes.add(container, 'heading2');
-              break;
-            case 'Heading 3':
-              goog.dom.classes.add(container, 'heading3');
-              break;
-          }
-        }
-      }, this), 10);
-    }, false, this);
+  goog.events.listen(formatButton, goog.ui.Component.EventType.ACTION, this.formatChanged, false, this);
 
 
   // Specify the buttons to add to the toolbar, using built in default buttons.
@@ -184,32 +154,18 @@ silex.view.dialog.TextEditor.prototype.initUI = function() {
   // lorem ipsum button
   var generator = new goog.text.LoremIpsum();
   var button = goog.ui.editor.ToolbarFactory.makeButton('loremIpsumBtn', 'insert lorem ipsum text', 'L');
-  goog.events.listen(button,
-    goog.ui.Component.EventType.ACTION, function () {
-      var text = generator.generateParagraph(true);
-      var container = goog.dom.createElement('P');
-      // add normal style
-      goog.dom.classes.add(container, 'normal');
-      container.innerHTML = text;
-      this.textField.getRange().replaceContentsWithNode(container);
-      this.contentChanged();
-    }, false, this);
+  goog.events.listen(button, goog.ui.Component.EventType.ACTION, this.onLoremIpsumClick, false, this);
   myToolbar.addChild(new goog.ui.ToolbarSeparator(), true);
   myToolbar.addChild(button, true);
 
   // Hook the toolbar into the field.
-  var myToolbarController = new goog.ui.editor.ToolbarController(this.textField,
-      myToolbar);
+  var myToolbarController = new goog.ui.editor.ToolbarController(this.textField, myToolbar);
 
   // Watch for field changes, to display below.
-  goog.events.listen(this.textField,
-      goog.editor.Field.EventType.DELAYEDCHANGE,
-      function() {
-        // notify the controller
-        this.contentChanged();
-  }, false, this);
+  // notify the controller
+  goog.events.listen(this.textField, goog.editor.Field.EventType.DELAYEDCHANGE, this.contentChanged, false, this);
 
-/* This appears to bug in firefox, because at this stage the text field is display: none
+  /* This appears to bug in firefox, because at this stage the text field is display: none
   try {
     this.textField.makeEditable();
   }
@@ -217,7 +173,7 @@ silex.view.dialog.TextEditor.prototype.initUI = function() {
     // to prevent this bug: goog.editor.BrowserFeature.HAS_STYLE_WITH_CSS = false;
     console.error('error catched', e);
   }
-*/
+  */
 
 };
 
@@ -227,7 +183,7 @@ silex.view.dialog.TextEditor.prototype.initUI = function() {
  * @param    {string} initialHtml    HTML to display at start
  * @param    {string} elementClassName    css classes of the element being edited,
  *                                               so that css rules apply in the editor too
- * @param    {string} opt_bgColor    desired color for the editor background
+ * @param    {string=} opt_bgColor    desired color for the editor background
  *            which is useful to edit white text on a black bacground for example
  */
 silex.view.dialog.TextEditor.prototype.openEditor = function(initialHtml, elementClassName, opt_bgColor) {
@@ -240,7 +196,7 @@ silex.view.dialog.TextEditor.prototype.openEditor = function(initialHtml, elemen
   this.textField.setHtml(false, initialHtml);
   this.textField.focusAndPlaceCursorAtStart();
   // editor bg color
-  if (!opt_bgColor){
+  if (!opt_bgColor) {
     opt_bgColor = '#FFFFFF';
   }
   // apply to the bg
@@ -252,19 +208,19 @@ silex.view.dialog.TextEditor.prototype.openEditor = function(initialHtml, elemen
   // apply it on <html> tag instead of body,
   // because body represents the '.silex-element-content' element of Silex text elements
   // so it has these classes: 'silex-element-content normal'
-  iframeDoc.getElementsByTagName("html")[0].className = elementClassName;
+  iframeDoc.getElementsByTagName('html')[0].className = elementClassName;
   // body represents the '.silex-element-content' element of Silex text elements
   // so it has these classes: 'silex-element-content normal'
   iframeDoc.body.className = 'silex-element-content normal';
   // handle current css styles
-  if (this.currentCustomCssStyles){
+  if (this.currentCustomCssStyles) {
     this.setCustomCssStyles(this.currentCustomCssStyles);
   }
   // handle current fonts
-  if (this.currentCustomFonts){
+  if (this.currentCustomFonts) {
     this.setCustomFonts(this.currentCustomFonts);
   }
-}
+};
 
 
 /**
@@ -274,10 +230,10 @@ silex.view.dialog.TextEditor.prototype.closeEditor = function() {
   // call super
   goog.base(this, 'closeEditor');
   // remove editable before it goes "display: none"
-  if (!this.textField.isUneditable()){
+  if (!this.textField.isUneditable()) {
     this.textField.makeUneditable();
   }
-}
+};
 
 
 /**
@@ -295,7 +251,7 @@ silex.view.dialog.TextEditor.prototype.setCustomFonts = function(customFonts) {
   this.currentCustomFonts = customFonts;
   // get the iframe document
   var iframe = goog.dom.getElementsByTagNameAndClass('iframe', null, this.element)[0];
-  if (!iframe){
+  if (!iframe) {
     // iframe not yet defined, the text editor is loading
     return;
   }
@@ -332,7 +288,7 @@ silex.view.dialog.TextEditor.prototype.setCustomCssStyles = function(customCssSt
   this.currentCustomCssStyles = customCssStyles;
   // get the iframe document
   var iframe = goog.dom.getElementsByTagNameAndClass('iframe', null, this.element)[0];
-  if (!iframe){
+  if (!iframe) {
     // iframe not yet defined, the text editor is loading
     return;
   }
@@ -341,10 +297,10 @@ silex.view.dialog.TextEditor.prototype.setCustomCssStyles = function(customCssSt
   var iframeHead = iframeDoc.head;
   // add Silex css to the iframe
   var silexStyle = goog.dom.getElementByClass(
-    silex.model.Head.SILEX_STYLE_ELEMENT_CSS_CLASS,
-    iframeHead);
+      silex.model.Head.SILEX_STYLE_ELEMENT_CSS_CLASS,
+      iframeHead);
   // update iframe css
-  if (!silexStyle){
+  if (!silexStyle) {
     silexStyle = iframeDoc.createElement('style');
     silexStyle.type = 'text/css';
     goog.dom.classes.add(silexStyle, silex.model.Head.SILEX_STYLE_ELEMENT_CSS_CLASS);
@@ -360,6 +316,52 @@ silex.view.dialog.TextEditor.prototype.setCustomCssStyles = function(customCssSt
 };
 
 
+/**
+ * user clicked lorem ipsum button
+ */
+silex.view.dialog.TextEditor.prototype.onLoremIpsumClick = function(e) {
+  var text = generator.generateParagraph(true);
+  var container = goog.dom.createElement('P');
+  // add normal style
+  goog.dom.classes.add(container, 'normal');
+  container.innerHTML = text;
+  this.textField.getRange().replaceContentsWithNode(container);
+  this.contentChanged();
+};
+
+
+/**
+ * user changed selection in the format drop down list
+ */
+silex.view.dialog.TextEditor.prototype.formatChanged = function(e) {
+  // let time for the editor to replace the node by the desired node (P, H1, H2...)
+  setTimeout(goog.bind(function() {
+    var container = this.textField.getRange().getContainerElement();
+    if (container.tagName.toLowerCase() !== 'body') {
+      // cleanup, remove previous classes
+      var allClasses = ['normal', 'title', 'heading1', 'heading2', 'heading3'];
+      goog.dom.classes.addRemove(container, allClasses);
+      // add the desired class
+      switch (e.target.getContent()) {
+        case 'Normal':
+          goog.dom.classes.add(container, 'normal');
+          break;
+        case 'Title':
+          goog.dom.classes.add(container, 'title');
+          break;
+        case 'Heading 1':
+          goog.dom.classes.add(container, 'heading1');
+          break;
+        case 'Heading 2':
+          goog.dom.classes.add(container, 'heading2');
+          break;
+        case 'Heading 3':
+          goog.dom.classes.add(container, 'heading3');
+          break;
+      }
+    }
+  }, this), 10);
+};
 
 
 /**

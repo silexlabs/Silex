@@ -21,8 +21,9 @@
 
 goog.provide('silex.model.Head');
 
-goog.require('silex.types.Model');
 goog.require('silex.Config');
+goog.require('silex.types.Model');
+
 
 
 /**
@@ -70,9 +71,9 @@ silex.model.Head.CUSTOM_FONTS_CSS_CLASS = 'silex-custom-font';
 silex.model.Head.prototype.getHeadScript = function() {
   // get silex scripts from the DOM
   var scriptTag = goog.dom.getElementByClass(
-    silex.model.Head.SILEX_SCRIPT_ELEMENT_CSS_CLASS,
-    this.getHeadElement());
-  if (!scriptTag){
+      silex.model.Head.SILEX_SCRIPT_ELEMENT_CSS_CLASS,
+      this.getHeadElement());
+  if (!scriptTag) {
     console.warn('no silex editable script defined');
     return '';
   }
@@ -86,10 +87,10 @@ silex.model.Head.prototype.getHeadScript = function() {
  */
 silex.model.Head.prototype.setHeadScript = function(jsString) {
   var scriptTag = goog.dom.getElementByClass(
-    silex.model.Head.SILEX_SCRIPT_ELEMENT_CSS_CLASS,
-    this.getHeadElement());
+      silex.model.Head.SILEX_SCRIPT_ELEMENT_CSS_CLASS,
+      this.getHeadElement());
 
-  if (!scriptTag){
+  if (!scriptTag) {
     scriptTag = goog.dom.createElement('script');
     scriptTag.type = 'text/javascript';
     scriptTag.className = silex.model.Head.SILEX_SCRIPT_ELEMENT_CSS_CLASS;
@@ -106,9 +107,9 @@ silex.model.Head.prototype.setHeadScript = function(jsString) {
 silex.model.Head.prototype.getHeadStyle = function() {
   // get silex styles from the DOM
   var silexStyle = goog.dom.getElementByClass(
-    silex.model.Head.SILEX_STYLE_ELEMENT_CSS_CLASS,
-    this.getHeadElement());
-  if (!silexStyle){
+      silex.model.Head.SILEX_STYLE_ELEMENT_CSS_CLASS,
+      this.getHeadElement());
+  if (!silexStyle) {
     console.warn('no silex editable styles defined');
     return '';
   }
@@ -122,10 +123,10 @@ silex.model.Head.prototype.getHeadStyle = function() {
  */
 silex.model.Head.prototype.setHeadStyle = function(cssString) {
   var silexStyle = goog.dom.getElementByClass(
-    silex.model.Head.SILEX_STYLE_ELEMENT_CSS_CLASS,
-    this.getHeadElement());
+      silex.model.Head.SILEX_STYLE_ELEMENT_CSS_CLASS,
+      this.getHeadElement());
 
-  if (!silexStyle){
+  if (!silexStyle) {
     silexStyle = goog.dom.createElement('style');
     silexStyle.type = 'text/css';
     silexStyle.className = silex.model.Head.SILEX_STYLE_ELEMENT_CSS_CLASS;
@@ -196,6 +197,7 @@ silex.model.Head.prototype.refreshFontList = function(neededFonts) {
   this.view.textEditor.setCustomFonts(customFontsForTextEditor);
 };
 
+
 /**
  * get/set the publication path
  */
@@ -203,14 +205,14 @@ silex.model.Head.prototype.setPublicationPath = function(path) {
   var found = false;
   // update the DOM element
   var metaNode = goog.dom.getFrameContentDocument(this.iframeElement).querySelector('meta[name="publicationPath"]');
-  if (!metaNode && path && path !== ''){
+  if (!metaNode && path && path !== '') {
     // create the DOM element
     metaNode = goog.dom.createElement('meta');
     metaNode.name = 'publicationPath';
     metaNode.content = path;
     goog.dom.appendChild(this.getHeadElement(), metaNode);
   }
-  else{
+  else {
     if (path && path !== '') {
       // update path
       metaNode.setAttribute('content', path);
@@ -230,11 +232,11 @@ silex.model.Head.prototype.setPublicationPath = function(path) {
  */
 silex.model.Head.prototype.getPublicationPath = function() {
   var metaNode = goog.dom.getFrameContentDocument(this.iframeElement).querySelector('meta[name="publicationPath"]');
-  if (metaNode){
+  if (metaNode) {
     return metaNode.getAttribute('content');
   }
-  else{
-    return null
+  else {
+    return null;
   }
 };
 
@@ -244,10 +246,10 @@ silex.model.Head.prototype.getPublicationPath = function() {
  */
 silex.model.Head.prototype.getTitle = function() {
   var titleNodes = goog.dom.getElementsByTagNameAndClass('title', null, this.getHeadElement());
-  if (titleNodes.length > 0){
+  if (titleNodes.length > 0) {
     return titleNodes[0].innerHTML;
   }
-  else{
+  else {
     return null;
   }
 };
@@ -260,11 +262,11 @@ silex.model.Head.prototype.setTitle = function(name) {
   // find or create the title tag in the head section
   var titleNodes = goog.dom.getElementsByTagNameAndClass('title', null, this.getHeadElement());
   var titleNode;
-  if (titleNodes.length === 0){
+  if (titleNodes.length === 0) {
     titleNode = goog.dom.createElement('title');
     goog.dom.appendChild(this.getHeadElement(), titleNode);
   }
-  else{
+  else {
     titleNode = titleNodes[0];
   }
   // update website title
@@ -281,7 +283,7 @@ silex.model.Head.prototype.setTitle = function(name) {
  */
 silex.model.Head.prototype.getHeadElement = function() {
   var contentDocument = goog.dom.getFrameContentDocument(this.iframeElement);
-  if (!contentDocument || !contentDocument.head){
+  if (!contentDocument || !contentDocument.head) {
     return null;
   }
   // returns the head of the document in the iframe
@@ -295,43 +297,43 @@ silex.model.Head.prototype.getHeadElement = function() {
  */
 silex.model.Head.prototype.addTempTag = function(tags, opt_onSuccess, opt_onError) {
   var tagsWichSupportOnload = ['link', 'script'];
-  if (typeof(tags) === "string"){
+  if (typeof(tags) === 'string') {
     // convert tags to an array
     tags = [tags];
   }
   // onload callback
-  var onload = goog.bind(function () {
+  var onload = goog.bind(function() {
     if (tags.length > 0) {
       addNextTag();
     }
-    else{
-      if(opt_onSuccess) opt_onSuccess();
+    else {
+      if (opt_onSuccess) opt_onSuccess();
     }
   }, this);
   // nex tag function
   var addNextTag = goog.bind(function() {
     var tag = tags.shift();
-    if (goog.array.contains(tagsWichSupportOnload, tag.tagName.toLowerCase())){
+    if (goog.array.contains(tagsWichSupportOnload, tag.tagName.toLowerCase())) {
       // use onload
       tag.onload = onload;
     }
-    else{
+    else {
       // no onload for this kind of tags, load right away
       onload();
     }
-    tag.onerror = function () {
-      console.error('scripts loading error')
-      if(opt_onError) opt_onError();
-    }
+    tag.onerror = function() {
+      console.error('scripts loading error');
+      if (opt_onError) opt_onError();
+    };
     goog.dom.classes.add(tag, silex.model.Head.SILEX_TEMP_TAGS_CSS_CLASS);
     goog.dom.appendChild(this.getHeadElement(), tag);
   }, this);
   // start the loading process: call next tag
-  if (tags.length > 0){
+  if (tags.length > 0) {
     addNextTag();
   }
-  else{
-    if(opt_onError) opt_onError();
+  else {
+    if (opt_onError) opt_onError();
   }
 };
 

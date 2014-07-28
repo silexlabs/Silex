@@ -41,7 +41,7 @@ module.exports = function(grunt) {
   // when debug mode, allows debug tastks like source maps, test tools...
   if (!production){
       grunt.loadNpmTasks('grunt-selenium-webdriver');
-      grunt.loadNpmTasks('grunt-contrib-csslint');
+      grunt.loadNpmTasks('grunt-lesslint');
       grunt.loadNpmTasks('grunt-append-sourcemapping');
       grunt.loadNpmTasks('grunt-contrib-watch');
       grunt.loadNpmTasks('grunt-closure-linter');
@@ -62,7 +62,7 @@ module.exports = function(grunt) {
   grunt.registerTask('debugDeploy', ['concat', 'less:development', 'jade:debug', 'closureBuilder:debug', 'append-sourcemapping']);
 
   // test and check tasks
-  grunt.registerTask('check', ['htmllint', 'csslint:lax', 'closureLint']);
+  grunt.registerTask('check', ['lesslint', 'closureLint']);
   grunt.registerTask('test', ['releaseDeploy', 'selenium_start', 'simplemocha', 'selenium_stop']);
   grunt.registerTask('test-no-build', ['selenium_start', 'simplemocha', 'selenium_stop']);
   grunt.registerTask('fix', ['closureFixStyle']);
@@ -104,19 +104,17 @@ module.exports = function(grunt) {
   // Project configuration.
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
-    csslint: {
-      lax: {
-        src: ['src/css/*.css'],
-        options: {
-          important: false, // useful when opening a website in Silex
-            "adjoining-classes" : false,
-            "known-properties" : false,
-            "box-sizing" : false,
-            "box-model" : false,
-            "overqualified-elements" : false,
-            "fallback-colors" : false,
-            "unqualified-attributes" : false,
-        },
+    lesslint: {
+      src: ['src/css/*.less'],
+      options: {
+        important: false, // useful when opening a website in Silex
+          "adjoining-classes" : false,
+          "known-properties" : false,
+          "box-sizing" : false,
+          "box-model" : false,
+          "overqualified-elements" : false,
+          "fallback-colors" : false,
+          "unqualified-attributes" : false,
       },
     },
     concat: {
@@ -124,9 +122,6 @@ module.exports = function(grunt) {
         src: ['src/css/*.less'],
         dest: 'src/css/.temp'
       },
-    },
-    htmllint: {
-        all: ["dist/client/*.html"]
     },
     closureLint: {
       app:{
