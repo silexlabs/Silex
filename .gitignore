@@ -21,3 +21,6 @@ www/*
 !www/robots.txt
 !www/sitemap_index.xml
 !www/sitemap.xml
+!www/functional-tests
+www/functional-tests/publish
+www/functional-tests/editable.html

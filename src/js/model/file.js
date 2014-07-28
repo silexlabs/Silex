@@ -637,6 +637,7 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
 
     // put back the scripts
     headStr = headStr.replace(/type=\"text\/notjavascript\"/gi, 'type="text/javascript"')
+    jsString = jsString.replace(/type=\"text\/notjavascript\"/gi, 'type="text/javascript"')
     bodyStr = bodyElement.innerHTML.replace(/type=\"text\/notjavascript\"/gi, 'type="text/javascript"')
     // handle the body style
     var bodyStyle = bodyElement.getAttribute('style');
@@ -679,8 +680,8 @@ silex.model.File.prototype.filterBgImage = function(baseUrl, files, match, group
   }
   if (this.isDownloadable(absolute)){
     var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
-    var newRelativePath = '../assets/' + fileName;
-    var res = "url('" + newRelativePath + "')";
+    var newRelativePath = 'assets/' + fileName;
+    var res = "url('../" + newRelativePath + "')";
     files.push({
       url: absolute
       , destPath: newRelativePath
