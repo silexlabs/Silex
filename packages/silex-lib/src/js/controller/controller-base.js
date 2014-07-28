@@ -711,8 +711,11 @@ silex.controller.ControllerBase.prototype.publish = function(){
       }
       }, this),
       goog.bind(function(error) {
-        console.error('Error: I did not manage to publish the file. (2)', error);
-        silex.utils.Notification.notifyError('I did not manage to publish the file. You may want to check the publication settings and your internet connection. \nError message: ' + error);
+        var msg = '';
+        if (error) msg = error;
+        if (error.message) msg = error.message;
+        console.error('Error: I did not manage to publish the file. (2)', msg);
+        silex.utils.Notification.notifyError('I did not manage to publish the file. You may want to check the publication settings and your internet connection. \nError message: ' + msg);
         this.tracker.trackAction('controller-events', 'error', 'file.publish', -1);
       }, this));
   }

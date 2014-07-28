@@ -483,6 +483,19 @@ ce.core.Controller.prototype = {
 						_g21.set_path(_g21.path + (_g.state.currentFileList.get(id1).name + "/"));
 					}
 					break;
+				case 1:
+					var options2 = _g12[5];
+					var input = _g12[4];
+					var onError2 = _g12[3];
+					var onSuccess2 = _g12[2];
+					if(!f1.isDir) {
+						onSuccess2({ url : _g.unifileSrv.generateUrl(_g.state.currentLocation.service,_g.state.currentLocation.path,f1.name), filename : f1.name, mimetype : ce.util.FileTools.getMimeType(f1.name), size : f1.bytes, key : null, container : null, isWriteable : true, path : _g.state.currentLocation.path});
+						_g.hide();
+					} else {
+						var _g21 = _g.state.currentLocation;
+						_g21.set_path(_g21.path + (_g.state.currentFileList.get(id1).name + "/"));
+					}
+					break;
 				default:
 					var _g21 = _g.state.currentLocation;
 					_g21.set_path(_g21.path + (_g.state.currentFileList.get(id1).name + "/"));
@@ -530,13 +543,13 @@ ce.core.Controller.prototype = {
 				var _g14 = _g.state.currentMode;
 				switch(_g14[1]) {
 				case 1:
-					var options2 = _g14[5];
-					var input = _g14[4];
-					var onError2 = _g14[3];
-					var onSuccess2 = _g14[2];
+					var options3 = _g14[5];
+					var input1 = _g14[4];
+					var onError3 = _g14[3];
+					var onSuccess3 = _g14[2];
 					var fname = _g.application["export"].get_exportName();
-					if(options2 != null) {
-						if(options2.mimetype != null && ce.util.FileTools.getExtension(options2.mimetype) != null) fname += ce.util.FileTools.getExtension(options2.mimetype); else if(options2.extension != null) if(options2.extension.indexOf(".") != 0) fname += "." + options2.extension; else fname += options2.extension;
+					if(options3 != null) {
+						if(options3.mimetype != null && ce.util.FileTools.getExtension(options3.mimetype) != null) fname += ce.util.FileTools.getExtension(options3.mimetype); else if(options3.extension != null) if(options3.extension.indexOf(".") != 0) fname += "." + options3.extension; else fname += options3.extension;
 					}
 					_g.setAlert("Do you confirm overwriting of " + fname + "?",1,[{ msg : "Yes, do overwrite it.", cb : function() {
 						_g.application.setAlertPopupDisplayed(false);
@@ -560,13 +573,13 @@ ce.core.Controller.prototype = {
 				var _g15 = _g.state.currentMode;
 				switch(_g15[1]) {
 				case 1:
-					var options3 = _g15[5];
-					var input1 = _g15[4];
-					var onError3 = _g15[3];
-					var onSuccess3 = _g15[2];
+					var options4 = _g15[5];
+					var input2 = _g15[4];
+					var onError4 = _g15[3];
+					var onSuccess4 = _g15[2];
 					var fname1 = _g.application["export"].get_exportName();
-					if(options3 != null) {
-						if(options3.mimetype != null && ce.util.FileTools.getExtension(options3.mimetype) != null) fname1 += ce.util.FileTools.getExtension(options3.mimetype); else if(options3.extension != null) if(options3.extension.indexOf(".") != 0) fname1 += "." + options3.extension; else fname1 += options3.extension;
+					if(options4 != null) {
+						if(options4.mimetype != null && ce.util.FileTools.getExtension(options4.mimetype) != null) fname1 += ce.util.FileTools.getExtension(options4.mimetype); else if(options4.extension != null) if(options4.extension.indexOf(".") != 0) fname1 += "." + options4.extension; else fname1 += options4.extension;
 					}
 					var $it0 = _g.state.currentFileList.iterator();
 					while( $it0.hasNext() ) {
@@ -631,15 +644,15 @@ ce.core.Controller.prototype = {
 				switch(_g16[1]) {
 				case 2:
 					var srvName = _g16[4];
-					var onError4 = _g16[3];
-					var onSuccess4 = _g16[2];
-					_g.isLoggedIn(srvName,onSuccess4,onError4);
+					var onError5 = _g16[3];
+					var onSuccess5 = _g16[2];
+					_g.isLoggedIn(srvName,onSuccess5,onError5);
 					break;
 				case 3:
 					var srvName1 = _g16[4];
-					var onError5 = _g16[3];
-					var onSuccess5 = _g16[2];
-					_g.requestAuthorize(srvName1,onSuccess5,onError5);
+					var onError6 = _g16[3];
+					var onSuccess6 = _g16[2];
+					_g.requestAuthorize(srvName1,onSuccess6,onError6);
 					break;
 				case 0:case 1:
 					break;
@@ -681,8 +694,8 @@ ce.core.Controller.prototype = {
 					throw "unexpected mode: " + Std.string(_g.state.currentMode);
 					break;
 				case 3:
-					var onSuccess6 = _g17[2];
-					onSuccess6();
+					var onSuccess7 = _g17[2];
+					onSuccess7();
 					_g.hide();
 					break;
 				}
@@ -755,23 +768,23 @@ ce.core.Controller.prototype = {
 					case 2:case 3:
 						break;
 					case 0:
-						var options4 = _g19[4];
-						var onError6 = _g19[3];
-						var onSuccess7 = _g19[2];
-						if(options4 != null) {
-							if((options4.mimetype != null || options4.mimetypes != null) && (options4.extension != null || options4.extensions != null)) throw "Cannot pass in both mimetype(s) and extension(s) parameters to the pick function";
+						var options5 = _g19[4];
+						var onError7 = _g19[3];
+						var onSuccess8 = _g19[2];
+						if(options5 != null) {
+							if((options5.mimetype != null || options5.mimetypes != null) && (options5.extension != null || options5.extensions != null)) throw "Cannot pass in both mimetype(s) and extension(s) parameters to the pick function";
 							var filters = null;
-							if(options4.mimetype != null || options4.mimetypes != null) {
-								if(options4.mimetype != null) {
-									if(options4.mimetypes != null) throw "Cannot pass in both mimetype and mimetypes parameters to the pick function";
-									filters = [options4.mimetype];
-								} else filters = options4.mimetypes;
+							if(options5.mimetype != null || options5.mimetypes != null) {
+								if(options5.mimetype != null) {
+									if(options5.mimetypes != null) throw "Cannot pass in both mimetype and mimetypes parameters to the pick function";
+									filters = [options5.mimetype];
+								} else filters = options5.mimetypes;
 							} else {
 								var extensions = null;
-								if(options4.extension != null) {
-									if(options4.extensions != null) throw "Cannot pass in both extension and extensions parameters to the pick function";
-									extensions = [options4.extension];
-								} else extensions = options4.extensions;
+								if(options5.extension != null) {
+									if(options5.extensions != null) throw "Cannot pass in both extension and extensions parameters to the pick function";
+									extensions = [options5.extension];
+								} else extensions = options5.extensions;
 								if(extensions != null && extensions.length > 0) {
 									filters = [];
 									var _g23 = 0;
@@ -787,13 +800,13 @@ ce.core.Controller.prototype = {
 						}
 						break;
 					case 1:
-						var options5 = _g19[5];
-						var input2 = _g19[4];
-						var onError7 = _g19[3];
-						var onSuccess8 = _g19[2];
+						var options6 = _g19[5];
+						var input3 = _g19[4];
+						var onError8 = _g19[3];
+						var onSuccess9 = _g19[2];
 						var ext;
-						if(options5 != null && options5.mimetype != null) ext = ce.util.FileTools.getExtension(options5.mimetype); else ext = null;
-						if(ext == null && options5 != null && options5.extension != null) if(options5.extension.indexOf(".") == 0) ext = options5.extension; else ext = "." + options5.extension;
+						if(options6 != null && options6.mimetype != null) ext = ce.util.FileTools.getExtension(options6.mimetype); else ext = null;
+						if(ext == null && options6 != null && options6.extension != null) if(options6.extension.indexOf(".") == 0) ext = options6.extension; else ext = "." + options6.extension;
 						_g.application["export"].set_ext(ext != null?ext:"");
 						_g.application["export"].set_exportName("");
 						_g.application.setExportOverwriteDisplayed(false);
