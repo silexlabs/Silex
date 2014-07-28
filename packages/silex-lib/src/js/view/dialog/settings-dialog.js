@@ -17,9 +17,9 @@
 
 goog.provide('silex.view.dialog.SettingsDialog');
 
-goog.require('silex.view.dialog.DialogBase');
 goog.require('goog.events.KeyCodes');
 goog.require('goog.ui.KeyboardShortcutHandler');
+goog.require('silex.view.dialog.DialogBase');
 
 
 
@@ -81,10 +81,10 @@ silex.view.dialog.SettingsDialog.prototype.initUI = function() {
  */
 silex.view.dialog.SettingsDialog.prototype.redraw = function(path) {
   var inputPublicationPath = goog.dom.getElementByClass('input-publication-path');
-  if (path){
+  if (path) {
     inputPublicationPath.value = path;
   }
-  else{
+  else {
     inputPublicationPath.value = '';
   }
 };
@@ -113,7 +113,7 @@ silex.view.dialog.SettingsDialog.prototype.openEditor = function() {
  * close editor
  * this is private method, do not call it
  */
-silex.view.dialog.SettingsDialog.prototype.closeEditor  = function() {
+silex.view.dialog.SettingsDialog.prototype.closeEditor = function() {
   // call super
   goog.base(this, 'closeEditor');
   // notify caller

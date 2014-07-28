@@ -16,9 +16,7 @@
  */
 
 
-goog.require('silex.view.pane.PaneBase');
 goog.provide('silex.view.pane.GeneralStylePane');
-
 goog.require('goog.array');
 goog.require('goog.object');
 goog.require('goog.ui.Checkbox');
@@ -26,6 +24,7 @@ goog.require('goog.ui.ColorButton');
 goog.require('goog.ui.CustomButton');
 goog.require('goog.ui.HsvaPalette');
 goog.require('goog.ui.TabBar');
+goog.require('silex.view.pane.PaneBase');
 
 
 
@@ -81,7 +80,7 @@ silex.view.pane.GeneralStylePane.prototype.redraw = function(selectedElements, d
 
   // not available for stage element
   var elementsNoStage = [];
-  goog.array.forEach(selectedElements, function (element) {
+  goog.array.forEach(selectedElements, function(element) {
     if (document.body != element) {
       elementsNoStage.push(element);
     }
@@ -90,20 +89,20 @@ silex.view.pane.GeneralStylePane.prototype.redraw = function(selectedElements, d
     // not stage element only
     this.opacityInput.removeAttribute('disabled');
     // get the opacity
-    var opacity = this.getCommonProperty(selectedElements, function (element) {
+    var opacity = this.getCommonProperty(selectedElements, function(element) {
       return element.style.opacity;
     });
     if (goog.isNull(opacity)) {
       this.opacityInput.value = '';
     }
-    else if (opacity === ''){
+    else if (opacity === '') {
       this.opacityInput.value = '100';
     }
     else {
-      this.opacityInput.value = Math.round(parseFloat(opacity)*100);
+      this.opacityInput.value = Math.round(parseFloat(opacity) * 100);
     }
   }
-  else{
+  else {
     // stage element only
     this.opacityInput.value = '';
     this.opacityInput.setAttribute('disabled', true);
@@ -117,7 +116,7 @@ silex.view.pane.GeneralStylePane.prototype.redraw = function(selectedElements, d
  */
 silex.view.pane.GeneralStylePane.prototype.onInputChanged = function(event) {
   if (this.opacityInput.value && this.opacityInput.value !== '') {
-    var val = parseFloat(this.opacityInput.value)/100.0;
+    var val = parseFloat(this.opacityInput.value) / 100.0;
     if (val < 0) val = 0;
     if (val > 1) val = 1;
     this.styleChanged('opacity', val);

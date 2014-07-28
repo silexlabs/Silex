@@ -20,6 +20,8 @@ goog.provide('silex.view.PageTool');
 
 goog.require('goog.dom');
 
+
+
 /**
  * @constructor
  *
@@ -36,6 +38,7 @@ silex.view.PageTool = function(element, view, controller) {
   this.initEvents();
 };
 
+
 /**
  * page list based on what is passed to redraw
  * {Array.<{name: string, displayName: string, linkName: string, idx: number}>} of objects with these attributes
@@ -46,30 +49,32 @@ silex.view.PageTool = function(element, view, controller) {
  */
 silex.view.PageTool.prototype.pages = [];
 
+
 /**
  * add listeners on the tool container
  */
 silex.view.PageTool.prototype.initEvents = function(pages) {
   // listen for the click on a page
   goog.events.listen(this.element, goog.events.EventType.CLICK, function(e) {
-    if (goog.dom.classes.has(e.target, 'delete')){
+    if (goog.dom.classes.has(e.target, 'delete')) {
       // remove the page
       this.removePageAtIndex(this.getCellIndex(e.target.parentNode.parentNode));
     }
-    else if (goog.dom.classes.has(e.target, 'label')){
+    else if (goog.dom.classes.has(e.target, 'label')) {
       // rename the page
       this.renamePageAtIndex(this.getCellIndex(e.target.parentNode.parentNode));
     }
-    else{
+    else {
       // select page
       var cellIndex = this.getCellIndex(e.target.parentNode);
-      if (cellIndex >= 0){
+      if (cellIndex >= 0) {
         this.setSelectedIndex(cellIndex, true);
       }
     }
     e.preventDefault();
   }, false, this);
-}
+};
+
 
 /**
  * refresh the pages
@@ -83,17 +88,17 @@ silex.view.PageTool.prototype.redraw = function(selectedElements, contentDocumen
   // prepare the data for the template
   // make an array with name, displayName, linkName and className
   var idx = 0;
-  this.pages = pageNames.map(goog.bind(function (pageName) {
+  this.pages = pageNames.map(goog.bind(function(pageName) {
     var res = {
       name: pageName,
       displayName: contentDocument.getElementById(pageName).innerHTML,
       linkName: '#!' + pageName,
       idx: idx++
     };
-    if (currentPageName === pageName){
+    if (currentPageName === pageName) {
       res.className = 'ui-selected';
     }
-    else{
+    else {
       res.className = '';
     }
     return res;
@@ -134,10 +139,10 @@ silex.view.PageTool.prototype.setSelectedIndex = function(idx, opt_notify) {
 
 silex.view.PageTool.prototype.getCellIndex = function(element) {
   var pageIdx = element.getAttribute('data-page-idx');
-  if (pageIdx){
+  if (pageIdx) {
     return parseInt(pageIdx);
   }
-  else{
+  else {
     return -1;
   }
 };

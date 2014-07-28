@@ -20,9 +20,9 @@
 
 goog.provide('silex.view.dialog.AceEditorBase');
 
-goog.require('silex.view.dialog.DialogBase');
 goog.require('goog.events.KeyCodes');
 goog.require('goog.ui.KeyboardShortcutHandler');
+goog.require('silex.view.dialog.DialogBase');
 
 
 
@@ -94,5 +94,5 @@ silex.view.dialog.AceEditorBase.prototype.openEditor = function(initialValue) {
  * the content has changed, notify the controler
  */
 silex.view.dialog.AceEditorBase.prototype.contentChanged = function() {
-  throw('to be overridden in sub classes');
+  throw ('to be overridden in sub classes');
 };

@@ -19,9 +19,9 @@
 
 goog.provide('silex.view.dialog.HTMLEditor');
 
-goog.require('silex.view.dialog.AceEditorBase');
 goog.require('goog.events.KeyCodes');
 goog.require('goog.ui.KeyboardShortcutHandler');
+goog.require('silex.view.dialog.AceEditorBase');
 
 
 
@@ -50,6 +50,7 @@ silex.view.dialog.HTMLEditor.prototype.initUI = function() {
   // set mode
   this.ace.getSession().setMode('ace/mode/html');
 };
+
 
 /**
  * the content has changed, notify the controler

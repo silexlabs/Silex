@@ -9,6 +9,7 @@
   "dependencies": {
     "body-parser": "1.6.5",
     "bytes": "1.0.0",
+    "compression": "1.0.11",
     "connect-fs2": "0.1.5",
     "connect-multiparty": "1.2.1",
     "cookie-parser": "1.3.2",
@@ -20,16 +21,15 @@
     "grunt-closure-tools": "0.9.7",
     "grunt-contrib-compress": "0.10.0",
     "grunt-contrib-concat": "0.5.0",
-    "grunt-contrib-csslint": "0.2.0",
     "grunt-contrib-jade": "0.12.0",
     "grunt-contrib-jshint": "0.10.0",
     "grunt-contrib-less": "0.11.4",
+    "grunt-lesslint": "1.1.10",
     "grunt-npm": "0.0.2",
     "lodash": "2.4.1",
     "path": "0.4.9",
     "qs": "1.2.2",
-    "unifile": "0.0.46",
-    "compression": "1.0.11"
+    "unifile": "0.0.46"
   },
   "devDependencies": {
     "assert": "^1.1.2",

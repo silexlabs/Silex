@@ -16,19 +16,25 @@
  */
 
 
+goog.provide('silex.types.Controller');
 goog.provide('silex.types.Model');
 goog.provide('silex.types.View');
-goog.provide('silex.types.Controller');
 
-goog.require('silex.controller.MenuController');
-goog.require('silex.controller.StageController');
+goog.require('silex.controller.CssEditorController');
+goog.require('silex.controller.EditMenuController');
+goog.require('silex.controller.FileMenuController');
+goog.require('silex.controller.HtmlEditorController');
+goog.require('silex.controller.InsertMenuController');
+goog.require('silex.controller.JsEditorController');
 goog.require('silex.controller.PageToolController');
 goog.require('silex.controller.PropertyToolController');
 goog.require('silex.controller.SettingsDialogController');
-goog.require('silex.controller.HtmlEditorController');
-goog.require('silex.controller.CssEditorController');
-goog.require('silex.controller.JsEditorController');
+goog.require('silex.controller.StageController');
 goog.require('silex.controller.TextEditorController');
+goog.require('silex.controller.ToolMenuController');
+goog.require('silex.controller.ViewMenuController');
+
+
 
 /**
  * @constructor
@@ -54,6 +60,8 @@ silex.types.Model.prototype.init = function(file, head, body, page, element) {
   this.element = element;
 };
 
+
+
 /**
  * @constructor
  * @struct
@@ -65,7 +73,11 @@ silex.types.Controller = function() {
 
 /**
  * store references
- * @param {silex.model.MenuController} menuController
+ * @param {silex.model.FileMenuController} fileMenuController
+ * @param {silex.model.EditMenuController} editMenuController
+ * @param {silex.model.ViewMenuController} viewMenuController
+ * @param {silex.model.InsertMenuController} insertMenuController
+ * @param {silex.model.ToolMenuController} toolMenuController
  * @param {silex.model.StageController} stageController
  * @param {silex.model.PageToolController} pageToolController
  * @param {silex.model.PropertyToolController} propertyToolController
@@ -75,18 +87,26 @@ silex.types.Controller = function() {
  * @param {silex.model.JsEditorController} jsEditorController
  * @param {silex.model.TextEditorController} textEditorController
  */
-silex.types.Controller.prototype.init = function (
-  menuController,
-  stageController,
-  pageToolController,
-  propertyToolController,
-  settingsDialogController,
-  htmlEditorController,
-  cssEditorController,
-  jsEditorController,
-  textEditorController)
-{
-  this.menuController = menuController;
+silex.types.Controller.prototype.init = function(
+    fileMenuController,
+    editMenuController,
+    viewMenuController,
+    insertMenuController,
+    toolMenuController,
+    stageController,
+    pageToolController,
+    propertyToolController,
+    settingsDialogController,
+    htmlEditorController,
+    cssEditorController,
+    jsEditorController,
+    textEditorController)
+    {
+  this.fileMenuController = fileMenuController;
+  this.editMenuController = editMenuController;
+  this.viewMenuController = viewMenuController;
+  this.insertMenuController = insertMenuController;
+  this.toolMenuController = toolMenuController;
   this.stageController = stageController;
   this.pageToolController = pageToolController;
   this.propertyToolController = propertyToolController;
@@ -95,14 +115,17 @@ silex.types.Controller.prototype.init = function (
   this.cssEditorController = cssEditorController;
   this.jsEditorController = jsEditorController;
   this.textEditorController = textEditorController;
-}
+};
+
+
 
 /**
  * @constructor
  * @struct
  */
 silex.types.View = function() {
-}
+};
+
 
 /**
  * store references
@@ -120,17 +143,17 @@ silex.types.View = function() {
  * @struct
  */
 silex.types.View.prototype.init = function(
-  menu,
-  stage,
-  pageTool,
-  propertyTool,
-  htmlEditor,
-  cssEditor,
-  jsEditor,
-  textEditor,
-  fileExplorer,
-  settingsDialog,
-  workspace) {
+    menu,
+    stage,
+    pageTool,
+    propertyTool,
+    htmlEditor,
+    cssEditor,
+    jsEditor,
+    textEditor,
+    fileExplorer,
+    settingsDialog,
+    workspace) {
   this.menu = menu;
   this.stage = stage;
   this.pageTool = pageTool;
@@ -142,4 +165,4 @@ silex.types.View.prototype.init = function(
   this.fileExplorer = fileExplorer;
   this.settingsDialog = settingsDialog;
   this.workspace = workspace;
-}
+};

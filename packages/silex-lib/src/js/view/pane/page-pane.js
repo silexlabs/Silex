@@ -17,18 +17,17 @@
  */
 
 
-goog.require('silex.view.pane.PaneBase');
 goog.provide('silex.view.pane.PagePane');
-
 goog.require('goog.array');
 goog.require('goog.cssom');
 goog.require('goog.editor.Field');
-goog.require('goog.ui.LabelInput');
 goog.require('goog.object');
 goog.require('goog.ui.Checkbox');
 goog.require('goog.ui.ColorButton');
 goog.require('goog.ui.CustomButton');
 goog.require('goog.ui.HsvaPalette');
+goog.require('goog.ui.LabelInput');
+goog.require('silex.view.pane.PaneBase');
 
 
 
@@ -107,7 +106,7 @@ silex.view.pane.PagePane.prototype.setPages = function(pages, document) {
   this.pages = pages;
 
   // build an array of obects with name and displayName properties
-  var pageData = pages.map(goog.bind(function (pageName) {
+  var pageData = pages.map(goog.bind(function(pageName) {
     return {
       name: pageName,
       displayName: document.getElementById(pageName).innerHTML,
@@ -201,10 +200,10 @@ silex.view.pane.PagePane.prototype.onLinkChanged = function() {
  */
 silex.view.pane.PagePane.prototype.onLinkTextChanged = function() {
   this.iAmSettingValue = true;
-  try{
+  try {
     this.controller.propertyToolController.addLink(this.selectedElements, this.linkInputTextField.getValue());
   }
-  catch(err){
+  catch (err) {
     // error which will not keep this.iAmSettingValue to true
     console.error('an error occured while editing the value', err);
   }
@@ -235,14 +234,14 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, document,
 
   // not available for stage element
   var elementsNoStage = [];
-  goog.array.forEach(selectedElements, function (element) {
+  goog.array.forEach(selectedElements, function(element) {
     if (document.body != element) {
       elementsNoStage.push(element);
     }
   }, this);
   // special case of the background / main container only selected element
   var bgOnly = false;
-  if(selectedElements.length === 1 && goog.dom.classes.has(selectedElements[0], 'background')){
+  if (selectedElements.length === 1 && goog.dom.classes.has(selectedElements[0], 'background')) {
     bgOnly = true;
   }
   if (elementsNoStage.length > 0 && bgOnly === false) {
@@ -253,22 +252,22 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, document,
       // there is a selection
       item.checkbox.setEnabled(true);
       // compute common pages
-      var isInPage = this.getCommonProperty(selectedElements, function (element) {
-        return goog.dom.classes.has(element, item.pageName)
+      var isInPage = this.getCommonProperty(selectedElements, function(element) {
+        return goog.dom.classes.has(element, item.pageName);
       });
       // set visibility
-      if (goog.isNull(isInPage)){
+      if (goog.isNull(isInPage)) {
         // multiple elements selected with different values
         item.checkbox.setChecked(goog.ui.Checkbox.State.UNDETERMINED);
       }
-      else{
+      else {
         item.checkbox.setChecked(isInPage);
       }
     }, this);
 
     // refresh the link inputs
     // get the link of the element
-    var elementLink = this.getCommonProperty(selectedElements, function (element) {
+    var elementLink = this.getCommonProperty(selectedElements, function(element) {
       return element.getAttribute(silex.model.Element.LINK_ATTR);
     });
     // default selection
@@ -295,7 +294,7 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, document,
       goog.style.setStyle(linkInputElement, 'display', 'none');
     }
   }
-  else{
+  else {
     // stage element only
     goog.array.forEach(this.pageCheckboxes, function(item) {
       item.checkbox.setEnabled(false);

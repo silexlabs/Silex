@@ -28,55 +28,51 @@ goog.provide('silex.App');
 goog.require('goog.dom');
 goog.require('goog.events');
 goog.require('goog.style');
-
-// service qos
-goog.require('silex.service.Tracker');
-
-// utils / helpers
-goog.require('silex.utils.Polyfills');
-
-// types
-goog.require('silex.types.Model');
-goog.require('silex.types.View');
-goog.require('silex.types.Controller');
-
 // model
 goog.require('silex.Config');
-goog.require('silex.model.File');
-goog.require('silex.model.Element');
-goog.require('silex.model.Head');
-goog.require('silex.model.Body');
-goog.require('silex.model.Page');
-
+goog.require('silex.controller.CssEditorController');
+goog.require('silex.controller.EditMenuController');
 // controller
-goog.require('silex.controller.MenuController');
-goog.require('silex.controller.StageController');
+goog.require('silex.controller.FileMenuController');
+goog.require('silex.controller.HtmlEditorController');
+goog.require('silex.controller.InsertMenuController');
+goog.require('silex.controller.JsEditorController');
 goog.require('silex.controller.PageToolController');
 goog.require('silex.controller.PropertyToolController');
 goog.require('silex.controller.SettingsDialogController');
-goog.require('silex.controller.HtmlEditorController');
-goog.require('silex.controller.CssEditorController');
-goog.require('silex.controller.JsEditorController');
+goog.require('silex.controller.StageController');
 goog.require('silex.controller.TextEditorController');
-
+goog.require('silex.controller.ToolMenuController');
+goog.require('silex.controller.ViewMenuController');
+goog.require('silex.model.Body');
+goog.require('silex.model.Element');
+goog.require('silex.model.File');
+goog.require('silex.model.Head');
+goog.require('silex.model.Page');
+// service qos
+goog.require('silex.service.Tracker');
+goog.require('silex.types.Controller');
+// types
+goog.require('silex.types.Model');
+goog.require('silex.types.View');
+// utils / helpers
+goog.require('silex.utils.Polyfills');
 // display
 goog.require('silex.view.Menu');
-goog.require('silex.view.Stage');
-goog.require('silex.view.Workspace');
-
 // tool boxes
 goog.require('silex.view.PageTool');
 goog.require('silex.view.PropertyTool');
-
-// editors
-goog.require('silex.view.dialog.HTMLEditor');
+goog.require('silex.view.Stage');
+goog.require('silex.view.Workspace');
 goog.require('silex.view.dialog.CssEditor');
-goog.require('silex.view.dialog.JsEditor');
-goog.require('silex.view.dialog.TextEditor');
-
 // dialogs
 goog.require('silex.view.dialog.FileExplorer');
+// editors
+goog.require('silex.view.dialog.HTMLEditor');
+goog.require('silex.view.dialog.JsEditor');
 goog.require('silex.view.dialog.SettingsDialog');
+goog.require('silex.view.dialog.TextEditor');
+
 
 
 /**
@@ -101,17 +97,16 @@ silex.App = function() {
 
   // handle the "prevent leave page" mechanism
   // TODO: move this to workspace? and prevent quit only when dirty?
-  if(!silex.Config.debug.debugMode || silex.Config.debug.preventQuit){
+  if (!silex.Config.debug.debugMode || silex.Config.debug.preventQuit) {
     function closeEditorWarning() {
       return 'Are you sure you want to leave Silex?';
     }
     window.onbeforeunload = closeEditorWarning;
   }
   // warning when IE
-  if (navigator.appName === "Microsoft Internet Explorer" || (navigator.appName === "Netscape" && navigator.userAgent.indexOf('Trident') >= 0)) {
+  if (navigator.appName === 'Microsoft Internet Explorer' || (navigator.appName === 'Netscape' && navigator.userAgent.indexOf('Trident') >= 0)) {
     silex.utils.Notification.alert('Your browser is not supported yet.<br>Considere using chrome or firefox instead of Internet Explorer.',
-      goog.bind(function() {
-      }, this));
+        goog.bind(function() {}, this));
   }
   // **
   // creation of the main MVC structures
@@ -182,28 +177,28 @@ silex.App = function() {
   var workspace = new silex.view.Workspace(workspaceElement, this.view, this.controller);
 
   this.view.init(
-    menu
-    , stage
-    , pageTool
-    , propertyTool
-    , htmlEditor
-    , cssEditor
-    , jsEditor
-    , textEditor
-    , fileExplorer
-    , settingsDialog
-    , workspace
+      menu,
+      stage,
+      pageTool,
+      propertyTool,
+      htmlEditor,
+      cssEditor,
+      jsEditor,
+      textEditor,
+      fileExplorer,
+      settingsDialog,
+      workspace
   );
   // **
   // creation of the model classes
   // **
   // init the model class wich references all the views
   this.model.init(
-    new silex.model.File(this.model, this.view)
-    , new silex.model.Head(this.model, this.view)
-    , new silex.model.Body(this.model, this.view)
-    , new silex.model.Page(this.model, this.view)
-    , new silex.model.Element(this.model, this.view)
+      new silex.model.File(this.model, this.view),
+      new silex.model.Head(this.model, this.view),
+      new silex.model.Body(this.model, this.view),
+      new silex.model.Page(this.model, this.view),
+      new silex.model.Element(this.model, this.view)
   );
 
   // **
@@ -211,26 +206,31 @@ silex.App = function() {
   // **
   // init the controller class with references to the views and the models
   this.controller.init(
-    new silex.controller.MenuController(this.controller, this.model, this.view)
-    , new silex.controller.StageController(this.controller, this.model, this.view)
-    , new silex.controller.PageToolController(this.controller, this.model, this.view)
-    , new silex.controller.PropertyToolController(this.controller, this.model, this.view)
-    , new silex.controller.SettingsDialogController(this.controller, this.model, this.view)
-    , new silex.controller.HtmlEditorController(this.controller, this.model, this.view)
-    , new silex.controller.CssEditorController(this.controller, this.model, this.view)
-    , new silex.controller.JsEditorController(this.controller, this.model, this.view)
-    , new silex.controller.TextEditorController(this.controller, this.model, this.view)
+      new silex.controller.FileMenuController(this.controller, this.model, this.view),
+      new silex.controller.EditMenuController(this.controller, this.model, this.view),
+      new silex.controller.ViewMenuController(this.controller, this.model, this.view),
+      new silex.controller.InsertMenuController(this.controller, this.model, this.view),
+      new silex.controller.ToolMenuController(this.controller, this.model, this.view),
+      new silex.controller.StageController(this.controller, this.model, this.view),
+      new silex.controller.PageToolController(this.controller, this.model, this.view),
+      new silex.controller.PropertyToolController(this.controller, this.model, this.view),
+      new silex.controller.SettingsDialogController(this.controller, this.model, this.view),
+      new silex.controller.HtmlEditorController(this.controller, this.model, this.view),
+      new silex.controller.CssEditorController(this.controller, this.model, this.view),
+      new silex.controller.JsEditorController(this.controller, this.model, this.view),
+      new silex.controller.TextEditorController(this.controller, this.model, this.view)
   );
 
   // **
   // application start, open a new empty file
   // **
   // now create an empty file to let the user start using Silex
-  this.controller.menuController.newFile();
-  if(silex.Config.debug.debugMode && silex.Config.debug.doAfterReady) {
+  this.controller.fileMenuController.newFile();
+  if (silex.Config.debug.debugMode && silex.Config.debug.doAfterReady) {
     silex.Config.debug.doAfterReady(this.model, this.view, this.controller);
   }
 };
+
 
 /**
  * store the main structures to ease debugging in browser console
@@ -238,17 +238,20 @@ silex.App = function() {
  */
 silex.App.prototype.model = null;
 
+
 /**
  * store the main structures to ease debugging in browser console
  * @type {silex.types.View}
  */
 silex.App.prototype.view = null;
 
+
 /**
  * store the main structures to ease debugging in browser console
  * @type {silex.types.Controller}
  */
 silex.App.prototype.controller = null;
+
 
 /**
  * store the main structures to ease debugging in browser console

@@ -41,66 +41,92 @@ silex.Config.debug = {
   showPreventQuitMessage: false,
   doAfterReady: null
 };
+
+
 /**
  * Link of the menu
- * @const constant
+ * @const {constant}
  */
 silex.Config.ABOUT_SILEX = 'http://www.silex.me/';
+
+
 /**
  * Link of the menu
- * @const constant
+ * @const {constant}
  */
 silex.Config.ISSUES_SILEX = 'https://github.com/silexlabs/Silex/issues?state=open';
+
+
 /**
  * Link of the menu
- * @const constant
+ * @const {constant}
  */
 silex.Config.DOWNLOADS_TEMPLATE_SILEX = 'https://github.com/silexlabs/Silex/issues?labels=template&state=open';
+
+
 /**
  * Link of the menu
- * @const constant
+ * @const {constant}
  */
 silex.Config.DOWNLOADS_WIDGET_SILEX = 'https://github.com/silexlabs/Silex/issues?labels=widget&state=open';
+
+
 /**
  * Link of the menu
- * @const constant
+ * @const {constant}
  */
 silex.Config.ABOUT_SILEX_LABS = 'http://www.silexlabs.org/';
+
+
 /**
  * Link of the menu
- * @const constant
+ * @const {constant}
  */
 silex.Config.SUBSCRIBE_SILEX_LABS = 'http://eepurl.com/F48q5';
+
+
 /**
  * Link of the menu
- * @const constant
+ * @const {constant}
  */
 silex.Config.SOCIAL_GPLUS = 'https://plus.google.com/communities/107373636457908189681';
+
+
 /**
  * Link of the menu
- * @const constant
+ * @const {constant}
  */
 silex.Config.SOCIAL_TWITTER = 'http://twitter.com/silexlabs';
+
+
 /**
  * Link of the menu
- * @const constant
+ * @const {constant}
  */
 silex.Config.SOCIAL_FB = 'http://www.facebook.com/silexlabs';
+
+
 /**
  * Link of the menu
- * @const constant
+ * @const {constant}
  */
 silex.Config.FORK_CODE = 'https://github.com/silexlabs/Silex';
+
+
 /**
  * Link of the menu
- * @const constant
+ * @const {constant}
  */
 silex.Config.CONTRIBUTE = 'https://github.com/silexlabs/Silex/blob/master/docs/contribute.md';
+
+
 /**
  * Link of the menu
- * @const constant
+ * @const {constant}
  */
 silex.Config.CONTRIBUTORS = 'https://github.com/silexlabs/Silex/blob/master/docs/contributors.md';
+
+
 /**
  * The main application menu
  */
@@ -129,7 +155,7 @@ silex.Config.menu = {
     {
       label: 'Help',
       className: 'menu-item-help'
-    },
+    }
   ],
   options: [
     [
@@ -141,7 +167,7 @@ silex.Config.menu = {
         shortcut: [[goog.events.KeyCodes.N, altKeyModifyer]],
         tooltip: altKeyDisplay + 'n',
         mnemonic: goog.events.KeyCodes.N,
-        accelerator: 'n',
+        accelerator: 'n'
       },
       {
         label: 'Open File...',
@@ -151,7 +177,7 @@ silex.Config.menu = {
         shortcut: [[goog.events.KeyCodes.O, ctrlKeyModifyer]],
         tooltip: ctrlKeyDisplay + 'o',
         mnemonic: goog.events.KeyCodes.O,
-        accelerator: 'o',
+        accelerator: 'o'
       },
       {
         label: 'Save File',
@@ -161,18 +187,18 @@ silex.Config.menu = {
         shortcut: [[goog.events.KeyCodes.S, ctrlKeyModifyer]],
         tooltip: ctrlKeyDisplay + 's',
         mnemonic: goog.events.KeyCodes.S,
-        accelerator: 's',
+        accelerator: 's'
       },
       {
         label: 'Save As...',
         id: 'file.saveas',
-        className: 'menu-item-file-saveas',
+        className: 'menu-item-file-saveas'
       },
       null,
       {
         label: 'Rename...',
         id: 'file.rename',
-        className: 'menu-item-file-rename',
+        className: 'menu-item-file-rename'
       },
       {
         label: 'Publish',
@@ -182,12 +208,12 @@ silex.Config.menu = {
         shortcut: [[goog.events.KeyCodes.P, ctrlKeyModifyer]],
         tooltip: ctrlKeyDisplay + 'P',
         mnemonic: goog.events.KeyCodes.P,
-        accelerator: 'p',
+        accelerator: 'p'
       },
       {
         label: 'Settings...',
         id: 'file.publish.settings',
-        className: 'menu-item-file-publish-settings',
+        className: 'menu-item-file-publish-settings'
       },
       null,
       {
@@ -198,8 +224,8 @@ silex.Config.menu = {
         shortcut: [[goog.events.KeyCodes.W, altKeyModifyer]],
         tooltip: altKeyDisplay + 'w',
         mnemonic: goog.events.KeyCodes.W,
-        accelerator: 'w',
-      },
+        accelerator: 'w'
+      }
     ],
     [
       {
@@ -209,7 +235,7 @@ silex.Config.menu = {
         shortcut: [[goog.events.KeyCodes.C, ctrlKeyModifyer]],
         tooltip: ctrlKeyDisplay + 'C',
         mnemonic: goog.events.KeyCodes.C,
-        accelerator: 'c',
+        accelerator: 'c'
       },
       {
         label: 'Paste',
@@ -218,9 +244,9 @@ silex.Config.menu = {
         shortcut: [[goog.events.KeyCodes.V, ctrlKeyModifyer]],
         tooltip: ctrlKeyDisplay + 'V',
         mnemonic: goog.events.KeyCodes.V,
-        accelerator: 'v',
+        accelerator: 'v'
       },
-/*      {
+     /*      {
         label: 'Undo',
         id: 'edit.undo',
         className: 'menu-item-edit-undo',
@@ -244,26 +270,26 @@ silex.Config.menu = {
         shortcut: [[goog.events.KeyCodes.DELETE], [goog.events.KeyCodes.BACKSPACE]],
         tooltip: 'suppr',
         mnemonic: goog.events.KeyCodes.R,
-        accelerator: 'r',
+        accelerator: 'r'
       },
       null,
       {
         label: 'Edit selection',
         id: 'view.open.editor',
         className: 'menu-item-view-open-textEditor',
-        tooltip: '↵',
+        tooltip: '↵'
       },
       null,
       {
         label: 'Rename page',
         id: 'edit.rename.page',
-        className: 'menu-item-edit-rename-page',
+        className: 'menu-item-edit-rename-page'
       },
       {
         label: 'Delete page',
         id: 'edit.delete.page',
-        className: 'menu-item-edit-delete-page',
-      },
+        className: 'menu-item-edit-delete-page'
+      }
     ],
     [
       {
@@ -273,7 +299,7 @@ silex.Config.menu = {
         shortcut: [[goog.events.KeyCodes.V, altKeyModifyer]],
         tooltip: altKeyDisplay + 'V',
         mnemonic: goog.events.KeyCodes.V,
-        accelerator: 'v',
+        accelerator: 'v'
       },
       null,
       {
@@ -284,7 +310,7 @@ silex.Config.menu = {
         shortcut: [[goog.events.KeyCodes.J, altKeyModifyer]],
         tooltip: altKeyDisplay + 'J',
         mnemonic: goog.events.KeyCodes.J,
-        accelerator: 'j',
+        accelerator: 'j'
       },
       {
         label: 'CSS styles editor',
@@ -294,13 +320,13 @@ silex.Config.menu = {
         shortcut: [[goog.events.KeyCodes.D, altKeyModifyer]],
         tooltip: altKeyDisplay + 'D',
         mnemonic: goog.events.KeyCodes.D,
-        accelerator: 'd',
+        accelerator: 'd'
       },
       {
         label: 'Open file browser',
         id: 'view.open.fileExplorer',
-        className: 'menu-item-view-open-fileExplorer',
-      },
+        className: 'menu-item-view-open-fileExplorer'
+      }
     ],
     [
       {
@@ -311,7 +337,7 @@ silex.Config.menu = {
         shortcut: [[goog.events.KeyCodes.T, altKeyModifyer]],
         tooltip: altKeyDisplay + 'T',
         mnemonic: goog.events.KeyCodes.T,
-        accelerator: 't',
+        accelerator: 't'
       },
       {
         label: 'Image...',
@@ -321,7 +347,7 @@ silex.Config.menu = {
         shortcut: [[goog.events.KeyCodes.I, altKeyModifyer]],
         tooltip: altKeyDisplay + 'I',
         mnemonic: goog.events.KeyCodes.I,
-        accelerator: 'i',
+        accelerator: 'i'
       },
       {
         label: 'Container',
@@ -330,7 +356,7 @@ silex.Config.menu = {
         shortcut: [[goog.events.KeyCodes.C, altKeyModifyer]],
         tooltip: altKeyDisplay + 'C',
         mnemonic: goog.events.KeyCodes.C,
-        accelerator: 'c',
+        accelerator: 'c'
       },
       null,
       {
@@ -341,7 +367,7 @@ silex.Config.menu = {
         shortcut: [[goog.events.KeyCodes.H, altKeyModifyer]],
         tooltip: altKeyDisplay + 'H',
         mnemonic: goog.events.KeyCodes.H,
-        accelerator: 'h',
+        accelerator: 'h'
       },
       null,
       {
@@ -352,15 +378,15 @@ silex.Config.menu = {
         shortcut: [[goog.events.KeyCodes.P, altKeyModifyer]],
         tooltip: altKeyDisplay + 'P',
         mnemonic: goog.events.KeyCodes.P,
-        accelerator: 'p',
-      },
+        accelerator: 'p'
+      }
     ],
     [
       {
         label: 'Apollo mode',
         id: 'tools.advanced.activate',
         className: 'menu-item-tools-advanced-activate',
-        checkable: true,
+        checkable: true
       },
       {
         label: 'Edit image with Express',
@@ -375,72 +401,72 @@ silex.Config.menu = {
         className: 'menu-item-tools-pixllr.edit',
         shortcut: [[goog.events.KeyCodes.ENTER, altKeyModifyer]],
         tooltip: altKeyDisplay + '↵'
-      },
+      }
     ],
     [
       {
         label: 'About Silex',
         id: 'help.about',
-        className: 'menu-item-help-about',
+        className: 'menu-item-help-about'
       },
       {
         label: 'Report a bug or ask a question',
         id: 'help.issues',
-        className: 'menu-item-help-issues',
+        className: 'menu-item-help-issues'
       },
       {
         label: 'Download templates',
         id: 'help.downloads.template',
-        className: 'menu-item-help-downloads-template',
+        className: 'menu-item-help-downloads-template'
       },
       {
         label: 'Download widgets',
         id: 'help.downloads.widget',
-        className: 'menu-item-help-downloads-widget',
+        className: 'menu-item-help-downloads-widget'
       },
       null,
       {
         label: 'Silex Labs foundation',
         id: 'help.aboutSilexLabs',
-        className: 'menu-item-help-aboutSilexLabs',
+        className: 'menu-item-help-aboutSilexLabs'
       },
       {
         label: 'News letter subscription',
         id: 'help.newsLetter',
-        className: 'menu-item-help-newsLetter',
+        className: 'menu-item-help-newsLetter'
       },
       null,
       {
         label: 'Twitter',
         id: 'help.twitter',
-        className: 'menu-item-help-twitter',
+        className: 'menu-item-help-twitter'
       },
       {
         label: 'Google+',
         id: 'help.googlPlus',
-        className: 'menu-item-help-googlPlus',
+        className: 'menu-item-help-googlPlus'
       },
       {
         label: 'Facebook',
         id: 'help.facebook',
-        className: 'menu-item-help-facebook',
+        className: 'menu-item-help-facebook'
       },
       null,
       {
         label: 'Give 5 minutes of your time!',
         id: 'help.contribute',
-        className: 'menu-item-help-contribute',
+        className: 'menu-item-help-contribute'
       },
       {
         label: 'Source code and download Silex',
         id: 'help.forkMe',
-        className: 'menu-item-help-forkMe',
+        className: 'menu-item-help-forkMe'
       },
       {
         label: 'Contributors',
         id: 'help.contributors',
-        className: 'menu-item-help-forkMe',
-      },
+        className: 'menu-item-help-forkMe'
+      }
     ]
   ]
 };
@@ -456,113 +482,113 @@ silex.Config.fonts = {
     //the url to load the font file
     href: 'http://fonts.googleapis.com/css?family=Roboto+Condensed:300italic,400italic,700italic,400,300,700',
     //the value for the CSS font-family value
-    value: 'Roboto Condensed',
+    value: 'Roboto Condensed'
   },
   'Roboto' : {
 
     href: 'http://fonts.googleapis.com/css?family=Roboto:400,100,100italic,300,300italic,400italic,500,500italic,700,700italic,900,900italic',
 
-    value: 'Roboto',
+    value: 'Roboto'
   },
   'Days One' : {
 
     href: 'http://fonts.googleapis.com/css?family=Days+One',
 
-    value: 'Days One',
+    value: 'Days One'
   },
   'Sintony' : {
 
     href: 'http://fonts.googleapis.com/css?family=Sintony:400,700',
 
-    value: 'Sintony',
+    value: 'Sintony'
   },
   'Junge' : {
 
     href: 'http://fonts.googleapis.com/css?family=Junge',
 
-    value: 'Junge',
+    value: 'Junge'
   },
   'Istok Web' : {
 
     href: 'http://fonts.googleapis.com/css?family=Istok+Web:400,700,400italic,700italic',
 
-    value: 'Istok Web',
+    value: 'Istok Web'
   },
   'Oswald' : {
 
     href: 'http://fonts.googleapis.com/css?family=Oswald:400,300,700',
 
-    value: 'Oswald',
+    value: 'Oswald'
   },
   'Cantata' : {
 
     href: 'http://fonts.googleapis.com/css?family=Cantata+One',
 
-    value: 'Cantata',
+    value: 'Cantata'
   },
   'Oranienbaum' : {
 
     href: 'http://fonts.googleapis.com/css?family=Oranienbaum',
 
-    value: 'Oranienbaum',
+    value: 'Oranienbaum'
   },
   'Londrina Solid' : {
 
     href: 'http://fonts.googleapis.com/css?family=Londrina+Solid',
 
-    value: 'Londrina Solid',
+    value: 'Londrina Solid'
   },
   'Noticia Text' : {
 
     href: 'http://fonts.googleapis.com/css?family=Noticia+Text:400,400italic,700,700italic',
 
-    value: 'Noticia Text',
+    value: 'Noticia Text'
   },
   'Codystar' : {
 
     href: 'http://fonts.googleapis.com/css?family=Codystar:300,400',
 
-    value: 'Codystar',
+    value: 'Codystar'
   },
   'Titillium Web' : {
 
     href: 'http://fonts.googleapis.com/css?family=Titillium+Web:400,200,200italic,300,300italic,400italic,600,600italic,700,700italic,900',
 
-    value: 'Titillium Web',
+    value: 'Titillium Web'
   },
   'Sarina' : {
 
     href: 'http://fonts.googleapis.com/css?family=Sarina',
 
-    value: 'Sarina',
+    value: 'Sarina'
   },
   'Bree Serif' : {
 
     href: 'http://fonts.googleapis.com/css?family=Bree+Serif',
 
-    value: 'Bree Serif',
+    value: 'Bree Serif'
   },
   'Arial Black' : {
-   value: 'Arial BlackGadgetsans-serif',
+    value: 'Arial BlackGadgetsans-serif'
   },
 
   'Impact' : {
-   value: 'ImpactCharcoalsans-serif',
+    value: 'ImpactCharcoalsans-serif'
   },
 
   'Lucida Console' : {
-   value: 'Lucida ConsoleMonacomonospace',
+    value: 'Lucida ConsoleMonacomonospace'
   },
 
   'Lucida Sans' : {
-   value: 'Lucida Sans UnicodeLucida Grandesans-serif',
+    value: 'Lucida Sans UnicodeLucida Grandesans-serif'
   },
 
   'Palatino' : {
-   value: 'Palatino LinotypeBook AntiquaPalatinoserif',
+    value: 'Palatino LinotypeBook AntiquaPalatinoserif'
   },
 
   'Tahoma' : {
-   value: 'TahomaGenevasans-serif',
-  },
+    value: 'TahomaGenevasans-serif'
+  }
 };

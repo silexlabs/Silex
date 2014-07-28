@@ -41,7 +41,7 @@ goog.addSingletonGetter(silex.service.SilexTasks);
  * @param {string} js
  * @param {Array.{{url: string, destPath: string, srcPath: string}}} files
  * @param {function(string)} cbk to receive the json response
- * @param {function(string)} opt_errCbk to receive the json response
+ * @param {function(string)=} opt_errCbk to receive the json response
  */
 silex.service.SilexTasks.prototype.publish = function(path, html, css, js, files, cbk, opt_errCbk) {
   // check inputs
@@ -90,8 +90,7 @@ silex.service.SilexTasks.prototype.getTempLink = function(path, cbk, opt_errCbk)
     var xhr = e.target;
     if (xhr.isSuccess()) {
       var json = xhr.getResponse();
-      console.log('getTempLink', json);
-      if (json){
+      if (json) {
         json = JSON.parse(json);
       }
       if (json && json.success === true && json.tempLink) {

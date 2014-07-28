@@ -18,15 +18,17 @@ goog.provide('silex.controller.JsEditorController');
 
 goog.require('silex.controller.ControllerBase');
 
+
+
 /**
  * @constructor
- * @extends silex.controller.ControllerBase
- * listen to the view events and call the main controller's methods
+ * @extends {silex.controller.ControllerBase
+ * listen to the view events and call the main controller's methods}
  * @param  {silex.types.Controller} controller  structure which holds the controller instances
  * @param {silex.types.Model} model
  * @param  {silex.types.View} view  view class which holds the other views
  */
-silex.controller.JsEditorController = function (controller, model, view) {
+silex.controller.JsEditorController = function(controller, model, view) {
   // call super
   silex.controller.ControllerBase.call(this, controller, model, view);
 };

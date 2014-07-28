@@ -20,6 +20,7 @@
 goog.provide('silex.service.Tracker');
 
 
+
 /**
  * the Silex Tracker class hadles user actions tracking
  * this is for us to detect problems and improve user experience
@@ -31,6 +32,7 @@ silex.service.Tracker = function() {
   }
 };
 goog.addSingletonGetter(silex.service.Tracker);
+
 
 /**
  * constant
@@ -44,7 +46,7 @@ silex.service.Tracker.SILEX_ACTIONS_CATEGORY = 'silex-event';
  * constant
  */
 silex.service.Tracker.prototype.trackAction = function(category, action, opt_label, opt_value) {
-//  console.info('trackAction', arguments);
+  //  console.info('trackAction', arguments);
   ga('send', 'event', category, action, opt_label, opt_value, true);
 };
 

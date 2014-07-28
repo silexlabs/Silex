@@ -86,40 +86,40 @@ silex.view.pane.StylePane.prototype.redraw = function(selectedElements, document
   goog.base(this, 'redraw', selectedElements, document, pageNames, currentPageName);
 
   // css classes
-  var cssClasses = this.getCommonProperty(selectedElements, goog.bind(function (element) {
+  var cssClasses = this.getCommonProperty(selectedElements, goog.bind(function(element) {
     return this.controller.propertyToolController.getClassName(element);
   }, this));
-  if (cssClasses){
+  if (cssClasses) {
     this.cssClassesInput.value = cssClasses;
   }
-  else{
+  else {
     this.cssClassesInput.value = '';
   }
 
   // css inline style
-  var cssInlineStyle = this.getCommonProperty(selectedElements, function (element) {
+  var cssInlineStyle = this.getCommonProperty(selectedElements, function(element) {
     return element.getAttribute('style');
   });
-  if (cssInlineStyle){
+  if (cssInlineStyle) {
     this.iAmSettingValue = true;
-    try{
-      var str = '.element{\n'+cssInlineStyle.replace(/; /gi, ';\n')+'\n}';
+    try {
+      var str = '.element{\n' + cssInlineStyle.replace(/; /gi, ';\n') + '\n}';
       var pos = this.ace.getCursorPosition();
       this.ace.setValue(str);
       this.ace.gotoLine(pos.row + 1, pos.column, false);
     }
-    catch(err){
+    catch (err) {
       // error which will not keep this.iAmSettingValue to true
       console.error('an error occured while editing the value', err);
     }
     this.iAmSettingValue = false;
   }
-  else{
+  else {
     this.iAmSettingValue = true;
-    try{
-      this.ace.setValue('.element{\n/'+'* multiple elements selected *'+'/\n}');
+    try {
+      this.ace.setValue('.element{\n/' + '* multiple elements selected *' + '/\n}');
     }
-    catch(err){
+    catch (err) {
       // error which will not keep this.iAmSettingValue to true
       console.error('an error occured while editing the value', err);
     }
@@ -135,15 +135,16 @@ silex.view.pane.StylePane.prototype.redraw = function(selectedElements, document
 silex.view.pane.StylePane.prototype.onInputChanged = function(event) {
   if (this.iAmSettingValue) return;
   this.iAmSettingValue = true;
-  try{
+  try {
     this.controller.propertyToolController.setClassName(this.cssClassesInput.value);
   }
-  catch(err){
+  catch (err) {
     // error which will not keep this.iAmSettingValue to true
     console.error('an error occured while editing the value', err);
   }
   this.iAmSettingValue = false;
 };
+
 
 /**
  * the content has changed, notify the controler
@@ -151,16 +152,16 @@ silex.view.pane.StylePane.prototype.onInputChanged = function(event) {
 silex.view.pane.StylePane.prototype.contentChanged = function() {
   if (this.iAmSettingValue) return;
   var value = this.ace.getValue();
-  if(value){
+  if (value) {
     value = value.replace('.element{\n', '');
     value = value.replace('\n}', '');
     value = value.replace(/\n/, ' ');
   }
   this.iAmSettingValue = true;
-  try{
+  try {
     this.controller.propertyToolController.propertyChanged('style', value);
   }
-  catch(err){
+  catch (err) {
     // error which will not keep this.iAmSettingValue to true
     console.error('an error occured while editing the value', err);
   }

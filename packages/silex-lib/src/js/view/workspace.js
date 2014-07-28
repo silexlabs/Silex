@@ -111,69 +111,36 @@ silex.view.Workspace.prototype.doRedraw = function() {
   this.isDirty = false;
 
   var viewportSize = this.viewport.getSize();
-  var pageToolSize = goog.style.getSize(this.view.pageTool.element);
-  var propertyToolSize = goog.style.getSize(this.view.propertyTool.element);
-  var menuSize = goog.style.getSize(this.view.menu.element);
-
-/*
-  // stage
-  var stageWidth = viewportSize.width -
-      pageToolSize.width - propertyToolSize.width;
-  goog.style.setWidth(this.view.stage.element, stageWidth);
-
-  // menu offset
-  var toolsHeight = viewportSize.height - menuSize.height; // why?! It works but hum... //
-  goog.style.setHeight(this.view.pageTool.element, toolsHeight);
-  goog.style.setHeight(this.view.propertyTool.element, toolsHeight);
-  goog.style.setHeight(this.view.stage.element, toolsHeight);
-  //goog.style.setPosition(this.view.pageTool.element, null, menuSize.height);
-*/
 
   // htmlEditor
-  if (this.view.htmlEditor.element) {
-    var htmlEditorSize = goog.style.getSize(this.view.htmlEditor.element);
-    var posX = (viewportSize.width - htmlEditorSize.width) / 2;
-    var posY = (viewportSize.height - htmlEditorSize.height) / 2;
-    goog.style.setPosition(this.view.htmlEditor.element, posX, posY);
-  }
+  this.center(this.view.htmlEditor, viewportSize);
   // cssEditor
-  if (this.view.cssEditor.element) {
-    var cssEditorSize = goog.style.getSize(this.view.cssEditor.element);
-    var posX = (viewportSize.width - cssEditorSize.width) / 2;
-    var posY = (viewportSize.height - cssEditorSize.height) / 2;
-    goog.style.setPosition(this.view.cssEditor.element, posX, posY);
-  }
+  this.center(this.view.cssEditor, viewportSize);
   // jsEditor
-  if (this.view.jsEditor.element) {
-    var jsEditorSize = goog.style.getSize(this.view.jsEditor.element);
-    var posX = (viewportSize.width - jsEditorSize.width) / 2;
-    var posY = (viewportSize.height - jsEditorSize.height) / 2;
-    goog.style.setPosition(this.view.jsEditor.element, posX, posY);
-  }
+  this.center(this.view.jsEditor, viewportSize);
   // texteditor
-  if (this.view.textEditor.element) {
-    var textEditorSize = goog.style.getSize(this.view.textEditor.element);
-    var posX = (viewportSize.width - textEditorSize.width) / 2;
-    var posY = (viewportSize.height - textEditorSize.height) / 2;
-    goog.style.setPosition(this.view.textEditor.element, posX, posY);
-  }
+  this.center(this.view.textEditor, viewportSize);
   // fileExplorer
-  if (this.view.fileExplorer.element) {
-    var fileExplorerSize = goog.style.getSize(this.view.fileExplorer.element);
-    var posX = (viewportSize.width - fileExplorerSize.width) / 2;
-    var posY = (viewportSize.height - fileExplorerSize.height) / 2;
-    goog.style.setPosition(this.view.fileExplorer.element, posX, posY);
-  }
+  this.center(this.view.fileExplorer, viewportSize);
   // settingsDialog
-  if (this.view.settingsDialog.element) {
-    var settingsDialogSize = goog.style.getSize(
-        this.view.settingsDialog.element);
-    var posX = (viewportSize.width - settingsDialogSize.width) / 2;
-    var posY = (viewportSize.height - settingsDialogSize.height) / 2;
-    goog.style.setPosition(this.view.settingsDialog.element, posX, posY);
-  }
+  this.center(this.view.settingsDialog, viewportSize);
   // no more loading
   if (goog.dom.classes.has(document.body, 'loading-pending')) {
     goog.dom.classes.remove(document.body, 'loading-pending');
+  }
+};
+
+
+/**
+ * center an editor in the viewport
+ * @param {silex.view.dialog.DialogBase} editor whith an element property to center
+ * @param {Object<width, height>}        the viewport size
+ */
+silex.view.Workspace.prototype.center = function(editor, viewportSize) {
+  if (editor.element){
+    var editorSize = goog.style.getSize(editor.element);
+    var posX = (viewportSize.width - editorSize.width) / 2;
+    var posY = (viewportSize.height - editorSize.height) / 2;
+    goog.style.setPosition(editor.element, posX, posY);
   }
 };

@@ -16,9 +16,7 @@
  */
 
 
-goog.require('silex.view.pane.PaneBase');
 goog.provide('silex.view.pane.BorderPane');
-
 goog.require('goog.array');
 goog.require('goog.cssom');
 goog.require('goog.editor.Field');
@@ -27,6 +25,7 @@ goog.require('goog.ui.Checkbox');
 goog.require('goog.ui.ColorButton');
 goog.require('goog.ui.CustomButton');
 goog.require('goog.ui.HsvaPalette');
+goog.require('silex.view.pane.PaneBase');
 
 
 
@@ -71,7 +70,7 @@ silex.view.pane.BorderPane.prototype.borderPlacementCheckBoxes = null;
 /**
  * input element
  */
-silex.view.pane.BorderPane.prototype.cornerRadiusInput = null;
+silex.view.pane.BorderPane.prototype.borderRadiusInput = null;
 
 
 /**
@@ -121,42 +120,13 @@ silex.view.pane.BorderPane.prototype.buildUi = function() {
   this.hsvPalette.setColorRgbaHex('#000000FF');
   this.setColorPaletteVisibility(false);
   // border placement
-  this.borderPlacementCheckBoxes = [];
-  var decorateNodes = goog.dom.getElementsByTagNameAndClass('span',
-      null,
-      goog.dom.getElementByClass('border-placement-container',
-      this.element));
-  var idx;
-  var len = decorateNodes.length;
-  for (idx = 0; idx < len; idx++) {
-    var checkBox = goog.ui.decorate(decorateNodes[idx]);
-    this.borderPlacementCheckBoxes.push(checkBox);
-    goog.events.listen(checkBox,
-                       goog.ui.Component.EventType.CHANGE,
-                       this.onBorderWidthChanged,
-                       false,
-                       this);
-  }
+  this.borderPlacementCheckBoxes = this.createCheckBoxes('border-placement-container', this.onBorderWidthChanged);
   // corner radius
-  this.cornerRadiusInput = goog.dom.getElementByClass('corner-radius-input',
+  this.borderRadiusInput = goog.dom.getElementByClass('corner-radius-input',
       this.element);
   // corner placement
-  this.cornerPlacementCheckBoxes = [];
-  var decorateNodes = goog.dom.getElementsByTagNameAndClass('span',
-      null,
-      goog.dom.getElementByClass('corner-placement-container',
-      this.element));
-  var idx;
-  var len = decorateNodes.length;
-  for (idx = 0; idx < len; idx++) {
-    var checkBox = goog.ui.decorate(decorateNodes[idx]);
-    this.cornerPlacementCheckBoxes.push(checkBox);
-    goog.events.listen(checkBox,
-        goog.ui.Component.EventType.CHANGE,
-        this.onBorderCornerChanged,
-        false,
-        this);
-  }
+  this.cornerPlacementCheckBoxes = this.createCheckBoxes('corner-placement-container', this.onBorderCornerChanged);
+
   goog.events.listen(this.borderWidthInput,
       goog.events.EventType.INPUT,
       this.onBorderWidthChanged,
@@ -177,11 +147,37 @@ silex.view.pane.BorderPane.prototype.buildUi = function() {
       this.toggleColorPaletteVisibility,
       false,
       this);
-  goog.events.listen(this.cornerRadiusInput,
+  goog.events.listen(this.borderRadiusInput,
       goog.events.EventType.INPUT,
       this.onBorderCornerChanged,
       false,
       this);
+};
+
+
+/**
+ * create and return checkboxes
+ * decorate the HTML nodes
+ * attach change event
+ */
+silex.view.pane.BorderPane.prototype.createCheckBoxes = function(containersCssClass, onChanged) {
+  var checkBoxes = [];
+  var decorateNodes = goog.dom.getElementsByTagNameAndClass('span',
+      null,
+      goog.dom.getElementByClass(containersCssClass,
+      this.element));
+  var idx;
+  var len = decorateNodes.length;
+  for (idx = 0; idx < len; idx++) {
+    var checkBox = goog.ui.decorate(decorateNodes[idx]);
+    checkBoxes.push(checkBox);
+    goog.events.listen(checkBox,
+                       goog.ui.Component.EventType.CHANGE,
+                       onChanged,
+                       false,
+                       this);
+  }
+  return checkBoxes;
 };
 
 
@@ -195,73 +191,22 @@ silex.view.pane.BorderPane.prototype.redraw = function(selectedElements, documen
   goog.base(this, 'redraw', selectedElements, document, pageNames, currentPageName);
 
   // border width
-  var borderWidth = this.getCommonProperty(selectedElements, function (element) {
+  var borderWidth = this.getCommonProperty(selectedElements, function(element) {
     return element.style.borderWidth;
   });
   if (borderWidth) {
-    // top, right, bottom, left
-    var values = borderWidth.split(' ');
-    // One-value syntax - width
-    if (values.length === 1) {
-      values[1] = values[2] = values[3] = values[0];
-    }
-    // Two-value syntax - horizontal vertical
-    else if (values.length === 2) {
-      values[2] = values[0];
-      values[3] = values[1];
-    }
-    // Three-value syntax - top vertical bottom
-    else if (values.length === 3) {
-      values[3] = values[1];
-    }
-    // Four-value syntax - top right bottom left
-    // else if (values.length  === 4) {
-      // do nothing, we're good!
-    // }
-    var val = values[0];
-    if (goog.isDef(values[1]) && val === '0' || val === '0px') val = values[1];
-    if (goog.isDef(values[2]) && val === '0' || val === '0px') val = values[2];
-    if (goog.isDef(values[3]) && val === '0' || val === '0px') val = values[3];
-    if (goog.isDef(val) && val !== '0' && val !== '0px') {
-      this.borderWidthInput.value = val.substr(0, val.indexOf('px'));
-      // border placement
-      var idx;
-      var len = this.borderPlacementCheckBoxes.length;
-      for (idx = 0; idx < len; idx++) {
-        var checkBox = this.borderPlacementCheckBoxes[idx];
-        if (values.length > idx && values[idx] !== '0' && values[idx] !== '0px')
-          checkBox.setChecked(true);
-        else
-          checkBox.setChecked(false);
-      }
-    }
-    else{
-      this.resetBorder();
-    }
+    this.redrawBorderWidth(borderWidth);
     // border color
-    var borderColor = this.getCommonProperty(selectedElements, function (element) {
+    var borderColor = this.getCommonProperty(selectedElements, function(element) {
       return element.style.borderColor;
     });
-    if (borderColor === 'transparent' || borderColor === '') {
-      this.setColorPaletteVisibility(false);
-    }
-    else if(goog.isNull(borderColor)) {
-      // display a "no color" in the button
-      this.colorPicker.setValue('');
-    }
-    else {
-      // handle all colors, including the named colors
-      var borderColor = goog.color.parse(borderColor);
-
-      this.colorPicker.setValue(borderColor.hex);
-      this.hsvPalette.setColor(borderColor.hex);
-    }
+    this.redrawBorderColor(borderColor);
   }
   else {
-      this.resetBorder();
+    this.resetBorder();
   }
   // border style
-  var borderStyle = this.getCommonProperty(selectedElements, function (element) {
+  var borderStyle = this.getCommonProperty(selectedElements, function(element) {
     return element.style.borderStyle;
   });
   if (borderStyle) {
@@ -271,41 +216,11 @@ silex.view.pane.BorderPane.prototype.redraw = function(selectedElements, documen
     this.borderStyleComboBox.setSelectedIndex(0);
   }
   // border radius
-  var borderRadius = this.getCommonProperty(selectedElements, function (element) {
+  var borderRadius = this.getCommonProperty(selectedElements, function(element) {
     return element.style.borderRadius;
   });
   if (borderRadius) {
-    var values = borderRadius.split(' ');
-    // The four values for each radii are given in the order
-    // top-left, top-right, bottom-right, bottom-left.
-    // If top-right is omitted it is the same as top-left.
-    if (!goog.isDef(values[1])) values[1] = values[0];
-    // If bottom-right is omitted it is the same as top-left.
-    if (!goog.isDef(values[2])) values[2] = values[0];
-    // If bottom-left is omitted it is the same as top-right.
-    if (!goog.isDef(values[3])) values[3] = values[1];
-    // get corner radius value
-    var val = values[0];
-    if (goog.isDef(values[1]) && val === '0' || val === '0px') val = values[1];
-    if (goog.isDef(values[2]) && val === '0' || val === '0px') val = values[2];
-    if (goog.isDef(values[3]) && val === '0' || val === '0px') val = values[3];
-    // remove unit
-    if (goog.isDef(val) && val !== '0' && val !== '0px') {
-      this.cornerRadiusInput.value = val.substr(0, val.indexOf('px'));
-      // corner placement
-      var idx;
-      var len = this.cornerPlacementCheckBoxes.length;
-      for (idx = 0; idx < len; idx++) {
-        var checkBox = this.cornerPlacementCheckBoxes[idx];
-        if (values[idx] !== '0' && values[idx] !== '0px')
-          checkBox.setChecked(true);
-        else
-          checkBox.setChecked(false);
-      }
-    }
-    else{
-      this.resetBorderRadius();
-    }
+    this.redrawBorderRadius(borderRadius);
   }
   else {
     this.resetBorderRadius();
@@ -313,11 +228,117 @@ silex.view.pane.BorderPane.prototype.redraw = function(selectedElements, documen
   this.iAmRedrawing = false;
 };
 
+
+/**
+ * redraw border radius UI
+ */
+silex.view.pane.BorderPane.prototype.redrawBorderRadius = function(borderRadius) {
+  var values = borderRadius.split(' ');
+  // The four values for each radii are given in the order
+  // top-left, top-right, bottom-right, bottom-left.
+  // If top-right is omitted it is the same as top-left.
+  if (!goog.isDef(values[1])) values[1] = values[0];
+  // If bottom-right is omitted it is the same as top-left.
+  if (!goog.isDef(values[2])) values[2] = values[0];
+  // If bottom-left is omitted it is the same as top-right.
+  if (!goog.isDef(values[3])) values[3] = values[1];
+  // get corner radius value
+  var val = values[0];
+  if (goog.isDef(values[1]) && val === '0' || val === '0px') val = values[1];
+  if (goog.isDef(values[2]) && val === '0' || val === '0px') val = values[2];
+  if (goog.isDef(values[3]) && val === '0' || val === '0px') val = values[3];
+  // remove unit when needed
+  if (goog.isDef(val) && val !== '0' && val !== '0px') {
+    this.borderRadiusInput.value = val.substr(0, val.indexOf('px'));
+    // corner placement
+    var idx;
+    var len = this.cornerPlacementCheckBoxes.length;
+    for (idx = 0; idx < len; idx++) {
+      var checkBox = this.cornerPlacementCheckBoxes[idx];
+      if (values[idx] !== '0' && values[idx] !== '0px')
+        checkBox.setChecked(true);
+      else
+        checkBox.setChecked(false);
+    }
+  }
+  else {
+    this.resetBorderRadius();
+  }
+};
+
+
+/**
+ * redraw border color UI
+ */
+silex.view.pane.BorderPane.prototype.redrawBorderColor = function(borderColor) {
+  if (borderColor === 'transparent' || borderColor === '') {
+    this.setColorPaletteVisibility(false);
+  }
+  else if (goog.isNull(borderColor)) {
+    // display a "no color" in the button
+    this.colorPicker.setValue('');
+  }
+  else {
+    // handle all colors, including the named colors
+    var borderColor = goog.color.parse(borderColor);
+
+    this.colorPicker.setValue(borderColor.hex);
+    this.hsvPalette.setColor(borderColor.hex);
+  }
+};
+
+
+/**
+ * redraw border width UI
+ */
+silex.view.pane.BorderPane.prototype.redrawBorderWidth = function(borderWidth) {
+  // top, right, bottom, left
+  var values = borderWidth.split(' ');
+  // One-value syntax - width
+  if (values.length === 1) {
+    values[1] = values[2] = values[3] = values[0];
+  }
+  // Two-value syntax - horizontal vertical
+  else if (values.length === 2) {
+    values[2] = values[0];
+    values[3] = values[1];
+  }
+  // Three-value syntax - top vertical bottom
+  else if (values.length === 3) {
+    values[3] = values[1];
+  }
+  // Four-value syntax - top right bottom left
+  // else if (values.length  === 4) {
+  // do nothing, we're good!
+  // }
+  var val = values[0];
+  if (goog.isDef(values[1]) && val === '0' || val === '0px') val = values[1];
+  if (goog.isDef(values[2]) && val === '0' || val === '0px') val = values[2];
+  if (goog.isDef(values[3]) && val === '0' || val === '0px') val = values[3];
+  if (goog.isDef(val) && val !== '0' && val !== '0px') {
+    this.borderWidthInput.value = val.substr(0, val.indexOf('px'));
+    // border placement
+    var idx;
+    var len = this.borderPlacementCheckBoxes.length;
+    for (idx = 0; idx < len; idx++) {
+      var checkBox = this.borderPlacementCheckBoxes[idx];
+      if (values.length > idx && values[idx] !== '0' && values[idx] !== '0px')
+        checkBox.setChecked(true);
+      else
+        checkBox.setChecked(false);
+    }
+  }
+  else {
+    this.resetBorder();
+  }
+};
+
+
 /**
  * reset UI
  */
 silex.view.pane.BorderPane.prototype.resetBorderRadius = function() {
-  this.cornerRadiusInput.value = '';
+  this.borderRadiusInput.value = '';
   // corner placement
   var idx;
   var len = this.cornerPlacementCheckBoxes.length;
@@ -325,7 +346,7 @@ silex.view.pane.BorderPane.prototype.resetBorderRadius = function() {
     var checkBox = this.cornerPlacementCheckBoxes[idx];
     checkBox.setChecked(true);
   }
-}
+};
 
 
 /**
@@ -340,7 +361,7 @@ silex.view.pane.BorderPane.prototype.resetBorder = function() {
     var checkBox = this.borderPlacementCheckBoxes[idx];
     checkBox.setChecked(true);
   }
-}
+};
 
 
 /**
@@ -374,31 +395,37 @@ silex.view.pane.BorderPane.prototype.onBorderWidthChanged = function() {
     this.styleChanged('borderStyle', '');
   }
 };
+
+
 /**
  * property changed
  * callback for number inputs
  * border style
  */
 silex.view.pane.BorderPane.prototype.onBorderStyleChanged = function() {
-    this.styleChanged('borderStyle', this.borderStyleComboBox.getSelectedItem().getValue());
+  this.styleChanged('borderStyle', this.borderStyleComboBox.getSelectedItem().getValue());
 };
+
+
 /**
  * property changed
  * callback for number inputs
  */
 silex.view.pane.BorderPane.prototype.onBorderColorChanged = function() {
-    var hex = this.hsvPalette.getColorRgbaHex();
-    var color = silex.utils.Style.hexToRgba(hex);
-    this.styleChanged('borderColor', color);
-    this.colorPicker.setValue(hex.substring(0, 7));
+  var hex = this.hsvPalette.getColorRgbaHex();
+  var color = silex.utils.Style.hexToRgba(hex);
+  this.styleChanged('borderColor', color);
+  this.colorPicker.setValue(hex.substring(0, 7));
 };
+
+
 /**
  * property changed
  * callback for number inputs
  */
 silex.view.pane.BorderPane.prototype.onBorderCornerChanged = function() {
   // corner radius
-  if (goog.isDef(this.cornerRadiusInput.value) && this.cornerRadiusInput.value !== '') {
+  if (goog.isDef(this.borderRadiusInput.value) && this.borderRadiusInput.value !== '') {
     // corner placement
     var borderWidthStr = '';
     var idx;
@@ -406,7 +433,7 @@ silex.view.pane.BorderPane.prototype.onBorderCornerChanged = function() {
     for (idx = 0; idx < len; idx++) {
       var checkBox = this.cornerPlacementCheckBoxes[idx];
       if (checkBox.getChecked()) {
-        borderWidthStr += this.cornerRadiusInput.value + 'px ';
+        borderWidthStr += this.borderRadiusInput.value + 'px ';
       }
       else {
         borderWidthStr += '0 ';
@@ -428,6 +455,7 @@ silex.view.pane.BorderPane.prototype.onResetBorder = function() {
   this.onBorderWidthChanged();
 };
 /* */
+
 
 /**
  * color palette visibility

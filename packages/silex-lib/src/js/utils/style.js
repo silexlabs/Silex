@@ -17,12 +17,11 @@
 
 goog.provide('silex.utils.Style');
 
-goog.require('silex.model.Page');
-goog.require('silex.model.Element');
-goog.require('silex.model.Body');
-
-goog.require('goog.style');
 goog.require('goog.array');
+goog.require('goog.style');
+goog.require('silex.model.Body');
+goog.require('silex.model.Element');
+goog.require('silex.model.Page');
 
 
 /**
@@ -75,18 +74,18 @@ silex.utils.Style.SILEX_TEMP_CLASS_NAMES = [
  * remove useless class names of an element created by silex
  * remove all silex internal classes
  * @param  {Element} element   created by silex, either a text box, image, ...
- * @param  {boolean} opt_allClasses   if true, remove all Silex classes, not only the classes which are temporary and useless to store
- * @param  {boolean} opt_isRecursive  if true, remove classes from the element and its children
+ * @param  {boolean=} opt_allClasses   if true, remove all Silex classes, not only the classes which are temporary and useless to store
+ * @param  {boolean=} opt_isRecursive  if true, remove classes from the element and its children
  */
 silex.utils.Style.removeInternalClasses = function(element, opt_allClasses, opt_isRecursive) {
   var classes = silex.utils.Style.SILEX_TEMP_CLASS_NAMES;
-  if (opt_allClasses){
+  if (opt_allClasses) {
     classes = silex.utils.Style.SILEX_CLASS_NAMES;
   }
-  for (idx in classes){
+  for (idx in classes) {
     var className = classes[idx];
     goog.dom.classes.remove(element, className);
-    if (opt_isRecursive){
+    if (opt_isRecursive) {
       var elements = goog.dom.getElementsByClass(className, element);
       goog.array.forEach(elements, function(child) {
         goog.dom.classes.remove(child, className);
@@ -126,82 +125,82 @@ silex.utils.Style.stringToStyle = function(styleStr) {
  * @return {!goog.color.Rgb} the element bg color
  */
 silex.utils.Style.computeBgColor = function(element) {
- var parentColorArray;
+  var parentColorArray;
   // retrieve the parents blended colors
-  if(element.parentNode){
+  if (element.parentNode) {
     parentColorArray = silex.utils.Style.computeBgColor(element.parentNode);
   }
-  else{
+  else {
     parentColorArray = null;
   }
-   // rgba array
+  // rgba array
   var elementColorArray;
-  if (element && element.style && element.style.backgroundColor && element.style.backgroundColor != ''){
+  if (element && element.style && element.style.backgroundColor && element.style.backgroundColor !== '') {
     var elementColorStr = element.style.backgroundColor;
     // convert bg color from rgba to array
-    if (elementColorStr.indexOf('rgba') >= 0){
+    if (elementColorStr.indexOf('rgba') >= 0) {
       // rgba case
       alpha = parseFloat(elementColorStr.substring(
-        elementColorStr.lastIndexOf(',') + 1,
-        elementColorStr.lastIndexOf(')')));
+          elementColorStr.lastIndexOf(',') + 1,
+          elementColorStr.lastIndexOf(')')));
       elementColorStr = elementColorStr.replace('rgba', 'rgb');
       elementColorStr = elementColorStr.substring(0,
-        elementColorStr.lastIndexOf(',')) + ')';
+          elementColorStr.lastIndexOf(',')) + ')';
       elementColorArray = goog.color.hexToRgb(goog.color.parse(elementColorStr).hex);
       elementColorArray.push(alpha);
     }
-    else if (elementColorStr.indexOf('transparent') >= 0){
+    else if (elementColorStr.indexOf('transparent') >= 0) {
       // transparent case
       elementColorArray = null;
     }
-    else if (elementColorStr.indexOf('rgb') >= 0){
+    else if (elementColorStr.indexOf('rgb') >= 0) {
       // rgb case
       elementColorArray = goog.color.hexToRgb(
-        goog.color.parse(elementColorStr).hex
-      );
+          goog.color.parse(elementColorStr).hex
+          );
       elementColorArray.push(1);
     }
-    else if (elementColorStr.indexOf('#') >= 0){
+    else if (elementColorStr.indexOf('#') >= 0) {
       // hex case
       elementColorArray = goog.color.hexToRgb(elementColorStr);
       elementColorArray.push(1);
     }
-    else{
+    else {
       // handle all colors, including the named colors
       elementColorStr = goog.style.getBackgroundColor(element);
       // named color case
       elementColorArray = goog.color.hexToRgb(
-        goog.color.parse(elementColorStr).hex
-      );
+          goog.color.parse(elementColorStr).hex
+          );
       elementColorArray.push(1);
     }
   }
-  else{
+  else {
     console.warn('was not able to take the element bg color into account', element);
     elementColorArray = null;
   }
   var res;
   // handle the case where there is no need to blend
-  if (elementColorArray === null && parentColorArray === null){
+  if (elementColorArray === null && parentColorArray === null) {
     // there is no need to blend
     res = null;
   }
-  else if (elementColorArray === null){
+  else if (elementColorArray === null) {
     // there is no need to blend
     res = parentColorArray;
   }
-  else if (parentColorArray === null){
+  else if (parentColorArray === null) {
     // there is no need to blend
     res = elementColorArray;
   }
-  else{
+  else {
     // blend the parents and the element's bg colors
     // f = (e*ae + p*(1-ae))
     var complement = 1 - elementColorArray[3];
     res = [
-      (elementColorArray[0]*elementColorArray[3] + parentColorArray[0]*complement),
-      (elementColorArray[1]*elementColorArray[3] + parentColorArray[1]*complement),
-      (elementColorArray[2]*elementColorArray[3] + parentColorArray[2]*complement),
+      (elementColorArray[0] * elementColorArray[3] + parentColorArray[0] * complement),
+      (elementColorArray[1] * elementColorArray[3] + parentColorArray[1] * complement),
+      (elementColorArray[2] * elementColorArray[3] + parentColorArray[2] * complement),
       1
     ];
   }
