@@ -20,9 +20,9 @@ goog.require('goog.events.KeyCodes');
 goog.require('goog.ui.KeyboardShortcutHandler');
 
 // display an apple on mac and ctrl on windows and linux
-var ctrlKeyDisplay = goog.userAgent.MAC ? '⌘' + '' : 'Ctrl';
-var altKeyDisplay = goog.userAgent.MAC ? '⌥' + '' : 'Ctrl';
-// for shortcutsuse "apple key" on mac and ctrl on windows and linux
+var ctrlKeyDisplay = goog.userAgent.MAC ? '⌘' + '' : 'Ctrl+';
+var altKeyDisplay = goog.userAgent.MAC ? '⌥' + '' : 'Ctrl+';
+// for shortcuts, use "apple key" on mac and ctrl on windows and linux
 var ctrlKeyModifyer = goog.userAgent.MAC ? goog.ui.KeyboardShortcutHandler.Modifiers.META : goog.ui.KeyboardShortcutHandler.Modifiers.CTRL;
 var altKeyModifyer = goog.userAgent.MAC ? goog.ui.KeyboardShortcutHandler.Modifiers.ALT : goog.ui.KeyboardShortcutHandler.Modifiers.CTRL;
 
@@ -361,6 +361,20 @@ silex.Config.menu = {
         id: 'tools.advanced.activate',
         className: 'menu-item-tools-advanced-activate',
         checkable: true,
+      },
+      {
+        label: 'Edit image with Express',
+        id: 'tools.pixlr.express',
+        className: 'menu-item-tools-pixllr.express',
+        shortcut: [[goog.events.KeyCodes.ENTER, altKeyModifyer + goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT]],
+        tooltip: altKeyDisplay + '⇧ ↵'
+      },
+      {
+        label: 'Edit image with Pixlr',
+        id: 'tools.pixlr.edit',
+        className: 'menu-item-tools-pixllr.edit',
+        shortcut: [[goog.events.KeyCodes.ENTER, altKeyModifyer]],
+        tooltip: altKeyDisplay + '↵'
       },
     ],
     [

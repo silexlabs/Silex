@@ -22,16 +22,17 @@ var app = express();
 // use express for silex tasks (has to be done before app.use(unifile.middleware(...))
 
 // parse data for file upload
-app.use('/tasks', multipart());
+app.use('/', multipart());
 
 // parse data for post data
-app.use('/tasks', bodyParser.urlencoded({
+app.use('/', bodyParser.urlencoded({
   extended: true
 }));
+app.use('/', bodyParser.json());
 
 // start session
-app.use('/tasks', cookieParser());
-app.use('/tasks', session({
+app.use('/', cookieParser());
+app.use('/', session({
   secret: unifile.defaultConfig.sessionSecret,
   resave: false,
   saveUninitialized: false
@@ -107,7 +108,7 @@ exports.setDebugMode(debug);
 // unifile server
 // ********************************
 // use unifile as a middleware
-app.use(unifile.middleware(express, app, options));
+app.use('/api', unifile.middleware(express, app, options));
 
 // server 'loop'
 var port = process.env.PORT || 6805; // 6805 is the date of sexual revolution started in paris france 8-)
@@ -123,7 +124,11 @@ var silexTasks = require('./silex-tasks.js');
 app.use('/tasks/:task', function(req, res, next){
     silexTasks.route(function(result){
         if (!result) result = {success:true};
-        console.log('silex task result', result);
-        res.send(result);
+        try{
+            res.send(result);
+        }
+        catch(e){
+            console.error('header sent?', e, result);
+        }
     }, req, res, next, req.params.task);
 });

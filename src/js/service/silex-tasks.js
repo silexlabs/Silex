@@ -67,9 +67,40 @@ silex.service.SilexTasks.prototype.publish = function(path, html, css, js, files
       }
       else {
         var message = json.code || json.message;
-        console.error(message, xhr, xhr.isSuccess(), xhr.getStatus(), xhr.headers.toString());
+        console.error('Error in while trying to connect with back end', message, xhr, xhr.isSuccess(), xhr.getStatus(), xhr.headers.toString());
         if (opt_errCbk) {
           opt_errCbk(message);
+        }
+      }
+    }
+    else {
+      var message = xhr.getLastError();
+      console.error('Error in while trying to connect with back end', xhr.getLastError(), xhr.getLastErrorCode(), xhr.isSuccess(), xhr.getStatus(), xhr.headers);
+      if (opt_errCbk) {
+        opt_errCbk(message);
+      }
+    }
+  }, 'POST', qd.toString());
+};
+
+silex.service.SilexTasks.prototype.getTempLink = function(path, cbk, opt_errCbk) {
+  var url = '/tasks/getTempLink?path=' + path;
+  goog.net.XhrIo.send(url, function(e) {
+    // success of the request
+    var xhr = e.target;
+    if (xhr.isSuccess()) {
+      var json = xhr.getResponse();
+      console.log('getTempLink', json);
+      if (json){
+        json = JSON.parse(json);
+      }
+      if (json && json.success === true && json.tempLink) {
+        if (cbk) cbk(json.tempLink);
+      }
+      else {
+        console.error('could not get temp link for resource', xhr, xhr.isSuccess(), xhr.getStatus(), xhr.headers.toString());
+        if (opt_errCbk) {
+          opt_errCbk('could not get temp link for resource');
         }
       }
     }
@@ -80,5 +111,32 @@ silex.service.SilexTasks.prototype.publish = function(path, html, css, js, files
         opt_errCbk(message);
       }
     }
-  }, 'POST', qd.toString());
+  }, 'GET');
+};
+silex.service.SilexTasks.prototype.disposeTempLink = function(name, cbk, opt_errCbk) {
+  var url = '/tasks/disposeTempLink?name=' + name;
+  goog.net.XhrIo.send(url, function(e) {
+    // success of the request
+    var xhr = e.target;
+    if (xhr.isSuccess()) {
+      var json = xhr.getResponseJson();
+      if (json.success) {
+        if (cbk) cbk(json);
+      }
+      else {
+        var message = json.code || json.message;
+        console.error(message, xhr, xhr.isSuccess(), xhr.getStatus(), xhr.headers.toString());
+        if (opt_errCbk) {
+          opt_errCbk(message);
+        }
+      }
+    }
+    else {
+      var message = xhr.getLastError();
+      console.error('Error in while trying to connect with back end', xhr.getLastError(), xhr.getLastErrorCode(), xhr.isSuccess(), xhr.getStatus(), xhr.headers);
+      if (opt_errCbk) {
+        opt_errCbk(message);
+      }
+    }
+  }, 'GET');
 };

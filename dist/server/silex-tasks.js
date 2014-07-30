@@ -154,6 +154,108 @@ exports.publishFiles = function(req, res, next, files, dstPath, cbk){
 	}
 }
 /**
+ * the public method called to store an image from pixlr
+ */
+exports.sendImage = function(cbk, req, res, next, path, url){
+    // check inputs
+    if (cbk === undefined || req === undefined || res === undefined || next === undefined || path === undefined || url === undefined){
+        console.error('All attributes needed: cbk, req, res, next, path, url')
+        cbk({
+            success: false
+            , code: 'All attributes needed: cbk, req, res, next, path, url '
+        });
+        return;
+    }
+    // load the image and save it to the desired service
+    exports.getFile(req, res, next, url, path, function (error) {
+        res.redirect('/libs/pixlr/close.html');
+        if (error){
+            console.error('Error in getFile', error, url, path);
+            cbk({success:false, code: error.code});
+        }
+        else{
+            cbk();
+        }
+    });
+};
+/**
+ * the public method called to get a temp link to a ressource stored in a cloud service
+ */
+exports.disposeTempLink = function(cbk, req, res, next, name){
+    // remove the first optional /tmp/
+    // and compute the path in the /www/tmp folder
+    var path = pathModule.resolve(__dirname, '../../../dist/client/tmp', name.replace(/\/|\\|tmp/g, ''));
+    fs.unlink(path, function(err) {
+        if (err){
+            console.error('Error, could not remove ' + name + ' (' + err.code + ')');
+            cbk({
+                code: 'Error, could not remove ' + name + ' (' + err.code + ')'
+            });
+        }
+        else{
+            cbk();
+        }
+    });
+};
+
+/**
+ * the public method called to get a temp link to a ressource stored in a cloud service
+ */
+exports.getTempLink = function(cbk, req, res, next, path){
+    if (!path){
+        cbk({success:false, code: 400, message: 'path param must be provided in get'});
+        return;
+    }
+    var ext = path.split('.').pop();
+    var name = Math.floor(2147483648 * Math.random()).toString(36)
+        + '-'
+        + Date.now()
+        + '.' + ext;
+    var tempLink = '/tmp/' + name;
+    var tempPath = __dirname + '../../../dist/client/tmp/' + name;
+    exports.unifileRoute(req, res, next, path, function (response, status, data, mime_type, responseFilePath) {
+        if (status && status.success === false){
+            console.error('Error in getFileFromService for ' + path, status);
+            cbk(status);
+        }
+        else if (data){
+            var p = pathModule.resolve(__dirname, tempPath)
+            console.log('writeFile', p, data);
+            fs.writeFile(p, data, function (err) {
+                if (err){
+                    cbk({success:false, code: 400, message: 'Error: could not write temp file (' + p + ')'});
+                }
+                else{
+                    cbk({success:true, tempLink: tempLink});
+                }
+            });
+        }
+        else if (responseFilePath){
+            fs.readFile(responseFilePath, function (err, data) {
+                if (err) cbk(err);
+                else {
+                    var p = pathModule.resolve(__dirname, tempPath)
+                    fs.writeFile(p, data, function (err) {
+                        if (err){
+                            cbk({success:false, code: 400, message: 'Error: could not write temp file (' + p + ')'});
+                        }
+                        else{
+                            cbk({success:true, tempLink: tempLink});
+                        }
+                    });
+                }
+            });
+        }
+        else{
+            console.error('Error, no data in result of getFileFromService for ' + path);
+            cbk({
+                code: 'Error, no data in result of getFileFromService for ' + path
+            });
+        }
+    });
+};
+
+/**
  * get one file from URL or service, to a service
  */
 exports.getFile = function(req, res, next, srcPath, dstPath, cbk){
@@ -168,14 +270,13 @@ exports.getFile = function(req, res, next, srcPath, dstPath, cbk){
  * get file from URL, to a service
  */
 exports.getFileFromUrl = function(req, res, next, srcPath, dstPath, cbk){
-	var data = '';
+	var data = [];
 
-	// http or https
-	var http_s = http;
-	if (srcPath.indexOf('https')===0){
-		http_s = https;
-	}
-
+    // http or https
+    var http_s = http;
+    if (srcPath.indexOf('https')===0){
+        http_s = https;
+    }
 	// load the file
 	http_s.get(srcPath, function(result) {
 		result.on('data', function(chunk) {
@@ -183,13 +284,13 @@ exports.getFileFromUrl = function(req, res, next, srcPath, dstPath, cbk){
 				// https => all the data the 1st time
 		    	data = chunk;
 			}
-			else{
-			    data += chunk;
-			}
-		  });
-		  result.on('end', function() {
-	    	exports.writeFileToService(req, res, next, dstPath, data, function(status) {
-				cbk();
+            else{
+                data.push( chunk);
+            }
+          });
+          result.on('end', function() {
+            exports.writeFileToService(req, res, next, dstPath, data, function(status) {
+				cbk(status);
 	        });
 		  });
 	}).on('error', function(e) {
@@ -203,7 +304,7 @@ exports.getFileFromUrl = function(req, res, next, srcPath, dstPath, cbk){
  * get file from a service, to a service
  */
 exports.getFileFromService = function(req, res, next, srcPath, dstPath, cbk){
-	exports.unifileRoute(req, res, next, srcPath, function (response, status, data, mime_type, responseFilePath) {
+    exports.unifileRoute(req, res, next, srcPath, function (response, status, data, mime_type, responseFilePath) {
     	if (data){
 	    	exports.writeFileToService(req, res, next, dstPath, data, cbk);
     	}

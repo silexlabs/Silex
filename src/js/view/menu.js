@@ -182,7 +182,10 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
   goog.events.listen(keyHandler, 'key', goog.bind(function(event) {
     if (!silex.utils.Notification.isActive) {
       // Allow ENTER to be used as shortcut for silex
-      if (event.keyCode === goog.events.KeyCodes.ENTER){
+      if (event.keyCode === goog.events.KeyCodes.ENTER
+        && event.shiftKey === false
+        && event.altKey === false
+        && event.ctrlKey === false){
         // but not in text inputs
         if(event.target.tagName.toUpperCase() === 'INPUT'
           || event.target.tagName.toUpperCase() === 'TEXTAREA'
@@ -351,5 +354,13 @@ silex.view.Menu.prototype.onMenuEvent = function(type) {
     case 'help.contributors':
       window.open(silex.Config.CONTRIBUTORS);
       break;
+    case 'tools.pixlr.express':
+      this.controller.menuController.pixlrExpress();
+      break;
+    case 'tools.pixlr.edit':
+      this.controller.menuController.pixlrEdit();
+      break;
+    default:
+      console.warn('menu type not found', type);
   }
 };
