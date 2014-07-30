@@ -26,6 +26,34 @@ silex.utils.Dom = function() {
 }
 
 /**
+ * refresh an image
+ */
+silex.utils.Dom.refreshImage = function(img, cbk) {
+    var initialUrl = img.src;
+    img.onload = function(e) {
+      // stop the process
+      img.onload = null;
+      // setTimeout(function (){
+        // restore url
+        // img.src = initialUrl;
+        // done
+        cbk();
+      // }, 5000);
+    };
+    //setTimeout(function (){
+      var noCacheSrc = '';
+      if (initialUrl.indexOf('?')>0){
+        noCacheSrc += initialUrl + '&';
+      }
+      else{
+        noCacheSrc += initialUrl + '?';
+      }
+      noCacheSrc += 'silex-cache-control=' + Date.now();
+      img.src = noCacheSrc;
+    //}, 1000);
+}
+
+/**
  * render a template by duplicating the itemTemplateString and inserting the data in it
  * @param {string} itemTemplateString   the template containing \{\{markers\}\}
  * @param {Array<string>}  data                 the array of strings conaining the data
