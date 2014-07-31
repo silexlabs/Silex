@@ -9,6 +9,8 @@
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
 
+require('look').start();
+
 // newrelic debug tool
 require('newrelic');
 
