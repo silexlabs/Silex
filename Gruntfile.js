@@ -103,162 +103,164 @@ module.exports = function(grunt) {
 
   // Project configuration.
   grunt.initConfig({
-    pkg: grunt.file.readJSON('package.json')
-    , csslint: {
+    pkg: grunt.file.readJSON('package.json'),
+    csslint: {
       lax: {
-        src: ['src/css/*.css']
-        , options: {
-          important: false // useful when opening a website in Silex
-            , "adjoining-classes" : false
-            , "known-properties" : false
-            , "box-sizing" : false
-            , "box-model" : false
-            , "overqualified-elements" : false
-            , "fallback-colors" : false
-            , "unqualified-attributes" : false
-        }
-      }
-    }
-    , concat: {
+        src: ['src/css/*.css'],
+        options: {
+          important: false, // useful when opening a website in Silex
+            "adjoining-classes" : false,
+            "known-properties" : false,
+            "box-sizing" : false,
+            "box-model" : false,
+            "overqualified-elements" : false,
+            "fallback-colors" : false,
+            "unqualified-attributes" : false,
+        },
+      },
+    },
+    concat: {
       dist: {
-        src: ['src/css/*.less']
-        , dest: 'src/css/.temp'
-      }
-    }
-    , htmllint: {
+        src: ['src/css/*.less'],
+        dest: 'src/css/.temp'
+      },
+    },
+    htmllint: {
         all: ["dist/client/*.html"]
-    }
-    , closureLint: {
+    },
+    closureLint: {
       app:{
-        closureLinterPath : 'submodules/closure-linter/closure_linter'
-        , command: 'gjslint.py'
-        , src: [ 'src/js/**/*.js' ]
-        , options: {
-          stdout: true
-          , strict: true
-        }
-      }
-    }
-    , closureFixStyle: {
+        closureLinterPath : 'submodules/closure-linter/closure_linter',
+        command: 'gjslint.py',
+        src: [ 'src/js/**/*.js' ],
+        options: {
+          stdout: true,
+          strict: true,
+        },
+      },
+    },
+    closureFixStyle: {
       app:{
-        closureLinterPath : 'submodules/closure-linter/closure_linter'
-        , command: 'fixjsstyle.py'
-        , src: [ 'src/js/**/*.js' ]
-        , options: {
-          strict: true
-          , stdout: true
-        }
-      }
-    }
-    , less: {
+        closureLinterPath : 'submodules/closure-linter/closure_linter',
+        command: 'fixjsstyle.py',
+        src: [ 'src/js/**/*.js' ],
+        options: {
+          strict: true,
+          stdout: true,
+        },
+      },
+    },
+    less: {
       development: {
         options: {
-          cleancss: true
-        }
-        , files: {
-          "dist/client/css/admin.css": "src/css/.temp"
-        }
-      }
-      , production: {
+          cleancss: true,
+        },
         files: {
-          "dist/client/css/admin.min.css": "src/css/.temp"
-        }
-      }
-    }
-    , jade: {
+          "dist/client/css/admin.css": "src/css/.temp",
+        },
+      },
+      production: {
+        files: {
+          "dist/client/css/admin.min.css": "src/css/.temp",
+        },
+      },
+    },
+    jade: {
       release: {
         options: {
           data: {
             debug: false
-          }
-        }
-        , files: {
-          "dist/client/index.html": ["src/html/release.jade"]
-        }
-      }
-      , debug: {
+          },
+        },
+        files: {
+          "dist/client/index.html": ["src/html/release.jade"],
+        },
+      },
+      debug: {
         options: {
           data: {
             debug: true
-          }
-        }
-        , files: {
-          "dist/client/debug.html": ["src/html/debug.jade"]
-        }
-      }
-    }
-    , closureBuilder: {
+          },
+        },
+        files: {
+          "dist/client/debug.html": ["src/html/debug.jade"],
+        },
+      },
+    },
+    closureBuilder: {
       release: {
         options: {
-          closureLibraryPath: 'submodules/closure-library'
-          , namespaces: ['silex.App']
-          , builder: 'submodules/closure-library/closure/bin/build/closurebuilder.py'
-          , compilerFile: 'build/closure-compiler.jar'
-          , compile: true
-          , compilerOpts: {
-            compilation_level: 'SIMPLE_OPTIMIZATIONS'
-            , debug: false
-            , create_source_map: 'dist/client/js/admin.min.js.map'
-            , source_map_format: 'V3'
-          }
-        }
-        , src: ['src/js/', 'submodules/closure-library/']
-        , dest: 'dist/client/js/admin.min.js'
-      }
-      , debug: {
+          closureLibraryPath: 'submodules/closure-library',
+          namespaces: ['silex.App'],
+          builder: 'submodules/closure-library/closure/bin/build/closurebuilder.py',
+          compilerFile: 'build/closure-compiler.jar',
+          compile: true,
+          compilerOpts: {
+            compilation_level: 'SIMPLE_OPTIMIZATIONS',
+            language_in: 'ECMASCRIPT5',
+            debug: false,
+            create_source_map: 'dist/client/js/admin.min.js.map',
+            source_map_format: 'V3'
+          },
+        },
+        src: ['src/js/', 'submodules/closure-library/'],
+        dest: 'dist/client/js/admin.min.js'
+      },
+      debug: {
         options: {
-          closureLibraryPath: 'submodules/closure-library'
-          , namespaces: 'silex.App'
-          , builder: 'submodules/closure-library/closure/bin/build/closurebuilder.py'
-          , compilerFile: 'build/closure-compiler.jar'
-          , compile: true // disable to speedup the compilation but also disable source map
-          , compilerOpts: {
-            compilation_level: 'SIMPLE_OPTIMIZATIONS'
-            , formatting: 'PRETTY_PRINT'
-            , debug: true
-            , create_source_map: 'dist/client/js/admin.js.map'
-            , source_map_format: 'V3'
-          }
-        }
-        , src: ['submodules/closure-library/', 'src/js/']
-        , dest: 'dist/client/js/admin.js'
-      }
-    }
-    , "append-sourcemapping": {
+          closureLibraryPath: 'submodules/closure-library',
+          namespaces: 'silex.App',
+          builder: 'submodules/closure-library/closure/bin/build/closurebuilder.py',
+          compilerFile: 'build/closure-compiler.jar',
+          compile: true, // disable to speedup the compilation but also disable source map
+          compilerOpts: {
+            compilation_level: 'SIMPLE_OPTIMIZATIONS',
+            language_in: 'ECMASCRIPT5',
+            formatting: 'PRETTY_PRINT',
+            debug: true,
+            create_source_map: 'dist/client/js/admin.js.map',
+            source_map_format: 'V3'
+          },
+        },
+        src: ['submodules/closure-library/', 'src/js/'],
+        dest: 'dist/client/js/admin.js'
+      },
+    },
+    "append-sourcemapping": {
         main: {
             files: {
                 "dist/client/js/admin.js": "admin.js.map"
-            }
-        }
-    }
-    , doWatch: {
+            },
+        },
+    },
+    doWatch: {
         options: {
-          livereload: true
-          , atBegin: true
-        }
-        , main: {
-            files: ['src/js/**/*.js', 'dist/server/**/*.js', 'src/css/*.css', 'src/css/*.less', 'src/html/**/*.jade', 'dist/client/**/*.html', 'Gruntfile.js']
-            , tasks: ['debugDeploy']
-        }
-        , test: {
-            files: ['test/**/*.js', 'src/js/**/*.js', 'dist/server/**/*.js', 'src/css/*.css', 'src/css/*.less', 'src/html/**/*.jade', 'dist/client/**/*.html', 'Gruntfile.js']
-            , tasks: ['simplemocha']
-        }
-    }
-    , simplemocha: {
+          livereload: true,
+          atBegin: true,
+        },
+        main: {
+            files: ['src/js/**/*.js', 'dist/server/**/*.js', 'src/css/*.css', 'src/css/*.less', 'src/html/**/*.jade', 'dist/client/**/*.html', 'Gruntfile.js'],
+            tasks: ['debugDeploy'],
+        },
+        test: {
+            files: ['test/**/*.js', 'src/js/**/*.js', 'dist/server/**/*.js', 'src/css/*.css', 'src/css/*.less', 'src/html/**/*.jade', 'dist/client/**/*.html', 'Gruntfile.js'],
+            tasks: ['simplemocha'],
+        },
+    },
+    simplemocha: {
         options: {
-          globals: ['should']
-          , ignoreLeaks: false
-          , ui: 'bdd'
-          , reporter: 'nyan'
-        }
-        , all: {
+          globals: ['should'],
+          ignoreLeaks: false,
+          ui: 'bdd',
+          reporter: 'nyan',
+        },
+        all: {
             src: [
-                'test/functional/file-explorer.js'
-                ,'test/functional/save.js'
-                ,'test/functional/publish.js'
-            ]
-        }
-      }
+                'test/functional/file-explorer.js',
+                'test/functional/save.js',
+                'test/functional/publish.js',
+            ],
+        },
+      },
   });
 }
