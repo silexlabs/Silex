@@ -69,7 +69,6 @@ exports.setDebugMode = function(debug){
         console.warn('Running server in production mode');
         // catch all errors and prevent nodejs to crash, production mode
         process.on('uncaughtException', onCatchError);
-
         // reset debug
         options.www.USERS = {};
     }
