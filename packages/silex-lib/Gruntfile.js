@@ -239,7 +239,7 @@ module.exports = function(grunt) {
           atBegin: true,
         },
         main: {
-            files: ['src/js/**/*.js', 'dist/server/**/*.js', 'src/css/*.css', 'src/css/*.less', 'src/html/**/*.jade', 'dist/client/**/*.html', 'Gruntfile.js'],
+            files: ['src/js/**/*.js', 'dist/server/**/*.js', 'src/css/*.css', 'src/css/*.less', 'src/html/**/*.jade', 'dist/client/creation-template.html', 'Gruntfile.js'],
             tasks: ['debugDeploy'],
         },
         test: {

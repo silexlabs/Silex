@@ -25,7 +25,7 @@ goog.require('goog.net.XhrIo');
 
 /**
  * Get base URL corresponding to a file URL
- * @param {string} opt_url  the URL of the file, or null to get the base URL of silex editor e.g. http://www.silex.me/silex/
+ * @param {string} opt_url  the URL of the file, or null to get the base URL of silex editor e.g. http://www.silex.me/
  * @return  {string} the base url
  */
 silex.utils.Url.getBaseUrl = function(opt_url) {

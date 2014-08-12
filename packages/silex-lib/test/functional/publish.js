@@ -19,7 +19,7 @@ if (!helper.getDriverName()){
 
 // start the test
 describe('Silex insert and publish test', function(){
-  var publishFolder = __dirname + '/../../www/functional-tests/publish';
+  var publishFolder = __dirname + '/../../dist/client/functional-tests/publish';
 
   var client = {};
   this.timeout(100000);
