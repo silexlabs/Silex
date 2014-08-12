@@ -39,8 +39,13 @@ goog.inherits(silex.controller.SettingsDialogController, silex.controller.Contro
 silex.controller.SettingsDialogController.prototype.browsePublishPath = function (type){
   this.view.fileExplorer.openDialog(
       goog.bind(function(url) {
-        //url = url.substring(url.indexOf('/api/v1.0/'), url.lastIndexOf('/'));
+        // start with /api/...
+        if (url.indexOf('/') != 0){
+          url = '/' + url;
+        }
+        // put instead of get
         url = url.replace('/exec/get', '/exec/put');
+        // set the new publication path
         this.model.head.setPublicationPath(url);
         this.tracker.trackAction('controller-events', 'success', type, 1);
       }, this),

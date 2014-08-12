@@ -1,6 +1,0 @@
-User-agent: *
-Disallow: /js/
-Disallow: /demos/
-Disallow: /css/
-Disallow: /tests/
-Sitemap: http://www.silex.me/sitemap_index.xml
