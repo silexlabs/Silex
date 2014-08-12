@@ -20,7 +20,7 @@ var router = require('unifile/lib/core/router.js');
  * route the call to a silex task
  */
 exports.route = function(cbk, req, res, next, task){
-	switch(task){
+  switch(task){
         case 'publish':
             exports.publish(function(result){
                 // just log the result
@@ -41,6 +41,11 @@ exports.route = function(cbk, req, res, next, task){
         case 'debug':
             exports.debug(cbk, req, res, next);
         break;
+        default:
+          cbk({
+            success: false
+            , code: 'Silex task "' + task + '" does not exist'
+          });
 	}
 }
 exports.debug = function(cbk, req, res, next){
