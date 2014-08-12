@@ -9,11 +9,6 @@
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
 
-require('look').start();
-
-// newrelic debug tool
-require('newrelic');
-
 // node modules
 var express = require('express')
     , bodyParser = require('body-parser')
@@ -125,8 +120,8 @@ app.listen(port, function() {
 // silex tasks
 // ********************************
 
-app.post('/silex/tasks/:task', function(req, res, next){
-    var silexTasks = require('./silex-tasks.js');
+var silexTasks = require('./silex-tasks.js');
+app.use('/silex/tasks/:task', function(req, res, next){
     silexTasks.route(function(result){
         if (!result) result = {success:true};
         console.log('silex task result', result);
