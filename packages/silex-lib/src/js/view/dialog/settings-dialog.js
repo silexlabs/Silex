@@ -35,11 +35,10 @@ goog.require('goog.ui.KeyboardShortcutHandler');
 silex.view.dialog.SettingsDialog = function(element, view, controller) {
   // call super
   goog.base(this, element, view, controller);
-
+  // override this.background
+  this.background = goog.dom.getElementByClass('settings-background');
   // init the editor
   this.publicationPath = '';
-  // hide the at start
-  goog.style.setStyle(this.element, 'display', 'none');
   // publication path browse button
   var btn = goog.dom.getElementByClass('browse-btn', this.element);
   goog.events.listen(btn, goog.events.EventType.CLICK, function() {
@@ -105,16 +104,8 @@ silex.view.dialog.SettingsDialog.prototype.openDialog = function(cbk) {
  * Open the editor
  */
 silex.view.dialog.SettingsDialog.prototype.openEditor = function() {
-  if (this.isOpened === false) {
-    this.isOpened = false;
-    // background
-    var background = goog.dom.getElementByClass('settings-background');
-    // show
-    goog.style.setStyle(background, 'display', 'inherit');
-    goog.style.setStyle(this.element, 'display', 'inherit');
-    // flag to remember if the dialog is opened
-    this.isOpened = true;
-  }
+  // call super
+  goog.base(this, 'openEditor');
 };
 
 
@@ -123,13 +114,8 @@ silex.view.dialog.SettingsDialog.prototype.openEditor = function() {
  * this is private method, do not call it
  */
 silex.view.dialog.SettingsDialog.prototype.closeEditor  = function() {
-  if (this.isOpened === true) {
-    // flag to remember if the dialog is opened
-    this.isOpened = false;
-    // hide dialog and background
-    var background = goog.dom.getElementByClass('settings-background');
-    goog.style.setStyle(background, 'display', 'none');
-    goog.style.setStyle(this.element, 'display', 'none');
-  }
+  // call super
+  goog.base(this, 'closeEditor');
+  // notify caller
   if (this.onClose) this.onClose();
 };

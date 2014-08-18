@@ -256,6 +256,14 @@ silex.view.dialog.TextEditor.prototype.openEditor = function(initialHtml, elemen
   // body represents the '.silex-element-content' element of Silex text elements
   // so it has these classes: 'silex-element-content normal'
   iframeDoc.body.className = 'silex-element-content normal';
+  // handle current css styles
+  if (this.currentCustomCssStyles){
+    this.setCustomCssStyles(this.currentCustomCssStyles);
+  }
+  // handle current fonts
+  if (this.currentCustomFonts){
+    this.setCustomFonts(this.currentCustomFonts);
+  }
 }
 
 
@@ -266,8 +274,16 @@ silex.view.dialog.TextEditor.prototype.closeEditor = function() {
   // call super
   goog.base(this, 'closeEditor');
   // remove editable before it goes "display: none"
-  this.textField.makeUneditable();
+  if (!this.textField.isUneditable()){
+    this.textField.makeUneditable();
+  }
 }
+
+
+/**
+ * list of custom fonts to apply when the editor opens
+ */
+silex.view.dialog.TextEditor.prototype.currentCustomFonts = null;
 
 
 /**
@@ -275,14 +291,14 @@ silex.view.dialog.TextEditor.prototype.closeEditor = function() {
  * @param {Array<string>} the custom fonts used in the text fields
  */
 silex.view.dialog.TextEditor.prototype.setCustomFonts = function(customFonts) {
+  // store for later use
+  this.currentCustomFonts = customFonts;
   // get the iframe document
   var iframe = goog.dom.getElementsByTagNameAndClass('iframe', null, this.element)[0];
   if (!iframe){
     // iframe not yet defined, the text editor is loading
-    setTimeout(goog.bind(function(){this.setCustomFonts(customFonts);}, this), 100);
     return;
   }
-
   var iframeDoc = goog.dom.getFrameContentDocument(iframe);
   var iframeHead = iframeDoc.head;
   //detach all previously loaded font before, to avoid duplicate
@@ -302,15 +318,22 @@ silex.view.dialog.TextEditor.prototype.setCustomFonts = function(customFonts) {
 
 
 /**
+ * list of custom css styles to apply when the editor opens
+ */
+silex.view.dialog.TextEditor.prototype.currentCustomCssStyles = null;
+
+
+/**
  * set the list of custom css styles
  * @param {string} customCssStyles   the styles written by the user in the css editor
  */
 silex.view.dialog.TextEditor.prototype.setCustomCssStyles = function(customCssStyles) {
+  // store for later use
+  this.currentCustomCssStyles = customCssStyles;
   // get the iframe document
   var iframe = goog.dom.getElementsByTagNameAndClass('iframe', null, this.element)[0];
   if (!iframe){
     // iframe not yet defined, the text editor is loading
-    setTimeout(goog.bind(function(){this.setCustomCssStyles(customCssStyles);}, this), 100);
     return;
   }
 
