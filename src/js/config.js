@@ -236,11 +236,12 @@ silex.Config.menu = {
         shortcut: [[goog.events.KeyCodes.Y, ctrlKeyModifyer]],
         tooltip: ctrlKeyDisplay + 'Y',
       },
- , */    {
+ , */
+     {
         label: 'Delete selection',
         id: 'edit.delete.selection',
         className: 'menu-item-edit-delete-selection',
-        shortcut: [[goog.events.KeyCodes.DELETE][goog.events.KeyCodes.BACKSPACE]],
+        shortcut: [[goog.events.KeyCodes.DELETE], [goog.events.KeyCodes.BACKSPACE]],
         tooltip: 'suppr',
         mnemonic: goog.events.KeyCodes.R,
         accelerator: 'r',
