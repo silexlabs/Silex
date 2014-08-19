@@ -36,8 +36,9 @@ silex.view.dialog.DialogBase = function(element, view, controller) {
   this.element = element;
   this.view = view;
   this.controller = controller;
-  // hide the at start
-  goog.style.setStyle(this.element, 'display', 'none');
+
+  // store the background
+  this.background = goog.dom.getElementByClass('dialogs-background');
 
   // flag to remember if the dialog is opened
   this.isOpened = false;
@@ -64,10 +65,8 @@ silex.view.dialog.DialogBase.prototype.initUI = function() {
   goog.events.listen(goog.dom.getElementByClass('close-btn', this.element), goog.events.EventType.CLICK, function() {
     this.closeEditor();
   }, false, this);
-  // background
-  var background = goog.dom.getElementByClass('dialogs-background');
   // dialogs background
-  goog.events.listen(background, goog.events.EventType.CLICK, function(e) {
+  goog.events.listen(this.background, goog.events.EventType.CLICK, function(e) {
     this.closeEditor();
   }, false, this);
 };
@@ -78,11 +77,9 @@ silex.view.dialog.DialogBase.prototype.initUI = function() {
  */
 silex.view.dialog.DialogBase.prototype.openEditor = function() {
   if (this.isOpened === false) {
-    // background
-    var background = goog.dom.getElementByClass('dialogs-background');
     // show
-    goog.style.setStyle(background, 'display', 'inherit');
-    goog.style.setStyle(this.element, 'display', 'inherit');
+    goog.dom.classes.remove(this.background, 'hidden-dialog');
+    goog.dom.classes.remove(this.element, 'hidden-dialog');
     // flag to remember if the dialog is opened
     this.isOpened = true;
   }
@@ -97,8 +94,7 @@ silex.view.dialog.DialogBase.prototype.closeEditor = function() {
     // flag to remember if the dialog is opened
     this.isOpened = false;
     // hide dialog and background
-    var background = goog.dom.getElementByClass('dialogs-background');
-    goog.style.setStyle(background, 'display', 'none');
-    goog.style.setStyle(this.element, 'display', 'none');
+    goog.dom.classes.add(this.background, 'hidden-dialog');
+    goog.dom.classes.add(this.element, 'hidden-dialog');
   }
 };

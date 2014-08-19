@@ -9,9 +9,6 @@
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
 
-// newrelic debug tool
-require('newrelic');
-
 // node modules
 var express = require('express')
     , bodyParser = require('body-parser')
@@ -25,16 +22,16 @@ var unifile = require('unifile');
 // use express for silex tasks (has to be done before app.use(unifile.middleware(...))
 
 // parse data for file upload
-app.use('/silex/tasks', multipart());
+app.use('/tasks', multipart());
 
 // parse data for post data
-app.use('/silex/tasks', bodyParser({
+app.use('/tasks', bodyParser({
   limit: 10000000
 }));
 
 // start session
-app.use('/silex/tasks', cookieParser());
-app.use('/silex/tasks', cookieSession({ secret: 'plum plum plum'}));
+app.use('/tasks', cookieParser());
+app.use('/tasks', cookieSession({ secret: 'plum plum plum'}));
 
 // ********************************
 // production
@@ -67,7 +64,6 @@ exports.setDebugMode = function(debug){
         console.warn('Running server in production mode');
         // catch all errors and prevent nodejs to crash, production mode
         process.on('uncaughtException', onCatchError);
-
         // reset debug
         options.www.USERS = {};
     }
@@ -78,23 +74,18 @@ exports.setDebugMode = function(debug){
 var options = unifile.defaultConfig;
 
 // change www root
-options.www.ROOT = __dirname + '/../../www';
+options.www.ROOT = __dirname + '/../../dist/client';
 
 // add static folders
 options.staticFolders.push(
     // silex main site
     {
-        path: __dirname + '/../../www'
+        path: __dirname + '/../../dist/client'
     },
     // debug silex, for js source map
     {
-        name: '/silex/js/src',
+        name: '/js/src',
         path: __dirname + '/../../src'
-    },
-    // silex editor
-    {
-        name: '/silex',
-        path: __dirname + '/../../dist/client'
     }
 );
 
@@ -124,8 +115,8 @@ app.listen(port, function() {
 // silex tasks
 // ********************************
 
-app.post('/silex/tasks/:task', function(req, res, next){
-    var silexTasks = require('./silex-tasks.js');
+var silexTasks = require('./silex-tasks.js');
+app.use('/tasks/:task', function(req, res, next){
     silexTasks.route(function(result){
         if (!result) result = {success:true};
         console.log('silex task result', result);

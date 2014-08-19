@@ -96,10 +96,6 @@ silex.App = function() {
   // polyfills
   silex.utils.Polyfills.init();
 
-  // redirect /silex to /silex/
-  if(window.location.href.slice(-5) === 'silex'){
-    window.location.href += '/';
-  }
   // remove hash added by cloud explorer
   window.location.hash = '';
 

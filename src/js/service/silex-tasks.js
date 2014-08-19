@@ -50,7 +50,7 @@ silex.service.SilexTasks.prototype.publish = function(path, html, css, js, files
     if (opt_errCbk) opt_errCbk('Param path, html, css, js or files missing');
     return;
   }
-  var url = '/silex/tasks/publish';
+  var url = '/tasks/publish';
   var qd = new goog.Uri.QueryData();
   qd.add('path', path);
   qd.add('html', html);

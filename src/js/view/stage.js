@@ -212,12 +212,12 @@ silex.view.Stage.prototype.initEvents = function (contentWindow) {
   }, false, this);
   // dispatch event when an element has been moved
   goog.events.listen(this.bodyElement, 'dragstop', function(e) {
-    this.controller.stageController.change(e.target);
+    this.propertyChanged();
     this.isDragging = false;
   }, false, this);
   // dispatch event when an element has been moved or resized
   goog.events.listen(this.bodyElement, 'resize', function(e) {
-    this.controller.stageController.change(e.target);
+    this.propertyChanged();
     this.isDragging = false;
   }, false, this);
   // dispatch event when an element is dropped in a new container
@@ -235,6 +235,8 @@ silex.view.Stage.prototype.initEvents = function (contentWindow) {
       }
       this.controller.stageController.newContainer(element);
     }, this);
+    // update property tool box
+    this.propertyChanged();
   }, false, this);
   // when an element is dropped on the background
   // move it to the body
@@ -282,7 +284,9 @@ silex.view.Stage.prototype.handleMouseUp = function(target, shiftKey) {
   this.isDown = false;
   // handle selection
   if (this.isDragging || this.isResizing) {
-    this.controller.stageController.change();
+    // update property tool box
+    this.propertyChanged();
+    // keep flags up to date
     this.isDragging = false;
     this.isResizing = false;
   }
@@ -335,6 +339,9 @@ silex.view.Stage.prototype.resetFocus = function() {
 silex.view.Stage.prototype.handleMouseMove = function(target, x, y) {
   // update states
   if (this.isDown){
+    // update property tool box
+    this.propertyChanged();
+    // case of a drag directly after mouse down (select + drag)
     if (this.lastSelected === null) {
       var editableElement = goog.dom.getAncestorByClass(target, silex.model.Body.EDITABLE_CLASS_NAME) || this.bodyElement;
       this.lastSelected = editableElement;
@@ -459,4 +466,30 @@ silex.view.Stage.prototype.getResizeDirection = function(target) {
   else if (goog.dom.classes.has(target, 'ui-resizable-nw')) return 'nw';
   // Target is not a resize handle
   return null;
+}
+
+
+/**
+ * notify the controller that the properties of the selection have changed
+ */
+silex.view.Stage.prototype.propertyChanged = function() {
+  // check position and size are int and not float
+  goog.array.forEach(this.selectedElements, function(element) {
+    // round position
+    var position = goog.style.getPosition(element);
+    var x = position.x ? Math.floor(position.x) : null;
+    var y = position.y ? Math.floor(position.y) : null;
+    if (goog.isDefAndNotNull(x) || goog.isDefAndNotNull(y)){
+      goog.style.setPosition(element, x, y);
+    }
+    // round size
+    var size = goog.style.getSize(element);
+    var x = size.x ? Math.floor(size.x) : null;
+    var y = size.y ? Math.floor(size.y) : null;
+    if (goog.isDefAndNotNull(x) || goog.isDefAndNotNull(y)){
+      goog.style.setSize(element, x, y);
+    }
+  }, this);
+  // update property tool box
+  this.controller.stageController.change();
 }
