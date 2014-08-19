@@ -266,8 +266,7 @@ silex.view.Menu.prototype.onMenuEvent = function(type) {
       this.controller.menuController.toggleAdvanced();
       break;
     case 'view.open.fileExplorer':
-      this.controller.menuController.view.fileExplorer.openDialog();
-      this.controller.menuController.view.workspace.invalidate();
+      this.controller.menuController.view.fileExplorer.openDialog(function(url) {}, function(error) {});
       break;
     case 'view.open.cssEditor':
       this.controller.menuController.openCssEditor();
