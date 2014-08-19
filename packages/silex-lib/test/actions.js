@@ -46,7 +46,7 @@ exports.loadSilex = function(client, cbk){
     console.log('loadSilex(' + argsToString(arguments));
     client
       // load silex
-      .url('http://localhost:6805/silex/')
+      .url('http://localhost:6805/')
       // wait for silex to be loaded
       .waitFor('.menu-item-file', 5000)
       // store reference to Silex main window

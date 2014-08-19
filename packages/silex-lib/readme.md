@@ -28,10 +28,19 @@ Contact us and let people know about Silex
 * [Google plus](https://plus.google.com/communities/107373636457908189681)
 * [Contributors list](https://github.com/silexlabs/Silex/blob/master/docs/contributors.md)
 
+##Host an instance of Silex
+
+If you plan to host Silex for your clients, your users or the community, this section is for you.
+
+If you feel like helping and host an instance of Silex as an alternative to the official Silex site http://editor.silex.me/ please let us know so that we can advertise it to the community.
+
+You will need a nodejs server, which you can setup yourself or host at heroku or Gandi for example (may be free of charge for small traffic, even with your own domain name).
+
+Download the zip file on github or clone this repository, and then follow the same steps as the developers when they install silex locally on linux - starting at npm install. See instructions bellow.
 
 ##Installation on your local computer
 
-This is for developers only, since our beloved designers can use the [online version](http://www.silex.me/).
+This is for developers only, since our beloved designers can use the [online version](http://editor.silex.me/).
 
 Developers you can clone this repository and start Silex, with nodejs. See instructions bellow.
 

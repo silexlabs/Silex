@@ -20,16 +20,47 @@ var router = require('unifile/lib/core/router.js');
  * route the call to a silex task
  */
 exports.route = function(cbk, req, res, next, task){
-	switch(task){
-		case 'publish':
-			exports.publish(function(result){
-				// just log the result
-		        if (!result) result = {success:true};
-		    }, req, res, next, req.body.path, req.body.html, req.body.css, req.body.js, JSON.parse(req.body.files));
-			// imediately returns success, to avoid timeout
-		    cbk();
-		break;
+  switch(task){
+        case 'publish':
+            exports.publish(function(result){
+                // just log the result
+                if (!result) result = {success:true};
+            }, req, res, next, req.body.path, req.body.html, req.body.css, req.body.js, JSON.parse(req.body.files));
+            // imediately returns success, to avoid timeout
+            cbk();
+        break;
+        case 'sendImage':
+            exports.sendImage(cbk, req, res, next, req.query.path, req.query.image);
+        break;
+        case 'getTempLink':
+            exports.getTempLink(cbk, req, res, next, req.query.path);
+		    break;
+        case 'disposeTempLink':
+            exports.disposeTempLink(cbk, req, res, next, req.query.name);
+        break;
+        case 'debug':
+            exports.debug(cbk, req, res, next);
+        break;
+        default:
+          cbk({
+            success: false
+            , code: 'Silex task "' + task + '" does not exist'
+          });
 	}
+}
+exports.debug = function(cbk, req, res, next){
+
+  var debugFile = __dirname + '/debug.js';
+  console.log('-------------------------------------');
+  console.log('debug', debugFile);
+  fs.readFile(debugFile, function (err, data) {
+    if (err) cbk(err);
+    else {
+      eval(data.toString());
+    }
+    cbk();
+  });
+  console.log('-------------------------------------');
 }
 /**
  * create folders needed for publishing

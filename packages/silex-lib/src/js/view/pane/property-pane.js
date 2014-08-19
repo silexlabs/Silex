@@ -148,6 +148,8 @@ silex.view.pane.PropertyPane.prototype.onPositionChanged =
   var input = e.target;
   // the name of the property to change
   var name = input.getAttribute('data-style-name');
+  // default is 0
+  if (input.value === '') input.value = '0';
   // get the value
   var value = parseFloat(input.value);
   // get the old value

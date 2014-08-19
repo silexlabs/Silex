@@ -469,7 +469,7 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
       var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
       // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
       if (!silex.utils.Url.isAbsoluteUrl(relative)) {
-        relative = relative.replace('../', '/');
+        relative = '/' + relative;
       }
       if (this.isDownloadable(absolute)){
         var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
@@ -501,7 +501,7 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
       var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
       // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
       if (!silex.utils.Url.isAbsoluteUrl(relative)) {
-        relative = relative.replace('../', '/');
+        relative = '/' + relative;
       }
       if (this.isDownloadable(absolute)){
         var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
@@ -523,7 +523,7 @@ silex.model.File.prototype.cleanup = function(cbk, opt_errCbk) {
         var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
         // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
         if (!silex.utils.Url.isAbsoluteUrl(relative)) {
-          relative = relative.replace('../', '/');
+          relative = '/' + relative;
         }
         var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
         var newRelativePath = 'js/' + fileName;
@@ -676,7 +676,7 @@ silex.model.File.prototype.filterBgImage = function(baseUrl, files, match, group
   var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
   // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
   if (!silex.utils.Url.isAbsoluteUrl(relative)) {
-    relative = relative.replace('../', '/');
+    relative = '/' + relative;
   }
   if (this.isDownloadable(absolute)){
     var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
@@ -784,7 +784,7 @@ silex.model.File.prototype.getPublicationInfo = function (url, baseUrl, localFol
   var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
   // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
   if (!silex.utils.Url.isAbsoluteUrl(relative)) {
-      relative = relative.replace('../', '/');
+      relative = '/' + relative;
   }
   var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
   var newRelativePath = localFolder + fileName;
