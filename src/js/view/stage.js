@@ -49,7 +49,7 @@ silex.view.Stage = function(element, view , controller) {
   // on Silex UI
   var mwh = new goog.events.MouseWheelHandler(document.body);
   goog.events.listen(mwh, goog.events.MouseWheelHandler.EventType.MOUSEWHEEL, function (e) {
-    if (e.deltaX<0 && document.body.parentNode.scrollLeft<=0){
+    if (e.deltaX < 0 && this.getScrollX() <= 0){
       e.preventDefault();
     }
   }, false, this);
@@ -57,12 +57,11 @@ silex.view.Stage = function(element, view , controller) {
   // on the iframe
   var mwh = new goog.events.MouseWheelHandler(element);
   goog.events.listen(mwh, goog.events.MouseWheelHandler.EventType.MOUSEWHEEL, function (e) {
-    if (e.deltaX<0 && element.scrollLeft<=0){
+    if (e.deltaX < 0 && this.getScrollX() <= 0){
       e.preventDefault();
     }
   }, false, this);
 
-  var stagePosition = goog.style.getPosition(this.element);
   // listen on body too because user can release
   // on the tool boxes
   goog.events.listen(document.body, 'mouseup', function(e){
@@ -70,8 +69,8 @@ silex.view.Stage = function(element, view , controller) {
     // simulate the mouse up on the iframe body
     var newEvObj = document.createEvent('MouseEvents');
     newEvObj.initEvent( 'mouseup', true, true);
-    newEvObj.screenX = e.screenX;
-    newEvObj.screenY = e.screenY;
+    newEvObj.clientX = e.clientX;
+    newEvObj.clientY = e.clientY;
     this.iAmClicking = true;
     this.bodyElement.dispatchEvent(newEvObj);
     this.iAmClicking = false;
@@ -79,8 +78,8 @@ silex.view.Stage = function(element, view , controller) {
   // listen on body too because user can release
   // on the tool boxes
   goog.events.listen(document.body, 'mousemove', function(e){
-    var x = e.screenX;// - stagePosition.x;
-    var y = e.screenY;// - stagePosition.y - 70;
+    var x = e.clientX;
+    var y = e.clientY;
     this.handleMouseMove(e.target, x, y);
   }, false, this);
 }
@@ -190,22 +189,23 @@ silex.view.Stage.prototype.initEvents = function (contentWindow) {
   // listen on body instead of element because user can release
   // on the tool boxes
   goog.events.listen(this.bodyElement, 'mouseup', function(e) {
-    var x = e.screenX;
-    var y = e.screenY;
+    var x = e.clientX;
+    var y = e.clientY;
     this.handleMouseUp(e.target, e.shiftKey);
   }, false, this);
 
-  // multiple selection move
+  // move in the iframe
+  var stagePosition = goog.style.getPosition(this.element);
   goog.events.listen(this.bodyElement, 'mousemove', function(e) {
-    var x = e.screenX;
-    var y = e.screenY;
+    var x = e.clientX + stagePosition.x;
+    var y = e.clientY + stagePosition.y;
     this.handleMouseMove(e.target, x, y);
   }, false, this);
   // detect mouse down
   goog.events.listen(this.bodyElement, 'mousedown', function(e) {
     this.lastClickWasResize = goog.dom.classes.has(e.target, 'ui-resizable-handle');
-    var x = e.screenX;
-    var y = e.screenY;
+    var x = e.clientX;
+    var y = e.clientY;
     // get the first parent node which is editable (silex-editable css class)
     var editableElement = goog.dom.getAncestorByClass(e.target, silex.model.Body.EDITABLE_CLASS_NAME) || this.bodyElement;
     this.handleMouseDown(editableElement, x, y, e.shiftKey);
@@ -364,13 +364,17 @@ silex.view.Stage.prototype.handleMouseMove = function(target, x, y) {
     }
     // compute the offset compared to the last mouse move
     // take the scroll delta into account (changes when dragging outside the stage)
-    var offsetX = x - this.lastPosX + (this.bodyElement.scrollLeft - this.lastScrollLeft);
-    var offsetY = y - this.lastPosY + (this.bodyElement.scrollTop - this.lastScrollTop);
+    var scrollX = this.getScrollX();
+    var scrollY = this.getScrollY();
+    var scrollMaxX = this.getScrollMaxX();
+    var scrollMaxY = this.getScrollMaxY();
+    var offsetX = x - this.lastPosX + (scrollX - this.lastScrollLeft);
+    var offsetY = y - this.lastPosY + (scrollY - this.lastScrollTop);
     // update the latest position and scroll
     this.lastPosX = x;
     this.lastPosY = y;
-    this.lastScrollLeft = this.bodyElement.scrollLeft;
-    this.lastScrollTop = this.bodyElement.scrollTop;
+    this.lastScrollLeft = scrollX;
+    this.lastScrollTop = scrollY;
 
     // apply offset to other selected element
     goog.array.forEach(this.selectedElements, function(element) {
@@ -410,6 +414,24 @@ silex.view.Stage.prototype.handleMouseMove = function(target, x, y) {
         }
       }
     }, this);
+    // handle the case where mouse is near a border of the stage
+    // scroll accordingly
+    var iframePosition = goog.style.getPosition(this.element);
+    var iframeSize = goog.style.getSize(this.element);
+    var xInStage = x - iframePosition.x;
+    var yInStage = y - iframePosition.y;
+    if (xInStage < 30){
+      this.setScrollX(scrollX - 35);
+    }
+    else if(xInStage > iframeSize.width - 30){
+      this.setScrollX(scrollX + 35);
+    }
+    if (yInStage < 30){
+      this.setScrollY(scrollY - 35);
+    }
+    else if(yInStage > iframeSize.height - 30){
+      this.setScrollY(scrollY + 35);
+    }
   }
 };
 
@@ -444,8 +466,8 @@ silex.view.Stage.prototype.handleMouseDown = function(element, x, y, shiftKey) {
   // keep track of the last mouse position and body scroll
   this.lastPosX = x;
   this.lastPosY = y;
-  this.lastScrollLeft = this.bodyElement.scrollLeft;
-  this.lastScrollTop = this.bodyElement.scrollTop;
+  this.lastScrollLeft = this.getScrollX();
+  this.lastScrollTop = this.getScrollY();
   // update state
   this.isDown = true;
 };
@@ -466,6 +488,62 @@ silex.view.Stage.prototype.getResizeDirection = function(target) {
   else if (goog.dom.classes.has(target, 'ui-resizable-nw')) return 'nw';
   // Target is not a resize handle
   return null;
+}
+
+
+/**
+ * get the scroll property, working around cross browser issues
+ */
+silex.view.Stage.prototype.setScrollX = function(value) {
+  var win = window.win = goog.dom.getFrameContentWindow(goog.dom.getElementByClass(silex.view.Stage.STAGE_CLASS_NAME));
+  win.document.documentElement.scrollLeft = value;
+  win.document.body.scrollLeft = value;
+}
+
+
+/**
+ * get the scroll property, working around cross browser issues
+ */
+silex.view.Stage.prototype.setScrollY = function(value) {
+  var win = goog.dom.getFrameContentWindow(goog.dom.getElementByClass(silex.view.Stage.STAGE_CLASS_NAME));
+  win.document.documentElement.scrollTop = value;
+  win.document.body.scrollTop = value;
+}
+
+
+/**
+ * get the scroll property, working around cross browser issues
+ */
+silex.view.Stage.prototype.getScrollX = function() {
+  var win = goog.dom.getFrameContentWindow(goog.dom.getElementByClass(silex.view.Stage.STAGE_CLASS_NAME));
+  return Math.max(win.document.documentElement.scrollLeft, win.document.body.scrollLeft);
+}
+
+
+/**
+ * get the scroll property, working around cross browser issues
+ */
+silex.view.Stage.prototype.getScrollY = function() {
+  var win = goog.dom.getFrameContentWindow(goog.dom.getElementByClass(silex.view.Stage.STAGE_CLASS_NAME));
+  return Math.max(win.document.documentElement.scrollTop, win.document.body.scrollTop);
+}
+
+
+/**
+ * get the scroll property, working around cross browser issues
+ */
+silex.view.Stage.prototype.getScrollMaxX = function() {
+  var win = goog.dom.getFrameContentWindow(goog.dom.getElementByClass(silex.view.Stage.STAGE_CLASS_NAME));
+  return Math.max(win.document.documentElement.scrollLeftMax, win.document.body.scrollWidth);
+}
+
+
+/**
+ * get the scroll property, working around cross browser issues
+ */
+silex.view.Stage.prototype.getScrollMaxY = function() {
+  var win = goog.dom.getFrameContentWindow(goog.dom.getElementByClass(silex.view.Stage.STAGE_CLASS_NAME));
+  return Math.max(win.document.documentElement.scrollTopMax, win.document.body.scrollHeight);
 }
 
 
