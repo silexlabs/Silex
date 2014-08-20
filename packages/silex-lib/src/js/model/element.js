@@ -397,8 +397,9 @@ silex.model.Element.prototype.createElement = function(type) {
   var bodyElement = this.model.body.getBodyElement();
 
   // take the scroll into account (drop at (100, 100) from top left corner of the window, not the stage)
-  var offsetX = 100 + bodyElement.scrollLeft;
-  var offsetY = 100 + bodyElement.scrollTop;
+  var offsetX = 100 + this.view.stage.getScrollX();
+  var offsetY = 100 + this.view.stage.getScrollY();
+
   // default style
   var styleObject = {
     height: '100px',
