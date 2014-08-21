@@ -10,14 +10,14 @@
 //////////////////////////////////////////////////
 
 // node modules
-var express = require('express')
-    , bodyParser = require('body-parser')
-    , cookieParser = require('cookie-parser')
-    , cookieSession = require('cookie-session')
-    , multipart = require('connect-multiparty');
+var express = require('express');
+var bodyParser = require('body-parser');
+var cookieParser = require('cookie-parser');
+var session = require('express-session');
+var multipart = require('connect-multiparty');
+var unifile = require('unifile');
 
 var app = express();
-var unifile = require('unifile');
 
 // use express for silex tasks (has to be done before app.use(unifile.middleware(...))
 
@@ -25,13 +25,17 @@ var unifile = require('unifile');
 app.use('/tasks', multipart());
 
 // parse data for post data
-app.use('/tasks', bodyParser({
-  limit: 10000000
+app.use('/tasks', bodyParser.urlencoded({
+  extended: true
 }));
 
 // start session
 app.use('/tasks', cookieParser());
-app.use('/tasks', cookieSession({ secret: 'plum plum plum'}));
+app.use('/tasks', session({
+  secret: unifile.defaultConfig.sessionSecret,
+  resave: false,
+  saveUninitialized: false
+}));
 
 // ********************************
 // production
