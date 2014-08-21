@@ -378,7 +378,7 @@ ce.core.Controller.prototype = {
 		}(this)),null,explodedUrl.srv,explodedUrl.path,function() {
 			if(_g1.state.currentFileList.get(explodedUrl.filename) == null) _g1.refreshFilesList();
 			onSuccess(target);
-		},($_=this.errorCtrl,$bind($_,$_.setError)));
+		},($_=this.errorCtrl,$bind($_,$_.setUnifileError)));
 	}
 	,isLoggedIn: function(srvName,onSuccess,onError) {
 		this.state.set_currentMode(ce.core.model.Mode.IsLoggedIn(onSuccess,onError,srvName));
@@ -535,7 +535,7 @@ ce.core.Controller.prototype = {
 				_g.unifileSrv.mv(_g.state.currentLocation.service,oldPath,newPath,function() {
 					_g.application.setLoaderDisplayed(false);
 					_g.refreshFilesList();
-				},($_=_g.errorCtrl,$bind($_,$_.setError)));
+				},($_=_g.errorCtrl,$bind($_,$_.setUnifileError)));
 			}
 		};
 		this.application.onOverwriteExportClicked = function() {
@@ -599,7 +599,7 @@ ce.core.Controller.prototype = {
 		this.application.onInputFilesChanged = function() {
 			_g.unifileSrv.upload(null,_g.application.dropzone.inputElt.files,_g.state.currentLocation.service,_g.state.currentLocation.path,function() {
 				_g.refreshFilesList();
-			},($_=_g.errorCtrl,$bind($_,$_.setError)));
+			},($_=_g.errorCtrl,$bind($_,$_.setUnifileError)));
 		};
 		this.application.onNavBtnClicked = function(srv,path) {
 			_g.state.set_currentLocation(new ce.core.model.Location(srv,path));
@@ -625,7 +625,7 @@ ce.core.Controller.prototype = {
 					_g.refreshFilesList();
 				},function(e) {
 					_g.state.set_newFolderMode(false);
-					_g.errorCtrl.setError(e);
+					_g.errorCtrl.setUnifileError(e);
 				});
 			}
 		};
@@ -716,7 +716,7 @@ ce.core.Controller.prototype = {
 				_g.application.setLogoutButtonDisplayed(true);
 				if(_g.state.serviceList.get(srvName2).account == null) _g.unifileSrv.account(srvName2,function(a) {
 					_g.state.serviceList.get(srvName2).set_account(a);
-				},($_=_g.errorCtrl,$bind($_,$_.setError)));
+				},($_=_g.errorCtrl,$bind($_,$_.setUnifileError)));
 				_g.state.set_currentLocation(new ce.core.model.Location(srvName2,"/"));
 			}
 		};
@@ -848,7 +848,7 @@ ce.core.Controller.prototype = {
 						_g2.application.setLoaderDisplayed(false);
 						_g2.refreshFilesList();
 					}
-				},($_=this.errorCtrl,$bind($_,$_.setError)));
+				},($_=this.errorCtrl,$bind($_,$_.setUnifileError)));
 			}
 		}
 	}
@@ -861,7 +861,7 @@ ce.core.Controller.prototype = {
 		this.unifileSrv.rm(this.state.currentLocation.service,rmDirPath,function() {
 			_g.application.setLoaderDisplayed(false);
 			_g.refreshFilesList();
-		},($_=this.errorCtrl,$bind($_,$_.setError)));
+		},($_=this.errorCtrl,$bind($_,$_.setUnifileError)));
 	}
 	,doExportFile: function() {
 		{
@@ -901,7 +901,7 @@ ce.core.Controller.prototype = {
 			_g.state.set_currentFileList(files);
 			_g.application.setFileBrowserDisplayed(true);
 			_g.application.setLoaderDisplayed(false);
-		},($_=this.errorCtrl,$bind($_,$_.setError)));
+		},($_=this.errorCtrl,$bind($_,$_.setUnifileError)));
 	}
 	,connect: function(srv) {
 		var _g = this;
@@ -911,31 +911,27 @@ ce.core.Controller.prototype = {
 		}
 		this.application.setLoaderDisplayed(true);
 		this.unifileSrv.connect(srv,function(cr) {
-			if(cr.success) {
-				_g.state.serviceList.get(srv).isConnected = true;
-				_g.application.authPopup.setServerName(_g.state.serviceList.get(srv).displayName);
-				_g.application.authPopup.onClicked = function() {
-					_g.application.onAuthorizationWindowBlocked = function() {
-						_g.application.setAuthPopupDisplayed(false);
-						_g.setAlert("Popup Blocker is enabled! Please add this site to your exception list and reload the page.",0);
-					};
-					_g.application.onServiceAuthorizationDone = function(result) {
-						_g.application.setAuthPopupDisplayed(false);
-						if(_g.state.serviceList.get(srv).isOAuth) {
-							if(result != null && result.notApproved != true) _g.login(srv); else _g.application.setLoaderDisplayed(false);
-						} else _g.login(srv);
-					};
-					var authUrl;
-					authUrl = cr.authorizeUrl + (cr.authorizeUrl.indexOf("?") > -1?"&":"?") + "oauth_callback=" + StringTools.urlEncode(_g.application.get_location() + (!StringTools.endsWith(_g.application.get_location(),"/") && !StringTools.startsWith(_g.config.path,"/")?"/":"") + _g.config.path + (!StringTools.endsWith(_g.config.path,"/") && _g.config.path.length > 0?"/":"") + "oauth-cb.html");
-					_g.application.openAuthorizationWindow(authUrl);
+			_g.state.serviceList.get(srv).isConnected = true;
+			_g.application.authPopup.setServerName(_g.state.serviceList.get(srv).displayName);
+			_g.application.authPopup.onClicked = function() {
+				_g.application.onAuthorizationWindowBlocked = function() {
+					_g.application.setAuthPopupDisplayed(false);
+					_g.setAlert("Popup Blocker is enabled! Please add this site to your exception list and reload the page.",0);
 				};
-				_g.application.setAuthPopupDisplayed(true);
-			} else {
-				_g.state.serviceList.get(srv).isConnected = false;
-				_g.errorCtrl.manageConnectError(cr.message);
-			}
-		},function(msg) {
-			_g.errorCtrl.manageConnectError(msg);
+				_g.application.onServiceAuthorizationDone = function(result) {
+					_g.application.setAuthPopupDisplayed(false);
+					if(_g.state.serviceList.get(srv).isOAuth) {
+						if(result != null && result.notApproved != true) _g.login(srv); else _g.application.setLoaderDisplayed(false);
+					} else _g.login(srv);
+				};
+				var authUrl;
+				authUrl = cr.authorizeUrl + (cr.authorizeUrl.indexOf("?") > -1?"&":"?") + "oauth_callback=" + StringTools.urlEncode(_g.application.get_location() + (!StringTools.endsWith(_g.application.get_location(),"/") && !StringTools.startsWith(_g.config.path,"/")?"/":"") + _g.config.path + (!StringTools.endsWith(_g.config.path,"/") && _g.config.path.length > 0?"/":"") + "oauth-cb.html");
+				_g.application.openAuthorizationWindow(authUrl);
+			};
+			_g.application.setAuthPopupDisplayed(true);
+		},function(e) {
+			_g.state.serviceList.get(srv).isConnected = false;
+			_g.errorCtrl.manageConnectError(e.message);
 		});
 	}
 	,login: function(srv) {
@@ -944,12 +940,10 @@ ce.core.Controller.prototype = {
 			this.application.setLoaderDisplayed(true);
 			this.unifileSrv.login(srv,function(lr) {
 				_g.application.setLoaderDisplayed(false);
-				if(lr.success) _g.state.serviceList.get(srv).set_isLoggedIn(true); else {
-					_g.state.serviceList.get(srv).set_isLoggedIn(false);
-					_g.errorCtrl.manageLoginError("Could not login. Please try again.");
-				}
-			},function(msg) {
-				_g.errorCtrl.manageLoginError(msg);
+				_g.state.serviceList.get(srv).set_isLoggedIn(true);
+			},function(e) {
+				_g.state.serviceList.get(srv).set_isLoggedIn(false);
+				_g.errorCtrl.manageLoginError(e.message);
 			});
 		} else console.log("can't log into " + Std.string(srv) + " as user already logged in!");
 	}
@@ -959,8 +953,10 @@ ce.core.Controller.prototype = {
 			this.application.setLoaderDisplayed(true);
 			this.unifileSrv.logout(srv,function(lr) {
 				_g.application.setLoaderDisplayed(false);
-				if(!lr.success) _g.errorCtrl.setError(lr.message); else _g.state.serviceList.get(srv).set_isLoggedIn(false);
-			},($_=this.errorCtrl,$bind($_,$_.setError)));
+				_g.state.serviceList.get(srv).set_isLoggedIn(false);
+			},function(e) {
+				_g.errorCtrl.setUnifileError(e);
+			});
 		} else console.log("can't log out from " + Std.string(srv) + " as user not yet logged in!");
 	}
 	,logoutAll: function() {
@@ -979,15 +975,17 @@ ce.core.Controller.prototype = {
 			var s = [srv1];
 			this.unifileSrv.logout(s[0],(function(s) {
 				return function(lr) {
-					if(!lr.success) _g1.errorCtrl.setError(lr.message); else {
-						HxOverrides.remove(loggedInSrvs,s[0]);
-						if(loggedInSrvs.length == 0) {
-							_g1.application.setLoaderDisplayed(false);
-							_g1.listServices();
-						}
+					HxOverrides.remove(loggedInSrvs,s[0]);
+					if(loggedInSrvs.length == 0) {
+						_g1.application.setLoaderDisplayed(false);
+						_g1.listServices();
 					}
 				};
-			})(s),($_=this.errorCtrl,$bind($_,$_.setError)));
+			})(s),(function() {
+				return function(e) {
+					_g1.errorCtrl.setUnifileError(e);
+				};
+			})());
 		}
 	}
 	,listServices: function() {
@@ -996,8 +994,8 @@ ce.core.Controller.prototype = {
 		this.unifileSrv.listServices(function(slm) {
 			_g.application.setLoaderDisplayed(false);
 			_g.state.set_serviceList(slm);
-		},function(msg) {
-			_g.errorCtrl.manageListSrvError(msg);
+		},function(e) {
+			_g.errorCtrl.manageListSrvError(e.message);
 		});
 	}
 	,hide: function() {
@@ -1100,6 +1098,9 @@ ce.core.ctrl.ErrorCtrl.prototype = {
 				break;
 			}
 		}
+	}
+	,setUnifileError: function(err) {
+		this.setError(err.message);
 	}
 	,setError: function(msg) {
 		var _g = this;
@@ -1457,6 +1458,12 @@ ce.core.parser.unifile.Json2Service.parseServiceCollection = function(dataStr) {
 ce.core.parser.unifile.Json2Service.parseService = function(obj) {
 	return new ce.core.model.unifile.Service(ce.core.parser.json.Json2Primitive.node2String(obj,"name",false),ce.core.parser.json.Json2Primitive.node2String(obj,"display_name",false),ce.core.parser.json.Json2Primitive.node2String(obj,"image_small",false),ce.core.parser.json.Json2Primitive.node2String(obj,"description",false),ce.core.parser.json.Json2Primitive.node2Bool(obj,"visible",false),ce.core.parser.json.Json2Primitive.node2Bool(obj,"isLoggedIn",false),ce.core.parser.json.Json2Primitive.node2Bool(obj,"isConnected",false),ce.core.parser.json.Json2Primitive.node2Bool(obj,"isOAuth",false),Object.prototype.hasOwnProperty.call(obj,"user")?ce.core.parser.unifile.Json2Account.parseAccount(null,Reflect.field(obj,"user")):null);
 };
+ce.core.parser.unifile.Json2UnifileError = function() { };
+ce.core.parser.unifile.Json2UnifileError.__name__ = true;
+ce.core.parser.unifile.Json2UnifileError.parseUnifileError = function(dataStr) {
+	var obj = JSON.parse(dataStr);
+	return { success : ce.core.parser.json.Json2Primitive.node2Bool(obj,"success",false), code : ce.core.parser.json.Json2Primitive.node2Int(obj,"code",false), message : ce.core.parser.json.Json2Primitive.node2String(obj,"message",false)};
+};
 ce.core.parser.unifile.Json2UploadResult = function() { };
 ce.core.parser.unifile.Json2UploadResult.__name__ = true;
 ce.core.parser.unifile.Json2UploadResult.parse = function(dataStr) {
@@ -1506,96 +1513,153 @@ ce.core.service.UnifileSrv.prototype = {
 		return { srv : srv, path : path, filename : filename};
 	}
 	,listServices: function(onSuccess,onError) {
-		var http = new haxe.Http(this.config.unifileEndpoint + "services/list");
-		http.onData = function(data) {
-			var sl = ce.core.parser.unifile.Json2Service.parseServiceCollection(data);
-			var slm = new haxe.ds.StringMap();
-			var _g = 0;
-			while(_g < sl.length) {
-				var s = sl[_g];
-				++_g;
-				slm.set(s.name,s);
+		var req = new XMLHttpRequest();
+		req.onload = function(_) {
+			if(req.status != 200) {
+				var err = ce.core.parser.unifile.Json2UnifileError.parseUnifileError(req.responseText);
+				onError(err);
+			} else {
+				var sl = ce.core.parser.unifile.Json2Service.parseServiceCollection(req.responseText);
+				var slm = new haxe.ds.StringMap();
+				var _g = 0;
+				while(_g < sl.length) {
+					var s = sl[_g];
+					++_g;
+					slm.set(s.name,s);
+				}
+				onSuccess(slm);
 			}
-			onSuccess(slm);
 		};
-		http.onError = onError;
-		http.request(false);
+		req.onerror = function(_1) {
+			onError({ success : false, code : 0, message : "The request has failed."});
+		};
+		req.open("GET",this.config.unifileEndpoint + "services/list");
+		req.send();
 	}
 	,connect: function(srv,onSuccess,onError) {
-		var http = new haxe.Http(this.config.unifileEndpoint + StringTools.replace("{srv}/connect","{srv}",srv));
-		http.onData = function(data) {
-			onSuccess(ce.core.parser.unifile.Json2ConnectResult.parse(data));
+		var req = new XMLHttpRequest();
+		req.onload = function(_) {
+			if(req.status != 200) {
+				var err = ce.core.parser.unifile.Json2UnifileError.parseUnifileError(req.responseText);
+				onError(err);
+			} else onSuccess(ce.core.parser.unifile.Json2ConnectResult.parse(req.responseText));
 		};
-		http.onError = onError;
-		http.request(false);
+		req.onerror = function(_1) {
+			onError({ success : false, code : 0, message : "The request has failed."});
+		};
+		req.open("GET",this.config.unifileEndpoint + StringTools.replace("{srv}/connect","{srv}",srv));
+		req.send();
 	}
 	,login: function(srv,onSuccess,onError) {
-		var http = new haxe.Http(this.config.unifileEndpoint + StringTools.replace("{srv}/login","{srv}",srv));
-		http.onData = function(data) {
-			onSuccess(ce.core.parser.unifile.Json2LoginResult.parse(data));
+		var req = new XMLHttpRequest();
+		req.onload = function(_) {
+			if(req.status != 200) {
+				var err = ce.core.parser.unifile.Json2UnifileError.parseUnifileError(req.responseText);
+				onError(err);
+			} else onSuccess(ce.core.parser.unifile.Json2LoginResult.parse(req.responseText));
 		};
-		http.onError = onError;
-		http.request(false);
+		req.onerror = function(_1) {
+			onError({ success : false, code : 0, message : "The request has failed."});
+		};
+		req.open("GET",this.config.unifileEndpoint + StringTools.replace("{srv}/login","{srv}",srv));
+		req.send();
 	}
 	,account: function(srv,onSuccess,onError) {
-		var http = new haxe.Http(this.config.unifileEndpoint + StringTools.replace("{srv}/account","{srv}",srv));
-		http.onData = function(data) {
-			onSuccess(ce.core.parser.unifile.Json2Account.parseAccount(data));
+		var req = new XMLHttpRequest();
+		req.onload = function(_) {
+			if(req.status != 200) {
+				var err = ce.core.parser.unifile.Json2UnifileError.parseUnifileError(req.responseText);
+				onError(err);
+			} else onSuccess(ce.core.parser.unifile.Json2Account.parseAccount(req.responseText));
 		};
-		http.onError = onError;
-		http.request(true);
+		req.onerror = function(_1) {
+			onError({ success : false, code : 0, message : "The request has failed."});
+		};
+		req.open("POST",this.config.unifileEndpoint + StringTools.replace("{srv}/account","{srv}",srv));
+		req.send();
 	}
 	,logout: function(srv,onSuccess,onError) {
-		var http = new haxe.Http(this.config.unifileEndpoint + StringTools.replace("{srv}/logout","{srv}",srv));
-		http.onData = function(data) {
-			onSuccess(ce.core.parser.unifile.Json2LogoutResult.parse(data));
+		var req = new XMLHttpRequest();
+		req.onload = function(_) {
+			if(req.status != 200) {
+				var err = ce.core.parser.unifile.Json2UnifileError.parseUnifileError(req.responseText);
+				onError(err);
+			} else onSuccess(ce.core.parser.unifile.Json2LogoutResult.parse(req.responseText));
 		};
-		http.onError = onError;
-		http.request(false);
+		req.onerror = function(_1) {
+			onError({ success : false, code : 0, message : "The request has failed."});
+		};
+		req.open("GET",this.config.unifileEndpoint + StringTools.replace("{srv}/logout","{srv}",srv));
+		req.send();
 	}
 	,ls: function(srv,path,onSuccess,onError) {
 		if(path == "/") path = ""; else path = path;
-		var http = new haxe.Http(this.config.unifileEndpoint + StringTools.replace(StringTools.replace("{srv}/exec/ls/{path}","{srv}",srv),"{path}",path));
-		http.onData = function(data) {
-			var fa = ce.core.parser.unifile.Json2File.parseFileCollection(data);
-			var fsm = new haxe.ds.StringMap();
-			var _g = 0;
-			while(_g < fa.length) {
-				var f = fa[_g];
-				++_g;
-				fsm.set(f.name,f);
+		var req = new XMLHttpRequest();
+		req.onload = function(_) {
+			if(req.status != 200) {
+				var err = ce.core.parser.unifile.Json2UnifileError.parseUnifileError(req.responseText);
+				onError(err);
+			} else {
+				var fa = ce.core.parser.unifile.Json2File.parseFileCollection(req.responseText);
+				var fsm = new haxe.ds.StringMap();
+				var _g = 0;
+				while(_g < fa.length) {
+					var f = fa[_g];
+					++_g;
+					fsm.set(f.name,f);
+				}
+				onSuccess(fsm);
 			}
-			onSuccess(fsm);
 		};
-		http.onError = onError;
-		http.request(false);
+		req.onerror = function(_1) {
+			onError({ success : false, code : 0, message : "The request has failed."});
+		};
+		req.open("GET",this.config.unifileEndpoint + StringTools.replace(StringTools.replace("{srv}/exec/ls/{path}","{srv}",srv),"{path}",path),true);
+		req.send();
 	}
 	,rm: function(srv,path,onSuccess,onError) {
-		var http = new haxe.Http(this.config.unifileEndpoint + StringTools.replace(StringTools.replace("{srv}/exec/rm/{path}","{srv}",srv),"{path}",path));
-		http.onData = function(_) {
-			onSuccess();
+		var req = new XMLHttpRequest();
+		req.onload = function(_) {
+			if(req.status != 200) {
+				var err = ce.core.parser.unifile.Json2UnifileError.parseUnifileError(req.responseText);
+				onError(err);
+			} else onSuccess();
 		};
-		http.onError = onError;
-		http.request(false);
+		req.onerror = function(_1) {
+			onError({ success : false, code : 0, message : "The request has failed."});
+		};
+		req.open("GET",this.config.unifileEndpoint + StringTools.replace(StringTools.replace("{srv}/exec/rm/{path}","{srv}",srv),"{path}",path),true);
+		req.send();
 	}
 	,mkdir: function(srv,path,onSuccess,onError) {
-		var http = new haxe.Http(this.config.unifileEndpoint + StringTools.replace(StringTools.replace("{srv}/exec/mkdir/{path}","{srv}",srv),"{path}",path));
-		http.onData = function(data) {
-			console.log("data= " + data);
-			onSuccess();
+		var req = new XMLHttpRequest();
+		req.onload = function(_) {
+			if(req.status != 200) {
+				var err = ce.core.parser.unifile.Json2UnifileError.parseUnifileError(req.responseText);
+				onError(err);
+			} else onSuccess();
 		};
-		http.onError = onError;
-		http.request(false);
+		req.onerror = function(_1) {
+			onError({ success : false, code : 0, message : "The request has failed."});
+		};
+		req.open("GET",this.config.unifileEndpoint + StringTools.replace(StringTools.replace("{srv}/exec/mkdir/{path}","{srv}",srv),"{path}",path));
+		req.send();
 	}
 	,cp: function() {
 	}
 	,mv: function(srv,oldPath,newPath,onSuccess,onError) {
-		var http = new haxe.Http(this.config.unifileEndpoint + StringTools.replace(StringTools.replace("{srv}/exec/mv/{path}","{srv}",srv),"{path}",oldPath + ":" + newPath));
-		http.onData = function(_) {
-			onSuccess();
+		var req = new XMLHttpRequest();
+		req.onload = function(_) {
+			if(req.status != 200) {
+				var err = ce.core.parser.unifile.Json2UnifileError.parseUnifileError(req.responseText);
+				onError(err);
+			} else onSuccess();
 		};
-		http.onError = onError;
-		http.request(false);
+		req.onerror = function(_1) {
+			onError({ success : false, code : 0, message : "The request has failed."});
+		};
+		req.open("GET",this.config.unifileEndpoint + StringTools.replace(StringTools.replace("{srv}/exec/mv/{path}","{srv}",srv),"{path}",oldPath + ":" + newPath));
+		req.send();
 	}
 	,upload: function(blobs,files,srv,path,onSuccess,onError) {
 		if(path != "" && path.lastIndexOf("/") != path.length - 1) path += "/";
@@ -1621,10 +1685,13 @@ ce.core.service.UnifileSrv.prototype = {
 		var xhttp = new XMLHttpRequest();
 		xhttp.open("POST",this.config.unifileEndpoint + StringTools.replace(StringTools.replace("{srv}/exec/put/{path}","{srv}",srv),"{path}",path));
 		xhttp.onload = function(_) {
-			if(xhttp.status == 200) onSuccess(); else onError("Error " + xhttp.status + " occurred uploading your file(s)");
+			if(xhttp.status == 200) onSuccess(); else {
+				var err = ce.core.parser.unifile.Json2UnifileError.parseUnifileError(xhttp.responseText);
+				onError(err);
+			}
 		};
 		xhttp.onerror = function(_1) {
-			onError("Error " + xhttp.status + " occurred uploading your file(s)");
+			onError({ success : false, code : 0, message : "The request has failed."});
 		};
 		xhttp.send(formData);
 	}
