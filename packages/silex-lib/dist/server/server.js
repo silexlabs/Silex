@@ -10,32 +10,42 @@
 //////////////////////////////////////////////////
 
 // node modules
+var unifile = require('unifile');
 var express = require('express');
 var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
 var session = require('express-session');
 var multipart = require('connect-multiparty');
 var unifile = require('unifile');
+var FSStore = require('connect-fs2')(session);
 
+// init express
 var app = express();
 
-// use express for silex tasks (has to be done before app.use(unifile.middleware(...))
+// gzip/deflate outgoing responses
+var compression = require('compression')
+app.use(compression())
 
 // parse data for file upload
-app.use('/', multipart());
+app.use('/', multipart({limit: '100mb'}));
 
-// parse data for post data
+// parse data for post and get requests
 app.use('/', bodyParser.urlencoded({
-  extended: true
+  extended: true,
+  limit: '10mb'
 }));
-app.use('/', bodyParser.json());
-
-// start session
+app.use('/', bodyParser.json({limit: '10mb'}));
 app.use('/', cookieParser());
+
+// session management
 app.use('/', session({
   secret: unifile.defaultConfig.sessionSecret,
   resave: false,
-  saveUninitialized: false
+  saveUninitialized: false,
+  store: new FSStore({
+    dir: __dirname + '/sessions'
+  }),
+  cookie: { maxAge: 7 * 24 * 60 * 60 * 1000 } // 1 week
 }));
 
 // ********************************
