@@ -184,10 +184,10 @@ exports.sendImage = function(cbk, req, res, next, path, url){
 exports.disposeTempLink = function(cbk, req, res, next, name){
     // remove the first optional /tmp/
     // and compute the path in the /www/tmp folder
-    var path = pathModule.resolve(__dirname, '../../../dist/client/tmp', name.replace(/\/|\\|tmp/g, ''));
+    var path = pathModule.resolve(__dirname, '../../dist/client/tmp', name.replace(/\/|\\|tmp/g, ''));
     fs.unlink(path, function(err) {
         if (err){
-            console.error('Error, could not remove ' + name + ' (' + err.code + ')');
+            console.error('Error, could not remove ' + name + ' resolved to path ' + path + ' (' + err.code + ')');
             cbk({
                 code: 'Error, could not remove ' + name + ' (' + err.code + ')'
             });
