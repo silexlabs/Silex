@@ -63,6 +63,8 @@ silex.controller.MenuController.prototype.openPixlr = function(pixlrMethod, trac
       // from localhost:6805/api/v1.0/dropbox/exec/get/_test_silex/silex-vbig.png
       // to /api/v1.0/dropbox/exec/get/_test_silex/silex-vbig.png
       url = url.substr(silex.utils.Url.getRootUrl().length);
+      // remove cache control
+      url = silex.utils.Dom.removeCacheControl(url);
       // get a public temporary link to the image
       silex.service.SilexTasks.getInstance().getTempLink(
           url,
@@ -100,6 +102,8 @@ silex.controller.MenuController.prototype.openPixlr = function(pixlrMethod, trac
       url = url.substr(url.indexOf('url(') + 4);
       url = url.substring(0, url.lastIndexOf(')'));
       url = url.substr(silex.utils.Url.getRootUrl().length);
+      // remove cache control
+      url = silex.utils.Dom.removeCacheControl(url);
       // get a public temporary link to the image
       silex.service.SilexTasks.getInstance().getTempLink(
         url,

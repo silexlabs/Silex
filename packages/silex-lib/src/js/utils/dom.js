@@ -29,29 +29,81 @@ silex.utils.Dom = function() {
  * refresh an image
  */
 silex.utils.Dom.refreshImage = function(img, cbk) {
-    var initialUrl = img.src;
-    img.onload = function(e) {
-      // stop the process
-      img.onload = null;
-      // setTimeout(function (){
-        // restore url
-        // img.src = initialUrl;
-        // done
-        cbk();
-      // }, 5000);
-    };
-    //setTimeout(function (){
-      var noCacheSrc = '';
-      if (initialUrl.indexOf('?')>0){
-        noCacheSrc += initialUrl + '&';
-      }
-      else{
-        noCacheSrc += initialUrl + '?';
-      }
-      noCacheSrc += 'silex-cache-control=' + Date.now();
-      img.src = noCacheSrc;
-    //}, 1000);
+  var initialUrl = img.src;
+  img.onload = function(e) {
+    // stop the process
+    img.onload = null;
+    // setTimeout(function (){
+      // restore url
+      // img.src = initialUrl;
+      // done
+      cbk();
+    // }, 5000);
+  };
+  img.src = silex.utils.Dom.addCacheControl(initialUrl);
 }
+
+
+/**
+ * name of the get param used to store the timestamp (cache control)
+ * @constant
+ */
+silex.utils.Dom.CACHE_CONTROL_PARAM_NAME = 'silex-cache-control';
+
+
+/**
+ * add cache control to an URL
+ * handle the cases where there is a ? or & or an existing cache control
+ * @example silex.utils.Dom.addCacheControl('aaaaaaaa.com') returns 'aaaaaaaa.com?silex-cache-control=09238734099890'
+ */
+silex.utils.Dom.addCacheControl = function(url) {
+  // remove existing cache control if any
+  url = silex.utils.Dom.removeCacheControl(url);
+  // add an url separator
+  if (url.indexOf('?')>0){
+    url += '&';
+  }
+  else{
+    url += '?';
+  }
+  // add the timestamp
+  url += silex.utils.Dom.CACHE_CONTROL_PARAM_NAME + '=' + Date.now();
+  // return the new url
+  return url;
+}
+
+
+/**
+ * remove cache control from an URL
+ * handle the cases where there are other params in get
+ * works fine when url contains several URLs with cache control or other text (like a full image tag with src='')
+ * @example silex.utils.Dom.addCacheControl('aaaaaaaa.com?silex-cache-control=09238734099890') returns 'aaaaaaaa.com'
+ */
+silex.utils.Dom.removeCacheControl = function(url) {
+  // only when there is an existing cache control
+  if (url.indexOf(silex.utils.Dom.CACHE_CONTROL_PARAM_NAME)>0){
+    var re = new RegExp('([\?|&|&amp;]' + silex.utils.Dom.CACHE_CONTROL_PARAM_NAME + '=[0-9]*[&*]?)', 'gi');
+    url = url.replace(re, function(match, group1, group2) {
+      // if there is a ? or & then return ?
+      // aaaaaaaa.com?silex-cache-control=09238734&ccsqcqsc&
+      // aaaaaaaa.com?silex-cache-control=09238734099890
+      // aaaaaaaa.com?silex-cache-control=09238734&ccsqcqsc&
+      // aaaaaaaa.com?xxx&silex-cache-control=09238734&ccsqcqsc&
+      if (group1.charAt(0) === '?' && group1.charAt(group1.length - 1) === '&'){
+        return '?';
+      }
+      else if (group1.charAt(group1.length - 1) === '&' || group1.charAt(0) === '&'){
+        return '&';
+      }
+      else {
+        return '';
+      }
+    });
+  }
+  // return the new url
+  return url;
+}
+
 
 /**
  * render a template by duplicating the itemTemplateString and inserting the data in it

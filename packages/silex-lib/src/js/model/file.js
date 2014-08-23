@@ -268,22 +268,7 @@ silex.model.File.prototype.getHtml = function() {
   // put back the scripts
   rawHtml = rawHtml.replace(/type=\"text\/notjavascript\"/gi, 'type="text/javascript"')
   // remove cache control used to refresh images after editing by pixlr
-  rawHtml = rawHtml.replace(/([\?|&]silex-cache-control=[0-9]*[&*]?)/gi, goog.bind(function(match, group1, group2) {
-    // if there is a ? or & then return ?
-    // aaaaaaaa.com?silex-cache-control=09238734&ccsqcqsc&
-    // aaaaaaaa.com?silex-cache-control=09238734099890
-    // aaaaaaaa.com?silex-cache-control=09238734&ccsqcqsc&
-    // aaaaaaaa.com?xxx&silex-cache-control=09238734&ccsqcqsc&
-    if (group1.charAt(0) === '?' && group1.charAt(group1.length - 1) === '&'){
-      return '?';
-    }
-    else if (group1.charAt(group1.length - 1) === '&' || group1.charAt(0) === '&'){
-      return '&';
-    }
-    else {
-      return '';
-    }
-  }, this));
+  rawHtml = silex.utils.Dom.removeCacheControl(rawHtml);
   // convert to relative urls
   if (this.url){
     rawHtml = silex.utils.Url.absolute2Relative(rawHtml, this.url);
