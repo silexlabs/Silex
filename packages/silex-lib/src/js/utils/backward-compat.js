@@ -61,7 +61,7 @@ silex.utils.BackwardCompat.process = function(document) {
   goog.array.forEach(elements, function(element) {
     element.removeAttribute('data-style-pressed');
   });
-  // retorcompat silex-sub-type (2.0)
+  // backward compat silex-sub-type (2.0)
   elements = bodyElement.querySelectorAll('[data-silex-sub-type]');
   goog.array.forEach(elements, function(element) {
     element.setAttribute('data-silex-type', element.getAttribute('data-silex-sub-type'));
@@ -93,7 +93,7 @@ silex.utils.BackwardCompat.process = function(document) {
     goog.dom.classes.remove(element, 'silex-page');
     goog.dom.classes.add(element, 'paged-element');
   });
-  // retorcompat silex links with #! (2.0)
+  // backward compat silex links with #! (2.0)
   elements = bodyElement.querySelectorAll('[data-silex-href]');
   goog.array.forEach(elements, function(element) {
     var href = element.getAttribute(silex.model.Element.LINK_ATTR);
@@ -157,4 +157,15 @@ silex.utils.BackwardCompat.process = function(document) {
     href = href.replace('//static.silex.me/2.1', '//static.silex.me/2.2');
     element.setAttribute(silex.model.Element.LINK_ATTR, href);
   });
+  // backward compat /silex/ to /
+  // publication path from ../api/1.0/dropbox/exec/put/_test_silex/publication-test
+  // to /api/1.0/dropbox/exec/put/_test_silex/publication-test
+  var metaNode = document.querySelector('meta[name="publicationPath"]');
+  if (metaNode){
+    var value = metaNode.getAttribute('content');
+    if (value.indexOf('../api/1.0/') === 0){
+      value = value.replace('../api/1.0/', '/api/1.0/');
+      metaNode.setAttribute('content', value);
+    }
+  }
 };
