@@ -564,7 +564,7 @@ silex.view.Stage.prototype.setScrollY = function(value) {
  * get the scroll property, working around cross browser issues
  */
 silex.view.Stage.prototype.getScrollX = function() {
-  return Math.max(this.documentElement.scrollLeft, this.bodyElement.scrollLeft);
+  return Math.max(this.documentElement.scrollLeft || 0, this.bodyElement.scrollLeft || 0);
 };
 
 
@@ -572,7 +572,7 @@ silex.view.Stage.prototype.getScrollX = function() {
  * get the scroll property, working around cross browser issues
  */
 silex.view.Stage.prototype.getScrollY = function() {
-  return Math.max(this.documentElement.scrollTop, this.bodyElement.scrollTop);
+  return Math.max(this.documentElement.scrollTop || 0, this.bodyElement.scrollTop || 0);
 };
 
 
@@ -580,7 +580,7 @@ silex.view.Stage.prototype.getScrollY = function() {
  * get the scroll property, working around cross browser issues
  */
 silex.view.Stage.prototype.getScrollMaxX = function() {
-  return Math.max(this.documentElement.scrollLeftMax, this.bodyElement.scrollWidth);
+  return Math.max(this.documentElement.scrollLeftMax || 0, this.bodyElement.scrollWidth || 0);
 };
 
 
@@ -588,7 +588,7 @@ silex.view.Stage.prototype.getScrollMaxX = function() {
  * get the scroll property, working around cross browser issues
  */
 silex.view.Stage.prototype.getScrollMaxY = function() {
-  return Math.max(this.documentElement.scrollTopMax, this.bodyElement.scrollHeight);
+  return Math.max(this.documentElement.scrollTopMax || 0, this.bodyElement.scrollHeight || 0);
 };
 
 

@@ -3,13 +3,18 @@
   right: 0;
   width: @propertiesToolWidth;
   top: @menuHeight;
-  bottom: 0;
   overflow-x: hidden;
+  overflow-y: scroll;
+  bottom: 0;
+  .help-icon {
+    color: #a9a9a9;
+    font-size: medium;
+    margin-left: 10px;
+  }
   .border-placement-container label {
     margin: 4px 2px 0;
     width: 35%;
   }
-  overflow-y: auto;
   .color-button {
     .goog-inline-block {
       display: block;
@@ -95,10 +100,13 @@
   .goog-hsva-palette-sm-input {
     font-size: 13px;
   }
+  fieldset {
+    margin-bottom: 10px;
+  }
   .position-editor {
     label {
       float: left;
-      margin: 1px 5px 0 0;
+      margin: 5px 5px 5px 0px;
       width: 10px;
       text-align: right;
       color: #555555;
@@ -118,7 +126,7 @@
       width: 45px;
       height: 15px;
       padding-top: 2px;
-      margin: 1px 0 0;
+      margin: 1px 35px 5px 5px;
       float: left;
       border-style: inset;
       font-size: 12px;
@@ -127,7 +135,7 @@
   }
   .goog-hsva-palette-sm {
     overflow: hidden;
-    max-width: 195px;
+    width: 210px;
   }
   .link-small-btn {
     color: blue;
@@ -153,7 +161,7 @@
   }
   .main-container {
     padding: 5px;
-    margin: 5px;
+    width: 97%;
   }
   .goog-tab-bar {
     background-color: transparent;
@@ -178,4 +186,5 @@
   overflow: hidden;
   padding: 0;
   width: 100%;
+  margin: 5px 0;
 }

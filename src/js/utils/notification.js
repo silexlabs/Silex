@@ -115,7 +115,7 @@ silex.utils.Notification.nativeNotification = function(message, iconUrl) {
 /**
  * core method for alert, prompt and confirm
  */
-silex.utils.Notification.dialog = function(dialogMethod, msg, cbk, opt_okLabel, opt_cancelLabel) {
+silex.utils.Notification.dialog = function(dialogMethod, msg, cbk, opt_okLabel, opt_cancelLabel, opt_default) {
   alertify.set({ labels: {
     ok: opt_okLabel || 'ok',
     cancel: opt_cancelLabel || 'cancel'
@@ -127,7 +127,7 @@ silex.utils.Notification.dialog = function(dialogMethod, msg, cbk, opt_okLabel, 
     silex.utils.Notification.isActive = false;
     // call the callback
     cbk.apply(this, arguments);
-  });
+  }, opt_default);
 };
 
 
@@ -143,7 +143,7 @@ silex.utils.Notification.alert = function(msg, cbk, opt_okLabel, opt_cancelLabel
  * display a message
  */
 silex.utils.Notification.prompt = function(msg, text, cbk, opt_okLabel, opt_cancelLabel) {
-  silex.utils.Notification.dialog(alertify.prompt, msg, cbk, opt_okLabel, opt_cancelLabel);
+  silex.utils.Notification.dialog(alertify.prompt, msg, cbk, opt_okLabel, opt_cancelLabel, text);
 };
 
 
