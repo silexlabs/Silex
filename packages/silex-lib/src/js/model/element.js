@@ -417,22 +417,22 @@ silex.model.Element.prototype.createElement = function(type) {
 
     // container
     case silex.model.Element.TYPE_CONTAINER:
-      element = this.createContainerElement();
+      element = this.createContainerElement(styleObject);
       break;
 
     // text
     case silex.model.Element.TYPE_TEXT:
-      element = this.createTextElement();
+      element = this.createTextElement(styleObject);
       break;
 
     // HTML box
     case silex.model.Element.TYPE_HTML:
-      element = this.createHtmlElement();
+      element = this.createHtmlElement(styleObject);
       break;
 
     // Image
     case silex.model.Element.TYPE_IMAGE:
-      element = this.createImageElement();
+      element = this.createImageElement(styleObject);
       break;
 
   }
@@ -449,9 +449,6 @@ silex.model.Element.prototype.createElement = function(type) {
   if (!container) {
     container = bodyElement;
   }
-
-  // set the default styles
-  goog.style.setStyle(element, styleObject);
   // add css class for Silex styles
   goog.dom.classes.add(element, type + '-element');
   // add to stage
@@ -465,12 +462,13 @@ silex.model.Element.prototype.createElement = function(type) {
  * element creation method for a given type
  * called from createElement
  */
-silex.model.Element.prototype.createContainerElement = function() {
+silex.model.Element.prototype.createContainerElement = function(styleObject) {
   // create the conatiner
   element = goog.dom.createElement('div');
   element.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_CONTAINER);
   // add a default style
   styleObject.backgroundColor = '#FFFFFF';
+  goog.style.setStyle(element, styleObject);
   return element;
 };
 
@@ -479,7 +477,7 @@ silex.model.Element.prototype.createContainerElement = function() {
  * element creation method for a given type
  * called from createElement
  */
-silex.model.Element.prototype.createTextElement = function() {
+silex.model.Element.prototype.createTextElement = function(styleObject) {
   // create the element
   element = goog.dom.createElement('div');
   element.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_TEXT);
@@ -496,8 +494,7 @@ silex.model.Element.prototype.createTextElement = function() {
   // sometimes there is only in text node in textContent
   // e.g. whe select all + remove formatting
   goog.dom.classes.add(textContent, 'normal');
-  // add a default style
-  styleObject.backgroundColor = '#FFFFFF';
+  goog.style.setStyle(element, styleObject);
   return element;
 };
 
@@ -506,7 +503,7 @@ silex.model.Element.prototype.createTextElement = function() {
  * element creation method for a given type
  * called from createElement
  */
-silex.model.Element.prototype.createHtmlElement = function() {
+silex.model.Element.prototype.createHtmlElement = function(styleObject) {
   // create the element
   element = goog.dom.createElement('div');
   element.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_HTML);
@@ -520,6 +517,7 @@ silex.model.Element.prototype.createHtmlElement = function() {
   goog.dom.classes.add(htmlContent, silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
   // add a default style
   styleObject.backgroundColor = '#FFFFFF';
+  goog.style.setStyle(element, styleObject);
   return element;
 };
 
@@ -528,10 +526,11 @@ silex.model.Element.prototype.createHtmlElement = function() {
  * element creation method for a given type
  * called from createElement
  */
-silex.model.Element.prototype.createImageElement = function() {
+silex.model.Element.prototype.createImageElement = function(styleObject) {
   // create the element
   element = goog.dom.createElement('div');
   element.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_IMAGE);
+  goog.style.setStyle(element, styleObject);
   return element;
 };
 

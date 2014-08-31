@@ -1,8 +1,8 @@
 
 [![Build Status](https://travis-ci.org/silexlabs/Silex.png?branch=master)](https://travis-ci.org/silexlabs/Silex)
+[![Code Climate](https://codeclimate.com/github/lexoyo/Silex/badges/gpa.svg)](https://codeclimate.com/github/lexoyo/Silex)
 [![Dependency Status](https://gemnasium.com/silexlabs/Silex.png)](https://gemnasium.com/silexlabs/Silex)
 [![Stories in Ready](https://badge.waffle.io/silexlabs/silex.png?label=ready)](http://waffle.io/silexlabs/silex)
-[![Code Climate](https://codeclimate.com/github/silexlabs/Silex.png)](https://codeclimate.com/github/silexlabs/Silex)
 
 ##About Silex, live web creation.
 
