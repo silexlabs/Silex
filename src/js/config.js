@@ -386,7 +386,11 @@ silex.Config.menu = {
         label: 'Apollo mode',
         id: 'tools.advanced.activate',
         className: 'menu-item-tools-advanced-activate',
-        checkable: true
+        checkable: true,
+        shortcut: [[goog.events.KeyCodes.A, altKeyModifyer + ctrlKeyModifyer + goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT]],
+        tooltip: altKeyDisplay + ctrlKeyDisplay + '⇧ A',
+        mnemonic: goog.events.KeyCodes.A,
+        accelerator: 'a'
       },
       {
         label: 'Edit image with Express',
