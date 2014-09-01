@@ -50,6 +50,18 @@ silex.controller.ControllerBase.prototype.tracker = null;
 
 
 /**
+ * {Array<string>} array of the states of the website
+ */
+silex.controller.ControllerBase.prototype.undoHistory = [];
+
+
+/**
+ * {Array<string>} array of the states of the website
+ */
+silex.controller.ControllerBase.prototype.redoHistory = [];
+
+
+/**
  * the {Array<Element>} array of elements in the clipboard
  * this is a static attribute
  * TODO: Move this elsewhere?
@@ -63,6 +75,34 @@ silex.controller.ControllerBase.clipboard = null;
 * TODO: Move this elsewhere?
  */
 silex.controller.ControllerBase.clipboardParent = null;
+
+
+/**
+ * store the model state in order to undo/redo
+ */
+silex.controller.ControllerBase.prototype.undoCheckPoint = function() {
+  this.redoHistory = [];
+  var html = this.model.file.getHtml();
+  var page = this.model.page.getCurrentPage();
+  // if the previous state was different
+  if (this.undoHistory.length === 0
+    || this.undoHistory[this.undoHistory.length - 1].html !== html
+    || this.undoHistory[this.undoHistory.length - 1].page !== page){
+    this.undoHistory.push({
+      html: html,
+      page: page
+    });
+  }
+};
+
+
+/**
+ * reset the undo/redo history
+ */
+silex.controller.ControllerBase.prototype.undoReset = function() {
+  this.undoHistory = [];
+  this.redoHistory = [];
+};
 
 
 /**
@@ -82,6 +122,8 @@ silex.controller.ControllerBase.prototype.browseBgImage = function() {
     // absolute url only on stage
     var baseUrl = silex.utils.Url.getBaseUrl();
     url = silex.utils.Url.getAbsolutePath(url, baseUrl);
+    // undo checkpoint
+    this.undoCheckPoint();
     // load the image
     this.model.element.setBgImage(element, url);
     // tracking
@@ -107,6 +149,8 @@ silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
         // absolute url only on stage
         var baseUrl = silex.utils.Url.getBaseUrl();
         url = silex.utils.Url.getAbsolutePath(url, baseUrl);
+        // undo checkpoint
+        this.undoCheckPoint();
         // create the element
         var img = this.addElement(silex.model.Element.TYPE_IMAGE);
         // load the image
@@ -141,6 +185,8 @@ silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
  */
 silex.controller.ControllerBase.prototype.styleChanged = function(name, value, opt_elements) {
   if (!opt_elements) opt_elements = this.model.body.getSelection();
+  // undo checkpoint
+  this.undoCheckPoint();
   // apply the change to all elements
   goog.array.forEach(opt_elements, function(element) {
     // update the model
@@ -156,6 +202,8 @@ silex.controller.ControllerBase.prototype.styleChanged = function(name, value, o
  */
 silex.controller.ControllerBase.prototype.propertyChanged = function(name, value, opt_elements, opt_applyToContent) {
   if (!opt_elements) opt_elements = this.model.body.getSelection();
+  // undo checkpoint
+  this.undoCheckPoint();
   // apply the change to all elements
   goog.array.forEach(opt_elements, function(element) {
     // update the model
@@ -168,6 +216,8 @@ silex.controller.ControllerBase.prototype.propertyChanged = function(name, value
  * set css class names
  */
 silex.controller.ControllerBase.prototype.setClassName = function(name) {
+  // undo checkpoint
+  this.undoCheckPoint();
   // apply the change to all elements
   var elements = this.model.body.getSelection();
   goog.array.forEach(elements, function(element) {
@@ -186,60 +236,8 @@ silex.controller.ControllerBase.prototype.getClassName = function(element) {
 
 
 /**
- * open a page
- */
-silex.controller.ControllerBase.prototype.openPage = function(pageName) {
-  this.model.page.setCurrentPage(pageName);
-};
-
-
-/**
- * rename a page
- */
-silex.controller.ControllerBase.prototype.renamePage = function(opt_pageName) {
-  // default to the current page
-  if (!opt_pageName) {
-    opt_pageName = this.model.page.getCurrentPage();
-  }
-  this.getUserInputPageName(
-      this.model.page.getDisplayName(opt_pageName),
-      goog.bind(function(name, newDisplayName) {
-        if (newDisplayName) {
-          // update model
-          this.model.page.renamePage(opt_pageName, name, newDisplayName);
-        }
-        else {
-          // just open the new page
-          this.openPage(opt_pageName);
-        }
-        // update view
-      }, this));
-};
-
-
-/**
- * remvove a page
- */
-silex.controller.ControllerBase.prototype.removePage = function(opt_pageName) {
-  // default to the current page
-  if (!opt_pageName) {
-    opt_pageName = this.model.page.getCurrentPage(this.model.body.getBodyElement());
-  }
-  // confirm and delete
-  silex.utils.Notification.confirm('I am about to <strong>delete the page "' +
-      this.model.page.getDisplayName(opt_pageName) +
-      '"</strong>, are you sure?',
-      goog.bind(function(accept) {
-        if (accept) {
-          // update model
-          this.model.page.removePage(opt_pageName);
-        }
-      }, this), 'delete', 'cancel');
-};
-
-
-/**
- * input a page name
+ * promp user for page name
+ * used in insert page, rename page...
  */
 silex.controller.ControllerBase.prototype.getUserInputPageName = function(defaultName, cbk) {
   silex.utils.Notification.prompt('Enter a name for your page!', defaultName,
@@ -300,6 +298,8 @@ silex.controller.ControllerBase.prototype.promptTitle = function() {
       this.model.head.getTitle(),
       goog.bind(function(accept, name) {
         if (accept) {
+          // undo checkpoint
+          this.undoCheckPoint();
           this.model.head.setTitle(name);
         }
       }, this));

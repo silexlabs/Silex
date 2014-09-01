@@ -46,6 +46,8 @@ silex.controller.FileMenuController.prototype.newFile = function(opt_cbk, opt_er
   this.tracker.trackAction('controller-events', 'request', 'file.new', 0);
 
   this.model.file.newFile(goog.bind(function(rawHtml) {
+    // undo redo reset
+    this.undoReset();
     this.model.file.setHtml(rawHtml, goog.bind(function() {
       this.fileOperationSuccess(null, true);
       // QOS, track success
@@ -70,6 +72,8 @@ silex.controller.FileMenuController.prototype.openFile = function(opt_cbk, opt_e
   // let the user choose the file
   this.view.fileExplorer.openDialog(
       goog.bind(function(url) {
+        // undo redo reset
+        this.undoReset();
         this.model.file.open(url, goog.bind(function(rawHtml) {
           this.model.file.setHtml(rawHtml, goog.bind(function() {
             // check that it is a Silex website (if we have at least 1 page and not the silex-published class)
@@ -107,6 +111,10 @@ silex.controller.FileMenuController.prototype.openFile = function(opt_cbk, opt_e
  * save or save-as
  */
 silex.controller.FileMenuController.prototype.doSave = function(url, opt_cbk, opt_errorCbk) {
+  // undo redo reset
+  if (this.model.file.getUrl() !== url){
+    this.undoReset();
+  }
   // urls will be relative to the html file url
   this.model.file.setUrl(url);
   // relative urls only in the files
@@ -192,8 +200,10 @@ silex.controller.FileMenuController.prototype.publish = function() {
   }
   else
   {
-    this.model.file.publish(
+    silex.utils.Dom.publish(
         this.model.head.getPublicationPath(),
+        this.model.file.getUrl(),
+        this.model.file.getHtml(),
         goog.bind(function(status) {
           if (status && status.success === false) {
             console.error('Error: I did not manage to publish the file. (1)');

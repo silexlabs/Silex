@@ -34,3 +34,65 @@ silex.controller.PageToolController = function(controller, model, view) {
 
 // inherit from silex.controller.ControllerBase
 goog.inherits(silex.controller.PageToolController, silex.controller.ControllerBase);
+
+
+/**
+ * open a page
+ */
+silex.controller.PageToolController.prototype.openPage = function(pageName) {
+  // undo checkpoint
+  this.undoCheckPoint();
+  // do the action
+  this.model.page.setCurrentPage(pageName);
+};
+
+
+/**
+ * rename a page
+ */
+silex.controller.PageToolController.prototype.renamePage = function(opt_pageName) {
+  // default to the current page
+  if (!opt_pageName) {
+    opt_pageName = this.model.page.getCurrentPage();
+  }
+  this.getUserInputPageName(
+      this.model.page.getDisplayName(opt_pageName),
+      goog.bind(function(name, newDisplayName) {
+        if (newDisplayName) {
+          // undo checkpoint
+          this.undoCheckPoint();
+          // update model
+          this.model.page.renamePage(opt_pageName, name, newDisplayName);
+        }
+        else {
+          // just open the new page
+          this.openPage(opt_pageName);
+        }
+        // update view
+      }, this));
+};
+
+
+/**
+ * remvove a page
+ */
+silex.controller.PageToolController.prototype.removePage = function(opt_pageName) {
+  // default to the current page
+  if (!opt_pageName) {
+    opt_pageName = this.model.page.getCurrentPage(this.model.body.getBodyElement());
+  }
+  // confirm and delete
+  silex.utils.Notification.confirm('I am about to <strong>delete the page "' +
+      this.model.page.getDisplayName(opt_pageName) +
+      '"</strong>, are you sure?',
+      goog.bind(function(accept) {
+        if (accept) {
+          // undo checkpoint
+          this.undoCheckPoint();
+          // update model
+          this.model.page.removePage(opt_pageName);
+        }
+      }, this), 'delete', 'cancel');
+};
+
+

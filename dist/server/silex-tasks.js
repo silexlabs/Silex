@@ -220,7 +220,6 @@ exports.getTempLink = function(cbk, req, res, next, path){
         }
         else if (data){
             var p = pathModule.resolve(__dirname, tempPath)
-            console.log('writeFile', p, data);
             fs.writeFile(p, data, function (err) {
                 if (err){
                     cbk({success:false, code: 400, message: 'Error: could not write temp file (' + p + ')'});
@@ -271,7 +270,6 @@ exports.getFile = function(req, res, next, srcPath, dstPath, cbk){
  */
 exports.getFileFromUrl = function(req, res, next, srcPath, dstPath, cbk){
 	var data = [];
-
     // http or https
     var http_s = http;
     if (srcPath.indexOf('https')===0){
@@ -284,15 +282,15 @@ exports.getFileFromUrl = function(req, res, next, srcPath, dstPath, cbk){
 				// https => all the data the 1st time
 		    	data = chunk;
 			}
-            else{
-                data.push( chunk);
-            }
-          });
-          result.on('end', function() {
-            exports.writeFileToService(req, res, next, dstPath, data, function(status) {
-				cbk(status);
-	        });
-		  });
+      else{
+          data.push(chunk);
+      }
+    });
+    result.on('end', function() {
+      exports.writeFileToService(req, res, next, dstPath, data.join(''), function(status) {
+    		cbk(status);
+      });
+	  });
 	}).on('error', function(e) {
 		console.error('Error while loading '+srcPath+': ' + e.message);
 		cbk({
@@ -305,10 +303,10 @@ exports.getFileFromUrl = function(req, res, next, srcPath, dstPath, cbk){
  */
 exports.getFileFromService = function(req, res, next, srcPath, dstPath, cbk){
     exports.unifileRoute(req, res, next, srcPath, function (response, status, data, mime_type, responseFilePath) {
-    	if (data){
-	    	exports.writeFileToService(req, res, next, dstPath, data, cbk);
-    	}
-    	else if (responseFilePath){
+      if (data){
+        exports.writeFileToService(req, res, next, dstPath, data, cbk);
+      }
+      else if (responseFilePath){
 			fs.readFile(responseFilePath, function (err, data) {
 		        if (err) cbk(err);
 		        else {

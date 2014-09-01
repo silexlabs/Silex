@@ -246,7 +246,7 @@ silex.Config.menu = {
         mnemonic: goog.events.KeyCodes.V,
         accelerator: 'v'
       },
-     /*      {
+      {
         label: 'Undo',
         id: 'edit.undo',
         className: 'menu-item-edit-undo',
@@ -259,10 +259,9 @@ silex.Config.menu = {
         label: 'Redo',
         id: 'edit.redo',
         className: 'menu-item-edit-redo',
-        shortcut: [[goog.events.KeyCodes.Y, ctrlKeyModifyer]],
-        tooltip: ctrlKeyDisplay + 'Y',
+        shortcut: [[goog.events.KeyCodes.Z, ctrlKeyModifyer + goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT]],
+        tooltip: ctrlKeyDisplay + '⇧ Z'
       },
- , */
      {
         label: 'Delete selection',
         id: 'edit.delete.selection',
