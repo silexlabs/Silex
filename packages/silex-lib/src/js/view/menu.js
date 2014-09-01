@@ -276,9 +276,9 @@ silex.view.Menu.prototype.onMenuEvent = function(type) {
       break;
     case 'view.open.editor':
       this.controller.editMenuController.editElement();
+      break;
     case 'tools.advanced.activate':
       this.controller.toolMenuController.toggleAdvanced();
-      break;
       break;
     case 'insert.page':
       this.controller.insertMenuController.createPage();

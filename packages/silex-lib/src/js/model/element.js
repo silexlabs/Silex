@@ -380,9 +380,10 @@ silex.model.Element.prototype.removeElement = function(element) {
 
 
 /**
- * append a child to the stage
+ * append an element to the stage
+ * handles undo/redo
  */
-silex.model.Element.prototype.appendChild = function(container, element) {
+silex.model.Element.prototype.addElement = function(container, element) {
   goog.dom.appendChild(container, element);
 };
 
@@ -452,7 +453,7 @@ silex.model.Element.prototype.createElement = function(type) {
   // add css class for Silex styles
   goog.dom.classes.add(element, type + '-element');
   // add to stage
-  goog.dom.appendChild(container, element);
+  this.addElement(container, element);
   // return the element
   return element;
 };

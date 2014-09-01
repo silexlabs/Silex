@@ -42,18 +42,6 @@ silex.model.File.CREATION_TEMPLATE = 'creation-template.html';
 
 
 /**
- * List of URLs from which we are allowed to download the content locally
- * during the process of publishing the file
- * This is made to prevent trying to download locally fonts from google fonts
- * or scripts from an embed code
- */
-silex.model.File.DOWNLOAD_LOCALLY_FROM = [
-  'http://static.silex.me',
-  silex.utils.Url.getRootUrl()
-];
-
-
-/**
  * current file url
  * if the current file is a new file, it has no url
  * if set, this is an absolute URL, use silex.model.File::getUrl to get the relatvie URL
@@ -73,11 +61,13 @@ silex.model.File.prototype.hasLoadedTmpTags = false;
  * build the html content
  * Parse the raw html and fill the bodyElement and headElement
  */
-silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk) {
+silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk, opt_showLoader) {
   var iframeElement = goog.dom.getElementByClass(silex.view.Stage.STAGE_CLASS_NAME);
   var contentDocument = goog.dom.getFrameContentDocument(iframeElement);
   // loading
-  goog.dom.classes.add(iframeElement.parentNode, silex.model.Element.LOADING_ELEMENT_CSS_CLASS);
+  if(opt_showLoader !== false){
+    goog.dom.classes.add(iframeElement.parentNode, silex.model.Element.LOADING_ELEMENT_CSS_CLASS);
+  }
   // cleanup
   this.model.body.setEditable(contentDocument.body, false);
   this.view.stage.removeEvents(contentDocument.body);
@@ -157,11 +147,8 @@ silex.model.File.prototype.onContentLoaded = function(opt_cbk) {
   // restore event listeners
   this.view.stage.initEvents(contentWindow);
   // refresh the view
-  var pages = this.model.page.getPages();
-  var page = this.model.page.getCurrentPage();
-  this.view.pageTool.redraw(this.model.body.getSelection(), contentDocument, pages, page);
-  this.view.propertyTool.redraw(this.model.body.getSelection(), contentDocument, pages, page);
-  this.view.stage.redraw(this.model.body.getSelection(), contentDocument, pages, page);
+  //var page = this.model.page.getCurrentPage();
+  //this.model.page.setCurrentPage(page);
   // loading
   setTimeout(goog.bind(function() {
     goog.dom.classes.remove(iframeElement.parentNode, silex.model.Element.LOADING_ELEMENT_CSS_CLASS);

@@ -67,6 +67,20 @@ silex.controller.StageController.prototype.deselect = function(target) {
   goog.array.remove(selection, target);
   this.model.body.setSelection(selection);
 };
+
+
+/**
+ * callback for the stage to notify a component will be moved or resized
+ */
+silex.controller.StageController.prototype.beforeChange = function() {
+  // undo checkpoint
+  this.undoCheckPoint();
+};
+
+
+/**
+ * callback for the stage to notify a component has been moved or resized
+ */
 silex.controller.StageController.prototype.change = function() {
   // refresh the toolboxes
   var selection = this.model.body.getSelection();
@@ -78,7 +92,17 @@ silex.controller.StageController.prototype.change = function() {
  * an element is dropped in a new container
  * @param {Element}   the dropped element
  */
-silex.controller.StageController.prototype.newContainer = function(target) {
-  this.checkElementVisibility(target);
-
+silex.controller.StageController.prototype.newContainer = function(container, element) {
+  if (element.parentNode !== container) {
+    // store initial position
+    var pos = goog.style.getPageOffset(element);
+    // move to the new container
+    this.model.element.removeElement(element);
+    this.model.element.addElement(container, element);
+    // restore position
+    goog.style.setPageOffset(element, pos);
+  }
+  // check if a parent is visible only on some pages,
+  // then element should be visible everywhere
+  this.checkElementVisibility(element);
 };

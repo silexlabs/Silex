@@ -41,6 +41,8 @@ goog.inherits(silex.controller.PropertyToolController, silex.controller.Controll
  * add the provided element to a given page
  */
 silex.controller.PropertyToolController.prototype.addToPage = function(elements, name) {
+  // undo checkpoint
+  this.undoCheckPoint();
   goog.array.forEach(elements, function(element) {
     this.model.page.addToPage(element, name);
   }, this);
@@ -51,6 +53,8 @@ silex.controller.PropertyToolController.prototype.addToPage = function(elements,
  * remove the provided element from a given page
  */
 silex.controller.PropertyToolController.prototype.removeFromPage = function(elements, name) {
+  // undo checkpoint
+  this.undoCheckPoint();
   goog.array.forEach(elements, function(element) {
     this.model.page.removeFromPage(element, name);
   }, this);
@@ -61,6 +65,8 @@ silex.controller.PropertyToolController.prototype.removeFromPage = function(elem
  * add link to the provided element
  */
 silex.controller.PropertyToolController.prototype.addLink = function(elements, name) {
+  // undo checkpoint
+  this.undoCheckPoint();
   goog.array.forEach(elements, function(element) {
     this.model.element.setLink(element, name);
   }, this);
@@ -71,6 +77,8 @@ silex.controller.PropertyToolController.prototype.addLink = function(elements, n
  * remove link from the provided element
  */
 silex.controller.PropertyToolController.prototype.removeLink = function(elements) {
+  // undo checkpoint
+  this.undoCheckPoint();
   goog.array.forEach(elements, function(element) {
     this.model.element.setLink(element);
   }, this);

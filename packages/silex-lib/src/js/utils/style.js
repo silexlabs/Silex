@@ -176,7 +176,7 @@ silex.utils.Style.computeBgColor = function(element) {
     }
   }
   else {
-    console.warn('was not able to take the element bg color into account', element);
+    console.warn('was not able to take the element bg color into account');
     elementColorArray = null;
   }
   var res;

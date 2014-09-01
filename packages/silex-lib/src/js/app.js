@@ -57,6 +57,8 @@ goog.require('silex.types.Model');
 goog.require('silex.types.View');
 // utils / helpers
 goog.require('silex.utils.Polyfills');
+goog.require('silex.utils.Dom');
+goog.require('silex.utils.DomCleaner');
 // display
 goog.require('silex.view.Menu');
 // tool boxes

@@ -39,8 +39,57 @@ goog.inherits(silex.controller.EditMenuController, silex.controller.ControllerBa
 
 
 /**
+ * undo the last action
+ */
+silex.controller.EditMenuController.prototype.undo = function() {
+  if (this.undoHistory.length > 0){
+    var html = this.model.file.getHtml();
+    var page = this.model.page.getCurrentPage();
+    this.redoHistory.push({
+      html: html,
+      page: page
+    });
+    var prevState = this.undoHistory.pop();
+    if (html !== prevState.html){
+      this.model.file.setHtml(prevState.html, goog.bind(function (){
+        this.model.page.setCurrentPage(prevState.page);
+        console.log(this.model.body.getSelection());
+      }, this), false);
+    }
+    else{
+        console.log(this.model.body.getSelection());
+      this.model.page.setCurrentPage(prevState.page);
+    }
+  }
+};
+
+
+/**
+ * redo the last action
+ */
+silex.controller.EditMenuController.prototype.redo = function() {
+  if (this.redoHistory.length > 0){
+    var html = this.model.file.getHtml();
+    var page = this.model.page.getCurrentPage();
+    this.undoHistory.push({
+      html: html,
+      page: page
+    });
+    var prevState = this.redoHistory.pop();
+    if (html !== prevState.html){
+      this.model.file.setHtml(prevState.html, goog.bind(function (){
+        this.model.page.setCurrentPage(prevState.page);
+      }, this), false);
+    }
+    else{
+      this.model.page.setCurrentPage(prevState.page);
+    }
+  }
+};
+
+
+/**
  * copy the selection for later paste
-* TODO: Move this elsewhere?
  */
 silex.controller.EditMenuController.prototype.copySelection = function() {
   this.tracker.trackAction('controller-events', 'request', 'copy', 0);
@@ -71,12 +120,13 @@ silex.controller.EditMenuController.prototype.copySelection = function() {
 
 /**
  * paste the previously copied element
-* TODO: Move this elsewhere?
  */
 silex.controller.EditMenuController.prototype.pasteSelection = function() {
   this.tracker.trackAction('controller-events', 'request', 'paste', 0);
   // default is selected element
   if (silex.controller.ControllerBase.clipboard) {
+    // undo checkpoint
+    this.undoCheckPoint();
     // find the container: original container, main background container or the stage
     var container;
     if (silex.controller.ControllerBase.clipboardParent &&
@@ -97,7 +147,7 @@ silex.controller.EditMenuController.prototype.pasteSelection = function() {
     // duplicate and add to the container
     goog.array.forEach(silex.controller.ControllerBase.clipboard, function(clipboardElement) {
       var element = clipboardElement.cloneNode(true);
-      this.model.element.appendChild(container, element);
+      this.model.element.addElement(container, element);
       // add to the selection
       selection.push(element);
       // apply the offset to the element, according to the scroll position
@@ -123,6 +173,9 @@ silex.controller.EditMenuController.prototype.removeSelectedElements = function(
   silex.utils.Notification.confirm('I am about to <strong>delete the selected element(s)</strong>, are you sure?',
       goog.bind(function(accept) {
         if (accept) {
+          // undo checkpoint
+          this.undoCheckPoint();
+          // do remove selected elements
           goog.array.forEach(elements, function(element) {
             this.model.element.removeElement(element);
           },this);
@@ -136,6 +189,8 @@ silex.controller.EditMenuController.prototype.removeSelectedElements = function(
  * take its type into account and open the corresponding editor
  */
 silex.controller.EditMenuController.prototype.editElement = function(opt_element) {
+  // undo checkpoint
+  this.undoCheckPoint();
   // default is selected element
   if (!opt_element) opt_element = this.model.body.getSelection()[0];
   switch (this.model.element.getType(opt_element)) {

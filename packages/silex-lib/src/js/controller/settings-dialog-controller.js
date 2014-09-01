@@ -40,6 +40,8 @@ goog.inherits(silex.controller.SettingsDialogController, silex.controller.Contro
 silex.controller.SettingsDialogController.prototype.browsePublishPath = function(type) {
   this.view.fileExplorer.openDialog(
       goog.bind(function(url) {
+        // undo checkpoint
+        this.undoCheckPoint();
         // start with /api/...
         if (url.indexOf('/') != 0) {
           url = '/' + url;
@@ -57,6 +59,13 @@ silex.controller.SettingsDialogController.prototype.browsePublishPath = function
       }, this)
   );
 };
+
+
+/**
+ * callback for the publication path text input
+ */
 silex.controller.SettingsDialogController.prototype.change = function(opt_data) {
+  // undo checkpoint
+  this.undoCheckPoint();
   this.model.head.setPublicationPath(opt_data);
 };

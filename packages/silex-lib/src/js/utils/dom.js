@@ -157,7 +157,7 @@ silex.utils.Dom.getBoundingBox = function(elements) {
     // take the bigger bottom and rigth
     bottom = isNaN(bottom) ? elementBottom : Math.max(bottom, elementBottom);
     right = isNaN(right) ? elementRight : Math.max(right, elementRight);
-  }, this);
+  });
 
   var res = {};
   // top left
@@ -178,9 +178,9 @@ silex.utils.Dom.getBoundingBox = function(elements) {
  * the HTML file must be saved somewhere because all URLs are made relative
  * This method creates an iframe with the temporary dom
  */
-silex.utils.Dom.prototype.publish = function(url, cbk, opt_errCbk) {
+silex.utils.Dom.publish = function(url, baseUrl, html, cbk, opt_errCbk) {
   // the file must be saved somewhere because all URLs are made relative
-  if (!this.getUrl()) {
+  if (!baseUrl) {
     if (opt_errCbk) {
       opt_errCbk({
         message: 'The file must be saved before I can clean it up for you.'
@@ -188,10 +188,6 @@ silex.utils.Dom.prototype.publish = function(url, cbk, opt_errCbk) {
     }
     return;
   }
-  // store the files to download and copy to assets, scripts...
-  var css = [];
-  var js = [];
-  var files = [];
   // create the iframe used to compute temporary dom
   var iframe = goog.dom.iframe.createBlank(goog.dom.getDomHelper(), 'position: absolute; left: -99999px; ');
   goog.dom.appendChild(document.body, iframe);
@@ -199,12 +195,16 @@ silex.utils.Dom.prototype.publish = function(url, cbk, opt_errCbk) {
   goog.events.listenOnce(iframe, 'load', function(e) {
     // clean up the DOM
     var contentDocument = goog.dom.getFrameContentDocument(iframe);
-    var html = this.cleanup(contentDocument, css, js, files);
+    var cleanedObj = silex.utils.DomCleaner.cleanup(contentDocument, baseUrl);
+    // store the files to download and copy to assets, scripts...
+    var htmlString = cleanedObj.htmlString;
+    console.log(cleanedObj, htmlString);
+    var cssString = cleanedObj.cssString;
+    var jsString = cleanedObj.jsString;
+    var files = cleanedObj.files;
     // call the publish service
-    silex.service.SilexTasks.getInstance().publish(url, html, css, js, files, cbk, opt_errCbk);
-  }, false, this);
-  // start the process
-  var html = this.getHtml();
+    silex.service.SilexTasks.getInstance().publish(url, htmlString, cssString, jsString, files, cbk, opt_errCbk);
+  }, false);
   // prevent scripts from executing
   html = html.replace(/type=\"text\/javascript\"/gi, 'type="text/notjavascript"');
   // write the content (leave this after "listen")

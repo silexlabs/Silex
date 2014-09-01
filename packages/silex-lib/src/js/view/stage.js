@@ -246,15 +246,7 @@ silex.view.Stage.prototype.initEvents = function(contentWindow) {
     var newContainer = e.target.parentNode;
     // move all selected elements to the new container
     goog.array.forEach(this.selectedElements, function(element) {
-      if (element.parentNode !== newContainer) {
-        // store initial position
-        var pos = goog.style.getPageOffset(element);
-        // move to the new container
-        goog.dom.appendChild(newContainer, element);
-        // restore position
-        goog.style.setPageOffset(element, pos);
-      }
-      this.controller.stageController.newContainer(element);
+      this.controller.stageController.newContainer(newContainer, element);
     }, this);
     // update property tool box
     this.propertyChanged();
@@ -263,16 +255,11 @@ silex.view.Stage.prototype.initEvents = function(contentWindow) {
   // move it to the body
   goog.events.listen(this.bodyElement, 'droppedOutOfStage', function(e) {
     var element = e.target;
-    // store initial position
-    var pos = goog.style.getPageOffset(element);
-    // move to the new container (the stage)
-    goog.dom.appendChild(this.bodyElement, element);
-    // restore position
-    goog.style.setPageOffset(element, pos);
+    this.controller.stageController.newContainer(this.bodyElement, element);
   }, false, this);
   // detect double click
   goog.events.listen(this.bodyElement, goog.events.EventType.DBLCLICK, function(e) {
-    this.controller.stageController.editElement();
+    this.controller.editMenuController.editElement();
   }, false, this);
 };
 
@@ -375,6 +362,8 @@ silex.view.Stage.prototype.handleMouseMove = function(target, x, y) {
     }
     // update states
     if (!this.isDragging && !this.isResizing) {
+      // notify controller that a change is about to take place
+      this.controller.stageController.beforeChange();
       if (this.lastClickWasResize) {
         this.isResizing = true;
       }

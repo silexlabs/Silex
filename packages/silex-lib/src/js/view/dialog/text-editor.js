@@ -28,7 +28,6 @@ goog.require('goog.editor.plugins.LinkBubble');
 goog.require('goog.editor.plugins.ListTabHandler');
 goog.require('goog.editor.plugins.RemoveFormatting');
 goog.require('goog.editor.plugins.SpacesTabHandler');
-goog.require('goog.editor.plugins.UndoRedo');
 goog.require('goog.events');
 goog.require('goog.events.KeyCodes');
 goog.require('goog.text.LoremIpsum');
@@ -78,7 +77,6 @@ silex.view.dialog.TextEditor.prototype.initUI = function() {
   // Create and register all of the editing plugins you want to use.
   this.textField.registerPlugin(new goog.editor.plugins.BasicTextFormatter());
   this.textField.registerPlugin(new goog.editor.plugins.RemoveFormatting());
-  this.textField.registerPlugin(new goog.editor.plugins.UndoRedo());
   this.textField.registerPlugin(new goog.editor.plugins.ListTabHandler());
   this.textField.registerPlugin(new goog.editor.plugins.SpacesTabHandler());
   this.textField.registerPlugin(new goog.editor.plugins.EnterHandler());
@@ -136,8 +134,6 @@ silex.view.dialog.TextEditor.prototype.initUI = function() {
     goog.editor.Command.FONT_COLOR,
     goog.editor.Command.BACKGROUND_COLOR,
     goog.editor.Command.LINK,
-    goog.editor.Command.UNDO,
-    goog.editor.Command.REDO,
     goog.editor.Command.UNORDERED_LIST,
     goog.editor.Command.ORDERED_LIST,
     goog.editor.Command.INDENT,
@@ -152,7 +148,6 @@ silex.view.dialog.TextEditor.prototype.initUI = function() {
       goog.dom.getElementByClass('toolbar', this.element));
 
   // lorem ipsum button
-  var generator = new goog.text.LoremIpsum();
   var button = goog.ui.editor.ToolbarFactory.makeButton('loremIpsumBtn', 'insert lorem ipsum text', 'L');
   goog.events.listen(button, goog.ui.Component.EventType.ACTION, this.onLoremIpsumClick, false, this);
   myToolbar.addChild(new goog.ui.ToolbarSeparator(), true);
@@ -320,6 +315,7 @@ silex.view.dialog.TextEditor.prototype.setCustomCssStyles = function(customCssSt
  * user clicked lorem ipsum button
  */
 silex.view.dialog.TextEditor.prototype.onLoremIpsumClick = function(e) {
+  var generator = new goog.text.LoremIpsum();
   var text = generator.generateParagraph(true);
   var container = goog.dom.createElement('P');
   // add normal style

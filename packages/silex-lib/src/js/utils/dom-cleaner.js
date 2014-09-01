@@ -29,13 +29,29 @@ silex.utils.DomCleaner = function() {
 
 
 /**
+ * List of URLs from which we are allowed to download the content locally
+ * during the process of publishing the file
+ * This is made to prevent trying to download locally fonts from google fonts
+ * or scripts from an embed code
+ */
+silex.utils.DomCleaner.DOWNLOAD_LOCALLY_FROM = [
+  'http://static.silex.me',
+  silex.utils.Url.getRootUrl()
+];
+
+
+/**
  * cleanup html page
  * remove Silex specific data from HTML
  * create an external CSS file
  * generates a list of js scripts and assets to be eported with the file
- * @return the cleaned up raw HTML {string} or null if an error occured
+ * @return an object with
+ *      html: the cleaned up raw HTML {string} or null if an error occured
+ *      css: list of css files
+ *      jsString: a script included in the html
+ *      files: list of assets files
  */
-silex.model.DomCleaner.cleanup = function(contentDocument, baseUrl, css, js, files) {
+silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
   var headElement = contentDocument.head;
   var bodyElement = contentDocument.body;
 
@@ -74,7 +90,7 @@ silex.model.DomCleaner.cleanup = function(contentDocument, baseUrl, css, js, fil
     goog.dom.removeNode(cssTag);
     // background-image / url(...)
     tmpStr = tmpStr.replace(/url\(()(.+?)\1\)/gi, function(match, group1, group2) {
-      return silex.model.DomCleaner.filterBgImage(baseUrl, files, match, group1, group2);
+      return silex.utils.DomCleaner.filterBgImage(baseUrl, files, match, group1, group2);
     });
     cssStr += tmpStr;
   }
@@ -91,7 +107,7 @@ silex.model.DomCleaner.cleanup = function(contentDocument, baseUrl, css, js, fil
     if (!silex.utils.Url.isAbsoluteUrl(relative)) {
       relative = '/' + relative;
     }
-    if (silex.model.DomCleaner.isDownloadable(absolute)) {
+    if (silex.utils.DomCleaner.isDownloadable(absolute)) {
       var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
       var newRelativePath = 'assets/' + fileName;
       files.push({
@@ -107,13 +123,13 @@ silex.model.DomCleaner.cleanup = function(contentDocument, baseUrl, css, js, fil
 
   // background-image / url(...)
   bodyStr = bodyStr.replace(/url\(()(.+?)\1\)/gi, function(match, group1, group2) {
-    return silex.model.DomCleaner.filterBgImage(baseUrl, files, match, group1, group2);
+    return silex.utils.DomCleaner.filterBgImage(baseUrl, files, match, group1, group2);
   });
 
   // handle the body itself
   var oldStyle = bodyElement.getAttribute('style');
   var newStyle = oldStyle.replace(/url\(()(.+?)\1\)/gi, function(match, group1, group2) {
-    return silex.model.DomCleaner.filterBgImage(baseUrl, files, match, group1, group2);
+    return silex.utils.DomCleaner.filterBgImage(baseUrl, files, match, group1, group2);
   });
   bodyElement.setAttribute('style', newStyle);
 
@@ -125,7 +141,7 @@ silex.model.DomCleaner.cleanup = function(contentDocument, baseUrl, css, js, fil
     if (!silex.utils.Url.isAbsoluteUrl(relative)) {
       relative = '/' + relative;
     }
-    if (silex.model.DomCleaner.isDownloadable(absolute)) {
+    if (silex.utils.DomCleaner.isDownloadable(absolute)) {
       var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
       var newRelativePath = 'css/' + fileName;
       files.push({
@@ -142,7 +158,7 @@ silex.model.DomCleaner.cleanup = function(contentDocument, baseUrl, css, js, fil
   // scripts to download and put to js/
   headStr = headStr.replace(/src="?([^"]*)"/gi, function(match, group1, group2) {
     var absolute = silex.utils.Url.getAbsolutePath(group1, baseUrl);
-    if (silex.model.DomCleaner.isDownloadable(absolute)) {
+    if (silex.utils.DomCleaner.isDownloadable(absolute)) {
       var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
       // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
       if (!silex.utils.Url.isAbsoluteUrl(relative)) {
@@ -258,7 +274,12 @@ silex.model.DomCleaner.cleanup = function(contentDocument, baseUrl, css, js, fil
   html += '<body class="' + bodyClass + ' silex-runtime silex-published">' + bodyStr + '</body>';
   html += '</html>';
 
-  return html;
+  return {
+    htmlString: html,
+    cssString: cssStr,
+    jsString: jsString,
+    files: files
+  };
 };
 
 
@@ -267,7 +288,7 @@ silex.model.DomCleaner.cleanup = function(contentDocument, baseUrl, css, js, fil
  * take into account that these will be referenced in css/style.css,
  * so they must be relative to "css/"
  */
-silex.model.DomCleaner.filterBgImage = function(baseUrl, files, match, group1, group2) {
+silex.utils.DomCleaner.filterBgImage = function(baseUrl, files, match, group1, group2) {
   // remove the ''
   if (group2.indexOf("'") === 0) group2 = group2.substr(1);
   if (group2.lastIndexOf("'") === group2.length - 1) group2 = group2.substr(0, group2.length - 1);
@@ -278,7 +299,7 @@ silex.model.DomCleaner.filterBgImage = function(baseUrl, files, match, group1, g
   if (!silex.utils.Url.isAbsoluteUrl(relative)) {
     relative = '/' + relative;
   }
-  if (silex.model.DomCleaner.isDownloadable(absolute)) {
+  if (silex.utils.DomCleaner.isDownloadable(absolute)) {
     var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
     var newRelativePath = 'assets/' + fileName;
     var res = "url('../" + newRelativePath + "')";
@@ -297,7 +318,7 @@ silex.model.DomCleaner.filterBgImage = function(baseUrl, files, match, group1, g
  * det if a given URL is supposed to be downloaded locally
  * @return true if the url is relative or it is a known domain (sttic.silex.me)
  */
-silex.model.DomCleaner.isDownloadable = function(url) {
+silex.utils.DomCleaner.isDownloadable = function(url) {
   // do not download files with ? or & since it is probably dynamic
   if (url.indexOf('?') >= 0 || url.indexOf('&') >= 0) {
     return false;
@@ -308,7 +329,7 @@ silex.model.DomCleaner.isDownloadable = function(url) {
   }
   // download files from a known domain (sttic.silex.me)
   var found = false;
-  goog.array.forEach(silex.model.File.DOWNLOAD_LOCALLY_FROM, function(baseUrl) {
+  goog.array.forEach(silex.utils.DomCleaner.DOWNLOAD_LOCALLY_FROM, function(baseUrl) {
     if (url.indexOf(baseUrl) === 0) {
       // url starts by the base url, so it is downloadable
       found = true;

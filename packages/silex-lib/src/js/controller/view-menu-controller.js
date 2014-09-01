@@ -42,6 +42,9 @@ goog.inherits(silex.controller.ViewMenuController, silex.controller.ControllerBa
  * edit Silex editable css styles
  */
 silex.controller.ViewMenuController.prototype.openCssEditor = function() {
+  // undo checkpoint
+  this.undoCheckPoint();
+  // open the editor
   this.view.cssEditor.openEditor(this.model.head.getHeadStyle());
 };
 
@@ -50,6 +53,9 @@ silex.controller.ViewMenuController.prototype.openCssEditor = function() {
  * edit Silex editable js scripts
  */
 silex.controller.ViewMenuController.prototype.openJsEditor = function() {
+  // undo checkpoint
+  this.undoCheckPoint();
+  // open the editor
   this.view.jsEditor.openEditor(this.model.head.getHeadScript());
 };
 

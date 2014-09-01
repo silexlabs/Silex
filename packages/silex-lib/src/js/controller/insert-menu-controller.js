@@ -45,6 +45,8 @@ goog.inherits(silex.controller.InsertMenuController, silex.controller.Controller
  */
 silex.controller.InsertMenuController.prototype.addElement = function(type) {
   this.tracker.trackAction('controller-events', 'request', 'insert.' + type, 0);
+  // undo checkpoint
+  this.undoCheckPoint();
   var element = null;
   try {
     // create the element and add it to the stage
@@ -89,6 +91,8 @@ silex.controller.InsertMenuController.prototype.createPage = function(successCbk
   this.tracker.trackAction('controller-events', 'request', 'insert.page', 0);
   this.getUserInputPageName('Your new page name', goog.bind(function(name, displayName) {
     if (name) {
+      // undo checkpoint
+      this.undoCheckPoint();
       // create the page model
       this.model.page.createPage(name, displayName);
       // update view
