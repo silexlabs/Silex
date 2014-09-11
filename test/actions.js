@@ -1,6 +1,9 @@
 // automate tasks in Silex
 
 var fs = require('fs');
+var file_explorer = require('./model/file-explorer-model.js');
+var logging = require('./logging');
+
 
 // dummy function used when the result is an expected error
 function _(){}
@@ -10,22 +13,12 @@ var originalTabId = null;
 // store the frame which has focus
 var currentFrame = null;
 
-function argsToString(args) {
-    var ret = '';
-    for(var idx in args){
-        if (typeof(args[idx]) === 'string'){
-            ret += args[idx] + ', ';
-        }
-    }
-    return ret;
-}
-
 /**
  * switch frame
  * @param opt_frameId   the frame id or null for main Silex UI frame
  */
 exports.switchFrame = function(client, opt_frameId, cbk){
-    console.log('switchFrame(' + argsToString(arguments));
+    console.log('switchFrame(' + logging.argsToString(arguments));
     if (currentFrame){
        client.frame();
     }
@@ -35,7 +28,7 @@ exports.switchFrame = function(client, opt_frameId, cbk){
     currentFrame = opt_frameId;
     client
         .pause(200)
-        .call(function(){console.log('-- switchFrame(', argsToString(arguments));})
+        .call(function(){console.log('-- switchFrame(', logging.argsToString(arguments));})
         .call(cbk);
 }
 
@@ -43,7 +36,7 @@ exports.switchFrame = function(client, opt_frameId, cbk){
  * load Silex
  */
 exports.loadSilex = function(client, cbk){
-    console.log('loadSilex(' + argsToString(arguments));
+    console.log('loadSilex(' + logging.argsToString(arguments));
     client
       // load silex
       .url('http://localhost:6805/')
@@ -54,26 +47,22 @@ exports.loadSilex = function(client, cbk){
         originalTabId = windowId;
       })
       .pause(200)
-      .call(function(){console.log('-- loadSilex(', argsToString(arguments));})
+      .call(function(){console.log('-- loadSilex(', logging.argsToString(arguments));})
       .call(cbk);
 }
 
 /**
  * open Silex file explorer dialog
  */
-exports.openFile = function(client, cbk){
-    console.log('openFile(' + argsToString(arguments));
+exports.openFile = function(client){
+    console.log('openFile(' + logging.argsToString(arguments))
     exports.switchFrame(client, null, function () {
-        client
+         console.log('-- ready to call file explore open file(', logging.argsToString(arguments))
           // open the file menu and click open
-          .click('.menu-item-file')
-          .click('.menu-item-file-open')
-          // check that the file explorer is opened
-          .waitFor('#silex-file-explorer', 200)
-          .isVisible('#silex-file-explorer')
-          .pause(200)
-          .call(function(){console.log('-- openFile(', argsToString(arguments));})
-          .call(cbk);
+        file_explorer.openFile(client)
+
+          client.pause(200)
+        console.log('-- openFile(', logging.argsToString(arguments))
     });
 }
 
@@ -81,7 +70,7 @@ exports.openFile = function(client, cbk){
  * open Silex file explorer dialog
  */
 exports.openInsertImage = function(client, cbk){
-    console.log('openInsertImage(' + argsToString(arguments));
+    console.log('openInsertImage(' + logging.argsToString(arguments));
     exports.switchFrame(client, null, function () {
         client
           // open the file menu and click open
@@ -91,7 +80,7 @@ exports.openInsertImage = function(client, cbk){
           .waitFor('#silex-file-explorer', 200)
           .isVisible('#silex-file-explorer')
           .pause(200)
-          .call(function(){console.log('-- openInsertImage(', argsToString(arguments));})
+          .call(function(){console.log('-- openInsertImage(', logging.argsToString(arguments));})
           .call(cbk);
     });
 }
@@ -100,7 +89,7 @@ exports.openInsertImage = function(client, cbk){
  * open Silex file explorer dialog
  */
 exports.openSelectBackgroundImage = function(client, cbk){
-    console.log('openSelectBackgroundImage(' + argsToString(arguments));
+    console.log('openSelectBackgroundImage(' + logging.argsToString(arguments));
     exports.switchFrame(client, null, function () {
         client
           // open the file menu and click open
@@ -109,7 +98,7 @@ exports.openSelectBackgroundImage = function(client, cbk){
           .waitFor('#silex-file-explorer', 200)
           .isVisible('#silex-file-explorer')
           .pause(200)
-          .call(function(){console.log('-- openSelectBackgroundImage(', argsToString(arguments));})
+          .call(function(){console.log('-- openSelectBackgroundImage(', logging.argsToString(arguments));})
           .call(cbk);
     });
 }
@@ -153,11 +142,11 @@ exports.saveAs = function(client, name, cbk){
         exports.switchFrame(client, null, function () {
             client
                 .pause(2000)
-                .call(function(){console.log('-- saveAs(', argsToString(arguments));})
+                .call(function(){console.log('-- saveAs(', logging.argsToString(arguments));})
                 .call(cbk);
         });
     }
-    console.log('saveAs(' + argsToString(arguments));
+    console.log('saveAs(' + logging.argsToString(arguments));
     exports.switchFrame(client, null, function () {
         client
           // open the file menu and click open
@@ -195,7 +184,7 @@ exports.saveAs = function(client, name, cbk){
  * open Silex file explorer dialog
  */
 exports.setPublicationPath = function(client, path, cbk){
-    console.log('setPublicationPath(' + argsToString(arguments));
+    console.log('setPublicationPath(' + logging.argsToString(arguments));
     exports.switchFrame(client, null, function () {
         client
           // open the file menu and click open
@@ -207,7 +196,7 @@ exports.setPublicationPath = function(client, path, cbk){
           .addValue('input.input-publication-path', path)
           .click('.close-btn')
           .pause(200)
-          .call(function(){console.log('-- setPublicationPath(', argsToString(arguments));})
+          .call(function(){console.log('-- setPublicationPath(', logging.argsToString(arguments));})
           .call(cbk);
     });
 }
@@ -234,7 +223,7 @@ exports.publish = function(client, cbk){
  * in the file explorer: login to the "www" service and display files
  */
 exports.enterWwwService = function(client, cbk){
-    console.log('enterWwwService(' + argsToString(arguments));
+    console.log('enterWwwService(' + logging.argsToString(arguments));
     // enter the cloud explorer frame
     exports.switchFrame(client, 'silex-file-explorer', function () {
         client
@@ -263,7 +252,7 @@ exports.enterWwwService = function(client, cbk){
                         .pause(200)
                         // close the file explorer
                         .isVisible('.closeBtn')
-                        .call(function(){console.log('-- enterWwwService(', argsToString(arguments));})
+                        .call(function(){console.log('-- enterWwwService(', logging.argsToString(arguments));})
                         .call(cbk);
                 });
           });
@@ -275,13 +264,13 @@ exports.enterWwwService = function(client, cbk){
  * enter a folder while the file explorer is opened
  */
 exports.selectFile = function(client, folderName, cbk) {
-    console.log('selectFile(' + argsToString(arguments));
+    console.log('selectFile(' + logging.argsToString(arguments));
     exports.switchFrame(client, 'silex-file-explorer', function () {
         client
             .waitFor('//span[text()="'+folderName+'"]', 1000)
             .click('//span[text()="'+folderName+'"]')
             .pause(200)
-            .call(function(){console.log('-- selectFile(', argsToString(arguments));})
+            .call(function(){console.log('-- selectFile(', logging.argsToString(arguments));})
             .call(cbk);
     });
 }
@@ -290,12 +279,12 @@ exports.selectFile = function(client, folderName, cbk) {
  * click close button of CE
  */
 exports.closeFileExplorer = function(client, cbk) {
-    console.log('closeFileExplorer(' + argsToString(arguments));
+    console.log('closeFileExplorer(' + logging.argsToString(arguments));
     exports.switchFrame(client, 'silex-file-explorer', function () {
         client
           .click('.closeBtn')
           .pause(200)
-          .call(function(){console.log('-- closeFileExplorer(', argsToString(arguments));})
+          .call(function(){console.log('-- closeFileExplorer(', logging.argsToString(arguments));})
           .call(cbk);
     });
 }
@@ -304,13 +293,13 @@ exports.closeFileExplorer = function(client, cbk) {
  * insert container
  */
 exports.insertContainer = function(client, cbk) {
-    console.log('insertContainer(' + argsToString(arguments));
+    console.log('insertContainer(' + logging.argsToString(arguments));
     exports.switchFrame(client, null, function () {
         client
           .click('.menu-item-insert')
           .click('.menu-item-insert-container')
           .pause(200)
-          .call(function(){console.log('-- insertContainer(', argsToString(arguments));})
+          .call(function(){console.log('-- insertContainer(', logging.argsToString(arguments));})
           .call(cbk);
     });
 }
@@ -319,11 +308,11 @@ exports.insertContainer = function(client, cbk) {
  * enter website iframe
  */
 exports.switchToMainTab = function(client, cbk) {
-    console.log('switchToMainTab(' + argsToString(arguments));
+    console.log('switchToMainTab(' + logging.argsToString(arguments));
     currentFrame = null;
     client
       .switchTab(originalTabId)
       .pause(200)
-      .call(function(){console.log('-- switchToMainTab(', argsToString(arguments));})
+      .call(function(){console.log('-- switchToMainTab(', logging.argsToString(arguments));})
       .call(cbk);
 }
