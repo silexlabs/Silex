@@ -252,13 +252,17 @@ module.exports = function(grunt) {
           globals: ['should'],
           ignoreLeaks: false,
           ui: 'bdd',
-          reporter: 'nyan',
+          reporter: 'spec',
         },
         all: {
             src: [
                 'test/functional/file-explorer.js',
                 'test/functional/save.js',
                 'test/functional/publish.js',
+                'test/actions.js',
+                'test/helper.js',
+                'test/logging.js',
+                'test/model/file-explorer-model.js',
             ],
         },
       },
