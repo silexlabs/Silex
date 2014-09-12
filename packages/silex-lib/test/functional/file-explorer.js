@@ -33,6 +33,7 @@ describe('Silex file explorer dialog test', function(){
         file_explorer.openFile(client, function (){
           file_explorer.isFileExplorerVisible(client, function(isVisible) {
             assert.equal(true,isVisible,"file explorer not visible");
+            done();
           });
         });
       });
