@@ -34,7 +34,7 @@ describe('Silex insert and publish test', function(){
         console.log('next');
         // create the client
         client = helper.createClient(webdriverjs);
-        //done();
+        done();
     }
     // cleanup the content of the publish folder
     fs.exists(publishFolder, function (exists) {
@@ -75,7 +75,7 @@ describe('Silex insert and publish test', function(){
   it('should publish the website',function(done) {
     // FIXME: check that editable.html exists
     actions.loadSilex(client, function () {
-        file_explorer(client, function () {
+        file_explorer.openFile(client, function () {
             actions.enterWwwService(client, function () {
                 actions.selectFile(client, 'functional-tests', function () {
                     actions.selectFile(client, 'editable-publish.html', function () {
