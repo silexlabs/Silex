@@ -32,12 +32,13 @@
     "compression": "1.0.11"
   },
   "devDependencies": {
-    "grunt-selenium-webdriver": "0.2.422",
-    "webdriverjs": "1.7.5",
-    "grunt-contrib-watch": "0.6.1",
+    "assert": "^1.1.2",
     "grunt-append-sourcemapping": "0.0.2",
+    "grunt-contrib-watch": "0.6.1",
+    "grunt-selenium-webdriver": "0.2.422",
     "grunt-simple-mocha": "0.4.0",
-    "phantomjs": "1.9.7-15"
+    "phantomjs": "1.9.7-15",
+    "webdriverjs": "1.7.5"
   },
   "repository": {
     "type": "git",
