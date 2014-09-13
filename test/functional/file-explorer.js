@@ -3,10 +3,12 @@
   https://github.com/camme/webdriverjs
 */
 
-
 var webdriverjs = require('webdriverjs'),
     helper = require('../helper.js'),
-    actions = require('../actions.js');
+    actions = require('../actions.js'),
+    file_explorer = require('../model/file-explorer-model.js'),
+    assert = require ('assert');
+
 
 
 if (!helper.getDriverName()){
@@ -28,9 +30,15 @@ describe('Silex file explorer dialog test', function(){
   // open Silex file explorer dialog
   it('should open Silex file explorer dialog',function(done) {
     actions.loadSilex(client, function () {
-        actions.openFile(client, done);
-    });
+        file_explorer.openFile(client, function (){
+          file_explorer.isFileExplorerVisible(client, function(isVisible) {
+            assert.equal(true,isVisible,"file explorer not visible");
+            done();
+          });
+        });
+      });
   });
+
   // in the file explorer: login to the "www" service and display files
   it('login to the "www" service and display files',function(done) {
     actions.enterWwwService(client, function () {
