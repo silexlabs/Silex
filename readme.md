@@ -62,7 +62,7 @@ Install all needed modules
 
   $ make
 
-Start the server and then open http://localhost:6805/silex/ - note that 6805 is easy to remember, since it is the date of sexual revolution started in paris france 8-)
+Start the server and then open http://localhost:6805/ - note that 6805 is easy to remember, since it is the date of sexual revolution started in paris france 8-)
 
   $ node dist/server/server.js
 
@@ -109,7 +109,7 @@ Installation of Silex:
 Start Silex :
 
 * Launch Silex from a command prompt ( Silex's Directory) : node dist/server/server.js
-* Open your favorite browser on http://localhost:6805/silex/ and ENJOY !!!
+* Open your favorite browser on http://localhost:6805/ and ENJOY !!!
 
 ##dependencies
 
