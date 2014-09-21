@@ -1,15 +1,15 @@
 all:
 	npm install
-	grunt install
+	node_modules/grunt-cli/bin/grunt install
 
 tests:
-	grunt test -phantomjs
-	grunt test -chrome
-	grunt test -firefox
+	node_modules/grunt-cli/bin/grunt test -phantomjs
+	node_modules/grunt-cli/bin/grunt test -chrome
+	node_modules/grunt-cli/bin/grunt test -firefox
 
 test:
-	grunt test -phantomjs
+	node_modules/grunt-cli/bin/grunt test -phantomjs
 
 precommit:
-	grunt test -phantomjs
+	node_modules/grunt-cli/bin/grunt test -phantomjs
 
