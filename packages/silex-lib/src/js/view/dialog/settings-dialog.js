@@ -1,13 +1,13 @@
-//////////////////////////////////////////////////
-// Silex, live web creation
-// http://projects.silexlabs.org/?/silex/
-//
-// Copyright (c) 2012 Silex Labs
-// http://www.silexlabs.org/
-//
-// Silex is available under the GPL license
-// http://www.silexlabs.org/silex/silex-licensing/
-//////////////////////////////////////////////////
+/**
+ * Silex, live web creation
+ * http://projects.silexlabs.org/?/silex/
+ *
+ * Copyright (c) 2012 Silex Labs
+ * http://www.silexlabs.org/
+ *
+ * Silex is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
+ */
 
 /**
  * @fileoverview The settings dialog which handles the file settings
@@ -25,18 +25,19 @@ goog.require('silex.view.dialog.DialogBase');
 
 /**
  * the Silex SettingsDialog class
- * @constructor
- * @param  {Element}  element  DOM element to wich I render the UI
- * @param  {silex.types.View} view  view class which holds the other views
- * @param  {silex.types.Controller} controller  structure which holds the controller instances
  * load the template and make it a SettingsDialog dialog
  * this is only the UI part, to let user setup publish functionnality
+ * @extends {silex.view.dialog.DialogBase}
+ * @constructor
+ * @param {!Element} element   container to render the UI
+ * @param  {!silex.types.Controller} controller  structure which holds
+ *                                               the controller instances
  */
-silex.view.dialog.SettingsDialog = function(element, view, controller) {
+silex.view.dialog.SettingsDialog = function(element, controller) {
   // call super
-  goog.base(this, element, view, controller);
+  goog.base(this, element, controller);
   // override this.background
-  this.background = goog.dom.getElementByClass('settings-background');
+  this.background = /** @type {!Element} */ (goog.dom.getElementByClass('settings-background'));
   // init the editor
   this.publicationPath = '';
   // publication path browse button
@@ -77,7 +78,7 @@ silex.view.dialog.SettingsDialog.prototype.initUI = function() {
 /**
  * render the template
 * @see silex.model.Head
-* @param {string}   the publication path
+* @param {string} path   the publication path
  */
 silex.view.dialog.SettingsDialog.prototype.redraw = function(path) {
   var inputPublicationPath = goog.dom.getElementByClass('input-publication-path');
@@ -92,10 +93,10 @@ silex.view.dialog.SettingsDialog.prototype.redraw = function(path) {
 
 /**
  * open settings dialog
- * @param {function} cbk   callback to be called when the user closes the dialog
+ * @param {?function()=} opt_cbk   callback to be called when the user closes the dialog
  */
-silex.view.dialog.SettingsDialog.prototype.openDialog = function(cbk) {
-  this.onClose = cbk;
+silex.view.dialog.SettingsDialog.prototype.openDialog = function(opt_cbk) {
+  this.onClose = opt_cbk;
   this.openEditor();
 };
 

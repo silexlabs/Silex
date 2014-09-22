@@ -58,6 +58,7 @@ module.exports = function(grunt) {
   // deploy tasks
   grunt.registerTask('heroku', ['releaseDeploy']);
   grunt.registerTask('deploy', ['releaseDeploy']);
+  grunt.registerTask('postinstall', ['deploy']);
   grunt.registerTask('releaseDeploy', ['concat', 'less:production', 'jade:release', 'closureBuilder:release']);
   grunt.registerTask('debugDeploy', ['concat', 'less:development', 'jade:debug', 'closureBuilder:debug', 'append-sourcemapping']);
 
@@ -185,46 +186,54 @@ module.exports = function(grunt) {
     closureBuilder: {
       release: {
         options: {
-          closureLibraryPath: 'submodules/closure-library',
-          namespaces: ['silex.App'],
+          namespaces: 'silex.App',
           builder: 'submodules/closure-library/closure/bin/build/closurebuilder.py',
           compilerFile: 'build/closure-compiler.jar',
           compile: true,
+          checkModified: true,
           compilerOpts: {
-            compilation_level: 'SIMPLE_OPTIMIZATIONS',
-            language_in: 'ECMASCRIPT5',
+            compilation_level: 'ADVANCED_OPTIMIZATIONS',
+            language_in: 'ECMASCRIPT6_STRICT',
+            jscomp_error: ['accessControls', 'ambiguousFunctionDecl', 'checkRegExp', 'checkTypes', 'checkVars', 'const', 'constantProperty', 'deprecated', 'duplicateMessage', 'es5Strict', 'externsValidation', 'fileoverviewTags', 'globalThis', 'internetExplorerChecks', 'invalidCasts', 'missingProperties', 'nonStandardJsDocs', 'strictModuleDepCheck', 'typeInvalidation', 'undefinedNames', 'undefinedVars', 'unknownDefines', 'uselessCode', 'visibility'],
+            language_out: 'ECMASCRIPT3',
+            warning_level: 'VERBOSE',
+            define: ["'goog.DEBUG=false'"],
             debug: false,
-            create_source_map: 'dist/client/js/admin.min.js.map',
-            source_map_format: 'V3'
+            externs: ['src/js/externs.js'],
           },
         },
-        src: ['src/js/', 'submodules/closure-library/'],
-        dest: 'dist/client/js/admin.min.js'
+        src: ['submodules/closure-library/', 'src/js/'],
+        dest: 'dist/client/js/admin.js',
       },
       debug: {
         options: {
-          closureLibraryPath: 'submodules/closure-library',
           namespaces: 'silex.App',
           builder: 'submodules/closure-library/closure/bin/build/closurebuilder.py',
           compilerFile: 'build/closure-compiler.jar',
           compile: true, // disable to speedup the compilation but also disable source map
+          checkModified: true,
           compilerOpts: {
             compilation_level: 'SIMPLE_OPTIMIZATIONS',
-            language_in: 'ECMASCRIPT5',
+            language_in: 'ECMASCRIPT6_STRICT',
+            jscomp_error: ['accessControls', 'ambiguousFunctionDecl', 'checkRegExp', 'checkTypes', 'checkVars', 'const', 'constantProperty', 'deprecated', 'duplicateMessage', 'es5Strict', 'externsValidation', 'fileoverviewTags', 'globalThis', 'internetExplorerChecks', 'invalidCasts', 'missingProperties', 'nonStandardJsDocs', 'strictModuleDepCheck', 'typeInvalidation', 'undefinedNames', 'undefinedVars', 'unknownDefines', 'uselessCode', 'visibility'],
+            language_out: 'ECMASCRIPT3',
             formatting: 'PRETTY_PRINT',
+            warning_level: 'VERBOSE',
+            define: ["'goog.DEBUG=true'"],
             debug: true,
             create_source_map: 'dist/client/js/admin.js.map',
-            source_map_format: 'V3'
+            source_map_format: 'V3',
+            externs: ['src/js/externs.js'],
           },
         },
         src: ['submodules/closure-library/', 'src/js/'],
-        dest: 'dist/client/js/admin.js'
+        dest: 'dist/client/js/admin.js',
       },
     },
     "append-sourcemapping": {
         main: {
             files: {
-                "dist/client/js/admin.js": "admin.js.map"
+                "dist/client/js/admin.js": "admin.js.map",
             },
         },
     },

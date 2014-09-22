@@ -1,13 +1,13 @@
-//////////////////////////////////////////////////
-// Silex, live web creation
-// http://projects.silexlabs.org/?/silex/
-//
-// Copyright (c) 2012 Silex Labs
-// http://www.silexlabs.org/
-//
-// Silex is available under the GPL license
-// http://www.silexlabs.org/silex/silex-licensing/
-//////////////////////////////////////////////////
+/**
+ * Silex, live web creation
+ * http://projects.silexlabs.org/?/silex/
+ *
+ * Copyright (c) 2012 Silex Labs
+ * http://www.silexlabs.org/
+ *
+ * Silex is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
+ */
 
 /**
  * @fileoverview A controller listens to a view element,
@@ -23,15 +23,14 @@ goog.require('silex.service.SilexTasks');
 
 /**
  * @constructor
- * @extends {silex.controller.ControllerBase
+ * @extends {silex.controller.ControllerBase}
  * listen to the view events and call the main controller's methods}
- * @param  {silex.types.Controller} controller  structure which holds the controller instances
  * @param {silex.types.Model} model
  * @param  {silex.types.View} view  view class which holds the other views
  */
-silex.controller.InsertMenuController = function(controller, model, view) {
+silex.controller.InsertMenuController = function(model, view) {
   // call super
-  silex.controller.ControllerBase.call(this, controller, model, view);
+  silex.controller.ControllerBase.call(this, model, view);
 };
 
 // inherit from silex.controller.ControllerBase
@@ -40,7 +39,7 @@ goog.inherits(silex.controller.InsertMenuController, silex.controller.Controller
 
 /**
  * create an element and add it to the stage
- * @param {string} the desired type for the new element
+ * @param {string} type the desired type for the new element
  * @return {Element} the new element
  */
 silex.controller.InsertMenuController.prototype.addElement = function(type) {
@@ -63,29 +62,9 @@ silex.controller.InsertMenuController.prototype.addElement = function(type) {
 
 
 /**
- * called after an element has been created
- * add the element to the current page (only if it has not a container which is in a page)
- * redraw the tools and set the element as editable
- * @param {Element} the element to add
- */
-silex.controller.InsertMenuController.prototype.doAddElement = function(element) {
-  // only visible on the current page
-  var currentPageName = this.model.page.getCurrentPage();
-  this.model.page.removeFromAllPages(element);
-  this.model.page.addToPage(element, currentPageName);
-  // unless one of its parents is in a page already
-  this.checkElementVisibility(element);
-  // select the component
-  this.model.body.setSelection([element]);
-  // update drop zones z index
-  //this.model.body.resetEditable(this.model.body.getBodyElement(), true);
-  // set element editable
-  this.model.body.setEditable(element, true);
-};
-
-
-/**
  * create a page
+ * @param {?function()=} successCbk
+ * @param {?function()=} cancelCbk
  */
 silex.controller.InsertMenuController.prototype.createPage = function(successCbk, cancelCbk) {
   this.tracker.trackAction('controller-events', 'request', 'insert.page', 0);

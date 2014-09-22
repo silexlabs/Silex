@@ -1,13 +1,13 @@
-//////////////////////////////////////////////////
-// Silex, live web creation
-// http://projects.silexlabs.org/?/silex/
-//
-// Copyright (c) 2012 Silex Labs
-// http://www.silexlabs.org/
-//
-// Silex is available under the GPL license
-// http://www.silexlabs.org/silex/silex-licensing/
-//////////////////////////////////////////////////
+/**
+ * Silex, live web creation
+ * http://projects.silexlabs.org/?/silex/
+ *
+ * Copyright (c) 2012 Silex Labs
+ * http://www.silexlabs.org/
+ *
+ * Silex is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
+ */
 
 /**
  * @fileoverview
@@ -28,16 +28,18 @@ goog.require('silex.view.dialog.DialogBase');
 
 /**
  * @constructor
- * @extend silex.view.dialog.DialogBase
- * @param {Element} element   container to render the UI
- * @param  {silex.types.View} view  view class which holds the other views
- * @param  {silex.types.Controller} controller  structure which holds the controller instances
+ * @extends {silex.view.dialog.DialogBase}
+ * @param {!Element} element   container to render the UI
+ * @param  {!silex.types.Controller} controller  structure which holds
+ *                                               the controller instances
  */
-silex.view.dialog.AceEditorBase = function(element, view, controller) {
+silex.view.dialog.AceEditorBase = function(element, controller) {
   // call super
-  goog.base(this, element, view, controller);
+  goog.base(this, element, controller);
   // keep a reference to ace
-  this.ace = ace.edit(goog.dom.getElementByClass('ace-editor', this.element));
+  this.ace = ace.edit(
+      /** @type {!Element} */(goog.dom.getElementByClass(
+          'ace-editor', this.element)));
 };
 // inherit from silex.view.dialog.DialogBase
 goog.inherits(silex.view.dialog.AceEditorBase, silex.view.dialog.DialogBase);
@@ -45,6 +47,7 @@ goog.inherits(silex.view.dialog.AceEditorBase, silex.view.dialog.DialogBase);
 
 /**
  * instance of ace editor
+ * @type {Ace}
  */
 silex.view.dialog.AceEditorBase.prototype.ace = null;
 
@@ -77,12 +80,20 @@ silex.view.dialog.AceEditorBase.prototype.initUI = function() {
 /**
  * Open the editor
  */
-silex.view.dialog.AceEditorBase.prototype.openEditor = function(initialValue) {
+silex.view.dialog.AceEditorBase.prototype.openEditor = function() {
   // call super
   goog.base(this, 'openEditor');
+};
+
+
+/**
+ * Set a value to the editor
+ * param {!string} value
+ */
+silex.view.dialog.AceEditorBase.prototype.setValue = function(value) {
   // set value
   this.iAmSettingValue = true;
-  this.ace.setValue(initialValue);
+  this.ace.setValue(value);
   this.ace.focus();
   this.iAmSettingValue = false;
   // force ace redraw

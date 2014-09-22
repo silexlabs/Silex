@@ -1,13 +1,13 @@
-//////////////////////////////////////////////////
-// Silex, live web creation
-// http://projects.silexlabs.org/?/silex/
-//
-// Copyright (c) 2012 Silex Labs
-// http://www.silexlabs.org/
-//
-// Silex is available under the GPL license
-// http://www.silexlabs.org/silex/silex-licensing/
-//////////////////////////////////////////////////
+/**
+ * Silex, live web creation
+ * http://projects.silexlabs.org/?/silex/
+ *
+ * Copyright (c) 2012 Silex Labs
+ * http://www.silexlabs.org/
+ *
+ * Silex is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
+ */
 
 /**
  * @fileoverview In Silex, each UI of the view package,
@@ -25,16 +25,14 @@ goog.require('silex.utils.Notification');
 
 
 /**
- * @constructor
  * base class for all UI controllers of the controller package
- * @param  {silex.types.Controller} controller  structure which holds the controller instances
+ * @constructor
  * @param {silex.types.Model} model
  * @param  {silex.types.View} view  view class which holds the other views
  */
-silex.controller.ControllerBase = function(controller, model, view) {
+silex.controller.ControllerBase = function(model, view) {
   // store the model
   this.model = model;
-  this.controller = controller;
   this.view = view;
 
   // tracker
@@ -50,31 +48,29 @@ silex.controller.ControllerBase.prototype.tracker = null;
 
 
 /**
- * {Array<string>} array of the states of the website
+ * {Array.<string>} array of the states of the website
  */
 silex.controller.ControllerBase.prototype.undoHistory = [];
 
 
 /**
- * {Array<string>} array of the states of the website
+ * {Array.<string>} array of the states of the website
  */
 silex.controller.ControllerBase.prototype.redoHistory = [];
 
 
 /**
- * the {Array<Element>} array of elements in the clipboard
+ * the {Array.<Element>|null} array of elements in the clipboard
  * this is a static attribute
- * TODO: Move this elsewhere?
  */
-silex.controller.ControllerBase.clipboard = null;
+silex.controller.ControllerBase.prototype.clipboard = null;
 
 
 /**
  * the {Element} element wich is the origin container of the element in the clipboard
  * this is a static attribute
-* TODO: Move this elsewhere?
  */
-silex.controller.ControllerBase.clipboardParent = null;
+silex.controller.ControllerBase.prototype.clipboardParent = null;
 
 
 /**
@@ -87,7 +83,7 @@ silex.controller.ControllerBase.prototype.undoCheckPoint = function() {
   // if the previous state was different
   if (this.undoHistory.length === 0
     || this.undoHistory[this.undoHistory.length - 1].html !== html
-    || this.undoHistory[this.undoHistory.length - 1].page !== page){
+    || this.undoHistory[this.undoHistory.length - 1].page !== page) {
     this.undoHistory.push({
       html: html,
       page: page
@@ -113,7 +109,7 @@ silex.controller.ControllerBase.prototype.browseBgImage = function() {
 
   var errCbk = function(error) {
     silex.utils.Notification.notifyError('Error: I could not load the image. \n' + (error.message || ''));
-    this.tracker.trackAction('controller-events', 'error', type, -1);
+    this.tracker.trackAction('controller-events', 'error', 'selectBgImage', -1);
   };
 
   var successCbk = function(url) {
@@ -176,12 +172,15 @@ silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
         this.tracker.trackAction('controller-events', 'error', 'insert.image', -1);
       }, this)
   );
-  this.view.workspace.invalidate();
+  this.view.workspace.invalidate(this.view);
 };
 
 
 /**
  * set a given style to the current selection
+ * @param  {string} name
+ * @param  {?string=} value
+ * @param {?Array.<Element>=} opt_elements
  */
 silex.controller.ControllerBase.prototype.styleChanged = function(name, value, opt_elements) {
   if (!opt_elements) opt_elements = this.model.body.getSelection();
@@ -191,14 +190,16 @@ silex.controller.ControllerBase.prototype.styleChanged = function(name, value, o
   goog.array.forEach(opt_elements, function(element) {
     // update the model
     this.model.element.setStyle(element, name, value);
-    // update drop zones z index
-    //this.model.body.resetEditable(this.model.body.getBodyElement(), true);
   }, this);
 };
 
 
 /**
  * set a given property to the current selection
+ * @param  {string} name
+ * @param  {?string=} value
+ * @param {?Array.<Element>=} opt_elements
+ * @param {?boolean=} opt_applyToContent
  */
 silex.controller.ControllerBase.prototype.propertyChanged = function(name, value, opt_elements, opt_applyToContent) {
   if (!opt_elements) opt_elements = this.model.body.getSelection();
@@ -214,6 +215,7 @@ silex.controller.ControllerBase.prototype.propertyChanged = function(name, value
 
 /**
  * set css class names
+ * @param   {string} name
  */
 silex.controller.ControllerBase.prototype.setClassName = function(name) {
   // undo checkpoint
@@ -229,6 +231,7 @@ silex.controller.ControllerBase.prototype.setClassName = function(name) {
 
 /**
  * get css class names
+ * @param   {Element} element
  */
 silex.controller.ControllerBase.prototype.getClassName = function(element) {
   return this.model.element.getClassName(element);
@@ -238,6 +241,8 @@ silex.controller.ControllerBase.prototype.getClassName = function(element) {
 /**
  * promp user for page name
  * used in insert page, rename page...
+ * @param   {string} defaultName
+ * @param   {function(string=, string=)} cbk
  */
 silex.controller.ControllerBase.prototype.getUserInputPageName = function(defaultName, cbk) {
   silex.utils.Notification.prompt('Enter a name for your page!', defaultName,
@@ -250,7 +255,7 @@ silex.controller.ControllerBase.prototype.getUserInputPageName = function(defaul
           // do not allow to start with an dash or number (see css specifications)
           name = 'page-' + name;
           // check if a page with this name exists
-          var pages = this.model.page.getPages(this.model.body.getBodyElement());
+          var pages = this.model.page.getPages();
           var exists = false;
           goog.array.forEach(pages, function(pageName) {
             if (pageName === name)
@@ -264,8 +269,28 @@ silex.controller.ControllerBase.prototype.getUserInputPageName = function(defaul
             cbk(name, displayName);
           }
         }
-        cbk(null);
+        cbk();
       }, this));
+};
+
+
+/**
+ * called after an element has been created
+ * add the element to the current page (only if it has not a container which is in a page)
+ * redraw the tools and set the element as editable
+ * @param {Element} element the element to add
+ */
+silex.controller.ControllerBase.prototype.doAddElement = function(element) {
+  // only visible on the current page
+  var currentPageName = this.model.page.getCurrentPage();
+  this.model.page.removeFromAllPages(element);
+  this.model.page.addToPage(element, currentPageName);
+  // unless one of its parents is in a page already
+  this.checkElementVisibility(element);
+  // select the component
+  this.model.body.setSelection([element]);
+  // set element editable
+  this.model.body.setEditable(element, true);
 };
 
 
@@ -275,6 +300,7 @@ silex.controller.ControllerBase.prototype.getUserInputPageName = function(defaul
  *
  * if the element is in a container which is visible only on some pages,
  * then the element should be visible everywhere, i.e. in the same pages as its parent
+ * @param   {Element} element
  */
 silex.controller.ControllerBase.prototype.checkElementVisibility = function(element) {
   var parentPage = this.model.page.getParentPage(element);

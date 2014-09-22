@@ -1,13 +1,13 @@
-//////////////////////////////////////////////////
-// Silex, live web creation
-// http://projects.silexlabs.org/?/silex/
-//
-// Copyright (c) 2012 Silex Labs
-// http://www.silexlabs.org/
-//
-// Silex is available under the GPL license
-// http://www.silexlabs.org/silex/silex-licensing/
-//////////////////////////////////////////////////
+/**
+ * Silex, live web creation
+ * http://projects.silexlabs.org/?/silex/
+ *
+ * Copyright (c) 2012 Silex Labs
+ * http://www.silexlabs.org/
+ *
+ * Silex is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
+ */
 
 /**
  * @fileoverview Property pane, displayed in the property tool box.
@@ -24,7 +24,6 @@ goog.require('goog.editor.Field');
 goog.require('goog.object');
 goog.require('goog.ui.Checkbox');
 goog.require('goog.ui.ColorButton');
-goog.require('goog.ui.CustomButton');
 goog.require('goog.ui.HsvaPalette');
 goog.require('goog.ui.LabelInput');
 goog.require('silex.view.pane.PaneBase');
@@ -35,14 +34,13 @@ goog.require('silex.view.pane.PaneBase');
  * on of Silex Editors class
  * let user edit style of components
  * @constructor
- * @extend silex.view.PaneBase
+ * @extends {silex.view.pane.PaneBase}
  * @param {Element} element   container to render the UI
- * @param  {silex.types.View} view  view class which holds the other views
  * @param  {silex.types.Controller} controller  structure which holds the controller instances
  */
-silex.view.pane.PagePane = function(element, view, controller) {
+silex.view.pane.PagePane = function(element, controller) {
   // call super
-  goog.base(this, element, view, controller);
+  goog.base(this, element, controller);
 
   this.buildUi();
 };
@@ -146,7 +144,7 @@ silex.view.pane.PagePane.prototype.setPages = function(pages, document) {
   // init page template
   var pagesContainer = goog.dom.getElementByClass('pages-container',
       this.element);
-  var templateHtml = goog.dom.getElementByClass('pages-selector-template',
+  templateHtml = goog.dom.getElementByClass('pages-selector-template',
       this.element).innerHTML;
   pagesContainer.innerHTML = silex.utils.Dom.renderList(
       templateHtml,
@@ -213,9 +211,9 @@ silex.view.pane.PagePane.prototype.onLinkTextChanged = function() {
 
 /**
  * redraw the properties
- * @param   {Array<element>} selectedElements the elements currently selected
- * @param   {HTMLDocument} document  the document to use
- * @param   {Array<string>} pageNames   the names of the pages which appear in the current HTML file
+ * @param   {Array.<Element>} selectedElements the elements currently selected
+ * @param   {Document} document  the document to use
+ * @param   {Array.<string>} pageNames   the names of the pages which appear in the current HTML file
  * @param   {string}  currentPageName   the name of the current page
  */
 silex.view.pane.PagePane.prototype.redraw = function(selectedElements, document, pageNames, currentPageName) {
@@ -241,7 +239,7 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, document,
   }, this);
   // special case of the background / main container only selected element
   var bgOnly = false;
-  if (selectedElements.length === 1 && goog.dom.classes.has(selectedElements[0], 'background')) {
+  if (selectedElements.length === 1 && goog.dom.classlist.contains(selectedElements[0], 'background')) {
     bgOnly = true;
   }
   if (elementsNoStage.length > 0 && bgOnly === false) {
@@ -253,7 +251,7 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, document,
       item.checkbox.setEnabled(true);
       // compute common pages
       var isInPage = this.getCommonProperty(selectedElements, function(element) {
-        return goog.dom.classes.has(element, item.pageName);
+        return goog.dom.classlist.contains(element, item.pageName);
       });
       // set visibility
       if (goog.isNull(isInPage)) {
@@ -267,9 +265,9 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, document,
 
     // refresh the link inputs
     // get the link of the element
-    var elementLink = this.getCommonProperty(selectedElements, function(element) {
+    var elementLink = /** @type {string} */ (this.getCommonProperty(selectedElements, function(element) {
       return element.getAttribute(silex.model.Element.LINK_ATTR);
-    });
+    }));
     // default selection
     if (!elementLink || elementLink === '') {
       this.linkDropdown.value = 'none';
@@ -312,7 +310,7 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, document,
 /**
  * callback for checkboxes click event
  * changes the visibility of the current component for the given page
- * @param   {silex.model.page} page   the page for wich the visibility changes
+ * @param   {string} pageName   the page for wich the visibility changes
  * @param   {goog.ui.Checkbox} checkbox   the checkbox clicked
  */
 silex.view.pane.PagePane.prototype.checkPage = function(pageName, checkbox) {

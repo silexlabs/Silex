@@ -1,13 +1,13 @@
-//////////////////////////////////////////////////
-// Silex, live web creation
-// http://projects.silexlabs.org/?/silex/
-//
-// Copyright (c) 2012 Silex Labs
-// http://www.silexlabs.org/
-//
-// Silex is available under the GPL license
-// http://www.silexlabs.org/silex/silex-licensing/
-//////////////////////////////////////////////////
+/**
+ * Silex, live web creation
+ * http://projects.silexlabs.org/?/silex/
+ *
+ * Copyright (c) 2012 Silex Labs
+ * http://www.silexlabs.org/
+ *
+ * Silex is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
+ */
 
 /**
  * @fileoverview A controller listens to a view element,
@@ -23,15 +23,14 @@ goog.require('silex.service.SilexTasks');
 
 /**
  * @constructor
- * @extends {silex.controller.ControllerBase
+ * @extends {silex.controller.ControllerBase}
  * listen to the view events and call the main controller's methods}
- * @param  {silex.types.Controller} controller  structure which holds the controller instances
  * @param {silex.types.Model} model
  * @param  {silex.types.View} view  view class which holds the other views
  */
-silex.controller.FileMenuController = function(controller, model, view) {
+silex.controller.FileMenuController = function(model, view) {
   // call super
-  silex.controller.ControllerBase.call(this, controller, model, view);
+  silex.controller.ControllerBase.call(this, model, view);
 };
 
 // inherit from silex.controller.ControllerBase
@@ -40,6 +39,8 @@ goog.inherits(silex.controller.FileMenuController, silex.controller.ControllerBa
 
 /**
  * open a file
+ * @param {?function()=} opt_cbk
+ * @param {?function(Object)=} opt_errorCbk
  */
 silex.controller.FileMenuController.prototype.newFile = function(opt_cbk, opt_errorCbk) {
 
@@ -65,6 +66,8 @@ silex.controller.FileMenuController.prototype.newFile = function(opt_cbk, opt_er
 
 /**
  * open a file
+ * @param {?function()=} opt_cbk
+ * @param {?function(Object)=} opt_errorCbk
  */
 silex.controller.FileMenuController.prototype.openFile = function(opt_cbk, opt_errorCbk) {
   // QOS, track success
@@ -77,7 +80,7 @@ silex.controller.FileMenuController.prototype.openFile = function(opt_cbk, opt_e
         this.model.file.open(url, goog.bind(function(rawHtml) {
           this.model.file.setHtml(rawHtml, goog.bind(function() {
             // check that it is a Silex website (if we have at least 1 page and not the silex-published class)
-            if (goog.dom.getElementByClass('page-element', this.model.body.getBodyElement()) && !goog.dom.classes.has(this.model.body.getBodyElement(), 'silex-published')) {
+            if (goog.dom.getElementByClass('page-element', this.model.body.getBodyElement()) && !goog.dom.classlist.contains(this.model.body.getBodyElement(), 'silex-published')) {
               // display and redraw
               this.fileOperationSuccess(this.model.head.getTitle() + ' opened.', true);
               // QOS, track success
@@ -99,20 +102,23 @@ silex.controller.FileMenuController.prototype.openFile = function(opt_cbk, opt_e
           if (opt_errorCbk) opt_errorCbk(error);
         }, this));
       }, this),
-      {'mimetype': 'text/html'},
-      function(error) {
+      {'mimetypes': ['text/html']},
+      goog.bind(function(error) {
         this.tracker.trackAction('controller-events', 'error', 'file.open', -1);
         if (opt_errorCbk) opt_errorCbk(error);
-      });
+      }, this));
 };
 
 
 /**
  * save or save-as
+ * @param {string} url
+ * @param {?function()=} opt_cbk
+ * @param {?function(Object)=} opt_errorCbk
  */
 silex.controller.FileMenuController.prototype.doSave = function(url, opt_cbk, opt_errorCbk) {
   // undo redo reset
-  if (this.model.file.getUrl() !== url){
+  if (this.model.file.getUrl() !== url) {
     this.undoReset();
   }
   // urls will be relative to the html file url
@@ -145,6 +151,9 @@ silex.controller.FileMenuController.prototype.doSave = function(url, opt_cbk, op
 
 /**
  * save or save-as
+ * @param {?string=} opt_url
+ * @param {?function()=} opt_cbk
+ * @param {?function(Object)=} opt_errorCbk
  */
 silex.controller.FileMenuController.prototype.save = function(opt_url, opt_cbk, opt_errorCbk) {
   this.tracker.trackAction('controller-events', 'request', 'file.save', 0);
@@ -154,23 +163,28 @@ silex.controller.FileMenuController.prototype.save = function(opt_url, opt_cbk, 
   else {
     // choose a new name
     this.view.fileExplorer.saveAsDialog(
-        goog.bind(function(url) {
-          this.doSave(url, opt_cbk, opt_errorCbk);
-        }, this),
-        {'mimetype': 'text/html'}
-    );
+      goog.bind(function(url) {
+        this.doSave(url, opt_cbk, opt_errorCbk);
+      }, this),
+      {'mimetypes': ['text/html']},
+      goog.bind(function(error) {
+        this.tracker.trackAction('controller-events', 'error', 'file.save', -1);
+        if (opt_errorCbk) opt_errorCbk(error);
+      }, this));
   }
 };
 
 
 /**
  * success of an operation involving changing the file model
+ * @param {?string=} opt_message
+ * @param {?boolean=} opt_updateTools
  */
 silex.controller.FileMenuController.prototype.fileOperationSuccess = function(opt_message, opt_updateTools) {
   // update tools
   if (opt_updateTools) {
     // find default first page
-    var pages = this.model.page.getPages(this.model.body.getBodyElement());
+    var pages = this.model.page.getPages();
     // open default page
     this.model.page.setCurrentPage(pages[0]);
     // update fonts
@@ -193,8 +207,10 @@ silex.controller.FileMenuController.prototype.publish = function() {
       Select a folder in the settings pannel and do "publish" again. \
       \nNow I will open the publish settings.',
         goog.bind(function() {
-          this.view.settingsDialog.openDialog();
-          this.view.workspace.invalidate();
+          this.view.settingsDialog.openDialog(function(){
+            //here the panel was closed
+          });
+          this.view.workspace.invalidate(this.view);
           this.tracker.trackAction('controller-events', 'cancel', 'file.publish', 0);
         }, this));
   }

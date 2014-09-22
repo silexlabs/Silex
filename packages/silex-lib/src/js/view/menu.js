@@ -1,13 +1,13 @@
-//////////////////////////////////////////////////
-// Silex, live web creation
-// http://projects.silexlabs.org/?/silex/
-//
-// Copyright (c) 2012 Silex Labs
-// http://www.silexlabs.org/
-//
-// Silex is available under the GPL license
-// http://www.silexlabs.org/silex/silex-licensing/
-//////////////////////////////////////////////////
+/**
+ * Silex, live web creation
+ * http://projects.silexlabs.org/?/silex/
+ *
+ * Copyright (c) 2012 Silex Labs
+ * http://www.silexlabs.org/
+ *
+ * Silex is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
+ */
 
 /**
  * @fileoverview
@@ -33,13 +33,11 @@ goog.require('silex.Config');
 /**
  * @constructor
  * @param {Element} element   container to render the UI
- * @param  {silex.types.View} view  view class which holds the other views
  * @param  {silex.types.Controller} controller  structure which holds the controller instances
  */
-silex.view.Menu = function(element, view, controller) {
+silex.view.Menu = function(element, controller) {
   // store references
   this.element = element;
-  this.view = view;
   this.controller = controller;
 
   // build the UI
@@ -99,7 +97,7 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
   var globalKeys = [];
 
   // create the menu items
-  for (i in silex.Config.menu.names) {
+  for (var i in silex.Config.menu.names) {
     // Create the drop down menu with a few suboptions.
     var menu = new goog.ui.Menu();
     goog.array.forEach(silex.Config.menu.options[i],
@@ -139,7 +137,7 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
           }
           //item.setDispatchTransitionEvents(goog.ui.Component.State.ALL, true);
           // add the menu item
-          menu.addItem(item);
+          menu.addChild(item, true);
           // add tooltip (has to be after menu.addItem)
           // TODO: add accelerator (only display shortcut here, could not get it to work automatically with closure's accelerator concept)
           if (itemData && itemData.tooltip) {
@@ -189,7 +187,7 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
         // but not in text inputs
         if (event.target.tagName.toUpperCase() === 'INPUT'
           || event.target.tagName.toUpperCase() === 'TEXTAREA'
-          || event.target.tagName === shortcutHandler.textInputs_[event.target.type]) {
+          || event.target.tagName === shortcutHandler['textInputs_'][event.target.type]) {
           // let browser handle
         }
         else {
@@ -216,9 +214,9 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
 
 /**
  * redraw the menu
- * @param   {Array<element>} selectedElements the elements currently selected
- * @param   {HTMLDocument} document  the document to use
- * @param   {Array<string>} pageNames   the names of the pages which appear in the current HTML file
+ * @param   {Array.<Element>} selectedElements the elements currently selected
+ * @param   {Document} document the document to use
+ * @param   {Array.<string>} pageNames   the names of the pages which appear in the current HTML file
  * @param   {string}  currentPageName   the name of the current page
  */
 silex.view.Menu.prototype.redraw = function(selectedElements, document, pageNames, currentPageName) {
@@ -251,7 +249,7 @@ silex.view.Menu.prototype.onMenuEvent = function(type) {
       break;
     case 'file.publish.settings':
       this.controller.fileMenuController.view.settingsDialog.openDialog();
-      this.controller.fileMenuController.view.workspace.invalidate();
+      this.controller.fileMenuController.view.workspace.invalidate(this.controller.fileMenuController.view);
       break;
     case 'file.publish':
       this.controller.fileMenuController.publish();
@@ -290,7 +288,7 @@ silex.view.Menu.prototype.onMenuEvent = function(type) {
       this.controller.insertMenuController.addElement(silex.model.Element.TYPE_HTML);
       break;
     case 'insert.image':
-      this.controller.insertMenuController.browseAndAddImage(silex.model.Element.TYPE_IMAGE);
+      this.controller.insertMenuController.browseAndAddImage();
       break;
     case 'insert.container':
       this.controller.insertMenuController.addElement(silex.model.Element.TYPE_CONTAINER);
@@ -312,10 +310,10 @@ silex.view.Menu.prototype.onMenuEvent = function(type) {
       this.controller.editMenuController.redo();
       break;
     case 'edit.delete.page':
-      this.controller.editMenuController.removePage();
+      this.controller.pageToolController.removePage();
       break;
     case 'edit.rename.page':
-      this.controller.editMenuController.renamePage();
+      this.controller.pageToolController.renamePage();
       break;
     // Help menu
     case 'help.about':

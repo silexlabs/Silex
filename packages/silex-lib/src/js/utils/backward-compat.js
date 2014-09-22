@@ -1,13 +1,13 @@
-//////////////////////////////////////////////////
-// Silex, live web creation
-// http://projects.silexlabs.org/?/silex/
-//
-// Copyright (c) 2012 Silex Labs
-// http://www.silexlabs.org/
-//
-// Silex is available under the GPL license
-// http://www.silexlabs.org/silex/silex-licensing/
-//////////////////////////////////////////////////
+/**
+ * Silex, live web creation
+ * http://projects.silexlabs.org/?/silex/
+ *
+ * Copyright (c) 2012 Silex Labs
+ * http://www.silexlabs.org/
+ *
+ * Silex is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
+ */
 
 /**
  * @fileoverview Helper class for common tasks
@@ -22,8 +22,6 @@ goog.provide('silex.utils.BackwardCompat');
 /**
  * @constructor
  * @struct
- * @param {string} name
- * @param {string} displayName
  */
 silex.utils.BackwardCompat = function() {
   throw ('this is a static class and it canot be instanciated');
@@ -40,7 +38,7 @@ silex.utils.BackwardCompat.process = function(document) {
 
   // critical bug fix (2.2)
   // text editor sets the body class to "silex-element-content normal" instead of the text editor's class
-  if (goog.dom.classes.has(bodyElement, 'silex-element-content')) {
+  if (goog.dom.classlist.contains(bodyElement, 'silex-element-content')) {
     bodyElement.className = 'pageable-plugin-created editable-plugin-created ui-droppable';
   }
 
@@ -85,15 +83,15 @@ silex.utils.BackwardCompat.process = function(document) {
   elements = bodyElement.querySelectorAll('.page-element');
   goog.array.forEach(elements, function(element) {
     if (element.getAttribute('data-silex-type') !== 'page') {
-      goog.dom.classes.remove(element, 'page-element');
-      goog.dom.classes.add(element, 'paged-element');
+      goog.dom.classlist.remove(element, 'page-element');
+      goog.dom.classlist.add(element, 'paged-element');
     }
   });
   // silex-page class becomes page-element
   elements = bodyElement.querySelectorAll('.silex-page');
   goog.array.forEach(elements, function(element) {
-    goog.dom.classes.remove(element, 'silex-page');
-    goog.dom.classes.add(element, 'paged-element');
+    goog.dom.classlist.remove(element, 'silex-page');
+    goog.dom.classlist.add(element, 'paged-element');
   });
   // backward compat silex links with #! (2.0)
   elements = bodyElement.querySelectorAll('[data-silex-href]');
@@ -106,33 +104,33 @@ silex.utils.BackwardCompat.process = function(document) {
   // add css class 'silex-element-content' on 'html-content' elements (starting from 2.1)
   elements = bodyElement.querySelectorAll('.html-element .html-content');
   goog.array.forEach(elements, function(element) {
-    goog.dom.classes.add(element, 'silex-element-content');
+    goog.dom.classlist.add(element, 'silex-element-content');
   });
   // add css class on elements with [type]-element (starting from 2.0)
   elements = bodyElement.querySelectorAll('.text-element *');
   goog.array.forEach(elements, function(element) {
     switch (element.nodeName.toLowerCase()) {
       case 'p':
-        goog.dom.classes.add(element, 'normal');
+        goog.dom.classlist.add(element, 'normal');
         break;
       case 'HEADER':
-        goog.dom.classes.add(element, 'title');
+        goog.dom.classlist.add(element, 'title');
         break;
       case 'H1':
-        goog.dom.classes.add(element, 'heading1');
+        goog.dom.classlist.add(element, 'heading1');
         break;
       case 'H2':
-        goog.dom.classes.add(element, 'heading2');
+        goog.dom.classlist.add(element, 'heading2');
         break;
       case 'H3':
-        goog.dom.classes.add(element, 'heading3');
+        goog.dom.classlist.add(element, 'heading3');
         break;
     }
   });
   // css class on text elements P, HEAD, H1, H2, H3 (2.2)
   elements = bodyElement.querySelectorAll('[data-silex-type]');
   goog.array.forEach(elements, function(element) {
-    goog.dom.classes.add(element, element.getAttribute('data-silex-type') + '-element');
+    goog.dom.classlist.add(element, element.getAttribute('data-silex-type') + '-element');
   });
   // static.silex.me 2.0 -> 2.1
   elements = document.querySelectorAll('[src]');
@@ -163,9 +161,9 @@ silex.utils.BackwardCompat.process = function(document) {
   // publication path from ../api/1.0/dropbox/exec/put/_test_silex/publication-test
   // to /api/1.0/dropbox/exec/put/_test_silex/publication-test
   var metaNode = document.querySelector('meta[name="publicationPath"]');
-  if (metaNode){
+  if (metaNode) {
     var value = metaNode.getAttribute('content');
-    if (value.indexOf('../api/1.0/') === 0){
+    if (value.indexOf('../api/1.0/') === 0) {
       value = value.replace('../api/1.0/', '/api/1.0/');
       metaNode.setAttribute('content', value);
     }

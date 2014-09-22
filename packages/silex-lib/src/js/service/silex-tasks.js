@@ -1,13 +1,13 @@
-//////////////////////////////////////////////////
-// Silex, live web creation
-// http://projects.silexlabs.org/?/silex/
-//
-// Copyright (c) 2012 Silex Labs
-// http://www.silexlabs.org/
-//
-// Silex is available under the GPL license
-// http://www.silexlabs.org/silex/silex-licensing/
-//////////////////////////////////////////////////
+/**
+ * Silex, live web creation
+ * http://projects.silexlabs.org/?/silex/
+ *
+ * Copyright (c) 2012 Silex Labs
+ * http://www.silexlabs.org/
+ *
+ * Silex is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
+ */
 
 /**
  * @fileoverview Service used to interact with the unifile server.
@@ -39,7 +39,7 @@ goog.addSingletonGetter(silex.service.SilexTasks);
  * @param {string} html
  * @param {string} css
  * @param {string} js
- * @param {Array.{{url: string, destPath: string, srcPath: string}}} files
+ * @param {Array.<{url: string, destPath: string, srcPath: string}>} files
  * @param {function(string)} cbk to receive the json response
  * @param {function(string)=} opt_errCbk to receive the json response
  */
@@ -83,17 +83,26 @@ silex.service.SilexTasks.prototype.publish = function(path, html, css, js, files
   }, 'POST', qd.toString());
 };
 
+
+/**
+ * create a temp link on the server
+ * @param path
+ * @param {function(string)} cbk
+ * @param {?function(string)=} opt_errCbk
+ */
 silex.service.SilexTasks.prototype.getTempLink = function(path, cbk, opt_errCbk) {
   var url = '/tasks/getTempLink?path=' + path;
   goog.net.XhrIo.send(url, function(e) {
     // success of the request
     var xhr = e.target;
     if (xhr.isSuccess()) {
-      var json = xhr.getResponse();
-      if (json) {
-        json = JSON.parse(json);
+      var jsonString = xhr.getResponse();
+      /** @type {?UnifileResponse} */
+      var json = null;
+      if (jsonString) {
+        json = /** @type {UnifileResponse} */ (JSON.parse(jsonString));
       }
-      if (json && json.success === true && json.tempLink) {
+      if (jsonString && json && json.success === true && json.tempLink) {
         if (cbk) cbk(json.tempLink);
       }
       else {
@@ -112,18 +121,26 @@ silex.service.SilexTasks.prototype.getTempLink = function(path, cbk, opt_errCbk)
     }
   }, 'GET');
 };
-silex.service.SilexTasks.prototype.disposeTempLink = function(name, cbk, opt_errCbk) {
+
+
+/**
+ * remove the temp link on the server
+ * @param name
+ * @param {?function(UnifileResponse)=} opt_cbk
+ * @param {?function(string)=} opt_errCbk
+ */
+silex.service.SilexTasks.prototype.disposeTempLink = function(name, opt_cbk, opt_errCbk) {
   var url = '/tasks/disposeTempLink?name=' + name;
   goog.net.XhrIo.send(url, function(e) {
     // success of the request
     var xhr = e.target;
     if (xhr.isSuccess()) {
-      var json = xhr.getResponseJson();
-      if (json.success) {
-        if (cbk) cbk(json);
+      var json = /** @type {UnifileResponse} */ (xhr.getResponseJson());
+      if (json.success === true) {
+        if (opt_cbk) opt_cbk(json);
       }
       else {
-        var message = json.code || json.message;
+        var message = /** @type {string} */ (json.code || json.message);
         console.error(message, xhr, xhr.isSuccess(), xhr.getStatus(), xhr.headers.toString());
         if (opt_errCbk) {
           opt_errCbk(message);

@@ -1,13 +1,13 @@
-//////////////////////////////////////////////////
-// Silex, live web creation
-// http://projects.silexlabs.org/?/silex/
-//
-// Copyright (c) 2012 Silex Labs
-// http://www.silexlabs.org/
-//
-// Silex is available under the GPL license
-// http://www.silexlabs.org/silex/silex-licensing/
-//////////////////////////////////////////////////
+/**
+ * Silex, live web creation
+ * http://projects.silexlabs.org/?/silex/
+ *
+ * Copyright (c) 2012 Silex Labs
+ * http://www.silexlabs.org/
+ *
+ * Silex is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
+ */
 
 /**
  * @fileoverview
@@ -47,54 +47,72 @@ silex.model.Body.prototype.iframeElement = null;
 
 /**
  * attribute name used to store the type of element
+ * @const
+ * @type {string}
  */
 silex.model.Body.SILEX_TYPE_ATTR_NAME = 'data-silex-type';
 
 
 /**
  * value of the type attribute
+ * @const
+ * @type {string}
  */
 silex.model.Body.SILEX_TYPE_CONTAINER = 'container';
 
 
 /**
  * class name used by the editable jquery plugin
+ * @const
+ * @type {string}
  */
 silex.model.Body.EDITABLE_CLASS_NAME = 'editable-style';
 
 
 /**
  * class name used by the editable jquery plugin
+ * @const
+ * @type {string}
  */
 silex.model.Body.EDITABLE_CREATED_CLASS_NAME = 'editable-plugin-created';
 
 
 /**
  * class name used by the editable jquery plugin
+ * @const
+ * @type {string}
  */
 silex.model.Body.UI_RESIZABLE_CLASS_NAME = 'ui-resizable';
 
 
 /**
  * class name used by the editable jquery plugin
+ * @const
+ * @type {string}
  */
 silex.model.Body.UI_DRAGGABLE_CLASS_NAME = 'ui-draggable';
 
 
 /**
  * class name used by the editable jquery plugin
+ * @const
+ * @type {string}
  */
 silex.model.Body.UI_DROPPABLE_CLASS_NAME = 'ui-droppable';
 
 
 /**
  * class name used by the editable jquery plugin
+ * @const
+ * @type {string}
  */
 silex.model.Body.UI_DRAGGABLE_DRAGGING_CLASS_NAME = 'ui-draggable-dragging';
 
 
 /**
  * class name used by the editable jquery plugin
+ * @const
+ * @type {string}
  */
 silex.model.Body.UI_DRAGGABLE_RESIZING_CLASS_NAME = 'ui-resizable-resizing';
 
@@ -126,19 +144,19 @@ silex.model.Body.prototype.getSelection = function() {
 
 
 /**
- * @param  {Array<Element>} selectedElements  array of elements which are to select
+ * @param  {Array.<Element>} selectedElements  array of elements which are to select
  */
 silex.model.Body.prototype.setSelection = function(selectedElements) {
   // reset selection
   var elements = goog.dom.getElementsByClass(silex.model.Element.SELECTED_CLASS_NAME, this.getBodyElement());
   goog.array.forEach(elements, function(element) {
-    goog.dom.classes.remove(element, silex.model.Element.SELECTED_CLASS_NAME);
+    goog.dom.classlist.remove(element, silex.model.Element.SELECTED_CLASS_NAME);
   }, this);
   // also remove selected class from the body
-  goog.dom.classes.remove(this.getBodyElement(), silex.model.Element.SELECTED_CLASS_NAME);
+  goog.dom.classlist.remove(this.getBodyElement(), silex.model.Element.SELECTED_CLASS_NAME);
   // update selection
   goog.array.forEach(selectedElements, function(element) {
-    goog.dom.classes.add(element, silex.model.Element.SELECTED_CLASS_NAME);
+    goog.dom.classlist.add(element, silex.model.Element.SELECTED_CLASS_NAME);
   }, this);
   // refresh views
   var pages = this.model.page.getPages();
@@ -150,13 +168,13 @@ silex.model.Body.prototype.setSelection = function(selectedElements) {
 
 
 /**
- * @return {object} object of fonts which are used in the text fields (key is the font name)
+ * @return {Object.<boolean>} object of fonts which are used in the text fields (key is the font name)
  */
 silex.model.Body.prototype.getNeededFonts = function() {
   var neededFonts = [];
   if (this.getBodyElement()) {
     var innerHTML = this.getBodyElement().innerHTML;
-    innerHTML.replace(/<font[^"]*face="?([^"]*)"/gi, function(match, group1, group2) {
+    innerHTML.replace(/<font[^"]*face="?([^"]*)"/gi, function(match, group1) {
       neededFonts[group1] = true;
       return match;
     });
@@ -166,19 +184,10 @@ silex.model.Body.prototype.getNeededFonts = function() {
 
 
 /**
- * update drop zones z index
- */
-silex.model.Body.prototype.resetEditable = function(element, opt_isRootDroppableOnly) {
-  // without timer, set style is not applyed, related to stageCallback change event
-  setTimeout(goog.bind(function() {
-    this.setEditable(element, false);
-    this.setEditable(element, true, opt_isRootDroppableOnly);
-  }, this), 10);
-};
-
-
-/**
  * init, activate and remove the "editable" jquery plugin
+ * @param {Element} rootElement
+ * @param {boolean} isEditable
+ * @param {?boolean=} opt_isRootDroppableOnly
  */
 silex.model.Body.prototype.setEditable = function(rootElement, isEditable, opt_isRootDroppableOnly) {
   // activate editable plugin
@@ -196,7 +205,7 @@ silex.model.Body.prototype.setEditable = function(rootElement, isEditable, opt_i
       }
     }
     else {
-      if (goog.dom.classes.has(element, silex.model.Body.EDITABLE_CREATED_CLASS_NAME)) {
+      if (goog.dom.classlist.contains(element, silex.model.Body.EDITABLE_CREATED_CLASS_NAME)){
         this.view.workspace.getWindow().jQuery(element).editable('destroy');
         this.removeEditableClasses(element);
       }
@@ -227,7 +236,7 @@ silex.model.Body.prototype.setEditable = function(rootElement, isEditable, opt_i
   }
   else {
     // deactivate editable plugin
-    if (goog.dom.classes.has(rootElement, silex.model.Body.EDITABLE_CREATED_CLASS_NAME)) {
+    if (goog.dom.classlist.contains(rootElement, silex.model.Body.EDITABLE_CREATED_CLASS_NAME)) {
       this.view.workspace.getWindow().jQuery(rootElement).editable('destroy');
       this.removeEditableClasses(rootElement);
     }
@@ -244,7 +253,7 @@ silex.model.Body.prototype.setEditable = function(rootElement, isEditable, opt_i
   goog.array.forEach(htmlContentElements, function(element) {
     // create the cover element
     var cover = goog.dom.createElement('div');
-    goog.dom.classes.add(cover, 'temp-editable-cover');
+    goog.dom.classlist.add(cover, 'temp-editable-cover');
     // insert cover on top of all elements
     goog.dom.insertChildAt(element, cover, 0);
   }, this);
@@ -252,7 +261,7 @@ silex.model.Body.prototype.setEditable = function(rootElement, isEditable, opt_i
   if (rootElement.getAttribute(silex.model.Body.SILEX_TYPE_ATTR_NAME) === silex.model.Element.TYPE_HTML) {
     // create the cover element
     var cover = goog.dom.createElement('div');
-    goog.dom.classes.add(cover, 'temp-editable-cover');
+    goog.dom.classlist.add(cover, 'temp-editable-cover');
     // insert cover on top of all elements
     goog.dom.insertChildAt(rootElement, cover, 0);
   }
@@ -267,33 +276,33 @@ silex.model.Body.prototype.removeEditableClasses = function(rootElement) {
   // remove the classes set by Silex
   elements = goog.dom.getElementsByClass(silex.model.Element.SELECTED_CLASS_NAME, rootElement);
   goog.array.forEach(elements, function(element) {
-    goog.dom.classes.remove(element, silex.model.Element.SELECTED_CLASS_NAME);
+    goog.dom.classlist.remove(element, silex.model.Element.SELECTED_CLASS_NAME);
   }, this);
 
   // remove classes set by the editable.js plugin
   elements = goog.dom.getElementsByClass(silex.model.Body.EDITABLE_CREATED_CLASS_NAME, rootElement);
   goog.array.forEach(elements, function(element) {
-    goog.dom.classes.remove(element, silex.model.Body.EDITABLE_CREATED_CLASS_NAME);
+    goog.dom.classlist.remove(element, silex.model.Body.EDITABLE_CREATED_CLASS_NAME);
   }, this);
 
-  elements = goog.dom.getElementsByClass(silex.model.Element.UI_RESIZABLE_CLASS_NAME, rootElement);
+  elements = goog.dom.getElementsByClass(silex.model.Body.UI_RESIZABLE_CLASS_NAME, rootElement);
   goog.array.forEach(elements, function(element) {
-    goog.dom.classes.remove(element, silex.model.Element.UI_RESIZABLE_CLASS_NAME);
+    goog.dom.classlist.remove(element, silex.model.Body.UI_RESIZABLE_CLASS_NAME);
   }, this);
 
   elements = goog.dom.getElementsByClass(silex.model.Body.UI_DRAGGABLE_CLASS_NAME, rootElement);
   goog.array.forEach(elements, function(element) {
-    goog.dom.classes.remove(element, silex.model.Body.UI_DRAGGABLE_CLASS_NAME);
+    goog.dom.classlist.remove(element, silex.model.Body.UI_DRAGGABLE_CLASS_NAME);
   }, this);
 
   elements = goog.dom.getElementsByClass(silex.model.Body.UI_DROPPABLE_CLASS_NAME, rootElement);
   goog.array.forEach(elements, function(element) {
-    goog.dom.classes.remove(element, silex.model.Body.UI_DROPPABLE_CLASS_NAME);
+    goog.dom.classlist.remove(element, silex.model.Body.UI_DROPPABLE_CLASS_NAME);
   }, this);
 
   elements = goog.dom.getElementsByClass(silex.model.Body.UI_DRAGGABLE_DRAGGING_CLASS_NAME, rootElement);
   goog.array.forEach(elements, function(element) {
-    goog.dom.classes.remove(element, silex.model.Body.UI_DRAGGABLE_DRAGGING_CLASS_NAME);
+    goog.dom.classlist.remove(element, silex.model.Body.UI_DRAGGABLE_DRAGGING_CLASS_NAME);
   }, this);
 
   elements = rootElement.querySelectorAll('[aria-disabled]');

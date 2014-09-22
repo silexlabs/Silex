@@ -1,13 +1,13 @@
-//////////////////////////////////////////////////
-// Silex, live web creation
-// http://projects.silexlabs.org/?/silex/
-//
-// Copyright (c) 2012 Silex Labs
-// http://www.silexlabs.org/
-//
-// Silex is available under the GPL license
-// http://www.silexlabs.org/silex/silex-licensing/
-//////////////////////////////////////////////////
+/**
+ * Silex, live web creation
+ * http://projects.silexlabs.org/?/silex/
+ *
+ * Copyright (c) 2012 Silex Labs
+ * http://www.silexlabs.org/
+ *
+ * Silex is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
+ */
 
 /**
  * @fileoverview Property pane, displayed in the property tool box
@@ -27,14 +27,13 @@ goog.require('silex.view.pane.PaneBase');
  * on of Silex Editors class
  * let user edit style of components
  * @constructor
- * @extend silex.view.PaneBase
+ * @extends {silex.view.pane.PaneBase}
  * @param {Element} element   container to render the UI
- * @param  {silex.types.View} view  view class which holds the other views
  * @param  {silex.types.Controller} controller  structure which holds the controller instances
  */
-silex.view.pane.PropertyPane = function(element, view, controller) {
+silex.view.pane.PropertyPane = function(element, controller) {
   // call super
-  goog.base(this, element, view, controller);
+  goog.base(this, element, controller);
 
   this.buildUi();
 };
@@ -191,10 +190,10 @@ silex.view.pane.PropertyPane.prototype.onAltChanged =
 
   // apply the change to all elements
   if (input.value !== '') {
-    this.propertyChanged('alt', input.value, undefined, true);
+    this.propertyChanged('alt', input.value, null, true);
   }
   else {
-    this.propertyChanged('alt', undefined, undefined, true);
+    this.propertyChanged('alt', null, null, true);
   }
 };
 
@@ -220,9 +219,9 @@ silex.view.pane.PropertyPane.prototype.onTitleChanged =
 
 /**
  * redraw the properties
- * @param   {Array<element>} selectedElements the elements currently selected
- * @param   {HTMLDocument} document  the document to use
- * @param   {Array<string>} pageNames   the names of the pages which appear in the current HTML file
+ * @param   {Array.<Element>} selectedElements the elements currently selected
+ * @param   {Document} document  the document to use
+ * @param   {Array.<string>} pageNames   the names of the pages which appear in the current HTML file
  * @param   {string}  currentPageName   the name of the current page
  */
 silex.view.pane.PropertyPane.prototype.redraw = function(selectedElements, document, pageNames, currentPageName) {
@@ -260,7 +259,7 @@ silex.view.pane.PropertyPane.prototype.redraw = function(selectedElements, docum
     this.heightInput.value = bb.height || '';
 
     // special case of the background / main container only selected element
-    if (selectedElements.length === 1 && goog.dom.classes.has(selectedElements[0], 'background')) {
+    if (selectedElements.length === 1 && goog.dom.classlist.contains(selectedElements[0], 'background')) {
       this.topInput.value = '';
       this.leftInput.value = '';
     }

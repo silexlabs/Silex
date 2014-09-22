@@ -1,13 +1,13 @@
-//////////////////////////////////////////////////
-// Silex, live web creation
-// http://projects.silexlabs.org/?/silex/
-//
-// Copyright (c) 2012 Silex Labs
-// http://www.silexlabs.org/
-//
-// Silex is available under the GPL license
-// http://www.silexlabs.org/silex/silex-licensing/
-//////////////////////////////////////////////////
+/**
+ * Silex, live web creation
+ * http://projects.silexlabs.org/?/silex/
+ *
+ * Copyright (c) 2012 Silex Labs
+ * http://www.silexlabs.org/
+ *
+ * Silex is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
+ */
 
 /**
  * @fileoverview Helper class for common tasks
@@ -28,7 +28,7 @@ goog.require('silex.model.Page');
  * constant for the class names which are of internal use in Silex
  * they do not appear in the "css classes" text field of the style-pane
  * @const
- * @type {string}
+ * @type {Array.<string>}
  */
 silex.utils.Style.SILEX_CLASS_NAMES = [
   silex.model.Body.EDITABLE_CLASS_NAME,
@@ -55,7 +55,7 @@ silex.utils.Style.SILEX_CLASS_NAMES = [
  * constant for the class names which are of internal use in Silex
  * only the classes which are temporary and useless to store
  * @const
- * @type {string}
+ * @type {Array.<string>}
  */
 silex.utils.Style.SILEX_TEMP_CLASS_NAMES = [
   silex.model.Body.UI_RESIZABLE_CLASS_NAME,
@@ -73,22 +73,22 @@ silex.utils.Style.SILEX_TEMP_CLASS_NAMES = [
 /**
  * remove useless class names of an element created by silex
  * remove all silex internal classes
- * @param  {Element} element   created by silex, either a text box, image, ...
- * @param  {boolean=} opt_allClasses   if true, remove all Silex classes, not only the classes which are temporary and useless to store
- * @param  {boolean=} opt_isRecursive  if true, remove classes from the element and its children
+ * @param  {!Element} element   created by silex, either a text box, image, ...
+ * @param  {?boolean=} opt_allClasses   if true, remove all Silex classes, not only the classes which are temporary and useless to store
+ * @param  {?boolean=} opt_isRecursive  if true, remove classes from the element and its children
  */
 silex.utils.Style.removeInternalClasses = function(element, opt_allClasses, opt_isRecursive) {
   var classes = silex.utils.Style.SILEX_TEMP_CLASS_NAMES;
   if (opt_allClasses) {
     classes = silex.utils.Style.SILEX_CLASS_NAMES;
   }
-  for (idx in classes) {
+  for (var idx in classes) {
     var className = classes[idx];
-    goog.dom.classes.remove(element, className);
+    goog.dom.classlist.remove(element, className);
     if (opt_isRecursive) {
       var elements = goog.dom.getElementsByClass(className, element);
       goog.array.forEach(elements, function(child) {
-        goog.dom.classes.remove(child, className);
+        goog.dom.classlist.remove(child, className);
       });
     }
   }
@@ -122,13 +122,13 @@ silex.utils.Style.stringToStyle = function(styleStr) {
  * Takes the opacity of the backgrounds into account
  * Recursively compute parents background colors
  * @param {Element} element the element which bg color we want
- * @return {!goog.color.Rgb} the element bg color
+ * @return {goog.color.Rgb|null} the element bg color
  */
 silex.utils.Style.computeBgColor = function(element) {
   var parentColorArray;
   // retrieve the parents blended colors
   if (element.parentNode) {
-    parentColorArray = silex.utils.Style.computeBgColor(element.parentNode);
+    parentColorArray = silex.utils.Style.computeBgColor(/** @type {Element} */ (element.parentNode));
   }
   else {
     parentColorArray = null;
@@ -140,7 +140,7 @@ silex.utils.Style.computeBgColor = function(element) {
     // convert bg color from rgba to array
     if (elementColorStr.indexOf('rgba') >= 0) {
       // rgba case
-      alpha = parseFloat(elementColorStr.substring(
+      var alpha = parseFloat(elementColorStr.substring(
           elementColorStr.lastIndexOf(',') + 1,
           elementColorStr.lastIndexOf(')')));
       elementColorStr = elementColorStr.replace('rgba', 'rgb');
@@ -218,11 +218,11 @@ silex.utils.Style.hexToRgba = function(hex) {
     console.error('Error in length ' + hex + ' - ' + hex.length);
     return hex;
   }
-  hexArr = silex.utils.Style.hexToArray(hex);
-  r = hexArr[0];
-  g = hexArr[1];
-  b = hexArr[2];
-  a = hexArr[3];
+  var hexArr = silex.utils.Style.hexToArray(hex);
+  var r = hexArr[0];
+  var g = hexArr[1];
+  var b = hexArr[2];
+  var a = hexArr[3];
 
   var result = 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
   return result;
@@ -236,10 +236,10 @@ silex.utils.Style.hexToRgba = function(hex) {
 silex.utils.Style.hexToArray = function(hex) {
   if (hex.indexOf('#') !== 0) return hex;
   hex = hex.replace('#', '');
-  r = parseInt(hex.substring(0, 2), 16);
-  g = parseInt(hex.substring(2, 4), 16);
-  b = parseInt(hex.substring(4, 6), 16);
-  a = parseInt(hex.substring(6, 8), 16) / 255;
+  var r = parseInt(hex.substring(0, 2), 16);
+  var g = parseInt(hex.substring(2, 4), 16);
+  var b = parseInt(hex.substring(4, 6), 16);
+  var a = parseInt(hex.substring(6, 8), 16) / 255;
 
   var result = [r, g, b, a];
   return result;
@@ -254,12 +254,12 @@ silex.utils.Style.rgbaToHex = function(rgba) {
   // has to be rgb or rgba
   if (rgba.indexOf('rgb') !== 0) return rgba;
   // get the array version
-  rgbaArr = silex.utils.Style.rgbaToArray(rgba);
+  var rgbaArr = silex.utils.Style.rgbaToArray(rgba);
 
-  r = rgbaArr[0].toString(16); if (r.length < 2) r = '0' + r;
-  g = rgbaArr[1].toString(16); if (g.length < 2) g = '0' + g;
-  b = rgbaArr[2].toString(16); if (b.length < 2) b = '0' + b;
-  a = (rgbaArr[3]).toString(16); if (a.length < 2) a = '0' + a;
+  var r = rgbaArr[0].toString(16); if (r.length < 2) r = '0' + r;
+  var g = rgbaArr[1].toString(16); if (g.length < 2) g = '0' + g;
+  var b = rgbaArr[2].toString(16); if (b.length < 2) b = '0' + b;
+  var a = (rgbaArr[3]).toString(16); if (a.length < 2) a = '0' + a;
 
   var result = '#' + (r + g + b + a);
   return result;
@@ -282,15 +282,15 @@ silex.utils.Style.rgbaToArray = function(rgba) {
     rgba = rgba.replace('rgba', '');
   }
   rgba = rgba.replace(' ', '');
-  rgbaArr = rgba.substring(1, rgba.length - 1).split(',');
+  var rgbaArr = rgba.substring(1, rgba.length - 1).split(',');
 
   // add alpha if needed
   if (rgbaArr.length < 4) rgbaArr.push('1');
 
-  r = parseInt(rgbaArr[0]);
-  g = parseInt(rgbaArr[1]);
-  b = parseInt(rgbaArr[2]);
-  a = parseInt(rgbaArr[3] * 255);
+  var r = parseInt(rgbaArr[0], 10);
+  var g = parseInt(rgbaArr[1], 10);
+  var b = parseInt(rgbaArr[2], 10);
+  var a = parseInt(rgbaArr[3] * 255, 10);
 
   var result = [r, g, b, a];
   return result;

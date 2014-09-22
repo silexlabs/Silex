@@ -1,13 +1,13 @@
-//////////////////////////////////////////////////
-// Silex, live web creation
-// http://projects.silexlabs.org/?/silex/
-//
-// Copyright (c) 2012 Silex Labs
-// http://www.silexlabs.org/
-//
-// Silex is available under the GPL license
-// http://www.silexlabs.org/silex/silex-licensing/
-//////////////////////////////////////////////////
+/**
+ * Silex, live web creation
+ * http://projects.silexlabs.org/?/silex/
+ *
+ * Copyright (c) 2012 Silex Labs
+ * http://www.silexlabs.org/
+ *
+ * Silex is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
+ */
 
 /**
  * @fileoverview The stage is the area where the user drag/drops elements
@@ -32,18 +32,17 @@ goog.require('goog.events.MouseWheelHandler');
  *  has been changed by the user
  * @param  {silex.types.Controller} controller  structure which holds the controller classes
  */
-silex.view.Stage = function(element, view , controller) {
+silex.view.Stage = function(element, controller) {
   // store references
   this.element = element;
-  this.view = view;
   this.controller = controller;
 
   // TODO: this should go in a controller
   // create an input element to get the focus
   this.focusInput = goog.dom.createElement('input');
-  //this.focusInput.style.visibility = 'hidden';
-  this.focusInput.style.left = '-1000px';
-  this.focusInput.style.position = 'absolute';
+  //goog.style.setStyle(this.focusInput, 'visibility', 'hidden');
+  goog.style.setStyle(this.focusInput, 'left', '-1000px');
+  goog.style.setStyle(this.focusInput, 'position', 'absolute');
   document.body.appendChild(this.focusInput);
 
 
@@ -138,6 +137,7 @@ silex.view.Stage.prototype.isDown = false;
 /**
  * resize the iframe body to the size of its content
  * this is to always keep space between the elements (main container etc) and the stage border
+ * @param {?Event=} event
  */
 silex.view.Stage.prototype.bodyElementSizeToContent = function(event) {
   if (this.bodyElement) {
@@ -150,22 +150,22 @@ silex.view.Stage.prototype.bodyElementSizeToContent = function(event) {
       var desiredBodyWidth = bb.width + 100;
       if (desiredBodyWidth < viewportSize.width) {
         // let the css handle a body of the size of the stage
-        this.bodyElement.style.minWidth = '';
+        goog.style.setStyle(this.bodyElement, 'minWidth');
       }
       else {
         // we want the body to be this size
         // we use minWidth/minHeight in order to leave width/height to the user
-        this.bodyElement.style.minWidth = desiredBodyWidth + 'px';
+        goog.style.setStyle(this.bodyElement, 'minWidth', desiredBodyWidth + 'px');
       }
       var desiredBodyHeight = bb.height + 100;
       if (desiredBodyHeight < viewportSize.height) {
         // let the css handle a body of the size of the stage
-        this.bodyElement.style.minHeight = '';
+        goog.style.setStyle(this.bodyElement, 'minHeight');
       }
       else {
         // we want the body to be this size
         // we use minWidth/minHeight in order to leave width/height to the user
-        this.bodyElement.style.minHeight = desiredBodyHeight + 'px';
+        goog.style.setStyle(this.bodyElement, 'minHeight', desiredBodyHeight + 'px');
       }
     }
   }
@@ -191,7 +191,7 @@ silex.view.Stage.prototype.removeEvents = function(bodyElement) {
  * events of the jquery editable plugin,
  * double click to edit,
  * and disable horizontal scrolling for back page on Mac OS
- * @param {Element}  bodyElement   the element which contains the body of the website
+ *{Element}Element}  bodyElement   the element which contains the body of the website
  */
 silex.view.Stage.prototype.initEvents = function(contentWindow) {
   this.bodyElement = contentWindow.document.body;
@@ -224,7 +224,7 @@ silex.view.Stage.prototype.initEvents = function(contentWindow) {
   }, false, this);
   // detect mouse down
   goog.events.listen(this.bodyElement, 'mousedown', function(e) {
-    this.lastClickWasResize = goog.dom.classes.has(e.target, 'ui-resizable-handle');
+    this.lastClickWasResize = goog.dom.classlist.contains(e.target, 'ui-resizable-handle');
     var x = e.clientX;
     var y = e.clientY;
     // get the first parent node which is editable (silex-editable css class)
@@ -266,9 +266,9 @@ silex.view.Stage.prototype.initEvents = function(contentWindow) {
 
 /**
  * redraw the properties
- * @param   {Array<element>} selectedElements the elements currently selected
- * @param   {HTMLDocument} document  the document to use
- * @param   {Array<string>} pageNames   the names of the pages which appear in the current HTML file
+ * @param   {Array.<HTMLElement>} selectedElements the elements currently selected
+ * @param   {Document} document  the document to use
+ * @param   {Array.<string>} pageNames   the names of the pages which appear in the current HTML file
  * @param   {string}  currentPageName   the name of the current page
  */
 silex.view.Stage.prototype.redraw = function(selectedElements, document, pageNames, currentPageName) {
@@ -286,7 +286,7 @@ silex.view.Stage.prototype.redraw = function(selectedElements, document, pageNam
  * - mouse position
  * - scroll position
  * - isDown
- * @param   {element} target a DOM element clicked by the user
+ * @param   {Element} target a DOM element clicked by the user
  * @param   {boolean} shiftKey state of the shift key
  */
 silex.view.Stage.prototype.handleMouseUp = function(target, shiftKey) {
@@ -343,7 +343,7 @@ silex.view.Stage.prototype.resetFocus = function() {
  * - compute the offset of the mouse from the last known position
  * - handle the scroll position changes (while dragging an element near the border of the stage, it may scroll)
  * - apply the ofset to the dragged or resized element(s)
- * @param   {element} target a DOM element clicked by the user
+ * @param   {Element} target a DOM element clicked by the user
  * @param   {number} x position of the mouse, relatively to the screen
  * @param   {number} y position of the mouse, relatively to the screen
  */
@@ -425,8 +425,9 @@ silex.view.Stage.prototype.handleMouseMove = function(target, x, y) {
 
 /**
  * make the followers follow the element's position
- * @param   {element} element Silex element to be followed
- * @param   {Arry<element>} elements which will follow the elements
+ * @param   {Array.<HTMLElement>} followers which will follow the elements
+ * @param   {number} offsetX the delta to be applied
+ * @param   {number} offsetY the delta to be applied
  */
 silex.view.Stage.prototype.followElementPosition = function(followers, offsetX, offsetY) {
   // apply offset to other selected element
@@ -444,8 +445,10 @@ silex.view.Stage.prototype.followElementPosition = function(followers, offsetX, 
 
 /**
  * make the followers follow the element's size
- * @param   {element} element Silex element to be followed
- * @param   {Arry<element>} elements which will follow the elements
+ * @param   {Array.<HTMLElement>} followers which will follow the elements
+ * @param   {string} resizeDirection the direction n, s, e, o, ne, no, se, so
+ * @param   {number} offsetX the delta to be applied
+ * @param   {number} offsetY the delta to be applied
  */
 silex.view.Stage.prototype.followElementSize = function(followers, resizeDirection, offsetX, offsetY) {
   // apply offset to other selected element
@@ -484,7 +487,7 @@ silex.view.Stage.prototype.followElementSize = function(followers, resizeDirecti
  * - mouse position
  * - scroll position
  * - isDown
- * @param   {element} element Silex element currently selected (text, image, html box...)
+ * @param   {Element} element Silex element currently selected (text, image, html box...)
  * @param   {number} x position of the mouse, relatively to the screen
  * @param   {number} y position of the mouse, relatively to the screen
  * @param   {boolean} shiftKey state of the shift key
@@ -493,7 +496,7 @@ silex.view.Stage.prototype.handleMouseDown = function(element, x, y, shiftKey) {
   this.lastSelected = null;
   this.resizeDirection = null;
   // if the element was not already selected
-  if (!goog.dom.classes.has(element, silex.model.Element.SELECTED_CLASS_NAME)) {
+  if (!goog.dom.classlist.contains(element, silex.model.Element.SELECTED_CLASS_NAME)) {
     this.lastSelected = element;
     // notify the controller
     if (shiftKey) {
@@ -515,17 +518,17 @@ silex.view.Stage.prototype.handleMouseDown = function(element, x, y, shiftKey) {
 
 /**
  * check if the target is a UI handle to resize or move (draggable jquery plugin)
- * @param   {element} target a DOM element clicked by the user, which may be a handle to resize or move
+ * @param   {Element} target a DOM element clicked by the user, which may be a handle to resize or move
  */
 silex.view.Stage.prototype.getResizeDirection = function(target) {
-  if (goog.dom.classes.has(target, 'ui-resizable-s')) return 's';
-  else if (goog.dom.classes.has(target, 'ui-resizable-n')) return 'n';
-  else if (goog.dom.classes.has(target, 'ui-resizable-e')) return 'e';
-  else if (goog.dom.classes.has(target, 'ui-resizable-w')) return 'w';
-  else if (goog.dom.classes.has(target, 'ui-resizable-se')) return 'se';
-  else if (goog.dom.classes.has(target, 'ui-resizable-sw')) return 'sw';
-  else if (goog.dom.classes.has(target, 'ui-resizable-ne')) return 'ne';
-  else if (goog.dom.classes.has(target, 'ui-resizable-nw')) return 'nw';
+  if (goog.dom.classlist.contains(target, 'ui-resizable-s')) return 's';
+  else if (goog.dom.classlist.contains(target, 'ui-resizable-n')) return 'n';
+  else if (goog.dom.classlist.contains(target, 'ui-resizable-e')) return 'e';
+  else if (goog.dom.classlist.contains(target, 'ui-resizable-w')) return 'w';
+  else if (goog.dom.classlist.contains(target, 'ui-resizable-se')) return 'se';
+  else if (goog.dom.classlist.contains(target, 'ui-resizable-sw')) return 'sw';
+  else if (goog.dom.classlist.contains(target, 'ui-resizable-ne')) return 'ne';
+  else if (goog.dom.classlist.contains(target, 'ui-resizable-nw')) return 'nw';
   // Target is not a resize handle
   return null;
 };
@@ -535,7 +538,7 @@ silex.view.Stage.prototype.getResizeDirection = function(target) {
  * get the scroll property, working around cross browser issues
  */
 silex.view.Stage.prototype.setScrollX = function(value) {
-  this.documentElement.scrollLeft = value;
+  this.documentElement['scrollLeft'] = value;
   this.bodyElement.scrollLeft = value;
 };
 
@@ -544,7 +547,7 @@ silex.view.Stage.prototype.setScrollX = function(value) {
  * get the scroll property, working around cross browser issues
  */
 silex.view.Stage.prototype.setScrollY = function(value) {
-  this.documentElement.scrollTop = value;
+  this.documentElement['scrollTop'] = value;
   this.bodyElement.scrollTop = value;
 };
 
@@ -553,7 +556,7 @@ silex.view.Stage.prototype.setScrollY = function(value) {
  * get the scroll property, working around cross browser issues
  */
 silex.view.Stage.prototype.getScrollX = function() {
-  return Math.max(this.documentElement.scrollLeft || 0, this.bodyElement.scrollLeft || 0);
+  return Math.max(this.documentElement['scrollLeft'] || 0, this.bodyElement.scrollLeft || 0);
 };
 
 
@@ -561,7 +564,7 @@ silex.view.Stage.prototype.getScrollX = function() {
  * get the scroll property, working around cross browser issues
  */
 silex.view.Stage.prototype.getScrollY = function() {
-  return Math.max(this.documentElement.scrollTop || 0, this.bodyElement.scrollTop || 0);
+  return Math.max(this.documentElement['scrollTop'] || 0, this.bodyElement.scrollTop || 0);
 };
 
 
@@ -569,7 +572,7 @@ silex.view.Stage.prototype.getScrollY = function() {
  * get the scroll property, working around cross browser issues
  */
 silex.view.Stage.prototype.getScrollMaxX = function() {
-  return Math.max(this.documentElement.scrollLeftMax || 0, this.bodyElement.scrollWidth || 0);
+  return Math.max(this.documentElement['scrollLeftMax'] || 0, this.bodyElement.scrollWidth || 0);
 };
 
 
@@ -577,7 +580,7 @@ silex.view.Stage.prototype.getScrollMaxX = function() {
  * get the scroll property, working around cross browser issues
  */
 silex.view.Stage.prototype.getScrollMaxY = function() {
-  return Math.max(this.documentElement.scrollTopMax || 0, this.bodyElement.scrollHeight || 0);
+  return Math.max(this.documentElement['scrollTopMax'] || 0, this.bodyElement.scrollHeight || 0);
 };
 
 
@@ -587,20 +590,19 @@ silex.view.Stage.prototype.getScrollMaxY = function() {
 silex.view.Stage.prototype.propertyChanged = function() {
   // check position and size are int and not float
   goog.array.forEach(this.selectedElements, function(element) {
-    var x, y;
     // round position
     var position = goog.style.getPosition(element);
-    x = position.x ? Math.floor(position.x) : null;
-    y = position.y ? Math.floor(position.y) : null;
-    if (goog.isDefAndNotNull(x) || goog.isDefAndNotNull(y)) {
-      goog.style.setPosition(element, x, y);
+    if (goog.isDefAndNotNull(position.x)) position.x = Math.floor(position.x);
+    if (goog.isDefAndNotNull(position.y)) position.y = Math.floor(position.y);
+    if (goog.isDefAndNotNull(position.x) || goog.isDefAndNotNull(position.y)) {
+      goog.style.setPosition(element, position.x, position.y);
     }
     // round size
     var size = goog.style.getSize(element);
-    x = size.x ? Math.floor(size.x) : null;
-    y = size.y ? Math.floor(size.y) : null;
-    if (goog.isDefAndNotNull(x) || goog.isDefAndNotNull(y)) {
-      goog.style.setSize(element, x, y);
+    if (goog.isDefAndNotNull(size.x)) size.x = Math.floor(size.x);
+    if (goog.isDefAndNotNull(size.y)) size.y = Math.floor(size.y);
+    if (goog.isDefAndNotNull(size.x) || goog.isDefAndNotNull(size.y)) {
+      goog.style.setSize(element, size.x, size.y);
     }
   }, this);
   // update property tool box
