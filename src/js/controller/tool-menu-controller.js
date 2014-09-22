@@ -1,13 +1,13 @@
-//////////////////////////////////////////////////
-// Silex, live web creation
-// http://projects.silexlabs.org/?/silex/
-//
-// Copyright (c) 2012 Silex Labs
-// http://www.silexlabs.org/
-//
-// Silex is available under the GPL license
-// http://www.silexlabs.org/silex/silex-licensing/
-//////////////////////////////////////////////////
+/**
+ * Silex, live web creation
+ * http://projects.silexlabs.org/?/silex/
+ *
+ * Copyright (c) 2012 Silex Labs
+ * http://www.silexlabs.org/
+ *
+ * Silex is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
+ */
 
 /**
  * @fileoverview A controller listens to a view element,
@@ -23,15 +23,14 @@ goog.require('silex.service.SilexTasks');
 
 /**
  * @constructor
- * @extends {silex.controller.ControllerBase
+ * @extends {silex.controller.ControllerBase}
  * listen to the view events and call the main controller's methods}
- * @param  {silex.types.Controller} controller  structure which holds the controller instances
  * @param {silex.types.Model} model
  * @param  {silex.types.View} view  view class which holds the other views
  */
-silex.controller.ToolMenuController = function(controller, model, view) {
+silex.controller.ToolMenuController = function(model, view) {
   // call super
-  silex.controller.ControllerBase.call(this, controller, model, view);
+  silex.controller.ControllerBase.call(this, model, view);
   this.pixlr = new Pixlr(silex.utils.Url.getRootUrl() + '/tasks/sendImage', silex.utils.Url.getRootUrl() + '/libs/pixlr/close.html');
 };
 
@@ -99,9 +98,9 @@ silex.controller.ToolMenuController.prototype.openPixlr = function(pixlrMethod, 
     );
   }
 // case of a background image on any other element
-  else if (element.style.backgroundImage) {
+  else if (goog.style.getStyle(element, 'backgroundImage')) {
     // retrieve the URL from "background-image: url(...)"
-    var url = element.style.backgroundImage;
+    var url = goog.style.getStyle(element, 'backgroundImage');
     url = url.substr(url.indexOf('url(') + 4);
     url = url.substring(0, url.lastIndexOf(')'));
     url = url.substr(silex.utils.Url.getRootUrl().length);
@@ -116,8 +115,6 @@ silex.controller.ToolMenuController.prototype.openPixlr = function(pixlrMethod, 
             if (isOk) {
               // callback for pixlr
               this.pixlr.onUpdate = goog.bind(function() {
-                // refresh image
-                element.style.backgroundImage = element.style.backgroundImage;
                 // track success
                 this.tracker.trackAction('controller-events', 'success', trackingLabel, 1);
                 // remove temp file on the server
@@ -163,12 +160,12 @@ silex.controller.ToolMenuController.prototype.pixlrExpress = function() {
  * toggle advanced / apollo mode
  */
 silex.controller.ToolMenuController.prototype.toggleAdvanced = function() {
-  if (!goog.dom.classes.has(document.body, 'advanced-mode-on')) {
-    goog.dom.classes.add(document.body, 'advanced-mode-on');
-    goog.dom.classes.remove(document.body, 'advanced-mode-off');
+  if (!goog.dom.classlist.contains(document.body, 'advanced-mode-on')) {
+    goog.dom.classlist.add(document.body, 'advanced-mode-on');
+    goog.dom.classlist.remove(document.body, 'advanced-mode-off');
   }
   else {
-    goog.dom.classes.remove(document.body, 'advanced-mode-on');
-    goog.dom.classes.add(document.body, 'advanced-mode-off');
+    goog.dom.classlist.remove(document.body, 'advanced-mode-on');
+    goog.dom.classlist.add(document.body, 'advanced-mode-off');
   }
 };

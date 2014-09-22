@@ -1,13 +1,13 @@
-//////////////////////////////////////////////////
-// Silex, live web creation
-// http://projects.silexlabs.org/?/silex/
-//
-// Copyright (c) 2012 Silex Labs
-// http://www.silexlabs.org/
-//
-// Silex is available under the GPL license
-// http://www.silexlabs.org/silex/silex-licensing/
-//////////////////////////////////////////////////
+/**
+ * Silex, live web creation
+ * http://projects.silexlabs.org/?/silex/
+ *
+ * Copyright (c) 2012 Silex Labs
+ * http://www.silexlabs.org/
+ *
+ * Silex is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
+ */
 
 /**
  * @fileoverview Helper class for common tasks
@@ -21,7 +21,6 @@ goog.provide('silex.utils.Notification');
 
 /**
  * @constructor
- * @struct
  */
 silex.utils.Notification = function() {
   throw ('this is a static class and it canot be instanciated');
@@ -96,6 +95,8 @@ silex.utils.Notification.activateNative = function() {
 
 /**
  * display a native notification, or ask for permission
+ * @param {string} message
+ * @param {string} iconUrl
  */
 silex.utils.Notification.nativeNotification = function(message, iconUrl) {
   if (silex.utils.Notification.useNative()) {
@@ -114,15 +115,21 @@ silex.utils.Notification.nativeNotification = function(message, iconUrl) {
 
 /**
  * core method for alert, prompt and confirm
+ * @param {function(string, function(...), ?string=, ?string=)} dialogMethod
+ * @param {string} message
+ * @param {function(?boolean, ?string)} cbk
+ * @param {?string=} opt_okLabel
+ * @param {?string=} opt_cancelLabel
+ * @param {?string=} opt_default
  */
-silex.utils.Notification.dialog = function(dialogMethod, msg, cbk, opt_okLabel, opt_cancelLabel, opt_default) {
+silex.utils.Notification.dialog = function(dialogMethod, message, cbk, opt_okLabel, opt_cancelLabel, opt_default) {
   alertify.set({ labels: {
     ok: opt_okLabel || 'ok',
     cancel: opt_cancelLabel || 'cancel'
   }});
   // set the flag while the modal dialog is opened
   silex.utils.Notification.isActive = true;
-  dialogMethod(msg, function() {
+  dialogMethod(message, function() {
     // reset the flag
     silex.utils.Notification.isActive = false;
     // call the callback
@@ -133,30 +140,44 @@ silex.utils.Notification.dialog = function(dialogMethod, msg, cbk, opt_okLabel, 
 
 /**
  * display a message
+ * @param {string} message
+ * @param {function()} cbk
+ * @param {?string=} opt_okLabel
+ * @param {?string=} opt_cancelLabel
  */
-silex.utils.Notification.alert = function(msg, cbk, opt_okLabel, opt_cancelLabel) {
-  silex.utils.Notification.dialog(alertify.alert, msg, cbk, opt_okLabel, opt_cancelLabel);
+silex.utils.Notification.alert = function(message, cbk, opt_okLabel, opt_cancelLabel) {
+  silex.utils.Notification.dialog(alertify.alert, message, cbk, opt_okLabel, opt_cancelLabel);
 };
 
 
 /**
- * display a message
+ * ask for a text
+ * @param {string} message
+ * @param {string} text
+ * @param {function(?boolean, ?string)} cbk
+ * @param {?string=} opt_okLabel
+ * @param {?string=} opt_cancelLabel
  */
-silex.utils.Notification.prompt = function(msg, text, cbk, opt_okLabel, opt_cancelLabel) {
-  silex.utils.Notification.dialog(alertify.prompt, msg, cbk, opt_okLabel, opt_cancelLabel, text);
+silex.utils.Notification.prompt = function(message, text, cbk, opt_okLabel, opt_cancelLabel) {
+  silex.utils.Notification.dialog(alertify.prompt, message, cbk, opt_okLabel, opt_cancelLabel, text);
 };
 
 
 /**
- * display a message
+ * ask for confirmation
+ * @param {string} message
+ * @param {function(?boolean)} cbk
+ * @param {?string=} opt_okLabel
+ * @param {?string=} opt_cancelLabel
  */
-silex.utils.Notification.confirm = function(msg, cbk, opt_okLabel, opt_cancelLabel) {
-  silex.utils.Notification.dialog(alertify.confirm, msg, cbk, opt_okLabel, opt_cancelLabel);
+silex.utils.Notification.confirm = function(message, cbk, opt_okLabel, opt_cancelLabel) {
+  silex.utils.Notification.dialog(alertify.confirm, message, cbk, opt_okLabel, opt_cancelLabel);
 };
 
 
 /**
  * notify the user with success formatting
+ * @param {string} message
  */
 silex.utils.Notification.notifySuccess = function(message) {
   console.log(message);
@@ -168,6 +189,7 @@ silex.utils.Notification.notifySuccess = function(message) {
 
 /**
  * notify the user with success formatting
+ * @param {string} message
  */
 silex.utils.Notification.notifyError = function(message) {
   console.error(message);
@@ -179,6 +201,7 @@ silex.utils.Notification.notifyError = function(message) {
 
 /**
  * notify the user with success formatting
+ * @param {string} message
  */
 silex.utils.Notification.notifyInfo = function(message) {
   console.info(message);

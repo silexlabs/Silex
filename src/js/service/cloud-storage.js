@@ -1,13 +1,13 @@
-//////////////////////////////////////////////////
-// Silex, live web creation
-// http://projects.silexlabs.org/?/silex/
-//
-// Copyright (c) 2012 Silex Labs
-// http://www.silexlabs.org/
-//
-// Silex is available under the GPL license
-// http://www.silexlabs.org/silex/silex-licensing/
-//////////////////////////////////////////////////
+/**
+ * Silex, live web creation
+ * http://projects.silexlabs.org/?/silex/
+ *
+ * Copyright (c) 2012 Silex Labs
+ * http://www.silexlabs.org/
+ *
+ * Silex is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
+ */
 
 /**
  * @fileoverview Service used to interact with the unifile server.
@@ -36,6 +36,7 @@ goog.addSingletonGetter(silex.service.CloudStorage);
 
 /**
  * reference to the filepicker instance
+ * @type {Object}
  */
 silex.service.CloudStorage.prototype.filePicker;
 

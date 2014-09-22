@@ -1,13 +1,13 @@
-//////////////////////////////////////////////////
-// Silex, live web creation
-// http://projects.silexlabs.org/?/silex/
-//
-// Copyright (c) 2012 Silex Labs
-// http://www.silexlabs.org/
-//
-// Silex is available under the GPL license
-// http://www.silexlabs.org/silex/silex-licensing/
-//////////////////////////////////////////////////
+/**
+ * Silex, live web creation
+ * http://projects.silexlabs.org/?/silex/
+ *
+ * Copyright (c) 2012 Silex Labs
+ * http://www.silexlabs.org/
+ *
+ * Silex is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
+ */
 
 /**
  * @fileoverview A controller listens to a view element,
@@ -23,13 +23,12 @@ goog.require('silex.controller.ControllerBase');
 /**
  * @constructor
  * @extends {silex.controller.ControllerBase}
- * @param  {silex.types.Controller} controller  structure which holds the controller instances
  * @param {silex.types.Model} model
  * @param  {silex.types.View} view  view class which holds the other views
  */
-silex.controller.PageToolController = function(controller, model, view) {
+silex.controller.PageToolController = function(model, view) {
   // call super
-  silex.controller.ControllerBase.call(this, controller, model, view);
+  silex.controller.ControllerBase.call(this, model, view);
 };
 
 // inherit from silex.controller.ControllerBase
@@ -49,6 +48,7 @@ silex.controller.PageToolController.prototype.openPage = function(pageName) {
 
 /**
  * rename a page
+ * @param {?string=} opt_pageName name of the page to be renamed
  */
 silex.controller.PageToolController.prototype.renamePage = function(opt_pageName) {
   // default to the current page
@@ -75,11 +75,12 @@ silex.controller.PageToolController.prototype.renamePage = function(opt_pageName
 
 /**
  * remvove a page
+ * @param {?string=} opt_pageName name of the page to be renamed
  */
 silex.controller.PageToolController.prototype.removePage = function(opt_pageName) {
   // default to the current page
   if (!opt_pageName) {
-    opt_pageName = this.model.page.getCurrentPage(this.model.body.getBodyElement());
+    opt_pageName = this.model.page.getCurrentPage();
   }
   // confirm and delete
   silex.utils.Notification.confirm('I am about to <strong>delete the page "' +

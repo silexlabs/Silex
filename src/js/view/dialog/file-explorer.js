@@ -1,13 +1,13 @@
-//////////////////////////////////////////////////
-// Silex, live web creation
-// http://projects.silexlabs.org/?/silex/
-//
-// Copyright (c) 2012 Silex Labs
-// http://www.silexlabs.org/
-//
-// Silex is available under the GPL license
-// http://www.silexlabs.org/silex/silex-licensing/
-//////////////////////////////////////////////////
+/**
+ * Silex, live web creation
+ * http://projects.silexlabs.org/?/silex/
+ *
+ * Copyright (c) 2012 Silex Labs
+ * http://www.silexlabs.org/
+ *
+ * Silex is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
+ */
 
 /**
  * @fileoverview This is the dialog box containing the
@@ -35,15 +35,14 @@ goog.require('silex.utils.Url');
 /**
  * the Silex FileExplorer class
  * @constructor
- * @param {Element} element   container to render the UI
- * @param  {silex.types.View} view  view class which holds the other views
- * @param  {silex.types.Controller} controller  structure which holds the controller instances
+ * @param {!Element} element   container to render the UI
+ * @param  {!silex.types.Controller} controller  structure which holds
+ *                                               the controller instances
  */
-silex.view.dialog.FileExplorer = function(element, view, controller) {
+silex.view.dialog.FileExplorer = function(element, controller) {
   // get the global variable of Cloud Explorer
   this.filePicker = silex.service.CloudStorage.getInstance().filePicker;
   // store the constructor params
-  this.view = view;
   this.controller = controller;
 };
 
@@ -56,15 +55,21 @@ silex.view.dialog.FileExplorer.prototype.filePicker;
 
 /**
  * pick a file
- * @param opt_mimetypes     optional array of accepted mimetypes, e.g. ['text/html', 'text/plain']
+ * @param {function(string)} cbk
+ * @param {?Object.<Array>=} opt_mimetypes optional array of accepted mimetypes,
+ *                           e.g. {mimetypes: ['text/html', 'text/plain']}
+ * @param {?function(Object)=} opt_errCbk
  */
-silex.view.dialog.FileExplorer.prototype.openDialog = function(cbk, opt_mimetypes, opt_errCbk) {
+silex.view.dialog.FileExplorer.prototype.openDialog =
+  function(cbk, opt_mimetypes, opt_errCbk) {
   var fileExtentions;
   if (opt_mimetypes) {
-    if (opt_mimetypes['mimetype'] && opt_mimetypes['mimetype'].indexOf('image') === 0) {
+    if (opt_mimetypes['mimetype'] &&
+        opt_mimetypes['mimetype'].indexOf('image') === 0) {
       fileExtentions = ['jpg', 'jpeg', 'gif', 'png'];
     }
-    else if (opt_mimetypes['mimetype'] && opt_mimetypes['mimetype'].indexOf('text/html') === 0) {
+    else if (opt_mimetypes['mimetype'] &&
+        opt_mimetypes['mimetype'].indexOf('text/html') === 0) {
       fileExtentions = ['html', 'htm'];
     }
   }
@@ -85,16 +90,18 @@ silex.view.dialog.FileExplorer.prototype.openDialog = function(cbk, opt_mimetype
       opt_mimetypes,
       goog.bind(function(blob) {
         // give back focus to Silex
-        this.view.stage.resetFocus();
+        // this.view.stage.resetFocus();
         // no https, because it creates security issues
         blob.url = blob.url.replace('https://', 'http://');
 
         // check the the file extention is ok
-        if (fileExtentions && silex.utils.Url.checkFileExt(blob.url, fileExtentions) === false) {
+        if (fileExtentions &&
+            silex.utils.Url.checkFileExt(blob.url, fileExtentions) === false) {
           var fileName = blob.url.substring(blob.url.lastIndexOf('/') + 1);
           silex.utils.Notification.confirm('The file name ' +
               fileName +
-              ' does not looks good to me, are you sure you want to select this file?',
+              ' does not looks good to me, \
+                  are you sure you want to select this file?',
               function(accept) {
                 if (accept) {
                   successCbk(blob.url);
@@ -114,7 +121,10 @@ silex.view.dialog.FileExplorer.prototype.openDialog = function(cbk, opt_mimetype
 
 /**
  * save as dialog
- * @param opt_mimetypes     optional array of accepted mimetypes, e.g. ['text/html', 'text/plain']
+ * @param {function(string)} cbk
+ * @param {?Object.<Array>=} opt_mimetypes optional array of accepted mimetypes,
+ *                           e.g. {mimetypes: ['text/html', 'text/plain']}
+ * @param {?function(Object)=} opt_errCbk
  */
 silex.view.dialog.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes, opt_errCbk) {
   var fileExtentions;
@@ -143,7 +153,7 @@ silex.view.dialog.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimety
       opt_mimetypes,
       goog.bind(function(blob) {
         // give back focus to Silex
-        this.view.stage.resetFocus();
+        // this.view.stage.resetFocus();
         // no https, because it creates security issues
         blob.url = blob.url.replace('https://', 'http://');
 

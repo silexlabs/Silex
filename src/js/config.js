@@ -1,13 +1,13 @@
-//////////////////////////////////////////////////
-// Silex, live web creation
-// http://projects.silexlabs.org/?/silex/
-//
-// Copyright (c) 2012 Silex Labs
-// http://www.silexlabs.org/
-//
-// Silex is available under the GPL license
-// http://www.silexlabs.org/silex/silex-licensing/
-//////////////////////////////////////////////////
+/**
+ * Silex, live web creation
+ * http://projects.silexlabs.org/?/silex/
+ *
+ * Copyright (c) 2012 Silex Labs
+ * http://www.silexlabs.org/
+ *
+ * Silex is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
+ */
 
 /**
  * @fileoverview Silex config
@@ -29,100 +29,109 @@ var altKeyModifyer = goog.userAgent.MAC ? goog.ui.KeyboardShortcutHandler.Modifi
 
 /**
  * The debug data
- * {boolean} debugMode      true if the app is in debug mode
-, *                          if falsethen all other params are not used
- *                          debug mode is set to true in debug.html
- * {boolean} preventQuit
- * {function} doAfterReady  callback executed when Silex has launched and is ready
- *                          it is defined in debug.js loaded only in debug.html
+ * @struct
  */
 silex.Config.debug = {
+  /**
+   * true if the app is in debug mode
+   * if falsethen all other params are not used
+   * debug mode is set to true in debug.html
+   * @type {boolean}
+   */
   debugMode: false,
-  showPreventQuitMessage: false,
+  /**
+   * @type {boolean}
+   */
+  preventQuit: false,
+  /**
+   * callback executed when Silex has launched and is ready
+   * it is defined in debug.js loaded only in debug.html
+   * @type {function(silex.types.Model, silex.types.View, silex.types.Controller)|null}
+   */
   doAfterReady: null
 };
 
 
 /**
  * Link of the menu
- * @const {constant}
+ * @const
  */
 silex.Config.ABOUT_SILEX = 'http://www.silex.me/';
 
 
 /**
  * Link of the menu
- * @const {constant}
+ * @const
  */
 silex.Config.ISSUES_SILEX = 'https://github.com/silexlabs/Silex/issues?state=open';
 
 
 /**
  * Link of the menu
- * @const {constant}
+ * @const
  */
 silex.Config.DOWNLOADS_TEMPLATE_SILEX = 'https://github.com/silexlabs/Silex/issues?labels=template&state=open';
 
 
 /**
  * Link of the menu
- * @const {constant}
+ * @const
  */
 silex.Config.DOWNLOADS_WIDGET_SILEX = 'https://github.com/silexlabs/Silex/issues?labels=widget&state=open';
 
 
 /**
  * Link of the menu
- * @const {constant}
+ * @const
  */
 silex.Config.ABOUT_SILEX_LABS = 'http://www.silexlabs.org/';
 
 
 /**
  * Link of the menu
- * @const {constant}
+ * @const
  */
 silex.Config.SUBSCRIBE_SILEX_LABS = 'http://eepurl.com/F48q5';
 
 
 /**
  * Link of the menu
- * @const {constant}
+ * @const
  */
 silex.Config.SOCIAL_GPLUS = 'https://plus.google.com/communities/107373636457908189681';
 
 
 /**
  * Link of the menu
- * @const {constant}
+ * @const
  */
 silex.Config.SOCIAL_TWITTER = 'http://twitter.com/silexlabs';
 
 
 /**
  * Link of the menu
- * @const {constant}
+ * @const
  */
 silex.Config.SOCIAL_FB = 'http://www.facebook.com/silexlabs';
 
 
 /**
  * Link of the menu
- * @const {constant}
+ * @const
  */
 silex.Config.FORK_CODE = 'https://github.com/silexlabs/Silex';
 
 
 /**
  * Link of the menu
- * @const {constant}
+ * @const
  */
 silex.Config.CONTRIBUTE = 'https://github.com/silexlabs/Silex/blob/master/docs/contribute.md';
 
 
 /**
  * Link of the menu
- * @const {constant}
+ * @const
  */
 silex.Config.CONTRIBUTORS = 'https://github.com/silexlabs/Silex/blob/master/docs/contributors.md';
 
@@ -253,7 +262,7 @@ silex.Config.menu = {
         shortcut: [[goog.events.KeyCodes.Z, ctrlKeyModifyer]],
         tooltip: ctrlKeyDisplay + 'Z',
         mnemonic: goog.events.KeyCodes.Z,
-        accelerator: 'z',
+        accelerator: 'z'
       },
       {
         label: 'Redo',

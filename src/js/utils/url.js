@@ -1,13 +1,13 @@
-//////////////////////////////////////////////////
-// Silex, live web creation
-// http://projects.silexlabs.org/?/silex/
-//
-// Copyright (c) 2012 Silex Labs
-// http://www.silexlabs.org/
-//
-// Silex is available under the GPL license
-// http://www.silexlabs.org/silex/silex-licensing/
-//////////////////////////////////////////////////
+/**
+ * Silex, live web creation
+ * http://projects.silexlabs.org/?/silex/
+ *
+ * Copyright (c) 2012 Silex Labs
+ * http://www.silexlabs.org/
+ *
+ * Silex is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
+ */
 
 /**
  * @fileoverview Helper class for common tasks
@@ -183,7 +183,7 @@ silex.utils.Url.getAbsolutePath = function(url, base) {
 /**
  * check if the file name has the desired extension
  * @param   {string} fileName  the file name to be checked
- * @param   {Array<string>} extArray  the allowed extensions
+ * @param   {Array.<string>} extArray  the allowed extensions
  */
 silex.utils.Url.checkFileExt = function(fileName, extArray) {
   var ext = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();

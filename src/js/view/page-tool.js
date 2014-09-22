@@ -1,13 +1,13 @@
-//////////////////////////////////////////////////
-// Silex, live web creation
-// http://projects.silexlabs.org/?/silex/
-//
-// Copyright (c) 2012 Silex Labs
-// http://www.silexlabs.org/
-//
-// Silex is available under the GPL license
-// http://www.silexlabs.org/silex/silex-licensing/
-//////////////////////////////////////////////////
+/**
+ * Silex, live web creation
+ * http://projects.silexlabs.org/?/silex/
+ *
+ * Copyright (c) 2012 Silex Labs
+ * http://www.silexlabs.org/
+ *
+ * Silex is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
+ */
 
 /**
  * @fileoverview The Silex PageTool class displays the list of pages
@@ -20,6 +20,8 @@ goog.provide('silex.view.PageTool');
 
 goog.require('goog.dom');
 
+goog.require('silex.model.PageData');
+
 
 
 /**
@@ -28,10 +30,9 @@ goog.require('goog.dom');
  * @param {Element} element   container to render the UI
  * @param  {silex.types.Controller} controller  structure which holds the controller instances
  */
-silex.view.PageTool = function(element, view, controller) {
+silex.view.PageTool = function(element, controller) {
   // store references
   this.element = element;
-  this.view = view;
   this.controller = controller;
 
   // init the tool
@@ -41,11 +42,8 @@ silex.view.PageTool = function(element, view, controller) {
 
 /**
  * page list based on what is passed to redraw
- * {Array.<{name: string, displayName: string, linkName: string, idx: number}>} of objects with these attributes
- *  * name
- *  * displayName
- *  * linkName
- *  * idx
+ * @type {Array.<silex.model.PageData>} array of pages for the opened website
+ * @see silex.model.PageData
  */
 silex.view.PageTool.prototype.pages = [];
 
@@ -53,14 +51,14 @@ silex.view.PageTool.prototype.pages = [];
 /**
  * add listeners on the tool container
  */
-silex.view.PageTool.prototype.initEvents = function(pages) {
+silex.view.PageTool.prototype.initEvents = function() {
   // listen for the click on a page
   goog.events.listen(this.element, goog.events.EventType.CLICK, function(e) {
-    if (goog.dom.classes.has(e.target, 'delete')) {
+    if (goog.dom.classlist.contains(e.target, 'delete')) {
       // remove the page
       this.removePageAtIndex(this.getCellIndex(e.target.parentNode.parentNode));
     }
-    else if (goog.dom.classes.has(e.target, 'label')) {
+    else if (goog.dom.classlist.contains(e.target, 'label')) {
       // rename the page
       this.renamePageAtIndex(this.getCellIndex(e.target.parentNode.parentNode));
     }
@@ -79,10 +77,10 @@ silex.view.PageTool.prototype.initEvents = function(pages) {
 /**
  * refresh the pages
  * find all pages in the dom
-* @param   {Array<element>} selectedElements the elements currently selected
-* @param   {HTMLDocument} contentDocument  the document to use
-* @param   {Array<string>} pageNames   the names of the pages which appear in the current HTML file
-* @param   {string}  currentPageName   the name of the current page
+ * @param   {Array.<Element>} selectedElements the elements currently selected
+ * @param   {Document} contentDocument  the document to use
+ * @param   {Array.<string>} pageNames   the names of the pages which appear in the current HTML file
+ * @param   {string}  currentPageName   the name of the current page
  */
 silex.view.PageTool.prototype.redraw = function(selectedElements, contentDocument, pageNames, currentPageName) {
   // prepare the data for the template
@@ -112,7 +110,8 @@ silex.view.PageTool.prototype.redraw = function(selectedElements, contentDocumen
 
 
 /**
- * ask to remove a page
+ * user wants to remove a page
+ * @param    {number} idx index of the page
  */
 silex.view.PageTool.prototype.removePageAtIndex = function(idx) {
   this.controller.pageToolController.removePage(this.pages[idx].name);
@@ -120,7 +119,8 @@ silex.view.PageTool.prototype.removePageAtIndex = function(idx) {
 
 
 /**
- * ask to rename a page
+ * user wants to rename a page
+ * @param    {number} idx index of the page
  */
 silex.view.PageTool.prototype.renamePageAtIndex = function(idx) {
   this.controller.pageToolController.renamePage(this.pages[idx].name);
@@ -129,7 +129,8 @@ silex.view.PageTool.prototype.renamePageAtIndex = function(idx) {
 
 /**
  * set the selection of pages
- * @param     notify    if true, then notify by calling the onChanged callback
+ * @param    {number} idx
+ * @param    {?boolean=} opt_notify    if true, then notify by calling the onChanged callback
  */
 silex.view.PageTool.prototype.setSelectedIndex = function(idx, opt_notify) {
   // notify the controller
@@ -137,10 +138,15 @@ silex.view.PageTool.prototype.setSelectedIndex = function(idx, opt_notify) {
 };
 
 
+/**
+ * get the index of the given cell
+ * @private
+ * @param    {Element} element which represents the cell in the dom
+ */
 silex.view.PageTool.prototype.getCellIndex = function(element) {
   var pageIdx = element.getAttribute('data-page-idx');
   if (pageIdx) {
-    return parseInt(pageIdx);
+    return parseInt(pageIdx, 10);
   }
   else {
     return -1;

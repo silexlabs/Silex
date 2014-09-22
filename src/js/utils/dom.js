@@ -1,13 +1,13 @@
-//////////////////////////////////////////////////
-// Silex, live web creation
-// http://projects.silexlabs.org/?/silex/
-//
-// Copyright (c) 2012 Silex Labs
-// http://www.silexlabs.org/
-//
-// Silex is available under the GPL license
-// http://www.silexlabs.org/silex/silex-licensing/
-//////////////////////////////////////////////////
+/**
+ * Silex, live web creation
+ * http://projects.silexlabs.org/?/silex/
+ *
+ * Copyright (c) 2012 Silex Labs
+ * http://www.silexlabs.org/
+ *
+ * Silex is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
+ */
 
 /**
  * @fileoverview Helper class for common tasks
@@ -111,17 +111,17 @@ silex.utils.Dom.removeCacheControl = function(url) {
 /**
  * render a template by duplicating the itemTemplateString and inserting the data in it
  * @param {string} itemTemplateString   the template containing \{\{markers\}\}
- * @param {Array<string>}  data                 the array of strings conaining the data
+ * @param {Array.<string>}  data                 the array of strings conaining the data
  * @return {string} the template string with the data in it
  */
 silex.utils.Dom.renderList = function(itemTemplateString, data) {
   var res = '';
   // for each item in data, e.g. each page in the list
-  for (itemIdx in data) {
+  for (var itemIdx in data) {
     // build an item
     var item = itemTemplateString;
     // replace each key by its value
-    for (key in data[itemIdx]) {
+    for (var key in data[itemIdx]) {
       var value = data[itemIdx][key];
       item = item.replace(new RegExp('{{' + key + '}}', 'g'), value);
     }
@@ -147,10 +147,14 @@ silex.utils.Dom.getBoundingBox = function(elements) {
 
   goog.array.forEach(elements, function(element) {
     // commpute the values, which may end up to be NaN or a number
-    var elementTop = parseFloat(element.style.top.substr(0, element.style.top.indexOf('px')));
-    var elementLeft = parseFloat(element.style.left.substr(0, element.style.left.indexOf('px')));
-    var elementRight = (elementLeft || 0) + parseFloat(element.style.width.substr(0, element.style.width.indexOf('px')));
-    var elementBottom = (elementTop || 0) + parseFloat(element.style.height.substr(0, element.style.height.indexOf('px')));
+    var elementStyleTop = goog.style.getStyle(element, 'top');
+    var elementStyleLeft = goog.style.getStyle(element, 'left');
+    var elementStyleWidth = goog.style.getStyle(element, 'width');
+    var elementStyleHeight = goog.style.getStyle(element, 'height');
+    var elementTop = parseFloat(elementStyleTop.substr(0, elementStyleTop.indexOf('px')));
+    var elementLeft = parseFloat(elementStyleLeft.substr(0, elementStyleLeft.indexOf('px')));
+    var elementRight = (elementLeft || 0) + parseFloat(elementStyleWidth.substr(0, elementStyleWidth.indexOf('px')));
+    var elementBottom = (elementTop || 0) + parseFloat(elementStyleHeight.substr(0, elementStyleHeight.indexOf('px')));
     // take the smallest top and left
     top = isNaN(top) ? elementTop : Math.min(top, elementTop);
     left = isNaN(left) ? elementLeft : Math.min(left, elementLeft);

@@ -1,13 +1,13 @@
-//////////////////////////////////////////////////
-// Silex, live web creation
-// http://projects.silexlabs.org/?/silex/
-//
-// Copyright (c) 2012 Silex Labs
-// http://www.silexlabs.org/
-//
-// Silex is available under the GPL license
-// http://www.silexlabs.org/silex/silex-licensing/
-//////////////////////////////////////////////////
+/**
+ * Silex, live web creation
+ * http://projects.silexlabs.org/?/silex/
+ *
+ * Copyright (c) 2012 Silex Labs
+ * http://www.silexlabs.org/
+ *
+ * Silex is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
+ */
 
 /**
  * @fileoverview This is the pane's base class
@@ -26,13 +26,11 @@ goog.provide('silex.view.pane.PaneBase');
  * @constructor
  *
  * @param {Element} element   container to render the UI
- * @param  {silex.types.View} view  view class which holds the other views
  * @param  {silex.types.Controller} controller  structure which holds the controller instances
  */
-silex.view.pane.PaneBase = function(element, view, controller) {
+silex.view.pane.PaneBase = function(element, controller) {
   // store references
   this.element = element;
-  this.view = view;
   this.controller = controller;
 };
 
@@ -62,7 +60,9 @@ silex.view.pane.PaneBase.prototype.iAmRedrawing;
 
 /**
  * notify the controller that the style changed
- * @param   styleName   not css style but camel case
+ * @param {string} styleName   not css style but camel case
+ * @param {?string=} opt_styleValue
+ * @param {?Array.<Element>=} opt_elements
  */
 silex.view.pane.PaneBase.prototype.styleChanged = function(styleName, opt_styleValue, opt_elements) {
   //  if (this.iAmRedrawing) return;
@@ -81,7 +81,10 @@ silex.view.pane.PaneBase.prototype.styleChanged = function(styleName, opt_styleV
 
 /**
  * notify the controller that a property has changed
- * @param   propertyName   property name, e.g. 'src'
+ * @param {string} propertyName   property name, e.g. 'src'
+ * @param {?string=} opt_propertyValue
+ * @param {?Array.<Element>=} opt_elements
+ * @param {?boolean=} opt_applyToContent
  */
 silex.view.pane.PaneBase.prototype.propertyChanged = function(propertyName, opt_propertyValue, opt_elements, opt_applyToContent) {
   if (this.iAmRedrawing) return;
@@ -100,9 +103,9 @@ silex.view.pane.PaneBase.prototype.propertyChanged = function(propertyName, opt_
 
 /**
  * refresh the displayed data
- * @param   {Array<element>} selectedElements the elements currently selected
- * @param   {HTMLDocument} document  the document to use
- * @param   {Array<string>} pageNames   the names of the pages which appear in the current HTML file
+ * @param   {Array.<Element>} selectedElements the elements currently selected
+ * @param   {Document} document  the document to use
+ * @param   {Array.<string>} pageNames   the names of the pages which appear in the current HTML file
  * @param   {string}  currentPageName   the name of the current page
  */
 silex.view.pane.PaneBase.prototype.redraw = function(selectedElements, document, pageNames, currentPageName) {
@@ -120,7 +123,9 @@ silex.view.pane.PaneBase.prototype.redraw = function(selectedElements, document,
 
 /**
  * get the common property of a group of elements
- * @return  the value or null if the value is not the same for all elements
+ * @param {Array.<Element>} elements
+ * @param {function(Element): ?(string|number|boolean)} getPropertyFunction the callback which returns the value for one element
+ * @return ? {string|number|boolean} the value or null if the value is not the same for all elements
  */
 silex.view.pane.PaneBase.prototype.getCommonProperty = function(elements, getPropertyFunction) {
   var value = null;

@@ -1,13 +1,13 @@
-//////////////////////////////////////////////////
-// Silex, live web creation
-// http://projects.silexlabs.org/?/silex/
-//
-// Copyright (c) 2012 Silex Labs
-// http://www.silexlabs.org/
-//
-// Silex is available under the GPL license
-// http://www.silexlabs.org/silex/silex-licensing/
-//////////////////////////////////////////////////
+/**
+ * Silex, live web creation
+ * http://projects.silexlabs.org/?/silex/
+ *
+ * Copyright (c) 2012 Silex Labs
+ * http://www.silexlabs.org/
+ *
+ * Silex is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
+ */
 
 /**
  * @fileoverview
@@ -27,14 +27,14 @@ goog.require('silex.view.dialog.AceEditorBase');
 
 /**
  * @constructor
- * @extend silex.view.dialog.AceEditorBase
- * @param {Element} element   container to render the UI
- * @param  {silex.types.View} view  view class which holds the other views
- * @param  {silex.types.Controller} controller  structure which holds the controller instances
+ * @extends {silex.view.dialog.AceEditorBase}
+ * @param {!Element} element   container to render the UI
+ * @param  {!silex.types.Controller} controller  structure which holds
+ *                                               the controller instances
  */
-silex.view.dialog.CssEditor = function(element, view, controller) {
+silex.view.dialog.CssEditor = function(element, controller) {
   // call super
-  goog.base(this, element, view, controller);
+  goog.base(this, element, controller);
 };
 // inherit from silex.view.dialog.DialogBase
 goog.inherits(silex.view.dialog.CssEditor, silex.view.dialog.AceEditorBase);

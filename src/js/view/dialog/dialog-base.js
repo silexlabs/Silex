@@ -1,13 +1,13 @@
-//////////////////////////////////////////////////
-// Silex, live web creation
-// http://projects.silexlabs.org/?/silex/
-//
-// Copyright (c) 2012 Silex Labs
-// http://www.silexlabs.org/
-//
-// Silex is available under the GPL license
-// http://www.silexlabs.org/silex/silex-licensing/
-//////////////////////////////////////////////////
+/**
+ * Silex, live web creation
+ * http://projects.silexlabs.org/?/silex/
+ *
+ * Copyright (c) 2012 Silex Labs
+ * http://www.silexlabs.org/
+ *
+ * Silex is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
+ */
 
 /**
  * @fileoverview
@@ -28,19 +28,28 @@ goog.require('goog.ui.KeyboardShortcutHandler');
 /**
  * @constructor
  *
- * @param {Element} element   container to render the UI
- * @param  {silex.types.View} view  view class which holds the other views
- * @param  {silex.types.Controller} controller  structure which holds the controller instances
+ * @param {!Element} element   container to render the UI
+ * @param  {!silex.types.Controller} controller  structure which holds
+ *                                               the controller instances
  */
-silex.view.dialog.DialogBase = function(element, view, controller) {
+silex.view.dialog.DialogBase = function(element, controller) {
+  /**
+   * @type {!Element} container to render the UI
+   */
   this.element = element;
-  this.view = view;
+  /**
+   * @type {!silex.types.Controller} structure which holds the controller instances
+   */
   this.controller = controller;
 
-  // store the background
-  this.background = goog.dom.getElementByClass('dialogs-background');
+  /**
+   * @type {!Element} store the background
+   */
+  this.background = /** @type {!Element} */ (goog.dom.getElementByClass('dialogs-background'));
 
-  // flag to remember if the dialog is opened
+  /**
+   * @type {!boolean} flag to remember if the dialog is opened
+   */
   this.isOpened = false;
 
   // let time to build the UI (e.g. for file explorer)
@@ -79,8 +88,8 @@ silex.view.dialog.DialogBase.prototype.initUI = function() {
 silex.view.dialog.DialogBase.prototype.openEditor = function() {
   if (this.isOpened === false) {
     // show
-    goog.dom.classes.remove(this.background, 'hidden-dialog');
-    goog.dom.classes.remove(this.element, 'hidden-dialog');
+    goog.dom.classlist.remove(this.background, 'hidden-dialog');
+    goog.dom.classlist.remove(this.element, 'hidden-dialog');
     // flag to remember if the dialog is opened
     this.isOpened = true;
   }
@@ -95,7 +104,7 @@ silex.view.dialog.DialogBase.prototype.closeEditor = function() {
     // flag to remember if the dialog is opened
     this.isOpened = false;
     // hide dialog and background
-    goog.dom.classes.add(this.background, 'hidden-dialog');
-    goog.dom.classes.add(this.element, 'hidden-dialog');
+    goog.dom.classlist.add(this.background, 'hidden-dialog');
+    goog.dom.classlist.add(this.element, 'hidden-dialog');
   }
 };

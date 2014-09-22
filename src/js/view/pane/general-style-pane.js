@@ -1,13 +1,13 @@
-//////////////////////////////////////////////////
-// Silex, live web creation
-// http://projects.silexlabs.org/?/silex/
-//
-// Copyright (c) 2012 Silex Labs
-// http://www.silexlabs.org/
-//
-// Silex is available under the GPL license
-// http://www.silexlabs.org/silex/silex-licensing/
-//////////////////////////////////////////////////
+/**
+ * Silex, live web creation
+ * http://projects.silexlabs.org/?/silex/
+ *
+ * Copyright (c) 2012 Silex Labs
+ * http://www.silexlabs.org/
+ *
+ * Silex is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
+ */
 
 /**
  * @fileoverview Property pane, displayed in the property tool box.
@@ -21,7 +21,6 @@ goog.require('goog.array');
 goog.require('goog.object');
 goog.require('goog.ui.Checkbox');
 goog.require('goog.ui.ColorButton');
-goog.require('goog.ui.CustomButton');
 goog.require('goog.ui.HsvaPalette');
 goog.require('goog.ui.TabBar');
 goog.require('silex.view.pane.PaneBase');
@@ -32,14 +31,13 @@ goog.require('silex.view.pane.PaneBase');
  * on of Silex Editors class
  * let user edit style of components
  * @constructor
- * @extend silex.view.PaneBase
+ * @extends {silex.view.pane.PaneBase}
  * @param {Element} element   container to render the UI
- * @param  {silex.types.View} view  view class which holds the other views
  * @param  {silex.types.Controller} controller  structure which holds the controller instances
  */
-silex.view.pane.GeneralStylePane = function(element, view, controller) {
+silex.view.pane.GeneralStylePane = function(element, controller) {
   // call super
-  goog.base(this, element, view, controller);
+  goog.base(this, element, controller);
 
   this.buildUi();
 };
@@ -66,9 +64,9 @@ silex.view.pane.GeneralStylePane.prototype.buildUi = function() {
 
 /**
  * redraw the properties
- * @param   {Array<element>} selectedElements the elements currently selected
- * @param   {HTMLDocument} document  the document to use
- * @param   {Array<string>} pageNames   the names of the pages which appear in the current HTML file
+ * @param   {Array.<Element>} selectedElements the elements currently selected
+ * @param   {Document} document  the document to use
+ * @param   {Array.<string>} pageNames   the names of the pages which appear in the current HTML file
  * @param   {string}  currentPageName   the name of the current page
  */
 silex.view.pane.GeneralStylePane.prototype.redraw = function(selectedElements, document, pageNames, currentPageName) {
@@ -90,7 +88,7 @@ silex.view.pane.GeneralStylePane.prototype.redraw = function(selectedElements, d
     this.opacityInput.removeAttribute('disabled');
     // get the opacity
     var opacity = this.getCommonProperty(selectedElements, function(element) {
-      return element.style.opacity;
+      return goog.style.getStyle(element, 'opacity');
     });
     if (goog.isNull(opacity)) {
       this.opacityInput.value = '';
@@ -119,7 +117,7 @@ silex.view.pane.GeneralStylePane.prototype.onInputChanged = function(event) {
     var val = parseFloat(this.opacityInput.value) / 100.0;
     if (val < 0) val = 0;
     if (val > 1) val = 1;
-    this.styleChanged('opacity', val);
+    this.styleChanged('opacity', val.toString());
   }
   else {
     this.styleChanged('opacity');

@@ -1,13 +1,13 @@
-//////////////////////////////////////////////////
-// Silex, live web creation
-// http://projects.silexlabs.org/?/silex/
-//
-// Copyright (c) 2012 Silex Labs
-// http://www.silexlabs.org/
-//
-// Silex is available under the GPL license
-// http://www.silexlabs.org/silex/silex-licensing/
-//////////////////////////////////////////////////
+/**
+ * Silex, live web creation
+ * http://projects.silexlabs.org/?/silex/
+ *
+ * Copyright (c) 2012 Silex Labs
+ * http://www.silexlabs.org/
+ *
+ * Silex is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
+ */
 
 /**
  * @fileoverview Helper class used to cleanup the DOM when publishing a website
@@ -218,10 +218,10 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
   var cleanupElement = function(element) {
     // add the element type
     var classNameType = 'silex-' + (element.getAttribute(silex.model.Element.TYPE_ATTR) || 'body');
-    goog.dom.classes.add(element, classNameType);
+    goog.dom.classlist.add(element, classNameType);
     // create a class name for this css
     var className = 'element-' + (elementIdx++);
-    goog.dom.classes.add(element, className);
+    goog.dom.classlist.add(element, className);
     // add the css for this context
     var cssNormal = element.getAttribute('style');
     cssArray.push({
@@ -229,7 +229,7 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
       styles: cssNormal
     });
     // cleanup styles used during edition
-    //goog.dom.classes.remove (element, 'editable-style');
+    //goog.dom.classlist.remove (element, 'editable-style');
     element.removeAttribute('data-silex-type');
     // remove inline css styles
     element.removeAttribute('style');

@@ -24,7 +24,6 @@ goog.provide('silex.view.dialog.LinkDialogPlugin');
 goog.require('goog.array');
 goog.require('goog.dom');
 goog.require('goog.editor.Command');
-goog.require('goog.editor.plugins.AbstractDialogPlugin');
 goog.require('goog.editor.plugins.LinkDialogPlugin');
 goog.require('goog.events.EventHandler');
 goog.require('goog.functions');
@@ -39,7 +38,7 @@ goog.require('goog.uri.utils');
 /**
  * A plugin that opens the link dialog.
  * @constructor
- * @extends {goog.editor.plugins.AbstractDialogPlugin}
+ * @extends {goog.editor.plugins.LinkDialogPlugin}
  */
 silex.view.dialog.LinkDialogPlugin = function() {
   goog.base(this);
@@ -55,12 +54,14 @@ goog.inherits(silex.view.dialog.LinkDialogPlugin,
  * @override
  */
 silex.view.dialog.LinkDialogPlugin.prototype.handleOk = function(e) {
-  // call parent class
-  goog.base(this, 'handleOk', e, linkUrl);
   // allow internal links
   var linkUrl = e.target.urlInputHandler_.element_.value;
   if (linkUrl && linkUrl.indexOf('#') === 0) {
     // this is an internal link
     this.currentLink_.getAnchor().href = linkUrl;
+    // TODO: check if this assignement is useful?
+    e.linkUrl = linkUrl;
   }
+  // call parent class
+  goog.base(this, 'handleOk', e);
 };

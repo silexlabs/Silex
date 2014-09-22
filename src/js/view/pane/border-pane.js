@@ -1,13 +1,13 @@
-//////////////////////////////////////////////////
-// Silex, live web creation
-// http://projects.silexlabs.org/?/silex/
-//
-// Copyright (c) 2012 Silex Labs
-// http://www.silexlabs.org/
-//
-// Silex is available under the GPL license
-// http://www.silexlabs.org/silex/silex-licensing/
-//////////////////////////////////////////////////
+/**
+ * Silex, live web creation
+ * http://projects.silexlabs.org/?/silex/
+ *
+ * Copyright (c) 2012 Silex Labs
+ * http://www.silexlabs.org/
+ *
+ * Silex is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
+ */
 
 /**
  * @fileoverview Property pane, displayed in the property tool box.
@@ -23,7 +23,6 @@ goog.require('goog.editor.Field');
 goog.require('goog.object');
 goog.require('goog.ui.Checkbox');
 goog.require('goog.ui.ColorButton');
-goog.require('goog.ui.CustomButton');
 goog.require('goog.ui.HsvaPalette');
 goog.require('silex.view.pane.PaneBase');
 
@@ -33,14 +32,13 @@ goog.require('silex.view.pane.PaneBase');
  * on of Silex Editors class
  * let user edit style of components
  * @constructor
- * @extend silex.view.PaneBase
+ * @extends {silex.view.pane.PaneBase}
  * @param {Element} element   container to render the UI
- * @param  {silex.types.View} view  view class which holds the other views
  * @param  {silex.types.Controller} controller  structure which holds the controller instances
  */
-silex.view.pane.BorderPane = function(element, view, controller) {
+silex.view.pane.BorderPane = function(element, controller) {
   // call super
-  goog.base(this, element, view, controller);
+  goog.base(this, element, controller);
 
   this.buildUi();
 };
@@ -106,13 +104,13 @@ silex.view.pane.BorderPane.prototype.buildUi = function() {
   // border color
   var hsvPaletteElement = goog.dom.getElementByClass('border-color-palette',
       this.element);
-  this.hsvPalette = new goog.ui.HsvaPalette(null,
-      null,
-      null,
+  this.hsvPalette = new goog.ui.HsvaPalette(undefined,
+      undefined,
+      undefined,
       'goog-hsva-palette-sm');
   this.hsvPalette.render(hsvPaletteElement);
   // init button which shows/hides the palete
-  this.colorPicker = new goog.ui.ColorButton();
+  this.colorPicker = new goog.ui.ColorButton('Border color');
   this.colorPicker.setTooltip('Click to select color');
   this.colorPicker.render(goog.dom.getElementByClass('border-color-button',
       this.element));
@@ -163,7 +161,7 @@ silex.view.pane.BorderPane.prototype.buildUi = function() {
 silex.view.pane.BorderPane.prototype.createCheckBoxes = function(containersCssClass, onChanged) {
   var checkBoxes = [];
   var decorateNodes = goog.dom.getElementsByTagNameAndClass('span',
-      null,
+      undefined,
       goog.dom.getElementByClass(containersCssClass,
       this.element));
   var idx;
@@ -192,13 +190,13 @@ silex.view.pane.BorderPane.prototype.redraw = function(selectedElements, documen
 
   // border width
   var borderWidth = this.getCommonProperty(selectedElements, function(element) {
-    return element.style.borderWidth;
+    return goog.style.getStyle(element, 'borderWidth');
   });
   if (borderWidth) {
     this.redrawBorderWidth(borderWidth);
     // border color
     var borderColor = this.getCommonProperty(selectedElements, function(element) {
-      return element.style.borderColor;
+      return goog.style.getStyle(element, 'borderColor');
     });
     this.redrawBorderColor(borderColor);
   }
@@ -207,7 +205,7 @@ silex.view.pane.BorderPane.prototype.redraw = function(selectedElements, documen
   }
   // border style
   var borderStyle = this.getCommonProperty(selectedElements, function(element) {
-    return element.style.borderStyle;
+    return goog.style.getStyle(element, 'borderStyle');
   });
   if (borderStyle) {
     this.borderStyleComboBox.setValue(borderStyle);
@@ -217,7 +215,7 @@ silex.view.pane.BorderPane.prototype.redraw = function(selectedElements, documen
   }
   // border radius
   var borderRadius = this.getCommonProperty(selectedElements, function(element) {
-    return element.style.borderRadius;
+    return goog.style.getStyle(element, 'borderRadius');
   });
   if (borderRadius) {
     this.redrawBorderRadius(borderRadius);
@@ -270,17 +268,17 @@ silex.view.pane.BorderPane.prototype.redrawBorderRadius = function(borderRadius)
 /**
  * redraw border color UI
  */
-silex.view.pane.BorderPane.prototype.redrawBorderColor = function(borderColor) {
-  if (borderColor === 'transparent' || borderColor === '') {
+silex.view.pane.BorderPane.prototype.redrawBorderColor = function(borderColorStr) {
+  if (borderColorStr === 'transparent' || borderColorStr === '') {
     this.setColorPaletteVisibility(false);
   }
-  else if (goog.isNull(borderColor)) {
+  else if (goog.isNull(borderColorStr)) {
     // display a "no color" in the button
     this.colorPicker.setValue('');
   }
   else {
     // handle all colors, including the named colors
-    var borderColor = goog.color.parse(borderColor);
+    var borderColor = goog.color.parse(borderColorStr);
 
     this.colorPicker.setValue(borderColor.hex);
     this.hsvPalette.setColor(borderColor.hex);
@@ -487,8 +485,8 @@ silex.view.pane.BorderPane.prototype.setColorPaletteVisibility =
     function(isVisible) {
   if (isVisible) {
     if (!this.getColorPaletteVisibility()) {
-      goog.style.setStyle(this.hsvPalette.getElement(), 'visibility', null);
-      goog.style.setStyle(this.hsvPalette.getElement(), 'position', null);
+      goog.style.setStyle(this.hsvPalette.getElement(), 'visibility', undefined);
+      goog.style.setStyle(this.hsvPalette.getElement(), 'position', undefined);
     }
   }
   else {

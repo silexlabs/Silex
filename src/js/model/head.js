@@ -1,13 +1,13 @@
-//////////////////////////////////////////////////
-// Silex, live web creation
-// http://projects.silexlabs.org/?/silex/
-//
-// Copyright (c) 2012 Silex Labs
-// http://www.silexlabs.org/
-//
-// Silex is available under the GPL license
-// http://www.silexlabs.org/silex/silex-licensing/
-//////////////////////////////////////////////////
+/**
+ * Silex, live web creation
+ * http://projects.silexlabs.org/?/silex/
+ *
+ * Copyright (c) 2012 Silex Labs
+ * http://www.silexlabs.org/
+ *
+ * Silex is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
+ */
 
 /**
  * @fileoverview
@@ -228,7 +228,7 @@ silex.model.Head.prototype.setPublicationPath = function(path) {
 
 /**
  * get/set the publication path
- * @return {string}   the publication path
+ * @return {?string}   the publication path
  */
 silex.model.Head.prototype.getPublicationPath = function() {
   var metaNode = goog.dom.getFrameContentDocument(this.iframeElement).querySelector('meta[name="publicationPath"]');
@@ -293,7 +293,9 @@ silex.model.Head.prototype.getHeadElement = function() {
 
 /**
  * load temp tags (js and css) to be removed later
- * @param   {Array<Element>|Element} the tag(s) to add
+ * @param {Array.<Element>|Element} tags the tag(s) to add
+ * @param {?function()=} opt_onSuccess
+ * @param {?function()=} opt_onError
  */
 silex.model.Head.prototype.addTempTag = function(tags, opt_onSuccess, opt_onError) {
   var tagsWichSupportOnload = ['link', 'script'];
@@ -325,7 +327,7 @@ silex.model.Head.prototype.addTempTag = function(tags, opt_onSuccess, opt_onErro
       console.error('scripts loading error');
       if (opt_onError) opt_onError();
     };
-    goog.dom.classes.add(tag, silex.model.Head.SILEX_TEMP_TAGS_CSS_CLASS);
+    goog.dom.classlist.add(tag, silex.model.Head.SILEX_TEMP_TAGS_CSS_CLASS);
     goog.dom.appendChild(this.getHeadElement(), tag);
   }, this);
   // start the loading process: call next tag
