@@ -26,7 +26,8 @@ goog.provide('silex.view.pane.PaneBase');
  * @constructor
  *
  * @param {Element} element   container to render the UI
- * @param  {silex.types.Controller} controller  structure which holds the controller instances
+ * @param  {silex.types.Controller} controller  structure which holds
+ *                                  the controller instances
  */
 silex.view.pane.PaneBase = function(element, controller) {
   // store references
@@ -149,4 +150,52 @@ silex.view.pane.PaneBase.prototype.getCommonProperty = function(elements, getPro
     value = null;
   }
   return value;
+};
+
+
+/**
+ * color palette visibility
+ * do not set display to none,
+ *     because the setColor then leave the color palette UI unchanged
+ * @param {goog.ui.HsvaPalette} hsvPalette   The HSV palete
+ * @param {boolean} isVisible    The desired visibility
+ */
+silex.view.pane.PaneBase.prototype.setColorPaletteVisibility =
+    function(hsvPalette, isVisible) {
+  if (isVisible) {
+    if (!this.getColorPaletteVisibility(hsvPalette)) {
+      goog.style.setStyle(
+          hsvPalette.getElement(),
+          'visibility',
+          '');
+      goog.style.setStyle(
+          hsvPalette.getElement(),
+          'position',
+          '');
+    }
+  }
+  else {
+    if (this.getColorPaletteVisibility(hsvPalette)) {
+      goog.style.setStyle(
+          hsvPalette.getElement(),
+          'visibility',
+          'hidden');
+      goog.style.setStyle(
+          hsvPalette.getElement(),
+          'position',
+          'absolute');
+    }
+  }
+};
+
+
+/**
+ * color palette visibility
+ * do not set display to none,
+ * because the setColor then leave the color palette UI unchanged
+ * @param {goog.ui.HsvaPalette} hsvPalette   The HSV palete
+ * @return    {boolean} true if the color palete is visible
+ */
+silex.view.pane.PaneBase.prototype.getColorPaletteVisibility = function(hsvPalette) {
+  return goog.style.getStyle(hsvPalette.getElement(), 'visibility') !== 'hidden';
 };

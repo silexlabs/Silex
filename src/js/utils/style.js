@@ -82,7 +82,7 @@ silex.utils.Style.removeInternalClasses = function(element, opt_allClasses, opt_
   if (opt_allClasses) {
     classes = silex.utils.Style.SILEX_CLASS_NAMES;
   }
-  for (var idx in classes) {
+  for (let idx in classes) {
     var className = classes[idx];
     goog.dom.classlist.remove(element, className);
     if (opt_isRecursive) {
@@ -122,7 +122,7 @@ silex.utils.Style.stringToStyle = function(styleStr) {
  * Takes the opacity of the backgrounds into account
  * Recursively compute parents background colors
  * @param {Element} element the element which bg color we want
- * @return {goog.color.Rgb|null} the element bg color
+ * @return {?goog.color.Rgb} the element bg color
  */
 silex.utils.Style.computeBgColor = function(element) {
   var parentColorArray;

@@ -117,11 +117,11 @@ silex.utils.Dom.removeCacheControl = function(url) {
 silex.utils.Dom.renderList = function(itemTemplateString, data) {
   var res = '';
   // for each item in data, e.g. each page in the list
-  for (var itemIdx in data) {
+  for (let itemIdx in data) {
     // build an item
     var item = itemTemplateString;
     // replace each key by its value
-    for (var key in data[itemIdx]) {
+    for (let key in data[itemIdx]) {
       var value = data[itemIdx][key];
       item = item.replace(new RegExp('{{' + key + '}}', 'g'), value);
     }
@@ -202,7 +202,6 @@ silex.utils.Dom.publish = function(url, baseUrl, html, cbk, opt_errCbk) {
     var cleanedObj = silex.utils.DomCleaner.cleanup(contentDocument, baseUrl);
     // store the files to download and copy to assets, scripts...
     var htmlString = cleanedObj.htmlString;
-    console.log(cleanedObj, htmlString);
     var cssString = cleanedObj.cssString;
     var jsString = cleanedObj.jsString;
     var files = cleanedObj.files;

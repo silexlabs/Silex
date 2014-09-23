@@ -157,7 +157,7 @@ silex.utils.Url.getRelativePath = function(url, base) {
 
   // as many '../' as there are folders left in the base url
   var relativePath = '';
-  for (var idx = 0; idx < baseArr.length; idx++) {
+  for (let idx = 0; idx < baseArr.length; idx++) {
     relativePath += '../';
   }
 
@@ -187,7 +187,7 @@ silex.utils.Url.getAbsolutePath = function(url, base) {
  */
 silex.utils.Url.checkFileExt = function(fileName, extArray) {
   var ext = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
-  for (var idx in extArray) {
+  for (let idx in extArray) {
     if (extArray[idx] === ext) {
       return true;
     }

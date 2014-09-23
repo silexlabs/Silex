@@ -15,7 +15,7 @@
  *     this is only the UI part, to let user choose a file in the cloud
  *     @see silex.service.CloudStorage     for the service/network part
  *
- *
+ * FIXME: should handle the 2 ways of specifying mimetype? https://github.com/silexlabs/cloud-explorer/issues/43
  */
 
 
@@ -61,20 +61,9 @@ silex.view.dialog.FileExplorer.prototype.filePicker;
  * @param {?function(Object)=} opt_errCbk
  */
 silex.view.dialog.FileExplorer.prototype.openDialog =
-  function(cbk, opt_mimetypes, opt_errCbk) {
-  var fileExtentions;
-  if (opt_mimetypes) {
-    if (opt_mimetypes['mimetype'] &&
-        opt_mimetypes['mimetype'].indexOf('image') === 0) {
-      fileExtentions = ['jpg', 'jpeg', 'gif', 'png'];
-    }
-    else if (opt_mimetypes['mimetype'] &&
-        opt_mimetypes['mimetype'].indexOf('text/html') === 0) {
-      fileExtentions = ['html', 'htm'];
-    }
-  }
+    function(cbk, opt_mimetypes, opt_errCbk) {
 
-  var errCbk = function(FPError) {
+	var errCbk = function(FPError) {
     console.error(FPError);
     if (opt_errCbk) {
       opt_errCbk(FPError);
@@ -93,27 +82,7 @@ silex.view.dialog.FileExplorer.prototype.openDialog =
         // this.view.stage.resetFocus();
         // no https, because it creates security issues
         blob.url = blob.url.replace('https://', 'http://');
-
-        // check the the file extention is ok
-        if (fileExtentions &&
-            silex.utils.Url.checkFileExt(blob.url, fileExtentions) === false) {
-          var fileName = blob.url.substring(blob.url.lastIndexOf('/') + 1);
-          silex.utils.Notification.confirm('The file name ' +
-              fileName +
-              ' does not looks good to me, \
-                  are you sure you want to select this file?',
-              function(accept) {
-                if (accept) {
-                  successCbk(blob.url);
-                }
-                else {
-                  errCbk({message: 'Wrong file type.'});
-                }
-              });
-        }
-        else {
-          successCbk(blob.url);
-        }
+        successCbk(blob.url);
       }, this),
       errCbk);
 };
@@ -127,16 +96,6 @@ silex.view.dialog.FileExplorer.prototype.openDialog =
  * @param {?function(Object)=} opt_errCbk
  */
 silex.view.dialog.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes, opt_errCbk) {
-  var fileExtentions;
-  if (opt_mimetypes) {
-    if (opt_mimetypes['mimetype'].indexOf('image') === 0) {
-      fileExtentions = ['jpg', 'jpeg', 'gif', 'png'];
-    }
-    else if (opt_mimetypes['mimetype'].indexOf('text/html') === 0) {
-      fileExtentions = ['html', 'htm'];
-    }
-  }
-
   var errCbk = function(FPError) {
     console.error(FPError);
     if (opt_errCbk) {
@@ -147,7 +106,6 @@ silex.view.dialog.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimety
     // notify controller
     if (cbk) cbk(blob.url);
   };
-
   // export dummy data
   this.filePicker.exportFile('http://google.com/',
       opt_mimetypes,
@@ -156,25 +114,7 @@ silex.view.dialog.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimety
         // this.view.stage.resetFocus();
         // no https, because it creates security issues
         blob.url = blob.url.replace('https://', 'http://');
-
-        // check the the file extention is ok
-        if (fileExtentions && silex.utils.Url.checkFileExt(blob.url, fileExtentions) === false) {
-          var fileName = blob.url.substring(blob.url.lastIndexOf('/') + 1);
-          silex.utils.Notification.confirm('The file name ' +
-              fileName +
-              ' does not looks good to me, are you sure you want to select this file?',
-              function(accept) {
-                if (accept) {
-                  successCbk(blob);
-                }
-                else {
-                  errCbk({message: 'Wrong file type.'});
-                }
-              });
-        }
-        else {
-          successCbk(blob);
-        }
+        successCbk(blob);
       }, this),
       errCbk);
 };

@@ -42,15 +42,13 @@ goog.require('silex.view.pane.StylePane');
  * @constructor
  *
  * @param {Element} element   container to render the UI
- * @param  {silex.types.Controller} controller  structure which holds the controller instances
+ * @param  {silex.types.Controller} controller  structure which holds
+ *                                  the controller instances
  */
 silex.view.PropertyTool = function(element, controller) {
   // store references
   this.element = element;
   this.controller = controller;
-
-  // build the UI
-  this.buildPanes();
 };
 
 
@@ -119,7 +117,7 @@ silex.view.PropertyTool.prototype.stylePane = null;
 /**
  * build the UI
  */
-silex.view.PropertyTool.prototype.buildPanes = function() {
+silex.view.PropertyTool.prototype.buildUi = function() {
   // background
   this.bgPane = new silex.view.pane.BgPane(
       goog.dom.getElementByClass('background-editor', this.element),

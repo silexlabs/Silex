@@ -44,9 +44,9 @@ goog.inherits(silex.view.dialog.HtmlEditor, silex.view.dialog.AceEditorBase);
 /**
  * init the menu and UIs
  */
-silex.view.dialog.HtmlEditor.prototype.initUI = function() {
+silex.view.dialog.HtmlEditor.prototype.buildUi = function() {
   // call super
-  goog.base(this, 'initUI');
+  goog.base(this, 'buildUi');
   // set mode
   this.ace.getSession().setMode('ace/mode/html');
 };

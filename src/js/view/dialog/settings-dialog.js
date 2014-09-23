@@ -62,9 +62,9 @@ goog.inherits(silex.view.dialog.SettingsDialog, silex.view.dialog.DialogBase);
 /**
  * init the menu and UIs
  */
-silex.view.dialog.SettingsDialog.prototype.initUI = function() {
+silex.view.dialog.SettingsDialog.prototype.buildUi = function() {
   // call super
-  goog.base(this, 'initUI');
+  goog.base(this, 'buildUi');
 
   // background
   var background = goog.dom.getElementByClass('settings-background');

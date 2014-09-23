@@ -123,14 +123,6 @@ Lambda.has = function(it,elt) {
 	}
 	return false;
 };
-Lambda.exists = function(it,f) {
-	var $it0 = $iterator(it)();
-	while( $it0.hasNext() ) {
-		var x = $it0.next();
-		if(f(x)) return true;
-	}
-	return false;
-};
 Lambda.count = function(it,pred) {
 	var n = 0;
 	if(pred == null) {
@@ -147,22 +139,6 @@ Lambda.count = function(it,pred) {
 		}
 	}
 	return n;
-};
-var List = function() {
-	this.length = 0;
-};
-List.__name__ = true;
-List.prototype = {
-	iterator: function() {
-		return { h : this.h, hasNext : function() {
-			return this.h != null;
-		}, next : function() {
-			if(this.h == null) return null;
-			var x = this.h[0];
-			this.h = this.h[1];
-			return x;
-		}};
-	}
 };
 var IMap = function() { };
 IMap.__name__ = true;
@@ -343,9 +319,8 @@ ce.core.Controller = function(config,iframe) {
 	this.config = config;
 	this.state = new ce.core.model.State();
 	this.unifileSrv = new ce.core.service.UnifileSrv(config);
-	this.fileSrv = new ce.core.service.FileSrv();
 	this.application = new ce.core.view.Application(iframe,config);
-	this.errorCtrl = new ce.core.ctrl.ErrorCtrl(this.state,this.application);
+	this.errorCtrl = new ce.core.ctrl.ErrorCtrl(this,this.state,this.application);
 	this.initMvc();
 };
 ce.core.Controller.__name__ = true;
@@ -357,7 +332,9 @@ ce.core.Controller.prototype = {
 	}
 	,read: function(input,options,onSuccess,onError,onProgress) {
 		ce.util.OptionTools.normalizeReadOptions(options);
-		this.fileSrv.get(input.url,onSuccess,($_=this.errorCtrl,$bind($_,$_.setError)));
+		this.unifileSrv.get(input.url,onSuccess,function(e) {
+			onError(new ce.core.model.CEError(e.code));
+		});
 	}
 	,exportFile: function(input,options,onSuccess,onError) {
 		ce.util.OptionTools.normalizeExportOptions(options);
@@ -378,7 +355,9 @@ ce.core.Controller.prototype = {
 		}(this)),null,explodedUrl.srv,explodedUrl.path,function() {
 			if(_g1.state.currentFileList.get(explodedUrl.filename) == null) _g1.refreshFilesList();
 			onSuccess(target);
-		},($_=this.errorCtrl,$bind($_,$_.setUnifileError)));
+		},function(e) {
+			onError(new ce.core.model.CEError(e.code));
+		});
 	}
 	,isLoggedIn: function(srvName,onSuccess,onError) {
 		this.state.set_currentMode(ce.core.model.Mode.IsLoggedIn(onSuccess,onError,srvName));
@@ -1038,7 +1017,8 @@ ce.core.config.Config.prototype = {
 	}
 };
 ce.core.ctrl = {};
-ce.core.ctrl.ErrorCtrl = function(state,application) {
+ce.core.ctrl.ErrorCtrl = function(parent,state,application) {
+	this.parent = parent;
 	this.state = state;
 	this.application = application;
 };
@@ -1100,7 +1080,11 @@ ce.core.ctrl.ErrorCtrl.prototype = {
 		}
 	}
 	,setUnifileError: function(err) {
-		this.setError(err.message);
+		if(err.code == 401) {
+			var srv = this.state.currentLocation.service;
+			this.state.serviceList.get(srv).set_isLoggedIn(false);
+			this.parent.connect(srv);
+		} else this.setError(err.message);
 	}
 	,setError: function(msg) {
 		var _g = this;
@@ -1471,20 +1455,6 @@ ce.core.parser.unifile.Json2UploadResult.parse = function(dataStr) {
 	return { success : ce.core.parser.json.Json2Primitive.node2Bool(obj,"success",false)};
 };
 ce.core.service = {};
-ce.core.service.FileSrv = function() {
-};
-ce.core.service.FileSrv.__name__ = true;
-ce.core.service.FileSrv.prototype = {
-	get: function(url,onSuccess,onError) {
-		var http = new haxe.Http(url);
-		http.onData = onSuccess;
-		http.onError = onError;
-		http.onStatus = function(s) {
-			console.log("status " + s);
-		};
-		http.request(false);
-	}
-};
 ce.core.service.UnifileSrv = function(config) {
 	this.config = config;
 };
@@ -1694,6 +1664,20 @@ ce.core.service.UnifileSrv.prototype = {
 			onError({ success : false, code : 0, message : "The request has failed."});
 		};
 		xhttp.send(formData);
+	}
+	,get: function(url,onSuccess,onError) {
+		var req = new XMLHttpRequest();
+		req.onload = function(_) {
+			if(req.status != 200) {
+				var err = ce.core.parser.unifile.Json2UnifileError.parseUnifileError(req.responseText);
+				onError(err);
+			} else onSuccess(req.responseText);
+		};
+		req.onerror = function(_1) {
+			onError({ success : false, code : 0, message : "The request has failed."});
+		};
+		req.open("GET",url);
+		req.send();
 	}
 };
 ce.core.view = {};
@@ -3233,88 +3217,6 @@ ce.util.OptionTools.normalizeWriteOptions = function(o) {
 	return o;
 };
 var haxe = {};
-haxe.Http = function(url) {
-	this.url = url;
-	this.headers = new List();
-	this.params = new List();
-	this.async = true;
-};
-haxe.Http.__name__ = true;
-haxe.Http.prototype = {
-	request: function(post) {
-		var me = this;
-		me.responseData = null;
-		var r = this.req = js.Browser.createXMLHttpRequest();
-		var onreadystatechange = function(_) {
-			if(r.readyState != 4) return;
-			var s;
-			try {
-				s = r.status;
-			} catch( e ) {
-				s = null;
-			}
-			if(s == undefined) s = null;
-			if(s != null) me.onStatus(s);
-			if(s != null && s >= 200 && s < 400) {
-				me.req = null;
-				me.onData(me.responseData = r.responseText);
-			} else if(s == null) {
-				me.req = null;
-				me.onError("Failed to connect or resolve host");
-			} else switch(s) {
-			case 12029:
-				me.req = null;
-				me.onError("Failed to connect to host");
-				break;
-			case 12007:
-				me.req = null;
-				me.onError("Unknown host");
-				break;
-			default:
-				me.req = null;
-				me.responseData = r.responseText;
-				me.onError("Http Error #" + r.status);
-			}
-		};
-		if(this.async) r.onreadystatechange = onreadystatechange;
-		var uri = this.postData;
-		if(uri != null) post = true; else {
-			var $it0 = this.params.iterator();
-			while( $it0.hasNext() ) {
-				var p = $it0.next();
-				if(uri == null) uri = ""; else uri += "&";
-				uri += encodeURIComponent(p.param) + "=" + encodeURIComponent(p.value);
-			}
-		}
-		try {
-			if(post) r.open("POST",this.url,this.async); else if(uri != null) {
-				var question = this.url.split("?").length <= 1;
-				r.open("GET",this.url + (question?"?":"&") + uri,this.async);
-				uri = null;
-			} else r.open("GET",this.url,this.async);
-		} catch( e1 ) {
-			me.req = null;
-			this.onError(e1.toString());
-			return;
-		}
-		if(!Lambda.exists(this.headers,function(h) {
-			return h.header == "Content-Type";
-		}) && post && this.postData == null) r.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
-		var $it1 = this.headers.iterator();
-		while( $it1.hasNext() ) {
-			var h1 = $it1.next();
-			r.setRequestHeader(h1.header,h1.value);
-		}
-		r.send(uri);
-		if(!this.async) onreadystatechange(null);
-	}
-	,onData: function(data) {
-	}
-	,onError: function(msg) {
-	}
-	,onStatus: function(status) {
-	}
-};
 haxe.Timer = function(time_ms) {
 	var me = this;
 	this.id = setInterval(function() {
@@ -3438,13 +3340,6 @@ js.Boot.__string_rec = function(o,s) {
 		return String(o);
 	}
 };
-js.Browser = function() { };
-js.Browser.__name__ = true;
-js.Browser.createXMLHttpRequest = function() {
-	if(typeof XMLHttpRequest != "undefined") return new XMLHttpRequest();
-	if(typeof ActiveXObject != "undefined") return new ActiveXObject("Microsoft.XMLHTTP");
-	throw "Unable to create XMLHttpRequest object.";
-};
 function $iterator(o) { if( o instanceof Array ) return function() { return HxOverrides.iter(o); }; return typeof(o.iterator) == 'function' ? $bind(o,o.iterator) : o.iterator; }
 var $_, $fid = 0;
 function $bind(o,m) { if( m == null ) return null; if( m.__id__ == null ) m.__id__ = $fid++; var f; if( o.hx__closures__ == null ) o.hx__closures__ = {}; else f = o.hx__closures__[m.__id__]; if( f == null ) { f = function(){ return f.method.apply(f.scope, arguments); }; f.scope = o; f.method = m; o.hx__closures__[m.__id__] = f; } return f; }
@@ -3480,6 +3375,7 @@ ce.core.config.Config.PROP_NAME_CE_PATH = "path";
 ce.core.config.Config.PROP_VALUE_DEFAULT_UNIFILE_ENDPOINT = "http://localhost:6805/api/1.0/";
 ce.core.config.Config.PROP_VALUE_DEFAULT_CE_PATH = "";
 ce.core.model.CEError.CODE_BAD_PARAMETERS = 400;
+ce.core.model.CEError.CODE_UNAUTHORIZED = 401;
 ce.core.model.CEError.CODE_INVALID_REQUEST = 403;
 ce.core.model._Service.Service_Impl_.Dropbox = "dropbox";
 ce.core.model._Service.Service_Impl_.Www = "www";

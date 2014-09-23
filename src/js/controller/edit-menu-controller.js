@@ -52,11 +52,9 @@ silex.controller.EditMenuController.prototype.undo = function() {
     if (html !== prevState.html) {
       this.model.file.setHtml(prevState.html, goog.bind(function() {
         this.model.page.setCurrentPage(prevState.page);
-        console.log(this.model.body.getSelection());
       }, this), false);
     }
     else {
-      console.log(this.model.body.getSelection());
       this.model.page.setCurrentPage(prevState.page);
     }
   }
@@ -205,10 +203,10 @@ silex.controller.EditMenuController.prototype.editElement = function(opt_element
       this.view.textEditor.setValue(this.model.element.getInnerHtml(element));
       this.view.textEditor.setElementClassNames(element.className);
       this.view.textEditor.setBackgroundColor(goog.color.rgbToHex(
-                                                          Math.round(bgColor[0]),
-                                                          Math.round(bgColor[1]),
-                                                          Math.round(bgColor[2])
-                                                        ));
+          Math.round(bgColor[0]),
+          Math.round(bgColor[1]),
+          Math.round(bgColor[2])
+          ));
       break;
     case silex.model.Element.TYPE_HTML:
       this.view.htmlEditor.openEditor();

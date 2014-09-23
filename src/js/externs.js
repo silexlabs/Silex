@@ -14,6 +14,7 @@
  * @fileoverview define externs for libs used in Silex
  */
 
+
 /**
  * google analytics
  * @param {string} a
@@ -24,7 +25,8 @@
  * @param {?string=} f
  * @param {?boolean=} g
  */
-function ga(a, b, c, d, e, f, g) {};
+function ga(a, b, c, d, e, f, g) {}
+
 
 
 /**
@@ -1135,5 +1137,5 @@ Ace.prototype.setAutoScrollEditorIntoView = function(enable) {};
 /**
  * @type {Object.<*>}
  */
-var alertify = {}
+var alertify = {};
 

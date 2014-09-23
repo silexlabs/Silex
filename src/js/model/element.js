@@ -346,8 +346,8 @@ silex.model.Element.prototype.setImageUrl = function(element, url, opt_callback,
  */
 silex.model.Element.prototype.removeElement = function(element) {
   // check this is allowed, i.e. an element inside the stage container
-  if (this.model.body.getBodyElement() != element
-    && goog.dom.contains(this.model.body.getBodyElement(), element)) {
+  if (this.model.body.getBodyElement() != element &&
+      goog.dom.contains(this.model.body.getBodyElement(), element)) {
     // remove the element
     goog.dom.removeNode(element);
   }
@@ -550,8 +550,8 @@ silex.model.Element.prototype.getLink = function(element) {
 silex.model.Element.prototype.getClassName = function(element) {
   var pages = this.model.page.getPages();
   return goog.array.map(element.className.split(' '), function(name) {
-    if (goog.array.contains(silex.utils.Style.SILEX_CLASS_NAMES, name)
-      || goog.array.contains(pages, name)) {
+    if (goog.array.contains(silex.utils.Style.SILEX_CLASS_NAMES, name) ||
+        goog.array.contains(pages, name)) {
       return;
     }
     return name;
@@ -570,8 +570,8 @@ silex.model.Element.prototype.setClassName = function(element, opt_className) {
   // i.e. the one which are in element.className + in Silex internal classes
   var pages = this.model.page.getPages();
   var classNamesToKeep = goog.array.map(element.className.split(' '), function(name) {
-    if (goog.array.contains(silex.utils.Style.SILEX_CLASS_NAMES, name)
-      || goog.array.contains(pages, name)) {
+    if (goog.array.contains(silex.utils.Style.SILEX_CLASS_NAMES, name) ||
+        goog.array.contains(pages, name)) {
       return name;
     }
   });

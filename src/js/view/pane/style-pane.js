@@ -26,7 +26,8 @@ goog.provide('silex.view.pane.StylePane');
  * @constructor
  * @extends {silex.view.pane.PaneBase}
  * @param {Element} element   container to render the UI
- * @param  {silex.types.Controller} controller  structure which holds the controller instances
+ * @param  {silex.types.Controller} controller  structure which holds
+ *                                  the controller instances
  */
 silex.view.pane.StylePane = function(element, controller) {
   // call super

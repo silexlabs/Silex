@@ -163,7 +163,7 @@ silex.model.Head.prototype.refreshFontList = function(neededFonts) {
   var availableFonts = silex.Config.fonts;
   //return the font from the font family or null
   var getFont = function(fontFamily) {
-    for (var fontName in availableFonts) {
+    for (let fontName in availableFonts) {
       if (availableFonts[fontName].value === fontFamily)
         return availableFonts[fontName];
     }
@@ -171,7 +171,7 @@ silex.model.Head.prototype.refreshFontList = function(neededFonts) {
   };
   var customFontsForTextEditor = [];
   //for each used font family, if a corresponding font is available, load it
-  for (var fontFamily in neededFonts) {
+  for (let fontFamily in neededFonts) {
 
     var font = getFont(fontFamily);
     //check that a URL to load is available. There is none for system font (serif, sans-serif...)

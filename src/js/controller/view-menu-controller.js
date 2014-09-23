@@ -78,7 +78,7 @@ silex.controller.ViewMenuController.prototype.preview = function() {
             goog.bind(function(url) {
               doOpenPreview();
             }, this),
-            {'mimetypes': ['text/html']},
+            {'mimetype': 'text/html'},
             goog.bind(function(err) {
               this.tracker.trackAction('controller-events', 'error', 'view.file', -1);
             }, this),
