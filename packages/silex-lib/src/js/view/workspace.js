@@ -34,12 +34,6 @@ silex.view.Workspace = function(element, controller) {
   // store references
   this.element = element;
   this.controller = controller;
-
-  //store the element which will hold the body of the opened file
-  this.iframeElement = /** @type {?HTMLIFrameElement} */ (goog.dom.getElementByClass(silex.view.Stage.STAGE_CLASS_NAME));
-
-  // store the window viewport for later use
-  this.viewport = new goog.dom.ViewportSizeMonitor();
 };
 
 
@@ -62,6 +56,19 @@ silex.view.Workspace.prototype.isDirty = false;
  * @type {?HTMLIFrameElement}
  */
 silex.view.Workspace.prototype.iframeElement = null;
+
+
+/**
+ * create the menu with closure API
+ * called by the app constructor
+ */
+silex.view.Workspace.prototype.buildUi = function() {
+  //store the element which will hold the body of the opened file
+  this.iframeElement = /** @type {?HTMLIFrameElement} */ (goog.dom.getElementByClass(silex.view.Stage.STAGE_CLASS_NAME));
+
+  // store the window viewport for later use
+  this.viewport = new goog.dom.ViewportSizeMonitor();
+};
 
 
 /**

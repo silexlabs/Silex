@@ -61,8 +61,8 @@ silex.view.dialog.AceEditorBase.prototype.iAmSettingValue = false;
 /**
  * init the menu and UIs
  */
-silex.view.dialog.AceEditorBase.prototype.initUI = function() {
-  goog.base(this, 'initUI');
+silex.view.dialog.AceEditorBase.prototype.buildUi = function() {
+  goog.base(this, 'buildUi');
   this.iAmSettingValue = false;
   //this.ace.setTheme("ace/theme/monokai");
   //this.ace.getSession().setMode('ace/mode/css');

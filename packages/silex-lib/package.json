@@ -94,9 +94,9 @@
   },
   "scripts": {
     "start": "node dist/server/server.js",
-    "deploy": "node_modules/grunt-cli/bin/grunt deploy",
-    "watch": "node_modules/grunt-cli/bin/grunt watch",
-    "test": "node_modules/grunt-cli/bin/grunt test",
-    "postinstall": "node_modules/grunt-cli/bin/grunt deploy"
+    "deploy": "./node_modules/.bin/grunt deploy",
+    "watch": "./node_modules/.bin/grunt watch",
+    "test": "./node_modules/.bin/grunt test",
+    "postinstall": "./node_modules/.bin/grunt deploy"
   }
 }

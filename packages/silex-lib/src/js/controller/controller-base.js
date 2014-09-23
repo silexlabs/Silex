@@ -81,9 +81,9 @@ silex.controller.ControllerBase.prototype.undoCheckPoint = function() {
   var html = this.model.file.getHtml();
   var page = this.model.page.getCurrentPage();
   // if the previous state was different
-  if (this.undoHistory.length === 0
-    || this.undoHistory[this.undoHistory.length - 1].html !== html
-    || this.undoHistory[this.undoHistory.length - 1].page !== page) {
+  if (this.undoHistory.length === 0 ||
+      this.undoHistory[this.undoHistory.length - 1].html !== html ||
+      this.undoHistory[this.undoHistory.length - 1].page !== page) {
     this.undoHistory.push({
       html: html,
       page: page
@@ -307,7 +307,7 @@ silex.controller.ControllerBase.prototype.checkElementVisibility = function(elem
   if (parentPage !== null) {
     // get all the pages
     var pages = this.model.page.getPagesForElement(element);
-    for (var idx in pages) {
+    for (let idx in pages) {
       // remove the component from the page
       var pageName = pages[idx];
       this.model.page.removeFromPage(element, pageName);

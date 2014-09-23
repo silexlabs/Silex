@@ -35,12 +35,13 @@ goog.require('silex.view.pane.PaneBase');
  * @constructor
  * @extends {silex.view.pane.PaneBase}
  * @param {Element} element   container to render the UI
- * @param  {silex.types.Controller} controller  structure which holds the controller instances
+ * @param  {silex.types.Controller} controller  structure which holds
+ *                                  the controller instances
  */
 silex.view.pane.BgPane = function(element, controller) {
   // call super
   goog.base(this, element, controller);
-
+  // init the component
   this.buildUi();
 };
 
@@ -53,63 +54,38 @@ goog.inherits(silex.view.pane.BgPane, silex.view.pane.PaneBase);
  */
 silex.view.pane.BgPane.prototype.buildUi = function() {
   // BG color
-  var hsvPaletteElement = goog.dom.getElementByClass('color-bg-palette', this.element);
+  this.buildBgColor();
+
+  // init palette
+  this.buildPalette();
+
+  // init bg image
+  this.buildBgImage();
+
+  // bg image properties
+  this.buildBgImageProperties();
+};
+
+
+/**
+ * build the UI
+ */
+silex.view.pane.BgPane.prototype.buildPalette = function() {
+  var hsvPaletteElement = goog.dom.getElementByClass(
+      'color-bg-palette',
+      this.element);
+
   this.hsvPalette = new goog.ui.HsvaPalette(undefined,
                                             undefined,
                                             undefined,
                                             'goog-hsva-palette-sm');
+
+  // render the element
   this.hsvPalette.render(hsvPaletteElement);
 
-  // init button which shows/hides the palete
-  this.bgColorPicker = new goog.ui.ColorButton('Background color');
-  this.bgColorPicker.setTooltip('Click to select color');
-  this.bgColorPicker.render(goog.dom.getElementByClass('color-bg-button', this.element));
   // init palette
   this.hsvPalette.setColorRgbaHex('#FFFFFFFF');
-  this.setColorPaletteVisibility(false);
-
-  // init the button to choose if there is a color or not
-  this.transparentBgCheckbox = new goog.ui.Checkbox();
-  this.transparentBgCheckbox.decorate(
-      goog.dom.getElementByClass('enable-color-bg-button', this.element)
-  );
-
-  // add bg image
-  var buttonAddImage = goog.dom.getElementByClass('bg-image-button', this.element);
-  this.bgSelectBgImage = new goog.ui.CustomButton('Click to select a file');
-  this.bgSelectBgImage.decorate(buttonAddImage);
-  this.bgSelectBgImage.setTooltip('Click to select a file');
-  // remove bg image
-  var buttonClearImage = goog.dom.getElementByClass('clear-bg-image-button', this.element);
-  this.bgClearBgImage = new goog.ui.CustomButton('Click to select a file');
-  this.bgClearBgImage.setTooltip('Click to select a file');
-  this.bgClearBgImage.decorate(buttonClearImage);
-
-  // bg image properties
-  this.attachmentComboBox = this.createComboBox('bg-attachment-combo-box',
-      function(event) {
-        this.styleChanged('backgroundAttachment', event.target.getSelectedItem().getId());
-      });
-  this.vPositionComboBox = this.createComboBox('bg-position-v-combo-box',
-      function(event) {
-        var hPosition = this.hPositionComboBox.getSelectedItem().getId();
-        var vPosition = this.vPositionComboBox.getSelectedItem().getId();
-        this.styleChanged('backgroundPosition', vPosition + ' ' + hPosition);
-      });
-  this.hPositionComboBox = this.createComboBox('bg-position-h-combo-box',
-      function(event) {
-        var hPosition = this.hPositionComboBox.getSelectedItem().getId();
-        var vPosition = this.vPositionComboBox.getSelectedItem().getId();
-        this.styleChanged('backgroundPosition', vPosition + ' ' + hPosition);
-      });
-  this.repeatComboBox = this.createComboBox('bg-repeat-combo-box',
-      function(event) {
-        this.styleChanged('backgroundRepeat', event.target.getSelectedItem().getId());
-      });
-  this.sizeComboBox = this.createComboBox('bg-size-combo-box',
-      function(event) {
-        this.styleChanged('backgroundSize', event.target.getSelectedItem().getId());
-      });
+  this.setColorPaletteVisibility(this.hsvPalette, false);
 
   // User has selected a color
   goog.events.listen(this.hsvPalette,
@@ -117,30 +93,120 @@ silex.view.pane.BgPane.prototype.buildUi = function() {
                      this.onColorChanged,
                      false,
                      this);
+}
+
+
+/**
+ * build the UI
+ */
+silex.view.pane.BgPane.prototype.buildBgColor = function() {
+  // BG color
+  // init button which shows/hides the palete
+  this.bgColorPicker = new goog.ui.ColorButton('');
+  this.bgColorPicker.setTooltip('Click to select color');
+  this.bgColorPicker.render(goog.dom.getElementByClass(
+      'color-bg-button',
+      this.element));
+
+  // init the button to choose if there is a color or not
+  this.transparentBgCheckbox = new goog.ui.Checkbox();
+  this.transparentBgCheckbox.decorate(
+      goog.dom.getElementByClass(
+          'enable-color-bg-button',
+          this.element)
+  );
+
   // the user opens/closes the palete
   goog.events.listen(this.bgColorPicker,
                      goog.ui.Component.EventType.ACTION,
                      this.onBgColorButton,
                      false,
                      this);
+
   // user set transparent bg
   goog.events.listen(this.transparentBgCheckbox,
                      goog.ui.Component.EventType.CHANGE,
                      this.onTransparentChanged,
                      false,
                      this);
-  // user wants to select a bg image
+}
+
+
+/**
+ * build the UI
+ */
+silex.view.pane.BgPane.prototype.buildBgImage = function() {
+  // add bg image button
+  var buttonAddImage = goog.dom.getElementByClass(
+      'bg-image-button',
+      this.element);
+  this.bgSelectBgImage = new goog.ui.CustomButton('Click to select a file');
+  this.bgSelectBgImage.decorate(buttonAddImage);
+  this.bgSelectBgImage.setTooltip('Click to select a file');
+
+  // remove bg image button
+  var buttonClearImage = goog.dom.getElementByClass(
+      'clear-bg-image-button',
+      this.element);
+  this.bgClearBgImage = new goog.ui.CustomButton('Click to select a file');
+  this.bgClearBgImage.setTooltip('Click to select a file');
+  this.bgClearBgImage.decorate(buttonClearImage);
+
+  // event user wants to update the bg image
   goog.events.listen(buttonAddImage,
       goog.events.EventType.CLICK,
       this.onSelectImageButton,
       false,
       this);
 
+  // event user wants to remove the bg image
   goog.events.listen(buttonClearImage,
       goog.events.EventType.CLICK,
       this.onClearImageButton,
       false,
       this);
+}
+
+
+/**
+ * build the UI
+ */
+silex.view.pane.BgPane.prototype.buildBgImageProperties = function() {
+  // bg image properties
+  this.attachmentComboBox = this.createComboBox('bg-attachment-combo-box',
+      function(event) {
+        this.styleChanged(
+            'backgroundAttachment',
+            event.target.getSelectedItem().getId());
+      });
+  this.vPositionComboBox = this.createComboBox('bg-position-v-combo-box',
+      function(event) {
+        var hPosition = this.hPositionComboBox.getSelectedItem().getId();
+        var vPosition = this.vPositionComboBox.getSelectedItem().getId();
+        this.styleChanged(
+            'backgroundPosition',
+            vPosition + ' ' + hPosition);
+      });
+  this.hPositionComboBox = this.createComboBox('bg-position-h-combo-box',
+      function(event) {
+        var hPosition = this.hPositionComboBox.getSelectedItem().getId();
+        var vPosition = this.vPositionComboBox.getSelectedItem().getId();
+        this.styleChanged(
+            'backgroundPosition',
+            vPosition + ' ' + hPosition);
+      });
+  this.repeatComboBox = this.createComboBox('bg-repeat-combo-box',
+      function(event) {
+        this.styleChanged(
+            'backgroundRepeat',
+            event.target.getSelectedItem().getId());
+      });
+  this.sizeComboBox = this.createComboBox('bg-size-combo-box',
+      function(event) {
+        this.styleChanged(
+            'backgroundSize',
+            event.target.getSelectedItem().getId());
+      });
 };
 
 
@@ -170,7 +236,7 @@ silex.view.pane.BgPane.prototype.redraw = function(selectedElements, document, p
   if (color === 'transparent' || color === '') {
     this.transparentBgCheckbox.setChecked(true);
     this.bgColorPicker.setEnabled(false);
-    this.setColorPaletteVisibility(false);
+    this.setColorPaletteVisibility(this.hsvPalette, false);
   }
   else if (goog.isNull(color)) {
     // display a "no color" in the button
@@ -344,14 +410,14 @@ silex.view.pane.BgPane.prototype.onColorChanged = function() {
 silex.view.pane.BgPane.prototype.onBgColorButton = function() {
   var element = this.selectedElements[0];
   // show the palette
-  if (this.getColorPaletteVisibility() === false) {
+  if (this.getColorPaletteVisibility(this.hsvPalette) === false) {
     this.hsvPalette.setColorRgbaHex(
         silex.utils.Style.rgbaToHex(goog.style.getStyle(element, 'backgroundColor'))
     );
-    this.setColorPaletteVisibility(true);
+    this.setColorPaletteVisibility(this.hsvPalette, true);
   }
   else {
-    this.setColorPaletteVisibility(false);
+    this.setColorPaletteVisibility(this.hsvPalette, false);
   }
 };
 
@@ -408,45 +474,4 @@ silex.view.pane.BgPane.prototype.onSelectImageButton = function() {
  */
 silex.view.pane.BgPane.prototype.onClearImageButton = function() {
   this.styleChanged('backgroundImage', '');
-};
-
-
-/**
- * color palette visibility
- * do not set display to none,
- * because the setColor then leave the color palette UI unchanged
- * @return    {boolean} true if the color palete is visible
- */
-silex.view.pane.BgPane.prototype.getColorPaletteVisibility = function() {
-  return goog.style.getStyle(this.hsvPalette.getElement(), 'visibility') !== 'hidden';
-};
-
-
-/**
- * color palette visibility
- * do not set display to none,
- * because the setColor then leave the color palette UI unchanged
- * @param {boolean} isVisible    The desired visibility
- */
-silex.view.pane.BgPane.prototype.setColorPaletteVisibility = function(isVisible) {
-  if (isVisible) {
-    if (!this.getColorPaletteVisibility()) {
-      goog.style.setStyle(this.hsvPalette.getElement(),
-          'visibility',
-          '');
-      goog.style.setStyle(this.hsvPalette.getElement(),
-          'position',
-          '');
-    }
-  }
-  else {
-    if (this.getColorPaletteVisibility()) {
-      goog.style.setStyle(this.hsvPalette.getElement(),
-          'visibility',
-          'hidden');
-      goog.style.setStyle(this.hsvPalette.getElement(),
-          'position',
-          'absolute');
-    }
-  }
 };

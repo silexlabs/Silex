@@ -27,6 +27,7 @@ goog.require('silex.Config');
 goog.require('silex.types.Model');
 
 
+
 /**
  * structure to store all of a page data
  * @struct
@@ -50,6 +51,7 @@ silex.model.PageData = function() {
    */
   this.idx;
 };
+
 
 
 /**
@@ -349,7 +351,7 @@ silex.model.Page.prototype.getPagesForElement = function(element) {
   var res = [];
   // get all the pages
   var pages = this.getPages();
-  for (var idx in pages) {
+  for (let idx in pages) {
     var pageName = pages[idx];
     // remove the component from the page
     if (goog.dom.classlist.contains(element, pageName)) {

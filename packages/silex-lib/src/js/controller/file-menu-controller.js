@@ -102,7 +102,7 @@ silex.controller.FileMenuController.prototype.openFile = function(opt_cbk, opt_e
           if (opt_errorCbk) opt_errorCbk(error);
         }, this));
       }, this),
-      {'mimetypes': ['text/html']},
+      {'mimetype': 'text/html'},
       goog.bind(function(error) {
         this.tracker.trackAction('controller-events', 'error', 'file.open', -1);
         if (opt_errorCbk) opt_errorCbk(error);
@@ -163,14 +163,14 @@ silex.controller.FileMenuController.prototype.save = function(opt_url, opt_cbk, 
   else {
     // choose a new name
     this.view.fileExplorer.saveAsDialog(
-      goog.bind(function(url) {
-        this.doSave(url, opt_cbk, opt_errorCbk);
-      }, this),
-      {'mimetypes': ['text/html']},
-      goog.bind(function(error) {
-        this.tracker.trackAction('controller-events', 'error', 'file.save', -1);
-        if (opt_errorCbk) opt_errorCbk(error);
-      }, this));
+        goog.bind(function(url) {
+          this.doSave(url, opt_cbk, opt_errorCbk);
+        }, this),
+        {'mimetype': 'text/html'},
+        goog.bind(function(error) {
+          this.tracker.trackAction('controller-events', 'error', 'file.save', -1);
+          if (opt_errorCbk) opt_errorCbk(error);
+        }, this));
   }
 };
 
@@ -207,7 +207,7 @@ silex.controller.FileMenuController.prototype.publish = function() {
       Select a folder in the settings pannel and do "publish" again. \
       \nNow I will open the publish settings.',
         goog.bind(function() {
-          this.view.settingsDialog.openDialog(function(){
+          this.view.settingsDialog.openDialog(function() {
             //here the panel was closed
           });
           this.view.workspace.invalidate(this.view);

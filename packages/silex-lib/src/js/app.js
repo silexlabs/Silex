@@ -24,8 +24,8 @@ goog.provide('silex.App');
 
 // google closure
 goog.require('goog.dom');
-goog.require('goog.dom.classlist');
 goog.require('goog.dom.classes');
+goog.require('goog.dom.classlist');
 goog.require('goog.events');
 goog.require('goog.style');
 // model
@@ -232,6 +232,18 @@ silex.App = function() {
     workspace.startWatchingUnload();
   }
   // TODO: call workspace.startWatchingResize ?? how does it work?
+
+  // init views now that controllers and model are instanciated
+  workspace.buildUi();
+  stage.buildUi();
+  menu.buildUi();
+  pageTool.buildUi();
+  htmlEditor.buildUi();
+  cssEditor.buildUi();
+  jsEditor.buildUi();
+  textEditor.buildUi();
+  settingsDialog.buildUi();
+  propertyTool.buildUi();
 };
 
 

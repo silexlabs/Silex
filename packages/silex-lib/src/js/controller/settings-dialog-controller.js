@@ -41,7 +41,7 @@ goog.inherits(silex.controller.SettingsDialogController,
  * the user clicked "browse" button in the publish settings panel
  */
 silex.controller.SettingsDialogController.prototype.browsePublishPath =
-  function() {
+    function() {
   this.view.fileExplorer.openDialog(
       goog.bind(function(url) {
         // undo checkpoint
@@ -74,7 +74,7 @@ silex.controller.SettingsDialogController.prototype.browsePublishPath =
  * @param {?string=} opt_data
  */
 silex.controller.SettingsDialogController.prototype.change =
-  function(opt_data) {
+    function(opt_data) {
   // undo checkpoint
   this.undoCheckPoint();
   this.model.head.setPublicationPath(opt_data);

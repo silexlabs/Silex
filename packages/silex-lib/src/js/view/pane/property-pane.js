@@ -29,7 +29,8 @@ goog.require('silex.view.pane.PaneBase');
  * @constructor
  * @extends {silex.view.pane.PaneBase}
  * @param {Element} element   container to render the UI
- * @param  {silex.types.Controller} controller  structure which holds the controller instances
+ * @param  {silex.types.Controller} controller  structure which holds
+ *                                  the controller instances
  */
 silex.view.pane.PropertyPane = function(element, controller) {
   // call super

@@ -1,6 +1,6 @@
 [submodule "submodules/closure-library"]
 	path = submodules/closure-library
-	url = git@github.com:google/closure-library.git
+	url = https://github.com/google/closure-library.git
 	ignore = dirty
 [submodule "submodules/closure-linter"]
 	path = submodules/closure-linter

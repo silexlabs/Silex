@@ -51,19 +51,14 @@ silex.view.dialog.DialogBase = function(element, controller) {
    * @type {!boolean} flag to remember if the dialog is opened
    */
   this.isOpened = false;
-
-  // let time to build the UI (e.g. for file explorer)
-  setTimeout(goog.bind(function() {
-    // init the editor
-    this.initUI();
-  }, this), 1000);
 };
 
 
 /**
  * init the menu and UIs
+ * called by the app constructor
  */
-silex.view.dialog.DialogBase.prototype.initUI = function() {
+silex.view.dialog.DialogBase.prototype.buildUi = function() {
   // handle escape key
   var shortcutHandler = new goog.ui.KeyboardShortcutHandler(document);
   shortcutHandler.registerShortcut('esc', goog.events.KeyCodes.ESC);

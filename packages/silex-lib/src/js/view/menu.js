@@ -33,15 +33,13 @@ goog.require('silex.Config');
 /**
  * @constructor
  * @param {Element} element   container to render the UI
- * @param  {silex.types.Controller} controller  structure which holds the controller instances
+ * @param  {silex.types.Controller} controller  structure which holds
+ *                                  the controller instances
  */
 silex.view.Menu = function(element, controller) {
   // store references
   this.element = element;
   this.controller = controller;
-
-  // build the UI
-  this.buildMenu(element);
 };
 
 
@@ -53,8 +51,9 @@ silex.view.Menu.prototype.menu = null;
 
 /**
  * create the menu with closure API
+ * called by the app constructor
  */
-silex.view.Menu.prototype.buildMenu = function(rootNode) {
+silex.view.Menu.prototype.buildUi = function() {
 
   /* *
         ////////////////////////////////////////////////////////////////////////////////
@@ -97,7 +96,7 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
   var globalKeys = [];
 
   // create the menu items
-  for (var i in silex.Config.menu.names) {
+  for (let i in silex.Config.menu.names) {
     // Create the drop down menu with a few suboptions.
     var menu = new goog.ui.Menu();
     goog.array.forEach(silex.Config.menu.options[i],
@@ -120,7 +119,7 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
             }
             // shortcut
             if (itemData.shortcut) {
-              for (var idx in itemData.shortcut) {
+              for (let idx in itemData.shortcut) {
                 try {
                   shortcutHandler.registerShortcut(itemData.id, itemData.shortcut[idx]);
                 }
@@ -180,14 +179,14 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
   goog.events.listen(keyHandler, 'key', goog.bind(function(event) {
     if (!silex.utils.Notification.isActive) {
       // Allow ENTER to be used as shortcut for silex
-      if (event.keyCode === goog.events.KeyCodes.ENTER
-        && event.shiftKey === false
-        && event.altKey === false
-        && event.ctrlKey === false) {
+      if (event.keyCode === goog.events.KeyCodes.ENTER &&
+          event.shiftKey === false &&
+          event.altKey === false &&
+          event.ctrlKey === false) {
         // but not in text inputs
-        if (event.target.tagName.toUpperCase() === 'INPUT'
-          || event.target.tagName.toUpperCase() === 'TEXTAREA'
-          || event.target.tagName === shortcutHandler['textInputs_'][event.target.type]) {
+        if (event.target.tagName.toUpperCase() === 'INPUT' ||
+            event.target.tagName.toUpperCase() === 'TEXTAREA' ||
+            event.target.tagName === shortcutHandler['textInputs_'][event.target.type]) {
           // let browser handle
         }
         else {
@@ -201,7 +200,7 @@ silex.view.Menu.prototype.buildMenu = function(rootNode) {
 
 
   // render the menu
-  this.menu.render(rootNode);
+  this.menu.render(this.element);
   // event handling
   goog.events.listen(this.menu, goog.ui.Component.EventType.ACTION, function(e) {
     this.onMenuEvent(e.target.getId());

@@ -205,7 +205,7 @@ silex.model.Body.prototype.setEditable = function(rootElement, isEditable, opt_i
       }
     }
     else {
-      if (goog.dom.classlist.contains(element, silex.model.Body.EDITABLE_CREATED_CLASS_NAME)){
+      if (goog.dom.classlist.contains(element, silex.model.Body.EDITABLE_CREATED_CLASS_NAME)) {
         this.view.workspace.getWindow().jQuery(element).editable('destroy');
         this.removeEditableClasses(element);
       }

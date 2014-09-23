@@ -199,11 +199,13 @@ module.exports = function(grunt) {
             warning_level: 'VERBOSE',
             define: ["'goog.DEBUG=false'"],
             debug: false,
+            create_source_map: 'dist/client/js/admin.min.js.map',
+            source_map_format: 'V3',
             externs: ['src/js/externs.js'],
           },
         },
         src: ['submodules/closure-library/', 'src/js/'],
-        dest: 'dist/client/js/admin.js',
+        dest: 'dist/client/js/admin.min.js'
       },
       debug: {
         options: {

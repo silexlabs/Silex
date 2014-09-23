@@ -18,6 +18,7 @@
 
 goog.provide('silex.view.dialog.TextEditor');
 
+goog.require('goog.events');
 goog.require('goog.dom');
 goog.require('goog.editor.Command');
 goog.require('goog.editor.Field');
@@ -30,6 +31,7 @@ goog.require('goog.editor.plugins.RemoveFormatting');
 goog.require('goog.editor.plugins.SpacesTabHandler');
 goog.require('goog.events');
 goog.require('goog.events.KeyCodes');
+goog.require('goog.net.XhrIo');
 goog.require('goog.ui.KeyboardShortcutHandler');
 goog.require('goog.ui.ToolbarSeparator');
 goog.require('goog.ui.editor.DefaultToolbar');
@@ -38,8 +40,7 @@ goog.require('silex.Config');
 goog.require('silex.view.dialog.DialogBase');
 goog.require('silex.view.dialog.LinkDialogPlugin');
 
-goog.require('goog.net.XhrIo');
-goog.require('goog.events');
+
 
 /**
  * the Silex TextEditor class
@@ -65,7 +66,7 @@ goog.inherits(silex.view.dialog.TextEditor, silex.view.dialog.DialogBase);
  * @type {string}
  */
 silex.view.dialog.TextEditor.LOREM_IPSUM_SERVICE_URL =
-    'http://loripsum.net/api/3/short/headers/decorate';
+    'http://baconipsum.com/api/?type=meat-and-filler';
 
 
 /**
@@ -77,9 +78,9 @@ silex.view.dialog.TextEditor.prototype.textField = null;
 /**
  * init the menu and UIs
  */
-silex.view.dialog.TextEditor.prototype.initUI = function() {
+silex.view.dialog.TextEditor.prototype.buildUi = function() {
   // call super
-  goog.base(this, 'initUI');
+  goog.base(this, 'buildUi');
 
   // Create an editable field
   // compute a unique class name for the text field element
@@ -90,13 +91,12 @@ silex.view.dialog.TextEditor.prototype.initUI = function() {
   var rnd = Math.floor(Math.random() * (99999));
   silex.view.dialog.TextEditor.nextId =
       silex.view.dialog.TextEditor.nextId || 0;
-  var uniqueClassName =
+  var uniqueId =
       'text-field' + rnd + '-' + (silex.view.dialog.TextEditor.nextId++);
-  // add this class to the desired text field
-  goog.dom.classlist.add(
-      goog.dom.getElementByClass('text-field', this.element), uniqueClassName);
+  // mark the desired text field
+  goog.dom.getElementByClass('text-field', this.element).id =  uniqueId;
   // create a text field out of this element
-  this.textField = new goog.editor.Field('.' + uniqueClassName);
+  this.textField = new goog.editor.Field(uniqueId);
 
   // Create and register all of the editing plugins you want to use.
   this.textField.registerPlugin(new goog.editor.plugins.BasicTextFormatter());
@@ -113,7 +113,7 @@ silex.view.dialog.TextEditor.prototype.initUI = function() {
       goog.editor.Command.FONT_FACE);
 
   var availableFonts = silex.Config.fonts;
-  for (var fontName in availableFonts) {
+  for (let fontName in availableFonts) {
     goog.ui.editor.ToolbarFactory.addFont(
         /** @type {!goog.ui.Select} */ (fontFaceButton),
         fontName,
@@ -198,7 +198,7 @@ silex.view.dialog.TextEditor.prototype.initUI = function() {
 
   // lorem ipsum button
   var button = goog.ui.editor.ToolbarFactory.makeButton(
-      'loremIpsumBtn', 'insert lorem ipsum text', 'L');
+      'loremIpsumBtn', 'insert lorem ipsum text', 'Lorem');
   goog.events.listen(
       button,
       goog.ui.Component.EventType.ACTION,
@@ -244,7 +244,7 @@ silex.view.dialog.TextEditor.prototype.setValue = function(html) {
   // init editable text input
   this.textField.setHtml(false, html);
   this.textField.focusAndPlaceCursorAtStart();
-}
+};
 
 
 /**
@@ -268,7 +268,7 @@ silex.view.dialog.TextEditor.prototype.setElementClassNames =
   // body represents the '.silex-element-content' element of Silex text elements
   // so it has these classes: 'silex-element-content normal'
   iframeDoc.body.className = 'silex-element-content normal';
-}
+};
 
 
 /**
@@ -288,7 +288,9 @@ silex.view.dialog.TextEditor.prototype.setBackgroundColor =
   // get the iframe document
   var iframeDoc = goog.dom.getFrameContentDocument(iframe);
   goog.style.setStyle(iframe, 'backgroundColor', opt_bgColor);
-}
+
+
+};
 
 
 /**
@@ -390,8 +392,8 @@ silex.view.dialog.TextEditor.prototype.setCustomCssStyles =
   var iframeHead = iframeDoc.head;
   // add Silex css to the iframe
   var silexStyle = /** @type  {!Element} */ (goog.dom.getElementByClass(
-        silex.model.Head.SILEX_STYLE_ELEMENT_CSS_CLASS,
-        iframeHead));
+      silex.model.Head.SILEX_STYLE_ELEMENT_CSS_CLASS,
+      iframeHead));
   // update iframe css
   if (!silexStyle) {
     silexStyle = iframeDoc.createElement('style');
@@ -422,15 +424,15 @@ silex.view.dialog.TextEditor.prototype.onLoremIpsumClick = function(e) {
   var container = goog.dom.createElement('P');
   // add normal style
   goog.dom.classlist.add(container, 'normal');
-  container.innerHTML = 'Loading lorem ipsum... Wait and seelex...';
+  container.innerHTML = '<pre><i><small>Loading lorem ipsum...</small></i></pre>';
   this.textField.getRange().replaceContentsWithNode(container);
   this.contentChanged();
   //request complete callback
-  goog.events.listen(request, 'complete', function(){
+  goog.events.listen(request, 'complete', function() {
     var data = '';
-    if(request.isSuccess()){
+    if (request.isSuccess()) {
       // success
-      data = request.getResponseText();
+      data = request.getResponseJson()[0];
     } else {
       // error: show a message in place of the lorem ipsum text
       data = 'lorem ipsum service <a href="' +

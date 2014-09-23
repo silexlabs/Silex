@@ -28,15 +28,13 @@ goog.require('silex.model.PageData');
  * @constructor
  *
  * @param {Element} element   container to render the UI
- * @param  {silex.types.Controller} controller  structure which holds the controller instances
+ * @param  {silex.types.Controller} controller  structure which holds
+ *                                  the controller instances
  */
 silex.view.PageTool = function(element, controller) {
   // store references
   this.element = element;
   this.controller = controller;
-
-  // init the tool
-  this.initEvents();
 };
 
 
@@ -50,8 +48,9 @@ silex.view.PageTool.prototype.pages = [];
 
 /**
  * add listeners on the tool container
+ * called by the app constructor
  */
-silex.view.PageTool.prototype.initEvents = function() {
+silex.view.PageTool.prototype.buildUi = function() {
   // listen for the click on a page
   goog.events.listen(this.element, goog.events.EventType.CLICK, function(e) {
     if (goog.dom.classlist.contains(e.target, 'delete')) {
