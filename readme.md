@@ -4,6 +4,7 @@
 [![Dependency Status](https://gemnasium.com/silexlabs/Silex.png)](https://gemnasium.com/silexlabs/Silex)
 [![Stories in Ready](https://badge.waffle.io/silexlabs/silex.png?label=ready)](http://waffle.io/silexlabs/silex)
 [![Analytics](https://ga-beacon.appspot.com/UA-19608894-21/silexlabs/Silex)](https://github.com/igrigorik/ga-beacon)
+[![Bountysource](https://www.bountysource.com/badge/tracker?tracker_id=672465)](https://www.bountysource.com/trackers/672465-silex?utm_source=672465&utm_medium=shield&utm_campaign=TRACKER_BADGE)
 
 ##About Silex, live web creation.
 
@@ -68,7 +69,7 @@ Start the server and then open http://localhost:6805/ - note that 6805 is easy t
 
 Or with grunt you can use
 
-* Build, i.e. check syntax with *lint, compile with google closure builder/compiler
+* Build, i.e. check syntax with lint, compile with google closure builder/compiler
 
   $ grunt deploy
 
@@ -76,7 +77,7 @@ Or with grunt you can use
 
   $ grunt watch
 
-* Test, i.e. check syntax with *lint, compile the release version with google closure, and execute functional tests
+* Test, i.e. check syntax with lint, compile the release version with google closure, and execute functional tests
 
   $ grunt test -phantomjs
 

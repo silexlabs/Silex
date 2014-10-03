@@ -69,7 +69,7 @@ silex.controller.ViewMenuController.prototype.preview = function() {
   var doOpenPreview = function() {
     window.open(this.model.file.getUrl());
     this.tracker.trackAction('controller-events', 'success', 'view.file', 1);
-  };
+  }.bind(this);
   if (!this.model.file.getUrl()) {
     silex.utils.Notification.confirm('You need to save your file before it can be opened in a new windo. Do you want me to <strong>save this file</strong> for you?', goog.bind(function(accept) {
       if (accept) {

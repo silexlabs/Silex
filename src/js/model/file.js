@@ -214,8 +214,8 @@ silex.model.File.prototype.getHtml = function() {
   this.model.body.removeEditableClasses(/** @type {!Element} */ (cleanFile));
   silex.utils.Style.removeInternalClasses(/** @type {!Element} */ (cleanFile), false, true);
   // reset the style set by stage on the body
-  goog.style.setStyle(/** @type {Document} */ (cleanFile).body, 'minWidth');
-  goog.style.setStyle(/** @type {Document} */ (cleanFile).body, 'minHeight');
+  goog.style.setStyle(/** @type {Document} */ (cleanFile).body, 'minWidth', '');
+  goog.style.setStyle(/** @type {Document} */ (cleanFile).body, 'minHeight', '');
   // put back the "silex-runtime" css class after editing
   goog.dom.classlist.add(/** @type {Document} */ (cleanFile).body, 'silex-runtime');
   // get html
