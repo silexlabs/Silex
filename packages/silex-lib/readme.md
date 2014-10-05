@@ -1,6 +1,6 @@
 
 [![Build Status](https://travis-ci.org/silexlabs/Silex.png?branch=master)](https://travis-ci.org/silexlabs/Silex)
-[![Code Climate](https://codeclimate.com/github/lexoyo/Silex/badges/gpa.svg)](https://codeclimate.com/github/lexoyo/Silex)
+[![Code Climate](https://codeclimate.com/github/silexlabs/Silex/badges/gpa.svg)](https://codeclimate.com/github/silexlabs/Silex)
 [![Dependency Status](https://gemnasium.com/silexlabs/Silex.png)](https://gemnasium.com/silexlabs/Silex)
 [![Stories in Ready](https://badge.waffle.io/silexlabs/silex.png?label=ready)](http://waffle.io/silexlabs/silex)
 [![Analytics](https://ga-beacon.appspot.com/UA-19608894-21/silexlabs/Silex)](https://github.com/igrigorik/ga-beacon)
