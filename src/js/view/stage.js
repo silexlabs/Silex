@@ -266,10 +266,9 @@ silex.view.Stage.prototype.initEvents = function(contentWindow) {
   }, false, this);
 
   // move in the iframe
-  var stagePosition = goog.style.getPosition(this.element);
   goog.events.listen(this.bodyElement, 'mousemove', function(event) {
-    var x = event.clientX + stagePosition.x;
-    var y = event.clientY + stagePosition.y;
+    var x = event.clientX;
+    var y = event.clientY;
     this.onMouseMove(/** @type {Element} */ (event.target), x, y);
   }, false, this);
 
@@ -498,8 +497,6 @@ silex.view.Stage.prototype.updateScroll = function(x, y) {
 silex.view.Stage.prototype.multipleDragged = function(x, y) {
   var scrollX = this.getScrollX();
   var scrollY = this.getScrollY();
-  var scrollMaxX = this.getScrollMaxX();
-  var scrollMaxY = this.getScrollMaxY();
   var offsetX = x - this.lastPosX + (scrollX - this.lastScrollLeft);
   var offsetY = y - this.lastPosY + (scrollY - this.lastScrollTop);
   // update the latest position and scroll
@@ -508,10 +505,17 @@ silex.view.Stage.prototype.multipleDragged = function(x, y) {
   this.lastScrollLeft = scrollX;
   this.lastScrollTop = scrollY;
 
+/*
   // handle multiple selection for size and position
   var followers = this.selectedElements.filter(goog.bind(function(element) {
     return element != this.lastSelected;
   }, this));
+*/
+  // follow the mouse (this means that the element dragged by the editable plugin
+  // is handled here, which overrides the behavior of the plugin
+  // (this is because we take the body scroll into account, and the parent's scroll too)
+  var followers = this.selectedElements
+  // drag or resize
   if (this.isDragging) {
     this.followElementPosition(followers, offsetX, offsetY);
   }
@@ -532,17 +536,33 @@ silex.view.Stage.prototype.followElementPosition =
   // apply offset to other selected element
   goog.array.forEach(followers, function(follower) {
     // do not move an element if one of its parent is already being moved
-    // TODO: do not need to set position if the element is the one draged
-    // by the editable plugin
     if (!goog.dom.getAncestorByClass(
         follower.parentNode, silex.model.Element.SELECTED_CLASS_NAME))
     {
       var pos = goog.style.getPosition(follower);
-      goog.style.setPosition(follower, pos.x + offsetX, pos.y + offsetY);
+      var scroll = this.getParentsScroll(follower);
+      goog.style.setPosition(follower, pos.x + offsetX + scroll.x, pos.y + offsetY + scroll.y);
     }
   }, this);
 };
 
+
+/**
+ *
+ */
+silex.view.Stage.prototype.getParentsScroll = function(follower){
+    var scroll = {
+        x: 0,
+        y: 0
+    }
+    var parent = follower.parentNode;
+    while(parent && parent.tagName.toLowerCase() != 'body'){
+        if (parent.scrollLeft) scroll.x += parent.scrollLeft;
+        if (parent.scrollTop) scroll.y += parent.scrollTop;
+        parent = parent.parentNode;
+    }
+    return scroll;
+};
 
 /**
  * make the followers follow the element's size
