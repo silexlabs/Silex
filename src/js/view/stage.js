@@ -359,6 +359,8 @@ silex.view.Stage.prototype.handleMouseUp = function(target, shiftKey) {
   if (this.isDragging || this.isResizing) {
     // update property tool box
     this.propertyChanged();
+	// change z order
+	this.bringSelectionForward();
     // keep flags up to date
     this.isDragging = false;
     this.isResizing = false;
@@ -404,6 +406,18 @@ silex.view.Stage.prototype.handleMouseUp = function(target, shiftKey) {
 silex.view.Stage.prototype.resetFocus = function() {
   this.focusInput.focus();
   this.focusInput.blur();
+};
+
+
+/**
+ * bring the selection forward
+ */
+silex.view.Stage.prototype.bringSelectionForward = function() {
+  goog.array.forEach(this.selectedElements, function(element) {
+    var container = element.parentNode;
+    goog.dom.removeNode(element);
+    goog.dom.appendChild(container, element);
+  }, this);
 };
 
 
