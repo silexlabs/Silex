@@ -226,7 +226,7 @@ silex.App = function() {
     silex.Config.debug.doAfterReady(this.model, this.view, this.controller);
   }
   // draw the workspace once
-  workspace.redraw(this.view);
+  workspace.invalidate(this.view);
   // prevent accidental unload
   if (!silex.Config.debug.debugMode || silex.Config.debug.preventQuit) {
     workspace.startWatchingUnload();
