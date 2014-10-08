@@ -174,39 +174,39 @@ silex.view.pane.BgPane.prototype.buildBgImage = function() {
 silex.view.pane.BgPane.prototype.buildBgImageProperties = function() {
   // bg image properties
   this.attachmentComboBox = this.createComboBox('bg-attachment-combo-box',
-      function(event) {
+      goog.bind(function(event) {
         this.styleChanged(
             'backgroundAttachment',
             event.target.getSelectedItem().getId());
-      });
+      }, this));
   this.vPositionComboBox = this.createComboBox('bg-position-v-combo-box',
-      function(event) {
+      goog.bind(function(event) {
         var hPosition = this.hPositionComboBox.getSelectedItem().getId();
         var vPosition = this.vPositionComboBox.getSelectedItem().getId();
         this.styleChanged(
             'backgroundPosition',
             vPosition + ' ' + hPosition);
-      });
+      },this));
   this.hPositionComboBox = this.createComboBox('bg-position-h-combo-box',
-      function(event) {
+      goog.bind(function(event) {
         var hPosition = this.hPositionComboBox.getSelectedItem().getId();
         var vPosition = this.vPositionComboBox.getSelectedItem().getId();
         this.styleChanged(
             'backgroundPosition',
             vPosition + ' ' + hPosition);
-      });
+      },this));
   this.repeatComboBox = this.createComboBox('bg-repeat-combo-box',
-      function(event) {
+      goog.bind(function(event) {
         this.styleChanged(
             'backgroundRepeat',
             event.target.getSelectedItem().getId());
-      });
+      },this));
   this.sizeComboBox = this.createComboBox('bg-size-combo-box',
-      function(event) {
+      goog.bind(function(event) {
         this.styleChanged(
             'backgroundSize',
             event.target.getSelectedItem().getId());
-      });
+      }, this));
 };
 
 
