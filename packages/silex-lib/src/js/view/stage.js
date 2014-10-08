@@ -21,6 +21,7 @@ goog.provide('silex.view.Stage');
 
 goog.require('goog.events');
 goog.require('goog.events.MouseWheelHandler');
+goog.require('goog.math.Coordinate');
 
 
 
@@ -480,22 +481,19 @@ silex.view.Stage.prototype.onMouseMove = function(target, x, y) {
  * @param   {number} y position of the mouse, relatively to the screen
  */
 silex.view.Stage.prototype.updateScroll = function(x, y) {
-  var iframePosition = goog.style.getPosition(this.element);
   var iframeSize = goog.style.getSize(this.element);
-  var xInStage = x - iframePosition.x;
-  var yInStage = y - iframePosition.y;
   var scrollX = this.getScrollX();
   var scrollY = this.getScrollY();
-  if (xInStage < 30) {
+  if (x < 30) {
     this.setScrollX(scrollX - 35);
   }
-  else if (xInStage > iframeSize.width - 30) {
+  else if (x > iframeSize.width - 30) {
     this.setScrollX(scrollX + 35);
   }
-  if (yInStage < 30) {
+  if (y < 30) {
     this.setScrollY(scrollY - 35);
   }
-  else if (yInStage > iframeSize.height - 30) {
+  else if (y > iframeSize.height - 30) {
     this.setScrollY(scrollY + 35);
   }
 };
@@ -562,13 +560,12 @@ silex.view.Stage.prototype.followElementPosition =
 
 
 /**
- *
+ * adds all parents scroll offsets and returns it
+ * @param {Element} follower the element whose parents we take into account
+ * @return {goog.math.Coordinate} the sum of all parent's scroll positions
  */
 silex.view.Stage.prototype.getParentsScroll = function(follower){
-    var scroll = {
-        x: 0,
-        y: 0
-    }
+    var scroll = new goog.math.Coordinate(0, 0);
     var parent = follower.parentNode;
     while(parent && parent.tagName.toLowerCase() != 'body'){
         if (parent.scrollLeft) scroll.x += parent.scrollLeft;
