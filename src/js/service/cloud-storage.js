@@ -52,7 +52,7 @@ silex.service.CloudStorage.prototype.createBlob = function(url) {
   }
   // create the blob
   var relBlob = {
-    url: url
+    'url': url
   };
   return relBlob;
 };

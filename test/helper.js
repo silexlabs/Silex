@@ -87,7 +87,7 @@ exports.createClient = function (webdriverjs) {
       if (e && e.err && e.err.code){
         switch(e.err.code) {
           case 'ECONNREFUSED':
-            console.error("couldn't connect to selenium server, please run the command: \n $ java -jar test/selenium-server-standalone-2.37.0.jar");
+            console.error("couldn't connect to selenium server, please run the command: \n $ java -jar node_modules/grunt-selenium-webdriver/jar/selenium-server-standalone-2.42.2.jar");
           break;
         }
       }

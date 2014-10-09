@@ -270,3 +270,7 @@ silex.App.prototype.controller = null;
 
 // Ensures the symbol will be visible after compiler renaming.
 goog.exportSymbol('silex.App', silex.App);
+// google library too, because of "dist/client/js/closure-patches.js" which patches goog.style
+// FIXME: still needed? Find a way to remove this
+goog.exportSymbol('goog.style', goog.style);
+

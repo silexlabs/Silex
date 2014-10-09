@@ -87,10 +87,10 @@ silex.view.PageTool.prototype.redraw = function(selectedElements, contentDocumen
   var idx = 0;
   this.pages = pageNames.map(goog.bind(function(pageName) {
     var res = {
-      name: pageName,
-      displayName: contentDocument.getElementById(pageName).innerHTML,
-      linkName: '#!' + pageName,
-      idx: idx++
+      'name': pageName,
+      'displayName': contentDocument.getElementById(pageName).innerHTML,
+      'linkName': '#!' + pageName,
+      'idx': idx++
     };
     if (currentPageName === pageName) {
       res.className = 'ui-selected';

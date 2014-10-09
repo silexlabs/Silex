@@ -175,7 +175,7 @@ silex.model.Page.prototype.refreshView = function() {
  */
 silex.model.Page.prototype.setCurrentPage = function(pageName) {
   var bodyElement = this.view.workspace.getWindow().document.body;
-  this.view.workspace.getWindow().jQuery(bodyElement).pageable({currentPage: pageName});
+  this.view.workspace.getWindow().jQuery(bodyElement).pageable({'currentPage': pageName});
   this.refreshView();
 };
 
