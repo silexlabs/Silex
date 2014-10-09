@@ -360,8 +360,8 @@ silex.view.Stage.prototype.handleMouseUp = function(target, shiftKey) {
   if (this.isDragging || this.isResizing) {
     // update property tool box
     this.propertyChanged();
-	// change z order
-	this.bringSelectionForward();
+    // change z order
+    this.bringSelectionForward();
     // keep flags up to date
     this.isDragging = false;
     this.isResizing = false;
