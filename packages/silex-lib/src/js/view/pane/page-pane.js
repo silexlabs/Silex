@@ -107,9 +107,9 @@ silex.view.pane.PagePane.prototype.setPages = function(pages, document) {
   // build an array of obects with name and displayName properties
   var pageData = pages.map(goog.bind(function(pageName) {
     return {
-      name: pageName,
-      displayName: document.getElementById(pageName).innerHTML,
-      linkName: '#!' + pageName
+      'name': pageName,
+      'displayName': document.getElementById(pageName).innerHTML,
+      'linkName': '#!' + pageName
     };
   }, this));
 
@@ -123,14 +123,14 @@ silex.view.pane.PagePane.prototype.setPages = function(pages, document) {
   // link selector
   var pageDataWithDefaultOptions = ([
     {
-      name: 'none',
-      displayName: '-',
-      linkName: 'none'
+      'name': 'none',
+      'displayName': '-',
+      'linkName': 'none'
     },
     {
-      name: 'custom',
-      displayName: 'External link',
-      linkName: 'custom'
+      'name': 'custom',
+      'displayName': 'External link',
+      'linkName': 'custom'
     }
   ]).concat(pageData);
   var linkContainer = goog.dom.getElementByClass('link-combo-box',
