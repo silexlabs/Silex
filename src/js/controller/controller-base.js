@@ -230,8 +230,19 @@ silex.controller.ControllerBase.prototype.setClassName = function(name) {
 
 
 /**
+ * get inline css styles
+ * @param   {Element} element
+ * @return {string} inline style of the element
+ */
+silex.controller.ControllerBase.prototype.getInlineStyle = function(element) {
+  return this.model.element.getAllStyles(element);
+};
+
+
+/**
  * get css class names
  * @param   {Element} element
+ * @return {string} css classes of the element (i.e. className attr)
  */
 silex.controller.ControllerBase.prototype.getClassName = function(element) {
   return this.model.element.getClassName(element);

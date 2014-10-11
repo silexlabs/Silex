@@ -97,12 +97,8 @@ silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk, opt_showLoader) 
   // should not be needed since we change all  the URLs to absolute
   // but just in case abs/rel conversion bugs
   if (this.url) rawHtml = rawHtml.replace('<head>', '<head><base class="' + silex.model.Head.SILEX_TEMP_TAGS_CSS_CLASS + '" href="' + this.url + '" target="_blank">');
-  // prevent scripts from executing
-  rawHtml = rawHtml.replace(/type=\"text\/javascript\"/gi, 'type="text/notjavascript"');
-  // convert to absolute urls
-  if (this.url) {
-    rawHtml = silex.utils.Url.relative2Absolute(rawHtml, this.url);
-  }
+  // prepare HTML
+  rawHtml = this.model.element.prepareHtmlForEdit(rawHtml);
   // write the content
   goog.dom.iframe.writeContent(iframeElement, rawHtml);
 };
@@ -220,14 +216,7 @@ silex.model.File.prototype.getHtml = function() {
   goog.dom.classlist.add(/** @type {Document} */ (cleanFile).body, 'silex-runtime');
   // get html
   var rawHtml = /** @type {Document} */ (cleanFile).documentElement.innerHTML;
-  // put back the scripts
-  rawHtml = rawHtml.replace(/type=\"text\/notjavascript\"/gi, 'type="text/javascript"');
-  // remove cache control used to refresh images after editing by pixlr
-  rawHtml = silex.utils.Dom.removeCacheControl(rawHtml);
-  // convert to relative urls
-  if (this.url) {
-    rawHtml = silex.utils.Url.absolute2Relative(rawHtml, this.url);
-  }
+  rawHtml = this.model.element.prepareHtmlForDisplay(rawHtml);
   return rawHtml;
 };
 

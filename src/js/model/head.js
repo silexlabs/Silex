@@ -77,7 +77,7 @@ silex.model.Head.prototype.getHeadScript = function() {
     console.warn('no silex editable script defined');
     return '';
   }
-  return scriptTag.innerHTML;
+  return this.model.element.prepareHtmlForDisplay(scriptTag.innerHTML);
 };
 
 
@@ -96,7 +96,7 @@ silex.model.Head.prototype.setHeadScript = function(jsString) {
     scriptTag.className = silex.model.Head.SILEX_SCRIPT_ELEMENT_CSS_CLASS;
     goog.dom.appendChild(this.getHeadElement(), scriptTag);
   }
-  scriptTag.innerHTML = jsString;
+  scriptTag.innerHTML = this.model.element.prepareHtmlForEdit(jsString);
 };
 
 
@@ -113,7 +113,7 @@ silex.model.Head.prototype.getHeadStyle = function() {
     console.warn('no silex editable styles defined');
     return '';
   }
-  return silexStyle.innerHTML;
+  return this.model.element.prepareHtmlForDisplay(silexStyle.innerHTML);
 };
 
 
@@ -132,6 +132,7 @@ silex.model.Head.prototype.setHeadStyle = function(cssString) {
     silexStyle.className = silex.model.Head.SILEX_STYLE_ELEMENT_CSS_CLASS;
     goog.dom.appendChild(this.getHeadElement(), silexStyle);
   }
+  cssString = this.model.element.prepareHtmlForEdit(cssString);
   silexStyle.innerHTML = cssString;
   // refresh the text editor's styles
   this.view.textEditor.setCustomCssStyles(cssString);
