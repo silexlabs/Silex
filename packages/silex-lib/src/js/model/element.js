@@ -112,6 +112,41 @@ silex.model.Element.SELECTED_CLASS_NAME = 'silex-selected';
 
 
 /**
+ * prepare element for edition
+ * @param  {string} rawHtml   raw HTML of the element to prepare
+ * @return {string} the processed HTML
+ */
+silex.model.Element.prototype.prepareHtmlForEdit = function(rawHtml) {
+  // prevent scripts from executing
+  rawHtml = rawHtml.replace(/type=\"text\/javascript\"/gi, 'type="text/notjavascript"');
+  // convert to absolute urls
+  if (this.model.file.url) {
+    rawHtml = silex.utils.Url.relative2Absolute(rawHtml, this.model.file.url);
+  }
+  return rawHtml;
+};
+
+
+
+/**
+ * unprepare element for edition
+ * @param  {string} rawHtml   raw HTML of the element to prepare
+ * @return {string} the processed HTML
+ */
+silex.model.Element.prototype.prepareHtmlForDisplay = function(rawHtml) {
+  // put back the scripts
+  rawHtml = rawHtml.replace(/type=\"text\/notjavascript\"/gi, 'type="text/javascript"');
+  // remove cache control used to refresh images after editing by pixlr
+  rawHtml = silex.utils.Dom.removeCacheControl(rawHtml);
+  // convert to relative urls
+  if (this.model.file.url) {
+    rawHtml = silex.utils.Url.absolute2Relative(rawHtml, this.model.file.url);
+  }
+  return rawHtml;
+};
+
+
+/**
  * get/set type of the element
  * @param  {Element} element   created by silex, either a text box, image, ...
  * @return  {string}           the style of the element
@@ -123,6 +158,16 @@ silex.model.Element.prototype.getType = function(element) {
 
 
 /**
+ * get all the element's styles
+ * @param  {Element} element   created by silex, either a text box, image, ...
+ * @return  {string}           the styles of the element
+ */
+silex.model.Element.prototype.getAllStyles = function(element) {
+  return this.prepareHtmlForDisplay(element.getAttribute('style'));
+};
+
+
+/**
  * get/set style of the element
  * @param  {Element} element   created by silex, either a text box, image, ...
  * @param  {string} styleName  the style name
@@ -130,7 +175,7 @@ silex.model.Element.prototype.getType = function(element) {
  */
 silex.model.Element.prototype.getStyle = function(element, styleName) {
   //return goog.style.getStyle(element, styleName);
-  return element.style[styleName];
+  return this.prepareHtmlForDisplay(element.style[styleName]);
 };
 
 
@@ -143,7 +188,7 @@ silex.model.Element.prototype.getStyle = function(element, styleName) {
 silex.model.Element.prototype.setStyle = function(element, styleName, opt_styleValue) {
   if (element.style[styleName] !== opt_styleValue) {
     if (goog.isDefAndNotNull(opt_styleValue)) {
-      element.style[styleName] = opt_styleValue;
+      element.style[styleName] = this.prepareHtmlForEdit(opt_styleValue);
     }
     else {
       element.style[styleName] = '';
@@ -200,6 +245,8 @@ silex.model.Element.prototype.getInnerHtml = function(element) {
   // disable editable
   this.model.body.setEditable(element, false);
   var innerHTML = this.getContentNode(element).innerHTML;
+  // remove absolute urls and not executable scripts
+  innerHTML = this.prepareHtmlForDisplay(innerHTML);
   // re-enable editable
   this.model.body.setEditable(element, true);
   return innerHTML;
@@ -216,6 +263,8 @@ silex.model.Element.prototype.setInnerHtml = function(element, innerHTML) {
   var contentNode = this.getContentNode(element);
   // cleanup
   this.model.body.setEditable(element, false);
+  // remove absolute urls and not executable scripts
+  innerHTML = this.prepareHtmlForEdit(innerHTML);
   // set html
   contentNode.innerHTML = innerHTML;
   // make editable again

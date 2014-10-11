@@ -96,9 +96,9 @@ silex.view.pane.StylePane.prototype.redraw = function(selectedElements, document
   }
 
   // css inline style
-  var cssInlineStyle = this.getCommonProperty(selectedElements, function(element) {
-    return element.getAttribute('style');
-  });
+  var cssInlineStyle = this.getCommonProperty(selectedElements, goog.bind(function(element) {
+    return this.controller.propertyToolController.getInlineStyle(element);
+  }, this));
   if (cssInlineStyle) {
     this.iAmSettingValue = true;
     try {
