@@ -57,7 +57,7 @@ silex.view.dialog.FileExplorer.prototype.filePicker;
  * pick a file
  * @param {function(string)} cbk
  * @param {?Object.<Array>=} opt_mimetypes optional array of accepted mimetypes,
- *                           e.g. {mimetypes: ['text/html', 'text/plain']}
+ *                           e.g. {'mimetypes': ['text/html', 'text/plain']}
  * @param {?function(Object)=} opt_errCbk
  */
 silex.view.dialog.FileExplorer.prototype.openDialog =
@@ -92,7 +92,7 @@ silex.view.dialog.FileExplorer.prototype.openDialog =
  * save as dialog
  * @param {function(string)} cbk
  * @param {?Object.<Array>=} opt_mimetypes optional array of accepted mimetypes,
- *                           e.g. {mimetypes: ['text/html', 'text/plain']}
+ *                           e.g. {'mimetypes': ['text/html', 'text/plain']}
  * @param {?function(Object)=} opt_errCbk
  */
 silex.view.dialog.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes, opt_errCbk) {

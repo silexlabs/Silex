@@ -57,7 +57,7 @@ silex.controller.SettingsDialogController.prototype.browsePublishPath =
         this.tracker.trackAction(
             'controller-events', 'success', 'publish.browse', 1);
       }, this),
-      { mimetypes: ['text/directory'] },
+      { 'mimetypes': ['text/directory'] },
       goog.bind(function(error) {
         silex.utils.Notification.notifyError(
             'Error: I could not select the publish path. <br /><br />' +
