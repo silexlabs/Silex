@@ -221,7 +221,7 @@ silex.controller.EditMenuController.prototype.editElement = function(opt_element
             // load the image
             this.model.element.setImageUrl(element, url);
           }, this),
-          { mimetypes: ['image/jpeg', 'image/png', 'image/gif'] },
+          { 'mimetypes': ['image/jpeg', 'image/png', 'image/gif'] },
           goog.bind(function(error) {
             silex.utils.Notification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''));
           }, this)
