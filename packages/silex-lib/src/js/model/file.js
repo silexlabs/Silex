@@ -145,6 +145,9 @@ silex.model.File.prototype.onContentLoaded = function(opt_cbk) {
   // loading
   setTimeout(goog.bind(function() {
     goog.dom.classlist.remove(iframeElement, silex.model.Element.LOADING_ELEMENT_CSS_CLASS);
+    // refresh the view (workaround for a bug where no page is opened after open a website or undo)
+    var page = this.model.page.getCurrentPage();
+    this.model.page.setCurrentPage(page);
   }, this), 200);
 };
 
