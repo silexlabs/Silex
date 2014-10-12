@@ -158,7 +158,7 @@ Pixlr.prototype.openPixlr = function (image, serviceName, opt_imageDst, opt_targ
         // open pixlr in a new window
         var pixlrWindow = window.open(url, 'pixlrWindow');
         if (pixlrWindow) {
-            var timer = setInterval(goog.bind(function() {
+            var timer = setInterval(function() {
                 if (pixlrWindow.closed){
                     console.log('Pixlr.onUpdate');
                     clearInterval(timer);
@@ -167,7 +167,7 @@ Pixlr.prototype.openPixlr = function (image, serviceName, opt_imageDst, opt_targ
                         this.onUpdate = null;
                     }
                 }
-            }, this), 500);
+            }.bind(this), 500);
             pixlrWindow.focus();
         }
         else{
