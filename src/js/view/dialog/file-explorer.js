@@ -63,7 +63,7 @@ silex.view.dialog.FileExplorer.prototype.filePicker;
 silex.view.dialog.FileExplorer.prototype.openDialog =
     function(cbk, opt_mimetypes, opt_errCbk) {
 
-	var errCbk = function(FPError) {
+    var errCbk = function(FPError) {
     console.error(FPError);
     if (opt_errCbk) {
       opt_errCbk(FPError);
