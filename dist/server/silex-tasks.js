@@ -136,6 +136,15 @@ exports.publish = function(cbk, req, res, next, path, html, css, js, files){
  * get all files data and copy it to destination service
  */
 exports.publishFiles = function(req, res, next, files, dstPath, cbk){
+    // check inputs
+    if (cbk === undefined || req === undefined || res === undefined || next === undefined || files === undefined || dstPath === undefined){
+        console.error('All attributes needed when calling publishFiles', files, dstPath);
+        cbk({
+            success: false
+            , code: 'All attributes needed when calling publishFiles method'
+        });
+        return;
+    }
   if(files.length>0){
     var file = files.shift();
         exports.getFile(req, res, next, file.srcPath, dstPath + '/' + file.destPath, function (error) {
@@ -159,10 +168,10 @@ exports.publishFiles = function(req, res, next, files, dstPath, cbk){
 exports.sendImage = function(cbk, req, res, next, path, url){
     // check inputs
     if (cbk === undefined || req === undefined || res === undefined || next === undefined || path === undefined || url === undefined){
-        console.error('All attributes needed: cbk, req, res, next, path, url')
+        console.error('All attributes needed when calling sendImage', path, url)
         cbk({
             success: false
-            , code: 'All attributes needed: cbk, req, res, next, path, url '
+            , code: 'All attributes needed when calling sendImage'
         });
         return;
     }
@@ -260,6 +269,15 @@ exports.getTempLink = function(cbk, req, res, next, path){
  * get one file from URL or service, to a service
  */
 exports.getFile = function(req, res, next, srcPath, dstPath, cbk){
+    // check inputs
+    if (cbk === undefined || req === undefined || res === undefined || next === undefined || srcPath === undefined || dstPath === undefined){
+        console.error('All attributes needed when calling getFile', srcPath, dstPath);
+        cbk({
+            success: false
+            , code: 'All attributes needed when calling getFile'
+        });
+        return;
+    }
     if (srcPath.indexOf('http')===0){
         exports.getFileFromUrl(req, res, next, srcPath, dstPath, cbk);
     }
@@ -384,7 +402,7 @@ exports.unifileRoute = function(req, res, next, url, cbk){
         }
     }
     catch(e){
-        console.error('Error in service '+serviceName+': '+e);
+        console.error('Error in service '+serviceName, e, e.stack);
         cbk(res, {
             success: false
             , code: 'Error in service '+serviceName+': '+e

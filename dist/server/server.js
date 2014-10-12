@@ -132,13 +132,19 @@ app.listen(port, function() {
 
 var silexTasks = require('./silex-tasks.js');
 app.use('/tasks/:task', function(req, res, next){
-    silexTasks.route(function(result){
-        if (!result) result = {success:true};
-        try{
-            res.send(result);
-        }
-        catch(e){
-            console.error('header sent?', e, result);
-        }
-    }, req, res, next, req.params.task);
+    try{
+        silexTasks.route(function(result){
+            if (!result) result = {success:true};
+            try{
+               res.send(result);
+            }
+           catch(e){
+                console.error('Error: header have been sent?', e, result, e.stack);
+            }
+        }, req, res, next, req.params.task);
+    }
+    catch(e){
+        console.error('Error while executing task', e, e.stack);
+    }
+
 });
