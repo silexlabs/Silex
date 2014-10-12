@@ -168,13 +168,15 @@ exports.sendImage = function(cbk, req, res, next, path, url){
     }
     // load the image and save it to the desired service
     exports.getFile(req, res, next, url, path, function (error) {
-        res.redirect('/libs/pixlr/close.html');
+        // no, makes the headers to be sent and crashes everything
+        // res.redirect('/libs/pixlr/close.html');
         if (error){
             console.error('Error in getFile', error, url, path);
             cbk({success:false, code: error.code});
         }
         else{
-            cbk();
+          res.header('Location', '/libs/pixlr/close.html');
+          cbk({success:true});
         }
     });
 };
@@ -269,35 +271,45 @@ exports.getFile = function(req, res, next, srcPath, dstPath, cbk){
  * get file from URL, to a service
  */
 exports.getFileFromUrl = function(req, res, next, srcPath, dstPath, cbk){
-	var data = [];
+    var data = [];
+
     // http or https
     var http_s = http;
     if (srcPath.indexOf('https')===0){
         http_s = https;
     }
-	// load the file
-	http_s.get(srcPath, function(result) {
-		result.on('data', function(chunk) {
-			if (srcPath.indexOf('https')===0){
-				// https => all the data the 1st time
-		    	data = chunk;
-			}
-      else{
-          data.push(chunk);
-      }
-    });
-    result.on('end', function() {
-      exports.writeFileToService(req, res, next, dstPath, data.join(''), function(status) {
-    		cbk(status);
-      });
-	  });
-	}).on('error', function(e) {
-		console.error('Error while loading '+srcPath+': ' + e.message);
-		cbk({
-        	code: 'Error while loading '+srcPath+': ' + e.message
+    // load the file
+    http_s.get(srcPath, function(result) {
+        result.on('data', function(chunk) {
+            if (srcPath.indexOf('https')===0){
+                // https => all the data the 1st time
+                data = chunk;
+            }
+            else{
+                data.push( chunk);
+            }
+          });
+          result.on('end', function() {
+            if (srcPath.indexOf('https')===0 && Array.isArray(data)){
+                exports.writeFileToService(req, res, next, dstPath, data.join(), function(status) {
+                    cbk(status);
+                });
+            }
+            else{
+                exports.writeFileToService(req, res, next, dstPath, data, function(status) {
+                    cbk(status);
+                });
+            }
+          });
+    }).on('error', function(e) {
+        console.error('Error while loading '+srcPath+': ' + e.message);
+        cbk({
+            code: 'Error while loading '+srcPath+': ' + e.message
         });
-	});
+    });
 }
+
+
 /**
  * get file from a service, to a service
  */
