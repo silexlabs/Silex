@@ -201,10 +201,10 @@ silex.utils.Dom.publish = function(url, baseUrl, html, cbk, opt_errCbk) {
     var contentDocument = goog.dom.getFrameContentDocument(iframe);
     var cleanedObj = silex.utils.DomCleaner.cleanup(contentDocument, baseUrl);
     // store the files to download and copy to assets, scripts...
-    var htmlString = cleanedObj.htmlString;
-    var cssString = cleanedObj.cssString;
-    var jsString = cleanedObj.jsString;
-    var files = cleanedObj.files;
+    var htmlString = cleanedObj['htmlString'];
+    var cssString = cleanedObj['cssString'];
+    var jsString = cleanedObj['jsString'];
+    var files = cleanedObj['files'];
     // call the publish service
     silex.service.SilexTasks.getInstance().publish(url, htmlString, cssString, jsString, files, cbk, opt_errCbk);
   }, false);
