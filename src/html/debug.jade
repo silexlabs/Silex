@@ -18,5 +18,7 @@ body.loading-pending.advanced-mode-off
 
   // start Silex
   script(type='text/javascript').
+    // debug mode
+    silex.Config.debug.debugMode = true;
     // boot silex app
     silex.main_silex_app = new silex.App();

@@ -1,7 +1,8 @@
 silex.Config.debug.doAfterReady = function (model, view, controller) {
+  setTimeout(function(){
     // insert elements
-    controller.menuController.menuCallback('insert.container');
-    controller.menuController.menuCallback('insert.html');
-    controller.menuController.menuCallback('insert.text');
-    controller.menuController.menuCallback('view.open.textEditor');
-  }
+    controller.insertMenuController.addElement('text');
+    controller.insertMenuController.addElement('html');
+    controller.insertMenuController.addElement('container');
+  }, 2000);
+}

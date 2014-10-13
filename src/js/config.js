@@ -34,8 +34,8 @@ var altKeyModifyer = goog.userAgent.MAC ? goog.ui.KeyboardShortcutHandler.Modifi
 silex.Config.debug = {
   /**
    * true if the app is in debug mode
-   * if falsethen all other params are not used
-   * debug mode is set to true in debug.html
+   * if false then all other params are not used
+   * debug mode is set to true in debug.html (src/html/debug.jade)
    * @type {boolean}
    */
   debugMode: false,
