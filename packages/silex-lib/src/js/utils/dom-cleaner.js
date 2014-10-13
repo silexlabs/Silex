@@ -45,7 +45,7 @@ silex.utils.DomCleaner.DOWNLOAD_LOCALLY_FROM = [
  * remove Silex specific data from HTML
  * create an external CSS file
  * generates a list of js scripts and assets to be eported with the file
- * @return an object with
+ * @return {{htmlString: string, cssString: string, jsString: string, files: Array.<Object>}} an object with
  *      html: the cleaned up raw HTML {string} or null if an error occured
  *      css: list of css files
  *      jsString: a script included in the html
@@ -111,9 +111,9 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
       var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
       var newRelativePath = 'assets/' + fileName;
       files.push({
-        url: absolute,
-        destPath: newRelativePath,
-        srcPath: relative
+        'url': absolute,
+        'destPath': newRelativePath,
+        'srcPath': relative
       });
       var res = match.replace(group1, newRelativePath);
       return res;
@@ -145,9 +145,9 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
       var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
       var newRelativePath = 'css/' + fileName;
       files.push({
-        url: absolute,
-        destPath: newRelativePath,
-        srcPath: relative
+        'url': absolute,
+        'destPath': newRelativePath,
+        'srcPath': relative
       });
       var res = match.replace(group1, newRelativePath);
       return res;
@@ -167,9 +167,9 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
       var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
       var newRelativePath = 'js/' + fileName;
       files.push({
-        url: absolute,
-        destPath: newRelativePath,
-        srcPath: relative
+        'url': absolute,
+        'destPath': newRelativePath,
+        'srcPath': relative
       });
       var res = match.replace(group1, newRelativePath);
       return res;
@@ -225,8 +225,8 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
     // add the css for this context
     var cssNormal = element.getAttribute('style');
     cssArray.push({
-      classNames: ['.' + className],
-      styles: cssNormal
+      'classNames': ['.' + className],
+      'styles': cssNormal
     });
     // cleanup styles used during edition
     //goog.dom.classlist.remove (element, 'editable-style');
@@ -243,12 +243,12 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
   goog.array.forEach(cssArray, function(cssData) {
     var elementCssStr = '';
     // compute class names
-    goog.array.forEach(cssData.classNames, function(className) {
+    goog.array.forEach(cssData['classNames'], function(className) {
       if (elementCssStr !== '') elementCssStr += ', ';
       elementCssStr += className;
     });
     // compute styles
-    elementCssStr += '{\n\t' + cssData.styles + '\n}';
+    elementCssStr += '{\n\t' + cssData['styles'] + '\n}';
     cssStr += '\n' + elementCssStr;
   });
   // format css
@@ -275,10 +275,10 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
   html += '</html>';
 
   return {
-    htmlString: html,
-    cssString: cssStr,
-    jsString: jsString,
-    files: files
+    'htmlString': html,
+    'cssString': cssStr,
+    'jsString': jsString,
+    'files': files
   };
 };
 
@@ -287,6 +287,8 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
  * takes a matching pattern "url(...)"" and convert the absolute URLs to relative once,
  * take into account that these will be referenced in css/style.css,
  * so they must be relative to "css/"
+ * FIXME: also changes the input param files, and this is dirty
+ * @return {string}
  */
 silex.utils.DomCleaner.filterBgImage = function(baseUrl, files, match, group1, group2) {
   // remove the ''
@@ -304,9 +306,9 @@ silex.utils.DomCleaner.filterBgImage = function(baseUrl, files, match, group1, g
     var newRelativePath = 'assets/' + fileName;
     var res = "url('../" + newRelativePath + "')";
     files.push({
-      url: absolute,
-      destPath: newRelativePath,
-      srcPath: relative
+      'url': absolute,
+      'destPath': newRelativePath,
+      'srcPath': relative
     });
     return res;
   }
@@ -316,7 +318,7 @@ silex.utils.DomCleaner.filterBgImage = function(baseUrl, files, match, group1, g
 
 /**
  * det if a given URL is supposed to be downloaded locally
- * @return true if the url is relative or it is a known domain (sttic.silex.me)
+ * @return {boolean} true if the url is relative or it is a known domain (sttic.silex.me)
  */
 silex.utils.DomCleaner.isDownloadable = function(url) {
   // do not download files with ? or & since it is probably dynamic
