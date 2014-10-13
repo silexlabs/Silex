@@ -150,6 +150,9 @@ silex.model.Page.prototype.getPages = function() {
  * @return {string} name of the page currently opened
  */
 silex.model.Page.prototype.getCurrentPage = function() {
+  if (goog.isNull(this.view.workspace.getWindow().jQuery)){
+    throw (new Error('JQuery not loaded in the opened website'));
+  }
   var bodyElement = this.view.workspace.getWindow().document.body;
   var pageName = this.view.workspace.getWindow().jQuery(bodyElement).pageable('option', 'currentPage');
   return pageName;

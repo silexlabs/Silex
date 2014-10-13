@@ -217,22 +217,6 @@ silex.App = function() {
       new silex.controller.TextEditorController(this.model, this.view)
   );
 
-  // **
-  // application start, open a new empty file
-  // **
-  // now create an empty file to let the user start using Silex
-  this.controller.fileMenuController.newFile();
-  if (silex.Config.debug.debugMode && silex.Config.debug.doAfterReady) {
-    silex.Config.debug.doAfterReady(this.model, this.view, this.controller);
-  }
-  // draw the workspace once
-  workspace.invalidate(this.view);
-  // prevent accidental unload
-  if (!silex.Config.debug.debugMode || silex.Config.debug.preventQuit) {
-    workspace.startWatchingUnload();
-  }
-  // TODO: call workspace.startWatchingResize ?? how does it work?
-
   // init views now that controllers and model are instanciated
   workspace.buildUi();
   stage.buildUi();
@@ -244,6 +228,22 @@ silex.App = function() {
   textEditor.buildUi();
   settingsDialog.buildUi();
   propertyTool.buildUi();
+
+  // draw the workspace once
+  workspace.invalidate(this.view);
+
+  // **
+  // application start, open a new empty file
+  this.controller.fileMenuController.newFile();
+  if (silex.Config.debug.debugMode && silex.Config.debug.doAfterReady) {
+    silex.Config.debug.doAfterReady(this.model, this.view, this.controller);
+  }
+  // prevent accidental unload
+  if (!silex.Config.debug.debugMode || silex.Config.debug.preventQuit) {
+    workspace.startWatchingUnload();
+  }
+  // TODO: call workspace.startWatchingResize ?? how does it work?
+
 };
 
 
