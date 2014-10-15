@@ -197,7 +197,7 @@ silex.model.Body.prototype.setEditable = function(rootElement, isEditable, opt_i
       if (element.getAttribute(silex.model.Body.SILEX_TYPE_ATTR_NAME) === silex.model.Body.SILEX_TYPE_CONTAINER) {
         // containers
         this.view.workspace.getWindow().jQuery(element).editable({
-          isContainer: true
+          'isContainer': true
         });
       }
       else {
@@ -218,15 +218,15 @@ silex.model.Body.prototype.setEditable = function(rootElement, isEditable, opt_i
       if (opt_isRootDroppableOnly) {
         // allow drops only
         this.view.workspace.getWindow().jQuery(rootElement).editable({
-          isContainer: true,
-          isResizable: false,
-          isDroppable: true,
-          isDraggable: false
+          'isContainer': true,
+          'isResizable': false,
+          'isDroppable': true,
+          'isDraggable': false
         });
       }
       else {
         this.view.workspace.getWindow().jQuery(rootElement).editable({
-          isContainer: true
+          'isContainer': true
         });
       }
     }

@@ -526,7 +526,7 @@ silex.view.Stage.prototype.multipleDragged = function(x, y) {
   // follow the mouse (this means that the element dragged by the editable plugin
   // is handled here, which overrides the behavior of the plugin
   // (this is because we take the body scroll into account, and the parent's scroll too)
-  var followers = this.selectedElements
+  var followers = this.selectedElements;
   // drag or resize
   if (this.isDragging) {
     this.followElementPosition(followers, offsetX, offsetY);
