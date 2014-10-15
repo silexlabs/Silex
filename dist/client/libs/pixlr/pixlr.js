@@ -65,7 +65,6 @@ Pixlr.prototype.absoluteUrl = function(url) {
         if (url.indexOf('/') != 0) {
             absoluteUrl += '/';
         }
-        console.log('absoluteUrl', absoluteUrl, url);
 
         absoluteUrl += url;
         return absoluteUrl;
