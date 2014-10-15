@@ -681,7 +681,7 @@ silex.view.Stage.prototype.getResizeDirection = function(target) {
 silex.view.Stage.prototype.getScroll = function(propDoc, propBody) {
   return Math.max(
       this.documentElement[propDoc] || 0,
-      this.bodyElement[propBody] || 0);
+      this.bodyElement.parentNode[propBody] || 0);
 };
 
 
@@ -689,13 +689,13 @@ silex.view.Stage.prototype.getScroll = function(propDoc, propBody) {
  * set the scroll property, working around cross browser issues
  * utility method
  * @private
+ * @param {number} value to be set
  * @param {string} propDoc, name of the property to set on document element
  * @param {string} propBody, name of the property to set on the document body
- * @param {number} value to be set
  */
 silex.view.Stage.prototype.setScroll = function(value, propDoc, propBody) {
   this.documentElement[propDoc] = value;
-  this.bodyElement[propBody] = value;
+  this.bodyElement.parentNode[propBody] = value;
 };
 
 
