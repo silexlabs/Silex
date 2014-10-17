@@ -509,7 +509,7 @@ silex.controller.ControllerBase.prototype.preview = function() {
   this.tracker.trackAction('controller-events', 'request', 'view.file', 0);
   try{
     if (!this.model.file.getUrl()) {
-      silex.utils.Notification.confirm('You need to save your file before it can be opened in a new windo. Do you want me to <strong>save this file</strong> for you?', goog.bind(function(accept) {
+      silex.utils.Notification.confirm('You need to save your file before it can be opened in a new window. Do you want me to <strong>save this file</strong> for you?', goog.bind(function(accept) {
         if (accept) {
           this.save(null, goog.bind(function() {
             window.open(this.model.file.getUrl());
