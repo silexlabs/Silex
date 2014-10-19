@@ -6,11 +6,13 @@
 .temp
 .cache
 node_modules
+dist/server/sessions
 dist/client/debug.html
 dist/client/index.html
 dist/client/js/debug.js
 dist/client/js/admin*
 dist/client/css/admin*
-test/selenium-server-standalone-2.37.0.jar
 dist/client/functional-tests/publish
 dist/client/functional-tests/editable.html
+test/selenium-server-standalone-2.37.0.jar
+

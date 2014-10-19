@@ -57,7 +57,6 @@ exports.loadSilex = function(client, cbk){
 exports.openFile = function(client){
     console.log('openFile(' + logging.argsToString(arguments))
     exports.switchFrame(client, null, function () {
-         console.log('-- ready to call file explore open file(', logging.argsToString(arguments))
           // open the file menu and click open
         file_explorer.openFile(client)
 
@@ -116,18 +115,20 @@ exports.checkForFile = function (path, cbk) {
 };
 
 exports.waitForFile = function (path, cbk) {
+    console.log('waitForFile waiting for', path);
     var count = 0;
     var doWaitForFile = function () {
         fs.exists(path, function (exists) {
             if(exists){
+                console.log('-- waitForFile returns', exists);
                 cbk();
             }
-            else if (count++ > 100){
-                console.error('Error: ' + path + ' do not exist');
+            else if (count++ > 30){
+                console.error('-- waitForFile Error: ' + path + ' do not exist');
                 cbk(path + ' do not exist');
             }
             else{
-                setTimeout(doWaitForFile, 200);
+                setTimeout(doWaitForFile, 1000);
             }
         });
     };
@@ -159,16 +160,13 @@ exports.saveAs = function(client, name, cbk){
               exports.switchFrame(client, 'silex-file-explorer', function () {
                 client
                     .isVisible('//span[text()="' + name + '.html"]', function (err, isVisible) {
-                        console.log('isVisible', err, isVisible);
                         if(!err && isVisible){
-                            console.log('isVisible 1', name + '.html');
                             exports.selectFile(client, name + '.html', function () {
                                 client
                                     .call(continueSaveAs);
                             });
                         }
                         else{
-                            console.log('isVisible 2');
                             client
                                 .addValue('.footer input', name)
                                 .click('.saveBtn')
@@ -207,7 +205,6 @@ exports.setPublicationPath = function(client, path, cbk){
 exports.publish = function(client, cbk){
     console.log('publish');
     exports.switchFrame(client, null, function () {
-        console.log('publish 1');
         client
           // open the file menu and click open
           .click('.menu-item-file')
