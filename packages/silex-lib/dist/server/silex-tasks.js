@@ -25,6 +25,7 @@ exports.route = function(cbk, req, res, next, task){
             exports.publish(function(result){
                 // just log the result
                 if (!result) result = {success:true};
+                console.log('publish done', result);
             }, req, res, next, req.body.path, req.body.html, req.body.css, req.body.js, JSON.parse(req.body.files));
             // imediately returns success, to avoid timeout
             cbk();
@@ -44,7 +45,8 @@ exports.route = function(cbk, req, res, next, task){
         default:
           cbk({
             success: false
-            , code: 'Silex task "' + task + '" does not exist'
+            , code: 400
+            , message: 'Silex task "' + task + '" does not exist'
           });
     }
 }
@@ -89,7 +91,8 @@ exports.publish = function(cbk, req, res, next, path, html, css, js, files){
         console.error('All attributes needed: cbk, req, res, next, path, html, css, js, files', !!cbk, !!req, !!res, !!next, !!path, !!html, !!css, !!js, !!files)
         cbk({
             success: false
-            , code: 'All attributes needed: cbk, req, res, next, path, html, css, js, files ('+(!!cbk)+', '+(!!req)+', '+(!!res)+', '+(!!next)+', '+(!!path)+', '+(!!html)+', '+(!!css)+', '+(!!js)+', '+(!!files)+')'
+            , code: 400
+            , message: 'All attributes needed: cbk, req, res, next, path, html, css, js, files ('+(!!cbk)+', '+(!!req)+', '+(!!res)+', '+(!!next)+', '+(!!path)+', '+(!!html)+', '+(!!css)+', '+(!!js)+', '+(!!files)+')'
         });
         return;
     }
@@ -99,35 +102,35 @@ exports.publish = function(cbk, req, res, next, path, html, css, js, files){
         exports.publishFiles(req, res, next, files, path, function(error){
             if (error){
                 console.error('Error in publishFiles', error);
-                cbk({success:false, code: error.code});
+                cbk(error);
             }
             else{
                 // write the css
                 exports.writeFileToService(req, res, next, path + '/css/styles.css', css, function (error){
-            if(error){
-                        cbk({success:false, code: error.code});
+                    if(error){
+                        cbk(error);
                     }
                     else{
-                if (js === '') js = '/* */';
-                    // write the js
-                    exports.writeFileToService(req, res, next, path + '/js/script.js', js, function (error){
-                        if(error){
-                            cbk({success:false, code: error.code});
-                        }
-                        else{
-                            // write the html
-                            exports.writeFileToService(req, res, next, path + '/index.html', html, function (error){
-                                if(error){
-                                    cbk({success:false, code: error.code});
-                                }
-                                else{
-                                    cbk();
-                                }
-                            });
-                        }
-                    });
-                 }
-            });
+                        if (js === '') js = '/* no script for this site */';
+                        // write the js
+                        exports.writeFileToService(req, res, next, path + '/js/script.js', js, function (error){
+                            if(error){
+                                cbk(error);
+                            }
+                            else{
+                                // write the html
+                                exports.writeFileToService(req, res, next, path + '/index.html', html, function (error){
+                                    if(error){
+                                        cbk(error);
+                                    }
+                                    else{
+                                        cbk();
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
            }
       });
     });
@@ -141,7 +144,8 @@ exports.publishFiles = function(req, res, next, files, dstPath, cbk){
         console.error('All attributes needed when calling publishFiles', files, dstPath);
         cbk({
             success: false
-            , code: 'All attributes needed when calling publishFiles method'
+            , message: 'All attributes needed when calling publishFiles method'
+            , code: 400
         });
         return;
     }
@@ -149,12 +153,12 @@ exports.publishFiles = function(req, res, next, files, dstPath, cbk){
     var file = files.shift();
         exports.getFile(req, res, next, file.srcPath, dstPath + '/' + file.destPath, function (error) {
             if (error){
-                console.error('Error in getFile', error, file.srcPath, dstPath);
+                console.error('publishFiles - Error in getFile', error, file.srcPath, dstPath, file.destPath);
                 // no, continue on error
-        // cbk({success:false, code: error.code});
+                // cbk(error);
             }
             else{
-      }
+            }
             exports.publishFiles(req, res, next, files, dstPath, cbk);
         });
     }
@@ -171,7 +175,8 @@ exports.sendImage = function(cbk, req, res, next, path, url){
         console.error('All attributes needed when calling sendImage', path, url)
         cbk({
             success: false
-            , code: 'All attributes needed when calling sendImage'
+            , code: 400
+            , message: 'All attributes needed when calling sendImage'
         });
         return;
     }
@@ -198,9 +203,10 @@ exports.disposeTempLink = function(cbk, req, res, next, name){
     var path = pathModule.resolve(__dirname, '../../dist/client/tmp', name.replace(/\/|\\|tmp/g, ''));
     fs.unlink(path, function(err) {
         if (err){
-            console.error('Error, could not remove ' + name + ' resolved to path ' + path + ' (' + err.code + ')');
+            console.error('Error, could not remove ' + name + ' resolved to path ' + path + ' (' + err + ')');
             cbk({
-                code: 'Error, could not remove ' + name + ' (' + err.code + ')'
+                success: false
+                , message: 'Error, could not remove ' + name
             });
         }
         else{
@@ -233,7 +239,7 @@ exports.getTempLink = function(cbk, req, res, next, path){
             var p = pathModule.resolve(__dirname, tempPath)
             fs.writeFile(p, data, function (err) {
                 if (err){
-                    cbk({success:false, code: 400, message: 'Error: could not write temp file (' + p + ')'});
+                    cbk({success:false, message: 'Error: could not write temp file (' + p + ')'});
                 }
                 else{
                     cbk({success:true, tempLink: tempLink});
@@ -247,7 +253,7 @@ exports.getTempLink = function(cbk, req, res, next, path){
                     var p = pathModule.resolve(__dirname, tempPath)
                     fs.writeFile(p, data, function (err) {
                         if (err){
-                            cbk({success:false, code: 400, message: 'Error: could not write temp file (' + p + ')'});
+                            cbk({success:false, message: 'Error: could not write temp file (' + p + ')'});
                         }
                         else{
                             cbk({success:true, tempLink: tempLink});
@@ -259,7 +265,7 @@ exports.getTempLink = function(cbk, req, res, next, path){
         else{
             console.error('Error, no data in result of getFileFromService for ' + path);
             cbk({
-                code: 'Error, no data in result of getFileFromService for ' + path
+                message: 'Error, no data in result of getFileFromService for ' + path
             });
         }
     });
@@ -274,7 +280,8 @@ exports.getFile = function(req, res, next, srcPath, dstPath, cbk){
         console.error('All attributes needed when calling getFile', srcPath, dstPath);
         cbk({
             success: false
-            , code: 'All attributes needed when calling getFile'
+            , code: 400
+            , message: 'All attributes needed when calling getFile'
         });
         return;
     }
@@ -309,20 +316,20 @@ exports.getFileFromUrl = function(req, res, next, srcPath, dstPath, cbk){
           });
           result.on('end', function() {
             if (srcPath.indexOf('https')===0 && Array.isArray(data)){
-                exports.writeFileToService(req, res, next, dstPath, data.join(), function(status) {
-                    cbk(status);
+                exports.writeFileToService(req, res, next, dstPath, data.join(), function(error) {
+                  cbk(error);
                 });
             }
             else{
-                exports.writeFileToService(req, res, next, dstPath, data, function(status) {
-                    cbk(status);
+                exports.writeFileToService(req, res, next, dstPath, data.toString(), function(error) {
+                    cbk(error);
                 });
             }
           });
     }).on('error', function(e) {
         console.error('Error while loading '+srcPath+': ' + e.message);
         cbk({
-            code: 'Error while loading '+srcPath+': ' + e.message
+            message: 'Error while loading '+srcPath+': ' + e.message
         });
     });
 }
@@ -347,7 +354,7 @@ exports.getFileFromService = function(req, res, next, srcPath, dstPath, cbk){
         else{
             console.error('Error, no data in result of getFileFromService for ' + srcPath);
             cbk({
-                code: 'Error, no data in result of getFileFromService for ' + srcPath
+                message: 'Error, no data in result of getFileFromService for ' + srcPath
             });
         }
     });
@@ -389,7 +396,8 @@ exports.unifileRoute = function(req, res, next, url, cbk){
                 console.error('Unknown service ', serviceName, ' (', url, ')');
                 cbk(res, {
                     success: false
-                    , code: 'Unknown service '+serviceName
+                    , code: 400
+                    , message: 'Unknown service '+serviceName
                 });
             }
         }
@@ -397,7 +405,8 @@ exports.unifileRoute = function(req, res, next, url, cbk){
             console.error('Unknown service ', serviceName, ' (', url, ')');
             cbk(res, {
                 success: false
-                , code: 'Unknown service '+serviceName
+                , code: 400
+                , message: 'Unknown service '+serviceName
             });
         }
     }
@@ -405,7 +414,7 @@ exports.unifileRoute = function(req, res, next, url, cbk){
         console.error('Error in service '+serviceName, e, e.stack);
         cbk(res, {
             success: false
-            , code: 'Error in service '+serviceName+': '+e
+            , message: 'Error in service '+serviceName+': '+e
         });
     }
 }
