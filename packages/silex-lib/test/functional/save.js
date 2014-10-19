@@ -86,6 +86,7 @@ describe('Silex insert and publish test', function(){
     actions.saveAs(client, 'editable', function () {
         actions.checkForFile(publishFolder + '/editable.html', done);
     });
+    
     // FIXME: check if editable.html exists and contains the images urls
   });
 

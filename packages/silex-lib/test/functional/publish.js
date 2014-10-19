@@ -28,10 +28,7 @@ describe('Silex insert and publish test', function(){
   // before tests, setup
   before(function(done){
     this.timeout(99999999);
-    console.log('publishFolder', publishFolder);
     var next = function () {
-//return;
-        console.log('next');
         // create the client
         client = helper.createClient(webdriverjs);
         done();
@@ -41,9 +38,7 @@ describe('Silex insert and publish test', function(){
         if (exists){
             // delete the files in the folder
             fs.exists(publishFolder + '/index.html', function (exists) {
-                console.log('exists '+ publishFolder + '/index.html', arguments);
                 if(exists){
-                    console.log('chmod done', arguments);
                     fs.unlink(publishFolder, function () {
                         console.log('unlink done', arguments);
                         setTimeout(function () {
@@ -125,7 +120,6 @@ describe('Silex insert and publish test', function(){
         done(err);
       }
       else{
-          console.log(data);
           if (data.toString().indexOf('notjavascript') >= 0){
             var msg = 'Error: notjavascript scripts remain in published html file';
             console.error(msg);
