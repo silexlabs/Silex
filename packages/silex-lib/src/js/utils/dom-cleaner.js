@@ -291,11 +291,12 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
  * @return {string}
  */
 silex.utils.DomCleaner.filterBgImage = function(baseUrl, files, match, group1, group2) {
-  // remove the ''
-  if (group2.indexOf("'") === 0) group2 = group2.substr(1);
-  if (group2.lastIndexOf("'") === group2.length - 1) group2 = group2.substr(0, group2.length - 1);
+  // get the url
+  var url = silex.utils.Url.removeUrlKeyword(group2);
+  // convert to relative path
+  url = silex.utils.Url.getAbsolutePath(url, baseUrl);
   // only if we are supposed to download this url locally
-  var absolute = silex.utils.Url.getAbsolutePath(group2, baseUrl);
+  var absolute = silex.utils.Url.getAbsolutePath(url, baseUrl);
   var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
   // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
   if (!silex.utils.Url.isAbsoluteUrl(relative)) {
@@ -304,13 +305,12 @@ silex.utils.DomCleaner.filterBgImage = function(baseUrl, files, match, group1, g
   if (silex.utils.DomCleaner.isDownloadable(absolute)) {
     var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
     var newRelativePath = 'assets/' + fileName;
-    var res = "url('../" + newRelativePath + "')";
     files.push({
       'url': absolute,
       'destPath': newRelativePath,
       'srcPath': relative
     });
-    return res;
+    return silex.utils.Url.addUrlKeyword('../' + newRelativePath);
   }
   return match;
 };
