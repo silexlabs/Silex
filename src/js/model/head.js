@@ -77,7 +77,7 @@ silex.model.Head.prototype.getHeadScript = function() {
     console.warn('no silex editable script defined');
     return '';
   }
-  return this.model.element.prepareHtmlForDisplay(scriptTag.innerHTML);
+  return this.model.element.unprepareHtmlForEdit(scriptTag.innerHTML);
 };
 
 
@@ -113,7 +113,7 @@ silex.model.Head.prototype.getHeadStyle = function() {
     console.warn('no silex editable styles defined');
     return '';
   }
-  return this.model.element.prepareHtmlForDisplay(silexStyle.innerHTML);
+  return this.model.element.unprepareHtmlForEdit(silexStyle.innerHTML);
 };
 
 

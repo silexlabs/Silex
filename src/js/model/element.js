@@ -133,7 +133,7 @@ silex.model.Element.prototype.prepareHtmlForEdit = function(rawHtml) {
  * @param  {string} rawHtml   raw HTML of the element to prepare
  * @return {string} the processed HTML
  */
-silex.model.Element.prototype.prepareHtmlForDisplay = function(rawHtml) {
+silex.model.Element.prototype.unprepareHtmlForEdit = function(rawHtml) {
   // put back the scripts
   rawHtml = rawHtml.replace(/type=\"text\/notjavascript\"/gi, 'type="text/javascript"');
   // remove cache control used to refresh images after editing by pixlr
@@ -163,7 +163,7 @@ silex.model.Element.prototype.getType = function(element) {
  * @return  {string}           the styles of the element
  */
 silex.model.Element.prototype.getAllStyles = function(element) {
-  return this.prepareHtmlForDisplay(element.getAttribute('style'));
+  return this.unprepareHtmlForEdit(element.getAttribute('style'));
 };
 
 
@@ -175,7 +175,7 @@ silex.model.Element.prototype.getAllStyles = function(element) {
  */
 silex.model.Element.prototype.getStyle = function(element, styleName) {
   //return goog.style.getStyle(element, styleName);
-  return this.prepareHtmlForDisplay(element.style[styleName]);
+  return this.unprepareHtmlForEdit(element.style[styleName]);
 };
 
 
@@ -228,7 +228,7 @@ silex.model.Element.prototype.setProperty = function(element, propertyName, opt_
  */
 silex.model.Element.prototype.setBgImage = function(element, url) {
   if (url) {
-    this.setStyle(element, 'backgroundImage', 'url(' + url + ')');
+    this.setStyle(element, 'backgroundImage', silex.utils.Url.addUrlKeyword(url));
   }
   else {
     this.setStyle(element, 'backgroundImage');
@@ -246,7 +246,7 @@ silex.model.Element.prototype.getInnerHtml = function(element) {
   this.model.body.setEditable(element, false);
   var innerHTML = this.getContentNode(element).innerHTML;
   // remove absolute urls and not executable scripts
-  innerHTML = this.prepareHtmlForDisplay(innerHTML);
+  innerHTML = this.unprepareHtmlForEdit(innerHTML);
   // re-enable editable
   this.model.body.setEditable(element, true);
   return innerHTML;

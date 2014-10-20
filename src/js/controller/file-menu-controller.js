@@ -127,10 +127,20 @@ silex.controller.FileMenuController.prototype.doSave = function(url, opt_cbk, op
   var rawHtml = this.model.file.getHtml();
   // look for bug of firefox inserting quotes in url("")
   if (rawHtml.indexOf("url('&quot;") > -1) {
+    console.warn('I have found HTML entities in some urls, there us probably an error in the save process.');
+    // log this (QA)
     this.tracker.trackAction('controller-events', 'warning', 'file.save.corrupted', -1);
+    // try to cleanup the mess
     rawHtml = rawHtml.replace(/url\('&quot;()(.+?)\1&quot;'\)/gi, goog.bind(function(match, group1, group2) {
       return 'url(\'' + group2 + '\')';
     }, this));
+  }
+  // runtime check for a recurrent error
+  // check that there is no more of the basUrl in the Html
+  if (this.url && rawHtml.indexOf(this.url) >= 0){
+    console.warn('Base URL remains in the HTML, there is probably an error in the convertion to relative URL process');
+    // log this (QA)
+    this.tracker.trackAction('controller-events', 'warning', 'file.save.corrupted', -1);
   }
   // save to file
   this.model.file.saveAs(

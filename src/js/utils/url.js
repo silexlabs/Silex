@@ -80,14 +80,61 @@ silex.utils.Url.absolute2Relative = function(htmlString, baseUrl) {
   });
   // css url()
   htmlString = htmlString.replace(/url\(()(.+?)\1\)/gi, function(match, group1, group2) {
-    // remove the ''
-    if (group2.indexOf("'") === 0) group2 = group2.substr(1);
-    if (group2.lastIndexOf("'") === group2.length - 1) group2 = group2.substr(0, group2.length - 1);
+    // get the url
+    var url = silex.utils.Url.removeUrlKeyword(group2);
+    // convert to relative path
+    url = silex.utils.Url.getRelativePath(url, baseUrl);
     // rebuild url('') with the relative path
-    var res = "url('" + silex.utils.Url.getRelativePath(group2, baseUrl) + "')";
-    return res;
+    url = silex.utils.Url.addUrlKeyword(url);
+    return url;
   });
   return htmlString;
+};
+
+
+/**
+ * remove the url() css keyword
+ * also remove the '' or "" if any
+ * @example url(http://silex.me) would return http://silex.me
+ * @param {string} url + keyword as for background-image
+ * @returns {string} URL without keyword
+ */
+silex.utils.Url.removeUrlKeyword = function (url) {
+  // removes the url() keyword
+  if (goog.string.startsWith(url, 'url(')){
+	  url = url.substr(4);
+  }
+  if (goog.string.endsWith(url, ')')){
+	  url = url.substr(0, url.length - 1);
+  }
+  // remove the ''
+  if (goog.string.startsWith(url, '\'') || goog.string.startsWith(url, '"')) {
+	  url = url.substr(1);
+  }
+  if (goog.string.endsWith(url, '\'') || goog.string.endsWith(url, '"')) {
+	  url = url.substr(0, url.length - 1);
+  }
+  // workaround firefox going crazy
+  if (goog.string.startsWith(url, '&quot;')){
+	  url = url.substr(6);
+  }
+  if (goog.string.endsWith(url, '&quot;')){
+	  url = url.substr(0, url.length - 6);
+  }
+  return url;
+};
+
+
+/**
+ * add the url() css keyword
+ * simple quotes are added so that the URL may contain parenthesis 
+ * and it does not disturb the inline style double quotes
+ * @example http://silex.me returns url("http://silex.me")
+ * @param {string} url
+ * @returns {string} url + keyword as for background-image
+ */
+silex.utils.Url.addUrlKeyword = function (url) {
+  return 'url(\'' + url + '\')';
 };
 
 
@@ -104,12 +151,13 @@ silex.utils.Url.relative2Absolute = function(htmlString, baseUrl) {
   });
   // css url()
   htmlString = htmlString.replace(/url\(()(.+?)\1\)/gi, function(match, group1, group2) {
-    // remove the ''
-    if (group2.indexOf("'") === 0) group2 = group2.substr(1);
-    if (group2.lastIndexOf("'") === group2.length - 1) group2 = group2.substr(0, group2.length - 1);
-    // rebuild url('') with the absolute path
-    var res = "url('" + silex.utils.Url.getAbsolutePath(group2, baseUrl) + "')";
-    return res;
+    // get the url
+    var url = silex.utils.Url.removeUrlKeyword(group2);
+    // convert to relative path
+    url = silex.utils.Url.getAbsolutePath(url, baseUrl);
+    // rebuild url('') with the relative path
+    url = silex.utils.Url.addUrlKeyword(url);
+    return url;
   });
   return htmlString;
 };

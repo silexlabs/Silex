@@ -219,7 +219,7 @@ silex.model.File.prototype.getHtml = function() {
   goog.dom.classlist.add(/** @type {Document} */ (cleanFile).body, 'silex-runtime');
   // get html
   var rawHtml = /** @type {Document} */ (cleanFile).documentElement.innerHTML;
-  rawHtml = this.model.element.prepareHtmlForDisplay(rawHtml);
+  rawHtml = this.model.element.unprepareHtmlForEdit(rawHtml);
   return rawHtml;
 };
 
