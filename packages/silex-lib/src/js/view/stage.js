@@ -485,16 +485,16 @@ silex.view.Stage.prototype.updateScroll = function(x, y) {
   var scrollX = this.getScrollX();
   var scrollY = this.getScrollY();
   if (x < 30) {
-    this.setScrollX(scrollX - 35);
+    this.setScrollX(scrollX - 25);
   }
   else if (x > iframeSize.width - 30) {
-    this.setScrollX(scrollX + 35);
+    this.setScrollX(scrollX + 25);
   }
   if (y < 30) {
-    this.setScrollY(scrollY - 35);
+    this.setScrollY(scrollY - 25);
   }
   else if (y > iframeSize.height - 30) {
-    this.setScrollY(scrollY + 35);
+    this.setScrollY(scrollY + 25);
   }
 };
 
@@ -672,39 +672,12 @@ silex.view.Stage.prototype.getResizeDirection = function(target) {
 
 /**
  * get the scroll property, working around cross browser issues
- * utility method
- * @private
- * @param {string} propDoc, name of the property to get on document element
- * @param {string} propBody, name of the property to get on the document body
- * @return {number} the value
- */
-silex.view.Stage.prototype.getScroll = function(propDoc, propBody) {
-  return Math.max(
-      this.documentElement[propDoc] || 0,
-      this.bodyElement.parentNode[propBody] || 0);
-};
-
-
-/**
- * set the scroll property, working around cross browser issues
- * utility method
- * @private
- * @param {number} value to be set
- * @param {string} propDoc, name of the property to set on document element
- * @param {string} propBody, name of the property to set on the document body
- */
-silex.view.Stage.prototype.setScroll = function(value, propDoc, propBody) {
-  this.documentElement[propDoc] = value;
-  this.bodyElement.parentNode[propBody] = value;
-};
-
-
-/**
- * get the scroll property, working around cross browser issues
  * @param {number} value to be set
  */
 silex.view.Stage.prototype.setScrollX = function(value) {
-  this.setScroll(value, 'scrollLeft', 'scrollLeft');
+  //this.setScroll(value, 'scrollLeft', 'scrollLeft');
+  var dh = new goog.dom.DomHelper(this.documentElement);
+  return dh.getDocumentScrollElement().scrollLeft = value;
 };
 
 
@@ -713,25 +686,33 @@ silex.view.Stage.prototype.setScrollX = function(value) {
  * @param {number} value to be set
  */
 silex.view.Stage.prototype.setScrollY = function(value) {
-  this.setScroll(value, 'scrollTop', 'scrollTop');
+  // this.setScroll(value, 'scrollTop', 'scrollTop');
+  var dh = new goog.dom.DomHelper(this.documentElement);
+  return dh.getDocumentScrollElement().scrollTop = value;
 };
 
 
 /**
  * get the scroll property, working around cross browser issues
+ * FIXME: no need for getScrollX and getScrollY, should be getScroll which returns coords
  * @return {number} the value
  */
 silex.view.Stage.prototype.getScrollX = function() {
-  return this.getScroll('scrollLeft', 'scrollLeft');
+  //return this.getScroll('scrollLeft', 'scrollLeft');
+  var dh = new goog.dom.DomHelper(this.documentElement);
+  return dh.getDocumentScroll().x;
 };
 
 
 /**
  * get the scroll property, working around cross browser issues
+ * FIXME: no need for getScrollX and getScrollY, should be getScroll which returns coords
  * @return {number} the value
  */
 silex.view.Stage.prototype.getScrollY = function() {
-  return this.getScroll('scrollTop', 'scrollTop');
+  //return this.getScroll('scrollTop', 'scrollTop');
+  var dh = new goog.dom.DomHelper(this.documentElement);
+  return dh.getDocumentScroll().y;
 };
 
 
@@ -740,7 +721,9 @@ silex.view.Stage.prototype.getScrollY = function() {
  * @return {number} the value
  */
 silex.view.Stage.prototype.getScrollMaxX = function() {
-  return this.getScroll('scrollLeftMax', 'scrollWidth');
+  // return this.getScroll('scrollLeftMax', 'scrollWidth');
+  var dh = new goog.dom.DomHelper(this.documentElement);
+  return goog.style.getSize(dh.getDocumentScrollElement()).width;
 };
 
 
@@ -749,7 +732,9 @@ silex.view.Stage.prototype.getScrollMaxX = function() {
  * @return {number} the value
  */
 silex.view.Stage.prototype.getScrollMaxY = function() {
-  return this.getScroll('scrollTopMax', 'scrollHeight');
+  //return this.getScroll('scrollTopMax', 'scrollHeight');
+  var dh = new goog.dom.DomHelper(this.documentElement);
+  return goog.style.getSize(dh.getDocumentScrollElement()).height;
 };
 
 
