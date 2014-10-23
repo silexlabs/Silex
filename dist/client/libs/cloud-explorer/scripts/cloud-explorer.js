@@ -575,7 +575,14 @@ ce.core.Controller.prototype = {
 				}
 			}
 		};
+		this.application.onFilesDropped = function(files) {
+			_g.application.setLoaderDisplayed(true);
+			_g.unifileSrv.upload(null,files,_g.state.currentLocation.service,_g.state.currentLocation.path,function() {
+				_g.refreshFilesList();
+			},($_=_g.errorCtrl,$bind($_,$_.setUnifileError)));
+		};
 		this.application.onInputFilesChanged = function() {
+			_g.application.setLoaderDisplayed(true);
 			_g.unifileSrv.upload(null,_g.application.dropzone.inputElt.files,_g.state.currentLocation.service,_g.state.currentLocation.path,function() {
 				_g.refreshFilesList();
 			},($_=_g.errorCtrl,$bind($_,$_.setUnifileError)));
@@ -1640,6 +1647,7 @@ ce.core.service.UnifileSrv.prototype = {
 				var f = files[_g];
 				++_g;
 				if(Reflect.isObject(f)) {
+					console.log("appended " + f.name);
 					formData.append('data', f, f.name);;
 				}
 			}
@@ -1779,6 +1787,8 @@ ce.core.view.Application.prototype = {
 	,onExportNameChanged: function() {
 	}
 	,onInputFilesChanged: function() {
+	}
+	,onFilesDropped: function(files) {
 	}
 	,onNewFolderClicked: function() {
 	}
@@ -1987,6 +1997,9 @@ ce.core.view.Application.prototype = {
 		this.dropzone.onInputFilesChanged = function() {
 			_g.onInputFilesChanged();
 		};
+		this.dropzone.onFilesDropped = function(files) {
+			_g.onFilesDropped(files);
+		};
 		this.authPopup = new ce.core.view.AuthPopup(this.rootElt.querySelector(".authPopup"));
 		this.alertPopup = new ce.core.view.AlertPopup(this.rootElt.querySelector(".alertPopup"));
 		this.newFolderBtn = new ce.core.view.Button(this.rootElt.querySelector(".newFolderBtn"));
@@ -2100,10 +2113,30 @@ ce.core.view.DropZone = function(elt) {
 	this.btnElt.addEventListener("click",function(_1) {
 		_g.onBtnClicked();
 	});
+	this.elt.addEventListener("dragover",function(e) {
+		e.preventDefault();
+		e.dataTransfer.dropEffect = "copy";
+		return false;
+	});
+	this.elt.addEventListener("dragenter",function(e1) {
+		ce.util.HtmlTools.toggleClass(_g.elt,"draggingover",true);
+	});
+	this.elt.addEventListener("dragleave",function(e2) {
+		ce.util.HtmlTools.toggleClass(_g.elt,"draggingover",false);
+	});
+	this.elt.addEventListener("drop",function(e3) {
+		e3.preventDefault();
+		e3.stopPropagation();
+		ce.util.HtmlTools.toggleClass(_g.elt,"draggingover",false);
+		var fileList = e3.dataTransfer.files;
+		if(fileList.length > 0) _g.onFilesDropped(fileList);
+	});
 };
 ce.core.view.DropZone.__name__ = true;
 ce.core.view.DropZone.prototype = {
 	onInputFilesChanged: function() {
+	}
+	,onFilesDropped: function(files) {
 	}
 	,onBtnClicked: function() {
 		this.inputElt.click();
@@ -3446,6 +3479,7 @@ ce.core.view.Button.ATTR_DISABLED = "disabled";
 ce.core.view.Button.ATTR_VALUE_DISABLED = "disabled";
 ce.core.view.DropZone.SELECTOR_INPUT = "div input";
 ce.core.view.DropZone.SELECTOR_BUTTON = "div button";
+ce.core.view.DropZone.CLASS_DRAGGINGOVER = "draggingover";
 ce.core.view.Export.SELECTOR_INPUT = "input";
 ce.core.view.Export.SELECTOR_PATH = "span.path";
 ce.core.view.Export.SELECTOR_EXT = "span.ext";
