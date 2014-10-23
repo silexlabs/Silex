@@ -101,5 +101,8 @@ silex.view.dialog.DialogBase.prototype.closeEditor = function() {
     // hide dialog and background
     goog.dom.classlist.add(this.background, 'hidden-dialog');
     goog.dom.classlist.add(this.element, 'hidden-dialog');
+    // focus the stage 
+    // FIXME: find a better way to automize that than going through the controller's view
+    this.controller.fileMenuController.view.stage.resetFocus();
   }
 };
