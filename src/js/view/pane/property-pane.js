@@ -254,10 +254,10 @@ silex.view.pane.PropertyPane.prototype.redraw = function(selectedElements, docum
     var bb = silex.utils.Dom.getBoundingBox(selectedElements);
 
     // display position and size
-    this.topInput.value = bb.top || '';
-    this.leftInput.value = bb.left || '';
-    this.widthInput.value = bb.width || '';
-    this.heightInput.value = bb.height || '';
+    this.topInput.value = bb.top || '0';
+    this.leftInput.value = bb.left || '0';
+    this.widthInput.value = bb.width || '0';
+    this.heightInput.value = bb.height || '0';
 
     // special case of the background / main container only selected element
     if (selectedElements.length === 1 && goog.dom.classlist.contains(selectedElements[0], 'background')) {
