@@ -26,6 +26,7 @@ goog.require('goog.events.KeyCodes');
 goog.require('goog.ui.KeyboardShortcutHandler');
 goog.require('silex.service.CloudStorage');
 goog.require('silex.utils.Url');
+goog.require('silex.view.dialog.DialogBase');
 
 
 
@@ -35,16 +36,28 @@ goog.require('silex.utils.Url');
 /**
  * the Silex FileExplorer class
  * @constructor
+ * @extends {silex.view.dialog.DialogBase}
  * @param {!Element} element   container to render the UI
  * @param  {!silex.types.Controller} controller  structure which holds
  *                                               the controller instances
  */
 silex.view.dialog.FileExplorer = function(element, controller) {
+  // call super
+  goog.base(this, element, controller);
+  // override this.background
+  var ceIframe = goog.dom.getElement('silex-file-explorer');
+  goog.events.listenOnce(ceIframe, 'load', goog.bind(function() {
+    var contentWindow = goog.dom.getFrameContentWindow(ceIframe);
+    this.background = /** @type {!Element} */ (goog.dom.getElementByClass('explorer-bg', contentWindow.document));
+    // this.buildUi();
+  },this));
   // get the global variable of Cloud Explorer
   this.filePicker = silex.service.CloudStorage.getInstance().filePicker;
-  // store the constructor params
-  this.controller = controller;
 };
+
+
+// inherit from silex.view.dialog.DialogBase
+goog.inherits(silex.view.dialog.FileExplorer, silex.view.dialog.DialogBase);
 
 
 /**
@@ -63,16 +76,20 @@ silex.view.dialog.FileExplorer.prototype.filePicker;
 silex.view.dialog.FileExplorer.prototype.openDialog =
     function(cbk, opt_mimetypes, opt_errCbk) {
 
-    var errCbk = function(FPError) {
+  this.openEditor();
+
+  var errCbk = function(FPError) {
     console.error(FPError);
     if (opt_errCbk) {
       opt_errCbk(FPError);
     }
-  };
+    this.closeEditor();
+  }.bind(this);
   var successCbk = function(url) {
     // notify controller
     if (cbk) cbk(url);
-  };
+    this.closeEditor();
+  }.bind(this);
 
   // pick it up
   this.filePicker.pick(
@@ -96,16 +113,20 @@ silex.view.dialog.FileExplorer.prototype.openDialog =
  * @param {?function(Object)=} opt_errCbk
  */
 silex.view.dialog.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes, opt_errCbk) {
+  this.openEditor();
+
   var errCbk = function(FPError) {
     console.error(FPError);
     if (opt_errCbk) {
       opt_errCbk(FPError);
     }
-  };
+    this.closeEditor();
+  }.bind(this);
   var successCbk = function(blob) {
     // notify controller
     if (cbk) cbk(blob.url);
-  };
+    this.closeEditor();
+  }.bind(this);
   // export dummy data
   this.filePicker.exportFile('http://google.com/',
       opt_mimetypes,
