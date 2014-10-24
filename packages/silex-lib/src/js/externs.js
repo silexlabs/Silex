@@ -59,6 +59,15 @@ Pixlr.prototype.express = function(image, opt_imageDst, opt_target) {};
 
 
 /**
+ * pixlr lib, in /dist/client/libs/pixlr/pixlr.js
+ * callback for update events
+ * @type {?function()}
+ */
+Pixlr.prototype.onUpdate = null;
+
+
+
+/**
  * jquery externs
  * @constructor
  */
