@@ -40,7 +40,7 @@ function Pixlr(pixlrSendImageUrl, pixlrCloseWindowUrl, opt_settings) {
 }
 /**
  * callback for update events
- * called with the image param
+ * called without any param
  */
 Pixlr.prototype.onUpdate = null;
 /**
@@ -125,7 +125,6 @@ Pixlr.prototype.buildSettings = function(image, opt_imageDst, opt_target) {
     for (var attribute in settings) {
         settings[attribute] = settings[attribute] || settings[attribute];
     }
-    console.log('settings: ', settings);
     return settings;
 }
 
@@ -159,7 +158,6 @@ Pixlr.prototype.openPixlr = function (image, serviceName, opt_imageDst, opt_targ
         if (pixlrWindow) {
             var timer = setInterval(function() {
                 if (pixlrWindow.closed){
-                    console.log('Pixlr.onUpdate');
                     clearInterval(timer);
                     if (this.onUpdate){
                         this.onUpdate();
@@ -184,7 +182,6 @@ Pixlr.prototype.openPixlr = function (image, serviceName, opt_imageDst, opt_targ
  * edit the provided image in pixlr editor
  */
 Pixlr.prototype.edit = function(image, opt_imageDst, opt_target) {
-    console.log('edit', this);
     this.openPixlr(image, 'editor', opt_imageDst, opt_target);
 };
 /**

@@ -173,6 +173,7 @@ exports.sendImage = function(cbk, req, res, next, path, url){
     // check inputs
     if (cbk === undefined || req === undefined || res === undefined || next === undefined || path === undefined || url === undefined){
         console.error('All attributes needed when calling sendImage', path, url)
+        // FIXME: do not send JSON, the end user will see the result
         cbk({
             success: false
             , code: 400
@@ -186,12 +187,19 @@ exports.sendImage = function(cbk, req, res, next, path, url){
         // res.redirect('/libs/pixlr/close.html');
         if (error){
             console.error('Error in getFile', error, url, path);
-            cbk({success:false, code: error.code});
+            // do not send JSON, the end user will see the result
+            // cbk({success:false, code: error.code});
         }
         else{
-          res.header('Location', '/libs/pixlr/close.html');
-          cbk({success:true});
+          // res.header('Location', '/libs/pixlr/close.html');
+          // do not send JSON, the end user will see the result
+          // cbk({success:true});
         }
+        // do not send JSON, the end user will see the result
+        fs.readFile(__dirname + '/../client/libs/pixlr/close.html', function (err, data) {
+            cbk(data.toString());
+        });
+
     });
 };
 /**
@@ -311,15 +319,23 @@ exports.getFileFromUrl = function(req, res, next, srcPath, dstPath, cbk){
                 data = chunk;
             }
             else{
-                data.push( chunk);
+                data.push(chunk);
             }
           });
           result.on('end', function() {
+            // data is an array
             if (srcPath.indexOf('https')===0 && Array.isArray(data)){
                 exports.writeFileToService(req, res, next, dstPath, data.join(), function(error) {
                   cbk(error);
                 });
             }
+            // data is an object
+            else if (typeof(data) === 'object'){
+                exports.writeFileToService(req, res, next, dstPath, data, function(error) {
+                    cbk(error);
+                });
+            }
+            // data is a string or something else
             else{
                 exports.writeFileToService(req, res, next, dstPath, data.toString(), function(error) {
                     cbk(error);

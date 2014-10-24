@@ -36,12 +36,7 @@ silex.utils.Dom.refreshImage = function(img, cbk) {
   img.onload = function(e) {
     // stop the process
     img.onload = null;
-    // setTimeout(function (){
-    // restore url
-    // img.src = initialUrl;
-    // done
     cbk();
-    // }, 5000);
   };
   img.src = silex.utils.Dom.addCacheControl(initialUrl);
 };

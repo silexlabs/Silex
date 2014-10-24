@@ -119,6 +119,8 @@ silex.controller.ToolMenuController.prototype.openPixlr = function(pixlrMethod, 
                 this.tracker.trackAction('controller-events', 'success', trackingLabel, 1);
                 // remove temp file on the server
                 silex.service.SilexTasks.getInstance().disposeTempLink(tempLink);
+                // update the bg image
+                this.model.element.setBgImage(element, silex.utils.Dom.addCacheControl(url));
               }, this);
               // start editing in pixlr
               pixlrMethod(silex.utils.Url.getRootUrl() + tempLink, url.replace('exec/get/', 'exec/put/'), '_blank');
