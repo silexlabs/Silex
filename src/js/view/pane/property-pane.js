@@ -87,6 +87,13 @@ silex.view.pane.PropertyPane.prototype.titleInput = null;
 
 
 /**
+ * store the last selection
+ * @type {Array.<Element>}
+ */
+silex.view.pane.PropertyPane.prototype.selectedElements = null;
+
+
+/**
  * build the UI
  */
 silex.view.pane.PropertyPane.prototype.buildUi = function() {
@@ -146,20 +153,19 @@ silex.view.pane.PropertyPane.prototype.onPositionChanged =
   var input = e.target;
   // the name of the property to change
   var name = input.getAttribute('data-style-name');
-  // default is 0
-  if (input.value === '') input.value = '0';
-  // get the value
-  var value = parseFloat(input.value);
-  // get the old value
-  var oldValue = parseFloat(input.getAttribute('data-prev-value') || 0);
-  input.setAttribute('data-prev-value', value);
-  // compute the offset
-  var offset = value - oldValue;
-  // the bounding box of all elements
-  var bb = {};
-  // apply the change to all elements
-  goog.array.forEach(this.selectedElements, function(element) {
-    if (goog.isNumber(value)) {
+  // do nothing if the value is not a number (numeric stepers's value set to '')
+  if (input.value !== '') {
+    // get the value
+    var value = parseFloat(input.value);
+    // get the old value
+    var oldValue = parseFloat(input.getAttribute('data-prev-value') || 0);
+    input.setAttribute('data-prev-value', value);
+    // compute the offset
+    var offset = value - oldValue;
+    // the bounding box of all elements
+    var bb = {};
+    // apply the change to all elements
+    goog.array.forEach(this.selectedElements, function(element) {
       if (goog.isNumber(oldValue)) {
         bb = silex.utils.Dom.getBoundingBox([element]);
         // compute the new value relatively to the old value,
@@ -172,11 +178,8 @@ silex.view.pane.PropertyPane.prototype.onPositionChanged =
       else {
         this.styleChanged(name, value + 'px');
       }
-    }
-    else {
-      this.styleChanged(name);
-    }
-  }, this);
+    }, this);
+  }
 };
 
 
