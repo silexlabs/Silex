@@ -137,24 +137,27 @@ silex.utils.BackwardCompat.process = function(document) {
   goog.array.forEach(elements, function(element) {
     var src = element.getAttribute('src');
     src = src.replace('static.silex.io', 'static.silex.me');
-    src = src.replace('//static.silex.me/2.0', '//static.silex.me/2.2');
-    src = src.replace('//static.silex.me/2.1', '//static.silex.me/2.2');
+    src = src.replace('//static.silex.me/2.0', '//static.silex.me/2.3');
+    src = src.replace('//static.silex.me/2.1', '//static.silex.me/2.3');
+    src = src.replace('//static.silex.me/2.2', '//static.silex.me/2.3');
     element.setAttribute('src', src);
   });
   elements = document.querySelectorAll('[href]');
   goog.array.forEach(elements, function(element) {
     var href = element.getAttribute('href');
     href = href.replace('static.silex.io', 'static.silex.me');
-    href = href.replace('//static.silex.me/2.0', '//static.silex.me/2.2');
-    href = href.replace('//static.silex.me/2.1', '//static.silex.me/2.2');
+    href = href.replace('//static.silex.me/2.0', '//static.silex.me/2.3');
+    href = href.replace('//static.silex.me/2.1', '//static.silex.me/2.3');
+    href = href.replace('//static.silex.me/2.2', '//static.silex.me/2.3');
     element.setAttribute('href', href);
   });
   elements = document.querySelectorAll('[data-silex-href]');
   goog.array.forEach(elements, function(element) {
     var href = element.getAttribute(silex.model.Element.LINK_ATTR);
     href = href.replace('static.silex.io', 'static.silex.me');
-    href = href.replace('//static.silex.me/2.0', '//static.silex.me/2.2');
-    href = href.replace('//static.silex.me/2.1', '//static.silex.me/2.2');
+    href = href.replace('//static.silex.me/2.0', '//static.silex.me/2.3');
+    href = href.replace('//static.silex.me/2.1', '//static.silex.me/2.3');
+    href = href.replace('//static.silex.me/2.2', '//static.silex.me/2.3');
     element.setAttribute(silex.model.Element.LINK_ATTR, href);
   });
   // backward compat /silex/ to /
@@ -168,4 +171,9 @@ silex.utils.BackwardCompat.process = function(document) {
       metaNode.setAttribute('content', value);
     }
   }
+  // background should not be draggable, fixed in 2.3
+  elements = document.querySelectorAll('background');
+  goog.array.forEach(elements, function(element) {
+    goog.dom.classlist.add(element, silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME);
+  });
 };

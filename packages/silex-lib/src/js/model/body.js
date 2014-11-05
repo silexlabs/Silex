@@ -118,6 +118,30 @@ silex.model.Body.UI_DRAGGABLE_RESIZING_CLASS_NAME = 'ui-resizable-resizing';
 
 
 /**
+ * class name which can be used to change params of the eitable jquery plugin
+ * @const
+ * @type {string}
+ */
+silex.model.Body.PREVENT_RESIZABLE_CLASS_NAME = 'prevent-resizable';
+
+
+/**
+ * class name which can be used to change params of the eitable jquery plugin
+ * @const
+ * @type {string}
+ */
+silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME = 'prevent-draggable';
+
+
+/**
+ * class name which can be used to change params of the eitable jquery plugin
+ * @const
+ * @type {string}
+ */
+silex.model.Body.PREVENT_DROPPABLE_CLASS_NAME = 'prevent-droppable';
+
+
+/**
  * @return  {Element}   body element
  */
 silex.model.Body.prototype.getBodyElement = function() {
@@ -194,15 +218,14 @@ silex.model.Body.prototype.setEditable = function(rootElement, isEditable, opt_i
   var elements = goog.dom.getElementsByClass(silex.model.Body.EDITABLE_CLASS_NAME, rootElement);
   goog.array.forEach(elements, function(element) {
     if (isEditable) {
-      if (element.getAttribute(silex.model.Body.SILEX_TYPE_ATTR_NAME) === silex.model.Body.SILEX_TYPE_CONTAINER) {
-        // containers
-        this.view.workspace.getWindow().jQuery(element).editable({
-          'isContainer': true
-        });
-      }
-      else {
-        this.view.workspace.getWindow().jQuery(element).editable();
-      }
+      var options = {
+          'isResizable': !goog.dom.classlist.contains(element, silex.model.Body.PREVENT_RESIZABLE_CLASS_NAME),
+          'isDroppable': !goog.dom.classlist.contains(element, silex.model.Body.PREVENT_DROPPABLE_CLASS_NAME)
+              && element.getAttribute(silex.model.Body.SILEX_TYPE_ATTR_NAME) === silex.model.Body.SILEX_TYPE_CONTAINER,
+          'isDraggable': !goog.dom.classlist.contains(element, silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME),
+          'isContainer': element.getAttribute(silex.model.Body.SILEX_TYPE_ATTR_NAME) === silex.model.Body.SILEX_TYPE_CONTAINER
+      };
+      this.view.workspace.getWindow().jQuery(element).editable(options);
     }
     else {
       if (goog.dom.classlist.contains(element, silex.model.Body.EDITABLE_CREATED_CLASS_NAME)) {
