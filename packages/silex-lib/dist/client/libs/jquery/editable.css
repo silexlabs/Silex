@@ -27,7 +27,6 @@ body{
 }
 .editable-style.silex-selected {
   box-shadow: 0 0 4px #333333;
-  opacity: 1 !important;
 }
 .editable-style.silex-selected > .ui-resizable-ne {
   top: -7px;
