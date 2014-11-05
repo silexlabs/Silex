@@ -12,8 +12,8 @@ $.widget('silexlabs.editable', {
   _setOption: function( key, value ) {
     switch(key){
       case 'isContainer':
-        this.options[key] = value;
         this.disableEditable();
+        this.options[key] = value;
         this.enableEditable();
         break;
       case 'disabled':
@@ -91,7 +91,9 @@ $.widget('silexlabs.editable', {
         })
      });
     if (this.options.isResizable != false)
-      this.element.resizable('enable').draggable('enable');
+      this.element.resizable('enable');
+    if (this.options.isDraggable != false)
+      this.element.draggable('enable');
     if (this.options.isContainer && this.options.isDroppable != false){
       this.element.droppable({
         // prevent propagation
