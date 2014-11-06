@@ -38,8 +38,7 @@ $(function() {
   $('body').pageable({
     currentPage: firstPageName,
     useDeeplink:true,
-    pageClass: 'paged-element',
-    window: window.top || window
+    pageClass: 'paged-element'
   });
   /**
    * silex links

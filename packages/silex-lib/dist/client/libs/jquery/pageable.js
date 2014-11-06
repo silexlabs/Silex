@@ -6,7 +6,7 @@ $.widget('silexlabs.pageable', {
     useDeeplink:true,
     pageClass: 'paged-element',
     onPageChanged: null,
-    window: window // useful if you are in an iframe to set window = window.parent
+    window: window // useful if you are in an iframe and want to set window = window.parent
   },
   // _setOption is called for each individual option that is changing
   _setOption: function( key, value ) {
@@ -32,6 +32,7 @@ $.widget('silexlabs.pageable', {
       $(this.options.window).bind( 'hashchange', this.cbk = function(){that.updatePage()});
     }
     else{
+      // FIXME: this is wrong? it will prevent all links, whereas it should check indexOf('#!')
       this.element.find('a').each(function(){
         $(this).bind('click', function(event){
           event.preventDefault();
