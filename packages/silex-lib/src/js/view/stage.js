@@ -607,7 +607,10 @@ silex.view.Stage.prototype.followElementSize =
     else if (resizeDirection === 'e') {
       offsetY = 0;
     }
-    goog.style.setSize(follower, size.width + offsetX, size.height + offsetY);
+    let borderBox = goog.style.getBorderBox(follower);
+    goog.style.setContentBoxSize(follower,
+            new goog.math.Size(size.width + offsetX - borderBox.left - borderBox.right,
+                  size.height + offsetY - borderBox.top - borderBox.bottom));
   }, this);
 };
 
