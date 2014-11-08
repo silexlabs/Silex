@@ -222,9 +222,12 @@ silex.utils.Url.getRelativePath = function(url, base) {
 /**
  * convert relative to absolute url
  * use http://docs.closure-library.googlecode.com/git/class_goog_Uri.html
+ * @param {string} rel    the path to be made absolute, e.g. /
+ * @param {string} base    the base URL, which must end with either a '/' or a file name
+ * @return {string} absolute url of the relative path
  */
-silex.utils.Url.getAbsolutePath = function(url, base) {
-  return goog.Uri.resolve(base, url).toString();
+silex.utils.Url.getAbsolutePath = function(rel, base) {
+  return goog.Uri.resolve(base, rel).toString();
 };
 
 
@@ -232,6 +235,7 @@ silex.utils.Url.getAbsolutePath = function(url, base) {
  * check if the file name has the desired extension
  * @param   {string} fileName  the file name to be checked
  * @param   {Array.<string>} extArray  the allowed extensions
+ * @return  {boolean} true if the file has an extension which is in the array
  */
 silex.utils.Url.checkFileExt = function(fileName, extArray) {
   var ext = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();

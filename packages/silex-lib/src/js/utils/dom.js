@@ -173,20 +173,26 @@ silex.utils.Dom.getBoundingBox = function(elements) {
 
 /**
  * publish the file to a folder
- * get all the website included files and put them into assets/ or js/ or css/
+ * get all the files included in the website, and put them into assets/ or js/ or css/
  * the HTML file must be saved somewhere because all URLs are made relative
- * This method creates an iframe with the temporary dom
+ * This method uses a temporary iframe to manage the temporary dom
+ * @param {string} publicationUrl    the url where to publish to, e.g. /api/1.0/dropbox/exec/put/.../...
+ * @param {string} fileUrl    the url of the file being published
+ * @param {string} html    the html data of the website
+ * @param {function({success: boolean})} statusCallback callback to be notified when operation is done, with the json response
+ * @param {function(string)=} opt_errCbk    callback to be notified of server side errors
  */
-silex.utils.Dom.publish = function(url, baseUrl, html, cbk, opt_errCbk) {
+silex.utils.Dom.publish = function(publicationUrl, fileUrl, html, statusCallback, opt_errCbk) {
   // the file must be saved somewhere because all URLs are made relative
-  if (!baseUrl) {
+  if (!fileUrl) {
     if (opt_errCbk) {
-      opt_errCbk({
-        message: 'The file must be saved before I can clean it up for you.'
-      });
+      opt_errCbk('The file must be saved before I can clean it up for you.');
     }
     return;
   }
+  // get the base url for the provided file url
+  // @type {string}
+  var baseUrl = silex.utils.Url.getBaseUrl() + fileUrl.substring(0, fileUrl.lastIndexOf('/'));
   // create the iframe used to compute temporary dom
   var iframe = goog.dom.iframe.createBlank(goog.dom.getDomHelper(), 'position: absolute; left: -99999px; ');
   goog.dom.appendChild(document.body, iframe);
@@ -201,7 +207,7 @@ silex.utils.Dom.publish = function(url, baseUrl, html, cbk, opt_errCbk) {
     var jsString = cleanedObj['jsString'];
     var files = cleanedObj['files'];
     // call the publish service
-    silex.service.SilexTasks.getInstance().publish(url, htmlString, cssString, jsString, files, cbk, opt_errCbk);
+    silex.service.SilexTasks.getInstance().publish(publicationUrl, htmlString, cssString, jsString, files, statusCallback, opt_errCbk);
   }, false);
   // prevent scripts from executing
   html = html.replace(/type=\"text\/javascript\"/gi, 'type="text/notjavascript"');

@@ -55,6 +55,11 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
   var headElement = contentDocument.head;
   var bodyElement = contentDocument.body;
 
+  // baseUrl must end with a '/' because filterBgImage and silex.utils.Url.getAbsolutePath needs it to
+  if(!goog.string.endsWith(baseUrl, '/')){
+    baseUrl += '/';
+  }
+
   // remove publication path
   var metaNode = contentDocument.querySelector('meta[name="publicationPath"]');
   if (metaNode) {
@@ -293,8 +298,6 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
 silex.utils.DomCleaner.filterBgImage = function(baseUrl, files, match, group1, group2) {
   // get the url
   var url = silex.utils.Url.removeUrlKeyword(group2);
-  // convert to relative path
-  url = silex.utils.Url.getAbsolutePath(url, baseUrl);
   // only if we are supposed to download this url locally
   var absolute = silex.utils.Url.getAbsolutePath(url, baseUrl);
   var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
