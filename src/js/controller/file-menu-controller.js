@@ -209,6 +209,7 @@ silex.controller.FileMenuController.prototype.fileOperationSuccess = function(op
 
 /**
  * ask the user for a new file title
+ * handle tracking and call the Dom helper
  */
 silex.controller.FileMenuController.prototype.publish = function() {
   this.tracker.trackAction('controller-events', 'request', 'file.publish', 0);
@@ -227,27 +228,18 @@ silex.controller.FileMenuController.prototype.publish = function() {
   else
   {
     silex.utils.Dom.publish(
-        this.model.head.getPublicationPath(),
+        /** @type {string} */ (this.model.head.getPublicationPath()),
         this.model.file.getUrl(),
         this.model.file.getHtml(),
         goog.bind(function(status) {
-          if (status && status.success === false) {
-            console.error('Error: I did not manage to publish the file. (1)');
-            silex.utils.Notification.notifyError('I did not manage to publish the file. You may want to check the publication settings and your internet connection. \nError message: ' + (status.message || status.code || ''));
-            this.tracker.trackAction('controller-events', 'error', 'file.publish', -1);
-          }
-          else {
-            silex.utils.Notification.notifySuccess('I am about to publish your site. This may take several minutes.');
-            this.tracker.trackAction('controller-events', 'success', 'file.publish', 1);
-          }
+          silex.utils.Notification.notifySuccess('I am about to publish your site. This may take several minutes.');
+          this.tracker.trackAction('controller-events', 'success', 'file.publish', 1);
         }, this),
-        goog.bind(function(error) {
-          var msg = '';
-          if (error) msg = error;
-          if (error.message) msg = error.message;
+        goog.bind(function(msg) {
           console.error('Error: I did not manage to publish the file. (2)', msg);
           silex.utils.Notification.notifyError('I did not manage to publish the file. You may want to check the publication settings and your internet connection. \nError message: ' + msg);
           this.tracker.trackAction('controller-events', 'error', 'file.publish', -1);
         }, this));
   }
 };
+

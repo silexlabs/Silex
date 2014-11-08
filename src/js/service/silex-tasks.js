@@ -40,7 +40,7 @@ goog.addSingletonGetter(silex.service.SilexTasks);
  * @param {string} css
  * @param {string} js
  * @param {Array.<{url: string, destPath: string, srcPath: string}>} files
- * @param {function(string)} cbk to receive the json response
+ * @param {function({success: boolean})} cbk to receive the json response
  * @param {function(string)=} opt_errCbk to receive the json response
  */
 silex.service.SilexTasks.prototype.publish = function(path, html, css, js, files, cbk, opt_errCbk) {
