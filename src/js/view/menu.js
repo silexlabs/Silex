@@ -185,8 +185,7 @@ silex.view.Menu.prototype.buildUi = function() {
           event.ctrlKey === false) {
         // but not in text inputs
         if (event.target.tagName.toUpperCase() === 'INPUT' ||
-            event.target.tagName.toUpperCase() === 'TEXTAREA' ||
-            event.target.tagName === shortcutHandler['textInputs_'][event.target.type]) {
+            event.target.tagName.toUpperCase() === 'TEXTAREA') {
           // let browser handle
         }
         else {
