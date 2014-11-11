@@ -309,6 +309,26 @@ silex.view.dialog.TextEditor.prototype.openEditor = function() {
   if (this.currentCustomFonts) {
     this.setCustomFonts(this.currentCustomFonts);
   }
+    // add styles already present in the main editor iframe
+    // this is useful to have text rendered the same way
+    var iframe = goog.dom.getElementsByTagNameAndClass(
+        'iframe', null, this.element)[0];
+    var iframeDoc = goog.dom.getFrameContentDocument(iframe);
+    var head = iframeDoc.getElementsByTagName('head')[0];
+    var tag = iframeDoc.createElement('link');
+    tag.rel = 'stylesheet';
+    tag.href = 'libs/normalize.css';
+    goog.dom.appendChild(head, tag);
+
+    tag = iframeDoc.createElement('link');
+    tag.rel = 'stylesheet';
+    tag.href = 'css/front-end.css';
+    goog.dom.appendChild(head, tag);
+
+    // prevent paged content to be hidden (pageable jquery plugin)
+    tag = iframeDoc.createElement('style');
+    tag.innerHTML = '.paged-element{display:inherit;}';
+    goog.dom.appendChild(head, tag);
 };
 
 
