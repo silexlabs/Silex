@@ -263,7 +263,7 @@ silex.view.Stage.prototype.initEvents = function(contentWindow) {
   goog.events.listen(this.bodyElement, 'mouseup', function(e) {
     var x = e.clientX;
     var y = e.clientY;
-    this.handleMouseUp(e.target, e.shiftKey);
+    this.handleMouseUp(e.target, x, y, e.shiftKey);
   }, false, this);
 
   // move in the iframe
@@ -285,36 +285,6 @@ silex.view.Stage.prototype.initEvents = function(contentWindow) {
         e.target,
         silex.model.Body.EDITABLE_CLASS_NAME) || this.bodyElement;
     this.handleMouseDown(editableElement, x, y, e.shiftKey);
-  }, false, this);
-
-  // dispatch event when an element has been moved
-  goog.events.listen(this.bodyElement, 'dragstop', function(e) {
-    this.propertyChanged();
-    this.isDragging = false;
-  }, false, this);
-
-  // dispatch event when an element has been moved or resized
-  goog.events.listen(this.bodyElement, 'resize', function(e) {
-    this.propertyChanged();
-    this.isDragging = false;
-  }, false, this);
-
-  // dispatch event when an element is dropped in a new container
-  goog.events.listen(this.bodyElement, 'newContainer', function(e) {
-    var newContainer = e.target.parentNode;
-    // move all selected elements to the new container
-    goog.array.forEach(this.selectedElements, function(element) {
-      this.controller.stageController.newContainer(newContainer, element);
-    }, this);
-    // update property tool box
-    this.propertyChanged();
-  }, false, this);
-
-  // when an element is dropped on the background
-  // move it to the body
-  goog.events.listen(this.bodyElement, 'droppedOutOfStage', function(e) {
-    var element = e.target;
-    this.controller.stageController.newContainer(this.bodyElement, element);
   }, false, this);
 
   // detect double click
@@ -339,6 +309,7 @@ silex.view.Stage.prototype.redraw =
   // remember selection
   this.selectedElements = selectedElements;
   this.bodyElementSizeToContent();
+  this.currentPageName = currentPageName;
 };
 
 
@@ -351,17 +322,29 @@ silex.view.Stage.prototype.redraw =
  * - scroll position
  * - isDown
  * @param   {Element} target a DOM element clicked by the user
+ * @param   {number} x position of the mouse, relatively to the screen
+ * @param   {number} y position of the mouse, relatively to the screen
  * @param   {boolean} shiftKey state of the shift key
  */
-silex.view.Stage.prototype.handleMouseUp = function(target, shiftKey) {
+silex.view.Stage.prototype.handleMouseUp = function(target, x, y, shiftKey) {
   // update state
   this.isDown = false;
+  if(this.isDragging){
+    // new container
+    var dropZone = this.getDropZone(x, y) || {'element': this.bodyElement, 'zIndex': 0};
+    // move all selected elements to the new container
+    goog.array.forEach(this.selectedElements, function(element) {
+      this.controller.stageController.newContainer(dropZone.element, element);
+    }, this);
+    // change z order
+    this.bringSelectionForward();
+    // reset dropzone marker
+    this.markAsDropZone(null);
+  }
   // handle selection
   if (this.isDragging || this.isResizing) {
     // update property tool box
     this.propertyChanged();
-    // change z order
-    this.bringSelectionForward();
     // keep flags up to date
     this.isDragging = false;
     this.isResizing = false;
@@ -437,6 +420,10 @@ silex.view.Stage.prototype.bringSelectionForward = function() {
 silex.view.Stage.prototype.onMouseMove = function(target, x, y) {
   // update states
   if (this.isDown) {
+    // det the drop zone under the cursor
+    var dropZone = this.getDropZone(x, y) || {'element': this.bodyElement, 'zIndex': 0};
+    // handle the css class applyed to the dropzone
+    this.markAsDropZone(dropZone.element);
     // update property tool box
     this.propertyChanged();
     // case of a drag directly after mouse down (select + drag)
@@ -472,6 +459,84 @@ silex.view.Stage.prototype.onMouseMove = function(target, x, y) {
   }
 };
 
+
+/**
+ * add a css class to the drop zone
+ * and remove from non dropzones
+ */
+silex.view.Stage.prototype.markAsDropZone = function(opt_element){
+    var els = goog.dom.getElementsByClass('drop-zone-candidate', this.bodyElement.parentNode);
+    goog.array.forEach(els, function(e){goog.dom.classlist.remove(/** @type {Element} */ (e),'drop-zone-candidate')});
+    if(opt_element){
+      goog.dom.classlist.add(/** @type {Element} */ (opt_element), 'drop-zone-candidate');
+    }
+};
+
+
+/**
+ * recursively get the top most element which is under the mouse cursor
+ * excludes the selected elements
+ * takes the zIndex into account, or the order in the DOM
+ *
+ * @param {number} x    mouse position
+ * @param {number} y    mouse position
+ * @param {?Element=} opt_container   element into which to seach for the dropzone, by default the body
+ * @return {{element: ?Element, zIndex: number}}  if not null this is the drop zone under the mouse cursor
+ *                                              zIndex being the highest z-index encountered while browsing children
+ */
+silex.view.Stage.prototype.getDropZone = function(x, y, opt_container){
+  // default value
+  var container =  opt_container || this.bodyElement;
+  var children = goog.dom.getChildren(container);
+  var topMost = null;
+  var zTopMost = 0;
+  // find the best drop zone
+  for (var idx=0; idx < children.length; idx++){
+    var element = children[idx];
+    if (this.getVisibility(element) 
+        && !goog.dom.classlist.contains(element, 'silex-selected')
+        && goog.dom.classlist.contains(element, 'container-element')){
+      var bb = goog.style.getBounds(element);
+      var scrollX = this.getScrollX();
+      var scrollY = this.getScrollY();
+      if (bb.left < x + scrollX && bb.left + bb.width > x + scrollX
+        && bb.top < y + scrollY && bb.top + bb.height > y + scrollY){
+          var candidate = this.getDropZone(x, y, element);
+          // if zIndex is 0 then there is no value to css zIndex, considere the DOM order
+          if (candidate.element){
+            var zIndex = goog.style.getComputedZIndex(element);
+            if (zIndex === 'auto') zIndex = 0;
+            if (zIndex >= zTopMost){
+              topMost = candidate;
+              zTopMost = zIndex;
+              // keep track of the highest z-index in for the given result
+              if(zIndex > candidate.zIndex){
+                candidate.zIndex = /** @type {number} */ (zIndex);
+              }
+            }
+          }
+      }
+    }
+  }
+  return topMost || {'element': container, 'zIndex': 0};
+};
+
+
+/**
+ * compute the page visibility of the element
+ * @param {Element} element     the element to check
+ * @return {boolean} true if the element is in the current page or not in any page
+ */
+silex.view.Stage.prototype.getVisibility = function(element){
+  /** @type {Element|null} */
+  var parent = /** @type {Element|null} */ (element.parentNode);
+  while (parent &&
+        (!goog.dom.classlist.contains(/** @type {Element} */ (parent), silex.model.Page.PAGED_CLASS_NAME) ||
+        goog.dom.classlist.contains(/** @type {Element} */ (parent), this.currentPageName))) {
+    parent = /** @type {Element|null} */ (parent.parentNode);
+  }
+  return parent === null;
+};
 
 /**
  * Handle the case where mouse is near a border of the stage
@@ -593,13 +658,13 @@ silex.view.Stage.prototype.followElementSize =
       offsetX = 0;
     }
     else if (resizeDirection === 'n') {
-      let pos = goog.style.getPosition(follower);
+      var pos = goog.style.getPosition(follower);
       goog.style.setPosition(follower, pos.x, pos.y + offsetY);
       offsetY = -offsetY;
       offsetX = 0;
     }
     else if (resizeDirection === 'w') {
-      let pos = goog.style.getPosition(follower);
+      var pos = goog.style.getPosition(follower);
       goog.style.setPosition(follower, pos.x + offsetX, pos.y);
       offsetX = -offsetX;
       offsetY = 0;
@@ -607,7 +672,7 @@ silex.view.Stage.prototype.followElementSize =
     else if (resizeDirection === 'e') {
       offsetY = 0;
     }
-    let borderBox = goog.style.getBorderBox(follower);
+    var borderBox = goog.style.getBorderBox(follower);
     goog.style.setContentBoxSize(follower,
             new goog.math.Size(size.width + offsetX - borderBox.left - borderBox.right,
                   size.height + offsetY - borderBox.top - borderBox.bottom));

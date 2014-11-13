@@ -6,7 +6,8 @@ $.widget('silexlabs.editable', {
         isContainer: false,
         isResizable: true,
         isDroppable: true,
-        isDraggable: true
+        isDraggable: true,
+        autoChangeContainer: true
   },
   // _setOption is called for each individual option that is changing
   _setOption: function( key, value ) {
@@ -95,6 +96,7 @@ $.widget('silexlabs.editable', {
     if (this.options.isDraggable != false)
       this.element.draggable('enable');
     if (this.options.isContainer && this.options.isDroppable != false){
+      var that = this;
       this.element.droppable({
         // prevent propagation
         greedy: true,
@@ -106,28 +108,8 @@ $.widget('silexlabs.editable', {
           var dropped = ui.draggable[0];
           var droppedFrom = $(dropped).parent()[0];
           var droppedTo = this;
-
-          /*
-          // **
-          // prevent drop on every container beneeth the dropped element
-          // greedy: true should do that, but it only works with parent elements,
-          // not with overlapping simblings
-          if (dropped.dropPending) {
-            var comparedPosition = dropped.dropPending.compareDocumentPosition(droppedTo);
-            if ((comparedPosition & 2) !== 0){
-              // block becaus the new container is bellow the old one
-              return false;
-            }
-          }
-          dropped.dropPending = droppedTo;
-          var resetPending = function () {
-            this.dropPending = null;
-          };
-          setTimeout(resetPending.bind(dropped), 1);
-          // **
-          /* */
           // the element changed container
-          if (droppedTo !== droppedFrom){
+          if ((that.options.autoChangeContainer !== false) && droppedTo !== droppedFrom){
             // move to the new container
             var oldPos = $(dropped).offset();
             // round position and size to integers
