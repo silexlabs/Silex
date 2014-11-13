@@ -20,11 +20,20 @@ goog.require('goog.events.KeyCodes');
 goog.require('goog.ui.KeyboardShortcutHandler');
 
 // display an apple on mac and ctrl on windows and linux
-var ctrlKeyDisplay = goog.userAgent.MAC ? '⌘' + '' : 'Ctrl+';
-var altKeyDisplay = goog.userAgent.MAC ? '⌥' + '' : 'Ctrl+';
+var ctrlKeyMacDisplay = goog.userAgent.MAC ? '⌘' : '';
+var altKeyMacDisplay = goog.userAgent.MAC ? '⌥' : '';
+var ctrlKeyPCDisplay = goog.userAgent.MAC ? '' : 'Ctrl+';
+var altKeyPCDisplay = goog.userAgent.MAC ? '' : 'Alt+';
+var ctrlKeyDisplay = goog.userAgent.MAC ? '⌘' : 'Ctrl+';
+var altKeyDisplay = goog.userAgent.MAC ? '⌥' : 'Alt+';
 // for shortcuts, use "apple key" on mac and ctrl on windows and linux
+var ctrlKeyMac = goog.userAgent.MAC ? goog.ui.KeyboardShortcutHandler.Modifiers.META : null;
+var altKeyMac = goog.userAgent.MAC ? goog.ui.KeyboardShortcutHandler.Modifiers.ALT : null;
+var ctrlKeyPC = goog.userAgent.MAC ? null : goog.ui.KeyboardShortcutHandler.Modifiers.CTRL;
+var altKeyPC = goog.userAgent.MAC ? null : goog.ui.KeyboardShortcutHandler.Modifiers.ALT;
+// same shortcuts on mac and other
 var ctrlKeyModifyer = goog.userAgent.MAC ? goog.ui.KeyboardShortcutHandler.Modifiers.META : goog.ui.KeyboardShortcutHandler.Modifiers.CTRL;
-var altKeyModifyer = goog.userAgent.MAC ? goog.ui.KeyboardShortcutHandler.Modifiers.ALT : goog.ui.KeyboardShortcutHandler.Modifiers.CTRL;
+var altKeyModifyer = goog.userAgent.MAC ? goog.ui.KeyboardShortcutHandler.Modifiers.ALT : goog.ui.KeyboardShortcutHandler.Modifiers.ALT;
 
 
 /**
@@ -173,8 +182,8 @@ silex.Config.menu = {
         id: 'file.new',
         className: 'menu-item-file-new',
         globalKey: goog.events.KeyCodes.N,
-        shortcut: [[goog.events.KeyCodes.N, altKeyModifyer]],
-        tooltip: altKeyDisplay + 'n',
+        shortcut: [[goog.events.KeyCodes.N, altKeyMac || ctrlKeyPC]],
+        tooltip: altKeyMacDisplay + ctrlKeyPCDisplay + 'n',
         mnemonic: goog.events.KeyCodes.N,
         accelerator: 'n'
       },
@@ -230,8 +239,8 @@ silex.Config.menu = {
         id: 'file.close',
         className: 'menu-item-file-close',
         globalKey: goog.events.KeyCodes.W,
-        shortcut: [[goog.events.KeyCodes.W, altKeyModifyer]],
-        tooltip: altKeyDisplay + 'w',
+        shortcut: [[goog.events.KeyCodes.W, altKeyMac || ctrlKeyPC]],
+        tooltip: altKeyMacDisplay + ctrlKeyPCDisplay + 'w',
         mnemonic: goog.events.KeyCodes.W,
         accelerator: 'w'
       }
@@ -396,7 +405,7 @@ silex.Config.menu = {
         className: 'menu-item-tools-advanced-activate',
         checkable: true,
         shortcut: [[goog.events.KeyCodes.A, altKeyModifyer + ctrlKeyModifyer + goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT]],
-        tooltip: altKeyDisplay + ctrlKeyDisplay + '⇧ A',
+        tooltip: ctrlKeyDisplay + altKeyDisplay + '⇧ A',
         mnemonic: goog.events.KeyCodes.A,
         accelerator: 'a'
       },
