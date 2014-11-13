@@ -223,7 +223,8 @@ silex.model.Body.prototype.setEditable = function(rootElement, isEditable, opt_i
           'isDroppable': !goog.dom.classlist.contains(element, silex.model.Body.PREVENT_DROPPABLE_CLASS_NAME)
               && element.getAttribute(silex.model.Body.SILEX_TYPE_ATTR_NAME) === silex.model.Body.SILEX_TYPE_CONTAINER,
           'isDraggable': !goog.dom.classlist.contains(element, silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME),
-          'isContainer': element.getAttribute(silex.model.Body.SILEX_TYPE_ATTR_NAME) === silex.model.Body.SILEX_TYPE_CONTAINER
+          'isContainer': element.getAttribute(silex.model.Body.SILEX_TYPE_ATTR_NAME) === silex.model.Body.SILEX_TYPE_CONTAINER,
+          'autoChangeContainer': false
       };
       this.view.workspace.getWindow().jQuery(element).editable(options);
     }
@@ -244,12 +245,14 @@ silex.model.Body.prototype.setEditable = function(rootElement, isEditable, opt_i
           'isContainer': true,
           'isResizable': false,
           'isDroppable': true,
-          'isDraggable': false
+          'isDraggable': false,
+          'autoChangeContainer': false
         });
       }
       else {
         this.view.workspace.getWindow().jQuery(rootElement).editable({
-          'isContainer': true
+          'isContainer': true,
+          'autoChangeContainer': false
         });
       }
     }

@@ -42,3 +42,9 @@ body{
 /* Remove dots surrounding links in Firefox
     because of normalize.css */
 a:focus{ outline: none;}
+
+body .drop-zone-candidate{
+  box-shadow: 0 0 4px #333333;
+  opacity: 1 !important;
+}
+
