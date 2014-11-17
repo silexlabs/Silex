@@ -207,6 +207,26 @@ silex.model.Body.prototype.getNeededFonts = function() {
 };
 
 
+silex.model.Body.prototype.initUiHandles = function(element) {
+  var handle;
+  goog.array.forEach([
+    'ui-resizable-n',
+    'ui-resizable-s',
+    'ui-resizable-e',
+    'ui-resizable-w',
+    'ui-resizable-ne',
+    'ui-resizable-nw',
+    'ui-resizable-se',
+    'ui-resizable-sw'
+  ], function(className){
+    var handle = this.view.workspace.getWindow().document.createElement('div');
+    goog.dom.classlist.add(handle, className);
+    goog.dom.classlist.add(handle, 'ui-resizable-handle');
+    goog.dom.appendChild(element, handle);
+  }, this);
+};
+
+
 /**
  * init, activate and remove the "editable" jquery plugin
  * @param {Element} rootElement
@@ -217,55 +237,19 @@ silex.model.Body.prototype.setEditable = function(rootElement, isEditable, opt_i
   // activate editable plugin
   var elements = goog.dom.getElementsByClass(silex.model.Body.EDITABLE_CLASS_NAME, rootElement);
   goog.array.forEach(elements, function(element) {
-    if (isEditable) {
-      var options = {
-          'isResizable': !goog.dom.classlist.contains(element, silex.model.Body.PREVENT_RESIZABLE_CLASS_NAME),
-          'isDroppable': !goog.dom.classlist.contains(element, silex.model.Body.PREVENT_DROPPABLE_CLASS_NAME)
-              && element.getAttribute(silex.model.Body.SILEX_TYPE_ATTR_NAME) === silex.model.Body.SILEX_TYPE_CONTAINER,
-          'isDraggable': !goog.dom.classlist.contains(element, silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME),
-          'isContainer': element.getAttribute(silex.model.Body.SILEX_TYPE_ATTR_NAME) === silex.model.Body.SILEX_TYPE_CONTAINER,
-          'autoChangeContainer': false
-      };
-      this.view.workspace.getWindow().jQuery(element).editable(options);
-    }
-    else {
-      if (goog.dom.classlist.contains(element, silex.model.Body.EDITABLE_CREATED_CLASS_NAME)) {
-        this.view.workspace.getWindow().jQuery(element).editable('destroy');
-        this.removeEditableClasses(element);
-      }
+    if (isEditable && goog.dom.getElementsByClass('ui-resizable-s', element).length === 0) {
+      this.initUiHandles(element);
     }
   }, this);
 
   // handle the root element itself
   if (isEditable) {
-    if (rootElement.getAttribute(silex.model.Body.SILEX_TYPE_ATTR_NAME) === silex.model.Body.SILEX_TYPE_CONTAINER) {
-      if (opt_isRootDroppableOnly) {
-        // allow drops only
-        this.view.workspace.getWindow().jQuery(rootElement).editable({
-          'isContainer': true,
-          'isResizable': false,
-          'isDroppable': true,
-          'isDraggable': false,
-          'autoChangeContainer': false
-        });
-      }
-      else {
-        this.view.workspace.getWindow().jQuery(rootElement).editable({
-          'isContainer': true,
-          'autoChangeContainer': false
-        });
-      }
-    }
-    else {
-      this.view.workspace.getWindow().jQuery(rootElement).editable();
+    if (goog.dom.getElementsByClass('ui-resizable-s', rootElement).length === 0) {
+      this.initUiHandles(rootElement);
     }
   }
   else {
-    // deactivate editable plugin
-    if (goog.dom.classlist.contains(rootElement, silex.model.Body.EDITABLE_CREATED_CLASS_NAME)) {
-      this.view.workspace.getWindow().jQuery(rootElement).editable('destroy');
       this.removeEditableClasses(rootElement);
-    }
   }
   // add a div on top of the HTML content elements in order to
   // prevent interactions with iframes and html content while editing
