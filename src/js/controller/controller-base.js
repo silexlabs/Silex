@@ -37,6 +37,9 @@ silex.controller.ControllerBase = function(model, view) {
 
   // tracker
   this.tracker = silex.service.Tracker.getInstance();
+  window.onerror = goog.bind(function(msg, url, line){
+    this.tracker.trackAction('controller-events', 'uncaught.error', msg + ' - line: ' + line, -1);
+  }, this);
 };
 
 
@@ -162,7 +165,7 @@ silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
             goog.bind(function(element, message) {
               silex.utils.Notification.notifyError('Error: I did not manage to load the image. \n' + message);
               this.model.element.removeElement(element);
-              this.tracker.trackAction('controller-events', 'error', 'insert.image', 1);
+              this.tracker.trackAction('controller-events', 'error', 'insert.image', -1);
             }, this)
         );
       }, this),
