@@ -89,7 +89,7 @@ silex.controller.EditMenuController.prototype.redo = function() {
  * copy the selection for later paste
  */
 silex.controller.EditMenuController.prototype.copySelection = function() {
-  this.tracker.trackAction('controller-events', 'request', 'copy', 0);
+  this.tracker.trackAction('controller-events', 'info', 'copy', 0);
   // default is selected element
   var elements = this.model.body.getSelection();
   if (elements.length > 0) {
@@ -110,7 +110,6 @@ silex.controller.EditMenuController.prototype.copySelection = function() {
         console.error('could not copy this element (', element, ') because it is the stage element');
       }
     }, this);
-    this.tracker.trackAction('controller-events', 'success', 'copy', 1);
   }
 };
 
@@ -119,7 +118,7 @@ silex.controller.EditMenuController.prototype.copySelection = function() {
  * paste the previously copied element
  */
 silex.controller.EditMenuController.prototype.pasteSelection = function() {
-  this.tracker.trackAction('controller-events', 'request', 'paste', 0);
+  this.tracker.trackAction('controller-events', 'info', 'paste', 0);
   // default is selected element
   if (this.clipboard) {
     // undo checkpoint
@@ -157,7 +156,6 @@ silex.controller.EditMenuController.prototype.pasteSelection = function() {
     // reset selection
     this.model.body.setSelection(selection);
   }
-  this.tracker.trackAction('controller-events', 'success', 'paste', 1);
 };
 
 
