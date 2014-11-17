@@ -167,7 +167,6 @@ silex.model.File.prototype.includeEditionTags = function(opt_onSuccess, opt_onEr
     'libs/jquery/jquery.js',
     'libs/jquery/jquery-ui.js',
     'libs/jquery/pageable.js',
-    'libs/jquery/editable.js',
     'js/front-end.js'
   ];
   goog.array.forEach(scripts, function(url) {
@@ -178,10 +177,10 @@ silex.model.File.prototype.includeEditionTags = function(opt_onSuccess, opt_onEr
   });
   // css tags
   var styles = [
-    'libs/jquery/editable.css',
+    'css/editable.css',
+    'css/front-end.css',
     'libs/jquery/jquery.ui.core.css',
     'libs/jquery/jquery-ui.css',
-    'css/front-end.css',
     'libs/normalize.css'
   ];
   goog.array.forEach(styles, function(url) {
