@@ -588,28 +588,5 @@ silex.Config.fonts = {
     href: 'http://fonts.googleapis.com/css?family=Bree+Serif',
 
     value: 'Bree Serif'
-  },
-  'Arial Black' : {
-    value: 'Arial BlackGadgetsans-serif'
-  },
-
-  'Impact' : {
-    value: 'ImpactCharcoalsans-serif'
-  },
-
-  'Lucida Console' : {
-    value: 'Lucida ConsoleMonacomonospace'
-  },
-
-  'Lucida Sans' : {
-    value: 'Lucida Sans UnicodeLucida Grandesans-serif'
-  },
-
-  'Palatino' : {
-    value: 'Palatino LinotypeBook AntiquaPalatinoserif'
-  },
-
-  'Tahoma' : {
-    value: 'TahomaGenevasans-serif'
   }
 };
