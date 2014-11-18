@@ -138,9 +138,8 @@ silex.view.Stage.prototype.buildUi = function() {
  * @param {Event} event
  */
 silex.view.Stage.prototype.onMouseMoveOverUi = function(event) {
-  var x = event.clientX;
-  var y = event.clientY;
-  this.onMouseMove(/** @type {Element} */ (event.target), x, y);
+  var pos =  goog.style.getRelativePosition(event, this.element);
+  this.onMouseMove(/** @type {Element} */ (event.target), pos.x, pos.y);
 };
 
 
@@ -152,10 +151,11 @@ silex.view.Stage.prototype.onMouseMoveOverUi = function(event) {
 silex.view.Stage.prototype.onMouseUpOverUi = function(event) {
   // if out of stage, release from drag of the plugin
   // simulate the mouse up on the iframe body
+  var pos =  goog.style.getRelativePosition(event, this.element);
   var newEvObj = document.createEvent('MouseEvents');
   newEvObj.initEvent('mouseup', true, true);
-  newEvObj.clientX = event.clientX;
-  newEvObj.clientY = event.clientY;
+  newEvObj.clientX = pos.x;
+  newEvObj.clientY = pos.y;
   this.iAmClicking = true;
   this.bodyElement.dispatchEvent(newEvObj);
   this.iAmClicking = false;
