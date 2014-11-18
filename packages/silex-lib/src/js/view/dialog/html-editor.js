@@ -35,6 +35,8 @@ goog.require('silex.view.dialog.AceEditorBase');
 silex.view.dialog.HtmlEditor = function(element, controller) {
   // call super
   goog.base(this, element, controller);
+  // set the visibility css class
+  this.visibilityClass = 'html-editor';
 };
 
 // inherit from silex.view.dialog.AceEditorBase

@@ -55,6 +55,13 @@ silex.view.dialog.DialogBase = function(element, controller) {
 
 
 /**
+ * class which is added to the document body when the dialog is visible
+ * @type {string}
+ */
+silex.view.dialog.DialogBase.prototype.visibilityClass = 'visibilityClass-should-be-set-in-subclasse';
+
+
+/**
  * init the menu and UIs
  * called by the app constructor
  */
@@ -83,8 +90,7 @@ silex.view.dialog.DialogBase.prototype.buildUi = function() {
 silex.view.dialog.DialogBase.prototype.openEditor = function() {
   if (this.isOpened === false) {
     // show
-    goog.dom.classlist.remove(this.background, 'hidden-dialog');
-    goog.dom.classlist.remove(this.element, 'hidden-dialog');
+    goog.dom.classlist.add(document.body, this.visibilityClass + '-opened');
     // flag to remember if the dialog is opened
     this.isOpened = true;
   }
@@ -99,8 +105,7 @@ silex.view.dialog.DialogBase.prototype.closeEditor = function() {
     // flag to remember if the dialog is opened
     this.isOpened = false;
     // hide dialog and background
-    goog.dom.classlist.add(this.background, 'hidden-dialog');
-    goog.dom.classlist.add(this.element, 'hidden-dialog');
+    goog.dom.classlist.remove(document.body, this.visibilityClass + '-opened');
     // focus the stage 
     // FIXME: find a better way to automize that than going through the controller's view
     this.controller.fileMenuController.view.stage.resetFocus();
