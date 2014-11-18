@@ -36,8 +36,8 @@ goog.require('silex.view.dialog.DialogBase');
 silex.view.dialog.SettingsDialog = function(element, controller) {
   // call super
   goog.base(this, element, controller);
-  // override this.background
-  this.background = /** @type {!Element} */ (goog.dom.getElementByClass('settings-background'));
+  // set the visibility css class
+  this.visibilityClass = 'settings-editor';
   // init the editor
   this.publicationPath = '';
   // publication path browse button
@@ -65,13 +65,6 @@ goog.inherits(silex.view.dialog.SettingsDialog, silex.view.dialog.DialogBase);
 silex.view.dialog.SettingsDialog.prototype.buildUi = function() {
   // call super
   goog.base(this, 'buildUi');
-
-  // background
-  var background = goog.dom.getElementByClass('settings-background');
-  // dialogs background
-  goog.events.listen(background, goog.events.EventType.CLICK, function(e) {
-    this.closeEditor();
-  }, false, this);
 };
 
 

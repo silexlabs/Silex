@@ -1,16 +1,25 @@
 .ace-editor-container {
   position: absolute;
-  width: 90%;
-  height: 90%;
   z-index: 110;
-  .close-btn {
+  .buttons.dock-btn {
+    background-image: url("../assets/dock.png");
+    right: 40px;
+    height: 15px;
+    width: 15px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    top: 21px;
+  }
+  .buttons.close-btn {
     background-image: url("../assets/goog-ui/close.png");
-    cursor: pointer;
-    height: 38px;
-    position: absolute;
     right: 0;
-    top: 11px;
+    height: 38px;
     width: 39px;
+    top: 11px;
+  }
+  .buttons {
+    cursor: pointer;
+    position: absolute;
   }
   .ace-editor {
     width: 100%;
@@ -33,3 +42,4 @@
 .tr_bubble {
   z-index: 999 !important;
 }
+

@@ -140,21 +140,6 @@ silex.view.Workspace.prototype.redraw = function(view) {
  */
 silex.view.Workspace.prototype.doRedraw = function(view) {
   this.isDirty = false;
-
-  var viewportSize = this.viewport.getSize();
-
-  // htmlEditor
-  this.center(view.htmlEditor, viewportSize);
-  // cssEditor
-  this.center(view.cssEditor, viewportSize);
-  // jsEditor
-  this.center(view.jsEditor, viewportSize);
-  // texteditor
-  this.center(view.textEditor, viewportSize);
-  // fileExplorer
-  this.center(view.fileExplorer, viewportSize);
-  // settingsDialog
-  this.center(view.settingsDialog, viewportSize);
   // no more loading
   goog.dom.classlist.remove(document.body, 'loading-pending');
 };
