@@ -29,6 +29,24 @@ silex.utils.Dom = function() {
 
 
 /**
+ * counts the number of parents
+ * used for indentation
+ * @param {Element} element
+ * @return {number} number of parents of elements
+ */
+silex.utils.Dom.getNumParents = function(element) {
+    // compute indentation
+    var indent = 0;
+    var tmpElement = element;
+    while(tmpElement) {
+      tmpElement =  goog.dom.getParentElement(tmpElement);
+      indent++;
+    }
+    return indent;
+};
+
+
+/**
  * refresh an image
  */
 silex.utils.Dom.refreshImage = function(img, cbk) {
