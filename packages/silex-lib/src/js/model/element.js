@@ -147,6 +147,19 @@ silex.model.Element.prototype.unprepareHtmlForEdit = function(rawHtml) {
 
 
 /**
+ * get num tabs
+ * @example getTabs(2) returns '        '
+ */
+silex.model.Element.prototype.getTabs = function(num) {
+  var tabs = ''; 
+  for (var n=0; n<num; n++) {
+    tabs += '    ';
+  }
+  return tabs;
+}
+
+
+/**
  * get/set type of the element
  * @param  {Element} element   created by silex, either a text box, image, ...
  * @return  {string}           the style of the element
@@ -353,6 +366,9 @@ silex.model.Element.prototype.setImageUrl = function(element, url, opt_callback,
             img.removeAttribute('id');
             // remove loading asset
             goog.dom.classlist.remove(element, silex.model.Element.LOADING_ELEMENT_CSS_CLASS);
+
+// parent.insertBefore(document.createTextNode("\n" + indent), parent.lastChild);
+          
           }, true, this);
       goog.events.listenOnce(imageLoader, goog.net.EventType.ERROR,
           function() {
@@ -409,10 +425,19 @@ silex.model.Element.prototype.removeElement = function(element) {
 /**
  * append an element to the stage
  * handles undo/redo
+ * @param {Element} container
+ * @param {Element} element
  */
 silex.model.Element.prototype.addElement = function(container, element) {
   goog.dom.appendChild(container, element);
-};
+
+  // respect indentation
+  var indent = silex.utils.Dom.getNumParents(container);
+  var textBefore = goog.dom.createTextNode('\n' + this.getTabs(indent));
+  goog.dom.insertSiblingBefore(textBefore, element);
+  var textAfter = goog.dom.createTextNode('\n' + this.getTabs(indent));
+  goog.dom.insertSiblingAfter(textAfter, element);
+ };
 
 
 /**
@@ -427,6 +452,14 @@ silex.model.Element.prototype.createElement = function(type) {
 
   var element;
   var bodyElement = this.model.body.getBodyElement();
+
+  // find the container (main background container or the stage)
+  var container = goog.dom.getElementByClass(silex.view.Stage.BACKGROUND_CLASS_NAME, bodyElement);
+  if (!container) {
+    container = bodyElement;
+  }
+  // indentation
+  var indent = silex.utils.Dom.getNumParents(container);
 
   // take the scroll into account (drop at (100, 100) from top left corner of the window, not the stage)
   var offsetX = 100 + this.view.stage.getScrollX();
@@ -445,22 +478,22 @@ silex.model.Element.prototype.createElement = function(type) {
 
     // container
     case silex.model.Element.TYPE_CONTAINER:
-      element = this.createContainerElement(styleObject);
+      element = this.createContainerElement(styleObject, indent);
       break;
 
     // text
     case silex.model.Element.TYPE_TEXT:
-      element = this.createTextElement(styleObject);
+      element = this.createTextElement(styleObject, indent);
       break;
 
     // HTML box
     case silex.model.Element.TYPE_HTML:
-      element = this.createHtmlElement(styleObject);
+      element = this.createHtmlElement(styleObject, indent);
       break;
 
     // Image
     case silex.model.Element.TYPE_IMAGE:
-      element = this.createImageElement(styleObject);
+      element = this.createImageElement(styleObject, indent);
       break;
 
   }
@@ -472,11 +505,6 @@ silex.model.Element.prototype.createElement = function(type) {
   // make it editable
   this.model.body.setEditable(element, true);
 
-  // find the container (main background container or the stage)
-  var container = goog.dom.getElementByClass(silex.view.Stage.BACKGROUND_CLASS_NAME, bodyElement);
-  if (!container) {
-    container = bodyElement;
-  }
   // add css class for Silex styles
   goog.dom.classlist.add(element, type + '-element');
   // add to stage
@@ -489,14 +517,21 @@ silex.model.Element.prototype.createElement = function(type) {
 /**
  * element creation method for a given type
  * called from createElement
+ * @param {Object} styleObject
+ * @param {number} indent number of tabulations
  */
-silex.model.Element.prototype.createContainerElement = function(styleObject) {
+silex.model.Element.prototype.createContainerElement = function(styleObject, indent) {
   // create the conatiner
   var element = goog.dom.createElement('div');
   element.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_CONTAINER);
   // add a default style
   styleObject.backgroundColor = '#FFFFFF';
   goog.style.setStyle(element, styleObject);
+
+  // respect indentation
+  var textInside = goog.dom.createTextNode('\n' + this.getTabs(indent - 1));
+  goog.dom.appendChild(element, textInside);
+  
   return element;
 };
 
@@ -504,8 +539,10 @@ silex.model.Element.prototype.createContainerElement = function(styleObject) {
 /**
  * element creation method for a given type
  * called from createElement
+ * @param {Object} styleObject
+ * @param {number} indent number of tabulations
  */
-silex.model.Element.prototype.createTextElement = function(styleObject) {
+silex.model.Element.prototype.createTextElement = function(styleObject, indent) {
   // create the element
   var element = goog.dom.createElement('div');
   element.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_TEXT);
@@ -523,6 +560,13 @@ silex.model.Element.prototype.createTextElement = function(styleObject) {
   // e.g. whe select all + remove formatting
   goog.dom.classlist.add(textContent, 'normal');
   goog.style.setStyle(element, styleObject);
+
+  // respect indentation
+  var textBefore = goog.dom.createTextNode('\n' + this.getTabs(1 + indent));
+  goog.dom.insertSiblingBefore(textBefore, textContent);
+  var textAfter = goog.dom.createTextNode('\n' + this.getTabs(indent));
+  goog.dom.insertSiblingAfter(textAfter, textContent);
+  
   return element;
 };
 
@@ -530,8 +574,10 @@ silex.model.Element.prototype.createTextElement = function(styleObject) {
 /**
  * element creation method for a given type
  * called from createElement
+ * @param {Object} styleObject
+ * @param {number} indent number of tabulations
  */
-silex.model.Element.prototype.createHtmlElement = function(styleObject) {
+silex.model.Element.prototype.createHtmlElement = function(styleObject, indent) {
   // create the element
   var element = goog.dom.createElement('div');
   element.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_HTML);
@@ -546,6 +592,13 @@ silex.model.Element.prototype.createHtmlElement = function(styleObject) {
   // add a default style
   styleObject.backgroundColor = '#FFFFFF';
   goog.style.setStyle(element, styleObject);
+
+  // respect indentation
+  var textBefore = goog.dom.createTextNode('\n' + this.getTabs(1 + indent));
+  goog.dom.insertSiblingBefore(textBefore, htmlContent);
+  var textAfter = goog.dom.createTextNode('\n');
+  goog.dom.insertSiblingAfter(textAfter, htmlContent);
+ 
   return element;
 };
 
@@ -553,8 +606,10 @@ silex.model.Element.prototype.createHtmlElement = function(styleObject) {
 /**
  * element creation method for a given type
  * called from createElement
+ * @param {Object} styleObject
+ * @param {number} indent number of tabulations
  */
-silex.model.Element.prototype.createImageElement = function(styleObject) {
+silex.model.Element.prototype.createImageElement = function(styleObject, indent) {
   // create the element
   var element = goog.dom.createElement('div');
   element.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_IMAGE);
