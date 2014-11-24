@@ -1,0 +1,125 @@
+/* less definitions */
+@dialog-margin: 10%;
+@docked-right-margin: 350px;
+
+.hidden-background {
+  display: none;
+}
+.visible-background {
+  display: initial;
+}
+
+/* */
+
+
+#silex-file-explorer{
+  z-index: 115;
+}
+
+/* generic styles  */
+.dialogs-background {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: black;
+  opacity: .5;
+  z-index: 110;
+  cursor: pointer;
+}
+/*
+  hidden-dialog is used instead of display none,
+  so that dialogs load normally even when the dialog is hidden
+*/
+.hidden-dialog{
+  position: absolute;
+  top: -9999px;
+  left: -9999px;
+  bottom: initial;
+  right: initial;
+}
+.visible-dialog {
+  position: absolute;
+  top: @dialog-margin;
+  left: @dialog-margin;
+  bottom: @dialog-margin;
+  right: @dialog-margin;
+}
+/* but hide the background with display none */
+.dialogs-background, .settings-background {
+  .hidden-background;
+}
+
+/* dialogs viibility */
+.text-editor-opened {
+  .silex-text-editor{
+    .visible-dialog;
+  }
+  .dialogs-background {
+    .visible-background;
+  }
+}
+.js-editor-opened {
+  .silex-js-editor {
+    .visible-dialog;
+  }
+  .dialogs-background {
+    .visible-background;
+  }
+}
+.css-editor-opened {
+  .silex-css-editor {
+    .visible-dialog;
+  }
+  .dialogs-background {
+    .visible-background;
+  }
+}
+.html-editor-opened {
+  .silex-html-editor {
+    .visible-dialog;
+  }
+  .dialogs-background {
+    .visible-background;
+  }
+}
+.settings-editor-opened {
+  .silex-settings-dialog {
+    .visible-dialog;
+  }
+  .dialogs-background {
+    .visible-background;
+  }
+}
+/* dock css editor */
+.dock-editors.settings-editor-opened,
+.dock-editors.text-editor-opened{
+  .dialogs-background{
+    .visible-background;
+  }
+}
+.dock-editors {
+  .silex-text-editor {
+    right: @docked-right-margin;
+  }
+  .silex-css-editor .title-bar, 
+  .silex-html-editor .title-bar, 
+  .silex-js-editor .title-bar {
+    height: 40px;
+  }
+  .dialogs-background {
+    .hidden-background;
+  }
+}
+.dock-editors.css-editor-opened .silex-css-editor,
+.dock-editors.js-editor-opened .silex-js-editor,
+.dock-editors.html-editor-opened .silex-html-editor {
+  left: auto;
+  right: 0;
+  top: 94px;
+  bottom: 0;
+  width: 250px;
+  overflow: hidden;
+}
+
