@@ -61,6 +61,7 @@ goog.require('silex.utils.DomCleaner');
 goog.require('silex.utils.Polyfills');
 // display
 goog.require('silex.view.Menu');
+goog.require('silex.view.Splitter');
 // tool boxes
 goog.require('silex.view.PageTool');
 goog.require('silex.view.PropertyTool');
@@ -232,6 +233,13 @@ silex.App = function() {
   // draw the workspace once
   workspace.invalidate(this.view);
 
+  // add splitters
+  var propSplitterElement = /** @type {!Element} */ (goog.dom.getElementByClass('vertical-splitter'));
+  /** @type {silex.view.Splitter} */
+  var propSplitter = new silex.view.Splitter(propSplitterElement, this.controller);
+  propSplitter.addLeft(stageElement);
+  propSplitter.addRight(propertyToolElement);
+
   // **
   // application start, open a new empty file
   this.controller.fileMenuController.newFile();
@@ -242,8 +250,6 @@ silex.App = function() {
   if (!silex.Config.debug.debugMode || silex.Config.debug.preventQuit) {
     workspace.startWatchingUnload();
   }
-  // TODO: call workspace.startWatchingResize ?? how does it work?
-
 };
 
 
