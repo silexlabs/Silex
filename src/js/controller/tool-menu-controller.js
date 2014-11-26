@@ -171,3 +171,23 @@ silex.controller.ToolMenuController.prototype.toggleAdvanced = function() {
     goog.dom.classlist.add(document.body, 'advanced-mode-off');
   }
 };
+
+/**
+ * dock panels
+ * @param {boolean} dock or undock
+ */
+silex.controller.ToolMenuController.prototype.dockPanel = function(dock) {
+  if (dock) {
+    goog.dom.classlist.add(document.body, 'dock-editors');
+    this.view.propSplitter.addRight(this.view.cssEditor.element);
+    this.view.propSplitter.addRight(this.view.jsEditor.element);
+    this.view.propSplitter.addRight(this.view.htmlEditor.element);
+  }
+  else {
+    goog.dom.classlist.remove(document.body, 'dock-editors');
+    this.view.propSplitter.remove(this.view.cssEditor.element);
+    this.view.propSplitter.remove(this.view.jsEditor.element);
+    this.view.propSplitter.remove(this.view.htmlEditor.element);
+  }
+};
+

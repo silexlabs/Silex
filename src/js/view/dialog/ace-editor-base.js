@@ -78,7 +78,8 @@ silex.view.dialog.AceEditorBase.prototype.buildUi = function() {
   var dockBtn = goog.dom.getElementByClass('dock-btn', this.element);
   if (dockBtn) {
     goog.events.listen(dockBtn, goog.events.EventType.CLICK, function() {
-      goog.dom.classlist.toggle(document.body, 'dock-editors');
+      this.isDocked = !this.isDocked;
+      this.controller.toolMenuController.dockPanel(this.isDocked);
       this.ace.resize();
     }, false, this);
   }

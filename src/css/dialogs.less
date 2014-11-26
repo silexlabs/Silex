@@ -28,6 +28,9 @@
   z-index: 110;
   cursor: pointer;
 }
+.dock-editors .dialogs-background {
+  z-index: 109; /* behind the docked editors and splitter */
+}
 /*
   hidden-dialog is used instead of display none,
   so that dialogs load normally even when the dialog is hidden
@@ -119,7 +122,6 @@
   right: 0;
   top: 94px;
   bottom: 0;
-  width: 250px;
   overflow: hidden;
 }
 
