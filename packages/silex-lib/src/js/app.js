@@ -171,6 +171,13 @@ silex.App = function() {
   /** @type {silex.view.Workspace} */
   var workspace = new silex.view.Workspace(workspaceElement, this.controller);
 
+  // add splitters
+  var propSplitterElement = /** @type {!Element} */ (goog.dom.getElementByClass('vertical-splitter'));
+  /** @type {silex.view.Splitter} */
+  var propSplitter = new silex.view.Splitter(propSplitterElement, this.controller);
+  propSplitter.addLeft(stageElement);
+  propSplitter.addRight(propertyToolElement);
+
   // init the view class which references all the views
   this.view.init(
       menu,
@@ -183,6 +190,7 @@ silex.App = function() {
       textEditor,
       fileExplorer,
       settingsDialog,
+      propSplitter,
       workspace
   );
   // **
@@ -232,13 +240,6 @@ silex.App = function() {
 
   // draw the workspace once
   workspace.invalidate(this.view);
-
-  // add splitters
-  var propSplitterElement = /** @type {!Element} */ (goog.dom.getElementByClass('vertical-splitter'));
-  /** @type {silex.view.Splitter} */
-  var propSplitter = new silex.view.Splitter(propSplitterElement, this.controller);
-  propSplitter.addLeft(stageElement);
-  propSplitter.addRight(propertyToolElement);
 
   // **
   // application start, open a new empty file

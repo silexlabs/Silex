@@ -1,0 +1,26 @@
+.vertical-splitter {
+  top: 94px;
+  bottom: 0;
+  right: 247px;
+  width: 5px;
+  position: absolute;
+  cursor: ew-resize;
+  z-index: 109;
+  background-color: lightgrey;
+}
+.dock-editors {
+  /* above text editor only when an editor is opened and docked */
+  &.js-editor-opened, &.css-editor-opened, &.html-editor-opened {
+    .vertical-splitter {
+      z-index: 110;
+    }
+  }
+}
+.vertical-splitter .knob {
+  height: 100px;
+  width: 100%;
+  position: absolute;
+  background-color: gray;
+  top: 50%;
+  margin-top: -50px;
+}
