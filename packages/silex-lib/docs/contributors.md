@@ -4,9 +4,9 @@ Feel free to congratulate each one of these exceptional people, and also to hire
 
 ##The core contributors
 
-###[Alex Hoyau, front-end architect](http://lexoyo.me)
+###[Alex Hoyau, developer and architect](http://lexoyo.me)
 
-Contribution: lead developer, Javascript and node.js coder
+Contribution: lead developer, Javascript and node.js code
 
 [@lexoyo](https://twitter.com/lexoyo)
 
