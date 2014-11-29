@@ -8,11 +8,11 @@ There is also a way to sponsor a development, see the link at the bottom of the 
 
 You can also [hire one of the contributors](https://github.com/silexlabs/Silex/blob/master/docs/contributors.md) directly to develop a feature you require for your business.
 
-## Archive of the old road map
+### Archive of the old road map
 
 Todo: make this roadmap issues in github
 
-###next priorities (2014-11)
+####next priorities (2014-11)
 
 Debug, stability, code quality, ux
 
@@ -48,7 +48,7 @@ Dynamic sites (to produce blogs or content websites)
 * dynamic element type: data source and template editor (markdown?)
 * integration with CMSs, APIs and backends as data sources
 
-###v2.0.0alpha4
+####v2.0.0alpha4
 
 WYSIWYG
 
@@ -69,7 +69,7 @@ File
 
 * (done) export (cleanup html, make zip with .html, .js, .css, all media)? + host on github or other free hosts?
 
-###v2.0.0alpha5
+####v2.0.0alpha5
 
 Edition
 
@@ -112,7 +112,7 @@ Properties
   * to animate page transitions (from-left, from-right ...)
   * to layout content: static
 
-###v2.0.0beta1
+####v2.0.0beta1
 
 Guarantee backward compatibility: notify users a new version is in production, offer ways to use older versions of Silex?
 
@@ -163,7 +163,7 @@ Nice to have :
   file://localhost/Users/lexa/Dropbox/fdt-workspace/Silex/libs/closure/goog/demos/onlinehandler.html
 
 
-###v2.0.x
+####v2.0.x
 
 Packaging / distribution
 
@@ -177,7 +177,7 @@ Packaging / distribution
 * mockup tool
 * banner editor
 
-###other features and ideas for plugins
+####other features and ideas for plugins
 
   * SEO:
     use _escaped_fragment_ - see https://developers.google.com/webmasters/ajax-crawling/docs/specification
