@@ -1,6 +1,52 @@
 ##Road map
 
+Right now, there is in the pipe [the issues marked as ```feature``` on github](https://github.com/silexlabs/Silex/issues?q=is%3Aopen+is%3Aissue+label%3Afeature+sort%3Acomments-desc). We considere their priority to be the number of ```+1``` in the comments of the issues, so __feel free to vote__.
+
+> [the features of the road map](https://github.com/silexlabs/Silex/issues?q=is%3Aopen+is%3Aissue+label%3Afeature+sort%3Acomments-desc)
+
+There is also a way to sponsor a development, see the link at the bottom of the issues ```Want to back this issue? Place a bounty on it! We accept bounties via Bountysource.```. 
+
+You can also [hire one of the contributors](https://github.com/silexlabs/Silex/blob/master/docs/contributors.md) directly to develop a feature you require for your business.
+
+## Archive of the old road map
+
 Todo: make this roadmap issues in github
+
+###next priorities (2014-11)
+
+Debug, stability, code quality, ux
+
+* page order?
+
+Contextual tool bar like in google docs presentation
+
+* add page
+* save / open 
+* undo redo
+* insert (image, text...) / delete 
+* edit / change content 
+* up/down the dom
+* ...
+
+Responsive
+
+* mobile/tablet/desktop modes
+* show / hide elements (elements list?)
+* navigation burger / group elements
+* publish responsive
+
+Seo, accessibility 
+
+* publication into multiple html pages, but Js redirect to index.html when not a bot or screen reader
+* robots.txt and sitemap.xml
+* w3c validator at 100% (drop google text editor?)
+
+Dynamic sites (to produce blogs or content websites)
+
+* resize to content option
+* vertical flow: move everything bellow the element when resizing an element which is in a container which resizes to content too
+* dynamic element type: data source and template editor (markdown?)
+* integration with CMSs, APIs and backends as data sources
 
 ###v2.0.0alpha4
 
