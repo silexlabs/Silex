@@ -6,42 +6,111 @@
   position: absolute;
   top: @menuHeight;
   bottom: 0;
-  overflow-y: scroll;
+  overflow-y: auto;
   background-color: #EDEDED;
   border: 1px solid #D9D9D9;
+
   .page-preview {
-    outline: 1px solid #D9D9D9;
+    border: 1px solid #D9D9D9;
     width: 131px;
     height: 80px;
     position: relative;
     margin: auto;
     cursor: default;
-    background-color: #FFFFFF;
+    background-color: #FFF;
+    transition: all .5s;
+
+    &:hover {
+      border: 1px solid #777;
+    }
+
     .delete {
-      right: 10px;
-      top: 5px;
+      right: -10px;
+      top: -10px;
       position: absolute;
       cursor: pointer;
+      padding: 5px;
+      background-color: #D00;
+      border-radius: 50%;
+      width: 10px;
+      height: 10px;
+      color: #FFF;
+      font-weight: bold;
+      vertical-align: middle;
+      line-height: 10px;
+      -moz-box-shadow: none;
+      -webkit-box-shadow: none;
+      -o-box-shadow: none;
+      box-shadow: none;
+      filter:none;
     }
+
   }
+
   .page-tool-container {
-    padding-left: 25px;
+
     .ui-selected {
+
       .page-preview {
-        border: 2px solid;
+        width: 141px;
+        height: 89px;
+        border: 1px solid #000;
+        background-color: #d6e9f8;
+        -moz-box-shadow: 2px 2px 5px 0px #656565;
+        -webkit-box-shadow: 2px 2px 5px 0px #656565;
+        -o-box-shadow: 2px 2px 5px 0px #656565;
+        box-shadow: 2px 2px 5px 0px #656565;
+        filter:progid:DXImageTransform.Microsoft.Shadow(color=#656565, Direction=134, Strength=5);
+        transition: all .5s;
+
+        &:before {
+          pointer-events: none;
+          position: absolute;
+          content: '';
+          height: 0;
+          width: 0;
+          top: 0;
+          left: 0;
+          background: white;
+          /* IE9 */
+          background: linear-gradient(135deg, white 45%, #aaaaaa 50%, #cccccc 56%, white 80%);
+          filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr='#ffffff', endColorstr='#000000');
+          /*For IE7-8-9*/
+          z-index: 1000;
+          box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4);
+          -webkit-transition-duration: 0.3s;
+          transition-duration: 0.3s;
+          -webkit-transition-property: width, height;
+          transition-property: width, height;
+        }
+
+        &:hover:before,&:focus:before,&:active:before {
+          width: 25px;
+          height: 25px;
+        }
+
+        .delete {
+          -moz-box-shadow: 2px 2px 5px 0px #656565;
+          -webkit-box-shadow: 2px 2px 5px 0px #656565;
+          -o-box-shadow: 2px 2px 5px 0px #656565;
+          box-shadow: 2px 2px 5px 0px #656565;
+          filter:progid:DXImageTransform.Microsoft.Shadow(color=#656565, Direction=134, Strength=5);
+        }
+
       }
+
     }
+
   }
-  .page-preview:hover {
-    outline-width: 2px;
-  }
+
   .page-container {
     overflow-x: visible;
-    overflow-y: scroll;
+    overflow-y: auto;
     overflow: visible;
     text-align: center;
     margin: 10px;
     text-decoration: none;
+
     .label {
       bottom: 0;
       padding: 5px;
@@ -52,5 +121,7 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
+
   }
+
 }
