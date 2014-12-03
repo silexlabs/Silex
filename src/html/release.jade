@@ -3,7 +3,6 @@ head
   include ./templates/head.jade
 
   // Silex styles and code
-  link(rel='stylesheet', type='text/css', href='css/admin.min.css')
   script(type='text/javascript', src='js/admin.min.js')
 
 body.loading-pending.advanced-mode-off
@@ -12,6 +11,9 @@ body.loading-pending.advanced-mode-off
   // google closure css patches, to be included after the other includes
   link(rel='stylesheet', type='text/css', href='css/closure-patches.css')
   script(type='text/javascript', src='js/closure-patches.js')
+
+  // custom style after the others for easy styling
+  link(rel='stylesheet', type='text/css', href='css/admin.min.css')
 
   // start Silex
   script(type='text/javascript').
