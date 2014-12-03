@@ -1,11 +1,15 @@
-.goog-menu{
+.goog-menu {
+
   .goog-menuitem-content {
     display: inline;
   }
+
   .goog-menuitem-accel {
     color: #666;
   }
+
 }
+
 .goog-tooltip {
   background: infobackground;
   color: infotext;
@@ -14,29 +18,85 @@
   font: menu;
   z-index: 999999;
 }
+
 .silex-menu {
+
   font-weight: 400;
   font-size-adjust: none;
+  background: transparent url(../assets/logo-silex.png) 3% top no-repeat;
+
   .goog-menubar {
+    display: block;
     font-size: 13px;
     font-style: normal;
     color: #000000;
     line-height: 20px;
     height: 35px;
-    margin: 0 0 0 40px;
-    padding-top: 0;
-    padding-bottom: 5px;
-    position: relative;
+    margin: 0 auto;
+    padding: 0;
     white-space: nowrap;
-    font-stretch: normal;
-    font-variant: normal;
     outline-style: none;
     outline-width: 0;
+    background-color: #FFF;
+    width: 510px;
+
     .goog-menu-button-caption {
       margin-right: 2px;
       margin-left: 2px;
     }
+
+    .goog-menu-button {
+      position: relative;
+      min-width: 70px;
+      margin: 0;
+      padding: 1px 7px;
+      cursor: pointer;
+      vertical-align: middle;
+      transition: all .5s;
+      text-shadow: 0 -1px 0 rgba(255,255,255,.75);
+      background-color: #FFF;
+      border: 1px solid #BBB;
+      border-right: none;
+      color: #333;
+      font-weight: normal;
+      text-decoration: none;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .2), 0 1px 2px rgba(0, 0, 0, .05);
+      transition: all .5s;
+
+       &:after {
+        content: "";
+        width: 0;
+        height: 0;
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        margin-top: -3px;
+        border-width: 6px 6px 0 6px;
+        border-style: solid;
+        border-color: #333 transparent;
+      }
+
+      &:hover, &:focus, &:active {
+        background-color: #d6e9f8;
+      }
+
+      &:last-child {
+        margin-right: 0;
+        border-right: 1px solid #BBB;
+      }
+
+    }
+
+    .goog-menu-button-open {
+        background-color: #d6e9f8;
+    }
+
+    .goog-menu-vertical {
+      background-color: #000;
+    }
+
   }
+
   .login-text {
     color: #666;
     font-size: 11px;
@@ -46,39 +106,42 @@
     position: absolute;
     top: 0;
     right: 0;
+
     p {
       margin: 5px 0 0 0;
     }
   }
+
   .website-name {
     font-size: 20px;
-    font-style: italic;
-    color: #000000;
-    line-height: 24.65px;
+    font-style: normal;
+    color: #333;
+    line-height: 24px;
     text-overflow: ellipsis;
-    opacity: 0.5;
-    margin: 25px 4px 1px 45px;
-    padding-right: 5px;
-    overflow-x: hidden;
-    overflow-y: hidden;
+    margin: 7px auto 10px auto;
+    padding: 5px;
     white-space: nowrap;
-    font-stretch: normal;
-    font-variant: normal;
-    max-width: 610px;
+    max-width: 500px;
     max-height: 50px;
     overflow: hidden;
-    outline: medium none;
     outline-color: #000000;
-    display: inline-block;
-    outline-style: none;
-    outline-width: 0;
-    position:relative;
+    display: block;
     text-decoration: none;
+    text-align: center;
+    border: 2px solid transparent;
+    transition: all .5s;
+
+    &:hover {
+      border: 2px solid #CCC;
+      background-color: #d6e9f8;
+    }
   }
+
   .goog-menu-button {
     display: inline-block;
     cursor: default;
   }
+
   .goog-menu-button-open {
     background: #fff;
     border: 1px solid rgba(0,0,0,.2);
@@ -89,6 +152,7 @@
     color: black;
   }
 }
+
 .shortcut-display {
   position: absolute;
   right: 10px;

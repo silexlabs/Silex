@@ -59,8 +59,8 @@ module.exports = function(grunt) {
   grunt.registerTask('heroku', ['releaseDeploy']);
   grunt.registerTask('deploy', ['releaseDeploy']);
   grunt.registerTask('postinstall', ['deploy']);
-  grunt.registerTask('releaseDeploy', ['concat', 'less:production', 'jade:release', 'closureBuilder:release']);
-  grunt.registerTask('debugDeploy', ['concat', 'less:development', 'jade:debug', 'closureBuilder:debug', 'append-sourcemapping']);
+  grunt.registerTask('releaseDeploy', ['less:production', 'jade:release', 'closureBuilder:release']);
+  grunt.registerTask('debugDeploy', ['less:development', 'jade:debug', 'closureBuilder:debug', 'append-sourcemapping']);
 
   // test and check tasks
   grunt.registerTask('check', ['lesslint', 'closureLint']);
@@ -118,12 +118,6 @@ module.exports = function(grunt) {
           "unqualified-attributes" : false,
       },
     },
-    concat: {
-      dist: {
-        src: ['src/css/*.less'],
-        dest: 'src/css/.temp'
-      },
-    },
     closureLint: {
       app:{
         closureLinterPath : 'submodules/closure-linter/closure_linter',
@@ -152,12 +146,12 @@ module.exports = function(grunt) {
           cleancss: true,
         },
         files: {
-          "dist/client/css/admin.css": "src/css/.temp",
+          "dist/client/css/admin.css": "src/css/styles.less",
         },
       },
       production: {
         files: {
-          "dist/client/css/admin.min.css": "src/css/.temp",
+          "dist/client/css/admin.min.css": "src/css/styles.less",
         },
       },
     },
