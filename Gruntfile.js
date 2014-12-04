@@ -143,15 +143,19 @@ module.exports = function(grunt) {
     less: {
       development: {
         options: {
-          cleancss: true,
+          cleancss: false,
         },
         files: {
-          "dist/client/css/admin.css": "src/css/styles.less",
+          "dist/client/css/admin.css": "src/css/_styles.less",
         },
       },
       production: {
+        options: {
+          cleancss: true,
+          compress: true,
+        },
         files: {
-          "dist/client/css/admin.min.css": "src/css/styles.less",
+          "dist/client/css/admin.min.css": "src/css/_styles.less",
         },
       },
     },
