@@ -76,6 +76,14 @@ module.exports = function(grunt) {
     ]);
   });
 
+  // watch for Less and CSS file modifications only and then build Silex and restart Silex server
+  grunt.registerTask('watchless', 'Start Silex for Less', function () {
+    grunt.task.run([
+      'runDebug',
+      'doWatch:less'
+    ]);
+  });
+
   // Start Silex server
   grunt.registerTask('run', 'Start Silex', function () {
       var server = require('./dist/server/server.js');
@@ -152,7 +160,6 @@ module.exports = function(grunt) {
       production: {
         options: {
           cleancss: true,
-          compress: true,
         },
         files: {
           "dist/client/css/admin.min.css": "src/css/_styles.less",
@@ -249,6 +256,10 @@ module.exports = function(grunt) {
         test: {
             files: ['test/**/*.js', 'src/js/**/*.js', 'dist/server/**/*.js', 'src/css/*.css', 'src/css/*.less', 'src/html/**/*.jade', 'dist/client/**/*.html', 'Gruntfile.js'],
             tasks: ['simplemocha'],
+        },
+        less: {
+            files: ['src/css/*.css', 'src/css/*.less', 'Gruntfile.js'],
+            tasks: ['less:development'],
         },
     },
     simplemocha: {

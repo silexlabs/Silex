@@ -7,42 +7,46 @@
   top: @menuHeight;
   bottom: 0;
   overflow-y: auto;
-  background-color: #EDEDED;
-  border: 1px solid #D9D9D9;
+  background-color: @silexlightgrey;
+  -moz-box-shadow: inset 0px 0px 6px 0px #000;
+  -webkit-box-shadow: inset 0px 0px 6px 0px #000;
+  -o-box-shadow: inset 0px 0px 6px 0px #000;
+  box-shadow: inset 0px 0px 6px 0px #000;
+  filter:progid:DXImageTransform.Microsoft.Shadow(color=#000, Direction=NaN, Strength=6);
 
   .page-preview {
-    border: 1px solid #D9D9D9;
+    border: 1px solid @silexdarkgrey;
     width: 131px;
     height: 80px;
     position: relative;
     margin: auto;
     cursor: default;
     background-color: #FFF;
-    transition: all .5s;
+    transition: all .3s;
 
     &:hover {
-      border: 1px solid #777;
+      border: 1px solid #000;
+
+      .delete {
+        opacity: 1;
+      }
+
     }
 
     .delete {
-      right: -10px;
-      top: -10px;
+      opacity: 0;
+      right: 4px;
+      top: 3px;
       position: absolute;
       cursor: pointer;
-      padding: 5px;
-      background-color: #D00;
-      border-radius: 50%;
-      width: 10px;
-      height: 10px;
-      color: #FFF;
-      font-weight: bold;
-      vertical-align: middle;
-      line-height: 10px;
-      -moz-box-shadow: none;
-      -webkit-box-shadow: none;
-      -o-box-shadow: none;
-      box-shadow: none;
-      filter:none;
+      color: #333;
+      font-size: 18px;
+      transition: all .2s;
+
+      &:hover {
+        color: #F00;
+      }
+
     }
 
   }
@@ -54,14 +58,11 @@
       .page-preview {
         width: 141px;
         height: 89px;
-        border: 1px solid #000;
-        background-color: #d6e9f8;
-        -moz-box-shadow: 2px 2px 5px 0px #656565;
-        -webkit-box-shadow: 2px 2px 5px 0px #656565;
-        -o-box-shadow: 2px 2px 5px 0px #656565;
-        box-shadow: 2px 2px 5px 0px #656565;
-        filter:progid:DXImageTransform.Microsoft.Shadow(color=#656565, Direction=134, Strength=5);
-        transition: all .5s;
+        border: 1px solid @silexdarkgrey;
+        background-color: #FFF;
+        box-shadow: 1px 1px 6px 1px @silexdarkgrey;
+        filter:progid:DXImageTransform.Microsoft.Shadow(color=@silexdarkgrey, Direction=134, Strength=6);
+        transition: all .3s;
 
         &:before {
           pointer-events: none;
@@ -89,14 +90,6 @@
           height: 25px;
         }
 
-        .delete {
-          -moz-box-shadow: 2px 2px 5px 0px #656565;
-          -webkit-box-shadow: 2px 2px 5px 0px #656565;
-          -o-box-shadow: 2px 2px 5px 0px #656565;
-          box-shadow: 2px 2px 5px 0px #656565;
-          filter:progid:DXImageTransform.Microsoft.Shadow(color=#656565, Direction=134, Strength=5);
-        }
-
       }
 
     }
@@ -117,9 +110,20 @@
       position: absolute;
       cursor: text;
       white-space: nowrap;
-      width: 90%;
+      width: 100%;
       overflow: hidden;
       text-overflow: ellipsis;
+      box-sizing: border-box;
+      text-align: center;
+      color: #333;
+      border-top: 1px dashed transparent;
+      transition: all .4s;
+
+      &:hover {
+        border-top: 1px dashed #333;
+        background-color: #FFF;
+      }
+
     }
 
   }
