@@ -1,4 +1,5 @@
 .silex-property-tool {
+  color: #FFF;
   position: absolute;
   right: 0;
   width: @propertiesToolWidth;
@@ -6,7 +7,36 @@
   overflow-x: hidden;
   overflow-y: auto;
   bottom: 0;
-  background-color: #EDEDED;
+  background-color: @silexlightgrey;
+
+  .main-container {
+    padding: 5px;
+    width: 97%;
+
+    input {
+      display: inherit;
+      border: 1px solid @silexmediumgrey;
+      box-shadow: inset 1px 1px 5px rgba(0, 0, 0, .3);
+      background-color: white;
+      height: 22px;
+      overflow: hidden;
+      padding-left: 3px;
+      margin: 4px 0;
+      width: 100%;
+      box-sizing: border-box;
+
+      &:focus {
+        outline: none;
+        border: 1px solid @silexdarkgrey;
+      }
+    }
+
+  }
+
+  fieldset {
+    margin: 15px 0;
+    border: 1px solid #FFF;
+  }
 
   .help-icon {
     color: #a9a9a9;
@@ -14,12 +44,20 @@
     margin-left: 10px;
   }
 
-  .border-placement-container label {
-    margin: 4px 2px 0;
-    width: 35%;
+  .xsmall-font {
+    font-size: 13px;
+    font-weight: lighter;
+    color: #FFF;
+  }
+
+  .goog-menu-button-caption {
+    padding: 0;
   }
 
   .color-button {
+    display: block;
+    width: 20px;
+    float: left;
 
     .goog-inline-block {
       display: block;
@@ -51,7 +89,7 @@
 
         span {
           float: left;
-          margin: 3px;
+          margin-top: 5px;
         }
 
       }
@@ -61,12 +99,14 @@
   }
 
   legend {
-    padding: 0;
-    font-weight: bold;
+    padding: 0 5px;
+    font-weight: normal;
   }
 
   .goog-checkbox {
     float: left;
+    margin-top: 3px;
+    margin-left: 10px;
   }
 
   .tab-page {
@@ -78,8 +118,16 @@
       margin: 0;
     }
 
-    fieldset {
-      margin-top: 10px;
+  }
+
+  .background-property {
+
+    .color-button {
+
+      .goog-menu-button-inner-box {
+        padding: 2px;
+      }
+
     }
 
   }
@@ -140,17 +188,14 @@
     font-size: 13px;
   }
 
-  fieldset {
-    margin-bottom: 10px;
-  }
-
   .position-editor {
+
     label {
       float: left;
       margin: 5px 5px 5px 0px;
       width: 10px;
       text-align: right;
-      color: #555555;
+      color: #FFF;
       font-size: 11px;
     }
 
@@ -169,11 +214,8 @@
 
     input {
       width: 45px;
-      height: 15px;
-      padding-top: 2px;
       margin: 1px 25px 5px 5px;
       float: left;
-      border-style: inset;
       font-size: 12px;
       text-align: center;
     }
@@ -183,6 +225,17 @@
   .goog-hsva-palette-sm {
     overflow: hidden;
     width: 210px;
+  }
+
+  .link-input-text {
+    background-color: white;
+    border: 1px dotted;
+    display: inherit;
+    height: 22px;
+    overflow: hidden;
+    padding: 0;
+    width: 100%;
+    margin: 5px 0;
   }
 
   .link-small-btn {
@@ -200,22 +253,14 @@
   }
 
   .title1 {
-    background-color: #CCC;
-    border-bottom: 1px solid #999;
     color: #FFFFFF;
     margin: 0;
     font-weight: bold;
-    padding: 10px 0 10px 12px;
-    padding: 10px 0 10px 12px;
+    padding: 10px 0 0 19px;
     height: 15px;
     font-size: 14px;
     text-transform: uppercase;
-    color: #000;
-  }
-
-  .main-container {
-    padding: 5px;
-    width: 97%;
+    background: @silexlightgrey;
   }
 
   .goog-tab-bar {
@@ -237,15 +282,86 @@
     height: 150px;
   }
 
-}
+  .opacity-property {
 
-.silex-property-tool .link-input-text,.silex-property-tool input {
-  background-color: white;
-  border: 1px dotted;
-  display: inherit;
-  height: 22px;
-  overflow: hidden;
-  padding: 0;
-  width: 100%;
-  margin: 5px 0;
+    .opacity-input {
+      width: 52px;
+    }
+
+  }
+
+
+  .border-property {
+
+    .border-width-color-container {
+      float: left;
+      width: 100%;
+
+      label {
+        margin: 8px;
+        float: left;
+      }
+
+      input.border-width-input {
+        width: 52px;
+        float: left;
+        margin-left: 4px;
+      }
+
+      .border-color-button {
+        margin-top: 7px;
+
+        .goog-menu-button-inner-box {
+          padding: 2px;
+        }
+
+      }
+
+    }
+
+    .border-type-conainer {
+      float: left;
+      width: 100%;
+
+      div.border-type-label {
+        float: left;
+        margin: 8px;
+      }
+
+      .border-type-combo-box {
+        background: #FFF;
+        margin-top: 5px;
+        margin-left: 12px;
+
+        .goog-menu-button-caption {
+          padding-right: 10px;
+        }
+
+      }
+
+    }
+
+    .border-radius-container {
+
+      .border-radius-width-container {
+        float: left;
+        width: 100%;
+        margin: 5px 0;
+
+        label.border-radius-label {
+          float: left;
+          margin: 8px;
+        }
+
+        input.corner-radius-input {
+          width: 52px;
+          float: left;
+        }
+
+      }
+
+    }
+
+  }
+
 }

@@ -1,23 +1,34 @@
-html {
-  box-sizing: border-box;
-}
+/* imports custom fonts */
+@import url(http://fonts.googleapis.com/css?family=Open+Sans:400,700);
+@import url(../libs/font-awesome/css/font-awesome.min.css);
 
 ::-webkit-scrollbar {
     width: 10px;
 }
 ::-webkit-scrollbar-track {
-    background-color: #eaeaea;
+    background-color: @silexdarkgrey;
 }
 ::-webkit-scrollbar-thumb {
-    background-color: #aaa;
+    background-color: @silexmediumgrey;
 }
 ::-webkit-scrollbar-thumb:hover {
-    background-color: #999;
+    background-color: #333;
+}
+
+::selection {
+  background: @silexmediumgrey;
+  color: #FFF;
+}
+::-moz-selection {
+  background: @silexmediumgrey;
+  color: #FFF;
 }
 
 body {
+  font-family: 'Open Sans', sans-serif;
   overflow: hidden;
   height: inherit; /* without this, there is a white space bellow the dialogs background */
+  background-color: @silexmediumgrey;
 
   .loader {
     display: none;
@@ -26,8 +37,7 @@ body {
 }
 
 .small-font {
-  font-size: 13px;
-  font-family: "arial", "​sans-serif";
+  font-size: 12px;
 }
 
 .modal-dialog {
@@ -36,6 +46,7 @@ body {
 
 body.loading-pending {
   height: 100%; /* without this, the body is short in height and the loading anim is aligned on top */
+  
   .loader {
     display: inherit;
     visibility: inherit;
@@ -94,7 +105,6 @@ body.loading-pending {
   font-size: 13px;
   font-weight: lighter;
   color: #555555;
-  font-family: "arial", "​sans-serif";
 }
 
 #silex-file-explorer{
