@@ -143,7 +143,7 @@ silex.controller.EditMenuController.prototype.pasteSelection = function() {
     // duplicate and add to the container
     goog.array.forEach(this.clipboard, function(clipboardElement) {
       var element = clipboardElement.cloneNode(true);
-      this.model.element.addElement(container, element);
+      this.model.element.addElement(/** @type {Element} */ (container), element);
       // add to the selection
       selection.push(element);
       // apply the offset to the element, according to the scroll position
