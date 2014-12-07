@@ -40,6 +40,12 @@ silex.view.dialog.AceEditorBase = function(element, controller) {
   this.ace = ace.edit(
       /** @type {!Element} */(goog.dom.getElementByClass(
           'ace-editor', this.element)));
+  this.ace.setTheme("ace/theme/twilight");
+  this.ace.setOptions({
+        'enableBasicAutocompletion': true,
+        'enableSnippets': true,
+        'enableLiveAutocompletion': true
+  });
 };
 // inherit from silex.view.dialog.DialogBase
 goog.inherits(silex.view.dialog.AceEditorBase, silex.view.dialog.DialogBase);
