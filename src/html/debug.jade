@@ -5,15 +5,14 @@ head
   // Silex styles and code
   script(type='text/javascript', src='js/admin.js')
 
+  // all the css in the head with _styles.less imports
+  link(rel='stylesheet', type='text/css', href='css/admin.css')
+
 body.loading-pending.advanced-mode-off
   include ./templates/body.jade
 
-  // google closure css patches, to be included after the other includes
-  link(rel='stylesheet', type='text/css', href='css/closure-patches.css')
+  // google closure js patches, to be included after the other includes
   script(type='text/javascript', src='js/closure-patches.js')
-
-  // custom style after the others for easy styling
-  link(rel='stylesheet', type='text/css', href='css/admin.css')
 
   // debug script
   script(type='text/javascript', src='js/debug.js')
