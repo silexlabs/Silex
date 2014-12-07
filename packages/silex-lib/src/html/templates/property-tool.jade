@@ -1,14 +1,3 @@
-link(rel='stylesheet', href='css/closure/checkbox.css')
-link(rel='stylesheet', href='css/closure/button.css')
-link(rel='stylesheet', href='css/closure/custombutton.css')
-link(rel='stylesheet', href='css/closure/flatbutton.css')
-link(rel='stylesheet', href='css/closure/linkbutton.css')
-link(rel='stylesheet', href='css/closure/tab.css')
-link(rel='stylesheet', href='css/closure/tabbar.css')
-link(rel='stylesheet', href='css/closure/hsvapalette.css')
-link(rel='stylesheet', href='css/closure/palette.css')
-link(rel='stylesheet', href='css/closure/colorpalette.css')
-link(rel='stylesheet', href='css/closure/colormenubutton.css')
 h1.title1 Properties
 .main-container
   span.position-editor
@@ -121,21 +110,24 @@ h1.title1 Properties
         fieldset.small-font.border-property
           legend
             | Border
-          label Width
-          input.border-width-input(placeholder='-', type='number')
-          label Color
-          span.border-color-button.color-button
+          .border-width-color-container
+            label.border-width-label Width
+            input.border-width-input(placeholder='-', type='number')
+            label.border-color-label Color
+            span.border-color-button.color-button
           span.border-color-palette
-          .border-type-combo-box.combobox.goog-select.advanced-only
-            ul.goog-menu
-              li#solid.goog-menuitem solid
-              li#dotted.goog-menuitem dotted
-              li#dashed.goog-menuitem dashed
-              li#double.goog-menuitem double
-              li#groove.goog-menuitem groove
-              li#ridge.goog-menuitem ridge
-              li#inset.goog-menuitem inset
-              li#outset.goog-menuitem outset
+          .border-type-conainer.advanced-only
+            .border-type-label Style
+            .border-type-combo-box.combobox.goog-select
+              ul.goog-menu
+                li#solid.goog-menuitem solid
+                li#dotted.goog-menuitem dotted
+                li#dashed.goog-menuitem dashed
+                li#double.goog-menuitem double
+                li#groove.goog-menuitem groove
+                li#ridge.goog-menuitem ridge
+                li#inset.goog-menuitem inset
+                li#outset.goog-menuitem outset
           .border-placement-container.advanced-only
             span.border-placement-check.goog-checkbox
             label.border-placement-label Top
@@ -145,20 +137,19 @@ h1.title1 Properties
             label.border-placement-label Bottom
             span.border-placement-check.goog-checkbox
             label.border-placement-label Left
-        fieldset.small-font.corner-property
-          legend Corners
-          label Radius
-          input.corner-radius-input(placeholder='-', type='number')
-          label.advanced-only
-          .corner-placement-container.advanced-only
-            span.corner-placement-check.goog-checkbox
-            label.corner-placement-label Top Left
-            span.corner-placement-check.goog-checkbox
-            label.corner-placement-label Top Right
-            span.corner-placement-check.goog-checkbox
-            label.corner-placement-label Btm. Left
-            span.corner-placement-check.goog-checkbox
-            label.corner-placement-label Btm. Right
+          .border-radius-container
+            .border-radius-width-container
+              label.border-radius-label Radius
+              input.corner-radius-input(placeholder='-', type='number')
+            .corner-placement-container.advanced-only
+              span.corner-placement-check.goog-checkbox
+              label.corner-placement-label Top Left
+              span.corner-placement-check.goog-checkbox
+              label.corner-placement-label Top Right
+              span.corner-placement-check.goog-checkbox
+              label.corner-placement-label Btm. Left
+              span.corner-placement-check.goog-checkbox
+              label.corner-placement-label Btm. Right
       .style-editor
         fieldset.small-font.style-property.advanced-only
           legend Styles
