@@ -4,14 +4,18 @@ h1.title1 Properties
     fieldset.small-font
       legend Position and size
       div
-        label X
-        input.position-input.left-input(placeholder='-', type='number',tabindex='1')
-        label W
-        input.position-input.width-input(placeholder='-', type='number',tabindex='3')
-        label.new-line Y
-        input.position-input.top-input(placeholder='-', type='number',tabindex='2')
-        label H
-        input.position-input.height-input(placeholder='-', type='number',tabindex='4')
+        div.two-col
+          label X
+          label W
+        div.two-col
+          input.position-input.left-input(placeholder='-', type='number',tabindex='1')
+          input.position-input.width-input(placeholder='-', type='number',tabindex='3')
+        div.two-col
+          label Y
+          label H
+        div.two-col
+          input.position-input.top-input(placeholder='-', type='number',tabindex='2')
+          input.position-input.height-input(placeholder='-', type='number',tabindex='4')
 
   span.seo-editor.advanced-only
     fieldset.small-font
@@ -48,17 +52,6 @@ h1.title1 Properties
 
 
 
-  span.property-editor
-    // script.edition-template(type='text/x-handlebars-template')
-    //   <div style="display:{{htmlEditor}}" class="button small-font html-editor-button" title="Open HTML editor">Edit HTML</div>
-    //   <div style="display:{{textEditor}}" class="button small-font text-editor-button" title="Open text editor">Edit text</div>
-    //   <div style="display:{{imageEditor}}">
-    //   <input placeholder="-" class="image-url-input advanced-only" value="{{imageUrl}}" />
-    //   <div class="button small-font image-url-button" title="Open file browser">Swap image</div>
-    //   </div>
-    // fieldset.small-font
-    //   legend Content
-    //   .edition-container
   span.style-container
     span.tab-page
       .general-editor
@@ -72,7 +65,7 @@ h1.title1 Properties
           legend Background Color
           span.color-bg-button.color-button
           span.color-bg-palette
-          span.enable-color-bg-button
+          span.enable-color-bg-button.goog-checkbox-unchecked
           | Transparent
         fieldset.small-font.background-image
           legend Background Image

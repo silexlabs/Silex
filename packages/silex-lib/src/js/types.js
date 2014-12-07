@@ -195,6 +195,7 @@ silex.types.View = function() {
  * @param {silex.view.dialog.TextEditor} textEditor
  * @param {silex.view.dialog.FileExplorer} fileExplorer
  * @param {silex.view.dialog.SettingsDialog} settingsDialog
+ * @param {silex.view.Splitter} propSplitter
  * @param {silex.view.Workspace} workspace
  */
 silex.types.View.prototype.init = function(
@@ -208,6 +209,7 @@ silex.types.View.prototype.init = function(
     textEditor,
     fileExplorer,
     settingsDialog,
+    propSplitter,
     workspace) {
   /**
    * @type {silex.view.Menu}
@@ -249,6 +251,10 @@ silex.types.View.prototype.init = function(
    * @type {silex.view.dialog.SettingsDialog}
    */
   this.settingsDialog = settingsDialog;
+  /**
+   * @type {silex.view.Splitter}
+   */
+  this.propSplitter = propSplitter;
   /**
    * @type {silex.view.Workspace}
    */

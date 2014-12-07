@@ -47,6 +47,13 @@ body{
   left: -7px;
   cursor: nw-resize;
 }
+.editable-style.prevent-resizable > .ui-resizable-handle {
+  display: none;
+}
+.editable-style.prevent-draggable {
+  cursor: pointer;
+}
+
 /* HTML box while mous over */
 /*
 this makes the video clickable:
@@ -68,7 +75,6 @@ this makes the video clickable:
 .editable-style.silex-selected > .ui-resizable-sw,
 .editable-style.silex-selected > .ui-resizable-ne,
 .editable-style.silex-selected > .ui-resizable-nw {
-  display: inherit;
   position: absolute;
   background-color: #333333;
   border: 1px solid #666666;
@@ -84,8 +90,6 @@ this makes the video clickable:
 .ui-icon-gripsmall-diagonal-se {
   background-image: none;
 }
-.editable-style.locked-style,
-.editable-style.locked-style .editable-style,
 .editable-style.background {
   cursor: pointer;
   margin-bottom: 30px;

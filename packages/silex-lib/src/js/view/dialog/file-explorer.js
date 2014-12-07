@@ -44,6 +44,8 @@ goog.require('silex.view.dialog.DialogBase');
 silex.view.dialog.FileExplorer = function(element, controller) {
   // call super
   goog.base(this, element, controller);
+  // set the visibility css class
+  this.visibilityClass = 'file-editor';
   // override this.background
   var ceIframe = goog.dom.getElement('silex-file-explorer');
   goog.events.listenOnce(ceIframe, 'load', goog.bind(function() {

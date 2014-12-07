@@ -35,6 +35,8 @@ goog.require('silex.view.dialog.AceEditorBase');
 silex.view.dialog.CssEditor = function(element, controller) {
   // call super
   goog.base(this, element, controller);
+  // set the visibility css class
+  this.visibilityClass = 'css-editor';
 };
 // inherit from silex.view.dialog.DialogBase
 goog.inherits(silex.view.dialog.CssEditor, silex.view.dialog.AceEditorBase);
@@ -57,3 +59,23 @@ silex.view.dialog.CssEditor.prototype.buildUi = function() {
 silex.view.dialog.CssEditor.prototype.contentChanged = function() {
   this.controller.cssEditorController.changed(this.ace.getValue());
 };
+
+
+/**
+ * Open the editor
+ */
+silex.view.dialog.CssEditor.prototype.openEditor = function() {
+  // call super
+  goog.base(this, 'openEditor');
+};
+
+
+
+/**
+ * close the editor
+ */
+silex.view.dialog.CssEditor.prototype.closeEditor = function() {
+  // call super
+  goog.base(this, 'closeEditor');
+};
+

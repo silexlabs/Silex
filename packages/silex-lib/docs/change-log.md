@@ -2,6 +2,64 @@
 
 This is where you will find the recent changes made to Silex, and available on http://www.silex.me/
 
+Commits on Oct 17, 2014
+
+neocorp64 contribution
+
+## Sept 2014
+
+Michele Martone contribution with Functional tests: more tests, better structure
+
+## Aug 2014
+
+Features
+
+* added pixlr
+* updated cloud explorer
+* updated unifile
+* better shortcuts
+* silex is now served at the root of the domain name, and the website is in a separate repository
+
+Bug fixes
+
+* fixed backward compatibility of publication path
+* fixed scroll issues, in chrome and firefox
+* fixed styles in text editor not always visible
+* fixed float in position and update display while dragging
+
+Code quality
+
+* sessions stored in files instead of includedd in the cookies
+* updated all npm packages to latest versions
+* better readme 
+* refactored dialogs
+* removed monitoring tools which should be in the bootstrap
+* handle errors for calls to /silex/tasks/ route which does not exist
+* updated npm packages (qs had a security issue) + debug method for nodejs
+* standard json instead of funky one everywhere in the app
+
+## Jul 2014
+
+Features
+
+* added seo description tag
+* updated cloud explorer to the latest version
+
+Bug fixes
+
+* improved publication algorithm
+* clean up website html markup
+* fixed pageable-plugin-created css class of the stage appears in the css classes
+* prevent file with image urls like url('&quote;
+* fixed background color with opacity throws a js error
+
+Code quality
+
+* removed useless warnings 
+* fixed errors with phantomjs auto tests
+* fixed functional tests in chrome
+* functional tests for save, insert and publish
+
 ## June 2014
 
 bug fixes

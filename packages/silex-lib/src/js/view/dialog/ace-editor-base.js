@@ -74,6 +74,15 @@ silex.view.dialog.AceEditorBase.prototype.buildUi = function() {
       }, this), 100);
     }
   }, this));
+  // dock mode
+  var dockBtn = goog.dom.getElementByClass('dock-btn', this.element);
+  if (dockBtn) {
+    goog.events.listen(dockBtn, goog.events.EventType.CLICK, function() {
+      this.isDocked = !this.isDocked;
+      this.controller.toolMenuController.dockPanel(this.isDocked);
+      this.ace.resize();
+    }, false, this);
+  }
 };
 
 

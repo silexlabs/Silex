@@ -2,7 +2,7 @@
   color: #FFF;
   position: absolute;
   right: 0;
-  width: @propertiesToolWidth;
+  left: @propertiesToolWidth;
   top: @menuHeight;
   overflow-x: hidden;
   overflow-y: auto;
@@ -188,6 +188,10 @@
     font-size: 13px;
   }
 
+  fieldset {
+    margin-bottom: 10px;
+  }
+
   .position-editor {
 
     label {
@@ -197,6 +201,13 @@
       text-align: right;
       color: #FFF;
       font-size: 11px;
+    }
+
+    .two-col label,
+    .two-col input {
+      width: 42%;
+      margin: 5px;
+      text-align: left;
     }
 
     .right-bottom {
@@ -261,6 +272,11 @@
     font-size: 14px;
     text-transform: uppercase;
     background: @silexlightgrey;
+  }
+  .main-container {
+    padding: 5px;
+    right: 25px;
+    left: 5px;
   }
 
   .goog-tab-bar {
