@@ -190,7 +190,7 @@ exports.setPublicationPath = function(client, path, cbk){
           .click('.menu-item-file-publish-settings')
           // check that the file explorer is opened
           .waitFor('.silex-settings-dialog', 200)
-          .isVisible('.settings-background')
+          .isVisible('.dialogs-background')
           .addValue('input.input-publication-path', path)
           .click('.close-btn')
           .pause(200)
