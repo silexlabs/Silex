@@ -73,6 +73,13 @@ silex.view.dialog.AceEditorBase.prototype.iAmSettingValue = false;
 
 
 /**
+ * flag set to true when editors are docked
+ * @type {boolean}
+ */
+silex.view.dialog.AceEditorBase.isDocked;
+
+
+/**
  * init the menu and UIs
  */
 silex.view.dialog.AceEditorBase.prototype.buildUi = function() {
@@ -92,8 +99,8 @@ silex.view.dialog.AceEditorBase.prototype.buildUi = function() {
   var dockBtn = goog.dom.getElementByClass('dock-btn', this.element);
   if (dockBtn) {
     goog.events.listen(dockBtn, goog.events.EventType.CLICK, function() {
-      this.isDocked = !this.isDocked;
-      this.controller.toolMenuController.dockPanel(this.isDocked);
+      silex.view.dialog.AceEditorBase.isDocked = !silex.view.dialog.AceEditorBase.isDocked;
+      this.controller.toolMenuController.dockPanel(silex.view.dialog.AceEditorBase.isDocked);
       this.ace.resize();
     }, false, this);
   }
