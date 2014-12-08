@@ -1144,6 +1144,12 @@ Ace.prototype.setAutoScrollEditorIntoView = function(enable) {};
 
 
 /**
+ * @param {Object.<*>} opts
+ */
+Ace.prototype.setOptions = function(opts) {};
+
+
+/**
  * @type {Object.<*>}
  */
 var alertify = {};

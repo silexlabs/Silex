@@ -11,5 +11,6 @@ test:
 	node_modules/grunt-cli/bin/grunt test -phantomjs
 
 precommit:
-	node_modules/grunt-cli/bin/grunt test -phantomjs
+	echo 'About to commit your changes. Did you run the functional tests? Please do: \
+		`$ node_modules/grunt-cli/bin/grunt test -phantomjs`'
 

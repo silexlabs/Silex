@@ -40,6 +40,12 @@ silex.view.dialog.AceEditorBase = function(element, controller) {
   this.ace = ace.edit(
       /** @type {!Element} */(goog.dom.getElementByClass(
           'ace-editor', this.element)));
+  this.ace.setTheme("ace/theme/twilight");
+  this.ace.setOptions({
+        'enableBasicAutocompletion': true,
+        'enableSnippets': true,
+        'enableLiveAutocompletion': true
+  });
 };
 // inherit from silex.view.dialog.DialogBase
 goog.inherits(silex.view.dialog.AceEditorBase, silex.view.dialog.DialogBase);
@@ -56,6 +62,22 @@ silex.view.dialog.AceEditorBase.prototype.ace = null;
  * flag to prevent looping with event
  */
 silex.view.dialog.AceEditorBase.prototype.iAmSettingValue = false;
+
+
+/**
+ * currently opened editor
+ * @static
+ * @type {silex.view.dialog.AceEditorBase}
+ */
+silex.view.dialog.AceEditorBase.currentEditor = null;
+
+
+/**
+ * flag set to true when editors are docked
+ * @type {boolean}
+ * @static
+ */
+silex.view.dialog.AceEditorBase.isDocked;
 
 
 /**
@@ -78,8 +100,8 @@ silex.view.dialog.AceEditorBase.prototype.buildUi = function() {
   var dockBtn = goog.dom.getElementByClass('dock-btn', this.element);
   if (dockBtn) {
     goog.events.listen(dockBtn, goog.events.EventType.CLICK, function() {
-      this.isDocked = !this.isDocked;
-      this.controller.toolMenuController.dockPanel(this.isDocked);
+      silex.view.dialog.AceEditorBase.isDocked = !silex.view.dialog.AceEditorBase.isDocked;
+      this.controller.toolMenuController.dockPanel(silex.view.dialog.AceEditorBase.isDocked);
       this.ace.resize();
     }, false, this);
   }
@@ -90,6 +112,12 @@ silex.view.dialog.AceEditorBase.prototype.buildUi = function() {
  * Open the editor
  */
 silex.view.dialog.AceEditorBase.prototype.openEditor = function() {
+  // close the previous editor
+  if (silex.view.dialog.AceEditorBase.currentEditor) {
+    silex.view.dialog.AceEditorBase.currentEditor.closeEditor();
+  }
+  silex.view.dialog.AceEditorBase.currentEditor = this;
+
   // call super
   goog.base(this, 'openEditor');
 };
