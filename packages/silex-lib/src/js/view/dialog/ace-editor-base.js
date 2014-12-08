@@ -52,6 +52,14 @@ goog.inherits(silex.view.dialog.AceEditorBase, silex.view.dialog.DialogBase);
 
 
 /**
+ * currently opened editor
+ * @static
+ * @type {silex.view.dialog.AceEditorBase}
+ */
+silex.view.dialog.AceEditorBase.currentEditor = null;
+
+
+/**
  * instance of ace editor
  * @type {Ace}
  */
@@ -96,6 +104,12 @@ silex.view.dialog.AceEditorBase.prototype.buildUi = function() {
  * Open the editor
  */
 silex.view.dialog.AceEditorBase.prototype.openEditor = function() {
+  // close the previous editor
+  if (silex.view.dialog.AceEditorBase.currentEditor) {
+    silex.view.dialog.AceEditorBase.currentEditor.closeEditor();
+  }
+  silex.view.dialog.AceEditorBase.currentEditor = this;
+
   // call super
   goog.base(this, 'openEditor');
 };
