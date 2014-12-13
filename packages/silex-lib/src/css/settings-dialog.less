@@ -6,7 +6,7 @@
   .left-pane {
     width: 25%;
     height: 100%;
-    border-right: 1px solid rgb(229, 229, 229);
+    border-right: 1px solid @silexdarkgrey;
     float: left;
     ul {
       list-style: none;
@@ -22,7 +22,7 @@
     }
   }
   .dialog {
-    color: #727271;
+    color: white;
     font-style: normal;
     font-size: 13px;
     line-height: normal;
@@ -30,8 +30,8 @@
     height: 580px;
     position: static;
     margin: auto;
-    background-color: white;
-    border-color: rgb(172, 172, 172);
+    background-color: @silexmediumdarkgrey;
+    border-color: @silexdarkgrey;
     border-style: solid;
     border-width: 1px;
     -moz-box-shadow: rgba(0, 0, 0, 0.2) 0 4px 16px 0;
@@ -52,7 +52,7 @@
     position: absolute;
   }
   .body {
-    border-top: 1px solid rgb(229, 229, 229);
+    border-top: 1px solid @silexdarkgrey;
     overflow-y: auto;
     overflow-x: hidden;
     height: 524px;
@@ -69,7 +69,7 @@
       margin:0;
       padding: 0;
       li {
-        color: #727271;
+        color: white;
         font-style: normal;
         font-size: 13px;
         line-height: normal;
@@ -78,16 +78,19 @@
         }
         .input-url {
           width: 85%;
+          background-color: @silexdarkgrey;
+          color: white;
         }
         fieldset {
           margin: 10px;
           padding: 10px;
+          border-color: @silexdarkgrey;
         }
       }
     }
   }
   .title {
-    border-top: 1px solid rgb(229, 229, 229);
+    border-top: 1px solid @silexdarkgrey;
     height: 20px;
     padding: 17px 20px;
     font-size: 20px;
