@@ -142,6 +142,14 @@ silex.model.Body.PREVENT_DROPPABLE_CLASS_NAME = 'prevent-droppable';
 
 
 /**
+ * class name set on elements in which we are about to drop
+ * @const
+ * @type {string}
+ */
+silex.model.Body.DROP_CANDIDATE_CLASS_NAME = 'drop-zone-candidate';
+
+
+/**
  * @return  {Element}   body element
  */
 silex.model.Body.prototype.getBodyElement = function() {
@@ -317,6 +325,11 @@ silex.model.Body.prototype.removeEditableClasses = function(rootElement) {
   elements = goog.dom.getElementsByClass(silex.model.Body.UI_DROPPABLE_CLASS_NAME, rootElement);
   goog.array.forEach(elements, function(element) {
     goog.dom.classlist.remove(element, silex.model.Body.UI_DROPPABLE_CLASS_NAME);
+  }, this);
+
+  elements = goog.dom.getElementsByClass(silex.model.Body.DROP_CANDIDATE_CLASS_NAME, rootElement);
+  goog.array.forEach(elements, function(element) {
+    goog.dom.classlist.remove(element, silex.model.Body.DROP_CANDIDATE_CLASS_NAME);
   }, this);
 
   elements = goog.dom.getElementsByClass(silex.model.Body.UI_DRAGGABLE_DRAGGING_CLASS_NAME, rootElement);

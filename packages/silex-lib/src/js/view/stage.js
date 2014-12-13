@@ -465,10 +465,10 @@ silex.view.Stage.prototype.onMouseMove = function(target, x, y) {
  * and remove from non dropzones
  */
 silex.view.Stage.prototype.markAsDropZone = function(opt_element){
-    var els = goog.dom.getElementsByClass('drop-zone-candidate', this.bodyElement.parentNode);
-    goog.array.forEach(els, function(e){goog.dom.classlist.remove(/** @type {Element} */ (e),'drop-zone-candidate')});
+    var els = goog.dom.getElementsByClass(silex.model.Body.DROP_CANDIDATE_CLASS_NAME, this.bodyElement.parentNode);
+    goog.array.forEach(els, function(e){goog.dom.classlist.remove(/** @type {Element} */ (e), silex.model.Body.DROP_CANDIDATE_CLASS_NAME)});
     if(opt_element){
-      goog.dom.classlist.add(/** @type {Element} */ (opt_element), 'drop-zone-candidate');
+      goog.dom.classlist.add(/** @type {Element} */ (opt_element), silex.model.Body.DROP_CANDIDATE_CLASS_NAME);
     }
 };
 
@@ -746,7 +746,6 @@ silex.view.Stage.prototype.getResizeDirection = function(target) {
  * @param {number} value to be set
  */
 silex.view.Stage.prototype.setScrollX = function(value) {
-  //this.setScroll(value, 'scrollLeft', 'scrollLeft');
   var dh = new goog.dom.DomHelper(this.documentElement);
   return dh.getDocumentScrollElement().scrollLeft = value;
 };
@@ -757,7 +756,6 @@ silex.view.Stage.prototype.setScrollX = function(value) {
  * @param {number} value to be set
  */
 silex.view.Stage.prototype.setScrollY = function(value) {
-  // this.setScroll(value, 'scrollTop', 'scrollTop');
   var dh = new goog.dom.DomHelper(this.documentElement);
   return dh.getDocumentScrollElement().scrollTop = value;
 };
@@ -769,7 +767,6 @@ silex.view.Stage.prototype.setScrollY = function(value) {
  * @return {number} the value
  */
 silex.view.Stage.prototype.getScrollX = function() {
-  //return this.getScroll('scrollLeft', 'scrollLeft');
   var dh = new goog.dom.DomHelper(this.documentElement);
   return dh.getDocumentScroll().x;
 };
@@ -781,7 +778,6 @@ silex.view.Stage.prototype.getScrollX = function() {
  * @return {number} the value
  */
 silex.view.Stage.prototype.getScrollY = function() {
-  //return this.getScroll('scrollTop', 'scrollTop');
   var dh = new goog.dom.DomHelper(this.documentElement);
   return dh.getDocumentScroll().y;
 };
@@ -792,7 +788,6 @@ silex.view.Stage.prototype.getScrollY = function() {
  * @return {number} the value
  */
 silex.view.Stage.prototype.getScrollMaxX = function() {
-  // return this.getScroll('scrollLeftMax', 'scrollWidth');
   var dh = new goog.dom.DomHelper(this.documentElement);
   return goog.style.getSize(dh.getDocumentScrollElement()).width;
 };
@@ -803,7 +798,6 @@ silex.view.Stage.prototype.getScrollMaxX = function() {
  * @return {number} the value
  */
 silex.view.Stage.prototype.getScrollMaxY = function() {
-  //return this.getScroll('scrollTopMax', 'scrollHeight');
   var dh = new goog.dom.DomHelper(this.documentElement);
   return goog.style.getSize(dh.getDocumentScrollElement()).height;
 };
