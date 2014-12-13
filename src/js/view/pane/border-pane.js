@@ -445,6 +445,9 @@ silex.view.pane.BorderPane.prototype.onBorderWidthChanged = function() {
  * border style
  */
 silex.view.pane.BorderPane.prototype.onBorderStyleChanged = function() {
+  // prevent changing border when redraw is setting the value
+  if(this.iAmRedrawing) return;
+
   this.styleChanged(
       'borderStyle',
       this.borderStyleComboBox.getSelectedItem().getValue());
