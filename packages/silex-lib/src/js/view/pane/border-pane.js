@@ -23,7 +23,7 @@ goog.require('goog.editor.Field');
 goog.require('goog.object');
 goog.require('goog.ui.Checkbox');
 goog.require('goog.ui.ColorButton');
-goog.require('goog.ui.HsvaPalette');
+goog.require('goog.ui.HsvPalette');
 goog.require('silex.view.pane.PaneBase');
 
 
@@ -111,11 +111,10 @@ silex.view.pane.BorderPane.prototype.buildUi = function() {
   var hsvPaletteElement = goog.dom.getElementByClass(
       'border-color-palette',
       this.element);
-  this.hsvPalette = new goog.ui.HsvaPalette(
+  this.hsvPalette = new goog.ui.HsvPalette(
       undefined,
       undefined,
-      undefined,
-      'goog-hsva-palette-sm');
+      'goog-hsv-palette-sm');
   this.hsvPalette.render(hsvPaletteElement);
 
   // init button which shows/hides the palete
@@ -126,7 +125,7 @@ silex.view.pane.BorderPane.prototype.buildUi = function() {
       this.element));
 
   // init palette
-  this.hsvPalette.setColorRgbaHex('#000000FF');
+  this.hsvPalette.setColor('#000000');
   this.setColorPaletteVisibility(this.hsvPalette, false);
 
   // border placement
@@ -459,7 +458,7 @@ silex.view.pane.BorderPane.prototype.onBorderStyleChanged = function() {
  * callback for number inputs
  */
 silex.view.pane.BorderPane.prototype.onBorderColorChanged = function() {
-  var hex = this.hsvPalette.getColorRgbaHex();
+  var hex = this.hsvPalette.getColor();
   var color = silex.utils.Style.hexToRgba(hex);
   this.styleChanged('borderColor', color);
   this.colorPicker.setValue(hex.substring(0, 7));

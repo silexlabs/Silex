@@ -157,7 +157,7 @@ silex.view.pane.PaneBase.prototype.getCommonProperty = function(elements, getPro
  * color palette visibility
  * do not set display to none,
  *     because the setColor then leave the color palette UI unchanged
- * @param {goog.ui.HsvaPalette} hsvPalette   The HSV palete
+ * @param {goog.ui.HsvaPalette|goog.ui.HsvPalette} hsvPalette   The HSV palete
  * @param {boolean} isVisible    The desired visibility
  */
 silex.view.pane.PaneBase.prototype.setColorPaletteVisibility =
@@ -193,7 +193,7 @@ silex.view.pane.PaneBase.prototype.setColorPaletteVisibility =
  * color palette visibility
  * do not set display to none,
  * because the setColor then leave the color palette UI unchanged
- * @param {goog.ui.HsvaPalette} hsvPalette   The HSV palete
+ * @param {goog.ui.HsvaPalette|goog.ui.HsvPalette} hsvPalette   The HSV palete
  * @return    {boolean} true if the color palete is visible
  */
 silex.view.pane.PaneBase.prototype.getColorPaletteVisibility = function(hsvPalette) {
