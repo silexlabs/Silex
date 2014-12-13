@@ -124,6 +124,19 @@ silex.view.dialog.AceEditorBase.prototype.openEditor = function() {
 
 
 /**
+ * Close the editor
+ */
+silex.view.dialog.AceEditorBase.prototype.closeEditor = function() {
+  // remove the reference
+  silex.view.dialog.AceEditorBase.currentEditor = null;
+  // hide the suggestion box (autocomplete)
+  this.ace.focus();
+  // call super
+  goog.base(this, 'closeEditor');
+};
+
+
+/**
  * Set a value to the editor
  * param {!string} value
  */
