@@ -251,6 +251,15 @@ silex.model.Body.prototype.setEditable = function(rootElement, isEditable, opt_i
   else {
       this.removeEditableClasses(rootElement);
   }
+  // prevent the user to follow links
+  var links = rootElement.querySelectorAll('a');
+  goog.array.forEach(elements, function(element) {
+    element.addEventListener('click', function(e) {
+      e.preventDefault();
+      return false;
+    });
+  }, this);
+
   // add a div on top of the HTML content elements in order to
   // prevent interactions with iframes and html content while editing
   // start by removing all
