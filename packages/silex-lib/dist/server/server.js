@@ -16,7 +16,6 @@ var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
 var session = require('express-session');
 var multipart = require('connect-multiparty');
-var unifile = require('unifile');
 var FSStore = require('connect-fs2')(session);
 
 // init express
@@ -45,7 +44,9 @@ app.use('/', session({
   store: new FSStore({
     dir: __dirname + '/sessions'
   }),
-  cookie: { maxAge: 7 * 24 * 60 * 60 * 1000 } // 1 week
+  cookie: {
+    maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+  }
 }));
 
 // ********************************

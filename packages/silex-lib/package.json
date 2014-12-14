@@ -28,7 +28,7 @@
     "lodash": "2.4.1",
     "path": "0.4.9",
     "qs": "2.2.3",
-    "unifile": "0.0.48"
+    "unifile": "0.0.49"
   },
   "devDependencies": {
     "assert": "1.1.2",
