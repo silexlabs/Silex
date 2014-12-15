@@ -618,28 +618,11 @@ silex.view.Stage.prototype.followElementPosition =
         follower.parentNode, silex.model.Element.SELECTED_CLASS_NAME)
       && !goog.dom.classlist.contains(follower, silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME)) {
       var pos = goog.style.getPosition(follower);
-      var scroll = this.getParentsScroll(follower);
-      goog.style.setPosition(follower, pos.x + offsetX + scroll.x, pos.y + offsetY + scroll.y);
+      goog.style.setPosition(follower, pos.x + offsetX, pos.y + offsetY);
     }
   }, this);
 };
 
-
-/**
- * adds all parents scroll offsets and returns it
- * @param {Element} follower the element whose parents we take into account
- * @return {goog.math.Coordinate} the sum of all parent's scroll positions
- */
-silex.view.Stage.prototype.getParentsScroll = function(follower){
-    var scroll = new goog.math.Coordinate(0, 0);
-    var parent = follower.parentNode;
-    while(parent && parent.tagName.toLowerCase() != 'body'){
-        if (parent.scrollLeft) scroll.x += parent.scrollLeft;
-        if (parent.scrollTop) scroll.y += parent.scrollTop;
-        parent = parent.parentNode;
-    }
-    return scroll;
-};
 
 /**
  * make the followers follow the element's size
