@@ -189,7 +189,6 @@ silex.view.Splitter.prototype.onMouseUp = function(e) {
  * @param {Event} e
  */
 silex.view.Splitter.prototype.onMouseMoveFrame = function(e) {
-  console.log('onMouseMoveFrame', e);
   if(this.isDown) {
     var parentSize =  goog.style.getContentBoxSize(/** @type {Element} */ (this.element.parentNode));
     var pos = goog.style.getClientPosition(e);
@@ -205,7 +204,6 @@ silex.view.Splitter.prototype.onMouseMoveFrame = function(e) {
  * @param {Event} e
  */
 silex.view.Splitter.prototype.onMouseMove = function(e) {
-  console.log('onMouseMove', e);
   if(this.isDown) {
     var parentSize =  goog.style.getContentBoxSize(/** @type {Element} */ (this.element.parentNode));
     var pos = goog.style.getClientPosition(e);

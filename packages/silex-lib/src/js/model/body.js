@@ -242,7 +242,18 @@ silex.model.Body.prototype.initUiHandles = function(element) {
  * @param {?boolean=} opt_isRootDroppableOnly
  */
 silex.model.Body.prototype.setEditable = function(rootElement, isEditable, opt_isRootDroppableOnly) {
-  // activate editable plugin
+  // handle the root element itself
+  if (isEditable) {
+    if (goog.dom.getElementsByClass('ui-resizable-s', rootElement).length === 0) {
+      this.initUiHandles(rootElement);
+      goog.dom.classlist.add(rootElement, 'editable-plugin-created');
+    }
+  }
+  else {
+      this.removeEditableClasses(rootElement);
+  }
+
+  // activate editable plugin on all editable children
   var elements = goog.dom.getElementsByClass(silex.model.Body.EDITABLE_CLASS_NAME, rootElement);
   goog.array.forEach(elements, function(element) {
     if (isEditable && goog.dom.getElementsByClass('ui-resizable-s', element).length === 0) {
@@ -250,15 +261,6 @@ silex.model.Body.prototype.setEditable = function(rootElement, isEditable, opt_i
     }
   }, this);
 
-  // handle the root element itself
-  if (isEditable) {
-    if (goog.dom.getElementsByClass('ui-resizable-s', rootElement).length === 0) {
-      this.initUiHandles(rootElement);
-    }
-  }
-  else {
-      this.removeEditableClasses(rootElement);
-  }
   // prevent the user to follow links
   var links = rootElement.querySelectorAll('a');
   goog.array.forEach(elements, function(element) {

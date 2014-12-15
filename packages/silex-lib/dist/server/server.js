@@ -39,7 +39,7 @@ app.use('/', cookieParser());
 // session management
 app.use('/', session({
   secret: unifile.defaultConfig.sessionSecret,
-  resave: false,
+  resave: true,
   saveUninitialized: false,
   store: new FSStore({
     dir: __dirname + '/sessions'
