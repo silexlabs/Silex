@@ -434,11 +434,10 @@ silex.view.Stage.prototype.onMouseMove = function(target, x, y) {
           target, silex.model.Body.EDITABLE_CLASS_NAME) || this.bodyElement;
       this.lastSelected = editableElement;
     }
-    if (this.resizeDirection === null) {
-      this.resizeDirection = this.getResizeDirection(target);
-    }
     // update states
     if (!this.isDragging && !this.isResizing) {
+      // update the resize direction
+      this.resizeDirection = this.getResizeDirection(target);
       // notify controller that a change is about to take place
       this.controller.stageController.beforeChange();
       if (this.lastClickWasResize) {
@@ -467,11 +466,11 @@ silex.view.Stage.prototype.onMouseMove = function(target, x, y) {
  * and remove from non dropzones
  */
 silex.view.Stage.prototype.markAsDropZone = function(opt_element){
-    var els = goog.dom.getElementsByClass(silex.model.Body.DROP_CANDIDATE_CLASS_NAME, this.bodyElement.parentNode);
-    goog.array.forEach(els, function(e){goog.dom.classlist.remove(/** @type {Element} */ (e), silex.model.Body.DROP_CANDIDATE_CLASS_NAME)});
-    if(opt_element){
-      goog.dom.classlist.add(/** @type {Element} */ (opt_element), silex.model.Body.DROP_CANDIDATE_CLASS_NAME);
-    }
+  var els = goog.dom.getElementsByClass(silex.model.Body.DROP_CANDIDATE_CLASS_NAME, this.bodyElement.parentNode);
+  goog.array.forEach(els, function(e){goog.dom.classlist.remove(/** @type {Element} */ (e), silex.model.Body.DROP_CANDIDATE_CLASS_NAME)});
+  if(opt_element){
+    goog.dom.classlist.add(/** @type {Element} */ (opt_element), silex.model.Body.DROP_CANDIDATE_CLASS_NAME);
+  }
 };
 
 
@@ -497,29 +496,29 @@ silex.view.Stage.prototype.getDropZone = function(x, y, opt_container){
     var element = children[idx];
     if (this.getVisibility(element)
         && !goog.dom.classlist.contains(element, silex.model.Body.PREVENT_DROPPABLE_CLASS_NAME)
-        && !goog.dom.classlist.contains(element, 'silex-selected')
-        && goog.dom.classlist.contains(element, 'container-element')){
-      var bb = goog.style.getBounds(element);
-      var scrollX = this.getScrollX();
-      var scrollY = this.getScrollY();
-      if (bb.left < x + scrollX && bb.left + bb.width > x + scrollX
-        && bb.top < y + scrollY && bb.top + bb.height > y + scrollY){
-          var candidate = this.getDropZone(x, y, element);
-          // if zIndex is 0 then there is no value to css zIndex, considere the DOM order
-          if (candidate.element){
-            var zIndex = goog.style.getComputedZIndex(element);
-            if (zIndex === 'auto') zIndex = 0;
-            if (zIndex >= zTopMost){
-              topMost = candidate;
-              zTopMost = zIndex;
-              // keep track of the highest z-index in for the given result
-              if(zIndex > candidate.zIndex){
-                candidate.zIndex = /** @type {number} */ (zIndex);
+      && !goog.dom.classlist.contains(element, 'silex-selected')
+      && goog.dom.classlist.contains(element, 'container-element')){
+        var bb = goog.style.getBounds(element);
+        var scrollX = this.getScrollX();
+        var scrollY = this.getScrollY();
+        if (bb.left < x + scrollX && bb.left + bb.width > x + scrollX
+            && bb.top < y + scrollY && bb.top + bb.height > y + scrollY){
+              var candidate = this.getDropZone(x, y, element);
+              // if zIndex is 0 then there is no value to css zIndex, considere the DOM order
+              if (candidate.element){
+                var zIndex = goog.style.getComputedZIndex(element);
+                if (zIndex === 'auto') zIndex = 0;
+                if (zIndex >= zTopMost){
+                  topMost = candidate;
+                  zTopMost = zIndex;
+                  // keep track of the highest z-index in for the given result
+                  if(zIndex > candidate.zIndex){
+                    candidate.zIndex = /** @type {number} */ (zIndex);
+                  }
+                }
               }
             }
-          }
       }
-    }
   }
   return topMost || {'element': container, 'zIndex': 0};
 };
@@ -534,8 +533,8 @@ silex.view.Stage.prototype.getVisibility = function(element){
   /** @type {Element|null} */
   var parent = /** @type {Element|null} */ (element.parentNode);
   while (parent &&
-        (!goog.dom.classlist.contains(/** @type {Element} */ (parent), silex.model.Page.PAGED_CLASS_NAME) ||
-        goog.dom.classlist.contains(/** @type {Element} */ (parent), this.currentPageName))) {
+         (!goog.dom.classlist.contains(/** @type {Element} */ (parent), silex.model.Page.PAGED_CLASS_NAME) ||
+          goog.dom.classlist.contains(/** @type {Element} */ (parent), this.currentPageName))) {
     parent = /** @type {Element|null} */ (parent.parentNode);
   }
   return parent === null;
@@ -585,18 +584,18 @@ silex.view.Stage.prototype.multipleDragged = function(x, y) {
   this.lastScrollLeft = scrollX;
   this.lastScrollTop = scrollY;
 
-/*
+  /*
   // handle multiple selection for size and position
   var followers = this.selectedElements.filter(goog.bind(function(element) {
-    return element != this.lastSelected;
+  return element != this.lastSelected;
   }, this));
-*/
+  */
   // follow the mouse (this means that the element dragged by the editable plugin
   // is handled here, which overrides the behavior of the plugin
   // (this is because we take the body scroll into account, and the parent's scroll too)
   var followers = this.selectedElements;
   // drag or resize
-  if (this.isDragging) {
+  if (this.isDragging || this.resizeDirection === null) {
     this.followElementPosition(followers, offsetX, offsetY);
   }
   else if (this.isResizing) {
@@ -612,16 +611,16 @@ silex.view.Stage.prototype.multipleDragged = function(x, y) {
  * @param   {number} offsetY the delta to be applied
  */
 silex.view.Stage.prototype.followElementPosition =
-    function(followers, offsetX, offsetY) {
+  function(followers, offsetX, offsetY) {
   // apply offset to other selected element
   goog.array.forEach(followers, function(follower) {
     // do not move an element if one of its parent is already being moved
     if (!goog.dom.getAncestorByClass(
-        follower.parentNode, silex.model.Element.SELECTED_CLASS_NAME)
-      && !goog.dom.classlist.contains(follower, silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME)) {
-      var pos = goog.style.getPosition(follower);
-      goog.style.setPosition(follower, pos.x + offsetX, pos.y + offsetY);
-    }
+      follower.parentNode, silex.model.Element.SELECTED_CLASS_NAME)
+        && !goog.dom.classlist.contains(follower, silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME)) {
+          var pos = goog.style.getPosition(follower);
+          goog.style.setPosition(follower, pos.x + offsetX, pos.y + offsetY);
+        }
   }, this);
 };
 
@@ -634,35 +633,71 @@ silex.view.Stage.prototype.followElementPosition =
  * @param   {number} offsetY the delta to be applied
  */
 silex.view.Stage.prototype.followElementSize =
-    function(followers, resizeDirection, offsetX, offsetY) {
+  function(followers, resizeDirection, offsetX, offsetY) {
   // apply offset to other selected element
   goog.array.forEach(followers, function(follower) {
     if (!goog.dom.classlist.contains(follower, silex.model.Body.PREVENT_RESIZABLE_CLASS_NAME)) {
       var size = goog.style.getSize(follower);
+      var pos = goog.style.getPosition(follower);
+      var offsetPosX = pos.x;
+      var offsetPosY = pos.y;
       // depending on the handle which is dragged,
       // only width and/or height should be set
-      if (resizeDirection === 's') {
+      switch(resizeDirection) {
+      case 's':
         offsetX = 0;
-      }
-      else if (resizeDirection === 'n') {
-        var pos = goog.style.getPosition(follower);
-        goog.style.setPosition(follower, pos.x, pos.y + offsetY);
+        break;
+      case 'n':
+        offsetPosY += offsetY;
         offsetY = -offsetY;
         offsetX = 0;
-      }
-      else if (resizeDirection === 'w') {
-        var pos = goog.style.getPosition(follower);
-        goog.style.setPosition(follower, pos.x + offsetX, pos.y);
+        break;
+      case 'w':
+        offsetPosX += offsetX;
         offsetX = -offsetX;
         offsetY = 0;
-      }
-      else if (resizeDirection === 'e') {
+        break;
+      case 'e':
         offsetY = 0;
+        break;
+      case 'se':
+        break;
+      case 'sw':
+        offsetPosX += offsetX;
+        offsetX = -offsetX;
+        break;
+      case 'ne':
+        offsetPosY += offsetY;
+        offsetY = -offsetY;
+        break;
+      case 'nw':
+        offsetPosX += offsetX;
+        offsetPosY += offsetY;
+        offsetY = -offsetY;
+        offsetX = -offsetX;
+        break;
       }
+      // compute new size
       var borderBox = goog.style.getBorderBox(follower);
-      goog.style.setContentBoxSize(follower,
-              new goog.math.Size(size.width + offsetX - borderBox.left - borderBox.right,
-                    size.height + offsetY - borderBox.top - borderBox.bottom));
+      var newSizeW = size.width + offsetX - borderBox.left - borderBox.right;
+      var newSizeH = size.height + offsetY - borderBox.top - borderBox.bottom;
+      // handle min size
+      if (newSizeW < 20) {
+        if (resizeDirection === 'w' || resizeDirection === 'sw' || resizeDirection === 'nw') {
+          offsetPosX -= 20 - newSizeW;
+        }
+        newSizeW = 20;
+      }
+      if (newSizeH < 20) {
+        if (resizeDirection === 'n' || resizeDirection === 'ne' || resizeDirection === 'nw') {
+          offsetPosY -= 20 - newSizeH;
+        }
+        newSizeH = 20;
+      }
+      // set position in case we are resizing up or left
+      goog.style.setPosition(follower, offsetPosX, offsetPosY);
+      // apply the new size
+      goog.style.setContentBoxSize(follower, new goog.math.Size(newSizeW, newSizeH));
     }
   }, this);
 };
