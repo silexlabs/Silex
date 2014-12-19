@@ -140,6 +140,7 @@ silex.view.Stage.prototype.buildUi = function() {
 silex.view.Stage.prototype.onMouseMoveOverUi = function(event) {
   var pos =  goog.style.getRelativePosition(event, this.element);
   this.onMouseMove(/** @type {Element} */ (event.target), pos.x, pos.y);
+  event.preventDefault();
 };
 
 
@@ -271,6 +272,7 @@ silex.view.Stage.prototype.initEvents = function(contentWindow) {
     var x = event.clientX;
     var y = event.clientY;
     this.onMouseMove(/** @type {Element} */ (event.target), x, y);
+    event.preventDefault();
   }, false, this);
 
   // detect mouse down
