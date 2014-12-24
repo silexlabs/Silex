@@ -352,7 +352,9 @@ silex.controller.ControllerBase.prototype.promptTitle = function() {
 silex.controller.ControllerBase.prototype.refreshFonts = function() {
   //update loaded font list, as user might have choose a new one
   var neededFonts = this.model.body.getNeededFonts();
-  this.model.head.refreshFontList(neededFonts);
+  // refresh the font list in the text editor
+  var customFontsForTextEditor = this.model.head.refreshFontList(neededFonts);
+  this.view.textEditor.setCustomFonts(customFontsForTextEditor);
 };
 
 

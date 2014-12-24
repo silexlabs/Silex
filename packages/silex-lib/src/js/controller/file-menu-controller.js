@@ -199,6 +199,10 @@ silex.controller.FileMenuController.prototype.fileOperationSuccess = function(op
     this.model.page.setCurrentPage(pages[0]);
     // update fonts
     this.refreshFonts();
+    // update dialogs
+    this.view.jsEditor.setValue(this.model.head.getHeadScript());
+    this.view.cssEditor.setValue(this.model.head.getHeadStyle());
+    this.view.htmlEditor.setValue('');
   }
   if (opt_message) {
     // notify user

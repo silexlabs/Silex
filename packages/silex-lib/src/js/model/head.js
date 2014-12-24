@@ -142,6 +142,8 @@ silex.model.Head.prototype.setHeadStyle = function(cssString) {
 /**
  * refresh the list of loaded fonts. When a user changes the font family
  * of a text, the corresponding font file is loaded if available
+ * @param {Object.<boolean>} neededFonts the embed fonts found in the website's body
+ * @return {Array.<{href: string, name: string}>} font list
  */
 silex.model.Head.prototype.refreshFontList = function(neededFonts) {
   var head = this.getHeadElement();
@@ -194,8 +196,7 @@ silex.model.Head.prototype.refreshFontList = function(neededFonts) {
       });
     }
   }
-  // refresh the font list in the text editor
-  this.view.textEditor.setCustomFonts(customFontsForTextEditor);
+  return customFontsForTextEditor;
 };
 
 
