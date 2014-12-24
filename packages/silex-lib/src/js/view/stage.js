@@ -296,7 +296,7 @@ silex.view.Stage.prototype.initEvents = function(contentWindow) {
       function(e) {
         this.controller.editMenuController.editElement();
       }, false, this);
-};
+  };
 
 
 /**
@@ -494,10 +494,11 @@ silex.view.Stage.prototype.getDropZone = function(x, y, opt_container){
   // find the best drop zone
   for (var idx=0; idx < children.length; idx++){
     var element = children[idx];
-    if (this.getVisibility(element)
-        && !goog.dom.classlist.contains(element, silex.model.Body.PREVENT_DROPPABLE_CLASS_NAME)
+    if (goog.dom.classlist.contains(element, 'container-element')
+      && !goog.dom.classlist.contains(element, silex.model.Body.PREVENT_DROPPABLE_CLASS_NAME)
       && !goog.dom.classlist.contains(element, 'silex-selected')
-      && goog.dom.classlist.contains(element, 'container-element')){
+      && this.getVisibility(element)
+      ){
         var bb = goog.style.getBounds(element);
         var scrollX = this.getScrollX();
         var scrollY = this.getScrollY();
@@ -531,7 +532,7 @@ silex.view.Stage.prototype.getDropZone = function(x, y, opt_container){
  */
 silex.view.Stage.prototype.getVisibility = function(element){
   /** @type {Element|null} */
-  var parent = /** @type {Element|null} */ (element.parentNode);
+  var parent = /** @type {Element|null} */ (element);
   while (parent &&
          (!goog.dom.classlist.contains(/** @type {Element} */ (parent), silex.model.Page.PAGED_CLASS_NAME) ||
           goog.dom.classlist.contains(/** @type {Element} */ (parent), this.currentPageName))) {
