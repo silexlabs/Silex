@@ -126,15 +126,13 @@ silex.model.File.prototype.onContentLoaded = function(opt_cbk) {
   this.model.body.setSelection([contentDocument.body]);
   // make editable again
   this.model.body.setEditable(contentDocument.body, true, true);
-  // update text editor with the sebsite custom style
+  // update text editor with the website custom styles and script
   this.model.head.setHeadStyle(this.model.head.getHeadStyle());
+  this.model.head.setHeadScript(this.model.head.getHeadScript());
   // update site title
   this.model.head.setTitle(this.model.head.getTitle());
   // update the settings dialog
   this.model.head.setPublicationPath(this.model.head.getPublicationPath());
-  //update loaded font list, as user might have choose a new one
-  var neededFonts = this.model.body.getNeededFonts();
-  this.model.head.refreshFontList(neededFonts);
   // restore event listeners
   this.view.stage.initEvents(contentWindow);
   // refresh the view
