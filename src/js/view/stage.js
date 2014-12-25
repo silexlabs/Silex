@@ -291,11 +291,33 @@ silex.view.Stage.prototype.initEvents = function(contentWindow) {
 
   // detect double click
   goog.events.listen(
-      this.bodyElement,
-      goog.events.EventType.DBLCLICK,
-      function(e) {
-        this.controller.editMenuController.editElement();
-      }, false, this);
+    this.bodyElement,
+    goog.events.EventType.DBLCLICK,
+    function(e) {
+      this.controller.editMenuController.editElement();
+    }, false, this);
+
+  // keyboard
+  var keyHandler = new goog.events.KeyHandler(document);
+  goog.events.listen(keyHandler, 'key', goog.bind(function(event) {
+    var offsetX = 0;
+    var offsetY = 0;
+    switch (event.keyCode) {
+      case goog.events.KeyCodes.LEFT:
+        offsetX = -10;
+      break;
+      case goog.events.KeyCodes.RIGHT:
+        offsetX = 10;
+      break;
+      case goog.events.KeyCodes.UP:
+        offsetY = -10;
+      break;
+      case goog.events.KeyCodes.DOWN:
+        offsetY = 10;
+      break;
+    }
+    this.followElementPosition(this.selectedElements, offsetX, offsetY);
+  }, this));
  };
 
 
