@@ -139,7 +139,7 @@ silex.view.Stage.prototype.buildUi = function() {
  */
 silex.view.Stage.prototype.onMouseMoveOverUi = function(event) {
   var pos =  goog.style.getRelativePosition(event, this.element);
-  this.onMouseMove(/** @type {Element} */ (event.target), pos.x, pos.y);
+  this.onMouseMove(/** @type {Element} */ (event.target), pos.x, pos.y, event.shiftKey);
   event.preventDefault();
 };
 
@@ -271,7 +271,7 @@ silex.view.Stage.prototype.initEvents = function(contentWindow) {
   goog.events.listen(this.bodyElement, 'mousemove', function(event) {
     var x = event.clientX;
     var y = event.clientY;
-    this.onMouseMove(/** @type {Element} */ (event.target), x, y);
+    this.onMouseMove(/** @type {Element} */ (event.target), x, y, event.shiftKey);
     event.preventDefault();
   }, false, this);
 
@@ -296,7 +296,7 @@ silex.view.Stage.prototype.initEvents = function(contentWindow) {
       function(e) {
         this.controller.editMenuController.editElement();
       }, false, this);
-  };
+ };
 
 
 /**
@@ -415,11 +415,11 @@ silex.view.Stage.prototype.bringSelectionForward = function() {
  *       (while dragging an element near the border of the stage, it may scroll)
  * - apply the ofset to the dragged or resized element(s)
  * @param   {Element} target a DOM element clicked by the user
- *
  * @param   {number} x position of the mouse, relatively to the screen
  * @param   {number} y position of the mouse, relatively to the screen
+ * @param   {boolean} shiftKey true if shift is down
  */
-silex.view.Stage.prototype.onMouseMove = function(target, x, y) {
+silex.view.Stage.prototype.onMouseMove = function(target, x, y, shiftKey) {
   // update states
   if (this.isDown) {
     // det the drop zone under the cursor
@@ -453,7 +453,7 @@ silex.view.Stage.prototype.onMouseMove = function(target, x, y) {
     }
 
     // update multiple selection according the the dragged element
-    this.multipleDragged(x, y);
+    this.multipleDragged(x, y, shiftKey);
 
     // update scroll when mouse is near the border
     this.updateScroll(x, y);
@@ -573,35 +573,55 @@ silex.view.Stage.prototype.updateScroll = function(x, y) {
  * Take the scroll delta into account (changes when dragging outside the stage)
  * @param   {number} x position of the mouse, relatively to the screen
  * @param   {number} y position of the mouse, relatively to the screen
+ * @param   {boolean} shiftKey state of the shift key
  */
-silex.view.Stage.prototype.multipleDragged = function(x, y) {
+silex.view.Stage.prototype.multipleDragged = function(x, y, shiftKey) {
   var scrollX = this.getScrollX();
   var scrollY = this.getScrollY();
-  var offsetX = x - this.lastPosX + (scrollX - this.lastScrollLeft);
-  var offsetY = y - this.lastPosY + (scrollY - this.lastScrollTop);
-  // update the latest position and scroll
-  this.lastPosX = x;
-  this.lastPosY = y;
-  this.lastScrollLeft = scrollX;
-  this.lastScrollTop = scrollY;
 
-  /*
-  // handle multiple selection for size and position
-  var followers = this.selectedElements.filter(goog.bind(function(element) {
-  return element != this.lastSelected;
-  }, this));
-  */
   // follow the mouse (this means that the element dragged by the editable plugin
   // is handled here, which overrides the behavior of the plugin
   // (this is because we take the body scroll into account, and the parent's scroll too)
   var followers = this.selectedElements;
   // drag or resize
   if (this.isDragging || this.resizeDirection === null) {
+    // handle shift key to move on one axis or preserve ratio
+    if(shiftKey === true) {
+      if(Math.abs((this.initialPos.x + this.initialScroll.x) - (x + scrollX)) < Math.abs((this.initialPos.y + this.initialScroll.y) - (y + scrollY))) {
+        x = this.initialPos.x + this.initialScroll.x - scrollX;
+      }
+      else {
+        y = this.initialPos.y + this.initialScroll.y - scrollY;
+      }
+    }
+    var offsetX = x - this.lastPosX + (scrollX - this.lastScrollLeft);
+    var offsetY = y - this.lastPosY + (scrollY - this.lastScrollTop);
     this.followElementPosition(followers, offsetX, offsetY);
   }
   else if (this.isResizing) {
+    // handle shift key to move on one axis or preserve ratio
+    if(shiftKey === true 
+      && (this.resizeDirection === 'sw'
+          || this.resizeDirection === 'se'
+          || this.resizeDirection === 'nw'
+          || this.resizeDirection === 'ne'
+    )) {
+      var width = x - this.initialPos.x;
+      if (this.resizeDirection === 'ne' || this.resizeDirection === 'sw') {
+        width = -width;
+      }
+      y = (this.initialPos.y) + (width * this.initialRatio);
+    }
+    var offsetX = x - this.lastPosX + (scrollX - this.lastScrollLeft);
+    var offsetY = y - this.lastPosY + (scrollY - this.lastScrollTop);
     this.followElementSize(followers, this.resizeDirection, offsetX, offsetY);
   }
+
+  // update the latest position and scroll
+  this.lastPosX = x;
+  this.lastPosY = y;
+  this.lastScrollLeft = scrollX;
+  this.lastScrollTop = scrollY;
 };
 
 
@@ -738,6 +758,10 @@ silex.view.Stage.prototype.handleMouseDown = function(element, x, y, shiftKey) {
   this.lastPosY = y;
   this.lastScrollLeft = this.getScrollX();
   this.lastScrollTop = this.getScrollY();
+  var initialSize = goog.style.getSize(element);
+  this.initialRatio = initialSize.height / initialSize.width;
+  this.initialPos = {x: x, y: y};
+  this.initialScroll = {x: this.getScrollX(), y: this.getScrollY()};
   // update state
   this.isDown = true;
 };
