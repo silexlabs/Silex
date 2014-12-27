@@ -129,6 +129,47 @@ silex.view.Stage.prototype.buildUi = function() {
       this.onMouseMoveOverUi,
       false,
       this);
+
+  // keyboard
+  var keyHandler = new goog.events.KeyHandler(document);
+  goog.events.listen(keyHandler, 'key', goog.bind(function(event) {
+     // not in text inputs
+    if (event.target.tagName.toUpperCase() === 'INPUT' ||
+        event.target.tagName.toUpperCase() === 'TEXTAREA') {
+      // let browser handle
+    }
+    else {
+      // silex takes an action
+      event.preventDefault();
+      var offsetX = 0;
+      var offsetY = 0;
+      var amount = 1;
+      if(event.shiftKey === true) {
+        amount *= 2;
+      }
+      if(event.altKey === true) {
+        amount *= 5;
+      }
+      switch (event.keyCode) {
+        case goog.events.KeyCodes.LEFT:
+          offsetX = -amount;
+        break;
+        case goog.events.KeyCodes.RIGHT:
+          offsetX = amount;
+        break;
+        case goog.events.KeyCodes.UP:
+          offsetY = -amount;
+        break;
+        case goog.events.KeyCodes.DOWN:
+          offsetY = amount;
+        break;
+      }
+      // apply the offset
+      this.followElementPosition(this.selectedElements, offsetX, offsetY);
+      // notify the controller
+      this.propertyChanged();
+    }
+  }, this));
 };
 
 
@@ -296,28 +337,6 @@ silex.view.Stage.prototype.initEvents = function(contentWindow) {
     function(e) {
       this.controller.editMenuController.editElement();
     }, false, this);
-
-  // keyboard
-  var keyHandler = new goog.events.KeyHandler(document);
-  goog.events.listen(keyHandler, 'key', goog.bind(function(event) {
-    var offsetX = 0;
-    var offsetY = 0;
-    switch (event.keyCode) {
-      case goog.events.KeyCodes.LEFT:
-        offsetX = -10;
-      break;
-      case goog.events.KeyCodes.RIGHT:
-        offsetX = 10;
-      break;
-      case goog.events.KeyCodes.UP:
-        offsetY = -10;
-      break;
-      case goog.events.KeyCodes.DOWN:
-        offsetY = 10;
-      break;
-    }
-    this.followElementPosition(this.selectedElements, offsetX, offsetY);
-  }, this));
  };
 
 
