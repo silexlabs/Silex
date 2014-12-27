@@ -331,6 +331,10 @@ silex.view.dialog.TextEditor.prototype.openEditor = function() {
   tag = iframeDoc.createElement('style');
   tag.innerHTML = '.paged-element{display:inherit;}';
   goog.dom.appendChild(head, tag);
+
+  // workaround "body of the text editor has min-width:0;"
+  iframeDoc.documentElement.style.minWidth = '';
+  iframeDoc.body.style.minWidth = '';
 };
 
 
