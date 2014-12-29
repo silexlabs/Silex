@@ -64,6 +64,14 @@ silex.view.Stage.prototype.documentElement = null;
 silex.view.Stage.prototype.bodyElement = null;
 
 
+
+/**
+ * current selection
+ * @type {Array.<Element>}
+ */
+silex.view.Stage.prototype.selectedElements = null;
+
+
 /**
  * input element to get the focus
  */
@@ -134,15 +142,9 @@ silex.view.Stage.prototype.buildUi = function() {
   var keyHandler = new goog.events.KeyHandler(document);
   goog.events.listen(keyHandler, 'key', goog.bind(function(event) {
      // not in text inputs
-    if (event.target.tagName.toUpperCase() === 'INPUT' ||
-        event.target.tagName.toUpperCase() === 'TEXTAREA') {
-      // let browser handle
-    }
-    else {
-      // silex takes an action
-      event.preventDefault();
-      var offsetX = 0;
-      var offsetY = 0;
+    if (event.target.tagName.toUpperCase() !== 'INPUT' &&
+        event.target.tagName.toUpperCase() !== 'TEXTAREA') {
+      // compute the number of pixels to move
       var amount = 1;
       if(event.shiftKey === true) {
         amount *= 2;
@@ -150,6 +152,9 @@ silex.view.Stage.prototype.buildUi = function() {
       if(event.altKey === true) {
         amount *= 5;
       }
+      // compute the direction
+      var offsetX = 0;
+      var offsetY = 0;
       switch (event.keyCode) {
         case goog.events.KeyCodes.LEFT:
           offsetX = -amount;
@@ -164,10 +169,15 @@ silex.view.Stage.prototype.buildUi = function() {
           offsetY = amount;
         break;
       }
-      // apply the offset
-      this.followElementPosition(this.selectedElements, offsetX, offsetY);
-      // notify the controller
-      this.propertyChanged();
+      // if there is something to move
+      if (offsetX > 0 || offsetY > 0) {
+        // apply the offset
+        this.followElementPosition(this.selectedElements, offsetX, offsetY);
+        // notify the controller
+        this.propertyChanged();
+        // prevent default behavior for this key
+        event.preventDefault();
+      }
     }
   }, this));
 };
@@ -349,6 +359,10 @@ silex.view.Stage.prototype.initEvents = function(contentWindow) {
  */
 silex.view.Stage.prototype.redraw =
     function(selectedElements, document, pageNames, currentPageName) {
+  // reset focus out of the text inputs,
+  // this also prevents a bug when the page is loaded and the user presses a key,
+  // the body is replaced by the keys chars
+  this.resetFocus();
   // remember selection
   this.selectedElements = selectedElements;
   this.bodyElementSizeToContent();
@@ -420,9 +434,6 @@ silex.view.Stage.prototype.handleMouseUp = function(target, x, y, shiftKey) {
         this.controller.stageController.select(editableElement);
       }
     }
-  }
-  if (this.iAmClicking !== true) {
-    this.resetFocus();
   }
 };
 
