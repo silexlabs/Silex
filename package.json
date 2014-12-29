@@ -32,7 +32,6 @@
   },
   "devDependencies": {
     "assert": "1.1.2",
-    "grunt-append-sourcemapping": "0.0.2",
     "grunt-contrib-watch": "0.6.1",
     "grunt-selenium-webdriver": "0.2.431",
     "grunt-simple-mocha": "0.4.0",
