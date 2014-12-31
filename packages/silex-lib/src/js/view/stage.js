@@ -140,46 +140,7 @@ silex.view.Stage.prototype.buildUi = function() {
 
   // keyboard
   var keyHandler = new goog.events.KeyHandler(document);
-  goog.events.listen(keyHandler, 'key', goog.bind(function(event) {
-     // not in text inputs
-    if (event.target.tagName.toUpperCase() !== 'INPUT' &&
-        event.target.tagName.toUpperCase() !== 'TEXTAREA') {
-      // compute the number of pixels to move
-      var amount = 1;
-      if(event.shiftKey === true) {
-        amount *= 2;
-      }
-      if(event.altKey === true) {
-        amount *= 5;
-      }
-      // compute the direction
-      var offsetX = 0;
-      var offsetY = 0;
-      switch (event.keyCode) {
-        case goog.events.KeyCodes.LEFT:
-          offsetX = -amount;
-        break;
-        case goog.events.KeyCodes.RIGHT:
-          offsetX = amount;
-        break;
-        case goog.events.KeyCodes.UP:
-          offsetY = -amount;
-        break;
-        case goog.events.KeyCodes.DOWN:
-          offsetY = amount;
-        break;
-      }
-      // if there is something to move
-      if (offsetX > 0 || offsetY > 0) {
-        // apply the offset
-        this.followElementPosition(this.selectedElements, offsetX, offsetY);
-        // notify the controller
-        this.propertyChanged();
-        // prevent default behavior for this key
-        event.preventDefault();
-      }
-    }
-  }, this));
+  goog.events.listen(keyHandler, 'key', goog.bind(this.handleKey, this));
 };
 
 
@@ -204,7 +165,7 @@ silex.view.Stage.prototype.onMouseUpOverUi = function(event) {
   // if out of stage, release from drag of the plugin
   // simulate the mouse up on the iframe body
   var pos =  goog.style.getRelativePosition(event, this.element);
-  var newEvObj = document.createEvent('MouseEvents');
+  var newEvObj = document.createEvent('MouseEvent');
   newEvObj.initEvent('mouseup', true, true);
   newEvObj.clientX = pos.x;
   newEvObj.clientY = pos.y;
@@ -347,7 +308,7 @@ silex.view.Stage.prototype.initEvents = function(contentWindow) {
     function(e) {
       this.controller.editMenuController.editElement();
     }, false, this);
- };
+};
 
 
 /**
@@ -371,6 +332,52 @@ silex.view.Stage.prototype.redraw =
 
 
 /**
+ * handle key strikes, look for arrow keys to move selection
+ * @param {Event} event
+ */
+silex.view.Stage.prototype.handleKey = function(event) {
+  // not in text inputs
+  if (event.target.tagName.toUpperCase() !== 'INPUT' &&
+      event.target.tagName.toUpperCase() !== 'TEXTAREA') {
+    // compute the number of pixels to move
+    var amount = 1;
+    if(event.shiftKey === true) {
+      amount *= 2;
+    }
+    if(event.altKey === true) {
+      amount *= 5;
+    }
+    // compute the direction
+    var offsetX = 0;
+    var offsetY = 0;
+    switch (event.keyCode) {
+      case goog.events.KeyCodes.LEFT:
+        offsetX = -amount;
+      break;
+      case goog.events.KeyCodes.RIGHT:
+        offsetX = amount;
+      break;
+      case goog.events.KeyCodes.UP:
+        offsetY = -amount;
+      break;
+      case goog.events.KeyCodes.DOWN:
+        offsetY = amount;
+      break;
+    }
+    // if there is something to move
+    if (offsetX !== 0 || offsetY !== 0) {
+      // apply the offset
+      this.followElementPosition(this.selectedElements, offsetX, offsetY);
+      // notify the controller
+      this.propertyChanged();
+      // prevent default behavior for this key
+      event.preventDefault();
+    }
+  }
+};
+
+
+/**
  * handle mouse up
  * notify the controller to select/deselect the element (multiple or single)
  * reset state:
@@ -386,6 +393,9 @@ silex.view.Stage.prototype.redraw =
 silex.view.Stage.prototype.handleMouseUp = function(target, x, y, shiftKey) {
   // update state
   this.isDown = false;
+  // reset focus to the main document
+  this.resetFocus();
+  // handle the mouse up
   if(this.isDragging){
     // new container
     var dropZone = this.getDropZone(x, y) || {'element': this.bodyElement, 'zIndex': 0};
