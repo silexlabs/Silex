@@ -393,8 +393,10 @@ silex.view.Stage.prototype.handleKey = function(event) {
 silex.view.Stage.prototype.handleMouseUp = function(target, x, y, shiftKey) {
   // update state
   this.isDown = false;
-  // reset focus to the main document
-  this.resetFocus();
+  // if it is not a click on the UI
+  if (this.iAmClicking !== true) {
+    this.resetFocus();
+  }
   // handle the mouse up
   if(this.isDragging){
     // new container
@@ -695,12 +697,15 @@ silex.view.Stage.prototype.multipleDragged = function(x, y, shiftKey) {
  */
 silex.view.Stage.prototype.followElementPosition =
   function(followers, offsetX, offsetY) {
+  console.log(followers);
   // apply offset to other selected element
   goog.array.forEach(followers, function(follower) {
     // do not move an element if one of its parent is already being moved
-    if (!goog.dom.getAncestorByClass(
-      follower.parentNode, silex.model.Element.SELECTED_CLASS_NAME)
-        && !goog.dom.classlist.contains(follower, silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME)) {
+    // or if it is the stage
+    // or if it has been marked as not draggable
+    if (follower.tagName.toUpperCase() !== 'BODY'
+      && !goog.dom.getAncestorByClass(follower.parentNode, silex.model.Element.SELECTED_CLASS_NAME)
+      && !goog.dom.classlist.contains(follower, silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME)) {
           var pos = goog.style.getPosition(follower);
           goog.style.setPosition(follower, pos.x + offsetX, pos.y + offsetY);
         }
@@ -719,7 +724,9 @@ silex.view.Stage.prototype.followElementSize =
   function(followers, resizeDirection, offsetX, offsetY) {
   // apply offset to other selected element
   goog.array.forEach(followers, function(follower) {
-    if (!goog.dom.classlist.contains(follower, silex.model.Body.PREVENT_RESIZABLE_CLASS_NAME)) {
+    // do not resize the stage or the un-resizeable elements
+    if (follower.tagName.toUpperCase() !== 'BODY'
+      && !goog.dom.classlist.contains(follower, silex.model.Body.PREVENT_RESIZABLE_CLASS_NAME)) {
       var size = goog.style.getSize(follower);
       var pos = goog.style.getPosition(follower);
       var offsetPosX = pos.x;
