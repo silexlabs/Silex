@@ -697,7 +697,6 @@ silex.view.Stage.prototype.multipleDragged = function(x, y, shiftKey) {
  */
 silex.view.Stage.prototype.followElementPosition =
   function(followers, offsetX, offsetY) {
-  console.log(followers);
   // apply offset to other selected element
   goog.array.forEach(followers, function(follower) {
     // do not move an element if one of its parent is already being moved
