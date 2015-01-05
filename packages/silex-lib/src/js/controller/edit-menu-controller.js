@@ -38,6 +38,20 @@ goog.inherits(silex.controller.EditMenuController, silex.controller.ControllerBa
 
 
 /**
+ * storage for the clipboard
+ * @type {Array.<Element>}
+ */
+silex.controller.EditMenuController.prototype.clipboard = [];
+
+
+/**
+ * storage for the clipboard
+ * @type {Element|null}
+ */
+silex.controller.EditMenuController.prototype.clipboardParent = null;
+
+
+/**
  * undo the last action
  */
 silex.controller.EditMenuController.prototype.undo = function() {
@@ -102,7 +116,7 @@ silex.controller.EditMenuController.prototype.copySelection = function() {
         this.model.body.setEditable(element, false);
         // duplicate the node
         this.clipboard.push(element.cloneNode(true));
-        this.clipboardParent = element.parentNode;
+        this.clipboardParent = /** @type {Element} */ (element.parentNode);
         // re-enable editable
         this.model.body.setEditable(element, true);
       }
@@ -126,7 +140,8 @@ silex.controller.EditMenuController.prototype.pasteSelection = function() {
     // find the container: original container, main background container or the stage
     var container;
     if (this.clipboardParent &&
-        goog.dom.contains(this.model.body.getBodyElement(), this.clipboardParent)) {
+        goog.dom.contains(this.model.body.getBodyElement(), this.clipboardParent) &&
+        this.view.stage.getVisibility(this.clipboardParent)) {
       container = this.clipboardParent;
     }
     else {
