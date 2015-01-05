@@ -317,7 +317,7 @@ silex.view.pane.BorderPane.prototype.redrawBorderColor =
   }
   else if (goog.isNull(borderColorStr)) {
     // display a "no color" in the button
-    this.colorPicker.setValue('');
+    this.colorPicker.setValue('#000000');
   }
   else {
     // handle all colors, including the named colors
@@ -333,6 +333,7 @@ silex.view.pane.BorderPane.prototype.redrawBorderColor =
  * redraw border width UI
  */
 silex.view.pane.BorderPane.prototype.redrawBorderWidth = function(borderWidth) {
+  this.colorPicker.setEnabled(true);
   // top, right, bottom, left
   var values = borderWidth.split(' ');
   // One-value syntax - width
@@ -402,6 +403,11 @@ silex.view.pane.BorderPane.prototype.resetBorder = function() {
     var checkBox = this.borderPlacementCheckBoxes[idx];
     checkBox.setChecked(true);
   }
+  // border color
+  this.colorPicker.setValue('#000000');
+  this.hsvPalette.setColor('#000000');
+  this.setColorPaletteVisibility(this.hsvPalette, false);
+  this.colorPicker.setEnabled(false);
 };
 
 
@@ -413,6 +419,8 @@ silex.view.pane.BorderPane.prototype.onBorderWidthChanged = function() {
   if (this.borderWidthInput.value &&
       this.borderWidthInput.value !== '' &&
       this.borderWidthInput.value !== '0') {
+    // border color
+    this.colorPicker.setEnabled(true);
     // border placement
     var borderWidthStr = '';
     var idx;
@@ -434,6 +442,7 @@ silex.view.pane.BorderPane.prototype.onBorderWidthChanged = function() {
   else {
     this.styleChanged('borderWidth', '');
     this.styleChanged('borderStyle', '');
+    this.colorPicker.setEnabled(false);
   }
 };
 
@@ -459,9 +468,8 @@ silex.view.pane.BorderPane.prototype.onBorderStyleChanged = function() {
  */
 silex.view.pane.BorderPane.prototype.onBorderColorChanged = function() {
   var hex = this.hsvPalette.getColor();
-  var color = silex.utils.Style.hexToRgba(hex);
-  this.styleChanged('borderColor', color);
-  this.colorPicker.setValue(hex.substring(0, 7));
+  this.styleChanged('borderColor', hex);
+  this.colorPicker.setValue(hex);
 };
 
 
