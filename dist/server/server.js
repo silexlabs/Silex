@@ -49,6 +49,7 @@ if (fs.existsSync(__dirname + '/config.js')) {
 // session management
 app.use('/', session({
   secret: silexConfig.sessionSecret,
+  name: silexConfig.cookieName,
   resave: true,
   saveUninitialized: false,
   store: new FSStore({
