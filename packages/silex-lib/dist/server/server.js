@@ -36,9 +36,20 @@ app.use('/', bodyParser.urlencoded({
 app.use('/', bodyParser.json({limit: '10mb'}));
 app.use('/', cookieParser());
 
+// get silex config
+var fs = require('fs');
+var silexConfig = unifile.defaultConfig;
+if (fs.existsSync(__dirname + '/config.js')) {
+  var obj = require(__dirname + '/config.js');
+  for (var prop in obj) {
+    silexConfig[prop] = obj[prop];
+  }
+}
+
 // session management
 app.use('/', session({
-  secret: unifile.defaultConfig.sessionSecret,
+  secret: silexConfig.sessionSecret,
+  name: silexConfig.cookieName,
   resave: true,
   saveUninitialized: false,
   store: new FSStore({
@@ -71,7 +82,7 @@ exports.setDebugMode = function(debug){
         // DEBUG ONLY
         console.warn('Running server in debug mode');
         // define users (login/password) wich will be authorized to access the www folder (read and write)
-        options.www.USERS = {
+        silexConfig.www.USERS = {
             'admin': 'admin'
         }
     }
@@ -81,19 +92,18 @@ exports.setDebugMode = function(debug){
         // catch all errors and prevent nodejs to crash, production mode
         process.on('uncaughtException', onCatchError);
         // reset debug
-        options.www.USERS = {};
+        silexConfig.www.USERS = {};
     }
 }
 // ********************************
 // config
 // ********************************
-var options = unifile.defaultConfig;
 
 // change www root
-options.www.ROOT = __dirname + '/../../dist/client';
+silexConfig.www.ROOT = __dirname + '/../../dist/client';
 
 // add static folders
-options.staticFolders.push(
+silexConfig.staticFolders.push(
     // silex main site
     {
         path: __dirname + '/../../dist/client'
@@ -119,7 +129,7 @@ exports.setDebugMode(debug);
 // unifile server
 // ********************************
 // use unifile as a middleware
-app.use('/api', unifile.middleware(express, app, options));
+app.use('/api', unifile.middleware(express, app, silexConfig));
 
 // server 'loop'
 var port = process.env.PORT || 6805; // 6805 is the date of sexual revolution started in paris france 8-)

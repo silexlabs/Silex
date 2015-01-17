@@ -8,14 +8,14 @@ h1.title1 Properties
           label X
           label W
         div.two-col
-          input.position-input.left-input(placeholder='-', type='number',tabindex='1')
-          input.position-input.width-input(placeholder='-', type='number',tabindex='3')
+          input.position-input.left-input(placeholder='-', type='number', tabindex='1')
+          input.position-input.width-input(placeholder='-', type='number', tabindex='3', min='0')
         div.two-col
           label Y
           label H
         div.two-col
-          input.position-input.top-input(placeholder='-', type='number',tabindex='2')
-          input.position-input.height-input(placeholder='-', type='number',tabindex='4')
+          input.position-input.top-input(placeholder='-', type='number', tabindex='2')
+          input.position-input.height-input(placeholder='-', type='number', tabindex='4', min='0')
 
   span.seo-editor.advanced-only
     fieldset.small-font
@@ -59,7 +59,7 @@ h1.title1 Properties
           legend
             | Opacity
             small  in %
-          input.opacity-input(placeholder='-', type='number')
+          input.opacity-input(placeholder='-', type='number', min='0', max='100')
       .background-editor
         fieldset.small-font.background-property
           legend Background Color
@@ -105,7 +105,7 @@ h1.title1 Properties
             | Border
           .border-width-color-container
             label.border-width-label Width
-            input.border-width-input(placeholder='-', type='number')
+            input.border-width-input(placeholder='-', type='number', min='0')
             label.border-color-label Color
             span.border-color-button.color-button
           span.border-color-palette
@@ -137,7 +137,7 @@ h1.title1 Properties
           .border-radius-container
             .border-radius-width-container
               label.border-radius-label Radius
-              input.corner-radius-input(placeholder='-', type='number')
+              input.corner-radius-input(placeholder='-', type='number', min='0')
             .corner-placement-container.advanced-only
               .half-col
                 span.corner-placement-check.goog-checkbox

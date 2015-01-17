@@ -62,6 +62,13 @@ silex.view.dialog.DialogBase.prototype.visibilityClass = 'visibilityClass-should
 
 
 /**
+ * currently opened dialog
+ * @type {silex.view.dialog.DialogBase|null}
+ * @static
+ */
+silex.view.dialog.DialogBase.currentDialog = null;
+
+/**
  * init the menu and UIs
  * called by the app constructor
  */
@@ -89,6 +96,11 @@ silex.view.dialog.DialogBase.prototype.buildUi = function() {
  */
 silex.view.dialog.DialogBase.prototype.openEditor = function() {
   if (this.isOpened === false) {
+    // close the previously opened dialog
+    if (silex.view.dialog.DialogBase.currentDialog !== null) {
+      silex.view.dialog.DialogBase.currentDialog.closeEditor();
+    }
+    silex.view.dialog.DialogBase.currentDialog = this;
     // show
     goog.dom.classlist.add(document.body, this.visibilityClass + '-opened');
     // flag to remember if the dialog is opened
@@ -102,6 +114,8 @@ silex.view.dialog.DialogBase.prototype.openEditor = function() {
  */
 silex.view.dialog.DialogBase.prototype.closeEditor = function() {
   if (this.isOpened === true) {
+    // reset the current dialog
+    silex.view.dialog.DialogBase.currentDialog = null;
     // flag to remember if the dialog is opened
     this.isOpened = false;
     // hide dialog and background
