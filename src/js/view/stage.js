@@ -299,6 +299,8 @@ silex.view.Stage.prototype.initEvents = function(contentWindow) {
         e.target,
         silex.model.Body.EDITABLE_CLASS_NAME) || this.bodyElement;
     this.handleMouseDown(editableElement, x, y, e.shiftKey);
+    // necessary in firefox to prevent default image drag
+    e.preventDefault();
   }, false, this);
 
   // detect double click
@@ -664,7 +666,7 @@ silex.view.Stage.prototype.multipleDragged = function(x, y, shiftKey) {
   }
   else if (this.isResizing) {
     // handle shift key to move on one axis or preserve ratio
-    if(shiftKey === true 
+    if(shiftKey === true
       && (this.resizeDirection === 'sw'
           || this.resizeDirection === 'se'
           || this.resizeDirection === 'nw'
