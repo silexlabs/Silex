@@ -42,7 +42,6 @@ module.exports = function(grunt) {
   if (!production){
       grunt.loadNpmTasks('grunt-selenium-webdriver');
       grunt.loadNpmTasks('grunt-lesslint');
-      grunt.loadNpmTasks('grunt-append-sourcemapping');
       grunt.loadNpmTasks('grunt-contrib-watch');
       grunt.loadNpmTasks('grunt-closure-linter');
       grunt.loadNpmTasks('grunt-simple-mocha');
@@ -61,6 +60,12 @@ module.exports = function(grunt) {
   grunt.registerTask('postinstall', ['deploy']);
   grunt.registerTask('releaseDeploy', ['less:production', 'jade:release', 'closureBuilder:release']);
   grunt.registerTask('debugDeploy', ['less:development', 'jade:debug', 'closureBuilder:debug', 'append-sourcemapping']);
+
+  grunt.registerTask('append-sourcemapping', 'append sourcemap to debug.html', function() {
+    var content = grunt.file.read('dist/client/js/admin.js');
+    content += '//# sourceMappingURL=/js/admin.js.map';
+    grunt.file.write('dist/client/js/admin.js', content);
+  });
 
   // test and check tasks
   grunt.registerTask('check', ['lesslint', 'closureLint']);
@@ -236,13 +241,6 @@ module.exports = function(grunt) {
         src: ['submodules/closure-library/', 'src/js/'],
         dest: 'dist/client/js/admin.js',
       },
-    },
-    "append-sourcemapping": {
-        main: {
-            files: {
-                "dist/client/js/admin.js": "admin.js.map",
-            },
-        },
     },
     doWatch: {
         options: {
