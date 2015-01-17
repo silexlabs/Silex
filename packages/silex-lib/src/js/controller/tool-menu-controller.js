@@ -97,12 +97,13 @@ silex.controller.ToolMenuController.prototype.openPixlr = function(pixlrMethod, 
         }, this)
     );
   }
-// case of a background image on any other element
+  // case of a background image on any other element
   else if (goog.style.getStyle(element, 'backgroundImage')) {
     // retrieve the URL from "background-image: url(...)"
     var url = goog.style.getStyle(element, 'backgroundImage');
-    url = url.substr(url.indexOf('url(') + 4);
-    url = url.substring(0, url.lastIndexOf(')'));
+    // remove the css 'url(' keyword
+    url = silex.utils.Url.removeUrlKeyword(url);
+    // remove the domain and protocol
     url = url.substr(silex.utils.Url.getRootUrl().length);
     // remove cache control
     url = silex.utils.Dom.removeCacheControl(url);
