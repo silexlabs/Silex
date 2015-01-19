@@ -36,12 +36,6 @@ silex.utils.BackwardCompat.process = function(document) {
   var bodyElement = document.body;
   var headElement = document.head;
 
-  // critical bug fix (2.2)
-  // text editor sets the body class to "silex-element-content normal" instead of the text editor's class
-  if (goog.dom.classlist.contains(bodyElement, 'silex-element-content')) {
-    bodyElement.className = 'pageable-plugin-created editable-plugin-created ui-droppable';
-  }
-
   // handle older style system (2.0)
   if (bodyElement.getAttribute('data-style-normal')) {
     bodyElement.setAttribute('data-style-normal', bodyElement.getAttribute('data-style-normal'));
@@ -67,6 +61,7 @@ silex.utils.BackwardCompat.process = function(document) {
     element.setAttribute('data-silex-type', element.getAttribute('data-silex-sub-type'));
     element.removeAttribute('data-silex-sub-type');
   });
+
   // old page system (2.0)
   // <meta name="page" content="page1">
   elements = headElement.querySelectorAll('meta[name="page"]');
@@ -101,11 +96,27 @@ silex.utils.BackwardCompat.process = function(document) {
       element.setAttribute(silex.model.Element.LINK_ATTR, '#!' + href.substr(1));
     }
   });
+
   // add css class 'silex-element-content' on 'html-content' elements (starting from 2.1)
   elements = bodyElement.querySelectorAll('.html-element .html-content');
   goog.array.forEach(elements, function(element) {
     goog.dom.classlist.add(element, 'silex-element-content');
   });
+
+  // critical bug fix (2.2)
+  // text editor sets the body class to "silex-element-content normal" instead of the text editor's class
+  if (goog.dom.classlist.contains(bodyElement, 'silex-element-content')) {
+    bodyElement.className = 'pageable-plugin-created editable-plugin-created ui-droppable';
+  }
+
+  // remove inline css from .silex-element-content (2.4)
+  elements = bodyElement.querySelectorAll('.silex-element-content');
+  goog.array.forEach(elements, function(element) {
+    element.style.width ='';
+    element.style.height ='';
+    element.removeAttribute('style');
+  });
+
   // add css class on elements with [type]-element (starting from 2.0)
   elements = bodyElement.querySelectorAll('.text-element *');
   goog.array.forEach(elements, function(element) {
@@ -132,32 +143,23 @@ silex.utils.BackwardCompat.process = function(document) {
   goog.array.forEach(elements, function(element) {
     goog.dom.classlist.add(element, element.getAttribute('data-silex-type') + '-element');
   });
-  // static.silex.me 2.0 -> 2.1
+  // static.silex.me
   elements = document.querySelectorAll('[src]');
   goog.array.forEach(elements, function(element) {
     var src = element.getAttribute('src');
-    src = src.replace('static.silex.io', 'static.silex.me');
-    src = src.replace('//static.silex.me/2.0', '//static.silex.me/2.3');
-    src = src.replace('//static.silex.me/2.1', '//static.silex.me/2.3');
-    src = src.replace('//static.silex.me/2.2', '//static.silex.me/2.3');
+    src = silex.utils.BackwardCompat.updateStaticUrl(src);
     element.setAttribute('src', src);
   });
   elements = document.querySelectorAll('[href]');
   goog.array.forEach(elements, function(element) {
     var href = element.getAttribute('href');
-    href = href.replace('static.silex.io', 'static.silex.me');
-    href = href.replace('//static.silex.me/2.0', '//static.silex.me/2.3');
-    href = href.replace('//static.silex.me/2.1', '//static.silex.me/2.3');
-    href = href.replace('//static.silex.me/2.2', '//static.silex.me/2.3');
+    href = silex.utils.BackwardCompat.updateStaticUrl(href);
     element.setAttribute('href', href);
   });
   elements = document.querySelectorAll('[data-silex-href]');
   goog.array.forEach(elements, function(element) {
     var href = element.getAttribute(silex.model.Element.LINK_ATTR);
-    href = href.replace('static.silex.io', 'static.silex.me');
-    href = href.replace('//static.silex.me/2.0', '//static.silex.me/2.3');
-    href = href.replace('//static.silex.me/2.1', '//static.silex.me/2.3');
-    href = href.replace('//static.silex.me/2.2', '//static.silex.me/2.3');
+    href = silex.utils.BackwardCompat.updateStaticUrl(href);
     element.setAttribute(silex.model.Element.LINK_ATTR, href);
   });
   // backward compat /silex/ to /
@@ -177,3 +179,17 @@ silex.utils.BackwardCompat.process = function(document) {
     goog.dom.classlist.add(element, silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME);
   });
 };
+
+/**
+ * update URLs according to the version of Silex static files
+ */
+silex.utils.BackwardCompat.updateStaticUrl = function(url) {
+  var newUrl = url;
+  newUrl = newUrl.replace('static.silex.io', 'static.silex.me');
+  newUrl = newUrl.replace('//static.silex.me/2.0', '//static.silex.me/2.4');
+  newUrl = newUrl.replace('//static.silex.me/2.1', '//static.silex.me/2.4');
+  newUrl = newUrl.replace('//static.silex.me/2.2', '//static.silex.me/2.4');
+  newUrl = newUrl.replace('//static.silex.me/2.3', '//static.silex.me/2.4');
+  return newUrl;
+};
+
