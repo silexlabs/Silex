@@ -36,7 +36,7 @@
     "grunt-selenium-webdriver": "0.2.431",
     "grunt-simple-mocha": "0.4.0",
     "phantomjs": "1.9.12",
-    "webdriverjs": "1.7.5"
+    "webdriverio": "^2.4.5"
   },
   "repository": {
     "type": "git",

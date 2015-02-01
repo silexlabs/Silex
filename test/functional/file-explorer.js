@@ -1,10 +1,9 @@
 /*
   for webdriver.io documentation
-  https://github.com/camme/webdriverjs
+  http://webdriver.io/api.html
 */
 
-var webdriverjs = require('webdriverjs'),
-    helper = require('../helper.js'),
+var helper = require('../helper.js'),
     actions = require('../actions.js'),
     file_explorer = require('../model/file-explorer-model.js'),
     assert = require ('assert');
@@ -24,7 +23,7 @@ describe('Silex file explorer dialog test', function(){
   // before tests, setup
   before(function(){
     this.timeout(99999999);
-    client = helper.createClient(webdriverjs);
+    client = helper.createClient();
   });
 
   // open Silex file explorer dialog
