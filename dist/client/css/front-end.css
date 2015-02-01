@@ -1,3 +1,7 @@
+/**
+ * This file holds the basic CSS styles of Silex websites
+ */
+
 /* the body covers the whole available space */
 /* the body is resized to its content size when needed in front-end.js */
 body{
@@ -43,8 +47,8 @@ body{
     because of normalize.css */
 a:focus{ outline: none;}
 
-body .drop-zone-candidate{
-  box-shadow: 0 0 4px #333333;
-  opacity: 1 !important;
+.silex-element-content {
+  width: 100%;
+  height: 100%;
 }
 
