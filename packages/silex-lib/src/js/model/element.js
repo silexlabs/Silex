@@ -151,7 +151,7 @@ silex.model.Element.prototype.unprepareHtmlForEdit = function(rawHtml) {
  * @example getTabs(2) returns '        '
  */
 silex.model.Element.prototype.getTabs = function(num) {
-  var tabs = ''; 
+  var tabs = '';
   for (var n=0; n<num; n++) {
     tabs += '    ';
   }
@@ -356,9 +356,6 @@ silex.model.Element.prototype.setImageUrl = function(element, url, opt_callback,
             }
             // add the image to the element
             goog.dom.appendChild(element, img);
-            // image tak all room available !! has to be after the callback because img.naturalWidth is used
-            goog.style.setStyle(img, 'width', '100%');
-            goog.style.setStyle(img, 'height', '100%');
             // add a marker to find the inner content afterwards, with getContent
             goog.dom.classlist.add(img, silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
             // remove the id set by the loader (it needs it to know what has already been loaded?)
@@ -367,7 +364,7 @@ silex.model.Element.prototype.setImageUrl = function(element, url, opt_callback,
             goog.dom.classlist.remove(element, silex.model.Element.LOADING_ELEMENT_CSS_CLASS);
 
 // parent.insertBefore(document.createTextNode("\n" + indent), parent.lastChild);
-          
+
           }, true, this);
       goog.events.listenOnce(imageLoader, goog.net.EventType.ERROR,
           function() {
@@ -530,7 +527,7 @@ silex.model.Element.prototype.createContainerElement = function(styleObject, ind
   // respect indentation
   var textInside = goog.dom.createTextNode('\n' + this.getTabs(indent - 1));
   goog.dom.appendChild(element, textInside);
-  
+
   return element;
 };
 
@@ -549,8 +546,6 @@ silex.model.Element.prototype.createTextElement = function(styleObject, indent) 
   var textContent = goog.dom.createElement('div');
   // add empty content
   textContent.innerHTML = 'New text box';
-  goog.style.setStyle(textContent, 'width', '100%');
-  goog.style.setStyle(textContent, 'height', '100%');
   goog.dom.appendChild(element, textContent);
   // add a marker to find the inner content afterwards, with getContent
   goog.dom.classlist.add(textContent, silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
@@ -565,7 +560,7 @@ silex.model.Element.prototype.createTextElement = function(styleObject, indent) 
   goog.dom.insertSiblingBefore(textBefore, textContent);
   var textAfter = goog.dom.createTextNode('\n' + this.getTabs(indent));
   goog.dom.insertSiblingAfter(textAfter, textContent);
-  
+
   return element;
 };
 
@@ -597,7 +592,7 @@ silex.model.Element.prototype.createHtmlElement = function(styleObject, indent) 
   goog.dom.insertSiblingBefore(textBefore, htmlContent);
   var textAfter = goog.dom.createTextNode('\n');
   goog.dom.insertSiblingAfter(textAfter, htmlContent);
- 
+
   return element;
 };
 

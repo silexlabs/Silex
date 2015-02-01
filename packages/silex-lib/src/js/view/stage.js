@@ -292,6 +292,7 @@ silex.view.Stage.prototype.initEvents = function(contentWindow) {
     this.lastClickWasResize = goog.dom.classlist.contains(
         e.target,
         'ui-resizable-handle');
+    this.resizeDirection = this.getResizeDirection(e.target);
     var x = e.clientX;
     var y = e.clientY;
     // get the first parent node which is editable (silex-editable css class)
@@ -502,8 +503,6 @@ silex.view.Stage.prototype.onMouseMove = function(target, x, y, shiftKey) {
     }
     // update states
     if (!this.isDragging && !this.isResizing) {
-      // update the resize direction
-      this.resizeDirection = this.getResizeDirection(target);
       // notify controller that a change is about to take place
       this.controller.stageController.beforeChange();
       if (this.lastClickWasResize) {
@@ -809,7 +808,6 @@ silex.view.Stage.prototype.followElementSize =
  */
 silex.view.Stage.prototype.handleMouseDown = function(element, x, y, shiftKey) {
   this.lastSelected = null;
-  this.resizeDirection = null;
   // if the element was not already selected
   if (!goog.dom.classlist.contains(
       element,
