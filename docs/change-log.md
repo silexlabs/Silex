@@ -2,13 +2,38 @@
 
 This is where you will find the recent changes made to Silex, and available on http://www.silex.me/
 
-Commits on Oct 17, 2014
+# Dec 2014
 
-neocorp64 contribution
+* UI design change to black, contribution by @camilleghirne
+* wording and adjustments
+* improved sessions management
+* reworked the settings panel
+
+# Nov 2014
+
+* dockable dialogs (css, js, html)
+* fixed drop zone issues
+* improved drag/drop/resize
+* removed editable jquery plugin
+* better tracking
+* keyboard arrows to move selection
+
+# Oct 2014
+
+* neocorp64 contribution - fixed typo
+* updated unifile version and other npm dependencies
+* google closure advanced optimizations
+* better error handling
+* allow Silex websites to be embedded in iframes
+* better scroll and focus management during edition
+* improvements on the UI
 
 ## Sept 2014
 
-Michele Martone contribution with Functional tests: more tests, better structure
+* undo/redo
+* help links and better wording
+* better keyboard shortcuts
+* Michele Martone contribution with Functional tests: more tests, better structure
 
 ## Aug 2014
 
@@ -31,7 +56,7 @@ Code quality
 
 * sessions stored in files instead of includedd in the cookies
 * updated all npm packages to latest versions
-* better readme 
+* better readme
 * refactored dialogs
 * removed monitoring tools which should be in the bootstrap
 * handle errors for calls to /silex/tasks/ route which does not exist
@@ -55,7 +80,7 @@ Bug fixes
 
 Code quality
 
-* removed useless warnings 
+* removed useless warnings
 * fixed errors with phantomjs auto tests
 * fixed functional tests in chrome
 * functional tests for save, insert and publish
