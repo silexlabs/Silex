@@ -222,6 +222,8 @@ silex.model.File.prototype.getHtml = function() {
   rawHtml = '<!DOCTYPE html>' + rawHtml;
   // cleanup HTML
   rawHtml = this.model.element.unprepareHtmlForEdit(rawHtml);
+  // beutify html
+  rawHtml = window['html_beautify'](rawHtml);
   return rawHtml;
 };
 
