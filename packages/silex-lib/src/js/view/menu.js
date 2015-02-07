@@ -204,9 +204,6 @@ silex.view.Menu.prototype.buildUi = function() {
   goog.events.listen(this.menu, goog.ui.Component.EventType.ACTION, function(e) {
     this.onMenuEvent(e.target.getId());
   }, false, this);
-  goog.events.listen(goog.dom.getElementByClass('website-name'), goog.events.EventType.CLICK, function(e) {
-    this.controller.fileMenuController.promptTitle();
-  }, false, this);
 };
 
 
@@ -218,11 +215,6 @@ silex.view.Menu.prototype.buildUi = function() {
  * @param   {string}  currentPageName   the name of the current page
  */
 silex.view.Menu.prototype.redraw = function(selectedElements, document, pageNames, currentPageName) {
-  // update website title
-  var titleElements = goog.dom.getElementsByTagNameAndClass('title', null, document.head);
-  if (titleElements && titleElements.length > 0) {
-    goog.dom.getElementByClass('website-name').innerHTML = titleElements[0].innerHTML;
-  }
 };
 
 
