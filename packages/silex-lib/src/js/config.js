@@ -214,11 +214,6 @@ silex.Config.menu = {
       },
       null,
       {
-        label: 'Rename...',
-        id: 'file.rename',
-        className: 'menu-item-file-rename'
-      },
-      {
         label: 'Publish',
         id: 'file.publish',
         className: 'menu-item-file-publish',

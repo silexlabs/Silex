@@ -333,16 +333,10 @@ silex.controller.ControllerBase.prototype.checkElementVisibility = function(elem
 /**
  * ask the user for a new file title
  */
-silex.controller.ControllerBase.prototype.promptTitle = function() {
-  silex.utils.Notification.prompt('What is the name of your website?',
-      this.model.head.getTitle(),
-      goog.bind(function(accept, name) {
-        if (accept) {
-          // undo checkpoint
-          this.undoCheckPoint();
-          this.model.head.setTitle(name);
-        }
-      }, this));
+silex.controller.ControllerBase.prototype.setTitle = function(title) {
+  // undo checkpoint
+  this.undoCheckPoint();
+  this.model.head.setTitle(title);
 };
 
 

@@ -224,7 +224,7 @@ silex.model.Head.prototype.setPublicationPath = function(path) {
       goog.dom.removeNode(metaNode);
     }
   }
-  this.view.settingsDialog.redraw(path);
+  this.view.settingsDialog.setPublicationPath(path);
 };
 
 
@@ -277,6 +277,7 @@ silex.model.Head.prototype.setTitle = function(name) {
   var pages = this.model.page.getPages();
   var page = this.model.page.getCurrentPage();
   this.view.menu.redraw(this.model.body.getSelection(), goog.dom.getFrameContentDocument(this.iframeElement), pages, page);
+  this.view.settingsDialog.setTitle(name);
 };
 
 
