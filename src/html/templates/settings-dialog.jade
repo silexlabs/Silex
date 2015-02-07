@@ -1,21 +1,32 @@
-div.dialog
-  div.header
-    div.title
+.dialog
+  .header
+    h1.title
       | Website settings
-      button.close-btn(type='button')
-  div.body
-    div.left-pane
+      button.close-btn(type="button")
+  .body
+    .left-pane
       ul.tree
-        li.selected
-          span Publish settings
-    div.right-pane
-      ul
-        li
-          fieldset
-            legend
-              span Publication Path - 
-              a.help-icon(href='https://github.com/silexlabs/Silex/issues/238', title='about Silex and CSS', target='blank') Help
-            p
-              | Path to the folder in wich I will publish the website. This folder content will be deleted.
-            input.input-url.input-publication-path(type='text', value='')
-            button.browse-btn(type='button') Browse
+        li.general-pane General
+        li.publish-pane Publish settings
+    .right-pane
+      .general-pane
+        ul
+          li
+            fieldset
+              legend
+                h3.title Website Title
+                //a.help-icon(href="https://github.com/silexlabs/Silex/issues/238", title="about Silex and CSS", target="blank") Help
+              p
+                | Title of the browser window, and title in the search engines results.
+              input.input-text.input-title(type="text", value="", placeholder="Untitled website")
+      .publish-pane
+        ul
+          li
+            fieldset
+              legend
+                span Publication Path -
+                a.help-icon(href="https://github.com/silexlabs/Silex/issues/238", title="about Silex and CSS", target="blank") Help
+              p
+                | Path to the folder in wich I will publish the website. This folder content will be deleted.
+              input.input-url.input-publication-path(type="text", value="")
+              button.browse-btn(type="button") Browse

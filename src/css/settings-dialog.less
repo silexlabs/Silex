@@ -3,6 +3,28 @@
   width: 80%;
   max-width: 929px;
   z-index: 110;
+  /* ************** */
+  /* pane selection */
+  /* ************** */
+  &.general-pane-visible {
+    .right-pane .publish-pane {
+      display: none;
+    }
+    .left-pane .general-pane {
+      font-weight: bold;
+    }
+  }
+  &.publish-pane-visible {
+    .right-pane .general-pane {
+      display: none;
+    }
+    .left-pane .publish-pane {
+      font-weight: bold;
+    }
+  }
+  /* **************** */
+  /* left pane styles */
+  /* **************** */
   .left-pane {
     width: 25%;
     height: 100%;
@@ -12,9 +34,6 @@
       list-style: none;
       margin:0;
       padding: 0;
-      li.selected {
-        font-weight: bold;
-      }
       li {
         padding: 15px;
         cursor: pointer;
@@ -75,11 +94,13 @@
         font-style: normal;
         font-size: 13px;
         line-height: normal;
-        .browse-btn {
-          width: 10%;
+        .input-text {
+          width: 100%;
         }
         .input-url {
           width: 85%;
+        }
+        .input-url, .input-text {
           background-color: @silexdarkgrey;
           color: white;
         }
@@ -91,10 +112,15 @@
       }
     }
   }
-  .title {
+  h1.title {
     border-top: 1px solid @silexdarkgrey;
     height: 20px;
     padding: 17px 20px;
+    margin: 0;
     font-size: 20px;
+    font-weight: 100;
+  }
+  h3.title {
+    font-weight: 100;
   }
 }

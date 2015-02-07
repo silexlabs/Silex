@@ -224,18 +224,12 @@ silex.view.Menu.prototype.redraw = function(selectedElements, document, pageName
  */
 silex.view.Menu.prototype.onMenuEvent = function(type) {
   switch (type) {
-    case 'title.changed':
-      this.controller.fileMenuController.promptTitle();
-      break;
     case 'file.close':
     case 'file.new':
       this.controller.fileMenuController.newFile();
       break;
     case 'file.saveas':
       this.controller.fileMenuController.save();
-      break;
-    case 'file.rename':
-      this.controller.fileMenuController.promptTitle();
       break;
     case 'file.publish.settings':
       this.controller.fileMenuController.view.settingsDialog.openDialog();
