@@ -42,6 +42,8 @@ goog.inherits(silex.controller.SettingsDialogController,
  */
 silex.controller.SettingsDialogController.prototype.browsePublishPath =
     function() {
+  this.tracker.trackAction(
+      'controller-events', 'request', 'publish.browse', 0);
   this.view.fileExplorer.openDialog(
       goog.bind(function(url) {
         // undo checkpoint
@@ -73,9 +75,65 @@ silex.controller.SettingsDialogController.prototype.browsePublishPath =
  * callback for the publication path text input
  * @param {?string=} opt_data
  */
-silex.controller.SettingsDialogController.prototype.change =
+silex.controller.SettingsDialogController.prototype.setPublicationPath =
     function(opt_data) {
   // undo checkpoint
   this.undoCheckPoint();
   this.model.head.setPublicationPath(opt_data);
+};
+
+
+/**
+ * the user clicked "browse" button to choose a favicon
+ */
+silex.controller.SettingsDialogController.prototype.browseFaviconPath =
+    function() {
+  this.tracker.trackAction(
+      'controller-events', 'request', 'favicon.browse', 0);
+  this.view.fileExplorer.openDialog(
+      goog.bind(function(url) {
+        // undo checkpoint
+        this.undoCheckPoint();
+        // start with /api/...
+        if (url.indexOf('/') != 0) {
+          url = '/' + url;
+        }
+        // set the new publication path
+        this.model.head.setFaviconPath(url);
+        this.tracker.trackAction(
+            'controller-events', 'success', 'favicon.browse', 1);
+      }, this),
+      { 'mimetypes': ['image/jpeg', 'image/png', 'image/gif', 'image/ico'] },
+      goog.bind(function(error) {
+        silex.utils.Notification.notifyError(
+            'Error: I could not select the favicon path. <br /><br />' +
+            (error.message || ''));
+        this.tracker.trackAction(
+            'controller-events', 'error', 'favicon.browse', -1);
+      }, this)
+  );
+};
+
+
+/**
+ * callback for the publication path text input
+ * @param {?string=} opt_data
+ */
+silex.controller.SettingsDialogController.prototype.setFaviconPath =
+    function(opt_data) {
+  // undo checkpoint
+  this.undoCheckPoint();
+  this.model.head.setFaviconPath(opt_data);
+};
+
+
+/**
+ * set new file description
+ * @param {?string=} opt_data
+ */
+silex.controller.SettingsDialogController.prototype.setDescription =
+  function(opt_data) {
+  // undo checkpoint
+  this.undoCheckPoint();
+  this.model.head.setDescription(opt_data);
 };

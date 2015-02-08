@@ -18,15 +18,36 @@
                 //a.help-icon(href="https://github.com/silexlabs/Silex/issues/238", title="about Silex and CSS", target="blank") Help
               p
                 | Title of the browser window, and title in the search engines results.
+                | It is used by search engines to find out what your site is talking about.
+                | The title should be a maximum of 70 characters long, including spaces.
               input.input-text.input-title(type="text", value="", placeholder="Untitled website")
+          li
+            fieldset
+              legend
+                h3.title Website Description
+                //a.help-icon(href="https://github.com/silexlabs/Silex/issues/238", title="about Silex and CSS", target="blank") Help
+              p
+                | Description displayed by the search engines in search results.
+                | It is used by search engines to find out what your site is talking about.
+                | It is best to keep meta descriptions between 150 and 160 characters.
+              input.input-text.input-description(type="text", value="", placeholder="Description")
+          li
+            fieldset
+              legend
+                h3 Favicon
+              p
+                | Small image displayed in the browser's address bar and in tabs.
+                | The recommended size is 16×16 or 32×32 pixels.
+              input.input-url.input-favicon-path(type="text", value="")
+              button.browse-favicon-path(type="button") Browse
       .publish-pane
         ul
           li
             fieldset
               legend
-                span Publication Path -
+                h3 Publication Path -
                 a.help-icon(href="https://github.com/silexlabs/Silex/issues/238", title="about Silex and CSS", target="blank") Help
               p
                 | Path to the folder in wich I will publish the website. This folder content will be deleted.
               input.input-url.input-publication-path(type="text", value="")
-              button.browse-btn(type="button") Browse
+              button.browse-publication-path(type="button") Browse
