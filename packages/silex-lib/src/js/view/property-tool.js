@@ -49,6 +49,11 @@ silex.view.PropertyTool = function(element, controller) {
   // store references
   this.element = element;
   this.controller = controller;
+  var btn = this.element.querySelector('.switch-apollo-mode button');
+  goog.events.listen(btn, goog.events.EventType.CLICK, function() {
+    this.controller.propertyToolController.toggleAdvanced();
+  }, false, this);
+
 };
 
 

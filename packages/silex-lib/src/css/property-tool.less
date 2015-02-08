@@ -1,3 +1,6 @@
+.advanced-mode-on .silex-property-tool .switch-apollo-mode button {
+  background-position: -188px 0;
+}
 .silex-property-tool {
   color: #FFF;
   position: absolute;
@@ -8,7 +11,31 @@
   overflow-y: auto;
   bottom: 0;
   background-color: @silexlightgrey;
-
+  .switch-apollo-mode {
+    display: inline-block;
+    padding: 10px 10px 0 10px;
+    margin: 10px 10px 0 10px;
+    label {
+      font-size: 12px;
+      float: right;
+    }
+    button {
+      float: left;
+      width: 79px;
+      height: 24px;
+      margin-right: 10px;
+      margin-top: 5px;
+      background-image: url('../assets/switch.png');
+      background-repeat: no-repeat;
+      background-size: 267px 25px;
+      background-position: -1px 0;
+      transition: background-position 0.1s steps(2, end);
+      cursor: pointer;
+      background-color: white;
+      border: none;
+      border-radius: 3px;
+    }
+  }
   .main-container {
     padding: 5px;
     width: 97%;

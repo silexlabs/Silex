@@ -352,3 +352,17 @@ silex.controller.ControllerBase.prototype.refreshFonts = function() {
 };
 
 
+/**
+ * toggle advanced / apollo mode
+ */
+silex.controller.ControllerBase.prototype.toggleAdvanced = function() {
+  if (!goog.dom.classlist.contains(document.body, 'advanced-mode-on')) {
+    goog.dom.classlist.add(document.body, 'advanced-mode-on');
+    goog.dom.classlist.remove(document.body, 'advanced-mode-off');
+  }
+  else {
+    goog.dom.classlist.remove(document.body, 'advanced-mode-on');
+    goog.dom.classlist.add(document.body, 'advanced-mode-off');
+  }
+};
+
