@@ -160,20 +160,6 @@ silex.controller.ToolMenuController.prototype.pixlrExpress = function() {
 
 
 /**
- * toggle advanced / apollo mode
- */
-silex.controller.ToolMenuController.prototype.toggleAdvanced = function() {
-  if (!goog.dom.classlist.contains(document.body, 'advanced-mode-on')) {
-    goog.dom.classlist.add(document.body, 'advanced-mode-on');
-    goog.dom.classlist.remove(document.body, 'advanced-mode-off');
-  }
-  else {
-    goog.dom.classlist.remove(document.body, 'advanced-mode-on');
-    goog.dom.classlist.add(document.body, 'advanced-mode-off');
-  }
-};
-
-/**
  * dock panels
  * @param {boolean} dock or undock
  */
