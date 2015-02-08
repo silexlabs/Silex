@@ -54,9 +54,28 @@ silex.view.dialog.SettingsDialog = function(element, controller) {
       function() {
         this.controller.settingsDialogController.setTitle(inputTitle.value);
       }, false, this);
+  // description input field
+  var inputDescription = goog.dom.getElementByClass('input-description');
+  goog.events.listen(
+      inputDescription, goog.ui.Component.EventType.CHANGE,
+      function() {
+        this.controller.settingsDialogController.setDescription(inputDescription.value);
+      }, false, this);
+  // favicon path browse button
+  var faviconPathBtn = goog.dom.getElementByClass('browse-favicon-path', this.element);
+  goog.events.listen(faviconPathBtn, goog.events.EventType.CLICK, function() {
+    this.controller.settingsDialogController.browseFaviconPath();
+  }, false, this);
+  // favicon path input field
+  var inputFaviconPath = goog.dom.getElementByClass('input-favicon-path');
+  goog.events.listen(
+      inputFaviconPath, goog.ui.Component.EventType.CHANGE,
+      function() {
+        this.controller.settingsDialogController.setFaviconPath(inputFaviconPath.value);
+      }, false, this);
   // publication path browse button
-  var btn = goog.dom.getElementByClass('browse-btn', this.element);
-  goog.events.listen(btn, goog.events.EventType.CLICK, function() {
+  var publicationPathBtn = goog.dom.getElementByClass('browse-publication-path', this.element);
+  goog.events.listen(publicationPathBtn, goog.events.EventType.CLICK, function() {
     this.controller.settingsDialogController.browsePublishPath();
   }, false, this);
   // publication path input field
@@ -64,7 +83,7 @@ silex.view.dialog.SettingsDialog = function(element, controller) {
   goog.events.listen(
       inputPublicationPath, goog.ui.Component.EventType.CHANGE,
       function() {
-        this.controller.settingsDialogController.change(inputPublicationPath.value);
+        this.controller.settingsDialogController.setPublicationPath(inputPublicationPath.value);
       }, false, this);
 };
 
@@ -110,34 +129,59 @@ silex.view.dialog.SettingsDialog.prototype.onNavClick = function(e) {
 
 
 /**
- * set the pubication path to display
+ * set the value to the input element
  * @see silex.model.Head
- * @param {string} path   the publication path
+ * @param {string} cssClass   the input css class
+ * @param {?string=} opt_value
  */
-silex.view.dialog.SettingsDialog.prototype.setPublicationPath = function(path) {
-  var inputPublicationPath = goog.dom.getElementByClass('input-publication-path');
-  if (path) {
-    inputPublicationPath.value = path;
+silex.view.dialog.SettingsDialog.prototype.setInputValue = function(cssClass, opt_value) {
+  var input = goog.dom.getElementByClass(cssClass);
+  if (opt_value) {
+    input.value = opt_value;
   }
   else {
-    inputPublicationPath.value = '';
+    input.value = '';
   }
 };
 
 
 /**
- * set the pubication site title to display
+ * set the pubication path to display
  * @see silex.model.Head
- * @param {string} title   the site title
+ * @param {?string=} opt_path   the publication path
  */
-silex.view.dialog.SettingsDialog.prototype.setTitle = function(title) {
-  var inputTitle = goog.dom.getElementByClass('input-title');
-  if (title) {
-    inputTitle.value = title;
-  }
-  else {
-    inputTitle.value = '';
-  }
+silex.view.dialog.SettingsDialog.prototype.setPublicationPath = function(opt_path) {
+  this.setInputValue('input-publication-path', opt_path);
+}
+
+
+/**
+ * set the favicon path to display
+ * @see silex.model.Head
+ * @param {?string=} opt_path
+ */
+silex.view.dialog.SettingsDialog.prototype.setFaviconPath = function(opt_path) {
+  this.setInputValue('input-favicon-path', opt_path);
+}
+
+
+/**
+ * set the site title to display
+ * @see silex.model.Head
+ * @param {?string=} opt_title   the site title
+ */
+silex.view.dialog.SettingsDialog.prototype.setTitle = function(opt_title) {
+  this.setInputValue('input-title', opt_title);
+};
+
+
+/**
+ * set the site description tag
+ * @see silex.model.Head
+ * @param {?string=} opt_description   the site description
+ */
+silex.view.dialog.SettingsDialog.prototype.setDescription = function(opt_description) {
+  this.setInputValue('input-description', opt_description);
 };
 
 

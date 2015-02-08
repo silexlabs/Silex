@@ -201,31 +201,59 @@ silex.model.Head.prototype.refreshFontList = function(neededFonts) {
 
 
 /**
- * get/set the publication path
+ * get/set a meta data
+ * @param {string} name
  */
-silex.model.Head.prototype.setPublicationPath = function(path) {
+silex.model.Head.prototype.getMeta = function(name) {
+  var metaNode = goog.dom.getFrameContentDocument(this.iframeElement)
+    .querySelector('meta[name="' + name + '"]');
+  if (metaNode) {
+    return metaNode.getAttribute('content');
+  }
+  else {
+    return null;
+  }
+};
+
+
+/**
+ * get/set a meta data
+ * @param {string} name
+ * @param {?string=} opt_value
+ */
+silex.model.Head.prototype.setMeta = function(name, opt_value) {
   var found = false;
   // update the DOM element
-  var metaNode = goog.dom.getFrameContentDocument(this.iframeElement).querySelector('meta[name="publicationPath"]');
-  if (!metaNode && path && path !== '') {
+  var metaNode = goog.dom.getFrameContentDocument(this.iframeElement)
+    .querySelector('meta[name="' + name + '"]');
+  if (!metaNode && opt_value && opt_value !== '') {
     // create the DOM element
     metaNode = goog.dom.createElement('meta');
-    metaNode.name = 'publicationPath';
-    metaNode.content = path;
+    metaNode.name = name;
+    metaNode.content = opt_value;
     goog.dom.appendChild(this.getHeadElement(), metaNode);
   }
   else {
-    if (path && path !== '') {
-      // update path
-      metaNode.setAttribute('content', path);
+    if (opt_value && opt_value !== '') {
+      // update opt_value
+      metaNode.setAttribute('content', opt_value);
     }
     else {
-      // remove the path
+      // remove the opt_value
       goog.dom.removeNode(metaNode);
     }
   }
-  this.view.settingsDialog.setPublicationPath(path);
 };
+
+
+/**
+ * get/set the publication path
+ * @param {?string=} opt_path
+ */
+silex.model.Head.prototype.setPublicationPath = function(opt_path) {
+  this.setMeta('publicationPath', opt_path);
+  this.view.settingsDialog.setPublicationPath(opt_path);
+}
 
 
 /**
@@ -233,13 +261,26 @@ silex.model.Head.prototype.setPublicationPath = function(path) {
  * @return {?string}   the publication path
  */
 silex.model.Head.prototype.getPublicationPath = function() {
-  var metaNode = goog.dom.getFrameContentDocument(this.iframeElement).querySelector('meta[name="publicationPath"]');
-  if (metaNode) {
-    return metaNode.getAttribute('content');
-  }
-  else {
-    return null;
-  }
+  return this.getMeta('publicationPath');
+};
+
+
+/**
+ * get/set the description
+ * @param {?string=} opt_description
+ */
+silex.model.Head.prototype.setDescription = function(opt_description) {
+  this.setMeta('description', opt_description);
+  this.view.settingsDialog.setDescription(opt_description);
+}
+
+
+/**
+ * get/set the description
+ * @return {?string}   the publication path
+ */
+silex.model.Head.prototype.getDescription = function() {
+  return this.getMeta('description');
 };
 
 
@@ -278,6 +319,46 @@ silex.model.Head.prototype.setTitle = function(name) {
   var page = this.model.page.getCurrentPage();
   this.view.menu.redraw(this.model.body.getSelection(), goog.dom.getFrameContentDocument(this.iframeElement), pages, page);
   this.view.settingsDialog.setTitle(name);
+};
+
+
+/**
+ * website favicon
+ */
+silex.model.Head.prototype.getFaviconPath = function() {
+  var faviconTag = this.getHeadElement().querySelector('link[rel="shortcut icon"]');
+  if (faviconTag) {
+    return faviconTag.getAttribute('href');
+  }
+  else {
+    return null;
+  }
+};
+
+
+/**
+ * website favicon
+ * @param {?string=} opt_path
+ */
+silex.model.Head.prototype.setFaviconPath = function(opt_path) {
+  var faviconTag = this.getHeadElement().querySelector('link[rel="shortcut icon"]');
+  if (!faviconTag) {
+    if (opt_path) {
+      faviconTag = goog.dom.createElement('link');
+      faviconTag.setAttribute('href', opt_path);
+      faviconTag.setAttribute('rel', 'shortcut icon');
+      goog.dom.appendChild(this.getHeadElement(), faviconTag);
+    }
+  }
+  else if(opt_path) {
+    goog.dom.removeNode(faviconTag);
+  }
+  if(opt_path) {
+    // update website title
+    faviconTag.setAttribute('href', opt_path);
+    // update view
+    this.view.settingsDialog.setFaviconPath(opt_path);
+  }
 };
 
 
