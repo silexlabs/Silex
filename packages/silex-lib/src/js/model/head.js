@@ -258,7 +258,6 @@ silex.model.Head.prototype.setPublicationPath = function(opt_path) {
 
 /**
  * get/set the publication path
- * @return {?string}   the publication path
  */
 silex.model.Head.prototype.getPublicationPath = function() {
   return this.getMeta('publicationPath');
@@ -277,7 +276,6 @@ silex.model.Head.prototype.setDescription = function(opt_description) {
 
 /**
  * get/set the description
- * @return {?string}   the publication path
  */
 silex.model.Head.prototype.getDescription = function() {
   return this.getMeta('description');
@@ -288,9 +286,9 @@ silex.model.Head.prototype.getDescription = function() {
  * website title
  */
 silex.model.Head.prototype.getTitle = function() {
-  var titleNodes = goog.dom.getElementsByTagNameAndClass('title', null, this.getHeadElement());
-  if (titleNodes.length > 0) {
-    return titleNodes[0].innerHTML;
+  var titleNode = this.getHeadElement().querySelector('title');
+  if (titleNode) {
+    return titleNode.innerHTML;
   }
   else {
     return null;
@@ -303,14 +301,10 @@ silex.model.Head.prototype.getTitle = function() {
  */
 silex.model.Head.prototype.setTitle = function(name) {
   // find or create the title tag in the head section
-  var titleNodes = goog.dom.getElementsByTagNameAndClass('title', null, this.getHeadElement());
-  var titleNode;
-  if (titleNodes.length === 0) {
+  var titleNode = this.getTitle();
+  if (!titleNode) {
     titleNode = goog.dom.createElement('title');
     goog.dom.appendChild(this.getHeadElement(), titleNode);
-  }
-  else {
-    titleNode = titleNodes[0];
   }
   // update website title
   titleNode.innerHTML = name;
@@ -356,9 +350,88 @@ silex.model.Head.prototype.setFaviconPath = function(opt_path) {
   if(opt_path) {
     // update website title
     faviconTag.setAttribute('href', opt_path);
-    // update view
-    this.view.settingsDialog.setFaviconPath(opt_path);
   }
+  // update view
+  this.view.settingsDialog.setFaviconPath(opt_path);
+};
+
+
+/**
+ * get/set the title for social networks
+ * @param {?string=} opt_data
+ */
+silex.model.Head.prototype.setTitleSocial = function(opt_data) {
+  this.setMeta('twitter:card', opt_data ? 'summary' : '');
+  this.setMeta('twitter:title', opt_data);
+  this.setMeta('og:title', opt_data);
+  this.view.settingsDialog.setTitleSocial(opt_data);
+}
+
+
+/**
+ * get/set the title for social networks
+ */
+silex.model.Head.prototype.getTitleSocial = function() {
+  return this.getMeta('twitter:title') || this.getMeta('og:title');
+};
+
+
+/**
+ * get/set the description for social networks
+ * @param {?string=} opt_data
+ */
+silex.model.Head.prototype.setDescriptionSocial = function(opt_data) {
+  this.setMeta('twitter:card', opt_data ? 'summary' : '');
+  this.setMeta('twitter:description', opt_data);
+  this.setMeta('og:description', opt_data);
+  this.view.settingsDialog.setDescriptionSocial(opt_data);
+}
+
+
+/**
+ * get/set the description for social networks
+ */
+silex.model.Head.prototype.getDescriptionSocial = function() {
+  return this.getMeta('twitter:description') || this.getMeta('og:description');
+};
+
+
+/**
+ * get/set the thumbnail image for social networks
+ * @param {?string=} opt_data
+ */
+silex.model.Head.prototype.setThumbnailSocialPath = function(opt_data) {
+  this.setMeta('twitter:card', opt_data ? 'summary' : '');
+  this.setMeta('twitter:image', opt_data);
+  this.setMeta('og:image', opt_data);
+  this.view.settingsDialog.setThumbnailSocialPath(opt_data);
+}
+
+
+/**
+ * get/set the thumbnail image for social networks
+ */
+silex.model.Head.prototype.getThumbnailSocialPath = function() {
+  return this.getMeta('og:image') || this.getMeta('twitter:image');
+};
+
+
+/**
+ * get/set the twitter account
+ * @param {?string=} opt_data
+ */
+silex.model.Head.prototype.setTwitterSocial = function(opt_data) {
+  this.setMeta('twitter:card', opt_data ? 'summary' : '');
+  this.setMeta('twitter:site', opt_data);
+  this.view.settingsDialog.setTwitterSocial(opt_data);
+}
+
+
+/**
+ * get/set the twitter account
+ */
+silex.model.Head.prototype.getTwitterSocial = function() {
+  return this.getMeta('twitter:site');
 };
 
 
