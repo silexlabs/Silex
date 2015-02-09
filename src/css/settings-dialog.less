@@ -6,19 +6,30 @@
   /* ************** */
   /* pane selection */
   /* ************** */
+  .right-pane > div {
+    display: none;
+  }
   &.general-pane-visible {
-    .right-pane .publish-pane {
-      display: none;
+    .right-pane .general-pane {
+      display: initial;
     }
     .left-pane .general-pane {
       font-weight: bold;
     }
   }
   &.publish-pane-visible {
-    .right-pane .general-pane {
-      display: none;
+    .right-pane .publish-pane {
+      display: initial;
     }
     .left-pane .publish-pane {
+      font-weight: bold;
+    }
+  }
+  &.social-pane-visible {
+    .right-pane .social-pane {
+      display: initial;
+    }
+    .left-pane .social-pane {
       font-weight: bold;
     }
   }
@@ -75,8 +86,7 @@
   }
   .body {
     border-top: 1px solid @silexdarkgrey;
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow: hidden;
     height: 524px;
     width: 100%;
   }
@@ -85,6 +95,9 @@
     overflow-x: hidden;
     height: 524px;
     width: 74%;
+    .pane > p {
+      margin: 10px;
+    }
     ul {
       list-style: none;
       margin:0;

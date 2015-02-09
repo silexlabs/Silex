@@ -38,12 +38,12 @@ goog.inherits(silex.controller.SettingsDialogController,
 
 
 /**
- * the user clicked "browse" button in the publish settings panel
+ * browse and notify result, track actions, enable undo/redo
  */
-silex.controller.SettingsDialogController.prototype.browsePublishPath =
-    function() {
+silex.controller.SettingsDialogController.prototype.browse =
+    function(trackActionName, mimetypes, cbk) {
   this.tracker.trackAction(
-      'controller-events', 'request', 'publish.browse', 0);
+      'controller-events', 'request', trackActionName, 0);
   this.view.fileExplorer.openDialog(
       goog.bind(function(url) {
         // undo checkpoint
@@ -52,22 +52,68 @@ silex.controller.SettingsDialogController.prototype.browsePublishPath =
         if (url.indexOf('/') != 0) {
           url = '/' + url;
         }
-        // put instead of get
-        url = url.replace('/exec/get', '/exec/put');
-        // set the new publication path
-        this.model.head.setPublicationPath(url);
+        // notify the caller
+        cbk(url);
+        // QA
         this.tracker.trackAction(
-            'controller-events', 'success', 'publish.browse', 1);
+            'controller-events', 'success', trackActionName, 1);
       }, this),
-      { 'mimetypes': ['text/directory'] },
+      mimetypes,
       goog.bind(function(error) {
         silex.utils.Notification.notifyError(
             'Error: I could not select the publish path. <br /><br />' +
             (error.message || ''));
         this.tracker.trackAction(
-            'controller-events', 'error', 'publish.browse', -1);
+            'controller-events', 'error', trackActionName, -1);
       }, this)
   );
+};
+
+
+/**
+ * the user clicked "browse" button in the publish settings panel
+ */
+silex.controller.SettingsDialogController.prototype.browsePublishPath =
+    function() {
+  this.browse(
+    'publish.browse',
+    { 'mimetypes': ['text/directory'] },
+    (url) => {
+      // put instead of get
+      url = url.replace('/exec/get', '/exec/put');
+      // set the new publication path
+      this.model.head.setPublicationPath(url);
+    });
+};
+
+
+/**
+ * the user clicked "browse" button to choose a favicon
+ */
+silex.controller.SettingsDialogController.prototype.browseFaviconPath =
+    function() {
+  this.browse(
+    'favicon.browse',
+    { 'mimetypes': ['image/jpeg', 'image/png', 'image/gif', 'image/ico'] },
+    (url) => {
+      // set the new publication path
+      this.model.head.setFaviconPath(url);
+    });
+};
+
+
+/**
+ * the user clicked "browse" button to choose a thumbnail for social netorks
+ */
+silex.controller.SettingsDialogController.prototype.browseThumbnailSocialPath =
+    function() {
+  this.browse(
+    'thumbnail-social.browse',
+    { 'mimetypes': ['image/jpeg', 'image/png', 'image/gif', 'image/ico'] },
+    (url) => {
+      // set the new publication path
+      this.model.head.setThumbnailSocialPath(url);
+    });
 };
 
 
@@ -80,38 +126,6 @@ silex.controller.SettingsDialogController.prototype.setPublicationPath =
   // undo checkpoint
   this.undoCheckPoint();
   this.model.head.setPublicationPath(opt_data);
-};
-
-
-/**
- * the user clicked "browse" button to choose a favicon
- */
-silex.controller.SettingsDialogController.prototype.browseFaviconPath =
-    function() {
-  this.tracker.trackAction(
-      'controller-events', 'request', 'favicon.browse', 0);
-  this.view.fileExplorer.openDialog(
-      goog.bind(function(url) {
-        // undo checkpoint
-        this.undoCheckPoint();
-        // start with /api/...
-        if (url.indexOf('/') != 0) {
-          url = '/' + url;
-        }
-        // set the new publication path
-        this.model.head.setFaviconPath(url);
-        this.tracker.trackAction(
-            'controller-events', 'success', 'favicon.browse', 1);
-      }, this),
-      { 'mimetypes': ['image/jpeg', 'image/png', 'image/gif', 'image/ico'] },
-      goog.bind(function(error) {
-        silex.utils.Notification.notifyError(
-            'Error: I could not select the favicon path. <br /><br />' +
-            (error.message || ''));
-        this.tracker.trackAction(
-            'controller-events', 'error', 'favicon.browse', -1);
-      }, this)
-  );
 };
 
 
@@ -136,4 +150,52 @@ silex.controller.SettingsDialogController.prototype.setDescription =
   // undo checkpoint
   this.undoCheckPoint();
   this.model.head.setDescription(opt_data);
+};
+
+
+/**
+ * set new title for social networks
+ * @param {?string=} opt_data
+ */
+silex.controller.SettingsDialogController.prototype.setTitleSocial =
+  function(opt_data) {
+  // undo checkpoint
+  this.undoCheckPoint();
+  this.model.head.setTitleSocial(opt_data);
+};
+
+
+/**
+ * set new description for social networks
+ * @param {?string=} opt_data
+ */
+silex.controller.SettingsDialogController.prototype.setDescriptionSocial =
+  function(opt_data) {
+  // undo checkpoint
+  this.undoCheckPoint();
+  this.model.head.setDescriptionSocial(opt_data);
+};
+
+
+/**
+ * set new thumbnail for social networks
+ * @param {?string=} opt_data
+ */
+silex.controller.SettingsDialogController.prototype.setThumbnailSocialPath =
+  function(opt_data) {
+  // undo checkpoint
+  this.undoCheckPoint();
+  this.model.head.setThumbnailSocialPath(opt_data);
+};
+
+
+/**
+ * set twitter account
+ * @param {?string=} opt_data
+ */
+silex.controller.SettingsDialogController.prototype.setTwitterSocial =
+  function(opt_data) {
+  // undo checkpoint
+  this.undoCheckPoint();
+  this.model.head.setTwitterSocial(opt_data);
 };

@@ -7,15 +7,15 @@
     .left-pane
       ul.tree
         li.general-pane General
+        li.social-pane Social Networks
         li.publish-pane Publish settings
     .right-pane
-      .general-pane
+      .pane.general-pane
         ul
           li
             fieldset
               legend
                 h3.title Website Title
-                //a.help-icon(href="https://github.com/silexlabs/Silex/issues/238", title="about Silex and CSS", target="blank") Help
               p
                 | Title of the browser window, and title in the search engines results.
                 | It is used by search engines to find out what your site is talking about.
@@ -25,7 +25,6 @@
             fieldset
               legend
                 h3.title Website Description
-                //a.help-icon(href="https://github.com/silexlabs/Silex/issues/238", title="about Silex and CSS", target="blank") Help
               p
                 | Description displayed by the search engines in search results.
                 | It is used by search engines to find out what your site is talking about.
@@ -34,18 +33,57 @@
           li
             fieldset
               legend
-                h3 Favicon
+                h3.title Favicon
               p
                 | Small image displayed in the browser's address bar and in tabs.
                 | The recommended size is 16×16 or 32×32 pixels.
               input.input-url.input-favicon-path(type="text", value="")
               button.browse-favicon-path(type="button") Browse
-      .publish-pane
+      .pane.social-pane
+        p Meta tags for search engines, Facebook, Google+, Twitter, Linkedin, ... The following settings enable Open Graph and Twitter Cards.
         ul
           li
             fieldset
               legend
-                h3 Publication Path -
+                h3.title Title
+              p
+                | The title of your website displayed when a user shares your website on a social network.
+                | Do not include any branding in this title, just eye-catching phrase, e.g. "Learn everything about fishing".
+                | Title should be between 60 and 90 characters long.
+              input.input-text.input-title(type="text", value="", placeholder="Title")
+          li
+            fieldset
+              legend
+                h3.title Description
+              p
+                | Description displayed when a user shares your website on a social network.
+                | Make it catchy, and invite readers to visit your website too, e.g. "Sam's website about fishing, check it out!"
+                | Title should be between 60 and 90 characters long.
+              input.input-text.input-description(type="text", value="", placeholder="Description")
+          li
+            fieldset
+              legend
+                h3.title Image
+              p
+                | Thumbnail image which is displayed when your website is shared on a social network.
+                | The optimal size is 1200×627 pixels. At this size, your thumbnail will be big and stand out from the crowd.
+                | But do not exceed the 5MB size limit.
+                | If you use an image that is smaller than 400 pixels x 209 pixels, it will render as a much smaller thumbnail.
+              input.input-url.input-image-path(type="text", value="")
+              button.browse-image-path(type="button") Browse
+          li
+            fieldset
+              legend
+                h3.title Twitter account
+              p
+                | Indicates your Twitter account.
+              input.input-text.input-twitter(type="text", value="", placeholder="@twitteraccount", pattern="^@*", title="Twitter account name")
+      .pane.publish-pane
+        ul
+          li
+            fieldset
+              legend
+                h3.title Publication Path -
                 a.help-icon(href="https://github.com/silexlabs/Silex/issues/238", title="about Silex and CSS", target="blank") Help
               p
                 | Path to the folder in wich I will publish the website. This folder content will be deleted.
