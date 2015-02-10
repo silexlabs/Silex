@@ -1,11 +1,9 @@
 /*
   for webdriver.io documentation
-  https://github.com/camme/webdriverjs
+  http://webdriver.io/api.html
 */
 
-
-var webdriverjs = require('webdriverjs'),
-    helper = require('../helper.js'),
+var helper = require('../helper.js'),
     actions = require('../actions.js'),
     fs = require('fs'),
     file_explorer = require('../model/file-explorer-model.js');
@@ -30,7 +28,7 @@ describe('Silex insert and publish test', function(){
     this.timeout(99999999);
     var next = function () {
         // create the client
-        client = helper.createClient(webdriverjs);
+        client = helper.createClient();
         done();
     }
     // cleanup the content of the publish folder
