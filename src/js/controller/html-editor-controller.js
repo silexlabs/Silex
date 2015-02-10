@@ -41,6 +41,13 @@ goog.inherits(silex.controller.HtmlEditorController, silex.controller.Controller
  */
 silex.controller.HtmlEditorController.prototype.changed = function(content) {
   // update content
-  var element = this.model.body.getSelection()[0];
-  this.model.element.setInnerHtml(element, content);
+  var selection = this.model.body.getSelection();
+  if (selection.length === 1 && selection[0].tagName.toLowerCase() === 'body') {
+    // edit head tag
+    this.model.head.setHeadTag(content);
+  }
+  else {
+    // edit current selection
+    this.model.element.setInnerHtml(selection[0], content);
+  }
 };

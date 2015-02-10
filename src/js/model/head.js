@@ -65,6 +65,55 @@ silex.model.Head.CUSTOM_FONTS_CSS_CLASS = 'silex-custom-font';
 
 
 /**
+ * delimiter for the head tag edited by the user
+ */
+silex.model.Head.HEAD_TAG_START = '<!-- Silex HEAD tag do not remove -->';
+
+
+/**
+ * delimiter for the head tag edited by the user
+ */
+silex.model.Head.HEAD_TAG_STOP = '<!-- End of Silex HEAD tag do not remove -->';
+
+
+/**
+ * set/get HEAD tag
+ * the head tag edited by the user is a portion of the real head tag
+ * it is delimited by specific comments
+ * @return {string} the head tag content
+ */
+silex.model.Head.prototype.getHeadTag = function() {
+  // get silex scripts from the DOM
+  var headString = this.model.element.unprepareHtmlForEdit(this.getHeadElement().innerHTML);
+  var regExp = new RegExp(silex.model.Head.HEAD_TAG_START + '(.*)' + silex.model.Head.HEAD_TAG_STOP);
+  var found = headString.match(regExp);
+  return found ? found[1] : '';
+};
+
+
+/**
+ * set/get HEAD tag
+ * the head tag edited by the user is a portion of the real head tag
+ * it is delimited by specific comments
+ * @param {string} headString
+ */
+silex.model.Head.prototype.setHeadTag = function(headString) {
+  var original = this.model.element.unprepareHtmlForEdit(this.getHeadElement().innerHTML);
+  var regExp = new RegExp(silex.model.Head.HEAD_TAG_START + '(.*)' + silex.model.Head.HEAD_TAG_STOP);
+  headString = silex.model.Head.HEAD_TAG_START + headString + silex.model.Head.HEAD_TAG_STOP;
+  if (regExp.test(original)) {
+    // update the head section
+    headString = original.replace(regExp, headString)
+  }
+  else {
+    // create the head section
+    headString = original + headString;
+  }
+  this.getHeadElement().innerHTML = this.model.element.prepareHtmlForEdit(headString);
+};
+
+
+/**
  * set/get silex editable js scripts
  * @return {string} the string defining the js script
  */
