@@ -1,11 +1,10 @@
 /*
   for webdriver.io documentation
-  https://github.com/camme/webdriverjs
+  http://webdriver.io/api.html
 */
 
 
-var webdriverjs = require('webdriverjs'),
-    helper = require('../helper.js'),
+var helper = require('../helper.js'),
     actions = require('../actions.js');
 
 // dummy function used when the result is an expected error
@@ -25,7 +24,7 @@ describe('Silex insert and publish test', function(){
   // before tests, setup
   before(function(){
     this.timeout(99999999);
-    client = helper.createClient(webdriverjs);
+    client = helper.createClient();
   });
 
   // insert an image
@@ -86,7 +85,7 @@ describe('Silex insert and publish test', function(){
     actions.saveAs(client, 'editable', function () {
         actions.checkForFile(publishFolder + '/editable.html', done);
     });
-    
+
     // FIXME: check if editable.html exists and contains the images urls
   });
 

@@ -3,7 +3,8 @@
 // * http://selenium.googlecode.com/git/docs/api/javascript/namespace_webdriver.html
 
 var fs = require('fs')
-, path = require('path');
+, path = require('path')
+, webdriverio = require('webdriverio');
 
 /**
  * ref to selenium driver
@@ -57,7 +58,7 @@ exports.getDriverName = function () {
 /**
  * create the webdriver client
  */
-exports.createClient = function (webdriverjs) {
+exports.createClient = function () {
 
     var rootPath = path.resolve(__dirname, '..');
     var phantomjsPath = rootPath + '/node_modules/phantomjs/bin/phantomjs';
@@ -74,7 +75,7 @@ exports.createClient = function (webdriverjs) {
       }
     }
 
-    var client = webdriverjs.remote({
+    var client = webdriverio.remote({
       desiredCapabilities: {
         browserName: driverName
         , 'phantomjs.binary.path': phantomjsPath
