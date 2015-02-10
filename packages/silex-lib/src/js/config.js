@@ -315,6 +315,16 @@ silex.Config.menu = {
       },
       null,
       {
+        label: 'HTML <head> editor',
+        id: 'view.open.htmlHeadEditor',
+        className: 'menu-item-view-open-htmlHeadEditor',
+        globalKey: goog.events.KeyCodes.E,
+        shortcut: [[goog.events.KeyCodes.E, altKeyModifyer]],
+        tooltip: altKeyDisplay + 'E',
+        mnemonic: goog.events.KeyCodes.E,
+        accelerator: 'e'
+      },
+      {
         label: 'JS scripts editor',
         id: 'view.open.jsEditor',
         className: 'menu-item-view-open-jsEditor',

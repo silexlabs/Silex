@@ -256,6 +256,9 @@ silex.view.Menu.prototype.onMenuEvent = function(type) {
     case 'view.open.jsEditor':
       this.controller.viewMenuController.openJsEditor();
       break;
+    case 'view.open.htmlHeadEditor':
+      this.controller.viewMenuController.openHtmlHeadEditor();
+      break;
     case 'view.open.editor':
       this.controller.editMenuController.editElement();
       break;

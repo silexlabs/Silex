@@ -50,6 +50,20 @@ silex.controller.ViewMenuController.prototype.openCssEditor = function() {
 
 
 /**
+ * edit HTML head tag
+ */
+silex.controller.ViewMenuController.prototype.openHtmlHeadEditor = function() {
+  // undo checkpoint
+  this.undoCheckPoint();
+  // deselect all elements
+  this.model.body.setSelection([]);
+  // open the editor
+  this.view.htmlEditor.openEditor();
+  this.view.htmlEditor.setValue(this.model.head.getHeadTag());
+};
+
+
+/**
  * edit Silex editable js scripts
  */
 silex.controller.ViewMenuController.prototype.openJsEditor = function() {
