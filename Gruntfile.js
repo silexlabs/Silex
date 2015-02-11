@@ -262,7 +262,7 @@ module.exports = function(grunt) {
     },
     simplemocha: {
         options: {
-          globals: ['should'],
+          globals: ['should', 'WDIO_GLOBALS'],
           ignoreLeaks: false,
           ui: 'bdd',
           reporter: 'spec',
@@ -271,11 +271,7 @@ module.exports = function(grunt) {
             src: [
                 'test/functional/file-explorer.js',
                 'test/functional/save.js',
-                'test/functional/publish.js',
-                'test/actions.js',
-                'test/helper.js',
-                'test/logging.js',
-                'test/model/file-explorer-model.js',
+                'test/functional/publish.js'
             ],
         },
       },
