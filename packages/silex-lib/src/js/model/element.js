@@ -578,8 +578,6 @@ silex.model.Element.prototype.createHtmlElement = function(styleObject, indent) 
   // create the container for html content
   var htmlContent = goog.dom.createElement('div');
   htmlContent.innerHTML = '<p>New HTML box</p>';
-  goog.style.setStyle(htmlContent, 'width', '100%');
-  goog.style.setStyle(htmlContent, 'height', '100%');
   goog.dom.appendChild(element, htmlContent);
   // add a marker to find the inner content afterwards, with getContent
   goog.dom.classlist.add(htmlContent, silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
