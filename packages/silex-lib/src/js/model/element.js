@@ -523,7 +523,6 @@ silex.model.Element.prototype.createContainerElement = function(styleObject, ind
   // add a default style
   styleObject.backgroundColor = '#FFFFFF';
   goog.style.setStyle(element, styleObject);
-
   // respect indentation
   var textInside = goog.dom.createTextNode('\n' + this.getTabs(indent - 1));
   goog.dom.appendChild(element, textInside);
