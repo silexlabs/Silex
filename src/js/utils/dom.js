@@ -152,39 +152,41 @@ silex.utils.Dom.renderList = function(itemTemplateString, data) {
  * @return the bounding box containing all the elements
  */
 silex.utils.Dom.getBoundingBox = function(elements) {
-  // compute the positions and sizes
+  // compute the positions and sizes, which may end up to be NaN or a number
   var top = NaN,
       left = NaN,
       right = NaN,
       bottom = NaN;
-
+  // browse all elements and compute the containing rect
   goog.array.forEach(elements, function(element) {
-    // commpute the values, which may end up to be NaN or a number
+    // retrieve the styles strings (with "px")
     var elementStyleTop = goog.style.getStyle(element, 'top');
     var elementStyleLeft = goog.style.getStyle(element, 'left');
     var elementStyleWidth = goog.style.getStyle(element, 'width');
     var elementStyleHeight = goog.style.getStyle(element, 'height');
+    var elementStyleMinWidth = goog.style.getStyle(element, 'minWidth');
+    var elementStyleMinHeight = goog.style.getStyle(element, 'minHeight');
+    // compute the styles numerical values, which may end up to be NaN or a number
+    var elementMinWidth = parseFloat(elementStyleMinWidth.substr(0, elementStyleMinWidth.indexOf('px')));
+    var elementWidth = Math.max(elementMinWidth || 0, parseFloat(elementStyleWidth.substr(0, elementStyleWidth.indexOf('px'))));
+    var elementMinHeight = parseFloat(elementStyleMinHeight.substr(0, elementStyleMinHeight.indexOf('px')));
+    var elementHeight = Math.max(elementMinHeight || 0, parseFloat(elementStyleHeight.substr(0, elementStyleHeight.indexOf('px'))));
     var elementTop = parseFloat(elementStyleTop.substr(0, elementStyleTop.indexOf('px')));
     var elementLeft = parseFloat(elementStyleLeft.substr(0, elementStyleLeft.indexOf('px')));
-    var elementRight = (elementLeft || 0) + parseFloat(elementStyleWidth.substr(0, elementStyleWidth.indexOf('px')));
-    var elementBottom = (elementTop || 0) + parseFloat(elementStyleHeight.substr(0, elementStyleHeight.indexOf('px')));
-    // take the smallest top and left
+    var elementRight = (elementLeft || 0) + elementWidth;
+    var elementBottom = (elementTop || 0) + elementHeight;
+    // take the smallest top and left and the bigger bottom and rigth
     top = isNaN(top) ? elementTop : Math.min(top, elementTop);
     left = isNaN(left) ? elementLeft : Math.min(left, elementLeft);
-    // take the bigger bottom and rigth
     bottom = isNaN(bottom) ? elementBottom : Math.max(bottom, elementBottom);
     right = isNaN(right) ? elementRight : Math.max(right, elementRight);
   });
-
+  // no value for NaN results
   var res = {};
-  // top left
   if (!isNaN(top)) res.top = top;
   if (!isNaN(left)) res.left = left;
-  // bottom right
-  if (isNaN(top)) top = 0;
-  if (isNaN(left)) left = 0;
-  if (!isNaN(bottom)) res.height = bottom - top;
-  if (!isNaN(right)) res.width = right - left;
+  if (!isNaN(bottom)) res.height = bottom - (top || 0);
+  if (!isNaN(right)) res.width = right - (left || 0);
   return res;
 };
 
