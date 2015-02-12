@@ -18,8 +18,6 @@ body{
   -ms-user-select: none;
   user-select: none;
   cursor: move;
-  min-width: 20px;
-  min-height: 20px;
 }
 .editable-style.silex-selected {
   box-shadow: 0 0 4px #333333;

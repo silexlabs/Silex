@@ -767,22 +767,26 @@ silex.view.Stage.prototype.followElementSize =
         offsetX = -offsetX;
         break;
       }
+      // handle .background element which is forced centered
+      if(goog.dom.classlist.contains(follower, 'background')) {
+        offsetX *= 2;
+      }
       // compute new size
       var borderBox = goog.style.getBorderBox(follower);
       var newSizeW = size.width + offsetX - borderBox.left - borderBox.right;
       var newSizeH = size.height + offsetY - borderBox.top - borderBox.bottom;
       // handle min size
-      if (newSizeW < 20) {
+      if (newSizeW < silex.model.Element.MIN_WIDTH) {
         if (resizeDirection === 'w' || resizeDirection === 'sw' || resizeDirection === 'nw') {
-          offsetPosX -= 20 - newSizeW;
+          offsetPosX -= silex.model.Element.MIN_WIDTH - newSizeW;
         }
-        newSizeW = 20;
+        newSizeW = silex.model.Element.MIN_WIDTH;
       }
-      if (newSizeH < 20) {
+      if (newSizeH < silex.model.Element.MIN_HEIGHT) {
         if (resizeDirection === 'n' || resizeDirection === 'ne' || resizeDirection === 'nw') {
-          offsetPosY -= 20 - newSizeH;
+          offsetPosY -= silex.model.Element.MIN_HEIGHT - newSizeH;
         }
-        newSizeH = 20;
+        newSizeH = silex.model.Element.MIN_HEIGHT;
       }
       // set position in case we are resizing up or left
       goog.style.setPosition(follower, offsetPosX, offsetPosY);
