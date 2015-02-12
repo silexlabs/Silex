@@ -15,10 +15,18 @@
 
     <style type="text/css" class="silex-style"></style>
     <script type="text/javascript" class="silex-script"></script>
+    <style id="silex-elements-styles" type="text/css">
+      .background-initial {
+        background-color: rgba(255, 255, 255, 1); top: 0; left: 0; width: 960px; height: 640px;
+      }
+      .body-initial {
+        background-color: #262626;
+      }
+    </style>
 </head>
-<body style="background-color: #262626;" data-silex-type="container">
+<body id="body-initial" class="body-initial" data-silex-type="container">
     <a id="page-page-1" data-silex-type="page" class="page-element">Page 1</a>
-    <div class="background editable-style container-element prevent-draggable" data-silex-type="container" style="background-color: rgba(255, 255, 255, 1); top: 0; left: 0; width: 960px; height: 640px; ">
+    <div id="background-initial" class="background background-initial editable-style container-element prevent-draggable" data-silex-type="container">
     </div>
 </body>
 </html>

@@ -94,6 +94,14 @@ silex.view.pane.PropertyPane.prototype.selectedElements = null;
 
 
 /**
+ * reference to the iframe document
+ * updated when redraw is called
+ * @type {Document}
+ */
+silex.view.pane.PropertyPane.prototype.document = null;
+
+
+/**
  * build the UI
  */
 silex.view.pane.PropertyPane.prototype.buildUi = function() {
@@ -162,15 +170,17 @@ silex.view.pane.PropertyPane.prototype.onPositionChanged =
     input.setAttribute('data-prev-value', value);
     // compute the offset
     var offset = value - oldValue;
-    // the bounding box of all elements
-    var bb = {};
     // apply the change to all elements
     goog.array.forEach(this.selectedElements, function(element) {
       if (goog.isNumber(oldValue)) {
-        bb = silex.utils.Dom.getBoundingBox([element]);
+        var elementStyle = silex.utils.Dom.getStyle(element, this.document);
+        var styleValue = 0;
+        if (elementStyle && elementStyle[name] && elementStyle[name] != '') {
+          styleValue = parseFloat(elementStyle[name].substr(0, elementStyle[name].indexOf('px')));
+        }
         // compute the new value relatively to the old value,
         // in order to match the group movement
-        var newValue = bb[name] + offset;
+        var newValue = styleValue + offset;
         this.styleChanged(name,
             newValue + 'px',
             [element]);
@@ -235,6 +245,9 @@ silex.view.pane.PropertyPane.prototype.redraw = function(selectedElements, docum
   // call super
   goog.base(this, 'redraw', selectedElements, document, pageNames, currentPageName);
 
+  // store a reference to the doc
+  this.document = document;
+
   // not available for stage element
   var elementsNoStage = [];
   goog.array.forEach(selectedElements, function(element) {
@@ -254,7 +267,7 @@ silex.view.pane.PropertyPane.prototype.redraw = function(selectedElements, docum
     // remember selection
     this.selectedElements = selectedElements;
 
-    var bb = silex.utils.Dom.getBoundingBox(selectedElements);
+    var bb = silex.utils.Dom.getBoundingBox(selectedElements, document);
 
     // display position and size
     this.topInput.value = bb.top || '0';

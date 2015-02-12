@@ -99,12 +99,16 @@ silex.utils.Style.removeInternalClasses = function(element, opt_allClasses, opt_
  * convert style object to string
  */
 silex.utils.Style.styleToString = function(style) {
-  // build a string out of the style object
+  if(typeof style === 'string') {
+    return style;
+  }
   var styleStr = '';
-  goog.object.forEach(style, function(val, index, obj) {
-    if (val)
-      styleStr += goog.string.toSelectorCase(index) + ': ' + val + '; ';
-  });
+  for(var idx in style) {
+    // filter the numerical indexes of a CSSStyleDeclaration object
+    if(style[idx] && typeof style[idx] === 'string' && style[idx] !== '' && idx.match(/[^0-9]/)) {
+      styleStr += goog.string.toSelectorCase(idx) + ': ' + style[idx] + '; ';
+    }
+  }
   return styleStr;
 };
 
