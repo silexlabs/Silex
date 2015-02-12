@@ -29,6 +29,24 @@ silex.utils.Dom = function() {
 
 
 /**
+ * constant for the ID of the style tag
+ * containing all CSS rules for the elements on stage
+ * which are being edited with the wysiwyg
+ * @const
+ * @static
+ */
+silex.utils.Dom.STYLE_TAG_ID = 'silex-elements-styles'
+
+
+/**
+ * constant for the prefix of the IDs given to Silex editable elements
+ * @const
+ * @static
+ */
+silex.utils.Dom.ELEMENT_ID_PREFIX = 'silex-id-'
+
+
+/**
  * counts the number of parents
  * used for indentation
  * @param {Element} element
@@ -149,9 +167,10 @@ silex.utils.Dom.renderList = function(itemTemplateString, data) {
  * compute the bounding box of the given elements
  * use only element.style.* to compute this, not the real positions and sizes
  * so it takes into account only the elements which have top, left, width and height set in px
+ * @param {Document} doc
  * @return the bounding box containing all the elements
  */
-silex.utils.Dom.getBoundingBox = function(elements) {
+silex.utils.Dom.getBoundingBox = function(elements, doc) {
   // compute the positions and sizes, which may end up to be NaN or a number
   var top = NaN,
       left = NaN,
@@ -160,19 +179,14 @@ silex.utils.Dom.getBoundingBox = function(elements) {
   // browse all elements and compute the containing rect
   goog.array.forEach(elements, function(element) {
     // retrieve the styles strings (with "px")
-    var elementStyleTop = goog.style.getStyle(element, 'top');
-    var elementStyleLeft = goog.style.getStyle(element, 'left');
-    var elementStyleWidth = goog.style.getStyle(element, 'width');
-    var elementStyleHeight = goog.style.getStyle(element, 'height');
-    var elementStyleMinWidth = goog.style.getStyle(element, 'minWidth');
-    var elementStyleMinHeight = goog.style.getStyle(element, 'minHeight');
+    var elementStyle = silex.utils.Dom.getStyle(element, doc)
     // compute the styles numerical values, which may end up to be NaN or a number
-    var elementMinWidth = parseFloat(elementStyleMinWidth.substr(0, elementStyleMinWidth.indexOf('px')));
-    var elementWidth = Math.max(elementMinWidth || 0, parseFloat(elementStyleWidth.substr(0, elementStyleWidth.indexOf('px'))));
-    var elementMinHeight = parseFloat(elementStyleMinHeight.substr(0, elementStyleMinHeight.indexOf('px')));
-    var elementHeight = Math.max(elementMinHeight || 0, parseFloat(elementStyleHeight.substr(0, elementStyleHeight.indexOf('px'))));
-    var elementTop = parseFloat(elementStyleTop.substr(0, elementStyleTop.indexOf('px')));
-    var elementLeft = parseFloat(elementStyleLeft.substr(0, elementStyleLeft.indexOf('px')));
+    var elementMinWidth = elementStyle.minWidth ? parseFloat(elementStyle.minWidth.substr(0, elementStyle.minWidth.indexOf('px'))) : null;
+    var elementWidth = Math.max(elementMinWidth || 0, parseFloat(elementStyle.width.substr(0, elementStyle.width.indexOf('px'))));
+    var elementMinHeight = elementStyle.minHeight ? parseFloat(elementStyle.minHeight.substr(0, elementStyle.minHeight.indexOf('px'))) : null;
+    var elementHeight = Math.max(elementMinHeight || 0, parseFloat(elementStyle.height.substr(0, elementStyle.height.indexOf('px'))));
+    var elementTop = parseFloat(elementStyle.top.substr(0, elementStyle.top.indexOf('px')));
+    var elementLeft = parseFloat(elementStyle.left.substr(0, elementStyle.left.indexOf('px')));
     var elementRight = (elementLeft || 0) + elementWidth;
     var elementBottom = (elementTop || 0) + elementHeight;
     // take the smallest top and left and the bigger bottom and rigth
@@ -234,3 +248,112 @@ silex.utils.Dom.publish = function(publicationUrl, fileUrl, html, statusCallback
   // write the content (leave this after "listen")
   goog.dom.iframe.writeContent(iframe, html);
 };
+
+
+/**
+ * @param {Document} doc
+ * @return {string}
+ */
+silex.utils.Dom.generateUniqueId = function (doc) {
+  var uniqueId;
+  var num = 0;
+  do {
+    uniqueId = Date.now().toString() + (num++ ? '-' + num : '');
+  } while (doc.getElementById(uniqueId));
+  return uniqueId;
+};
+
+
+/**
+ * @param {Document} doc
+ * @return {CSSStyleSheet|null} the style sheet with Silex definitions
+ */
+silex.utils.Dom.getSilexStyleSheet = function (doc) {
+  //retrieve the style sheet with Silex definitions
+  for (var idx in doc.styleSheets) {
+    if (doc.styleSheets[idx].ownerNode && doc.styleSheets[idx].ownerNode.id === silex.utils.Dom.STYLE_TAG_ID) {
+      return doc.styleSheets[idx];
+    }
+  }
+  return null;
+};
+
+
+/**
+ * get / set the css style of an element
+ * this creates or update a rule in the style tag with id STYLE_TAG_ID
+ * if opt_style is null this will remove the rule
+ * @param {Element} element
+ * @param {?string|Object|CSSStyleDeclaration=} opt_style
+ * @param {?Document=} opt_document
+ */
+silex.utils.Dom.setStyle = function (element, opt_style, opt_document) {
+  // default document is window.document
+  var doc = (opt_document || document);
+  // convert style to string
+
+//ICI opt_style.style.width N EST PAS SETTE A LA BONNE VALEUR
+  // if(opt_style) opt_style.style.width = '22px';
+
+  var styleStr = silex.utils.Style.styleToString(opt_style || '');
+  // add the selector for this element
+  if (!element.id) {
+    var idAndClass = silex.utils.Dom.ELEMENT_ID_PREFIX + silex.utils.Dom.generateUniqueId(doc);
+    element.id = idAndClass;
+    element.classList.add(idAndClass);
+  }
+  // we use the class name because elements have their ID as a css class too
+  styleStr = '.' + element.id + '{' + styleStr + '} '
+  // make sure of the existance of the style tag with Silex definitions
+  var styleTag = doc.getElementById(silex.utils.Dom.STYLE_TAG_ID);
+  if(!styleTag) {
+    styleTag = doc.createElement('style');
+    styleTag.setAttribute('id', silex.utils.Dom.STYLE_TAG_ID);
+    styleTag.setAttribute('type', 'text/css');
+    goog.dom.appendChild(doc.head, styleTag);
+  }
+  //retrieve the style sheet with Silex definitions
+  var styleSheet = silex.utils.Dom.getSilexStyleSheet(doc);
+  // find the index of the rule for the given element
+  var originalCssRuleIdx = -1;
+  for (var idx in styleSheet.cssRules) {
+    if (styleSheet.cssRules[idx].selectorText === '.' + element.id) {
+      originalCssRuleIdx = parseInt(idx, 10);
+      break;
+    }
+  }
+  // update or create the rule
+  if (originalCssRuleIdx >= 0) {
+    styleSheet.deleteRule(originalCssRuleIdx)
+  }
+  if(opt_style) {
+    styleSheet.insertRule(styleStr, styleSheet.cssRules.length);
+  }
+};
+
+
+/**
+ * get / set the css style of an element
+ * this creates or update a rule in the style tag with id STYLE_TAG_ID
+ * @param {Element} element
+ * @param {?Document=} opt_document
+ * @return {CSSStyleDeclaration|null}
+ */
+silex.utils.Dom.getStyle = function (element, opt_document) {
+  // default document is window.document
+  var doc = (opt_document || document);
+  //retrieve the style sheet with Silex definitions
+  var styleSheet = silex.utils.Dom.getSilexStyleSheet(doc);
+  if (styleSheet) {
+    // find the rule for the given element
+    for (var idx in styleSheet.cssRules) {
+      // we use the class name because elements have their ID as a css class too
+      if (styleSheet.cssRules[idx].selectorText === '.' + element.id) {
+        return styleSheet.cssRules[idx].style;
+      }
+    }
+  }
+  return null;
+};
+
+

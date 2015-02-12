@@ -176,7 +176,9 @@ silex.model.Element.prototype.getType = function(element) {
  * @return  {string}           the styles of the element
  */
 silex.model.Element.prototype.getAllStyles = function(element) {
-  return this.unprepareHtmlForEdit(element.getAttribute('style'));
+  var styleObject = silex.utils.Dom.getStyle(element, goog.dom.getFrameContentDocument(this.iframeElement));
+  var styleStr = silex.utils.Style.styleToString(styleObject);
+  return this.unprepareHtmlForEdit(styleStr);
 };
 
 
@@ -187,8 +189,8 @@ silex.model.Element.prototype.getAllStyles = function(element) {
  * @return  {string}           the style of the element
  */
 silex.model.Element.prototype.getStyle = function(element, styleName) {
-  //return goog.style.getStyle(element, styleName);
-  return this.unprepareHtmlForEdit(element.style[styleName]);
+  var styleObject = silex.utils.Dom.getStyle(element, goog.dom.getFrameContentDocument(this.iframeElement));
+  return this.unprepareHtmlForEdit(styleObject[styleName]);
 };
 
 
@@ -199,13 +201,18 @@ silex.model.Element.prototype.getStyle = function(element, styleName) {
  * @param  {?string=}  opt_styleValue     the value for this styleName
  */
 silex.model.Element.prototype.setStyle = function(element, styleName, opt_styleValue) {
-  if (element.style[styleName] !== opt_styleValue) {
+  var styleObject = silex.utils.Dom.getStyle(element, goog.dom.getFrameContentDocument(this.iframeElement));
+  if (!styleObject) {
+    styleObject = {};
+  }
+  if (styleObject[styleName] !== opt_styleValue) {
     if (goog.isDefAndNotNull(opt_styleValue)) {
-      element.style[styleName] = this.prepareHtmlForEdit(opt_styleValue);
+      styleObject[styleName] = this.prepareHtmlForEdit(opt_styleValue);
     }
     else {
-      element.style[styleName] = '';
+      styleObject[styleName] = '';
     }
+    silex.utils.Dom.setStyle(element, styleObject, goog.dom.getFrameContentDocument(this.iframeElement));
     // update the view
     var pages = this.model.page.getPages();
     var page = this.model.page.getCurrentPage();
@@ -495,7 +502,6 @@ silex.model.Element.prototype.createElement = function(type) {
   }
 
   // init the element
-  element.className = silex.model.Body.EDITABLE_CLASS_NAME;
   goog.dom.classlist.add(element, silex.model.Body.EDITABLE_CLASS_NAME);
 
   // make it editable
@@ -522,7 +528,7 @@ silex.model.Element.prototype.createContainerElement = function(styleObject, ind
   element.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_CONTAINER);
   // add a default style
   styleObject.backgroundColor = '#FFFFFF';
-  goog.style.setStyle(element, styleObject);
+  silex.utils.Dom.setStyle(element, styleObject, goog.dom.getFrameContentDocument(this.iframeElement));
   // respect indentation
   var textInside = goog.dom.createTextNode('\n' + this.getTabs(indent - 1));
   goog.dom.appendChild(element, textInside);
@@ -552,7 +558,7 @@ silex.model.Element.prototype.createTextElement = function(styleObject, indent) 
   // sometimes there is only in text node in textContent
   // e.g. whe select all + remove formatting
   goog.dom.classlist.add(textContent, 'normal');
-  goog.style.setStyle(element, styleObject);
+  silex.utils.Dom.setStyle(element, styleObject, goog.dom.getFrameContentDocument(this.iframeElement));
 
   // respect indentation
   var textBefore = goog.dom.createTextNode('\n' + this.getTabs(1 + indent));
@@ -582,7 +588,7 @@ silex.model.Element.prototype.createHtmlElement = function(styleObject, indent) 
   goog.dom.classlist.add(htmlContent, silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
   // add a default style
   styleObject.backgroundColor = '#FFFFFF';
-  goog.style.setStyle(element, styleObject);
+  silex.utils.Dom.setStyle(element, styleObject, goog.dom.getFrameContentDocument(this.iframeElement));
 
   // respect indentation
   var textBefore = goog.dom.createTextNode('\n' + this.getTabs(1 + indent));
@@ -604,7 +610,7 @@ silex.model.Element.prototype.createImageElement = function(styleObject, indent)
   // create the element
   var element = goog.dom.createElement('div');
   element.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_IMAGE);
-  goog.style.setStyle(element, styleObject);
+  silex.utils.Dom.setStyle(element, styleObject, goog.dom.getFrameContentDocument(this.iframeElement));
   return element;
 };
 

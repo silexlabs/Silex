@@ -202,7 +202,7 @@ silex.view.Stage.prototype.bodyElementSizeToContent = function(event) {
         this.bodyElement);
 
     if (containers && containers.length > 0) {
-      var bb = silex.utils.Dom.getBoundingBox(containers);
+      var bb = silex.utils.Dom.getBoundingBox(containers, this.documentElement);
       var viewportSize = this.viewport.getSize();
       var desiredBodyWidth = bb.width + 100;
       if (desiredBodyWidth < viewportSize.width) {
@@ -787,7 +787,9 @@ silex.view.Stage.prototype.followElementSize =
       // set position in case we are resizing up or left
       goog.style.setPosition(follower, offsetPosX, offsetPosY);
       // apply the new size
-      goog.style.setContentBoxSize(follower, new goog.math.Size(newSizeW, newSizeH));
+      //goog.style.setContentBoxSize(follower, new goog.math.Size(newSizeW, newSizeH));
+      this.controller.stageController.styleChanged('width', newSizeW + 'px', [follower]);
+      this.controller.stageController.styleChanged('height', newSizeH + 'px', [follower]);
     }
   }, this);
 };
