@@ -40,6 +40,22 @@ silex.model.Element = function(model, view) {
 
 
 /**
+ * constant for minimum elements size
+ * @const
+ * @type {number}
+ */
+silex.model.Element.MIN_HEIGHT = 20;
+
+
+/**
+ * constant for minimum elements size
+ * @const
+ * @type {number}
+ */
+silex.model.Element.MIN_WIDTH = 20;
+
+
+/**
  * constant for loader on elements
  * @const
  * @type {string}

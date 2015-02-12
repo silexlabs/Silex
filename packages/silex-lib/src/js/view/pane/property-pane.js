@@ -165,6 +165,13 @@ silex.view.pane.PropertyPane.prototype.onPositionChanged =
   if (input.value !== '') {
     // get the value
     var value = parseFloat(input.value);
+    // handle minimum size
+    if (name === 'width' && value < silex.model.Element.MIN_WIDTH) {
+      value = silex.model.Element.MIN_WIDTH
+    }
+    if (name === 'height' && value < silex.model.Element.MIN_HEIGHT) {
+      value = silex.model.Element.MIN_HEIGHT
+    }
     // get the old value
     var oldValue = parseFloat(input.getAttribute('data-prev-value') || 0);
     input.setAttribute('data-prev-value', value);
