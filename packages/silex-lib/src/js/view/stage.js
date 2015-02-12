@@ -707,7 +707,8 @@ silex.view.Stage.prototype.followElementPosition =
       && !goog.dom.getAncestorByClass(follower.parentNode, silex.model.Element.SELECTED_CLASS_NAME)
       && !goog.dom.classlist.contains(follower, silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME)) {
           var pos = goog.style.getPosition(follower);
-          goog.style.setPosition(follower, pos.x + offsetX, pos.y + offsetY);
+          this.controller.stageController.styleChanged('top', (pos.y + offsetY) + 'px', [follower]);
+          this.controller.stageController.styleChanged('left', (pos.x + offsetX) + 'px', [follower]);
         }
   }, this);
 };
@@ -789,9 +790,9 @@ silex.view.Stage.prototype.followElementSize =
         newSizeH = silex.model.Element.MIN_HEIGHT;
       }
       // set position in case we are resizing up or left
-      goog.style.setPosition(follower, offsetPosX, offsetPosY);
+      this.controller.stageController.styleChanged('top', offsetPosY + 'px', [follower]);
+      this.controller.stageController.styleChanged('left', offsetPosX + 'px', [follower]);
       // apply the new size
-      //goog.style.setContentBoxSize(follower, new goog.math.Size(newSizeW, newSizeH));
       this.controller.stageController.styleChanged('width', newSizeW + 'px', [follower]);
       this.controller.stageController.styleChanged('height', newSizeH + 'px', [follower]);
     }
@@ -926,23 +927,6 @@ silex.view.Stage.prototype.getScrollMaxY = function() {
  * notify the controller that the properties of the selection have changed
  */
 silex.view.Stage.prototype.propertyChanged = function() {
-  // check position and size are int and not float
-  goog.array.forEach(this.selectedElements, function(element) {
-    // round position
-    var position = goog.style.getPosition(element);
-    if (goog.isDefAndNotNull(position.x)) position.x = Math.floor(position.x);
-    if (goog.isDefAndNotNull(position.y)) position.y = Math.floor(position.y);
-    if (goog.isDefAndNotNull(position.x) || goog.isDefAndNotNull(position.y)) {
-      goog.style.setPosition(element, position.x, position.y);
-    }
-    // round size
-    var size = goog.style.getSize(element);
-    if (goog.isDefAndNotNull(size.x)) size.x = Math.floor(size.x);
-    if (goog.isDefAndNotNull(size.y)) size.y = Math.floor(size.y);
-    if (goog.isDefAndNotNull(size.x) || goog.isDefAndNotNull(size.y)) {
-      goog.style.setSize(element, size.x, size.y);
-    }
-  }, this);
   // update property tool box
   this.controller.stageController.change();
 };
