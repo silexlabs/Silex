@@ -80,9 +80,9 @@ this makes the video clickable:
   /* background-image: none;
   box-shadow: inset 2px 2px 20px rgba(51, 51, 51, 0.8);
   */
-  animation-duration: 5s;
-  -moz-animation-duration: 5s;
-  -webkit-animation-duration: 5s;
+  animation-duration: 2s;
+  -moz-animation-duration: 2s;
+  -webkit-animation-duration: 2s;
   animation-name: blink;
   -moz-animation-name: blink;
   -webkit-animation-name: blink;
@@ -91,22 +91,22 @@ this makes the video clickable:
   -webkit-animation-iteration-count: infinite;
 }
 @keyframes blink {
-  0% {     box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8); }
-  10% {     box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.8); }
-  20% { box-shadow: none; }
-  100% { box-shadow: none; }
+  0% {     box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.8); }
+  10% {     box-shadow: inset 0 0 4px rgba(255, 255, 255, 0.8); }
+  20% { box-shadow: inset 0 0 4px #333333 }
+  100% { box-shadow: inset 0 0 4px #333333 }
 }
 @-moz-keyframes blink {
-  0% {     box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8); }
-  10% {     box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.8); }
-  20% { box-shadow: none; }
-  100% { box-shadow: none; }
+  0% {     box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.8); }
+  10% {     box-shadow: inset 0 0 4px rgba(255, 255, 255, 0.8); }
+  20% { box-shadow: inset 0 0 4px #333333 }
+  100% { box-shadow: inset 0 0 4px #333333 }
 }
 @-webkit-keyframes blink {
-  0% {     box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8); }
-  10% {     box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.8); }
-  20% { box-shadow: none; }
-  100% { box-shadow: none; }
+  0% {     box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.8); }
+  10% {     box-shadow: inset 0 0 4px rgba(255, 255, 255, 0.8); }
+  20% { box-shadow: inset 0 0 4px #333333 }
+  100% { box-shadow: inset 0 0 4px #333333 }
 }
 /* style while dragging */
 .editable-style.silex-selected > .ui-resizable-se,
