@@ -32,9 +32,9 @@ silex.utils.BackwardCompat = function() {
  * handle backward compatibility issues
  * Backwardcompatibility process takes place after opening a file
  */
-silex.utils.BackwardCompat.process = function(document) {
-  var bodyElement = document.body;
-  var headElement = document.head;
+silex.utils.BackwardCompat.process = function(doc, cbk) {
+  var bodyElement = doc.body;
+  var headElement = doc.head;
 
   // handle older style system (2.0)
   if (bodyElement.getAttribute('data-style-normal')) {
@@ -67,7 +67,7 @@ silex.utils.BackwardCompat.process = function(document) {
   elements = headElement.querySelectorAll('meta[name="page"]');
   goog.array.forEach(elements, function(element) {
     var pageName = element.getAttribute('content');
-    var a = document.createElement('a');
+    var a = doc.createElement('a');
     a.id = pageName;
     a.setAttribute('data-silex-type', 'page');
     a.innerHTML = pageName;
@@ -144,19 +144,19 @@ silex.utils.BackwardCompat.process = function(document) {
     goog.dom.classlist.add(element, element.getAttribute('data-silex-type') + '-element');
   });
   // static.silex.me
-  elements = document.querySelectorAll('[src]');
+  elements = doc.querySelectorAll('[src]');
   goog.array.forEach(elements, function(element) {
     var src = element.getAttribute('src');
     src = silex.utils.BackwardCompat.updateStaticUrl(src);
     element.setAttribute('src', src);
   });
-  elements = document.querySelectorAll('[href]');
+  elements = doc.querySelectorAll('[href]');
   goog.array.forEach(elements, function(element) {
     var href = element.getAttribute('href');
     href = silex.utils.BackwardCompat.updateStaticUrl(href);
     element.setAttribute('href', href);
   });
-  elements = document.querySelectorAll('[data-silex-href]');
+  elements = doc.querySelectorAll('[data-silex-href]');
   goog.array.forEach(elements, function(element) {
     var href = element.getAttribute(silex.model.Element.LINK_ATTR);
     href = silex.utils.BackwardCompat.updateStaticUrl(href);
@@ -165,7 +165,7 @@ silex.utils.BackwardCompat.process = function(document) {
   // backward compat /silex/ to /
   // publication path from ../api/1.0/dropbox/exec/put/_test_silex/publication-test
   // to /api/1.0/dropbox/exec/put/_test_silex/publication-test
-  var metaNode = document.querySelector('meta[name="publicationPath"]');
+  var metaNode = doc.querySelector('meta[name="publicationPath"]');
   if (metaNode) {
     var value = metaNode.getAttribute('content');
     if (value.indexOf('../api/1.0/') === 0) {
@@ -174,10 +174,45 @@ silex.utils.BackwardCompat.process = function(document) {
     }
   }
   // background should not be draggable, fixed in 2.3
-  elements = document.querySelectorAll('background');
+  elements = doc.querySelectorAll('.background');
   goog.array.forEach(elements, function(element) {
     goog.dom.classlist.add(element, silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME);
   });
+  /* better version check since 2.4 */
+  // if no generator, create one
+  metaNode = doc.querySelector('meta[name="generator"]');
+  if (!metaNode) {
+    metaNode = doc.createElement('meta');
+    metaNode.setAttribute('name', 'generator');
+    goog.dom.appendChild(doc.head, metaNode);
+  }
+  // if not the latest version
+  var latest = [2, 2, 4];
+  var version = (metaNode.getAttribute('content') || '')
+    .replace('Silex v', '')
+    .split('.')
+    .map(function(str) {
+      return parseInt(str, 10) || 0;
+    });
+  // 2.2.4
+  if(version[0] < 2 || version[1] < 2 || version[2] < 4) {
+    // time for the DOM to update
+    setTimeout(() => {
+      console.warn('Update site version from', version, 'to ', latest);
+      // remove all inline styles
+      elements = doc.querySelectorAll('.editable-style[style]');
+      goog.array.forEach(elements, function(element) {
+        silex.utils.Dom.setStyle(element, element.style, doc);
+        element.removeAttribute('style');
+      });
+    }, 5000);
+    cbk();
+  }
+  else {
+    cbk();
+  }
+  // set to the latest version
+  metaNode.setAttribute('content', 'Silex v' + latest.join('.'));
 };
 
 /**

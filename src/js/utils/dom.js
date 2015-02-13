@@ -277,6 +277,10 @@ silex.utils.Dom.generateUniqueId = function (doc) {
  * @return {CSSStyleSheet|null} the style sheet with Silex definitions
  */
 silex.utils.Dom.getSilexStyleSheet = function (doc) {
+  // check that we are looking at the iframe doc
+  if (doc === document) {
+    console.error('getSilexStyleSheet error: doc is the main Silex document');
+  }
   //retrieve the style sheet with Silex definitions
   for (var idx in doc.styleSheets) {
     if (doc.styleSheets[idx].ownerNode && doc.styleSheets[idx].ownerNode.id === silex.utils.Dom.STYLE_TAG_ID) {
@@ -334,6 +338,9 @@ silex.utils.Dom.setStyle = function (element, opt_style, opt_document) {
     if(opt_style) {
       styleSheet.insertRule(styleStr, styleSheet.cssRules.length);
     }
+  }
+  else {
+    console.error('setStyle no style sheet found');
   }
 };
 
