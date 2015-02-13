@@ -180,6 +180,14 @@ silex.utils.Dom.getBoundingBox = function(elements, doc) {
   goog.array.forEach(elements, function(element) {
     // retrieve the styles strings (with "px")
     var elementStyle = silex.utils.Dom.getStyle(element, doc)
+    if(!elementStyle) {
+      elementStyle = {
+        'top': '',
+        'left': '',
+        'width': '',
+        'height': ''
+      };
+    }
     // compute the styles numerical values, which may end up to be NaN or a number
     var elementMinWidth = elementStyle.minWidth ? parseFloat(elementStyle.minWidth.substr(0, elementStyle.minWidth.indexOf('px'))) : null;
     var elementWidth = Math.max(elementMinWidth || 0, parseFloat(elementStyle.width.substr(0, elementStyle.width.indexOf('px'))));
@@ -291,10 +299,6 @@ silex.utils.Dom.setStyle = function (element, opt_style, opt_document) {
   // default document is window.document
   var doc = (opt_document || document);
   // convert style to string
-
-//ICI opt_style.style.width N EST PAS SETTE A LA BONNE VALEUR
-  // if(opt_style) opt_style.style.width = '22px';
-
   var styleStr = silex.utils.Style.styleToString(opt_style || '');
   // add the selector for this element
   if (!element.id) {
@@ -314,20 +318,22 @@ silex.utils.Dom.setStyle = function (element, opt_style, opt_document) {
   }
   //retrieve the style sheet with Silex definitions
   var styleSheet = silex.utils.Dom.getSilexStyleSheet(doc);
-  // find the index of the rule for the given element
-  var originalCssRuleIdx = -1;
-  for (var idx in styleSheet.cssRules) {
-    if (styleSheet.cssRules[idx].selectorText === '.' + element.id) {
-      originalCssRuleIdx = parseInt(idx, 10);
-      break;
+  if(styleSheet) {
+    // find the index of the rule for the given element
+    var originalCssRuleIdx = -1;
+    for (var idx in styleSheet.cssRules) {
+      if (styleSheet.cssRules[idx].selectorText === '.' + element.id) {
+        originalCssRuleIdx = parseInt(idx, 10);
+        break;
+      }
     }
-  }
-  // update or create the rule
-  if (originalCssRuleIdx >= 0) {
-    styleSheet.deleteRule(originalCssRuleIdx)
-  }
-  if(opt_style) {
-    styleSheet.insertRule(styleStr, styleSheet.cssRules.length);
+    // update or create the rule
+    if (originalCssRuleIdx >= 0) {
+      styleSheet.deleteRule(originalCssRuleIdx)
+    }
+    if(opt_style) {
+      styleSheet.insertRule(styleStr, styleSheet.cssRules.length);
+    }
   }
 };
 
