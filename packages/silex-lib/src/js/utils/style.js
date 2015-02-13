@@ -32,12 +32,6 @@ goog.require('silex.model.Page');
  */
 silex.utils.Style.SILEX_CLASS_NAMES = [
   silex.model.Body.EDITABLE_CLASS_NAME,
-  silex.model.Body.UI_RESIZABLE_CLASS_NAME,
-  silex.model.Body.UI_DRAGGABLE_CLASS_NAME,
-  silex.model.Body.UI_DROPPABLE_CLASS_NAME,
-  silex.model.Body.UI_DRAGGABLE_DRAGGING_CLASS_NAME,
-  silex.model.Body.UI_DRAGGABLE_RESIZING_CLASS_NAME,
-  silex.model.Body.EDITABLE_CREATED_CLASS_NAME,
   silex.model.Page.PAGED_CLASS_NAME,
   silex.model.Page.PAGED_HIDDEN_CLASS_NAME,
   silex.model.Page.PAGED_VISIBLE_CLASS_NAME,
@@ -58,11 +52,6 @@ silex.utils.Style.SILEX_CLASS_NAMES = [
  * @type {Array.<string>}
  */
 silex.utils.Style.SILEX_TEMP_CLASS_NAMES = [
-  silex.model.Body.UI_RESIZABLE_CLASS_NAME,
-  silex.model.Body.UI_DRAGGABLE_CLASS_NAME,
-  silex.model.Body.UI_DROPPABLE_CLASS_NAME,
-  silex.model.Body.UI_DRAGGABLE_DRAGGING_CLASS_NAME,
-  silex.model.Body.UI_DRAGGABLE_RESIZING_CLASS_NAME,
   silex.model.Page.PAGED_HIDDEN_CLASS_NAME,
   silex.model.Page.PAGED_VISIBLE_CLASS_NAME,
   silex.model.Page.PAGEABLE_PLUGIN_READY_CLASS_NAME,

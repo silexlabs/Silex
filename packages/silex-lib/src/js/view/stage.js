@@ -420,6 +420,8 @@ silex.view.Stage.prototype.handleMouseUp = function(target, x, y, shiftKey) {
     // keep flags up to date
     this.isDragging = false;
     this.isResizing = false;
+    // style the body
+    goog.dom.classlist.remove(this.bodyElement, silex.model.Body.DRAGGING_CLASS_NAME);
   }
   // if not dragging, and on stage, then change selection
   else if (this.iAmClicking !== true) {
@@ -510,6 +512,8 @@ silex.view.Stage.prototype.onMouseMove = function(target, x, y, shiftKey) {
       }
       else {
         this.isDragging = true;
+        // dragging style
+        goog.dom.classlist.add(this.bodyElement, silex.model.Body.DRAGGING_CLASS_NAME);
       }
     }
     else {
