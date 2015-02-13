@@ -70,54 +70,6 @@ silex.model.Body.EDITABLE_CLASS_NAME = 'editable-style';
 
 
 /**
- * class name used by the editable jquery plugin
- * @const
- * @type {string}
- */
-silex.model.Body.EDITABLE_CREATED_CLASS_NAME = 'editable-plugin-created';
-
-
-/**
- * class name used by the editable jquery plugin
- * @const
- * @type {string}
- */
-silex.model.Body.UI_RESIZABLE_CLASS_NAME = 'ui-resizable';
-
-
-/**
- * class name used by the editable jquery plugin
- * @const
- * @type {string}
- */
-silex.model.Body.UI_DRAGGABLE_CLASS_NAME = 'ui-draggable';
-
-
-/**
- * class name used by the editable jquery plugin
- * @const
- * @type {string}
- */
-silex.model.Body.UI_DROPPABLE_CLASS_NAME = 'ui-droppable';
-
-
-/**
- * class name used by the editable jquery plugin
- * @const
- * @type {string}
- */
-silex.model.Body.UI_DRAGGABLE_DRAGGING_CLASS_NAME = 'ui-draggable-dragging';
-
-
-/**
- * class name used by the editable jquery plugin
- * @const
- * @type {string}
- */
-silex.model.Body.UI_DRAGGABLE_RESIZING_CLASS_NAME = 'ui-resizable-resizing';
-
-
-/**
  * class name which can be used to change params of the eitable jquery plugin
  * @const
  * @type {string}
@@ -147,6 +99,14 @@ silex.model.Body.PREVENT_DROPPABLE_CLASS_NAME = 'prevent-droppable';
  * @type {string}
  */
 silex.model.Body.DROP_CANDIDATE_CLASS_NAME = 'drop-zone-candidate';
+
+
+/**
+ * class name set on the body while the user is dragging an element
+ * @const
+ * @type {string}
+ */
+silex.model.Body.DRAGGING_CLASS_NAME = 'dragging-pending';
 
 
 /**
@@ -308,35 +268,9 @@ silex.model.Body.prototype.removeEditableClasses = function(rootElement) {
     goog.dom.classlist.remove(element, silex.model.Element.SELECTED_CLASS_NAME);
   }, this);
 
-  // remove classes set by the editable.js plugin
-  elements = goog.dom.getElementsByClass(silex.model.Body.EDITABLE_CREATED_CLASS_NAME, rootElement);
-  goog.array.forEach(elements, function(element) {
-    goog.dom.classlist.remove(element, silex.model.Body.EDITABLE_CREATED_CLASS_NAME);
-  }, this);
-
-  elements = goog.dom.getElementsByClass(silex.model.Body.UI_RESIZABLE_CLASS_NAME, rootElement);
-  goog.array.forEach(elements, function(element) {
-    goog.dom.classlist.remove(element, silex.model.Body.UI_RESIZABLE_CLASS_NAME);
-  }, this);
-
-  elements = goog.dom.getElementsByClass(silex.model.Body.UI_DRAGGABLE_CLASS_NAME, rootElement);
-  goog.array.forEach(elements, function(element) {
-    goog.dom.classlist.remove(element, silex.model.Body.UI_DRAGGABLE_CLASS_NAME);
-  }, this);
-
-  elements = goog.dom.getElementsByClass(silex.model.Body.UI_DROPPABLE_CLASS_NAME, rootElement);
-  goog.array.forEach(elements, function(element) {
-    goog.dom.classlist.remove(element, silex.model.Body.UI_DROPPABLE_CLASS_NAME);
-  }, this);
-
   elements = goog.dom.getElementsByClass(silex.model.Body.DROP_CANDIDATE_CLASS_NAME, rootElement);
   goog.array.forEach(elements, function(element) {
     goog.dom.classlist.remove(element, silex.model.Body.DROP_CANDIDATE_CLASS_NAME);
-  }, this);
-
-  elements = goog.dom.getElementsByClass(silex.model.Body.UI_DRAGGABLE_DRAGGING_CLASS_NAME, rootElement);
-  goog.array.forEach(elements, function(element) {
-    goog.dom.classlist.remove(element, silex.model.Body.UI_DRAGGABLE_DRAGGING_CLASS_NAME);
   }, this);
 
   elements = rootElement.querySelectorAll('[aria-disabled]');
