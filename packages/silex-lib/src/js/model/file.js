@@ -121,33 +121,34 @@ silex.model.File.prototype.onContentLoaded = function(opt_cbk) {
   }
 
   // handle retrocompatibility issues
-  silex.utils.BackwardCompat.process(contentDocument);
-  // select the body
-  this.model.body.setSelection([contentDocument.body]);
-  // make editable again
-  this.model.body.setEditable(contentDocument.body, true, true);
-  // update text editor with the website custom styles and script
-  this.model.head.setHeadStyle(this.model.head.getHeadStyle());
-  this.model.head.setHeadScript(this.model.head.getHeadScript());
-  // update the settings dialog
-  this.model.head.setPublicationPath(this.model.head.getPublicationPath());
-  this.model.head.setFaviconPath(this.model.head.getFaviconPath());
-  this.model.head.setTitle(this.model.head.getTitle());
-  this.model.head.setDescription(this.model.head.getDescription());
-  // restore event listeners
-  this.view.stage.initEvents(contentWindow);
-  // refresh the view
-  //var page = this.model.page.getCurrentPage();
-  //this.model.page.setCurrentPage(page);
-  // notify the caller
-  if (opt_cbk) opt_cbk();
-  // loading
-  setTimeout(goog.bind(function() {
-    goog.dom.classlist.remove(this.view.stage.element, silex.model.Element.LOADING_ELEMENT_CSS_CLASS);
-    // refresh the view (workaround for a bug where no page is opened after open a website or undo)
-    var page = this.model.page.getCurrentPage();
-    this.model.page.setCurrentPage(page);
-  }, this), 200);
+  silex.utils.BackwardCompat.process(contentDocument, () => {
+    // select the body
+    this.model.body.setSelection([contentDocument.body]);
+    // make editable again
+    this.model.body.setEditable(contentDocument.body, true, true);
+    // update text editor with the website custom styles and script
+    this.model.head.setHeadStyle(this.model.head.getHeadStyle());
+    this.model.head.setHeadScript(this.model.head.getHeadScript());
+    // update the settings dialog
+    this.model.head.setPublicationPath(this.model.head.getPublicationPath());
+    this.model.head.setFaviconPath(this.model.head.getFaviconPath());
+    this.model.head.setTitle(this.model.head.getTitle());
+    this.model.head.setDescription(this.model.head.getDescription());
+    // restore event listeners
+    this.view.stage.initEvents(contentWindow);
+    // refresh the view
+    //var page = this.model.page.getCurrentPage();
+    //this.model.page.setCurrentPage(page);
+    // notify the caller
+    if (opt_cbk) opt_cbk();
+    // loading
+    setTimeout(goog.bind(function() {
+      goog.dom.classlist.remove(this.view.stage.element, silex.model.Element.LOADING_ELEMENT_CSS_CLASS);
+      // refresh the view (workaround for a bug where no page is opened after open a website or undo)
+      var page = this.model.page.getCurrentPage();
+      this.model.page.setCurrentPage(page);
+    }, this), 200);
+  });
 };
 
 
