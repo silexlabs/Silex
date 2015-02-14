@@ -340,7 +340,7 @@ silex.utils.Dom.setStyle = function (element, opt_style, opt_document) {
     }
   }
   else {
-    console.error('setStyle no style sheet found');
+    console.warn('setStyle no style sheet found');
   }
 };
 
