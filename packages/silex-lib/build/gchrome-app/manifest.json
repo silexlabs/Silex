@@ -1,8 +1,8 @@
 {
     "manifest_version": 2,
     "name": "Silex, live web creation",
-    "version": "2.0.0.1",
-    "description": "Website builder, free and open source, for designers to create beautiful meaningful websites.",
+    "version": "2.2.4.0",
+    "description": "Website builder, free and open source, for web designers to create beautiful meaningful websites. HTML5 & CSS3 with ❤.",
     "icons": {
         "128": "silex128.png"
     },
@@ -12,10 +12,10 @@
     "short_name": "Silex",
     "app": {
       "urls": [
-        "http://www.silex.me/silex/"
+        "http://editor.silex.me/"
       ],
       "launch": {
-        "web_url": "http://www.silex.me/silex/"
+        "web_url": "http://editor.silex.me/"
       }
     }
 }
