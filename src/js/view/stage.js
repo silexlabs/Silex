@@ -732,7 +732,6 @@ silex.view.Stage.prototype.followElementSize =
     // do not resize the stage or the un-resizeable elements
     if (follower.tagName.toUpperCase() !== 'BODY'
       && !goog.dom.classlist.contains(follower, silex.model.Body.PREVENT_RESIZABLE_CLASS_NAME)) {
-      var size = goog.style.getSize(follower);
       var pos = goog.style.getPosition(follower);
       var offsetPosX = pos.x;
       var offsetPosY = pos.y;
@@ -777,6 +776,7 @@ silex.view.Stage.prototype.followElementSize =
         offsetX *= 2;
       }
       // compute new size
+      var size = goog.style.getSize(follower);
       var borderBox = goog.style.getBorderBox(follower);
       var newSizeW = size.width + offsetX - borderBox.left - borderBox.right;
       var newSizeH = size.height + offsetY - borderBox.top - borderBox.bottom;
