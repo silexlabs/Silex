@@ -33,13 +33,15 @@ goog.require('silex.view.pane.PaneBase');
  * @constructor
  * @extends {silex.view.pane.PaneBase}
  * @param {Element} element   container to render the UI
- * @param  {silex.types.Controller} controller  structure which holds
+ * @param  {!silex.types.Model} model  model class which holds
+ *                                  the model instances - views use it for read operation only
+ * @param  {!silex.types.Controller} controller  structure which holds
  *                                  the controller instances
  */
-silex.view.pane.GeneralStylePane = function(element, controller) {
+silex.view.pane.GeneralStylePane = function(element, model, controller) {
   // call super
-  goog.base(this, element, controller);
-
+  goog.base(this, element, model, controller);
+  // init the component
   this.buildUi();
 };
 

@@ -28,11 +28,23 @@ goog.require('goog.dom.ViewportSizeMonitor');
 /**
  * @constructor
  * @param {Element} element   container to render the UI
- * @param  {silex.types.Controller} controller  controller class which holds the other controllers
+ * @param  {!silex.types.Model} model  model class which holds
+ *                                  the model instances - views use it for read operation only
+ * @param  {!silex.types.Controller} controller  controller class which holds the other controllers
  */
-silex.view.Workspace = function(element, controller) {
+silex.view.Workspace = function(element, model, controller) {
   // store references
+  /**
+   * @type {Element}
+   */
   this.element = element;
+  /**
+   * @type {!silex.types.Model}
+   */
+  this.model = model;
+  /**
+   * @type {!silex.types.Controller}
+   */
   this.controller = controller;
 };
 

@@ -26,12 +26,24 @@ goog.provide('silex.view.pane.PaneBase');
  * @constructor
  *
  * @param {Element} element   container to render the UI
- * @param  {silex.types.Controller} controller  structure which holds
+ * @param  {!silex.types.Model} model  model class which holds
+ *                                  the model instances - views use it for read operation only
+ * @param  {!silex.types.Controller} controller  structure which holds
  *                                  the controller instances
  */
-silex.view.pane.PaneBase = function(element, controller) {
+silex.view.pane.PaneBase = function(element, model, controller) {
   // store references
+  /**
+   * @type {Element}
+   */
   this.element = element;
+  /**
+   * @type {!silex.types.Model}
+   */
+  this.model = model;
+  /**
+   * @type {!silex.types.Controller}
+   */
   this.controller = controller;
 };
 

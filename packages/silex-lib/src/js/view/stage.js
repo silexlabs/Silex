@@ -31,12 +31,24 @@ goog.require('goog.math.Coordinate');
  * load the template and render to the given html element
  * @param  {Element}  element  DOM element to wich I render the UI
  *  has been changed by the user
- * @param  {silex.types.Controller} controller
+ * @param  {!silex.types.Model} model  model class which holds
+ *                                  the model instances - views use it for read operation only
+ * @param  {!silex.types.Controller} controller
  *                      structure which holds the controller classes
  */
-silex.view.Stage = function(element, controller) {
+silex.view.Stage = function(element, model, controller) {
   // store references
+  /**
+   * @type {Element}
+   */
   this.element = element;
+  /**
+   * @type {!silex.types.Model}
+   */
+  this.model = model;
+  /**
+   * @type {!silex.types.Controller}
+   */
   this.controller = controller;
 };
 
