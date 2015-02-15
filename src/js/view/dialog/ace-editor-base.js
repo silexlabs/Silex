@@ -30,12 +30,14 @@ goog.require('silex.view.dialog.DialogBase');
  * @constructor
  * @extends {silex.view.dialog.DialogBase}
  * @param {!Element} element   container to render the UI
+ * @param  {!silex.types.Model} model  model class which holds
+ *                                  the model instances - views use it for read operation only
  * @param  {!silex.types.Controller} controller  structure which holds
  *                                               the controller instances
  */
-silex.view.dialog.AceEditorBase = function(element, controller) {
+silex.view.dialog.AceEditorBase = function(element, model, controller) {
   // call super
-  goog.base(this, element, controller);
+  goog.base(this, element, model, controller);
   // keep a reference to ace
   this.ace = ace.edit(
       /** @type {!Element} */(goog.dom.getElementByClass(

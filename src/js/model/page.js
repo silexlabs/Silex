@@ -56,7 +56,7 @@ silex.model.PageData = function() {
 
 /**
  * @constructor
- * @param  {silex.types.Model} model  model class which holds the other models
+ * @param  {!silex.types.Model} model  model class which holds the other models
  * @param  {silex.types.View} view  view class which holds the other views
  */
 silex.model.Page = function(model, view) {

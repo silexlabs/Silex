@@ -28,7 +28,7 @@ goog.require('silex.types.Model');
 
 /**
  * @constructor
- * @param  {silex.types.Model} model  model class which holds the other models
+ * @param  {!silex.types.Model} model  model class which holds the other models
  * @param  {silex.types.View} view  view class which holds the other views
  */
 silex.model.Element = function(model, view) {

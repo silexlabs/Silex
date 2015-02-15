@@ -58,7 +58,6 @@ silex.utils.BackwardCompat.process = function(doc, cbk) {
     .map(function(str) {
       return parseInt(str, 10) || 0;
     });
-  console.info('current version is', version);
 
   // update static.silex.me
   var elements = doc.querySelectorAll('[src]');
