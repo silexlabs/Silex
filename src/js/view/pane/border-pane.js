@@ -225,17 +225,17 @@ silex.view.pane.BorderPane.prototype.redraw =
   // border width
   var borderWidth = this.getCommonProperty(
       selectedElements,
-      function(element) {
-        return goog.style.getStyle(element, 'borderWidth');
-  });
+      goog.bind(function(element) {
+        return this.model.element.getStyle(element, 'borderWidth');
+  }, this));
   if (borderWidth) {
     this.redrawBorderWidth(borderWidth);
     // border color
     var borderColor = this.getCommonProperty(
         selectedElements,
-        function(element) {
-          return goog.style.getStyle(element, 'borderColor');
-    });
+        goog.bind(function(element) {
+          return this.model.element.getStyle(element, 'borderColor');
+    }, this));
     this.redrawBorderColor(borderColor);
   }
   else {
@@ -244,9 +244,9 @@ silex.view.pane.BorderPane.prototype.redraw =
   // border style
   var borderStyle = this.getCommonProperty(
       selectedElements,
-      function(element) {
-        return goog.style.getStyle(element, 'borderStyle');
-  });
+      goog.bind(function(element) {
+        return this.model.element.getStyle(element, 'borderStyle');
+  }, this));
   if (borderStyle) {
     this.borderStyleComboBox.setValue(borderStyle);
   }
@@ -256,9 +256,9 @@ silex.view.pane.BorderPane.prototype.redraw =
   // border radius
   var borderRadius = this.getCommonProperty(
       selectedElements,
-      function(element) {
-        return goog.style.getStyle(element, 'borderRadius');
-  });
+      goog.bind(function(element) {
+        return this.model.element.getStyle(element, 'borderRadius');
+  }, this));
   if (borderRadius) {
     this.redrawBorderRadius(borderRadius);
   }

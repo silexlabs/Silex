@@ -202,11 +202,14 @@ silex.model.Element.prototype.getAllStyles = function(element) {
  * get/set style of the element
  * @param  {Element} element   created by silex, either a text box, image, ...
  * @param  {string} styleName  the style name
- * @return  {string}           the style of the element
+ * @return  {string|null}           the style of the element
  */
 silex.model.Element.prototype.getStyle = function(element, styleName) {
   var styleObject = silex.utils.Dom.getStyle(element, goog.dom.getFrameContentDocument(this.iframeElement));
-  return this.unprepareHtmlForEdit(styleObject[styleName]);
+  if(styleObject) {
+    return this.unprepareHtmlForEdit(styleObject[styleName]);
+  }
+  return null;
 };
 
 

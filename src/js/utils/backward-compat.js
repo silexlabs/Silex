@@ -148,7 +148,7 @@ silex.utils.BackwardCompat.to2_2_4 = function(version, doc, bodyElement, headEle
     function nextUpdate() {
       if(elementsArr.length > 0) {
         var element = elementsArr.pop();
-        silex.utils.Dom.setStyle(element, element.style, doc);
+        silex.utils.Dom.setStyle(element, element.getAttribute('style'), doc);
         element.removeAttribute('style');
         // let time for the DOM to update
         setTimeout(nextUpdate, 100);
