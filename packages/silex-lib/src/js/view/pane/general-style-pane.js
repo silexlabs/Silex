@@ -90,9 +90,9 @@ silex.view.pane.GeneralStylePane.prototype.redraw = function(selectedElements, d
     // not stage element only
     this.opacityInput.removeAttribute('disabled');
     // get the opacity
-    var opacity = this.getCommonProperty(selectedElements, function(element) {
-      return goog.style.getStyle(element, 'opacity');
-    });
+    var opacity = this.getCommonProperty(selectedElements, goog.bind(function(element) {
+      return this.model.element.getStyle(element, 'opacity');
+    }, this));
     if (goog.isNull(opacity)) {
       this.opacityInput.value = '';
     }

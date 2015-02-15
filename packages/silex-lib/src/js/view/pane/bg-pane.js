@@ -232,9 +232,9 @@ silex.view.pane.BgPane.prototype.redraw = function(selectedElements, document, p
   this.currentPageName = currentPageName;
 
   // BG color
-  var color = this.getCommonProperty(selectedElements, function(element) {
-    return goog.style.getStyle(element, 'backgroundColor');
-  });
+  var color = this.getCommonProperty(selectedElements, goog.bind(function(element) {
+    return this.model.element.getStyle(element, 'backgroundColor');
+  }, this));
   if (color === 'transparent' || color === '') {
     this.transparentBgCheckbox.setChecked(true);
     this.bgColorPicker.setEnabled(false);
@@ -262,9 +262,9 @@ silex.view.pane.BgPane.prototype.redraw = function(selectedElements, document, p
     this.repeatComboBox.setEnabled(enable);
     this.sizeComboBox.setEnabled(enable);
   }, this);
-  var bgImage = this.getCommonProperty(selectedElements, function(element) {
-    return goog.style.getStyle(element, 'backgroundImage');
-  });
+  var bgImage = this.getCommonProperty(selectedElements, goog.bind(function(element) {
+    return this.model.element.getStyle(element, 'backgroundImage');
+  }, this));
   if (bgImage !== null &&
       bgImage !== 'none' &&
       bgImage !== '') {
@@ -274,9 +274,9 @@ silex.view.pane.BgPane.prototype.redraw = function(selectedElements, document, p
     enableBgComponents(false);
   }
   // bg image attachment
-  var bgImageAttachment = this.getCommonProperty(selectedElements, function(element) {
-    return goog.style.getStyle(element, 'backgroundAttachment');
-  });
+  var bgImageAttachment = this.getCommonProperty(selectedElements, goog.bind(function(element) {
+    return this.model.element.getStyle(element, 'backgroundAttachment');
+  }, this));
   if (bgImageAttachment) {
     switch (bgImageAttachment) {
       case 'scroll':
@@ -294,14 +294,14 @@ silex.view.pane.BgPane.prototype.redraw = function(selectedElements, document, p
     this.attachmentComboBox.setSelectedIndex(0);
   }
   // bg image position
-  var bgImagePosition = this.getCommonProperty(selectedElements, function(element) {
-    return goog.style.getStyle(element, 'backgroundPosition');
-  });
+  var bgImagePosition = this.getCommonProperty(selectedElements, goog.bind(function(element) {
+    return this.model.element.getStyle(element, 'backgroundPosition');
+  }, this));
   if (bgImagePosition) {
     // convert 50% in cennter
     var posArr = bgImagePosition.split(' ');
-    var hPosition = posArr[0];
-    var vPosition = posArr[1];
+    var hPosition = posArr[0] || 'left';
+    var vPosition = posArr[1] || 'top';
 
     // convert 0% by left, 50% by center, 100% by right
     hPosition = hPosition
@@ -314,7 +314,7 @@ silex.view.pane.BgPane.prototype.redraw = function(selectedElements, document, p
     .replace('100%', 'bottom')
     .replace('50%', 'center')
     .replace('0%', 'top');
-
+    // update the drop down lists to display the bg image position
     switch (vPosition) {
       case 'top':
         this.vPositionComboBox.setSelectedIndex(0);
@@ -343,9 +343,9 @@ silex.view.pane.BgPane.prototype.redraw = function(selectedElements, document, p
     this.hPositionComboBox.setSelectedIndex(0);
   }
   // bg image repeat
-  var bgImageRepeat = this.getCommonProperty(selectedElements, function(element) {
-    return goog.style.getStyle(element, 'backgroundRepeat');
-  });
+  var bgImageRepeat = this.getCommonProperty(selectedElements, goog.bind(function(element) {
+    return this.model.element.getStyle(element, 'backgroundRepeat');
+  }, this));
   if (bgImageRepeat) {
     switch (bgImageRepeat) {
       case 'repeat':
@@ -369,9 +369,9 @@ silex.view.pane.BgPane.prototype.redraw = function(selectedElements, document, p
     this.repeatComboBox.setSelectedIndex(0);
   }
   // bg image size
-  var bgImageSize = this.getCommonProperty(selectedElements, function(element) {
-    return goog.style.getStyle(element, 'backgroundSize');
-  });
+  var bgImageSize = this.getCommonProperty(selectedElements, goog.bind(function(element) {
+    return this.model.element.getStyle(element, 'backgroundSize');
+  }, this));
   if (bgImageSize) {
     switch (bgImageSize) {
       case 'auto':
@@ -414,7 +414,7 @@ silex.view.pane.BgPane.prototype.onBgColorButton = function() {
   // show the palette
   if (this.getColorPaletteVisibility(this.hsvPalette) === false) {
     this.hsvPalette.setColorRgbaHex(
-        silex.utils.Style.rgbaToHex(goog.style.getStyle(element, 'backgroundColor'))
+        silex.utils.Style.rgbaToHex(this.model.element.getStyle(element, 'backgroundColor'))
     );
     this.setColorPaletteVisibility(this.hsvPalette, true);
   }
