@@ -167,10 +167,6 @@ silex.Config.menu = {
       className: 'menu-item-insert'
     },
     {
-      label: 'Tools',
-      className: 'menu-item-tools'
-    },
-    {
       label: 'Help',
       className: 'menu-item-help'
     }
@@ -291,6 +287,20 @@ silex.Config.menu = {
         className: 'menu-item-view-open-textEditor',
         tooltip: '↵'
       },
+      {
+        label: 'Edit image with Express',
+        id: 'tools.pixlr.express',
+        className: 'menu-item-tools-pixllr.express',
+        shortcut: [[goog.events.KeyCodes.ENTER, altKeyModifyer + goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT]],
+        tooltip: altKeyDisplay + '⇧ ↵'
+      },
+      {
+        label: 'Edit image with Pixlr',
+        id: 'tools.pixlr.edit',
+        className: 'menu-item-tools-pixllr.edit',
+        shortcut: [[goog.events.KeyCodes.ENTER, altKeyModifyer]],
+        tooltip: altKeyDisplay + '↵'
+      },
       null,
       {
         label: 'Rename page',
@@ -312,6 +322,24 @@ silex.Config.menu = {
         tooltip: altKeyDisplay + 'V',
         mnemonic: goog.events.KeyCodes.V,
         accelerator: 'v'
+      },
+      {
+        label: 'Preview in Responsize',
+        id: 'view.file.responsize',
+        className: 'menu-item-view-file-responsize',
+        shortcut: [[goog.events.KeyCodes.V, altKeyModifyer + goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT]],
+        tooltip: altKeyDisplay + '⇧ V'
+      },
+      null,
+      {
+        label: 'Apollo mode',
+        id: 'tools.advanced.activate',
+        className: 'menu-item-tools-advanced-activate',
+        checkable: true,
+        shortcut: [[goog.events.KeyCodes.A, altKeyModifyer + ctrlKeyModifyer + goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT]],
+        tooltip: ctrlKeyDisplay + altKeyDisplay + '⇧ A',
+        mnemonic: goog.events.KeyCodes.A,
+        accelerator: 'a'
       },
       null,
       {
@@ -401,32 +429,6 @@ silex.Config.menu = {
         tooltip: altKeyDisplay + 'P',
         mnemonic: goog.events.KeyCodes.P,
         accelerator: 'p'
-      }
-    ],
-    [
-      {
-        label: 'Apollo mode',
-        id: 'tools.advanced.activate',
-        className: 'menu-item-tools-advanced-activate',
-        checkable: true,
-        shortcut: [[goog.events.KeyCodes.A, altKeyModifyer + ctrlKeyModifyer + goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT]],
-        tooltip: ctrlKeyDisplay + altKeyDisplay + '⇧ A',
-        mnemonic: goog.events.KeyCodes.A,
-        accelerator: 'a'
-      },
-      {
-        label: 'Edit image with Express',
-        id: 'tools.pixlr.express',
-        className: 'menu-item-tools-pixllr.express',
-        shortcut: [[goog.events.KeyCodes.ENTER, altKeyModifyer + goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT]],
-        tooltip: altKeyDisplay + '⇧ ↵'
-      },
-      {
-        label: 'Edit image with Pixlr',
-        id: 'tools.pixlr.edit',
-        className: 'menu-item-tools-pixllr.edit',
-        shortcut: [[goog.events.KeyCodes.ENTER, altKeyModifyer]],
-        tooltip: altKeyDisplay + '↵'
       }
     ],
     [
