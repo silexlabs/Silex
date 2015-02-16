@@ -222,11 +222,10 @@ silex.view.Menu.prototype.buildUi = function() {
 /**
  * redraw the menu
  * @param   {Array.<Element>} selectedElements the elements currently selected
- * @param   {Document} document the document to use
  * @param   {Array.<string>} pageNames   the names of the pages which appear in the current HTML file
  * @param   {string}  currentPageName   the name of the current page
  */
-silex.view.Menu.prototype.redraw = function(selectedElements, document, pageNames, currentPageName) {
+silex.view.Menu.prototype.redraw = function(selectedElements, pageNames, currentPageName) {
 };
 
 

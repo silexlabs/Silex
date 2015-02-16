@@ -89,18 +89,17 @@ silex.view.PageTool.prototype.buildUi = function() {
  * refresh the pages
  * find all pages in the dom
  * @param   {Array.<Element>} selectedElements the elements currently selected
- * @param   {Document} contentDocument  the document to use
  * @param   {Array.<string>} pageNames   the names of the pages which appear in the current HTML file
  * @param   {string}  currentPageName   the name of the current page
  */
-silex.view.PageTool.prototype.redraw = function(selectedElements, contentDocument, pageNames, currentPageName) {
+silex.view.PageTool.prototype.redraw = function(selectedElements, pageNames, currentPageName) {
   // prepare the data for the template
   // make an array with name, displayName, linkName and className
   var idx = 0;
   this.pages = pageNames.map(goog.bind(function(pageName) {
     var res = {
       'name': pageName,
-      'displayName': contentDocument.getElementById(pageName).innerHTML,
+      'displayName': this.model.file.getContentDocument().getElementById(pageName).innerHTML,
       'linkName': '#!' + pageName,
       'idx': idx++
     };

@@ -210,7 +210,7 @@ silex.view.pane.BorderPane.prototype.createCheckBoxes =
  * redraw the properties
  */
 silex.view.pane.BorderPane.prototype.redraw =
-  function(selectedElements, document, pageNames, currentPageName) {
+  function(selectedElements, pageNames, currentPageName) {
   if (this.iAmSettingValue) return;
   this.iAmRedrawing = true;
   // call super
@@ -218,7 +218,6 @@ silex.view.pane.BorderPane.prototype.redraw =
       this,
       'redraw',
       selectedElements,
-      document,
       pageNames,
       currentPageName);
 

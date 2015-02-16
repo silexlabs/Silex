@@ -64,30 +64,12 @@ silex.view.Workspace.prototype.isDirty = false;
 
 
 /**
- * element which holds the opened website
- * @type {?HTMLIFrameElement}
- */
-silex.view.Workspace.prototype.iframeElement = null;
-
-
-/**
  * create the menu with closure API
  * called by the app constructor
  */
 silex.view.Workspace.prototype.buildUi = function() {
-  //store the element which will hold the body of the opened file
-  this.iframeElement = /** @type {?HTMLIFrameElement} */ (goog.dom.getElementByClass(silex.view.Stage.STAGE_CLASS_NAME));
-
   // store the window viewport for later use
   this.viewport = new goog.dom.ViewportSizeMonitor();
-};
-
-
-/**
- * @return {?Window} the window element
- */
-silex.view.Workspace.prototype.getWindow = function() {
-  return goog.dom.getFrameContentWindow(this.iframeElement);
 };
 
 

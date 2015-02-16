@@ -14,8 +14,6 @@
  *   This class represents a the body of the opened file,
  *   which is rendered by the Stage class
  *   It has methods to manipulate the dom
- *
- *   All model classes are singletons
  */
 
 
@@ -113,7 +111,7 @@ silex.model.Body.DRAGGING_CLASS_NAME = 'dragging-pending';
  * @return  {Element}   body element
  */
 silex.model.Body.prototype.getBodyElement = function() {
-  return goog.dom.getFrameContentDocument(this.iframeElement).body;
+  return this.model.file.getContentDocument().body;
 };
 
 
@@ -153,9 +151,9 @@ silex.model.Body.prototype.setSelection = function(selectedElements) {
   // refresh views
   var pages = this.model.page.getPages();
   var page = this.model.page.getCurrentPage();
-  this.view.pageTool.redraw(selectedElements, this.view.workspace.getWindow().document, pages, page);
-  this.view.propertyTool.redraw(selectedElements, this.view.workspace.getWindow().document, pages, page);
-  this.view.stage.redraw(selectedElements, this.view.workspace.getWindow().document, pages, page);
+  this.view.pageTool.redraw(selectedElements, pages, page);
+  this.view.propertyTool.redraw(selectedElements, pages, page);
+  this.view.stage.redraw(selectedElements, pages, page);
 };
 
 
@@ -187,7 +185,7 @@ silex.model.Body.prototype.initUiHandles = function(element) {
     'ui-resizable-se',
     'ui-resizable-sw'
   ], function(className){
-    var handle = this.view.workspace.getWindow().document.createElement('div');
+    var handle = this.model.file.getContentDocument().createElement('div');
     goog.dom.classlist.add(handle, className);
     goog.dom.classlist.add(handle, 'ui-resizable-handle');
     goog.dom.appendChild(element, handle);

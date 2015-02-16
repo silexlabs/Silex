@@ -215,19 +215,17 @@ silex.view.pane.BgPane.prototype.buildBgImageProperties = function() {
 /**
  * redraw the properties
  * @param   {Array.<Element>} selectedElements the elements currently selected
- * @param   {Document} document  the document to use
  * @param   {Array.<string>} pageNames   the names of the pages which appear in the current HTML file
  * @param   {string}  currentPageName   the name of the current page
  */
-silex.view.pane.BgPane.prototype.redraw = function(selectedElements, document, pageNames, currentPageName) {
+silex.view.pane.BgPane.prototype.redraw = function(selectedElements, pageNames, currentPageName) {
   if (this.iAmSettingValue) return;
   this.iAmRedrawing = true;
   // call super
-  goog.base(this, 'redraw', selectedElements, document, pageNames, currentPageName);
+  goog.base(this, 'redraw', selectedElements, pageNames, currentPageName);
 
   // remember selection
   this.selectedElements = selectedElements;
-  this.document = document;
   this.pageNames = pageNames;
   this.currentPageName = currentPageName;
 
@@ -396,6 +394,7 @@ silex.view.pane.BgPane.prototype.redraw = function(selectedElements, document, p
  * User has selected a color
  */
 silex.view.pane.BgPane.prototype.onColorChanged = function() {
+  if (this.iAmRedrawing) return;
   var color = silex.utils.Style.hexToRgba(this.hsvPalette.getColorRgbaHex());
   // update the button
   this.bgColorPicker.setValue(this.hsvPalette.getColor());
@@ -448,6 +447,7 @@ silex.view.pane.BgPane.prototype.createComboBox = function(className, onChange) 
  * User has clicked the transparent checkbox
  */
 silex.view.pane.BgPane.prototype.onTransparentChanged = function() {
+  if (this.iAmRedrawing) return;
   var color = 'transparent';
   if (this.transparentBgCheckbox.getChecked() === false) {
     color = silex.utils.Style.hexToRgba(this.hsvPalette.getColorRgbaHex());
@@ -459,7 +459,7 @@ silex.view.pane.BgPane.prototype.onTransparentChanged = function() {
   // notify the toolbox
   this.styleChanged('backgroundColor', color);
   // redraw myself (styleChange prevent myself to redraw)
-  this.redraw(this.selectedElements, this.document, this.pageNames, this.currentPageName);
+  this.redraw(this.selectedElements, this.pageNames, this.currentPageName);
 };
 
 

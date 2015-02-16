@@ -44,10 +44,11 @@ goog.require('silex.controller.StageController');
 goog.require('silex.controller.TextEditorController');
 goog.require('silex.controller.ToolMenuController');
 goog.require('silex.controller.ViewMenuController');
-goog.require('silex.model.Body');
+goog.require('silex.model.Property');
 goog.require('silex.model.Element');
-goog.require('silex.model.File');
+goog.require('silex.model.Body');
 goog.require('silex.model.Head');
+goog.require('silex.model.File');
 goog.require('silex.model.Page');
 // service qos
 goog.require('silex.service.Tracker');
@@ -203,7 +204,8 @@ silex.App = function() {
       new silex.model.Head(this.model, this.view),
       new silex.model.Body(this.model, this.view),
       new silex.model.Page(this.model, this.view),
-      new silex.model.Element(this.model, this.view)
+      new silex.model.Element(this.model, this.view),
+      new silex.model.Property(this.model, this.view)
   );
 
   // **
