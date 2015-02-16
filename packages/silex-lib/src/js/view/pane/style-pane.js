@@ -88,7 +88,7 @@ silex.view.pane.StylePane.prototype.redraw = function(selectedElements, document
 
   // css classes
   var cssClasses = this.getCommonProperty(selectedElements, goog.bind(function(element) {
-    return this.controller.propertyToolController.getClassName(element);
+    return this.model.element.getClassName(element);
   }, this));
   if (cssClasses) {
     this.cssClassesInput.value = cssClasses;
@@ -99,7 +99,7 @@ silex.view.pane.StylePane.prototype.redraw = function(selectedElements, document
 
   // css inline style
   var cssInlineStyle = this.getCommonProperty(selectedElements, goog.bind(function(element) {
-    return this.controller.propertyToolController.getInlineStyle(element);
+    return this.model.element.getAllStyles(element);
   }, this));
   if (cssInlineStyle) {
     this.iAmSettingValue = true;

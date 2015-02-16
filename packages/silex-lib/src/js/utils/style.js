@@ -94,7 +94,7 @@ silex.utils.Style.styleToString = function(style) {
   var styleStr = '';
   for(var idx in style) {
     // filter the numerical indexes of a CSSStyleDeclaration object
-    if(style[idx] && typeof style[idx] === 'string' && style[idx] !== '' && idx.match(/[^0-9]/)) {
+    if(idx !== 'cssText' && style[idx] && typeof style[idx] === 'string' && style[idx] !== '' && idx.match(/[^0-9]/)) {
       styleStr += goog.string.toSelectorCase(idx) + ': ' + style[idx] + '; ';
     }
   }
