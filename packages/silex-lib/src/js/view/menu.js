@@ -259,6 +259,9 @@ silex.view.Menu.prototype.onMenuEvent = function(type) {
     case 'view.file':
       this.controller.viewMenuController.preview();
       break;
+    case 'view.file.responsize':
+      this.controller.viewMenuController.previewResponsize();
+      break;
     case 'view.open.fileExplorer':
       this.controller.viewMenuController.view.fileExplorer.openDialog(function(url) {}, function(error) {});
       break;

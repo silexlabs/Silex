@@ -79,9 +79,35 @@ silex.controller.ViewMenuController.prototype.openJsEditor = function() {
  * view this file in a new window
  */
 silex.controller.ViewMenuController.prototype.preview = function() {
+  this.doPreview(false);
+};
+
+
+/**
+ * view this file in responsize
+ */
+silex.controller.ViewMenuController.prototype.previewResponsize = function() {
+  this.doPreview(true);
+};
+
+
+/**
+ * preview the website in a new window or in responsize
+ * ask the user to save the file if needed
+ * @param {boolean} inResponsize if true this will open the preview in responsize
+ *                               if false it will open the website in a new window
+ */
+silex.controller.ViewMenuController.prototype.doPreview = function(inResponsize) {
   this.tracker.trackAction('controller-events', 'request', 'view.file', 0);
   var doOpenPreview = function() {
-    window.open(this.model.file.getUrl());
+    if (inResponsize) {
+      window.open('http://www.responsize.org/?url='
+        + silex.utils.Url.getBaseUrl()
+        + this.model.file.getUrl());
+    }
+    else {
+      window.open(this.model.file.getUrl());
+    }
     this.tracker.trackAction('controller-events', 'success', 'view.file', 1);
   }.bind(this);
   if (!this.model.file.getUrl()) {
@@ -104,5 +130,3 @@ silex.controller.ViewMenuController.prototype.preview = function() {
     doOpenPreview();
   }
 };
-
-
