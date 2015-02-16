@@ -105,11 +105,10 @@ silex.view.pane.PaneBase.prototype.propertyChanged = function(propertyName, opt_
 /**
  * refresh the displayed data
  * @param   {Array.<Element>} selectedElements the elements currently selected
- * @param   {Document} document  the document to use
  * @param   {Array.<string>} pageNames   the names of the pages which appear in the current HTML file
  * @param   {string}  currentPageName   the name of the current page
  */
-silex.view.pane.PaneBase.prototype.redraw = function(selectedElements, document, pageNames, currentPageName) {
+silex.view.pane.PaneBase.prototype.redraw = function(selectedElements, pageNames, currentPageName) {
   if (!selectedElements) {
     throw (new Error('selection array is undefined'));
   }

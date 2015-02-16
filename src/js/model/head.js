@@ -14,8 +14,6 @@
  *   This class represents a the head section of the opened file,
  *   which is rendered by the Stage class
  *   It has methods to manipulate the dom
- *
- *   All model classes are singletons
  */
 
 
@@ -28,14 +26,19 @@ goog.require('silex.types.Model');
 
 /**
  * @constructor
- * @param  {!silex.types.Model} model  model class which holds the other models
+ * @param  {silex.types.Model} model  model class which holds the other models
  * @param  {silex.types.View} view  view class which holds the other views
  */
 silex.model.Head = function(model, view) {
+  // store the model and the view
+  /**
+   * @type {silex.types.Model}
+   */
   this.model = model;
+  /**
+   * @type {silex.types.View}
+   */
   this.view = view;
-  // retrieve the element which will hold the body of the opened file
-  this.iframeElement = goog.dom.getElementByClass(silex.view.Stage.STAGE_CLASS_NAME);
 };
 
 
@@ -254,7 +257,7 @@ silex.model.Head.prototype.refreshFontList = function(neededFonts) {
  * @param {string} name
  */
 silex.model.Head.prototype.getMeta = function(name) {
-  var metaNode = goog.dom.getFrameContentDocument(this.iframeElement)
+  var metaNode = this.model.file.getContentDocument()
     .querySelector('meta[name="' + name + '"]');
   if (metaNode) {
     return metaNode.getAttribute('content');
@@ -273,7 +276,7 @@ silex.model.Head.prototype.getMeta = function(name) {
 silex.model.Head.prototype.setMeta = function(name, opt_value) {
   var found = false;
   // update the DOM element
-  var metaNode = goog.dom.getFrameContentDocument(this.iframeElement)
+  var metaNode = this.model.file.getContentDocument()
     .querySelector('meta[name="' + name + '"]');
   if (!metaNode && opt_value && opt_value !== '') {
     // create the DOM element
@@ -360,7 +363,7 @@ silex.model.Head.prototype.setTitle = function(name) {
   // update view
   var pages = this.model.page.getPages();
   var page = this.model.page.getCurrentPage();
-  this.view.menu.redraw(this.model.body.getSelection(), goog.dom.getFrameContentDocument(this.iframeElement), pages, page);
+  this.view.menu.redraw(this.model.body.getSelection(), pages, page);
   this.view.settingsDialog.setTitle(name);
 };
 
@@ -488,12 +491,8 @@ silex.model.Head.prototype.getTwitterSocial = function() {
  * @return  {Element}   head element of the loaded site
  */
 silex.model.Head.prototype.getHeadElement = function() {
-  var contentDocument = goog.dom.getFrameContentDocument(this.iframeElement);
-  if (!contentDocument || !contentDocument.head) {
-    return null;
-  }
   // returns the head of the document in the iframe
-  return contentDocument.head;
+  return this.model.file.getContentDocument().head;
 };
 
 

@@ -214,7 +214,7 @@ silex.view.Stage.prototype.bodyElementSizeToContent = function(event) {
         this.bodyElement);
 
     if (containers && containers.length > 0) {
-      var bb = silex.utils.Dom.getBoundingBox(containers, this.documentElement);
+      var bb = this.model.property.getBoundingBox(containers);
       var viewportSize = this.viewport.getSize();
       var desiredBodyWidth = bb.width + 100;
       if (desiredBodyWidth < viewportSize.width) {
@@ -329,12 +329,11 @@ silex.view.Stage.prototype.initEvents = function(contentWindow) {
 /**
  * redraw the properties
  * @param   {Array.<HTMLElement>} selectedElements the selected elements
- * @param   {Document} document  the document to use
  * @param   {Array.<string>} pageNames   the names of the pages
  * @param   {string}  currentPageName   the name of the current page
  */
 silex.view.Stage.prototype.redraw =
-    function(selectedElements, document, pageNames, currentPageName) {
+    function(selectedElements, pageNames, currentPageName) {
   // reset focus out of the text inputs,
   // this also prevents a bug when the page is loaded and the user presses a key,
   // the body is replaced by the keys chars

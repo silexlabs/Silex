@@ -96,14 +96,6 @@ silex.view.pane.PropertyPane.prototype.selectedElements = null;
 
 
 /**
- * reference to the iframe document
- * updated when redraw is called
- * @type {Document}
- */
-silex.view.pane.PropertyPane.prototype.document = null;
-
-
-/**
  * build the UI
  */
 silex.view.pane.PropertyPane.prototype.buildUi = function() {
@@ -182,7 +174,7 @@ silex.view.pane.PropertyPane.prototype.onPositionChanged =
     // apply the change to all elements
     goog.array.forEach(this.selectedElements, function(element) {
       if (goog.isNumber(oldValue)) {
-        var elementStyle = silex.utils.Dom.getStyle(element, this.document);
+        var elementStyle = this.model.property.getStyle(element);
         var styleValue = 0;
         if (elementStyle && elementStyle[name] && elementStyle[name] != '') {
           styleValue = parseFloat(elementStyle[name].substr(0, elementStyle[name].indexOf('px')));
@@ -243,24 +235,20 @@ silex.view.pane.PropertyPane.prototype.onTitleChanged =
 /**
  * redraw the properties
  * @param   {Array.<Element>} selectedElements the elements currently selected
- * @param   {Document} document  the document to use
  * @param   {Array.<string>} pageNames   the names of the pages which appear in the current HTML file
  * @param   {string}  currentPageName   the name of the current page
  */
-silex.view.pane.PropertyPane.prototype.redraw = function(selectedElements, document, pageNames, currentPageName) {
+silex.view.pane.PropertyPane.prototype.redraw = function(selectedElements, pageNames, currentPageName) {
   if (this.iAmSettingValue) return;
   this.iAmRedrawing = true;
 
   // call super
-  goog.base(this, 'redraw', selectedElements, document, pageNames, currentPageName);
-
-  // store a reference to the doc
-  this.document = document;
+  goog.base(this, 'redraw', selectedElements, pageNames, currentPageName);
 
   // not available for stage element
   var elementsNoStage = [];
   goog.array.forEach(selectedElements, function(element) {
-    if (document.body != element) {
+    if (this.model.body.getBodyElement() != element) {
       elementsNoStage.push(element);
     }
   }, this);
@@ -276,7 +264,7 @@ silex.view.pane.PropertyPane.prototype.redraw = function(selectedElements, docum
     // remember selection
     this.selectedElements = selectedElements;
 
-    var bb = silex.utils.Dom.getBoundingBox(selectedElements, document);
+    var bb = this.model.property.getBoundingBox(selectedElements);
 
     // display position and size
     this.topInput.value = bb.top || '0';

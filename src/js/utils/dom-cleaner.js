@@ -191,7 +191,7 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
   // **
   // replace internal links <div data-silex-href="..." by <a href="..."
   // do a first pass, in order to avoid replacing the elements in the <a> containers
-  var components = goog.dom.getElementsByClass('editable-style', bodyElement);
+  var components = goog.dom.getElementsByClass(silex.model.Body.EDITABLE_CLASS_NAME, bodyElement);
   goog.array.forEach(components, function(element) {
     var href = element.getAttribute('data-silex-href');
     if (href)
@@ -218,7 +218,7 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
   });
 
   // extract the elements styles to external .css file
-  var elements = goog.dom.getElementsByClass('editable-style', bodyElement);
+  var elements = goog.dom.getElementsByClass(silex.model.Body.EDITABLE_CLASS_NAME, bodyElement);
   var elementIdx = 0;
   var cleanupElement = function(element) {
     // add the element type
@@ -234,7 +234,7 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
       'styles': cssNormal
     });
     // cleanup styles used during edition
-    //goog.dom.classlist.remove (element, 'editable-style');
+    //goog.dom.classlist.remove (element, silex.model.Body.EDITABLE_CLASS_NAME);
     element.removeAttribute('data-silex-type');
     // remove inline css styles
     element.removeAttribute('style');

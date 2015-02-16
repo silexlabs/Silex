@@ -32,7 +32,14 @@ goog.require('silex.utils.Notification');
  */
 silex.controller.ControllerBase = function(model, view) {
   // store the model
+  // store the model and the view
+  /**
+   * @type {silex.types.Model}
+   */
   this.model = model;
+  /**
+   * @type {silex.types.View}
+   */
   this.view = view;
 
   // tracker
@@ -156,10 +163,8 @@ silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
         this.model.element.setImageUrl(img, url,
             goog.bind(function(element, img) {
               // update element size
-              goog.style.setStyle(element, {
-                width: img.naturalWidth + 'px',
-                height: img.naturalHeight + 'px'
-              });
+              this.model.element.setStyle(element, 'width', img.naturalWidth + 'px',);
+              this.model.element.setStyle(element, 'height', img.naturalHeight + 'px');
               this.tracker.trackAction('controller-events', 'success', 'insert.image', 1);
             }, this),
             goog.bind(function(element, message) {

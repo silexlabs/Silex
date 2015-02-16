@@ -68,21 +68,20 @@ silex.view.pane.GeneralStylePane.prototype.buildUi = function() {
 /**
  * redraw the properties
  * @param   {Array.<Element>} selectedElements the elements currently selected
- * @param   {Document} document  the document to use
  * @param   {Array.<string>} pageNames   the names of the pages which appear in the current HTML file
  * @param   {string}  currentPageName   the name of the current page
  */
-silex.view.pane.GeneralStylePane.prototype.redraw = function(selectedElements, document, pageNames, currentPageName) {
+silex.view.pane.GeneralStylePane.prototype.redraw = function(selectedElements, pageNames, currentPageName) {
   if (this.iAmSettingValue) return;
   this.iAmRedrawing = true;
 
   // call super
-  goog.base(this, 'redraw', selectedElements, document, pageNames, currentPageName);
+  goog.base(this, 'redraw', selectedElements, pageNames, currentPageName);
 
   // not available for stage element
   var elementsNoStage = [];
   goog.array.forEach(selectedElements, function(element) {
-    if (document.body != element) {
+    if (this.model.body.getBodyElement() != element) {
       elementsNoStage.push(element);
     }
   }, this);

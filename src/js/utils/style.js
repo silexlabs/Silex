@@ -86,16 +86,31 @@ silex.utils.Style.removeInternalClasses = function(element, opt_allClasses, opt_
 
 /**
  * convert style object to string
+ * @param {string|Object|CSSStyleDeclaration} style
+ * @param {?string=} opt_tab
  */
-silex.utils.Style.styleToString = function(style) {
+silex.utils.Style.styleToString = function(style, opt_tab) {
   if(typeof style === 'string') {
     return style;
+  }
+  if(!opt_tab) {
+    opt_tab = '';
   }
   var styleStr = '';
   for(var idx in style) {
     // filter the numerical indexes of a CSSStyleDeclaration object
-    if(idx !== 'cssText' && style[idx] && typeof style[idx] === 'string' && style[idx] !== '' && idx.match(/[^0-9]/)) {
-      styleStr += goog.string.toSelectorCase(idx) + ': ' + style[idx] + '; ';
+    // filter initial values and shorthand properties
+    if(idx !== 'cssText'
+      && idx !== 'background'
+      && idx !== 'border'
+      && idx !== 'border-width'
+      && idx !== 'border-style'
+      && style[idx]
+      && style[idx] !== 'initial'
+      && typeof style[idx] === 'string'
+      && style[idx] !== ''
+      && idx.match(/[^0-9]/)) {
+      styleStr += opt_tab + goog.string.toSelectorCase(idx) + ': ' + style[idx] + '; ';
     }
   }
   return styleStr;

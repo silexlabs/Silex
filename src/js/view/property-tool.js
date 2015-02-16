@@ -158,16 +158,15 @@ silex.view.PropertyTool.prototype.buildUi = function() {
 /**
  * redraw all panes
 * @param   {Array.<HTMLElement>} selectedElements the elements currently selected
-* @param   {Document} document  the document to use
 * @param   {Array.<string>} pageNames   the names of the pages which appear in the current HTML file
 * @param   {string}  currentPageName   the name of the current page
  */
-silex.view.PropertyTool.prototype.redraw = function(selectedElements, document, pageNames, currentPageName) {
+silex.view.PropertyTool.prototype.redraw = function(selectedElements, pageNames, currentPageName) {
   // refresh panes
-  this.borderPane.redraw(selectedElements, document, pageNames, currentPageName);
-  this.propertyPane.redraw(selectedElements, document, pageNames, currentPageName);
-  this.pagePane.redraw(selectedElements, document, pageNames, currentPageName);
-  this.generalStylePane.redraw(selectedElements, document, pageNames, currentPageName);
-  this.stylePane.redraw(selectedElements, document, pageNames, currentPageName);
-  this.bgPane.redraw(selectedElements, document, pageNames, currentPageName);
+  this.borderPane.redraw(selectedElements, pageNames, currentPageName);
+  this.propertyPane.redraw(selectedElements, pageNames, currentPageName);
+  this.pagePane.redraw(selectedElements, pageNames, currentPageName);
+  this.generalStylePane.redraw(selectedElements, pageNames, currentPageName);
+  this.stylePane.redraw(selectedElements, pageNames, currentPageName);
+  this.bgPane.redraw(selectedElements, pageNames, currentPageName);
 };
