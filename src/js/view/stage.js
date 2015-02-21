@@ -21,7 +21,6 @@ goog.provide('silex.view.Stage');
 
 goog.require('goog.events');
 goog.require('goog.events.MouseWheelHandler');
-goog.require('goog.math.Coordinate');
 
 
 

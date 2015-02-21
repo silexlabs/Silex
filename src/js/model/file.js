@@ -232,8 +232,6 @@ silex.model.File.prototype.includeEditionTags = function(opt_onSuccess, opt_onEr
   var styles = [
     'css/editable.css',
     'css/front-end.css',
-    'libs/jquery/jquery.ui.core.css',
-    'libs/jquery/jquery-ui.css',
     'libs/normalize.css'
   ];
   goog.array.forEach(styles, function(url) {
