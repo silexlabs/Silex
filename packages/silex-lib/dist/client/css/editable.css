@@ -18,60 +18,20 @@ body{
   user-select: none;
   cursor: move;
 }
-.editable-style.silex-selected {
-}
-.editable-style > .ui-resizable-ne {
-  top: -4px;
-  right: -4px;
-  cursor: ne-resize;
-}
-.editable-style > .ui-resizable-sw {
-  bottom: -4px;
-  left: -4px;
-  cursor: sw-resize;
-}
-.editable-style > .ui-resizable-se {
-  bottom: -4px;
-  right: -4px;
-  cursor: se-resize;
-}
-.editable-style > .ui-resizable-nw {
-  top: -4px;
-  left: -4px;
-  cursor: nw-resize;
-}
-.editable-style > .ui-resizable-n {
-  top: -4px;
-  left: 0;
-  cursor: n-resize;
-  border-bottom: 1px solid;
-}
-.editable-style > .ui-resizable-s {
-  bottom: -4px;
-  left: 0;
-  cursor: s-resize;
-  border-top: 1px solid;
-}
-.editable-style > .ui-resizable-e {
-  top: 0;
-  right: -4px;
-  cursor: e-resize;
-  border-left: 1px solid;
-}
-.editable-style > .ui-resizable-w {
-  top: 0;
-  left: -4px;
-  cursor: w-resize;
-  border-right: 1px solid;
-}
 .editable-style > .ui-resizable-handle {
-  opacity: .25;
+  opacity: .5;
   z-index: auto;
   position: absolute;
   border-color: #333333;
+  border-style: dashed;
+}
+.editable-style:hover > .ui-resizable-handle {
+  opacity: 1;
 }
 .editable-style.silex-selected > .ui-resizable-handle {
   opacity: 1;
+  border-style: solid;
+  background-color: rgba(255, 255, 255, 0.33);
 }
 .editable-style.prevent-resizable > .ui-resizable-handle {
   display: none;
@@ -100,9 +60,10 @@ this makes the video clickable:
 }
 .dragging-pending .silex-selected {
   z-index: 99999 !important;
+  /*
   box-shadow: 2px 2px 20px rgba(51, 51, 51, 0.8);
   transition: box-shadow .5s;
-  /* background-image: none; */
+  */
 }
 .dragging-pending .drop-zone-candidate {
   /* background-image: none;
@@ -136,31 +97,6 @@ this makes the video clickable:
   20% { box-shadow: inset 0 0 4px #333333 }
   100% { box-shadow: inset 0 0 4px #333333 }
 }
-/* style while dragging */
-.editable-style.silex-selected > .ui-resizable-se,
-.editable-style.silex-selected > .ui-resizable-sw,
-.editable-style.silex-selected > .ui-resizable-ne,
-.editable-style.silex-selected > .ui-resizable-nw {
-  background-color: #333333;
-  border: 1px solid #666666;
-}
-.ui-resizable-se,
-.ui-resizable-sw,
-.ui-resizable-ne,
-.ui-resizable-nw {
-  width: 4px;
-  height: 4px;
-}
-.ui-resizable-e,
-.ui-resizable-w {
-  width: 4px;
-  height: 100%;
-}
-.ui-resizable-s,
-.ui-resizable-n {
-  width: 100%;
-  height: 4px;
-}
 .editable-style.background {
   cursor: pointer;
   margin-bottom: 30px;
@@ -170,4 +106,89 @@ this makes the video clickable:
 }
 .editable-style[data-silex-sub-type="image"] img {
   border-radius: inherit;
+}
+/* style while dragging */
+.editable-style.silex-selected > .ui-resizable-handle.ui-resizable-se,
+.editable-style.silex-selected > .ui-resizable-handle.ui-resizable-sw,
+.editable-style.silex-selected > .ui-resizable-handle.ui-resizable-ne,
+.editable-style.silex-selected > .ui-resizable-handle.ui-resizable-nw {
+  opacity: 1;
+  background-color: #333;
+  border: 1px solid #FFFFFF;
+  border-radius: 4px;
+  width: 6px;
+  height: 6px;
+}
+.editable-style > .ui-resizable-handle.ui-resizable-se,
+.editable-style > .ui-resizable-handle.ui-resizable-sw,
+.editable-style > .ui-resizable-handle.ui-resizable-ne,
+.editable-style > .ui-resizable-handle.ui-resizable-nw {
+  border-style: solid;
+  opacity: 0;
+}
+.editable-style > .ui-resizable-e,
+.editable-style > .ui-resizable-w {
+  width: 4px;
+  height: 100%;
+}
+.editable-style > .ui-resizable-s,
+.editable-style > .ui-resizable-n {
+  width: 100%;
+  height: 4px;
+}
+.editable-style > .ui-resizable-ne {
+  top: -4px;
+  right: -4px;
+  cursor: ne-resize;
+}
+.editable-style > .ui-resizable-sw {
+  bottom: -4px;
+  left: -4px;
+  cursor: sw-resize;
+}
+.editable-style > .ui-resizable-se {
+  bottom: -4px;
+  right: -4px;
+  cursor: se-resize;
+}
+.editable-style > .ui-resizable-nw {
+  top: -4px;
+  left: -4px;
+  cursor: nw-resize;
+}
+.editable-style > .ui-resizable-n {
+  top: -4px;
+  left: 0;
+  cursor: n-resize;
+  border-top-width: 0;
+  border-bottom-width: 1px;
+  border-left-width: 0;
+  border-right-width: 0;
+}
+.editable-style > .ui-resizable-s {
+  bottom: -4px;
+  left: 0;
+  cursor: s-resize;
+  border-top-width: 1px;
+  border-bottom-width: 0;
+  border-left-width: 0;
+  border-right-width: 0;
+}
+.editable-style > .ui-resizable-e {
+  top: 0;
+  right: -4px;
+  cursor: e-resize;
+  border-top-width: 0;
+  border-bottom-width: 0;
+  border-left-width: 1px;
+  border-right-width: 0;
+}
+.editable-style > .ui-resizable-w {
+  top: 0;
+  left: -4px;
+  cursor: w-resize;
+  border-top-width: 0;
+  border-bottom-width: 0;
+  border-left-width: 0;
+  border-right-width: 1px;
 }
