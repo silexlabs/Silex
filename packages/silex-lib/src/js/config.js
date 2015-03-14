@@ -303,6 +303,37 @@ silex.Config.menu = {
       },
       null,
       {
+        label: 'Bring to front',
+        id: 'edit.move.to.top',
+        className: 'menu-item-edit-move-to-top',
+        shortcut: [[goog.events.KeyCodes.UP, altKeyModifyer + goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT]],
+        tooltip: altKeyDisplay + '⇧ Up'
+      },
+      {
+        label: 'Bring forward',
+        id: 'edit.move.up',
+        className: 'menu-item-edit-move-up',
+        shortcut: [[goog.events.KeyCodes.UP, altKeyModifyer]],
+        tooltip: altKeyDisplay + 'Up',
+        mnemonic: goog.events.KeyCodes.UP
+      },
+      {
+        label: 'Bring backward',
+        id: 'edit.move.down',
+        className: 'menu-item-edit-move-down',
+        shortcut: [[goog.events.KeyCodes.DOWN, altKeyModifyer]],
+        tooltip: altKeyDisplay + 'Down',
+        mnemonic: goog.events.KeyCodes.DOWN
+      },
+      {
+        label: 'Send to back',
+        id: 'edit.move.to.bottom',
+        className: 'menu-item-edit-move-to-bottom',
+        shortcut: [[goog.events.KeyCodes.DOWN, altKeyModifyer + goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT]],
+        tooltip: altKeyDisplay + '⇧ Down'
+      },
+      null,
+      {
         label: 'Rename page',
         id: 'edit.rename.page',
         className: 'menu-item-edit-rename-page'

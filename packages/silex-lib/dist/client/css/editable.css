@@ -58,13 +58,11 @@ this makes the video clickable:
 .dragging-pending .container-element {
 /*  background-image: url(../assets/stripe.jpg); */
 }
+/*
 .dragging-pending .silex-selected {
   z-index: 99999 !important;
-  /*
-  box-shadow: 2px 2px 20px rgba(51, 51, 51, 0.8);
-  transition: box-shadow .5s;
-  */
 }
+*/
 .dragging-pending .drop-zone-candidate {
   /* background-image: none;
   box-shadow: inset 2px 2px 20px rgba(51, 51, 51, 0.8);

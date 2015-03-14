@@ -310,6 +310,18 @@ silex.view.Menu.prototype.onMenuEvent = function(type) {
     case 'edit.redo':
       this.controller.editMenuController.redo();
       break;
+    case 'edit.move.up':
+      this.controller.editMenuController.moveUp();
+      break;
+    case 'edit.move.down':
+      this.controller.editMenuController.moveDown();
+      break;
+    case 'edit.move.to.top':
+      this.controller.editMenuController.moveToTop();
+      break;
+    case 'edit.move.to.bottom':
+      this.controller.editMenuController.moveToBottom();
+      break;
     case 'edit.delete.page':
       this.controller.pageToolController.removePage();
       break;
