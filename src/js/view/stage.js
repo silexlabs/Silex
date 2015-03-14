@@ -353,12 +353,13 @@ silex.view.Stage.prototype.handleKey = function(event) {
   if (event.target.tagName.toUpperCase() !== 'INPUT' &&
       event.target.tagName.toUpperCase() !== 'TEXTAREA') {
     // compute the number of pixels to move
-    var amount = 1;
+    var amount = 10;
     if(event.shiftKey === true) {
-      amount *= 2;
+      amount = 1;
     }
     if(event.altKey === true) {
-      amount *= 5;
+      // this is the bring forward/backward shortcut
+      return;
     }
     // compute the direction
     var offsetX = 0;
@@ -419,7 +420,7 @@ silex.view.Stage.prototype.handleMouseUp = function(target, x, y, shiftKey) {
       this.controller.stageController.newContainer(dropZone.element, element);
     }, this);
     // change z order
-    this.bringSelectionForward();
+    //this.bringSelectionForward();
     // reset dropzone marker
     this.markAsDropZone(null);
   }
