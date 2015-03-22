@@ -435,6 +435,7 @@ silex.model.Element.prototype.removeElement = function(element) {
   // check this is allowed, i.e. an element inside the stage container
   if (this.model.body.getBodyElement() != element &&
       goog.dom.contains(this.model.body.getBodyElement(), element)) {
+    // useless? Should remove its style? this.model.property.setStyle(element);
     // remove the element
     goog.dom.removeNode(element);
   }
