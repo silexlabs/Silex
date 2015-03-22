@@ -59,6 +59,11 @@ silex.utils.BackwardCompat.process = function(doc, model, cbk) {
       return parseInt(str, 10) || 0;
     });
 
+  if (silex.utils.BackwardCompat.amIObsolete(version, silex.utils.BackwardCompat.LATEST_VERSION)) {
+    silex.utils.Notification.alert('This website has been saved with a newer version of Silex. Continue at your own risks.', function() {});
+
+  }
+
   // update static.silex.me
   var elements = doc.querySelectorAll('[src]');
   goog.array.forEach(elements, function(element) {
@@ -105,6 +110,19 @@ silex.utils.BackwardCompat.updateStaticUrl = function(version, url) {
   newUrl = newUrl.replace('//static.silex.me/' + initialFolder, '//static.silex.me/' + finalFolder);
   return newUrl;
 };
+
+
+/**
+ * check if the website has been edited with a newer version of Silex
+ * @param {Array.<number>} initialVersion the website version
+ * @param {Array.<number>} targetVersion  a given Silex version
+ */
+silex.utils.BackwardCompat.amIObsolete = function(initialVersion, targetVersion) {
+  console.log('amIObsolete', initialVersion, targetVersion);
+  return initialVersion[2] && initialVersion[0] > targetVersion[0]
+    || initialVersion[1] > targetVersion[1]
+    || initialVersion[2] > targetVersion[2];
+}
 
 
 /**

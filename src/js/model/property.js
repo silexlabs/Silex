@@ -200,7 +200,7 @@ silex.model.Property.prototype.updateSilexStyleTag = function (doc) {
  * this creates or update a rule in the style tag with id INLINE_STYLE_TAG_CLASS_NAME
  * if opt_style is null this will remove the rule
  * @param {Element} element
- * @param {?string|Object|CSSStyleDeclaration} style
+ * @param {?string|Object|CSSStyleDeclaration=} style
  */
 silex.model.Property.prototype.setStyle = function (element, style) {
   // convert style to string
