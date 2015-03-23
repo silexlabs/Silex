@@ -44,7 +44,7 @@ silex.controller.HtmlEditorController.prototype.changed = function(content) {
   var selection = this.model.body.getSelection();
   if (selection.length === 1 && selection[0].tagName.toLowerCase() === 'body') {
     // edit head tag
-    this.model.head.setHeadTag(content);
+    this.model.head.setUserHeadTag(content);
   }
   else {
     // edit current selection

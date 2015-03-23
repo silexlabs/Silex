@@ -59,7 +59,7 @@ silex.controller.ViewMenuController.prototype.openHtmlHeadEditor = function() {
   this.model.body.setSelection([]);
   // open the editor
   this.view.htmlEditor.openEditor();
-  this.view.htmlEditor.setValue(this.model.head.getHeadTag());
+  this.view.htmlEditor.setValue(this.model.head.getUserHeadTag());
 };
 
 

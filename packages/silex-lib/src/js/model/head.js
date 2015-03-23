@@ -39,6 +39,10 @@ silex.model.Head = function(model, view) {
    * @type {silex.types.View}
    */
   this.view = view;
+  /**
+   * @type {string}
+   */
+  this.userHeadTag = '';
 };
 
 
@@ -83,14 +87,11 @@ silex.model.Head.HEAD_TAG_STOP = '<!-- End of Silex HEAD tag do not remove -->';
  * set/get HEAD tag
  * the head tag edited by the user is a portion of the real head tag
  * it is delimited by specific comments
+ * it can not be interpreted while editing, in case it has bad HTML tags, it could break the whole site, insert tags into the body instead of the head...
  * @return {string} the head tag content
  */
-silex.model.Head.prototype.getHeadTag = function() {
-  // get silex scripts from the DOM
-  var headString = this.model.element.unprepareHtmlForEdit(this.getHeadElement().innerHTML);
-  var regExp = new RegExp(silex.model.Head.HEAD_TAG_START + '(.*)' + silex.model.Head.HEAD_TAG_STOP);
-  var found = headString.match(regExp);
-  return found ? found[1] : '';
+silex.model.Head.prototype.getUserHeadTag = function() {
+  return this.userHeadTag;
 };
 
 
@@ -98,21 +99,47 @@ silex.model.Head.prototype.getHeadTag = function() {
  * set/get HEAD tag
  * the head tag edited by the user is a portion of the real head tag
  * it is delimited by specific comments
- * @param {string} headString
+ * it can not be interpreted while editing, in case it has bad HTML tags, it could break the whole site, insert tags into the body instead of the head...
+ * @param {string} str
  */
-silex.model.Head.prototype.setHeadTag = function(headString) {
-  var original = this.model.element.unprepareHtmlForEdit(this.getHeadElement().innerHTML);
-  var regExp = new RegExp(silex.model.Head.HEAD_TAG_START + '(.*)' + silex.model.Head.HEAD_TAG_STOP);
-  headString = silex.model.Head.HEAD_TAG_START + headString + silex.model.Head.HEAD_TAG_STOP;
-  if (regExp.test(original)) {
-    // update the head section
-    headString = original.replace(regExp, headString)
+silex.model.Head.prototype.setUserHeadTag = function(str) {
+  this.userHeadTag = str;
+};
+
+
+/**
+ * remove the user's head tag from the provided string and store it into this.userHeadTag
+ * the head tag edited by the user is a portion of the real head tag
+ * it is delimited by specific comments
+ * it can not be interpreted while editing, in case it has bad HTML tags, it could break the whole site, insert tags into the body instead of the head...
+ * @param {string} headString   initial head tag
+ * @return {string} initial head tag without the user's head tag
+ */
+silex.model.Head.prototype.extractUserHeadTag = function(headString) {
+  var regExp = new RegExp(silex.model.Head.HEAD_TAG_START + '([\\\s\\\S.]*)' + silex.model.Head.HEAD_TAG_STOP);
+  var found = headString.match(regExp);
+  if(found) {
+    headString = headString.replace(regExp, '');
+    this.userHeadTag = found[1];
   }
   else {
-    // create the head section
-    headString = original + headString;
+    this.userHeadTag = '';
   }
-  this.getHeadElement().innerHTML = this.model.element.prepareHtmlForEdit(headString);
+  return headString;
+};
+
+
+/**
+ * insert the HEAD tag into an HTML string
+ * the head tag edited by the user is a portion of the real head tag
+ * it is delimited by specific comments
+ * it can not be interpreted while editing, in case it has bad HTML tags, it could break the whole site, insert tags into the body instead of the head...
+ * @param {string} htmlString
+ * @return {string} the provided string with the user's head tags
+ */
+silex.model.Head.prototype.insertUserHeadTag = function(htmlString) {
+  htmlString = htmlString.replace(/<\/head>/i, silex.model.Head.HEAD_TAG_START + this.userHeadTag + silex.model.Head.HEAD_TAG_STOP + '</head>');
+  return htmlString;
 };
 
 
