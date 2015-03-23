@@ -39,7 +39,7 @@ goog.inherits(silex.controller.EditMenuController, silex.controller.ControllerBa
 
 /**
  * storage for the clipboard
- * @type {Array.<Element>}
+ * @type Array.<silex.types.ClipboardItem>
  */
 silex.controller.EditMenuController.prototype.clipboard = [];
 
@@ -48,7 +48,7 @@ silex.controller.EditMenuController.prototype.clipboard = [];
  * storage for the clipboard
  * @type {Element|null}
  */
-silex.controller.EditMenuController.prototype.clipboardParent = null;
+//silex.controller.EditMenuController.prototype.clipboardParent = null;
 
 
 /**
@@ -114,9 +114,9 @@ silex.controller.EditMenuController.prototype.copySelection = function() {
       if (this.model.body.getBodyElement() != element) {
         // disable editable
         this.model.body.setEditable(element, false);
-        // duplicate the node
-        this.clipboard.push(element.cloneNode(true));
-        this.clipboardParent = /** @type {Element} */ (element.parentNode);
+        // copy the element and its children
+        this.clipboard.push(this.recursiveCopy(element));
+        //this.clipboardParent = /** @type {Element} */ (element.parentNode);
         // re-enable editable
         this.model.body.setEditable(element, true);
       }
@@ -124,7 +124,38 @@ silex.controller.EditMenuController.prototype.copySelection = function() {
         console.error('could not copy this element (', element, ') because it is the stage element');
       }
     }, this);
+    // notify the user
+    silex.utils.Notification.notifySuccess(this.clipboard.length + ' elements stored in the clipboard.');
   }
+};
+
+
+
+/**
+ * make a copy of a Silex element and its sub-elements (for containers)
+ * @param {Element} element
+ */
+silex.controller.EditMenuController.prototype.recursiveCopy = function(element) {
+  // duplicate the node
+  var res = {
+    element: element.cloneNode(true),
+    style: this.model.property.getStyle(element),
+    children: []
+  };
+  // case of a container, handle its children
+  if(this.model.element.getType(res.element) === silex.model.Element.TYPE_CONTAINER) {
+    let toBeRemoved = [];
+    let len = res.element.childNodes.length;
+    for (let idx=0; idx < len; idx++) {
+      let el = res.element.childNodes[idx];
+      if (el.nodeType === 1 && this.model.element.getType(el) !== null) {
+        res.children.push(this.recursiveCopy(el));
+        toBeRemoved.push(el);
+      }
+    }
+    toBeRemoved.forEach((el) => res.element.removeChild(el));
+  }
+  return res;
 };
 
 
@@ -139,39 +170,58 @@ silex.controller.EditMenuController.prototype.pasteSelection = function() {
     this.undoCheckPoint();
     // find the container: original container, main background container or the stage
     var container;
-    if (this.clipboardParent &&
-        goog.dom.contains(this.model.body.getBodyElement(), this.clipboardParent) &&
-        this.view.stage.getVisibility(this.clipboardParent)) {
-      container = this.clipboardParent;
-    }
-    else {
-      container = goog.dom.getElementByClass(silex.view.Stage.BACKGROUND_CLASS_NAME, this.model.body.getBodyElement());
-      if (!container) {
-        container = this.model.body.getBodyElement();
-      }
+    container = goog.dom.getElementByClass(silex.view.Stage.BACKGROUND_CLASS_NAME, this.model.body.getBodyElement());
+    if (!container) {
+      container = this.model.body.getBodyElement();
     }
     // take the scroll into account (drop at (100, 100) from top left corner of the window, not the stage)
     var doc = this.model.file.getContentDocument();
-    var bb = this.model.property.getBoundingBox(this.clipboard);
-    var offsetX = 100 + doc.body.scrollLeft - bb.left;
-    var offsetY = 100 + doc.body.scrollTop - bb.top;
+    var elements = this.clipboard.map(function(item) {return item.element;});
+    var offsetX = 100 + doc.body.scrollLeft;
+    var offsetY = 100 + doc.body.scrollTop;
     var selection = [];
     // duplicate and add to the container
-    goog.array.forEach(this.clipboard, function(clipboardElement) {
-      var element = clipboardElement.cloneNode(true);
-      this.model.element.addElement(/** @type {Element} */ (container), element);
+    goog.array.forEach(this.clipboard, function(clipboardItem) {
+      var element = this.recursivePaste(clipboardItem);
       // add to the selection
       selection.push(element);
-      // apply the offset to the element, according to the scroll position
-      var bbElement = this.model.property.getBoundingBox([element]);
-      element.style.left = (bbElement.left + offsetX) + 'px';
-      element.style.top = (bbElement.top + offsetY) + 'px';
       // reset editable option
       this.doAddElement(element);
+      // apply the offset to the element, according to the scroll position
+      var left = offsetX + 'px';
+      var top = offsetY + 'px';
+      offsetX += 10;
+      offsetY += 10;
+      this.model.element.setStyle(element, 'left', left);
+      this.model.element.setStyle(element, 'top', top);
+      // add to stage and set the "silex-just-added" css class
+      this.model.element.addElement(/** @type {Element} */ (container), element);
     }, this);
     // reset selection
     this.model.body.setSelection(selection);
   }
+};
+
+
+/**
+ * paste a Silex element and its sub-elements (for containers)
+ * @param {silex.types.ClipboardItem} clipboardItem
+ * @return {Element}
+ */
+silex.controller.EditMenuController.prototype.recursivePaste = function(clipboardItem) {
+  var element = clipboardItem.element.cloneNode(true);
+  // reset the ID
+  this.model.property.initSilexId(element);
+  // keep the original style
+  this.model.property.setStyle(element, clipboardItem.style);
+  // add its children
+  goog.array.forEach(clipboardItem.children, function(childItem) {
+    var childElement = this.recursivePaste(childItem);
+    // add to stage
+    this.model.element.addElement(element, childElement);
+    }, this);
+
+  return element;
 };
 
 

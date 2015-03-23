@@ -131,6 +131,15 @@ silex.model.Element.SELECTED_CLASS_NAME = 'silex-selected';
 
 
 /**
+ * constant for the class name of pasted components
+ * this will be removed from the component as soon as it is dragged
+ * @const
+ * @type {string}
+ */
+silex.model.Element.JUST_ADDED_CLASS_NAME = 'silex-just-added';
+
+
+/**
  * prepare element for edition
  * @param  {string} rawHtml   raw HTML of the element to prepare
  * @return {string} the processed HTML
@@ -182,6 +191,7 @@ silex.model.Element.prototype.getTabs = function(num) {
  * get/set type of the element
  * @param  {Element} element   created by silex, either a text box, image, ...
  * @return  {string}           the style of the element
+ * @example for a container this will return "container"
  */
 silex.model.Element.prototype.getType = function(element) {
   //return goog.style.getStyle(element, styleName);
@@ -241,6 +251,8 @@ silex.model.Element.prototype.setStyle = function(element, styleName, opt_styleV
     var selectedElements = this.model.body.getSelection();
     this.view.propertyTool.redraw(selectedElements, pages, page);
   }
+  // remove the 'just pasted' class
+  element.classList.remove(silex.model.Element.JUST_ADDED_CLASS_NAME);
 };
 
 
@@ -453,6 +465,8 @@ silex.model.Element.prototype.removeElement = function(element) {
  */
 silex.model.Element.prototype.addElement = function(container, element) {
   goog.dom.appendChild(container, element);
+  // add the class to keep the element above all others
+  element.classList.add(silex.model.Element.JUST_ADDED_CLASS_NAME);
  };
 
 
