@@ -153,6 +153,9 @@ silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk, opt_showLoader) 
   // should not be needed since we change all  the URLs to absolute
   // but just in case abs/rel conversion bugs
   if (this.url) rawHtml = rawHtml.replace('<head>', '<head><base class="' + silex.model.Head.SILEX_TEMP_TAGS_CSS_CLASS + '" href="' + this.url + '" target="_blank">');
+  // remove user's head tag before it is interprated by the browser
+  // - in case it has bad HTML tags, it could break the whole site, insert tags into the body instead of the head...
+  rawHtml = this.model.head.extractUserHeadTag(rawHtml);
   // prepare HTML
   rawHtml = this.model.element.prepareHtmlForEdit(rawHtml);
   // write the content
@@ -273,6 +276,8 @@ silex.model.File.prototype.getHtml = function() {
   rawHtml = '<!DOCTYPE html>' + rawHtml;
   // cleanup HTML
   rawHtml = this.model.element.unprepareHtmlForEdit(rawHtml);
+  // add the user's head tag
+  rawHtml = this.model.head.insertUserHeadTag(rawHtml);
   // beutify html
   rawHtml = window['html_beautify'](rawHtml);
   return rawHtml;

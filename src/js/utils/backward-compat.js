@@ -118,7 +118,6 @@ silex.utils.BackwardCompat.updateStaticUrl = function(version, url) {
  * @param {Array.<number>} targetVersion  a given Silex version
  */
 silex.utils.BackwardCompat.amIObsolete = function(initialVersion, targetVersion) {
-  console.log('amIObsolete', initialVersion, targetVersion);
   return initialVersion[2] && initialVersion[0] > targetVersion[0]
     || initialVersion[1] > targetVersion[1]
     || initialVersion[2] > targetVersion[2];
