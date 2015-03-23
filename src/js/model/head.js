@@ -380,7 +380,7 @@ silex.model.Head.prototype.getTitle = function() {
  */
 silex.model.Head.prototype.setTitle = function(name) {
   // find or create the title tag in the head section
-  var titleNode = this.getTitle();
+  var titleNode = this.getHeadElement().querySelector('title');
   if (!titleNode) {
     titleNode = goog.dom.createElement('title');
     goog.dom.appendChild(this.getHeadElement(), titleNode);
