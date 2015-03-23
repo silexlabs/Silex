@@ -166,8 +166,10 @@ silex.utils.BackwardCompat.to2_2_4 = function(version, doc, model, cbk) {
       if(elementsArr.length > 0) {
         var element = elementsArr.pop();
         // init id
-        model.property.initSilexId(element, doc);
-        allStyles += '.' + model.property.getSilexId(element) + '{' + element.getAttribute('style') + '} ';
+        if (!model.property.getSilexId(element)) {
+          model.property.initSilexId(element, doc);
+          allStyles += '.' + model.property.getSilexId(element) + '{' + element.getAttribute('style') + '} ';
+        }
         element.removeAttribute('style');
         // let time for the DOM to update
         setTimeout(nextUpdate, 100);

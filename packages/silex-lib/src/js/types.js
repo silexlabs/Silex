@@ -37,6 +37,13 @@ goog.require('silex.controller.ViewMenuController');
 
 
 /**
+ * recursive type of copied elements stored in the clipboard
+ * @typedef {{element:Element, style, children: Array.<silex.types.ClipboardItem>}}
+ */
+silex.types.ClipboardItem;
+
+
+/**
  * @struct
  * @constructor
  */

@@ -88,22 +88,28 @@ silex.model.Property.prototype.getSilexId = function (element) {
  * @param {string} uniqueId
  */
 silex.model.Property.prototype.setSilexId = function (element, uniqueId) {
+  var oldId = this.getSilexId(element);
+  if(oldId) {
+    element.classList.remove(oldId);
+  }
   element.setAttribute(silex.model.Property.ELEMENT_ID_ATTR_NAME, uniqueId);
+  element.classList.add(uniqueId);
 };
 
 
 /**
  * @param {string} uniqueId
- * @param {Document} doc docment of the iframe containing the website
+ * @param {?Document=} doc docment of the iframe containing the website
  * @return {Element}
  */
 silex.model.Property.prototype.getElementBySilexId = function (uniqueId, doc) {
+  doc = doc || this.model.file.getContentDocument();
   return doc.querySelector('[' + silex.model.Property.ELEMENT_ID_ATTR_NAME + '="' + uniqueId + '"]');
 };
 
 
 /**
- * @param {Document} doc docment of the iframe containing the website
+ * @param {?Document=} doc docment of the iframe containing the website
  * @return {string}
  */
 silex.model.Property.prototype.generateSilexId = function (doc) {
@@ -117,20 +123,19 @@ silex.model.Property.prototype.generateSilexId = function (doc) {
 
 
 /**
- * @param {Document} doc docment of the iframe containing the website
+ * @param {Element} element
+ * @param {?Document=} doc docment of the iframe containing the website
  */
 silex.model.Property.prototype.initSilexId = function (element, doc) {
   // add the selector for this element
-  if (!this.getSilexId(element)) {
-    var idAndClass = silex.model.Property.ELEMENT_ID_PREFIX + this.generateSilexId(doc);
-    this.setSilexId(element, idAndClass);
-    element.classList.add(idAndClass);
-  }
+  var idAndClass = silex.model.Property.ELEMENT_ID_PREFIX + this.generateSilexId(doc);
+  this.setSilexId(element, idAndClass);
 };
 
 
 /**
  * check existance and possibly create a style tag holding Silex elements styles
+ * @param {Document} doc docment of the iframe containing the website
  * @return {Element}
  */
 silex.model.Property.prototype.initSilexStyleTag = function (doc) {

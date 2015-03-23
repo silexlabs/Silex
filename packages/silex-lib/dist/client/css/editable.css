@@ -18,6 +18,13 @@ body{
   user-select: none;
   cursor: move;
 }
+/*
+  class name for components just after they are added to the stage
+  this will be removed from the component as soon as it is dragged
+*/
+.editable-style.silex-just-added {
+  z-index: 99999 !important;
+}
 .editable-style > .ui-resizable-handle {
   opacity: .5;
   z-index: auto;
@@ -58,11 +65,9 @@ this makes the video clickable:
 .dragging-pending .container-element {
 /*  background-image: url(../assets/stripe.jpg); */
 }
-/*
 .dragging-pending .silex-selected {
   z-index: 99999 !important;
 }
-*/
 .dragging-pending .drop-zone-candidate {
   /* background-image: none;
   box-shadow: inset 2px 2px 20px rgba(51, 51, 51, 0.8);
