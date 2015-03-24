@@ -203,6 +203,23 @@ silex.controller.ControllerBase.prototype.styleChanged = function(name, value, o
 
 
 /**
+ * set a set of styles to the current selection
+ * @param  {string|Object|CSSStyleDeclaration} style
+ * @param {?Array.<Element>=} opt_elements
+ */
+silex.controller.ControllerBase.prototype.multipleStylesChanged = function(style, opt_elements) {
+  if (!opt_elements) opt_elements = this.model.body.getSelection();
+  // undo checkpoint
+  this.undoCheckPoint();
+  // apply the change to all elements
+  goog.array.forEach(opt_elements, function(element) {
+    // update the model
+    this.model.property.setStyle(element, style);
+  }, this);
+};
+
+
+/**
  * set a given property to the current selection
  * @param  {string} name
  * @param  {?string=} value
