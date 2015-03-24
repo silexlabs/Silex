@@ -70,8 +70,7 @@ silex.utils.Notification.isActive = false;
  * use native alerts vs alertify
  */
 silex.utils.Notification.useNative = function() {
-  // 0 is PERMISSION_ALLOWED
-  return (window.webkitNotifications && window.webkitNotifications.checkPermission() === 0);
+  return ("Notification" in window && Notification.permission === "granted");
 };
 
 
@@ -79,16 +78,16 @@ silex.utils.Notification.useNative = function() {
  * activate native alerts if available
  */
 silex.utils.Notification.activateNative = function() {
-  if (window.webkitNotifications) {
+  if ("Notification" in window && Notification.permission !== 'denied') {
     if (silex.utils.Notification.useNative()) {
     } else {
       goog.events.listenOnce(document, goog.events.EventType.CLICK, function(e) {
-        window.webkitNotifications.requestPermission();
+        Notification.requestPermission();
       });
     }
   }
   else {
-    // Notifications are not supported for this Browser/OS version yet
+    // Notifications are not supported or denied
   }
 };
 
@@ -100,11 +99,13 @@ silex.utils.Notification.activateNative = function() {
  */
 silex.utils.Notification.nativeNotification = function(message, iconUrl) {
   if (silex.utils.Notification.useNative()) {
-    var notification = window.webkitNotifications.createNotification(
-        iconUrl, 'Silex speaking...', message);
-    notification.show();
+    var notification = new Notification('Silex speaking...', {
+      'icon': iconUrl,
+      'body': message,
+      'lang': 'en-US'
+    });
     setTimeout(function() {
-      notification.cancel();
+      notification.close();
     }, silex.utils.Notification.NOTIFICATION_DURATION_MS);
   }
   else {
