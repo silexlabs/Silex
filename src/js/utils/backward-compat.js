@@ -148,6 +148,11 @@ silex.utils.BackwardCompat.hasToUpdate = function(initialVersion, targetVersion)
 silex.utils.BackwardCompat.to2_2_4 = function(version, doc, model, cbk) {
   if(silex.utils.BackwardCompat.hasToUpdate(version, [2, 2, 4])) {
     console.warn('Update site version from', version, 'to ', silex.utils.BackwardCompat.LATEST_VERSION);
+    // remove the class editable-plugin-created because it is not used anymore, and it appears in the inline css editor
+    elements = doc.body.querySelectorAll('.editable-plugin-created');
+    goog.array.forEach(elements, function(element) {
+        goog.dom.classlist.remove(element, 'editable-plugin-created');
+    });
     // remove inline css from .silex-element-content (2.4)
     var elements = doc.body.querySelectorAll('.silex-element-content');
     goog.array.forEach(elements, function(element) {
@@ -246,7 +251,7 @@ silex.utils.BackwardCompat.to2_2_2 = function(version, doc, model, cbk) {
   // critical bug fix (2.2)
   // text editor sets the body class to "silex-element-content normal" instead of the text editor's class
   if (goog.dom.classlist.contains(doc.body, 'silex-element-content')) {
-    doc.body.className = 'pageable-plugin-created editable-plugin-created ui-droppable';
+    doc.body.className = 'pageable-plugin-created ui-droppable';
   }
   cbk();
 };

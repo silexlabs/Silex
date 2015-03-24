@@ -204,7 +204,6 @@ silex.model.Body.prototype.setEditable = function(rootElement, isEditable, opt_i
   if (isEditable) {
     if (goog.dom.getElementsByClass('ui-resizable-s', rootElement).length === 0) {
       this.initUiHandles(rootElement);
-      goog.dom.classlist.add(rootElement, 'editable-plugin-created');
     }
   }
   else {
