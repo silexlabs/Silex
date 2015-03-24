@@ -42,7 +42,7 @@ silex.view.dialog.AceEditorBase = function(element, model, controller) {
   this.ace = ace.edit(
       /** @type {!Element} */(goog.dom.getElementByClass(
           'ace-editor', this.element)));
-  this.ace.setTheme("ace/theme/twilight");
+  this.ace.setTheme("ace/theme/idle_fingers");
   this.ace.setOptions({
         'enableBasicAutocompletion': true,
         'enableSnippets': true,

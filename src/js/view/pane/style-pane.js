@@ -62,7 +62,14 @@ silex.view.pane.StylePane.prototype.buildUi = function() {
   goog.events.listen(this.cssClassesInput, goog.events.EventType.INPUT, this.onInputChanged, false, this);
   this.ace = ace.edit(goog.dom.getElementByClass('element-style-editor', this.element));
   this.iAmSettingValue = false;
+  this.ace.setTheme("ace/theme/idle_fingers");
+  this.ace.renderer.setShowGutter(false);
   this.ace.getSession().setMode('ace/mode/css');
+  this.ace.setOptions({
+        'enableBasicAutocompletion': true,
+        'enableSnippets': true,
+        'enableLiveAutocompletion': true
+  });
   this.ace.getSession().on('change', goog.bind(function() {
     if (this.iAmSettingValue === false) {
       setTimeout(goog.bind(function() {
@@ -140,6 +147,6 @@ silex.view.pane.StylePane.prototype.contentChanged = function() {
     value = value.replace(/\n/, ' ');
   }
   this.iAmSettingValue = true;
-  this.controller.propertyToolController.propertyChanged('style', value);
+  this.controller.propertyToolController.multipleStylesChanged(value);
   this.iAmSettingValue = false;
 };
