@@ -189,11 +189,14 @@ silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
  * @param  {string} name
  * @param  {?string=} value
  * @param {?Array.<Element>=} opt_elements
+ * @param  {?boolean=} isUndoable
  */
-silex.controller.ControllerBase.prototype.styleChanged = function(name, value, opt_elements) {
+silex.controller.ControllerBase.prototype.styleChanged = function(name, value, opt_elements, isUndoable) {
   if (!opt_elements) opt_elements = this.model.body.getSelection();
-  // undo checkpoint
-  this.undoCheckPoint();
+  if(isUndoable !== false) {
+    // undo checkpoint
+    this.undoCheckPoint();
+  }
   // apply the change to all elements
   goog.array.forEach(opt_elements, function(element) {
     // update the model
