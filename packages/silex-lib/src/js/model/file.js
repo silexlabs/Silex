@@ -72,6 +72,22 @@ silex.model.File.CREATION_TEMPLATE = 'creation-template.html';
 
 
 /**
+ * loading css class
+ * @const
+ * @static
+ */
+silex.model.File.LOADING_CSS_CLASS = 'loading-website';
+
+
+/**
+ * loading css class
+ * @const
+ * @static
+ */
+silex.model.File.LOADING_LIGHT_CSS_CLASS = 'loading-website-light';
+
+
+/**
  * current file url
  * if the current file is a new file, it has no url
  * if set, this is an absolute URL, use silex.model.File::getUrl to get the relatvie URL
@@ -117,7 +133,10 @@ silex.model.File.prototype.getContentWindow = function() {
 silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk, opt_showLoader) {
   // loading
   if (opt_showLoader !== false) {
-    goog.dom.classlist.add(this.view.stage.element, silex.model.Element.LOADING_ELEMENT_CSS_CLASS);
+    goog.dom.classlist.add(this.view.stage.element, silex.model.File.LOADING_CSS_CLASS);
+  }
+  else {
+    goog.dom.classlist.add(this.view.stage.element, silex.model.File.LOADING_LIGHT_CSS_CLASS);
   }
   // cleanup
   this.model.body.setEditable(this.contentDocument.body, false);
@@ -201,7 +220,8 @@ silex.model.File.prototype.onContentLoaded = function(opt_cbk) {
     if (opt_cbk) opt_cbk();
     // loading
     setTimeout(goog.bind(function() {
-      goog.dom.classlist.remove(this.view.stage.element, silex.model.Element.LOADING_ELEMENT_CSS_CLASS);
+      goog.dom.classlist.remove(this.view.stage.element, silex.model.File.LOADING_CSS_CLASS);
+      goog.dom.classlist.remove(this.view.stage.element, silex.model.File.LOADING_LIGHT_CSS_CLASS);
       // refresh the view (workaround for a bug where no page is opened after open a website or undo)
       var page = this.model.page.getCurrentPage();
       this.model.page.setCurrentPage(page);
