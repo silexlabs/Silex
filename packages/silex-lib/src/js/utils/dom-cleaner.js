@@ -99,6 +99,18 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
     });
     cssStr += tmpStr;
   }
+  // extract the elements styles to external .css file
+  var userCssTag = goog.dom.getElementByClass(
+      silex.model.Property.INLINE_STYLE_TAG_CLASS_NAME,
+      headElement);
+  if (userCssTag) {
+    goog.dom.removeNode(userCssTag);
+    // background-image / url(...)
+    cssStr += userCssTag.innerHTML.replace(/url\(()(.+?)\1\)/gi, function(match, group1, group2) {
+      return silex.utils.DomCleaner.filterBgImage(baseUrl, files, match, group1, group2);
+    });
+  }
+
 
   // convert to strings
   var bodyStr = bodyElement.innerHTML;
@@ -130,13 +142,6 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
   bodyStr = bodyStr.replace(/url\(()(.+?)\1\)/gi, function(match, group1, group2) {
     return silex.utils.DomCleaner.filterBgImage(baseUrl, files, match, group1, group2);
   });
-
-  // handle the body itself
-  var oldStyle = bodyElement.getAttribute('style');
-  var newStyle = oldStyle.replace(/url\(()(.+?)\1\)/gi, function(match, group1, group2) {
-    return silex.utils.DomCleaner.filterBgImage(baseUrl, files, match, group1, group2);
-  });
-  bodyElement.setAttribute('style', newStyle);
 
   // css to download and put to css/
   headStr = headStr.replace(/href="?([^" ]*)"/gi, function(match, group1, group2) {
@@ -217,48 +222,6 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
     }
   });
 
-  // extract the elements styles to external .css file
-  var elements = goog.dom.getElementsByClass(silex.model.Body.EDITABLE_CLASS_NAME, bodyElement);
-  var elementIdx = 0;
-  var cleanupElement = function(element) {
-    // add the element type
-    var classNameType = 'silex-' + (element.getAttribute(silex.model.Element.TYPE_ATTR) || 'body');
-    goog.dom.classlist.add(element, classNameType);
-    // create a class name for this css
-    var className = 'element-' + (elementIdx++);
-    goog.dom.classlist.add(element, className);
-    // add the css for this context
-    var cssNormal = element.getAttribute('style');
-    cssArray.push({
-      'classNames': ['.' + className],
-      'styles': cssNormal
-    });
-    // cleanup styles used during edition
-    //goog.dom.classlist.remove (element, silex.model.Body.EDITABLE_CLASS_NAME);
-    element.removeAttribute('data-silex-type');
-    // remove inline css styles
-    element.removeAttribute('style');
-  };
-  // handle body itself
-  cleanupElement(bodyElement);
-  // handle all other editable elements
-  goog.array.forEach(elements, cleanupElement);
-
-  // todo: find patterns to reduce the number of css classes
-  goog.array.forEach(cssArray, function(cssData) {
-    var elementCssStr = '';
-    // compute class names
-    goog.array.forEach(cssData['classNames'], function(className) {
-      if (elementCssStr !== '') elementCssStr += ', ';
-      elementCssStr += className;
-    });
-    // compute styles
-    elementCssStr += '{\n\t' + cssData['styles'] + '\n}';
-    cssStr += '\n' + elementCssStr;
-  });
-  // format css
-  cssStr.replace('; ', ';\n\t');
-
   // put back the scripts
   headStr = headStr.replace(/type=\"text\/notjavascript\"/gi, 'type="text/javascript"');
   jsString = jsString.replace(/type=\"text\/notjavascript\"/gi, 'type="text/javascript"');
@@ -276,7 +239,7 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
       <link href="css/styles.css" rel="stylesheet">\
       <script src="js/script.js" type="text/javascript"></script>\
   </head>';
-  html += '<body class="' + bodyClass + ' silex-runtime silex-published">' + bodyStr + '</body>';
+  html += '<body class="' + bodyClass + ' silex-published">' + bodyStr + '</body>';
   html += '</html>';
 
   return {
