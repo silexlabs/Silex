@@ -331,7 +331,7 @@ exports.getFileFromUrl = function(req, res, next, srcPath, dstPath, cbk){
             }
             // data is an object
             else if (typeof(data) === 'object'){
-                exports.writeFileToService(req, res, next, dstPath, data, function(error) {
+                exports.writeFileToService(req, res, next, dstPath, data.toString(), function(error) {
                     cbk(error);
                 });
             }
