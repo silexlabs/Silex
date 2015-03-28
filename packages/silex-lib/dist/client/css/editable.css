@@ -67,6 +67,7 @@ this makes the video clickable:
 }
 .dragging-pending .silex-selected {
   z-index: 99999 !important;
+  opacity: .75 !important;
 }
 .dragging-pending .drop-zone-candidate {
   /* background-image: none;
