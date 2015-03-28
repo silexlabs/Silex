@@ -100,13 +100,7 @@ silex.utils.Style.styleToString = function(style, opt_tab) {
   for(var idx in style) {
     // filter the numerical indexes of a CSSStyleDeclaration object
     // filter initial values and shorthand properties
-    if(idx !== 'cssText'
-      && idx !== 'background'
-      && idx !== 'border'
-      && idx !== 'border-width'
-      && idx !== 'border-style'
-      && style[idx]
-      && style[idx] !== 'initial'
+    if(style[idx]
       && typeof style[idx] === 'string'
       && style[idx] !== ''
       && idx.match(/[^0-9]/)) {

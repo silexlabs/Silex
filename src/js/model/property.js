@@ -190,7 +190,7 @@ silex.model.Property.prototype.updateSilexStyleTag = function (doc) {
   var elements = doc.querySelectorAll('body, .' + silex.model.Body.EDITABLE_CLASS_NAME);
   var allStyles = '';
   goog.array.forEach(elements, function(element) {
-    var style = this.getStyle(element);
+    var style = this.getStyleObject(element);
     var styleStr = silex.utils.Style.styleToString(style, '\n    ');
     allStyles += '.' + this.getSilexId(element) + ' {' + styleStr + '\n}\n';
   }, this);
@@ -234,14 +234,21 @@ silex.model.Property.prototype.setStyle = function (element, style) {
  * get / set the css style of an element
  * this creates or update a rule in the style tag with id INLINE_STYLE_TAG_CLASS_NAME
  * @param {Element} element
- * @return {CSSStyleDeclaration|null}
+ * @return {Object|null}
  */
-silex.model.Property.prototype.getStyle = function (element) {
+silex.model.Property.prototype.getStyleObject = function (element) {
   // find the rule for the given element
   for (var idx in this.silexStyleSheet.cssRules) {
     // we use the class name because elements have their ID as a css class too
     if (this.silexStyleSheet.cssRules[idx].selectorText === '.' + this.getSilexId(element)) {
-      return this.silexStyleSheet.cssRules[idx].style;
+      // build an object with only the changed keys
+      var cssStyleDeclaration = this.silexStyleSheet.cssRules[idx].style;
+      var res = {};
+      for (var idx=0 ; idx < cssStyleDeclaration.length; idx++) {
+        var styleName = cssStyleDeclaration[idx];
+        res[styleName] = cssStyleDeclaration[styleName];
+      }
+      return res;
     }
   }
   return null;
@@ -263,7 +270,7 @@ silex.model.Property.prototype.getBoundingBox = function(elements) {
   // browse all elements and compute the containing rect
   goog.array.forEach(elements, function(element) {
     // retrieve the styles strings (with "px")
-    var elementStyle = this.getStyle(element)
+    var elementStyle = this.getStyleObject(element)
     if(!elementStyle) {
       elementStyle = {
         'top': '',
