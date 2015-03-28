@@ -371,3 +371,101 @@ silex.controller.ControllerBase.prototype.toggleAdvanced = function() {
   }
 };
 
+
+/**
+ * save or save-as
+ * @param {?string=} opt_url
+ * @param {?function()=} opt_cbk
+ * @param {?function(Object)=} opt_errorCbk
+ */
+silex.controller.ControllerBase.prototype.save = function(opt_url, opt_cbk, opt_errorCbk) {
+  this.tracker.trackAction('controller-events', 'request', 'file.save', 0);
+  if (opt_url) {
+    this.doSave(opt_url, opt_cbk, opt_errorCbk);
+  }
+  else {
+    // choose a new name
+    this.view.fileExplorer.saveAsDialog(
+        goog.bind(function(url) {
+          this.doSave(url, opt_cbk, opt_errorCbk);
+        }, this),
+        {'mimetype': 'text/html'},
+        goog.bind(function(error) {
+          this.tracker.trackAction('controller-events', 'error', 'file.save', -1);
+          if (opt_errorCbk) opt_errorCbk(error);
+        }, this));
+  }
+};
+
+
+/**
+ * save or save-as
+ * @param {string} url
+ * @param {?function()=} opt_cbk
+ * @param {?function(Object)=} opt_errorCbk
+ */
+silex.controller.ControllerBase.prototype.doSave = function(url, opt_cbk, opt_errorCbk) {
+  // urls will be relative to the html file url
+  this.model.file.setUrl(url);
+  // relative urls only in the files
+  var rawHtml = this.model.file.getHtml();
+  // look for bug of firefox inserting quotes in url("")
+  if (rawHtml.indexOf("url('&quot;") > -1) {
+    console.warn('I have found HTML entities in some urls, there us probably an error in the save process.');
+    // log this (QA)
+    this.tracker.trackAction('controller-events', 'warning', 'file.save.corrupted', -1);
+    // try to cleanup the mess
+    rawHtml = rawHtml.replace(/url\('&quot;()(.+?)\1&quot;'\)/gi, goog.bind(function(match, group1, group2) {
+      return 'url(\'' + group2 + '\')';
+    }, this));
+  }
+  // runtime check for a recurrent error
+  // check that there is no more of the basUrl in the Html
+  if (this.url && rawHtml.indexOf(this.url) >= 0){
+    console.warn('Base URL remains in the HTML, there is probably an error in the convertion to relative URL process');
+    // log this (QA)
+    this.tracker.trackAction('controller-events', 'warning', 'file.save.corrupted', -1);
+  }
+  // save to file
+  this.model.file.saveAs(
+      url,
+      rawHtml,
+      goog.bind(function() {
+        this.tracker.trackAction('controller-events', 'success', 'file.save', 1);
+        this.fileOperationSuccess('File is saved.', false);
+        if (opt_cbk) opt_cbk();
+      }, this),
+      goog.bind(function(error) {
+        silex.utils.Notification.notifyError('Error: I did not manage to save the file. \n' + (error.message || ''));
+        this.tracker.trackAction('controller-events', 'error', 'file.save', -1);
+        if (opt_errorCbk) opt_errorCbk(error);
+      }, this));
+};
+
+
+/**
+ * success of an operation involving changing the file model
+ * @param {?string=} opt_message
+ * @param {?boolean=} opt_updateTools
+ */
+silex.controller.ControllerBase.prototype.fileOperationSuccess = function(opt_message, opt_updateTools) {
+  // update tools
+  if (opt_updateTools) {
+    // find default first page
+    var pages = this.model.page.getPages();
+    // open default page
+    this.model.page.setCurrentPage(pages[0]);
+    // update fonts
+    this.refreshFonts();
+    // update dialogs
+    this.view.jsEditor.setValue(this.model.head.getHeadScript());
+    this.view.cssEditor.setValue(this.model.head.getHeadStyle());
+    this.view.htmlEditor.setValue('');
+  }
+  if (opt_message) {
+    // notify user
+    silex.utils.Notification.notifySuccess(opt_message);
+  }
+};
+
+
