@@ -380,6 +380,8 @@ silex.view.Stage.prototype.handleKey = function(event) {
     }
     // if there is something to move
     if (offsetX !== 0 || offsetY !== 0) {
+      // mark as undoable
+      this.controller.stageController.markAsUndoable();
       // apply the offset
       this.followElementPosition(this.selectedElements, offsetX, offsetY);
       // notify the controller
