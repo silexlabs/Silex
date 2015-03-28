@@ -410,7 +410,6 @@ silex.view.pane.BgPane.prototype.onColorChanged = function() {
  */
 silex.view.pane.BgPane.prototype.onBgColorButton = function() {
   var element = this.selectedElements[0];
-  console.log('xxx', this.model.property.getStyleObject(element));
   // show the palette
   if (this.getColorPaletteVisibility(this.hsvPalette) === false) {
     var color = this.model.element.getStyle(element, 'backgroundColor') || 'rgba(255, 255, 255, 1)';
