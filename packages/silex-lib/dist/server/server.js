@@ -112,6 +112,11 @@ silexConfig.staticFolders.push(
     {
         name: '/js/src',
         path: __dirname + '/../../src'
+    },
+    // when working offline, you can re-route http://static.silex.me/ to http://localhost:6805/static/
+    {
+        name: '/static',
+        path: __dirname + '/../../static.silex.me'
     }
 );
 
