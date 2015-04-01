@@ -316,10 +316,10 @@ exports.getFileFromUrl = function(req, res, next, srcPath, dstPath, cbk){
         result.on('data', function(chunk) {
             if (srcPath.indexOf('https')===0){
                 // https => all the data the 1st time
-                data = chunk;
+                data = chunk.toString();
             }
             else{
-                data.push(chunk);
+                data.push(chunk.toString());
             }
           });
           result.on('end', function() {
@@ -331,7 +331,7 @@ exports.getFileFromUrl = function(req, res, next, srcPath, dstPath, cbk){
             }
             // data is an object
             else if (typeof(data) === 'object'){
-                exports.writeFileToService(req, res, next, dstPath, data.toString(), function(error) {
+                exports.writeFileToService(req, res, next, dstPath, data.join ? data.join('') : data.toString(), function(error) {
                     cbk(error);
                 });
             }
