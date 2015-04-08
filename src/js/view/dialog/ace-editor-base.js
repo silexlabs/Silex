@@ -90,7 +90,9 @@ silex.view.dialog.AceEditorBase.prototype.buildUi = function() {
   this.iAmSettingValue = false;
   //this.ace.setTheme("ace/theme/monokai");
   //this.ace.getSession().setMode('ace/mode/css');
-  this.ace.getSession().on('change', goog.bind(function(e) {
+  // for some reason, this.ace.getSession().on is undefined,
+  //    closure renames it despite the fact that that it is declared in the externs.js file
+  this.ace.getSession()['on']('change', goog.bind(function(e) {
     if (this.iAmSettingValue === false) {
       var value = this.ace.getValue();
       setTimeout(goog.bind(function() {
