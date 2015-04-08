@@ -75,14 +75,20 @@ goog.require('silex.view.dialog.TextEditor');
 /**
  * Entry point of Silex client application
  * create all views and models and controllers
+ * @param {Boolean} isDebugMode
+ * @param {?function()=} opt_silexDoAfterReady
  * @constructor
  *
  */
-silex.App = function() {
+silex.App = function(isDebugMode, opt_silexDoAfterReady) {
 
   // **
   // general initializations
   // **
+  // debug mode
+  if(isDebugMode !== null) {
+    silex.Config.debug.debugMode = isDebugMode;
+  }
   // tracker / qos
   silex.service.Tracker.getInstance().trackAction('app-events', 'start', null, 2);
 
@@ -248,8 +254,9 @@ silex.App = function() {
   // **
   // application start, open a new empty file
   this.controller.fileMenuController.newFile();
-  if (silex.Config.debug.debugMode && silex.Config.debug.doAfterReady) {
-    silex.Config.debug.doAfterReady(this.model, this.view, this.controller);
+  if (isDebugMode && opt_silexDoAfterReady != null) {
+    console.log('xxxxx', opt_silexDoAfterReady);
+    opt_silexDoAfterReady(this.model, this.view, this.controller);
   }
   // prevent accidental unload
   if (!silex.Config.debug.debugMode || silex.Config.debug.preventQuit) {
@@ -281,6 +288,4 @@ silex.App.prototype.controller = null;
 
 // Ensures the symbol will be visible after compiler renaming.
 goog.exportSymbol('silex.App', silex.App);
-// google library too, because of "dist/client/js/closure-patches.js" which patches goog.style
-// FIXME: still needed? Find a way to remove this
-goog.exportSymbol('goog.style', goog.style);
+//goog.exportSymbol('goog.style', goog.style);

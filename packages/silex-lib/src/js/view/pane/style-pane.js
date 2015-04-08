@@ -64,13 +64,17 @@ silex.view.pane.StylePane.prototype.buildUi = function() {
   this.iAmSettingValue = false;
   this.ace.setTheme("ace/theme/idle_fingers");
   this.ace.renderer.setShowGutter(false);
-  this.ace.getSession().setMode('ace/mode/css');
+  // for some reason, this.ace.getSession().* is undefined,
+  //    closure renames it despite the fact that that it is declared in the externs.js file
+  this.ace.getSession()['setMode']('ace/mode/css');
   this.ace.setOptions({
         'enableBasicAutocompletion': true,
         'enableSnippets': true,
         'enableLiveAutocompletion': true
   });
-  this.ace.getSession().on('change', goog.bind(function() {
+  // for some reason, this.ace.getSession().on is undefined,
+  //    closure renames it despite the fact that that it is declared in the externs.js file
+  this.ace.getSession()['on']('change', goog.bind(function() {
     if (this.iAmSettingValue === false) {
       setTimeout(goog.bind(function() {
         this.contentChanged();
