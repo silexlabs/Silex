@@ -43,31 +43,28 @@ silex.model.Property = function(model, view) {
  * containing all CSS rules for the elements on stage
  * which are being edited with the wysiwyg
  * @const
- * @static
  */
-silex.model.Property.INLINE_STYLE_TAG_CLASS_NAME = 'silex-inline-styles'
+silex.model.Property.INLINE_STYLE_TAG_CLASS_NAME = 'silex-inline-styles';
 
 
 /**
  * constant for the prefix of the IDs given to Silex editable elements
  * @const
- * @static
  */
-silex.model.Property.ELEMENT_ID_PREFIX = 'silex-id-'
+silex.model.Property.ELEMENT_ID_PREFIX = 'silex-id-';
 
 
 /**
  * constant for the attribute name holding the IDs given to Silex editable elements
  * @const
- * @static
  */
-silex.model.Property.ELEMENT_ID_ATTR_NAME = 'data-silex-id'
+silex.model.Property.ELEMENT_ID_ATTR_NAME = 'data-silex-id';
 
 
 /**
  * the current file's silex style sheet which holds silex elements styles
  * this is stored for performance reasons
- * @type {CSSStyleSheet|null}
+ * @type {?CSSStyleSheet}
  */
 silex.model.Property.prototype.silexStyleSheet = null;
 
@@ -82,9 +79,9 @@ silex.model.Property.prototype.nextId = 0;
 /**
  * get/set Silex ID
  * @param {Element} element
- * @return {string|null} uniqueId
+ * @return {?string} uniqueId
  */
-silex.model.Property.prototype.getSilexId = function (element) {
+silex.model.Property.prototype.getSilexId = function(element) {
   return element.getAttribute(silex.model.Property.ELEMENT_ID_ATTR_NAME);
 };
 
@@ -94,9 +91,9 @@ silex.model.Property.prototype.getSilexId = function (element) {
  * @param {Element} element
  * @param {string} uniqueId
  */
-silex.model.Property.prototype.setSilexId = function (element, uniqueId) {
+silex.model.Property.prototype.setSilexId = function(element, uniqueId) {
   var oldId = this.getSilexId(element);
-  if(oldId) {
+  if (oldId) {
     element.classList.remove(oldId);
   }
   element.setAttribute(silex.model.Property.ELEMENT_ID_ATTR_NAME, uniqueId);
@@ -109,7 +106,7 @@ silex.model.Property.prototype.setSilexId = function (element, uniqueId) {
  * @param {?Document=} doc docment of the iframe containing the website
  * @return {Element}
  */
-silex.model.Property.prototype.getElementBySilexId = function (uniqueId, doc) {
+silex.model.Property.prototype.getElementBySilexId = function(uniqueId, doc) {
   doc = doc || this.model.file.getContentDocument();
   return doc.querySelector('[' + silex.model.Property.ELEMENT_ID_ATTR_NAME + '="' + uniqueId + '"]');
 };
@@ -119,7 +116,7 @@ silex.model.Property.prototype.getElementBySilexId = function (uniqueId, doc) {
  * @param {?Document=} doc docment of the iframe containing the website
  * @return {string}
  */
-silex.model.Property.prototype.generateSilexId = function (doc) {
+silex.model.Property.prototype.generateSilexId = function(doc) {
   var uniqueId;
   do {
     uniqueId = Date.now().toString() + '-' + (this.nextId++);
@@ -132,7 +129,7 @@ silex.model.Property.prototype.generateSilexId = function (doc) {
  * @param {Element} element
  * @param {?Document=} doc docment of the iframe containing the website
  */
-silex.model.Property.prototype.initSilexId = function (element, doc) {
+silex.model.Property.prototype.initSilexId = function(element, doc) {
   // add the selector for this element
   var idAndClass = silex.model.Property.ELEMENT_ID_PREFIX + this.generateSilexId(doc);
   this.setSilexId(element, idAndClass);
@@ -144,10 +141,10 @@ silex.model.Property.prototype.initSilexId = function (element, doc) {
  * @param {Document} doc docment of the iframe containing the website
  * @return {Element}
  */
-silex.model.Property.prototype.initSilexStyleTag = function (doc) {
+silex.model.Property.prototype.initSilexStyleTag = function(doc) {
   // make sure of the existance of the style tag with Silex definitions
   var styleTag = doc.querySelector('.' + silex.model.Property.INLINE_STYLE_TAG_CLASS_NAME);
-  if(!styleTag) {
+  if (!styleTag) {
     styleTag = doc.createElement('style');
     styleTag.classList.add(silex.model.Property.INLINE_STYLE_TAG_CLASS_NAME);
     styleTag.setAttribute('type', 'text/css');
@@ -160,18 +157,18 @@ silex.model.Property.prototype.initSilexStyleTag = function (doc) {
 /**
  * get/set cache the current website main iframe's Silex style sheet
  * this is an optimization
- * @param {CSSStyleSheet|null} silexStyleSheet the style sheet with Silex elements styles
+ * @param {?CSSStyleSheet} silexStyleSheet the style sheet with Silex elements styles
  */
-silex.model.Property.prototype.setCurrentSilexStyleSheet = function (silexStyleSheet) {
+silex.model.Property.prototype.setCurrentSilexStyleSheet = function(silexStyleSheet) {
   this.silexStyleSheet = silexStyleSheet;
 };
 
 
 /**
  * @param {Document} doc docment of the iframe containing the website
- * @return {CSSStyleSheet|null} the style sheet with Silex elements styles
+ * @return {?CSSStyleSheet} the style sheet with Silex elements styles
  */
-silex.model.Property.prototype.getSilexStyleSheet = function (doc) {
+silex.model.Property.prototype.getSilexStyleSheet = function(doc) {
   // check that we are looking at the iframe doc
   if (doc === document) {
     console.error('getSilexStyleSheet error: doc is the main Silex document');
@@ -210,7 +207,7 @@ silex.model.Property.prototype.getRule = function(element) {
  * @param {Document} doc docment of the iframe containing the website
  * @return {string} the updated string defining all elements styles
  */
-silex.model.Property.prototype.updateSilexStyleTag = function (doc) {
+silex.model.Property.prototype.updateSilexStyleTag = function(doc) {
   var elements = doc.querySelectorAll('body, .' + silex.model.Body.EDITABLE_CLASS_NAME);
   var allStyles = '';
   goog.array.forEach(elements, function(element) {
@@ -231,7 +228,7 @@ silex.model.Property.prototype.updateSilexStyleTag = function (doc) {
  * @param {Element} element
  * @param {?string|Object|CSSStyleDeclaration=} style
  */
-silex.model.Property.prototype.setStyle = function (element, style) {
+silex.model.Property.prototype.setStyle = function(element, style) {
   // convert style to string
   var styleStr = silex.utils.Style.styleToString(style || '');
   // we use the class name because elements have their ID as a css class too
@@ -246,9 +243,9 @@ silex.model.Property.prototype.setStyle = function (element, style) {
   }
   // update or create the rule
   if (originalCssRuleIdx >= 0) {
-    this.silexStyleSheet.deleteRule(originalCssRuleIdx)
+    this.silexStyleSheet.deleteRule(originalCssRuleIdx);
   }
-  if(style) {
+  if (style) {
     this.silexStyleSheet.insertRule(styleStr, this.silexStyleSheet.cssRules.length);
   }
 };
@@ -284,7 +281,7 @@ silex.model.Property.prototype.getStyleObject = function (element, opt_computed)
  * compute the bounding box of the given elements
  * it takes into account only the elements which have top, left, width and height set in px
  * @param {Array.<Element>|{length:number}} elements
- * @return the bounding box containing all the elements
+ * @return {{top:?number, left:?number, width:?number, height:?number}} the bounding box containing all the elements
  */
 silex.model.Property.prototype.getBoundingBox = function(elements) {
   // compute the positions and sizes, which may end up to be NaN or a number
@@ -295,8 +292,8 @@ silex.model.Property.prototype.getBoundingBox = function(elements) {
   // browse all elements and compute the containing rect
   goog.array.forEach(elements, function(element) {
     // retrieve the styles strings (with "px")
-    var elementStyle = this.getStyleObject(element)
-    if(!elementStyle) {
+    var elementStyle = this.getStyleObject(element);
+    if (!elementStyle) {
       elementStyle = {
         'top': '',
         'left': '',
@@ -327,11 +324,17 @@ silex.model.Property.prototype.getBoundingBox = function(elements) {
   }, this);
   // no value for NaN results
   var res = {};
-  if (!isNaN(top)) res.top = top;
-  if (!isNaN(left)) res.left = left;
-  if (!isNaN(bottom)) res.height = bottom - (top || 0);
-  if (!isNaN(right)) res.width = right - (left || 0);
+  if (!isNaN(top)) {
+    res.top = top;
+  }
+  if (!isNaN(left)) {
+    res.left = left;
+  }
+  if (!isNaN(bottom)) {
+    res.height = bottom - (top || 0);
+  }
+  if (!isNaN(right)) {
+    res.width = right - (left || 0);
+  }
   return res;
 };
-
-

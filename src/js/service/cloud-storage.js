@@ -38,11 +38,13 @@ goog.addSingletonGetter(silex.service.CloudStorage);
  * reference to the filepicker instance
  * @type {Object}
  */
-silex.service.CloudStorage.prototype.filePicker;
+silex.service.CloudStorage.prototype.filePicker = null;
 
 
 /**
  * create a blob out of an url
+ * @param {string} url
+ * @return {{url:string}}
  */
 silex.service.CloudStorage.prototype.createBlob = function(url) {
   // cloud explorer expects relative path
@@ -60,6 +62,10 @@ silex.service.CloudStorage.prototype.createBlob = function(url) {
 
 /**
  * save a file
+ * @param  {string} url
+ * @param  {string} rawData
+ * @param  {function()} cbk
+ * @param  {function(Object)} opt_errCbk
  */
 silex.service.CloudStorage.prototype.save = function(url, rawData, cbk, opt_errCbk) {
   // get teh blob corresponding to the url
@@ -69,7 +75,9 @@ silex.service.CloudStorage.prototype.save = function(url, rawData, cbk, opt_errC
       relBlob,
       rawData,
       function(blob) {
-        if (cbk) cbk();
+        if (cbk) {
+          cbk();
+        }
       },
       function(FPError) {
         console.error(FPError);
@@ -83,6 +91,9 @@ silex.service.CloudStorage.prototype.save = function(url, rawData, cbk, opt_errC
 
 /**
  * load data
+ * @param  {string} url
+ * @param  {function(string)} cbk
+ * @param  {function(Object)} opt_errCbk
  */
 silex.service.CloudStorage.prototype.load = function(url, cbk, opt_errCbk) {
   // get teh blob corresponding to the url
@@ -92,7 +103,9 @@ silex.service.CloudStorage.prototype.load = function(url, cbk, opt_errCbk) {
   this.filePicker.read(
       relBlob,
       function(data) {
-        if (cbk) cbk(data);
+        if (cbk) {
+          cbk(data);
+        }
       },
       function(FPError) {
         console.error(FPError);
@@ -106,6 +119,9 @@ silex.service.CloudStorage.prototype.load = function(url, cbk, opt_errCbk) {
 
 /**
  * load data
+ * @param  {string} url
+ * @param  {function(string)} cbk
+ * @param  {function(Object)} opt_errCbk
  */
 silex.service.CloudStorage.prototype.loadLocal = function(url, cbk, opt_errCbk) {
   goog.net.XhrIo.send(url, function(e) {
@@ -113,7 +129,9 @@ silex.service.CloudStorage.prototype.loadLocal = function(url, cbk, opt_errCbk) 
     var xhr = e.target;
     var rawHtml = xhr.getResponse();
     if (xhr.isSuccess()) {
-      if (cbk) cbk(rawHtml);
+      if (cbk) {
+        cbk(rawHtml);
+      }
     }
     else {
       var message = xhr.getLastError();
