@@ -51,7 +51,7 @@ silex.view.pane.PaneBase = function(element, model, controller) {
 /**
  * base url for relative/absolute urls
  */
-silex.view.pane.PaneBase.prototype.baseUrl;
+silex.view.pane.PaneBase.prototype.baseUrl = null;
 
 
 /**
@@ -59,7 +59,7 @@ silex.view.pane.PaneBase.prototype.baseUrl;
  *        this is true when the user has used the toolbox to change a value,
  *        while the call to notify the controller is processed
  */
-silex.view.pane.PaneBase.prototype.iAmSettingValue;
+silex.view.pane.PaneBase.prototype.iAmSettingValue = null;
 
 
 /**
@@ -68,7 +68,7 @@ silex.view.pane.PaneBase.prototype.iAmSettingValue;
  *        it is useful because setting a value of an input element
  *        automatically triggers a change event
  */
-silex.view.pane.PaneBase.prototype.iAmRedrawing;
+silex.view.pane.PaneBase.prototype.iAmRedrawing = null;
 
 
 /**
@@ -94,7 +94,9 @@ silex.view.pane.PaneBase.prototype.styleChanged = function(styleName, opt_styleV
  * @param {?boolean=} opt_applyToContent
  */
 silex.view.pane.PaneBase.prototype.propertyChanged = function(propertyName, opt_propertyValue, opt_elements, opt_applyToContent) {
-  if (this.iAmRedrawing) return;
+  if (this.iAmRedrawing) {
+    return;
+  }
   this.iAmSettingValue = true;
   // notify the controller
   this.controller.propertyToolController.propertyChanged(propertyName, opt_propertyValue, opt_elements, opt_applyToContent);
@@ -114,7 +116,9 @@ silex.view.pane.PaneBase.prototype.redraw = function(selectedElements, pageNames
   }
   /*
   // to be placed in all redraw methods to avoid loops
-  if (this.iAmSettingValue) return;
+  if (this.iAmSettingValue) {
+    return;
+  }
   this.iAmRedrawing = true;
   this.iAmRedrawing = false;
   */

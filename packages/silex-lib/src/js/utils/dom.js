@@ -72,7 +72,9 @@ silex.utils.Dom.MANDATORY_TAGS = [
 
 
 /**
- * refresh an image
+ * refresh an image with its latest version on the server
+ * @param  {Element} img
+ * @param  {function()} cbk
  */
 silex.utils.Dom.refreshImage = function(img, cbk) {
   var initialUrl = img.src;
@@ -88,7 +90,9 @@ silex.utils.Dom.refreshImage = function(img, cbk) {
 /**
  * add cache control to an URL
  * handle the cases where there is a ? or & or an existing cache control
- * @example silex.utils.Dom.addCacheControl('aaaaaaaa.com') returns 'aaaaaaaa.com?silex-cache-control=09238734099890'
+ * example: silex.utils.Dom.addCacheControl('aaaaaaaa.com') returns 'aaaaaaaa.com?silex-cache-control=09238734099890'
+ * @param {string} url
+ * @return {string}
  */
 silex.utils.Dom.addCacheControl = function(url) {
   // remove existing cache control if any
@@ -111,7 +115,9 @@ silex.utils.Dom.addCacheControl = function(url) {
  * remove cache control from an URL
  * handle the cases where there are other params in get
  * works fine when url contains several URLs with cache control or other text (like a full image tag with src='')
- * @example silex.utils.Dom.addCacheControl('aaaaaaaa.com?silex-cache-control=09238734099890') returns 'aaaaaaaa.com'
+ * example: silex.utils.Dom.addCacheControl('aaaaaaaa.com?silex-cache-control=09238734099890') returns 'aaaaaaaa.com'
+ * @param {string} url
+ * @return {string}
  */
 silex.utils.Dom.removeCacheControl = function(url) {
   // only when there is an existing cache control

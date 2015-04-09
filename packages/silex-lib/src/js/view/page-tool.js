@@ -39,23 +39,27 @@ silex.view.PageTool = function(element, model, controller) {
    * @type {Element}
    */
   this.element = element;
+
+
   /**
    * @type {!silex.types.Model}
    */
   this.model = model;
+
+
   /**
    * @type {!silex.types.Controller}
    */
   this.controller = controller;
+
+
+  /**
+   * page list based on what is passed to redraw
+   * @type {Array.<silex.model.PageData>} array of pages for the opened website
+   * @see silex.model.PageData
+   */
+  this.pages = [];
 };
-
-
-/**
- * page list based on what is passed to redraw
- * @type {Array.<silex.model.PageData>} array of pages for the opened website
- * @see silex.model.PageData
- */
-silex.view.PageTool.prototype.pages = [];
 
 
 /**
@@ -144,14 +148,16 @@ silex.view.PageTool.prototype.renamePageAtIndex = function(idx) {
  */
 silex.view.PageTool.prototype.setSelectedIndex = function(idx, opt_notify) {
   // notify the controller
-  if (opt_notify) this.controller.pageToolController.openPage(this.pages[idx].name);
+  if (opt_notify) {
+    this.controller.pageToolController.openPage(this.pages[idx].name);
+  }
 };
 
 
 /**
  * get the index of the given cell
- * @private
  * @param    {Element} element which represents the cell in the dom
+ * @return {number}
  */
 silex.view.PageTool.prototype.getCellIndex = function(element) {
   var pageIdx = element.getAttribute('data-page-idx');

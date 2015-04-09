@@ -38,12 +38,18 @@ silex.controller.ToolMenuController = function(model, view) {
 goog.inherits(silex.controller.ToolMenuController, silex.controller.ControllerBase);
 
 
+/**
+ * pixlr object, created with the global Pixlr calss provided by Pixlr library
+ * @type {[type]}
+ */
 silex.controller.ToolMenuController.prototype.pixlr = null;
 
 
 /**
  * edit in pixlr
  * this method is called by pixlrEdit and pixlrExpress with the desired service name
+ * @param {function(url, method)} pixlrMethod a reference to either `this.pixlr.edit` or `this.pixlr.express`
+ * @param {string} trackingLabel
  */
 silex.controller.ToolMenuController.prototype.openPixlr = function(pixlrMethod, trackingLabel) {
   if (!pixlrMethod) {
@@ -60,7 +66,7 @@ silex.controller.ToolMenuController.prototype.openPixlr = function(pixlrMethod, 
     // get a reference to the img tag in the element
     var img = this.model.element.getContentNode(element);
     // retrieve the image URL
-    var url = img.getAttribute('src');
+    let url = img.getAttribute('src');
     // make it understandable by unifile, i.e.
     // from localhost:6805/api/v1.0/dropbox/exec/get/_test_silex/silex-vbig.png
     // to /api/v1.0/dropbox/exec/get/_test_silex/silex-vbig.png
@@ -100,7 +106,7 @@ silex.controller.ToolMenuController.prototype.openPixlr = function(pixlrMethod, 
   // case of a background image on any other element
   else if (this.model.element.getStyle(element, 'backgroundImage')) {
     // retrieve the URL from "background-image: url(...)"
-    var url = this.model.element.getStyle(element, 'backgroundImage');
+    let url = this.model.element.getStyle(element, 'backgroundImage');
     // remove the css 'url(' keyword
     url = silex.utils.Url.removeUrlKeyword(/** @type {string} */ (url));
     // remove the domain and protocol

@@ -45,9 +45,11 @@ goog.require('silex.controller.ContextMenuController');
 goog.require('silex.model.Property');
 goog.require('silex.model.Element');
 goog.require('silex.model.Body');
-goog.require('silex.model.Head');
+goog.require('silex.model.Element');
 goog.require('silex.model.File');
+goog.require('silex.model.Head');
 goog.require('silex.model.Page');
+goog.require('silex.model.Property');
 goog.require('silex.service.Tracker');
 goog.require('silex.types.Controller');
 goog.require('silex.types.Model');
@@ -61,6 +63,7 @@ goog.require('silex.view.ContextMenu');
 goog.require('silex.view.Splitter');
 goog.require('silex.view.PageTool');
 goog.require('silex.view.PropertyTool');
+goog.require('silex.view.Splitter');
 goog.require('silex.view.Stage');
 goog.require('silex.view.Workspace');
 goog.require('silex.view.dialog.CssEditor');
@@ -86,7 +89,7 @@ silex.App = function(isDebugMode, opt_silexDoAfterReady) {
   // general initializations
   // **
   // debug mode
-  if(isDebugMode !== null) {
+  if (isDebugMode !== null) {
     silex.Config.debug.debugMode = isDebugMode;
   }
   // tracker / qos
@@ -254,7 +257,7 @@ silex.App = function(isDebugMode, opt_silexDoAfterReady) {
   // **
   // application start, open a new empty file
   this.controller.fileMenuController.newFile();
-  if (isDebugMode && opt_silexDoAfterReady != null) {
+  if (isDebugMode && opt_silexDoAfterReady !== null) {
     console.log('xxxxx', opt_silexDoAfterReady);
     opt_silexDoAfterReady(this.model, this.view, this.controller);
   }

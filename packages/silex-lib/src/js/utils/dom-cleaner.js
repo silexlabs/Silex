@@ -45,6 +45,8 @@ silex.utils.DomCleaner.DOWNLOAD_LOCALLY_FROM = [
  * remove Silex specific data from HTML
  * create an external CSS file
  * generates a list of js scripts and assets to be eported with the file
+ * @param {Document} contentDocument
+ * @param {string} baseUrl
  * @return {{htmlString: string, cssString: string, jsString: string, files: Array.<Object>}} an object with
  *      html: the cleaned up raw HTML {string} or null if an error occured
  *      css: list of css files
@@ -56,7 +58,7 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
   var bodyElement = contentDocument.body;
 
   // baseUrl must end with a '/' because filterBgImage and silex.utils.Url.getAbsolutePath needs it to
-  if(!goog.string.endsWith(baseUrl, '/')){
+  if (!goog.string.endsWith(baseUrl, '/')) {
     baseUrl += '/';
   }
 
@@ -83,7 +85,6 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
   var cssStr = '';
 
   // list of css and files (assets, scripts...)
-  var cssArray = [];
   var files = [];
 
   // add head css
@@ -216,7 +217,6 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
       // FIXME: bug when there is a link in the content of an element with an external link set
       // see issue https://github.com/silexlabs/Silex/issues/56
       var fragment = goog.dom.htmlToDocumentFragment(newHtml);
-      var parentNode = element.parentNode;
       goog.dom.insertSiblingBefore(fragment, element);
       goog.dom.removeNode(element);
     }
@@ -227,18 +227,17 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
   jsString = jsString.replace(/type=\"text\/notjavascript\"/gi, 'type="text/javascript"');
   bodyStr = bodyElement.innerHTML.replace(/type=\"text\/notjavascript\"/gi, 'type="text/javascript"');
 
-  // handle the body style
-  var bodyStyle = bodyElement.getAttribute('style');
+  // keep the body css classes
   var bodyClass = bodyElement.getAttribute('class');
 
   // final html page
   var html = '';
   html += '<!DOCTYPE html><html>';
-  html += '<head>\
-      ' + headStr + '\
-      <link href="css/styles.css" rel="stylesheet">\
-      <script src="js/script.js" type="text/javascript"></script>\
-  </head>';
+  html += '<head>';
+  html += '    ' + headStr + '';
+  html += '    <link href="css/styles.css" rel="stylesheet">';
+  html += '    <script src="js/script.js" type="text/javascript"></script>';
+  html += '</head>';
   html += '<body class="' + bodyClass + ' silex-published">' + bodyStr + '</body>';
   html += '</html>';
 
@@ -256,6 +255,11 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
  * take into account that these will be referenced in css/style.css,
  * so they must be relative to "css/"
  * FIXME: also changes the input param files, and this is dirty
+ * @param {string} baseUrl
+ * @param {Array.<{url:string, destPath:string, srcPath:string}>} files
+ * @param {string} match
+ * @param {string} group1
+ * @param {string} group2
  * @return {string}
  */
 silex.utils.DomCleaner.filterBgImage = function(baseUrl, files, match, group1, group2) {
@@ -284,6 +288,7 @@ silex.utils.DomCleaner.filterBgImage = function(baseUrl, files, match, group1, g
 
 /**
  * det if a given URL is supposed to be downloaded locally
+ * @param {string} url
  * @return {boolean} true if the url is relative or it is a known domain (sttic.silex.me)
  */
 silex.utils.DomCleaner.isDownloadable = function(url) {

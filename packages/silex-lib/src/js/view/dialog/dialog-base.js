@@ -67,8 +67,7 @@ silex.view.dialog.DialogBase.prototype.visibilityClass = 'visibilityClass-should
 
 /**
  * currently opened dialog
- * @type {silex.view.dialog.DialogBase|null}
- * @static
+ * @type {?silex.view.dialog.DialogBase}
  */
 silex.view.dialog.DialogBase.currentDialog = null;
 
@@ -89,7 +88,7 @@ silex.view.dialog.DialogBase.prototype.buildUi = function() {
     this.closeEditor();
   }, false, this);
   // dialogs background
-  goog.events.listen(this.background, goog.events.EventType.CLICK, function(e) {
+  goog.events.listen(this.background, goog.events.EventType.CLICK, function(event) {
     this.closeEditor();
   }, false, this);
 };
