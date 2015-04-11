@@ -180,7 +180,7 @@ silex.utils.BackwardCompat.to2_2_4 = function(version, doc, model, cbk) {
     // store the style sheet string with all elements styles
     var allStyles = '';
     // then update each element
-    let nextUpdate = function () {
+    let nextUpdate = function() {
       if (elementsArr.length > 0) {
         var element = elementsArr.pop();
         // init id

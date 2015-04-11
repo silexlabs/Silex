@@ -1,7 +1,8 @@
 {
   "env": {
     "browser": true,
-    "es6": true
+    "es6": true,
+    "node": true
   },
   "globals": {
     "silex": true,
@@ -14,12 +15,13 @@
   },
   "rules": {
     "quotes": [2, "single"],
-    "no-unused-vars": 1,
-    "no-loop-func": 1,
+    "no-unused-vars": 0,
+    "no-loop-func": 0,
     "no-underscore-dangle": 0,
     "strict": 0,
     "camelcase": 0,
     "no-console": 0,
-    "dot-notation": 0
+    "dot-notation": 0,
+    "no-shadow": 0
   }
 }

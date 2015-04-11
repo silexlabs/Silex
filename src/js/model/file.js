@@ -1,3 +1,4 @@
+
 /**
  * Silex, live web creation
  * http://projects.silexlabs.org/?/silex/
@@ -365,7 +366,7 @@ silex.model.File.prototype.close = function() {
 
 silex.model.File.prototype.getUrl = function() {
   // revert to relative URL
-  if (this.url) {
+  if (this.url){
     var baseUrl = silex.utils.Url.getBaseUrl();
     return silex.utils.Url.getRelativePath(this.url, baseUrl);
   }

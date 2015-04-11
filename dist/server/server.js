@@ -10,6 +10,7 @@
 //////////////////////////////////////////////////
 
 // node modules
+var pathModule = require('path');
 var unifile = require('unifile');
 var express = require('express');
 var bodyParser = require('body-parser');
@@ -39,10 +40,10 @@ app.use('/', cookieParser());
 // get silex config
 var fs = require('fs');
 var silexConfig = unifile.defaultConfig;
-if (fs.existsSync(__dirname + '/config.js')) {
-  var obj = require(__dirname + '/config.js');
+if (fs.existsSync(pathModule.resolve(__dirname, 'config.js'))) {
+  var obj = require(pathModule.resolve(__dirname, 'config.js'));
   for (var prop in obj) {
-    silexConfig[prop] = obj[prop];
+  silexConfig[prop] = obj[prop];
   }
 }
 
@@ -53,7 +54,7 @@ app.use('/', session({
   resave: true,
   saveUninitialized: false,
   store: new FSStore({
-    dir: __dirname + '/sessions'
+    dir: pathModule.resolve(__dirname, '../sessions')
   }),
   cookie: {
     maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
@@ -68,64 +69,65 @@ var isDebug = false;
  * catch all errors to prevent nodejs server crash
  */
 function onCatchError(err) {
-    console.log  ('---------------------');
-    console.error('---------------------', 'Caught exception: ', err, '---------------------');
-    console.log  ('---------------------');
+  console.log('---------------------');
+  console.error('---------------------', 'Caught exception: ', err, '---------------------');
+  console.log('---------------------');
 }
 /**
  * set debug or production modes
  */
 exports.setDebugMode = function(debug){
-    if(debug && !isDebug){
-        process.removeListener('uncaughtException', onCatchError);
+  if(debug && !isDebug){
+    process.removeListener('uncaughtException', onCatchError);
 
-        // DEBUG ONLY
-        console.warn('Running server in debug mode');
-        // define users (login/password) wich will be authorized to access the www folder (read and write)
-        silexConfig.www.USERS = {
-            'admin': 'admin'
-        };
-    }
-    if(!debug && isDebug){
-        // PRODUCTION ONLY
-        console.warn('Running server in production mode');
-        // catch all errors and prevent nodejs to crash, production mode
-        process.on('uncaughtException', onCatchError);
-        // reset debug
-        silexConfig.www.USERS = {};
-    }
+    // DEBUG ONLY
+    console.warn('Running server in debug mode');
+    // define users (login/password) wich will be authorized to access the www folder (read and write)
+    silexConfig.www.USERS = {
+      'admin': 'admin'
+    };
+  }
+  if(!debug && isDebug){
+    // PRODUCTION ONLY
+    console.warn('Running server in production mode');
+    // catch all errors and prevent nodejs to crash, production mode
+    process.on('uncaughtException', onCatchError);
+    // reset debug
+    silexConfig.www.USERS = {};
+  }
 };
-
 // ********************************
 // config
 // ********************************
 
 // change www root
-silexConfig.www.ROOT = __dirname + '/../../dist/client';
+silexConfig.www.ROOT = pathModule.resolve(__dirname, '../../dist/client');
 
 // add static folders
 silexConfig.staticFolders.push(
-    // silex main site
-    {
-        path: __dirname + '/../../dist/client'
-    },
-    // debug silex, for js source map
-    {
-        name: '/js/src',
-        path: __dirname + '/../../src'
-    },
-    // when working offline, you can re-route http://static.silex.me/ to http://localhost:6805/static/
-    {
-        name: '/static',
-        path: __dirname + '/../../static.silex.me'
-    }
+  // silex main site
+  {
+    path: pathModule.resolve(__dirname, '../../dist/client')
+  },
+  // debug silex, for js source map
+  {
+    name: '/js/src',
+    path: pathModule.resolve(__dirname, '../../src')
+  },
+  // when working offline, you can re-route http://static.silex.me/ to http://localhost:6805/static/
+  {
+    name: '/static',
+    path: pathModule.resolve(__dirname, '../../static.silex.me')
+  }
 );
 
 // get command line args
 var debug = false;
 for (var i in process.argv){
-    var val = process.argv[i];
-    if (val == '-debug') debug = true;
+  var val = process.argv[i];
+  if (val === '-debug') {
+    debug = true;
+  }
 }
 
 // debug or production mode
@@ -149,19 +151,21 @@ app.listen(port, function() {
 
 var silexTasks = require('./silex-tasks.js');
 app.use('/tasks/:task', function(req, res, next){
-    try{
-        silexTasks.route(function(result){
-            if (!result) result = {success:true};
-            try{
-               res.send(result);
-            }
-           catch(e){
-                console.error('Error: header have been sent?', e, result, e.stack);
-            }
-        }, req, res, next, req.params.task);
-    }
-    catch(e){
-        console.error('Error while executing task', e, e.stack);
-    }
+  try{
+    silexTasks.route(function(result){
+      if (!result) {
+        result = {success: true};
+      }
+      try{
+         res.send(result);
+      }
+       catch(e){
+        console.error('Error: header have been sent?', e, result, e.stack);
+      }
+    }, req, res, next, req.params.task);
+  }
+  catch(e){
+    console.error('Error while executing task', e, e.stack);
+  }
 
 });
