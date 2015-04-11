@@ -36,7 +36,7 @@ If you plan to host Silex for your clients, your users or the community, this se
 
 If you feel like helping and host an instance of Silex as an alternative to the official Silex site http://editor.silex.me/ please let us know so that we can advertise it to the community.
 
-You will need a nodejs server, which you can setup yourself or host at heroku or Gandi for example (may be free of charge for small traffic, even with your own domain name).
+You will need a nodejs server, which you can setup yourself or host at [heroku](https://www.heroku.com/) or [Gandi](https://www.gandi.net/) for example (may be free of charge for small traffic, even with your own domain name).
 
 Download the zip file on github or clone this repository, and then follow the same steps as the developers when they install silex locally on linux - starting at npm install. See instructions bellow.
 
@@ -55,9 +55,9 @@ Prerequisite :
 
 Open http://localhost:6805/ and you are ready!
 
-### local installation on linux or macos
+### local installation on linux or macos or cloud9
 
-Prerequisite :
+Prerequisite:
 
 * [node.js](http://nodejs.org/) installed
 * [NPM](https://npmjs.org/) installed
@@ -70,39 +70,23 @@ Clone this repository, and do not forget the sub modules (cloud-explorer and uni
 
 Install all needed modules
 
-  $ make
+  $ npm install
 
-Start the server and then open http://localhost:6805/ - note that 6805 is easy to remember, since it is the date of sexual revolution started in paris france 8-)
+Start the server and then open [http://localhost:6805/](http://localhost:6805/) - note that the port is 6805, which is easy to remember, since it is the date of sexual revolution started in paris france 8-)
 
-  $ node dist/server/server.js
+  $ npm start
 
-Or with grunt you can use
-
-* Build, i.e. check syntax with lint, compile with google closure builder/compiler
-
-  $ grunt deploy
-
-* Watch, i.e. watch for changing files and build the debug version when files change, also use livereload
-
-  $ grunt watch
-
-* Test, i.e. check syntax with lint, compile the release version with google closure, and execute functional tests
-
-  $ grunt test -phantomjs
-
-  $ grunt test -firefox
-
-  $ grunt test -chrome
-
-> Note for cloud9 users: you may want to activate python
+> Note for [cloud9](http://c9.io) users: you may want to activate python with this command:
 
   $ nada-nix install python
 
+And finally, take a look at the "available commands" section bellow
+
 ### local installation on Windows
 
-> instructions provided by Régis RIGAUD :)
+> instructions provided by Régis RIGAUD:)
 
-Prerequisite :
+Prerequisite:
 
 * [node.js](http://nodejs.org/) installed
 * Git Client installed (e.g. [windows github client](http://windows.github.com/))
@@ -112,14 +96,34 @@ Prerequisite :
 Installation of Silex:
 
 * Launch the "Git Shell"
-* Create a complete clone of Silex Project : git clone --recursive https://github.com/silexlabs/Silex.git
+* Create a complete clone of Silex Project: git clone --recursive https://github.com/silexlabs/Silex.git
 * Go to Silex's Directory.
-* install depedencies  : npm install
+* install depedencies : npm install
 
-Start Silex :
+Start Silex:
 
-* Launch Silex from a command prompt ( Silex's Directory) : node dist/server/server.js
+* Launch Silex from a command prompt (Silex's Directory): `npm start`
 * Open your favorite browser on http://localhost:6805/ and ENJOY !!!
+* also take a look at the "available commands" section bellow
+
+### Available commands
+
+When debuging these npm scripts can be used with npm (they are defined in the file [package.json](./package.json))
+
+* `$ npm run start` will start the server
+* `$ npm run build` will build everything
+* `$ npm run build:css` will build only the css files with less
+* `$ npm run build:html` will build only the html files with jade
+* `$ npm run build:js` will build only the client side js files with google closure
+* `$ npm run build:server` will build only check that the server scripts are correct
+* `$ npm run watch:css` will watch the css source folder and rebuild when a file changes
+* `$ npm run watch:html` will watch the html source folder and rebuild when a file changes
+* `$ npm run watch:js` will watch the client side js source folder and rebuild when a file changes
+* `$ npm run watch:server` will watch the server source folder and rebuild when a file changes
+* `$ npm run watch:client` will watch the html, js and css source folders and rebuild when a file changes
+* `$ npm run lint:js` will lint the client side js files
+* `$ npm run lint:server` will lint the server files
+* `$ npm run fix:js` will fix the client side js files with google closure fix tool
 
 ##dependencies
 
