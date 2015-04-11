@@ -6,6 +6,36 @@
   "contributors": [
     "Thomas Fetiveau aka zabojad"
   ],
+  "main": "dist/server/server.js",
+  "license": "GPL",
+  "engines": {
+    "node": "~0.12.0",
+    "npm": "~2.7.3"
+  },
+  "precommit": [
+    "lint:js",
+    "lint:server"
+  ],
+  "scripts": {
+    "start": "node dist/server/server.js",
+    "build": "npm run build:css; npm run build:html; npm run build:js; ",
+    "build:css": "node_modules/.bin/lessc src/css/_styles.less dist/client/css/admin.min.css --clean-css=\"--compatibility=ie8 --advanced\" --source-map",
+    "build:html": "node_modules/.bin/jade src/html/*.jade --out dist/client/ --no-debug; mv dist/client/release.html dist/client/index.html",
+    "build:js": "java -jar node_modules/superstartup-closure-compiler/build/es6compiler.jar --js submodules/closure-library/closure/goog/ --js src/js/ --externs src/externs.js --js_output_file dist/client/js/admin.min.js --compilation_level ADVANCED_OPTIMIZATIONS --language_in ECMASCRIPT6_STRICT --language_out ECMASCRIPT3 --create_source_map dist/client/js/admin.min.js.map --closure_entry_point silex.App --only_closure_dependencies --manage_closure_dependencies --define=\"goog.DEBUG=false\"; echo \"//# sourceMappingURL=/js/admin.min.js.map\" >> dist/client/js/admin.min.js; ",
+    "build:server": "npm run lint:server",
+    "livereload:start": "echo '-- starting livereload'; node_modules/.bin/tiny-lr &",
+    "livereload:stop": "echo '-- stopping livereload'; curl --ipv4 http://localhost:35729/kill",
+    "livereload:changed": "echo '-- reloading livereload'; curl --ipv4 http://localhost:35729/changed?files=dist/",
+    "watch:css": "npm run livereload:start; node_modules/watch/cli.js 'npm run build:css; npm run livereload:changed' src/css/",
+    "watch:html": "npm run livereload:start; node_modules/watch/cli.js 'npm run build:html; npm run livereload:changed' src/html/",
+    "watch:js": "npm run livereload:start; node_modules/watch/cli.js 'npm run build:js; npm run livereload:changed' src/js/",
+    "watch:server": "npm run livereload:start; node_modules/watch/cli.js 'npm run build:server; npm start; npm run livereload:changed' dist/server/",
+    "watch:client": "npm run livereload:start; node_modules/watch/cli.js 'npm run build:js; npm run build:css; npm run build:html; npm run livereload:changed' src/",
+    "lint:js": "eslint src/js/; #submodules/closure-linter/closure_linter/gjslint.py --max_line_length=200 src/js/**/*.js",
+    "lint:server": "eslint dist/server/",
+    "fix:js": "submodules/closure-linter/closure_linter/fixjsstyle.py -r src/js/",
+    "": ""
+  },
   "dependencies": {
     "body-parser": "1.9.2",
     "compression": "1.2.0",
@@ -76,35 +106,5 @@
     "github",
     "silex",
     "creative commons"
-  ],
-  "main": "dist/server/server.js",
-  "license": "GPL",
-  "engines": {
-    "node": "~0.12.0",
-    "npm": "~2.7.3"
-  },
-  "precommit": [
-    "lint:js",
-    "lint:server"
-  ],
-  "scripts": {
-    "start": "node dist/server/server.js",
-    "build": "npm run build:css; npm run build:html; npm run build:js; ",
-    "build:css": "node_modules/.bin/lessc src/css/_styles.less dist/client/css/admin.min.css --clean-css=\"--compatibility=ie8 --advanced\" --source-map",
-    "build:html": "node_modules/.bin/jade src/html/*.jade --out dist/client/ --no-debug; mv dist/client/release.html dist/client/index.html",
-    "build:js": "java -jar node_modules/superstartup-closure-compiler/build/es6compiler.jar --js submodules/closure-library/closure/goog/ --js src/js/ --externs src/externs.js --js_output_file dist/client/js/admin.min.js --compilation_level ADVANCED_OPTIMIZATIONS --language_in ECMASCRIPT6_STRICT --language_out ECMASCRIPT3 --create_source_map dist/client/js/admin.min.js.map --closure_entry_point silex.App --only_closure_dependencies --manage_closure_dependencies --define=\"goog.DEBUG=false\"; echo \"//# sourceMappingURL=/js/admin.min.js.map\" >> dist/client/js/admin.min.js; ",
-    "build:server": "npm run lint:server",
-    "livereload:start": "echo '-- starting livereload'; node_modules/.bin/tiny-lr &",
-    "livereload:stop": "echo '-- stopping livereload'; curl --ipv4 http://localhost:35729/kill",
-    "livereload:changed": "echo '-- reloading livereload'; curl --ipv4 http://localhost:35729/changed?files=dist/",
-    "watch:css": "npm run livereload:start; node_modules/watch/cli.js 'npm run build:css; npm run livereload:changed' src/css/",
-    "watch:html": "npm run livereload:start; node_modules/watch/cli.js 'npm run build:html; npm run livereload:changed' src/html/",
-    "watch:js": "npm run livereload:start; node_modules/watch/cli.js 'npm run build:js; npm run livereload:changed' src/js/",
-    "watch:server": "npm run livereload:start; node_modules/watch/cli.js 'npm run build:server; npm start; npm run livereload:changed' dist/server/",
-    "watch:client": "npm run livereload:start; node_modules/watch/cli.js 'npm run build:js; npm run build:css; npm run build:html; npm run livereload:changed' src/",
-    "lint:js": "eslint src/js/; #submodules/closure-linter/closure_linter/gjslint.py --max_line_length=200 src/js/**/*.js",
-    "lint:server": "eslint dist/server/",
-    "fix:js": "submodules/closure-linter/closure_linter/fixjsstyle.py -r src/js/",
-    "": ""
-  }
+  ]
 }
