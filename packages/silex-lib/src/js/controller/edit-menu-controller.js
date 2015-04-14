@@ -310,7 +310,9 @@ silex.controller.EditMenuController.prototype.getPreviousElement = function(elem
       if(el === element) {
         return res;
       }
-      res = el;
+      if(this.model.page.isInPage(el)) {
+        res = el;
+      }
     }
   }
   return null;
@@ -331,7 +333,9 @@ silex.controller.EditMenuController.prototype.getNextElement = function(element)
       if(el === element) {
         return prev;
       }
-      prev = el;
+      if(this.model.page.isInPage(el)) {
+        prev = el;
+      }
     }
   }
   return null;

@@ -206,6 +206,7 @@ silex.model.Page.prototype.getDisplayName = function(pageName) {
 /**
  * remove a page from the dom
  * elements which are only in this page should be deleted
+ * @param {string} pageName
  */
 silex.model.Page.prototype.removePage = function(pageName) {
   var pages = this.getPages();
@@ -286,6 +287,9 @@ silex.model.Page.prototype.createPage = function(name, displayName) {
 
 /**
  * rename a page in the dom
+ * @param {string} oldName
+ * @param {string} newName
+ * @param {string} newDisplayName
  */
 silex.model.Page.prototype.renamePage = function(oldName, newName, newDisplayName) {
   var bodyElement = this.model.body.getBodyElement();
@@ -317,6 +321,8 @@ silex.model.Page.prototype.renamePage = function(oldName, newName, newDisplayNam
 
 /**
  * set/get a the visibility of an element in the given page
+ * @param {Element} element
+ * @param {string} pageName
  */
 silex.model.Page.prototype.addToPage = function(element, pageName) {
   goog.dom.classlist.add(element, pageName);
@@ -327,6 +333,8 @@ silex.model.Page.prototype.addToPage = function(element, pageName) {
 
 /**
  * set/get a "silex style link" on an element
+ * @param {Element} element
+ * @param {string} pageName
  */
 silex.model.Page.prototype.removeFromPage = function(element, pageName) {
   goog.dom.classlist.remove(element, pageName);
@@ -339,6 +347,7 @@ silex.model.Page.prototype.removeFromPage = function(element, pageName) {
 
 /**
  * set/get a "silex style link" on an element
+ * @param {Element} element
  */
 silex.model.Page.prototype.removeFromAllPages = function(element) {
   var pages = this.getPagesForElement(element);
@@ -354,6 +363,7 @@ silex.model.Page.prototype.removeFromAllPages = function(element) {
 
 /**
  * set/get a "silex style link" on an element
+ * @param {Element} element
  */
 silex.model.Page.prototype.getPagesForElement = function(element) {
   var res = [];
@@ -372,6 +382,8 @@ silex.model.Page.prototype.getPagesForElement = function(element) {
 
 /**
  * check if an element is in the given page (current page by default)
+ * @param {Element} element
+ * @param {?string=} opt_pageName
  */
 silex.model.Page.prototype.isInPage = function(element, opt_pageName) {
   var bodyElement = this.model.body.getBodyElement();
