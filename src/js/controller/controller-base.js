@@ -19,7 +19,6 @@
  */
 goog.provide('silex.controller.ControllerBase');
 
-goog.require('silex.utils.BackwardCompat');
 goog.require('silex.utils.Notification');
 
 
