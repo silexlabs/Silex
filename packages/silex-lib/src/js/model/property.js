@@ -181,6 +181,24 @@ silex.model.Property.prototype.getSilexStyleSheet = function (doc) {
 
 
 /**
+ * get the CSS rule for the given element
+ * @param {Element} element
+ * @return {CSSRule|null}
+ */
+silex.model.Property.prototype.getRule = function(element) {
+  let className = '.' + this.model.property.getSilexId(element);
+  // find the rule for the given element
+  for (let idx in this.silexStyleSheet.cssRules) {
+    // we use the class name because elements have their ID as a css class too
+    if (this.silexStyleSheet.cssRules[idx].selectorText === className) {
+      return this.silexStyleSheet.cssRules[idx];
+    }
+  }
+  return null;
+};
+
+
+/**
  * update Silex style tag with the styles of all elements
  * because the dom do not update automatically when we change document.styleSheets
  * @param {Document} doc docment of the iframe containing the website
@@ -234,22 +252,22 @@ silex.model.Property.prototype.setStyle = function (element, style) {
  * get / set the css style of an element
  * this creates or update a rule in the style tag with id INLINE_STYLE_TAG_CLASS_NAME
  * @param {Element} element
+ * @param {?boolean=} opt_computed use window.getComputedStyle instead of the element's stylesheet
  * @return {Object|null}
  */
-silex.model.Property.prototype.getStyleObject = function (element) {
-  // find the rule for the given element
-  for (var idx in this.silexStyleSheet.cssRules) {
-    // we use the class name because elements have their ID as a css class too
-    if (this.silexStyleSheet.cssRules[idx].selectorText === '.' + this.getSilexId(element)) {
-      // build an object with only the changed keys
-      var cssStyleDeclaration = this.silexStyleSheet.cssRules[idx].style;
-      var res = {};
-      for (var idx=0 ; idx < cssStyleDeclaration.length; idx++) {
-        var styleName = cssStyleDeclaration[idx];
-        res[styleName] = cssStyleDeclaration[styleName];
-      }
-      return res;
-    }
+silex.model.Property.prototype.getStyleObject = function (element, opt_computed) {
+  console.log('getStyleObject', element, opt_computed);
+  var cssStyleDeclaration = null;
+  if(opt_computed !== true) {
+    let cssRule = this.getRule(element);
+    cssStyleDeclaration = cssRule.style;
+  }
+  else {
+    cssStyleDeclaration = this.model.file.getContentWindow().getComputedStyle(element);
+  }
+  if(cssStyleDeclaration) {
+    // build an object with only the keys which are set
+    return silex.utils.Style.styleToObject(cssStyleDeclaration);
   }
   return null;
 };

@@ -23,6 +23,17 @@ goog.require('goog.net.ImageLoader');
 goog.require('silex.types.Model');
 
 
+/**
+ * direction in the dom
+ * @enum {string}
+ */
+silex.model.DomDirection = {
+  UP: "UP",
+  DOWN: "DOWN",
+  TOP: "TOP",
+  BOTTOM: "BOTTOM"
+};
+
 
 /**
  * @constructor
@@ -184,7 +195,7 @@ silex.model.Element.prototype.getTabs = function(num) {
     tabs += '    ';
   }
   return tabs;
-}
+};
 
 
 /**
@@ -202,10 +213,11 @@ silex.model.Element.prototype.getType = function(element) {
 /**
  * get all the element's styles
  * @param  {Element} element   created by silex, either a text box, image, ...
+ * @param {?boolean=} opt_computed use window.getComputedStyle instead of the element's stylesheet
  * @return  {string}           the styles of the element
  */
-silex.model.Element.prototype.getAllStyles = function(element) {
-  var styleObject = this.model.property.getStyleObject(element);
+silex.model.Element.prototype.getAllStyles = function(element, opt_computed) {
+  var styleObject = this.model.property.getStyleObject(element, opt_computed);
   var styleStr = silex.utils.Style.styleToString(styleObject);
   return this.unprepareHtmlForEdit(styleStr);
 };
@@ -215,10 +227,11 @@ silex.model.Element.prototype.getAllStyles = function(element) {
  * get/set style of the element
  * @param  {Element} element   created by silex, either a text box, image, ...
  * @param  {string} styleName  the style name
+ * @param {?boolean=} opt_computed use window.getComputedStyle instead of the element's stylesheet
  * @return  {string|null}           the style of the element
  */
-silex.model.Element.prototype.getStyle = function(element, styleName) {
-  var styleObject = this.model.property.getStyleObject(element);
+silex.model.Element.prototype.getStyle = function(element, styleName, opt_computed) {
+  var styleObject = this.model.property.getStyleObject(element, opt_computed);
   var cssName = goog.string.toSelectorCase(styleName);
   if(styleObject && styleObject[cssName]) {
     return this.unprepareHtmlForEdit(styleObject[cssName]);
@@ -346,6 +359,83 @@ silex.model.Element.prototype.getContentNode = function(element) {
     content = element;
   }
   return content;
+};
+
+
+/**
+ * move the element up/down the DOM
+ * @param  {Element} element
+ * @param  {silex.model.DomDirection} direction
+ */
+silex.model.Element.prototype.move = function(element, direction) {
+  switch(direction) {
+    case silex.model.DomDirection.UP:
+      let sibling = this.getNextElement(element);
+      if(sibling) {
+        // insert after
+        element.parentNode.insertBefore(sibling, element);
+      }
+      break;
+    case silex.model.DomDirection.DOWN:
+      let sibling = this.getPreviousElement(element);
+      if(sibling) {
+        // insert before
+        element.parentNode.insertBefore(sibling, element.nextSibling);
+      }
+      break;
+    case silex.model.DomDirection.TOP:
+      element.parentNode.appendChild(element);
+      break;
+    case silex.model.DomDirection.BOTTOM:
+      element.parentNode.insertBefore(element, element.parentNode.childNodes[0]);
+      break;
+  }
+};
+
+
+/**
+ * get the previous element in the DOM, which is a Silex element
+ * @param {Element} element
+ * @return {Element|null}
+ */
+silex.model.Element.prototype.getPreviousElement = function(element) {
+  let len = element.parentNode.childNodes.length;
+  let res = null;
+  for (let idx=0; idx < len; idx++) {
+    let el = element.parentNode.childNodes[idx];
+    if (el.nodeType === 1 && this.getType(el) !== null) {
+      if(el === element) {
+        return res;
+      }
+      if(this.model.page.isInPage(el)) {
+        res = el;
+      }
+    }
+  }
+  return null;
+};
+
+
+/**
+ * get the previous element in the DOM, which is a Silex element
+ * @param {Element} element
+ * @return {Element|null}
+ */
+silex.model.Element.prototype.getNextElement = function(element) {
+  let len = element.parentNode.childNodes.length;
+  let res = null;
+  for (let idx=len - 1; idx >= 0; idx--) {
+    let el = element.parentNode.childNodes[idx];
+    if (el.nodeType === 1 && this.getType(el) !== null) {
+      if(el === element) {
+        return res;
+      }
+      if(this.model.page.isInPage(el)) {
+        res = el;
+      }
+    }
+  }
+  return null;
 };
 
 

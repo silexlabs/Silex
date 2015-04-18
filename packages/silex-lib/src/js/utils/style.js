@@ -85,6 +85,23 @@ silex.utils.Style.removeInternalClasses = function(element, opt_allClasses, opt_
 
 
 /**
+ * convert style object to object
+ * with only the keys which are set
+ * @param {CSSStyleDeclaration} styleObj
+ * @return {Object}
+ */
+silex.utils.Style.styleToObject = function(styleObj) {
+  var res = {};
+  for (let idx=0 ; idx < styleObj.length; idx++) {
+    var styleName = styleObj[idx];
+    res[styleName] = styleObj[styleName];
+  }
+  console.log('styleToObject', styleObj, res);
+  return res;
+};
+
+
+/**
  * convert style object to string
  * @param {string|Object|CSSStyleDeclaration} style
  * @param {?string=} opt_tab
