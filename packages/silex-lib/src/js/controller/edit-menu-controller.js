@@ -124,8 +124,6 @@ silex.controller.EditMenuController.prototype.copySelection = function() {
         console.error('could not copy this element (', element, ') because it is the stage element');
       }
     }, this);
-    // notify the user
-    silex.utils.Notification.notifySuccess(this.clipboard.length + ' elements stored in the clipboard.');
   }
 };
 
