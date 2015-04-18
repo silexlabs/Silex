@@ -326,7 +326,6 @@ silex.controller.EditMenuController.prototype.move = function(direction) {
   // move up
   elements.forEach((element) => {
     let reverse = this.model.element.getStyle(element, 'position', true) !== 'absolute';
-    console.log('reverse?', reverse, element, this.model.element.getStyle(element, 'position', true));
     if(reverse) {
       switch(direction) {
         case silex.model.DomDirection.UP:

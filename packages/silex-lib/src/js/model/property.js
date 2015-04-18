@@ -256,7 +256,6 @@ silex.model.Property.prototype.setStyle = function (element, style) {
  * @return {Object|null}
  */
 silex.model.Property.prototype.getStyleObject = function (element, opt_computed) {
-  console.log('getStyleObject', element, opt_computed);
   var cssStyleDeclaration = null;
   if(opt_computed !== true) {
     let cssRule = this.getRule(element);
