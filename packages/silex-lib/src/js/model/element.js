@@ -742,11 +742,12 @@ silex.model.Element.prototype.getClassName = function(element) {
   var pages = this.model.page.getPages();
   return goog.array.map(element.className.split(' '), function(name) {
     if (goog.array.contains(silex.utils.Style.SILEX_CLASS_NAMES, name) ||
-        goog.array.contains(pages, name)) {
+        goog.array.contains(pages, name) ||
+        this.model.property.getSilexId(element) === name) {
       return;
     }
     return name;
-  }).join(' ').trim();
+  }, this).join(' ').trim();
 };
 
 
@@ -762,10 +763,11 @@ silex.model.Element.prototype.setClassName = function(element, opt_className) {
   var pages = this.model.page.getPages();
   var classNamesToKeep = goog.array.map(element.className.split(' '), function(name) {
     if (goog.array.contains(silex.utils.Style.SILEX_CLASS_NAMES, name) ||
-        goog.array.contains(pages, name)) {
+        goog.array.contains(pages, name) ||
+        this.model.property.getSilexId(element) === name) {
       return name;
     }
-  });
+  }, this);
 
   // reset element class name
   element.className = classNamesToKeep.join(' ');
