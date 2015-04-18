@@ -50,6 +50,12 @@ silex.view.Workspace = function(element, model, controller) {
 
 
 /**
+ * handle of the preview popup window
+ */
+silex.view.Workspace.prototype.previewWindow = null;
+
+
+/**
  * store the window viewport
  * @type {?goog.dom.ViewportSizeMonitor}
  */
@@ -151,4 +157,24 @@ silex.view.Workspace.prototype.center = function(editor, viewportSize) {
     var posY = (viewportSize.height - editorSize.height) / 2;
     goog.style.setPosition(editor.element, posX, posY);
   }
+};
+
+
+/**
+ * open a popup or refresh the allready opened one
+ * @param {?string=} opt_location or null to refresh only
+ */
+silex.view.Workspace.prototype.setPreviewWindowLocation = function (opt_location) {
+  if(this.previewWindow && !this.previewWindow.closed) {
+    if(opt_location) {
+      this.previewWindow.location = opt_location;
+    }
+    this.previewWindow.document.location.reload(true);
+  }
+  else {
+    if(opt_location) {
+      this.previewWindow = window.open(opt_location);
+    }
+  }
+  this.previewWindow.focus();
 };

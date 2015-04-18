@@ -101,22 +101,37 @@ silex.controller.ViewMenuController.prototype.doPreview = function(inResponsize)
   this.tracker.trackAction('controller-events', 'request', 'view.file', 0);
   var doOpenPreview = function() {
     if (inResponsize) {
-      window.open('http://www.responsize.org/?url='
-        + silex.utils.Url.getBaseUrl()
-        + this.model.file.getUrl());
+      this.view.workspace.setPreviewWindowLocation('http://www.responsize.org/?url=' +
+        silex.utils.Url.getBaseUrl() +
+        this.model.file.getUrl());
     }
     else {
-      window.open(this.model.file.getUrl() + '#!' + this.model.page.getCurrentPage());
+      this.view.workspace.setPreviewWindowLocation(this.model.file.getUrl() + '#!' + this.model.page.getCurrentPage());
     }
     this.tracker.trackAction('controller-events', 'success', 'view.file', 1);
   }.bind(this);
   // save before preview
-  this.save(
-    this.model.file.getUrl(),
-    goog.bind(function(url) {
-      doOpenPreview();
-    }, this),
-    goog.bind(function(err) {
-      this.tracker.trackAction('controller-events', 'error', 'view.file', -1);
+  var doSaveTheFile = function() {
+    this.save(
+      this.model.file.getUrl(),
+      goog.bind(function(url) {
+        //doOpenPreview();
+      }, this),
+      goog.bind(function(err) {
+        this.tracker.trackAction('controller-events', 'error', 'view.file', -1);
+      }, this));
+  }.bind(this);
+  if(this.model.file.getUrl()) {
+    // open the preview window
+    // it is important to do it now, on the user click so that it is not blocked
+    // it will be refreshed after save
+    doOpenPreview();
+    // also save
+    doSaveTheFile();
+  }
+  else {
+    silex.utils.Notification.alert('You need to save the website before I can show a preview', goog.bind(function () {
+      doSaveTheFile();
     }, this));
+  }
 };

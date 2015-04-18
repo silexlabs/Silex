@@ -432,6 +432,7 @@ silex.controller.ControllerBase.prototype.doSave = function(url, opt_cbk, opt_er
       goog.bind(function() {
         this.tracker.trackAction('controller-events', 'success', 'file.save', 1);
         this.fileOperationSuccess('File is saved.', false);
+        this.view.workspace.setPreviewWindowLocation();
         if (opt_cbk) opt_cbk();
       }, this),
       goog.bind(function(error) {
