@@ -38,39 +38,14 @@ goog.inherits(silex.controller.EditMenuController, silex.controller.ControllerBa
 
 
 /**
- * storage for the clipboard
- * @type Array.<silex.types.ClipboardItem>
- */
-silex.controller.EditMenuController.prototype.clipboard = [];
-
-
-/**
- * storage for the clipboard
- * @type {Element|null}
- */
-//silex.controller.EditMenuController.prototype.clipboardParent = null;
-
-
-/**
  * undo the last action
  */
 silex.controller.EditMenuController.prototype.undo = function() {
   if (this.undoHistory.length > 0) {
-    var html = this.model.file.getHtml();
-    var page = this.model.page.getCurrentPage();
-    this.redoHistory.push({
-      html: html,
-      page: page
-    });
+    var state = this.getState();
+    this.redoHistory.push(state);
     var prevState = this.undoHistory.pop();
-    if (html !== prevState.html) {
-      this.model.file.setHtml(prevState.html, goog.bind(function() {
-        this.model.page.setCurrentPage(prevState.page);
-      }, this), false);
-    }
-    else {
-      this.model.page.setCurrentPage(prevState.page);
-    }
+    this.restoreState(prevState);
   }
 };
 
@@ -80,21 +55,10 @@ silex.controller.EditMenuController.prototype.undo = function() {
  */
 silex.controller.EditMenuController.prototype.redo = function() {
   if (this.redoHistory.length > 0) {
-    var html = this.model.file.getHtml();
-    var page = this.model.page.getCurrentPage();
-    this.undoHistory.push({
-      html: html,
-      page: page
-    });
+    var state = this.getState();
+    this.undoHistory.push(state);
     var prevState = this.redoHistory.pop();
-    if (html !== prevState.html) {
-      this.model.file.setHtml(prevState.html, goog.bind(function() {
-        this.model.page.setCurrentPage(prevState.page);
-      }, this), false);
-    }
-    else {
-      this.model.page.setCurrentPage(prevState.page);
-    }
+    this.restoreState(prevState);
   }
 };
 
@@ -116,7 +80,6 @@ silex.controller.EditMenuController.prototype.copySelection = function() {
         this.model.body.setEditable(element, false);
         // copy the element and its children
         this.clipboard.push(this.recursiveCopy(element));
-        //this.clipboardParent = /** @type {Element} */ (element.parentNode);
         // re-enable editable
         this.model.body.setEditable(element, true);
       }
