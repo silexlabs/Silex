@@ -170,11 +170,11 @@ silex.view.Workspace.prototype.setPreviewWindowLocation = function (opt_location
       this.previewWindow.location = opt_location;
     }
     this.previewWindow.document.location.reload(true);
+    this.previewWindow.focus();
   }
   else {
     if(opt_location) {
       this.previewWindow = window.open(opt_location);
     }
   }
-  this.previewWindow.focus();
 };
