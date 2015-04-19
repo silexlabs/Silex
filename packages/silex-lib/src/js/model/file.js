@@ -60,7 +60,7 @@ silex.model.File = function(model, view) {
    * @private
    */
   this.contentWindow = goog.dom.getFrameContentWindow(this.iFrameElement);
-}
+};
 
 
 /**
@@ -220,11 +220,8 @@ silex.model.File.prototype.onContentLoaded = function(opt_cbk) {
     // update text editor with the website custom styles and script
     this.model.head.setHeadStyle(this.model.head.getHeadStyle());
     this.model.head.setHeadScript(this.model.head.getHeadScript());
-    // update the settings dialog
-    this.model.head.setPublicationPath(this.model.head.getPublicationPath());
-    this.model.head.setFaviconPath(this.model.head.getFaviconPath());
-    this.model.head.setTitle(this.model.head.getTitle());
-    this.model.head.setDescription(this.model.head.getDescription());
+    // update the settings
+    this.model.head.updateFromDom();
     // restore event listeners
     this.view.stage.initEvents(this.contentWindow);
     // refresh the view

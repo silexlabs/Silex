@@ -159,8 +159,8 @@ silex.model.Element.prototype.prepareHtmlForEdit = function(rawHtml) {
   // prevent scripts from executing
   rawHtml = rawHtml.replace(/type=\"text\/javascript\"/gi, 'type="text/notjavascript"');
   // convert to absolute urls
-  if (this.model.file.url) {
-    rawHtml = silex.utils.Url.relative2Absolute(rawHtml, this.model.file.url);
+  if (this.model.file.getUrl()) {
+    rawHtml = silex.utils.Url.relative2Absolute(rawHtml, silex.utils.Url.getBaseUrl() + this.model.file.getUrl());
   }
   return rawHtml;
 };
@@ -178,8 +178,8 @@ silex.model.Element.prototype.unprepareHtmlForEdit = function(rawHtml) {
   // remove cache control used to refresh images after editing by pixlr
   rawHtml = silex.utils.Dom.removeCacheControl(rawHtml);
   // convert to relative urls
-  if (this.model.file.url) {
-    rawHtml = silex.utils.Url.absolute2Relative(rawHtml, this.model.file.url);
+  if (this.model.file.getUrl()) {
+    rawHtml = silex.utils.Url.absolute2Relative(rawHtml, silex.utils.Url.getBaseUrl() + this.model.file.getUrl());
   }
   return rawHtml;
 };
