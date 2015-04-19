@@ -49,7 +49,7 @@ silex.controller.SettingsDialogController.prototype.browse =
         // undo checkpoint
         this.undoCheckPoint();
         // start with /api/...
-        if (url.indexOf('/') != 0) {
+        if (url.indexOf('/') !== 0) {
           url = '/' + url;
         }
         // notify the caller

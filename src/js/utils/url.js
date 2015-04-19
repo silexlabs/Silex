@@ -73,8 +73,14 @@ silex.utils.Url.isAbsoluteUrl = function(url) {
  * @param   {string} baseUrl      the base URL for relative/absolute conversion
  */
 silex.utils.Url.absolute2Relative = function(htmlString, baseUrl) {
+  baseUrl = silex.utils.Url.getAbsolutePath(baseUrl, silex.utils.Url.getBaseUrl());
   // image source
   htmlString = htmlString.replace(/src="?([^" ]*)"/gi, function(match, group1, group2) {
+    var res = match.replace(group1, silex.utils.Url.getRelativePath(group1, baseUrl));
+    return res;
+  });
+  // href (links and favicon)
+  htmlString = htmlString.replace(/href="?([^" ]*)"/gi, function(match, group1, group2) {
     var res = match.replace(group1, silex.utils.Url.getRelativePath(group1, baseUrl));
     return res;
   });
@@ -127,7 +133,7 @@ silex.utils.Url.removeUrlKeyword = function (url) {
 
 /**
  * add the url() css keyword
- * simple quotes are added so that the URL may contain parenthesis 
+ * simple quotes are added so that the URL may contain parenthesis
  * and it does not disturb the inline style double quotes
  * @example http://silex.me returns url("http://silex.me")
  * @param {string} url
@@ -146,6 +152,11 @@ silex.utils.Url.addUrlKeyword = function (url) {
 silex.utils.Url.relative2Absolute = function(htmlString, baseUrl) {
   // image source
   htmlString = htmlString.replace(/src="?([^" ]*)"/gi, function(match, group1, group2) {
+    var res = match.replace(group1, silex.utils.Url.getAbsolutePath(group1, baseUrl));
+    return res;
+  });
+  // href (links and favicon)
+  htmlString = htmlString.replace(/href="?([^" ]*)"/gi, function(match, group1, group2) {
     var res = match.replace(group1, silex.utils.Url.getAbsolutePath(group1, baseUrl));
     return res;
   });

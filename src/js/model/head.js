@@ -84,6 +84,20 @@ silex.model.Head.HEAD_TAG_STOP = '<!-- End of Silex HEAD tag do not remove -->';
 
 
 /**
+ * Update the settings from the DOM after a website was loaded
+ */
+silex.model.Head.prototype.updateFromDom = function() {
+  this.view.settingsDialog.setPublicationPath(this.model.head.getPublicationPath());
+  this.view.settingsDialog.setFaviconPath(this.model.head.getFaviconPath());
+  this.view.settingsDialog.setThumbnailSocialPath(this.model.head.getThumbnailSocialPath());
+  this.view.settingsDialog.setDescription(this.model.head.getDescription());
+  this.view.settingsDialog.setDescriptionSocial(this.model.head.getDescriptionSocial());
+  this.view.settingsDialog.setTitleSocial(this.model.head.getTitleSocial());
+  this.view.settingsDialog.setTitle(this.model.head.getTitle());
+};
+
+
+/**
  * set/get HEAD tag
  * the head tag edited by the user is a portion of the real head tag
  * it is delimited by specific comments
@@ -327,19 +341,28 @@ silex.model.Head.prototype.setMeta = function(name, opt_value) {
 
 /**
  * get/set the publication path
+ * publication path is always absolute url
  * @param {?string=} opt_path
  */
 silex.model.Head.prototype.setPublicationPath = function(opt_path) {
+  if(opt_path) {
+    // absolute url only in the dom
+    var baseUrl = silex.utils.Url.getBaseUrl();
+    opt_path = silex.utils.Url.getAbsolutePath(/** @type {string} */ (opt_path), baseUrl);
+  }
   this.setMeta('publicationPath', opt_path);
   this.view.settingsDialog.setPublicationPath(opt_path);
-}
+};
 
 
 /**
  * get/set the publication path
+ * publication path is always absolute url
  */
 silex.model.Head.prototype.getPublicationPath = function() {
-  return this.getMeta('publicationPath');
+  // here, we could make it a relative path in order to display it, but publication path is deliberately an absolute path
+  var url = this.getMeta('publicationPath');
+  return url;
 };
 
 
@@ -350,7 +373,7 @@ silex.model.Head.prototype.getPublicationPath = function() {
 silex.model.Head.prototype.setDescription = function(opt_description) {
   this.setMeta('description', opt_description);
   this.view.settingsDialog.setDescription(opt_description);
-}
+};
 
 
 /**
@@ -388,9 +411,6 @@ silex.model.Head.prototype.setTitle = function(name) {
   // update website title
   titleNode.innerHTML = name;
   // update view
-  var pages = this.model.page.getPages();
-  var page = this.model.page.getCurrentPage();
-  this.view.menu.redraw(this.model.body.getSelection(), pages, page);
   this.view.settingsDialog.setTitle(name);
 };
 
@@ -400,12 +420,15 @@ silex.model.Head.prototype.setTitle = function(name) {
  */
 silex.model.Head.prototype.getFaviconPath = function() {
   var faviconTag = this.getHeadElement().querySelector('link[rel="shortcut icon"]');
+  var url = null;
   if (faviconTag) {
-    return faviconTag.getAttribute('href');
+    url = faviconTag.getAttribute('href');
   }
-  else {
-    return null;
+  if(url && this.model.file.getUrl()) {
+    var baseUrl = silex.utils.Url.getBaseUrl() + this.model.file.getUrl();
+    url = silex.utils.Url.getRelativePath(url, baseUrl);
   }
+  return url;
 };
 
 
@@ -414,6 +437,11 @@ silex.model.Head.prototype.getFaviconPath = function() {
  * @param {?string=} opt_path
  */
 silex.model.Head.prototype.setFaviconPath = function(opt_path) {
+  if(opt_path) {
+    // absolute url only in the dom
+    var baseUrl = silex.utils.Url.getBaseUrl();
+    opt_path = silex.utils.Url.getAbsolutePath(/** @type {string} */ (opt_path), baseUrl);
+  }
   var faviconTag = this.getHeadElement().querySelector('link[rel="shortcut icon"]');
   if (!faviconTag) {
     if (opt_path) {
@@ -423,7 +451,7 @@ silex.model.Head.prototype.setFaviconPath = function(opt_path) {
       goog.dom.appendChild(this.getHeadElement(), faviconTag);
     }
   }
-  else if(opt_path) {
+  else if(!opt_path) {
     goog.dom.removeNode(faviconTag);
   }
   if(opt_path) {
@@ -444,7 +472,7 @@ silex.model.Head.prototype.setTitleSocial = function(opt_data) {
   this.setMeta('twitter:title', opt_data);
   this.setMeta('og:title', opt_data);
   this.view.settingsDialog.setTitleSocial(opt_data);
-}
+};
 
 
 /**
@@ -464,7 +492,7 @@ silex.model.Head.prototype.setDescriptionSocial = function(opt_data) {
   this.setMeta('twitter:description', opt_data);
   this.setMeta('og:description', opt_data);
   this.view.settingsDialog.setDescriptionSocial(opt_data);
-}
+};
 
 
 /**
@@ -477,21 +505,31 @@ silex.model.Head.prototype.getDescriptionSocial = function() {
 
 /**
  * get/set the thumbnail image for social networks
- * @param {?string=} opt_data
+ * @param {?string=} opt_path
  */
-silex.model.Head.prototype.setThumbnailSocialPath = function(opt_data) {
-  this.setMeta('twitter:card', opt_data ? 'summary' : '');
-  this.setMeta('twitter:image', opt_data);
-  this.setMeta('og:image', opt_data);
-  this.view.settingsDialog.setThumbnailSocialPath(opt_data);
-}
+silex.model.Head.prototype.setThumbnailSocialPath = function(opt_path) {
+  if(opt_path) {
+    // absolute url only in the dom
+    var baseUrl = silex.utils.Url.getBaseUrl();
+    opt_path = silex.utils.Url.getAbsolutePath(/** @type {string} */ (opt_path), baseUrl);
+  }
+  this.setMeta('twitter:card', opt_path ? 'summary' : '');
+  this.setMeta('twitter:image', opt_path);
+  this.setMeta('og:image', opt_path);
+  this.view.settingsDialog.setThumbnailSocialPath(opt_path);
+};
 
 
 /**
  * get/set the thumbnail image for social networks
  */
 silex.model.Head.prototype.getThumbnailSocialPath = function() {
-  return this.getMeta('og:image') || this.getMeta('twitter:image');
+  var url = this.getMeta('og:image') || this.getMeta('twitter:image');
+  if(url && this.model.file.getUrl()) {
+    var baseUrl = silex.utils.Url.getBaseUrl() + this.model.file.getUrl();
+    url = silex.utils.Url.getRelativePath(url, baseUrl);
+  }
+  return url;
 };
 
 
@@ -503,7 +541,7 @@ silex.model.Head.prototype.setTwitterSocial = function(opt_data) {
   this.setMeta('twitter:card', opt_data ? 'summary' : '');
   this.setMeta('twitter:site', opt_data);
   this.view.settingsDialog.setTwitterSocial(opt_data);
-}
+};
 
 
 /**
