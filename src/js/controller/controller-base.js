@@ -57,29 +57,22 @@ silex.controller.ControllerBase.prototype.tracker = null;
 
 
 /**
- * {Array.<string>} array of the states of the website
+ * @type {Array.<silex.types.UndoItem>} array of the states of the website
  */
 silex.controller.ControllerBase.prototype.undoHistory = [];
 
 
 /**
- * {Array.<string>} array of the states of the website
+ * @type {Array.<silex.types.UndoItem>} array of the states of the website
  */
 silex.controller.ControllerBase.prototype.redoHistory = [];
 
 
 /**
- * the {Array.<Element>|null} array of elements in the clipboard
+ * @type Array.<silex.types.ClipboardItem>
  * this is a static attribute
  */
 silex.controller.ControllerBase.prototype.clipboard = null;
-
-
-/**
- * the {Element} element wich is the origin container of the element in the clipboard
- * this is a static attribute
- */
-silex.controller.ControllerBase.prototype.clipboardParent = null;
 
 
 /**
@@ -87,17 +80,41 @@ silex.controller.ControllerBase.prototype.clipboardParent = null;
  */
 silex.controller.ControllerBase.prototype.undoCheckPoint = function() {
   this.redoHistory = [];
-  var html = this.model.file.getHtml();
-  var page = this.model.page.getCurrentPage();
+  var state = this.getState();
   // if the previous state was different
   if (this.undoHistory.length === 0 ||
-      this.undoHistory[this.undoHistory.length - 1].html !== html ||
-      this.undoHistory[this.undoHistory.length - 1].page !== page) {
-    this.undoHistory.push({
-      html: html,
-      page: page
-    });
+      this.undoHistory[this.undoHistory.length - 1].html !== state.html ||
+      this.undoHistory[this.undoHistory.length - 1].page !== state.page) {
+    this.undoHistory.push(state);
   }
+};
+
+
+
+/**
+ * build a state object for undo/redo
+ * @return {silex.types.UndoItem}
+ */
+silex.controller.ControllerBase.prototype.getState = function() {
+  return {
+      html: this.model.file.getHtml(),
+      page: this.model.page.getCurrentPage(),
+      scrollX: this.view.stage.getScrollX(),
+      scrollY: this.view.stage.getScrollY()
+  };
+};
+
+
+/**
+ * build a state object for undo/redo
+ * @param {silex.types.UndoItem} state
+ */
+silex.controller.ControllerBase.prototype.restoreState = function(state) {
+  this.model.file.setHtml(state.html, goog.bind(function() {
+    this.model.page.setCurrentPage(state.page);
+    this.view.stage.setScrollX(state.scrollX);
+    this.view.stage.setScrollY(state.scrollY);
+  }, this), false);
 };
 
 

@@ -44,6 +44,13 @@ silex.types.ClipboardItem;
 
 
 /**
+ * type used to store the state of the website, for undo/redo
+ * @typedef {{page:string, html:string, scrollX:number, scrollY:number}}
+ */
+silex.types.UndoItem;
+
+
+/**
  * @struct
  * @constructor
  */
