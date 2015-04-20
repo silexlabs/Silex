@@ -419,7 +419,10 @@ silex.view.Stage.prototype.handleMouseUp = function(target, x, y, shiftKey) {
     var dropZone = this.getDropZone(x, y) || {'element': this.bodyElement, 'zIndex': 0};
     // move all selected elements to the new container
     goog.array.forEach(this.selectedElements, function(element) {
-      this.controller.stageController.newContainer(dropZone.element, element);
+      if(!goog.dom.getAncestorByClass(element.parentNode, silex.model.Element.SELECTED_CLASS_NAME) &&
+         !goog.dom.classlist.contains(element, silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME)) {
+        this.controller.stageController.newContainer(dropZone.element, element);
+      }
     }, this);
     // change z order
     //this.bringSelectionForward();
