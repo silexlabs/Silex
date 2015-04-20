@@ -233,14 +233,10 @@ silex.view.pane.BgPane.prototype.redraw = function(selectedElements, pageNames, 
   var color = this.getCommonProperty(selectedElements, goog.bind(function(element) {
     return this.model.element.getStyle(element, 'backgroundColor');
   }, this));
-  if (color === 'transparent' || color === '') {
+  if (color === null || color === 'transparent' || color === '') {
     this.transparentBgCheckbox.setChecked(true);
     this.bgColorPicker.setEnabled(false);
     this.setColorPaletteVisibility(this.hsvPalette, false);
-  }
-  else if (goog.isNull(color)) {
-    // display a "no color" in the button
-    this.bgColorPicker.setValue('');
   }
   else {
     // handle all colors, including the named colors
