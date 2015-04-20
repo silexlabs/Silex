@@ -1,0 +1,46 @@
+.silex-context-menu {
+  background-color: @silexmediumgrey;
+  left: @pageToolWidth;
+  right: @propertiesToolWidth;
+  position: absolute;
+  box-shadow: inset 0px 0px 6px 0px #000;
+  top: @menuHeight;
+  height: @contextMenuHeight;
+  z-index: 10;
+  overflow: hidden;
+  & > div {
+    cursor: pointer;
+    width: 30px;
+    height: 22px;
+    display: inline-block;
+    margin: 4px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    transition: opacity .1s linear;
+  }
+  .off {
+    opacity: .5;
+  }
+  .off:hover {
+    opacity: 1;
+  }
+  .sep {
+    width: 0px;
+    border: 1px solid black
+  }
+  .save {background-image: url(../assets/context-menu/glyphicons-447-floppy-save.png);}
+  .undo {background-image: url(../assets/context-menu/glyphicons-436-undo.png);}
+  .redo {background-image: url(../assets/context-menu/glyphicons-435-redo.png);}
+  .text {background-image: url(../assets/context-menu/glyphicons-108-text-resize.png);}
+  .image {background-image: url(../assets/context-menu/glyphicons-139-picture.png);}
+  .container {background-image: url(../assets/context-menu/glyphicons-95-vector-path-square.png);}
+  .html {background-image: url(../assets/context-menu/glyphicons-118-embed.png);}
+  .delete {background-image: url(../assets/context-menu/glyphicons-208-remove-2.png);}
+  .copy {background-image: url(../assets/context-menu/glyphicons-512-copy.png);}
+  .paste {background-image: url(../assets/context-menu/glyphicons-513-paste.png);}
+  .top {background-image: url(../assets/context-menu/glyphicons-214-up-arrow.png);}
+  .up {background-image: url(../assets/context-menu/glyphicons-370-collapse-top.png);}
+  .down {background-image: url(../assets/context-menu/glyphicons-368-expand.png);}
+  .bottom {background-image: url(../assets/context-menu/glyphicons-213-down-arrow.png);}
+}
