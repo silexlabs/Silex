@@ -142,21 +142,22 @@ silex.utils.Style.stringToStyle = function(styleStr) {
  * Takes the opacity of the backgrounds into account
  * Recursively compute parents background colors
  * @param {Element} element the element which bg color we want
+ * @param {Window} contentWindow of the iframe containing the website
  * @return {?goog.color.Rgb} the element bg color
  */
-silex.utils.Style.computeBgColor = function(element) {
+silex.utils.Style.computeBgColor = function(element, contentWindow) {
   var parentColorArray;
   // retrieve the parents blended colors
-  if (element.parentNode) {
-    parentColorArray = silex.utils.Style.computeBgColor(/** @type {Element} */ (element.parentNode));
+  if (element.parentNode && element.parentNode.nodeType === 1) {
+    parentColorArray = silex.utils.Style.computeBgColor(/** @type {Element} */ (element.parentNode), contentWindow);
   }
   else {
     parentColorArray = null;
   }
   // rgba array
-  var elementColorArray;
-  if (element && element.style && element.style.backgroundColor && element.style.backgroundColor !== '') {
-    var elementColorStr = element.style.backgroundColor;
+  var elementColorArray = null;
+  var elementColorStr = contentWindow.getComputedStyle(element)['background-color'];
+  if (elementColorStr) {
     // convert bg color from rgba to array
     if (elementColorStr.indexOf('rgba') >= 0) {
       // rgba case

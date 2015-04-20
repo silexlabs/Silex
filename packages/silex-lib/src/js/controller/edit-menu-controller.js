@@ -218,7 +218,7 @@ silex.controller.EditMenuController.prototype.editElement = function(opt_element
   var element = opt_element || this.model.body.getSelection()[0];
   switch (this.model.element.getType(element)) {
     case silex.model.Element.TYPE_TEXT:
-      var bgColor = silex.utils.Style.computeBgColor(element);
+      var bgColor = silex.utils.Style.computeBgColor(element, this.model.file.getContentWindow());
       if (!bgColor) {
         // case where all parents are transparent
         bgColor = [255, 255, 255, 255];
