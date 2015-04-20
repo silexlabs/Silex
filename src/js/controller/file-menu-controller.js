@@ -78,7 +78,7 @@ silex.controller.FileMenuController.prototype.openFile = function(opt_cbk, opt_e
             // check that it is a Silex website (if we have at least 1 page and not the silex-published class)
             if (goog.dom.getElementByClass('page-element', this.model.body.getBodyElement()) && !goog.dom.classlist.contains(this.model.body.getBodyElement(), 'silex-published')) {
               // display and redraw
-              this.fileOperationSuccess(this.model.head.getTitle() + ' opened.', true);
+              this.fileOperationSuccess((this.model.head.getTitle() || 'Untitled website') + ' opened.', true);
               // QOS, track success
               this.tracker.trackAction('controller-events', 'success', 'file.open', 1);
               if (opt_cbk) opt_cbk();
