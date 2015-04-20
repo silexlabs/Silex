@@ -58,34 +58,36 @@ silex.controller.ControllerBase.prototype.tracker = null;
 
 /**
  * @type {Array.<silex.types.UndoItem>} array of the states of the website
+ * @static because it is shared by all controllers
  */
-silex.controller.ControllerBase.prototype.undoHistory = [];
+silex.controller.ControllerBase.undoHistory = [];
 
 
 /**
  * @type {Array.<silex.types.UndoItem>} array of the states of the website
+ * @static because it is shared by all controllers
  */
-silex.controller.ControllerBase.prototype.redoHistory = [];
+silex.controller.ControllerBase.redoHistory = [];
 
 
 /**
  * @type Array.<silex.types.ClipboardItem>
- * this is a static attribute
+ * @static because it is shared by all controllers
  */
-silex.controller.ControllerBase.prototype.clipboard = null;
+silex.controller.ControllerBase.clipboard = null;
 
 
 /**
  * store the model state in order to undo/redo
  */
 silex.controller.ControllerBase.prototype.undoCheckPoint = function() {
-  this.redoHistory = [];
+  silex.controller.ControllerBase.redoHistory = [];
   var state = this.getState();
   // if the previous state was different
-  if (this.undoHistory.length === 0 ||
-      this.undoHistory[this.undoHistory.length - 1].html !== state.html ||
-      this.undoHistory[this.undoHistory.length - 1].page !== state.page) {
-    this.undoHistory.push(state);
+  if (silex.controller.ControllerBase.undoHistory.length === 0 ||
+      silex.controller.ControllerBase.undoHistory[silex.controller.ControllerBase.undoHistory.length - 1].html !== state.html ||
+      silex.controller.ControllerBase.undoHistory[silex.controller.ControllerBase.undoHistory.length - 1].page !== state.page) {
+    silex.controller.ControllerBase.undoHistory.push(state);
   }
 };
 
@@ -122,8 +124,8 @@ silex.controller.ControllerBase.prototype.restoreState = function(state) {
  * reset the undo/redo history
  */
 silex.controller.ControllerBase.prototype.undoReset = function() {
-  this.undoHistory = [];
-  this.redoHistory = [];
+  silex.controller.ControllerBase.undoHistory = [];
+  silex.controller.ControllerBase.redoHistory = [];
 };
 
 
@@ -483,6 +485,6 @@ silex.controller.ControllerBase.prototype.fileOperationSuccess = function(opt_me
     // notify user
     silex.utils.Notification.notifySuccess(opt_message);
   }
+  // undo redo reset
+  this.undoReset();
 };
-
-
