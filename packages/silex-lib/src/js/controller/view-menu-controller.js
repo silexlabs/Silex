@@ -103,7 +103,8 @@ silex.controller.ViewMenuController.prototype.doPreview = function(inResponsize)
     if (inResponsize) {
       this.view.workspace.setPreviewWindowLocation('http://www.responsize.org/?url=' +
         silex.utils.Url.getBaseUrl() +
-        this.model.file.getUrl());
+        this.model.file.getUrl() +
+        '#!' + this.model.page.getCurrentPage());
     }
     else {
       this.view.workspace.setPreviewWindowLocation(this.model.file.getUrl() + '#!' + this.model.page.getCurrentPage());
