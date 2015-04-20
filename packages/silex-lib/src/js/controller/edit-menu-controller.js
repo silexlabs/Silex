@@ -41,10 +41,10 @@ goog.inherits(silex.controller.EditMenuController, silex.controller.ControllerBa
  * undo the last action
  */
 silex.controller.EditMenuController.prototype.undo = function() {
-  if (this.undoHistory.length > 0) {
+  if (silex.controller.ControllerBase.undoHistory.length > 0) {
     var state = this.getState();
-    this.redoHistory.push(state);
-    var prevState = this.undoHistory.pop();
+    silex.controller.ControllerBase.redoHistory.push(state);
+    var prevState = silex.controller.ControllerBase.undoHistory.pop();
     this.restoreState(prevState);
   }
 };
@@ -54,10 +54,10 @@ silex.controller.EditMenuController.prototype.undo = function() {
  * redo the last action
  */
 silex.controller.EditMenuController.prototype.redo = function() {
-  if (this.redoHistory.length > 0) {
+  if (silex.controller.ControllerBase.redoHistory.length > 0) {
     var state = this.getState();
-    this.undoHistory.push(state);
-    var prevState = this.redoHistory.pop();
+    silex.controller.ControllerBase.undoHistory.push(state);
+    var prevState = silex.controller.ControllerBase.redoHistory.pop();
     this.restoreState(prevState);
   }
 };
@@ -72,14 +72,14 @@ silex.controller.EditMenuController.prototype.copySelection = function() {
   var elements = this.model.body.getSelection();
   if (elements.length > 0) {
     // reset clipboard
-    this.clipboard = [];
+    silex.controller.ControllerBase.clipboard = [];
     // add each selected element to the clipboard
     goog.array.forEach(elements, function(element) {
       if (this.model.body.getBodyElement() != element) {
         // disable editable
         this.model.body.setEditable(element, false);
         // copy the element and its children
-        this.clipboard.push(this.recursiveCopy(element));
+        silex.controller.ControllerBase.clipboard.push(this.recursiveCopy(element));
         // re-enable editable
         this.model.body.setEditable(element, true);
       }
@@ -126,7 +126,7 @@ silex.controller.EditMenuController.prototype.recursiveCopy = function(element) 
 silex.controller.EditMenuController.prototype.pasteSelection = function() {
   this.tracker.trackAction('controller-events', 'info', 'paste', 0);
   // default is selected element
-  if (this.clipboard) {
+  if (silex.controller.ControllerBase.clipboard) {
     // undo checkpoint
     this.undoCheckPoint();
     // find the container: original container, main background container or the stage
@@ -137,12 +137,12 @@ silex.controller.EditMenuController.prototype.pasteSelection = function() {
     }
     // take the scroll into account (drop at (100, 100) from top left corner of the window, not the stage)
     var doc = this.model.file.getContentDocument();
-    var elements = this.clipboard.map(function(item) {return item.element;});
+    var elements = silex.controller.ControllerBase.clipboard.map(function(item) {return item.element;});
     var offsetX = 100 + doc.body.scrollLeft;
     var offsetY = 100 + doc.body.scrollTop;
     var selection = [];
     // duplicate and add to the container
-    goog.array.forEach(this.clipboard, function(clipboardItem) {
+    goog.array.forEach(silex.controller.ControllerBase.clipboard, function(clipboardItem) {
       var element = this.recursivePaste(clipboardItem);
       // add to the selection
       selection.push(element);

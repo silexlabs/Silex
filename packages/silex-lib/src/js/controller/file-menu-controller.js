@@ -47,8 +47,6 @@ silex.controller.FileMenuController.prototype.newFile = function(opt_cbk, opt_er
   this.tracker.trackAction('controller-events', 'request', 'file.new', 0);
 
   this.model.file.newFile(goog.bind(function(rawHtml) {
-    // undo redo reset
-    this.undoReset();
     this.model.file.setHtml(rawHtml, goog.bind(function() {
       this.fileOperationSuccess(null, true);
       // QOS, track success
@@ -75,8 +73,6 @@ silex.controller.FileMenuController.prototype.openFile = function(opt_cbk, opt_e
   // let the user choose the file
   this.view.fileExplorer.openDialog(
       goog.bind(function(url) {
-        // undo redo reset
-        this.undoReset();
         this.model.file.open(url, goog.bind(function(rawHtml) {
           this.model.file.setHtml(rawHtml, goog.bind(function() {
             // check that it is a Silex website (if we have at least 1 page and not the silex-published class)
