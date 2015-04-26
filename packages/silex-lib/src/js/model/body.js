@@ -258,30 +258,31 @@ silex.model.Body.prototype.setEditable = function(rootElement, isEditable, opt_i
  * remove the classes set by Silex and the editable.js plugin
  */
 silex.model.Body.prototype.removeEditableClasses = function(rootElement) {
-  var elements;
-  // remove the classes set by Silex
-  elements = goog.dom.getElementsByClass(silex.model.Element.SELECTED_CLASS_NAME, rootElement);
-  goog.array.forEach(elements, function(element) {
-    goog.dom.classlist.remove(element, silex.model.Element.SELECTED_CLASS_NAME);
-  }, this);
+  if (rootElement !== null) {
+    var elements;
+    elements = goog.dom.getElementsByClass(silex.model.Element.SELECTED_CLASS_NAME, rootElement);
+    goog.array.forEach(elements, function(element) {
+      goog.dom.classlist.remove(element, silex.model.Element.SELECTED_CLASS_NAME);
+    }, this);
 
-  elements = goog.dom.getElementsByClass(silex.model.Body.DROP_CANDIDATE_CLASS_NAME, rootElement);
-  goog.array.forEach(elements, function(element) {
-    goog.dom.classlist.remove(element, silex.model.Body.DROP_CANDIDATE_CLASS_NAME);
-  }, this);
+    elements = goog.dom.getElementsByClass(silex.model.Body.DROP_CANDIDATE_CLASS_NAME, rootElement);
+    goog.array.forEach(elements, function(element) {
+      goog.dom.classlist.remove(element, silex.model.Body.DROP_CANDIDATE_CLASS_NAME);
+    }, this);
 
-  elements = rootElement.querySelectorAll('[aria-disabled]');
-  goog.array.forEach(elements, function(element) {
-    element.removeAttribute('aria-disabled');
-  }, this);
+    elements = rootElement.querySelectorAll('[aria-disabled]');
+    goog.array.forEach(elements, function(element) {
+      element.removeAttribute('aria-disabled');
+    }, this);
 
-  // remove html elements added by the editable.js plugin
-  elements = goog.dom.getElementsByClass('ui-resizable-handle', rootElement);
-  goog.array.forEach(elements, function(element) {
-    goog.dom.removeNode(element);
-  }, this);
-  elements = goog.dom.getElementsByClass('temp-editable-cover', rootElement);
-  goog.array.forEach(elements, function(element) {
-    goog.dom.removeNode(element);
-  }, this);
+    // remove html elements added by the editable.js plugin
+    elements = goog.dom.getElementsByClass('ui-resizable-handle', rootElement);
+    goog.array.forEach(elements, function(element) {
+      goog.dom.removeNode(element);
+    }, this);
+    elements = goog.dom.getElementsByClass('temp-editable-cover', rootElement);
+    goog.array.forEach(elements, function(element) {
+      goog.dom.removeNode(element);
+    }, this);
+  }
 };

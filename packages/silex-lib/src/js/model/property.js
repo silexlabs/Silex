@@ -259,7 +259,9 @@ silex.model.Property.prototype.getStyleObject = function (element, opt_computed)
   var cssStyleDeclaration = null;
   if(opt_computed !== true) {
     let cssRule = this.getRule(element);
-    cssStyleDeclaration = cssRule.style;
+    if(cssRule) {
+      cssStyleDeclaration = cssRule.style;
+    }
   }
   else {
     cssStyleDeclaration = this.model.file.getContentWindow().getComputedStyle(element);
