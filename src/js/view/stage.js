@@ -173,16 +173,18 @@ silex.view.Stage.prototype.onMouseMoveOverUi = function(event) {
  * @param {Event} event
  */
 silex.view.Stage.prototype.onMouseUpOverUi = function(event) {
-  // if out of stage, release from drag of the plugin
-  // simulate the mouse up on the iframe body
-  var pos =  goog.style.getRelativePosition(event, this.element);
-  var newEvObj = document.createEvent('MouseEvent');
-  newEvObj.initEvent('mouseup', true, true);
-  newEvObj.clientX = pos.x;
-  newEvObj.clientY = pos.y;
-  this.iAmClicking = true;
-  this.bodyElement.dispatchEvent(newEvObj);
-  this.iAmClicking = false;
+  if (this.bodyElement !== null) {
+    // if out of stage, release from drag of the plugin
+    // simulate the mouse up on the iframe body
+    var pos =  goog.style.getRelativePosition(event, this.element);
+    var newEvObj = document.createEvent('MouseEvent');
+    newEvObj.initEvent('mouseup', true, true);
+    newEvObj.clientX = pos.x;
+    newEvObj.clientY = pos.y;
+    this.iAmClicking = true;
+    this.bodyElement.dispatchEvent(newEvObj);
+    this.iAmClicking = false;
+  }
 };
 
 
@@ -205,7 +207,7 @@ silex.view.Stage.prototype.onPreventBackSwipe = function(event) {
  * @param {?Event=} event
  */
 silex.view.Stage.prototype.bodyElementSizeToContent = function(event) {
-  if (this.bodyElement) {
+  if (this.bodyElement !== null) {
     var width = 0;
     var height = 0;
     var containers = goog.dom.getElementsByClass(
