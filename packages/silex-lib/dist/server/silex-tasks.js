@@ -86,6 +86,13 @@ exports.createFolders = function(req, res, next, folders, errCbk, cbk){
  * write css and html data to a unifile service
  */
 exports.publish = function(cbk, req, res, next, path, html, css, js, files){
+    if(path.indexOf('http') === 0) {
+        // remove the protocol
+        path = path.substring(path.indexOf('//') + 2);
+        // remove the domain name
+        path = path.substring(path.indexOf('/'));
+    }
+    path = '/api/1.0/dropbox/exec/put/sites-silex/www.silex.me';
     // check inputs
     if (cbk === undefined || req === undefined || res === undefined || next === undefined || path === undefined || html === undefined || css === undefined || js === undefined || files === undefined){
         console.error('All attributes needed: cbk, req, res, next, path, html, css, js, files', !!cbk, !!req, !!res, !!next, !!path, !!html, !!css, !!js, !!files)
