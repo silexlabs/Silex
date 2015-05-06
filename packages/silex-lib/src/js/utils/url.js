@@ -238,6 +238,10 @@ silex.utils.Url.getRelativePath = function(url, base) {
  * @return {string} absolute url of the relative path
  */
 silex.utils.Url.getAbsolutePath = function(rel, base) {
+  if(rel.indexOf('#') === 0) {
+    // do not convert to absolute the anchors
+    return rel;
+  }
   return goog.Uri.resolve(base, rel).toString();
 };
 
