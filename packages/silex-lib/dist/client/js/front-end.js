@@ -42,11 +42,10 @@ $(function() {
   });
   /**
    * Silex links
-   * Only when the classname .silex-runtime is defined on the body (not while editing)
-   * Do not do it immediately,
-   * because silex will remove .silex-runtime as soon as the page is loaded
+   * Only when `window.parent.silex.App` is undefined, i.e. not while editing
+   * Links are not clickable while editing
    */
-  setTimeout(function () {
+  if(!window.parent.silex.App) {
     $('.silex-runtime [data-silex-href]').click(function () {
       var href = this.getAttribute('data-silex-href');
       if (href.indexOf('#!') === 0){
@@ -56,5 +55,5 @@ $(function() {
         window.open(href, '_blank');
       }
     });
-  }, 100);
+  }
 });
