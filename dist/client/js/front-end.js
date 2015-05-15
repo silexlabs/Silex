@@ -41,16 +41,20 @@ $(function() {
     pageClass: 'paged-element'
   });
   /**
-   * silex links
-   * only when the classname .silex-runtime is defined on the body (not while editing)
+   * Silex links
+   * Only when the classname .silex-runtime is defined on the body (not while editing)
+   * Do not do it immediately,
+   * because silex will remove .silex-runtime as soon as the page is loaded
    */
-  $('.silex-runtime [data-silex-href]').click(function () {
-    var href = this.getAttribute('data-silex-href');
-    if (href.indexOf('#!') === 0){
-      window.location.href = href;
-    }
-    else{
-      window.open(href, '_blank');
-    }
-  });
-})
+  setTimeout(function () {
+    $('.silex-runtime [data-silex-href]').click(function () {
+      var href = this.getAttribute('data-silex-href');
+      if (href.indexOf('#!') === 0){
+        window.location.href = href;
+      }
+      else{
+        window.open(href, '_blank');
+      }
+    });
+  }, 100);
+});

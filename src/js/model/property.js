@@ -298,6 +298,12 @@ silex.model.Property.prototype.getBoundingBox = function(elements) {
         'height': ''
       };
     }
+    else {
+      if(!elementStyle.top) elementStyle.top = '';
+      if(!elementStyle.left) elementStyle.left = '';
+      if(!elementStyle.width) elementStyle.width = '';
+      if(!elementStyle.height) elementStyle.height = '';
+    }
     // compute the styles numerical values, which may end up to be NaN or a number
     var elementMinWidth = elementStyle.minWidth ? parseFloat(elementStyle.minWidth.substr(0, elementStyle.minWidth.indexOf('px'))) : null;
     var elementWidth = Math.max(elementMinWidth || 0, parseFloat(elementStyle.width.substr(0, elementStyle.width.indexOf('px'))));

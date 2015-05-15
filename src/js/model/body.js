@@ -218,13 +218,12 @@ silex.model.Body.prototype.setEditable = function(rootElement, isEditable, opt_i
     }
   }, this);
 
-  // prevent the user to follow links
+  // prevent the user from following links
   var links = rootElement.querySelectorAll('a');
   goog.array.forEach(elements, function(element) {
-    element.addEventListener('click', function(e) {
+    goog.events.listen(element, goog.events.EventType.CLICK, function(e) {
       e.preventDefault();
-      return false;
-    });
+    }, false, this);
   }, this);
 
   // add a div on top of the HTML content elements in order to
