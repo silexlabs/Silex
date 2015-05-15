@@ -11,7 +11,6 @@
   overflow-y: auto;
   bottom: 0;
   background-color: @silexlightgrey;
-  max-width: 50%;
   .combobox {
     line-height: 16px;
   }
@@ -72,8 +71,13 @@
     margin: 15px 0;
     border: 1px solid @silexdarkgrey;
     float: left;
-    width: 100%;
+    width: 90%;
     max-width: 200px;
+  }
+
+  /* only the inline editor stays 100% width */
+  fieldset.style-property {
+    max-width: none;
   }
 
   .help-icon {
