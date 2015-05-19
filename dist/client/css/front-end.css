@@ -17,6 +17,14 @@ body{
 .paged-element{
   display: none;
 }
+/* default style for silex elements */
+.editable-style{
+  position: absolute;
+}
+.silex-element-content{
+  overflow: hidden;
+  border-radius: inherit;
+}
 /* background */
 .background{
   position: relative !important;
@@ -25,11 +33,6 @@ body{
   margin-left: auto;
   margin-right: auto;
   z-index: 1;
-}
-/* default style for silex elements */
-.silex-element-content{
-  overflow: hidden;
-  border-radius: inherit;
 }
 /* links default formatting */
 .editable-style[data-silex-href]{
@@ -51,4 +54,3 @@ a:focus{ outline: none;}
   width: 100%;
   height: 100%;
 }
-
