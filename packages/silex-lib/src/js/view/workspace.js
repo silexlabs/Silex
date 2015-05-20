@@ -167,14 +167,28 @@ silex.view.Workspace.prototype.center = function(editor, viewportSize) {
 silex.view.Workspace.prototype.setPreviewWindowLocation = function (opt_location) {
   if(this.previewWindow && !this.previewWindow.closed) {
     if(opt_location) {
-      this.previewWindow.location = opt_location;
+      this.previewWindow.close();
+      this.previewWindow = window.open(opt_location);
+      this.previewWindow.focus();
     }
-    this.previewWindow.document.location.reload(true);
+    else {
+      try {
+        if(this.previewWindow.location.href != 'about:blank') {
+          // only when loaded, reload
+          this.previewWindow.location.reload(true);
+        }
+      }
+      catch(e) {
+        // case of responsize
+        this.previewWindow.frames[1].location.reload(true)
+      }
+    }
     this.previewWindow.focus();
   }
   else {
     if(opt_location) {
       this.previewWindow = window.open(opt_location);
+      this.previewWindow.focus();
     }
   }
 };
