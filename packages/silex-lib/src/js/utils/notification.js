@@ -67,10 +67,25 @@ silex.utils.Notification.isActive = false;
 
 
 /**
+ * flag to indicate wether the window/tab has focus
+ * @type {boolean}
+ */
+silex.utils.Notification.hasFocus = true;
+
+
+/**
+ * flag to indicate wether we are listening for focus event already
+ * @type {boolean}
+ */
+silex.utils.Notification.isListeningForFocus = false;
+
+
+/**
  * use native alerts vs alertify
  */
 silex.utils.Notification.useNative = function() {
-  return ("Notification" in window && Notification.permission === "granted");
+  return silex.utils.Notification.hasFocus == false
+    && ("Notification" in window && Notification.permission === "granted");
 };
 
 
@@ -98,6 +113,11 @@ silex.utils.Notification.activateNative = function() {
  * @param {string} iconUrl
  */
 silex.utils.Notification.nativeNotification = function(message, iconUrl) {
+  if(!silex.utils.Notification.isListeningForFocus) {
+    silex.utils.Notification.isListeningForFocus = true;
+    window.onfocus = (e) => silex.utils.Notification.hasFocus = true;
+    window.onblur = (e) => silex.utils.Notification.hasFocus = false;
+  }
   if (silex.utils.Notification.useNative()) {
     var notification = new Notification('Silex speaking...', {
       'icon': iconUrl,
@@ -218,5 +238,3 @@ silex.utils.Notification.notifyInfo = function(message) {
   silex.utils.Notification.nativeNotification(message, silex.utils.Notification.INFO_ICON);
   alertify.log(message);
 };
-
-
