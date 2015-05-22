@@ -69,7 +69,14 @@ silex.model.Property.ELEMENT_ID_ATTR_NAME = 'data-silex-id'
  * this is stored for performance reasons
  * @type {CSSStyleSheet|null}
  */
-silex.model.Property.prototype.silexStyleSheet;
+silex.model.Property.prototype.silexStyleSheet = null;
+
+
+/**
+ * a number appended to the current timestamp in order to make unique Silex IDs
+ * @type {number}
+ */
+silex.model.Property.prototype.nextId = 0;
 
 
 /**
@@ -114,9 +121,8 @@ silex.model.Property.prototype.getElementBySilexId = function (uniqueId, doc) {
  */
 silex.model.Property.prototype.generateSilexId = function (doc) {
   var uniqueId;
-  var num = 0;
   do {
-    uniqueId = Date.now().toString() + (num++ ? '-' + num : '');
+    uniqueId = Date.now().toString() + '-' + (this.nextId++);
   } while (this.getElementBySilexId(uniqueId, doc));
   return uniqueId;
 };
