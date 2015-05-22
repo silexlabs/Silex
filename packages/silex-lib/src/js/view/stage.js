@@ -755,51 +755,53 @@ silex.view.Stage.prototype.followElementSize =
       var pos = goog.style.getPosition(follower);
       var offsetPosX = pos.x;
       var offsetPosY = pos.y;
+      var offsetSizeX = offsetX;
+      var offsetSizeY = offsetY;
       // depending on the handle which is dragged,
       // only width and/or height should be set
       switch(resizeDirection) {
       case 's':
-        offsetX = 0;
+        offsetSizeX = 0;
         break;
       case 'n':
-        offsetPosY += offsetY;
-        offsetY = -offsetY;
-        offsetX = 0;
+        offsetPosY += offsetSizeY;
+        offsetSizeY = -offsetSizeY;
+        offsetSizeX = 0;
         break;
       case 'w':
-        offsetPosX += offsetX;
-        offsetX = -offsetX;
-        offsetY = 0;
+        offsetPosX += offsetSizeX;
+        offsetSizeX = -offsetSizeX;
+        offsetSizeY = 0;
         break;
       case 'e':
-        offsetY = 0;
+        offsetSizeY = 0;
         break;
       case 'se':
         break;
       case 'sw':
-        offsetPosX += offsetX;
-        offsetX = -offsetX;
+        offsetPosX += offsetSizeX;
+        offsetSizeX = -offsetSizeX;
         break;
       case 'ne':
-        offsetPosY += offsetY;
-        offsetY = -offsetY;
+        offsetPosY += offsetSizeY;
+        offsetSizeY = -offsetSizeY;
         break;
       case 'nw':
-        offsetPosX += offsetX;
-        offsetPosY += offsetY;
-        offsetY = -offsetY;
-        offsetX = -offsetX;
+        offsetPosX += offsetSizeX;
+        offsetPosY += offsetSizeY;
+        offsetSizeY = -offsetSizeY;
+        offsetSizeX = -offsetSizeX;
         break;
       }
       // handle .background element which is forced centered
       if(goog.dom.classlist.contains(follower, 'background')) {
-        offsetX *= 2;
+        offsetSizeX *= 2;
       }
       // compute new size
       var size = goog.style.getSize(follower);
       var borderBox = goog.style.getBorderBox(follower);
-      var newSizeW = size.width + offsetX - borderBox.left - borderBox.right;
-      var newSizeH = size.height + offsetY - borderBox.top - borderBox.bottom;
+      var newSizeW = size.width + offsetSizeX - borderBox.left - borderBox.right;
+      var newSizeH = size.height + offsetSizeY - borderBox.top - borderBox.bottom;
       // handle min size
       if (newSizeW < silex.model.Element.MIN_WIDTH) {
         if (resizeDirection === 'w' || resizeDirection === 'sw' || resizeDirection === 'nw') {
