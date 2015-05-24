@@ -268,10 +268,18 @@ silex.view.dialog.TextEditor.prototype.setElementClassNames =
   // because body represents
   // the '.silex-element-content' element of Silex text elements
   // so it has these classes: 'silex-element-content normal'
-  iframeDoc.getElementsByTagName('html')[0].className = elementClassNames;
+  var htmlElement = iframeDoc.getElementsByTagName('html')[0];
+  htmlElement.className = elementClassNames;
   // body represents the '.silex-element-content' element of Silex text elements
   // so it has these classes: 'silex-element-content normal'
   iframeDoc.body.className = 'silex-element-content normal';
+  // keep the size of the text field
+  htmlElement.style.left = '10px';
+  htmlElement.style.right = '20px';
+  htmlElement.style.height = '100%';
+  htmlElement.style.overflowX = 'hidden';
+  htmlElement.style.overflowY = 'scroll';
+  iframeDoc.body.style.height = 'auto';
 };
 
 
