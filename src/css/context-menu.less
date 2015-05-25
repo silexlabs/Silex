@@ -7,17 +7,18 @@
   top: @menuHeight;
   height: @contextMenuHeight;
   z-index: 10;
+  padding-left: 10px;
   overflow: hidden;
   & > div {
     cursor: pointer;
-    width: 30px;
-    height: 22px;
+    width: 25px;
+    height: 20px;
     display: inline-block;
-    margin: 4px;
     background-repeat: no-repeat;
-    background-position: center;
+    background-position: center center;
     background-size: contain;
-    transition: opacity .1s linear;
+    transition: opacity 0.1s linear 0s;
+    margin: 4px 3px;
   }
   .off {
     opacity: .5;
