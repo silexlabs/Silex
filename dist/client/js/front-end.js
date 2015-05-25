@@ -42,13 +42,13 @@ $(function() {
   });
   /**
    * Silex links
-   * Only when `window.parent.silex.App` is undefined, i.e. not while editing
+   * Only when `window.parent.silex` is undefined, i.e. not while editing
    * Links are not clickable while editing
    */
-  if(!window.parent.silex.App) {
+  if(!window.parent || !window.parent.silex) {
     $('.silex-runtime [data-silex-href]').click(function () {
       var href = this.getAttribute('data-silex-href');
-      if (href.indexOf('#!') === 0){
+      if (href.indexOf('#') === 0){
         window.location.href = href;
       }
       else{

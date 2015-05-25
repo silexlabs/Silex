@@ -41,16 +41,19 @@ $(function() {
     pageClass: 'paged-element'
   });
   /**
-   * silex links
-   * only when the classname .silex-runtime is defined on the body (not while editing)
+   * Silex links
+   * Only when `window.parent.silex` is undefined, i.e. not while editing
+   * Links are not clickable while editing
    */
-  $('.silex-runtime [data-silex-href]').click(function () {
-    var href = this.getAttribute('data-silex-href');
-    if (href.indexOf('#!') === 0){
-      window.location.href = href;
-    }
-    else{
-      window.open(href, '_blank');
-    }
-  });
-})
+  if(!window.parent || !window.parent.silex) {
+    $('.silex-runtime [data-silex-href]').click(function () {
+      var href = this.getAttribute('data-silex-href');
+      if (href.indexOf('#') === 0){
+        window.location.href = href;
+      }
+      else{
+        window.open(href, '_blank');
+      }
+    });
+  }
+});
