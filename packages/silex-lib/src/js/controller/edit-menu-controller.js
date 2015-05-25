@@ -138,8 +138,8 @@ silex.controller.EditMenuController.prototype.pasteSelection = function() {
     // take the scroll into account (drop at (100, 100) from top left corner of the window, not the stage)
     var doc = this.model.file.getContentDocument();
     var elements = silex.controller.ControllerBase.clipboard.map(function(item) {return item.element;});
-    var offsetX = 100 + doc.body.scrollLeft;
-    var offsetY = 100 + doc.body.scrollTop;
+    var offsetX = 100 + this.view.stage.getScrollX();
+    var offsetY = 100 + this.view.stage.getScrollY();
     var selection = [];
     // duplicate and add to the container
     goog.array.forEach(silex.controller.ControllerBase.clipboard, function(clipboardItem) {
