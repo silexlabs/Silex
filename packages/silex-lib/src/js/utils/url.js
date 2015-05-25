@@ -81,8 +81,14 @@ silex.utils.Url.absolute2Relative = function(htmlString, baseUrl) {
   });
   // href (links and favicon)
   htmlString = htmlString.replace(/href="?([^" ]*)"/gi, function(match, group1, group2) {
-    var res = match.replace(group1, silex.utils.Url.getRelativePath(group1, baseUrl));
-    return res;
+    if(group1.indexOf('#') === 0){
+      // case of an anchor or page name
+      return match;
+    }
+    else {
+      var res = match.replace(group1, silex.utils.Url.getRelativePath(group1, baseUrl));
+      return res;
+    }
   });
   // css url()
   htmlString = htmlString.replace(/url\(()(.+?)\1\)/gi, function(match, group1, group2) {
