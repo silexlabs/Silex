@@ -88,7 +88,7 @@ silex.utils.BackwardCompat.process = function(doc, model, cbk) {
   });
 
   // convert to the latest version
-  silex.utils.BackwardCompat.to2_2_0(version, doc, model, function() {
+  // silex.utils.BackwardCompat.to2_2_0(version, doc, model, function() {
   silex.utils.BackwardCompat.to2_2_2(version, doc, model, function() {
   silex.utils.BackwardCompat.to2_2_3(version, doc, model, function() {
   silex.utils.BackwardCompat.to2_2_4(version, doc, model, function() {
@@ -97,7 +97,7 @@ silex.utils.BackwardCompat.process = function(doc, model, cbk) {
   });
   });
   });
-  });
+  // });
   // store the latest version
   metaNode.setAttribute('content', 'Silex v' + silex.utils.BackwardCompat.LATEST_VERSION.join('.'));
 };
@@ -262,7 +262,9 @@ silex.utils.BackwardCompat.to2_2_2 = function(version, doc, model, cbk) {
  * @param {Document} doc
  * @param  {silex.types.Model} model
  * @param {function()} cbk
- */
+ * Not supported anymore since it was executed each time (no version number)
+ * and it adds bugs - e.g. transforms # into #!
+ * /
 silex.utils.BackwardCompat.to2_2_0 = function(version, doc, model, cbk) {
   // handle older style system (2.0)
   if (doc.body.getAttribute('data-style-normal')) {
@@ -342,5 +344,4 @@ silex.utils.BackwardCompat.to2_2_0 = function(version, doc, model, cbk) {
   }
   cbk();
 };
-
-
+*/
