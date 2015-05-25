@@ -61,8 +61,8 @@ silex.view.ContextMenu.prototype.buildUi = function() {
     this.element.querySelector('.paste').addEventListener('click', () => {this.controller.editMenuController.pasteSelection()});
     this.element.querySelector('.top').addEventListener('click', () => {this.controller.editMenuController.moveToTop()});
     this.element.querySelector('.up').addEventListener('click', () => {this.controller.editMenuController.moveUp()});
-    this.element.querySelector('.down').addEventListener('click', () => {this.controller.editMenuController.moveToBottom()});
-    this.element.querySelector('.bottom').addEventListener('click', () => {this.controller.editMenuController.moveDown()});
+    this.element.querySelector('.down').addEventListener('click', () => {this.controller.editMenuController.moveDown()});
+    this.element.querySelector('.bottom').addEventListener('click', () => {this.controller.editMenuController.moveToBottom()});
 };
 
 
