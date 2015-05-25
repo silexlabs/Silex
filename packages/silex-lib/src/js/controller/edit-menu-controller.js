@@ -138,8 +138,6 @@ silex.controller.EditMenuController.prototype.pasteSelection = function() {
     // take the scroll into account (drop at (100, 100) from top left corner of the window, not the stage)
     var doc = this.model.file.getContentDocument();
     var elements = silex.controller.ControllerBase.clipboard.map(function(item) {return item.element;});
-    var offsetX = 100 + this.view.stage.getScrollX();
-    var offsetY = 100 + this.view.stage.getScrollY();
     var selection = [];
     // duplicate and add to the container
     goog.array.forEach(silex.controller.ControllerBase.clipboard, function(clipboardItem) {
@@ -148,16 +146,18 @@ silex.controller.EditMenuController.prototype.pasteSelection = function() {
       selection.push(element);
       // reset editable option
       this.doAddElement(element);
-      // apply the offset to the element, according to the scroll position
-      var left = offsetX + 'px';
-      var top = offsetY + 'px';
-      offsetX += 10;
-      offsetY += 10;
-      this.model.element.setStyle(element, 'left', left);
-      this.model.element.setStyle(element, 'top', top);
       // add to stage and set the "silex-just-added" css class
       this.model.element.addElement(/** @type {Element} */ (container), element);
     }, this);
+    // apply the offset to the elements, according to the scroll position
+    var offsetX = 100 + this.view.stage.getScrollX();
+    var offsetY = 100 + this.view.stage.getScrollY();
+    var bb = this.model.property.getBoundingBox(selection);
+    this.view.stage.followElementPosition(
+      selection,
+      offsetX - bb.left,
+      offsetY - bb.top
+    );
     // reset selection
     this.model.body.setSelection(selection);
   }
