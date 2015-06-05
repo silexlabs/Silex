@@ -18,9 +18,9 @@ Here is how to help and become a [Silex contributor](https://github.com/silexlab
 
 **Answer questions**. Hunt down people [questions being asked about Silex on github](https://github.com/silexlabs/Silex/issues?labels=question&state=open) and provide a clear answer to their question.
 
-**Create tutorials**. Create text or video guides and upload them to your favorite video sharing website. We have a [blog section for Silex tutorials](http://www.silexlabs.org/category/silex/tutorials-silex/), where we can add your creations if you like!
+**Create tutorials**. Create text or video guides and upload them to your favorite video sharing website.
 
-**Create marketing tools**. Create some marketing material such as memes from the 90s, put it online and send it through to us and we will spam it about on social media and other places.
+**Create marketing tools**. Create some marketing material such as memes from the 90s, put it online and send it through to us and we will spam social media and other places.
 
 ##Host an instance of Silex
 
@@ -41,5 +41,3 @@ It gives you a chance to be helpful to the community and to gain credibility as 
 **Give the community a [free widget](https://github.com/silexlabs/Silex/issues?labels=widget&state=open)**. Show off your programming skills, build a widget and release it as open source. Let us know, we will help you distribute it and advertize it.
 
 **Contribute code**. We are open to contributions to the Silex code. If you find a bug or want to contribute a functionnality, [fork Silex source code](https://github.com/silexlabs/Silex/), make changes and then make [a pull request](https://help.github.com/articles/using-pull-requests). Please respect the comments and style of the rest of the code, and do not forget to add tests for each added functionality, see [the existing functional tests](https://github.com/silexlabs/Silex/tree/master/test/functional).
-
-
