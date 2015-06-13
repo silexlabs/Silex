@@ -1,8 +1,5 @@
 ## Silex next steps, TOC
 
-push master
-push context-menu
-
 a mettre sous forme d'issues et de propositions?
 
   - No inline CSS => debug and release

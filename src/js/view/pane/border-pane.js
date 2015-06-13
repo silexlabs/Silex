@@ -225,7 +225,16 @@ silex.view.pane.BorderPane.prototype.redraw =
   var borderWidth = this.getCommonProperty(
       selectedElements,
       goog.bind(function(element) {
-        return this.model.element.getStyle(element, 'borderWidth');
+        var w;
+	w = this.model.element.getStyle(element, 'borderLeftWidth');
+	if(w && w != "0px") return w;
+	w = this.model.element.getStyle(element, 'borderRightWidth');
+	if(w && w != "0px") return w;
+	w = this.model.element.getStyle(element, 'borderTopWidth');
+	if(w && w != "0px") return w;
+	w = this.model.element.getStyle(element, 'borderBottomWidth'); 
+	if(w && w != "0px") return w;
+	return null;
   }, this));
   if (borderWidth) {
     this.redrawBorderWidth(borderWidth);
@@ -244,7 +253,16 @@ silex.view.pane.BorderPane.prototype.redraw =
   var borderStyle = this.getCommonProperty(
       selectedElements,
       goog.bind(function(element) {
-        return this.model.element.getStyle(element, 'borderStyle');
+        var w;
+	w = this.model.element.getStyle(element, 'borderLeftStyle');
+	if(w && w != "0px") return w;
+	w = this.model.element.getStyle(element, 'borderRightStyle');
+	if(w && w != "0px") return w;
+	w = this.model.element.getStyle(element, 'borderTopStyle');
+	if(w && w != "0px") return w;
+	w = this.model.element.getStyle(element, 'borderBottomStyle'); 
+	if(w && w != "0px") return w;
+	return null;
   }, this));
   if (borderStyle) {
     this.borderStyleComboBox.setValue(borderStyle);
@@ -253,12 +271,13 @@ silex.view.pane.BorderPane.prototype.redraw =
     this.borderStyleComboBox.setSelectedIndex(0);
   }
   // border radius
-  var borderRadius = this.getCommonProperty(
-      selectedElements,
-      goog.bind(function(element) {
-        return this.model.element.getStyle(element, 'borderRadius');
-  }, this));
-  if (borderRadius) {
+  var borderRadius = [
+	this.getCommonProperty(selectedElements, (element) => this.model.element.getStyle(element, 'borderTopLeftRadius')),
+  	this.getCommonProperty(selectedElements, (element) => this.model.element.getStyle(element, 'borderTopRightRadius')),
+  	this.getCommonProperty(selectedElements, (element) => this.model.element.getStyle(element, 'borderBottomLeftRadius')),
+  	this.getCommonProperty(selectedElements, (element) => this.model.element.getStyle(element, 'borderBottomRightRadius'))
+  ];
+  if (borderRadius[0] || borderRadius[1] || borderRadius[2] || borderRadius[3]) {
     this.redrawBorderRadius(borderRadius);
   }
   else {
@@ -272,8 +291,7 @@ silex.view.pane.BorderPane.prototype.redraw =
  * redraw border radius UI
  */
 silex.view.pane.BorderPane.prototype.redrawBorderRadius =
-    function(borderRadius) {
-  var values = borderRadius.split(' ');
+    function(values) {
   // The four values for each radii are given in the order
   // top-left, top-right, bottom-right, bottom-left.
   // If top-right is omitted it is the same as top-left.
