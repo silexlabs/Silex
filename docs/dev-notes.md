@@ -9,6 +9,7 @@ a mettre sous forme d'issues et de propositions?
   - fix more bugs
     + bug des URLs https://github.com/silexlabs/Silex/issues/264#issuecomment-108923532
       => save/publish = parse all nodes and create html string
+  - ? file / new => chose a template from templates.silex.me
   - no !important in front-end.css?
   - better "tiling" in the property editor?
         -moz-columns: 2 auto; sur .main-container
@@ -163,9 +164,17 @@ context-menu branch
 
 ## known bugs
 
+* border color broken
+* clear image broken
+* og:description & twitter:image are absolute with unifile URL
+  => let the user put an absolute path, no CE
+* problem in paths (../../../....///)
+  => only in ff? online?
+
 * script type="text/javascript" style="display:none"
   => au save, remove all + add latest scripts (call BackwardCompat::getLatestTags)
-* border radius and border width are broken
+
+* rename silex-style => silex-user-styles
 
 * ? option of links ?: Change page should scroll to top (animated)  like when pages are reloaded
     #!page-xxx
