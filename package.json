@@ -19,7 +19,7 @@
     "grunt-npm": "0.0.2",
     "lodash": "2.4.1",
     "qs": "2.2.3",
-    "unifile": "0.0.49"
+    "unifile": "0.0.51"
   },
   "devDependencies": {
     "assert": "1.1.2",
