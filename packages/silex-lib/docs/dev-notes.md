@@ -164,7 +164,6 @@ context-menu branch
 
 ## known bugs
 
-* border color broken
 * clear image broken
 * og:description & twitter:image are absolute with unifile URL
   => let the user put an absolute path, no CE

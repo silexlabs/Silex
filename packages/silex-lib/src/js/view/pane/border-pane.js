@@ -221,29 +221,67 @@ silex.view.pane.BorderPane.prototype.redraw =
       pageNames,
       currentPageName);
 
-  // border width
+  // border width, this builds a string like "0px 1px 2px 3px"
+  // FIXME: should not build a string which is then split in redrawBorderWidth
   var borderWidth = this.getCommonProperty(
-      selectedElements,
-      goog.bind(function(element) {
-        var w;
-	w = this.model.element.getStyle(element, 'borderLeftWidth');
-	if(w && w != "0px") return w;
-	w = this.model.element.getStyle(element, 'borderRightWidth');
-	if(w && w != "0px") return w;
-	w = this.model.element.getStyle(element, 'borderTopWidth');
-	if(w && w != "0px") return w;
-	w = this.model.element.getStyle(element, 'borderBottomWidth'); 
-	if(w && w != "0px") return w;
-	return null;
+    selectedElements,
+    goog.bind(function(element) {
+      var w;
+      var hasValue = false;
+      var arr = [];
+      w = this.model.element.getStyle(element, 'borderTopWidth');
+      if(!w) {
+        w = '0px';
+      }
+      else {
+        hasValue = true;
+      }
+      arr.push(w);
+      w = this.model.element.getStyle(element, 'borderRightWidth');
+      if(!w) {
+        w = '0px';
+      }
+      else {
+        hasValue = true;
+      }
+      arr.push(w);
+      w = this.model.element.getStyle(element, 'borderBottomWidth');
+      if(!w) {
+        w = '0px';
+      }
+      else {
+        hasValue = true;
+      }
+      arr.push(w);
+      w = this.model.element.getStyle(element, 'borderLeftWidth');
+      if(!w) {
+        w = '0px';
+      }
+      else {
+        hasValue = true;
+      }
+      arr.push(w);
+      if(hasValue) return arr.join(' ');
+      return null;
   }, this));
   if (borderWidth) {
     this.redrawBorderWidth(borderWidth);
     // border color
     var borderColor = this.getCommonProperty(
-        selectedElements,
-        goog.bind(function(element) {
-          return this.model.element.getStyle(element, 'borderColor');
-    }, this));
+      selectedElements,
+      goog.bind(function(element) {
+        var w;
+        w = this.model.element.getStyle(element, 'borderLeftColor');
+        if(w && w != "") return w;
+        w = this.model.element.getStyle(element, 'borderRightColor');
+        if(w && w != "") return w;
+        w = this.model.element.getStyle(element, 'borderTopColor');
+        if(w && w != "") return w;
+        w = this.model.element.getStyle(element, 'borderBottomColor');
+        if(w && w != "") return w;
+        return null;
+      }, this)
+    );
     this.redrawBorderColor(borderColor);
   }
   else {
@@ -251,19 +289,20 @@ silex.view.pane.BorderPane.prototype.redraw =
   }
   // border style
   var borderStyle = this.getCommonProperty(
-      selectedElements,
-      goog.bind(function(element) {
-        var w;
-	w = this.model.element.getStyle(element, 'borderLeftStyle');
-	if(w && w != "0px") return w;
-	w = this.model.element.getStyle(element, 'borderRightStyle');
-	if(w && w != "0px") return w;
-	w = this.model.element.getStyle(element, 'borderTopStyle');
-	if(w && w != "0px") return w;
-	w = this.model.element.getStyle(element, 'borderBottomStyle'); 
-	if(w && w != "0px") return w;
-	return null;
-  }, this));
+    selectedElements,
+    goog.bind(function(element) {
+      var w;
+      w = this.model.element.getStyle(element, 'borderLeftStyle');
+      if(w && w != "0px") return w;
+      w = this.model.element.getStyle(element, 'borderRightStyle');
+      if(w && w != "0px") return w;
+      w = this.model.element.getStyle(element, 'borderTopStyle');
+      if(w && w != "0px") return w;
+      w = this.model.element.getStyle(element, 'borderBottomStyle');
+      if(w && w != "0px") return w;
+      return null;
+    }, this)
+  );
   if (borderStyle) {
     this.borderStyleComboBox.setValue(borderStyle);
   }
@@ -272,10 +311,10 @@ silex.view.pane.BorderPane.prototype.redraw =
   }
   // border radius
   var borderRadius = [
-	this.getCommonProperty(selectedElements, (element) => this.model.element.getStyle(element, 'borderTopLeftRadius')),
-  	this.getCommonProperty(selectedElements, (element) => this.model.element.getStyle(element, 'borderTopRightRadius')),
-  	this.getCommonProperty(selectedElements, (element) => this.model.element.getStyle(element, 'borderBottomLeftRadius')),
-  	this.getCommonProperty(selectedElements, (element) => this.model.element.getStyle(element, 'borderBottomRightRadius'))
+  this.getCommonProperty(selectedElements, (element) => this.model.element.getStyle(element, 'borderTopLeftRadius')),
+    this.getCommonProperty(selectedElements, (element) => this.model.element.getStyle(element, 'borderTopRightRadius')),
+    this.getCommonProperty(selectedElements, (element) => this.model.element.getStyle(element, 'borderBottomLeftRadius')),
+    this.getCommonProperty(selectedElements, (element) => this.model.element.getStyle(element, 'borderBottomRightRadius'))
   ];
   if (borderRadius[0] || borderRadius[1] || borderRadius[2] || borderRadius[3]) {
     this.redrawBorderRadius(borderRadius);
