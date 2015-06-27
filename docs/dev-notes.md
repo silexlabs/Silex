@@ -164,8 +164,6 @@ context-menu branch
 
 ## known bugs
 
-* og:description & twitter:image are absolute with unifile URL
-  => let the user put an absolute path, no CE
 * problem in paths (../../../....///)
   => only in ff? online?
 
