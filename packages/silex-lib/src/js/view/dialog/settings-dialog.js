@@ -62,7 +62,6 @@ silex.view.dialog.SettingsDialog = function(element, model, controller) {
 
   // image path browse button
   this.bindBrowseButton('.general-pane .browse-favicon-path', () => this.controller.settingsDialogController.browseFaviconPath())
-  this.bindBrowseButton('.social-pane .browse-image-path', () => this.controller.settingsDialogController.browseThumbnailSocialPath())
   this.bindBrowseButton('.publish-pane .browse-publication-path', () => this.controller.settingsDialogController.browsePublishPath())
 };
 
