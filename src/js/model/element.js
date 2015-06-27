@@ -247,6 +247,9 @@ silex.model.Element.prototype.getStyle = function(element, styleName, opt_comput
  * @param  {?string=}  opt_styleValue     the value for this styleName
  */
 silex.model.Element.prototype.setStyle = function(element, styleName, opt_styleValue) {
+  // convert to css case
+  styleName = goog.string.toSelectorCase(styleName);
+  // retrieve style
   var styleObject = this.model.property.getStyleObject(element);
   if (!styleObject) {
     styleObject = {};
