@@ -131,21 +131,20 @@ page thumbnails
 
 mobile branch to do
   silex responsive => regarder dev notes de responsize
-  ?new item in view menu: reset mobile style
+  resize with viewport
+  ?new item in view menu: reset mobile style 
+    => is it when switch off the "allow mobile" setting?
   manage font offset?
-  ?? css editor => change only mobile / desktop
   rename "publish settings" section to "advanced" or something?
   a button "hide from mobile version"
-  hamburger menu
-    * make the menu out of the pages elements
-      déja commencé => test tout (surtout BCompat)
-    * css in front-end.css
+  guide to customize the menu + propose several "themes" (get styles from http://slicknav.com/)
 
   bugs
     * pages bugs
-    * add margin between elements
-    * reorder the dom the first time? + element when is inserted or change container
-    * not possible to add elements in the mobile mode
+    * add margin between elements => add property?
+    * reorder the dom the first time? 
+        + ?reorder the element when is inserted or change container
+    * ?not possible to add elements in the mobile mode
     * prevent-drag in mobile mode
     * resize background => do not double like un non mobile mode
     * fix containers may be smaller than their content
