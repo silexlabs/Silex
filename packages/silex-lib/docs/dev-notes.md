@@ -2,7 +2,6 @@
 
 a mettre sous forme d'issues et de propositions?
 
-  - No inline CSS => debug and release
   - update change log, call for testers and contributors (templates, issues)
   - doc expliquant l'event "file.open_not.editable"? avec lien dans le message
   - documenter les #!page-* VS #anchor-name
@@ -172,11 +171,6 @@ context-menu branch
 
 * rename silex-style => silex-user-styles
 
-* ? option of links ?: Change page should scroll to top (animated)  like when pages are reloaded
-    #!page-xxx
-    #!page-xxx#anchor
-    #!page-xxx# => do not scroll top
-    + open in blank/self
 * settings panel + browse + select => close settings panel
 * containers may be smaller than their content
     + resize container should not move the elements inside it (currently, resize from the top, moves the elements)
