@@ -34,13 +34,14 @@ goog.require('silex.view.pane.PaneBase');
  * @constructor
  * @extends {silex.view.pane.PaneBase}
  * @param {Element} element   container to render the UI
- * @param  {silex.types.Controller} controller structure which holds
+ * @param  {!silex.types.Model} model  model class which holds
+ *                                  the model instances - views use it for read operation only
+ * @param  {!silex.types.Controller} controller structure which holds
  *                                  the controller instances
  */
-silex.view.pane.BorderPane = function(element, controller) {
+silex.view.pane.BorderPane = function(element, model, controller) {
   // call super
-  goog.base(this, element, controller);
-
+  goog.base(this, element, model, controller);
   // init the component
   this.buildUi();
   this.initEvents();
@@ -209,7 +210,7 @@ silex.view.pane.BorderPane.prototype.createCheckBoxes =
  * redraw the properties
  */
 silex.view.pane.BorderPane.prototype.redraw =
-  function(selectedElements, document, pageNames, currentPageName) {
+  function(selectedElements, pageNames, currentPageName) {
   if (this.iAmSettingValue) return;
   this.iAmRedrawing = true;
   // call super
@@ -217,24 +218,70 @@ silex.view.pane.BorderPane.prototype.redraw =
       this,
       'redraw',
       selectedElements,
-      document,
       pageNames,
       currentPageName);
 
-  // border width
+  // border width, this builds a string like "0px 1px 2px 3px"
+  // FIXME: should not build a string which is then split in redrawBorderWidth
   var borderWidth = this.getCommonProperty(
-      selectedElements,
-      function(element) {
-        return goog.style.getStyle(element, 'borderWidth');
-  });
+    selectedElements,
+    goog.bind(function(element) {
+      var w;
+      var hasValue = false;
+      var arr = [];
+      w = this.model.element.getStyle(element, 'borderTopWidth');
+      if(!w) {
+        w = '0px';
+      }
+      else {
+        hasValue = true;
+      }
+      arr.push(w);
+      w = this.model.element.getStyle(element, 'borderRightWidth');
+      if(!w) {
+        w = '0px';
+      }
+      else {
+        hasValue = true;
+      }
+      arr.push(w);
+      w = this.model.element.getStyle(element, 'borderBottomWidth');
+      if(!w) {
+        w = '0px';
+      }
+      else {
+        hasValue = true;
+      }
+      arr.push(w);
+      w = this.model.element.getStyle(element, 'borderLeftWidth');
+      if(!w) {
+        w = '0px';
+      }
+      else {
+        hasValue = true;
+      }
+      arr.push(w);
+      if(hasValue) return arr.join(' ');
+      return null;
+  }, this));
   if (borderWidth) {
     this.redrawBorderWidth(borderWidth);
     // border color
     var borderColor = this.getCommonProperty(
-        selectedElements,
-        function(element) {
-          return goog.style.getStyle(element, 'borderColor');
-    });
+      selectedElements,
+      goog.bind(function(element) {
+        var w;
+        w = this.model.element.getStyle(element, 'borderLeftColor');
+        if(w && w != "") return w;
+        w = this.model.element.getStyle(element, 'borderRightColor');
+        if(w && w != "") return w;
+        w = this.model.element.getStyle(element, 'borderTopColor');
+        if(w && w != "") return w;
+        w = this.model.element.getStyle(element, 'borderBottomColor');
+        if(w && w != "") return w;
+        return null;
+      }, this)
+    );
     this.redrawBorderColor(borderColor);
   }
   else {
@@ -242,10 +289,20 @@ silex.view.pane.BorderPane.prototype.redraw =
   }
   // border style
   var borderStyle = this.getCommonProperty(
-      selectedElements,
-      function(element) {
-        return goog.style.getStyle(element, 'borderStyle');
-  });
+    selectedElements,
+    goog.bind(function(element) {
+      var w;
+      w = this.model.element.getStyle(element, 'borderLeftStyle');
+      if(w && w != "0px") return w;
+      w = this.model.element.getStyle(element, 'borderRightStyle');
+      if(w && w != "0px") return w;
+      w = this.model.element.getStyle(element, 'borderTopStyle');
+      if(w && w != "0px") return w;
+      w = this.model.element.getStyle(element, 'borderBottomStyle');
+      if(w && w != "0px") return w;
+      return null;
+    }, this)
+  );
   if (borderStyle) {
     this.borderStyleComboBox.setValue(borderStyle);
   }
@@ -253,12 +310,13 @@ silex.view.pane.BorderPane.prototype.redraw =
     this.borderStyleComboBox.setSelectedIndex(0);
   }
   // border radius
-  var borderRadius = this.getCommonProperty(
-      selectedElements,
-      function(element) {
-        return goog.style.getStyle(element, 'borderRadius');
-  });
-  if (borderRadius) {
+  var borderRadius = [
+  this.getCommonProperty(selectedElements, (element) => this.model.element.getStyle(element, 'borderTopLeftRadius')),
+    this.getCommonProperty(selectedElements, (element) => this.model.element.getStyle(element, 'borderTopRightRadius')),
+    this.getCommonProperty(selectedElements, (element) => this.model.element.getStyle(element, 'borderBottomLeftRadius')),
+    this.getCommonProperty(selectedElements, (element) => this.model.element.getStyle(element, 'borderBottomRightRadius'))
+  ];
+  if (borderRadius[0] || borderRadius[1] || borderRadius[2] || borderRadius[3]) {
     this.redrawBorderRadius(borderRadius);
   }
   else {
@@ -272,8 +330,7 @@ silex.view.pane.BorderPane.prototype.redraw =
  * redraw border radius UI
  */
 silex.view.pane.BorderPane.prototype.redrawBorderRadius =
-    function(borderRadius) {
-  var values = borderRadius.split(' ');
+    function(values) {
   // The four values for each radii are given in the order
   // top-left, top-right, bottom-right, bottom-left.
   // If top-right is omitted it is the same as top-left.

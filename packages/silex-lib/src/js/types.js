@@ -37,6 +37,20 @@ goog.require('silex.controller.ViewMenuController');
 
 
 /**
+ * recursive type of copied elements stored in the clipboard
+ * @typedef {{element:Element, style, children: Array.<silex.types.ClipboardItem>}}
+ */
+silex.types.ClipboardItem;
+
+
+/**
+ * type used to store the state of the website, for undo/redo
+ * @typedef {{page:string, html:string, scrollX:number, scrollY:number}}
+ */
+silex.types.UndoItem;
+
+
+/**
  * @struct
  * @constructor
  */
@@ -52,8 +66,9 @@ silex.types.Model = function() {
  * @param {silex.model.Body} body
  * @param {silex.model.Page} page
  * @param {silex.model.Element} element
+ * @param {silex.model.Property} property
  */
-silex.types.Model.prototype.init = function(file, head, body, page, element) {
+silex.types.Model.prototype.init = function(file, head, body, page, element, property) {
   /**
    * @type {silex.model.File}
    */
@@ -74,6 +89,10 @@ silex.types.Model.prototype.init = function(file, head, body, page, element) {
    * @type {silex.model.Element}
    */
   this.element = element;
+  /**
+   * @type {silex.model.Property}
+   */
+  this.property = property;
 };
 
 

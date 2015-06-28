@@ -21,7 +21,6 @@ goog.provide('silex.view.Stage');
 
 goog.require('goog.events');
 goog.require('goog.events.MouseWheelHandler');
-goog.require('goog.math.Coordinate');
 
 
 
@@ -31,12 +30,24 @@ goog.require('goog.math.Coordinate');
  * load the template and render to the given html element
  * @param  {Element}  element  DOM element to wich I render the UI
  *  has been changed by the user
- * @param  {silex.types.Controller} controller
+ * @param  {!silex.types.Model} model  model class which holds
+ *                                  the model instances - views use it for read operation only
+ * @param  {!silex.types.Controller} controller
  *                      structure which holds the controller classes
  */
-silex.view.Stage = function(element, controller) {
+silex.view.Stage = function(element, model, controller) {
   // store references
+  /**
+   * @type {Element}
+   */
   this.element = element;
+  /**
+   * @type {!silex.types.Model}
+   */
+  this.model = model;
+  /**
+   * @type {!silex.types.Controller}
+   */
   this.controller = controller;
 };
 
@@ -162,16 +173,18 @@ silex.view.Stage.prototype.onMouseMoveOverUi = function(event) {
  * @param {Event} event
  */
 silex.view.Stage.prototype.onMouseUpOverUi = function(event) {
-  // if out of stage, release from drag of the plugin
-  // simulate the mouse up on the iframe body
-  var pos =  goog.style.getRelativePosition(event, this.element);
-  var newEvObj = document.createEvent('MouseEvent');
-  newEvObj.initEvent('mouseup', true, true);
-  newEvObj.clientX = pos.x;
-  newEvObj.clientY = pos.y;
-  this.iAmClicking = true;
-  this.bodyElement.dispatchEvent(newEvObj);
-  this.iAmClicking = false;
+  if (this.bodyElement !== null) {
+    // if out of stage, release from drag of the plugin
+    // simulate the mouse up on the iframe body
+    var pos =  goog.style.getRelativePosition(event, this.element);
+    var newEvObj = document.createEvent('MouseEvent');
+    newEvObj.initEvent('mouseup', true, true);
+    newEvObj.clientX = pos.x;
+    newEvObj.clientY = pos.y;
+    this.iAmClicking = true;
+    this.bodyElement.dispatchEvent(newEvObj);
+    this.iAmClicking = false;
+  }
 };
 
 
@@ -194,7 +207,7 @@ silex.view.Stage.prototype.onPreventBackSwipe = function(event) {
  * @param {?Event=} event
  */
 silex.view.Stage.prototype.bodyElementSizeToContent = function(event) {
-  if (this.bodyElement) {
+  if (this.bodyElement !== null) {
     var width = 0;
     var height = 0;
     var containers = goog.dom.getElementsByClass(
@@ -202,7 +215,7 @@ silex.view.Stage.prototype.bodyElementSizeToContent = function(event) {
         this.bodyElement);
 
     if (containers && containers.length > 0) {
-      var bb = silex.utils.Dom.getBoundingBox(containers);
+      var bb = this.model.property.getBoundingBox(containers);
       var viewportSize = this.viewport.getSize();
       var desiredBodyWidth = bb.width + 100;
       if (desiredBodyWidth < viewportSize.width) {
@@ -317,12 +330,11 @@ silex.view.Stage.prototype.initEvents = function(contentWindow) {
 /**
  * redraw the properties
  * @param   {Array.<HTMLElement>} selectedElements the selected elements
- * @param   {Document} document  the document to use
  * @param   {Array.<string>} pageNames   the names of the pages
  * @param   {string}  currentPageName   the name of the current page
  */
 silex.view.Stage.prototype.redraw =
-    function(selectedElements, document, pageNames, currentPageName) {
+    function(selectedElements, pageNames, currentPageName) {
   // reset focus out of the text inputs,
   // this also prevents a bug when the page is loaded and the user presses a key,
   // the body is replaced by the keys chars
@@ -343,12 +355,13 @@ silex.view.Stage.prototype.handleKey = function(event) {
   if (event.target.tagName.toUpperCase() !== 'INPUT' &&
       event.target.tagName.toUpperCase() !== 'TEXTAREA') {
     // compute the number of pixels to move
-    var amount = 1;
+    var amount = 10;
     if(event.shiftKey === true) {
-      amount *= 2;
+      amount = 1;
     }
     if(event.altKey === true) {
-      amount *= 5;
+      // this is the bring forward/backward shortcut
+      return;
     }
     // compute the direction
     var offsetX = 0;
@@ -369,6 +382,8 @@ silex.view.Stage.prototype.handleKey = function(event) {
     }
     // if there is something to move
     if (offsetX !== 0 || offsetY !== 0) {
+      // mark as undoable
+      this.controller.stageController.markAsUndoable();
       // apply the offset
       this.followElementPosition(this.selectedElements, offsetX, offsetY);
       // notify the controller
@@ -406,10 +421,13 @@ silex.view.Stage.prototype.handleMouseUp = function(target, x, y, shiftKey) {
     var dropZone = this.getDropZone(x, y) || {'element': this.bodyElement, 'zIndex': 0};
     // move all selected elements to the new container
     goog.array.forEach(this.selectedElements, function(element) {
-      this.controller.stageController.newContainer(dropZone.element, element);
+      if(!goog.dom.getAncestorByClass(element.parentNode, silex.model.Element.SELECTED_CLASS_NAME) &&
+         !goog.dom.classlist.contains(element, silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME)) {
+        this.controller.stageController.newContainer(dropZone.element, element);
+      }
     }, this);
     // change z order
-    this.bringSelectionForward();
+    //this.bringSelectionForward();
     // reset dropzone marker
     this.markAsDropZone(null);
   }
@@ -420,6 +438,8 @@ silex.view.Stage.prototype.handleMouseUp = function(target, x, y, shiftKey) {
     // keep flags up to date
     this.isDragging = false;
     this.isResizing = false;
+    // style the body
+    goog.dom.classlist.remove(this.bodyElement, silex.model.Body.DRAGGING_CLASS_NAME);
   }
   // if not dragging, and on stage, then change selection
   else if (this.iAmClicking !== true) {
@@ -504,12 +524,16 @@ silex.view.Stage.prototype.onMouseMove = function(target, x, y, shiftKey) {
     // update states
     if (!this.isDragging && !this.isResizing) {
       // notify controller that a change is about to take place
-      this.controller.stageController.beforeChange();
+      // marker for undo/redo
+      this.controller.stageController.markAsUndoable();
+      // store the state for later use
       if (this.lastClickWasResize) {
         this.isResizing = true;
       }
       else {
         this.isDragging = true;
+        // dragging style
+        goog.dom.classlist.add(this.bodyElement, silex.model.Body.DRAGGING_CLASS_NAME);
       }
     }
     else {
@@ -707,7 +731,8 @@ silex.view.Stage.prototype.followElementPosition =
       && !goog.dom.getAncestorByClass(follower.parentNode, silex.model.Element.SELECTED_CLASS_NAME)
       && !goog.dom.classlist.contains(follower, silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME)) {
           var pos = goog.style.getPosition(follower);
-          goog.style.setPosition(follower, pos.x + offsetX, pos.y + offsetY);
+          this.controller.stageController.styleChanged('top', (pos.y + offsetY) + 'px', [follower], false);
+          this.controller.stageController.styleChanged('left', (pos.x + offsetX) + 'px', [follower], false);
         }
   }, this);
 };
@@ -727,67 +752,75 @@ silex.view.Stage.prototype.followElementSize =
     // do not resize the stage or the un-resizeable elements
     if (follower.tagName.toUpperCase() !== 'BODY'
       && !goog.dom.classlist.contains(follower, silex.model.Body.PREVENT_RESIZABLE_CLASS_NAME)) {
-      var size = goog.style.getSize(follower);
       var pos = goog.style.getPosition(follower);
       var offsetPosX = pos.x;
       var offsetPosY = pos.y;
+      var offsetSizeX = offsetX;
+      var offsetSizeY = offsetY;
       // depending on the handle which is dragged,
       // only width and/or height should be set
       switch(resizeDirection) {
       case 's':
-        offsetX = 0;
+        offsetSizeX = 0;
         break;
       case 'n':
-        offsetPosY += offsetY;
-        offsetY = -offsetY;
-        offsetX = 0;
+        offsetPosY += offsetSizeY;
+        offsetSizeY = -offsetSizeY;
+        offsetSizeX = 0;
         break;
       case 'w':
-        offsetPosX += offsetX;
-        offsetX = -offsetX;
-        offsetY = 0;
+        offsetPosX += offsetSizeX;
+        offsetSizeX = -offsetSizeX;
+        offsetSizeY = 0;
         break;
       case 'e':
-        offsetY = 0;
+        offsetSizeY = 0;
         break;
       case 'se':
         break;
       case 'sw':
-        offsetPosX += offsetX;
-        offsetX = -offsetX;
+        offsetPosX += offsetSizeX;
+        offsetSizeX = -offsetSizeX;
         break;
       case 'ne':
-        offsetPosY += offsetY;
-        offsetY = -offsetY;
+        offsetPosY += offsetSizeY;
+        offsetSizeY = -offsetSizeY;
         break;
       case 'nw':
-        offsetPosX += offsetX;
-        offsetPosY += offsetY;
-        offsetY = -offsetY;
-        offsetX = -offsetX;
+        offsetPosX += offsetSizeX;
+        offsetPosY += offsetSizeY;
+        offsetSizeY = -offsetSizeY;
+        offsetSizeX = -offsetSizeX;
         break;
       }
-      // compute new size
-      var borderBox = goog.style.getBorderBox(follower);
-      var newSizeW = size.width + offsetX - borderBox.left - borderBox.right;
-      var newSizeH = size.height + offsetY - borderBox.top - borderBox.bottom;
-      // handle min size
-      if (newSizeW < 20) {
-        if (resizeDirection === 'w' || resizeDirection === 'sw' || resizeDirection === 'nw') {
-          offsetPosX -= 20 - newSizeW;
-        }
-        newSizeW = 20;
+      // handle .background element which is forced centered
+      if(goog.dom.classlist.contains(follower, 'background')) {
+        offsetSizeX *= 2;
       }
-      if (newSizeH < 20) {
-        if (resizeDirection === 'n' || resizeDirection === 'ne' || resizeDirection === 'nw') {
-          offsetPosY -= 20 - newSizeH;
+      // compute new size
+      var size = goog.style.getSize(follower);
+      var borderBox = goog.style.getBorderBox(follower);
+      var newSizeW = size.width + offsetSizeX - borderBox.left - borderBox.right;
+      var newSizeH = size.height + offsetSizeY - borderBox.top - borderBox.bottom;
+      // handle min size
+      if (newSizeW < silex.model.Element.MIN_WIDTH) {
+        if (resizeDirection === 'w' || resizeDirection === 'sw' || resizeDirection === 'nw') {
+          offsetPosX -= silex.model.Element.MIN_WIDTH - newSizeW;
         }
-        newSizeH = 20;
+        newSizeW = silex.model.Element.MIN_WIDTH;
+      }
+      if (newSizeH < silex.model.Element.MIN_HEIGHT) {
+        if (resizeDirection === 'n' || resizeDirection === 'ne' || resizeDirection === 'nw') {
+          offsetPosY -= silex.model.Element.MIN_HEIGHT - newSizeH;
+        }
+        newSizeH = silex.model.Element.MIN_HEIGHT;
       }
       // set position in case we are resizing up or left
-      goog.style.setPosition(follower, offsetPosX, offsetPosY);
+      this.controller.stageController.styleChanged('top', offsetPosY + 'px', [follower], false);
+      this.controller.stageController.styleChanged('left', offsetPosX + 'px', [follower], false);
       // apply the new size
-      goog.style.setContentBoxSize(follower, new goog.math.Size(newSizeW, newSizeH));
+      this.controller.stageController.styleChanged('width', newSizeW + 'px', [follower], false);
+      this.controller.stageController.styleChanged('height', newSizeH + 'px', [follower], false);
     }
   }, this);
 };
@@ -920,23 +953,6 @@ silex.view.Stage.prototype.getScrollMaxY = function() {
  * notify the controller that the properties of the selection have changed
  */
 silex.view.Stage.prototype.propertyChanged = function() {
-  // check position and size are int and not float
-  goog.array.forEach(this.selectedElements, function(element) {
-    // round position
-    var position = goog.style.getPosition(element);
-    if (goog.isDefAndNotNull(position.x)) position.x = Math.floor(position.x);
-    if (goog.isDefAndNotNull(position.y)) position.y = Math.floor(position.y);
-    if (goog.isDefAndNotNull(position.x) || goog.isDefAndNotNull(position.y)) {
-      goog.style.setPosition(element, position.x, position.y);
-    }
-    // round size
-    var size = goog.style.getSize(element);
-    if (goog.isDefAndNotNull(size.x)) size.x = Math.floor(size.x);
-    if (goog.isDefAndNotNull(size.y)) size.y = Math.floor(size.y);
-    if (goog.isDefAndNotNull(size.x) || goog.isDefAndNotNull(size.y)) {
-      goog.style.setSize(element, size.x, size.y);
-    }
-  }, this);
   // update property tool box
-  this.controller.stageController.change();
+  this.controller.stageController.updateView();
 };

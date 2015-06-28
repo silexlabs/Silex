@@ -86,6 +86,11 @@ exports.createFolders = function(req, res, next, folders, errCbk, cbk){
  * write css and html data to a unifile service
  */
 exports.publish = function(cbk, req, res, next, path, html, css, js, files){
+    // cleanup path since front end sends an absolute path
+    // and we need path which start with /api
+    if(path.indexOf('http') === 0) {
+        path = path.substring(path.indexOf('/api'));
+    }
     // check inputs
     if (cbk === undefined || req === undefined || res === undefined || next === undefined || path === undefined || html === undefined || css === undefined || js === undefined || files === undefined){
         console.error('All attributes needed: cbk, req, res, next, path, html, css, js, files', !!cbk, !!req, !!res, !!next, !!path, !!html, !!css, !!js, !!files)
@@ -316,10 +321,10 @@ exports.getFileFromUrl = function(req, res, next, srcPath, dstPath, cbk){
         result.on('data', function(chunk) {
             if (srcPath.indexOf('https')===0){
                 // https => all the data the 1st time
-                data = chunk;
+                data = chunk.toString();
             }
             else{
-                data.push(chunk);
+                data.push(chunk.toString());
             }
           });
           result.on('end', function() {
@@ -331,7 +336,7 @@ exports.getFileFromUrl = function(req, res, next, srcPath, dstPath, cbk){
             }
             // data is an object
             else if (typeof(data) === 'object'){
-                exports.writeFileToService(req, res, next, dstPath, data, function(error) {
+                exports.writeFileToService(req, res, next, dstPath, data.join ? data.join('') : data.toString(), function(error) {
                     cbk(error);
                 });
             }

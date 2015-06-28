@@ -53,8 +53,8 @@ Prerequisite :
 
 * [node.js](http://nodejs.org/) installed
 * [NPM](https://npmjs.org/) installed
-* [python](https://www.python.org/downloads/) (version > V2.7)
-* [java](https://www.java.com/en/download/index.jsp) (version > 7)
+* [python](https://www.python.org/downloads/) (version >= V2.7)
+* [java](https://www.java.com/en/download/index.jsp) (version >= 7)
 
 Clone this repository, and do not forget the sub modules (cloud-explorer and unifile)
 

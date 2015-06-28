@@ -198,7 +198,7 @@ module.exports = function(grunt) {
         options: {
           namespaces: 'silex.App',
           builder: 'submodules/closure-library/closure/bin/build/closurebuilder.py',
-          compilerFile: 'build/closure-compiler.jar',
+          compilerFile: 'node_modules/superstartup-closure-compiler/build/es6compiler.jar',
           compile: true,
           checkModified: true,
           compilerOpts: {
@@ -221,7 +221,7 @@ module.exports = function(grunt) {
         options: {
           namespaces: 'silex.App',
           builder: 'submodules/closure-library/closure/bin/build/closurebuilder.py',
-          compilerFile: 'build/closure-compiler.jar',
+          compilerFile: 'node_modules/superstartup-closure-compiler/build/es6compiler.jar',
           compile: true, // disable to speedup the compilation but also disable source map
           checkModified: true,
           compilerOpts: {
@@ -262,7 +262,7 @@ module.exports = function(grunt) {
     },
     simplemocha: {
         options: {
-          globals: ['should'],
+          globals: ['should', 'WDIO_GLOBALS'],
           ignoreLeaks: false,
           ui: 'bdd',
           reporter: 'spec',
@@ -271,11 +271,7 @@ module.exports = function(grunt) {
             src: [
                 'test/functional/file-explorer.js',
                 'test/functional/save.js',
-                'test/functional/publish.js',
-                'test/actions.js',
-                'test/helper.js',
-                'test/logging.js',
-                'test/model/file-explorer-model.js',
+                'test/functional/publish.js'
             ],
         },
       },

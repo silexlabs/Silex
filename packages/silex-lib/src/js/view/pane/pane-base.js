@@ -26,12 +26,24 @@ goog.provide('silex.view.pane.PaneBase');
  * @constructor
  *
  * @param {Element} element   container to render the UI
- * @param  {silex.types.Controller} controller  structure which holds
+ * @param  {!silex.types.Model} model  model class which holds
+ *                                  the model instances - views use it for read operation only
+ * @param  {!silex.types.Controller} controller  structure which holds
  *                                  the controller instances
  */
-silex.view.pane.PaneBase = function(element, controller) {
+silex.view.pane.PaneBase = function(element, model, controller) {
   // store references
+  /**
+   * @type {Element}
+   */
   this.element = element;
+  /**
+   * @type {!silex.types.Model}
+   */
+  this.model = model;
+  /**
+   * @type {!silex.types.Controller}
+   */
   this.controller = controller;
 };
 
@@ -67,15 +79,9 @@ silex.view.pane.PaneBase.prototype.iAmRedrawing;
  */
 silex.view.pane.PaneBase.prototype.styleChanged = function(styleName, opt_styleValue, opt_elements) {
   //  if (this.iAmRedrawing) return;
-  // notify the controller
   this.iAmSettingValue = true;
-  try {
-    this.controller.propertyToolController.styleChanged(styleName, opt_styleValue, opt_elements);
-  }
-  catch (err) {
-    // error which will not keep this.iAmSettingValue to true
-    console.error('an error occured while editing the value', err);
-  }
+  // notify the controller
+  this.controller.propertyToolController.styleChanged(styleName, opt_styleValue, opt_elements);
   this.iAmSettingValue = false;
 };
 
@@ -89,15 +95,9 @@ silex.view.pane.PaneBase.prototype.styleChanged = function(styleName, opt_styleV
  */
 silex.view.pane.PaneBase.prototype.propertyChanged = function(propertyName, opt_propertyValue, opt_elements, opt_applyToContent) {
   if (this.iAmRedrawing) return;
-  // notify the controller
   this.iAmSettingValue = true;
-  try {
-    this.controller.propertyToolController.propertyChanged(propertyName, opt_propertyValue, opt_elements, opt_applyToContent);
-  }
-  catch (err) {
-    // error which will not keep this.iAmSettingValue to true
-    console.error('an error occured while editing the value', err);
-  }
+  // notify the controller
+  this.controller.propertyToolController.propertyChanged(propertyName, opt_propertyValue, opt_elements, opt_applyToContent);
   this.iAmSettingValue = false;
 };
 
@@ -105,11 +105,10 @@ silex.view.pane.PaneBase.prototype.propertyChanged = function(propertyName, opt_
 /**
  * refresh the displayed data
  * @param   {Array.<Element>} selectedElements the elements currently selected
- * @param   {Document} document  the document to use
  * @param   {Array.<string>} pageNames   the names of the pages which appear in the current HTML file
  * @param   {string}  currentPageName   the name of the current page
  */
-silex.view.pane.PaneBase.prototype.redraw = function(selectedElements, document, pageNames, currentPageName) {
+silex.view.pane.PaneBase.prototype.redraw = function(selectedElements, pageNames, currentPageName) {
   if (!selectedElements) {
     throw (new Error('selection array is undefined'));
   }

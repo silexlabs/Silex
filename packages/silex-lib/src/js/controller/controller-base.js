@@ -19,7 +19,6 @@
  */
 goog.provide('silex.controller.ControllerBase');
 
-goog.require('silex.utils.BackwardCompat');
 goog.require('silex.utils.Notification');
 
 
@@ -32,7 +31,14 @@ goog.require('silex.utils.Notification');
  */
 silex.controller.ControllerBase = function(model, view) {
   // store the model
+  // store the model and the view
+  /**
+   * @type {silex.types.Model}
+   */
   this.model = model;
+  /**
+   * @type {silex.types.View}
+   */
   this.view = view;
 
   // tracker
@@ -51,47 +57,66 @@ silex.controller.ControllerBase.prototype.tracker = null;
 
 
 /**
- * {Array.<string>} array of the states of the website
+ * @type {Array.<silex.types.UndoItem>} array of the states of the website
+ * @static because it is shared by all controllers
  */
-silex.controller.ControllerBase.prototype.undoHistory = [];
+silex.controller.ControllerBase.undoHistory = [];
 
 
 /**
- * {Array.<string>} array of the states of the website
+ * @type {Array.<silex.types.UndoItem>} array of the states of the website
+ * @static because it is shared by all controllers
  */
-silex.controller.ControllerBase.prototype.redoHistory = [];
+silex.controller.ControllerBase.redoHistory = [];
 
 
 /**
- * the {Array.<Element>|null} array of elements in the clipboard
- * this is a static attribute
+ * @type Array.<silex.types.ClipboardItem>
+ * @static because it is shared by all controllers
  */
-silex.controller.ControllerBase.prototype.clipboard = null;
-
-
-/**
- * the {Element} element wich is the origin container of the element in the clipboard
- * this is a static attribute
- */
-silex.controller.ControllerBase.prototype.clipboardParent = null;
+silex.controller.ControllerBase.clipboard = null;
 
 
 /**
  * store the model state in order to undo/redo
  */
 silex.controller.ControllerBase.prototype.undoCheckPoint = function() {
-  this.redoHistory = [];
-  var html = this.model.file.getHtml();
-  var page = this.model.page.getCurrentPage();
+  silex.controller.ControllerBase.redoHistory = [];
+  var state = this.getState();
   // if the previous state was different
-  if (this.undoHistory.length === 0 ||
-      this.undoHistory[this.undoHistory.length - 1].html !== html ||
-      this.undoHistory[this.undoHistory.length - 1].page !== page) {
-    this.undoHistory.push({
-      html: html,
-      page: page
-    });
+  if (silex.controller.ControllerBase.undoHistory.length === 0 ||
+      silex.controller.ControllerBase.undoHistory[silex.controller.ControllerBase.undoHistory.length - 1].html !== state.html ||
+      silex.controller.ControllerBase.undoHistory[silex.controller.ControllerBase.undoHistory.length - 1].page !== state.page) {
+    silex.controller.ControllerBase.undoHistory.push(state);
   }
+};
+
+
+
+/**
+ * build a state object for undo/redo
+ * @return {silex.types.UndoItem}
+ */
+silex.controller.ControllerBase.prototype.getState = function() {
+  return {
+      html: this.model.file.getHtml(),
+      page: this.model.page.getCurrentPage(),
+      scrollX: this.view.stage.getScrollX(),
+      scrollY: this.view.stage.getScrollY()
+  };
+};
+
+
+/**
+ * build a state object for undo/redo
+ * @param {silex.types.UndoItem} state
+ */
+silex.controller.ControllerBase.prototype.restoreState = function(state) {
+  this.model.file.setHtml(state.html, goog.bind(function() {
+    this.model.page.setCurrentPage(state.page);
+    this.view.stage.setScrollX(state.scrollX);
+    this.view.stage.setScrollY(state.scrollY);
+  }, this), false);
 };
 
 
@@ -99,8 +124,8 @@ silex.controller.ControllerBase.prototype.undoCheckPoint = function() {
  * reset the undo/redo history
  */
 silex.controller.ControllerBase.prototype.undoReset = function() {
-  this.undoHistory = [];
-  this.redoHistory = [];
+  silex.controller.ControllerBase.undoHistory = [];
+  silex.controller.ControllerBase.redoHistory = [];
 };
 
 
@@ -156,10 +181,8 @@ silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
         this.model.element.setImageUrl(img, url,
             goog.bind(function(element, img) {
               // update element size
-              goog.style.setStyle(element, {
-                width: img.naturalWidth + 'px',
-                height: img.naturalHeight + 'px'
-              });
+              this.model.element.setStyle(element, 'width', Math.max(silex.model.Element.MIN_WIDTH, img.naturalWidth) + 'px');
+              this.model.element.setStyle(element, 'height', Math.max(silex.model.Element.MIN_HEIGHT, img.naturalHeight) + 'px');
               this.tracker.trackAction('controller-events', 'success', 'insert.image', 1);
             }, this),
             goog.bind(function(element, message) {
@@ -184,15 +207,35 @@ silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
  * @param  {string} name
  * @param  {?string=} value
  * @param {?Array.<Element>=} opt_elements
+ * @param  {?boolean=} isUndoable
  */
-silex.controller.ControllerBase.prototype.styleChanged = function(name, value, opt_elements) {
+silex.controller.ControllerBase.prototype.styleChanged = function(name, value, opt_elements, isUndoable) {
+  if (!opt_elements) opt_elements = this.model.body.getSelection();
+  if(isUndoable !== false) {
+    // undo checkpoint
+    this.undoCheckPoint();
+  }
+  // apply the change to all elements
+  goog.array.forEach(opt_elements, function(element) {
+    // update the model
+    this.model.element.setStyle(element, name, value);
+  }, this);
+};
+
+
+/**
+ * set a set of styles to the current selection
+ * @param  {string|Object|CSSStyleDeclaration} style
+ * @param {?Array.<Element>=} opt_elements
+ */
+silex.controller.ControllerBase.prototype.multipleStylesChanged = function(style, opt_elements) {
   if (!opt_elements) opt_elements = this.model.body.getSelection();
   // undo checkpoint
   this.undoCheckPoint();
   // apply the change to all elements
   goog.array.forEach(opt_elements, function(element) {
     // update the model
-    this.model.element.setStyle(element, name, value);
+    this.model.property.setStyle(element, style);
   }, this);
 };
 
@@ -229,26 +272,6 @@ silex.controller.ControllerBase.prototype.setClassName = function(name) {
     // update the model
     this.model.element.setClassName(element, name);
   }, this);
-};
-
-
-/**
- * get inline css styles
- * @param   {Element} element
- * @return {string} inline style of the element
- */
-silex.controller.ControllerBase.prototype.getInlineStyle = function(element) {
-  return this.model.element.getAllStyles(element);
-};
-
-
-/**
- * get css class names
- * @param   {Element} element
- * @return {string} css classes of the element (i.e. className attr)
- */
-silex.controller.ControllerBase.prototype.getClassName = function(element) {
-  return this.model.element.getClassName(element);
 };
 
 
@@ -333,16 +356,10 @@ silex.controller.ControllerBase.prototype.checkElementVisibility = function(elem
 /**
  * ask the user for a new file title
  */
-silex.controller.ControllerBase.prototype.promptTitle = function() {
-  silex.utils.Notification.prompt('What is the name of your website?',
-      this.model.head.getTitle(),
-      goog.bind(function(accept, name) {
-        if (accept) {
-          // undo checkpoint
-          this.undoCheckPoint();
-          this.model.head.setTitle(name);
-        }
-      }, this));
+silex.controller.ControllerBase.prototype.setTitle = function(title) {
+  // undo checkpoint
+  this.undoCheckPoint();
+  this.model.head.setTitle(title);
 };
 
 
@@ -358,3 +375,116 @@ silex.controller.ControllerBase.prototype.refreshFonts = function() {
 };
 
 
+/**
+ * toggle advanced / apollo mode
+ */
+silex.controller.ControllerBase.prototype.toggleAdvanced = function() {
+  if (!goog.dom.classlist.contains(document.body, 'advanced-mode-on')) {
+    goog.dom.classlist.add(document.body, 'advanced-mode-on');
+    goog.dom.classlist.remove(document.body, 'advanced-mode-off');
+  }
+  else {
+    goog.dom.classlist.remove(document.body, 'advanced-mode-on');
+    goog.dom.classlist.add(document.body, 'advanced-mode-off');
+  }
+};
+
+
+/**
+ * save or save-as
+ * @param {?string=} opt_url
+ * @param {?function()=} opt_cbk
+ * @param {?function(Object)=} opt_errorCbk
+ */
+silex.controller.ControllerBase.prototype.save = function(opt_url, opt_cbk, opt_errorCbk) {
+  this.tracker.trackAction('controller-events', 'request', 'file.save', 0);
+  if (opt_url) {
+    this.doSave(opt_url, opt_cbk, opt_errorCbk);
+  }
+  else {
+    // choose a new name
+    this.view.fileExplorer.saveAsDialog(
+        goog.bind(function(url) {
+          this.doSave(url, opt_cbk, opt_errorCbk);
+        }, this),
+        {'mimetype': 'text/html'},
+        goog.bind(function(error) {
+          this.tracker.trackAction('controller-events', 'error', 'file.save', -1);
+          if (opt_errorCbk) opt_errorCbk(error);
+        }, this));
+  }
+};
+
+
+/**
+ * save or save-as
+ * @param {string} url
+ * @param {?function()=} opt_cbk
+ * @param {?function(Object)=} opt_errorCbk
+ */
+silex.controller.ControllerBase.prototype.doSave = function(url, opt_cbk, opt_errorCbk) {
+  // urls will be relative to the html file url
+  this.model.file.setUrl(url);
+  // relative urls only in the files
+  var rawHtml = this.model.file.getHtml();
+  // look for bug of firefox inserting quotes in url("")
+  if (rawHtml.indexOf("url('&quot;") > -1) {
+    console.warn('I have found HTML entities in some urls, there us probably an error in the save process.');
+    // log this (QA)
+    this.tracker.trackAction('controller-events', 'warning', 'file.save.corrupted', -1);
+    // try to cleanup the mess
+    rawHtml = rawHtml.replace(/url\('&quot;()(.+?)\1&quot;'\)/gi, goog.bind(function(match, group1, group2) {
+      return 'url(\'' + group2 + '\')';
+    }, this));
+  }
+  // runtime check for a recurrent error
+  // check that there is no more of the basUrl in the Html
+  if (this.url && rawHtml.indexOf(this.url) >= 0){
+    console.warn('Base URL remains in the HTML, there is probably an error in the convertion to relative URL process');
+    // log this (QA)
+    this.tracker.trackAction('controller-events', 'warning', 'file.save.corrupted', -1);
+  }
+  // save to file
+  this.model.file.saveAs(
+      url,
+      rawHtml,
+      goog.bind(function() {
+        this.tracker.trackAction('controller-events', 'success', 'file.save', 1);
+        this.fileOperationSuccess('File is saved.', false);
+        this.view.workspace.setPreviewWindowLocation();
+        if (opt_cbk) opt_cbk();
+      }, this),
+      goog.bind(function(error) {
+        silex.utils.Notification.notifyError('Error: I did not manage to save the file. \n' + (error.message || ''));
+        this.tracker.trackAction('controller-events', 'error', 'file.save', -1);
+        if (opt_errorCbk) opt_errorCbk(error);
+      }, this));
+};
+
+
+/**
+ * success of an operation involving changing the file model
+ * @param {?string=} opt_message
+ * @param {?boolean=} opt_updateTools
+ */
+silex.controller.ControllerBase.prototype.fileOperationSuccess = function(opt_message, opt_updateTools) {
+  // update tools
+  if (opt_updateTools) {
+    // find default first page
+    var pages = this.model.page.getPages();
+    // open default page
+    this.model.page.setCurrentPage(pages[0]);
+    // update fonts
+    this.refreshFonts();
+    // update dialogs
+    this.view.jsEditor.setValue(this.model.head.getHeadScript());
+    this.view.cssEditor.setValue(this.model.head.getHeadStyle());
+    this.view.htmlEditor.setValue('');
+  }
+  if (opt_message) {
+    // notify user
+    silex.utils.Notification.notifySuccess(opt_message);
+  }
+  // undo redo reset
+  this.undoReset();
+};

@@ -146,50 +146,6 @@ silex.utils.Dom.renderList = function(itemTemplateString, data) {
 
 
 /**
- * compute the bounding box of the given elements
- * use only element.style.* to compute this, not the real positions and sizes
- * so it takes into account only the elements which have top, left, width and height set in px
- * @return the bounding box containing all the elements
- */
-silex.utils.Dom.getBoundingBox = function(elements) {
-  // compute the positions and sizes
-  var top = NaN,
-      left = NaN,
-      right = NaN,
-      bottom = NaN;
-
-  goog.array.forEach(elements, function(element) {
-    // commpute the values, which may end up to be NaN or a number
-    var elementStyleTop = goog.style.getStyle(element, 'top');
-    var elementStyleLeft = goog.style.getStyle(element, 'left');
-    var elementStyleWidth = goog.style.getStyle(element, 'width');
-    var elementStyleHeight = goog.style.getStyle(element, 'height');
-    var elementTop = parseFloat(elementStyleTop.substr(0, elementStyleTop.indexOf('px')));
-    var elementLeft = parseFloat(elementStyleLeft.substr(0, elementStyleLeft.indexOf('px')));
-    var elementRight = (elementLeft || 0) + parseFloat(elementStyleWidth.substr(0, elementStyleWidth.indexOf('px')));
-    var elementBottom = (elementTop || 0) + parseFloat(elementStyleHeight.substr(0, elementStyleHeight.indexOf('px')));
-    // take the smallest top and left
-    top = isNaN(top) ? elementTop : Math.min(top, elementTop);
-    left = isNaN(left) ? elementLeft : Math.min(left, elementLeft);
-    // take the bigger bottom and rigth
-    bottom = isNaN(bottom) ? elementBottom : Math.max(bottom, elementBottom);
-    right = isNaN(right) ? elementRight : Math.max(right, elementRight);
-  });
-
-  var res = {};
-  // top left
-  if (!isNaN(top)) res.top = top;
-  if (!isNaN(left)) res.left = left;
-  // bottom right
-  if (isNaN(top)) top = 0;
-  if (isNaN(left)) left = 0;
-  if (!isNaN(bottom)) res.height = bottom - top;
-  if (!isNaN(right)) res.width = right - left;
-  return res;
-};
-
-
-/**
  * publish the file to a folder
  * get all the files included in the website, and put them into assets/ or js/ or css/
  * the HTML file must be saved somewhere because all URLs are made relative

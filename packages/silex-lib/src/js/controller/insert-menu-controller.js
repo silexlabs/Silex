@@ -47,16 +47,10 @@ silex.controller.InsertMenuController.prototype.addElement = function(type) {
   // undo checkpoint
   this.undoCheckPoint();
   var element = null;
-  try {
-    // create the element and add it to the stage
-    element = this.model.element.createElement(type);
-    this.doAddElement(element);
-    this.tracker.trackAction('controller-events', 'success', 'insert.' + type, 1);
-  }
-  catch (e) {
-    this.tracker.trackAction('controller-events', 'error', 'insert.' + type, -1);
-    console.error('could not add element of type', type, ' - ', e.message);
-  }
+  // create the element and add it to the stage
+  element = this.model.element.createElement(type);
+  this.doAddElement(element);
+  this.tracker.trackAction('controller-events', 'success', 'insert.' + type, 1);
   return element;
 };
 

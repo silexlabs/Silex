@@ -33,13 +33,15 @@ goog.require('silex.view.pane.PaneBase');
  * @constructor
  * @extends {silex.view.pane.PaneBase}
  * @param {Element} element   container to render the UI
- * @param  {silex.types.Controller} controller  structure which holds
+ * @param  {!silex.types.Model} model  model class which holds
+ *                                  the model instances - views use it for read operation only
+ * @param  {!silex.types.Controller} controller  structure which holds
  *                                  the controller instances
  */
-silex.view.pane.GeneralStylePane = function(element, controller) {
+silex.view.pane.GeneralStylePane = function(element, model, controller) {
   // call super
-  goog.base(this, element, controller);
-
+  goog.base(this, element, model, controller);
+  // init the component
   this.buildUi();
 };
 
@@ -66,21 +68,20 @@ silex.view.pane.GeneralStylePane.prototype.buildUi = function() {
 /**
  * redraw the properties
  * @param   {Array.<Element>} selectedElements the elements currently selected
- * @param   {Document} document  the document to use
  * @param   {Array.<string>} pageNames   the names of the pages which appear in the current HTML file
  * @param   {string}  currentPageName   the name of the current page
  */
-silex.view.pane.GeneralStylePane.prototype.redraw = function(selectedElements, document, pageNames, currentPageName) {
+silex.view.pane.GeneralStylePane.prototype.redraw = function(selectedElements, pageNames, currentPageName) {
   if (this.iAmSettingValue) return;
   this.iAmRedrawing = true;
 
   // call super
-  goog.base(this, 'redraw', selectedElements, document, pageNames, currentPageName);
+  goog.base(this, 'redraw', selectedElements, pageNames, currentPageName);
 
   // not available for stage element
   var elementsNoStage = [];
   goog.array.forEach(selectedElements, function(element) {
-    if (document.body != element) {
+    if (this.model.body.getBodyElement() != element) {
       elementsNoStage.push(element);
     }
   }, this);
@@ -88,9 +89,9 @@ silex.view.pane.GeneralStylePane.prototype.redraw = function(selectedElements, d
     // not stage element only
     this.opacityInput.removeAttribute('disabled');
     // get the opacity
-    var opacity = this.getCommonProperty(selectedElements, function(element) {
-      return goog.style.getStyle(element, 'opacity');
-    });
+    var opacity = this.getCommonProperty(selectedElements, goog.bind(function(element) {
+      return this.model.element.getStyle(element, 'opacity');
+    }, this));
     if (goog.isNull(opacity)) {
       this.opacityInput.value = '';
     }
