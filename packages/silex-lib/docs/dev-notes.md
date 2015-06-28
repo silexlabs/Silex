@@ -2,23 +2,30 @@
 
 a mettre sous forme d'issues et de propositions?
 
-  - update change log, call for testers and contributors (templates, issues)
   - doc expliquant l'event "file.open_not.editable"? avec lien dans le message
   - documenter les #!page-* VS #anchor-name
   - fix more bugs
-    + bug des URLs https://github.com/silexlabs/Silex/issues/264#issuecomment-108923532
-      => save/publish = parse all nodes and create html string
-  - ? file / new => chose a template from templates.silex.me
-  - no !important in front-end.css?
+    + script type="text/javascript" style="display:none"
+      => au save, remove all + add latest scripts (call BackwardCompat::getLatestTags)
+    + videos and html box 
+      => https://github.com/silexlabs/Silex/issues/156#issuecomment-88950690
+      => remove HTML boxes from the dom when not paged
+      + Html box: Do not execute scripts
+    + ? rename silex-style => silex-user-styles
+    + ? file / new => chose a template from templates.silex.me
+    + no !important in front-end.css?
+    + see known bugs
   - better "tiling" in the property editor?
         -moz-columns: 2 auto; sur .main-container
         take .style-container out of main-container
   - merge `build` branch, cf notes below
   - merge `context-menu` branch
-  - Html box: Do not execute scripts
   - site silex a finir
+  - ?? bug des URLs https://github.com/silexlabs/Silex/issues/264#issuecomment-108923532
+    => save/publish = parse all nodes and create html string
   - better containers (UI), see bellow
   - Finish Mobile
+  - release food template + startup template, call for testers and contributors (templates, issues)
   - full ES6 and no more goog.*
   - Monitoring of nodejs app
   - Hosting:
@@ -52,6 +59,9 @@ better code quaity
     - insert > add bg container
     - insert > add container
     - edit > group in a container
+
+old notes: containers may be smaller than their content
+    + resize container should not move the elements inside it (currently, resize from the top, moves the elements)
 
 
 ## ways to publish a silex website
@@ -162,23 +172,8 @@ context-menu branch
 
 ## known bugs
 
-* problem in paths (../../../....///)
-  => only in ff? online?
-
-* script type="text/javascript" style="display:none"
-  => au save, remove all + add latest scripts (call BackwardCompat::getLatestTags)
-
-* rename silex-style => silex-user-styles
-
 * settings panel + browse + select => close settings panel
-* containers may be smaller than their content
-    + resize container should not move the elements inside it (currently, resize from the top, moves the elements)
-* video bug
-  => https://github.com/silexlabs/Silex/issues/156#issuecomment-88950690
-  => remove HTML boxes from the dom when not paged
 * optim déplacement
-* twitter:image is not relative => problematic because we can not convert abs2relative the meta content attr with the abolute2relative regexp
-    duplicate issue: URLs in the settings panel : should be relative in the DOM and in the display, but absolute when we use the getters
 * select multiple elements => add css class names should still be possible without removing all the non shared classes
 * padding or margin on a silex element make it buggy when resized or moved
 * rename works but displays an error in CE

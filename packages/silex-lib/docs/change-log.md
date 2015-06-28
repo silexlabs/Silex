@@ -5,8 +5,6 @@ This is where you will find the recent changes made to Silex, and available on h
 
 # Jun 2015
 
-6 months of work released on http//editor.silex.me
-
 features
 
 * new social and SEO features in the settings pannel
