@@ -200,6 +200,11 @@ silex.model.Body.prototype.initUiHandles = function(element) {
  * @param {?boolean=} opt_isRootDroppableOnly
  */
 silex.model.Body.prototype.setEditable = function(rootElement, isEditable, opt_isRootDroppableOnly) {
+  if(!rootElement) {
+    // this happens on firefox sometimes at start
+    // FIXME: find why this happens instead of this workaround
+    return;
+  }
   // handle the root element itself
   if (isEditable) {
     if (goog.dom.getElementsByClass('ui-resizable-s', rootElement).length === 0) {
