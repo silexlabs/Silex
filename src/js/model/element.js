@@ -14,8 +14,6 @@
  *   This class is used to manage Silex elements
  *   It has methods to manipulate the DOM elements
  *      created by new silex.model.Element().createElement
- *
- *   All model classes are singletons
  */
 
 goog.provide('silex.model.Element');
@@ -25,6 +23,17 @@ goog.require('goog.net.ImageLoader');
 goog.require('silex.types.Model');
 
 
+/**
+ * direction in the dom
+ * @enum {string}
+ */
+silex.model.DomDirection = {
+  UP: "UP",
+  DOWN: "DOWN",
+  TOP: "TOP",
+  BOTTOM: "BOTTOM"
+};
+
 
 /**
  * @constructor
@@ -32,11 +41,32 @@ goog.require('silex.types.Model');
  * @param  {silex.types.View} view  view class which holds the other views
  */
 silex.model.Element = function(model, view) {
-  this.view = view;
+  // store the model and the view
+  /**
+   * @type {silex.types.Model}
+   */
   this.model = model;
-  // retrieve the element which will hold the body of the opened file
-  this.iframeElement = goog.dom.getElementByClass(silex.view.Stage.STAGE_CLASS_NAME);
+  /**
+   * @type {silex.types.View}
+   */
+  this.view = view;
 };
+
+
+/**
+ * constant for minimum elements size
+ * @const
+ * @type {number}
+ */
+silex.model.Element.MIN_HEIGHT = 20;
+
+
+/**
+ * constant for minimum elements size
+ * @const
+ * @type {number}
+ */
+silex.model.Element.MIN_WIDTH = 20;
 
 
 /**
@@ -112,6 +142,15 @@ silex.model.Element.SELECTED_CLASS_NAME = 'silex-selected';
 
 
 /**
+ * constant for the class name of pasted components
+ * this will be removed from the component as soon as it is dragged
+ * @const
+ * @type {string}
+ */
+silex.model.Element.JUST_ADDED_CLASS_NAME = 'silex-just-added';
+
+
+/**
  * prepare element for edition
  * @param  {string} rawHtml   raw HTML of the element to prepare
  * @return {string} the processed HTML
@@ -120,8 +159,8 @@ silex.model.Element.prototype.prepareHtmlForEdit = function(rawHtml) {
   // prevent scripts from executing
   rawHtml = rawHtml.replace(/type=\"text\/javascript\"/gi, 'type="text/notjavascript"');
   // convert to absolute urls
-  if (this.model.file.url) {
-    rawHtml = silex.utils.Url.relative2Absolute(rawHtml, this.model.file.url);
+  if (this.model.file.getUrl()) {
+    rawHtml = silex.utils.Url.relative2Absolute(rawHtml, silex.utils.Url.getBaseUrl() + this.model.file.getUrl());
   }
   return rawHtml;
 };
@@ -139,8 +178,8 @@ silex.model.Element.prototype.unprepareHtmlForEdit = function(rawHtml) {
   // remove cache control used to refresh images after editing by pixlr
   rawHtml = silex.utils.Dom.removeCacheControl(rawHtml);
   // convert to relative urls
-  if (this.model.file.url) {
-    rawHtml = silex.utils.Url.absolute2Relative(rawHtml, this.model.file.url);
+  if (this.model.file.getUrl()) {
+    rawHtml = silex.utils.Url.absolute2Relative(rawHtml, silex.utils.Url.getBaseUrl() + this.model.file.getUrl());
   }
   return rawHtml;
 };
@@ -156,13 +195,14 @@ silex.model.Element.prototype.getTabs = function(num) {
     tabs += '    ';
   }
   return tabs;
-}
+};
 
 
 /**
  * get/set type of the element
  * @param  {Element} element   created by silex, either a text box, image, ...
  * @return  {string}           the style of the element
+ * @example for a container this will return "container"
  */
 silex.model.Element.prototype.getType = function(element) {
   //return goog.style.getStyle(element, styleName);
@@ -173,10 +213,13 @@ silex.model.Element.prototype.getType = function(element) {
 /**
  * get all the element's styles
  * @param  {Element} element   created by silex, either a text box, image, ...
+ * @param {?boolean=} opt_computed use window.getComputedStyle instead of the element's stylesheet
  * @return  {string}           the styles of the element
  */
-silex.model.Element.prototype.getAllStyles = function(element) {
-  return this.unprepareHtmlForEdit(element.getAttribute('style'));
+silex.model.Element.prototype.getAllStyles = function(element, opt_computed) {
+  var styleObject = this.model.property.getStyleObject(element, opt_computed);
+  var styleStr = silex.utils.Style.styleToString(styleObject);
+  return this.unprepareHtmlForEdit(styleStr);
 };
 
 
@@ -184,11 +227,16 @@ silex.model.Element.prototype.getAllStyles = function(element) {
  * get/set style of the element
  * @param  {Element} element   created by silex, either a text box, image, ...
  * @param  {string} styleName  the style name
- * @return  {string}           the style of the element
+ * @param {?boolean=} opt_computed use window.getComputedStyle instead of the element's stylesheet
+ * @return  {string|null}           the style of the element
  */
-silex.model.Element.prototype.getStyle = function(element, styleName) {
-  //return goog.style.getStyle(element, styleName);
-  return this.unprepareHtmlForEdit(element.style[styleName]);
+silex.model.Element.prototype.getStyle = function(element, styleName, opt_computed) {
+  var styleObject = this.model.property.getStyleObject(element, opt_computed);
+  var cssName = goog.string.toSelectorCase(styleName);
+  if(styleObject && styleObject[cssName]) {
+    return this.unprepareHtmlForEdit(styleObject[cssName]);
+  }
+  return null;
 };
 
 
@@ -199,19 +247,29 @@ silex.model.Element.prototype.getStyle = function(element, styleName) {
  * @param  {?string=}  opt_styleValue     the value for this styleName
  */
 silex.model.Element.prototype.setStyle = function(element, styleName, opt_styleValue) {
-  if (element.style[styleName] !== opt_styleValue) {
+  // convert to css case
+  styleName = goog.string.toSelectorCase(styleName);
+  // retrieve style
+  var styleObject = this.model.property.getStyleObject(element);
+  if (!styleObject) {
+    styleObject = {};
+  }
+  if (styleObject[styleName] !== opt_styleValue) {
     if (goog.isDefAndNotNull(opt_styleValue)) {
-      element.style[styleName] = this.prepareHtmlForEdit(opt_styleValue);
+      styleObject[styleName] = this.prepareHtmlForEdit(opt_styleValue);
     }
     else {
-      element.style[styleName] = '';
+      styleObject[styleName] = '';
     }
+    this.model.property.setStyle(element, styleObject);
     // update the view
     var pages = this.model.page.getPages();
     var page = this.model.page.getCurrentPage();
     var selectedElements = this.model.body.getSelection();
-    this.view.propertyTool.redraw(selectedElements, goog.dom.getFrameContentDocument(this.iframeElement), pages, page);
+    this.view.propertyTool.redraw(selectedElements, pages, page);
   }
+  // remove the 'just pasted' class
+  element.classList.remove(silex.model.Element.JUST_ADDED_CLASS_NAME);
 };
 
 
@@ -308,6 +366,83 @@ silex.model.Element.prototype.getContentNode = function(element) {
 
 
 /**
+ * move the element up/down the DOM
+ * @param  {Element} element
+ * @param  {silex.model.DomDirection} direction
+ */
+silex.model.Element.prototype.move = function(element, direction) {
+  switch(direction) {
+    case silex.model.DomDirection.UP:
+      let sibling = this.getNextElement(element);
+      if(sibling) {
+        // insert after
+        element.parentNode.insertBefore(sibling, element);
+      }
+      break;
+    case silex.model.DomDirection.DOWN:
+      let sibling = this.getPreviousElement(element);
+      if(sibling) {
+        // insert before
+        element.parentNode.insertBefore(sibling, element.nextSibling);
+      }
+      break;
+    case silex.model.DomDirection.TOP:
+      element.parentNode.appendChild(element);
+      break;
+    case silex.model.DomDirection.BOTTOM:
+      element.parentNode.insertBefore(element, element.parentNode.childNodes[0]);
+      break;
+  }
+};
+
+
+/**
+ * get the previous element in the DOM, which is a Silex element
+ * @param {Element} element
+ * @return {Element|null}
+ */
+silex.model.Element.prototype.getPreviousElement = function(element) {
+  let len = element.parentNode.childNodes.length;
+  let res = null;
+  for (let idx=0; idx < len; idx++) {
+    let el = element.parentNode.childNodes[idx];
+    if (el.nodeType === 1 && this.getType(el) !== null) {
+      if(el === element) {
+        return res;
+      }
+      if(this.model.page.isInPage(el)) {
+        res = el;
+      }
+    }
+  }
+  return null;
+};
+
+
+/**
+ * get the previous element in the DOM, which is a Silex element
+ * @param {Element} element
+ * @return {Element|null}
+ */
+silex.model.Element.prototype.getNextElement = function(element) {
+  let len = element.parentNode.childNodes.length;
+  let res = null;
+  for (let idx=len - 1; idx >= 0; idx--) {
+    let el = element.parentNode.childNodes[idx];
+    if (el.nodeType === 1 && this.getType(el) !== null) {
+      if(el === element) {
+        return res;
+      }
+      if(this.model.page.isInPage(el)) {
+        res = el;
+      }
+    }
+  }
+  return null;
+};
+
+
+/**
  * set/get the image URL of an image element
  * @param  {Element} element  container created by silex which contains an image
  * @return  {string}  the url of the image
@@ -362,9 +497,6 @@ silex.model.Element.prototype.setImageUrl = function(element, url, opt_callback,
             img.removeAttribute('id');
             // remove loading asset
             goog.dom.classlist.remove(element, silex.model.Element.LOADING_ELEMENT_CSS_CLASS);
-
-// parent.insertBefore(document.createTextNode("\n" + indent), parent.lastChild);
-
           }, true, this);
       goog.events.listenOnce(imageLoader, goog.net.EventType.ERROR,
           function() {
@@ -409,6 +541,7 @@ silex.model.Element.prototype.removeElement = function(element) {
   // check this is allowed, i.e. an element inside the stage container
   if (this.model.body.getBodyElement() != element &&
       goog.dom.contains(this.model.body.getBodyElement(), element)) {
+    // useless? Should remove its style? this.model.property.setStyle(element);
     // remove the element
     goog.dom.removeNode(element);
   }
@@ -426,13 +559,8 @@ silex.model.Element.prototype.removeElement = function(element) {
  */
 silex.model.Element.prototype.addElement = function(container, element) {
   goog.dom.appendChild(container, element);
-
-  // respect indentation
-  var indent = silex.utils.Dom.getNumParents(container);
-  var textBefore = goog.dom.createTextNode('\n' + this.getTabs(indent));
-  goog.dom.insertSiblingBefore(textBefore, element);
-  var textAfter = goog.dom.createTextNode('\n' + this.getTabs(indent));
-  goog.dom.insertSiblingAfter(textAfter, element);
+  // add the class to keep the element above all others
+  element.classList.add(silex.model.Element.JUST_ADDED_CLASS_NAME);
  };
 
 
@@ -445,58 +573,59 @@ silex.model.Element.prototype.addElement = function(container, element) {
  * @return  {Element}   the newly created element
  */
 silex.model.Element.prototype.createElement = function(type) {
-
-  var element;
-  var bodyElement = this.model.body.getBodyElement();
-
   // find the container (main background container or the stage)
+  var bodyElement = this.model.body.getBodyElement();
   var container = goog.dom.getElementByClass(silex.view.Stage.BACKGROUND_CLASS_NAME, bodyElement);
   if (!container) {
     container = bodyElement;
   }
-  // indentation
-  var indent = silex.utils.Dom.getNumParents(container);
-
   // take the scroll into account (drop at (100, 100) from top left corner of the window, not the stage)
   var offsetX = 100 + this.view.stage.getScrollX();
   var offsetY = 100 + this.view.stage.getScrollY();
-
   // default style
   var styleObject = {
     height: '100px',
     width: '100px',
     top: offsetY + 'px',
-    left: offsetX + 'px',
-    position: 'absolute'
+    left: offsetX + 'px'
   };
 
+  // create the element
+  var element;
   switch (type) {
 
     // container
     case silex.model.Element.TYPE_CONTAINER:
-      element = this.createContainerElement(styleObject, indent);
+      element = this.createContainerElement();
+      // add a default style
+      styleObject.backgroundColor = '#FFFFFF';
       break;
 
     // text
     case silex.model.Element.TYPE_TEXT:
-      element = this.createTextElement(styleObject, indent);
+      element = this.createTextElement();
       break;
 
     // HTML box
     case silex.model.Element.TYPE_HTML:
-      element = this.createHtmlElement(styleObject, indent);
+      element = this.createHtmlElement();
+      // add a default style
+      styleObject.backgroundColor = '#FFFFFF';
       break;
 
     // Image
     case silex.model.Element.TYPE_IMAGE:
-      element = this.createImageElement(styleObject, indent);
+      element = this.createImageElement();
       break;
 
   }
 
   // init the element
-  element.className = silex.model.Body.EDITABLE_CLASS_NAME;
   goog.dom.classlist.add(element, silex.model.Body.EDITABLE_CLASS_NAME);
+  this.model.property.initSilexId(element, this.model.file.getContentDocument());
+
+  // apply the style
+  this.model.property.setStyle(element, styleObject);
 
   // make it editable
   this.model.body.setEditable(element, true);
@@ -513,21 +642,11 @@ silex.model.Element.prototype.createElement = function(type) {
 /**
  * element creation method for a given type
  * called from createElement
- * @param {Object} styleObject
- * @param {number} indent number of tabulations
  */
-silex.model.Element.prototype.createContainerElement = function(styleObject, indent) {
+silex.model.Element.prototype.createContainerElement = function() {
   // create the conatiner
   var element = goog.dom.createElement('div');
   element.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_CONTAINER);
-  // add a default style
-  styleObject.backgroundColor = '#FFFFFF';
-  goog.style.setStyle(element, styleObject);
-
-  // respect indentation
-  var textInside = goog.dom.createTextNode('\n' + this.getTabs(indent - 1));
-  goog.dom.appendChild(element, textInside);
-
   return element;
 };
 
@@ -535,10 +654,8 @@ silex.model.Element.prototype.createContainerElement = function(styleObject, ind
 /**
  * element creation method for a given type
  * called from createElement
- * @param {Object} styleObject
- * @param {number} indent number of tabulations
  */
-silex.model.Element.prototype.createTextElement = function(styleObject, indent) {
+silex.model.Element.prototype.createTextElement = function() {
   // create the element
   var element = goog.dom.createElement('div');
   element.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_TEXT);
@@ -553,13 +670,6 @@ silex.model.Element.prototype.createTextElement = function(styleObject, indent) 
   // sometimes there is only in text node in textContent
   // e.g. whe select all + remove formatting
   goog.dom.classlist.add(textContent, 'normal');
-  goog.style.setStyle(element, styleObject);
-
-  // respect indentation
-  var textBefore = goog.dom.createTextNode('\n' + this.getTabs(1 + indent));
-  goog.dom.insertSiblingBefore(textBefore, textContent);
-  var textAfter = goog.dom.createTextNode('\n' + this.getTabs(indent));
-  goog.dom.insertSiblingAfter(textAfter, textContent);
 
   return element;
 };
@@ -568,30 +678,17 @@ silex.model.Element.prototype.createTextElement = function(styleObject, indent) 
 /**
  * element creation method for a given type
  * called from createElement
- * @param {Object} styleObject
- * @param {number} indent number of tabulations
  */
-silex.model.Element.prototype.createHtmlElement = function(styleObject, indent) {
+silex.model.Element.prototype.createHtmlElement = function() {
   // create the element
   var element = goog.dom.createElement('div');
   element.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_HTML);
   // create the container for html content
   var htmlContent = goog.dom.createElement('div');
   htmlContent.innerHTML = '<p>New HTML box</p>';
-  goog.style.setStyle(htmlContent, 'width', '100%');
-  goog.style.setStyle(htmlContent, 'height', '100%');
   goog.dom.appendChild(element, htmlContent);
   // add a marker to find the inner content afterwards, with getContent
   goog.dom.classlist.add(htmlContent, silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
-  // add a default style
-  styleObject.backgroundColor = '#FFFFFF';
-  goog.style.setStyle(element, styleObject);
-
-  // respect indentation
-  var textBefore = goog.dom.createTextNode('\n' + this.getTabs(1 + indent));
-  goog.dom.insertSiblingBefore(textBefore, htmlContent);
-  var textAfter = goog.dom.createTextNode('\n');
-  goog.dom.insertSiblingAfter(textAfter, htmlContent);
 
   return element;
 };
@@ -600,14 +697,11 @@ silex.model.Element.prototype.createHtmlElement = function(styleObject, indent) 
 /**
  * element creation method for a given type
  * called from createElement
- * @param {Object} styleObject
- * @param {number} indent number of tabulations
  */
-silex.model.Element.prototype.createImageElement = function(styleObject, indent) {
+silex.model.Element.prototype.createImageElement = function() {
   // create the element
   var element = goog.dom.createElement('div');
   element.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_IMAGE);
-  goog.style.setStyle(element, styleObject);
   return element;
 };
 
@@ -649,11 +743,12 @@ silex.model.Element.prototype.getClassName = function(element) {
   var pages = this.model.page.getPages();
   return goog.array.map(element.className.split(' '), function(name) {
     if (goog.array.contains(silex.utils.Style.SILEX_CLASS_NAMES, name) ||
-        goog.array.contains(pages, name)) {
+        goog.array.contains(pages, name) ||
+        this.model.property.getSilexId(element) === name) {
       return;
     }
     return name;
-  }).join(' ').trim();
+  }, this).join(' ').trim();
 };
 
 
@@ -669,10 +764,11 @@ silex.model.Element.prototype.setClassName = function(element, opt_className) {
   var pages = this.model.page.getPages();
   var classNamesToKeep = goog.array.map(element.className.split(' '), function(name) {
     if (goog.array.contains(silex.utils.Style.SILEX_CLASS_NAMES, name) ||
-        goog.array.contains(pages, name)) {
+        goog.array.contains(pages, name) ||
+        this.model.property.getSilexId(element) === name) {
       return name;
     }
-  });
+  }, this);
 
   // reset element class name
   element.className = classNamesToKeep.join(' ');

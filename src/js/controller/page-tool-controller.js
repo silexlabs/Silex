@@ -62,7 +62,7 @@ silex.controller.PageToolController.prototype.renamePage = function(opt_pageName
           // undo checkpoint
           this.undoCheckPoint();
           // update model
-          this.model.page.renamePage(opt_pageName, name, newDisplayName);
+          this.model.page.renamePage(/** @type {string} */ (opt_pageName), name, newDisplayName);
         }
         else {
           // just open the new page
@@ -91,7 +91,7 @@ silex.controller.PageToolController.prototype.removePage = function(opt_pageName
           // undo checkpoint
           this.undoCheckPoint();
           // update model
-          this.model.page.removePage(opt_pageName);
+          this.model.page.removePage(/** @type {string} */ (opt_pageName));
         }
       }, this), 'delete', 'cancel');
 };

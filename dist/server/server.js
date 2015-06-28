@@ -22,8 +22,8 @@ var FSStore = require('connect-fs2')(session);
 var app = express();
 
 // gzip/deflate outgoing responses
-var compression = require('compression')
-app.use(compression())
+var compression = require('compression');
+app.use(compression());
 
 // parse data for file upload
 app.use('/', multipart({limit: '100mb'}));
@@ -84,7 +84,7 @@ exports.setDebugMode = function(debug){
         // define users (login/password) wich will be authorized to access the www folder (read and write)
         silexConfig.www.USERS = {
             'admin': 'admin'
-        }
+        };
     }
     if(!debug && isDebug){
         // PRODUCTION ONLY
@@ -94,7 +94,8 @@ exports.setDebugMode = function(debug){
         // reset debug
         silexConfig.www.USERS = {};
     }
-}
+};
+
 // ********************************
 // config
 // ********************************
@@ -112,6 +113,11 @@ silexConfig.staticFolders.push(
     {
         name: '/js/src',
         path: __dirname + '/../../src'
+    },
+    // when working offline, you can re-route http://static.silex.me/ to http://localhost:6805/static/
+    {
+        name: '/static',
+        path: __dirname + '/../../static.silex.me'
     }
 );
 

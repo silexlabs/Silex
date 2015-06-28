@@ -70,21 +70,21 @@ silex.controller.StageController.prototype.deselect = function(target) {
 
 
 /**
- * callback for the stage to notify a component will be moved or resized
+ * callback for the stage to notify a component has been moved or resized
  */
-silex.controller.StageController.prototype.beforeChange = function() {
-  // undo checkpoint
-  this.undoCheckPoint();
+silex.controller.StageController.prototype.updateView = function() {
+  // refresh the toolboxes
+  var selection = this.model.body.getSelection();
+  this.model.body.setSelection(selection);
 };
 
 
 /**
- * callback for the stage to notify a component has been moved or resized
+ * mark the state for undo/redo
  */
-silex.controller.StageController.prototype.change = function() {
-  // refresh the toolboxes
-  var selection = this.model.body.getSelection();
-  this.model.body.setSelection(selection);
+silex.controller.StageController.prototype.markAsUndoable = function() {
+  // undo checkpoint
+  this.undoCheckPoint();
 };
 
 
@@ -95,13 +95,15 @@ silex.controller.StageController.prototype.change = function() {
  */
 silex.controller.StageController.prototype.newContainer = function(container, element) {
   if (element.parentNode !== container) {
-    // store initial position
-    var pos = goog.style.getPageOffset(element);
+    // initial positions
+    var elementPos = goog.style.getPageOffset(element);
+    var newContainerPos = goog.style.getPageOffset(container);
     // move to the new container
     this.model.element.removeElement(element);
     this.model.element.addElement(container, element);
     // restore position
-    goog.style.setPageOffset(element, pos);
+    this.styleChanged('left', (elementPos.x - newContainerPos.x) + 'px', [element]);
+    this.styleChanged('top', (elementPos.y - newContainerPos.y) + 'px', [element]);
   }
   // check if a parent is visible only on some pages,
   // then element should be visible everywhere

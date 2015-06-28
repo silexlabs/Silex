@@ -167,10 +167,6 @@ silex.Config.menu = {
       className: 'menu-item-insert'
     },
     {
-      label: 'Tools',
-      className: 'menu-item-tools'
-    },
-    {
       label: 'Help',
       className: 'menu-item-help'
     }
@@ -213,11 +209,6 @@ silex.Config.menu = {
         className: 'menu-item-file-saveas'
       },
       null,
-      {
-        label: 'Rename...',
-        id: 'file.rename',
-        className: 'menu-item-file-rename'
-      },
       {
         label: 'Publish',
         id: 'file.publish',
@@ -296,6 +287,51 @@ silex.Config.menu = {
         className: 'menu-item-view-open-textEditor',
         tooltip: '↵'
       },
+      {
+        label: 'Edit image with Express',
+        id: 'tools.pixlr.express',
+        className: 'menu-item-tools-pixllr.express',
+        shortcut: [[goog.events.KeyCodes.ENTER, altKeyModifyer + goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT]],
+        tooltip: altKeyDisplay + '⇧ ↵'
+      },
+      {
+        label: 'Edit image with Pixlr',
+        id: 'tools.pixlr.edit',
+        className: 'menu-item-tools-pixllr.edit',
+        shortcut: [[goog.events.KeyCodes.ENTER, altKeyModifyer]],
+        tooltip: altKeyDisplay + '↵'
+      },
+      null,
+      {
+        label: 'Bring to front',
+        id: 'edit.move.to.top',
+        className: 'menu-item-edit-move-to-top',
+        shortcut: [[goog.events.KeyCodes.UP, altKeyModifyer + goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT]],
+        tooltip: altKeyDisplay + '⇧ Up'
+      },
+      {
+        label: 'Bring forward',
+        id: 'edit.move.up',
+        className: 'menu-item-edit-move-up',
+        shortcut: [[goog.events.KeyCodes.UP, altKeyModifyer]],
+        tooltip: altKeyDisplay + 'Up',
+        mnemonic: goog.events.KeyCodes.UP
+      },
+      {
+        label: 'Bring backward',
+        id: 'edit.move.down',
+        className: 'menu-item-edit-move-down',
+        shortcut: [[goog.events.KeyCodes.DOWN, altKeyModifyer]],
+        tooltip: altKeyDisplay + 'Down',
+        mnemonic: goog.events.KeyCodes.DOWN
+      },
+      {
+        label: 'Send to back',
+        id: 'edit.move.to.bottom',
+        className: 'menu-item-edit-move-to-bottom',
+        shortcut: [[goog.events.KeyCodes.DOWN, altKeyModifyer + goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT]],
+        tooltip: altKeyDisplay + '⇧ Down'
+      },
       null,
       {
         label: 'Rename page',
@@ -318,7 +354,35 @@ silex.Config.menu = {
         mnemonic: goog.events.KeyCodes.V,
         accelerator: 'v'
       },
+      {
+        label: 'Preview in Responsize',
+        id: 'view.file.responsize',
+        className: 'menu-item-view-file-responsize',
+        shortcut: [[goog.events.KeyCodes.V, altKeyModifyer + goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT]],
+        tooltip: altKeyDisplay + '⇧ V'
+      },
       null,
+      {
+        label: 'Apollo mode',
+        id: 'tools.advanced.activate',
+        className: 'menu-item-tools-advanced-activate',
+        checkable: true,
+        shortcut: [[goog.events.KeyCodes.A, altKeyModifyer + ctrlKeyModifyer + goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT]],
+        tooltip: ctrlKeyDisplay + altKeyDisplay + '⇧ A',
+        mnemonic: goog.events.KeyCodes.A,
+        accelerator: 'a'
+      },
+      null,
+      {
+        label: 'HTML <head> editor',
+        id: 'view.open.htmlHeadEditor',
+        className: 'menu-item-view-open-htmlHeadEditor',
+        globalKey: goog.events.KeyCodes.E,
+        shortcut: [[goog.events.KeyCodes.E, altKeyModifyer]],
+        tooltip: altKeyDisplay + 'E',
+        mnemonic: goog.events.KeyCodes.E,
+        accelerator: 'e'
+      },
       {
         label: 'JS scripts editor',
         id: 'view.open.jsEditor',
@@ -396,32 +460,6 @@ silex.Config.menu = {
         tooltip: altKeyDisplay + 'P',
         mnemonic: goog.events.KeyCodes.P,
         accelerator: 'p'
-      }
-    ],
-    [
-      {
-        label: 'Apollo mode',
-        id: 'tools.advanced.activate',
-        className: 'menu-item-tools-advanced-activate',
-        checkable: true,
-        shortcut: [[goog.events.KeyCodes.A, altKeyModifyer + ctrlKeyModifyer + goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT]],
-        tooltip: ctrlKeyDisplay + altKeyDisplay + '⇧ A',
-        mnemonic: goog.events.KeyCodes.A,
-        accelerator: 'a'
-      },
-      {
-        label: 'Edit image with Express',
-        id: 'tools.pixlr.express',
-        className: 'menu-item-tools-pixllr.express',
-        shortcut: [[goog.events.KeyCodes.ENTER, altKeyModifyer + goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT]],
-        tooltip: altKeyDisplay + '⇧ ↵'
-      },
-      {
-        label: 'Edit image with Pixlr',
-        id: 'tools.pixlr.edit',
-        className: 'menu-item-tools-pixllr.edit',
-        shortcut: [[goog.events.KeyCodes.ENTER, altKeyModifyer]],
-        tooltip: altKeyDisplay + '↵'
       }
     ],
     [

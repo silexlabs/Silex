@@ -28,12 +28,24 @@ goog.require('silex.model.PageData');
  * @constructor
  *
  * @param {Element} element   container to render the UI
- * @param  {silex.types.Controller} controller  structure which holds
+ * @param  {!silex.types.Model} model  model class which holds
+ *                                  the model instances - views use it for read operation only
+ * @param  {!silex.types.Controller} controller  structure which holds
  *                                  the controller instances
  */
-silex.view.PageTool = function(element, controller) {
+silex.view.PageTool = function(element, model, controller) {
   // store references
+  /**
+   * @type {Element}
+   */
   this.element = element;
+  /**
+   * @type {!silex.types.Model}
+   */
+  this.model = model;
+  /**
+   * @type {!silex.types.Controller}
+   */
   this.controller = controller;
 };
 
@@ -77,18 +89,17 @@ silex.view.PageTool.prototype.buildUi = function() {
  * refresh the pages
  * find all pages in the dom
  * @param   {Array.<Element>} selectedElements the elements currently selected
- * @param   {Document} contentDocument  the document to use
  * @param   {Array.<string>} pageNames   the names of the pages which appear in the current HTML file
  * @param   {string}  currentPageName   the name of the current page
  */
-silex.view.PageTool.prototype.redraw = function(selectedElements, contentDocument, pageNames, currentPageName) {
+silex.view.PageTool.prototype.redraw = function(selectedElements, pageNames, currentPageName) {
   // prepare the data for the template
   // make an array with name, displayName, linkName and className
   var idx = 0;
   this.pages = pageNames.map(goog.bind(function(pageName) {
     var res = {
       'name': pageName,
-      'displayName': contentDocument.getElementById(pageName).innerHTML,
+      'displayName': this.model.file.getContentDocument().getElementById(pageName).innerHTML,
       'linkName': '#!' + pageName,
       'idx': idx++
     };

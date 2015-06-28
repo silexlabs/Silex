@@ -2,6 +2,51 @@
 
 This is where you will find the recent changes made to Silex, and available on http://www.silex.me/
 
+
+# Jun 2015
+
+6 months of work released on http//editor.silex.me
+
+features
+
+* new social and SEO features in the settings pannel
+* support links to pages (`#!page-*`)  and links to anchor (`#*`)
+* better preview
+  * use [responsize](http://www.responsize.org)
+  * auto refresh on save
+  * open the current page
+  * save before preview
+* notifications in chrome and firefox
+
+quality of the generated websites
+
+* save pretty (readable) HTML
+* no more inline CSS styles in the HTML
+* code cleanup (removed old jquery libs)
+
+UI
+
+* display an alert when updating to the latest version
+* z-index: no more automatic z-index changes, added menu for move to front / back
+* better drag / drop (better precision and improved UI)
+* new HEAD tag editor
+* workspace UI improvements (size and resize of the pannels)
+* added switch button for apollo mode in the properties
+
+contributions
+
+* @christian-bromann
+* @rrrene
+
+other improvements
+
+* optimized undo/redo: it is almost instantaneous
+* Add docs badge to README
+* improved the [google chrome app version](https://chrome.google.com/webstore/detail/silex-live-web-creation/pjapkdalpbohjofmdibkcgkkhohakcje)
+* better backward compatibility system
+* bug fixes
+
+
 # Dec 2014
 
 * UI design change to black, contribution by @camilleghirne

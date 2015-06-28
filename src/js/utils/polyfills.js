@@ -26,7 +26,9 @@ silex.utils.Polyfills.init = function() {
   // console object, do nothing
   window.console = window.console || {
     log: function() {},
+    info: function() {},
     warn: function() {},
-    error: function() {}
+    error: function() {},
+    dir: function() {}
   };
 };

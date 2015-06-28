@@ -29,13 +29,15 @@ goog.require('silex.view.pane.PaneBase');
  * @constructor
  * @extends {silex.view.pane.PaneBase}
  * @param {Element} element   container to render the UI
- * @param  {silex.types.Controller} controller  structure which holds
+ * @param  {!silex.types.Model} model  model class which holds
+ *                                  the model instances - views use it for read operation only
+ * @param  {!silex.types.Controller} controller  structure which holds
  *                                  the controller instances
  */
-silex.view.pane.PropertyPane = function(element, controller) {
+silex.view.pane.PropertyPane = function(element, model, controller) {
   // call super
-  goog.base(this, element, controller);
-
+  goog.base(this, element, model, controller);
+  // init the component
   this.buildUi();
 };
 
@@ -157,20 +159,29 @@ silex.view.pane.PropertyPane.prototype.onPositionChanged =
   if (input.value !== '') {
     // get the value
     var value = parseFloat(input.value);
+    // handle minimum size
+    if (name === 'width' && value < silex.model.Element.MIN_WIDTH) {
+      value = silex.model.Element.MIN_WIDTH
+    }
+    if (name === 'height' && value < silex.model.Element.MIN_HEIGHT) {
+      value = silex.model.Element.MIN_HEIGHT
+    }
     // get the old value
     var oldValue = parseFloat(input.getAttribute('data-prev-value') || 0);
     input.setAttribute('data-prev-value', value);
     // compute the offset
     var offset = value - oldValue;
-    // the bounding box of all elements
-    var bb = {};
     // apply the change to all elements
     goog.array.forEach(this.selectedElements, function(element) {
       if (goog.isNumber(oldValue)) {
-        bb = silex.utils.Dom.getBoundingBox([element]);
+        var elementStyle = this.model.property.getStyleObject(element);
+        var styleValue = 0;
+        if (elementStyle && elementStyle[name] && elementStyle[name] != '') {
+          styleValue = parseFloat(elementStyle[name].substr(0, elementStyle[name].indexOf('px')));
+        }
         // compute the new value relatively to the old value,
         // in order to match the group movement
-        var newValue = bb[name] + offset;
+        var newValue = styleValue + offset;
         this.styleChanged(name,
             newValue + 'px',
             [element]);
@@ -224,21 +235,20 @@ silex.view.pane.PropertyPane.prototype.onTitleChanged =
 /**
  * redraw the properties
  * @param   {Array.<Element>} selectedElements the elements currently selected
- * @param   {Document} document  the document to use
  * @param   {Array.<string>} pageNames   the names of the pages which appear in the current HTML file
  * @param   {string}  currentPageName   the name of the current page
  */
-silex.view.pane.PropertyPane.prototype.redraw = function(selectedElements, document, pageNames, currentPageName) {
+silex.view.pane.PropertyPane.prototype.redraw = function(selectedElements, pageNames, currentPageName) {
   if (this.iAmSettingValue) return;
   this.iAmRedrawing = true;
 
   // call super
-  goog.base(this, 'redraw', selectedElements, document, pageNames, currentPageName);
+  goog.base(this, 'redraw', selectedElements, pageNames, currentPageName);
 
   // not available for stage element
   var elementsNoStage = [];
   goog.array.forEach(selectedElements, function(element) {
-    if (document.body != element) {
+    if (this.model.body.getBodyElement() != element) {
       elementsNoStage.push(element);
     }
   }, this);
@@ -254,7 +264,7 @@ silex.view.pane.PropertyPane.prototype.redraw = function(selectedElements, docum
     // remember selection
     this.selectedElements = selectedElements;
 
-    var bb = silex.utils.Dom.getBoundingBox(selectedElements);
+    var bb = this.model.property.getBoundingBox(selectedElements);
 
     // display position and size
     this.topInput.value = bb.top || '0';
