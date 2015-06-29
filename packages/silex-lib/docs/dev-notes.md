@@ -7,9 +7,9 @@ a mettre sous forme d'issues et de propositions?
   - fix more bugs
     + script type="text/javascript" style="display:none"
       => au save, remove all + add latest scripts (call BackwardCompat::getLatestTags)
-    + videos and html box 
+    + videos and html box
       => https://github.com/silexlabs/Silex/issues/156#issuecomment-88950690
-      => remove HTML boxes from the dom when not paged
+      => remove iframes when not paged
       + Html box: Do not execute scripts
     + ? rename silex-style => silex-user-styles
     + ? file / new => chose a template from templates.silex.me
@@ -142,7 +142,7 @@ page thumbnails
 mobile branch to do
   silex responsive => regarder dev notes de responsize
   resize with viewport
-  ?new item in view menu: reset mobile style 
+  ?new item in view menu: reset mobile style
     => is it when switch off the "allow mobile" setting?
   manage font offset?
   rename "publish settings" section to "advanced" or something?
@@ -152,7 +152,7 @@ mobile branch to do
   bugs
     * pages bugs
     * add margin between elements => add property?
-    * reorder the dom the first time? 
+    * reorder the dom the first time?
         + ?reorder the element when is inserted or change container
     * ?not possible to add elements in the mobile mode
     * prevent-drag in mobile mode
