@@ -60,10 +60,15 @@ silex.utils.BackwardCompat.process = function(doc, model, cbk) {
     });
 
   // warn the user
-  if (silex.utils.BackwardCompat.amIObsolete(version, silex.utils.BackwardCompat.LATEST_VERSION)) {
+  if(!doc.querySelector('.page-element') && !doc.querySelector('silex-published')) {
+    console.error('Error: this is not a Silex website, abort backward compat');
+    cbk();
+    return;
+  }
+  else if (silex.utils.BackwardCompat.amIObsolete(version, silex.utils.BackwardCompat.LATEST_VERSION)) {
     silex.utils.Notification.alert('This website has been saved with a newer version of Silex. Continue at your own risks.', function() {});
   }
-  if (silex.utils.BackwardCompat.hasToUpdate(version, silex.utils.BackwardCompat.LATEST_VERSION)) {
+  else if (silex.utils.BackwardCompat.hasToUpdate(version, silex.utils.BackwardCompat.LATEST_VERSION)) {
     silex.utils.Notification.alert('This website has been updated with the latest version of Silex.<br><br>Before you save it, please check that everything is fine. Saving it with another name could be a good idea too (menu file > save as).', function() {});
   }
 
