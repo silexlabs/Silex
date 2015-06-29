@@ -31,6 +31,16 @@ $(function() {
   $('body').on('pageChanged', function (event, pageName) {
     // mark links to the current page as active
     $('[data-silex-href="#!'+pageName+'"]').addClass('page-link-active');
+    // prevent iframe content from staying in the dom
+    // this prevent a youtube video to continue playing while on another page
+    // this is useful in chrome and not firefox since display:none does not reset iframe dom in chrome
+    $('[data-silex-iframe-src]').each(function() {
+      this.setAttribute('src', this.getAttribute('data-silex-iframe-src'));
+    });
+    $('.paged-element-hidden iframe').each(function() {
+      this.setAttribute('data-silex-iframe-src', this.getAttribute('src'));
+      this.setAttribute('src', '');
+    });
   });
   /**
    * init page system
