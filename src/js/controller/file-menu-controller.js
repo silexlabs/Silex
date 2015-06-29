@@ -85,8 +85,9 @@ silex.controller.FileMenuController.prototype.openFile = function(opt_cbk, opt_e
             }
             else {
               // this website is not an editable Silex website?
-              var message = 'This file is not an editable Silex website.';
+              var message = 'This file is not an editable Silex website. <a target="_blank" href="https://github.com/silexlabs/Silex/issues/282">More info here</a>.';
               silex.utils.Notification.notifyError('Error: ' + message);
+              silex.utils.Notification.alert('Error: ' + message, function() {});
               this.tracker.trackAction('controller-events', 'error', 'file.open_not.editable', -1);
               if (opt_errorCbk) opt_errorCbk({message: message});
             }
