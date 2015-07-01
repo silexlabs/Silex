@@ -156,8 +156,8 @@ silex.model.Element.JUST_ADDED_CLASS_NAME = 'silex-just-added';
  * @return {string} the processed HTML
  */
 silex.model.Element.prototype.prepareHtmlForEdit = function(rawHtml) {
-  // prevent scripts from executing
-  rawHtml = rawHtml.replace(/type=\"text\/javascript\"/gi, 'type="text/notjavascript"');
+  // prevent the user scripts from executing while editing
+  rawHtml = rawHtml.replace(/<script.*class=\"silex-script\".*?>/gi, '<script type="text/notjavascript" class="silex-script">');
   // convert to absolute urls
   if (this.model.file.getUrl()) {
     rawHtml = silex.utils.Url.relative2Absolute(rawHtml, silex.utils.Url.getBaseUrl() + this.model.file.getUrl());
@@ -173,7 +173,7 @@ silex.model.Element.prototype.prepareHtmlForEdit = function(rawHtml) {
  * @return {string} the processed HTML
  */
 silex.model.Element.prototype.unprepareHtmlForEdit = function(rawHtml) {
-  // put back the scripts
+  // put back the user script
   rawHtml = rawHtml.replace(/type=\"text\/notjavascript\"/gi, 'type="text/javascript"');
   // remove cache control used to refresh images after editing by pixlr
   rawHtml = silex.utils.Dom.removeCacheControl(rawHtml);
