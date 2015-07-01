@@ -2,14 +2,17 @@
 
 a mettre sous forme d'issues et de propositions?
 
-  - doc expliquant l'event "file.open_not.editable"? avec lien dans le message
-  - documenter les #!page-* VS #anchor-name
+  - ?? documenter les #!page-* VS #anchor-name
   - fix more bugs
     + script type="text/javascript" style="display:none"
       => au save, remove all + add latest scripts (call BackwardCompat::getLatestTags)
+
+      => suppr edition scripts from dist/client/
+
+    + deconnection de dropbox
     + videos and html box
-      => https://github.com/silexlabs/Silex/issues/156#issuecomment-88950690
-      => remove iframes when not paged
+      x => https://github.com/silexlabs/Silex/issues/156#issuecomment-88950690
+      x => remove iframes when not paged
       + Html box: Do not execute scripts
     + ? rename silex-style => silex-user-styles
     + ? file / new => chose a template from templates.silex.me
@@ -129,6 +132,11 @@ Communication inside silex
 
 `build` branch
 * reorg static.silex.me => all in the repo served by nodejs
+* deploy with codeship or travis
+  sftp 1729213@sftp.dc0.gpaas.net
+  + pass ?
+  cd vhosts/default/
+  put -r .../* Silex/
 
 page thumbnails
 * cf screenshot "page thumbnails.png"

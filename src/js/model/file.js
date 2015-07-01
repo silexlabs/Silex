@@ -88,14 +88,6 @@ silex.model.File.LOADING_LIGHT_CSS_CLASS = 'loading-website-light';
 
 
 /**
- * edit scripts as a string, used to speed up undo / redo when the scripts are cached by the browser
- * @const
- * @static
- */
-silex.model.File.EDIT_SCRIPTS_CACHE = '<script type="text/javascript" src="{{baseUrl}}libs/jquery/jquery.js" class="silex-temp-tag"></script><script type="text/javascript" src="{{baseUrl}}libs/jquery/jquery-ui.js" class="silex-temp-tag"></script><script type="text/javascript" src="{{baseUrl}}libs/jquery/pageable.js" class="silex-temp-tag"></script><script type="text/javascript" src="{{baseUrl}}js/front-end.js" class="silex-temp-tag"></script><link rel="stylesheet" href="{{baseUrl}}css/editable.css" class="silex-temp-tag"><link rel="stylesheet" href="{{baseUrl}}css/front-end.css" class="silex-temp-tag"><link rel="stylesheet" href="{{baseUrl}}libs/normalize.css" class="silex-temp-tag">';
-
-
-/**
  * current file url
  * if the current file is a new file, it has no url
  * if set, this is an absolute URL, use silex.model.File::getUrl to get the relatvie URL
@@ -156,28 +148,16 @@ silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk, opt_showLoader) 
     // include edition tags and call onContentLoaded
     // the first time, it takes time to load the scripts
     // the second time, no load event, and jquery is already loaded
-    if (!this.contentWindow.jQuery) {
-      // first time in chrome, and always in firefox
-      // load scripts for edition in the iframe
-      this.includeEditionTags(goog.bind(function() {
-        this.onContentLoaded(opt_cbk);
-      }, this), goog.bind(function() {
-        // error loading editable script
-        console.error('error loading editable script');
-        throw new Error('error loading editable script');
-      }, this));
-    }
-    else {
-      // jQuery already loaded
-      // second time in chrome, jquery already loaded
-      // call include scripts with no callback
-      // OPTIM: no need to wait, see the optim bellow (editScripts)
-      // this.includeEditionTags();
-      // this.contentWindow.jQuery(goog.bind(function() {
-      //  this.onContentLoaded(opt_cbk);
-      // }, this));
+
+    // first time in chrome, and always in firefox
+    // load scripts for edition in the iframe
+    this.includeEditionTags(goog.bind(function() {
       this.onContentLoaded(opt_cbk);
-    }
+    }, this), goog.bind(function() {
+      // error loading editable script
+      console.error('error loading editable script');
+      throw new Error('error loading editable script');
+    }, this));
   }, false, this);
   // add base tag from the beginning
   // should not be needed since we change all  the URLs to absolute
@@ -188,9 +168,6 @@ silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk, opt_showLoader) 
   rawHtml = this.model.head.extractUserHeadTag(rawHtml);
   // prepare HTML
   rawHtml = this.model.element.prepareHtmlForEdit(rawHtml);
-  // speed up in case they have been loaded already (see the comment 'jQuery already loaded' a few lines before this)
-  var editScripts = silex.model.File.EDIT_SCRIPTS_CACHE.replace(/{{baseUrl}}/g, silex.utils.Url.getBaseUrl());
-  rawHtml = rawHtml.replace('</head>', editScripts + '</head>');
   // write the content
   goog.dom.iframe.writeContent(this.iFrameElement, rawHtml);
 };
@@ -248,31 +225,15 @@ silex.model.File.prototype.onContentLoaded = function(opt_cbk) {
  * load all scripts needed for edit and display
  * in the iframe
  * WARNING:
- *    this is not used when the scripts are cached by the browser: @see silex.model.File.EDIT_SCRIPTS_CACHE
- *    if you change this method you will want to update silex.model.File.EDIT_SCRIPTS_CACHE
+ *    this is not used when the scripts are cached by the browser (see how this method is called, only the 1st time the website is loaded)
  * @param {?function()=} opt_onSuccess
  * @param {?function()=} opt_onError
  */
 silex.model.File.prototype.includeEditionTags = function(opt_onSuccess, opt_onError) {
   var tags = [];
-  // js script tags
-  var scripts = [
-    'libs/jquery/jquery.js',
-    'libs/jquery/jquery-ui.js',
-    'libs/jquery/pageable.js',
-    'js/front-end.js'
-  ];
-  goog.array.forEach(scripts, function(url) {
-    var tag = this.contentDocument.createElement('script');
-    tag.type = 'text/javascript';
-    tag.src = silex.utils.Url.getAbsolutePath(url, window.location.href);
-    tags.push(tag);
-  }, this);
   // css tags
   var styles = [
-    'css/editable.css',
-    'css/front-end.css',
-    'libs/normalize.css'
+    'css/editable.css'
   ];
   goog.array.forEach(styles, function(url) {
     var tag = this.contentDocument.createElement('link');
@@ -300,6 +261,7 @@ silex.model.File.prototype.getHtml = function() {
   this.model.head.removeTempTags(/** @type {Document} */ (cleanFile).head);
   this.model.body.removeEditableClasses(/** @type {!Element} */ (cleanFile));
   silex.utils.Style.removeInternalClasses(/** @type {!Element} */ (cleanFile), false, true);
+  silex.utils.Dom.cleanupFirefoxInlines(this.contentDocument);
   // reset the style set by stage on the body
   goog.style.setStyle(/** @type {Document} */ (cleanFile).body, 'minWidth', '');
   goog.style.setStyle(/** @type {Document} */ (cleanFile).body, 'minHeight', '');
