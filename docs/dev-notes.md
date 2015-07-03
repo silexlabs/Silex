@@ -4,9 +4,6 @@ a mettre sous forme d'issues et de propositions?
 
   - ?? documenter les #!page-* VS #anchor-name
   - fix more bugs
-    + script type="text/javascript" style="display:none"
-      => au save, remove all + add latest scripts (call BackwardCompat::getLatestTags)
-
       => suppr edition scripts from dist/client/
 
     + deconnection de dropbox
@@ -133,7 +130,7 @@ Communication inside silex
 `build` branch
 * reorg static.silex.me => all in the repo served by nodejs
 * deploy with codeship or travis
-  sftp 1729213@sftp.dc0.gpaas.net
+  sftp xxxx@sftp.dc0.gpaas.net
   + pass ?
   cd vhosts/default/
   put -r .../* Silex/
