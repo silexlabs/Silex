@@ -113,6 +113,15 @@ Start Silex :
 * Launch Silex from a command prompt ( Silex's Directory) : node dist/server/server.js
 * Open your favorite browser on http://localhost:6805/ and ENJOY !!!
 
+### Using Docker
+
+Prerequisite :
+* [docker](https://www.docker.com/)
+
+  $ docker run -p 6805:6805 indiehosters/silex
+
+Open http://localhost:6805/ and you are ready!
+
 ##dependencies
 
 These are the upstream projects we use in Silex
