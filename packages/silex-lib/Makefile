@@ -1,5 +1,5 @@
 all:
-	npm install
+	npm install --unsafe-perm # --unsafe-perm is to avoid loosing write access for postinstall script (which results in not building Silex at all)
 	node_modules/grunt-cli/bin/grunt install
 
 tests:
@@ -13,4 +13,3 @@ test:
 precommit:
 	echo 'About to commit your changes. Did you run the functional tests? Please do: \
 		`$ node_modules/grunt-cli/bin/grunt test -phantomjs`'
-
