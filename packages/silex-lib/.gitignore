@@ -6,7 +6,7 @@
 .temp
 .cache
 node_modules
-npm-debug.log
+*.log
 dist/server/sessions
 dist/client/debug.html
 dist/client/index.html
