@@ -127,8 +127,14 @@ Communication inside silex
 
 ## other branches
 
+`docker` branch
+* ?? permet de dev sur silex (different image indiehosters)
+* utiliser indiehosters mais avec le build de l'image et fichiers silex locaux?
+
 `build` branch
-* reorg static.silex.me => all in the repo served by nodejs
+* verifier que `npm install --production` fonctionne (doit builder sans les devDependencies)
+  https://github.com/silexlabs/Silex/issues/287
+* avoir 2 modes de build, dev / prod, plus de .min.* ni de debug.html
 * deploy with codeship or travis
   sftp xxxx@sftp.dc0.gpaas.net
   + pass ?
