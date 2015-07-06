@@ -4,6 +4,7 @@ COPY . /silex
 WORKDIR /silex
 RUN apt-get update \
 &&  apt-get install -yq python openjdk-7-jre \
+&&  rm -rf /var/lib/apt/lists/* \
 &&  make
 
 EXPOSE 6805
