@@ -4,13 +4,8 @@ a mettre sous forme d'issues et de propositions?
 
   - ?? documenter les #!page-* VS #anchor-name
   - fix more bugs
-      => suppr edition scripts from dist/client/
-
+    + Html box: Do not execute scripts
     + deconnection de dropbox
-    + videos and html box
-      x => https://github.com/silexlabs/Silex/issues/156#issuecomment-88950690
-      x => remove iframes when not paged
-      + Html box: Do not execute scripts
     + ? rename silex-style => silex-user-styles
     + ? file / new => chose a template from templates.silex.me
     + no !important in front-end.css?
@@ -19,6 +14,8 @@ a mettre sous forme d'issues et de propositions?
         -moz-columns: 2 auto; sur .main-container
         take .style-container out of main-container
   - merge `build` branch, cf notes below
+    + env var for static.silex.me
+    + class to mark the required scripts, do not rely on their URLs anymore
   - merge `context-menu` branch
   - site silex a finir
   - ?? bug des URLs https://github.com/silexlabs/Silex/issues/264#issuecomment-108923532
