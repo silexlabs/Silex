@@ -2,7 +2,6 @@
 
 a mettre sous forme d'issues et de propositions?
 
-  - ?? documenter les #!page-* VS #anchor-name
   - fix more bugs
     + Html box: Do not execute scripts
     + deconnection de dropbox
@@ -11,11 +10,14 @@ a mettre sous forme d'issues et de propositions?
     + no !important in front-end.css?
     + see known bugs
   - better "tiling" in the property editor?
-        -moz-columns: 2 auto; sur .main-container
-        take .style-container out of main-container
+        !! bug in chrome?
+        commit & push
+        ? take .style-container out of main-container
   - merge `build` branch, cf notes below
-    + env var for static.silex.me
+  - https branch
+    + static.silex.me => dist/client/static/
     + class to mark the required scripts, do not rely on their URLs anymore
+    + backward compat: update to // + server url + static
   - merge `context-menu` branch
   - site silex a finir
   - ?? bug des URLs https://github.com/silexlabs/Silex/issues/264#issuecomment-108923532
@@ -132,7 +134,7 @@ Communication inside silex
 * verifier que `npm install --production` fonctionne (doit builder sans les devDependencies)
   https://github.com/silexlabs/Silex/issues/287
 * avoir 2 modes de build, dev / prod, plus de .min.* ni de debug.html
-* deploy with codeship or travis
+* ?? deploy with codeship or travis
   sftp xxxx@sftp.dc0.gpaas.net
   + pass ?
   cd vhosts/default/

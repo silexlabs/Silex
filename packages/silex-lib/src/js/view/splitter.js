@@ -27,8 +27,9 @@ goog.provide('silex.view.Splitter');
  *                                  the model instances - views use it for read operation only
  * @param  {!silex.types.Controller} controller  structure which holds
  *                                  the controller instances
+ * @param {?function()=} opt_onRedraw
  */
-silex.view.Splitter = function(element, model, controller) {
+silex.view.Splitter = function(element, model, controller, opt_onRedraw) {
   // store references
   /**
    * @type {Element}
@@ -42,6 +43,10 @@ silex.view.Splitter = function(element, model, controller) {
    * @type {!silex.types.Controller}
    */
   this.controller = controller;
+  /**
+   * @type {function()|null|undefined}
+   */
+  this.onRedraw = opt_onRedraw;
   /**
    * width of the splitter, as defined in the CSS
    * @static
@@ -118,6 +123,9 @@ silex.view.Splitter.prototype.redraw = function() {
   goog.array.forEach(this.onTheRight, function(element) {
     element.style.left = silex.view.Splitter.WIDTH + pos.x + 'px';
   }, this);
+  if(this.onRedraw) {
+    this.onRedraw();
+  }
 };
 
 
@@ -212,4 +220,3 @@ silex.view.Splitter.prototype.onMouseMove = function(e) {
     this.redraw();
   }
 };
-

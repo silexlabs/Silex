@@ -176,7 +176,7 @@ silex.App = function() {
   // add splitters
   var propSplitterElement = /** @type {!Element} */ (goog.dom.getElementByClass('vertical-splitter'));
   /** @type {silex.view.Splitter} */
-  var propSplitter = new silex.view.Splitter(propSplitterElement, this.model, this.controller);
+  var propSplitter = new silex.view.Splitter(propSplitterElement, this.model, this.controller, () => workspace.resizeProperties());
   propSplitter.addLeft(stageElement);
   propSplitter.addRight(propertyToolElement);
 
@@ -283,4 +283,3 @@ goog.exportSymbol('silex.App', silex.App);
 // google library too, because of "dist/client/js/closure-patches.js" which patches goog.style
 // FIXME: still needed? Find a way to remove this
 goog.exportSymbol('goog.style', goog.style);
-
