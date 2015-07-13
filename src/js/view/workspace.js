@@ -161,6 +161,29 @@ silex.view.Workspace.prototype.center = function(editor, viewportSize) {
 
 
 /**
+ * called by silex.App when the property pannel is resized
+ * here we change the number of columns in the pannel
+ */
+silex.view.Workspace.prototype.resizeProperties = function () {
+  var container = this.element.querySelector('.silex-property-tool .main-container');
+  if(container.offsetWidth < 500) {
+    container.classList.add('size1');
+    container.classList.remove('size2');
+    container.classList.remove('size3');
+  }
+  else if(container.offsetWidth < 750) {
+    container.classList.remove('size1');
+    container.classList.add('size2');
+    container.classList.remove('size3');
+  }
+  else if(container.offsetWidth < 1000) {
+    container.classList.remove('size1');
+    container.classList.remove('size2');
+    container.classList.add('size3');
+  }
+};
+
+/**
  * open a popup or refresh the allready opened one
  * @param {?string=} opt_location or null to refresh only
  */

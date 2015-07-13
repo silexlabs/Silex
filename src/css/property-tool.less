@@ -44,6 +44,31 @@
     padding: 5px;
     width: 97%;
 
+    /* size set by workspace.js when the user resizes the property tool */
+    &.size1 {
+      -webkit-column-count: 1;
+    	-moz-column-count: 1;
+    	-o-column-count: 1;
+    	-ms-column-count: 1;
+    	column-count: 1;
+    }
+
+    &.size2 {
+      -webkit-column-count: 2;
+    	-moz-column-count: 2;
+    	-o-column-count: 2;
+    	-ms-column-count: 2;
+    	column-count: 2;
+    }
+
+    &.size3 {
+      -webkit-column-count: 3;
+    	-moz-column-count: 3;
+    	-o-column-count: 3;
+    	-ms-column-count: 3;
+    	column-count: 3;
+    }
+
     input {
       display: inherit;
       border: 1px solid @silexmediumgrey;
@@ -70,9 +95,8 @@
   fieldset {
     margin: 15px 0;
     border: 1px solid @silexdarkgrey;
-    float: left;
     width: 90%;
-    max-width: 200px;
+    display: inline;
   }
 
   /* only the inline editor stays 100% width */
