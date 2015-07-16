@@ -14,8 +14,6 @@
  *   This class represents a the body of the opened file,
  *   which is rendered by the Stage class
  *   It has methods to manipulate the dom
- *
- *   All model classes are singletons
  */
 
 
@@ -27,7 +25,7 @@ goog.require('silex.types.Model');
 
 /**
  * @constructor
- * @param  {silex.types.Model} model  model class which holds the other models
+ * @param  {!silex.types.Model} model  model class which holds the other models
  * @param  {silex.types.View} view  view class which holds the other views
  */
 silex.model.Body = function(model, view) {
@@ -70,54 +68,6 @@ silex.model.Body.EDITABLE_CLASS_NAME = 'editable-style';
 
 
 /**
- * class name used by the editable jquery plugin
- * @const
- * @type {string}
- */
-silex.model.Body.EDITABLE_CREATED_CLASS_NAME = 'editable-plugin-created';
-
-
-/**
- * class name used by the editable jquery plugin
- * @const
- * @type {string}
- */
-silex.model.Body.UI_RESIZABLE_CLASS_NAME = 'ui-resizable';
-
-
-/**
- * class name used by the editable jquery plugin
- * @const
- * @type {string}
- */
-silex.model.Body.UI_DRAGGABLE_CLASS_NAME = 'ui-draggable';
-
-
-/**
- * class name used by the editable jquery plugin
- * @const
- * @type {string}
- */
-silex.model.Body.UI_DROPPABLE_CLASS_NAME = 'ui-droppable';
-
-
-/**
- * class name used by the editable jquery plugin
- * @const
- * @type {string}
- */
-silex.model.Body.UI_DRAGGABLE_DRAGGING_CLASS_NAME = 'ui-draggable-dragging';
-
-
-/**
- * class name used by the editable jquery plugin
- * @const
- * @type {string}
- */
-silex.model.Body.UI_DRAGGABLE_RESIZING_CLASS_NAME = 'ui-resizable-resizing';
-
-
-/**
  * class name which can be used to change params of the eitable jquery plugin
  * @const
  * @type {string}
@@ -150,10 +100,18 @@ silex.model.Body.DROP_CANDIDATE_CLASS_NAME = 'drop-zone-candidate';
 
 
 /**
+ * class name set on the body while the user is dragging an element
+ * @const
+ * @type {string}
+ */
+silex.model.Body.DRAGGING_CLASS_NAME = 'dragging-pending';
+
+
+/**
  * @return  {Element}   body element
  */
 silex.model.Body.prototype.getBodyElement = function() {
-  return goog.dom.getFrameContentDocument(this.iframeElement).body;
+  return this.model.file.getContentDocument().body;
 };
 
 
@@ -193,9 +151,10 @@ silex.model.Body.prototype.setSelection = function(selectedElements) {
   // refresh views
   var pages = this.model.page.getPages();
   var page = this.model.page.getCurrentPage();
-  this.view.pageTool.redraw(selectedElements, this.view.workspace.getWindow().document, pages, page);
-  this.view.propertyTool.redraw(selectedElements, this.view.workspace.getWindow().document, pages, page);
-  this.view.stage.redraw(selectedElements, this.view.workspace.getWindow().document, pages, page);
+  this.view.pageTool.redraw(selectedElements, pages, page);
+  this.view.propertyTool.redraw(selectedElements, pages, page);
+  this.view.stage.redraw(selectedElements, pages, page);
+  this.view.contextMenu.redraw(selectedElements, pages, page);
 };
 
 
@@ -227,7 +186,7 @@ silex.model.Body.prototype.initUiHandles = function(element) {
     'ui-resizable-se',
     'ui-resizable-sw'
   ], function(className){
-    var handle = this.view.workspace.getWindow().document.createElement('div');
+    var handle = this.model.file.getContentDocument().createElement('div');
     goog.dom.classlist.add(handle, className);
     goog.dom.classlist.add(handle, 'ui-resizable-handle');
     goog.dom.appendChild(element, handle);
@@ -242,11 +201,15 @@ silex.model.Body.prototype.initUiHandles = function(element) {
  * @param {?boolean=} opt_isRootDroppableOnly
  */
 silex.model.Body.prototype.setEditable = function(rootElement, isEditable, opt_isRootDroppableOnly) {
+  if(!rootElement) {
+    // this happens on firefox sometimes at start
+    // FIXME: find why this happens instead of this workaround
+    return;
+  }
   // handle the root element itself
   if (isEditable) {
     if (goog.dom.getElementsByClass('ui-resizable-s', rootElement).length === 0) {
       this.initUiHandles(rootElement);
-      goog.dom.classlist.add(rootElement, 'editable-plugin-created');
     }
   }
   else {
@@ -261,13 +224,12 @@ silex.model.Body.prototype.setEditable = function(rootElement, isEditable, opt_i
     }
   }, this);
 
-  // prevent the user to follow links
+  // prevent the user from following links
   var links = rootElement.querySelectorAll('a');
   goog.array.forEach(elements, function(element) {
-    element.addEventListener('click', function(e) {
+    goog.events.listen(element, goog.events.EventType.CLICK, function(e) {
       e.preventDefault();
-      return false;
-    });
+    }, false, this);
   }, this);
 
   // add a div on top of the HTML content elements in order to
@@ -301,56 +263,31 @@ silex.model.Body.prototype.setEditable = function(rootElement, isEditable, opt_i
  * remove the classes set by Silex and the editable.js plugin
  */
 silex.model.Body.prototype.removeEditableClasses = function(rootElement) {
-  var elements;
-  // remove the classes set by Silex
-  elements = goog.dom.getElementsByClass(silex.model.Element.SELECTED_CLASS_NAME, rootElement);
-  goog.array.forEach(elements, function(element) {
-    goog.dom.classlist.remove(element, silex.model.Element.SELECTED_CLASS_NAME);
-  }, this);
+  if (rootElement !== null) {
+    var elements;
+    elements = goog.dom.getElementsByClass(silex.model.Element.SELECTED_CLASS_NAME, rootElement);
+    goog.array.forEach(elements, function(element) {
+      goog.dom.classlist.remove(element, silex.model.Element.SELECTED_CLASS_NAME);
+    }, this);
 
-  // remove classes set by the editable.js plugin
-  elements = goog.dom.getElementsByClass(silex.model.Body.EDITABLE_CREATED_CLASS_NAME, rootElement);
-  goog.array.forEach(elements, function(element) {
-    goog.dom.classlist.remove(element, silex.model.Body.EDITABLE_CREATED_CLASS_NAME);
-  }, this);
+    elements = goog.dom.getElementsByClass(silex.model.Body.DROP_CANDIDATE_CLASS_NAME, rootElement);
+    goog.array.forEach(elements, function(element) {
+      goog.dom.classlist.remove(element, silex.model.Body.DROP_CANDIDATE_CLASS_NAME);
+    }, this);
 
-  elements = goog.dom.getElementsByClass(silex.model.Body.UI_RESIZABLE_CLASS_NAME, rootElement);
-  goog.array.forEach(elements, function(element) {
-    goog.dom.classlist.remove(element, silex.model.Body.UI_RESIZABLE_CLASS_NAME);
-  }, this);
+    elements = rootElement.querySelectorAll('[aria-disabled]');
+    goog.array.forEach(elements, function(element) {
+      element.removeAttribute('aria-disabled');
+    }, this);
 
-  elements = goog.dom.getElementsByClass(silex.model.Body.UI_DRAGGABLE_CLASS_NAME, rootElement);
-  goog.array.forEach(elements, function(element) {
-    goog.dom.classlist.remove(element, silex.model.Body.UI_DRAGGABLE_CLASS_NAME);
-  }, this);
-
-  elements = goog.dom.getElementsByClass(silex.model.Body.UI_DROPPABLE_CLASS_NAME, rootElement);
-  goog.array.forEach(elements, function(element) {
-    goog.dom.classlist.remove(element, silex.model.Body.UI_DROPPABLE_CLASS_NAME);
-  }, this);
-
-  elements = goog.dom.getElementsByClass(silex.model.Body.DROP_CANDIDATE_CLASS_NAME, rootElement);
-  goog.array.forEach(elements, function(element) {
-    goog.dom.classlist.remove(element, silex.model.Body.DROP_CANDIDATE_CLASS_NAME);
-  }, this);
-
-  elements = goog.dom.getElementsByClass(silex.model.Body.UI_DRAGGABLE_DRAGGING_CLASS_NAME, rootElement);
-  goog.array.forEach(elements, function(element) {
-    goog.dom.classlist.remove(element, silex.model.Body.UI_DRAGGABLE_DRAGGING_CLASS_NAME);
-  }, this);
-
-  elements = rootElement.querySelectorAll('[aria-disabled]');
-  goog.array.forEach(elements, function(element) {
-    element.removeAttribute('aria-disabled');
-  }, this);
-
-  // remove html elements added by the editable.js plugin
-  elements = goog.dom.getElementsByClass('ui-resizable-handle', rootElement);
-  goog.array.forEach(elements, function(element) {
-    goog.dom.removeNode(element);
-  }, this);
-  elements = goog.dom.getElementsByClass('temp-editable-cover', rootElement);
-  goog.array.forEach(elements, function(element) {
-    goog.dom.removeNode(element);
-  }, this);
+    // remove html elements added by the editable.js plugin
+    elements = goog.dom.getElementsByClass('ui-resizable-handle', rootElement);
+    goog.array.forEach(elements, function(element) {
+      goog.dom.removeNode(element);
+    }, this);
+    elements = goog.dom.getElementsByClass('temp-editable-cover', rootElement);
+    goog.array.forEach(elements, function(element) {
+      goog.dom.removeNode(element);
+    }, this);
+  }
 };

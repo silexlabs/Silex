@@ -36,13 +36,15 @@ goog.require('silex.view.pane.PaneBase');
  * @constructor
  * @extends {silex.view.pane.PaneBase}
  * @param {Element} element   container to render the UI
- * @param  {silex.types.Controller} controller  structure which holds
+ * @param  {!silex.types.Model} model  model class which holds
+ *                                  the model instances - views use it for read operation only
+ * @param  {!silex.types.Controller} controller  structure which holds
  *                                  the controller instances
  */
-silex.view.pane.PagePane = function(element, controller) {
+silex.view.pane.PagePane = function(element, model, controller) {
   // call super
-  goog.base(this, element, controller);
-
+  goog.base(this, element, model, controller);
+  // init the component
   this.buildUi();
 };
 
@@ -100,7 +102,7 @@ silex.view.pane.PagePane.prototype.buildUi = function() {
  * refresh with new pages
  * @param   {Array} pages   the new list of pages
  */
-silex.view.pane.PagePane.prototype.setPages = function(pages, document) {
+silex.view.pane.PagePane.prototype.setPages = function(pages) {
   // store the pages
   this.pages = pages;
 
@@ -108,7 +110,7 @@ silex.view.pane.PagePane.prototype.setPages = function(pages, document) {
   var pageData = pages.map(goog.bind(function(pageName) {
     return {
       'name': pageName,
-      'displayName': document.getElementById(pageName).innerHTML,
+      'displayName': this.model.file.getContentDocument().getElementById(pageName).innerHTML,
       'linkName': '#!' + pageName
     };
   }, this));
@@ -199,13 +201,7 @@ silex.view.pane.PagePane.prototype.onLinkChanged = function() {
  */
 silex.view.pane.PagePane.prototype.onLinkTextChanged = function() {
   this.iAmSettingValue = true;
-  try {
-    this.controller.propertyToolController.addLink(this.selectedElements, this.linkInputTextField.getValue());
-  }
-  catch (err) {
-    // error which will not keep this.iAmSettingValue to true
-    console.error('an error occured while editing the value', err);
-  }
+  this.controller.propertyToolController.addLink(this.selectedElements, this.linkInputTextField.getValue());
   this.iAmSettingValue = false;
 };
 
@@ -213,15 +209,14 @@ silex.view.pane.PagePane.prototype.onLinkTextChanged = function() {
 /**
  * redraw the properties
  * @param   {Array.<Element>} selectedElements the elements currently selected
- * @param   {Document} document  the document to use
  * @param   {Array.<string>} pageNames   the names of the pages which appear in the current HTML file
  * @param   {string}  currentPageName   the name of the current page
  */
-silex.view.pane.PagePane.prototype.redraw = function(selectedElements, document, pageNames, currentPageName) {
+silex.view.pane.PagePane.prototype.redraw = function(selectedElements, pageNames, currentPageName) {
   if (this.iAmSettingValue) return;
   this.iAmRedrawing = true;
   // call super
-  goog.base(this, 'redraw', selectedElements, document, pageNames, currentPageName);
+  goog.base(this, 'redraw', selectedElements, pageNames, currentPageName);
 
   // remember selection
   this.selectedElements = selectedElements;
@@ -229,12 +224,12 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, document,
   var linkInputElement = goog.dom.getElementByClass('link-input-text', this.element);
 
   // update page list
-  this.setPages(pageNames, document);
+  this.setPages(pageNames);
 
   // not available for stage element
   var elementsNoStage = [];
   goog.array.forEach(selectedElements, function(element) {
-    if (document.body != element) {
+    if (this.model.body.getBodyElement() != element) {
       elementsNoStage.push(element);
     }
   }, this);

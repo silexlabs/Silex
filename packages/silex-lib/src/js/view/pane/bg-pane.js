@@ -35,12 +35,14 @@ goog.require('silex.view.pane.PaneBase');
  * @constructor
  * @extends {silex.view.pane.PaneBase}
  * @param {Element} element   container to render the UI
- * @param  {silex.types.Controller} controller  structure which holds
+ * @param  {!silex.types.Model} model  model class which holds
+ *                                  the model instances - views use it for read operation only
+ * @param  {!silex.types.Controller} controller  structure which holds
  *                                  the controller instances
  */
-silex.view.pane.BgPane = function(element, controller) {
+silex.view.pane.BgPane = function(element, model, controller) {
   // call super
-  goog.base(this, element, controller);
+  goog.base(this, element, model, controller);
   // init the component
   this.buildUi();
 };
@@ -213,34 +215,28 @@ silex.view.pane.BgPane.prototype.buildBgImageProperties = function() {
 /**
  * redraw the properties
  * @param   {Array.<Element>} selectedElements the elements currently selected
- * @param   {Document} document  the document to use
  * @param   {Array.<string>} pageNames   the names of the pages which appear in the current HTML file
  * @param   {string}  currentPageName   the name of the current page
  */
-silex.view.pane.BgPane.prototype.redraw = function(selectedElements, document, pageNames, currentPageName) {
+silex.view.pane.BgPane.prototype.redraw = function(selectedElements, pageNames, currentPageName) {
   if (this.iAmSettingValue) return;
   this.iAmRedrawing = true;
   // call super
-  goog.base(this, 'redraw', selectedElements, document, pageNames, currentPageName);
+  goog.base(this, 'redraw', selectedElements, pageNames, currentPageName);
 
   // remember selection
   this.selectedElements = selectedElements;
-  this.document = document;
   this.pageNames = pageNames;
   this.currentPageName = currentPageName;
 
   // BG color
-  var color = this.getCommonProperty(selectedElements, function(element) {
-    return goog.style.getStyle(element, 'backgroundColor');
-  });
-  if (color === 'transparent' || color === '') {
+  var color = this.getCommonProperty(selectedElements, goog.bind(function(element) {
+    return this.model.element.getStyle(element, 'backgroundColor');
+  }, this));
+  if (color === null || color === 'transparent' || color === '') {
     this.transparentBgCheckbox.setChecked(true);
     this.bgColorPicker.setEnabled(false);
     this.setColorPaletteVisibility(this.hsvPalette, false);
-  }
-  else if (goog.isNull(color)) {
-    // display a "no color" in the button
-    this.bgColorPicker.setValue('');
   }
   else {
     // handle all colors, including the named colors
@@ -260,9 +256,9 @@ silex.view.pane.BgPane.prototype.redraw = function(selectedElements, document, p
     this.repeatComboBox.setEnabled(enable);
     this.sizeComboBox.setEnabled(enable);
   }, this);
-  var bgImage = this.getCommonProperty(selectedElements, function(element) {
-    return goog.style.getStyle(element, 'backgroundImage');
-  });
+  var bgImage = this.getCommonProperty(selectedElements, goog.bind(function(element) {
+    return this.model.element.getStyle(element, 'backgroundImage');
+  }, this));
   if (bgImage !== null &&
       bgImage !== 'none' &&
       bgImage !== '') {
@@ -272,9 +268,9 @@ silex.view.pane.BgPane.prototype.redraw = function(selectedElements, document, p
     enableBgComponents(false);
   }
   // bg image attachment
-  var bgImageAttachment = this.getCommonProperty(selectedElements, function(element) {
-    return goog.style.getStyle(element, 'backgroundAttachment');
-  });
+  var bgImageAttachment = this.getCommonProperty(selectedElements, goog.bind(function(element) {
+    return this.model.element.getStyle(element, 'backgroundAttachment');
+  }, this));
   if (bgImageAttachment) {
     switch (bgImageAttachment) {
       case 'scroll':
@@ -292,14 +288,14 @@ silex.view.pane.BgPane.prototype.redraw = function(selectedElements, document, p
     this.attachmentComboBox.setSelectedIndex(0);
   }
   // bg image position
-  var bgImagePosition = this.getCommonProperty(selectedElements, function(element) {
-    return goog.style.getStyle(element, 'backgroundPosition');
-  });
+  var bgImagePosition = this.getCommonProperty(selectedElements, goog.bind(function(element) {
+    return this.model.element.getStyle(element, 'backgroundPosition');
+  }, this));
   if (bgImagePosition) {
     // convert 50% in cennter
     var posArr = bgImagePosition.split(' ');
-    var hPosition = posArr[0];
-    var vPosition = posArr[1];
+    var hPosition = posArr[0] || 'left';
+    var vPosition = posArr[1] || 'top';
 
     // convert 0% by left, 50% by center, 100% by right
     hPosition = hPosition
@@ -312,7 +308,7 @@ silex.view.pane.BgPane.prototype.redraw = function(selectedElements, document, p
     .replace('100%', 'bottom')
     .replace('50%', 'center')
     .replace('0%', 'top');
-
+    // update the drop down lists to display the bg image position
     switch (vPosition) {
       case 'top':
         this.vPositionComboBox.setSelectedIndex(0);
@@ -341,9 +337,9 @@ silex.view.pane.BgPane.prototype.redraw = function(selectedElements, document, p
     this.hPositionComboBox.setSelectedIndex(0);
   }
   // bg image repeat
-  var bgImageRepeat = this.getCommonProperty(selectedElements, function(element) {
-    return goog.style.getStyle(element, 'backgroundRepeat');
-  });
+  var bgImageRepeat = this.getCommonProperty(selectedElements, goog.bind(function(element) {
+    return this.model.element.getStyle(element, 'backgroundRepeat');
+  }, this));
   if (bgImageRepeat) {
     switch (bgImageRepeat) {
       case 'repeat':
@@ -367,9 +363,9 @@ silex.view.pane.BgPane.prototype.redraw = function(selectedElements, document, p
     this.repeatComboBox.setSelectedIndex(0);
   }
   // bg image size
-  var bgImageSize = this.getCommonProperty(selectedElements, function(element) {
-    return goog.style.getStyle(element, 'backgroundSize');
-  });
+  var bgImageSize = this.getCommonProperty(selectedElements, goog.bind(function(element) {
+    return this.model.element.getStyle(element, 'backgroundSize');
+  }, this));
   if (bgImageSize) {
     switch (bgImageSize) {
       case 'auto':
@@ -394,6 +390,7 @@ silex.view.pane.BgPane.prototype.redraw = function(selectedElements, document, p
  * User has selected a color
  */
 silex.view.pane.BgPane.prototype.onColorChanged = function() {
+  if (this.iAmRedrawing) return;
   var color = silex.utils.Style.hexToRgba(this.hsvPalette.getColorRgbaHex());
   // update the button
   this.bgColorPicker.setValue(this.hsvPalette.getColor());
@@ -411,8 +408,9 @@ silex.view.pane.BgPane.prototype.onBgColorButton = function() {
   var element = this.selectedElements[0];
   // show the palette
   if (this.getColorPaletteVisibility(this.hsvPalette) === false) {
+    var color = this.model.element.getStyle(element, 'backgroundColor') || 'rgba(255, 255, 255, 1)';
     this.hsvPalette.setColorRgbaHex(
-        silex.utils.Style.rgbaToHex(goog.style.getStyle(element, 'backgroundColor'))
+      silex.utils.Style.rgbaToHex(color)
     );
     this.setColorPaletteVisibility(this.hsvPalette, true);
   }
@@ -446,18 +444,18 @@ silex.view.pane.BgPane.prototype.createComboBox = function(className, onChange) 
  * User has clicked the transparent checkbox
  */
 silex.view.pane.BgPane.prototype.onTransparentChanged = function() {
+  if (this.iAmRedrawing) return;
   var color = 'transparent';
   if (this.transparentBgCheckbox.getChecked() === false) {
     color = silex.utils.Style.hexToRgba(this.hsvPalette.getColorRgbaHex());
     if (!color) {
-      //color='#FFFFFF';
       color = 'rgba(255, 255, 255, 1)';
     }
   }
   // notify the toolbox
   this.styleChanged('backgroundColor', color);
   // redraw myself (styleChange prevent myself to redraw)
-  this.redraw(this.selectedElements, this.document, this.pageNames, this.currentPageName);
+  this.redraw(this.selectedElements, this.pageNames, this.currentPageName);
 };
 
 

@@ -32,10 +32,10 @@ function Pixlr(pixlrSendImageUrl, pixlrCloseWindowUrl, opt_settings) {
     };
     // check that we are not with protocol file://
     if (window.location.href.indexOf('file') === 0){
-        console.error('you need to run this page online, not with file:// protocol');
+        console.warn('you need to run this page online, not with file:// protocol');
     }
     if (window.location.href.indexOf('http://localhost') === 0){
-        console.error('you need to run this page online, not from localhost');
+        console.warn('you need to run this page online, not from localhost');
     }
 }
 /**

@@ -47,12 +47,14 @@ goog.require('silex.view.dialog.LinkDialogPlugin');
  * @constructor
  * @extends {silex.view.dialog.DialogBase}
  * @param {!Element} element   container to render the UI
+ * @param  {!silex.types.Model} model  model class which holds
+ *                                  the model instances - views use it for read operation only
  * @param  {!silex.types.Controller} controller  structure which holds
  *                                               the controller instances
  */
-silex.view.dialog.TextEditor = function(element, controller) {
+silex.view.dialog.TextEditor = function(element, model, controller) {
   // call super
-  goog.base(this, element, controller);
+  goog.base(this, element, model, controller);
   // set the visibility css class
   this.visibilityClass = 'text-editor';
 };
@@ -266,10 +268,18 @@ silex.view.dialog.TextEditor.prototype.setElementClassNames =
   // because body represents
   // the '.silex-element-content' element of Silex text elements
   // so it has these classes: 'silex-element-content normal'
-  iframeDoc.getElementsByTagName('html')[0].className = elementClassNames;
+  var htmlElement = iframeDoc.getElementsByTagName('html')[0];
+  htmlElement.className = elementClassNames;
   // body represents the '.silex-element-content' element of Silex text elements
   // so it has these classes: 'silex-element-content normal'
   iframeDoc.body.className = 'silex-element-content normal';
+  // keep the size of the text field
+  htmlElement.style.left = '10px';
+  htmlElement.style.right = '20px';
+  htmlElement.style.height = '100%';
+  htmlElement.style.overflowX = 'hidden';
+  htmlElement.style.overflowY = 'scroll';
+  iframeDoc.body.style.height = 'auto';
 };
 
 

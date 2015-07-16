@@ -32,18 +32,13 @@ goog.require('silex.model.Page');
  */
 silex.utils.Style.SILEX_CLASS_NAMES = [
   silex.model.Body.EDITABLE_CLASS_NAME,
-  silex.model.Body.UI_RESIZABLE_CLASS_NAME,
-  silex.model.Body.UI_DRAGGABLE_CLASS_NAME,
-  silex.model.Body.UI_DROPPABLE_CLASS_NAME,
-  silex.model.Body.UI_DRAGGABLE_DRAGGING_CLASS_NAME,
-  silex.model.Body.UI_DRAGGABLE_RESIZING_CLASS_NAME,
-  silex.model.Body.EDITABLE_CREATED_CLASS_NAME,
   silex.model.Page.PAGED_CLASS_NAME,
   silex.model.Page.PAGED_HIDDEN_CLASS_NAME,
   silex.model.Page.PAGED_VISIBLE_CLASS_NAME,
   silex.model.Page.PAGEABLE_PLUGIN_READY_CLASS_NAME,
   silex.model.Page.PAGE_LINK_ACTIVE_CLASS_NAME,
   silex.model.Element.SELECTED_CLASS_NAME,
+  silex.model.Element.JUST_ADDED_CLASS_NAME,
   silex.model.Element.TYPE_CONTAINER + '-element',
   silex.model.Element.TYPE_IMAGE + '-element',
   silex.model.Element.TYPE_TEXT + '-element',
@@ -58,15 +53,11 @@ silex.utils.Style.SILEX_CLASS_NAMES = [
  * @type {Array.<string>}
  */
 silex.utils.Style.SILEX_TEMP_CLASS_NAMES = [
-  silex.model.Body.UI_RESIZABLE_CLASS_NAME,
-  silex.model.Body.UI_DRAGGABLE_CLASS_NAME,
-  silex.model.Body.UI_DROPPABLE_CLASS_NAME,
-  silex.model.Body.UI_DRAGGABLE_DRAGGING_CLASS_NAME,
-  silex.model.Body.UI_DRAGGABLE_RESIZING_CLASS_NAME,
   silex.model.Page.PAGED_HIDDEN_CLASS_NAME,
   silex.model.Page.PAGED_VISIBLE_CLASS_NAME,
   silex.model.Page.PAGEABLE_PLUGIN_READY_CLASS_NAME,
-  silex.model.Element.SELECTED_CLASS_NAME
+  silex.model.Element.SELECTED_CLASS_NAME,
+  silex.model.Element.JUST_ADDED_CLASS_NAME
 ];
 
 
@@ -96,15 +87,44 @@ silex.utils.Style.removeInternalClasses = function(element, opt_allClasses, opt_
 
 
 /**
- * convert style object to string
+ * convert style object to object
+ * with only the keys which are set
+ * @param {CSSStyleDeclaration} styleObj
+ * @return {Object}
  */
-silex.utils.Style.styleToString = function(style) {
-  // build a string out of the style object
+silex.utils.Style.styleToObject = function(styleObj) {
+  var res = {};
+  for (let idx=0 ; idx < styleObj.length; idx++) {
+    var styleName = styleObj[idx];
+    res[styleName] = styleObj[styleName];
+  }
+  return res;
+};
+
+
+/**
+ * convert style object to string
+ * @param {string|Object|CSSStyleDeclaration} style
+ * @param {?string=} opt_tab
+ */
+silex.utils.Style.styleToString = function(style, opt_tab) {
+  if(typeof style === 'string') {
+    return style;
+  }
+  if(!opt_tab) {
+    opt_tab = '';
+  }
   var styleStr = '';
-  goog.object.forEach(style, function(val, index, obj) {
-    if (val)
-      styleStr += goog.string.toSelectorCase(index) + ': ' + val + '; ';
-  });
+  for(var idx in style) {
+    // filter the numerical indexes of a CSSStyleDeclaration object
+    // filter initial values and shorthand properties
+    if(style[idx]
+      && typeof style[idx] === 'string'
+      && style[idx] !== ''
+      && idx.match(/[^0-9]/)) {
+      styleStr += opt_tab + goog.string.toSelectorCase(idx) + ': ' + style[idx] + '; ';
+    }
+  }
   return styleStr;
 };
 
@@ -122,21 +142,22 @@ silex.utils.Style.stringToStyle = function(styleStr) {
  * Takes the opacity of the backgrounds into account
  * Recursively compute parents background colors
  * @param {Element} element the element which bg color we want
+ * @param {Window} contentWindow of the iframe containing the website
  * @return {?goog.color.Rgb} the element bg color
  */
-silex.utils.Style.computeBgColor = function(element) {
+silex.utils.Style.computeBgColor = function(element, contentWindow) {
   var parentColorArray;
   // retrieve the parents blended colors
-  if (element.parentNode) {
-    parentColorArray = silex.utils.Style.computeBgColor(/** @type {Element} */ (element.parentNode));
+  if (element.parentNode && element.parentNode.nodeType === 1) {
+    parentColorArray = silex.utils.Style.computeBgColor(/** @type {Element} */ (element.parentNode), contentWindow);
   }
   else {
     parentColorArray = null;
   }
   // rgba array
-  var elementColorArray;
-  if (element && element.style && element.style.backgroundColor && element.style.backgroundColor !== '') {
-    var elementColorStr = element.style.backgroundColor;
+  var elementColorArray = null;
+  var elementColorStr = contentWindow.getComputedStyle(element)['background-color'];
+  if (elementColorStr) {
     // convert bg color from rgba to array
     if (elementColorStr.indexOf('rgba') >= 0) {
       // rgba case

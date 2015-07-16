@@ -18,7 +18,11 @@ var currentFrame = null;
  * @param opt_frameId   the frame id or null for main Silex UI frame
  */
 exports.switchFrame = function(client, opt_frameId, cbk){
-    console.log('switchFrame(' + logging.argsToString(arguments));
+    console.log('switchFrame(' + logging.argsToString(arguments) + ' - ' + currentFrame + '===' + opt_frameId);
+    if (currentFrame && opt_frameId && currentFrame === opt_frameId) {
+      console.error('we are already in this frame', currentFrame);
+      console.trace();
+    }
     if (currentFrame){
        client.frame();
     }
@@ -37,11 +41,18 @@ exports.switchFrame = function(client, opt_frameId, cbk){
  */
 exports.loadSilex = function(client, cbk){
     console.log('loadSilex(' + logging.argsToString(arguments));
+    // reset
+    currentFrame = null;
+
+    // start
     client
       // load silex
       .url('http://localhost:6805/')
       // wait for silex to be loaded
       .waitFor('.menu-item-file', 5000)
+      // wait for the default website to load
+      .pause(5000)
+      .saveScreenshot ('after-loading.png')
       // store reference to Silex main window
       .getCurrentTabId(function(err, windowId){
         originalTabId = windowId;

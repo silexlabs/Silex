@@ -23,41 +23,49 @@ goog.provide('silex.view.Splitter');
 /**
  * @constructor
  * @param {Element} element   container to render the UI
- * @param  {silex.types.Controller} controller  structure which holds
+ * @param  {!silex.types.Model} model  model class which holds
+ *                                  the model instances - views use it for read operation only
+ * @param  {!silex.types.Controller} controller  structure which holds
  *                                  the controller instances
+ * @param {?function()=} opt_onRedraw
  */
-silex.view.Splitter = function(element, controller) {
+silex.view.Splitter = function(element, model, controller, opt_onRedraw) {
   // store references
+  /**
+   * @type {Element}
+   */
   this.element = element;
+  /**
+   * @type {!silex.types.Model}
+   */
+  this.model = model;
+  /**
+   * @type {!silex.types.Controller}
+   */
   this.controller = controller;
-
+  /**
+   * @type {function()|null|undefined}
+   */
+  this.onRedraw = opt_onRedraw;
   /**
    * width of the splitter, as defined in the CSS
+   * @static
+   * @type {number}
    */
   silex.view.Splitter.WIDTH = 5;
-
   /**
    * @type {Array.<Element>}
    */
-  this.onTheLeft = [];  
-  
-
+  this.onTheLeft = [];
   /**
    * @type {Array.<Element>}
    */
   this.onTheRight = [];
-
-
   /**
    * true when the mouse is down
    * @type {boolean}
    */
   this.isDown = false;
-
-  /**
-   * @type {HTMLIFrameElement}
-   */
-  this.iframeElement = /** @type {HTMLIFrameElement} */ (goog.dom.getElementByClass(silex.view.Stage.STAGE_CLASS_NAME));
 
   // mouse down event
   goog.events.listen(this.element, 'mousedown', this.onMouseDown, false, this);
@@ -115,6 +123,9 @@ silex.view.Splitter.prototype.redraw = function() {
   goog.array.forEach(this.onTheRight, function(element) {
     element.style.left = silex.view.Splitter.WIDTH + pos.x + 'px';
   }, this);
+  if(this.onRedraw) {
+    this.onRedraw();
+  }
 };
 
 
@@ -127,13 +138,12 @@ silex.view.Splitter.prototype.onMouseDown = function(e) {
   this.isDown = true;
 
   // listen mouse events
-  var contentWindow = goog.dom.getFrameContentWindow(this.iframeElement);
-  goog.events.listen(contentWindow,
+  goog.events.listen(this.model.file.getContentWindow(),
       'mousemove',
       this.onMouseMoveFrame,
       false,
       this);
-  goog.events.listen(contentWindow,
+  goog.events.listen(this.model.file.getContentWindow(),
       'mouseup',
       this.onMouseUp,
       true,
@@ -160,13 +170,12 @@ silex.view.Splitter.prototype.onMouseUp = function(e) {
   this.isDown = false;
 
   // stop listening
-  var contentWindow = goog.dom.getFrameContentWindow(this.iframeElement);
-  goog.events.unlisten(contentWindow,
+  goog.events.unlisten(this.model.file.getContentWindow(),
       'mousemove',
       this.onMouseMoveFrame,
       false,
       this);
-  goog.events.unlisten(contentWindow,
+  goog.events.unlisten(this.model.file.getContentWindow(),
       'mouseup',
       this.onMouseUp,
       true,
@@ -192,7 +201,7 @@ silex.view.Splitter.prototype.onMouseMoveFrame = function(e) {
   if(this.isDown) {
     var parentSize =  goog.style.getContentBoxSize(/** @type {Element} */ (this.element.parentNode));
     var pos = goog.style.getClientPosition(e);
-    var posIFrame = goog.style.getClientPosition(this.iframeElement);
+    var posIFrame = goog.style.getClientPosition(this.model.file.getIFrameElement());
     this.element.style.right = (parentSize.width - pos.x - posIFrame.x)  + 'px';
     this.redraw();
   }
@@ -211,4 +220,3 @@ silex.view.Splitter.prototype.onMouseMove = function(e) {
     this.redraw();
   }
 };
-

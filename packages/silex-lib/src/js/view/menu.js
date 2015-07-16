@@ -33,12 +33,24 @@ goog.require('silex.Config');
 /**
  * @constructor
  * @param {Element} element   container to render the UI
- * @param  {silex.types.Controller} controller  structure which holds
+ * @param  {!silex.types.Model} model  model class which holds
+ *                                  the model instances - views use it for read operation only
+ * @param  {!silex.types.Controller} controller  structure which holds
  *                                  the controller instances
  */
-silex.view.Menu = function(element, controller) {
+silex.view.Menu = function(element, model, controller) {
   // store references
+  /**
+   * @type {Element}
+   */
   this.element = element;
+  /**
+   * @type {!silex.types.Model}
+   */
+  this.model = model;
+  /**
+   * @type {!silex.types.Controller}
+   */
   this.controller = controller;
 };
 
@@ -204,25 +216,16 @@ silex.view.Menu.prototype.buildUi = function() {
   goog.events.listen(this.menu, goog.ui.Component.EventType.ACTION, function(e) {
     this.onMenuEvent(e.target.getId());
   }, false, this);
-  goog.events.listen(goog.dom.getElementByClass('website-name'), goog.events.EventType.CLICK, function(e) {
-    this.controller.fileMenuController.promptTitle();
-  }, false, this);
 };
 
 
 /**
  * redraw the menu
  * @param   {Array.<Element>} selectedElements the elements currently selected
- * @param   {Document} document the document to use
  * @param   {Array.<string>} pageNames   the names of the pages which appear in the current HTML file
  * @param   {string}  currentPageName   the name of the current page
  */
-silex.view.Menu.prototype.redraw = function(selectedElements, document, pageNames, currentPageName) {
-  // update website title
-  var titleElements = goog.dom.getElementsByTagNameAndClass('title', null, document.head);
-  if (titleElements && titleElements.length > 0) {
-    goog.dom.getElementByClass('website-name').innerHTML = titleElements[0].innerHTML;
-  }
+silex.view.Menu.prototype.redraw = function(selectedElements, pageNames, currentPageName) {
 };
 
 
@@ -232,18 +235,12 @@ silex.view.Menu.prototype.redraw = function(selectedElements, document, pageName
  */
 silex.view.Menu.prototype.onMenuEvent = function(type) {
   switch (type) {
-    case 'title.changed':
-      this.controller.fileMenuController.promptTitle();
-      break;
     case 'file.close':
     case 'file.new':
       this.controller.fileMenuController.newFile();
       break;
     case 'file.saveas':
       this.controller.fileMenuController.save();
-      break;
-    case 'file.rename':
-      this.controller.fileMenuController.promptTitle();
       break;
     case 'file.publish.settings':
       this.controller.fileMenuController.view.settingsDialog.openDialog();
@@ -261,6 +258,9 @@ silex.view.Menu.prototype.onMenuEvent = function(type) {
     case 'view.file':
       this.controller.viewMenuController.preview();
       break;
+    case 'view.file.responsize':
+      this.controller.viewMenuController.previewResponsize();
+      break;
     case 'view.open.fileExplorer':
       this.controller.viewMenuController.view.fileExplorer.openDialog(function(url) {}, function(error) {});
       break;
@@ -269,6 +269,9 @@ silex.view.Menu.prototype.onMenuEvent = function(type) {
       break;
     case 'view.open.jsEditor':
       this.controller.viewMenuController.openJsEditor();
+      break;
+    case 'view.open.htmlHeadEditor':
+      this.controller.viewMenuController.openHtmlHeadEditor();
       break;
     case 'view.open.editor':
       this.controller.editMenuController.editElement();
@@ -306,6 +309,18 @@ silex.view.Menu.prototype.onMenuEvent = function(type) {
       break;
     case 'edit.redo':
       this.controller.editMenuController.redo();
+      break;
+    case 'edit.move.up':
+      this.controller.editMenuController.moveUp();
+      break;
+    case 'edit.move.down':
+      this.controller.editMenuController.moveDown();
+      break;
+    case 'edit.move.to.top':
+      this.controller.editMenuController.moveToTop();
+      break;
+    case 'edit.move.to.bottom':
+      this.controller.editMenuController.moveToBottom();
       break;
     case 'edit.delete.page':
       this.controller.pageToolController.removePage();

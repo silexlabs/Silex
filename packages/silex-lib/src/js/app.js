@@ -22,17 +22,14 @@
 
 goog.provide('silex.App');
 
-// google closure
 goog.require('goog.dom');
 goog.require('goog.dom.classes');
 goog.require('goog.dom.classlist');
 goog.require('goog.events');
 goog.require('goog.style');
-// model
 goog.require('silex.Config');
 goog.require('silex.controller.CssEditorController');
 goog.require('silex.controller.EditMenuController');
-// controller
 goog.require('silex.controller.FileMenuController');
 goog.require('silex.controller.HtmlEditorController');
 goog.require('silex.controller.InsertMenuController');
@@ -44,33 +41,30 @@ goog.require('silex.controller.StageController');
 goog.require('silex.controller.TextEditorController');
 goog.require('silex.controller.ToolMenuController');
 goog.require('silex.controller.ViewMenuController');
-goog.require('silex.model.Body');
+goog.require('silex.controller.ContextMenuController');
+goog.require('silex.model.Property');
 goog.require('silex.model.Element');
-goog.require('silex.model.File');
+goog.require('silex.model.Body');
 goog.require('silex.model.Head');
+goog.require('silex.model.File');
 goog.require('silex.model.Page');
-// service qos
 goog.require('silex.service.Tracker');
-// types
 goog.require('silex.types.Controller');
 goog.require('silex.types.Model');
 goog.require('silex.types.View');
-// utils / helpers
 goog.require('silex.utils.Dom');
 goog.require('silex.utils.DomCleaner');
 goog.require('silex.utils.Polyfills');
-// display
+goog.require('silex.utils.BackwardCompat');
 goog.require('silex.view.Menu');
+goog.require('silex.view.ContextMenu');
 goog.require('silex.view.Splitter');
-// tool boxes
 goog.require('silex.view.PageTool');
 goog.require('silex.view.PropertyTool');
 goog.require('silex.view.Stage');
 goog.require('silex.view.Workspace');
 goog.require('silex.view.dialog.CssEditor');
-// dialogs
 goog.require('silex.view.dialog.FileExplorer');
-// editors
 goog.require('silex.view.dialog.HtmlEditor');
 goog.require('silex.view.dialog.JsEditor');
 goog.require('silex.view.dialog.SettingsDialog');
@@ -119,68 +113,75 @@ silex.App = function() {
   // create Stage
   var stageElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-stage'));
   /** @type {silex.view.Stage} */
-  var stage = new silex.view.Stage(stageElement, this.controller);
+  var stage = new silex.view.Stage(stageElement, this.model, this.controller);
 
   // create Menu
   var menuElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-menu'));
   /** @type {silex.view.Menu} */
-  var menu = new silex.view.Menu(menuElement, this.controller);
+  var menu = new silex.view.Menu(menuElement, this.model, this.controller);
+
+  // create context menu
+  var contextMenuElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-context-menu'));
+  /** @type {silex.view.ContextMenu} */
+  var contextMenu = new silex.view.ContextMenu(contextMenuElement, this.model, this.controller);
 
   // create PageTool
   var pageToolElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-page-tool'));
   /** @type {silex.view.PageTool} */
-  var pageTool = new silex.view.PageTool(pageToolElement, this.controller);
+  var pageTool = new silex.view.PageTool(pageToolElement, this.model, this.controller);
 
   // create HtmlEditor
   var htmlEditorElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-html-editor'));
   /** @type {silex.view.dialog.HtmlEditor} */
-  var htmlEditor = new silex.view.dialog.HtmlEditor(htmlEditorElement, this.controller);
+  var htmlEditor = new silex.view.dialog.HtmlEditor(htmlEditorElement, this.model, this.controller);
 
   // create CssEditor
   var cssEditorElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-css-editor'));
   /** @type {silex.view.dialog.CssEditor} */
-  var cssEditor = new silex.view.dialog.CssEditor(cssEditorElement, this.controller);
+  var cssEditor = new silex.view.dialog.CssEditor(cssEditorElement, this.model, this.controller);
 
   // create JsEditor
   var jsEditorElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-js-editor'));
   /** @type {silex.view.dialog.JsEditor} */
-  var jsEditor = new silex.view.dialog.JsEditor(jsEditorElement, this.controller);
+  var jsEditor = new silex.view.dialog.JsEditor(jsEditorElement, this.model, this.controller);
 
   // create TextEditor
   var textEditorElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-text-editor'));
   /** @type {silex.view.dialog.TextEditor} */
-  var textEditor = new silex.view.dialog.TextEditor(textEditorElement, this.controller);
+  var textEditor = new silex.view.dialog.TextEditor(textEditorElement, this.model, this.controller);
 
   // create SettingsDialog
   var settingsDialogElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-settings-dialog'));
   /** @type {silex.view.dialog.SettingsDialog} */
-  var settingsDialog = new silex.view.dialog.SettingsDialog(settingsDialogElement, this.controller);
+  var settingsDialog = new silex.view.dialog.SettingsDialog(settingsDialogElement, this.model, this.controller);
 
   // create SettingsDialog
   var fileExplorerElement = /** @type {!Element} */ (document.getElementById('silex-file-explorer'));
   /** @type {silex.view.dialog.FileExplorer} */
-  var fileExplorer = new silex.view.dialog.FileExplorer(fileExplorerElement, this.controller);
+  var fileExplorer = new silex.view.dialog.FileExplorer(fileExplorerElement, this.model, this.controller);
 
   // create PropertyTool
   var propertyToolElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-property-tool'));
   /** @type {silex.view.PropertyTool} */
-  var propertyTool = new silex.view.PropertyTool(propertyToolElement, this.controller);
+  var propertyTool = new silex.view.PropertyTool(propertyToolElement, this.model, this.controller);
 
   // create PropertyTool
   var workspaceElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-workspace'));
   /** @type {silex.view.Workspace} */
-  var workspace = new silex.view.Workspace(workspaceElement, this.controller);
+  var workspace = new silex.view.Workspace(workspaceElement, this.model, this.controller);
 
   // add splitters
   var propSplitterElement = /** @type {!Element} */ (goog.dom.getElementByClass('vertical-splitter'));
   /** @type {silex.view.Splitter} */
-  var propSplitter = new silex.view.Splitter(propSplitterElement, this.controller);
+  var propSplitter = new silex.view.Splitter(propSplitterElement, this.model, this.controller, () => workspace.resizeProperties());
+  propSplitter.addLeft(contextMenuElement);
   propSplitter.addLeft(stageElement);
   propSplitter.addRight(propertyToolElement);
 
   // init the view class which references all the views
   this.view.init(
       menu,
+      contextMenu,
       stage,
       pageTool,
       propertyTool,
@@ -203,7 +204,8 @@ silex.App = function() {
       new silex.model.Head(this.model, this.view),
       new silex.model.Body(this.model, this.view),
       new silex.model.Page(this.model, this.view),
-      new silex.model.Element(this.model, this.view)
+      new silex.model.Element(this.model, this.view),
+      new silex.model.Property(this.model, this.view)
   );
 
   // **
@@ -216,6 +218,7 @@ silex.App = function() {
       new silex.controller.ViewMenuController(this.model, this.view),
       new silex.controller.InsertMenuController(this.model, this.view),
       new silex.controller.ToolMenuController(this.model, this.view),
+      new silex.controller.ContextMenuController(this.model, this.view),
       new silex.controller.StageController(this.model, this.view),
       new silex.controller.PageToolController(this.model, this.view),
       new silex.controller.PropertyToolController(this.model, this.view),
@@ -230,6 +233,7 @@ silex.App = function() {
   workspace.buildUi();
   stage.buildUi();
   menu.buildUi();
+  contextMenu.buildUi();
   pageTool.buildUi();
   htmlEditor.buildUi();
   cssEditor.buildUi();
@@ -280,4 +284,3 @@ goog.exportSymbol('silex.App', silex.App);
 // google library too, because of "dist/client/js/closure-patches.js" which patches goog.style
 // FIXME: still needed? Find a way to remove this
 goog.exportSymbol('goog.style', goog.style);
-

@@ -29,24 +29,28 @@ goog.require('goog.ui.KeyboardShortcutHandler');
  * @constructor
  *
  * @param {!Element} element   container to render the UI
+ * @param  {!silex.types.Model} model  model class which holds
+ *                                  the model instances - views use it for read operation only
  * @param  {!silex.types.Controller} controller  structure which holds
  *                                               the controller instances
  */
-silex.view.dialog.DialogBase = function(element, controller) {
+silex.view.dialog.DialogBase = function(element, model, controller) {
   /**
    * @type {!Element} container to render the UI
    */
   this.element = element;
   /**
-   * @type {!silex.types.Controller} structure which holds the controller instances
+   * @type {!silex.types.Model}
+   */
+  this.model = model;
+  /**
+   * @type {!silex.types.Controller}
    */
   this.controller = controller;
-
   /**
    * @type {!Element} store the background
    */
   this.background = /** @type {!Element} */ (goog.dom.getElementByClass('dialogs-background'));
-
   /**
    * @type {!boolean} flag to remember if the dialog is opened
    */
@@ -120,7 +124,7 @@ silex.view.dialog.DialogBase.prototype.closeEditor = function() {
     this.isOpened = false;
     // hide dialog and background
     goog.dom.classlist.remove(document.body, this.visibilityClass + '-opened');
-    // focus the stage 
+    // focus the stage
     // FIXME: find a better way to automize that than going through the controller's view
     this.controller.fileMenuController.view.stage.resetFocus();
   }

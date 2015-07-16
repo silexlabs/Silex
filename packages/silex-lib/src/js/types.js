@@ -33,7 +33,22 @@ goog.require('silex.controller.StageController');
 goog.require('silex.controller.TextEditorController');
 goog.require('silex.controller.ToolMenuController');
 goog.require('silex.controller.ViewMenuController');
+goog.require('silex.controller.ContextMenuController');
 
+
+
+/**
+ * recursive type of copied elements stored in the clipboard
+ * @typedef {{element:Element, style, children: Array.<silex.types.ClipboardItem>}}
+ */
+silex.types.ClipboardItem;
+
+
+/**
+ * type used to store the state of the website, for undo/redo
+ * @typedef {{page:string, html:string, scrollX:number, scrollY:number}}
+ */
+silex.types.UndoItem;
 
 
 /**
@@ -52,8 +67,9 @@ silex.types.Model = function() {
  * @param {silex.model.Body} body
  * @param {silex.model.Page} page
  * @param {silex.model.Element} element
+ * @param {silex.model.Property} property
  */
-silex.types.Model.prototype.init = function(file, head, body, page, element) {
+silex.types.Model.prototype.init = function(file, head, body, page, element, property) {
   /**
    * @type {silex.model.File}
    */
@@ -74,6 +90,10 @@ silex.types.Model.prototype.init = function(file, head, body, page, element) {
    * @type {silex.model.Element}
    */
   this.element = element;
+  /**
+   * @type {silex.model.Property}
+   */
+  this.property = property;
 };
 
 
@@ -94,6 +114,7 @@ silex.types.Controller = function() {
  * @param {silex.controller.ViewMenuController} viewMenuController
  * @param {silex.controller.InsertMenuController} insertMenuController
  * @param {silex.controller.ToolMenuController} toolMenuController
+ * @param {silex.controller.ContextMenuController} contextMenuController
  * @param {silex.controller.StageController} stageController
  * @param {silex.controller.PageToolController} pageToolController
  * @param {silex.controller.PropertyToolController} propertyToolController
@@ -109,6 +130,7 @@ silex.types.Controller.prototype.init = function(
     viewMenuController,
     insertMenuController,
     toolMenuController,
+    contextMenuController,
     stageController,
     pageToolController,
     propertyToolController,
@@ -138,6 +160,10 @@ silex.types.Controller.prototype.init = function(
    * @type {silex.controller.ToolMenuController}
    */
   this.toolMenuController = toolMenuController;
+  /**
+   * @type {silex.controller.ContextMenuController}
+   */
+  this.contextMenuController = contextMenuController;
   /**
    * @type {silex.controller.StageController}
    */
@@ -186,6 +212,7 @@ silex.types.View = function() {
 /**
  * store references
  * @param {silex.view.Menu} menu
+ * @param {silex.view.ContextMenu} contextMenu
  * @param {silex.view.Stage} stage
  * @param {silex.view.PageTool} pageTool
  * @param {silex.view.PropertyTool} propertyTool
@@ -200,6 +227,7 @@ silex.types.View = function() {
  */
 silex.types.View.prototype.init = function(
     menu,
+    contextMenu,
     stage,
     pageTool,
     propertyTool,
@@ -215,6 +243,10 @@ silex.types.View.prototype.init = function(
    * @type {silex.view.Menu}
    */
   this.menu = menu;
+  /**
+   * @type {silex.view.ContextMenu}
+   */
+  this.contextMenu = contextMenu;
   /**
    * @type {silex.view.Stage}
    */

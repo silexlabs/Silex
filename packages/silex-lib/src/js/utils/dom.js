@@ -29,21 +29,46 @@ silex.utils.Dom = function() {
 
 
 /**
- * counts the number of parents
- * used for indentation
- * @param {Element} element
- * @return {number} number of parents of elements
+ * name of the get param used to store the timestamp (cache control)
+ * @constant
  */
-silex.utils.Dom.getNumParents = function(element) {
-    // compute indentation
-    var indent = 0;
-    var tmpElement = element;
-    while(tmpElement) {
-      tmpElement =  goog.dom.getParentElement(tmpElement);
-      indent++;
-    }
-    return indent;
-};
+silex.utils.Dom.CACHE_CONTROL_PARAM_NAME = 'silex-cache-control';
+
+
+/**
+ * tag used by Silex, which are mandatory in all Silex webstes
+ * @constant
+ */
+silex.utils.Dom.MANDATORY_TAGS = [
+  {
+    'type': 'script',
+    'url': 'http://static.silex.me/' + silex.utils.BackwardCompat.LATEST_VERSION[1] + '.' + silex.utils.BackwardCompat.LATEST_VERSION[2] + '/jquery.js'
+  },
+  {
+    'type': 'script',
+    'url': 'http://static.silex.me/' + silex.utils.BackwardCompat.LATEST_VERSION[1] + '.' + silex.utils.BackwardCompat.LATEST_VERSION[2] + '/jquery-ui.js'
+  },
+  {
+    'type': 'script',
+    'url': 'http://static.silex.me/' + silex.utils.BackwardCompat.LATEST_VERSION[1] + '.' + silex.utils.BackwardCompat.LATEST_VERSION[2] + '/jquery.ui.touch-punch.min.js'
+  },
+  {
+    'type': 'script',
+    'url': 'http://static.silex.me/' + silex.utils.BackwardCompat.LATEST_VERSION[1] + '.' + silex.utils.BackwardCompat.LATEST_VERSION[2] + '/pageable.js'
+  },
+  {
+    'type': 'script',
+    'url': 'http://static.silex.me/' + silex.utils.BackwardCompat.LATEST_VERSION[1] + '.' + silex.utils.BackwardCompat.LATEST_VERSION[2] + '/front-end.js'
+  },
+  {
+    'type': 'link',
+    'url': 'http://static.silex.me/' + silex.utils.BackwardCompat.LATEST_VERSION[1] + '.' + silex.utils.BackwardCompat.LATEST_VERSION[2] + '/normalize.css'
+  },
+  {
+    'type': 'link',
+    'url': 'http://static.silex.me/' + silex.utils.BackwardCompat.LATEST_VERSION[1] + '.' + silex.utils.BackwardCompat.LATEST_VERSION[2] + '/front-end.css'
+  }
+];
 
 
 /**
@@ -58,13 +83,6 @@ silex.utils.Dom.refreshImage = function(img, cbk) {
   };
   img.src = silex.utils.Dom.addCacheControl(initialUrl);
 };
-
-
-/**
- * name of the get param used to store the timestamp (cache control)
- * @constant
- */
-silex.utils.Dom.CACHE_CONTROL_PARAM_NAME = 'silex-cache-control';
 
 
 /**
@@ -146,50 +164,6 @@ silex.utils.Dom.renderList = function(itemTemplateString, data) {
 
 
 /**
- * compute the bounding box of the given elements
- * use only element.style.* to compute this, not the real positions and sizes
- * so it takes into account only the elements which have top, left, width and height set in px
- * @return the bounding box containing all the elements
- */
-silex.utils.Dom.getBoundingBox = function(elements) {
-  // compute the positions and sizes
-  var top = NaN,
-      left = NaN,
-      right = NaN,
-      bottom = NaN;
-
-  goog.array.forEach(elements, function(element) {
-    // commpute the values, which may end up to be NaN or a number
-    var elementStyleTop = goog.style.getStyle(element, 'top');
-    var elementStyleLeft = goog.style.getStyle(element, 'left');
-    var elementStyleWidth = goog.style.getStyle(element, 'width');
-    var elementStyleHeight = goog.style.getStyle(element, 'height');
-    var elementTop = parseFloat(elementStyleTop.substr(0, elementStyleTop.indexOf('px')));
-    var elementLeft = parseFloat(elementStyleLeft.substr(0, elementStyleLeft.indexOf('px')));
-    var elementRight = (elementLeft || 0) + parseFloat(elementStyleWidth.substr(0, elementStyleWidth.indexOf('px')));
-    var elementBottom = (elementTop || 0) + parseFloat(elementStyleHeight.substr(0, elementStyleHeight.indexOf('px')));
-    // take the smallest top and left
-    top = isNaN(top) ? elementTop : Math.min(top, elementTop);
-    left = isNaN(left) ? elementLeft : Math.min(left, elementLeft);
-    // take the bigger bottom and rigth
-    bottom = isNaN(bottom) ? elementBottom : Math.max(bottom, elementBottom);
-    right = isNaN(right) ? elementRight : Math.max(right, elementRight);
-  });
-
-  var res = {};
-  // top left
-  if (!isNaN(top)) res.top = top;
-  if (!isNaN(left)) res.left = left;
-  // bottom right
-  if (isNaN(top)) top = 0;
-  if (isNaN(left)) left = 0;
-  if (!isNaN(bottom)) res.height = bottom - top;
-  if (!isNaN(right)) res.width = right - left;
-  return res;
-};
-
-
-/**
  * publish the file to a folder
  * get all the files included in the website, and put them into assets/ or js/ or css/
  * the HTML file must be saved somewhere because all URLs are made relative
@@ -231,4 +205,39 @@ silex.utils.Dom.publish = function(publicationUrl, fileUrl, html, statusCallback
   html = html.replace(/type=\"text\/javascript\"/gi, 'type="text/notjavascript"');
   // write the content (leave this after "listen")
   goog.dom.iframe.writeContent(iframe, html);
+};
+
+
+/**
+ * remove the javascript and css files which firefox inlines
+ * the inlined tags are script type="text/javascript" style="display:none"
+ * @param {Document} doc
+ */
+silex.utils.Dom.cleanupFirefoxInlines = function(doc) {
+  // remove inlined scripts
+  let elements = doc.querySelectorAll('script[style="display:none"]');
+  for (let idx in elements) {
+    goog.dom.removeNode(elements[idx]);
+  }
+  elements = doc.querySelectorAll('style[style="display:none"]');
+  for (let idx in elements) {
+    goog.dom.removeNode(elements[idx]);
+  }
+  // put back the mandatory Silex scripts and styles:
+  silex.utils.Dom.MANDATORY_TAGS.forEach((tagObj) => {
+    let query = '[' + (tagObj['type'] == 'script' ? 'src=' : 'href=') + '"' + tagObj['url'] + '"]'
+    let element = doc.querySelector(query);
+    if(!element) {
+      element = doc.createElement(tagObj['type']);
+      if(tagObj['type'] == 'script') {
+        element.setAttribute('type', 'text/javascript');
+        element.setAttribute('src', tagObj.url);
+      }
+      else {
+        element.setAttribute('rel', 'stylesheet');
+        element.setAttribute('href', tagObj.url);
+      }
+      doc.head.appendChild(element);
+    }
+  });
 };

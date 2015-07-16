@@ -9,11 +9,30 @@
 
   // menu
   .silex-menu
-    a.website-name Untitled website
 
   // page tool
   .silex-page-tool.notranslate
     include ./page-tool.jade
+
+  .silex-context-menu
+    .save.off(title='Save')
+    .undo.off(title='Undo')
+    .redo.off(title='Redo')
+    .sep
+    .text(title='Text')
+    .image(title='Image')
+    .container(title='Container')
+    .html(title='Html')
+    .sep
+    .delete.off(title='Delete')
+    .copy.off(title='Copy')
+    .paste.off(title='Paste')
+    .sep
+    .top.off(title='To top')
+    .up.off(title='Up')
+    .down.off(title='Down')
+    .bottom.off(title='To bottom')
+    .sep
 
   // vertical splitter
   .vertical-splitter
@@ -62,5 +81,5 @@
   // text editor
   .silex-text-editor.notranslate.hidden-dialog
     .toolbar
-    div#text-editor.text-field
+    #text-editor.text-field
     .close-btn.text-editor-close-btn.buttons
