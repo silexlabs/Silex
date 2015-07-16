@@ -104,25 +104,22 @@ exports.publish = function(cbk, req, res, next, path, html, css, js, files){
             // write the js
             exports.writeFileToService(req, res, next, path + '/js/script.js', js, function (error){
               if(error){
-                cbk(error);
+                  cbk(error);
               }
               else{
-                // write the html
-                exports.writeFileToService(req, res, next, path + '/index.html', html, function (error){
-                  if(error){
-                    cbk(error);
-                  }
-                  else{
-                    cbk();
-                  }
-                });
+                  // write the html
+                  exports.writeFileToService(req, res, next, path + '/index.html', html, function (error){
+                      if(error){
+                          cbk(error);
+                      }
+                      else{
+                          cbk();
+                      }
+                  });
               }
             });
-          }
         });
-       }
     });
-  });
 };
 
 
