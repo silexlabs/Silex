@@ -47,8 +47,6 @@ silex.controller.FileMenuController.prototype.newFile = function(opt_cbk, opt_er
   this.tracker.trackAction('controller-events', 'request', 'file.new', 0);
 
   this.model.file.newFile(goog.bind(function(rawHtml) {
-    // undo redo reset
-    this.undoReset();
     this.model.file.setHtml(rawHtml, goog.bind(function() {
       this.fileOperationSuccess(null, true);
       // QOS, track success
@@ -75,22 +73,21 @@ silex.controller.FileMenuController.prototype.openFile = function(opt_cbk, opt_e
   // let the user choose the file
   this.view.fileExplorer.openDialog(
       goog.bind(function(url) {
-        // undo redo reset
-        this.undoReset();
         this.model.file.open(url, goog.bind(function(rawHtml) {
           this.model.file.setHtml(rawHtml, goog.bind(function() {
             // check that it is a Silex website (if we have at least 1 page and not the silex-published class)
             if (goog.dom.getElementByClass('page-element', this.model.body.getBodyElement()) && !goog.dom.classlist.contains(this.model.body.getBodyElement(), 'silex-published')) {
               // display and redraw
-              this.fileOperationSuccess(this.model.head.getTitle() + ' opened.', true);
+              this.fileOperationSuccess((this.model.head.getTitle() || 'Untitled website') + ' opened.', true);
               // QOS, track success
               this.tracker.trackAction('controller-events', 'success', 'file.open', 1);
               if (opt_cbk) opt_cbk();
             }
             else {
               // this website is not an editable Silex website?
-              var message = 'This file is not an editable Silex website.';
+              var message = 'This file is not an editable Silex website. <a target="_blank" href="https://github.com/silexlabs/Silex/issues/282">More info here</a>.';
               silex.utils.Notification.notifyError('Error: ' + message);
+              silex.utils.Notification.alert('Error: ' + message, function() {});
               this.tracker.trackAction('controller-events', 'error', 'file.open_not.editable', -1);
               if (opt_errorCbk) opt_errorCbk({message: message});
             }
@@ -107,107 +104,6 @@ silex.controller.FileMenuController.prototype.openFile = function(opt_cbk, opt_e
         this.tracker.trackAction('controller-events', 'error', 'file.open', -1);
         if (opt_errorCbk) opt_errorCbk(error);
       }, this));
-};
-
-
-/**
- * save or save-as
- * @param {string} url
- * @param {?function()=} opt_cbk
- * @param {?function(Object)=} opt_errorCbk
- */
-silex.controller.FileMenuController.prototype.doSave = function(url, opt_cbk, opt_errorCbk) {
-  // undo redo reset
-  if (this.model.file.getUrl() !== url) {
-    this.undoReset();
-  }
-  // urls will be relative to the html file url
-  this.model.file.setUrl(url);
-  // relative urls only in the files
-  var rawHtml = this.model.file.getHtml();
-  // look for bug of firefox inserting quotes in url("")
-  if (rawHtml.indexOf("url('&quot;") > -1) {
-    console.warn('I have found HTML entities in some urls, there us probably an error in the save process.');
-    // log this (QA)
-    this.tracker.trackAction('controller-events', 'warning', 'file.save.corrupted', -1);
-    // try to cleanup the mess
-    rawHtml = rawHtml.replace(/url\('&quot;()(.+?)\1&quot;'\)/gi, goog.bind(function(match, group1, group2) {
-      return 'url(\'' + group2 + '\')';
-    }, this));
-  }
-  // runtime check for a recurrent error
-  // check that there is no more of the basUrl in the Html
-  if (this.url && rawHtml.indexOf(this.url) >= 0){
-    console.warn('Base URL remains in the HTML, there is probably an error in the convertion to relative URL process');
-    // log this (QA)
-    this.tracker.trackAction('controller-events', 'warning', 'file.save.corrupted', -1);
-  }
-  // save to file
-  this.model.file.saveAs(
-      url,
-      rawHtml,
-      goog.bind(function() {
-        this.tracker.trackAction('controller-events', 'success', 'file.save', 1);
-        this.fileOperationSuccess('File is saved.', false);
-        if (opt_cbk) opt_cbk();
-      }, this),
-      goog.bind(function(error) {
-        silex.utils.Notification.notifyError('Error: I did not manage to save the file. \n' + (error.message || ''));
-        this.tracker.trackAction('controller-events', 'error', 'file.save', -1);
-        if (opt_errorCbk) opt_errorCbk(error);
-      }, this));
-};
-
-
-/**
- * save or save-as
- * @param {?string=} opt_url
- * @param {?function()=} opt_cbk
- * @param {?function(Object)=} opt_errorCbk
- */
-silex.controller.FileMenuController.prototype.save = function(opt_url, opt_cbk, opt_errorCbk) {
-  this.tracker.trackAction('controller-events', 'request', 'file.save', 0);
-  if (opt_url) {
-    this.doSave(opt_url, opt_cbk, opt_errorCbk);
-  }
-  else {
-    // choose a new name
-    this.view.fileExplorer.saveAsDialog(
-        goog.bind(function(url) {
-          this.doSave(url, opt_cbk, opt_errorCbk);
-        }, this),
-        {'mimetype': 'text/html'},
-        goog.bind(function(error) {
-          this.tracker.trackAction('controller-events', 'error', 'file.save', -1);
-          if (opt_errorCbk) opt_errorCbk(error);
-        }, this));
-  }
-};
-
-
-/**
- * success of an operation involving changing the file model
- * @param {?string=} opt_message
- * @param {?boolean=} opt_updateTools
- */
-silex.controller.FileMenuController.prototype.fileOperationSuccess = function(opt_message, opt_updateTools) {
-  // update tools
-  if (opt_updateTools) {
-    // find default first page
-    var pages = this.model.page.getPages();
-    // open default page
-    this.model.page.setCurrentPage(pages[0]);
-    // update fonts
-    this.refreshFonts();
-    // update dialogs
-    this.view.jsEditor.setValue(this.model.head.getHeadScript());
-    this.view.cssEditor.setValue(this.model.head.getHeadStyle());
-    this.view.htmlEditor.setValue('');
-  }
-  if (opt_message) {
-    // notify user
-    silex.utils.Notification.notifySuccess(opt_message);
-  }
 };
 
 

@@ -28,13 +28,31 @@ goog.require('goog.dom.ViewportSizeMonitor');
 /**
  * @constructor
  * @param {Element} element   container to render the UI
- * @param  {silex.types.Controller} controller  controller class which holds the other controllers
+ * @param  {!silex.types.Model} model  model class which holds
+ *                                  the model instances - views use it for read operation only
+ * @param  {!silex.types.Controller} controller  controller class which holds the other controllers
  */
-silex.view.Workspace = function(element, controller) {
+silex.view.Workspace = function(element, model, controller) {
   // store references
+  /**
+   * @type {Element}
+   */
   this.element = element;
+  /**
+   * @type {!silex.types.Model}
+   */
+  this.model = model;
+  /**
+   * @type {!silex.types.Controller}
+   */
   this.controller = controller;
 };
+
+
+/**
+ * handle of the preview popup window
+ */
+silex.view.Workspace.prototype.previewWindow = null;
 
 
 /**
@@ -52,30 +70,12 @@ silex.view.Workspace.prototype.isDirty = false;
 
 
 /**
- * element which holds the opened website
- * @type {?HTMLIFrameElement}
- */
-silex.view.Workspace.prototype.iframeElement = null;
-
-
-/**
  * create the menu with closure API
  * called by the app constructor
  */
 silex.view.Workspace.prototype.buildUi = function() {
-  //store the element which will hold the body of the opened file
-  this.iframeElement = /** @type {?HTMLIFrameElement} */ (goog.dom.getElementByClass(silex.view.Stage.STAGE_CLASS_NAME));
-
   // store the window viewport for later use
   this.viewport = new goog.dom.ViewportSizeMonitor();
-};
-
-
-/**
- * @return {?Window} the window element
- */
-silex.view.Workspace.prototype.getWindow = function() {
-  return goog.dom.getFrameContentWindow(this.iframeElement);
 };
 
 
@@ -156,5 +156,62 @@ silex.view.Workspace.prototype.center = function(editor, viewportSize) {
     var posX = (viewportSize.width - editorSize.width) / 2;
     var posY = (viewportSize.height - editorSize.height) / 2;
     goog.style.setPosition(editor.element, posX, posY);
+  }
+};
+
+
+/**
+ * called by silex.App when the property pannel is resized
+ * here we change the number of columns in the pannel
+ */
+silex.view.Workspace.prototype.resizeProperties = function () {
+  var container = this.element.querySelector('.silex-property-tool .main-container');
+  if(container.offsetWidth < 500) {
+    container.classList.add('size1');
+    container.classList.remove('size2');
+    container.classList.remove('size3');
+  }
+  else if(container.offsetWidth < 750) {
+    container.classList.remove('size1');
+    container.classList.add('size2');
+    container.classList.remove('size3');
+  }
+  else if(container.offsetWidth < 1000) {
+    container.classList.remove('size1');
+    container.classList.remove('size2');
+    container.classList.add('size3');
+  }
+};
+
+/**
+ * open a popup or refresh the allready opened one
+ * @param {?string=} opt_location or null to refresh only
+ */
+silex.view.Workspace.prototype.setPreviewWindowLocation = function (opt_location) {
+  if(this.previewWindow && !this.previewWindow.closed) {
+    if(opt_location) {
+      this.previewWindow.close();
+      this.previewWindow = window.open(opt_location);
+      this.previewWindow.focus();
+    }
+    else {
+      try {
+        if(this.previewWindow.location.href != 'about:blank') {
+          // only when loaded, reload
+          this.previewWindow.location.reload(true);
+        }
+      }
+      catch(e) {
+        // case of responsize
+        this.previewWindow.frames[1].location.reload(true)
+      }
+    }
+    this.previewWindow.focus();
+  }
+  else {
+    if(opt_location) {
+      this.previewWindow = window.open(opt_location);
+      this.previewWindow.focus();
+    }
   }
 };

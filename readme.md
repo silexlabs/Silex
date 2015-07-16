@@ -3,7 +3,6 @@
 [![Code Climate](https://codeclimate.com/github/silexlabs/Silex/badges/gpa.svg)](https://codeclimate.com/github/silexlabs/Silex)
 [![Inline docs](http://inch-ci.org/github/silexlabs/Silex.svg?branch=master)](http://inch-ci.org/github/silexlabs/Silex)
 [![Dependency Status](https://gemnasium.com/silexlabs/Silex.png)](https://gemnasium.com/silexlabs/Silex)
-[![Stories in Ready](https://badge.waffle.io/silexlabs/silex.png?label=ready)](http://waffle.io/silexlabs/silex)
 [![Analytics](https://ga-beacon.appspot.com/UA-19608894-21/silexlabs/Silex)](https://github.com/igrigorik/ga-beacon)
 [![Bountysource](https://www.bountysource.com/badge/tracker?tracker_id=672465)](https://www.bountysource.com/trackers/672465-silex?utm_source=672465&utm_medium=shield&utm_campaign=TRACKER_BADGE)
 
@@ -47,14 +46,23 @@ This is for developers only, since our beloved designers can use the [online ver
 
 Developers you can clone this repository and start Silex, with nodejs. See instructions bellow.
 
+### Recommended: with Docker
+
+Prerequisite :
+* [docker](https://www.docker.com/)
+
+  $ docker run -p 6805:6805 indiehosters/silex
+
+Open http://localhost:6805/ and you are ready!
+
 ### local installation on linux or macos
 
 Prerequisite :
 
 * [node.js](http://nodejs.org/) installed
 * [NPM](https://npmjs.org/) installed
-* [python](https://www.python.org/downloads/) (version > V2.7)
-* [java](https://www.java.com/en/download/index.jsp) (version > 7)
+* [python](https://www.python.org/downloads/) (version >= V2.7)
+* [java](https://www.java.com/en/download/index.jsp) (version >= 7)
 
 Clone this repository, and do not forget the sub modules (cloud-explorer and unifile)
 

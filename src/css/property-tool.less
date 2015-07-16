@@ -1,3 +1,6 @@
+.advanced-mode-on .silex-property-tool .switch-apollo-mode button {
+  background-position: -188px 0;
+}
 .silex-property-tool {
   color: #FFF;
   position: absolute;
@@ -8,10 +11,63 @@
   overflow-y: auto;
   bottom: 0;
   background-color: @silexlightgrey;
-
+  .combobox {
+    line-height: 16px;
+  }
+  .switch-apollo-mode {
+    display: inline-block;
+    padding: 10px 10px 0 10px;
+    margin: 10px 10px 0 10px;
+    label {
+      font-size: 12px;
+      float: right;
+      margin-top: 6px;
+    }
+    button {
+      float: left;
+      width: 79px;
+      height: 24px;
+      margin-right: 10px;
+      margin-top: 5px;
+      background-image: url('../assets/switch.png');
+      background-repeat: no-repeat;
+      background-size: 267px 25px;
+      background-position: -1px 0;
+      transition: background-position 0.1s steps(2, end);
+      cursor: pointer;
+      background-color: white;
+      border: none;
+      border-radius: 3px;
+    }
+  }
   .main-container {
     padding: 5px;
     width: 97%;
+
+    /* size set by workspace.js when the user resizes the property tool */
+    &.size1 {
+      -webkit-column-count: 1;
+    	-moz-column-count: 1;
+    	-o-column-count: 1;
+    	-ms-column-count: 1;
+    	column-count: 1;
+    }
+
+    &.size2 {
+      -webkit-column-count: 2;
+    	-moz-column-count: 2;
+    	-o-column-count: 2;
+    	-ms-column-count: 2;
+    	column-count: 2;
+    }
+
+    &.size3 {
+      -webkit-column-count: 3;
+    	-moz-column-count: 3;
+    	-o-column-count: 3;
+    	-ms-column-count: 3;
+    	column-count: 3;
+    }
 
     input {
       display: inherit;
@@ -30,12 +86,22 @@
         border: 1px solid @silexdarkgrey;
       }
     }
+    > span {
+      clear: both;
+    }
 
   }
 
   fieldset {
     margin: 15px 0;
     border: 1px solid @silexdarkgrey;
+    width: 90%;
+    display: inline;
+  }
+
+  /* only the inline editor stays 100% width */
+  fieldset.style-property {
+    max-width: none;
   }
 
   .help-icon {
@@ -48,6 +114,7 @@
     font-size: 13px;
     font-weight: lighter;
     color: #FFF;
+    line-height: 22px;
   }
 
   .goog-menu-button-caption {
@@ -121,6 +188,7 @@
       display: block;
       width: 100%;
       margin: 0;
+      line-height: 22px;
     }
 
     .half-col {
@@ -131,6 +199,7 @@
   }
 
   .background-property {
+    line-height: 22px;
 
     .color-button {
 
@@ -143,7 +212,6 @@
   }
 
   .background-editor {
-
     .background-image {
 
       .button {
@@ -305,7 +373,7 @@
 
   .element-style-editor{
     margin-top: 10px;
-    height: 150px;
+    height: 400px;
   }
 
   .opacity-property {

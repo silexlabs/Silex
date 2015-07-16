@@ -9,7 +9,7 @@
 .silex-stage {
   background-color: @silexdarkgrey;
   position: absolute;
-  top: @menuHeight;
+  top: @menuHeight + @contextMenuHeight;
   bottom: 0;
   left: @pageToolWidth;
   right: @propertiesToolWidth;
@@ -20,13 +20,17 @@
   transition: opacity 0.1s linear;
 }
 
-.silex-stage.loading-image iframe{
+.silex-stage.loading-website iframe{
   transition: none;
   opacity: .001;
 }
 
-.silex-stage.loading-image {
+.silex-stage.loading-website {
   background-image: url(../assets/image-loader.gif);
   background-repeat: no-repeat;
   background-position: 50%;
 }
+
+.silex-stage.loading-website-light iframe{
+}
+

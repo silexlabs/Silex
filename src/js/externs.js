@@ -213,6 +213,12 @@ ace.edit = function(el) {};
 
 
 /**
+ * @type {{setShowGutter}}
+ */
+Ace.prototype.renderer = {'setShowGutter': function() {}};
+
+
+/**
  * Sets a new key handler, such as "vim" or "windows".
  * @param {string} keyboardHandler The new key handler
  *
