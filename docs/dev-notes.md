@@ -1,19 +1,26 @@
 ## Silex next steps, TOC
 
+push lexoyo/master to silexlabs/develop
+push build branch
+
 a mettre sous forme d'issues et de propositions?
 
   - fix more bugs
+    + property new layout bug in chrome
+      => apolo mode : absolute en plus de display none
+    + remove "new element" class when move up/down the dom
     + Html box: Do not execute scripts
     + deconnection de dropbox
     + ? rename silex-style => silex-user-styles
     + no !important in front-end.css?
     + see known bugs
   - merge `build` branch, cf notes below
+  - merge context menu
   - https branch
     + static.silex.me => dist/client/static/
     + class to mark the required scripts, do not rely on their URLs anymore
     + backward compat: update to // + server url + static
-  - merge `context-menu` branch
+    + point to http on silex site
   - site silex a finir
   - ?? bug des URLs https://github.com/silexlabs/Silex/issues/264#issuecomment-108923532
     => save/publish = parse all nodes and create html string
@@ -169,6 +176,9 @@ context-menu branch
     * set on/off styles on the buttons
   * credit icons: http://glyphicons.com/
   * add a tooltip in SIlex: "I have added a new context-menu recently, tell me what you think about it!"
+  + add bug report & news letter? (peut etre en haut a droite avec le mobile / desktop ou bien une popup de temps en temps)
+  + add preview
+  + ménage menu help ()
 
 ## known bugs
 
