@@ -82,6 +82,7 @@ silex.utils.Notification.isListeningForFocus = false;
 
 /**
  * use native alerts vs alertify
+ * @return {boolean}
  */
 silex.utils.Notification.useNative = function() {
   return silex.utils.Notification.hasFocus == false
@@ -93,17 +94,16 @@ silex.utils.Notification.useNative = function() {
  * activate native alerts if available
  */
 silex.utils.Notification.activateNative = function() {
-  if ("Notification" in window && Notification.permission !== 'denied') {
-    if (silex.utils.Notification.useNative()) {
-    } else {
+  if ('Notification' in window && Notification.permission !== 'denied') {
+    if (!silex.utils.Notification.useNative()) {
       goog.events.listenOnce(document, goog.events.EventType.CLICK, function(e) {
         Notification.requestPermission();
       });
     }
   }
-  else {
+  // else {
     // Notifications are not supported or denied
-  }
+  // }
 };
 
 

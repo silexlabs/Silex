@@ -37,6 +37,7 @@ goog.inherits(silex.controller.PageToolController, silex.controller.ControllerBa
 
 /**
  * open a page
+ * @param {string} pageName
  */
 silex.controller.PageToolController.prototype.openPage = function(pageName) {
   // undo checkpoint

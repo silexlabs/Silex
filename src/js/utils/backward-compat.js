@@ -109,6 +109,9 @@ silex.utils.BackwardCompat.process = function(doc, model, cbk) {
 
 /**
  * update URLs according to the version of Silex static files
+ * @param {Array.<string>} version
+ * @param {string} url
+ * @return {string}
  */
 silex.utils.BackwardCompat.updateStaticUrl = function(version, url) {
   var newUrl = url;
@@ -124,24 +127,26 @@ silex.utils.BackwardCompat.updateStaticUrl = function(version, url) {
  * check if the website has been edited with a newer version of Silex
  * @param {Array.<number>} initialVersion the website version
  * @param {Array.<number>} targetVersion  a given Silex version
+ * @return {boolean}
  */
 silex.utils.BackwardCompat.amIObsolete = function(initialVersion, targetVersion) {
-  return initialVersion[2] && initialVersion[0] > targetVersion[0]
-    || initialVersion[1] > targetVersion[1]
-    || initialVersion[2] > targetVersion[2];
-}
+  return initialVersion[2] && initialVersion[0] > targetVersion[0] ||
+    initialVersion[1] > targetVersion[1] ||
+    initialVersion[2] > targetVersion[2];
+};
 
 
 /**
  * check if the website has to be updated for the given version of Silex
  * @param {Array.<number>} initialVersion the website version
  * @param {Array.<number>} targetVersion  a given Silex version
+ * @return {boolean}
  */
 silex.utils.BackwardCompat.hasToUpdate = function(initialVersion, targetVersion) {
-  return initialVersion[0] < targetVersion[0]
-    || initialVersion[1] < targetVersion[1]
-    || initialVersion[2] < targetVersion[2];
-}
+  return initialVersion[0] < targetVersion[0] ||
+    initialVersion[1] < targetVersion[1] ||
+    initialVersion[2] < targetVersion[2];
+};
 
 
 /**
@@ -151,7 +156,7 @@ silex.utils.BackwardCompat.hasToUpdate = function(initialVersion, targetVersion)
  * @param {function()} cbk
  */
 silex.utils.BackwardCompat.to2_2_4 = function(version, doc, model, cbk) {
-  if(silex.utils.BackwardCompat.hasToUpdate(version, [2, 2, 4])) {
+  if (silex.utils.BackwardCompat.hasToUpdate(version, [2, 2, 4])) {
     console.warn('Update site version from', version, 'to ', silex.utils.BackwardCompat.LATEST_VERSION);
     // remove the class editable-plugin-created because it is not used anymore, and it appears in the inline css editor
     elements = doc.body.querySelectorAll('.editable-plugin-created');
@@ -161,8 +166,8 @@ silex.utils.BackwardCompat.to2_2_4 = function(version, doc, model, cbk) {
     // remove inline css from .silex-element-content (2.4)
     var elements = doc.body.querySelectorAll('.silex-element-content');
     goog.array.forEach(elements, function(element) {
-      element.style.width ='';
-      element.style.height ='';
+      element.style.width = '';
+      element.style.height = '';
       element.removeAttribute('style');
     });
     // remove all inline styles
@@ -175,8 +180,8 @@ silex.utils.BackwardCompat.to2_2_4 = function(version, doc, model, cbk) {
     // store the style sheet string with all elements styles
     var allStyles = '';
     // then update each element
-    function nextUpdate() {
-      if(elementsArr.length > 0) {
+    let nextUpdate = function() {
+      if (elementsArr.length > 0) {
         var element = elementsArr.pop();
         // init id
         if (!model.property.getSilexId(element)) {
@@ -195,7 +200,7 @@ silex.utils.BackwardCompat.to2_2_4 = function(version, doc, model, cbk) {
         // end of the process
         cbk();
       }
-    }
+    };
     nextUpdate();
   }
   else {

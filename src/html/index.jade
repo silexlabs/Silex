@@ -11,10 +11,10 @@ head
   include ./templates/head.jade
 
   // Silex styles and code
-  script(type='text/javascript', src='js/admin.min.js')
+  script(type='text/javascript', src='js/admin.js')
 
   // all the css in the head with _styles.less imports
-  link(rel='stylesheet', type='text/css', href='css/admin.min.css')
+  link(rel='stylesheet', type='text/css', href='css/admin.css')
 
 body.loading-pending.advanced-mode-off
   include ./templates/body.jade
@@ -25,4 +25,4 @@ body.loading-pending.advanced-mode-off
   // start Silex
   script(type='text/javascript').
     // boot silex app
-    silex.main_silex_app = new silex.App();
+    window.silexApp = new silex.App();

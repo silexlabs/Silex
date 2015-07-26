@@ -47,10 +47,10 @@ silex.utils.Url.getBaseUrl = function(opt_url) {
 /**
  * Get root URL of Silex app
  * @return  {string} the base url
- * @example https://duckduckgo.com returns https://duckduckgo.com
- * @example https://duckduckgo.com/ returns https://duckduckgo.com
- * @example https://duckduckgo.com/?q=javascript returns https://duckduckgo.com
- * @example https://duckduckgo.com/abc/ returns https://duckduckgo.com
+ * example: https://duckduckgo.com returns https://duckduckgo.com
+ * example: https://duckduckgo.com/ returns https://duckduckgo.com
+ * example: https://duckduckgo.com/?q=javascript returns https://duckduckgo.com
+ * example: https://duckduckgo.com/abc/ returns https://duckduckgo.com
  */
 silex.utils.Url.getRootUrl = function() {
   return window.location.href.substr(0, window.location.href.lastIndexOf(window.location.pathname));
@@ -59,7 +59,8 @@ silex.utils.Url.getRootUrl = function() {
 
 /**
  * Check if an URL is relative or absolute
- * @return  true if the url is absolute
+ * @param {string} url
+ * @return {boolean} true if the url is absolute
  */
 silex.utils.Url.isAbsoluteUrl = function(url) {
   return url.indexOf('http') === 0;
@@ -71,11 +72,12 @@ silex.utils.Url.isAbsoluteUrl = function(url) {
  * this will not work, because element.style.backgroundImage is reevaluated when set to a relative value
  * @param   {string} htmlString  the html content to set
  * @param   {string} baseUrl      the base URL for relative/absolute conversion
+ * @return {string}
  */
 silex.utils.Url.absolute2Relative = function(htmlString, baseUrl) {
   baseUrl = silex.utils.Url.getAbsolutePath(baseUrl, silex.utils.Url.getBaseUrl());
   // image source
-  htmlString = htmlString.replace(/src="?([^" ]*)"/gi, function(match, group1, group2) {
+  htmlString = htmlString.replace(/src="?([^" ]*)"/gi, function(match, group1) {
     var res = match.replace(group1, silex.utils.Url.getRelativePath(group1, baseUrl));
     return res;
   });
@@ -107,31 +109,31 @@ silex.utils.Url.absolute2Relative = function(htmlString, baseUrl) {
 /**
  * remove the url() css keyword
  * also remove the '' or "" if any
- * @example url(http://silex.me) would return http://silex.me
+ * example: url(http://silex.me) would return http://silex.me
  * @param {string} url + keyword as for background-image
- * @returns {string} URL without keyword
+ * @return {string} URL without keyword
  */
-silex.utils.Url.removeUrlKeyword = function (url) {
+silex.utils.Url.removeUrlKeyword = function(url) {
   // removes the url() keyword
-  if (goog.string.startsWith(url, 'url(')){
-	  url = url.substr(4);
+  if (goog.string.startsWith(url, 'url(')) {
+    url = url.substr(4);
   }
-  if (goog.string.endsWith(url, ')')){
-	  url = url.substr(0, url.length - 1);
+  if (goog.string.endsWith(url, ')')) {
+    url = url.substr(0, url.length - 1);
   }
   // remove the ''
   if (goog.string.startsWith(url, '\'') || goog.string.startsWith(url, '"')) {
-	  url = url.substr(1);
+    url = url.substr(1);
   }
   if (goog.string.endsWith(url, '\'') || goog.string.endsWith(url, '"')) {
-	  url = url.substr(0, url.length - 1);
+    url = url.substr(0, url.length - 1);
   }
   // workaround firefox going crazy
-  if (goog.string.startsWith(url, '&quot;')){
-	  url = url.substr(6);
+  if (goog.string.startsWith(url, '&quot;')) {
+    url = url.substr(6);
   }
-  if (goog.string.endsWith(url, '&quot;')){
-	  url = url.substr(0, url.length - 6);
+  if (goog.string.endsWith(url, '&quot;')) {
+    url = url.substr(0, url.length - 6);
   }
   return url;
 };
@@ -141,11 +143,11 @@ silex.utils.Url.removeUrlKeyword = function (url) {
  * add the url() css keyword
  * simple quotes are added so that the URL may contain parenthesis
  * and it does not disturb the inline style double quotes
- * @example http://silex.me returns url("http://silex.me")
+ * example: http://silex.me returns url("http://silex.me")
  * @param {string} url
- * @returns {string} url + keyword as for background-image
+ * @return {string} url + keyword as for background-image
  */
-silex.utils.Url.addUrlKeyword = function (url) {
+silex.utils.Url.addUrlKeyword = function(url) {
   return 'url(\'' + url + '\')';
 };
 
@@ -154,6 +156,7 @@ silex.utils.Url.addUrlKeyword = function (url) {
  * convert all URLs to absolute
  * @param   {string} htmlString  the html content to set
  * @param   {string} baseUrl      the base URL for relative/absolute conversion
+ * @return {string}
  */
 silex.utils.Url.relative2Absolute = function(htmlString, baseUrl) {
   // image source
@@ -182,10 +185,10 @@ silex.utils.Url.relative2Absolute = function(htmlString, baseUrl) {
 
 /**
  * Get a relative path from an absolute URL, given a base URL
- * @param url   a URL which has to end with a '/' or with a file name
- * @param base  a URL which has to end with a '/' or with a file name
- * @return      a path from the base to the url
- * @example     silex.utils.Url.getRelativePath("http://abc.com/d/f/g/file.html","http://abc.com/d/e/");
+ * @param  {string} url   a URL which has to end with a '/' or with a file name
+ * @param  {string} base  a URL which has to end with a '/' or with a file name
+ * @return {string}       a path from the base to the url
+ * example:     silex.utils.Url.getRelativePath("http://abc.com/d/f/g/file.html","http://abc.com/d/e/");
  *              base    http://abc.com/d/e/
  *              url     http://abc.com/d/f/g/file.html
  *              result  ../f/g/file.html
@@ -213,8 +216,6 @@ silex.utils.Url.getRelativePath = function(url, base) {
     return url;
   }
   // remove the common part
-  var baseElement;
-  var urlElement;
   while (baseArr.length > 0 && urlArr.length > 0 && baseArr[0] === urlArr[0]) {
     baseArr.shift();
     urlArr.shift();
