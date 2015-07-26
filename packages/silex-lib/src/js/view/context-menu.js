@@ -74,7 +74,6 @@ silex.view.ContextMenu.prototype.buildUi = function() {
  * @param   {string}  currentPageName   the name of the current page
  */
 silex.view.ContextMenu.prototype.redraw = function(selectedElements, pageNames, currentPageName) {
-  console.log('selection changed', selectedElements);
   if(selectedElements.length === 1 && selectedElements[0].tagName.toLowerCase() === 'body') {
     this.element.querySelector('.delete').classList.add('off');
     this.element.querySelector('.copy').classList.add('off');
@@ -84,7 +83,6 @@ silex.view.ContextMenu.prototype.redraw = function(selectedElements, pageNames, 
     this.element.querySelector('.bottom').classList.add('off');
   }
   else {
-    console.log('has selection');
     this.element.querySelector('.delete').classList.remove('off');
     this.element.querySelector('.copy').classList.remove('off');
     this.element.querySelector('.top').classList.remove('off');
