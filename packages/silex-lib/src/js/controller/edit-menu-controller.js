@@ -31,6 +31,8 @@ goog.require('silex.service.SilexTasks');
 silex.controller.EditMenuController = function(model, view) {
   // call super
   silex.controller.ControllerBase.call(this, model, view);
+  // init clipboard
+  this.clipboard = [];
 };
 
 // inherit from silex.controller.ControllerBase
@@ -38,6 +40,21 @@ goog.inherits(silex.controller.EditMenuController, silex.controller.ControllerBa
 
 
 /**
+ * storage for the clipboard
+ * @type Array.<silex.types.ClipboardItem>
+ */
+silex.controller.EditMenuController.prototype.clipboard = null;
+
+
+/**
+ * storage for the clipboard
+ * @type {?Element}
+ */
+//silex.controller.EditMenuController.prototype.clipboardParent = null;
+
+
+/**
+>>>>>>> added js linter and fixer, started to fix
  * undo the last action
  */
 silex.controller.EditMenuController.prototype.undo = function() {
@@ -75,7 +92,7 @@ silex.controller.EditMenuController.prototype.copySelection = function() {
     silex.controller.ControllerBase.clipboard = [];
     // add each selected element to the clipboard
     goog.array.forEach(elements, function(element) {
-      if (this.model.body.getBodyElement() != element) {
+      if (this.model.body.getBodyElement() !== element) {
         // disable editable
         this.model.body.setEditable(element, false);
         // copy the element and its children
@@ -104,10 +121,10 @@ silex.controller.EditMenuController.prototype.recursiveCopy = function(element) 
     children: []
   };
   // case of a container, handle its children
-  if(this.model.element.getType(res.element) === silex.model.Element.TYPE_CONTAINER) {
+  if (this.model.element.getType(res.element) === silex.model.Element.TYPE_CONTAINER) {
     let toBeRemoved = [];
     let len = res.element.childNodes.length;
-    for (let idx=0; idx < len; idx++) {
+    for (let idx = 0; idx < len; idx++) {
       let el = res.element.childNodes[idx];
       if (el.nodeType === 1 && this.model.element.getType(el) !== null) {
         res.children.push(this.recursiveCopy(el));
@@ -200,7 +217,7 @@ silex.controller.EditMenuController.prototype.removeSelectedElements = function(
           // do remove selected elements
           goog.array.forEach(elements, function(element) {
             this.model.element.removeElement(element);
-          },this);
+          }, this);
         }
       }, this), 'delete', 'cancel');
 };
@@ -257,13 +274,57 @@ silex.controller.EditMenuController.prototype.editElement = function(opt_element
 
 
 /**
+ * get the previous element in the DOM, which is a Silex element
+ * @see   {silex.model.element}
+ * @param {Element} element
+ * @return {?Element}
+ */
+silex.controller.EditMenuController.prototype.getPreviousElement = function(element) {
+  let len = element.parentNode.childNodes.length;
+  let res = null;
+  for (let idx = 0; idx < len; idx++) {
+    let el = element.parentNode.childNodes[idx];
+    if (el.nodeType === 1 && this.model.element.getType(el) !== null) {
+      if (el === element) {
+        return res;
+      }
+      res = el;
+    }
+  }
+  return null;
+};
+
+
+/**
+ * get the previous element in the DOM, which is a Silex element
+ * @see   {silex.model.element}
+ * @param {Element} element
+ * @return {?Element}
+ */
+silex.controller.EditMenuController.prototype.getNextElement = function(element) {
+  let prev = null;
+  for (let idx = element.parentNode.childNodes.length - 1; idx >= 0; idx--) {
+    let el = element.parentNode.childNodes[idx];
+    if (el.nodeType === 1 && this.model.element.getType(el) !== null) {
+      if (el === element) {
+        return prev;
+      }
+      prev = el;
+    }
+  }
+  return null;
+};
+
+
+/**
+>>>>>>> added js linter and fixer, started to fix
  * get the index of the element in the DOM
  * @param {Element} element
  * @return {number}
  */
 silex.controller.EditMenuController.prototype.indexOfElement = function(element) {
   let len = element.parentNode.childNodes.length;
-  for (let idx=0; idx < len; idx++) {
+  for (let idx = 0; idx < len; idx++) {
     if (element.parentNode.childNodes[idx] === element) {
       return idx;
     }

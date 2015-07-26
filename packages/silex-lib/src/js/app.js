@@ -45,9 +45,11 @@ goog.require('silex.controller.ContextMenuController');
 goog.require('silex.model.Property');
 goog.require('silex.model.Element');
 goog.require('silex.model.Body');
-goog.require('silex.model.Head');
+goog.require('silex.model.Element');
 goog.require('silex.model.File');
+goog.require('silex.model.Head');
 goog.require('silex.model.Page');
+goog.require('silex.model.Property');
 goog.require('silex.service.Tracker');
 goog.require('silex.types.Controller');
 goog.require('silex.types.Model');
@@ -61,6 +63,7 @@ goog.require('silex.view.ContextMenu');
 goog.require('silex.view.Splitter');
 goog.require('silex.view.PageTool');
 goog.require('silex.view.PropertyTool');
+goog.require('silex.view.Splitter');
 goog.require('silex.view.Stage');
 goog.require('silex.view.Workspace');
 goog.require('silex.view.dialog.CssEditor');
@@ -248,11 +251,17 @@ silex.App = function() {
   // **
   // application start, open a new empty file
   this.controller.fileMenuController.newFile();
-  if (silex.Config.debug.debugMode && silex.Config.debug.doAfterReady) {
-    silex.Config.debug.doAfterReady(this.model, this.view, this.controller);
+  if (goog.DEBUG) {
+    window['model'] = this.model;
+    window['view'] = this.view;
+    window['controller'] = this.controller;
+    var script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = '/js/debug.js';
+    document.body.appendChild(script);
   }
   // prevent accidental unload
-  if (!silex.Config.debug.debugMode || silex.Config.debug.preventQuit) {
+  if (!goog.DEBUG || silex.Config.debug.preventQuit) {
     workspace.startWatchingUnload();
   }
 };
@@ -281,6 +290,4 @@ silex.App.prototype.controller = null;
 
 // Ensures the symbol will be visible after compiler renaming.
 goog.exportSymbol('silex.App', silex.App);
-// google library too, because of "dist/client/js/closure-patches.js" which patches goog.style
-// FIXME: still needed? Find a way to remove this
-goog.exportSymbol('goog.style', goog.style);
+//goog.exportSymbol('goog.style', goog.style);

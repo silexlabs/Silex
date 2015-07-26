@@ -41,9 +41,12 @@ silex.controller.ControllerBase = function(model, view) {
    */
   this.view = view;
 
+  // init undo/redo
+  this.undoReset();
+
   // tracker
   this.tracker = silex.service.Tracker.getInstance();
-  window.onerror = goog.bind(function(msg, url, line){
+  window.onerror = goog.bind(function(msg, url, line) {
     this.tracker.trackAction('controller-events', 'uncaught.error', msg + '- ' + url + ' - line: ' + line, -1);
   }, this);
 };
@@ -176,13 +179,13 @@ silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
         // undo checkpoint
         this.undoCheckPoint();
         // create the element
-        var img = this.addElement(silex.model.Element.TYPE_IMAGE);
+        let img = this.addElement(silex.model.Element.TYPE_IMAGE);
         // load the image
         this.model.element.setImageUrl(img, url,
-            goog.bind(function(element, img) {
+            goog.bind(function(element, imgElement) {
               // update element size
-              this.model.element.setStyle(element, 'width', Math.max(silex.model.Element.MIN_WIDTH, img.naturalWidth) + 'px');
-              this.model.element.setStyle(element, 'height', Math.max(silex.model.Element.MIN_HEIGHT, img.naturalHeight) + 'px');
+              this.model.element.setStyle(element, 'width', Math.max(silex.model.Element.MIN_WIDTH, imgElement.naturalWidth) + 'px');
+              this.model.element.setStyle(element, 'height', Math.max(silex.model.Element.MIN_HEIGHT, imgElement.naturalHeight) + 'px');
               this.tracker.trackAction('controller-events', 'success', 'insert.image', 1);
             }, this),
             goog.bind(function(element, message) {
@@ -210,8 +213,10 @@ silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
  * @param  {?boolean=} isUndoable
  */
 silex.controller.ControllerBase.prototype.styleChanged = function(name, value, opt_elements, isUndoable) {
-  if (!opt_elements) opt_elements = this.model.body.getSelection();
-  if(isUndoable !== false) {
+  if (!opt_elements) {
+    opt_elements = this.model.body.getSelection();
+  }
+  if (isUndoable !== false) {
     // undo checkpoint
     this.undoCheckPoint();
   }
@@ -229,7 +234,9 @@ silex.controller.ControllerBase.prototype.styleChanged = function(name, value, o
  * @param {?Array.<Element>=} opt_elements
  */
 silex.controller.ControllerBase.prototype.multipleStylesChanged = function(style, opt_elements) {
-  if (!opt_elements) opt_elements = this.model.body.getSelection();
+  if (!opt_elements) {
+    opt_elements = this.model.body.getSelection();
+  }
   // undo checkpoint
   this.undoCheckPoint();
   // apply the change to all elements
@@ -248,7 +255,9 @@ silex.controller.ControllerBase.prototype.multipleStylesChanged = function(style
  * @param {?boolean=} opt_applyToContent
  */
 silex.controller.ControllerBase.prototype.propertyChanged = function(name, value, opt_elements, opt_applyToContent) {
-  if (!opt_elements) opt_elements = this.model.body.getSelection();
+  if (!opt_elements) {
+    opt_elements = this.model.body.getSelection();
+  }
   // undo checkpoint
   this.undoCheckPoint();
   // apply the change to all elements
@@ -295,8 +304,9 @@ silex.controller.ControllerBase.prototype.getUserInputPageName = function(defaul
           var pages = this.model.page.getPages();
           var exists = false;
           goog.array.forEach(pages, function(pageName) {
-            if (pageName === name)
+            if (pageName === name) {
               exists = true;
+            }
           });
           if (exists) {
             // just open the new page
@@ -355,6 +365,7 @@ silex.controller.ControllerBase.prototype.checkElementVisibility = function(elem
 
 /**
  * ask the user for a new file title
+ * @param {string} title
  */
 silex.controller.ControllerBase.prototype.setTitle = function(title) {
   // undo checkpoint
@@ -410,7 +421,9 @@ silex.controller.ControllerBase.prototype.save = function(opt_url, opt_cbk, opt_
         {'mimetype': 'text/html'},
         goog.bind(function(error) {
           this.tracker.trackAction('controller-events', 'error', 'file.save', -1);
-          if (opt_errorCbk) opt_errorCbk(error);
+          if (opt_errorCbk) {
+            opt_errorCbk(error);
+          }
         }, this));
   }
 };
@@ -428,7 +441,7 @@ silex.controller.ControllerBase.prototype.doSave = function(url, opt_cbk, opt_er
   // relative urls only in the files
   var rawHtml = this.model.file.getHtml();
   // look for bug of firefox inserting quotes in url("")
-  if (rawHtml.indexOf("url('&quot;") > -1) {
+  if (rawHtml.indexOf('url(\'&quot;') > -1) {
     console.warn('I have found HTML entities in some urls, there us probably an error in the save process.');
     // log this (QA)
     this.tracker.trackAction('controller-events', 'warning', 'file.save.corrupted', -1);
@@ -439,7 +452,7 @@ silex.controller.ControllerBase.prototype.doSave = function(url, opt_cbk, opt_er
   }
   // runtime check for a recurrent error
   // check that there is no more of the basUrl in the Html
-  if (this.url && rawHtml.indexOf(this.url) >= 0){
+  if (this.url && rawHtml.indexOf(this.url) >= 0) {
     console.warn('Base URL remains in the HTML, there is probably an error in the convertion to relative URL process');
     // log this (QA)
     this.tracker.trackAction('controller-events', 'warning', 'file.save.corrupted', -1);
@@ -452,12 +465,16 @@ silex.controller.ControllerBase.prototype.doSave = function(url, opt_cbk, opt_er
         this.tracker.trackAction('controller-events', 'success', 'file.save', 1);
         this.fileOperationSuccess('File is saved.', false);
         this.view.workspace.setPreviewWindowLocation();
-        if (opt_cbk) opt_cbk();
+        if (opt_cbk) {
+          opt_cbk();
+        }
       }, this),
       goog.bind(function(error) {
         silex.utils.Notification.notifyError('Error: I did not manage to save the file. \n' + (error.message || ''));
         this.tracker.trackAction('controller-events', 'error', 'file.save', -1);
-        if (opt_errorCbk) opt_errorCbk(error);
+        if (opt_errorCbk) {
+          opt_errorCbk(error);
+        }
       }, this));
 };
 

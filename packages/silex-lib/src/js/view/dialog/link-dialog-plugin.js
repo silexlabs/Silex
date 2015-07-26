@@ -53,15 +53,15 @@ goog.inherits(silex.view.dialog.LinkDialogPlugin,
  * @protected
  * @override
  */
-silex.view.dialog.LinkDialogPlugin.prototype.handleOk = function(e) {
+silex.view.dialog.LinkDialogPlugin.prototype.handleOk = function(event) {
   // allow internal links
-  var linkUrl = e.target.urlInputHandler_.element_.value;
+  var linkUrl = event.target.urlInputHandler_.element_.value;
   if (linkUrl && linkUrl.indexOf('#') === 0) {
     // this is an internal link
     this.currentLink_.getAnchor().href = linkUrl;
     // TODO: check if this assignement is useful?
-    e.linkUrl = linkUrl;
+    event.linkUrl = linkUrl;
   }
   // call parent class
-  goog.base(this, 'handleOk', e);
+  goog.base(this, 'handleOk', event);
 };

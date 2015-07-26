@@ -67,40 +67,6 @@ silex.view.Menu.prototype.menu = null;
  */
 silex.view.Menu.prototype.buildUi = function() {
 
-  /* *
-        ////////////////////////////////////////////////////////////////////////////////
-        // test of surtcuts
-        ////////////////////////////////////////////////////////////////////////////////
-        var shortcutHandler = new goog.ui.KeyboardShortcutHandler(document);
-        var globalKeys = [];
-        var tmp = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
-
-        // create the menu items
-        for (i in tmp) {
-          shortcutHandler.registerShortcut('meta-'+tmp[i], [goog.events.KeyCodes[tmp[i].toUpperCase()], goog.ui.KeyboardShortcutHandler.Modifiers.META]);
-          shortcutHandler.registerShortcut('alt-'+tmp[i], [goog.events.KeyCodes[tmp[i].toUpperCase()], goog.ui.KeyboardShortcutHandler.Modifiers.ALT]);
-          shortcutHandler.registerShortcut('ctrl-'+tmp[i], [goog.events.KeyCodes[tmp[i].toUpperCase()], goog.ui.KeyboardShortcutHandler.Modifiers.CTRL]);
-          shortcutHandler.registerShortcut('meta-shift-'+tmp[i], [goog.events.KeyCodes[tmp[i].toUpperCase()], goog.ui.KeyboardShortcutHandler.Modifiers.META + goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT]);
-          shortcutHandler.registerShortcut('alt-shift-'+tmp[i], [goog.events.KeyCodes[tmp[i].toUpperCase()], goog.ui.KeyboardShortcutHandler.Modifiers.ALT + goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT]);
-          shortcutHandler.registerShortcut('ctrl-shift-'+tmp[i], [goog.events.KeyCodes[tmp[i].toUpperCase()], goog.ui.KeyboardShortcutHandler.Modifiers.CTRL + goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT]);
-          console.log('added shortcut', tmp[i]);
-        }
-        shortcutHandler.setAlwaysPreventDefault(false);
-        //  shortcutHandler.setAllShortcutsAreGlobal(false);
-        shortcutHandler.setModifierShortcutsAreGlobal(false);
-        shortcutHandler.setGlobalKeys(globalKeys);
-        goog.events.listen(
-          shortcutHandler,
-          goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED,
-          goog.bind(function(event) {
-            console.log('received shortcut', event.identifier);
-            event.preventDefault();
-            event.stopPropagation();
-          }, this)
-        );
-        return;
-        /* */
-
   this.menu = goog.ui.menuBar.create();
 
   // shortcut handler
@@ -111,56 +77,9 @@ silex.view.Menu.prototype.buildUi = function() {
   for (let i in silex.Config.menu.names) {
     // Create the drop down menu with a few suboptions.
     var menu = new goog.ui.Menu();
-    goog.array.forEach(silex.Config.menu.options[i],
-        function(itemData) {
-          var item;
-          if (itemData) {
-            // create the menu item
-            var label = itemData.label;
-            var id = itemData.id;
-            item = new goog.ui.MenuItem(label);
-            item.setId(id);
-            item.addClassName(itemData.className);
-            // checkable
-            if (itemData.checkable) {
-              item.setCheckable(true);
-            }
-            // mnemonic (access to an item with keyboard when the menu is open)
-            if (itemData.mnemonic) {
-              item.setMnemonic(itemData.mnemonic);
-            }
-            // shortcut
-            if (itemData.shortcut) {
-              for (let idx in itemData.shortcut) {
-                try {
-                  shortcutHandler.registerShortcut(itemData.id, itemData.shortcut[idx]);
-                }
-                catch (e) {
-                  console.error('Catched error for shortcut', id, '. Error: ', e);
-                }
-                if (itemData.globalKey) {
-                  globalKeys.push(itemData.globalKey);
-                }
-              }
-            }
-          } else {
-            item = new goog.ui.MenuSeparator();
-          }
-          //item.setDispatchTransitionEvents(goog.ui.Component.State.ALL, true);
-          // add the menu item
-          menu.addChild(item, true);
-          // add tooltip (has to be after menu.addItem)
-          // TODO: add accelerator (only display shortcut here, could not get it to work automatically with closure's accelerator concept)
-          if (itemData && itemData.tooltip) {
-            // add label
-            var div = goog.dom.createElement('span');
-            div.innerHTML = itemData.tooltip;
-            div.className = 'goog-menuitem-accel';
-            item.getElement().appendChild(div);
-            // add a real tooltip
-            //new goog.ui.Tooltip(item.getElement(), itemData.tooltip);
-          }
-        }, this);
+    goog.array.forEach(silex.Config.menu.options[i], (itemData) => {
+      this.addToMenu(itemData, menu, shortcutHandler, globalKeys);
+    }, this);
 
     // Create a button inside menubar.
     var menuItemData = silex.Config.menu.names[i];
@@ -196,15 +115,15 @@ silex.view.Menu.prototype.buildUi = function() {
           event.altKey === false &&
           event.ctrlKey === false) {
         // but not in text inputs
-        if (event.target.tagName.toUpperCase() === 'INPUT' ||
-            event.target.tagName.toUpperCase() === 'TEXTAREA') {
-          // let browser handle
-        }
-        else {
+        if (event.target.tagName.toUpperCase() !== 'INPUT' &&
+            event.target.tagName.toUpperCase() !== 'TEXTAREA') {
           // silex takes an action
           event.preventDefault();
           this.onMenuEvent('view.open.editor');
         }
+        // else  {
+          // let browser handle
+        // }
       }
     }
   }, this));
@@ -216,6 +135,64 @@ silex.view.Menu.prototype.buildUi = function() {
   goog.events.listen(this.menu, goog.ui.Component.EventType.ACTION, function(e) {
     this.onMenuEvent(e.target.getId());
   }, false, this);
+};
+
+
+/**
+ * add an item to the menu
+ * @param {{mnemonic:string,checkable:boolean,id:string,shortcut:Array.<*>, globalKey:string}} itemData [description]
+ * @param {goog.ui.menuBar} menu
+ * @param {goog.ui.KeyboardShortcutHandler} shortcutHandler
+ * @param {Array.<Object>} globalKeys
+ */
+silex.view.Menu.prototype.addToMenu = function(itemData, menu, shortcutHandler, globalKeys) {
+  var item;
+  if (itemData) {
+    // create the menu item
+    var label = itemData.label;
+    var id = itemData.id;
+    item = new goog.ui.MenuItem(label);
+    item.setId(id);
+    item.addClassName(itemData.className);
+    // checkable
+    if (itemData.checkable) {
+      item.setCheckable(true);
+    }
+    // mnemonic (access to an item with keyboard when the menu is open)
+    if (itemData.mnemonic) {
+      item.setMnemonic(itemData.mnemonic);
+    }
+    // shortcut
+    if (itemData.shortcut) {
+      for (let idx in itemData.shortcut) {
+        try {
+          shortcutHandler.registerShortcut(itemData.id, itemData.shortcut[idx]);
+        }
+        catch (e) {
+          console.error('Catched error for shortcut', id, '. Error: ', e);
+        }
+        if (itemData.globalKey) {
+          globalKeys.push(itemData.globalKey);
+        }
+      }
+    }
+  } else {
+    item = new goog.ui.MenuSeparator();
+  }
+  //item.setDispatchTransitionEvents(goog.ui.Component.State.ALL, true);
+  // add the menu item
+  menu.addChild(item, true);
+  // add tooltip (has to be after menu.addItem)
+  // TODO: add accelerator (only display shortcut here, could not get it to work automatically with closure's accelerator concept)
+  if (itemData && itemData.tooltip) {
+    // add label
+    var div = goog.dom.createElement('span');
+    div.innerHTML = itemData.tooltip;
+    div.className = 'goog-menuitem-accel';
+    item.getElement().appendChild(div);
+    // add a real tooltip
+    //new goog.ui.Tooltip(item.getElement(), itemData.tooltip);
+  }
 };
 
 
@@ -232,6 +209,7 @@ silex.view.Menu.prototype.redraw = function(selectedElements, pageNames, current
 /**
  * handles click events
  * calls onStatus to notify the controller
+ * @param {string} type
  */
 silex.view.Menu.prototype.onMenuEvent = function(type) {
   switch (type) {

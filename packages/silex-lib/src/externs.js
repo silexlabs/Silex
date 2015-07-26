@@ -246,6 +246,8 @@ Ace.prototype.setSession = function(session) {};
 
 /**
  * Returns the current session being used.
+ * for some reason, this.ace.getSession().* is undefined,
+ *    closure renames it despite the fact that that it is declared in the externs.js file
  * @return {{on:function(string, function(Object)), setMode: function(string)}}
  */
 Ace.prototype.getSession = function() {};

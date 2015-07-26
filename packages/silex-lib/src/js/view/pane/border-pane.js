@@ -176,7 +176,7 @@ silex.view.pane.BorderPane.prototype.initEvents = function() {
       this.onBorderCornerChanged,
       false,
       this);
-}
+};
 
 
 /**
@@ -211,7 +211,9 @@ silex.view.pane.BorderPane.prototype.createCheckBoxes =
  */
 silex.view.pane.BorderPane.prototype.redraw =
   function(selectedElements, pageNames, currentPageName) {
-  if (this.iAmSettingValue) return;
+  if (this.iAmSettingValue) {
+    return;
+  }
   this.iAmRedrawing = true;
   // call super
   goog.base(
@@ -334,16 +336,28 @@ silex.view.pane.BorderPane.prototype.redrawBorderRadius =
   // The four values for each radii are given in the order
   // top-left, top-right, bottom-right, bottom-left.
   // If top-right is omitted it is the same as top-left.
-  if (!goog.isDef(values[1])) values[1] = values[0];
+  if (!goog.isDef(values[1])) {
+    values[1] = values[0];
+  }
   // If bottom-right is omitted it is the same as top-left.
-  if (!goog.isDef(values[2])) values[2] = values[0];
+  if (!goog.isDef(values[2])) {
+    values[2] = values[0];
+  }
   // If bottom-left is omitted it is the same as top-right.
-  if (!goog.isDef(values[3])) values[3] = values[1];
+  if (!goog.isDef(values[3])) {
+    values[3] = values[1];
+  }
   // get corner radius value
   var val = values[0];
-  if (goog.isDef(values[1]) && val === '0' || val === '0px') val = values[1];
-  if (goog.isDef(values[2]) && val === '0' || val === '0px') val = values[2];
-  if (goog.isDef(values[3]) && val === '0' || val === '0px') val = values[3];
+  if (goog.isDef(values[1]) && val === '0' || val === '0px') {
+    val = values[1];
+  }
+  if (goog.isDef(values[2]) && val === '0' || val === '0px') {
+    val = values[2];
+  }
+  if (goog.isDef(values[3]) && val === '0' || val === '0px') {
+    val = values[3];
+  }
   // remove unit when needed
   if (goog.isDef(val) && val !== '0' && val !== '0px') {
     this.borderRadiusInput.value = val.substr(0, val.indexOf('px'));
@@ -352,10 +366,12 @@ silex.view.pane.BorderPane.prototype.redrawBorderRadius =
     var len = this.cornerPlacementCheckBoxes.length;
     for (idx = 0; idx < len; idx++) {
       var checkBox = this.cornerPlacementCheckBoxes[idx];
-      if (values[idx] !== '0' && values[idx] !== '0px')
+      if (values[idx] !== '0' && values[idx] !== '0px') {
         checkBox.setChecked(true);
-      else
+      }
+      else {
         checkBox.setChecked(false);
+      }
     }
   }
   else {
@@ -411,9 +427,15 @@ silex.view.pane.BorderPane.prototype.redrawBorderWidth = function(borderWidth) {
   // do nothing, we're good!
   // }
   var val = values[0];
-  if (goog.isDef(values[1]) && val === '0' || val === '0px') val = values[1];
-  if (goog.isDef(values[2]) && val === '0' || val === '0px') val = values[2];
-  if (goog.isDef(values[3]) && val === '0' || val === '0px') val = values[3];
+  if (goog.isDef(values[1]) && val === '0' || val === '0px') {
+    val = values[1];
+  }
+  if (goog.isDef(values[2]) && val === '0' || val === '0px') {
+    val = values[2];
+  }
+  if (goog.isDef(values[3]) && val === '0' || val === '0px') {
+    val = values[3];
+  }
   if (goog.isDef(val) && val !== '0' && val !== '0px') {
     this.borderWidthInput.value = val.substr(0, val.indexOf('px'));
     // border placement
@@ -421,10 +443,12 @@ silex.view.pane.BorderPane.prototype.redrawBorderWidth = function(borderWidth) {
     var len = this.borderPlacementCheckBoxes.length;
     for (idx = 0; idx < len; idx++) {
       var checkBox = this.borderPlacementCheckBoxes[idx];
-      if (values.length > idx && values[idx] !== '0' && values[idx] !== '0px')
+      if (values.length > idx && values[idx] !== '0' && values[idx] !== '0px') {
         checkBox.setChecked(true);
-      else
+      }
+      else {
         checkBox.setChecked(false);
+      }
     }
   }
   else {
@@ -511,7 +535,9 @@ silex.view.pane.BorderPane.prototype.onBorderWidthChanged = function() {
  */
 silex.view.pane.BorderPane.prototype.onBorderStyleChanged = function() {
   // prevent changing border when redraw is setting the value
-  if(this.iAmRedrawing) return;
+  if (this.iAmRedrawing) {
+    return;
+  }
 
   this.styleChanged(
       'borderStyle',
