@@ -28,7 +28,7 @@ a mettre sous forme d'issues et de propositions?
   - better containers (UI), see bellow
   - Finish Mobile
   - release food template + startup template, call for testers and contributors (templates, issues)
-  - full ES6 + no more goog.* + fix linter errors + get rid of jquery ui?
+  - full ES6 + no more goog.* + fix linter errors + get rid of jquery ui? + dist should be empty, add assets/, add lib/ or use bower
   - Monitoring of nodejs app
   - Hosting:
     see hosting branch with persona,
@@ -133,11 +133,8 @@ Communication inside silex
 * ?? permet de dev sur silex (different image indiehosters)
 * utiliser indiehosters mais avec le build de l'image et fichiers silex locaux?
 
-`build` branch
-* verifier que `npm install --production` fonctionne (doit builder sans les devDependencies)
-  https://github.com/silexlabs/Silex/issues/287
-
 page thumbnails
+
 * cf screenshot "page thumbnails.png"
 * cf branche page-thumbnails
 * cf https://github.com/cburgmer/rasterizeHTML.js/
