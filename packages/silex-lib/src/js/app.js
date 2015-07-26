@@ -290,4 +290,4 @@ silex.App.prototype.controller = null;
 
 // Ensures the symbol will be visible after compiler renaming.
 goog.exportSymbol('silex.App', silex.App);
-//goog.exportSymbol('goog.style', goog.style);
+goog.exportSymbol('goog.style', goog.style);

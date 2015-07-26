@@ -107,6 +107,19 @@ silex.utils.BackwardCompat.process = function(doc, model, cbk) {
   metaNode.setAttribute('content', 'Silex v' + silex.utils.BackwardCompat.LATEST_VERSION.join('.'));
 };
 
+
+/**
+ * build the URL for static files, with the version in the URL
+ * @param {Array.<string>} version
+ * @return {string}
+ */
+silex.utils.BackwardCompat.getStaticUrl = function(version) {
+  var folder = '2.' + silex.utils.BackwardCompat.LATEST_VERSION[2];
+  var url = '//static.silex.me/' + folder;
+  return url;
+};
+
+
 /**
  * update URLs according to the version of Silex static files
  * @param {Array.<string>} version
