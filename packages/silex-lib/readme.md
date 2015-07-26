@@ -51,7 +51,9 @@ Developers you can clone this repository and start Silex, with nodejs. See instr
 Prerequisite :
 * [docker](https://www.docker.com/)
 
-  $ docker run -p 6805:6805 indiehosters/silex
+```
+$ docker run -p 6805:6805 indiehosters/silex
+```
 
 Open http://localhost:6805/ and you are ready!
 
@@ -66,19 +68,27 @@ Prerequisite:
 
 Clone this repository, and do not forget the sub modules (cloud-explorer and unifile)
 
-  $ git clone --recursive https://github.com/silexlabs/Silex.git
+```
+$ git clone --recursive https://github.com/silexlabs/Silex.git
+```
 
 Install all needed modules
 
-  $ npm install
+```
+$ npm install
+```
 
 Start the server and then open [http://localhost:6805/](http://localhost:6805/) - note that the port is 6805, which is easy to remember, since it is the date of sexual revolution started in paris france 8-)
 
-  $ npm start
+```
+$ npm start
+```
 
 > Note for [cloud9](http://c9.io) users: you may want to activate python with this command:
 
-  $ nada-nix install python
+```
+$ nada-nix install python
+```
 
 And finally, take a look at the "available commands" section bellow
 
@@ -108,22 +118,14 @@ Start Silex:
 
 ### Available commands
 
-When debuging these npm scripts can be used with npm (they are defined in the file [package.json](./package.json))
+If you develop or debug Silex, these npm scripts can be used with npm (they are defined in the file [package.json](./package.json))
 
 * `$ npm run start` will start the server
-* `$ npm run build` will build everything
-* `$ npm run build:css` will build only the css files with less
-* `$ npm run build:html` will build only the html files with jade
-* `$ npm run build:js` will build only the client side js files with google closure
-* `$ npm run build:server` will build only check that the server scripts are correct
-* `$ npm run watch:css` will watch the css source folder and rebuild when a file changes
-* `$ npm run watch:html` will watch the html source folder and rebuild when a file changes
-* `$ npm run watch:js` will watch the client side js source folder and rebuild when a file changes
-* `$ npm run watch:server` will watch the server source folder and rebuild when a file changes
+* `$ npm run build:debug` will build the client side of Silex (html, css and js), with several little things enabled for debug, [see the App class](./src/js/app.js)
+* `$ npm run build:release` will build the client side of Silex (html, css and js), ready for production
+* `$ npm run build:server` this only check that the server scripts are correct
 * `$ npm run watch:client` will watch the html, js and css source folders and rebuild when a file changes
-* `$ npm run lint:js` will lint the client side js files
-* `$ npm run lint:server` will lint the server files
-* `$ npm run fix:js` will fix the client side js files with google closure fix tool
+* `$ npm run watch:server` will watch the server source folder and rebuild when a file changes
 
 ##dependencies
 
