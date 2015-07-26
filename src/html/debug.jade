@@ -1,10 +1,18 @@
 doctype html
 head
+  style.
+    .loading-pending {
+      opacity: 0;
+    }
+    body {
+      background-color: #464646;
+    }
+
   include ./templates/head.jade
 
   // Silex styles and code
   script(type='text/javascript', src='js/admin.js')
-
+  
   // all the css in the head with _styles.less imports
   link(rel='stylesheet', type='text/css', href='css/admin.css')
 
