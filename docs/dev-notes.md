@@ -9,10 +9,6 @@ a mettre sous forme d'issues et de propositions?
     + ? file / new => chose a template from templates.silex.me
     + no !important in front-end.css?
     + see known bugs
-  - better "tiling" in the property editor?
-        !! bug in chrome?
-        commit & push
-        ? take .style-container out of main-container
   - merge `build` branch, cf notes below
   - https branch
     + static.silex.me => dist/client/static/
@@ -25,7 +21,7 @@ a mettre sous forme d'issues et de propositions?
   - better containers (UI), see bellow
   - Finish Mobile
   - release food template + startup template, call for testers and contributors (templates, issues)
-  - full ES6 and no more goog.*
+  - full ES6 + no more goog.* + fix linter errors
   - Monitoring of nodejs app
   - Hosting:
     see hosting branch with persona,
