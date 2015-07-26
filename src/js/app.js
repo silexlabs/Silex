@@ -78,20 +78,14 @@ goog.require('silex.view.dialog.TextEditor');
 /**
  * Entry point of Silex client application
  * create all views and models and controllers
- * @param {Boolean} isDebugMode
- * @param {?function()=} opt_silexDoAfterReady
  * @constructor
  *
  */
-silex.App = function(isDebugMode, opt_silexDoAfterReady) {
+silex.App = function() {
 
   // **
   // general initializations
   // **
-  // debug mode
-  if (isDebugMode !== null) {
-    silex.Config.debug.debugMode = isDebugMode;
-  }
   // tracker / qos
   silex.service.Tracker.getInstance().trackAction('app-events', 'start', null, 2);
 
@@ -257,12 +251,17 @@ silex.App = function(isDebugMode, opt_silexDoAfterReady) {
   // **
   // application start, open a new empty file
   this.controller.fileMenuController.newFile();
-  if (isDebugMode && opt_silexDoAfterReady !== null) {
-    console.log('xxxxx', opt_silexDoAfterReady);
-    opt_silexDoAfterReady(this.model, this.view, this.controller);
+  if (goog.DEBUG) {
+    window['model'] = this.model;
+    window['view'] = this.view;
+    window['controller'] = this.controller;
+    var script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = '/js/debug.js';
+    document.body.appendChild(script);
   }
   // prevent accidental unload
-  if (!silex.Config.debug.debugMode || silex.Config.debug.preventQuit) {
+  if (!goog.DEBUG || silex.Config.debug.preventQuit) {
     workspace.startWatchingUnload();
   }
 };

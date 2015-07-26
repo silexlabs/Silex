@@ -52,12 +52,6 @@ silex.Config.debug = {
    * @type {boolean}
    */
   preventQuit: false,
-  /**
-   * callback executed when Silex has launched and is ready
-   * it is defined in debug.js loaded only in debug.html
-   * @type {?function(silex.types.Model, silex.types.View, silex.types.Controller)}
-   */
-  doAfterReady: null
 };
 
 
