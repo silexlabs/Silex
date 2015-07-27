@@ -72,7 +72,9 @@ silex.view.pane.GeneralStylePane.prototype.buildUi = function() {
  * @param   {string}  currentPageName   the name of the current page
  */
 silex.view.pane.GeneralStylePane.prototype.redraw = function(selectedElements, pageNames, currentPageName) {
-  if (this.iAmSettingValue) return;
+  if (this.iAmSettingValue) {
+    return;
+  }
   this.iAmRedrawing = true;
 
   // call super
@@ -81,7 +83,7 @@ silex.view.pane.GeneralStylePane.prototype.redraw = function(selectedElements, p
   // not available for stage element
   var elementsNoStage = [];
   goog.array.forEach(selectedElements, function(element) {
-    if (this.model.body.getBodyElement() != element) {
+    if (this.model.body.getBodyElement() !== element) {
       elementsNoStage.push(element);
     }
   }, this);
@@ -117,8 +119,12 @@ silex.view.pane.GeneralStylePane.prototype.redraw = function(selectedElements, p
 silex.view.pane.GeneralStylePane.prototype.onInputChanged = function(event) {
   if (this.opacityInput.value && this.opacityInput.value !== '') {
     var val = parseFloat(this.opacityInput.value) / 100.0;
-    if (val < 0) val = 0;
-    if (val > 1) val = 1;
+    if (val < 0) {
+      val = 0;
+    }
+    if (val > 1) {
+      val = 1;
+    }
     this.styleChanged('opacity', val.toString());
   }
   else {

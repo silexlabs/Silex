@@ -1,3 +1,0 @@
-# num@period  delay(unused) name script...
-
-1@daily 0 silex_cleanup /srv/data/web/vhosts/default/Silex/dist/cron/silex_cleanup.sh

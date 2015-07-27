@@ -47,11 +47,13 @@ silex.service.SilexTasks.prototype.publish = function(path, html, css, js, files
   // check inputs
   if (goog.isNull(path) || goog.isNull(html) || goog.isNull(css) || goog.isNull(js) || goog.isNull(files)) {
     console.error('Param path, html, css, js or files missing');
-    if (opt_errCbk) opt_errCbk('Param path, html, css, js or files missing');
+    if (opt_errCbk) {
+      opt_errCbk('Param path, html, css, js or files missing');
+    }
     return;
   }
-  var url = '/tasks/publish';
-  var qd = new goog.Uri.QueryData();
+  let url = '/tasks/publish';
+  let qd = new goog.Uri.QueryData();
   qd.add('path', path);
   qd.add('html', html);
   qd.add('css', css);
@@ -59,14 +61,16 @@ silex.service.SilexTasks.prototype.publish = function(path, html, css, js, files
   qd.add('files', JSON.stringify(files));
   goog.net.XhrIo.send(url, function(e) {
     // success of the request
-    var xhr = e.target;
+    let xhr = e.target;
     if (xhr.isSuccess()) {
-      var json = xhr.getResponseJson();
+      let json = xhr.getResponseJson();
       if (json.success) {
-        if (cbk) cbk(json);
+        if (cbk) {
+          cbk(json);
+        }
       }
       else {
-        var message = json.code || json.message;
+        let message = json.code || json.message;
         console.error('Error in while trying to connect with back end', message, xhr, xhr.isSuccess(), xhr.getStatus(), xhr.headers.toString());
         if (opt_errCbk) {
           opt_errCbk(message);
@@ -74,7 +78,7 @@ silex.service.SilexTasks.prototype.publish = function(path, html, css, js, files
       }
     }
     else {
-      var message = xhr.getLastError();
+      let message = xhr.getLastError();
       console.error('Error in while trying to connect with back end', xhr.getLastError(), xhr.getLastErrorCode(), xhr.isSuccess(), xhr.getStatus(), xhr.headers);
       if (opt_errCbk) {
         opt_errCbk(message);
@@ -86,24 +90,26 @@ silex.service.SilexTasks.prototype.publish = function(path, html, css, js, files
 
 /**
  * create a temp link on the server
- * @param path
+ * @param {string} path
  * @param {function(string)} cbk
  * @param {?function(string)=} opt_errCbk
  */
 silex.service.SilexTasks.prototype.getTempLink = function(path, cbk, opt_errCbk) {
-  var url = '/tasks/getTempLink?path=' + path;
+  let url = '/tasks/getTempLink?path=' + path;
   goog.net.XhrIo.send(url, function(e) {
     // success of the request
-    var xhr = e.target;
+    let xhr = e.target;
     if (xhr.isSuccess()) {
-      var jsonString = xhr.getResponse();
+      let jsonString = xhr.getResponse();
       /** @type {?UnifileResponse} */
-      var json = null;
+      let json = null;
       if (jsonString) {
         json = /** @type {UnifileResponse} */ (JSON.parse(jsonString));
       }
       if (jsonString && json && json.success === true && json.tempLink) {
-        if (cbk) cbk(json.tempLink);
+        if (cbk) {
+          cbk(json.tempLink);
+        }
       }
       else {
         console.error('could not get temp link for resource', xhr, xhr.isSuccess(), xhr.getStatus(), xhr.headers.toString());
@@ -113,7 +119,7 @@ silex.service.SilexTasks.prototype.getTempLink = function(path, cbk, opt_errCbk)
       }
     }
     else {
-      var message = xhr.getLastError();
+      let message = xhr.getLastError();
       console.error(xhr.getLastError(), xhr.getLastErrorCode(), xhr.isSuccess(), xhr.getStatus(), xhr.headers);
       if (opt_errCbk) {
         opt_errCbk(message);
@@ -125,22 +131,24 @@ silex.service.SilexTasks.prototype.getTempLink = function(path, cbk, opt_errCbk)
 
 /**
  * remove the temp link on the server
- * @param name
+ * @param {string} name
  * @param {?function(UnifileResponse)=} opt_cbk
  * @param {?function(string)=} opt_errCbk
  */
 silex.service.SilexTasks.prototype.disposeTempLink = function(name, opt_cbk, opt_errCbk) {
-  var url = '/tasks/disposeTempLink?name=' + name;
+  let url = '/tasks/disposeTempLink?name=' + name;
   goog.net.XhrIo.send(url, function(e) {
     // success of the request
-    var xhr = e.target;
+    let xhr = e.target;
     if (xhr.isSuccess()) {
-      var json = /** @type {UnifileResponse} */ (xhr.getResponseJson());
+      let json = /** @type {UnifileResponse} */ (xhr.getResponseJson());
       if (json.success === true) {
-        if (opt_cbk) opt_cbk(json);
+        if (opt_cbk) {
+          opt_cbk(json);
+        }
       }
       else {
-        var message = /** @type {string} */ (json.code || json.message);
+        let message = /** @type {string} */ (json.code || json.message);
         console.error(message, xhr, xhr.isSuccess(), xhr.getStatus(), xhr.headers.toString());
         if (opt_errCbk) {
           opt_errCbk(message);
@@ -148,7 +156,7 @@ silex.service.SilexTasks.prototype.disposeTempLink = function(name, opt_cbk, opt
       }
     }
     else {
-      var message = xhr.getLastError();
+      let message = xhr.getLastError();
       console.error('Error in while trying to connect with back end', xhr.getLastError(), xhr.getLastErrorCode(), xhr.isSuccess(), xhr.getStatus(), xhr.headers);
       if (opt_errCbk) {
         opt_errCbk(message);
