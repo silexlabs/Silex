@@ -43,7 +43,6 @@ silex.view.TipOfTheDay = function(element, model, controller) {
   setTimeout(() => {
     // start loading
     this.element.classList.add('loading');
-    this.element.classList.remove('hidden-dialog');
     // load data
     goog.net.XhrIo.send('https://api.github.com/repos/silexlabs/Silex/issues?labels=tip-of-the-day', (e) => {
       var xhr = e.target;
@@ -53,13 +52,14 @@ silex.view.TipOfTheDay = function(element, model, controller) {
       el.innerHTML = '<a target="_blank" href="' + obj['html_url'] + '"><h1>' + obj['title'] + '</h1><p>' + this.strip(obj['body']) + '</p></a><a class="close" href="#">Close</a>';
       this.element.appendChild(el);
       this.element.classList.remove('loading');
-      // attach click event
-      goog.events.listen(this.element, goog.events.EventType.CLICK, (e) => {
-        // hide
-        this.element.classList.add('hidden-dialog');
-      }, false, this);
+      this.element.classList.remove('hidden-dialog');
     });
   }, 4000);
+  // attach click event
+  goog.events.listen(this.element, goog.events.EventType.CLICK, (e) => {
+    // hide
+    this.element.classList.add('hidden-dialog');
+  }, false, this);
 };
 
 
