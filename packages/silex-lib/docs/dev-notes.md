@@ -11,7 +11,6 @@ a mettre sous forme d'issues et de propositions?
     + ? rename silex-style => silex-user-styles
     + no !important in front-end.css?
     + see known bugs
-  - merge `build` branch, cf notes below
   - merge context menu
   - https branch
     + static.silex.me => dist/client/static/
@@ -165,10 +164,6 @@ enable less in the css editor? http://stackoverflow.com/questions/9746756/parse-
 
 context-menu branch
 
-  * on/off states
-    * on/off styles in context-menu.less
-    * set on/off styles on the buttons
-  * credit icons: http://glyphicons.com/
   * add a tooltip in SIlex: "I have added a new context-menu recently, tell me what you think about it!"
   + add bug report & news letter? (peut etre en haut a droite avec le mobile / desktop ou bien une popup de temps en temps)
   + add preview
