@@ -31,7 +31,6 @@ goog.require('goog.net.XhrIo');
  *                                  the controller instances
  */
 silex.view.TipOfTheDay = function(element, model, controller) {
-  console.log('TipOfTheDay');
   /**
    * @type {Element}
    */
@@ -43,13 +42,32 @@ silex.view.TipOfTheDay = function(element, model, controller) {
   setTimeout(() => {
     // start loading
     this.element.classList.add('loading');
+    // capping to prevent harrassing the user
+    let visits = 0;
+    if(localStorage) {
+      // init local storage
+      let visitsStr = localStorage.getItem('visits');
+      if(visitsStr) {
+        visits = parseInt(visitsStr);
+      }
+      localStorage.setItem('visits', visits + 1);
+      // the more visits the less chance we have to show the tip
+      let rand = Math.random() * visits;
+      if(rand > 3) {
+        return;
+      }
+    }
     // load data
     goog.net.XhrIo.send('https://api.github.com/repos/silexlabs/Silex/issues?labels=tip-of-the-day', (e) => {
-      var xhr = e.target;
-      var obj = xhr.getResponseJson()[0];
+      // get the json response
+      let xhr = e.target;
+      let items = xhr.getResponseJson();
+      // loop on the items backward
+      let idx = items.length - (visits % items.length) -1;
+      let item = items[idx];
       // display the content
       let el = document.createElement('div');
-      el.innerHTML = '<a target="_blank" href="' + obj['html_url'] + '"><h1>' + obj['title'] + '</h1><p>' + this.strip(obj['body']) + '</p></a><a class="close" href="#">Close</a>';
+      el.innerHTML = '<a target="_blank" href="' + item['html_url'] + '"><h1>' + item['title'] + '</h1><p>' + this.strip(item['body']) + '</p></a><a class="close" href="#">Close</a>';
       this.element.appendChild(el);
       this.element.classList.remove('loading');
       this.element.classList.remove('hidden-dialog');
