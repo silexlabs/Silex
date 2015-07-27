@@ -6,7 +6,6 @@ push build branch
 a mettre sous forme d'issues et de propositions?
 
   - fix more bugs
-    + remove "new element" class when move up/down the dom
     + Html box: Do not execute scripts
     + deconnection de dropbox
     + ? rename silex-style => silex-user-styles

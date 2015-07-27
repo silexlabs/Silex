@@ -397,6 +397,8 @@ silex.model.Element.prototype.move = function(element, direction) {
       element.parentNode.insertBefore(element, element.parentNode.childNodes[0]);
       break;
   }
+  // remove the 'just pasted' class
+  element.classList.remove(silex.model.Element.JUST_ADDED_CLASS_NAME);
 };
 
 
