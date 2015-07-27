@@ -1,13 +1,13 @@
 .tip-of-the-day {
-  top: 96px;
-  right: 250px;
+  top: @menuHeight + @contextMenuHeight + 10;
+  right: @propertiesToolWidth;
   padding: 0 10px 8px 10px;
   width: 300px;
   border-radius: 2px;
   box-shadow: 0 0 8px 4px #666;
-  z-index: 1000;
+  z-index: 110;
   position: absolute;
-  background-color: #000;
+  background-color: @silexdarkgrey;
   border: 2px solid #FFF;
   &, & *:link, & *:visited {
     color: #EEE;
@@ -19,6 +19,10 @@
   h1 {
     font-weight: normal;
     font-size: 15px;
+    margin-top: 15px;
+  }
+  p {
+    margin-bottom: 20px;
   }
   img {
     z-index: 20;
