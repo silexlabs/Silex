@@ -99,6 +99,8 @@ silex.controller.EditMenuController.prototype.copySelection = function() {
         silex.controller.ControllerBase.clipboard.push(this.recursiveCopy(element));
         // re-enable editable
         this.model.body.setEditable(element, true);
+        // update the views
+        this.model.body.setSelection(this.model.body.getSelection());
       }
       else {
         console.error('could not copy this element (', element, ') because it is the stage element');

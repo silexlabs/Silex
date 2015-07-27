@@ -6,8 +6,6 @@ push build branch
 a mettre sous forme d'issues et de propositions?
 
   - fix more bugs
-    + property new layout bug in chrome
-      => apolo mode : absolute en plus de display none
     + remove "new element" class when move up/down the dom
     + Html box: Do not execute scripts
     + deconnection de dropbox
