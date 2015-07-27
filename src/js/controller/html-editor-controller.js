@@ -38,6 +38,7 @@ goog.inherits(silex.controller.HtmlEditorController, silex.controller.Controller
 
 /**
  * htmlEditor event handler
+ * @param {string} content
  */
 silex.controller.HtmlEditorController.prototype.changed = function(content) {
   // update content

@@ -20,17 +20,17 @@ goog.require('goog.events.KeyCodes');
 goog.require('goog.ui.KeyboardShortcutHandler');
 
 // display an apple on mac and ctrl on windows and linux
-var ctrlKeyMacDisplay = goog.userAgent.MAC ? '⌘' : '';
+// var ctrlKeyMacDisplay = goog.userAgent.MAC ? '⌘' : '';
 var altKeyMacDisplay = goog.userAgent.MAC ? '⌥' : '';
 var ctrlKeyPCDisplay = goog.userAgent.MAC ? '' : 'Ctrl+';
-var altKeyPCDisplay = goog.userAgent.MAC ? '' : 'Alt+';
+// var altKeyPCDisplay = goog.userAgent.MAC ? '' : 'Alt+';
 var ctrlKeyDisplay = goog.userAgent.MAC ? '⌘' : 'Ctrl+';
 var altKeyDisplay = goog.userAgent.MAC ? '⌥' : 'Alt+';
 // for shortcuts, use "apple key" on mac and ctrl on windows and linux
-var ctrlKeyMac = goog.userAgent.MAC ? goog.ui.KeyboardShortcutHandler.Modifiers.META : null;
+// var ctrlKeyMac = goog.userAgent.MAC ? goog.ui.KeyboardShortcutHandler.Modifiers.META : null;
 var altKeyMac = goog.userAgent.MAC ? goog.ui.KeyboardShortcutHandler.Modifiers.ALT : null;
 var ctrlKeyPC = goog.userAgent.MAC ? null : goog.ui.KeyboardShortcutHandler.Modifiers.CTRL;
-var altKeyPC = goog.userAgent.MAC ? null : goog.ui.KeyboardShortcutHandler.Modifiers.ALT;
+// var altKeyPC = goog.userAgent.MAC ? null : goog.ui.KeyboardShortcutHandler.Modifiers.ALT;
 // same shortcuts on mac and other
 var ctrlKeyModifyer = goog.userAgent.MAC ? goog.ui.KeyboardShortcutHandler.Modifiers.META : goog.ui.KeyboardShortcutHandler.Modifiers.CTRL;
 var altKeyModifyer = goog.userAgent.MAC ? goog.ui.KeyboardShortcutHandler.Modifiers.ALT : goog.ui.KeyboardShortcutHandler.Modifiers.ALT;
@@ -52,12 +52,6 @@ silex.Config.debug = {
    * @type {boolean}
    */
   preventQuit: false,
-  /**
-   * callback executed when Silex has launched and is ready
-   * it is defined in debug.js loaded only in debug.html
-   * @type {function(silex.types.Model, silex.types.View, silex.types.Controller)|null}
-   */
-  doAfterReady: null
 };
 
 
@@ -537,91 +531,91 @@ silex.Config.menu = {
 silex.Config.fonts = {
 
 
-  'Roboto Condensed' : {
+  'Roboto Condensed': {
     //the url to load the font file
     href: 'http://fonts.googleapis.com/css?family=Roboto+Condensed:300italic,400italic,700italic,400,300,700',
     //the value for the CSS font-family value
     value: 'Roboto Condensed'
   },
-  'Roboto' : {
+  'Roboto': {
 
     href: 'http://fonts.googleapis.com/css?family=Roboto:400,100,100italic,300,300italic,400italic,500,500italic,700,700italic,900,900italic',
 
     value: 'Roboto'
   },
-  'Days One' : {
+  'Days One': {
 
     href: 'http://fonts.googleapis.com/css?family=Days+One',
 
     value: 'Days One'
   },
-  'Sintony' : {
+  'Sintony': {
 
     href: 'http://fonts.googleapis.com/css?family=Sintony:400,700',
 
     value: 'Sintony'
   },
-  'Junge' : {
+  'Junge': {
 
     href: 'http://fonts.googleapis.com/css?family=Junge',
 
     value: 'Junge'
   },
-  'Istok Web' : {
+  'Istok Web': {
 
     href: 'http://fonts.googleapis.com/css?family=Istok+Web:400,700,400italic,700italic',
 
     value: 'Istok Web'
   },
-  'Oswald' : {
+  'Oswald': {
 
     href: 'http://fonts.googleapis.com/css?family=Oswald:400,300,700',
 
     value: 'Oswald'
   },
-  'Cantata' : {
+  'Cantata': {
 
     href: 'http://fonts.googleapis.com/css?family=Cantata+One',
 
     value: 'Cantata'
   },
-  'Oranienbaum' : {
+  'Oranienbaum': {
 
     href: 'http://fonts.googleapis.com/css?family=Oranienbaum',
 
     value: 'Oranienbaum'
   },
-  'Londrina Solid' : {
+  'Londrina Solid': {
 
     href: 'http://fonts.googleapis.com/css?family=Londrina+Solid',
 
     value: 'Londrina Solid'
   },
-  'Noticia Text' : {
+  'Noticia Text': {
 
     href: 'http://fonts.googleapis.com/css?family=Noticia+Text:400,400italic,700,700italic',
 
     value: 'Noticia Text'
   },
-  'Codystar' : {
+  'Codystar': {
 
     href: 'http://fonts.googleapis.com/css?family=Codystar:300,400',
 
     value: 'Codystar'
   },
-  'Titillium Web' : {
+  'Titillium Web': {
 
     href: 'http://fonts.googleapis.com/css?family=Titillium+Web:400,200,200italic,300,300italic,400italic,600,600italic,700,700italic,900',
 
     value: 'Titillium Web'
   },
-  'Sarina' : {
+  'Sarina': {
 
     href: 'http://fonts.googleapis.com/css?family=Sarina',
 
     value: 'Sarina'
   },
-  'Bree Serif' : {
+  'Bree Serif': {
 
     href: 'http://fonts.googleapis.com/css?family=Bree+Serif',
 

@@ -161,10 +161,10 @@ silex.view.pane.PropertyPane.prototype.onPositionChanged =
     var value = parseFloat(input.value);
     // handle minimum size
     if (name === 'width' && value < silex.model.Element.MIN_WIDTH) {
-      value = silex.model.Element.MIN_WIDTH
+      value = silex.model.Element.MIN_WIDTH;
     }
     if (name === 'height' && value < silex.model.Element.MIN_HEIGHT) {
-      value = silex.model.Element.MIN_HEIGHT
+      value = silex.model.Element.MIN_HEIGHT;
     }
     // get the old value
     var oldValue = parseFloat(input.getAttribute('data-prev-value') || 0);
@@ -176,7 +176,7 @@ silex.view.pane.PropertyPane.prototype.onPositionChanged =
       if (goog.isNumber(oldValue)) {
         var elementStyle = this.model.property.getStyleObject(element);
         var styleValue = 0;
-        if (elementStyle && elementStyle[name] && elementStyle[name] != '') {
+        if (elementStyle && elementStyle[name] && elementStyle[name] !== '') {
           styleValue = parseFloat(elementStyle[name].substr(0, elementStyle[name].indexOf('px')));
         }
         // compute the new value relatively to the old value,
@@ -239,7 +239,9 @@ silex.view.pane.PropertyPane.prototype.onTitleChanged =
  * @param   {string}  currentPageName   the name of the current page
  */
 silex.view.pane.PropertyPane.prototype.redraw = function(selectedElements, pageNames, currentPageName) {
-  if (this.iAmSettingValue) return;
+  if (this.iAmSettingValue) {
+    return;
+  }
   this.iAmRedrawing = true;
 
   // call super
@@ -248,7 +250,7 @@ silex.view.pane.PropertyPane.prototype.redraw = function(selectedElements, pageN
   // not available for stage element
   var elementsNoStage = [];
   goog.array.forEach(selectedElements, function(element) {
-    if (this.model.body.getBodyElement() != element) {
+    if (this.model.body.getBodyElement() !== element) {
       elementsNoStage.push(element);
     }
   }, this);

@@ -97,7 +97,7 @@ silex.view.dialog.SettingsDialog.prototype.onNavClick = function(e) {
   // select the target pane and make it visible
   goog.array.forEach(silex.view.dialog.SettingsDialog.PANE_CSS_CLASSES,
     function(paneCssClass) {
-      if(e.target.classList.contains(paneCssClass)) {
+      if (e.target.classList.contains(paneCssClass)) {
         this.element.classList.add(paneCssClass + '-visible');
       }
       else {
@@ -115,7 +115,7 @@ silex.view.dialog.SettingsDialog.prototype.onNavClick = function(e) {
 silex.view.dialog.SettingsDialog.prototype.bindTextField = function(cssSelector, cbk) {
   // title input field
   var input = this.element.querySelector(cssSelector);
-  if(!input) {
+  if (!input) {
     throw new Error('Settings panel error: could not find the element to bind.');
   }
   goog.events.listen(
@@ -134,7 +134,7 @@ silex.view.dialog.SettingsDialog.prototype.bindTextField = function(cssSelector,
 silex.view.dialog.SettingsDialog.prototype.bindBrowseButton = function(cssSelector, cbk) {
   // title input field
   var btn = this.element.querySelector(cssSelector);
-  if(!btn) {
+  if (!btn) {
     throw new Error('Settings panel error: could not find the element to bind.');
   }
   goog.events.listen(btn, goog.events.EventType.CLICK, function() {
@@ -167,7 +167,7 @@ silex.view.dialog.SettingsDialog.prototype.setInputValue = function(cssSelector,
  */
 silex.view.dialog.SettingsDialog.prototype.setFaviconPath = function(opt_path) {
   this.setInputValue('.general-pane .input-favicon-path', opt_path);
-}
+};
 
 
 /**
@@ -177,7 +177,7 @@ silex.view.dialog.SettingsDialog.prototype.setFaviconPath = function(opt_path) {
  */
 silex.view.dialog.SettingsDialog.prototype.setThumbnailSocialPath = function(opt_path) {
   this.setInputValue('.social-pane .input-image-path', opt_path);
-}
+};
 
 
 /**
@@ -187,7 +187,7 @@ silex.view.dialog.SettingsDialog.prototype.setThumbnailSocialPath = function(opt
  */
 silex.view.dialog.SettingsDialog.prototype.setPublicationPath = function(opt_path) {
   this.setInputValue('.publish-pane .input-publication-path', opt_path);
-}
+};
 
 
 /**
@@ -267,5 +267,7 @@ silex.view.dialog.SettingsDialog.prototype.closeEditor = function() {
   // call super
   goog.base(this, 'closeEditor');
   // notify caller
-  if (this.onClose) this.onClose();
+  if (this.onClose) {
+    this.onClose();
+  }
 };

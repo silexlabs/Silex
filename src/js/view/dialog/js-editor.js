@@ -53,7 +53,9 @@ silex.view.dialog.JsEditor.prototype.buildUi = function() {
   // call super
   goog.base(this, 'buildUi');
   // set mode
-  this.ace.getSession().setMode('ace/mode/javascript');
+  // for some reason, this.ace.getSession().* is undefined,
+  //    closure renames it despite the fact that that it is declared in the externs.js file
+  this.ace.getSession()['setMode']('ace/mode/javascript');
 };
 
 

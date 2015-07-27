@@ -57,7 +57,9 @@ silex.controller.FileMenuController.prototype.newFile = function(opt_cbk, opt_er
     }, this));
   }, this), goog.bind(function(error) {
     this.tracker.trackAction('controller-events', 'error', 'file.new', -1);
-    if (opt_errorCbk) opt_errorCbk(error);
+    if (opt_errorCbk) {
+      opt_errorCbk(error);
+    }
   }, this));
 };
 
@@ -81,7 +83,9 @@ silex.controller.FileMenuController.prototype.openFile = function(opt_cbk, opt_e
               this.fileOperationSuccess((this.model.head.getTitle() || 'Untitled website') + ' opened.', true);
               // QOS, track success
               this.tracker.trackAction('controller-events', 'success', 'file.open', 1);
-              if (opt_cbk) opt_cbk();
+              if (opt_cbk) {
+                opt_cbk();
+              }
             }
             else {
               // this website is not an editable Silex website?
@@ -89,20 +93,26 @@ silex.controller.FileMenuController.prototype.openFile = function(opt_cbk, opt_e
               silex.utils.Notification.notifyError('Error: ' + message);
               silex.utils.Notification.alert('Error: ' + message, function() {});
               this.tracker.trackAction('controller-events', 'error', 'file.open_not.editable', -1);
-              if (opt_errorCbk) opt_errorCbk({message: message});
+              if (opt_errorCbk) {
+                opt_errorCbk({message: message});
+              }
             }
           }, this));
         }, this),
         goog.bind(function(error) {
           silex.utils.Notification.notifyError('Error: I did not manage to open this file. \n' + (error.message || ''));
           this.tracker.trackAction('controller-events', 'error', 'file.open', -1);
-          if (opt_errorCbk) opt_errorCbk(error);
+          if (opt_errorCbk) {
+            opt_errorCbk(error);
+          }
         }, this));
       }, this),
       {'mimetype': 'text/html'},
       goog.bind(function(error) {
         this.tracker.trackAction('controller-events', 'error', 'file.open', -1);
-        if (opt_errorCbk) opt_errorCbk(error);
+        if (opt_errorCbk) {
+          opt_errorCbk(error);
+        }
       }, this));
 };
 
@@ -114,9 +124,9 @@ silex.controller.FileMenuController.prototype.openFile = function(opt_cbk, opt_e
 silex.controller.FileMenuController.prototype.publish = function() {
   this.tracker.trackAction('controller-events', 'request', 'file.publish', 0);
   if (!this.model.head.getPublicationPath()) {
-    silex.utils.Notification.alert('I do not know where to publish your site. \
-      Select a folder in the settings pannel and do "publish" again. \
-      \nNow I will open the publish settings.',
+    silex.utils.Notification.alert('I do not know where to publish your site.' +
+      'Select a folder in the settings pannel and do "publish" again.' +
+      '\nNow I will open the publish settings.',
         goog.bind(function() {
           this.view.settingsDialog.openDialog(function() {
             //here the panel was closed

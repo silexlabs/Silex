@@ -187,11 +187,13 @@ silex.model.Element.prototype.unprepareHtmlForEdit = function(rawHtml) {
 
 /**
  * get num tabs
- * @example getTabs(2) returns '        '
+ * example: getTabs(2) returns '        '
+ * @param {number} num
+ * @return {string}
  */
 silex.model.Element.prototype.getTabs = function(num) {
   var tabs = '';
-  for (var n=0; n<num; n++) {
+  for (var n = 0; n < num; n++) {
     tabs += '    ';
   }
   return tabs;
@@ -202,7 +204,7 @@ silex.model.Element.prototype.getTabs = function(num) {
  * get/set type of the element
  * @param  {Element} element   created by silex, either a text box, image, ...
  * @return  {string}           the style of the element
- * @example for a container this will return "container"
+ * example: for a container this will return "container"
  */
 silex.model.Element.prototype.getType = function(element) {
   //return goog.style.getStyle(element, styleName);
@@ -233,7 +235,7 @@ silex.model.Element.prototype.getAllStyles = function(element, opt_computed) {
 silex.model.Element.prototype.getStyle = function(element, styleName, opt_computed) {
   var styleObject = this.model.property.getStyleObject(element, opt_computed);
   var cssName = goog.string.toSelectorCase(styleName);
-  if(styleObject && styleObject[cssName]) {
+  if (styleObject && styleObject[cssName]) {
     return this.unprepareHtmlForEdit(styleObject[cssName]);
   }
   return null;
@@ -279,10 +281,12 @@ silex.model.Element.prototype.setStyle = function(element, styleName, opt_styleV
  * @param  {string}  propertyName          the property name
  * @param  {?string=}  opt_propertyValue     the value for this propertyName
  * @param  {?boolean=}  opt_applyToContent    apply to the element or to its ".silex-element-content" element
- * @example element.setProperty(imgElement, 'style', 'top: 5px; left: 30px;')
+ * example: element.setProperty(imgElement, 'style', 'top: 5px; left: 30px;')
  */
 silex.model.Element.prototype.setProperty = function(element, propertyName, opt_propertyValue, opt_applyToContent) {
-  if (opt_applyToContent) element = this.getContentNode(element);
+  if (opt_applyToContent) {
+    element = this.getContentNode(element);
+  }
   if (goog.isDefAndNotNull(opt_propertyValue)) {
     element.setAttribute(propertyName, /** @type {!string} */ (opt_propertyValue));
   }
@@ -451,7 +455,7 @@ silex.model.Element.prototype.getImageUrl = function(element) {
   var url = '';
   if (element.getAttribute(silex.model.Element.TYPE_ATTR) === silex.model.Element.TYPE_IMAGE) {
     // get the image tag
-    var img = this.getContentNode(element);
+    let img = this.getContentNode(element);
     if (img) {
       url = img.getAttribute('src');
     }
@@ -476,7 +480,7 @@ silex.model.Element.prototype.getImageUrl = function(element) {
 silex.model.Element.prototype.setImageUrl = function(element, url, opt_callback, opt_errorCallback) {
   if (element.getAttribute(silex.model.Element.TYPE_ATTR) === silex.model.Element.TYPE_IMAGE) {
     // get the image tag
-    var img = this.getContentNode(element);
+    let img = this.getContentNode(element);
     if (img) {
       //img.innerHTML = '';
       // listen to the complete event
@@ -484,7 +488,7 @@ silex.model.Element.prototype.setImageUrl = function(element, url, opt_callback,
       goog.events.listenOnce(imageLoader, goog.events.EventType.LOAD,
           function(e) {
             // handle the loaded image
-            var img = e.target;
+            img = e.target;
             // callback
             if (opt_callback) {
               opt_callback(element, img);
@@ -539,7 +543,7 @@ silex.model.Element.prototype.setImageUrl = function(element, url, opt_callback,
  */
 silex.model.Element.prototype.removeElement = function(element) {
   // check this is allowed, i.e. an element inside the stage container
-  if (this.model.body.getBodyElement() != element &&
+  if (this.model.body.getBodyElement() !== element &&
       goog.dom.contains(this.model.body.getBodyElement(), element)) {
     // useless? Should remove its style? this.model.property.setStyle(element);
     // remove the element
@@ -642,6 +646,7 @@ silex.model.Element.prototype.createElement = function(type) {
 /**
  * element creation method for a given type
  * called from createElement
+ * @return {Element}
  */
 silex.model.Element.prototype.createContainerElement = function() {
   // create the conatiner
@@ -654,6 +659,7 @@ silex.model.Element.prototype.createContainerElement = function() {
 /**
  * element creation method for a given type
  * called from createElement
+ * @return {Element}
  */
 silex.model.Element.prototype.createTextElement = function() {
   // create the element
@@ -678,6 +684,7 @@ silex.model.Element.prototype.createTextElement = function() {
 /**
  * element creation method for a given type
  * called from createElement
+ * @return {Element}
  */
 silex.model.Element.prototype.createHtmlElement = function() {
   // create the element
@@ -697,6 +704,7 @@ silex.model.Element.prototype.createHtmlElement = function() {
 /**
  * element creation method for a given type
  * called from createElement
+ * @return {Element}
  */
 silex.model.Element.prototype.createImageElement = function() {
   // create the element
@@ -737,7 +745,7 @@ silex.model.Element.prototype.getLink = function(element) {
  * get/set class name of the element of a container created by silex
  * remove all silex internal classes
  * @param  {Element} element   created by silex, either a text box, image, ...
- * @return  {string}           the value for this styleName
+ * @return  {?string}           the value for this styleName
  */
 silex.model.Element.prototype.getClassName = function(element) {
   var pages = this.model.page.getPages();
