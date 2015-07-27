@@ -60,10 +60,10 @@ goog.require('silex.utils.Polyfills');
 goog.require('silex.utils.BackwardCompat');
 goog.require('silex.view.Menu');
 goog.require('silex.view.ContextMenu');
-goog.require('silex.view.Splitter');
 goog.require('silex.view.PageTool');
 goog.require('silex.view.PropertyTool');
 goog.require('silex.view.Splitter');
+goog.require('silex.view.TipOfTheDay');
 goog.require('silex.view.Stage');
 goog.require('silex.view.Workspace');
 goog.require('silex.view.dialog.CssEditor');
@@ -180,6 +180,11 @@ silex.App = function() {
   propSplitter.addLeft(contextMenuElement);
   propSplitter.addLeft(stageElement);
   propSplitter.addRight(propertyToolElement);
+
+  // tip of the day
+  var tipOfTheDayElement = /** @type {!Element} */ (goog.dom.getElementByClass('tip-of-the-day'));
+  /** @type {silex.view.TipOfTheDay} */
+  var tipOfTheDay = new silex.view.TipOfTheDay(tipOfTheDayElement, this.model, this.controller);
 
   // init the view class which references all the views
   this.view.init(
