@@ -1161,4 +1161,10 @@ Ace.prototype.setOptions = function(opts) {};
  * @type {Object.<*>}
  */
 var alertify = {};
-
+alertify.success = function () {};
+alertify.set = function () {};
+alertify.alert = function () {};
+alertify.prompt = function () {};
+alertify.confirm = function () {};
+alertify.error = function () {};
+alertify.log = function () {};
