@@ -68,7 +68,7 @@ silex.utils.Dom.MANDATORY_TAGS = [
     'type': 'link',
     'url': 'http://static.silex.me/' + silex.utils.BackwardCompat.LATEST_VERSION[1] + '.' + silex.utils.BackwardCompat.LATEST_VERSION[2] + '/front-end.css'
   }
-];
+].reverse();
 
 
 /**
