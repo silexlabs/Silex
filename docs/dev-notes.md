@@ -1,7 +1,7 @@
 ## Silex next steps, TOC
 
 push lexoyo/master to silexlabs/develop
-push build branch
+push build & build-merged branch
 
 a mettre sous forme d'issues et de propositions?
 
@@ -13,6 +13,7 @@ a mettre sous forme d'issues et de propositions?
     + see known bugs
   - merge context menu
   - https branch
+    + If your application needs to know whether a connection came in over http or https, you can look at the value of X-Forwarded-Proto in the header of the request.
     + static.silex.me => dist/client/static/
     + class to mark the required scripts, do not rely on their URLs anymore
     + backward compat: update to // + server url + static
