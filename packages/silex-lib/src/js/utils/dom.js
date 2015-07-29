@@ -243,7 +243,7 @@ silex.utils.Dom.cleanupFirefoxInlines = function(doc) {
         element.setAttribute('rel', 'stylesheet');
         element.setAttribute('href', tagObj.url);
       }
-      doc.head.appendChild(element);
+      doc.head.insertBefore(element, doc.head.firstChild);
     }
   });
 };
