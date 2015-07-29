@@ -132,7 +132,7 @@ silex.model.Head.prototype.setUserHeadTag = function(str) {
 silex.model.Head.prototype.extractUserHeadTag = function(headString) {
   var regExp = new RegExp(silex.model.Head.HEAD_TAG_START + '([\\\s\\\S.]*)' + silex.model.Head.HEAD_TAG_STOP);
   var found = headString.match(regExp);
-  if(found) {
+  if (found) {
     headString = headString.replace(regExp, '');
     this.userHeadTag = found[1];
   }
@@ -242,15 +242,15 @@ silex.model.Head.prototype.refreshFontList = function(neededFonts) {
   var head = this.getHeadElement();
   //detach all previously loaded font before, to avoid duplicate
   var links = goog.dom.getElementsByClass(silex.model.Head.CUSTOM_FONTS_CSS_CLASS, head);
-  goog.array.forEach(links, function(link) {
-    link.parentNode.removeChild(link);
+  goog.array.forEach(links, function(linkElement) {
+    linkElement.parentNode.removeChild(linkElement);
   });
 
   //text styles can also be applied using old-school font tag.
   //Get face attribute values from them
   var fontTags = goog.dom.getElementsByTagNameAndClass('font', null, head);
   goog.array.forEach(fontTags, function(fontTag) {
-    if (null !== fontTag.getAttribute('face')) {
+    if (fontTag.getAttribute('face') !== null) {
       neededFonts[fontTag.getAttribute('face')] = true;
     }
   });
@@ -260,8 +260,9 @@ silex.model.Head.prototype.refreshFontList = function(neededFonts) {
   //return the font from the font family or null
   var getFont = function(fontFamily) {
     for (let fontName in availableFonts) {
-      if (availableFonts[fontName].value === fontFamily)
+      if (availableFonts[fontName].value === fontFamily) {
         return availableFonts[fontName];
+      }
     }
     return null;
   };
@@ -296,6 +297,7 @@ silex.model.Head.prototype.refreshFontList = function(neededFonts) {
 /**
  * get/set a meta data
  * @param {string} name
+ * @return {?string}
  */
 silex.model.Head.prototype.getMeta = function(name) {
   var metaNode = this.model.file.getContentDocument()
@@ -315,7 +317,6 @@ silex.model.Head.prototype.getMeta = function(name) {
  * @param {?string=} opt_value
  */
 silex.model.Head.prototype.setMeta = function(name, opt_value) {
-  var found = false;
   // update the DOM element
   var metaNode = this.model.file.getContentDocument()
     .querySelector('meta[name="' + name + '"]');
@@ -358,6 +359,7 @@ silex.model.Head.prototype.setPublicationPath = function(opt_path) {
 /**
  * get/set the publication path
  * publication path is always absolute url
+ * @return {?string}
  */
 silex.model.Head.prototype.getPublicationPath = function() {
   // here, we could make it a relative path in order to display it, but publication path is deliberately an absolute path
@@ -378,6 +380,7 @@ silex.model.Head.prototype.setDescription = function(opt_description) {
 
 /**
  * get/set the description
+ * @return {?string}
  */
 silex.model.Head.prototype.getDescription = function() {
   return this.getMeta('description');
@@ -386,6 +389,7 @@ silex.model.Head.prototype.getDescription = function() {
 
 /**
  * website title
+ * @return {?string}
  */
 silex.model.Head.prototype.getTitle = function() {
   var titleNode = this.getHeadElement().querySelector('title');
@@ -400,6 +404,7 @@ silex.model.Head.prototype.getTitle = function() {
 
 /**
  * website title
+ * @param {string} name
  */
 silex.model.Head.prototype.setTitle = function(name) {
   // find or create the title tag in the head section
@@ -417,6 +422,7 @@ silex.model.Head.prototype.setTitle = function(name) {
 
 /**
  * website favicon
+ * @return {?string}
  */
 silex.model.Head.prototype.getFaviconPath = function() {
   var faviconTag = this.getHeadElement().querySelector('link[rel="shortcut icon"]');
@@ -454,7 +460,7 @@ silex.model.Head.prototype.setFaviconPath = function(opt_path) {
   else if(!opt_path) {
     goog.dom.removeNode(faviconTag);
   }
-  if(opt_path) {
+  if (opt_path) {
     // update website title
     faviconTag.setAttribute('href', opt_path);
   }
@@ -477,6 +483,7 @@ silex.model.Head.prototype.setTitleSocial = function(opt_data) {
 
 /**
  * get/set the title for social networks
+ * @return {?string}
  */
 silex.model.Head.prototype.getTitleSocial = function() {
   return this.getMeta('twitter:title') || this.getMeta('og:title');
@@ -497,6 +504,7 @@ silex.model.Head.prototype.setDescriptionSocial = function(opt_data) {
 
 /**
  * get/set the description for social networks
+ * @return {?string}
  */
 silex.model.Head.prototype.getDescriptionSocial = function() {
   return this.getMeta('twitter:description') || this.getMeta('og:description');
@@ -522,6 +530,7 @@ silex.model.Head.prototype.setThumbnailSocialPath = function(opt_path) {
 
 /**
  * get/set the thumbnail image for social networks
+ * @return {?string}
  */
 silex.model.Head.prototype.getThumbnailSocialPath = function() {
   var url = this.getMeta('og:image') || this.getMeta('twitter:image');
@@ -546,6 +555,7 @@ silex.model.Head.prototype.setTwitterSocial = function(opt_data) {
 
 /**
  * get/set the twitter account
+ * @return {?string}
  */
 silex.model.Head.prototype.getTwitterSocial = function() {
   return this.getMeta('twitter:site');
@@ -569,7 +579,7 @@ silex.model.Head.prototype.getHeadElement = function() {
  */
 silex.model.Head.prototype.addTempTag = function(tags, opt_onSuccess, opt_onError) {
   var tagsWichSupportOnload = ['link', 'script'];
-  if (typeof(tags) === 'string') {
+  if (typeof tags === 'string') {
     // convert tags to an array
     tags = [tags];
   }
@@ -579,7 +589,9 @@ silex.model.Head.prototype.addTempTag = function(tags, opt_onSuccess, opt_onErro
       addNextTag();
     }
     else {
-      if (opt_onSuccess) opt_onSuccess();
+      if (opt_onSuccess) {
+        opt_onSuccess();
+      }
     }
   }, this);
   // nex tag function
@@ -595,7 +607,9 @@ silex.model.Head.prototype.addTempTag = function(tags, opt_onSuccess, opt_onErro
     }
     tag.onerror = function() {
       console.error('scripts loading error');
-      if (opt_onError) opt_onError();
+      if (opt_onError) {
+        opt_onError();
+      }
     };
     goog.dom.classlist.add(tag, silex.model.Head.SILEX_TEMP_TAGS_CSS_CLASS);
     goog.dom.appendChild(this.getHeadElement(), tag);
@@ -605,16 +619,21 @@ silex.model.Head.prototype.addTempTag = function(tags, opt_onSuccess, opt_onErro
     addNextTag();
   }
   else {
-    if (opt_onError) opt_onError();
+    if (opt_onError) {
+      opt_onError();
+    }
   }
 };
 
 
 /**
  * remove temp tags
+ * @param {?Element=} opt_headElement
  */
 silex.model.Head.prototype.removeTempTags = function(opt_headElement) {
-  if (!opt_headElement) opt_headElement = this.getHeadElement();
+  if (!opt_headElement) {
+    opt_headElement = this.getHeadElement();
+  }
   // remove tags marked as silex-temp-tag
   var tags = goog.dom.getElementsByTagNameAndClass(null, silex.model.Head.SILEX_TEMP_TAGS_CSS_CLASS, opt_headElement);
   goog.array.forEach(tags, function(tag) {

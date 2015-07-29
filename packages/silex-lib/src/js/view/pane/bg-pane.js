@@ -95,7 +95,7 @@ silex.view.pane.BgPane.prototype.buildPalette = function() {
                      this.onColorChanged,
                      false,
                      this);
-}
+};
 
 
 /**
@@ -131,7 +131,7 @@ silex.view.pane.BgPane.prototype.buildBgColor = function() {
                      this.onTransparentChanged,
                      false,
                      this);
-}
+};
 
 
 /**
@@ -167,7 +167,7 @@ silex.view.pane.BgPane.prototype.buildBgImage = function() {
       this.onClearImageButton,
       false,
       this);
-}
+};
 
 
 /**
@@ -188,7 +188,7 @@ silex.view.pane.BgPane.prototype.buildBgImageProperties = function() {
         this.styleChanged(
             'backgroundPosition',
             vPosition + ' ' + hPosition);
-      },this));
+      }, this));
   this.hPositionComboBox = this.createComboBox('bg-position-h-combo-box',
       goog.bind(function(event) {
         var hPosition = this.hPositionComboBox.getSelectedItem().getId();
@@ -196,13 +196,13 @@ silex.view.pane.BgPane.prototype.buildBgImageProperties = function() {
         this.styleChanged(
             'backgroundPosition',
             vPosition + ' ' + hPosition);
-      },this));
+      }, this));
   this.repeatComboBox = this.createComboBox('bg-repeat-combo-box',
       goog.bind(function(event) {
         this.styleChanged(
             'backgroundRepeat',
             event.target.getSelectedItem().getId());
-      },this));
+      }, this));
   this.sizeComboBox = this.createComboBox('bg-size-combo-box',
       goog.bind(function(event) {
         this.styleChanged(
@@ -219,7 +219,9 @@ silex.view.pane.BgPane.prototype.buildBgImageProperties = function() {
  * @param   {string}  currentPageName   the name of the current page
  */
 silex.view.pane.BgPane.prototype.redraw = function(selectedElements, pageNames, currentPageName) {
-  if (this.iAmSettingValue) return;
+  if (this.iAmSettingValue) {
+    return;
+  }
   this.iAmRedrawing = true;
   // call super
   goog.base(this, 'redraw', selectedElements, pageNames, currentPageName);
@@ -390,7 +392,9 @@ silex.view.pane.BgPane.prototype.redraw = function(selectedElements, pageNames, 
  * User has selected a color
  */
 silex.view.pane.BgPane.prototype.onColorChanged = function() {
-  if (this.iAmRedrawing) return;
+  if (this.iAmRedrawing) {
+    return;
+  }
   var color = silex.utils.Style.hexToRgba(this.hsvPalette.getColorRgbaHex());
   // update the button
   this.bgColorPicker.setValue(this.hsvPalette.getColor());
@@ -444,7 +448,9 @@ silex.view.pane.BgPane.prototype.createComboBox = function(className, onChange) 
  * User has clicked the transparent checkbox
  */
 silex.view.pane.BgPane.prototype.onTransparentChanged = function() {
-  if (this.iAmRedrawing) return;
+  if (this.iAmRedrawing) {
+    return;
+  }
   var color = 'transparent';
   if (this.transparentBgCheckbox.getChecked() === false) {
     color = silex.utils.Style.hexToRgba(this.hsvPalette.getColorRgbaHex());

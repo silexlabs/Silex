@@ -54,7 +54,7 @@ silex.view.dialog.FileExplorer = function(element, model, controller) {
     var contentWindow = goog.dom.getFrameContentWindow(ceIframe);
     this.background = /** @type {!Element} */ (goog.dom.getElementByClass('explorer-bg', contentWindow.document));
     // this.buildUi();
-  },this));
+  }, this));
   // get the global variable of Cloud Explorer
   this.filePicker = silex.service.CloudStorage.getInstance().filePicker;
 };
@@ -67,7 +67,7 @@ goog.inherits(silex.view.dialog.FileExplorer, silex.view.dialog.DialogBase);
 /**
  * reference to the filepicker instance
  */
-silex.view.dialog.FileExplorer.prototype.filePicker;
+silex.view.dialog.FileExplorer.prototype.filePicker = null;
 
 
 /**
@@ -91,7 +91,9 @@ silex.view.dialog.FileExplorer.prototype.openDialog =
   }.bind(this);
   var successCbk = function(url) {
     // notify controller
-    if (cbk) cbk(url);
+    if (cbk) {
+      cbk(url);
+    }
     this.closeEditor();
   }.bind(this);
 
@@ -128,7 +130,9 @@ silex.view.dialog.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimety
   }.bind(this);
   var successCbk = function(blob) {
     // notify controller
-    if (cbk) cbk(blob.url);
+    if (cbk) {
+      cbk(blob.url);
+    }
     this.closeEditor();
   }.bind(this);
   // export dummy data

@@ -170,7 +170,7 @@ silex.view.pane.PagePane.prototype.setPages = function(pages) {
       pageName: name
     });
     goog.events.listen(checkbox, goog.ui.Component.EventType.CHANGE,
-        function(e) {
+        function(event) {
           this.checkPage(name, checkbox);
         }, false, this);
   }, this);
@@ -213,7 +213,9 @@ silex.view.pane.PagePane.prototype.onLinkTextChanged = function() {
  * @param   {string}  currentPageName   the name of the current page
  */
 silex.view.pane.PagePane.prototype.redraw = function(selectedElements, pageNames, currentPageName) {
-  if (this.iAmSettingValue) return;
+  if (this.iAmSettingValue) {
+    return;
+  }
   this.iAmRedrawing = true;
   // call super
   goog.base(this, 'redraw', selectedElements, pageNames, currentPageName);
@@ -229,7 +231,7 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, pageNames
   // not available for stage element
   var elementsNoStage = [];
   goog.array.forEach(selectedElements, function(element) {
-    if (this.model.body.getBodyElement() != element) {
+    if (this.model.body.getBodyElement() !== element) {
       elementsNoStage.push(element);
     }
   }, this);
