@@ -62,15 +62,19 @@ silex.view.pane.StylePane.prototype.buildUi = function() {
   goog.events.listen(this.cssClassesInput, goog.events.EventType.INPUT, this.onInputChanged, false, this);
   this.ace = ace.edit(goog.dom.getElementByClass('element-style-editor', this.element));
   this.iAmSettingValue = false;
-  this.ace.setTheme("ace/theme/idle_fingers");
+  this.ace.setTheme('ace/theme/idle_fingers');
   this.ace.renderer.setShowGutter(false);
-  this.ace.getSession().setMode('ace/mode/css');
+  // for some reason, this.ace.getSession().* is undefined,
+  //    closure renames it despite the fact that that it is declared in the externs.js file
+  this.ace.getSession()['setMode']('ace/mode/css');
   this.ace.setOptions({
         'enableBasicAutocompletion': true,
         'enableSnippets': true,
         'enableLiveAutocompletion': true
   });
-  this.ace.getSession().on('change', goog.bind(function() {
+  // for some reason, this.ace.getSession().on is undefined,
+  //    closure renames it despite the fact that that it is declared in the externs.js file
+  this.ace.getSession()['on']('change', goog.bind(function() {
     if (this.iAmSettingValue === false) {
       setTimeout(goog.bind(function() {
         this.contentChanged();
@@ -87,7 +91,9 @@ silex.view.pane.StylePane.prototype.buildUi = function() {
  * @param   {string}  currentPageName   the name of the current page
  */
 silex.view.pane.StylePane.prototype.redraw = function(selectedElements, pageNames, currentPageName) {
-  if (this.iAmSettingValue) return;
+  if (this.iAmSettingValue) {
+    return;
+  }
   this.iAmRedrawing = true;
   // call super
   goog.base(this, 'redraw', selectedElements, pageNames, currentPageName);
@@ -128,7 +134,9 @@ silex.view.pane.StylePane.prototype.redraw = function(selectedElements, pageName
  * User has selected a color
  */
 silex.view.pane.StylePane.prototype.onInputChanged = function() {
-  if (this.iAmSettingValue) return;
+  if (this.iAmSettingValue) {
+    return;
+  }
   this.iAmSettingValue = true;
   this.controller.propertyToolController.setClassName(this.cssClassesInput.value);
   this.iAmSettingValue = false;
@@ -139,7 +147,9 @@ silex.view.pane.StylePane.prototype.onInputChanged = function() {
  * the content has changed, notify the controller
  */
 silex.view.pane.StylePane.prototype.contentChanged = function() {
-  if (this.iAmSettingValue) return;
+  if (this.iAmSettingValue) {
+    return;
+  }
   var value = this.ace.getValue();
   if (value) {
     value = value.replace('.element{\n', '');

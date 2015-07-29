@@ -69,11 +69,15 @@ silex.controller.InsertMenuController.prototype.createPage = function(successCbk
       // create the page model
       this.model.page.createPage(name, displayName);
       // update view
-      if (successCbk) successCbk();
+      if (successCbk) {
+        successCbk();
+      }
       this.tracker.trackAction('controller-events', 'success', 'insert.page', 1);
     }
     else {
-      if (cancelCbk) cancelCbk();
+      if (cancelCbk) {
+        cancelCbk();
+      }
       this.tracker.trackAction('controller-events', 'cancel', 'insert.page', 0);
     }
   }, this));

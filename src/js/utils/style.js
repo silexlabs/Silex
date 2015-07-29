@@ -106,22 +106,23 @@ silex.utils.Style.styleToObject = function(styleObj) {
  * convert style object to string
  * @param {string|Object|CSSStyleDeclaration} style
  * @param {?string=} opt_tab
+ * @return {string}
  */
 silex.utils.Style.styleToString = function(style, opt_tab) {
-  if(typeof style === 'string') {
+  if (typeof style === 'string') {
     return style;
   }
-  if(!opt_tab) {
+  if (!opt_tab) {
     opt_tab = '';
   }
   var styleStr = '';
-  for(var idx in style) {
+  for (var idx in style) {
     // filter the numerical indexes of a CSSStyleDeclaration object
     // filter initial values and shorthand properties
-    if(style[idx]
-      && typeof style[idx] === 'string'
-      && style[idx] !== ''
-      && idx.match(/[^0-9]/)) {
+    if (style[idx] &&
+      typeof style[idx] === 'string' &&
+      style[idx] !== '' &&
+      idx.match(/[^0-9]/)) {
       styleStr += opt_tab + goog.string.toSelectorCase(idx) + ': ' + style[idx] + '; ';
     }
   }
@@ -131,6 +132,8 @@ silex.utils.Style.styleToString = function(style, opt_tab) {
 
 /**
  * convert style string to object
+ * @param {string} styleStr
+ * @return {Object}
  */
 silex.utils.Style.stringToStyle = function(styleStr) {
   return goog.style.parseStyleAttribute(styleStr);
@@ -231,10 +234,14 @@ silex.utils.Style.computeBgColor = function(element, contentWindow) {
 
 /**
  * convert hex color to rgba values
- * @example  #000000FF will return rgba(0, 0, 0, 1)
+ * example: #000000FF will return rgba(0, 0, 0, 1)
+ * @param {string} hex
+ * @return {string}
  */
 silex.utils.Style.hexToRgba = function(hex) {
-  if (hex.indexOf('#') !== 0) return hex;
+  if (hex.indexOf('#') !== 0) {
+    return hex;
+  }
   if (hex.length !== 9) {
     console.error('Error in length ' + hex + ' - ' + hex.length);
     return hex;
@@ -252,10 +259,14 @@ silex.utils.Style.hexToRgba = function(hex) {
 
 /**
  * convert rgba to array of values
- * @example     #000000FF will return [0, 0, 0, 1]
+ * example:    #000000FF will return [0, 0, 0, 1]
+ * @param {string} hex
+ * @return {Array.<number>}
  */
 silex.utils.Style.hexToArray = function(hex) {
-  if (hex.indexOf('#') !== 0) return hex;
+  if (hex.indexOf('#') !== 0) {
+    return hex;
+  }
   hex = hex.replace('#', '');
   var r = parseInt(hex.substring(0, 2), 16);
   var g = parseInt(hex.substring(2, 4), 16);
@@ -269,18 +280,34 @@ silex.utils.Style.hexToArray = function(hex) {
 
 /**
  * convert rgba to hex
- * @example     rgba(0, 0, 0, 1) will return #000000FF
+ * example:    rgba(0, 0, 0, 1) will return #000000FF
+ * @param {string} rgba
+ * @return {string}
  */
 silex.utils.Style.rgbaToHex = function(rgba) {
   // has to be rgb or rgba
-  if (rgba.indexOf('rgb') !== 0) return rgba;
+  if (rgba.indexOf('rgb') !== 0) {
+    return rgba;
+  }
   // get the array version
   var rgbaArr = silex.utils.Style.rgbaToArray(rgba);
 
-  var r = rgbaArr[0].toString(16); if (r.length < 2) r = '0' + r;
-  var g = rgbaArr[1].toString(16); if (g.length < 2) g = '0' + g;
-  var b = rgbaArr[2].toString(16); if (b.length < 2) b = '0' + b;
-  var a = (rgbaArr[3]).toString(16); if (a.length < 2) a = '0' + a;
+  var r = rgbaArr[0].toString(16);
+  if (r.length < 2) {
+    r = '0' + r;
+  }
+  var g = rgbaArr[1].toString(16);
+  if (g.length < 2) {
+    g = '0' + g;
+  }
+  var b = rgbaArr[2].toString(16);
+  if (b.length < 2) {
+    b = '0' + b;
+  }
+  var a = (rgbaArr[3]).toString(16);
+  if (a.length < 2) {
+    a = '0' + a;
+  }
 
   var result = '#' + (r + g + b + a);
   return result;
@@ -289,11 +316,15 @@ silex.utils.Style.rgbaToHex = function(rgba) {
 
 /**
  * convert rgba to array of values
- * @example     rgba(0, 0, 0, 1) will return [0, 0, 0, 1]
+ * example:    rgba(0, 0, 0, 1) will return [0, 0, 0, 1]
+ * @param {string} rgba
+ * @return {Array.<number>}
  */
 silex.utils.Style.rgbaToArray = function(rgba) {
   // not rgb nor rgba
-  if (rgba.indexOf('rgb') !== 0) return rgba;
+  if (rgba.indexOf('rgb') !== 0) {
+    return rgba;
+  }
   if (rgba.indexOf('rgba') !== 0) {
     // rgb
     rgba = rgba.replace('rgb', '');
@@ -306,7 +337,9 @@ silex.utils.Style.rgbaToArray = function(rgba) {
   var rgbaArr = rgba.substring(1, rgba.length - 1).split(',');
 
   // add alpha if needed
-  if (rgbaArr.length < 4) rgbaArr.push('1');
+  if (rgbaArr.length < 4) {
+    rgbaArr.push('1');
+  }
 
   var r = parseInt(rgbaArr[0], 10);
   var g = parseInt(rgbaArr[1], 10);

@@ -174,8 +174,10 @@ silex.model.Body.prototype.getNeededFonts = function() {
 };
 
 
+/**
+ * @param  {Element} element
+ */
 silex.model.Body.prototype.initUiHandles = function(element) {
-  var handle;
   goog.array.forEach([
     'ui-resizable-n',
     'ui-resizable-s',
@@ -185,7 +187,7 @@ silex.model.Body.prototype.initUiHandles = function(element) {
     'ui-resizable-nw',
     'ui-resizable-se',
     'ui-resizable-sw'
-  ], function(className){
+  ], function(className) {
     var handle = this.model.file.getContentDocument().createElement('div');
     goog.dom.classlist.add(handle, className);
     goog.dom.classlist.add(handle, 'ui-resizable-handle');
@@ -198,9 +200,8 @@ silex.model.Body.prototype.initUiHandles = function(element) {
  * init, activate and remove the "editable" jquery plugin
  * @param {Element} rootElement
  * @param {boolean} isEditable
- * @param {?boolean=} opt_isRootDroppableOnly
  */
-silex.model.Body.prototype.setEditable = function(rootElement, isEditable, opt_isRootDroppableOnly) {
+silex.model.Body.prototype.setEditable = function(rootElement, isEditable) {
   if(!rootElement) {
     // this happens on firefox sometimes at start
     // FIXME: find why this happens instead of this workaround
@@ -243,7 +244,7 @@ silex.model.Body.prototype.setEditable = function(rootElement, isEditable, opt_i
   var htmlContentElements = rootElement.querySelectorAll('.html-element');
   goog.array.forEach(htmlContentElements, function(element) {
     // create the cover element
-    var cover = goog.dom.createElement('div');
+    let cover = goog.dom.createElement('div');
     goog.dom.classlist.add(cover, 'temp-editable-cover');
     // insert cover on top of all elements
     goog.dom.insertChildAt(element, cover, 0);
@@ -251,7 +252,7 @@ silex.model.Body.prototype.setEditable = function(rootElement, isEditable, opt_i
   // handle the root element itself
   if (rootElement.getAttribute(silex.model.Body.SILEX_TYPE_ATTR_NAME) === silex.model.Element.TYPE_HTML) {
     // create the cover element
-    var cover = goog.dom.createElement('div');
+    let cover = goog.dom.createElement('div');
     goog.dom.classlist.add(cover, 'temp-editable-cover');
     // insert cover on top of all elements
     goog.dom.insertChildAt(rootElement, cover, 0);
@@ -261,6 +262,7 @@ silex.model.Body.prototype.setEditable = function(rootElement, isEditable, opt_i
 
 /**
  * remove the classes set by Silex and the editable.js plugin
+ * @param {Element} rootElement
  */
 silex.model.Body.prototype.removeEditableClasses = function(rootElement) {
   if (rootElement !== null) {

@@ -49,7 +49,6 @@ silex.view.Splitter = function(element, model, controller, opt_onRedraw) {
   this.onRedraw = opt_onRedraw;
   /**
    * width of the splitter, as defined in the CSS
-   * @static
    * @type {number}
    */
   silex.view.Splitter.WIDTH = 5;
@@ -115,7 +114,7 @@ silex.view.Splitter.prototype.remove = function(element) {
  */
 silex.view.Splitter.prototype.redraw = function() {
   var pos = goog.style.getClientPosition(this.element);
-  var parentSize =  goog.style.getContentBoxSize(/** @type {Element} */ (this.element.parentNode));
+  var parentSize = goog.style.getContentBoxSize(/** @type {Element} */ (this.element.parentNode));
   // apply the position to the elements
   goog.array.forEach(this.onTheLeft, function(element) {
     element.style.right = (parentSize.width - pos.x) + 'px';
@@ -198,11 +197,11 @@ silex.view.Splitter.prototype.onMouseUp = function(e) {
  * @param {Event} e
  */
 silex.view.Splitter.prototype.onMouseMoveFrame = function(e) {
-  if(this.isDown) {
-    var parentSize =  goog.style.getContentBoxSize(/** @type {Element} */ (this.element.parentNode));
+  if (this.isDown) {
+    var parentSize = goog.style.getContentBoxSize(/** @type {Element} */ (this.element.parentNode));
     var pos = goog.style.getClientPosition(e);
     var posIFrame = goog.style.getClientPosition(this.model.file.getIFrameElement());
-    this.element.style.right = (parentSize.width - pos.x - posIFrame.x)  + 'px';
+    this.element.style.right = (parentSize.width - pos.x - posIFrame.x) + 'px';
     this.redraw();
   }
 };
@@ -213,8 +212,8 @@ silex.view.Splitter.prototype.onMouseMoveFrame = function(e) {
  * @param {Event} e
  */
 silex.view.Splitter.prototype.onMouseMove = function(e) {
-  if(this.isDown) {
-    var parentSize =  goog.style.getContentBoxSize(/** @type {Element} */ (this.element.parentNode));
+  if (this.isDown) {
+    var parentSize = goog.style.getContentBoxSize(/** @type {Element} */ (this.element.parentNode));
     var pos = goog.style.getClientPosition(e);
     this.element.style.right = (parentSize.width - pos.x) + 'px';
     this.redraw();

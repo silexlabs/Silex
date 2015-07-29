@@ -65,7 +65,6 @@ goog.inherits(silex.view.dialog.TextEditor, silex.view.dialog.DialogBase);
 
 /**
  * the URL of the lorem ipsum service
- * @static
  * @const
  * @type {string}
  */
@@ -98,7 +97,7 @@ silex.view.dialog.TextEditor.prototype.buildUi = function() {
   var uniqueId =
       'text-field' + rnd + '-' + (silex.view.dialog.TextEditor.nextId++);
   // mark the desired text field
-  goog.dom.getElementByClass('text-field', this.element).id =  uniqueId;
+  goog.dom.getElementByClass('text-field', this.element).id = uniqueId;
   // create a text field out of this element
   this.textField = new goog.editor.Field(uniqueId);
 
@@ -213,8 +212,8 @@ silex.view.dialog.TextEditor.prototype.buildUi = function() {
   myToolbar.addChild(button, true);
 
   // Hook the toolbar into the field.
-  var myToolbarController = new goog.ui.editor.ToolbarController(
-      this.textField, myToolbar);
+//  var myToolbarController = new goog.ui.editor.ToolbarController(
+//      this.textField, myToolbar);
 
   // Watch for field changes, to display below.
   // notify the controller
@@ -253,7 +252,7 @@ silex.view.dialog.TextEditor.prototype.setValue = function(html) {
 
 /**
  * add class names to the iframe inside the editor
- * @param    {string} elementClassNames, css classes of the element being edited
+ * @param    {string} elementClassNames , css classes of the element being edited
  *                    so that css rules apply in the editor too
  */
 silex.view.dialog.TextEditor.prototype.setElementClassNames =
@@ -297,11 +296,8 @@ silex.view.dialog.TextEditor.prototype.setBackgroundColor =
   // apply to the bg
   var iframe = goog.dom.getElementsByTagNameAndClass(
       'iframe', null, this.element)[0];
-  // get the iframe document
-  var iframeDoc = goog.dom.getFrameContentDocument(iframe);
+
   goog.style.setStyle(iframe, 'backgroundColor', opt_bgColor);
-
-
 };
 
 
@@ -334,7 +330,7 @@ silex.view.dialog.TextEditor.prototype.openEditor = function() {
 
   tag = iframeDoc.createElement('link');
   tag.rel = 'stylesheet';
-  tag.href = 'css/front-end.css';
+  tag.href = silex.utils.BackwardCompat.getStaticUrl() + '/front-end.css';
   goog.dom.appendChild(head, tag);
 
   // prevent paged content to be hidden (pageable jquery plugin)
@@ -369,7 +365,7 @@ silex.view.dialog.TextEditor.prototype.currentCustomFonts = null;
 
 /**
  * set the list of custom fonts
- * @param {Array.<{name:string, href:string}>} customFonts,
+ * @param {Array.<{name:string, href:string}>} customFonts ,
  *                                      the custom fonts used in the text fields
  */
 silex.view.dialog.TextEditor.prototype.setCustomFonts = function(customFonts) {
@@ -455,7 +451,7 @@ silex.view.dialog.TextEditor.prototype.setCustomCssStyles =
  * user clicked lorem ipsum button
  * get the lorem from a lorem ipsum service
  */
-silex.view.dialog.TextEditor.prototype.onLoremIpsumClick = function(e) {
+silex.view.dialog.TextEditor.prototype.onLoremIpsumClick = function(event) {
   var request = new goog.net.XhrIo();
   var container = goog.dom.createElement('P');
   // add normal style

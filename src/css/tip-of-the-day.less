@@ -1,0 +1,45 @@
+.tip-of-the-day {
+  top: @menuHeight + @contextMenuHeight + 10;
+  right: @propertiesToolWidth - 14;
+  padding: 0 10px 8px 10px;
+  width: 230px;
+  border-radius: 2px;
+  box-shadow: 0 0 8px 4px #666;
+  z-index: 110;
+  position: absolute;
+  background-color: @silexdarkgrey;
+  border: 2px solid #FFF;
+  transition: opacity .5s ease-out;
+  &.hidden-dialog {
+    opacity: 0;
+  }
+  &, & *:link, & *:visited {
+    color: #EEE;
+    font-size: 14px;
+    line-height: 1.5;
+    text-decoration: none;
+    font-size: 12px;
+  }
+  h1 {
+    font-weight: normal;
+    font-size: 15px;
+    margin-top: 15px;
+  }
+  p {
+    margin-bottom: 20px;
+  }
+  img {
+    z-index: 20;
+    position: absolute;
+    border: 0px none;
+    top: -10px;
+    left: 200px;
+    width: 22px;
+  }
+  .close {
+    display: block;
+    text-align: center;
+    padding-top: 7px;
+    border-top: 1px solid;
+  }
+}

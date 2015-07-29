@@ -42,7 +42,7 @@ silex.view.dialog.AceEditorBase = function(element, model, controller) {
   this.ace = ace.edit(
       /** @type {!Element} */(goog.dom.getElementByClass(
           'ace-editor', this.element)));
-  this.ace.setTheme("ace/theme/idle_fingers");
+  this.ace.setTheme('ace/theme/idle_fingers');
   this.ace.setOptions({
         'enableBasicAutocompletion': true,
         'enableSnippets': true,
@@ -68,7 +68,6 @@ silex.view.dialog.AceEditorBase.prototype.iAmSettingValue = false;
 
 /**
  * currently opened editor
- * @static
  * @type {silex.view.dialog.AceEditorBase}
  */
 silex.view.dialog.AceEditorBase.currentEditor = null;
@@ -77,9 +76,8 @@ silex.view.dialog.AceEditorBase.currentEditor = null;
 /**
  * flag set to true when editors are docked
  * @type {boolean}
- * @static
  */
-silex.view.dialog.AceEditorBase.isDocked;
+silex.view.dialog.AceEditorBase.isDocked = null;
 
 
 /**
@@ -90,9 +88,10 @@ silex.view.dialog.AceEditorBase.prototype.buildUi = function() {
   this.iAmSettingValue = false;
   //this.ace.setTheme("ace/theme/monokai");
   //this.ace.getSession().setMode('ace/mode/css');
-  this.ace.getSession().on('change', goog.bind(function(e) {
+  // for some reason, this.ace.getSession().on is undefined,
+  //    closure renames it despite the fact that that it is declared in the externs.js file
+  this.ace.getSession()['on']('change', goog.bind(function(event) {
     if (this.iAmSettingValue === false) {
-      var value = this.ace.getValue();
       setTimeout(goog.bind(function() {
         this.contentChanged();
       }, this), 100);

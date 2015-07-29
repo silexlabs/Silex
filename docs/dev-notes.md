@@ -1,31 +1,30 @@
 ## Silex next steps, TOC
 
+push lexoyo/master to silexlabs/develop
+push build branch
+
 a mettre sous forme d'issues et de propositions?
 
   - fix more bugs
     + Html box: Do not execute scripts
     + deconnection de dropbox
     + ? rename silex-style => silex-user-styles
-    + ? file / new => chose a template from templates.silex.me
     + no !important in front-end.css?
     + see known bugs
-  - better "tiling" in the property editor?
-        !! bug in chrome?
-        commit & push
-        ? take .style-container out of main-container
-  - merge `build` branch, cf notes below
+  - merge context menu
   - https branch
     + static.silex.me => dist/client/static/
     + class to mark the required scripts, do not rely on their URLs anymore
     + backward compat: update to // + server url + static
-  - merge `context-menu` branch
+    + point to http on silex site
   - site silex a finir
   - ?? bug des URLs https://github.com/silexlabs/Silex/issues/264#issuecomment-108923532
     => save/publish = parse all nodes and create html string
+  - ? file / new => chose a template from templates.silex.me
   - better containers (UI), see bellow
   - Finish Mobile
   - release food template + startup template, call for testers and contributors (templates, issues)
-  - full ES6 and no more goog.*
+  - full ES6 + no more goog.* + fix linter errors + get rid of jquery ui? + dist should be empty, add assets/, add lib/ or use bower
   - Monitoring of nodejs app
   - Hosting:
     see hosting branch with persona,
@@ -130,17 +129,8 @@ Communication inside silex
 * ?? permet de dev sur silex (different image indiehosters)
 * utiliser indiehosters mais avec le build de l'image et fichiers silex locaux?
 
-`build` branch
-* verifier que `npm install --production` fonctionne (doit builder sans les devDependencies)
-  https://github.com/silexlabs/Silex/issues/287
-* avoir 2 modes de build, dev / prod, plus de .min.* ni de debug.html
-* ?? deploy with codeship or travis
-  sftp xxxx@sftp.dc0.gpaas.net
-  + pass ?
-  cd vhosts/default/
-  put -r .../* Silex/
-
 page thumbnails
+
 * cf screenshot "page thumbnails.png"
 * cf branche page-thumbnails
 * cf https://github.com/cburgmer/rasterizeHTML.js/
@@ -174,11 +164,10 @@ enable less in the css editor? http://stackoverflow.com/questions/9746756/parse-
 
 context-menu branch
 
-  * on/off states
-    * invert icons => white version
-    * on/off styles in context-menu.less
-    * set on/off styles on the buttons
-  * credit icons: http://glyphicons.com/
+  * add a tooltip in SIlex: "I have added a new context-menu recently, tell me what you think about it!"
+  + add bug report & news letter? (peut etre en haut a droite avec le mobile / desktop ou bien une popup de temps en temps)
+  + add preview
+  + ménage menu help ()
 
 ## known bugs
 
