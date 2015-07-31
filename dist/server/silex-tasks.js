@@ -44,6 +44,19 @@ exports.route = function(cbk, req, res, next, task){
     case 'debug':
       exports.debug(cbk, req, res, next);
     break;
+    case process.env.RESTART_ROUTE || 'reload':
+      if(!process.env.RESTART_ROUTE) {
+        cbk({
+          success: false,
+          message: 'You need to define an env var RESTART_ROUTE and call /{{RESTART_ROUTE}}'
+        });
+        return;
+      }
+      cbk({
+        success: true
+      });
+      process.send('restart');
+    break;
     default:
       cbk({
       success: false,
