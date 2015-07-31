@@ -179,7 +179,7 @@ exports.sendImage = function(cbk, req, res, next, path, url){
       // cbk({success: false, code: error.code});
     }
     // do not send JSON, the end user will see the result
-    fs.readFile(pathModule.resolve(__dirname, '/../client/libs/pixlr/close.html'), function (err, data) {
+    fs.readFile(pathModule.resolve(__dirname, '../client/libs/pixlr/close.html'), function (err, data) {
       // FIXME: handle err?
       if (!err) {
         cbk(data.toString());
@@ -200,7 +200,7 @@ exports.sendImage = function(cbk, req, res, next, path, url){
 exports.disposeTempLink = function(cbk, req, res, next, name){
   // remove the first optional /tmp/
   // and compute the path in the /www/tmp folder
-  var path = pathModule.resolve(__dirname, '../../dist/client/tmp', name.replace(/\/|\\|tmp/g, ''));
+  var path = pathModule.resolve(__dirname, '../client/tmp', name.replace(/\/|\\|tmp/g, ''));
   fs.unlink(path, function(err) {
     if (err){
       console.error('Error, could not remove ' + name + ' resolved to path ' + path + ' (' + err + ')');
@@ -221,13 +221,14 @@ exports.disposeTempLink = function(cbk, req, res, next, name){
  */
 exports.getTempLink = function(cbk, req, res, next, path){
   if (!path){
+    console.error('Error: path param must be provided in get');
     cbk({success: false, code: 400, message: 'path param must be provided in get'});
     return;
   }
   var ext = path.split('.').pop();
   var name = Math.floor(2147483648 * Math.random()).toString(36) + '-' + Date.now() + '.' + ext;
   var tempLink = '/tmp/' + name;
-  var tempPath = pathModule.resolve(__dirname, '../../../dist/client/tmp/', name);
+  var tempPath = pathModule.resolve(__dirname, '../client/tmp/', name);
   exports.unifileRoute(req, res, next, path, function (response, status, data, mime_type, responseFilePath) {
     if (status && status.success === false){
       console.error('Error in getFileFromService for ' + path, status);
@@ -236,8 +237,10 @@ exports.getTempLink = function(cbk, req, res, next, path){
     else if (data){
       var p = pathModule.resolve(__dirname, tempPath);
       fs.writeFile(p, data, function (err) {
+        console.log('writeFile', err, p, data);
         if (err){
-          cbk({success: false, message: 'Error: could not write temp file (' + p + ')'});
+          console.error('Error: could not write temp file (' + p + ') - ' + err);
+          cbk({success: false, message: 'Error: could not write temp file'});
         }
         else{
           cbk({success: true, tempLink: tempLink});
@@ -253,7 +256,8 @@ exports.getTempLink = function(cbk, req, res, next, path){
           var p = pathModule.resolve(__dirname, tempPath);
           fs.writeFile(p, data, function (err) {
             if (err){
-              cbk({success: false, message: 'Error: could not write temp file (' + p + ')'});
+              console.error('Error: could not write temp file (' + p + ') - ' + err);
+              cbk({success: false, message: 'Error: could not write temp file'});
             }
             else{
               cbk({success: true, tempLink: tempLink});

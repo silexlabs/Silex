@@ -68,7 +68,7 @@ silex.utils.Dom.MANDATORY_TAGS = [
     'type': 'link',
     'url': 'http://static.silex.me/' + silex.utils.BackwardCompat.LATEST_VERSION[1] + '.' + silex.utils.BackwardCompat.LATEST_VERSION[2] + '/front-end.css'
   }
-];
+].reverse();
 
 
 /**
@@ -243,7 +243,7 @@ silex.utils.Dom.cleanupFirefoxInlines = function(doc) {
         element.setAttribute('rel', 'stylesheet');
         element.setAttribute('href', tagObj.url);
       }
-      doc.head.appendChild(element);
+      doc.head.insertBefore(element, doc.head.firstChild);
     }
   });
 };
