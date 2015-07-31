@@ -313,40 +313,40 @@ exports.getFileFromUrl = function(req, res, next, srcPath, dstPath, cbk){
   }
   // load the file
   http_s.get(srcPath, function(result) {
-    result.on('data', function(chunk) {
-      if (srcPath.indexOf('https') === 0){
-        // https => all the data the 1st time
-        data = chunk.toString();
-      }
-      else{
-        data.push(chunk.toString());
-      }
+   result.on('data', function(chunk) {
+     if (srcPath.indexOf('https')===0){
+      // https => all the data the 1st time
+      data = chunk;
+     }
+     else{
+      data.push(chunk);
+     }
+     });
+     result.on('end', function() {
+     // data is an array
+     if (srcPath.indexOf('https')===0 && Array.isArray(data)){
+      exports.writeFileToService(req, res, next, dstPath, data.join(), function(error) {
+        cbk(error);
       });
-      result.on('end', function() {
-      // data is an array
-      if (srcPath.indexOf('https') === 0 && Array.isArray(data)){
-        exports.writeFileToService(req, res, next, dstPath, data.join(), function(error) {
-          cbk(error);
-        });
-      }
-      // data is an object
-      else if (typeof data === 'object'){
-        exports.writeFileToService(req, res, next, dstPath, data.join ? data.join('') : data.toString(), function(error) {
-          cbk(error);
-        });
-      }
-      // data is a string or something else
-      else{
-        exports.writeFileToService(req, res, next, dstPath, data.toString(), function(error) {
-          cbk(error);
-        });
-      }
+     }
+     // data is an object
+     else if (typeof(data) === 'object'){
+      exports.writeFileToService(req, res, next, dstPath, data, function(error) {
+        cbk(error);
       });
+     }
+     // data is a string or something else
+     else{
+      exports.writeFileToService(req, res, next, dstPath, data.toString(), function(error) {
+        cbk(error);
+      });
+     }
+     });
   }).on('error', function(e) {
-    console.error('Error while loading ' + srcPath + ': ' + e.message);
-    cbk({
-      message: 'Error while loading ' + srcPath + ': ' + e.message
-    });
+   console.error('Error while loading '+srcPath+': ' + e.message);
+   cbk({
+     message: 'Error while loading '+srcPath+': ' + e.message
+   });
   });
 };
 
