@@ -1,0 +1,24 @@
+
+machine:
+  node:
+    version: 0.12.0
+dependencies:
+  override:
+    - npm install --production
+
+checkout:
+  post:
+    - git submodule sync
+    - git submodule update --init
+
+deployment:
+  staging:
+    branch: develop
+    commands:
+      - chmod u+x ./build/deploy.sh
+      - ./build/deploy.sh $HOST_PREPROD
+  production:
+    branch: master
+    commands:
+      - chmod u+x ./build/deploy.sh
+      - ./build/deploy.sh $HOST_PROD
