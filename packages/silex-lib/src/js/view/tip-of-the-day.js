@@ -36,6 +36,21 @@ silex.view.TipOfTheDay = function(element, model, controller) {
    */
   this.element = element;
 
+  this.init();
+};
+
+
+/**
+ * name of the local storage property
+ */
+silex.view.TipOfTheDay.NUM_VISITS_LOCAL_STORAGE_NAME = 'silex-caping';
+
+
+/**
+ * Start the process of showing the tip of the day
+ */
+silex.view.TipOfTheDay.prototype.init = function(html)
+{
   // hide
   this.element.classList.add('hidden-dialog');
   // wait for a while
@@ -46,16 +61,18 @@ silex.view.TipOfTheDay = function(element, model, controller) {
     let visits = 0;
     if(localStorage) {
       // init local storage
-      let visitsStr = localStorage.getItem('visits');
+      let visitsStr = localStorage.getItem(silex.view.TipOfTheDay.NUM_VISITS_LOCAL_STORAGE_NAME);
       if(visitsStr) {
         visits = parseInt(visitsStr);
       }
-      localStorage.setItem('visits', visits + 1);
+      localStorage.setItem(silex.view.TipOfTheDay.NUM_VISITS_LOCAL_STORAGE_NAME, visits + 1);
       // the more visits the less chance we have to show the tip
       let rand = Math.random() * visits;
       if(rand > 3) {
+        silex.service.Tracker.getInstance().trackAction('app-events', 'tip-of-the-day', 'skip', 0);
         return;
       }
+      silex.service.Tracker.getInstance().trackAction('app-events', 'tip-of-the-day', 'show', 0);
     }
     // load data
     goog.net.XhrIo.send('https://api.github.com/repos/silexlabs/Silex/issues?labels=tip-of-the-day', (e) => {
@@ -71,12 +88,24 @@ silex.view.TipOfTheDay = function(element, model, controller) {
       this.element.appendChild(el);
       this.element.classList.remove('loading');
       this.element.classList.remove('hidden-dialog');
+      // add a timeout
+      setTimeout(() => {
+        this.element.classList.add('hidden-dialog');
+        silex.service.Tracker.getInstance().trackAction('app-events', 'tip-of-the-day', 'timeout', -1);
+      }, 30000);
     });
   }, 4000);
   // attach click event
   goog.events.listen(this.element, goog.events.EventType.CLICK, (e) => {
     // hide
     this.element.classList.add('hidden-dialog');
+    console.log('xxx', e.target.classList.contains('close'));
+    if(e.target.classList.contains('close')) {
+      silex.service.Tracker.getInstance().trackAction('app-events', 'tip-of-the-day', 'close', 0);
+    }
+    else{
+      silex.service.Tracker.getInstance().trackAction('app-events', 'tip-of-the-day', 'open', 1);
+    }
   }, false, this);
 };
 
