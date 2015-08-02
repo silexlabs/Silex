@@ -15,9 +15,9 @@ exports.webdriver = null;
  * start Silex server once
  */
 var silexServer = require('../dist/server/server.js');
-console.log('-----');
+console.log('------');
 console.log('Silex start');
-console.log('-----');
+console.log('------');
 silexServer.setDebugMode(true);
 
 /**
@@ -41,13 +41,13 @@ exports.getDriverName = function () {
     var driverName = null;
     for (var i in process.argv){
         var val = process.argv[i];
-        if (val == '-firefox'){
+        if (val == '--firefox'){
             driverName = 'firefox';
         }
-        else if (val == '-chrome'){
+        else if (val == '--chrome'){
             driverName = 'chrome';
         }
-        else if (val == '-phantomjs'){
+        else if (val == '--phantomjs'){
             driverName = 'phantomjs';
         }
     }
@@ -88,13 +88,13 @@ exports.createClient = function () {
       if (e && e.err && e.err.code){
         switch(e.err.code) {
           case 'ECONNREFUSED':
-            console.error("couldn't connect to selenium server, please run the command: \n $ java -jar node_modules/grunt-selenium-webdriver/jar/selenium-server-standalone-2.42.2.jar");
+            console.error("couldn't connect to selenium server, please run the command: \n $ node_modules/.bin/selenium");
           break;
         }
       }
     });
     return client;
   }
-  console.error('You are supposed to call grunt with param \'-firefox\', \'-chrome\' or \'-phantomjs\'. Canceling tests.');
+  console.error('You are supposed to call mocha with param \'--firefox\', \'--chrome\' or \'--phantomjs\'. Canceling tests.');
   return null;
 }
