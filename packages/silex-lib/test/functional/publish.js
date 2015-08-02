@@ -12,7 +12,7 @@ var helper = require('../helper.js'),
 function _(){}
 
 if (!helper.getDriverName()){
-  console.error('You are supposed to call grunt with param \'-firefox\', \'-chrome\' or \'-phantomjs\'. Canceling tests.');
+  console.error('You are supposed to call mocha with param \'--firefox\', \'--chrome\' or \'--phantomjs\'. Canceling tests.');
   return;
 }
 

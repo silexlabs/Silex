@@ -4,7 +4,7 @@ machine:
     version: 0.12.0
 dependencies:
   override:
-    - npm install --production
+    - npm install
 
 checkout:
   post:
