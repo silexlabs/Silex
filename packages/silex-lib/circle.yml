@@ -22,3 +22,6 @@ deployment:
     commands:
       - chmod u+x ./build/deploy.sh
       - ./build/deploy.sh $HOST_PROD
+test:
+  override:
+      - echo "tests prevented from circle.yml"
