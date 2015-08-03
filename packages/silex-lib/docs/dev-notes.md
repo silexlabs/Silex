@@ -6,7 +6,6 @@ push build & build-merged branch
 a mettre sous forme d'issues et de propositions?
 
   - bugs
-    + up/down when not paged bug
     + import tempaltes.silex.me
     + Html box: Do not execute scripts
     + deconnection de dropbox
