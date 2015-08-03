@@ -6,8 +6,8 @@ push build & build-merged branch
 a mettre sous forme d'issues et de propositions?
 
   - bugs
-    + text editor toolbar broken
     + up/down when not paged bug
+    + import tempaltes.silex.me
     + Html box: Do not execute scripts
     + deconnection de dropbox
     + ? rename silex-style => silex-user-styles
