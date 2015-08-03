@@ -1,5 +1,4 @@
-
-[![Build Status](https://travis-ci.org/silexlabs/Silex.png?branch=master)](https://travis-ci.org/silexlabs/Silex)
+[![Build Status](https://circleci.com/gh/silexlabs/Silex.svg?style=svg)](https://circleci.com/gh/silexlabs/Silex)
 [![Code Climate](https://codeclimate.com/github/silexlabs/Silex/badges/gpa.svg)](https://codeclimate.com/github/silexlabs/Silex)
 [![Inline docs](http://inch-ci.org/github/silexlabs/Silex.svg?branch=master)](http://inch-ci.org/github/silexlabs/Silex)
 [![Dependency Status](https://gemnasium.com/silexlabs/Silex.png)](https://gemnasium.com/silexlabs/Silex)

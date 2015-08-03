@@ -5,7 +5,9 @@ push build & build-merged branch
 
 a mettre sous forme d'issues et de propositions?
 
-  - fix more bugs
+  - bugs
+    + text editor toolbar broken
+    + up/down when not paged bug
     + Html box: Do not execute scripts
     + deconnection de dropbox
     + ? rename silex-style => silex-user-styles
