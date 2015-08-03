@@ -119,11 +119,11 @@ Start Silex:
 
 If you develop or debug Silex, these npm scripts can be used with npm (they are defined in the file [package.json](./package.json))
 
-* `$ npm run start` will start the server
-* `$ npm run build` will build the client side of Silex (html, css and js), ready for production
+* `$ npm start` will start the server
+* `$ npm run start:debug` will start the server in debug mode (no error catchall, enable local service to use local file system as a storage)
+* `$ npm run build` will build the client side code (html, css, js), ready for production
 * `$ npm run build:server` this only check that the server scripts are correct
 * `$ npm run watch:client` will watch the html, js and css source folders and rebuild when a file changes
-* `$ npm run watch:server` will watch the server source folder and rebuild when a file changes
 
 ##dependencies
 

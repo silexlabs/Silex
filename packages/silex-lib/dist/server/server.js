@@ -62,9 +62,8 @@ app.use('/', session({
 }));
 
 // ********************************
-// production
+// production / debug
 // ********************************
-var isDebug = false;
 /**
  * catch all errors to prevent nodejs server crash
  */
@@ -73,29 +72,23 @@ function onCatchError(err) {
   console.error('---------------------', 'Caught exception: ', err, '---------------------');
   console.log('---------------------');
 }
-/**
- * set debug or production modes
- */
-exports.setDebugMode = function(debug){
-  if(debug && !isDebug){
-    process.removeListener('uncaughtException', onCatchError);
+if(process.env.SILEX_DEBUG) {
+  // DEBUG ONLY
+  console.warn('Running server in debug mode');
+  // define users (login/password) wich will be authorized to access the www folder (read and write)
+  silexConfig.www.USERS = {
+    'admin': 'admin'
+  };
+}
+else {
+  // PRODUCTION ONLY
+  console.warn('Running server in production mode');
+  // catch all errors and prevent nodejs to crash, production mode
+  process.on('uncaughtException', onCatchError);
+  // reset debug
+  silexConfig.www.USERS = {};
+}
 
-    // DEBUG ONLY
-    console.warn('Running server in debug mode');
-    // define users (login/password) wich will be authorized to access the www folder (read and write)
-    silexConfig.www.USERS = {
-      'admin': 'admin'
-    };
-  }
-  if(!debug && isDebug){
-    // PRODUCTION ONLY
-    console.warn('Running server in production mode');
-    // catch all errors and prevent nodejs to crash, production mode
-    process.on('uncaughtException', onCatchError);
-    // reset debug
-    silexConfig.www.USERS = {};
-  }
-};
 // ********************************
 // config
 // ********************************
@@ -114,24 +107,12 @@ silexConfig.staticFolders.push(
     name: '/js/src',
     path: pathModule.resolve(__dirname, '../../src')
   },
-  // when working offline, you can re-route http://static.silex.me/ to http://localhost:6805/static/
+  // the scripts which have to be available in all versions (v2.1, v2.2, v2.3, ...)
   {
     name: '/static',
     path: pathModule.resolve(__dirname, '../../static.silex.me')
   }
 );
-
-// get command line args
-var debug = false;
-for (var i in process.argv){
-  var val = process.argv[i];
-  if (val === '-debug') {
-    debug = true;
-  }
-}
-
-// debug or production mode
-exports.setDebugMode(debug);
 
 // ********************************
 // unifile server
