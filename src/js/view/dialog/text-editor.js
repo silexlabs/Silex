@@ -212,8 +212,8 @@ silex.view.dialog.TextEditor.prototype.buildUi = function() {
   myToolbar.addChild(button, true);
 
   // Hook the toolbar into the field.
-//  var myToolbarController = new goog.ui.editor.ToolbarController(
-//      this.textField, myToolbar);
+  var myToolbarController = new goog.ui.editor.ToolbarController(
+      this.textField, myToolbar);
 
   // Watch for field changes, to display below.
   // notify the controller
