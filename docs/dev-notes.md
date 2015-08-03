@@ -1,8 +1,5 @@
 ## Silex next steps, TOC
 
-push lexoyo/master to silexlabs/develop
-push build & build-merged branch
-
 a mettre sous forme d'issues et de propositions?
 
   - bugs
