@@ -18,7 +18,6 @@ var silexServer = require('../dist/server/server.js');
 console.log('------');
 console.log('Silex start');
 console.log('------');
-silexServer.setDebugMode(true);
 
 /**
  * check if we will be able to start selenium driver
