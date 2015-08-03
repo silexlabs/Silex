@@ -178,11 +178,18 @@ silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk, opt_showLoader) 
  * @param {function()} opt_cbk
  */
 silex.model.File.prototype.onContentLoaded = function(opt_cbk) {
+  // if we interrupt the loading, the body will be removed
+  if (!this.contentDocument_.body) {
+    console.warn('File:: body is empty, something went wrong, stop waiting for the content');
+    return;
+  }
+  // if the pageable plugin is not created yet, come back later
   if (!goog.dom.classlist.contains(this.contentDocument_.body, 'pageable-plugin-created')) {
+    console.log('File:: come back later');
     // let the time for the scripts to execute (e.g. pageable)
     setTimeout(goog.bind(function() {
       this.onContentLoaded(opt_cbk);
-    }, this), 1);
+    }, this), 100);
     return;
   }
 

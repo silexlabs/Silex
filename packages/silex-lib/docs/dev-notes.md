@@ -1,9 +1,13 @@
 ## Silex next steps, TOC
 
+push mobile
+push https
+
 a mettre sous forme d'issues et de propositions?
 
   - bugs
     + import tempaltes.silex.me
+    + title style is not defined?
     + Html box: Do not execute scripts
     + deconnection de dropbox
     + ? rename silex-style => silex-user-styles
