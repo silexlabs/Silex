@@ -36,7 +36,7 @@
     "lint:server": "eslint dist/server/",
     "fix:js": "submodules/closure-linter/closure_linter/fixjsstyle.py -r src/js/",
     "postinstall": "npm run build",
-    "test": "node_modules/.bin/mocha --phantomjs test/functional/file-explorer.js test/functional/save.js test/functional/publish.js",
+    "test": "SILEX_DEBUG=true node_modules/.bin/mocha --phantomjs test/functional/file-explorer.js test/functional/save.js test/functional/publish.js",
     "selenium:start": "node_modules/.bin/selenium"
   },
   "dependencies": {
