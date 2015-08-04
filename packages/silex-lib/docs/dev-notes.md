@@ -1,14 +1,20 @@
 ## Silex next steps, TOC
 
+push develop
 push mobile
 push https
 
 a mettre sous forme d'issues et de propositions?
 
   - bugs
-    + import tempaltes.silex.me
+    + preview does not open anymore
+    + redo bug
+    + iframe content not undoable
     + title style is not defined?
+    + import tempaltes.silex.me
+
     + Html box: Do not execute scripts
+    + bg image multiple selection => disabled
     + deconnection de dropbox
     + ? rename silex-style => silex-user-styles
     + no !important in front-end.css?
