@@ -99,7 +99,6 @@ silex.view.TipOfTheDay.prototype.init = function(html)
   goog.events.listen(this.element, goog.events.EventType.CLICK, (e) => {
     // hide
     this.element.classList.add('hidden-dialog');
-    console.log('xxx', e.target.classList.contains('close'));
     if(e.target.classList.contains('close')) {
       silex.service.Tracker.getInstance().trackAction('app-events', 'tip-of-the-day', 'close', 0);
     }
