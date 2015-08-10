@@ -102,8 +102,8 @@ silex.controller.StageController.prototype.newContainer = function(container, el
     this.model.element.removeElement(element);
     this.model.element.addElement(container, element);
     // restore position
-    this.styleChanged('left', (elementPos.x - newContainerPos.x) + 'px', [element]);
-    this.styleChanged('top', (elementPos.y - newContainerPos.y) + 'px', [element]);
+    this.styleChanged('left', (elementPos.x - newContainerPos.x) + 'px', [element], false);
+    this.styleChanged('top', (elementPos.y - newContainerPos.y) + 'px', [element], false);
   }
   // check if a parent is visible only on some pages,
   // then element should be visible everywhere

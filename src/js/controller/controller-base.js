@@ -231,7 +231,7 @@ silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
  * @param  {string} name
  * @param  {?string=} value
  * @param {?Array.<Element>=} opt_elements
- * @param  {?boolean=} isUndoable
+ * @param  {boolean} isUndoable
  */
 silex.controller.ControllerBase.prototype.styleChanged = function(name, value, opt_elements, isUndoable) {
   if (!opt_elements) {
