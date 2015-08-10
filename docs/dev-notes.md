@@ -9,7 +9,7 @@ a mettre sous forme d'issues et de propositions?
     + publication path contains http://  instead of the path on dropbox
     + redo bug
     + undo 3 times when changing container
-    + preview saves publication even when nothing changed?
+    + called on mouse move: this.view.contextMenu.redraw();
     + icons shoul turn on when website changed (save, preview, responsize)
       => add isDirty (based on undo idx)
       => warn quit only when dirty
