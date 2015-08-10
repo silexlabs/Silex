@@ -7,12 +7,8 @@ a mettre sous forme d'issues et de propositions?
   - bugs
     + publish is broken (old style ids?)
     + publication path contains http://  instead of the path on dropbox
-    + redo bug
-    + undo 3 times when changing container
+    + chek BC on templates
     + called on mouse move: this.view.contextMenu.redraw();
-    + icons shoul turn on when website changed (save, preview, responsize)
-      => add isDirty (based on undo idx)
-      => warn quit only when dirty
     + html box exectutes scripts while editing
     + iframe content not undoable
     + title style is not defined?
