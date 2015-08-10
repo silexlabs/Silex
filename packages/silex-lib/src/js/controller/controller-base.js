@@ -60,6 +60,16 @@ silex.controller.ControllerBase.prototype.tracker = null;
 
 
 /**
+ * @type {number} index of the undoHistory when last saved
+ * this is useful in order to know if the website is "dirty", i.e. if it was modified since last save
+ * it has a default value of -1
+ * @see isDirty
+ * @static because it is shared by all controllers
+ */
+silex.controller.ControllerBase.lastSaveUndoIdx = -1;
+
+
+/**
  * @type {Array.<silex.types.UndoItem>} array of the states of the website
  * @static because it is shared by all controllers
  */
@@ -78,6 +88,16 @@ silex.controller.ControllerBase.redoHistory = [];
  * @static because it is shared by all controllers
  */
 silex.controller.ControllerBase.clipboard = null;
+
+
+/**
+ * use lastSaveUndoIdx to determine if the website is dirty
+ * @return {boolean} true if the website has unsaved changes
+ */
+silex.controller.ControllerBase.prototype.isDirty = function() {
+  return silex.controller.ControllerBase.lastSaveUndoIdx !== silex.controller.ControllerBase.undoHistory.length - 1;
+};
+
 
 
 /**
@@ -129,6 +149,7 @@ silex.controller.ControllerBase.prototype.restoreState = function(state) {
 silex.controller.ControllerBase.prototype.undoReset = function() {
   silex.controller.ControllerBase.undoHistory = [];
   silex.controller.ControllerBase.redoHistory = [];
+  silex.controller.ControllerBase.lastSaveUndoIdx = -1;
 };
 
 
@@ -463,7 +484,8 @@ silex.controller.ControllerBase.prototype.doSave = function(url, opt_cbk, opt_er
       rawHtml,
       goog.bind(function() {
         this.tracker.trackAction('controller-events', 'success', 'file.save', 1);
-        this.fileOperationSuccess('File is saved.', false);
+        silex.controller.ControllerBase.lastSaveUndoIdx = silex.controller.ControllerBase.undoHistory.length - 1;
+        this.fileOperationSuccess('File is saved.', true);
         this.view.workspace.setPreviewWindowLocation();
         if (opt_cbk) {
           opt_cbk();
@@ -497,6 +519,7 @@ silex.controller.ControllerBase.prototype.fileOperationSuccess = function(opt_me
     this.view.jsEditor.setValue(this.model.head.getHeadScript());
     this.view.cssEditor.setValue(this.model.head.getHeadStyle());
     this.view.htmlEditor.setValue('');
+    this.view.contextMenu.redraw();
   }
   if (opt_message) {
     // notify user
