@@ -8,7 +8,7 @@ a mettre sous forme d'issues et de propositions?
     + publish is broken (old style ids?)
     + publication path contains http://  instead of the path on dropbox
     + redo bug
-    + undo reset after save
+    + undo 3 times when changing container
     + preview saves publication even when nothing changed?
     + icons shoul turn on when website changed (save, preview, responsize)
       => add isDirty (based on undo idx)
