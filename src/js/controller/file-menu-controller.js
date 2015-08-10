@@ -49,6 +49,8 @@ silex.controller.FileMenuController.prototype.newFile = function(opt_cbk, opt_er
   this.model.file.newFile(goog.bind(function(rawHtml) {
     this.model.file.setHtml(rawHtml, goog.bind(function() {
       this.fileOperationSuccess(null, true);
+      // undo redo reset
+      this.undoReset();
       // QOS, track success
       this.tracker.trackAction('controller-events', 'success', 'file.new', 1);
       if (opt_cbk) {
@@ -81,6 +83,8 @@ silex.controller.FileMenuController.prototype.openFile = function(opt_cbk, opt_e
             if (goog.dom.getElementByClass('page-element', this.model.body.getBodyElement()) && !goog.dom.classlist.contains(this.model.body.getBodyElement(), 'silex-published')) {
               // display and redraw
               this.fileOperationSuccess((this.model.head.getTitle() || 'Untitled website') + ' opened.', true);
+              // undo redo reset
+              this.undoReset();
               // QOS, track success
               this.tracker.trackAction('controller-events', 'success', 'file.open', 1);
               if (opt_cbk) {

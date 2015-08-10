@@ -502,6 +502,4 @@ silex.controller.ControllerBase.prototype.fileOperationSuccess = function(opt_me
     // notify user
     silex.utils.Notification.notifySuccess(opt_message);
   }
-  // undo redo reset
-  this.undoReset();
 };
