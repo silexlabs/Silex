@@ -5,10 +5,10 @@ push templates new
 a mettre sous forme d'issues et de propositions?
 
   - bugs
+    + respecter l'ordre des mandatory scripts
     + publish is broken (old style ids?)
     + publication path contains http://  instead of the path on dropbox
-    + BC on templates
-      * prevent links
+    + Envoyer le html à la fenêtre de preview pour ne pas avoir à sauver, update au fur et à mesure de la maquette
     + called on mouse move: this.view.contextMenu.redraw();
     + html box exectutes scripts while editing
     + iframe content not undoable
