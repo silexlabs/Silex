@@ -120,17 +120,25 @@ exports.publish = function(cbk, req, res, next, path, html, css, js, files){
                   cbk(error);
               }
               else{
-                  // write the html
-                  exports.writeFileToService(req, res, next, path + '/index.html', html, function (error){
-                      if(error){
-                          cbk(error);
-                      }
-                      else{
-                          cbk();
-                      }
-                  });
-              }
-            });
+                // write the js
+                exports.writeFileToService(req, res, next, path + '/css/styles.css', css, function (error){
+                  if(error){
+                      cbk(error);
+                  }
+                  else{
+                      // write the html
+                      exports.writeFileToService(req, res, next, path + '/index.html', html, function (error){
+                          if(error){
+                              cbk(error);
+                          }
+                          else{
+                              cbk();
+                          }
+                      });
+                  }
+              });
+            }
+          });
         });
     });
 };
@@ -250,7 +258,6 @@ exports.getTempLink = function(cbk, req, res, next, path){
     else if (data){
       var p = pathModule.resolve(__dirname, tempPath);
       fs.writeFile(p, data, function (err) {
-        console.log('writeFile', err, p, data);
         if (err){
           console.error('Error: could not write temp file (' + p + ') - ' + err);
           cbk({success: false, message: 'Error: could not write temp file'});
