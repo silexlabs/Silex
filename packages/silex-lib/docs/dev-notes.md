@@ -5,9 +5,12 @@ push templates new
 a mettre sous forme d'issues et de propositions?
 
   - bugs
-    + respecter l'ordre des mandatory scripts
-    + publish is broken (old style ids?)
+    + publish "online-service" => no index.html
+    + favicon broken?
+    + save opens home page
+    + after file browser, keybord => write htlml in the elements
     + publication path contains http://  instead of the path on dropbox
+    + open a published website => infinite loading
     + Envoyer le html à la fenêtre de preview pour ne pas avoir à sauver, update au fur et à mesure de la maquette
     + called on mouse move: this.view.contextMenu.redraw();
     + html box exectutes scripts while editing
