@@ -127,12 +127,14 @@ silex.utils.BackwardCompat.getStaticUrl = function(version) {
  * @return {string}
  */
 silex.utils.BackwardCompat.updateStaticUrl = function(version, url) {
-  var newUrl = url;
-  var initialFolder = '2.' + version[version.length - 1];
-  var finalFolder = '2.' + silex.utils.BackwardCompat.LATEST_VERSION[2];
-  newUrl = newUrl.replace('static.silex.io', 'static.silex.me');
-  newUrl = newUrl.replace('//static.silex.me/' + initialFolder, '//static.silex.me/' + finalFolder);
-  return newUrl;
+  var fileName = url.substr(url.lastIndexOf('/') + 1);
+  var theGoodTag = silex.utils.Dom.MANDATORY_TAGS.filter((tagObj) => {
+    return tagObj.fileName === fileName;
+  });
+  if(theGoodTag.length > 0) {
+    return theGoodTag[0].url;
+  }
+  return url;
 };
 
 

@@ -7,7 +7,8 @@ a mettre sous forme d'issues et de propositions?
   - bugs
     + publish is broken (old style ids?)
     + publication path contains http://  instead of the path on dropbox
-    + chek BC on templates
+    + BC on templates
+      * prevent links
     + called on mouse move: this.view.contextMenu.redraw();
     + html box exectutes scripts while editing
     + iframe content not undoable

@@ -42,31 +42,38 @@ silex.utils.Dom.CACHE_CONTROL_PARAM_NAME = 'silex-cache-control';
 silex.utils.Dom.MANDATORY_TAGS = [
   {
     'type': 'script',
-    'url': 'http://static.silex.me/' + silex.utils.BackwardCompat.LATEST_VERSION[1] + '.' + silex.utils.BackwardCompat.LATEST_VERSION[2] + '/jquery.js'
+    'url': 'http://static.silex.me/' + silex.utils.BackwardCompat.LATEST_VERSION[1] + '.' + silex.utils.BackwardCompat.LATEST_VERSION[2] + '/jquery.js',
+    'fileName': 'jquery.js'
   },
   {
     'type': 'script',
-    'url': 'http://static.silex.me/' + silex.utils.BackwardCompat.LATEST_VERSION[1] + '.' + silex.utils.BackwardCompat.LATEST_VERSION[2] + '/jquery-ui.js'
+    'url': 'http://static.silex.me/' + silex.utils.BackwardCompat.LATEST_VERSION[1] + '.' + silex.utils.BackwardCompat.LATEST_VERSION[2] + '/jquery-ui.js',
+    'fileName': 'jquery-ui.js'
   },
   {
     'type': 'script',
-    'url': 'http://static.silex.me/' + silex.utils.BackwardCompat.LATEST_VERSION[1] + '.' + silex.utils.BackwardCompat.LATEST_VERSION[2] + '/jquery.ui.touch-punch.min.js'
+    'url': 'http://static.silex.me/' + silex.utils.BackwardCompat.LATEST_VERSION[1] + '.' + silex.utils.BackwardCompat.LATEST_VERSION[2] + '/jquery.ui.touch-punch.min.js',
+    'fileName': 'jquery.ui.touch-punch.min.js'
   },
   {
     'type': 'script',
-    'url': 'http://static.silex.me/' + silex.utils.BackwardCompat.LATEST_VERSION[1] + '.' + silex.utils.BackwardCompat.LATEST_VERSION[2] + '/pageable.js'
+    'url': 'http://static.silex.me/' + silex.utils.BackwardCompat.LATEST_VERSION[1] + '.' + silex.utils.BackwardCompat.LATEST_VERSION[2] + '/pageable.js',
+    'fileName': 'pageable.js'
   },
   {
     'type': 'script',
-    'url': 'http://static.silex.me/' + silex.utils.BackwardCompat.LATEST_VERSION[1] + '.' + silex.utils.BackwardCompat.LATEST_VERSION[2] + '/front-end.js'
+    'url': 'http://static.silex.me/' + silex.utils.BackwardCompat.LATEST_VERSION[1] + '.' + silex.utils.BackwardCompat.LATEST_VERSION[2] + '/front-end.js',
+    'fileName': 'front-end.js'
   },
   {
     'type': 'link',
-    'url': 'http://static.silex.me/' + silex.utils.BackwardCompat.LATEST_VERSION[1] + '.' + silex.utils.BackwardCompat.LATEST_VERSION[2] + '/normalize.css'
+    'url': 'http://static.silex.me/' + silex.utils.BackwardCompat.LATEST_VERSION[1] + '.' + silex.utils.BackwardCompat.LATEST_VERSION[2] + '/normalize.css',
+    'fileName': 'normalize.css'
   },
   {
     'type': 'link',
-    'url': 'http://static.silex.me/' + silex.utils.BackwardCompat.LATEST_VERSION[1] + '.' + silex.utils.BackwardCompat.LATEST_VERSION[2] + '/front-end.css'
+    'url': 'http://static.silex.me/' + silex.utils.BackwardCompat.LATEST_VERSION[1] + '.' + silex.utils.BackwardCompat.LATEST_VERSION[2] + '/front-end.css',
+    'fileName': 'front-end.css'
   }
 ].reverse();
 
@@ -229,19 +236,29 @@ silex.utils.Dom.cleanupFirefoxInlines = function(doc) {
   for (let idx in elements) {
     goog.dom.removeNode(elements[idx]);
   }
+  silex.utils.Dom.addMandatoryTags(doc);
+};
+
+
+/**
+ * remove the javascript and css files which firefox inlines
+ * the inlined tags are script type="text/javascript" style="display:none"
+ * @param {Document} doc
+ */
+silex.utils.Dom.addMandatoryTags = function(doc) {
   // put back the mandatory Silex scripts and styles:
   silex.utils.Dom.MANDATORY_TAGS.forEach((tagObj) => {
-    let query = '[' + (tagObj['type'] == 'script' ? 'src=' : 'href=') + '"' + tagObj['url'] + '"]'
+    let query = '[' + (tagObj['type'] === 'script' ? 'src$=' : 'href$=') + '"' + tagObj['fileName'] + '"]'
     let element = doc.querySelector(query);
     if(!element) {
       element = doc.createElement(tagObj['type']);
-      if(tagObj['type'] == 'script') {
+      if(tagObj['type'] === 'script') {
         element.setAttribute('type', 'text/javascript');
-        element.setAttribute('src', tagObj.url);
+        element.setAttribute('src', tagObj['url']);
       }
       else {
         element.setAttribute('rel', 'stylesheet');
-        element.setAttribute('href', tagObj.url);
+        element.setAttribute('href', tagObj['url']);
       }
       doc.head.insertBefore(element, doc.head.firstChild);
     }
