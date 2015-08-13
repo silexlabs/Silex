@@ -52,11 +52,6 @@ silex.utils.Dom.MANDATORY_TAGS = [
   },
   {
     'type': 'script',
-    'url': 'http://static.silex.me/' + silex.utils.BackwardCompat.LATEST_VERSION[1] + '.' + silex.utils.BackwardCompat.LATEST_VERSION[2] + '/jquery.ui.touch-punch.min.js',
-    'fileName': 'jquery.ui.touch-punch.min.js'
-  },
-  {
-    'type': 'script',
     'url': 'http://static.silex.me/' + silex.utils.BackwardCompat.LATEST_VERSION[1] + '.' + silex.utils.BackwardCompat.LATEST_VERSION[2] + '/pageable.js',
     'fileName': 'pageable.js'
   },
