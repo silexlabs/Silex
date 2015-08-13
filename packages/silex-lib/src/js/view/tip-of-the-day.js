@@ -59,13 +59,13 @@ silex.view.TipOfTheDay.prototype.init = function(html)
     this.element.classList.add('loading');
     // capping to prevent harrassing the user
     let visits = 0;
-    if(localStorage) {
+    if(window.localStorage) {
       // init local storage
-      let visitsStr = localStorage.getItem(silex.view.TipOfTheDay.NUM_VISITS_LOCAL_STORAGE_NAME);
+      let visitsStr = window.localStorage.getItem(silex.view.TipOfTheDay.NUM_VISITS_LOCAL_STORAGE_NAME);
       if(visitsStr) {
         visits = parseInt(visitsStr);
       }
-      localStorage.setItem(silex.view.TipOfTheDay.NUM_VISITS_LOCAL_STORAGE_NAME, visits + 1);
+      window.localStorage.setItem(silex.view.TipOfTheDay.NUM_VISITS_LOCAL_STORAGE_NAME, visits + 1);
       // the more visits the less chance we have to show the tip
       let rand = Math.random() * visits;
       if(rand > 3) {
