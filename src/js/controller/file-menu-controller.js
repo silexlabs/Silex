@@ -146,7 +146,19 @@ silex.controller.FileMenuController.prototype.publish = function() {
         this.model.file.getUrl(),
         this.model.file.getHtml(),
         goog.bind(function(status) {
-          silex.utils.Notification.notifySuccess('I am about to publish your site. This may take several minutes.');
+          silex.utils.Notification.alert('I am about to publish your site. This may take several minutes.', () => clearInterval(timer));
+          var timer = setInterval(() => {
+            silex.service.SilexTasks.getInstance().publishState(json => {
+              document.querySelector('.alertify-message').innerHTML = json.status;
+              if(json.stop === true) {
+                clearInterval(timer);
+              }
+            }, message => {
+              console.error('Error: ', message);
+              document.querySelector('.alertify-message').innerHTML = 'An error unknown occured.';
+              clearInterval(timer);
+            });
+          }, 1000);
           this.tracker.trackAction('controller-events', 'success', 'file.publish', 1);
         }, this),
         goog.bind(function(msg) {
