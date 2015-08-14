@@ -5,10 +5,9 @@ push templates new
 a mettre sous forme d'issues et de propositions?
 
   - bugs
-    + publish "online-service" => no index.html
-    + favicon broken?
-    + save opens home page
+    + favicon broken
     + after file browser, keybord => write htlml in the elements
+    + save opens home page
     + publication path contains http://  instead of the path on dropbox
     + open a published website => infinite loading
     + Envoyer le html à la fenêtre de preview pour ne pas avoir à sauver, update au fur et à mesure de la maquette
