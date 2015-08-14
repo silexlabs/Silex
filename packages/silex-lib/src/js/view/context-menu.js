@@ -63,6 +63,8 @@ silex.view.ContextMenu.prototype.buildUi = function() {
     this.element.querySelector('.up').addEventListener('click', () => {this.controller.editMenuController.moveUp()});
     this.element.querySelector('.down').addEventListener('click', () => {this.controller.editMenuController.moveDown()});
     this.element.querySelector('.bottom').addEventListener('click', () => {this.controller.editMenuController.moveToBottom()});
+    this.element.querySelector('.preview').addEventListener('click', () => {this.controller.viewMenuController.preview()});
+    this.element.querySelector('.previewResponsize').addEventListener('click', () => {this.controller.viewMenuController.previewResponsize()});
 };
 
 
@@ -75,7 +77,7 @@ silex.view.ContextMenu.prototype.buildUi = function() {
  */
 silex.view.ContextMenu.prototype.redraw = function(opt_selectedElements, opt_pageNames, opt_currentPageName) {
   // get the selection if not provided
-  if(!opt_selectedElements) this.model.body.getSelection();
+  if(!opt_selectedElements) opt_selectedElements = this.model.body.getSelection();
   //update menu items according to selection
   if(opt_selectedElements.length === 1 && opt_selectedElements[0].tagName.toLowerCase() === 'body') {
     this.element.querySelector('.delete').classList.add('off');
@@ -110,5 +112,15 @@ silex.view.ContextMenu.prototype.redraw = function(opt_selectedElements, opt_pag
   }
   else {
     this.element.querySelector('.paste').classList.add('off');
+  }
+  if(this.controller.fileMenuController.isDirty()) {
+    this.element.querySelector('.save').classList.remove('off');
+    this.element.querySelector('.preview').classList.add('off');
+    this.element.querySelector('.previewResponsize').classList.add('off');
+  }
+  else {
+    this.element.querySelector('.save').classList.add('off');
+    this.element.querySelector('.preview').classList.remove('off');
+    this.element.querySelector('.previewResponsize').classList.remove('off');
   }
 };

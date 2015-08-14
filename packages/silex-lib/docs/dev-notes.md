@@ -1,14 +1,19 @@
 ## Silex next steps, TOC
 
-push develop
-push mobile
-push https
+push templates new
 
 a mettre sous forme d'issues et de propositions?
 
   - bugs
-    + preview does not open anymore
-    + redo bug
+    + publish "online-service" => no index.html
+    + favicon broken?
+    + save opens home page
+    + after file browser, keybord => write htlml in the elements
+    + publication path contains http://  instead of the path on dropbox
+    + open a published website => infinite loading
+    + Envoyer le html à la fenêtre de preview pour ne pas avoir à sauver, update au fur et à mesure de la maquette
+    + called on mouse move: this.view.contextMenu.redraw();
+    + html box exectutes scripts while editing
     + iframe content not undoable
     + title style is not defined?
     + import tempaltes.silex.me
@@ -22,6 +27,8 @@ a mettre sous forme d'issues et de propositions?
   - merge context menu
   - https branch
     + If your application needs to know whether a connection came in over http or https, you can look at the value of X-Forwarded-Proto in the header of the request.
+    => Oui. La connexion sécurisée est établie entre le client et un proxy. Le trafic est ensuite transféré en 'clair' à l'instance, Apache, qui transmet à Node sur le port 8080, effectivement. Donc vous n'avez pas à gérer le HTTPS directement dans votre code, et pour savoir si le trafic était sécurisé, vous pouvez utiliser l'en tête X-Forwarded-Proto header. (cf réponse de themouette au post).
+
     + static.silex.me => dist/client/static/
     + class to mark the required scripts, do not rely on their URLs anymore
     + backward compat: update to // + server url + static

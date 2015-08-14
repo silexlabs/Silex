@@ -185,7 +185,6 @@ silex.model.File.prototype.onContentLoaded = function(opt_cbk) {
   }
   // if the pageable plugin is not created yet, come back later
   if (!goog.dom.classlist.contains(this.contentDocument_.body, 'pageable-plugin-created')) {
-    console.log('File:: come back later');
     // let the time for the scripts to execute (e.g. pageable)
     setTimeout(goog.bind(function() {
       this.onContentLoaded(opt_cbk);
