@@ -41,6 +41,25 @@ silex.utils.DomCleaner.DOWNLOAD_LOCALLY_FROM = [
 
 
 /**
+ * remove the javascript and css files which firefox inlines
+ * the inlined tags are script type="text/javascript" style="display:none"
+ * @param {Document} doc
+ */
+silex.utils.DomCleaner.cleanupFirefoxInlines = function(doc) {
+  // remove inlined scripts
+  let elements = doc.querySelectorAll('script[style="display:none"]');
+  for (let idx in elements) {
+    goog.dom.removeNode(elements[idx]);
+  }
+  elements = doc.querySelectorAll('style[style="display:none"]');
+  for (let idx in elements) {
+    goog.dom.removeNode(elements[idx]);
+  }
+  silex.utils.Dom.addMandatoryTags(doc);
+};
+
+
+/**
  * cleanup html page
  * remove Silex specific data from HTML
  * create an external CSS file
