@@ -31,7 +31,7 @@ exports.route = function(cbk, req, res, next, task){
           publishStates[req.session.sessionID] = 'Done.';
         }
         else {
-          publishStates[req.session.sessionID] = 'Error: ' + result;
+          publishStates[req.session.sessionID] = 'Error: ' + result.message;
         }
       }, req, res, next, req.body.path, req.body.html, req.body.css, req.body.js, JSON.parse(req.body.files));
       // imediately returns success, to avoid timeout
