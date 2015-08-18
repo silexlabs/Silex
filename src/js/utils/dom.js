@@ -221,25 +221,6 @@ silex.utils.Dom.publish = function(publicationUrl, fileUrl, html, statusCallback
  * the inlined tags are script type="text/javascript" style="display:none"
  * @param {Document} doc
  */
-silex.utils.Dom.cleanupFirefoxInlines = function(doc) {
-  // remove inlined scripts
-  let elements = doc.querySelectorAll('script[style="display:none"]');
-  for (let idx in elements) {
-    goog.dom.removeNode(elements[idx]);
-  }
-  elements = doc.querySelectorAll('style[style="display:none"]');
-  for (let idx in elements) {
-    goog.dom.removeNode(elements[idx]);
-  }
-  silex.utils.Dom.addMandatoryTags(doc);
-};
-
-
-/**
- * remove the javascript and css files which firefox inlines
- * the inlined tags are script type="text/javascript" style="display:none"
- * @param {Document} doc
- */
 silex.utils.Dom.addMandatoryTags = function(doc) {
   // put back the mandatory Silex scripts and styles:
   silex.utils.Dom.MANDATORY_TAGS.forEach((tagObj) => {

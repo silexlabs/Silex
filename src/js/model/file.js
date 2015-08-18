@@ -270,7 +270,7 @@ silex.model.File.prototype.getHtml = function() {
   this.model.head.removeTempTags(/** @type {Document} */ (cleanFile).head);
   this.model.body.removeEditableClasses(/** @type {!Element} */ (cleanFile));
   silex.utils.Style.removeInternalClasses(/** @type {!Element} */ (cleanFile), false, true);
-  silex.utils.Dom.cleanupFirefoxInlines(this.contentDocument_);
+  silex.utils.DomCleaner.cleanupFirefoxInlines(this.contentDocument_);
   // reset the style set by stage on the body
   goog.style.setStyle(/** @type {Document} */ (cleanFile).body, 'minWidth', '');
   goog.style.setStyle(/** @type {Document} */ (cleanFile).body, 'minHeight', '');
