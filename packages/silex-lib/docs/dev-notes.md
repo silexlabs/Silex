@@ -1,14 +1,18 @@
 ## Silex next steps, TOC
 
-push templates new
+merge templates new
 
 a mettre sous forme d'issues et de propositions?
 
   - bugs
-    + publish "online-service" => no index.html
-    + favicon broken?
-    + save opens home page
+    + pixlr edit bg image
+
+
+    + https => BC bug
+    + back to home page in website do not work when no #
+    + favicon broken
     + after file browser, keybord => write htlml in the elements
+    + save opens home page
     + publication path contains http://  instead of the path on dropbox
     + open a published website => infinite loading
     + Envoyer le html à la fenêtre de preview pour ne pas avoir à sauver, update au fur et à mesure de la maquette
@@ -77,8 +81,18 @@ better code quaity
 old notes: containers may be smaller than their content
     + resize container should not move the elements inside it (currently, resize from the top, moves the elements)
 
+## publication
 
-## ways to publish a silex website
+optimize
+    Check box "optimize" in the advanced options of images and bg images
+    When publishing the website, rename the image with its params (size and cropping and quality) and optimize it for the website
+    https://www.npmjs.com/package/nodejs-fastload
+    Autre module avec options utiles pour crop
+    https://github.com/rsms/node-imagemagick
+
+split 1 page = 1 file
+
+## deployment
 
 * with github pages, with rsync http://octopress.org/docs/deploying/
 * toile libre

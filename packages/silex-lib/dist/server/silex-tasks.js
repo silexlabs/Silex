@@ -31,7 +31,7 @@ exports.route = function(cbk, req, res, next, task){
           publishStates[req.session.sessionID] = 'Done.';
         }
         else {
-          publishStates[req.session.sessionID] = 'Error: ' + result;
+          publishStates[req.session.sessionID] = 'Error: ' + result.message;
         }
       }, req, res, next, req.body.path, req.body.html, req.body.css, req.body.js, JSON.parse(req.body.files));
       // imediately returns success, to avoid timeout
@@ -39,8 +39,8 @@ exports.route = function(cbk, req, res, next, task){
     break;
     case 'publishState':
       cbk({
-        "status": publishStates[req.session.sessionID],
-        "stop": !publishStates[req.session.sessionID] || publishStates[req.session.sessionID] === 'Done.' || publishStates[req.session.sessionID].indexOf('Error') === 0
+        'status': publishStates[req.session.sessionID],
+        'stop': !publishStates[req.session.sessionID] || publishStates[req.session.sessionID] === 'Done.' || publishStates[req.session.sessionID].indexOf('Error') === 0
       });
     break;
     case 'sendImage':
@@ -423,15 +423,20 @@ exports.getFileFromService = function(req, res, next, srcPath, dstPath, cbk){
  * call unifile as an api
  */
 exports.writeFileToService = function(req, res, next, url, data, cbk){
-  req.body.data = data;
-  exports.unifileRoute(req, res, next, url, function(response, status, responseData, mime_type, responseFilePath) {
-    if (status.success){
-      cbk();
-    }
-    else{
-      cbk(status);
-    }
-  });
+  if(!data || data === '') {
+    cbk();
+  }
+  else {
+    req.body.data = data;
+    exports.unifileRoute(req, res, next, url, function(response, status, responseData, mime_type, responseFilePath) {
+      if (status.success){
+        cbk();
+      }
+      else{
+        cbk(status);
+      }
+    });
+  }
 };
 
 
