@@ -1,11 +1,10 @@
 ## Silex next steps, TOC
 
-push templates new
+merge templates new
 
 a mettre sous forme d'issues et de propositions?
 
   - bugs
-    + close js/html/css editors, then close, then type => writes in the js editor
     + pixlr edit bg image
 
 
