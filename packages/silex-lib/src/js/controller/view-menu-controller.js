@@ -128,7 +128,9 @@ silex.controller.ViewMenuController.prototype.doPreview = function(inResponsize)
     // it will be refreshed after save
     doOpenPreview();
     // also save
-    doSaveTheFile();
+    if(this.isDirty()) {
+      doSaveTheFile();
+    }
   }
   else {
     silex.utils.Notification.alert('You need to save the website before I can show a preview', goog.bind(function () {

@@ -397,6 +397,8 @@ silex.model.Element.prototype.move = function(element, direction) {
       element.parentNode.insertBefore(element, element.parentNode.childNodes[0]);
       break;
   }
+  // remove the 'just pasted' class
+  element.classList.remove(silex.model.Element.JUST_ADDED_CLASS_NAME);
 };
 
 
@@ -414,7 +416,8 @@ silex.model.Element.prototype.getPreviousElement = function(element) {
       if(el === element) {
         return res;
       }
-      if(this.model.page.isInPage(el)) {
+      // candidates are the elements which are visible in the current page, or visible everywhere (not paged)
+      if(this.model.page.isInPage(el) || this.model.page.getPagesForElement(el).length === 0) {
         res = el;
       }
     }
@@ -437,7 +440,8 @@ silex.model.Element.prototype.getNextElement = function(element) {
       if(el === element) {
         return res;
       }
-      if(this.model.page.isInPage(el)) {
+      // candidates are the elements which are visible in the current page, or visible everywhere (not paged)
+      if(this.model.page.isInPage(el) || this.model.page.getPagesForElement(el).length === 0) {
         res = el;
       }
     }

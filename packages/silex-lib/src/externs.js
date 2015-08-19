@@ -184,9 +184,34 @@ ce.api.CloudExplorer.prototype.exportFile = function(arg1, arg2, arg3, arg4) {};
 
 /**
  * unifile externs
+ * @constructor
  * @typedef {{success: boolean, message: ?string, tempLink: ?string, code: ?string}}
  */
-var UnifileResponse;
+var UnifileResponse = function() {};
+
+
+/**
+ * @type {boolean}
+ */
+UnifileResponse.prototype.success = false;
+
+
+/**
+ * @type {?string}
+ */
+UnifileResponse.prototype.message = null;
+
+
+/**
+ * @type {?string}
+ */
+UnifileResponse.prototype.tempLink = null;
+
+
+/**
+ * @type {?string}
+ */
+UnifileResponse.prototype.code = null;
 
 
 
@@ -1161,4 +1186,10 @@ Ace.prototype.setOptions = function(opts) {};
  * @type {Object.<*>}
  */
 var alertify = {};
-
+alertify.success = function () {};
+alertify.set = function () {};
+alertify.alert = function () {};
+alertify.prompt = function () {};
+alertify.confirm = function () {};
+alertify.error = function () {};
+alertify.log = function () {};

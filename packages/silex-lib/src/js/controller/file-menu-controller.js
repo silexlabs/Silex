@@ -48,6 +48,8 @@ silex.controller.FileMenuController.prototype.newFile = function(opt_cbk, opt_er
 
   this.model.file.newFile(goog.bind(function(rawHtml) {
     this.model.file.setHtml(rawHtml, goog.bind(function() {
+      // undo redo reset
+      this.undoReset();
       this.fileOperationSuccess(null, true);
       // QOS, track success
       this.tracker.trackAction('controller-events', 'success', 'file.new', 1);
@@ -79,6 +81,8 @@ silex.controller.FileMenuController.prototype.openFile = function(opt_cbk, opt_e
           this.model.file.setHtml(rawHtml, goog.bind(function() {
             // check that it is a Silex website (if we have at least 1 page and not the silex-published class)
             if (goog.dom.getElementByClass('page-element', this.model.body.getBodyElement()) && !goog.dom.classlist.contains(this.model.body.getBodyElement(), 'silex-published')) {
+              // undo redo reset
+              this.undoReset();
               // display and redraw
               this.fileOperationSuccess((this.model.head.getTitle() || 'Untitled website') + ' opened.', true);
               // QOS, track success
@@ -142,7 +146,19 @@ silex.controller.FileMenuController.prototype.publish = function() {
         this.model.file.getUrl(),
         this.model.file.getHtml(),
         goog.bind(function(status) {
-          silex.utils.Notification.notifySuccess('I am about to publish your site. This may take several minutes.');
+          silex.utils.Notification.alert('I am about to publish your site. This may take several minutes.', () => clearInterval(timer));
+          var timer = setInterval(() => {
+            silex.service.SilexTasks.getInstance().publishState(json => {
+              document.querySelector('.alertify-message').innerHTML = json.status;
+              if(json.stop === true) {
+                clearInterval(timer);
+              }
+            }, message => {
+              console.error('Error: ', message);
+              document.querySelector('.alertify-message').innerHTML = 'An error unknown occured.';
+              clearInterval(timer);
+            });
+          }, 1000);
           this.tracker.trackAction('controller-events', 'success', 'file.publish', 1);
         }, this),
         goog.bind(function(msg) {

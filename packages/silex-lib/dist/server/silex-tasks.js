@@ -16,6 +16,8 @@ var http = require('http');
 var https = require('https');
 var router = require('unifile/lib/core/router.js');
 
+var publishStates = {};
+
 /**
  * route the call to a silex task
  */
@@ -26,11 +28,20 @@ exports.route = function(cbk, req, res, next, task){
         // just log the result
         if (!result) {
           result = {success: true};
+          publishStates[req.session.sessionID] = 'Done.';
         }
-        console.log('publish done', result);
+        else {
+          publishStates[req.session.sessionID] = 'Error: ' + result.message;
+        }
       }, req, res, next, req.body.path, req.body.html, req.body.css, req.body.js, JSON.parse(req.body.files));
       // imediately returns success, to avoid timeout
       cbk();
+    break;
+    case 'publishState':
+      cbk({
+        'status': publishStates[req.session.sessionID],
+        'stop': !publishStates[req.session.sessionID] || publishStates[req.session.sessionID] === 'Done.' || publishStates[req.session.sessionID].indexOf('Error') === 0
+      });
     break;
     case 'sendImage':
       exports.sendImage(cbk, req, res, next, req.query.path, req.query.image);
@@ -43,6 +54,19 @@ exports.route = function(cbk, req, res, next, task){
     break;
     case 'debug':
       exports.debug(cbk, req, res, next);
+    break;
+    case process.env.RESTART_ROUTE || 'reload':
+      if(!process.env.RESTART_ROUTE) {
+        cbk({
+          success: false,
+          message: 'You need to define an env var RESTART_ROUTE and call /{{RESTART_ROUTE}}'
+        });
+        return;
+      }
+      cbk({
+        success: true
+      });
+      process.send('restart');
     break;
     default:
       cbk({
@@ -78,6 +102,7 @@ exports.createFolders = function(req, res, next, folders, errCbk, cbk){
  * write css and html data to a unifile service
  */
 exports.publish = function(cbk, req, res, next, path, html, css, js, files){
+    publishStates[req.session.sessionID] = 'Creating folders.';
     // cleanup path since front end sends an absolute path
     // and we need path which start with /api
     if(path.indexOf('http') === 0) {
@@ -97,27 +122,42 @@ exports.publish = function(cbk, req, res, next, path, html, css, js, files){
     exports.createFolders(req, res, next, [path + '/js', path + '/css', path + '/assets'], cbk, function (){
         // get all files data and copy it to destination service
         exports.publishFiles(req, res, next, files, path, function(error){
+            publishStates[req.session.sessionID] = 'Creating "/js/script.js".';
             if (error){
-                console.error('Error in publishFiles', error);
+                console.error('SilexTasks:: publishFiles:: Error', error);
                 cbk(error);
             }
             // write the js
             exports.writeFileToService(req, res, next, path + '/js/script.js', js, function (error){
+              publishStates[req.session.sessionID] = 'Creating "/css/styles.css".';
               if(error){
+                  console.error('SilexTasks:: writeFileToService:: Error for /js/script.js', error);
                   cbk(error);
               }
               else{
-                  // write the html
-                  exports.writeFileToService(req, res, next, path + '/index.html', html, function (error){
-                      if(error){
-                          cbk(error);
-                      }
-                      else{
-                          cbk();
-                      }
-                  });
-              }
-            });
+                // write the js
+                exports.writeFileToService(req, res, next, path + '/css/styles.css', css, function (error){
+                  publishStates[req.session.sessionID] = 'Creating "/index.html".';
+                  if(error){
+                      console.error('SilexTasks:: writeFileToService:: Error for /css/styles.css', error);
+                      cbk(error);
+                  }
+                  else{
+                      // write the html
+                      exports.writeFileToService(req, res, next, path + '/index.html', html, function (error){
+                          publishStates[req.session.sessionID] = 'index.html file created.';
+                          if(error){
+                              console.error('SilexTasks:: writeFileToService:: Error for /index.html', error);
+                              cbk(error);
+                          }
+                          else{
+                              cbk();
+                          }
+                      });
+                  }
+              });
+            }
+          });
         });
     });
 };
@@ -138,7 +178,8 @@ exports.publishFiles = function(req, res, next, files, dstPath, cbk){
     return;
   }
   if(files.length > 0){
-  var file = files.shift();
+    var file = files.shift();
+    publishStates[req.session.sessionID] = 'Downloading ' + file.destPath + ' (' + files.length + ' left)';
     exports.getFile(req, res, next, file.srcPath, dstPath + '/' + file.destPath, function (error) {
       if (error){
         console.error('publishFiles - Error in getFile', error, file.srcPath, dstPath, file.destPath);
@@ -179,7 +220,7 @@ exports.sendImage = function(cbk, req, res, next, path, url){
       // cbk({success: false, code: error.code});
     }
     // do not send JSON, the end user will see the result
-    fs.readFile(pathModule.resolve(__dirname, '/../client/libs/pixlr/close.html'), function (err, data) {
+    fs.readFile(pathModule.resolve(__dirname, '../client/libs/pixlr/close.html'), function (err, data) {
       // FIXME: handle err?
       if (!err) {
         cbk(data.toString());
@@ -200,7 +241,7 @@ exports.sendImage = function(cbk, req, res, next, path, url){
 exports.disposeTempLink = function(cbk, req, res, next, name){
   // remove the first optional /tmp/
   // and compute the path in the /www/tmp folder
-  var path = pathModule.resolve(__dirname, '../../dist/client/tmp', name.replace(/\/|\\|tmp/g, ''));
+  var path = pathModule.resolve(__dirname, '../client/tmp', name.replace(/\/|\\|tmp/g, ''));
   fs.unlink(path, function(err) {
     if (err){
       console.error('Error, could not remove ' + name + ' resolved to path ' + path + ' (' + err + ')');
@@ -221,13 +262,14 @@ exports.disposeTempLink = function(cbk, req, res, next, name){
  */
 exports.getTempLink = function(cbk, req, res, next, path){
   if (!path){
+    console.error('Error: path param must be provided in get');
     cbk({success: false, code: 400, message: 'path param must be provided in get'});
     return;
   }
   var ext = path.split('.').pop();
   var name = Math.floor(2147483648 * Math.random()).toString(36) + '-' + Date.now() + '.' + ext;
   var tempLink = '/tmp/' + name;
-  var tempPath = pathModule.resolve(__dirname, '../../../dist/client/tmp/', name);
+  var tempPath = pathModule.resolve(__dirname, '../client/tmp/', name);
   exports.unifileRoute(req, res, next, path, function (response, status, data, mime_type, responseFilePath) {
     if (status && status.success === false){
       console.error('Error in getFileFromService for ' + path, status);
@@ -237,7 +279,8 @@ exports.getTempLink = function(cbk, req, res, next, path){
       var p = pathModule.resolve(__dirname, tempPath);
       fs.writeFile(p, data, function (err) {
         if (err){
-          cbk({success: false, message: 'Error: could not write temp file (' + p + ')'});
+          console.error('Error: could not write temp file (' + p + ') - ' + err);
+          cbk({success: false, message: 'Error: could not write temp file'});
         }
         else{
           cbk({success: true, tempLink: tempLink});
@@ -253,7 +296,8 @@ exports.getTempLink = function(cbk, req, res, next, path){
           var p = pathModule.resolve(__dirname, tempPath);
           fs.writeFile(p, data, function (err) {
             if (err){
-              cbk({success: false, message: 'Error: could not write temp file (' + p + ')'});
+              console.error('Error: could not write temp file (' + p + ') - ' + err);
+              cbk({success: false, message: 'Error: could not write temp file'});
             }
             else{
               cbk({success: true, tempLink: tempLink});
@@ -309,40 +353,40 @@ exports.getFileFromUrl = function(req, res, next, srcPath, dstPath, cbk){
   }
   // load the file
   http_s.get(srcPath, function(result) {
-    result.on('data', function(chunk) {
-      if (srcPath.indexOf('https') === 0){
-        // https => all the data the 1st time
-        data = chunk.toString();
-      }
-      else{
-        data.push(chunk.toString());
-      }
+   result.on('data', function(chunk) {
+     if (srcPath.indexOf('https')===0){
+      // https => all the data the 1st time
+      data = chunk;
+     }
+     else{
+      data.push(chunk);
+     }
+     });
+     result.on('end', function() {
+     // data is an array
+     if (srcPath.indexOf('https')===0 && Array.isArray(data)){
+      exports.writeFileToService(req, res, next, dstPath, data.join(), function(error) {
+        cbk(error);
       });
-      result.on('end', function() {
-      // data is an array
-      if (srcPath.indexOf('https') === 0 && Array.isArray(data)){
-        exports.writeFileToService(req, res, next, dstPath, data.join(), function(error) {
-          cbk(error);
-        });
-      }
-      // data is an object
-      else if (typeof data === 'object'){
-        exports.writeFileToService(req, res, next, dstPath, data.join ? data.join('') : data.toString(), function(error) {
-          cbk(error);
-        });
-      }
-      // data is a string or something else
-      else{
-        exports.writeFileToService(req, res, next, dstPath, data.toString(), function(error) {
-          cbk(error);
-        });
-      }
+     }
+     // data is an object
+     else if (typeof(data) === 'object'){
+      exports.writeFileToService(req, res, next, dstPath, data, function(error) {
+        cbk(error);
       });
+     }
+     // data is a string or something else
+     else{
+      exports.writeFileToService(req, res, next, dstPath, data.toString(), function(error) {
+        cbk(error);
+      });
+     }
+     });
   }).on('error', function(e) {
-    console.error('Error while loading ' + srcPath + ': ' + e.message);
-    cbk({
-      message: 'Error while loading ' + srcPath + ': ' + e.message
-    });
+   console.error('Error while loading '+srcPath+': ' + e.message);
+   cbk({
+     message: 'Error while loading '+srcPath+': ' + e.message
+   });
   });
 };
 
@@ -379,15 +423,20 @@ exports.getFileFromService = function(req, res, next, srcPath, dstPath, cbk){
  * call unifile as an api
  */
 exports.writeFileToService = function(req, res, next, url, data, cbk){
-  req.body.data = data;
-  exports.unifileRoute(req, res, next, url, function(response, status, responseData, mime_type, responseFilePath) {
-    if (status.success){
-      cbk();
-    }
-    else{
-      cbk(status);
-    }
-  });
+  if(!data || data === '') {
+    cbk();
+  }
+  else {
+    req.body.data = data;
+    exports.unifileRoute(req, res, next, url, function(response, status, responseData, mime_type, responseFilePath) {
+      if (status.success){
+        cbk();
+      }
+      else{
+        cbk(status);
+      }
+    });
+  }
 };
 
 
