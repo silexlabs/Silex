@@ -109,8 +109,14 @@ silex.controller.ToolMenuController.prototype.openPixlr = function(pixlrMethod, 
     let url = this.model.element.getStyle(element, 'backgroundImage');
     // remove the css 'url(' keyword
     url = silex.utils.Url.removeUrlKeyword(/** @type {string} */ (url));
+    // get the absolute path
+    url = silex.utils.Url.getAbsolutePath(url, this.model.file.getUrl());
+    // make it understandable by unifile, i.e.
+    // from api/v1.0/dropbox/exec/get/_test_silex/silex-vbig.png
+    // to /api/v1.0/dropbox/exec/get/_test_silex/silex-vbig.png
+    url = '/' + url;
     // remove the domain and protocol
-    url = url.substr(silex.utils.Url.getRootUrl().length);
+    // url = url.substr(silex.utils.Url.getRootUrl().length);
     // remove cache control
     url = silex.utils.Dom.removeCacheControl(url);
     // get a public temporary link to the image

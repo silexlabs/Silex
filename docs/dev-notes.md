@@ -1,22 +1,36 @@
 ## Silex next steps, TOC
 
-push lexoyo/master to silexlabs/develop
-push build branch
+merge templates new
 
 a mettre sous forme d'issues et de propositions?
 
-  - fix more bugs
-    + property new layout bug in chrome
-      => apolo mode : absolute en plus de display none
-    + remove "new element" class when move up/down the dom
+  - bugs
+
+    + https => BC bug
+    + back to home page in website do not work when no #
+    + favicon broken
+    + after file browser, keybord => write htlml in the elements
+    + save opens home page
+    + publication path contains http://  instead of the path on dropbox
+    + open a published website => infinite loading
+    + Envoyer le html à la fenêtre de preview pour ne pas avoir à sauver, update au fur et à mesure de la maquette
+    + called on mouse move: this.view.contextMenu.redraw();
+    + html box exectutes scripts while editing
+    + iframe content not undoable
+    + title style is not defined?
+    + import tempaltes.silex.me
+
     + Html box: Do not execute scripts
+    + bg image multiple selection => disabled
     + deconnection de dropbox
     + ? rename silex-style => silex-user-styles
     + no !important in front-end.css?
     + see known bugs
-  - merge `build` branch, cf notes below
   - merge context menu
   - https branch
+    + If your application needs to know whether a connection came in over http or https, you can look at the value of X-Forwarded-Proto in the header of the request.
+    => Oui. La connexion sécurisée est établie entre le client et un proxy. Le trafic est ensuite transféré en 'clair' à l'instance, Apache, qui transmet à Node sur le port 8080, effectivement. Donc vous n'avez pas à gérer le HTTPS directement dans votre code, et pour savoir si le trafic était sécurisé, vous pouvez utiliser l'en tête X-Forwarded-Proto header. (cf réponse de themouette au post).
+
     + static.silex.me => dist/client/static/
     + class to mark the required scripts, do not rely on their URLs anymore
     + backward compat: update to // + server url + static
@@ -65,8 +79,18 @@ better code quaity
 old notes: containers may be smaller than their content
     + resize container should not move the elements inside it (currently, resize from the top, moves the elements)
 
+## publication
 
-## ways to publish a silex website
+optimize
+    Check box "optimize" in the advanced options of images and bg images
+    When publishing the website, rename the image with its params (size and cropping and quality) and optimize it for the website
+    https://www.npmjs.com/package/nodejs-fastload
+    Autre module avec options utiles pour crop
+    https://github.com/rsms/node-imagemagick
+
+split 1 page = 1 file
+
+## deployment
 
 * with github pages, with rsync http://octopress.org/docs/deploying/
 * toile libre
@@ -168,10 +192,6 @@ enable less in the css editor? http://stackoverflow.com/questions/9746756/parse-
 
 context-menu branch
 
-  * on/off states
-    * on/off styles in context-menu.less
-    * set on/off styles on the buttons
-  * credit icons: http://glyphicons.com/
   * add a tooltip in SIlex: "I have added a new context-menu recently, tell me what you think about it!"
   + add bug report & news letter? (peut etre en haut a droite avec le mobile / desktop ou bien une popup de temps en temps)
   + add preview

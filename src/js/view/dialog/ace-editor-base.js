@@ -91,7 +91,7 @@ silex.view.dialog.AceEditorBase.prototype.buildUi = function() {
   // for some reason, this.ace.getSession().on is undefined,
   //    closure renames it despite the fact that that it is declared in the externs.js file
   this.ace.getSession()['on']('change', goog.bind(function(event) {
-    if (this.iAmSettingValue === false) {
+    if (this.iAmSettingValue === false && this.isOpened) {
       setTimeout(goog.bind(function() {
         this.contentChanged();
       }, this), 100);

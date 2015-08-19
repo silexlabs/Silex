@@ -178,11 +178,17 @@ silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk, opt_showLoader) 
  * @param {function()} opt_cbk
  */
 silex.model.File.prototype.onContentLoaded = function(opt_cbk) {
+  // if we interrupt the loading, the body will be removed
+  if (!this.contentDocument_.body) {
+    console.warn('File:: body is empty, something went wrong, stop waiting for the content');
+    return;
+  }
+  // if the pageable plugin is not created yet, come back later
   if (!goog.dom.classlist.contains(this.contentDocument_.body, 'pageable-plugin-created')) {
     // let the time for the scripts to execute (e.g. pageable)
     setTimeout(goog.bind(function() {
       this.onContentLoaded(opt_cbk);
-    }, this), 1);
+    }, this), 100);
     return;
   }
 
@@ -264,7 +270,7 @@ silex.model.File.prototype.getHtml = function() {
   this.model.head.removeTempTags(/** @type {Document} */ (cleanFile).head);
   this.model.body.removeEditableClasses(/** @type {!Element} */ (cleanFile));
   silex.utils.Style.removeInternalClasses(/** @type {!Element} */ (cleanFile), false, true);
-  silex.utils.Dom.cleanupFirefoxInlines(this.contentDocument_);
+  silex.utils.DomCleaner.cleanupFirefoxInlines(this.contentDocument_);
   // reset the style set by stage on the body
   goog.style.setStyle(/** @type {Document} */ (cleanFile).body, 'minWidth', '');
   goog.style.setStyle(/** @type {Document} */ (cleanFile).body, 'minHeight', '');

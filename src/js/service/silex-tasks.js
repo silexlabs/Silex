@@ -89,6 +89,32 @@ silex.service.SilexTasks.prototype.publish = function(path, html, css, js, files
 
 
 /**
+ * get the state of the current publication
+ * @param {function({success: boolean})} cbk to receive the json response
+ * @param {function(string)=} opt_errCbk to receive the json response
+ */
+silex.service.SilexTasks.prototype.publishState = function(cbk, opt_errCbk) {
+  let url = '/tasks/publishState';
+  let qd = new goog.Uri.QueryData();
+  goog.net.XhrIo.send(url, function(e) {
+    // success of the request
+    let xhr = e.target;
+    if (xhr.isSuccess()) {
+      let json = xhr.getResponseJson();
+      cbk(json);
+    }
+    else {
+      let message = xhr.getLastError();
+      console.error('Error in while trying to connect with back end', xhr.getLastError(), xhr.getLastErrorCode(), xhr.isSuccess(), xhr.getStatus(), xhr.headers);
+      if (opt_errCbk) {
+        opt_errCbk(message);
+      }
+    }
+  }, 'POST', qd.toString());
+};
+
+
+/**
  * create a temp link on the server
  * @param {string} path
  * @param {function(string)} cbk
