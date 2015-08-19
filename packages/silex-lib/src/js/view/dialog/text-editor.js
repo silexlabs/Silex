@@ -152,9 +152,6 @@ silex.view.dialog.TextEditor.prototype.buildUi = function() {
       'Normal', goog.dom.TagName.P);
   goog.ui.editor.ToolbarFactory.addFormatOption(
       /** @type {!goog.ui.Select} */ (formatButton),
-      'Title', goog.dom.TagName.HEADER);
-  goog.ui.editor.ToolbarFactory.addFormatOption(
-      /** @type {!goog.ui.Select} */ (formatButton),
       'Heading 1', goog.dom.TagName.H1);
   goog.ui.editor.ToolbarFactory.addFormatOption(
       /** @type {!goog.ui.Select} */ (formatButton),
@@ -492,14 +489,11 @@ silex.view.dialog.TextEditor.prototype.formatChanged = function(e) {
     if (container.tagName.toLowerCase() !== 'body') {
       // cleanup, remove previous classes
       goog.dom.classlist.removeAll(
-          container, ['normal', 'title', 'heading1', 'heading2', 'heading3']);
+          container, ['normal', 'heading1', 'heading2', 'heading3']);
       // add the desired class
       switch (e.target.getContent()) {
         case 'Normal':
           goog.dom.classlist.add(container, 'normal');
-          break;
-        case 'Title':
-          goog.dom.classlist.add(container, 'title');
           break;
         case 'Heading 1':
           goog.dom.classlist.add(container, 'heading1');
