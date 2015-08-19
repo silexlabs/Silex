@@ -5,9 +5,6 @@ merge templates new
 a mettre sous forme d'issues et de propositions?
 
   - bugs
-    + pixlr edit bg image
-    + .title ne fonctionne pas
-
 
     + https => BC bug
     + back to home page in website do not work when no #
