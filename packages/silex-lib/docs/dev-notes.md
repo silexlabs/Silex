@@ -5,12 +5,16 @@ merge templates new
 a mettre sous forme d'issues et de propositions?
 
   - bugs
+    + page1 appears on undo/redo
+    + remove dev-notes.md from git
 
-    + https => BC bug
-    + back to home page in website do not work when no #
+    + add more info about which tooltip is clicked in the tracker
+    + change page breaks redo
     + favicon broken
     + after file browser, keybord => write htlml in the elements
-    + save opens home page
+    + back to home page in website do not work when no #
+
+    + https => BC bug
     + publication path contains http://  instead of the path on dropbox
     + open a published website => infinite loading
     + Envoyer le html à la fenêtre de preview pour ne pas avoir à sauver, update au fur et à mesure de la maquette
