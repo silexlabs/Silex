@@ -125,6 +125,19 @@ If you develop or debug Silex, these npm scripts can be used with npm (they are 
 * `$ npm run build:server` this only check that the server scripts are correct
 * `$ npm run watch:client` will watch the html, js and css source folders and rebuild when a file changes
 
+### environment variables
+
+* `PORT`
+* `SSL_PORT`
+* `SILEX_SSL_PRIVATE_KEY`
+* `SILEX_SSL_CERTIFICATE`
+
+### enable https / SSL
+
+When you start Silex, it looks for the environment variables `SILEX_SSL_PRIVATE_KEY` and `SILEX_SSL_CERTIFICATE`. If they are present, it enables SSL.
+
+`SILEX_SSL_PRIVATE_KEY` is expected to be the path to a `.key` file, and `SILEX_SSL_CERTIFICATE` the path to a  `.crt`.
+
 ##dependencies
 
 These are the upstream projects we use in Silex
