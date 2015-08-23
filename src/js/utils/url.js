@@ -58,6 +58,21 @@ silex.utils.Url.getRootUrl = function() {
 
 
 /**
+ * Get host of Silex app
+ * @return  {string} the base url
+ * example: https://duckduckgo.com returns duckduckgo.com
+ * example: https://duckduckgo.com/ returns duckduckgo.com
+ * example: https://duckduckgo.com/?q=javascript returns duckduckgo.com
+ * example: https://duckduckgo.com/abc/ returns duckduckgo.com
+ */
+silex.utils.Url.getHost = function() {
+  var root = silex.utils.Url.getRootUrl();
+  var host = root.substr(root.indexOf('//') + 2);
+  return host;
+};
+
+
+/**
  * Check if an URL is relative or absolute
  * @param {string} url
  * @return {boolean} true if the url is absolute

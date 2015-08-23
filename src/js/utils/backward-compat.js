@@ -31,9 +31,9 @@ silex.utils.BackwardCompat = function() {
 /**
  * the version of the website is stored in the generator tag as "Silex v-X-Y-Z"
  * used for backward compat
- * also the static files are taken from //static.silex.me/Y-Z
+ * also the static files are taken from //{{host}}/static/Y-Z
  */
-silex.utils.BackwardCompat.LATEST_VERSION = [2, 2, 4];
+silex.utils.BackwardCompat.LATEST_VERSION = [2, 2, 5];
 
 
 /**
@@ -72,26 +72,6 @@ silex.utils.BackwardCompat.process = function(doc, model, cbk) {
     silex.utils.Notification.alert('This website has been updated with the latest version of Silex.<br><br>Before you save it, please check that everything is fine. Saving it with another name could be a good idea too (menu file > save as).', function() {});
   }
 
-  // update static.silex.me
-  var elements = doc.querySelectorAll('[src]');
-  goog.array.forEach(elements, function(element) {
-    var src = element.getAttribute('src');
-    src = silex.utils.BackwardCompat.updateStaticUrl(version, src);
-    element.setAttribute('src', src);
-  });
-  elements = doc.querySelectorAll('[href]');
-  goog.array.forEach(elements, function(element) {
-    var href = element.getAttribute('href');
-    href = silex.utils.BackwardCompat.updateStaticUrl(version, href);
-    element.setAttribute('href', href);
-  });
-  elements = doc.querySelectorAll('[data-silex-href]');
-  goog.array.forEach(elements, function(element) {
-    var href = element.getAttribute(silex.model.Element.LINK_ATTR);
-    href = silex.utils.BackwardCompat.updateStaticUrl(version, href);
-    element.setAttribute(silex.model.Element.LINK_ATTR, href);
-  });
-
   // convert to the latest version
   // silex.utils.BackwardCompat.to2_2_0(version, doc, model, function() {
   silex.utils.BackwardCompat.to2_2_2(version, doc, model, function() {
@@ -103,38 +83,16 @@ silex.utils.BackwardCompat.process = function(doc, model, cbk) {
   });
   });
   // });
+
+  // update //{{host}}/2.x/... to new version
+  var elements = doc.querySelectorAll('[data-silex-static]');
+  goog.array.forEach(elements, function(element) {
+    goog.dom.removeNode(element);
+  });
+  silex.utils.Dom.addMandatoryTags(doc);
+
   // store the latest version
   metaNode.setAttribute('content', 'Silex v' + silex.utils.BackwardCompat.LATEST_VERSION.join('.'));
-};
-
-
-/**
- * build the URL for static files, with the version in the URL
- * @param {Array.<string>} version
- * @return {string}
- */
-silex.utils.BackwardCompat.getStaticUrl = function(version) {
-  var folder = '2.' + silex.utils.BackwardCompat.LATEST_VERSION[2];
-  var url = '//static.silex.me/' + folder;
-  return url;
-};
-
-
-/**
- * update URLs according to the version of Silex static files
- * @param {Array.<string>} version
- * @param {string} url
- * @return {string}
- */
-silex.utils.BackwardCompat.updateStaticUrl = function(version, url) {
-  var fileName = url.substr(url.lastIndexOf('/') + 1);
-  var theGoodTag = silex.utils.Dom.MANDATORY_TAGS.filter((tagObj) => {
-    return tagObj.fileName === fileName;
-  });
-  if(theGoodTag.length > 0) {
-    return theGoodTag[0].url;
-  }
-  return url;
 };
 
 
@@ -161,6 +119,49 @@ silex.utils.BackwardCompat.hasToUpdate = function(initialVersion, targetVersion)
   return initialVersion[0] < targetVersion[0] ||
     initialVersion[1] < targetVersion[1] ||
     initialVersion[2] < targetVersion[2];
+};
+
+
+/**
+ * @param {Array.<number>} version
+ * @param {Document} doc
+ * @param  {silex.types.Model} model
+ * @param {function()} cbk
+ */
+silex.utils.BackwardCompat.to2_2_5 = function(version, doc, model, cbk) {
+
+  if(silex.utils.BackwardCompat.hasToUpdate(version, [2, 2, 5])) {
+    console.warn('Update site version from', version, 'to ', silex.utils.BackwardCompat.LATEST_VERSION);
+    var pagesContainer = doc.querySelector(silex.model.Page.PAGES_CONTAINER_CLASS_NAME);
+    if(!pagesContainer) {
+      pagesContainer = doc.createElement('div');
+      pagesContainer.classList.add(silex.model.Page.PAGES_CONTAINER_CLASS_NAME);
+      doc.body.appendChild(pagesContainer);
+      var pages = doc.querySelectorAll(silex.model.Page.PAGE_CLASS_NAME);
+      goog.array.forEach(pages, (page) => pagesContainer.appendChild(page));
+    }
+
+    var host = silex.utils.Url.getHost();
+    handle('src');
+    handle('href');
+    handle('[data-silex-href]');
+    // add the [data-silex-static] attributes
+    function handle(attrName) {
+      var elements = doc.querySelectorAll('[' + attrName + ']');
+      goog.array.forEach(function (element) {
+        var attr = element.getAttribute(attrName);
+        if(attr.indexOf('http://static.silex.') > -1) {
+          attr = attr.replace('http://static.silex.me', '//' + host);
+          attr = attr.replace('http://static.silex.io', '//' + host);
+          element.setAttribute(attrName, attr);
+          element.setAttribute('data-silex-static', '');
+        }
+      });
+    }
+  }
+  else {
+    cbk();
+  }
 };
 
 
