@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ls -al dist/client/js/
-zip -r silex.zip dist/ node_modules/
+zip -r silex.zip dist/ node_modules/ static/
 echo 'put silex.zip' | sftp -o "StrictHostKeyChecking no" "$1":vhosts/default
 echo "wget http://preprod.silex.me/$SILEX_RELOAD_ROUTE"
 wget "http://preprod.silex.me/$SILEX_RELOAD_ROUTE"
