@@ -77,12 +77,12 @@ silex.utils.BackwardCompat.process = function(doc, model, cbk) {
   silex.utils.BackwardCompat.to2_2_2(version, doc, model, function() {
   silex.utils.BackwardCompat.to2_2_3(version, doc, model, function() {
   silex.utils.BackwardCompat.to2_2_4(version, doc, model, function() {
-    // next update here (to2_2_5)
+  silex.utils.BackwardCompat.to2_2_5(version, doc, model, function() {
     cbk();
   });
   });
   });
-  // });
+  });
 
   // update //{{host}}/2.x/... to latest version
   var elements = doc.querySelectorAll('[data-silex-static]');
@@ -164,11 +164,11 @@ silex.utils.BackwardCompat.to2_2_5 = function(version, doc, model, cbk) {
     var host = silex.utils.Url.getHost();
     handle('src');
     handle('href');
-    handle('[data-silex-href]');
+    handle('data-silex-href');
     // add the [data-silex-static] attributes
     function handle(attrName) {
       var elements = doc.querySelectorAll('[' + attrName + ']');
-      goog.array.forEach(function (element) {
+      goog.array.forEach(elements, function (element) {
         var attr = element.getAttribute(attrName);
         if(attr.indexOf('http://static.silex.') > -1) {
           attr = attr.replace('http://static.silex.me', '//' + host);
@@ -179,9 +179,7 @@ silex.utils.BackwardCompat.to2_2_5 = function(version, doc, model, cbk) {
       });
     }
   }
-  else {
-    cbk();
-  }
+  cbk();
 };
 
 
