@@ -509,8 +509,6 @@ silex.controller.ControllerBase.prototype.doSave = function(url, opt_cbk, opt_er
 silex.controller.ControllerBase.prototype.fileOperationSuccess = function(opt_message, opt_updateTools) {
   // update tools
   if (opt_updateTools) {
-    // find default first page
-    var pages = this.model.page.getPages();
     // update fonts
     this.refreshFonts();
     // update dialogs
