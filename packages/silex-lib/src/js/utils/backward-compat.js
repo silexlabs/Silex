@@ -84,15 +84,35 @@ silex.utils.BackwardCompat.process = function(doc, model, cbk) {
   });
   // });
 
-  // update //{{host}}/2.x/... to new version
+  // update //{{host}}/2.x/... to latest version
   var elements = doc.querySelectorAll('[data-silex-static]');
   goog.array.forEach(elements, function(element) {
-    goog.dom.removeNode(element);
+    let propName = element.src ? 'src' : 'href';
+    let fileName = element[propName].substr(element[propName].lastIndexOf('/') + 1);
+    element[propName] = silex.utils.BackwardCompat.getStaticResourceUrl(fileName);
   });
-  silex.utils.Dom.addMandatoryTags(doc);
 
   // store the latest version
   metaNode.setAttribute('content', 'Silex v' + silex.utils.BackwardCompat.LATEST_VERSION.join('.'));
+};
+
+
+/**
+ * get the complete URL for the static file
+ * this will result in a URL on the current server, in the `/static/` folder
+ * with the current version
+ * @param {string} fileName
+ * @return {string}
+ */
+silex.utils.BackwardCompat.getStaticResourceUrl = function(fileName) {
+  return '//' +
+    silex.utils.Url.getHost() +
+    '/static/' +
+    silex.utils.BackwardCompat.LATEST_VERSION[1] +
+    '.' +
+    silex.utils.BackwardCompat.LATEST_VERSION[2] +
+    '/' +
+    fileName;
 };
 
 

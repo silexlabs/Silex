@@ -327,7 +327,7 @@ silex.view.dialog.TextEditor.prototype.openEditor = function() {
 
   tag = iframeDoc.createElement('link');
   tag.rel = 'stylesheet';
-  tag.href = silex.utils.BackwardCompat.getStaticUrl() + '/front-end.css';
+  tag.href = silex.utils.BackwardCompat.getStaticResourceUrl('front-end.css');
   goog.dom.appendChild(head, tag);
 
   // prevent paged content to be hidden (pageable jquery plugin)

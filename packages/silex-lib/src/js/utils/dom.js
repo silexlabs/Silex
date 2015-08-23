@@ -42,32 +42,26 @@ silex.utils.Dom.CACHE_CONTROL_PARAM_NAME = 'silex-cache-control';
 silex.utils.Dom.MANDATORY_TAGS = [
   {
     'type': 'script',
-    'url': '//' + silex.utils.Url.getHost() + '/static/' + silex.utils.BackwardCompat.LATEST_VERSION[1] + '.' + silex.utils.BackwardCompat.LATEST_VERSION[2] + '/jquery.js',
     'fileName': 'jquery.js'
   },
   {
     'type': 'script',
-    'url': '//' + silex.utils.Url.getHost() + '/static/' + silex.utils.BackwardCompat.LATEST_VERSION[1] + '.' + silex.utils.BackwardCompat.LATEST_VERSION[2] + '/jquery-ui.js',
     'fileName': 'jquery-ui.js'
   },
   {
     'type': 'script',
-    'url': '//' + silex.utils.Url.getHost() + '/static/' + silex.utils.BackwardCompat.LATEST_VERSION[1] + '.' + silex.utils.BackwardCompat.LATEST_VERSION[2] + '/pageable.js',
     'fileName': 'pageable.js'
   },
   {
     'type': 'script',
-    'url': '//' + silex.utils.Url.getHost() + '/static/' + silex.utils.BackwardCompat.LATEST_VERSION[1] + '.' + silex.utils.BackwardCompat.LATEST_VERSION[2] + '/front-end.js',
     'fileName': 'front-end.js'
   },
   {
     'type': 'link',
-    'url': '//' + silex.utils.Url.getHost() + '/static/' + silex.utils.BackwardCompat.LATEST_VERSION[1] + '.' + silex.utils.BackwardCompat.LATEST_VERSION[2] + '/normalize.css',
     'fileName': 'normalize.css'
   },
   {
     'type': 'link',
-    'url': '//' + silex.utils.Url.getHost() + '/static/' + silex.utils.BackwardCompat.LATEST_VERSION[1] + '.' + silex.utils.BackwardCompat.LATEST_VERSION[2] + '/front-end.css',
     'fileName': 'front-end.css'
   }
 ].reverse();
@@ -228,11 +222,11 @@ silex.utils.Dom.addMandatoryTags = function(doc) {
       element = doc.createElement(tagObj['type']);
       if(tagObj['type'] === 'script') {
         element.setAttribute('type', 'text/javascript');
-        element.setAttribute('src', tagObj['url']);
+        element.setAttribute('src', silex.utils.BackwardCompat.getStaticResourceUrl(tagObj['fileName']));
       }
       else {
         element.setAttribute('rel', 'stylesheet');
-        element.setAttribute('href', tagObj['url']);
+        element.setAttribute('href', silex.utils.BackwardCompat.getStaticResourceUrl(tagObj['fileName']));
       }
       doc.head.insertBefore(element, doc.head.firstChild);
     }
