@@ -511,8 +511,6 @@ silex.controller.ControllerBase.prototype.fileOperationSuccess = function(opt_me
   if (opt_updateTools) {
     // find default first page
     var pages = this.model.page.getPages();
-    // open default page
-    this.model.page.setCurrentPage(pages[0]);
     // update fonts
     this.refreshFonts();
     // update dialogs
