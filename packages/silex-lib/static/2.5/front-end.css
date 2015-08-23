@@ -1,0 +1,56 @@
+/**
+ * This file holds the basic CSS styles of Silex websites
+ */
+
+/* the body covers the whole available space */
+/* the body is resized to its content size when needed in front-end.js */
+body{
+  min-width: 99%;
+  min-height: 99%;
+  position: absolute;
+  padding: 5px;
+}
+/* pages */
+.page-element{
+  display: none;
+}
+.paged-element{
+  display: none;
+}
+/* default style for silex elements */
+.editable-style{
+  position: absolute;
+}
+.silex-element-content{
+  overflow: hidden;
+  border-radius: inherit;
+}
+/* background */
+.background{
+  position: relative !important;
+  left: 0 !important;
+  top: 0 !important; /* !important is useful while editing */
+  margin-left: auto;
+  margin-right: auto;
+  z-index: 1;
+}
+/* links default formatting */
+.editable-style[data-silex-href]{
+  cursor: pointer;
+}
+.text-element a, a.text-element{
+  color: inherit;
+  text-decoration: inherit;
+}
+.text-element a:hover, a.text-element:hover{
+  color: inherit;
+  text-decoration: underline;
+}
+/* Remove dots surrounding links in Firefox
+    because of normalize.css */
+a:focus{ outline: none;}
+
+.silex-element-content {
+  width: 100%;
+  height: 100%;
+}

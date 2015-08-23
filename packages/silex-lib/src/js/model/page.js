@@ -160,7 +160,10 @@ silex.model.Page.prototype.getCurrentPage = function() {
     throw (new Error('JQuery not loaded in the opened website'));
   }
   var bodyElement = this.model.body.getBodyElement();
-  var pageName = this.model.file.getContentWindow().jQuery(bodyElement).pageable('option', 'currentPage');
+  var pageName = null;
+  if(this.model.file.getContentWindow().jQuery(bodyElement).pageable) {
+    pageName = this.model.file.getContentWindow().jQuery(bodyElement).pageable('option', 'currentPage');
+  }
   return pageName;
 };
 
@@ -184,7 +187,9 @@ silex.model.Page.prototype.refreshView = function() {
  */
 silex.model.Page.prototype.setCurrentPage = function(pageName) {
   var bodyElement = this.model.body.getBodyElement();
-  this.model.file.getContentWindow().jQuery(bodyElement).pageable({'currentPage': pageName});
+  if(this.model.file.getContentWindow().jQuery(bodyElement).pageable) {
+    this.model.file.getContentWindow().jQuery(bodyElement).pageable({'currentPage': pageName});
+  }
   this.refreshView();
 };
 

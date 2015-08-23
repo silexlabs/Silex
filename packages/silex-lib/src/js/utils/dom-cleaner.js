@@ -36,6 +36,7 @@ silex.utils.DomCleaner = function() {
  */
 silex.utils.DomCleaner.DOWNLOAD_LOCALLY_FROM = [
   'http://static.silex.me',
+  '//editor.silex.me',
   silex.utils.Url.getRootUrl()
 ];
 
@@ -322,7 +323,7 @@ silex.utils.DomCleaner.isDownloadable = function(url) {
   // download files from a known domain (sttic.silex.me)
   var found = false;
   goog.array.forEach(silex.utils.DomCleaner.DOWNLOAD_LOCALLY_FROM, function(baseUrl) {
-    if (url.indexOf(baseUrl) === 0) {
+    if (url.indexOf(baseUrl) >= 0) {
       // url starts by the base url, so it is downloadable
       found = true;
     }
