@@ -161,6 +161,12 @@ silex.utils.BackwardCompat.to2_2_5 = function(version, doc, model, cbk) {
       goog.array.forEach(pages, (page) => pagesContainer.appendChild(page));
     }
 
+    // remove jquery.ui.touch-punch.min.js
+    let element = doc.querySelector('[src$="jquery.ui.touch-punch.min.js"]');
+    if(element) {
+      goog.dom.removeNode(element);
+    }
+
     var host = silex.utils.Url.getHost();
     handle('src');
     handle('href');
