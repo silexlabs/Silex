@@ -51,6 +51,7 @@ silex.view.TipOfTheDay.NUM_VISITS_LOCAL_STORAGE_NAME = 'silex-caping';
  */
 silex.view.TipOfTheDay.prototype.init = function(html)
 {
+  let itemTrackAction = '';
   // hide
   this.element.classList.add('hidden-dialog');
   // wait for a while
@@ -69,10 +70,9 @@ silex.view.TipOfTheDay.prototype.init = function(html)
       // the more visits the less chance we have to show the tip
       let rand = Math.random() * visits;
       if(rand > 3) {
-        silex.service.Tracker.getInstance().trackAction('app-events', 'tip-of-the-day', 'skip', 0);
+        silex.service.Tracker.getInstance().trackAction('tip-of-the-day', 'noshow', itemTrackAction, 0);
         return;
       }
-      silex.service.Tracker.getInstance().trackAction('app-events', 'tip-of-the-day', 'show', 0);
     }
     // load data
     goog.net.XhrIo.send('https://api.github.com/repos/silexlabs/Silex/issues?labels=tip-of-the-day', (e) => {
@@ -82,16 +82,19 @@ silex.view.TipOfTheDay.prototype.init = function(html)
       // loop on the items backward
       let idx = items.length - (visits % items.length) -1;
       let item = items[idx];
+      // store for actions tracking (QA)
+      itemTrackAction = item['title'];
+      silex.service.Tracker.getInstance().trackAction('tip-of-the-day', 'show', itemTrackAction, 0);
       // display the content
       let el = document.createElement('div');
-      el.innerHTML = '<a target="_blank" href="' + item['html_url'] + '"><h1>' + item['title'] + '</h1><p>' + this.strip(item['body']) + '</p></a><a class="close" href="#">Close</a>';
+      el.innerHTML = '<a target="_blank" title="' + item['title'] + '" href="' + item['html_url'] + '"><h1>' + item['title'] + '</h1><p>' + this.strip(item['body']) + '</p></a><a class="close" href="#">Close</a>';
       this.element.appendChild(el);
       this.element.classList.remove('loading');
       this.element.classList.remove('hidden-dialog');
       // add a timeout
       setTimeout(() => {
         this.element.classList.add('hidden-dialog');
-        silex.service.Tracker.getInstance().trackAction('app-events', 'tip-of-the-day', 'timeout', -1);
+        silex.service.Tracker.getInstance().trackAction('tip-of-the-day', 'timeout', itemTrackAction, -1);
       }, 30000);
     });
   }, 4000);
@@ -100,10 +103,10 @@ silex.view.TipOfTheDay.prototype.init = function(html)
     // hide
     this.element.classList.add('hidden-dialog');
     if(e.target.classList.contains('close')) {
-      silex.service.Tracker.getInstance().trackAction('app-events', 'tip-of-the-day', 'close', 0);
+      silex.service.Tracker.getInstance().trackAction('tip-of-the-day', 'close', itemTrackAction, 0);
     }
     else{
-      silex.service.Tracker.getInstance().trackAction('app-events', 'tip-of-the-day', 'open', 1);
+      silex.service.Tracker.getInstance().trackAction('tip-of-the-day', 'open', itemTrackAction, 1);
     }
   }, false, this);
 };
