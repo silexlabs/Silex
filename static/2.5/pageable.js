@@ -23,7 +23,8 @@ $.widget('silexlabs.pageable', {
     }
   },
   _create: function() {
-
+    // store the initial page
+    this.initialPage = this.options.currentPage;
     // mark the body
     $(document.body).addClass('pageable-plugin-created');
     // listen for page change
@@ -60,8 +61,12 @@ $.widget('silexlabs.pageable', {
   },
   updatePage: function (){
     if(this.options.useDeeplink){
-      if (this.options.window.location.hash && this.options.window.location.hash.indexOf('#!') >= 0)
+      if (this.options.window.location.hash && this.options.window.location.hash.indexOf('#!') >= 0) {
         this.options.currentPage = this.options.window.location.hash;
+      }
+      else {
+        this.options.currentPage = this.initialPage;
+      }
     }
     if (this.options.currentPage && this.options.currentPage.indexOf('#!') >= 0){
       this.options.currentPage = this.options.currentPage.substr(this.options.currentPage.indexOf('#!') + 2);
