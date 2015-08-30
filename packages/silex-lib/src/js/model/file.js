@@ -168,6 +168,8 @@ silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk, opt_showLoader) 
   rawHtml = this.model.head.extractUserHeadTag(rawHtml);
   // prepare HTML
   rawHtml = this.model.element.prepareHtmlForEdit(rawHtml);
+  // make everything protocol agnostic to avoid problems with silex being https
+  rawHtml = rawHtml.replace('http://', '//', 'g');
   // write the content
   goog.dom.iframe.writeContent(this.iFrameElement_, rawHtml);
 };
