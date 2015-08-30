@@ -16,12 +16,12 @@ deployment:
     branch: develop
     commands:
       - chmod u+x ./build/deploy.sh
-      - ./build/deploy.sh $HOST_PREPROD
+      - ./build/deploy.sh $HOST_PREPROD $URL_PREPROD
   production:
     branch: master
     commands:
       - chmod u+x ./build/deploy.sh
-      - ./build/deploy.sh $HOST_PROD
+      - ./build/deploy.sh $HOST_PROD $URL_PROD
 test:
   override:
       - echo "tests prevented from circle.yml"
