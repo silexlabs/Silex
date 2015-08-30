@@ -18,6 +18,9 @@ var cookieParser = require('cookie-parser');
 var session = require('express-session');
 var multipart = require('connect-multiparty');
 var FSStore = require('connect-fs2')(session);
+var http = require('http');
+var https = require('https');
+var fs = require('fs');
 
 // init express
 var app = express();
@@ -38,7 +41,6 @@ app.use('/', bodyParser.json({limit: '10mb'}));
 app.use('/', cookieParser());
 
 // get silex config
-var fs = require('fs');
 var silexConfig = unifile.defaultConfig;
 if (fs.existsSync(pathModule.resolve(__dirname, 'config.js'))) {
   var obj = require(pathModule.resolve(__dirname, 'config.js'));
@@ -110,21 +112,64 @@ silexConfig.staticFolders.push(
   // the scripts which have to be available in all versions (v2.1, v2.2, v2.3, ...)
   {
     name: '/static',
-    path: pathModule.resolve(__dirname, '../../static.silex.me')
+    path: pathModule.resolve(__dirname, '../../static')
   }
 );
 
 // ********************************
 // unifile server
 // ********************************
+// SSL certificate
+try {
+  var privateKey = fs.readFileSync(process.env.SILEX_SSL_PRIVATE_KEY || __dirname + '/../../privatekey.pem').toString();
+  var certificate = fs.readFileSync(process.env.SILEX_SSL_CERTIFICATE || __dirname + '/../../certificate.pem').toString();
+
+  var options = {
+    key: privatekey,
+    cert: certificate
+  };
+}
+catch(e) {
+  console.warn('SSL certificate failed.')
+}
+
 // use unifile as a middleware
 app.use('/api', unifile.middleware(express, app, silexConfig));
 
-// server 'loop'
+// ********************************
+// unifile server
+// ********************************
 var port = process.env.PORT || 6805; // 6805 is the date of sexual revolution started in paris france 8-)
-app.listen(port, function() {
-  console.log('Listening on ' + port);
+http.createServer(app).listen(port, function() {
+  console.log('listening on port ', port);
 });
+
+// SSL certificate
+if(process.env.SILEX_SSL_PRIVATE_KEY && process.env.SILEX_SSL_CERTIFICATE) {
+  try {
+    var privateKey = fs.readFileSync(process.env.SILEX_SSL_PRIVATE_KEY).toString();
+    var certificate = fs.readFileSync(process.env.SILEX_SSL_CERTIFICATE).toString();
+
+    var options = {
+      key: privateKey,
+      cert: certificate,
+      requestCert: true,
+      rejectUnauthorized: false
+    };
+
+    var sslPort = process.env.SSL_PORT || 443;
+    https.createServer(options, app).listen(sslPort, function() {
+      console.log('listening on port ', sslPort);
+    });
+    app.use(function(req, res, next){
+      console.log('app.use');
+      next();
+    });
+  }
+  catch(e) {
+    console.warn('SSL certificate failed.', e)
+  }
+}
 
 // ********************************
 // silex tasks
