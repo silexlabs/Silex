@@ -35,7 +35,6 @@ silex.utils.DomCleaner = function() {
  * or scripts from an embed code
  */
 silex.utils.DomCleaner.DOWNLOAD_LOCALLY_FROM = [
-  'http://static.silex.me',
   '//editor.silex.me',
   silex.utils.Url.getRootUrl()
 ];

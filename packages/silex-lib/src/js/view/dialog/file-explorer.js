@@ -104,7 +104,7 @@ silex.view.dialog.FileExplorer.prototype.openDialog =
         // give back focus to Silex
         // this.view.stage.resetFocus();
         // no https, because it creates security issues
-        blob.url = blob.url.replace('https://', 'http://');
+        blob.url = blob.url.replace('https://', '//');
         successCbk(blob.url);
       }, this),
       errCbk);
@@ -142,7 +142,7 @@ silex.view.dialog.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimety
         // give back focus to Silex
         // this.view.stage.resetFocus();
         // no https, because it creates security issues
-        blob.url = blob.url.replace('https://', 'http://');
+        blob.url = blob.url.replace('https://', '//');
         successCbk(blob);
       }, this),
       errCbk);

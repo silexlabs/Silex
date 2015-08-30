@@ -69,7 +69,7 @@ goog.inherits(silex.view.dialog.TextEditor, silex.view.dialog.DialogBase);
  * @type {string}
  */
 silex.view.dialog.TextEditor.LOREM_IPSUM_SERVICE_URL =
-    'http://baconipsum.com/api/?type=meat-and-filler';
+    '//baconipsum.com/api/?type=meat-and-filler';
 
 
 /**
