@@ -119,6 +119,18 @@ silexConfig.staticFolders.push(
 // ********************************
 // unifile server
 // ********************************
+// open pages if defined
+if(silexConfig.openPages) {
+  silexConfig.openPages.ROOT = pathModule.resolve(__dirname, '../../../open-pages/');
+  silexConfig.openPages.SQLLITE_FILE = pathModule.resolve(__dirname, '../../../open-pages/websites.sql');
+  // fixeme unifile should serve this, with the user's chosen name
+  silexConfig.staticFolders.push({
+    name: '/open-pages',
+    path: silexConfig.openPages.ROOT
+  });
+  fs.mkdir(silexConfig.openPages.ROOT, null, function (error) {
+  });
+}
 // SSL certificate
 try {
   var privateKey = fs.readFileSync(process.env.SILEX_SSL_PRIVATE_KEY || __dirname + '/../../privatekey.pem').toString();
@@ -136,9 +148,6 @@ catch(e) {
 // use unifile as a middleware
 app.use('/api', unifile.middleware(express, app, silexConfig));
 
-// ********************************
-// unifile server
-// ********************************
 var port = process.env.PORT || 6805; // 6805 is the date of sexual revolution started in paris france 8-)
 http.createServer(app).listen(port, function() {
   console.log('listening on port ', port);
