@@ -140,6 +140,9 @@ silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk, opt_showLoader) 
   this.model.body.setEditable(this.contentDocument_.body, false);
   this.view.stage.removeEvents(this.contentDocument_.body);
   // when the iframe content has changed
+  goog.events.listenOnce(this.iFrameElement_, 'error', function(e) {
+    console.error('iframe load error', e);
+  });
   goog.events.listenOnce(this.iFrameElement_, 'load', function() {
     // remove the "silex-runtime" css class from the body while editing
     goog.dom.classlist.remove(this.contentDocument_.body, 'silex-runtime');

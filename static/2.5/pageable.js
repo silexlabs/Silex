@@ -18,6 +18,7 @@ $.widget('silexlabs.pageable', {
         break;
       case 'currentPage':
       case 'pageClass':
+        this.currentPageChanged = true;
         this.updatePage();
         break;
     }
@@ -64,10 +65,11 @@ $.widget('silexlabs.pageable', {
       if (this.options.window.location.hash && this.options.window.location.hash.indexOf('#!') >= 0) {
         this.options.currentPage = this.options.window.location.hash;
       }
-      else {
+      else if(!this.currentPageChanged) {
         this.options.currentPage = this.initialPage;
       }
     }
+    this.currentPageChanged = false;
     if (this.options.currentPage && this.options.currentPage.indexOf('#!') >= 0){
       this.options.currentPage = this.options.currentPage.substr(this.options.currentPage.indexOf('#!') + 2);
     }

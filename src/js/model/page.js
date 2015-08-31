@@ -186,11 +186,16 @@ silex.model.Page.prototype.refreshView = function() {
  * @param {string} pageName   name of the page to open
  */
 silex.model.Page.prototype.setCurrentPage = function(pageName) {
+  console.log('#1', pageName);
   var bodyElement = this.model.body.getBodyElement();
+  console.log('#2', bodyElement);
   if(this.model.file.getContentWindow().jQuery(bodyElement).pageable) {
+    console.log('#3', this.model.file.getContentWindow().jQuery(bodyElement).pageable);
     this.model.file.getContentWindow().jQuery(bodyElement).pageable({'currentPage': pageName});
   }
+  console.log('#4');
   this.refreshView();
+  console.log('#5');
 };
 
 
