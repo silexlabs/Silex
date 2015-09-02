@@ -177,8 +177,8 @@ silex.utils.BackwardCompat.to2_2_5 = function(version, doc, model, cbk) {
       goog.array.forEach(elements, function (element) {
         var attr = element.getAttribute(attrName);
         if(attr.indexOf('http://static.silex.') > -1) {
-          attr = attr.replace('http://static.silex.me', '//' + host);
-          attr = attr.replace('http://static.silex.io', '//' + host);
+          attr = attr.replace('http://static.silex.me', '//' + host + '/static');
+          attr = attr.replace('http://static.silex.io', '//' + host + '/static');
           element.setAttribute(attrName, attr);
           element.setAttribute('data-silex-static', '');
         }
