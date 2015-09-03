@@ -41,7 +41,7 @@ silex.utils.BackwardCompat.LATEST_VERSION = [2, 2, 5];
  * Backwardcompatibility process takes place after opening a file
  * @param {Document} doc
  * @param  {silex.types.Model} model
- * @param {function()} cbk
+ * @param {function(updated: boolean)} cbk
  */
 silex.utils.BackwardCompat.process = function(doc, model, cbk) {
   // if no generator tag, create one
@@ -59,11 +59,13 @@ silex.utils.BackwardCompat.process = function(doc, model, cbk) {
       return parseInt(str, 10) || 0;
     });
 
+  var hasToUpdate = silex.utils.BackwardCompat.hasToUpdate(version, silex.utils.BackwardCompat.LATEST_VERSION);
+
   // warn the user
   if (silex.utils.BackwardCompat.amIObsolete(version, silex.utils.BackwardCompat.LATEST_VERSION)) {
     silex.utils.Notification.alert('This website has been saved with a newer version of Silex. Continue at your own risks.', function() {});
   }
-  else if (silex.utils.BackwardCompat.hasToUpdate(version, silex.utils.BackwardCompat.LATEST_VERSION)) {
+  else if (hasToUpdate) {
     silex.utils.Notification.alert('This website has been updated with the latest version of Silex.<br><br>Before you save it, please check that everything is fine. Saving it with another name could be a good idea too (menu file > save as).', function() {});
   }
 
@@ -73,22 +75,21 @@ silex.utils.BackwardCompat.process = function(doc, model, cbk) {
   silex.utils.BackwardCompat.to2_2_3(version, doc, model, function() {
   silex.utils.BackwardCompat.to2_2_4(version, doc, model, function() {
   silex.utils.BackwardCompat.to2_2_5(version, doc, model, function() {
-    cbk();
+    // update //{{host}}/2.x/... to latest version
+    var elements = doc.querySelectorAll('[data-silex-static]');
+    goog.array.forEach(elements, function(element) {
+      let propName = element.src ? 'src' : 'href';
+      let fileName = element[propName].substr(element[propName].lastIndexOf('/') + 1);
+      element[propName] = silex.utils.BackwardCompat.getStaticResourceUrl(fileName);
+    });
+    // store the latest version
+    metaNode.setAttribute('content', 'Silex v' + silex.utils.BackwardCompat.LATEST_VERSION.join('.'));
+    // continue
+    cbk(hasToUpdate);
   });
   });
   });
   });
-
-  // update //{{host}}/2.x/... to latest version
-  var elements = doc.querySelectorAll('[data-silex-static]');
-  goog.array.forEach(elements, function(element) {
-    let propName = element.src ? 'src' : 'href';
-    let fileName = element[propName].substr(element[propName].lastIndexOf('/') + 1);
-    element[propName] = silex.utils.BackwardCompat.getStaticResourceUrl(fileName);
-  });
-
-  // store the latest version
-  metaNode.setAttribute('content', 'Silex v' + silex.utils.BackwardCompat.LATEST_VERSION.join('.'));
 };
 
 
