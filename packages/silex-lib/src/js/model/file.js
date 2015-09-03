@@ -139,27 +139,6 @@ silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk, opt_showLoader) 
   // cleanup
   this.model.body.setEditable(this.contentDocument_.body, false);
   this.view.stage.removeEvents(this.contentDocument_.body);
-  // when the iframe content has changed
-  goog.events.listenOnce(this.iFrameElement_, 'error', function(e) {
-    console.error('iframe load error', e);
-  });
-  goog.events.listenOnce(this.iFrameElement_, 'load', function() {
-    // remove the "silex-runtime" css class from the body while editing
-    goog.dom.classlist.remove(this.contentDocument_.body, 'silex-runtime');
-    // include edition tags and call onContentLoaded
-    // the first time, it takes time to load the scripts
-    // the second time, no load event, and jquery is already loaded
-
-    // first time in chrome, and always in firefox
-    // load scripts for edition in the iframe
-    this.includeEditionTags(goog.bind(function() {
-      this.onContentLoaded(opt_cbk);
-    }, this), goog.bind(function() {
-      // error loading editable script
-      console.error('error loading editable script');
-      throw new Error('error loading editable script');
-    }, this));
-  }, false, this);
   // add base tag from the beginning
   // should not be needed since we change all  the URLs to absolute
   // but just in case abs/rel conversion bugs
@@ -173,9 +152,59 @@ silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk, opt_showLoader) 
   rawHtml = this.model.element.prepareHtmlForEdit(rawHtml);
   // make everything protocol agnostic to avoid problems with silex being https
   rawHtml = rawHtml.replace('http://', '//', 'g');
+  // detect non-silex websites
+  if(rawHtml.indexOf('silex-runtime') < 0) {
+    console.error('This is not a website editable in Silex.');
+    silex.utils.Notification.alert('I can not be open this website. I can only open website made with Silex. <a target="_blank" href="https://github.com/silexlabs/Silex/issues/282">More info here</a>.', function() {});
+    return;
+  }
+  else if(rawHtml.indexOf('silex-published') >= 0) {
+    console.error('This is a published website.');
+    silex.utils.Notification.alert('I can not be open this website. It is a published version of a Silex website. <a target="_blank" href="https://github.com/silexlabs/Silex/issues/282">More info here</a>.', function() {});
+    return;
+  }
   // write the content
   goog.dom.iframe.writeContent(this.iFrameElement_, rawHtml);
+  this.contentChanged(opt_cbk);
 };
+
+
+
+/**
+ * the content of the iframe changed
+ * @param {function()} opt_cbk
+ */
+silex.model.File.prototype.contentChanged = function(opt_cbk) {
+  // wait for the webste to be loaded
+  // can not rely on the load event of the iframe because there may be missing assets
+  this.contentDocument_ = goog.dom.getFrameContentDocument(this.iFrameElement_);
+  this.contentWindow_ = goog.dom.getFrameContentWindow(this.iFrameElement_);
+  if (this.contentDocument_.body === null ||
+    this.contentWindow_ === null ||
+    this.contentWindow_['$'] === null ) {
+    setTimeout(goog.bind(function() {
+      this.contentChanged(opt_cbk);
+    }, this), 0);
+    return;
+  }
+
+  // remove the "silex-runtime" css class from the body while editing
+  goog.dom.classlist.remove(this.contentDocument_.body, 'silex-runtime');
+
+  // include edition tags and call onContentLoaded
+  // the first time, it takes time to load the scripts
+  // the second time, no load event, and jquery is already loaded
+
+  // first time in chrome, and always in firefox
+  // load scripts for edition in the iframe
+  this.includeEditionTags(goog.bind(function() {
+    this.onContentLoaded(opt_cbk);
+  }, this), goog.bind(function() {
+    // error loading editable script
+    console.error('error loading editable script');
+    throw new Error('error loading editable script');
+  }, this));
+}
 
 
 /**
@@ -183,20 +212,7 @@ silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk, opt_showLoader) 
  * @param {function()} opt_cbk
  */
 silex.model.File.prototype.onContentLoaded = function(opt_cbk) {
-  // if we interrupt the loading, the body will be removed
-  if (!this.contentDocument_.body) {
-    console.warn('File:: body is empty, something went wrong, stop waiting for the content');
-    return;
-  }
   // if the pageable plugin is not created yet, come back later
-  if (!goog.dom.classlist.contains(this.contentDocument_.body, 'pageable-plugin-created')) {
-    // let the time for the scripts to execute (e.g. pageable)
-    setTimeout(goog.bind(function() {
-      this.onContentLoaded(opt_cbk);
-    }, this), 100);
-    return;
-  }
-
   // handle retrocompatibility issues
   silex.utils.BackwardCompat.process(this.contentDocument_, this.model, () => {
     // check the integrity and store silex style sheet which holds silex elements styles
