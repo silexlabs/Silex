@@ -25,7 +25,6 @@ $(function() {
    * called when a page is opened
    */
   $('body').on('pageChanged', function (event, pageName) {
-    console.log(arguments);
     // mark links to the current page as active
     $('[data-silex-href="#!'+pageName+'"]').addClass('page-link-active');
   });
