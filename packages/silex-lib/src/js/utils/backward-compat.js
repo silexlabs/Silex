@@ -86,10 +86,7 @@ silex.utils.BackwardCompat.process = function(doc, model, cbk) {
     metaNode.setAttribute('content', 'Silex v' + silex.utils.BackwardCompat.LATEST_VERSION.join('.'));
     // continue
     cbk(hasToUpdate);
-  });
-  });
-  });
-  });
+  })})})});
 };
 
 
@@ -147,7 +144,6 @@ silex.utils.BackwardCompat.hasToUpdate = function(initialVersion, targetVersion)
 silex.utils.BackwardCompat.to2_2_5 = function(version, doc, model, cbk) {
 
   if(silex.utils.BackwardCompat.hasToUpdate(version, [2, 2, 5])) {
-    console.warn('Update site version from', version, 'to ', silex.utils.BackwardCompat.LATEST_VERSION);
     var pagesContainer = doc.querySelector(silex.model.Page.PAGES_CONTAINER_CLASS_NAME);
     if(!pagesContainer) {
       pagesContainer = doc.createElement('div');
@@ -169,7 +165,7 @@ silex.utils.BackwardCompat.to2_2_5 = function(version, doc, model, cbk) {
     handle('data-silex-href');
     // add the [data-silex-static] attributes
     function handle(attrName) {
-      var elements = doc.querySelectorAll('[' + attrName + ']');
+      let elements = doc.querySelectorAll('[' + attrName + ']');
       goog.array.forEach(elements, function (element) {
         var attr = element.getAttribute(attrName);
         if(attr.indexOf('http://static.silex.') > -1) {
@@ -193,7 +189,7 @@ silex.utils.BackwardCompat.to2_2_5 = function(version, doc, model, cbk) {
  */
 silex.utils.BackwardCompat.to2_2_4 = function(version, doc, model, cbk) {
   if (silex.utils.BackwardCompat.hasToUpdate(version, [2, 2, 4])) {
-    console.warn('Update site version from', version, 'to ', silex.utils.BackwardCompat.LATEST_VERSION);
+    console.warn('Update site version from', version, 'to 2.4');
     // remove the class editable-plugin-created because it is not used anymore, and it appears in the inline css editor
     elements = doc.body.querySelectorAll('.editable-plugin-created');
     goog.array.forEach(elements, function(element) {
@@ -226,7 +222,7 @@ silex.utils.BackwardCompat.to2_2_4 = function(version, doc, model, cbk) {
         }
         element.removeAttribute('style');
         // let time for the DOM to update
-        setTimeout(nextUpdate, 100);
+        setTimeout(nextUpdate, 0);
       }
       else {
         // create a style tag to hold Silex elements style
@@ -252,11 +248,14 @@ silex.utils.BackwardCompat.to2_2_4 = function(version, doc, model, cbk) {
  * @param {function()} cbk
  */
 silex.utils.BackwardCompat.to2_2_3 = function(version, doc, model, cbk) {
-  // background should not be draggable, fixed in 2.3
-  var elements = doc.querySelectorAll('.background');
-  goog.array.forEach(elements, function(element) {
-    goog.dom.classlist.add(element, silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME);
-  });
+  if (silex.utils.BackwardCompat.hasToUpdate(version, [2, 2, 3])) {
+    console.warn('Update site version from', version, 'to 2.3');
+    // background should not be draggable, fixed in 2.3
+    var elements = doc.querySelectorAll('.background');
+    goog.array.forEach(elements, function(element) {
+      goog.dom.classlist.add(element, silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME);
+    });
+  }
   cbk();
 };
 
@@ -268,36 +267,40 @@ silex.utils.BackwardCompat.to2_2_3 = function(version, doc, model, cbk) {
  * @param {function()} cbk
  */
 silex.utils.BackwardCompat.to2_2_2 = function(version, doc, model, cbk) {
-  // add css class on elements with [type]-element (starting from 2.0)
-  var elements = doc.body.querySelectorAll('.text-element *');
-  goog.array.forEach(elements, function(element) {
-    switch (element.nodeName.toLowerCase()) {
-      case 'p':
-        goog.dom.classlist.add(element, 'normal');
-        break;
-      case 'HEADER':
-        goog.dom.classlist.add(element, 'title');
-        break;
-      case 'H1':
-        goog.dom.classlist.add(element, 'heading1');
-        break;
-      case 'H2':
-        goog.dom.classlist.add(element, 'heading2');
-        break;
-      case 'H3':
-        goog.dom.classlist.add(element, 'heading3');
-        break;
+  if (silex.utils.BackwardCompat.hasToUpdate(version, [2, 2, 2])) {
+    // css class on text elements P, HEAD, H1, H2, H3 (2.2)
+    var elements = doc.body.querySelectorAll('.text-element *');
+    goog.array.forEach(elements, function(element) {
+      switch (element.nodeName.toLowerCase()) {
+        case 'p':
+          goog.dom.classlist.add(element, 'normal');
+          break;
+        case 'HEADER':
+          goog.dom.classlist.add(element, 'title');
+          break;
+        case 'H1':
+          goog.dom.classlist.add(element, 'heading1');
+          break;
+        case 'H2':
+          goog.dom.classlist.add(element, 'heading2');
+          break;
+        case 'H3':
+          goog.dom.classlist.add(element, 'heading3');
+          break;
+      }
+    });
+    // add css class on elements with [type]-element (starting from 2.0)
+    elements = doc.body.querySelectorAll('[data-silex-type]');
+    goog.array.forEach(elements, function(element) {
+      // add a class corresponding to the type
+      goog.dom.classlist.add(element, element.getAttribute('data-silex-type') + '-element');
+    });
+    // critical bug fix (2.2)
+    // text editor sets the body class to "silex-element-content normal" instead of the text editor's class
+    if (goog.dom.classlist.contains(doc.body, 'silex-element-content')) {
+      doc.body.className = 'pageable-plugin-created ui-droppable';
     }
-  });
-  // css class on text elements P, HEAD, H1, H2, H3 (2.2)
-  elements = doc.body.querySelectorAll('[data-silex-type]');
-  goog.array.forEach(elements, function(element) {
-    goog.dom.classlist.add(element, element.getAttribute('data-silex-type') + '-element');
-  });
-  // critical bug fix (2.2)
-  // text editor sets the body class to "silex-element-content normal" instead of the text editor's class
-  if (goog.dom.classlist.contains(doc.body, 'silex-element-content')) {
-    doc.body.className = 'pageable-plugin-created ui-droppable';
+    console.warn('Update site version from', version, 'to 2.2');
   }
   cbk();
 };
@@ -310,84 +313,87 @@ silex.utils.BackwardCompat.to2_2_2 = function(version, doc, model, cbk) {
  * @param {function()} cbk
  * Not supported anymore since it was executed each time (no version number)
  * and it adds bugs - e.g. transforms # into #!
- * /
+ */
 silex.utils.BackwardCompat.to2_2_0 = function(version, doc, model, cbk) {
-  // handle older style system (2.0)
-  if (doc.body.getAttribute('data-style-normal')) {
-    doc.body.setAttribute('data-style-normal', doc.body.getAttribute('data-style-normal'));
-    doc.body.removeAttribute('data-style-normal');
-  }
-  var elements = null;
-  elements = doc.body.querySelectorAll('[data-style-normal]');
-  goog.array.forEach(elements, function(element) {
-    element.setAttribute('style', element.getAttribute('data-style-normal'));
-    element.removeAttribute('data-style-normal');
-  });
-  elements = doc.body.querySelectorAll('[data-style-hover]');
-  goog.array.forEach(elements, function(element) {
-    element.removeAttribute('data-style-hover');
-  });
-  elements = doc.body.querySelectorAll('[data-style-pressed]');
-  goog.array.forEach(elements, function(element) {
-    element.removeAttribute('data-style-pressed');
-  });
-  // backward compat silex-sub-type (2.0)
-  elements = doc.body.querySelectorAll('[data-silex-sub-type]');
-  goog.array.forEach(elements, function(element) {
-    element.setAttribute('data-silex-type', element.getAttribute('data-silex-sub-type'));
-    element.removeAttribute('data-silex-sub-type');
-  });
+  if (silex.utils.BackwardCompat.hasToUpdate(version, [2, 2, 0])) {
+    console.warn('Update site version from', version, 'to 2.0');
+    // handle older style system (2.0)
+    if (doc.body.getAttribute('data-style-normal')) {
+      doc.body.setAttribute('data-style-normal', doc.body.getAttribute('data-style-normal'));
+      doc.body.removeAttribute('data-style-normal');
+    }
+    var elements = null;
+    elements = doc.body.querySelectorAll('[data-style-normal]');
+    goog.array.forEach(elements, function(element) {
+      element.setAttribute('style', element.getAttribute('data-style-normal'));
+      element.removeAttribute('data-style-normal');
+    });
+    elements = doc.body.querySelectorAll('[data-style-hover]');
+    goog.array.forEach(elements, function(element) {
+      element.removeAttribute('data-style-hover');
+    });
+    elements = doc.body.querySelectorAll('[data-style-pressed]');
+    goog.array.forEach(elements, function(element) {
+      element.removeAttribute('data-style-pressed');
+    });
+    // backward compat silex-sub-type (2.0)
+    elements = doc.body.querySelectorAll('[data-silex-sub-type]');
+    goog.array.forEach(elements, function(element) {
+      element.setAttribute('data-silex-type', element.getAttribute('data-silex-sub-type'));
+      element.removeAttribute('data-silex-sub-type');
+    });
 
-  // old page system (2.0)
-  // <meta name="page" content="page1">
-  elements = doc.head.querySelectorAll('meta[name="page"]');
-  goog.array.forEach(elements, function(element) {
-    var pageName = element.getAttribute('content');
-    var a = doc.createElement('a');
-    a.id = pageName;
-    a.setAttribute('data-silex-type', 'page');
-    a.innerHTML = pageName;
-    goog.dom.appendChild(doc.body, a);
-    goog.dom.removeNode(element);
-  });
-  // fixes bug "confusion between pages and paged elements"
-  elements = doc.body.querySelectorAll('.page-element');
-  goog.array.forEach(elements, function(element) {
-    if (element.getAttribute('data-silex-type') !== 'page') {
-      goog.dom.classlist.remove(element, 'page-element');
+    // old page system (2.0)
+    // <meta name="page" content="page1">
+    elements = doc.head.querySelectorAll('meta[name="page"]');
+    goog.array.forEach(elements, function(element) {
+      var pageName = element.getAttribute('content');
+      var a = doc.createElement('a');
+      a.id = pageName;
+      a.setAttribute('data-silex-type', 'page');
+      a.innerHTML = pageName;
+      goog.dom.appendChild(doc.body, a);
+      goog.dom.removeNode(element);
+    });
+    // fixes bug "confusion between pages and paged elements"
+    elements = doc.body.querySelectorAll('.page-element');
+    goog.array.forEach(elements, function(element) {
+      if (element.getAttribute('data-silex-type') !== 'page') {
+        goog.dom.classlist.remove(element, 'page-element');
+        goog.dom.classlist.add(element, 'paged-element');
+      }
+    });
+    // silex-page class becomes page-element
+    elements = doc.body.querySelectorAll('.silex-page');
+    goog.array.forEach(elements, function(element) {
+      goog.dom.classlist.remove(element, 'silex-page');
       goog.dom.classlist.add(element, 'paged-element');
-    }
-  });
-  // silex-page class becomes page-element
-  elements = doc.body.querySelectorAll('.silex-page');
-  goog.array.forEach(elements, function(element) {
-    goog.dom.classlist.remove(element, 'silex-page');
-    goog.dom.classlist.add(element, 'paged-element');
-  });
-  // backward compat silex links with #! (2.0)
-  elements = doc.body.querySelectorAll('[data-silex-href]');
-  goog.array.forEach(elements, function(element) {
-    var href = element.getAttribute(silex.model.Element.LINK_ATTR);
-    if (href.indexOf('#') === 0 && href.indexOf('#!') !== 0) {
-      element.setAttribute(silex.model.Element.LINK_ATTR, '#!' + href.substr(1));
-    }
-  });
-  // add css class 'silex-element-content' on 'html-content' elements (starting from 2.1)
-  elements = doc.body.querySelectorAll('.html-element .html-content');
-  goog.array.forEach(elements, function(element) {
-    goog.dom.classlist.add(element, 'silex-element-content');
-  });
-  // backward compat /silex/ to /
-  // publication path from ../api/1.0/dropbox/exec/put/_test_silex/publication-test
-  // to /api/1.0/dropbox/exec/put/_test_silex/publication-test
-  var metaNode = doc.querySelector('meta[name="publicationPath"]');
-  if (metaNode) {
-    var value = metaNode.getAttribute('content');
-    if (value.indexOf('../api/1.0/') === 0) {
-      value = value.replace('../api/1.0/', '/api/1.0/');
-      metaNode.setAttribute('content', value);
+    });
+    // backward compat silex links with #! (2.0)
+    elements = doc.body.querySelectorAll('[data-silex-href]');
+    goog.array.forEach(elements, function(element) {
+      var href = element.getAttribute(silex.model.Element.LINK_ATTR);
+      if (href.indexOf('#') === 0 && href.indexOf('#!') !== 0) {
+        element.setAttribute(silex.model.Element.LINK_ATTR, '#!' + href.substr(1));
+      }
+    });
+    // add css class 'silex-element-content' on 'html-content' elements (starting from 2.1)
+    elements = doc.body.querySelectorAll('.html-element .html-content');
+    goog.array.forEach(elements, function(element) {
+      goog.dom.classlist.add(element, 'silex-element-content');
+    });
+    // backward compat /silex/ to /
+    // publication path from ../api/1.0/dropbox/exec/put/_test_silex/publication-test
+    // to /api/1.0/dropbox/exec/put/_test_silex/publication-test
+    var metaNode = doc.querySelector('meta[name="publicationPath"]');
+    if (metaNode) {
+      var value = metaNode.getAttribute('content');
+      if (value.indexOf('../api/1.0/') === 0) {
+        value = value.replace('../api/1.0/', '/api/1.0/');
+        metaNode.setAttribute('content', value);
+      }
     }
   }
   cbk();
 };
-*/
+

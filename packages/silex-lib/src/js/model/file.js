@@ -212,7 +212,6 @@ silex.model.File.prototype.contentChanged = function(opt_cbk) {
  * @param {function()} opt_cbk
  */
 silex.model.File.prototype.onContentLoaded = function(opt_cbk) {
-  // if the pageable plugin is not created yet, come back later
   // handle retrocompatibility issues
   silex.utils.BackwardCompat.process(this.contentDocument_, this.model, (hasUpgraded) => {
    // check the integrity and store silex style sheet which holds silex elements styles
@@ -230,6 +229,7 @@ silex.model.File.prototype.onContentLoaded = function(opt_cbk) {
     // restore event listeners
     this.view.stage.initEvents(this.contentWindow_);
     // if upgraded, relaod everything
+    /*
     if(hasUpgraded) {
       // wait for the BC to complete and the dom to update
       setTimeout(() => {
@@ -237,7 +237,8 @@ silex.model.File.prototype.onContentLoaded = function(opt_cbk) {
       }, 200);
       return;
     }
-     // refresh the view
+    */
+    // refresh the view
     //var page = this.model.page.getCurrentPage();
     //this.model.page.setCurrentPage(page);
     // notify the caller
