@@ -208,10 +208,12 @@ silex.view.Stage.prototype.onPreventBackSwipe = function(event) {
  */
 silex.view.Stage.prototype.bodyElementSizeToContent = function(event) {
   if (this.bodyElement) {
-    let containers = goog.dom.getElementsByClass(
-        silex.view.Stage.BACKGROUND_CLASS_NAME,
-        this.bodyElement);
-
+    let containers = [];
+    goog.array.forEach(this.bodyElement.children, (element) => {
+      if(element.classList.contains(silex.model.Body.EDITABLE_CLASS_NAME)) {
+        containers.push(element);
+      }
+    });
     if (containers && containers.length > 0) {
       let bb = this.model.property.getBoundingBox(containers);
       let viewportSize = this.viewport.getSize();
