@@ -57,7 +57,8 @@ silex.controller.EditMenuController.prototype.clipboard = null;
  * undo the last action
  */
 silex.controller.EditMenuController.prototype.undo = function() {
-  if (silex.controller.ControllerBase.undoHistory.length > 0) {
+  if (silex.controller.ControllerBase.getStatePending === 0 &&
+    silex.controller.ControllerBase.undoHistory.length > 0) {
     var state = this.getState();
     silex.controller.ControllerBase.redoHistory.push(state);
     var prevState = silex.controller.ControllerBase.undoHistory.pop();
