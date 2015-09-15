@@ -252,7 +252,7 @@ silex.App = function() {
   propertyTool.buildUi();
 
   // draw the workspace once
-  workspace.invalidate(this.view);
+  workspace.redraw(this.view);
 
   // **
   // application start, open a new empty file

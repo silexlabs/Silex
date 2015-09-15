@@ -59,6 +59,14 @@ silex.view.PageTool = function(element, model, controller) {
    * @see silex.model.PageData
    */
   this.pages = [];
+
+
+  /**
+   * invalidation mechanism
+   * @type {InvalidationManager}
+   */
+  this.invalidationManager = new InvalidationManager(500);
+
 };
 
 
@@ -97,29 +105,31 @@ silex.view.PageTool.prototype.buildUi = function() {
  * @param   {string}  currentPageName   the name of the current page
  */
 silex.view.PageTool.prototype.redraw = function(selectedElements, pageNames, currentPageName) {
-  // prepare the data for the template
-  // make an array with name, displayName, linkName and className
-  var idx = 0;
-  this.pages = pageNames.map(goog.bind(function(pageName) {
-    var res = {
-      'name': pageName,
-      'displayName': this.model.file.getContentDocument().getElementById(pageName).innerHTML,
-      'linkName': '#!' + pageName,
-      'idx': idx++
-    };
-    if (currentPageName === pageName) {
-      res.className = 'ui-selected';
-    }
-    else {
-      res.className = '';
-    }
-    return res;
-  }, this));
+  this.invalidationManager.callWhenReady(() => {
+    // prepare the data for the template
+    // make an array with name, displayName, linkName and className
+    var idx = 0;
+    this.pages = pageNames.map(goog.bind(function(pageName) {
+      var res = {
+        'name': pageName,
+        'displayName': this.model.file.getContentDocument().getElementById(pageName).innerHTML,
+        'linkName': '#!' + pageName,
+        'idx': idx++
+      };
+      if (currentPageName === pageName) {
+        res.className = 'ui-selected';
+      }
+      else {
+        res.className = '';
+      }
+      return res;
+    }, this));
 
-  // refresh the list with new pages
-  var container = goog.dom.getElementByClass('page-tool-container', this.element);
-  var templateHtml = goog.dom.getElementByClass('page-tool-template', this.element).innerHTML;
-  container.innerHTML = silex.utils.Dom.renderList(templateHtml, this.pages);
+    // refresh the list with new pages
+    var container = goog.dom.getElementByClass('page-tool-container', this.element);
+    var templateHtml = goog.dom.getElementByClass('page-tool-template', this.element).innerHTML;
+    container.innerHTML = silex.utils.Dom.renderList(templateHtml, this.pages);
+  });
 };
 
 

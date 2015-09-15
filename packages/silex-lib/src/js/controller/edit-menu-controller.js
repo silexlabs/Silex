@@ -54,7 +54,6 @@ silex.controller.EditMenuController.prototype.clipboard = null;
 
 
 /**
->>>>>>> added js linter and fixer, started to fix
  * undo the last action
  */
 silex.controller.EditMenuController.prototype.undo = function() {
@@ -319,7 +318,6 @@ silex.controller.EditMenuController.prototype.getNextElement = function(element)
 
 
 /**
->>>>>>> added js linter and fixer, started to fix
  * get the index of the element in the DOM
  * @param {Element} element
  * @return {number}

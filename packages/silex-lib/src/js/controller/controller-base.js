@@ -105,28 +105,43 @@ silex.controller.ControllerBase.prototype.isDirty = function() {
  */
 silex.controller.ControllerBase.prototype.undoCheckPoint = function() {
   silex.controller.ControllerBase.redoHistory = [];
-  var state = this.getState();
-  // if the previous state was different
-  if (silex.controller.ControllerBase.undoHistory.length === 0 ||
-      silex.controller.ControllerBase.undoHistory[silex.controller.ControllerBase.undoHistory.length - 1].html !== state.html ||
-      silex.controller.ControllerBase.undoHistory[silex.controller.ControllerBase.undoHistory.length - 1].page !== state.page) {
-    silex.controller.ControllerBase.undoHistory.push(state);
-  }
+  this.getState((state) => {
+    // if the previous state was different
+    if (silex.controller.ControllerBase.undoHistory.length === 0 ||
+        silex.controller.ControllerBase.undoHistory[silex.controller.ControllerBase.undoHistory.length - 1].html !== state.html ||
+        silex.controller.ControllerBase.undoHistory[silex.controller.ControllerBase.undoHistory.length - 1].page !== state.page) {
+      silex.controller.ControllerBase.undoHistory.push(state);
+    }
+  });
 };
 
 
 
 /**
  * build a state object for undo/redo
- * @return {silex.types.UndoItem}
+ * asyn operation if opt_cbk is provided
+ * @param {?function(silex.types.UndoItem)=} opt_cbk
+ * @return {silex.types.UndoItem|null}
  */
-silex.controller.ControllerBase.prototype.getState = function() {
-  return {
+silex.controller.ControllerBase.prototype.getState = function(opt_cbk) {
+  if(opt_cbk) {
+    this.model.file.getHtmlAsync((html) => {
+      opt_cbk({
+        html:html,
+        page: this.model.page.getCurrentPage(),
+        scrollX: this.view.stage.getScrollX(),
+        scrollY: this.view.stage.getScrollY()
+      });
+    });
+  }
+  else {
+    return {
       html: this.model.file.getHtml(),
       page: this.model.page.getCurrentPage(),
       scrollX: this.view.stage.getScrollX(),
       scrollY: this.view.stage.getScrollY()
-  };
+    };
+  }
 };
 
 
