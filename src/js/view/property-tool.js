@@ -62,6 +62,7 @@ silex.view.PropertyTool = function(element, model, controller) {
    */
   this.controller = controller;
 
+
   /**
    * invalidation mechanism
    * @type {InvalidationManager}

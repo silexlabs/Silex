@@ -39,6 +39,13 @@ class InvalidationManager {
      * @type {number}
      */
     this.delay = delay;
+
+
+    /**
+     * store the last callback called while the delay since first call is not over
+     * @type {function()}
+     */
+    this.cbk = null;
   }
 
 
