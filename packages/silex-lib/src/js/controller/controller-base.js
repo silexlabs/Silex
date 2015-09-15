@@ -84,10 +84,18 @@ silex.controller.ControllerBase.redoHistory = [];
 
 
 /**
- * @type Array.<silex.types.ClipboardItem>
+ * @type {Array.<silex.types.ClipboardItem>}
  * @static because it is shared by all controllers
  */
 silex.controller.ControllerBase.clipboard = null;
+
+
+/**
+ * flag to indicate that a getState ation is pending
+ * will be 0 unless an undo check point is being created
+ * @type {number}
+ */
+silex.controller.ControllerBase.getStatePending = 0;
 
 
 /**
@@ -105,7 +113,9 @@ silex.controller.ControllerBase.prototype.isDirty = function() {
  */
 silex.controller.ControllerBase.prototype.undoCheckPoint = function() {
   silex.controller.ControllerBase.redoHistory = [];
+  silex.controller.ControllerBase.getStatePending++;
   this.getState((state) => {
+    silex.controller.ControllerBase.getStatePending--;
     // if the previous state was different
     if (silex.controller.ControllerBase.undoHistory.length === 0 ||
         silex.controller.ControllerBase.undoHistory[silex.controller.ControllerBase.undoHistory.length - 1].html !== state.html ||

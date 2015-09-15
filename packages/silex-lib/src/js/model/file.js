@@ -354,11 +354,14 @@ silex.model.File.prototype.getHtmlNextStep = function (cbk, generator) {
 silex.model.File.prototype.getHtmlGenerator = function* () {
   // cleanup
   //this.model.body.setEditable(this.contentDocument_.body, false);
+  // update style tag (the dom do not update automatically when we change document.styleSheets)
+  let updatedStyles = this.model.property.updateSilexStyleTag(this.contentDocument_, false);
+  yield;
   // clone
   var cleanFile = /** @type {Node} */ (this.contentDocument_.cloneNode(true));
   yield;
-  // update style tag (the dom do not update automatically when we change document.styleSheets)
-  this.model.property.updateSilexStyleTag(/** @type {Document} */ (cleanFile));
+  var styleTag = cleanFile.querySelector('.' + silex.model.Property.INLINE_STYLE_TAG_CLASS_NAME);
+  styleTag.innerHTML = updatedStyles;
   yield;
   // cleanup
   this.model.head.removeTempTags(/** @type {Document} */ (cleanFile).head);
