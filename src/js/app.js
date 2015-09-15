@@ -58,6 +58,7 @@ goog.require('silex.utils.Dom');
 goog.require('silex.utils.DomCleaner');
 goog.require('silex.utils.Polyfills');
 goog.require('silex.utils.BackwardCompat');
+goog.require('silex.utils.InvalidationManager');
 goog.require('silex.view.Menu');
 goog.require('silex.view.ContextMenu');
 goog.require('silex.view.PageTool');
