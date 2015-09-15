@@ -62,6 +62,12 @@ silex.view.PropertyTool = function(element, model, controller) {
    */
   this.controller = controller;
 
+  /**
+   * invalidation mechanism
+   * @type {InvalidationManager}
+   */
+  this.invalidationManager = new InvalidationManager(500);
+
   var btn = this.element.querySelector('.switch-apollo-mode button');
   goog.events.listen(btn, goog.events.EventType.CLICK, function() {
     this.controller.propertyToolController.toggleAdvanced();
@@ -162,11 +168,13 @@ silex.view.PropertyTool.prototype.buildUi = function() {
 * @param   {string}  currentPageName   the name of the current page
  */
 silex.view.PropertyTool.prototype.redraw = function(selectedElements, pageNames, currentPageName) {
-  // refresh panes
-  this.borderPane.redraw(selectedElements, pageNames, currentPageName);
-  this.propertyPane.redraw(selectedElements, pageNames, currentPageName);
-  this.pagePane.redraw(selectedElements, pageNames, currentPageName);
-  this.generalStylePane.redraw(selectedElements, pageNames, currentPageName);
-  this.stylePane.redraw(selectedElements, pageNames, currentPageName);
-  this.bgPane.redraw(selectedElements, pageNames, currentPageName);
+  this.invalidationManager.callWhenReady(() => {
+    // refresh panes
+    this.borderPane.redraw(selectedElements, pageNames, currentPageName);
+    this.propertyPane.redraw(selectedElements, pageNames, currentPageName);
+    this.pagePane.redraw(selectedElements, pageNames, currentPageName);
+    this.generalStylePane.redraw(selectedElements, pageNames, currentPageName);
+    this.stylePane.redraw(selectedElements, pageNames, currentPageName);
+    this.bgPane.redraw(selectedElements, pageNames, currentPageName);
+  });
 };
