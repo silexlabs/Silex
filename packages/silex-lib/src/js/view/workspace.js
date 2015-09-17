@@ -46,6 +46,21 @@ silex.view.Workspace = function(element, model, controller) {
    * @type {!silex.types.Controller}
    */
   this.controller = controller;
+
+
+  /**
+   * invalidation mechanism
+   * @type {InvalidationManager}
+   */
+  this.invalidationManagerRedraw = new InvalidationManager(500);
+
+
+  /**
+   * invalidation mechanism
+   * @type {InvalidationManager}
+   */
+  this.invalidationManagerResize = new InvalidationManager(500);
+
 };
 
 
@@ -87,9 +102,9 @@ silex.view.Workspace.prototype.startWatchingResize = function(view) {
   // handle window resize event
   goog.events.listen(this.viewport, goog.events.EventType.RESIZE,
       function() {
-        this.invalidate(view);
+        this.redraw(view);
       }, false, this);
-  this.invalidate(view);
+  this.redraw(view);
 };
 
 
@@ -112,42 +127,15 @@ silex.view.Workspace.prototype.startWatchingUnload = function() {
 
 
 /**
- * set as dirty
- * invalidation mechanism
- * @param {!silex.types.View} view
- */
-silex.view.Workspace.prototype.invalidate = function(view) {
-  if (this.isDirty === false) {
-    this.isDirty = true;
-    this.redraw(view);
-  }
-};
-
-
-/**
  * redraw the workspace, positions and sizes of the tool boxes
  * invalidation mechanism
  * @param {!silex.types.View} view
  */
 silex.view.Workspace.prototype.redraw = function(view) {
-  if (this.isDirty === false) {
-    console.warn('Do not call redraw directly, use invalidate() instead');
-  }
-  setTimeout(goog.bind(function() {
-    this.doRedraw(view);
-  }, this), 400);
-};
-
-
-/**
- * actually doas the positionning of the elements
- * invalidation mechanism
- * @param {!silex.types.View} view
- */
-silex.view.Workspace.prototype.doRedraw = function(view) {
-  this.isDirty = false;
-  // no more loading
-  goog.dom.classlist.remove(document.body, 'loading-pending');
+  this.invalidationManagerRedraw.callWhenReady(() => {
+    // no more loading
+    goog.dom.classlist.remove(document.body, 'loading-pending');
+  });
 };
 
 
@@ -171,22 +159,24 @@ silex.view.Workspace.prototype.center = function(editor, viewportSize) {
  * here we change the number of columns in the pannel
  */
 silex.view.Workspace.prototype.resizeProperties = function () {
-  var container = this.element.querySelector('.silex-property-tool .main-container');
-  if(container.offsetWidth < 500) {
-    container.classList.add('size1');
-    container.classList.remove('size2');
-    container.classList.remove('size3');
-  }
-  else if(container.offsetWidth < 750) {
-    container.classList.remove('size1');
-    container.classList.add('size2');
-    container.classList.remove('size3');
-  }
-  else if(container.offsetWidth < 1000) {
-    container.classList.remove('size1');
-    container.classList.remove('size2');
-    container.classList.add('size3');
-  }
+  this.invalidationManagerResize.callWhenReady(() => {
+    var container = this.element.querySelector('.silex-property-tool .main-container');
+    if(container.offsetWidth < 500) {
+      container.classList.add('size1');
+      container.classList.remove('size2');
+      container.classList.remove('size3');
+    }
+    else if(container.offsetWidth < 750) {
+      container.classList.remove('size1');
+      container.classList.add('size2');
+      container.classList.remove('size3');
+    }
+    else if(container.offsetWidth < 1000) {
+      container.classList.remove('size1');
+      container.classList.remove('size2');
+      container.classList.add('size3');
+    }
+  });
 };
 
 /**

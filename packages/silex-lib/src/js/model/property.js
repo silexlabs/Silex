@@ -205,9 +205,10 @@ silex.model.Property.prototype.getRule = function(element) {
  * update Silex style tag with the styles of all elements
  * because the dom do not update automatically when we change document.styleSheets
  * @param {Document} doc docment of the iframe containing the website
+ * @param {?boolean=} opt_writeDom if true (default), then will replace the silex script tag with the updated styles
  * @return {string} the updated string defining all elements styles
  */
-silex.model.Property.prototype.updateSilexStyleTag = function(doc) {
+silex.model.Property.prototype.updateSilexStyleTag = function(doc, opt_writeDom) {
   var elements = doc.querySelectorAll('body, .' + silex.model.Body.EDITABLE_CLASS_NAME);
   var allStyles = '';
   goog.array.forEach(elements, function(element) {
@@ -215,8 +216,10 @@ silex.model.Property.prototype.updateSilexStyleTag = function(doc) {
     var styleStr = silex.utils.Style.styleToString(style, '\n    ');
     allStyles += '.' + this.getSilexId(element) + ' {' + styleStr + '\n}\n';
   }, this);
-  var styleTag = doc.querySelector('.' + silex.model.Property.INLINE_STYLE_TAG_CLASS_NAME);
-  styleTag.innerHTML = allStyles;
+  if(opt_writeDom !== false) {
+    var styleTag = doc.querySelector('.' + silex.model.Property.INLINE_STYLE_TAG_CLASS_NAME);
+    styleTag.innerHTML = allStyles;
+  }
   return allStyles;
 };
 

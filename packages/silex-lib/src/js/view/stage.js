@@ -49,6 +49,20 @@ silex.view.Stage = function(element, model, controller) {
    * @type {!silex.types.Controller}
    */
   this.controller = controller;
+
+
+  /**
+   * invalidation mechanism
+   * @type {InvalidationManager}
+   */
+  this.invalidationManagerScroll = new InvalidationManager(500);
+
+
+  /**
+   * invalidation mechanism
+   * @type {InvalidationManager}
+   */
+  this.invalidationManagerFocus = new InvalidationManager(500);
 };
 
 /**
@@ -477,8 +491,10 @@ silex.view.Stage.prototype.handleMouseUp = function(target, x, y, shiftKey) {
  * remove the focus from text fields
  */
 silex.view.Stage.prototype.resetFocus = function() {
-  this.focusInput.focus();
-  this.focusInput.blur();
+  this.invalidationManagerFocus.callWhenReady(() => {
+    this.focusInput.focus();
+    this.focusInput.blur();
+  });
 };
 
 
@@ -641,21 +657,23 @@ silex.view.Stage.prototype.getVisibility = function(element) {
  * @param   {number} y position of the mouse, relatively to the screen
  */
 silex.view.Stage.prototype.updateScroll = function(x, y) {
-  let iframeSize = goog.style.getSize(this.element);
-  let scrollX = this.getScrollX();
-  let scrollY = this.getScrollY();
-  if (x < 30) {
-    this.setScrollX(scrollX - 25);
-  }
-  else if (x > iframeSize.width - 30) {
-    this.setScrollX(scrollX + 25);
-  }
-  if (y < 30) {
-    this.setScrollY(scrollY - 25);
-  }
-  else if (y > iframeSize.height - 30) {
-    this.setScrollY(scrollY + 25);
-  }
+  this.invalidationManagerScroll.callWhenReady(() => {
+    let iframeSize = goog.style.getSize(this.element);
+    let scrollX = this.getScrollX();
+    let scrollY = this.getScrollY();
+    if (x < 30) {
+      this.setScrollX(scrollX - 25);
+    }
+    else if (x > iframeSize.width - 30) {
+      this.setScrollX(scrollX + 25);
+    }
+    if (y < 30) {
+      this.setScrollY(scrollY - 25);
+    }
+    else if (y > iframeSize.height - 30) {
+      this.setScrollY(scrollY + 25);
+    }
+  });
 };
 
 

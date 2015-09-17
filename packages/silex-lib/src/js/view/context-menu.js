@@ -41,6 +41,14 @@ silex.view.ContextMenu = function(element, model, controller) {
    * @type {!silex.types.Controller}
    */
   this.controller = controller;
+
+
+  /**
+   * invalidation mechanism
+   * @type {InvalidationManager}
+   */
+  this.invalidationManager = new InvalidationManager(500);
+
 };
 
 
@@ -76,51 +84,53 @@ silex.view.ContextMenu.prototype.buildUi = function() {
  * @param   {?string=}  opt_currentPageName   the name of the current page
  */
 silex.view.ContextMenu.prototype.redraw = function(opt_selectedElements, opt_pageNames, opt_currentPageName) {
-  // get the selection if not provided
-  if(!opt_selectedElements) opt_selectedElements = this.model.body.getSelection();
-  //update menu items according to selection
-  if(opt_selectedElements.length === 1 && opt_selectedElements[0].tagName.toLowerCase() === 'body') {
-    this.element.querySelector('.delete').classList.add('off');
-    this.element.querySelector('.copy').classList.add('off');
-    this.element.querySelector('.top').classList.add('off');
-    this.element.querySelector('.up').classList.add('off');
-    this.element.querySelector('.down').classList.add('off');
-    this.element.querySelector('.bottom').classList.add('off');
-  }
-  else {
-    this.element.querySelector('.delete').classList.remove('off');
-    this.element.querySelector('.copy').classList.remove('off');
-    this.element.querySelector('.top').classList.remove('off');
-    this.element.querySelector('.up').classList.remove('off');
-    this.element.querySelector('.down').classList.remove('off');
-    this.element.querySelector('.bottom').classList.remove('off');
-  }
-  if(silex.controller.ControllerBase.undoHistory.length > 0) {
-    this.element.querySelector('.undo').classList.remove('off');
-  }
-  else {
-    this.element.querySelector('.undo').classList.add('off');
-  }
-  if(silex.controller.ControllerBase.redoHistory.length > 0) {
-    this.element.querySelector('.redo').classList.remove('off');
-  }
-  else {
-    this.element.querySelector('.redo').classList.add('off');
-  }
-  if(silex.controller.ControllerBase.clipboard && silex.controller.ControllerBase.clipboard.length > 0) {
-    this.element.querySelector('.paste').classList.remove('off');
-  }
-  else {
-    this.element.querySelector('.paste').classList.add('off');
-  }
-  if(this.controller.fileMenuController.isDirty()) {
-    this.element.querySelector('.save').classList.remove('off');
-    this.element.querySelector('.preview').classList.add('off');
-    this.element.querySelector('.previewResponsize').classList.add('off');
-  }
-  else {
-    this.element.querySelector('.save').classList.add('off');
-    this.element.querySelector('.preview').classList.remove('off');
-    this.element.querySelector('.previewResponsize').classList.remove('off');
-  }
+  this.invalidationManager.callWhenReady(() => {
+    // get the selection if not provided
+    if(!opt_selectedElements) opt_selectedElements = this.model.body.getSelection();
+    //update menu items according to selection
+    if(opt_selectedElements.length === 1 && opt_selectedElements[0].tagName.toLowerCase() === 'body') {
+      this.element.querySelector('.delete').classList.add('off');
+      this.element.querySelector('.copy').classList.add('off');
+      this.element.querySelector('.top').classList.add('off');
+      this.element.querySelector('.up').classList.add('off');
+      this.element.querySelector('.down').classList.add('off');
+      this.element.querySelector('.bottom').classList.add('off');
+    }
+    else {
+      this.element.querySelector('.delete').classList.remove('off');
+      this.element.querySelector('.copy').classList.remove('off');
+      this.element.querySelector('.top').classList.remove('off');
+      this.element.querySelector('.up').classList.remove('off');
+      this.element.querySelector('.down').classList.remove('off');
+      this.element.querySelector('.bottom').classList.remove('off');
+    }
+    if(silex.controller.ControllerBase.undoHistory.length > 0) {
+      this.element.querySelector('.undo').classList.remove('off');
+    }
+    else {
+      this.element.querySelector('.undo').classList.add('off');
+    }
+    if(silex.controller.ControllerBase.redoHistory.length > 0) {
+      this.element.querySelector('.redo').classList.remove('off');
+    }
+    else {
+      this.element.querySelector('.redo').classList.add('off');
+    }
+    if(silex.controller.ControllerBase.clipboard && silex.controller.ControllerBase.clipboard.length > 0) {
+      this.element.querySelector('.paste').classList.remove('off');
+    }
+    else {
+      this.element.querySelector('.paste').classList.add('off');
+    }
+    if(this.controller.fileMenuController.isDirty()) {
+      this.element.querySelector('.save').classList.remove('off');
+      this.element.querySelector('.preview').classList.add('off');
+      this.element.querySelector('.previewResponsize').classList.add('off');
+    }
+    else {
+      this.element.querySelector('.save').classList.add('off');
+      this.element.querySelector('.preview').classList.remove('off');
+      this.element.querySelector('.previewResponsize').classList.remove('off');
+    }
+  });
 };

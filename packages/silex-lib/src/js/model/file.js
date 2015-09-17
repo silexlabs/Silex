@@ -287,7 +287,7 @@ silex.model.File.prototype.includeEditionTags = function(opt_onSuccess, opt_onEr
 
 /**
  * build a string of the raw html content
- * use the bodyTag and headTag objects
+ * remove all internal objects and attributes
  */
 silex.model.File.prototype.getHtml = function() {
   // cleanup
@@ -316,6 +316,85 @@ silex.model.File.prototype.getHtml = function() {
   rawHtml = this.model.element.unprepareHtmlForEdit(rawHtml);
   // add the user's head tag
   rawHtml = this.model.head.insertUserHeadTag(rawHtml);
+  // beutify html
+  rawHtml = window['html_beautify'](rawHtml);
+  return rawHtml;
+};
+
+
+/**
+ * async verion of getHtml
+ * this is an optimisation needed to speedup drag start (which creates an undo point)
+ * it uses generator to lower the load induced by these operations
+ */
+silex.model.File.prototype.getHtmlAsync = function (cbk) {
+  var generator = this.getHtmlGenerator();
+  this.getHtmlNextStep(cbk, generator);
+};
+
+
+/**
+ * does one more step of the async getHtml process
+ */
+silex.model.File.prototype.getHtmlNextStep = function (cbk, generator) {
+  let res = generator.next();
+  if(res.done) {
+    setTimeout(() => cbk(res.value), 100);
+  }
+  else {
+    setTimeout(() => this.getHtmlNextStep(cbk, generator), 100);
+  }
+};
+
+
+/**
+ * the async getHtml process
+ * yield after each step
+ */
+silex.model.File.prototype.getHtmlGenerator = function* () {
+  // cleanup
+  //this.model.body.setEditable(this.contentDocument_.body, false);
+  // update style tag (the dom do not update automatically when we change document.styleSheets)
+  let updatedStyles = this.model.property.updateSilexStyleTag(this.contentDocument_, false);
+  yield;
+  // clone
+  var cleanFile = /** @type {Node} */ (this.contentDocument_.cloneNode(true));
+  yield;
+  var styleTag = cleanFile.querySelector('.' + silex.model.Property.INLINE_STYLE_TAG_CLASS_NAME);
+  styleTag.innerHTML = updatedStyles;
+  yield;
+  // cleanup
+  this.model.head.removeTempTags(/** @type {Document} */ (cleanFile).head);
+  yield;
+  this.model.body.removeEditableClasses(/** @type {!Element} */ (cleanFile));
+  yield;
+  silex.utils.Style.removeInternalClasses(/** @type {!Element} */ (cleanFile), false, true);
+  yield;
+  silex.utils.DomCleaner.cleanupFirefoxInlines(this.contentDocument_);
+  yield;
+  // reset the style set by stage on the body
+  goog.style.setStyle(/** @type {Document} */ (cleanFile).body, 'minWidth', '');
+  yield;
+  goog.style.setStyle(/** @type {Document} */ (cleanFile).body, 'minHeight', '');
+  yield;
+  // put back the "silex-runtime" css class after editing
+  goog.dom.classlist.add(/** @type {Document} */ (cleanFile).body, 'silex-runtime');
+  yield;
+  // get html
+  var rawHtml = /** @type {Document} */ (cleanFile).documentElement.innerHTML;
+  yield;
+  // add the outer html (html tag)
+  rawHtml = '<html>' + rawHtml + '</html>';
+  yield;
+  // add doctype
+  rawHtml = '<!DOCTYPE html>' + rawHtml;
+  yield;
+  // cleanup HTML
+  rawHtml = this.model.element.unprepareHtmlForEdit(rawHtml);
+  yield;
+  // add the user's head tag
+  rawHtml = this.model.head.insertUserHeadTag(rawHtml);
+  yield;
   // beutify html
   rawHtml = window['html_beautify'](rawHtml);
   return rawHtml;

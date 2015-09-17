@@ -264,11 +264,6 @@ silex.model.Element.prototype.setStyle = function(element, styleName, opt_styleV
       styleObject[styleName] = '';
     }
     this.model.property.setStyle(element, styleObject);
-    // update the view
-    var pages = this.model.page.getPages();
-    var page = this.model.page.getCurrentPage();
-    var selectedElements = this.model.body.getSelection();
-    this.view.propertyTool.redraw(selectedElements, pages, page);
   }
   // remove the 'just pasted' class
   element.classList.remove(silex.model.Element.JUST_ADDED_CLASS_NAME);
