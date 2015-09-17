@@ -54,11 +54,11 @@ silex.controller.EditMenuController.prototype.clipboard = null;
 
 
 /**
->>>>>>> added js linter and fixer, started to fix
  * undo the last action
  */
 silex.controller.EditMenuController.prototype.undo = function() {
-  if (silex.controller.ControllerBase.undoHistory.length > 0) {
+  if (silex.controller.ControllerBase.getStatePending === 0 &&
+    silex.controller.ControllerBase.undoHistory.length > 0) {
     var state = this.getState();
     silex.controller.ControllerBase.redoHistory.push(state);
     var prevState = silex.controller.ControllerBase.undoHistory.pop();
@@ -319,7 +319,6 @@ silex.controller.EditMenuController.prototype.getNextElement = function(element)
 
 
 /**
->>>>>>> added js linter and fixer, started to fix
  * get the index of the element in the DOM
  * @param {Element} element
  * @return {number}
