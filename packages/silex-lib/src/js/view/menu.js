@@ -222,7 +222,7 @@ silex.view.Menu.prototype.onMenuEvent = function(type) {
       break;
     case 'file.publish.settings':
       this.controller.fileMenuController.view.settingsDialog.openDialog();
-      this.controller.fileMenuController.view.workspace.invalidate(this.controller.fileMenuController.view);
+      this.controller.fileMenuController.view.workspace.redraw(this.controller.fileMenuController.view);
       break;
     case 'file.publish':
       this.controller.fileMenuController.publish();

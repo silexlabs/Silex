@@ -247,7 +247,7 @@ silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
         this.tracker.trackAction('controller-events', 'error', 'insert.image', -1);
       }, this)
   );
-  this.view.workspace.invalidate(this.view);
+  this.view.workspace.redraw(this.view);
 };
 
 
