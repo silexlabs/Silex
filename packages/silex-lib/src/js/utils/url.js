@@ -78,7 +78,7 @@ silex.utils.Url.getHost = function() {
  * @return {boolean} true if the url is absolute
  */
 silex.utils.Url.isAbsoluteUrl = function(url) {
-  return url.indexOf('http') === 0;
+  return url.indexOf('http') === 0 || url.indexOf('//') === 0;
 };
 
 
@@ -210,7 +210,7 @@ silex.utils.Url.relative2Absolute = function(htmlString, baseUrl) {
  */
 silex.utils.Url.getRelativePath = function(url, base) {
   // check if they are both absolute urls
-  if (base.indexOf('http') !== 0 || url.indexOf('http') !== 0) {
+  if ((base.indexOf('//') !== 0 && base.indexOf('http') !== 0) || (url.indexOf('http') !== 0 && url.indexOf('//') !== 0)) {
     return url;
   }
   // get an array out of the URLs

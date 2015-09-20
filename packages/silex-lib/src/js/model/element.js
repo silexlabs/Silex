@@ -177,9 +177,13 @@ silex.model.Element.prototype.unprepareHtmlForEdit = function(rawHtml) {
   rawHtml = rawHtml.replace(/type=\"text\/notjavascript\"/gi, 'type="text/javascript"');
   // remove cache control used to refresh images after editing by pixlr
   rawHtml = silex.utils.Dom.removeCacheControl(rawHtml);
-  // convert to relative urls
   if (this.model.file.getUrl()) {
-    rawHtml = silex.utils.Url.absolute2Relative(rawHtml, silex.utils.Url.getBaseUrl() + this.model.file.getUrl());
+    // convert to relative urls
+    let baseUrl = silex.utils.Url.getBaseUrl();
+    rawHtml = silex.utils.Url.absolute2Relative(rawHtml, baseUrl + this.model.file.getUrl());
+    // put back the static scripts (protocol agnostic)
+    let staticUrl = baseUrl.substr(baseUrl.indexOf('//')) + 'static/';
+    rawHtml = rawHtml.replace(new RegExp('../../../../../static/', 'g'), staticUrl);
   }
   return rawHtml;
 };
