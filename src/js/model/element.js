@@ -183,7 +183,7 @@ silex.model.Element.prototype.unprepareHtmlForEdit = function(rawHtml) {
     rawHtml = silex.utils.Url.absolute2Relative(rawHtml, baseUrl + this.model.file.getUrl());
     // put back the static scripts (protocol agnostic)
     let staticUrl = baseUrl.substr(baseUrl.indexOf('//')) + 'static/';
-    rawHtml = rawHtml.replace(new RegExp('../../../../../static/', 'g'), staticUrl);
+    rawHtml = rawHtml.replace(new RegExp('\.\./\.\./\.\./\.\./\.\./\.\./[\.\./]*static/', 'g'), staticUrl);
   }
   return rawHtml;
 };
