@@ -136,8 +136,8 @@ silex.controller.FileMenuController.prototype.publish = function() {
           silex.utils.Notification.alert('I am about to publish your site. This may take several minutes.', () => clearInterval(timer));
           var timer = setInterval(() => {
             silex.service.SilexTasks.getInstance().publishState(json => {
-              document.querySelector('.alertify-message').innerHTML = json.status;
-              if(json.stop === true) {
+              document.querySelector('.alertify-message').innerHTML = json['status'];
+              if(json['stop'] === true) {
                 clearInterval(timer);
               }
             }, message => {

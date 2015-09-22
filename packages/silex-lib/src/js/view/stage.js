@@ -572,7 +572,7 @@ silex.view.Stage.prototype.onMouseMove = function(target, x, y, shiftKey) {
  * @param {?Element=} opt_element to be marked
  */
 silex.view.Stage.prototype.markAsDropZone = function(opt_element) {
-  let els = goog.dom.getElementsByClass(silex.model.Body.DROP_CANDIDATE_CLASS_NAME, this.bodyElement.parentNode);
+  let els = goog.dom.getElementsByClass(silex.model.Body.DROP_CANDIDATE_CLASS_NAME, /** @type {Element|null} */ (this.bodyElement.parentNode));
   goog.array.forEach(els, (event) => goog.dom.classlist.remove(/** @type {Element} */ (event), silex.model.Body.DROP_CANDIDATE_CLASS_NAME));
   if (opt_element) {
     goog.dom.classlist.add(/** @type {Element} */ (opt_element), silex.model.Body.DROP_CANDIDATE_CLASS_NAME);

@@ -598,7 +598,7 @@ silex.model.Element.prototype.createElement = function(type) {
   };
 
   // create the element
-  var element;
+  var element = null;
   switch (type) {
 
     // container

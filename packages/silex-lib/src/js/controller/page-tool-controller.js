@@ -67,7 +67,7 @@ silex.controller.PageToolController.prototype.renamePage = function(opt_pageName
         }
         else {
           // just open the new page
-          this.openPage(opt_pageName);
+          this.openPage(/** @type {string} */ (opt_pageName));
         }
         // update view
       }, this));

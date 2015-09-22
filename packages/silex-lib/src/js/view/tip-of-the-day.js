@@ -49,7 +49,7 @@ silex.view.TipOfTheDay.NUM_VISITS_LOCAL_STORAGE_NAME = 'silex-caping';
 /**
  * Start the process of showing the tip of the day
  */
-silex.view.TipOfTheDay.prototype.init = function(html)
+silex.view.TipOfTheDay.prototype.init = function()
 {
   let itemTrackAction = '';
   // hide
@@ -64,9 +64,9 @@ silex.view.TipOfTheDay.prototype.init = function(html)
       // init local storage
       let visitsStr = window.localStorage.getItem(silex.view.TipOfTheDay.NUM_VISITS_LOCAL_STORAGE_NAME);
       if(visitsStr) {
-        visits = parseInt(visitsStr);
+        visits = parseInt(visitsStr, 10);
       }
-      window.localStorage.setItem(silex.view.TipOfTheDay.NUM_VISITS_LOCAL_STORAGE_NAME, visits + 1);
+      window.localStorage.setItem(silex.view.TipOfTheDay.NUM_VISITS_LOCAL_STORAGE_NAME, (visits + 1).toString());
       // the more visits the less chance we have to show the tip
       let rand = Math.random() * visits;
       if(rand > 3) {

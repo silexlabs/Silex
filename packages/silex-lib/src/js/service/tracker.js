@@ -48,7 +48,7 @@ silex.service.Tracker.SILEX_ACTIONS_CATEGORY = 'silex-event';
  * @param  {string} category
  * @param  {string} action
  * @param  {?string=} opt_label
- * @param  {?string=} opt_value
+ * @param  {?number=} opt_value
  */
 silex.service.Tracker.prototype.trackAction = function(category, action, opt_label, opt_value) {
   //  console.info('trackAction', arguments);
