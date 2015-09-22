@@ -35,19 +35,19 @@ silex.model.PageData = function() {
   /**
    * @type {string}
    */
-  this.name = null;
+  this.name = '';
   /**
    * @type {string}
    */
-  this.displayName = null;
+  this.displayName = '';
   /**
    * @type {string}
    */
-  this.linkName = null;
+  this.linkName = '';
   /**
    * @type {number}
    */
-  this.idx = null;
+  this.idx = -1;
 };
 
 
@@ -105,6 +105,14 @@ silex.model.Page.PAGED_HIDDEN_CLASS_NAME = 'paged-element-hidden';
 
 
 /**
+ * constant for the class name of element containing the pages
+ * @const
+ * @type {string}
+ */
+silex.model.Page.PAGES_CONTAINER_CLASS_NAME = 'silex-pages';
+
+
+/**
  * constant for the class name of elements when it is in a visible page
  * this css class is set in pageable.js
  * @const
@@ -129,10 +137,10 @@ silex.model.Page.PAGE_LINK_ACTIVE_CLASS_NAME = 'page-link-active';
  */
 silex.model.Page.prototype.getParentPage = function(element) {
   var parent = element.parentNode;
-  while (parent && !goog.dom.classlist.contains(parent, silex.model.Page.PAGED_CLASS_NAME)) {
+  while (parent && !goog.dom.classlist.contains(/** @type {Element|null} */ (parent), silex.model.Page.PAGED_CLASS_NAME)) {
     parent = parent.parentNode;
   }
-  return parent;
+  return /** @type {Element|null} */ (parent);
 };
 
 
@@ -393,7 +401,7 @@ silex.model.Page.prototype.getPagesForElement = function(element) {
 /**
  * check if an element is in the given page (current page by default)
  * @param {Element} element
- * @param {string} opt_pageName
+ * @param {?string=} opt_pageName
  * @return {boolean}
  */
 silex.model.Page.prototype.isInPage = function(element, opt_pageName) {

@@ -112,16 +112,13 @@ silex.view.Workspace.prototype.startWatchingResize = function(view) {
  * handle the "prevent leave page" mechanism
  * listen for the unload event and warn the user
  * prevent quit only when the current website is dirty
- * @return {string|null}
  */
 silex.view.Workspace.prototype.startWatchingUnload = function() {
   window.onbeforeunload = () => {
     if(this.controller.fileMenuController.isDirty()) {
       return 'You have unsaved modifications, are you sure you want to leave me?';
     }
-    else {
-      return null;
-    }
+    return null;
   };
 };
 

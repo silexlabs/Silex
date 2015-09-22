@@ -22,7 +22,7 @@
  * @param {string} c
  * @param {string} d
  * @param {?string=} e
- * @param {?string=} f
+ * @param {?number=} f
  * @param {?boolean=} g
  */
 function ga(a, b, c, d, e, f, g) {}
@@ -185,7 +185,6 @@ ce.api.CloudExplorer.prototype.exportFile = function(arg1, arg2, arg3, arg4) {};
 /**
  * unifile externs
  * @constructor
- * @typedef {{success: boolean, message: ?string, tempLink: ?string, code: ?string}}
  */
 var UnifileResponse = function() {};
 
@@ -1186,10 +1185,47 @@ Ace.prototype.setOptions = function(opts) {};
  * @type {Object.<*>}
  */
 var alertify = {};
-alertify.success = function () {};
-alertify.set = function () {};
-alertify.alert = function () {};
-alertify.prompt = function () {};
-alertify.confirm = function () {};
-alertify.error = function () {};
-alertify.log = function () {};
+/**
+ * @param {string} message
+ */
+alertify.success = function (message) {};
+/**
+ * @param {*} config
+ */
+alertify.set = function (config) {};
+/**
+ * ask for a text
+ * @param {string} message
+ * @param {function(?boolean, ?string)} cbk
+ * @param {?string=} opt_okLabel
+ * @param {?string=} opt_cancelLabel
+ * @param {?string=} opt_text
+ */
+alertify.alert = function (message, cbk, opt_okLabel, opt_cancelLabel, opt_text) {};
+/**
+ * ask for a text
+ * @param {string} message
+ * @param {function(?boolean, ?string)} cbk
+ * @param {?string=} opt_okLabel
+ * @param {?string=} opt_cancelLabel
+ * @param {?string=} opt_text
+ */
+alertify.prompt = function (message, cbk, opt_okLabel, opt_cancelLabel, opt_text) {};
+/**
+ * ask for a text
+ * @param {string} message
+ * @param {function(?boolean, ?string)} cbk
+ * @param {?string=} opt_okLabel
+ * @param {?string=} opt_cancelLabel
+ * @param {?string=} opt_text
+ */
+alertify.confirm = function (message, cbk, opt_okLabel, opt_cancelLabel, opt_text) {};
+/**
+ * @param {string} message
+ */
+alertify.error = function (message) {};
+/**
+ * @param {string} message
+ */
+alertify.log = function (message) {};
+

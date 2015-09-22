@@ -152,6 +152,7 @@ silex.controller.ControllerBase.prototype.getState = function(opt_cbk) {
       scrollY: this.view.stage.getScrollY()
     };
   }
+  return null;
 };
 
 
@@ -256,13 +257,13 @@ silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
  * @param  {string} name
  * @param  {?string=} value
  * @param {?Array.<Element>=} opt_elements
- * @param  {boolean} isUndoable
+ * @param  {?boolean=} opt_isUndoable default is true
  */
-silex.controller.ControllerBase.prototype.styleChanged = function(name, value, opt_elements, isUndoable) {
+silex.controller.ControllerBase.prototype.styleChanged = function(name, value, opt_elements, opt_isUndoable) {
   if (!opt_elements) {
     opt_elements = this.model.body.getSelection();
   }
-  if (isUndoable !== false) {
+  if (opt_isUndoable !== false) {
     // undo checkpoint
     this.undoCheckPoint();
   }

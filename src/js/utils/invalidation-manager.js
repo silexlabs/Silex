@@ -42,8 +42,15 @@ class InvalidationManager {
 
 
     /**
+     * the minimum time between two calls
+     * @type {boolean}
+     */
+    this.isDirty = false;
+
+
+    /**
      * store the last callback called while the delay since first call is not over
-     * @type {function()}
+     * @type {function()|null}
      */
     this.cbk = null;
   }
@@ -68,7 +75,7 @@ class InvalidationManager {
     }
   }
 
-  startDirty(cbk) {
+  startDirty() {
     setTimeout(() => {
       // other calls have been made in the mean time, call the last one only
       if(this.cbk === null) {

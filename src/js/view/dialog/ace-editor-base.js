@@ -55,7 +55,7 @@ goog.inherits(silex.view.dialog.AceEditorBase, silex.view.dialog.DialogBase);
 
 /**
  * instance of ace editor
- * @type {Ace}
+ * @type {Ace|null}
  */
 silex.view.dialog.AceEditorBase.prototype.ace = null;
 
@@ -68,14 +68,14 @@ silex.view.dialog.AceEditorBase.prototype.iAmSettingValue = false;
 
 /**
  * currently opened editor
- * @type {silex.view.dialog.AceEditorBase}
+ * @type {silex.view.dialog.AceEditorBase|null}
  */
 silex.view.dialog.AceEditorBase.currentEditor = null;
 
 
 /**
  * flag set to true when editors are docked
- * @type {boolean}
+ * @type {boolean|null}
  */
 silex.view.dialog.AceEditorBase.isDocked = null;
 

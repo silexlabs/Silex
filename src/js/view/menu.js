@@ -140,8 +140,8 @@ silex.view.Menu.prototype.buildUi = function() {
 
 /**
  * add an item to the menu
- * @param {{mnemonic:string,checkable:boolean,id:string,shortcut:Array.<*>, globalKey:string}} itemData [description]
- * @param {goog.ui.menuBar} menu
+ * @param {{mnemonic:goog.events.KeyCodes.<number>,checkable:boolean,id:string,shortcut:Array.<number>, globalKey:string, tooltip:goog.events.KeyCodes.<number>}} itemData menu item as defined in config.js
+ * @param {goog.ui.Menu} menu
  * @param {goog.ui.KeyboardShortcutHandler} shortcutHandler
  * @param {Array.<Object>} globalKeys
  */

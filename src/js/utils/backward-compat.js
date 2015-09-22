@@ -41,7 +41,7 @@ silex.utils.BackwardCompat.LATEST_VERSION = [2, 2, 5];
  * Backwardcompatibility process takes place after opening a file
  * @param {Document} doc
  * @param  {silex.types.Model} model
- * @param {function(updated: boolean)} cbk
+ * @param {function(boolean)} cbk
  */
 silex.utils.BackwardCompat.process = function(doc, model, cbk) {
   // if no generator tag, create one
@@ -70,7 +70,7 @@ silex.utils.BackwardCompat.process = function(doc, model, cbk) {
   }
 
   // convert to the latest version
-  // silex.utils.BackwardCompat.to2_2_0(version, doc, model, function() {
+  silex.utils.BackwardCompat.to2_2_0(version, doc, model, function() {
   silex.utils.BackwardCompat.to2_2_2(version, doc, model, function() {
   silex.utils.BackwardCompat.to2_2_3(version, doc, model, function() {
   silex.utils.BackwardCompat.to2_2_4(version, doc, model, function() {
@@ -86,7 +86,7 @@ silex.utils.BackwardCompat.process = function(doc, model, cbk) {
     metaNode.setAttribute('content', 'Silex v' + silex.utils.BackwardCompat.LATEST_VERSION.join('.'));
     // continue
     cbk(hasToUpdate);
-  })})})});
+  })})})})});
 };
 
 
@@ -116,7 +116,7 @@ silex.utils.BackwardCompat.getStaticResourceUrl = function(fileName) {
  * @return {boolean}
  */
 silex.utils.BackwardCompat.amIObsolete = function(initialVersion, targetVersion) {
-  return initialVersion[2] && initialVersion[0] > targetVersion[0] ||
+  return !!initialVersion[2] && initialVersion[0] > targetVersion[0] ||
     initialVersion[1] > targetVersion[1] ||
     initialVersion[2] > targetVersion[2];
 };
@@ -141,10 +141,10 @@ silex.utils.BackwardCompat.hasToUpdate = function(initialVersion, targetVersion)
  * @param  {silex.types.Model} model
  * @param {function()} cbk
  */
-silex.utils.BackwardCompat.to2_2_5 = function(version, doc, model, cbk) {
+silex.utils.BackwardCompat.to2_2_6 = function(version, doc, model, cbk) {
 
   if(silex.utils.BackwardCompat.hasToUpdate(version, [2, 2, 5])) {
-    var pagesContainer = doc.querySelector(silex.model.Page.PAGES_CONTAINER_CLASS_NAME);
+     var pagesContainer = doc.querySelector(silex.model.Page.PAGES_CONTAINER_CLASS_NAME);
     if(!pagesContainer) {
       pagesContainer = doc.createElement('div');
       pagesContainer.classList.add(silex.model.Page.PAGES_CONTAINER_CLASS_NAME);
@@ -152,7 +152,20 @@ silex.utils.BackwardCompat.to2_2_5 = function(version, doc, model, cbk) {
       var pages = doc.querySelectorAll(silex.model.Page.PAGE_CLASS_NAME);
       goog.array.forEach(pages, (page) => pagesContainer.appendChild(page));
     }
+  }
+  cbk();
+};
 
+
+/**
+ * @param {Array.<number>} version
+ * @param {Document} doc
+ * @param  {silex.types.Model} model
+ * @param {function()} cbk
+ */
+silex.utils.BackwardCompat.to2_2_5 = function(version, doc, model, cbk) {
+
+  if(silex.utils.BackwardCompat.hasToUpdate(version, [2, 2, 5])) {
     // remove jquery.ui.touch-punch.min.js
     let element = doc.querySelector('[src$="jquery.ui.touch-punch.min.js"]');
     if(element) {
@@ -160,9 +173,6 @@ silex.utils.BackwardCompat.to2_2_5 = function(version, doc, model, cbk) {
     }
 
     var host = silex.utils.Url.getHost();
-    handle('src');
-    handle('href');
-    handle('data-silex-href');
     // add the [data-silex-static] attributes
     function handle(attrName) {
       let elements = doc.querySelectorAll('[' + attrName + ']');
@@ -175,6 +185,10 @@ silex.utils.BackwardCompat.to2_2_5 = function(version, doc, model, cbk) {
           element.setAttribute('data-silex-static', '');
         }
       });
+    // handle the different attributes
+    handle('src');
+    handle('href');
+    handle('data-silex-href');
     }
   }
   cbk();

@@ -172,7 +172,7 @@ silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk, opt_showLoader) 
 
 /**
  * the content of the iframe changed
- * @param {function()} opt_cbk
+ * @param {?function()=} opt_cbk
  */
 silex.model.File.prototype.contentChanged = function(opt_cbk) {
   // wait for the webste to be loaded
@@ -209,7 +209,7 @@ silex.model.File.prototype.contentChanged = function(opt_cbk) {
 
 /**
  * copntent successfully changed in the iframe
- * @param {function()} opt_cbk
+ * @param {?function()=} opt_cbk
  */
 silex.model.File.prototype.onContentLoaded = function(opt_cbk) {
   // handle retrocompatibility issues
@@ -220,7 +220,7 @@ silex.model.File.prototype.onContentLoaded = function(opt_cbk) {
     // select the body
     this.model.body.setSelection([this.contentDocument_.body]);
     // make editable again
-    this.model.body.setEditable(this.contentDocument_.body, true, true);
+    this.model.body.setEditable(this.contentDocument_.body, true);
     // update text editor with the website custom styles and script
     this.model.head.setHeadStyle(this.model.head.getHeadStyle());
     this.model.head.setHeadScript(this.model.head.getHeadScript());
@@ -290,8 +290,6 @@ silex.model.File.prototype.includeEditionTags = function(opt_onSuccess, opt_onEr
  * remove all internal objects and attributes
  */
 silex.model.File.prototype.getHtml = function() {
-  // cleanup
-  //this.model.body.setEditable(this.contentDocument_.body, false);
   // clone
   var cleanFile = /** @type {Node} */ (this.contentDocument_.cloneNode(true));
   // update style tag (the dom do not update automatically when we change document.styleSheets)
@@ -352,8 +350,6 @@ silex.model.File.prototype.getHtmlNextStep = function (cbk, generator) {
  * yield after each step
  */
 silex.model.File.prototype.getHtmlGenerator = function* () {
-  // cleanup
-  //this.model.body.setEditable(this.contentDocument_.body, false);
   // update style tag (the dom do not update automatically when we change document.styleSheets)
   let updatedStyles = this.model.property.updateSilexStyleTag(this.contentDocument_, false);
   yield;

@@ -40,7 +40,7 @@ goog.inherits(silex.controller.ToolMenuController, silex.controller.ControllerBa
 
 /**
  * pixlr object, created with the global Pixlr calss provided by Pixlr library
- * @type {[type]}
+ * @type {Pixlr}
  */
 silex.controller.ToolMenuController.prototype.pixlr = null;
 
@@ -48,7 +48,7 @@ silex.controller.ToolMenuController.prototype.pixlr = null;
 /**
  * edit in pixlr
  * this method is called by pixlrEdit and pixlrExpress with the desired service name
- * @param {function(url, method)} pixlrMethod a reference to either `this.pixlr.edit` or `this.pixlr.express`
+ * @param {function((HTMLElement|null|string), (null|string), (null|string))} pixlrMethod a reference to either `this.pixlr.edit` or `this.pixlr.express`
  * @param {string} trackingLabel
  */
 silex.controller.ToolMenuController.prototype.openPixlr = function(pixlrMethod, trackingLabel) {
@@ -133,7 +133,7 @@ silex.controller.ToolMenuController.prototype.openPixlr = function(pixlrMethod, 
                 // remove temp file on the server
                 silex.service.SilexTasks.getInstance().disposeTempLink(tempLink);
                 // update the bg image
-                this.model.element.setBgImage(element, silex.utils.Dom.addCacheControl(url));
+                this.model.element.setBgImage(element, silex.utils.Dom.addCacheControl(/** @type {string} */ (url)));
               }, this);
               // start editing in pixlr
               pixlrMethod(silex.utils.Url.getRootUrl() + tempLink, url.replace('exec/get/', 'exec/put/'), '_blank');
