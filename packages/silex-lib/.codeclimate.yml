@@ -1,0 +1,12 @@
+# Save as .codeclimate.yml (note leading .) in project root directory
+languages:
+  JavaScript: true
+exclude_paths:
+- "dist/*"
+- "build/*"
+- "docs/*"
+- "submodules/*"
+- "static/*"
+- "www/*"
+- "test/*"
+- "src/js/config.js"
