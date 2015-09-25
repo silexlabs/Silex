@@ -185,11 +185,11 @@ silex.utils.BackwardCompat.to2_2_5 = function(version, doc, model, cbk) {
           element.setAttribute('data-silex-static', '');
         }
       });
+    }
     // handle the different attributes
     handle('src');
     handle('href');
     handle('data-silex-href');
-    }
   }
   cbk();
 };
