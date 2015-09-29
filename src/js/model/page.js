@@ -169,8 +169,13 @@ silex.model.Page.prototype.getCurrentPage = function() {
   }
   var bodyElement = this.model.body.getBodyElement();
   var pageName = null;
-  if(this.model.file.getContentWindow().jQuery(bodyElement).pageable) {
-    pageName = this.model.file.getContentWindow().jQuery(bodyElement).pageable('option', 'currentPage');
+  try {
+    if(this.model.file.getContentWindow().jQuery(bodyElement).pageable) {
+      pageName = this.model.file.getContentWindow().jQuery(bodyElement).pageable('option', 'currentPage');
+    }
+  }
+  catch(e) {
+    console.error('error, could not retrieve the current page', e);
   }
   return pageName;
 };
