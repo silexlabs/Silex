@@ -234,7 +234,7 @@ silex.view.Stage.prototype.bodyElementSizeToContent = function(event) {
       let desiredBodyWidth = bb.width + 100;
       if (desiredBodyWidth < viewportSize.width) {
         // let the css handle a body of the size of the stage
-        goog.style.setStyle(this.bodyElement, 'minWidth');
+        goog.style.setStyle(this.bodyElement, 'minWidth', '');
       }
       else {
         // we want the body to be this size
@@ -247,7 +247,7 @@ silex.view.Stage.prototype.bodyElementSizeToContent = function(event) {
       let desiredBodyHeight = bb.height + 100;
       if (desiredBodyHeight < viewportSize.height) {
         // let the css handle a body of the size of the stage
-        goog.style.setStyle(this.bodyElement, 'minHeight');
+        goog.style.setStyle(this.bodyElement, 'minHeight', '');
       }
       else {
         // we want the body to be this size

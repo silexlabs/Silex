@@ -320,10 +320,10 @@ silex.model.Property.prototype.getBoundingBox = function(elements) {
     var elementRight = (elementLeft || 0) + elementWidth;
     var elementBottom = (elementTop || 0) + elementHeight;
     // take the smallest top and left and the bigger bottom and rigth
-    top = isNaN(top) ? elementTop : Math.min(top, elementTop);
-    left = isNaN(left) ? elementLeft : Math.min(left, elementLeft);
-    bottom = isNaN(bottom) ? elementBottom : Math.max(bottom, elementBottom);
-    right = isNaN(right) ? elementRight : Math.max(right, elementRight);
+    top = isNaN(top) ? elementTop : Math.min(top, isNaN(elementTop) ? top : elementTop);
+    left = isNaN(left) ? elementLeft : Math.min(left, isNaN(elementLeft) ? left : elementLeft);
+    bottom = isNaN(bottom) ? elementBottom : Math.max(bottom, isNaN(elementBottom) ? bottom : elementBottom);
+    right = isNaN(right) ? elementRight : Math.max(right, isNaN(elementRight) ? right : elementRight);
   }, this);
   // no value for NaN results
   var res = {};
