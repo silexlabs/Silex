@@ -306,6 +306,8 @@ silex.model.Element.prototype.setBgImage = function(element, url) {
   else {
     this.setStyle(element, 'backgroundImage');
   }
+  // redraw tools
+  this.model.body.setSelection(this.model.body.getSelection());
 };
 
 
@@ -504,6 +506,8 @@ silex.model.Element.prototype.setImageUrl = function(element, url, opt_callback,
             img.removeAttribute('id');
             // remove loading asset
             goog.dom.classlist.remove(element, silex.model.Element.LOADING_ELEMENT_CSS_CLASS);
+            // redraw tools
+            this.model.body.setSelection(this.model.body.getSelection());
           }, true, this);
       goog.events.listenOnce(imageLoader, goog.net.EventType.ERROR,
           function() {
