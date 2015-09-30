@@ -346,11 +346,6 @@ silex.model.Head.prototype.setMeta = function(name, opt_value) {
  * @param {?string=} opt_path
  */
 silex.model.Head.prototype.setPublicationPath = function(opt_path) {
-  if(opt_path) {
-    // absolute url only in the dom
-    var baseUrl = silex.utils.Url.getBaseUrl();
-    opt_path = silex.utils.Url.getAbsolutePath(/** @type {string} */ (opt_path), baseUrl);
-  }
   this.setMeta('publicationPath', opt_path);
   this.view.settingsDialog.setPublicationPath(opt_path);
 };
@@ -362,7 +357,6 @@ silex.model.Head.prototype.setPublicationPath = function(opt_path) {
  * @return {?string}
  */
 silex.model.Head.prototype.getPublicationPath = function() {
-  // here, we could make it a relative path in order to display it, but publication path is deliberately an absolute path
   var url = this.getMeta('publicationPath');
   return url;
 };
