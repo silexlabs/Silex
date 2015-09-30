@@ -16,6 +16,7 @@
 
 
 goog.provide('silex.utils.DomCleaner');
+goog.require('silex.utils.Url');
 
 
 
@@ -75,7 +76,6 @@ silex.utils.DomCleaner.cleanupFirefoxInlines = function(doc) {
 silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
   var headElement = contentDocument.head;
   var bodyElement = contentDocument.body;
-
   // baseUrl must end with a '/' because filterBgImage and silex.utils.Url.getAbsolutePath needs it to
   if (!goog.string.endsWith(baseUrl, '/')) {
     baseUrl += '/';
@@ -169,7 +169,15 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
     var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
     // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
     if (!silex.utils.Url.isAbsoluteUrl(relative)) {
-      relative = '/' + relative;
+      // case of the static scripts (all the other cases are /api/...)
+      if(relative.indexOf('static/') === 0) {
+        // from static/2.5/jquery.js to http://editor.silex.me/static/2.5/jquery.js
+        relative = silex.utils.Url.getBaseUrl() + relative;
+      }
+      else {
+        // add '/', e.g. api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
+        relative = '/' + relative;
+      }
     }
     if (silex.utils.DomCleaner.isDownloadable(absolute)) {
       var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
@@ -190,9 +198,16 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
     var absolute = silex.utils.Url.getAbsolutePath(group1, baseUrl);
     if (silex.utils.DomCleaner.isDownloadable(absolute)) {
       var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
-      // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
       if (!silex.utils.Url.isAbsoluteUrl(relative)) {
-        relative = '/' + relative;
+        // case of the static scripts (all the other cases are /api/...)
+        if(relative.indexOf('static/') === 0) {
+          // from static/2.5/jquery.js to http://editor.silex.me/static/2.5/jquery.js
+          relative = silex.utils.Url.getBaseUrl() + relative;
+        }
+        else {
+          // add '/', e.g. api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
+          relative = '/' + relative;
+        }
       }
       var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
       var newRelativePath = 'js/' + fileName;
@@ -319,10 +334,15 @@ silex.utils.DomCleaner.isDownloadable = function(url) {
   if (!silex.utils.Url.isAbsoluteUrl(url)) {
     return true;
   }
+  // make protocol agnostic
+  let agnosticUrl = url.substr(url.indexOf('//'));
   // download files from a known domain (sttic.silex.me)
   var found = false;
   goog.array.forEach(silex.utils.DomCleaner.DOWNLOAD_LOCALLY_FROM, function(baseUrl) {
-    if (url.indexOf(baseUrl) >= 0) {
+    // make protocol agnostic
+    baseUrl = baseUrl.substr(baseUrl.indexOf('//'));
+    // check if we can download it
+    if (agnosticUrl.indexOf(baseUrl) >= 0) {
       // url starts by the base url, so it is downloadable
       found = true;
     }

@@ -143,7 +143,7 @@ silex.utils.BackwardCompat.hasToUpdate = function(initialVersion, targetVersion)
  */
 silex.utils.BackwardCompat.to2_2_6 = function(version, doc, model, cbk) {
 
-  if(silex.utils.BackwardCompat.hasToUpdate(version, [2, 2, 5])) {
+  if(silex.utils.BackwardCompat.hasToUpdate(version, [2, 2, 6])) {
      var pagesContainer = doc.querySelector(silex.model.Page.PAGES_CONTAINER_CLASS_NAME);
     if(!pagesContainer) {
       pagesContainer = doc.createElement('div');
@@ -165,7 +165,8 @@ silex.utils.BackwardCompat.to2_2_6 = function(version, doc, model, cbk) {
  */
 silex.utils.BackwardCompat.to2_2_5 = function(version, doc, model, cbk) {
 
-  if(silex.utils.BackwardCompat.hasToUpdate(version, [2, 2, 5])) {
+// FIXME: to be uncommented, due to a fix after release of 2.2.5 this will be run for all templates even > 2.2.5
+//  if(silex.utils.BackwardCompat.hasToUpdate(version, [2, 2, 5])) {
     // remove jquery.ui.touch-punch.min.js
     let element = doc.querySelector('[src$="jquery.ui.touch-punch.min.js"]');
     if(element) {
@@ -178,9 +179,9 @@ silex.utils.BackwardCompat.to2_2_5 = function(version, doc, model, cbk) {
       let elements = doc.querySelectorAll('[' + attrName + ']');
       goog.array.forEach(elements, function (element) {
         var attr = element.getAttribute(attrName);
-        if(attr.indexOf('http://static.silex.') > -1) {
-          attr = attr.replace('http://static.silex.me', '//' + host + '/static');
-          attr = attr.replace('http://static.silex.io', '//' + host + '/static');
+        if(attr.indexOf('//static.silex.') > -1) {
+          attr = attr.replace('//static.silex.me', '//' + host + '/static');
+          attr = attr.replace('//static.silex.io', '//' + host + '/static');
           element.setAttribute(attrName, attr);
           element.setAttribute('data-silex-static', '');
         }
@@ -190,7 +191,7 @@ silex.utils.BackwardCompat.to2_2_5 = function(version, doc, model, cbk) {
     handle('src');
     handle('href');
     handle('data-silex-href');
-  }
+//  }
   cbk();
 };
 
