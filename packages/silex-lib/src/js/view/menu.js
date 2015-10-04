@@ -140,8 +140,8 @@ silex.view.Menu.prototype.buildUi = function() {
 
 /**
  * add an item to the menu
- * @param {{mnemonic:string,checkable:boolean,id:string,shortcut:Array.<*>, globalKey:string}} itemData [description]
- * @param {goog.ui.menuBar} menu
+ * @param {{mnemonic:goog.events.KeyCodes.<number>,checkable:boolean,id:string,shortcut:Array.<number>, globalKey:string, tooltip:goog.events.KeyCodes.<number>}} itemData menu item as defined in config.js
+ * @param {goog.ui.Menu} menu
  * @param {goog.ui.KeyboardShortcutHandler} shortcutHandler
  * @param {Array.<Object>} globalKeys
  */
@@ -222,7 +222,7 @@ silex.view.Menu.prototype.onMenuEvent = function(type) {
       break;
     case 'file.publish.settings':
       this.controller.fileMenuController.view.settingsDialog.openDialog();
-      this.controller.fileMenuController.view.workspace.invalidate(this.controller.fileMenuController.view);
+      this.controller.fileMenuController.view.workspace.redraw(this.controller.fileMenuController.view);
       break;
     case 'file.publish':
       this.controller.fileMenuController.publish();

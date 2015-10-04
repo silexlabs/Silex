@@ -177,9 +177,13 @@ silex.model.Element.prototype.unprepareHtmlForEdit = function(rawHtml) {
   rawHtml = rawHtml.replace(/type=\"text\/notjavascript\"/gi, 'type="text/javascript"');
   // remove cache control used to refresh images after editing by pixlr
   rawHtml = silex.utils.Dom.removeCacheControl(rawHtml);
-  // convert to relative urls
   if (this.model.file.getUrl()) {
-    rawHtml = silex.utils.Url.absolute2Relative(rawHtml, silex.utils.Url.getBaseUrl() + this.model.file.getUrl());
+    // convert to relative urls
+    let baseUrl = silex.utils.Url.getBaseUrl();
+    rawHtml = silex.utils.Url.absolute2Relative(rawHtml, baseUrl + this.model.file.getUrl());
+    // put back the static scripts (protocol agnostic)
+    let staticUrl = baseUrl.substr(baseUrl.indexOf('//')) + 'static/';
+    rawHtml = rawHtml.replace(new RegExp('\.\./\.\./\.\./\.\./\.\./[\.\./]*static/', 'g'), staticUrl);
   }
   return rawHtml;
 };
@@ -203,7 +207,7 @@ silex.model.Element.prototype.getTabs = function(num) {
 /**
  * get/set type of the element
  * @param  {Element} element   created by silex, either a text box, image, ...
- * @return  {string}           the style of the element
+ * @return  {string|null}           the style of the element
  * example: for a container this will return "container"
  */
 silex.model.Element.prototype.getType = function(element) {
@@ -264,11 +268,6 @@ silex.model.Element.prototype.setStyle = function(element, styleName, opt_styleV
       styleObject[styleName] = '';
     }
     this.model.property.setStyle(element, styleObject);
-    // update the view
-    var pages = this.model.page.getPages();
-    var page = this.model.page.getCurrentPage();
-    var selectedElements = this.model.body.getSelection();
-    this.view.propertyTool.redraw(selectedElements, pages, page);
   }
   // remove the 'just pasted' class
   element.classList.remove(silex.model.Element.JUST_ADDED_CLASS_NAME);
@@ -307,6 +306,8 @@ silex.model.Element.prototype.setBgImage = function(element, url) {
   else {
     this.setStyle(element, 'backgroundImage');
   }
+  // redraw tools
+  this.model.body.setSelection(this.model.body.getSelection());
 };
 
 
@@ -505,6 +506,8 @@ silex.model.Element.prototype.setImageUrl = function(element, url, opt_callback,
             img.removeAttribute('id');
             // remove loading asset
             goog.dom.classlist.remove(element, silex.model.Element.LOADING_ELEMENT_CSS_CLASS);
+            // redraw tools
+            this.model.body.setSelection(this.model.body.getSelection());
           }, true, this);
       goog.events.listenOnce(imageLoader, goog.net.EventType.ERROR,
           function() {
@@ -599,7 +602,7 @@ silex.model.Element.prototype.createElement = function(type) {
   };
 
   // create the element
-  var element;
+  var element = null;
   switch (type) {
 
     // container

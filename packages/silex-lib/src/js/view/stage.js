@@ -49,6 +49,20 @@ silex.view.Stage = function(element, model, controller) {
    * @type {!silex.types.Controller}
    */
   this.controller = controller;
+
+
+  /**
+   * invalidation mechanism
+   * @type {InvalidationManager}
+   */
+  this.invalidationManagerScroll = new InvalidationManager(500);
+
+
+  /**
+   * invalidation mechanism
+   * @type {InvalidationManager}
+   */
+  this.invalidationManagerFocus = new InvalidationManager(500);
 };
 
 /**
@@ -208,17 +222,19 @@ silex.view.Stage.prototype.onPreventBackSwipe = function(event) {
  */
 silex.view.Stage.prototype.bodyElementSizeToContent = function(event) {
   if (this.bodyElement) {
-    let containers = goog.dom.getElementsByClass(
-        silex.view.Stage.BACKGROUND_CLASS_NAME,
-        this.bodyElement);
-
+    let containers = [];
+    goog.array.forEach(this.bodyElement.children, (element) => {
+      if(element.classList.contains(silex.model.Body.EDITABLE_CLASS_NAME)) {
+        containers.push(element);
+      }
+    });
     if (containers && containers.length > 0) {
       let bb = this.model.property.getBoundingBox(containers);
       let viewportSize = this.viewport.getSize();
       let desiredBodyWidth = bb.width + 100;
       if (desiredBodyWidth < viewportSize.width) {
         // let the css handle a body of the size of the stage
-        goog.style.setStyle(this.bodyElement, 'minWidth');
+        goog.style.setStyle(this.bodyElement, 'minWidth', '');
       }
       else {
         // we want the body to be this size
@@ -231,7 +247,7 @@ silex.view.Stage.prototype.bodyElementSizeToContent = function(event) {
       let desiredBodyHeight = bb.height + 100;
       if (desiredBodyHeight < viewportSize.height) {
         // let the css handle a body of the size of the stage
-        goog.style.setStyle(this.bodyElement, 'minHeight');
+        goog.style.setStyle(this.bodyElement, 'minHeight', '');
       }
       else {
         // we want the body to be this size
@@ -475,8 +491,10 @@ silex.view.Stage.prototype.handleMouseUp = function(target, x, y, shiftKey) {
  * remove the focus from text fields
  */
 silex.view.Stage.prototype.resetFocus = function() {
-  this.focusInput.focus();
-  this.focusInput.blur();
+  this.invalidationManagerFocus.callWhenReady(() => {
+    this.focusInput.focus();
+    this.focusInput.blur();
+  });
 };
 
 
@@ -554,7 +572,7 @@ silex.view.Stage.prototype.onMouseMove = function(target, x, y, shiftKey) {
  * @param {?Element=} opt_element to be marked
  */
 silex.view.Stage.prototype.markAsDropZone = function(opt_element) {
-  let els = goog.dom.getElementsByClass(silex.model.Body.DROP_CANDIDATE_CLASS_NAME, this.bodyElement.parentNode);
+  let els = goog.dom.getElementsByClass(silex.model.Body.DROP_CANDIDATE_CLASS_NAME, /** @type {Element|null} */ (this.bodyElement.parentNode));
   goog.array.forEach(els, (event) => goog.dom.classlist.remove(/** @type {Element} */ (event), silex.model.Body.DROP_CANDIDATE_CLASS_NAME));
   if (opt_element) {
     goog.dom.classlist.add(/** @type {Element} */ (opt_element), silex.model.Body.DROP_CANDIDATE_CLASS_NAME);
@@ -639,21 +657,23 @@ silex.view.Stage.prototype.getVisibility = function(element) {
  * @param   {number} y position of the mouse, relatively to the screen
  */
 silex.view.Stage.prototype.updateScroll = function(x, y) {
-  let iframeSize = goog.style.getSize(this.element);
-  let scrollX = this.getScrollX();
-  let scrollY = this.getScrollY();
-  if (x < 30) {
-    this.setScrollX(scrollX - 25);
-  }
-  else if (x > iframeSize.width - 30) {
-    this.setScrollX(scrollX + 25);
-  }
-  if (y < 30) {
-    this.setScrollY(scrollY - 25);
-  }
-  else if (y > iframeSize.height - 30) {
-    this.setScrollY(scrollY + 25);
-  }
+  this.invalidationManagerScroll.callWhenReady(() => {
+    let iframeSize = goog.style.getSize(this.element);
+    let scrollX = this.getScrollX();
+    let scrollY = this.getScrollY();
+    if (x < 30) {
+      this.setScrollX(scrollX - 25);
+    }
+    else if (x > iframeSize.width - 30) {
+      this.setScrollX(scrollX + 25);
+    }
+    if (y < 30) {
+      this.setScrollY(scrollY - 25);
+    }
+    else if (y > iframeSize.height - 30) {
+      this.setScrollY(scrollY + 25);
+    }
+  });
 };
 
 
