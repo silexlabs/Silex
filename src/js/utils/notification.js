@@ -136,7 +136,7 @@ silex.utils.Notification.nativeNotification = function(message, iconUrl) {
 
 /**
  * core method for alert, prompt and confirm
- * @param {function(string, function(...), ?string=, ?string=)} dialogMethod
+ * @param {function(string, function(...), ?string=, ?string=, ?string=)} dialogMethod
  * @param {string} message
  * @param {function(?boolean, ?string)} cbk
  * @param {?string=} opt_okLabel

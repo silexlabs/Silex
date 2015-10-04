@@ -139,27 +139,6 @@ silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk, opt_showLoader) 
   // cleanup
   this.model.body.setEditable(this.contentDocument_.body, false);
   this.view.stage.removeEvents(this.contentDocument_.body);
-  // when the iframe content has changed
-  goog.events.listenOnce(this.iFrameElement_, 'error', function(e) {
-    console.error('iframe load error', e);
-  });
-  goog.events.listenOnce(this.iFrameElement_, 'load', function() {
-    // remove the "silex-runtime" css class from the body while editing
-    goog.dom.classlist.remove(this.contentDocument_.body, 'silex-runtime');
-    // include edition tags and call onContentLoaded
-    // the first time, it takes time to load the scripts
-    // the second time, no load event, and jquery is already loaded
-
-    // first time in chrome, and always in firefox
-    // load scripts for edition in the iframe
-    this.includeEditionTags(goog.bind(function() {
-      this.onContentLoaded(opt_cbk);
-    }, this), goog.bind(function() {
-      // error loading editable script
-      console.error('error loading editable script');
-      throw new Error('error loading editable script');
-    }, this));
-  }, false, this);
   // add base tag from the beginning
   // should not be needed since we change all  the URLs to absolute
   // but just in case abs/rel conversion bugs
@@ -173,39 +152,75 @@ silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk, opt_showLoader) 
   rawHtml = this.model.element.prepareHtmlForEdit(rawHtml);
   // make everything protocol agnostic to avoid problems with silex being https
   rawHtml = rawHtml.replace('http://', '//', 'g');
+  // detect non-silex websites
+  if(rawHtml.indexOf('silex-runtime') < 0) {
+    console.error('This is not a website editable in Silex.');
+    silex.utils.Notification.alert('I can not be open this website. I can only open website made with Silex. <a target="_blank" href="https://github.com/silexlabs/Silex/issues/282">More info here</a>.', function() {});
+    return;
+  }
+  else if(rawHtml.indexOf('silex-published') >= 0) {
+    console.error('This is a published website.');
+    silex.utils.Notification.alert('I can not be open this website. It is a published version of a Silex website. <a target="_blank" href="https://github.com/silexlabs/Silex/issues/282">More info here</a>.', function() {});
+    return;
+  }
   // write the content
   goog.dom.iframe.writeContent(this.iFrameElement_, rawHtml);
+  this.contentChanged(opt_cbk);
 };
+
+
+
+/**
+ * the content of the iframe changed
+ * @param {?function()=} opt_cbk
+ */
+silex.model.File.prototype.contentChanged = function(opt_cbk) {
+  // wait for the webste to be loaded
+  // can not rely on the load event of the iframe because there may be missing assets
+  this.contentDocument_ = goog.dom.getFrameContentDocument(this.iFrameElement_);
+  this.contentWindow_ = goog.dom.getFrameContentWindow(this.iFrameElement_);
+  if (this.contentDocument_.body === null ||
+    this.contentWindow_ === null ||
+    this.contentWindow_['$'] === null ) {
+    setTimeout(goog.bind(function() {
+      this.contentChanged(opt_cbk);
+    }, this), 0);
+    return;
+  }
+
+  // remove the "silex-runtime" css class from the body while editing
+  goog.dom.classlist.remove(this.contentDocument_.body, 'silex-runtime');
+
+  // include edition tags and call onContentLoaded
+  // the first time, it takes time to load the scripts
+  // the second time, no load event, and jquery is already loaded
+
+  // first time in chrome, and always in firefox
+  // load scripts for edition in the iframe
+  this.includeEditionTags(goog.bind(function() {
+    this.onContentLoaded(opt_cbk);
+  }, this), goog.bind(function() {
+    // error loading editable script
+    console.error('error loading editable script');
+    throw new Error('error loading editable script');
+  }, this));
+}
 
 
 /**
  * copntent successfully changed in the iframe
- * @param {function()} opt_cbk
+ * @param {?function()=} opt_cbk
  */
 silex.model.File.prototype.onContentLoaded = function(opt_cbk) {
-  // if we interrupt the loading, the body will be removed
-  if (!this.contentDocument_.body) {
-    console.warn('File:: body is empty, something went wrong, stop waiting for the content');
-    return;
-  }
-  // if the pageable plugin is not created yet, come back later
-  if (!goog.dom.classlist.contains(this.contentDocument_.body, 'pageable-plugin-created')) {
-    // let the time for the scripts to execute (e.g. pageable)
-    setTimeout(goog.bind(function() {
-      this.onContentLoaded(opt_cbk);
-    }, this), 100);
-    return;
-  }
-
   // handle retrocompatibility issues
-  silex.utils.BackwardCompat.process(this.contentDocument_, this.model, () => {
-    // check the integrity and store silex style sheet which holds silex elements styles
+  silex.utils.BackwardCompat.process(this.contentDocument_, this.model, (hasUpgraded) => {
+   // check the integrity and store silex style sheet which holds silex elements styles
     this.model.property.initSilexStyleTag(this.contentDocument_);
     this.model.property.setCurrentSilexStyleSheet(this.model.property.getSilexStyleSheet(this.contentDocument_));
     // select the body
     this.model.body.setSelection([this.contentDocument_.body]);
     // make editable again
-    this.model.body.setEditable(this.contentDocument_.body, true, true);
+    this.model.body.setEditable(this.contentDocument_.body, true);
     // update text editor with the website custom styles and script
     this.model.head.setHeadStyle(this.model.head.getHeadStyle());
     this.model.head.setHeadScript(this.model.head.getHeadScript());
@@ -213,6 +228,16 @@ silex.model.File.prototype.onContentLoaded = function(opt_cbk) {
     this.model.head.updateFromDom();
     // restore event listeners
     this.view.stage.initEvents(this.contentWindow_);
+    // if upgraded, relaod everything
+    /*
+    if(hasUpgraded) {
+      // wait for the BC to complete and the dom to update
+      setTimeout(() => {
+        this.setHtml(this.getHtml(), opt_cbk);
+      }, 200);
+      return;
+    }
+    */
     // refresh the view
     //var page = this.model.page.getCurrentPage();
     //this.model.page.setCurrentPage(page);
@@ -262,11 +287,9 @@ silex.model.File.prototype.includeEditionTags = function(opt_onSuccess, opt_onEr
 
 /**
  * build a string of the raw html content
- * use the bodyTag and headTag objects
+ * remove all internal objects and attributes
  */
 silex.model.File.prototype.getHtml = function() {
-  // cleanup
-  //this.model.body.setEditable(this.contentDocument_.body, false);
   // clone
   var cleanFile = /** @type {Node} */ (this.contentDocument_.cloneNode(true));
   // update style tag (the dom do not update automatically when we change document.styleSheets)
@@ -291,6 +314,83 @@ silex.model.File.prototype.getHtml = function() {
   rawHtml = this.model.element.unprepareHtmlForEdit(rawHtml);
   // add the user's head tag
   rawHtml = this.model.head.insertUserHeadTag(rawHtml);
+  // beutify html
+  rawHtml = window['html_beautify'](rawHtml);
+  return rawHtml;
+};
+
+
+/**
+ * async verion of getHtml
+ * this is an optimisation needed to speedup drag start (which creates an undo point)
+ * it uses generator to lower the load induced by these operations
+ */
+silex.model.File.prototype.getHtmlAsync = function (cbk) {
+  var generator = this.getHtmlGenerator();
+  this.getHtmlNextStep(cbk, generator);
+};
+
+
+/**
+ * does one more step of the async getHtml process
+ */
+silex.model.File.prototype.getHtmlNextStep = function (cbk, generator) {
+  let res = generator.next();
+  if(res.done) {
+    setTimeout(() => cbk(res.value), 100);
+  }
+  else {
+    setTimeout(() => this.getHtmlNextStep(cbk, generator), 100);
+  }
+};
+
+
+/**
+ * the async getHtml process
+ * yield after each step
+ */
+silex.model.File.prototype.getHtmlGenerator = function* () {
+  // update style tag (the dom do not update automatically when we change document.styleSheets)
+  let updatedStyles = this.model.property.updateSilexStyleTag(this.contentDocument_, false);
+  yield;
+  // clone
+  var cleanFile = /** @type {Node} */ (this.contentDocument_.cloneNode(true));
+  yield;
+  var styleTag = cleanFile.querySelector('.' + silex.model.Property.INLINE_STYLE_TAG_CLASS_NAME);
+  styleTag.innerHTML = updatedStyles;
+  yield;
+  // cleanup
+  this.model.head.removeTempTags(/** @type {Document} */ (cleanFile).head);
+  yield;
+  this.model.body.removeEditableClasses(/** @type {!Element} */ (cleanFile));
+  yield;
+  silex.utils.Style.removeInternalClasses(/** @type {!Element} */ (cleanFile), false, true);
+  yield;
+  silex.utils.DomCleaner.cleanupFirefoxInlines(this.contentDocument_);
+  yield;
+  // reset the style set by stage on the body
+  goog.style.setStyle(/** @type {Document} */ (cleanFile).body, 'minWidth', '');
+  yield;
+  goog.style.setStyle(/** @type {Document} */ (cleanFile).body, 'minHeight', '');
+  yield;
+  // put back the "silex-runtime" css class after editing
+  goog.dom.classlist.add(/** @type {Document} */ (cleanFile).body, 'silex-runtime');
+  yield;
+  // get html
+  var rawHtml = /** @type {Document} */ (cleanFile).documentElement.innerHTML;
+  yield;
+  // add the outer html (html tag)
+  rawHtml = '<html>' + rawHtml + '</html>';
+  yield;
+  // add doctype
+  rawHtml = '<!DOCTYPE html>' + rawHtml;
+  yield;
+  // cleanup HTML
+  rawHtml = this.model.element.unprepareHtmlForEdit(rawHtml);
+  yield;
+  // add the user's head tag
+  rawHtml = this.model.head.insertUserHeadTag(rawHtml);
+  yield;
   // beutify html
   rawHtml = window['html_beautify'](rawHtml);
   return rawHtml;

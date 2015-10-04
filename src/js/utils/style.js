@@ -261,11 +261,11 @@ silex.utils.Style.hexToRgba = function(hex) {
  * convert rgba to array of values
  * example:    #000000FF will return [0, 0, 0, 1]
  * @param {string} hex
- * @return {Array.<number>}
+ * @return {Array.<number>|null}
  */
 silex.utils.Style.hexToArray = function(hex) {
   if (hex.indexOf('#') !== 0) {
-    return hex;
+    return null;
   }
   hex = hex.replace('#', '');
   var r = parseInt(hex.substring(0, 2), 16);
@@ -318,12 +318,12 @@ silex.utils.Style.rgbaToHex = function(rgba) {
  * convert rgba to array of values
  * example:    rgba(0, 0, 0, 1) will return [0, 0, 0, 1]
  * @param {string} rgba
- * @return {Array.<number>}
+ * @return {Array.<number>|null}
  */
 silex.utils.Style.rgbaToArray = function(rgba) {
   // not rgb nor rgba
   if (rgba.indexOf('rgb') !== 0) {
-    return rgba;
+    return null;
   }
   if (rgba.indexOf('rgba') !== 0) {
     // rgb

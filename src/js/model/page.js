@@ -35,19 +35,19 @@ silex.model.PageData = function() {
   /**
    * @type {string}
    */
-  this.name = null;
+  this.name = '';
   /**
    * @type {string}
    */
-  this.displayName = null;
+  this.displayName = '';
   /**
    * @type {string}
    */
-  this.linkName = null;
+  this.linkName = '';
   /**
    * @type {number}
    */
-  this.idx = null;
+  this.idx = -1;
 };
 
 
@@ -105,6 +105,14 @@ silex.model.Page.PAGED_HIDDEN_CLASS_NAME = 'paged-element-hidden';
 
 
 /**
+ * constant for the class name of element containing the pages
+ * @const
+ * @type {string}
+ */
+silex.model.Page.PAGES_CONTAINER_CLASS_NAME = 'silex-pages';
+
+
+/**
  * constant for the class name of elements when it is in a visible page
  * this css class is set in pageable.js
  * @const
@@ -129,10 +137,10 @@ silex.model.Page.PAGE_LINK_ACTIVE_CLASS_NAME = 'page-link-active';
  */
 silex.model.Page.prototype.getParentPage = function(element) {
   var parent = element.parentNode;
-  while (parent && !goog.dom.classlist.contains(parent, silex.model.Page.PAGED_CLASS_NAME)) {
+  while (parent && !goog.dom.classlist.contains(/** @type {Element|null} */ (parent), silex.model.Page.PAGED_CLASS_NAME)) {
     parent = parent.parentNode;
   }
-  return parent;
+  return /** @type {Element|null} */ (parent);
 };
 
 
@@ -161,8 +169,13 @@ silex.model.Page.prototype.getCurrentPage = function() {
   }
   var bodyElement = this.model.body.getBodyElement();
   var pageName = null;
-  if(this.model.file.getContentWindow().jQuery(bodyElement).pageable) {
-    pageName = this.model.file.getContentWindow().jQuery(bodyElement).pageable('option', 'currentPage');
+  try {
+    if(this.model.file.getContentWindow().jQuery(bodyElement).pageable) {
+      pageName = this.model.file.getContentWindow().jQuery(bodyElement).pageable('option', 'currentPage');
+    }
+  }
+  catch(e) {
+    console.error('error, could not retrieve the current page', e);
   }
   return pageName;
 };
@@ -186,16 +199,11 @@ silex.model.Page.prototype.refreshView = function() {
  * @param {string} pageName   name of the page to open
  */
 silex.model.Page.prototype.setCurrentPage = function(pageName) {
-  console.log('#1', pageName);
   var bodyElement = this.model.body.getBodyElement();
-  console.log('#2', bodyElement);
   if(this.model.file.getContentWindow().jQuery(bodyElement).pageable) {
-    console.log('#3', this.model.file.getContentWindow().jQuery(bodyElement).pageable);
     this.model.file.getContentWindow().jQuery(bodyElement).pageable({'currentPage': pageName});
   }
-  console.log('#4');
   this.refreshView();
-  console.log('#5');
 };
 
 
@@ -398,7 +406,7 @@ silex.model.Page.prototype.getPagesForElement = function(element) {
 /**
  * check if an element is in the given page (current page by default)
  * @param {Element} element
- * @param {string} opt_pageName
+ * @param {?string=} opt_pageName
  * @return {boolean}
  */
 silex.model.Page.prototype.isInPage = function(element, opt_pageName) {

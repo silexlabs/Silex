@@ -41,7 +41,7 @@ goog.inherits(silex.controller.SettingsDialogController,
  * browse and notify result, track actions, enable undo/redo
  * @param  {string} trackActionName
  * @param  {{mimetypes:Array.<string>}} mimetypes
- * @param  {function(url)} cbk
+ * @param  {function(string)} cbk
  */
 silex.controller.SettingsDialogController.prototype.browse = function(trackActionName, mimetypes, cbk) {
   this.tracker.trackAction(

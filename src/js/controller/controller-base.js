@@ -84,10 +84,18 @@ silex.controller.ControllerBase.redoHistory = [];
 
 
 /**
- * @type Array.<silex.types.ClipboardItem>
+ * @type {Array.<silex.types.ClipboardItem>}
  * @static because it is shared by all controllers
  */
 silex.controller.ControllerBase.clipboard = null;
+
+
+/**
+ * flag to indicate that a getState ation is pending
+ * will be 0 unless an undo check point is being created
+ * @type {number}
+ */
+silex.controller.ControllerBase.getStatePending = 0;
 
 
 /**
@@ -105,28 +113,46 @@ silex.controller.ControllerBase.prototype.isDirty = function() {
  */
 silex.controller.ControllerBase.prototype.undoCheckPoint = function() {
   silex.controller.ControllerBase.redoHistory = [];
-  var state = this.getState();
-  // if the previous state was different
-  if (silex.controller.ControllerBase.undoHistory.length === 0 ||
-      silex.controller.ControllerBase.undoHistory[silex.controller.ControllerBase.undoHistory.length - 1].html !== state.html ||
-      silex.controller.ControllerBase.undoHistory[silex.controller.ControllerBase.undoHistory.length - 1].page !== state.page) {
-    silex.controller.ControllerBase.undoHistory.push(state);
-  }
+  silex.controller.ControllerBase.getStatePending++;
+  this.getState((state) => {
+    silex.controller.ControllerBase.getStatePending--;
+    // if the previous state was different
+    if (silex.controller.ControllerBase.undoHistory.length === 0 ||
+        silex.controller.ControllerBase.undoHistory[silex.controller.ControllerBase.undoHistory.length - 1].html !== state.html ||
+        silex.controller.ControllerBase.undoHistory[silex.controller.ControllerBase.undoHistory.length - 1].page !== state.page) {
+      silex.controller.ControllerBase.undoHistory.push(state);
+    }
+  });
 };
 
 
 
 /**
  * build a state object for undo/redo
- * @return {silex.types.UndoItem}
+ * asyn operation if opt_cbk is provided
+ * @param {?function(silex.types.UndoItem)=} opt_cbk
+ * @return {silex.types.UndoItem|null}
  */
-silex.controller.ControllerBase.prototype.getState = function() {
-  return {
+silex.controller.ControllerBase.prototype.getState = function(opt_cbk) {
+  if(opt_cbk) {
+    this.model.file.getHtmlAsync((html) => {
+      opt_cbk({
+        html:html,
+        page: this.model.page.getCurrentPage(),
+        scrollX: this.view.stage.getScrollX(),
+        scrollY: this.view.stage.getScrollY()
+      });
+    });
+  }
+  else {
+    return {
       html: this.model.file.getHtml(),
       page: this.model.page.getCurrentPage(),
       scrollX: this.view.stage.getScrollX(),
       scrollY: this.view.stage.getScrollY()
-  };
+    };
+  }
+  return null;
 };
 
 
@@ -222,7 +248,7 @@ silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
         this.tracker.trackAction('controller-events', 'error', 'insert.image', -1);
       }, this)
   );
-  this.view.workspace.invalidate(this.view);
+  this.view.workspace.redraw(this.view);
 };
 
 
@@ -231,13 +257,13 @@ silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
  * @param  {string} name
  * @param  {?string=} value
  * @param {?Array.<Element>=} opt_elements
- * @param  {boolean} isUndoable
+ * @param  {?boolean=} opt_isUndoable default is true
  */
-silex.controller.ControllerBase.prototype.styleChanged = function(name, value, opt_elements, isUndoable) {
+silex.controller.ControllerBase.prototype.styleChanged = function(name, value, opt_elements, opt_isUndoable) {
   if (!opt_elements) {
     opt_elements = this.model.body.getSelection();
   }
-  if (isUndoable !== false) {
+  if (opt_isUndoable !== false) {
     // undo checkpoint
     this.undoCheckPoint();
   }

@@ -205,9 +205,10 @@ silex.model.Property.prototype.getRule = function(element) {
  * update Silex style tag with the styles of all elements
  * because the dom do not update automatically when we change document.styleSheets
  * @param {Document} doc docment of the iframe containing the website
+ * @param {?boolean=} opt_writeDom if true (default), then will replace the silex script tag with the updated styles
  * @return {string} the updated string defining all elements styles
  */
-silex.model.Property.prototype.updateSilexStyleTag = function(doc) {
+silex.model.Property.prototype.updateSilexStyleTag = function(doc, opt_writeDom) {
   var elements = doc.querySelectorAll('body, .' + silex.model.Body.EDITABLE_CLASS_NAME);
   var allStyles = '';
   goog.array.forEach(elements, function(element) {
@@ -215,8 +216,10 @@ silex.model.Property.prototype.updateSilexStyleTag = function(doc) {
     var styleStr = silex.utils.Style.styleToString(style, '\n    ');
     allStyles += '.' + this.getSilexId(element) + ' {' + styleStr + '\n}\n';
   }, this);
-  var styleTag = doc.querySelector('.' + silex.model.Property.INLINE_STYLE_TAG_CLASS_NAME);
-  styleTag.innerHTML = allStyles;
+  if(opt_writeDom !== false) {
+    var styleTag = doc.querySelector('.' + silex.model.Property.INLINE_STYLE_TAG_CLASS_NAME);
+    styleTag.innerHTML = allStyles;
+  }
   return allStyles;
 };
 
@@ -317,10 +320,10 @@ silex.model.Property.prototype.getBoundingBox = function(elements) {
     var elementRight = (elementLeft || 0) + elementWidth;
     var elementBottom = (elementTop || 0) + elementHeight;
     // take the smallest top and left and the bigger bottom and rigth
-    top = isNaN(top) ? elementTop : Math.min(top, elementTop);
-    left = isNaN(left) ? elementLeft : Math.min(left, elementLeft);
-    bottom = isNaN(bottom) ? elementBottom : Math.max(bottom, elementBottom);
-    right = isNaN(right) ? elementRight : Math.max(right, elementRight);
+    top = isNaN(top) ? elementTop : Math.min(top, isNaN(elementTop) ? top : elementTop);
+    left = isNaN(left) ? elementLeft : Math.min(left, isNaN(elementLeft) ? left : elementLeft);
+    bottom = isNaN(bottom) ? elementBottom : Math.max(bottom, isNaN(elementBottom) ? bottom : elementBottom);
+    right = isNaN(right) ? elementRight : Math.max(right, isNaN(elementRight) ? right : elementRight);
   }, this);
   // no value for NaN results
   var res = {};

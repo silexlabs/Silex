@@ -79,27 +79,14 @@ silex.controller.FileMenuController.prototype.openFile = function(opt_cbk, opt_e
       goog.bind(function(url) {
         this.model.file.open(url, goog.bind(function(rawHtml) {
           this.model.file.setHtml(rawHtml, goog.bind(function() {
-            // check that it is a Silex website (if we have at least 1 page and not the silex-published class)
-            if (goog.dom.getElementByClass('page-element', this.model.body.getBodyElement()) && !goog.dom.classlist.contains(this.model.body.getBodyElement(), 'silex-published')) {
-              // undo redo reset
-              this.undoReset();
-              // display and redraw
-              this.fileOperationSuccess((this.model.head.getTitle() || 'Untitled website') + ' opened.', true);
-              // QOS, track success
-              this.tracker.trackAction('controller-events', 'success', 'file.open', 1);
-              if (opt_cbk) {
-                opt_cbk();
-              }
-            }
-            else {
-              // this website is not an editable Silex website?
-              var message = 'This file is not an editable Silex website. <a target="_blank" href="https://github.com/silexlabs/Silex/issues/282">More info here</a>.';
-              silex.utils.Notification.notifyError('Error: ' + message);
-              silex.utils.Notification.alert('Error: ' + message, function() {});
-              this.tracker.trackAction('controller-events', 'error', 'file.open_not.editable', -1);
-              if (opt_errorCbk) {
-                opt_errorCbk({message: message});
-              }
+            // undo redo reset
+            this.undoReset();
+            // display and redraw
+            this.fileOperationSuccess((this.model.head.getTitle() || 'Untitled website') + ' opened.', true);
+            // QOS, track success
+            this.tracker.trackAction('controller-events', 'success', 'file.open', 1);
+            if (opt_cbk) {
+              opt_cbk();
             }
           }, this));
         }, this),
@@ -135,7 +122,7 @@ silex.controller.FileMenuController.prototype.publish = function() {
           this.view.settingsDialog.openDialog(function() {
             //here the panel was closed
           });
-          this.view.workspace.invalidate(this.view);
+          this.view.workspace.redraw(this.view);
           this.tracker.trackAction('controller-events', 'cancel', 'file.publish', 0);
         }, this));
   }
@@ -149,8 +136,8 @@ silex.controller.FileMenuController.prototype.publish = function() {
           silex.utils.Notification.alert('I am about to publish your site. This may take several minutes.', () => clearInterval(timer));
           var timer = setInterval(() => {
             silex.service.SilexTasks.getInstance().publishState(json => {
-              document.querySelector('.alertify-message').innerHTML = json.status;
-              if(json.stop === true) {
+              document.querySelector('.alertify-message').innerHTML = json['status'];
+              if(json['stop'] === true) {
                 clearInterval(timer);
               }
             }, message => {

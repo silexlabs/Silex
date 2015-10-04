@@ -49,7 +49,7 @@ goog.inherits(silex.view.dialog.LinkDialogPlugin,
 
 /**
  * Handles the OK event from the dialog by updating the link in the field.
- * @param {goog.ui.editor.LinkDialog.OkEvent} e OK event object.
+ * @param {goog.ui.editor.LinkDialog.OkEvent} event OK event object.
  * @protected
  * @override
  */
