@@ -277,7 +277,7 @@ silex.controller.ControllerBase.prototype.styleChanged = function(name, value, o
 
 /**
  * set a set of styles to the current selection
- * @param  {string|Object|CSSStyleDeclaration} style
+ * @param  {Object|null} style
  * @param {?Array.<Element>=} opt_elements
  */
 silex.controller.ControllerBase.prototype.multipleStylesChanged = function(style, opt_elements) {
@@ -445,6 +445,14 @@ silex.controller.ControllerBase.prototype.toggleAdvanced = function() {
     goog.dom.classlist.remove(document.body, 'advanced-mode-on');
     goog.dom.classlist.add(document.body, 'advanced-mode-off');
   }
+};
+
+
+ /**
+ * toggle mobile mode
+ */
+silex.controller.ControllerBase.prototype.toggleMobileMode = function() {
+  this.view.workspace.setMobileEditor(!this.view.workspace.getMobileEditor());
 };
 
 

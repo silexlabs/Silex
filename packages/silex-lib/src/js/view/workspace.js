@@ -208,3 +208,27 @@ silex.view.Workspace.prototype.setPreviewWindowLocation = function (opt_location
     }
   }
 };
+
+
+/**
+ * set/get mobile editor mode
+ * @param {boolean} isMobileEditor
+ */
+silex.view.Workspace.prototype.setMobileEditor = function(isMobileEditor) {
+  if(isMobileEditor) {
+    document.body.classList.add('mobile-mode');
+  }
+  else {
+    document.body.classList.remove('mobile-mode');
+  }
+};
+
+
+/**
+ * set/get mobile editor mode
+ * @return {boolean}
+ */
+silex.view.Workspace.prototype.getMobileEditor = function() {
+  return document.body.classList.contains('mobile-mode');
+};
+

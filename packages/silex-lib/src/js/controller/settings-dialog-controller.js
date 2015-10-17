@@ -117,6 +117,17 @@ silex.controller.SettingsDialogController.prototype.browseThumbnailSocialPath = 
 
 
 /**
+ * enable/disable mobile version
+ */
+silex.controller.SettingsDialogController.prototype.toggleEnableMobile =
+    function() {
+  // undo checkpoint
+  this.undoCheckPoint();
+  this.model.head.setEnableMobile(!this.model.head.getEnableMobile());
+};
+
+
+/**
  * callback for the publication path text input
  * @param {?string=} opt_data
  */
