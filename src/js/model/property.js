@@ -163,6 +163,10 @@ silex.model.Property.prototype.initSilexId = function(element, doc) {
 };
 
 
+
+/**
+ * Convert the styles to json and save it in a script tag
+ */
 silex.model.Property.prototype.saveStyles = function(doc) {
   var styleTag = doc.querySelector('.' + silex.model.Property.JSON_STYLE_TAG_CLASS_NAME);
   if (!styleTag) {
@@ -174,9 +178,12 @@ silex.model.Property.prototype.saveStyles = function(doc) {
     "desktop": this.stylesObj,
     "mobile": this.mobileStylesObj
   });
-  console.log('saveStyles', styleTag, this.stylesObj);
 }
 
+
+/**
+ * Load the styles from the json saved in a script tag
+ */
 silex.model.Property.prototype.loadStyles = function(doc) {
   var styleTag = doc.querySelector('.' + silex.model.Property.JSON_STYLE_TAG_CLASS_NAME);
   if(styleTag != null) {

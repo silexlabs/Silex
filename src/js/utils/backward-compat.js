@@ -145,16 +145,27 @@ silex.utils.BackwardCompat.hasToUpdate = function(initialVersion, targetVersion)
 silex.utils.BackwardCompat.to2_2_6 = function(version, doc, model, cbk) {
 
   if(silex.utils.BackwardCompat.hasToUpdate(version, [2, 2, 6])) {
-     var pagesContainer = doc.querySelector(silex.model.Page.PAGES_CONTAINER_CLASS_NAME);
+    // container for page anchors, this will also be the menu when switching to mobile version
+    var pagesContainer = doc.querySelector('.' + silex.model.Page.PAGES_CONTAINER_CLASS_NAME);
     if(!pagesContainer) {
       pagesContainer = doc.createElement('div');
       pagesContainer.classList.add(silex.model.Page.PAGES_CONTAINER_CLASS_NAME);
       doc.body.appendChild(pagesContainer);
-      var pages = doc.querySelectorAll(silex.model.Page.PAGE_CLASS_NAME);
-      goog.array.forEach(pages, (page) => pagesContainer.appendChild(page));
     }
+    var button = doc.querySelector('.menu-button');
+    if(!button) {
+      // add the button
+      button = doc.createElement('img');
+      button.src = '/static/2.6/hamburger.png';
+      button.setAttribute('data-silex-static', '');
+      button.classList.add('menu-button');
+      pagesContainer.appendChild(button);
+    }
+    // move all page anchors to the new container
+    var pages = doc.querySelectorAll('.' + silex.model.Page.PAGE_CLASS_NAME);
+    goog.array.forEach(pages, (page) => pagesContainer.appendChild(page));
   }
-  // create the JSON array of styles when needed
+  // create the JSON array of styles when needed (will check even if not upgrading)
   let jsonStyleTag = doc.querySelector('.' + silex.model.Property.JSON_STYLE_TAG_CLASS_NAME);
   if(!jsonStyleTag) {
     let styleTag = doc.querySelector('.' + silex.model.Property.INLINE_STYLE_TAG_CLASS_NAME);
