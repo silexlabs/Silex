@@ -78,7 +78,7 @@ $(function() {
     });
   });
   $('.silex-pages .page-element').click(function() {
-    $(document.body).pageable({'currentPage': '#!page-' + this.id});
+    window.location.hash = '#!' + this.id;
     $(document.body).removeClass('show-mobile-menu');
   });
 });
