@@ -84,16 +84,23 @@ silex.model.Head.HEAD_TAG_STOP = '<!-- End of Silex HEAD tag do not remove -->';
 
 
 /**
+ * css class set to enable mobile version
+ */
+silex.model.Head.ENABLE_MOBILE_CSS_CLASS = 'enable-mobile';
+
+
+/**
  * Update the settings from the DOM after a website was loaded
  */
 silex.model.Head.prototype.updateFromDom = function() {
-  this.view.settingsDialog.setPublicationPath(this.model.head.getPublicationPath());
-  this.view.settingsDialog.setFaviconPath(this.model.head.getFaviconPath());
-  this.view.settingsDialog.setThumbnailSocialPath(this.model.head.getThumbnailSocialPath());
-  this.view.settingsDialog.setDescription(this.model.head.getDescription());
-  this.view.settingsDialog.setDescriptionSocial(this.model.head.getDescriptionSocial());
-  this.view.settingsDialog.setTitleSocial(this.model.head.getTitleSocial());
-  this.view.settingsDialog.setTitle(this.model.head.getTitle());
+  this.setPublicationPath(this.getPublicationPath());
+  this.setFaviconPath(this.getFaviconPath());
+  this.setThumbnailSocialPath(this.getThumbnailSocialPath());
+  this.setDescription(this.getDescription());
+  this.setDescriptionSocial(this.getDescriptionSocial());
+  this.setTitleSocial(this.getTitleSocial());
+  this.setTitle(this.getTitle());
+  this.setEnableMobile(this.getEnableMobile());
 };
 
 
@@ -363,6 +370,29 @@ silex.model.Head.prototype.getPublicationPath = function() {
 
 
 /**
+ * enable/disable the mobile version
+ * @param {boolean} enable
+ */
+silex.model.Head.prototype.setEnableMobile = function(enable) {
+  if(enable === true) {
+    this.model.file.getContentDocument().body.classList.add(silex.model.Head.ENABLE_MOBILE_CSS_CLASS);
+  } else {
+    this.model.file.getContentDocument().body.classList.remove(silex.model.Head.ENABLE_MOBILE_CSS_CLASS);
+  }
+  this.view.settingsDialog.setEnableMobile(enable);
+};
+
+
+/**
+ * enable/disable the mobile version
+ * @return {boolean}
+ */
+silex.model.Head.prototype.getEnableMobile = function() {
+  return this.model.file.getContentDocument().body.classList.contains(silex.model.Head.ENABLE_MOBILE_CSS_CLASS);
+};
+
+
+/**
  * get/set the description
  * @param {?string=} opt_description
  */
@@ -398,7 +428,7 @@ silex.model.Head.prototype.getTitle = function() {
 
 /**
  * website title
- * @param {string} name
+ * @param {?string} name
  */
 silex.model.Head.prototype.setTitle = function(name) {
   // find or create the title tag in the head section
@@ -408,7 +438,7 @@ silex.model.Head.prototype.setTitle = function(name) {
     goog.dom.appendChild(this.getHeadElement(), titleNode);
   }
   // update website title
-  titleNode.innerHTML = name;
+  titleNode.innerHTML = name || '';
   // update view
   this.view.settingsDialog.setTitle(name);
 };

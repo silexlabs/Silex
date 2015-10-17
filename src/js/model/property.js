@@ -19,7 +19,6 @@ goog.require('silex.Config');
 goog.require('silex.service.SilexTasks');
 
 
-
 /**
  * @constructor
  * @param  {silex.types.Model} model  model class which holds the other models
@@ -39,6 +38,14 @@ silex.model.Property = function(model, view) {
 
 
 /**
+ *
+ * @typedef {{rule: CSSRule, parent: (CSSRule|CSSStyleSheet), index: number}}
+ */
+silex.model.Property.CSSRuleInfo;
+
+
+
+/**
  * constant for the ID of the style tag
  * containing all CSS rules for the elements on stage
  * which are being edited with the wysiwyg
@@ -46,7 +53,7 @@ silex.model.Property = function(model, view) {
  */
 silex.model.Property.INLINE_STYLE_TAG_CLASS_NAME = 'silex-inline-styles';
 
-
+silex.model.Property.JSON_STYLE_TAG_CLASS_NAME = 'silex-json-styles';
 /**
  * constant for the prefix of the IDs given to Silex editable elements
  * @const
@@ -62,11 +69,19 @@ silex.model.Property.ELEMENT_ID_ATTR_NAME = 'data-silex-id';
 
 
 /**
+ * constant for the value of media query for mobile version
+ * @const
+ * @static
+ */
+silex.model.Property.MOBILE_MEDIA_QUERY = '(max-width: 400px)'
+
+
+/**
  * the current file's silex style sheet which holds silex elements styles
  * this is stored for performance reasons
  * @type {?CSSStyleSheet}
  */
-silex.model.Property.prototype.silexStyleSheet = null;
+silex.model.Property.prototype.styleSheet = null;
 
 
 /**
@@ -74,6 +89,18 @@ silex.model.Property.prototype.silexStyleSheet = null;
  * @type {number}
  */
 silex.model.Property.prototype.nextId = 0;
+
+
+/**
+ * @type {Object}
+ */
+silex.model.Property.prototype.stylesObj = {};
+
+
+/**
+ * @type {Object}
+ */
+silex.model.Property.prototype.mobileStylesObj = {};
 
 
 /**
@@ -136,12 +163,44 @@ silex.model.Property.prototype.initSilexId = function(element, doc) {
 };
 
 
+silex.model.Property.prototype.saveStyles = function(doc) {
+  var styleTag = doc.querySelector('.' + silex.model.Property.JSON_STYLE_TAG_CLASS_NAME);
+  if (!styleTag) {
+    styleTag = doc.createElement('script');
+    styleTag.classList.add(silex.model.Property.JSON_STYLE_TAG_CLASS_NAME);
+    goog.dom.appendChild(doc.head, styleTag);
+  }
+  styleTag.innerHTML = JSON.stringify({
+    "desktop": this.stylesObj,
+    "mobile": this.mobileStylesObj
+  });
+  console.log('saveStyles', styleTag, this.stylesObj);
+}
+
+silex.model.Property.prototype.loadStyles = function(doc) {
+  var styleTag = doc.querySelector('.' + silex.model.Property.JSON_STYLE_TAG_CLASS_NAME);
+  if(styleTag != null) {
+    let styles = /** @type {Object} */ (JSON.parse(styleTag.innerHTML));
+    if(styles && styles['desktop'] && styles['mobile']) {
+      this.stylesObj = styles['desktop'];
+      this.mobileStylesObj = styles['mobile'];
+    }
+    else {
+      console.error('Error: could not retreve desktop and mobile styles from .' + silex.model.Property.JSON_STYLE_TAG_CLASS_NAME);
+    }
+  }
+  else {
+    this.stylesObj = {};
+    console.error('Error: no JSON styles array found in the dom');
+  }
+}
+
 /**
  * check existance and possibly create a style tag holding Silex elements styles
  * @param {Document} doc docment of the iframe containing the website
  * @return {Element}
  */
-silex.model.Property.prototype.initSilexStyleTag = function(doc) {
+silex.model.Property.prototype.initStyles = function(doc) {
   // make sure of the existance of the style tag with Silex definitions
   var styleTag = doc.querySelector('.' + silex.model.Property.INLINE_STYLE_TAG_CLASS_NAME);
   if (!styleTag) {
@@ -150,77 +209,17 @@ silex.model.Property.prototype.initSilexStyleTag = function(doc) {
     styleTag.setAttribute('type', 'text/css');
     goog.dom.appendChild(doc.head, styleTag);
   }
-  return styleTag;
-};
-
-
-/**
- * get/set cache the current website main iframe's Silex style sheet
- * this is an optimization
- * @param {?CSSStyleSheet} silexStyleSheet the style sheet with Silex elements styles
- */
-silex.model.Property.prototype.setCurrentSilexStyleSheet = function(silexStyleSheet) {
-  this.silexStyleSheet = silexStyleSheet;
-};
-
-
-/**
- * @param {Document} doc docment of the iframe containing the website
- * @return {?CSSStyleSheet} the style sheet with Silex elements styles
- */
-silex.model.Property.prototype.getSilexStyleSheet = function(doc) {
-  // check that we are looking at the iframe doc
-  if (doc === document) {
-    console.error('getSilexStyleSheet error: doc is the main Silex document');
-  }
   //retrieve the style sheet with Silex definitions
+  this.styleSheet = null;
   for (var idx in doc.styleSheets) {
-    if (doc.styleSheets[idx].ownerNode && doc.styleSheets[idx].ownerNode.classList.contains(silex.model.Property.INLINE_STYLE_TAG_CLASS_NAME)) {
-      return doc.styleSheets[idx];
+    if (doc.styleSheets[idx].ownerNode && doc.styleSheets[idx].ownerNode == styleTag) {
+      this.styleSheet =  doc.styleSheets[idx];
     }
   }
-  return null;
-};
-
-
-/**
- * get the CSS rule for the given element
- * @param {Element} element
- * @return {CSSRule|null}
- */
-silex.model.Property.prototype.getRule = function(element) {
-  let className = '.' + this.model.property.getSilexId(element);
-  // find the rule for the given element
-  for (let idx in this.silexStyleSheet.cssRules) {
-    // we use the class name because elements have their ID as a css class too
-    if (this.silexStyleSheet.cssRules[idx].selectorText === className) {
-      return this.silexStyleSheet.cssRules[idx];
-    }
+  if(this.styleSheet === null) {
+    console.error('no stylesheet found');
   }
-  return null;
-};
-
-
-/**
- * update Silex style tag with the styles of all elements
- * because the dom do not update automatically when we change document.styleSheets
- * @param {Document} doc docment of the iframe containing the website
- * @param {?boolean=} opt_writeDom if true (default), then will replace the silex script tag with the updated styles
- * @return {string} the updated string defining all elements styles
- */
-silex.model.Property.prototype.updateSilexStyleTag = function(doc, opt_writeDom) {
-  var elements = doc.querySelectorAll('body, .' + silex.model.Body.EDITABLE_CLASS_NAME);
-  var allStyles = '';
-  goog.array.forEach(elements, function(element) {
-    var style = this.getStyleObject(element);
-    var styleStr = silex.utils.Style.styleToString(style, '\n    ');
-    allStyles += '.' + this.getSilexId(element) + ' {' + styleStr + '\n}\n';
-  }, this);
-  if(opt_writeDom !== false) {
-    var styleTag = doc.querySelector('.' + silex.model.Property.INLINE_STYLE_TAG_CLASS_NAME);
-    styleTag.innerHTML = allStyles;
-  }
-  return allStyles;
+  return styleTag;
 };
 
 
@@ -229,54 +228,120 @@ silex.model.Property.prototype.updateSilexStyleTag = function(doc, opt_writeDom)
  * this creates or update a rule in the style tag with id INLINE_STYLE_TAG_CLASS_NAME
  * if opt_style is null this will remove the rule
  * @param {Element} element
- * @param {?string|Object|CSSStyleDeclaration=} style
+ * @param {Object|null} style
  */
 silex.model.Property.prototype.setStyle = function(element, style) {
+  var elementId =  /** @type {string} */ (this.getSilexId(element));
+  // store in JSON
+  if(this.view.workspace.getMobileEditor()) {
+    this.mobileStylesObj[elementId] = style;
+  }
+  else {
+    this.stylesObj[elementId] = style;
+  }
   // convert style to string
   var styleStr = silex.utils.Style.styleToString(style || '');
   // we use the class name because elements have their ID as a css class too
-  styleStr = '.' + this.getSilexId(element) + '{' + styleStr + '} ';
-  // find the index of the rule for the given element
-  var originalCssRuleIdx = -1;
-  for (var idx in this.silexStyleSheet.cssRules) {
-    if (this.silexStyleSheet.cssRules[idx].selectorText === '.' + this.getSilexId(element)) {
-      originalCssRuleIdx = parseInt(idx, 10);
-      break;
-    }
+  styleStr = '.' + elementId + '{' + styleStr + '} ';
+  if(this.view.workspace.getMobileEditor()) {
+    styleStr = '@media ' + silex.model.Property.MOBILE_MEDIA_QUERY + '{' + styleStr + '}';
   }
+  // find the index of the rule for the given element
+  var cssRuleObject = this.findCssRule(elementId, this.view.workspace.getMobileEditor());
   // update or create the rule
-  if (originalCssRuleIdx >= 0) {
-    this.silexStyleSheet.deleteRule(originalCssRuleIdx);
+  if (cssRuleObject) {
+    this.styleSheet.deleteRule(cssRuleObject.index);
   }
   if (style) {
-    this.silexStyleSheet.insertRule(styleStr, this.silexStyleSheet.cssRules.length);
+    this.styleSheet.insertRule(styleStr, this.styleSheet.cssRules.length);
   }
 };
 
 
 /**
  * get / set the css style of an element
- * this creates or update a rule in the style tag with id INLINE_STYLE_TAG_CLASS_NAME
  * @param {Element} element
- * @param {?boolean=} opt_computed use window.getComputedStyle instead of the element's stylesheet
+ * @param {?boolean=} opt_isMobile
  * @return {Object|null}
  */
-silex.model.Property.prototype.getStyleObject = function (element, opt_computed) {
-  var cssStyleDeclaration = null;
-  if(opt_computed !== true) {
-    let cssRule = this.getRule(element);
-    if(cssRule) {
-      cssStyleDeclaration = cssRule.style;
+silex.model.Property.prototype.getStyle = function(element, opt_isMobile) {
+  var elementId =  /** @type {string} */ (this.getSilexId(element));
+  if(opt_isMobile === true || this.view.workspace.getMobileEditor()) {
+    return this.mobileStylesObj[elementId];
+  }
+  return this.stylesObj[elementId];
+};
+
+
+/**
+ * @param {string} elementId
+ * @param {boolean} isMobile
+ * @return {silex.model.Property.CSSRuleInfo|null} null if not found
+ */
+silex.model.Property.prototype.findCssRule = function (elementId, isMobile) {
+  // find the rule for the given element
+  for (var idx=0; idx < this.styleSheet.cssRules.length; idx++) {
+    let cssRule = this.styleSheet.cssRules[idx];
+    // we use the class name because elements have their ID as a css class too
+    if(isMobile === false) {
+      if(cssRule.selectorText === '.' + elementId) {
+        return {
+          rule: cssRule,
+          parent: this.styleSheet,
+          index: parseInt(idx, 10)
+        }
+      }
+    }
+    else if(cssRule.media
+      && cssRule.cssRules
+      && cssRule.cssRules[0]
+      && cssRule.cssRules[0].selectorText === '.' + elementId) {
+      return {
+        rule: cssRule.cssRules[0],
+        parent: cssRule,
+        index: 0
+      }
     }
   }
-  else {
-    cssStyleDeclaration = this.model.file.getContentWindow().getComputedStyle(element);
-  }
-  if(cssStyleDeclaration) {
-    // build an object with only the keys which are set
-    return silex.utils.Style.styleToObject(cssStyleDeclaration);
-  }
   return null;
+ };
+
+
+/**
+ * update Silex style tag with the styles of all elements
+ * because the dom do not update automatically when we change document.styleSheets
+ * @param {Document} doc docment of the iframe containing the website
+ */
+silex.model.Property.prototype.updateStylesInDom = function(doc) {
+  var styleTag = doc.querySelector('.' + silex.model.Property.INLINE_STYLE_TAG_CLASS_NAME);
+  styleTag.innerHTML = this.getAllStyles(doc);
+};
+
+
+/**
+ * @param {Document} doc docment of the iframe containing the website
+ * @return {string} the string defining all elements styles
+ */
+silex.model.Property.prototype.getAllStyles = function(doc) {
+  var elements = doc.querySelectorAll('body, .' + silex.model.Body.EDITABLE_CLASS_NAME);
+  var allStyles = '';
+  goog.array.forEach(elements, function(element) {
+    var elementId =  /** @type {string} */ (this.getSilexId(element));
+    // desktop
+    let styleStr = silex.utils.Style.styleToString(this.getStyle(element, false), '\n    ');
+    if(styleStr != '') {
+      styleStr = '.' + elementId + ' {' + styleStr + '\n}\n';
+      allStyles += styleStr;
+    }
+    // mobile
+    styleStr = silex.utils.Style.styleToString(this.getStyle(element, true), '\n    ');
+    if(styleStr != '') {
+      styleStr = '.' + elementId + ' {' + styleStr + '\n}\n';
+      styleStr = '@media ' + silex.model.Property.MOBILE_MEDIA_QUERY + '{' + styleStr + '}';
+      allStyles += styleStr;
+    }
+  }, this);
+  return allStyles;
 };
 
 
@@ -295,7 +360,7 @@ silex.model.Property.prototype.getBoundingBox = function(elements) {
   // browse all elements and compute the containing rect
   goog.array.forEach(elements, function(element) {
     // retrieve the styles strings (with "px")
-    var elementStyle = this.getStyleObject(element);
+    var elementStyle = this.getStyle(element);
     if (!elementStyle) {
       elementStyle = {
         'top': '',
@@ -341,3 +406,43 @@ silex.model.Property.prototype.getBoundingBox = function(elements) {
   }
   return res;
 };
+
+
+/**
+ * get / set the css style of an element
+ * this creates or update a rule in the style tag with id INLINE_STYLE_TAG_CLASS_NAME
+ * @param {Element} element
+ * @param {?boolean=} opt_computed use window.getComputedStyle instead of the element's stylesheet
+ * @return {Object|null}
+ */
+// silex.model.Property.prototype.getStyleObject = function (element, opt_computed) {
+//   var cssStyleDeclaration = null;
+//   if(opt_computed !== true) {
+//     var cssRule = null;
+//     var elementId =  /** @type {string} */ (this.getSilexId(element));
+//     if(this.view.workspace.getMobileEditor()) {
+//       let cssRuleObject = this.findCssRuleIndex(elementId, true);
+//       if(cssRuleObject) {
+//         cssRule = cssRuleObject.rule;
+//       }
+//     }
+//     if(!cssRule) {
+//       let cssRuleObject = this.findCssRuleIndex(elementId, false);
+//       if(cssRuleObject) {
+//         cssRule = cssRuleObject.rule;
+//       }
+//     }
+//     if(cssRule) {
+//       cssStyleDeclaration = cssRule.style;
+//     }
+//   }
+//   else {
+//     cssStyleDeclaration = this.model.file.getContentWindow().getComputedStyle(element);
+//   }
+//   if(cssStyleDeclaration) {
+//     // build an object with only the keys which are set
+//     return silex.utils.Style.styleToObject(cssStyleDeclaration);
+//   }
+//   return null;
+// };
+

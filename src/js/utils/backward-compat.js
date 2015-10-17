@@ -33,7 +33,7 @@ silex.utils.BackwardCompat = function() {
  * used for backward compat
  * also the static files are taken from //{{host}}/static/Y-Z
  */
-silex.utils.BackwardCompat.LATEST_VERSION = [2, 2, 5];
+silex.utils.BackwardCompat.LATEST_VERSION = [2, 2, 6];
 
 
 /**
@@ -75,6 +75,7 @@ silex.utils.BackwardCompat.process = function(doc, model, cbk) {
   silex.utils.BackwardCompat.to2_2_3(version, doc, model, function() {
   silex.utils.BackwardCompat.to2_2_4(version, doc, model, function() {
   silex.utils.BackwardCompat.to2_2_5(version, doc, model, function() {
+  silex.utils.BackwardCompat.to2_2_6(version, doc, model, function() {
     // update //{{host}}/2.x/... to latest version
     var elements = doc.querySelectorAll('[data-silex-static]');
     goog.array.forEach(elements, function(element) {
@@ -86,7 +87,7 @@ silex.utils.BackwardCompat.process = function(doc, model, cbk) {
     metaNode.setAttribute('content', 'Silex v' + silex.utils.BackwardCompat.LATEST_VERSION.join('.'));
     // continue
     cbk(hasToUpdate);
-  })})})})});
+  })})})})})});
 };
 
 
@@ -151,6 +152,44 @@ silex.utils.BackwardCompat.to2_2_6 = function(version, doc, model, cbk) {
       doc.body.appendChild(pagesContainer);
       var pages = doc.querySelectorAll(silex.model.Page.PAGE_CLASS_NAME);
       goog.array.forEach(pages, (page) => pagesContainer.appendChild(page));
+    }
+  }
+  // create the JSON array of styles when needed
+  let jsonStyleTag = doc.querySelector('.' + silex.model.Property.JSON_STYLE_TAG_CLASS_NAME);
+  if(!jsonStyleTag) {
+    let styleTag = doc.querySelector('.' + silex.model.Property.INLINE_STYLE_TAG_CLASS_NAME);
+    let styleSheet = null;
+    for (var idx in doc.styleSheets) {
+      if (doc.styleSheets[idx].ownerNode && doc.styleSheets[idx].ownerNode == styleTag) {
+        styleSheet =  doc.styleSheets[idx];
+      }
+    }
+    if(styleSheet === null) {
+      console.error('BackwardCompat error: no stylesheet found');
+    }
+    else {
+      let stylesObj = {};
+      let mobileStylesObj = {};
+      for (var idx=0; idx < styleSheet.cssRules.length; idx++) {
+        let cssRule = styleSheet.cssRules[idx];
+        let id = cssRule.selectorText.substr(1);
+        let style = silex.utils.Style.styleToObject(cssRule.style);
+        if(cssRule['media']) {
+          mobileStylesObj[id] = style;
+        }
+        else {
+          stylesObj[id] = style;
+        }
+      }
+      // create the tag
+      jsonStyleTag = doc.createElement('script');
+      jsonStyleTag.classList.add(silex.model.Property.JSON_STYLE_TAG_CLASS_NAME);
+      goog.dom.appendChild(doc.head, jsonStyleTag);
+      // fill the tag with the JSON data
+      jsonStyleTag.innerHTML = JSON.stringify({
+        "desktop": stylesObj,
+        "mobile": mobileStylesObj
+      });
     }
   }
   cbk();
@@ -241,7 +280,7 @@ silex.utils.BackwardCompat.to2_2_4 = function(version, doc, model, cbk) {
       }
       else {
         // create a style tag to hold Silex elements style
-        var styleTag = model.property.initSilexStyleTag(doc);
+        var styleTag = model.property.initStyles(doc);
         // fill with Silex elements styles
         styleTag.innerHTML = allStyles;
         // end of the process

@@ -366,6 +366,16 @@ silex.Config.menu = {
         mnemonic: goog.events.KeyCodes.A,
         accelerator: 'a'
       },
+      {
+        label: 'Mobile editor',
+        id: 'tools.mobile.mode',
+        className: 'menu-item-tools-mobile-mode',
+        checkable: true,
+        shortcut: [[goog.events.KeyCodes.M, altKeyModifyer]],
+        tooltip: ctrlKeyDisplay + altKeyDisplay + 'M',
+        mnemonic: goog.events.KeyCodes.M,
+        accelerator: 'm'
+      },
       null,
       {
         label: 'HTML <head> editor',
