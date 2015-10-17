@@ -293,13 +293,13 @@ silex.model.Page.prototype.removePage = function(pageName) {
  * @param {string} displayName
  */
 silex.model.Page.prototype.createPage = function(name, displayName) {
-  var bodyElement = this.model.body.getBodyElement();
+  var container = this.model.body.getBodyElement().querySelector('.' + silex.model.Page.PAGES_CONTAINER_CLASS_NAME);
   // create the DOM element
   var aTag = goog.dom.createElement('a');
   aTag.setAttribute('id', name);
   aTag.setAttribute('data-silex-type', 'page');
   aTag.innerHTML = displayName;
-  goog.dom.appendChild(bodyElement, aTag);
+  goog.dom.appendChild(container, aTag);
   // for coherence with other silex elements
   goog.dom.classlist.add(aTag, silex.model.Page.PAGE_CLASS_NAME);
   // select this page
