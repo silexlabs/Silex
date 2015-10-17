@@ -119,7 +119,7 @@ silex.controller.EditMenuController.prototype.recursiveCopy = function(element) 
   // duplicate the node
   var res = {
     element: element.cloneNode(true),
-    style: this.model.property.getStyleObject(element),
+    style: this.model.property.getStyle(element),
     children: []
   };
   // case of a container, handle its children

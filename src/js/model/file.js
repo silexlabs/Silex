@@ -214,9 +214,9 @@ silex.model.File.prototype.contentChanged = function(opt_cbk) {
 silex.model.File.prototype.onContentLoaded = function(opt_cbk) {
   // handle retrocompatibility issues
   silex.utils.BackwardCompat.process(this.contentDocument_, this.model, (hasUpgraded) => {
-   // check the integrity and store silex style sheet which holds silex elements styles
-    this.model.property.initSilexStyleTag(this.contentDocument_);
-    this.model.property.setCurrentSilexStyleSheet(this.model.property.getSilexStyleSheet(this.contentDocument_));
+    // check the integrity and store silex style sheet which holds silex elements styles
+    this.model.property.initStyles(this.contentDocument_);
+    this.model.property.loadStyles(this.contentDocument_);
     // select the body
     this.model.body.setSelection([this.contentDocument_.body]);
     // make editable again
@@ -293,7 +293,8 @@ silex.model.File.prototype.getHtml = function() {
   // clone
   var cleanFile = /** @type {Node} */ (this.contentDocument_.cloneNode(true));
   // update style tag (the dom do not update automatically when we change document.styleSheets)
-  this.model.property.updateSilexStyleTag(/** @type {Document} */ (cleanFile));
+  this.model.property.updateStylesInDom(/** @type {Document} */ (cleanFile));
+  this.model.property.saveStyles(this.contentDocument_);
   // cleanup
   this.model.head.removeTempTags(/** @type {Document} */ (cleanFile).head);
   this.model.body.removeEditableClasses(/** @type {!Element} */ (cleanFile));
@@ -351,7 +352,9 @@ silex.model.File.prototype.getHtmlNextStep = function (cbk, generator) {
  */
 silex.model.File.prototype.getHtmlGenerator = function* () {
   // update style tag (the dom do not update automatically when we change document.styleSheets)
-  let updatedStyles = this.model.property.updateSilexStyleTag(this.contentDocument_, false);
+  let updatedStyles = this.model.property.getAllStyles(this.contentDocument_);
+  yield;
+  this.model.property.saveStyles(this.contentDocument_);
   yield;
   // clone
   var cleanFile = /** @type {Node} */ (this.contentDocument_.cloneNode(true));

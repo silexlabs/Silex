@@ -223,7 +223,7 @@ silex.model.Element.prototype.getType = function(element) {
  * @return  {string}           the styles of the element
  */
 silex.model.Element.prototype.getAllStyles = function(element, opt_computed) {
-  var styleObject = this.model.property.getStyleObject(element, opt_computed);
+  var styleObject = this.model.property.getStyle(element, opt_computed);
   var styleStr = silex.utils.Style.styleToString(styleObject);
   return this.unprepareHtmlForEdit(styleStr);
 };
@@ -237,7 +237,7 @@ silex.model.Element.prototype.getAllStyles = function(element, opt_computed) {
  * @return  {string|null}           the style of the element
  */
 silex.model.Element.prototype.getStyle = function(element, styleName, opt_computed) {
-  var styleObject = this.model.property.getStyleObject(element, opt_computed);
+  var styleObject = this.model.property.getStyle(element, opt_computed);
   var cssName = goog.string.toSelectorCase(styleName);
   if (styleObject && styleObject[cssName]) {
     return this.unprepareHtmlForEdit(styleObject[cssName]);
@@ -256,7 +256,7 @@ silex.model.Element.prototype.setStyle = function(element, styleName, opt_styleV
   // convert to css case
   styleName = goog.string.toSelectorCase(styleName);
   // retrieve style
-  var styleObject = this.model.property.getStyleObject(element);
+  var styleObject = this.model.property.getStyle(element);
   if (!styleObject) {
     styleObject = {};
   }

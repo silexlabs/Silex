@@ -174,7 +174,7 @@ silex.view.pane.PropertyPane.prototype.onPositionChanged =
     // apply the change to all elements
     goog.array.forEach(this.selectedElements, function(element) {
       if (goog.isNumber(oldValue)) {
-        var elementStyle = this.model.property.getStyleObject(element);
+        var elementStyle = this.model.property.getStyle(element);
         var styleValue = 0;
         if (elementStyle && elementStyle[name] && elementStyle[name] !== '') {
           styleValue = parseFloat(elementStyle[name].substr(0, elementStyle[name].indexOf('px')));
