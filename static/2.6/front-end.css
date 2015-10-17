@@ -55,6 +55,29 @@ a:focus{ outline: none;}
   height: 100%;
 }
 
+/* Mobile styles */
+.nav-bar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 75%;
+  height: auto;
+  left: -75%;
+  transition: left .1s ease-out;
+}
+
+.silex-pages .menu-button {
+  width: 50px;
+  height: 50px;
+  left: 110%;
+  top: 30px;
+  background-image: url('/assets/hamburger.png');
+  background-repeat: no-repeat;
+  background-size: cover;
+  position: absolute;
+  cursor: pointer;
+}
+
 @media (max-width:400px) {
   .silex-pages {
     position: absolute;
