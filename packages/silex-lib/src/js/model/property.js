@@ -261,12 +261,19 @@ silex.model.Property.prototype.setStyle = function(element, style) {
 /**
  * get / set the css style of an element
  * @param {Element} element
- * @param {?boolean=} opt_isMobile
+ * @param {?boolean=} opt_isMobile defaults to the global setting of silex.view.Workspace
+ * @param {?boolean=} opt_computed computed syle or stored value? defaults to false
  * @return {Object|null}
  */
-silex.model.Property.prototype.getStyle = function(element, opt_isMobile) {
+silex.model.Property.prototype.getStyle = function(element, opt_isMobile, opt_computed) {
+  if(opt_computed === true) {
+    let stylesObj = this.model.file.getContentWindow().getComputedStyle(element);
+    return silex.utils.Style.styleToObject(stylesObj);
+  }
   var elementId =  /** @type {string} */ (this.getSilexId(element));
-  if(opt_isMobile === true || this.view.workspace.getMobileEditor()) {
+  var isMobile = opt_isMobile;
+  if(typeof(opt_isMobile) === 'undefined') isMobile = this.view.workspace.getMobileEditor();
+  if(isMobile === true) {
     return this.mobileStylesObj[elementId];
   }
   return this.stylesObj[elementId];
@@ -283,23 +290,15 @@ silex.model.Property.prototype.findCssRule = function (elementId, isMobile) {
   for (var idx=0; idx < this.styleSheet.cssRules.length; idx++) {
     let cssRule = this.styleSheet.cssRules[idx];
     // we use the class name because elements have their ID as a css class too
-    if(isMobile === false) {
-      if(cssRule.selectorText === '.' + elementId) {
-        return {
-          rule: cssRule,
-          parent: this.styleSheet,
-          index: parseInt(idx, 10)
-        }
-      }
-    }
-    else if(cssRule.media
-      && cssRule.cssRules
-      && cssRule.cssRules[0]
-      && cssRule.cssRules[0].selectorText === '.' + elementId) {
+    if((isMobile === false && cssRule.selectorText === '.' + elementId) ||
+      (cssRule.media
+        && cssRule.cssRules
+        && cssRule.cssRules[0]
+        && cssRule.cssRules[0].selectorText === '.' + elementId)) {
       return {
-        rule: cssRule.cssRules[0],
-        parent: cssRule,
-        index: 0
+        rule: cssRule,
+        parent: this.styleSheet,
+        index: parseInt(idx, 10)
       }
     }
   }
@@ -360,7 +359,8 @@ silex.model.Property.prototype.getBoundingBox = function(elements) {
   // browse all elements and compute the containing rect
   goog.array.forEach(elements, function(element) {
     // retrieve the styles strings (with "px")
-    var elementStyle = this.getStyle(element);
+    var elementStyle = this.getStyle(element, false);
+    var mobileStyle = this.getStyle(element, true);
     if (!elementStyle) {
       elementStyle = {
         'top': '',
@@ -374,6 +374,12 @@ silex.model.Property.prototype.getBoundingBox = function(elements) {
       if(!elementStyle.left) elementStyle.left = '';
       if(!elementStyle.width) elementStyle.width = '';
       if(!elementStyle.height) elementStyle.height = '';
+    }
+    if(this.view.workspace.getMobileEditor()) {
+      if(elementStyle.top === '' && !!mobileStyle.top) elementStyle.top = mobileStyle.top;
+      if(elementStyle.left === '' && !!mobileStyle.left) elementStyle.left = mobileStyle.left;
+      if(elementStyle.width === '' && !!mobileStyle.width) elementStyle.width = mobileStyle.width;
+      if(elementStyle.height === '' && !!mobileStyle.height) elementStyle.height = mobileStyle.height;
     }
     // compute the styles numerical values, which may end up to be NaN or a number
     var elementMinWidth = elementStyle.minWidth ? parseFloat(elementStyle.minWidth.substr(0, elementStyle.minWidth.indexOf('px'))) : null;
@@ -406,43 +412,4 @@ silex.model.Property.prototype.getBoundingBox = function(elements) {
   }
   return res;
 };
-
-
-/**
- * get / set the css style of an element
- * this creates or update a rule in the style tag with id INLINE_STYLE_TAG_CLASS_NAME
- * @param {Element} element
- * @param {?boolean=} opt_computed use window.getComputedStyle instead of the element's stylesheet
- * @return {Object|null}
- */
-// silex.model.Property.prototype.getStyleObject = function (element, opt_computed) {
-//   var cssStyleDeclaration = null;
-//   if(opt_computed !== true) {
-//     var cssRule = null;
-//     var elementId =  /** @type {string} */ (this.getSilexId(element));
-//     if(this.view.workspace.getMobileEditor()) {
-//       let cssRuleObject = this.findCssRuleIndex(elementId, true);
-//       if(cssRuleObject) {
-//         cssRule = cssRuleObject.rule;
-//       }
-//     }
-//     if(!cssRule) {
-//       let cssRuleObject = this.findCssRuleIndex(elementId, false);
-//       if(cssRuleObject) {
-//         cssRule = cssRuleObject.rule;
-//       }
-//     }
-//     if(cssRule) {
-//       cssStyleDeclaration = cssRule.style;
-//     }
-//   }
-//   else {
-//     cssStyleDeclaration = this.model.file.getContentWindow().getComputedStyle(element);
-//   }
-//   if(cssStyleDeclaration) {
-//     // build an object with only the keys which are set
-//     return silex.utils.Style.styleToObject(cssStyleDeclaration);
-//   }
-//   return null;
-// };
 
