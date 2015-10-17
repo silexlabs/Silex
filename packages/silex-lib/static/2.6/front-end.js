@@ -70,10 +70,7 @@ $(function() {
    * mobile menu
    */
   $('.silex-pages').each(function() {
-    var button = document.createElement('div');
-    button.className = 'menu-button';
-    this.appendChild(button);
-    $(button).click(function () {
+    $('.menu-button', this).click(function () {
       $(document.body).toggleClass('show-mobile-menu');
     });
   });
