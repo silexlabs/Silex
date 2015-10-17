@@ -211,7 +211,6 @@ silex.model.Element.prototype.getTabs = function(num) {
  * example: for a container this will return "container"
  */
 silex.model.Element.prototype.getType = function(element) {
-  //return goog.style.getStyle(element, styleName);
   return element.getAttribute(silex.model.Element.TYPE_ATTR);
 };
 
@@ -223,7 +222,7 @@ silex.model.Element.prototype.getType = function(element) {
  * @return  {string}           the styles of the element
  */
 silex.model.Element.prototype.getAllStyles = function(element, opt_computed) {
-  var styleObject = this.model.property.getStyle(element, opt_computed);
+  var styleObject = this.model.property.getStyle(element, null, opt_computed);
   var styleStr = silex.utils.Style.styleToString(styleObject);
   return this.unprepareHtmlForEdit(styleStr);
 };
@@ -237,10 +236,19 @@ silex.model.Element.prototype.getAllStyles = function(element, opt_computed) {
  * @return  {string|null}           the style of the element
  */
 silex.model.Element.prototype.getStyle = function(element, styleName, opt_computed) {
-  var styleObject = this.model.property.getStyle(element, opt_computed);
+  var isMobile = this.view.workspace.getMobileEditor();
+  var styleObject = this.model.property.getStyle(element, isMobile, opt_computed);
   var cssName = goog.string.toSelectorCase(styleName);
   if (styleObject && styleObject[cssName]) {
     return this.unprepareHtmlForEdit(styleObject[cssName]);
+  }
+  else if(isMobile) {
+    // get the non mobile style if it is not defined in mobile
+    styleObject = this.model.property.getStyle(element, false, opt_computed);
+    cssName = goog.string.toSelectorCase(styleName);
+    if (styleObject && styleObject[cssName]) {
+      return this.unprepareHtmlForEdit(styleObject[cssName]);
+    }
   }
   return null;
 };
