@@ -99,7 +99,7 @@ a:focus{ outline: none;}
     overflow: hidden;
   }
   body.enable-mobile {
-    padding: 0;
+    padding: 60px 0 0 0; /* leave space for the hamburger button */
   }
   .background {
     height: inherit;
@@ -116,6 +116,9 @@ a:focus{ outline: none;}
     left: auto;
     max-width: 99.999%;
     margin-bottom: 5px;
+  }
+  .editable-style {
+    float: left;
   }
   .page-link-active {
     color: #555;
