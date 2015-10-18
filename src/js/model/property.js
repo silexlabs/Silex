@@ -382,7 +382,7 @@ silex.model.Property.prototype.getBoundingBox = function(elements) {
       if(!elementStyle.width) elementStyle.width = '';
       if(!elementStyle.height) elementStyle.height = '';
     }
-    if(this.view.workspace.getMobileEditor()) {
+    if(this.view.workspace.getMobileEditor() && mobileStyle) {
       if(elementStyle.top === '' && !!mobileStyle.top) elementStyle.top = mobileStyle.top;
       if(elementStyle.left === '' && !!mobileStyle.left) elementStyle.left = mobileStyle.left;
       if(elementStyle.width === '' && !!mobileStyle.width) elementStyle.width = mobileStyle.width;
