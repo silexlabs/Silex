@@ -144,16 +144,16 @@ silex.utils.BackwardCompat.hasToUpdate = function(initialVersion, targetVersion)
  */
 silex.utils.BackwardCompat.to2_2_6 = function(version, doc, model, cbk) {
 
-  if(silex.utils.BackwardCompat.hasToUpdate(version, [2, 2, 6])) {
+  if (silex.utils.BackwardCompat.hasToUpdate(version, [2, 2, 6])) {
     // container for page anchors, this will also be the menu when switching to mobile version
     var pagesContainer = doc.querySelector('.' + silex.model.Page.PAGES_CONTAINER_CLASS_NAME);
-    if(!pagesContainer) {
+    if (!pagesContainer) {
       pagesContainer = doc.createElement('div');
       pagesContainer.classList.add(silex.model.Page.PAGES_CONTAINER_CLASS_NAME);
       doc.body.appendChild(pagesContainer);
     }
     var button = doc.querySelector('.menu-button');
-    if(!button) {
+    if (!button) {
       // add the button
       button = doc.createElement('img');
       button.src = '/static/2.6/hamburger.png';
@@ -167,25 +167,25 @@ silex.utils.BackwardCompat.to2_2_6 = function(version, doc, model, cbk) {
   }
   // create the JSON array of styles when needed (will check even if not upgrading)
   let jsonStyleTag = doc.querySelector('.' + silex.model.Property.JSON_STYLE_TAG_CLASS_NAME);
-  if(!jsonStyleTag) {
+  if (!jsonStyleTag) {
     let styleTag = doc.querySelector('.' + silex.model.Property.INLINE_STYLE_TAG_CLASS_NAME);
     let styleSheet = null;
     for (var idx in doc.styleSheets) {
       if (doc.styleSheets[idx].ownerNode && doc.styleSheets[idx].ownerNode == styleTag) {
-        styleSheet =  doc.styleSheets[idx];
+        styleSheet = doc.styleSheets[idx];
       }
     }
-    if(styleSheet === null) {
+    if (styleSheet === null) {
       console.error('BackwardCompat error: no stylesheet found');
     }
     else {
       let stylesObj = {};
       let mobileStylesObj = {};
-      for (var idx=0; idx < styleSheet.cssRules.length; idx++) {
+      for (var idx = 0; idx < styleSheet.cssRules.length; idx++) {
         let cssRule = styleSheet.cssRules[idx];
         let id = cssRule.selectorText.substr(1);
         let style = silex.utils.Style.styleToObject(cssRule.style);
-        if(cssRule['media']) {
+        if (cssRule['media']) {
           mobileStylesObj[id] = style;
         }
         else {
@@ -199,8 +199,8 @@ silex.utils.BackwardCompat.to2_2_6 = function(version, doc, model, cbk) {
       goog.dom.appendChild(doc.head, jsonStyleTag);
       // fill the tag with the JSON data
       jsonStyleTag.innerHTML = '[' + JSON.stringify({
-        "desktop": stylesObj,
-        "mobile": mobileStylesObj
+        'desktop': stylesObj,
+        'mobile': mobileStylesObj
       }) + ']';
     }
   }
@@ -220,7 +220,7 @@ silex.utils.BackwardCompat.to2_2_5 = function(version, doc, model, cbk) {
 //  if(silex.utils.BackwardCompat.hasToUpdate(version, [2, 2, 5])) {
     // remove jquery.ui.touch-punch.min.js
     let element = doc.querySelector('[src$="jquery.ui.touch-punch.min.js"]');
-    if(element) {
+    if (element) {
       goog.dom.removeNode(element);
     }
 
@@ -228,9 +228,9 @@ silex.utils.BackwardCompat.to2_2_5 = function(version, doc, model, cbk) {
     // add the [data-silex-static] attributes
     function handle(attrName) {
       let elements = doc.querySelectorAll('[' + attrName + ']');
-      goog.array.forEach(elements, function (element) {
+      goog.array.forEach(elements, function(element) {
         var attr = element.getAttribute(attrName);
-        if(attr.indexOf('//static.silex.') > -1) {
+        if (attr.indexOf('//static.silex.') > -1) {
           attr = attr.replace('//static.silex.me', '//' + host + '/static');
           attr = attr.replace('//static.silex.io', '//' + host + '/static');
           element.setAttribute(attrName, attr);

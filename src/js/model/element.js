@@ -28,10 +28,10 @@ goog.require('silex.types.Model');
  * @enum {string}
  */
 silex.model.DomDirection = {
-  UP: "UP",
-  DOWN: "DOWN",
-  TOP: "TOP",
-  BOTTOM: "BOTTOM"
+  UP: 'UP',
+  DOWN: 'DOWN',
+  TOP: 'TOP',
+  BOTTOM: 'BOTTOM'
 };
 
 
@@ -207,7 +207,7 @@ silex.model.Element.prototype.getTabs = function(num) {
 /**
  * get/set type of the element
  * @param  {Element} element   created by silex, either a text box, image, ...
- * @return  {string|null}           the style of the element
+ * @return  {?string}           the style of the element
  * example: for a container this will return "container"
  */
 silex.model.Element.prototype.getType = function(element) {
@@ -233,7 +233,7 @@ silex.model.Element.prototype.getAllStyles = function(element, opt_computed) {
  * @param  {Element} element   created by silex, either a text box, image, ...
  * @param  {string} styleName  the style name
  * @param {?boolean=} opt_computed use window.getComputedStyle instead of the element's stylesheet
- * @return  {string|null}           the style of the element
+ * @return  {?string}           the style of the element
  */
 silex.model.Element.prototype.getStyle = function(element, styleName, opt_computed) {
   var isMobile = this.view.workspace.getMobileEditor();
@@ -242,7 +242,7 @@ silex.model.Element.prototype.getStyle = function(element, styleName, opt_comput
   if (styleObject && styleObject[cssName]) {
     return this.unprepareHtmlForEdit(styleObject[cssName]);
   }
-  else if(isMobile) {
+  else if (isMobile) {
     // get the non mobile style if it is not defined in mobile
     styleObject = this.model.property.getStyle(element, false, opt_computed);
     cssName = goog.string.toSelectorCase(styleName);
@@ -384,17 +384,17 @@ silex.model.Element.prototype.getContentNode = function(element) {
  * @param  {silex.model.DomDirection} direction
  */
 silex.model.Element.prototype.move = function(element, direction) {
-  switch(direction) {
+  switch (direction) {
     case silex.model.DomDirection.UP:
       let sibling = this.getNextElement(element);
-      if(sibling) {
+      if (sibling) {
         // insert after
         element.parentNode.insertBefore(sibling, element);
       }
       break;
     case silex.model.DomDirection.DOWN:
       let sibling = this.getPreviousElement(element);
-      if(sibling) {
+      if (sibling) {
         // insert before
         element.parentNode.insertBefore(sibling, element.nextSibling);
       }
@@ -414,19 +414,19 @@ silex.model.Element.prototype.move = function(element, direction) {
 /**
  * get the previous element in the DOM, which is a Silex element
  * @param {Element} element
- * @return {Element|null}
+ * @return {?Element}
  */
 silex.model.Element.prototype.getPreviousElement = function(element) {
   let len = element.parentNode.childNodes.length;
   let res = null;
-  for (let idx=0; idx < len; idx++) {
+  for (let idx = 0; idx < len; idx++) {
     let el = element.parentNode.childNodes[idx];
     if (el.nodeType === 1 && this.getType(el) !== null) {
-      if(el === element) {
+      if (el === element) {
         return res;
       }
       // candidates are the elements which are visible in the current page, or visible everywhere (not paged)
-      if(this.model.page.isInPage(el) || this.model.page.getPagesForElement(el).length === 0) {
+      if (this.model.page.isInPage(el) || this.model.page.getPagesForElement(el).length === 0) {
         res = el;
       }
     }
@@ -438,19 +438,19 @@ silex.model.Element.prototype.getPreviousElement = function(element) {
 /**
  * get the previous element in the DOM, which is a Silex element
  * @param {Element} element
- * @return {Element|null}
+ * @return {?Element}
  */
 silex.model.Element.prototype.getNextElement = function(element) {
   let len = element.parentNode.childNodes.length;
   let res = null;
-  for (let idx=len - 1; idx >= 0; idx--) {
+  for (let idx = len - 1; idx >= 0; idx--) {
     let el = element.parentNode.childNodes[idx];
     if (el.nodeType === 1 && this.getType(el) !== null) {
-      if(el === element) {
+      if (el === element) {
         return res;
       }
       // candidates are the elements which are visible in the current page, or visible everywhere (not paged)
-      if(this.model.page.isInPage(el) || this.model.page.getPagesForElement(el).length === 0) {
+      if (this.model.page.isInPage(el) || this.model.page.getPagesForElement(el).length === 0) {
         res = el;
       }
     }

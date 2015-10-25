@@ -153,12 +153,12 @@ silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk, opt_showLoader) 
   // make everything protocol agnostic to avoid problems with silex being https
   rawHtml = rawHtml.replace('http://', '//', 'g');
   // detect non-silex websites
-  if(rawHtml.indexOf('silex-runtime') < 0) {
+  if (rawHtml.indexOf('silex-runtime') < 0) {
     console.error('This is not a website editable in Silex.');
     silex.utils.Notification.alert('I can not be open this website. I can only open website made with Silex. <a target="_blank" href="https://github.com/silexlabs/Silex/issues/282">More info here</a>.', function() {});
     return;
   }
-  else if(rawHtml.indexOf('silex-published') >= 0) {
+  else if (rawHtml.indexOf('silex-published') >= 0) {
     console.error('This is a published website.');
     silex.utils.Notification.alert('I can not be open this website. It is a published version of a Silex website. <a target="_blank" href="https://github.com/silexlabs/Silex/issues/282">More info here</a>.', function() {});
     return;
@@ -181,7 +181,7 @@ silex.model.File.prototype.contentChanged = function(opt_cbk) {
   this.contentWindow_ = goog.dom.getFrameContentWindow(this.iFrameElement_);
   if (this.contentDocument_.body === null ||
     this.contentWindow_ === null ||
-    this.contentWindow_['$'] === null ) {
+    this.contentWindow_['$'] === null) {
     setTimeout(goog.bind(function() {
       this.contentChanged(opt_cbk);
     }, this), 0);
@@ -204,7 +204,7 @@ silex.model.File.prototype.contentChanged = function(opt_cbk) {
     console.error('error loading editable script');
     throw new Error('error loading editable script');
   }, this));
-}
+};
 
 
 /**

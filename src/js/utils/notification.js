@@ -86,7 +86,7 @@ silex.utils.Notification.isListeningForFocus = false;
  */
 silex.utils.Notification.useNative = function() {
   return silex.utils.Notification.hasFocus == false
-    && ("Notification" in window && Notification.permission === "granted");
+    && ('Notification' in window && Notification.permission === 'granted');
 };
 
 
@@ -113,7 +113,7 @@ silex.utils.Notification.activateNative = function() {
  * @param {string} iconUrl
  */
 silex.utils.Notification.nativeNotification = function(message, iconUrl) {
-  if(!silex.utils.Notification.isListeningForFocus) {
+  if (!silex.utils.Notification.isListeningForFocus) {
     silex.utils.Notification.isListeningForFocus = true;
     window.onfocus = (e) => silex.utils.Notification.hasFocus = true;
     window.onblur = (e) => silex.utils.Notification.hasFocus = false;

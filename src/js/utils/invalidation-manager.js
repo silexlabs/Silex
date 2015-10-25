@@ -61,7 +61,7 @@ class InvalidationManager {
    */
   callWhenReady(cbk) {
     // if a call was made a short time ago
-    if(this.isDirty) {
+    if (this.isDirty) {
       // store the last call only (rewrite this.cbk each time)
       // and save it for later
       this.cbk = cbk;
@@ -78,7 +78,7 @@ class InvalidationManager {
   startDirty() {
     setTimeout(() => {
       // other calls have been made in the mean time, call the last one only
-      if(this.cbk === null) {
+      if (this.cbk === null) {
         // reset the flag
         this.isDirty = false;
       }
@@ -89,4 +89,4 @@ class InvalidationManager {
       }
     }, this.delay);
   }
-}
+};
