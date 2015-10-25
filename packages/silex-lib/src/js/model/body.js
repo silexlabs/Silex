@@ -202,7 +202,7 @@ silex.model.Body.prototype.initUiHandles = function(element) {
  * @param {boolean} isEditable
  */
 silex.model.Body.prototype.setEditable = function(rootElement, isEditable) {
-  if(!rootElement) {
+  if (!rootElement) {
     // this happens on firefox sometimes at start
     // FIXME: find why this happens instead of this workaround
     return;

@@ -122,7 +122,7 @@ silex.view.Splitter.prototype.redraw = function() {
   goog.array.forEach(this.onTheRight, function(element) {
     element.style.left = silex.view.Splitter.WIDTH + pos.x + 'px';
   }, this);
-  if(this.onRedraw) {
+  if (this.onRedraw) {
     this.onRedraw();
   }
 };

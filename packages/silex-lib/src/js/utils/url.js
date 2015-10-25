@@ -98,7 +98,7 @@ silex.utils.Url.absolute2Relative = function(htmlString, baseUrl) {
   });
   // href (links and favicon)
   htmlString = htmlString.replace(/href="?([^" ]*)"/gi, function(match, group1, group2) {
-    if(group1.indexOf('#') === 0){
+    if (group1.indexOf('#') === 0) {
       // case of an anchor or page name
       return match;
     }
@@ -260,7 +260,7 @@ silex.utils.Url.getRelativePath = function(url, base) {
  * @return {string} absolute url of the relative path
  */
 silex.utils.Url.getAbsolutePath = function(rel, base) {
-  if(rel.indexOf('#') === 0 || rel.indexOf('//') === 0) {
+  if (rel.indexOf('#') === 0 || rel.indexOf('//') === 0) {
     // do not convert to absolute the anchors or protocol agnostic urls
     return rel;
   }

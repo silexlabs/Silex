@@ -51,7 +51,7 @@ silex.Config.debug = {
   /**
    * @type {boolean}
    */
-  preventQuit: false,
+  preventQuit: false
 };
 
 
