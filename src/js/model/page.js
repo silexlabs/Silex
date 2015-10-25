@@ -137,10 +137,10 @@ silex.model.Page.PAGE_LINK_ACTIVE_CLASS_NAME = 'page-link-active';
  */
 silex.model.Page.prototype.getParentPage = function(element) {
   var parent = element.parentNode;
-  while (parent && !goog.dom.classlist.contains(/** @type {Element|null} */ (parent), silex.model.Page.PAGED_CLASS_NAME)) {
+  while (parent && !goog.dom.classlist.contains(/** @type {?Element} */ (parent), silex.model.Page.PAGED_CLASS_NAME)) {
     parent = parent.parentNode;
   }
-  return /** @type {Element|null} */ (parent);
+  return /** @type {?Element} */ (parent);
 };
 
 
@@ -170,11 +170,11 @@ silex.model.Page.prototype.getCurrentPage = function() {
   var bodyElement = this.model.body.getBodyElement();
   var pageName = null;
   try {
-    if(this.model.file.getContentWindow().jQuery(bodyElement).pageable) {
+    if (this.model.file.getContentWindow().jQuery(bodyElement).pageable) {
       pageName = this.model.file.getContentWindow().jQuery(bodyElement).pageable('option', 'currentPage');
     }
   }
-  catch(e) {
+  catch (e) {
     console.error('error, could not retrieve the current page', e);
   }
   return pageName;
@@ -200,7 +200,7 @@ silex.model.Page.prototype.refreshView = function() {
  */
 silex.model.Page.prototype.setCurrentPage = function(pageName) {
   var bodyElement = this.model.body.getBodyElement();
-  if(this.model.file.getContentWindow().jQuery(bodyElement).pageable) {
+  if (this.model.file.getContentWindow().jQuery(bodyElement).pageable) {
     this.model.file.getContentWindow().jQuery(bodyElement).pageable({'currentPage': pageName});
   }
   this.refreshView();

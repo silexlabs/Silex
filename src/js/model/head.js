@@ -374,7 +374,7 @@ silex.model.Head.prototype.getPublicationPath = function() {
  * @param {boolean} enable
  */
 silex.model.Head.prototype.setEnableMobile = function(enable) {
-  if(enable === true) {
+  if (enable === true) {
     this.model.file.getContentDocument().body.classList.add(silex.model.Head.ENABLE_MOBILE_CSS_CLASS);
   } else {
     this.model.file.getContentDocument().body.classList.remove(silex.model.Head.ENABLE_MOBILE_CSS_CLASS);
@@ -454,7 +454,7 @@ silex.model.Head.prototype.getFaviconPath = function() {
   if (faviconTag) {
     url = faviconTag.getAttribute('href');
   }
-  if(url && this.model.file.getUrl()) {
+  if (url && this.model.file.getUrl()) {
     var baseUrl = silex.utils.Url.getBaseUrl() + this.model.file.getUrl();
     url = silex.utils.Url.getRelativePath(url, baseUrl);
   }
@@ -467,7 +467,7 @@ silex.model.Head.prototype.getFaviconPath = function() {
  * @param {?string=} opt_path
  */
 silex.model.Head.prototype.setFaviconPath = function(opt_path) {
-  if(opt_path) {
+  if (opt_path) {
     // absolute url only in the dom
     var baseUrl = silex.utils.Url.getBaseUrl();
     opt_path = silex.utils.Url.getAbsolutePath(/** @type {string} */ (opt_path), baseUrl);
@@ -481,7 +481,7 @@ silex.model.Head.prototype.setFaviconPath = function(opt_path) {
       goog.dom.appendChild(this.getHeadElement(), faviconTag);
     }
   }
-  else if(!opt_path) {
+  else if (!opt_path) {
     goog.dom.removeNode(faviconTag);
   }
   if (opt_path) {
@@ -540,7 +540,7 @@ silex.model.Head.prototype.getDescriptionSocial = function() {
  * @param {?string=} opt_path
  */
 silex.model.Head.prototype.setThumbnailSocialPath = function(opt_path) {
-  if(opt_path) {
+  if (opt_path) {
     // absolute url only in the dom
     var baseUrl = silex.utils.Url.getBaseUrl();
     opt_path = silex.utils.Url.getAbsolutePath(/** @type {string} */ (opt_path), baseUrl);
@@ -558,7 +558,7 @@ silex.model.Head.prototype.setThumbnailSocialPath = function(opt_path) {
  */
 silex.model.Head.prototype.getThumbnailSocialPath = function() {
   var url = this.getMeta('og:image') || this.getMeta('twitter:image');
-  if(url && this.model.file.getUrl()) {
+  if (url && this.model.file.getUrl()) {
     var baseUrl = silex.utils.Url.getBaseUrl() + this.model.file.getUrl();
     url = silex.utils.Url.getRelativePath(url, baseUrl);
   }

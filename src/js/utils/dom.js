@@ -218,9 +218,9 @@ silex.utils.Dom.addMandatoryTags = function(doc) {
   silex.utils.Dom.MANDATORY_TAGS.forEach((tagObj) => {
     let query = '[' + (tagObj['type'] === 'script' ? 'src$=' : 'href$=') + '"' + tagObj['fileName'] + '"]'
     let element = doc.querySelector(query);
-    if(!element) {
+    if (!element) {
       element = doc.createElement(tagObj['type']);
-      if(tagObj['type'] === 'script') {
+      if (tagObj['type'] === 'script') {
         element.setAttribute('type', 'text/javascript');
         element.setAttribute('src', silex.utils.BackwardCompat.getStaticResourceUrl(tagObj['fileName']));
       }
