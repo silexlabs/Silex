@@ -194,14 +194,14 @@ silex.utils.BackwardCompat.to2_2_6 = function(version, doc, model, cbk) {
       }
       // create the tag
       jsonStyleTag = doc.createElement('script');
-      jsonStyleTag.setAttribute('type', 'text/json');
+      jsonStyleTag.setAttribute('type', 'text/javascript');
       jsonStyleTag.classList.add(silex.model.Property.JSON_STYLE_TAG_CLASS_NAME);
       goog.dom.appendChild(doc.head, jsonStyleTag);
       // fill the tag with the JSON data
-      jsonStyleTag.innerHTML = JSON.stringify({
+      jsonStyleTag.innerHTML = '[' + JSON.stringify({
         "desktop": stylesObj,
         "mobile": mobileStylesObj
-      });
+      }) + ']';
     }
   }
   cbk();

@@ -174,10 +174,11 @@ silex.model.Property.prototype.saveStyles = function(doc) {
     styleTag.classList.add(silex.model.Property.JSON_STYLE_TAG_CLASS_NAME);
     goog.dom.appendChild(doc.head, styleTag);
   }
-  styleTag.innerHTML = JSON.stringify({
+  let obj = {
     "desktop": this.stylesObj,
     "mobile": this.mobileStylesObj
-  });
+  };
+  styleTag.innerHTML = '[' + JSON.stringify(obj) + ']';
 }
 
 
@@ -187,7 +188,7 @@ silex.model.Property.prototype.saveStyles = function(doc) {
 silex.model.Property.prototype.loadStyles = function(doc) {
   var styleTag = doc.querySelector('.' + silex.model.Property.JSON_STYLE_TAG_CLASS_NAME);
   if(styleTag != null) {
-    let styles = /** @type {Object} */ (JSON.parse(styleTag.innerHTML));
+    let styles = /** @type {Object} */ (JSON.parse(styleTag.innerHTML)[0]);
     if(styles && styles['desktop'] && styles['mobile']) {
       this.stylesObj = styles['desktop'];
       this.mobileStylesObj = styles['mobile'];
