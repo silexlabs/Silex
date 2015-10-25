@@ -137,7 +137,7 @@ silex.controller.FileMenuController.prototype.publish = function() {
           var timer = setInterval(() => {
             silex.service.SilexTasks.getInstance().publishState(json => {
               document.querySelector('.alertify-message').innerHTML = json['status'];
-              if(json['stop'] === true) {
+              if (json['stop'] === true) {
                 clearInterval(timer);
               }
             }, message => {

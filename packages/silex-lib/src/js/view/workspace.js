@@ -115,7 +115,7 @@ silex.view.Workspace.prototype.startWatchingResize = function(view) {
  */
 silex.view.Workspace.prototype.startWatchingUnload = function() {
   window.onbeforeunload = () => {
-    if(this.controller.fileMenuController.isDirty()) {
+    if (this.controller.fileMenuController.isDirty()) {
       return 'You have unsaved modifications, are you sure you want to leave me?';
     }
     return null;

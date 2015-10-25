@@ -61,8 +61,8 @@ silex.view.dialog.SettingsDialog = function(element, model, controller) {
   this.bindTextField('.publish-pane .input-publication-path', (v) => this.controller.settingsDialogController.setPublicationPath(v));
 
   // image path browse button
-  this.bindBrowseButton('.general-pane .browse-favicon-path', () => this.controller.settingsDialogController.browseFaviconPath())
-  this.bindBrowseButton('.publish-pane .browse-publication-path', () => this.controller.settingsDialogController.browsePublishPath())
+  this.bindBrowseButton('.general-pane .browse-favicon-path', () => this.controller.settingsDialogController.browseFaviconPath());
+  this.bindBrowseButton('.publish-pane .browse-publication-path', () => this.controller.settingsDialogController.browsePublishPath());
 };
 
 // inherit from silex.view.dialog.DialogBase
@@ -212,7 +212,7 @@ silex.view.dialog.SettingsDialog.prototype.setPublicationPath = function(opt_pat
  */
 silex.view.dialog.SettingsDialog.prototype.setEnableMobile = function(enabled) {
   this.mobileCheckbox.setChecked(enabled);
-}
+};
 
 
 /**

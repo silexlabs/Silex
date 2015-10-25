@@ -170,7 +170,7 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
     // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
     if (!silex.utils.Url.isAbsoluteUrl(relative)) {
       // case of the static scripts (all the other cases are /api/...)
-      if(relative.indexOf('static/') === 0) {
+      if (relative.indexOf('static/') === 0) {
         // from static/2.5/jquery.js to http://editor.silex.me/static/2.5/jquery.js
         relative = silex.utils.Url.getBaseUrl() + relative;
       }
@@ -200,7 +200,7 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
       var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
       if (!silex.utils.Url.isAbsoluteUrl(relative)) {
         // case of the static scripts (all the other cases are /api/...)
-        if(relative.indexOf('static/') === 0) {
+        if (relative.indexOf('static/') === 0) {
           // from static/2.5/jquery.js to http://editor.silex.me/static/2.5/jquery.js
           relative = silex.utils.Url.getBaseUrl() + relative;
         }

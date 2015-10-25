@@ -20,6 +20,7 @@ goog.provide('silex.types.Controller');
 goog.provide('silex.types.Model');
 goog.provide('silex.types.View');
 
+goog.require('silex.controller.ContextMenuController');
 goog.require('silex.controller.CssEditorController');
 goog.require('silex.controller.EditMenuController');
 goog.require('silex.controller.FileMenuController');
@@ -33,7 +34,6 @@ goog.require('silex.controller.StageController');
 goog.require('silex.controller.TextEditorController');
 goog.require('silex.controller.ToolMenuController');
 goog.require('silex.controller.ViewMenuController');
-goog.require('silex.controller.ContextMenuController');
 
 
 

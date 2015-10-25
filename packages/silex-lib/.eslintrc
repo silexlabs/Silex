@@ -2,8 +2,7 @@
   "env": {
     "browser": true,
     "es6": true,
-    "node": true,
-    "esnext": true
+    "node": true
   },
   "globals": {
     "silex": true,

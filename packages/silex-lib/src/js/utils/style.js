@@ -94,7 +94,7 @@ silex.utils.Style.removeInternalClasses = function(element, opt_allClasses, opt_
  */
 silex.utils.Style.styleToObject = function(styleObj) {
   var res = {};
-  for (let idx=0 ; idx < styleObj.length; idx++) {
+  for (let idx = 0; idx < styleObj.length; idx++) {
     var styleName = styleObj[idx];
     res[styleName] = styleObj[styleName];
   }

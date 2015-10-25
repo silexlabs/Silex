@@ -190,7 +190,7 @@ silex.view.Stage.prototype.onMouseUpOverUi = function(event) {
   if (this.bodyElement !== null) {
     // if out of stage, release from drag of the plugin
     // simulate the mouse up on the iframe body
-    var pos =  goog.style.getRelativePosition(event, this.element);
+    var pos = goog.style.getRelativePosition(event, this.element);
     var newEvObj = document.createEvent('MouseEvent');
     newEvObj.initEvent('mouseup', true, true);
     newEvObj.clientX = pos.x;
@@ -224,7 +224,7 @@ silex.view.Stage.prototype.bodyElementSizeToContent = function(event) {
   if (this.bodyElement) {
     let containers = [];
     goog.array.forEach(this.bodyElement.children, (element) => {
-      if(element.classList.contains(silex.model.Body.EDITABLE_CLASS_NAME)) {
+      if (element.classList.contains(silex.model.Body.EDITABLE_CLASS_NAME)) {
         containers.push(element);
       }
     });
@@ -435,7 +435,7 @@ silex.view.Stage.prototype.handleMouseUp = function(target, x, y, shiftKey) {
     let dropZone = this.getDropZone(x, y) || {'element': this.bodyElement, 'zIndex': 0};
     // move all selected elements to the new container
     goog.array.forEach(this.selectedElements, function(element) {
-      if(!goog.dom.getAncestorByClass(element.parentNode, silex.model.Element.SELECTED_CLASS_NAME) &&
+      if (!goog.dom.getAncestorByClass(element.parentNode, silex.model.Element.SELECTED_CLASS_NAME) &&
          !goog.dom.classlist.contains(element, silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME)) {
         this.controller.stageController.newContainer(dropZone.element, element);
       }
