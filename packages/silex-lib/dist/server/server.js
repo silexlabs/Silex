@@ -81,6 +81,7 @@ if(process.env.SILEX_DEBUG) {
   silexConfig.www.USERS = {
     'admin': 'admin'
   };
+  silexConfig.openPages.ENABLED = true;
 }
 else {
   // PRODUCTION ONLY
@@ -89,6 +90,7 @@ else {
   process.on('uncaughtException', onCatchError);
   // reset debug
   silexConfig.www.USERS = {};
+  silexConfig.openPages.ENABLED = false;
 }
 
 // ********************************
@@ -121,15 +123,9 @@ silexConfig.staticFolders.push(
 // ********************************
 // open pages if defined
 if(silexConfig.openPages) {
-  silexConfig.openPages.ROOT = pathModule.resolve(__dirname, '../../../open-pages/');
-  silexConfig.openPages.SQLLITE_FILE = pathModule.resolve(__dirname, '../../../open-pages/websites.sql');
-  // fixeme unifile should serve this, with the user's chosen name
-  silexConfig.staticFolders.push({
-    name: '/open-pages',
-    path: silexConfig.openPages.ROOT
-  });
-  fs.mkdir(silexConfig.openPages.ROOT, null, function (error) {
-  });
+  silexConfig.openPages.ROOT = pathModule.resolve(__dirname, '../../open-pages/');
+  silexConfig.openPages.SQLLITE_FILE = pathModule.resolve(__dirname, '../../open-pages/websites.sql');
+  fs.mkdir(silexConfig.openPages.ROOT, null, function (error) {});
 }
 // SSL certificate
 try {

@@ -10,7 +10,7 @@
  */
 
 /**
- * @fileoverview Service used to interact with google analytics server.
+ * @fileoverview Service used to interact with analytics server.
  *     It is used in Silex to track the user actions (QOS layer).
  *     This class is a singleton.
  *
@@ -22,14 +22,11 @@ goog.provide('silex.service.Tracker');
 
 
 /**
- * the Silex Tracker class hadles user actions tracking
+ * the Silex Tracker class logs user actions
  * this is for us to detect problems and improve user experience
  * @constructor
  */
 silex.service.Tracker = function() {
-  if (!ga) {
-    console.error('google analytcs not loaded');
-  }
 };
 goog.addSingletonGetter(silex.service.Tracker);
 
@@ -51,7 +48,12 @@ silex.service.Tracker.SILEX_ACTIONS_CATEGORY = 'silex-event';
  * @param  {?number=} opt_value
  */
 silex.service.Tracker.prototype.trackAction = function(category, action, opt_label, opt_value) {
-  //  console.info('trackAction', arguments);
-  ga('send', 'event', category, action, opt_label, opt_value, true);
+  console.info('trackAction', arguments);
+  if (typeof Piwik === 'undefined') {
+    // console.error('Piwik not loaded');
+  }
+  else {
+    _paq.push(['trackEvent', category, action, opt_label, opt_value]);
+  }
 };
 
