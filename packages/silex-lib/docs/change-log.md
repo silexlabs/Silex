@@ -1,6 +1,7 @@
 
-This document is now [in the wiki](https://github.com/silexlabs/Silex/wiki/Change-log)
+This document is obsolete, it is now [in the wiki](https://github.com/silexlabs/Silex/wiki/Change-log)
 
+____
 
 # change logs
 
