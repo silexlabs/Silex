@@ -1,3 +1,7 @@
+
+This document is now [in the wiki](https://github.com/silexlabs/Silex/wiki/Change-log)
+
+
 # change logs
 
 This is where you will find the recent changes made to Silex, and available on http://www.silex.me/
