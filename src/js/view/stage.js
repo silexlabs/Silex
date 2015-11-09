@@ -752,8 +752,8 @@ silex.view.Stage.prototype.followElementPosition =
       !goog.dom.getAncestorByClass(follower.parentNode, silex.model.Element.SELECTED_CLASS_NAME) &&
       !goog.dom.classlist.contains(follower, silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME)) {
           let pos = goog.style.getPosition(follower);
-          this.controller.stageController.styleChanged('top', (pos.y + offsetY) + 'px', [follower], false);
-          this.controller.stageController.styleChanged('left', (pos.x + offsetX) + 'px', [follower], false);
+          this.controller.stageController.styleChanged('top', Math.round(pos.y + offsetY) + 'px', [follower], false);
+          this.controller.stageController.styleChanged('left', Math.round(pos.x + offsetX) + 'px', [follower], false);
         }
   }, this);
 };
@@ -837,11 +837,11 @@ silex.view.Stage.prototype.followElementSize =
         newSizeH = silex.model.Element.MIN_HEIGHT;
       }
       // set position in case we are resizing up or left
-      this.controller.stageController.styleChanged('top', offsetPosY + 'px', [follower], false);
-      this.controller.stageController.styleChanged('left', offsetPosX + 'px', [follower], false);
+      this.controller.stageController.styleChanged('top', Math.round(offsetPosY) + 'px', [follower], false);
+      this.controller.stageController.styleChanged('left', Math.round(offsetPosX) + 'px', [follower], false);
       // apply the new size
-      this.controller.stageController.styleChanged('width', newSizeW + 'px', [follower], false);
-      this.controller.stageController.styleChanged('height', newSizeH + 'px', [follower], false);
+      this.controller.stageController.styleChanged('width', Math.round(newSizeW) + 'px', [follower], false);
+      this.controller.stageController.styleChanged('height', Math.round(newSizeH) + 'px', [follower], false);
     }
   }, this);
 };
