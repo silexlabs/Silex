@@ -1,3 +1,7 @@
+This document is obsolete, it is now [in the wiki](https://github.com/silexlabs/Silex/wiki/Contribute)
+
+____
+
 #Contribute to Silex
 
 We really appreciate having you involved! Do not hesitate to contact us by email, contact[at]silexlabs[dot]org
