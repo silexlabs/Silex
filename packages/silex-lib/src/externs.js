@@ -16,16 +16,30 @@
 
 
 /**
- * google analytics
- * @param {string} a
- * @param {string} b
+ * piwik analytics
+ * @constructor
+ */
+function Piwik() {};
+
+/**
+ * @type {Array.<string|number>}
+ */
+var _paq = [];
+
+/**
+ * @static
+ * @return {Piwik}
+ */
+Piwik.getAsyncTracker = function() {};
+
+
+/**
  * @param {string} c
  * @param {string} d
  * @param {?string=} e
  * @param {?number=} f
- * @param {?boolean=} g
  */
-function ga(a, b, c, d, e, f, g) {}
+Piwik.prototype.trackEvent = function(c, d, e, f) {}
 
 
 
