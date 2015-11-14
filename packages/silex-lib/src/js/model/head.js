@@ -375,11 +375,18 @@ silex.model.Head.prototype.getPublicationPath = function() {
  */
 silex.model.Head.prototype.setEnableMobile = function(enable) {
   if (enable === true) {
+    // website
     this.model.file.getContentDocument().body.classList.add(silex.model.Head.ENABLE_MOBILE_CSS_CLASS);
   } else {
+    // website
     this.model.file.getContentDocument().body.classList.remove(silex.model.Head.ENABLE_MOBILE_CSS_CLASS);
   }
   this.view.settingsDialog.setEnableMobile(enable);
+
+  // redraw UI
+  var pages = this.model.page.getPages();
+  var page = this.model.page.getCurrentPage();
+  this.view.propertyTool.redraw(this.model.body.getSelection(), pages, page);
 };
 
 

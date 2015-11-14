@@ -59,6 +59,7 @@ a:focus{ outline: none;}
 }
 /* Mobile styles */
 @media (max-width:400px) {
+  /* mobile hamburger menu */
   .silex-pages .menu-button {
     width: 50px;
     height: 40px;
@@ -70,6 +71,7 @@ a:focus{ outline: none;}
     display: inherit;
   }
 
+  /* mobile side bar */
   .silex-pages {
     position: fixed;
     z-index: 999999;
@@ -98,6 +100,7 @@ a:focus{ outline: none;}
     white-space: nowrap;
     overflow: hidden;
   }
+  /* elements styles */
   body.enable-mobile {
     padding: 60px 0 0 0; /* leave space for the hamburger button */
   }
@@ -120,9 +123,8 @@ a:focus{ outline: none;}
   .editable-style {
     float: left;
   }
-  .page-link-active {
-    color: #555;
-    background-color: #e7e7e7;
+  .editable-style.hide-on-mobile {
+    display: none;
   }
 }
 
