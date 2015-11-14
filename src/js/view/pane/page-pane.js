@@ -59,6 +59,13 @@ silex.view.pane.PagePane.prototype.linkDropdown = null;
 
 
 /**
+ * check box "view on mobile"
+ * @type {goog.ui.Checkbox}
+ */
+silex.view.pane.PagePane.prototype.viewOnMobileCheckbox = null;
+
+
+/**
  * text field used to type an external link
  */
 silex.view.pane.PagePane.prototype.linkInputTextField = null;
@@ -95,6 +102,26 @@ silex.view.pane.PagePane.prototype.buildUi = function() {
       this.onLinkTextChanged,
       false,
       this);
+
+  // View on mobile checkbox
+  var viewOnMobileElement = goog.dom.getElementByClass('view-on-mobile', this.element);
+  var checkboxElement = goog.dom.getElementByClass('view-on-mobile-check', viewOnMobileElement);
+  var labelElement = goog.dom.getElementByClass('view-on-mobile-label', viewOnMobileElement);
+  this.viewOnMobileCheckbox = new goog.ui.Checkbox();
+  this.viewOnMobileCheckbox.render(checkboxElement);
+  this.viewOnMobileCheckbox.setLabel(labelElement);
+  goog.events.listen(this.viewOnMobileCheckbox, goog.ui.Component.EventType.CHANGE,
+      function(event) {
+        goog.array.forEach(this.selectedElements, function(element) {
+          if(this.viewOnMobileCheckbox.isChecked()) {
+            element.classList.remove('hide-on-mobile');
+          }
+          else {
+            element.classList.add('hide-on-mobile');
+          }
+        }, this);
+      }, false, this);
+
 };
 
 
@@ -228,12 +255,17 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, pageNames
   // update page list
   this.setPages(pageNames);
 
+  // View on mobile checkbox
+  this.viewOnMobileCheckbox.setEnabled(this.model.head.getEnableMobile());
+
   // not available for stage element
   var elementsNoStage = [];
   goog.array.forEach(selectedElements, function(element) {
     if (this.model.body.getBodyElement() !== element) {
       elementsNoStage.push(element);
     }
+    // update the "view on mobile" checkbox
+    this.viewOnMobileCheckbox.setChecked(!element.classList.contains('hide-on-mobile'));
   }, this);
   // special case of the background / main container only selected element
   var bgOnly = false;
