@@ -264,9 +264,20 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, pageNames
     if (this.model.body.getBodyElement() !== element) {
       elementsNoStage.push(element);
     }
-    // update the "view on mobile" checkbox
-    this.viewOnMobileCheckbox.setChecked(!element.classList.contains('hide-on-mobile'));
+    else {
+      this.viewOnMobileCheckbox.setEnabled(false);
+    }
   }, this);
+  // update the "view on mobile" checkbox
+  var isVisibleOnMobile = this.getCommonProperty(selectedElements, function(element) {
+    return !element.classList.contains('hide-on-mobile');
+  });
+  if(!goog.isNull(isVisibleOnMobile)) {
+    this.viewOnMobileCheckbox.setChecked(isVisibleOnMobile);
+  }
+  else {
+    this.viewOnMobileCheckbox.setChecked(goog.ui.Checkbox.State.UNDETERMINED);
+  }
   // special case of the background / main container only selected element
   var bgOnly = false;
   if (selectedElements.length === 1 && goog.dom.classlist.contains(selectedElements[0], 'background')) {
