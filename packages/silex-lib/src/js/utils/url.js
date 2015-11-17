@@ -23,6 +23,26 @@ goog.require('goog.net.XhrIo');
 
 
 /**
+ * cleanup URLs and remove double slashes which are sometimes added by cloud explorer / unifile
+ * FIXME: fix the issue in cloud explorer/unifile
+ */
+silex.utils.Url.workaroundCE = function(url) {
+  // cleanup: replace all groups of slashes by one slash, except when it has http(s):// or url(' in front of it
+  // this is to handle the cases like ../../..//sites-silex/ or api/v1.0/dropbox/get//sites-silex/
+  // this is a workaround for cloud explorer
+  url = url.replace(/(.)(:|'|"|\(|)(\/\/+)/, (match, p1, p2, p3) => {
+      // case where /(//...///) do not have : or ' or " or ... in just before it 
+      if (p2 === '') {
+        return p1 + "/";
+      }
+      // this is not a bug, not like ../../..//sites-silex/
+      return match;
+  }, 'g');
+  return url;
+}
+
+
+/**
  * Get base URL corresponding to a file URL
  * @param {string=} opt_url  the URL of the file, or null to get the base URL of silex editor e.g. http://www.silex.me/
  * @return  {string} the base url
@@ -210,9 +230,11 @@ silex.utils.Url.relative2Absolute = function(htmlString, baseUrl) {
  */
 silex.utils.Url.getRelativePath = function(url, base) {
   // check if they are both absolute urls
-  if ((base.indexOf('//') !== 0 && base.indexOf('http') !== 0) || (url.indexOf('http') !== 0 && url.indexOf('//') !== 0)) {
+  if (silex.utils.Url.isAbsoluteUrl(base) === false || silex.utils.Url.isAbsoluteUrl(url) === false) {
     return url;
   }
+  base = silex.utils.Url.workaroundCE(base);
+  url = silex.utils.Url.workaroundCE(url);
   // get an array out of the URLs
   var urlArr = url.split('/');
   var baseArr = base.split('/');
@@ -264,6 +286,8 @@ silex.utils.Url.getAbsolutePath = function(rel, base) {
     // do not convert to absolute the anchors or protocol agnostic urls
     return rel;
   }
+  base = silex.utils.Url.workaroundCE(base);
+  rel = silex.utils.Url.workaroundCE(rel);
   return goog.Uri.resolve(base, rel).toString();
 };
 
