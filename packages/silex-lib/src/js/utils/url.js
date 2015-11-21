@@ -31,9 +31,9 @@ silex.utils.Url.workaroundCE = function(url) {
   // this is to handle the cases like ../../..//sites-silex/ or api/v1.0/dropbox/get//sites-silex/
   // this is a workaround for cloud explorer
   url = url.replace(/(.)(:|'|"|\(|)(\/\/+)/, (match, p1, p2, p3) => {
-      // case where /(//...///) do not have : or ' or " or ... in just before it 
+      // case where /(//...///) do not have : or ' or " or ... in just before it
       if (p2 === '') {
-        return p1 + "/";
+        return p1 + '/';
       }
       // this is not a bug, not like ../../..//sites-silex/
       return match;
