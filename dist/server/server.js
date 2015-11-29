@@ -50,13 +50,14 @@ if (fs.existsSync(pathModule.resolve(__dirname, 'config.js'))) {
 }
 
 // session management
+var sessionFolder = process.env.SILEX_SESSION_FOLDER || pathModule.resolve(__dirname, '../sessions');
 app.use('/', session({
   secret: silexConfig.sessionSecret,
   name: silexConfig.cookieName,
   resave: true,
   saveUninitialized: false,
   store: new FSStore({
-    dir: pathModule.resolve(__dirname, '../sessions')
+    dir: sessionFolder
   }),
   cookie: {
     maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
