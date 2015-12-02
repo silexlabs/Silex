@@ -1,3 +1,8 @@
+
+This document is obsolete, it is now [in the wiki](https://github.com/silexlabs/Silex/wiki/Change-log)
+
+____
+
 # change logs
 
 This is where you will find the recent changes made to Silex, and available on http://www.silex.me/
