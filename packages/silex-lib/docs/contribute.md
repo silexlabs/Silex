@@ -1,8 +1,20 @@
+This document is obsolete, it is now [in the wiki](https://github.com/silexlabs/Silex/wiki/Contribute)
+
+____
+
 #Contribute to Silex
 
 We really appreciate having you involved! Do not hesitate to contact us by email, contact[at]silexlabs[dot]org
 
 Here is how to help and become a [Silex contributor](https://github.com/silexlabs/Silex/blob/master/docs/contributors.md). For people wanting to invest a significant amount of time, there are also [open positions in Silex team](https://github.com/silexlabs/Silex/issues?labels=help+wanted&state=open)
+
+##Start here
+
+* [subscribe to the newsletter](http://eepurl.com/IuNSD) be notified of important news (less than one per month)
+*  [ask questions in the forum](https://github.com/silexlabs/Silex/labels/question)
+* star the project on github (the button is in the top right corner of this page) 
+* watch the project on github so you can be notified when other ask questions in the forum (the button is in the top right corner of this page)
+* [edit the wiki pages](https://github.com/silexlabs/Silex/wiki) if you discover something!
 
 ##Show us that you like Silex
 
