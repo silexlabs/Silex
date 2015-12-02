@@ -163,6 +163,14 @@ silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk, opt_showLoader) 
     silex.utils.Notification.alert('I can not be open this website. It is a published version of a Silex website. <a target="_blank" href="https://github.com/silexlabs/Silex/issues/282">More info here</a>.', function() {});
     return;
   }
+  // remove the "silex-runtime" css class from the body while editing
+  // this must be done before rendering the dom, because it is used in front-end.js
+  rawHtml = rawHtml.replace(/<body(.*)(silex-runtime).*>/, function(match, p1, p2) {
+    if (p1.indexOf('>') >= 0) {
+      return match;
+    }
+    return match.replace('silex-runtime', '');
+  }, 'g');
   // write the content
   goog.dom.iframe.writeContent(this.iFrameElement_, rawHtml);
   this.contentChanged(opt_cbk);
@@ -187,9 +195,6 @@ silex.model.File.prototype.contentChanged = function(opt_cbk) {
     }, this), 0);
     return;
   }
-
-  // remove the "silex-runtime" css class from the body while editing
-  goog.dom.classlist.remove(this.contentDocument_.body, 'silex-runtime');
 
   // include edition tags and call onContentLoaded
   // the first time, it takes time to load the scripts
