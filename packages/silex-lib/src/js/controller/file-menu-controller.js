@@ -133,16 +133,17 @@ silex.controller.FileMenuController.prototype.publish = function() {
         this.model.file.getUrl(),
         this.model.file.getHtml(),
         goog.bind(function(status) {
-          silex.utils.Notification.alert('I am about to publish your site. This may take several minutes.', () => clearInterval(timer));
+          silex.utils.Notification.alert('<strong>I am about to publish your site. This may take several minutes.</strong>', () => clearInterval(timer), 'Close');
+          setTimeout(() => silex.utils.Notification.setInfoPanel('<iframe style="width:100%; height:100%; " src="https://fr.surveymonkey.com/r/LCSJFC2"></iframe>'), 2000);
           var timer = setInterval(() => {
             silex.service.SilexTasks.getInstance().publishState(json => {
-              document.querySelector('.alertify-message').innerHTML = json['status'];
-              if (json['stop'] === true) {
+              silex.utils.Notification.setText('<strong>' + json['status'] + '</strong>');
+              if(json['stop'] === true) {
                 clearInterval(timer);
               }
             }, message => {
               console.error('Error: ', message);
-              document.querySelector('.alertify-message').innerHTML = 'An error unknown occured.';
+              silex.utils.Notification.setText('<strong>An error unknown occured.</strong>');
               clearInterval(timer);
             });
           }, 1000);
@@ -155,4 +156,3 @@ silex.controller.FileMenuController.prototype.publish = function() {
         }, this));
   }
 };
-
