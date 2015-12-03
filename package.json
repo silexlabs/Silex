@@ -32,6 +32,7 @@
     "watch:client": "npm run livereload:start && node_modules/watch/cli.js 'npm run build:js:debug && npm run build:css && npm run build:html && npm run livereload:changed' src/",
     "lint:js:inactive": "echo \"FIXME PRECOMMIT HOOK: FIX ISSUES OF 'npm run lint:js' AND THEN ACTIVATE IT AGAIN IN PRECOMMIT HOOK\"",
     "lint:js": "eslint src/js/",
+    "lint:js:closure": "eslint src/js/ && submodules/closure-linter/closure_linter/gjslint.py --max_line_length=200 src/js/**/*.js",
     "lint:server:inactive": "echo \"FIXME PRECOMMIT HOOK: FIX ISSUES OF 'npm run lint:server' AND THEN ACTIVATE IT AGAIN IN PRECOMMIT HOOK\"",
     "lint:server": "eslint dist/server/",
     "fix:js": "submodules/closure-linter/closure_linter/fixjsstyle.py -r src/js/ && submodules/closure-linter/closure_linter/gjslint.py --max_line_length=200 src/js/**/*.js",
