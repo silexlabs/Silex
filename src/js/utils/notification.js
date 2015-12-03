@@ -238,3 +238,31 @@ silex.utils.Notification.notifyInfo = function(message) {
   silex.utils.Notification.nativeNotification(message, silex.utils.Notification.INFO_ICON);
   alertify.log(message);
 };
+
+
+/**
+ * change the text of the current notification
+ * @param {string} message
+ */
+silex.utils.Notification.setText = function(message) {
+  document.querySelector('.alertify-message').innerHTML = message;
+};
+
+
+/**
+ * add an HTML panel with info of type "while you wait, here is an info"
+ * @param {string} message
+ */
+silex.utils.Notification.setInfoPanel = function(message) {
+  var container = document.querySelector('.alertify-inner');
+  var infoPanel = container.querySelector('.silex-info-panel');
+  if (infoPanel === null) {
+    infoPanel = document.createElement('DIV');
+    infoPanel.classList.add('info-panel');
+    // limit height so that small screens still see the close button
+    var stage = document.querySelector('#silex-stage-iframe')
+    infoPanel.style.maxHeight = Math.round(stage.offsetHeight * 2/3) + 'px';
+    container.insertBefore(infoPanel, container.childNodes[container.childNodes.length - 1]);
+  }
+  infoPanel.innerHTML = message;
+};
