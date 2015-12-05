@@ -274,13 +274,13 @@ silex.view.pane.BorderPane.prototype.redraw =
       goog.bind(function(element) {
         var w;
         w = this.model.element.getStyle(element, 'borderLeftColor');
-        if (w && w != '') return w;
+        if (w && w !== '') return w;
         w = this.model.element.getStyle(element, 'borderRightColor');
-        if (w && w != '') return w;
+        if (w && w !== '') return w;
         w = this.model.element.getStyle(element, 'borderTopColor');
-        if (w && w != '') return w;
+        if (w && w !== '') return w;
         w = this.model.element.getStyle(element, 'borderBottomColor');
-        if (w && w != '') return w;
+        if (w && w !== '') return w;
         return null;
       }, this)
     );
@@ -295,13 +295,13 @@ silex.view.pane.BorderPane.prototype.redraw =
     goog.bind(function(element) {
       var w;
       w = this.model.element.getStyle(element, 'borderLeftStyle');
-      if (w && w != '0px') return w;
+      if (w && w !== '0px') return w;
       w = this.model.element.getStyle(element, 'borderRightStyle');
-      if (w && w != '0px') return w;
+      if (w && w !== '0px') return w;
       w = this.model.element.getStyle(element, 'borderTopStyle');
-      if (w && w != '0px') return w;
+      if (w && w !== '0px') return w;
       w = this.model.element.getStyle(element, 'borderBottomStyle');
-      if (w && w != '0px') return w;
+      if (w && w !== '0px') return w;
       return null;
     }, this)
   );

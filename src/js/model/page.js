@@ -360,7 +360,7 @@ silex.model.Page.prototype.addToPage = function(element, pageName) {
  */
 silex.model.Page.prototype.removeFromPage = function(element, pageName) {
   goog.dom.classlist.remove(element, pageName);
-  if (!this.getPagesForElement(element).length > 0) {
+  if (this.getPagesForElement(element).length <= 0) {
     goog.dom.classlist.remove(element, silex.model.Page.PAGED_CLASS_NAME);
   }
   this.refreshView();

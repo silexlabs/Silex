@@ -556,3 +556,4 @@ silex.controller.ControllerBase.prototype.fileOperationSuccess = function(opt_me
     silex.utils.Notification.notifySuccess(opt_message);
   }
 };
+

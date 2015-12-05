@@ -216,7 +216,7 @@ silex.utils.Dom.publish = function(publicationUrl, fileUrl, html, statusCallback
  */
 silex.utils.Dom.addMandatoryTags = function(doc) {
   silex.utils.Dom.MANDATORY_TAGS.forEach((tagObj) => {
-    let query = '[' + (tagObj['type'] === 'script' ? 'src$=' : 'href$=') + '"' + tagObj['fileName'] + '"]'
+    let query = '[' + (tagObj['type'] === 'script' ? 'src$=' : 'href$=') + '"' + tagObj['fileName'] + '"]';
     let element = doc.querySelector(query);
     if (!element) {
       element = doc.createElement(tagObj['type']);

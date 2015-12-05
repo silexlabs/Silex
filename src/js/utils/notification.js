@@ -85,8 +85,8 @@ silex.utils.Notification.isListeningForFocus = false;
  * @return {boolean}
  */
 silex.utils.Notification.useNative = function() {
-  return silex.utils.Notification.hasFocus == false
-    && ('Notification' in window && Notification.permission === 'granted');
+  return silex.utils.Notification.hasFocus === false &&
+      ('Notification' in window && Notification.permission === 'granted');
 };
 
 
@@ -260,7 +260,7 @@ silex.utils.Notification.setInfoPanel = function(message) {
     infoPanel = document.createElement('DIV');
     infoPanel.classList.add('info-panel');
     // limit height so that small screens still see the close button
-    var stage = document.querySelector('#silex-stage-iframe')
+    var stage = document.querySelector('#silex-stage-iframe');
     infoPanel.style.maxHeight = Math.round(stage.offsetHeight * 2/3) + 'px';
     container.insertBefore(infoPanel, container.childNodes[container.childNodes.length - 1]);
   }
