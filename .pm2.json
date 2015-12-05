@@ -1,0 +1,7 @@
+{
+  "apps" : [{
+    "name"        : "Silex",
+    "script"      : "dist/server/server.js",
+    "watch"       : "dist/server/"
+  }]
+}
