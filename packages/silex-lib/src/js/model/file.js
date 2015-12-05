@@ -155,12 +155,12 @@ silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk, opt_showLoader) 
   // detect non-silex websites
   if (rawHtml.indexOf('silex-runtime') < 0) {
     console.error('This is not a website editable in Silex.');
-    silex.utils.Notification.alert('I can not be open this website. I can only open website made with Silex. <a target="_blank" href="https://github.com/silexlabs/Silex/issues/282">More info here</a>.', function() {});
+    silex.utils.Notification.alert('I can not open this website. I can only open website made with Silex. <a target="_blank" href="https://github.com/silexlabs/Silex/issues/282">More info here</a>.', function() {});
     return;
   }
   else if (rawHtml.indexOf('silex-published') >= 0) {
     console.error('This is a published website.');
-    silex.utils.Notification.alert('I can not be open this website. It is a published version of a Silex website. <a target="_blank" href="https://github.com/silexlabs/Silex/issues/282">More info here</a>.', function() {});
+    silex.utils.Notification.alert('I can not open this website. It is a published version of a Silex website. <a target="_blank" href="https://github.com/silexlabs/Silex/issues/282">More info here</a>.', function() {});
     return;
   }
   // remove the "silex-runtime" css class from the body while editing
