@@ -771,8 +771,8 @@ silex.view.Stage.prototype.followElementSize =
   // apply offset to other selected element
   goog.array.forEach(followers, function(follower) {
     // do not resize the stage or the un-resizeable elements
-    if (follower.tagName.toUpperCase() !== 'BODY'
-      && !goog.dom.classlist.contains(follower, silex.model.Body.PREVENT_RESIZABLE_CLASS_NAME)) {
+    if (follower.tagName.toUpperCase() !== 'BODY' &&
+      !goog.dom.classlist.contains(follower, silex.model.Body.PREVENT_RESIZABLE_CLASS_NAME)) {
       var pos = goog.style.getPosition(follower);
       var offsetPosX = pos.x;
       var offsetPosY = pos.y;

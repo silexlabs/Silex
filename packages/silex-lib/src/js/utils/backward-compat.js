@@ -87,7 +87,7 @@ silex.utils.BackwardCompat.process = function(doc, model, cbk) {
     metaNode.setAttribute('content', 'Silex v' + silex.utils.BackwardCompat.LATEST_VERSION.join('.'));
     // continue
     cbk(hasToUpdate);
-  })})})})})});
+  });});});});});});
 };
 
 

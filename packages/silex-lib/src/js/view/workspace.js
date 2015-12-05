@@ -196,7 +196,7 @@ silex.view.Workspace.prototype.setPreviewWindowLocation = function (opt_location
       }
       catch(e) {
         // case of responsize
-        this.previewWindow.frames[1].location.reload(true)
+        this.previewWindow.frames[1].location.reload(true);
       }
     }
     this.previewWindow.focus();
