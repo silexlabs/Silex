@@ -60,7 +60,7 @@ a:focus{ outline: none;}
 /* Mobile styles */
 @media (max-width:400px) {
   /* mobile hamburger menu */
-  .silex-pages .menu-button {
+  body.enable-mobile .silex-pages .menu-button {
     width: 50px;
     height: 40px;
     left: 105%;
@@ -85,10 +85,10 @@ a:focus{ outline: none;}
     border-width: 0 1px 0 0;
     border-color: #8E8E8E;
   }
-  .show-mobile-menu .silex-pages {
+  body.enable-mobile.show-mobile-menu .silex-pages {
     right: 20%;
   }
-  .page-element {
+  body.enable-mobile .page-element {
     display: block;
     cursor: pointer;
     margin: 1em;
@@ -104,7 +104,7 @@ a:focus{ outline: none;}
   body.enable-mobile {
     padding: 60px 0 0 0; /* leave space for the hamburger button */
   }
-  .background {
+  body.enable-mobile .background {
     height: inherit;
     padding-bottom: 50px;
   }
@@ -120,10 +120,10 @@ a:focus{ outline: none;}
     max-width: 99.999%;
     margin-bottom: 5px;
   }
-  .editable-style {
+  body.enable-mobile .editable-style {
     float: left;
   }
-  .editable-style.hide-on-mobile {
+  body.enable-mobile .editable-style.hide-on-mobile {
     display: none;
   }
 }
