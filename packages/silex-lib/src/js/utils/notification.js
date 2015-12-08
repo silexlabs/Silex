@@ -96,7 +96,7 @@ silex.utils.Notification.useNative = function() {
 silex.utils.Notification.activateNative = function() {
   if ('Notification' in window && Notification.permission !== 'denied') {
     if (!silex.utils.Notification.useNative()) {
-      goog.events.listenOnce(document, goog.events.EventType.CLICK, function(e) {
+      goog.events.listenOnce(document, goog.events.EventType.MOUSEMOVE, function(e) {
         Notification.requestPermission();
       });
     }
