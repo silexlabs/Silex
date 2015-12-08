@@ -72,8 +72,9 @@ $(function() {
       $(document.body).toggleClass('show-mobile-menu');
     });
   });
-  $('.silex-pages .page-element').click(function() {
+  $('.silex-runtime .silex-pages .page-element').click(function(e) {
     window.location.hash = '#!' + this.id;
     $(document.body).removeClass('show-mobile-menu');
+    e.preventDefault();
   });
 });
