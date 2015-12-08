@@ -58,7 +58,7 @@ a:focus{ outline: none;}
   display: none;
 }
 /* Mobile styles */
-@media (max-width:400px) {
+@media (max-width:480px) {
   /* mobile hamburger menu */
   body.enable-mobile .silex-pages .menu-button {
     width: 50px;
