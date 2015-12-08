@@ -73,7 +73,7 @@ silex.model.Property.ELEMENT_ID_ATTR_NAME = 'data-silex-id';
  * @const
  * @static
  */
-silex.model.Property.MOBILE_MEDIA_QUERY = '(max-width: 400px)';
+silex.model.Property.MOBILE_MEDIA_QUERY = 'only screen and (max-width: 480px), only screen and (max-device-width: 480px)';
 
 
 /**
