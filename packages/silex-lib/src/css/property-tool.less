@@ -8,7 +8,7 @@
   left: @propertiesToolWidth;
   top: @menuHeight;
   overflow-x: hidden;
-  overflow-y: auto;
+  overflow-y: scroll;
   bottom: 0;
   background-color: @silexlightgrey;
   .combobox {
@@ -73,7 +73,6 @@
       display: inherit;
       height: 22px;
       overflow: hidden;
-      padding-left: 3px;
       margin: 4px 0;
       width: 100%;
 
@@ -276,7 +275,6 @@
       color: #FFF;
       font-size: 11px;
     }
-
     .two-col label,
     .two-col input {
       width: 42%;
@@ -296,15 +294,27 @@
     .new-line {
       clear: left;
     }
-
-    input {
-      width: 45px;
-      margin: 1px 25px 5px 5px;
-      float: left;
-      font-size: 12px;
-      text-align: center;
+    .input-with-unit {
+      display: inline-block;
+      width: 44%;
+      margin: 0px 10px 0px 0;
+      label.unit {
+        font-size: 80%;
+        position: absolute;
+        margin-left: -5px;
+        margin-top: 0;
+        padding: 4px;
+        width: 20px;
+        text-align: right;
+      }
+      input {
+        width: 75%;
+        float: left;
+        font-size: 12px;
+        text-align: left;
+        margin: 0;
+      }
     }
-
   }
 
   .goog-hsva-palette-sm {
