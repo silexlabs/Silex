@@ -374,12 +374,22 @@ silex.model.Head.prototype.getPublicationPath = function() {
  * @param {boolean} enable
  */
 silex.model.Head.prototype.setEnableMobile = function(enable) {
+  let doc = this.model.file.getContentDocument();
+  let viewport = doc.querySelector('meta[data-silex-viewport]');
   if (enable === true) {
-    // website
-    this.model.file.getContentDocument().body.classList.add(silex.model.Head.ENABLE_MOBILE_CSS_CLASS);
+    doc.body.classList.add(silex.model.Head.ENABLE_MOBILE_CSS_CLASS);
+    if (!viewport) {
+      viewport = /** @type {HTMLMetaElement} */ (doc.createElement('meta'));
+      viewport.name = 'viewport';
+      viewport.content = 'width=device-width, initial-scale=1, maximum-scale=2.2';
+      viewport.setAttribute('data-silex-viewport', '');
+      doc.head.appendChild(viewport);
+    }
   } else {
-    // website
-    this.model.file.getContentDocument().body.classList.remove(silex.model.Head.ENABLE_MOBILE_CSS_CLASS);
+    doc.body.classList.remove(silex.model.Head.ENABLE_MOBILE_CSS_CLASS);
+    if (viewport) {
+      doc.head.removeChild(viewport);
+    }
   }
   this.view.settingsDialog.setEnableMobile(enable);
 
