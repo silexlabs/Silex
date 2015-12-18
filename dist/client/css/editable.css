@@ -65,9 +65,9 @@ this makes the video clickable:
 /*  background-image: url(../assets/stripe.jpg); */
 }
 .dragging-pending .silex-selected {
-  z-index: 99999 !important;
-  opacity: .75 !important;
-  position: absolute !important;
+  z-index: 99999;
+  opacity: .75;
+  position: relative;
 }
 .dragging-pending .silex-selected.prevent-draggable {
   z-index: initial !important;
