@@ -20,6 +20,7 @@ body{
 /* default style for silex elements */
 .editable-style{
   position: absolute;
+  box-sizing: border-box;
 }
 .silex-element-content{
   overflow: hidden;
@@ -110,6 +111,8 @@ a:focus{ outline: none;}
   }
   body.enable-mobile {
     min-width: initial !important;
+    min-height: 100%;
+    position: absolute; /* for min-height to apply */
   }
   body.enable-mobile .editable-style,
   body.enable-mobile .background.background-initial,
@@ -118,7 +121,6 @@ a:focus{ outline: none;}
     top: auto;
     left: auto;
     max-width: 99.999%;
-    margin-bottom: 5px;
   }
   body.enable-mobile .editable-style {
     float: left;
