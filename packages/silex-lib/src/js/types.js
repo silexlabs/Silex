@@ -213,6 +213,7 @@ silex.types.View = function() {
  * store references
  * @param {silex.view.Menu} menu
  * @param {silex.view.ContextMenu} contextMenu
+ * @param {silex.view.BreadCrumbs} breadCrumbs
  * @param {silex.view.Stage} stage
  * @param {silex.view.PageTool} pageTool
  * @param {silex.view.PropertyTool} propertyTool
@@ -228,6 +229,7 @@ silex.types.View = function() {
 silex.types.View.prototype.init = function(
     menu,
     contextMenu,
+    breadCrumbs,
     stage,
     pageTool,
     propertyTool,
@@ -247,6 +249,10 @@ silex.types.View.prototype.init = function(
    * @type {silex.view.ContextMenu}
    */
   this.contextMenu = contextMenu;
+  /**
+   * @type {silex.view.BreadCrumbs}
+   */
+  this.breadCrumbs = breadCrumbs;
   /**
    * @type {silex.view.Stage}
    */

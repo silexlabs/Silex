@@ -60,6 +60,7 @@ goog.require('silex.utils.DomCleaner');
 goog.require('silex.utils.InvalidationManager');
 goog.require('silex.utils.Polyfills');
 goog.require('silex.view.ContextMenu');
+goog.require('silex.view.BreadCrumbs');
 goog.require('silex.view.Menu');
 goog.require('silex.view.PageTool');
 goog.require('silex.view.PropertyTool');
@@ -134,6 +135,7 @@ class App {
     this.view.stage.buildUi();
     this.view.menu.buildUi();
     this.view.contextMenu.buildUi();
+    this.view.breadCrumbs.buildUi();
     this.view.pageTool.buildUi();
     this.view.htmlEditor.buildUi();
     this.view.cssEditor.buildUi();
@@ -190,6 +192,11 @@ class App {
     /** @type {silex.view.ContextMenu} */
     var contextMenu = new silex.view.ContextMenu(contextMenuElement, this.model, this.controller);
 
+    // bread crumbs
+    var breadCrumbsElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-bread-crumbs'));
+    /** @type {silex.view.BreadCrumbs} */
+    var breadCrumbs = new silex.view.BreadCrumbs(breadCrumbsElement, this.model, this.controller);
+
     // PageTool
     var pageToolElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-page-tool'));
     /** @type {silex.view.PageTool} */
@@ -240,6 +247,7 @@ class App {
     /** @type {silex.view.Splitter} */
     var propSplitter = new silex.view.Splitter(propSplitterElement, this.model, this.controller, () => workspace.resizeProperties());
     propSplitter.addLeft(contextMenuElement);
+    propSplitter.addLeft(breadCrumbsElement);
     propSplitter.addLeft(stageElement);
     propSplitter.addRight(propertyToolElement);
 
@@ -252,6 +260,7 @@ class App {
     this.view.init(
         menu,
         contextMenu,
+        breadCrumbs,
         stage,
         pageTool,
         propertyTool,

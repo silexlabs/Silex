@@ -550,6 +550,7 @@ silex.controller.ControllerBase.prototype.fileOperationSuccess = function(opt_me
     this.view.cssEditor.setValue(this.model.head.getHeadStyle());
     this.view.htmlEditor.setValue('');
     this.view.contextMenu.redraw();
+    this.view.breadCrumbs.redraw();
   }
   if (opt_message) {
     // notify user
