@@ -114,6 +114,12 @@ silex.view.BreadCrumbs.prototype.addCrumb = function(ancestor) {
   crumb.innerHTML = ancestor.tagName + '.' + ancestor.getAttribute('data-silex-type') + '-element' + cssClasses;
   crumb.style.zIndex = 100 - this.element.childNodes.length;
   this.element.appendChild(crumb);
+  crumb.onclick = () => this.controller.stageController.select(ancestor);
+  if(ancestor.tagName.toUpperCase() !== 'BODY') {
+      crumb.onmouseover = () => ancestor.classList.add('editable-style-hover');
+      crumb.onmouseout = () => ancestor.classList.remove('editable-style-hover');
+  }
+
 };
 
 
