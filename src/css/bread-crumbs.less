@@ -1,9 +1,24 @@
 /* uses styles from context-menu */
 
+@breadPaddingTop: 7px;
+
 .silex-bread-crumbs {
   .silex-context-menu;
   top: initial;
+  padding-left: initial;
   bottom: 0;
   height: @breadCrumbsHeight;
+  div {
+    display: inline-flex;
+    height: @breadCrumbsHeight - @breadPaddingTop;
+    position: relative;
+    color: white;
+    padding: @breadPaddingTop 10px 0 20px;
+    margin-left: -10px;
+    border-right: 1px solid @silexlightergrey;
+    border-radius: 10px;
+    font-size: small;
+    background-color: @silexmediumdarkgrey;
+  }
 }
 

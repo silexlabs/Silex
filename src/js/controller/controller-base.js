@@ -327,6 +327,8 @@ silex.controller.ControllerBase.prototype.setClassName = function(name) {
   goog.array.forEach(elements, function(element) {
     // update the model
     this.model.element.setClassName(element, name);
+    // refresh the views
+    this.view.breadCrumbs.redraw();
   }, this);
 };
 
