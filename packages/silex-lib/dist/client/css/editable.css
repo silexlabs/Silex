@@ -30,7 +30,9 @@ body{
   border-color: #333333;
   border-style: dashed;
 }
-.editable-style:hover > .ui-resizable-handle {
+/* editable-style-hover is used by bread crumb to hilight potential selection */
+.editable-style:hover > .ui-resizable-handle,
+.editable-style-hover > .ui-resizable-handle {
   opacity: 1;
   border-style: solid;
 }
