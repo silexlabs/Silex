@@ -72,9 +72,55 @@ silex.view.BreadCrumbs.prototype.redraw = function(opt_selectedElements, opt_pag
     // get the selection if not provided
     if (!opt_selectedElements) opt_selectedElements = this.model.body.getSelection();
     // get the common ancesters to all selected elements
-    let ancestors = [this.model.file.getContentDocument().body];
+    function getParents(elem) {
+      let parents = [];
+      while(elem && elem.tagName !== 'HTML') {
+        parents.unshift(elem);
+        elem = elem.parentNode;
+      }
+      return parents;
+    }
+    // find the selected element which is the "deepest" in the dom, i.e. has the greater number of parent nodes
+    opt_selectedElements.sort((elem1, elem2) => getParents(elem2).length - getParents(elem1).length);
+    let deepest = opt_selectedElements.shift();
+    // for this "deepest" element, find the common ancestors with all others
+    let ancestors = getParents(deepest);
     opt_selectedElements.forEach((element) => {
-      console.log(element);
+      let parents = getParents(element);
+      let newAncestors = [];
+      let idx = 0;
+      while(idx < ancestors.length && idx < parents.length && ancestors[idx] === parents[idx]) {
+        newAncestors.push(ancestors[idx++]);
+      }
+      ancestors = newAncestors;
     });
+    // empty current bread crumbs
+    while(this.element.childNodes.length) this.removeCrumb(this.element.childNodes[0]);
+    // create a button for each ancester
+    ancestors.forEach((ancestor) => this.addCrumb(ancestor));
   });
+};
+
+
+/**
+ * add a button in the bread crumb container
+ * @param {HTMLElement} ancestor
+ */
+silex.view.BreadCrumbs.prototype.addCrumb = function(ancestor) {
+  let doc = this.model.file.getContentDocument();
+  let crumb = doc.createElement('DIV');
+  let cssClasses = this.model.element.getClassName(ancestor);
+  if(cssClasses !== '') cssClasses = '.' + cssClasses.split(' ').join('.');
+  crumb.innerHTML = ancestor.tagName + '.' + ancestor.getAttribute('data-silex-type') + '-element' + cssClasses;
+  crumb.style.zIndex = 100 - this.element.childNodes.length;
+  this.element.appendChild(crumb);
+};
+
+
+/**
+ * remove events and deletes a bread crumb
+ * @param {HTMLElement} crumb
+ */
+silex.view.BreadCrumbs.prototype.removeCrumb = function(crumb) {
+  this.element.removeChild(crumb);
 };
