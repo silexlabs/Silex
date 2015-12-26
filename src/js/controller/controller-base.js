@@ -327,6 +327,8 @@ silex.controller.ControllerBase.prototype.setClassName = function(name) {
   goog.array.forEach(elements, function(element) {
     // update the model
     this.model.element.setClassName(element, name);
+    // refresh the views
+    this.view.breadCrumbs.redraw();
   }, this);
 };
 
@@ -559,6 +561,7 @@ silex.controller.ControllerBase.prototype.fileOperationSuccess = function(opt_me
     this.view.cssEditor.setValue(this.model.head.getHeadStyle());
     this.view.htmlEditor.setValue('');
     this.view.contextMenu.redraw();
+    this.view.breadCrumbs.redraw();
   }
   if (opt_message) {
     // notify user

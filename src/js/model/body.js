@@ -155,6 +155,7 @@ silex.model.Body.prototype.setSelection = function(selectedElements) {
   this.view.propertyTool.redraw(selectedElements, pages, page);
   this.view.stage.redraw(selectedElements, pages, page);
   this.view.contextMenu.redraw(selectedElements, pages, page);
+  this.view.breadCrumbs.redraw(selectedElements, pages, page);
 };
 
 
