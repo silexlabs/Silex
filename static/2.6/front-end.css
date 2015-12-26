@@ -92,7 +92,7 @@ a:focus{ outline: none;}
   body.enable-mobile .page-element {
     display: block;
     cursor: pointer;
-    margin: 1em;
+    padding: 1em;
     font-size: 1.6em;
     color: #FFFFFF;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -100,6 +100,9 @@ a:focus{ outline: none;}
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
+  }
+  body.enable-mobile .page-element.page-link-active {
+    background-color: #262626;
   }
   /* elements styles */
   body.enable-mobile {
