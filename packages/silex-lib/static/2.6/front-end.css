@@ -73,7 +73,7 @@ a:focus{ outline: none;}
   }
 
   /* mobile side bar */
-  .silex-pages {
+  body.enable-mobile .silex-pages {
     position: fixed;
     z-index: 999999;
     width: 80%;
