@@ -764,14 +764,15 @@ silex.model.Element.prototype.getLink = function(element) {
  */
 silex.model.Element.prototype.getClassName = function(element) {
   var pages = this.model.page.getPages();
-  return goog.array.map(element.className.split(' '), function(name) {
-    if (goog.array.contains(silex.utils.Style.SILEX_CLASS_NAMES, name) ||
+  return element.className.split(' ').filter((name) => {
+    if (name === '' ||
+        goog.array.contains(silex.utils.Style.SILEX_CLASS_NAMES, name) ||
         goog.array.contains(pages, name) ||
         this.model.property.getSilexId(element) === name) {
-      return;
+      return false;
     }
-    return name;
-  }, this).join(' ').trim();
+    return true;
+  }).join(' ');
 };
 
 
