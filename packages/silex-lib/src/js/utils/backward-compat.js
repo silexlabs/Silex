@@ -189,6 +189,8 @@ silex.utils.BackwardCompat.to2_2_6 = function(version, doc, model, cbk) {
           mobileStylesObj[id] = style;
         }
         else {
+          // handle the case of old sites with position: absolute in the styles, which is now in front-end.css
+          if(style.position === 'absolute') style.position = undefined;
           stylesObj[id] = style;
         }
       }
