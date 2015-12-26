@@ -78,9 +78,15 @@ silex.view.Stage.BACKGROUND_CLASS_NAME = 'background';
 
 
 /**
+ * the Window of the iframe which contains the website
+ */
+silex.view.Stage.prototype.contentWindow = null;
+
+
+/**
  * the document of the iframe which contains the website
  */
-silex.view.Stage.prototype.documentElement = null;
+silex.view.Stage.prototype.contentDocument = null;
 
 
 /**
@@ -190,7 +196,7 @@ silex.view.Stage.prototype.onMouseUpOverUi = function(event) {
   if (this.bodyElement !== null) {
     // if out of stage, release from drag of the plugin
     // simulate the mouse up on the iframe body
-    var pos =  goog.style.getRelativePosition(event, this.element);
+    var pos = goog.style.getRelativePosition(event, this.element);
     var newEvObj = document.createEvent('MouseEvent');
     newEvObj.initEvent('mouseup', true, true);
     newEvObj.clientX = pos.x;
@@ -224,7 +230,7 @@ silex.view.Stage.prototype.bodyElementSizeToContent = function(event) {
   if (this.bodyElement) {
     let containers = [];
     goog.array.forEach(this.bodyElement.children, (element) => {
-      if(element.classList.contains(silex.model.Body.EDITABLE_CLASS_NAME)) {
+      if (element.classList.contains(silex.model.Body.EDITABLE_CLASS_NAME)) {
         containers.push(element);
       }
     });
@@ -286,7 +292,8 @@ silex.view.Stage.prototype.removeEvents = function(bodyElement) {
  */
 silex.view.Stage.prototype.initEvents = function(contentWindow) {
   this.bodyElement = contentWindow.document.body;
-  this.documentElement = contentWindow.document;
+  this.contentDocument = contentWindow.document;
+  this.contentWindow = contentWindow;
 
   // handle resize and the iframe body size
   if (this.viewport) {
@@ -435,10 +442,13 @@ silex.view.Stage.prototype.handleMouseUp = function(target, x, y, shiftKey) {
     let dropZone = this.getDropZone(x, y) || {'element': this.bodyElement, 'zIndex': 0};
     // move all selected elements to the new container
     goog.array.forEach(this.selectedElements, function(element) {
-      if(!goog.dom.getAncestorByClass(element.parentNode, silex.model.Element.SELECTED_CLASS_NAME) &&
+      if (!goog.dom.getAncestorByClass(element.parentNode, silex.model.Element.SELECTED_CLASS_NAME) &&
          !goog.dom.classlist.contains(element, silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME)) {
         this.controller.stageController.newContainer(dropZone.element, element);
       }
+      // reset node properties
+      element.style.top = '';
+      element.style.left = '';
     }, this);
     // change z order
     //this.bringSelectionForward();
@@ -751,10 +761,28 @@ silex.view.Stage.prototype.followElementPosition =
     if (follower.tagName.toUpperCase() !== 'BODY' &&
       !goog.dom.getAncestorByClass(follower.parentNode, silex.model.Element.SELECTED_CLASS_NAME) &&
       !goog.dom.classlist.contains(follower, silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME)) {
-          let pos = goog.style.getPosition(follower);
-          this.controller.stageController.styleChanged('top', Math.round(pos.y + offsetY) + 'px', [follower], false);
-          this.controller.stageController.styleChanged('left', Math.round(pos.x + offsetX) + 'px', [follower], false);
+        let pos = goog.style.getPosition(follower);
+        let finalY = Math.round(pos.y + offsetY);
+        let finalX = Math.round(pos.x + offsetX);
+        this.controller.stageController.styleChanged('top', finalY + 'px', [follower], false);
+        this.controller.stageController.styleChanged('left', finalX + 'px', [follower], false);
+        // in case the element is in the flow, 
+        // the css class .dragging-pending will set position:relative
+        // and we temporarily move the element with its attributes instead of css style tag in head
+        let style;
+        if(follower.style.left === '' || follower.style.top === '') {
+          // "start drag" case
+          style = this.contentWindow.getComputedStyle(follower);
         }
+        else {
+          // dragging case
+          style = follower.style;
+        }
+        let left = parseInt(style.left, 10) || 0;
+        let top = parseInt(style.top, 10) || 0;
+        follower.style.left = (left + offsetX) + 'px';
+        follower.style.top = (top + offsetY) + 'px';
+    }
   }, this);
 };
 
@@ -771,8 +799,8 @@ silex.view.Stage.prototype.followElementSize =
   // apply offset to other selected element
   goog.array.forEach(followers, function(follower) {
     // do not resize the stage or the un-resizeable elements
-    if (follower.tagName.toUpperCase() !== 'BODY'
-      && !goog.dom.classlist.contains(follower, silex.model.Body.PREVENT_RESIZABLE_CLASS_NAME)) {
+    if (follower.tagName.toUpperCase() !== 'BODY' &&
+      !goog.dom.classlist.contains(follower, silex.model.Body.PREVENT_RESIZABLE_CLASS_NAME)) {
       var pos = goog.style.getPosition(follower);
       var offsetPosX = pos.x;
       var offsetPosY = pos.y;
@@ -923,7 +951,7 @@ silex.view.Stage.prototype.getResizeDirection = function(target) {
  * @param {number} value to be set
  */
 silex.view.Stage.prototype.setScrollX = function(value) {
-  let dh = new goog.dom.DomHelper(this.documentElement);
+  let dh = new goog.dom.DomHelper(this.contentDocument);
   dh.getDocumentScrollElement().scrollLeft = value;
 };
 
@@ -933,7 +961,7 @@ silex.view.Stage.prototype.setScrollX = function(value) {
  * @param {number} value to be set
  */
 silex.view.Stage.prototype.setScrollY = function(value) {
-  let dh = new goog.dom.DomHelper(this.documentElement);
+  let dh = new goog.dom.DomHelper(this.contentDocument);
   dh.getDocumentScrollElement().scrollTop = value;
 };
 
@@ -944,7 +972,7 @@ silex.view.Stage.prototype.setScrollY = function(value) {
  * @return {number} the value
  */
 silex.view.Stage.prototype.getScrollX = function() {
-  let dh = new goog.dom.DomHelper(this.documentElement);
+  let dh = new goog.dom.DomHelper(this.contentDocument);
   return dh.getDocumentScroll().x;
 };
 
@@ -955,7 +983,7 @@ silex.view.Stage.prototype.getScrollX = function() {
  * @return {number} the value
  */
 silex.view.Stage.prototype.getScrollY = function() {
-  let dh = new goog.dom.DomHelper(this.documentElement);
+  let dh = new goog.dom.DomHelper(this.contentDocument);
   return dh.getDocumentScroll().y;
 };
 
@@ -965,7 +993,7 @@ silex.view.Stage.prototype.getScrollY = function() {
  * @return {number} the value
  */
 silex.view.Stage.prototype.getScrollMaxX = function() {
-  let dh = new goog.dom.DomHelper(this.documentElement);
+  let dh = new goog.dom.DomHelper(this.contentDocument);
   return goog.style.getSize(dh.getDocumentScrollElement()).width;
 };
 
@@ -975,7 +1003,7 @@ silex.view.Stage.prototype.getScrollMaxX = function() {
  * @return {number} the value
  */
 silex.view.Stage.prototype.getScrollMaxY = function() {
-  let dh = new goog.dom.DomHelper(this.documentElement);
+  let dh = new goog.dom.DomHelper(this.contentDocument);
   return goog.style.getSize(dh.getDocumentScrollElement()).height;
 };
 

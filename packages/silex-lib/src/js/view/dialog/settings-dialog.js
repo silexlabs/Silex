@@ -61,8 +61,8 @@ silex.view.dialog.SettingsDialog = function(element, model, controller) {
   this.bindTextField('.publish-pane .input-publication-path', (v) => this.controller.settingsDialogController.setPublicationPath(v));
 
   // image path browse button
-  this.bindBrowseButton('.general-pane .browse-favicon-path', () => this.controller.settingsDialogController.browseFaviconPath())
-  this.bindBrowseButton('.publish-pane .browse-publication-path', () => this.controller.settingsDialogController.browsePublishPath())
+  this.bindBrowseButton('.general-pane .browse-favicon-path', () => this.controller.settingsDialogController.browseFaviconPath());
+  this.bindBrowseButton('.publish-pane .browse-publication-path', () => this.controller.settingsDialogController.browsePublishPath());
 };
 
 // inherit from silex.view.dialog.DialogBase
@@ -80,11 +80,26 @@ silex.view.dialog.SettingsDialog.PANE_CSS_CLASSES = [
 
 
 /**
+ * store the mobile checkbox
+ * @type {goog.ui.Checkbox}
+ */
+silex.view.dialog.SettingsDialog.prototype.mobileCheckbox = null;
+
+
+/**
  * init the menu and UIs
  */
 silex.view.dialog.SettingsDialog.prototype.buildUi = function() {
   // call super
   goog.base(this, 'buildUi');
+
+  var checkboxElement = goog.dom.getElementByClass('mobile-check', this.element);
+  this.mobileCheckbox = new goog.ui.Checkbox();
+  this.mobileCheckbox.render(checkboxElement);
+  goog.events.listen(this.mobileCheckbox, goog.ui.Component.EventType.CHANGE,
+   function(e) {
+     this.controller.settingsDialogController.toggleEnableMobile();
+   }, false, this);
 };
 
 
@@ -187,6 +202,16 @@ silex.view.dialog.SettingsDialog.prototype.setThumbnailSocialPath = function(opt
  */
 silex.view.dialog.SettingsDialog.prototype.setPublicationPath = function(opt_path) {
   this.setInputValue('.publish-pane .input-publication-path', opt_path);
+};
+
+
+/**
+ * enable/disable mobile version
+ * @see silex.model.Head
+ * @param {boolean} enabled
+ */
+silex.view.dialog.SettingsDialog.prototype.setEnableMobile = function(enabled) {
+  this.mobileCheckbox.setChecked(enabled);
 };
 
 

@@ -20,15 +20,18 @@
     transition: opacity 0.1s linear 0s;
     margin: 4px 3px;
   }
+  .right {
+    float: right;
+  }
   .off {
     opacity: .5;
   }
-  .off:hover {
+  .button:hover, .on {
     opacity: 1;
   }
   .sep {
     width: 0px;
-    border: 1px solid black
+    border: 1px solid @silexmediumdarkgrey
   }
   .save {background-image: url(../assets/context-menu/glyphicons-447-floppy-save.png);}
   .undo {background-image: url(../assets/context-menu/glyphicons-436-undo.png);}
@@ -40,16 +43,20 @@
   .delete {background-image: url(../assets/context-menu/glyphicons-208-remove-2.png);}
   .copy {background-image: url(../assets/context-menu/glyphicons-512-copy.png);}
   .paste {background-image: url(../assets/context-menu/glyphicons-513-paste.png);}
-  .top {background-image: url(../assets/context-menu/glyphicons-214-up-arrow.png);}
-  .up {background-image: url(../assets/context-menu/glyphicons-370-collapse-top.png);}
-  .down {background-image: url(../assets/context-menu/glyphicons-368-expand.png);}
-  .bottom {background-image: url(../assets/context-menu/glyphicons-213-down-arrow.png);}
+  .top {background-image: url(../assets/context-menu/glyphicons-415-disk-save-rotated.png);}
+  .up {background-image: url(../assets/context-menu/glyphicons-214-up-arrow.png);}
+  .down {background-image: url(../assets/context-menu/glyphicons-213-down-arrow.png);}
+  .bottom {background-image: url(../assets/context-menu/glyphicons-415-disk-save.png);}
   .preview {background-image: url(../assets/context-menu/glyphicons-52-eye-open.png);}
   .previewResponsize {background-image: url(../assets/context-menu/responsize-small.png);}
-  .help {
-    background-image: url(../assets/context-menu/glyphicons-195-circle-question-mark.png);
-    position: absolute;
-    right: 10px;
-    top: 2px;
-  }
+  .help {background-image: url(../assets/context-menu/glyphicons-195-circle-question-mark.png);}
+  .mobile {background-image: url(../assets/context-menu/glyphicons-164-iphone.png);}
+  .desktop {background-image: url(../assets/context-menu/glyphicons-161-imac.png);}
 }
+
+// mobile mode icons
+body .silex-context-menu .mobile {.silex-context-menu .off}
+body.mobile-mode .silex-context-menu .mobile {.silex-context-menu .on}
+body.mobile-mode .silex-context-menu .desktop {.silex-context-menu .off}
+body.mobile-mode .silex-context-menu .desktop:hover {.silex-context-menu .on}
+
