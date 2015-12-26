@@ -217,6 +217,9 @@ silex.view.Workspace.prototype.setPreviewWindowLocation = function (opt_location
 silex.view.Workspace.prototype.setMobileEditor = function(isMobileEditor) {
   if(isMobileEditor) {
     document.body.classList.add('mobile-mode');
+    if(!this.model.head.getEnableMobile()) {
+      silex.utils.Notification.alert('Warning: you are entering the mobile editor, but your website is not configured to support it, so you need to open the menu "File", then "Settings" and "Enable mobile version".', () => {});
+    }
   }
   else {
     document.body.classList.remove('mobile-mode');
