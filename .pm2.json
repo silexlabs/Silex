@@ -2,6 +2,10 @@
   "apps" : [{
     "name"        : "Silex",
     "script"      : "dist/server/server.js",
-    "watch"       : "dist/server/"
+    "watch"       : "dist/server/",
+    "env": {
+      "NODE_ENV": "production",
+      "SILEX_DEBUG": true
+    }
   }]
 }

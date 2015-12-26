@@ -122,18 +122,18 @@ silex.controller.ViewMenuController.prototype.doPreview = function(inResponsize)
         this.tracker.trackAction('controller-events', 'error', 'view.file', -1);
       }, this));
   }.bind(this);
-  if(this.model.file.getUrl()) {
+  if (this.model.file.getUrl()) {
     // open the preview window
     // it is important to do it now, on the user click so that it is not blocked
     // it will be refreshed after save
     doOpenPreview();
     // also save
-    if(this.isDirty()) {
+    if (this.isDirty()) {
       doSaveTheFile();
     }
   }
   else {
-    silex.utils.Notification.alert('You need to save the website before I can show a preview', goog.bind(function () {
+    silex.utils.Notification.alert('You need to save the website before I can show a preview', goog.bind(function() {
       doSaveTheFile();
     }, this));
   }

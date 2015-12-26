@@ -202,7 +202,7 @@ silex.model.Body.prototype.initUiHandles = function(element) {
  * @param {boolean} isEditable
  */
 silex.model.Body.prototype.setEditable = function(rootElement, isEditable) {
-  if(!rootElement) {
+  if (!rootElement) {
     // this happens on firefox sometimes at start
     // FIXME: find why this happens instead of this workaround
     return;
@@ -227,7 +227,7 @@ silex.model.Body.prototype.setEditable = function(rootElement, isEditable) {
 
   // prevent the user from following links
   var links = rootElement.querySelectorAll('a');
-  goog.array.forEach(elements, function(element) {
+  goog.array.forEach(links, function(element) {
     goog.events.listen(element, goog.events.EventType.CLICK, function(e) {
       e.preventDefault();
     }, false, this);

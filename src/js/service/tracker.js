@@ -48,12 +48,7 @@ silex.service.Tracker.SILEX_ACTIONS_CATEGORY = 'silex-event';
  * @param  {?number=} opt_value
  */
 silex.service.Tracker.prototype.trackAction = function(category, action, opt_label, opt_value) {
-  console.info('trackAction', arguments);
-  if (typeof Piwik === 'undefined') {
-    // console.error('Piwik not loaded');
-  }
-  else {
-    _paq.push(['trackEvent', category, action, opt_label, opt_value]);
-  }
+  // console.info('trackAction', arguments);
+  _paq.push(['trackEvent', category, action, opt_label, opt_value]);
 };
 

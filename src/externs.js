@@ -19,7 +19,7 @@
  * piwik analytics
  * @constructor
  */
-function Piwik() {};
+function Piwik() {}
 
 /**
  * @type {Array.<string|number>}
@@ -39,7 +39,7 @@ Piwik.getAsyncTracker = function() {};
  * @param {?string=} e
  * @param {?number=} f
  */
-Piwik.prototype.trackEvent = function(c, d, e, f) {}
+Piwik.prototype.trackEvent = function(c, d, e, f) {};
 
 
 

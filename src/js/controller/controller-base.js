@@ -277,7 +277,7 @@ silex.controller.ControllerBase.prototype.styleChanged = function(name, value, o
 
 /**
  * set a set of styles to the current selection
- * @param  {string|Object|CSSStyleDeclaration} style
+ * @param  {Object|null} style
  * @param {?Array.<Element>=} opt_elements
  */
 silex.controller.ControllerBase.prototype.multipleStylesChanged = function(style, opt_elements) {
@@ -449,6 +449,23 @@ silex.controller.ControllerBase.prototype.toggleAdvanced = function() {
 
 
 /**
+ * set mobile mode
+ * @param {boolean} isMobile
+ */
+silex.controller.ControllerBase.prototype.setMobileMode = function(isMobile) {
+  this.view.workspace.setMobileEditor(isMobile);
+};
+
+
+/**
+ * toggle mobile mode
+ */
+silex.controller.ControllerBase.prototype.toggleMobileMode = function() {
+  this.view.workspace.setMobileEditor(!this.view.workspace.getMobileEditor());
+};
+
+
+/**
  * save or save-as
  * @param {?string=} opt_url
  * @param {?function()=} opt_cbk
@@ -548,3 +565,4 @@ silex.controller.ControllerBase.prototype.fileOperationSuccess = function(opt_me
     silex.utils.Notification.notifySuccess(opt_message);
   }
 };
+
