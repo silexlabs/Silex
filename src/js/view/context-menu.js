@@ -73,6 +73,8 @@ silex.view.ContextMenu.prototype.buildUi = function() {
     this.element.querySelector('.bottom').addEventListener('click', () => {this.controller.editMenuController.moveToBottom();});
     this.element.querySelector('.preview').addEventListener('click', () => {this.controller.viewMenuController.preview();});
     this.element.querySelector('.previewResponsize').addEventListener('click', () => {this.controller.viewMenuController.previewResponsize();});
+    this.element.querySelector('.mobile').addEventListener('click', () => {this.controller.viewMenuController.setMobileMode(true);});
+    this.element.querySelector('.desktop').addEventListener('click', () => {this.controller.viewMenuController.setMobileMode(false);});
 };
 
 

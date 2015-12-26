@@ -448,7 +448,16 @@ silex.controller.ControllerBase.prototype.toggleAdvanced = function() {
 };
 
 
- /**
+/**
+ * set mobile mode
+ * @param {boolean} isMobile
+ */
+silex.controller.ControllerBase.prototype.setMobileMode = function(isMobile) {
+  this.view.workspace.setMobileEditor(isMobile);
+};
+
+
+/**
  * toggle mobile mode
  */
 silex.controller.ControllerBase.prototype.toggleMobileMode = function() {
