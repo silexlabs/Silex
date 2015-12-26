@@ -213,7 +213,6 @@ silex.view.Menu.prototype.redraw = function(selectedElements, pageNames, current
  */
 silex.view.Menu.prototype.onMenuEvent = function(type) {
   switch (type) {
-    case 'file.close':
     case 'file.new':
       this.controller.fileMenuController.newFile();
       break;

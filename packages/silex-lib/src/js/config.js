@@ -217,17 +217,6 @@ silex.Config.menu = {
         label: 'Settings...',
         id: 'file.publish.settings',
         className: 'menu-item-file-publish-settings'
-      },
-      null,
-      {
-        label: 'Close File',
-        id: 'file.close',
-        className: 'menu-item-file-close',
-        globalKey: goog.events.KeyCodes.W,
-        shortcut: [[goog.events.KeyCodes.W, altKeyMac || ctrlKeyPC]],
-        tooltip: altKeyMacDisplay + ctrlKeyPCDisplay + 'w',
-        mnemonic: goog.events.KeyCodes.W,
-        accelerator: 'w'
       }
     ],
     [
