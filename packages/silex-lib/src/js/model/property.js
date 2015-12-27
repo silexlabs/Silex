@@ -237,11 +237,13 @@ silex.model.Property.prototype.initStyles = function(doc) {
  * if opt_style is null this will remove the rule
  * @param {Element} element
  * @param {?Object} style
+ * @param {?boolean=} opt_isMobile
  */
-silex.model.Property.prototype.setStyle = function(element, style) {
+silex.model.Property.prototype.setStyle = function(element, style, opt_isMobile) {
   var elementId =  /** @type {string} */ (this.getSilexId(element));
+  var isMobile = opt_isMobile != null ? opt_isMobile : this.view.workspace.getMobileEditor()
   // store in JSON
-  if (this.view.workspace.getMobileEditor()) {
+  if (isMobile) {
     this.mobileStylesObj[elementId] = style;
   }
   else {
@@ -251,11 +253,11 @@ silex.model.Property.prototype.setStyle = function(element, style) {
   var styleStr = silex.utils.Style.styleToString(style || '');
   // we use the class name because elements have their ID as a css class too
   styleStr = '.' + elementId + '{' + styleStr + '} ';
-  if (this.view.workspace.getMobileEditor()) {
+  if (isMobile) {
     styleStr = '@media ' + silex.model.Property.MOBILE_MEDIA_QUERY + '{' + styleStr + '}';
   }
   // find the index of the rule for the given element
-  var cssRuleObject = this.findCssRule(elementId, this.view.workspace.getMobileEditor());
+  var cssRuleObject = this.findCssRule(elementId, isMobile);
   // update or create the rule
   if (cssRuleObject) {
     this.styleSheet.deleteRule(cssRuleObject.index);

@@ -643,8 +643,8 @@ silex.model.Element.prototype.createElement = function(type) {
   goog.dom.classlist.add(element, silex.model.Body.EDITABLE_CLASS_NAME);
   this.model.property.initSilexId(element, this.model.file.getContentDocument());
 
-  // apply the style
-  this.model.property.setStyle(element, styleObject);
+  // apply the style (force desktop style, not mobile)
+  this.model.property.setStyle(element, styleObject, false);
 
   // make it editable
   this.model.body.setEditable(element, true);
