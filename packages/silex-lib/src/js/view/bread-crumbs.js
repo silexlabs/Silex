@@ -70,7 +70,10 @@ silex.view.BreadCrumbs.prototype.buildUi = function() {
 silex.view.BreadCrumbs.prototype.redraw = function(opt_selectedElements, opt_pageNames, opt_currentPageName) {
   this.invalidationManager.callWhenReady(() => {
     // get the selection if not provided
-    if (!opt_selectedElements) opt_selectedElements = this.model.body.getSelection();
+    opt_selectedElements = opt_selectedElements ? opt_selectedElements : this.model.body.getSelection();
+    // clone the selection array in order to avoid side effects after manipulating the array
+    let selectedElements = [];
+    opt_selectedElements.forEach((element) => selectedElements.push(element));
     // get the common ancesters to all selected elements
     function getParents(elem) {
       let parents = [];
@@ -81,11 +84,11 @@ silex.view.BreadCrumbs.prototype.redraw = function(opt_selectedElements, opt_pag
       return parents;
     }
     // find the selected element which is the "deepest" in the dom, i.e. has the greater number of parent nodes
-    opt_selectedElements.sort((elem1, elem2) => getParents(elem2).length - getParents(elem1).length);
-    let deepest = opt_selectedElements.shift();
+    selectedElements.sort((elem1, elem2) => getParents(elem2).length - getParents(elem1).length);
+    let deepest = selectedElements.shift();
     // for this "deepest" element, find the common ancestors with all others
     let ancestors = getParents(deepest);
-    opt_selectedElements.forEach((element) => {
+    selectedElements.forEach((element) => {
       let parents = getParents(element);
       let newAncestors = [];
       let idx = 0;
