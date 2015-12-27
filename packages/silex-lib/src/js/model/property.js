@@ -263,7 +263,13 @@ silex.model.Property.prototype.setStyle = function(element, style, opt_isMobile)
     this.styleSheet.deleteRule(cssRuleObject.index);
   }
   if (style) {
-    this.styleSheet.insertRule(styleStr, this.styleSheet.cssRules.length);
+    // add the rule to the dom to see the changes, mobile rules after desktop ones
+    if(isMobile) {
+      this.styleSheet.insertRule(styleStr, this.styleSheet.cssRules.length);
+    }
+    else {
+      this.styleSheet.insertRule(styleStr, 0);
+    }
   }
 };
 
