@@ -52,14 +52,6 @@ silex.model.Body.SILEX_TYPE_ATTR_NAME = 'data-silex-type';
 
 
 /**
- * value of the type attribute
- * @const
- * @type {string}
- */
-silex.model.Body.SILEX_TYPE_CONTAINER = 'container';
-
-
-/**
  * class name used by the editable jquery plugin
  * @const
  * @type {string}
