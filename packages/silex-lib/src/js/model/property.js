@@ -376,7 +376,6 @@ silex.model.Property.prototype.getBoundingBox = function(elements) {
   goog.array.forEach(elements, function(element) {
     // retrieve the styles strings (with "px")
     var elementStyle = this.getStyle(element, false);
-    var mobileStyle = this.getStyle(element, true);
     if (!elementStyle) {
       elementStyle = {
         'top': '',
@@ -391,11 +390,15 @@ silex.model.Property.prototype.getBoundingBox = function(elements) {
       if (!elementStyle.width) elementStyle.width = '';
       if (!elementStyle.height) elementStyle.height = '';
     }
-    if (this.view.workspace.getMobileEditor() && mobileStyle) {
-      if (elementStyle.top === '' && !!mobileStyle.top) elementStyle.top = mobileStyle.top;
-      if (elementStyle.left === '' && !!mobileStyle.left) elementStyle.left = mobileStyle.left;
-      if (elementStyle.width === '' && !!mobileStyle.width) elementStyle.width = mobileStyle.width;
-      if (elementStyle.height === '' && !!mobileStyle.height) elementStyle.height = mobileStyle.height;
+    // in mobile editor, if a mobile style is set use it
+    if (this.view.workspace.getMobileEditor()) {
+      var mobileStyle = this.getStyle(element, true);
+      if(mobileStyle != null) {
+        if (!!mobileStyle.top) elementStyle.top = mobileStyle.top;
+        if (!!mobileStyle.left) elementStyle.left = mobileStyle.left;
+        if (!!mobileStyle.width) elementStyle.width = mobileStyle.width;
+        if (!!mobileStyle.height) elementStyle.height = mobileStyle.height;
+      }
     }
     // compute the styles numerical values, which may end up to be NaN or a number
     var elementMinWidth = elementStyle.minWidth ? parseFloat(elementStyle.minWidth.substr(0, elementStyle.minWidth.indexOf('px'))) : null;
