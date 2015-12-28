@@ -31,7 +31,13 @@ goog.require('silex.model.Page');
  * @type {Array.<string>}
  */
 silex.utils.Style.SILEX_CLASS_NAMES = [
+  silex.model.Body.DRAGGING_CLASS_NAME,
+  silex.model.Body.DROP_CANDIDATE_CLASS_NAME,
+  silex.model.Body.PREVENT_DROPPABLE_CLASS_NAME,
+  silex.model.Body.PREVENT_RESIZABLE_CLASS_NAME,
+  silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME,
   silex.model.Body.EDITABLE_CLASS_NAME,
+  silex.model.Head.ENABLE_MOBILE_CSS_CLASS,
   silex.model.Page.PAGED_CLASS_NAME,
   silex.model.Page.PAGED_HIDDEN_CLASS_NAME,
   silex.model.Page.PAGED_VISIBLE_CLASS_NAME,

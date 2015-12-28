@@ -199,6 +199,7 @@ silex.model.Property.prototype.loadStyles = function(doc) {
   }
   else {
     this.stylesObj = {};
+    this.mobileStylesObj = {};
     console.error('Error: no JSON styles array found in the dom');
   }
 };
@@ -237,11 +238,13 @@ silex.model.Property.prototype.initStyles = function(doc) {
  * if opt_style is null this will remove the rule
  * @param {Element} element
  * @param {?Object} style
+ * @param {?boolean=} opt_isMobile
  */
-silex.model.Property.prototype.setStyle = function(element, style) {
+silex.model.Property.prototype.setStyle = function(element, style, opt_isMobile) {
   var elementId =  /** @type {string} */ (this.getSilexId(element));
+  var isMobile = opt_isMobile != null ? opt_isMobile : this.view.workspace.getMobileEditor()
   // store in JSON
-  if (this.view.workspace.getMobileEditor()) {
+  if (isMobile) {
     this.mobileStylesObj[elementId] = style;
   }
   else {
@@ -251,17 +254,23 @@ silex.model.Property.prototype.setStyle = function(element, style) {
   var styleStr = silex.utils.Style.styleToString(style || '');
   // we use the class name because elements have their ID as a css class too
   styleStr = '.' + elementId + '{' + styleStr + '} ';
-  if (this.view.workspace.getMobileEditor()) {
+  if (isMobile) {
     styleStr = '@media ' + silex.model.Property.MOBILE_MEDIA_QUERY + '{' + styleStr + '}';
   }
   // find the index of the rule for the given element
-  var cssRuleObject = this.findCssRule(elementId, this.view.workspace.getMobileEditor());
+  var cssRuleObject = this.findCssRule(elementId, isMobile);
   // update or create the rule
   if (cssRuleObject) {
     this.styleSheet.deleteRule(cssRuleObject.index);
   }
   if (style) {
-    this.styleSheet.insertRule(styleStr, this.styleSheet.cssRules.length);
+    // add the rule to the dom to see the changes, mobile rules after desktop ones
+    if(isMobile) {
+      this.styleSheet.insertRule(styleStr, this.styleSheet.cssRules.length);
+    }
+    else {
+      this.styleSheet.insertRule(styleStr, 0);
+    }
   }
 };
 
@@ -281,10 +290,15 @@ silex.model.Property.prototype.getStyle = function(element, opt_isMobile, opt_co
   var elementId =  /** @type {string} */ (this.getSilexId(element));
   var isMobile = opt_isMobile;
   if (typeof(opt_isMobile) === 'undefined') isMobile = this.view.workspace.getMobileEditor();
+  let res;
   if (isMobile === true) {
-    return this.mobileStylesObj[elementId];
+    res = this.mobileStylesObj[elementId];
   }
-  return this.stylesObj[elementId];
+  else {
+    res = this.stylesObj[elementId];
+  }
+  // returns a clone of the style object
+  return res == null ? null : /** @type {Object} */ (JSON.parse(JSON.stringify(res)));
 };
 
 
@@ -368,7 +382,6 @@ silex.model.Property.prototype.getBoundingBox = function(elements) {
   goog.array.forEach(elements, function(element) {
     // retrieve the styles strings (with "px")
     var elementStyle = this.getStyle(element, false);
-    var mobileStyle = this.getStyle(element, true);
     if (!elementStyle) {
       elementStyle = {
         'top': '',
@@ -383,11 +396,15 @@ silex.model.Property.prototype.getBoundingBox = function(elements) {
       if (!elementStyle.width) elementStyle.width = '';
       if (!elementStyle.height) elementStyle.height = '';
     }
-    if (this.view.workspace.getMobileEditor() && mobileStyle) {
-      if (elementStyle.top === '' && !!mobileStyle.top) elementStyle.top = mobileStyle.top;
-      if (elementStyle.left === '' && !!mobileStyle.left) elementStyle.left = mobileStyle.left;
-      if (elementStyle.width === '' && !!mobileStyle.width) elementStyle.width = mobileStyle.width;
-      if (elementStyle.height === '' && !!mobileStyle.height) elementStyle.height = mobileStyle.height;
+    // in mobile editor, if a mobile style is set use it
+    if (this.view.workspace.getMobileEditor()) {
+      var mobileStyle = this.getStyle(element, true);
+      if(mobileStyle != null) {
+        if (!!mobileStyle.top) elementStyle.top = mobileStyle.top;
+        if (!!mobileStyle.left) elementStyle.left = mobileStyle.left;
+        if (!!mobileStyle.width) elementStyle.width = mobileStyle.width;
+        if (!!mobileStyle.height) elementStyle.height = mobileStyle.height;
+      }
     }
     // compute the styles numerical values, which may end up to be NaN or a number
     var elementMinWidth = elementStyle.minWidth ? parseFloat(elementStyle.minWidth.substr(0, elementStyle.minWidth.indexOf('px'))) : null;

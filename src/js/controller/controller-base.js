@@ -451,11 +451,22 @@ silex.controller.ControllerBase.prototype.toggleAdvanced = function() {
 
 
 /**
+ * refresh tools after mobile/desktop editor switch
+ */
+silex.controller.ControllerBase.prototype.refreshView = function() {
+  var pages = this.model.page.getPages();
+  var currentPage = this.model.page.getCurrentPage();
+  this.view.propertyTool.redraw(this.model.body.getSelection(), pages, currentPage);
+};
+
+
+/**
  * set mobile mode
  * @param {boolean} isMobile
  */
 silex.controller.ControllerBase.prototype.setMobileMode = function(isMobile) {
   this.view.workspace.setMobileEditor(isMobile);
+  this.refreshView();
 };
 
 
@@ -464,6 +475,7 @@ silex.controller.ControllerBase.prototype.setMobileMode = function(isMobile) {
  */
 silex.controller.ControllerBase.prototype.toggleMobileMode = function() {
   this.view.workspace.setMobileEditor(!this.view.workspace.getMobileEditor());
+  this.refreshView();
 };
 
 
