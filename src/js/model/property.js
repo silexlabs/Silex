@@ -199,6 +199,7 @@ silex.model.Property.prototype.loadStyles = function(doc) {
   }
   else {
     this.stylesObj = {};
+    this.mobileStylesObj = {};
     console.error('Error: no JSON styles array found in the dom');
   }
 };
@@ -289,10 +290,15 @@ silex.model.Property.prototype.getStyle = function(element, opt_isMobile, opt_co
   var elementId =  /** @type {string} */ (this.getSilexId(element));
   var isMobile = opt_isMobile;
   if (typeof(opt_isMobile) === 'undefined') isMobile = this.view.workspace.getMobileEditor();
+  let res;
   if (isMobile === true) {
-    return this.mobileStylesObj[elementId];
+    res = this.mobileStylesObj[elementId];
   }
-  return this.stylesObj[elementId];
+  else {
+    res = this.stylesObj[elementId];
+  }
+  // returns a clone of the style object
+  return res == null ? null : /** @type {Object} */ (JSON.parse(JSON.stringify(res)));
 };
 
 
