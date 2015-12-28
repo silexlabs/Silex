@@ -125,8 +125,11 @@ a:focus{ outline: none;}
     left: auto;
     max-width: 99.999%;
   }
-  body.enable-mobile .editable-style {
-    float: left;
+  body.enable-mobile .container-element {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    flex-wrap: wrap;
   }
   body.enable-mobile .editable-style.hide-on-mobile {
     display: none;
