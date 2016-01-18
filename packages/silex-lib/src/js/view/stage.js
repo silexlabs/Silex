@@ -63,6 +63,11 @@ silex.view.Stage = function(element, model, controller) {
    * @type {InvalidationManager}
    */
   this.invalidationManagerFocus = new InvalidationManager(500);
+
+  /**
+   * @type {!HTMLIFrameElement}
+   */
+  this.iframeElement = /** @type {!HTMLIFrameElement} */ (goog.dom.getElementByClass(silex.view.Stage.STAGE_CLASS_NAME));
 };
 
 /**
@@ -181,7 +186,8 @@ silex.view.Stage.prototype.buildUi = function() {
  * @param {Event} event
  */
 silex.view.Stage.prototype.onMouseMoveOverUi = function(event) {
-  let pos = goog.style.getRelativePosition(event, this.element);
+  var pos = goog.style.getRelativePosition(event, this.iframeElement);
+  console.log('pos:', pos);
   this.onMouseMove(/** @type {Element} */ (event.target), pos.x, pos.y, event.shiftKey);
   event.preventDefault();
 };
@@ -196,7 +202,8 @@ silex.view.Stage.prototype.onMouseUpOverUi = function(event) {
   if (this.bodyElement !== null) {
     // if out of stage, release from drag of the plugin
     // simulate the mouse up on the iframe body
-    var pos = goog.style.getRelativePosition(event, this.element);
+    var pos = goog.style.getRelativePosition(event, this.iframeElement);
+    console.log('pos:', pos);
     var newEvObj = document.createEvent('MouseEvent');
     newEvObj.initEvent('mouseup', true, true);
     newEvObj.clientX = pos.x;
@@ -766,7 +773,7 @@ silex.view.Stage.prototype.followElementPosition =
         let finalX = Math.round(pos.x + offsetX);
         this.controller.stageController.styleChanged('top', finalY + 'px', [follower], false);
         this.controller.stageController.styleChanged('left', finalX + 'px', [follower], false);
-        // in case the element is in the flow, 
+        // in case the element is in the flow,
         // the css class .dragging-pending will set position:relative
         // and we temporarily move the element with its attributes instead of css style tag in head
         let style;
