@@ -33,12 +33,13 @@ silex.model.Body = function(model, view) {
   this.model = model;
   // get the iframe
   // retrieve the element which will hold the body of the opened file
-  this.iframeElement = goog.dom.getElementByClass(silex.view.Stage.STAGE_CLASS_NAME);
+  this.iframeElement = /** @type {!HTMLIFrameElement} */ (goog.dom.getElementByClass(silex.view.Stage.STAGE_CLASS_NAME));
 };
 
 
 /**
  * element which holds the opened website
+ * @type {!HTMLIFrameElement}
  */
 silex.model.Body.prototype.iframeElement = null;
 
