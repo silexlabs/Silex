@@ -52,7 +52,7 @@ Prerequisite :
 * [docker](https://www.docker.com/)
 
 ```
-$ docker run -p 6805:6805 indiehosters/silex
+$ docker run -p 6805:6805 silexlabs/silex
 ```
 
 Open http://localhost:6805/ and you are ready!
