@@ -72,10 +72,11 @@ Clone this repository, and do not forget the sub modules (cloud-explorer and uni
 $ git clone --recursive https://github.com/silexlabs/Silex.git
 ```
 
-Install all needed modules
+Install all needed modules and build the assets
 
 ```
 $ npm install
+$ npm run build
 ```
 
 Start the server and then open [http://localhost:6805/](http://localhost:6805/) - note that the port is 6805, which is easy to remember, since it is the date of sexual revolution started in paris france 8-)
