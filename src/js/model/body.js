@@ -39,7 +39,7 @@ silex.model.Body = function(model, view) {
 
 /**
  * element which holds the opened website
- * @type {!HTMLIFrameElement}
+ * @type {HTMLIFrameElement}
  */
 silex.model.Body.prototype.iframeElement = null;
 
