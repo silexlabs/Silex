@@ -46,11 +46,11 @@ silex.controller.ControllerBase = function(model, view) {
 
   // tracker
   this.tracker = silex.service.Tracker.getInstance();
-  window.onerror = goog.bind(function(msg, url, line) {
-    this.tracker.trackAction('controller-events', 'uncaught.error', msg + '- ' + url + ' - line: ' + line, -1);
-  }, this);
-};
 
+
+  // catchall error tracker
+  window.onerror = /** @type {function (string, string, number)} */ ((msg, url, line, colno, error) => this.tracker.trackOnError(msg, url, line, colno, error));
+};
 
 /**
  * {silex.service.Tracker} tracker used to pull statistics on the user actions

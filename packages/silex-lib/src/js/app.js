@@ -94,9 +94,6 @@ class App {
 
     // **
     // general initializations
-    // **
-    // tracker / qos
-    silex.service.Tracker.getInstance().trackAction('app-events', 'start', null, 2);
 
     // polyfills
     silex.utils.Polyfills.init();
