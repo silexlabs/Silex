@@ -1,4 +1,4 @@
-/**
+/**inst
  * Silex, live web creation
  * http://projects.silexlabs.org/?/silex/
  *
@@ -14,6 +14,27 @@
  * @fileoverview define externs for libs used in Silex
  */
 
+
+/**
+ * Parse and consume source maps. By Mozilla
+ * @see https://github.com/mozilla/source-map/
+ * @type {Object.<*>}
+ */
+var sourceMap = {};
+
+
+/**
+ * @param {string} rawSourceMap
+ * @constructor
+ */
+sourceMap.SourceMapConsumer = function (rawSourceMap) {}
+
+
+/**
+ * @param {{line:*, column:*, bias:*}} generatedPosition
+ * @return {{source:string, line:number, column:number, name:*}}
+ */
+sourceMap.SourceMapConsumer.prototype.originalPositionFor = function(generatedPosition) {};
 
 /**
  * piwik analytics
