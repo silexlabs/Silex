@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Cloud Explorer</title>
+        <style>
+            body {
+                background-color: #FFF;
+                color: #444;
+                font-family: Arial, Helvetica, sans-serif;
+            }
+            .step {
+                width: 600px;
+                padding: 10px; padding-top: 5px; margin: auto; margin-bottom: 30px;
+                background: #CCC; border-radius: 15px;
+            }
+            p.result {
+                display: none;
+            }
+            p.result + div {
+                background: white; margin-top: 10px; margin-bottom: 15px;
+                max-width: 100%; max-height: 300px; overflow: scroll;
+            }
+            .step.open .success, .step.saveas .success, .step.save .success {
+                display: none;
+            }
+            .success .step.open p.result, .success .step.saveas p.result, .success .step.save p.result {
+                display: block;
+            }
+            .success .step.open p.result + div, .success .step.saveas p.result + div, .success .step.save p.result + div {
+                min-height: 100px;
+            }
+            p {
+                margin: 10px;
+            }
+            h2 {
+                font-size: 22px;
+                font-weight: 500;
+                text-align: center;
+                margin: 10px;
+            }
+            button {
+                height: 35px; font-size: 16px;
+                padding-left: 10px; padding-right: 10px;
+                background: #b4dff8; color: #444;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer; user-select: none;
+            }
+            textarea {
+                display: block; width: 594px; height: 200px;
+                margin-top: 10px; margin-bottom: 20px;
+                resize: none;
+            }
+            a {
+                color: #b4dff8;
+            }
+            body.intro .step.open, body.intro .step.saveas, body.intro .step.save, body.intro .step.end {
+                display: none;
+            }
+            body.one .step.intro, body.one .step.saveas, body.one .step.save, body.one .step.end {
+                display: none;
+            }
+            body.one.success .step.open .success, body.two.success .step.saveas .success, body.three.success .step.save .success {
+                display: block;
+            }
+            body.two .step.intro, body.two .step.open, body.two .step.save, body.two .step.end {
+                display: none;
+            }
+            body.three .step.intro, body.three .step.open, body.three .step.saveas, body.three .step.end {
+                display: none;
+            }
+            body.end .step.intro, body.end .step.open, body.end .step.saveas, body.end .step.save {
+                display: none;
+            }
+        </style>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+        <!-- <script src="scripts/jquery.min.js"></script> -->
+        <script src="scripts/cloud-explorer.js"></script>
+    </head>
+    <body class="intro">
+
+        <iframe id="ce-js"
+                frameborder="no" 
+                scrolling="no"
+                allowfullscreen="yes"
+                data-ce-unifile-url="http://cloud-explorer.herokuapp.com/api/1.0/">
+        </iframe>
+
+        <div class="step intro">
+            <h2>Welcome to the Cloud Explorer demo</h2>
+            <p>Thank you for testing Cloud Explorer!</p>
+            <p>Please click the following button to start the demo: <button class="startBtn">Start</button></p>
+        </div>
+
+        <div class="step open">
+            <h2>Open a file from the cloud</h2>
+            <p>Pick a file, image or text content, from a cloud storage: <button class="pickBtn">Open</button></p>
+            <p class="result">Great ! Here is your file's content: </p><div></div>
+            <p class="success">Click here to continue: <button class="nextBtn">Continue</button></p>
+        </div>
+
+        <div class="step saveas">
+            <h2>Create some content and save it in the cloud</h2>
+            <p>Write some text in the below input:</p>
+            <textarea></textarea>
+            <p>And save it in a new file : <button class="exportBtn">Save As</button></p>
+            <p class="result">File successfully saved with content:</p><div></div>
+            <p class="success">Click here to continue: <button class="nextBtn">Continue</button></p>
+        </div>
+
+        <div class="step save">
+            <h2>Edit your file content and save the changes</h2>
+            <p>Now, edit your previously created file's content in the below input:</p>
+            <textarea></textarea>
+            <p>And save those changes to the cloud : <button class="writeBtn">Save</button></p>
+            <p class="result">File successfully saved with new content:</p><div></div>
+            <p class="success">Click here to continue: <button class="nextBtn">Continue</button></p>
+        </div>
+
+        <div class="step end">
+            <h2>Thank you for having tested Cloud Explorer</h2>
+            <p>For suggestion, bug report, contribution or anything about the project, please use the <a href="https://github.com/silexlabs/cloud-explorer/issues">Github issue tracker</a>.</p>
+            <p>To restart the demo, click here: <button class="restartBtn">Restart</button></p>
+        </div>
+
+        <script type="text/javascript">
+
+            $(document).ready(function(){
+                
+                    // init ce on iframe id "ce-js"
+                    window.cloudExplorer = ce.api.CloudExplorer.get("ce-js");
+
+                    var state = "intro";
+
+                    var ablob;
+
+                    $(".step.intro .startBtn").click(function(){
+
+                            document.body.className = "one";
+                        });
+
+                    $(".step.open .nextBtn").click(function(){
+
+                            document.body.className = "two";
+
+                        });
+
+                    $(".step.open .pickBtn").click(function(){
+
+                            var ab;
+
+                            cloudExplorer.pick(function(b){
+
+                                    ab = b;
+
+                                    if (ab.mimetype.indexOf("image/") == 0) {
+
+                                        $('.step.open .result + div').html("<img src='"+ab.url+"' />");
+
+                                        document.body.className = "one success";
+
+                                    } else if(ab.mimetype.indexOf("text/") == 0) {
+
+                                        $.get( ab.url, function( data ) {
+
+                                                $('.step.open .result + div').html(data)
+
+                                            });
+
+                                        document.body.className = "one success";
+                                    
+                                    } else {
+
+                                        $('.step.open .result + div').html("<span class='error'>Not supported mime/type, please chose a text or image file.</span>")
+                                    }
+
+                                }, function(e){ console.log("error " + JSON.stringify(e)); });
+                        });
+
+                    $(".step.saveas .nextBtn").click(function(){
+
+                            document.body.className = "three";
+
+                        });
+
+                    $(".step.saveas .exportBtn").click(function(){
+
+                            cloudExplorer.exportFile({}, { mimetype: "text/html" }, function(b){
+
+                                    cloudExplorer.write(b, $(".step.saveas textarea").val(), function(ceb){
+
+                                            $.get( ceb.url, function( data ) {
+
+                                                $('.step.saveas .result + div').html(data);
+
+                                                $('.step.save textarea').val(data);
+
+                                                document.body.className = "two success";
+
+                                            });
+
+                                            ablob = ceb;
+
+                                        }, function(e){ console.log("error " + JSON.stringify(e)); });
+
+                                }, function(e){ console.log("error " + JSON.stringify(e)); });
+
+                        });
+
+                    $(".step.save .nextBtn").click(function(){
+
+                            document.body.className = "end";
+
+                        });
+
+                    $(".step.save .writeBtn").click(function(){
+
+                            cloudExplorer.write(ablob, $(".step.save textarea").val(), function(ceb){
+
+                                    $.get( ceb.url, function( data ) {
+
+                                        $('.step.save .result + div').html(data);
+
+                                        document.body.className = "three success";
+
+                                    });
+
+                                }, function(e){ console.log("error " + JSON.stringify(e)); });
+
+                        });
+
+                    $(".step.end .restartBtn").click(function(){
+
+                            $('.result + div').html('');
+
+                            document.body.className = "intro";
+
+                        });
+                });
+
+        </script>
+
+    </body>
+</html>
