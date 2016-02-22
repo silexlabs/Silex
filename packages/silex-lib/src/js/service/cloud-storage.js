@@ -124,6 +124,7 @@ silex.service.CloudStorage.prototype.load = function(url, cbk, opt_errCbk) {
  * @param  {function(Object)} opt_errCbk
  */
 silex.service.CloudStorage.prototype.loadLocal = function(url, cbk, opt_errCbk) {
+  // FIXME: use regular XMLHttpRequest
   goog.net.XhrIo.send(url, function(e) {
     // success of the request
     var xhr = e.target;
