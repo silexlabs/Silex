@@ -5,8 +5,8 @@
 /* the body covers the whole available space */
 /* the body is resized to its content size when needed in front-end.js */
 body{
-  min-width: 99%;
-  min-height: 99%;
+  width: 100%;
+  height: 100%;
   position: absolute;
   padding: 5px;
 }
