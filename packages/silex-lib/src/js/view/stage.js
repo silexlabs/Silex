@@ -226,59 +226,6 @@ silex.view.Stage.prototype.onPreventBackSwipe = function(event) {
 
 
 /**
- * Resize the iframe body to the size of its content
- * This is to always keep space between the elements (main container etc)
- * and the stage border
- * @param {?Event=} event
- */
-silex.view.Stage.prototype.bodyElementSizeToContent = function(event) {
-  if (this.bodyElement) {
-    let containers = [];
-    goog.array.forEach(this.bodyElement.children, (element) => {
-      if (element.classList.contains(silex.model.Body.EDITABLE_CLASS_NAME)) {
-        containers.push(element);
-      }
-    });
-    if (containers && containers.length > 0) {
-      let bb = this.model.property.getBoundingBox(containers);
-      let viewportSize = this.viewport.getSize();
-      let desiredBodyWidth = bb.width + 100;
-      if (desiredBodyWidth < viewportSize.width) {
-        // let the css handle a body of the size of the stage
-        goog.style.setStyle(this.bodyElement, 'minWidth', '');
-      }
-      else {
-        // we want the body to be this size
-        // we use minWidth/minHeight in order to leave width/height to the user
-        goog.style.setStyle(
-            this.bodyElement,
-            'minWidth',
-            desiredBodyWidth + 'px');
-      }
-      let desiredBodyHeight = bb.height + 100;
-      if (desiredBodyHeight < viewportSize.height) {
-        // let the css handle a body of the size of the stage
-        goog.style.setStyle(this.bodyElement, 'minHeight', '');
-      }
-      else {
-        // we want the body to be this size
-        // we use minWidth/minHeight in order to leave width/height to the user
-        goog.style.setStyle(
-            this.bodyElement,
-            'minHeight',
-            desiredBodyHeight + 'px');
-      }
-    }
-  }
-  // else {
-    // could not resize body to match content because
-    // this.bodyElement is undefined
-    // this happens at startup
-  //}
-};
-
-
-/**
  * remove stage event listeners
  * @param {Element} bodyElement the element which contains the body of the site
  */
@@ -299,16 +246,6 @@ silex.view.Stage.prototype.initEvents = function(contentWindow) {
   this.bodyElement = contentWindow.document.body;
   this.contentDocument = contentWindow.document;
   this.contentWindow = contentWindow;
-
-  // handle resize and the iframe body size
-  if (this.viewport) {
-    goog.events.removeAll(this.viewport);
-  }
-  this.viewport = new goog.dom.ViewportSizeMonitor(contentWindow);
-  goog.events.listen(this.viewport, goog.events.EventType.RESIZE,
-      this.bodyElementSizeToContent, false, this);
-  // init iframe body size
-  this.bodyElementSizeToContent();
 
   // listen on body instead of element because user can release
   // on the tool boxes
@@ -367,7 +304,6 @@ silex.view.Stage.prototype.redraw =
   this.resetFocus();
   // remember selection
   this.selectedElements = selectedElements;
-  this.bodyElementSizeToContent();
   this.currentPageName = currentPageName;
 };
 
@@ -566,10 +502,6 @@ silex.view.Stage.prototype.onMouseMove = function(target, x, y, shiftKey) {
         // dragging style
         goog.dom.classlist.add(this.bodyElement, silex.model.Body.DRAGGING_CLASS_NAME);
       }
-    }
-    else {
-      // keep the body size while dragging or resizing
-      this.bodyElementSizeToContent();
     }
 
     // update multiple selection according the the dragged element
@@ -874,7 +806,7 @@ silex.view.Stage.prototype.followElementSize =
       this.controller.stageController.styleChanged('left', Math.round(offsetPosX) + 'px', [follower], false);
       // apply the new size
       this.controller.stageController.styleChanged('width', Math.round(newSizeW) + 'px', [follower], false);
-      this.controller.stageController.styleChanged('height', Math.round(newSizeH) + 'px', [follower], false);
+      this.controller.stageController.styleChanged('minHeight', Math.round(newSizeH) + 'px', [follower], false);
     }
   }, this);
 };
