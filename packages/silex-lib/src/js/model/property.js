@@ -243,6 +243,13 @@ silex.model.Property.prototype.initStyles = function(doc) {
 silex.model.Property.prototype.setStyle = function(element, style, opt_isMobile) {
   var elementId =  /** @type {string} */ (this.getSilexId(element));
   var isMobile = opt_isMobile != null ? opt_isMobile : this.view.workspace.getMobileEditor()
+  // to selector case
+  for(let key in style) {
+    let camel = goog.string.toCamelCase(key);
+    let val = style[key];
+    style[key] = undefined;
+    style[camel] = val;
+  }
   // store in JSON
   if (isMobile) {
     this.mobileStylesObj[elementId] = style;
@@ -387,7 +394,8 @@ silex.model.Property.prototype.getBoundingBox = function(elements) {
         'top': '',
         'left': '',
         'width': '',
-        'height': ''
+        'height': '',
+        'minHeight': ''
       };
     }
     else {
@@ -410,7 +418,7 @@ silex.model.Property.prototype.getBoundingBox = function(elements) {
     var elementMinWidth = elementStyle.minWidth ? parseFloat(elementStyle.minWidth.substr(0, elementStyle.minWidth.indexOf('px'))) : null;
     var elementWidth = Math.max(elementMinWidth || 0, parseFloat(elementStyle.width.substr(0, elementStyle.width.indexOf('px'))));
     var elementMinHeight = elementStyle.minHeight ? parseFloat(elementStyle.minHeight.substr(0, elementStyle.minHeight.indexOf('px'))) : null;
-    var elementHeight = Math.max(elementMinHeight || 0, parseFloat(elementStyle.height.substr(0, elementStyle.height.indexOf('px'))));
+    var elementHeight = Math.max(elementMinHeight || 0, parseFloat(elementStyle.height.substr(0, elementStyle.height.indexOf('px'))) || 0);
     var elementTop = parseFloat(elementStyle.top.substr(0, elementStyle.top.indexOf('px')));
     var elementLeft = parseFloat(elementStyle.left.substr(0, elementStyle.left.indexOf('px')));
     var elementRight = (elementLeft || 0) + elementWidth;

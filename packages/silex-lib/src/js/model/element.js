@@ -603,7 +603,7 @@ silex.model.Element.prototype.createElement = function(type) {
   var offsetY = 100 + this.view.stage.getScrollY();
   // default style
   var styleObject = {
-    height: '100px',
+    minHeight: '100px',
     width: '100px',
     top: offsetY + 'px',
     left: offsetX + 'px'

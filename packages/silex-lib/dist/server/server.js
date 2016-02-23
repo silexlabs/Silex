@@ -143,7 +143,7 @@ catch(e) {
 }
 
 // use unifile as a middleware
-app.use('/api', unifile.middleware(express, app, silexConfig));
+app.use(silexConfig.apiRoot, unifile.middleware(express, app, silexConfig));
 
 var port = process.env.PORT || 6805; // 6805 is the date of sexual revolution started in paris france 8-)
 http.createServer(app).listen(port, function() {
