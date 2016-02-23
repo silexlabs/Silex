@@ -108,14 +108,19 @@ $(function() {
   var resizeBody = debounce(function (event){
     var width = 0;
     var height = 0;
+    var bodyEl = $('body');
     $('body > *').each(function (index) {
-      var position = $(this).position();
-      var right = position.left + $(this).width();
-      var bottom = position.top + $(this).height();
-      if (width < right) width = right;
-      if (height < bottom) height = bottom;
+      var el = $('this');
+      // take elements visible on the current page
+      if(!el.hasClass('paged-element') || el.hasClass(bodyEl.pageable('option').currentPage)) {
+        var position = el.position();
+        var right = position.left + el.width();
+        var bottom = position.top + el.height();
+        if (width < right) width = right;
+        if (height < bottom) height = bottom;
+      }
     });
-    $("body").css({
+    bodyEl.css({
       "min-width": width + "px",
       "min-height": height + "px"
     });
@@ -127,4 +132,6 @@ $(function() {
   // resize body on window resize
   $(window).resize(resizeBody);
 
+  // resize on page change (size will vary)
+  $('body').on('pageChanged', resizeBody);
 });
