@@ -78,4 +78,53 @@ $(function() {
     $(document.body).removeClass('show-mobile-menu');
     e.preventDefault();
   });
+
+  /**
+   * Returns a function, that, as long as it continues to be invoked, will not
+   * be triggered. The function will be called after it stops being called for
+   * N milliseconds. If `immediate` is passed, trigger the function on the
+   * leading edge, instead of the trailing.
+   */
+  function debounce(func, wait, immediate) {
+    var timeout;
+    return function() {
+      var context = this, args = arguments;
+      var later = function() {
+        timeout = null;
+        if (!immediate) func.apply(context, args);
+      };
+      var callNow = immediate && !timeout;
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+      if (callNow) func.apply(context, args);
+    };
+  };
+
+  /**
+   * resize body to the size of its content
+   * this is needed since the content has absolute position
+   * so it is not automatic with css
+   */
+  var resizeBody = debounce(function (event){
+    var width = 0;
+    var height = 0;
+    $('body > *').each(function (index) {
+      var position = $(this).position();
+      var right = position.left + $(this).width();
+      var bottom = position.top + $(this).height();
+      if (width < right) width = right;
+      if (height < bottom) height = bottom;
+    });
+    $("body").css({
+      "min-width": width + "px",
+      "min-height": height + "px"
+    });
+  }, 500);
+
+  // resize body at start
+  resizeBody();
+
+  // resize body on window resize
+  $(window).resize(resizeBody);
+
 });
