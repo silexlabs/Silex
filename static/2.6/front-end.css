@@ -25,6 +25,8 @@ body{
 .silex-element-content{
   overflow: hidden;
   border-radius: inherit;
+  width: 100%;
+  height: 100%;
 }
 /* background */
 .background{
@@ -34,6 +36,10 @@ body{
   margin-left: auto;
   margin-right: auto;
   z-index: 1;
+}
+/* resize */
+.editable-style.image-element .silex-element-content{
+  position: absolute;
 }
 /* links default formatting */
 .editable-style[data-silex-href]{
@@ -51,10 +57,6 @@ body{
     because of normalize.css */
 a:focus{ outline: none;}
 
-.silex-element-content {
-  width: 100%;
-  height: 100%;
-}
 .silex-pages .menu-button {
   display: none;
 }
@@ -130,6 +132,7 @@ a:focus{ outline: none;}
     align-items: center;
     justify-content: space-around;
     flex-wrap: wrap;
+    padding: 10px;
   }
   body.enable-mobile .editable-style.hide-on-mobile {
     display: none;

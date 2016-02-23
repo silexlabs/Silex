@@ -123,7 +123,7 @@ silex.view.pane.PropertyPane.prototype.buildUi = function() {
       false,
       this);
   this.heightInput = goog.dom.getElementByClass('height-input');
-  this.heightInput.setAttribute('data-style-name', 'height');
+  this.heightInput.setAttribute('data-style-name', 'minHeight');
   goog.events.listen(this.heightInput,
       goog.events.EventType.INPUT,
       this.onPositionChanged,
@@ -163,7 +163,7 @@ silex.view.pane.PropertyPane.prototype.onPositionChanged =
     if (name === 'width' && value < silex.model.Element.MIN_WIDTH) {
       value = silex.model.Element.MIN_WIDTH;
     }
-    if (name === 'height' && value < silex.model.Element.MIN_HEIGHT) {
+    if (name === 'minHeight' && value < silex.model.Element.MIN_HEIGHT) {
       value = silex.model.Element.MIN_HEIGHT;
     }
     // get the old value
