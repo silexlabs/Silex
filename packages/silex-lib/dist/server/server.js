@@ -95,7 +95,7 @@ else {
 }
 
 // ********************************
-// config
+// unifile server
 // ********************************
 
 // change www root
@@ -119,15 +119,20 @@ silexConfig.staticFolders.push(
   }
 );
 
-// ********************************
-// unifile server
-// ********************************
 // open pages if defined
 if(silexConfig.openPages) {
   silexConfig.openPages.ROOT = pathModule.resolve(__dirname, '../../open-pages/');
   silexConfig.openPages.SQLLITE_FILE = pathModule.resolve(__dirname, '../../open-pages/websites.sql');
   fs.mkdir(silexConfig.openPages.ROOT, null, function (error) {});
 }
+
+// github service
+if(process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
+  console.log(process.env.GITHUB_CLIENT_ID);
+  silexConfig.github.client_id = process.env.GITHUB_CLIENT_ID;
+  silexConfig.github.client_secret = process.env.GITHUB_CLIENT_SECRET;
+}
+
 // SSL certificate
 try {
   var privateKey = fs.readFileSync(process.env.SILEX_SSL_PRIVATE_KEY || __dirname + '/../../privatekey.pem').toString();
