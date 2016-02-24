@@ -110,10 +110,11 @@ $(function() {
     var height = 0;
     var bodyEl = $('body');
     $('body > *').each(function (index) {
-      var el = $('this');
+      var el = $(this);
       // take elements visible on the current page
       if(el.hasClass('editable-style') && (!el.hasClass('paged-element') || el.hasClass(bodyEl.pageable('option').currentPage))) {
         var position = el.position();
+        console.log(position);
         var right = position.left + el.width();
         var bottom = position.top + el.height();
         if (width < right) width = right;
