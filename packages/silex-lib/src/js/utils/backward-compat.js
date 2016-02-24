@@ -206,6 +206,19 @@ silex.utils.BackwardCompat.to2_2_6 = function(version, doc, model, cbk) {
       }) + ']';
     }
   }
+  // convert all css style `height` to `min-height`
+  // FIXME: should be done only when updating, but due to a fix after release of 2.2.6 this will be run for all templates
+  let arr = /** @type {!Array.<Object.<*>>} */ (JSON.parse(jsonStyleTag.innerHTML));
+  for(let modeName in arr[0]) for(let id in arr[0][modeName]) {
+    let style = arr[0][modeName][id];
+    if(style['height']) {
+      style['min-height'] = style['height'];
+      style['height'] = undefined;
+    }
+  }
+  jsonStyleTag.innerHTML = JSON.stringify(arr);
+  model.property.loadStyles(doc);
+
   cbk();
 };
 
