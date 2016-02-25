@@ -54,7 +54,7 @@
     "lodash": "3.10.0",
     "qs": "4.0.0",
     "superstartup-closure-compiler": "0.1.7",
-    "unifile": "0.0.58"
+    "unifile": "0.0.59"
   },
   "devDependencies": {
     "assert": "1.3.0",
