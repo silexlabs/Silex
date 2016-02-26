@@ -12,8 +12,7 @@
 // useful modules
 var pathModule = require('path');
 var fs = require('fs');
-var http = require('http');
-var https = require('https');
+var request = require('request');
 var router = require('unifile/lib/core/router.js');
 
 var publishStates = {};
@@ -344,43 +343,16 @@ exports.getFile = function(req, res, next, srcPath, dstPath, cbk){
  * get file from URL, to a service
  */
 exports.getFileFromUrl = function(req, res, next, srcPath, dstPath, cbk){
-  var data = [];
-
-  // http or https
-  var http_s = http;
-  if (srcPath.indexOf('https') === 0){
-    http_s = https;
-  }
-  // load the file
-  http_s.get(srcPath, function(result) {
-     result.on('data', function(chunk) {
-       data.push(chunk);
-     });
-     result.on('end', function() {
-     // data is an array
-     if (srcPath.indexOf('https')===0 && Array.isArray(data)){
-      exports.writeFileToService(req, res, next, dstPath, data.join(''), function(error) {
+  request(srcPath, function (error, response, body) {
+    if (!error && response.statusCode == 200) {
+      exports.writeFileToService(req, res, next, dstPath, body, function(error) {
         cbk(error);
       });
-     }
-     // data is an object
-     else if (typeof(data) === 'object'){
-      exports.writeFileToService(req, res, next, dstPath, data, function(error) {
-        cbk(error);
-      });
-     }
-     // data is a string or something else
-     else{
-      exports.writeFileToService(req, res, next, dstPath, data.toString(), function(error) {
-        cbk(error);
-      });
-     }
-     });
-  }).on('error', function(e) {
-   console.error('Error while loading '+srcPath+': ' + e.message);
-   cbk({
-     message: 'Error while loading '+srcPath+': ' + e.message
-   });
+    }
+    else {
+      console.error('Error while loading '+srcPath+': ' + e.message);
+      cbk(error);
+    }
   });
 };
 
