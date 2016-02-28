@@ -245,7 +245,6 @@ silex.model.Element.prototype.getStyle = function(element, styleName, opt_comput
   else if (isMobile) {
     // get the non mobile style if it is not defined in mobile
     styleObject = this.model.property.getStyle(element, false, opt_computed);
-    cssName = goog.string.toSelectorCase(styleName);
     if (styleObject && styleObject[cssName]) {
       return this.unprepareHtmlForEdit(styleObject[cssName]);
     }
@@ -603,10 +602,10 @@ silex.model.Element.prototype.createElement = function(type) {
   var offsetY = 100 + this.view.stage.getScrollY();
   // default style
   var styleObject = {
-    minHeight: '100px',
-    width: '100px',
-    top: offsetY + 'px',
-    left: offsetX + 'px'
+    'min-height': '100px',
+    'width': '100px',
+    'top': offsetY + 'px',
+    'left': offsetX + 'px'
   };
 
   // create the element
@@ -617,7 +616,7 @@ silex.model.Element.prototype.createElement = function(type) {
     case silex.model.Element.TYPE_CONTAINER:
       element = this.createContainerElement();
       // add a default style
-      styleObject.backgroundColor = '#FFFFFF';
+      styleObject['background-color'] = 'rgb(255, 255, 255)';
       break;
 
     // text
@@ -629,7 +628,7 @@ silex.model.Element.prototype.createElement = function(type) {
     case silex.model.Element.TYPE_HTML:
       element = this.createHtmlElement();
       // add a default style
-      styleObject.backgroundColor = '#FFFFFF';
+      styleObject['background-color'] = 'rgb(255, 255, 255)';
       break;
 
     // Image
