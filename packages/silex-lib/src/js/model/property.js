@@ -245,10 +245,12 @@ silex.model.Property.prototype.setStyle = function(element, style, opt_isMobile)
   var isMobile = opt_isMobile != null ? opt_isMobile : this.view.workspace.getMobileEditor()
   // to selector case
   for(let key in style) {
-    let camel = goog.string.toCamelCase(key);
-    let val = style[key];
-    style[key] = undefined;
-    style[camel] = val;
+    let cssName = goog.string.toSelectorCase(key);
+    if(cssName !== key && style[key] !== null && style[key] !== '') {
+      let val = style[key];
+      style[key] = undefined;
+      style[cssName] = val;
+    }
   }
   // store in JSON
   if (isMobile) {
@@ -395,32 +397,32 @@ silex.model.Property.prototype.getBoundingBox = function(elements) {
         'left': '',
         'width': '',
         'height': '',
-        'minHeight': ''
+        'min-height': ''
       };
     }
     else {
-      if (!elementStyle.top) elementStyle.top = '';
-      if (!elementStyle.left) elementStyle.left = '';
-      if (!elementStyle.width) elementStyle.width = '';
-      if (!elementStyle.height) elementStyle.height = '';
+      if (!elementStyle['top']) elementStyle['top'] = '';
+      if (!elementStyle['left']) elementStyle['left'] = '';
+      if (!elementStyle['width']) elementStyle['width'] = '';
+      if (!elementStyle['height']) elementStyle['height'] = '';
     }
     // in mobile editor, if a mobile style is set use it
     if (this.view.workspace.getMobileEditor()) {
       var mobileStyle = this.getStyle(element, true);
       if(mobileStyle != null) {
-        if (!!mobileStyle.top) elementStyle.top = mobileStyle.top;
-        if (!!mobileStyle.left) elementStyle.left = mobileStyle.left;
-        if (!!mobileStyle.width) elementStyle.width = mobileStyle.width;
-        if (!!mobileStyle.height) elementStyle.height = mobileStyle.height;
+        if (!!mobileStyle.top) elementStyle['top'] = mobileStyle.top;
+        if (!!mobileStyle.left) elementStyle['left'] = mobileStyle.left;
+        if (!!mobileStyle.width) elementStyle['width'] = mobileStyle.width;
+        if (!!mobileStyle.height) elementStyle['height'] = mobileStyle.height;
       }
     }
     // compute the styles numerical values, which may end up to be NaN or a number
-    var elementMinWidth = elementStyle.minWidth ? parseFloat(elementStyle.minWidth.substr(0, elementStyle.minWidth.indexOf('px'))) : null;
-    var elementWidth = Math.max(elementMinWidth || 0, parseFloat(elementStyle.width.substr(0, elementStyle.width.indexOf('px'))));
-    var elementMinHeight = elementStyle.minHeight ? parseFloat(elementStyle.minHeight.substr(0, elementStyle.minHeight.indexOf('px'))) : null;
-    var elementHeight = Math.max(elementMinHeight || 0, parseFloat(elementStyle.height.substr(0, elementStyle.height.indexOf('px'))) || 0);
-    var elementTop = parseFloat(elementStyle.top.substr(0, elementStyle.top.indexOf('px')));
-    var elementLeft = parseFloat(elementStyle.left.substr(0, elementStyle.left.indexOf('px')));
+    var elementMinWidth = elementStyle['min-width'] ? parseFloat(elementStyle['min-width'].substr(0, elementStyle['min-width'].indexOf('px'))) : null;
+    var elementWidth = Math.max(elementMinWidth || 0, parseFloat(elementStyle['width'].substr(0, elementStyle['width'].indexOf('px'))));
+    var elementMinHeight = elementStyle['min-height'] ? parseFloat(elementStyle['min-height'].substr(0, elementStyle['min-height'].indexOf('px'))) : null;
+    var elementHeight = Math.max(elementMinHeight || 0, parseFloat(elementStyle['height'].substr(0, elementStyle['height'].indexOf('px'))) || 0);
+    var elementTop = parseFloat(elementStyle['top'].substr(0, elementStyle['top'].indexOf('px')));
+    var elementLeft = parseFloat(elementStyle['left'].substr(0, elementStyle['left'].indexOf('px')));
     var elementRight = (elementLeft || 0) + elementWidth;
     var elementBottom = (elementTop || 0) + elementHeight;
     // take the smallest top and left and the bigger bottom and rigth
