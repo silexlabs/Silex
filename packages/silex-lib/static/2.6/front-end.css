@@ -125,14 +125,18 @@ a:focus{ outline: none;}
     position: relative;
     top: auto;
     left: auto;
-    max-width: 99.999%;
+    max-width: 94.999%; /* less than 99.999% because of padding */
   }
   body.enable-mobile .container-element {
     display: flex;
     align-items: center;
     justify-content: space-around;
     flex-wrap: wrap;
-    padding: 10px;
+    padding: 5%; /* will fill the max-width */
+  }
+  /* at runtime, only padding is the elements in the body */
+  body.enable-mobile > .editable-style {
+    padding: 5%;
   }
   /* but still hide paged elements or desktop only elements */
   .paged-element-hidden.paged-element.editable-style {
