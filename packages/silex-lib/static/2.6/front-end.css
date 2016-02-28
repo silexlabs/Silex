@@ -134,6 +134,10 @@ a:focus{ outline: none;}
     flex-wrap: wrap;
     padding: 10px;
   }
+  /* but still hide paged elements or desktop only elements */
+  .paged-element-hidden.paged-element.editable-style {
+    display: none;
+  }
   body.enable-mobile .editable-style.hide-on-mobile {
     display: none;
   }
