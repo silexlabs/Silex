@@ -9,10 +9,11 @@
 
 Silex, is a free and open source website builder in the cloud. Create websites directly in the browser without writing code. And it is suitable for professional designers to produce great websites without constraints. Silex is also known as the HTML5 editor.
 
-Brought to you by Silex Labs team, promoting free software. Current version: v2.0.0alpha5.
+Brought to you by Silex Labs team, promoting free software.
 
 Links
 * [Silex official website](http://www.silex.me/)
+* [Documentation wiki](https://github.com/silexlabs/Silex/wiki)
 * [questions and answers, bug report, feature requests](http://www.silexlabs.org/silex/)
 * [Silex license is GPL](http://www.silexlabs.org/silex/silex-licensing/)
 * [Road map](https://github.com/silexlabs/Silex/blob/master/docs/roadmap.md) and [change log](https://github.com/silexlabs/Silex/blob/master/docs/change-log.md)
@@ -51,7 +52,7 @@ Prerequisite :
 * [docker](https://www.docker.com/)
 
 ```
-$ docker run -p 6805:6805 indiehosters/silex
+$ docker run -p 6805:6805 silexlabs/silex
 ```
 
 Open http://localhost:6805/ and you are ready!
@@ -71,10 +72,11 @@ Clone this repository, and do not forget the sub modules (cloud-explorer and uni
 $ git clone --recursive https://github.com/silexlabs/Silex.git
 ```
 
-Install all needed modules
+Install all needed modules and build the assets
 
 ```
 $ npm install
+$ npm run build
 ```
 
 Start the server and then open [http://localhost:6805/](http://localhost:6805/) - note that the port is 6805, which is easy to remember, since it is the date of sexual revolution started in paris france 8-)

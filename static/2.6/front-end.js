@@ -14,6 +14,9 @@ $(function() {
   document.createElement('HEADER');
   document.createElement('VIDEO');
 
+  // store the body selector
+  var bodyEl = $('body');
+
   /**
    * list all pages from the head section
    * and open the 1st one by default
@@ -28,7 +31,7 @@ $(function() {
    * callback for change events
    * called when a page is opened
    */
-  $('body').on('pageChanged', function (event, pageName) {
+  bodyEl.on('pageChanged', function (event, pageName) {
     // mark links to the current page as active
     $('[data-silex-href="#!'+pageName+'"]').addClass('page-link-active');
     $('[id="'+pageName+'"]').addClass('page-link-active');
@@ -46,7 +49,7 @@ $(function() {
   /**
    * init page system
    */
-  $('body').pageable({
+  bodyEl.pageable({
     currentPage: firstPageName,
     useDeeplink:true,
     pageClass: 'paged-element'
@@ -101,14 +104,15 @@ $(function() {
   };
 
   /**
-   * resize body to the size of its content
-   * this is needed since the content has absolute position
-   * so it is not automatic with css
+   * compute the desired size of the body
+   * this will allways be as big as the viewport
+   * and the bounding box (0,0) (width, height) contains all the elements in the body
+   * even if the elements are absolute positioned
+   * @return {width, height}
    */
-  var resizeBody = debounce(function (event){
+  function getBodySize() {
     var width = 0;
     var height = 0;
-    var bodyEl = $('body');
     $('body > *').each(function (index) {
       var el = $(this);
       // take elements visible on the current page
@@ -120,6 +124,22 @@ $(function() {
         if (height < bottom) height = bottom;
       }
     });
+    return {
+      'width': width,
+      'height': height
+    };
+  }
+
+  /**
+   * resize body to the size of its content
+   * this is needed since the content has absolute position
+   * so it is not automatic with css
+   */
+  var initialViewportContent = $('meta[data-silex-viewport]').attr('content');
+  var resizeBody = debounce(function (event){
+    var boundingBox = getBodySize();
+    var width = boundingBox.width;
+    var height = boundingBox.height;
     bodyEl.css({
       "min-width": width + "px",
       "min-height": height + "px"
@@ -133,5 +153,15 @@ $(function() {
   $(window).resize(resizeBody);
 
   // resize on page change (size will vary)
-  $('body').on('pageChanged', resizeBody);
+  bodyEl.on('pageChanged', resizeBody);
+
+  // only outside silex editor when the window is small enough
+  // change viewport to enable mobile view scale mode
+  // for "pixel perfect" mobile version
+  if(bodyEl.hasClass('silex-runtime')) {
+    var winWidth = $(window).width();
+    if(winWidth < 960) {
+      $('meta[data-silex-viewport]').attr('content', 'width=479, user-scalable=no, maximum-scale=5');
+    }
+  }
 });

@@ -117,25 +117,33 @@ a:focus{ outline: none;}
   body.enable-mobile {
     min-width: initial !important;
     min-height: 100%;
-    position: absolute; /* for min-height to apply */
+    max-width: 99.999%;
   }
   body.enable-mobile .editable-style,
-  body.enable-mobile .background.background-initial,
-  body.enable-mobile {
+  body.enable-mobile .background.background-initial {
     position: relative;
     top: auto;
     left: auto;
-    max-width: 99.999%;
+    max-width: 94.999%; /* less than 99.999% in the editor to be able to resize container */
+    margin-left: auto;
+    margin-right: auto;
   }
   body.enable-mobile .container-element {
     display: flex;
     align-items: center;
     justify-content: space-around;
     flex-wrap: wrap;
-    padding: 10px;
+  }
+  /* but still hide paged elements or desktop only elements */
+  .paged-element-hidden.paged-element.editable-style {
+    display: none;
   }
   body.enable-mobile .editable-style.hide-on-mobile {
     display: none;
+  }
+  body.silex-runtime.enable-mobile .editable-style,
+  body.silex-runtime.enable-mobile .background.background-initial {
+    max-width: 99.999%;
   }
 }
 
