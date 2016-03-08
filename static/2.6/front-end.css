@@ -117,26 +117,22 @@ a:focus{ outline: none;}
   body.enable-mobile {
     min-width: initial !important;
     min-height: 100%;
-    position: absolute; /* for min-height to apply */
+    max-width: 99.999%;
   }
   body.enable-mobile .editable-style,
-  body.enable-mobile .background.background-initial,
-  body.enable-mobile {
+  body.enable-mobile .background.background-initial {
     position: relative;
     top: auto;
     left: auto;
-    max-width: 94.999%; /* less than 99.999% because of padding */
+    max-width: 94.999%; /* less than 99.999% in the editor to be able to resize container */
+    margin-left: auto;
+    margin-right: auto;
   }
   body.enable-mobile .container-element {
     display: flex;
     align-items: center;
     justify-content: space-around;
     flex-wrap: wrap;
-    padding: 5%; /* will fill the max-width */
-  }
-  /* at runtime, only padding is the elements in the body */
-  body.enable-mobile > .editable-style {
-    padding: 5%;
   }
   /* but still hide paged elements or desktop only elements */
   .paged-element-hidden.paged-element.editable-style {
@@ -144,6 +140,10 @@ a:focus{ outline: none;}
   }
   body.enable-mobile .editable-style.hide-on-mobile {
     display: none;
+  }
+  body.silex-runtime.enable-mobile .editable-style,
+  body.silex-runtime.enable-mobile .background.background-initial {
+    max-width: 99.999%;
   }
 }
 
