@@ -72,7 +72,7 @@ app.use('/', session({
  */
 function onCatchError(err) {
   console.log('---------------------');
-  console.error('---------------------', 'Caught exception: ', err, '---------------------');
+  console.error('---------------------', 'Caught exception: ', err, err.stack, '---------------------');
   console.log('---------------------');
 }
 if(process.env.SILEX_DEBUG) {
