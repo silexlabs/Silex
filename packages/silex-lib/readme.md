@@ -8,6 +8,8 @@
 
 Silex, is a free and open source website builder in the cloud. Create websites directly in the browser without writing code. And it is suitable for professional designers to produce great websites without constraints. Silex is also known as the HTML5 editor.
 
+![Silex UI](https://github.com/silexlabs/www.silex.me/raw/gh-pages/assets/silex-ui.gif)
+
 Brought to you by Silex Labs team, promoting free software.
 
 Links
