@@ -608,16 +608,16 @@ silex.view.Stage.prototype.updateScroll = function(x, y) {
     let iframeSize = goog.style.getSize(this.element);
     let scrollX = this.getScrollX();
     let scrollY = this.getScrollY();
-    if (x < 30) {
+    if (x < 100) {
       this.setScrollX(scrollX - 25);
     }
-    else if (x > iframeSize.width - 30) {
+    else if (x > iframeSize.width - 100) {
       this.setScrollX(scrollX + 25);
     }
-    if (y < 30) {
+    if (y < 100) {
       this.setScrollY(scrollY - 25);
     }
-    else if (y > iframeSize.height - 30) {
+    else if (y > iframeSize.height - 100) {
       this.setScrollY(scrollY + 25);
     }
   });
@@ -679,6 +679,9 @@ silex.view.Stage.prototype.multipleDragged = function(x, y, shiftKey) {
   this.lastPosY = y;
   this.lastScrollLeft = scrollX;
   this.lastScrollTop = scrollY;
+
+  // update body size with the front-end.js API
+  // this.contentWindow['resizeBody']();
 };
 
 
