@@ -51,6 +51,7 @@ silex.view.BreadCrumbs = function(element, model, controller) {
 
 };
 
+silex.view.BreadCrumbs.EDITABLE_STYLE_HOVER_CLASS = 'editable-style-hover';
 
 /**
  * to be consistent with views
@@ -119,8 +120,8 @@ silex.view.BreadCrumbs.prototype.addCrumb = function(ancestor) {
   this.element.appendChild(crumb);
   crumb.onclick = () => this.controller.stageController.select(ancestor);
   if(ancestor.tagName.toUpperCase() !== 'BODY') {
-      crumb.onmouseover = () => ancestor.classList.add('editable-style-hover');
-      crumb.onmouseout = () => ancestor.classList.remove('editable-style-hover');
+      crumb.onmouseover = () => ancestor.classList.add(silex.view.BreadCrumbs.EDITABLE_STYLE_HOVER_CLASS);
+      crumb.onmouseout = () => ancestor.classList.remove(silex.view.BreadCrumbs.EDITABLE_STYLE_HOVER_CLASS);
   }
 
 };

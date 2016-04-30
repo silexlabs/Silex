@@ -22,6 +22,7 @@ goog.require('goog.style');
 goog.require('silex.model.Body');
 goog.require('silex.model.Element');
 goog.require('silex.model.Page');
+goog.require('silex.model.Head');
 
 
 /**
@@ -45,6 +46,7 @@ silex.utils.Style.SILEX_CLASS_NAMES = [
   silex.model.Page.PAGE_LINK_ACTIVE_CLASS_NAME,
   silex.model.Element.SELECTED_CLASS_NAME,
   silex.model.Element.JUST_ADDED_CLASS_NAME,
+  silex.view.BreadCrumbs.EDITABLE_STYLE_HOVER_CLASS,
   silex.model.Element.TYPE_CONTAINER + '-element',
   silex.model.Element.TYPE_IMAGE + '-element',
   silex.model.Element.TYPE_TEXT + '-element',
@@ -63,7 +65,8 @@ silex.utils.Style.SILEX_TEMP_CLASS_NAMES = [
   silex.model.Page.PAGED_VISIBLE_CLASS_NAME,
   silex.model.Page.PAGEABLE_PLUGIN_READY_CLASS_NAME,
   silex.model.Element.SELECTED_CLASS_NAME,
-  silex.model.Element.JUST_ADDED_CLASS_NAME
+  silex.model.Element.JUST_ADDED_CLASS_NAME,
+  silex.view.BreadCrumbs.EDITABLE_STYLE_HOVER_CLASS
 ];
 
 
