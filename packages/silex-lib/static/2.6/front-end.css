@@ -4,11 +4,13 @@
 
 /* the body covers the whole available space */
 /* the body is resized to its content size when needed in front-end.js */
-body{
+body {
   width: 100%;
   height: 100%;
   position: absolute;
-  padding: 5px;
+  padding-top: 5px;
+  padding-left: 0;
+  padding-right: 0;
 }
 /* pages */
 .page-element{
@@ -117,14 +119,14 @@ a:focus{ outline: none;}
   body.enable-mobile {
     min-width: initial !important;
     min-height: 100%;
-    max-width: 99.999%;
+    max-width: 100%;
   }
   body.enable-mobile .editable-style,
   body.enable-mobile .background.background-initial {
     position: relative;
     top: auto;
     left: auto;
-    max-width: 94.999%; /* less than 99.999% in the editor to be able to resize container */
+    max-width: 95%; /* less than 100% in the editor to be able to resize container */
     margin-left: auto;
     margin-right: auto;
   }
@@ -143,7 +145,7 @@ a:focus{ outline: none;}
   }
   body.silex-runtime.enable-mobile .editable-style,
   body.silex-runtime.enable-mobile .background.background-initial {
-    max-width: 99.999%;
+    max-width: 100%;
   }
 }
 

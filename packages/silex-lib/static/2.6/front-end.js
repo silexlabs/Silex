@@ -130,12 +130,13 @@ $(function() {
     };
   }
 
+  var initialViewportContent = $('meta[data-silex-viewport]').attr('content');
+  var win = $(window);
   /**
    * resize body to the size of its content
    * this is needed since the content has absolute position
    * so it is not automatic with css
    */
-  var initialViewportContent = $('meta[data-silex-viewport]').attr('content');
   var resizeBody = debounce(function (event){
     var boundingBox = getBodySize();
     var width = boundingBox.width;
@@ -144,24 +145,39 @@ $(function() {
       "min-width": width + "px",
       "min-height": height + "px"
     });
+    // handle the scroll bar manually
+    // prevent the scroll bar to appear when we are only a few pixels short
+    // this allows us to set width to 100% instead of 99%
+    // this will only take place on mobile with winWidth < 480 (not needed on desktop apparently)
+    var winWidth = win.width();
+    if(bodyEl.hasClass('silex-runtime') && winWidth < 480) {
+      if(width < winWidth + 10)
+        bodyEl.css('overflow-x', 'hidden');
+      else
+        bodyEl.css('overflow-x', 'auto');
+    }
   }, 500);
+
+  // only outside silex editor when the window is small enough
+  // change viewport to enable mobile view scale mode
+  // for "pixel perfect" mobile version
+  // bellow 960, the window width will be seen as 480
+  if(bodyEl.hasClass('silex-runtime')) {
+    var winWidth = win.width();
+    if(winWidth < 960) {
+      $('meta[data-silex-viewport]').attr('content', 'width=479, user-scalable=no, maximum-scale=5');
+    }
+  }
 
   // resize body at start
   resizeBody();
 
   // resize body on window resize
-  $(window).resize(resizeBody);
+  win.resize(resizeBody);
 
   // resize on page change (size will vary)
   bodyEl.on('pageChanged', resizeBody);
 
-  // only outside silex editor when the window is small enough
-  // change viewport to enable mobile view scale mode
-  // for "pixel perfect" mobile version
-  if(bodyEl.hasClass('silex-runtime')) {
-    var winWidth = $(window).width();
-    if(winWidth < 960) {
-      $('meta[data-silex-viewport]').attr('content', 'width=479, user-scalable=no, maximum-scale=5');
-    }
-  }
+  // expose for use by the widgets and Silex editor
+  window.resizeBody = resizeBody;
 });
