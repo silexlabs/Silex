@@ -213,6 +213,7 @@ silex.model.Head.prototype.getHeadStyle = function() {
     console.warn('no silex editable styles defined');
     return '';
   }
+  console.info('editable styles:', silexStyle.innerHTML, this.model.element.unprepareHtmlForEdit(silexStyle.innerHTML));
   return this.model.element.unprepareHtmlForEdit(silexStyle.innerHTML);
 };
 
