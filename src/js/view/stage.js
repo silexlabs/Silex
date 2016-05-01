@@ -350,6 +350,11 @@ silex.view.Stage.prototype.handleKey = function(event) {
       this.followElementPosition(this.selectedElements, offsetX, offsetY);
       // notify the controller
       this.propertyChanged();
+      // reset elements properties as they are stored in the CSS by the model
+      this.selectedElements.forEach((element) => {
+        element.style.top = '';
+        element.style.left = '';
+      });
       // prevent default behavior for this key
       event.preventDefault();
     }
