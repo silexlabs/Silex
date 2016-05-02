@@ -230,7 +230,8 @@ silex.utils.Url.relative2Absolute = function(htmlString, baseUrl) {
  */
 silex.utils.Url.getRelativePath = function(url, base) {
   // check if they are both absolute urls
-  if (silex.utils.Url.isAbsoluteUrl(base) === false || silex.utils.Url.isAbsoluteUrl(url) === false) {
+  if (silex.utils.Url.isAbsoluteUrl(base) === false || silex.utils.Url.isAbsoluteUrl(url) === false ||
+    url.indexOf('data:') === 0) {
     return url;
   }
   base = silex.utils.Url.workaroundCE(base);
@@ -282,8 +283,8 @@ silex.utils.Url.getRelativePath = function(url, base) {
  * @return {string} absolute url of the relative path
  */
 silex.utils.Url.getAbsolutePath = function(rel, base) {
-  if (rel.indexOf('#') === 0 || rel.indexOf('//') === 0) {
-    // do not convert to absolute the anchors or protocol agnostic urls
+  if (rel.indexOf('#') === 0 || rel.indexOf('//') === 0 || rel.indexOf('data:') === 0) {
+    // do not convert to absolute the anchors or protocol agnostic urls nor data: images
     return rel;
   }
   base = silex.utils.Url.workaroundCE(base);
