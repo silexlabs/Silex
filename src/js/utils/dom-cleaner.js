@@ -330,6 +330,10 @@ silex.utils.DomCleaner.isDownloadable = function(url) {
   if (url.indexOf('?') >= 0 || url.indexOf('&') >= 0) {
     return false;
   }
+  // do not download data:* images
+  if (url.indexOf('data:') === 0) {
+    return false;
+  }
   // download relative paths
   if (!silex.utils.Url.isAbsoluteUrl(url)) {
     return true;
