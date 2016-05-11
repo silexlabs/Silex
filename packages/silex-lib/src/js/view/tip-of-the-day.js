@@ -89,7 +89,6 @@ silex.view.TipOfTheDay.prototype.init = function()
       let tmp = document.createElement('div');
       tmp.innerHTML = item['body'];
       let firstLink = tmp.querySelector('a');
-      console.log('firstLink', firstLink, tmp);
       // display the content
       let el = document.createElement('a');
       el.target='_blank';
