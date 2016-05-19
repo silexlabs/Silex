@@ -144,7 +144,8 @@ silex.utils.BackwardCompat.hasToUpdate = function(initialVersion, targetVersion)
  */
 silex.utils.BackwardCompat.to2_2_6 = function(version, doc, model, cbk) {
 
-  if (silex.utils.BackwardCompat.hasToUpdate(version, [2, 2, 6])) {
+//  if (silex.utils.BackwardCompat.hasToUpdate(version, [2, 2, 6]))
+{
     // container for page anchors, this will also be the menu when switching to mobile version
     var pagesContainer = doc.querySelector('.' + silex.model.Page.PAGES_CONTAINER_CLASS_NAME);
     if (!pagesContainer) {
@@ -154,12 +155,16 @@ silex.utils.BackwardCompat.to2_2_6 = function(version, doc, model, cbk) {
     }
     var button = doc.querySelector('.menu-button');
     if (!button) {
+      let div = doc.createElement('div');
+      div.setAttribute('data-silex-type', 'image');
+      div.setAttribute('data-silex-id', 'silex-id-hamburger-menu');
+      div.className = 'menu-button editable-style silex-id-hamburger-menu image-element page-page-1 paged-element prevent-draggable prevent-resizable';
+      let img = doc.createElement('img');
+      img.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAoCAYAAAC8cqlMAAAB5UlEQVR42u2ZPWvCUBSGM+UfFO3e3dLu/QN+oKj4EUXRQREEJYgoiCAu6qCogyDo7iJ21UUaKqEgCC4iiEMGB3UVgsnpTWj/wfVK2nvhGbKEPJyT996TMMzPGg6H5mKx+GgkyuWyeTQasb8OTDwef4tEIp8+n+/LYIjJZJJHQiwzm81M6OLDarWqNpsNjEYgEJCy2ewT0+/3TagighElNFAnQT6ft1ARKkJFqMgfFvF4PFpuEwFtdrcRqVarIIoirFYrIiyXSxiPx+B2u/GJBINBuF6vQHopigK1Wg2fCMdxcLlciIuoqgqNRgOfiN1uB3Qwg91uB8fjkQiHwwEmkwne1qLxS0VuKKJle71eh06nQ4Rmswk8z+MVcTqdsNlsQJZlotF7Pp8hk8ngE4lGo/qN7xG/vV4Pb0Xm8zlxkdPpBGgMx/+yJxIJKBQKRMjlcuBwOGhq/Q+RcDgMsViMCFrAuFwu/CKDwQC22y1IkkSE/X4PgiDo+xc2Ea0S9zjGa/Hb7Xbxifj9fj0K7yFSqVTwtlY6nYbpdKpPiSRYLBbQarX0PYymFhWhIlSEilCRW6GdyUqlkoVZr9dsKpXiOY6TtW+7BkNBz/7ebrcf9L+6Xq+XRYPMMyrTq5EIhUIvaAjTJb4BBNQ2yhnth0wAAAAASUVORK5CYII=';
+      img.className = 'silex-element-content';
       // add the button
-      button = doc.createElement('img');
-      button.src = '/static/2.6/hamburger.png';
-      button.setAttribute('data-silex-static', '');
-      button.classList.add('menu-button');
-      pagesContainer.appendChild(button);
+      div.appendChild(img);
+      pagesContainer.appendChild(div);
     }
     // move all page anchors to the new container
     var pages = doc.querySelectorAll('.' + silex.model.Page.PAGE_CLASS_NAME);
