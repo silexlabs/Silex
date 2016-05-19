@@ -71,10 +71,8 @@ $(function() {
   /**
    * mobile menu
    */
-  $('.silex-pages').each(function() {
-    $('.menu-button', this).click(function () {
-      $(document.body).toggleClass('show-mobile-menu');
-    });
+  $('.silex-runtime .silex-pages .menu-button').click(function () {
+    $(document.body).toggleClass('show-mobile-menu');
   });
   $('.silex-runtime .silex-pages .page-element').click(function(e) {
     window.location.hash = '#!' + this.id;
