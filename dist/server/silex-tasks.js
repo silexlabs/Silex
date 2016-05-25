@@ -219,7 +219,7 @@ exports.sendImage = function(cbk, req, res, next, path, url){
       // cbk({success: false, code: error.code});
     }
     // do not send JSON, the end user will see the result
-    fs.readFile(pathModule.resolve(__dirname, '../client/libs/pixlr/close.html'), function (err, data) {
+    fs.readFile(pathModule.resolve(__dirname, '../client/libs/pixlr/close.html'), 'utf-8', function (err, data) {
       // FIXME: handle err?
       if (!err) {
         cbk(data.toString());
@@ -287,7 +287,7 @@ exports.getTempLink = function(cbk, req, res, next, path){
       });
     }
     else if (responseFilePath){
-      fs.readFile(responseFilePath, function (err, data) {
+      fs.readFile(responseFilePath, 'utf-8', function (err, data) {
         if (err) {
           cbk(err);
         }
@@ -366,7 +366,7 @@ exports.getFileFromService = function(req, res, next, srcPath, dstPath, cbk){
     exports.writeFileToService(req, res, next, dstPath, data, cbk);
     }
     else if (responseFilePath){
-      fs.readFile(responseFilePath, function (err, responseData) {
+      fs.readFile(responseFilePath, 'utf-8', function (err, responseData) {
         if (err) {
           cbk(err);
         }
