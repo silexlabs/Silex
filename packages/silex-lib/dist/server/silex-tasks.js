@@ -363,10 +363,10 @@ exports.getFileFromUrl = function(req, res, next, srcPath, dstPath, cbk){
 exports.getFileFromService = function(req, res, next, srcPath, dstPath, cbk){
   exports.unifileRoute(req, res, next, srcPath, function (response, status, data, mime_type, responseFilePath) {
     if (data){
-    exports.writeFileToService(req, res, next, dstPath, data, cbk);
+      exports.writeFileToService(req, res, next, dstPath, data, cbk);
     }
     else if (responseFilePath){
-      fs.readFile(responseFilePath, 'utf-8', function (err, responseData) {
+      fs.readFile(responseFilePath, function (err, responseData) {
         if (err) {
           cbk(err);
         }
@@ -393,6 +393,14 @@ exports.writeFileToService = function(req, res, next, url, data, cbk){
     cbk();
   }
   else {
+    if(url.indexOf('jpg') > 0) {
+      fs.writeFile(__dirname + "/../../test.jpg", data, 'utf8', function (err) {
+      });
+    }
+    else if(url.indexOf('png') > 0) {
+      fs.writeFile(__dirname + "/../../test.png", data, 'utf8', function (err) {
+      });
+    }
     req.body.data = data;
     exports.unifileRoute(req, res, next, url, function(response, status, responseData, mime_type, responseFilePath) {
       if (status.success){
