@@ -1,6 +1,7 @@
 /* leave space around the main container */
 body{
   padding-bottom: 100px;
+/*  transition: min-width .5s, min-height .5s; */
 }
 .loading-image {
   background-image: url(../../assets/image-loader.gif);
