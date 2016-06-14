@@ -276,6 +276,7 @@ silex.view.dialog.TextEditor.prototype.setElementClassNames =
   htmlElement.style.overflowX = 'hidden';
   htmlElement.style.overflowY = 'scroll';
   iframeDoc.body.style.height = 'auto';
+  iframeDoc.body.style.position = 'initial';
 };
 
 
