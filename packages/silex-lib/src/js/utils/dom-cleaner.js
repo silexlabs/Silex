@@ -87,6 +87,12 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
     goog.dom.removeNode(metaNode);
   }
 
+  // remove JSON styles
+  let jsonStyleContainer = contentDocument.querySelector(`.${silex.model.Property.JSON_STYLE_TAG_CLASS_NAME}`);
+  if (jsonStyleContainer) {
+    goog.dom.removeNode(jsonStyleContainer);
+  }
+
   // final js script to store in js/script.js
   var jsString = '';
   var scriptTag = goog.dom.getElementByClass(
