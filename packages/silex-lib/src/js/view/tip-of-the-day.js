@@ -85,10 +85,23 @@ silex.view.TipOfTheDay.prototype.init = function()
       // store for actions tracking (QA)
       itemTrackAction = item['title'];
       silex.service.Tracker.getInstance().trackAction('tip-of-the-day', 'show', itemTrackAction, 0);
+      // extract the first link from the issue
+      let tmp = document.createElement('div');
+      tmp.innerHTML = item['body'];
+      let firstLink = tmp.querySelector('a');
       // display the content
-      let el = document.createElement('div');
-      el.innerHTML = '<a target="_blank" title="' + item['title'] + '" href="' + item['html_url'] + '"><h1>' + item['title'] + '</h1><p>' + this.strip(item['body']) + '</p></a><a class="close" href="#">Close</a>';
+      let el = document.createElement('a');
+      el.target='_blank';
+      el.title= item['title'];
+      el.innerHTML = '<h1>' + item['title'] + '</h1><p>' + this.strip(item['body']) + '</p>';
+      if(firstLink != null) el.href = firstLink.href;
       this.element.appendChild(el);
+      // close button
+      let a = document.createElement('a');
+      a.className = 'close';
+      a.textContent = 'Close';
+      this.element.appendChild(a);
+      // show the tooltip
       this.element.classList.remove('loading');
       this.element.classList.remove('hidden-dialog');
       // add a timeout
