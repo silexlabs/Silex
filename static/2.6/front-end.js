@@ -71,10 +71,8 @@ $(function() {
   /**
    * mobile menu
    */
-  $('.silex-pages').each(function() {
-    $('.menu-button', this).click(function () {
-      $(document.body).toggleClass('show-mobile-menu');
-    });
+  $('.silex-runtime .silex-pages .menu-button').click(function () {
+    $(document.body).toggleClass('show-mobile-menu');
   });
   $('.silex-runtime .silex-pages .page-element').click(function(e) {
     window.location.hash = '#!' + this.id;
@@ -83,23 +81,18 @@ $(function() {
   });
 
   /**
-   * Returns a function, that, as long as it continues to be invoked, will not
-   * be triggered. The function will be called after it stops being called for
-   * N milliseconds. If `immediate` is passed, trigger the function on the
-   * leading edge, instead of the trailing.
+   * returns a function that will not be called more than every `wait` seconds
    */
-  function debounce(func, wait, immediate) {
+  function debounce(func, wait) {
     var timeout;
     return function() {
       var context = this, args = arguments;
       var later = function() {
+        clearTimeout(timeout);
         timeout = null;
-        if (!immediate) func.apply(context, args);
+        func.apply(context, args);
       };
-      var callNow = immediate && !timeout;
-      clearTimeout(timeout);
-      timeout = setTimeout(later, wait);
-      if (callNow) func.apply(context, args);
+      if(!timeout) timeout = setTimeout(later, wait);
     };
   };
 
@@ -141,21 +134,27 @@ $(function() {
     var boundingBox = getBodySize();
     var width = boundingBox.width;
     var height = boundingBox.height;
-    bodyEl.css({
-      "min-width": width + "px",
-      "min-height": height + "px"
-    });
-    // handle the scroll bar manually
-    // prevent the scroll bar to appear when we are only a few pixels short
-    // this allows us to set width to 100% instead of 99%
-    // this will only take place on mobile with winWidth < 480 (not needed on desktop apparently)
-    var winWidth = win.width();
-    if(bodyEl.hasClass('silex-runtime') && winWidth < 480) {
-      if(width < winWidth + 10)
+    // behavior which is not the same in Silex editor and outside the editor
+    if(bodyEl.hasClass('silex-runtime')) {
+      var winWidth = win.width();
+      // handle the scroll bar manually
+      // prevent the scroll bar to appear when we are only a few pixels short
+      // this allows us to set width to 100% instead of 99%
+      // this will only take place on mobile with winWidth < 480 (not needed on desktop apparently)
+      if(width < winWidth + 10 && winWidth < 480)
         bodyEl.css('overflow-x', 'hidden');
       else
         bodyEl.css('overflow-x', 'auto');
     }
+    else {
+      // add space around the elements in the body
+      width += 50;
+      height += 50;
+    }
+    bodyEl.css({
+      "min-width": width + "px",
+      "min-height": height + "px"
+    });
   }, 500);
 
   // only outside silex editor when the window is small enough

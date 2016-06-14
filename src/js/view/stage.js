@@ -55,7 +55,7 @@ silex.view.Stage = function(element, model, controller) {
    * invalidation mechanism
    * @type {InvalidationManager}
    */
-  this.invalidationManagerScroll = new InvalidationManager(500);
+  this.invalidationManagerScroll = new InvalidationManager(100);
 
 
   /**
@@ -130,6 +130,7 @@ silex.view.Stage.prototype.isDragging = false;
  * flag to store the state
  */
 silex.view.Stage.prototype.isDown = false;
+silex.view.Stage.prototype.pendingMM = 0;
 
 
 /**
@@ -350,6 +351,11 @@ silex.view.Stage.prototype.handleKey = function(event) {
       this.followElementPosition(this.selectedElements, offsetX, offsetY);
       // notify the controller
       this.propertyChanged();
+      // reset elements properties as they are stored in the CSS by the model
+      this.selectedElements.forEach((element) => {
+        element.style.top = '';
+        element.style.left = '';
+      });
       // prevent default behavior for this key
       event.preventDefault();
     }
@@ -504,11 +510,23 @@ silex.view.Stage.prototype.onMouseMove = function(target, x, y, shiftKey) {
       }
     }
 
-    // update multiple selection according the the dragged element
-    this.multipleDragged(x, y, shiftKey);
+    var pendingMM = ++this.pendingMM;
+    function doMM(me) {
+      if(me.pendingMM === pendingMM && (me.isDragging || me.isResizing)) {
+        // update multiple selection according the the dragged element
+        me.multipleDragged(x, y, shiftKey);
 
-    // update scroll when mouse is near the border
-    this.updateScroll(x, y);
+        // update scroll when mouse is near the border
+        me.updateScroll(x, y);
+      
+        // update body size with the front-end.js API
+        me.contentWindow['resizeBody']();
+
+        // loop while the mouse has not moved
+        requestAnimationFrame(() => doMM(me));
+      }
+    }
+    doMM(this);
   }
 };
 
@@ -609,16 +627,16 @@ silex.view.Stage.prototype.updateScroll = function(x, y) {
     let scrollX = this.getScrollX();
     let scrollY = this.getScrollY();
     if (x < 100) {
-      this.setScrollX(scrollX - 25);
+      this.setScrollX(scrollX - 100);
     }
     else if (x > iframeSize.width - 100) {
-      this.setScrollX(scrollX + 25);
+      this.setScrollX(scrollX + 100);
     }
     if (y < 100) {
-      this.setScrollY(scrollY - 25);
+      this.setScrollY(scrollY - 100);
     }
     else if (y > iframeSize.height - 100) {
-      this.setScrollY(scrollY + 25);
+      this.setScrollY(scrollY + 100);
     }
   });
 };
@@ -679,9 +697,6 @@ silex.view.Stage.prototype.multipleDragged = function(x, y, shiftKey) {
   this.lastPosY = y;
   this.lastScrollLeft = scrollX;
   this.lastScrollTop = scrollY;
-
-  // update body size with the front-end.js API
-  // this.contentWindow['resizeBody']();
 };
 
 
@@ -782,13 +797,13 @@ silex.view.Stage.prototype.followElementSize =
         offsetSizeX = -offsetSizeX;
         break;
       }
-      // handle .background element which is forced centered
-      if(goog.dom.classlist.contains(follower, 'background')) {
+      var size = goog.style.getSize(follower);
+      var borderBox = goog.style.getBorderBox(follower);
+      // handle .background element which is forced centered (only when the background is smaller than the body)
+      if(goog.dom.classlist.contains(follower, 'background') && size.width < this.bodyElement.offsetWidth - 50) {
         offsetSizeX *= 2;
       }
       // compute new size
-      var size = goog.style.getSize(follower);
-      var borderBox = goog.style.getBorderBox(follower);
       var newSizeW = size.width + offsetSizeX - borderBox.left - borderBox.right;
       var newSizeH = size.height + offsetSizeY - borderBox.top - borderBox.bottom;
       // handle min size

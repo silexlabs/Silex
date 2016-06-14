@@ -87,6 +87,12 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
     goog.dom.removeNode(metaNode);
   }
 
+  // remove JSON styles
+  let jsonStyleContainer = contentDocument.querySelector(`.${silex.model.Property.JSON_STYLE_TAG_CLASS_NAME}`);
+  if (jsonStyleContainer) {
+    goog.dom.removeNode(jsonStyleContainer);
+  }
+
   // final js script to store in js/script.js
   var jsString = '';
   var scriptTag = goog.dom.getElementByClass(
@@ -328,6 +334,10 @@ silex.utils.DomCleaner.filterBgImage = function(baseUrl, files, match, group1, g
 silex.utils.DomCleaner.isDownloadable = function(url) {
   // do not download files with ? or & since it is probably dynamic
   if (url.indexOf('?') >= 0 || url.indexOf('&') >= 0) {
+    return false;
+  }
+  // do not download data:* images
+  if (url.indexOf('data:') === 0) {
     return false;
   }
   // download relative paths
