@@ -1,8 +1,7 @@
 [![Build Status](https://circleci.com/gh/silexlabs/Silex.svg?style=svg)](https://circleci.com/gh/silexlabs/Silex)
 [![Code Climate](https://codeclimate.com/github/silexlabs/Silex/badges/gpa.svg)](https://codeclimate.com/github/silexlabs/Silex)
-[![Inline docs](http://inch-ci.org/github/silexlabs/Silex.svg?branch=master)](http://inch-ci.org/github/silexlabs/Silex)
-[![Dependency Status](https://gemnasium.com/silexlabs/Silex.png)](https://gemnasium.com/silexlabs/Silex)
 [![Bountysource](https://www.bountysource.com/badge/tracker?tracker_id=672465)](https://www.bountysource.com/trackers/672465-silex?utm_source=672465&utm_medium=shield&utm_campaign=TRACKER_BADGE)
+[![license: GPL](https://img.shields.io/badge/license-GPL-green.svg)](http://www.silexlabs.org/silex/silex-licensing/)
 
 ##About Silex, live web creation.
 
