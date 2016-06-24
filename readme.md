@@ -1,7 +1,8 @@
+[![license: GPL](https://img.shields.io/badge/license-GPL-green.svg)](http://www.silexlabs.org/silex/silex-licensing/)
 [![Build Status](https://circleci.com/gh/silexlabs/Silex.svg?style=svg)](https://circleci.com/gh/silexlabs/Silex)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/58008bcbc53941cb8db1081aa6e5dd02)](https://www.codacy.com/app/a-hoyau/Silex?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=silexlabs/Silex&amp;utm_campaign=Badge_Grade)
 [![Code Climate](https://codeclimate.com/github/silexlabs/Silex/badges/gpa.svg)](https://codeclimate.com/github/silexlabs/Silex)
 [![Bountysource](https://www.bountysource.com/badge/tracker?tracker_id=672465)](https://www.bountysource.com/trackers/672465-silex?utm_source=672465&utm_medium=shield&utm_campaign=TRACKER_BADGE)
-[![license: GPL](https://img.shields.io/badge/license-GPL-green.svg)](http://www.silexlabs.org/silex/silex-licensing/)
 
 ##About Silex, live web creation.
 
@@ -36,9 +37,11 @@ If you plan to host Silex for your clients, your users or the community, this se
 
 If you feel like helping and host an instance of Silex as an alternative to the official Silex site http://editor.silex.me/ please let us know so that we can advertise it to the community.
 
-You will need a nodejs server, which you can setup yourself or host at [heroku](https://www.heroku.com/) or [Gandi](https://www.gandi.net/) for example (may be free of charge for small traffic, even with your own domain name).
+You will need a nodejs server, which you can setup yourself or host at [Gandi](https://www.gandi.net/) or [IndieHosters](https://indiehosters.net/shop/product/silex-23) for example.
 
 Download the zip file on github or clone this repository, and then follow the same steps as the developers when they install silex locally on linux - starting at npm install. See instructions bellow.
+
+For the lazy ones, there is the [Heroku One-Click Deploy](https://heroku.com/deploy): [![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy?template=https://github.com/silexlabs/Silex/tree/master)
 
 ##Installation on your local computer
 
