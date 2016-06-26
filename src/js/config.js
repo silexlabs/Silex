@@ -271,21 +271,6 @@ silex.Config.menu = {
         tooltip: '↵'
       },
       {
-        label: 'Edit image with Express',
-        id: 'tools.pixlr.express',
-        className: 'menu-item-tools-pixllr.express',
-        shortcut: [[goog.events.KeyCodes.ENTER, altKeyModifyer + goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT]],
-        tooltip: altKeyDisplay + '⇧ ↵'
-      },
-      {
-        label: 'Edit image with Pixlr',
-        id: 'tools.pixlr.edit',
-        className: 'menu-item-tools-pixllr.edit',
-        shortcut: [[goog.events.KeyCodes.ENTER, altKeyModifyer]],
-        tooltip: altKeyDisplay + '↵'
-      },
-      null,
-      {
         label: 'Bring to front',
         id: 'edit.move.to.top',
         className: 'menu-item-edit-move-to-top',
