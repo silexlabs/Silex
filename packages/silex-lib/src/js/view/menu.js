@@ -345,12 +345,12 @@ silex.view.Menu.prototype.onMenuEvent = function(type) {
     case 'help.contributors':
       window.open(silex.Config.CONTRIBUTORS);
       break;
-    case 'tools.pixlr.express':
-      this.controller.toolMenuController.pixlrExpress();
-      break;
-    case 'tools.pixlr.edit':
-      this.controller.toolMenuController.pixlrEdit();
-      break;
+    // case 'tools.pixlr.express':
+    //   this.controller.toolMenuController.pixlrExpress();
+    //   break;
+    // case 'tools.pixlr.edit':
+    //   this.controller.toolMenuController.pixlrEdit();
+    //   break;
     default:
       console.warn('menu type not found', type);
   }

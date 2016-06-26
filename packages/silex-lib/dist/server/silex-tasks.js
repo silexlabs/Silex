@@ -43,7 +43,7 @@ exports.route = function(cbk, req, res, next, task){
       });
     break;
     case 'sendImage':
-      exports.sendImage(cbk, req, res, next, req.query.path, req.query.image);
+      // exports.sendImage(cbk, req, res, next, req.query.path, req.query.image);
     break;
     case 'getTempLink':
       exports.getTempLink(cbk, req, res, next, req.query.path);
@@ -197,41 +197,41 @@ exports.publishFiles = function(req, res, next, files, dstPath, cbk){
 /**
  * the public method called to store an image from pixlr
  */
-exports.sendImage = function(cbk, req, res, next, path, url){
-  // check inputs
-  if (cbk === undefined || req === undefined || res === undefined || next === undefined || path === undefined || url === undefined){
-    console.error('All attributes needed when calling sendImage', path, url);
-    // FIXME: do not send JSON, the end user will see the result
-    cbk({
-      success: false,
-      code: 400,
-      message: 'All attributes needed when calling sendImage'
-    });
-    return;
-  }
-  // load the image and save it to the desired service
-  exports.getFile(req, res, next, url, path, function (error) {
-    // no, makes the headers to be sent and crashes everything
-    // res.redirect('/libs/pixlr/close.html');
-    if (error){
-      console.error('Error in getFile', error, url, path);
-      // do not send JSON, the end user will see the result
-      // cbk({success: false, code: error.code});
-    }
-    // do not send JSON, the end user will see the result
-    fs.readFile(pathModule.resolve(__dirname, '../client/libs/pixlr/close.html'), 'utf-8', function (err, data) {
-      // FIXME: handle err?
-      if (!err) {
-        cbk(data.toString());
-      }
-      else {
-        console.error('Error: could not read the template close.html');
-        cbk('Error: could not read the template close.html');
-      }
-    });
+// exports.sendImage = function(cbk, req, res, next, path, url){
+//   // check inputs
+//   if (cbk === undefined || req === undefined || res === undefined || next === undefined || path === undefined || url === undefined){
+//     console.error('All attributes needed when calling sendImage', path, url);
+//     // FIXME: do not send JSON, the end user will see the result
+//     cbk({
+//       success: false,
+//       code: 400,
+//       message: 'All attributes needed when calling sendImage'
+//     });
+//     return;
+//   }
+//   // load the image and save it to the desired service
+//   exports.getFile(req, res, next, url, path, function (error) {
+//     // no, makes the headers to be sent and crashes everything
+//     // res.redirect('/libs/pixlr/close.html');
+//     if (error){
+//       console.error('Error in getFile', error, url, path);
+//       // do not send JSON, the end user will see the result
+//       // cbk({success: false, code: error.code});
+//     }
+//     // do not send JSON, the end user will see the result
+//     fs.readFile(pathModule.resolve(__dirname, '../client/libs/pixlr/close.html'), 'utf-8', function (err, data) {
+//       // FIXME: handle err?
+//       if (!err) {
+//         cbk(data.toString());
+//       }
+//       else {
+//         console.error('Error: could not read the template close.html');
+//         cbk('Error: could not read the template close.html');
+//       }
+//     });
 
-  });
-};
+//   });
+// };
 
 
 /**
@@ -343,7 +343,7 @@ exports.getFile = function(req, res, next, srcPath, dstPath, cbk){
  * get file from URL, to a service
  */
 exports.getFileFromUrl = function(req, res, next, srcPath, dstPath, cbk){
-  request(srcPath, function (error, response, body) {
+  request(srcPath, 'utf8', function (error, response, body) {
     if (!error && response.statusCode == 200) {
       exports.writeFileToService(req, res, next, dstPath, body, function(error) {
         cbk(error);
@@ -393,14 +393,6 @@ exports.writeFileToService = function(req, res, next, url, data, cbk){
     cbk();
   }
   else {
-    if(url.indexOf('jpg') > 0) {
-      fs.writeFile(__dirname + '/../../test.jpg', data, 'utf8', function (err) {
-      });
-    }
-    else if(url.indexOf('png') > 0) {
-      fs.writeFile(__dirname + '/../../test.png', data, 'utf8', function (err) {
-      });
-    }
     req.body.data = data;
     exports.unifileRoute(req, res, next, url, function(response, status, responseData, mime_type, responseFilePath) {
       if (status.success){
