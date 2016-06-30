@@ -122,6 +122,9 @@ silex.controller.ControllerBase.prototype.undoCheckPoint = function() {
         silex.controller.ControllerBase.undoHistory[silex.controller.ControllerBase.undoHistory.length - 1].page !== state.page) {
       silex.controller.ControllerBase.undoHistory.push(state);
     }
+    else {
+      console.warn('Did not store undo state, because nothing has changed');
+    }
   });
 };
 

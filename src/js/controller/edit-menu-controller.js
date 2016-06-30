@@ -64,6 +64,9 @@ silex.controller.EditMenuController.prototype.undo = function() {
     var prevState = silex.controller.ControllerBase.undoHistory.pop();
     this.restoreState(prevState);
   }
+  else {
+    requestAnimationFrame(() => this.undo());
+  }
 };
 
 
