@@ -113,6 +113,10 @@ silex.controller.FileMenuController.prototype.openFile = function(opt_cbk, opt_e
  * handle tracking and call the Dom helper
  */
 silex.controller.FileMenuController.prototype.publish = function() {
+  if(silex.utils.Notification.isActive) {
+    console.warn('Publish canceled because a modal dialog is opened already.');
+    return;
+  }
   this.tracker.trackAction('controller-events', 'request', 'file.publish', 0);
   if (!this.model.head.getPublicationPath()) {
     silex.utils.Notification.alert('I do not know where to publish your site.' +
