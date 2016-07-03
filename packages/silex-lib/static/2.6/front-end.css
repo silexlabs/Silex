@@ -11,6 +11,7 @@ body {
   padding-top: 5px;
   padding-left: 0;
   padding-right: 0;
+  transition: min-width .5s ease-out, min-height .5s ease-out; /* smooth body resize when dragging elements near the side, or when page have different size */
 }
 /* pages */
 .page-element{
