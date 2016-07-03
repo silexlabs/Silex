@@ -172,15 +172,12 @@ silex.controller.EditMenuController.prototype.pasteSelection = function() {
       this.model.element.addElement(/** @type {Element} */ (container), element);
     }, this);
     // apply the offset to the elements, according to the scroll position
-    var offsetX = 100 + this.view.stage.getScrollX();
-    var offsetY = 100 + this.view.stage.getScrollY();
+    // i.e. move the bounding box to coord (100, 100)
     var bb = this.model.property.getBoundingBox(selection);
-    this.view.stage.followElementPosition(
-      selection,
-      offsetX - bb.left,
-      offsetY - bb.top
-    );
-    // reset selection
+    var offsetX = 100 + this.view.stage.getScrollX() - bb.left;
+    var offsetY = 100 + this.view.stage.getScrollY() - bb.top;
+    this.view.stage.moveElements(selection, offsetX, offsetY);
+    // select the new elements
     this.model.body.setSelection(selection);
   }
 };
