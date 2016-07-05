@@ -171,6 +171,15 @@ silex.controller.EditMenuController.prototype.pasteSelection = function() {
       // add to stage and set the "silex-just-added" css class
       this.model.element.addElement(/** @type {Element} */ (container), element);
     }, this);
+    // apply the offset to the elements, according to the scroll position
+    var offsetX = 100 + this.view.stage.getScrollX();
+    var offsetY = 100 + this.view.stage.getScrollY();
+    var bb = this.model.property.getBoundingBox(selection);
+    this.view.stage.followElementPosition(
+      selection,
+      offsetX - bb.left,
+      offsetY - bb.top
+    );
     // reset selection
     this.model.body.setSelection(selection);
   }
