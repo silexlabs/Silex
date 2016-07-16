@@ -131,7 +131,12 @@ silex.view.pane.BorderPane.prototype.buildUi = function() {
 
   // border placement
   this.borderPlacementCheckBoxes = this.createCheckBoxes(
-      'border-placement-container',
+      [
+        '.border-placement-container .top',
+        '.border-placement-container .right',
+        '.border-placement-container .bottom',
+        '.border-placement-container .left',
+      ],
       this.onBorderWidthChanged);
 
   // corner radius
@@ -141,7 +146,12 @@ silex.view.pane.BorderPane.prototype.buildUi = function() {
 
   // corner placement
   this.cornerPlacementCheckBoxes = this.createCheckBoxes(
-      'corner-placement-container',
+      [
+        '.border-radius-container .top-left',
+        '.border-radius-container .top-right',
+        '.border-radius-container .bottom-right',
+        '.border-radius-container .bottom-left',
+      ],
       this.onBorderCornerChanged);
 };
 
@@ -185,16 +195,13 @@ silex.view.pane.BorderPane.prototype.initEvents = function() {
  * attach change event
  */
 silex.view.pane.BorderPane.prototype.createCheckBoxes =
-  function(containersCssClass, onChanged) {
+  function(cssSelectors, onChanged) {
   var checkBoxes = [];
-  var decorateNodes = goog.dom.getElementsByTagNameAndClass('span',
-      undefined,
-      goog.dom.getElementByClass(containersCssClass,
-      this.element));
   var idx;
-  var len = decorateNodes.length;
+  var len = cssSelectors.length;
   for (idx = 0; idx < len; idx++) {
-    var checkBox = goog.ui.decorate(decorateNodes[idx]);
+    var decorateNode = this.element.querySelector(cssSelectors[idx]);
+    var checkBox = goog.ui.decorate(decorateNode);
     checkBoxes.push(checkBox);
     goog.events.listen(checkBox,
                        goog.ui.Component.EventType.CHANGE,
