@@ -546,6 +546,7 @@ silex.view.Stage.prototype.markAsDropZone = function(opt_element) {
  * @param {?Element=} opt_container   element into which to seach for the dropzone, by default the body
  * @return {{element: ?Element, zIndex: number}}  if not null this is the drop zone under the mouse cursor
  *                                              zIndex being the highest z-index encountered while browsing children
+ * TODO: use `pointer-events: none;` to get the dropzone with mouse events, or  `Document.elementsFromPoint()`
  */
 silex.view.Stage.prototype.getDropZone = function(x, y, opt_container) {
   // default value
@@ -599,7 +600,9 @@ silex.view.Stage.prototype.getVisibility = function(element) {
   let parent = /** @type {?Element} */ (element);
   while (parent &&
          (!goog.dom.classlist.contains(/** @type {Element} */ (parent), silex.model.Page.PAGED_CLASS_NAME) ||
-          goog.dom.classlist.contains(/** @type {Element} */ (parent), this.currentPageName))) {
+          goog.dom.classlist.contains(/** @type {Element} */ (parent), this.currentPageName)) &&
+         !(goog.dom.classlist.contains(document.body, 'mobile-mode') && goog.dom.classlist.contains(/** @type {Element} */ (parent), 'hide-on-mobile'))
+   ) {
     parent = /** @type {?Element} */ (parent.parentNode);
   }
   return parent === null;
