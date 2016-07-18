@@ -358,9 +358,7 @@ silex.model.File.prototype.getHtmlNextStep = function (cbk, generator) {
 silex.model.File.prototype.getHtmlGenerator = function* () {
   // update style tag (the dom do not update automatically when we change document.styleSheets)
   let updatedStyles = this.model.property.getAllStyles(this.contentDocument_);
-  yield;
   this.model.property.saveStyles(this.contentDocument_);
-  yield;
   // clone
   var cleanFile = /** @type {Node} */ (this.contentDocument_.cloneNode(true));
   yield;
