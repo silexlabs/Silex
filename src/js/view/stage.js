@@ -348,14 +348,7 @@ silex.view.Stage.prototype.handleKey = function(event) {
       // mark as undoable
       this.controller.stageController.markAsUndoable();
       // apply the offset
-      this.followElementPosition(this.selectedElements, offsetX, offsetY);
-      // notify the controller
-      this.propertyChanged();
-      // reset elements properties as they are stored in the CSS by the model
-      this.selectedElements.forEach((element) => {
-        element.style.top = '';
-        element.style.left = '';
-      });
+      this.moveElements(this.selectedElements, offsetX, offsetY);
       // prevent default behavior for this key
       event.preventDefault();
     }
@@ -393,9 +386,7 @@ silex.view.Stage.prototype.handleMouseUp = function(target, x, y, shiftKey) {
          !goog.dom.classlist.contains(element, silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME)) {
         this.controller.stageController.newContainer(dropZone.element, element);
       }
-      // reset node properties
-      element.style.top = '';
-      element.style.left = '';
+      this.cleanupElement(element);
     }, this);
     // change z order
     //this.bringSelectionForward();
@@ -518,7 +509,7 @@ silex.view.Stage.prototype.onMouseMove = function(target, x, y, shiftKey) {
 
         // update scroll when mouse is near the border
         me.updateScroll(x, y);
-      
+
         // update body size with the front-end.js API
         me.contentWindow['resizeBody']();
 
@@ -555,6 +546,7 @@ silex.view.Stage.prototype.markAsDropZone = function(opt_element) {
  * @param {?Element=} opt_container   element into which to seach for the dropzone, by default the body
  * @return {{element: ?Element, zIndex: number}}  if not null this is the drop zone under the mouse cursor
  *                                              zIndex being the highest z-index encountered while browsing children
+ * TODO: use `pointer-events: none;` to get the dropzone with mouse events, or  `Document.elementsFromPoint()`
  */
 silex.view.Stage.prototype.getDropZone = function(x, y, opt_container) {
   // default value
@@ -608,7 +600,9 @@ silex.view.Stage.prototype.getVisibility = function(element) {
   let parent = /** @type {?Element} */ (element);
   while (parent &&
          (!goog.dom.classlist.contains(/** @type {Element} */ (parent), silex.model.Page.PAGED_CLASS_NAME) ||
-          goog.dom.classlist.contains(/** @type {Element} */ (parent), this.currentPageName))) {
+          goog.dom.classlist.contains(/** @type {Element} */ (parent), this.currentPageName)) &&
+         !(goog.dom.classlist.contains(document.body, 'mobile-mode') && goog.dom.classlist.contains(/** @type {Element} */ (parent), 'hide-on-mobile'))
+   ) {
     parent = /** @type {?Element} */ (parent.parentNode);
   }
   return parent === null;
@@ -969,4 +963,29 @@ silex.view.Stage.prototype.getScrollMaxY = function() {
 silex.view.Stage.prototype.propertyChanged = function() {
   // update property tool box
   this.controller.stageController.updateView();
+};
+
+
+/**
+ * reset 1 element properties since they are stored in the CSS by the model
+ */
+silex.view.Stage.prototype.cleanupElement = function(element) {
+  element.style.top = '';
+  element.style.left = '';
+};
+
+
+/**
+ * Move the selected elements in the DOM
+ * This is a convenience method which does as if the elements where dragged
+ */
+silex.view.Stage.prototype.moveElements = function(elements, offsetX, offsetY) {
+  // just like when mouse moves
+  this.followElementPosition(elements, offsetX, offsetY);
+  // notify the controller
+  this.propertyChanged();
+  // reset elements properties since they are stored in the CSS by the model
+  elements.forEach((element) => {
+    this.cleanupElement(element);
+  });
 };

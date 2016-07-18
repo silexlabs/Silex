@@ -133,7 +133,6 @@ silex.view.Splitter.prototype.redraw = function() {
  * @param {Event} e
  */
 silex.view.Splitter.prototype.onMouseDown = function(e) {
-  e.preventDefault();
   this.isDown = true;
 
   // listen mouse events
@@ -165,7 +164,6 @@ silex.view.Splitter.prototype.onMouseDown = function(e) {
  * @param {Event} e
  */
 silex.view.Splitter.prototype.onMouseUp = function(e) {
-  e.preventDefault();
   this.isDown = false;
 
   // stop listening

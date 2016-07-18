@@ -64,6 +64,9 @@ silex.controller.EditMenuController.prototype.undo = function() {
     var prevState = silex.controller.ControllerBase.undoHistory.pop();
     this.restoreState(prevState);
   }
+  else {
+    requestAnimationFrame(() => this.undo());
+  }
 };
 
 
@@ -168,7 +171,13 @@ silex.controller.EditMenuController.prototype.pasteSelection = function() {
       // add to stage and set the "silex-just-added" css class
       this.model.element.addElement(/** @type {Element} */ (container), element);
     }, this);
-    // reset selection
+    // apply the offset to the elements, according to the scroll position
+    // i.e. move the bounding box to coord (100, 100)
+    var bb = this.model.property.getBoundingBox(selection);
+    var offsetX = 100 + this.view.stage.getScrollX() - bb.left;
+    var offsetY = 100 + this.view.stage.getScrollY() - bb.top;
+    this.view.stage.moveElements(selection, offsetX, offsetY);
+    // select the new elements
     this.model.body.setSelection(selection);
   }
 };
