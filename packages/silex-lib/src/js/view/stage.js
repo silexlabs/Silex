@@ -487,6 +487,11 @@ silex.view.Stage.prototype.onMouseMove = function(target, x, y, shiftKey) {
     }
     // update states
     if (!this.isDragging && !this.isResizing) {
+      if(Math.abs(this.initialPos.x - x) + Math.abs(this.initialPos.y - y) < 5) {
+        // do nothing while the user has not dragged more than 5 pixels
+        return;
+      }
+
       // notify controller that a change is about to take place
       // marker for undo/redo
       this.controller.stageController.markAsUndoable();
