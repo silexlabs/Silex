@@ -545,7 +545,7 @@ silex.controller.ControllerBase.prototype.doSave = function(url, opt_cbk, opt_er
       goog.bind(function() {
         this.tracker.trackAction('controller-events', 'success', 'file.save', 1);
         silex.controller.ControllerBase.lastSaveUndoIdx = silex.controller.ControllerBase.undoHistory.length - 1;
-        this.fileOperationSuccess('File is saved.', true);
+        this.fileOperationSuccess('File is saved.', false);
         this.view.workspace.setPreviewWindowLocation();
         if (opt_cbk) {
           opt_cbk();
@@ -572,9 +572,10 @@ silex.controller.ControllerBase.prototype.fileOperationSuccess = function(opt_me
     // update fonts
     this.refreshFonts();
     // update dialogs
-    this.view.jsEditor.setValue(this.model.head.getHeadScript());
-    this.view.cssEditor.setValue(this.model.head.getHeadStyle());
-    this.view.htmlEditor.setValue('');
+    this.view.jsEditor.closeEditor();
+    this.view.cssEditor.closeEditor();
+    this.view.htmlEditor.closeEditor();
+    this.view.settingsDialog.closeEditor();
     this.view.contextMenu.redraw();
     this.view.breadCrumbs.redraw();
   }

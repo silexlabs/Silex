@@ -77,12 +77,15 @@ silex.view.dialog.DialogBase.currentDialog = null;
  */
 silex.view.dialog.DialogBase.prototype.buildUi = function() {
   // handle escape key
-  var shortcutHandler = new goog.ui.KeyboardShortcutHandler(document);
-  shortcutHandler.registerShortcut('esc', goog.events.KeyCodes.ESC);
-  goog.events.listen(
-      shortcutHandler,
-      goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED,
-      goog.bind(this.closeEditor, this));
+  let keyHandler = new goog.events.KeyHandler(document);
+  goog.events.listen(keyHandler, 'key',
+    (e) => {
+      if(this.isOpened && e.keyCode === goog.events.KeyCodes.ESC) {
+        this.closeEditor();
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    });
   // close button
   goog.events.listen(goog.dom.getElementByClass('close-btn', this.element), goog.events.EventType.CLICK, function() {
     this.closeEditor();

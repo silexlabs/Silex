@@ -1,3 +1,16 @@
+/* hide auto completion box when closed */
+.ace_autocomplete {
+  display: none;
+}
+.js-editor-opened,
+.css-editor-opened,
+.html-editor-opened,
+.settings-editor-opened {
+  .ace_autocomplete {
+    display: initial;
+  }
+}
+/* */
 .ace-editor-container {
   position: absolute;
   z-index: 110;

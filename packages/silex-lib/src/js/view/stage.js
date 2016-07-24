@@ -342,6 +342,9 @@ silex.view.Stage.prototype.handleKey = function(event) {
       case goog.events.KeyCodes.DOWN:
         offsetY = amount;
       break;
+      case goog.events.KeyCodes.ESC:
+        this.controller.stageController.selectNone();
+      break;
     }
     // if there is something to move
     if (offsetX !== 0 || offsetY !== 0) {
@@ -440,8 +443,11 @@ silex.view.Stage.prototype.handleMouseUp = function(target, x, y, shiftKey) {
  */
 silex.view.Stage.prototype.resetFocus = function() {
   this.invalidationManagerFocus.callWhenReady(() => {
-    this.focusInput.focus();
-    this.focusInput.blur();
+    // focus on stage unless there is a dialog opened
+    if(!silex.view.dialog.DialogBase.currentDialog) {
+      this.focusInput.focus();
+      this.focusInput.blur();
+    }
   });
 };
 
