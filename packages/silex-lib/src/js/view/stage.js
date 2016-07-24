@@ -342,6 +342,9 @@ silex.view.Stage.prototype.handleKey = function(event) {
       case goog.events.KeyCodes.DOWN:
         offsetY = amount;
       break;
+      case goog.events.KeyCodes.ESC:
+        this.controller.stageController.selectNone();
+      break;
     }
     // if there is something to move
     if (offsetX !== 0 || offsetY !== 0) {
@@ -372,9 +375,10 @@ silex.view.Stage.prototype.handleKey = function(event) {
 silex.view.Stage.prototype.handleMouseUp = function(target, x, y, shiftKey) {
   // update state
   this.isDown = false;
-  // if it is not a click on the UI
+  // if click down was not on the UI, do nothing
+  // this can happen when the user selects text in the property tool box and releases outside the tool box
   if (this.iAmClicking !== true) {
-    this.resetFocus();
+    return;
   }
   // handle the mouse up
   if (this.isDragging) {
@@ -440,8 +444,11 @@ silex.view.Stage.prototype.handleMouseUp = function(target, x, y, shiftKey) {
  */
 silex.view.Stage.prototype.resetFocus = function() {
   this.invalidationManagerFocus.callWhenReady(() => {
-    this.focusInput.focus();
-    this.focusInput.blur();
+    // focus on stage unless there is a dialog opened
+    if(!silex.view.dialog.DialogBase.currentDialog) {
+      this.focusInput.focus();
+      this.focusInput.blur();
+    }
   });
 };
 

@@ -209,15 +209,15 @@ silex.view.dialog.TextEditor.prototype.buildUi = function() {
   myToolbar.addChild(button, true);
 
   // invert color button
-  var button = goog.ui.editor.ToolbarFactory.makeButton(
+  var buttonColor = goog.ui.editor.ToolbarFactory.makeButton(
       'invertColorBtn', 'invert the background color of the text editor', ' bg color', 'fa fa-adjust fa-lg');
   goog.events.listen(
-      button,
+      buttonColor,
       goog.ui.Component.EventType.ACTION,
       this.onInvertColor,
       false,
       this);
-  myToolbar.addChild(button, true);
+  myToolbar.addChild(buttonColor, true);
 
   // Hook the toolbar into the field.
   var myToolbarController = new goog.ui.editor.ToolbarController(
@@ -350,6 +350,14 @@ silex.view.dialog.TextEditor.prototype.openEditor = function() {
   // workaround "body of the text editor has min-width:0;"
   iframeDoc.documentElement.style.minWidth = '';
   iframeDoc.body.style.minWidth = '';
+
+  // listen for escape key inside the iframe
+  let keyHandler = new goog.events.KeyHandler(iframeDoc);
+  goog.events.listen(keyHandler, 'key', (e) => {
+    if(this.isOpened && e.keyCode == goog.events.KeyCodes.ESC) {
+      this.closeEditor();
+    }
+  });
 };
 
 
