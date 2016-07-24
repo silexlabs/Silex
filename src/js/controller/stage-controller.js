@@ -37,6 +37,14 @@ goog.inherits(silex.controller.StageController, silex.controller.ControllerBase)
 
 
 /**
+ * empty/reset selection
+ */
+silex.controller.StageController.prototype.selectNone = function() {
+  this.model.body.setSelection([this.model.body.getBodyElement()]);
+};
+
+
+/**
  * the user has selected an element
  * @param {Element} target selected element
  */
