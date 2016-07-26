@@ -373,13 +373,13 @@ silex.view.Stage.prototype.handleKey = function(event) {
  * @param   {boolean} shiftKey state of the shift key
  */
 silex.view.Stage.prototype.handleMouseUp = function(target, x, y, shiftKey) {
-  // update state
-  this.isDown = false;
   // if click down was not on the UI, do nothing
   // this can happen when the user selects text in the property tool box and releases outside the tool box
-  if (this.iAmClicking !== true) {
+  if (!this.isDown) {
     return;
   }
+  // update state
+  this.isDown = false;
   // handle the mouse up
   if (this.isDragging) {
     // new container
@@ -513,6 +513,9 @@ silex.view.Stage.prototype.onMouseMove = function(target, x, y, shiftKey) {
       }
     }
 
+    // do MouseMove is a function which will be called while the user holds the mouse button down
+    // even if the mouse do not move
+    // this is useful when holding an element near the border of the stage, to keep scrolling
     var pendingMM = ++this.pendingMM;
     function doMM(me) {
       if(me.pendingMM === pendingMM && (me.isDragging || me.isResizing)) {
