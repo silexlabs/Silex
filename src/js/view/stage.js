@@ -378,6 +378,8 @@ silex.view.Stage.prototype.handleMouseUp = function(target, x, y, shiftKey) {
   if (!this.isDown) {
     return;
   }
+  // give focus to the stage
+  this.resetFocus();
   // update state
   this.isDown = false;
   // handle the mouse up
@@ -444,11 +446,8 @@ silex.view.Stage.prototype.handleMouseUp = function(target, x, y, shiftKey) {
  */
 silex.view.Stage.prototype.resetFocus = function() {
   this.invalidationManagerFocus.callWhenReady(() => {
-    // focus on stage unless there is a dialog opened
-    if(!silex.view.dialog.DialogBase.currentDialog) {
-      this.focusInput.focus();
-      this.focusInput.blur();
-    }
+    this.focusInput.focus();
+    this.focusInput.blur();
   });
 };
 
