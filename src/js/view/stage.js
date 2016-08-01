@@ -175,6 +175,15 @@ silex.view.Stage.prototype.buildUi = function() {
       false,
       this);
 
+  // listen on the element containing the stage too
+  // because in mobile editor, it is visible
+  // and should let the user reset selection
+  goog.events.listen(this.element,
+      'mousedown',
+      this.onMouseDownOverStageBg,
+      false,
+      this);
+
   // keyboard
   let keyHandler = new goog.events.KeyHandler(document);
   goog.events.listen(keyHandler, 'key', goog.bind(this.handleKey, this));
@@ -199,6 +208,7 @@ silex.view.Stage.prototype.onMouseMoveOverUi = function(event) {
  * @param {Event} event
  */
 silex.view.Stage.prototype.onMouseUpOverUi = function(event) {
+
   if (this.bodyElement !== null) {
     // if out of stage, release from drag of the plugin
     // simulate the mouse up on the iframe body
@@ -210,6 +220,19 @@ silex.view.Stage.prototype.onMouseUpOverUi = function(event) {
     this.iAmClicking = true;
     this.bodyElement.dispatchEvent(newEvObj);
     this.iAmClicking = false;
+  }
+};
+
+
+/**
+ * Reset selection and focus
+ * Because user can clickon the stage bg in mobile mode
+ * to empty selection
+ * @param {Event} event
+ */
+silex.view.Stage.prototype.onMouseDownOverStageBg = function(event) {
+  if (this.bodyElement !== null) {
+    this.controller.stageController.selectNone();
   }
 };
 
@@ -276,6 +299,13 @@ silex.view.Stage.prototype.initEvents = function(contentWindow) {
     let editableElement = goog.dom.getAncestorByClass(
         event.target,
         silex.model.Body.EDITABLE_CLASS_NAME) || this.bodyElement;
+    try {
+      // in firefox, this is needed to keep recieving events while dragging outside the iframe
+      // in chrome this will throw an error
+      editableElement.setCapture();
+    }
+    catch(e) {}
+    // handle the mouse event
     this.handleMouseDown(editableElement, x, y, event.shiftKey);
     // necessary in firefox to prevent default image drag
     event.preventDefault();
