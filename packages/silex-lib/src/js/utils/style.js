@@ -22,6 +22,7 @@ goog.require('goog.style');
 goog.require('silex.model.Body');
 goog.require('silex.model.Element');
 goog.require('silex.model.Page');
+goog.require('silex.model.Head');
 
 
 /**
@@ -31,7 +32,13 @@ goog.require('silex.model.Page');
  * @type {Array.<string>}
  */
 silex.utils.Style.SILEX_CLASS_NAMES = [
+  silex.model.Body.DRAGGING_CLASS_NAME,
+  silex.model.Body.DROP_CANDIDATE_CLASS_NAME,
+  silex.model.Body.PREVENT_DROPPABLE_CLASS_NAME,
+  silex.model.Body.PREVENT_RESIZABLE_CLASS_NAME,
+  silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME,
   silex.model.Body.EDITABLE_CLASS_NAME,
+  silex.model.Head.ENABLE_MOBILE_CSS_CLASS,
   silex.model.Page.PAGED_CLASS_NAME,
   silex.model.Page.PAGED_HIDDEN_CLASS_NAME,
   silex.model.Page.PAGED_VISIBLE_CLASS_NAME,
@@ -39,6 +46,7 @@ silex.utils.Style.SILEX_CLASS_NAMES = [
   silex.model.Page.PAGE_LINK_ACTIVE_CLASS_NAME,
   silex.model.Element.SELECTED_CLASS_NAME,
   silex.model.Element.JUST_ADDED_CLASS_NAME,
+  silex.view.BreadCrumbs.EDITABLE_STYLE_HOVER_CLASS,
   silex.model.Element.TYPE_CONTAINER + '-element',
   silex.model.Element.TYPE_IMAGE + '-element',
   silex.model.Element.TYPE_TEXT + '-element',
@@ -57,7 +65,8 @@ silex.utils.Style.SILEX_TEMP_CLASS_NAMES = [
   silex.model.Page.PAGED_VISIBLE_CLASS_NAME,
   silex.model.Page.PAGEABLE_PLUGIN_READY_CLASS_NAME,
   silex.model.Element.SELECTED_CLASS_NAME,
-  silex.model.Element.JUST_ADDED_CLASS_NAME
+  silex.model.Element.JUST_ADDED_CLASS_NAME,
+  silex.view.BreadCrumbs.EDITABLE_STYLE_HOVER_CLASS
 ];
 
 
@@ -94,7 +103,7 @@ silex.utils.Style.removeInternalClasses = function(element, opt_allClasses, opt_
  */
 silex.utils.Style.styleToObject = function(styleObj) {
   var res = {};
-  for (let idx=0 ; idx < styleObj.length; idx++) {
+  for (let idx = 0; idx < styleObj.length; idx++) {
     var styleName = styleObj[idx];
     res[styleName] = styleObj[styleName];
   }

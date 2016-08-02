@@ -28,10 +28,10 @@ goog.require('silex.types.Model');
  * @enum {string}
  */
 silex.model.DomDirection = {
-  UP: "UP",
-  DOWN: "DOWN",
-  TOP: "TOP",
-  BOTTOM: "BOTTOM"
+  UP: 'UP',
+  DOWN: 'DOWN',
+  TOP: 'TOP',
+  BOTTOM: 'BOTTOM'
 };
 
 
@@ -183,7 +183,7 @@ silex.model.Element.prototype.unprepareHtmlForEdit = function(rawHtml) {
     rawHtml = silex.utils.Url.absolute2Relative(rawHtml, baseUrl + this.model.file.getUrl());
     // put back the static scripts (protocol agnostic)
     let staticUrl = baseUrl.substr(baseUrl.indexOf('//')) + 'static/';
-    rawHtml = rawHtml.replace(new RegExp('\.\./\.\./\.\./\.\./\.\./[\.\./]*static/', 'g'), staticUrl);
+    rawHtml = rawHtml.replace(/\.\.\/\.\.\/\.\.\/\.\.\/\.\.\/[\.\.\/]*static\//g, staticUrl);
   }
   return rawHtml;
 };
@@ -207,11 +207,10 @@ silex.model.Element.prototype.getTabs = function(num) {
 /**
  * get/set type of the element
  * @param  {Element} element   created by silex, either a text box, image, ...
- * @return  {string|null}           the style of the element
+ * @return  {?string}           the style of the element
  * example: for a container this will return "container"
  */
 silex.model.Element.prototype.getType = function(element) {
-  //return goog.style.getStyle(element, styleName);
   return element.getAttribute(silex.model.Element.TYPE_ATTR);
 };
 
@@ -223,7 +222,7 @@ silex.model.Element.prototype.getType = function(element) {
  * @return  {string}           the styles of the element
  */
 silex.model.Element.prototype.getAllStyles = function(element, opt_computed) {
-  var styleObject = this.model.property.getStyleObject(element, opt_computed);
+  var styleObject = this.model.property.getStyle(element, null, opt_computed);
   var styleStr = silex.utils.Style.styleToString(styleObject);
   return this.unprepareHtmlForEdit(styleStr);
 };
@@ -234,13 +233,21 @@ silex.model.Element.prototype.getAllStyles = function(element, opt_computed) {
  * @param  {Element} element   created by silex, either a text box, image, ...
  * @param  {string} styleName  the style name
  * @param {?boolean=} opt_computed use window.getComputedStyle instead of the element's stylesheet
- * @return  {string|null}           the style of the element
+ * @return  {?string}           the style of the element
  */
 silex.model.Element.prototype.getStyle = function(element, styleName, opt_computed) {
-  var styleObject = this.model.property.getStyleObject(element, opt_computed);
+  var isMobile = this.view.workspace.getMobileEditor();
+  var styleObject = this.model.property.getStyle(element, isMobile, opt_computed);
   var cssName = goog.string.toSelectorCase(styleName);
   if (styleObject && styleObject[cssName]) {
     return this.unprepareHtmlForEdit(styleObject[cssName]);
+  }
+  else if (isMobile) {
+    // get the non mobile style if it is not defined in mobile
+    styleObject = this.model.property.getStyle(element, false, opt_computed);
+    if (styleObject && styleObject[cssName]) {
+      return this.unprepareHtmlForEdit(styleObject[cssName]);
+    }
   }
   return null;
 };
@@ -256,7 +263,7 @@ silex.model.Element.prototype.setStyle = function(element, styleName, opt_styleV
   // convert to css case
   styleName = goog.string.toSelectorCase(styleName);
   // retrieve style
-  var styleObject = this.model.property.getStyleObject(element);
+  var styleObject = this.model.property.getStyle(element);
   if (!styleObject) {
     styleObject = {};
   }
@@ -376,17 +383,17 @@ silex.model.Element.prototype.getContentNode = function(element) {
  * @param  {silex.model.DomDirection} direction
  */
 silex.model.Element.prototype.move = function(element, direction) {
-  switch(direction) {
+  switch (direction) {
     case silex.model.DomDirection.UP:
       let sibling = this.getNextElement(element);
-      if(sibling) {
+      if (sibling) {
         // insert after
         element.parentNode.insertBefore(sibling, element);
       }
       break;
     case silex.model.DomDirection.DOWN:
       let sibling = this.getPreviousElement(element);
-      if(sibling) {
+      if (sibling) {
         // insert before
         element.parentNode.insertBefore(sibling, element.nextSibling);
       }
@@ -406,19 +413,19 @@ silex.model.Element.prototype.move = function(element, direction) {
 /**
  * get the previous element in the DOM, which is a Silex element
  * @param {Element} element
- * @return {Element|null}
+ * @return {?Element}
  */
 silex.model.Element.prototype.getPreviousElement = function(element) {
   let len = element.parentNode.childNodes.length;
   let res = null;
-  for (let idx=0; idx < len; idx++) {
+  for (let idx = 0; idx < len; idx++) {
     let el = element.parentNode.childNodes[idx];
     if (el.nodeType === 1 && this.getType(el) !== null) {
-      if(el === element) {
+      if (el === element) {
         return res;
       }
       // candidates are the elements which are visible in the current page, or visible everywhere (not paged)
-      if(this.model.page.isInPage(el) || this.model.page.getPagesForElement(el).length === 0) {
+      if (this.model.page.isInPage(el) || this.model.page.getPagesForElement(el).length === 0) {
         res = el;
       }
     }
@@ -430,19 +437,19 @@ silex.model.Element.prototype.getPreviousElement = function(element) {
 /**
  * get the previous element in the DOM, which is a Silex element
  * @param {Element} element
- * @return {Element|null}
+ * @return {?Element}
  */
 silex.model.Element.prototype.getNextElement = function(element) {
   let len = element.parentNode.childNodes.length;
   let res = null;
-  for (let idx=len - 1; idx >= 0; idx--) {
+  for (let idx = len - 1; idx >= 0; idx--) {
     let el = element.parentNode.childNodes[idx];
     if (el.nodeType === 1 && this.getType(el) !== null) {
-      if(el === element) {
+      if (el === element) {
         return res;
       }
       // candidates are the elements which are visible in the current page, or visible everywhere (not paged)
-      if(this.model.page.isInPage(el) || this.model.page.getPagesForElement(el).length === 0) {
+      if (this.model.page.isInPage(el) || this.model.page.getPagesForElement(el).length === 0) {
         res = el;
       }
     }
@@ -595,10 +602,10 @@ silex.model.Element.prototype.createElement = function(type) {
   var offsetY = 100 + this.view.stage.getScrollY();
   // default style
   var styleObject = {
-    height: '100px',
-    width: '100px',
-    top: offsetY + 'px',
-    left: offsetX + 'px'
+    'min-height': '100px',
+    'width': '100px',
+    'top': offsetY + 'px',
+    'left': offsetX + 'px'
   };
 
   // create the element
@@ -609,7 +616,7 @@ silex.model.Element.prototype.createElement = function(type) {
     case silex.model.Element.TYPE_CONTAINER:
       element = this.createContainerElement();
       // add a default style
-      styleObject.backgroundColor = '#FFFFFF';
+      styleObject['background-color'] = 'rgb(255, 255, 255)';
       break;
 
     // text
@@ -621,7 +628,7 @@ silex.model.Element.prototype.createElement = function(type) {
     case silex.model.Element.TYPE_HTML:
       element = this.createHtmlElement();
       // add a default style
-      styleObject.backgroundColor = '#FFFFFF';
+      styleObject['background-color'] = 'rgb(255, 255, 255)';
       break;
 
     // Image
@@ -635,8 +642,8 @@ silex.model.Element.prototype.createElement = function(type) {
   goog.dom.classlist.add(element, silex.model.Body.EDITABLE_CLASS_NAME);
   this.model.property.initSilexId(element, this.model.file.getContentDocument());
 
-  // apply the style
-  this.model.property.setStyle(element, styleObject);
+  // apply the style (force desktop style, not mobile)
+  this.model.property.setStyle(element, styleObject, false);
 
   // make it editable
   this.model.body.setEditable(element, true);
@@ -756,14 +763,15 @@ silex.model.Element.prototype.getLink = function(element) {
  */
 silex.model.Element.prototype.getClassName = function(element) {
   var pages = this.model.page.getPages();
-  return goog.array.map(element.className.split(' '), function(name) {
-    if (goog.array.contains(silex.utils.Style.SILEX_CLASS_NAMES, name) ||
+  return element.className.split(' ').filter((name) => {
+    if (name === '' ||
+        goog.array.contains(silex.utils.Style.SILEX_CLASS_NAMES, name) ||
         goog.array.contains(pages, name) ||
         this.model.property.getSilexId(element) === name) {
-      return;
+      return false;
     }
-    return name;
-  }, this).join(' ').trim();
+    return true;
+  }).join(' ');
 };
 
 

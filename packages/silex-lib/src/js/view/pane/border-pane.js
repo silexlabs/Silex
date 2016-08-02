@@ -131,7 +131,12 @@ silex.view.pane.BorderPane.prototype.buildUi = function() {
 
   // border placement
   this.borderPlacementCheckBoxes = this.createCheckBoxes(
-      'border-placement-container',
+      [
+        '.border-placement-container .top',
+        '.border-placement-container .right',
+        '.border-placement-container .bottom',
+        '.border-placement-container .left',
+      ],
       this.onBorderWidthChanged);
 
   // corner radius
@@ -141,7 +146,12 @@ silex.view.pane.BorderPane.prototype.buildUi = function() {
 
   // corner placement
   this.cornerPlacementCheckBoxes = this.createCheckBoxes(
-      'corner-placement-container',
+      [
+        '.border-radius-container .top-left',
+        '.border-radius-container .top-right',
+        '.border-radius-container .bottom-right',
+        '.border-radius-container .bottom-left',
+      ],
       this.onBorderCornerChanged);
 };
 
@@ -185,16 +195,13 @@ silex.view.pane.BorderPane.prototype.initEvents = function() {
  * attach change event
  */
 silex.view.pane.BorderPane.prototype.createCheckBoxes =
-  function(containersCssClass, onChanged) {
+  function(cssSelectors, onChanged) {
   var checkBoxes = [];
-  var decorateNodes = goog.dom.getElementsByTagNameAndClass('span',
-      undefined,
-      goog.dom.getElementByClass(containersCssClass,
-      this.element));
   var idx;
-  var len = decorateNodes.length;
+  var len = cssSelectors.length;
   for (idx = 0; idx < len; idx++) {
-    var checkBox = goog.ui.decorate(decorateNodes[idx]);
+    var decorateNode = this.element.querySelector(cssSelectors[idx]);
+    var checkBox = goog.ui.decorate(decorateNode);
     checkBoxes.push(checkBox);
     goog.events.listen(checkBox,
                        goog.ui.Component.EventType.CHANGE,
@@ -228,63 +235,25 @@ silex.view.pane.BorderPane.prototype.redraw =
   var borderWidth = this.getCommonProperty(
     selectedElements,
     goog.bind(function(element) {
-      var w;
-      var hasValue = false;
-      var arr = [];
-      w = this.model.element.getStyle(element, 'borderTopWidth');
-      if(!w) {
-        w = '0px';
-      }
-      else {
-        hasValue = true;
-      }
-      arr.push(w);
-      w = this.model.element.getStyle(element, 'borderRightWidth');
-      if(!w) {
-        w = '0px';
-      }
-      else {
-        hasValue = true;
-      }
-      arr.push(w);
-      w = this.model.element.getStyle(element, 'borderBottomWidth');
-      if(!w) {
-        w = '0px';
-      }
-      else {
-        hasValue = true;
-      }
-      arr.push(w);
-      w = this.model.element.getStyle(element, 'borderLeftWidth');
-      if(!w) {
-        w = '0px';
-      }
-      else {
-        hasValue = true;
-      }
-      arr.push(w);
-      if(hasValue) return arr.join(' ');
+      var w = this.model.element.getStyle(element, 'borderWidth');
+      if (w && w != '') return w;
+      else return null;
+    }, this));
+
+  // border color
+  var borderColor = this.getCommonProperty(
+    selectedElements,
+    goog.bind(function(element) {
+      var w = this.model.element.getStyle(element, 'borderColor');
+      if (w && w !== '') return w;
       return null;
-  }, this));
+    }, this)
+  );
+  this.redrawBorderColor(borderColor);
+
+  // display width or reset borders if width is null
   if (borderWidth) {
     this.redrawBorderWidth(borderWidth);
-    // border color
-    var borderColor = this.getCommonProperty(
-      selectedElements,
-      goog.bind(function(element) {
-        var w;
-        w = this.model.element.getStyle(element, 'borderLeftColor');
-        if(w && w != "") return w;
-        w = this.model.element.getStyle(element, 'borderRightColor');
-        if(w && w != "") return w;
-        w = this.model.element.getStyle(element, 'borderTopColor');
-        if(w && w != "") return w;
-        w = this.model.element.getStyle(element, 'borderBottomColor');
-        if(w && w != "") return w;
-        return null;
-      }, this)
-    );
-    this.redrawBorderColor(borderColor);
   }
   else {
     this.resetBorder();
@@ -293,15 +262,9 @@ silex.view.pane.BorderPane.prototype.redraw =
   var borderStyle = this.getCommonProperty(
     selectedElements,
     goog.bind(function(element) {
-      var w;
-      w = this.model.element.getStyle(element, 'borderLeftStyle');
-      if(w && w != "0px") return w;
-      w = this.model.element.getStyle(element, 'borderRightStyle');
-      if(w && w != "0px") return w;
-      w = this.model.element.getStyle(element, 'borderTopStyle');
-      if(w && w != "0px") return w;
-      w = this.model.element.getStyle(element, 'borderBottomStyle');
-      if(w && w != "0px") return w;
+      var style;
+      style = this.model.element.getStyle(element, 'borderStyle');
+      if (style) return style;
       return null;
     }, this)
   );
@@ -312,14 +275,9 @@ silex.view.pane.BorderPane.prototype.redraw =
     this.borderStyleComboBox.setSelectedIndex(0);
   }
   // border radius
-  var borderRadius = [
-  this.getCommonProperty(selectedElements, (element) => this.model.element.getStyle(element, 'borderTopLeftRadius')),
-    this.getCommonProperty(selectedElements, (element) => this.model.element.getStyle(element, 'borderTopRightRadius')),
-    this.getCommonProperty(selectedElements, (element) => this.model.element.getStyle(element, 'borderBottomLeftRadius')),
-    this.getCommonProperty(selectedElements, (element) => this.model.element.getStyle(element, 'borderBottomRightRadius'))
-  ];
-  if (borderRadius[0] || borderRadius[1] || borderRadius[2] || borderRadius[3]) {
-    this.redrawBorderRadius(borderRadius);
+  var borderRadiusStr = this.getCommonProperty(selectedElements, (element) => this.model.element.getStyle(element, 'borderRadius'));
+  if (borderRadiusStr) {
+    this.redrawBorderRadius(borderRadiusStr);
   }
   else {
     this.resetBorderRadius();
@@ -332,22 +290,9 @@ silex.view.pane.BorderPane.prototype.redraw =
  * redraw border radius UI
  */
 silex.view.pane.BorderPane.prototype.redrawBorderRadius =
-    function(values) {
-  // The four values for each radii are given in the order
-  // top-left, top-right, bottom-right, bottom-left.
-  // If top-right is omitted it is the same as top-left.
-  if (!goog.isDef(values[1])) {
-    values[1] = values[0];
-  }
-  // If bottom-right is omitted it is the same as top-left.
-  if (!goog.isDef(values[2])) {
-    values[2] = values[0];
-  }
-  // If bottom-left is omitted it is the same as top-right.
-  if (!goog.isDef(values[3])) {
-    values[3] = values[1];
-  }
-  // get corner radius value
+    function(borderWidth) {
+  var values = borderWidth.split(' ');
+  // get corner radius value, get the first non-zero value
   var val = values[0];
   if (goog.isDef(values[1]) && val === '0' || val === '0px') {
     val = values[1];
@@ -409,23 +354,7 @@ silex.view.pane.BorderPane.prototype.redrawBorderWidth = function(borderWidth) {
   this.colorPicker.setEnabled(true);
   // top, right, bottom, left
   var values = borderWidth.split(' ');
-  // One-value syntax - width
-  if (values.length === 1) {
-    values[1] = values[2] = values[3] = values[0];
-  }
-  // Two-value syntax - horizontal vertical
-  else if (values.length === 2) {
-    values[2] = values[0];
-    values[3] = values[1];
-  }
-  // Three-value syntax - top vertical bottom
-  else if (values.length === 3) {
-    values[3] = values[1];
-  }
-  // Four-value syntax - top right bottom left
-  // else if (values.length  === 4) {
-  // do nothing, we're good!
-  // }
+  // get the first non-zero value
   var val = values[0];
   if (goog.isDef(values[1]) && val === '0' || val === '0px') {
     val = values[1];
@@ -436,12 +365,12 @@ silex.view.pane.BorderPane.prototype.redrawBorderWidth = function(borderWidth) {
   if (goog.isDef(values[3]) && val === '0' || val === '0px') {
     val = values[3];
   }
-  if (goog.isDef(val) && val !== '0' && val !== '0px') {
+  // if there is a non-zero value
+  if (val !== '0' && val !== '0px') {
     this.borderWidthInput.value = val.substr(0, val.indexOf('px'));
     // border placement
-    var idx;
     var len = this.borderPlacementCheckBoxes.length;
-    for (idx = 0; idx < len; idx++) {
+    for (var idx = 0; idx < len; idx++) {
       var checkBox = this.borderPlacementCheckBoxes[idx];
       if (values.length > idx && values[idx] !== '0' && values[idx] !== '0px') {
         checkBox.setChecked(true);

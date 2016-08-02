@@ -31,9 +31,9 @@ silex.utils.Url.workaroundCE = function(url) {
   // this is to handle the cases like ../../..//sites-silex/ or api/v1.0/dropbox/get//sites-silex/
   // this is a workaround for cloud explorer
   url = url.replace(/(.)(:|'|"|\(|)(\/\/+)/, (match, p1, p2, p3) => {
-      // case where /(//...///) do not have : or ' or " or ... in just before it 
+      // case where /(//...///) do not have : or ' or " or ... in just before it
       if (p2 === '') {
-        return p1 + "/";
+        return p1 + '/';
       }
       // this is not a bug, not like ../../..//sites-silex/
       return match;
@@ -118,7 +118,7 @@ silex.utils.Url.absolute2Relative = function(htmlString, baseUrl) {
   });
   // href (links and favicon)
   htmlString = htmlString.replace(/href="?([^" ]*)"/gi, function(match, group1, group2) {
-    if(group1.indexOf('#') === 0){
+    if (group1.indexOf('#') === 0) {
       // case of an anchor or page name
       return match;
     }
@@ -230,7 +230,8 @@ silex.utils.Url.relative2Absolute = function(htmlString, baseUrl) {
  */
 silex.utils.Url.getRelativePath = function(url, base) {
   // check if they are both absolute urls
-  if (silex.utils.Url.isAbsoluteUrl(base) === false || silex.utils.Url.isAbsoluteUrl(url) === false) {
+  if (silex.utils.Url.isAbsoluteUrl(base) === false || silex.utils.Url.isAbsoluteUrl(url) === false ||
+    url.indexOf('data:') === 0) {
     return url;
   }
   base = silex.utils.Url.workaroundCE(base);
@@ -282,8 +283,8 @@ silex.utils.Url.getRelativePath = function(url, base) {
  * @return {string} absolute url of the relative path
  */
 silex.utils.Url.getAbsolutePath = function(rel, base) {
-  if(rel.indexOf('#') === 0 || rel.indexOf('//') === 0) {
-    // do not convert to absolute the anchors or protocol agnostic urls
+  if (rel.indexOf('#') === 0 || rel.indexOf('//') === 0 || rel.indexOf('data:') === 0) {
+    // do not convert to absolute the anchors or protocol agnostic urls nor data: images
     return rel;
   }
   base = silex.utils.Url.workaroundCE(base);

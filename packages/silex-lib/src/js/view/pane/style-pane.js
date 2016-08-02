@@ -157,6 +157,8 @@ silex.view.pane.StylePane.prototype.contentChanged = function() {
     value = value.replace(/\n/, ' ');
   }
   this.iAmSettingValue = true;
-  this.controller.propertyToolController.multipleStylesChanged(value);
+  this.controller.propertyToolController.multipleStylesChanged(
+    silex.utils.Style.stringToStyle(value || '')
+  );
   this.iAmSettingValue = false;
 };

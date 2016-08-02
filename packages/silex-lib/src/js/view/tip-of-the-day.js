@@ -60,16 +60,16 @@ silex.view.TipOfTheDay.prototype.init = function()
     this.element.classList.add('loading');
     // capping to prevent harrassing the user
     let visits = 0;
-    if(window.localStorage) {
+    if (window.localStorage) {
       // init local storage
       let visitsStr = window.localStorage.getItem(silex.view.TipOfTheDay.NUM_VISITS_LOCAL_STORAGE_NAME);
-      if(visitsStr) {
+      if (visitsStr) {
         visits = parseInt(visitsStr, 10);
       }
       window.localStorage.setItem(silex.view.TipOfTheDay.NUM_VISITS_LOCAL_STORAGE_NAME, (visits + 1).toString());
       // the more visits the less chance we have to show the tip
       let rand = Math.random() * visits;
-      if(rand > 3) {
+      if (rand > 3) {
         silex.service.Tracker.getInstance().trackAction('tip-of-the-day', 'noshow', itemTrackAction, 0);
         return;
       }
@@ -80,7 +80,7 @@ silex.view.TipOfTheDay.prototype.init = function()
       let xhr = e.target;
       let items = xhr.getResponseJson();
       // loop on the items backward
-      let idx = items.length - (visits % items.length) -1;
+      let idx = items.length - (visits % items.length) - 1;
       let item = items[idx];
       // store for actions tracking (QA)
       itemTrackAction = item['title'];
@@ -89,7 +89,6 @@ silex.view.TipOfTheDay.prototype.init = function()
       let tmp = document.createElement('div');
       tmp.innerHTML = item['body'];
       let firstLink = tmp.querySelector('a');
-      console.log('firstLink', firstLink, tmp);
       // display the content
       let el = document.createElement('a');
       el.target='_blank';
@@ -131,7 +130,7 @@ silex.view.TipOfTheDay.prototype.init = function()
  */
 silex.view.TipOfTheDay.prototype.strip = function(html)
 {
-  var node = document.createElement("DIV");
+  var node = document.createElement('DIV');
   node.innerHTML = html;
-  return node.textContent || node.innerText || "";
+  return node.textContent || node.innerText || '';
 };

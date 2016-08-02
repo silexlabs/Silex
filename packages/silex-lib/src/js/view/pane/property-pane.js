@@ -123,7 +123,7 @@ silex.view.pane.PropertyPane.prototype.buildUi = function() {
       false,
       this);
   this.heightInput = goog.dom.getElementByClass('height-input');
-  this.heightInput.setAttribute('data-style-name', 'height');
+  this.heightInput.setAttribute('data-style-name', 'minHeight');
   goog.events.listen(this.heightInput,
       goog.events.EventType.INPUT,
       this.onPositionChanged,
@@ -159,29 +159,29 @@ silex.view.pane.PropertyPane.prototype.onPositionChanged =
   if (input.value !== '') {
     // get the value
     var value = parseFloat(input.value);
-    // handle minimum size
-    if (name === 'width' && value < silex.model.Element.MIN_WIDTH) {
-      value = silex.model.Element.MIN_WIDTH;
-    }
-    if (name === 'height' && value < silex.model.Element.MIN_HEIGHT) {
-      value = silex.model.Element.MIN_HEIGHT;
+    // handle minimum size of elements on stage
+    switch (name) {
+      case 'width': value = Math.max(value, silex.model.Element.MIN_WIDTH);
+      case 'minHeight': value = Math.max(value, silex.model.Element.MIN_HEIGHT);
     }
     // get the old value
     var oldValue = parseFloat(input.getAttribute('data-prev-value') || 0);
+    // keep track of the new value for next time
     input.setAttribute('data-prev-value', value);
     // compute the offset
     var offset = value - oldValue;
     // apply the change to all elements
     goog.array.forEach(this.selectedElements, function(element) {
       if (goog.isNumber(oldValue)) {
-        var elementStyle = this.model.property.getStyleObject(element);
-        var styleValue = 0;
-        if (elementStyle && elementStyle[name] && elementStyle[name] !== '') {
-          styleValue = parseFloat(elementStyle[name].substr(0, elementStyle[name].indexOf('px')));
-        }
         // compute the new value relatively to the old value,
         // in order to match the group movement
+        var elementStyle = this.model.element.getStyle(element, name);
+        var styleValue = 0;
+        if (elementStyle && elementStyle !== '') {
+          styleValue = parseFloat(elementStyle);
+        }
         var newValue = styleValue + offset;
+        // apply the change to the current element
         this.styleChanged(name,
             newValue + 'px',
             [element]);
@@ -267,7 +267,6 @@ silex.view.pane.PropertyPane.prototype.redraw = function(selectedElements, pageN
     this.selectedElements = selectedElements;
 
     var bb = this.model.property.getBoundingBox(selectedElements);
-
     // display position and size
     this.topInput.value = bb.top || '0';
     this.leftInput.value = bb.left || '0';

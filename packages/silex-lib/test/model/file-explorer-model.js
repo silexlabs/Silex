@@ -7,10 +7,8 @@ var FileExplorerModel = function () {
   var file_menu = '.menu-item-file';
   var file_open = '.menu-item-file-open';
   var file_explorer = '#silex-file-explorer';
-  
-  this.openFile = function(client, cbk) {
 
-    console.log('openFile file explorer(' + logging.argsToString(arguments));
+  this.openFile = function(client, cbk) {
 
     actions.switchFrame(client, null, function () {
       console.log('client');
@@ -26,8 +24,7 @@ var FileExplorerModel = function () {
   this.isFileExplorerVisible = function(client, cbk) {
 
     client.isVisible(file_explorer, function(err, isVisible) {
-        console.log(isVisible);
-        cbk(isVisible); 
+        cbk(isVisible);
     })
   }
 

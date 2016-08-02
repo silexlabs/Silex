@@ -208,6 +208,17 @@ silex.view.dialog.TextEditor.prototype.buildUi = function() {
   myToolbar.addChild(new goog.ui.ToolbarSeparator(), true);
   myToolbar.addChild(button, true);
 
+  // invert color button
+  var buttonColor = goog.ui.editor.ToolbarFactory.makeButton(
+      'invertColorBtn', 'invert the background color of the text editor', ' bg color', 'fa fa-adjust fa-lg');
+  goog.events.listen(
+      buttonColor,
+      goog.ui.Component.EventType.ACTION,
+      this.onInvertColor,
+      false,
+      this);
+  myToolbar.addChild(buttonColor, true);
+
   // Hook the toolbar into the field.
   var myToolbarController = new goog.ui.editor.ToolbarController(
       this.textField, myToolbar);
@@ -276,6 +287,7 @@ silex.view.dialog.TextEditor.prototype.setElementClassNames =
   htmlElement.style.overflowX = 'hidden';
   htmlElement.style.overflowY = 'scroll';
   iframeDoc.body.style.height = 'auto';
+  iframeDoc.body.style.position = 'initial';
 };
 
 
@@ -338,6 +350,14 @@ silex.view.dialog.TextEditor.prototype.openEditor = function() {
   // workaround "body of the text editor has min-width:0;"
   iframeDoc.documentElement.style.minWidth = '';
   iframeDoc.body.style.minWidth = '';
+
+  // listen for escape key inside the iframe
+  let keyHandler = new goog.events.KeyHandler(iframeDoc);
+  goog.events.listen(keyHandler, 'key', (e) => {
+    if(this.isOpened && e.keyCode == goog.events.KeyCodes.ESC) {
+      this.closeEditor();
+    }
+  });
 };
 
 
@@ -442,6 +462,19 @@ silex.view.dialog.TextEditor.prototype.setCustomCssStyles =
   // add the styles to the editor's dom
   silexStyle.innerHTML = customCssStyles;
 };
+
+
+/**
+ * user clicked invert bg color button
+ * invert the background color of the text editor
+ */
+silex.view.dialog.TextEditor.prototype.onInvertColor = function(event) {
+  var iframe = goog.dom.getElementsByTagNameAndClass('iframe', null, this.element)[0];
+  var bgColorStr = goog.style.getStyle(iframe, 'backgroundColor');
+  var bgColorArray = goog.color.hexToRgb(goog.color.parse(bgColorStr).hex);
+  var invertedArray = bgColorArray.map(color => 255 - color);
+  goog.style.setStyle(iframe, 'backgroundColor', goog.color.rgbArrayToHex(invertedArray));
+}
 
 
 /**

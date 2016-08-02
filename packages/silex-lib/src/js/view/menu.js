@@ -213,7 +213,6 @@ silex.view.Menu.prototype.redraw = function(selectedElements, pageNames, current
  */
 silex.view.Menu.prototype.onMenuEvent = function(type) {
   switch (type) {
-    case 'file.close':
     case 'file.new':
       this.controller.fileMenuController.newFile();
       break;
@@ -257,7 +256,10 @@ silex.view.Menu.prototype.onMenuEvent = function(type) {
     case 'tools.advanced.activate':
       this.controller.toolMenuController.toggleAdvanced();
       break;
-    case 'insert.page':
+    case 'tools.mobile.mode':
+      this.controller.toolMenuController.toggleMobileMode();
+      break;
+   case 'insert.page':
       this.controller.insertMenuController.createPage();
       break;
     case 'insert.text':
@@ -343,12 +345,12 @@ silex.view.Menu.prototype.onMenuEvent = function(type) {
     case 'help.contributors':
       window.open(silex.Config.CONTRIBUTORS);
       break;
-    case 'tools.pixlr.express':
-      this.controller.toolMenuController.pixlrExpress();
-      break;
-    case 'tools.pixlr.edit':
-      this.controller.toolMenuController.pixlrEdit();
-      break;
+    // case 'tools.pixlr.express':
+    //   this.controller.toolMenuController.pixlrExpress();
+    //   break;
+    // case 'tools.pixlr.edit':
+    //   this.controller.toolMenuController.pixlrEdit();
+    //   break;
     default:
       console.warn('menu type not found', type);
   }

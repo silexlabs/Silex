@@ -64,6 +64,9 @@ silex.controller.EditMenuController.prototype.undo = function() {
     var prevState = silex.controller.ControllerBase.undoHistory.pop();
     this.restoreState(prevState);
   }
+  else {
+    requestAnimationFrame(() => this.undo());
+  }
 };
 
 
@@ -119,7 +122,7 @@ silex.controller.EditMenuController.prototype.recursiveCopy = function(element) 
   // duplicate the node
   var res = {
     element: element.cloneNode(true),
-    style: this.model.property.getStyleObject(element),
+    style: this.model.property.getStyle(element),
     children: []
   };
   // case of a container, handle its children
@@ -169,15 +172,12 @@ silex.controller.EditMenuController.prototype.pasteSelection = function() {
       this.model.element.addElement(/** @type {Element} */ (container), element);
     }, this);
     // apply the offset to the elements, according to the scroll position
-    var offsetX = 100 + this.view.stage.getScrollX();
-    var offsetY = 100 + this.view.stage.getScrollY();
+    // i.e. move the bounding box to coord (100, 100)
     var bb = this.model.property.getBoundingBox(selection);
-    this.view.stage.followElementPosition(
-      selection,
-      offsetX - bb.left,
-      offsetY - bb.top
-    );
-    // reset selection
+    var offsetX = 100 + this.view.stage.getScrollX() - bb.left;
+    var offsetY = 100 + this.view.stage.getScrollY() - bb.top;
+    this.view.stage.moveElements(selection, offsetX, offsetY);
+    // select the new elements
     this.model.body.setSelection(selection);
   }
 };

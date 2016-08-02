@@ -113,6 +113,10 @@ silex.controller.FileMenuController.prototype.openFile = function(opt_cbk, opt_e
  * handle tracking and call the Dom helper
  */
 silex.controller.FileMenuController.prototype.publish = function() {
+  if(silex.utils.Notification.isActive) {
+    console.warn('Publish canceled because a modal dialog is opened already.');
+    return;
+  }
   this.tracker.trackAction('controller-events', 'request', 'file.publish', 0);
   if (!this.model.head.getPublicationPath()) {
     silex.utils.Notification.alert('I do not know where to publish your site.' +
@@ -137,10 +141,13 @@ silex.controller.FileMenuController.prototype.publish = function() {
           setTimeout(() => silex.utils.Notification.setInfoPanel('<a href="http://crowdfunding.silex.me/" target="_blank"><p style="text-align: center; border-top: 1px solid grey; padding-top: 10px;">Participate to the crowd funding!<BR />For a better Silex, let us help you help us.</p><div style="width: 100%; height: 100%; background-image: url(http://www.silex.me/assets/silex-01.jpg); background-repeat: no-repeat; background-position-x: center; background-position-y: center;"></div></a>'), 2000);
           var timer = setInterval(() => {
             silex.service.SilexTasks.getInstance().publishState(json => {
-              silex.utils.Notification.setText('<strong>' + json['status'] + '</strong>');
+              let msg = `<strong>${json['status']}</strong>`;
               if(json['stop'] === true) {
                 clearInterval(timer);
+                let path = this.model.head.getPublicationPath().replace('/exec/put/', '/exec/get/');
+                msg += `<p>Preview <a target="_blanck" href="${path}/index.html">your published site here</a>.</p>`;
               }
+              silex.utils.Notification.setText(msg);
             }, message => {
               console.error('Error: ', message);
               silex.utils.Notification.setText('<strong>An error unknown occured.</strong>');

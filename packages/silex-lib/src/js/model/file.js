@@ -153,14 +153,14 @@ silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk, opt_showLoader) 
   // make everything protocol agnostic to avoid problems with silex being https
   rawHtml = rawHtml.replace('http://', '//', 'g');
   // detect non-silex websites
-  if(rawHtml.indexOf('silex-runtime') < 0) {
+  if (rawHtml.indexOf('silex-runtime') < 0) {
     console.error('This is not a website editable in Silex.');
-    silex.utils.Notification.alert('I can not be open this website. I can only open website made with Silex. <a target="_blank" href="https://github.com/silexlabs/Silex/issues/282">More info here</a>.', function() {});
+    silex.utils.Notification.alert('I can not open this website. I can only open website made with Silex. <a target="_blank" href="https://github.com/silexlabs/Silex/issues/282">More info here</a>.', function() {});
     return;
   }
-  else if(rawHtml.indexOf('silex-published') >= 0) {
+  else if (rawHtml.indexOf('silex-published') >= 0) {
     console.error('This is a published website.');
-    silex.utils.Notification.alert('I can not be open this website. It is a published version of a Silex website. <a target="_blank" href="https://github.com/silexlabs/Silex/issues/282">More info here</a>.', function() {});
+    silex.utils.Notification.alert('I can not open this website. It is a published version of a Silex website. <a target="_blank" href="https://github.com/silexlabs/Silex/issues/282">More info here</a>.', function() {});
     return;
   }
   // remove the "silex-runtime" css class from the body while editing
@@ -189,7 +189,7 @@ silex.model.File.prototype.contentChanged = function(opt_cbk) {
   this.contentWindow_ = goog.dom.getFrameContentWindow(this.iFrameElement_);
   if (this.contentDocument_.body === null ||
     this.contentWindow_ === null ||
-    this.contentWindow_['$'] === null ) {
+    this.contentWindow_['$'] === null) {
     setTimeout(goog.bind(function() {
       this.contentChanged(opt_cbk);
     }, this), 0);
@@ -209,7 +209,7 @@ silex.model.File.prototype.contentChanged = function(opt_cbk) {
     console.error('error loading editable script');
     throw new Error('error loading editable script');
   }, this));
-}
+};
 
 
 /**
@@ -219,9 +219,9 @@ silex.model.File.prototype.contentChanged = function(opt_cbk) {
 silex.model.File.prototype.onContentLoaded = function(opt_cbk) {
   // handle retrocompatibility issues
   silex.utils.BackwardCompat.process(this.contentDocument_, this.model, (hasUpgraded) => {
-   // check the integrity and store silex style sheet which holds silex elements styles
-    this.model.property.initSilexStyleTag(this.contentDocument_);
-    this.model.property.setCurrentSilexStyleSheet(this.model.property.getSilexStyleSheet(this.contentDocument_));
+    // check the integrity and store silex style sheet which holds silex elements styles
+    this.model.property.initStyles(this.contentDocument_);
+    this.model.property.loadStyles(this.contentDocument_);
     // select the body
     this.model.body.setSelection([this.contentDocument_.body]);
     // make editable again
@@ -298,7 +298,8 @@ silex.model.File.prototype.getHtml = function() {
   // clone
   var cleanFile = /** @type {Node} */ (this.contentDocument_.cloneNode(true));
   // update style tag (the dom do not update automatically when we change document.styleSheets)
-  this.model.property.updateSilexStyleTag(/** @type {Document} */ (cleanFile));
+  this.model.property.updateStylesInDom(/** @type {Document} */ (cleanFile));
+  this.model.property.saveStyles(this.contentDocument_);
   // cleanup
   this.model.head.removeTempTags(/** @type {Document} */ (cleanFile).head);
   this.model.body.removeEditableClasses(/** @type {!Element} */ (cleanFile));
@@ -356,8 +357,8 @@ silex.model.File.prototype.getHtmlNextStep = function (cbk, generator) {
  */
 silex.model.File.prototype.getHtmlGenerator = function* () {
   // update style tag (the dom do not update automatically when we change document.styleSheets)
-  let updatedStyles = this.model.property.updateSilexStyleTag(this.contentDocument_, false);
-  yield;
+  let updatedStyles = this.model.property.getAllStyles(this.contentDocument_);
+  this.model.property.saveStyles(this.contentDocument_);
   // clone
   var cleanFile = /** @type {Node} */ (this.contentDocument_.cloneNode(true));
   yield;

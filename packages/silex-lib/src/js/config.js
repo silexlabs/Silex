@@ -51,7 +51,7 @@ silex.Config.debug = {
   /**
    * @type {boolean}
    */
-  preventQuit: false,
+  preventQuit: false
 };
 
 
@@ -217,17 +217,6 @@ silex.Config.menu = {
         label: 'Settings...',
         id: 'file.publish.settings',
         className: 'menu-item-file-publish-settings'
-      },
-      null,
-      {
-        label: 'Close File',
-        id: 'file.close',
-        className: 'menu-item-file-close',
-        globalKey: goog.events.KeyCodes.W,
-        shortcut: [[goog.events.KeyCodes.W, altKeyMac || ctrlKeyPC]],
-        tooltip: altKeyMacDisplay + ctrlKeyPCDisplay + 'w',
-        mnemonic: goog.events.KeyCodes.W,
-        accelerator: 'w'
       }
     ],
     [
@@ -281,21 +270,6 @@ silex.Config.menu = {
         className: 'menu-item-view-open-textEditor',
         tooltip: '↵'
       },
-      {
-        label: 'Edit image with Express',
-        id: 'tools.pixlr.express',
-        className: 'menu-item-tools-pixllr.express',
-        shortcut: [[goog.events.KeyCodes.ENTER, altKeyModifyer + goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT]],
-        tooltip: altKeyDisplay + '⇧ ↵'
-      },
-      {
-        label: 'Edit image with Pixlr',
-        id: 'tools.pixlr.edit',
-        className: 'menu-item-tools-pixllr.edit',
-        shortcut: [[goog.events.KeyCodes.ENTER, altKeyModifyer]],
-        tooltip: altKeyDisplay + '↵'
-      },
-      null,
       {
         label: 'Bring to front',
         id: 'edit.move.to.top',
@@ -365,6 +339,16 @@ silex.Config.menu = {
         tooltip: ctrlKeyDisplay + altKeyDisplay + '⇧ A',
         mnemonic: goog.events.KeyCodes.A,
         accelerator: 'a'
+      },
+      {
+        label: 'Mobile editor',
+        id: 'tools.mobile.mode',
+        className: 'menu-item-tools-mobile-mode',
+        checkable: true,
+        shortcut: [[goog.events.KeyCodes.M, altKeyModifyer]],
+        tooltip: ctrlKeyDisplay + altKeyDisplay + 'M',
+        mnemonic: goog.events.KeyCodes.M,
+        accelerator: 'm'
       },
       null,
       {
