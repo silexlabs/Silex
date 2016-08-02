@@ -343,7 +343,7 @@ exports.getFile = function(req, res, next, srcPath, dstPath, cbk){
  * get file from URL, to a service
  */
 exports.getFileFromUrl = function(req, res, next, srcPath, dstPath, cbk){
-  request(srcPath, 'utf8', function (error, response, body) {
+  request(srcPath, function (error, response, body) {
     if (!error && response.statusCode == 200) {
       exports.writeFileToService(req, res, next, dstPath, body, function(error) {
         cbk(error);
@@ -393,6 +393,7 @@ exports.writeFileToService = function(req, res, next, url, data, cbk){
     cbk();
   }
   else {
+    console.log('writeFileToService', req.body);
     req.body.data = data;
     exports.unifileRoute(req, res, next, url, function(response, status, responseData, mime_type, responseFilePath) {
       if (status.success){
