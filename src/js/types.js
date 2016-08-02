@@ -20,6 +20,7 @@ goog.provide('silex.types.Controller');
 goog.provide('silex.types.Model');
 goog.provide('silex.types.View');
 
+goog.require('silex.controller.ContextMenuController');
 goog.require('silex.controller.CssEditorController');
 goog.require('silex.controller.EditMenuController');
 goog.require('silex.controller.FileMenuController');
@@ -33,7 +34,6 @@ goog.require('silex.controller.StageController');
 goog.require('silex.controller.TextEditorController');
 goog.require('silex.controller.ToolMenuController');
 goog.require('silex.controller.ViewMenuController');
-goog.require('silex.controller.ContextMenuController');
 
 
 
@@ -213,6 +213,7 @@ silex.types.View = function() {
  * store references
  * @param {silex.view.Menu} menu
  * @param {silex.view.ContextMenu} contextMenu
+ * @param {silex.view.BreadCrumbs} breadCrumbs
  * @param {silex.view.Stage} stage
  * @param {silex.view.PageTool} pageTool
  * @param {silex.view.PropertyTool} propertyTool
@@ -228,6 +229,7 @@ silex.types.View = function() {
 silex.types.View.prototype.init = function(
     menu,
     contextMenu,
+    breadCrumbs,
     stage,
     pageTool,
     propertyTool,
@@ -247,6 +249,10 @@ silex.types.View.prototype.init = function(
    * @type {silex.view.ContextMenu}
    */
   this.contextMenu = contextMenu;
+  /**
+   * @type {silex.view.BreadCrumbs}
+   */
+  this.breadCrumbs = breadCrumbs;
   /**
    * @type {silex.view.Stage}
    */

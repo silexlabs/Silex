@@ -22,12 +22,15 @@
 
 goog.provide('silex.App');
 
+goog.require('silex.model.Property');
+goog.require('silex.model.Element');
 goog.require('goog.dom');
 goog.require('goog.dom.classes');
 goog.require('goog.dom.classlist');
 goog.require('goog.events');
 goog.require('goog.style');
 goog.require('silex.Config');
+goog.require('silex.controller.ContextMenuController');
 goog.require('silex.controller.CssEditorController');
 goog.require('silex.controller.EditMenuController');
 goog.require('silex.controller.FileMenuController');
@@ -41,9 +44,6 @@ goog.require('silex.controller.StageController');
 goog.require('silex.controller.TextEditorController');
 goog.require('silex.controller.ToolMenuController');
 goog.require('silex.controller.ViewMenuController');
-goog.require('silex.controller.ContextMenuController');
-goog.require('silex.model.Property');
-goog.require('silex.model.Element');
 goog.require('silex.model.Body');
 goog.require('silex.model.Element');
 goog.require('silex.model.File');
@@ -54,18 +54,20 @@ goog.require('silex.service.Tracker');
 goog.require('silex.types.Controller');
 goog.require('silex.types.Model');
 goog.require('silex.types.View');
+goog.require('silex.utils.BackwardCompat');
 goog.require('silex.utils.Dom');
 goog.require('silex.utils.DomCleaner');
-goog.require('silex.utils.Polyfills');
-goog.require('silex.utils.BackwardCompat');
 goog.require('silex.utils.InvalidationManager');
-goog.require('silex.view.Menu');
+goog.require('silex.utils.Polyfills');
+goog.require('silex.utils.Style');
 goog.require('silex.view.ContextMenu');
+goog.require('silex.view.BreadCrumbs');
+goog.require('silex.view.Menu');
 goog.require('silex.view.PageTool');
 goog.require('silex.view.PropertyTool');
 goog.require('silex.view.Splitter');
-goog.require('silex.view.TipOfTheDay');
 goog.require('silex.view.Stage');
+goog.require('silex.view.TipOfTheDay');
 goog.require('silex.view.Workspace');
 goog.require('silex.view.dialog.CssEditor');
 goog.require('silex.view.dialog.FileExplorer');
@@ -93,9 +95,6 @@ class App {
 
     // **
     // general initializations
-    // **
-    // tracker / qos
-    silex.service.Tracker.getInstance().trackAction('app-events', 'start', null, 2);
 
     // polyfills
     silex.utils.Polyfills.init();
@@ -134,6 +133,7 @@ class App {
     this.view.stage.buildUi();
     this.view.menu.buildUi();
     this.view.contextMenu.buildUi();
+    this.view.breadCrumbs.buildUi();
     this.view.pageTool.buildUi();
     this.view.htmlEditor.buildUi();
     this.view.cssEditor.buildUi();
@@ -190,6 +190,11 @@ class App {
     /** @type {silex.view.ContextMenu} */
     var contextMenu = new silex.view.ContextMenu(contextMenuElement, this.model, this.controller);
 
+    // bread crumbs
+    var breadCrumbsElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-bread-crumbs'));
+    /** @type {silex.view.BreadCrumbs} */
+    var breadCrumbs = new silex.view.BreadCrumbs(breadCrumbsElement, this.model, this.controller);
+
     // PageTool
     var pageToolElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-page-tool'));
     /** @type {silex.view.PageTool} */
@@ -240,6 +245,7 @@ class App {
     /** @type {silex.view.Splitter} */
     var propSplitter = new silex.view.Splitter(propSplitterElement, this.model, this.controller, () => workspace.resizeProperties());
     propSplitter.addLeft(contextMenuElement);
+    propSplitter.addLeft(breadCrumbsElement);
     propSplitter.addLeft(stageElement);
     propSplitter.addRight(propertyToolElement);
 
@@ -252,6 +258,7 @@ class App {
     this.view.init(
         menu,
         contextMenu,
+        breadCrumbs,
         stage,
         pageTool,
         propertyTool,
@@ -305,7 +312,7 @@ class App {
         new silex.controller.TextEditorController(this.model, this.view)
     );
   }
-}
+};
 
 
 // Ensures the symbol will be visible after compiler renaming

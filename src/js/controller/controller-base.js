@@ -46,11 +46,11 @@ silex.controller.ControllerBase = function(model, view) {
 
   // tracker
   this.tracker = silex.service.Tracker.getInstance();
-  window.onerror = goog.bind(function(msg, url, line) {
-    this.tracker.trackAction('controller-events', 'uncaught.error', msg + '- ' + url + ' - line: ' + line, -1);
-  }, this);
-};
 
+
+  // catchall error tracker
+  window.onerror = /** @type {function (string, string, number)} */ ((msg, url, line, colno, error) => this.tracker.trackOnError(msg, url, line, colno, error));
+};
 
 /**
  * {silex.service.Tracker} tracker used to pull statistics on the user actions
@@ -121,6 +121,9 @@ silex.controller.ControllerBase.prototype.undoCheckPoint = function() {
         silex.controller.ControllerBase.undoHistory[silex.controller.ControllerBase.undoHistory.length - 1].html !== state.html ||
         silex.controller.ControllerBase.undoHistory[silex.controller.ControllerBase.undoHistory.length - 1].page !== state.page) {
       silex.controller.ControllerBase.undoHistory.push(state);
+    }
+    else {
+      console.warn('Did not store undo state, because nothing has changed');
     }
   });
 };
@@ -232,7 +235,7 @@ silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
             goog.bind(function(element, imgElement) {
               // update element size
               this.model.element.setStyle(element, 'width', Math.max(silex.model.Element.MIN_WIDTH, imgElement.naturalWidth) + 'px');
-              this.model.element.setStyle(element, 'height', Math.max(silex.model.Element.MIN_HEIGHT, imgElement.naturalHeight) + 'px');
+              this.model.element.setStyle(element, 'minHeight', Math.max(silex.model.Element.MIN_HEIGHT, imgElement.naturalHeight) + 'px');
               this.tracker.trackAction('controller-events', 'success', 'insert.image', 1);
             }, this),
             goog.bind(function(element, message) {
@@ -277,7 +280,7 @@ silex.controller.ControllerBase.prototype.styleChanged = function(name, value, o
 
 /**
  * set a set of styles to the current selection
- * @param  {string|Object|CSSStyleDeclaration} style
+ * @param  {Object|null} style
  * @param {?Array.<Element>=} opt_elements
  */
 silex.controller.ControllerBase.prototype.multipleStylesChanged = function(style, opt_elements) {
@@ -327,6 +330,8 @@ silex.controller.ControllerBase.prototype.setClassName = function(name) {
   goog.array.forEach(elements, function(element) {
     // update the model
     this.model.element.setClassName(element, name);
+    // refresh the views
+    this.view.breadCrumbs.redraw();
   }, this);
 };
 
@@ -449,6 +454,35 @@ silex.controller.ControllerBase.prototype.toggleAdvanced = function() {
 
 
 /**
+ * refresh tools after mobile/desktop editor switch
+ */
+silex.controller.ControllerBase.prototype.refreshView = function() {
+  var pages = this.model.page.getPages();
+  var currentPage = this.model.page.getCurrentPage();
+  this.view.propertyTool.redraw(this.model.body.getSelection(), pages, currentPage);
+};
+
+
+/**
+ * set mobile mode
+ * @param {boolean} isMobile
+ */
+silex.controller.ControllerBase.prototype.setMobileMode = function(isMobile) {
+  this.view.workspace.setMobileEditor(isMobile);
+  this.refreshView();
+};
+
+
+/**
+ * toggle mobile mode
+ */
+silex.controller.ControllerBase.prototype.toggleMobileMode = function() {
+  this.view.workspace.setMobileEditor(!this.view.workspace.getMobileEditor());
+  this.refreshView();
+};
+
+
+/**
  * save or save-as
  * @param {?string=} opt_url
  * @param {?function()=} opt_cbk
@@ -511,7 +545,7 @@ silex.controller.ControllerBase.prototype.doSave = function(url, opt_cbk, opt_er
       goog.bind(function() {
         this.tracker.trackAction('controller-events', 'success', 'file.save', 1);
         silex.controller.ControllerBase.lastSaveUndoIdx = silex.controller.ControllerBase.undoHistory.length - 1;
-        this.fileOperationSuccess('File is saved.', true);
+        this.fileOperationSuccess('File is saved.', false);
         this.view.workspace.setPreviewWindowLocation();
         if (opt_cbk) {
           opt_cbk();
@@ -538,13 +572,16 @@ silex.controller.ControllerBase.prototype.fileOperationSuccess = function(opt_me
     // update fonts
     this.refreshFonts();
     // update dialogs
-    this.view.jsEditor.setValue(this.model.head.getHeadScript());
-    this.view.cssEditor.setValue(this.model.head.getHeadStyle());
-    this.view.htmlEditor.setValue('');
+    this.view.jsEditor.closeEditor();
+    this.view.cssEditor.closeEditor();
+    this.view.htmlEditor.closeEditor();
+    this.view.settingsDialog.closeEditor();
     this.view.contextMenu.redraw();
+    this.view.breadCrumbs.redraw();
   }
   if (opt_message) {
     // notify user
     silex.utils.Notification.notifySuccess(opt_message);
   }
 };
+

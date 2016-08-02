@@ -87,6 +87,12 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
     goog.dom.removeNode(metaNode);
   }
 
+  // remove JSON styles
+  let jsonStyleContainer = contentDocument.querySelector(`.${silex.model.Property.JSON_STYLE_TAG_CLASS_NAME}`);
+  if (jsonStyleContainer) {
+    goog.dom.removeNode(jsonStyleContainer);
+  }
+
   // final js script to store in js/script.js
   var jsString = '';
   var scriptTag = goog.dom.getElementByClass(
@@ -170,7 +176,7 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
     // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
     if (!silex.utils.Url.isAbsoluteUrl(relative)) {
       // case of the static scripts (all the other cases are /api/...)
-      if(relative.indexOf('static/') === 0) {
+      if (relative.indexOf('static/') === 0) {
         // from static/2.5/jquery.js to http://editor.silex.me/static/2.5/jquery.js
         relative = silex.utils.Url.getBaseUrl() + relative;
       }
@@ -200,7 +206,7 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
       var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
       if (!silex.utils.Url.isAbsoluteUrl(relative)) {
         // case of the static scripts (all the other cases are /api/...)
-        if(relative.indexOf('static/') === 0) {
+        if (relative.indexOf('static/') === 0) {
           // from static/2.5/jquery.js to http://editor.silex.me/static/2.5/jquery.js
           relative = silex.utils.Url.getBaseUrl() + relative;
         }
@@ -328,6 +334,10 @@ silex.utils.DomCleaner.filterBgImage = function(baseUrl, files, match, group1, g
 silex.utils.DomCleaner.isDownloadable = function(url) {
   // do not download files with ? or & since it is probably dynamic
   if (url.indexOf('?') >= 0 || url.indexOf('&') >= 0) {
+    return false;
+  }
+  // do not download data:* images
+  if (url.indexOf('data:') === 0) {
     return false;
   }
   // download relative paths

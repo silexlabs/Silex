@@ -137,10 +137,10 @@ silex.model.Page.PAGE_LINK_ACTIVE_CLASS_NAME = 'page-link-active';
  */
 silex.model.Page.prototype.getParentPage = function(element) {
   var parent = element.parentNode;
-  while (parent && !goog.dom.classlist.contains(/** @type {Element|null} */ (parent), silex.model.Page.PAGED_CLASS_NAME)) {
+  while (parent && !goog.dom.classlist.contains(/** @type {?Element} */ (parent), silex.model.Page.PAGED_CLASS_NAME)) {
     parent = parent.parentNode;
   }
-  return /** @type {Element|null} */ (parent);
+  return /** @type {?Element} */ (parent);
 };
 
 
@@ -170,12 +170,14 @@ silex.model.Page.prototype.getCurrentPage = function() {
   var bodyElement = this.model.body.getBodyElement();
   var pageName = null;
   try {
-    if(this.model.file.getContentWindow().jQuery(bodyElement).pageable) {
+    if (this.model.file.getContentWindow().jQuery(bodyElement).pageable) {
       pageName = this.model.file.getContentWindow().jQuery(bodyElement).pageable('option', 'currentPage');
     }
   }
-  catch(e) {
-    console.error('error, could not retrieve the current page', e);
+  catch (e) {
+    // there was a problem in the pageable plugin, return the first page
+    console.error('error, could not retrieve the current page, I will return the first page', e, this.getPages());
+    pageName = this.getPages()[0];
   }
   return pageName;
 };
@@ -200,7 +202,7 @@ silex.model.Page.prototype.refreshView = function() {
  */
 silex.model.Page.prototype.setCurrentPage = function(pageName) {
   var bodyElement = this.model.body.getBodyElement();
-  if(this.model.file.getContentWindow().jQuery(bodyElement).pageable) {
+  if (this.model.file.getContentWindow().jQuery(bodyElement).pageable) {
     this.model.file.getContentWindow().jQuery(bodyElement).pageable({'currentPage': pageName});
   }
   this.refreshView();
@@ -293,13 +295,13 @@ silex.model.Page.prototype.removePage = function(pageName) {
  * @param {string} displayName
  */
 silex.model.Page.prototype.createPage = function(name, displayName) {
-  var bodyElement = this.model.body.getBodyElement();
+  var container = this.model.body.getBodyElement().querySelector('.' + silex.model.Page.PAGES_CONTAINER_CLASS_NAME);
   // create the DOM element
   var aTag = goog.dom.createElement('a');
   aTag.setAttribute('id', name);
   aTag.setAttribute('data-silex-type', 'page');
   aTag.innerHTML = displayName;
-  goog.dom.appendChild(bodyElement, aTag);
+  goog.dom.appendChild(container, aTag);
   // for coherence with other silex elements
   goog.dom.classlist.add(aTag, silex.model.Page.PAGE_CLASS_NAME);
   // select this page
@@ -360,7 +362,7 @@ silex.model.Page.prototype.addToPage = function(element, pageName) {
  */
 silex.model.Page.prototype.removeFromPage = function(element, pageName) {
   goog.dom.classlist.remove(element, pageName);
-  if (!this.getPagesForElement(element).length > 0) {
+  if (this.getPagesForElement(element).length <= 0) {
     goog.dom.classlist.remove(element, silex.model.Page.PAGED_CLASS_NAME);
   }
   this.refreshView();

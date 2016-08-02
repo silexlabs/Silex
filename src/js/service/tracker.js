@@ -27,7 +27,12 @@ goog.provide('silex.service.Tracker');
  * @constructor
  */
 silex.service.Tracker = function() {
-};
+  /**
+   * catchall error tracker
+   * @type {sourceMap.SourceMapConsumer}
+   */
+  this.sourceMapConsumer = null;
+ };
 goog.addSingletonGetter(silex.service.Tracker);
 
 
@@ -48,12 +53,48 @@ silex.service.Tracker.SILEX_ACTIONS_CATEGORY = 'silex-event';
  * @param  {?number=} opt_value
  */
 silex.service.Tracker.prototype.trackAction = function(category, action, opt_label, opt_value) {
-  console.info('trackAction', arguments);
-  if (typeof Piwik === 'undefined') {
-    // console.error('Piwik not loaded');
-  }
-  else {
-    _paq.push(['trackEvent', category, action, opt_label, opt_value]);
-  }
+  console.info('trackAction (anonymized)', arguments);
+  _paq.push(['trackEvent', category, action, opt_label, opt_value]);
 };
 
+/** 
+ * @param {string} msg
+ * @param {string} url
+ * @param {number} line
+ * @param {?number=} colno
+ * @param {?Error=} error
+ */ 
+silex.service.Tracker.prototype.trackOnError = function(msg, url, line, colno, error) {
+// define a closure to execute once sourceMapConsumer is initialized
+  var trackWithSourceMap = () => {
+    try {
+      var originalPosition = this.sourceMapConsumer.originalPositionFor({
+        line: line,
+        column: colno
+      });
+      this.trackAction('controller-events', 'uncaught.error ' + msg, 'file: ' + originalPosition.source + ' - line: ' + originalPosition.line + ':' + originalPosition.column + ' - name: ' + originalPosition.name, -1);
+    }
+    catch(e) {
+      // do nothing if the error tracker itself fails
+    }
+  };
+  // load the source map if needed 
+  if(this.sourceMapConsumer) {
+    trackWithSourceMap();
+  }
+  else {
+    // load sourcemap
+    var oReq = new XMLHttpRequest();
+    oReq.open('GET', 'js/admin.js.map');
+    oReq.addEventListener('load', (event) => {
+      try {
+        this.sourceMapConsumer = new sourceMap.SourceMapConsumer(event.target.responseText);
+      }
+      catch(e) {
+        // do nothing if the error tracker itself fails
+      }
+      trackWithSourceMap();
+    });
+    oReq.send();
+  }
+}

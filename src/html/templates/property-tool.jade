@@ -52,7 +52,13 @@ h1.title1 Properties
 
     fieldset.small-font
       legend
-        | Show only on
+        | Visible on
+      .view-on-mobile
+        .view-on-mobile-check-container
+          span.view-on-mobile-check
+        label.view-on-mobile-label.xsmall-font
+          | mobile version
+        hr
       .pages-container
     fieldset.small-font
       legend Link
@@ -134,34 +140,34 @@ h1.title1 Properties
                 li#outset.goog-menuitem outset
           .border-placement-container.advanced-only
             .half-col
-              span.border-placement-check.goog-checkbox
+              span.top.border-placement-check.goog-checkbox
               label.border-placement-label Top
             .half-col
-              span.border-placement-check.goog-checkbox
-              label.border-placement-label Right
+              span.left.border-placement-check.goog-checkbox
+              label.border-placement-label Left
             .half-col
-              span.border-placement-check.goog-checkbox
+              span.bottom.border-placement-check.goog-checkbox
               label.border-placement-label Bottom
             .half-col
-              span.border-placement-check.goog-checkbox
-              label.border-placement-label Left
+              span.right.border-placement-check.goog-checkbox
+              label.border-placement-label Right
           .border-radius-container
             .border-radius-width-container
               label.border-radius-label Radius
               input.corner-radius-input(placeholder='-', type='number', min='0')
             .corner-placement-container.advanced-only
               .half-col
-                span.corner-placement-check.goog-checkbox
+                span.top-left.corner-placement-check.goog-checkbox
                 label.corner-placement-label Top Left
               .half-col
-                span.corner-placement-check.goog-checkbox
+                span.top-right.corner-placement-check.goog-checkbox
                 label.corner-placement-label Top Right
               .half-col
-                span.corner-placement-check.goog-checkbox
-                label.corner-placement-label Btm. Left
+                span.bottom-left.corner-placement-check.goog-checkbox
+                label.corner-placement-label Btm Left
               .half-col
-                span.corner-placement-check.goog-checkbox
-                label.corner-placement-label Btm. Right
+                span.bottom-right.corner-placement-check.goog-checkbox
+                label.corner-placement-label Btm Right
       .style-editor
         fieldset.small-font.style-property.advanced-only
           legend Styles

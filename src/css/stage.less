@@ -10,7 +10,7 @@
   background-color: @silexdarkgrey;
   position: absolute;
   top: @menuHeight + @contextMenuHeight;
-  bottom: 0;
+  bottom: @breadCrumbsHeight;
   left: @pageToolWidth;
   right: @propertiesToolWidth;
 }
@@ -34,3 +34,14 @@
 .silex-stage.loading-website-light iframe{
 }
 
+.mobile-mode {
+  .silex-stage-iframe {
+    max-width: @mobileStageWidth;
+    position: initial;
+  }
+  .silex-stage {
+    text-align: center;
+    background-image: url('../assets/stripe.png');
+    background-color: @silexlightgrey;
+  }
+}

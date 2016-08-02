@@ -85,8 +85,8 @@ silex.utils.Notification.isListeningForFocus = false;
  * @return {boolean}
  */
 silex.utils.Notification.useNative = function() {
-  return silex.utils.Notification.hasFocus == false
-    && ("Notification" in window && Notification.permission === "granted");
+  return silex.utils.Notification.hasFocus === false &&
+      ('Notification' in window && Notification.permission === 'granted');
 };
 
 
@@ -96,7 +96,7 @@ silex.utils.Notification.useNative = function() {
 silex.utils.Notification.activateNative = function() {
   if ('Notification' in window && Notification.permission !== 'denied') {
     if (!silex.utils.Notification.useNative()) {
-      goog.events.listenOnce(document, goog.events.EventType.CLICK, function(e) {
+      goog.events.listenOnce(document, goog.events.EventType.MOUSEMOVE, function(e) {
         Notification.requestPermission();
       });
     }
@@ -113,7 +113,7 @@ silex.utils.Notification.activateNative = function() {
  * @param {string} iconUrl
  */
 silex.utils.Notification.nativeNotification = function(message, iconUrl) {
-  if(!silex.utils.Notification.isListeningForFocus) {
+  if (!silex.utils.Notification.isListeningForFocus) {
     silex.utils.Notification.isListeningForFocus = true;
     window.onfocus = (e) => silex.utils.Notification.hasFocus = true;
     window.onblur = (e) => silex.utils.Notification.hasFocus = false;
@@ -129,7 +129,9 @@ silex.utils.Notification.nativeNotification = function(message, iconUrl) {
     }, silex.utils.Notification.NOTIFICATION_DURATION_MS);
   }
   else {
-    silex.utils.Notification.activateNative();
+    // FIXME: remove all calls to nativeNotification since it is not useful anymore
+    console.info('Desktop notifications disabled because it disturbs more than it serves');
+    // silex.utils.Notification.activateNative();
   }
 };
 
@@ -260,7 +262,7 @@ silex.utils.Notification.setInfoPanel = function(message) {
     infoPanel = document.createElement('DIV');
     infoPanel.classList.add('info-panel');
     // limit height so that small screens still see the close button
-    var stage = document.querySelector('#silex-stage-iframe')
+    var stage = document.querySelector('#silex-stage-iframe');
     infoPanel.style.maxHeight = Math.round(stage.offsetHeight * 2/3) + 'px';
     container.insertBefore(infoPanel, container.childNodes[container.childNodes.length - 1]);
   }

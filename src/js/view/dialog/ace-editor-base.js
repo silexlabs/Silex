@@ -55,7 +55,7 @@ goog.inherits(silex.view.dialog.AceEditorBase, silex.view.dialog.DialogBase);
 
 /**
  * instance of ace editor
- * @type {Ace|null}
+ * @type {?Ace}
  */
 silex.view.dialog.AceEditorBase.prototype.ace = null;
 
@@ -68,14 +68,14 @@ silex.view.dialog.AceEditorBase.prototype.iAmSettingValue = false;
 
 /**
  * currently opened editor
- * @type {silex.view.dialog.AceEditorBase|null}
+ * @type {?silex.view.dialog.AceEditorBase}
  */
 silex.view.dialog.AceEditorBase.currentEditor = null;
 
 
 /**
  * flag set to true when editors are docked
- * @type {boolean|null}
+ * @type {?boolean}
  */
 silex.view.dialog.AceEditorBase.isDocked = null;
 
@@ -130,8 +130,6 @@ silex.view.dialog.AceEditorBase.prototype.openEditor = function() {
 silex.view.dialog.AceEditorBase.prototype.closeEditor = function() {
   // remove the reference
   silex.view.dialog.AceEditorBase.currentEditor = null;
-  // hide the suggestion box (autocomplete)
-  this.ace.focus();
   // call super
   goog.base(this, 'closeEditor');
 };

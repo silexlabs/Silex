@@ -1,4 +1,4 @@
-/**
+/**inst
  * Silex, live web creation
  * http://projects.silexlabs.org/?/silex/
  *
@@ -16,10 +16,31 @@
 
 
 /**
+ * Parse and consume source maps. By Mozilla
+ * @see https://github.com/mozilla/source-map/
+ * @type {Object.<*>}
+ */
+var sourceMap = {};
+
+
+/**
+ * @param {string} rawSourceMap
+ * @constructor
+ */
+sourceMap.SourceMapConsumer = function (rawSourceMap) {}
+
+
+/**
+ * @param {{line:*, column:*, bias:*}} generatedPosition
+ * @return {{source:string, line:number, column:number, name:*}}
+ */
+sourceMap.SourceMapConsumer.prototype.originalPositionFor = function(generatedPosition) {};
+
+/**
  * piwik analytics
  * @constructor
  */
-function Piwik() {};
+function Piwik() {}
 
 /**
  * @type {Array.<string|number>}
@@ -39,7 +60,7 @@ Piwik.getAsyncTracker = function() {};
  * @param {?string=} e
  * @param {?number=} f
  */
-Piwik.prototype.trackEvent = function(c, d, e, f) {}
+Piwik.prototype.trackEvent = function(c, d, e, f) {};
 
 
 

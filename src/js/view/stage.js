@@ -55,7 +55,7 @@ silex.view.Stage = function(element, model, controller) {
    * invalidation mechanism
    * @type {InvalidationManager}
    */
-  this.invalidationManagerScroll = new InvalidationManager(500);
+  this.invalidationManagerScroll = new InvalidationManager(100);
 
 
   /**
@@ -63,6 +63,11 @@ silex.view.Stage = function(element, model, controller) {
    * @type {InvalidationManager}
    */
   this.invalidationManagerFocus = new InvalidationManager(500);
+
+  /**
+   * @type {!HTMLIFrameElement}
+   */
+  this.iframeElement = /** @type {!HTMLIFrameElement} */ (goog.dom.getElementByClass(silex.view.Stage.STAGE_CLASS_NAME));
 };
 
 /**
@@ -78,9 +83,15 @@ silex.view.Stage.BACKGROUND_CLASS_NAME = 'background';
 
 
 /**
+ * the Window of the iframe which contains the website
+ */
+silex.view.Stage.prototype.contentWindow = null;
+
+
+/**
  * the document of the iframe which contains the website
  */
-silex.view.Stage.prototype.documentElement = null;
+silex.view.Stage.prototype.contentDocument = null;
 
 
 /**
@@ -119,6 +130,7 @@ silex.view.Stage.prototype.isDragging = false;
  * flag to store the state
  */
 silex.view.Stage.prototype.isDown = false;
+silex.view.Stage.prototype.pendingMM = 0;
 
 
 /**
@@ -163,6 +175,15 @@ silex.view.Stage.prototype.buildUi = function() {
       false,
       this);
 
+  // listen on the element containing the stage too
+  // because in mobile editor, it is visible
+  // and should let the user reset selection
+  goog.events.listen(this.element,
+      'mousedown',
+      this.onMouseDownOverStageBg,
+      false,
+      this);
+
   // keyboard
   let keyHandler = new goog.events.KeyHandler(document);
   goog.events.listen(keyHandler, 'key', goog.bind(this.handleKey, this));
@@ -175,7 +196,7 @@ silex.view.Stage.prototype.buildUi = function() {
  * @param {Event} event
  */
 silex.view.Stage.prototype.onMouseMoveOverUi = function(event) {
-  let pos = goog.style.getRelativePosition(event, this.element);
+  var pos = goog.style.getRelativePosition(event, this.iframeElement);
   this.onMouseMove(/** @type {Element} */ (event.target), pos.x, pos.y, event.shiftKey);
   event.preventDefault();
 };
@@ -187,10 +208,11 @@ silex.view.Stage.prototype.onMouseMoveOverUi = function(event) {
  * @param {Event} event
  */
 silex.view.Stage.prototype.onMouseUpOverUi = function(event) {
+
   if (this.bodyElement !== null) {
     // if out of stage, release from drag of the plugin
     // simulate the mouse up on the iframe body
-    var pos =  goog.style.getRelativePosition(event, this.element);
+    var pos = goog.style.getRelativePosition(event, this.iframeElement);
     var newEvObj = document.createEvent('MouseEvent');
     newEvObj.initEvent('mouseup', true, true);
     newEvObj.clientX = pos.x;
@@ -198,6 +220,19 @@ silex.view.Stage.prototype.onMouseUpOverUi = function(event) {
     this.iAmClicking = true;
     this.bodyElement.dispatchEvent(newEvObj);
     this.iAmClicking = false;
+  }
+};
+
+
+/**
+ * Reset selection and focus
+ * Because user can clickon the stage bg in mobile mode
+ * to empty selection
+ * @param {Event} event
+ */
+silex.view.Stage.prototype.onMouseDownOverStageBg = function(event) {
+  if (this.bodyElement !== null) {
+    this.controller.stageController.selectNone();
   }
 };
 
@@ -211,59 +246,6 @@ silex.view.Stage.prototype.onPreventBackSwipe = function(event) {
   if (event.deltaX < 0 && this.getScrollX() <= 0) {
     event.preventDefault();
   }
-};
-
-
-/**
- * Resize the iframe body to the size of its content
- * This is to always keep space between the elements (main container etc)
- * and the stage border
- * @param {?Event=} event
- */
-silex.view.Stage.prototype.bodyElementSizeToContent = function(event) {
-  if (this.bodyElement) {
-    let containers = [];
-    goog.array.forEach(this.bodyElement.children, (element) => {
-      if(element.classList.contains(silex.model.Body.EDITABLE_CLASS_NAME)) {
-        containers.push(element);
-      }
-    });
-    if (containers && containers.length > 0) {
-      let bb = this.model.property.getBoundingBox(containers);
-      let viewportSize = this.viewport.getSize();
-      let desiredBodyWidth = bb.width + 100;
-      if (desiredBodyWidth < viewportSize.width) {
-        // let the css handle a body of the size of the stage
-        goog.style.setStyle(this.bodyElement, 'minWidth', '');
-      }
-      else {
-        // we want the body to be this size
-        // we use minWidth/minHeight in order to leave width/height to the user
-        goog.style.setStyle(
-            this.bodyElement,
-            'minWidth',
-            desiredBodyWidth + 'px');
-      }
-      let desiredBodyHeight = bb.height + 100;
-      if (desiredBodyHeight < viewportSize.height) {
-        // let the css handle a body of the size of the stage
-        goog.style.setStyle(this.bodyElement, 'minHeight', '');
-      }
-      else {
-        // we want the body to be this size
-        // we use minWidth/minHeight in order to leave width/height to the user
-        goog.style.setStyle(
-            this.bodyElement,
-            'minHeight',
-            desiredBodyHeight + 'px');
-      }
-    }
-  }
-  // else {
-    // could not resize body to match content because
-    // this.bodyElement is undefined
-    // this happens at startup
-  //}
 };
 
 
@@ -286,17 +268,8 @@ silex.view.Stage.prototype.removeEvents = function(bodyElement) {
  */
 silex.view.Stage.prototype.initEvents = function(contentWindow) {
   this.bodyElement = contentWindow.document.body;
-  this.documentElement = contentWindow.document;
-
-  // handle resize and the iframe body size
-  if (this.viewport) {
-    goog.events.removeAll(this.viewport);
-  }
-  this.viewport = new goog.dom.ViewportSizeMonitor(contentWindow);
-  goog.events.listen(this.viewport, goog.events.EventType.RESIZE,
-      this.bodyElementSizeToContent, false, this);
-  // init iframe body size
-  this.bodyElementSizeToContent();
+  this.contentDocument = contentWindow.document;
+  this.contentWindow = contentWindow;
 
   // listen on body instead of element because user can release
   // on the tool boxes
@@ -326,6 +299,13 @@ silex.view.Stage.prototype.initEvents = function(contentWindow) {
     let editableElement = goog.dom.getAncestorByClass(
         event.target,
         silex.model.Body.EDITABLE_CLASS_NAME) || this.bodyElement;
+    try {
+      // in firefox, this is needed to keep recieving events while dragging outside the iframe
+      // in chrome this will throw an error
+      editableElement.setCapture();
+    }
+    catch(e) {}
+    // handle the mouse event
     this.handleMouseDown(editableElement, x, y, event.shiftKey);
     // necessary in firefox to prevent default image drag
     event.preventDefault();
@@ -355,7 +335,6 @@ silex.view.Stage.prototype.redraw =
   this.resetFocus();
   // remember selection
   this.selectedElements = selectedElements;
-  this.bodyElementSizeToContent();
   this.currentPageName = currentPageName;
 };
 
@@ -393,15 +372,16 @@ silex.view.Stage.prototype.handleKey = function(event) {
       case goog.events.KeyCodes.DOWN:
         offsetY = amount;
       break;
+      case goog.events.KeyCodes.ESC:
+        this.controller.stageController.selectNone();
+      break;
     }
     // if there is something to move
     if (offsetX !== 0 || offsetY !== 0) {
       // mark as undoable
       this.controller.stageController.markAsUndoable();
       // apply the offset
-      this.followElementPosition(this.selectedElements, offsetX, offsetY);
-      // notify the controller
-      this.propertyChanged();
+      this.moveElements(this.selectedElements, offsetX, offsetY);
       // prevent default behavior for this key
       event.preventDefault();
     }
@@ -423,22 +403,26 @@ silex.view.Stage.prototype.handleKey = function(event) {
  * @param   {boolean} shiftKey state of the shift key
  */
 silex.view.Stage.prototype.handleMouseUp = function(target, x, y, shiftKey) {
+  // if click down was not on the UI, do nothing
+  // this can happen when the user selects text in the property tool box and releases outside the tool box
+  if (!this.isDown) {
+    return;
+  }
+  // give focus to the stage
+  this.resetFocus();
   // update state
   this.isDown = false;
-  // if it is not a click on the UI
-  if (this.iAmClicking !== true) {
-    this.resetFocus();
-  }
   // handle the mouse up
   if (this.isDragging) {
     // new container
     let dropZone = this.getDropZone(x, y) || {'element': this.bodyElement, 'zIndex': 0};
     // move all selected elements to the new container
     goog.array.forEach(this.selectedElements, function(element) {
-      if(!goog.dom.getAncestorByClass(element.parentNode, silex.model.Element.SELECTED_CLASS_NAME) &&
+      if (!goog.dom.getAncestorByClass(element.parentNode, silex.model.Element.SELECTED_CLASS_NAME) &&
          !goog.dom.classlist.contains(element, silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME)) {
         this.controller.stageController.newContainer(dropZone.element, element);
       }
+      this.cleanupElement(element);
     }, this);
     // change z order
     //this.bringSelectionForward();
@@ -539,6 +523,11 @@ silex.view.Stage.prototype.onMouseMove = function(target, x, y, shiftKey) {
     }
     // update states
     if (!this.isDragging && !this.isResizing) {
+      if(Math.abs(this.initialPos.x - x) + Math.abs(this.initialPos.y - y) < 5) {
+        // do nothing while the user has not dragged more than 5 pixels
+        return;
+      }
+
       // notify controller that a change is about to take place
       // marker for undo/redo
       this.controller.stageController.markAsUndoable();
@@ -552,16 +541,27 @@ silex.view.Stage.prototype.onMouseMove = function(target, x, y, shiftKey) {
         goog.dom.classlist.add(this.bodyElement, silex.model.Body.DRAGGING_CLASS_NAME);
       }
     }
-    else {
-      // keep the body size while dragging or resizing
-      this.bodyElementSizeToContent();
+
+    // do MouseMove is a function which will be called while the user holds the mouse button down
+    // even if the mouse do not move
+    // this is useful when holding an element near the border of the stage, to keep scrolling
+    var pendingMM = ++this.pendingMM;
+    function doMM(me) {
+      if(me.pendingMM === pendingMM && (me.isDragging || me.isResizing)) {
+        // update multiple selection according the the dragged element
+        me.multipleDragged(x, y, shiftKey);
+
+        // update scroll when mouse is near the border
+        me.updateScroll(x, y);
+
+        // update body size with the front-end.js API
+        me.contentWindow['resizeBody']();
+
+        // loop while the mouse has not moved
+        requestAnimationFrame(() => doMM(me));
+      }
     }
-
-    // update multiple selection according the the dragged element
-    this.multipleDragged(x, y, shiftKey);
-
-    // update scroll when mouse is near the border
-    this.updateScroll(x, y);
+    doMM(this);
   }
 };
 
@@ -590,6 +590,7 @@ silex.view.Stage.prototype.markAsDropZone = function(opt_element) {
  * @param {?Element=} opt_container   element into which to seach for the dropzone, by default the body
  * @return {{element: ?Element, zIndex: number}}  if not null this is the drop zone under the mouse cursor
  *                                              zIndex being the highest z-index encountered while browsing children
+ * TODO: use `pointer-events: none;` to get the dropzone with mouse events, or  `Document.elementsFromPoint()`
  */
 silex.view.Stage.prototype.getDropZone = function(x, y, opt_container) {
   // default value
@@ -643,7 +644,9 @@ silex.view.Stage.prototype.getVisibility = function(element) {
   let parent = /** @type {?Element} */ (element);
   while (parent &&
          (!goog.dom.classlist.contains(/** @type {Element} */ (parent), silex.model.Page.PAGED_CLASS_NAME) ||
-          goog.dom.classlist.contains(/** @type {Element} */ (parent), this.currentPageName))) {
+          goog.dom.classlist.contains(/** @type {Element} */ (parent), this.currentPageName)) &&
+         !(goog.dom.classlist.contains(document.body, 'mobile-mode') && goog.dom.classlist.contains(/** @type {Element} */ (parent), 'hide-on-mobile'))
+   ) {
     parent = /** @type {?Element} */ (parent.parentNode);
   }
   return parent === null;
@@ -661,17 +664,17 @@ silex.view.Stage.prototype.updateScroll = function(x, y) {
     let iframeSize = goog.style.getSize(this.element);
     let scrollX = this.getScrollX();
     let scrollY = this.getScrollY();
-    if (x < 30) {
-      this.setScrollX(scrollX - 25);
+    if (x < 100) {
+      this.setScrollX(scrollX - 100);
     }
-    else if (x > iframeSize.width - 30) {
-      this.setScrollX(scrollX + 25);
+    else if (x > iframeSize.width - 100) {
+      this.setScrollX(scrollX + 100);
     }
-    if (y < 30) {
-      this.setScrollY(scrollY - 25);
+    if (y < 100) {
+      this.setScrollY(scrollY - 100);
     }
-    else if (y > iframeSize.height - 30) {
-      this.setScrollY(scrollY + 25);
+    else if (y > iframeSize.height - 100) {
+      this.setScrollY(scrollY + 100);
     }
   });
 };
@@ -751,10 +754,28 @@ silex.view.Stage.prototype.followElementPosition =
     if (follower.tagName.toUpperCase() !== 'BODY' &&
       !goog.dom.getAncestorByClass(follower.parentNode, silex.model.Element.SELECTED_CLASS_NAME) &&
       !goog.dom.classlist.contains(follower, silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME)) {
-          let pos = goog.style.getPosition(follower);
-          this.controller.stageController.styleChanged('top', Math.round(pos.y + offsetY) + 'px', [follower], false);
-          this.controller.stageController.styleChanged('left', Math.round(pos.x + offsetX) + 'px', [follower], false);
+        let pos = goog.style.getPosition(follower);
+        let finalY = Math.round(pos.y + offsetY);
+        let finalX = Math.round(pos.x + offsetX);
+        this.controller.stageController.styleChanged('top', finalY + 'px', [follower], false);
+        this.controller.stageController.styleChanged('left', finalX + 'px', [follower], false);
+        // in case the element is in the flow,
+        // the css class .dragging-pending will set position:relative
+        // and we temporarily move the element with its attributes instead of css style tag in head
+        let style;
+        if(follower.style.left === '' || follower.style.top === '') {
+          // "start drag" case
+          style = this.contentWindow.getComputedStyle(follower);
         }
+        else {
+          // dragging case
+          style = follower.style;
+        }
+        let left = parseInt(style.left, 10) || 0;
+        let top = parseInt(style.top, 10) || 0;
+        follower.style.left = (left + offsetX) + 'px';
+        follower.style.top = (top + offsetY) + 'px';
+    }
   }, this);
 };
 
@@ -771,8 +792,8 @@ silex.view.Stage.prototype.followElementSize =
   // apply offset to other selected element
   goog.array.forEach(followers, function(follower) {
     // do not resize the stage or the un-resizeable elements
-    if (follower.tagName.toUpperCase() !== 'BODY'
-      && !goog.dom.classlist.contains(follower, silex.model.Body.PREVENT_RESIZABLE_CLASS_NAME)) {
+    if (follower.tagName.toUpperCase() !== 'BODY' &&
+      !goog.dom.classlist.contains(follower, silex.model.Body.PREVENT_RESIZABLE_CLASS_NAME)) {
       var pos = goog.style.getPosition(follower);
       var offsetPosX = pos.x;
       var offsetPosY = pos.y;
@@ -814,13 +835,13 @@ silex.view.Stage.prototype.followElementSize =
         offsetSizeX = -offsetSizeX;
         break;
       }
-      // handle .background element which is forced centered
-      if(goog.dom.classlist.contains(follower, 'background')) {
+      var size = goog.style.getSize(follower);
+      var borderBox = goog.style.getBorderBox(follower);
+      // handle .background element which is forced centered (only when the background is smaller than the body)
+      if(goog.dom.classlist.contains(follower, 'background') && size.width < this.bodyElement.offsetWidth - 50) {
         offsetSizeX *= 2;
       }
       // compute new size
-      var size = goog.style.getSize(follower);
-      var borderBox = goog.style.getBorderBox(follower);
       var newSizeW = size.width + offsetSizeX - borderBox.left - borderBox.right;
       var newSizeH = size.height + offsetSizeY - borderBox.top - borderBox.bottom;
       // handle min size
@@ -841,7 +862,7 @@ silex.view.Stage.prototype.followElementSize =
       this.controller.stageController.styleChanged('left', Math.round(offsetPosX) + 'px', [follower], false);
       // apply the new size
       this.controller.stageController.styleChanged('width', Math.round(newSizeW) + 'px', [follower], false);
-      this.controller.stageController.styleChanged('height', Math.round(newSizeH) + 'px', [follower], false);
+      this.controller.stageController.styleChanged('minHeight', Math.round(newSizeH) + 'px', [follower], false);
     }
   }, this);
 };
@@ -923,7 +944,7 @@ silex.view.Stage.prototype.getResizeDirection = function(target) {
  * @param {number} value to be set
  */
 silex.view.Stage.prototype.setScrollX = function(value) {
-  let dh = new goog.dom.DomHelper(this.documentElement);
+  let dh = new goog.dom.DomHelper(this.contentDocument);
   dh.getDocumentScrollElement().scrollLeft = value;
 };
 
@@ -933,7 +954,7 @@ silex.view.Stage.prototype.setScrollX = function(value) {
  * @param {number} value to be set
  */
 silex.view.Stage.prototype.setScrollY = function(value) {
-  let dh = new goog.dom.DomHelper(this.documentElement);
+  let dh = new goog.dom.DomHelper(this.contentDocument);
   dh.getDocumentScrollElement().scrollTop = value;
 };
 
@@ -944,7 +965,7 @@ silex.view.Stage.prototype.setScrollY = function(value) {
  * @return {number} the value
  */
 silex.view.Stage.prototype.getScrollX = function() {
-  let dh = new goog.dom.DomHelper(this.documentElement);
+  let dh = new goog.dom.DomHelper(this.contentDocument);
   return dh.getDocumentScroll().x;
 };
 
@@ -955,7 +976,7 @@ silex.view.Stage.prototype.getScrollX = function() {
  * @return {number} the value
  */
 silex.view.Stage.prototype.getScrollY = function() {
-  let dh = new goog.dom.DomHelper(this.documentElement);
+  let dh = new goog.dom.DomHelper(this.contentDocument);
   return dh.getDocumentScroll().y;
 };
 
@@ -965,7 +986,7 @@ silex.view.Stage.prototype.getScrollY = function() {
  * @return {number} the value
  */
 silex.view.Stage.prototype.getScrollMaxX = function() {
-  let dh = new goog.dom.DomHelper(this.documentElement);
+  let dh = new goog.dom.DomHelper(this.contentDocument);
   return goog.style.getSize(dh.getDocumentScrollElement()).width;
 };
 
@@ -975,7 +996,7 @@ silex.view.Stage.prototype.getScrollMaxX = function() {
  * @return {number} the value
  */
 silex.view.Stage.prototype.getScrollMaxY = function() {
-  let dh = new goog.dom.DomHelper(this.documentElement);
+  let dh = new goog.dom.DomHelper(this.contentDocument);
   return goog.style.getSize(dh.getDocumentScrollElement()).height;
 };
 
@@ -986,4 +1007,29 @@ silex.view.Stage.prototype.getScrollMaxY = function() {
 silex.view.Stage.prototype.propertyChanged = function() {
   // update property tool box
   this.controller.stageController.updateView();
+};
+
+
+/**
+ * reset 1 element properties since they are stored in the CSS by the model
+ */
+silex.view.Stage.prototype.cleanupElement = function(element) {
+  element.style.top = '';
+  element.style.left = '';
+};
+
+
+/**
+ * Move the selected elements in the DOM
+ * This is a convenience method which does as if the elements where dragged
+ */
+silex.view.Stage.prototype.moveElements = function(elements, offsetX, offsetY) {
+  // just like when mouse moves
+  this.followElementPosition(elements, offsetX, offsetY);
+  // notify the controller
+  this.propertyChanged();
+  // reset elements properties since they are stored in the CSS by the model
+  elements.forEach((element) => {
+    this.cleanupElement(element);
+  });
 };

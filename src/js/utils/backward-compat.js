@@ -33,7 +33,7 @@ silex.utils.BackwardCompat = function() {
  * used for backward compat
  * also the static files are taken from //{{host}}/static/Y-Z
  */
-silex.utils.BackwardCompat.LATEST_VERSION = [2, 2, 5];
+silex.utils.BackwardCompat.LATEST_VERSION = [2, 2, 6];
 
 
 /**
@@ -75,6 +75,7 @@ silex.utils.BackwardCompat.process = function(doc, model, cbk) {
   silex.utils.BackwardCompat.to2_2_3(version, doc, model, function() {
   silex.utils.BackwardCompat.to2_2_4(version, doc, model, function() {
   silex.utils.BackwardCompat.to2_2_5(version, doc, model, function() {
+  silex.utils.BackwardCompat.to2_2_6(version, doc, model, function() {
     // update //{{host}}/2.x/... to latest version
     var elements = doc.querySelectorAll('[data-silex-static]');
     goog.array.forEach(elements, function(element) {
@@ -86,7 +87,7 @@ silex.utils.BackwardCompat.process = function(doc, model, cbk) {
     metaNode.setAttribute('content', 'Silex v' + silex.utils.BackwardCompat.LATEST_VERSION.join('.'));
     // continue
     cbk(hasToUpdate);
-  })})})})});
+  });});});});});});
 };
 
 
@@ -143,16 +144,90 @@ silex.utils.BackwardCompat.hasToUpdate = function(initialVersion, targetVersion)
  */
 silex.utils.BackwardCompat.to2_2_6 = function(version, doc, model, cbk) {
 
-  if(silex.utils.BackwardCompat.hasToUpdate(version, [2, 2, 6])) {
-     var pagesContainer = doc.querySelector(silex.model.Page.PAGES_CONTAINER_CLASS_NAME);
-    if(!pagesContainer) {
+//  if (silex.utils.BackwardCompat.hasToUpdate(version, [2, 2, 6]))
+  {
+    // pass w3c validation => Error: Using the meta element to specify the document-wide default language is obsolete. Consider specifying the language on the root element instead.
+    let metaToRemove = doc.querySelector('meta[http-equiv=content-language]');
+    if(metaToRemove) metaToRemove.parentNode.removeChild(metaToRemove);
+    // container for page anchors, this will also be the menu when switching to mobile version
+    let pagesContainer = doc.querySelector('.' + silex.model.Page.PAGES_CONTAINER_CLASS_NAME);
+    if (!pagesContainer) {
       pagesContainer = doc.createElement('div');
       pagesContainer.classList.add(silex.model.Page.PAGES_CONTAINER_CLASS_NAME);
       doc.body.appendChild(pagesContainer);
-      var pages = doc.querySelectorAll(silex.model.Page.PAGE_CLASS_NAME);
-      goog.array.forEach(pages, (page) => pagesContainer.appendChild(page));
+    }
+    let button = doc.querySelector('.menu-button');
+    if (!button) {
+      let div = doc.createElement('div');
+      div.setAttribute('data-silex-type', 'image');
+      div.setAttribute('data-silex-id', 'silex-id-hamburger-menu');
+      div.className = 'menu-button editable-style silex-id-hamburger-menu image-element page-page-1 paged-element prevent-draggable prevent-resizable';
+      let img = doc.createElement('img');
+      img.alt = 'open mobile menu';
+      img.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAoCAYAAAC8cqlMAAAB5UlEQVR42u2ZPWvCUBSGM+UfFO3e3dLu/QN+oKj4EUXRQREEJYgoiCAu6qCogyDo7iJ21UUaKqEgCC4iiEMGB3UVgsnpTWj/wfVK2nvhGbKEPJyT996TMMzPGg6H5mKx+GgkyuWyeTQasb8OTDwef4tEIp8+n+/LYIjJZJJHQiwzm81M6OLDarWqNpsNjEYgEJCy2ewT0+/3TagighElNFAnQT6ft1ARKkJFqMgfFvF4PFpuEwFtdrcRqVarIIoirFYrIiyXSxiPx+B2u/GJBINBuF6vQHopigK1Wg2fCMdxcLlciIuoqgqNRgOfiN1uB3Qwg91uB8fjkQiHwwEmkwne1qLxS0VuKKJle71eh06nQ4Rmswk8z+MVcTqdsNlsQJZlotF7Pp8hk8ngE4lGo/qN7xG/vV4Pb0Xm8zlxkdPpBGgMx/+yJxIJKBQKRMjlcuBwOGhq/Q+RcDgMsViMCFrAuFwu/CKDwQC22y1IkkSE/X4PgiDo+xc2Ea0S9zjGa/Hb7Xbxifj9fj0K7yFSqVTwtlY6nYbpdKpPiSRYLBbQarX0PYymFhWhIlSEilCRW6GdyUqlkoVZr9dsKpXiOY6TtW+7BkNBz/7ebrcf9L+6Xq+XRYPMMyrTq5EIhUIvaAjTJb4BBNQ2yhnth0wAAAAASUVORK5CYII=';
+      img.className = 'silex-element-content';
+      // add the button
+      div.appendChild(img);
+      pagesContainer.appendChild(div);
+    }
+    // move all page anchors to the new container
+    var pages = doc.querySelectorAll('.' + silex.model.Page.PAGE_CLASS_NAME);
+    goog.array.forEach(pages, (page) => pagesContainer.appendChild(page));
+  }
+  // create the JSON array of styles when needed (will check even if not upgrading)
+  let jsonStyleTag = doc.querySelector('.' + silex.model.Property.JSON_STYLE_TAG_CLASS_NAME);
+  if (!jsonStyleTag) {
+    let styleTag = doc.querySelector('.' + silex.model.Property.INLINE_STYLE_TAG_CLASS_NAME);
+    let styleSheet = null;
+    for (var idx in doc.styleSheets) {
+      if (doc.styleSheets[idx].ownerNode && doc.styleSheets[idx].ownerNode == styleTag) {
+        styleSheet = doc.styleSheets[idx];
+      }
+    }
+    if (styleSheet === null) {
+      console.error('BackwardCompat error: no stylesheet found');
+    }
+    else {
+      let stylesObj = {};
+      let mobileStylesObj = {};
+      for (var idx = 0; idx < styleSheet.cssRules.length; idx++) {
+        let cssRule = styleSheet.cssRules[idx];
+        let id = cssRule.selectorText.substr(1);
+        let style = silex.utils.Style.styleToObject(cssRule.style);
+        if (cssRule['media']) {
+          mobileStylesObj[id] = style;
+        }
+        else {
+          // handle the case of old sites with position: absolute in the styles, which is now in front-end.css
+          if(style.position === 'absolute') style.position = undefined;
+          stylesObj[id] = style;
+        }
+      }
+      // create the tag
+      jsonStyleTag = doc.createElement('script');
+      jsonStyleTag.setAttribute('type', 'text/javascript');
+      jsonStyleTag.classList.add(silex.model.Property.JSON_STYLE_TAG_CLASS_NAME);
+      goog.dom.appendChild(doc.head, jsonStyleTag);
+      // fill the tag with the JSON data
+      jsonStyleTag.innerHTML = '[' + JSON.stringify({
+        'desktop': stylesObj,
+        'mobile': mobileStylesObj
+      }) + ']';
     }
   }
+  // convert all css style `height` to `min-height`
+  // FIXME: should be done only when updating, but due to a fix after release of 2.2.6 this will be run for all templates
+  let arr = /** @type {!Array.<Object.<*>>} */ (JSON.parse(jsonStyleTag.innerHTML));
+  for(let modeName in arr[0]) for(let id in arr[0][modeName]) {
+    let style = arr[0][modeName][id];
+    if(style['height']) {
+      style['min-height'] = style['height'];
+      style['height'] = undefined;
+    }
+  }
+  jsonStyleTag.innerHTML = JSON.stringify(arr);
+  model.property.loadStyles(doc);
+
   cbk();
 };
 
@@ -169,7 +244,7 @@ silex.utils.BackwardCompat.to2_2_5 = function(version, doc, model, cbk) {
 //  if(silex.utils.BackwardCompat.hasToUpdate(version, [2, 2, 5])) {
     // remove jquery.ui.touch-punch.min.js
     let element = doc.querySelector('[src$="jquery.ui.touch-punch.min.js"]');
-    if(element) {
+    if (element) {
       goog.dom.removeNode(element);
     }
 
@@ -177,9 +252,9 @@ silex.utils.BackwardCompat.to2_2_5 = function(version, doc, model, cbk) {
     // add the [data-silex-static] attributes
     function handle(attrName) {
       let elements = doc.querySelectorAll('[' + attrName + ']');
-      goog.array.forEach(elements, function (element) {
+      goog.array.forEach(elements, function(element) {
         var attr = element.getAttribute(attrName);
-        if(attr.indexOf('//static.silex.') > -1) {
+        if (attr.indexOf('//static.silex.') > -1) {
           attr = attr.replace('//static.silex.me', '//' + host + '/static');
           attr = attr.replace('//static.silex.io', '//' + host + '/static');
           element.setAttribute(attrName, attr);
@@ -241,7 +316,7 @@ silex.utils.BackwardCompat.to2_2_4 = function(version, doc, model, cbk) {
       }
       else {
         // create a style tag to hold Silex elements style
-        var styleTag = model.property.initSilexStyleTag(doc);
+        var styleTag = model.property.initStyles(doc);
         // fill with Silex elements styles
         styleTag.innerHTML = allStyles;
         // end of the process

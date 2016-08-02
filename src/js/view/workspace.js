@@ -115,7 +115,7 @@ silex.view.Workspace.prototype.startWatchingResize = function(view) {
  */
 silex.view.Workspace.prototype.startWatchingUnload = function() {
   window.onbeforeunload = () => {
-    if(this.controller.fileMenuController.isDirty()) {
+    if (this.controller.fileMenuController.isDirty()) {
       return 'You have unsaved modifications, are you sure you want to leave me?';
     }
     return null;
@@ -196,7 +196,7 @@ silex.view.Workspace.prototype.setPreviewWindowLocation = function (opt_location
       }
       catch(e) {
         // case of responsize
-        this.previewWindow.frames[1].location.reload(true)
+        this.previewWindow.frames[1].location.reload(true);
       }
     }
     this.previewWindow.focus();
@@ -208,3 +208,30 @@ silex.view.Workspace.prototype.setPreviewWindowLocation = function (opt_location
     }
   }
 };
+
+
+/**
+ * set/get mobile editor mode
+ * @param {boolean} isMobileEditor
+ */
+silex.view.Workspace.prototype.setMobileEditor = function(isMobileEditor) {
+  if(isMobileEditor) {
+    document.body.classList.add('mobile-mode');
+    if(!this.model.head.getEnableMobile()) {
+      silex.utils.Notification.alert('Warning: you are entering the mobile editor, but your website is not configured to support it, so you need to open the menu "File", then "Settings" and "Enable mobile version".', () => {});
+    }
+  }
+  else {
+    document.body.classList.remove('mobile-mode');
+  }
+};
+
+
+/**
+ * set/get mobile editor mode
+ * @return {boolean}
+ */
+silex.view.Workspace.prototype.getMobileEditor = function() {
+  return document.body.classList.contains('mobile-mode');
+};
+

@@ -33,12 +33,13 @@ silex.model.Body = function(model, view) {
   this.model = model;
   // get the iframe
   // retrieve the element which will hold the body of the opened file
-  this.iframeElement = goog.dom.getElementByClass(silex.view.Stage.STAGE_CLASS_NAME);
+  this.iframeElement = /** @type {!HTMLIFrameElement} */ (goog.dom.getElementByClass(silex.view.Stage.STAGE_CLASS_NAME));
 };
 
 
 /**
  * element which holds the opened website
+ * @type {HTMLIFrameElement}
  */
 silex.model.Body.prototype.iframeElement = null;
 
@@ -49,14 +50,6 @@ silex.model.Body.prototype.iframeElement = null;
  * @type {string}
  */
 silex.model.Body.SILEX_TYPE_ATTR_NAME = 'data-silex-type';
-
-
-/**
- * value of the type attribute
- * @const
- * @type {string}
- */
-silex.model.Body.SILEX_TYPE_CONTAINER = 'container';
 
 
 /**
@@ -155,6 +148,7 @@ silex.model.Body.prototype.setSelection = function(selectedElements) {
   this.view.propertyTool.redraw(selectedElements, pages, page);
   this.view.stage.redraw(selectedElements, pages, page);
   this.view.contextMenu.redraw(selectedElements, pages, page);
+  this.view.breadCrumbs.redraw(selectedElements, pages, page);
 };
 
 
@@ -202,7 +196,7 @@ silex.model.Body.prototype.initUiHandles = function(element) {
  * @param {boolean} isEditable
  */
 silex.model.Body.prototype.setEditable = function(rootElement, isEditable) {
-  if(!rootElement) {
+  if (!rootElement) {
     // this happens on firefox sometimes at start
     // FIXME: find why this happens instead of this workaround
     return;
@@ -227,7 +221,7 @@ silex.model.Body.prototype.setEditable = function(rootElement, isEditable) {
 
   // prevent the user from following links
   var links = rootElement.querySelectorAll('a');
-  goog.array.forEach(elements, function(element) {
+  goog.array.forEach(links, function(element) {
     goog.events.listen(element, goog.events.EventType.CLICK, function(e) {
       e.preventDefault();
     }, false, this);
