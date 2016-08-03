@@ -1,6 +1,11 @@
 /* imports custom fonts */
-@import url(//fonts.googleapis.com/css?family=Open+Sans:400,700);
 @import url(../libs/font-awesome/css/font-awesome.min.css);
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Roboto'), url('../roboto.woff2') format('woff2');
+}
 
 ::-webkit-scrollbar {
     width: 10px;
@@ -25,7 +30,7 @@
 }
 
 body {
-  font-family: 'Open Sans', sans-serif;
+  font-family: 'Roboto', sans-serif;
   overflow: hidden;
   height: inherit; /* without this, there is a white space bellow the dialogs background */
   background-color: @silexmediumgrey;
