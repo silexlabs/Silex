@@ -20,30 +20,30 @@
     include ./page-tool.jade
 
   .silex-context-menu
-    .button.save.off(title='Save')
-    .button.undo.off(title='Undo')
-    .button.redo.off(title='Redo')
+    .button.save.fa-inverse.fa-cloud.off(title='Save')
+    .button.undo.fa-inverse.fa-undo.off(title='Undo')
+    .button.redo.fa-inverse.fa-repeat.off(title='Redo')
     .button.sep
     .button.text(title='Text')
     .button.image(title='Image')
     .button.container(title='Container')
-    .button.html(title='Html')
+    .button.html.fa-inverse.fa-code(title='Html')
     .button.sep
-    .button.delete.off(title='Delete')
+    .button.delete.fa-inverse.fa-trash.off(title='Delete')
     .button.copy.off(title='Copy')
     .button.paste.off(title='Paste')
     .button.sep
-    .button.top.off(title='To top')
-    .button.up.off(title='Up')
-    .button.down.off(title='Down')
-    .button.bottom.off(title='To bottom')
+    .button.top.fa-inverse.fa-angle-double-up.off(title='To top')
+    .button.up.fa-inverse.fa-angle-up.off(title='Up')
+    .button.down.fa-inverse.fa-angle-down.off(title='Down')
+    .button.bottom.fa-inverse.fa-angle-double-down.off(title='To bottom')
     .button.sep
-    .button.preview.off(title='Preview')
+    .button.preview.fa-inverse.fa-eye.off(title='Preview')
     .button.previewResponsize.off(title='Preview in Responsize')
     .button.sep
-    a.button.right.help(href='https://github.com/silexlabs/Silex/wiki', title="get help here!", target='_blank')
-    .button.right.mobile(title="Mobile editor")
-    .button.right.desktop(title="Desktop editor")
+    a.button.right.help.fa-inverse.fa-question-circle(href='https://github.com/silexlabs/Silex/wiki', title="get help here!", target='_blank')
+    .button.right.mobile.fa-inverse.fa-mobile(title="Mobile editor")
+    .button.right.desktop.fa-inverse.fa-desktop(title="Desktop editor")
 
   .tip-of-the-day
     img(src='assets/tooltip-callout.gif')
