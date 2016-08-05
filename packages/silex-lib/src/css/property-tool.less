@@ -1,6 +1,6 @@
 /* "apollo mode" UI */
-.advanced-mode-on .silex-property-tool .switch-apollo-mode button {
-  background-position: -188px 0;
+.advanced-mode-on .silex-property-tool .switch-apollo-mode button:after {
+  content: '\f205';
 }
 .silex-property-tool {
   color: #FFF;
@@ -26,23 +26,20 @@
     label {
       font-size: 12px;
       float: right;
-      margin-top: 6px;
+      margin-top: 17px;
     }
     button {
       float: left;
-      width: 79px;
-      height: 24px;
-      margin-right: 10px;
-      margin-top: 5px;
-      background-image: url('../assets/switch.png');
-      background-repeat: no-repeat;
-      background-size: 267px 25px;
-      background-position: -1px 0;
-      transition: background-position 0.1s steps(2, end);
       cursor: pointer;
-      background-color: white;
+      background-color: transparent;
       border: none;
-      border-radius: 3px;
+      margin: 8px 10px 0px 0px;
+      outline: none;
+      &:after {
+        font-family: FontAwesome;
+        font-size: xx-large;
+        content: '\f204'
+      }
     }
   }
   .main-container {

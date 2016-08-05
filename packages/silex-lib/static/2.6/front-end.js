@@ -47,7 +47,10 @@ $(function() {
     $('body > *').each(function (index) {
       var el = $(this);
       // take elements visible on the current page
-      if(el.hasClass('editable-style') && (!el.hasClass('paged-element') || el.hasClass($('body').pageable('option').currentPage))) {
+      if(el.hasClass('editable-style') &&
+        (!el.hasClass('paged-element') || el.hasClass($('body').pageable('option').currentPage)) &&
+        (!el.hasClass('hide-on-mobile') || win.width() >= 480)
+      ) {
         var position = el.position();
         var right = position.left + el.width();
         var bottom = position.top + el.height();
