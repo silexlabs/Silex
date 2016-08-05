@@ -342,9 +342,6 @@ silex.view.Menu.prototype.onMenuEvent = function(type) {
     case 'help.contribute':
       window.open(silex.Config.CONTRIBUTE);
       break;
-    case 'help.contributors':
-      window.open(silex.Config.CONTRIBUTORS);
-      break;
     // case 'tools.pixlr.express':
     //   this.controller.toolMenuController.pixlrExpress();
     //   break;

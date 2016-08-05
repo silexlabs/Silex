@@ -129,14 +129,7 @@ silex.Config.FORK_CODE = 'https://github.com/silexlabs/Silex';
  * Link of the menu
  * @const
  */
-silex.Config.CONTRIBUTE = 'https://github.com/silexlabs/Silex/blob/master/docs/contribute.md';
-
-
-/**
- * Link of the menu
- * @const
- */
-silex.Config.CONTRIBUTORS = 'https://github.com/silexlabs/Silex/blob/master/docs/contributors.md';
+silex.Config.CONTRIBUTE = 'https://github.com/silexlabs/Silex/wiki/Contribute';
 
 
 /**
@@ -497,11 +490,6 @@ silex.Config.menu = {
       {
         label: 'Source code and download Silex',
         id: 'help.forkMe',
-        className: 'menu-item-help-forkMe'
-      },
-      {
-        label: 'Contributors',
-        id: 'help.contributors',
         className: 'menu-item-help-forkMe'
       }
     ]
