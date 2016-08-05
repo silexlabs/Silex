@@ -347,43 +347,64 @@ silex.view.Stage.prototype.handleKey = function(event) {
   // not in text inputs
   if (event.target.tagName.toUpperCase() !== 'INPUT' &&
       event.target.tagName.toUpperCase() !== 'TEXTAREA') {
-    // compute the number of pixels to move
-    let amount = 10;
-    if (event.shiftKey === true) {
-      amount = 1;
+    if(this.isMobileMode()) {
+      switch (event.keyCode) {
+        case goog.events.KeyCodes.LEFT:
+          this.controller.editMenuController.moveToTop();
+        break;
+        case goog.events.KeyCodes.RIGHT:
+          this.controller.editMenuController.moveToBottom();
+        break;
+        case goog.events.KeyCodes.UP:
+          this.controller.editMenuController.moveUp()
+        break;
+        case goog.events.KeyCodes.DOWN:
+          this.controller.editMenuController.moveDown()
+        break;
+        case goog.events.KeyCodes.ESC:
+          this.controller.stageController.selectNone();
+        break;
+      }
     }
-    if (event.altKey === true) {
-      // this is the bring forward/backward shortcut
-      return;
-    }
-    // compute the direction
-    let offsetX = 0;
-    let offsetY = 0;
-    switch (event.keyCode) {
-      case goog.events.KeyCodes.LEFT:
-        offsetX = -amount;
-      break;
-      case goog.events.KeyCodes.RIGHT:
-        offsetX = amount;
-      break;
-      case goog.events.KeyCodes.UP:
-        offsetY = -amount;
-      break;
-      case goog.events.KeyCodes.DOWN:
-        offsetY = amount;
-      break;
-      case goog.events.KeyCodes.ESC:
-        this.controller.stageController.selectNone();
-      break;
-    }
-    // if there is something to move
-    if (offsetX !== 0 || offsetY !== 0) {
-      // mark as undoable
-      this.controller.stageController.markAsUndoable();
-      // apply the offset
-      this.moveElements(this.selectedElements, offsetX, offsetY);
-      // prevent default behavior for this key
-      event.preventDefault();
+    else {
+      // compute the number of pixels to move
+      let amount = 10;
+      if (event.shiftKey === true) {
+        amount = 1;
+      }
+      if (event.altKey === true) {
+        // this is the bring forward/backward shortcut
+        return;
+      }
+      // compute the direction
+      let offsetX = 0;
+      let offsetY = 0;
+      switch (event.keyCode) {
+        case goog.events.KeyCodes.LEFT:
+          offsetX = -amount;
+        break;
+        case goog.events.KeyCodes.RIGHT:
+          offsetX = amount;
+        break;
+        case goog.events.KeyCodes.UP:
+          offsetY = -amount;
+        break;
+        case goog.events.KeyCodes.DOWN:
+          offsetY = amount;
+        break;
+        case goog.events.KeyCodes.ESC:
+          this.controller.stageController.selectNone();
+        break;
+      }
+      // if there is something to move
+      if (offsetX !== 0 || offsetY !== 0) {
+        // mark as undoable
+        this.controller.stageController.markAsUndoable();
+        // apply the offset
+        this.moveElements(this.selectedElements, offsetX, offsetY);
+        // prevent default behavior for this key
+        event.preventDefault();
+      }
     }
   }
 };
@@ -645,7 +666,7 @@ silex.view.Stage.prototype.getVisibility = function(element) {
   while (parent &&
          (!goog.dom.classlist.contains(/** @type {Element} */ (parent), silex.model.Page.PAGED_CLASS_NAME) ||
           goog.dom.classlist.contains(/** @type {Element} */ (parent), this.currentPageName)) &&
-         !(goog.dom.classlist.contains(document.body, 'mobile-mode') && goog.dom.classlist.contains(/** @type {Element} */ (parent), 'hide-on-mobile'))
+         !(this.isMobileMode() && goog.dom.classlist.contains(/** @type {Element} */ (parent), 'hide-on-mobile'))
    ) {
     parent = /** @type {?Element} */ (parent.parentNode);
   }
@@ -752,6 +773,7 @@ silex.view.Stage.prototype.followElementPosition =
     // or if it is the stage
     // or if it has been marked as not draggable
     if (follower.tagName.toUpperCase() !== 'BODY' &&
+      !this.isMobileMode() &&
       !goog.dom.getAncestorByClass(follower.parentNode, silex.model.Element.SELECTED_CLASS_NAME) &&
       !goog.dom.classlist.contains(follower, silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME)) {
         let pos = goog.style.getPosition(follower);
@@ -1032,4 +1054,12 @@ silex.view.Stage.prototype.moveElements = function(elements, offsetX, offsetY) {
   elements.forEach((element) => {
     this.cleanupElement(element);
   });
+};
+
+
+/**
+ *
+ */
+silex.view.Stage.prototype.isMobileMode = function() {
+  return goog.dom.classlist.contains(document.body, 'mobile-mode');
 };
