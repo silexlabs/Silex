@@ -17,7 +17,7 @@
     "lint:server"
   ],
   "scripts": {
-    "start": "node dist/server/server.js",
+    "start": "pm2 start .pm2.json",
     "start:debug": "SILEX_DEBUG=true node dist/server/server.js",
     "build": "npm run build:css && npm run build:html && npm run build:js:release ",
     "build:css": "node_modules/.bin/lessc src/css/_styles.less dist/client/css/admin.css --source-map",
@@ -51,6 +51,7 @@
     "jade": "1.11.0",
     "less": "2.7.1",
     "lodash": "3.10.0",
+    "pm2": "^1.1.3",
     "qs": "4.0.0",
     "request": "2.69.0",
     "superstartup-closure-compiler": "0.1.7",
