@@ -58,11 +58,22 @@ silex.view.dialog.SettingsDialog = function(element, model, controller) {
   this.bindTextField('.social-pane .input-twitter', (v) => this.controller.settingsDialogController.setTwitterSocial(v));
   this.bindTextField('.general-pane .input-favicon-path', (v) => this.controller.settingsDialogController.setFaviconPath(v));
   this.bindTextField('.social-pane .input-image-path', (v) => this.controller.settingsDialogController.setThumbnailSocialPath(v));
-  this.bindTextField('.publish-pane .input-publication-path', (v) => this.controller.settingsDialogController.setPublicationPath(v));
+  this.bindTextField('.publish-pane .input-publication-path', (v) => {
+    v = this.getPublicationPath();
+    this.controller.settingsDialogController.setPublicationPath(v)
+  });
+  this.bindTextField('.publish-pane .input-publication-service', (v) => {
+    v = this.getPublicationPath();
+    this.controller.settingsDialogController.setPublicationPath(v)
+  });
 
   // image path browse button
-  this.bindBrowseButton('.general-pane .browse-favicon-path', () => this.controller.settingsDialogController.browseFaviconPath());
-  this.bindBrowseButton('.publish-pane .browse-publication-path', () => this.controller.settingsDialogController.browsePublishPath());
+  this.bindBrowseButton('.general-pane .browse-favicon-path', () => {
+    this.controller.settingsDialogController.browseFaviconPath(() => this.openEditor());
+  });
+  this.bindBrowseButton('.publish-pane .browse-publication-path', () => {
+    this.controller.settingsDialogController.browsePublishPath(() => this.openEditor());
+  });
 };
 
 // inherit from silex.view.dialog.DialogBase
@@ -201,7 +212,44 @@ silex.view.dialog.SettingsDialog.prototype.setThumbnailSocialPath = function(opt
  * @param {?string=} opt_path   the publication path
  */
 silex.view.dialog.SettingsDialog.prototype.setPublicationPath = function(opt_path) {
-  this.setInputValue('.publish-pane .input-publication-path', opt_path);
+  // fill the options of the service selector
+  const services = silex.service.CloudStorage.getInstance().getServices();
+  const select = this.element.querySelector('.publish-pane .input-publication-service');
+  select.innerHTML = '';
+  for(let idx in services) {
+    const service = services[idx];
+    const option = document.createElement('option');
+    option.value = service;
+    option.innerHTML = service;
+    select.appendChild(option);
+  }
+
+  // set the values
+  if(opt_path && opt_path.indexOf('exec/put')) {
+    // split: /api/1.0/github/exec/put/Silex/...
+    // into: "github" and /Silex/...
+    const split = opt_path.split(/.*1\.0\/(.*)\/exec\/put(.*)$/);
+    this.setInputValue('.publish-pane .input-publication-service', split[1]);
+    this.setInputValue('.publish-pane .input-publication-path', split[2]);
+  }
+  else {
+    this.setInputValue('.publish-pane .input-publication-service', '');
+    this.setInputValue('.publish-pane .input-publication-path', '');
+  }
+};
+
+
+/**
+ * get the pubication path from text fields
+ * @return {string} the publication path
+ */
+silex.view.dialog.SettingsDialog.prototype.getPublicationPath = function() {
+  const service = this.element.querySelector('.publish-pane .input-publication-service').value;
+  const path = this.element.querySelector('.publish-pane .input-publication-path').value;
+  if(service && path &&service !== '' && path !== '') {
+    return `/api/1.0/${ service }/exec/put${ path }`;
+  }
+  return '';
 };
 
 
@@ -281,6 +329,7 @@ silex.view.dialog.SettingsDialog.prototype.openDialog = function(opt_cbk) {
 silex.view.dialog.SettingsDialog.prototype.openEditor = function() {
   // call super
   goog.base(this, 'openEditor');
+  this.setPublicationPath(this.model.head.getPublicationPath());
 };
 
 
