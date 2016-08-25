@@ -75,7 +75,7 @@ silex.controller.SettingsDialogController.prototype.browse = function(trackActio
 /**
  * the user clicked "browse" button in the publish settings panel
  */
-silex.controller.SettingsDialogController.prototype.browsePublishPath = function() {
+silex.controller.SettingsDialogController.prototype.browsePublishPath = function(opt_cbk) {
   this.browse(
     'publish.browse',
     { 'mimetypes': ['text/directory'] },
@@ -84,6 +84,8 @@ silex.controller.SettingsDialogController.prototype.browsePublishPath = function
       url = url.replace('/exec/get', '/exec/put');
       // set the new publication path
       this.model.head.setPublicationPath(url);
+      // notify caller (used to reopen settings)
+      if(opt_cbk) opt_cbk();
     });
 };
 
@@ -110,7 +112,7 @@ silex.controller.SettingsDialogController.prototype.browseThumbnailSocialPath = 
     'thumbnail-social.browse',
     { 'mimetypes': ['image/jpeg', 'image/png', 'image/gif', 'image/ico'] },
     (url) => {
-      // set the new publication path
+      // set the new path
       this.model.head.setThumbnailSocialPath(url);
     });
 };
@@ -139,7 +141,7 @@ silex.controller.SettingsDialogController.prototype.setPublicationPath = functio
 
 
 /**
- * callback for the publication path text input
+ * callback for the favicon path text input
  * @param {?string=} opt_data
  */
 silex.controller.SettingsDialogController.prototype.setFaviconPath = function(opt_data) {

@@ -30,6 +30,8 @@ goog.require('goog.net.XhrIo');
  */
 silex.service.CloudStorage = function() {
   this.filePicker = ce.api.CloudExplorer.get('silex-file-explorer');
+  // debug
+  window['silexFilePicker'] = this.filePicker;
 };
 goog.addSingletonGetter(silex.service.CloudStorage);
 
@@ -142,4 +144,15 @@ silex.service.CloudStorage.prototype.loadLocal = function(url, cbk, opt_errCbk) 
       }
     }
   });
+};
+silex.service.CloudStorage.prototype.getServices = function() {
+  // init services list
+  try {
+    // init the list (do not work? is it needed to have a list before the user has opened CE?)
+    // this.filePicker['ctrl']['listServices']();
+    return this.filePicker['ctrl']['state']['serviceList']['arrayKeys']();
+  }
+  catch(e) {
+    return [];
+  }
 };
