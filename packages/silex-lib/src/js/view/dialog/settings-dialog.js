@@ -58,11 +58,22 @@ silex.view.dialog.SettingsDialog = function(element, model, controller) {
   this.bindTextField('.social-pane .input-twitter', (v) => this.controller.settingsDialogController.setTwitterSocial(v));
   this.bindTextField('.general-pane .input-favicon-path', (v) => this.controller.settingsDialogController.setFaviconPath(v));
   this.bindTextField('.social-pane .input-image-path', (v) => this.controller.settingsDialogController.setThumbnailSocialPath(v));
-  this.bindTextField('.publish-pane .input-publication-path', (v) => this.controller.settingsDialogController.setPublicationPath(v));
+  this.bindTextField('.publish-pane .input-publication-path', (v) => {
+    v = this.getPublicationPath();
+    this.controller.settingsDialogController.setPublicationPath(v)
+  });
+  this.bindTextField('.publish-pane .input-publication-service', (v) => {
+    v = this.getPublicationPath();
+    this.controller.settingsDialogController.setPublicationPath(v)
+  });
 
   // image path browse button
-  this.bindBrowseButton('.general-pane .browse-favicon-path', () => this.controller.settingsDialogController.browseFaviconPath());
-  this.bindBrowseButton('.publish-pane .browse-publication-path', () => this.controller.settingsDialogController.browsePublishPath());
+  this.bindBrowseButton('.general-pane .browse-favicon-path', () => {
+    this.controller.settingsDialogController.browseFaviconPath(() => this.openEditor());
+  });
+  this.bindBrowseButton('.publish-pane .browse-publication-path', () => {
+    this.controller.settingsDialogController.browsePublishPath(() => this.openEditor());
+  });
 };
 
 // inherit from silex.view.dialog.DialogBase
@@ -105,20 +116,23 @@ silex.view.dialog.SettingsDialog.prototype.buildUi = function() {
 
 /**
  * click in the navigation
- * adds the desired pane class + '-visible' to this.element
  * @param {Event} e
  */
 silex.view.dialog.SettingsDialog.prototype.onNavClick = function(e) {
-  // select the target pane and make it visible
-  goog.array.forEach(silex.view.dialog.SettingsDialog.PANE_CSS_CLASSES,
-    function(paneCssClass) {
-      if (e.target.classList.contains(paneCssClass)) {
-        this.element.classList.add(paneCssClass + '-visible');
-      }
-      else {
-        this.element.classList.remove(paneCssClass + '-visible');
-      }
-    }, this);
+  this.openPane(e.target.getAttribute('data-pane'));
+};
+
+
+/**
+ * open the given pane
+ * adds the desired pane class + '-visible' to this.element
+ * @param {string} paneCssClass
+ */
+silex.view.dialog.SettingsDialog.prototype.openPane = function(paneCssClass) {
+  // close all panes
+  silex.view.dialog.SettingsDialog.PANE_CSS_CLASSES.forEach(className => this.element.classList.remove(className + '-visible'));
+  // open the one we want
+  this.element.classList.add(paneCssClass + '-visible');
 };
 
 
@@ -201,7 +215,54 @@ silex.view.dialog.SettingsDialog.prototype.setThumbnailSocialPath = function(opt
  * @param {?string=} opt_path   the publication path
  */
 silex.view.dialog.SettingsDialog.prototype.setPublicationPath = function(opt_path) {
-  this.setInputValue('.publish-pane .input-publication-path', opt_path);
+  // fill the options of the service selector
+  const services = silex.service.CloudStorage.getInstance().getServices();
+  const select = this.element.querySelector('.publish-pane .input-publication-service');
+  select.innerHTML = '';
+  for(let idx in services) {
+    const service = services[idx];
+    const option = document.createElement('option');
+    option.value = service;
+    option.innerHTML = service;
+    select.appendChild(option);
+  }
+
+  // set the values
+  if(opt_path && opt_path.indexOf('exec/put')) {
+    // split: /api/1.0/github/exec/put/Silex/...
+    // into: "github" and /Silex/...
+    const split = opt_path.split(/.*1\.0\/(.*)\/exec\/put(.*)$/);
+    this.setInputValue('.publish-pane .input-publication-service', split[1]);
+    this.setInputValue('.publish-pane .input-publication-path', split[2]);
+    if(services.length === 0) {
+      // add the configured service even if user is not yet connected
+      // also happens when the cloud explorer window has not been opened yet
+      const option = document.createElement('option');
+      option.value = split[1];
+      option.innerHTML = split[1];
+      select.appendChild(option);
+    }
+    this.element.classList.remove('publication-path-not-set');
+  }
+  else {
+    this.setInputValue('.publish-pane .input-publication-service', '');
+    this.setInputValue('.publish-pane .input-publication-path', '');
+    this.element.classList.add('publication-path-not-set');
+  }
+};
+
+
+/**
+ * get the pubication path from text fields
+ * @return {string} the publication path
+ */
+silex.view.dialog.SettingsDialog.prototype.getPublicationPath = function() {
+  const service = this.element.querySelector('.publish-pane .input-publication-service').value;
+  const path = this.element.querySelector('.publish-pane .input-publication-path').value;
+  if(service && path &&service !== '' && path !== '') {
+    return `/api/1.0/${ service }/exec/put${ path }`;
+  }
+  return '';
 };
 
 
@@ -268,9 +329,11 @@ silex.view.dialog.SettingsDialog.prototype.setTwitterSocial = function(opt_twitt
 /**
  * open settings dialog
  * @param {?function()=} opt_cbk   callback to be called when the user closes the dialog
+ * @param {?string=} opt_paneCssClass   css class of the pane to open
  */
-silex.view.dialog.SettingsDialog.prototype.openDialog = function(opt_cbk) {
+silex.view.dialog.SettingsDialog.prototype.openDialog = function(opt_cbk, opt_paneCssClass) {
   this.onClose = opt_cbk;
+  if(opt_paneCssClass) this.openPane(opt_paneCssClass);
   this.openEditor();
 };
 
@@ -281,6 +344,7 @@ silex.view.dialog.SettingsDialog.prototype.openDialog = function(opt_cbk) {
 silex.view.dialog.SettingsDialog.prototype.openEditor = function() {
   // call super
   goog.base(this, 'openEditor');
+  this.setPublicationPath(this.model.head.getPublicationPath());
 };
 
 
