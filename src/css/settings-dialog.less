@@ -125,7 +125,7 @@
       .input-service, .input-path {
         display: block;
         width: 100%;
-        padding: 10px;
+        padding: 5px;
         margin-top: 5px;
       }
       label {
@@ -153,5 +153,9 @@
   }
   h3.title {
     font-weight: 100;
+  }
+  /* hide the labels and inputs when publication path is not set */
+  &.publication-path-not-set .publish-pane label {
+    display: none;
   }
 }

@@ -6,9 +6,9 @@
   .body
     .left-pane
       ul.tree
-        li.general-pane General
-        li.social-pane Social Networks
-        li.publish-pane Publish settings
+        li.general-pane(data-pane="general-pane") General
+        li.social-pane(data-pane="social-pane") Social Networks
+        li.publish-pane(data-pane="publish-pane") Publish settings
     .right-pane
       .pane.general-pane
         ul
@@ -102,4 +102,4 @@
                 select.input-service.input-publication-service(value="")
               label.path Path
                 input.input-path.input-publication-path(type="text", value="")
-              button.browse-publication-path(type="button") Change
+              button.browse-publication-path(type="button") Configure
