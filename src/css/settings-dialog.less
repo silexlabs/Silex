@@ -110,10 +110,7 @@
         .input-text {
           width: 100%;
         }
-        .input-url {
-          width: 85%;
-        }
-        .input-url, .input-text {
+        .input-text {
           background-color: @silexdarkgrey;
           color: white;
         }
@@ -122,6 +119,27 @@
           margin: 10px;
           padding: 10px;
         }
+      }
+    }
+    .publish-pane {
+      .input-service, .input-path {
+        display: block;
+        width: 100%;
+        padding: 5px;
+        margin-top: 5px;
+      }
+      label {
+        margin-bottom: 20px;
+        display: inline-block;
+      }
+      label.service {
+        width: 29%;
+      }
+      label.path {
+        width: 69%;
+      }
+      button.browse-publication-path {
+        display: block;
       }
     }
   }
@@ -135,5 +153,9 @@
   }
   h3.title {
     font-weight: 100;
+  }
+  /* hide the labels and inputs when publication path is not set */
+  &.publication-path-not-set .publish-pane label {
+    display: none;
   }
 }

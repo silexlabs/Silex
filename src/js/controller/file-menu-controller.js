@@ -125,7 +125,7 @@ silex.controller.FileMenuController.prototype.publish = function() {
         goog.bind(function() {
           this.view.settingsDialog.openDialog(function() {
             //here the panel was closed
-          });
+          }, 'publish-pane');
           this.view.workspace.redraw(this.view);
           this.tracker.trackAction('controller-events', 'cancel', 'file.publish', 0);
         }, this));
