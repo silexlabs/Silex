@@ -1,172 +1,206 @@
-.goog-menu {
-  background-color: @silexmediumdarkgrey;
-  border: none;
-  box-shadow: 2px 2px 6px rgba(0,0,0,.2);
-
-  .goog-menuseparator {
-    border-top-color: @silexdarkgrey;
+.silex-icons-menu {
+  background-color: @silexmediumgrey; /* hide sub menu during opening */
+  overflow: hidden;
+  position: fixed;
+  z-index: 2; /* over the sub menus */
+  .icon {
+    cursor: pointer;
+    width: 25px;
+    height: 18px;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: contain;
+    transition: opacity 0.1s linear 0s;
+    text-decoration: none;
   }
-
-  .goog-menuitem-content {
-    display: inline;
+  .off {
+    opacity: .5;
   }
-
-  .goog-menuitem {
-    line-height: 26px;
-
-    &:hover, &:focus, &:active {
-      background-color: @silexlightgrey;
-      color: #FFF;
-      border-style: solid;
-      border-color: @silexlightgrey;
-
-      & > .goog-menuitem-content {
-        color: #FFF;
-      }
-
-    }
-
-    .goog-menuitem-content {
-      color: #FFF;
-    }
-
+  .on {
+    opacity: 1;
   }
-
-  .goog-menuitem-hightlight {}
-
-  .goog-menuitem-accel {
-    color: #999;
+  .icon:hover {
+    .on();
   }
-
+  div.icon, a.icon, span.icon {
+    font-family: FontAwesome;
+    font-size: large;
+  }
+  .sep {
+    border: 1px solid @silexmediumdarkgrey;
+  }
 }
-
-.goog-tooltip {
-  background: infobackground;
-  color: infotext;
-  border: 1px solid infotext;
-  padding: 4px;
-  font: menu;
-  z-index: 999999;
-}
-
-.silex-menu {
-
-  font-weight: 400;
-  font-size-adjust: none;
-  background: @silexmediumgrey url(../assets/logo-silex.png) 15px top no-repeat;
-  background-size: contain;
-  padding-left: 70px;
-  padding-top: 10px;
-
-  .goog-menubar {
+.silex-menu .menu-container {
+  .silex-icons-menu();
+  top: 0;
+  bottom: 0;
+  width: @menuWidth;
+  .silex-logo {
+    background: url(../assets/logo-silex.png) no-repeat;
+    background-size: contain;
+    background-position: 50% 50%;
+    width: @menuWidth;
+    height: @contextMenuHeight;
     display: block;
-    font-size: 14px;
-    font-style: normal;
-    color: #333;
-    line-height: 20px;
-    height: 35px;
-    margin-left: 40px;
+    cursor: pointer;
+  }
+  .previewResponsize {background-image: url(../assets/context-menu/responsize-small.png);}
+  .sep {
+    height: 0;
+  }
+  .icon {
+    margin: 15px 5px 20px;
+  }
+}
+///////////////
+// TODO: delete this remains
+.goog-menubar.goog-menubar-horizontal,
+.crowdfundgin-button.menubar.goog-menubar.goog-menubar-horizontal {
+  display: none !important;
+}
+///////////////
+.silex-sub-menu() {
+  .silex-icons-menu();
+  .sub-menu-hidden(200px); /* the width is an approximation */
+  z-index: 1;
+  .icon {
+    margin: 9px 9px 20px;
+  }
+  .sep {
+    border: none;
+    border-top: 1px solid @silexdarkgrey;
+    width: 100%;
+    margin: 0 !important;
     padding: 0;
-    white-space: nowrap;
-    outline-style: none;
-    outline-width: 0;
-    background-color: transparent;
-
-    .goog-menu-button-caption {
-      margin-right: 2px;
-      margin-left: 2px;
-    }
-
-    .goog-menu-button {
-      position: relative;
-      min-width: 70px;
-      margin: 0;
-      padding: 1px 7px;
-      border: none;
-      cursor: pointer;
-      vertical-align: middle;
-      background-color: transparent;
-      color: #FFF;
-      font-weight: lighter;
-      text-decoration: none;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .2), 0 1px 2px rgba(0, 0, 0, .25);
-      transition: all .3s;
-
-       &:after {
-        font-family: FontAwesome;
-        content: "\f078";
-        display: inline-block;
-        padding-left: 6px;
-        vertical-align: middle;
-      }
-
-      &:hover, &:focus, &:active {
-        background-color: @silexmediumdarkgrey;
-      }
-
-    }
-
-    .goog-menu-button-open {
-        background-color: @silexmediumdarkgrey;
-    }
-
   }
-
-  .login-text {
-    color: #666;
-    font-size: 11px;
-    font-style: normal;
-    text-align: right;
-    margin: 5px 10px 0 0;
-    position: absolute;
-    top: 0;
-    right: 0;
-
-    p {
-      margin: 5px 0 0 0;
-    }
-  }
-
-  .goog-menu-button {
-    display: inline-block;
+}
+.silex-sub-menu-text {
+  padding: 10px;
+  top: @contextMenuHeight;
+  & > .label {
+    background-color: @silexdarkergrey;
+    font-weight: 700;
+    font-size: 13px;
+    padding-top: 8px;
+    padding-left: 8px;
     cursor: default;
+    line-height: 2;
   }
-
-  .goog-menu-button-open {
-    background: #fff;
-    border: 1px solid rgba(0,0,0,.2);
+  & > div, & > a {
+    min-height: 32px;
+    padding-top: 2px;
+    padding-right: 11px;
+    padding-bottom: 0px;
+    border: 1px solid @silexdarkgrey;
     border-bottom: none;
-    -moz-box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    -webkit-box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    color: black;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    color: #c9c9c9;
+    font-size: 12px;
+    line-height: 1.5;
+    text-decoration: none;
   }
-
-  .crowdfundgin-button {
-    z-index: 1;
-    float: right;
-    margin-top: -5px;
-    margin-right: 15px;
-    .goog-menu-button {
-      line-height: 34px;
-      cursor: pointer;
-      text-align: center;
-    }
-    .goog-menu-button:after {
-      display: none;
-    }
-    .auto-promo-right:before {
-      content: "\f09d";
-      font-family: FontAwesome;
-      display: inline-block;
-      padding: 0 10px;
-      vertical-align: middle;
+  .sub-menu-item:hover {
+    background-color: @silexmediumdarkgrey;
+    cursor: pointer;
+  }
+  & > *:last-child {
+    border-bottom: 1px solid @silexdarkgrey;
+  }
+}
+.about-menu-container,
+.file-menu-container,
+.code-menu-container,
+.add-menu-container {
+  .silex-sub-menu();
+  .silex-sub-menu-text();
+}
+.file-menu-container {
+  .icon.svg {
+    position: absolute;
+    margin: 0 8px;
+    width: 20px;
+  }
+  .file-save-as {
+    padding-top: 6px;
+  }
+  .file-save-as span {
+    margin-left: 34px;
+    line-height: 1.8;
+  }
+}
+.add-menu-container {
+  span.icon {
+    padding: 10px;
+    margin: 18px;
+    &.fa-inverse {
+      line-height: 1.5;
     }
   }
-
+  .text {background-image: url(../assets/context-menu/glyphicons-108-text-resize.png);}
+  .image {background-image: url(../assets/context-menu/glyphicons-139-picture.png);}
+  .container {background-image: url(../assets/context-menu/glyphicons-95-vector-path-square.png);}
 }
-
-.shortcut-display {
-  position: absolute;
-  right: 10px;
+/* sub menus visibility */
+.sub-menu-hidden(@width) {
+  transition: left @subMenuTransitionDuration, opacity @subMenuTransitionDuration;
+  left: -@width;
+  opacity: 0;
 }
+.sub-menu-visible() {
+  left: @menuWidth;
+  width: inherit;
+  opacity: 1;
+}
+body.page-tool-visible {
+  .silex-menu .show-pages.icon {
+    opacity: 1;
+  }
+  .page-tool-container {
+    .sub-menu-visible();
+  }
+}
+body.about-menu-visible {
+  .silex-menu .show-about-menu.icon {
+    opacity: 1;
+  }
+  .about-menu-container {
+    .sub-menu-visible();
+  }
+}
+body.file-menu-visible {
+  .silex-menu .show-file-menu.icon {
+    opacity: 1;
+  }
+  .file-menu-container {
+    .sub-menu-visible();
+  }
+}
+body.code-menu-visible {
+  .silex-menu .show-code-menu.icon {
+    opacity: 1;
+  }
+  .code-menu-container {
+    .sub-menu-visible();
+  }
+}
+body.add-menu-visible {
+  .silex-menu .show-add-menu.icon {
+    opacity: 1;
+  }
+  .add-menu-container {
+    .sub-menu-visible();
+  }
+}
+/* *** */
+// mobile mode icons
+body .silex-menu {
+  & .mobile.icon.fa-inverse.fa-mobile {
+    height: 32px;
+    font-size: 27px;
+  }
+}
+body .silex-menu .mobile {.silex-icons-menu .off}
+body .silex-menu .mobile:hover {.silex-icons-menu .on}
+body.mobile-mode .silex-menu .mobile {.silex-icons-menu .on}
+body.mobile-mode .silex-menu .desktop {.silex-icons-menu .off}
+body.mobile-mode .silex-menu .desktop:hover {.silex-icons-menu .on}
