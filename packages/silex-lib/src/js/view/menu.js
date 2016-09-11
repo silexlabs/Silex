@@ -11,7 +11,8 @@
 
 /**
  * @fileoverview
- * the Silex menu
+ * the Silex menu on the left
+ * TODO: clean up and remove the old google closure menu, implement a mechanism for keyboard shortcuts
  * based on closure menu class
  *
  */
@@ -145,6 +146,7 @@ silex.view.Menu.prototype.buildUi = function() {
  * @param {goog.ui.Menu} menu
  * @param {goog.ui.KeyboardShortcutHandler} shortcutHandler
  * @param {Array.<Object>} globalKeys
+ * TODO: clean up and remove the old google closure menu, implement a mechanism for keyboard shortcuts
  */
 silex.view.Menu.prototype.addToMenu = function(itemData, menu, shortcutHandler, globalKeys) {
   var item;
@@ -156,13 +158,13 @@ silex.view.Menu.prototype.addToMenu = function(itemData, menu, shortcutHandler, 
     item.setId(id);
     item.addClassName(itemData.className);
     // checkable
-    if (itemData.checkable) {
-      item.setCheckable(true);
-    }
-    // mnemonic (access to an item with keyboard when the menu is open)
-    if (itemData.mnemonic) {
-      item.setMnemonic(itemData.mnemonic);
-    }
+    // if (itemData.checkable) {
+    //   item.setCheckable(true);
+    // }
+    // // mnemonic (access to an item with keyboard when the menu is open)
+    // if (itemData.mnemonic) {
+    //   item.setMnemonic(itemData.mnemonic);
+    // }
     // shortcut
     if (itemData.shortcut) {
       for (let idx in itemData.shortcut) {
@@ -177,23 +179,23 @@ silex.view.Menu.prototype.addToMenu = function(itemData, menu, shortcutHandler, 
         }
       }
     }
-  } else {
-    item = new goog.ui.MenuSeparator();
   }
-  //item.setDispatchTransitionEvents(goog.ui.Component.State.ALL, true);
+  // else {
+  //   item = new goog.ui.MenuSeparator();
+  // }
   // add the menu item
-  menu.addChild(item, true);
+  // menu.addChild(item, true);
   // add tooltip (has to be after menu.addItem)
   // TODO: add accelerator (only display shortcut here, could not get it to work automatically with closure's accelerator concept)
-  if (itemData && itemData.tooltip) {
-    // add label
-    var div = goog.dom.createElement('span');
-    div.innerHTML = itemData.tooltip;
-    div.className = 'goog-menuitem-accel';
-    item.getElement().appendChild(div);
-    // add a real tooltip
-    //new goog.ui.Tooltip(item.getElement(), itemData.tooltip);
-  }
+  // if (itemData && itemData.tooltip) {
+  //   // add label
+  //   var div = goog.dom.createElement('span');
+  //   div.innerHTML = itemData.tooltip;
+  //   div.className = 'goog-menuitem-accel';
+  //   item.getElement().appendChild(div);
+  //   // add a real tooltip
+  //   //new goog.ui.Tooltip(item.getElement(), itemData.tooltip);
+  // }
 };
 
 
