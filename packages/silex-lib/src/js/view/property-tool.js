@@ -69,11 +69,6 @@ silex.view.PropertyTool = function(element, model, controller) {
    */
   this.invalidationManager = new InvalidationManager(500);
 
-  var btn = this.element.querySelector('.switch-apollo-mode button');
-  goog.events.listen(btn, goog.events.EventType.CLICK, function() {
-    this.controller.propertyToolController.toggleAdvanced();
-  }, false, this);
-
 };
 
 
@@ -158,7 +153,19 @@ silex.view.PropertyTool.prototype.buildUi = function() {
   this.stylePane = new silex.view.pane.StylePane(
       goog.dom.getElementByClass('style-editor', this.element),
       this.model, this.controller);
-
+  // expandables
+  const expandables = this.element.querySelectorAll('.expandable legend');
+  for(let idx=0; idx<expandables.length; idx++) {
+    const el = expandables[idx];
+    el.onclick = e => {
+      el.parentNode.classList.toggle('expanded');
+      const caret = el.querySelector('.fa-inverse');
+      if(caret) {
+        caret.classList.toggle('fa-caret-right');
+        caret.classList.toggle('fa-caret-down');
+      }
+    }
+  }
 };
 
 

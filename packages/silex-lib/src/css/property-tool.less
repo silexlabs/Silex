@@ -12,6 +12,7 @@
   overflow-y: scroll;
   bottom: 0;
   background-color: @silexmediumgrey;
+  margin-top: @contextMenuHeight;
   hr {
     border-style: groove;
     margin: 7px 10px 3px;
@@ -43,8 +44,10 @@
     }
   }
   .main-container {
-    padding: 5px;
+    padding: 0;
+    padding-top: 5px;
     width: 97%;
+    border-bottom: 1px solid #2F2F2F;
 
     /* size set by workspace.js when the user resizes the property tool */
     &.size1 {
@@ -164,10 +167,37 @@
     }
 
   }
-
-  legend {
-    padding: 0 5px;
-    font-weight: normal;
+  .expandable {
+    margin-top: -4px;
+    display: inline-block;
+    width: 100%;
+    legend {
+      background-color: @silexmediumgrey;
+      font-weight: 700;
+      font-size: 13px;
+      padding-top: 8px;
+      padding-left: 8px;
+      cursor: default;
+      line-height: 2;
+      width: 100%;
+      cursor: pointer;
+      border-top: 1px solid @silexdarkgrey;
+      .fa {
+        font-family: FontAwesome;
+        margin-right: 5px;
+      }
+    }
+    .body {
+      margin: 0;
+      margin-top: 5px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height @silexUiTransitions;
+    }
+    &.expanded .body {
+      max-height: 300px;
+      margin: 10px;
+    }
   }
 
   .goog-checkbox {
@@ -215,7 +245,7 @@
     .background-image {
 
       .button {
-
+        font-size: smaller;
         .goog-custom-button-outer-box {
           width: 90px;
 
@@ -277,7 +307,7 @@
       margin: 5px 5px 5px 0px;
       width: 10px;
       text-align: right;
-      color: #FFF;
+      color: @silexlightergrey;
       font-size: 11px;
     }
     .two-col label,
@@ -304,13 +334,11 @@
       width: 44%;
       margin: 0px 10px 0px 0;
       label.unit {
-        font-size: 80%;
-        position: absolute;
-        margin-left: -5px;
+        font-size: 70%;
+        margin-left: 0;
         margin-top: 0;
         padding: 4px;
-        width: 20px;
-        text-align: right;
+        width: 0;
       }
       input {
         width: 75%;
@@ -342,7 +370,7 @@
   }
 
   .title1 {
-    color: #FFFFFF;
+    color: @silexlightergrey;
     margin: 0;
     font-weight: bold;
     padding: 10px 0 0 19px;
@@ -350,11 +378,6 @@
     font-size: 14px;
     text-transform: uppercase;
     background-color: @silexmediumgrey;
-  }
-  .main-container {
-    padding: 5px;
-    right: 25px;
-    left: 5px;
   }
 
   .goog-tab-bar {
