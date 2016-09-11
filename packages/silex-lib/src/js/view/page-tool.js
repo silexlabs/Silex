@@ -94,6 +94,16 @@ silex.view.PageTool.prototype.buildUi = function() {
     }
     e.preventDefault();
   }, false, this);
+  function attach(className, cbk) {
+    const addBtns = document.querySelectorAll(className);
+    for(let idx=0; idx<addBtns.length; idx++) {
+      addBtns[idx].onclick = cbk;
+    }
+  }
+  attach('.add-page', e => this.controller.insertMenuController.createPage());
+  attach('.remove-page', e => this.controller.pageToolController.removePage());
+  attach('.move-page-up', e => this.controller.pageToolController.movePageUp());
+  attach('.move-page-down', e => this.controller.pageToolController.movePageDown());
 };
 
 
