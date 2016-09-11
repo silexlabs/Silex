@@ -73,10 +73,6 @@
     margin: 0 !important;
     padding: 0;
   }
-}
-.silex-sub-menu-text {
-  padding: 10px;
-  top: @contextMenuHeight;
   & > .label {
     background-color: @silexdarkergrey;
     font-weight: 700;
@@ -85,6 +81,8 @@
     padding-left: 8px;
     cursor: default;
     line-height: 2;
+    color: @silexlightergrey;
+    text-align: center;
   }
   & > div, & > a {
     min-height: 32px;
@@ -93,12 +91,17 @@
     padding-bottom: 0px;
     border: 1px solid @silexdarkgrey;
     border-bottom: none;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
-    color: #c9c9c9;
+    box-shadow: inset 0 1px 0 @silexlightgrey;
+    color: @silexlightergrey;
     font-size: 12px;
     line-height: 1.5;
     text-decoration: none;
   }
+}
+.silex-sub-menu-text {
+  padding: 10px;
+  min-width: 180px;
+  top: @contextMenuHeight;
   .sub-menu-item:hover {
     background-color: @silexmediumdarkgrey;
     cursor: pointer;
@@ -155,7 +158,7 @@ body.page-tool-visible {
   .silex-menu .show-pages.icon {
     opacity: 1;
   }
-  .page-tool-container {
+  .silex-page-tool {
     .sub-menu-visible();
   }
 }
