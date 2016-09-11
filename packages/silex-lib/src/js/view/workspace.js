@@ -129,7 +129,9 @@ silex.view.Workspace.prototype.startWatchingUnload = function() {
  * @param {!silex.types.View} view
  */
 silex.view.Workspace.prototype.redraw = function(view) {
+  console.log('xxxxxxx redraw');
   this.invalidationManagerRedraw.callWhenReady(() => {
+    console.log('bbbbb');
     // no more loading
     goog.dom.classlist.remove(document.body, 'loading-pending');
   });

@@ -1,0 +1,128 @@
+.silex-menu
+  .menu-container
+    .show-about-menu.silex-logo(title='About Silex', data-menu-action='show.about.menu')
+    .show-file-menu.fa-fw.icon.fa-inverse.fa-cloud.off(title='File menu', data-menu-action='show.file.menu')
+    .show-add-menu.fa-fw.icon.fa-inverse.fa-plus-square.off(title='Add elements', data-menu-action='show.add.menu')
+    .show-code-menu.fa-fw.icon.fa-inverse.fa-code.off(title='Code', data-menu-action='show.code.menu')
+    .icon.sep
+    .show-pages.fa-fw.fa-fw.icon.fa-inverse.fa-file.off(title='Pages', data-menu-action='show.pages')
+    .show-settings.fa-fw.icon.fa-inverse.fa-cogs.off(title='Settings', data-menu-action='file.publish.settings')
+    .icon.sep
+    .icon.undo.fa-fw.fa-inverse.fa-undo.off(title='Undo', data-menu-action='edit.undo')
+    .icon.redo.fa-fw.fa-inverse.fa-repeat.off(title='Redo', data-menu-action='edit.redo')
+    .icon.sep
+    .view-file.fa-fw.icon.fa-inverse.fa-eye.off(title='Preview', data-menu-action='view.file')
+    .view-file-responsize.icon.previewResponsize.off(title='Preview in Responsize', data-menu-action='view.file.responsize')
+    .right.mobile.fa-fw.icon.fa-inverse.fa-mobile(title='Mobile editor', data-menu-action="tools.mobile.mode.on")
+    .right.desktop.fa-fw.icon.fa-inverse.fa-desktop(title='Desktop editor', data-menu-action="tools.mobile.mode.off")
+    .icon.sep
+    .show-about-menu.fa-fw.icon.fa-inverse.fa-question-circle.off(title='About Silex', data-menu-action='show.about.menu')
+
+
+  .about-menu-container
+    .label About Silex
+    .sub-menu-item(title='get help here!', data-menu-action="help.wiki")
+      span.icon.fa-inverse.fa-fw.fa-question-circle
+      span Silex wiki
+    .sub-menu-item(title='Silex website', data-menu-action="help.about")
+      span.icon.fa-inverse.fa-fw.fa-question-circle
+      span Silex website
+    .sub-menu-item(title='Silex forums', data-menu-action="help.issues")
+      span.icon.fa-inverse.fa-fw.fa-question-circle
+      span Silex forums
+    .sub-menu-item(title='Download widgets', data-menu-action="help.downloads.widget")
+      span.icon.fa-inverse.fa-fw.fa-question-circle
+      span Download widgets
+    .sub-menu-item(title='Download templates', data-menu-action="help.downloads.template")
+      span.icon.fa-inverse.fa-fw.fa-question-circle
+      span Download templates
+    .icon.sep
+    .sub-menu-item(title='Silex Labs non profit organization', data-menu-action="help.aboutSilexLabs")
+      span.icon.fa-inverse.fa-fw.fa-question-circle
+      span Silex Labs
+    .sub-menu-item(title='Subscribe now!', data-menu-action="help.newsLetter")
+      span.icon.fa-inverse.fa-fw.fa-question-circle
+      span News letter
+    .sub-menu-item(title='Diaspora*', data-menu-action="help.diaspora")
+      span.icon.fa-inverse.fa-fw.fa-question-circle
+      span Diaspora*
+    .sub-menu-item(title='Twitter', data-menu-action="help.twitter")
+      span.icon.fa-inverse.fa-fw.fa-twitter
+      span Twitter
+    .sub-menu-item(title='Facebook', data-menu-action="help.facebook")
+      span.icon.fa-inverse.fa-fw.fa-facebook
+      span Facebook
+    .icon.sep
+    .sub-menu-item(title='Source code', data-menu-action="help.forkMe")
+      span.icon.fa-inverse.fa-fw.fa-github
+      span Source code
+    .sub-menu-item(title='Contribute', data-menu-action="help.contribute")
+      span.icon.fa-inverse.fa-fw.fa-question-circle
+      span Contribute
+
+  .file-menu-container
+    .label File Menu
+    .sub-menu-item(data-menu-action='file.new')
+      span.icon.fa-inverse.fa-fw.fa-eraser
+      span New website
+    .sub-menu-item(data-menu-action='file.open')
+      span.icon.fa-inverse.fa-fw.fa-folder-open
+      span Open website
+    .sub-menu-item(data-menu-action='file.save')
+      span.icon.fa-inverse.fa-fw.fa-floppy-o
+      span Save website
+    .file-save-as.sub-menu-item(data-menu-action='file.save')
+      .icon.svg
+        include ./save-as.svg
+      span Save website as
+    .icon.sep
+    .sub-menu-item(data-menu-action='file.publish')
+      span.icon.fa-inverse.fa-fw.fa-rocket
+      span Publish
+    .sub-menu-item(data-menu-action='view.open.fileExplorer')
+      span.icon.fa-inverse.fa-fw.fa-cloud-upload
+      span File explorer
+
+  .add-menu-container
+    .label Elements
+    .sub-menu-item(title='Text', data-menu-action='insert.text')
+      span.icon.text
+      span Add Text
+    .sub-menu-item(title='Image', data-menu-action='insert.image')
+      span.icon.image
+      span Add Image
+    .sub-menu-item(title='Container', data-menu-action='insert.container')
+      span.icon.container
+      span Add Container
+    .sub-menu-item(title='Html', data-menu-action='insert.html')
+      span.icon.html.fa-inverse.fa-code
+      span Add Html
+
+  .code-menu-container
+    .label Code Menu
+    .sub-menu-item(data-menu-action='view.open.htmlHeadEditor')
+      span.icon.fa-inverse.fa-fw.fa-html5
+      span HTML HEAD editor
+    .sub-menu-item(data-menu-action='view.open.jsEditor')
+      span.icon.fa-inverse.fa-fw.fa-terminal
+      span Javascript editor
+    .sub-menu-item(data-menu-action='view.open.cssEditor')
+      span.icon.fa-inverse.fa-fw.fa-css3
+      span CSS editor
+
+// page tool
+.silex-page-tool.notranslate
+  include ./page-tool.jade
+
+.silex-context-menu
+  .icon.edit.fa-inverse.fa-pencil.off(title='Edit')
+  .icon.delete.fa-inverse.fa-trash.off(title='Delete')
+  .icon.sep
+  .icon.copy.off(title='Copy')
+  .icon.paste.off(title='Paste')
+  .icon.sep
+  .icon.top.fa-inverse.fa-angle-double-up.off(title='To top')
+  .icon.up.fa-inverse.fa-angle-up.off(title='Up')
+  .icon.down.fa-inverse.fa-angle-down.off(title='Down')
+  .icon.bottom.fa-inverse.fa-angle-double-down.off(title='To bottom')
+

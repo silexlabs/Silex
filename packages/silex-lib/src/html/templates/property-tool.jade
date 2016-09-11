@@ -1,12 +1,10 @@
-h1.title1 Properties
-.switch-apollo-mode
-  label Apollo Mode (Advanced)
-  button.fa-inverse
 .main-container
-  span.position-editor
-    fieldset.small-font
-      legend Position and size
-      div
+  span.position-editor.editor-container
+    .expandable
+      legend
+        span.fa.fa-fw.fa-inverse.fa-caret-right
+        span Position and size
+      .body
         div.two-col
           label X
           label W
@@ -28,17 +26,19 @@ h1.title1 Properties
             input.position-input.height-input(placeholder='-', type='number', tabindex='4', min='0')
             label.unit PX
 
-  span.seo-editor.advanced-only
-    fieldset.small-font
-      legend SEO (search engines)
-      div
+  span.seo-editor.old-advanced-only.editor-container
+    .expandable
+      legend
+        span.fa.fa-fw.fa-inverse.fa-caret-right
+        span SEO (search engines)
+      .body
         label.alt-label Alt (images only)
         input.alt-input(placeholder='-', type='text')
         label.title-label Title and tooltip
         input.title-input(placeholder='-', type='text')
 
 
-  span.page-editor
+  span.page-editor.editor-container
     script.pages-selector-template(type='text/x-handlebars-template')
       <div class="page-container">
       <div class="page-check-container">
@@ -50,128 +50,143 @@ h1.title1 Properties
     script.link-template(type='text/x-handlebars-template')
       <option value="{{linkName}}">{{displayName}}</option>
 
-    fieldset.small-font
+    .expandable
       legend
-        | Visible on
-      .view-on-mobile
-        .view-on-mobile-check-container
-          span.view-on-mobile-check
-        label.view-on-mobile-label.xsmall-font
-          | mobile version
-        hr
-      .pages-container
-    fieldset.small-font
-      legend Link
-      div
+        span.fa.fa-fw.fa-inverse.fa-caret-right
+        span Visible on
+      .body
+        .view-on-mobile
+          .view-on-mobile-check-container
+            span.view-on-mobile-check
+          label.view-on-mobile-label.xsmall-font
+            | mobile version
+          hr
+        .pages-container
+    .expandable
+      legend
+        span.fa.fa-fw.fa-inverse.fa-caret-right
+        span Link
+      .body
         select.link-combo-box
-      input.link-input-text(placeholder='-', type='text')
-
-
-
+        input.link-input-text(placeholder='-', type='text')
 
   span.style-container
     span.tab-page
-      .general-editor
-        fieldset.small-font.opacity-property.advanced-only
+      .general-editor.editor-container
+        .expandable.opacity-property.old-advanced-only
           legend
-            | Opacity
+            span.fa.fa-fw.fa-inverse.fa-caret-right
+            span Opacity
             small  in %
-          input.opacity-input(placeholder='-', type='number', min='0', max='100')
-      .background-editor
-        fieldset.small-font.background-property
-          legend Background Color
-          span.color-bg-button.color-button
-          span.color-bg-palette
-          span.enable-color-bg-button.goog-checkbox-unchecked
-          | Transparent
-        fieldset.small-font.background-image
-          legend Background Image
-          div
-            .button.bg-image-button Select image
-            .button.clear-bg-image-button Clear image
-          div
-            .bg-position-h-combo-box.combobox.goog-select
-              ul.goog-menu
-                li#left.goog-menuitem left
-                li#center.goog-menuitem center
-                li#right.goog-menuitem right
-            .bg-position-v-combo-box.combobox.goog-select
-              ul.goog-menu
-                li#top.goog-menuitem top
-                li#center.goog-menuitem center
-                li#bottom.goog-menuitem bottom
-          .background-image
-            .bg-attachment-combo-box.combobox.goog-select
-              ul.goog-menu
-                li#scroll.goog-menuitem(title='The background scrolls along with the element') scroll
-                li#fixed.goog-menuitem(title='The background is fixed with regard to the viewport') fixed
-            .bg-repeat-combo-box.combobox.goog-select
-              ul.goog-menu
-                li#repeat.goog-menuitem(title='The background image is repeated both vertically and horizontally') repeat
-                li#repeat-x.goog-menuitem(title='The background image is only repeated horizontally') repeat-x
-                li#repeat-y.goog-menuitem(title='The background image is only repeated vertically') repeat-y
-                li#no-repeat.goog-menuitem(title='The background-image is not repeated') no-repeat
-            .bg-size-combo-box.combobox.goog-select
-              ul.goog-menu
-                li#auto.goog-menuitem(title='The background image is not resized') auto
-                li#contain.goog-menuitem(title='The background image is scaled so that the whole image is visible') contain
-                li#cover.goog-menuitem(title='The background image is scaled so that it completely covers the element') cover
-      .border-editor
-        fieldset.small-font.border-property
+          .body
+            input.opacity-input(placeholder='-', type='number', min='0', max='100')
+
+      .background-editor.editor-container
+        .expandable.background-property
           legend
-            | Border
-          .border-width-color-container
-            label.border-width-label Width
-            input.border-width-input(placeholder='-', type='number', min='0')
-            label.border-color-label Color
-            span.border-color-button.color-button
-          span.border-color-palette
-          .border-type-conainer.advanced-only
-            .border-type-label Style
-            .border-type-combo-box.combobox.goog-select
-              ul.goog-menu
-                li#solid.goog-menuitem solid
-                li#dotted.goog-menuitem dotted
-                li#dashed.goog-menuitem dashed
-                li#double.goog-menuitem double
-                li#groove.goog-menuitem groove
-                li#ridge.goog-menuitem ridge
-                li#inset.goog-menuitem inset
-                li#outset.goog-menuitem outset
-          .border-placement-container.advanced-only
-            .half-col
-              span.top.border-placement-check.goog-checkbox
-              label.border-placement-label Top
-            .half-col
-              span.left.border-placement-check.goog-checkbox
-              label.border-placement-label Left
-            .half-col
-              span.bottom.border-placement-check.goog-checkbox
-              label.border-placement-label Bottom
-            .half-col
-              span.right.border-placement-check.goog-checkbox
-              label.border-placement-label Right
-          .border-radius-container
-            .border-radius-width-container
-              label.border-radius-label Radius
-              input.corner-radius-input(placeholder='-', type='number', min='0')
-            .corner-placement-container.advanced-only
+            span.fa.fa-fw.fa-inverse.fa-caret-right
+            span Background Color
+          .body
+            span.color-bg-button.color-button
+            span.color-bg-palette
+            span.enable-color-bg-button.goog-checkbox-unchecked
+            | Transparent
+        .expandable.background-image
+          legend
+            span.fa.fa-fw.fa-inverse.fa-caret-right
+            span Background Image
+          .body
+            div
+              .button.bg-image-button Select image
+              .button.clear-bg-image-button Clear image
+            div
+              .bg-position-h-combo-box.combobox.goog-select
+                ul.goog-menu
+                  li#left.goog-menuitem left
+                  li#center.goog-menuitem center
+                  li#right.goog-menuitem right
+              .bg-position-v-combo-box.combobox.goog-select
+                ul.goog-menu
+                  li#top.goog-menuitem top
+                  li#center.goog-menuitem center
+                  li#bottom.goog-menuitem bottom
+            .background-image
+              .bg-attachment-combo-box.combobox.goog-select
+                ul.goog-menu
+                  li#scroll.goog-menuitem(title='The background scrolls along with the element') scroll
+                  li#fixed.goog-menuitem(title='The background is fixed with regard to the viewport') fixed
+              .bg-repeat-combo-box.combobox.goog-select
+                ul.goog-menu
+                  li#repeat.goog-menuitem(title='The background image is repeated both vertically and horizontally') repeat
+                  li#repeat-x.goog-menuitem(title='The background image is only repeated horizontally') repeat-x
+                  li#repeat-y.goog-menuitem(title='The background image is only repeated vertically') repeat-y
+                  li#no-repeat.goog-menuitem(title='The background-image is not repeated') no-repeat
+              .bg-size-combo-box.combobox.goog-select
+                ul.goog-menu
+                  li#auto.goog-menuitem(title='The background image is not resized') auto
+                  li#contain.goog-menuitem(title='The background image is scaled so that the whole image is visible') contain
+                  li#cover.goog-menuitem(title='The background image is scaled so that it completely covers the element') cover
+      .border-editor.editor-container
+        .expandable.border-property
+          legend
+            span.fa.fa-fw.fa-inverse.fa-caret-right
+            span Border
+          .body
+            .border-width-color-container
+              label.border-width-label Width
+              input.border-width-input(placeholder='-', type='number', min='0')
+              label.border-color-label Color
+              span.border-color-button.color-button
+            span.border-color-palette
+            .border-type-conainer.old-advanced-only
+              .border-type-label Style
+              .border-type-combo-box.combobox.goog-select
+                ul.goog-menu
+                  li#solid.goog-menuitem solid
+                  li#dotted.goog-menuitem dotted
+                  li#dashed.goog-menuitem dashed
+                  li#double.goog-menuitem double
+                  li#groove.goog-menuitem groove
+                  li#ridge.goog-menuitem ridge
+                  li#inset.goog-menuitem inset
+                  li#outset.goog-menuitem outset
+            .border-placement-container.old-advanced-only
               .half-col
-                span.top-left.corner-placement-check.goog-checkbox
-                label.corner-placement-label Top Left
+                span.top.border-placement-check.goog-checkbox
+                label.border-placement-label Top
               .half-col
-                span.top-right.corner-placement-check.goog-checkbox
-                label.corner-placement-label Top Right
+                span.left.border-placement-check.goog-checkbox
+                label.border-placement-label Left
               .half-col
-                span.bottom-left.corner-placement-check.goog-checkbox
-                label.corner-placement-label Btm Left
+                span.bottom.border-placement-check.goog-checkbox
+                label.border-placement-label Bottom
               .half-col
-                span.bottom-right.corner-placement-check.goog-checkbox
-                label.corner-placement-label Btm Right
-      .style-editor
-        fieldset.small-font.style-property.advanced-only
-          legend Styles
-          label CSS classes
-            a.help-icon(href='https://github.com/silexlabs/Silex/issues/184#properties-css-panel', title='about Silex and CSS', target='_blank') Help
-          input.style-css-classes-input(placeholder='-', type='text')
-          .element-style-editor
+                span.right.border-placement-check.goog-checkbox
+                label.border-placement-label Right
+            .border-radius-container
+              .border-radius-width-container
+                label.border-radius-label Radius
+                input.corner-radius-input(placeholder='-', type='number', min='0')
+              .corner-placement-container.old-advanced-only
+                .half-col
+                  span.top-left.corner-placement-check.goog-checkbox
+                  label.corner-placement-label Top Left
+                .half-col
+                  span.top-right.corner-placement-check.goog-checkbox
+                  label.corner-placement-label Top Right
+                .half-col
+                  span.bottom-left.corner-placement-check.goog-checkbox
+                  label.corner-placement-label Btm Left
+                .half-col
+                  span.bottom-right.corner-placement-check.goog-checkbox
+                  label.corner-placement-label Btm Right
+      .style-editor.editor-container
+        .expandable.style-property.old-advanced-only
+          legend
+            span.fa.fa-fw.fa-inverse.fa-caret-right
+            span Styles
+          .body
+            label CSS classes
+              a.help-icon(href='https://github.com/silexlabs/Silex/issues/184#properties-css-panel', title='about Silex and CSS', target='_blank') Help
+            input.style-css-classes-input(placeholder='-', type='text')
+            .element-style-editor.editor-container

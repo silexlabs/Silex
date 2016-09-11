@@ -1,76 +1,21 @@
-.silex-context-menu {
-  background-color: @silexmediumgrey;
-  left: @pageToolWidth;
+.horizontal-menu() {
+  .silex-icons-menu();
+  left: @menuWidth;
   right: @propertiesToolWidth;
-  position: absolute;
-  box-shadow: inset 0px 0px 6px 0px #000;
-  top: @menuHeight;
   height: @contextMenuHeight;
-  z-index: 10;
   padding-left: 10px;
-  overflow: hidden;
-  .button {
-    cursor: pointer;
-    width: 25px;
-    height: 18px;
-    background-repeat: no-repeat;
-    background-position: center center;
-    background-size: contain;
-    transition: opacity 0.1s linear 0s;
-    margin: 8px 3px;
-    float: left;
-    text-decoration: none;
-  }
-  .off {
-    opacity: .5;
-  }
-  .button:hover, .on {
-    opacity: 1;
-  }
-  .button.fa-inverse {
-    font-family: FontAwesome;
-    margin-top: 8px;
-    font-size: large;
-    text-align: center;
-  }
-  .button.right {
-    margin-top: 9px;
-    float: right;
+  display: flex;
+}
+.silex-context-menu {
+  .horizontal-menu();
+  // center icons
+  justify-content: center;
+  .icon {
+    margin: 9px;
   }
   .sep {
     width: 0px;
-    border: 1px solid @silexmediumdarkgrey
   }
-  .mobile {
-    font-size: x-large;
-    margin-top: 5px;
-  }
-/* now use fontawesome:
-  .save {background-image: url(../assets/context-menu/glyphicons-447-floppy-save.png);}
-  .undo {background-image: url(../assets/context-menu/glyphicons-436-undo.png);}
-  .redo {background-image: url(../assets/context-menu/glyphicons-435-redo.png);}
-  .html {background-image: url(../assets/context-menu/glyphicons-118-embed.png);}
-  .delete {background-image: url(../assets/context-menu/glyphicons-208-remove-2.png);}
-  .top {background-image: url(../assets/context-menu/glyphicons-415-disk-save-rotated.png);}
-  .up {background-image: url(../assets/context-menu/glyphicons-214-up-arrow.png);}
-  .down {background-image: url(../assets/context-menu/glyphicons-213-down-arrow.png);}
-  .bottom {background-image: url(../assets/context-menu/glyphicons-415-disk-save.png);}
-  .preview {background-image: url(../assets/context-menu/glyphicons-52-eye-open.png);}
-  .help {background-image: url(../assets/context-menu/glyphicons-195-circle-question-mark.png);}
-  .mobile {background-image: url(../assets/context-menu/glyphicons-164-iphone.png);}
-  .desktop {background-image: url(../assets/context-menu/glyphicons-161-imac.png);}
- */
-  .text {background-image: url(../assets/context-menu/glyphicons-108-text-resize.png);}
-  .image {background-image: url(../assets/context-menu/glyphicons-139-picture.png);}
-  .container {background-image: url(../assets/context-menu/glyphicons-95-vector-path-square.png);}
   .copy {background-image: url(../assets/context-menu/glyphicons-512-copy.png);}
   .paste {background-image: url(../assets/context-menu/glyphicons-513-paste.png);}
-  .previewResponsize {background-image: url(../assets/context-menu/responsize-small.png);}
 }
-
-// mobile mode icons
-body .silex-context-menu .mobile {.silex-context-menu .off}
-body.mobile-mode .silex-context-menu .mobile {.silex-context-menu .on}
-body.mobile-mode .silex-context-menu .desktop {.silex-context-menu .off}
-body.mobile-mode .silex-context-menu .desktop:hover {.silex-context-menu .on}
-
