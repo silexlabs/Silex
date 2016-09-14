@@ -357,8 +357,8 @@ silex.view.Menu.prototype.onMenuEvent = function(type) {
     case 'help.wiki':
       window.open(silex.Config.WIKI_SILEX);
       break;
-    case 'help.about':
-      window.open(silex.Config.ABOUT_SILEX);
+    case 'help.crowdfunding':
+      window.open(silex.Config.CROWD_FUNDING);
       break;
     case 'help.issues':
       window.open(silex.Config.ISSUES_SILEX);

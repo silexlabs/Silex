@@ -66,7 +66,7 @@ silex.Config.WIKI_SILEX = 'https://github.com/silexlabs/Silex/wiki';
  * Link of the menu
  * @const
  */
-silex.Config.ABOUT_SILEX = 'http://www.silex.me/';
+silex.Config.CROWD_FUNDING = 'http://crowdfunding.silex.me/';
 
 
 /**
