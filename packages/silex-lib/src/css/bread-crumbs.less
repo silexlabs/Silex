@@ -8,18 +8,25 @@
   padding-left: initial;
   bottom: 0;
   height: @breadCrumbsHeight;
-  background-color: @silexlightergrey;
-  div {
+  .crumb {
     display: inline-flex;
     height: @breadCrumbsHeight - @breadPaddingTop;
     position: relative;
-    color: @silexdarkergrey;
+    color: @silexlightergrey;
     padding: @breadPaddingTop 10px 0 20px;
     margin-left: -10px;
-    border-right: 1px solid @silexdarkergrey;
-    border-radius: 10px;
     font-size: small;
     cursor: pointer;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .sep {
+    margin: 0;
+    padding: 0;
+    border: none;
+    .svg {
+      color: #444;
+    }
   }
 }
 
