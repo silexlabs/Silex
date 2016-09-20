@@ -235,7 +235,7 @@ silex.view.Menu.prototype.toggleSubMenu = function(classNameToToggle) {
  * @param {string} type
  */
 silex.view.Menu.prototype.onMenuEvent = function(type) {
-  console.log('onMenuEvent', type);
+  // console.log('onMenuEvent', type);
   switch (type) {
     case 'show.pages':
       this.toggleSubMenu('page-tool-visible');
@@ -304,11 +304,14 @@ silex.view.Menu.prototype.onMenuEvent = function(type) {
     case 'tools.mobile.mode.off':
       this.controller.toolMenuController.setMobileMode(false);
       break;
-   case 'insert.page':
+    case 'insert.page':
       this.controller.insertMenuController.createPage();
       break;
     case 'insert.text':
       this.controller.insertMenuController.addElement(silex.model.Element.TYPE_TEXT);
+      break;
+    case 'insert.section':
+      this.controller.insertMenuController.addElement(silex.model.Element.TYPE_SECTION);
       break;
     case 'insert.html':
       this.controller.insertMenuController.addElement(silex.model.Element.TYPE_HTML);

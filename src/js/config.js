@@ -417,7 +417,6 @@ silex.Config.menu = {
         mnemonic: goog.events.KeyCodes.C,
         accelerator: 'c'
       },
-      null,
       {
         label: 'HTML box',
         id: 'insert.html',
@@ -427,6 +426,12 @@ silex.Config.menu = {
         tooltip: altKeyDisplay + 'H',
         mnemonic: goog.events.KeyCodes.H,
         accelerator: 'h'
+      },
+      {
+        label: 'Section',
+        id: 'insert.section',
+        shortcut: [[goog.events.KeyCodes.S, altKeyModifyer]],
+        tooltip: altKeyDisplay + 'S'
       },
       null,
       {

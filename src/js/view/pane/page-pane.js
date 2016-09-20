@@ -404,6 +404,9 @@ silex.view.pane.PagePane.prototype.checkAllPages = function() {
 
 silex.view.pane.PagePane.prototype.isInNoPage = function() {
   return this.selectedElements.reduce((prev, element) => {
+    if(this.model.element.isSectionContent(element)) {
+      element = /** @type {Element} */ (element.parentNode);
+    }
     return prev && !goog.dom.classlist.contains(element, silex.model.Page.PAGED_CLASS_NAME);
   }, true);
 };

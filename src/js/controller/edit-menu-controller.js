@@ -88,8 +88,19 @@ silex.controller.EditMenuController.prototype.redo = function() {
  */
 silex.controller.EditMenuController.prototype.copySelection = function() {
   this.tracker.trackAction('controller-events', 'info', 'copy', 0);
-  // default is selected element
-  var elements = this.model.body.getSelection();
+  // default is current selection
+  let elements = this.model.body.getSelection();
+  // but select the sections instead of their container content
+  elements = elements.map(element => {
+    if(this.model.element.isSectionContent(element)) {
+      const parentNode = /** @type {Element} */ (element.parentNode);
+      if(elements.indexOf(parentNode) >= 0) return null;
+      return parentNode;
+    }
+    else {
+      return element;
+    }
+  }).filter(element => !!element);
   if (elements.length > 0) {
     // reset clipboard
     silex.controller.ControllerBase.clipboard = [];
@@ -152,11 +163,7 @@ silex.controller.EditMenuController.prototype.pasteSelection = function() {
     // undo checkpoint
     this.undoCheckPoint();
     // find the container: original container, main background container or the stage
-    var container;
-    container = goog.dom.getElementByClass(silex.view.Stage.BACKGROUND_CLASS_NAME, this.model.body.getBodyElement());
-    if (!container) {
-      container = this.model.body.getBodyElement();
-    }
+    var container = this.model.element.getBestContainerForNewElement();
     // take the scroll into account (drop at (100, 100) from top left corner of the window, not the stage)
     var doc = this.model.file.getContentDocument();
     var elements = silex.controller.ControllerBase.clipboard.map(function(item) {return item.element;});

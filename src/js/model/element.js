@@ -90,6 +90,22 @@ silex.model.Element.TYPE_CONTAINER = 'container';
  * @const
  * @type {string}
  */
+silex.model.Element.TYPE_SECTION = 'section';
+
+
+/**
+ * constant for the content element of a section, which is also a container
+ * @const
+ * @type {string}
+ */
+silex.model.Element.TYPE_CONTAINER_CONTENT = 'silex-container-content';
+
+
+/**
+ * constant for silex element type
+ * @const
+ * @type {string}
+ */
 silex.model.Element.TYPE_IMAGE = 'image';
 
 
@@ -123,6 +139,15 @@ silex.model.Element.TYPE_ATTR = 'data-silex-type';
  * @type {string}
  */
 silex.model.Element.ELEMENT_CONTENT_CLASS_NAME = 'silex-element-content';
+
+
+/**
+ * constant for the class name of the default site width, rule is set when setting is changed
+ * used to set a default width to section content container
+ * @const
+ * @type {string}
+ */
+silex.model.Element.DEFAULT_SITE_WIDTH_CLASS_NAME = 'default-site-width'
 
 
 /**
@@ -213,6 +238,24 @@ silex.model.Element.prototype.getTabs = function(num) {
 silex.model.Element.prototype.getType = function(element) {
   return element.getAttribute(silex.model.Element.TYPE_ATTR);
 };
+
+
+/**
+ * @param  {Element} element   created by silex
+ * @return true if el is a section or the content container of a section
+ */
+silex.model.Element.prototype.isSection = function(element) {
+  return element.classList.contains(silex.model.Element.TYPE_SECTION + '-element');
+}
+
+
+/**
+ * @param  {Element} element   created by silex
+ * @return true if el is a section or the content container of a section
+ */
+silex.model.Element.prototype.isSectionContent = function(element) {
+  return element.classList.contains(silex.model.Element.TYPE_CONTAINER_CONTENT);
+}
 
 
 /**
@@ -383,6 +426,9 @@ silex.model.Element.prototype.getContentNode = function(element) {
  * @param  {silex.model.DomDirection} direction
  */
 silex.model.Element.prototype.move = function(element, direction) {
+  if(this.isSectionContent(element)) {
+    element = /** @type {Element} */ (element.parentNode);
+  }
   switch (direction) {
     case silex.model.DomDirection.UP:
       let sibling = this.getNextElement(element);
@@ -576,10 +622,19 @@ silex.model.Element.prototype.removeElement = function(element) {
  * @param {Element} element
  */
 silex.model.Element.prototype.addElement = function(container, element) {
+  // for sections, force body
+  if(this.isSection(element)) {
+    container = this.model.body.getBodyElement();
+  }
   goog.dom.appendChild(container, element);
   // add the class to keep the element above all others
   element.classList.add(silex.model.Element.JUST_ADDED_CLASS_NAME);
- };
+};
+
+
+silex.model.Element.prototype.getBestContainerForNewElement = function() {
+  return this.model.body.getBodyElement();
+};
 
 
 /**
@@ -592,11 +647,7 @@ silex.model.Element.prototype.addElement = function(container, element) {
  */
 silex.model.Element.prototype.createElement = function(type) {
   // find the container (main background container or the stage)
-  var bodyElement = this.model.body.getBodyElement();
-  var container = goog.dom.getElementByClass(silex.view.Stage.BACKGROUND_CLASS_NAME, bodyElement);
-  if (!container) {
-    container = bodyElement;
-  }
+  var container = this.getBestContainerForNewElement();
   // take the scroll into account (drop at (100, 100) from top left corner of the window, not the stage)
   var offsetX = 100 + this.view.stage.getScrollX();
   var offsetY = 100 + this.view.stage.getScrollY();
@@ -617,6 +668,11 @@ silex.model.Element.prototype.createElement = function(type) {
       element = this.createContainerElement();
       // add a default style
       styleObject['background-color'] = 'rgb(255, 255, 255)';
+      break;
+
+    // section
+    case silex.model.Element.TYPE_SECTION:
+      element = this.createSectionElement();
       break;
 
     // text
@@ -671,26 +727,71 @@ silex.model.Element.prototype.createContainerElement = function() {
 
 
 /**
+ * @param {string} className
+ * @return {Element}
+ */
+silex.model.Element.prototype.createElementWithContent = function(className) {
+  // create the element
+  var element = goog.dom.createElement('div');
+  element.setAttribute(silex.model.Element.TYPE_ATTR, className);
+  // create the container for text content
+  var content = goog.dom.createElement('div');
+  // add empty content
+  goog.dom.appendChild(element, content);
+  // add a marker to find the inner content afterwards, with getContent
+  goog.dom.classlist.add(content, silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
+  // done
+  return element;
+};
+
+
+/**
+ * element creation method for a given type
+ * called from createElement
+ * @return {Element}
+ */
+silex.model.Element.prototype.createSectionElement = function() {
+  // create the element
+  var element = goog.dom.createElement('div');
+  element.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_CONTAINER);
+  element.classList.add(silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME);
+  element.classList.add(silex.model.Element.TYPE_CONTAINER + '-element');
+  // content element is both a container and a content element
+  var content = this.createContainerElement();
+  var styleObject = {
+    'min-height': '100px',
+    'background-color': 'rgb(255, 255, 255)'
+  };
+  content.classList.add(silex.model.Body.EDITABLE_CLASS_NAME);
+  content.classList.add(silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
+  content.classList.add(silex.model.Element.DEFAULT_SITE_WIDTH_CLASS_NAME);
+  this.model.property.initSilexId(content, this.model.file.getContentDocument());
+  this.model.property.setStyle(content, styleObject, false);
+  content.classList.add(silex.model.Element.TYPE_CONTAINER_CONTENT);
+  content.classList.add(silex.model.Element.TYPE_CONTAINER + '-element');
+  content.classList.add(silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME);
+  element.appendChild(content);
+  // done
+  return element;
+};
+
+
+/**
  * element creation method for a given type
  * called from createElement
  * @return {Element}
  */
 silex.model.Element.prototype.createTextElement = function() {
   // create the element
-  var element = goog.dom.createElement('div');
-  element.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_TEXT);
-  // create the container for text content
-  var textContent = goog.dom.createElement('div');
-  // add empty content
-  textContent.innerHTML = 'New text box';
-  goog.dom.appendChild(element, textContent);
-  // add a marker to find the inner content afterwards, with getContent
-  goog.dom.classlist.add(textContent, silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
+  var element = this.createElementWithContent(silex.model.Element.TYPE_TEXT);
+  // add default content
+  var content = this.getContentNode(element);
+  content.innerHTML = 'New text box';
   // add normal class for default text formatting
-  // sometimes there is only in text node in textContent
+  // sometimes there is only in text node in content
   // e.g. whe select all + remove formatting
-  goog.dom.classlist.add(textContent, 'normal');
-
+  goog.dom.classlist.add(content, 'normal');
+  // done
   return element;
 };
 
