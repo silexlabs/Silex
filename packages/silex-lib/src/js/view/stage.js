@@ -347,7 +347,11 @@ silex.view.Stage.prototype.handleKey = function(event) {
   // not in text inputs
   if (event.target.tagName.toUpperCase() !== 'INPUT' &&
       event.target.tagName.toUpperCase() !== 'TEXTAREA') {
-    if(this.isMobileMode()) {
+    // mobile mode or selection contains onlu sections elements
+    if(this.isMobileMode() ||
+      this.selectedElements.reduce((prev, cur) => prev &&
+        (this.model.element.isSection(cur) ||
+          this.model.element.isSectionContent(cur)), true)) {
       switch (event.keyCode) {
         case goog.events.KeyCodes.LEFT:
           this.controller.editMenuController.moveToTop();
@@ -552,6 +556,18 @@ silex.view.Stage.prototype.onMouseMove = function(target, x, y, shiftKey) {
       // notify controller that a change is about to take place
       // marker for undo/redo
       this.controller.stageController.markAsUndoable();
+      // move to the body so that it is above everything
+      this.selectedElements.forEach(element => {
+        if(element.classList.contains(silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME)) {
+          return;
+        }
+        // move back to the same x, y position
+        var elementPos = goog.style.getPageOffset(element);
+        element.style.left = elementPos.x + 'px';
+        element.style.top = elementPos.y + 'px';
+        // attache to body
+        this.bodyElement.appendChild(element);
+      });
       // store the state for later use
       if (this.lastClickWasResize) {
         this.isResizing = true;
@@ -859,8 +875,12 @@ silex.view.Stage.prototype.followElementSize =
       }
       var size = goog.style.getSize(follower);
       var borderBox = goog.style.getBorderBox(follower);
-      // handle .background element which is forced centered (only when the background is smaller than the body)
-      if(goog.dom.classlist.contains(follower, 'background') && size.width < this.bodyElement.offsetWidth - 50) {
+      // handle section content elements which are forced centered
+      // (only when the background is smaller than the body)
+      // TODO: remove support of .background
+      if((follower.classList.contains(silex.view.Stage.BACKGROUND_CLASS_NAME) ||
+        this.model.element.isSectionContent(follower)) &&
+        size.width < this.bodyElement.offsetWidth - 50) {
         offsetSizeX *= 2;
       }
       // compute new size

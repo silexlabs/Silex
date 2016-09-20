@@ -136,6 +136,9 @@ silex.model.Page.PAGE_LINK_ACTIVE_CLASS_NAME = 'page-link-active';
  * @return {Element} null or the element or one of its parents which has the css class silex.model.Page.PAGED_CLASS_NAME
  */
 silex.model.Page.prototype.getParentPage = function(element) {
+  if(this.model.element.isSectionContent(element)) {
+    element = /** @type {Element} */ (element.parentNode);
+  }
   var parent = element.parentNode;
   while (parent && !goog.dom.classlist.contains(/** @type {?Element} */ (parent), silex.model.Page.PAGED_CLASS_NAME)) {
     parent = parent.parentNode;
@@ -376,6 +379,9 @@ silex.model.Page.prototype.renamePage = function(oldName, newName, newDisplayNam
  * @param {string} pageName
  */
 silex.model.Page.prototype.addToPage = function(element, pageName) {
+  if(this.model.element.isSectionContent(element)) {
+    element = /** @type {Element} */ (element.parentNode);
+  }
   const pages = this.getPagesForElement(element);
   if (pages.length + 1 === this.getPages().length) {
     pages.forEach(page => element.classList.remove(page));
@@ -395,6 +401,9 @@ silex.model.Page.prototype.addToPage = function(element, pageName) {
  * @param {string} pageName
  */
 silex.model.Page.prototype.removeFromPage = function(element, pageName) {
+  if(this.model.element.isSectionContent(element)) {
+    element = /** @type {Element} */ (element.parentNode);
+  }
   goog.dom.classlist.remove(element, pageName);
   if (this.getPagesForElement(element).length <= 0) {
     goog.dom.classlist.remove(element, silex.model.Page.PAGED_CLASS_NAME);
@@ -408,6 +417,9 @@ silex.model.Page.prototype.removeFromPage = function(element, pageName) {
  * @param {Element} element
  */
 silex.model.Page.prototype.removeFromAllPages = function(element) {
+  if(this.model.element.isSectionContent(element)) {
+    element = /** @type {Element} */ (element.parentNode);
+  }
   var pages = this.getPagesForElement(element);
   goog.array.forEach(pages, function(pageName) {
     goog.dom.classlist.remove(element, pageName);
@@ -425,6 +437,9 @@ silex.model.Page.prototype.removeFromAllPages = function(element) {
  * @return {Array.<string>}
  */
 silex.model.Page.prototype.getPagesForElement = function(element) {
+  if(this.model.element.isSectionContent(element)) {
+    element = /** @type {Element} */ (element.parentNode);
+  }
   var res = [];
   // get all the pages
   var pages = this.getPages();
@@ -446,6 +461,9 @@ silex.model.Page.prototype.getPagesForElement = function(element) {
  * @return {boolean}
  */
 silex.model.Page.prototype.isInPage = function(element, opt_pageName) {
+  if(this.model.element.isSectionContent(element)) {
+    element = /** @type {Element} */ (element.parentNode);
+  }
   if (!opt_pageName) {
     opt_pageName = this.getCurrentPage();
   }
