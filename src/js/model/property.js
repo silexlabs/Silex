@@ -241,6 +241,10 @@ silex.model.Property.prototype.initStyles = function(doc) {
  * @param {?boolean=} opt_isMobile
  */
 silex.model.Property.prototype.setStyle = function(element, style, opt_isMobile) {
+  // do not apply width to sections
+  if(this.model.element.isSection(element)) {
+    style['width'] = undefined;
+  }
   var elementId =  /** @type {string} */ (this.getSilexId(element));
   var isMobile = opt_isMobile != null ? opt_isMobile : this.view.workspace.getMobileEditor()
   // to selector case
