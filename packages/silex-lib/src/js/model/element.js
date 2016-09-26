@@ -305,11 +305,22 @@ silex.model.Element.prototype.getStyle = function(element, styleName, opt_comput
 silex.model.Element.prototype.setStyle = function(element, styleName, opt_styleValue) {
   // convert to css case
   styleName = goog.string.toSelectorCase(styleName);
+  // remove the 'just pasted' class
+  element.classList.remove(silex.model.Element.JUST_ADDED_CLASS_NAME);
+  // do not apply width to sections
+  if(styleName === 'width' && this.isSection(element)) {
+    return;
+  }
+  // apply height to section and not section container content
+  if(styleName === 'min-height' && this.isSectionContent(element)) {
+    element = /** @type {Element} */ (element.parentNode);
+  }
   // retrieve style
   var styleObject = this.model.property.getStyle(element);
   if (!styleObject) {
     styleObject = {};
   }
+  // apply the new style
   if (styleObject[styleName] !== opt_styleValue) {
     if (goog.isDefAndNotNull(opt_styleValue)) {
       styleObject[styleName] = this.prepareHtmlForEdit(opt_styleValue);
@@ -319,8 +330,6 @@ silex.model.Element.prototype.setStyle = function(element, styleName, opt_styleV
     }
     this.model.property.setStyle(element, styleObject);
   }
-  // remove the 'just pasted' class
-  element.classList.remove(silex.model.Element.JUST_ADDED_CLASS_NAME);
 };
 
 
@@ -426,6 +435,7 @@ silex.model.Element.prototype.getContentNode = function(element) {
  * @param  {silex.model.DomDirection} direction
  */
 silex.model.Element.prototype.move = function(element, direction) {
+  // do not move a section's container content, but the section itself
   if(this.isSectionContent(element)) {
     element = /** @type {Element} */ (element.parentNode);
   }
