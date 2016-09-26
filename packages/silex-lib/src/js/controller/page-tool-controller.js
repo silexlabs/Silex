@@ -98,3 +98,19 @@ silex.controller.PageToolController.prototype.removePage = function(opt_pageName
 };
 
 
+/**
+ * move a page up/down
+ * @param {?string=} opt_pageName name of the page to be moved
+ */
+silex.controller.PageToolController.prototype.movePageUp = function(opt_pageName) {
+  this.model.page.movePage(/** @type {string} */ (opt_pageName || this.model.page.getCurrentPage()), 'up');
+};
+
+
+/**
+ * move a page up/down
+ * @param {?string=} opt_pageName name of the page to be moved
+ */
+silex.controller.PageToolController.prototype.movePageDown = function(opt_pageName) {
+  this.model.page.movePage(/** @type {string} */ (opt_pageName || this.model.page.getCurrentPage()), 'down');
+};

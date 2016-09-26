@@ -11,8 +11,12 @@
   }
   .toolbar {
     width: 100%;
-    top: -28px;
+    top: -48px;
     position: relative;
+    background-color: @silexlightergrey;
+    box-shadow: 0px 0px 5px #2F2F2F;
+    padding: 10px;
+    box-sizing: border-box;
   }
   .close-btn {
     background-image: url("../assets/goog-ui/text-editor-close.png");
@@ -20,8 +24,8 @@
     height: 38px;
     position: absolute;
     right: 0;
-    top: -28px;
-    width: 39px;
+    top: -43px;
+    width: 40px;
   }
 }
 .dock-editors .silex-text-editor {
@@ -29,4 +33,9 @@
 }
 div.tr_bubble {
   z-index: 999 !important;
+}
+.goog-toolbar {
+  background-image: none !important;
+  background: none;
+  border: none;
 }

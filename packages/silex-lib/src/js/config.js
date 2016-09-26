@@ -59,7 +59,14 @@ silex.Config.debug = {
  * Link of the menu
  * @const
  */
-silex.Config.ABOUT_SILEX = 'http://www.silex.me/';
+silex.Config.WIKI_SILEX = 'https://github.com/silexlabs/Silex/wiki';
+
+
+/**
+ * Link of the menu
+ * @const
+ */
+silex.Config.CROWD_FUNDING = 'http://crowdfunding.silex.me/';
 
 
 /**
@@ -101,7 +108,7 @@ silex.Config.SUBSCRIBE_SILEX_LABS = 'http://eepurl.com/F48q5';
  * Link of the menu
  * @const
  */
-silex.Config.SOCIAL_GPLUS = 'https://plus.google.com/communities/107373636457908189681';
+silex.Config.SOCIAL_DIASPORA = 'https://diasp.org/people/f37438103a9b013250aa2a0000053625';
 
 
 /**
