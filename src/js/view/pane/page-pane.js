@@ -66,6 +66,13 @@ silex.view.pane.PagePane.prototype.viewOnMobileCheckbox = null;
 
 
 /**
+ * check box "view on all pages"
+ * @type {goog.ui.Checkbox}
+ */
+silex.view.pane.PagePane.prototype.viewOnAllPagesCheckbox = null;
+
+
+/**
  * text field used to type an external link
  */
 silex.view.pane.PagePane.prototype.linkInputTextField = null;
@@ -122,6 +129,20 @@ silex.view.pane.PagePane.prototype.buildUi = function() {
         }, this);
       }, false, this);
 
+  // View on all pages
+  var viewOnAllPagesElement = goog.dom.getElementByClass('view-on-allpages', this.element);
+  checkboxElement = goog.dom.getElementByClass('view-on-allpages-check', viewOnAllPagesElement);
+  labelElement = goog.dom.getElementByClass('view-on-allpages-label', viewOnAllPagesElement);
+  this.viewOnAllPagesCheckbox = new goog.ui.Checkbox();
+  this.viewOnAllPagesCheckbox.render(checkboxElement);
+  this.viewOnAllPagesCheckbox.setLabel(labelElement);
+  goog.events.listen(this.viewOnAllPagesCheckbox, goog.ui.Component.EventType.CHANGE,
+    function(event) {
+      if(this.viewOnAllPagesCheckbox.isChecked()) {
+        this.checkAllPages();
+      }
+      this.removeFromAllPages();
+    }, false, this);
 };
 
 
@@ -287,6 +308,7 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, pageNames
     // not stage element only
     this.linkDropdown.removeAttribute('disabled');
     // refresh page checkboxes
+    let isInNoPage = true;
     goog.array.forEach(this.pageCheckboxes, function(item) {
       // there is a selection
       item.checkbox.setEnabled(true);
@@ -295,6 +317,7 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, pageNames
         return goog.dom.classlist.contains(element, item.pageName);
       });
       // set visibility
+      isInNoPage = isInNoPage && isInPage === false;
       if (goog.isNull(isInPage)) {
         // multiple elements selected with different values
         item.checkbox.setChecked(goog.ui.Checkbox.State.UNDETERMINED);
@@ -303,7 +326,14 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, pageNames
         item.checkbox.setChecked(isInPage);
       }
     }, this);
-
+    this.viewOnAllPagesCheckbox.setEnabled(true);
+    if(isInNoPage) {
+      this.viewOnAllPagesCheckbox.setChecked(true);
+      // this.checkAllPages();
+    }
+    else {
+      this.viewOnAllPagesCheckbox.setChecked(false);
+    }
     // refresh the link inputs
     // get the link of the element
     var elementLink = /** @type {string} */ (this.getCommonProperty(selectedElements, function(element) {
@@ -342,7 +372,8 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, pageNames
     this.linkDropdown.value = 'none';
     this.linkDropdown.setAttribute('disabled', true);
     goog.style.setStyle(linkInputElement, 'display', 'none');
-
+    this.viewOnAllPagesCheckbox.setEnabled(false);
+    this.viewOnAllPagesCheckbox.setChecked(true);
   }
   this.iAmRedrawing = false;
 };
@@ -362,4 +393,23 @@ silex.view.pane.PagePane.prototype.checkPage = function(pageName, checkbox) {
   else {
     this.controller.propertyToolController.removeFromPage(this.selectedElements, pageName);
   }
+};
+
+silex.view.pane.PagePane.prototype.checkAllPages = function() {
+  this.pageCheckboxes.forEach(item => {
+    item.checkbox.setChecked(true);
+  });
+  this.viewOnAllPagesCheckbox.setChecked(true);
+};
+
+silex.view.pane.PagePane.prototype.isInNoPage = function() {
+  return this.selectedElements.reduce((prev, element) => {
+    return prev && !goog.dom.classlist.contains(element, silex.model.Page.PAGED_CLASS_NAME);
+  }, true);
+};
+
+silex.view.pane.PagePane.prototype.removeFromAllPages = function() {
+  this.pageCheckboxes.forEach(item => {
+    this.controller.propertyToolController.removeFromPage(this.selectedElements, item.pageName);
+  });
 };

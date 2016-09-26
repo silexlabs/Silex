@@ -3,7 +3,7 @@
 @font-face {
   font-family: 'Roboto';
   font-style: normal;
-  font-weight: 400;
+  font-weight: lighter;
   src: local('Roboto'), url('../roboto.woff2') format('woff2');
 }
 
@@ -17,16 +17,16 @@
     background-color: @silexmediumgrey;
 }
 ::-webkit-scrollbar-thumb:hover {
-    background-color: #333;
+    background-color: @silexmediumdarkgrey;
 }
 
 ::selection {
   background: @silexmediumgrey;
-  color: #FFF;
+  color: @silexlightergrey;
 }
 ::-moz-selection {
   background: @silexmediumgrey;
-  color: #FFF;
+  color: @silexlightergrey;
 }
 
 body {
@@ -41,13 +41,22 @@ body {
 
   input {
     border: 1px solid @silexmediumgrey;
-    color: white;
+    color: @silexlightergrey;
     background-color: @silexdarkgrey;
-    box-shadow: inset 1px 1px 5px rgba(0, 0, 0, .3);
+    border: 1px solid @silexdarkergrey;
+    box-shadow: 1px 1px 0 @silexlightgrey;
+    color: @silexlightergrey;
+    border-radius: 2px;
     box-sizing: border-box;
-    border-radius: 5px;
-    padding-left: 10px;
-    padding-top: 2px;
+    padding: 0 5px;
+  }
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
   }
 }
 
@@ -92,7 +101,7 @@ body.loading-pending {
 .xsmall-font {
   font-size: 13px;
   font-weight: lighter;
-  color: #555555;
+  color: @silexlightergrey;
 }
 
 #silex-file-explorer{

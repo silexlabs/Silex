@@ -11,7 +11,8 @@
 
 /**
  * @fileoverview
- * the Silex menu
+ * the Silex menu on the left
+ * TODO: clean up and remove the old google closure menu, implement a mechanism for keyboard shortcuts
  * based on closure menu class
  *
  */
@@ -127,14 +128,15 @@ silex.view.Menu.prototype.buildUi = function() {
       }
     }
   }, this));
-
-
-  // render the menu
-  this.menu.render(this.element);
   // event handling
-  goog.events.listen(this.menu, goog.ui.Component.EventType.ACTION, function(e) {
-    this.onMenuEvent(e.target.getId());
-  }, false, this);
+  this.element.onclick = e => {
+    const action = e.target.getAttribute('data-menu-action') || e.target.parentNode.getAttribute('data-menu-action');
+    this.onMenuEvent(action);
+    if(e.target.parentNode && !e.target.parentNode.classList.contains('menu-container')) {
+      // not a first level menu => close sub menus
+      this.closeAllSubMenu();
+    }
+  };
 };
 
 
@@ -144,6 +146,7 @@ silex.view.Menu.prototype.buildUi = function() {
  * @param {goog.ui.Menu} menu
  * @param {goog.ui.KeyboardShortcutHandler} shortcutHandler
  * @param {Array.<Object>} globalKeys
+ * TODO: clean up and remove the old google closure menu, implement a mechanism for keyboard shortcuts
  */
 silex.view.Menu.prototype.addToMenu = function(itemData, menu, shortcutHandler, globalKeys) {
   var item;
@@ -155,13 +158,13 @@ silex.view.Menu.prototype.addToMenu = function(itemData, menu, shortcutHandler, 
     item.setId(id);
     item.addClassName(itemData.className);
     // checkable
-    if (itemData.checkable) {
-      item.setCheckable(true);
-    }
-    // mnemonic (access to an item with keyboard when the menu is open)
-    if (itemData.mnemonic) {
-      item.setMnemonic(itemData.mnemonic);
-    }
+    // if (itemData.checkable) {
+    //   item.setCheckable(true);
+    // }
+    // // mnemonic (access to an item with keyboard when the menu is open)
+    // if (itemData.mnemonic) {
+    //   item.setMnemonic(itemData.mnemonic);
+    // }
     // shortcut
     if (itemData.shortcut) {
       for (let idx in itemData.shortcut) {
@@ -176,23 +179,23 @@ silex.view.Menu.prototype.addToMenu = function(itemData, menu, shortcutHandler, 
         }
       }
     }
-  } else {
-    item = new goog.ui.MenuSeparator();
   }
-  //item.setDispatchTransitionEvents(goog.ui.Component.State.ALL, true);
+  // else {
+  //   item = new goog.ui.MenuSeparator();
+  // }
   // add the menu item
-  menu.addChild(item, true);
+  // menu.addChild(item, true);
   // add tooltip (has to be after menu.addItem)
   // TODO: add accelerator (only display shortcut here, could not get it to work automatically with closure's accelerator concept)
-  if (itemData && itemData.tooltip) {
-    // add label
-    var div = goog.dom.createElement('span');
-    div.innerHTML = itemData.tooltip;
-    div.className = 'goog-menuitem-accel';
-    item.getElement().appendChild(div);
-    // add a real tooltip
-    //new goog.ui.Tooltip(item.getElement(), itemData.tooltip);
-  }
+  // if (itemData && itemData.tooltip) {
+  //   // add label
+  //   var div = goog.dom.createElement('span');
+  //   div.innerHTML = itemData.tooltip;
+  //   div.className = 'goog-menuitem-accel';
+  //   item.getElement().appendChild(div);
+  //   // add a real tooltip
+  //   //new goog.ui.Tooltip(item.getElement(), itemData.tooltip);
+  // }
 };
 
 
@@ -206,13 +209,49 @@ silex.view.Menu.prototype.redraw = function(selectedElements, pageNames, current
 };
 
 
+silex.view.Menu.SUB_MENU_CLASSES = ['page-tool-visible', 'about-menu-visible', 'file-menu-visible', 'code-menu-visible', 'add-menu-visible'];
+silex.view.Menu.prototype.closeAllSubMenu = function() {
+  silex.view.Menu.SUB_MENU_CLASSES.forEach(className => {
+    document.body.classList.remove(className);
+  });
+};
+
+
+silex.view.Menu.prototype.toggleSubMenu = function(classNameToToggle) {
+  silex.view.Menu.SUB_MENU_CLASSES.forEach(className => {
+    if(classNameToToggle === className) {
+      document.body.classList.toggle(className);
+    }
+    else {
+      document.body.classList.remove(className);
+    }
+  });
+}
+
+
 /**
  * handles click events
  * calls onStatus to notify the controller
  * @param {string} type
  */
 silex.view.Menu.prototype.onMenuEvent = function(type) {
+  console.log('onMenuEvent', type);
   switch (type) {
+    case 'show.pages':
+      this.toggleSubMenu('page-tool-visible');
+      break;
+    case 'show.about.menu':
+      this.toggleSubMenu('about-menu-visible');
+      break;
+    case 'show.file.menu':
+      this.toggleSubMenu('file-menu-visible');
+      break;
+    case 'show.code.menu':
+      this.toggleSubMenu('code-menu-visible');
+      break;
+    case 'show.add.menu':
+      this.toggleSubMenu('add-menu-visible');
+      break;
     case 'file.new':
       this.controller.fileMenuController.newFile();
       break;
@@ -258,6 +297,12 @@ silex.view.Menu.prototype.onMenuEvent = function(type) {
       break;
     case 'tools.mobile.mode':
       this.controller.toolMenuController.toggleMobileMode();
+      break;
+    case 'tools.mobile.mode.on':
+      this.controller.toolMenuController.setMobileMode(true);
+      break;
+    case 'tools.mobile.mode.off':
+      this.controller.toolMenuController.setMobileMode(false);
       break;
    case 'insert.page':
       this.controller.insertMenuController.createPage();
@@ -309,8 +354,11 @@ silex.view.Menu.prototype.onMenuEvent = function(type) {
       this.controller.pageToolController.renamePage();
       break;
     // Help menu
-    case 'help.about':
-      window.open(silex.Config.ABOUT_SILEX);
+    case 'help.wiki':
+      window.open(silex.Config.WIKI_SILEX);
+      break;
+    case 'help.crowdfunding':
+      window.open(silex.Config.CROWD_FUNDING);
       break;
     case 'help.issues':
       window.open(silex.Config.ISSUES_SILEX);
@@ -327,8 +375,8 @@ silex.view.Menu.prototype.onMenuEvent = function(type) {
     case 'help.newsLetter':
       window.open(silex.Config.SUBSCRIBE_SILEX_LABS);
       break;
-    case 'help.googlPlus':
-      window.open(silex.Config.SOCIAL_GPLUS);
+    case 'help.diaspora':
+      window.open(silex.Config.SOCIAL_DIASPORA);
       break;
     case 'help.twitter':
       window.open(silex.Config.SOCIAL_TWITTER);

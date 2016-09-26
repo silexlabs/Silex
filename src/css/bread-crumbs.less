@@ -3,23 +3,30 @@
 @breadPaddingTop: 7px;
 
 .silex-bread-crumbs {
-  .silex-context-menu;
+  .horizontal-menu();
   top: initial;
   padding-left: initial;
   bottom: 0;
   height: @breadCrumbsHeight;
-  div {
+  .crumb {
     display: inline-flex;
     height: @breadCrumbsHeight - @breadPaddingTop;
     position: relative;
-    color: white;
+    color: @silexlightergrey;
     padding: @breadPaddingTop 10px 0 20px;
     margin-left: -10px;
-    border-right: 1px solid @silexlightergrey;
-    border-radius: 10px;
     font-size: small;
-    background-color: @silexmediumdarkgrey;
     cursor: pointer;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .sep {
+    margin: 0;
+    padding: 0;
+    border: none;
+    .svg {
+      color: #444;
+    }
   }
 }
 

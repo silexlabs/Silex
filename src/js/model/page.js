@@ -290,6 +290,32 @@ silex.model.Page.prototype.removePage = function(pageName) {
 
 
 /**
+ * move a page in the dom
+ * @param {string} pageName
+ * @param {string} direction up or down
+ */
+silex.model.Page.prototype.movePage = function(pageName, direction) {
+  if(direction !== 'up' && direction !== 'down') throw 'wrong direction ' + direction + ', can not move page';
+  const elements = this.model.body.getBodyElement().querySelectorAll('a[data-silex-type="page"]');
+  let prevEl = null;
+  for(let idx=0; idx<elements.length; idx++) {
+    const el = elements[idx];
+    if(prevEl &&
+      ((el.id === pageName && direction === 'up') ||
+      (prevEl.id === pageName && direction === 'down'))) {
+      el.parentNode.insertBefore(el, prevEl);
+      var pages = this.getPages();
+      var currentPage = this.getCurrentPage();
+      this.view.pageTool.redraw(this.model.body.getSelection(), pages, currentPage);
+      return;
+    }
+    prevEl = el;
+  };
+  console.error('page could not be moved', pageName, direction, prevEl);
+};
+
+
+/**
  * add a page to the dom
  * @param {string} name
  * @param {string} displayName
@@ -345,12 +371,20 @@ silex.model.Page.prototype.renamePage = function(oldName, newName, newDisplayNam
 
 /**
  * set/get a the visibility of an element in the given page
+ * remove from all pages if visible in all pages
  * @param {Element} element
  * @param {string} pageName
  */
 silex.model.Page.prototype.addToPage = function(element, pageName) {
-  goog.dom.classlist.add(element, pageName);
-  goog.dom.classlist.add(element, silex.model.Page.PAGED_CLASS_NAME);
+  const pages = this.getPagesForElement(element);
+  if (pages.length + 1 === this.getPages().length) {
+    pages.forEach(page => element.classList.remove(page));
+    goog.dom.classlist.remove(element, silex.model.Page.PAGED_CLASS_NAME);
+  }
+  else {
+    goog.dom.classlist.add(element, pageName);
+    goog.dom.classlist.add(element, silex.model.Page.PAGED_CLASS_NAME);
+  }
   this.refreshView();
 };
 
