@@ -612,6 +612,10 @@ silex.model.Element.prototype.setImageUrl = function(element, url, opt_callback,
  * @param  {Element} element   the element to remove
  */
 silex.model.Element.prototype.removeElement = function(element) {
+  // never delete sections container content, but the section itself
+  if(this.isSectionContent(element)) {
+    element = /** @type {Element} */ (element.parentNode);
+  }
   // check this is allowed, i.e. an element inside the stage container
   if (this.model.body.getBodyElement() !== element &&
       goog.dom.contains(this.model.body.getBodyElement(), element)) {
