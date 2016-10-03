@@ -556,18 +556,6 @@ silex.view.Stage.prototype.onMouseMove = function(target, x, y, shiftKey) {
       // notify controller that a change is about to take place
       // marker for undo/redo
       this.controller.stageController.markAsUndoable();
-      // move to the body so that it is above everything
-      this.selectedElements.forEach(element => {
-        if(element.classList.contains(silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME)) {
-          return;
-        }
-        // move back to the same x, y position
-        var elementPos = goog.style.getPageOffset(element);
-        element.style.left = elementPos.x + 'px';
-        element.style.top = elementPos.y + 'px';
-        // attache to body
-        this.bodyElement.appendChild(element);
-      });
       // store the state for later use
       if (this.lastClickWasResize) {
         this.isResizing = true;
@@ -576,6 +564,18 @@ silex.view.Stage.prototype.onMouseMove = function(target, x, y, shiftKey) {
         this.isDragging = true;
         // dragging style
         goog.dom.classlist.add(this.bodyElement, silex.model.Body.DRAGGING_CLASS_NAME);
+        // move to the body so that it is above everything
+        this.selectedElements.forEach(element => {
+          if(element.classList.contains(silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME)) {
+            return;
+          }
+          // move back to the same x, y position
+          var elementPos = goog.style.getPageOffset(element);
+          element.style.left = elementPos.x + 'px';
+          element.style.top = elementPos.y + 'px';
+          // attache to body
+          this.bodyElement.appendChild(element);
+        });
       }
     }
 
