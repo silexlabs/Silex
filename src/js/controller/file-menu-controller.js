@@ -46,23 +46,26 @@ silex.controller.FileMenuController.prototype.newFile = function(opt_cbk, opt_er
 
   this.tracker.trackAction('controller-events', 'request', 'file.new', 0);
 
-  this.model.file.newFile(goog.bind(function(rawHtml) {
-    this.model.file.setHtml(rawHtml, goog.bind(function() {
-      // undo redo reset
-      this.undoReset();
-      this.fileOperationSuccess(null, true);
-      // QOS, track success
-      this.tracker.trackAction('controller-events', 'success', 'file.new', 1);
-      if (opt_cbk) {
-        opt_cbk();
-      }
-    }, this));
-  }, this), goog.bind(function(error) {
-    this.tracker.trackAction('controller-events', 'error', 'file.new', -1);
-    if (opt_errorCbk) {
-      opt_errorCbk(error);
-    }
-  }, this));
+  // this.model.file.newFile(goog.bind(function(rawHtml) {
+  //   this.model.file.setHtml(rawHtml, goog.bind(function() {
+  //     // undo redo reset
+  //     this.undoReset();
+  //     this.fileOperationSuccess(null, true);
+  //     // QOS, track success
+  //     this.tracker.trackAction('controller-events', 'success', 'file.new', 1);
+  //     if (opt_cbk) {
+  //       opt_cbk();
+  //     }
+  //   }, this));
+  // }, this), goog.bind(function(error) {
+  //   this.tracker.trackAction('controller-events', 'error', 'file.new', -1);
+  //   if (opt_errorCbk) {
+  //     opt_errorCbk(error);
+  //   }
+  // }, this));
+  this.view.newWebsiteDialog.openDialog(opt_url => {
+    console.log('pannel closed', opt_url);
+  });
 };
 
 
