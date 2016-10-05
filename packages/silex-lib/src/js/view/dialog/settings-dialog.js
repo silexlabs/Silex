@@ -40,6 +40,16 @@ silex.view.dialog.SettingsDialog = function(element, model, controller) {
   goog.base(this, element, model, controller);
   // set the visibility css class
   this.visibilityClass = 'settings-editor';
+  // do init stuff
+  this.init();
+};
+
+
+// inherit from silex.view.dialog.DialogBase
+goog.inherits(silex.view.dialog.SettingsDialog, silex.view.dialog.DialogBase);
+
+
+silex.view.dialog.SettingsDialog.prototype.init = function() {
   // init the navigation
   this.element.classList.add('general-pane-visible');
   // init the editor
@@ -75,10 +85,6 @@ silex.view.dialog.SettingsDialog = function(element, model, controller) {
     this.controller.settingsDialogController.browsePublishPath(() => this.openEditor());
   });
 };
-
-// inherit from silex.view.dialog.DialogBase
-goog.inherits(silex.view.dialog.SettingsDialog, silex.view.dialog.DialogBase);
-
 
 /**
  * constant for all pane css classes
@@ -344,7 +350,9 @@ silex.view.dialog.SettingsDialog.prototype.openDialog = function(opt_cbk, opt_pa
 silex.view.dialog.SettingsDialog.prototype.openEditor = function() {
   // call super
   goog.base(this, 'openEditor');
-  this.setPublicationPath(this.model.head.getPublicationPath());
+try{
+ this.setPublicationPath(this.model.head.getPublicationPath());
+} catch(e){}
 };
 
 
