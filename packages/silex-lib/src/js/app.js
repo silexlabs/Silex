@@ -74,6 +74,7 @@ goog.require('silex.view.dialog.FileExplorer');
 goog.require('silex.view.dialog.HtmlEditor');
 goog.require('silex.view.dialog.JsEditor');
 goog.require('silex.view.dialog.SettingsDialog');
+goog.require('silex.view.dialog.NewWebsiteDialog');
 goog.require('silex.view.dialog.TextEditor');
 
 
@@ -140,6 +141,7 @@ class App {
     this.view.jsEditor.buildUi();
     this.view.textEditor.buildUi();
     this.view.settingsDialog.buildUi();
+    this.view.newWebsiteDialog.buildUi();
     this.view.propertyTool.buildUi();
 
 
@@ -225,7 +227,12 @@ class App {
     /** @type {silex.view.dialog.SettingsDialog} */
     var settingsDialog = new silex.view.dialog.SettingsDialog(settingsDialogElement, this.model, this.controller);
 
-    // SettingsDialog
+    // NewWebsiteDialog
+    var newWebsiteDialogElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-newwebsite-dialog'));
+    /** @type {silex.view.dialog.NewWebsiteDialog} */
+    var newWebsiteDialog = new silex.view.dialog.NewWebsiteDialog(newWebsiteDialogElement, this.model, this.controller);
+
+    // FileExplorer
     var fileExplorerElement = /** @type {!Element} */ (document.getElementById('silex-file-explorer'));
     /** @type {silex.view.dialog.FileExplorer} */
     var fileExplorer = new silex.view.dialog.FileExplorer(fileExplorerElement, this.model, this.controller);
@@ -268,6 +275,7 @@ class App {
         textEditor,
         fileExplorer,
         settingsDialog,
+        newWebsiteDialog,
         propSplitter,
         workspace
     );
