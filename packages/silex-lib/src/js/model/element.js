@@ -279,9 +279,17 @@ silex.model.Element.prototype.getAllStyles = function(element, opt_computed) {
  * @return  {?string}           the style of the element
  */
 silex.model.Element.prototype.getStyle = function(element, styleName, opt_computed) {
-  var isMobile = this.view.workspace.getMobileEditor();
-  var styleObject = this.model.property.getStyle(element, isMobile, opt_computed);
-  var cssName = goog.string.toSelectorCase(styleName);
+  const cssName = goog.string.toSelectorCase(styleName);
+  // getStyle width of section, return null
+  if(cssName === 'width' && this.isSection(element)) {
+    return null;
+  }
+  // getStyle min-height of section content, return parent min-height
+  if(cssName === 'min-height' && this.isSectionContent(element)) {
+    element = /** @type {Element} */ (element.parentNode);
+  }
+  const isMobile = this.view.workspace.getMobileEditor();
+  let styleObject = this.model.property.getStyle(element, isMobile, opt_computed);
   if (styleObject && styleObject[cssName]) {
     return this.unprepareHtmlForEdit(styleObject[cssName]);
   }

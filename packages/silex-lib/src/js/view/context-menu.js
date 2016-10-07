@@ -48,7 +48,7 @@ silex.view.ContextMenu = function(element, model, controller) {
    * @type {Element}
    */
   this.currentPageElement = element.querySelector('.current-page');
-  this.currentPageElement.onclick = e => this.view.menu.toggleSubMenu('page-tool-visible');
+  this.currentPageElement.onclick = e => this.controller.viewMenuController.showPages();
 
 
   /**
