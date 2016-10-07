@@ -192,6 +192,7 @@ silex.model.Page.prototype.getCurrentPage = function() {
 silex.model.Page.prototype.refreshView = function() {
   var pages = this.getPages();
   var currentPage = this.getCurrentPage();
+  this.view.contextMenu.redraw(this.model.body.getSelection(), pages, currentPage);
   this.view.pageTool.redraw(this.model.body.getSelection(), pages, currentPage);
   this.view.propertyTool.redraw(this.model.body.getSelection(), pages, currentPage);
   this.view.stage.redraw(this.model.body.getSelection(), pages, currentPage);
