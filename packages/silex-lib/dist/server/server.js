@@ -98,6 +98,13 @@ else {
 // unifile server
 // ********************************
 
+// force ssl if the env var SILEX_FORCE_HTTPS is set
+if(process.env.SILEX_FORCE_HTTPS) {
+  console.log('test')
+  var forceSSL = require('express-force-ssl');
+  app.use(forceSSL);
+}
+
 // change www root
 silexConfig.www.ROOT = pathModule.resolve(__dirname, '../../dist/client');
 
@@ -172,16 +179,11 @@ if(process.env.SILEX_SSL_PRIVATE_KEY && process.env.SILEX_SSL_CERTIFICATE) {
     https.createServer(options, app).listen(sslPort, function() {
       console.log('listening on port ', sslPort);
     });
-    app.use(function(req, res, next){
-      console.log('app.use');
-      next();
-    });
   }
   catch(e) {
     console.warn('SSL certificate failed.', e)
   }
 }
-
 // ********************************
 // silex tasks
 // ********************************
