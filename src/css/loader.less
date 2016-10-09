@@ -1,5 +1,19 @@
+.silex-workspace {
+  transition: opacity .5s ease-out;
+  opacity: 1;
+}
 .loader {
-  background-image: url(../assets/image-loader.gif);
-  background-repeat: no-repeat;
-  background-position: 50%;
+  z-index: -1;
+  height: 0;
+}
+.loading-pending {
+  .silex-workspace {
+    opacity: 0; // also in index.jade
+  }
+  .loader {
+    color: #DDD;
+    text-align: center;
+    margin-top: 50vh;
+    height: auto;
+  }
 }
