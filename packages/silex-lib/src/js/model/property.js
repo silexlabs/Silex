@@ -293,7 +293,7 @@ silex.model.Property.prototype.setStyle = function(element, style, opt_isMobile)
  * @param {Element} element
  * @param {?boolean=} opt_isMobile defaults to the global setting of silex.view.Workspace
  * @param {?boolean=} opt_computed computed syle or stored value? defaults to false
- * @return {?Object}
+ * @return {?Object} a clone of the style object
  */
 silex.model.Property.prototype.getStyle = function(element, opt_isMobile, opt_computed) {
   if (opt_computed === true) {
@@ -310,8 +310,20 @@ silex.model.Property.prototype.getStyle = function(element, opt_isMobile, opt_co
   else {
     res = this.stylesObj[elementId];
   }
-  // returns a clone of the style object
-  return res == null ? null : /** @type {Object} */ (JSON.parse(JSON.stringify(res)));
+  if(res) {
+    // clone the style object
+    res = /** @type {Object} */ (JSON.parse(JSON.stringify(res)));
+    // do not apply width to sections
+    if(this.model.element.isSection(element)) {
+      res['width'] = undefined;
+    }
+    else if(this.model.element.isSectionContent(element)) {
+      const parent = /** @type {Element} */ (element.parentNode);
+      const parentStyle = this.getStyle(parent, isMobile, false);
+      res['min-height'] = parentStyle ? parentStyle['min-height'] : undefined;
+    }
+  }
+  return res;
 };
 
 

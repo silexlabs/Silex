@@ -23,6 +23,7 @@ goog.require('silex.model.Body');
 goog.require('silex.model.Element');
 goog.require('silex.model.Page');
 goog.require('silex.model.Head');
+goog.require('silex.view.BreadCrumbs');
 
 
 /**
