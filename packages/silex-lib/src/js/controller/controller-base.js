@@ -490,7 +490,7 @@ silex.controller.ControllerBase.prototype.toggleMobileMode = function() {
  */
 silex.controller.ControllerBase.prototype.save = function(opt_url, opt_cbk, opt_errorCbk) {
   this.tracker.trackAction('controller-events', 'request', 'file.save', 0);
-  if (opt_url) {
+  if (opt_url && !silex.utils.Url.isAbsoluteUrl(opt_url)) {
     this.doSave(opt_url, opt_cbk, opt_errorCbk);
   }
   else {

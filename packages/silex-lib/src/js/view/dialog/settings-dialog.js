@@ -42,6 +42,15 @@ silex.view.dialog.SettingsDialog = function(element, model, controller) {
   this.visibilityClass = 'settings-editor';
   // do init stuff
   this.init();
+  // init the navigation
+  this.element.classList.add(this.paneCssClasses[0] + '-visible');
+  // init the editor
+  this.publicationPath = '';
+  this.title = '';
+  // navigation
+  var leftPane = goog.dom.getElementByClass('left-pane');
+  goog.events.listen(
+      leftPane, goog.events.EventType.CLICK, this.onNavClick, false, this);
 };
 
 
@@ -50,16 +59,7 @@ goog.inherits(silex.view.dialog.SettingsDialog, silex.view.dialog.DialogBase);
 
 
 silex.view.dialog.SettingsDialog.prototype.init = function() {
-  // init the navigation
-  this.element.classList.add('general-pane-visible');
-  // init the editor
-  this.publicationPath = '';
-  this.title = '';
-  // navigation
-  var leftPane = goog.dom.getElementByClass('left-pane');
-  goog.events.listen(
-      leftPane, goog.events.EventType.CLICK, this.onNavClick, false, this);
-
+  this.paneCssClasses = silex.view.dialog.SettingsDialog.PANE_CSS_CLASSES;
   // input text fields
   this.bindTextField('.general-pane .input-title', (v) => this.controller.settingsDialogController.setTitle(v));
   this.bindTextField('.social-pane .input-title', (v) => this.controller.settingsDialogController.setTitleSocial(v));
@@ -136,7 +136,7 @@ silex.view.dialog.SettingsDialog.prototype.onNavClick = function(e) {
  */
 silex.view.dialog.SettingsDialog.prototype.openPane = function(paneCssClass) {
   // close all panes
-  silex.view.dialog.SettingsDialog.PANE_CSS_CLASSES.forEach(className => this.element.classList.remove(className + '-visible'));
+  this.paneCssClasses.forEach(className => this.element.classList.remove(className + '-visible'));
   // open the one we want
   this.element.classList.add(paneCssClass + '-visible');
 };
