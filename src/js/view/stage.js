@@ -440,7 +440,7 @@ silex.view.Stage.prototype.handleMouseUp = function(target, x, y, shiftKey) {
   // handle the mouse up
   if (this.isDragging) {
     // new container
-    let dropZone = this.getDropZone(x, y) || {'element': this.bodyElement, 'zIndex': 0};
+    let dropZone = this.getDropZone(x, y, true) || {'element': this.bodyElement, 'zIndex': 0};
     // move all selected elements to the new container
     goog.array.forEach(this.selectedElements, function(element) {
       if (!goog.dom.getAncestorByClass(element.parentNode, silex.model.Element.SELECTED_CLASS_NAME) &&
@@ -535,7 +535,7 @@ silex.view.Stage.prototype.onMouseMove = function(target, x, y, shiftKey) {
   // update states
   if (this.isDown) {
     // det the drop zone under the cursor
-    let dropZone = this.getDropZone(x, y) || {'element': this.bodyElement, 'zIndex': 0};
+    let dropZone = this.getDropZone(x, y, true) || {'element': this.bodyElement, 'zIndex': 0};
     // handle the css class applyed to the dropzone
     this.markAsDropZone(dropZone.element);
     // update property tool box
@@ -624,12 +624,15 @@ silex.view.Stage.prototype.markAsDropZone = function(opt_element) {
  *
  * @param {number} x    mouse position
  * @param {number} y    mouse position
+ * @param {?boolean=} opt_preventSelected   will not considere the selected elements and their content as a potential drop zone,
+ *                                          which is useful to prevent drop into the element being dragged
+ *                                          default is false
  * @param {?Element=} opt_container   element into which to seach for the dropzone, by default the body
  * @return {{element: ?Element, zIndex: number}}  if not null this is the drop zone under the mouse cursor
  *                                              zIndex being the highest z-index encountered while browsing children
  * TODO: use `pointer-events: none;` to get the dropzone with mouse events, or  `Document.elementsFromPoint()`
  */
-silex.view.Stage.prototype.getDropZone = function(x, y, opt_container) {
+silex.view.Stage.prototype.getDropZone = function(x, y, opt_preventSelected, opt_container) {
   // default value
   let container = opt_container || this.bodyElement;
   let children = goog.dom.getChildren(container);
@@ -640,7 +643,7 @@ silex.view.Stage.prototype.getDropZone = function(x, y, opt_container) {
     let element = children[idx];
     if (goog.dom.classlist.contains(element, 'container-element') &&
       !goog.dom.classlist.contains(element, silex.model.Body.PREVENT_DROPPABLE_CLASS_NAME) &&
-      !goog.dom.classlist.contains(element, 'silex-selected') &&
+      !(opt_preventSelected === true && goog.dom.classlist.contains(element, 'silex-selected')) &&
       this.getVisibility(element)
       ) {
         let bb = goog.style.getBounds(element);
@@ -648,7 +651,7 @@ silex.view.Stage.prototype.getDropZone = function(x, y, opt_container) {
         let scrollY = this.getScrollY();
         if (bb.left < x + scrollX && bb.left + bb.width > x + scrollX &&
             bb.top < y + scrollY && bb.top + bb.height > y + scrollY) {
-              let candidate = this.getDropZone(x, y, element);
+              let candidate = this.getDropZone(x, y, opt_preventSelected, element);
               // if zIndex is 0 then there is no value to css zIndex, considere the DOM order
               if (candidate.element) {
                 let zIndex = goog.style.getComputedZIndex(element);
@@ -689,6 +692,15 @@ silex.view.Stage.prototype.getVisibility = function(element) {
   return parent === null;
 };
 
+
+/**
+ * @return {{width, height}} the size of the stage
+ */
+silex.view.Stage.prototype.getStageSize = function() {
+  return goog.style.getSize(this.element)
+}
+
+
 /**
  * Handle the case where mouse is near a border of the stage
  * and an element is being dragged
@@ -698,7 +710,7 @@ silex.view.Stage.prototype.getVisibility = function(element) {
  */
 silex.view.Stage.prototype.updateScroll = function(x, y) {
   this.invalidationManagerScroll.callWhenReady(() => {
-    let iframeSize = goog.style.getSize(this.element);
+    let iframeSize = this.getStageSize();
     let scrollX = this.getScrollX();
     let scrollY = this.getScrollY();
     if (x < 100) {

@@ -29,7 +29,7 @@
     "livereload:stop": "echo '-- stopping livereload' && curl --ipv4 http://localhost:35729/kill",
     "livereload:changed": "echo '-- reloading livereload' && curl --ipv4 http://localhost:35729/changed",
     "watch:server": "npm run livereload:start && node_modules/watch/cli.js 'npm run build:server && npm start && npm run livereload:changed' dist/server/",
-    "watch:client": "npm run livereload:start && node_modules/watch/cli.js 'npm run build && npm run livereload:changed' src/",
+    "watch:client": "npm run livereload:start && node_modules/watch/cli.js 'npm run build:css && npm run build:html && npm run build:js:debug && npm run livereload:changed' src/",
     "lint:js:inactive": "echo \"FIXME PRECOMMIT HOOK: FIX ISSUES OF 'npm run lint:js' AND THEN ACTIVATE IT AGAIN IN PRECOMMIT HOOK\"",
     "lint:js": "eslint src/js/",
     "lint:js:closure": "eslint src/js/ && submodules/closure-linter/closure_linter/gjslint.py --max_line_length=200 src/js/**/*.js",
