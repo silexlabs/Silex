@@ -139,9 +139,7 @@ silex.view.Workspace.prototype.redraw = function(view) {
  * loading is over, hide the loader
  */
 silex.view.Workspace.prototype.loadingDone = function() {
-  setTimeout(() => {
-    goog.dom.classlist.remove(document.body, 'loading-pending');
-  }, 500);
+  goog.dom.classlist.remove(document.body, 'loading-pending');
 };
 
 
