@@ -65,13 +65,6 @@ silex.model.File = function(model, view) {
 
 
 /**
- * name of the new file template
- * @const
- */
-silex.model.File.CREATION_TEMPLATE = 'creation-template.html';
-
-
-/**
  * loading css class
  * @const
  */
@@ -404,21 +397,13 @@ silex.model.File.prototype.getHtmlGenerator = function* () {
 
 
 /**
- * load an empty new file
- */
-silex.model.File.prototype.newFile = function(cbk, opt_errCbk) {
-  this.openFromUrl(silex.model.File.CREATION_TEMPLATE, cbk, opt_errCbk);
-};
-
-
-/**
  * load an arbitrary url as a silex html file
  * will not be able to save
  */
 silex.model.File.prototype.openFromUrl = function(url, cbk, opt_errCbk) {
   silex.service.CloudStorage.getInstance().loadLocal(url,
       goog.bind(function(rawHtml) {
-        this.setUrl(null);
+        this.setUrl(url);
         if (cbk) {
           cbk(rawHtml);
         }
