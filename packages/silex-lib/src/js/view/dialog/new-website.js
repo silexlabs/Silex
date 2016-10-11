@@ -17,13 +17,10 @@
 
 
 goog.provide('silex.view.dialog.NewWebsiteDialog');
-goog.require('silex.view.dialog.SettingsDialog');
-
 
 
 /**
  * load the templates for the user to choose
- * @extends {silex.view.dialog.SettingsDialog}
  * @constructor
  * @param {!Element} element   container to render the UI
  * @param  {!silex.types.Model} model  model class which holds
@@ -32,58 +29,193 @@ goog.require('silex.view.dialog.SettingsDialog');
  *                                               the controller instances
  */
 silex.view.dialog.NewWebsiteDialog = function(element, model, controller) {
-  // call super
-  goog.base(this, element, model, controller);
-  // set the visibility css class
-  this.visibilityClass = 'newwebsite-editor';
-  // init the navigation
-  this.element.classList.add('general-pane-visible');
-};
 
-// inherit from silex.view.dialog.SettingsDialog
-goog.inherits(silex.view.dialog.NewWebsiteDialog, silex.view.dialog.SettingsDialog);
+  // store the params
+  this.element = element;
+  this.model = model;
+  this.controller = controller;
+
+  // make this a dialog
+  this.modalDialog = new silex.view.ModalDialog({
+    element: element,
+    onOpen: args => console.log('onOpen', args),
+    onClose: () => console.log('onClose'),
+  });
+
+  /**
+   * flag set to 'success' when the template list is loaded
+   * and set to 'error' when the loading failed
+   * @type {string}
+   */
+  this.state = '';
+
+  this.buildUi();
+};
 
 
 /**
- * prevent settings init stuff
+ * render the data loaded from github into a <ul>
+ * @param  {Element} ul
+ * @param  {string} repo
+ * @param  {*} data
  */
-silex.view.dialog.NewWebsiteDialog.prototype.init = function() {
+silex.view.dialog.NewWebsiteDialog.prototype.renderTemplateList = function(ul, repo, data) {
+  // handle previously rendered elements
+  const elements = ul.querySelectorAll('li.rendered-item');
+  for(let idx=0; idx<elements.length; idx++) {
+    const el = elements[idx];
+    el.parentNode.removeChild(el);
+  }
+  // render the data
+  data
+    // remove files
+    .filter(item => item.type === 'dir')
+    // make a list of <li> tags
+    .map(item => {
+      const li = document.createElement('li');
+      const name = item.name.replace('-', ' ', 'g');
+
+      // handle previously rendered elements
+      li.classList.add('rendered-item');
+
+      // title
+      const h2 = document.createElement('h2');
+      h2.innerHTML = name;
+      li.appendChild(h2);
+
+      // UI container
+      const ui = document.createElement('div');
+      ui.classList.add('ui');
+      li.appendChild(ui);
+
+      // preview
+      const previewEl = document.createElement('a');
+      previewEl.classList.add('fa', 'fa-external-link', 'fa-2x');
+      previewEl.innerHTML = 'Preview';
+      previewEl.setAttribute('data-action', 'preview');
+      previewEl.href = `//${repo}.silex.me/${item.name}/index.html`;
+      ui.appendChild(previewEl);
+
+      // info
+      const infoEl = document.createElement('a');
+      infoEl.classList.add('fa', 'fa-info', 'fa-2x');
+      infoEl.innerHTML = 'Info';
+      infoEl.href = `//${repo}.silex.me/${item.name}/README.md`;
+      infoEl.setAttribute('data-action', 'info');
+      ui.appendChild(infoEl);
+
+      // edit
+      const editEl = document.createElement('a');
+      editEl.classList.add('fa', 'fa-pencil', 'fa-2x');
+      editEl.innerHTML = 'Select';
+      editEl.setAttribute('data-editable', `//${repo}.silex.me/${item.name}/editable.html`);
+      ui.appendChild(editEl);
+
+      // image
+      const img = document.createElement('img');
+      img.src = `//${repo}.silex.me/${item.name}/screenshot-678x336.png`;
+      img.title = name;
+      li.appendChild(img);
+
+      return li;
+    })
+    // add the <li> tags to the <ul> tag
+    .forEach(li => ul.appendChild(li));
 };
+
 
 /**
  * init the menu and UIs
  */
 silex.view.dialog.NewWebsiteDialog.prototype.buildUi = function() {
-  // call super
-  // goog.base(this, 'buildUi');
-  const templatesList = this.element.querySelector('.templates');
-  const oReq = new XMLHttpRequest();
-  oReq.addEventListener('load', e => {
-    const data = JSON.parse(oReq.responseText);
-    data
-      .filter(item => item.type === 'dir')
-      .map(item => {
-        const li = document.createElement('li');
-        const name = item.name.replace('-', ' ', 'g');
+  const createList = (ul, repo, success, error) => {
+    const repoUrl = `https://api.github.com/repos/silexlabs/${repo}/contents`;
+    const oReq = new XMLHttpRequest();
+    oReq.addEventListener('error', e => error('Error loading repo data', e));
+    oReq.addEventListener('load', e => {
+      if(oReq.status === 200) {
+        const list = JSON.parse(oReq.responseText);
+        this.renderTemplateList(ul, repo, list);
+        success();
+        // cache
+        console.log('stored in cache', list.length, 'items for', repo);
+        window.localStorage.setItem('silex:cache:' + repoUrl, oReq.responseText);
+      }
+      else {
+        error('Error loading repo data', e);
+      }
+    });
+    oReq.open('GET', repoUrl);
+    oReq.send();
+    // cache
+    const inCache = window.localStorage.getItem('silex:cache:' + repoUrl);
+    if(inCache) {
+      const list = JSON.parse(inCache);
+      this.renderTemplateList(ul, repo, list);
+      console.log('read from cache', list.length, 'items for', repo);
+    }
+    // click event
+    ul.onclick = e => {
+      const a = e.target;
+      this.selected = a.getAttribute('data-editable');
+      this.modalDialog.close();
+      e.preventDefault();
+      return false;
+    };
+  }
+  const loadNext = toLoad => {
+    if(toLoad.length > 0) {
+      const item = toLoad.pop();
+      createList(this.element.querySelector(item.selector),
+        item.repo,
+        () => loadNext(toLoad),
+        e => {
+          this.state = 'error';
+          if(this.errorCbk) this.errorCbk(e);
+          this.readyCbk = null;
+          this.errorCbk = null;
+        });
+    }
+    else {
+      this.state = 'ready';
+      if(this.readyCbk) this.readyCbk();
+      this.readyCbk = null;
+      this.errorCbk = null;
+    }
+  };
+  const toLoad = [
+    {
+      selector: '.general-pane ul',
+      repo: 'silex-templates',
+    },
+    {
+      selector: '.blank-page-pane ul',
+      repo: 'silex-blank-templates',
+    },
+  ];
+  loadNext(toLoad);
+};
 
-        const h2 = document.createElement('h2');
-        h2.innerHTML = name;
-        li.appendChild(h2);
 
-        const a = document.createElement('a');
-        a.innerHTML = 'View this template online';
-        a.href = `//silex-templates.silex.me/${item.name}/index.html`;
-        li.appendChild(a);
-
-        const img = document.createElement('img');
-        img.src = `//silex-templates.silex.me/${item.name}/screenshot-678x336.png`;
-        img.title = name;
-        li.appendChild(img);
-
-        return li;
-      })
-      .forEach(li => templatesList.appendChild(li));
-  });
-  oReq.open('GET', 'https://api.github.com/repos/silexlabs/silex-templates/contents');
-  oReq.send();
+/**
+ * open the dialog
+ * @param {{close:!function(string), ready:?function(), error:?function(?Object)}} options   options object
+ */
+silex.view.dialog.NewWebsiteDialog.prototype.openDialog = function(options) {
+  // is ready callback
+  if(this.state === 'ready') {
+    if(options.ready) options.ready();
+  }
+  // error callback
+  else if(this.state === 'error') {
+    if(options.error) options.error();
+  }
+  // store them for later
+  else {
+    this.readyCbk = options.ready;
+    this.errorCbk = options.error;
+  }
+  this.selected = null;
+  this.modalDialog.onClose = () => options.close(this.selected);
+  this.modalDialog.open();
 };

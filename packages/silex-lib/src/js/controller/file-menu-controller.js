@@ -63,8 +63,43 @@ silex.controller.FileMenuController.prototype.newFile = function(opt_cbk, opt_er
   //     opt_errorCbk(error);
   //   }
   // }, this));
-  this.view.newWebsiteDialog.openDialog(opt_url => {
-    console.log('pannel closed', opt_url);
+  const onError = (err) => {
+    this.tracker.trackAction('controller-events', 'error', 'file.new', -1);
+    if (opt_errorCbk) {
+      opt_errorCbk(err);
+    }
+  };
+  const onSuccess = () => {
+    console.log('onSuccess');
+    // QOS, track success
+    this.tracker.trackAction('controller-events', 'success', 'file.new', 1);
+    if(opt_cbk) {
+      opt_cbk();
+    }
+  };
+  console.log('xxx open new website');
+  this.view.newWebsiteDialog.openDialog({
+    close: url => {
+      console.log('pannel closed', this.view.newWebsiteDialog.selected);
+      this.model.file.openFromUrl(this.view.newWebsiteDialog.selected, rawHtml => {
+        this.model.file.setHtml(rawHtml, () => {
+          // undo redo reset
+          this.undoReset();
+          this.fileOperationSuccess(null, true);
+          onSuccess();
+        }, true);
+      }, err => {
+        console.log('opening template error');
+        onError(err);
+      });
+    },
+    ready: () => {
+      onSuccess();
+    },
+    error: err => {
+      console.log('loading templates error');
+      onError(err);
+    },
   });
 };
 

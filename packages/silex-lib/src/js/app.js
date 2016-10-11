@@ -1,3 +1,4 @@
+
 /**
  * @preserve
  * Silex, live web creation
@@ -77,7 +78,7 @@ goog.require('silex.view.dialog.SettingsDialog');
 goog.require('silex.view.dialog.NewWebsiteDialog');
 goog.require('silex.view.dialog.TextEditor');
 
-
+goog.require('silex.view.ModalDialog');
 
 /**
  * Defines the entry point of Silex client application
@@ -155,7 +156,10 @@ class App {
     this.view.workspace.redraw(this.view);
 
     // application start, open a new empty file
-    this.controller.fileMenuController.newFile(() => this.view.workspace.loadingDone());
+    this.controller.fileMenuController.newFile(
+      () => this.view.workspace.loadingDone(),
+      () => this.view.workspace.loadingDone()
+    );
     if (goog.DEBUG) {
       window['model'] = this.model;
       window['view'] = this.view;
