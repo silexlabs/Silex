@@ -27,7 +27,7 @@ body.compute-body-size-pending {
 /* default style for silex elements */
 .editable-style{
   position: absolute;
-  box-sizing: border-box;
+  box-sizing: content-box; /* this is needed to set the size of elements with a border (though it could be omited since this is the default value) */
 }
 .silex-element-content{
   overflow: hidden;
