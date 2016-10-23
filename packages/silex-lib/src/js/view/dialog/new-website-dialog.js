@@ -17,6 +17,7 @@
 
 
 goog.provide('silex.view.dialog.NewWebsiteDialog');
+goog.require('silex.view.ModalDialog');
 
 
 /**
@@ -112,10 +113,7 @@ silex.view.dialog.NewWebsiteDialog.prototype.renderTemplateList = function(ul, r
       ui.appendChild(editEl);
 
       // image
-      const img = document.createElement('img');
-      img.src = `//${repo}.silex.me/${item.name}/screenshot-678x336.png`;
-      img.title = name;
-      li.appendChild(img);
+      li.style.backgroundImage = `url(//${repo}.silex.me/${item.name}/screenshot-678x336.png)`;
 
       return li;
     })
@@ -158,9 +156,11 @@ silex.view.dialog.NewWebsiteDialog.prototype.buildUi = function() {
     ul.onclick = e => {
       const a = e.target;
       this.selected = a.getAttribute('data-editable');
-      this.modalDialog.close();
-      e.preventDefault();
-      return false;
+      if(this.selected) {
+        this.modalDialog.close();
+        e.preventDefault();
+        return false;
+      }
     };
   }
   const loadNext = toLoad => {
@@ -199,7 +199,7 @@ silex.view.dialog.NewWebsiteDialog.prototype.buildUi = function() {
 
 /**
  * open the dialog
- * @param {{close:!function(string), ready:?function(), error:?function(?Object)}} options   options object
+ * @param {{close:!function(string), ready:?function(), error:?function(?Object=)}} options   options object
  */
 silex.view.dialog.NewWebsiteDialog.prototype.openDialog = function(options) {
   // is ready callback

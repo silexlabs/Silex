@@ -1,15 +1,32 @@
-@dialogs-margin: 50px;
 
 .silex-newwebsite-dialog {
-  position: absolute;
-  top: @dialogs-margin;
-  left: @dialogs-margin;
-  right: @dialogs-margin;
-  bottom: @dialogs-margin;
-  .ui {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.37);
+  .rendered-item {
+    display: flex;
+    flex-direction: column;
+    background-size: cover;
+    height: 350px;
+    margin: 15px 0;
+    &::before {
+      content: '';
+      flex: 1 1 auto;
+    }
+    h2, .ui {
+      display: none;
+    }
+    &:hover h2, &:hover .ui {
+      display: initial;
+    }
+    .ui {
+      padding: 50px 0;
+    }
+    h2, .ui {
+      width: 100%;
+      background-color: rgba(0, 0, 0, 0.37);
+      text-align: center;
+      margin: 0;
+    }
+    h2 {
+      order: -1;
+    }
   }
 }
