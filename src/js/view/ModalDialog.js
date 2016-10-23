@@ -19,8 +19,9 @@
 goog.provide('silex.view.ModalDialog');
 
 
-const HIDE_DIALOG_CLASS_NAME = 'hide-dialog';
-const HIDE_DIALOGS_BACKGROUND = 'hide-dialog-background';
+const HIDE_DIALOG_CLASS_NAME = 'silex-hide-dialog';
+const MODAL_DIALOG_CLASS_NAME = 'silex-modal-dialog';
+const HIDE_DIALOGS_BACKGROUND = 'silex-hide-dialog-background';
 
 /**
  * implement a "modal" behavior to hide and show dialogs
@@ -31,7 +32,7 @@ silex.view.ModalDialog = class {
 
   /**
    * @constructor
-   * @param  {{name:(string|undefined), element:Element, onOpen:!function(Object), onClose:!function()}} options
+   * @param  {{name:(string|undefined), element:Element, onOpen:!function(?Object=), onClose:!function()}} options
    */
   constructor(options) {
     // check and store options
@@ -47,6 +48,11 @@ silex.view.ModalDialog = class {
     else throw 'Modal dialog options missing a "onClose" field';
     // init the static fields
     silex.view.ModalDialog.dialogs = silex.view.ModalDialog.dialogs || {};
+    // init css classes
+    this.element.classList.add(MODAL_DIALOG_CLASS_NAME);
+    if(!silex.view.ModalDialog.currentDialog) {
+      document.body.classList.add(HIDE_DIALOGS_BACKGROUND);
+    }
     // set the flag
     this.isOpen = false;
     // set the css classes
@@ -72,15 +78,14 @@ silex.view.ModalDialog = class {
 
   /**
    * close a dialog by name
-   * @param  {string} name
    */
-  static close(name) {
-    console.log('closing dialog', name);
-    if(silex.view.ModalDialog.dialogs && silex.view.ModalDialog.dialogs[name]) {
-      silex.view.ModalDialog.dialogs[name].close();
+  static close() {
+    if(silex.view.ModalDialog.currentDialog) {
+      console.log('closing dialog', silex.view.ModalDialog.currentDialog.name);
+      silex.view.ModalDialog.currentDialog.close();
     }
     else {
-      console.error('could not close dialog', name, silex.view.ModalDialog.dialogs);
+      console.error('could not close dialog, there is no dialog opened');
     }
   }
 
@@ -90,6 +95,7 @@ silex.view.ModalDialog = class {
    * @param  {?Object=} args optional args to pass to the dialog
    */
   open(args) {
+    console.log('modal open');
     if(!this.isOpen) {
       // set the flag
       this.isOpen = true;
@@ -105,15 +111,17 @@ silex.view.ModalDialog = class {
       this.onOpen(args);
     }
     else {
-      console.warn('dialog is already opened', this.name ? this.name : '');
+      console.warn('this dialog is already opened', this.name ? this.name : '');
     }
   }
   /**
    * close the dialog
    */
   close() {
+    console.log('modal close');
     if(this.isOpen) {
       this.isOpen = false;
+      silex.view.ModalDialog.currentDialog = null;
       this.element.classList.add(HIDE_DIALOG_CLASS_NAME);
       document.body.classList.add(HIDE_DIALOGS_BACKGROUND);
       this.onClose();
