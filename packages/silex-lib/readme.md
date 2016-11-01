@@ -3,7 +3,7 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/58008bcbc53941cb8db1081aa6e5dd02)](https://www.codacy.com/app/a-hoyau/Silex?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=silexlabs/Silex&amp;utm_campaign=Badge_Grade)
 [![Code Climate](https://codeclimate.com/github/silexlabs/Silex/badges/gpa.svg)](https://codeclimate.com/github/silexlabs/Silex)
 [![Bountysource](https://www.bountysource.com/badge/tracker?tracker_id=672465)](https://www.bountysource.com/trackers/672465-silex?utm_source=672465&utm_medium=shield&utm_campaign=TRACKER_BADGE)
-[![silex.me status](http://monitoshi.lexoyo.me/badge/1477988690203-4702)](https://www.silex.me)
+[![status of silex.me instance](http://monitoshi.lexoyo.me/badge/1477989142014-3680)](https://editor.silex.me)
 ##About Silex, live web creation.
 
 Silex, is a free and open source website builder in the cloud. Create websites directly in the browser without writing code. And it is suitable for professional designers to produce great websites without constraints. Silex is also known as the HTML5 editor.
