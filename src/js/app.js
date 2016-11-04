@@ -1,3 +1,4 @@
+
 /**
  * @preserve
  * Silex, live web creation
@@ -77,7 +78,7 @@ goog.require('silex.view.dialog.SettingsDialog');
 goog.require('silex.view.dialog.NewWebsiteDialog');
 goog.require('silex.view.dialog.TextEditor');
 
-
+goog.require('silex.view.ModalDialog');
 
 /**
  * Defines the entry point of Silex client application

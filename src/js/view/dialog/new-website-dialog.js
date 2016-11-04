@@ -1,0 +1,221 @@
+/**
+ * Silex, live web creation
+ * http://projects.silexlabs.org/?/silex/
+ *
+ * Copyright (c) 2012 Silex Labs
+ * http://www.silexlabs.org/
+ *
+ * Silex is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
+ */
+
+/**
+ * @fileoverview The "new website" dialog which displays templates
+ * FIXME: do not inherit from settings but create a SideBarDialogBase base class
+ *
+ */
+
+
+goog.provide('silex.view.dialog.NewWebsiteDialog');
+goog.require('silex.view.ModalDialog');
+
+
+/**
+ * load the templates for the user to choose
+ * @constructor
+ * @param {!Element} element   container to render the UI
+ * @param  {!silex.types.Model} model  model class which holds
+ *                                  the model instances - views use it for read operation only
+ * @param  {!silex.types.Controller} controller  structure which holds
+ *                                               the controller instances
+ */
+silex.view.dialog.NewWebsiteDialog = function(element, model, controller) {
+
+  // store the params
+  this.element = element;
+  this.model = model;
+  this.controller = controller;
+
+  // make this a dialog
+  this.modalDialog = new silex.view.ModalDialog({
+    element: element,
+    onOpen: args => console.log('onOpen', args),
+    onClose: () => console.log('onClose'),
+  });
+
+  /**
+   * flag set to 'success' when the template list is loaded
+   * and set to 'error' when the loading failed
+   * @type {string}
+   */
+  this.state = '';
+
+  this.buildUi();
+};
+
+
+/**
+ * render the data loaded from github into a <ul>
+ * @param  {Element} ul
+ * @param  {string} repo
+ * @param  {*} data
+ */
+silex.view.dialog.NewWebsiteDialog.prototype.renderTemplateList = function(ul, repo, data) {
+  // handle previously rendered elements
+  const elements = ul.querySelectorAll('li.rendered-item');
+  for(let idx=0; idx<elements.length; idx++) {
+    const el = elements[idx];
+    el.parentNode.removeChild(el);
+  }
+  // render the data
+  data
+    // remove files
+    .filter(item => item.type === 'dir')
+    // make a list of <li> tags
+    .map(item => {
+      const li = document.createElement('li');
+      const name = item.name.replace('-', ' ', 'g');
+
+      // handle previously rendered elements
+      li.classList.add('rendered-item');
+
+      // title
+      const h2 = document.createElement('h2');
+      h2.innerHTML = name;
+      li.appendChild(h2);
+
+      // UI container
+      const ui = document.createElement('div');
+      ui.classList.add('ui');
+      li.appendChild(ui);
+
+      // preview
+      const previewEl = document.createElement('a');
+      previewEl.classList.add('fa', 'fa-external-link', 'fa-2x');
+      previewEl.innerHTML = 'Preview';
+      previewEl.setAttribute('data-action', 'preview');
+      previewEl.href = `//${repo}.silex.me/${item.name}/index.html`;
+      ui.appendChild(previewEl);
+
+      // info
+      const infoEl = document.createElement('a');
+      infoEl.classList.add('fa', 'fa-info', 'fa-2x');
+      infoEl.innerHTML = 'Info';
+      infoEl.href = `//${repo}.silex.me/${item.name}/README.md`;
+      infoEl.setAttribute('data-action', 'info');
+      ui.appendChild(infoEl);
+
+      // edit
+      const editEl = document.createElement('a');
+      editEl.classList.add('fa', 'fa-pencil', 'fa-2x');
+      editEl.innerHTML = 'Select';
+      editEl.setAttribute('data-editable', `//${repo}.silex.me/${item.name}/editable.html`);
+      ui.appendChild(editEl);
+
+      // image
+      li.style.backgroundImage = `url(//${repo}.silex.me/${item.name}/screenshot-678x336.png)`;
+
+      return li;
+    })
+    // add the <li> tags to the <ul> tag
+    .forEach(li => ul.appendChild(li));
+};
+
+
+/**
+ * init the menu and UIs
+ */
+silex.view.dialog.NewWebsiteDialog.prototype.buildUi = function() {
+  const createList = (ul, repo, success, error) => {
+    const repoUrl = `https://api.github.com/repos/silexlabs/${repo}/contents`;
+    const oReq = new XMLHttpRequest();
+    oReq.addEventListener('error', e => error('Error loading repo data', e));
+    oReq.addEventListener('load', e => {
+      if(oReq.status === 200) {
+        const list = JSON.parse(oReq.responseText);
+        this.renderTemplateList(ul, repo, list);
+        success();
+        // cache
+        console.log('stored in cache', list.length, 'items for', repo);
+        window.localStorage.setItem('silex:cache:' + repoUrl, oReq.responseText);
+      }
+      else {
+        error('Error loading repo data', e);
+      }
+    });
+    oReq.open('GET', repoUrl);
+    oReq.send();
+    // cache
+    const inCache = window.localStorage.getItem('silex:cache:' + repoUrl);
+    if(inCache) {
+      const list = JSON.parse(inCache);
+      this.renderTemplateList(ul, repo, list);
+      console.log('read from cache', list.length, 'items for', repo);
+    }
+    // click event
+    ul.onclick = e => {
+      const a = e.target;
+      this.selected = a.getAttribute('data-editable');
+      if(this.selected) {
+        this.modalDialog.close();
+        e.preventDefault();
+        return false;
+      }
+    };
+  }
+  const loadNext = toLoad => {
+    if(toLoad.length > 0) {
+      const item = toLoad.pop();
+      createList(this.element.querySelector(item.selector),
+        item.repo,
+        () => loadNext(toLoad),
+        e => {
+          this.state = 'error';
+          if(this.errorCbk) this.errorCbk(e);
+          this.readyCbk = null;
+          this.errorCbk = null;
+        });
+    }
+    else {
+      this.state = 'ready';
+      if(this.readyCbk) this.readyCbk();
+      this.readyCbk = null;
+      this.errorCbk = null;
+    }
+  };
+  const toLoad = [
+    {
+      selector: '.general-pane ul',
+      repo: 'silex-templates',
+    },
+    {
+      selector: '.blank-page-pane ul',
+      repo: 'silex-blank-templates',
+    },
+  ];
+  loadNext(toLoad);
+};
+
+
+/**
+ * open the dialog
+ * @param {{close:!function(string), ready:?function(), error:?function(?Object=)}} options   options object
+ */
+silex.view.dialog.NewWebsiteDialog.prototype.openDialog = function(options) {
+  // is ready callback
+  if(this.state === 'ready') {
+    if(options.ready) options.ready();
+  }
+  // error callback
+  else if(this.state === 'error') {
+    if(options.error) options.error();
+  }
+  // store them for later
+  else {
+    this.readyCbk = options.ready;
+    this.errorCbk = options.error;
+  }
+  this.selected = null;
+  this.modalDialog.onClose = () => options.close(this.selected);
+  this.modalDialog.open();
+};
