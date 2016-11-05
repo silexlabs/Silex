@@ -18,4 +18,21 @@
   }
   .copy {background-image: url(../assets/context-menu/glyphicons-512-copy.png);}
   .paste {background-image: url(../assets/context-menu/glyphicons-513-paste.png);}
+  .current-page {
+    margin: 5px 30px;
+    padding: 3px 10px;
+    font-size: small;
+    color: #DDD;
+    border: 1px solid @silexdarkergrey;
+    font-size: small;
+    color: @silexlightergrey;
+    cursor: pointer;
+    label {
+      cursor: pointer;
+      opacity: .5;
+    }
+    &:hover {
+      border-style: inset;
+    }
+  }
 }

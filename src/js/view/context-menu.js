@@ -44,6 +44,14 @@ silex.view.ContextMenu = function(element, model, controller) {
 
 
   /**
+   * hold the element in the context menu which has the current page name
+   * @type {Element}
+   */
+  this.currentPageElement = element.querySelector('.current-page');
+  this.currentPageElement.onclick = e => this.controller.viewMenuController.showPages();
+
+
+  /**
    * invalidation mechanism
    * @type {InvalidationManager}
    */
@@ -77,6 +85,10 @@ silex.view.ContextMenu.prototype.buildUi = function() {
  */
 silex.view.ContextMenu.prototype.redraw = function(opt_selectedElements, opt_pageNames, opt_currentPageName) {
   this.invalidationManager.callWhenReady(() => {
+    // update page name
+    if(opt_currentPageName) {
+      this.currentPageElement.innerHTML = '<label>Page: </label>' + this.model.page.getDisplayName(opt_currentPageName);
+    }
     // get the selection if not provided
     if (!opt_selectedElements) opt_selectedElements = this.model.body.getSelection();
     //update menu items according to selection

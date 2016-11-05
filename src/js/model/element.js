@@ -279,9 +279,17 @@ silex.model.Element.prototype.getAllStyles = function(element, opt_computed) {
  * @return  {?string}           the style of the element
  */
 silex.model.Element.prototype.getStyle = function(element, styleName, opt_computed) {
-  var isMobile = this.view.workspace.getMobileEditor();
-  var styleObject = this.model.property.getStyle(element, isMobile, opt_computed);
-  var cssName = goog.string.toSelectorCase(styleName);
+  const cssName = goog.string.toSelectorCase(styleName);
+  // getStyle width of section, return null
+  if(cssName === 'width' && this.isSection(element)) {
+    return null;
+  }
+  // getStyle min-height of section content, return parent min-height
+  if(cssName === 'min-height' && this.isSectionContent(element)) {
+    element = /** @type {Element} */ (element.parentNode);
+  }
+  const isMobile = this.view.workspace.getMobileEditor();
+  let styleObject = this.model.property.getStyle(element, isMobile, opt_computed);
   if (styleObject && styleObject[cssName]) {
     return this.unprepareHtmlForEdit(styleObject[cssName]);
   }
@@ -645,9 +653,46 @@ silex.model.Element.prototype.addElement = function(container, element) {
   element.classList.add(silex.model.Element.JUST_ADDED_CLASS_NAME);
 };
 
+silex.model.Element.INITIAL_ELEMENT_SIZE = 100;
 
-silex.model.Element.prototype.getBestContainerForNewElement = function() {
-  return this.model.body.getBodyElement();
+
+/**
+ * add an element at the center of the stage
+ * and move it into the container beneeth it
+ * @param {Element} element    the element to add
+ * @param {?number=} opt_offset an offset to apply to its position (x and y)
+ */
+silex.model.Element.prototype.addElementDefaultPosition = function(element, opt_offset) {
+  opt_offset = opt_offset || 0;
+  // find the container (main background container or the stage)
+  const stageSize = this.view.stage.getStageSize();
+  const bb = this.model.property.getBoundingBox([element]);
+  const posX = Math.round((stageSize.width / 2) - (bb.width / 2));
+  const posY = 100;
+  const container = this.getBestContainerForNewElement(posX, posY);
+  // take the scroll into account (drop at (100, 100) from top left corner of the window, not the stage)
+  const bbContainer = goog.style.getBounds(container);
+  const offsetX = posX + this.view.stage.getScrollX() - bbContainer.left;
+  const offsetY = posY + this.view.stage.getScrollY() - bbContainer.top;
+  // add to stage
+  this.addElement(container, element);
+  // apply the style (force desktop style, not mobile)
+  const styleObject = this.model.property.getStyle(element, false);
+  styleObject.top = (opt_offset + offsetY) + 'px';
+  styleObject.left = (opt_offset + offsetX) + 'px';
+  this.model.property.setStyle(element, styleObject, false);
+};
+
+
+/**
+ * find the best drop zone at a given position
+ * @param  {number} x position in px
+ * @param  {number} y position in px
+ * @return {Element} the container element under (x, y)
+ */
+silex.model.Element.prototype.getBestContainerForNewElement = function(x, y) {
+  let dropZone = this.view.stage.getDropZone(x, y) || {'element': this.view.stage.bodyElement, 'zIndex': 0};
+  return dropZone.element;
 };
 
 
@@ -660,17 +705,10 @@ silex.model.Element.prototype.getBestContainerForNewElement = function() {
  * @return  {Element}   the newly created element
  */
 silex.model.Element.prototype.createElement = function(type) {
-  // find the container (main background container or the stage)
-  var container = this.getBestContainerForNewElement();
-  // take the scroll into account (drop at (100, 100) from top left corner of the window, not the stage)
-  var offsetX = 100 + this.view.stage.getScrollX();
-  var offsetY = 100 + this.view.stage.getScrollY();
   // default style
   var styleObject = {
-    'min-height': '100px',
-    'width': '100px',
-    'top': offsetY + 'px',
-    'left': offsetX + 'px'
+    'min-height': silex.model.Element.INITIAL_ELEMENT_SIZE + 'px',
+    'width': silex.model.Element.INITIAL_ELEMENT_SIZE + 'px',
   };
 
   // create the element
@@ -721,7 +759,7 @@ silex.model.Element.prototype.createElement = function(type) {
   // add css class for Silex styles
   goog.dom.classlist.add(element, type + '-element');
   // add to stage
-  this.addElement(container, element);
+  this.addElementDefaultPosition(element);
   // return the element
   return element;
 };

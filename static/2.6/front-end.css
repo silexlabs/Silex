@@ -9,6 +9,13 @@ body {
   height: 100%;
   position: absolute;
   transition: min-width .5s ease-out, min-height .5s ease-out; /* smooth body resize when dragging elements near the side, or when page have different size */
+  font-family: Arial, sans-serif;
+  font-weight: lighter;
+}
+body.compute-body-size-pending {
+  transition: none;
+  width: 0;
+  height: 0;
 }
 /* pages */
 .page-element{
@@ -20,7 +27,7 @@ body {
 /* default style for silex elements */
 .editable-style{
   position: absolute;
-  box-sizing: border-box;
+  box-sizing: content-box; /* this is needed to set the size of elements with a border (though it could be omited since this is the default value) */
 }
 .silex-element-content{
   overflow: hidden;
@@ -128,8 +135,6 @@ a:focus{ outline: none;}
     padding: 1em;
     font-size: 1.6em;
     color: #FFFFFF;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-weight: lighter;
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
