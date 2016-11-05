@@ -92,6 +92,14 @@ silex.controller.ViewMenuController.prototype.previewResponsize = function() {
 
 
 /**
+ * open the page pannel
+ */
+silex.controller.ViewMenuController.prototype.showPages = function() {
+  this.view.menu.toggleSubMenu('page-tool-visible');
+};
+
+
+/**
  * preview the website in a new window or in responsize
  * ask the user to save the file if needed
  * @param {boolean} inResponsize if true this will open the preview in responsize

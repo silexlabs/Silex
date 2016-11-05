@@ -134,6 +134,7 @@ If you develop or debug Silex, these npm scripts can be used with npm (they are 
 
 * `PORT`, optional, default: 6805, [used here in the code](dist/server/server.js#L148)
 * `SSL_PORT`, optional, default: to 443, [used here in the code]()
+* `SILEX_FORCE_HTTPS`, optional [used here in the code](dist/server/server.js#102) to force https/ssl (default is `false`)
 * `SILEX_SSL_PRIVATE_KEY`, optional (see ssl section bellow), [used here in the code](dist/server/server.js#L124)
 * `SILEX_SSL_CERTIFICATE`, optional (see ssl section bellow), [used here in the code](dist/server/server.js#L124)
 * `SILEX_SESSION_FOLDER`, optional, default: `dist/sessions`, [used here in the code](dist/server/server.js#L53)

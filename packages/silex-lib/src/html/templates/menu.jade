@@ -8,13 +8,13 @@
     .show-pages.fa-fw.fa-fw.icon.fa-inverse.fa-file.off(title='Pages', data-menu-action='show.pages')
     .show-settings.fa-fw.icon.fa-inverse.fa-cogs.off(title='Settings', data-menu-action='file.publish.settings')
     .icon.sep
-    .icon.undo.fa-fw.fa-inverse.fa-undo.off(title='Undo', data-menu-action='edit.undo')
-    .icon.redo.fa-fw.fa-inverse.fa-repeat.off(title='Redo', data-menu-action='edit.redo')
+    .icon.undo.fa-fw.fa-inverse.fa-undo.off(title='Undo (Ctrl Z)', data-menu-action='edit.undo')
+    .icon.redo.fa-fw.fa-inverse.fa-repeat.off(title='Redo (⇧ Ctrl Z)', data-menu-action='edit.redo')
     .icon.sep
-    .view-file.fa-fw.icon.fa-inverse.fa-eye.off(title='Preview', data-menu-action='view.file')
-    .view-file-responsize.icon.previewResponsize.off(title='Preview in Responsize', data-menu-action='view.file.responsize')
-    .right.mobile.fa-fw.icon.fa-inverse.fa-mobile(title='Mobile editor', data-menu-action="tools.mobile.mode.on")
-    .right.desktop.fa-fw.icon.fa-inverse.fa-desktop(title='Desktop editor', data-menu-action="tools.mobile.mode.off")
+    .view-file.fa-fw.icon.fa-inverse.fa-eye.off(title='Preview (Alt V)', data-menu-action='view.file')
+    .view-file-responsize.icon.previewResponsize.off(title='Preview in Responsize (⇧ Alt V)', data-menu-action='view.file.responsize')
+    .right.mobile.fa-fw.icon.fa-inverse.fa-mobile(title='Mobile editor (Alt M)', data-menu-action="tools.mobile.mode.on")
+    .right.desktop.fa-fw.icon.fa-inverse.fa-desktop(title='Desktop editor (Alt M)', data-menu-action="tools.mobile.mode.off")
     .icon.sep
     .show-about-menu.fa-fw.icon.fa-inverse.fa-question-circle.off(title='About Silex', data-menu-action='show.about.menu')
 
@@ -68,9 +68,11 @@
     .sub-menu-item(data-menu-action='file.open')
       span.icon.fa-inverse.fa-fw.fa-folder-open
       span Open website
+      .shortcut Ctrl O
     .sub-menu-item(data-menu-action='file.save')
       span.icon.fa-inverse.fa-fw.fa-floppy-o
       span Save website
+      .shortcut Ctrl S
     .file-save-as.sub-menu-item(data-menu-action='file.saveas')
       .icon.svg
         include ./save-as.svg
@@ -79,6 +81,7 @@
     .sub-menu-item(data-menu-action='file.publish')
       span.icon.fa-inverse.fa-fw.fa-rocket
       span Publish
+      .shortcut Alt P
     .sub-menu-item(data-menu-action='view.open.fileExplorer')
       span.icon.fa-inverse.fa-fw.fa-cloud-upload
       span File explorer
@@ -88,44 +91,53 @@
     .sub-menu-item(title='Text', data-menu-action='insert.text')
       span.icon.text
       span Add Text
+      .shortcut Alt T
     .sub-menu-item(title='Image', data-menu-action='insert.image')
       span.icon.image
       span Add Image
+      .shortcut Alt I
     .sub-menu-item(title='Container', data-menu-action='insert.container')
       span.icon.container
       span Add Container
+      .shortcut Alt C
     .sub-menu-item(title='Html', data-menu-action='insert.html')
       span.icon.html.fa-inverse.fa-code
       span Add Html
+      .shortcut Alt H
     .sub-menu-item(title='Section', data-menu-action='insert.section')
       span.icon.fa-inverse.fa-fw.fa-list-alt
       span Add Section
+      .shortcut Alt S
 
   .code-menu-container
     .label Code Menu
     .sub-menu-item(data-menu-action='view.open.htmlHeadEditor')
       span.icon.fa-inverse.fa-fw.fa-html5
       span HTML HEAD editor
+      .shortcut Alt E
     .sub-menu-item(data-menu-action='view.open.jsEditor')
       span.icon.fa-inverse.fa-fw.fa-terminal
       span Javascript editor
+      .shortcut Alt J
     .sub-menu-item(data-menu-action='view.open.cssEditor')
       span.icon.fa-inverse.fa-fw.fa-css3
       span CSS editor
+      .shortcut Alt D
 
 // page tool
 .silex-page-tool.notranslate
   include ./page-tool.jade
 
 .silex-context-menu
-  .icon.edit.fa-inverse.fa-pencil.off(title='Edit')
-  .icon.delete.fa-inverse.fa-trash.off(title='Delete')
+  .current-page
+  .icon.edit.fa-inverse.fa-pencil.off(title='Edit (↵)')
+  .icon.delete.fa-inverse.fa-trash.off(title='Delete (SUPPR)')
   .icon.sep
-  .icon.copy.off(title='Copy')
-  .icon.paste.off(title='Paste')
+  .icon.copy.off(title='Copy (Ctrl C)')
+  .icon.paste.off(title='Paste (Ctrl V)')
   .icon.sep
-  .icon.top.fa-inverse.fa-angle-double-up.off(title='To top')
-  .icon.up.fa-inverse.fa-angle-up.off(title='Up')
-  .icon.down.fa-inverse.fa-angle-down.off(title='Down')
-  .icon.bottom.fa-inverse.fa-angle-double-down.off(title='To bottom')
+  .icon.top.fa-inverse.fa-angle-double-up.off(title='To top (⇧ Alt UP)')
+  .icon.up.fa-inverse.fa-angle-up.off(title='Up (Alt UP)')
+  .icon.down.fa-inverse.fa-angle-down.off(title='Down (Alt DOWN)')
+  .icon.bottom.fa-inverse.fa-angle-double-down.off(title='To bottom (⇧ Alt DOWN)')
 

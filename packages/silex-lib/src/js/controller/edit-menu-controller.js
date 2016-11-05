@@ -162,12 +162,11 @@ silex.controller.EditMenuController.prototype.pasteSelection = function() {
   if (silex.controller.ControllerBase.clipboard) {
     // undo checkpoint
     this.undoCheckPoint();
-    // find the container: original container, main background container or the stage
-    var container = this.model.element.getBestContainerForNewElement();
     // take the scroll into account (drop at (100, 100) from top left corner of the window, not the stage)
-    var doc = this.model.file.getContentDocument();
-    var elements = silex.controller.ControllerBase.clipboard.map(function(item) {return item.element;});
-    var selection = [];
+    const doc = this.model.file.getContentDocument();
+    const elements = silex.controller.ControllerBase.clipboard.map(function(item) {return item.element;});
+    const selection = [];
+    let offset = 0;
     // duplicate and add to the container
     goog.array.forEach(silex.controller.ControllerBase.clipboard, function(clipboardItem) {
       var element = this.recursivePaste(clipboardItem);
@@ -176,14 +175,9 @@ silex.controller.EditMenuController.prototype.pasteSelection = function() {
       // reset editable option
       this.doAddElement(element);
       // add to stage and set the "silex-just-added" css class
-      this.model.element.addElement(/** @type {Element} */ (container), element);
+      this.model.element.addElementDefaultPosition(element, offset);
+      offset += 20;
     }, this);
-    // apply the offset to the elements, according to the scroll position
-    // i.e. move the bounding box to coord (100, 100)
-    var bb = this.model.property.getBoundingBox(selection);
-    var offsetX = 100 + this.view.stage.getScrollX() - bb.left;
-    var offsetY = 100 + this.view.stage.getScrollY() - bb.top;
-    this.view.stage.moveElements(selection, offsetX, offsetY);
     // select the new elements
     this.model.body.setSelection(selection);
   }

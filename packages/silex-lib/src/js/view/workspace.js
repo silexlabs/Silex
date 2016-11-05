@@ -130,9 +130,16 @@ silex.view.Workspace.prototype.startWatchingUnload = function() {
  */
 silex.view.Workspace.prototype.redraw = function(view) {
   this.invalidationManagerRedraw.callWhenReady(() => {
-    // no more loading
-    goog.dom.classlist.remove(document.body, 'loading-pending');
+    // do something here?
   });
+};
+
+
+/**
+ * loading is over, hide the loader
+ */
+silex.view.Workspace.prototype.loadingDone = function() {
+  goog.dom.classlist.remove(document.body, 'loading-pending');
 };
 
 
