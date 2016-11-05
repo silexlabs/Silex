@@ -79,41 +79,48 @@ silex.view.dialog.NewWebsiteDialog.prototype.renderTemplateList = function(ul, r
       // handle previously rendered elements
       li.classList.add('rendered-item');
 
-      // title
-      const h2 = document.createElement('h2');
-      h2.innerHTML = name;
-      li.appendChild(h2);
+      // thumbnail
+      const thumbnail = document.createElement('div');
+      thumbnail.classList.add('thumbnail');
+      thumbnail.style.backgroundImage = `url(//${repo}.silex.me/${item.name}/screenshot-678x336.png)`;
+      thumbnail.setAttribute('data-editable', `//${repo}.silex.me/${item.name}/editable.html`);
+      li.appendChild(thumbnail);
 
       // UI container
       const ui = document.createElement('div');
       ui.classList.add('ui');
       li.appendChild(ui);
 
+      // title
+      const h3 = document.createElement('h3');
+      h3.innerHTML = name;
+      h3.setAttribute('data-editable', `//${repo}.silex.me/${item.name}/editable.html`);
+      ui.appendChild(h3);
+
       // preview
       const previewEl = document.createElement('a');
-      previewEl.classList.add('fa', 'fa-external-link', 'fa-2x');
+      previewEl.classList.add('fa', 'fa-external-link');
       previewEl.innerHTML = 'Preview';
       previewEl.setAttribute('data-action', 'preview');
+      previewEl.target = '_blank';
       previewEl.href = `//${repo}.silex.me/${item.name}/index.html`;
       ui.appendChild(previewEl);
 
       // info
       const infoEl = document.createElement('a');
-      infoEl.classList.add('fa', 'fa-info', 'fa-2x');
+      infoEl.classList.add('fa', 'fa-info');
       infoEl.innerHTML = 'Info';
+      infoEl.target = '_blank';
       infoEl.href = `//${repo}.silex.me/${item.name}/README.md`;
       infoEl.setAttribute('data-action', 'info');
       ui.appendChild(infoEl);
 
       // edit
       const editEl = document.createElement('a');
-      editEl.classList.add('fa', 'fa-pencil', 'fa-2x');
+      editEl.classList.add('fa', 'fa-pencil');
       editEl.innerHTML = 'Select';
       editEl.setAttribute('data-editable', `//${repo}.silex.me/${item.name}/editable.html`);
       ui.appendChild(editEl);
-
-      // image
-      li.style.backgroundImage = `url(//${repo}.silex.me/${item.name}/screenshot-678x336.png)`;
 
       return li;
     })
