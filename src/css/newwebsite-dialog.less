@@ -3,58 +3,89 @@
 @titleHeight: 40px;
 @thumbnailHeight: @cardHeight - @titleHeight;
 
-.silex-newwebsite-dialog {
-  .pane > ul {
+.silex-newwebsite-dialog .pane {
+  font-weight: lighter;
+  font-size: 13px;
+  font-style: normal;
+  margin-bottom: 50px;
+  & > ul.rendered-list {
     display: flex;
     flex-wrap: wrap;
   }
-  li.rendered-item {
-    height: @cardHeight;
-    max-width: @cardWidth;
-    width: 30%;
-    margin: 15px 30px 0 0;
+  &.open {
+    max-width: 800px;
+    min-width: 500px;
+  }
+  .more-btn:hover, .list-item:hover {
+    background-color: @silexmediumdarkgrey;
+  }
+  .more-btn {
+    padding: 6px;
+    border: 1px solid;
+    border-radius: 5px;
+    width: 100px;
+    text-align: center;
+    cursor: pointer;
+  }
+  li {
     list-style: none;
-    flex: 1 0 auto;
-    .thumbnail, h2, .ui {
-      margin: 0;
-    }
-    .thumbnail {
-      width: 100%;
-      height: @thumbnailHeight;
+    &.list-item {
+      display: block;
+      border: 1px solid @silexdarkgrey;
+      border-bottom: none;
+      box-shadow: inset 0 1px 0 @silexlightgrey;
+      padding: 10px;
       cursor: pointer;
-      background-position: 50%;
-      background-size: contain;
-      background-repeat: no-repeat;
-      background-color: @silexdarkergrey;
-    }
-    .ui {
-      height: @titleHeight;
-      margin: 5px;
-      display: flex;
-      h3 {
-        font-size: 16px;
-        font-weight: lighter;
-        cursor: pointer;
-        margin: 0;
-        flex: 1 1 auto;
-        text-overflow: ellipsis;
-        overflow: hidden;
+      .fa {
+        padding-right: 10px;
       }
-      a {
-        font-size: 13px;
-        font-weight: lighter;
-        font-style: normal;
-        padding: 5px;
-        color: @silexlightergrey;
-        text-decoration: none;
-        cursor: pointer;
-        opacity: .7;
-        &:before {
-          padding: 0 5px;
+    }
+    &.list-item:last-child {
+      border-bottom: 1px solid @silexdarkgrey;
+    }
+    &.rendered-item {
+        height: @cardHeight;
+        max-width: @cardWidth;
+        width: 30%;
+        margin: 15px 30px 0 0;
+        flex: 1 0 auto;
+        .thumbnail, h2, .ui {
+          margin: 0;
         }
-        &:hover {
-          opacity: 1;
+        .thumbnail {
+          width: 100%;
+          height: @thumbnailHeight;
+          cursor: pointer;
+          background-position: 50%;
+          background-size: contain;
+          background-repeat: no-repeat;
+          background-color: @silexmediumdarkgrey;
         }
+        .ui {
+          height: @titleHeight;
+          margin: 5px;
+          display: flex;
+          h3 {
+            font-size: 16px;
+            cursor: pointer;
+            margin: 0;
+            flex: 1 1 auto;
+            text-overflow: ellipsis;
+            overflow: hidden;
+          }
+          a {
+            padding: 5px;
+            color: @silexlightergrey;
+            text-decoration: none;
+            cursor: pointer;
+            opacity: .7;
+            &:before {
+              padding: 0 5px;
+            }
+            &:hover {
+              opacity: 1;
+            }
+          }
       }
     }
   }
