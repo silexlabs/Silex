@@ -1,32 +1,61 @@
+@cardHeight: 290px;
+@cardWidth: 500px;
+@titleHeight: 40px;
+@thumbnailHeight: @cardHeight - @titleHeight;
 
 .silex-newwebsite-dialog {
-  .rendered-item {
+  .pane > ul {
     display: flex;
-    flex-direction: column;
-    background-size: cover;
-    height: 350px;
-    margin: 15px 0;
-    &::before {
-      content: '';
-      flex: 1 1 auto;
-    }
-    h2, .ui {
-      display: none;
-    }
-    &:hover h2, &:hover .ui {
-      display: initial;
-    }
-    .ui {
-      padding: 50px 0;
-    }
-    h2, .ui {
-      width: 100%;
-      background-color: rgba(0, 0, 0, 0.37);
-      text-align: center;
+    flex-wrap: wrap;
+  }
+  li.rendered-item {
+    height: @cardHeight;
+    max-width: @cardWidth;
+    width: 30%;
+    margin: 15px 30px 0 0;
+    list-style: none;
+    flex: 1 0 auto;
+    .thumbnail, h2, .ui {
       margin: 0;
     }
-    h2 {
-      order: -1;
+    .thumbnail {
+      width: 100%;
+      height: @thumbnailHeight;
+      cursor: pointer;
+      background-position: 50%;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-color: @silexdarkergrey;
+    }
+    .ui {
+      height: @titleHeight;
+      margin: 5px;
+      display: flex;
+      h3 {
+        font-size: 16px;
+        font-weight: lighter;
+        cursor: pointer;
+        margin: 0;
+        flex: 1 1 auto;
+        text-overflow: ellipsis;
+        overflow: hidden;
+      }
+      a {
+        font-size: 13px;
+        font-weight: lighter;
+        font-style: normal;
+        padding: 5px;
+        color: @silexlightergrey;
+        text-decoration: none;
+        cursor: pointer;
+        opacity: .7;
+        &:before {
+          padding: 0 5px;
+        }
+        &:hover {
+          opacity: 1;
+        }
+      }
     }
   }
 }
