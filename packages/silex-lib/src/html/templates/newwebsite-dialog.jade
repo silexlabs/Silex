@@ -1,11 +1,30 @@
 .header
   h1.title
-    | Create a new website: choose a template to start
+    | Create a website
   button.close-btn(type="button")
 .body
+  .pane.open
+    h2 Open an existing website
+    ul.list
+      li.list-item
+        span.fa.fa-dropbox
+        span /folder/test.html
+      li.list-item
+        span.fa.fa-github
+        span /another/folder/file.html
+      li.list-item
+        span.fa.fa-server
+        span /htdocs/abcd.html
+      li.list-item
+        span.fa.fa-cloud-upload
+        span /Website/owncloud.html
+      li.list-item
+        span.fa.fa-cloud
+        span /other/cloud.html
+    .more-btn Import...
   .pane.blank-page-pane
     h2 Blank layouts
-    ul
+    ul.rendered-list
   .pane.general-pane
     h2 Community templates
-    ul
+    ul.rendered-list
