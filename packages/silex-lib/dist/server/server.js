@@ -100,9 +100,15 @@ else {
 
 // force ssl if the env var SILEX_FORCE_HTTPS is set
 if(process.env.SILEX_FORCE_HTTPS) {
-  console.log('test')
+  console.log('force SSL is active (env var SILEX_FORCE_HTTPS is set)');
   var forceSSL = require('express-force-ssl');
+  app.set('forceSSLOptions', {
+    trustXFPHeader: !!process.env.SILEX_FORCE_HTTPS_TRUST_XFP_HEADER
+  });
   app.use(forceSSL);
+}
+else {
+  console.log('force SSL NOT active (env var SILEX_FORCE_HTTPS is NOT set)');
 }
 
 // change www root
