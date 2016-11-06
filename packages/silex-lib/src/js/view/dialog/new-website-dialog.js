@@ -80,7 +80,7 @@ silex.view.dialog.NewWebsiteDialog.prototype.renderTemplateList = function(ul, r
       // thumbnail
       const thumbnail = document.createElement('div');
       thumbnail.classList.add('thumbnail');
-      thumbnail.style.backgroundImage = `url(//${repo}.silex.me/${item.name}/screenshot-678x336.png)`;
+      thumbnail.style.backgroundImage = `url(//${repo}.silex.me/${item.name}/screenshot.png)`;
       thumbnail.setAttribute('data-editable', `//${repo}.silex.me/${item.name}/editable.html`);
       li.appendChild(thumbnail);
 
