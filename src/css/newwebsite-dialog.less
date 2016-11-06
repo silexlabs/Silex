@@ -1,7 +1,9 @@
 @cardHeight: 290px;
 @cardWidth: 500px;
+@cardHeightSmall: 150px;
+@cardWidthSmall: 250px;
+
 @titleHeight: 40px;
-@thumbnailHeight: @cardHeight - @titleHeight;
 
 .silex-newwebsite-dialog .pane {
   font-weight: lighter;
@@ -59,7 +61,7 @@
         }
         .thumbnail {
           width: 100%;
-          height: @thumbnailHeight;
+          height: @cardHeight - @titleHeight;
           cursor: pointer;
           background-position: 50%;
           background-size: contain;
@@ -92,6 +94,17 @@
             }
           }
       }
+    }
+  }
+  .small-items li.rendered-item {
+    height: @cardHeightSmall;
+    max-width: @cardWidthSmall;
+    .thumbnail {
+      width: 100%;
+      height: @cardHeightSmall - @titleHeight;
+    }
+    .ui a {
+      display: none;
     }
   }
 }
