@@ -57,6 +57,9 @@ silex.view.ModalDialog = class {
     this.isOpen = false;
     // set the css classes
     this.element.classList.add(HIDE_DIALOG_CLASS_NAME);
+    // close button
+    const closeBtn = this.element.querySelector('.close-btn');
+    if(closeBtn) closeBtn.onclick = e => this.close();
   }
 
 
