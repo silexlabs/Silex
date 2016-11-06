@@ -39,7 +39,7 @@ silex.view.dialog.NewWebsiteDialog = function(element, model, controller) {
   // make this a dialog
   this.modalDialog = new silex.view.ModalDialog({
     element: element,
-    onOpen: args => console.log('onOpen', args),
+    onOpen: args => this.redraw(),
     onClose: () => console.log('onClose'),
   });
 
@@ -75,8 +75,6 @@ silex.view.dialog.NewWebsiteDialog.prototype.renderTemplateList = function(ul, r
     .map(item => {
       const li = document.createElement('li');
       const name = item.name.replace('-', ' ', 'g');
-
-      // handle previously rendered elements
       li.classList.add('rendered-item');
 
       // thumbnail
@@ -142,9 +140,6 @@ silex.view.dialog.NewWebsiteDialog.prototype.buildUi = function() {
         const list = JSON.parse(oReq.responseText);
         this.renderTemplateList(ul, repo, list);
         success();
-        // cache
-        console.log('stored in cache', list.length, 'items for', repo);
-        window.localStorage.setItem('silex:cache:' + repoUrl, oReq.responseText);
       }
       else {
         error('Error loading repo data', e);
@@ -152,24 +147,18 @@ silex.view.dialog.NewWebsiteDialog.prototype.buildUi = function() {
     });
     oReq.open('GET', repoUrl);
     oReq.send();
-    // cache
-    const inCache = window.localStorage.getItem('silex:cache:' + repoUrl);
-    if(inCache) {
-      const list = JSON.parse(inCache);
-      this.renderTemplateList(ul, repo, list);
-      console.log('read from cache', list.length, 'items for', repo);
-    }
-    // click event
-    ul.onclick = e => {
-      const a = e.target;
-      this.selected = a.getAttribute('data-editable');
-      if(this.selected) {
-        this.modalDialog.close();
-        e.preventDefault();
-        return false;
-      }
-    };
   }
+  // click event
+  const body = this.element.querySelector('.body');
+  body.onclick = e => {
+    const a = e.target;
+    this.selected = a.getAttribute('data-editable');
+    if(this.selected) {
+      this.modalDialog.close();
+      e.preventDefault();
+      return false;
+    }
+  };
   const loadNext = toLoad => {
     if(toLoad.length > 0) {
       const item = toLoad.pop();
@@ -205,6 +194,45 @@ silex.view.dialog.NewWebsiteDialog.prototype.buildUi = function() {
 
 
 /**
+ * redraw UI each time the dialog opens
+ */
+silex.view.dialog.NewWebsiteDialog.prototype.redraw = function() {
+  // recent files
+  const recentFiles = this.model.file.getLatestFiles();
+  const ul = this.element.querySelector('.open-pane ul');
+  ul.innerHTML = '';
+  recentFiles
+    .map(item => {
+      // there my be errors due to wrong data in the local storage
+      try {
+        const li = document.createElement('li');
+        li.setAttribute('data-editable', item['path']);
+        li.classList.add('list-item');
+
+        const icon = document.createElement('span');
+        icon.setAttribute('data-editable', item['path']);
+        icon.classList.add('fa', item['cloudIcon']);
+        li.appendChild(icon);
+
+        const name = document.createElement('span');
+        name.setAttribute('data-editable', item['path']);
+        name.innerHTML = item['folder'];
+        li.appendChild(name);
+
+        return li;
+      }
+      catch(e) {
+        console.error('Catched error: ', e);
+      }
+      return null;
+    })
+    .filter(item => !!item)
+    // add the <li> tags to the <ul> tag
+    .forEach(li => ul.appendChild(li));
+};
+
+
+/**
  * open the dialog
  * @param {{close:!function(string), ready:?function(), error:?function(?Object=)}} options   options object
  */
@@ -223,6 +251,8 @@ silex.view.dialog.NewWebsiteDialog.prototype.openDialog = function(options) {
     this.errorCbk = options.error;
   }
   this.selected = null;
-  this.modalDialog.onClose = () => options.close(this.selected);
+  this.modalDialog.onClose = () => {
+    options.close(this.selected);
+  }
   this.modalDialog.open();
 };

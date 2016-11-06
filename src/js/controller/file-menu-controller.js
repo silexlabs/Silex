@@ -53,7 +53,6 @@ silex.controller.FileMenuController.prototype.newFile = function(opt_cbk, opt_er
     this.tracker.trackAction('controller-events', 'error', 'file.new', -1);
   };
   const onSuccess = () => {
-    console.log('onSuccess');
     // QOS, track success
     this.tracker.trackAction('controller-events', 'success', 'file.new', 1);
     if(opt_cbk) {
@@ -62,18 +61,25 @@ silex.controller.FileMenuController.prototype.newFile = function(opt_cbk, opt_er
   };
   this.view.newWebsiteDialog.openDialog({
     close: url => {
-      console.log('pannel closed', this.view.newWebsiteDialog.selected);
-      this.model.file.openFromUrl(this.view.newWebsiteDialog.selected, rawHtml => {
-        this.model.file.setHtml(rawHtml, () => {
-          // undo redo reset
-          this.undoReset();
-          this.fileOperationSuccess(null, true);
-          onSuccess();
-        }, true);
-      }, err => {
-        console.log('opening template error');
-        onError(err);
-      });
+      if(!url && !this.model.file.hasContent()) {
+        // if the user closes the dialog and no website is being edited
+        // then load default blank website
+        // otherwise just close the dialog
+        url = 'http://silex-blank-templates.silex.me/blank/editable.html';
+      }
+      if(url) {
+        this.model.file.openFromUrl(url, rawHtml => {
+          this.model.file.setHtml(rawHtml, () => {
+            // undo redo reset
+            this.undoReset();
+            this.fileOperationSuccess(null, true);
+            onSuccess();
+          }, true);
+        }, err => {
+          console.log('opening template error');
+          onError(err);
+        });
+      }
     },
     ready: () => {
       onSuccess();

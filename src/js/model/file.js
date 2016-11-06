@@ -65,6 +65,13 @@ silex.model.File = function(model, view) {
 
 
 /**
+ * max number of items in recent files
+ * @const
+ */
+silex.model.File.MAX_RECENT_FILES = 5;
+
+
+/**
  * loading css class
  * @const
  */
@@ -111,6 +118,14 @@ silex.model.File.prototype.getContentDocument = function() {
  */
 silex.model.File.prototype.getContentWindow = function() {
   return this.contentWindow_;
+};
+
+
+/**
+ * @return {boolean} true if a website is being edited
+ */
+silex.model.File.prototype.hasContent = function() {
+  return this.contentDocument_.body && this.contentDocument_.body.childNodes.length > 0;
 };
 
 
@@ -484,6 +499,60 @@ silex.model.File.prototype.setUrl = function(url) {
   if (url) {
     var baseUrl = silex.utils.Url.getBaseUrl();
     url = silex.utils.Url.getAbsolutePath(url, baseUrl);
+    this.addToLatestFiles(url);
   }
   this.url = url;
+};
+
+
+/**
+ * get the latest opened files
+ * @return {Array.<{name:string, path:string, cloudIcon:string}>}
+ */
+
+silex.model.File.prototype.getLatestFiles = function() {
+  const str = window.localStorage.getItem('silex:recent-files');
+  if(str) return JSON.parse(str);
+  else return [];
+};
+
+
+/**
+ * store this file in the latest opened files
+ * @param {?string} url
+ */
+silex.model.File.prototype.addToLatestFiles = function(url) {
+  // url= http://localhost:6805/api/1.0/github/exec/get/silex-tests/gh-pages/abcd.html
+  const latestFiles = this.getLatestFiles();
+  const versionIdx = url.indexOf('/api/1.0/');
+  if(versionIdx >= 0) {
+    // path= /api/1.0/github/exec/get/silex-tests/gh-pages/abcd.html
+    const path = url.substr(versionIdx);
+    // remove if it is already in the array
+    // so that it goes back to the top of the list
+    const foundIndex = -1;
+    latestFiles.forEach((item, idx) => item.path === path ? foundIndex = idx : null);
+    if(foundIndex > -1) {
+      latestFiles.splice(foundIndex, 1);
+    }
+    const serviceIdx = versionIdx + '/api/1.0/'.length;
+    // folder= /silex-tests/gh-pages/abcd.html
+    const folder = url.substr(url.indexOf('exec/get', serviceIdx) + 'exec/get'.length);
+    // service= github
+    const service = url.substring(serviceIdx, url.indexOf('/', serviceIdx));
+    // cloudIcon= fa-github | fa-dropbox | fa-server | fa-cloud | fa-cloud-download
+    const cloudIcon = 'fa-' + (['github', 'dropbox'].indexOf(service) === 0 ? service : (service === 'webdav' ? 'cloud-download' : (service === 'ftp' ? 'server' : 'cloud')));
+    latestFiles.unshift({
+      'url': url,
+      'path': path,
+      'folder': folder,
+      'service': service,
+      'cloudIcon': cloudIcon,
+    });
+    // limit size
+    if(latestFiles.length > silex.model.File.MAX_RECENT_FILES) {
+      latestFiles.splice(silex.model.File.MAX_RECENT_FILES, latestFiles.length - silex.model.File.MAX_RECENT_FILES)
+    }
+    const str = window.localStorage.setItem('silex:recent-files', JSON.stringify(latestFiles));
+  }
 };
