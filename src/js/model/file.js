@@ -506,10 +506,17 @@ silex.model.File.prototype.setUrl = function(url) {
 
 
 /**
+ * clear the recent files
+ */
+silex.model.File.prototype.clearLatestFiles = function() {
+  window.localStorage.removeItem('silex:recent-files');
+};
+
+
+/**
  * get the latest opened files
  * @return {Array.<{name:string, path:string, cloudIcon:string}>}
  */
-
 silex.model.File.prototype.getLatestFiles = function() {
   const str = window.localStorage.getItem('silex:recent-files');
   if(str) return JSON.parse(str);
@@ -553,6 +560,6 @@ silex.model.File.prototype.addToLatestFiles = function(url) {
     if(latestFiles.length > silex.model.File.MAX_RECENT_FILES) {
       latestFiles.splice(silex.model.File.MAX_RECENT_FILES, latestFiles.length - silex.model.File.MAX_RECENT_FILES)
     }
-    const str = window.localStorage.setItem('silex:recent-files', JSON.stringify(latestFiles));
+    window.localStorage.setItem('silex:recent-files', JSON.stringify(latestFiles));
   }
 };
