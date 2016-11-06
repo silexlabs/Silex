@@ -190,6 +190,18 @@ silex.view.dialog.NewWebsiteDialog.prototype.buildUi = function() {
     },
   ];
   loadNext(toLoad);
+  // clear button
+  const clearBtn = this.element.querySelector('.clear-btn');
+  clearBtn.onclick = e => {
+    this.model.file.clearLatestFiles();
+    this.redraw();
+  };
+  // browse / import button
+  const moreBtn = this.element.querySelector('.more-btn');
+  moreBtn.onclick = e => {
+    this.modalDialog.close();
+    this.controller.fileMenuController.openFile(null, e => this.modalDialog.open(), () => this.modalDialog.open());
+  };
 };
 
 
@@ -199,7 +211,14 @@ silex.view.dialog.NewWebsiteDialog.prototype.buildUi = function() {
 silex.view.dialog.NewWebsiteDialog.prototype.redraw = function() {
   // recent files
   const recentFiles = this.model.file.getLatestFiles();
-  const ul = this.element.querySelector('.open-pane ul');
+
+  // buttons visibility
+  const pane = this.element.querySelector('.open-pane');
+  if(recentFiles.length) pane.classList.remove('emty-list');
+  else pane.classList.add('emty-list');
+
+  // fill the list
+  const ul = pane.querySelector('ul.list');
   ul.innerHTML = '';
   recentFiles
     .map(item => {

@@ -16,16 +16,21 @@
     max-width: 800px;
     min-width: 500px;
   }
-  .more-btn:hover, .list-item:hover {
+  .btn:hover, .list-item:hover {
     background-color: @silexmediumdarkgrey;
   }
-  .more-btn {
+  .btn {
     padding: 6px;
     border: 1px solid;
     border-radius: 5px;
     width: 100px;
     text-align: center;
     cursor: pointer;
+    display: inline-block;
+    margin: 0 5px;
+  }
+  &.emty-list .clear-btn {
+    display: none;
   }
   li {
     list-style: none;

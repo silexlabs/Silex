@@ -94,17 +94,18 @@ silex.controller.FileMenuController.prototype.newFile = function(opt_cbk, opt_er
 
 /**
  * open a file
- * @param {?function()=} opt_cbk
+ * @param {?function(string)=} opt_cbk
  * @param {?function(Object)=} opt_errorCbk
+ * @param {?function()=} opt_cancelCbk
  */
-silex.controller.FileMenuController.prototype.openFile = function(opt_cbk, opt_errorCbk) {
+silex.controller.FileMenuController.prototype.openFile = function(opt_cbk, opt_errorCbk, opt_cancelCbk) {
   // QOS, track success
   this.tracker.trackAction('controller-events', 'request', 'file.open', 0);
   // let the user choose the file
   this.view.fileExplorer.openDialog(
-      goog.bind(function(url) {
-        this.model.file.open(url, goog.bind(function(rawHtml) {
-          this.model.file.setHtml(rawHtml, goog.bind(function() {
+      url => {
+        this.model.file.open(url, rawHtml => {
+          this.model.file.setHtml(rawHtml, () => {
             // undo redo reset
             this.undoReset();
             // display and redraw
@@ -112,25 +113,28 @@ silex.controller.FileMenuController.prototype.openFile = function(opt_cbk, opt_e
             // QOS, track success
             this.tracker.trackAction('controller-events', 'success', 'file.open', 1);
             if (opt_cbk) {
-              opt_cbk();
+              opt_cbk(url);
             }
-          }, this));
-        }, this),
-        goog.bind(function(error) {
+          });
+        },
+        error => {
           silex.utils.Notification.notifyError('Error: I did not manage to open this file. \n' + (error.message || ''));
           this.tracker.trackAction('controller-events', 'error', 'file.open', -1);
           if (opt_errorCbk) {
             opt_errorCbk(error);
           }
-        }, this));
-      }, this),
+        });
+      },
       {'mimetype': 'text/html'},
-      goog.bind(function(error) {
+      error => {
         this.tracker.trackAction('controller-events', 'error', 'file.open', -1);
         if (opt_errorCbk) {
           opt_errorCbk(error);
         }
-      }, this));
+      },
+      () => {
+        if(opt_cancelCbk) opt_cancelCbk();
+      });
 };
 
 
