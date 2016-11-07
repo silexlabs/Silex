@@ -68,7 +68,6 @@ goog.require('silex.view.PageTool');
 goog.require('silex.view.PropertyTool');
 goog.require('silex.view.Splitter');
 goog.require('silex.view.Stage');
-goog.require('silex.view.TipOfTheDay');
 goog.require('silex.view.Workspace');
 goog.require('silex.view.dialog.CssEditor');
 goog.require('silex.view.dialog.FileExplorer');
@@ -259,11 +258,6 @@ class App {
     propSplitter.addLeft(breadCrumbsElement);
     propSplitter.addLeft(stageElement);
     propSplitter.addRight(propertyToolElement);
-
-    // tip of the day
-    var tipOfTheDayElement = /** @type {!Element} */ (goog.dom.getElementByClass('tip-of-the-day'));
-    /** @type {silex.view.TipOfTheDay} */
-    var tipOfTheDay = new silex.view.TipOfTheDay(tipOfTheDayElement, this.model, this.controller);
 
     // init the view class which references all the views
     this.view.init(

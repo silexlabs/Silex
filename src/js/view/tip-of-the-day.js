@@ -54,67 +54,45 @@ silex.view.TipOfTheDay.prototype.init = function()
   let itemTrackAction = '';
   // hide
   this.element.classList.add('hidden-dialog');
-  // wait for a while
-  setTimeout(() => {
-    // start loading
-    this.element.classList.add('loading');
-    // capping to prevent harrassing the user
-    let visits = 0;
-    if (window.localStorage) {
-      // init local storage
-      let visitsStr = window.localStorage.getItem(silex.view.TipOfTheDay.NUM_VISITS_LOCAL_STORAGE_NAME);
-      if (visitsStr) {
-        visits = parseInt(visitsStr, 10);
-      }
-      window.localStorage.setItem(silex.view.TipOfTheDay.NUM_VISITS_LOCAL_STORAGE_NAME, (visits + 1).toString());
-      // the more visits the less chance we have to show the tip
-      let rand = Math.random() * visits;
-      if (rand > 3) {
-        silex.service.Tracker.getInstance().trackAction('tip-of-the-day', 'noshow', itemTrackAction, 0);
-        return;
-      }
-    }
-    // load data
-    goog.net.XhrIo.send('https://api.github.com/repos/silexlabs/Silex/issues?labels=tip-of-the-day', (e) => {
-      // get the json response
-      let xhr = e.target;
-      let items = xhr.getResponseJson();
-      // loop on the items backward
-      let idx = items.length - (visits % items.length) - 1;
-      let item = items[idx];
-      // store for actions tracking (QA)
-      itemTrackAction = item['title'];
-      silex.service.Tracker.getInstance().trackAction('tip-of-the-day', 'show', itemTrackAction, 0);
-      // extract the first link from the issue
-      let tmp = document.createElement('div');
-      tmp.innerHTML = item['body'];
-      let firstLink = tmp.querySelector('a');
-      // display the content
-      let el = document.createElement('a');
-      el.target='_blank';
-      el.title= item['title'];
-      el.innerHTML = '<h1>' + item['title'] + '</h1><p>' + this.strip(item['body']) + '</p>';
-      if(firstLink != null) el.href = firstLink.href;
-      this.element.appendChild(el);
-      // close button
-      let a = document.createElement('a');
-      a.className = 'close';
-      a.textContent = 'Close';
-      this.element.appendChild(a);
-      // show the tooltip
-      this.element.classList.remove('loading');
-      this.element.classList.remove('hidden-dialog');
-      // add a timeout
-      setTimeout(() => {
-        this.element.classList.add('hidden-dialog');
-        silex.service.Tracker.getInstance().trackAction('tip-of-the-day', 'timeout', itemTrackAction, -1);
-      }, 30000);
-    });
-  }, 4000);
+  // start loading
+  this.element.classList.add('loading');
+  // keep track of the visits
+  let visits = 0;
+  let visitsStr = window.localStorage.getItem(silex.view.TipOfTheDay.NUM_VISITS_LOCAL_STORAGE_NAME);
+  if (visitsStr) {
+    visits = parseInt(visitsStr, 10);
+  }
+  window.localStorage.setItem(silex.view.TipOfTheDay.NUM_VISITS_LOCAL_STORAGE_NAME, (visits + 1).toString());
+  // load data
+  goog.net.XhrIo.send('https://api.github.com/repos/silexlabs/Silex/issues?labels=tip-of-the-day', (e) => {
+    // get the json response
+    let xhr = e.target;
+    let items = xhr.getResponseJson();
+    // loop on the items backward
+    let idx = items.length - (visits % items.length) - 1;
+    let item = items[idx];
+    // store for actions tracking (QA)
+    itemTrackAction = item['title'];
+    silex.service.Tracker.getInstance().trackAction('tip-of-the-day', 'show', itemTrackAction, 0);
+    // extract the first link from the issue
+    let tmp = document.createElement('div');
+    tmp.innerHTML = item['body'];
+    let firstLink = tmp.querySelector('a');
+    // let firstImage = tmp.querySelector('img');
+    // display the content
+    let el = document.createElement('a');
+    el.target='_blank';
+    el.title= item['title'];
+    el.innerHTML = '<h2>' + item['title'] + '</h2><p>' + this.strip(item['body']) + '</p>';
+    if(firstLink != null) el.href = firstLink.href;
+    // if(firstImage != null) el.style.backgroundImage = `url(${firstImage.src})`;
+    this.element.appendChild(el);
+    // show the tooltip
+    this.element.classList.remove('loading');
+    this.element.classList.remove('hidden-dialog');
+  });
   // attach click event
   goog.events.listen(this.element, goog.events.EventType.CLICK, (e) => {
-    // hide
-    this.element.classList.add('hidden-dialog');
     if(e.target.classList.contains('close')) {
       silex.service.Tracker.getInstance().trackAction('tip-of-the-day', 'close', itemTrackAction, 0);
     }
