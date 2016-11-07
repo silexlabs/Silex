@@ -18,6 +18,7 @@
 
 goog.provide('silex.view.dialog.NewWebsiteDialog');
 goog.require('silex.view.ModalDialog');
+goog.require('silex.view.TipOfTheDay');
 
 
 /**
@@ -49,8 +50,6 @@ silex.view.dialog.NewWebsiteDialog = function(element, model, controller) {
    * @type {string}
    */
   this.state = '';
-
-  this.buildUi();
 };
 
 
@@ -202,6 +201,10 @@ silex.view.dialog.NewWebsiteDialog.prototype.buildUi = function() {
     this.modalDialog.close();
     this.controller.fileMenuController.openFile(null, e => this.modalDialog.open(), () => this.modalDialog.open());
   };
+  // tip of the day
+  const tipOfTheDayElement = /** @type {!Element} */ (this.element.querySelector('.tip-of-the-day'));
+  /** @type {silex.view.TipOfTheDay} */
+  var tipOfTheDay = new silex.view.TipOfTheDay(tipOfTheDayElement, this.model, this.controller);
 };
 
 
