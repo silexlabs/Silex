@@ -1,7 +1,7 @@
-@cardHeight: 290px;
-@cardWidth: 500px;
-@cardHeightSmall: 150px;
-@cardWidthSmall: 250px;
+@cardWidth: 300px;
+@cardHeight: @cardWidth;
+@cardWidthSmall: @cardWidth/2;
+@cardHeightSmall: 200px;
 
 @titleHeight: 40px;
 
@@ -57,6 +57,7 @@
     & > ul.rendered-list {
       display: flex;
       flex-wrap: wrap;
+      justify-content: space-between;
     }
     .btn:hover, .list-item:hover {
       background-color: @silexmediumdarkgrey;
@@ -92,10 +93,10 @@
       }
       &.rendered-item {
           height: @cardHeight;
-          max-width: @cardWidth;
-          width: 30%;
-          margin: 15px 30px 0 0;
+          width: @cardWidth;
           flex: 1 0 auto;
+          margin: 5px;
+
           .thumbnail, h2, .ui {
             margin: 0;
           }
@@ -133,9 +134,8 @@
       }
     }
     .small-items li.rendered-item {
+      width: @cardWidthSmall;
       height: @cardHeightSmall;
-      width: @cardWidthSmall/2;
-      max-width: @cardWidthSmall;
       .thumbnail {
         width: 100%;
         height: @cardHeightSmall - @titleHeight;
