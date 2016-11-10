@@ -83,10 +83,10 @@ silex.view.TipOfTheDay.prototype.init = function()
     let el = document.createElement('a');
     el.target='_blank';
     el.title= item['title'];
-    el.innerHTML = '<h2>' + item['title'] + '</h2><p>' + this.strip(item['body']) + '</p>';
+    el.innerHTML = '<h3>' + item['title'] + '</h3><p>' + this.strip(item['body']) + '</p>';
     if(firstLink != null) el.href = firstLink.href;
     // if(firstImage != null) el.style.backgroundImage = `url(${firstImage.src})`;
-    this.element.appendChild(el);
+    this.element.querySelector('.container').appendChild(el);
     // show the tooltip
     this.element.classList.remove('loading');
     this.element.classList.remove('hidden-dialog');
