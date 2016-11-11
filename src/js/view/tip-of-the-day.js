@@ -18,7 +18,6 @@
 
 
 goog.provide('silex.view.TipOfTheDay');
-goog.require('goog.net.XhrIo');
 
 
 
@@ -52,8 +51,6 @@ silex.view.TipOfTheDay.NUM_VISITS_LOCAL_STORAGE_NAME = 'silex-caping';
 silex.view.TipOfTheDay.prototype.init = function()
 {
   let itemTrackAction = '';
-  // hide
-  this.element.classList.add('hidden-dialog');
   // start loading
   this.element.classList.add('loading');
   // keep track of the visits
@@ -64,10 +61,16 @@ silex.view.TipOfTheDay.prototype.init = function()
   }
   window.localStorage.setItem(silex.view.TipOfTheDay.NUM_VISITS_LOCAL_STORAGE_NAME, (visits + 1).toString());
   // load data
-  goog.net.XhrIo.send('https://api.github.com/repos/silexlabs/Silex/issues?labels=tip-of-the-day', (e) => {
+  var oReq = new XMLHttpRequest();
+  oReq.open('GET', 'https://api.github.com/repos/silexlabs/Silex/issues?labels=tip-of-the-day');
+  oReq.send();
+  oReq.addEventListener('error', e => {
+    this.element.querySelector('.container').innerHTML = 'It looks like you are offline. I could not load data from github issues';
+    this.element.classList.remove('loading');
+  });
+  oReq.addEventListener('load', e => {
     // get the json response
-    let xhr = e.target;
-    let items = xhr.getResponseJson();
+    const items = JSON.parse(oReq.responseText);
     // loop on the items backward
     let idx = items.length - (visits % items.length) - 1;
     let item = items[idx];
@@ -89,7 +92,6 @@ silex.view.TipOfTheDay.prototype.init = function()
     this.element.querySelector('.container').appendChild(el);
     // show the tooltip
     this.element.classList.remove('loading');
-    this.element.classList.remove('hidden-dialog');
   });
   // attach click event
   goog.events.listen(this.element, goog.events.EventType.CLICK, (e) => {

@@ -69,7 +69,6 @@ silex.view.ModalDialog = class {
    * @param  {?Object=} args
    */
   static open(name, args = null) {
-    console.log('opening dialog', name, args);
     if(silex.view.ModalDialog.dialogs && silex.view.ModalDialog.dialogs[name]) {
       silex.view.ModalDialog.dialogs[name].open(args);
     }
@@ -84,7 +83,6 @@ silex.view.ModalDialog = class {
    */
   static close() {
     if(silex.view.ModalDialog.currentDialog) {
-      console.log('closing dialog', silex.view.ModalDialog.currentDialog.name);
       silex.view.ModalDialog.currentDialog.close();
     }
     else {
@@ -98,7 +96,6 @@ silex.view.ModalDialog = class {
    * @param  {?Object=} args optional args to pass to the dialog
    */
   open(args) {
-    console.log('modal open');
     if(!this.isOpen) {
       // set the flag
       this.isOpen = true;
@@ -121,7 +118,6 @@ silex.view.ModalDialog = class {
    * close the dialog
    */
   close() {
-    console.log('modal close');
     if(this.isOpen) {
       this.isOpen = false;
       silex.view.ModalDialog.currentDialog = null;
