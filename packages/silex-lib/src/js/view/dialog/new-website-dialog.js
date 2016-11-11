@@ -133,16 +133,14 @@ silex.view.dialog.NewWebsiteDialog.prototype.buildUi = function() {
   const createList = (ul, repo, success, error) => {
     const repoUrl = `https://api.github.com/repos/silexlabs/${repo}/contents`;
     const oReq = new XMLHttpRequest();
-    oReq.addEventListener('error', e => error('Error loading repo data', e));
+    oReq.addEventListener('error', e => {
+      ul.innerHTML = 'It looks like you are offline. I could not load data from github issues';
+      success();
+    });
     oReq.addEventListener('load', e => {
-      if(oReq.status === 200) {
-        const list = JSON.parse(oReq.responseText);
-        this.renderTemplateList(ul, repo, list);
-        success();
-      }
-      else {
-        error('Error loading repo data', e);
-      }
+      const list = JSON.parse(oReq.responseText);
+      this.renderTemplateList(ul, repo, list);
+      success();
     });
     oReq.open('GET', repoUrl);
     oReq.send();
