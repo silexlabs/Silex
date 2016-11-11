@@ -184,8 +184,10 @@ silex.model.Element.prototype.prepareHtmlForEdit = function(rawHtml) {
   // prevent the user scripts from executing while editing
   rawHtml = rawHtml.replace(/<script.*class=\"silex-script\".*?>/gi, '<script type="text/notjavascript" class="silex-script">');
   // convert to absolute urls
-  if (this.model.file.getUrl()) {
-    rawHtml = silex.utils.Url.relative2Absolute(rawHtml, silex.utils.Url.getBaseUrl() + this.model.file.getUrl());
+  let url = this.model.file.getUrl();
+  if (url) {
+    if(!silex.utils.Url.isAbsoluteUrl(url)) url = silex.utils.Url.getBaseUrl() + url;
+    rawHtml = silex.utils.Url.relative2Absolute(rawHtml, url);
   }
   return rawHtml;
 };

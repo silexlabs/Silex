@@ -1,39 +1,14 @@
 .tip-of-the-day {
-  top: 555px;
-  left: @menuWidth + 14;
-  padding: 0 10px 8px 10px;
-  width: 230px;
-  border-radius: 2px;
-  box-shadow: 0 0 8px 4px #666;
-  z-index: 110;
-  position: absolute;
-  background-color: @silexdarkgrey;
-  border: 2px solid #FFF;
   transition: opacity .5s ease-out;
-  &.hidden-dialog {
-    opacity: 0;
-    left: -1000px;
+
+  &.loading {
+    opacity: .5;
   }
-  &, & *:link, & *:visited {
-    color: #EEE;
-    font-size: 14px;
-    line-height: 1.5;
-    text-decoration: none;
-    font-size: 12px;
+  a {
+    background-size: cover;
+    background-position: 50%;
   }
-  h1 {
-    font-weight: normal;
-    font-size: 15px;
-    margin-top: 15px;
-  }
-  p {
-    margin-bottom: 20px;
-  }
-  .close {
-    display: block;
-    text-align: center;
-    padding-top: 7px;
-    border-top: 1px solid;
-    cursor: pointer;
+  a:focus {
+    outline: none;
   }
 }
