@@ -1,11 +1,25 @@
 @cardWidth: 300px;
 @cardHeight: @cardWidth;
-@cardWidthSmall: @cardWidth/2;
+@cardWidthSmall: @cardWidth;
 @cardHeightSmall: 200px;
 
 @titleHeight: 40px;
 
 .silex-newwebsite-dialog {
+  .header .help-btn {
+    margin-left: 20px;
+    font-weight: 100;
+    font-size: 16px;
+    font-family: sans-serif;
+    text-decoration: none;
+    color: @silexlightergrey;
+    &:hover {
+      text-decoration: underline;
+    }
+    &:before {
+      padding: 0 5px;
+    }
+  }
   .pane {
     font-weight: lighter;
     font-size: 13px;
@@ -18,7 +32,7 @@
   //////////////////////
   .top {
     display: flex;
-  justify-content: space-between;
+    justify-content: space-between;
     .pane {
       flex: 1 1 auto;
       width: 50%;
@@ -75,6 +89,23 @@
       display: flex;
       flex-wrap: wrap;
       justify-content: space-between;
+      &.small-items {
+        justify-content: initial;
+        li.rendered-item {
+          width: @cardWidthSmall;
+          height: @cardHeightSmall;
+          flex: initial;
+          .thumbnail {
+            width: 100%;
+            height: @cardHeightSmall - @titleHeight;
+            max-width: @cardWidth;
+            background-size: initial;
+          }
+          .ui a {
+            display: none;
+          }
+        }
+      }
     }
     .btn:hover, .list-item:hover {
       background-color: @silexmediumdarkgrey;
@@ -148,17 +179,6 @@
               }
             }
         }
-      }
-    }
-    .small-items li.rendered-item {
-      width: @cardWidthSmall;
-      height: @cardHeightSmall;
-      .thumbnail {
-        width: 100%;
-        height: @cardHeightSmall - @titleHeight;
-      }
-      .ui a {
-        display: none;
       }
     }
   }
