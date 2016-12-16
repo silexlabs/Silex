@@ -422,20 +422,9 @@ silex.model.Element.prototype.setInnerHtml = function(element, innerHTML) {
  * @return  {Element}  the element which holds the content, i.e. a div, an image, ...
  */
 silex.model.Element.prototype.getContentNode = function(element) {
-  var content;
-  // find the content elements
-  var contentElements = goog.dom.getElementsByClass(
-      silex.model.Element.ELEMENT_CONTENT_CLASS_NAME,
-      element);
-  if (contentElements && contentElements.length === 1) {
-    // image or html box case
-    content = contentElements[0];
-  }
-  else {
-    // text box or container case
-    content = element;
-  }
-  return content;
+  return element.querySelector(
+    ':scope > .' + silex.model.Element.ELEMENT_CONTENT_CLASS_NAME) ||
+    element;
 };
 
 
@@ -629,7 +618,10 @@ silex.model.Element.prototype.removeElement = function(element) {
   // check this is allowed, i.e. an element inside the stage container
   if (this.model.body.getBodyElement() !== element &&
       goog.dom.contains(this.model.body.getBodyElement(), element)) {
-    // useless? Should remove its style? this.model.property.setStyle(element);
+    // remove style and component data
+    this.model.property.setComponentData(element)
+    this.model.property.setStyle(element, null, true);
+    this.model.property.setStyle(element, null, false);
     // remove the element
     goog.dom.removeNode(element);
   }

@@ -24,6 +24,75 @@ var sourceMap = {};
 
 
 /**
+ * Prodotype
+ * @see https://github.com/lexoyo/Prodotype
+ * @constructor
+ */
+function Prodotype(container, rootPath) {}
+
+
+/**
+ * @typedef {{faIconClass:?string, baseElement:?string, name:?string, category:?string, isPrivate:?boolean}}
+ */
+var ProdotypeCompDef;
+
+
+/**
+ * @type {ProdotypeCompDef}
+ */
+Prodotype.prototype.componentsDef;
+
+
+/**
+ * @param {string} templateName
+ * @param {Object.<*>} data
+ */
+Prodotype.prototype.decorate = function(templateName, data) {};
+
+
+/**
+ * @param {function(?Object)} cbk
+ */
+Prodotype.prototype.ready = function(cbk) {};
+
+
+/**
+ * @param {?Object.<*>=} data
+ * @param {?Array.<{name:string, displayName:string, templateName:string}>=} list
+ * @param {?string=} templateName
+ * @param {?Object.<function()>=} events
+ */
+Prodotype.prototype.edit = function(data, list, templateName, events) {};
+
+
+/**
+ *
+ */
+Prodotype.prototype.reset = function() {};
+
+
+/**
+ * @return {string}
+ */
+Prodotype.prototype.createName = function(type, list) {};
+
+
+/**
+ * @param {Element} container the element containing the dependencies (scripts and style sheets)
+ * @param {Array.<{templateName:string}>} componentNames the list of all the component names
+ * @return {Array.<Element>} the elements to be added to the site
+ */
+Prodotype.prototype.getMissingDependencies = function(container, componentNames) {};
+
+
+/**
+ * @param {Array.<Element>} dependencyElements depencies, i.e. scripts and style sheets
+ * @param {Array.<{templateName:string}>} componentNames the list of all the component names
+ */
+Prodotype.prototype.getUnusedDependencies = function(dependencyElements, componentNames) {};
+
+
+/**
  * @param {string} rawSourceMap
  * @constructor
  */

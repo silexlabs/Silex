@@ -23,8 +23,6 @@
 
 goog.provide('silex.App');
 
-goog.require('silex.model.Property');
-goog.require('silex.model.Element');
 goog.require('goog.dom');
 goog.require('goog.dom.classes');
 goog.require('goog.dom.classlist');
@@ -47,6 +45,7 @@ goog.require('silex.controller.ToolMenuController');
 goog.require('silex.controller.ViewMenuController');
 goog.require('silex.model.Body');
 goog.require('silex.model.Element');
+goog.require('silex.model.Component');
 goog.require('silex.model.File');
 goog.require('silex.model.Head');
 goog.require('silex.model.Page');
@@ -156,9 +155,18 @@ class App {
 
     // application start, open a new empty file
     this.controller.fileMenuController.newFile(
-      () => this.view.workspace.loadingDone(),
-      () => this.view.workspace.loadingDone()
+      () => {
+        this.view.workspace.loadingDone();
+        this.initDebug();
+      },
+      () => {
+        this.view.workspace.loadingDone();
+        this.initDebug();
+      }
     );
+  }
+
+  initDebug() {
     if (goog.DEBUG) {
       window['model'] = this.model;
       window['view'] = this.view;
@@ -292,6 +300,7 @@ class App {
         new silex.model.Body(this.model, this.view),
         new silex.model.Page(this.model, this.view),
         new silex.model.Element(this.model, this.view),
+        new silex.model.Component(this.model, this.view),
         new silex.model.Property(this.model, this.view)
     );
   }

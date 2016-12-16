@@ -125,7 +125,7 @@ silex.model.File.prototype.getContentWindow = function() {
  * @return {boolean} true if a website is being edited
  */
 silex.model.File.prototype.hasContent = function() {
-  return this.contentDocument_.body && this.contentDocument_.body.childNodes.length > 0;
+  return !!this.contentDocument_.body && this.contentDocument_.body.childNodes.length > 0;
 };
 
 
@@ -135,6 +135,7 @@ silex.model.File.prototype.hasContent = function() {
  * @param {string} rawHtml
  * @param {?function()=} opt_cbk
  * @param {?boolean=} opt_showLoader
+ * @expose
  */
 silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk, opt_showLoader) {
   // loading
@@ -229,7 +230,7 @@ silex.model.File.prototype.onContentLoaded = function(opt_cbk) {
   silex.utils.BackwardCompat.process(this.contentDocument_, this.model, (hasUpgraded) => {
     // check the integrity and store silex style sheet which holds silex elements styles
     this.model.property.initStyles(this.contentDocument_);
-    this.model.property.loadStyles(this.contentDocument_);
+    this.model.property.loadProperties(this.contentDocument_);
     // select the body
     this.model.body.setSelection([this.contentDocument_.body]);
     // make editable again
@@ -307,7 +308,7 @@ silex.model.File.prototype.getHtml = function() {
   var cleanFile = /** @type {Node} */ (this.contentDocument_.cloneNode(true));
   // update style tag (the dom do not update automatically when we change document.styleSheets)
   this.model.property.updateStylesInDom(/** @type {Document} */ (cleanFile));
-  this.model.property.saveStyles(this.contentDocument_);
+  this.model.property.saveProperties(this.contentDocument_);
   // cleanup
   this.model.head.removeTempTags(/** @type {Document} */ (cleanFile).head);
   this.model.body.removeEditableClasses(/** @type {!Element} */ (cleanFile));
@@ -366,7 +367,7 @@ silex.model.File.prototype.getHtmlNextStep = function (cbk, generator) {
 silex.model.File.prototype.getHtmlGenerator = function* () {
   // update style tag (the dom do not update automatically when we change document.styleSheets)
   let updatedStyles = this.model.property.getAllStyles(this.contentDocument_);
-  this.model.property.saveStyles(this.contentDocument_);
+  this.model.property.saveProperties(this.contentDocument_);
   // clone
   var cleanFile = /** @type {Node} */ (this.contentDocument_.cloneNode(true));
   yield;
@@ -414,13 +415,17 @@ silex.model.File.prototype.getHtmlGenerator = function* () {
 /**
  * load an arbitrary url as a silex html file
  * will not be able to save
+ * @param {string} url
+ * @param {?function(string)=} opt_cbk
+ * @param {?function(Object)=} opt_errCbk
+ * @expose
  */
-silex.model.File.prototype.openFromUrl = function(url, cbk, opt_errCbk) {
+silex.model.File.prototype.openFromUrl = function(url, opt_cbk, opt_errCbk) {
   silex.service.CloudStorage.getInstance().loadLocal(url,
       goog.bind(function(rawHtml) {
         this.setUrl(url);
-        if (cbk) {
-          cbk(rawHtml);
+        if (opt_cbk) {
+          opt_cbk(rawHtml);
         }
       }, this), opt_errCbk);
 };
@@ -428,6 +433,7 @@ silex.model.File.prototype.openFromUrl = function(url, cbk, opt_errCbk) {
 
 /**
  * save a file with a new name
+ * @expose
  */
 silex.model.File.prototype.saveAs = function(url, rawHtml, cbk, opt_errCbk) {
   // save the data
@@ -438,6 +444,7 @@ silex.model.File.prototype.saveAs = function(url, rawHtml, cbk, opt_errCbk) {
 
 /**
  * write content to the file
+ * @expose
  */
 silex.model.File.prototype.save = function(rawHtml, cbk, opt_errCbk) {
   silex.service.CloudStorage.getInstance().save(
@@ -480,7 +487,6 @@ silex.model.File.prototype.close = function() {
 /**
  * get the url of the file
  */
-
 silex.model.File.prototype.getUrl = function() {
   // revert to relative URL
   if (this.url){
@@ -519,7 +525,7 @@ silex.model.File.prototype.clearLatestFiles = function() {
  */
 silex.model.File.prototype.getLatestFiles = function() {
   const str = window.localStorage.getItem('silex:recent-files');
-  if(str) return JSON.parse(str);
+  if(str) return /** @type {Array.<{name:string, path:string, cloudIcon:string}>} */ (JSON.parse(str));
   else return [];
 };
 
@@ -537,7 +543,7 @@ silex.model.File.prototype.addToLatestFiles = function(url) {
     const path = url.substr(versionIdx);
     // remove if it is already in the array
     // so that it goes back to the top of the list
-    const foundIndex = -1;
+    let foundIndex = -1;
     latestFiles.forEach((item, idx) => item.path === path ? foundIndex = idx : null);
     if(foundIndex > -1) {
       latestFiles.splice(foundIndex, 1);

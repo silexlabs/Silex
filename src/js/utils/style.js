@@ -47,7 +47,6 @@ silex.utils.Style.SILEX_CLASS_NAMES = [
   silex.model.Page.PAGE_LINK_ACTIVE_CLASS_NAME,
   silex.model.Element.SELECTED_CLASS_NAME,
   silex.model.Element.JUST_ADDED_CLASS_NAME,
-  silex.view.BreadCrumbs.EDITABLE_STYLE_HOVER_CLASS,
   silex.model.Element.ELEMENT_CONTENT_CLASS_NAME, // useful to hide it when the content container of a section is selected
   silex.model.Element.TYPE_CONTAINER_CONTENT, // useful to hide it when the content container of a section is selected
   silex.model.Element.DEFAULT_SITE_WIDTH_CLASS_NAME,
@@ -55,7 +54,9 @@ silex.utils.Style.SILEX_CLASS_NAMES = [
   silex.model.Element.TYPE_SECTION + '-element',
   silex.model.Element.TYPE_IMAGE + '-element',
   silex.model.Element.TYPE_TEXT + '-element',
-  silex.model.Element.TYPE_HTML + '-element'
+  silex.model.Element.TYPE_HTML + '-element',
+  silex.model.Component.COMPONENT_CLASS_NAME,
+  silex.view.BreadCrumbs.EDITABLE_STYLE_HOVER_CLASS,
 ];
 
 

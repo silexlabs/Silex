@@ -22,11 +22,11 @@ body{
   this will be removed from the component as soon as it is dragged
 */
 .editable-style.silex-just-added {
-  z-index: 99999 !important;
+  z-index: 99998 !important;
 }
 .editable-style > .ui-resizable-handle {
   opacity: .5;
-  z-index: auto;
+  z-index: 1;
   position: absolute;
   border-color: #333333;
   border-style: dashed;
