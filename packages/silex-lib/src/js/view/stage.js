@@ -889,7 +889,7 @@ silex.view.Stage.prototype.followElementSize =
       var borderBox = goog.style.getBorderBox(follower);
       // handle section content elements which are forced centered
       // (only when the background is smaller than the body)
-      // TODO: remove support of .background
+      // TODO in a while: remove support of .background since it is now a section
       if((follower.classList.contains(silex.view.Stage.BACKGROUND_CLASS_NAME) ||
         this.model.element.isSectionContent(follower)) &&
         size.width < this.bodyElement.offsetWidth - 50) {

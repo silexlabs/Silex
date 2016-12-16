@@ -40,14 +40,14 @@ goog.inherits(silex.controller.SettingsDialogController,
 /**
  * browse and notify result, track actions, enable undo/redo
  * @param  {string} trackActionName
- * @param  {{mimetypes:Array.<string>}} mimetypes
- * @param  {function(string)} cbk
+ * @param  {{mimetypes: (Array.<string>|undefined)}} mimetypes
+ * @param  {function(string, ?Object=)} cbk
  */
 silex.controller.SettingsDialogController.prototype.browse = function(trackActionName, mimetypes, cbk) {
   this.tracker.trackAction(
       'controller-events', 'request', trackActionName, 0);
   this.view.fileExplorer.openDialog(
-      goog.bind(function(url) {
+      (url, blob) => {
         // undo checkpoint
         this.undoCheckPoint();
         // start with /api/...
@@ -55,19 +55,19 @@ silex.controller.SettingsDialogController.prototype.browse = function(trackActio
           url = '/' + url;
         }
         // notify the caller
-        cbk(url);
+        cbk(url, blob);
         // QA
         this.tracker.trackAction(
             'controller-events', 'success', trackActionName, 1);
-      }, this),
+      },
       mimetypes,
-      goog.bind(function(error) {
+      (error) => {
         silex.utils.Notification.notifyError(
             'Error: I could not select the publish path. <br /><br />' +
             (error.message || ''));
         this.tracker.trackAction(
             'controller-events', 'error', trackActionName, -1);
-      }, this)
+      }
   );
 };
 
@@ -79,7 +79,7 @@ silex.controller.SettingsDialogController.prototype.browsePublishPath = function
   this.browse(
     'publish.browse',
     { 'mimetypes': ['text/directory'] },
-    (url) => {
+    (url, blob) => {
       // put instead of get
       url = url.replace('/exec/get', '/exec/put');
       // set the new publication path
@@ -97,7 +97,7 @@ silex.controller.SettingsDialogController.prototype.browseFaviconPath = function
   this.browse(
     'favicon.browse',
     { 'mimetypes': ['image/jpeg', 'image/png', 'image/gif', 'image/ico'] },
-    (url) => {
+    (url, blob) => {
       // set the new publication path
       this.model.head.setFaviconPath(url);
       // notify caller (used to reopen settings)
@@ -113,7 +113,7 @@ silex.controller.SettingsDialogController.prototype.browseThumbnailSocialPath = 
   this.browse(
     'thumbnail-social.browse',
     { 'mimetypes': ['image/jpeg', 'image/png', 'image/gif', 'image/ico'] },
-    (url) => {
+    (url, blob) => {
       // set the new path
       this.model.head.setThumbnailSocialPath(url);
       // notify caller (used to reopen settings)

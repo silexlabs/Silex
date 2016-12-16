@@ -123,27 +123,22 @@ silex.service.CloudStorage.prototype.load = function(url, cbk, opt_errCbk) {
  * load data
  * @param  {string} url
  * @param  {function(string)} cbk
- * @param  {function(Object)} opt_errCbk
+ * @param  {?function(Object)=} opt_errCbk
  */
 silex.service.CloudStorage.prototype.loadLocal = function(url, cbk, opt_errCbk) {
-  // FIXME: use regular XMLHttpRequest
-  goog.net.XhrIo.send(url, function(e) {
+  const oReq = new XMLHttpRequest();
+  oReq.addEventListener('load', e => {
     // success of the request
-    var xhr = e.target;
-    var rawHtml = xhr.getResponse();
-    if (xhr.isSuccess()) {
-      if (cbk) {
-        cbk(rawHtml);
-      }
-    }
-    else {
-      var message = xhr.getLastError();
-      console.error(message, xhr, xhr.isSuccess(), xhr.getStatus(), xhr.headers.toString());
-      if (opt_errCbk) {
-        opt_errCbk(message);
-      }
+    cbk(oReq.responseText);
+  });
+  oReq.addEventListener('error', e => {
+    console.error('could not load website', url, e);
+    if (opt_errCbk) {
+      opt_errCbk(e);
     }
   });
+  oReq.open('GET', url);
+  oReq.send();
 };
 silex.service.CloudStorage.prototype.getServices = function() {
   // init services list

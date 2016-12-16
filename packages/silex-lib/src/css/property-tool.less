@@ -21,29 +21,6 @@
   .combobox {
     line-height: 16px;
   }
-  .switch-apollo-mode {
-    display: inline-block;
-    padding: 10px 10px 0 10px;
-    margin: 10px 10px 0 10px;
-    label {
-      font-size: 12px;
-      float: right;
-      margin-top: 17px;
-    }
-    button {
-      float: left;
-      cursor: pointer;
-      background-color: transparent;
-      border: none;
-      margin: 8px 10px 0px 0px;
-      outline: none;
-      &:after {
-        font-family: FontAwesome;
-        font-size: xx-large;
-        content: '\f204'
-      }
-    }
-  }
   .main-container {
     padding: 0;
     padding-top: 5px;
@@ -172,7 +149,7 @@
     margin-top: -4px;
     display: inline-block;
     width: 100%;
-    legend {
+    legend, .expandable-legend {
       background-color: @silexmediumgrey;
       font-weight: 700;
       font-size: 13px;
@@ -480,7 +457,21 @@
       }
 
     }
-
+  }
+  .component-editor {
+    .expandable;
+    border-top: 1px solid @silexdarkgrey;
+    &.hide-panel {
+      display: none;
+    }
+    & > section > ul {
+      padding-left: 0;
+    }
+    label {
+      .expandable-legend;
+      display: block;
+      padding-bottom: 5px;
+    }
   }
 
 }
