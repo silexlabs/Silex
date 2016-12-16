@@ -66,63 +66,65 @@ silex.view.dialog.NewWebsiteDialog.prototype.renderTemplateList = function(ul, r
     const el = elements[idx];
     el.parentNode.removeChild(el);
   }
-  // render the data
-  data
-    // remove files
-    .filter(item => item.type === 'dir')
-    // make a list of <li> tags
-    .map(item => {
-      const li = document.createElement('li');
-      const name = item.name.replace('-', ' ', 'g');
-      li.classList.add('rendered-item');
+  if(Array.isArray(data)) {
+    // render the data
+    data
+      // remove files
+      .filter(item => item.type === 'dir')
+      // make a list of <li> tags
+      .map(item => {
+        const li = document.createElement('li');
+        const name = item.name.replace('-', ' ', 'g');
+        li.classList.add('rendered-item');
 
-      // thumbnail
-      const thumbnail = document.createElement('div');
-      thumbnail.classList.add('thumbnail');
-      thumbnail.style.backgroundImage = `url(//${repo}.silex.me/${item.name}/screenshot.png)`;
-      thumbnail.setAttribute('data-editable', `//${repo}.silex.me/${item.name}/editable.html`);
-      li.appendChild(thumbnail);
+        // thumbnail
+        const thumbnail = document.createElement('div');
+        thumbnail.classList.add('thumbnail');
+        thumbnail.style.backgroundImage = `url(//${repo}.silex.me/${item.name}/screenshot.png)`;
+        thumbnail.setAttribute('data-editable', `//${repo}.silex.me/${item.name}/editable.html`);
+        li.appendChild(thumbnail);
 
-      // UI container
-      const ui = document.createElement('div');
-      ui.classList.add('ui');
-      li.appendChild(ui);
+        // UI container
+        const ui = document.createElement('div');
+        ui.classList.add('ui');
+        li.appendChild(ui);
 
-      // title
-      const h3 = document.createElement('h3');
-      h3.innerHTML = name;
-      h3.setAttribute('data-editable', `//${repo}.silex.me/${item.name}/editable.html`);
-      ui.appendChild(h3);
+        // title
+        const h3 = document.createElement('h3');
+        h3.innerHTML = name;
+        h3.setAttribute('data-editable', `//${repo}.silex.me/${item.name}/editable.html`);
+        ui.appendChild(h3);
 
-      // preview
-      const previewEl = document.createElement('a');
-      previewEl.classList.add('fa', 'fa-external-link');
-      previewEl.innerHTML = 'Preview';
-      previewEl.setAttribute('data-action', 'preview');
-      previewEl.target = '_blank';
-      previewEl.href = `//${repo}.silex.me/${item.name}/index.html`;
-      ui.appendChild(previewEl);
+        // preview
+        const previewEl = document.createElement('a');
+        previewEl.classList.add('fa', 'fa-external-link');
+        previewEl.innerHTML = 'Preview';
+        previewEl.setAttribute('data-action', 'preview');
+        previewEl.target = '_blank';
+        previewEl.href = `//${repo}.silex.me/${item.name}/index.html`;
+        ui.appendChild(previewEl);
 
-      // info
-      const infoEl = document.createElement('a');
-      infoEl.classList.add('fa', 'fa-info');
-      infoEl.innerHTML = 'Info';
-      infoEl.target = '_blank';
-      infoEl.href = `//${repo}.silex.me/${item.name}/README.md`;
-      infoEl.setAttribute('data-action', 'info');
-      ui.appendChild(infoEl);
+        // info
+        const infoEl = document.createElement('a');
+        infoEl.classList.add('fa', 'fa-info');
+        infoEl.innerHTML = 'Info';
+        infoEl.target = '_blank';
+        infoEl.href = `//${repo}.silex.me/${item.name}/README.md`;
+        infoEl.setAttribute('data-action', 'info');
+        ui.appendChild(infoEl);
 
-      // edit
-      const editEl = document.createElement('a');
-      editEl.classList.add('fa', 'fa-pencil');
-      editEl.innerHTML = 'Select';
-      editEl.setAttribute('data-editable', `//${repo}.silex.me/${item.name}/editable.html`);
-      ui.appendChild(editEl);
+        // edit
+        const editEl = document.createElement('a');
+        editEl.classList.add('fa', 'fa-pencil');
+        editEl.innerHTML = 'Select';
+        editEl.setAttribute('data-editable', `//${repo}.silex.me/${item.name}/editable.html`);
+        ui.appendChild(editEl);
 
-      return li;
-    })
-    // add the <li> tags to the <ul> tag
-    .forEach(li => ul.appendChild(li));
+        return li;
+      })
+      // add the <li> tags to the <ul> tag
+      .forEach(li => ul.appendChild(li));
+  } // else { console.log('It looks like you are offline. I could not load data from github issues'); }
 };
 
 

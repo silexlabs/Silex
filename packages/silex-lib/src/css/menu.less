@@ -1,6 +1,5 @@
 .silex-icons-menu {
   background-color: @silexmediumgrey; /* hide sub menu during opening */
-  overflow: hidden;
   position: fixed;
   z-index: 2; /* over the sub menus */
   .icon {
@@ -32,6 +31,7 @@
 }
 .silex-menu .menu-container {
   .silex-icons-menu();
+  overflow: hidden;
   top: 0;
   bottom: 0;
   width: @menuWidth;
@@ -104,6 +104,9 @@
     font-style: italic;
     .off;
   }
+  .prodotype-icon {
+    background-image: url(../libs/prodotype/prodotype-logo-small.png);
+  }
 }
 .silex-sub-menu-text {
   padding: 10px;
@@ -155,7 +158,10 @@
 .sub-menu-hidden(@width) {
   transition: left @silexUiTransitions, opacity @silexUiTransitions;
   left: -@width;
+  bottom: @breadCrumbsHeight;
   opacity: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 .sub-menu-visible() {
   left: @menuWidth;

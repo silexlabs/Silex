@@ -35,6 +35,12 @@ body.compute-body-size-pending {
   width: 100%;
   height: 100%;
 }
+.html-element .silex-element-content {
+  pointer-events: none;
+}
+body.silex-runtime .html-element .silex-element-content {
+  pointer-events: auto;
+}
 /*  needed to have the content 100% height but mess up with UI
 .html-element .silex-element-content{
   position: absolute;
@@ -183,3 +189,20 @@ a:focus{ outline: none;}
   }
 }
 
+/**
+ * prodotype components
+ */
+.prodotype-runtime {
+  display: none;
+}
+body.silex-runtime .prodotype-runtime {
+  display: block;
+}
+body.silex-runtime .prodotype-preview {
+  display: none;
+}
+.prodotype-force-size {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
