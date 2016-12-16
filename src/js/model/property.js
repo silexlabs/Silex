@@ -104,6 +104,13 @@ silex.model.Property.prototype.mobileStylesObj = {};
 
 
 /**
+ * arbitrary data for elements and components
+ * @type {Object}
+ */
+silex.model.Property.prototype.componentDataObj = {};
+
+
+/**
  * get/set Silex ID
  * @param {Element} element
  * @return {?string} uniqueId
@@ -167,7 +174,7 @@ silex.model.Property.prototype.initSilexId = function(element, doc) {
 /**
  * Convert the styles to json and save it in a script tag
  */
-silex.model.Property.prototype.saveStyles = function(doc) {
+silex.model.Property.prototype.saveProperties = function(doc) {
   var styleTag = doc.querySelector('.' + silex.model.Property.JSON_STYLE_TAG_CLASS_NAME);
   if (!styleTag) {
     styleTag = doc.createElement('script');
@@ -176,7 +183,8 @@ silex.model.Property.prototype.saveStyles = function(doc) {
   }
   let obj = {
     'desktop': this.stylesObj,
-    'mobile': this.mobileStylesObj
+    'mobile': this.mobileStylesObj,
+    'componentData': this.componentDataObj,
   };
   styleTag.innerHTML = '[' + JSON.stringify(obj) + ']';
 };
@@ -185,22 +193,24 @@ silex.model.Property.prototype.saveStyles = function(doc) {
 /**
  * Load the styles from the json saved in a script tag
  */
-silex.model.Property.prototype.loadStyles = function(doc) {
+silex.model.Property.prototype.loadProperties = function(doc) {
   var styleTag = doc.querySelector('.' + silex.model.Property.JSON_STYLE_TAG_CLASS_NAME);
   if (styleTag != null) {
     let styles = /** @type {Object} */ (JSON.parse(styleTag.innerHTML)[0]);
     if (styles && styles['desktop'] && styles['mobile']) {
-      this.stylesObj = styles['desktop'];
-      this.mobileStylesObj = styles['mobile'];
+      this.stylesObj = styles['desktop'] || {};
+      this.mobileStylesObj = styles['mobile'] || {};
+      this.componentDataObj = styles['componentData'] || {};
     }
     else {
-      console.error('Error: could not retreve desktop and mobile styles from .' + silex.model.Property.JSON_STYLE_TAG_CLASS_NAME);
+      console.error('Error: could not retrieve desktop and mobile styles from the dom (.' + silex.model.Property.JSON_STYLE_TAG_CLASS_NAME + ')');
     }
   }
   else {
     this.stylesObj = {};
     this.mobileStylesObj = {};
-    console.error('Error: no JSON styles array found in the dom');
+    this.componentDataObj = {};
+    console.info('Warning: no JSON styles array found in the dom');
   }
 };
 
@@ -233,50 +243,94 @@ silex.model.Property.prototype.initStyles = function(doc) {
 
 
 /**
+ * get / set the data associated with an element
+ * if opt_componentData is null this will remove the rule
+ * @param {Element} element
+ * @param {?Object=} opt_componentData
+ */
+silex.model.Property.prototype.setComponentData = function(element, opt_componentData) {
+  // get the internal ID
+  var elementId =  /** @type {string} */ (this.getSilexId(element));
+  // store in object
+  if(opt_componentData) {
+    this.componentDataObj[elementId] = opt_componentData;
+  }
+  else {
+    delete this.componentDataObj[elementId];
+  }
+}
+
+
+/**
+ * get / set the data associated with an element
+ * @param {Element} element
+ * @return {?Object} a clone of the data object
+ */
+silex.model.Property.prototype.getComponentData = function(element) {
+  // get the internal ID
+  var elementId =  /** @type {string} */ (this.getSilexId(element));
+  // returns value of object
+  return this.componentDataObj[elementId];
+}
+
+
+/**
  * get / set the css style of an element
  * this creates or update a rule in the style tag with id INLINE_STYLE_TAG_CLASS_NAME
- * if opt_style is null this will remove the rule
+ * if style is null this will remove the rule
  * @param {Element} element
  * @param {?Object} style
  * @param {?boolean=} opt_isMobile
  */
 silex.model.Property.prototype.setStyle = function(element, style, opt_isMobile) {
   // do not apply width to sections
-  if(this.model.element.isSection(element)) {
-    style['width'] = undefined;
+  if(style && this.model.element.isSection(element)) {
+    delete style['width'];
   }
   var elementId =  /** @type {string} */ (this.getSilexId(element));
   var isMobile = opt_isMobile != null ? opt_isMobile : this.view.workspace.getMobileEditor()
   // to selector case
-  for(let key in style) {
-    let cssName = goog.string.toSelectorCase(key);
-    if(cssName !== key && style[key] !== null && style[key] !== '') {
-      let val = style[key];
-      style[key] = undefined;
-      style[cssName] = val;
+  if(style) {
+    for(let key in style) {
+      let cssName = goog.string.toSelectorCase(key);
+      if(cssName !== key && style[key] !== null && style[key] !== '') {
+        let val = style[key];
+        delete style[key];
+        style[cssName] = val;
+      }
     }
   }
   // store in JSON
   if (isMobile) {
-    this.mobileStylesObj[elementId] = style;
+    if(style) {
+      this.mobileStylesObj[elementId] = style;
+    }
+    else {
+      delete this.mobileStylesObj[elementId];
+    }
   }
   else {
-    this.stylesObj[elementId] = style;
-  }
-  // convert style to string
-  var styleStr = silex.utils.Style.styleToString(style || '');
-  // we use the class name because elements have their ID as a css class too
-  styleStr = '.' + elementId + '{' + styleStr + '} ';
-  if (isMobile) {
-    styleStr = '@media ' + silex.model.Property.MOBILE_MEDIA_QUERY + '{' + styleStr + '}';
+    if(style) {
+      this.stylesObj[elementId] = style;
+    }
+    else {
+      delete this.stylesObj[elementId];
+    }
   }
   // find the index of the rule for the given element
-  var cssRuleObject = this.findCssRule(elementId, isMobile);
+  const cssRuleObject = this.findCssRule(elementId, isMobile);
   // update or create the rule
   if (cssRuleObject) {
     this.styleSheet.deleteRule(cssRuleObject.index);
   }
-  if (style) {
+  // convert style to string
+  if(style) {
+    let styleStr = silex.utils.Style.styleToString(style);
+    // we use the class name because elements have their ID as a css class too
+    styleStr = '.' + elementId + '{' + styleStr + '} ';
+    if (isMobile) {
+      styleStr = '@media ' + silex.model.Property.MOBILE_MEDIA_QUERY + '{' + styleStr + '}';
+    }
     // add the rule to the dom to see the changes, mobile rules after desktop ones
     if(isMobile) {
       this.styleSheet.insertRule(styleStr, this.styleSheet.cssRules.length);

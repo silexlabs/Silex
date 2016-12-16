@@ -74,22 +74,24 @@ silex.view.TipOfTheDay.prototype.init = function()
     // loop on the items backward
     let idx = items.length - (visits % items.length) - 1;
     let item = items[idx];
-    // store for actions tracking (QA)
-    itemTrackAction = item['title'];
-    silex.service.Tracker.getInstance().trackAction('tip-of-the-day', 'show', itemTrackAction, 0);
-    // extract the first link from the issue
-    let tmp = document.createElement('div');
-    tmp.innerHTML = item['body'];
-    let firstLink = tmp.querySelector('a');
-    // let firstImage = tmp.querySelector('img');
-    // display the content
-    let el = document.createElement('a');
-    el.target='_blank';
-    el.title= item['title'];
-    el.innerHTML = '<h3>' + item['title'] + '</h3><p>' + this.strip(item['body']) + '</p>';
-    if(firstLink != null) el.href = firstLink.href;
-    // if(firstImage != null) el.style.backgroundImage = `url(${firstImage.src})`;
-    this.element.querySelector('.container').appendChild(el);
+    if(item) {
+      // store for actions tracking (QA)
+      itemTrackAction = item['title'];
+      silex.service.Tracker.getInstance().trackAction('tip-of-the-day', 'show', itemTrackAction, 0);
+      // extract the first link from the issue
+      let tmp = document.createElement('div');
+      tmp.innerHTML = item['body'];
+      let firstLink = tmp.querySelector('a');
+      // let firstImage = tmp.querySelector('img');
+      // display the content
+      let el = document.createElement('a');
+      el.target='_blank';
+      el.title= item['title'];
+      el.innerHTML = '<h3>' + item['title'] + '</h3><p>' + this.strip(item['body']) + '</p>';
+      if(firstLink != null) el.href = firstLink.href;
+      // if(firstImage != null) el.style.backgroundImage = `url(${firstImage.src})`;
+      this.element.querySelector('.container').appendChild(el);
+    } // else { console.log('It looks like you are offline. I could not load data from github issues'); }
     // show the tooltip
     this.element.classList.remove('loading');
   });

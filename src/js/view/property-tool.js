@@ -153,6 +153,11 @@ silex.view.PropertyTool.prototype.buildUi = function() {
   this.stylePane = new silex.view.pane.StylePane(
       goog.dom.getElementByClass('style-editor', this.element),
       this.model, this.controller);
+
+  // component editor
+  this.model.component.initComponents(this.element.querySelector('.component-editor'));
+  this.componentEditorElement = this.element.querySelector('.component-editor');
+
   // expandables
   const expandables = this.element.querySelectorAll('.expandable legend');
   for(let idx=0; idx<expandables.length; idx++) {
@@ -184,5 +189,13 @@ silex.view.PropertyTool.prototype.redraw = function(selectedElements, pageNames,
     this.generalStylePane.redraw(selectedElements, pageNames, currentPageName);
     this.stylePane.redraw(selectedElements, pageNames, currentPageName);
     this.bgPane.redraw(selectedElements, pageNames, currentPageName);
+    if(selectedElements.length === 1 && this.model.property.getComponentData(selectedElements[0])) {
+      this.model.component.edit(selectedElements[0]);
+      this.componentEditorElement.classList.remove('hide-panel');
+    }
+    else {
+      this.model.component.resetSelection();
+      this.componentEditorElement.classList.add('hide-panel');
+    }
   });
 };

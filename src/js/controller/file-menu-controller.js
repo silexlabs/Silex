@@ -76,7 +76,7 @@ silex.controller.FileMenuController.prototype.newFile = function(opt_cbk, opt_er
             onSuccess();
           }, true);
         }, err => {
-          console.log('opening template error');
+          console.error('opening template error');
           onError(err);
         });
       }
@@ -85,7 +85,7 @@ silex.controller.FileMenuController.prototype.newFile = function(opt_cbk, opt_er
       onSuccess();
     },
     error: err => {
-      console.log('loading templates error');
+      console.error('loading templates error');
       onError(err);
     },
   });
