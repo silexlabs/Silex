@@ -46,39 +46,66 @@ silex.controller.FileMenuController.prototype.newFile = function(opt_cbk, opt_er
 
   this.tracker.trackAction('controller-events', 'request', 'file.new', 0);
 
-  this.model.file.newFile(goog.bind(function(rawHtml) {
-    this.model.file.setHtml(rawHtml, goog.bind(function() {
-      // undo redo reset
-      this.undoReset();
-      this.fileOperationSuccess(null, true);
-      // QOS, track success
-      this.tracker.trackAction('controller-events', 'success', 'file.new', 1);
-      if (opt_cbk) {
-        opt_cbk();
-      }
-    }, this));
-  }, this), goog.bind(function(error) {
-    this.tracker.trackAction('controller-events', 'error', 'file.new', -1);
+  const onError = (err) => {
     if (opt_errorCbk) {
-      opt_errorCbk(error);
+      opt_errorCbk(err);
     }
-  }, this));
+    this.tracker.trackAction('controller-events', 'error', 'file.new', -1);
+  };
+  const onSuccess = () => {
+    // QOS, track success
+    this.tracker.trackAction('controller-events', 'success', 'file.new', 1);
+    if(opt_cbk) {
+      opt_cbk();
+    }
+  };
+  this.view.newWebsiteDialog.openDialog({
+    close: url => {
+      if(!url && !this.model.file.hasContent()) {
+        // if the user closes the dialog and no website is being edited
+        // then load default blank website
+        // otherwise just close the dialog
+        url = 'http://silex-blank-templates.silex.me/blank/editable.html';
+      }
+      if(url) {
+        this.model.file.openFromUrl(url, rawHtml => {
+          this.model.file.setHtml(rawHtml, () => {
+            // undo redo reset
+            this.undoReset();
+            this.fileOperationSuccess(null, true);
+            onSuccess();
+          }, true);
+        }, err => {
+          console.error('opening template error');
+          onError(err);
+        });
+      }
+    },
+    ready: () => {
+      onSuccess();
+    },
+    error: err => {
+      console.error('loading templates error');
+      onError(err);
+    },
+  });
 };
 
 
 /**
  * open a file
- * @param {?function()=} opt_cbk
+ * @param {?function(string)=} opt_cbk
  * @param {?function(Object)=} opt_errorCbk
+ * @param {?function()=} opt_cancelCbk
  */
-silex.controller.FileMenuController.prototype.openFile = function(opt_cbk, opt_errorCbk) {
+silex.controller.FileMenuController.prototype.openFile = function(opt_cbk, opt_errorCbk, opt_cancelCbk) {
   // QOS, track success
   this.tracker.trackAction('controller-events', 'request', 'file.open', 0);
   // let the user choose the file
   this.view.fileExplorer.openDialog(
-      goog.bind(function(url) {
-        this.model.file.open(url, goog.bind(function(rawHtml) {
-          this.model.file.setHtml(rawHtml, goog.bind(function() {
+      url => {
+        this.model.file.open(url, rawHtml => {
+          this.model.file.setHtml(rawHtml, () => {
             // undo redo reset
             this.undoReset();
             // display and redraw
@@ -86,25 +113,28 @@ silex.controller.FileMenuController.prototype.openFile = function(opt_cbk, opt_e
             // QOS, track success
             this.tracker.trackAction('controller-events', 'success', 'file.open', 1);
             if (opt_cbk) {
-              opt_cbk();
+              opt_cbk(url);
             }
-          }, this));
-        }, this),
-        goog.bind(function(error) {
+          });
+        },
+        error => {
           silex.utils.Notification.notifyError('Error: I did not manage to open this file. \n' + (error.message || ''));
           this.tracker.trackAction('controller-events', 'error', 'file.open', -1);
           if (opt_errorCbk) {
             opt_errorCbk(error);
           }
-        }, this));
-      }, this),
+        });
+      },
       {'mimetype': 'text/html'},
-      goog.bind(function(error) {
+      error => {
         this.tracker.trackAction('controller-events', 'error', 'file.open', -1);
         if (opt_errorCbk) {
           opt_errorCbk(error);
         }
-      }, this));
+      },
+      () => {
+        if(opt_cancelCbk) opt_cancelCbk();
+      });
 };
 
 

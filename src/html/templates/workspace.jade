@@ -10,8 +10,6 @@
   // menu
   include ./menu.jade
 
-  .tip-of-the-day.hidden-dialog
-
   // vertical splitter
   .vertical-splitter
     .knob
@@ -30,10 +28,15 @@
 
   // dialogs background
   .dialogs-background
+  .silex-modal-dialogs-background
 
   // settings
   .silex-settings-dialog.hidden-dialog
     include ./settings-dialog.jade
+
+  // newwebsite
+  .silex-newwebsite-dialog
+    include ./newwebsite-dialog.jade
 
   // html editor
   .silex-html-editor.ace-editor-container.notranslate.hidden-dialog

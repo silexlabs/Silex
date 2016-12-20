@@ -191,8 +191,13 @@ silex.controller.EditMenuController.prototype.pasteSelection = function() {
  */
 silex.controller.EditMenuController.prototype.recursivePaste = function(clipboardItem) {
   var element = clipboardItem.element.cloneNode(true);
+  var componentData = this.model.property.getComponentData(clipboardItem.element);
   // reset the ID
   this.model.property.initSilexId(element);
+  // init component props
+  if(componentData) {
+    this.model.property.setComponentData(element, componentData);
+  }
   // keep the original style
   this.model.property.setStyle(element, clipboardItem.style);
   // add its children

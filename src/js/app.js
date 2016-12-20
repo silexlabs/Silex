@@ -1,3 +1,4 @@
+
 /**
  * @preserve
  * Silex, live web creation
@@ -22,8 +23,6 @@
 
 goog.provide('silex.App');
 
-goog.require('silex.model.Property');
-goog.require('silex.model.Element');
 goog.require('goog.dom');
 goog.require('goog.dom.classes');
 goog.require('goog.dom.classlist');
@@ -46,6 +45,7 @@ goog.require('silex.controller.ToolMenuController');
 goog.require('silex.controller.ViewMenuController');
 goog.require('silex.model.Body');
 goog.require('silex.model.Element');
+goog.require('silex.model.Component');
 goog.require('silex.model.File');
 goog.require('silex.model.Head');
 goog.require('silex.model.Page');
@@ -67,16 +67,16 @@ goog.require('silex.view.PageTool');
 goog.require('silex.view.PropertyTool');
 goog.require('silex.view.Splitter');
 goog.require('silex.view.Stage');
-goog.require('silex.view.TipOfTheDay');
 goog.require('silex.view.Workspace');
 goog.require('silex.view.dialog.CssEditor');
 goog.require('silex.view.dialog.FileExplorer');
 goog.require('silex.view.dialog.HtmlEditor');
 goog.require('silex.view.dialog.JsEditor');
 goog.require('silex.view.dialog.SettingsDialog');
+goog.require('silex.view.dialog.NewWebsiteDialog');
 goog.require('silex.view.dialog.TextEditor');
 
-
+goog.require('silex.view.ModalDialog');
 
 /**
  * Defines the entry point of Silex client application
@@ -140,6 +140,7 @@ class App {
     this.view.jsEditor.buildUi();
     this.view.textEditor.buildUi();
     this.view.settingsDialog.buildUi();
+    this.view.newWebsiteDialog.buildUi();
     this.view.propertyTool.buildUi();
 
 
@@ -153,7 +154,19 @@ class App {
     this.view.workspace.redraw(this.view);
 
     // application start, open a new empty file
-    this.controller.fileMenuController.newFile(() => this.view.workspace.loadingDone());
+    this.controller.fileMenuController.newFile(
+      () => {
+        this.view.workspace.loadingDone();
+        this.initDebug();
+      },
+      () => {
+        this.view.workspace.loadingDone();
+        this.initDebug();
+      }
+    );
+  }
+
+  initDebug() {
     if (goog.DEBUG) {
       window['model'] = this.model;
       window['view'] = this.view;
@@ -225,7 +238,12 @@ class App {
     /** @type {silex.view.dialog.SettingsDialog} */
     var settingsDialog = new silex.view.dialog.SettingsDialog(settingsDialogElement, this.model, this.controller);
 
-    // SettingsDialog
+    // NewWebsiteDialog
+    var newWebsiteDialogElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-newwebsite-dialog'));
+    /** @type {silex.view.dialog.NewWebsiteDialog} */
+    var newWebsiteDialog = new silex.view.dialog.NewWebsiteDialog(newWebsiteDialogElement, this.model, this.controller);
+
+    // FileExplorer
     var fileExplorerElement = /** @type {!Element} */ (document.getElementById('silex-file-explorer'));
     /** @type {silex.view.dialog.FileExplorer} */
     var fileExplorer = new silex.view.dialog.FileExplorer(fileExplorerElement, this.model, this.controller);
@@ -249,11 +267,6 @@ class App {
     propSplitter.addLeft(stageElement);
     propSplitter.addRight(propertyToolElement);
 
-    // tip of the day
-    var tipOfTheDayElement = /** @type {!Element} */ (goog.dom.getElementByClass('tip-of-the-day'));
-    /** @type {silex.view.TipOfTheDay} */
-    var tipOfTheDay = new silex.view.TipOfTheDay(tipOfTheDayElement, this.model, this.controller);
-
     // init the view class which references all the views
     this.view.init(
         menu,
@@ -268,6 +281,7 @@ class App {
         textEditor,
         fileExplorer,
         settingsDialog,
+        newWebsiteDialog,
         propSplitter,
         workspace
     );
@@ -286,6 +300,7 @@ class App {
         new silex.model.Body(this.model, this.view),
         new silex.model.Page(this.model, this.view),
         new silex.model.Element(this.model, this.view),
+        new silex.model.Component(this.model, this.view),
         new silex.model.Property(this.model, this.view)
     );
   }

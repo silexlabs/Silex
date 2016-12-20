@@ -1,0 +1,79 @@
+@modalDialogsMargin: 50px;
+@modalDialogZIndexFront: 200;
+@modalDialogZIndexBack: 110;
+
+.silex-modal-dialog {
+  z-index: @modalDialogZIndexFront;
+  display: flex;
+  flex-direction: column;
+  .header, .body {
+    padding: 0 35px;
+    color: @silexlightergrey;
+    font-size: 20px;
+    font-weight: lighter;
+  }
+  .header h1 {
+    display: inline-block;
+    padding: 17px 0;
+    margin: 0;
+    font-size: 20px;
+    font-weight: 400;
+  }
+  .body {
+    overflow: auto;
+    flex: 1 1 auto;
+    border-top: 1px solid #2F2F2F;
+    h2 {
+      font-size: 18px;
+    }
+    background-color: @silexmediumgrey;
+  }
+
+  background-color: @silexmediumdarkgrey;
+  border-color: @silexdarkgrey;
+  border-style: solid;
+  border-width: 1px;
+  -moz-box-shadow: rgba(0, 0, 0, 0.2) 0 4px 16px 0;
+  -webkit-box-shadow: rgba(0, 0, 0, 0.2) 0 4px 16px 0;
+  box-shadow: rgba(0, 0, 0, 0.2) 0 4px 16px 0;
+
+  position: absolute;
+  top: @modalDialogsMargin;
+  left: @modalDialogsMargin;
+  right: @modalDialogsMargin;
+  bottom: @modalDialogsMargin;
+  .pane > ul {
+    padding: 0;
+  }
+  .close-btn {
+    background: url("../assets/goog-ui/close.png") no-repeat center center;
+    width: 30px;
+    display: inline-block;
+    border: 0;
+    padding: 0;
+    margin-top: 15px;
+    margin-right: 10px;
+    height: 30px;
+    cursor: pointer;
+    right: 15px;
+    position: absolute;
+  }
+}
+.silex-hide-dialog {
+  display: none;
+}
+
+.silex-modal-dialogs-background {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: white;
+  opacity: .5;
+  z-index: @modalDialogZIndexBack;
+//  cursor: pointer;
+}
+.silex-hide-dialog-background .silex-modal-dialogs-background {
+  display: none;
+}

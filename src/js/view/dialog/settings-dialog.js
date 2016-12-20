@@ -40,8 +40,10 @@ silex.view.dialog.SettingsDialog = function(element, model, controller) {
   goog.base(this, element, model, controller);
   // set the visibility css class
   this.visibilityClass = 'settings-editor';
+  // do init stuff
+  this.init();
   // init the navigation
-  this.element.classList.add('general-pane-visible');
+  this.element.classList.add(this.paneCssClasses[0] + '-visible');
   // init the editor
   this.publicationPath = '';
   this.title = '';
@@ -49,7 +51,15 @@ silex.view.dialog.SettingsDialog = function(element, model, controller) {
   var leftPane = goog.dom.getElementByClass('left-pane');
   goog.events.listen(
       leftPane, goog.events.EventType.CLICK, this.onNavClick, false, this);
+};
 
+
+// inherit from silex.view.dialog.DialogBase
+goog.inherits(silex.view.dialog.SettingsDialog, silex.view.dialog.DialogBase);
+
+
+silex.view.dialog.SettingsDialog.prototype.init = function() {
+  this.paneCssClasses = silex.view.dialog.SettingsDialog.PANE_CSS_CLASSES;
   // input text fields
   this.bindTextField('.general-pane .input-title', (v) => this.controller.settingsDialogController.setTitle(v));
   this.bindTextField('.social-pane .input-title', (v) => this.controller.settingsDialogController.setTitleSocial(v));
@@ -75,10 +85,6 @@ silex.view.dialog.SettingsDialog = function(element, model, controller) {
     this.controller.settingsDialogController.browsePublishPath(() => this.openEditor());
   });
 };
-
-// inherit from silex.view.dialog.DialogBase
-goog.inherits(silex.view.dialog.SettingsDialog, silex.view.dialog.DialogBase);
-
 
 /**
  * constant for all pane css classes
@@ -130,7 +136,7 @@ silex.view.dialog.SettingsDialog.prototype.onNavClick = function(e) {
  */
 silex.view.dialog.SettingsDialog.prototype.openPane = function(paneCssClass) {
   // close all panes
-  silex.view.dialog.SettingsDialog.PANE_CSS_CLASSES.forEach(className => this.element.classList.remove(className + '-visible'));
+  this.paneCssClasses.forEach(className => this.element.classList.remove(className + '-visible'));
   // open the one we want
   this.element.classList.add(paneCssClass + '-visible');
 };
@@ -344,7 +350,9 @@ silex.view.dialog.SettingsDialog.prototype.openDialog = function(opt_cbk, opt_pa
 silex.view.dialog.SettingsDialog.prototype.openEditor = function() {
   // call super
   goog.base(this, 'openEditor');
-  this.setPublicationPath(this.model.head.getPublicationPath());
+try{
+ this.setPublicationPath(this.model.head.getPublicationPath());
+} catch(e){}
 };
 
 
