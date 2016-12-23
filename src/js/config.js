@@ -172,8 +172,8 @@ silex.Config.menu = {
         id: 'file.new',
         className: 'menu-item-file-new',
         globalKey: goog.events.KeyCodes.N,
-        shortcut: [[goog.events.KeyCodes.N, altKeyMac || ctrlKeyPC]],
-        tooltip: altKeyMacDisplay + ctrlKeyPCDisplay + 'n',
+        shortcut: [[goog.events.KeyCodes.N, altKeyModifyer]],
+        tooltip: altKeyDisplay + 'n',
         mnemonic: goog.events.KeyCodes.N,
         accelerator: 'n'
       },
