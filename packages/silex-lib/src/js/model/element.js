@@ -680,13 +680,16 @@ silex.model.Element.prototype.addElementDefaultPosition = function(element, opt_
 
 /**
  * find the best drop zone at a given position
+ * NEW: drop in the body directly since containers have their own z-index
+ *      and the element is partly hidden sometimes if we drop it in a container
  * @param  {number} x position in px
  * @param  {number} y position in px
  * @return {Element} the container element under (x, y)
  */
 silex.model.Element.prototype.getBestContainerForNewElement = function(x, y) {
-  let dropZone = this.view.stage.getDropZone(x, y) || {'element': this.view.stage.bodyElement, 'zIndex': 0};
-  return dropZone.element;
+  // let dropZone = this.view.stage.getDropZone(x, y) || {'element': this.model.body.getBodyElement(), 'zIndex': 0};
+  // return dropZone.element;
+  return this.model.body.getBodyElement();
 };
 
 
