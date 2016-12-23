@@ -10,14 +10,17 @@
     margin-left: 20px;
     font-weight: 100;
     font-size: 16px;
-    font-family: sans-serif;
     text-decoration: none;
     color: @silexlightergrey;
+    opacity: .7;
     &:hover {
-      text-decoration: underline;
+      opacity: 1;
     }
-    &:before {
+    .icon:before {
       padding: 0 5px;
+    }
+    .label:hover {
+      text-decoration: underline;
     }
   }
   .pane {
