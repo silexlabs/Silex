@@ -417,7 +417,7 @@ silex.model.File.prototype.getHtmlGenerator = function* () {
  * will not be able to save
  * @param {string} url
  * @param {?function(string)=} opt_cbk
- * @param {?function(Object)=} opt_errCbk
+ * @param {?function(Object, string)=} opt_errCbk
  * @expose
  */
 silex.model.File.prototype.openFromUrl = function(url, opt_cbk, opt_errCbk) {

@@ -150,6 +150,13 @@ silex.view.dialog.NewWebsiteDialog.prototype.buildUi = function() {
   // click event
   const body = this.element.querySelector('.body');
   body.onclick = e => {
+    // let the file picker init
+    // this is a workaround to prevent cloud explorer to throw an error on write
+    // FIXME: remove this with the new cloud explorer version
+    const filePicker = silex.service.CloudStorage.getInstance().filePicker;
+    filePicker['ctrl']['show']();
+    filePicker['ctrl']['hide']();
+    // listen for a click in the list of recent files
     const a = e.target;
     this.selected = a.getAttribute('data-editable');
     if(this.selected) {
