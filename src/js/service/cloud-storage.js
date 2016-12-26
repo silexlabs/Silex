@@ -30,8 +30,6 @@ goog.require('goog.net.XhrIo');
  */
 silex.service.CloudStorage = function() {
   this.filePicker = ce.api.CloudExplorer.get('silex-file-explorer');
-  // debug
-  window['silexFilePicker'] = this.filePicker;
 };
 goog.addSingletonGetter(silex.service.CloudStorage);
 
