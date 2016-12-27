@@ -192,6 +192,7 @@ a:focus{ outline: none;}
   body.silex-runtime.enable-mobile .editable-style,
   body.silex-runtime.enable-mobile .background.background-initial {
     max-width: 100%;
+    min-width: auto; /* this is to remove sections min-width, since section min-width is set to the witdh of its content in Element::setStyle() */
   }
 }
 
