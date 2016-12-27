@@ -322,6 +322,10 @@ silex.model.Element.prototype.setStyle = function(element, styleName, opt_styleV
   if(styleName === 'width' && this.isSection(element)) {
     return;
   }
+  // set a min-width style to sections so that they are always larger than their content container
+  if(styleName === 'width' && this.isSectionContent(element) && !this.view.workspace.getMobileEditor()) {
+    this.setStyle(/** @type {Element} */ (element.parentNode), 'min-width', opt_styleValue);
+  }
   // apply height to section and not section container content
   if(styleName === 'min-height' && this.isSectionContent(element)) {
     element = /** @type {Element} */ (element.parentNode);
