@@ -311,12 +311,13 @@ silex.model.Element.prototype.getStyle = function(element, styleName, opt_comput
  * @param  {Element} element            created by silex, either a text box, image, ...
  * @param  {string}  styleName          the style name, camel case, not css with dashes
  * @param  {?string=}  opt_styleValue     the value for this styleName
+ * @param  {?boolean=}  opt_preserveJustAdded     if true, do not remove the "just added" css class, default is false
  */
-silex.model.Element.prototype.setStyle = function(element, styleName, opt_styleValue) {
+silex.model.Element.prototype.setStyle = function(element, styleName, opt_styleValue, opt_preserveJustAdded) {
   // convert to css case
   styleName = goog.string.toSelectorCase(styleName);
   // remove the 'just pasted' class
-  element.classList.remove(silex.model.Element.JUST_ADDED_CLASS_NAME);
+  if(!opt_preserveJustAdded) element.classList.remove(silex.model.Element.JUST_ADDED_CLASS_NAME);
   // do not apply width to sections
   if(styleName === 'width' && this.isSection(element)) {
     return;
@@ -556,6 +557,9 @@ silex.model.Element.prototype.setImageUrl = function(element, url, opt_callback,
           function(e) {
             // handle the loaded image
             img = e.target;
+            // update element size
+            this.setStyle(element, 'width', Math.max(silex.model.Element.MIN_WIDTH, img.naturalWidth) + 'px', true);
+            this.setStyle(element, 'minHeight', Math.max(silex.model.Element.MIN_HEIGHT, img.naturalHeight) + 'px', true);
             // callback
             if (opt_callback) {
               opt_callback(element, img);
