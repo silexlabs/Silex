@@ -62,6 +62,7 @@ silex.view.dialog.SettingsDialog.prototype.init = function() {
   this.paneCssClasses = silex.view.dialog.SettingsDialog.PANE_CSS_CLASSES;
   // input text fields
   this.bindTextField('.general-pane .input-title', (v) => this.controller.settingsDialogController.setTitle(v));
+  this.bindTextField('.general-pane .input-site-width', (v) => this.controller.settingsDialogController.setWebsiteWidth(v));
   this.bindTextField('.social-pane .input-title', (v) => this.controller.settingsDialogController.setTitleSocial(v));
   this.bindTextField('.general-pane .input-description', (v) => this.controller.settingsDialogController.setDescription(v));
   this.bindTextField('.social-pane .input-description', (v) => this.controller.settingsDialogController.setDescriptionSocial(v));
@@ -279,6 +280,16 @@ silex.view.dialog.SettingsDialog.prototype.getPublicationPath = function() {
  */
 silex.view.dialog.SettingsDialog.prototype.setEnableMobile = function(enabled) {
   this.mobileCheckbox.setChecked(enabled);
+};
+
+
+/**
+ * set the website width
+ * @see silex.model.Head
+ * @param {?string=} opt_value
+ */
+silex.view.dialog.SettingsDialog.prototype.setWebsiteWidth = function(opt_value) {
+  this.setInputValue('.general-pane .input-site-width', opt_value);
 };
 
 

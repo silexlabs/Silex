@@ -147,7 +147,7 @@ silex.model.Element.ELEMENT_CONTENT_CLASS_NAME = 'silex-element-content';
  * @const
  * @type {string}
  */
-silex.model.Element.DEFAULT_SITE_WIDTH_CLASS_NAME = 'default-site-width'
+silex.model.Element.WEBSITE_WIDTH_CLASS_NAME = 'website-width'
 
 
 /**
@@ -821,7 +821,7 @@ silex.model.Element.prototype.createSectionElement = function() {
   };
   content.classList.add(silex.model.Body.EDITABLE_CLASS_NAME);
   content.classList.add(silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
-  content.classList.add(silex.model.Element.DEFAULT_SITE_WIDTH_CLASS_NAME);
+  content.classList.add(silex.model.Element.WEBSITE_WIDTH_CLASS_NAME);
   this.model.property.initSilexId(content, this.model.file.getContentDocument());
   this.model.property.setStyle(content, styleObject, false);
   content.classList.add(silex.model.Element.TYPE_CONTAINER_CONTENT);
