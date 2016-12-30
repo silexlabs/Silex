@@ -470,3 +470,4 @@ silex.model.Page.prototype.isInPage = function(element, opt_pageName) {
   }
   return goog.dom.classlist.contains(element, opt_pageName);
 };
+
