@@ -75,8 +75,9 @@ silex.controller.FileMenuController.prototype.newFile = function(opt_cbk, opt_er
             this.fileOperationSuccess(null, true);
             onSuccess();
           }, true);
-        }, err => {
-          console.error('opening template error');
+        }, (err, msg) => {
+          console.error('opening template error', err);
+          silex.utils.Notification.alert('An error occured, I could not open the file. ' + msg, () => this.newFile(opt_cbk, opt_errorCbk));
           onError(err);
         });
       }

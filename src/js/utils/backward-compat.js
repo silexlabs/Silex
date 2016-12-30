@@ -225,7 +225,9 @@ silex.utils.BackwardCompat.to2_2_6 = function(version, doc, model, cbk) {
     jsonStyleTag.innerHTML = JSON.stringify(arr);
     model.property.loadProperties(doc);
   }
-
+  // rename class which changed soon after release
+  let oldClasses = doc.querySelectorAll('.default-site-width');
+  goog.array.forEach(oldClasses, el => el.classList.add('website-width') || el.classList.remove('default-site-width'));
   cbk();
 };
 

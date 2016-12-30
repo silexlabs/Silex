@@ -218,39 +218,6 @@ silex.model.Body.prototype.setEditable = function(rootElement, isEditable) {
       this.initUiHandles(element);
     }
   }, this);
-
-  // prevent the user from following links
-  var links = rootElement.querySelectorAll('a');
-  goog.array.forEach(links, function(element) {
-    goog.events.listen(element, goog.events.EventType.CLICK, function(e) {
-      e.preventDefault();
-    }, false, this);
-  }, this);
-
-  // add a div on top of the HTML content elements in order to
-  // prevent interactions with iframes and html content while editing
-  // start by removing all
-  var coverElements = rootElement.querySelectorAll('.html-element>.temp-editable-cover');
-  goog.array.forEach(coverElements, function(element) {
-    goog.dom.removeNode(element);
-  }, this);
-  // then add one in each HTML element
-  var htmlContentElements = rootElement.querySelectorAll('.html-element');
-  goog.array.forEach(htmlContentElements, function(element) {
-    // create the cover element
-    let cover = goog.dom.createElement('div');
-    goog.dom.classlist.add(cover, 'temp-editable-cover');
-    // insert cover on top of all elements
-    goog.dom.insertChildAt(element, cover, 0);
-  }, this);
-  // handle the root element itself
-  if (rootElement.getAttribute(silex.model.Body.SILEX_TYPE_ATTR_NAME) === silex.model.Element.TYPE_HTML) {
-    // create the cover element
-    let cover = goog.dom.createElement('div');
-    goog.dom.classlist.add(cover, 'temp-editable-cover');
-    // insert cover on top of all elements
-    goog.dom.insertChildAt(rootElement, cover, 0);
-  }
 };
 
 
@@ -278,10 +245,6 @@ silex.model.Body.prototype.removeEditableClasses = function(rootElement) {
 
     // remove html elements added by the editable.js plugin
     elements = goog.dom.getElementsByClass('ui-resizable-handle', rootElement);
-    goog.array.forEach(elements, function(element) {
-      goog.dom.removeNode(element);
-    }, this);
-    elements = goog.dom.getElementsByClass('temp-editable-cover', rootElement);
     goog.array.forEach(elements, function(element) {
       goog.dom.removeNode(element);
     }, this);
