@@ -313,8 +313,8 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, pageNames
       // there is a selection
       item.checkbox.setEnabled(true);
       // compute common pages
-      var isInPage = this.getCommonProperty(selectedElements, function(element) {
-        return goog.dom.classlist.contains(element, item.pageName);
+      var isInPage = this.getCommonProperty(selectedElements, element => {
+        return this.model.page.isInPage(element, item.pageName);
       });
       // set visibility
       isInNoPage = isInNoPage && isInPage === false;
@@ -402,14 +402,6 @@ silex.view.pane.PagePane.prototype.checkAllPages = function() {
   this.viewOnAllPagesCheckbox.setChecked(true);
 };
 
-silex.view.pane.PagePane.prototype.isInNoPage = function() {
-  return this.selectedElements.reduce((prev, element) => {
-    if(this.model.element.isSectionContent(element)) {
-      element = /** @type {Element} */ (element.parentNode);
-    }
-    return prev && !goog.dom.classlist.contains(element, silex.model.Page.PAGED_CLASS_NAME);
-  }, true);
-};
 
 silex.view.pane.PagePane.prototype.removeFromAllPages = function() {
   this.pageCheckboxes.forEach(item => {
