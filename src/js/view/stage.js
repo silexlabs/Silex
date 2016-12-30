@@ -1090,8 +1090,11 @@ silex.view.Stage.prototype.moveElements = function(elements, offsetX, offsetY) {
 
 
 /**
- *
+ * helper for other views,
+ * because views (view.workspace.get/setMobileEditor) is not accessible from other views
+ * FIXME: find another way to expose isMobileEditor to views
  */
 silex.view.Stage.prototype.isMobileMode = function() {
   return goog.dom.classlist.contains(document.body, 'mobile-mode');
 };
+
