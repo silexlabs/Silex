@@ -30,8 +30,6 @@ goog.require('goog.net.XhrIo');
  */
 silex.service.CloudStorage = function() {
   this.filePicker = ce.api.CloudExplorer.get('silex-file-explorer');
-  // debug
-  window['silexFilePicker'] = this.filePicker;
 };
 goog.addSingletonGetter(silex.service.CloudStorage);
 
@@ -123,18 +121,31 @@ silex.service.CloudStorage.prototype.load = function(url, cbk, opt_errCbk) {
  * load data
  * @param  {string} url
  * @param  {function(string)} cbk
- * @param  {?function(Object)=} opt_errCbk
+ * @param  {?function(Object, string)=} opt_errCbk
  */
 silex.service.CloudStorage.prototype.loadLocal = function(url, cbk, opt_errCbk) {
   const oReq = new XMLHttpRequest();
   oReq.addEventListener('load', e => {
     // success of the request
-    cbk(oReq.responseText);
+    if(oReq.status === 200) cbk(oReq.responseText);
+    else {
+      const err = new Event('error');
+      let msg = '';
+      switch(oReq.status) {
+        case 404: msg = 'File not found.';
+        break;
+        case 401: msg = 'You are not connected to the cloud service you try to use.';
+        break;
+        default: msg = 'Unknown error with HTTP status ' + oReq.status;
+      }
+      err.currentTarget = err.target = oReq;
+      opt_errCbk(err, msg);
+    }
   });
   oReq.addEventListener('error', e => {
     console.error('could not load website', url, e);
     if (opt_errCbk) {
-      opt_errCbk(e);
+      opt_errCbk(e, 'Network error, please check your internet connection or try again later.');
     }
   });
   oReq.open('GET', url);

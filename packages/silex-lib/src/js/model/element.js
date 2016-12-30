@@ -147,7 +147,7 @@ silex.model.Element.ELEMENT_CONTENT_CLASS_NAME = 'silex-element-content';
  * @const
  * @type {string}
  */
-silex.model.Element.DEFAULT_SITE_WIDTH_CLASS_NAME = 'default-site-width'
+silex.model.Element.WEBSITE_WIDTH_CLASS_NAME = 'website-width'
 
 
 /**
@@ -311,15 +311,20 @@ silex.model.Element.prototype.getStyle = function(element, styleName, opt_comput
  * @param  {Element} element            created by silex, either a text box, image, ...
  * @param  {string}  styleName          the style name, camel case, not css with dashes
  * @param  {?string=}  opt_styleValue     the value for this styleName
+ * @param  {?boolean=}  opt_preserveJustAdded     if true, do not remove the "just added" css class, default is false
  */
-silex.model.Element.prototype.setStyle = function(element, styleName, opt_styleValue) {
+silex.model.Element.prototype.setStyle = function(element, styleName, opt_styleValue, opt_preserveJustAdded) {
   // convert to css case
   styleName = goog.string.toSelectorCase(styleName);
   // remove the 'just pasted' class
-  element.classList.remove(silex.model.Element.JUST_ADDED_CLASS_NAME);
+  if(!opt_preserveJustAdded) element.classList.remove(silex.model.Element.JUST_ADDED_CLASS_NAME);
   // do not apply width to sections
   if(styleName === 'width' && this.isSection(element)) {
     return;
+  }
+  // set a min-width style to sections so that they are always larger than their content container
+  if(styleName === 'width' && this.isSectionContent(element) && !this.view.workspace.getMobileEditor()) {
+    this.setStyle(/** @type {Element} */ (element.parentNode), 'min-width', opt_styleValue);
   }
   // apply height to section and not section container content
   if(styleName === 'min-height' && this.isSectionContent(element)) {
@@ -556,6 +561,9 @@ silex.model.Element.prototype.setImageUrl = function(element, url, opt_callback,
           function(e) {
             // handle the loaded image
             img = e.target;
+            // update element size
+            this.setStyle(element, 'width', Math.max(silex.model.Element.MIN_WIDTH, img.naturalWidth) + 'px', true);
+            this.setStyle(element, 'minHeight', Math.max(silex.model.Element.MIN_HEIGHT, img.naturalHeight) + 'px', true);
             // callback
             if (opt_callback) {
               opt_callback(element, img);
@@ -680,13 +688,16 @@ silex.model.Element.prototype.addElementDefaultPosition = function(element, opt_
 
 /**
  * find the best drop zone at a given position
+ * NEW: drop in the body directly since containers have their own z-index
+ *      and the element is partly hidden sometimes if we drop it in a container
  * @param  {number} x position in px
  * @param  {number} y position in px
  * @return {Element} the container element under (x, y)
  */
 silex.model.Element.prototype.getBestContainerForNewElement = function(x, y) {
-  let dropZone = this.view.stage.getDropZone(x, y) || {'element': this.view.stage.bodyElement, 'zIndex': 0};
-  return dropZone.element;
+  // let dropZone = this.view.stage.getDropZone(x, y) || {'element': this.model.body.getBodyElement(), 'zIndex': 0};
+  // return dropZone.element;
+  return this.model.body.getBodyElement();
 };
 
 
@@ -810,7 +821,7 @@ silex.model.Element.prototype.createSectionElement = function() {
   };
   content.classList.add(silex.model.Body.EDITABLE_CLASS_NAME);
   content.classList.add(silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
-  content.classList.add(silex.model.Element.DEFAULT_SITE_WIDTH_CLASS_NAME);
+  content.classList.add(silex.model.Element.WEBSITE_WIDTH_CLASS_NAME);
   this.model.property.initSilexId(content, this.model.file.getContentDocument());
   this.model.property.setStyle(content, styleObject, false);
   content.classList.add(silex.model.Element.TYPE_CONTAINER_CONTENT);

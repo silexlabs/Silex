@@ -134,6 +134,17 @@ silex.controller.SettingsDialogController.prototype.toggleEnableMobile =
 
 
 /**
+ * set website width
+ * @param {?string=} opt_data
+ */
+silex.controller.SettingsDialogController.prototype.setWebsiteWidth = function(opt_data) {
+  // undo checkpoint
+  this.undoCheckPoint();
+  this.model.head.setWebsiteWidth(opt_data);
+};
+
+
+/**
  * callback for the publication path text input
  * @param {?string=} opt_data
  */
@@ -208,3 +219,4 @@ silex.controller.SettingsDialogController.prototype.setTwitterSocial = function(
   this.undoCheckPoint();
   this.model.head.setTwitterSocial(opt_data);
 };
+

@@ -233,9 +233,6 @@ silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
         // load the image
         this.model.element.setImageUrl(img, url,
             goog.bind(function(element, imgElement) {
-              // update element size
-              this.model.element.setStyle(element, 'width', Math.max(silex.model.Element.MIN_WIDTH, imgElement.naturalWidth) + 'px');
-              this.model.element.setStyle(element, 'minHeight', Math.max(silex.model.Element.MIN_HEIGHT, imgElement.naturalHeight) + 'px');
               this.tracker.trackAction('controller-events', 'success', 'insert.image', 1);
             }, this),
             goog.bind(function(element, message) {
