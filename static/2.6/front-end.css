@@ -38,7 +38,7 @@ body.compute-body-size-pending {
 .silex-element-content {
   pointer-events: none;
 }
-.section-element .silex-element-content {
+.section-element > .silex-element-content {
   /* section have a content element, and it needs to keep pointer events
      because it container other silex elements
   */
