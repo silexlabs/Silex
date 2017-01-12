@@ -228,6 +228,9 @@ silex.utils.BackwardCompat.to2_2_6 = function(version, doc, model, cbk) {
   // rename class which changed soon after release
   let oldClasses = doc.querySelectorAll('.default-site-width');
   goog.array.forEach(oldClasses, el => el.classList.add('website-width') || el.classList.remove('default-site-width'));
+  // add website-min-width class to sections, which changed soon after release
+  let sections = doc.querySelectorAll('.section-element');
+  goog.array.forEach(sections, el => el.classList.add('website-min-width'));
   cbk();
 };
 

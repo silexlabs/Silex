@@ -425,9 +425,13 @@ silex.model.Head.prototype.setWebsiteWidth = function(opt_value) {
       silexStyle.className = 'silex-style-settings';
       goog.dom.appendChild(this.getHeadElement(), silexStyle);
     }
+    const minWidth = parseInt(opt_value, 10) + 300;
     silexStyle.innerHTML = `
       .${silex.model.Element.WEBSITE_WIDTH_CLASS_NAME} {
         width: ${opt_value}px;
+      }
+      .${silex.model.Element.WEBSITE_MIN_WIDTH_CLASS_NAME} {
+        min-width: ${minWidth}px;
       }
     `;
   }
