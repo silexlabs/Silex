@@ -151,6 +151,15 @@ silex.model.Element.WEBSITE_WIDTH_CLASS_NAME = 'website-width'
 
 
 /**
+ * constant for the class name of the default site width, rule is set when setting is changed
+ * used to set a min-width to sections
+ * @const
+ * @type {string}
+ */
+silex.model.Element.WEBSITE_MIN_WIDTH_CLASS_NAME = 'website-min-width'
+
+
+/**
  * constant for the attribute name of the links
  * @const
  * @type {string}
@@ -286,9 +295,9 @@ silex.model.Element.prototype.getStyle = function(element, styleName, opt_comput
   if(cssName === 'width' && this.isSection(element)) {
     return null;
   }
-  // getStyle min-height of section content, return parent min-height
-  if(cssName === 'min-height' && this.isSectionContent(element)) {
-    element = /** @type {Element} */ (element.parentNode);
+  // getStyle min-height of section, return min-height of section content
+  if(cssName === 'min-height' && this.isSection(element)) {
+    element = /** @type {Element} */ (this.getContentNode(element));
   }
   const isMobile = this.view.workspace.getMobileEditor();
   let styleObject = this.model.property.getStyle(element, isMobile, opt_computed);
@@ -326,9 +335,9 @@ silex.model.Element.prototype.setStyle = function(element, styleName, opt_styleV
   if(styleName === 'width' && this.isSectionContent(element) && !this.view.workspace.getMobileEditor()) {
     this.setStyle(/** @type {Element} */ (element.parentNode), 'min-width', opt_styleValue);
   }
-  // apply height to section and not section container content
-  if(styleName === 'min-height' && this.isSectionContent(element)) {
-    element = /** @type {Element} */ (element.parentNode);
+  // apply height to section content and not section itself
+  if(styleName === 'min-height' && this.isSection(element)) {
+    element = /** @type {Element} */ (this.getContentNode(element));
   }
   // retrieve style
   var styleObject = this.model.property.getStyle(element);
@@ -813,6 +822,7 @@ silex.model.Element.prototype.createSectionElement = function() {
   element.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_CONTAINER);
   element.classList.add(silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME);
   element.classList.add(silex.model.Element.TYPE_CONTAINER + '-element');
+  element.classList.add(silex.model.Element.WEBSITE_MIN_WIDTH_CLASS_NAME);
   // content element is both a container and a content element
   var content = this.createContainerElement();
   var styleObject = {
