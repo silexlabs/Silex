@@ -295,9 +295,9 @@ silex.model.Element.prototype.getStyle = function(element, styleName, opt_comput
   if(cssName === 'width' && this.isSection(element)) {
     return null;
   }
-  // getStyle min-height of section content, return parent min-height
-  if(cssName === 'min-height' && this.isSectionContent(element)) {
-    element = /** @type {Element} */ (element.parentNode);
+  // getStyle min-height of section, return min-height of section content
+  if(cssName === 'min-height' && this.isSection(element)) {
+    element = /** @type {Element} */ (this.getContentNode(element));
   }
   const isMobile = this.view.workspace.getMobileEditor();
   let styleObject = this.model.property.getStyle(element, isMobile, opt_computed);
@@ -335,9 +335,9 @@ silex.model.Element.prototype.setStyle = function(element, styleName, opt_styleV
   if(styleName === 'width' && this.isSectionContent(element) && !this.view.workspace.getMobileEditor()) {
     this.setStyle(/** @type {Element} */ (element.parentNode), 'min-width', opt_styleValue);
   }
-  // apply height to section and not section container content
-  if(styleName === 'min-height' && this.isSectionContent(element)) {
-    element = /** @type {Element} */ (element.parentNode);
+  // apply height to section content and not section itself
+  if(styleName === 'min-height' && this.isSection(element)) {
+    element = /** @type {Element} */ (this.getContentNode(element));
   }
   // retrieve style
   var styleObject = this.model.property.getStyle(element);

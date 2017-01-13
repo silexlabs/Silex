@@ -146,11 +146,44 @@ silex.utils.BackwardCompat.hasToUpdate = function(initialVersion, targetVersion)
 silex.utils.BackwardCompat.to2_2_7 = function(version, doc, model, cbk) {
   if (silex.utils.BackwardCompat.hasToUpdate(version, [2, 2, 7])) {
     // rename class names because it changed
-    let oldClasses = doc.querySelectorAll('.default-site-width');
+    const oldClasses = doc.querySelectorAll('.default-site-width');
     goog.array.forEach(oldClasses, el => el.classList.add('website-width') || el.classList.remove('default-site-width'));
     // add website-min-width class to sections
-    let sections = doc.querySelectorAll('.section-element');
+    const sections = doc.querySelectorAll('.section-element');
     goog.array.forEach(sections, el => el.classList.add('website-min-width'));
+    // sections height is now set on sections containers
+    const elements = doc.querySelectorAll('.' + silex.model.Element.TYPE_SECTION + '-element');
+    goog.array.forEach(elements, element => {
+      const sectionId = model.property.getSilexId(element);
+      const sectionContentNode = model.element.getContentNode(element);
+      const sectionContentNodeId = model.property.getSilexId(sectionContentNode);
+
+      // init model.property object with the styles found in the JSON
+      model.property.loadProperties(doc);
+
+      // set min-height on the section content container
+      // and remove it from section
+      // for desktop styles
+      if(model.property.stylesObj[sectionId] && model.property.stylesObj[sectionId]['min-height']) {
+        model.property.stylesObj[sectionContentNodeId] = model.property.stylesObj[sectionContentNodeId] || {};
+        model.property.stylesObj[sectionContentNodeId]['min-height'] = model.property.stylesObj[sectionId]['min-height'];
+        model.property.stylesObj[sectionId]['min-height'] = '';
+        delete model.property.stylesObj[sectionId]['min-height'];
+      }
+
+      // same for mobile
+      if(model.property.mobileStylesObj[sectionId] && model.property.mobileStylesObj[sectionId]['min-height']) {
+        model.property.mobileStylesObj[sectionContentNodeId] = model.property.mobileStylesObj[sectionContentNodeId] || {};
+        model.property.mobileStylesObj[sectionContentNodeId]['min-height'] = model.property.mobileStylesObj[sectionId]['min-height'];
+        model.property.mobileStylesObj[sectionId]['min-height'] = '';
+        delete model.property.mobileStylesObj[sectionId]['min-height'];
+      }
+
+      // save the styles as JSON
+      model.property.saveProperties(doc);
+      // apply the new style from JSON to DOM
+      model.property.updateStylesInDom(doc);
+    });
   }
   cbk();
 };
