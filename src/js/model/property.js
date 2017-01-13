@@ -428,13 +428,13 @@ silex.model.Property.prototype.getAllStyles = function(doc) {
   goog.array.forEach(elements, function(element) {
     var elementId =  /** @type {string} */ (this.getSilexId(element));
     // desktop
-    let styleStr = silex.utils.Style.styleToString(this.getStyle(element, false), '\n    ');
+    let styleStr = silex.utils.Style.styleToString(this.stylesObj[elementId], '\n    ');
     if (styleStr != '') {
       styleStr = '.' + elementId + ' {' + styleStr + '\n}\n';
       allStyles += styleStr;
     }
     // mobile
-    styleStr = silex.utils.Style.styleToString(this.getStyle(element, true), '\n    ');
+    styleStr = silex.utils.Style.styleToString(this.mobileStylesObj[elementId], '\n    ');
     if (styleStr != '') {
       styleStr = '.' + elementId + ' {' + styleStr + '\n}\n';
       styleStr = '@media ' + silex.model.Property.MOBILE_MEDIA_QUERY + '{' + styleStr + '}';
