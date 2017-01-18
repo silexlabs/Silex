@@ -283,9 +283,31 @@ silex.model.Property.prototype.getComponentData = function(element) {
  * @param {?boolean=} opt_isMobile
  */
 silex.model.Property.prototype.setStyle = function(element, style, opt_isMobile) {
-  // do not apply width to sections
+  // styles of sections are special
   if(style && this.model.element.isSection(element)) {
-    delete style['width'];
+    if(style['width']) {
+      // do not apply width to sections
+      delete style['width'];
+    }
+    // apply height to section content and not section itself
+    const contentElement = /** @type {Element} */ (this.model.element.getContentNode(element));
+    const contentStyle = this.getStyle(contentElement, opt_isMobile);
+    if(style['min-height'] !== contentStyle['min-height']) {
+      contentStyle['min-height'] = style['min-height'];
+      this.setStyle(contentElement, contentStyle, opt_isMobile);
+    }
+    // do not apply min-height to the section itself
+    style['min-height'] = null;
+    delete style['min-height'];
+  }
+  if(style && this.model.element.isSectionContent(element) && !this.view.workspace.getMobileEditor()) {
+    // set a min-width style to sections so that they are always larger than their content container
+    const parentElement = /** @type {Element} */ (element.parentNode);
+    const parentStyle = this.getStyle(parentElement, opt_isMobile);
+    if(style['width'] !== parentStyle['min-width']) {
+      parentStyle['min-width'] = style['width'];
+      this.setStyle(parentElement, parentStyle, opt_isMobile);
+    }
   }
   var elementId =  /** @type {string} */ (this.getSilexId(element));
   var isMobile = opt_isMobile != null ? opt_isMobile : this.view.workspace.getMobileEditor()
@@ -350,32 +372,36 @@ silex.model.Property.prototype.setStyle = function(element, style, opt_isMobile)
  * @return {?Object} a clone of the style object
  */
 silex.model.Property.prototype.getStyle = function(element, opt_isMobile, opt_computed) {
+  let res = null;
   if (opt_computed === true) {
     let stylesObj = this.model.file.getContentWindow().getComputedStyle(element);
-    return silex.utils.Style.styleToObject(stylesObj);
-  }
-  var elementId =  /** @type {string} */ (this.getSilexId(element));
-  var isMobile = opt_isMobile;
-  if (typeof(opt_isMobile) === 'undefined') isMobile = this.view.workspace.getMobileEditor();
-  let res;
-  if (isMobile === true) {
-    res = this.mobileStylesObj[elementId];
+    res = silex.utils.Style.styleToObject(stylesObj);
   }
   else {
-    res = this.stylesObj[elementId];
+    var elementId =  /** @type {string} */ (this.getSilexId(element));
+    var isMobile = opt_isMobile;
+    if (typeof(opt_isMobile) === 'undefined') isMobile = this.view.workspace.getMobileEditor();
+    if (isMobile === true) {
+      res = this.mobileStylesObj[elementId];
+    }
+    else {
+      res = this.stylesObj[elementId];
+    }
+    if(res) {
+      // clone the style object
+      res = /** @type {Object} */ (JSON.parse(JSON.stringify(res)));
+    }
   }
-  if(res) {
-    // clone the style object
-    res = /** @type {Object} */ (JSON.parse(JSON.stringify(res)));
-    // do not apply width to sections
-    if(this.model.element.isSection(element)) {
-      res['width'] = undefined;
-    }
-    else if(this.model.element.isSectionContent(element)) {
-      const parent = /** @type {Element} */ (element.parentNode);
-      const parentStyle = this.getStyle(parent, isMobile, false);
-      res['min-height'] = parentStyle ? parentStyle['min-height'] : undefined;
-    }
+  // styles of sections are special
+  // the min-height of the section is stored on its content container
+  if(this.model.element.isSection(element)) {
+    // min-height of sections is the min-height of section content
+    const contentElement = /** @type {Element} */ (this.model.element.getContentNode(element));
+    const contentStyle = this.getStyle(contentElement, opt_isMobile, opt_computed);
+    res['min-height'] = contentStyle['min-height'];
+    // width of section is null
+    res['width'] = undefined;
+    delete res['width'];
   }
   return res;
 };
