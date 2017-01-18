@@ -109,7 +109,7 @@ silex.view.dialog.NewWebsiteDialog.prototype.renderTemplateList = function(ul, r
         infoEl.classList.add('fa', 'fa-info');
         infoEl.innerHTML = 'Info';
         infoEl.target = '_blank';
-        infoEl.href = `//${repo}.silex.me/${item.name}/README.md`;
+        infoEl.href = `https://github.com/silexlabs/${repo}/blob/gh-pages/${item.name}/README.md`;
         infoEl.setAttribute('data-action', 'info');
         ui.appendChild(infoEl);
 
