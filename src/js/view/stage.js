@@ -442,27 +442,32 @@ silex.view.Stage.prototype.handleMouseUp = function(target, x, y, shiftKey) {
     // new container
     let dropZone = this.getDropZone(x, y, true) || {'element': this.bodyElement, 'zIndex': 0};
     // move all selected elements to the new container
-    goog.array.forEach(this.selectedElements, function(element) {
+    this.selectedElements
+    .filter(element => element !== this.bodyElement)
+    .forEach(element => {
       if (!goog.dom.getAncestorByClass(element.parentNode, silex.model.Element.SELECTED_CLASS_NAME) &&
          !goog.dom.classlist.contains(element, silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME)) {
         this.controller.stageController.newContainer(dropZone.element, element);
       }
       this.cleanupElement(element);
-    }, this);
+    });
     // change z order
     //this.bringSelectionForward();
-    // reset dropzone marker
-    this.markAsDropZone(null);
   }
   // handle selection
   if (this.isDragging || this.isResizing) {
+    // reset dropzone marker
+    this.markAsDropZone(null);
     // update property tool box
     this.propertyChanged();
     // keep flags up to date
     this.isDragging = false;
     this.isResizing = false;
-    // style the body
-    goog.dom.classlist.remove(this.bodyElement, silex.model.Body.DRAGGING_CLASS_NAME);
+    // remove dragging style
+    const dragged = this.bodyElement.querySelectorAll('.' + silex.model.Body.DRAGGING_CLASS_NAME);
+    for (let idx = 0, el = null; el = dragged[idx]; ++idx) {
+      el.classList.remove(silex.model.Body.DRAGGING_CLASS_NAME);
+    }
   }
   // if not dragging, and on stage, then change selection
   else if (this.iAmClicking !== true) {
@@ -562,13 +567,12 @@ silex.view.Stage.prototype.onMouseMove = function(target, x, y, shiftKey) {
       }
       else {
         this.isDragging = true;
-        // dragging style
-        goog.dom.classlist.add(this.bodyElement, silex.model.Body.DRAGGING_CLASS_NAME);
-        // move to the body so that it is above everything
-        this.selectedElements.forEach(element => {
-          if(element.classList.contains(silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME)) {
-            return;
-          }
+        this.selectedElements
+        .filter(element => element !== this.bodyElement && !element.classList.contains(silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME))
+        .forEach(element => {
+          // dragging style
+          element.classList.add(silex.model.Body.DRAGGING_CLASS_NAME);
+          // move to the body so that it is above everything
           // move back to the same x, y position
           var elementPos = goog.style.getPageOffset(element);
           element.style.left = elementPos.x + 'px';
@@ -804,11 +808,14 @@ silex.view.Stage.prototype.followElementPosition =
       !this.isMobileMode() &&
       !goog.dom.getAncestorByClass(follower.parentNode, silex.model.Element.SELECTED_CLASS_NAME) &&
       !goog.dom.classlist.contains(follower, silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME)) {
-        let pos = goog.style.getPosition(follower);
-        let finalY = Math.round(pos.y + offsetY);
-        let finalX = Math.round(pos.x + offsetX);
-        this.controller.stageController.styleChanged('top', finalY + 'px', [follower], false);
-        this.controller.stageController.styleChanged('left', finalX + 'px', [follower], false);
+        // do not do this anymore because the element is moved to the body during drag so its position is wrong:
+        // update the toolboxes to display the position during drag
+        // let pos = goog.style.getPosition(follower);
+        // let finalY = Math.round(pos.y + offsetY);
+        // let finalX = Math.round(pos.x + offsetX);
+        // this.controller.stageController.styleChanged('top', finalY + 'px', [follower], false);
+        // this.controller.stageController.styleChanged('left', finalX + 'px', [follower], false);
+
         // in case the element is in the flow,
         // the css class .dragging-pending will set position:relative
         // and we temporarily move the element with its attributes instead of css style tag in head
