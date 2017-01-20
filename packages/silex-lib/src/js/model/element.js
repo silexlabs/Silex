@@ -291,14 +291,6 @@ silex.model.Element.prototype.getAllStyles = function(element, opt_computed) {
  */
 silex.model.Element.prototype.getStyle = function(element, styleName, opt_computed) {
   const cssName = goog.string.toSelectorCase(styleName);
-  // getStyle width of section, return null
-  if(cssName === 'width' && this.isSection(element)) {
-    return null;
-  }
-  // getStyle min-height of section, return min-height of section content
-  if(cssName === 'min-height' && this.isSection(element)) {
-    element = /** @type {Element} */ (this.getContentNode(element));
-  }
   const isMobile = this.view.workspace.getMobileEditor();
   let styleObject = this.model.property.getStyle(element, isMobile, opt_computed);
   if (styleObject && styleObject[cssName]) {
@@ -327,18 +319,6 @@ silex.model.Element.prototype.setStyle = function(element, styleName, opt_styleV
   styleName = goog.string.toSelectorCase(styleName);
   // remove the 'just pasted' class
   if(!opt_preserveJustAdded) element.classList.remove(silex.model.Element.JUST_ADDED_CLASS_NAME);
-  // do not apply width to sections
-  if(styleName === 'width' && this.isSection(element)) {
-    return;
-  }
-  // set a min-width style to sections so that they are always larger than their content container
-  if(styleName === 'width' && this.isSectionContent(element) && !this.view.workspace.getMobileEditor()) {
-    this.setStyle(/** @type {Element} */ (element.parentNode), 'min-width', opt_styleValue);
-  }
-  // apply height to section content and not section itself
-  if(styleName === 'min-height' && this.isSection(element)) {
-    element = /** @type {Element} */ (this.getContentNode(element));
-  }
   // retrieve style
   var styleObject = this.model.property.getStyle(element);
   if (!styleObject) {
