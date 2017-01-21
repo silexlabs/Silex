@@ -20,7 +20,7 @@
     "start": "pm2 start .pm2.json",
     "start:debug": "SILEX_DEBUG=true node dist/server/server.js",
     "build": "npm run build:css && npm run build:html && npm run build:js:release && npm run build:prodotype",
-    "build:prodotype": "mkdir -p dist/client/libs/prodotype/components && cp node_modules/prodotype/pub/prodotype.js dist/client/libs/prodotype/ && prodotype node_modules/sample dist/client/libs/prodotype/components/",
+    "build:prodotype": "mkdir -p dist/client/libs/prodotype/components && cp node_modules/prodotype/pub/prodotype.js dist/client/libs/prodotype/ && prodotype node_modules/prodotype/sample dist/client/libs/prodotype/components/",
     "init:prodotype": "cd node_modules/prodotype/ && npm i && cd ../../",
     "build:css": "node_modules/.bin/lessc src/css/_styles.less dist/client/css/admin.css --source-map",
     "build:html": "node_modules/.bin/jade src/html/index.jade --out dist/client/ --no-debug",
