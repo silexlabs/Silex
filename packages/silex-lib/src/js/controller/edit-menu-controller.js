@@ -133,7 +133,8 @@ silex.controller.EditMenuController.prototype.recursiveCopy = function(element) 
   // duplicate the node
   var res = {
     element: element.cloneNode(true),
-    style: this.model.property.getStyle(element),
+    style: this.model.property.getStyle(element, false),
+    mobileStyle: this.model.property.getStyle(element, true),
     children: []
   };
   // case of a container, handle its children
@@ -191,10 +192,16 @@ silex.controller.EditMenuController.prototype.pasteSelection = function() {
  */
 silex.controller.EditMenuController.prototype.recursivePaste = function(clipboardItem) {
   var element = clipboardItem.element.cloneNode(true);
+  var componentData = this.model.property.getComponentData(clipboardItem.element);
   // reset the ID
   this.model.property.initSilexId(element);
+  // init component props
+  if(componentData) {
+    this.model.property.setComponentData(element, componentData);
+  }
   // keep the original style
-  this.model.property.setStyle(element, clipboardItem.style);
+  this.model.property.setStyle(element, clipboardItem.style, false);
+  this.model.property.setStyle(element, clipboardItem.mobileStyle, true);
   // add its children
   goog.array.forEach(clipboardItem.children, function(childItem) {
     var childElement = this.recursivePaste(childItem);

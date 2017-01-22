@@ -67,9 +67,10 @@ silex.types.Model = function() {
  * @param {silex.model.Body} body
  * @param {silex.model.Page} page
  * @param {silex.model.Element} element
+ * @param {silex.model.Component} component
  * @param {silex.model.Property} property
  */
-silex.types.Model.prototype.init = function(file, head, body, page, element, property) {
+silex.types.Model.prototype.init = function(file, head, body, page, element, component, property) {
   /**
    * @type {silex.model.File}
    */
@@ -90,6 +91,10 @@ silex.types.Model.prototype.init = function(file, head, body, page, element, pro
    * @type {silex.model.Element}
    */
   this.element = element;
+  /**
+   * @type {silex.model.Component}
+   */
+  this.component = component;
   /**
    * @type {silex.model.Property}
    */
@@ -223,6 +228,7 @@ silex.types.View = function() {
  * @param {silex.view.dialog.TextEditor} textEditor
  * @param {silex.view.dialog.FileExplorer} fileExplorer
  * @param {silex.view.dialog.SettingsDialog} settingsDialog
+ * @param {silex.view.dialog.NewWebsiteDialog} newWebsiteDialog
  * @param {silex.view.Splitter} propSplitter
  * @param {silex.view.Workspace} workspace
  */
@@ -239,6 +245,7 @@ silex.types.View.prototype.init = function(
     textEditor,
     fileExplorer,
     settingsDialog,
+    newWebsiteDialog,
     propSplitter,
     workspace) {
   /**
@@ -289,6 +296,10 @@ silex.types.View.prototype.init = function(
    * @type {silex.view.dialog.SettingsDialog}
    */
   this.settingsDialog = settingsDialog;
+  /**
+   * @type {silex.view.dialog.NewWebsiteDialog}
+   */
+  this.newWebsiteDialog = newWebsiteDialog;
   /**
    * @type {silex.view.Splitter}
    */

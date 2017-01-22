@@ -288,6 +288,8 @@ silex.view.dialog.TextEditor.prototype.setElementClassNames =
   htmlElement.style.overflowY = 'scroll';
   iframeDoc.body.style.height = 'auto';
   iframeDoc.body.style.position = 'initial';
+  // keep the pointer events which are disabled on element content (see front-end.css)
+  iframeDoc.body.style.pointerEvents = 'auto';
 };
 
 

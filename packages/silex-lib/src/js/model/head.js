@@ -101,6 +101,7 @@ silex.model.Head.prototype.updateFromDom = function() {
   this.setTitleSocial(this.getTitleSocial());
   this.setTitle(this.getTitle());
   this.setEnableMobile(this.getEnableMobile());
+  this.setWebsiteWidth(this.getWebsiteWidth());
 };
 
 
@@ -408,6 +409,43 @@ silex.model.Head.prototype.getEnableMobile = function() {
   return this.model.file.getContentDocument().body.classList.contains(silex.model.Head.ENABLE_MOBILE_CSS_CLASS);
 };
 
+
+/**
+ * get/set the website width
+ * @param {?string=} opt_value
+ */
+silex.model.Head.prototype.setWebsiteWidth = function(opt_value) {
+  this.setMeta('website-width', opt_value);
+  this.view.settingsDialog.setWebsiteWidth(opt_value);
+  let silexStyle = this.getHeadElement().querySelector('.silex-style-settings');
+  if(opt_value && opt_value !== '') {
+    if (!silexStyle) {
+      silexStyle = goog.dom.createElement('style');
+      silexStyle.type = 'text/css';
+      silexStyle.className = 'silex-style-settings';
+      goog.dom.appendChild(this.getHeadElement(), silexStyle);
+    }
+    const minWidth = parseInt(opt_value, 10) + 300;
+    silexStyle.innerHTML = `
+      .${silex.model.Element.WEBSITE_WIDTH_CLASS_NAME} {
+        width: ${opt_value}px;
+      }
+      .${silex.model.Element.WEBSITE_MIN_WIDTH_CLASS_NAME} {
+        min-width: ${minWidth}px;
+      }
+    `;
+  }
+  else if(silexStyle) this.getHeadElement().removeChild(silexStyle);
+};
+
+
+/**
+ * get/set the website width
+ * @return {?string}
+ */
+silex.model.Head.prototype.getWebsiteWidth = function() {
+  return this.getMeta('website-width');
+};
 
 /**
  * get/set the description

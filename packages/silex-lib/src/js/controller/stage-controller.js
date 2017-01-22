@@ -107,8 +107,8 @@ silex.controller.StageController.prototype.newContainer = function(container, el
     var elementPos = goog.style.getPageOffset(element);
     var newContainerPos = goog.style.getPageOffset(container);
     // move to the new container
-    this.model.element.removeElement(element);
-    this.model.element.addElement(container, element);
+    element.parentNode.removeChild(element);
+    container.appendChild(element);
     // restore position
     this.styleChanged('left', Math.round(elementPos.x - newContainerPos.x) + 'px', [element], false);
     this.styleChanged('top', Math.round(elementPos.y - newContainerPos.y) + 'px', [element], false);

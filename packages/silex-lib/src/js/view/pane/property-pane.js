@@ -274,9 +274,19 @@ silex.view.pane.PropertyPane.prototype.redraw = function(selectedElements, pageN
     this.heightInput.value = bb.height || '0';
 
     // special case of the background / main container only selected element
-    if (selectedElements.length === 1 && goog.dom.classlist.contains(selectedElements[0], 'background')) {
-      this.topInput.value = '';
-      this.leftInput.value = '';
+    if (selectedElements.length === 1) {
+      if (
+        goog.dom.classlist.contains(selectedElements[0], 'background') ||
+        this.model.element.isSection(selectedElements[0]) ||
+        this.model.element.isSectionContent(selectedElements[0]) ||
+        this.isMobileMode()
+      ) {
+        this.topInput.value = '';
+        this.leftInput.value = '';
+      }
+      if (this.model.element.isSection(selectedElements[0])) {
+        this.widthInput.value = '';
+      }
     }
 
     // alt, only for images
@@ -337,3 +347,14 @@ silex.view.pane.PropertyPane.prototype.redraw = function(selectedElements, pageN
 
   this.iAmRedrawing = false;
 };
+
+
+/**
+ * helper for other views,
+ * because views (view.workspace.get/setMobileEditor) is not accessible from other views
+ * FIXME: find another way to expose isMobileEditor to views
+ */
+silex.view.pane.PropertyPane.prototype.isMobileMode = function() {
+  return goog.dom.classlist.contains(document.body, 'mobile-mode');
+};
+

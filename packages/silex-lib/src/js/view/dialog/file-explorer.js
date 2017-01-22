@@ -72,13 +72,15 @@ silex.view.dialog.FileExplorer.prototype.filePicker = null;
 
 /**
  * pick a file
- * @param {function(string)} cbk
+ * @param {function(string, ?Object=)} cbk
  * @param {?Object.<Array>=} opt_mimetypes optional array of accepted mimetypes,
  *                           e.g. {'mimetypes': ['text/html', 'text/plain']}
  * @param {?function(Object)=} opt_errCbk
+ * @param {?function()=} opt_cancelCbk
+ * FIXME: opt_cancelCbk is never called because CE has no mechanisme to get notified when the user closes the dialog
  */
 silex.view.dialog.FileExplorer.prototype.openDialog =
-    function(cbk, opt_mimetypes, opt_errCbk) {
+    function(cbk, opt_mimetypes, opt_errCbk, opt_cancelCbk) {
 
   this.openEditor();
 
@@ -89,10 +91,13 @@ silex.view.dialog.FileExplorer.prototype.openDialog =
     }
     this.closeEditor();
   }.bind(this);
-  var successCbk = function(url) {
+  var successCbk = function(url, blob) {
     // notify controller
     if (cbk) {
-      cbk(url);
+      cbk(url, blob);
+    }
+    else if(opt_cancelCbk) {
+      opt_cancelCbk();
     }
     this.closeEditor();
   }.bind(this);
@@ -105,7 +110,7 @@ silex.view.dialog.FileExplorer.prototype.openDialog =
         // this.view.stage.resetFocus();
         // no https, because it creates security issues
         blob.url = blob.url.replace('https://', '//');
-        successCbk(blob.url);
+        successCbk(blob.url, blob);
       }, this),
       errCbk);
 };
