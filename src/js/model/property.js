@@ -258,7 +258,7 @@ silex.model.Property.prototype.setComponentData = function(element, opt_componen
   else {
     delete this.componentDataObj[elementId];
   }
-}
+};
 
 
 /**
@@ -271,7 +271,7 @@ silex.model.Property.prototype.getComponentData = function(element) {
   var elementId =  /** @type {string} */ (this.getSilexId(element));
   // returns value of object
   return this.componentDataObj[elementId];
-}
+};
 
 
 /**

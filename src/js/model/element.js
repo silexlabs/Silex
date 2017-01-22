@@ -156,7 +156,7 @@ silex.model.Element.WEBSITE_WIDTH_CLASS_NAME = 'website-width'
  * @const
  * @type {string}
  */
-silex.model.Element.WEBSITE_MIN_WIDTH_CLASS_NAME = 'website-min-width'
+silex.model.Element.WEBSITE_MIN_WIDTH_CLASS_NAME = 'website-min-width';
 
 
 /**
@@ -616,7 +616,7 @@ silex.model.Element.prototype.removeElement = function(element) {
   if (this.model.body.getBodyElement() !== element &&
       goog.dom.contains(this.model.body.getBodyElement(), element)) {
     // remove style and component data
-    this.model.property.setComponentData(element)
+    this.model.property.setComponentData(element);
     this.model.property.setStyle(element, null, true);
     this.model.property.setStyle(element, null, false);
     // remove the element
