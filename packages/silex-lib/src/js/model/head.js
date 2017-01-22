@@ -418,7 +418,7 @@ silex.model.Head.prototype.setWebsiteWidth = function(opt_value) {
   this.setMeta('website-width', opt_value);
   this.view.settingsDialog.setWebsiteWidth(opt_value);
   let silexStyle = this.getHeadElement().querySelector('.silex-style-settings');
-  if(opt_value && opt_value != '') {
+  if(opt_value && opt_value !== '') {
     if (!silexStyle) {
       silexStyle = goog.dom.createElement('style');
       silexStyle.type = 'text/css';

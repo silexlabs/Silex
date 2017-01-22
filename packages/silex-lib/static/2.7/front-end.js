@@ -101,8 +101,8 @@ $(function() {
     // set the body size to contain all the elements
     // this has to be done manually since the elements are absolutely positioned
     bodyEl.css({
-      "min-width": width + "px",
-      "min-height": height + "px"
+      'min-width': width + 'px',
+      'min-height': height + 'px'
     });
     // end computation, put back the body to a normal size
     bodyEl.removeClass('compute-body-size-pending');

@@ -2,8 +2,8 @@
 $.widget('silexlabs.pageable', {
   version: '1.0.1',
   options: {
-    currentPage:"home",
-    useDeeplink:true,
+    currentPage: 'home',
+    useDeeplink: true,
     pageClass: 'paged-element',
     onPageChanged: null,
     window: window // useful if you are in an iframe and want to set window = window.parent

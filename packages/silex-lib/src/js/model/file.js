@@ -564,7 +564,7 @@ silex.model.File.prototype.addToLatestFiles = function(url) {
     });
     // limit size
     if(latestFiles.length > silex.model.File.MAX_RECENT_FILES) {
-      latestFiles.splice(silex.model.File.MAX_RECENT_FILES, latestFiles.length - silex.model.File.MAX_RECENT_FILES)
+      latestFiles.splice(silex.model.File.MAX_RECENT_FILES, latestFiles.length - silex.model.File.MAX_RECENT_FILES);
     }
     window.localStorage.setItem('silex:recent-files', JSON.stringify(latestFiles));
   }

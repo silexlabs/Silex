@@ -38,4 +38,5 @@ silex.view.DockableDialog = class {
   static undock() {
     document.body.classList.remove(DOCK_DIALOG_CLASS_NAME);
   }
-}
+};
+

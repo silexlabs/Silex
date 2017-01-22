@@ -84,7 +84,7 @@ silex.model.Component.prototype.isComponent = function(el) {
  */
 silex.model.Component.prototype.getComponentsDef = function() {
   return this.prodotype ? this.prodotype.componentsDef : /** @type {ProdotypeCompDef} */ ({});
-}
+};
 
 
 /**
