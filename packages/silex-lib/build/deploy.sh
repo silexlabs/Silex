@@ -13,5 +13,5 @@
 ls -al dist/client/js/
 zip -r silex.zip dist/ node_modules/ static/
 echo 'put silex.zip' | sftp -o "StrictHostKeyChecking no" "$1":vhosts/default
-echo "wget $2/$SILEX_RELOAD_ROUTE"
+echo "wget --secure-protocol=TLSv1 $2/$SILEX_RELOAD_ROUTE"
 wget "$2/$SILEX_RELOAD_ROUTE"
