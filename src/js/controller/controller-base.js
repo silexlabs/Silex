@@ -233,9 +233,6 @@ silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
         // load the image
         this.model.element.setImageUrl(img, url,
             goog.bind(function(element, imgElement) {
-              // update element size
-              this.model.element.setStyle(element, 'width', Math.max(silex.model.Element.MIN_WIDTH, imgElement.naturalWidth) + 'px');
-              this.model.element.setStyle(element, 'minHeight', Math.max(silex.model.Element.MIN_HEIGHT, imgElement.naturalHeight) + 'px');
               this.tracker.trackAction('controller-events', 'success', 'insert.image', 1);
             }, this),
             goog.bind(function(element, message) {
@@ -490,7 +487,7 @@ silex.controller.ControllerBase.prototype.toggleMobileMode = function() {
  */
 silex.controller.ControllerBase.prototype.save = function(opt_url, opt_cbk, opt_errorCbk) {
   this.tracker.trackAction('controller-events', 'request', 'file.save', 0);
-  if (opt_url) {
+  if (opt_url && !silex.utils.Url.isAbsoluteUrl(opt_url)) {
     this.doSave(opt_url, opt_cbk, opt_errorCbk);
   }
   else {

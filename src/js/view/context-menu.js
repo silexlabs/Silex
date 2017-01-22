@@ -87,7 +87,7 @@ silex.view.ContextMenu.prototype.redraw = function(opt_selectedElements, opt_pag
   this.invalidationManager.callWhenReady(() => {
     // update page name
     if(opt_currentPageName) {
-      this.currentPageElement.innerHTML = '<label>Page: </label>' + this.model.page.getDisplayName(opt_currentPageName);
+      this.currentPageElement.innerHTML = this.model.page.getDisplayName(opt_currentPageName);
     }
     // get the selection if not provided
     if (!opt_selectedElements) opt_selectedElements = this.model.body.getSelection();

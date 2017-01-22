@@ -30,8 +30,6 @@ goog.require('goog.net.XhrIo');
  */
 silex.service.CloudStorage = function() {
   this.filePicker = ce.api.CloudExplorer.get('silex-file-explorer');
-  // debug
-  window['silexFilePicker'] = this.filePicker;
 };
 goog.addSingletonGetter(silex.service.CloudStorage);
 
@@ -123,27 +121,35 @@ silex.service.CloudStorage.prototype.load = function(url, cbk, opt_errCbk) {
  * load data
  * @param  {string} url
  * @param  {function(string)} cbk
- * @param  {function(Object)} opt_errCbk
+ * @param  {?function(Object, string)=} opt_errCbk
  */
 silex.service.CloudStorage.prototype.loadLocal = function(url, cbk, opt_errCbk) {
-  // FIXME: use regular XMLHttpRequest
-  goog.net.XhrIo.send(url, function(e) {
+  const oReq = new XMLHttpRequest();
+  oReq.addEventListener('load', e => {
     // success of the request
-    var xhr = e.target;
-    var rawHtml = xhr.getResponse();
-    if (xhr.isSuccess()) {
-      if (cbk) {
-        cbk(rawHtml);
-      }
-    }
+    if(oReq.status === 200) cbk(oReq.responseText);
     else {
-      var message = xhr.getLastError();
-      console.error(message, xhr, xhr.isSuccess(), xhr.getStatus(), xhr.headers.toString());
-      if (opt_errCbk) {
-        opt_errCbk(message);
+      const err = new Event('error');
+      let msg = '';
+      switch(oReq.status) {
+        case 404: msg = 'File not found.';
+        break;
+        case 401: msg = 'You are not connected to the cloud service you try to use.';
+        break;
+        default: msg = 'Unknown error with HTTP status ' + oReq.status;
       }
+      err.currentTarget = err.target = oReq;
+      opt_errCbk(err, msg);
     }
   });
+  oReq.addEventListener('error', e => {
+    console.error('could not load website', url, e);
+    if (opt_errCbk) {
+      opt_errCbk(e, 'Network error, please check your internet connection or try again later.');
+    }
+  });
+  oReq.open('GET', url);
+  oReq.send();
 };
 silex.service.CloudStorage.prototype.getServices = function() {
   // init services list

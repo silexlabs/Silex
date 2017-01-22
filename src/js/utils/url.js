@@ -170,6 +170,15 @@ silex.utils.Url.removeUrlKeyword = function(url) {
   if (goog.string.endsWith(url, '&quot;')) {
     url = url.substr(0, url.length - 6);
   }
+  if (goog.string.startsWith(url, '%5C')) {
+    url = url.substr(3);
+  }
+  if (goog.string.startsWith(url, '%22')) {
+    url = url.substr(3);
+  }
+  if (goog.string.endsWith(url, '%22')) {
+    url = url.substr(0, url.length - 3);
+  }
   return url;
 };
 
@@ -183,7 +192,7 @@ silex.utils.Url.removeUrlKeyword = function(url) {
  * @return {string} url + keyword as for background-image
  */
 silex.utils.Url.addUrlKeyword = function(url) {
-  return 'url(\'' + url + '\')';
+  return `url('${url}')`;
 };
 
 

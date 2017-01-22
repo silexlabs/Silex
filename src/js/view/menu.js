@@ -128,10 +128,50 @@ silex.view.Menu.prototype.buildUi = function() {
       }
     }
   }, this));
+
+  function elFromCompDef(comp, id) {
+    // build the dom elements for each comp by category
+    const iconClassName = comp.faIconClass || 'prodotype-icon';
+    const baseElementType = comp.baseElement || 'html';
+    const el = document.createElement('div');
+    el.classList.add('sub-menu-item');
+    el.title = `${comp.name}`;
+    el.setAttribute('data-menu-action', 'insert.' + baseElementType);
+    el.setAttribute('data-comp-id', id);
+    el.innerHTML = `
+      <span class="icon fa-fw ${iconClassName}"></span>
+      Add ${id}
+    `;
+    return el;
+  }
+  // components
+  // this.model.component.ready(() => {
+  //   const list = this.element.querySelector('.add-menu-container');
+  //   const componentsDef = this.model.component.getComponentsDef();
+  //   // build a list of component categories
+  //   const elements = {};
+  //   for(let id in componentsDef) {
+  //     const comp = componentsDef[id];
+  //     if(comp.isPrivate !== true) {
+  //       if(!elements[comp.category]) elements[comp.category] = [elFromCompDef(comp, id)];
+  //       else elements[comp.category].push(elFromCompDef(comp, id));
+  //     }
+  //   }
+  //   for(let id in elements) {
+  //     // create a label for the category
+  //     const label = document.createElement('div');
+  //     label.classList.add('label');
+  //     label.innerHTML = id;
+  //     list.appendChild(label);
+  //     // attach each comp's element
+  //     elements[id].forEach(el => list.appendChild(el));
+  //   }
+  // });
   // event handling
   this.element.onclick = e => {
     const action = e.target.getAttribute('data-menu-action') || e.target.parentNode.getAttribute('data-menu-action');
-    this.onMenuEvent(action);
+    const componentId = e.target.getAttribute('data-comp-id') || e.target.parentNode.getAttribute('data-comp-id');
+    this.onMenuEvent(action, componentId);
     if(e.target.parentNode && !e.target.parentNode.classList.contains('menu-container')) {
       // not a first level menu => close sub menus
       this.closeAllSubMenu();
@@ -233,9 +273,9 @@ silex.view.Menu.prototype.toggleSubMenu = function(classNameToToggle) {
  * handles click events
  * calls onStatus to notify the controller
  * @param {string} type
+ * @param {?string=} opt_componentName the component type if it is a component
  */
-silex.view.Menu.prototype.onMenuEvent = function(type) {
-  // console.log('onMenuEvent', type);
+silex.view.Menu.prototype.onMenuEvent = function(type, opt_componentName) {
   switch (type) {
     case 'show.pages':
       this.toggleSubMenu('page-tool-visible');
@@ -308,19 +348,20 @@ silex.view.Menu.prototype.onMenuEvent = function(type) {
       this.controller.insertMenuController.createPage();
       break;
     case 'insert.text':
-      this.controller.insertMenuController.addElement(silex.model.Element.TYPE_TEXT);
+      this.controller.insertMenuController.addElement(silex.model.Element.TYPE_TEXT, opt_componentName);
       break;
     case 'insert.section':
-      this.controller.insertMenuController.addElement(silex.model.Element.TYPE_SECTION);
+      this.controller.insertMenuController.addElement(silex.model.Element.TYPE_SECTION, opt_componentName);
       break;
     case 'insert.html':
-      this.controller.insertMenuController.addElement(silex.model.Element.TYPE_HTML);
+      this.controller.insertMenuController.addElement(silex.model.Element.TYPE_HTML, opt_componentName);
       break;
     case 'insert.image':
+      // FIXME: add opt_componentName param to browseAndAddImage
       this.controller.insertMenuController.browseAndAddImage();
       break;
     case 'insert.container':
-      this.controller.insertMenuController.addElement(silex.model.Element.TYPE_CONTAINER);
+      this.controller.insertMenuController.addElement(silex.model.Element.TYPE_CONTAINER, opt_componentName);
       break;
     case 'edit.delete.selection':
       // delete component

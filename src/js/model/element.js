@@ -147,7 +147,16 @@ silex.model.Element.ELEMENT_CONTENT_CLASS_NAME = 'silex-element-content';
  * @const
  * @type {string}
  */
-silex.model.Element.DEFAULT_SITE_WIDTH_CLASS_NAME = 'default-site-width'
+silex.model.Element.WEBSITE_WIDTH_CLASS_NAME = 'website-width'
+
+
+/**
+ * constant for the class name of the default site width, rule is set when setting is changed
+ * used to set a min-width to sections
+ * @const
+ * @type {string}
+ */
+silex.model.Element.WEBSITE_MIN_WIDTH_CLASS_NAME = 'website-min-width';
 
 
 /**
@@ -184,8 +193,10 @@ silex.model.Element.prototype.prepareHtmlForEdit = function(rawHtml) {
   // prevent the user scripts from executing while editing
   rawHtml = rawHtml.replace(/<script.*class=\"silex-script\".*?>/gi, '<script type="text/notjavascript" class="silex-script">');
   // convert to absolute urls
-  if (this.model.file.getUrl()) {
-    rawHtml = silex.utils.Url.relative2Absolute(rawHtml, silex.utils.Url.getBaseUrl() + this.model.file.getUrl());
+  let url = this.model.file.getUrl();
+  if (url) {
+    if(!silex.utils.Url.isAbsoluteUrl(url)) url = silex.utils.Url.getBaseUrl() + url;
+    rawHtml = silex.utils.Url.relative2Absolute(rawHtml, url);
   }
   return rawHtml;
 };
@@ -280,14 +291,6 @@ silex.model.Element.prototype.getAllStyles = function(element, opt_computed) {
  */
 silex.model.Element.prototype.getStyle = function(element, styleName, opt_computed) {
   const cssName = goog.string.toSelectorCase(styleName);
-  // getStyle width of section, return null
-  if(cssName === 'width' && this.isSection(element)) {
-    return null;
-  }
-  // getStyle min-height of section content, return parent min-height
-  if(cssName === 'min-height' && this.isSectionContent(element)) {
-    element = /** @type {Element} */ (element.parentNode);
-  }
   const isMobile = this.view.workspace.getMobileEditor();
   let styleObject = this.model.property.getStyle(element, isMobile, opt_computed);
   if (styleObject && styleObject[cssName]) {
@@ -309,20 +312,13 @@ silex.model.Element.prototype.getStyle = function(element, styleName, opt_comput
  * @param  {Element} element            created by silex, either a text box, image, ...
  * @param  {string}  styleName          the style name, camel case, not css with dashes
  * @param  {?string=}  opt_styleValue     the value for this styleName
+ * @param  {?boolean=}  opt_preserveJustAdded     if true, do not remove the "just added" css class, default is false
  */
-silex.model.Element.prototype.setStyle = function(element, styleName, opt_styleValue) {
+silex.model.Element.prototype.setStyle = function(element, styleName, opt_styleValue, opt_preserveJustAdded) {
   // convert to css case
   styleName = goog.string.toSelectorCase(styleName);
   // remove the 'just pasted' class
-  element.classList.remove(silex.model.Element.JUST_ADDED_CLASS_NAME);
-  // do not apply width to sections
-  if(styleName === 'width' && this.isSection(element)) {
-    return;
-  }
-  // apply height to section and not section container content
-  if(styleName === 'min-height' && this.isSectionContent(element)) {
-    element = /** @type {Element} */ (element.parentNode);
-  }
+  if(!opt_preserveJustAdded) element.classList.remove(silex.model.Element.JUST_ADDED_CLASS_NAME);
   // retrieve style
   var styleObject = this.model.property.getStyle(element);
   if (!styleObject) {
@@ -420,20 +416,9 @@ silex.model.Element.prototype.setInnerHtml = function(element, innerHTML) {
  * @return  {Element}  the element which holds the content, i.e. a div, an image, ...
  */
 silex.model.Element.prototype.getContentNode = function(element) {
-  var content;
-  // find the content elements
-  var contentElements = goog.dom.getElementsByClass(
-      silex.model.Element.ELEMENT_CONTENT_CLASS_NAME,
-      element);
-  if (contentElements && contentElements.length === 1) {
-    // image or html box case
-    content = contentElements[0];
-  }
-  else {
-    // text box or container case
-    content = element;
-  }
-  return content;
+  return element.querySelector(
+    ':scope > .' + silex.model.Element.ELEMENT_CONTENT_CLASS_NAME) ||
+    element;
 };
 
 
@@ -565,6 +550,9 @@ silex.model.Element.prototype.setImageUrl = function(element, url, opt_callback,
           function(e) {
             // handle the loaded image
             img = e.target;
+            // update element size
+            this.setStyle(element, 'width', Math.max(silex.model.Element.MIN_WIDTH, img.naturalWidth) + 'px', true);
+            this.setStyle(element, 'minHeight', Math.max(silex.model.Element.MIN_HEIGHT, img.naturalHeight) + 'px', true);
             // callback
             if (opt_callback) {
               opt_callback(element, img);
@@ -627,7 +615,10 @@ silex.model.Element.prototype.removeElement = function(element) {
   // check this is allowed, i.e. an element inside the stage container
   if (this.model.body.getBodyElement() !== element &&
       goog.dom.contains(this.model.body.getBodyElement(), element)) {
-    // useless? Should remove its style? this.model.property.setStyle(element);
+    // remove style and component data
+    this.model.property.setComponentData(element);
+    this.model.property.setStyle(element, null, true);
+    this.model.property.setStyle(element, null, false);
     // remove the element
     goog.dom.removeNode(element);
   }
@@ -686,13 +677,16 @@ silex.model.Element.prototype.addElementDefaultPosition = function(element, opt_
 
 /**
  * find the best drop zone at a given position
+ * NEW: drop in the body directly since containers have their own z-index
+ *      and the element is partly hidden sometimes if we drop it in a container
  * @param  {number} x position in px
  * @param  {number} y position in px
  * @return {Element} the container element under (x, y)
  */
 silex.model.Element.prototype.getBestContainerForNewElement = function(x, y) {
-  let dropZone = this.view.stage.getDropZone(x, y) || {'element': this.view.stage.bodyElement, 'zIndex': 0};
-  return dropZone.element;
+  // let dropZone = this.view.stage.getDropZone(x, y) || {'element': this.model.body.getBodyElement(), 'zIndex': 0};
+  // return dropZone.element;
+  return this.model.body.getBodyElement();
 };
 
 
@@ -808,6 +802,7 @@ silex.model.Element.prototype.createSectionElement = function() {
   element.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_CONTAINER);
   element.classList.add(silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME);
   element.classList.add(silex.model.Element.TYPE_CONTAINER + '-element');
+  element.classList.add(silex.model.Element.WEBSITE_MIN_WIDTH_CLASS_NAME);
   // content element is both a container and a content element
   var content = this.createContainerElement();
   var styleObject = {
@@ -816,7 +811,7 @@ silex.model.Element.prototype.createSectionElement = function() {
   };
   content.classList.add(silex.model.Body.EDITABLE_CLASS_NAME);
   content.classList.add(silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
-  content.classList.add(silex.model.Element.DEFAULT_SITE_WIDTH_CLASS_NAME);
+  content.classList.add(silex.model.Element.WEBSITE_WIDTH_CLASS_NAME);
   this.model.property.initSilexId(content, this.model.file.getContentDocument());
   this.model.property.setStyle(content, styleObject, false);
   content.classList.add(silex.model.Element.TYPE_CONTAINER_CONTENT);

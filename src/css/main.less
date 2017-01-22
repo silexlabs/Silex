@@ -35,6 +35,10 @@ body {
   height: inherit; /* without this, there is a white space bellow the dialogs background */
   background-color: @silexmediumgrey;
 
+  .fa, .fa-inverse {
+    font-family: FontAwesome;
+    text-decoration: none;
+  }
   input {
     border: 1px solid @silexmediumgrey;
     color: @silexlightergrey;
@@ -77,6 +81,12 @@ label {
 
 .goog-toolbar-menu-button-dropdown, .tr-icon {
   background-image: url(../assets/goog-ui/editortoolbar.png);
+}
+
+h1, h2, h3 {
+  font-family: sans-serif;
+  color: @silexlightergrey;
+  font-weight: normal;
 }
 
 .xsmall-font {

@@ -53,17 +53,17 @@ silex.service.Tracker.SILEX_ACTIONS_CATEGORY = 'silex-event';
  * @param  {?number=} opt_value
  */
 silex.service.Tracker.prototype.trackAction = function(category, action, opt_label, opt_value) {
-  console.info('trackAction (anonymized)', arguments);
+  // console.info('trackAction (anonymized)', arguments);
   _paq.push(['trackEvent', category, action, opt_label, opt_value]);
 };
 
-/** 
+/**
  * @param {string} msg
  * @param {string} url
  * @param {number} line
  * @param {?number=} colno
  * @param {?Error=} error
- */ 
+ */
 silex.service.Tracker.prototype.trackOnError = function(msg, url, line, colno, error) {
 // define a closure to execute once sourceMapConsumer is initialized
   var trackWithSourceMap = () => {
@@ -78,7 +78,7 @@ silex.service.Tracker.prototype.trackOnError = function(msg, url, line, colno, e
       // do nothing if the error tracker itself fails
     }
   };
-  // load the source map if needed 
+  // load the source map if needed
   if(this.sourceMapConsumer) {
     trackWithSourceMap();
   }
