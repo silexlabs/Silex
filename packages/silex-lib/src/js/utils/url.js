@@ -179,6 +179,9 @@ silex.utils.Url.removeUrlKeyword = function(url) {
   if (goog.string.endsWith(url, '%22')) {
     url = url.substr(0, url.length - 3);
   }
+  if (goog.string.endsWith(url, '%5C')) {
+    url = url.substr(0, url.length - 3);
+  }
   return url;
 };
 
