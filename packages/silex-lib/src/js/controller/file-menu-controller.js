@@ -65,7 +65,7 @@ silex.controller.FileMenuController.prototype.newFile = function(opt_cbk, opt_er
         // if the user closes the dialog and no website is being edited
         // then load default blank website
         // otherwise just close the dialog
-        url = 'http://silex-blank-templates.silex.me/blank/editable.html';
+        url = '//silex-blank-templates.silex.me/blank/editable.html';
       }
       if(url) {
         this.model.file.openFromUrl(url, rawHtml => {
