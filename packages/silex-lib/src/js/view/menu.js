@@ -139,34 +139,34 @@ silex.view.Menu.prototype.buildUi = function() {
     el.setAttribute('data-menu-action', 'insert.' + baseElementType);
     el.setAttribute('data-comp-id', id);
     el.innerHTML = `
-      <span class="icon fa-fw ${iconClassName}"></span>
+      <span class="icon fa-inverse ${iconClassName}"></span>
       Add ${id}
     `;
     return el;
   }
   // components
-  // this.model.component.ready(() => {
-  //   const list = this.element.querySelector('.add-menu-container');
-  //   const componentsDef = this.model.component.getComponentsDef();
-  //   // build a list of component categories
-  //   const elements = {};
-  //   for(let id in componentsDef) {
-  //     const comp = componentsDef[id];
-  //     if(comp.isPrivate !== true) {
-  //       if(!elements[comp.category]) elements[comp.category] = [elFromCompDef(comp, id)];
-  //       else elements[comp.category].push(elFromCompDef(comp, id));
-  //     }
-  //   }
-  //   for(let id in elements) {
-  //     // create a label for the category
-  //     const label = document.createElement('div');
-  //     label.classList.add('label');
-  //     label.innerHTML = id;
-  //     list.appendChild(label);
-  //     // attach each comp's element
-  //     elements[id].forEach(el => list.appendChild(el));
-  //   }
-  // });
+  this.model.component.ready(() => {
+    const list = this.element.querySelector('.add-menu-container');
+    const componentsDef = this.model.component.getComponentsDef();
+    // build a list of component categories
+    const elements = {};
+    for(let id in componentsDef) {
+      const comp = componentsDef[id];
+      if(comp.isPrivate !== true) {
+        if(!elements[comp.category]) elements[comp.category] = [elFromCompDef(comp, id)];
+        else elements[comp.category].push(elFromCompDef(comp, id));
+      }
+    }
+    for(let id in elements) {
+      // create a label for the category
+      const label = document.createElement('div');
+      label.classList.add('label');
+      label.innerHTML = id;
+      list.appendChild(label);
+      // attach each comp's element
+      elements[id].forEach(el => list.appendChild(el));
+    }
+  });
   // event handling
   this.element.onclick = e => {
     const action = e.target.getAttribute('data-menu-action') || e.target.parentNode.getAttribute('data-menu-action');

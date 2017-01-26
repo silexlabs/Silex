@@ -249,6 +249,10 @@ silex.model.Property.prototype.initStyles = function(doc) {
  * @param {?Object=} opt_componentData
  */
 silex.model.Property.prototype.setComponentData = function(element, opt_componentData) {
+  // a section's container content can not be a component, but the section itself may be
+  if(this.model.element.isSectionContent(element)) {
+    element = /** @type {Element} */ (element.parentNode);
+  }
   // get the internal ID
   var elementId =  /** @type {string} */ (this.getSilexId(element));
   // store in object
@@ -267,6 +271,10 @@ silex.model.Property.prototype.setComponentData = function(element, opt_componen
  * @return {?Object} a clone of the data object
  */
 silex.model.Property.prototype.getComponentData = function(element) {
+  // a section's container content can not be a component, but the section itself may be
+  if(this.model.element.isSectionContent(element)) {
+    element = /** @type {Element} */ (element.parentNode);
+  }
   // get the internal ID
   var elementId =  /** @type {string} */ (this.getSilexId(element));
   // returns value of object
