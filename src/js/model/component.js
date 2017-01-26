@@ -72,10 +72,11 @@ silex.model.Component.prototype.ready = function(cbk) {
 /**
  * @param {Element} el
  * @return {boolean} true if el is a component (not only an element)
- */
+ * we use !!this.model.property.getComponentData(element)
 silex.model.Component.prototype.isComponent = function(el) {
-  return el.classList.has(silex.model.Component.COMPONENT_CLASS_NAME);
+  return el.classList.contains(silex.model.Component.COMPONENT_CLASS_NAME);
 };
+ */
 
 
 /**
@@ -113,16 +114,17 @@ silex.model.Component.prototype.initComponent = function(element, templateName) 
     this.updateDepenedencies();
   });
   // static resource for components styles
-  if(!this.model.file.getContentDocument().querySelector('link[data-components-css]')) {
-    const head = this.model.head.getHeadElement();
-    const tag = this.model.file.getContentDocument().createElement('link');
-    tag.setAttribute('data-silex-static', '');
-    tag.setAttribute('data-component-css', '');
-    tag.rel = 'stylesheet';
-    tag.href = silex.utils.BackwardCompat.getStaticResourceUrl('components.css');
-    // insert on top so that styles applyed with Silex UI are strongger thant the predefined styles
-    head.insertBefore(tag, head.childNodes[0]);
-  }
+  // TODO: delete this as there is no CSS file specific to components, everything is in dist/client/css/front-end.css
+  // if(!this.model.file.getContentDocument().querySelector('link[data-components-css]')) {
+  //   const head = this.model.head.getHeadElement();
+  //   const tag = this.model.file.getContentDocument().createElement('link');
+  //   tag.setAttribute('data-silex-static', '');
+  //   tag.setAttribute('data-component-css', '');
+  //   tag.rel = 'stylesheet';
+  //   tag.href = silex.utils.BackwardCompat.getStaticResourceUrl('components.css');
+  //   // insert on top so that styles applyed with Silex UI are strongger thant the predefined styles
+  //   head.insertBefore(tag, head.childNodes[0]);
+  // }
 };
 
 
@@ -179,6 +181,24 @@ silex.model.Component.prototype.resetSelection = function() {
     this.prodotype.edit();
   }
 };
+
+
+/**
+ * remove the editable elements from an HTML element and store them in an HTML fragment
+ * @param {Element} parentElement, the element whose children we want to save
+ * @return {DocumentFragment} an HTML fragment with the editable children in it
+ */
+silex.model.Component.prototype.saveEditableChildren = function(parentElement) {
+  const fragment = document.createDocumentFragment();
+  for(var i = 0, el; el = parentElement.children[i]; i++) {
+    if(el.classList.contains('editable-style')) {
+      fragment.appendChild(el.cloneNode(true));
+    }
+  }
+  return fragment;
+}
+
+
 /**
  * @param {Element} element, the component to edit
  */
@@ -199,8 +219,14 @@ silex.model.Component.prototype.edit = function(element) {
       componentData['templateName'],
       {
         'onChange': (newData, html) => {
+          // remove the editable elements temporarily
+          const tempElements = this.saveEditableChildren(element);
+          // store the component's data for later edition
           this.model.property.setComponentData(element, newData);
+          // update the element with the new template
           this.model.element.setInnerHtml(element, html);
+          // put back the editable elements
+          element.appendChild(tempElements);
         },
         'onBrowse': (e, cbk) => {
           e.preventDefault();
