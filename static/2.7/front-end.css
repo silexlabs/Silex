@@ -62,9 +62,14 @@ body.silex-runtime .silex-element-content {
 .website-width {
   width: 960px;
 }
+/* minimum size of the body during edition */
 .website-min-width {
   min-width: 1260px;
 }
+.silex-runtime .website-min-width {
+  min-width: 0;
+}
+/* */
 .section-element .silex-container-content {
   position: relative;
   left: 0;
