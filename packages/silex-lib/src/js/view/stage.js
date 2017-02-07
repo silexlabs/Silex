@@ -1107,6 +1107,8 @@ silex.view.Stage.prototype.moveElements = function(elements, offsetX, offsetY) {
   this.propertyChanged();
   // reset elements properties since they are stored in the CSS by the model
   elements.forEach((element) => {
+    this.controller.stageController.styleChanged('top', element.style.top, [element], false);
+    this.controller.stageController.styleChanged('left', element.style.left, [element], false);
     this.cleanupElement(element);
   });
 };
