@@ -357,9 +357,9 @@ silex.view.Stage.prototype.handleKey = function(event) {
       event.target.tagName.toUpperCase() !== 'TEXTAREA') {
     // mobile mode or selection contains only sections elements
     if(this.isMobileMode() ||
-      this.selectedElements.reduce((prev, cur) => prev &&
+      (this.selectedElements && this.selectedElements.reduce((prev, cur) => prev &&
         (this.model.element.isSection(cur) ||
-          this.model.element.isSectionContent(cur)), true)) {
+          this.model.element.isSectionContent(cur)), true))) {
       // move the elements in the dom
       let tookAction = true;
       switch (event.keyCode) {
@@ -1126,12 +1126,14 @@ silex.view.Stage.prototype.isMobileMode = function() {
  * @param  {Element}  element in the DOM to wich I am scrolling
  */
 silex.view.Stage.prototype.setScrollTarget = function(element) {
-  const previousTarget = this.scrollTarget;
-  this.scrollTarget = element;
-  if(!previousTarget) {
-    // start scrolling
-    // not right away because the element will not be attached to the dom yet
-    requestAnimationFrame(() => this.startScrolling());
+  if(element !== this.bodyElement) {
+    const previousTarget = this.scrollTarget;
+    this.scrollTarget = element;
+    if(!previousTarget) {
+      // start scrolling
+      // not right away because the element will not be attached to the dom yet
+      requestAnimationFrame(() => this.startScrolling());
+    }
   }
 };
 
