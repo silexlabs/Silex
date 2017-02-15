@@ -719,6 +719,7 @@ silex.model.Element.prototype.createElement = function(type) {
     // section
     case silex.model.Element.TYPE_SECTION:
       element = this.createSectionElement();
+      this.view.stage.setScrollTarget(element);
       break;
 
     // text
