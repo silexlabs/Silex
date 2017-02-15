@@ -98,21 +98,21 @@ silex.controller.StageController.prototype.markAsUndoable = function() {
 
 /**
  * an element is dropped in a new container
+ * this will always occure when the user drops elements,
+ * even in the same container as before since we move the elements to the body while dragging (stage.js)
  * @param {Element} container the container
  * @param {Element} element the dropped element
  */
 silex.controller.StageController.prototype.newContainer = function(container, element) {
-  if (element.parentNode !== container) {
-    // initial positions
-    var elementPos = goog.style.getPageOffset(element);
-    var newContainerPos = goog.style.getPageOffset(container);
-    // move to the new container
-    element.parentNode.removeChild(element);
-    container.appendChild(element);
-    // restore position
-    this.styleChanged('left', Math.round(elementPos.x - newContainerPos.x) + 'px', [element], false);
-    this.styleChanged('top', Math.round(elementPos.y - newContainerPos.y) + 'px', [element], false);
-  }
+  // initial positions
+  var elementPos = goog.style.getPageOffset(element);
+  var newContainerPos = goog.style.getPageOffset(container);
+  // move to the new container
+  element.parentNode.removeChild(element);
+  container.appendChild(element);
+  // restore position
+  this.styleChanged('left', Math.round(elementPos.x - newContainerPos.x) + 'px', [element], false);
+  this.styleChanged('top', Math.round(elementPos.y - newContainerPos.y) + 'px', [element], false);
   // check if a parent is visible only on some pages,
   // then element should be visible everywhere
   this.checkElementVisibility(element);
