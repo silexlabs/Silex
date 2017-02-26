@@ -276,6 +276,7 @@ silex.view.Menu.prototype.toggleSubMenu = function(classNameToToggle) {
  * @param {?string=} opt_componentName the component type if it is a component
  */
 silex.view.Menu.prototype.onMenuEvent = function(type, opt_componentName) {
+  let added = null;
   switch (type) {
     case 'show.pages':
       this.toggleSubMenu('page-tool-visible');
@@ -348,20 +349,20 @@ silex.view.Menu.prototype.onMenuEvent = function(type, opt_componentName) {
       this.controller.insertMenuController.createPage();
       break;
     case 'insert.text':
-      this.controller.insertMenuController.addElement(silex.model.Element.TYPE_TEXT, opt_componentName);
+      added = this.controller.insertMenuController.addElement(silex.model.Element.TYPE_TEXT, opt_componentName);
       break;
     case 'insert.section':
-      this.controller.insertMenuController.addElement(silex.model.Element.TYPE_SECTION, opt_componentName);
+      added = this.controller.insertMenuController.addElement(silex.model.Element.TYPE_SECTION, opt_componentName);
       break;
     case 'insert.html':
-      this.controller.insertMenuController.addElement(silex.model.Element.TYPE_HTML, opt_componentName);
+      added = this.controller.insertMenuController.addElement(silex.model.Element.TYPE_HTML, opt_componentName);
       break;
     case 'insert.image':
       // FIXME: add opt_componentName param to browseAndAddImage
       this.controller.insertMenuController.browseAndAddImage();
       break;
     case 'insert.container':
-      this.controller.insertMenuController.addElement(silex.model.Element.TYPE_CONTAINER, opt_componentName);
+      added = this.controller.insertMenuController.addElement(silex.model.Element.TYPE_CONTAINER, opt_componentName);
       break;
     case 'edit.delete.selection':
       // delete component
@@ -442,5 +443,17 @@ silex.view.Menu.prototype.onMenuEvent = function(type, opt_componentName) {
     //   break;
     default:
       console.warn('menu type not found', type);
+  }
+  if(opt_componentName) {
+    // for components, apply the style found in component definition
+    const componentsDef = this.model.component.getComponentsDef();
+    const comp = componentsDef[opt_componentName];
+    if(comp && comp.initialCss) {
+      const style = this.model.property.getStyle(added, false);
+      for(let name in comp.initialCss) {
+        style[name] = comp.initialCss[name];
+      }
+      this.model.property.setStyle(added, style, false);
+    }
   }
 };
