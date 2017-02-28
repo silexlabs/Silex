@@ -12,6 +12,16 @@ faIconClass: fa-header
 initialCss:
   min-height: 400px
 props:
-- name: useless
-  type: string
-  description: useless
+- name: width
+  type: number
+  description: Width in %
+  default: 100
+- name: align
+  type:
+  - left
+  - right
+  description: Horizontal alignment
+- name: height
+  type: number
+  description: Height in %
+  default: 100

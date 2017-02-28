@@ -1,0 +1,38 @@
+---
+name: JSON box
+description: 'This is an element which will load data and display it as HTML. '
+doc:
+category: Website UI
+tags:
+- ui
+- ux
+- website
+- dynamic data
+baseElement: html
+faIconClass: fa-list
+initialCss:
+  min-height: 400px
+dependencies:
+  script:
+  - src: http://ajax.aspnetcdn.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js
+props:
+- name: url
+  type: string
+  description: The URL to load.
+  default: 'https://api.buttercms.com/v2/posts/?auth_token=2fd9b76559c990b18cab8843e24d7a57f4dc8ca6'
+- name: template
+  type: string
+  description: The template to use to display the content.
+  default: '<h2>{{html title}}</h2><p>{{html body}}</p>'
+- name: jsonRoot
+  type: string
+  description: The JSON path to the array of data.
+  default: 'data'
+- name: refreshInterval
+  type: number
+  description: The refresh interval in seconds (0 to disable).
+  default: 10
+- name: autosize
+  type: boolean
+  description: Take the size of the content (otherwise display a scroll bar).
+  default: false
