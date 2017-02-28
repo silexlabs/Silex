@@ -1,0 +1,19 @@
+---
+name: Centered content
+description: 'This is the centered content in a hero section component. It is a container which is automatically centered vertically.'
+doc: https://en.wikipedia.org/wiki/Hero_image
+category: Hero Section
+tags:
+- ui
+- ux
+- website
+baseElement: container
+faIconClass: fa-address-card-o
+initialCss:
+  background-color: 'transparent'
+initialCssClass:
+  hero-center
+props:
+- name: useless
+  type: number
+  default: 100

@@ -1,0 +1,20 @@
+---
+name: Scroll down
+description: 'This is a clickable area to scroll down to the content in a hero section component. It is a container which is automatically moved at the bottom of the hero section.'
+doc: https://en.wikipedia.org/wiki/Hero_image
+category: Hero Section
+tags:
+- ui
+- ux
+- website
+baseElement: container
+faIconClass: fa-angle-double-down
+initialCss:
+  background-color: 'transparent'
+initialCssClass:
+  hero-bottom
+  hero-scroll
+props:
+- name: useless
+  type: number
+  default: 100

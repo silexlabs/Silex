@@ -2,7 +2,7 @@
 name: JSON box
 description: 'This is an element which will load data and display it as HTML. '
 doc:
-category: Website UI
+category: Dynamic list
 tags:
 - ui
 - ux
