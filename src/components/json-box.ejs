@@ -1,0 +1,57 @@
+<ul class="prodotype-preview">
+  <li>Open in preview to see the dynamic content.</li>
+</ul>
+<ul id="id_<%= uid %>"></ul>
+<style type="text/css">
+  #id_<%= uid %> {
+    margin: 0;
+  }
+  #id_<%= uid %> img, #id_<%= uid %> iframe {
+    max-width: 100%;
+  }
+</style>
+<script type="text/javascript">
+$(document).ready(function(){
+  if(!$('body').hasClass('silex-runtime')) {
+    // execute only outside silex editor
+    return;
+  }
+  var ul = $("#id_<%= uid %>");
+  function refresh() {
+    $.getJSON("<%= url %>", function(data){
+      var path = '<%= jsonRoot %>'.split('.');
+      var rootArray = data;
+      while(path.length) {
+        prop = path.shift();
+        if(data[prop]) rootArray = data[prop];
+      }
+      ul.empty();
+      for(var idx=0; idx<rootArray.length; idx++) {
+        var el = document.createElement('li');
+        el.innerHTML = '<%- template %>';
+          $(el).tmpl( rootArray[idx] ).appendTo("#id_<%= uid %>");
+      }
+      <% if(!autosize) { %>
+        var minHeight = ul.parent().parent().css('min-height');
+        ul.css({'height': minHeight, 'overflow': 'auto'});
+      <% } else { %>
+        var parent = ul.parent();
+        var height = ul.height();
+        var top = ul.offset().top;
+        var section = parent;
+        section.css({'min-height': height + top});
+      <% } %>
+      resizeBody();
+    });
+    <% if(refreshInterval > 0) { %>
+      // refresh if the element is still in the dom
+      // this will prevent refresh when the element has been deleted
+      if($('#id_<%= uid %>').length) {
+        setTimeout(refresh, <%= refreshInterval * 1000 %>);
+      }
+    <% } %>
+  }
+  ul.empty();
+  refresh();
+});
+</script>
