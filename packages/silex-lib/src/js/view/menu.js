@@ -147,9 +147,6 @@ silex.view.Menu.prototype.buildUi = function() {
   // components
   this.model.component.ready(() => {
     // **
-    // FIXME: do not display components untill the feature is ready
-    return;
-    // **
     const list = this.element.querySelector('.add-menu-container');
     const componentsDef = this.model.component.getComponentsDef();
     // build a list of component categories
