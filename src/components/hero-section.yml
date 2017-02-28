@@ -2,7 +2,7 @@
 name: Hero Section
 description: 'This is a hero section component, which takes the whole screen. You can add elements to the section and use the css classes "hero-center", "hero-bottom", "hero-right", "hero-scroll"'
 doc: https://en.wikipedia.org/wiki/Hero_image
-category: Website UI
+category: Hero Section
 tags:
 - ui
 - ux
@@ -11,6 +11,8 @@ baseElement: section
 faIconClass: fa-header
 initialCss:
   min-height: 400px
+initialCssContentContainer:
+  background-color: 'transparent'
 props:
 - name: width
   type: number
