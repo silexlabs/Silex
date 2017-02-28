@@ -449,15 +449,42 @@ silex.view.Menu.prototype.onMenuEvent = function(type, opt_componentName) {
       console.warn('menu type not found', type);
   }
   if(opt_componentName) {
-    // for components, apply the style found in component definition
+    // component definition special params for Silex
     const componentsDef = this.model.component.getComponentsDef();
     const comp = componentsDef[opt_componentName];
-    if(comp && comp.initialCss) {
-      const style = this.model.property.getStyle(added, false);
-      for(let name in comp.initialCss) {
-        style[name] = comp.initialCss[name];
+    if(comp) {
+      // for components, apply the style found in component definition
+      if(comp.initialCss) {
+        this.applyStyleTo(added, comp.initialCss);
       }
-      this.model.property.setStyle(added, style, false);
+      // same for the container inside the element (content node)
+      if(comp.initialCssContentContainer) {
+        this.applyStyleTo(this.model.element.getContentNode(added), comp.initialCssContentContainer);
+      }
+      // same for CSS classes to apply
+      if(comp.initialCssClass) {
+        // class name is either an array
+        // or a string
+        const className = comp.initialCssClass.join ? comp.initialCssClass.join(' ') : comp.initialCssClass;
+        const oldClassName = this.model.element.getClassName(added);
+        this.model.element.setClassName(added, oldClassName + ' ' + className);
+      }
     }
   }
 };
+
+
+/**
+ * apply a style to an element
+ * @param  {Element} element
+ * @param  {!Object} styleObj
+ */
+silex.view.Menu.prototype.applyStyleTo = function (element, styleObj) {
+  const style = this.model.property.getStyle(element, false);
+  for(let name in styleObj) {
+    style[name] = styleObj[name];
+  }
+  this.model.property.setStyle(element, style, false);
+};
+
+
