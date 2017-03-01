@@ -83,6 +83,14 @@ silex.view.Stage.BACKGROUND_CLASS_NAME = 'background';
 
 
 /**
+ * number of pixels to scroll at each animation frame
+ * the bigger the faster I will scroll to the target
+ * @type {number}
+ */
+silex.view.Stage.SCROLL_STEPS = 100;
+
+
+/**
  * the Window of the iframe which contains the website
  */
 silex.view.Stage.prototype.contentWindow = null;
@@ -347,11 +355,13 @@ silex.view.Stage.prototype.handleKey = function(event) {
   // not in text inputs
   if (event.target.tagName.toUpperCase() !== 'INPUT' &&
       event.target.tagName.toUpperCase() !== 'TEXTAREA') {
-    // mobile mode or selection contains onlu sections elements
+    // mobile mode or selection contains only sections elements
     if(this.isMobileMode() ||
-      this.selectedElements.reduce((prev, cur) => prev &&
+      (this.selectedElements && this.selectedElements.reduce((prev, cur) => prev &&
         (this.model.element.isSection(cur) ||
-          this.model.element.isSectionContent(cur)), true)) {
+          this.model.element.isSectionContent(cur)), true))) {
+      // move the elements in the dom
+      let tookAction = true;
       switch (event.keyCode) {
         case goog.events.KeyCodes.LEFT:
           this.controller.editMenuController.moveToTop();
@@ -368,6 +378,12 @@ silex.view.Stage.prototype.handleKey = function(event) {
         case goog.events.KeyCodes.ESC:
           this.controller.stageController.selectNone();
         break;
+        default:
+          tookAction = false;
+      }
+      // scroll to the moving element
+      if(tookAction) {
+        this.setScrollTarget(this.selectedElements[0]);
       }
     }
     else {
@@ -1091,6 +1107,8 @@ silex.view.Stage.prototype.moveElements = function(elements, offsetX, offsetY) {
   this.propertyChanged();
   // reset elements properties since they are stored in the CSS by the model
   elements.forEach((element) => {
+    this.controller.stageController.styleChanged('top', element.style.top, [element], false);
+    this.controller.stageController.styleChanged('left', element.style.left, [element], false);
     this.cleanupElement(element);
   });
 };
@@ -1105,3 +1123,52 @@ silex.view.Stage.prototype.isMobileMode = function() {
   return goog.dom.classlist.contains(document.body, 'mobile-mode');
 };
 
+
+/**
+ * @param  {Element}  element in the DOM to wich I am scrolling
+ */
+silex.view.Stage.prototype.setScrollTarget = function(element) {
+  if(element !== this.bodyElement) {
+    const previousTarget = this.scrollTarget;
+    this.scrollTarget = element;
+    if(!previousTarget) {
+      // start scrolling
+      // not right away because the element will not be attached to the dom yet
+      requestAnimationFrame(() => this.startScrolling());
+    }
+  }
+};
+
+
+/**
+ * scroll until the scroll target is reached
+ */
+silex.view.Stage.prototype.startScrolling = function() {
+  if(this.scrollTarget) {
+    // det the next scroll step
+    const prevScroll = this.getScrollY();
+    const bb = goog.style.getBounds(this.scrollTarget);
+    const iframeSize = this.getStageSize();
+    const scrollCentered = bb.top - Math.round(iframeSize.height/2);
+    // const nextStep = Math.round((bb.top - prevScroll) / silex.view.Stage.SCROLL_STEPS);
+    let nextStep;
+    if(Math.abs(scrollCentered - prevScroll) < silex.view.Stage.SCROLL_STEPS) {
+      nextStep = scrollCentered;
+    }
+    else if(scrollCentered > prevScroll) {
+      nextStep = prevScroll + silex.view.Stage.SCROLL_STEPS;
+    }
+    else {
+      nextStep = prevScroll - silex.view.Stage.SCROLL_STEPS;
+    }
+    this.setScrollY(nextStep);
+    // check if the scrolling target is reached
+    const newScroll = this.getScrollY();
+    if(newScroll === prevScroll || newScroll === scrollCentered) {
+      this.scrollTarget = null;
+    }
+    else {
+      requestAnimationFrame(() => this.startScrolling());
+    }
+  }
+};
