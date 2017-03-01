@@ -249,6 +249,10 @@ silex.model.Property.prototype.initStyles = function(doc) {
  * @param {?Object=} opt_componentData
  */
 silex.model.Property.prototype.setComponentData = function(element, opt_componentData) {
+  // a section's container content can not be a component, but the section itself may be
+  if(this.model.element.isSectionContent(element)) {
+    element = /** @type {Element} */ (element.parentNode);
+  }
   // get the internal ID
   var elementId =  /** @type {string} */ (this.getSilexId(element));
   // store in object
@@ -267,6 +271,10 @@ silex.model.Property.prototype.setComponentData = function(element, opt_componen
  * @return {?Object} a clone of the data object
  */
 silex.model.Property.prototype.getComponentData = function(element) {
+  // a section's container content can not be a component, but the section itself may be
+  if(this.model.element.isSectionContent(element)) {
+    element = /** @type {Element} */ (element.parentNode);
+  }
   // get the internal ID
   var elementId =  /** @type {string} */ (this.getSilexId(element));
   // returns value of object
@@ -291,7 +299,7 @@ silex.model.Property.prototype.setStyle = function(element, style, opt_isMobile)
     }
     // apply height to section content and not section itself
     const contentElement = /** @type {Element} */ (this.model.element.getContentNode(element));
-    const contentStyle = this.getStyle(contentElement, opt_isMobile);
+    const contentStyle = this.getStyle(contentElement, opt_isMobile) || {};
     if(style['min-height'] !== contentStyle['min-height']) {
       contentStyle['min-height'] = style['min-height'];
       this.setStyle(contentElement, contentStyle, opt_isMobile);
@@ -394,11 +402,13 @@ silex.model.Property.prototype.getStyle = function(element, opt_isMobile, opt_co
   }
   // styles of sections are special
   // the min-height of the section is stored on its content container
-  if(this.model.element.isSection(element)) {
+  if(this.model.element.isSection(element) && res) {
     // min-height of sections is the min-height of section content
     const contentElement = /** @type {Element} */ (this.model.element.getContentNode(element));
     const contentStyle = this.getStyle(contentElement, opt_isMobile, opt_computed);
-    res['min-height'] = contentStyle['min-height'];
+    if(contentStyle) {
+      res['min-height'] = contentStyle['min-height'];
+    }
     // width of section is null
     res['width'] = undefined;
     delete res['width'];

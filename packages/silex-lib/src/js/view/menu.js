@@ -139,34 +139,38 @@ silex.view.Menu.prototype.buildUi = function() {
     el.setAttribute('data-menu-action', 'insert.' + baseElementType);
     el.setAttribute('data-comp-id', id);
     el.innerHTML = `
-      <span class="icon fa-fw ${iconClassName}"></span>
+      <span class="icon fa-inverse ${iconClassName}"></span>
       Add ${id}
     `;
     return el;
   }
   // components
-  // this.model.component.ready(() => {
-  //   const list = this.element.querySelector('.add-menu-container');
-  //   const componentsDef = this.model.component.getComponentsDef();
-  //   // build a list of component categories
-  //   const elements = {};
-  //   for(let id in componentsDef) {
-  //     const comp = componentsDef[id];
-  //     if(comp.isPrivate !== true) {
-  //       if(!elements[comp.category]) elements[comp.category] = [elFromCompDef(comp, id)];
-  //       else elements[comp.category].push(elFromCompDef(comp, id));
-  //     }
-  //   }
-  //   for(let id in elements) {
-  //     // create a label for the category
-  //     const label = document.createElement('div');
-  //     label.classList.add('label');
-  //     label.innerHTML = id;
-  //     list.appendChild(label);
-  //     // attach each comp's element
-  //     elements[id].forEach(el => list.appendChild(el));
-  //   }
-  // });
+  this.model.component.ready(() => {
+    // **
+    // FIXME: do not display components untill the feature is ready
+    return;
+    // **
+    const list = this.element.querySelector('.add-menu-container');
+    const componentsDef = this.model.component.getComponentsDef();
+    // build a list of component categories
+    const elements = {};
+    for(let id in componentsDef) {
+      const comp = componentsDef[id];
+      if(comp.isPrivate !== true) {
+        if(!elements[comp.category]) elements[comp.category] = [elFromCompDef(comp, id)];
+        else elements[comp.category].push(elFromCompDef(comp, id));
+      }
+    }
+    for(let id in elements) {
+      // create a label for the category
+      const label = document.createElement('div');
+      label.classList.add('label');
+      label.innerHTML = id;
+      list.appendChild(label);
+      // attach each comp's element
+      elements[id].forEach(el => list.appendChild(el));
+    }
+  });
   // event handling
   this.element.onclick = e => {
     const action = e.target.getAttribute('data-menu-action') || e.target.parentNode.getAttribute('data-menu-action');
@@ -276,6 +280,7 @@ silex.view.Menu.prototype.toggleSubMenu = function(classNameToToggle) {
  * @param {?string=} opt_componentName the component type if it is a component
  */
 silex.view.Menu.prototype.onMenuEvent = function(type, opt_componentName) {
+  let added = null;
   switch (type) {
     case 'show.pages':
       this.toggleSubMenu('page-tool-visible');
@@ -348,20 +353,20 @@ silex.view.Menu.prototype.onMenuEvent = function(type, opt_componentName) {
       this.controller.insertMenuController.createPage();
       break;
     case 'insert.text':
-      this.controller.insertMenuController.addElement(silex.model.Element.TYPE_TEXT, opt_componentName);
+      added = this.controller.insertMenuController.addElement(silex.model.Element.TYPE_TEXT, opt_componentName);
       break;
     case 'insert.section':
-      this.controller.insertMenuController.addElement(silex.model.Element.TYPE_SECTION, opt_componentName);
+      added = this.controller.insertMenuController.addElement(silex.model.Element.TYPE_SECTION, opt_componentName);
       break;
     case 'insert.html':
-      this.controller.insertMenuController.addElement(silex.model.Element.TYPE_HTML, opt_componentName);
+      added = this.controller.insertMenuController.addElement(silex.model.Element.TYPE_HTML, opt_componentName);
       break;
     case 'insert.image':
       // FIXME: add opt_componentName param to browseAndAddImage
       this.controller.insertMenuController.browseAndAddImage();
       break;
     case 'insert.container':
-      this.controller.insertMenuController.addElement(silex.model.Element.TYPE_CONTAINER, opt_componentName);
+      added = this.controller.insertMenuController.addElement(silex.model.Element.TYPE_CONTAINER, opt_componentName);
       break;
     case 'edit.delete.selection':
       // delete component
@@ -442,5 +447,17 @@ silex.view.Menu.prototype.onMenuEvent = function(type, opt_componentName) {
     //   break;
     default:
       console.warn('menu type not found', type);
+  }
+  if(opt_componentName) {
+    // for components, apply the style found in component definition
+    const componentsDef = this.model.component.getComponentsDef();
+    const comp = componentsDef[opt_componentName];
+    if(comp && comp.initialCss) {
+      const style = this.model.property.getStyle(added, false);
+      for(let name in comp.initialCss) {
+        style[name] = comp.initialCss[name];
+      }
+      this.model.property.setStyle(added, style, false);
+    }
   }
 };
