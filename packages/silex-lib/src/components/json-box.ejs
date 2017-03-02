@@ -35,11 +35,8 @@ $(document).ready(function(){
         var minHeight = ul.parent().parent().css('min-height');
         ul.css({'height': minHeight, 'overflow': 'auto'});
       <% } else { %>
-        var parent = ul.parent();
-        var height = ul.height();
-        var top = ul.offset().top;
-        var section = parent;
-        section.css({'min-height': height + top});
+        var section = ul.parent();
+        section.css({'min-height': 'auto'});
       <% } %>
       resizeBody();
     });

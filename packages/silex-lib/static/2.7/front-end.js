@@ -115,6 +115,8 @@ $(function() {
     }
     // end computation, put back the body to a normal size
     bodyEl.removeClass('compute-body-size-pending');
+    // dispatch an event so that components can update
+    $(document).trigger('silex:resize');
   }, 500);
 
   // only outside silex editor when the window is small enough

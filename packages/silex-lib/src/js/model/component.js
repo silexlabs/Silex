@@ -112,19 +112,50 @@ silex.model.Component.prototype.initComponent = function(element, templateName) 
   .then(html => {
     this.model.element.setInnerHtml(element, html);
     this.updateDepenedencies();
+    // execute the scripts
+    const scripts = element.querySelectorAll('script');
+    for(let idx=0; idx<scripts.length; idx++) {
+      this.model.file.getContentWindow().eval(scripts[idx].innerText);
+    }
+
   });
-  // static resource for components styles
-  // TODO: delete this as there is no CSS file specific to components, everything is in dist/client/css/front-end.css
-  // if(!this.model.file.getContentDocument().querySelector('link[data-components-css]')) {
-  //   const head = this.model.head.getHeadElement();
-  //   const tag = this.model.file.getContentDocument().createElement('link');
-  //   tag.setAttribute('data-silex-static', '');
-  //   tag.setAttribute('data-component-css', '');
-  //   tag.rel = 'stylesheet';
-  //   tag.href = silex.utils.BackwardCompat.getStaticResourceUrl('components.css');
-  //   // insert on top so that styles applyed with Silex UI are strongger thant the predefined styles
-  //   head.insertBefore(tag, head.childNodes[0]);
-  // }
+
+  // component definition special params for Silex
+  const componentsDef = this.model.component.getComponentsDef();
+  const comp = componentsDef[templateName];
+  if(comp) {
+    // apply the style found in component definition
+    if(comp.initialCss) {
+      this.applyStyleTo(element, comp.initialCss);
+    }
+    // same for the container inside the element (content node)
+    if(comp.initialCssContentContainer) {
+      this.applyStyleTo(this.model.element.getContentNode(element), comp.initialCssContentContainer);
+    }
+    // same for CSS classes to apply
+    if(comp.initialCssClass) {
+      // class name is either an array
+      // or a string
+      const className = comp.initialCssClass.join ? comp.initialCssClass.join(' ') : comp.initialCssClass;
+      const oldClassName = this.model.element.getClassName(element);
+      this.model.element.setClassName(element, oldClassName + ' ' + className);
+    }
+  }
+
+};
+
+
+/**
+ * apply a style to an element
+ * @param  {Element} element
+ * @param  {!Object} styleObj
+ */
+silex.model.Component.prototype.applyStyleTo = function (element, styleObj) {
+  const style = this.model.property.getStyle(element, false);
+  for(let name in styleObj) {
+    style[name] = styleObj[name];
+  }
+  this.model.property.setStyle(element, style, false);
 };
 
 
