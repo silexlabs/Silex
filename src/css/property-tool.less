@@ -12,7 +12,6 @@
   overflow-y: auto;
   bottom: 0;
   background-color: @silexmediumgrey;
-  margin-top: @contextMenuHeight;
   font-size: small;
   hr {
     border-style: groove;
@@ -21,11 +20,45 @@
   .combobox {
     line-height: 16px;
   }
+
+  /* visibility of the content depends on tabs */
+  &.params-tab .main-container > span {
+    display: none;
+    &.component-editor {
+      display: initial;
+    }
+  }
+  .main-container span.component-editor {
+    display: none;
+  }
+  .tabs {
+    height: @contextMenuHeight;
+    width: 100%;
+    padding-bottom: 2px;
+    margin-bottom: 3px;
+    position: relative;
+    border-bottom: 1px solid @silexdarkgrey;
+    background-color: @silexdarkgrey;
+    .tab {
+      cursor: pointer;
+      padding: 11px;
+      border-right: 1px solid @silexdarkgrey;
+      background-color: @silexmediumdarkgrey;
+      &.on {
+        background-color: @silexlightgrey;
+        border: 1px solid @silexdarkgrey;
+        border-bottom-color: @silexmediumdarkgrey;
+        padding-bottom: 12px;
+      }
+    }
+  }
+
+  /* */
+
   .main-container {
     padding: 0;
-    padding-top: 5px;
     width: 97%;
-    border-bottom: 1px solid #2F2F2F;
+    border-bottom: 1px solid @silexdarkgrey;
 
     /* size set by workspace.js when the user resizes the property tool */
     &.size1 {
@@ -472,5 +505,4 @@
       padding-bottom: 5px;
     }
   }
-
 }
