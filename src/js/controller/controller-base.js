@@ -50,6 +50,13 @@ silex.controller.ControllerBase = function(model, view) {
 
   // catchall error tracker
   window.onerror = /** @type {function (string, string, number)} */ ((msg, url, line, colno, error) => this.tracker.trackOnError(msg, url, line, colno, error));
+
+
+  /**
+   * invalidation mechanism
+   * @type {InvalidationManager}
+   */
+  this.undoCheckpointInvalidationManager = new InvalidationManager(1000);
 };
 
 /**
@@ -112,19 +119,21 @@ silex.controller.ControllerBase.prototype.isDirty = function() {
  * store the model state in order to undo/redo
  */
 silex.controller.ControllerBase.prototype.undoCheckPoint = function() {
-  silex.controller.ControllerBase.redoHistory = [];
-  silex.controller.ControllerBase.getStatePending++;
-  this.getState((state) => {
-    silex.controller.ControllerBase.getStatePending--;
-    // if the previous state was different
-    if (silex.controller.ControllerBase.undoHistory.length === 0 ||
-        silex.controller.ControllerBase.undoHistory[silex.controller.ControllerBase.undoHistory.length - 1].html !== state.html ||
-        silex.controller.ControllerBase.undoHistory[silex.controller.ControllerBase.undoHistory.length - 1].page !== state.page) {
-      silex.controller.ControllerBase.undoHistory.push(state);
-    }
-    else {
-      console.warn('Did not store undo state, because nothing has changed');
-    }
+  this.undoCheckpointInvalidationManager.callWhenReady(() => {
+    silex.controller.ControllerBase.redoHistory = [];
+    silex.controller.ControllerBase.getStatePending++;
+    this.getState((state) => {
+      silex.controller.ControllerBase.getStatePending--;
+      // if the previous state was different
+      if (silex.controller.ControllerBase.undoHistory.length === 0 ||
+          silex.controller.ControllerBase.undoHistory[silex.controller.ControllerBase.undoHistory.length - 1].html !== state.html ||
+          silex.controller.ControllerBase.undoHistory[silex.controller.ControllerBase.undoHistory.length - 1].page !== state.page) {
+        silex.controller.ControllerBase.undoHistory.push(state);
+      }
+      else {
+        console.warn('Did not store undo state, because nothing has changed');
+      }
+    });
   });
 };
 
