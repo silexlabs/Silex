@@ -33,6 +33,13 @@ silex.controller.EditMenuController = function(model, view) {
   silex.controller.ControllerBase.call(this, model, view);
   // init clipboard
   this.clipboard = [];
+
+
+  /**
+   * invalidation mechanism
+   * @type {InvalidationManager}
+   */
+  this.undoredoInvalidationManager = new InvalidationManager(1000);
 };
 
 // inherit from silex.controller.ControllerBase
@@ -57,16 +64,19 @@ silex.controller.EditMenuController.prototype.clipboard = null;
  * undo the last action
  */
 silex.controller.EditMenuController.prototype.undo = function() {
-  if (silex.controller.ControllerBase.getStatePending === 0 &&
-    silex.controller.ControllerBase.undoHistory.length > 0) {
-    var state = this.getState();
-    silex.controller.ControllerBase.redoHistory.push(state);
-    var prevState = silex.controller.ControllerBase.undoHistory.pop();
-    this.restoreState(prevState);
-  }
-  else {
-    requestAnimationFrame(() => this.undo());
-  }
+  this.model.body.setSelection([]);
+  this.undoredoInvalidationManager.callWhenReady(() => {
+    if (silex.controller.ControllerBase.getStatePending === 0 &&
+      silex.controller.ControllerBase.undoHistory.length > 0) {
+      var state = this.getState();
+      silex.controller.ControllerBase.redoHistory.push(state);
+      var prevState = silex.controller.ControllerBase.undoHistory.pop();
+      this.restoreState(prevState);
+    }
+    else {
+      requestAnimationFrame(() => this.undo());
+    }
+  });
 };
 
 
@@ -74,12 +84,15 @@ silex.controller.EditMenuController.prototype.undo = function() {
  * redo the last action
  */
 silex.controller.EditMenuController.prototype.redo = function() {
-  if (silex.controller.ControllerBase.redoHistory.length > 0) {
-    var state = this.getState();
-    silex.controller.ControllerBase.undoHistory.push(state);
-    var prevState = silex.controller.ControllerBase.redoHistory.pop();
-    this.restoreState(prevState);
-  }
+  this.model.body.setSelection([]);
+  this.undoredoInvalidationManager.callWhenReady(() => {
+    if (silex.controller.ControllerBase.redoHistory.length > 0) {
+      var state = this.getState();
+      silex.controller.ControllerBase.undoHistory.push(state);
+      var prevState = silex.controller.ControllerBase.redoHistory.pop();
+      this.restoreState(prevState);
+    }
+  });
 };
 
 
