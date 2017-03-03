@@ -1,0 +1,48 @@
+<div id="id_<%= uid %>"></div>
+<script type="text/javascript">
+/*
+animation widget from here: https://github.com/silexlabs/Silex/issues/443
+*/
+$(function() {
+  // execute only outside silex editor
+  if(!$('body').hasClass('silex-runtime')) return;
+  // init ScrollReveal lib
+  window.sr = window.sr || ScrollReveal();
+  // animate this element on page change
+  $('body').on('pageChanged', animate_<%= uid %>);
+  // animate this element at start
+  animate_<%= uid %>();
+  // the function to start the animation
+  function animate_<%= uid %> (event, pageName) {
+    // only if the element is visible in the current page
+    var parent = $('#id_<%= uid %>').parent();
+    if($(parent).hasClass('paged-element-visible')) {
+      // use ScrollReveal API
+      sr.reveal(parent, {
+        origin:  '<%= origin %>',
+        distance: '<%= distance %>',
+        duration: <%= duration %>,
+        delay: <%= delay %>,
+        rotate: { x: <%= rotateX %>, y: <%= rotateY %>, z: <%= rotateZ %> },
+        opacity: <%= opacity %>,
+        scale: <%= scale %>,
+        easing: '<%= easing %>',
+        mobile: <%= mobile %>,
+        reset: <%= reset %>,
+        beforeReveal: function(el){
+          <%= beforeReveal %>
+        },
+        beforeReset: function(el){
+          <%= beforeReset %>
+        },
+        afterReveal: function(el){
+          <%= afterReveal %>
+        },
+        afterReset: function(el){
+          <%= afterReset %>
+        }
+      });
+    }
+  };
+})
+</script>

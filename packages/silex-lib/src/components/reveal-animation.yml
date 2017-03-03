@@ -1,0 +1,85 @@
+---
+name: Reveal animation
+description: "This is a container which will appear with an animation."
+doc:
+category: Special Containers
+tags:
+- ui
+- ux
+- website
+- anim
+dependencies:
+  script:
+  - src: https://unpkg.com/scrollreveal/dist/scrollreveal.min.js
+baseElement: container
+faIconClass: fa-arrows
+props:
+- name: origin
+  type:
+  - left
+  - right
+  - top
+  - bottom
+  default: left
+  description: Origin of the animation, e.g. from left.
+- name: distance
+  type: string
+  default: 20px
+  description: Distance where animation starts, e.g. '5rem', '10%', '20vw', etc.
+- name: duration
+  type: number
+  default: 500
+  description: Duration in milliseconds.
+- name: delay
+  type: number
+  default: 0
+  description: Delay in milliseconds.
+- name: rotateX
+  type: number
+  default: 0
+  description: Starting rotation. X angle in degrees. Will transition from these values to 0 in all axes.
+- name: rotateY
+  type: number
+  default: 0
+  description: Starting rotation. Y angle in degrees. Will transition from these values to 0 in all axes.
+- name: rotateZ
+  type: number
+  default: 0
+  description: Starting rotation. Z angle in degrees. Will transition from these values to 0 in all axes.
+- name: opacity
+  type: number
+  default: 0
+  description: Starting opacity value, before transitioning to the computed opacity.
+- name: scale
+  type: number
+  default: 0.9
+  description: Starting scale value, will transition from this value to 1
+- name: easing
+  type:
+  - linear
+  - ease
+  - ease-in
+  - ease-in-out
+  - ease-out
+  default: linear
+  description: Easing function (CSS easing)
+- name: mobile
+  type: boolean
+  default: true
+  description: Enable reveal animations on mobile.
+- name: reset
+  type: boolean
+  default: false
+  description: Repeat animation every time elements become visible or only once as elements become visible
+- name: beforeReveal
+  type: action
+  description: Callbacks that fire for each triggered element reveal.
+- name: beforeReset
+  type: action
+  description: Callbacks that fire for each triggered element reset.
+- name: afterReveal
+  type: action
+  description: Callbacks that fire for each completed element reveal.
+- name: afterReset
+  type: action
+  description: Callbacks that fire for each completed element reset.
