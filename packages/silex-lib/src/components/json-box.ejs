@@ -12,10 +12,9 @@
 </style>
 <script type="text/javascript">
 $(document).ready(function(){
-  if(!$('body').hasClass('silex-runtime')) {
-    // execute only outside silex editor
-    return;
-  }
+  // execute only outside silex editor
+  if(!$('body').hasClass('silex-runtime')) return;
+
   var ul = $("#id_<%= uid %>");
   function refresh() {
     $.getJSON("<%= url %>", function(data){
