@@ -214,7 +214,7 @@ silex.model.Head.prototype.getHeadStyle = function() {
     console.warn('no silex editable styles defined');
     return '';
   }
-  return this.model.element.unprepareHtmlForEdit(silexStyle.innerHTML);
+  return window['css_beautify'](this.model.element.unprepareHtmlForEdit(silexStyle.innerHTML));
 };
 
 

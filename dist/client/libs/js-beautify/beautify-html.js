@@ -3,7 +3,7 @@
 
   The MIT License (MIT)
 
-  Copyright (c) 2007-2013 Einar Lielmanis and contributors.
+  Copyright (c) 2007-2017 Einar Lielmanis, Liam Newman, and contributors.
 
   Permission is hereby granted, free of charge, to any person
   obtaining a copy of this software and associated documentation files
@@ -47,6 +47,7 @@
     brace_style (default "collapse") - "collapse" | "expand" | "end-expand" | "none"
             put braces on the same line as control statements (default), or put braces on own line (Allman / ANSI style), or just put end braces on own line, or attempt to keep them where they are.
     unformatted (defaults to inline tags) - list of tags, that shouldn't be reformatted
+    content_unformatted (defaults to pre tag) - list of tags, that its content shouldn't be reformatted
     indent_scripts (default normal)  - "keep"|"separate"|"normal"
     preserve_newlines (default true) - whether existing line breaks before elements should be preserved
                                         Only works before elements, not inside tags or for text.
@@ -63,7 +64,6 @@
       'indent_char': ' ',
       'wrap_line_length': 78,
       'brace_style': 'expand',
-      'unformatted': ['a', 'sub', 'sup', 'b', 'i', 'u'],
       'preserve_newlines': true,
       'max_preserve_newlines': 5,
       'indent_handlebars': false,
@@ -73,72 +73,130 @@
 
 (function() {
 
-    function trim(s) {
-        return s.replace(/^\s+|\s+$/g, '');
-    }
+    // function trim(s) {
+    //     return s.replace(/^\s+|\s+$/g, '');
+    // }
 
     function ltrim(s) {
         return s.replace(/^\s+/g, '');
     }
 
     function rtrim(s) {
-        return s.replace(/\s+$/g,'');
+        return s.replace(/\s+$/g, '');
     }
+
+    function mergeOpts(allOptions, targetType) {
+        var finalOpts = {};
+        var name;
+
+        for (name in allOptions) {
+            if (name !== targetType) {
+                finalOpts[name] = allOptions[name];
+            }
+        }
+
+        //merge in the per type settings for the targetType
+        if (targetType in allOptions) {
+            for (name in allOptions[targetType]) {
+                finalOpts[name] = allOptions[targetType][name];
+            }
+        }
+        return finalOpts;
+    }
+
+    var lineBreak = /\r\n|[\n\r\u2028\u2029]/;
+    var allLineBreaks = new RegExp(lineBreak.source, 'g');
 
     function style_html(html_source, options, js_beautify, css_beautify) {
         //Wrapper function to invoke all the necessary constructors and deal with the output.
 
         var multi_parser,
             indent_inner_html,
+            indent_body_inner_html,
+            indent_head_inner_html,
             indent_size,
             indent_character,
             wrap_line_length,
             brace_style,
             unformatted,
+            content_unformatted,
             preserve_newlines,
             max_preserve_newlines,
             indent_handlebars,
             wrap_attributes,
             wrap_attributes_indent_size,
+            is_wrap_attributes_force,
+            is_wrap_attributes_force_expand_multiline,
+            is_wrap_attributes_force_aligned,
             end_with_newline,
             extra_liners,
             eol;
 
         options = options || {};
 
+        // Allow the setting of language/file-type specific options
+        // with inheritance of overall settings
+        options = mergeOpts(options, 'html');
+
         // backwards compatibility to 1.3.4
         if ((options.wrap_line_length === undefined || parseInt(options.wrap_line_length, 10) === 0) &&
-                (options.max_char !== undefined && parseInt(options.max_char, 10) !== 0)) {
+            (options.max_char !== undefined && parseInt(options.max_char, 10) !== 0)) {
             options.wrap_line_length = options.max_char;
         }
 
         indent_inner_html = (options.indent_inner_html === undefined) ? false : options.indent_inner_html;
+        indent_body_inner_html = (options.indent_body_inner_html === undefined) ? true : options.indent_body_inner_html;
+        indent_head_inner_html = (options.indent_head_inner_html === undefined) ? true : options.indent_head_inner_html;
         indent_size = (options.indent_size === undefined) ? 4 : parseInt(options.indent_size, 10);
         indent_character = (options.indent_char === undefined) ? ' ' : options.indent_char;
         brace_style = (options.brace_style === undefined) ? 'collapse' : options.brace_style;
-        wrap_line_length =  parseInt(options.wrap_line_length, 10) === 0 ? 32786 : parseInt(options.wrap_line_length || 250, 10);
-        unformatted = options.unformatted || ['a', 'span', 'img', 'bdo', 'em', 'strong', 'dfn', 'code', 'samp', 'kbd',
-            'var', 'cite', 'abbr', 'acronym', 'q', 'sub', 'sup', 'tt', 'i', 'b', 'big', 'small', 'u', 's', 'strike',
-            'font', 'ins', 'del', 'pre', 'address', 'dt', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
+        wrap_line_length = parseInt(options.wrap_line_length, 10) === 0 ? 32786 : parseInt(options.wrap_line_length || 250, 10);
+        unformatted = options.unformatted || [
+            // https://www.w3.org/TR/html5/dom.html#phrasing-content
+            'a', 'abbr', 'area', 'audio', 'b', 'bdi', 'bdo', 'br', 'button', 'canvas', 'cite',
+            'code', 'data', 'datalist', 'del', 'dfn', 'em', 'embed', 'i', 'iframe', 'img',
+            'input', 'ins', 'kbd', 'keygen', 'label', 'map', 'mark', 'math', 'meter', 'noscript',
+            'object', 'output', 'progress', 'q', 'ruby', 's', 'samp', /* 'script', */ 'select', 'small',
+            'span', 'strong', 'sub', 'sup', 'svg', 'template', 'textarea', 'time', 'u', 'var',
+            'video', 'wbr', 'text',
+            // prexisting - not sure of full effect of removing, leaving in
+            'acronym', 'address', 'big', 'dt', 'ins', 'strike', 'tt',
+        ];
+        content_unformatted = options.content_unformatted || [
+            'pre',
+        ];
         preserve_newlines = (options.preserve_newlines === undefined) ? true : options.preserve_newlines;
         max_preserve_newlines = preserve_newlines ?
-            (isNaN(parseInt(options.max_preserve_newlines, 10)) ? 32786 : parseInt(options.max_preserve_newlines, 10))
-            : 0;
+            (isNaN(parseInt(options.max_preserve_newlines, 10)) ? 32786 : parseInt(options.max_preserve_newlines, 10)) :
+            0;
         indent_handlebars = (options.indent_handlebars === undefined) ? false : options.indent_handlebars;
         wrap_attributes = (options.wrap_attributes === undefined) ? 'auto' : options.wrap_attributes;
-        wrap_attributes_indent_size = (options.wrap_attributes_indent_size === undefined) ? indent_size : parseInt(options.wrap_attributes_indent_size, 10) || indent_size;
+        wrap_attributes_indent_size = (isNaN(parseInt(options.wrap_attributes_indent_size, 10))) ? indent_size : parseInt(options.wrap_attributes_indent_size, 10);
+        is_wrap_attributes_force = wrap_attributes.substr(0, 'force'.length) === 'force';
+        is_wrap_attributes_force_expand_multiline = (wrap_attributes === 'force-expand-multiline');
+        is_wrap_attributes_force_aligned = (wrap_attributes === 'force-aligned');
         end_with_newline = (options.end_with_newline === undefined) ? false : options.end_with_newline;
-        extra_liners = (typeof options.extra_liners == 'object') && options.extra_liners ?
+        extra_liners = (typeof options.extra_liners === 'object') && options.extra_liners ?
             options.extra_liners.concat() : (typeof options.extra_liners === 'string') ?
             options.extra_liners.split(',') : 'head,body,/html'.split(',');
-        eol = options.eol ? options.eol : '\n';
+        eol = options.eol ? options.eol : 'auto';
 
-        if(options.indent_with_tabs){
+        if (options.indent_with_tabs) {
             indent_character = '\t';
             indent_size = 1;
         }
 
-        eol = eol.replace(/\\r/, '\r').replace(/\\n/, '\n')
+        if (eol === 'auto') {
+            eol = '\n';
+            if (html_source && lineBreak.test(html_source || '')) {
+                eol = html_source.match(lineBreak)[0];
+            }
+        }
+
+        eol = eol.replace(/\\r/, '\r').replace(/\\n/, '\n');
+
+        // HACK: newline parsing inconsistent. This brute force normalizes the input.
+        html_source = html_source.replace(allLineBreaks, '\n');
 
         function Parser() {
 
@@ -154,10 +212,30 @@
             this.token_text = this.last_token = this.last_text = this.token_type = '';
             this.newlines = 0;
             this.indent_content = indent_inner_html;
+            this.indent_body_inner_html = indent_body_inner_html;
+            this.indent_head_inner_html = indent_head_inner_html;
 
             this.Utils = { //Uilities made available to the various functions
                 whitespace: "\n\r\t ".split(''),
-                single_token: 'br,input,link,meta,source,!doctype,basefont,base,area,hr,wbr,param,img,isindex,embed'.split(','), //all the single tags for HTML
+
+                single_token: [
+                    // HTLM void elements - aka self-closing tags - aka singletons
+                    // https://www.w3.org/html/wg/drafts/html/master/syntax.html#void-elements
+                    'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'keygen',
+                    'link', 'menuitem', 'meta', 'param', 'source', 'track', 'wbr',
+                    // NOTE: Optional tags - are not understood.
+                    // https://www.w3.org/TR/html5/syntax.html#optional-tags
+                    // The rules for optional tags are too complex for a simple list
+                    // Also, the content of these tags should still be indented in many cases.
+                    // 'li' is a good exmple.
+
+                    // Doctype and xml elements
+                    '!doctype', '?xml',
+                    // ?php tag
+                    '?php',
+                    // other tags that were in this list, keeping just in case
+                    'basefont', 'isindex'
+                ],
                 extra_liners: extra_liners, //for tags that need a line of whitespace before them
                 in_array: function(what, arr) {
                     for (var i = 0; i < arr.length; i++) {
@@ -171,7 +249,7 @@
 
             // Return true if the given text is composed entirely of whitespace.
             this.is_whitespace = function(text) {
-                for (var n = 0; n < text.length; text++) {
+                for (var n = 0; n < text.length; n++) {
                     if (!this.Utils.in_array(text.charAt(n), this.Utils.whitespace)) {
                         return false;
                     }
@@ -200,32 +278,48 @@
 
             // Append a space to the given content (string array) or, if we are
             // at the wrap_line_length, append a newline/indentation.
+            // return true if a newline was added, false if a space was added
             this.space_or_wrap = function(content) {
                 if (this.line_char_count >= this.wrap_line_length) { //insert a line when the wrap_line_length is reached
                     this.print_newline(false, content);
                     this.print_indentation(content);
+                    return true;
                 } else {
                     this.line_char_count++;
                     content.push(' ');
+                    return false;
                 }
             };
 
             this.get_content = function() { //function to capture regular content between tags
                 var input_char = '',
                     content = [],
-                    space = false; //if a space is needed
+                    handlebarsStarted = 0;
 
-                while (this.input.charAt(this.pos) !== '<') {
+                while (this.input.charAt(this.pos) !== '<' || handlebarsStarted === 2) {
                     if (this.pos >= this.input.length) {
                         return content.length ? content.join('') : ['', 'TK_EOF'];
                     }
 
-                    if (this.traverse_whitespace()) {
+                    if (handlebarsStarted < 2 && this.traverse_whitespace()) {
                         this.space_or_wrap(content);
                         continue;
                     }
 
+                    input_char = this.input.charAt(this.pos);
+
                     if (indent_handlebars) {
+                        if (input_char === '{') {
+                            handlebarsStarted += 1;
+                        } else if (handlebarsStarted < 2) {
+                            handlebarsStarted = 0;
+                        }
+
+                        if (input_char === '}' && handlebarsStarted > 0) {
+                            if (handlebarsStarted-- === 0) {
+                                break;
+                            }
+                        }
                         // Handlebars parsing is complicated.
                         // {{#foo}} and {{/foo}} are formatted tags.
                         // {{something}} should get treated as content, except:
@@ -243,7 +337,6 @@
                         }
                     }
 
-                    input_char = this.input.charAt(this.pos);
                     this.pos++;
                     this.line_char_count++;
                     content.push(input_char); //letter at-a-time (or string) inserted to an array
@@ -255,7 +348,6 @@
                 if (this.pos === this.input.length) {
                     return ['', 'TK_EOF'];
                 }
-                var input_char = '';
                 var content = '';
                 var reg_match = new RegExp('</' + name + '\\s*>', 'igm');
                 reg_match.lastIndex = this.pos;
@@ -326,10 +418,13 @@
                     comment = '',
                     space = false,
                     first_attr = true,
+                    has_wrapped_attrs = false,
                     tag_start, tag_end,
                     tag_start_char,
                     orig_pos = this.pos,
-                    orig_line_char_count = this.line_char_count;
+                    orig_line_char_count = this.line_char_count,
+                    is_tag_closed = false,
+                    tail;
 
                 peek = peek !== undefined ? peek : false;
 
@@ -353,29 +448,59 @@
                     if (input_char === "'" || input_char === '"') {
                         input_char += this.get_unformatted(input_char);
                         space = true;
-
                     }
 
                     if (input_char === '=') { //no space before =
                         space = false;
                     }
-
+                    tail = this.input.substr(this.pos - 1);
+                    if (is_wrap_attributes_force_expand_multiline && has_wrapped_attrs && !is_tag_closed && (input_char === '>' || input_char === '/')) {
+                        if (tail.match(/^\/?\s*>/)) {
+                            space = false;
+                            is_tag_closed = true;
+                            this.print_newline(false, content);
+                            this.print_indentation(content);
+                        }
+                    }
                     if (content.length && content[content.length - 1] !== '=' && input_char !== '>' && space) {
                         //no space after = or before >
-                        this.space_or_wrap(content);
+                        var wrapped = this.space_or_wrap(content);
+                        var indentAttrs = wrapped && input_char !== '/' && !is_wrap_attributes_force;
                         space = false;
-                        if (!first_attr && wrap_attributes === 'force' &&  input_char !== '/') {
-                            this.print_newline(true, content);
-                            this.print_indentation(content);
-                            for (var count = 0; count < wrap_attributes_indent_size; count++) {
-                                content.push(indent_character);
+
+                        if (is_wrap_attributes_force && input_char !== '/') {
+                            var force_first_attr_wrap = false;
+                            if (is_wrap_attributes_force_expand_multiline && first_attr) {
+                                var is_only_attribute = tail.match(/^\S*(="([^"]|\\")*")?\s*\/?\s*>/) !== null;
+                                force_first_attr_wrap = !is_only_attribute;
+                            }
+                            if (!first_attr || force_first_attr_wrap) {
+                                this.print_newline(false, content);
+                                this.print_indentation(content);
+                                indentAttrs = true;
                             }
                         }
-                        for (var i = 0; i < content.length; i++) {
-                          if (content[i] === ' ') {
-                            first_attr = false;
-                            break;
-                          }
+                        if (indentAttrs) {
+                            has_wrapped_attrs = true;
+
+                            //indent attributes an auto, forced, or forced-align line-wrap
+                            var alignment_size = wrap_attributes_indent_size;
+                            if (is_wrap_attributes_force_aligned) {
+                                alignment_size = content.indexOf(' ') + 1;
+                            }
+
+                            for (var count = 0; count < alignment_size; count++) {
+                                // only ever further indent with spaces since we're trying to align characters
+                                content.push(' ');
+                            }
+                        }
+                        if (first_attr) {
+                            for (var i = 0; i < content.length; i++) {
+                                if (content[i] === ' ') {
+                                    first_attr = false;
+                                    break;
+                                }
+                            }
                         }
                     }
 
@@ -433,8 +558,12 @@
                 var tag_index;
                 var tag_offset;
 
+                // must check for space first otherwise the tag could have the first attribute included, and
+                // then not un-indent correctly
                 if (tag_complete.indexOf(' ') !== -1) { //if there's whitespace, thats where the tag name ends
                     tag_index = tag_complete.indexOf(' ');
+                } else if (tag_complete.indexOf('\n') !== -1) { //if there's a line break, thats where the tag name ends
+                    tag_index = tag_complete.indexOf('\n');
                 } else if (tag_complete.charAt(0) === '{') {
                     tag_index = tag_complete.indexOf('}');
                 } else { //otherwise go with the tag ending
@@ -458,22 +587,24 @@
                         this.indent_content = true;
                         this.traverse_whitespace();
                     }
-                } else if (this.is_unformatted(tag_check, unformatted)) { // do not reformat the "unformatted" tags
+                } else if (this.is_unformatted(tag_check, unformatted) ||
+                    this.is_unformatted(tag_check, content_unformatted)) {
+                    // do not reformat the "unformatted" or "content_unformatted" tags
                     comment = this.get_unformatted('</' + tag_check + '>', tag_complete); //...delegate to get_unformatted function
                     content.push(comment);
                     tag_end = this.pos - 1;
                     this.tag_type = 'SINGLE';
                 } else if (tag_check === 'script' &&
                     (tag_complete.search('type') === -1 ||
-                    (tag_complete.search('type') > -1 &&
-                    tag_complete.search(/\b(text|application)\/(x-)?(javascript|ecmascript|jscript|livescript)/) > -1))) {
+                        (tag_complete.search('type') > -1 &&
+                            tag_complete.search(/\b(text|application|dojo)\/(x-)?(javascript|ecmascript|jscript|livescript|(ld\+)?json|method|aspect)/) > -1))) {
                     if (!peek) {
                         this.record_tag(tag_check);
                         this.tag_type = 'SCRIPT';
                     }
                 } else if (tag_check === 'style' &&
                     (tag_complete.search('type') === -1 ||
-                    (tag_complete.search('type') > -1 && tag_complete.search('text/css') > -1))) {
+                        (tag_complete.search('type') > -1 && tag_complete.search('text/css') > -1))) {
                     if (!peek) {
                         this.record_tag(tag_check);
                         this.tag_type = 'STYLE';
@@ -524,7 +655,7 @@
                     matched = false;
 
                 this.pos = start_pos;
-                input_char = this.input.charAt(this.pos);
+                var input_char = this.input.charAt(this.pos);
                 this.pos++;
 
                 while (this.pos <= this.input.length) {
@@ -550,9 +681,14 @@
                         } else if (comment.indexOf('<!--') === 0) { // <!-- comment ...
                             delimiter = '-->';
                             matched = true;
-                        } else if (comment.indexOf('{{!') === 0) { // {{! handlebars comment
-                            delimiter = '}}';
+                        } else if (comment.indexOf('{{!--') === 0) { // {{!-- handlebars comment
+                            delimiter = '--}}';
                             matched = true;
+                        } else if (comment.indexOf('{{!') === 0) { // {{! handlebars comment
+                            if (comment.length === 5 && comment.indexOf('{{!--') === -1) {
+                                delimiter = '}}';
+                                matched = true;
+                            }
                         } else if (comment.indexOf('<?') === 0) { // {{! handlebars comment
                             delimiter = '?>';
                             matched = true;
@@ -569,15 +705,34 @@
                 return comment;
             };
 
-            this.get_unformatted = function(delimiter, orig_tag) { //function to return unformatted content in its entirety
+            function tokenMatcher(delimiter) {
+                var token = '';
 
+                var add = function(str) {
+                    var newToken = token + str.toLowerCase();
+                    token = newToken.length <= delimiter.length ? newToken : newToken.substr(newToken.length - delimiter.length, delimiter.length);
+                };
+
+                var doesNotMatch = function() {
+                    return token.indexOf(delimiter) === -1;
+                };
+
+                return {
+                    add: add,
+                    doesNotMatch: doesNotMatch
+                };
+            }
+
+            this.get_unformatted = function(delimiter, orig_tag) { //function to return unformatted content in its entirety
                 if (orig_tag && orig_tag.toLowerCase().indexOf(delimiter) !== -1) {
                     return '';
                 }
                 var input_char = '';
                 var content = '';
-                var min_index = 0;
                 var space = true;
+
+                var delimiterMatcher = tokenMatcher(delimiter);
+
                 do {
 
                     if (this.pos >= this.input.length) {
@@ -605,16 +760,17 @@
                         }
                     }
                     content += input_char;
+                    delimiterMatcher.add(input_char);
                     this.line_char_count++;
                     space = true;
 
                     if (indent_handlebars && input_char === '{' && content.length && content.charAt(content.length - 2) === '{') {
                         // Handlebars expressions in strings should also be unformatted.
                         content += this.get_unformatted('}}');
-                        // These expressions are opaque.  Ignore delimiters found in them.
-                        min_index = content.length;
+                        // Don't consider when stopping for delimiters.
                     }
-                } while (content.toLowerCase().indexOf(delimiter, min_index) === -1);
+                } while (delimiterMatcher.doesNotMatch());
+
                 return content;
             };
 
@@ -690,7 +846,7 @@
                 this.input = js_source || ''; //gets the input for the Parser
 
                 // HACK: newline parsing inconsistent. This brute force normalizes the input.
-                this.input = this.input.replace(/\r\n|[\r\u2028\u2029]/g, '\n')
+                this.input = this.input.replace(/\r\n|[\r\u2028\u2029]/g, '\n');
 
                 this.output = [];
                 this.indent_character = indent_character;
@@ -794,7 +950,12 @@
                     multi_parser.print_newline(false, multi_parser.output);
                     multi_parser.print_token(multi_parser.token_text);
                     if (multi_parser.indent_content) {
-                        multi_parser.indent();
+                        if ((multi_parser.indent_body_inner_html || !multi_parser.token_text.match(/<body(?:.*)>/)) &&
+                            (multi_parser.indent_head_inner_html || !multi_parser.token_text.match(/<head(?:.*)>/))) {
+
+                            multi_parser.indent();
+                        }
+
                         multi_parser.indent_content = false;
                     }
                     multi_parser.current_mode = 'CONTENT';
@@ -808,7 +969,7 @@
                 case 'TK_TAG_END':
                     //Print new line only if the tag has no content and has child
                     if (multi_parser.last_token === 'TK_CONTENT' && multi_parser.last_text === '') {
-                        var tag_name = multi_parser.token_text.match(/\w+/)[0];
+                        var tag_name = (multi_parser.token_text.match(/\w+/) || [])[0];
                         var tag_extracted_from_last_output = null;
                         if (multi_parser.output.length) {
                             tag_extracted_from_last_output = multi_parser.output[multi_parser.output.length - 1].match(/(?:<|{{#)\s*(\w+)/);
@@ -831,6 +992,21 @@
                     multi_parser.current_mode = 'CONTENT';
                     break;
                 case 'TK_TAG_HANDLEBARS_ELSE':
+                    // Don't add a newline if opening {{#if}} tag is on the current line
+                    var foundIfOnCurrentLine = false;
+                    for (var lastCheckedOutput = multi_parser.output.length - 1; lastCheckedOutput >= 0; lastCheckedOutput--) {
+                        if (multi_parser.output[lastCheckedOutput] === '\n') {
+                            break;
+                        } else {
+                            if (multi_parser.output[lastCheckedOutput].match(/{{#if/)) {
+                                foundIfOnCurrentLine = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!foundIfOnCurrentLine) {
+                        multi_parser.print_newline(false, multi_parser.output);
+                    }
                     multi_parser.print_token(multi_parser.token_text);
                     if (multi_parser.indent_content) {
                         multi_parser.indent();
@@ -909,7 +1085,7 @@
             sweet_code += '\n';
         }
 
-        if (eol != '\n') {
+        if (eol !== '\n') {
             sweet_code = sweet_code.replace(/[\n]/g, eol);
         }
 
@@ -919,13 +1095,13 @@
     if (typeof define === "function" && define.amd) {
         // Add support for AMD ( https://github.com/amdjs/amdjs-api/wiki/AMD#defineamd-property- )
         define(["require", "./beautify", "./beautify-css"], function(requireamd) {
-            var js_beautify =  requireamd("./beautify");
-            var css_beautify =  requireamd("./beautify-css");
+            var js_beautify = requireamd("./beautify");
+            var css_beautify = requireamd("./beautify-css");
 
             return {
-              html_beautify: function(html_source, options) {
-                return style_html(html_source, options, js_beautify.js_beautify, css_beautify.css_beautify);
-              }
+                html_beautify: function(html_source, options) {
+                    return style_html(html_source, options, js_beautify.js_beautify, css_beautify.css_beautify);
+                }
             };
         });
     } else if (typeof exports !== "undefined") {
