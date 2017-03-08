@@ -57,7 +57,7 @@
     "request": "2.69.0",
     "superstartup-closure-compiler": "0.1.7",
     "unifile": "0.0.60",
-    "prodotype": "lexoyo/Prodotype"
+    "prodotype": "silexlabs/Prodotype"
   },
   "devDependencies": {
     "assert": "1.3.0",
