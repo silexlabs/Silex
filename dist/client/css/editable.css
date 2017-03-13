@@ -125,32 +125,32 @@ this makes the video clickable:
 }
 .editable-style > .ui-resizable-e,
 .editable-style > .ui-resizable-w {
-  width: 4px;
+  width: 6px;
   height: 100%;
 }
 .editable-style > .ui-resizable-s,
 .editable-style > .ui-resizable-n {
   width: 100%;
-  height: 4px;
+  height: 6px;
 }
 .editable-style > .ui-resizable-ne {
-  top: -4px;
-  right: -4px;
+  top: -6px;
+  right: -6px;
   cursor: ne-resize;
 }
 .editable-style > .ui-resizable-sw {
-  bottom: -4px;
-  left: -4px;
+  bottom: -6px;
+  left: -6px;
   cursor: sw-resize;
 }
 .editable-style > .ui-resizable-se {
-  bottom: -4px;
-  right: -4px;
+  bottom: -6px;
+  right: -6px;
   cursor: se-resize;
 }
 .editable-style > .ui-resizable-nw {
-  top: -4px;
-  left: -4px;
+  top: -6px;
+  left: -6px;
   cursor: nw-resize;
 }
 .editable-style > .ui-resizable-n {
