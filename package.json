@@ -9,8 +9,8 @@
   "main": "dist/server/server.js",
   "license": "GPL-3.0",
   "engines": {
-    "node": "~0.12.0",
-    "npm": "~2.7.3"
+    "node": "~6.5.0",
+    "npm": "~3.8.6"
   },
   "precommit": [
     "lint:js",
