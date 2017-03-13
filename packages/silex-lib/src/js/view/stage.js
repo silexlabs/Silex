@@ -577,11 +577,6 @@ silex.view.Stage.prototype.onMouseMove = function(target, x, y, shiftKey) {
         this.isResizing = true;
       }
       else {
-        // det the drop zone under the cursor
-        let dropZone = this.getDropZone(x, y, true) || {'element': this.bodyElement, 'zIndex': 0};
-        // handle the css class applyed to the dropzone
-        this.markAsDropZone(dropZone.element);
-
         // switch to dragging state
         this.isDragging = true;
         this.selectedElements
@@ -768,6 +763,11 @@ silex.view.Stage.prototype.multipleDragged = function(x, y, shiftKey) {
   let followers = this.selectedElements;
   // drag or resize
   if (this.isDragging || this.resizeDirection === null) {
+    // det the drop zone under the cursor
+    let dropZone = this.getDropZone(x, y, true) || {'element': this.bodyElement, 'zIndex': 0};
+    // handle the css class applyed to the dropzone
+    this.markAsDropZone(dropZone.element);
+
     // handle shift key to move on one axis or preserve ratio
     if (shiftKey === true) {
       if (Math.abs((this.initialPos.x + this.initialScroll.x) - (x + scrollX)) < Math.abs((this.initialPos.y + this.initialScroll.y) - (y + scrollY))) {
