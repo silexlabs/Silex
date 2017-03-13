@@ -28,18 +28,14 @@ body{
   opacity: .5;
   z-index: 1;
   position: absolute;
-  border-color: #333333;
-  border-style: dashed;
 }
 /* editable-style-hover is used by bread crumb to hilight potential selection */
-.editable-style:hover > .ui-resizable-handle,
-.editable-style-hover > .ui-resizable-handle {
+.editable-style:hover {
   opacity: 1;
-  border-style: solid;
+  box-shadow: inset 0px 0px 0px 1px #FFFFFF, 0px 0px 0px 1px #000000;
 }
-.editable-style.silex-selected > .ui-resizable-handle {
-  opacity: 1;
-  border-style: solid;
+.editable-style.silex-selected {
+  box-shadow: inset 0px 0px 0px 1px #FFFFFF, 0px 0px 0px 1px #000000;
 }
 .editable-style.prevent-resizable > .ui-resizable-handle {
   display: none;
@@ -69,12 +65,9 @@ this makes the video clickable:
   position: absolute;
 }
 .drop-zone-candidate {
-  /* background-image: none;
-  box-shadow: inset 2px 2px 20px rgba(51, 51, 51, 0.8);
-  */
-  animation-duration: 2s;
-  -moz-animation-duration: 2s;
-  -webkit-animation-duration: 2s;
+  animation-duration: 1s;
+  -moz-animation-duration: 1s;
+  -webkit-animation-duration: 1s;
   animation-name: blink;
   -moz-animation-name: blink;
   -webkit-animation-name: blink;
@@ -83,22 +76,22 @@ this makes the video clickable:
   -webkit-animation-iteration-count: infinite;
 }
 @keyframes blink {
-  0% {     box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.8); }
-  10% {     box-shadow: inset 0 0 4px rgba(255, 255, 255, 0.8); }
-  20% { box-shadow: inset 0 0 4px #333333 }
-  100% { box-shadow: inset 0 0 4px #333333 }
+  0% {     box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.8); }
+  33% {     box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.8); }
+  66% { box-shadow: inset 0 0 0 2px #333333 }
+  100% { box-shadow: inset 0 0 0 2px #333333 }
 }
 @-moz-keyframes blink {
-  0% {     box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.8); }
-  10% {     box-shadow: inset 0 0 4px rgba(255, 255, 255, 0.8); }
-  20% { box-shadow: inset 0 0 4px #333333 }
-  100% { box-shadow: inset 0 0 4px #333333 }
+  0% {     box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.8); }
+  33% {     box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.8); }
+  66% { box-shadow: inset 0 0 0 2px #333333 }
+  100% { box-shadow: inset 0 0 0 2px #333333 }
 }
 @-webkit-keyframes blink {
-  0% {     box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.8); }
-  10% {     box-shadow: inset 0 0 4px rgba(255, 255, 255, 0.8); }
-  20% { box-shadow: inset 0 0 4px #333333 }
-  100% { box-shadow: inset 0 0 4px #333333 }
+  0% {     box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.8); }
+  33% {     box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.8); }
+  66% { box-shadow: inset 0 0 0 2px #333333 }
+  100% { box-shadow: inset 0 0 0 2px #333333 }
 }
 .editable-style.background {
   cursor: pointer;
@@ -131,32 +124,32 @@ this makes the video clickable:
 }
 .editable-style > .ui-resizable-e,
 .editable-style > .ui-resizable-w {
-  width: 6px;
+  width: 4px;
   height: 100%;
 }
 .editable-style > .ui-resizable-s,
 .editable-style > .ui-resizable-n {
   width: 100%;
-  height: 6px;
+  height: 4px;
 }
 .editable-style > .ui-resizable-ne {
-  top: -6px;
-  right: -6px;
+  top: -4px;
+  right: -4px;
   cursor: ne-resize;
 }
 .editable-style > .ui-resizable-sw {
-  bottom: -6px;
-  left: -6px;
+  bottom: -4px;
+  left: -4px;
   cursor: sw-resize;
 }
 .editable-style > .ui-resizable-se {
-  bottom: -6px;
-  right: -6px;
+  bottom: -4px;
+  right: -4px;
   cursor: se-resize;
 }
 .editable-style > .ui-resizable-nw {
-  top: -6px;
-  left: -6px;
+  top: -4px;
+  left: -4px;
   cursor: nw-resize;
 }
 .editable-style > .ui-resizable-n {

@@ -455,6 +455,8 @@ silex.view.Stage.prototype.handleMouseUp = function(target, x, y, shiftKey) {
   this.isDown = false;
   // handle the mouse up
   if (this.isDragging) {
+    // reset dropzone marker
+    this.markAsDropZone(null);
     // new container
     let dropZone = this.getDropZone(x, y, true) || {'element': this.bodyElement, 'zIndex': 0};
     // move all selected elements to the new container
@@ -472,8 +474,6 @@ silex.view.Stage.prototype.handleMouseUp = function(target, x, y, shiftKey) {
   }
   // handle selection
   if (this.isDragging || this.isResizing) {
-    // reset dropzone marker
-    this.markAsDropZone(null);
     // update property tool box
     this.propertyChanged();
     // keep flags up to date
@@ -555,10 +555,6 @@ silex.view.Stage.prototype.bringSelectionForward = function() {
 silex.view.Stage.prototype.onMouseMove = function(target, x, y, shiftKey) {
   // update states
   if (this.isDown) {
-    // det the drop zone under the cursor
-    let dropZone = this.getDropZone(x, y, true) || {'element': this.bodyElement, 'zIndex': 0};
-    // handle the css class applyed to the dropzone
-    this.markAsDropZone(dropZone.element);
     // update property tool box
     this.propertyChanged();
     // case of a drag directly after mouse down (select + drag)
@@ -573,7 +569,6 @@ silex.view.Stage.prototype.onMouseMove = function(target, x, y, shiftKey) {
         // do nothing while the user has not dragged more than 5 pixels
         return;
       }
-
       // notify controller that a change is about to take place
       // marker for undo/redo
       this.controller.stageController.markAsUndoable();
@@ -582,6 +577,12 @@ silex.view.Stage.prototype.onMouseMove = function(target, x, y, shiftKey) {
         this.isResizing = true;
       }
       else {
+        // det the drop zone under the cursor
+        let dropZone = this.getDropZone(x, y, true) || {'element': this.bodyElement, 'zIndex': 0};
+        // handle the css class applyed to the dropzone
+        this.markAsDropZone(dropZone.element);
+
+        // switch to dragging state
         this.isDragging = true;
         this.selectedElements
         .filter(element => element !== this.bodyElement && !element.classList.contains(silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME))
