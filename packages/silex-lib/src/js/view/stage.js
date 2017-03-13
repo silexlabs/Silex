@@ -909,8 +909,15 @@ silex.view.Stage.prototype.followElementSize =
         offsetSizeX = -offsetSizeX;
         break;
       }
-      var size = goog.style.getSize(follower);
-      var borderBox = goog.style.getBorderBox(follower);
+      const size = goog.style.getSize(follower);
+      const borderBox = goog.style.getBorderBox(follower);
+      const style = this.contentWindow.getComputedStyle(follower);
+      const paddingBox = {
+        left: parseInt(style.paddingLeft, 10),
+        right: parseInt(style.paddingRight, 10),
+        top: parseInt(style.paddingTop, 10),
+        bottom: parseInt(style.paddingBottom, 10),
+      };
       // handle section content elements which are forced centered
       // (only when the background is smaller than the body)
       // TODO in a while: remove support of .background since it is now a section
@@ -920,8 +927,8 @@ silex.view.Stage.prototype.followElementSize =
         offsetSizeX *= 2;
       }
       // compute new size
-      var newSizeW = size.width + offsetSizeX - borderBox.left - borderBox.right;
-      var newSizeH = size.height + offsetSizeY - borderBox.top - borderBox.bottom;
+      var newSizeW = size.width + offsetSizeX - borderBox.left - paddingBox.left - borderBox.right - paddingBox.right;
+      var newSizeH = size.height + offsetSizeY - borderBox.top - paddingBox.top - borderBox.bottom - paddingBox.bottom;
       // handle min size
       if (newSizeW < silex.model.Element.MIN_WIDTH) {
         if (resizeDirection === 'w' || resizeDirection === 'sw' || resizeDirection === 'nw') {
