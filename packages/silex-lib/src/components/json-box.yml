@@ -14,7 +14,7 @@ initialCss:
   min-height: 400px
 dependencies:
   script:
-  - src: http://ajax.aspnetcdn.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js
+  - src: //ajax.aspnetcdn.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js
 props:
 - name: url
   type: string
