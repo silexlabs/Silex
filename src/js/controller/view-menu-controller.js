@@ -130,7 +130,7 @@ silex.controller.ViewMenuController.prototype.doPreview = function(inResponsize)
         this.tracker.trackAction('controller-events', 'error', 'view.file', -1);
       }, this));
   }.bind(this);
-  if (this.model.file.getUrl()) {
+  if (this.model.file.getUrl() && !this.model.file.isTemplate) {
     // open the preview window
     // it is important to do it now, on the user click so that it is not blocked
     // it will be refreshed after save

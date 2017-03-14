@@ -11,7 +11,6 @@
 
 /**
  * @fileoverview The "new website" dialog which displays templates
- * FIXME: do not inherit from settings but create a SideBarDialogBase base class
  *
  */
 
@@ -70,18 +69,19 @@ silex.view.dialog.NewWebsiteDialog.prototype.renderTemplateList = function(ul, r
     // render the data
     data
       // remove files
-      .filter(item => item.type === 'dir')
+      .filter(item => item.type === 'directory')
       // make a list of <li> tags
       .map(item => {
         const li = document.createElement('li');
-        const name = item.name.replace('-', ' ', 'g');
+        const name = item.name;
         li.classList.add('rendered-item');
 
         // thumbnail
         const thumbnail = document.createElement('div');
         thumbnail.classList.add('thumbnail');
-        thumbnail.style.backgroundImage = `url(//${repo}.silex.me/${item.name}/screenshot.png)`;
-        thumbnail.setAttribute('data-editable', `//${repo}.silex.me/${item.name}/editable.html`);
+        thumbnail.style.backgroundImage = `url(/${repo}/${item.name}/screenshot.png)`;
+        thumbnail.setAttribute('data-editable', `/${repo}/${item.name}/editable.html`);
+        thumbnail.setAttribute('data-is-template', 'true');
         li.appendChild(thumbnail);
 
         // UI container
@@ -92,7 +92,8 @@ silex.view.dialog.NewWebsiteDialog.prototype.renderTemplateList = function(ul, r
         // title
         const h3 = document.createElement('h3');
         h3.innerHTML = name;
-        h3.setAttribute('data-editable', `//${repo}.silex.me/${item.name}/editable.html`);
+        h3.setAttribute('data-editable', `/${repo}/${item.name}/editable.html`);
+        h3.setAttribute('data-is-template', 'true');
         ui.appendChild(h3);
 
         // preview
@@ -101,7 +102,7 @@ silex.view.dialog.NewWebsiteDialog.prototype.renderTemplateList = function(ul, r
         previewEl.innerHTML = 'Preview';
         previewEl.setAttribute('data-action', 'preview');
         previewEl.target = '_blank';
-        previewEl.href = `//${repo}.silex.me/${item.name}/index.html`;
+        previewEl.href = `/${repo}/${item.name}/index.html`;
         ui.appendChild(previewEl);
 
         // info
@@ -117,7 +118,8 @@ silex.view.dialog.NewWebsiteDialog.prototype.renderTemplateList = function(ul, r
         const editEl = document.createElement('a');
         editEl.classList.add('fa', 'fa-pencil');
         editEl.innerHTML = 'Select';
-        editEl.setAttribute('data-editable', `//${repo}.silex.me/${item.name}/editable.html`);
+        editEl.setAttribute('data-editable', `/${repo}/${item.name}/editable.html`);
+        editEl.setAttribute('data-is-template', 'true');
         ui.appendChild(editEl);
 
         return li;
@@ -133,7 +135,7 @@ silex.view.dialog.NewWebsiteDialog.prototype.renderTemplateList = function(ul, r
  */
 silex.view.dialog.NewWebsiteDialog.prototype.buildUi = function() {
   const createList = (ul, repo, success, error) => {
-    const repoUrl = `https://api.github.com/repos/silexlabs/${repo}/contents`;
+    const repoUrl = `/get/${repo}`;
     const oReq = new XMLHttpRequest();
     oReq.addEventListener('error', e => {
       ul.innerHTML = 'It looks like you are offline. I could not load data from github issues';
@@ -141,7 +143,7 @@ silex.view.dialog.NewWebsiteDialog.prototype.buildUi = function() {
     });
     oReq.addEventListener('load', e => {
       const list = JSON.parse(oReq.responseText);
-      this.renderTemplateList(ul, repo, list);
+      this.renderTemplateList(ul, repo, list.children);
       success();
     });
     oReq.open('GET', repoUrl);
@@ -152,14 +154,11 @@ silex.view.dialog.NewWebsiteDialog.prototype.buildUi = function() {
   body.onclick = e => {
     // listen for a click in the list of recent files
     const a = e.target;
-    this.selected = a.getAttribute('data-editable');
-    if(this.selected) {
-      // let the file picker init
-      // this is a workaround to prevent cloud explorer to throw an error on write
-      // FIXME: remove this with the new cloud explorer version
-      const filePicker = silex.service.CloudStorage.getInstance().filePicker;
-      filePicker['ctrl']['show']();
-      filePicker['ctrl']['hide']();
+    if(a.getAttribute('data-editable')) {
+      this.selected = {
+        url: a.getAttribute('data-editable'),
+        isTemplate: a.getAttribute('data-is-template') === 'true',
+      }
       // close the dialog, which will trigger a call the dialog onClose callback
       // and then this.selected will be used to open the selected file
       this.modalDialog.close();
@@ -265,11 +264,18 @@ silex.view.dialog.NewWebsiteDialog.prototype.redraw = function() {
 
 /**
  * open the dialog
- * @param {{close:!function(string), ready:?function(), error:?function(?Object=)}} options   options object
+ * @param {{close:!function(?string, ?boolean), ready:?function(), error:?function(?Object=)}} options   options object
  */
 silex.view.dialog.NewWebsiteDialog.prototype.openDialog = function(options) {
   // is ready callback
   if(this.state === 'ready') {
+    // let the file picker init
+    // this is a workaround to prevent cloud explorer to throw an error on write
+    // FIXME: remove this with the new cloud explorer version
+    const filePicker = silex.service.CloudStorage.getInstance().filePicker;
+    filePicker['ctrl']['show']();
+    filePicker['ctrl']['hide']();
+    // notify the owner
     if(options.ready) options.ready();
   }
   // error callback
@@ -283,7 +289,12 @@ silex.view.dialog.NewWebsiteDialog.prototype.openDialog = function(options) {
   }
   this.selected = null;
   this.modalDialog.onClose = () => {
-    options.close(this.selected);
+    if(this.selected) {
+      options.close(this.selected.url, this.selected.isTemplate);
+    }
+    else {
+      options.close(null, null);
+    }
   }
   this.modalDialog.open();
 };
