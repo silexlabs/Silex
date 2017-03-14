@@ -46,52 +46,60 @@ silex.controller.FileMenuController.prototype.newFile = function(opt_cbk, opt_er
 
   this.tracker.trackAction('controller-events', 'request', 'file.new', 0);
 
-  const onError = (err) => {
-    if (opt_errorCbk) {
-      opt_errorCbk(err);
-    }
-    this.tracker.trackAction('controller-events', 'error', 'file.new', -1);
-  };
-  const onSuccess = () => {
-    // QOS, track success
-    this.tracker.trackAction('controller-events', 'success', 'file.new', 1);
-    if(opt_cbk) {
-      opt_cbk();
-    }
-  };
   this.view.newWebsiteDialog.openDialog({
-    close: url => {
+    close: (url, isTemplate) => {
       if(!url && !this.model.file.hasContent()) {
         // if the user closes the dialog and no website is being edited
         // then load default blank website
         // otherwise just close the dialog
-        url = '//silex-blank-templates.silex.me/blank/editable.html';
+        url = './silex-blank-templates/blank/editable.html';
+        isTemplate = true;
       }
       if(url) {
-        this.model.file.openFromUrl(url, rawHtml => {
-          this.model.file.setHtml(rawHtml, () => {
-            // undo redo reset
-            this.undoReset();
-            this.fileOperationSuccess(null, true);
-            onSuccess();
-          }, true);
-        }, (err, msg) => {
-          console.error('opening template error', err);
-          silex.utils.Notification.alert('An error occured, I could not open the file. ' + msg, () => this.newFile(opt_cbk, opt_errorCbk));
-          onError(err);
-        });
+        if(isTemplate) {
+          this.model.file.openFromUrl(url, rawHtml => this.onOpened(opt_cbk, rawHtml), (err, msg) => this.onOpenError(opt_errorCbk, err, msg));
+        }
+        else {
+          this.model.file.open(url, rawHtml => this.onOpened(opt_cbk, rawHtml), (err, msg) => this.onOpenError(opt_errorCbk, err, msg));
+        }
       }
     },
     ready: () => {
-      onSuccess();
+      if(opt_cbk) {
+        opt_cbk();
+      }
     },
     error: err => {
       console.error('loading templates error');
-      onError(err);
+      this.onOpenError(opt_errorCbk, err, 'loading templates error');
     },
   });
 };
 
+silex.controller.FileMenuController.prototype.onOpened = function(opt_cbk, rawHtml) {
+  // reset file URL in order to "save as" instead of "save"
+  // this.model.file.setUrl(null);
+  this.model.file.setHtml(rawHtml, () => {
+    // undo redo reset
+    this.undoReset();
+    this.fileOperationSuccess(null, true);
+  }, true);
+  // QOS, track success
+  this.tracker.trackAction('controller-events', 'success', 'file.new', 1);
+  if(opt_cbk) {
+    opt_cbk();
+  }
+};
+
+silex.controller.FileMenuController.prototype.onOpenError = function(opt_errorCbk, err, msg) {
+  console.error('opening template error', err);
+  silex.utils.Notification.alert('An error occured, I could not open the file. ' + msg, () => {});
+  if (opt_errorCbk) {
+    opt_errorCbk(err);
+  }
+  this.tracker.trackAction('controller-events', 'error', 'file.new', -1);
+
+};
 
 /**
  * open a file

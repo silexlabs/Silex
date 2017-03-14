@@ -129,6 +129,15 @@ silexConfig.staticFolders.push(
   {
     name: '/static',
     path: pathModule.resolve(__dirname, '../../static')
+  },
+  // templates
+  {
+    name: '/silex-templates',
+    path: pathModule.resolve(__dirname, '../../submodules/silex-templates')
+  },
+  {
+    name: '/silex-blank-templates',
+    path: pathModule.resolve(__dirname, '../../submodules/silex-blank-templates')
   }
 );
 
@@ -214,3 +223,27 @@ app.use('/tasks/:task', function(req, res, next){
   }
 
 });
+
+// ********************************
+// list templates
+// ********************************
+var dirToJson = require('dir-to-json');
+app.use('/get/:folder', function(req, res, next){
+  switch(req.params.folder) {
+    case 'silex-templates':
+    case 'silex-blank-templates':
+    break;
+    default:
+      res.send({success: false, error: 'Error while trying to get the json representation of the folder ' + req.params.folder + ' - folder does not exist'});
+      return;
+  }
+  dirToJson( pathModule.resolve(__dirname, '../../submodules/', req.params.folder), function( err, result ){
+    if( err ){
+      console.error('Error while trying to get the json representation of the folder ' + req.params.folder, err);
+      res.send({success: false, error: 'Error while trying to get the json representation of the folder ' + req.params.folder + ' - ' + err});
+    }else{
+      res.send(result);
+    }
+  });
+});
+

@@ -95,6 +95,14 @@ silex.model.File.prototype.url = null;
 
 
 /**
+ * true if the opened file is a template
+ * this means that one must "save as" and not "save"
+ * @type {boolean}
+ */
+silex.model.File.prototype.isTemplate = false;
+
+
+/**
  * the get the iframe element
  * @return {HTMLIFrameElement}
  */
@@ -421,6 +429,7 @@ silex.model.File.prototype.getHtmlGenerator = function* () {
  * @expose
  */
 silex.model.File.prototype.openFromUrl = function(url, opt_cbk, opt_errCbk) {
+  this.isTemplate = true;
   silex.service.CloudStorage.getInstance().loadLocal(url,
       goog.bind(function(rawHtml) {
         this.setUrl(url);
@@ -450,7 +459,8 @@ silex.model.File.prototype.save = function(rawHtml, cbk, opt_errCbk) {
   silex.service.CloudStorage.getInstance().save(
       this.getUrl(),
       rawHtml,
-      function() {
+      () => {
+        this.isTemplate = false;
         if (cbk) {
           cbk();
         }
@@ -463,6 +473,7 @@ silex.model.File.prototype.save = function(rawHtml, cbk, opt_errCbk) {
  * load a new file
  */
 silex.model.File.prototype.open = function(url, cbk, opt_errCbk) {
+  this.isTemplate = false;
   silex.service.CloudStorage.getInstance().load(
       url,
       goog.bind(function(rawHtml) {
