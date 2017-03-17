@@ -52,7 +52,7 @@ silex.controller.FileMenuController.prototype.newFile = function(opt_cbk, opt_er
         // if the user closes the dialog and no website is being edited
         // then load default blank website
         // otherwise just close the dialog
-        url = './silex-blank-templates/blank/editable.html';
+        url = 'libs/templates/silex-blank-templates/blank/editable.html';
         isTemplate = true;
       }
       if(url) {
