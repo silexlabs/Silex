@@ -5,9 +5,3 @@
 [submodule "submodules/closure-linter"]
 	path = submodules/closure-linter
 	url = https://github.com/silexlabs/google-closure-linter.git
-[submodule "submodules/silex-templates"]
-	path = submodules/silex-templates
-	url = https://github.com/silexlabs/silex-templates.git
-[submodule "submodules/silex-blank-templates"]
-	path = submodules/silex-blank-templates
-	url = https://github.com/silexlabs/silex-blank-templates.git

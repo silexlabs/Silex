@@ -78,9 +78,10 @@ silex.view.dialog.NewWebsiteDialog.prototype.renderTemplateList = function(ul, r
 
         // thumbnail
         const thumbnail = document.createElement('div');
+        const templateFolder = `/libs/templates/${repo}/${item.name}`;
         thumbnail.classList.add('thumbnail');
-        thumbnail.style.backgroundImage = `url(/${repo}/${item.name}/screenshot.png)`;
-        thumbnail.setAttribute('data-editable', `/${repo}/${item.name}/editable.html`);
+        thumbnail.style.backgroundImage = `url(${templateFolder}/screenshot.png)`;
+        thumbnail.setAttribute('data-editable', `${templateFolder}/editable.html`);
         thumbnail.setAttribute('data-is-template', 'true');
         li.appendChild(thumbnail);
 
@@ -92,7 +93,7 @@ silex.view.dialog.NewWebsiteDialog.prototype.renderTemplateList = function(ul, r
         // title
         const h3 = document.createElement('h3');
         h3.innerHTML = name;
-        h3.setAttribute('data-editable', `/${repo}/${item.name}/editable.html`);
+        h3.setAttribute('data-editable', `${templateFolder}/editable.html`);
         h3.setAttribute('data-is-template', 'true');
         ui.appendChild(h3);
 
@@ -102,7 +103,7 @@ silex.view.dialog.NewWebsiteDialog.prototype.renderTemplateList = function(ul, r
         previewEl.innerHTML = 'Preview';
         previewEl.setAttribute('data-action', 'preview');
         previewEl.target = '_blank';
-        previewEl.href = `/${repo}/${item.name}/index.html`;
+        previewEl.href = `${templateFolder}/index.html`;
         ui.appendChild(previewEl);
 
         // info
@@ -118,7 +119,7 @@ silex.view.dialog.NewWebsiteDialog.prototype.renderTemplateList = function(ul, r
         const editEl = document.createElement('a');
         editEl.classList.add('fa', 'fa-pencil');
         editEl.innerHTML = 'Select';
-        editEl.setAttribute('data-editable', `/${repo}/${item.name}/editable.html`);
+        editEl.setAttribute('data-editable', `libs/templates/${repo}/${item.name}/editable.html`);
         editEl.setAttribute('data-is-template', 'true');
         ui.appendChild(editEl);
 
