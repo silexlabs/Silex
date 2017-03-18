@@ -8,6 +8,7 @@ tags:
 - ux
 - website
 - dynamic data
+isPrivate: true
 baseElement: section
 faIconClass: fa-arrows-v
 props:

@@ -7,6 +7,7 @@ tags:
 - ui
 - ux
 - website
+isPrivate: true
 baseElement: section
 faIconClass: fa-header
 initialCss:
