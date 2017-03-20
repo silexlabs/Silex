@@ -582,15 +582,17 @@ silex.view.Stage.prototype.onMouseMove = function(target, x, y, shiftKey) {
         this.selectedElements
         .filter(element => element !== this.bodyElement && !element.classList.contains(silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME))
         .forEach(element => {
-          // dragging style
-          element.classList.add(silex.model.Body.DRAGGING_CLASS_NAME);
           // move to the body so that it is above everything
           // move back to the same x, y position
+          // var elementPos = element.getBoundingClientRect();
           var elementPos = goog.style.getPageOffset(element);
+          // apply new position
           element.style.left = elementPos.x + 'px';
           element.style.top = elementPos.y + 'px';
           // attache to body
           this.bodyElement.appendChild(element);
+          // dragging style
+          element.classList.add(silex.model.Body.DRAGGING_CLASS_NAME);
         });
       }
     }
@@ -832,21 +834,9 @@ silex.view.Stage.prototype.followElementPosition =
         // let finalX = Math.round(pos.x + offsetX);
         // this.controller.stageController.styleChanged('top', finalY + 'px', [follower], false);
         // this.controller.stageController.styleChanged('left', finalX + 'px', [follower], false);
-
-        // in case the element is in the flow,
-        // the css class .dragging-pending will set position:relative
-        // and we temporarily move the element with its attributes instead of css style tag in head
-        let style;
-        if(follower.style.left === '' || follower.style.top === '') {
-          // "start drag" case
-          style = this.contentWindow.getComputedStyle(follower);
-        }
-        else {
-          // dragging case
-          style = follower.style;
-        }
-        let left = parseInt(style.left, 10) || 0;
-        let top = parseInt(style.top, 10) || 0;
+        // move the element
+        let left = parseInt(follower.style.left, 10) || 0;
+        let top = parseInt(follower.style.top, 10) || 0;
         follower.style.left = (left + offsetX) + 'px';
         follower.style.top = (top + offsetY) + 'px';
     }

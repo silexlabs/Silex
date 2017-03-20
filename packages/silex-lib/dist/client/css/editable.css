@@ -66,6 +66,8 @@ this makes the video clickable:
   position: absolute;
   max-width: 80vw;
   max-height: 80vh;
+  right: initial;
+  bottom: initial;
 }
 .drop-zone-candidate {
   animation-duration: 1s;
