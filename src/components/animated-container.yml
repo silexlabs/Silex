@@ -1,6 +1,6 @@
 ---
-name: Reveal animation
-description: "This is a container which will appear with an animation."
+name: Animated Container
+description: "This container will appear with an animation (visible in preview only)."
 doc:
 category: Special Containers
 tags:

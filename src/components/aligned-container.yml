@@ -1,0 +1,38 @@
+---
+name: Right aligned container
+description: "This is a container which is fixed on the right side of its parent. You choose if you want it to scroll with the content or stay fixed."
+doc:
+category: Special Containers
+tags:
+- ui
+- ux
+- website
+baseElement: container
+faIconClass: fa-align-right
+props:
+- name: vertical
+  type:
+  - none
+  - top
+  - center
+  - bottom
+  - full-height
+  default: none
+  description: "How to align the container vertically."
+- name: horizontal
+  type:
+  - none
+  - left
+  - center
+  - right
+  - full-width
+  default: none
+  description: "How to align the container horizontally."
+- name: fixed
+  type: boolean
+  default: false
+  description: "Stay fixed when the user scrolls (visible only in preview)."
+- name: onTop
+  type: boolean
+  default: false
+  description: "On top of the other elements (z-index: 10)."

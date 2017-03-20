@@ -113,11 +113,7 @@ silex.model.Component.prototype.initComponent = function(element, templateName) 
     this.model.element.setInnerHtml(element, html);
     this.updateDepenedencies();
     // execute the scripts
-    const scripts = element.querySelectorAll('script');
-    for(let idx=0; idx<scripts.length; idx++) {
-      this.model.file.getContentWindow().eval(scripts[idx].innerText);
-    }
-
+    this.executeScripts(element);
   });
 
   // component definition special params for Silex
@@ -142,6 +138,15 @@ silex.model.Component.prototype.initComponent = function(element, templateName) 
     }
   }
 
+};
+
+
+silex.model.Component.prototype.executeScripts = function (element) {
+  // execute the scripts
+  const scripts = element.querySelectorAll('script');
+  for(let idx=0; idx<scripts.length; idx++) {
+    this.model.file.getContentWindow().eval(scripts[idx].innerText);
+  }
 };
 
 
@@ -256,6 +261,8 @@ silex.model.Component.prototype.edit = function(element) {
           this.model.property.setComponentData(element, newData);
           // update the element with the new template
           this.model.element.setInnerHtml(element, html);
+          // execute the scripts
+          this.executeScripts(element);
           // put back the editable elements
           element.appendChild(tempElements);
         },
