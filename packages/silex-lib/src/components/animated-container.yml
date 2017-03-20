@@ -63,10 +63,6 @@ props:
   - ease-out
   default: linear
   description: Easing function (CSS easing)
-- name: mobile
-  type: boolean
-  default: true
-  description: Enable reveal animations on mobile.
 - name: reset
   type: boolean
   default: false
