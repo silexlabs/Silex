@@ -4,21 +4,29 @@
 animation widget from here: https://github.com/silexlabs/Silex/issues/443
 */
 $(function() {
+  var bodyEl = $('body');
   // execute only outside silex editor
-  if(!$('body').hasClass('silex-runtime')) return;
+  if(!bodyEl.hasClass('silex-runtime')) return;
   // init ScrollReveal lib
   window.sr = window.sr || ScrollReveal();
   // animate this element on page change
-  $('body').on('pageChanged', animate_<%= uid %>);
+  bodyEl.on('pageChanged', animate_<%= uid %>);
   // animate this element at start
   animate_<%= uid %>();
   // the function to start the animation
   function animate_<%= uid %> (event, pageName) {
-    // only if the element is visible in the current page
-    var parent = $('#id_<%= uid %>').parent();
-    if($(parent).hasClass('paged-element-visible')) {
+    // get the silex element in which we are
+    var silexElement = $('#id_<%= uid %>').parent();
+    if(// only if the element is in the dom
+      silexElement &&
+      // and is visible in the current page
+      (silexElement.hasClass(bodyEl.pageable('option').currentPage) ||
+      // or visible in all pages
+      !silexElement.hasClass('paged-element')) &&
+      // but never in mobile mode
+      (!bodyEl.hasClass('enable-mobile') || $(window).width() >= 480)) {
       // use ScrollReveal API
-      sr.reveal(parent, {
+      sr.reveal(silexElement, {
         origin:  '<%= origin %>',
         distance: '<%= distance %>',
         duration: <%= duration %>,
@@ -27,7 +35,6 @@ $(function() {
         opacity: <%= opacity %>,
         scale: <%= scale %>,
         easing: '<%= easing %>',
-        mobile: <%= mobile %>,
         reset: <%= reset %>,
         beforeReveal: function(el){
           <%= beforeReveal %>
@@ -43,6 +50,6 @@ $(function() {
         }
       });
     }
-  };
+  }
 })
 </script>
