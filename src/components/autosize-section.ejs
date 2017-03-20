@@ -1,0 +1,31 @@
+<div id="id_<%= uid %>"></div>
+<script type="text/javascript">
+function resizeSection_<%= uid %>(dispatchResize) {
+  // no resize while dragging
+  if($('.dragging-pending').length) return;
+  // get a ref to the parent elements
+  var sectionContent = $('#id_<%= uid %>').parent();
+  var section = $(sectionContent).parent();
+  // compute size of content
+  // ...for  section background container
+  var sectionBottom = 0;
+  $(section).children('.editable-style').filter(':not(.silex-element-content)').each(function() {
+    sectionBottom = Math.max(sectionBottom, $(this).position().top + $(this).height());
+  });
+  // ...for  section foreground container
+  var sectionContentBottom = 0;
+  $(sectionContent).children('.editable-style').each(function() {
+    sectionContentBottom = Math.max(sectionContentBottom, $(this).position().top + $(this).height());
+  });
+  // apply content height
+  $(sectionContent).css({
+    'height': Math.max(sectionBottom, sectionContentBottom) + <%= margin %>
+  });
+  // call silex API to resize the body
+  if(dispatchResize) resizeBody();
+}
+$(window).resize(function() { resizeSection_<%= uid %>(true); });
+$(document).ready(function(){ resizeSection_<%= uid %>(true); });
+$(document).on('silex:resize', function() { resizeSection_<%= uid %>(false); });
+resizeSection_<%= uid %>(false);
+</script>
