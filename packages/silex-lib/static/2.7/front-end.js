@@ -161,10 +161,11 @@ $(function() {
   });
   /**
    * init page system
+   * Use deep links (hash) only when `body.silex-runtime` is defined, i.e. not while editing
    */
   bodyEl.pageable({
     currentPage: firstPageName,
-    useDeeplink:true,
+    useDeeplink: bodyEl.hasClass('silex-runtime'),
     pageClass: 'paged-element'
   });
   /**
