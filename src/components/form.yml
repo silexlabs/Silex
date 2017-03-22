@@ -1,8 +1,8 @@
 ---
-name: Form
+name: Contact Form
 description: 'This is a form which let your visitors get in touch with you.'
-doc: https://en.wikipedia.org/wiki/Hero_image
-category: Forms
+doc:
+category: Design Goodies
 tags:
 - ui
 - ux

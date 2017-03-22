@@ -1,0 +1,108 @@
+<!-- preview -->
+<!-- just the 1st image 100% size -->
+<div class="prodotype-preview prodotype-force-size">
+  <% if(slides && slides.length) { %>
+    <div style="<% if(slides[0].bgColor) { %>background-color: <%= slides[0].bgColor %>; <% } %> <% if(slides[0].color) { %>color:<%= slides[0].color %>; <% } %><% if(slides[0].image && slides[0].image[0]) { %>background-image:url('<%= slides[0].image[0].url %>'); background-repeat: no-repeat; background-size: cover; background-position: 50%; <% } %> width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+      <p>~ Preview ~</p>
+    </div>
+  <% } %>
+</div>
+<!-- runtime -->
+<!-- the whole slideshow -->
+<div class="prodotype-runtime" id="parent_<%= uid %>">
+<div id="id_<%= uid %>">
+  <ul>
+  <% for(var idx in slides) { %>
+    <li style="<% if(slides[idx].bgColor) { %>background-color: <%= slides[idx].bgColor %>; <% } %> <% if(slides[idx].color) { %>color:<%= slides[idx].color %>; <% } %><% if(slides[idx].image && slides[idx].image[0]) { %>background-image:url('<%= slides[idx].image[0].url %>'); background-repeat: no-repeat; background-size: cover; background-position: 50%;<% } %>">
+      <% if(slides[idx].text) { %><%- slides[idx].text %><% } %>
+    </li>
+  <% } %>
+  </ul>
+</div>
+</div>
+<style type="text/css">
+#parent_<%= uid %> .unslider-nav {
+    position: absolute;
+    bottom: 10px;
+    left: 0;
+    right: 0;
+    top: auto;
+    margin: 0;
+}
+#parent_<%= uid %> .unslider-nav ol {
+    text-align: center;
+}
+#parent_<%= uid %> .unslider-nav ol li.unslider-active {
+    background: #fff;
+    cursor: default;
+    opacity: 1;
+}
+#parent_<%= uid %> .unslider-nav ol li {
+    display: inline-block;
+    float: none;
+    width: 6px;
+    height: 6px;
+    margin: 0 4px;
+    padding: 3px;
+    background: transparent;
+    border-radius: 10px;
+    overflow: hidden;
+    text-indent: -999em;
+    border: 2px solid #fff;
+    cursor: pointer;
+    opacity: .4;
+}
+#parent_<%= uid %> .unslider-arrow {
+    display: block;
+    width: 32px;
+    height: 32px;
+    top: 50%;
+    right: 16px;
+    left: auto;
+    margin-top: -16px;
+    overflow: hidden;
+    background: rgba(0,0,0,.2) no-repeat 50% 50%;
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAQCAQAAABuQZ3IAAAAi0lEQVR4AU3OISBEQQBAwS0AACS9NxqQgCZpkiYBVddFvWhAAUABAPQCAGC4g/0vTnrBqCfDIZl70J+kMUBPpEwT4FNXxBxz4F1HxHyr4EVTxBLb4EFNxEon4CJSlVNw9AcV9sC16h8osgke1P1ArgXwouVvdQq86ww/GQefusNf7kBviBlxpT8k+gL/Wox4r1d4MwAAAABJRU5ErkJggg==');
+    background-size: 7px 11px;
+    border-radius: 32px;
+    text-indent: -999em;
+    opacity: .6;
+    transition: opacity .2s;
+}
+#parent_<%= uid %> .unslider-arrow.prev {
+    left: 16px;
+    right: auto;
+    -ms-transform: rotate(-180deg);
+    transform: rotate(-180deg);
+}
+</style>
+<script type="text/javascript">
+  (function() {
+    function initUnslider() {
+      // do not start in the editor (it would mess with the markup)
+      if(!$('body').hasClass('silex-runtime')) return;
+
+      var slider = $('#id_<%= uid %>').unslider({
+        "autoplay": <%= autoplay %>,
+        "speed": <%= speed %>,
+        "delay": <%= delay %>,
+        "index": <%= index %>,
+        "nav": <%= nav %>,
+        "arrows": <%= arrows %>
+      });
+      //  Listen to slide changes
+      <% if(onchange) { %>
+      slider.on('unslider.change', function(event, index, slide) {
+        <%- onchange %>
+      });
+    <% } %>
+      // apply element height to the images
+      var silexElement = $('#id_<%= uid %>').closest('.editable-style');
+      var elementMinHeight = silexElement.css('height');
+      $('#id_<%= uid %> li').css({
+        'height': elementMinHeight
+      });
+  }
+    initUnslider();
+  })();
+</script>
