@@ -85,6 +85,16 @@ silex.model.Body.PREVENT_DROPPABLE_CLASS_NAME = 'prevent-droppable';
 
 
 /**
+ * class name which can be used to force Silex to use height instead of minHeight
+ * to set the height of an element
+ * this is useful if the element has content with height set to 100%
+ * @const
+ * @type {string}
+ */
+silex.model.Body.SILEX_USE_HEIGHT_NOT_MINHEIGHT = 'silex-use-height-not-minheight';
+
+
+/**
  * class name set on elements in which we are about to drop
  * @const
  * @type {string}

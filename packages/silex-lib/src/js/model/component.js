@@ -156,7 +156,7 @@ silex.model.Component.prototype.executeScripts = function (element) {
  * @param  {!Object} styleObj
  */
 silex.model.Component.prototype.applyStyleTo = function (element, styleObj) {
-  const style = this.model.property.getStyle(element, false);
+  const style = this.model.property.getStyle(element, false) || {};
   for(let name in styleObj) {
     style[name] = styleObj[name];
   }

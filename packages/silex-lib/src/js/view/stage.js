@@ -937,7 +937,7 @@ silex.view.Stage.prototype.followElementSize =
       this.controller.stageController.styleChanged('left', Math.round(offsetPosX) + 'px', [follower], false);
       // apply the new size
       this.controller.stageController.styleChanged('width', Math.round(newSizeW) + 'px', [follower], false);
-      this.controller.stageController.styleChanged('minHeight', Math.round(newSizeH) + 'px', [follower], false);
+      this.controller.stageController.styleChanged(this.model.element.getHeightStyleName(follower), Math.round(newSizeH) + 'px', [follower], false);
     }
   }, this);
 };

@@ -552,7 +552,7 @@ silex.model.Element.prototype.setImageUrl = function(element, url, opt_callback,
             img = e.target;
             // update element size
             this.setStyle(element, 'width', Math.max(silex.model.Element.MIN_WIDTH, img.naturalWidth) + 'px', true);
-            this.setStyle(element, 'minHeight', Math.max(silex.model.Element.MIN_HEIGHT, img.naturalHeight) + 'px', true);
+            this.setStyle(element, this.getHeightStyleName(element), Math.max(silex.model.Element.MIN_HEIGHT, img.naturalHeight) + 'px', true);
             // callback
             if (opt_callback) {
               opt_callback(element, img);
@@ -691,6 +691,45 @@ silex.model.Element.prototype.getBestContainerForNewElement = function(x, y) {
 
 
 /**
+ * init the element depending on its type
+ * @param {Element} element
+ */
+silex.model.Element.prototype.initElement = function(element) {
+  // default style
+  var defaultStyleObject = {};
+  defaultStyleObject['width'] = silex.model.Element.INITIAL_ELEMENT_SIZE + 'px';
+  defaultStyleObject[this.getHeightStyleName(element)] = silex.model.Element.INITIAL_ELEMENT_SIZE + 'px';
+
+  // init the element depending on its type
+  switch(this.getType(element)) {
+    case silex.model.Element.TYPE_CONTAINER:
+    case silex.model.Element.TYPE_HTML:
+      defaultStyleObject['background-color'] = 'rgb(255, 255, 255)';
+      break;
+
+    case silex.model.Element.TYPE_SECTION:
+      this.view.stage.setScrollTarget(element);
+      break;
+
+    case silex.model.Element.TYPE_TEXT:
+    case silex.model.Element.TYPE_IMAGE:
+      break;
+  }
+
+  // default style to the element style
+  // keep the style if there is one, usually set by component::initComponent
+  const finalStyleObject = this.model.property.getStyle(element, false) || {};
+  for(var name in defaultStyleObject) finalStyleObject[name] = finalStyleObject[name] || defaultStyleObject[name];
+
+  // apply the style (force desktop style, not mobile)
+  this.model.property.setStyle(element, finalStyleObject, false);
+
+  // position on stage
+  this.addElementDefaultPosition(element);
+};
+
+
+/**
  * element creation
  * create a DOM element, attach it to this container
  * and returns a new component for the element
@@ -699,27 +738,17 @@ silex.model.Element.prototype.getBestContainerForNewElement = function(x, y) {
  * @return  {Element}   the newly created element
  */
 silex.model.Element.prototype.createElement = function(type) {
-  // default style
-  var styleObject = {
-    'min-height': silex.model.Element.INITIAL_ELEMENT_SIZE + 'px',
-    'width': silex.model.Element.INITIAL_ELEMENT_SIZE + 'px',
-  };
-
   // create the element
   var element = null;
   switch (type) {
-
     // container
     case silex.model.Element.TYPE_CONTAINER:
       element = this.createContainerElement();
-      // add a default style
-      styleObject['background-color'] = 'rgb(255, 255, 255)';
       break;
 
     // section
     case silex.model.Element.TYPE_SECTION:
       element = this.createSectionElement();
-      this.view.stage.setScrollTarget(element);
       break;
 
     // text
@@ -730,8 +759,6 @@ silex.model.Element.prototype.createElement = function(type) {
     // HTML box
     case silex.model.Element.TYPE_HTML:
       element = this.createHtmlElement();
-      // add a default style
-      styleObject['background-color'] = 'rgb(255, 255, 255)';
       break;
 
     // Image
@@ -745,16 +772,12 @@ silex.model.Element.prototype.createElement = function(type) {
   goog.dom.classlist.add(element, silex.model.Body.EDITABLE_CLASS_NAME);
   this.model.property.initSilexId(element, this.model.file.getContentDocument());
 
-  // apply the style (force desktop style, not mobile)
-  this.model.property.setStyle(element, styleObject, false);
-
   // make it editable
   this.model.body.setEditable(element, true);
 
   // add css class for Silex styles
   goog.dom.classlist.add(element, type + '-element');
-  // add to stage
-  this.addElementDefaultPosition(element);
+
   // return the element
   return element;
 };
@@ -953,4 +976,18 @@ silex.model.Element.prototype.setClassName = function(element, opt_className) {
       }
     });
   }
+};
+
+
+/**
+ * get the name of the style to be used to set the height of the element
+ * returns 'height' or 'minHeight' depending on the element type
+ * @param {Element} element
+ * @return {string} 'height' or 'minHeight' depending on the element type
+ */
+silex.model.Element.prototype.getHeightStyleName = function(element) {
+  if(element.classList.contains(silex.model.Body.SILEX_USE_HEIGHT_NOT_MINHEIGHT)) {
+    return 'height';
+  }
+  return 'minHeight';
 };

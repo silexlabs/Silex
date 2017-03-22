@@ -47,13 +47,17 @@ silex.controller.InsertMenuController.prototype.addElement = function(type, opt_
   this.tracker.trackAction('controller-events', 'request', 'insert.' + type, 0);
   // undo checkpoint
   this.undoCheckPoint();
-  var element = null;
   // create the element and add it to the stage
-  element = this.model.element.createElement(type);
+  var element = this.model.element.createElement(type);
+  // apply component styles etc
   if(!!opt_componentName) {
     this.model.component.initComponent(element, opt_componentName);
   }
+  // apply default size
+  this.model.element.initElement(element);
+  // make element editable and visible on current page
   this.doAddElement(element);
+  // tracking
   this.tracker.trackAction('controller-events', 'success', 'insert.' + type, 1);
   return element;
 };
