@@ -1,0 +1,56 @@
+---
+name: Form
+description: 'This is a form which let your visitors get in touch with you.'
+doc: https://en.wikipedia.org/wiki/Hero_image
+category: Forms
+tags:
+- ui
+- ux
+- website
+- form
+- contact
+- email
+isPrivate: false
+baseElement: html
+faIconClass: fa-server
+initialCssClass:
+  silex-use-height-not-minheight
+initialCss:
+  min-height: 400px
+  width: 400px
+  background-color: 'transparent'
+props:
+- name: sendTo
+  type: string
+  default: your@email.com
+  description: Your email (use formspree) or the URL of your server where the form will send data.
+- name: submitButtonLabel
+  type: string
+  default: Send
+- name: field1
+  type: boolean
+  default: true
+- name: label1
+  type: string
+  default: Name
+- name: placeholder1
+  type: string
+  default: Your name
+- name: field2
+  type: boolean
+  default: true
+- name: label2
+  type: string
+  default: Your email adress
+- name: placeholder2
+  type: string
+  default: your@email.com
+- name: field3
+  type: boolean
+  default: true
+- name: label3
+  type: string
+  default: Your message
+- name: placeholder3
+  type: string
+  default: What you have to say
