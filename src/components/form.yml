@@ -16,8 +16,8 @@ faIconClass: fa-server
 initialCssClass:
   silex-use-height-not-minheight
 initialCss:
-  min-height: 400px
   width: 400px
+  height: 400px
   background-color: 'transparent'
 props:
 - name: sendTo
