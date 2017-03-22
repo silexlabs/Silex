@@ -1,0 +1,77 @@
+<%
+  var styleUrl = 'https://raw.githubusercontent.com/fourtonfish/SimpleSharingButtons/master/images';
+  switch(style) {
+    case 'Flat Web Icon Set - Color':
+      styleUrl += '/flat_web_icon_set/color';
+    break;
+    case 'Flat Web Icon Set - Black':
+      styleUrl += '/flat_web_icon_set/black';
+    break;
+    case 'Flat Web Icon Set - Inverted':
+      styleUrl += '/flat_web_icon_set/inverted';
+    break;
+    case 'Simple Icons':
+      styleUrl += '/simple_icons';
+    break;
+    case 'Simple Icons - Black':
+      styleUrl += '/simple_icons_black';
+    break;
+  }
+%>
+<ul class="share-buttons" id="id_<%= uid %>">
+  <% if(networks.indexOf("Facebook") >= 0) { %>
+  <li><a href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2F<%= url %>&t=<%= title %>" title="Share on Facebook" target="_blank"><img alt="Share on Facebook" src="<%= styleUrl %>/Facebook.png"></a></li>
+  <% } %>
+  <% if(networks.indexOf("Twitter") >= 0) { %>
+  <li><a href="https://twitter.com/intent/tweet?source=http%3A%2F%2F<%= url %>&text=<%= title %>:%20http%3A%2F%2F<%= url %>&via=<%= twitter %>" target="_blank" title="Tweet"><img alt="Tweet" src="<%= styleUrl %>/Twitter.png"></a></li>
+  <% } %>
+  <% if(networks.indexOf("Google+") >= 0) { %>
+  <li><a href="https://plus.google.com/share?url=http%3A%2F%2F<%= url %>" target="_blank" title="Share on Google+"><img alt="Share on Google+" src="<%= styleUrl %>/Google+.png"></a></li>
+  <% } %>
+  <% if(networks.indexOf("Tumblr") >= 0) { %>
+  <li><a href="http://www.tumblr.com/share?v=3&u=http%3A%2F%2F<%= url %>&t=<%= title %>&s=" target="_blank" title="Post to Tumblr"><img alt="Post to Tumblr" src="<%= styleUrl %>/Tumblr.png"></a></li>
+  <% } %>
+  <% if(networks.indexOf("Pinterest") >= 0) { %>
+  <li><a href="http://pinterest.com/pin/create/button/?url=http%3A%2F%2F<%= url %>&description=<%= description %>" target="_blank" title="Pin it"><img alt="Pin it" src="<%= styleUrl %>/Pinterest.png"></a></li>
+  <% } %>
+  <% if(networks.indexOf("Pocket") >= 0) { %>
+  <li><a href="https://getpocket.com/save?url=http%3A%2F%2F<%= url %>&title=<%= title %>" target="_blank" title="Add to Pocket"><img alt="Add to Pocket" src="<%= styleUrl %>/Pocket.png"></a></li>
+  <% } %>
+  <% if(networks.indexOf("Reddit") >= 0) { %>
+  <li><a href="http://www.reddit.com/submit?url=http%3A%2F%2F<%= url %>&title=<%= title %>" target="_blank" title="Submit to Reddit"><img alt="Submit to Reddit" src="<%= styleUrl %>/Reddit.png"></a></li>
+  <% } %>
+  <% if(networks.indexOf("LinkedIn") >= 0) { %>
+  <li><a href="http://www.linkedin.com/shareArticle?mini=true&url=http%3A%2F%2F<%= url %>&title=<%= title %>&summary=<%= description %>&source=http%3A%2F%2F<%= url %>{ " target="_blank" title="Share on LinkedIn"><img alt="Share on LinkedIn" src="<%= styleUrl %>/LinkedIn.png"></a></li>
+  <% } %>
+  <% if(networks.indexOf("WordPress") >= 0) { %>
+  <li><a href="http://wordpress.com/press-this.php?u=http%3A%2F%2F<%= url %>&t=<%= title %>&s=<%= description %>" target="_blank" title="Publish on WordPress"><img alt="Publish on WordPress" src="<%= styleUrl %>/Wordpress.png"></a></li>
+  <% } %>
+  <% if(networks.indexOf("Pinboard") >= 0) { %>
+  <li><a href="https://pinboard.in/popup_login/?url=http%3A%2F%2F<%= url %>&title=<%= title %>&description=<%= description %>" target="_blank" title="Save to Pinboard"><img alt="Save to Pinboard" src="<%= styleUrl %>/Pinboard.png"></a></li>
+  <% } %>
+  <% if(networks.indexOf("Email") >= 0) { %>
+  <li><a href="mailto:?subject=<%= title %>&body=<%= description %>:%20http%3A%2F%2F<%= url %>" target="_blank" title="Send email"><img alt="Send email" src="<%= styleUrl %>/Email.png"></a></li>
+  <% } %>
+</ul>
+</div>
+<style type="text/css">
+#id_<%= uid %>.share-buttons{
+  list-style: none;
+  padding: 0;
+}
+
+#id_<%= uid %>.share-buttons li{
+  display: inline;
+}
+
+#id_<%= uid %>.share-buttons .sr-only {
+  position: absolute;
+  clip: rect(1px 1px 1px 1px);
+  clip: rect(1px, 1px, 1px, 1px);
+  padding: 0;
+  border: 0;
+  height: 1px;
+  width: 1px;
+  overflow: hidden;
+}
+</style>

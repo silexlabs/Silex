@@ -1,0 +1,43 @@
+---
+name: Share Buttons
+description: "Simple share buttons."
+doc:
+category: Utils
+tags:
+- ui
+- ux
+- website
+- anim
+dependencies:
+  script:
+  - src: https://unpkg.com/scrollreveal/dist/scrollreveal.min.js
+baseElement: html
+faIconClass: fa-share
+initialCss:
+  width: 400px
+  min-height: 50px
+  background-color: 'transparent'
+props:
+- name: style
+  type:
+  - Flat Web Icon Set - Color
+  - Flat Web Icon Set - Black
+  - Flat Web Icon Set - Inverted
+  - Simple Icons
+  - Simple Icons - Black
+  default: Flat Web Icon Set - Color
+- name: networks
+  type: array
+  default: ["Facebook", "Twitter", "Google+", "Tumblr", "Pinterest", "Pocket", "Reddit", "LinkedIn", "WordPress", "Pinboard", "Email"]
+- name: url
+  type: string
+  default: http://yoursite.com
+- name: title
+  type: string
+  default: Yout site title
+- name: description
+  type: multiline
+  default: Yout site description
+- name: twitter
+  type: string
+  default: "@silexlabs"
