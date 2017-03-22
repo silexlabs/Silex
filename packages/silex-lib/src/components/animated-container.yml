@@ -2,7 +2,7 @@
 name: Animated Container
 description: "This container will appear with an animation (visible in preview only)."
 doc:
-category: Special Containers
+category: Smart Containers
 tags:
 - ui
 - ux

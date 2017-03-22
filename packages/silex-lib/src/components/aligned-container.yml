@@ -2,7 +2,7 @@
 name: Right aligned container
 description: "This is a container which is fixed on the right side of its parent. You choose if you want it to scroll with the content or stay fixed."
 doc:
-category: Special Containers
+category: Smart Containers
 tags:
 - ui
 - ux
