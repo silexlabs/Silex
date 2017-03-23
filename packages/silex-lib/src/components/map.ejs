@@ -1,0 +1,69 @@
+<div id="mapdiv_<%= uid %>"></div>
+<style>
+    #mapdiv_<%= uid %> {
+        width: 100%;
+        height: 100%;
+    }
+</style>
+<script>
+
+
+function init_<%= uid %>() {
+    if(!$('body').hasClass('silex-runtime') && typeof(ol) === 'undefined') {
+        // wait for dependencies to be loaded
+        setTimeout(init_<%= uid %>, 100);
+        return;
+    }
+
+    // apply position and zoom
+    // from map URL http://www.openstreetmap.org/#map=18/48.88680/2.34235&layers=C
+    var params = '<%- url %>'.match(/.*map=([0-9]*)\/(.*)\/(.*)&layers=(.)/);
+    if(params) {
+        var zoom = parseFloat(params[1]);
+        var lat = parseFloat(params[2]);
+        var lon = parseFloat(params[3]);
+        var layer = params[4];
+        var center = ol.proj.fromLonLat([lon, lat]);
+        var map = new ol.Map({
+          layers: [
+            new ol.layer.Tile({
+              source: new ol.source.OSM()
+            })
+          ],
+          target: 'mapdiv_<%= uid %>',
+          view: new ol.View({
+            center: center,
+            zoom: zoom
+          })
+        });
+        <% if(marker) { %>
+        var iconFeature = new ol.Feature({
+            geometry: new ol.geom.Point(center)
+        });
+        var vectorSource = new ol.source.Vector({
+            features: [iconFeature]
+        });
+        var vectorLayer = new ol.layer.Vector({
+            source: vectorSource
+        });
+        var iconStyle = new ol.style.Style({
+            image: new ol.style.Icon(({
+                anchor: [0.5, 1],
+                anchorXUnits: 'fraction',
+                anchorYUnits: 'fraction',
+                opacity: 1,
+                src: '<%- marker[0].url %>'
+            }))
+        });
+        iconFeature.setStyle(iconStyle);
+        map.addLayer(vectorLayer);
+        <% } %>
+    }
+}
+init_<%= uid %>();
+$(document).on('silex:resize', function() {
+    $('#mapdiv_<%= uid %>').empty();
+    init_<%= uid %>();
+});
+
+</script>

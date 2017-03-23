@@ -1,0 +1,30 @@
+---
+name: Live Map
+description: 'Display a map in your website. Your users will be able to move the map, zoom in and out in order to locate where you are exactly'
+doc: http://idiot.github.io/unslider/
+category: Utils
+tags:
+- map
+- contact
+- geoloc
+isPrivate: false
+baseElement: html
+faIconClass: fa-map
+dependencies:
+  script:
+  - src: https://openlayers.org/en/v4.0.1/build/ol.js
+initialCssClass:
+  silex-use-height-not-minheight
+initialCss:
+  height: 400px
+  width: 400px
+  background-color: 'transparent'
+props:
+- name: url
+  type: string
+  default: http://www.openstreetmap.org/#map=18/48.87378/2.29489&layers=C
+  description: URL of the map on openstreetmap.org
+- name: marker
+  type: file
+  default: [{url: 'https://openlayers.org/en/v4.0.1/examples/data/icon.png'}]
+  description: Image to display at the center of the map (called a marker)
