@@ -300,7 +300,7 @@ silex.model.Property.prototype.setStyle = function(element, style, opt_isMobile)
     // apply height to section content and not section itself
     const contentElement = /** @type {Element} */ (this.model.element.getContentNode(element));
     const contentStyle = this.getStyle(contentElement, opt_isMobile) || {};
-    if(style['min-height'] !== contentStyle['min-height']) {
+    if(style['min-height'] && style['min-height'] !== contentStyle['min-height']) {
       contentStyle['min-height'] = style['min-height'];
       this.setStyle(contentElement, contentStyle, opt_isMobile);
     }
@@ -311,8 +311,8 @@ silex.model.Property.prototype.setStyle = function(element, style, opt_isMobile)
   if(style && this.model.element.isSectionContent(element) && !this.view.workspace.getMobileEditor()) {
     // set a min-width style to sections so that they are always larger than their content container
     const parentElement = /** @type {Element} */ (element.parentNode);
-    const parentStyle = this.getStyle(parentElement, opt_isMobile);
-    if(style['width'] !== parentStyle['min-width']) {
+    const parentStyle = this.getStyle(parentElement, opt_isMobile) || {};
+    if(style['width'] && style['width'] !== parentStyle['min-width']) {
       parentStyle['min-width'] = style['width'];
       this.setStyle(parentElement, parentStyle, opt_isMobile);
     }
