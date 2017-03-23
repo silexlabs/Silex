@@ -719,8 +719,9 @@ silex.model.Element.prototype.initElement = function(element) {
   // default style to the element style
   // keep the style if there is one, usually set by component::initComponent
   const finalStyleObject = this.model.property.getStyle(element, false) || {};
-  for(var name in defaultStyleObject) finalStyleObject[name] = finalStyleObject[name] || defaultStyleObject[name];
-
+  for(var name in defaultStyleObject) {
+    finalStyleObject[name] = finalStyleObject[name] || defaultStyleObject[name];
+  }
   // apply the style (force desktop style, not mobile)
   this.model.property.setStyle(element, finalStyleObject, false);
 
