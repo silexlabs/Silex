@@ -2,7 +2,7 @@
 name: Slideshow
 description: 'Display a series of texts and images.'
 doc: http://idiot.github.io/unslider/
-category: Design Goodies
+category: Utils
 tags:
 - form
 - input
