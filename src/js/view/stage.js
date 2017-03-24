@@ -279,6 +279,14 @@ silex.view.Stage.prototype.initEvents = function(contentWindow) {
   this.contentDocument = contentWindow.document;
   this.contentWindow = contentWindow;
 
+  //detect right click
+  goog.events.listen(this.bodyElement, 'contextmenu', function(event) {
+  	let x = event.clientX;
+    let y = event.clientY;
+    this.handleRightClick(x, y);
+    event.preventDefault();
+  }, false, this);
+
   // listen on body instead of element because user can release
   // on the tool boxes
   goog.events.listen(this.bodyElement, 'mouseup', function(event) {
@@ -1180,3 +1188,30 @@ silex.view.Stage.prototype.startScrolling = function() {
     }
   }
 };
+
+silex.view.Stage.prototype.handleRightClick = function(x, y) {
+
+	if(document.getElementById( 'powDiv' )!=null){
+		var el = document.getElementById( 'powDiv' );
+		el.parentNode.removeChild( el );	
+	}
+
+	console.log('Powered by Silex');
+	var powDiv=goog.dom.createElement('div');
+	powDiv.id='powDiv';
+	powDiv.setAttribute('style', 'width:240px;height:39px;background-color:#444;position:absolute;color:#DDD;font-family:\'Roboto\', sans-serif;font-size:small;text-align: center;border-radius:5px;');
+	powDiv.style.left = x+'px';
+  	powDiv.style.top = y+'px';
+  	powDiv.innerHTML='Powered by Silex';
+  	document.body.appendChild(powDiv);
+
+	setTimeout(function(){ 
+		var el = document.getElementById( 'powDiv' );
+		el.parentNode.removeChild( el );
+  	}, 3000);
+};
+
+document.addEventListener( 'contextmenu', function(e) {
+    console.log(e);
+  });
+
