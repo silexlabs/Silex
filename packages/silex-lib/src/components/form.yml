@@ -27,6 +27,15 @@ props:
 - name: submitButtonLabel
   type: string
   default: Send
+- name: buttonTextColor
+  type: color
+  default: "#FFFFFF"
+- name: buttonBackgroundColor
+  type: color
+  default: "#4CAF50"
+- name: buttonBorderColor
+  type: color
+  default: "#4CAF50"
 - name: field1
   type: boolean
   default: true
@@ -54,3 +63,6 @@ props:
 - name: placeholder3
   type: string
   default: What you have to say
+- name: onsubmit
+  type: action
+  description: "Fires when the form is about to be submitted. Use the params 'event' or return false to prevent submit."

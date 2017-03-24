@@ -1,4 +1,4 @@
-<form id="id_<%= uid %>" action="<% if(sendTo.indexOf('http') !== 0 && sendTo.indexOf('//') !== 0) { %>https://formspree.io/<% } %><%= sendTo %>" method="POST">
+<form id="id_<%= uid %>" action="<% if(sendTo.indexOf('http') !== 0 && sendTo.indexOf('//') !== 0) { %>https://formspree.io/<% } %><%= sendTo %>" method="POST" <% if(onsubmit) { %>onsubmit="return onsubmit_<%= uid %>(event);"<% } %>>
   <% if(field1) { %>
   <div>
     <% if(label1) { %><label for="field1"><%= label1 %></label><% } %>
@@ -32,11 +32,11 @@
 
 #id_<%= uid %> input[type=submit] {
     width: 100%;
-    background-color: #4CAF50;
-    color: white;
+    background-color: <%- buttonBackgroundColor %>;
+    color: <%- buttonTextColor %>;
     padding: 14px 20px;
     margin: 8px 0;
-    border: none;
+    border: 1px solid <%- buttonBorderColor %>;
     border-radius: 4px;
     cursor: pointer;
 }
@@ -63,3 +63,12 @@
     height: 100%;
 }
 </style>
+<% if(onsubmit) { %>
+<script type="text/javascript">
+function onsubmit_<%= uid %>(event) {
+try {
+    <%- onsubmit %>
+} catch(e) {}
+}
+</script>
+<% } %>
