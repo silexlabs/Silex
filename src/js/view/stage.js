@@ -279,6 +279,14 @@ silex.view.Stage.prototype.initEvents = function(contentWindow) {
   this.contentDocument = contentWindow.document;
   this.contentWindow = contentWindow;
 
+  //detect right click
+  goog.events.listen(this.bodyElement, 'contextmenu', function(event) {
+  	let x = event.clientX;
+    let y = event.clientY;
+    this.handleRightClick(x, y);
+    event.preventDefault();
+  }, false, this);
+
   // listen on body instead of element because user can release
   // on the tool boxes
   goog.events.listen(this.bodyElement, 'mouseup', function(event) {
@@ -1180,3 +1188,53 @@ silex.view.Stage.prototype.startScrolling = function() {
     }
   }
 };
+
+silex.view.Stage.prototype.handleRightClick = function(x, y) {
+
+	if(document.getElementById( 'powDiv' )!=null){
+		var el = document.getElementById( 'powDiv' );
+		el.parentNode.removeChild( el );	
+	}
+
+	var powDiv=goog.dom.createElement('div');
+	powDiv.id='powDiv';
+	powDiv.setAttribute('style','position:absolute;width:150px;text-align:center;background-color:#252525;;color:#FFF;width:200px;height:46px;border-radius:.15em;border:1px solid #444;');
+	
+  var leftPowDiv=goog.dom.createElement('div');
+  leftPowDiv.id='leftPowDiv';
+  leftPowDiv.setAttribute('style','display: inline;');
+
+  var imgLeftPowDiv=goog.dom.createElement('img');
+  imgLeftPowDiv.id='imgLeftPowDiv';
+  imgLeftPowDiv.setAttribute('style','width:70px;height:38px;margin-top:5px;');
+  imgLeftPowDiv.setAttribute('src', '../assets/logo-silex.png');
+
+
+  var rightPowA=goog.dom.createElement('a');
+  rightPowA.id='rightPowA';
+  rightPowA.setAttribute('style','display:inline;color:#777;');
+  rightPowA.setAttribute('href', 'http://www.silex.me');
+  rightPowA.setAttribute('target', '_blank');
+  rightPowA.innerHTML='Powered by Silex';
+
+	var myContextHeight=goog.dom.getElementByClass(silex.view.ContextMenu.CLASS_NAME).offsetHeight;
+	var myMenuWidth=goog.dom.getElementByClass('menu-container').offsetWidth;
+
+	powDiv.style.left = (x+myMenuWidth)+'px';
+	powDiv.style.top = (y+myContextHeight)+'px';
+	
+  document.body.appendChild(powDiv);
+  document.getElementById('powDiv').appendChild(leftPowDiv);
+  document.getElementById('leftPowDiv').appendChild(imgLeftPowDiv);
+  document.getElementById('powDiv').appendChild(rightPowA);
+
+	setTimeout(function(){ 
+		var el = document.getElementById( 'powDiv' );
+		el.parentNode.removeChild( el );
+  	}, 3000);
+};
+
+document.addEventListener( 'contextmenu', function(e) {
+    console.log(e);
+  });
+
