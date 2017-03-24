@@ -59,7 +59,7 @@ silex.view.ContextMenu = function(element, model, controller) {
 
 };
 
-
+silex.view.ContextMenu.CLASS_NAME='silex-context-menu';
 /**
  * create the context menu
  * called by the app constructor
