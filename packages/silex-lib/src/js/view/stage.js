@@ -835,8 +835,9 @@ silex.view.Stage.prototype.followElementPosition =
         // this.controller.stageController.styleChanged('top', finalY + 'px', [follower], false);
         // this.controller.stageController.styleChanged('left', finalX + 'px', [follower], false);
         // move the element
-        let left = parseInt(follower.style.left, 10) || 0;
-        let top = parseInt(follower.style.top, 10) || 0;
+        let pos = goog.style.getPosition(follower);
+        let left = parseInt(follower.style.left, 10) || pos.x;
+        let top = parseInt(follower.style.top, 10) || pos.y;
         follower.style.left = (left + offsetX) + 'px';
         follower.style.top = (top + offsetY) + 'px';
     }
