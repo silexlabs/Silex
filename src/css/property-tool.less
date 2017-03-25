@@ -1,3 +1,9 @@
+.small-text-input {
+  width: 52px;
+  float: left;
+  margin: 0 4px;
+}
+
 /* "apollo mode" UI */
 .advanced-mode-on .silex-property-tool .switch-apollo-mode button:after {
   content: '\f205';
@@ -275,6 +281,35 @@
     margin-bottom: 10px;
   }
 
+  /*
+    a box to edit color:
+    * label + text for alpha
+    * color input tag
+   */
+  .color-edit-container {
+    .color-edit-label {
+      float: left;
+      margin: 4px;
+      &.alpha {
+        margin: 0 4px;
+      }
+    }
+    .color-edit-color-input,
+    .color-edit-text-input {
+      .small-text-input();
+    }
+    .color-edit-text-input {
+      clear: left;
+    }
+    .color-edit-transparent-check {
+      clear: left;
+      margin: 8px;
+      float: left;
+      width: 15px;
+      height: 15px;
+    }
+  }
+
   .position-editor {
 
     label {
@@ -372,7 +407,7 @@
   .opacity-property {
 
     .opacity-input {
-      width: 52px;
+      .small-text-input();
     }
 
   }
@@ -380,19 +415,20 @@
 
   .border-property {
 
-    .border-width-color-container {
-      float: left;
+    .border-width-container {
       width: 100%;
+      clear: both;
+      display: block;
+      margin: 4px;
 
       label {
-        margin: 8px;
-        float: left;
+        .small-text-input();
+        margin: 4px;
       }
 
       input.border-width-input {
-        width: 52px;
-        float: left;
-        margin-left: 4px;
+        .small-text-input();
+        clear: left;
       }
       .border-color-button {
         margin-top: 7px;
@@ -403,10 +439,10 @@
 
       }
 
+/* ************* */
     }
     select.combobox {
       .small-combo;
-      margin: 5px 10px;
     }
 
     .border-type-conainer {
@@ -417,6 +453,18 @@
         float: left;
         margin: 8px;
       }
+/* ************* */
+      .border-type-combo-box {
+        background: #FFF;
+        .small-text-input();
+
+        .goog-menu-button-caption {
+          padding-right: 10px;
+        }
+
+      }
+
+/* ************* */
     }
 
     .border-radius-container {
@@ -432,8 +480,7 @@
         }
 
         input.corner-radius-input {
-          width: 52px;
-          float: left;
+          .small-text-input();
         }
 
       }
