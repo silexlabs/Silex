@@ -19,10 +19,10 @@
 goog.provide('silex.view.pane.BgPane');
 goog.require('goog.array');
 goog.require('goog.object');
-goog.require('goog.ui.ColorButton');
-goog.require('goog.ui.HsvaPalette');
-goog.require('goog.ui.TabBar');
+goog.require('goog.ui.Checkbox');
+goog.require('goog.ui.CustomButton');
 goog.require('silex.utils.Style');
+goog.require('silex.view.utils.ColorPicker');
 goog.require('silex.view.pane.PaneBase');
 
 
@@ -56,9 +56,6 @@ silex.view.pane.BgPane.prototype.buildUi = function() {
   // BG color
   this.buildBgColor();
 
-  // init palette
-  this.buildPalette();
-
   // init bg image
   this.buildBgImage();
 
@@ -70,60 +67,9 @@ silex.view.pane.BgPane.prototype.buildUi = function() {
 /**
  * build the UI
  */
-silex.view.pane.BgPane.prototype.buildPalette = function() {
-  var hsvPaletteElement = goog.dom.getElementByClass(
-      'color-bg-palette',
-      this.element);
-
-  this.hsvPalette = new goog.ui.HsvaPalette(undefined,
-                                            undefined,
-                                            undefined,
-                                            'goog-hsva-palette-sm');
-
-  // render the element
-  this.hsvPalette.render(hsvPaletteElement);
-
-  // init palette
-  this.hsvPalette.setColorRgbaHex('#FFFFFFFF');
-  this.setColorPaletteVisibility(this.hsvPalette, false);
-
-  // User has selected a color
-  goog.events.listen(this.hsvPalette,
-                     goog.ui.Component.EventType.ACTION,
-                     this.onColorChanged,
-                     false,
-                     this);
-};
-
-
-/**
- * build the UI
- */
 silex.view.pane.BgPane.prototype.buildBgColor = function() {
   // BG color
-  // init button which shows/hides the palete
-  this.bgColorPicker = new goog.ui.ColorButton('');
-  this.bgColorPicker.setTooltip('Click to select color');
-  this.bgColorPicker.render(goog.dom.getElementByClass(
-      'color-bg-button',
-      this.element));
-
-  // init the button to choose if there is a color or not
-  this.transparentBgCheckbox = this.element.querySelector('.enable-color-bg-button');
-
-  // the user opens/closes the palete
-  goog.events.listen(this.bgColorPicker,
-                     goog.ui.Component.EventType.ACTION,
-                     this.onBgColorButton,
-                     false,
-                     this);
-
-  // user set transparent bg
-  goog.events.listen(this.transparentBgCheckbox,
-                     goog.ui.Component.EventType.CHANGE,
-                     this.onTransparentChanged,
-                     false,
-                     this);
+  this.colorPicker = new ColorPicker(this.element.querySelector('.color-edit-container'), value => this.onColorChanged());
 };
 
 
@@ -215,22 +161,20 @@ silex.view.pane.BgPane.prototype.redraw = function(selectedElements, pageNames, 
   this.currentPageName = currentPageName;
 
   // BG color
-  var color = this.getCommonProperty(selectedElements, goog.bind(function(element) {
-    return this.model.element.getStyle(element, 'backgroundColor');
-  }, this));
-  if (color === null || color === 'transparent' || color === '') {
-    this.transparentBgCheckbox.checked = true;
-    this.bgColorPicker.setEnabled(false);
-    this.setColorPaletteVisibility(this.hsvPalette, false);
+  if(selectedElements.length > 0) {
+    this.colorPicker.setDisabled(false);
+    var color = this.getCommonProperty(selectedElements, goog.bind(function(element) {
+      return this.model.element.getStyle(element, 'backgroundColor') || '';
+    }, this));
+    // indeterminate state
+    this.colorPicker.setIndeterminate(color == null);
+    // display color
+    if(color != null) {
+      this.colorPicker.setColor(color);
+    }
   }
   else {
-    // handle all colors, including the named colors
-    color = silex.utils.Style.rgbaToHex(color);
-
-    this.transparentBgCheckbox.checked = false;
-    this.bgColorPicker.setEnabled(true);
-    this.hsvPalette.setColorRgbaHex(color);
-    this.bgColorPicker.setValue(this.hsvPalette.getColor());
+    this.colorPicker.setDisabled(true);
   }
   // BG image
   var enableBgComponents = goog.bind(function(enable) {
@@ -323,32 +267,8 @@ silex.view.pane.BgPane.prototype.onColorChanged = function() {
   if (this.iAmRedrawing) {
     return;
   }
-  var color = silex.utils.Style.hexToRgba(this.hsvPalette.getColorRgbaHex());
-  // update the button
-  this.bgColorPicker.setValue(this.hsvPalette.getColor());
-
   // notify the toolbox
-  this.styleChanged('backgroundColor', color);
-};
-
-
-/**
- * User has clicked on the color button
- * open or close the palete
- */
-silex.view.pane.BgPane.prototype.onBgColorButton = function() {
-  var element = this.selectedElements[0];
-  // show the palette
-  if (this.getColorPaletteVisibility(this.hsvPalette) === false) {
-    var color = this.model.element.getStyle(element, 'backgroundColor') || 'rgba(255, 255, 255, 1)';
-    this.hsvPalette.setColorRgbaHex(
-      silex.utils.Style.rgbaToHex(color)
-    );
-    this.setColorPaletteVisibility(this.hsvPalette, true);
-  }
-  else {
-    this.setColorPaletteVisibility(this.hsvPalette, false);
-  }
+  this.styleChanged('backgroundColor', this.colorPicker.getColor());
 };
 
 
@@ -368,27 +288,6 @@ silex.view.pane.BgPane.prototype.initComboBox = function(selector, onChange) {
       }, this));
   // return the google closure object
   return comboBox;
-};
-
-
-/**
- * User has clicked the transparent checkbox
- */
-silex.view.pane.BgPane.prototype.onTransparentChanged = function() {
-  if (this.iAmRedrawing) {
-    return;
-  }
-  var color = 'transparent';
-  if (this.transparentBgCheckbox.checked === false) {
-    color = silex.utils.Style.hexToRgba(this.hsvPalette.getColorRgbaHex());
-    if (!color) {
-      color = 'rgba(255, 255, 255, 1)';
-    }
-  }
-  // notify the toolbox
-  this.styleChanged('backgroundColor', color);
-  // redraw myself (styleChange prevent myself to redraw)
-  this.redraw(this.selectedElements, this.pageNames, this.currentPageName);
 };
 
 
