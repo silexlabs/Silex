@@ -70,9 +70,9 @@ silex.model.Component.prototype.ready = function(cbk) {
 
 
 /**
+ * not needed? we use !!this.model.property.getComponentData(element)
  * @param {Element} el
  * @return {boolean} true if el is a component (not only an element)
- * we use !!this.model.property.getComponentData(element)
 silex.model.Component.prototype.isComponent = function(el) {
   return el.classList.contains(silex.model.Component.COMPONENT_CLASS_NAME);
 };
