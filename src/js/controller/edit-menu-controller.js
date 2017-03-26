@@ -256,7 +256,12 @@ silex.controller.EditMenuController.prototype.editElement = function(opt_element
   this.undoCheckPoint();
   // default is selected element
   var element = opt_element || this.model.body.getSelection()[0];
-  switch (this.model.element.getType(element)) {
+  // open the params tab for the components
+  // or the editor for the elements
+  if(!!this.model.property.getComponentData(element)) {
+    this.view.propertyTool.openParamsTab();
+  }
+  else switch (this.model.element.getType(element)) {
     case silex.model.Element.TYPE_TEXT:
       var bgColor = silex.utils.Style.computeBgColor(element, this.model.file.getContentWindow());
       if (!bgColor) {
