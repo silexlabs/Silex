@@ -79,6 +79,12 @@ silex.view.dialog.TextEditor.prototype.textField = null;
 
 
 /**
+ * @type {Element}
+ */
+silex.view.dialog.TextEditor.prototype.fontColorButtonEl = null;
+
+
+/**
  * init the menu and UIs
  */
 silex.view.dialog.TextEditor.prototype.buildUi = function() {
@@ -169,6 +175,22 @@ silex.view.dialog.TextEditor.prototype.buildUi = function() {
       false,
       this);
 
+  // font color button
+  this.colorInput = document.createElement('input');
+  this.colorInput.type = 'color';
+  this.colorInput.style.position = 'absolute';
+  this.colorInput.style.left = '-999px';
+  document.body.appendChild(this.colorInput);
+
+  var fontColorButton = goog.ui.editor.ToolbarFactory.makeButton(
+      'fontColorButton', 'Text color', '', 'fa fa-paint-brush');
+  goog.events.listen(
+      fontColorButton,
+      goog.ui.Component.EventType.ACTION,
+      this.onFontColorClick,
+      false,
+      this);
+
 
   // Specify the buttons to add to the toolbar, using built in default buttons.
   var buttons = [
@@ -178,8 +200,7 @@ silex.view.dialog.TextEditor.prototype.buildUi = function() {
     goog.editor.Command.BOLD,
     goog.editor.Command.ITALIC,
     goog.editor.Command.UNDERLINE,
-    goog.editor.Command.FONT_COLOR,
-    goog.editor.Command.BACKGROUND_COLOR,
+    fontColorButton,
     goog.editor.Command.LINK,
     goog.editor.Command.UNORDERED_LIST,
     goog.editor.Command.ORDERED_LIST,
@@ -188,14 +209,12 @@ silex.view.dialog.TextEditor.prototype.buildUi = function() {
     goog.editor.Command.JUSTIFY_LEFT,
     goog.editor.Command.JUSTIFY_CENTER,
     goog.editor.Command.JUSTIFY_RIGHT,
-    goog.editor.Command.STRIKE_THROUGH,
     goog.editor.Command.REMOVE_FORMAT
   ];
   var myToolbar = goog.ui.editor.DefaultToolbar.makeToolbar(
       buttons,
       /** @type  {!Element} */ (goog.dom.getElementByClass(
           'toolbar', this.element)));
-
   // lorem ipsum button
   var button = goog.ui.editor.ToolbarFactory.makeButton(
       'loremIpsumBtn', 'insert lorem ipsum text', 'Lorem');
@@ -243,7 +262,12 @@ silex.view.dialog.TextEditor.prototype.buildUi = function() {
     console.error('error catched', e);
   }
   */
-
+  // keep a reference to the font color button
+  this.fontColorButtonEl = fontColorButton.getContentElement();
+  // keep the color of the button the same as the selection
+  setInterval(() => {
+    if(this.isOpened) this.updateFontColorButton();
+  }, 1000);
 };
 
 
@@ -381,6 +405,8 @@ silex.view.dialog.TextEditor.prototype.openEditor = function() {
 silex.view.dialog.TextEditor.prototype.closeEditor = function() {
   // call super
   goog.base(this, 'closeEditor');
+  // needed because sometimes the color picker do not fire a change event
+  this.contentChanged();
   // remove editable before it goes "display: none"
   if (!this.textField.isUneditable()) {
     this.textField.makeUneditable();
@@ -488,6 +514,48 @@ silex.view.dialog.TextEditor.prototype.onInvertColor = function(event) {
   var bgColorArray = goog.color.hexToRgb(goog.color.parse(bgColorStr).hex);
   var invertedArray = bgColorArray.map(color => 255 - color);
   goog.style.setStyle(iframe, 'backgroundColor', goog.color.rgbArrayToHex(invertedArray));
+}
+
+
+/**
+ * user clicked font color button
+ */
+silex.view.dialog.TextEditor.prototype.updateFontColorButton = function() {
+  const range = this.textField.getRange();
+  const startNode = this.textField.getRange().getStartNode();
+  const container = startNode.nextElementSibling == null ? startNode : startNode.nextElementSibling;
+  let color = '#000000';
+  if(container && container.style && container.style.color) {
+    color = container.style.color;
+  }
+  else if (container) {
+    const el = /** @type {Element} */ (container.nodeType === goog.dom.NodeType.ELEMENT ? container : container.parentNode);
+    color = window.getComputedStyle(el).color;
+  }
+  // apply the color input and the button to the selection color
+  this.colorInput.value = color;
+  this.fontColorButtonEl.style.color = color;
+};
+
+
+/**
+ * user clicked font color button
+ */
+silex.view.dialog.TextEditor.prototype.onFontColorClick = function(event) {
+  // this.colorInput.focus();
+  this.updateFontColorButton();
+  // open the browser's color picker
+  this.colorInput.click();
+  this.colorInput.onchange = e => {
+    let container = this.textField.getRange().getContainer();
+    if(container.nodeType === goog.dom.NodeType.TEXT) {
+      container = document.createElement('span');
+      this.textField.getRange().surroundContents(container);
+    }
+    container.style.color = this.colorInput.value;
+    this.colorInput.onchange = null;
+    this.contentChanged();
+  }
 }
 
 
