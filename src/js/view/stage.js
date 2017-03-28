@@ -1200,10 +1200,14 @@ silex.view.Stage.prototype.handleRightClick = function(x, y) {
 	var powDiv=goog.dom.createElement('div');
 	powDiv.id='powDiv';
 	powDiv.setAttribute('style', 'width:240px;height:39px;background-color:#444;position:absolute;color:#DDD;font-family:\'Roboto\', sans-serif;font-size:small;text-align: center;border-radius:5px;');
-	powDiv.style.left = x+'px';
-  	powDiv.style.top = y+'px';
-  	powDiv.innerHTML='Powered by Silex';
-  	document.body.appendChild(powDiv);
+	
+	var myContextHeight=goog.dom.getElementByClass(silex.view.ContextMenu.CLASS_NAME).offsetHeight;
+	var myMenuWidth=goog.dom.getElementByClass('menu-container').offsetWidth;
+
+	powDiv.style.left = (x+myMenuWidth)+'px';
+	powDiv.style.top = (y+myContextHeight)+'px';
+	powDiv.innerHTML='Powered by Silex';
+	document.body.appendChild(powDiv);
 
 	setTimeout(function(){ 
 		var el = document.getElementById( 'powDiv' );
