@@ -1,7 +1,0 @@
-[submodule "submodules/closure-library"]
-	path = submodules/closure-library
-	url = https://github.com/google/closure-library.git
-	ignore = dirty
-[submodule "submodules/closure-linter"]
-	path = submodules/closure-linter
-	url = https://github.com/silexlabs/google-closure-linter.git
