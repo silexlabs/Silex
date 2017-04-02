@@ -434,17 +434,17 @@ silex.model.Element.prototype.move = function(element, direction) {
   }
   switch (direction) {
     case silex.model.DomDirection.UP:
-      let sibling = this.getNextElement(element);
-      if (sibling) {
+      let nextSibling = this.getNextElement(element);
+      if (nextSibling) {
         // insert after
-        element.parentNode.insertBefore(sibling, element);
+        element.parentNode.insertBefore(nextSibling, element);
       }
       break;
     case silex.model.DomDirection.DOWN:
-      let sibling = this.getPreviousElement(element);
-      if (sibling) {
+      let prevSibling = this.getPreviousElement(element);
+      if (prevSibling) {
         // insert before
-        element.parentNode.insertBefore(sibling, element.nextSibling);
+        element.parentNode.insertBefore(prevSibling, element.nextSibling);
       }
       break;
     case silex.model.DomDirection.TOP:
