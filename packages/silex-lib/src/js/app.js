@@ -88,7 +88,6 @@ class App {
   /**
    * Entry point of Silex client application
    * create all views and models and controllers
-   * @constructor
    *
    */
   constructor() {

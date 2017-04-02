@@ -150,7 +150,7 @@ silex.model.File.prototype.hasContent = function() {
  * @param {?function()=} opt_cbk
  * @param {?boolean=} opt_showLoader
  * @param {?boolean=} opt_bypassBC if true will bypass backward compat check, default is true
- * @expose
+ * @export
  */
 silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk, opt_showLoader, opt_bypassBC) {
   // reset iframe content
@@ -443,7 +443,7 @@ silex.model.File.prototype.getHtmlGenerator = function* () {
  * @param {string} url
  * @param {?function(string)=} opt_cbk
  * @param {?function(Object, string)=} opt_errCbk
- * @expose
+ * @export
  */
 silex.model.File.prototype.openFromUrl = function(url, opt_cbk, opt_errCbk) {
   this.isTemplate = true;
@@ -459,7 +459,7 @@ silex.model.File.prototype.openFromUrl = function(url, opt_cbk, opt_errCbk) {
 
 /**
  * save a file with a new name
- * @expose
+ * @export
  */
 silex.model.File.prototype.saveAs = function(url, rawHtml, cbk, opt_errCbk) {
   // save the data
@@ -470,7 +470,7 @@ silex.model.File.prototype.saveAs = function(url, rawHtml, cbk, opt_errCbk) {
 
 /**
  * write content to the file
- * @expose
+ * @export
  */
 silex.model.File.prototype.save = function(rawHtml, cbk, opt_errCbk) {
   silex.service.CloudStorage.getInstance().save(

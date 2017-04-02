@@ -31,7 +31,6 @@ const HIDE_DIALOGS_BACKGROUND = 'silex-hide-dialog-background';
 silex.view.ModalDialog = class {
 
   /**
-   * @constructor
    * @param  {{name:(string|undefined), element:Element, onOpen:!function(?Object=), onClose:!function()}} options
    */
   constructor(options) {
