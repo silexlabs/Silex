@@ -253,7 +253,16 @@ silex.model.Element.prototype.getType = function(element) {
 
 /**
  * @param  {Element} element   created by silex
- * @return true if el is a section or the content container of a section
+ * @return true if `element` is a an element's content (the element in an image, html box, section...)
+ */
+silex.model.Element.prototype.isElementContent = function(element) {
+  return element.classList.contains(silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
+}
+
+
+/**
+ * @param  {Element} element   created by silex
+ * @return true if `element` is a section
  */
 silex.model.Element.prototype.isSection = function(element) {
   return element.classList.contains(silex.model.Element.TYPE_SECTION + '-element');
@@ -262,7 +271,7 @@ silex.model.Element.prototype.isSection = function(element) {
 
 /**
  * @param  {Element} element   created by silex
- * @return true if el is a section or the content container of a section
+ * @return true if `element` is the content container of a section
  */
 silex.model.Element.prototype.isSectionContent = function(element) {
   return element.classList.contains(silex.model.Element.TYPE_CONTAINER_CONTENT);
@@ -642,6 +651,11 @@ silex.model.Element.prototype.addElement = function(container, element) {
   goog.dom.appendChild(container, element);
   // add the class to keep the element above all others
   element.classList.add(silex.model.Element.JUST_ADDED_CLASS_NAME);
+  // resize the body
+  // call the method defined in front-end.js
+  // this will resize the body according to its content
+  // it will also trigger a "silex:resize" event
+  this.model.file.getContentWindow()['resizeBody']();
 };
 
 silex.model.Element.INITIAL_ELEMENT_SIZE = 100;
@@ -706,15 +720,17 @@ silex.model.Element.prototype.initElement = function(element) {
     case silex.model.Element.TYPE_HTML:
       defaultStyleObject['background-color'] = 'rgb(255, 255, 255)';
       break;
-
-    case silex.model.Element.TYPE_SECTION:
-      this.view.stage.setScrollTarget(element);
-      break;
-
     case silex.model.Element.TYPE_TEXT:
     case silex.model.Element.TYPE_IMAGE:
       break;
   }
+  // special case of section content
+  if(this.isSectionContent(element)) {
+    // no background color for the content container
+    defaultStyleObject['background-color'] = '';
+  }
+  // send the scroll to the target
+  this.view.stage.setScrollTarget(element);
 
   // default style to the element style
   // keep the style if there is one, usually set by component::initComponent
@@ -725,8 +741,15 @@ silex.model.Element.prototype.initElement = function(element) {
   // apply the style (force desktop style, not mobile)
   this.model.property.setStyle(element, finalStyleObject, false);
 
-  // position on stage
-  this.addElementDefaultPosition(element);
+  // add the element to the stage
+  if(this.isSection(element)) {
+    this.addElement(this.model.body.getBodyElement(), element);
+  }
+  else if(!this.isElementContent(element)) {
+    // add to the stage at the right position
+    // and in the right container
+    this.addElementDefaultPosition(element);
+  }
 };
 
 
@@ -772,9 +795,6 @@ silex.model.Element.prototype.createElement = function(type) {
   // init the element
   goog.dom.classlist.add(element, silex.model.Body.EDITABLE_CLASS_NAME);
   this.model.property.initSilexId(element, this.model.file.getContentDocument());
-
-  // make it editable
-  this.model.body.setEditable(element, true);
 
   // add css class for Silex styles
   goog.dom.classlist.add(element, type + '-element');
@@ -828,21 +848,17 @@ silex.model.Element.prototype.createSectionElement = function() {
   element.classList.add(silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME);
   element.classList.add(silex.model.Element.TYPE_CONTAINER + '-element');
   element.classList.add(silex.model.Element.WEBSITE_MIN_WIDTH_CLASS_NAME);
+
   // content element is both a container and a content element
-  var content = this.createContainerElement();
-  var styleObject = {
-    'min-height': '100px',
-    'background-color': 'rgb(255, 255, 255)'
-  };
-  content.classList.add(silex.model.Body.EDITABLE_CLASS_NAME);
+  var content = this.createElement(silex.model.Element.TYPE_CONTAINER);
   content.classList.add(silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
-  content.classList.add(silex.model.Element.WEBSITE_WIDTH_CLASS_NAME);
-  this.model.property.initSilexId(content, this.model.file.getContentDocument());
-  this.model.property.setStyle(content, styleObject, false);
   content.classList.add(silex.model.Element.TYPE_CONTAINER_CONTENT);
-  content.classList.add(silex.model.Element.TYPE_CONTAINER + '-element');
+  content.classList.add(silex.model.Element.WEBSITE_WIDTH_CLASS_NAME);
   content.classList.add(silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME);
   element.appendChild(content);
+
+  this.initElement(content);
+
   // done
   return element;
 };

@@ -213,7 +213,7 @@ silex.model.Body.prototype.setEditable = function(rootElement, isEditable) {
   }
   // handle the root element itself
   if (isEditable) {
-    if (goog.dom.getElementsByClass('ui-resizable-s', rootElement).length === 0) {
+    if (rootElement.querySelector(':scope > .ui-resizable-s') == null) {
       this.initUiHandles(rootElement);
     }
   }
@@ -224,7 +224,7 @@ silex.model.Body.prototype.setEditable = function(rootElement, isEditable) {
   // activate editable plugin on all editable children
   var elements = goog.dom.getElementsByClass(silex.model.Body.EDITABLE_CLASS_NAME, rootElement);
   goog.array.forEach(elements, function(element) {
-    if (isEditable && goog.dom.getElementsByClass('ui-resizable-s', element).length === 0) {
+    if (isEditable && element.querySelector(':scope > .ui-resizable-s') == null) {
       this.initUiHandles(element);
     }
   }, this);
