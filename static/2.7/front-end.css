@@ -92,6 +92,7 @@ body.silex-runtime .silex-element-content {
 /* resize */
 .editable-style.image-element .silex-element-content{
   position: absolute;
+  border-radius: inherit; /* this is to follow the element's radius */
 }
 /* links default formatting */
 .editable-style[data-silex-href]{

@@ -129,8 +129,8 @@ silex.utils.Notification.nativeNotification = function(message, iconUrl) {
     }, silex.utils.Notification.NOTIFICATION_DURATION_MS);
   }
   else {
+    // Desktop notifications disabled because it disturbs more than it serves
     // FIXME: remove all calls to nativeNotification since it is not useful anymore
-    console.info('Desktop notifications disabled because it disturbs more than it serves');
     // silex.utils.Notification.activateNative();
   }
 };
@@ -233,7 +233,6 @@ silex.utils.Notification.notifyError = function(message) {
  * @param {string} message
  */
 silex.utils.Notification.notifyInfo = function(message) {
-  console.info(message);
   alertify.set({
     'delay': silex.utils.Notification.NOTIFICATION_DURATION_MS
   });
