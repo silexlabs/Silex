@@ -56,7 +56,7 @@
     "lodash": "3.10.0",
     "pm2": "1.1.3",
     "prodotype": "silexlabs/Prodotype",
-    "silex-templates": "silexlabs/silex-templates#1344e93",
+    "silex-templates": "silexlabs/silex-templates#2107872",
     "silex-blank-templates": "silexlabs/silex-blank-templates#6a11537",
     "qs": "4.0.0",
     "request": "2.69.0",
