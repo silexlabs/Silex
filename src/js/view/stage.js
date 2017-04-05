@@ -1196,18 +1196,37 @@ silex.view.Stage.prototype.handleRightClick = function(x, y) {
 		el.parentNode.removeChild( el );	
 	}
 
-	console.log('Powered by Silex');
 	var powDiv=goog.dom.createElement('div');
 	powDiv.id='powDiv';
-	powDiv.setAttribute('style', 'width:240px;height:39px;background-color:#444;position:absolute;color:#DDD;font-family:\'Roboto\', sans-serif;font-size:small;text-align: center;border-radius:5px;');
+	powDiv.setAttribute('style','position:absolute;width:150px;text-align:center;background-color:#252525;;color:#FFF;width:200px;height:46px;border-radius:.15em;border:1px solid #444;');
 	
+  var leftPowDiv=goog.dom.createElement('div');
+  leftPowDiv.id='leftPowDiv';
+  leftPowDiv.setAttribute('style','display: inline;');
+
+  var imgLeftPowDiv=goog.dom.createElement('img');
+  imgLeftPowDiv.id='imgLeftPowDiv';
+  imgLeftPowDiv.setAttribute('style','width:70px;height:38px;margin-top:5px;');
+  imgLeftPowDiv.setAttribute('src', '../assets/logo-silex.png');
+
+
+  var rightPowA=goog.dom.createElement('a');
+  rightPowA.id='rightPowA';
+  rightPowA.setAttribute('style','display:inline;color:#777;');
+  rightPowA.setAttribute('href', 'http://www.silex.me');
+  rightPowA.setAttribute('target', '_blank');
+  rightPowA.innerHTML='Powered by Silex';
+
 	var myContextHeight=goog.dom.getElementByClass(silex.view.ContextMenu.CLASS_NAME).offsetHeight;
 	var myMenuWidth=goog.dom.getElementByClass('menu-container').offsetWidth;
 
 	powDiv.style.left = (x+myMenuWidth)+'px';
 	powDiv.style.top = (y+myContextHeight)+'px';
-	powDiv.innerHTML='Powered by Silex';
-	document.body.appendChild(powDiv);
+	
+  document.body.appendChild(powDiv);
+  document.getElementById('powDiv').appendChild(leftPowDiv);
+  document.getElementById('leftPowDiv').appendChild(imgLeftPowDiv);
+  document.getElementById('powDiv').appendChild(rightPowA);
 
 	setTimeout(function(){ 
 		var el = document.getElementById( 'powDiv' );
