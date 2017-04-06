@@ -281,7 +281,7 @@ silex.view.Stage.prototype.initEvents = function(contentWindow) {
 
   // listen on body instead of element because user can release
   // on the tool boxes
-  goog.events.listen(this.bodyElement, 'mouseup', function(event) {
+  goog.events.listen(contentWindow.document, 'mouseup', function(event) {
     let x = event.clientX;
     let y = event.clientY;
     this.handleMouseUp(event.target, x, y, event.shiftKey);
