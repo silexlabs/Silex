@@ -710,15 +710,15 @@ silex.model.Element.prototype.getBestContainerForNewElement = function(x, y) {
  */
 silex.model.Element.prototype.initElement = function(element) {
   // default style
-  var defaultStyleObject = {};
-  defaultStyleObject['width'] = silex.model.Element.INITIAL_ELEMENT_SIZE + 'px';
-  defaultStyleObject[this.getHeightStyleName(element)] = silex.model.Element.INITIAL_ELEMENT_SIZE + 'px';
+  var defaultStyle = {};
+  defaultStyle['width'] = silex.model.Element.INITIAL_ELEMENT_SIZE + 'px';
+  defaultStyle[this.getHeightStyleName(element)] = silex.model.Element.INITIAL_ELEMENT_SIZE + 'px';
 
   // init the element depending on its type
   switch(this.getType(element)) {
     case silex.model.Element.TYPE_CONTAINER:
     case silex.model.Element.TYPE_HTML:
-      defaultStyleObject['background-color'] = 'rgb(255, 255, 255)';
+      defaultStyle['background-color'] = 'rgb(255, 255, 255)';
       break;
     case silex.model.Element.TYPE_TEXT:
     case silex.model.Element.TYPE_IMAGE:
@@ -726,20 +726,23 @@ silex.model.Element.prototype.initElement = function(element) {
   }
   // special case of section content
   if(this.isSectionContent(element)) {
-    // no background color for the content container
-    defaultStyleObject['background-color'] = '';
+    // no bg color for the content container
+    defaultStyle['background-color'] = '';
+    // no width either, it will take the .website-width
+    // the default one from front-end.css or the one in the settings
+    defaultStyle['width'] = '';
   }
   // send the scroll to the target
   this.view.stage.setScrollTarget(element);
 
   // default style to the element style
   // keep the style if there is one, usually set by component::initComponent
-  const finalStyleObject = this.model.property.getStyle(element, false) || {};
-  for(var name in defaultStyleObject) {
-    finalStyleObject[name] = finalStyleObject[name] || defaultStyleObject[name];
+  const finalStyle = this.model.property.getStyle(element, false) || {};
+  for(var name in defaultStyle) {
+    finalStyle[name] = finalStyle[name] || defaultStyle[name];
   }
   // apply the style (force desktop style, not mobile)
-  this.model.property.setStyle(element, finalStyleObject, false);
+  this.model.property.setStyle(element, finalStyle, false);
 
   // add the element to the stage
   if(this.isSection(element)) {
