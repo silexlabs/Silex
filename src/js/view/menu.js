@@ -140,7 +140,7 @@ silex.view.Menu.prototype.buildUi = function() {
     el.setAttribute('data-comp-id', id);
     el.innerHTML = `
       <span class="icon fa-inverse ${iconClassName}"></span>
-      Add ${id}
+      ${comp.name}
     `;
     return el;
   }
