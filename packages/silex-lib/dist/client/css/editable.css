@@ -69,7 +69,7 @@ this makes the video clickable:
   right: initial;
   bottom: initial;
 }
-.drop-zone-candidate {
+body .drop-zone-candidate {
   animation-duration: 1s;
   -moz-animation-duration: 1s;
   -webkit-animation-duration: 1s;
