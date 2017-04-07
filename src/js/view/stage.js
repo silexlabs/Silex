@@ -83,11 +83,37 @@ silex.view.Stage.BACKGROUND_CLASS_NAME = 'background';
 
 
 /**
- * number of pixels to scroll at each animation frame
+ * number of pixels to scroll when the user scrolls out of the site
+ * @type {number}
+ */
+silex.view.Stage.SCROLL_STEPS_DRAG = 100;
+
+
+
+
+/**
+ * distance in pixels to the border of the stage, under which we scroll
+ * this is when the user drag or resize an element and the mouse goes near the border
+ * @type {number}
+ */
+silex.view.Stage.MARGIN_FOR_SCROLL = 20;
+
+
+/**
+ * number of pixels to scroll at each animation frame to reach silex.view.Stage.SCROLL_STEPS_DRAG
  * the bigger the faster I will scroll to the target
  * @type {number}
  */
-silex.view.Stage.SCROLL_STEPS = 100;
+silex.view.Stage.SCROLL_DRAG_SPEED = 10;
+
+
+/**
+ * number of pixels to scroll at each animation frame to reach a target
+ * this is used when an element is added and it becomes a scorll target
+ * the bigger the faster I will scroll to the target
+ * @type {number}
+ */
+silex.view.Stage.DEFAULT_SCROLL_SPEED = 100;
 
 
 /**
@@ -731,17 +757,19 @@ silex.view.Stage.prototype.updateScroll = function(x, y) {
     let iframeSize = this.getStageSize();
     let scrollX = this.getScrollX();
     let scrollY = this.getScrollY();
-    if (x < 100) {
-      this.setScrollX(scrollX - 100);
+    if (x < silex.view.Stage.MARGIN_FOR_SCROLL) {
+      // todo: same as scrollY, an animation with scrollTo (which should support scrollX anim)
+      this.setScrollX(scrollX - silex.view.Stage.SCROLL_STEPS_DRAG);
     }
-    else if (x > iframeSize.width - 100) {
-      this.setScrollX(scrollX + 100);
+    else if (x > iframeSize.width - silex.view.Stage.MARGIN_FOR_SCROLL) {
+      // todo: same as scrollY, an animation with scrollTo (which should support scrollX anim)
+      this.setScrollX(scrollX + silex.view.Stage.SCROLL_STEPS_DRAG);
     }
-    if (y < 100) {
-      this.setScrollY(scrollY - 100);
+    if (y < silex.view.Stage.MARGIN_FOR_SCROLL) {
+      this.scrollTo(scrollY - silex.view.Stage.SCROLL_STEPS_DRAG, silex.view.Stage.SCROLL_DRAG_SPEED);
     }
-    else if (y > iframeSize.height - 100) {
-      this.setScrollY(scrollY + 100);
+    else if (y > iframeSize.height - silex.view.Stage.MARGIN_FOR_SCROLL) {
+      this.scrollTo(scrollY + silex.view.Stage.SCROLL_STEPS_DRAG, silex.view.Stage.SCROLL_DRAG_SPEED);
     }
   });
 };
@@ -801,7 +829,6 @@ silex.view.Stage.prototype.multipleDragged = function(x, y, shiftKey) {
     let offsetY = y - this.lastPosY + (scrollY - this.lastScrollTop);
     this.followElementSize(followers, this.resizeDirection, offsetX, offsetY);
   }
-
   // update the latest position and scroll
   this.lastPosX = x;
   this.lastPosY = y;
@@ -914,7 +941,7 @@ silex.view.Stage.prototype.followElementSize =
       // TODO in a while: remove support of .background since it is now a section
       if((follower.classList.contains(silex.view.Stage.BACKGROUND_CLASS_NAME) ||
         this.model.element.isSectionContent(follower)) &&
-        size.width < this.bodyElement.offsetWidth - 50) {
+        size.width < this.getStageSize().width - 100) {
         offsetSizeX *= 2;
       }
       // compute new size
@@ -1078,6 +1105,70 @@ silex.view.Stage.prototype.getScrollMaxY = function() {
 
 
 /**
+ * @param  {Element}  element in the DOM to wich I am scrolling
+ */
+silex.view.Stage.prototype.setScrollTarget = function(element) {
+  if(element !== this.bodyElement) {
+    // start scrolling
+    // not right away because the element may not be attached to the dom yet (case of add element)
+    requestAnimationFrame(() => {
+      const scrollTop = goog.style.getBounds(element).top;
+      const iframeSize = this.getStageSize();
+      const scrollCentered = scrollTop - Math.round(iframeSize.height/2);
+      this.scrollTo(scrollCentered);
+    });
+  }
+};
+
+
+/**
+ * @param  {number}  scrollTop to wich I am scrolling
+ * @param  {?number=}  scrollSpeed number of pixels per frame to go there
+ */
+silex.view.Stage.prototype.scrollTo = function(scrollTop, scrollSpeed) {
+  const previousTarget = this.scrollTarget;
+  this.scrollTarget = scrollTop;
+  if(previousTarget == null) {
+    this.startScrolling(scrollSpeed);
+  }
+};
+
+
+/**
+ * scroll until the scroll target is reached
+ * @param  {?number=}  scrollSpeed number of pixels per frame to go there
+ * TODO: should support scrollX anim too
+ */
+silex.view.Stage.prototype.startScrolling = function(scrollSpeed) {
+  if(this.scrollTarget != null) {
+    const scrollSpeedWithDefault = scrollSpeed || silex.view.Stage.DEFAULT_SCROLL_SPEED;
+    // det the next scroll step
+    const prevScroll = this.getScrollY();
+    // const nextStep = Math.round((bb.top - prevScroll) / silex.view.Stage.SCROLL_STEPS_ANIM);
+    let nextStep;
+    if(Math.abs(this.scrollTarget - prevScroll) < scrollSpeedWithDefault) {
+      nextStep = this.scrollTarget;
+    }
+    else if(this.scrollTarget > prevScroll) {
+      nextStep = prevScroll + scrollSpeedWithDefault;
+    }
+    else {
+      nextStep = prevScroll - scrollSpeedWithDefault;
+    }
+    this.setScrollY(nextStep);
+    // check if the scrolling target is reached
+    const newScroll = this.getScrollY();
+    if(newScroll === prevScroll || newScroll === this.scrollTarget) {
+      this.scrollTarget = null;
+    }
+    else {
+      requestAnimationFrame(() => this.startScrolling(scrollSpeedWithDefault));
+    }
+  }
+};
+
+
+/**
  * notify the controller that the properties of the selection have changed
  */
 silex.view.Stage.prototype.propertyChanged = function() {
@@ -1120,54 +1211,4 @@ silex.view.Stage.prototype.moveElements = function(elements, offsetX, offsetY) {
  */
 silex.view.Stage.prototype.isMobileMode = function() {
   return goog.dom.classlist.contains(document.body, 'mobile-mode');
-};
-
-
-/**
- * @param  {Element}  element in the DOM to wich I am scrolling
- */
-silex.view.Stage.prototype.setScrollTarget = function(element) {
-  if(element !== this.bodyElement) {
-    const previousTarget = this.scrollTarget;
-    this.scrollTarget = element;
-    if(!previousTarget) {
-      // start scrolling
-      // not right away because the element will not be attached to the dom yet
-      requestAnimationFrame(() => this.startScrolling());
-    }
-  }
-};
-
-
-/**
- * scroll until the scroll target is reached
- */
-silex.view.Stage.prototype.startScrolling = function() {
-  if(this.scrollTarget) {
-    // det the next scroll step
-    const prevScroll = this.getScrollY();
-    const bb = goog.style.getBounds(this.scrollTarget);
-    const iframeSize = this.getStageSize();
-    const scrollCentered = bb.top - Math.round(iframeSize.height/2);
-    // const nextStep = Math.round((bb.top - prevScroll) / silex.view.Stage.SCROLL_STEPS);
-    let nextStep;
-    if(Math.abs(scrollCentered - prevScroll) < silex.view.Stage.SCROLL_STEPS) {
-      nextStep = scrollCentered;
-    }
-    else if(scrollCentered > prevScroll) {
-      nextStep = prevScroll + silex.view.Stage.SCROLL_STEPS;
-    }
-    else {
-      nextStep = prevScroll - silex.view.Stage.SCROLL_STEPS;
-    }
-    this.setScrollY(nextStep);
-    // check if the scrolling target is reached
-    const newScroll = this.getScrollY();
-    if(newScroll === prevScroll || newScroll === scrollCentered) {
-      this.scrollTarget = null;
-    }
-    else {
-      requestAnimationFrame(() => this.startScrolling());
-    }
-  }
 };
