@@ -70,13 +70,13 @@ silex.model.Component.prototype.ready = function(cbk) {
 
 
 /**
- * not needed? we use !!this.model.property.getComponentData(element)
+ * not needed? we sometimes use !!this.model.property.getComponentData(element)
  * @param {Element} el
  * @return {boolean} true if el is a component (not only an element)
+ */
 silex.model.Component.prototype.isComponent = function(el) {
   return el.classList.contains(silex.model.Component.COMPONENT_CLASS_NAME);
 };
- */
 
 
 /**
@@ -101,7 +101,6 @@ silex.model.Component.prototype.initComponent = function(element, templateName) 
   // for selection (select all components)
   element.classList.add(silex.model.Component.COMPONENT_CLASS_NAME);
   // for styles (select buttons and apply a style)
-  element.classList.add(silex.model.Component.COMPONENT_CLASS_NAME + '-'  + templateName);
   this.model.property.setComponentData(element, {
     'name': name,
     'templateName': templateName,
@@ -116,8 +115,8 @@ silex.model.Component.prototype.initComponent = function(element, templateName) 
     this.executeScripts(element);
   });
 
-  // component definition special params for Silex
-  const componentsDef = this.model.component.getComponentsDef();
+  // css styles
+  const componentsDef = this.getComponentsDef();
   const comp = componentsDef[templateName];
   if(comp) {
     // apply the style found in component definition
@@ -129,18 +128,50 @@ silex.model.Component.prototype.initComponent = function(element, templateName) 
       this.applyStyleTo(this.model.element.getContentNode(element), comp.initialCssContentContainer);
     }
     // same for CSS classes to apply
-    if(comp.initialCssClass) {
-      // class name is either an array
-      // or a string
-      const className = comp.initialCssClass.join ? comp.initialCssClass.join(' ') : comp.initialCssClass;
+    // apply the style found in component definition
+    // this includes the css class of the component (component-templateName)
+    const cssClasses = this.getCssClasses(templateName)
+    if(cssClasses) {
       const oldClassName = this.model.element.getClassName(element);
-      this.model.element.setClassName(element, oldClassName + ' ' + className);
+      this.model.element.setClassName(element, oldClassName + ' ' + cssClasses.join(' '));
     }
   }
 
 };
 
 
+/**
+ * get all CSS classes set on this component when it is created
+ * this includes the css class of the component (component-templateName)
+ * @param  {string} templateName the component's template name
+ * @return {Array.<string>} an array of CSS classes
+ */
+silex.model.Component.prototype.getCssClasses = function (templateName) {
+  const componentsDef = this.getComponentsDef();
+  const comp = componentsDef[templateName];
+  const cssClasses = [silex.model.Component.COMPONENT_CLASS_NAME + '-'  + templateName];
+  if(comp) {
+    // class name is either an array
+    // or a string or null
+    switch(typeof comp.initialCssClass) {
+      case 'undefined':
+      break;
+      case 'string': cssClasses.concat(comp.initialCssClass.split(' '));
+      break;
+      default: cssClasses.concat(comp.initialCssClass);
+    }
+  } else {
+    console.error(`Error: component's definition not found in prodotype templates, with template name "${ templateName }".`);
+  }
+  return cssClasses;
+};
+
+
+/**
+ * eval the scripts found in an element
+ * this is useful when we render a template, since the scripts are executed only when the page loads
+ * @param  {Element} element
+ */
 silex.model.Component.prototype.executeScripts = function (element) {
   // execute the scripts
   const scripts = element.querySelectorAll('script');

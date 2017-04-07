@@ -258,7 +258,7 @@ silex.controller.EditMenuController.prototype.editElement = function(opt_element
   var element = opt_element || this.model.body.getSelection()[0];
   // open the params tab for the components
   // or the editor for the elements
-  if(!!this.model.property.getComponentData(element)) {
+  if(this.model.component.isComponent(element)) {
     this.view.propertyTool.openParamsTab();
   }
   else switch (this.model.element.getType(element)) {

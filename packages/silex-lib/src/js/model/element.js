@@ -954,11 +954,17 @@ silex.model.Element.prototype.getLink = function(element) {
  * @return  {?string}           the value for this styleName
  */
 silex.model.Element.prototype.getClassName = function(element) {
-  var pages = this.model.page.getPages();
+  const pages = this.model.page.getPages();
+  let componentCssClasses = [];
+  if(this.model.component.isComponent(element)) {
+    const templateName = this.model.property.getComponentData(element)['templateName'];
+    componentCssClasses = this.model.component.getCssClasses(templateName);
+  }
   return element.className.split(' ').filter((name) => {
     if (name === '' ||
         goog.array.contains(silex.utils.Style.SILEX_CLASS_NAMES, name) ||
         goog.array.contains(pages, name) ||
+        goog.array.contains(componentCssClasses, name) ||
         this.model.property.getSilexId(element) === name) {
       return false;
     }
