@@ -15,7 +15,4 @@ initialCss:
 initialCssClass:
   hero-bottom
   hero-scroll
-props:
-- name: useless
-  type: number
-  default: 100
+props: []

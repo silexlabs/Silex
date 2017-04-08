@@ -14,7 +14,4 @@ initialCss:
   background-color: 'transparent'
 initialCssClass:
   hero-center
-props:
-- name: useless
-  type: number
-  default: 100
+props: []
