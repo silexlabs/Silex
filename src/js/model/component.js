@@ -286,6 +286,8 @@ silex.model.Component.prototype.edit = function(element) {
       componentData['templateName'],
       {
         'onChange': (newData, html) => {
+          // undo checkpoint
+          this.view.settingsDialog.controller.settingsDialogController.undoCheckPoint();
           // remove the editable elements temporarily
           const tempElements = this.saveEditableChildren(element);
           // store the component's data for later edition
