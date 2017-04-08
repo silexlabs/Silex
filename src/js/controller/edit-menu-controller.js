@@ -211,6 +211,8 @@ silex.controller.EditMenuController.prototype.recursivePaste = function(clipboar
   // init component props
   if(componentData) {
     this.model.property.setComponentData(element, componentData);
+    // re-render components (makes inner ID change)
+    this.model.component.render(element);
   }
   // keep the original style
   this.model.property.setStyle(element, clipboardItem.style, false);

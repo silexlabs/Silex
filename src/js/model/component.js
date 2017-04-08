@@ -105,16 +105,11 @@ silex.model.Component.prototype.initComponent = function(element, templateName) 
     'name': name,
     'templateName': templateName,
   });
-  this.prodotype.decorate(templateName, {
-    'name': name,
-  })
-  .then(html => {
-    this.model.element.setInnerHtml(element, html);
-    this.updateDepenedencies();
-    // execute the scripts
-    this.executeScripts(element);
+  // first rendering of the component
+  this.render(element, () => {
+    // update the dependencies once the component is added
+    this.updateDepenedencies()
   });
-
   // css styles
   const componentsDef = this.getComponentsDef();
   const comp = componentsDef[templateName];
@@ -139,6 +134,28 @@ silex.model.Component.prototype.initComponent = function(element, templateName) 
 
 };
 
+
+/**
+ * render the component
+ * this is made using prodotype
+ * the template is expanded with the data we have for this component
+ * used when the component is created, or duplicated (paste)
+ * @param {Element} element component to render
+ * @param {?function()=} opt_cbk
+ */
+silex.model.Component.prototype.render = function (element, opt_cbk) {
+  const data = this.model.property.getComponentData(element);
+  const templateName = data['templateName'];
+  this.prodotype.decorate(templateName, data)
+  .then(html => {
+    this.model.element.setInnerHtml(element, html);
+    // notify the owner
+    if(opt_cbk) opt_cbk();
+    // execute the scripts
+    // FIXME: should exec scripts only after dependencies are loaded
+    this.executeScripts(element);
+  });
+};
 
 /**
  * get all CSS classes set on this component when it is created
@@ -210,6 +227,7 @@ silex.model.Component.prototype.getAllComponents = function() {
 
 /**
  * update the dependencies of Prodotype components
+ * FIXME: should have a callback to know if/when scripts are loaded
  */
 silex.model.Component.prototype.updateDepenedencies = function() {
   const head = this.model.head.getHeadElement();
