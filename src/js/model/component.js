@@ -166,16 +166,16 @@ silex.model.Component.prototype.render = function (element, opt_cbk) {
 silex.model.Component.prototype.getCssClasses = function (templateName) {
   const componentsDef = this.getComponentsDef();
   const comp = componentsDef[templateName];
-  const cssClasses = [silex.model.Component.COMPONENT_CLASS_NAME + '-'  + templateName];
+  let cssClasses = [silex.model.Component.COMPONENT_CLASS_NAME + '-'  + templateName];
   if(comp) {
     // class name is either an array
     // or a string or null
     switch(typeof comp.initialCssClass) {
       case 'undefined':
       break;
-      case 'string': cssClasses.concat(comp.initialCssClass.split(' '));
+      case 'string': cssClasses = cssClasses.concat(comp.initialCssClass.split(' '));
       break;
-      default: cssClasses.concat(comp.initialCssClass);
+      default: cssClasses = cssClasses.concat(comp.initialCssClass);
     }
   } else {
     console.error(`Error: component's definition not found in prodotype templates, with template name "${ templateName }".`);

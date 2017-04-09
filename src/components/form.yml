@@ -36,6 +36,9 @@ props:
 - name: buttonBorderColor
   type: color
   default: "#4CAF50"
+- name: labelTextColor
+  type: color
+  default: "#000000"
 - name: field1
   type: boolean
   default: true
@@ -65,4 +68,4 @@ props:
   default: What you have to say
 - name: onsubmit
   type: action
-  description: "Fires when the form is about to be submitted. Use the params 'event' or return false to prevent submit."
+  description: "Fires when the form is about to be submitted. Use the 'event' object or return false to prevent submit."
