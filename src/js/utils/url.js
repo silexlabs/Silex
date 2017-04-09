@@ -112,12 +112,12 @@ silex.utils.Url.isAbsoluteUrl = function(url) {
 silex.utils.Url.absolute2Relative = function(htmlString, baseUrl) {
   baseUrl = silex.utils.Url.getAbsolutePath(baseUrl, silex.utils.Url.getBaseUrl());
   // image source
-  htmlString = htmlString.replace(/src="?([^" ]*)"/gi, function(match, group1) {
+  htmlString = htmlString.replace(/src="?([^"]*)"/gi, function(match, group1) {
     var res = match.replace(group1, silex.utils.Url.getRelativePath(group1, baseUrl));
     return res;
   });
   // href (links and favicon)
-  htmlString = htmlString.replace(/href="?([^" ]*)"/gi, function(match, group1, group2) {
+  htmlString = htmlString.replace(/href="?([^"]*)"/gi, function(match, group1, group2) {
     if (group1.indexOf('#') === 0) {
       // case of an anchor or page name
       return match;
@@ -207,12 +207,12 @@ silex.utils.Url.addUrlKeyword = function(url) {
  */
 silex.utils.Url.relative2Absolute = function(htmlString, baseUrl) {
   // image source
-  htmlString = htmlString.replace(/src="?([^" ]*)"/gi, function(match, group1, group2) {
+  htmlString = htmlString.replace(/src="?([^"]*)"/gi, function(match, group1, group2) {
     var res = match.replace(group1, silex.utils.Url.getAbsolutePath(group1, baseUrl));
     return res;
   });
   // href (links and favicon)
-  htmlString = htmlString.replace(/href="?([^" ]*)"/gi, function(match, group1, group2) {
+  htmlString = htmlString.replace(/href="?([^"]*)"/gi, function(match, group1, group2) {
     var res = match.replace(group1, silex.utils.Url.getAbsolutePath(group1, baseUrl));
     return res;
   });

@@ -143,7 +143,7 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
   var headStr = headElement.innerHTML;
 
   // images to download and put to assets/
-  bodyStr = bodyStr.replace(/src="?([^" ]*)"/gi, function(match, group1, group2) {
+  bodyStr = bodyStr.replace(/src="?([^"]*)"/gi, function(match, group1, group2) {
     var absolute = silex.utils.Url.getAbsolutePath(group1, baseUrl);
     var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
     // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
@@ -170,7 +170,7 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
   });
 
   // css to download and put to css/
-  headStr = headStr.replace(/href="?([^" ]*)"/gi, function(match, group1, group2) {
+  headStr = headStr.replace(/href="?([^"]*)"/gi, function(match, group1, group2) {
     var absolute = silex.utils.Url.getAbsolutePath(group1, baseUrl);
     var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
     // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
