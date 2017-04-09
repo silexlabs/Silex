@@ -26,7 +26,7 @@
     margin: 8px 0;
     display: inline-block;
     border: 1px solid #ccc;
-    border-radius: 4px;
+    border-radius: 3px;
     box-sizing: border-box;
 }
 
@@ -37,26 +37,26 @@
     padding: 14px 20px;
     margin: 8px 0;
     border: 1px solid <%- buttonBorderColor %>;
-    border-radius: 4px;
+    border-radius: 3px;
     cursor: pointer;
 }
 
-#id_<%= uid %> input[type=submit]:hover {
-    background-color: #45a049;
-}
 #id_<%= uid %> textarea {
     width: 100%;
     height: 150px;
     padding: 12px 20px;
     box-sizing: border-box;
     border: 2px solid #ccc;
-    border-radius: 4px;
+    border-radius: 3px;
     background-color: #f8f8f8;
     font-size: 16px;
     resize: none;
 }
+#id_<%= uid %> label {
+    color: <%- labelTextColor %>;
+}
 #id_<%= uid %> {
-    border-radius: 5px;
+    border-radius: 3px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
