@@ -5,6 +5,29 @@
 
 @titleHeight: 40px;
 
+.tip-of-the-day {
+  margin: 10px;
+  border: 1px solid #535353;
+  flex: 0 1 auto;
+  width: 300px;
+  height: 250px;
+  > * {
+    text-align: center;
+  }
+  &::before {
+    content: "Info";
+    font-size: 15px;
+    margin: 0;
+    padding: 3px;
+    float: left;
+    background-color: @silexlightgrey;
+    color: @silexlightergrey;
+  }
+  a {
+    text-decoration: none;
+  }
+}
+
 .silex-newwebsite-dialog {
   .header .help-btn {
     margin-left: 20px;
@@ -41,20 +64,7 @@
       width: 50%;
     }
     .info-pane {
-      margin: 10px;
-      border: 1px solid #535353;
-      text-align: center;
-      flex: 0 1 auto;
-      width: 300px;
-      height: 250px;
-      h2 {
-        font-size: 15px;
-        margin: 0;
-        padding: 3px;
-        float: left;
-        background-color: @silexlightgrey;
-        color: @silexlightergrey;
-      }
+      .tip-of-the-day;
       .container {
         margin: 40px 20px;
       }

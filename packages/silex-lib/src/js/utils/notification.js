@@ -252,9 +252,9 @@ silex.utils.Notification.setText = function(message) {
 
 /**
  * add an HTML panel with info of type "while you wait, here is an info"
- * @param {string} message
+ * @param {Element} element
  */
-silex.utils.Notification.setInfoPanel = function(message) {
+silex.utils.Notification.setInfoPanel = function(element) {
   var container = document.querySelector('.alertify-inner');
   var infoPanel = container.querySelector('.silex-info-panel');
   if (infoPanel === null) {
@@ -265,5 +265,6 @@ silex.utils.Notification.setInfoPanel = function(message) {
     infoPanel.style.maxHeight = Math.round(stage.offsetHeight * 2/3) + 'px';
     container.insertBefore(infoPanel, container.childNodes[container.childNodes.length - 1]);
   }
-  infoPanel.innerHTML = message;
+  infoPanel.innerHTML = '';
+  infoPanel.appendChild(element);
 };

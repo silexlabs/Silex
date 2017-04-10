@@ -24,12 +24,8 @@ goog.provide('silex.view.TipOfTheDay');
 /**
  * @constructor
  * @param {Element} element   container to render the UI
- * @param  {!silex.types.Model} model  model class which holds
- *                                  the model instances - views use it for read operation only
- * @param  {!silex.types.Controller} controller  structure which holds
- *                                  the controller instances
  */
-silex.view.TipOfTheDay = function(element, model, controller) {
+silex.view.TipOfTheDay = function(element) {
   /**
    * @type {Element}
    */
@@ -52,6 +48,7 @@ silex.view.TipOfTheDay.prototype.init = function()
 {
   let itemTrackAction = '';
   // start loading
+  this.element.classList.add('tip-of-the-day');
   this.element.classList.add('loading');
   // keep track of the visits
   let visits = 0;
@@ -65,7 +62,7 @@ silex.view.TipOfTheDay.prototype.init = function()
   oReq.open('GET', 'https://api.github.com/repos/silexlabs/Silex/issues?labels=tip-of-the-day');
   oReq.send();
   oReq.addEventListener('error', e => {
-    this.element.querySelector('.container').innerHTML = 'It looks like you are offline. I could not load data from github issues';
+    (this.element.querySelector('.container') || this.element).innerHTML = 'It looks like you are offline. I could not load data from github issues';
     this.element.classList.remove('loading');
   });
   oReq.addEventListener('load', e => {
@@ -90,7 +87,7 @@ silex.view.TipOfTheDay.prototype.init = function()
       el.innerHTML = '<h3>' + item['title'] + '</h3><p>' + this.strip(item['body']) + '</p>';
       if(firstLink != null) el.href = firstLink.href;
       // if(firstImage != null) el.style.backgroundImage = `url(${firstImage.src})`;
-      this.element.querySelector('.container').appendChild(el);
+      (this.element.querySelector('.container') || this.element).appendChild(el);
     } // else { console.log('It looks like you are offline. I could not load data from github issues'); }
     // show the tooltip
     this.element.classList.remove('loading');
