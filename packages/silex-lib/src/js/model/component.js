@@ -325,7 +325,7 @@ silex.model.Component.prototype.edit = function(element) {
             { },
             (url, blob) => {
               cbk([{
-                'url': blob.url,
+                'url': url, // not blob.url because it misses a "/" at the beginning
                 'lastModified': blob.lastModified, // not in blob?
                 'lastModifiedDate': blob.lastModifiedDate, // not in blob?
                 'name': blob.filename,

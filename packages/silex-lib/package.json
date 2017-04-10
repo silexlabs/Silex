@@ -18,6 +18,7 @@
   ],
   "scripts": {
     "start": "pm2 start .pm2.json",
+    "stop": "pm2 stop .pm2.json",
     "start:debug": "SILEX_DEBUG=true node dist/server/server.js",
     "build": "npm run build:css && npm run build:html && npm run build:prodotype && npm run build:js:release",
     "build:prodotype": "mkdir -p dist/client/libs/prodotype/components && cp node_modules/prodotype/pub/prodotype.js node_modules/prodotype/pub/prodotype-logo-small.png dist/client/libs/prodotype/ && prodotype src/components dist/client/libs/prodotype/components/",
