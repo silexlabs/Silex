@@ -121,7 +121,7 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
     goog.dom.removeNode(cssTag);
     // background-image / url(...)
     tmpStr = tmpStr.replace(/url\(()(.+?)\1\)/gi, function(match, group1, group2) {
-      return silex.utils.DomCleaner.filterBgImage(baseUrl, files, match, group1, group2);
+      return silex.utils.DomCleaner.filterBgImage(baseUrl, files, match, group1, group2, true);
     });
     cssStr += tmpStr;
   }
@@ -133,7 +133,7 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
     goog.dom.removeNode(userCssTag);
     // background-image / url(...)
     cssStr += userCssTag.innerHTML.replace(/url\(()(.+?)\1\)/gi, function(match, group1, group2) {
-      return silex.utils.DomCleaner.filterBgImage(baseUrl, files, match, group1, group2);
+      return silex.utils.DomCleaner.filterBgImage(baseUrl, files, match, group1, group2, true);
     });
   }
 
@@ -166,7 +166,7 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
 
   // background-image / url(...)
   bodyStr = bodyStr.replace(/url\(()(.+?)\1\)/gi, function(match, group1, group2) {
-    return silex.utils.DomCleaner.filterBgImage(baseUrl, files, match, group1, group2);
+    return silex.utils.DomCleaner.filterBgImage(baseUrl, files, match, group1, group2, false);
   });
 
   // css to download and put to css/
@@ -300,9 +300,10 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
  * @param {string} match
  * @param {string} group1
  * @param {string} group2
+ * @param {boolean} isMovedToCssFolder
  * @return {string}
  */
-silex.utils.DomCleaner.filterBgImage = function(baseUrl, files, match, group1, group2) {
+silex.utils.DomCleaner.filterBgImage = function(baseUrl, files, match, group1, group2, isMovedToCssFolder) {
   // get the url
   var url = silex.utils.Url.removeUrlKeyword(group2);
   // only if we are supposed to download this url locally
@@ -320,7 +321,7 @@ silex.utils.DomCleaner.filterBgImage = function(baseUrl, files, match, group1, g
       'destPath': newRelativePath,
       'srcPath': relative
     });
-    return silex.utils.Url.addUrlKeyword('../' + newRelativePath);
+    return silex.utils.Url.addUrlKeyword((isMovedToCssFolder ? '../' : '') + newRelativePath);
   }
   return match;
 };
