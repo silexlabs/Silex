@@ -1,5 +1,5 @@
 <%
-  var styleUrl = 'https://raw.githubusercontent.com/fourtonfish/SimpleSharingButtons/master/images';
+  var styleUrl = '/static/2.7/simplesharingbuttons';
   switch(style) {
     case 'Flat Web Icon Set - Color':
       styleUrl += '/flat_web_icon_set/color';
@@ -23,10 +23,10 @@
   <li><a href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2F<%= url %>&t=<%= title %>" title="Share on Facebook" target="_blank"><img alt="Share on Facebook" src="<%= styleUrl %>/Facebook.png"></a></li>
   <% } %>
   <% if(networks.indexOf("Twitter") >= 0) { %>
-  <li><a href="https://twitter.com/intent/tweet?source=http%3A%2F%2F<%= url %>&text=<%= title %>:%20http%3A%2F%2F<%= url %>&via=<%= twitter %>" target="_blank" title="Tweet"><img alt="Tweet" src="<%= styleUrl %>/Twitter.png"></a></li>
+  <li><a href="https://twitter.com/intent/tweet?source=http%3A%2F%2F<%= url %>&text=<%= title %>:%20http%3A%2F%2F<%= url %>&via=<%= twitter %>" target="_blank" title="Share on Tweeter"><img alt="Tweet" src="<%= styleUrl %>/Twitter.png"></a></li>
   <% } %>
   <% if(networks.indexOf("Google+") >= 0) { %>
-  <li><a href="https://plus.google.com/share?url=http%3A%2F%2F<%= url %>" target="_blank" title="Share on Google+"><img alt="Share on Google+" src="<%= styleUrl %>/Google+.png"></a></li>
+  <li><a href="https://plus.google.com/share?url=http%3A%2F%2F<%= url %>" target="_blank" title="Share on Google+"><img alt="Share on Google+" src="<%= styleUrl %>/Google%2B.png"></a></li>
   <% } %>
   <% if(networks.indexOf("Tumblr") >= 0) { %>
   <li><a href="http://www.tumblr.com/share?v=3&u=http%3A%2F%2F<%= url %>&t=<%= title %>&s=" target="_blank" title="Post to Tumblr"><img alt="Post to Tumblr" src="<%= styleUrl %>/Tumblr.png"></a></li>
@@ -50,7 +50,7 @@
   <li><a href="https://pinboard.in/popup_login/?url=http%3A%2F%2F<%= url %>&title=<%= title %>&description=<%= description %>" target="_blank" title="Save to Pinboard"><img alt="Save to Pinboard" src="<%= styleUrl %>/Pinboard.png"></a></li>
   <% } %>
   <% if(networks.indexOf("Email") >= 0) { %>
-  <li><a href="mailto:?subject=<%= title %>&body=<%= description %>:%20http%3A%2F%2F<%= url %>" target="_blank" title="Send email"><img alt="Send email" src="<%= styleUrl %>/Email.png"></a></li>
+  <li><a href="mailto:?subject=<%= title %>&body=<%= description %>:%20http%3A%2F%2F<%= url %>" target="_blank" title="Send email"><img alt="Send by email" src="<%= styleUrl %>/Email.png"></a></li>
   <% } %>
 </ul>
 </div>
