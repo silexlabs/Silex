@@ -305,6 +305,14 @@ silex.view.Stage.prototype.initEvents = function(contentWindow) {
   this.contentDocument = contentWindow.document;
   this.contentWindow = contentWindow;
 
+ //detect right click
+  goog.events.listen(contentWindow.document, 'contextmenu', function(event) {
+    let x = event.clientX;
+    let y = event.clientY;
+    this.handleRightClick(x, y);
+    event.preventDefault();
+    return false;
+  }, false, this);
   // listen on body instead of element because user can release
   // on the tool boxes
   goog.events.listen(contentWindow.document, 'mouseup', function(event) {
@@ -1211,4 +1219,45 @@ silex.view.Stage.prototype.moveElements = function(elements, offsetX, offsetY) {
  */
 silex.view.Stage.prototype.isMobileMode = function() {
   return goog.dom.classlist.contains(document.body, 'mobile-mode');
+};
+
+silex.view.Stage.prototype.handleRightClick = function(x, y) {
+
+  if(document.getElementById( 'powDiv' )!=null){
+    var el = document.getElementById( 'powDiv' );
+    el.parentNode.removeChild( el );  
+  }
+
+  var powDiv=goog.dom.createElement('div');
+  powDiv.id='powDiv';
+  
+  var leftPowDiv=goog.dom.createElement('div');
+  leftPowDiv.id='leftPowDiv';
+
+  var imgLeftPowDiv=goog.dom.createElement('img');
+  imgLeftPowDiv.id='imgLeftPowDiv';
+  imgLeftPowDiv.setAttribute('src', '../assets/logo-silex.png');
+
+
+  var rightPowA=goog.dom.createElement('a');
+  rightPowA.id='rightPowA';
+  rightPowA.setAttribute('href', 'http://www.silex.me');
+  rightPowA.setAttribute('target', '_blank');
+  rightPowA.innerHTML='Powered by Silex';
+
+  var myContextHeight=goog.dom.getElementByClass(silex.view.ContextMenu.CLASS_NAME).offsetHeight;
+  var myMenuWidth=goog.dom.getElementByClass('menu-container').offsetWidth;
+
+  powDiv.style.left = (x+myMenuWidth)+'px';
+  powDiv.style.top = (y+myContextHeight)+'px';
+  
+  document.body.appendChild(powDiv);
+  document.getElementById('powDiv').appendChild(leftPowDiv);
+  document.getElementById('leftPowDiv').appendChild(imgLeftPowDiv);
+  document.getElementById('powDiv').appendChild(rightPowA);
+
+  setTimeout(function(){ 
+    var el = document.getElementById( 'powDiv' );
+    el.parentNode.removeChild( el );
+    }, 3000);
 };
