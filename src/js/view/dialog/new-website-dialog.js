@@ -213,7 +213,7 @@ silex.view.dialog.NewWebsiteDialog.prototype.buildUi = function() {
   // tip of the day
   const tipOfTheDayElement = /** @type {!Element} */ (this.element.querySelector('.tip-of-the-day'));
   /** @type {silex.view.TipOfTheDay} */
-  var tipOfTheDay = new silex.view.TipOfTheDay(tipOfTheDayElement, this.model, this.controller);
+  var tipOfTheDay = new silex.view.TipOfTheDay(tipOfTheDayElement);
 };
 
 
