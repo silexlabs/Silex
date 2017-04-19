@@ -27,6 +27,14 @@
     &.component-editor {
       display: initial;
     }
+    .image-preview {
+      min-height: 100px;
+      background-size: cover;
+      background-position: center;
+    }
+    input[type=file] {
+      color: @silexdarkgrey; /* no need to display "no file chosen" */
+    }
   }
   .main-container span.component-editor {
     display: none;
