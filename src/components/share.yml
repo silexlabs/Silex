@@ -8,9 +8,6 @@ tags:
 - ux
 - website
 - anim
-dependencies:
-  script:
-  - src: https://unpkg.com/scrollreveal/dist/scrollreveal.min.js
 baseElement: html
 faIconClass: fa-share
 initialCss:
