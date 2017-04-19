@@ -13,10 +13,10 @@ baseElement: html
 faIconClass: fa-slideshare
 dependencies:
   script:
-  - src: https://cdnjs.cloudflare.com/ajax/libs/unslider/2.0.3/js/unslider-min.js
+  - src: /static/2.7/unslider/unslider-min.js
   link:
   - rel: stylesheet
-    href:   https://cdnjs.cloudflare.com/ajax/libs/unslider/2.0.3/css/unslider.css
+    href: /static/2.7/unslider/unslider.css
 initialCssClass:
   silex-use-height-not-minheight
 initialCss:
