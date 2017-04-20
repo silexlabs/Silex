@@ -12,7 +12,7 @@ baseElement: html
 faIconClass: fa-map
 dependencies:
   script:
-  - src: https://openlayers.org/en/v4.0.1/build/ol.js
+  - src: /static/2.7/osm/ol.js
 initialCssClass:
   silex-use-height-not-minheight
 initialCss:
