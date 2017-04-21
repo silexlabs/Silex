@@ -46,27 +46,37 @@
   }
 }
 
-#powDiv {
+/**
+* Right click button style
+**/
+
+.rightClick {
     position: absolute;
     width: 150px;
     text-align: center;
-    background-color: #252525;
+    background-color: @silexdarkgrey;
     color: #FFF;
     width: 200px;
     height: 46px;
     border-radius: .15em;
     border: 1px solid #444;
     z-index: 11111;
+    top:20000px;
+    left:20000px;
 }
-#leftPowDiv {
+.parentImgRightClick {
     display: inline;
 }
-#imgLeftPowDiv {
+.imgRightClick {
     width: 70px;
     height: 38px;
     margin-top: 5px;
+    float:left;
 }
-#rightPowA {
+.textRightClick {
     display: inline;
-    color: #777
+    color: @silexlightergrey;
+    position: relative;
+    top: 25%;
+    font-size: 13px;
 }
