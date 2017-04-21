@@ -55,7 +55,13 @@ silex.view.Menu = function(element, model, controller) {
   this.controller = controller;
 };
 
+/**
+ * Get the menu container
+ * @static 
+ * @type {string}
+ */
 silex.view.Menu.CLASS_NAME='menu-container';
+
 /**
  * reference to the menu class of the closure library
  */

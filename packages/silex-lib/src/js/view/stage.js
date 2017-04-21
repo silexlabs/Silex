@@ -1221,43 +1221,23 @@ silex.view.Stage.prototype.isMobileMode = function() {
   return goog.dom.classlist.contains(document.body, 'mobile-mode');
 };
 
+/**
+ * Handle the right click and display a small text to inform users
+ * @param {number} x position of the mouse, relatively to the screen
+ * @param {number} y position of the mouse, relatively to the screen
+ */
 silex.view.Stage.prototype.handleRightClick = function(x, y) {
 
-  if(document.getElementById( 'powDiv' )!=null){
-    var el = document.getElementById( 'powDiv' );
-    el.parentNode.removeChild( el );  
-  }
+  const myContextHeight=goog.dom.getElementByClass(silex.view.ContextMenu.CLASS_NAME).offsetHeight;
+  const myMenuWidth=goog.dom.getElementByClass('menu-container').offsetWidth;
 
-  var powDiv=goog.dom.createElement('div');
-  powDiv.id='powDiv';
+  const rightClickDiv=goog.dom.getElementByClass('rightClick');
+  rightClickDiv.style.display='block';
+  rightClickDiv.style.left = (x+myMenuWidth)+'px';
+  rightClickDiv.style.top = (y+myContextHeight)+'px';
   
-  var leftPowDiv=goog.dom.createElement('div');
-  leftPowDiv.id='leftPowDiv';
-
-  var imgLeftPowDiv=goog.dom.createElement('img');
-  imgLeftPowDiv.id='imgLeftPowDiv';
-  imgLeftPowDiv.setAttribute('src', '../assets/logo-silex.png');
-
-
-  var rightPowA=goog.dom.createElement('a');
-  rightPowA.id='rightPowA';
-  rightPowA.setAttribute('href', 'http://www.silex.me');
-  rightPowA.setAttribute('target', '_blank');
-  rightPowA.innerHTML='Powered by Silex';
-
-  var myContextHeight=goog.dom.getElementByClass(silex.view.ContextMenu.CLASS_NAME).offsetHeight;
-  var myMenuWidth=goog.dom.getElementByClass('menu-container').offsetWidth;
-
-  powDiv.style.left = (x+myMenuWidth)+'px';
-  powDiv.style.top = (y+myContextHeight)+'px';
-  
-  document.body.appendChild(powDiv);
-  document.getElementById('powDiv').appendChild(leftPowDiv);
-  document.getElementById('leftPowDiv').appendChild(imgLeftPowDiv);
-  document.getElementById('powDiv').appendChild(rightPowA);
-
-  setTimeout(function(){ 
-    var el = document.getElementById( 'powDiv' );
-    el.parentNode.removeChild( el );
+  setTimeout(() => { 
+    const el = goog.dom.getElementByClass('rightClick');
+    el.style.display='none';
     }, 3000);
 };
