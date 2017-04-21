@@ -1,3 +1,4 @@
+'use strict';
 //////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
@@ -10,7 +11,8 @@
 //////////////////////////////////////////////////
 
 // node modules
-var pathModule = require('path');
+var Path = require('path');
+var Os = require('os');
 var unifile = require('unifile');
 var express = require('express');
 var bodyParser = require('body-parser');
@@ -40,17 +42,90 @@ app.use('/', bodyParser.urlencoded({
 app.use('/', bodyParser.json({limit: '10mb'}));
 app.use('/', cookieParser());
 
+// Start Silex as an Electron app
+if(process.env.SILEX_ELECTRON) {
+  const {app, BrowserWindow, protocol} = require('electron');
+  // Keep a global reference of the window object, if you don't, the window will
+  // be closed automatically when the JavaScript object is garbage collected.
+  let win;
+
+  function createWindow () {
+    // Create the browser window.
+    win = new BrowserWindow({
+      width: 1200,
+      height: 800,
+      icon: Path.join(__dirname, '..', 'client', 'assets', 'logo-silex.png'),
+      titleBarStyle: 'hidden',
+      webPreferences: {
+        nodeIntegration: false,
+        // Needed by CE callback
+        // Could be remove with next version
+        sandbox: true
+      },
+
+    });
+
+    // and load the index.html of the app.
+    const url = 'http://localhost:' + (process.env.PORT || 6805) + '/';
+    console.log('Sarting app on ' + url);
+    win.loadURL(url);
+
+    // Open the DevTools.
+    win.webContents.openDevTools();
+
+    // Emitted when the window is closed.
+    win.on('closed', () => {
+      // Dereference the window object, usually you would store windows
+      // in an array if your app supports multi windows, this is the time
+      // when you should delete the corresponding element.
+      win = null
+    });
+  }
+
+  // This method will be called when Electron has finished
+  // initialization and is ready to create browser windows.
+  // Some APIs can only be used after this event occurs.
+  app.on('ready', createWindow);
+
+  // Quit when all windows are closed.
+  app.on('window-all-closed', () => {
+    // On macOS it is common for applications and their menu bar
+    // to stay active until the user quits explicitly with Cmd + Q
+    if (process.platform !== 'darwin') {
+      app.quit()
+    }
+  });
+
+  app.on('activate', () => {
+    // On macOS it's common to re-create a window in the app when the
+    // dock icon is clicked and there are no other windows open.
+    if (win === null) {
+      createWindow()
+    }
+  });
+
+  //protocol.registerStandardSchemes(['silex']);
+  app.on('ready', () => {
+    protocol.registerFileProtocol('silex', (request, callback) => {
+      // TODO Remove this hack
+      const pathname = url.parse(request.url).pathname.replace('home/home', 'home');
+      callback({path: pathname});
+    }, (error) => {
+      if (error) console.error('Failed to register protocol')
+    });
+  });
+}
 // get silex config
 var silexConfig = unifile.defaultConfig;
-if (fs.existsSync(pathModule.resolve(__dirname, 'config.js'))) {
-  var obj = require(pathModule.resolve(__dirname, 'config.js'));
+if (fs.existsSync(Path.resolve(__dirname, 'config.js'))) {
+  var obj = require(Path.resolve(__dirname, 'config.js'));
   for (var prop in obj) {
   silexConfig[prop] = obj[prop];
   }
 }
 
 // session management
-var sessionFolder = process.env.SILEX_SESSION_FOLDER || pathModule.resolve(__dirname, '../sessions');
+var sessionFolder = process.env.SILEX_SESSION_FOLDER || Path.resolve(__dirname, '../sessions');
 app.use('/', session({
   secret: silexConfig.sessionSecret,
   name: silexConfig.cookieName,
@@ -75,14 +150,13 @@ function onCatchError(err) {
   console.error('---------------------', 'Caught exception: ', err, err.stack, '---------------------');
   console.log('---------------------');
 }
-if(process.env.SILEX_DEBUG) {
+if(process.env.SILEX_DEBUG || process.env.SILEX_ELECTRON) {
   // DEBUG ONLY
   console.warn('Running server in debug mode');
   // define users (login/password) wich will be authorized to access the www folder (read and write)
   silexConfig.www.USERS = {
     'admin': 'admin'
   };
-  silexConfig.openPages.ENABLED = true;
 }
 else {
   // PRODUCTION ONLY
@@ -91,7 +165,6 @@ else {
   process.on('uncaughtException', onCatchError);
   // reset debug
   silexConfig.www.USERS = {};
-  silexConfig.openPages.ENABLED = false;
 }
 
 // ********************************
@@ -112,32 +185,25 @@ else {
 }
 
 // change www root
-silexConfig.www.ROOT = pathModule.resolve(__dirname, '../../dist/client');
+silexConfig.www.ROOT = process.env.SILEX_ELECTRON ? Os.homedir() : Path.join(__dirname, '..', '..', 'dist', 'client');
 
 // add static folders
 silexConfig.staticFolders.push(
   // silex main site
   {
-    path: pathModule.resolve(__dirname, '../../dist/client')
+    path: Path.resolve(__dirname, '../../dist/client')
   },
   // debug silex, for js source map
   {
     name: '/js/src',
-    path: pathModule.resolve(__dirname, '../../src')
+    path: Path.resolve(__dirname, '../../src')
   },
   // the scripts which have to be available in all versions (v2.1, v2.2, v2.3, ...)
   {
     name: '/static',
-    path: pathModule.resolve(__dirname, '../../static')
+    path: Path.resolve(__dirname, '../../static')
   }
 );
-
-// open pages if defined
-if(silexConfig.openPages) {
-  silexConfig.openPages.ROOT = pathModule.resolve(__dirname, '../../open-pages/');
-  silexConfig.openPages.SQLLITE_FILE = pathModule.resolve(__dirname, '../../open-pages/websites.sql');
-  fs.mkdir(silexConfig.openPages.ROOT, null, function (error) {});
-}
 
 // github service
 if(process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
@@ -228,7 +294,7 @@ app.use('/get/:folder', function(req, res, next){
       res.send({success: false, error: 'Error while trying to get the json representation of the folder ' + req.params.folder + ' - folder does not exist'});
       return;
   }
-  dirToJson( pathModule.resolve(__dirname, '../../dist/client/libs/templates/', req.params.folder), function( err, result ){
+  dirToJson( Path.resolve(__dirname, '../../dist/client/libs/templates/', req.params.folder), function( err, result ){
     if( err ){
       console.error('Error while trying to get the json representation of the folder ' + req.params.folder, err);
       res.send({success: false, error: 'Error while trying to get the json representation of the folder ' + req.params.folder + ' - ' + err});
