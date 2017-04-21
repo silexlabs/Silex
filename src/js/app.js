@@ -194,12 +194,12 @@ class App {
     var stage = new silex.view.Stage(stageElement, this.model, this.controller);
 
     // Menu
-    var menuElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-menu'));
+     var menuElement = /** @type {!Element} */ (goog.dom.getElementByClass(silex.view.Menu.CLASS_NAME));
     /** @type {silex.view.Menu} */
     var menu = new silex.view.Menu(menuElement, this.model, this.controller);
 
     // context menu
-    var contextMenuElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-context-menu'));
+    var contextMenuElement = /** @type {!Element} */ (goog.dom.getElementByClass(silex.view.ContextMenu.CLASS_NAME));
     /** @type {silex.view.ContextMenu} */
     var contextMenu = new silex.view.ContextMenu(contextMenuElement, this.model, this.controller);
 
