@@ -305,6 +305,14 @@ silex.view.Stage.prototype.initEvents = function(contentWindow) {
   this.contentDocument = contentWindow.document;
   this.contentWindow = contentWindow;
 
+ //detect right click
+  goog.events.listen(contentWindow.document, 'contextmenu', function(event) {
+    let x = event.clientX;
+    let y = event.clientY;
+    this.handleRightClick(x, y);
+    event.preventDefault();
+    return false;
+  }, false, this);
   // listen on body instead of element because user can release
   // on the tool boxes
   goog.events.listen(contentWindow.document, 'mouseup', function(event) {
@@ -1211,4 +1219,25 @@ silex.view.Stage.prototype.moveElements = function(elements, offsetX, offsetY) {
  */
 silex.view.Stage.prototype.isMobileMode = function() {
   return goog.dom.classlist.contains(document.body, 'mobile-mode');
+};
+
+/**
+ * Handle the right click and display a small text to inform users
+ * @param {number} x position of the mouse, relatively to the screen
+ * @param {number} y position of the mouse, relatively to the screen
+ */
+silex.view.Stage.prototype.handleRightClick = function(x, y) {
+
+  const myContextHeight=goog.dom.getElementByClass(silex.view.ContextMenu.CLASS_NAME).offsetHeight;
+  const myMenuWidth=goog.dom.getElementByClass('menu-container').offsetWidth;
+
+  const rightClickDiv=goog.dom.getElementByClass('rightClick');
+  rightClickDiv.style.display='block';
+  rightClickDiv.style.left = (x+myMenuWidth)+'px';
+  rightClickDiv.style.top = (y+myContextHeight)+'px';
+  
+  setTimeout(() => { 
+    const el = goog.dom.getElementByClass('rightClick');
+    el.style.display='none';
+    }, 3000);
 };

@@ -59,6 +59,12 @@ silex.view.ContextMenu = function(element, model, controller) {
 
 };
 
+/**
+ * Get the silex context menu
+ * @static 
+ * @type {string}
+ */
+silex.view.ContextMenu.CLASS_NAME='silex-context-menu';
 
 /**
  * create the context menu
