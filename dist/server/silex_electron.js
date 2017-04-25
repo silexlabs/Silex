@@ -14,6 +14,7 @@ function createWindow () {
     height: 800,
     icon: Path.join(__dirname, '..', 'client', 'assets', 'logo-silex.png'),
     titleBarStyle: 'hidden',
+    frame: false,
     webPreferences: {
       nodeIntegration: false,
       // Needed by CE callback
@@ -29,7 +30,7 @@ function createWindow () {
   win.loadURL(url);
 
   // Open the DevTools.
-  win.webContents.openDevTools();
+  //win.webContents.openDevTools();
 
   // Emitted when the window is closed.
   win.on('closed', () => {
