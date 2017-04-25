@@ -14,6 +14,7 @@ function createWindow () {
     height: 800,
     icon: Path.join(__dirname, '..', 'client', 'assets', 'logo-silex.png'),
     titleBarStyle: 'hidden',
+    frame: false,
     webPreferences: {
       nodeIntegration: false,
       // Needed by CE callback
