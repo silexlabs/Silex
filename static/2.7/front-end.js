@@ -160,8 +160,8 @@ $(function() {
    */
   bodyEl.on('pageChanged', function (event, pageName) {
     // mark links to the current page as active
-    $('[data-silex-href="#!'+pageName+'"]').addClass('page-link-active');
-    $('[id="'+pageName+'"]').addClass('page-link-active');
+    $('[data-silex-href*="#!'+pageName+'"]').addClass('page-link-active');
+    $('[id*="'+pageName+'"]').addClass('page-link-active');
     // prevent iframe content from staying in the dom
     // this prevent a youtube video to continue playing while on another page
     // this is useful in chrome and not firefox since display:none does not reset iframe dom in chrome
