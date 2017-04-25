@@ -70,8 +70,14 @@ $.widget('silexlabs.pageable', {
       }
     }
     this.currentPageChanged = false;
-    if (this.options.currentPage && this.options.currentPage.indexOf('#!') >= 0){
-      this.options.currentPage = this.options.currentPage.substr(this.options.currentPage.indexOf('#!') + 2);
+    var idxDeeplink = 0;
+    if (this.options.currentPage && (idxDeeplink = this.options.currentPage.indexOf('#!')) >= 0){
+      var newPage = this.options.currentPage.substr(idxDeeplink + 2);
+      // ignore "real" anchor
+      var idxAnchor = newPage.indexOf("#");
+      if(idxAnchor >= 0) newPage = newPage.substring(0, idxAnchor);
+      // change to the new page
+      this.options.currentPage = newPage;
     }
     // show elements which belong to this page
     $('#current-page-style').remove();
