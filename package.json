@@ -56,7 +56,7 @@
     "silex-blank-templates": "github:silexlabs/silex-blank-templates#6a11537",
     "silex-templates": "github:silexlabs/silex-templates#ccf6b2d",
     "superstartup-closure-compiler": "0.1.7",
-    "unifile": "0.0.60"
+    "unifile": "github:silexlabs/unifile#0.0.61"
   },
   "devDependencies": {
     "assert": "1.3.0",
