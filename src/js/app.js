@@ -194,7 +194,7 @@ class App {
     var stage = new silex.view.Stage(stageElement, this.model, this.controller);
 
     // Menu
-     var menuElement = /** @type {!Element} */ (goog.dom.getElementByClass(silex.view.Menu.CLASS_NAME));
+     var menuElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-menu'));
     /** @type {silex.view.Menu} */
     var menu = new silex.view.Menu(menuElement, this.model, this.controller);
 

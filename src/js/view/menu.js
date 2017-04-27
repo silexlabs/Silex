@@ -57,7 +57,7 @@ silex.view.Menu = function(element, model, controller) {
 
 /**
  * Get the menu container
- * @static 
+ * @static
  * @type {string}
  */
 silex.view.Menu.CLASS_NAME='menu-container';
