@@ -151,15 +151,6 @@ silex.model.Element.WEBSITE_WIDTH_CLASS_NAME = 'website-width'
 
 
 /**
- * constant for the class name of the default site width, rule is set when setting is changed
- * used to set a min-width to sections
- * @const
- * @type {string}
- */
-silex.model.Element.WEBSITE_MIN_WIDTH_CLASS_NAME = 'website-min-width';
-
-
-/**
  * constant for the attribute name of the links
  * @const
  * @type {string}
@@ -850,7 +841,6 @@ silex.model.Element.prototype.createSectionElement = function() {
   element.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_CONTAINER);
   element.classList.add(silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME);
   element.classList.add(silex.model.Element.TYPE_CONTAINER + '-element');
-  element.classList.add(silex.model.Element.WEBSITE_MIN_WIDTH_CLASS_NAME);
 
   // content element is both a container and a content element
   var content = this.createElement(silex.model.Element.TYPE_CONTAINER);
