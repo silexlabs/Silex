@@ -8,6 +8,7 @@ tags:
 - ux
 - website
 - anim
+isPrivate: true
 dependencies:
   script:
   - src: https://unpkg.com/scrollreveal/dist/scrollreveal.min.js
