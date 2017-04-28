@@ -179,7 +179,7 @@ silex.model.Page.prototype.getCurrentPage = function() {
   }
   catch (e) {
     // there was a problem in the pageable plugin, return the first page
-    console.error('error, could not retrieve the current page, I will return the first page', e, this.getPages());
+    console.warn(`warning, could not retrieve the current page, I will return the first page (${ this.getPages() })`, e);
     pageName = this.getPages()[0];
   }
   return pageName;

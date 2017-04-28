@@ -235,7 +235,7 @@ silex.model.File.prototype.contentChanged = function(opt_cbk) {
  */
 silex.model.File.prototype.onContentLoaded = function(opt_cbk) {
   // handle retrocompatibility issues
-  silex.utils.BackwardCompat.process(this.contentDocument_, this.model, (hasUpgraded) => {
+  silex.utils.BackwardCompat.process(this.contentDocument_, this.model, (needsReload) => {
     // check the integrity and store silex style sheet which holds silex elements styles
     this.model.property.initStyles(this.contentDocument_);
     this.model.property.loadProperties(this.contentDocument_);
@@ -250,16 +250,14 @@ silex.model.File.prototype.onContentLoaded = function(opt_cbk) {
     this.model.head.updateFromDom();
     // restore event listeners
     this.view.stage.initEvents(this.contentWindow_);
-    // if upgraded, relaod everything
-    /*
-    if(hasUpgraded) {
+    // if backward compat says it needs reload
+    if(needsReload) {
       // wait for the BC to complete and the dom to update
       setTimeout(() => {
         this.setHtml(this.getHtml(), opt_cbk);
       }, 200);
       return;
     }
-    */
     // refresh the view
     //var page = this.model.page.getCurrentPage();
     //this.model.page.setCurrentPage(page);

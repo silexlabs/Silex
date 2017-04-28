@@ -65,28 +65,35 @@ silex.utils.Url.getBaseUrl = function(opt_url) {
 
 
 /**
- * Get root URL of Silex app
+ * Get root of a URL or Silex app
+ * @param  {?string=} opt_url URL or null
  * @return  {string} the base url
+ * example: "" returns https://editor.silex.me
  * example: https://duckduckgo.com returns https://duckduckgo.com
  * example: https://duckduckgo.com/ returns https://duckduckgo.com
  * example: https://duckduckgo.com/?q=javascript returns https://duckduckgo.com
  * example: https://duckduckgo.com/abc/ returns https://duckduckgo.com
  */
-silex.utils.Url.getRootUrl = function() {
-  return window.location.href.substr(0, window.location.href.lastIndexOf(window.location.pathname));
+silex.utils.Url.getRootUrl = function(opt_url) {
+  const url = opt_url || window.location.href;
+  // const rootUrl = /http.?:\/\/(.*)\//.match()[0];
+  const start = url.indexOf('//');
+  const end = url.indexOf('/', start + 2);
+  return url.substr(0, end);
 };
 
 
 /**
  * Get host of Silex app
+ * @param  {?string=} opt_url URL or null
  * @return  {string} the base url
  * example: https://duckduckgo.com returns duckduckgo.com
  * example: https://duckduckgo.com/ returns duckduckgo.com
  * example: https://duckduckgo.com/?q=javascript returns duckduckgo.com
  * example: https://duckduckgo.com/abc/ returns duckduckgo.com
  */
-silex.utils.Url.getHost = function() {
-  var root = silex.utils.Url.getRootUrl();
+silex.utils.Url.getHost = function(opt_url) {
+  var root = silex.utils.Url.getRootUrl(opt_url);
   var host = root.substr(root.indexOf('//') + 2);
   return host;
 };
