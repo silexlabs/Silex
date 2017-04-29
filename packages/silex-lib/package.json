@@ -53,7 +53,7 @@
     "pm2": "1.1.3",
     "prodotype": "github:silexlabs/Prodotype",
     "request": "^2.81.0",
-    "silex-blank-templates": "github:silexlabs/silex-blank-templates#bbe14ee",
+    "silex-blank-templates": "github:silexlabs/silex-blank-templates#717e228",
     "silex-templates": "github:silexlabs/silex-templates#c86ec27",
     "superstartup-closure-compiler": "0.1.7",
     "unifile": "github:silexlabs/unifile#0.0.61"
