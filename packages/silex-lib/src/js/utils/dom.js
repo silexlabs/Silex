@@ -144,23 +144,23 @@ silex.utils.Dom.removeCacheControl = function(url) {
 /**
  * render a template by duplicating the itemTemplateString and inserting the data in it
  * @param {string} itemTemplateString   the template containing \{\{markers\}\}
- * @param {Array.<string>}  data                 the array of strings conaining the data
+ * @param {Array.<Object>}  data                 the array of strings conaining the data
  * @return {string} the template string with the data in it
  */
 silex.utils.Dom.renderList = function(itemTemplateString, data) {
   var res = '';
   // for each item in data, e.g. each page in the list
-  for (let itemIdx in data) {
+  data.forEach(itemData => {
     // build an item
     var item = itemTemplateString;
     // replace each key by its value
-    for (let key in data[itemIdx]) {
-      var value = data[itemIdx][key];
+    for (let key in itemData) {
+      var value = itemData[key];
       item = item.replace(new RegExp('{{' + key + '}}', 'g'), value);
     }
     // add the item to the rendered template
     res += item;
-  }
+  });
   return res;
 };
 
@@ -188,25 +188,30 @@ silex.utils.Dom.publish = function(publicationUrl, fileUrl, html, statusCallback
   // @type {string}
   var baseUrl = silex.utils.Url.getBaseUrl() + fileUrl.substring(0, fileUrl.lastIndexOf('/'));
   // create the iframe used to compute temporary dom
-  var iframe = goog.dom.iframe.createBlank(goog.dom.getDomHelper(), 'position: absolute; left: -99999px; ');
-  goog.dom.appendChild(document.body, iframe);
+  var iframe = document.createElement('iframe')
+  iframe.style.position = 'absolute';
+  iframe.style.left = '-99999px;';
+  document.body.appendChild(iframe);
   // wait untill iframe is ready
   goog.events.listenOnce(iframe, 'load', function(e) {
     // clean up the DOM
-    var contentDocument = goog.dom.getFrameContentDocument(iframe);
-    var cleanedObj = silex.utils.DomCleaner.cleanup(contentDocument, baseUrl);
+    var cleanedObj = silex.utils.DomCleaner.cleanup(iframe.contentDocument, baseUrl);
     // store the files to download and copy to assets, scripts...
     var htmlString = cleanedObj['htmlString'];
     var cssString = cleanedObj['cssString'];
     var jsString = cleanedObj['jsString'];
     var files = cleanedObj['files'];
+    // get rid of the iframe
+    document.body.removeChild(iframe);
     // call the publish service
     silex.service.SilexTasks.getInstance().publish(publicationUrl, htmlString, cssString, jsString, files, statusCallback, opt_errCbk);
   }, false);
   // prevent scripts from executing
   html = html.replace(/type=\"text\/javascript\"/gi, 'type="text/notjavascript"');
   // write the content (leave this after "listen")
-  goog.dom.iframe.writeContent(iframe, html);
+  iframe.contentDocument.open();
+  iframe.contentDocument.write(html);
+  iframe.contentDocument.close();
 };
 
 

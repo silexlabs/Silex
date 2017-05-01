@@ -37,7 +37,7 @@ silex.view.dialog.NewWebsiteDialog = function(element, model, controller) {
   this.controller = controller;
 
   // make this a dialog
-  this.modalDialog = new silex.view.ModalDialog({
+  this.modalDialog = new ModalDialog({
     element: element,
     onOpen: args => this.redraw(),
     onClose: () => console.log('onClose'),

@@ -319,11 +319,6 @@ silex.utils.Url.getAbsolutePath = function(rel, base) {
  * @return  {boolean} true if the file has an extension which is in the array
  */
 silex.utils.Url.checkFileExt = function(fileName, extArray) {
-  var ext = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
-  for (let idx in extArray) {
-    if (extArray[idx] === ext) {
-      return true;
-    }
-  }
-  return false;
+  const ext = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
+  return extArray.findIndex(function(str) { return str === ext; }) >= 0;
 };

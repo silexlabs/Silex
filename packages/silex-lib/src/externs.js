@@ -121,7 +121,7 @@ sourceMap.SourceMapConsumer.prototype.originalPositionFor = function(generatedPo
 function Piwik() {}
 
 /**
- * @type {Array.<string|number>}
+ * @type {Array.<Array.<string|number>>}
  */
 var _paq = [];
 

@@ -205,7 +205,9 @@ silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk, opt_showLoader, 
     return match.replace('silex-runtime', '');
   }, 'g');
   // write the content
-  goog.dom.iframe.writeContent(this.iFrameElement_, rawHtml);
+  this.contentDocument_.open();
+  this.contentDocument_.write(rawHtml);
+  this.contentDocument_.close();
   this.contentChanged(!!opt_bypassBC, opt_cbk);
 };
 

@@ -39,7 +39,10 @@ body {
     font-family: FontAwesome;
     text-decoration: none;
   }
-  input {
+  input[disabled], select[disabled] {
+    background-color: @silexmediumdarkgrey;
+  }
+  input, select {
     border: 1px solid @silexmediumgrey;
     color: @silexlightergrey;
     background-color: @silexdarkgrey;
@@ -49,6 +52,7 @@ body {
     border-radius: 2px;
     box-sizing: border-box;
     padding: 0 5px;
+    display: inline;
   }
   input[type=number]::-webkit-inner-spin-button,
   input[type=number]::-webkit-outer-spin-button {
