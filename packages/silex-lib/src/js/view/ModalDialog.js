@@ -26,9 +26,9 @@ const HIDE_DIALOGS_BACKGROUND = 'silex-hide-dialog-background';
 /**
  * implement a "modal" behavior to hide and show dialogs
  * there is a static method to open dialogs by name
- * @type {silex.view.ModalDialog}
+ * @class {silex.view.ModalDialog}
  */
-silex.view.ModalDialog = class {
+class ModalDialog {
 
   /**
    * @param  {{name:(string|undefined), element:Element, onOpen:!function(?Object=), onClose:!function()}} options

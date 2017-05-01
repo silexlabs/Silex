@@ -101,28 +101,28 @@ silex.view.pane.PropertyPane.prototype.selectedElements = null;
 silex.view.pane.PropertyPane.prototype.buildUi = function() {
 
   // position and size
-  this.leftInput = goog.dom.getElementByClass('left-input');
+  this.leftInput = document.querySelector('.left-input');
   this.leftInput.setAttribute('data-style-name', 'left');
   goog.events.listen(this.leftInput,
       goog.events.EventType.INPUT,
       this.onPositionChanged,
       false,
       this);
-  this.widthInput = goog.dom.getElementByClass('width-input');
+  this.widthInput = document.querySelector('.width-input');
   this.widthInput.setAttribute('data-style-name', 'width');
   goog.events.listen(this.widthInput,
       goog.events.EventType.INPUT,
       this.onPositionChanged,
       false,
       this);
-  this.topInput = goog.dom.getElementByClass('top-input');
+  this.topInput = document.querySelector('.top-input');
   this.topInput.setAttribute('data-style-name', 'top');
   goog.events.listen(this.topInput,
       goog.events.EventType.INPUT,
       this.onPositionChanged,
       false,
       this);
-  this.heightInput = goog.dom.getElementByClass('height-input');
+  this.heightInput = document.querySelector('.height-input');
   this.heightInput.setAttribute('data-style-name', 'minHeight');
   goog.events.listen(this.heightInput,
       goog.events.EventType.INPUT,
@@ -130,13 +130,13 @@ silex.view.pane.PropertyPane.prototype.buildUi = function() {
       false,
       this);
 
-  this.altInput = goog.dom.getElementByClass('alt-input');
+  this.altInput = document.querySelector('.alt-input');
   goog.events.listen(this.altInput,
       goog.events.EventType.INPUT,
       this.onAltChanged,
       false,
       this);
-  this.titleInput = goog.dom.getElementByClass('title-input');
+  this.titleInput = document.querySelector('.title-input');
   goog.events.listen(this.titleInput,
       goog.events.EventType.INPUT,
       this.onTitleChanged,
@@ -296,7 +296,7 @@ silex.view.pane.PropertyPane.prototype.redraw = function(selectedElements, pageN
     if (elementsType === silex.model.Element.TYPE_IMAGE) {
       this.altInput.removeAttribute('disabled');
       var alt = this.getCommonProperty(selectedElements, function(element) {
-        var content = goog.dom.getElementByClass(silex.model.Element.ELEMENT_CONTENT_CLASS_NAME, element);
+        var content = element.querySelector(silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
         if (content) {
           return content.getAttribute('alt');
         }

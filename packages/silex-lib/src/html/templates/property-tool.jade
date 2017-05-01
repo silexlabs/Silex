@@ -43,15 +43,13 @@
 
   span.page-editor.editor-container
     script.pages-selector-template(type='text/x-handlebars-template')
-      <div class="page-container">
-      <div class="page-check-container">
-      <span class="page-check" />
-      </div>
-      <label class="page-label xsmall-font">{{displayName}}</label>
+      <div class='page-container'>
+      <input class='page-check checkbox' type='checkbox' id='{{name}}' />
+      <label class='page-label xsmall-font' for='{{name}}' >{{displayName}}</label>
       </div>
 
     script.link-template(type='text/x-handlebars-template')
-      <option value="{{linkName}}">{{displayName}}</option>
+      <option value='{{linkName}}'>{{displayName}}</option>
 
     .expandable
       legend
@@ -59,15 +57,13 @@
         span Visible on
       .body
         .view-on-mobile
-          .view-on-mobile-check-container
-            span.view-on-mobile-check
-          label.view-on-mobile-label.xsmall-font
+          input#mobile.view-on-mobile-check.checkbox(type='checkbox')
+          label.view-on-mobile-label.xsmall-font(for='mobile')
             | mobile version
           hr
         .view-on-allpages
-          .view-on-allpages-check-container
-            span.view-on-allpages-check
-          label.view-on-allpages-label.xsmall-font
+          input#allpages.view-on-allpages-check.checkbox(type='checkbox')
+          label.view-on-allpages-label.xsmall-font(for='allpages')
             | all pages
         .pages-container
     .expandable
@@ -75,7 +71,7 @@
         span.fa.fa-fw.fa-inverse.fa-caret-right
         span Link
       .body
-        select.link-combo-box
+        select.link-combo-box.combobox
         input.link-input-text(placeholder='-', type='text')
 
   span.style-container
@@ -97,7 +93,7 @@
           .body
             span.color-bg-button.color-button
             span.color-bg-palette
-            span.enable-color-bg-button.goog-checkbox-unchecked
+            input.enable-color-bg-button.checkbox(type='checkbox')
             | Transparent
         .expandable.background-image
           legend
@@ -108,32 +104,27 @@
               .button.bg-image-button Select image
               .button.clear-bg-image-button Clear image
             div
-              .bg-position-h-combo-box.combobox.goog-select
-                ul.goog-menu
-                  li#left.goog-menuitem left
-                  li#center.goog-menuitem center
-                  li#right.goog-menuitem right
-              .bg-position-v-combo-box.combobox.goog-select
-                ul.goog-menu
-                  li#top.goog-menuitem top
-                  li#center.goog-menuitem center
-                  li#bottom.goog-menuitem bottom
+              select.bg-position-h-combo-box.combobox
+                  option.goog-menuitem(value='left') left
+                  option.goog-menuitem(value='center') center
+                  option.goog-menuitem(value='right') right
+              select.bg-position-v-combo-box.combobox
+                  option.goog-menuitem(value='top') top
+                  option.goog-menuitem(value='center') center
+                  option.goog-menuitem(value='bottom') bottom
             .background-image
-              .bg-attachment-combo-box.combobox.goog-select
-                ul.goog-menu
-                  li#scroll.goog-menuitem(title='The background scrolls along with the element') scroll
-                  li#fixed.goog-menuitem(title='The background is fixed with regard to the viewport') fixed
-              .bg-repeat-combo-box.combobox.goog-select
-                ul.goog-menu
-                  li#repeat.goog-menuitem(title='The background image is repeated both vertically and horizontally') repeat
-                  li#repeat-x.goog-menuitem(title='The background image is only repeated horizontally') repeat-x
-                  li#repeat-y.goog-menuitem(title='The background image is only repeated vertically') repeat-y
-                  li#no-repeat.goog-menuitem(title='The background-image is not repeated') no-repeat
-              .bg-size-combo-box.combobox.goog-select
-                ul.goog-menu
-                  li#auto.goog-menuitem(title='The background image is not resized') auto
-                  li#contain.goog-menuitem(title='The background image is scaled so that the whole image is visible') contain
-                  li#cover.goog-menuitem(title='The background image is scaled so that it completely covers the element') cover
+              select.bg-attachment-combo-box.combobox
+                  option.goog-menuitem(value='scroll', title='The background scrolls along with the element') scroll
+                  option.goog-menuitem(value='fixed', title='The background is fixed with regard to the viewport') fixed
+              select.bg-repeat-combo-box.combobox
+                  option.goog-menuitem(value='repeat', title='The background image is repeated both vertically and horizontally') repeat
+                  option.goog-menuitem(value='repeat-x', title='The background image is only repeated horizontally') repeat-x
+                  option.goog-menuitem(value='repeat-y', title='The background image is only repeated vertically') repeat-y
+                  option.goog-menuitem(value='no-repeat', title='The background-image is not repeated') no-repeat
+              select.bg-size-combo-box.combobox
+                  option.goog-menuitem(value='auto', title='The background image is not resized') auto
+                  option.goog-menuitem(value='contain', title='The background image is scaled so that the whole image is visible') contain
+                  option.goog-menuitem(value='cover', title='The background image is scaled so that it completely covers the element') cover
       .border-editor.editor-container
         .expandable.border-property
           legend
@@ -148,28 +139,27 @@
             span.border-color-palette
             .border-type-conainer.old-advanced-only
               .border-type-label Style
-              .border-type-combo-box.combobox.goog-select
-                ul.goog-menu
-                  li#solid.goog-menuitem solid
-                  li#dotted.goog-menuitem dotted
-                  li#dashed.goog-menuitem dashed
-                  li#double.goog-menuitem double
-                  li#groove.goog-menuitem groove
-                  li#ridge.goog-menuitem ridge
-                  li#inset.goog-menuitem inset
-                  li#outset.goog-menuitem outset
+              select.border-type-combo-box.combobox
+                option(value='solid.goog-menuitem') solid
+                option(value='dotted.goog-menuitem') dotted
+                option(value='dashed.goog-menuitem') dashed
+                option(value='double.goog-menuitem') double
+                option(value='groove.goog-menuitem') groove
+                option(value='ridge.goog-menuitem') ridge
+                option(value='inset.goog-menuitem') inset
+                option(value='outset.goog-menuitem') outset
             .border-placement-container.old-advanced-only
               .half-col
-                span.top.border-placement-check.goog-checkbox
+                input.top.border-placement-check.checkbox(type='checkbox')
                 label.border-placement-label Top
               .half-col
-                span.left.border-placement-check.goog-checkbox
+                input.left.border-placement-check.checkbox(type='checkbox')
                 label.border-placement-label Left
               .half-col
-                span.bottom.border-placement-check.goog-checkbox
+                input.bottom.border-placement-check.checkbox(type='checkbox')
                 label.border-placement-label Bottom
               .half-col
-                span.right.border-placement-check.goog-checkbox
+                input.right.border-placement-check.checkbox(type='checkbox')
                 label.border-placement-label Right
             .border-radius-container
               .border-radius-width-container
@@ -177,16 +167,16 @@
                 input.corner-radius-input(placeholder='-', type='number', min='0')
               .corner-placement-container.old-advanced-only
                 .half-col
-                  span.top-left.corner-placement-check.goog-checkbox
+                  input.top-left.corner-placement-check.checkbox(type='checkbox')
                   label.corner-placement-label Top Left
                 .half-col
-                  span.top-right.corner-placement-check.goog-checkbox
+                  input.top-right.corner-placement-check.checkbox(type='checkbox')
                   label.corner-placement-label Top Right
                 .half-col
-                  span.bottom-left.corner-placement-check.goog-checkbox
+                  input.bottom-left.corner-placement-check.checkbox(type='checkbox')
                   label.corner-placement-label Btm Left
                 .half-col
-                  span.bottom-right.corner-placement-check.goog-checkbox
+                  input.bottom-right.corner-placement-check.checkbox(type='checkbox')
                   label.corner-placement-label Btm Right
       .style-editor.editor-container
         .expandable.style-property.old-advanced-only

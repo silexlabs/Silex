@@ -122,7 +122,7 @@ silex.controller.ControllerBase.prototype.undoCheckPoint = function() {
   this.undoCheckpointInvalidationManager.callWhenReady(() => {
     silex.controller.ControllerBase.redoHistory = [];
     silex.controller.ControllerBase.getStatePending++;
-    this.getState((state) => {
+    this.getStateAsync((state) => {
       silex.controller.ControllerBase.getStatePending--;
       // if the previous state was different
       if (silex.controller.ControllerBase.undoHistory.length === 0 ||
@@ -141,30 +141,33 @@ silex.controller.ControllerBase.prototype.undoCheckPoint = function() {
 
 /**
  * build a state object for undo/redo
- * asyn operation if opt_cbk is provided
- * @param {?function(silex.types.UndoItem)=} opt_cbk
- * @return {silex.types.UndoItem|null}
+ * async operation to improve performance
+ * @param {!function(silex.types.UndoItem)} opt_cbk
  */
-silex.controller.ControllerBase.prototype.getState = function(opt_cbk) {
-  if(opt_cbk) {
-    this.model.file.getHtmlAsync((html) => {
-      opt_cbk({
-        html:html,
-        page: this.model.page.getCurrentPage(),
-        scrollX: this.view.stage.getScrollX(),
-        scrollY: this.view.stage.getScrollY()
-      });
-    });
-  }
-  else {
-    return {
-      html: this.model.file.getHtml(),
+silex.controller.ControllerBase.prototype.getStateAsync = function(opt_cbk) {
+  this.model.file.getHtmlAsync((html) => {
+    opt_cbk({
+      html:html,
       page: this.model.page.getCurrentPage(),
       scrollX: this.view.stage.getScrollX(),
       scrollY: this.view.stage.getScrollY()
-    };
-  }
-  return null;
+    });
+  });
+};
+
+
+
+/**
+ * build a state object for undo/redo
+ * @return {silex.types.UndoItem}
+ */
+silex.controller.ControllerBase.prototype.getState = function() {
+  return {
+    html: this.model.file.getHtml(),
+    page: this.model.page.getCurrentPage(),
+    scrollX: this.view.stage.getScrollX(),
+    scrollY: this.view.stage.getScrollY()
+  };
 };
 
 
@@ -412,11 +415,8 @@ silex.controller.ControllerBase.prototype.checkElementVisibility = function(elem
   if (parentPage !== null) {
     // get all the pages
     var pages = this.model.page.getPagesForElement(element);
-    for (let idx in pages) {
-      // remove the component from the page
-      var pageName = pages[idx];
-      this.model.page.removeFromPage(element, pageName);
-    }
+    // remove the components from the page
+    pages.forEach(pageName => this.model.page.removeFromPage(element, pageName));
   }
 };
 

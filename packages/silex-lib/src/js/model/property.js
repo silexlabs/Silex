@@ -39,10 +39,9 @@ silex.model.Property = function(model, view) {
 
 /**
  *
- * @typedef {{rule: CSSRule, parent: (CSSRule|CSSStyleSheet), index: number}}
+ * @typedef {{rule: CSSRule, parent: (CSSRule|StyleSheet), index: number}}
  */
 silex.model.Property.CSSRuleInfo;
-
 
 
 /**
@@ -79,7 +78,7 @@ silex.model.Property.MOBILE_MEDIA_QUERY = 'only screen and (max-width: 480px), o
 /**
  * the current file's silex style sheet which holds silex elements styles
  * this is stored for performance reasons
- * @type {?CSSStyleSheet}
+ * @type {?StyleSheet}
  */
 silex.model.Property.prototype.styleSheet = null;
 
@@ -230,7 +229,7 @@ silex.model.Property.prototype.initStyles = function(doc) {
   }
   //retrieve the style sheet with Silex definitions
   this.styleSheet = null;
-  for (var idx in doc.styleSheets) {
+  for (let idx = 0; idx < doc.styleSheets.length; idx++) {
     if (doc.styleSheets[idx].ownerNode && doc.styleSheets[idx].ownerNode == styleTag) {
       this.styleSheet = doc.styleSheets[idx];
     }
@@ -424,7 +423,7 @@ silex.model.Property.prototype.getStyle = function(element, opt_isMobile, opt_co
  */
 silex.model.Property.prototype.findCssRule = function(elementId, isMobile) {
   // find the rule for the given element
-  for (var idx = 0; idx < this.styleSheet.cssRules.length; idx++) {
+  for (let idx = 0; idx < this.styleSheet.cssRules.length; idx++) {
     let cssRule = this.styleSheet.cssRules[idx];
     // we use the class name because elements have their ID as a css class too
     if ((isMobile === false && cssRule.selectorText === '.' + elementId) ||

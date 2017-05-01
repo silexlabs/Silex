@@ -20,12 +20,9 @@
 goog.provide('silex.view.pane.PagePane');
 goog.require('goog.array');
 goog.require('goog.cssom');
-goog.require('goog.editor.Field');
 goog.require('goog.object');
-goog.require('goog.ui.Checkbox');
 goog.require('goog.ui.ColorButton');
 goog.require('goog.ui.HsvaPalette');
-goog.require('goog.ui.LabelInput');
 goog.require('silex.view.pane.PaneBase');
 
 
@@ -60,14 +57,14 @@ silex.view.pane.PagePane.prototype.linkDropdown = null;
 
 /**
  * check box "view on mobile"
- * @type {goog.ui.Checkbox}
+ * @type {HTMLInputElement}
  */
 silex.view.pane.PagePane.prototype.viewOnMobileCheckbox = null;
 
 
 /**
  * check box "view on all pages"
- * @type {goog.ui.Checkbox}
+ * @type {HTMLInputElement}
  */
 silex.view.pane.PagePane.prototype.viewOnAllPagesCheckbox = null;
 
@@ -79,7 +76,8 @@ silex.view.pane.PagePane.prototype.linkInputTextField = null;
 
 
 /**
- * {Array} of checkboxes used to add/remove the element from pages
+ * Array of checkboxes used to add/remove the element from pages
+ * @type {Array.<{checkbox:HTMLInputElement,pageName:string}>}
  */
 silex.view.pane.PagePane.prototype.pageCheckboxes = null;
 
@@ -90,21 +88,17 @@ silex.view.pane.PagePane.prototype.pageCheckboxes = null;
 silex.view.pane.PagePane.prototype.buildUi = function() {
   // link, select page or enter custom link
   // handle the dropdown list from the template
-  this.linkDropdown = goog.dom.getElementByClass('link-combo-box',
-      this.element);
+  this.linkDropdown = this.element.querySelector('.link-combo-box');
   this.linkDropdown.onchange = goog.bind(this.onLinkChanged, this);
 
   // create a text field for custom link
-  var linkInputElement = goog.dom.getElementByClass('link-input-text',
-      this.element);
-  this.linkInputTextField = new goog.ui.LabelInput();
-  this.linkInputTextField.decorate(linkInputElement);
+  this.linkInputTextField = this.element.querySelector('.link-input-text');
 
   // hide by default
-  goog.style.setStyle(linkInputElement, 'display', 'none');
+  this.linkInputTextField.style.display = 'none';
 
   // Watch for field changes, to display below.
-  goog.events.listen(linkInputElement,
+  goog.events.listen(this.linkInputTextField,
       goog.events.EventType.INPUT,
       this.onLinkTextChanged,
       false,
@@ -112,15 +106,11 @@ silex.view.pane.PagePane.prototype.buildUi = function() {
 
   // View on mobile checkbox
   var viewOnMobileElement = goog.dom.getElementByClass('view-on-mobile', this.element);
-  var checkboxElement = goog.dom.getElementByClass('view-on-mobile-check', viewOnMobileElement);
-  var labelElement = goog.dom.getElementByClass('view-on-mobile-label', viewOnMobileElement);
-  this.viewOnMobileCheckbox = new goog.ui.Checkbox();
-  this.viewOnMobileCheckbox.render(checkboxElement);
-  this.viewOnMobileCheckbox.setLabel(labelElement);
+  this.viewOnMobileCheckbox = /** @type {HTMLInputElement} */ (this.element.querySelector('.view-on-mobile-check'));
   goog.events.listen(this.viewOnMobileCheckbox, goog.ui.Component.EventType.CHANGE,
       function(event) {
         goog.array.forEach(this.selectedElements, function(element) {
-          if(this.viewOnMobileCheckbox.isChecked()) {
+          if(this.viewOnMobileCheckbox.checked) {
             element.classList.remove('hide-on-mobile');
           }
           else {
@@ -130,15 +120,10 @@ silex.view.pane.PagePane.prototype.buildUi = function() {
       }, false, this);
 
   // View on all pages
-  var viewOnAllPagesElement = goog.dom.getElementByClass('view-on-allpages', this.element);
-  checkboxElement = goog.dom.getElementByClass('view-on-allpages-check', viewOnAllPagesElement);
-  labelElement = goog.dom.getElementByClass('view-on-allpages-label', viewOnAllPagesElement);
-  this.viewOnAllPagesCheckbox = new goog.ui.Checkbox();
-  this.viewOnAllPagesCheckbox.render(checkboxElement);
-  this.viewOnAllPagesCheckbox.setLabel(labelElement);
+  this.viewOnAllPagesCheckbox = /** @type {HTMLInputElement} */ (this.element.querySelector('.view-on-allpages-check'));
   goog.events.listen(this.viewOnAllPagesCheckbox, goog.ui.Component.EventType.CHANGE,
     function(event) {
-      if(this.viewOnAllPagesCheckbox.isChecked()) {
+      if(this.viewOnAllPagesCheckbox.checked) {
         this.checkAllPages();
       }
       this.removeFromAllPages();
@@ -167,13 +152,6 @@ silex.view.pane.PagePane.prototype.setPages = function(pages) {
       'linkName': '#!' + pageName
     };
   }, this));
-
-  // reset page checkboxes
-  if (this.pageCheckboxes) {
-    goog.array.forEach(this.pageCheckboxes, function(item) {
-      item.checkbox.dispose();
-    });
-  }
 
   // link selector
   var pageDataWithDefaultOptions = ([
@@ -205,6 +183,15 @@ silex.view.pane.PagePane.prototype.setPages = function(pages) {
   pagesContainer.innerHTML = silex.utils.Dom.renderList(
       templateHtml,
       pageData);
+  // reset page checkboxes
+  if (this.pageCheckboxes) {
+    this.pageCheckboxes.forEach(item => {
+      if(item.checkbox.parentNode != null) {
+        item.checkbox.parentNode.removeChild(item.checkbox);
+      }
+      goog.events.removeAll(item.checkbox, goog.ui.Component.EventType.CHANGE);
+    });
+  }
   // create page checkboxes
   this.pageCheckboxes = [];
   var mainContainer = goog.dom.getElementByClass('pages-container',
@@ -212,12 +199,8 @@ silex.view.pane.PagePane.prototype.setPages = function(pages) {
   var items = goog.dom.getElementsByClass('page-container', mainContainer);
   var idx = 0;
   goog.array.forEach(items, function(item) {
-    var checkboxElement = goog.dom.getElementByClass('page-check', item);
-    var labelElement = goog.dom.getElementByClass('page-label', item);
-    var checkbox = new goog.ui.Checkbox();
+    var checkbox = /** @type {HTMLInputElement} */ (item.querySelector('.page-check'));
     var name = this.pages[idx++];
-    checkbox.render(checkboxElement);
-    checkbox.setLabel(labelElement);
     this.pageCheckboxes.push({
       checkbox: checkbox,
       pageName: name
@@ -234,14 +217,13 @@ silex.view.pane.PagePane.prototype.setPages = function(pages) {
  * the user changed the link drop down
  */
 silex.view.pane.PagePane.prototype.onLinkChanged = function() {
-  var linkInputElement = goog.dom.getElementByClass('link-input-text', this.element);
   if (this.linkDropdown.value === 'none') {
     this.controller.propertyToolController.removeLink(this.selectedElements);
-    goog.style.setStyle(linkInputElement, 'display', 'none');
+    this.linkInputTextField.style.display = 'none';
   }
   else if (this.linkDropdown.value === 'custom') {
-    this.linkInputTextField.setValue('');
-    goog.style.setStyle(linkInputElement, 'display', 'inherit');
+    this.linkInputTextField.value = '';
+    this.linkInputTextField.style.display = 'inherit';
   }
   else {
     this.controller.propertyToolController.addLink(this.selectedElements, this.linkDropdown.value);
@@ -254,7 +236,7 @@ silex.view.pane.PagePane.prototype.onLinkChanged = function() {
  */
 silex.view.pane.PagePane.prototype.onLinkTextChanged = function() {
   this.iAmSettingValue = true;
-  this.controller.propertyToolController.addLink(this.selectedElements, this.linkInputTextField.getValue());
+  this.controller.propertyToolController.addLink(this.selectedElements, this.linkInputTextField.value);
   this.iAmSettingValue = false;
 };
 
@@ -275,14 +257,12 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, pageNames
 
   // remember selection
   this.selectedElements = selectedElements;
-  // visibility of the text edit
-  var linkInputElement = goog.dom.getElementByClass('link-input-text', this.element);
 
   // update page list
   this.setPages(pageNames);
 
   // View on mobile checkbox
-  this.viewOnMobileCheckbox.setEnabled(this.model.head.getEnableMobile());
+  this.viewOnMobileCheckbox.enabled = this.model.head.getEnableMobile();
 
   // not available for stage element
   var elementsNoStage = [];
@@ -291,7 +271,7 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, pageNames
       elementsNoStage.push(element);
     }
     else {
-      this.viewOnMobileCheckbox.setEnabled(false);
+      this.viewOnMobileCheckbox.enabled = false;
     }
   }, this);
   // update the "view on mobile" checkbox
@@ -299,10 +279,11 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, pageNames
     return !element.classList.contains('hide-on-mobile');
   });
   if(!goog.isNull(isVisibleOnMobile)) {
-    this.viewOnMobileCheckbox.setChecked(isVisibleOnMobile);
+    this.viewOnMobileCheckbox.checked = (isVisibleOnMobile);
+    this.viewOnMobileCheckbox.indeterminate = false;
   }
   else {
-    this.viewOnMobileCheckbox.setChecked(goog.ui.Checkbox.State.UNDETERMINED);
+    this.viewOnMobileCheckbox.indeterminate = true;
   }
   // special case of the background / main container only selected element
   var bgOnly = false;
@@ -316,7 +297,7 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, pageNames
     let isInNoPage = true;
     goog.array.forEach(this.pageCheckboxes, function(item) {
       // there is a selection
-      item.checkbox.setEnabled(true);
+      item.checkbox.enabled = true;
       // compute common pages
       var isInPage = this.getCommonProperty(selectedElements, element => {
         return this.model.page.isInPage(element, item.pageName);
@@ -325,19 +306,20 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, pageNames
       isInNoPage = isInNoPage && isInPage === false;
       if (goog.isNull(isInPage)) {
         // multiple elements selected with different values
-        item.checkbox.setChecked(goog.ui.Checkbox.State.UNDETERMINED);
+        item.checkbox.indeterminate = true;
       }
       else {
-        item.checkbox.setChecked(isInPage);
+        item.checkbox.indeterminate = false;
+        item.checkbox.checked = (isInPage);
       }
     }, this);
-    this.viewOnAllPagesCheckbox.setEnabled(true);
+    this.viewOnAllPagesCheckbox.enabled = true;
     if(isInNoPage) {
-      this.viewOnAllPagesCheckbox.setChecked(true);
+      this.viewOnAllPagesCheckbox.checked = true;
       // this.checkAllPages();
     }
     else {
-      this.viewOnAllPagesCheckbox.setChecked(false);
+      this.viewOnAllPagesCheckbox.checked = false;
     }
     // refresh the link inputs
     // get the link of the element
@@ -347,7 +329,7 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, pageNames
     // default selection
     if (!elementLink || elementLink === '') {
       this.linkDropdown.value = 'none';
-      this.linkInputTextField.setValue('');
+      this.linkInputTextField.value = '';
     }
     else {
       if (elementLink.indexOf('#!') === 0) {
@@ -357,28 +339,28 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, pageNames
       }
       else {
         // in case it is a custom link
-        this.linkInputTextField.setValue(elementLink);
+        this.linkInputTextField.value = (elementLink);
         this.linkDropdown.value = 'custom';
       }
     }
     if (this.linkDropdown.value === 'custom') {
-      goog.style.setStyle(linkInputElement, 'display', 'inherit');
+      this.linkInputTextField.style.display = 'inherit';
     }
     else {
-      goog.style.setStyle(linkInputElement, 'display', 'none');
+      this.linkInputTextField.style.display = 'none';
     }
   }
   else {
     // stage element only
     goog.array.forEach(this.pageCheckboxes, function(item) {
-      item.checkbox.setEnabled(false);
-      item.checkbox.setChecked(goog.ui.Checkbox.State.UNDETERMINED);
+      item.checkbox.enabled = false;
+      item.checkbox.indeterminate = true;
     }, this);
     this.linkDropdown.value = 'none';
     this.linkDropdown.setAttribute('disabled', true);
-    goog.style.setStyle(linkInputElement, 'display', 'none');
-    this.viewOnAllPagesCheckbox.setEnabled(false);
-    this.viewOnAllPagesCheckbox.setChecked(true);
+    this.linkInputTextField.style.display = 'none';
+    this.viewOnAllPagesCheckbox.enabled = false;
+    this.viewOnAllPagesCheckbox.checked = true;
   }
   this.iAmRedrawing = false;
 };
@@ -388,11 +370,11 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, pageNames
  * callback for checkboxes click event
  * changes the visibility of the current component for the given page
  * @param   {string} pageName   the page for wich the visibility changes
- * @param   {goog.ui.Checkbox} checkbox   the checkbox clicked
+ * @param   {HTMLInputElement} checkbox   the checkbox clicked
  */
 silex.view.pane.PagePane.prototype.checkPage = function(pageName, checkbox) {
   // notify the toolbox
-  if (checkbox.isChecked()) {
+  if (checkbox.checked) {
     this.controller.propertyToolController.addToPage(this.selectedElements, pageName);
   }
   else {
@@ -402,9 +384,9 @@ silex.view.pane.PagePane.prototype.checkPage = function(pageName, checkbox) {
 
 silex.view.pane.PagePane.prototype.checkAllPages = function() {
   this.pageCheckboxes.forEach(item => {
-    item.checkbox.setChecked(true);
+    item.checkbox.checked = true;
   });
-  this.viewOnAllPagesCheckbox.setChecked(true);
+  this.viewOnAllPagesCheckbox.checked = true;
 };
 
 
