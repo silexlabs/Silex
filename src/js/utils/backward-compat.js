@@ -222,7 +222,7 @@ silex.utils.BackwardCompat.to2_2_6 = function(version, doc, model, cbk) {
   if (!jsonStyleTag) {
     let styleTag = doc.querySelector('.' + silex.model.Property.INLINE_STYLE_TAG_CLASS_NAME);
     let styleSheet = null;
-    for (var idx in doc.styleSheets) {
+    for (let idx=0; idx<doc.styleSheets.length; idx++) {
       if (doc.styleSheets[idx].ownerNode && doc.styleSheets[idx].ownerNode == styleTag) {
         styleSheet = doc.styleSheets[idx];
       }
@@ -233,7 +233,7 @@ silex.utils.BackwardCompat.to2_2_6 = function(version, doc, model, cbk) {
     else {
       let stylesObj = {};
       let mobileStylesObj = {};
-      for (var idx = 0; idx < styleSheet.cssRules.length; idx++) {
+      for (let idx = 0; idx < styleSheet.cssRules.length; idx++) {
         let cssRule = styleSheet.cssRules[idx];
         let id = cssRule.selectorText.substr(1);
         let style = silex.utils.Style.styleToObject(cssRule.style);

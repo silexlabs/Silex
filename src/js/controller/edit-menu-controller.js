@@ -68,9 +68,9 @@ silex.controller.EditMenuController.prototype.undo = function() {
   this.undoredoInvalidationManager.callWhenReady(() => {
     if (silex.controller.ControllerBase.getStatePending === 0 &&
       silex.controller.ControllerBase.undoHistory.length > 0) {
-      var state = this.getState();
+      const state = this.getState();
       silex.controller.ControllerBase.redoHistory.push(state);
-      var prevState = silex.controller.ControllerBase.undoHistory.pop();
+      const prevState = silex.controller.ControllerBase.undoHistory.pop();
       this.restoreState(prevState);
     }
     else {
@@ -87,9 +87,9 @@ silex.controller.EditMenuController.prototype.redo = function() {
   this.model.body.setSelection([]);
   this.undoredoInvalidationManager.callWhenReady(() => {
     if (silex.controller.ControllerBase.redoHistory.length > 0) {
-      var state = this.getState();
+      const state = this.getState();
       silex.controller.ControllerBase.undoHistory.push(state);
-      var prevState = silex.controller.ControllerBase.redoHistory.pop();
+      const prevState = silex.controller.ControllerBase.redoHistory.pop();
       this.restoreState(prevState);
     }
   });
@@ -152,13 +152,16 @@ silex.controller.EditMenuController.prototype.recursiveCopy = function(element) 
   };
   // case of a container, handle its children
   if (this.model.element.getType(res.element) === silex.model.Element.TYPE_CONTAINER) {
-    let toBeRemoved = [];
-    let len = res.element.childNodes.length;
+    const toBeRemoved = [];
+    const len = res.element.childNodes.length;
     for (let idx = 0; idx < len; idx++) {
-      let el = res.element.childNodes[idx];
-      if (el.nodeType === 1 && this.model.element.getType(el) !== null) {
-        res.children.push(this.recursiveCopy(el));
-        toBeRemoved.push(el);
+      const node = res.element.childNodes[idx];
+      if (node.nodeType === 1) {
+        const el = /** @type {Element} */ (node);
+        if(this.model.element.getType(el) !== null) {
+          res.children.push(this.recursiveCopy(el));
+          toBeRemoved.push(el);
+        }
       }
     }
     toBeRemoved.forEach((el) => res.element.removeChild(el));
@@ -300,49 +303,6 @@ silex.controller.EditMenuController.prototype.editElement = function(opt_element
       );
       break;
   }
-};
-
-
-/**
- * get the previous element in the DOM, which is a Silex element
- * @see   {silex.model.element}
- * @param {Element} element
- * @return {?Element}
- */
-silex.controller.EditMenuController.prototype.getPreviousElement = function(element) {
-  let len = element.parentNode.childNodes.length;
-  let res = null;
-  for (let idx = 0; idx < len; idx++) {
-    let el = element.parentNode.childNodes[idx];
-    if (el.nodeType === 1 && this.model.element.getType(el) !== null) {
-      if (el === element) {
-        return res;
-      }
-      res = el;
-    }
-  }
-  return null;
-};
-
-
-/**
- * get the previous element in the DOM, which is a Silex element
- * @see   {silex.model.element}
- * @param {Element} element
- * @return {?Element}
- */
-silex.controller.EditMenuController.prototype.getNextElement = function(element) {
-  let prev = null;
-  for (let idx = element.parentNode.childNodes.length - 1; idx >= 0; idx--) {
-    let el = element.parentNode.childNodes[idx];
-    if (el.nodeType === 1 && this.model.element.getType(el) !== null) {
-      if (el === element) {
-        return prev;
-      }
-      prev = el;
-    }
-  }
-  return null;
 };
 
 

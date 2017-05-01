@@ -434,14 +434,14 @@ silex.model.Element.prototype.move = function(element, direction) {
   }
   switch (direction) {
     case silex.model.DomDirection.UP:
-      let nextSibling = this.getNextElement(element);
+      let nextSibling = this.getNextElement(element, true);
       if (nextSibling) {
         // insert after
         element.parentNode.insertBefore(nextSibling, element);
       }
       break;
     case silex.model.DomDirection.DOWN:
-      let prevSibling = this.getPreviousElement(element);
+      let prevSibling = this.getNextElement(element, false);
       if (prevSibling) {
         // insert before
         element.parentNode.insertBefore(prevSibling, element.nextSibling);
@@ -460,46 +460,29 @@ silex.model.Element.prototype.move = function(element, direction) {
 
 
 /**
- * get the previous element in the DOM, which is a Silex element
+ * get the previous or next element in the DOM, which is a Silex element
  * @param {Element} element
+ * @param {boolean} forward if true look for the next element, if false for the previous
  * @return {?Element}
  */
-silex.model.Element.prototype.getPreviousElement = function(element) {
-  let len = element.parentNode.childNodes.length;
-  let res = null;
-  for (let idx = 0; idx < len; idx++) {
-    let el = element.parentNode.childNodes[idx];
-    if (el.nodeType === 1 && this.getType(el) !== null) {
-      if (el === element) {
-        return res;
-      }
+silex.model.Element.prototype.getNextElement = function(element, forward) {
+  let node = /** @type {Node} */ (element);
+  console.log('getNextElement', element, forward);
+  while(node = forward ? node.nextSibling : node.previousSibling) {
+    console.log('getNextElement nodeType=', node.nodeType, node);
+    if (node.nodeType === 1) {
+      const el = /** @type {Element} */ (node);
+      console.log('getNextElement', {
+        'type': this.getType(el),
+        'isInPage': this.model.page.isInPage(el),
+        'pages': this.model.page.getPagesForElement(el),
+      });
       // candidates are the elements which are visible in the current page, or visible everywhere (not paged)
-      if (this.model.page.isInPage(el) || this.model.page.getPagesForElement(el).length === 0) {
-        res = el;
-      }
-    }
-  }
-  return null;
-};
-
-
-/**
- * get the previous element in the DOM, which is a Silex element
- * @param {Element} element
- * @return {?Element}
- */
-silex.model.Element.prototype.getNextElement = function(element) {
-  let len = element.parentNode.childNodes.length;
-  let res = null;
-  for (let idx = len - 1; idx >= 0; idx--) {
-    let el = element.parentNode.childNodes[idx];
-    if (el.nodeType === 1 && this.getType(el) !== null) {
-      if (el === element) {
-        return res;
-      }
-      // candidates are the elements which are visible in the current page, or visible everywhere (not paged)
-      if (this.model.page.isInPage(el) || this.model.page.getPagesForElement(el).length === 0) {
-        res = el;
+      if(this.getType(el) !== null &&
+        (this.model.page.isInPage(el) ||
+        this.model.page.getPagesForElement(el).length === 0)) {
+        console.log('getNextElement FOUND!!');
+        return el;
       }
     }
   }

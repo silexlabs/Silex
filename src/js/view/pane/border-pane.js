@@ -19,9 +19,7 @@
 goog.provide('silex.view.pane.BorderPane');
 goog.require('goog.array');
 goog.require('goog.cssom');
-goog.require('goog.editor.Field');
 goog.require('goog.object');
-goog.require('goog.ui.Checkbox');
 goog.require('goog.ui.ColorButton');
 goog.require('goog.ui.HsvPalette');
 goog.require('silex.view.pane.PaneBase');
@@ -65,6 +63,7 @@ silex.view.pane.BorderPane.prototype.borderStyleComboBox = null;
 
 /**
  * input element
+ * @type {Array.<HTMLInputElement>}
  */
 silex.view.pane.BorderPane.prototype.borderPlacementCheckBoxes = null;
 
@@ -77,6 +76,7 @@ silex.view.pane.BorderPane.prototype.borderRadiusInput = null;
 
 /**
  * input element
+ * @type {Array.<HTMLInputElement>}
  */
 silex.view.pane.BorderPane.prototype.cornerPlacementCheckBoxes = null;
 
@@ -103,10 +103,7 @@ silex.view.pane.BorderPane.prototype.buildUi = function() {
       this.element);
 
   // border style
-  this.borderStyleComboBox = goog.ui.decorate(
-      goog.dom.getElementByClass(
-        'border-type-combo-box',
-        this.element));
+  this.borderStyleComboBox = this.element.querySelector('.border-type-combo-box');
 
   // border color
   var hsvPaletteElement = goog.dom.getElementByClass(
@@ -130,14 +127,12 @@ silex.view.pane.BorderPane.prototype.buildUi = function() {
   this.setColorPaletteVisibility(this.hsvPalette, false);
 
   // border placement
-  this.borderPlacementCheckBoxes = this.createCheckBoxes(
-      [
-        '.border-placement-container .top',
-        '.border-placement-container .right',
-        '.border-placement-container .bottom',
-        '.border-placement-container .left',
-      ],
-      this.onBorderWidthChanged);
+  this.borderPlacementCheckBoxes = [
+    '.border-placement-container .top',
+    '.border-placement-container .right',
+    '.border-placement-container .bottom',
+    '.border-placement-container .left',
+  ].map(selector => this.initCheckBox(selector, e => this.onBorderWidthChanged()));
 
   // corner radius
   this.borderRadiusInput = goog.dom.getElementByClass(
@@ -145,14 +140,13 @@ silex.view.pane.BorderPane.prototype.buildUi = function() {
       this.element);
 
   // corner placement
-  this.cornerPlacementCheckBoxes = this.createCheckBoxes(
-      [
-        '.border-radius-container .top-left',
-        '.border-radius-container .top-right',
-        '.border-radius-container .bottom-right',
-        '.border-radius-container .bottom-left',
-      ],
-      this.onBorderCornerChanged);
+  this.cornerPlacementCheckBoxes = [
+    '.border-radius-container .top-left',
+    '.border-radius-container .top-right',
+    '.border-radius-container .bottom-right',
+    '.border-radius-container .bottom-left',
+  ].map(selector => this.initCheckBox(selector, e => this.onBorderCornerChanged()));
+
 };
 
 
@@ -191,25 +185,17 @@ silex.view.pane.BorderPane.prototype.initEvents = function() {
 
 /**
  * create and return checkboxes
- * decorate the HTML nodes
+ * query the HTML nodes
  * attach change event
  */
-silex.view.pane.BorderPane.prototype.createCheckBoxes =
-  function(cssSelectors, onChanged) {
-  var checkBoxes = [];
-  var idx;
-  var len = cssSelectors.length;
-  for (idx = 0; idx < len; idx++) {
-    var decorateNode = this.element.querySelector(cssSelectors[idx]);
-    var checkBox = goog.ui.decorate(decorateNode);
-    checkBoxes.push(checkBox);
-    goog.events.listen(checkBox,
-                       goog.ui.Component.EventType.CHANGE,
-                       onChanged,
-                       false,
-                       this);
-  }
-  return checkBoxes;
+silex.view.pane.BorderPane.prototype.initCheckBox = function(cssSelector, onChanged) {
+  var checkbox = this.element.querySelector(cssSelector);
+  goog.events.listen(checkbox,
+                     goog.ui.Component.EventType.CHANGE,
+                     onChanged,
+                     false,
+                     this);
+  return checkbox;
 };
 
 
@@ -269,10 +255,10 @@ silex.view.pane.BorderPane.prototype.redraw =
     }, this)
   );
   if (borderStyle) {
-    this.borderStyleComboBox.setValue(borderStyle);
+    this.borderStyleComboBox.value = borderStyle;
   }
   else {
-    this.borderStyleComboBox.setSelectedIndex(0);
+    this.borderStyleComboBox.selectedIndex = 0;
   }
   // border radius
   var borderRadiusStr = this.getCommonProperty(selectedElements, (element) => this.model.element.getStyle(element, 'borderRadius'));
@@ -312,10 +298,10 @@ silex.view.pane.BorderPane.prototype.redrawBorderRadius =
     for (idx = 0; idx < len; idx++) {
       var checkBox = this.cornerPlacementCheckBoxes[idx];
       if (values[idx] !== '0' && values[idx] !== '0px') {
-        checkBox.setChecked(true);
+        checkBox.checked = true;
       }
       else {
-        checkBox.setChecked(false);
+        checkBox.checked = false;
       }
     }
   }
@@ -373,10 +359,10 @@ silex.view.pane.BorderPane.prototype.redrawBorderWidth = function(borderWidth) {
     for (var idx = 0; idx < len; idx++) {
       var checkBox = this.borderPlacementCheckBoxes[idx];
       if (values.length > idx && values[idx] !== '0' && values[idx] !== '0px') {
-        checkBox.setChecked(true);
+        checkBox.checked = true;
       }
       else {
-        checkBox.setChecked(false);
+        checkBox.checked = false;
       }
     }
   }
@@ -396,7 +382,7 @@ silex.view.pane.BorderPane.prototype.resetBorderRadius = function() {
   var len = this.cornerPlacementCheckBoxes.length;
   for (idx = 0; idx < len; idx++) {
     var checkBox = this.cornerPlacementCheckBoxes[idx];
-    checkBox.setChecked(true);
+    checkBox.checked = true;
   }
 };
 
@@ -411,7 +397,7 @@ silex.view.pane.BorderPane.prototype.resetBorder = function() {
   var len = this.borderPlacementCheckBoxes.length;
   for (idx = 0; idx < len; idx++) {
     var checkBox = this.borderPlacementCheckBoxes[idx];
-    checkBox.setChecked(true);
+    checkBox.checked = true;
   }
   // border color
   this.colorPicker.setValue('#000000');
@@ -437,7 +423,7 @@ silex.view.pane.BorderPane.prototype.onBorderWidthChanged = function() {
     var len = this.borderPlacementCheckBoxes.length;
     for (idx = 0; idx < len; idx++) {
       var checkBox = this.borderPlacementCheckBoxes[idx];
-      if (checkBox.getChecked()) {
+      if (checkBox.checked) {
         borderWidthStr += this.borderWidthInput.value + 'px ';
       }
       else {
@@ -470,7 +456,7 @@ silex.view.pane.BorderPane.prototype.onBorderStyleChanged = function() {
 
   this.styleChanged(
       'borderStyle',
-      this.borderStyleComboBox.getSelectedItem().getValue());
+      this.borderStyleComboBox.value);
 };
 
 
@@ -499,7 +485,7 @@ silex.view.pane.BorderPane.prototype.onBorderCornerChanged = function() {
     var len = this.cornerPlacementCheckBoxes.length;
     for (idx = 0; idx < len; idx++) {
       var checkBox = this.cornerPlacementCheckBoxes[idx];
-      if (checkBox.getChecked()) {
+      if (checkBox.checked) {
         borderWidthStr += this.borderRadiusInput.value + 'px ';
       }
       else {

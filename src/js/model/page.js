@@ -441,17 +441,8 @@ silex.model.Page.prototype.getPagesForElement = function(element) {
   if(this.model.element.isSectionContent(element)) {
     element = /** @type {Element} */ (element.parentNode);
   }
-  var res = [];
-  // get all the pages
-  var pages = this.getPages();
-  for (let idx in pages) {
-    var pageName = pages[idx];
-    // remove the component from the page
-    if (goog.dom.classlist.contains(element, pageName)) {
-      res.push(pageName);
-    }
-  }
-  return res;
+  return this.getPages()
+    .filter(pageName => element.classList.contains(pageName));
 };
 
 

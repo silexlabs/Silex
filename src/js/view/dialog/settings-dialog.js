@@ -99,7 +99,7 @@ silex.view.dialog.SettingsDialog.PANE_CSS_CLASSES = [
 
 /**
  * store the mobile checkbox
- * @type {goog.ui.Checkbox}
+ * @type {HTMLInputElement}
  */
 silex.view.dialog.SettingsDialog.prototype.mobileCheckbox = null;
 
@@ -111,9 +111,7 @@ silex.view.dialog.SettingsDialog.prototype.buildUi = function() {
   // call super
   goog.base(this, 'buildUi');
 
-  var checkboxElement = goog.dom.getElementByClass('mobile-check', this.element);
-  this.mobileCheckbox = new goog.ui.Checkbox();
-  this.mobileCheckbox.render(checkboxElement);
+  this.mobileCheckbox = /** @type {HTMLInputElement} */ (this.element.querySelector('.mobile-check'));
   goog.events.listen(this.mobileCheckbox, goog.ui.Component.EventType.CHANGE,
    function(e) {
      this.controller.settingsDialogController.toggleEnableMobile();
@@ -279,7 +277,7 @@ silex.view.dialog.SettingsDialog.prototype.getPublicationPath = function() {
  * @param {boolean} enabled
  */
 silex.view.dialog.SettingsDialog.prototype.setEnableMobile = function(enabled) {
-  this.mobileCheckbox.setChecked(enabled);
+  this.mobileCheckbox.checked = enabled;
 };
 
 
