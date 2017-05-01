@@ -252,11 +252,23 @@ silex.view.dialog.TextEditor.prototype.buildUi = function() {
  * @param    {string} html    HTML to display at start
  */
 silex.view.dialog.TextEditor.prototype.setValue = function(html) {
-  // init editable text input
-  this.textField.setHtml(false, html);
-  this.textField.focusAndPlaceCursorAtStart();
+  // this.textField.setSafeHtml(false, goog.html.SafeHtml.createSafeHtmlSecurityPrivateDoNotAccessOrElse(html, null /* dir */));
+
+  this.textField.getElement().innerHTML = html;
+
+  // we loose foxus shortly after open
+  this.getFocus();
+  setTimeout(() => this.getFocus(), 250);
+  setTimeout(() => this.getFocus(), 500);
 };
 
+silex.view.dialog.TextEditor.prototype.getFocus = function() {
+  if(this.isOpened) {
+    // this.textField.focusAndPlaceCursorAtStart();
+    this.textField.getElement().focus();
+    this.textField.getElement().blur();
+  }
+};
 
 /**
  * add class names to the iframe inside the editor

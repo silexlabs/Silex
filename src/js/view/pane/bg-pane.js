@@ -19,9 +19,7 @@
 goog.provide('silex.view.pane.BgPane');
 goog.require('goog.array');
 goog.require('goog.object');
-goog.require('goog.ui.Checkbox');
 goog.require('goog.ui.ColorButton');
-goog.require('goog.ui.CustomButton');
 goog.require('goog.ui.HsvaPalette');
 goog.require('goog.ui.TabBar');
 goog.require('silex.utils.Style');
@@ -111,12 +109,7 @@ silex.view.pane.BgPane.prototype.buildBgColor = function() {
       this.element));
 
   // init the button to choose if there is a color or not
-  this.transparentBgCheckbox = new goog.ui.Checkbox();
-  this.transparentBgCheckbox.decorate(
-      goog.dom.getElementByClass(
-          'enable-color-bg-button',
-          this.element)
-  );
+  this.transparentBgCheckbox = this.element.querySelector('.enable-color-bg-button');
 
   // the user opens/closes the palete
   goog.events.listen(this.bgColorPicker,
@@ -139,30 +132,20 @@ silex.view.pane.BgPane.prototype.buildBgColor = function() {
  */
 silex.view.pane.BgPane.prototype.buildBgImage = function() {
   // add bg image button
-  var buttonAddImage = goog.dom.getElementByClass(
-      'bg-image-button',
-      this.element);
-  this.bgSelectBgImage = new goog.ui.CustomButton('Click to select a file');
-  this.bgSelectBgImage.decorate(buttonAddImage);
-  this.bgSelectBgImage.setTooltip('Click to select a file');
+  this.bgSelectBgImage = this.element.querySelector('.bg-image-button')
 
   // remove bg image button
-  var buttonClearImage = goog.dom.getElementByClass(
-      'clear-bg-image-button',
-      this.element);
-  this.bgClearBgImage = new goog.ui.CustomButton('Click to select a file');
-  this.bgClearBgImage.setTooltip('Click to select a file');
-  this.bgClearBgImage.decorate(buttonClearImage);
+  this.bgClearBgImage = this.element.querySelector('.clear-bg-image-button')
 
   // event user wants to update the bg image
-  goog.events.listen(buttonAddImage,
+  goog.events.listen(this.bgSelectBgImage,
       goog.events.EventType.CLICK,
       this.onSelectImageButton,
       false,
       this);
 
   // event user wants to remove the bg image
-  goog.events.listen(buttonClearImage,
+  goog.events.listen(this.bgClearBgImage,
       goog.events.EventType.CLICK,
       this.onClearImageButton,
       false,
@@ -175,39 +158,39 @@ silex.view.pane.BgPane.prototype.buildBgImage = function() {
  */
 silex.view.pane.BgPane.prototype.buildBgImageProperties = function() {
   // bg image properties
-  this.attachmentComboBox = this.createComboBox('bg-attachment-combo-box',
+  this.attachmentComboBox = this.initComboBox('.bg-attachment-combo-box',
       goog.bind(function(event) {
         this.styleChanged(
             'backgroundAttachment',
-            event.target.getSelectedItem().getId());
+            event.target.value);
       }, this));
-  this.vPositionComboBox = this.createComboBox('bg-position-v-combo-box',
+  this.vPositionComboBox = this.initComboBox('.bg-position-v-combo-box',
       goog.bind(function(event) {
-        var hPosition = this.hPositionComboBox.getSelectedItem().getId();
-        var vPosition = this.vPositionComboBox.getSelectedItem().getId();
+        var hPosition = this.hPositionComboBox.value;
+        var vPosition = this.vPositionComboBox.value;
         this.styleChanged(
             'backgroundPosition',
             vPosition + ' ' + hPosition);
       }, this));
-  this.hPositionComboBox = this.createComboBox('bg-position-h-combo-box',
+  this.hPositionComboBox = this.initComboBox('.bg-position-h-combo-box',
       goog.bind(function(event) {
-        var hPosition = this.hPositionComboBox.getSelectedItem().getId();
-        var vPosition = this.vPositionComboBox.getSelectedItem().getId();
+        var hPosition = this.hPositionComboBox.value;
+        var vPosition = this.vPositionComboBox.value;
         this.styleChanged(
             'backgroundPosition',
             vPosition + ' ' + hPosition);
       }, this));
-  this.repeatComboBox = this.createComboBox('bg-repeat-combo-box',
+  this.repeatComboBox = this.initComboBox('.bg-repeat-combo-box',
       goog.bind(function(event) {
         this.styleChanged(
             'backgroundRepeat',
-            event.target.getSelectedItem().getId());
+            event.target.value);
       }, this));
-  this.sizeComboBox = this.createComboBox('bg-size-combo-box',
+  this.sizeComboBox = this.initComboBox('.bg-size-combo-box',
       goog.bind(function(event) {
         this.styleChanged(
             'backgroundSize',
-            event.target.getSelectedItem().getId());
+            event.target.value);
       }, this));
 };
 
@@ -236,7 +219,7 @@ silex.view.pane.BgPane.prototype.redraw = function(selectedElements, pageNames, 
     return this.model.element.getStyle(element, 'backgroundColor');
   }, this));
   if (color === null || color === 'transparent' || color === '') {
-    this.transparentBgCheckbox.setChecked(true);
+    this.transparentBgCheckbox.checked = true;
     this.bgColorPicker.setEnabled(false);
     this.setColorPaletteVisibility(this.hsvPalette, false);
   }
@@ -244,19 +227,20 @@ silex.view.pane.BgPane.prototype.redraw = function(selectedElements, pageNames, 
     // handle all colors, including the named colors
     color = silex.utils.Style.rgbaToHex(color);
 
-    this.transparentBgCheckbox.setChecked(false);
+    this.transparentBgCheckbox.checked = false;
     this.bgColorPicker.setEnabled(true);
     this.hsvPalette.setColorRgbaHex(color);
     this.bgColorPicker.setValue(this.hsvPalette.getColor());
   }
   // BG image
   var enableBgComponents = goog.bind(function(enable) {
-    this.bgClearBgImage.setEnabled(enable);
-    this.attachmentComboBox.setEnabled(enable);
-    this.vPositionComboBox.setEnabled(enable);
-    this.hPositionComboBox.setEnabled(enable);
-    this.repeatComboBox.setEnabled(enable);
-    this.sizeComboBox.setEnabled(enable);
+    if(enable) this.bgClearBgImage.classList.remove('disabled');
+    else this.bgClearBgImage.classList.add('disabled');
+    this.attachmentComboBox.disabled = !enable;
+    this.vPositionComboBox.disabled = !enable;
+    this.hPositionComboBox.disabled = !enable;
+    this.repeatComboBox.disabled = !enable;
+    this.sizeComboBox.disabled = !enable;
   }, this);
   var bgImage = this.getCommonProperty(selectedElements, goog.bind(function(element) {
     return this.model.element.getStyle(element, 'backgroundImage');
@@ -274,20 +258,10 @@ silex.view.pane.BgPane.prototype.redraw = function(selectedElements, pageNames, 
     return this.model.element.getStyle(element, 'backgroundAttachment');
   }, this));
   if (bgImageAttachment) {
-    switch (bgImageAttachment) {
-      case 'scroll':
-        this.attachmentComboBox.setSelectedIndex(0);
-        break;
-      case 'fixed':
-        this.attachmentComboBox.setSelectedIndex(1);
-        break;
-      case 'local':
-        this.attachmentComboBox.setSelectedIndex(2);
-        break;
-    }
+    this.attachmentComboBox.value = bgImageAttachment;
   }
   else {
-    this.attachmentComboBox.setSelectedIndex(0);
+    this.attachmentComboBox.selectedIndex = 0;
   }
   // bg image position
   var bgImagePosition = this.getCommonProperty(selectedElements, goog.bind(function(element) {
@@ -311,78 +285,32 @@ silex.view.pane.BgPane.prototype.redraw = function(selectedElements, pageNames, 
     .replace('50%', 'center')
     .replace('0%', 'top');
     // update the drop down lists to display the bg image position
-    switch (vPosition) {
-      case 'top':
-        this.vPositionComboBox.setSelectedIndex(0);
-        break;
-      case 'center':
-        this.vPositionComboBox.setSelectedIndex(1);
-        break;
-      case 'bottom':
-        this.vPositionComboBox.setSelectedIndex(2);
-        break;
-    }
-    switch (hPosition) {
-      case 'left':
-        this.hPositionComboBox.setSelectedIndex(0);
-        break;
-      case 'center':
-        this.hPositionComboBox.setSelectedIndex(1);
-        break;
-      case 'right':
-        this.hPositionComboBox.setSelectedIndex(2);
-        break;
-    }
+    this.vPositionComboBox.value = vPosition;
+    this.hPositionComboBox.value = hPosition;
   }
   else {
-    this.vPositionComboBox.setSelectedIndex(0);
-    this.hPositionComboBox.setSelectedIndex(0);
+    this.vPositionComboBox.selectedIndex = 0;
+    this.hPositionComboBox.selectedIndex = 0;
   }
   // bg image repeat
   var bgImageRepeat = this.getCommonProperty(selectedElements, goog.bind(function(element) {
     return this.model.element.getStyle(element, 'backgroundRepeat');
   }, this));
   if (bgImageRepeat) {
-    switch (bgImageRepeat) {
-      case 'repeat':
-        this.repeatComboBox.setSelectedIndex(0);
-        break;
-      case 'repeat-x':
-        this.repeatComboBox.setSelectedIndex(1);
-        break;
-      case 'repeat-y':
-        this.repeatComboBox.setSelectedIndex(2);
-        break;
-      case 'no-repeat':
-        this.repeatComboBox.setSelectedIndex(3);
-        break;
-      case 'inherit':
-        this.repeatComboBox.setSelectedIndex(4);
-        break;
-    }
+    this.repeatComboBox.value = bgImageRepeat;
   }
   else {
-    this.repeatComboBox.setSelectedIndex(0);
+    this.repeatComboBox.selectedIndex = 0;
   }
   // bg image size
   var bgImageSize = this.getCommonProperty(selectedElements, goog.bind(function(element) {
     return this.model.element.getStyle(element, 'backgroundSize');
   }, this));
   if (bgImageSize) {
-    switch (bgImageSize) {
-      case 'auto':
-        this.sizeComboBox.setSelectedIndex(0);
-        break;
-      case 'contain':
-        this.sizeComboBox.setSelectedIndex(1);
-        break;
-      case 'cover':
-        this.sizeComboBox.setSelectedIndex(2);
-        break;
-    }
+    this.sizeComboBox.value = bgImageSize;
   }
   else {
-    this.sizeComboBox.setSelectedIndex(0);
+    this.sizeComboBox.selectedIndex = 0;
   }
   this.iAmRedrawing = false;
 };
@@ -427,11 +355,10 @@ silex.view.pane.BgPane.prototype.onBgColorButton = function() {
 /**
  * Create a combo box
  */
-silex.view.pane.BgPane.prototype.createComboBox = function(className, onChange) {
+silex.view.pane.BgPane.prototype.initComboBox = function(selector, onChange) {
   // create the combo box
-  var comboBox = goog.ui.decorate(
-      goog.dom.getElementByClass(className, this.element)
-      );
+  var comboBox = this.element.querySelector(selector);
+
   // attach event
   goog.events.listen(comboBox, goog.ui.Component.EventType.CHANGE,
       goog.bind(function(event) {
@@ -452,7 +379,7 @@ silex.view.pane.BgPane.prototype.onTransparentChanged = function() {
     return;
   }
   var color = 'transparent';
-  if (this.transparentBgCheckbox.getChecked() === false) {
+  if (this.transparentBgCheckbox.checked === false) {
     color = silex.utils.Style.hexToRgba(this.hsvPalette.getColorRgbaHex());
     if (!color) {
       color = 'rgba(255, 255, 255, 1)';

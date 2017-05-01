@@ -79,25 +79,27 @@ silex.utils.Style.SILEX_TEMP_CLASS_NAMES = [
 /**
  * remove useless class names of an element created by silex
  * remove all silex internal classes
- * @param  {!Element} element   created by silex, either a text box, image, ...
+ * @param  {!Element|Document} element   created by silex, either a text box, image, ...
  * @param  {?boolean=} opt_allClasses   if true, remove all Silex classes, not only the classes which are temporary and useless to store
  * @param  {?boolean=} opt_isRecursive  if true, remove classes from the element and its children
  */
 silex.utils.Style.removeInternalClasses = function(element, opt_allClasses, opt_isRecursive) {
-  var classes = silex.utils.Style.SILEX_TEMP_CLASS_NAMES;
+  let classes = silex.utils.Style.SILEX_TEMP_CLASS_NAMES;
   if (opt_allClasses) {
     classes = silex.utils.Style.SILEX_CLASS_NAMES;
   }
-  for (let idx in classes) {
-    var className = classes[idx];
-    goog.dom.classlist.remove(element, className);
-    if (opt_isRecursive) {
-      var elements = goog.dom.getElementsByClass(className, element);
-      goog.array.forEach(elements, function(child) {
-        goog.dom.classlist.remove(child, className);
-      });
+  classes.forEach(className => {
+    if(element.classList != null) {
+      // case of the document for example
+      element.classList.remove(className);
     }
-  }
+    if (opt_isRecursive) {
+      var elements = element.querySelectorAll('.' + className);
+      for(let idx=0; idx<elements.length; idx++) {
+        elements[idx].classList.remove(className);
+      }
+    }
+  });
 };
 
 
