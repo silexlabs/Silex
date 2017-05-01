@@ -47,15 +47,14 @@ silex.utils.DomCleaner.DOWNLOAD_LOCALLY_FROM = [
  * @param {Document} doc
  */
 silex.utils.DomCleaner.cleanupFirefoxInlines = function(doc) {
-  // remove inlined scripts
-  let elements = doc.querySelectorAll('script[style="display:none"]');
-  for (let idx in elements) {
-    goog.dom.removeNode(elements[idx]);
-  }
-  elements = doc.querySelectorAll('style[style="display:none"]');
-  for (let idx in elements) {
-    goog.dom.removeNode(elements[idx]);
-  }
+  // remove inlined scripts and styles
+  ['script', 'style'].forEach(tagName => {
+    const elements = doc.querySelectorAll(`${tagName}[style="display:none"]`);
+    for (let idx=0; idx<elements.length; idx++) {
+      const element = elements[idx];
+      element.parentNode.removeChild(element);
+    }
+  });
   silex.utils.Dom.addMandatoryTags(doc);
 };
 
@@ -224,30 +223,28 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
   // **
   // replace internal links <div data-silex-href="..." by <a href="..."
   // do a first pass, in order to avoid replacing the elements in the <a> containers
-  var components = goog.dom.getElementsByClass(silex.model.Body.EDITABLE_CLASS_NAME, bodyElement);
-  goog.array.forEach(components, function(element) {
+  var components = bodyElement.querySelectorAll('.' + silex.model.Body.EDITABLE_CLASS_NAME);
+  for(let idx=0; idx<components.length; idx++) {
+    const element = components[idx];
     var href = element.getAttribute('data-silex-href');
-    if (href)
-    {
+    if (href) {
       element.setAttribute('href', href);
       element.removeAttribute('data-silex-href');
 
-      // create a clone with a different tagname
-      var outerHtml = goog.dom.getOuterHtml(element);
-      var newHtml = '<a ';
-      if (href.indexOf('#!') !== 0) {
-        newHtml += 'target="_blank" ';
+      var replacement = contentDocument.createElement('a');
+      replacement.innerHTML = element.innerHTML;
+      for(let attrIdx=0; attrIdx<element.attributes.length; attrIdx++) {
+        const nodeName = element.attributes.item(attrIdx).nodeName;
+        const nodeValue = element.attributes.item(attrIdx).nodeValue;
+        replacement.setAttribute(nodeName, nodeValue);
       }
-      newHtml += outerHtml.substring(4, outerHtml.length - 6) + '</a>'; // 4 is for <div and 6 for </div>
 
       // insert the clone at the place of the original and remove the original
       // FIXME: bug when there is a link in the content of an element with an external link set
       // see issue https://github.com/silexlabs/Silex/issues/56
-      var fragment = goog.dom.htmlToDocumentFragment(newHtml);
-      goog.dom.insertSiblingBefore(fragment, element);
-      goog.dom.removeNode(element);
+      element.parentNode.replaceChild(replacement, element);
     }
-  });
+  };
 
   // put back the scripts
   headStr = headStr.replace(/type=\"text\/notjavascript\"/gi, 'type="text/javascript"');
