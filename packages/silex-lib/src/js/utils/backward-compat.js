@@ -83,8 +83,7 @@ silex.utils.BackwardCompat.process = function(doc, model, cbk) {
     const silexHost = silex.utils.Url.getHost();
     goog.array.forEach(elements, function(element) {
       const propName = element.src ? 'src' : 'href';
-      const fileName = element[propName].substr(element[propName].lastIndexOf('/') + 1);
-      const newUrl = silex.utils.BackwardCompat.getStaticResourceUrl(fileName);
+      const newUrl = silex.utils.BackwardCompat.getStaticResourceUrl(element[propName]);
       if(silex.utils.Url.getHost(element[propName]) != silexHost) {
         element[propName] = newUrl;
         needsReload = true;
@@ -100,13 +99,26 @@ silex.utils.BackwardCompat.process = function(doc, model, cbk) {
 
 
 /**
- * get the complete URL for the static file
+ * get the complete URL for the static file,
+ * * on the current Silex server
+ * * with the latest Silex version
+ *
  * this will result in a URL on the current server, in the `/static/` folder
+ *
+ * @example `//localhost:6805/static/2.1/example/example.js` returns `//editor.silex.me/static/2.7/example/unslider.js`
+ * @example `/static/2.1/example/example.js` returns `//editor.silex.me/static/2.7/example/example.js`
+ *
  * with the current version
- * @param {string} fileName
+ * @param {string} url
  * @return {string}
  */
-silex.utils.BackwardCompat.getStaticResourceUrl = function(fileName) {
+silex.utils.BackwardCompat.getStaticResourceUrl = function(url) {
+  const pathRelativeToStaticMatch = url.match(/static\/[0-9]*\.[0-9]*\/(.*)/);
+  if(pathRelativeToStaticMatch == null) {
+    console.warn('Error: could not extract the path and file name of static asset', url);
+    return url;
+  }
+  const pathRelativeToStatic = pathRelativeToStaticMatch[1];
   return '//' +
     silex.utils.Url.getHost() +
     '/static/' +
@@ -114,7 +126,7 @@ silex.utils.BackwardCompat.getStaticResourceUrl = function(fileName) {
     '.' +
     silex.utils.BackwardCompat.LATEST_VERSION[2] +
     '/' +
-    fileName;
+    pathRelativeToStatic;
 };
 
 

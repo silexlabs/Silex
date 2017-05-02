@@ -20,37 +20,37 @@
 %>
 <ul class="share-buttons" id="id_<%= uid %>">
   <% if(networks.indexOf("Facebook") >= 0) { %>
-  <li><a href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2F<%= url %>&t=<%= title %>" title="Share on Facebook" target="_blank"><img alt="Share on Facebook" src="<%= styleUrl %>/Facebook.png"></a></li>
+  <li><a href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2F<%= url %>&t=<%= title %>" title="Share on Facebook" target="_blank"><img alt="Share on Facebook" data-silex-static="" src="<%= styleUrl %>/Facebook.png"></a></li>
   <% } %>
   <% if(networks.indexOf("Twitter") >= 0) { %>
-  <li><a href="https://twitter.com/intent/tweet?source=http%3A%2F%2F<%= url %>&text=<%= title %>:%20http%3A%2F%2F<%= url %>&via=<%= twitter %>" target="_blank" title="Share on Tweeter"><img alt="Tweet" src="<%= styleUrl %>/Twitter.png"></a></li>
+  <li><a href="https://twitter.com/intent/tweet?source=http%3A%2F%2F<%= url %>&text=<%= title %>:%20http%3A%2F%2F<%= url %>&via=<%= twitter %>" target="_blank" title="Share on Tweeter"><img alt="Tweet" data-silex-static="" src="<%= styleUrl %>/Twitter.png"></a></li>
   <% } %>
   <% if(networks.indexOf("Google+") >= 0) { %>
-  <li><a href="https://plus.google.com/share?url=http%3A%2F%2F<%= url %>" target="_blank" title="Share on Google+"><img alt="Share on Google+" src="<%= styleUrl %>/Google%2B.png"></a></li>
+  <li><a href="https://plus.google.com/share?url=http%3A%2F%2F<%= url %>" target="_blank" title="Share on Google+"><img alt="Share on Google+" data-silex-static="" src="<%= styleUrl %>/Google%2B.png"></a></li>
   <% } %>
   <% if(networks.indexOf("Tumblr") >= 0) { %>
-  <li><a href="http://www.tumblr.com/share?v=3&u=http%3A%2F%2F<%= url %>&t=<%= title %>&s=" target="_blank" title="Post to Tumblr"><img alt="Post to Tumblr" src="<%= styleUrl %>/Tumblr.png"></a></li>
+  <li><a href="http://www.tumblr.com/share?v=3&u=http%3A%2F%2F<%= url %>&t=<%= title %>&s=" target="_blank" title="Post to Tumblr"><img alt="Post to Tumblr" data-silex-static="" src="<%= styleUrl %>/Tumblr.png"></a></li>
   <% } %>
   <% if(networks.indexOf("Pinterest") >= 0) { %>
-  <li><a href="http://pinterest.com/pin/create/button/?url=http%3A%2F%2F<%= url %>&description=<%= description %>" target="_blank" title="Pin it"><img alt="Pin it" src="<%= styleUrl %>/Pinterest.png"></a></li>
+  <li><a href="http://pinterest.com/pin/create/button/?url=http%3A%2F%2F<%= url %>&description=<%= description %>" target="_blank" title="Pin it"><img alt="Pin it" data-silex-static="" src="<%= styleUrl %>/Pinterest.png"></a></li>
   <% } %>
   <% if(networks.indexOf("Pocket") >= 0) { %>
-  <li><a href="https://getpocket.com/save?url=http%3A%2F%2F<%= url %>&title=<%= title %>" target="_blank" title="Add to Pocket"><img alt="Add to Pocket" src="<%= styleUrl %>/Pocket.png"></a></li>
+  <li><a href="https://getpocket.com/save?url=http%3A%2F%2F<%= url %>&title=<%= title %>" target="_blank" title="Add to Pocket"><img alt="Add to Pocket" data-silex-static="" src="<%= styleUrl %>/Pocket.png"></a></li>
   <% } %>
   <% if(networks.indexOf("Reddit") >= 0) { %>
-  <li><a href="http://www.reddit.com/submit?url=http%3A%2F%2F<%= url %>&title=<%= title %>" target="_blank" title="Submit to Reddit"><img alt="Submit to Reddit" src="<%= styleUrl %>/Reddit.png"></a></li>
+  <li><a href="http://www.reddit.com/submit?url=http%3A%2F%2F<%= url %>&title=<%= title %>" target="_blank" title="Submit to Reddit"><img alt="Submit to Reddit" data-silex-static="" src="<%= styleUrl %>/Reddit.png"></a></li>
   <% } %>
   <% if(networks.indexOf("LinkedIn") >= 0) { %>
-  <li><a href="http://www.linkedin.com/shareArticle?mini=true&url=http%3A%2F%2F<%= url %>&title=<%= title %>&summary=<%= description %>&source=http%3A%2F%2F<%= url %>{ " target="_blank" title="Share on LinkedIn"><img alt="Share on LinkedIn" src="<%= styleUrl %>/LinkedIn.png"></a></li>
+  <li><a href="http://www.linkedin.com/shareArticle?mini=true&url=http%3A%2F%2F<%= url %>&title=<%= title %>&summary=<%= description %>&source=http%3A%2F%2F<%= url %>{ " target="_blank" title="Share on LinkedIn"><img alt="Share on LinkedIn" data-silex-static="" src="<%= styleUrl %>/LinkedIn.png"></a></li>
   <% } %>
   <% if(networks.indexOf("WordPress") >= 0) { %>
-  <li><a href="http://wordpress.com/press-this.php?u=http%3A%2F%2F<%= url %>&t=<%= title %>&s=<%= description %>" target="_blank" title="Publish on WordPress"><img alt="Publish on WordPress" src="<%= styleUrl %>/Wordpress.png"></a></li>
+  <li><a href="http://wordpress.com/press-this.php?u=http%3A%2F%2F<%= url %>&t=<%= title %>&s=<%= description %>" target="_blank" title="Publish on WordPress"><img alt="Publish on WordPress" data-silex-static="" src="<%= styleUrl %>/Wordpress.png"></a></li>
   <% } %>
   <% if(networks.indexOf("Pinboard") >= 0) { %>
-  <li><a href="https://pinboard.in/popup_login/?url=http%3A%2F%2F<%= url %>&title=<%= title %>&description=<%= description %>" target="_blank" title="Save to Pinboard"><img alt="Save to Pinboard" src="<%= styleUrl %>/Pinboard.png"></a></li>
+  <li><a href="https://pinboard.in/popup_login/?url=http%3A%2F%2F<%= url %>&title=<%= title %>&description=<%= description %>" target="_blank" title="Save to Pinboard"><img alt="Save to Pinboard" data-silex-static="" src="<%= styleUrl %>/Pinboard.png"></a></li>
   <% } %>
   <% if(networks.indexOf("Email") >= 0) { %>
-  <li><a href="mailto:?subject=<%= title %>&body=<%= description %>:%20http%3A%2F%2F<%= url %>" target="_blank" title="Send email"><img alt="Send by email" src="<%= styleUrl %>/Email.png"></a></li>
+  <li><a href="mailto:?subject=<%= title %>&body=<%= description %>:%20http%3A%2F%2F<%= url %>" target="_blank" title="Send email"><img alt="Send by email" data-silex-static="" src="<%= styleUrl %>/Email.png"></a></li>
   <% } %>
 </ul>
 </div>

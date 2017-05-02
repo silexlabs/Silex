@@ -13,6 +13,7 @@ faIconClass: fa-map
 dependencies:
   script:
   - src: /static/2.7/osm/ol.js
+    data-silex-static: ''
 initialCssClass:
   silex-use-height-not-minheight
 initialCss:
