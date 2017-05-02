@@ -14,9 +14,11 @@ faIconClass: fa-slideshare
 dependencies:
   script:
   - src: /static/2.7/unslider/unslider-min.js
+    data-silex-static: ''
   link:
   - rel: stylesheet
     href: /static/2.7/unslider/unslider.css
+    data-silex-static: ''
 initialCssClass:
   silex-use-height-not-minheight
 initialCss:
