@@ -277,16 +277,15 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
 };
 
 silex.utils.DomCleaner.cleanupRelativePath = function(relative) {
-  // case of the static scripts (all the other cases are /api/...)
-  if (relative.indexOf('static/') === 0) {
-    // from static/2.5/jquery.js to http://editor.silex.me/static/2.5/jquery.js
-    relative = silex.utils.Url.getBaseUrl() + relative;
-  }
-  else {
+  // handle case of unifile calls
+  if (relative.indexOf('api/') === 0) {
     // add '/', e.g. api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
-    relative = '/' + relative;
+    return '/' + relative;
   }
-  return relative;
+  // case of the static scripts (all the other cases are /api/...)
+  // and of the templates assets (e.g. libs/templates/...)
+  // from static/2.5/jquery.js to http://editor.silex.me/static/2.5/jquery.js
+  return silex.utils.Url.getBaseUrl() + relative;
 };
 
 
