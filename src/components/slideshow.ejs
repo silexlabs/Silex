@@ -1,26 +1,114 @@
+<div id="parent_<%= uid %>">
 <!-- preview -->
-<!-- just the 1st image 100% size -->
-<div class="prodotype-preview prodotype-force-size">
+<div class="prodotype-preview">
   <% if(slides && slides.length) { %>
-    <div style="<% if(slides[0].bgColor) { %>background-color: <%= slides[0].bgColor %>; <% } %> <% if(slides[0].color) { %>color:<%= slides[0].color %>; <% } %><% if(slides[0].image && slides[0].image[0]) { %>background-image:url('<%= slides[0].image[0].url %>'); background-repeat: no-repeat; background-size: cover; background-position: 50%; <% } %> width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
-      <p>~ Preview ~</p>
+  <div class="preview-text prodotype-force-size"><p>~ Preview ~</p></div>
+  <figure class="slide-0">
+    <div class="slide-image prodotype-force-size">
+      <% if(slides[0].text) { %>
+        <figcaption><%- slides[0].text %></figcaption>
+      <% } %>
     </div>
+  </figure>
   <% } %>
 </div>
-<!-- runtime -->
-<!-- the whole slideshow -->
-<div class="prodotype-runtime" id="parent_<%= uid %>">
 <div id="id_<%= uid %>">
-  <ul>
+  <!-- runtime -->
+  <!-- the whole slideshow -->
+  <ul class="prodotype-runtime">
   <% for(var idx in slides) { %>
-    <li style="<% if(slides[idx].bgColor) { %>background-color: <%= slides[idx].bgColor %>; <% } %> <% if(slides[idx].color) { %>color:<%= slides[idx].color %>; <% } %><% if(slides[idx].image && slides[idx].image[0]) { %>background-image:url('<%= slides[idx].image[0].url %>'); background-repeat: no-repeat; background-size: cover; background-position: 50%;<% } %>">
-      <% if(slides[idx].text) { %><%- slides[idx].text %><% } %>
-    </li>
+    <li><figure class="slide-<%= idx %>">
+      <% if(slides[idx].link) { %>
+      <a href="<%= slides[idx].link %>">
+      <% } %>
+      <div class="slide-image">
+        <% if(slides[idx].text) { %>
+          <figcaption><%- slides[idx].text %></figcaption>
+        <% } %>
+      </div>
+      <% if(slides[idx].link) { %>
+      </a>
+      <% } %>
+    </figure></li>
   <% } %>
   </ul>
 </div>
 </div>
 <style type="text/css">
+/* *********************** */
+/* "Preview" label always on top of the slideshow in silex */
+#parent_<%= uid %> .prodotype-preview {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+#parent_<%= uid %> .prodotype-preview .preview-text {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#parent_<%= uid %> .prodotype-preview .preview-text p {
+    z-index: 1;
+    background-color: black;
+    color: white;
+}
+/* *********************** */
+/* styles for each slide */
+<% for(var idx in slides) { %>
+  #parent_<%= uid %> .slide-<%= idx %> .slide-image {
+  <% if(slides[idx].bgColor) { %>background-color: <%= slides[idx].bgColor %>; <% } %>
+  <% if(slides[idx].image && slides[idx].image[0]) { %>
+      background-image:url('<%= slides[idx].image[0].url %>');
+      background-repeat: no-repeat;
+      background-size: cover;
+      background-position: 50%;
+  <% } %>
+  }
+<% } %>
+/* *********************** */
+/* styles for all the slides */
+#parent_<%= uid %> .slide-image {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    <% if(captionAlignV === 'top') { %>
+      align-items: flex-start;
+    <% } %>
+    <% if(captionAlignV === 'center') { %>
+      align-items: center;
+    <% } %>
+    <% if(captionAlignV === 'bottom') { %>
+      align-items: flex-end;
+    <% } %>
+    <% if(captionAlignH === 'left') { %>
+      justify-content: flex-start;
+    <% } %>
+    <% if(captionAlignH === 'center') { %>
+      justify-content: center;
+    <% } %>
+    <% if(captionAlignH === 'right') { %>
+      justify-content: flex-end;
+    <% } %>
+}
+#parent_<%= uid %> figcaption {
+    padding: 50px;
+    <% if(captionColor) { %>color:<%= captionColor %>; <% } %>
+    <% if(captionBgColor) { %>background-color:<%= captionBgColor %>; <% } %>
+    <% if(captionAlignV === 'top' || captionAlignV === 'bottom') { %>
+      width: 100%;
+    <% } %>
+    <% if(captionAlignH === 'left') { %>
+      text-align: left;
+    <% } %>
+    <% if(captionAlignH === 'center') { %>
+      text-align: center;
+    <% } %>
+    <% if(captionAlignH === 'right') { %>
+      text-align: right;
+    <% } %>
+}
+/* *********************** */
+/* UI style */
 #parent_<%= uid %> .unslider-nav {
     position: absolute;
     bottom: 10px;
@@ -75,6 +163,7 @@
     -ms-transform: rotate(-180deg);
     transform: rotate(-180deg);
 }
+/* *********************** */
 </style>
 <script type="text/javascript">
   (function() {
@@ -83,12 +172,13 @@
       if(!$('body').hasClass('silex-runtime')) return;
 
       var slider = $('#id_<%= uid %>').unslider({
-        "autoplay": <%= autoplay %>,
-        "speed": <%= speed %>,
-        "delay": <%= delay %>,
-        "index": <%= index %>,
-        "nav": <%= nav %>,
-        "arrows": <%= arrows %>
+        'autoplay': <%= autoplay %>,
+        'speed': <%= speed %>,
+        'delay': <%= delay %>,
+        'index': <%= index %>,
+        'nav': <%= nav %>,
+        'animation': '<%= animation %>',
+        'arrows': <%= arrows %>
       });
       //  Listen to slide changes
       <% if(onchange) { %>
@@ -99,9 +189,16 @@
       // apply element height to the images
       var silexElement = $('#id_<%= uid %>').closest('.editable-style');
       var elementMinHeight = silexElement.css('height');
-      $('#id_<%= uid %> li').css({
+      var elementWidth = silexElement.css('width');
+      $('#id_<%= uid %> li .slide-image').css({
         'height': elementMinHeight
       });
+      <% if(animation === 'fade' ) { %>
+      // apply element height to the container (useful for fade only)
+      $('#id_<%= uid %> ul').css({
+        'height': elementMinHeight
+      });
+      <% } %>
   }
     initUnslider();
   })();

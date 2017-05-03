@@ -41,6 +41,9 @@ props:
     - name: color
       type: color
       description: color of the text
+    - name: link
+      type: string
+      description: Link to open when the user clicks on the slide
 - name: animation
   default: 'horizontal'
   description: How should Unslider animate each slide? Right now, there's three different animation types
@@ -48,6 +51,28 @@ props:
   - horizontal
   - vertical
   - fade
+- name: captionColor
+  type: color
+  description: "the captions text color"
+  default: white
+- name: captionBgColor
+  type: color
+  description: "the captions background color"
+  default: "rgba(0,0,0,0.5)"
+- name: captionAlignH
+  type:
+  - left
+  - center
+  - right
+  description: "the captions horizontal position"
+  default: center
+- name: captionAlignV
+  type:
+  - top
+  - center
+  - bottom
+  description: "the captions vertical position"
+  default: bottom
 - name: autoplay
   type: boolean
   default: false
