@@ -27,7 +27,6 @@ initialCss:
   background-color: 'transparent'
 props:
 - name: slides
-  description: images and texts
   type:
     - name: image
       type: file
