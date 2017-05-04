@@ -31,10 +31,11 @@ props:
   default: http://yoursite.com
 - name: title
   type: string
-  default: Yout site title
+  default: Your site title
 - name: description
   type: multiline
-  default: Yout site description
+  default: Your site description
 - name: twitter
   type: string
-  default: "@silexlabs"
+  description: Your name on twitter
+  default: "silexlabs"
