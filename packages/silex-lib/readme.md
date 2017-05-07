@@ -41,7 +41,7 @@ Download the zip file on github or clone this repository, and then follow the sa
 
 For the lazy ones, there is the [Heroku One-Click Deploy](https://heroku.com/deploy): [![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy?template=https://github.com/silexlabs/Silex/tree/master)
 
-##Installation on your local computer
+## Installation on your local computer
 
 This is for developers only, since our beloved designers can use the [online version](http://editor.silex.me/).
 
