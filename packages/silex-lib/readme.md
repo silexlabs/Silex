@@ -2,7 +2,7 @@
 [![Build Status](https://circleci.com/gh/silexlabs/Silex.svg?style=svg)](https://circleci.com/gh/silexlabs/Silex)
 [![status of silex.me instance](http://monitoshi.lexoyo.me/badge/1477989142014-3680)](https://editor.silex.me)
 
-##About Silex, live web creation.
+## About Silex, live web creation.
 
 Silex, is a free and open source website builder in the cloud. Create websites directly in the browser without writing code. And it is suitable for professional designers to produce great websites without constraints. Silex is also known as the HTML5 editor.
 
@@ -29,7 +29,7 @@ Contact us and let people know about Silex
 * [Google plus](https://plus.google.com/communities/107373636457908189681)
 * [Contributors list](https://github.com/silexlabs/Silex/blob/master/docs/contributors.md)
 
-##Host an instance of Silex
+## Host an instance of Silex
 
 If you plan to host Silex for your clients, your users or the community, this section is for you.
 
@@ -146,7 +146,7 @@ When you start Silex, it looks for the environment variables `SILEX_SSL_PRIVATE_
 
 `SILEX_SSL_PRIVATE_KEY` is expected to be the path to a `.key` file, and `SILEX_SSL_CERTIFICATE` the path to a  `.crt`.
 
-##dependencies
+## dependencies
 
 These are the upstream projects we use in Silex
 
