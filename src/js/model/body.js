@@ -140,6 +140,10 @@ silex.model.Body.prototype.getSelection = function() {
  * @param  {Array.<Element>} selectedElements  array of elements which are to select
  */
 silex.model.Body.prototype.setSelection = function(selectedElements) {
+  if(this.getBodyElement() === null) {
+    // body is null, this happens while undoing or redoing
+    return;
+  }
   // reset selection
   var elements = goog.dom.getElementsByClass(silex.model.Element.SELECTED_CLASS_NAME, this.getBodyElement());
   goog.array.forEach(elements, function(element) {
