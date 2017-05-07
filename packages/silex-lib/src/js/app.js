@@ -151,17 +151,19 @@ class App {
         () => {});
     }
 
-    // warning small screen size
-    // height must be enough to view the settings pannel
-    // width is just arbitrary
-    const winSizeWidth = document.documentElement.clientWidth;
-    const winSizeHeight = document.documentElement.clientHeight;
-    const minWinSizeWidth = 950;
-    const minWinSizeHeight = 630;
-    if (winSizeHeight < minWinSizeHeight || winSizeWidth < minWinSizeWidth) {
-      silex.utils.Notification.alert(
-        `Your window is very small (${winSizeWidth}x${winSizeHeight}) and Silex may not display correctly.<br><br>Considere maximizing the window or use a bigger screen to use Silex at its best. A window size of ${minWinSizeWidth}x${minWinSizeHeight} is considered to be a acceptable.`,
-        () => {});
+    if (!goog.DEBUG) {
+      // warning small screen size
+      // height must be enough to view the settings pannel
+      // width is just arbitrary
+      const winSizeWidth = document.documentElement.clientWidth;
+      const winSizeHeight = document.documentElement.clientHeight;
+      const minWinSizeWidth = 950;
+      const minWinSizeHeight = 630;
+      if (winSizeHeight < minWinSizeHeight || winSizeWidth < minWinSizeWidth) {
+        silex.utils.Notification.alert(
+          `Your window is very small (${winSizeWidth}x${winSizeHeight}) and Silex may not display correctly.<br><br>Considere maximizing the window or use a bigger screen to use Silex at its best. A window size of ${minWinSizeWidth}x${minWinSizeHeight} is considered to be a acceptable.`,
+          () => {});
+      }
     }
 
     // draw the workspace once
