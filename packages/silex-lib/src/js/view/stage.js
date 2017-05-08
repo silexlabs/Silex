@@ -117,6 +117,21 @@ silex.view.Stage.DEFAULT_SCROLL_SPEED = 100;
 
 
 /**
+ * the keys we listen to for moving elements
+ * @type {Array.<number>}
+ */
+silex.view.Stage.KEYS_TO_CATCH = [
+  goog.events.KeyCodes.LEFT,
+  goog.events.KeyCodes.RIGHT,
+  goog.events.KeyCodes.UP,
+  goog.events.KeyCodes.DOWN,
+  goog.events.KeyCodes.ESC,
+  goog.events.KeyCodes.PAGE_UP, // this is to prevent scroll in the html tag
+  goog.events.KeyCodes.PAGE_DOWN, // this is to prevent scroll in the html tag
+];
+
+
+/**
  * the Window of the iframe which contains the website
  */
 silex.view.Stage.prototype.contentWindow = null;
@@ -388,7 +403,8 @@ silex.view.Stage.prototype.redraw =
 silex.view.Stage.prototype.handleKey = function(event) {
   // not in text inputs
   if (event.target.tagName.toUpperCase() !== 'INPUT' &&
-      event.target.tagName.toUpperCase() !== 'TEXTAREA') {
+      event.target.tagName.toUpperCase() !== 'TEXTAREA' &&
+      silex.view.Stage.KEYS_TO_CATCH.indexOf(event.keyCode) >= 0) {
     // mobile mode or selection contains only sections elements
     if(this.isMobileMode() ||
       (this.selectedElements && this.selectedElements.reduce((prev, cur) => prev &&
