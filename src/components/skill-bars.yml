@@ -1,7 +1,7 @@
 ---
 name: Skill bars
 description: 'Represent a set of skills as progress bars.'
-doc: https://github.com/silexlabs/Silex/wiki
+doc: https://github.com/silexlabs/Silex/wiki/Skill-bar-component
 category: Utils
 tags:
 - skill

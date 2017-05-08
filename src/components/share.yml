@@ -1,7 +1,7 @@
 ---
 name: Share Buttons
 description: "Simple share buttons."
-doc:
+doc: https://github.com/silexlabs/Silex/wiki/Share-bar-component
 category: Utils
 tags:
 - ui
