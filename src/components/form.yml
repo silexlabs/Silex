@@ -1,7 +1,7 @@
 ---
 name: Contact Form
 description: 'This is a form which let your visitors get in touch with you.'
-doc:
+doc: https://github.com/silexlabs/Silex/wiki/Contact-form-component
 category: Utils
 tags:
 - ui
