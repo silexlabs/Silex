@@ -56,19 +56,35 @@ if (fs.existsSync(Path.resolve(__dirname, 'config.js'))) {
 }
 
 // session management
-var sessionFolder = process.env.SILEX_SESSION_FOLDER || Path.resolve(__dirname, '../sessions');
-app.use('/', session({
-  secret: silexConfig.sessionSecret,
-  name: silexConfig.cookieName,
-  resave: true,
-  saveUninitialized: false,
-  store: new FSStore({
-    dir: sessionFolder
-  }),
-  cookie: {
-    maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
-  }
-}));
+var sessionFolder = process.env.SILEX_SESSION_FOLDER || Path.join(Os.homedir(), '.silex', 'sessions');
+function mkdirp(path, callback) {
+  fs.mkdir(path, function(err) {
+    if(!err || err.code === 'EEXIST') {
+      callback();
+    } else if(err.code === 'ENOENT') {
+      setTimeout(function() {
+      mkdirp(Path.dirname(path), function(err) {
+        if(err) callback(err);
+        else mkdirp(path, callback);
+      });
+      }, 5000);
+    }
+  });
+}
+mkdirp(sessionFolder, function(err) {
+  app.use('/', session({
+    secret: silexConfig.sessionSecret,
+    name: silexConfig.cookieName,
+    resave: true,
+    saveUninitialized: false,
+    store: new FSStore({
+      dir: sessionFolder
+    }),
+    cookie: {
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+    }
+  }));
+});
 
 // ********************************
 // production / debug
