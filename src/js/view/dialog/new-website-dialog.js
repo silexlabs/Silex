@@ -68,17 +68,14 @@ silex.view.dialog.NewWebsiteDialog.prototype.renderTemplateList = function(ul, r
   if(Array.isArray(data)) {
     // render the data
     data
-      // remove files
-      .filter(item => item.type === 'directory')
       // make a list of <li> tags
       .map(item => {
         const li = document.createElement('li');
-        const name = item.name;
         li.classList.add('rendered-item');
 
         // thumbnail
         const thumbnail = document.createElement('div');
-        const templateFolder = `/libs/templates/${repo}/${item.name}`;
+        const templateFolder = `/libs/templates/${repo}/${item}`;
         thumbnail.classList.add('thumbnail');
         thumbnail.style.backgroundImage = `url(${templateFolder}/screenshot.png)`;
         thumbnail.setAttribute('data-editable', `${templateFolder}/editable.html`);
@@ -92,7 +89,7 @@ silex.view.dialog.NewWebsiteDialog.prototype.renderTemplateList = function(ul, r
 
         // title
         const h3 = document.createElement('h3');
-        h3.innerHTML = name;
+        h3.innerHTML = item;
         h3.setAttribute('data-editable', `${templateFolder}/editable.html`);
         h3.setAttribute('data-is-template', 'true');
         ui.appendChild(h3);
@@ -111,7 +108,7 @@ silex.view.dialog.NewWebsiteDialog.prototype.renderTemplateList = function(ul, r
         infoEl.classList.add('fa', 'fa-info');
         infoEl.innerHTML = 'Info';
         infoEl.target = '_blank';
-        infoEl.href = `https://github.com/silexlabs/${repo}/blob/gh-pages/${item.name}/README.md`;
+        infoEl.href = `https://github.com/silexlabs/${repo}/blob/gh-pages/${item}/README.md`;
         infoEl.setAttribute('data-action', 'info');
         ui.appendChild(infoEl);
 
@@ -119,7 +116,7 @@ silex.view.dialog.NewWebsiteDialog.prototype.renderTemplateList = function(ul, r
         const editEl = document.createElement('a');
         editEl.classList.add('fa', 'fa-pencil');
         editEl.innerHTML = 'Select';
-        editEl.setAttribute('data-editable', `libs/templates/${repo}/${item.name}/editable.html`);
+        editEl.setAttribute('data-editable', `libs/templates/${repo}/${item}/editable.html`);
         editEl.setAttribute('data-is-template', 'true');
         ui.appendChild(editEl);
 
@@ -144,7 +141,7 @@ silex.view.dialog.NewWebsiteDialog.prototype.buildUi = function() {
     });
     oReq.addEventListener('load', e => {
       const list = JSON.parse(oReq.responseText);
-      this.renderTemplateList(ul, repo, list.children);
+      this.renderTemplateList(ul, repo, list);
       success();
     });
     oReq.open('GET', repoUrl);
