@@ -9,12 +9,14 @@ let win;
 
 function createWindow () {
   // Create the browser window.
+  // 950x630
   win = new BrowserWindow({
     width: 1200,
     height: 800,
+    minWidth: 950,
+    minHeight: 630,
     icon: Path.join(__dirname, '..', 'client', 'assets', 'logo-silex.png'),
     titleBarStyle: 'hidden',
-    frame: false,
     webPreferences: {
       nodeIntegration: false,
       // Needed by CE callback
@@ -72,4 +74,9 @@ app.on('ready', () => {
   }, (error) => {
     if (error) console.error('Failed to register protocol')
   });
+});
+
+// Remove menu bar
+app.on('browser-window-created',function(e,window) {
+  window.setMenu(null);
 });
