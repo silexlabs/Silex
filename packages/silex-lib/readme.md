@@ -135,7 +135,7 @@ If you develop or debug Silex, these npm scripts can be used with npm (they are 
 * `SILEX_FORCE_HTTPS`, optional [used here in the code](dist/server/server.js#102) to force https/ssl (default is `false`)
 * `SILEX_SSL_PRIVATE_KEY`, optional (see ssl section bellow), [used here in the code](dist/server/server.js#L124)
 * `SILEX_SSL_CERTIFICATE`, optional (see ssl section bellow), [used here in the code](dist/server/server.js#L124)
-* `SILEX_SESSION_FOLDER`, optional, default: `dist/sessions`, [used here in the code](dist/server/server.js#L53)
+* `SILEX_SESSION_FOLDER`, optional, default: `$HOME/.silex/sessions`, [used here in the code](dist/server/server.js#L53)
 * `SILEX_DEBUG`, optional, default: `false`, when `true` this will enable the service "www" (storage on the local server in `www/`) with login `admin` and pass `admin`, [used here in the code](dist/server/server.js#L78)
 * `RESTART_ROUTE`, optional, if set it will enable the route `GET {{Silex server instance URL}}/tasks/{{RESTART_ROUTE}}` which will restart the server, [used here in the code](dist/server/silex-tasks.js#L58). See [this article to learn about deployment and why this hack](http://the.webapp.cat/2015/07/Deploy-to-Gandi-Simple-Hosting.html).
 * `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`: optional, to activate github service, you need to create a github app to get these info ([create a github app](https://github.com/settings/applications/new) to get those)
