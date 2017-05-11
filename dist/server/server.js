@@ -230,7 +230,6 @@ app.use('/tasks/:task', function(req, res, next){
 // ********************************
 // list templates
 // ********************************
-var dirToJson = require('dir-to-json');
 app.use('/get/:folder', function(req, res, next){
   switch(req.params.folder) {
     case 'silex-templates':
@@ -240,12 +239,17 @@ app.use('/get/:folder', function(req, res, next){
       res.send({success: false, error: 'Error while trying to get the json representation of the folder ' + req.params.folder + ' - folder does not exist'});
       return;
   }
-  dirToJson( Path.resolve(__dirname, '../../dist/client/libs/templates/', req.params.folder), function( err, result ){
-    if( err ){
+  var templateFolder = Path.resolve(__dirname, '../client/libs/templates/', req.params.folder);
+  fs.readdir(templateFolder, function(err, result) {
+    if(err) {
       console.error('Error while trying to get the json representation of the folder ' + req.params.folder, err);
       res.send({success: false, error: 'Error while trying to get the json representation of the folder ' + req.params.folder + ' - ' + err});
-    }else{
-      res.send(result);
+    } else {
+      var templateList = result.filter(function(entry) {
+        return fs.statSync(Path.join(templateFolder, entry)).isDirectory();
+      });
+
+      res.send(templateList);
     }
   });
 });
