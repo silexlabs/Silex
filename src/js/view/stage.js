@@ -1220,14 +1220,14 @@ silex.view.Stage.prototype.cleanupElement = function(element) {
 silex.view.Stage.prototype.moveElements = function(elements, offsetX, offsetY) {
   // just like when mouse moves
   this.followElementPosition(elements, offsetX, offsetY);
-  // notify the controller
-  this.propertyChanged();
   // reset elements properties since they are stored in the CSS by the model
   elements.forEach((element) => {
     this.controller.stageController.styleChanged('top', element.style.top, [element], false);
     this.controller.stageController.styleChanged('left', element.style.left, [element], false);
     this.cleanupElement(element);
   });
+  // notify the controller
+  this.propertyChanged();
 };
 
 
