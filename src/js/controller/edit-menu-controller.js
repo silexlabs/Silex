@@ -288,18 +288,16 @@ silex.controller.EditMenuController.prototype.editElement = function(opt_element
       this.view.htmlEditor.setValue(this.model.element.getInnerHtml(element));
       break;
     case silex.model.Element.TYPE_IMAGE:
-      this.view.fileExplorer.openDialog(
-          goog.bind(function(url) {
-            // absolute url only on stage
-            var baseUrl = silex.utils.Url.getBaseUrl();
-            url = silex.utils.Url.getAbsolutePath(url, baseUrl);
-            // load the image
-            this.model.element.setImageUrl(element, url);
-          }, this),
-          { 'mimetypes': ['image/jpeg', 'image/png', 'image/gif'] },
-          goog.bind(function(error) {
+      // TODO: allow multiple files
+      this.view.fileExplorer.openFile(
+        blob => {
+          // load the image
+          this.model.element.setImageUrl(element, blob.url);
+        },
+        { 'mimetypes': ['image/jpeg', 'image/png', 'image/gif'] },
+        error => {
             silex.utils.Notification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''));
-          }, this)
+          }
       );
       break;
   }

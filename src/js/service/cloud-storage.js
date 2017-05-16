@@ -18,102 +18,85 @@
 
 goog.provide('silex.service.CloudStorage');
 
-goog.require('goog.net.XhrIo');
-
-
 
 /**
- * the Silex CloudStorage singleton
- * @constructor
- * based on http://www.inkfilepicker.com/
+ * the Silex CloudStorage service
  * load and save data to and from the cloud storage services
+ * this is a singleton
+ * @constructor
  */
 silex.service.CloudStorage = function() {
-  this.filePicker = ce.api.CloudExplorer.get('silex-file-explorer');
 };
 goog.addSingletonGetter(silex.service.CloudStorage);
 
 
 /**
  * reference to the filepicker instance
- * @type {Object}
+ * @type {CloudExplorer}
  */
-silex.service.CloudStorage.prototype.filePicker = null;
+silex.service.CloudStorage.prototype.ce = null;
 
 
 /**
- * create a blob out of an url
- * @param {string} url
- * @return {{url:string}}
+ * @param {function()} cbk
  */
-silex.service.CloudStorage.prototype.createBlob = function(url) {
-  // cloud explorer expects relative path
-  if (silex.utils.Url.isAbsoluteUrl(url)) {
-    console.error('cloud explorer expects relative path');
-    throw new Error('cloud explorer expects relative path');
+silex.service.CloudStorage.prototype.ready = function(cbk) {
+  // cloud explorer instance
+  const ceIframe = document.querySelector('#silex-file-explorer');
+  if(ceIframe.contentWindow.ce) {
+    this.ce = /** @type {CloudExplorer} */ (ceIframe.contentWindow.ce);
+    cbk();
   }
-  // create the blob
-  var relBlob = {
-    'url': url
-  };
-  return relBlob;
+  else {
+    if(this.cbks == null) {
+      this.cbks = [];
+      ceIframe.addEventListener('load', e => {
+        this.ce = /** @type {CloudExplorer} */ (ceIframe.contentWindow['ce']);
+        this.cbks.forEach(cbk => cbk());
+        this.cbks = [];
+      });
+    }
+    this.cbks.push(cbk);
+  }
 };
 
 
 /**
  * save a file
- * @param  {string} url
+ * @param  {CEBlob} blob
  * @param  {string} rawData
  * @param  {function()} cbk
- * @param  {function(Object)} opt_errCbk
+ * @param  {function(*)} opt_errCbk
  */
-silex.service.CloudStorage.prototype.save = function(url, rawData, cbk, opt_errCbk) {
-  // get teh blob corresponding to the url
-  var relBlob = this.createBlob(url);
+silex.service.CloudStorage.prototype.write = function(blob, rawData, cbk, opt_errCbk) {
   // save the data
-  this.filePicker.write(
-      relBlob,
-      rawData,
-      function(blob) {
-        if (cbk) {
-          cbk();
-        }
-      },
-      function(FPError) {
-        console.error(FPError);
-        if (opt_errCbk) {
-          console.error(FPError);
-          opt_errCbk(FPError);
-        }
-      });
+  this.ce.write(rawData, blob)
+  .then(() => {
+    cbk();
+  })
+  .catch(e => {
+    console.error('Error: could not write file', blob, e);
+    if (opt_errCbk) opt_errCbk(e);
+  });
 };
 
 
 /**
  * load data
- * @param  {string} url
+ * @param  {CEBlob} blob
  * @param  {function(string)} cbk
- * @param  {function(Object)} opt_errCbk
+ * @param  {function(*)} opt_errCbk
  */
-silex.service.CloudStorage.prototype.load = function(url, cbk, opt_errCbk) {
-  // get teh blob corresponding to the url
-  var relBlob = this.createBlob(url);
-
+silex.service.CloudStorage.prototype.read = function(blob, cbk, opt_errCbk) {
   // load the data
-  this.filePicker.read(
-      relBlob,
-      function(data) {
-        if (cbk) {
-          cbk(data);
-        }
-      },
-      function(FPError) {
-        console.error(FPError);
-        if (opt_errCbk) {
-          console.error(FPError);
-          opt_errCbk(FPError);
-        }
-      });
+  this.ce.read(blob)
+  .then(data => {
+    cbk(data);
+  })
+  .catch(e => {
+    console.error('Error: could not read file', blob, e);
+    if (opt_errCbk) opt_errCbk(e);
+  });
 };
 
 
@@ -121,7 +104,7 @@ silex.service.CloudStorage.prototype.load = function(url, cbk, opt_errCbk) {
  * load data
  * @param  {string} url
  * @param  {function(string)} cbk
- * @param  {?function(Object, string)=} opt_errCbk
+ * @param  {?function(*, string)=} opt_errCbk
  */
 silex.service.CloudStorage.prototype.loadLocal = function(url, cbk, opt_errCbk) {
   const oReq = new XMLHttpRequest();
@@ -151,14 +134,20 @@ silex.service.CloudStorage.prototype.loadLocal = function(url, cbk, opt_errCbk) 
   oReq.open('GET', url);
   oReq.send();
 };
-silex.service.CloudStorage.prototype.getServices = function() {
-  // init services list
-  try {
-    // init the list (do not work? is it needed to have a list before the user has opened CE?)
-    // this.filePicker['ctrl']['listServices']();
-    return this.filePicker['ctrl']['state']['serviceList']['arrayKeys']();
-  }
-  catch(e) {
-    return [];
-  }
+
+
+/**
+ * @param  {function(Array.<*>)} cbk
+ * @param  {?function(*, string)=} opt_errCbk
+ */
+silex.service.CloudStorage.prototype.getServices = function(cbk, opt_errCbk) {
+  this.ce.getServices()
+  .then(services => {
+    cbk(services);
+  })
+  .catch(e => {
+    console.error('Error: could not get the list of services', e);
+    if (opt_errCbk) opt_errCbk(e, 'Error: could not get the list of services');
+    else cbk([]);
+  });
 };

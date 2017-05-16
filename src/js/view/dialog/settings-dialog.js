@@ -45,7 +45,6 @@ silex.view.dialog.SettingsDialog = function(element, model, controller) {
   // init the navigation
   this.element.classList.add(this.paneCssClasses[0] + '-visible');
   // init the editor
-  this.publicationPath = '';
   this.title = '';
   // navigation
   var leftPane = goog.dom.getElementByClass('left-pane');
@@ -70,12 +69,14 @@ silex.view.dialog.SettingsDialog.prototype.init = function() {
   this.bindTextField('.general-pane .input-favicon-path', (v) => this.controller.settingsDialogController.setFaviconPath(v));
   this.bindTextField('.social-pane .input-image-path', (v) => this.controller.settingsDialogController.setThumbnailSocialPath(v));
   this.bindTextField('.publish-pane .input-publication-path', (v) => {
-    v = this.getPublicationPath();
-    this.controller.settingsDialogController.setPublicationPath(v)
+    const blob = this.controller.settingsDialogController.getPublicationPath();
+    blob.path = v;
+    this.controller.settingsDialogController.setPublicationPath(blob);
   });
   this.bindTextField('.publish-pane .input-publication-service', (v) => {
-    v = this.getPublicationPath();
-    this.controller.settingsDialogController.setPublicationPath(v)
+    const blob = this.controller.settingsDialogController.getPublicationPath();
+    blob.service = v;
+    this.controller.settingsDialogController.setPublicationPath(blob);
   });
 
   // image path browse button
@@ -105,6 +106,13 @@ silex.view.dialog.SettingsDialog.prototype.mobileCheckbox = null;
 
 
 /**
+ * store the current publication path
+ * @type {?CEBlob}
+ */
+silex.view.dialog.SettingsDialog.prototype.publicationPath = null;
+
+
+/**
  * init the menu and UIs
  */
 silex.view.dialog.SettingsDialog.prototype.buildUi = function() {
@@ -116,7 +124,21 @@ silex.view.dialog.SettingsDialog.prototype.buildUi = function() {
    function(e) {
      this.controller.settingsDialogController.toggleEnableMobile();
    }, false, this);
-};
+  // fill the options of the service selector
+  silex.service.CloudStorage.getInstance().ready(() => {
+    silex.service.CloudStorage.getInstance().getServices(services => {
+      const select = this.element.querySelector('.publish-pane .input-publication-service');
+      select.innerHTML = '';
+      for(let idx=0; idx<services.length; idx++) {
+        const service = services[idx];
+        const option = document.createElement('option');
+        option.value = service;
+        option.innerHTML = service;
+        select.appendChild(option);
+      }
+    });
+  });
+ };
 
 
 /**
@@ -217,57 +239,41 @@ silex.view.dialog.SettingsDialog.prototype.setThumbnailSocialPath = function(opt
 /**
  * set the pubication path to display
  * @see silex.model.Head
- * @param {?string=} opt_path   the publication path
+ * @param {?CEBlob=} opt_blob   the publication path
  */
-silex.view.dialog.SettingsDialog.prototype.setPublicationPath = function(opt_path) {
-  // fill the options of the service selector
-  const services = silex.service.CloudStorage.getInstance().getServices();
-  const select = this.element.querySelector('.publish-pane .input-publication-service');
-  select.innerHTML = '';
-  for(let idx in services) {
-    const service = services[idx];
-    const option = document.createElement('option');
-    option.value = service;
-    option.innerHTML = service;
-    select.appendChild(option);
-  }
-
-  // set the values
-  if(opt_path && opt_path.indexOf('exec/put')) {
-    // split: /api/1.0/github/exec/put/Silex/...
-    // into: "github" and /Silex/...
-    const split = opt_path.split(/.*1\.0\/(.*)\/exec\/put(.*)$/);
-    this.setInputValue('.publish-pane .input-publication-service', split[1]);
-    this.setInputValue('.publish-pane .input-publication-path', split[2]);
-    if(services.length === 0) {
-      // add the configured service even if user is not yet connected
-      // also happens when the cloud explorer window has not been opened yet
-      const option = document.createElement('option');
-      option.value = split[1];
-      option.innerHTML = split[1];
-      select.appendChild(option);
-    }
+silex.view.dialog.SettingsDialog.prototype.setPublicationPath = function(opt_blob) {
+  if(opt_blob != null) {
+    // set input tags the values
+    this.setInputValue('.publish-pane .input-publication-service', opt_blob.service);
+    this.setInputValue('.publish-pane .input-publication-path', opt_blob.path);
+    // display the UI with publication path set
     this.element.classList.remove('publication-path-not-set');
+    // store blob value, clone blob for safety
+    this.publicationPath = /** @type {CEBlob} */ (Object.assign({}, opt_blob));
   }
   else {
     this.setInputValue('.publish-pane .input-publication-service', '');
     this.setInputValue('.publish-pane .input-publication-path', '');
+    // display the "not set" UI
     this.element.classList.add('publication-path-not-set');
+    // store blob value
+    this.publicationPath = null;
   }
 };
 
 
 /**
  * get the pubication path from text fields
- * @return {string} the publication path
+ * @return {?CEBlob} the publication path
  */
 silex.view.dialog.SettingsDialog.prototype.getPublicationPath = function() {
   const service = this.element.querySelector('.publish-pane .input-publication-service').value;
   const path = this.element.querySelector('.publish-pane .input-publication-path').value;
-  if(service && path &&service !== '' && path !== '') {
-    return `/api/1.0/${ service }/exec/put${ path }`;
+  if(this.publicationPath != null && service && path && service !== '' && path !== '') {
+    this.publicationPath.service = service;
+    this.publicationPath.path = path;
   }
-  return '';
+  return this.publicationPath;
 };
 
 

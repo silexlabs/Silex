@@ -323,14 +323,14 @@ silex.model.Component.prototype.edit = function(element) {
           this.view.settingsDialog.controller.settingsDialogController.browse(
             'prodotype.browse',
             { },
-            (url, blob) => {
+            (blob) => {
               cbk([{
-                'url': url, // not blob.url because it misses a "/" at the beginning
-                'lastModified': blob.lastModified, // not in blob?
-                'lastModifiedDate': blob.lastModifiedDate, // not in blob?
-                'name': blob.filename,
+                'url': blob.url,
+                'lastModified': blob.lastModified,
+                'lastModifiedDate': new Date(blob.lastModified), // not in blob?
+                'name': blob.name,
                 'size': blob.size,
-                'type': blob.type, // not in blob?
+                'type': blob.type,
               }]);
             });
         },

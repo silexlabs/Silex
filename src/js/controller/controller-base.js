@@ -205,23 +205,18 @@ silex.controller.ControllerBase.prototype.browseBgImage = function() {
     this.tracker.trackAction('controller-events', 'error', 'selectBgImage', -1);
   };
 
-  var successCbk = function(url) {
-    // update the model
-    var element = this.model.body.getSelection()[0];
-    // absolute url only on stage
-    var baseUrl = silex.utils.Url.getBaseUrl();
-    url = silex.utils.Url.getAbsolutePath(url, baseUrl);
-    // undo checkpoint
-    this.undoCheckPoint();
-    // load the image
-    this.model.element.setBgImage(element, url);
-    // tracking
-    this.tracker.trackAction('controller-events', 'success', 'selectBgImage', 1);
-  };
-
   // open the file browser
-  this.view.fileExplorer.openDialog(
-      goog.bind(successCbk, this),
+  this.view.fileExplorer.openFile(
+      blob => {
+        // update the model
+        var element = this.model.body.getSelection()[0];
+        // undo checkpoint
+        this.undoCheckPoint();
+        // load the image
+        this.model.element.setBgImage(element, blob.url);
+        // tracking
+        this.tracker.trackAction('controller-events', 'success', 'selectBgImage', 1);
+      },
       { 'mimetypes': ['image/jpeg', 'image/png', 'image/gif'] },
       goog.bind(errCbk, this)
   );
@@ -233,7 +228,7 @@ silex.controller.ControllerBase.prototype.browseBgImage = function() {
  */
 silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
   this.tracker.trackAction('controller-events', 'request', 'insert.image', 0);
-  this.view.fileExplorer.openDialog(
+  this.view.fileExplorer.openFile( // TODO: allow multiple files
       goog.bind(function(url) {
         // absolute url only on stage
         var baseUrl = silex.utils.Url.getBaseUrl();
@@ -490,41 +485,46 @@ silex.controller.ControllerBase.prototype.toggleMobileMode = function() {
 
 /**
  * save or save-as
- * @param {?string=} opt_url
+ * @param {?CEBlob=} opt_blob
  * @param {?function()=} opt_cbk
  * @param {?function(Object)=} opt_errorCbk
  */
-silex.controller.ControllerBase.prototype.save = function(opt_url, opt_cbk, opt_errorCbk) {
+silex.controller.ControllerBase.prototype.save = function(opt_blob, opt_cbk, opt_errorCbk) {
   this.tracker.trackAction('controller-events', 'request', 'file.save', 0);
-  if (opt_url && !this.model.file.isTemplate) {
-    this.doSave(opt_url, opt_cbk, opt_errorCbk);
+  if (opt_blob && !this.model.file.isTemplate) {
+    this.doSave(/** @type {CEBlob} */ (opt_blob), opt_cbk, opt_errorCbk);
   }
   else {
     // choose a new name
-    this.view.fileExplorer.saveAsDialog(
-        goog.bind(function(url) {
-          this.doSave(url, opt_cbk, opt_errorCbk);
-        }, this),
-        {'mimetype': 'text/html'},
-        goog.bind(function(error) {
+    this.view.fileExplorer.saveAs(
+        blob => {
+          if(blob != null) {
+            this.doSave(/** @type {CEBlob} */ (blob), opt_cbk, opt_errorCbk);
+          }
+          else {
+            console.log('user aborted save as');
+          }
+        },
+        '.html',
+        error => {
           this.tracker.trackAction('controller-events', 'error', 'file.save', -1);
           if (opt_errorCbk) {
             opt_errorCbk(error);
           }
-        }, this));
+        });
   }
 };
 
 
 /**
  * save or save-as
- * @param {string} url
+ * @param {CEBlob} blob
  * @param {?function()=} opt_cbk
  * @param {?function(Object)=} opt_errorCbk
  */
-silex.controller.ControllerBase.prototype.doSave = function(url, opt_cbk, opt_errorCbk) {
+silex.controller.ControllerBase.prototype.doSave = function(blob, opt_cbk, opt_errorCbk) {
   // urls will be relative to the html file url
-  this.model.file.setUrl(url);
+  this.model.file.blob = blob;
   // relative urls only in the files
   var rawHtml = this.model.file.getHtml();
   // look for bug of firefox inserting quotes in url("")
@@ -539,14 +539,14 @@ silex.controller.ControllerBase.prototype.doSave = function(url, opt_cbk, opt_er
   }
   // runtime check for a recurrent error
   // check that there is no more of the basUrl in the Html
-  if (this.url && rawHtml.indexOf(this.url) >= 0) {
+  if (this.blob && rawHtml.indexOf(this.blob.url) >= 0) {
     console.warn('Base URL remains in the HTML, there is probably an error in the convertion to relative URL process');
     // log this (QA)
     this.tracker.trackAction('controller-events', 'warning', 'file.save.corrupted', -1);
   }
   // save to file
   this.model.file.saveAs(
-      url,
+      blob,
       rawHtml,
       goog.bind(function() {
         this.tracker.trackAction('controller-events', 'success', 'file.save', 1);
