@@ -351,22 +351,23 @@ silex.model.Head.prototype.setMeta = function(name, opt_value) {
 /**
  * get/set the publication path
  * publication path is always absolute url
- * @param {?string=} opt_path
+ * @param {?CEBlob=} opt_blob
  */
-silex.model.Head.prototype.setPublicationPath = function(opt_path) {
-  this.setMeta('publicationPath', opt_path);
-  this.view.settingsDialog.setPublicationPath(opt_path);
+silex.model.Head.prototype.setPublicationPath = function(opt_blob) {
+  // TODO: remove meta and store this value in the JSON like components params (see model/property.js)
+  this.setMeta('publicationPath', opt_blob == null ? null : JSON.stringify(opt_blob));
+  this.view.settingsDialog.setPublicationPath(opt_blob);
 };
 
 
 /**
  * get/set the publication path
  * publication path is always absolute url
- * @return {?string}
+ * @return {?CEBlob}
  */
 silex.model.Head.prototype.getPublicationPath = function() {
-  var url = this.getMeta('publicationPath');
-  return url;
+  var blob = this.getMeta('publicationPath');
+  return blob == null ? null : /** @type {CEBlob} */ (JSON.parse(blob));
 };
 
 

@@ -41,21 +41,17 @@ goog.inherits(silex.controller.SettingsDialogController,
  * browse and notify result, track actions, enable undo/redo
  * @param  {string} trackActionName
  * @param  {{mimetypes: (Array.<string>|undefined)}} mimetypes
- * @param  {function(string, ?Object=)} cbk
+ * @param  {function(?CEBlob=)} cbk
  */
 silex.controller.SettingsDialogController.prototype.browse = function(trackActionName, mimetypes, cbk) {
   this.tracker.trackAction(
       'controller-events', 'request', trackActionName, 0);
-  this.view.fileExplorer.openDialog(
-      (url, blob) => {
+  this.view.fileExplorer.openFolder(
+      (blob) => {
         // undo checkpoint
         this.undoCheckPoint();
-        // start with /api/...
-        if (url.indexOf('/') !== 0) {
-          url = '/' + url;
-        }
         // notify the caller
-        cbk(url, blob);
+        cbk(blob);
         // QA
         this.tracker.trackAction(
             'controller-events', 'success', trackActionName, 1);
@@ -79,11 +75,9 @@ silex.controller.SettingsDialogController.prototype.browsePublishPath = function
   this.browse(
     'publish.browse',
     { 'mimetypes': ['text/directory'] },
-    (url, blob) => {
-      // put instead of get
-      url = url.replace('/exec/get', '/exec/put');
+    (blob) => {
       // set the new publication path
-      this.model.head.setPublicationPath(url);
+      this.model.head.setPublicationPath(blob);
       // notify caller (used to reopen settings)
       if(opt_cbk) opt_cbk();
     });
@@ -97,9 +91,9 @@ silex.controller.SettingsDialogController.prototype.browseFaviconPath = function
   this.browse(
     'favicon.browse',
     { 'mimetypes': ['image/jpeg', 'image/png', 'image/gif', 'image/ico'] },
-    (url, blob) => {
+    (blob) => {
       // set the new publication path
-      this.model.head.setFaviconPath(url);
+      this.model.head.setFaviconPath(blob.url);
       // notify caller (used to reopen settings)
       if(opt_cbk) opt_cbk();
     });
@@ -113,9 +107,9 @@ silex.controller.SettingsDialogController.prototype.browseThumbnailSocialPath = 
   this.browse(
     'thumbnail-social.browse',
     { 'mimetypes': ['image/jpeg', 'image/png', 'image/gif', 'image/ico'] },
-    (url, blob) => {
+    (blob) => {
       // set the new path
-      this.model.head.setThumbnailSocialPath(url);
+      this.model.head.setThumbnailSocialPath(blob.url);
       // notify caller (used to reopen settings)
       if(opt_cbk) opt_cbk();
     });
@@ -146,12 +140,21 @@ silex.controller.SettingsDialogController.prototype.setWebsiteWidth = function(o
 
 /**
  * callback for the publication path text input
- * @param {?string=} opt_data
+ * @param {?CEBlob=} opt_data
  */
 silex.controller.SettingsDialogController.prototype.setPublicationPath = function(opt_data) {
   // undo checkpoint
   this.undoCheckPoint();
   this.model.head.setPublicationPath(opt_data);
+};
+
+
+/**
+ * callback for the publication path text input
+ * @return {?CEBlob}
+ */
+silex.controller.SettingsDialogController.prototype.getPublicationPath = function() {
+  return this.model.head.getPublicationPath();
 };
 
 

@@ -103,7 +103,7 @@ silex.controller.FileMenuController.prototype.onOpenError = function(opt_errorCb
 
 /**
  * open a file
- * @param {?function(string)=} opt_cbk
+ * @param {?function(CEBlob)=} opt_cbk
  * @param {?function(Object)=} opt_errorCbk
  * @param {?function()=} opt_cancelCbk
  */
@@ -111,9 +111,9 @@ silex.controller.FileMenuController.prototype.openFile = function(opt_cbk, opt_e
   // QOS, track success
   this.tracker.trackAction('controller-events', 'request', 'file.open', 0);
   // let the user choose the file
-  this.view.fileExplorer.openDialog(
-      url => {
-        this.model.file.open(url, rawHtml => {
+  this.view.fileExplorer.openFile(
+      blob => {
+        this.model.file.open(blob, rawHtml => {
           this.model.file.setHtml(rawHtml, () => {
             // undo redo reset
             this.undoReset();
@@ -122,7 +122,7 @@ silex.controller.FileMenuController.prototype.openFile = function(opt_cbk, opt_e
             // QOS, track success
             this.tracker.trackAction('controller-events', 'success', 'file.open', 1);
             if (opt_cbk) {
-              opt_cbk(url);
+              opt_cbk(/** @type {CEBlob} */ (blob));
             }
           }, true, false); // with loader and backward compat check
         },
@@ -188,8 +188,8 @@ silex.controller.FileMenuController.prototype.publish = function() {
               let msg = `<strong>${json['status']}</strong>`;
               if(json['stop'] === true) {
                 clearInterval(timer);
-                let path = this.model.head.getPublicationPath().replace('/exec/put/', '/exec/get/');
-                msg += `<p>Preview <a target="_blanck" href="${path}/index.html">your published site here</a>.</p>`;
+                const url = this.model.head.getPublicationPath().url;
+                msg += `<p>Preview <a target="_blanck" href="${url}/index.html">your published site here</a>.</p>`;
               }
               silex.utils.Notification.setText(msg);
             }, message => {

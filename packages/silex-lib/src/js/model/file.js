@@ -92,12 +92,12 @@ silex.model.File.LOADING_LIGHT_CSS_CLASS = 'loading-website-light';
 
 
 /**
- * current file url
- * if the current file is a new file, it has no url
+ * current file url and path and info returned by CE
+ * if the current file is a new file, it has no blob
  * if set, this is an absolute URL, use silex.model.File::getUrl to get the relatvie URL
- * @type {?string}
+ * @type {?CEBlob}
  */
-silex.model.File.prototype.url = null;
+silex.model.File.prototype.blob = null;
 
 
 /**
@@ -171,8 +171,8 @@ silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk, opt_showLoader, 
   // add base tag from the beginning
   // should not be needed since we change all  the URLs to absolute
   // but just in case abs/rel conversion bugs
-  if (this.url) {
-    rawHtml = rawHtml.replace('<head>', '<head><base class="' + silex.model.Head.SILEX_TEMP_TAGS_CSS_CLASS + '" href="' + this.url + '" target="_blank">');
+  if (this.blob) {
+    rawHtml = rawHtml.replace('<head>', '<head><base class="' + silex.model.Head.SILEX_TEMP_TAGS_CSS_CLASS + '" href="' + this.blob.url + '" target="_blank">');
   }
   // remove user's head tag before it is interprated by the browser
   // - in case it has bad HTML tags, it could break the whole site, insert tags into the body instead of the head...
@@ -444,14 +444,15 @@ silex.model.File.prototype.getHtmlGenerator = function* () {
  * will not be able to save
  * @param {string} url
  * @param {?function(string)=} opt_cbk
- * @param {?function(Object, string)=} opt_errCbk
+ * @param {?function(*, string)=} opt_errCbk
  * @export
  */
 silex.model.File.prototype.openFromUrl = function(url, opt_cbk, opt_errCbk) {
   this.isTemplate = true;
   silex.service.CloudStorage.getInstance().loadLocal(url,
       goog.bind(function(rawHtml) {
-        this.setUrl(url);
+        this.blob = null;
+        // this.setUrl(url);
         if (opt_cbk) {
           opt_cbk(rawHtml);
         }
@@ -463,9 +464,9 @@ silex.model.File.prototype.openFromUrl = function(url, opt_cbk, opt_errCbk) {
  * save a file with a new name
  * @export
  */
-silex.model.File.prototype.saveAs = function(url, rawHtml, cbk, opt_errCbk) {
+silex.model.File.prototype.saveAs = function(blob, rawHtml, cbk, opt_errCbk) {
   // save the data
-  this.setUrl(url);
+  this.blob = blob;
   this.save(rawHtml, cbk, opt_errCbk);
 };
 
@@ -475,8 +476,9 @@ silex.model.File.prototype.saveAs = function(url, rawHtml, cbk, opt_errCbk) {
  * @export
  */
 silex.model.File.prototype.save = function(rawHtml, cbk, opt_errCbk) {
-  silex.service.CloudStorage.getInstance().save(
-      this.getUrl(),
+  if(this.blob == null) throw new Error('Can not save, blob is null');
+  silex.service.CloudStorage.getInstance().write(
+      /** @type {CEBlob} */ (this.blob),
       rawHtml,
       () => {
         this.isTemplate = false;
@@ -491,18 +493,18 @@ silex.model.File.prototype.save = function(rawHtml, cbk, opt_errCbk) {
 /**
  * load a new file
  */
-silex.model.File.prototype.open = function(url, cbk, opt_errCbk) {
+silex.model.File.prototype.open = function(blob, cbk, opt_errCbk) {
   this.isTemplate = false;
-  silex.service.CloudStorage.getInstance().load(
-      url,
-      goog.bind(function(rawHtml) {
+  silex.service.CloudStorage.getInstance().read(
+      blob,
+      (rawHtml) => {
         // update model
         this.close();
-        this.setUrl(url);
+        this.blob = blob;
         if (cbk) {
           cbk(rawHtml);
         }
-      }, this), opt_errCbk);
+      }, opt_errCbk);
 };
 
 
@@ -510,7 +512,7 @@ silex.model.File.prototype.open = function(url, cbk, opt_errCbk) {
  * reset data, close file
  */
 silex.model.File.prototype.close = function() {
-  this.url = null;
+  this.blob = null;
 };
 
 
@@ -519,25 +521,11 @@ silex.model.File.prototype.close = function() {
  */
 silex.model.File.prototype.getUrl = function() {
   // revert to relative URL
-  if (this.url){
+  if (this.blob != null){
     var baseUrl = silex.utils.Url.getBaseUrl();
-    return silex.utils.Url.getRelativePath(this.url, baseUrl);
+    return silex.utils.Url.getRelativePath(this.blob.url, baseUrl);
   }
-  return this.url;
-};
-
-
-/**
- * store url of this file
- * @param {?string} url
- */
-silex.model.File.prototype.setUrl = function(url) {
-  if (url) {
-    var baseUrl = silex.utils.Url.getBaseUrl();
-    url = silex.utils.Url.getAbsolutePath(url, baseUrl);
-    this.addToLatestFiles(url);
-  }
-  this.url = url;
+  return null;
 };
 
 
@@ -551,51 +539,35 @@ silex.model.File.prototype.clearLatestFiles = function() {
 
 /**
  * get the latest opened files
- * @return {Array.<{name:string, path:string, cloudIcon:string}>}
+ * @return {Array.<CEBlob>}
  */
 silex.model.File.prototype.getLatestFiles = function() {
   const str = window.localStorage.getItem('silex:recent-files');
-  if(str) return /** @type {Array.<{name:string, path:string, cloudIcon:string}>} */ (JSON.parse(str));
+  if(str) return /** @type {Array.<CEBlob>} */ (JSON.parse(str));
   else return [];
 };
 
 
 /**
  * store this file in the latest opened files
- * @param {?string} url
+ * @param {?CEBlob} blob
  */
-silex.model.File.prototype.addToLatestFiles = function(url) {
+silex.model.File.prototype.addToLatestFiles = function(blob) {
   // url= http://localhost:6805/api/1.0/github/exec/get/silex-tests/gh-pages/abcd.html
-  const latestFiles = this.getLatestFiles();
-  const versionIdx = url.indexOf('/api/1.0/');
-  if(versionIdx >= 0) {
-    // path= /api/1.0/github/exec/get/silex-tests/gh-pages/abcd.html
-    const path = url.substr(versionIdx);
-    // remove if it is already in the array
-    // so that it goes back to the top of the list
-    let foundIndex = -1;
-    latestFiles.forEach((item, idx) => item.path === path ? foundIndex = idx : null);
-    if(foundIndex > -1) {
-      latestFiles.splice(foundIndex, 1);
-    }
-    const serviceIdx = versionIdx + '/api/1.0/'.length;
-    // folder= /silex-tests/gh-pages/abcd.html
-    const folder = url.substr(url.indexOf('exec/get', serviceIdx) + 'exec/get'.length);
-    // service= github
-    const service = url.substring(serviceIdx, url.indexOf('/', serviceIdx));
-    // cloudIcon= fa-github | fa-dropbox | fa-server | fa-cloud | fa-cloud-download
-    const cloudIcon = 'fa-' + (['github', 'dropbox'].indexOf(service) === 0 ? service : (service === 'webdav' ? 'cloud-download' : (service === 'ftp' ? 'server' : 'cloud')));
-    latestFiles.unshift({
-      'url': url,
-      'path': path,
-      'folder': folder,
-      'service': service,
-      'cloudIcon': cloudIcon,
-    });
-    // limit size
-    if(latestFiles.length > silex.model.File.MAX_RECENT_FILES) {
-      latestFiles.splice(silex.model.File.MAX_RECENT_FILES, latestFiles.length - silex.model.File.MAX_RECENT_FILES);
-    }
-    window.localStorage.setItem('silex:recent-files', JSON.stringify(latestFiles));
+  const latestFiles = this.getLatestFiles()
+    // remove old URLs from previous CE version
+    .filter(blob => blob.service != null);
+  // remove if it is already in the array
+  // so that it goes back to the top of the list
+  let foundIndex = -1;
+  latestFiles.forEach((item, idx) => item.url === blob.url ? foundIndex = idx : null);
+  if(foundIndex > -1) {
+    latestFiles.splice(foundIndex, 1);
   }
+  latestFiles.unshift(blob);
+  // limit size
+  if(latestFiles.length > silex.model.File.MAX_RECENT_FILES) {
+    latestFiles.splice(silex.model.File.MAX_RECENT_FILES, latestFiles.length - silex.model.File.MAX_RECENT_FILES);
+  }
+  window.localStorage.setItem('silex:recent-files', JSON.stringify(latestFiles));
 };

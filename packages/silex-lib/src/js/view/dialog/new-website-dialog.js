@@ -223,28 +223,30 @@ silex.view.dialog.NewWebsiteDialog.prototype.redraw = function() {
 
   // buttons visibility
   const pane = this.element.querySelector('.open-pane');
-  if(recentFiles.length) pane.classList.remove('emty-list');
+  if(recentFiles.length > 0) pane.classList.remove('emty-list');
   else pane.classList.add('emty-list');
 
   // fill the list
   const ul = pane.querySelector('ul.list');
   ul.innerHTML = '';
   recentFiles
-    .map(item => {
+    .map(blob => {
       // there my be errors due to wrong data in the local storage
       try {
         const li = document.createElement('li');
-        li.setAttribute('data-editable', item['path']);
+        li.setAttribute('data-editable', JSON.stringify(blob));
         li.classList.add('list-item');
 
         const icon = document.createElement('span');
-        icon.setAttribute('data-editable', item['path']);
-        icon.classList.add('fa', item['cloudIcon']);
+        icon.setAttribute('data-editable', blob.path);
+        // cloudIcon= fa-github | fa-dropbox | fa-server | fa-cloud | fa-cloud-download
+        const cloudIcon = 'fa-' + (['github', 'dropbox'].indexOf(blob.service) === 0 ? blob.service : (blob.service === 'webdav' ? 'cloud-download' : (blob.service === 'ftp' ? 'server' : 'cloud')));
+        icon.classList.add('fa', cloudIcon);
         li.appendChild(icon);
 
         const name = document.createElement('span');
-        name.setAttribute('data-editable', item['path']);
-        name.innerHTML = item['folder'];
+        name.setAttribute('data-editable', JSON.stringify(blob));
+        name.innerHTML = blob.path;
         li.appendChild(name);
 
         return li;
@@ -281,12 +283,6 @@ silex.view.dialog.NewWebsiteDialog.prototype.openDialog = function(options) {
   }
   this.selected = null;
   this.modalDialog.onClose = () => {
-    // let the file picker init
-    // this is a workaround to prevent cloud explorer to throw an error on write
-    // FIXME: remove this with the new cloud explorer version
-    const filePicker = silex.service.CloudStorage.getInstance().filePicker;
-    filePicker['ctrl']['show']();
-    filePicker['ctrl']['hide']();
     // notify the owner, with the url to load or nothing (will load blank template)
     if(this.selected) {
       options.close(this.selected.url, this.selected.isTemplate);

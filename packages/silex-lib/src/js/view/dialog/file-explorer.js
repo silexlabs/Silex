@@ -21,18 +21,12 @@
 
 goog.provide('silex.view.dialog.FileExplorer');
 
-goog.require('goog.async.Delay');
-goog.require('goog.events.KeyCodes');
-goog.require('goog.ui.KeyboardShortcutHandler');
 goog.require('silex.service.CloudStorage');
 goog.require('silex.utils.Url');
 goog.require('silex.view.dialog.DialogBase');
 
 
 
-//////////////////////////////////////////////////////////////////
-// FileExplorer class
-//////////////////////////////////////////////////////////////////
 /**
  * the Silex FileExplorer class
  * @constructor
@@ -46,17 +40,12 @@ goog.require('silex.view.dialog.DialogBase');
 silex.view.dialog.FileExplorer = function(element, model, controller) {
   // call super
   goog.base(this, element, model, controller);
+  // cloud explorer instance
+  silex.service.CloudStorage.getInstance().ready(() => {
+    this.ce = silex.service.CloudStorage.getInstance().ce;
+  });
   // set the visibility css class
   this.visibilityClass = 'file-editor';
-  // override this.background
-  var ceIframe = goog.dom.getElement('silex-file-explorer');
-  goog.events.listenOnce(ceIframe, 'load', goog.bind(function() {
-    var contentWindow = goog.dom.getFrameContentWindow(ceIframe);
-    this.background = /** @type {!Element} */ (goog.dom.getElementByClass('explorer-bg', contentWindow.document));
-    // this.buildUi();
-  }, this));
-  // get the global variable of Cloud Explorer
-  this.filePicker = silex.service.CloudStorage.getInstance().filePicker;
 };
 
 
@@ -66,53 +55,105 @@ goog.inherits(silex.view.dialog.FileExplorer, silex.view.dialog.DialogBase);
 
 /**
  * reference to the filepicker instance
+ * @type {CloudExplorer}
  */
-silex.view.dialog.FileExplorer.prototype.filePicker = null;
+silex.view.dialog.FileExplorer.prototype.ce = null;
 
 
 /**
- * pick a file
- * @param {function(string, ?Object=)} cbk
+ * call CE API
+ * @private
+ * @param {function(?CEBlob=)} cbk
+ * @param {?string=} opt_paramStr
  * @param {?Object.<Array>=} opt_mimetypes optional array of accepted mimetypes,
  *                           e.g. {'mimetypes': ['text/html', 'text/plain']}
  * @param {?function(Object)=} opt_errCbk
  * @param {?function()=} opt_cancelCbk
- * FIXME: opt_cancelCbk is never called because CE has no mechanisme to get notified when the user closes the dialog
  */
-silex.view.dialog.FileExplorer.prototype.openDialog =
-    function(cbk, opt_mimetypes, opt_errCbk, opt_cancelCbk) {
+silex.view.dialog.FileExplorer.prototype.callCE =
+    function(ceMethod, cbk, opt_paramStr, opt_mimetypes, opt_errCbk, opt_cancelCbk) {
 
   this.openEditor();
 
-  var errCbk = function(FPError) {
-    console.error(FPError);
-    if (opt_errCbk) {
-      opt_errCbk(FPError);
-    }
-    this.closeEditor();
-  }.bind(this);
-  var successCbk = function(url, blob) {
-    // notify controller
-    if (cbk) {
-      cbk(url, blob);
-    }
-    else if(opt_cancelCbk) {
-      opt_cancelCbk();
-    }
-    this.closeEditor();
-  }.bind(this);
+  // give focus to the iframe
+  document.querySelector('#silex-file-explorer').contentWindow.focus();
 
-  // pick it up
-  this.filePicker.pick(
-      opt_mimetypes,
-      goog.bind(function(blob) {
-        // give back focus to Silex
-        // this.view.stage.resetFocus();
-        // no https, because it creates security issues
-        blob.url = blob.url.replace('https://', '//');
-        successCbk(blob.url, blob);
-      }, this),
-      errCbk);
+  ceMethod.call(this.ce, opt_paramStr)
+  .then((blob) => {
+    if(blob != null) {
+      // no https, because it creates security issues
+      // blob.url = blob.url.replace('https://', '//');
+      cbk(blob);
+    }
+    else {
+      console.log('user canceled in CE');
+      if(opt_cancelCbk != null) {
+        opt_cancelCbk();
+      }
+    }
+    this.closeEditor();
+  }).catch(e => {
+    console.error('Error thrown by CE', e.stack);
+    this.closeEditor();
+    if(opt_errCbk != null) opt_errCbk(e);
+  });
+};
+
+
+/**
+ * pick file
+ * @param {function(?CEBlob=)} cbk
+ * @param {?Object.<Array>=} opt_mimetypes optional array of accepted mimetypes,
+ *                           e.g. {'mimetypes': ['text/html', 'text/plain']}
+ * @param {?function(Object)=} opt_errCbk
+ * @param {?function()=} opt_cancelCbk
+ */
+silex.view.dialog.FileExplorer.prototype.openFile =
+    function(cbk, opt_mimetypes, opt_errCbk, opt_cancelCbk) {
+  this.callCE(this.ce.openFile, cbk, null, opt_mimetypes, opt_errCbk, opt_cancelCbk);
+};
+
+
+/**
+ * pick multiple files
+ * @param {function(?CEBlob=)} cbk
+ * @param {?Object.<Array>=} opt_mimetypes optional array of accepted mimetypes,
+ *                           e.g. {'mimetypes': ['text/html', 'text/plain']}
+ * @param {?function(Object)=} opt_errCbk
+ * @param {?function()=} opt_cancelCbk
+ */
+silex.view.dialog.FileExplorer.prototype.openFiles =
+    function(cbk, opt_mimetypes, opt_errCbk, opt_cancelCbk) {
+  this.callCE(this.ce.openFiles, cbk, null, opt_mimetypes, opt_errCbk, opt_cancelCbk);
+};
+
+
+/**
+ * pick a folder
+ * @param {function(?CEBlob=)} cbk
+ * @param {?Object.<Array>=} opt_mimetypes optional array of accepted mimetypes,
+ *                           e.g. {'mimetypes': ['text/html', 'text/plain']}
+ * @param {?function(Object)=} opt_errCbk
+ * @param {?function()=} opt_cancelCbk
+ */
+silex.view.dialog.FileExplorer.prototype.openFolder =
+    function(cbk, opt_mimetypes, opt_errCbk, opt_cancelCbk) {
+  this.callCE(this.ce.openFolder, cbk, null, opt_mimetypes, opt_errCbk, opt_cancelCbk);
+};
+
+
+/**
+ * choose a name for the file
+ * @param {function(?CEBlob=)} cbk
+ * @param {string} defaultName
+ * @param {?Object.<Array>=} opt_mimetypes optional array of accepted mimetypes,
+ *                           e.g. {'mimetypes': ['text/html', 'text/plain']}
+ * @param {?function(Object)=} opt_errCbk
+ * @param {?function()=} opt_cancelCbk
+ */
+silex.view.dialog.FileExplorer.prototype.saveAs =
+    function(cbk, defaultName, opt_mimetypes, opt_errCbk, opt_cancelCbk) {
+  this.callCE(this.ce.saveAs, cbk, defaultName, opt_mimetypes, opt_errCbk, opt_cancelCbk);
 };
 
 
@@ -123,32 +164,34 @@ silex.view.dialog.FileExplorer.prototype.openDialog =
  *                           e.g. {'mimetypes': ['text/html', 'text/plain']}
  * @param {?function(Object)=} opt_errCbk
  */
-silex.view.dialog.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes, opt_errCbk) {
-  this.openEditor();
+// silex.view.dialog.FileExplorer.prototype.saveAsDialog = function(cbk, opt_mimetypes, opt_errCbk) {
+//   this.openEditor();
+//
+//   var errCbk = function(FPError) {
+//     console.error(FPError);
+//     if (opt_errCbk) {
+//       opt_errCbk(FPError);
+//     }
+//     this.closeEditor();
+//   }.bind(this);
+//   var successCbk = function(blob) {
+//     // notify controller
+//     if (cbk) {
+//       cbk(blob.url);
+//     }
+//     this.closeEditor();
+//   }.bind(this);
+//   // export dummy data
+//   this.ce.saveAs('http://google.com/',
+//       opt_mimetypes,
+//       goog.bind(function(blob) {
+//         // give back focus to Silex
+//         // this.view.stage.resetFocus();
+//         // no https, because it creates security issues
+//         blob.url = blob.url.replace('https://', '//');
+//         successCbk(blob);
+//       }, this),
+//       errCbk);
+// };
 
-  var errCbk = function(FPError) {
-    console.error(FPError);
-    if (opt_errCbk) {
-      opt_errCbk(FPError);
-    }
-    this.closeEditor();
-  }.bind(this);
-  var successCbk = function(blob) {
-    // notify controller
-    if (cbk) {
-      cbk(blob.url);
-    }
-    this.closeEditor();
-  }.bind(this);
-  // export dummy data
-  this.filePicker.exportFile('http://google.com/',
-      opt_mimetypes,
-      goog.bind(function(blob) {
-        // give back focus to Silex
-        // this.view.stage.resetFocus();
-        // no https, because it creates security issues
-        blob.url = blob.url.replace('https://', '//');
-        successCbk(blob);
-      }, this),
-      errCbk);
-};
+
