@@ -85,23 +85,29 @@ silex.controller.EditMenuController.prototype.redo = function() {
  */
 silex.controller.EditMenuController.prototype.copySelection = function() {
   this.tracker.trackAction('controller-events', 'info', 'copy', 0);
-  // default is current selection
-  const elements = this.model.body.getSelection()
+  const body = this.model.body.getBodyElement();
   // select the sections instead of their container content
-  .map(element => {
-    if(this.model.element.isSectionContent(element)) {
-      return element.parentNode;
-    }
-    else {
-      return element;
-    }
-  })
-  // not the body
-  .filter(element => !!element && this.model.body.getBodyElement() !== element)
-  // clone the elements
-  .map(element => {
-    return element.cloneNode(true);
-  });
+  const elements =
+    this.model.body.getSelection()
+    .map(element => {
+      if(this.model.element.isSectionContent(element)) {
+        return element.parentNode;
+      }
+      else {
+        return element;
+      }
+    })
+    .filter(element => {
+      // not the body
+      return body !== element &&
+        // not an element which has a selected parent
+        // FIXME: closest is not yet defined on Element in google closure, remove the array access ['closest'] when it is
+        element.parentElement['closest']('.' + silex.model.Element.SELECTED_CLASS_NAME) == null;
+    })
+    // clone the elements
+    .map(element => {
+      return element.cloneNode(true);
+    });
   if (elements.length > 0) {
     // reset clipboard
     silex.controller.ControllerBase.clipboard = [];
