@@ -83,11 +83,52 @@ silex.view.Stage.BACKGROUND_CLASS_NAME = 'background';
 
 
 /**
- * number of pixels to scroll at each animation frame
+ * number of pixels to scroll when the user scrolls out of the site
+ * @type {number}
+ */
+silex.view.Stage.SCROLL_STEPS_DRAG = 100;
+
+
+
+
+/**
+ * distance in pixels to the border of the stage, under which we scroll
+ * this is when the user drag or resize an element and the mouse goes near the border
+ * @type {number}
+ */
+silex.view.Stage.MARGIN_FOR_SCROLL = 20;
+
+
+/**
+ * number of pixels to scroll at each animation frame to reach silex.view.Stage.SCROLL_STEPS_DRAG
  * the bigger the faster I will scroll to the target
  * @type {number}
  */
-silex.view.Stage.SCROLL_STEPS = 100;
+silex.view.Stage.SCROLL_DRAG_SPEED = 10;
+
+
+/**
+ * number of pixels to scroll at each animation frame to reach a target
+ * this is used when an element is added and it becomes a scorll target
+ * the bigger the faster I will scroll to the target
+ * @type {number}
+ */
+silex.view.Stage.DEFAULT_SCROLL_SPEED = 100;
+
+
+/**
+ * the keys we listen to for moving elements
+ * @type {Array.<number>}
+ */
+silex.view.Stage.KEYS_TO_CATCH = [
+  goog.events.KeyCodes.LEFT,
+  goog.events.KeyCodes.RIGHT,
+  goog.events.KeyCodes.UP,
+  goog.events.KeyCodes.DOWN,
+  goog.events.KeyCodes.ESC,
+  goog.events.KeyCodes.PAGE_UP, // this is to prevent scroll in the html tag
+  goog.events.KeyCodes.PAGE_DOWN, // this is to prevent scroll in the html tag
+];
 
 
 /**
@@ -279,9 +320,17 @@ silex.view.Stage.prototype.initEvents = function(contentWindow) {
   this.contentDocument = contentWindow.document;
   this.contentWindow = contentWindow;
 
+ //detect right click
+  goog.events.listen(contentWindow.document, 'contextmenu', function(event) {
+    let x = event.clientX;
+    let y = event.clientY;
+    this.handleRightClick(x, y);
+    event.preventDefault();
+    return false;
+  }, false, this);
   // listen on body instead of element because user can release
   // on the tool boxes
-  goog.events.listen(this.bodyElement, 'mouseup', function(event) {
+  goog.events.listen(contentWindow.document, 'mouseup', function(event) {
     let x = event.clientX;
     let y = event.clientY;
     this.handleMouseUp(event.target, x, y, event.shiftKey);
@@ -354,7 +403,8 @@ silex.view.Stage.prototype.redraw =
 silex.view.Stage.prototype.handleKey = function(event) {
   // not in text inputs
   if (event.target.tagName.toUpperCase() !== 'INPUT' &&
-      event.target.tagName.toUpperCase() !== 'TEXTAREA') {
+      event.target.tagName.toUpperCase() !== 'TEXTAREA' &&
+      silex.view.Stage.KEYS_TO_CATCH.indexOf(event.keyCode) >= 0) {
     // mobile mode or selection contains only sections elements
     if(this.isMobileMode() ||
       (this.selectedElements && this.selectedElements.reduce((prev, cur) => prev &&
@@ -422,10 +472,13 @@ silex.view.Stage.prototype.handleKey = function(event) {
         this.controller.stageController.markAsUndoable();
         // apply the offset
         this.moveElements(this.selectedElements, offsetX, offsetY);
-        // prevent default behavior for this key
-        event.preventDefault();
       }
     }
+    // prevent default behavior for this key
+    // especially important to have this for arrow keys and page up/down
+    // to prevent stage scroll in body in firefox (opened issue in ff:
+    // https://bugzilla.mozilla.org/show_bug.cgi?id=295020 )
+    event.preventDefault();
   }
 };
 
@@ -582,15 +635,17 @@ silex.view.Stage.prototype.onMouseMove = function(target, x, y, shiftKey) {
         this.selectedElements
         .filter(element => element !== this.bodyElement && !element.classList.contains(silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME))
         .forEach(element => {
-          // dragging style
-          element.classList.add(silex.model.Body.DRAGGING_CLASS_NAME);
           // move to the body so that it is above everything
           // move back to the same x, y position
+          // var elementPos = element.getBoundingClientRect();
           var elementPos = goog.style.getPageOffset(element);
+          // apply new position
           element.style.left = elementPos.x + 'px';
           element.style.top = elementPos.y + 'px';
           // attache to body
           this.bodyElement.appendChild(element);
+          // dragging style
+          element.classList.add(silex.model.Body.DRAGGING_CLASS_NAME);
         });
       }
     }
@@ -729,17 +784,19 @@ silex.view.Stage.prototype.updateScroll = function(x, y) {
     let iframeSize = this.getStageSize();
     let scrollX = this.getScrollX();
     let scrollY = this.getScrollY();
-    if (x < 100) {
-      this.setScrollX(scrollX - 100);
+    if (x < silex.view.Stage.MARGIN_FOR_SCROLL) {
+      // todo: same as scrollY, an animation with scrollTo (which should support scrollX anim)
+      this.setScrollX(scrollX - silex.view.Stage.SCROLL_STEPS_DRAG);
     }
-    else if (x > iframeSize.width - 100) {
-      this.setScrollX(scrollX + 100);
+    else if (x > iframeSize.width - silex.view.Stage.MARGIN_FOR_SCROLL) {
+      // todo: same as scrollY, an animation with scrollTo (which should support scrollX anim)
+      this.setScrollX(scrollX + silex.view.Stage.SCROLL_STEPS_DRAG);
     }
-    if (y < 100) {
-      this.setScrollY(scrollY - 100);
+    if (y < silex.view.Stage.MARGIN_FOR_SCROLL) {
+      this.scrollTo(scrollY - silex.view.Stage.SCROLL_STEPS_DRAG, silex.view.Stage.SCROLL_DRAG_SPEED);
     }
-    else if (y > iframeSize.height - 100) {
-      this.setScrollY(scrollY + 100);
+    else if (y > iframeSize.height - silex.view.Stage.MARGIN_FOR_SCROLL) {
+      this.scrollTo(scrollY + silex.view.Stage.SCROLL_STEPS_DRAG, silex.view.Stage.SCROLL_DRAG_SPEED);
     }
   });
 };
@@ -799,7 +856,6 @@ silex.view.Stage.prototype.multipleDragged = function(x, y, shiftKey) {
     let offsetY = y - this.lastPosY + (scrollY - this.lastScrollTop);
     this.followElementSize(followers, this.resizeDirection, offsetX, offsetY);
   }
-
   // update the latest position and scroll
   this.lastPosX = x;
   this.lastPosY = y;
@@ -832,21 +888,10 @@ silex.view.Stage.prototype.followElementPosition =
         // let finalX = Math.round(pos.x + offsetX);
         // this.controller.stageController.styleChanged('top', finalY + 'px', [follower], false);
         // this.controller.stageController.styleChanged('left', finalX + 'px', [follower], false);
-
-        // in case the element is in the flow,
-        // the css class .dragging-pending will set position:relative
-        // and we temporarily move the element with its attributes instead of css style tag in head
-        let style;
-        if(follower.style.left === '' || follower.style.top === '') {
-          // "start drag" case
-          style = this.contentWindow.getComputedStyle(follower);
-        }
-        else {
-          // dragging case
-          style = follower.style;
-        }
-        let left = parseInt(style.left, 10) || 0;
-        let top = parseInt(style.top, 10) || 0;
+        // move the element
+        let pos = goog.style.getPosition(follower);
+        let left = parseInt(follower.style.left, 10) || pos.x;
+        let top = parseInt(follower.style.top, 10) || pos.y;
         follower.style.left = (left + offsetX) + 'px';
         follower.style.top = (top + offsetY) + 'px';
     }
@@ -923,7 +968,7 @@ silex.view.Stage.prototype.followElementSize =
       // TODO in a while: remove support of .background since it is now a section
       if((follower.classList.contains(silex.view.Stage.BACKGROUND_CLASS_NAME) ||
         this.model.element.isSectionContent(follower)) &&
-        size.width < this.bodyElement.offsetWidth - 50) {
+        size.width < this.getStageSize().width - 100) {
         offsetSizeX *= 2;
       }
       // compute new size
@@ -947,7 +992,7 @@ silex.view.Stage.prototype.followElementSize =
       this.controller.stageController.styleChanged('left', Math.round(offsetPosX) + 'px', [follower], false);
       // apply the new size
       this.controller.stageController.styleChanged('width', Math.round(newSizeW) + 'px', [follower], false);
-      this.controller.stageController.styleChanged('minHeight', Math.round(newSizeH) + 'px', [follower], false);
+      this.controller.stageController.styleChanged(this.model.element.getHeightStyleName(follower), Math.round(newSizeH) + 'px', [follower], false);
     }
   }, this);
 };
@@ -1087,6 +1132,70 @@ silex.view.Stage.prototype.getScrollMaxY = function() {
 
 
 /**
+ * @param  {Element}  element in the DOM to wich I am scrolling
+ */
+silex.view.Stage.prototype.setScrollTarget = function(element) {
+  if(element !== this.bodyElement) {
+    // start scrolling
+    // not right away because the element may not be attached to the dom yet (case of add element)
+    requestAnimationFrame(() => {
+      const scrollTop = goog.style.getBounds(element).top;
+      const iframeSize = this.getStageSize();
+      const scrollCentered = scrollTop - Math.round(iframeSize.height/2);
+      this.scrollTo(scrollCentered);
+    });
+  }
+};
+
+
+/**
+ * @param  {number}  scrollTop to wich I am scrolling
+ * @param  {?number=}  scrollSpeed number of pixels per frame to go there
+ */
+silex.view.Stage.prototype.scrollTo = function(scrollTop, scrollSpeed) {
+  const previousTarget = this.scrollTarget;
+  this.scrollTarget = scrollTop;
+  if(previousTarget == null) {
+    this.startScrolling(scrollSpeed);
+  }
+};
+
+
+/**
+ * scroll until the scroll target is reached
+ * @param  {?number=}  scrollSpeed number of pixels per frame to go there
+ * TODO: should support scrollX anim too
+ */
+silex.view.Stage.prototype.startScrolling = function(scrollSpeed) {
+  if(this.scrollTarget != null) {
+    const scrollSpeedWithDefault = scrollSpeed || silex.view.Stage.DEFAULT_SCROLL_SPEED;
+    // det the next scroll step
+    const prevScroll = this.getScrollY();
+    // const nextStep = Math.round((bb.top - prevScroll) / silex.view.Stage.SCROLL_STEPS_ANIM);
+    let nextStep;
+    if(Math.abs(this.scrollTarget - prevScroll) < scrollSpeedWithDefault) {
+      nextStep = this.scrollTarget;
+    }
+    else if(this.scrollTarget > prevScroll) {
+      nextStep = prevScroll + scrollSpeedWithDefault;
+    }
+    else {
+      nextStep = prevScroll - scrollSpeedWithDefault;
+    }
+    this.setScrollY(nextStep);
+    // check if the scrolling target is reached
+    const newScroll = this.getScrollY();
+    if(newScroll === prevScroll || newScroll === this.scrollTarget) {
+      this.scrollTarget = null;
+    }
+    else {
+      requestAnimationFrame(() => this.startScrolling(scrollSpeedWithDefault));
+    }
+  }
+};
+
+
+/**
  * notify the controller that the properties of the selection have changed
  */
 silex.view.Stage.prototype.propertyChanged = function() {
@@ -1111,14 +1220,14 @@ silex.view.Stage.prototype.cleanupElement = function(element) {
 silex.view.Stage.prototype.moveElements = function(elements, offsetX, offsetY) {
   // just like when mouse moves
   this.followElementPosition(elements, offsetX, offsetY);
-  // notify the controller
-  this.propertyChanged();
   // reset elements properties since they are stored in the CSS by the model
   elements.forEach((element) => {
     this.controller.stageController.styleChanged('top', element.style.top, [element], false);
     this.controller.stageController.styleChanged('left', element.style.left, [element], false);
     this.cleanupElement(element);
   });
+  // notify the controller
+  this.propertyChanged();
 };
 
 
@@ -1131,52 +1240,23 @@ silex.view.Stage.prototype.isMobileMode = function() {
   return goog.dom.classlist.contains(document.body, 'mobile-mode');
 };
 
-
 /**
- * @param  {Element}  element in the DOM to wich I am scrolling
+ * Handle the right click and display a small text to inform users
+ * @param {number} x position of the mouse, relatively to the screen
+ * @param {number} y position of the mouse, relatively to the screen
  */
-silex.view.Stage.prototype.setScrollTarget = function(element) {
-  if(element !== this.bodyElement) {
-    const previousTarget = this.scrollTarget;
-    this.scrollTarget = element;
-    if(!previousTarget) {
-      // start scrolling
-      // not right away because the element will not be attached to the dom yet
-      requestAnimationFrame(() => this.startScrolling());
-    }
-  }
-};
+silex.view.Stage.prototype.handleRightClick = function(x, y) {
 
+  const myContextHeight=goog.dom.getElementByClass(silex.view.ContextMenu.CLASS_NAME).offsetHeight;
+  const myMenuWidth=goog.dom.getElementByClass('menu-container').offsetWidth;
 
-/**
- * scroll until the scroll target is reached
- */
-silex.view.Stage.prototype.startScrolling = function() {
-  if(this.scrollTarget) {
-    // det the next scroll step
-    const prevScroll = this.getScrollY();
-    const bb = goog.style.getBounds(this.scrollTarget);
-    const iframeSize = this.getStageSize();
-    const scrollCentered = bb.top - Math.round(iframeSize.height/2);
-    // const nextStep = Math.round((bb.top - prevScroll) / silex.view.Stage.SCROLL_STEPS);
-    let nextStep;
-    if(Math.abs(scrollCentered - prevScroll) < silex.view.Stage.SCROLL_STEPS) {
-      nextStep = scrollCentered;
-    }
-    else if(scrollCentered > prevScroll) {
-      nextStep = prevScroll + silex.view.Stage.SCROLL_STEPS;
-    }
-    else {
-      nextStep = prevScroll - silex.view.Stage.SCROLL_STEPS;
-    }
-    this.setScrollY(nextStep);
-    // check if the scrolling target is reached
-    const newScroll = this.getScrollY();
-    if(newScroll === prevScroll || newScroll === scrollCentered) {
-      this.scrollTarget = null;
-    }
-    else {
-      requestAnimationFrame(() => this.startScrolling());
-    }
-  }
+  const rightClickDiv=goog.dom.getElementByClass('rightClick');
+  rightClickDiv.style.display='block';
+  rightClickDiv.style.left = (x+myMenuWidth)+'px';
+  rightClickDiv.style.top = (y+myContextHeight)+'px';
+
+  setTimeout(() => {
+    const el = goog.dom.getElementByClass('rightClick');
+    el.style.display='none';
+    }, 3000);
 };

@@ -213,7 +213,7 @@ silex.view.dialog.NewWebsiteDialog.prototype.buildUi = function() {
   // tip of the day
   const tipOfTheDayElement = /** @type {!Element} */ (this.element.querySelector('.tip-of-the-day'));
   /** @type {silex.view.TipOfTheDay} */
-  var tipOfTheDay = new silex.view.TipOfTheDay(tipOfTheDayElement, this.model, this.controller);
+  var tipOfTheDay = new silex.view.TipOfTheDay(tipOfTheDayElement);
 };
 
 
@@ -270,12 +270,6 @@ silex.view.dialog.NewWebsiteDialog.prototype.redraw = function() {
 silex.view.dialog.NewWebsiteDialog.prototype.openDialog = function(options) {
   // is ready callback
   if(this.state === 'ready') {
-    // let the file picker init
-    // this is a workaround to prevent cloud explorer to throw an error on write
-    // FIXME: remove this with the new cloud explorer version
-    const filePicker = silex.service.CloudStorage.getInstance().filePicker;
-    filePicker['ctrl']['show']();
-    filePicker['ctrl']['hide']();
     // notify the owner
     if(options.ready) options.ready();
   }
@@ -290,6 +284,13 @@ silex.view.dialog.NewWebsiteDialog.prototype.openDialog = function(options) {
   }
   this.selected = null;
   this.modalDialog.onClose = () => {
+    // let the file picker init
+    // this is a workaround to prevent cloud explorer to throw an error on write
+    // FIXME: remove this with the new cloud explorer version
+    const filePicker = silex.service.CloudStorage.getInstance().filePicker;
+    filePicker['ctrl']['show']();
+    filePicker['ctrl']['hide']();
+    // notify the owner, with the url to load or nothing (will load blank template)
     if(this.selected) {
       options.close(this.selected.url, this.selected.isTemplate);
     }

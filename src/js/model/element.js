@@ -151,15 +151,6 @@ silex.model.Element.WEBSITE_WIDTH_CLASS_NAME = 'website-width'
 
 
 /**
- * constant for the class name of the default site width, rule is set when setting is changed
- * used to set a min-width to sections
- * @const
- * @type {string}
- */
-silex.model.Element.WEBSITE_MIN_WIDTH_CLASS_NAME = 'website-min-width';
-
-
-/**
  * constant for the attribute name of the links
  * @const
  * @type {string}
@@ -253,7 +244,16 @@ silex.model.Element.prototype.getType = function(element) {
 
 /**
  * @param  {Element} element   created by silex
- * @return true if el is a section or the content container of a section
+ * @return true if `element` is a an element's content (the element in an image, html box, section...)
+ */
+silex.model.Element.prototype.isElementContent = function(element) {
+  return element.classList.contains(silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
+}
+
+
+/**
+ * @param  {Element} element   created by silex
+ * @return true if `element` is a section
  */
 silex.model.Element.prototype.isSection = function(element) {
   return element.classList.contains(silex.model.Element.TYPE_SECTION + '-element');
@@ -262,7 +262,7 @@ silex.model.Element.prototype.isSection = function(element) {
 
 /**
  * @param  {Element} element   created by silex
- * @return true if el is a section or the content container of a section
+ * @return true if `element` is the content container of a section
  */
 silex.model.Element.prototype.isSectionContent = function(element) {
   return element.classList.contains(silex.model.Element.TYPE_CONTAINER_CONTENT);
@@ -552,7 +552,7 @@ silex.model.Element.prototype.setImageUrl = function(element, url, opt_callback,
             img = e.target;
             // update element size
             this.setStyle(element, 'width', Math.max(silex.model.Element.MIN_WIDTH, img.naturalWidth) + 'px', true);
-            this.setStyle(element, 'minHeight', Math.max(silex.model.Element.MIN_HEIGHT, img.naturalHeight) + 'px', true);
+            this.setStyle(element, this.getHeightStyleName(element), Math.max(silex.model.Element.MIN_HEIGHT, img.naturalHeight) + 'px', true);
             // callback
             if (opt_callback) {
               opt_callback(element, img);
@@ -642,6 +642,11 @@ silex.model.Element.prototype.addElement = function(container, element) {
   goog.dom.appendChild(container, element);
   // add the class to keep the element above all others
   element.classList.add(silex.model.Element.JUST_ADDED_CLASS_NAME);
+  // resize the body
+  // call the method defined in front-end.js
+  // this will resize the body according to its content
+  // it will also trigger a "silex:resize" event
+  this.model.file.getContentWindow()['resizeBody']();
 };
 
 silex.model.Element.INITIAL_ELEMENT_SIZE = 100;
@@ -691,6 +696,60 @@ silex.model.Element.prototype.getBestContainerForNewElement = function(x, y) {
 
 
 /**
+ * init the element depending on its type
+ * @param {Element} element
+ */
+silex.model.Element.prototype.initElement = function(element) {
+  // default style
+  var defaultStyle = {};
+  defaultStyle['width'] = silex.model.Element.INITIAL_ELEMENT_SIZE + 'px';
+  defaultStyle[this.getHeightStyleName(element)] = silex.model.Element.INITIAL_ELEMENT_SIZE + 'px';
+
+  // init the element depending on its type
+  switch(this.getType(element)) {
+    case silex.model.Element.TYPE_CONTAINER:
+    case silex.model.Element.TYPE_HTML:
+      if(!this.isSection(element)){
+        defaultStyle['background-color'] = 'rgb(255, 255, 255)';
+      }
+      break;
+    case silex.model.Element.TYPE_TEXT:
+    case silex.model.Element.TYPE_IMAGE:
+      break;
+  }
+  // special case of section content
+  if(this.isSectionContent(element)) {
+    // no bg color for the content container
+    defaultStyle['background-color'] = '';
+    // no width either, it will take the .website-width
+    // the default one from front-end.css or the one in the settings
+    defaultStyle['width'] = '';
+  }
+  // send the scroll to the target
+  this.view.stage.setScrollTarget(element);
+
+  // default style to the element style
+  // keep the style if there is one, usually set by component::initComponent
+  const finalStyle = this.model.property.getStyle(element, false) || {};
+  for(var name in defaultStyle) {
+    finalStyle[name] = finalStyle[name] || defaultStyle[name];
+  }
+  // apply the style (force desktop style, not mobile)
+  this.model.property.setStyle(element, finalStyle, false);
+
+  // add the element to the stage
+  if(this.isSection(element)) {
+    this.addElement(this.model.body.getBodyElement(), element);
+  }
+  else if(!this.isElementContent(element)) {
+    // add to the stage at the right position
+    // and in the right container
+    this.addElementDefaultPosition(element);
+  }
+};
+
+
+/**
  * element creation
  * create a DOM element, attach it to this container
  * and returns a new component for the element
@@ -699,27 +758,17 @@ silex.model.Element.prototype.getBestContainerForNewElement = function(x, y) {
  * @return  {Element}   the newly created element
  */
 silex.model.Element.prototype.createElement = function(type) {
-  // default style
-  var styleObject = {
-    'min-height': silex.model.Element.INITIAL_ELEMENT_SIZE + 'px',
-    'width': silex.model.Element.INITIAL_ELEMENT_SIZE + 'px',
-  };
-
   // create the element
   var element = null;
   switch (type) {
-
     // container
     case silex.model.Element.TYPE_CONTAINER:
       element = this.createContainerElement();
-      // add a default style
-      styleObject['background-color'] = 'rgb(255, 255, 255)';
       break;
 
     // section
     case silex.model.Element.TYPE_SECTION:
       element = this.createSectionElement();
-      this.view.stage.setScrollTarget(element);
       break;
 
     // text
@@ -730,8 +779,6 @@ silex.model.Element.prototype.createElement = function(type) {
     // HTML box
     case silex.model.Element.TYPE_HTML:
       element = this.createHtmlElement();
-      // add a default style
-      styleObject['background-color'] = 'rgb(255, 255, 255)';
       break;
 
     // Image
@@ -745,16 +792,9 @@ silex.model.Element.prototype.createElement = function(type) {
   goog.dom.classlist.add(element, silex.model.Body.EDITABLE_CLASS_NAME);
   this.model.property.initSilexId(element, this.model.file.getContentDocument());
 
-  // apply the style (force desktop style, not mobile)
-  this.model.property.setStyle(element, styleObject, false);
-
-  // make it editable
-  this.model.body.setEditable(element, true);
-
   // add css class for Silex styles
   goog.dom.classlist.add(element, type + '-element');
-  // add to stage
-  this.addElementDefaultPosition(element);
+
   // return the element
   return element;
 };
@@ -803,22 +843,17 @@ silex.model.Element.prototype.createSectionElement = function() {
   element.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_CONTAINER);
   element.classList.add(silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME);
   element.classList.add(silex.model.Element.TYPE_CONTAINER + '-element');
-  element.classList.add(silex.model.Element.WEBSITE_MIN_WIDTH_CLASS_NAME);
+
   // content element is both a container and a content element
-  var content = this.createContainerElement();
-  var styleObject = {
-    'min-height': '100px',
-    'background-color': 'rgb(255, 255, 255)'
-  };
-  content.classList.add(silex.model.Body.EDITABLE_CLASS_NAME);
+  var content = this.createElement(silex.model.Element.TYPE_CONTAINER);
   content.classList.add(silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
-  content.classList.add(silex.model.Element.WEBSITE_WIDTH_CLASS_NAME);
-  this.model.property.initSilexId(content, this.model.file.getContentDocument());
-  this.model.property.setStyle(content, styleObject, false);
   content.classList.add(silex.model.Element.TYPE_CONTAINER_CONTENT);
-  content.classList.add(silex.model.Element.TYPE_CONTAINER + '-element');
+  content.classList.add(silex.model.Element.WEBSITE_WIDTH_CLASS_NAME);
   content.classList.add(silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME);
   element.appendChild(content);
+
+  this.initElement(content);
+
   // done
   return element;
 };
@@ -911,11 +946,17 @@ silex.model.Element.prototype.getLink = function(element) {
  * @return  {?string}           the value for this styleName
  */
 silex.model.Element.prototype.getClassName = function(element) {
-  var pages = this.model.page.getPages();
+  const pages = this.model.page.getPages();
+  let componentCssClasses = [];
+  if(this.model.component.isComponent(element)) {
+    const templateName = this.model.property.getComponentData(element)['templateName'];
+    componentCssClasses = this.model.component.getCssClasses(templateName);
+  }
   return element.className.split(' ').filter((name) => {
     if (name === '' ||
         goog.array.contains(silex.utils.Style.SILEX_CLASS_NAMES, name) ||
         goog.array.contains(pages, name) ||
+        goog.array.contains(componentCssClasses, name) ||
         this.model.property.getSilexId(element) === name) {
       return false;
     }
@@ -953,4 +994,18 @@ silex.model.Element.prototype.setClassName = function(element, opt_className) {
       }
     });
   }
+};
+
+
+/**
+ * get the name of the style to be used to set the height of the element
+ * returns 'height' or 'minHeight' depending on the element type
+ * @param {Element} element
+ * @return {string} 'height' or 'minHeight' depending on the element type
+ */
+silex.model.Element.prototype.getHeightStyleName = function(element) {
+  if(element.classList.contains(silex.model.Body.SILEX_USE_HEIGHT_NOT_MINHEIGHT)) {
+    return 'height';
+  }
+  return 'minHeight';
 };

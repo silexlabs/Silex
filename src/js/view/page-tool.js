@@ -120,6 +120,11 @@ silex.view.PageTool.prototype.redraw = function(selectedElements, pageNames, cur
     // make an array with name, displayName, linkName and className
     var idx = 0;
     this.pages = pageNames.map(goog.bind(function(pageName) {
+      const pageElement = this.model.file.getContentDocument().getElementById(pageName);
+      if(!pageElement) {
+        // this happens while undoing or redoing
+        return null;
+      }
       var res = {
         'name': pageName,
         'displayName': this.model.file.getContentDocument().getElementById(pageName).innerHTML,

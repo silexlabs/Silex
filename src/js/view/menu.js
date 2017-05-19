@@ -55,6 +55,12 @@ silex.view.Menu = function(element, model, controller) {
   this.controller = controller;
 };
 
+/**
+ * Get the menu container
+ * @static
+ * @type {string}
+ */
+silex.view.Menu.CLASS_NAME='menu-container';
 
 /**
  * reference to the menu class of the closure library
@@ -140,15 +146,12 @@ silex.view.Menu.prototype.buildUi = function() {
     el.setAttribute('data-comp-id', id);
     el.innerHTML = `
       <span class="icon fa-inverse ${iconClassName}"></span>
-      Add ${id}
+      ${comp.name}
     `;
     return el;
   }
   // components
   this.model.component.ready(() => {
-    // **
-    // FIXME: do not display components untill the feature is ready
-    return;
     // **
     const list = this.element.querySelector('.add-menu-container');
     const componentsDef = this.model.component.getComponentsDef();
@@ -447,17 +450,5 @@ silex.view.Menu.prototype.onMenuEvent = function(type, opt_componentName) {
     //   break;
     default:
       console.warn('menu type not found', type);
-  }
-  if(opt_componentName) {
-    // for components, apply the style found in component definition
-    const componentsDef = this.model.component.getComponentsDef();
-    const comp = componentsDef[opt_componentName];
-    if(comp && comp.initialCss) {
-      const style = this.model.property.getStyle(added, false);
-      for(let name in comp.initialCss) {
-        style[name] = comp.initialCss[name];
-      }
-      this.model.property.setStyle(added, style, false);
-    }
   }
 };
