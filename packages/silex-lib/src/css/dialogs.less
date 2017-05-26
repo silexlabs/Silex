@@ -10,17 +10,6 @@
 }
 
 /* */
-
-
-.file-editor-opened #silex-file-explorer {
-  width: 90%;
-  height: 90%;
-  left: 5%;
-  top: 5%;
-  position: absolute;
-  background-color: white;
-}
-
 /* generic styles  */
 .dialogs-background {
   width: 100%;
@@ -53,6 +42,8 @@
   left: @dialog-margin;
   bottom: @dialog-margin;
   right: @dialog-margin;
+  width: 100% - 2*@dialog-margin;
+  height: 100% - 2*@dialog-margin;
 }
 /* but hide the background with display none */
 .dialogs-background, .settings-background {
@@ -102,6 +93,14 @@
 }
 .newwebsite-editor-opened {
   .silex-newwebsite-dialog {
+    .visible-dialog;
+  }
+  .dialogs-background {
+    .visible-background;
+  }
+}
+.file-editor-opened {
+  #silex-file-explorer {
     .visible-dialog;
   }
   .dialogs-background {
