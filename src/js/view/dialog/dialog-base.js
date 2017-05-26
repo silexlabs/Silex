@@ -87,9 +87,10 @@ silex.view.dialog.DialogBase.prototype.buildUi = function() {
       }
     });
   // close button
-  goog.events.listen(goog.dom.getElementByClass('close-btn', this.element), goog.events.EventType.CLICK, function() {
+  const closeBtn = this.element.querySelector('.close-btn');
+  if(closeBtn != null) goog.events.listen(closeBtn, goog.events.EventType.CLICK, () => {
     this.closeEditor();
-  }, false, this);
+  }, false);
   // dialogs background
   goog.events.listen(this.background, goog.events.EventType.CLICK, function(event) {
     this.closeEditor();

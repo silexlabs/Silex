@@ -46,6 +46,7 @@ silex.view.dialog.FileExplorer = function(element, model, controller) {
   });
   // set the visibility css class
   this.visibilityClass = 'file-editor';
+  this.buildUi();
 };
 
 
