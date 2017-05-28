@@ -158,8 +158,9 @@
 
   .color-button {
     display: block;
-    width: 20px;
+    width: 30px;
     float: left;
+    padding-top: 2px;
 
     .goog-inline-block {
       display: block;
@@ -240,18 +241,33 @@
       }
 
     }
-    input.checkbox {
-      margin: 3px;
-    }
-
   }
 
   .background-editor {
     .background-image {
-      select.combobox {
+      select.combobox, button {
         .small-combo;
         margin-right: 5px;
         margin-top: 5px;
+        color: @silexlightergrey;
+        &.disabled {
+          opacity: .7;
+        }
+      }
+      button {
+        background-color: @silexdarkgrey;
+        padding: 5px;
+        border: 1px solid @silexlightgrey;
+        transition: all .25s;
+        text-decoration: none;
+        border-radius: 2px;
+        &:hover {
+          text-decoration: none;
+          background-color: @silexlightblue;
+          border-color: @silexlightergrey;
+          color: white;
+          z-index: 1;
+        }
       }
 
     }
