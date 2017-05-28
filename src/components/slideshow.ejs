@@ -59,9 +59,6 @@
   <% if(slides[idx].bgColor) { %>background-color: <%= slides[idx].bgColor %>; <% } %>
   <% if(slides[idx].image && slides[idx].image[0]) { %>
       background-image:url('<%= slides[idx].image[0].url %>');
-      background-repeat: no-repeat;
-      background-size: cover;
-      background-position: 50%;
   <% } %>
   }
 <% } %>
@@ -71,6 +68,9 @@
     width: 100%;
     display: flex;
     justify-content: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: 50%;
     <% if(captionAlignV === 'top') { %>
       align-items: flex-start;
     <% } %>
