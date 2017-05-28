@@ -272,7 +272,7 @@ CloudExplorer.prototype.saveAs = function(defaultFileName) {};
  *   mime: string
  * }}
  */
-var CEBlob;
+var FileInfo;
 
 
 /**

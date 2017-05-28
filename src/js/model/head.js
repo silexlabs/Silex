@@ -351,23 +351,23 @@ silex.model.Head.prototype.setMeta = function(name, opt_value) {
 /**
  * get/set the publication path
  * publication path is always absolute url
- * @param {?CEBlob=} opt_blob
+ * @param {?FileInfo=} opt_fileInfo
  */
-silex.model.Head.prototype.setPublicationPath = function(opt_blob) {
+silex.model.Head.prototype.setPublicationPath = function(opt_fileInfo) {
   // TODO: remove meta and store this value in the JSON like components params (see model/property.js)
-  this.setMeta('publicationPath', opt_blob == null ? null : JSON.stringify(opt_blob));
-  this.view.settingsDialog.setPublicationPath(opt_blob);
+  this.setMeta('publicationPath', opt_fileInfo == null ? null : JSON.stringify(opt_fileInfo));
+  this.view.settingsDialog.setPublicationPath(opt_fileInfo);
 };
 
 
 /**
  * get/set the publication path
  * publication path is always absolute url
- * @return {?CEBlob}
+ * @return {?FileInfo}
  */
 silex.model.Head.prototype.getPublicationPath = function() {
-  var blob = this.getMeta('publicationPath');
-  return blob == null ? null : /** @type {CEBlob} */ (JSON.parse(blob));
+  var fileInfo = this.getMeta('publicationPath');
+  return fileInfo == null ? null : /** @type {FileInfo} */ (JSON.parse(fileInfo));
 };
 
 
@@ -515,8 +515,8 @@ silex.model.Head.prototype.getFaviconPath = function() {
   if (faviconTag) {
     url = faviconTag.getAttribute('href');
   }
-  if (url && this.model.file.getUrl()) {
-    var baseUrl = silex.utils.Url.getBaseUrl() + this.model.file.getUrl();
+  if (url && this.model.file.getFileInfo()) {
+    var baseUrl = silex.utils.Url.getBaseUrl() + this.model.file.getFileInfo().url;
     url = silex.utils.Url.getRelativePath(url, baseUrl);
   }
   return url;
@@ -619,8 +619,8 @@ silex.model.Head.prototype.setThumbnailSocialPath = function(opt_path) {
  */
 silex.model.Head.prototype.getThumbnailSocialPath = function() {
   var url = this.getMeta('og:image') || this.getMeta('twitter:image');
-  if (url && this.model.file.getUrl()) {
-    var baseUrl = silex.utils.Url.getBaseUrl() + this.model.file.getUrl();
+  if (url && this.model.file.getFileInfo()) {
+    var baseUrl = this.model.file.getFileInfo().url;
     url = silex.utils.Url.getRelativePath(url, baseUrl);
   }
   return url;

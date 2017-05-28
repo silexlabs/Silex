@@ -69,14 +69,14 @@ silex.view.dialog.SettingsDialog.prototype.init = function() {
   this.bindTextField('.general-pane .input-favicon-path', (v) => this.controller.settingsDialogController.setFaviconPath(v));
   this.bindTextField('.social-pane .input-image-path', (v) => this.controller.settingsDialogController.setThumbnailSocialPath(v));
   this.bindTextField('.publish-pane .input-publication-path', (v) => {
-    const blob = this.controller.settingsDialogController.getPublicationPath();
-    blob.path = v;
-    this.controller.settingsDialogController.setPublicationPath(blob);
+    const fileInfo = this.controller.settingsDialogController.getPublicationPath();
+    fileInfo.path = v;
+    this.controller.settingsDialogController.setPublicationPath(fileInfo);
   });
   this.bindTextField('.publish-pane .input-publication-service', (v) => {
-    const blob = this.controller.settingsDialogController.getPublicationPath();
-    blob.service = v;
-    this.controller.settingsDialogController.setPublicationPath(blob);
+    const fileInfo = this.controller.settingsDialogController.getPublicationPath();
+    fileInfo.service = v;
+    this.controller.settingsDialogController.setPublicationPath(fileInfo);
   });
 
   // image path browse button
@@ -107,7 +107,7 @@ silex.view.dialog.SettingsDialog.prototype.mobileCheckbox = null;
 
 /**
  * store the current publication path
- * @type {?CEBlob}
+ * @type {?FileInfo}
  */
 silex.view.dialog.SettingsDialog.prototype.publicationPath = null;
 
@@ -132,8 +132,8 @@ silex.view.dialog.SettingsDialog.prototype.buildUi = function() {
       for(let idx=0; idx<services.length; idx++) {
         const service = services[idx];
         const option = document.createElement('option');
-        option.value = service;
-        option.innerHTML = service;
+        option.value = service.name;
+        option.innerHTML = service.displayName || service.name;
         select.appendChild(option);
       }
     });
@@ -239,24 +239,24 @@ silex.view.dialog.SettingsDialog.prototype.setThumbnailSocialPath = function(opt
 /**
  * set the pubication path to display
  * @see silex.model.Head
- * @param {?CEBlob=} opt_blob   the publication path
+ * @param {?FileInfo=} opt_fileInfo   the publication path
  */
-silex.view.dialog.SettingsDialog.prototype.setPublicationPath = function(opt_blob) {
-  if(opt_blob != null) {
+silex.view.dialog.SettingsDialog.prototype.setPublicationPath = function(opt_fileInfo) {
+  if(opt_fileInfo != null) {
     // set input tags the values
-    this.setInputValue('.publish-pane .input-publication-service', opt_blob.service);
-    this.setInputValue('.publish-pane .input-publication-path', opt_blob.path);
+    this.setInputValue('.publish-pane .input-publication-service', opt_fileInfo.service);
+    this.setInputValue('.publish-pane .input-publication-path', opt_fileInfo.path);
     // display the UI with publication path set
     this.element.classList.remove('publication-path-not-set');
-    // store blob value, clone blob for safety
-    this.publicationPath = /** @type {CEBlob} */ (Object.assign({}, opt_blob));
+    // store fileInfo value, clone fileInfo for safety
+    this.publicationPath = /** @type {FileInfo} */ (Object.assign({}, opt_fileInfo));
   }
   else {
     this.setInputValue('.publish-pane .input-publication-service', '');
     this.setInputValue('.publish-pane .input-publication-path', '');
     // display the "not set" UI
     this.element.classList.add('publication-path-not-set');
-    // store blob value
+    // store fileInfo value
     this.publicationPath = null;
   }
 };
@@ -264,7 +264,7 @@ silex.view.dialog.SettingsDialog.prototype.setPublicationPath = function(opt_blo
 
 /**
  * get the pubication path from text fields
- * @return {?CEBlob} the publication path
+ * @return {?FileInfo} the publication path
  */
 silex.view.dialog.SettingsDialog.prototype.getPublicationPath = function() {
   const service = this.element.querySelector('.publish-pane .input-publication-service').value;
@@ -273,6 +273,7 @@ silex.view.dialog.SettingsDialog.prototype.getPublicationPath = function() {
     this.publicationPath.service = service;
     this.publicationPath.path = path;
   }
+  console.log('getPub', this.publicationPath);
   return this.publicationPath;
 };
 

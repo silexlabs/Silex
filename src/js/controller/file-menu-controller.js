@@ -103,7 +103,7 @@ silex.controller.FileMenuController.prototype.onOpenError = function(opt_errorCb
 
 /**
  * open a file
- * @param {?function(CEBlob)=} opt_cbk
+ * @param {?function(FileInfo)=} opt_cbk
  * @param {?function(Object)=} opt_errorCbk
  * @param {?function()=} opt_cancelCbk
  */
@@ -112,8 +112,8 @@ silex.controller.FileMenuController.prototype.openFile = function(opt_cbk, opt_e
   this.tracker.trackAction('controller-events', 'request', 'file.open', 0);
   // let the user choose the file
   this.view.fileExplorer.openFile(
-      blob => {
-        this.model.file.open(blob, rawHtml => {
+      fileInfo => {
+        this.model.file.open(fileInfo, rawHtml => {
           this.model.file.setHtml(rawHtml, () => {
             // undo redo reset
             this.undoReset();
@@ -122,7 +122,7 @@ silex.controller.FileMenuController.prototype.openFile = function(opt_cbk, opt_e
             // QOS, track success
             this.tracker.trackAction('controller-events', 'success', 'file.open', 1);
             if (opt_cbk) {
-              opt_cbk(/** @type {CEBlob} */ (blob));
+              opt_cbk(/** @type {FileInfo} */ (fileInfo));
             }
           }, true, false); // with loader and backward compat check
         },
@@ -173,7 +173,7 @@ silex.controller.FileMenuController.prototype.publish = function() {
   {
     silex.utils.Dom.publish(
         /** @type {string} */ (this.model.head.getPublicationPath()),
-        this.model.file.getUrl(),
+        this.model.file.getFileInfo().path,
         this.model.file.getHtml(),
         goog.bind(function(status) {
           silex.utils.Notification.alert('<strong>I am about to publish your site. This may take several minutes.</strong>', () => clearInterval(timer), 'Close');

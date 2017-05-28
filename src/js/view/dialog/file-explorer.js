@@ -64,7 +64,7 @@ silex.view.dialog.FileExplorer.prototype.ce = null;
 /**
  * call CE API
  * @private
- * @param {function(?CEBlob=)} cbk
+ * @param {function(?FileInfo=)} cbk
  * @param {?string=} opt_paramStr
  * @param {?Object.<Array>=} opt_mimetypes optional array of accepted mimetypes,
  *                           e.g. {'mimetypes': ['text/html', 'text/plain']}
@@ -80,11 +80,11 @@ silex.view.dialog.FileExplorer.prototype.callCE =
   document.querySelector('#silex-file-explorer').contentWindow.focus();
 
   ceMethod.call(this.ce, opt_paramStr)
-  .then((blob) => {
-    if(blob != null) {
+  .then((fileInfo) => {
+    if(fileInfo != null) {
       // no https, because it creates security issues
-      // blob.url = blob.url.replace('https://', '//');
-      cbk(blob);
+      // fileInfo.url = fileInfo.url.replace('https://', '//');
+      cbk(fileInfo);
     }
     else {
       console.log('user canceled in CE');
@@ -103,7 +103,7 @@ silex.view.dialog.FileExplorer.prototype.callCE =
 
 /**
  * pick file
- * @param {function(?CEBlob=)} cbk
+ * @param {function(?FileInfo=)} cbk
  * @param {?Object.<Array>=} opt_mimetypes optional array of accepted mimetypes,
  *                           e.g. {'mimetypes': ['text/html', 'text/plain']}
  * @param {?function(Object)=} opt_errCbk
@@ -117,7 +117,7 @@ silex.view.dialog.FileExplorer.prototype.openFile =
 
 /**
  * pick multiple files
- * @param {function(?CEBlob=)} cbk
+ * @param {function(?FileInfo=)} cbk
  * @param {?Object.<Array>=} opt_mimetypes optional array of accepted mimetypes,
  *                           e.g. {'mimetypes': ['text/html', 'text/plain']}
  * @param {?function(Object)=} opt_errCbk
@@ -131,7 +131,7 @@ silex.view.dialog.FileExplorer.prototype.openFiles =
 
 /**
  * pick a folder
- * @param {function(?CEBlob=)} cbk
+ * @param {function(?FileInfo=)} cbk
  * @param {?Object.<Array>=} opt_mimetypes optional array of accepted mimetypes,
  *                           e.g. {'mimetypes': ['text/html', 'text/plain']}
  * @param {?function(Object)=} opt_errCbk
@@ -145,7 +145,7 @@ silex.view.dialog.FileExplorer.prototype.openFolder =
 
 /**
  * choose a name for the file
- * @param {function(?CEBlob=)} cbk
+ * @param {function(?FileInfo=)} cbk
  * @param {string} defaultName
  * @param {?Object.<Array>=} opt_mimetypes optional array of accepted mimetypes,
  *                           e.g. {'mimetypes': ['text/html', 'text/plain']}
@@ -175,22 +175,22 @@ silex.view.dialog.FileExplorer.prototype.saveAs =
 //     }
 //     this.closeEditor();
 //   }.bind(this);
-//   var successCbk = function(blob) {
+//   var successCbk = function(fileInfo) {
 //     // notify controller
 //     if (cbk) {
-//       cbk(blob.url);
+//       cbk(fileInfo.url);
 //     }
 //     this.closeEditor();
 //   }.bind(this);
 //   // export dummy data
 //   this.ce.saveAs('http://google.com/',
 //       opt_mimetypes,
-//       goog.bind(function(blob) {
+//       goog.bind(function(fileInfo) {
 //         // give back focus to Silex
 //         // this.view.stage.resetFocus();
 //         // no https, because it creates security issues
-//         blob.url = blob.url.replace('https://', '//');
-//         successCbk(blob);
+//         fileInfo.url = fileInfo.url.replace('https://', '//');
+//         successCbk(fileInfo);
 //       }, this),
 //       errCbk);
 // };

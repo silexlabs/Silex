@@ -207,13 +207,13 @@ silex.controller.ControllerBase.prototype.browseBgImage = function() {
 
   // open the file browser
   this.view.fileExplorer.openFile(
-      blob => {
+      fileInfo => {
         // update the model
         var element = this.model.body.getSelection()[0];
         // undo checkpoint
         this.undoCheckPoint();
         // load the image
-        this.model.element.setBgImage(element, blob.url);
+        this.model.element.setBgImage(element, fileInfo.url);
         // tracking
         this.tracker.trackAction('controller-events', 'success', 'selectBgImage', 1);
       },
@@ -228,32 +228,30 @@ silex.controller.ControllerBase.prototype.browseBgImage = function() {
  */
 silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
   this.tracker.trackAction('controller-events', 'request', 'insert.image', 0);
-  this.view.fileExplorer.openFile( // TODO: allow multiple files
-      goog.bind(function(url) {
-        // absolute url only on stage
-        var baseUrl = silex.utils.Url.getBaseUrl();
-        url = silex.utils.Url.getAbsolutePath(url, baseUrl);
-        // undo checkpoint
-        this.undoCheckPoint();
-        // create the element
-        let img = this.addElement(silex.model.Element.TYPE_IMAGE);
-        // load the image
-        this.model.element.setImageUrl(img, url,
-            goog.bind(function(element, imgElement) {
-              this.tracker.trackAction('controller-events', 'success', 'insert.image', 1);
-            }, this),
-            goog.bind(function(element, message) {
-              silex.utils.Notification.notifyError('Error: I did not manage to load the image. \n' + message);
-              this.model.element.removeElement(element);
-              this.tracker.trackAction('controller-events', 'error', 'insert.image', -1);
-            }, this)
-        );
-      }, this),
-      { 'mimetypes': ['image/jpeg', 'image/png', 'image/gif'] },
-      goog.bind(function(error) {
-        silex.utils.Notification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''));
-        this.tracker.trackAction('controller-events', 'error', 'insert.image', -1);
-      }, this)
+  // TODO: allow multiple files
+  this.view.fileExplorer.openFile(
+    fileInfo => {
+      // undo checkpoint
+      this.undoCheckPoint();
+      // create the element
+      let img = this.addElement(silex.model.Element.TYPE_IMAGE);
+      // load the image
+      this.model.element.setImageUrl(img, fileInfo.url,
+        (element, imgElement) => {
+          this.tracker.trackAction('controller-events', 'success', 'insert.image', 1);
+        },
+        (element, message) => {
+          silex.utils.Notification.notifyError('Error: I did not manage to load the image. \n' + message);
+          this.model.element.removeElement(element);
+          this.tracker.trackAction('controller-events', 'error', 'insert.image', -1);
+        }
+      );
+    },
+    { 'mimetypes': ['image/jpeg', 'image/png', 'image/gif'] },
+    error => {
+      silex.utils.Notification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''));
+      this.tracker.trackAction('controller-events', 'error', 'insert.image', -1);
+    }
   );
   this.view.workspace.redraw(this.view);
 };
@@ -485,21 +483,21 @@ silex.controller.ControllerBase.prototype.toggleMobileMode = function() {
 
 /**
  * save or save-as
- * @param {?CEBlob=} opt_blob
+ * @param {?FileInfo=} opt_fileInfo
  * @param {?function()=} opt_cbk
  * @param {?function(Object)=} opt_errorCbk
  */
-silex.controller.ControllerBase.prototype.save = function(opt_blob, opt_cbk, opt_errorCbk) {
+silex.controller.ControllerBase.prototype.save = function(opt_fileInfo, opt_cbk, opt_errorCbk) {
   this.tracker.trackAction('controller-events', 'request', 'file.save', 0);
-  if (opt_blob && !this.model.file.isTemplate) {
-    this.doSave(/** @type {CEBlob} */ (opt_blob), opt_cbk, opt_errorCbk);
+  if (opt_fileInfo && !this.model.file.isTemplate) {
+    this.doSave(/** @type {FileInfo} */ (opt_fileInfo), opt_cbk, opt_errorCbk);
   }
   else {
     // choose a new name
     this.view.fileExplorer.saveAs(
-        blob => {
-          if(blob != null) {
-            this.doSave(/** @type {CEBlob} */ (blob), opt_cbk, opt_errorCbk);
+        fileInfo => {
+          if(fileInfo != null) {
+            this.doSave(/** @type {FileInfo} */ (fileInfo), opt_cbk, opt_errorCbk);
           }
           else {
             console.log('user aborted save as');
@@ -518,13 +516,13 @@ silex.controller.ControllerBase.prototype.save = function(opt_blob, opt_cbk, opt
 
 /**
  * save or save-as
- * @param {CEBlob} blob
+ * @param {FileInfo} fileInfo
  * @param {?function()=} opt_cbk
  * @param {?function(Object)=} opt_errorCbk
  */
-silex.controller.ControllerBase.prototype.doSave = function(blob, opt_cbk, opt_errorCbk) {
+silex.controller.ControllerBase.prototype.doSave = function(fileInfo, opt_cbk, opt_errorCbk) {
   // urls will be relative to the html file url
-  this.model.file.blob = blob;
+  this.model.file.fileInfo = fileInfo;
   // relative urls only in the files
   var rawHtml = this.model.file.getHtml();
   // look for bug of firefox inserting quotes in url("")
@@ -539,14 +537,14 @@ silex.controller.ControllerBase.prototype.doSave = function(blob, opt_cbk, opt_e
   }
   // runtime check for a recurrent error
   // check that there is no more of the basUrl in the Html
-  if (this.blob && rawHtml.indexOf(this.blob.url) >= 0) {
+  if (this.fileInfo && rawHtml.indexOf(this.fileInfo.url) >= 0) {
     console.warn('Base URL remains in the HTML, there is probably an error in the convertion to relative URL process');
     // log this (QA)
     this.tracker.trackAction('controller-events', 'warning', 'file.save.corrupted', -1);
   }
   // save to file
   this.model.file.saveAs(
-      blob,
+      fileInfo,
       rawHtml,
       goog.bind(function() {
         this.tracker.trackAction('controller-events', 'success', 'file.save', 1);
