@@ -110,27 +110,26 @@ silex.controller.ViewMenuController.prototype.doPreview = function(inResponsize)
   var doOpenPreview = function() {
     if (inResponsize) {
       this.view.workspace.setPreviewWindowLocation('http://www.responsize.org/?url=' +
-        silex.utils.Url.getBaseUrl() +
-        this.model.file.getUrl() +
+        this.model.file.getFileInfo().url +
         '#!' + this.model.page.getCurrentPage());
     }
     else {
-      this.view.workspace.setPreviewWindowLocation(this.model.file.getUrl() + '#!' + this.model.page.getCurrentPage());
+      this.view.workspace.setPreviewWindowLocation(this.model.file.getFileInfo().url + '#!' + this.model.page.getCurrentPage());
     }
     this.tracker.trackAction('controller-events', 'success', 'view.file', 1);
   }.bind(this);
   // save before preview
-  var doSaveTheFile = function() {
+  var doSaveTheFile = () => {
     this.save(
-      this.model.file.getUrl(),
+      this.model.file.getFileInfo(),
       goog.bind(function(url) {
         //doOpenPreview();
       }, this),
       goog.bind(function(err) {
         this.tracker.trackAction('controller-events', 'error', 'view.file', -1);
       }, this));
-  }.bind(this);
-  if (this.model.file.getUrl() && !this.model.file.isTemplate) {
+  };
+  if (this.model.file.getFileInfo() && !this.model.file.isTemplate) {
     // open the preview window
     // it is important to do it now, on the user click so that it is not blocked
     // it will be refreshed after save

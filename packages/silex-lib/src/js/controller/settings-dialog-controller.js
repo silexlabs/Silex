@@ -41,17 +41,17 @@ goog.inherits(silex.controller.SettingsDialogController,
  * browse and notify result, track actions, enable undo/redo
  * @param  {string} trackActionName
  * @param  {{mimetypes: (Array.<string>|undefined)}} mimetypes
- * @param  {function(?CEBlob=)} cbk
+ * @param  {function(?FileInfo=)} cbk
  */
 silex.controller.SettingsDialogController.prototype.browse = function(trackActionName, mimetypes, cbk) {
   this.tracker.trackAction(
       'controller-events', 'request', trackActionName, 0);
   this.view.fileExplorer.openFolder(
-      (blob) => {
+      (fileInfo) => {
         // undo checkpoint
         this.undoCheckPoint();
         // notify the caller
-        cbk(blob);
+        cbk(fileInfo);
         // QA
         this.tracker.trackAction(
             'controller-events', 'success', trackActionName, 1);
@@ -75,9 +75,9 @@ silex.controller.SettingsDialogController.prototype.browsePublishPath = function
   this.browse(
     'publish.browse',
     { 'mimetypes': ['text/directory'] },
-    (blob) => {
+    (fileInfo) => {
       // set the new publication path
-      this.model.head.setPublicationPath(blob);
+      this.model.head.setPublicationPath(fileInfo);
       // notify caller (used to reopen settings)
       if(opt_cbk) opt_cbk();
     });
@@ -91,9 +91,9 @@ silex.controller.SettingsDialogController.prototype.browseFaviconPath = function
   this.browse(
     'favicon.browse',
     { 'mimetypes': ['image/jpeg', 'image/png', 'image/gif', 'image/ico'] },
-    (blob) => {
+    (fileInfo) => {
       // set the new publication path
-      this.model.head.setFaviconPath(blob.url);
+      this.model.head.setFaviconPath(fileInfo.url);
       // notify caller (used to reopen settings)
       if(opt_cbk) opt_cbk();
     });
@@ -107,9 +107,9 @@ silex.controller.SettingsDialogController.prototype.browseThumbnailSocialPath = 
   this.browse(
     'thumbnail-social.browse',
     { 'mimetypes': ['image/jpeg', 'image/png', 'image/gif', 'image/ico'] },
-    (blob) => {
+    (fileInfo) => {
       // set the new path
-      this.model.head.setThumbnailSocialPath(blob.url);
+      this.model.head.setThumbnailSocialPath(fileInfo.url);
       // notify caller (used to reopen settings)
       if(opt_cbk) opt_cbk();
     });
@@ -140,7 +140,7 @@ silex.controller.SettingsDialogController.prototype.setWebsiteWidth = function(o
 
 /**
  * callback for the publication path text input
- * @param {?CEBlob=} opt_data
+ * @param {?FileInfo=} opt_data
  */
 silex.controller.SettingsDialogController.prototype.setPublicationPath = function(opt_data) {
   // undo checkpoint
@@ -151,7 +151,7 @@ silex.controller.SettingsDialogController.prototype.setPublicationPath = functio
 
 /**
  * callback for the publication path text input
- * @return {?CEBlob}
+ * @return {?FileInfo}
  */
 silex.controller.SettingsDialogController.prototype.getPublicationPath = function() {
   return this.model.head.getPublicationPath();

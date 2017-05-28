@@ -13,6 +13,7 @@
 // node modules
 const Path = require('path');
 const fs = require('fs');
+const Os = require('os');
 const express = require('express');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
@@ -48,7 +49,7 @@ if(process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
   routerOptions.github = {
     clientId: process.env.GITHUB_CLIENT_ID,
     clientSecret: process.env.GITHUB_CLIENT_SECRET,
-    state: process.env.GITHUB_STATE || 'aaathub',
+    redirectUri: rootUrl + '/github/oauth_callback',
   };
 }
 
@@ -56,11 +57,10 @@ if(process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
 console.log('Dropbox service: looking for env vars DROPBOX_CLIENT_ID and DROPBOX_CLIENT_SECRET');
 if(process.env.DROPBOX_CLIENT_ID && process.env.DROPBOX_CLIENT_SECRET) {
   console.log('Dropbox service: found app', process.env.DROPBOX_CLIENT_ID);
-  routerOptions.github = {
+  routerOptions.dropbox = {
     clientId: process.env.DROPBOX_CLIENT_ID,
     clientSecret: process.env.DROPBOX_CLIENT_SECRET,
-    state: process.env.DROPBOX_STATE || 'bbbox',
-    redirectUri: rootUrl + '/dropbox/oauth-callback',
+    redirectUri: rootUrl + '/dropbox/oauth_callback',
   };
 }
 
@@ -70,6 +70,10 @@ if(process.env.SILEX_DEBUG || process.env.SILEX_ELECTRON) {
   console.info('Local file system service: ENABLED => local file system is writable');
   routerOptions.fs = {
     showHiddenFile: false,
+    sandbox: Os.homedir(),
+    infos: {
+      displayName: 'Hard drive',
+    },
   };
 }
 

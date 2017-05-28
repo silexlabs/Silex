@@ -313,7 +313,7 @@ silex.view.Menu.prototype.onMenuEvent = function(type, opt_componentName) {
       this.controller.fileMenuController.publish();
       break;
     case 'file.save':
-      this.controller.fileMenuController.save(this.controller.fileMenuController.model.file.getUrl());
+      this.controller.fileMenuController.save(this.controller.fileMenuController.model.file.getFileInfo());
       break;
     case 'file.open':
       this.controller.fileMenuController.openFile();

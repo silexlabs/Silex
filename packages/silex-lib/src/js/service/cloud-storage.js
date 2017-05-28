@@ -63,19 +63,19 @@ silex.service.CloudStorage.prototype.ready = function(cbk) {
 
 /**
  * save a file
- * @param  {CEBlob} blob
+ * @param  {FileInfo} fileInfo
  * @param  {string} rawData
  * @param  {function()} cbk
  * @param  {function(*)} opt_errCbk
  */
-silex.service.CloudStorage.prototype.write = function(blob, rawData, cbk, opt_errCbk) {
+silex.service.CloudStorage.prototype.write = function(fileInfo, rawData, cbk, opt_errCbk) {
   // save the data
-  this.ce.write(rawData, blob)
+  this.ce.write(rawData, fileInfo)
   .then(() => {
     cbk();
   })
   .catch(e => {
-    console.error('Error: could not write file', blob, e);
+    console.error('Error: could not write file', fileInfo, e);
     if (opt_errCbk) opt_errCbk(e);
   });
 };
@@ -83,18 +83,18 @@ silex.service.CloudStorage.prototype.write = function(blob, rawData, cbk, opt_er
 
 /**
  * load data
- * @param  {CEBlob} blob
+ * @param  {FileInfo} fileInfo
  * @param  {function(string)} cbk
  * @param  {function(*)} opt_errCbk
  */
-silex.service.CloudStorage.prototype.read = function(blob, cbk, opt_errCbk) {
+silex.service.CloudStorage.prototype.read = function(fileInfo, cbk, opt_errCbk) {
   // load the data
-  this.ce.read(blob)
+  this.ce.read(fileInfo)
   .then(data => {
     cbk(data);
   })
   .catch(e => {
-    console.error('Error: could not read file', blob, e);
+    console.error('Error: could not read file', fileInfo, e);
     if (opt_errCbk) opt_errCbk(e);
   });
 };

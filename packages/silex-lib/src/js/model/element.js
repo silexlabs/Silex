@@ -184,10 +184,9 @@ silex.model.Element.prototype.prepareHtmlForEdit = function(rawHtml) {
   // prevent the user scripts from executing while editing
   rawHtml = rawHtml.replace(/<script.*class=\"silex-script\".*?>/gi, '<script type="text/notjavascript" class="silex-script">');
   // convert to absolute urls
-  let url = this.model.file.getUrl();
-  if (url) {
-    if(!silex.utils.Url.isAbsoluteUrl(url)) url = silex.utils.Url.getBaseUrl() + url;
-    rawHtml = silex.utils.Url.relative2Absolute(rawHtml, url);
+  let fileInfo = this.model.file.getFileInfo();
+  if (fileInfo) {
+    rawHtml = silex.utils.Url.relative2Absolute(rawHtml, fileInfo.url);
   }
   return rawHtml;
 };
@@ -204,10 +203,10 @@ silex.model.Element.prototype.unprepareHtmlForEdit = function(rawHtml) {
   rawHtml = rawHtml.replace(/type=\"text\/notjavascript\"/gi, 'type="text/javascript"');
   // remove cache control used to refresh images after editing by pixlr
   rawHtml = silex.utils.Dom.removeCacheControl(rawHtml);
-  if (this.model.file.getUrl()) {
+  if (this.model.file.getFileInfo()) {
     // convert to relative urls
     let baseUrl = silex.utils.Url.getBaseUrl();
-    rawHtml = silex.utils.Url.absolute2Relative(rawHtml, baseUrl + this.model.file.getUrl());
+    rawHtml = silex.utils.Url.absolute2Relative(rawHtml, this.model.file.getFileInfo().url);
     // put back the static scripts (protocol agnostic)
     let staticUrl = baseUrl.substr(baseUrl.indexOf('//')) + 'static/';
     rawHtml = rawHtml.replace(/\.\.\/\.\.\/\.\.\/\.\.\/\.\.\/[\.\.\/]*static\//g, staticUrl);

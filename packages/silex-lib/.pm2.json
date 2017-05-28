@@ -6,7 +6,9 @@
     "env": {
       "NODE_ENV": "production",
       "GITHUB_CLIENT_ID": "a173a2e4af98211d94c9",
-      "GITHUB_CLIENT_SECRET": "1fce6f8127611c44bafaa19c3843d890cbd479df"
+      "GITHUB_CLIENT_SECRET": "1fce6f8127611c44bafaa19c3843d890cbd479df",
+      "DROPBOX_CLIENT_ID": "ngk5t8312eo4agh",
+      "DROPBOX_CLIENT_SECRET": "7uxqr625pct7zbl"
     }
   }]
 }
