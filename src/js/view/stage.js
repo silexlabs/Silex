@@ -128,6 +128,7 @@ silex.view.Stage.KEYS_TO_CATCH = [
   goog.events.KeyCodes.ESC,
   goog.events.KeyCodes.PAGE_UP, // this is to prevent scroll in the html tag
   goog.events.KeyCodes.PAGE_DOWN, // this is to prevent scroll in the html tag
+  goog.events.KeyCodes.SPACE, // this is to prevent scroll in the html tag
 ];
 
 
