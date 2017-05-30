@@ -18,7 +18,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const serveStatic = require('serve-static');
-const session = require('express-session');
+const session = require('cookie-session');
 const Router = require('cloud-explorer/router.js');
 
 // 6805 is the date of sexual revolution started in paris france 8-)
@@ -29,9 +29,8 @@ const app = express();
 app.use( bodyParser.json({limit: '10mb'}) );
 app.use(cookieParser());
 app.use(session({
-  secret: 'test session secret',
-  resave: false,
-  saveUninitialized: false,
+  name: 'silex-session',
+  secret: 'test session secret'
 }));
 
 // Build router options
