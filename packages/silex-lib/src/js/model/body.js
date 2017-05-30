@@ -85,6 +85,16 @@ silex.model.Body.PREVENT_DROPPABLE_CLASS_NAME = 'prevent-droppable';
 
 
 /**
+ * class name which can be used to force Silex to use height instead of minHeight
+ * to set the height of an element
+ * this is useful if the element has content with height set to 100%
+ * @const
+ * @type {string}
+ */
+silex.model.Body.SILEX_USE_HEIGHT_NOT_MINHEIGHT = 'silex-use-height-not-minheight';
+
+
+/**
  * class name set on elements in which we are about to drop
  * @const
  * @type {string}
@@ -130,6 +140,10 @@ silex.model.Body.prototype.getSelection = function() {
  * @param  {Array.<Element>} selectedElements  array of elements which are to select
  */
 silex.model.Body.prototype.setSelection = function(selectedElements) {
+  if(this.getBodyElement() === null) {
+    // body is null, this happens while undoing or redoing
+    return;
+  }
   // reset selection
   var elements = goog.dom.getElementsByClass(silex.model.Element.SELECTED_CLASS_NAME, this.getBodyElement());
   goog.array.forEach(elements, function(element) {
@@ -203,7 +217,7 @@ silex.model.Body.prototype.setEditable = function(rootElement, isEditable) {
   }
   // handle the root element itself
   if (isEditable) {
-    if (goog.dom.getElementsByClass('ui-resizable-s', rootElement).length === 0) {
+    if (rootElement.querySelector(':scope > .ui-resizable-s') == null) {
       this.initUiHandles(rootElement);
     }
   }
@@ -214,7 +228,7 @@ silex.model.Body.prototype.setEditable = function(rootElement, isEditable) {
   // activate editable plugin on all editable children
   var elements = goog.dom.getElementsByClass(silex.model.Body.EDITABLE_CLASS_NAME, rootElement);
   goog.array.forEach(elements, function(element) {
-    if (isEditable && goog.dom.getElementsByClass('ui-resizable-s', element).length === 0) {
+    if (isEditable && element.querySelector(':scope > .ui-resizable-s') == null) {
       this.initUiHandles(element);
     }
   }, this);

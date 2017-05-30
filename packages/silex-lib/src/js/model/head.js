@@ -376,6 +376,10 @@ silex.model.Head.prototype.getPublicationPath = function() {
  */
 silex.model.Head.prototype.setEnableMobile = function(enable) {
   let doc = this.model.file.getContentDocument();
+  if(doc.body === null) {
+    // body is null, this happens while undoing or redoing
+    return;
+  }
   let viewport = doc.querySelector('meta[data-silex-viewport]');
   if (enable === true) {
     doc.body.classList.add(silex.model.Head.ENABLE_MOBILE_CSS_CLASS);
@@ -406,7 +410,12 @@ silex.model.Head.prototype.setEnableMobile = function(enable) {
  * @return {boolean}
  */
 silex.model.Head.prototype.getEnableMobile = function() {
-  return this.model.file.getContentDocument().body.classList.contains(silex.model.Head.ENABLE_MOBILE_CSS_CLASS);
+  const body = this.model.file.getContentDocument().body;
+  if(body === null) {
+    // body is null, this happens while undoing or redoing
+    return false;
+  }
+  return body.classList.contains(silex.model.Head.ENABLE_MOBILE_CSS_CLASS);
 };
 
 
@@ -425,13 +434,9 @@ silex.model.Head.prototype.setWebsiteWidth = function(opt_value) {
       silexStyle.className = 'silex-style-settings';
       goog.dom.appendChild(this.getHeadElement(), silexStyle);
     }
-    const minWidth = parseInt(opt_value, 10) + 300;
     silexStyle.innerHTML = `
       .${silex.model.Element.WEBSITE_WIDTH_CLASS_NAME} {
         width: ${opt_value}px;
-      }
-      .${silex.model.Element.WEBSITE_MIN_WIDTH_CLASS_NAME} {
-        min-width: ${minWidth}px;
       }
     `;
   }

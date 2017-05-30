@@ -1,0 +1,118 @@
+<div id="id_<%= uid %>"></div>
+<style type="text/css">
+  .aligned-left {
+    left: 0;
+  }
+  .aligned-center-h {
+    left: initial;
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+  }
+  .aligned-right {
+    right: 0;
+    left: initial;
+  }
+  .aligned-full-width {
+    right: 0;
+    left: 0;
+    width: initial;
+  }
+  .aligned-top {
+    top: 0;
+  }
+  .aligned-center-v {
+    top: 50%;
+  }
+  .aligned-bottom {
+    bottom: 0;
+    top: initial;
+  }
+  .aligned-full-height {
+    bottom: 0;
+    top: 0;
+    height: initial;
+  }
+  .aligned-fixed {
+    position: fixed;
+  }
+  .aligned-on-top {
+    z-index: 10;
+  }
+</style>
+<script type="text/javascript">
+(function() {
+  // vertical align
+  function vertical_<%= uid %>() {
+    var silexElement = $('#id_<%= uid %>').parent();
+    if(!silexElement.hasClass('dragging-pending')) {
+      // horizontal alignment
+      <% if(vertical === 'center') { %>
+      var elementMinHeight = silexElement.css('min-height');
+      silexElement.css({
+        'margin-top': Math.round(-parseInt(elementMinHeight) / 2) + 'px'
+      });
+      <% } %>
+    }
+  }
+  vertical_<%= uid %>();
+  $(document).on('silex:resize', vertical_<%= uid %>);
+  // execute only in silex editor
+  if($('body').hasClass('silex-runtime')) return;
+  function redraw_<%= uid %>() {
+    var silexElement = $('#id_<%= uid %>').parent();
+    silexElement.removeClass('aligned-left');
+    silexElement.removeClass('aligned-center-h');
+    silexElement.removeClass('aligned-right');
+    silexElement.removeClass('aligned-full-width');
+    silexElement.removeClass('aligned-top');
+    silexElement.removeClass('aligned-center-v');
+    silexElement.removeClass('aligned-bottom');
+    silexElement.removeClass('aligned-full-height');
+    silexElement.removeClass('aligned-fixed');
+    silexElement.removeClass('aligned-on-top');
+    // apply css class corresponding to the component params
+    // not during dragged
+    if(!silexElement.hasClass('dragging-pending')) {
+      // horizontal alignment
+      <% if(horizontal === 'left') { %>
+      silexElement.addClass('aligned-left');
+      <% } %>
+      <% if(horizontal === 'center') { %>
+      silexElement.addClass('aligned-center-h');
+      <% } %>
+      <% if(horizontal === 'right') { %>
+      silexElement.addClass('aligned-right');
+      <% } %>
+      <% if(horizontal === 'full-width') { %>
+      silexElement.addClass('aligned-full-width');
+      <% } %>
+      // vertical alignment
+      <% if(vertical === 'top') { %>
+      silexElement.addClass('aligned-top');
+      <% } %>
+      <% if(vertical === 'center') { %>
+      silexElement.addClass('aligned-center-v');
+      <% } %>
+      <% if(vertical === 'bottom') { %>
+      silexElement.addClass('aligned-bottom');
+      <% } %>
+      <% if(vertical === 'full-height') { %>
+      silexElement.addClass('aligned-full-height');
+      <% } %>
+      // fixed param
+      <% if(fixed) { %>
+      silexElement.addClass('aligned-fixed');
+      <% } %>
+      // onTop param
+      <% if(onTop) { %>
+      silexElement.addClass('aligned-on-top');
+      <% } %>
+    }
+  }
+  redraw_<%= uid %>();
+  $(document).on('silex:resize', function() {
+    redraw_<%= uid %>();
+  });
+})()
+</script>

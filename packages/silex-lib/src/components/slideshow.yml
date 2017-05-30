@@ -1,0 +1,101 @@
+---
+name: Slideshow
+description: 'Display a series of texts and images.'
+doc: https://github.com/silexlabs/Silex/wiki/Slideshow-component
+category: Utils
+tags:
+- form
+- input
+- dropdown
+- text
+isPrivate: false
+baseElement: html
+faIconClass: fa-slideshare
+dependencies:
+  script:
+  - src: /static/2.7/unslider/unslider-min.js
+    data-silex-static: ''
+  link:
+  - rel: stylesheet
+    href: /static/2.7/unslider/unslider.css
+    data-silex-static: ''
+initialCssClass:
+  silex-use-height-not-minheight
+initialCss:
+  height: 400px
+  width: 400px
+  background-color: 'transparent'
+props:
+- name: slides
+  type:
+    - name: image
+      type: file
+      description: image of the slide
+    - name: text
+      type: multiline
+      description: text to display in the slide
+    - name: bgColor
+      type: color
+      description: "the slide's background color"
+    - name: color
+      type: color
+      description: color of the text
+    - name: link
+      type: string
+      description: Link to open when the user clicks on the slide
+- name: animation
+  default: 'horizontal'
+  description: How should Unslider animate each slide? Right now, there's three different animation types
+  type:
+  - horizontal
+  - vertical
+  - fade
+- name: captionColor
+  type: color
+  description: "the captions text color"
+  default: white
+- name: captionBgColor
+  type: color
+  description: "the captions background color"
+  default: "rgba(0,0,0,0.5)"
+- name: captionAlignH
+  type:
+  - left
+  - center
+  - right
+  description: "the captions horizontal position"
+  default: center
+- name: captionAlignV
+  type:
+  - top
+  - center
+  - bottom
+  description: "the captions vertical position"
+  default: bottom
+- name: autoplay
+  type: boolean
+  default: false
+  description: Should the slider move by itself or only be triggered manually?
+- name: speed
+  type: number
+  default: 750
+  description: How fast (in milliseconds) Unslider should animate between slides.
+- name: delay
+  type: number
+  default: 3000
+  description: If autoplay is set to true, how many milliseconds should pass between moving the slides?
+- name: index
+  type: number
+  default: 0
+  description: "If this is set to an integer, 'first' or 'last', it'll set the default slide to that position rather than the first slide."
+- name: nav
+  type: boolean
+  default: true
+  description: Do you want to generate an automatic clickable navigation for each slide in your slider?
+- name: arrows
+  type: boolean
+  default: true
+  description: Do you want to add left/right arrows to your slider?
+- name: onchange
+  type: action
+  description: "Fires the moment when the slide changes"

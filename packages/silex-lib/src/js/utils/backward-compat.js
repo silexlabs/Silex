@@ -79,27 +79,46 @@ silex.utils.BackwardCompat.process = function(doc, model, cbk) {
   silex.utils.BackwardCompat.to2_2_7(version, doc, model, function() {
     // update //{{host}}/2.x/... to latest version
     var elements = doc.querySelectorAll('[data-silex-static]');
+    let needsReload = false;
+    const silexHost = silex.utils.Url.getHost();
     goog.array.forEach(elements, function(element) {
-      let propName = element.src ? 'src' : 'href';
-      let fileName = element[propName].substr(element[propName].lastIndexOf('/') + 1);
-      element[propName] = silex.utils.BackwardCompat.getStaticResourceUrl(fileName);
+      const propName = element.src ? 'src' : 'href';
+      const newUrl = silex.utils.BackwardCompat.getStaticResourceUrl(element[propName]);
+      if(silex.utils.Url.getHost(element[propName]) != silexHost) {
+        element[propName] = newUrl;
+        needsReload = true;
+      }
     });
     // store the latest version
     metaNode.setAttribute('content', 'Silex v' + silex.utils.BackwardCompat.LATEST_VERSION.join('.'));
     // continue
-    cbk(hasToUpdate);
+    // needs to reload if silex scripts and stylesheets have been updated
+    cbk(hasToUpdate || needsReload);
   });});});});});});});
 };
 
 
 /**
- * get the complete URL for the static file
+ * get the complete URL for the static file,
+ * * on the current Silex server
+ * * with the latest Silex version
+ *
  * this will result in a URL on the current server, in the `/static/` folder
+ *
+ * @example `//localhost:6805/static/2.1/example/example.js` returns `//editor.silex.me/static/2.7/example/unslider.js`
+ * @example `/static/2.1/example/example.js` returns `//editor.silex.me/static/2.7/example/example.js`
+ *
  * with the current version
- * @param {string} fileName
+ * @param {string} url
  * @return {string}
  */
-silex.utils.BackwardCompat.getStaticResourceUrl = function(fileName) {
+silex.utils.BackwardCompat.getStaticResourceUrl = function(url) {
+  const pathRelativeToStaticMatch = url.match(/static\/[0-9]*\.[0-9]*\/(.*)/);
+  if(pathRelativeToStaticMatch == null) {
+    console.warn('Error: could not extract the path and file name of static asset', url);
+    return url;
+  }
+  const pathRelativeToStatic = pathRelativeToStaticMatch[1];
   return '//' +
     silex.utils.Url.getHost() +
     '/static/' +
@@ -107,7 +126,7 @@ silex.utils.BackwardCompat.getStaticResourceUrl = function(fileName) {
     '.' +
     silex.utils.BackwardCompat.LATEST_VERSION[2] +
     '/' +
-    fileName;
+    pathRelativeToStatic;
 };
 
 
@@ -148,9 +167,6 @@ silex.utils.BackwardCompat.to2_2_7 = function(version, doc, model, cbk) {
     // rename class names because it changed
     const oldClasses = doc.querySelectorAll('.default-site-width');
     goog.array.forEach(oldClasses, el => el.classList.add('website-width') || el.classList.remove('default-site-width'));
-    // add website-min-width class to sections
-    const sections = doc.querySelectorAll('.section-element');
-    goog.array.forEach(sections, el => el.classList.add('website-min-width'));
     // sections height is now set on sections containers
     const elements = doc.querySelectorAll('.' + silex.model.Element.TYPE_SECTION + '-element');
     goog.array.forEach(elements, element => {
@@ -185,6 +201,10 @@ silex.utils.BackwardCompat.to2_2_7 = function(version, doc, model, cbk) {
       model.property.updateStylesInDom(doc);
     });
   }
+  // remove website-min-width class from sections
+  const sections = doc.querySelectorAll('.website-min-width');
+  goog.array.forEach(sections, el => el.classList.remove('website-min-width'));
+
   cbk();
 };
 
@@ -329,7 +349,6 @@ silex.utils.BackwardCompat.to2_2_5 = function(version, doc, model, cbk) {
  */
 silex.utils.BackwardCompat.to2_2_4 = function(version, doc, model, cbk) {
   if (silex.utils.BackwardCompat.hasToUpdate(version, [2, 2, 4])) {
-    console.warn('Update site version from', version, 'to 2.4');
     // remove the class editable-plugin-created because it is not used anymore, and it appears in the inline css editor
     elements = doc.body.querySelectorAll('.editable-plugin-created');
     goog.array.forEach(elements, function(element) {
@@ -389,7 +408,6 @@ silex.utils.BackwardCompat.to2_2_4 = function(version, doc, model, cbk) {
  */
 silex.utils.BackwardCompat.to2_2_3 = function(version, doc, model, cbk) {
   if (silex.utils.BackwardCompat.hasToUpdate(version, [2, 2, 3])) {
-    console.warn('Update site version from', version, 'to 2.3');
     // background should not be draggable, fixed in 2.3
     var elements = doc.querySelectorAll('.background');
     goog.array.forEach(elements, function(element) {
@@ -440,7 +458,6 @@ silex.utils.BackwardCompat.to2_2_2 = function(version, doc, model, cbk) {
     if (goog.dom.classlist.contains(doc.body, 'silex-element-content')) {
       doc.body.className = 'pageable-plugin-created ui-droppable';
     }
-    console.warn('Update site version from', version, 'to 2.2');
   }
   cbk();
 };
@@ -456,7 +473,6 @@ silex.utils.BackwardCompat.to2_2_2 = function(version, doc, model, cbk) {
  */
 silex.utils.BackwardCompat.to2_2_0 = function(version, doc, model, cbk) {
   if (silex.utils.BackwardCompat.hasToUpdate(version, [2, 2, 0])) {
-    console.warn('Update site version from', version, 'to 2.0');
     // handle older style system (2.0)
     if (doc.body.getAttribute('data-style-normal')) {
       doc.body.setAttribute('data-style-normal', doc.body.getAttribute('data-style-normal'));

@@ -146,8 +146,24 @@ class App {
 
     // warning when IE
     if (navigator.appName === 'Microsoft Internet Explorer' || (navigator.appName === 'Netscape' && navigator.userAgent.indexOf('Trident') >= 0)) {
-      silex.utils.Notification.alert('Your browser is not supported yet.<br>Considere using chrome or firefox instead of Internet Explorer.',
-          goog.bind(function() {}, this));
+      silex.utils.Notification.alert(
+        'Your browser is not supported yet.<br><br>Considere using chrome or firefox instead of Internet Explorer.',
+        () => {});
+    }
+
+    if (!goog.DEBUG) {
+      // warning small screen size
+      // height must be enough to view the settings pannel
+      // width is just arbitrary
+      const winSizeWidth = document.documentElement.clientWidth;
+      const winSizeHeight = document.documentElement.clientHeight;
+      const minWinSizeWidth = 950;
+      const minWinSizeHeight = 630;
+      if (winSizeHeight < minWinSizeHeight || winSizeWidth < minWinSizeWidth) {
+        silex.utils.Notification.alert(
+          `Your window is very small (${winSizeWidth}x${winSizeHeight}) and Silex may not display correctly.<br><br>Considere maximizing the window or use a bigger screen to use Silex at its best. A window size of ${minWinSizeWidth}x${minWinSizeHeight} is considered to be a acceptable.`,
+          () => {});
+      }
     }
 
     // draw the workspace once
@@ -194,12 +210,12 @@ class App {
     var stage = new silex.view.Stage(stageElement, this.model, this.controller);
 
     // Menu
-    var menuElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-menu'));
+     var menuElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-menu'));
     /** @type {silex.view.Menu} */
     var menu = new silex.view.Menu(menuElement, this.model, this.controller);
 
     // context menu
-    var contextMenuElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-context-menu'));
+    var contextMenuElement = /** @type {!Element} */ (goog.dom.getElementByClass(silex.view.ContextMenu.CLASS_NAME));
     /** @type {silex.view.ContextMenu} */
     var contextMenu = new silex.view.ContextMenu(contextMenuElement, this.model, this.controller);
 

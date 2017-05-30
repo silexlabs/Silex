@@ -156,9 +156,14 @@ silex.view.pane.PagePane.prototype.setPages = function(pages) {
 
   // build an array of obects with name and displayName properties
   var pageData = pages.map(goog.bind(function(pageName) {
+    const pageElement = this.model.file.getContentDocument().getElementById(pageName);
+    if(!pageElement) {
+      // this happens while undoing or redoing
+      return null;
+    }
     return {
       'name': pageName,
-      'displayName': this.model.file.getContentDocument().getElementById(pageName).innerHTML,
+      'displayName': pageElement.innerHTML,
       'linkName': '#!' + pageName
     };
   }, this));

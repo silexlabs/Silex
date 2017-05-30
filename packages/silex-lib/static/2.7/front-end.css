@@ -5,8 +5,8 @@
 /* the body covers the whole available space */
 /* the body is resized to its content size when needed in front-end.js */
 body {
-  width: 100%;
-  height: 100%;
+  min-width: 100%;
+  min-height: 100%;
   position: absolute;
   transition: min-width .5s ease-out, min-height .5s ease-out; /* smooth body resize when dragging elements near the side, or when page have different size */
   font-family: Arial, sans-serif;
@@ -57,20 +57,17 @@ body.silex-runtime .silex-element-content {
   left: 0;
   top: 0;
   right: 0;
-  padding: 15px 0;
+  padding: 15px 100px;
+  margin: 5px 5px;
+}
+.silex-runtime .editable-style.section-element {
+  padding: 0;
+  margin: 0;
 }
 .default-site-width, /* for backward compat, FIXME: remove in a while */
 .website-width {
   width: 960px;
 }
-/* minimum size of the body during edition */
-.website-min-width {
-  min-width: 1260px;
-}
-.silex-runtime .website-min-width {
-  min-width: 0;
-}
-/* */
 .section-element .silex-container-content {
   position: relative;
   left: 0;
@@ -92,6 +89,7 @@ body.silex-runtime .silex-element-content {
 /* resize */
 .editable-style.image-element .silex-element-content{
   position: absolute;
+  border-radius: inherit; /* this is to follow the element's radius */
 }
 /* links default formatting */
 .editable-style[data-silex-href]{
@@ -169,7 +167,6 @@ a:focus{ outline: none;}
     padding-bottom: 50px;
   }
   body.enable-mobile {
-    min-width: initial !important;
     min-height: 100%;
     max-width: 100%;
   }
@@ -185,6 +182,8 @@ a:focus{ outline: none;}
   }
   body.enable-mobile .editable-style.section-element {
     max-width: 100%; /* section bg should be 100% width because user do not need to grab the side and resize */
+    padding: 0;
+    margin: 0;
   }
   body.enable-mobile .container-element {
     display: flex;

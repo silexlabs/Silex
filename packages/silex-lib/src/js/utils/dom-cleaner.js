@@ -121,7 +121,7 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
     goog.dom.removeNode(cssTag);
     // background-image / url(...)
     tmpStr = tmpStr.replace(/url\(()(.+?)\1\)/gi, function(match, group1, group2) {
-      return silex.utils.DomCleaner.filterBgImage(baseUrl, files, match, group1, group2);
+      return silex.utils.DomCleaner.filterBgImage(baseUrl, files, match, group1, group2, true);
     });
     cssStr += tmpStr;
   }
@@ -133,7 +133,7 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
     goog.dom.removeNode(userCssTag);
     // background-image / url(...)
     cssStr += userCssTag.innerHTML.replace(/url\(()(.+?)\1\)/gi, function(match, group1, group2) {
-      return silex.utils.DomCleaner.filterBgImage(baseUrl, files, match, group1, group2);
+      return silex.utils.DomCleaner.filterBgImage(baseUrl, files, match, group1, group2, true);
     });
   }
 
@@ -143,12 +143,13 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
   var headStr = headElement.innerHTML;
 
   // images to download and put to assets/
-  bodyStr = bodyStr.replace(/src="?([^" ]*)"/gi, function(match, group1, group2) {
+  bodyStr = bodyStr.replace(/src="?([^"]*)"/gi, function(match, group1, group2) {
     var absolute = silex.utils.Url.getAbsolutePath(group1, baseUrl);
     var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
     // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
     if (!silex.utils.Url.isAbsoluteUrl(relative)) {
-      relative = '/' + relative;
+      // case of the static scripts and /api/...
+      relative = silex.utils.DomCleaner.cleanupRelativePath(relative);
     }
     if (silex.utils.DomCleaner.isDownloadable(absolute)) {
       var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
@@ -166,24 +167,17 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
 
   // background-image / url(...)
   bodyStr = bodyStr.replace(/url\(()(.+?)\1\)/gi, function(match, group1, group2) {
-    return silex.utils.DomCleaner.filterBgImage(baseUrl, files, match, group1, group2);
+    return silex.utils.DomCleaner.filterBgImage(baseUrl, files, match, group1, group2, false);
   });
 
   // css to download and put to css/
-  headStr = headStr.replace(/href="?([^" ]*)"/gi, function(match, group1, group2) {
+  headStr = headStr.replace(/href="?([^"]*)"/gi, function(match, group1, group2) {
     var absolute = silex.utils.Url.getAbsolutePath(group1, baseUrl);
     var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
     // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
     if (!silex.utils.Url.isAbsoluteUrl(relative)) {
-      // case of the static scripts (all the other cases are /api/...)
-      if (relative.indexOf('static/') === 0) {
-        // from static/2.5/jquery.js to http://editor.silex.me/static/2.5/jquery.js
-        relative = silex.utils.Url.getBaseUrl() + relative;
-      }
-      else {
-        // add '/', e.g. api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
-        relative = '/' + relative;
-      }
+      // case of the static scripts and /api/...
+      relative = silex.utils.DomCleaner.cleanupRelativePath(relative);
     }
     if (silex.utils.DomCleaner.isDownloadable(absolute)) {
       var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
@@ -205,15 +199,8 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
     if (silex.utils.DomCleaner.isDownloadable(absolute)) {
       var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
       if (!silex.utils.Url.isAbsoluteUrl(relative)) {
-        // case of the static scripts (all the other cases are /api/...)
-        if (relative.indexOf('static/') === 0) {
-          // from static/2.5/jquery.js to http://editor.silex.me/static/2.5/jquery.js
-          relative = silex.utils.Url.getBaseUrl() + relative;
-        }
-        else {
-          // add '/', e.g. api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
-          relative = '/' + relative;
-        }
+        // case of the static scripts and /api/...
+        relative = silex.utils.DomCleaner.cleanupRelativePath(relative);
       }
       var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
       var newRelativePath = 'js/' + fileName;
@@ -289,6 +276,18 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
   };
 };
 
+silex.utils.DomCleaner.cleanupRelativePath = function(relative) {
+  // handle case of unifile calls
+  if (relative.indexOf('api/') === 0) {
+    // add '/', e.g. api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
+    return '/' + relative;
+  }
+  // case of the static scripts (all the other cases are /api/...)
+  // and of the templates assets (e.g. libs/templates/...)
+  // from static/2.5/jquery.js to http://editor.silex.me/static/2.5/jquery.js
+  return silex.utils.Url.getBaseUrl() + relative;
+};
+
 
 /**
  * takes a matching pattern "url(...)"" and convert the absolute URLs to relative once,
@@ -300,9 +299,10 @@ silex.utils.DomCleaner.cleanup = function(contentDocument, baseUrl) {
  * @param {string} match
  * @param {string} group1
  * @param {string} group2
+ * @param {boolean} isMovedToCssFolder
  * @return {string}
  */
-silex.utils.DomCleaner.filterBgImage = function(baseUrl, files, match, group1, group2) {
+silex.utils.DomCleaner.filterBgImage = function(baseUrl, files, match, group1, group2, isMovedToCssFolder) {
   // get the url
   var url = silex.utils.Url.removeUrlKeyword(group2);
   // only if we are supposed to download this url locally
@@ -310,7 +310,8 @@ silex.utils.DomCleaner.filterBgImage = function(baseUrl, files, match, group1, g
   var relative = silex.utils.Url.getRelativePath(absolute, silex.utils.Url.getBaseUrl());
   // replace the '../' by '/', e.g. ../api/v1.0/www/exec/get/silex.png becomes /api/v1.0/www/exec/get/silex.png
   if (!silex.utils.Url.isAbsoluteUrl(relative)) {
-    relative = '/' + relative;
+    // case of the static scripts and /api/...
+    relative = silex.utils.DomCleaner.cleanupRelativePath(relative);
   }
   if (silex.utils.DomCleaner.isDownloadable(absolute)) {
     var fileName = absolute.substr(absolute.lastIndexOf('/') + 1);
@@ -320,7 +321,7 @@ silex.utils.DomCleaner.filterBgImage = function(baseUrl, files, match, group1, g
       'destPath': newRelativePath,
       'srcPath': relative
     });
-    return silex.utils.Url.addUrlKeyword('../' + newRelativePath);
+    return silex.utils.Url.addUrlKeyword((isMovedToCssFolder ? '../' : '') + newRelativePath);
   }
   return match;
 };

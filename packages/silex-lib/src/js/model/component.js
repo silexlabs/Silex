@@ -70,13 +70,13 @@ silex.model.Component.prototype.ready = function(cbk) {
 
 
 /**
+ * not needed? we sometimes use !!this.model.property.getComponentData(element)
  * @param {Element} el
  * @return {boolean} true if el is a component (not only an element)
- * we use !!this.model.property.getComponentData(element)
+ */
 silex.model.Component.prototype.isComponent = function(el) {
   return el.classList.contains(silex.model.Component.COMPONENT_CLASS_NAME);
 };
- */
 
 
 /**
@@ -101,30 +101,114 @@ silex.model.Component.prototype.initComponent = function(element, templateName) 
   // for selection (select all components)
   element.classList.add(silex.model.Component.COMPONENT_CLASS_NAME);
   // for styles (select buttons and apply a style)
-  element.classList.add(silex.model.Component.COMPONENT_CLASS_NAME + '-'  + templateName);
   this.model.property.setComponentData(element, {
     'name': name,
     'templateName': templateName,
   });
-  this.prodotype.decorate(templateName, {
-    'name': name,
-  })
+  // first rendering of the component
+  this.render(element, () => {
+    // update the dependencies once the component is added
+    this.updateDepenedencies()
+  });
+  // css styles
+  const componentsDef = this.getComponentsDef();
+  const comp = componentsDef[templateName];
+  if(comp) {
+    // apply the style found in component definition
+    if(comp.initialCss) {
+      this.applyStyleTo(element, comp.initialCss);
+    }
+    // same for the container inside the element (content node)
+    if(comp.initialCssContentContainer) {
+      this.applyStyleTo(this.model.element.getContentNode(element), comp.initialCssContentContainer);
+    }
+    // same for CSS classes to apply
+    // apply the style found in component definition
+    // this includes the css class of the component (component-templateName)
+    const cssClasses = this.getCssClasses(templateName)
+    if(cssClasses) {
+      const oldClassName = this.model.element.getClassName(element);
+      this.model.element.setClassName(element, oldClassName + ' ' + cssClasses.join(' '));
+    }
+  }
+
+};
+
+
+/**
+ * render the component
+ * this is made using prodotype
+ * the template is expanded with the data we have for this component
+ * used when the component is created, or duplicated (paste)
+ * @param {Element} element component to render
+ * @param {?function()=} opt_cbk
+ */
+silex.model.Component.prototype.render = function (element, opt_cbk) {
+  const data = this.model.property.getComponentData(element);
+  const templateName = data['templateName'];
+  this.prodotype.decorate(templateName, data)
   .then(html => {
     this.model.element.setInnerHtml(element, html);
-    this.updateDepenedencies();
+    // notify the owner
+    if(opt_cbk) opt_cbk();
+    // execute the scripts
+    // FIXME: should exec scripts only after dependencies are loaded
+    this.executeScripts(element);
   });
-  // static resource for components styles
-  // TODO: delete this as there is no CSS file specific to components, everything is in dist/client/css/front-end.css
-  // if(!this.model.file.getContentDocument().querySelector('link[data-components-css]')) {
-  //   const head = this.model.head.getHeadElement();
-  //   const tag = this.model.file.getContentDocument().createElement('link');
-  //   tag.setAttribute('data-silex-static', '');
-  //   tag.setAttribute('data-component-css', '');
-  //   tag.rel = 'stylesheet';
-  //   tag.href = silex.utils.BackwardCompat.getStaticResourceUrl('components.css');
-  //   // insert on top so that styles applyed with Silex UI are strongger thant the predefined styles
-  //   head.insertBefore(tag, head.childNodes[0]);
-  // }
+};
+
+/**
+ * get all CSS classes set on this component when it is created
+ * this includes the css class of the component (component-templateName)
+ * @param  {string} templateName the component's template name
+ * @return {Array.<string>} an array of CSS classes
+ */
+silex.model.Component.prototype.getCssClasses = function (templateName) {
+  const componentsDef = this.getComponentsDef();
+  const comp = componentsDef[templateName];
+  let cssClasses = [silex.model.Component.COMPONENT_CLASS_NAME + '-'  + templateName];
+  if(comp) {
+    // class name is either an array
+    // or a string or null
+    switch(typeof comp.initialCssClass) {
+      case 'undefined':
+      break;
+      case 'string': cssClasses = cssClasses.concat(comp.initialCssClass.split(' '));
+      break;
+      default: cssClasses = cssClasses.concat(comp.initialCssClass);
+    }
+  } else {
+    console.error(`Error: component's definition not found in prodotype templates, with template name "${ templateName }".`);
+  }
+  return cssClasses;
+};
+
+
+/**
+ * eval the scripts found in an element
+ * this is useful when we render a template, since the scripts are executed only when the page loads
+ * @param  {Element} element
+ */
+silex.model.Component.prototype.executeScripts = function (element) {
+  // execute the scripts
+  const scripts = element.querySelectorAll('script');
+  for(let idx=0; idx<scripts.length; idx++) {
+    this.model.file.getContentWindow().eval(scripts[idx].innerText);
+  }
+};
+
+
+/**
+ * apply a style to an element
+ * @param  {Element} element
+ * @param  {!Object} styleObj
+ */
+silex.model.Component.prototype.applyStyleTo = function (element, styleObj) {
+  const style = this.model.property.getStyle(element, false) || {};
+  for(let name in styleObj) {
+    style[name] = styleObj[name];
+  }
+  this.model.property.setStyle(element, style, false);
 };
 
 
@@ -143,6 +227,7 @@ silex.model.Component.prototype.getAllComponents = function() {
 
 /**
  * update the dependencies of Prodotype components
+ * FIXME: should have a callback to know if/when scripts are loaded
  */
 silex.model.Component.prototype.updateDepenedencies = function() {
   const head = this.model.head.getHeadElement();
@@ -219,12 +304,16 @@ silex.model.Component.prototype.edit = function(element) {
       componentData['templateName'],
       {
         'onChange': (newData, html) => {
+          // undo checkpoint
+          this.view.settingsDialog.controller.settingsDialogController.undoCheckPoint();
           // remove the editable elements temporarily
           const tempElements = this.saveEditableChildren(element);
           // store the component's data for later edition
           this.model.property.setComponentData(element, newData);
           // update the element with the new template
           this.model.element.setInnerHtml(element, html);
+          // execute the scripts
+          this.executeScripts(element);
           // put back the editable elements
           element.appendChild(tempElements);
         },
@@ -236,7 +325,7 @@ silex.model.Component.prototype.edit = function(element) {
             { },
             (url, blob) => {
               cbk([{
-                'url': blob.url,
+                'url': url, // not blob.url because it misses a "/" at the beginning
                 'lastModified': blob.lastModified, // not in blob?
                 'lastModifiedDate': blob.lastModifiedDate, // not in blob?
                 'name': blob.filename,

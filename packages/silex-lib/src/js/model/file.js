@@ -61,6 +61,12 @@ silex.model.File = function(model, view) {
    * @private
    */
   this.contentWindow_ = goog.dom.getFrameContentWindow(this.iFrameElement_);
+
+
+  // reset iframe content
+  // this is needed since iframes can keep their content
+  // after a refresh in firefox
+  this.getContentDocument().write('');
 };
 
 
@@ -143,15 +149,21 @@ silex.model.File.prototype.hasContent = function() {
  * @param {string} rawHtml
  * @param {?function()=} opt_cbk
  * @param {?boolean=} opt_showLoader
+ * @param {?boolean=} opt_bypassBC if true will bypass backward compat check, default is true
  * @expose
  */
-silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk, opt_showLoader) {
+silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk, opt_showLoader, opt_bypassBC) {
+  // reset iframe content
+  this.getContentDocument().write('');
   // loading
   if (opt_showLoader !== false) {
     goog.dom.classlist.add(this.view.stage.element, silex.model.File.LOADING_CSS_CLASS);
   }
   else {
     goog.dom.classlist.add(this.view.stage.element, silex.model.File.LOADING_LIGHT_CSS_CLASS);
+  }
+  if (typeof(opt_bypassBC) === 'undefined') {
+    opt_bypassBC = true;
   }
   // cleanup
   this.model.body.setEditable(this.contentDocument_.body, false);
@@ -190,16 +202,17 @@ silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk, opt_showLoader) 
   }, 'g');
   // write the content
   goog.dom.iframe.writeContent(this.iFrameElement_, rawHtml);
-  this.contentChanged(opt_cbk);
+  this.contentChanged(!!opt_bypassBC, opt_cbk);
 };
 
 
 
 /**
  * the content of the iframe changed
+ * @param {boolean} bypassBC if true will bypass backward compat check
  * @param {?function()=} opt_cbk
  */
-silex.model.File.prototype.contentChanged = function(opt_cbk) {
+silex.model.File.prototype.contentChanged = function(bypassBC, opt_cbk) {
   // wait for the webste to be loaded
   // can not rely on the load event of the iframe because there may be missing assets
   this.contentDocument_ = goog.dom.getFrameContentDocument(this.iFrameElement_);
@@ -208,7 +221,7 @@ silex.model.File.prototype.contentChanged = function(opt_cbk) {
     this.contentWindow_ === null ||
     this.contentWindow_['$'] === null) {
     setTimeout(goog.bind(function() {
-      this.contentChanged(opt_cbk);
+      this.contentChanged(bypassBC, opt_cbk);
     }, this), 0);
     return;
   }
@@ -220,7 +233,15 @@ silex.model.File.prototype.contentChanged = function(opt_cbk) {
   // first time in chrome, and always in firefox
   // load scripts for edition in the iframe
   this.includeEditionTags(goog.bind(function() {
-    this.onContentLoaded(opt_cbk);
+    if(bypassBC) {
+      this.onContentLoaded(false, opt_cbk);
+    }
+    else {
+      // handle retrocompatibility issues
+      silex.utils.BackwardCompat.process(this.contentDocument_, this.model, (needsReload) => {
+        this.onContentLoaded(needsReload, opt_cbk);
+      });
+    }
   }, this), goog.bind(function() {
     // error loading editable script
     console.error('error loading editable script');
@@ -230,55 +251,51 @@ silex.model.File.prototype.contentChanged = function(opt_cbk) {
 
 
 /**
- * copntent successfully changed in the iframe
+ * content successfully changed in the iframe
+ * @param {boolean} needsReload
  * @param {?function()=} opt_cbk
  */
-silex.model.File.prototype.onContentLoaded = function(opt_cbk) {
-  // handle retrocompatibility issues
-  silex.utils.BackwardCompat.process(this.contentDocument_, this.model, (hasUpgraded) => {
-    // check the integrity and store silex style sheet which holds silex elements styles
-    this.model.property.initStyles(this.contentDocument_);
-    this.model.property.loadProperties(this.contentDocument_);
-    // select the body
-    this.model.body.setSelection([this.contentDocument_.body]);
-    // make editable again
-    this.model.body.setEditable(this.contentDocument_.body, true);
-    // update text editor with the website custom styles and script
-    this.model.head.setHeadStyle(this.model.head.getHeadStyle());
-    this.model.head.setHeadScript(this.model.head.getHeadScript());
-    // update the settings
-    this.model.head.updateFromDom();
-    // restore event listeners
-    this.view.stage.initEvents(this.contentWindow_);
-    // if upgraded, relaod everything
-    /*
-    if(hasUpgraded) {
-      // wait for the BC to complete and the dom to update
-      setTimeout(() => {
-        this.setHtml(this.getHtml(), opt_cbk);
-      }, 200);
-      return;
-    }
-    */
-    // refresh the view
-    //var page = this.model.page.getCurrentPage();
-    //this.model.page.setCurrentPage(page);
-    // notify the caller
-    if (opt_cbk) {
-      opt_cbk();
-    }
-    // loading
-    setTimeout(goog.bind(function() {
-      goog.dom.classlist.remove(this.view.stage.element, silex.model.File.LOADING_CSS_CLASS);
-      goog.dom.classlist.remove(this.view.stage.element, silex.model.File.LOADING_LIGHT_CSS_CLASS);
-      // refresh the view (workaround for a bug where no page is opened after open a website or undo)
-      var page = this.model.page.getCurrentPage();
-      this.model.page.setCurrentPage(page);
-      setTimeout(goog.bind(function() {
-        this.model.page.setCurrentPage(page);
-      }, this), 300);
-    }, this), 100);
-  });
+silex.model.File.prototype.onContentLoaded = function(needsReload, opt_cbk) {
+  // check the integrity and store silex style sheet which holds silex elements styles
+  this.model.property.initStyles(this.contentDocument_);
+  this.model.property.loadProperties(this.contentDocument_);
+  // select the body
+  this.model.body.setSelection([this.contentDocument_.body]);
+  // make editable again
+  this.model.body.setEditable(this.contentDocument_.body, true);
+  // update text editor with the website custom styles and script
+  this.model.head.setHeadStyle(this.model.head.getHeadStyle());
+  this.model.head.setHeadScript(this.model.head.getHeadScript());
+  // update the settings
+  this.model.head.updateFromDom();
+  // restore event listeners
+  this.view.stage.initEvents(this.contentWindow_);
+  // notify the caller
+  if (opt_cbk) {
+    opt_cbk();
+  }
+  // if backward compat says it needs reload
+  if(needsReload) {
+    console.warn('backward compat needs reload');
+    this.setHtml(this.getHtml());
+    return;
+  }
+  // loading
+  goog.dom.classlist.remove(this.view.stage.element, silex.model.File.LOADING_CSS_CLASS);
+  goog.dom.classlist.remove(this.view.stage.element, silex.model.File.LOADING_LIGHT_CSS_CLASS);
+  // refresh the view
+  var page = this.model.page.getCurrentPage();
+  this.model.page.setCurrentPage(page);
+  // // refresh the view again
+  // // workaround for a bug where no page is opened after open a website or undo
+  // setTimeout(goog.bind(function() {
+  //   var page = this.model.page.getCurrentPage();
+  //   this.model.page.setCurrentPage(page);
+  //   setTimeout(goog.bind(function() {
+  //     // and again after a while because sometimes shit happens (but where?)
+  //     this.model.page.setCurrentPage(page);
+  //   }, this), 300);
+  // }, this), 100);
 };
 
 

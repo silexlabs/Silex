@@ -1,0 +1,40 @@
+/* array of object editor */
+.component-editor {
+  .prop-editor-base.prop-editor-expand > .prop-editor-container {
+    padding-bottom: 10px;
+  }
+  .sub-editors-container {
+    border-bottom: 1px solid #2F2F2F;
+    border-left: 1px solid #2F2F2F;
+    border-right: 1px solid #2F2F2F;
+    margin-bottom: 10px;
+    margin-left: 10px;
+    padding-bottom: 10px;
+    .prop-editor-base > .prop-editor-container {
+      padding-bottom: 0;
+    }
+    .sub-editors {
+      border-bottom: 1px solid #2F2F2F;
+      margin-bottom: 9px;
+    }
+    /* *************************************** */
+    /* override silex property editor's styles */
+    .prop-editor-name {
+      padding: 0;
+    }
+    /* *************************************** */
+  }
+  .btn {
+    width: 90%;
+    cursor: pointer;
+    display: inline;
+    margin: 10px;
+    opacity: .8;
+    font-size: 1.4em;
+  }
+  .btn:hover {
+    opacity: 1;
+  }
+  .add-btn {
+  }
+}

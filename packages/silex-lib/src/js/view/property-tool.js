@@ -171,6 +171,43 @@ silex.view.PropertyTool.prototype.buildUi = function() {
       }
     }
   }
+
+  // tabs
+  const designTab = this.element.querySelector('.design');
+  const paramsTab = this.element.querySelector('.params');
+  designTab.addEventListener('click', () => this.openDesignTab());
+  paramsTab.addEventListener('click', () => this.openParamsTab());
+};
+
+
+/**
+ * open the "design" tab
+ */
+silex.view.PropertyTool.prototype.openDesignTab = function() {
+  const designTab = this.element.querySelector('.design');
+  this.selectTab(designTab);
+  this.element.classList.remove('params-tab');
+  this.element.classList.add('design-tab');
+};
+
+
+/**
+ * open the "params" tab
+ */
+silex.view.PropertyTool.prototype.openParamsTab = function() {
+  const paramsTab = this.element.querySelector('.params');
+  this.selectTab(paramsTab);
+  this.element.classList.remove('design-tab');
+  this.element.classList.add('params-tab');
+};
+
+
+silex.view.PropertyTool.prototype.selectTab = function(tab) {
+  const onTabs = this.element.querySelectorAll('.tab');
+  for(let idx=0; idx<onTabs.length; idx++) {
+    onTabs[idx].classList.remove('on');
+  }
+  tab.classList.add('on');
 };
 
 

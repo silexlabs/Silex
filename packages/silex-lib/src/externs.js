@@ -32,7 +32,16 @@ function Prodotype(container, rootPath) {}
 
 
 /**
- * @typedef {{faIconClass:?string, initialCss:?Array, baseElement:?string, name:?string, category:?string, isPrivate:?boolean}}
+ * @typedef {{
+ *          faIconClass:?string,
+ *          initialCss:?Array,
+ *          initialCssContentContainer:?Array,
+ *          initialCssClass:?Array,
+ *          baseElement:?string,
+ *          name:?string,
+ *          category:?string,
+ *          isPrivate:?boolean
+ *          }}
  */
 var ProdotypeCompDef;
 
