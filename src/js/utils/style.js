@@ -50,7 +50,6 @@ silex.utils.Style.SILEX_CLASS_NAMES = [
   silex.model.Element.ELEMENT_CONTENT_CLASS_NAME, // useful to hide it when the content container of a section is selected
   silex.model.Element.TYPE_CONTAINER_CONTENT, // useful to hide it when the content container of a section is selected
   silex.model.Element.WEBSITE_WIDTH_CLASS_NAME,
-  silex.model.Element.WEBSITE_MIN_WIDTH_CLASS_NAME,
   silex.model.Element.TYPE_CONTAINER + '-element',
   silex.model.Element.TYPE_SECTION + '-element',
   silex.model.Element.TYPE_IMAGE + '-element',
