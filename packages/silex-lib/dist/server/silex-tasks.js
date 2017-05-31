@@ -13,7 +13,7 @@
 var pathModule = require('path');
 var fs = require('fs');
 var request = require('request');
-var router = require('unifile/lib/core/router.js');
+//var router = require('unifile/lib/core/router.js');
 
 var publishStates = {};
 
