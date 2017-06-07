@@ -66,7 +66,9 @@ silex.model.File = function(model, view) {
   // reset iframe content
   // this is needed since iframes can keep their content
   // after a refresh in firefox
+  this.contentDocument_.open();
   this.getContentDocument().write('');
+  this.contentDocument_.close();
 };
 
 
@@ -154,7 +156,9 @@ silex.model.File.prototype.hasContent = function() {
  */
 silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk, opt_showLoader, opt_bypassBC) {
   // reset iframe content
+  this.contentDocument_.open();
   this.getContentDocument().write('');
+  this.contentDocument_.close();
   // loading
   if (opt_showLoader !== false) {
     goog.dom.classlist.add(this.view.stage.element, silex.model.File.LOADING_CSS_CLASS);
