@@ -44,7 +44,7 @@ silex.service.CloudStorage.prototype.ready = function(cbk) {
   // cloud explorer instance
   const ceIframe = document.querySelector('#silex-file-explorer');
   if(ceIframe.contentWindow.ce) {
-    this.ce = /** @type {CloudExplorer} */ (ceIframe.contentWindow.ce);
+    this.ce = /** @type {CloudExplorer} */ (ceIframe.contentWindow['ce']);
     cbk();
   }
   else {
