@@ -532,8 +532,7 @@ silex.view.dialog.TextEditor.prototype.updateFontColorButton = function() {
     const el = /** @type {Element} */ (container.nodeType === goog.dom.NodeType.ELEMENT ? container : container.parentNode);
     color = window.getComputedStyle(el).color;
   }
-  // apply the color input and the button to the selection color
-  this.colorInput.value = color;
+  // apply the selection color to the button
   this.fontColorButtonEl.style.color = color;
 };
 
