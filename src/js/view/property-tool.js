@@ -162,16 +162,11 @@ silex.view.PropertyTool.prototype.buildUi = function() {
     const el = expandables[idx];
     const lsKey = 'silex-expand-property-' + idx;
     const isExpand = window.localStorage.getItem(lsKey) === 'true';
-    if(isExpand) el.parentNode.classList.add('expanded');
+    if(isExpand) this.togglePanel(el);
     el.onclick = e => {
-      el.parentNode.classList.toggle('expanded');
+      this.togglePanel(el);
       window.localStorage.setItem(lsKey, el.parentNode.classList.contains('expanded').toString());
-      const caret = el.querySelector('.fa-inverse');
-      if(caret) {
-        caret.classList.toggle('fa-caret-right');
-        caret.classList.toggle('fa-caret-down');
-      }
-    }
+    };
   }
 
   // tabs
@@ -179,6 +174,19 @@ silex.view.PropertyTool.prototype.buildUi = function() {
   const paramsTab = this.element.querySelector('.params');
   designTab.addEventListener('click', () => this.openDesignTab());
   paramsTab.addEventListener('click', () => this.openParamsTab());
+};
+
+
+/**
+ * toggle a property panel
+ */
+silex.view.PropertyTool.prototype.togglePanel = function(el) {
+  el.parentNode.classList.toggle('expanded');
+  const caret = el.querySelector('.fa-inverse');
+  if(caret) {
+    caret.classList.toggle('fa-caret-right');
+    caret.classList.toggle('fa-caret-down');
+  }
 };
 
 

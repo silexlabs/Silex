@@ -91,10 +91,12 @@
             span.fa.fa-fw.fa-inverse.fa-caret-right
             span Background Color
           .body
-            span.color-bg-button.color-button
-            span.color-bg-palette
-            input.enable-color-bg-button.checkbox(type='checkbox')
-            | Transparent
+            .color-edit-container
+              label.color-edit-label.alpha Alpha
+              input.color-edit-text-input.color-opacity-input(placeholder='-', type='number', min='0', max='100')
+              input.color-edit-color-input.color-button.color-button(type='color', defaultValue='rgba(0, 0, 0, 1)', placeholder='-')
+              input.color-edit-transparent-check(type='checkbox', indeterminate='true')
+              label.color-edit-label Transparent
         .expandable.background-image
           legend
             span.fa.fa-fw.fa-inverse.fa-caret-right
@@ -105,49 +107,51 @@
               .button.clear-bg-image-button Clear image
             div
               select.bg-position-h-combo-box.combobox
-                  option.goog-menuitem(value='left') left
-                  option.goog-menuitem(value='center') center
-                  option.goog-menuitem(value='right') right
+                  option(value='left') left
+                  option(value='center') center
+                  option(value='right') right
               select.bg-position-v-combo-box.combobox
-                  option.goog-menuitem(value='top') top
-                  option.goog-menuitem(value='center') center
-                  option.goog-menuitem(value='bottom') bottom
+                  option(value='top') top
+                  option(value='center') center
+                  option(value='bottom') bottom
             .background-image
               select.bg-attachment-combo-box.combobox
-                  option.goog-menuitem(value='scroll', title='The background scrolls along with the element') scroll
-                  option.goog-menuitem(value='fixed', title='The background is fixed with regard to the viewport') fixed
+                  option(value='scroll', title='The background scrolls along with the element') scroll
+                  option(value='fixed', title='The background is fixed with regard to the viewport') fixed
               select.bg-repeat-combo-box.combobox
-                  option.goog-menuitem(value='repeat', title='The background image is repeated both vertically and horizontally') repeat
-                  option.goog-menuitem(value='repeat-x', title='The background image is only repeated horizontally') repeat-x
-                  option.goog-menuitem(value='repeat-y', title='The background image is only repeated vertically') repeat-y
-                  option.goog-menuitem(value='no-repeat', title='The background-image is not repeated') no-repeat
+                  option(value='repeat', title='The background image is repeated both vertically and horizontally') repeat
+                  option(value='repeat-x', title='The background image is only repeated horizontally') repeat-x
+                  option(value='repeat-y', title='The background image is only repeated vertically') repeat-y
+                  option(value='no-repeat', title='The background-image is not repeated') no-repeat
               select.bg-size-combo-box.combobox
-                  option.goog-menuitem(value='auto', title='The background image is not resized') auto
-                  option.goog-menuitem(value='contain', title='The background image is scaled so that the whole image is visible') contain
-                  option.goog-menuitem(value='cover', title='The background image is scaled so that it completely covers the element') cover
+                  option(value='auto', title='The background image is not resized') auto
+                  option(value='contain', title='The background image is scaled so that the whole image is visible') contain
+                  option(value='cover', title='The background image is scaled so that it completely covers the element') cover
       .border-editor.editor-container
         .expandable.border-property
           legend
             span.fa.fa-fw.fa-inverse.fa-caret-right
             span Border
           .body
-            .border-width-color-container
+            .border-width-container
               label.border-width-label Width
+              label.border-type-label Style
               input.border-width-input(placeholder='-', type='number', min='0')
-              label.border-color-label Color
-              span.border-color-button.color-button
-            span.border-color-palette
-            .border-type-conainer.old-advanced-only
-              .border-type-label Style
               select.border-type-combo-box.combobox
-                option(value='solid.goog-menuitem') solid
-                option(value='dotted.goog-menuitem') dotted
-                option(value='dashed.goog-menuitem') dashed
-                option(value='double.goog-menuitem') double
-                option(value='groove.goog-menuitem') groove
-                option(value='ridge.goog-menuitem') ridge
-                option(value='inset.goog-menuitem') inset
-                option(value='outset.goog-menuitem') outset
+                option(value='solid') solid
+                option(value='dotted') dotted
+                option(value='dashed') dashed
+                option(value='double') double
+                option(value='groove') groove
+                option(value='ridge') ridge
+                option(value='inset') inset
+                option(value='outset') outset
+            .color-edit-container
+              label.color-edit-label Alpha
+              input.color-edit-text-input.color-opacity-input.color-border-opacity-input(placeholder='-', type='number', min='0', max='100')
+              input.color-edit-color-input.color-border-button.color-button(type='color', defaultValue='rgba(0, 0, 0, 1)', placeholder='-')
+              input.color-edit-transparent-check(type='checkbox', indeterminate='true')
+              label.color-edit-label.alpha Transparent
             .border-placement-container.old-advanced-only
               .half-col
                 input.top.border-placement-check.checkbox(type='checkbox')
@@ -189,3 +193,4 @@
             input.style-css-classes-input(placeholder='-', type='text')
             .element-style-editor.editor-container
   span.component-editor.editor-container
+
