@@ -41,7 +41,7 @@ Download the zip file on github or clone this repository, and then follow the sa
 
 For the lazy ones, there is the [Heroku One-Click Deploy](https://heroku.com/deploy): [![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy?template=https://github.com/silexlabs/Silex/tree/master)
 
-##Installation on your local computer
+## Installation on your local computer
 
 This is for developers only, since our beloved designers can use the [online version](http://editor.silex.me/).
 
@@ -70,7 +70,7 @@ Prerequisite:
 Clone this repository, and do not forget the sub modules (cloud-explorer and unifile)
 
 ```
-$ git clone --recursive https://github.com/silexlabs/Silex.git
+$ git clone --depth 10 https://github.com/silexlabs/Silex.git
 ```
 
 Install all needed modules and build the assets
@@ -108,7 +108,7 @@ Prerequisite:
 Installation of Silex:
 
 * Launch the "Git Shell"
-* Create a complete clone of Silex Project: git clone --recursive https://github.com/silexlabs/Silex.git
+* Create a clone of Silex Project: git clone --depth 10 https://github.com/silexlabs/Silex.git
 * Go to Silex's Directory.
 * install depedencies : npm install
 
@@ -145,6 +145,87 @@ If you develop or debug Silex, these npm scripts can be used with npm (they are 
 When you start Silex, it looks for the environment variables `SILEX_SSL_PRIVATE_KEY` and `SILEX_SSL_CERTIFICATE`. If they are present, it enables SSL.
 
 `SILEX_SSL_PRIVATE_KEY` is expected to be the path to a `.key` file, and `SILEX_SSL_CERTIFICATE` the path to a  `.crt`.
+
+
+## Size of the project's code base
+
+As of june 2017, around 100.000 lines of code. See [github API count (includes blank lines and comments I guess)](https://api.github.com/repos/silexlabs/Silex/languages):
+
+```
+JavaScript: 856643,
+CSS: 82702,
+HTML: 53727,
+Shell: 1532
+```
+
+[cb372's report](http://line-count.herokuapp.com/silexlabs/Silex):
+
+<table id="results" class="table table-striped">
+<tbody>
+    <tr>
+        <th>File Type</th>
+        <th>Files</th>
+        <th>Lines of Code</th>
+        <th>Total lines</th>
+    </tr>
+    <tr>
+        <td>JavaScript</td>
+        <td>422</td>
+        <td>138797</td>
+        <td>183644</td>
+    </tr>
+    <tr>
+        <td>Json</td>
+        <td>3</td>
+        <td>146</td>
+        <td>146</td>
+    </tr>
+    <tr>
+        <td>Text</td>
+        <td>12</td>
+        <td>0</td>
+        <td>1047</td>
+    </tr>
+    <tr>
+        <td>Shell</td>
+        <td>4</td>
+        <td>24</td>
+        <td>47</td>
+    </tr>
+    <tr>
+        <td>Stylesheets</td>
+        <td>90</td>
+        <td>17777</td>
+        <td>21504</td>
+    </tr>
+    <tr>
+        <td>Html</td>
+        <td>7</td>
+        <td>545</td>
+        <td>726</td>
+    </tr>
+</tbody>
+</table>
+
+
+[Cloc's report](https://github.com/AlDanial/cloc):
+
+```
+-------------------------------------------------------------------------------
+Language                     files          blank        comment           code
+-------------------------------------------------------------------------------
+JavaScript                     404           9616          14937          50841
+CSS                             75           1580           1652          11394
+LESS                            20            141             87           1768
+Markdown                        10            334              0            657
+YAML                            14              3              1            581
+HTML                             7            177             22            527
+JSON                             3              0              0            146
+Bourne Shell                     4              6             13             28
+-------------------------------------------------------------------------------
+SUM:                           541          12030          16712          66869
+-------------------------------------------------------------------------------
+```
 
 ## dependencies
 
