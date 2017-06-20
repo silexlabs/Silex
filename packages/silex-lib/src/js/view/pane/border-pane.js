@@ -20,8 +20,6 @@ goog.provide('silex.view.pane.BorderPane');
 goog.require('goog.array');
 goog.require('goog.cssom');
 goog.require('goog.object');
-goog.require('goog.ui.ColorButton');
-goog.require('goog.ui.HsvPalette');
 goog.require('silex.view.pane.PaneBase');
 
 
@@ -84,13 +82,7 @@ silex.view.pane.BorderPane.prototype.cornerPlacementCheckBoxes = null;
 /**
  * color picker for border color
  */
-silex.view.pane.BorderPane.prototype.borderColorPicker = null;
-
-
-/**
- * color picker for border color
- */
-silex.view.pane.BorderPane.prototype.hsvPalette = null;
+silex.view.pane.BorderPane.prototype.colorPicker = null;
 
 
 /**
@@ -106,25 +98,7 @@ silex.view.pane.BorderPane.prototype.buildUi = function() {
   this.borderStyleComboBox = this.element.querySelector('.border-type-combo-box');
 
   // border color
-  var hsvPaletteElement = goog.dom.getElementByClass(
-      'border-color-palette',
-      this.element);
-  this.hsvPalette = new goog.ui.HsvPalette(
-      undefined,
-      undefined,
-      'goog-hsv-palette-sm');
-  this.hsvPalette.render(hsvPaletteElement);
-
-  // init button which shows/hides the palete
-  this.colorPicker = new goog.ui.ColorButton('');
-  this.colorPicker.setTooltip('Click to select color');
-  this.colorPicker.render(
-      goog.dom.getElementByClass('border-color-button',
-      this.element));
-
-  // init palette
-  this.hsvPalette.setColor('#000000');
-  this.setColorPaletteVisibility(this.hsvPalette, false);
+  this.colorPicker = new ColorPicker(this.element.querySelector('.color-edit-container'), value => this.onBorderColorChanged());
 
   // border placement
   this.borderPlacementCheckBoxes = [
@@ -163,16 +137,6 @@ silex.view.pane.BorderPane.prototype.initEvents = function() {
   goog.events.listen(this.borderStyleComboBox,
       goog.ui.Component.EventType.CHANGE,
       this.onBorderStyleChanged,
-      false,
-      this);
-  goog.events.listen(this.hsvPalette,
-      goog.ui.Component.EventType.ACTION,
-      this.onBorderColorChanged,
-      false,
-      this);
-  goog.events.listen(this.colorPicker,
-      goog.ui.Component.EventType.ACTION,
-      this.toggleColorPaletteVisibility,
       false,
       this);
   goog.events.listen(this.borderRadiusInput,
@@ -226,20 +190,11 @@ silex.view.pane.BorderPane.prototype.redraw =
       else return null;
     }, this));
 
-  // border color
-  var borderColor = this.getCommonProperty(
-    selectedElements,
-    goog.bind(function(element) {
-      var w = this.model.element.getStyle(element, 'borderColor');
-      if (w && w !== '') return w;
-      return null;
-    }, this)
-  );
-  this.redrawBorderColor(borderColor);
 
   // display width or reset borders if width is null
   if (borderWidth) {
     this.redrawBorderWidth(borderWidth);
+    this.redrawBorderColor(selectedElements);
   }
   else {
     this.resetBorder();
@@ -269,6 +224,31 @@ silex.view.pane.BorderPane.prototype.redraw =
     this.resetBorderRadius();
   }
   this.iAmRedrawing = false;
+};
+
+
+/**
+ * redraw border color UI
+ */
+silex.view.pane.BorderPane.prototype.redrawBorderColor = function(selectedElements) {
+  if(selectedElements.length > 0) {
+    this.colorPicker.setDisabled(false);
+    var color = this.getCommonProperty(
+      selectedElements,
+      goog.bind(function(element) {
+        var w = this.model.element.getStyle(element, 'borderColor');
+        return w || 'rgba(0,0,0,1)';
+      }, this));
+    // indeterminate state
+    this.colorPicker.setIndeterminate(color == null);
+    // display color
+    if(color != null) {
+      this.colorPicker.setColor(color);
+    }
+  }
+  else {
+    this.colorPicker.setDisabled(true);
+  }
 };
 
 
@@ -312,32 +292,9 @@ silex.view.pane.BorderPane.prototype.redrawBorderRadius =
 
 
 /**
- * redraw border color UI
- */
-silex.view.pane.BorderPane.prototype.redrawBorderColor =
-    function(borderColorStr) {
-  if (borderColorStr === 'transparent' || borderColorStr === '') {
-    this.setColorPaletteVisibility(this.hsvPalette, false);
-  }
-  else if (goog.isNull(borderColorStr)) {
-    // display a "no color" in the button
-    this.colorPicker.setValue('#000000');
-  }
-  else {
-    // handle all colors, including the named colors
-    var borderColor = goog.color.parse(borderColorStr);
-
-    this.colorPicker.setValue(borderColor.hex);
-    this.hsvPalette.setColor(borderColor.hex);
-  }
-};
-
-
-/**
  * redraw border width UI
  */
 silex.view.pane.BorderPane.prototype.redrawBorderWidth = function(borderWidth) {
-  this.colorPicker.setEnabled(true);
   // top, right, bottom, left
   var values = borderWidth.split(' ');
   // get the first non-zero value
@@ -400,10 +357,8 @@ silex.view.pane.BorderPane.prototype.resetBorder = function() {
     checkBox.checked = true;
   }
   // border color
-  this.colorPicker.setValue('#000000');
-  this.hsvPalette.setColor('#000000');
-  this.setColorPaletteVisibility(this.hsvPalette, false);
-  this.colorPicker.setEnabled(false);
+  this.colorPicker.setColor('');
+  this.colorPicker.setDisabled(true);
 };
 
 
@@ -416,7 +371,10 @@ silex.view.pane.BorderPane.prototype.onBorderWidthChanged = function() {
       this.borderWidthInput.value !== '' &&
       this.borderWidthInput.value !== '0') {
     // border color
-    this.colorPicker.setEnabled(true);
+    this.colorPicker.setDisabled(false);
+    if(this.colorPicker.getColor() == null || this.colorPicker.getColor() === '') {
+      this.colorPicker.setColor('rgba(0,0,0,1)');
+    }
     // border placement
     var borderWidthStr = '';
     var idx;
@@ -430,6 +388,8 @@ silex.view.pane.BorderPane.prototype.onBorderWidthChanged = function() {
         borderWidthStr += '0 ';
       }
     }
+    // reset indeterminate state (because all selected elements will be changed the same value)
+    this.colorPicker.setIndeterminate(false);
     // border width
     this.styleChanged('borderWidth', borderWidthStr);
     // border style
@@ -438,7 +398,7 @@ silex.view.pane.BorderPane.prototype.onBorderWidthChanged = function() {
   else {
     this.styleChanged('borderWidth', '');
     this.styleChanged('borderStyle', '');
-    this.colorPicker.setEnabled(false);
+    this.colorPicker.setDisabled(true);
   }
 };
 
@@ -465,9 +425,7 @@ silex.view.pane.BorderPane.prototype.onBorderStyleChanged = function() {
  * callback for number inputs
  */
 silex.view.pane.BorderPane.prototype.onBorderColorChanged = function() {
-  var hex = this.hsvPalette.getColor();
-  this.styleChanged('borderColor', hex);
-  this.colorPicker.setValue(hex);
+  this.styleChanged('borderColor', this.colorPicker.getColor());
 };
 
 
@@ -497,22 +455,4 @@ silex.view.pane.BorderPane.prototype.onBorderCornerChanged = function() {
   else {
     this.styleChanged('borderRadius', '');
   }
-};
-
-
-/**
- * reset borders
- *
-silex.view.pane.BorderPane.prototype.onResetBorder = function() {
-  this.borderWidthInput.value = '';
-  this.onBorderWidthChanged();
-};
-/* */
-
-
-/**
- * color palette visibility
- */
-silex.view.pane.BorderPane.prototype.toggleColorPaletteVisibility = function() {
-  this.setColorPaletteVisibility(this.hsvPalette, !this.getColorPaletteVisibility(this.hsvPalette));
 };
