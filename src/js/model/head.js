@@ -367,7 +367,12 @@ silex.model.Head.prototype.setPublicationPath = function(opt_fileInfo) {
  */
 silex.model.Head.prototype.getPublicationPath = function() {
   var fileInfo = this.getMeta('publicationPath');
-  return fileInfo == null ? null : /** @type {FileInfo} */ (JSON.parse(fileInfo));
+  try {
+    return fileInfo == null ? null : /** @type {FileInfo} */ (JSON.parse(fileInfo));
+  } catch(e) {
+    // this happens with old publication path (just a string)
+    return null;
+  }
 };
 
 

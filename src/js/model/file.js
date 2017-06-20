@@ -292,6 +292,9 @@ silex.model.File.prototype.onContentLoaded = function(needsReload, opt_cbk) {
   // refresh the view
   var page = this.model.page.getCurrentPage();
   this.model.page.setCurrentPage(page);
+  // remove publication path for templates
+  if(this.isTemplate) this.model.head.setPublicationPath(null);
+
   // // refresh the view again
   // // workaround for a bug where no page is opened after open a website or undo
   // setTimeout(goog.bind(function() {
@@ -455,7 +458,11 @@ silex.model.File.prototype.openFromUrl = function(url, opt_cbk, opt_errCbk) {
   this.isTemplate = true;
   silex.service.CloudStorage.getInstance().loadLocal(url,
       goog.bind(function(rawHtml) {
-        this.fileInfo = null;
+        this.fileInfo = /** @type {FileInfo} */ ({
+          isDir: false,
+          mime: 'text/html',
+          url: url
+        });
         // this.setUrl(url);
         if (opt_cbk) {
           opt_cbk(rawHtml);
