@@ -276,8 +276,13 @@ silex.model.Property.prototype.getComponentData = function(element) {
   }
   // get the internal ID
   var elementId =  /** @type {string} */ (this.getSilexId(element));
+  let res = this.componentDataObj[elementId];
+  if(res) {
+    // clone the object
+    res = /** @type {Object} */ (JSON.parse(JSON.stringify(res)));
+  }
   // returns value of object
-  return this.componentDataObj[elementId];
+  return res;
 };
 
 
