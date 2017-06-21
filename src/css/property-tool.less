@@ -11,6 +11,7 @@
 .small-combo {
   width: 45%;
   padding: 2px;
+  cursor: pointer;
 }
 .silex-property-tool {
   color: @silexlightergrey;
@@ -130,9 +131,14 @@
       line-height: 0;
     }
     .button {
-      font-size: smaller;
-      width: 90px;
-      font-size: small;
+      .small-combo;
+      display: inline;
+      margin-right: 5px;
+      margin-top: 5px;
+      &.disabled {
+        color: graytext;
+        background-color: @silexmediumdarkgrey;
+      }
     }
 
   }
