@@ -353,7 +353,7 @@ exports.getFileFromUrl = function(req, res, next, srcPath, dstPath, cbk){
       });
     }
     else {
-      console.error('Error while loading '+srcPath+': ' + e.message);
+      console.error('Error while loading '+srcPath+': ' + (error ? error.message : 'status ' + response.statusCode));
       cbk(error);
     }
   });
