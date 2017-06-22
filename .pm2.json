@@ -4,11 +4,7 @@
     "script"      : "dist/server/server.js",
     "watch"       : "dist/server/",
     "env": {
-      "NODE_ENV": "production",
-      "GITHUB_CLIENT_ID": "17bc72b961e18c24f5e0",
-      "GITHUB_CLIENT_SECRET": "92083622b0d267470a2da016190d685ebe0dc129",
-      "DROPBOX_CLIENT_ID": "ngk5t8312eo4agh",
-      "DROPBOX_CLIENT_SECRET": "7uxqr625pct7zbl"
+      "NODE_ENV": "production"
     }
   }]
 }
