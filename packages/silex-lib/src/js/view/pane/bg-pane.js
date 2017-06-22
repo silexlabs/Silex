@@ -304,4 +304,6 @@ silex.view.pane.BgPane.prototype.onSelectImageButton = function() {
  */
 silex.view.pane.BgPane.prototype.onClearImageButton = function() {
   this.styleChanged('backgroundImage', '');
+  // UI needs to be updated (which is prevented in this.styleChanged by the flag iAmSettingTheValue
+  this.redraw(this.selectedElements, this.pageNames, this.currentPageName)
 };
