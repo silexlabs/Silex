@@ -1,6 +1,6 @@
 [![license: GPL](https://img.shields.io/badge/license-GPL-green.svg)](http://www.silexlabs.org/silex/silex-licensing/)
 [![Build Status](https://circleci.com/gh/silexlabs/Silex.svg?style=svg)](https://circleci.com/gh/silexlabs/Silex)
-[![status of silex.me instance](http://monitoshi.lexoyo.me/badge/1477989142014-3680)](https://editor.silex.me)
+[![status of silex.me instance](http://monitoshi.lexoyo.me/badge/1488579168302-7057)](https://editor.silex.me)
 
 ## About Silex, live web creation.
 
