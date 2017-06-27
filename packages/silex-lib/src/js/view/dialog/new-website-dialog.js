@@ -152,10 +152,12 @@ silex.view.dialog.NewWebsiteDialog.prototype.buildUi = function() {
   body.onclick = e => {
     // listen for a click in the list of recent files
     const a = e.target;
-    if(a.getAttribute('data-editable')) {
+    const templateUrl = a.getAttribute('data-editable');
+    const recentFileInfo = a.getAttribute('data-file-info');
+    if(!!templateUrl || !!recentFileInfo) {
       this.selected = {
-        url: a.getAttribute('data-editable'),
-        isTemplate: a.getAttribute('data-is-template') === 'true',
+        fileInfo: JSON.parse(recentFileInfo),
+        url: templateUrl,
       }
       // close the dialog, which will trigger a call the dialog onClose callback
       // and then this.selected will be used to open the selected file
@@ -231,21 +233,21 @@ silex.view.dialog.NewWebsiteDialog.prototype.redraw = function() {
   ul.innerHTML = '';
   recentFiles
     .map(blob => {
-      // there my be errors due to wrong data in the local storage
+      // there may be errors due to wrong data in the local storage
       try {
         const li = document.createElement('li');
-        li.setAttribute('data-editable', JSON.stringify(blob));
+        li.setAttribute('data-file-info', JSON.stringify(blob));
         li.classList.add('list-item');
 
         const icon = document.createElement('span');
-        icon.setAttribute('data-editable', blob.path);
+        icon.setAttribute('data-file-info', JSON.stringify(blob));
         // cloudIcon= fa-github | fa-dropbox | fa-server | fa-cloud | fa-cloud-download
         const cloudIcon = 'fa-' + (['github', 'dropbox'].indexOf(blob.service) === 0 ? blob.service : (blob.service === 'webdav' ? 'cloud-download' : (blob.service === 'ftp' ? 'server' : 'cloud')));
         icon.classList.add('fa', cloudIcon);
         li.appendChild(icon);
 
         const name = document.createElement('span');
-        name.setAttribute('data-editable', JSON.stringify(blob));
+        name.setAttribute('data-file-info', JSON.stringify(blob));
         name.innerHTML = blob.path;
         li.appendChild(name);
 
@@ -264,7 +266,7 @@ silex.view.dialog.NewWebsiteDialog.prototype.redraw = function() {
 
 /**
  * open the dialog
- * @param {{close:!function(?string, ?boolean), ready:?function(), error:?function(?Object=)}} options   options object
+ * @param {{openFileInfo:!function(?FileInfo), openTemplate:!function(?string), ready:?function(), error:?function(?Object=)}} options   options object
  */
 silex.view.dialog.NewWebsiteDialog.prototype.openDialog = function(options) {
   // is ready callback
@@ -285,10 +287,12 @@ silex.view.dialog.NewWebsiteDialog.prototype.openDialog = function(options) {
   this.modalDialog.onClose = () => {
     // notify the owner, with the url to load or nothing (will load blank template)
     if(this.selected) {
-      options.close(this.selected.url, this.selected.isTemplate);
+      if(this.selected.fileInfo)
+        options.openFileInfo(this.selected.fileInfo);
+      else options.openTemplate(this.selected.url);
     }
     else {
-      options.close(null, null);
+      options.openTemplate(null);
     }
   }
   this.modalDialog.open();
