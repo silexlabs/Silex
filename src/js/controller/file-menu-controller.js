@@ -38,6 +38,26 @@ goog.inherits(silex.controller.FileMenuController, silex.controller.ControllerBa
 
 
 /**
+ * @param {?function()=} opt_cbk
+ * @param {?function(Object)=} opt_errorCbk
+ */
+silex.controller.FileMenuController.prototype.loadTemplate = function(url, opt_cbk, opt_errorCbk) {
+    this.model.file.openFromUrl(url, rawHtml => this.onOpened(opt_cbk, rawHtml), (err, msg) => this.onOpenError(err, msg, opt_errorCbk));
+};
+
+
+/**
+ * load blank template
+ * @param {?function()=} opt_cbk
+ * @param {?function(Object)=} opt_errorCbk
+ */
+silex.controller.FileMenuController.prototype.loadBlank = function(opt_cbk, opt_errorCbk) {
+  const blankUrl = 'libs/templates/silex-blank-templates/desktop/editable.html';
+  this.loadTemplate(blankUrl, opt_cbk, opt_errorCbk);
+};
+
+
+/**
  * open a file
  * @param {?function()=} opt_cbk
  * @param {?function(Object)=} opt_errorCbk
@@ -45,23 +65,25 @@ goog.inherits(silex.controller.FileMenuController, silex.controller.ControllerBa
 silex.controller.FileMenuController.prototype.newFile = function(opt_cbk, opt_errorCbk) {
 
   this.tracker.trackAction('controller-events', 'request', 'file.new', 0);
-
   this.view.newWebsiteDialog.openDialog({
-    close: (url, isTemplate) => {
-      if(!url && !this.model.file.hasContent()) {
-        // if the user closes the dialog and no website is being edited
-        // then load default blank website
-        // otherwise just close the dialog
-        url = 'libs/templates/silex-blank-templates/desktop/editable.html';
-        isTemplate = true;
+    openFileInfo: (fileInfo) => {
+      if(!fileInfo && !this.model.file.hasContent()) {
+        // if the user closes the dialog and no website is being edited then load default blank website
+        this.loadBlank(opt_cbk, opt_errorCbk);
       }
-      if(url) {
-        if(isTemplate) {
-          this.model.file.openFromUrl(url, rawHtml => this.onOpened(opt_cbk, rawHtml), (err, msg) => this.onOpenError(opt_errorCbk, err, msg));
-        }
-        else {
-          this.model.file.open(url, rawHtml => this.onOpened(opt_cbk, rawHtml), (err, msg) => this.onOpenError(opt_errorCbk, err, msg));
-        }
+      else if(fileInfo) {
+        // a recent file was selected
+        this.model.file.open(/** @type {FileInfo} */ (fileInfo), rawHtml => this.onOpened(opt_cbk, rawHtml), err => this.onOpenError(err, 'Could not open this recent file, are you connected to ' + fileInfo.service + '?', opt_errorCbk));
+      }
+    },
+    openTemplate: (url) => {
+      if(!url && !this.model.file.hasContent()) {
+        // if the user closes the dialog and no website is being edited then load default blank website
+        this.loadBlank(opt_cbk, opt_errorCbk);
+      }
+      else if(url) {
+        // a template was selected
+        this.loadTemplate(url, opt_cbk, opt_errorCbk);
       }
     },
     ready: () => {
@@ -71,7 +93,7 @@ silex.controller.FileMenuController.prototype.newFile = function(opt_cbk, opt_er
     },
     error: err => {
       console.error('loading templates error');
-      this.onOpenError(opt_errorCbk, err, 'loading templates error');
+      this.onOpenError(err, 'Loading templates error', opt_errorCbk);
     },
   });
 };
@@ -91,11 +113,20 @@ silex.controller.FileMenuController.prototype.onOpened = function(opt_cbk, rawHt
   }
 };
 
-silex.controller.FileMenuController.prototype.onOpenError = function(opt_errorCbk, err, msg) {
+
+/**
+ * @param {Object} err
+ * @param {string} msg
+ * @param {?function(Object)=} opt_errorCbk
+ */
+silex.controller.FileMenuController.prototype.onOpenError = function(err, msg, opt_errorCbk) {
   console.error('opening template error', err);
-  silex.utils.Notification.alert('An error occured, I could not open the file. ' + msg, () => {});
+  silex.utils.Notification.alert('An error occured. ' + msg, () => {});
   if (opt_errorCbk) {
     opt_errorCbk(err);
+  }
+  if(!this.model.file.hasContent()) {
+    this.loadBlank();
   }
   this.tracker.trackAction('controller-events', 'error', 'file.new', -1);
 
@@ -103,7 +134,7 @@ silex.controller.FileMenuController.prototype.onOpenError = function(opt_errorCb
 
 /**
  * open a file
- * @param {?function(FileInfo)=} opt_cbk
+ * @param {?function(!FileInfo)=} opt_cbk
  * @param {?function(Object)=} opt_errorCbk
  * @param {?function()=} opt_cancelCbk
  */

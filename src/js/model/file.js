@@ -451,10 +451,10 @@ silex.model.File.prototype.getHtmlGenerator = function* () {
  * will not be able to save
  * @param {string} url
  * @param {?function(string)=} opt_cbk
- * @param {?function(*, string)=} opt_errCbk
+ * @param  {?function(Object, string)=} opt_errCbk
  * @export
  */
-silex.model.File.prototype.openFromUrl = function(url, opt_cbk, opt_errCbk) {
+silex.model.File.prototype.openFromUrl = function(url, opt_cbk = null, opt_errCbk = null) {
   this.isTemplate = true;
   silex.service.CloudStorage.getInstance().loadLocal(url,
       goog.bind(function(rawHtml) {
@@ -473,17 +473,25 @@ silex.model.File.prototype.openFromUrl = function(url, opt_cbk, opt_errCbk) {
 
 /**
  * save a file with a new name
+ * @param {FileInfo} fileInfo
+ * @param {string} rawHtml
+ * @param {function()} cbk receives the raw HTML
+ * @param {?function(Object)=} opt_errCbk
  * @export
  */
 silex.model.File.prototype.saveAs = function(fileInfo, rawHtml, cbk, opt_errCbk) {
   // save the data
   this.fileInfo = fileInfo;
+  this.addToLatestFiles(this.fileInfo);
   this.save(rawHtml, cbk, opt_errCbk);
 };
 
 
 /**
  * write content to the file
+ * @param {string} rawHtml
+ * @param {function()} cbk
+ * @param {?function(Object)=} opt_errCbk
  * @export
  */
 silex.model.File.prototype.save = function(rawHtml, cbk, opt_errCbk) {
@@ -503,6 +511,9 @@ silex.model.File.prototype.save = function(rawHtml, cbk, opt_errCbk) {
 
 /**
  * load a new file
+ * @param {FileInfo} fileInfo
+ * @param {function(string)} cbk receives the raw HTML
+ * @param {?function(Object)=} opt_errCbk (err)
  */
 silex.model.File.prototype.open = function(fileInfo, cbk, opt_errCbk) {
   this.isTemplate = false;
@@ -512,6 +523,7 @@ silex.model.File.prototype.open = function(fileInfo, cbk, opt_errCbk) {
         // update model
         this.close();
         this.fileInfo = fileInfo;
+        this.addToLatestFiles(this.fileInfo);
         if (cbk) {
           cbk(rawHtml);
         }
@@ -550,7 +562,11 @@ silex.model.File.prototype.clearLatestFiles = function() {
  */
 silex.model.File.prototype.getLatestFiles = function() {
   const str = window.localStorage.getItem('silex:recent-files');
-  if(str) return /** @type {Array.<FileInfo>} */ (JSON.parse(str));
+  if(str) {
+    return (/** @type {Array.<FileInfo>} */ (JSON.parse(str)))
+      // remove old URLs from previous CE version
+      .filter(fileInfo => fileInfo.name != null);
+  }
   else return [];
 };
 
@@ -561,9 +577,7 @@ silex.model.File.prototype.getLatestFiles = function() {
  */
 silex.model.File.prototype.addToLatestFiles = function(fileInfo) {
   // url= http://localhost:6805/api/1.0/github/exec/get/silex-tests/gh-pages/abcd.html
-  const latestFiles = this.getLatestFiles()
-    // remove old URLs from previous CE version
-    .filter(fileInfo => fileInfo.service != null);
+  const latestFiles = this.getLatestFiles();
   // remove if it is already in the array
   // so that it goes back to the top of the list
   let foundIndex = -1;

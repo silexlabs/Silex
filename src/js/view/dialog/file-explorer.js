@@ -64,7 +64,8 @@ silex.view.dialog.FileExplorer.prototype.ce = null;
 /**
  * call CE API
  * @private
- * @param {function(?FileInfo=)} cbk
+ * @param {function(string)|function()} ceMethod
+ * @param {function(FileInfo)} cbk
  * @param {?string=} opt_paramStr
  * @param {?Object.<Array>=} opt_mimetypes optional array of accepted mimetypes,
  *                           e.g. {'mimetypes': ['text/html', 'text/plain']}
@@ -103,7 +104,7 @@ silex.view.dialog.FileExplorer.prototype.callCE =
 
 /**
  * pick file
- * @param {function(?FileInfo=)} cbk
+ * @param {function(FileInfo)} cbk
  * @param {?Object.<Array>=} opt_mimetypes optional array of accepted mimetypes,
  *                           e.g. {'mimetypes': ['text/html', 'text/plain']}
  * @param {?function(Object)=} opt_errCbk
@@ -117,7 +118,7 @@ silex.view.dialog.FileExplorer.prototype.openFile =
 
 /**
  * pick multiple files
- * @param {function(?FileInfo=)} cbk
+ * @param {function(FileInfo)} cbk
  * @param {?Object.<Array>=} opt_mimetypes optional array of accepted mimetypes,
  *                           e.g. {'mimetypes': ['text/html', 'text/plain']}
  * @param {?function(Object)=} opt_errCbk
@@ -131,7 +132,7 @@ silex.view.dialog.FileExplorer.prototype.openFiles =
 
 /**
  * pick a folder
- * @param {function(?FileInfo=)} cbk
+ * @param {function(FileInfo)} cbk
  * @param {?Object.<Array>=} opt_mimetypes optional array of accepted mimetypes,
  *                           e.g. {'mimetypes': ['text/html', 'text/plain']}
  * @param {?function(Object)=} opt_errCbk
@@ -145,7 +146,7 @@ silex.view.dialog.FileExplorer.prototype.openFolder =
 
 /**
  * choose a name for the file
- * @param {function(?FileInfo=)} cbk
+ * @param {function(FileInfo)} cbk
  * @param {string} defaultName
  * @param {?Object.<Array>=} opt_mimetypes optional array of accepted mimetypes,
  *                           e.g. {'mimetypes': ['text/html', 'text/plain']}
