@@ -117,7 +117,7 @@ silex.service.CloudStorage.prototype.loadLocal = function(url, cbk, opt_errCbk) 
       switch(oReq.status) {
         case 404: msg = 'File not found.';
         break;
-        case 401: msg = 'You are not connected to the cloud service you try to use.';
+        case 401: msg = 'You are not connected to the cloud service you are trying to use.';
         break;
         default: msg = 'Unknown error with HTTP status ' + oReq.status;
       }
