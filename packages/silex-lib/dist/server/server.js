@@ -20,6 +20,7 @@ const cookieParser = require('cookie-parser');
 const serveStatic = require('serve-static');
 const session = require('cookie-session');
 const Router = require('cloud-explorer/router.js');
+const initSilexTasks = require('./silex-tasks-router.js');
 
 // 6805 is the date of sexual revolution started in paris france 8-)
 const port = process.env.PORT || 6805;
@@ -125,6 +126,7 @@ if(process.env.SILEX_SSL_PRIVATE_KEY && process.env.SILEX_SSL_CERTIFICATE) {
 // create the routes for unifile
 // needed by CE
 const router = new Router(app, routerOptions);
+initSilexTasks(app, router.unifile);
 
 // Start Silex as an Electron app
 if(process.env.SILEX_ELECTRON) {
@@ -136,31 +138,6 @@ app.listen(port, function() {
   console.log('Listening on ' + port);
 });
 
-
-// ********************************
-// silex tasks
-// ********************************
-
-var silexTasks = require('./silex-tasks.js');
-app.use('/tasks/:task', function(req, res, next){
-  try{
-    silexTasks.route(function(result){
-      if (!result) {
-        result = {success: true};
-      }
-      try{
-         res.send(result);
-      }
-       catch(e){
-        console.error('Error: header have been sent?', e, result, e.stack);
-      }
-    }, req, res, next, req.params.task);
-  }
-  catch(e){
-    console.error('Error while executing task', e, e.stack);
-  }
-
-});
 
 // ********************************
 // list templates
