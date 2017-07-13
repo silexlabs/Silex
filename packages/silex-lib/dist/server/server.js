@@ -72,7 +72,7 @@ if(process.env.SILEX_DEBUG || process.env.SILEX_ELECTRON) {
     showHiddenFile: false,
     sandbox: Os.homedir(),
     infos: {
-      displayName: 'Hard drive',
+      displayName: 'fs',
     },
   };
 }
@@ -146,7 +146,7 @@ app.use('/get/:folder', function(req, res, next){
   switch(req.params.folder) {
     case 'silex-templates':
     case 'silex-blank-templates':
-    break;
+      break;
     default:
       res.send({success: false, error: 'Error while trying to get the json representation of the folder ' + req.params.folder + ' - folder does not exist'});
       return;
