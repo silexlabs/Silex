@@ -34,11 +34,9 @@ module.exports = function (app, unifile) {
         }
         try {
           // check input params
+          // paras `files`, `js` and `css` are optional
           Assert.ok(!!req.body.folder, 'Missing param "folder"');
-          Assert.ok(!!req.body.files, 'Missing param "files"');
           Assert.ok(!!req.body.html, 'Missing param "html"');
-          Assert.ok(!!req.body.css, 'Missing param "css"');
-          Assert.ok(!!req.body.js, 'Missing param "js"');
         }
         catch(e) {
           console.error('Invalid params', e);
@@ -129,6 +127,10 @@ class Publisher {
    * the method called to publish a website to a location
    * copy assets and files to and from unifile services
    * write css and html data to a unifile service
+   * @param {string} html content of index.html
+   * @param {?string=} css optional content of css/styles.css
+   * @param {?string=} js optional content of js/scripts.js
+   * @param {?string=} files optional list of files to download and copy to assets/
    */
   publish(html, css, js, files) {
     // create the folders css, js and html
@@ -137,32 +139,41 @@ class Publisher {
       return Promise.reject();
     }
     this.state = 'Creating files: index.html css/styles.css js/script.js';
-    return this.unifile.batch(this.session.unifile, this.folder.service, [{
-      name: 'mkdir',
-      path: this.folder.path + '/css',
-    }, {
-      name: 'mkdir',
-      path: this.folder.path + '/js',
-    }, {
-      name: 'mkdir',
-      path: this.folder.path + '/assets',
-    }, {
-      name: 'writefile',
-      path: this.folder.path + '/css/styles.css',
-      content: css,
-    }, {
-      name: 'writefile',
-      path: this.folder.path + '/js/script.js',
-      content: js
-    }, {
-      name: 'writefile',
-      path: this.folder.path + '/index.html',
-      content: html
-    }])
+    const batchActions = [{
+        name: 'mkdir',
+        path: this.folder.path + '/css',
+      }, {
+        name: 'mkdir',
+        path: this.folder.path + '/js',
+      }, {
+        name: 'writefile',
+        path: this.folder.path + '/index.html',
+        content: html
+      }];
+    if(!!css) {
+      batchActions.push({
+        name: 'writefile',
+        path: this.folder.path + '/css/styles.css',
+        content: css,
+      });
+    }
+    if(!!js) {
+      batchActions.push({
+        name: 'writefile',
+        path: this.folder.path + '/js/script.js',
+        content: js
+      });
+    }
+    if(!!files) {
+      batchActions.push({
+        name: 'mkdir',
+        path: this.folder.path + '/assets',
+      });
+    }
+    return this.unifile.batch(this.session.unifile, this.folder.service, batchActions)
     .then(() => {
       return new Promise((resolve, reject) => {
         this.streamFileRecursive(files, 0, err => {
-          console.info('xxx', err);
           if(err) {
             this.error = true;
             this.state = err.message;
@@ -177,7 +188,6 @@ class Publisher {
       });
     })
     .catch((err) => {
-      console.error('xxx');
       console.error(err);
       this.error = true;
       this.state = err.message;
