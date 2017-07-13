@@ -479,7 +479,7 @@ silex.model.Element.prototype.getNextElement = function(element, forward) {
       // candidates are the elements which are visible in the current page, or visible everywhere (not paged)
       if(this.getType(el) !== null &&
         (this.model.page.isInPage(el) ||
-        this.model.page.getPagesForElement(el).length === 0)) {
+          this.model.page.getPagesForElement(el).length === 0)) {
         console.log('getNextElement FOUND!!');
         return el;
       }
@@ -529,35 +529,35 @@ silex.model.Element.prototype.setImageUrl = function(element, url, opt_callback,
       // listen to the complete event
       var imageLoader = new goog.net.ImageLoader();
       goog.events.listenOnce(imageLoader, goog.events.EventType.LOAD,
-          function(e) {
-            // handle the loaded image
-            img = e.target;
-            // update element size
-            this.setStyle(element, 'width', Math.max(silex.model.Element.MIN_WIDTH, img.naturalWidth) + 'px', true);
-            this.setStyle(element, this.getHeightStyleName(element), Math.max(silex.model.Element.MIN_HEIGHT, img.naturalHeight) + 'px', true);
-            // callback
-            if (opt_callback) {
-              opt_callback(element, img);
-            }
-            // add the image to the element
-            goog.dom.appendChild(element, img);
-            // add a marker to find the inner content afterwards, with getContent
-            goog.dom.classlist.add(img, silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
-            // remove the id set by the loader (it needs it to know what has already been loaded?)
-            img.removeAttribute('id');
-            // remove loading asset
-            goog.dom.classlist.remove(element, silex.model.Element.LOADING_ELEMENT_CSS_CLASS);
-            // redraw tools
-            this.model.body.setSelection(this.model.body.getSelection());
-          }, true, this);
+        function(e) {
+          // handle the loaded image
+          img = e.target;
+          // update element size
+          this.setStyle(element, 'width', Math.max(silex.model.Element.MIN_WIDTH, img.naturalWidth) + 'px', true);
+          this.setStyle(element, this.getHeightStyleName(element), Math.max(silex.model.Element.MIN_HEIGHT, img.naturalHeight) + 'px', true);
+          // callback
+          if (opt_callback) {
+            opt_callback(element, img);
+          }
+          // add the image to the element
+          goog.dom.appendChild(element, img);
+          // add a marker to find the inner content afterwards, with getContent
+          goog.dom.classlist.add(img, silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
+          // remove the id set by the loader (it needs it to know what has already been loaded?)
+          img.removeAttribute('id');
+          // remove loading asset
+          goog.dom.classlist.remove(element, silex.model.Element.LOADING_ELEMENT_CSS_CLASS);
+          // redraw tools
+          this.model.body.setSelection(this.model.body.getSelection());
+        }, true, this);
       goog.events.listenOnce(imageLoader, goog.net.EventType.ERROR,
-          function() {
-            console.error('An error occured while loading the image.', element);
-            // callback
-            if (opt_errorCallback) {
-              opt_errorCallback(element, 'An error occured while loading the image.');
-            }
-          }, true, this);
+        function(e) {
+          console.error('An error occured while loading the image.', element, e);
+          // callback
+          if (opt_errorCallback) {
+            opt_errorCallback(element, 'An error occured while loading the image.');
+          }
+        }, true, this);
       // add loading asset
       goog.dom.classlist.add(element, silex.model.Element.LOADING_ELEMENT_CSS_CLASS);
       // remove previous img tag
@@ -596,7 +596,7 @@ silex.model.Element.prototype.removeElement = function(element) {
   }
   // check this is allowed, i.e. an element inside the stage container
   if (this.model.body.getBodyElement() !== element &&
-      goog.dom.contains(this.model.body.getBodyElement(), element)) {
+    goog.dom.contains(this.model.body.getBodyElement(), element)) {
     // remove style and component data
     this.model.property.setComponentData(element);
     this.model.property.setStyle(element, null, true);
@@ -743,27 +743,27 @@ silex.model.Element.prototype.createElement = function(type) {
   // create the element
   var element = null;
   switch (type) {
-    // container
+      // container
     case silex.model.Element.TYPE_CONTAINER:
       element = this.createContainerElement();
       break;
 
-    // section
+      // section
     case silex.model.Element.TYPE_SECTION:
       element = this.createSectionElement();
       break;
 
-    // text
+      // text
     case silex.model.Element.TYPE_TEXT:
       element = this.createTextElement();
       break;
 
-    // HTML box
+      // HTML box
     case silex.model.Element.TYPE_HTML:
       element = this.createHtmlElement();
       break;
 
-    // Image
+      // Image
     case silex.model.Element.TYPE_IMAGE:
       element = this.createImageElement();
       break;
@@ -936,10 +936,10 @@ silex.model.Element.prototype.getClassName = function(element) {
   }
   return element.className.split(' ').filter((name) => {
     if (name === '' ||
-        goog.array.contains(silex.utils.Style.SILEX_CLASS_NAMES, name) ||
-        goog.array.contains(pages, name) ||
-        goog.array.contains(componentCssClasses, name) ||
-        this.model.property.getSilexId(element) === name) {
+      goog.array.contains(silex.utils.Style.SILEX_CLASS_NAMES, name) ||
+      goog.array.contains(pages, name) ||
+      goog.array.contains(componentCssClasses, name) ||
+      this.model.property.getSilexId(element) === name) {
       return false;
     }
     return true;
@@ -959,8 +959,8 @@ silex.model.Element.prototype.setClassName = function(element, opt_className) {
   var pages = this.model.page.getPages();
   var classNamesToKeep = goog.array.map(element.className.split(' '), function(name) {
     if (goog.array.contains(silex.utils.Style.SILEX_CLASS_NAMES, name) ||
-        goog.array.contains(pages, name) ||
-        this.model.property.getSilexId(element) === name) {
+      goog.array.contains(pages, name) ||
+      this.model.property.getSilexId(element) === name) {
       return name;
     }
   }, this);
