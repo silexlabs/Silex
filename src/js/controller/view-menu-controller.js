@@ -44,7 +44,7 @@ silex.controller.ViewMenuController.prototype.openCssEditor = function() {
   // undo checkpoint
   this.undoCheckPoint();
   // open the editor
-  this.view.cssEditor.openEditor();
+  this.view.cssEditor.open();
   this.view.cssEditor.setValue(this.model.head.getHeadStyle());
 };
 
@@ -58,7 +58,7 @@ silex.controller.ViewMenuController.prototype.openHtmlHeadEditor = function() {
   // deselect all elements
   this.model.body.setSelection([]);
   // open the editor
-  this.view.htmlEditor.openEditor();
+  this.view.htmlEditor.open();
   this.view.htmlEditor.setValue(this.model.head.getUserHeadTag());
 };
 
@@ -70,7 +70,7 @@ silex.controller.ViewMenuController.prototype.openJsEditor = function() {
   // undo checkpoint
   this.undoCheckPoint();
   // open the editor
-  this.view.jsEditor.openEditor();
+  this.view.jsEditor.open();
   this.view.jsEditor.setValue(this.model.head.getHeadScript());
 };
 

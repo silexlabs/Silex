@@ -576,10 +576,10 @@ silex.controller.ControllerBase.prototype.fileOperationSuccess = function(opt_me
     // update fonts
     this.refreshFonts();
     // update dialogs
-    this.view.jsEditor.closeEditor();
-    this.view.cssEditor.closeEditor();
-    this.view.htmlEditor.closeEditor();
-    this.view.settingsDialog.closeEditor();
+    this.view.jsEditor.close();
+    this.view.cssEditor.close();
+    this.view.htmlEditor.close();
+    this.view.settingsDialog.redraw();
     this.view.contextMenu.redraw();
     this.view.breadCrumbs.redraw();
   }

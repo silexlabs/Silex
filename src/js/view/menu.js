@@ -306,7 +306,7 @@ silex.view.Menu.prototype.onMenuEvent = function(type, opt_componentName) {
       this.controller.fileMenuController.save();
       break;
     case 'file.publish.settings':
-      this.controller.fileMenuController.view.settingsDialog.openDialog();
+      this.controller.fileMenuController.view.settingsDialog.open();
       this.controller.fileMenuController.view.workspace.redraw(this.controller.fileMenuController.view);
       break;
     case 'file.publish':

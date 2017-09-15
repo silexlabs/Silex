@@ -1,8 +1,10 @@
-@modalDialogsMargin: 50px;
+@modalDialogsMargin: 0;
 @modalDialogZIndexFront: 200;
-@modalDialogZIndexBack: 110;
 
 .silex-modal-dialog {
+  &.silex-hide-dialog {
+    display: none;
+  }
   z-index: @modalDialogZIndexFront;
   display: flex;
   flex-direction: column;
@@ -19,10 +21,28 @@
     font-size: 20px;
     font-weight: 400;
   }
+  .header .help-btn {
+    margin-left: 20px;
+    font-weight: 100;
+    font-size: 16px;
+    text-decoration: none;
+    color: @silexlightergrey;
+    opacity: .7;
+    &:hover {
+      opacity: 1;
+    }
+    .icon:before {
+      padding: 0 5px;
+    }
+    .label:hover {
+      text-decoration: underline;
+    }
+  }
   .body {
     overflow: auto;
     flex: 1 1 auto;
-    border-top: 1px solid #2F2F2F;
+    height: 100%;
+    border-top: 1px solid @silexdarkgrey;
     h2 {
       font-size: 18px;
     }
@@ -30,18 +50,14 @@
   }
 
   background-color: @silexmediumdarkgrey;
-  border-color: @silexdarkgrey;
-  border-style: solid;
-  border-width: 1px;
-  -moz-box-shadow: rgba(0, 0, 0, 0.2) 0 4px 16px 0;
-  -webkit-box-shadow: rgba(0, 0, 0, 0.2) 0 4px 16px 0;
-  box-shadow: rgba(0, 0, 0, 0.2) 0 4px 16px 0;
 
   position: absolute;
   top: @modalDialogsMargin;
   left: @modalDialogsMargin;
   right: @modalDialogsMargin;
   bottom: @modalDialogsMargin;
+  width: 100%; /* for CE iframe */
+  height: 100%; /* for CE iframe */
   .pane > ul {
     padding: 0;
   }
@@ -51,29 +67,11 @@
     display: inline-block;
     border: 0;
     padding: 0;
-    margin-top: 15px;
-    margin-right: 10px;
     height: 30px;
     cursor: pointer;
     right: 15px;
+    top: 15px;
     position: absolute;
   }
 }
-.silex-hide-dialog {
-  display: none;
-}
 
-.silex-modal-dialogs-background {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  left: 0;
-  background-color: white;
-  opacity: .5;
-  z-index: @modalDialogZIndexBack;
-//  cursor: pointer;
-}
-.silex-hide-dialog-background .silex-modal-dialogs-background {
-  display: none;
-}

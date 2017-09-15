@@ -144,21 +144,6 @@ silex.view.Workspace.prototype.loadingDone = function() {
 
 
 /**
- * center an editor in the viewport
- * @param {!silex.view.dialog.DialogBase|silex.view.dialog.FileExplorer} editor whith an element property to center
- * @param {goog.math.Size} viewportSize viewport size
- */
-silex.view.Workspace.prototype.center = function(editor, viewportSize) {
-  if (editor.element) {
-    var editorSize = goog.style.getSize(editor.element);
-    var posX = (viewportSize.width - editorSize.width) / 2;
-    var posY = (viewportSize.height - editorSize.height) / 2;
-    goog.style.setPosition(editor.element, posX, posY);
-  }
-};
-
-
-/**
  * called by silex.App when the property pannel is resized
  * here we change the number of columns in the pannel
  */

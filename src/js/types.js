@@ -222,13 +222,13 @@ silex.types.View = function() {
  * @param {silex.view.Stage} stage
  * @param {silex.view.PageTool} pageTool
  * @param {silex.view.PropertyTool} propertyTool
- * @param {silex.view.dialog.HtmlEditor} htmlEditor
- * @param {silex.view.dialog.CssEditor} cssEditor
- * @param {silex.view.dialog.JsEditor} jsEditor
- * @param {silex.view.dialog.TextEditor} textEditor
- * @param {silex.view.dialog.FileExplorer} fileExplorer
- * @param {silex.view.dialog.SettingsDialog} settingsDialog
- * @param {silex.view.dialog.NewWebsiteDialog} newWebsiteDialog
+ * @param {HtmlEditor} htmlEditor
+ * @param {CssEditor} cssEditor
+ * @param {JsEditor} jsEditor
+ * @param {TextEditor} textEditor
+ * @param {FileExplorer} fileExplorer
+ * @param {SettingsDialog} settingsDialog
+ * @param {NewWebsiteDialog} newWebsiteDialog
  * @param {silex.view.Splitter} propSplitter
  * @param {silex.view.Workspace} workspace
  */
@@ -273,31 +273,31 @@ silex.types.View.prototype.init = function(
    */
   this.propertyTool = propertyTool;
   /**
-   * @type {silex.view.dialog.HtmlEditor}
+   * @type {HtmlEditor}
    */
   this.htmlEditor = htmlEditor;
   /**
-   * @type {silex.view.dialog.CssEditor}
+   * @type {CssEditor}
    */
   this.cssEditor = cssEditor;
   /**
-   * @type {silex.view.dialog.JsEditor}
+   * @type {JsEditor}
    */
   this.jsEditor = jsEditor;
   /**
-   * @type {silex.view.dialog.TextEditor}
+   * @type {TextEditor}
    */
   this.textEditor = textEditor;
   /**
-   * @type {silex.view.dialog.FileExplorer}
+   * @type {FileExplorer}
    */
   this.fileExplorer = fileExplorer;
   /**
-   * @type {silex.view.dialog.SettingsDialog}
+   * @type {SettingsDialog}
    */
   this.settingsDialog = settingsDialog;
   /**
-   * @type {silex.view.dialog.NewWebsiteDialog}
+   * @type {NewWebsiteDialog}
    */
   this.newWebsiteDialog = newWebsiteDialog;
   /**

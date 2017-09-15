@@ -255,7 +255,7 @@ silex.controller.EditMenuController.prototype.editElement = function(opt_element
         bgColor = [255, 255, 255, 255];
       }
       // open the text editor with the same bg color as the element
-      this.view.textEditor.openEditor();
+      this.view.textEditor.open();
       this.view.textEditor.setValue(this.model.element.getInnerHtml(element));
       this.view.textEditor.setElementClassNames(element.className);
       this.view.textEditor.setBackgroundColor(goog.color.rgbToHex(
@@ -265,7 +265,7 @@ silex.controller.EditMenuController.prototype.editElement = function(opt_element
           ));
       break;
     case silex.model.Element.TYPE_HTML:
-      this.view.htmlEditor.openEditor();
+      this.view.htmlEditor.open();
       this.view.htmlEditor.setValue(this.model.element.getInnerHtml(element));
       break;
     case silex.model.Element.TYPE_IMAGE:
