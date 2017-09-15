@@ -195,7 +195,7 @@ silex.controller.FileMenuController.prototype.publish = function() {
       'Select a folder in the settings pannel and do "publish" again.' +
       '\nNow I will open the publish settings.',
         goog.bind(function() {
-          this.view.settingsDialog.openDialog(function() {
+          this.view.settingsDialog.open(function() {
             //here the panel was closed
           }, 'publish-pane');
           this.view.workspace.redraw(this.view);
