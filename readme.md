@@ -19,6 +19,7 @@ Links
 
 News and tutorials
 
+* See Silex wiki, there is a tutorials section
 * [Silex blog](http://www.silexlabs.org/category/the-blog/blog-silex/)
 * [subscribe by email](http://eepurl.com/F48q5)
 
@@ -27,7 +28,7 @@ Contact us and let people know about Silex
 * [Facebook](http://www.facebook.com/silexlabs)
 * [Twitter](https://twitter.com/silexlabs)
 * [Google plus](https://plus.google.com/communities/107373636457908189681)
-* [Contributors list](https://github.com/silexlabs/Silex/blob/master/docs/contributors.md)
+* [Contributors list](https://github.com/silexlabs/Silex/graphs/contributors)
 
 ## Host an instance of Silex
 
@@ -41,22 +42,31 @@ Download the zip file on github or clone this repository, and then follow the sa
 
 For the lazy ones, there is the [Heroku One-Click Deploy](https://heroku.com/deploy): [![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy?template=https://github.com/silexlabs/Silex/tree/master)
 
+For Heroku as for Gandi, you need to set environments variables, see the environment variables bellow.
+
 ## Installation on your local computer
 
 This is for developers only, since our beloved designers can use the [online version](http://editor.silex.me/).
 
-Developers you can clone this repository and start Silex, with nodejs. See instructions bellow.
+Developers you can clone this repository and start Silex, with nodejs. To do this you can use just nodejs or Docker, see instructions bellow.
 
 ### Recommended: with Docker
 
 Prerequisite :
 * [docker](https://www.docker.com/)
 
+Clone this repo with `git clone https://github.com/silexlabs/Silex.git` and then `cd Silex`
+
+Build the docker image for Silex
+
 ```
-$ docker run -p 6805:6805 silexlabs/silex
+$ docker build -t silex-image .
+$ docker run -p 6805:6805 -t silex-image
 ```
 
 Open http://localhost:6805/ and you are ready!
+
+The default env vars can be overriden using the `-e` option in docker run, see the section about env vars bellow
 
 ### local installation on linux or macos or cloud9
 
@@ -130,15 +140,28 @@ If you develop or debug Silex, these npm scripts can be used with npm (they are 
 
 ### environment variables
 
+* `APP_URL` base URL of your Silex instance, passed to OAuth services like github si they can come back to you with a token
 * `PORT`, optional, default: 6805, [used here in the code](dist/server/server.js#L148)
 * `SSL_PORT`, optional, default: to 443, [used here in the code]()
 * `SILEX_FORCE_HTTPS`, optional [used here in the code](dist/server/server.js#102) to force https/ssl (default is `false`)
 * `SILEX_SSL_PRIVATE_KEY`, optional (see ssl section bellow), [used here in the code](dist/server/server.js#L124)
 * `SILEX_SSL_CERTIFICATE`, optional (see ssl section bellow), [used here in the code](dist/server/server.js#L124)
+* `SILEX_FORCE_HTTPS_TRUST_XFP_HEADER`: optional, useful only if `SILEX_FORCE_HTTPS` is true, [see the param `trustXFPHeader` in this doc](https://www.npmjs.com/package/express-force-ssl)
 * `SILEX_SESSION_FOLDER`, optional, default: `$HOME/.silex/sessions`, [used here in the code](dist/server/server.js#L53)
 * `SILEX_DEBUG`, optional, default: `false`, when `true` this will enable the service "www" (storage on the local server in `www/`) with login `admin` and pass `admin`, [used here in the code](dist/server/server.js#L78)
-* `RESTART_ROUTE`, optional, if set it will enable the route `GET {{Silex server instance URL}}/tasks/{{RESTART_ROUTE}}` which will restart the server, [used here in the code](dist/server/silex-tasks.js#L58). See [this article to learn about deployment and why this hack](http://the.webapp.cat/2015/07/Deploy-to-Gandi-Simple-Hosting.html).
 * `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`: optional, to activate github service, you need to create a github app to get these info ([create a github app](https://github.com/settings/applications/new) to get those)
+* `DROPBOX_CLIENT_ID` and `DROPBOX_CLIENT_SECRET`: optional, this will activate Dropbox service, you need to create a Dropbox app on developers.dropbox.com
+* `ENABLE_FTP`, `ENABLE_SFTP`, `ENABLE_WEBDAV`: optional, used to activate the corresponding services
+* `SILEX_ELECTRON`: this is set by Silex electron app, in order to activate the `fs` service and access your file system from within Silex
+
+> Tip: for your tests on localhost, you can use these test apps
+> ```
+> $ export DROPBOX_CLIENT_ID=ckixgyo62obeo05
+> $ export DROPBOX_CLIENT_SECRET=ptg6u5iw7gs6r6o
+> $ export GITHUB_CLIENT_ID=f124e4148bf9d633d58b
+> $ export GITHUB_CLIENT_SECRET=1a8fcb93d5d0786eb0a16d81e8c118ce03eefece
+> ```
+
 
 ### enable https / SSL
 
