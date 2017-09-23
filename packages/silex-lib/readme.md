@@ -140,7 +140,7 @@ If you develop or debug Silex, these npm scripts can be used with npm (they are 
 
 ### environment variables
 
-* `APP_URL` base URL of your Silex instance, passed to OAuth services like github si they can come back to you with a token
+* `SERVER_URL` base URL of your Silex instance, passed to OAuth services like github si they can come back to you with a token
 * `PORT`, optional, default: 6805, [used here in the code](dist/server/server.js#L148)
 * `SSL_PORT`, optional, default: to 443, [used here in the code]()
 * `SILEX_FORCE_HTTPS`, optional [used here in the code](dist/server/server.js#102) to force https/ssl (default is `false`)

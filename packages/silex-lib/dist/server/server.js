@@ -24,7 +24,7 @@ const initSilexTasks = require('./silex-tasks-router.js');
 
 // 6805 is the date of sexual revolution started in paris france 8-)
 const port = process.env.PORT || 6805;
-const rootUrl = process.env.APP_URL || `http://localhost:${port}`;
+const rootUrl = process.env.SERVER_URL || `http://localhost:${port}`;
 
 const app = express();
 app.use( bodyParser.json({limit: '10mb'}) );
