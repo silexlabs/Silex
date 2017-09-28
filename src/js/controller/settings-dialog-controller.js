@@ -56,7 +56,6 @@ silex.controller.SettingsDialogController.prototype.browse = function(trackActio
         this.tracker.trackAction(
             'controller-events', 'success', trackActionName, 1);
       },
-      mimetypes,
       (error) => {
         silex.utils.Notification.notifyError(
             'Error: I could not select the publish path. <br /><br />' +

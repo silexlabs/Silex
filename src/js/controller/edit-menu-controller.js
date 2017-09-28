@@ -275,7 +275,7 @@ silex.controller.EditMenuController.prototype.editElement = function(opt_element
           // load the image
           this.model.element.setImageUrl(element, blob.url);
         },
-        { 'mimetypes': ['image/jpeg', 'image/png', 'image/gif'] },
+        FileExplorer.IMAGE_EXTENSIONS,
         error => {
             silex.utils.Notification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''));
           }

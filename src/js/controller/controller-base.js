@@ -217,7 +217,7 @@ silex.controller.ControllerBase.prototype.browseBgImage = function() {
         // tracking
         this.tracker.trackAction('controller-events', 'success', 'selectBgImage', 1);
       },
-      { 'mimetypes': ['image/jpeg', 'image/png', 'image/gif'] },
+      FileExplorer.IMAGE_EXTENSIONS,
       goog.bind(errCbk, this)
   );
 };
@@ -247,7 +247,7 @@ silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
         }
       );
     },
-    { 'mimetypes': ['image/jpeg', 'image/png', 'image/gif'] },
+    FileExplorer.IMAGE_EXTENSIONS,
     error => {
       silex.utils.Notification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''));
       this.tracker.trackAction('controller-events', 'error', 'insert.image', -1);
@@ -503,7 +503,8 @@ silex.controller.ControllerBase.prototype.save = function(opt_fileInfo, opt_cbk,
             console.log('user aborted save as');
           }
         },
-        '.html',
+        'editable.html',
+        FileExplorer.HTML_EXTENSIONS,
         error => {
           this.tracker.trackAction('controller-events', 'error', 'file.save', -1);
           if (opt_errorCbk) {

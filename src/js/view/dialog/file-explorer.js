@@ -15,7 +15,6 @@
  *     this is only the UI part, to let user choose a file in the cloud
  *     @see silex.service.CloudStorage     for the service/network part
  *
- * FIXME: should handle the 2 ways of specifying mimetype? https://github.com/silexlabs/cloud-explorer/issues/43
  */
 
 
@@ -30,6 +29,9 @@ goog.require('silex.utils.Url');
  * @class {silex.view.dialog.FileExplorer}
  */
 class FileExplorer {
+  static get IMAGE_EXTENSIONS() { return ['.jpg', '.jpeg', '.png', '.gif']; }
+  static get HTML_EXTENSIONS() { return ['.html', '.htm']; }
+
   /**
    * @param {!Element} element   container to render the UI
    * @param  {!silex.types.Model} model  model class which holds
@@ -67,30 +69,24 @@ class FileExplorer {
   /**
    * call CE API
    * @private
-   * @param {function(string)|function()} ceMethod
+   * @param {Promise} promise
    * @param {function(FileInfo)} cbk
-   * @param {?string=} opt_paramStr
-   * @param {?Object.<Array>=} opt_mimetypes optional array of accepted mimetypes,
-   *                           e.g. {'mimetypes': ['text/html', 'text/plain']}
    * @param {?function(Object)=} opt_errCbk
    * @param {?function()=} opt_cancelCbk
    */
-  callCE(ceMethod, cbk, opt_paramStr, opt_mimetypes, opt_errCbk, opt_cancelCbk) {
+  handlePromise(promise, cbk, opt_errCbk, opt_cancelCbk) {
 
     this.open();
 
     // give focus to the iframe
     document.querySelector('#silex-file-explorer').contentWindow.focus();
 
-    ceMethod.call(this.ce, opt_paramStr)
-    .then((fileInfo) => {
+    promise.then((fileInfo) => {
       if(fileInfo != null) {
-        // no https, because it creates security issues
-        // fileInfo.url = fileInfo.url.replace('https://', '//');
         cbk(fileInfo);
       }
       else {
-        console.log('user canceled in CE');
+        // user canceled in CE
         if(opt_cancelCbk != null) {
           opt_cancelCbk();
         }
@@ -98,8 +94,8 @@ class FileExplorer {
       this.close();
     }).catch(e => {
       console.error('Error thrown by CE', e.stack);
-      this.close();
-      if(opt_errCbk != null) opt_errCbk(e);
+      // this.close();
+      if(opt_errCbk != null) opt_errCbk(/** @type {Object} */ (e));
     });
   }
 
@@ -107,39 +103,41 @@ class FileExplorer {
   /**
    * pick file
    * @param {function(FileInfo)} cbk
-   * @param {?Object.<Array>=} opt_mimetypes optional array of accepted mimetypes,
-   *                           e.g. {'mimetypes': ['text/html', 'text/plain']}
+   * @param {?Array.<string>=} opt_extensions optional array of file extensions, e.g.
+   *                           ['.jpg'] to show *.jpg and *.JPG
+   *                           null to show all the files and folders
+   *                           [] to show only folders
    * @param {?function(Object)=} opt_errCbk
    * @param {?function()=} opt_cancelCbk
    */
-  openFile(cbk, opt_mimetypes, opt_errCbk, opt_cancelCbk) {
-    this.callCE(this.ce.openFile, cbk, null, opt_mimetypes, opt_errCbk, opt_cancelCbk);
+  openFile(cbk, opt_extensions, opt_errCbk, opt_cancelCbk) {
+    this.handlePromise(this.ce.openFile(opt_extensions), cbk, opt_errCbk, opt_cancelCbk);
   }
 
 
   /**
    * pick multiple files
    * @param {function(FileInfo)} cbk
-   * @param {?Object.<Array>=} opt_mimetypes optional array of accepted mimetypes,
-   *                           e.g. {'mimetypes': ['text/html', 'text/plain']}
+   * @param {?Array.<string>=} opt_extensions optional array of file extensions, e.g.
+   *                           ['.jpg'] to show *.jpg and *.JPG
+   *                           null to show all the files and folders
+   *                           [] to show only folders
    * @param {?function(Object)=} opt_errCbk
    * @param {?function()=} opt_cancelCbk
    */
-  openFiles(cbk, opt_mimetypes, opt_errCbk, opt_cancelCbk) {
-    this.callCE(this.ce.openFiles, cbk, null, opt_mimetypes, opt_errCbk, opt_cancelCbk);
+  openFiles(cbk, opt_extensions, opt_errCbk, opt_cancelCbk) {
+    this.handlePromise(this.ce.openFiles(opt_extensions), cbk, opt_errCbk, opt_cancelCbk);
   }
 
 
   /**
    * pick a folder
    * @param {function(FileInfo)} cbk
-   * @param {?Object.<Array>=} opt_mimetypes optional array of accepted mimetypes,
-   *                           e.g. {'mimetypes': ['text/html', 'text/plain']}
    * @param {?function(Object)=} opt_errCbk
    * @param {?function()=} opt_cancelCbk
    */
-  openFolder(cbk, opt_mimetypes, opt_errCbk, opt_cancelCbk) {
-    this.callCE(this.ce.openFolder, cbk, null, opt_mimetypes, opt_errCbk, opt_cancelCbk);
+  openFolder(cbk, opt_errCbk, opt_cancelCbk) {
+    this.handlePromise(this.ce.openFolder(), cbk, opt_errCbk, opt_cancelCbk);
   }
 
 
@@ -147,53 +145,16 @@ class FileExplorer {
    * choose a name for the file
    * @param {function(FileInfo)} cbk
    * @param {string} defaultName
-   * @param {?Object.<Array>=} opt_mimetypes optional array of accepted mimetypes,
-   *                           e.g. {'mimetypes': ['text/html', 'text/plain']}
+   * @param {?Array.<string>=} opt_extensions optional array of file extensions, e.g.
+   *                           ['.jpg'] to show *.jpg and *.JPG
+   *                           null to show all the files and folders
+   *                           [] to show only folders
    * @param {?function(Object)=} opt_errCbk
    * @param {?function()=} opt_cancelCbk
    */
-  saveAs(cbk, defaultName, opt_mimetypes, opt_errCbk, opt_cancelCbk) {
-    this.callCE(this.ce.saveAs, cbk, defaultName, opt_mimetypes, opt_errCbk, opt_cancelCbk);
+  saveAs(cbk, defaultName, opt_extensions, opt_errCbk, opt_cancelCbk) {
+    this.handlePromise(this.ce.saveAs(defaultName, opt_extensions), cbk, opt_errCbk, opt_cancelCbk);
   }
-
-
-  /**
-   * save as dialog
-   * @param {function(string)} cbk
-   * @param {?Object.<Array>=} opt_mimetypes optional array of accepted mimetypes,
-   *                           e.g. {'mimetypes': ['text/html', 'text/plain']}
-   * @param {?function(Object)=} opt_errCbk
-   */
-  // saveAsDialogunctioncbk, opt_mimetypes, opt_errCbk) {
-  //   this.open();
-  //
-  //   var errCbk = function(FPError) {
-  //     console.error(FPError);
-  //     if (opt_errCbk) {
-  //       opt_errCbk(FPError);
-  //     }
-  //     this.close();
-  //   }.bind(this);
-  //   var successCbk = function(fileInfo) {
-  //     // notify controller
-  //     if (cbk) {
-  //       cbk(fileInfo.url);
-  //     }
-  //     this.close();
-  //   }.bind(this);
-  //   // export dummy data
-  //   this.ce.saveAs('http://google.com/',
-  //       opt_mimetypes,
-  //       goog.bind(function(fileInfo) {
-  //         // give back focus to Silex
-  //         // this.view.stage.resetFocus();
-  //         // no https, because it creates security issues
-  //         fileInfo.url = fileInfo.url.replace('https://', '//');
-  //         successCbk(fileInfo);
-  //       }, this),
-  //       errCbk);
-  // }
-
 
   /**
    * Open the editor

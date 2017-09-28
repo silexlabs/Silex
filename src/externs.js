@@ -224,15 +224,17 @@ CloudExplorer.prototype.getServices = function() {};
 
 
 /**
+ * @param {?Array.<string>=} extensions
  * @return {Promise}
  */
-CloudExplorer.prototype.openFile = function() {};
+CloudExplorer.prototype.openFile = function(extensions) {};
 
 
 /**
+ * @param {?Array.<string>=} extensions
  * @return {Promise}
  */
-CloudExplorer.prototype.openFiles = function() {};
+CloudExplorer.prototype.openFiles = function(extensions) {};
 
 
 /**
@@ -255,9 +257,10 @@ CloudExplorer.prototype.read = function(blob) {};
 
 /**
  * @param {string}  defaultFileName
+ * @param {?Array.<string>=} extensions
  * @return {Promise}
  */
-CloudExplorer.prototype.saveAs = function(defaultFileName) {};
+CloudExplorer.prototype.saveAs = function(defaultFileName, extensions) {};
 
 
 /**

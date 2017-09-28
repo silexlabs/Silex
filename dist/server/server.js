@@ -24,7 +24,7 @@ const initSilexTasks = require('./silex-tasks-router.js');
 
 // 6805 is the date of sexual revolution started in paris france 8-)
 const port = process.env.PORT || 6805;
-const rootUrl = process.env.APP_URL || `http://localhost:${port}`;
+const rootUrl = process.env.SERVER_URL || `http://localhost:${port}`;
 
 const app = express();
 app.use( bodyParser.json({limit: '10mb'}) );
@@ -36,11 +36,31 @@ app.use(session({
 
 // Build router options
 // routes to expose unifile to CE front end
-const routerOptions = {
-  ftp: {
+const routerOptions = {};
+
+// FTP service
+console.log('FTP service: looking for env vars ENABLE_FTP');
+if(process.env.ENABLE_FTP) {
+  routerOptions.ftp = {
     redirectUri: rootUrl + '/ftp/signin',
-  },
-};
+  };
+}
+
+// SFTP service
+console.log('SFTP service: looking for env vars ENABLE_SFTP');
+if(process.env.ENABLE_SFTP) {
+  routerOptions.sftp = {
+    redirectUri: rootUrl + '/sftp/signin',
+  };
+}
+
+// Webdav service
+console.log('Webdav service: looking for env vars ENABLE_WEBDAV');
+if(process.env.ENABLE_WEBDAV) {
+  routerOptions.webdav = {
+    redirectUri: rootUrl + '/webdav/signin',
+  };
+}
 
 // Github service
 console.log('Github service: looking for env vars GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET');
