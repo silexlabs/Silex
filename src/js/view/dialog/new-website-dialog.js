@@ -222,7 +222,9 @@ class NewWebsiteDialog {
     const moreBtn = this.element.querySelector('.more-btn');
     moreBtn.onclick = e => {
       this.modalDialog.close();
-      this.controller.fileMenuController.openFile(null, e => this.modalDialog.open(), () => this.modalDialog.open());
+      // note that if there is an error in CE, we keep it open so that the user can do something,
+      // e.g. navigate awway from a non existing folder
+      this.controller.fileMenuController.openFile(null, null, () => this.modalDialog.open());
     };
     // tip of the day
     const tipOfTheDayElement = /** @type {!Element} */ (this.element.querySelector('.tip-of-the-day'));
