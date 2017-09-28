@@ -70,7 +70,7 @@ silex.service.CloudStorage.prototype.ready = function(cbk) {
  */
 silex.service.CloudStorage.prototype.write = function(fileInfo, rawData, cbk, opt_errCbk) {
   // save the data
-  this.ce.write(rawData, fileInfo)
+  this.ce.write(new Blob([rawData], {type: 'text/plain'}), fileInfo)
   .then(() => {
     cbk();
   })
