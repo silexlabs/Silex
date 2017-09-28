@@ -82,7 +82,7 @@ silex.service.CloudStorage.prototype.write = function(fileInfo, rawData, cbk, op
 
 
 /**
- * load data
+ * load text blob from unifile
  * @param  {FileInfo} fileInfo
  * @param  {function(string)} cbk
  * @param  {?function(Object)=} opt_errCbk
@@ -90,8 +90,17 @@ silex.service.CloudStorage.prototype.write = function(fileInfo, rawData, cbk, op
 silex.service.CloudStorage.prototype.read = function(fileInfo, cbk, opt_errCbk) {
   // load the data
   this.ce.read(fileInfo)
-  .then(data => {
-    cbk(data);
+  .then(blob => {
+    // convert blob to text
+    var reader = new FileReader();
+    reader.addEventListener('error', function(e) {
+       console.error('could not read the blob received from cloud explorer', e);
+       if(opt_errCbk) opt_errCbk(e);
+    });
+    reader.addEventListener('loadend', function() {
+       cbk(/** @type {string} */ (reader.result));
+    });
+    reader.readAsText(blob);
   })
   .catch(e => {
     console.error('Error: could not read file', fileInfo, e);
