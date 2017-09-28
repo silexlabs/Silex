@@ -165,7 +165,7 @@ silex.controller.FileMenuController.prototype.openFile = function(opt_cbk, opt_e
           }
         });
       },
-      {'mimetype': 'text/html'},
+      FileExplorer.HTML_EXTENSIONS,
       error => {
         this.tracker.trackAction('controller-events', 'error', 'file.open', -1);
         if (opt_errorCbk) {
