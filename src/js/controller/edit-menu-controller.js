@@ -269,17 +269,16 @@ silex.controller.EditMenuController.prototype.editElement = function(opt_element
       this.view.htmlEditor.setValue(this.model.element.getInnerHtml(element));
       break;
     case silex.model.Element.TYPE_IMAGE:
-      // TODO: allow multiple files
-      this.view.fileExplorer.openFile(
-        blob => {
+      this.view.fileExplorer.openFile(FileExplorer.IMAGE_EXTENSIONS)
+      .then(blob => {
+        if(blob) {
           // load the image
           this.model.element.setImageUrl(element, blob.url);
-        },
-        FileExplorer.IMAGE_EXTENSIONS,
-        error => {
-            silex.utils.Notification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''));
-          }
-      );
+        }
+      })
+      .catch(error => {
+        silex.utils.Notification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''));
+      });
       break;
   }
 };

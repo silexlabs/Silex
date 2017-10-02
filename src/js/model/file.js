@@ -176,7 +176,6 @@ silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk, opt_showLoader, 
   // should not be needed since we change all  the URLs to absolute
   // but just in case abs/rel conversion bugs
   if (this.fileInfo) {
-    console.log('xxx', rawHtml, this.fileInfo);
     rawHtml = rawHtml.replace('<head>', '<head><base class="' + silex.model.Head.SILEX_TEMP_TAGS_CSS_CLASS + '" href="' + this.fileInfo.url + '" target="_blank">');
   }
   // remove user's head tag before it is interprated by the browser

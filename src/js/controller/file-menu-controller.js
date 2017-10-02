@@ -135,46 +135,47 @@ silex.controller.FileMenuController.prototype.onOpenError = function(err, msg, o
 /**
  * open a file
  * @param {?function(!FileInfo)=} opt_cbk
- * @param {?function(Object)=} opt_errorCbk
+ * @param {?function(*)=} opt_errorCbk
  * @param {?function()=} opt_cancelCbk
  */
 silex.controller.FileMenuController.prototype.openFile = function(opt_cbk, opt_errorCbk, opt_cancelCbk) {
   // QOS, track success
   this.tracker.trackAction('controller-events', 'request', 'file.open', 0);
   // let the user choose the file
-  this.view.fileExplorer.openFile(
-      fileInfo => {
-        this.model.file.open(fileInfo, rawHtml => {
-          this.model.file.setHtml(rawHtml, () => {
-            // undo redo reset
-            this.undoReset();
-            // display and redraw
-            this.fileOperationSuccess((this.model.head.getTitle() || 'Untitled website') + ' opened.', true);
-            // QOS, track success
-            this.tracker.trackAction('controller-events', 'success', 'file.open', 1);
-            if (opt_cbk) {
-              opt_cbk(/** @type {FileInfo} */ (fileInfo));
-            }
-          }, true, false); // with loader and backward compat check
-        },
-        error => {
-          silex.utils.Notification.notifyError('Error: I did not manage to open this file. \n' + (error.message || ''));
-          this.tracker.trackAction('controller-events', 'error', 'file.open', -1);
-          if (opt_errorCbk) {
-            opt_errorCbk(error);
+  this.view.fileExplorer.openFile(FileExplorer.HTML_EXTENSIONS)
+  .then(fileInfo => {
+    if(fileInfo) {
+      this.model.file.open(fileInfo, rawHtml => {
+        this.model.file.setHtml(rawHtml, () => {
+          // undo redo reset
+          this.undoReset();
+          // display and redraw
+          this.fileOperationSuccess((this.model.head.getTitle() || 'Untitled website') + ' opened.', true);
+          // QOS, track success
+          this.tracker.trackAction('controller-events', 'success', 'file.open', 1);
+          if (opt_cbk) {
+            opt_cbk(/** @type {FileInfo} */ (fileInfo));
           }
-        });
+        }, true, false); // with loader and backward compat check
       },
-      FileExplorer.HTML_EXTENSIONS,
       error => {
+        silex.utils.Notification.notifyError('Error: I did not manage to open this file. \n' + (error.message || ''));
         this.tracker.trackAction('controller-events', 'error', 'file.open', -1);
         if (opt_errorCbk) {
           opt_errorCbk(error);
         }
-      },
-      () => {
-        if(opt_cancelCbk) opt_cancelCbk();
       });
+    }
+    else {
+      if(opt_cancelCbk) opt_cancelCbk();
+    }
+  })
+  .catch(error => {
+    this.tracker.trackAction('controller-events', 'error', 'file.open', -1);
+    if (opt_errorCbk) {
+      opt_errorCbk(error);
+    }
+  });
 };
 
 

@@ -67,93 +67,71 @@ class FileExplorer {
   }
 
   /**
-   * call CE API
-   * @private
-   * @param {Promise} promise
-   * @param {function(FileInfo)} cbk
-   * @param {?function(Object)=} opt_errCbk
-   * @param {?function()=} opt_cancelCbk
+   * pick file
+   * @param {?Array.<string>=} opt_extensions optional array of file extensions, e.g.
+   *                           ['.jpg'] to show *.jpg and *.JPG
+   *                           null to show all the files and folders
+   *                           [] to show only folders
+   * @return {Promise.<FileInfo>}
    */
-  handlePromise(promise, cbk, opt_errCbk, opt_cancelCbk) {
-
+  openFile(opt_extensions) {
     this.open();
-
-    // give focus to the iframe
-    document.querySelector('#silex-file-explorer').contentWindow.focus();
-
-    promise.then((fileInfo) => {
-      if(fileInfo != null) {
-        cbk(fileInfo);
-      }
-      else {
-        // user canceled in CE
-        if(opt_cancelCbk != null) {
-          opt_cancelCbk();
-        }
-      }
-      this.close();
-    }).catch(e => {
-      console.error('Error thrown by CE', e.stack);
-      // this.close();
-      if(opt_errCbk != null) opt_errCbk(/** @type {Object} */ (e));
+    return this.ce.openFile(opt_extensions)
+    .then(fileInfo => {
+      this.close()
+      return fileInfo;
     });
   }
 
 
   /**
-   * pick file
-   * @param {function(FileInfo)} cbk
-   * @param {?Array.<string>=} opt_extensions optional array of file extensions, e.g.
-   *                           ['.jpg'] to show *.jpg and *.JPG
-   *                           null to show all the files and folders
-   *                           [] to show only folders
-   * @param {?function(Object)=} opt_errCbk
-   * @param {?function()=} opt_cancelCbk
-   */
-  openFile(cbk, opt_extensions, opt_errCbk, opt_cancelCbk) {
-    this.handlePromise(this.ce.openFile(opt_extensions), cbk, opt_errCbk, opt_cancelCbk);
-  }
-
-
-  /**
    * pick multiple files
-   * @param {function(FileInfo)} cbk
    * @param {?Array.<string>=} opt_extensions optional array of file extensions, e.g.
    *                           ['.jpg'] to show *.jpg and *.JPG
    *                           null to show all the files and folders
    *                           [] to show only folders
-   * @param {?function(Object)=} opt_errCbk
-   * @param {?function()=} opt_cancelCbk
+   * @return {Promise.<FileInfo>}
    */
-  openFiles(cbk, opt_extensions, opt_errCbk, opt_cancelCbk) {
-    this.handlePromise(this.ce.openFiles(opt_extensions), cbk, opt_errCbk, opt_cancelCbk);
+  openFiles(opt_extensions) {
+    this.open();
+    return this.ce.openFiles(opt_extensions)
+      .then(fileInfo => {
+      this.close()
+      return fileInfo;
+    });
   }
 
 
   /**
    * pick a folder
-   * @param {function(FileInfo)} cbk
-   * @param {?function(Object)=} opt_errCbk
-   * @param {?function()=} opt_cancelCbk
+   * @return {Promise.<FileInfo>}
    */
-  openFolder(cbk, opt_errCbk, opt_cancelCbk) {
-    this.handlePromise(this.ce.openFolder(), cbk, opt_errCbk, opt_cancelCbk);
+  openFolder() {
+    this.open();
+    return this.ce.openFolder()
+    .then(fileInfo => {
+      this.close()
+      return fileInfo;
+    });
   }
 
 
   /**
    * choose a name for the file
-   * @param {function(FileInfo)} cbk
    * @param {string} defaultName
    * @param {?Array.<string>=} opt_extensions optional array of file extensions, e.g.
    *                           ['.jpg'] to show *.jpg and *.JPG
    *                           null to show all the files and folders
    *                           [] to show only folders
-   * @param {?function(Object)=} opt_errCbk
-   * @param {?function()=} opt_cancelCbk
+   * @return {Promise.<FileInfo>}
    */
-  saveAs(cbk, defaultName, opt_extensions, opt_errCbk, opt_cancelCbk) {
-    this.handlePromise(this.ce.saveAs(defaultName, opt_extensions), cbk, opt_errCbk, opt_cancelCbk);
+  saveAs(defaultName, opt_extensions) {
+    this.open();
+    return this.ce.saveAs(defaultName, opt_extensions)
+    .then(fileInfo => {
+      this.close()
+      return fileInfo;
+    });
   }
 
   /**

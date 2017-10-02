@@ -199,27 +199,24 @@ silex.controller.ControllerBase.prototype.undoReset = function() {
  */
 silex.controller.ControllerBase.prototype.browseBgImage = function() {
   this.tracker.trackAction('controller-events', 'request', 'selectBgImage', 0);
-
-  var errCbk = function(error) {
+  // open the file browser
+  this.view.fileExplorer.openFile(FileExplorer.IMAGE_EXTENSIONS)
+  .then(fileInfo => {
+    if(fileInfo) {
+      // update the model
+      var element = this.model.body.getSelection()[0];
+      // undo checkpoint
+      this.undoCheckPoint();
+      // load the image
+      this.model.element.setBgImage(element, fileInfo.url);
+      // tracking
+      this.tracker.trackAction('controller-events', 'success', 'selectBgImage', 1);
+    }
+  })
+  .catch(error => {
     silex.utils.Notification.notifyError('Error: I could not load the image. \n' + (error.message || ''));
     this.tracker.trackAction('controller-events', 'error', 'selectBgImage', -1);
-  };
-
-  // open the file browser
-  this.view.fileExplorer.openFile(
-      fileInfo => {
-        // update the model
-        var element = this.model.body.getSelection()[0];
-        // undo checkpoint
-        this.undoCheckPoint();
-        // load the image
-        this.model.element.setBgImage(element, fileInfo.url);
-        // tracking
-        this.tracker.trackAction('controller-events', 'success', 'selectBgImage', 1);
-      },
-      FileExplorer.IMAGE_EXTENSIONS,
-      goog.bind(errCbk, this)
-  );
+  });
 };
 
 
@@ -228,9 +225,9 @@ silex.controller.ControllerBase.prototype.browseBgImage = function() {
  */
 silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
   this.tracker.trackAction('controller-events', 'request', 'insert.image', 0);
-  // TODO: allow multiple files
-  this.view.fileExplorer.openFile(
-    fileInfo => {
+  this.view.fileExplorer.openFile(FileExplorer.IMAGE_EXTENSIONS)
+  .then(fileInfo => {
+    if(fileInfo) {
       // undo checkpoint
       this.undoCheckPoint();
       // create the element
@@ -246,13 +243,12 @@ silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
           this.tracker.trackAction('controller-events', 'error', 'insert.image', -1);
         }
       );
-    },
-    FileExplorer.IMAGE_EXTENSIONS,
-    error => {
-      silex.utils.Notification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''));
-      this.tracker.trackAction('controller-events', 'error', 'insert.image', -1);
     }
-  );
+  })
+  .catch(error => {
+    silex.utils.Notification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''));
+    this.tracker.trackAction('controller-events', 'error', 'insert.image', -1);
+  });
   this.view.workspace.redraw(this.view);
 };
 
@@ -485,7 +481,7 @@ silex.controller.ControllerBase.prototype.toggleMobileMode = function() {
  * save or save-as
  * @param {?FileInfo=} opt_fileInfo
  * @param {?function()=} opt_cbk
- * @param {?function(Object)=} opt_errorCbk
+ * @param {?function(*)=} opt_errorCbk
  */
 silex.controller.ControllerBase.prototype.save = function(opt_fileInfo, opt_cbk, opt_errorCbk) {
   this.tracker.trackAction('controller-events', 'request', 'file.save', 0);
@@ -494,23 +490,21 @@ silex.controller.ControllerBase.prototype.save = function(opt_fileInfo, opt_cbk,
   }
   else {
     // choose a new name
-    this.view.fileExplorer.saveAs(
-        fileInfo => {
-          if(fileInfo != null) {
-            this.doSave(/** @type {FileInfo} */ (fileInfo), opt_cbk, opt_errorCbk);
-          }
-          else {
-            console.log('user aborted save as');
-          }
-        },
-        'editable.html',
-        FileExplorer.HTML_EXTENSIONS,
-        error => {
-          this.tracker.trackAction('controller-events', 'error', 'file.save', -1);
-          if (opt_errorCbk) {
-            opt_errorCbk(error);
-          }
-        });
+    this.view.fileExplorer.saveAs('editable.html', FileExplorer.HTML_EXTENSIONS)
+    .then(fileInfo => {
+      if(fileInfo != null) {
+        this.doSave(/** @type {FileInfo} */ (fileInfo), opt_cbk, opt_errorCbk);
+      }
+      else {
+        console.log('user aborted save as');
+      }
+    })
+    .catch(error => {
+      this.tracker.trackAction('controller-events', 'error', 'file.save', -1);
+      if (opt_errorCbk) {
+        opt_errorCbk(error);
+      }
+    });
   }
 };
 
