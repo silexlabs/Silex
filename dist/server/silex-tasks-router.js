@@ -203,7 +203,12 @@ class Publisher {
     }
     if(idx >= files.length) cbk();
     else {
-      const file = files[idx];
+      const file = {
+        destPath: decodeURIComponent(files[idx].destPath),
+        srcPath: decodeURIComponent(files[idx].srcPath),
+        url: files[idx].url,
+      };
+      this.state = 'Downloading ' + file.destPath;
       //if(file.src.indexOf('http') === 0) {
         // load from URL
         // "encoding: null" is needed for images (which in this case will be served from /static)
