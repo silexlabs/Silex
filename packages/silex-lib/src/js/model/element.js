@@ -208,8 +208,11 @@ silex.model.Element.prototype.unprepareHtmlForEdit = function(rawHtml) {
     let baseUrl = silex.utils.Url.getBaseUrl();
     rawHtml = silex.utils.Url.absolute2Relative(rawHtml, this.model.file.getFileInfo().url);
     // put back the static scripts (protocol agnostic)
-    let staticUrl = baseUrl.substr(baseUrl.indexOf('//')) + 'static/';
-    rawHtml = rawHtml.replace(/\.\.\/\.\.\/\.\.\/\.\.\/\.\.\/[\.\.\/]*static\//g, staticUrl);
+    let staticUrl = baseUrl.substr(baseUrl.indexOf('//'));
+    // match <link href="//localhost:6805/static/2.7/normalize.css" rel="stylesheet" data-silex-static="">
+    rawHtml = rawHtml.replace(/(\.\.\/[\.\.\/]*)(static\/.*data-silex-static="")/g, (match, p1, p2) => staticUrl + p2);
+    // match <img alt="Twitt" data-silex-static="" src="../../../static/2.7/simplesharingbuttons"
+    rawHtml = rawHtml.replace(/(data-silex-static="".*?)([\.\.\/]+)(static\/)/g, (match, p1, p2, p3) => p1 + staticUrl + p3);
   }
   return rawHtml;
 };
