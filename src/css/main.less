@@ -54,6 +54,12 @@ body {
     padding: 0 5px;
     display: inline;
   }
+  input[type=checkbox], select, label[for] {
+    cursor: pointer;
+  }
+  input[type=checkbox] {
+    opacity: .8;
+  }
   input[type=number]::-webkit-inner-spin-button,
   input[type=number]::-webkit-outer-spin-button {
     -webkit-appearance: none;
@@ -99,6 +105,3 @@ h1, h2, h3 {
   color: @silexlightergrey;
 }
 
-#silex-file-explorer{
-  z-index: 215; /* must be higher than the dashboard in case there is an error */
-}

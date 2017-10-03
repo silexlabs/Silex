@@ -255,7 +255,7 @@ silex.controller.EditMenuController.prototype.editElement = function(opt_element
         bgColor = [255, 255, 255, 255];
       }
       // open the text editor with the same bg color as the element
-      this.view.textEditor.openEditor();
+      this.view.textEditor.open();
       this.view.textEditor.setValue(this.model.element.getInnerHtml(element));
       this.view.textEditor.setElementClassNames(element.className);
       this.view.textEditor.setBackgroundColor(goog.color.rgbToHex(
@@ -265,23 +265,20 @@ silex.controller.EditMenuController.prototype.editElement = function(opt_element
           ));
       break;
     case silex.model.Element.TYPE_HTML:
-      this.view.htmlEditor.openEditor();
+      this.view.htmlEditor.open();
       this.view.htmlEditor.setValue(this.model.element.getInnerHtml(element));
       break;
     case silex.model.Element.TYPE_IMAGE:
-      this.view.fileExplorer.openDialog(
-          goog.bind(function(url) {
-            // absolute url only on stage
-            var baseUrl = silex.utils.Url.getBaseUrl();
-            url = silex.utils.Url.getAbsolutePath(url, baseUrl);
-            // load the image
-            this.model.element.setImageUrl(element, url);
-          }, this),
-          { 'mimetypes': ['image/jpeg', 'image/png', 'image/gif'] },
-          goog.bind(function(error) {
-            silex.utils.Notification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''));
-          }, this)
-      );
+      this.view.fileExplorer.openFile(FileExplorer.IMAGE_EXTENSIONS)
+      .then(blob => {
+        if(blob) {
+          // load the image
+          this.model.element.setImageUrl(element, blob.url);
+        }
+      })
+      .catch(error => {
+        silex.utils.Notification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''));
+      });
       break;
   }
 };

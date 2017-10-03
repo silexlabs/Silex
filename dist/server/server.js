@@ -11,112 +11,93 @@
 //////////////////////////////////////////////////
 
 // node modules
-var Path = require('path');
-var Os = require('os');
-var unifile = require('unifile');
-var express = require('express');
-var bodyParser = require('body-parser');
-var cookieParser = require('cookie-parser');
-var session = require('express-session');
-var multipart = require('connect-multiparty');
-var FSStore = require('connect-fs2')(session);
-var http = require('http');
-var https = require('https');
-var fs = require('fs');
+const Path = require('path');
+const fs = require('fs');
+const Os = require('os');
+const express = require('express');
+const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
+const serveStatic = require('serve-static');
+const session = require('cookie-session');
+const Router = require('cloud-explorer/router.js');
+const initSilexTasks = require('./silex-tasks-router.js');
 
-// init express
-var app = express();
+// 6805 is the date of sexual revolution started in paris france 8-)
+const port = process.env.PORT || 6805;
+const rootUrl = process.env.SERVER_URL || `http://localhost:${port}`;
 
-// gzip/deflate outgoing responses
-var compression = require('compression');
-app.use(compression());
-
-// parse data for file upload
-app.use('/', multipart({limit: '100mb'}));
-
-// parse data for post and get requests
-app.use('/', bodyParser.urlencoded({
-  extended: true,
-  limit: '10mb'
-}));
-app.use('/', bodyParser.json({limit: '10mb'}));
-app.use('/', cookieParser());
-
-// Start Silex as an Electron app
-if(process.env.SILEX_ELECTRON) {
-  require(Path.join(__dirname, 'silex_electron'));
-}
-// get silex config
-var silexConfig = unifile.defaultConfig;
-if (fs.existsSync(Path.resolve(__dirname, 'config.js'))) {
-  var obj = require(Path.resolve(__dirname, 'config.js'));
-  for (var prop in obj) {
-  silexConfig[prop] = obj[prop];
-  }
-}
-
-// session management
-var sessionFolder = process.env.SILEX_SESSION_FOLDER || Path.join(Os.homedir(), '.silex', 'sessions');
-mkdirpSync(sessionFolder);
-app.use('/', session({
-  secret: silexConfig.sessionSecret,
-  name: silexConfig.cookieName,
-  resave: true,
-  saveUninitialized: false,
-  store: new FSStore({
-    dir: sessionFolder
-  }),
-  cookie: {
-    maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
-  }
+const app = express();
+app.use( bodyParser.json({limit: '10mb'}) );
+app.use(cookieParser());
+app.use(session({
+  name: 'silex-session',
+  secret: 'test session secret'
 }));
 
-function mkdirpSync(path) {
-  try {
-    fs.mkdirSync(path);
-  } catch(err) {
-    if(err.code === 'ENOENT') {
-      mkdirpSync(Path.dirname(path));
-      mkdirpSync(path);
-    } else if(err.code !== 'EEXIST') {
-      console.error('Unable to create session storage');
-      throw new Error('Unable to create session storage: ' + err.code);
-    }
-  }
-}
+// Build router options
+// routes to expose unifile to CE front end
+const routerOptions = {};
 
-// ********************************
-// production / debug
-// ********************************
-/**
- * catch all errors to prevent nodejs server crash
- */
-function onCatchError(err) {
-  console.log('---------------------');
-  console.error('---------------------', 'Caught exception: ', err, err.stack, '---------------------');
-  console.log('---------------------');
-}
-if(process.env.SILEX_DEBUG || process.env.SILEX_ELECTRON) {
-  // DEBUG ONLY
-  console.warn('Running server in debug mode');
-  // define users (login/password) wich will be authorized to access the www folder (read and write)
-  silexConfig.www.USERS = {
-    'admin': 'admin'
+// FTP service
+console.log('FTP service: looking for env vars ENABLE_FTP');
+if(process.env.ENABLE_FTP) {
+  routerOptions.ftp = {
+    redirectUri: rootUrl + '/ftp/signin',
   };
 }
-else {
-  // PRODUCTION ONLY
-  console.warn('Running server in production mode');
-  // catch all errors and prevent nodejs to crash, production mode
-  process.on('uncaughtException', onCatchError);
-  // reset debug
-  silexConfig.www.USERS = {};
+
+// SFTP service
+console.log('SFTP service: looking for env vars ENABLE_SFTP');
+if(process.env.ENABLE_SFTP) {
+  routerOptions.sftp = {
+    redirectUri: rootUrl + '/sftp/signin',
+  };
 }
 
-// ********************************
-// unifile server
-// ********************************
+// Webdav service
+console.log('Webdav service: looking for env vars ENABLE_WEBDAV');
+if(process.env.ENABLE_WEBDAV) {
+  routerOptions.webdav = {
+    redirectUri: rootUrl + '/webdav/signin',
+  };
+}
 
+// Github service
+console.log('Github service: looking for env vars GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET');
+if(process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
+  console.log('Github service: found app', process.env.GITHUB_CLIENT_ID);
+  routerOptions.github = {
+    clientId: process.env.GITHUB_CLIENT_ID,
+    clientSecret: process.env.GITHUB_CLIENT_SECRET,
+    redirectUri: rootUrl + '/github/oauth_callback',
+  };
+}
+
+// Dropbox service
+console.log('Dropbox service: looking for env vars DROPBOX_CLIENT_ID and DROPBOX_CLIENT_SECRET');
+if(process.env.DROPBOX_CLIENT_ID && process.env.DROPBOX_CLIENT_SECRET) {
+  console.log('Dropbox service: found app', process.env.DROPBOX_CLIENT_ID);
+  routerOptions.dropbox = {
+    clientId: process.env.DROPBOX_CLIENT_ID,
+    clientSecret: process.env.DROPBOX_CLIENT_SECRET,
+    redirectUri: rootUrl + '/dropbox/oauth_callback',
+  };
+}
+
+// Local file system service
+console.log('Local file system service: looking for env vars SILEX_ELECTRON or SILEX_DEBUG');
+if(process.env.SILEX_DEBUG || process.env.SILEX_ELECTRON) {
+  console.info('Local file system service: ENABLED => local file system is writable');
+  routerOptions.fs = {
+    showHiddenFile: false,
+    sandbox: Os.homedir(),
+    infos: {
+      displayName: 'fs',
+    },
+  };
+}
+
+// SSL
 // force ssl if the env var SILEX_FORCE_HTTPS is set
 if(process.env.SILEX_FORCE_HTTPS) {
   console.log('force SSL is active (env var SILEX_FORCE_HTTPS is set)');
@@ -130,58 +111,17 @@ else {
   console.log('force SSL NOT active (env var SILEX_FORCE_HTTPS is NOT set)');
 }
 
-// change www root
-silexConfig.www.ROOT = Os.homedir();
-
-// add static folders
-silexConfig.staticFolders.push(
-  // silex main site
-  {
-    path: Path.resolve(__dirname, '../../dist/client')
-  },
-  // debug silex, for js source map
-  {
-    name: '/js/src',
-    path: Path.resolve(__dirname, '../../src')
-  },
-  // the scripts which have to be available in all versions (v2.1, v2.2, v2.3, ...)
-  {
-    name: '/static',
-    path: Path.resolve(__dirname, '../../static')
-  }
-);
-
-// github service
-if(process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
-  console.log(process.env.GITHUB_CLIENT_ID);
-  silexConfig.github.client_id = process.env.GITHUB_CLIENT_ID;
-  silexConfig.github.client_secret = process.env.GITHUB_CLIENT_SECRET;
-}
+// add static folders to serve silex files
+app.use('/', serveStatic(Path.join(__dirname, '../../dist/client')));
+// debug silex, for js source map
+app.use('/js/src', serveStatic(Path.join(__dirname, '../../src')));
+// the scripts which have to be available in all versions (v2.1, v2.2, v2.3, ...)
+app.use('/static', serveStatic(Path.join(__dirname, '../../static')));
 
 // SSL certificate
-try {
-  var privateKey = fs.readFileSync(process.env.SILEX_SSL_PRIVATE_KEY || __dirname + '/../../privatekey.pem').toString();
-  var certificate = fs.readFileSync(process.env.SILEX_SSL_CERTIFICATE || __dirname + '/../../certificate.pem').toString();
-
-  var options = {
-    key: privatekey,
-    cert: certificate
-  };
-}
-catch(e) {
-  console.warn('SSL certificate failed.')
-}
-
-// use unifile as a middleware
-app.use(silexConfig.apiRoot, unifile.middleware(express, app, silexConfig));
-
-var port = process.env.PORT || 6805; // 6805 is the date of sexual revolution started in paris france 8-)
-http.createServer(app).listen(port, function() {
-  console.log('listening on port ', port);
-});
-
-// SSL certificate
+console.log('SSL: looking for env vars SILEX_SSL_CERTIFICATE and SILEX_SSL_PRIVATE_KEY');
 if(process.env.SILEX_SSL_PRIVATE_KEY && process.env.SILEX_SSL_CERTIFICATE) {
+  console.log('SSL: found certificate', process.env.SILEX_SSL_CERTIFICATE);
   try {
     var privateKey = fs.readFileSync(process.env.SILEX_SSL_PRIVATE_KEY).toString();
     var certificate = fs.readFileSync(process.env.SILEX_SSL_CERTIFICATE).toString();
@@ -195,37 +135,29 @@ if(process.env.SILEX_SSL_PRIVATE_KEY && process.env.SILEX_SSL_CERTIFICATE) {
 
     var sslPort = process.env.SSL_PORT || 443;
     https.createServer(options, app).listen(sslPort, function() {
-      console.log('listening on port ', sslPort);
+      console.log('SSL: listening on port ', sslPort);
     });
   }
   catch(e) {
-    console.warn('SSL certificate failed.', e)
+    console.warn('SSL: load certificate failed.', e)
   }
 }
-// ********************************
-// silex tasks
-// ********************************
 
-var silexTasks = require('./silex-tasks.js');
-app.use('/tasks/:task', function(req, res, next){
-  try{
-    silexTasks.route(function(result){
-      if (!result) {
-        result = {success: true};
-      }
-      try{
-         res.send(result);
-      }
-       catch(e){
-        console.error('Error: header have been sent?', e, result, e.stack);
-      }
-    }, req, res, next, req.params.task);
-  }
-  catch(e){
-    console.error('Error while executing task', e, e.stack);
-  }
+// create the routes for unifile
+// needed by CE
+const router = new Router(app, routerOptions);
+initSilexTasks(app, router.unifile);
 
+// Start Silex as an Electron app
+if(process.env.SILEX_ELECTRON) {
+  require(Path.join(__dirname, 'silex_electron'));
+}
+
+// server 'loop'
+app.listen(port, function() {
+  console.log('Listening on ' + port);
 });
+
 
 // ********************************
 // list templates
@@ -234,12 +166,12 @@ app.use('/get/:folder', function(req, res, next){
   switch(req.params.folder) {
     case 'silex-templates':
     case 'silex-blank-templates':
-    break;
+      break;
     default:
       res.send({success: false, error: 'Error while trying to get the json representation of the folder ' + req.params.folder + ' - folder does not exist'});
       return;
   }
-  var templateFolder = Path.resolve(__dirname, '../client/libs/templates/', req.params.folder);
+  var templateFolder = Path.join(__dirname, '../../dist/client/libs/templates/', req.params.folder);
   fs.readdir(templateFolder, function(err, result) {
     if(err) {
       console.error('Error while trying to get the json representation of the folder ' + req.params.folder, err);

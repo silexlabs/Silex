@@ -212,87 +212,70 @@ window.jQuery = function(any) {};
 
 /**
  * cloud explorer externs
- * @type {Object.<*>}
- */
-var ce = {};
-
-
-/**
- * cloud explorer externs
- * @type {Object.<*>}
- */
-ce.api = {};
-
-
-
-/**
- * cloud explorer externs
  * @constructor
  */
-ce.api.CloudExplorer = function() {};
+var CloudExplorer = function() {};
 
 
 /**
- * cloud explorer externs
- * @param {string} className
+ * @return {Promise}
  */
-ce.api.CloudExplorer.get = function(className) {};
+CloudExplorer.prototype.getServices = function() {};
 
 
 /**
- * cloud explorer externs
- * TODO: add the real params names and types
- * @param arg1
- * @param arg2
- * @param arg3
- * @param arg4
- * @param arg5
+ * @param {?Array.<string>=} extensions
+ * @return {Promise}
  */
-ce.api.CloudExplorer.prototype.read = function(arg1, arg2, arg3, arg4, arg5) {};
+CloudExplorer.prototype.openFile = function(extensions) {};
 
 
 /**
- * cloud explorer externs
- * TODO: add the real params names and types
- * @param arg1
- * @param arg2
- * @param arg3
- * @param arg4
- * @param arg5
- * @param arg6
+ * @param {?Array.<string>=} extensions
+ * @return {Promise}
  */
-ce.api.CloudExplorer.prototype.write = function(arg1, arg2, arg3, arg4, arg5, arg6) {};
+CloudExplorer.prototype.openFiles = function(extensions) {};
 
 
 /**
- * cloud explorer externs
- * TODO: add the real params names and types
- * @param arg1
- * @param arg2
- * @param arg3
+ * @return {Promise}
  */
-ce.api.CloudExplorer.prototype.pick = function(arg1, arg2, arg3) {};
+CloudExplorer.prototype.openFolder = function() {};
 
 
 /**
- * cloud explorer externs
- * TODO: add the real params names and types
- * @param arg1
- * @param arg2
- * @param arg3
+ * @return {Promise}
  */
-ce.api.CloudExplorer.prototype.requestAuthorize = function(arg1, arg2, arg3) {};
+CloudExplorer.prototype.write = function(data, blob) {};
 
 
 /**
- * cloud explorer externs
- * TODO: add the real params names and types
- * @param arg1
- * @param arg2
- * @param arg3
- * @param arg4
+ * @return {Promise}
  */
-ce.api.CloudExplorer.prototype.exportFile = function(arg1, arg2, arg3, arg4) {};
+CloudExplorer.prototype.read = function(blob) {};
+
+
+/**
+ * @param {string}  defaultFileName
+ * @param {?Array.<string>=} extensions
+ * @return {Promise}
+ */
+CloudExplorer.prototype.saveAs = function(defaultFileName, extensions) {};
+
+
+/**
+ * @typedef {{
+ *   url: string,
+ *   path: string,
+ *   service: string,
+ *   size: number,
+ *   modified: string,
+ *   name: string,
+ *   isDir: boolean,
+ *   mime: string
+ * }}
+ */
+var FileInfo;
 
 
 /**

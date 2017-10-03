@@ -19,8 +19,6 @@
 goog.provide('silex.view.pane.BgPane');
 goog.require('goog.array');
 goog.require('goog.object');
-goog.require('goog.ui.Checkbox');
-goog.require('goog.ui.CustomButton');
 goog.require('silex.utils.Style');
 goog.require('silex.view.utils.ColorPicker');
 goog.require('silex.view.pane.PaneBase');
@@ -68,7 +66,6 @@ silex.view.pane.BgPane.prototype.buildUi = function() {
  * build the UI
  */
 silex.view.pane.BgPane.prototype.buildBgColor = function() {
-  // BG color
   this.colorPicker = new ColorPicker(this.element.querySelector('.color-edit-container'), value => this.onColorChanged());
 };
 
