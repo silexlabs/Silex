@@ -306,14 +306,14 @@ silex.view.Menu.prototype.onMenuEvent = function(type, opt_componentName) {
       this.controller.fileMenuController.save();
       break;
     case 'file.publish.settings':
-      this.controller.fileMenuController.view.settingsDialog.openDialog();
+      this.controller.fileMenuController.view.settingsDialog.open();
       this.controller.fileMenuController.view.workspace.redraw(this.controller.fileMenuController.view);
       break;
     case 'file.publish':
       this.controller.fileMenuController.publish();
       break;
     case 'file.save':
-      this.controller.fileMenuController.save(this.controller.fileMenuController.model.file.getUrl());
+      this.controller.fileMenuController.save(this.controller.fileMenuController.model.file.getFileInfo());
       break;
     case 'file.open':
       this.controller.fileMenuController.openFile();
@@ -325,7 +325,7 @@ silex.view.Menu.prototype.onMenuEvent = function(type, opt_componentName) {
       this.controller.viewMenuController.previewResponsize();
       break;
     case 'view.open.fileExplorer':
-      this.controller.viewMenuController.view.fileExplorer.openDialog(function(url) {}, function(error) {});
+      this.controller.viewMenuController.view.fileExplorer.openFile();
       break;
     case 'view.open.cssEditor':
       this.controller.viewMenuController.openCssEditor();
