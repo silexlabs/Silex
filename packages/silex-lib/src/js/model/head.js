@@ -47,6 +47,13 @@ silex.model.Head = function(model, view) {
 
 
 /**
+ * id of the style element which holds current page style
+ * e.g. <style id="current-page-style">.page-page-1 {display: inherit;}</style>
+ */
+silex.model.Head.SILEX_CURRENT_PAGE_CSS_CLASS = 'current-page-style';
+
+
+/**
  * id of the style element which holds silex editable css styles
  */
 silex.model.Head.SILEX_STYLE_ELEMENT_CSS_CLASS = 'silex-style';
@@ -659,6 +666,20 @@ silex.model.Head.prototype.getHeadElement = function() {
   // returns the head of the document in the iframe
   return this.model.file.getContentDocument().head;
 };
+
+
+
+/**
+ * @param {?Element=} opt_headElement
+ *
+ */
+silex.model.Head.prototype.removeCurrentPageStyleTag = function(opt_headElement) {
+  if (!opt_headElement) {
+    opt_headElement = this.getHeadElement();
+  }
+  const tag = opt_headElement.querySelector('#' + silex.model.Head.SILEX_CURRENT_PAGE_CSS_CLASS);
+  goog.dom.removeNode(tag);
+}
 
 
 /**

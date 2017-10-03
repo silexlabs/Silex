@@ -344,6 +344,7 @@ silex.model.File.prototype.getHtml = function() {
   this.model.property.updateStylesInDom(/** @type {Document} */ (cleanFile));
   this.model.property.saveProperties(this.contentDocument_);
   // cleanup
+  this.model.head.removeCurrentPageStyleTag(/** @type {Document} */ (cleanFile).head);
   this.model.head.removeTempTags(/** @type {Document} */ (cleanFile).head);
   this.model.body.removeEditableClasses(/** @type {!Element} */ (cleanFile));
   silex.utils.Style.removeInternalClasses(/** @type {!Element} */ (cleanFile), false, true);
@@ -409,6 +410,7 @@ silex.model.File.prototype.getHtmlGenerator = function* () {
   styleTag.innerHTML = updatedStyles;
   yield;
   // cleanup
+  this.model.head.removeCurrentPageStyleTag(/** @type {Document} */ (cleanFile).head);
   this.model.head.removeTempTags(/** @type {Document} */ (cleanFile).head);
   yield;
   this.model.body.removeEditableClasses(/** @type {!Element} */ (cleanFile));
