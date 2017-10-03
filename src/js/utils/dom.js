@@ -183,8 +183,7 @@ silex.utils.Dom.publish = function(publicationFolder, file, html, statusCallback
   console.log('publish', publicationFolder, file, baseUrl);
   // create the iframe used to compute temporary dom
   var iframe = document.createElement('iframe')
-  iframe.style.position = 'absolute';
-  iframe.style.left = '-99999px;';
+  iframe.style.display = 'none';
   document.body.appendChild(iframe);
   // wait untill iframe is ready
   goog.events.listenOnce(iframe, 'load', function(e) {
