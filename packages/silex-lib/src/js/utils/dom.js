@@ -179,7 +179,7 @@ silex.utils.Dom.renderList = function(itemTemplateString, data) {
 silex.utils.Dom.publish = function(publicationFolder, file, html, statusCallback, opt_errCbk) {
   // get the base url for the provided file url
   // @type {string}
-  var baseUrl = silex.utils.Url.getBaseUrl() + file.service + '/' + file.path;
+  var baseUrl = silex.utils.Url.getBaseUrl() + file.service + '/get/' + file.path.slice(0, -file.name.length);
   console.log('publish', publicationFolder, file, baseUrl);
   // create the iframe used to compute temporary dom
   var iframe = document.createElement('iframe')
