@@ -80,11 +80,10 @@ silex.utils.BackwardCompat.process = function(doc, model, cbk) {
     // update //{{host}}/2.x/... to latest version
     var elements = doc.querySelectorAll('[data-silex-static]');
     let needsReload = false;
-    const silexHost = silex.utils.Url.getHost();
     goog.array.forEach(elements, function(element) {
       const propName = element.src ? 'src' : 'href';
       const newUrl = silex.utils.BackwardCompat.getStaticResourceUrl(element[propName]);
-      if(silex.utils.Url.getHost(element[propName]) != silexHost) {
+      if(element[propName] != newUrl) {
         element[propName] = newUrl;
         needsReload = true;
       }
