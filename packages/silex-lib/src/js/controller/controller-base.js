@@ -208,7 +208,7 @@ silex.controller.ControllerBase.prototype.browseBgImage = function() {
       // undo checkpoint
       this.undoCheckPoint();
       // load the image
-      this.model.element.setBgImage(element, fileInfo.url);
+      this.model.element.setBgImage(element, fileInfo.absPath);
       // tracking
       this.tracker.trackAction('controller-events', 'success', 'selectBgImage', 1);
     }
@@ -228,12 +228,13 @@ silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
   this.view.fileExplorer.openFile(FileExplorer.IMAGE_EXTENSIONS)
   .then(fileInfo => {
     if(fileInfo) {
+      console.log('xxx', fileInfo);
       // undo checkpoint
       this.undoCheckPoint();
       // create the element
       let img = this.addElement(silex.model.Element.TYPE_IMAGE);
       // load the image
-      this.model.element.setImageUrl(img, fileInfo.url,
+      this.model.element.setImageUrl(img, fileInfo.absPath,
         (element, imgElement) => {
           this.tracker.trackAction('controller-events', 'success', 'insert.image', 1);
         },
@@ -387,7 +388,31 @@ silex.controller.ControllerBase.prototype.doAddElement = function(element) {
   // select the component
   this.model.body.setSelection([element]);
   // set element editable
-  this.model.body.setEditable(element, true);
+  // TODO: move this to element::createElement
+  this.initUiHandles(element);
+};
+
+
+/**
+ * @param  {Element} element
+ * TODO: move this to element::createElement
+ */
+silex.controller.ControllerBase.prototype.initUiHandles = function(element) {
+  goog.array.forEach([
+    'ui-resizable-n',
+    'ui-resizable-s',
+    'ui-resizable-e',
+    'ui-resizable-w',
+    'ui-resizable-ne',
+    'ui-resizable-nw',
+    'ui-resizable-se',
+    'ui-resizable-sw'
+  ], function(className) {
+    var handle = this.model.file.getContentDocument().createElement('div');
+    goog.dom.classlist.add(handle, className);
+    goog.dom.classlist.add(handle, 'ui-resizable-handle');
+    goog.dom.appendChild(element, handle);
+  }, this);
 };
 
 
@@ -529,13 +554,6 @@ silex.controller.ControllerBase.prototype.doSave = function(fileInfo, opt_cbk, o
     rawHtml = rawHtml.replace(/url\('&quot;()(.+?)\1&quot;'\)/gi, goog.bind(function(match, group1, group2) {
       return 'url(\'' + group2 + '\')';
     }, this));
-  }
-  // runtime check for a recurrent error
-  // check that there is no more of the basUrl in the Html
-  if (this.fileInfo && rawHtml.indexOf(this.fileInfo.url) >= 0) {
-    console.warn('Base URL remains in the HTML, there is probably an error in the convertion to relative URL process');
-    // log this (QA)
-    this.tracker.trackAction('controller-events', 'warning', 'file.save.corrupted', -1);
   }
   // save to file
   this.model.file.saveAs(
