@@ -65,6 +65,17 @@ class FileExplorer {
 
   }
 
+
+  /**
+   * method passed to then in order to add the desired path format everywhere in silex
+   * @param {FileInfo} fileInfo
+   * @return {FileInfo}
+   */
+  addAbsPath(fileInfo) {
+    return /** @type {FileInfo} */ (Object.assign({'absPath': `/${ fileInfo.service }/get/${ fileInfo.path }`}, fileInfo));
+  }
+
+
   /**
    * pick file
    * @param {?Array.<string>=} opt_extensions optional array of file extensions, e.g.
@@ -76,6 +87,7 @@ class FileExplorer {
   openFile(opt_extensions) {
     this.open();
     return this.ce.openFile(opt_extensions)
+    .then(fileInfo => this.addAbsPath(fileInfo))
     .then(fileInfo => {
       this.close()
       return fileInfo;
@@ -94,7 +106,8 @@ class FileExplorer {
   openFiles(opt_extensions) {
     this.open();
     return this.ce.openFiles(opt_extensions)
-      .then(fileInfo => {
+    .then(fileInfo => this.addAbsPath(fileInfo))
+    .then(fileInfo => {
       this.close()
       return fileInfo;
     });
@@ -108,6 +121,7 @@ class FileExplorer {
   openFolder() {
     this.open();
     return this.ce.openFolder()
+    .then(fileInfo => this.addAbsPath(fileInfo))
     .then(fileInfo => {
       this.close()
       return fileInfo;
@@ -127,6 +141,7 @@ class FileExplorer {
   saveAs(defaultName, opt_extensions) {
     this.open();
     return this.ce.saveAs(defaultName, opt_extensions)
+    .then(fileInfo => this.addAbsPath(fileInfo))
     .then(fileInfo => {
       this.close()
       return fileInfo;

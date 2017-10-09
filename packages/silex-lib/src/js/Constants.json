@@ -1,0 +1,27 @@
+{
+	"EDITABLE_CLASS_NAME": "editable-style",
+	"SILEX_CURRENT_PAGE_ID": "current-page-style",
+	"SILEX_TEMP_TAGS_CSS_CLASS": "silex-temp-tag",
+	"SILEX_TEMP_CLASS_NAMES": [
+		"dragging-pending",
+		"drop-zone-candidate",
+		"editable-style-hover",
+		"page-link-active",
+		"pageable-plugin-created",
+		"paged-element-hidden",
+		"paged-element-visible",
+		"silex-just-added",
+		"silex-selected"
+	],
+	"RISZE_HANDLE_CSS_CLASS": "ui-resizable-handle",
+	"RESIZE_HANDLE_CSS_CLASSES": [
+	    "ui-resizable-n",
+	    "ui-resizable-s",
+	    "ui-resizable-e",
+	    "ui-resizable-w",
+	    "ui-resizable-ne",
+	    "ui-resizable-nw",
+	    "ui-resizable-se",
+	    "ui-resizable-sw"
+ 	]
+}

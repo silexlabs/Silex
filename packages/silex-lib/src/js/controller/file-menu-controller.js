@@ -52,7 +52,7 @@ silex.controller.FileMenuController.prototype.loadTemplate = function(url, opt_c
  * @param {?function(Object)=} opt_errorCbk
  */
 silex.controller.FileMenuController.prototype.loadBlank = function(opt_cbk, opt_errorCbk) {
-  const blankUrl = 'libs/templates/silex-blank-templates/desktop/editable.html';
+  const blankUrl = '/libs/templates/silex-blank-templates/desktop/editable.html';
   this.loadTemplate(blankUrl, opt_cbk, opt_errorCbk);
 };
 
