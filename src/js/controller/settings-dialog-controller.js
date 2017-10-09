@@ -110,7 +110,7 @@ silex.controller.SettingsDialogController.prototype.browseFaviconPath = function
   promise.then(fileInfo => {
     if(fileInfo) {
       // set the new favicon path
-      this.model.head.setFaviconPath(fileInfo.url);
+      this.model.head.setFaviconPath(fileInfo.absPath);
       // notify caller (used to reopen settings)
       if(opt_cbk) opt_cbk();
     }
@@ -136,7 +136,7 @@ silex.controller.SettingsDialogController.prototype.browseThumbnailSocialPath = 
   promise.then(fileInfo => {
     if(fileInfo) {
       // set the new path
-      this.model.head.setThumbnailSocialPath(fileInfo.url);
+      this.model.head.setThumbnailSocialPath(fileInfo.absPath);
       // notify caller (used to reopen settings)
       if(opt_cbk) opt_cbk();
     }

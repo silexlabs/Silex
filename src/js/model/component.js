@@ -328,7 +328,7 @@ silex.model.Component.prototype.edit = function(element) {
           promise.then(fileInfo => {
             if(fileInfo) {
               cbk([{
-                'url': fileInfo.url,
+                'url': fileInfo.absPath,
                 'lastModified': fileInfo.lastModified,
                 'lastModifiedDate': new Date(fileInfo.lastModified),
                 'name': fileInfo.name,

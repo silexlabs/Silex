@@ -21,6 +21,7 @@ goog.provide('silex.model.Element');
 goog.require('goog.net.EventType');
 goog.require('goog.net.ImageLoader');
 goog.require('silex.types.Model');
+goog.require('silex.utils.Url');
 
 
 /**
@@ -184,49 +185,6 @@ silex.model.Element.HIDE_ON_MOBILE = 'hide-on-mobile';
 
 
 /**
- * prepare element for edition
- * @param  {string} rawHtml   raw HTML of the element to prepare
- * @return {string} the processed HTML
- */
-silex.model.Element.prototype.prepareHtmlForEdit = function(rawHtml) {
-  // prevent the user scripts from executing while editing
-  rawHtml = rawHtml.replace(/<script.*class=\"silex-script\".*?>/gi, '<script type="text/notjavascript" class="silex-script">');
-  // convert to absolute urls
-  let fileInfo = this.model.file.getFileInfo();
-  if (fileInfo) {
-    rawHtml = silex.utils.Url.relative2Absolute(rawHtml, fileInfo.url);
-  }
-  return rawHtml;
-};
-
-
-
-/**
- * unprepare element for edition
- * @param  {string} rawHtml   raw HTML of the element to prepare
- * @return {string} the processed HTML
- */
-silex.model.Element.prototype.unprepareHtmlForEdit = function(rawHtml) {
-  // put back the user script
-  rawHtml = rawHtml.replace(/type=\"text\/notjavascript\"/gi, 'type="text/javascript"');
-  // remove cache control used to refresh images after editing by pixlr
-  rawHtml = silex.utils.Dom.removeCacheControl(rawHtml);
-  if (this.model.file.getFileInfo()) {
-    // convert to relative urls
-    let baseUrl = silex.utils.Url.getBaseUrl();
-    rawHtml = silex.utils.Url.absolute2Relative(rawHtml, this.model.file.getFileInfo().url);
-    // put back the static scripts (protocol agnostic)
-    let staticUrl = baseUrl.substr(baseUrl.indexOf('//'));
-    // match <link href="//localhost:6805/static/2.7/normalize.css" rel="stylesheet" data-silex-static="">
-    rawHtml = rawHtml.replace(/(\.\.\/[\.\.\/]*)(static\/.*data-silex-static="")/g, (match, p1, p2) => staticUrl + p2);
-    // match <img alt="Twitt" data-silex-static="" src="../../../static/2.7/simplesharingbuttons"
-    rawHtml = rawHtml.replace(/(data-silex-static="".*?)([\.\.\/]+)(static\/)/g, (match, p1, p2, p3) => p1 + staticUrl + p3);
-  }
-  return rawHtml;
-};
-
-
-/**
  * get num tabs
  * example: getTabs(2) returns '        '
  * @param {number} num
@@ -329,7 +287,7 @@ silex.model.Element.prototype.setHideOnMobile = function(element, hide) {
 silex.model.Element.prototype.getAllStyles = function(element, opt_computed) {
   var styleObject = this.model.property.getStyle(element, null, opt_computed);
   var styleStr = silex.utils.Style.styleToString(styleObject);
-  return this.unprepareHtmlForEdit(styleStr);
+  return styleStr;
 };
 
 
@@ -345,13 +303,13 @@ silex.model.Element.prototype.getStyle = function(element, styleName, opt_comput
   const isMobile = this.view.workspace.getMobileEditor();
   let styleObject = this.model.property.getStyle(element, isMobile, opt_computed);
   if (styleObject && styleObject[cssName]) {
-    return this.unprepareHtmlForEdit(styleObject[cssName]);
+    return styleObject[cssName];
   }
   else if (isMobile) {
     // get the non mobile style if it is not defined in mobile
     styleObject = this.model.property.getStyle(element, false, opt_computed);
     if (styleObject && styleObject[cssName]) {
-      return this.unprepareHtmlForEdit(styleObject[cssName]);
+      return styleObject[cssName];
     }
   }
   return null;
@@ -378,7 +336,7 @@ silex.model.Element.prototype.setStyle = function(element, styleName, opt_styleV
   // apply the new style
   if (styleObject[styleName] !== opt_styleValue) {
     if (goog.isDefAndNotNull(opt_styleValue)) {
-      styleObject[styleName] = this.prepareHtmlForEdit(opt_styleValue);
+      styleObject[styleName] = opt_styleValue;
     }
     else {
       styleObject[styleName] = '';
@@ -431,13 +389,9 @@ silex.model.Element.prototype.setBgImage = function(element, url) {
  * @return  {string}  the html content
  */
 silex.model.Element.prototype.getInnerHtml = function(element) {
-  // disable editable
-  this.model.body.setEditable(element, false);
   var innerHTML = this.getContentNode(element).innerHTML;
-  // remove absolute urls and not executable scripts
-  innerHTML = this.unprepareHtmlForEdit(innerHTML);
-  // re-enable editable
-  this.model.body.setEditable(element, true);
+  // put back executable scripts
+  innerHTML = silex.utils.Dom.reactivateScripts(innerHTML);
   return innerHTML;
 };
 
@@ -450,14 +404,10 @@ silex.model.Element.prototype.getInnerHtml = function(element) {
 silex.model.Element.prototype.setInnerHtml = function(element, innerHTML) {
   // get the container of the html content of the element
   var contentNode = this.getContentNode(element);
-  // cleanup
-  this.model.body.setEditable(element, false);
-  // remove absolute urls and not executable scripts
-  innerHTML = this.prepareHtmlForEdit(innerHTML);
+  // deactivate executable scripts
+  innerHTML = silex.utils.Dom.deactivateScripts(innerHTML);
   // set html
   contentNode.innerHTML = innerHTML;
-  // make editable again
-  this.model.body.setEditable(element, true);
 };
 
 
@@ -947,7 +897,7 @@ silex.model.Element.prototype.createImageElement = function() {
 /**
  * set/get a "silex style link" on an element
  * @param  {Element} element
- * @param  {?string=} opt_link  a link (absolute or relative)
+ * @param  {?string=} opt_link an URL
  *         or an internal link (beginning with #!)
  *         or null to remove the link
  */

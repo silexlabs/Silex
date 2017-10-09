@@ -139,9 +139,7 @@ silex.utils.BackwardCompat.getStaticResourceUrl = function(url) {
     return url;
   }
   const pathRelativeToStatic = pathRelativeToStaticMatch[1];
-  return '//' +
-    silex.utils.Url.getHost() +
-    '/static/' +
+  return '/static/' +
     silex.utils.BackwardCompat.LATEST_VERSION[1] +
     '.' +
     silex.utils.BackwardCompat.LATEST_VERSION[2] +

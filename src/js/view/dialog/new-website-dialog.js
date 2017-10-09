@@ -131,7 +131,7 @@ class NewWebsiteDialog {
           const editEl = document.createElement('a');
           editEl.classList.add('fa', 'fa-pencil');
           editEl.innerHTML = 'Select';
-          editEl.setAttribute('data-editable', `libs/templates/${repo}/${item}/editable.html`);
+          editEl.setAttribute('data-editable', `/libs/templates/${repo}/${item}/editable.html`);
           editEl.setAttribute('data-is-template', 'true');
           ui.appendChild(editEl);
 
