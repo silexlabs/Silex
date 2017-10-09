@@ -12,7 +12,49 @@
 const request = require('request');
 const sequential = require('promise-sequential');
 
-module.exports = class Publisher {
+// shared map of PublishJob instances,
+// these are all the publications currently taking place
+const publishJobs = new Map();
+// regularely check for ended publications
+setInterval(() => {
+  publishJobs.forEach(publishJob => {
+    if(publishJob.pleaseDeleteMe) {
+      publishJobs.delete(publishJob.id);
+    }
+  });
+}, 60*1000);
+
+module.exports = class PublishJob {
+  static get(id) {
+    return publishJobs.get(id);
+  }
+  /**
+   * factory to create a publish job
+   */
+  static create(id, { folder, html, css, js, files }, unifile, session, cookies, serverUrl) {
+    // FIXME: several publications should be possible, e.g. when you publish 2 different websites from 2 browser tabs. So we should have an ID which is generated, then returned to the client side to be used when calling cancel or publishState
+    if(publishJobs.has(id)) {
+      publishJobs.get(id).stop();
+    }
+    try {
+      // check input params
+      // paras `files`, `js` and `css` are optional
+      Assert.ok(!!folder, 'Missing param "folder"');
+      Assert.ok(!!html, 'Missing param "html"');
+    }
+    catch(e) {
+      console.error('Invalid params', e);
+      res.status(400).send({
+        message: 'Received invalid params. ' + e.message,
+      });
+      return;
+    }
+    const publishJob = new PublishJob(id, unifile, folder, session, cookies, serverUrl);
+    publishJobs.set(id, publishJob);
+    publishJob.publish(html, css, js, files);
+    return publishJob;
+  }
+
   constructor(id, unifile, folder, session, cookies, serverUrl) {
     this.id = id;
     this.unifile = unifile;

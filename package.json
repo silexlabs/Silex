@@ -6,7 +6,7 @@
   "contributors": [
     "Thomas Fetiveau aka zabojad"
   ],
-  "main": "dist/server/server.js",
+  "main": "dist/server/index.js",
   "license": "GPL-3.0",
   "engines": {
     "node": "~6.5.0",
@@ -47,6 +47,7 @@
     "cookie-session": "^2.0.0-beta.2",
     "express": "4.16.0",
     "express-force-ssl": "^0.3.2",
+    "jsdom": "^11.3.0",
     "prodotype": "github:silexlabs/Prodotype",
     "promise-sequential": "^1.1.1",
     "request": "2.81.0",

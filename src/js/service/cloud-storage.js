@@ -69,15 +69,28 @@ silex.service.CloudStorage.prototype.ready = function(cbk) {
  * @param  {?function(Object)=} opt_errCbk
  */
 silex.service.CloudStorage.prototype.write = function(fileInfo, rawData, cbk, opt_errCbk) {
-  // save the data
-  this.ce.write(rawData, fileInfo)
-  .then(() => {
-    cbk();
-  })
-  .catch(e => {
-    console.error('Error: could not write file', fileInfo, e);
-    if (opt_errCbk) opt_errCbk(/** @type {Object} */ (e));
-  });
+  // // save the data
+  // this.ce.write(new Blob([rawData], {type: 'text/plain'}), fileInfo)
+  // .then(() => {
+  //   cbk();
+  // })
+  // .catch(e => {
+  //   console.error('Error: could not write file', fileInfo, e);
+  //   if (opt_errCbk) opt_errCbk(/** @type {Object} */ (e));
+  // });
+	const oReq = new XMLHttpRequest();
+	oReq.onload = function(event) {
+		if(oReq.status === 200) {
+			cbk();
+		}
+	};
+	oReq.onerror = function(e) {
+		console.error('error for the request', e);
+		if(opt_errCbk) opt_errCbk(e);
+	};
+	const url = `/website/${ fileInfo.service }/put/${ fileInfo.path }`;
+	oReq.open('PUT', url);
+	oReq.send(rawData);
 };
 
 
@@ -88,34 +101,37 @@ silex.service.CloudStorage.prototype.write = function(fileInfo, rawData, cbk, op
  * @param  {?function(Object)=} opt_errCbk
  */
 silex.service.CloudStorage.prototype.read = function(fileInfo, cbk, opt_errCbk) {
-  // load the data
-  this.ce.read(fileInfo)
-  .then(blob => {
-    // convert blob to text
-    var reader = new FileReader();
-    reader.addEventListener('error', function(e) {
-       console.error('could not read the blob received from cloud explorer', e);
-       if(opt_errCbk) opt_errCbk(e);
-    });
-    reader.addEventListener('loadend', function() {
-       cbk(/** @type {string} */ (reader.result));
-    });
-    reader.readAsText(blob);
-  })
-  .catch(e => {
-    console.error('Error: could not read file', fileInfo, e);
-    if (opt_errCbk) opt_errCbk(/** @type {Object} */ (e));
-  });
+
+  this.loadLocal(fileInfo.absPath, cbk, opt_errCbk);
+  // // load the data
+  // this.ce.read(fileInfo)
+  // .then(blob => {
+  //   // convert blob to text
+  //   var reader = new FileReader();
+  //   reader.addEventListener('error', function(e) {
+  //      console.error('could not read the blob received from cloud explorer', e);
+  //      if(opt_errCbk) opt_errCbk(e);
+  //   });
+  //   reader.addEventListener('loadend', function() {
+  //      cbk(/** @type {string} */ (reader.result));
+  //   });
+  //   reader.readAsText(blob);
+  // })
+  // .catch(e => {
+  //   console.error('Error: could not read file', fileInfo, e);
+  //   if (opt_errCbk) opt_errCbk(/** @type {Object} */ (e));
+  // });
 };
 
 
 /**
  * load data
- * @param  {string} url
+ * @param  {string} absPath
  * @param  {function(string)} cbk
  * @param  {?function(Object, string)=} opt_errCbk
  */
-silex.service.CloudStorage.prototype.loadLocal = function(url, cbk, opt_errCbk) {
+silex.service.CloudStorage.prototype.loadLocal = function(absPath, cbk, opt_errCbk) {
+  const url = '/website' + absPath;
   const oReq = new XMLHttpRequest();
   oReq.addEventListener('load', e => {
     // success of the request
@@ -123,7 +139,9 @@ silex.service.CloudStorage.prototype.loadLocal = function(url, cbk, opt_errCbk) 
     else {
       const err = new Event('error');
       let msg = '';
-      switch(oReq.status) {
+      const response = JSON.parse(oReq.responseText);
+      if(response.message) msg = response.message;
+      else switch(oReq.status) {
         case 404: msg = 'File not found.';
         break;
         case 401: msg = 'You are not connected to the cloud service you are trying to use.';
@@ -135,7 +153,7 @@ silex.service.CloudStorage.prototype.loadLocal = function(url, cbk, opt_errCbk) 
     }
   });
   oReq.addEventListener('error', e => {
-    console.error('could not load website', url, e);
+    console.error('could not load website', absPath, 'from', url, e);
     if (opt_errCbk) {
       opt_errCbk(e, 'Network error, please check your internet connection or try again later.');
     }

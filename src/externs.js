@@ -273,6 +273,7 @@ CloudExplorer.prototype.saveAs = function(defaultFileName, extensions) {};
  *   name: string,
  *   isDir: boolean,
  *   mime: string,
+ *   absPath: string
  * }}
  */
 var FileInfo;

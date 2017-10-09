@@ -36,38 +36,6 @@ silex.utils.Dom.CACHE_CONTROL_PARAM_NAME = 'silex-cache-control';
 
 
 /**
- * tag used by Silex, which are mandatory in all Silex webstes
- * @constant
- */
-silex.utils.Dom.MANDATORY_TAGS = [
-  {
-    'type': 'script',
-    'fileName': 'jquery.js'
-  },
-  {
-    'type': 'script',
-    'fileName': 'jquery-ui.js'
-  },
-  {
-    'type': 'script',
-    'fileName': 'pageable.js'
-  },
-  {
-    'type': 'script',
-    'fileName': 'front-end.js'
-  },
-  {
-    'type': 'link',
-    'fileName': 'normalize.css'
-  },
-  {
-    'type': 'link',
-    'fileName': 'front-end.css'
-  }
-].reverse();
-
-
-/**
  * refresh an image with its latest version on the server
  * @param  {Element} img
  * @param  {function()} cbk
@@ -141,6 +109,29 @@ silex.utils.Dom.removeCacheControl = function(url) {
 };
 
 
+
+/**
+ * prevent scripts from executing in components, html boxes...
+ * @param {string} html
+ * @return {string} a safe html string
+ */
+silex.utils.Dom.deactivateScripts = function(html) {
+  return html.replace(/<script.*class=\"silex-script\".*?>/gi, '<script type="text/notjavascript" class="silex-script">');
+
+};
+
+
+
+/**
+ * undo the deactivateScript
+ * @param {string} html
+ * @return {string} the original html string
+ */
+silex.utils.Dom.reactivateScripts = function(html) {
+  return html.replace(/type=\"text\/notjavascript\"/gi, 'type="text/javascript"');
+};
+
+
 /**
  * render a template by duplicating the itemTemplateString and inserting the data in it
  * @param {string} itemTemplateString   the template containing \{\{markers\}\}
@@ -177,56 +168,32 @@ silex.utils.Dom.renderList = function(itemTemplateString, data) {
  * @param {function(string)=} opt_errCbk    callback to be notified of server side errors
  */
 silex.utils.Dom.publish = function(publicationFolder, file, html, statusCallback, opt_errCbk) {
-  // get the base url for the provided file url
-  // @type {string}
-  var baseUrl = silex.utils.Url.getBaseUrl() + file.service + '/get/' + file.path.slice(0, -file.name.length);
-  console.log('publish', publicationFolder, file, baseUrl);
-  // create the iframe used to compute temporary dom
-  var iframe = document.createElement('iframe')
-  iframe.style.display = 'none';
-  document.body.appendChild(iframe);
-  // wait untill iframe is ready
-  goog.events.listenOnce(iframe, 'load', function(e) {
-    // clean up the DOM
-    var cleanedObj = silex.utils.DomCleaner.cleanup(iframe.contentDocument, baseUrl);
-    // store the files to download and copy to assets, scripts...
-    var htmlString = cleanedObj['htmlString'];
-    var cssString = cleanedObj['cssString'];
-    var jsString = cleanedObj['jsString'];
-    var files = cleanedObj['files'];
-    // get rid of the iframe
-    document.body.removeChild(iframe);
-    // call the publish service
-    silex.service.SilexTasks.getInstance().publish(publicationFolder, htmlString, cssString, jsString, files, statusCallback, opt_errCbk);
-  }, false);
-  // prevent scripts from executing
-  html = html.replace(/type=\"text\/javascript\"/gi, 'type="text/notjavascript"');
-  // write the content (leave this after "listen")
-  iframe.contentDocument.open();
-  iframe.contentDocument.write(html);
-  iframe.contentDocument.close();
-};
-
-
-/**
- * add the mandatory Silex scripts and styles in <HEAD>
- * @param {Document} doc
- */
-silex.utils.Dom.addMandatoryTags = function(doc) {
-  silex.utils.Dom.MANDATORY_TAGS.forEach((tagObj) => {
-    let query = '[' + (tagObj['type'] === 'script' ? 'src$=' : 'href$=') + '"' + tagObj['fileName'] + '"]';
-    let element = doc.querySelector(query);
-    if (!element) {
-      element = doc.createElement(tagObj['type']);
-      if (tagObj['type'] === 'script') {
-        element.setAttribute('type', 'text/javascript');
-        element.setAttribute('src', silex.utils.BackwardCompat.getStaticResourceUrl(tagObj['fileName']));
-      }
-      else {
-        element.setAttribute('rel', 'stylesheet');
-        element.setAttribute('href', silex.utils.BackwardCompat.getStaticResourceUrl(tagObj['fileName']));
-      }
-      doc.head.insertBefore(element, doc.head.firstChild);
-    }
-  });
+//  // get the base url for the provided file url
+//  // @type {string}
+//  var baseUrl = silex.utils.Url.getBaseUrl() + file.service + '/get/' + file.path.slice(0, -file.name.length);
+//  console.log('publish', publicationFolder, file, baseUrl);
+//  // create the iframe used to compute temporary dom
+//  var iframe = document.createElement('iframe')
+//  iframe.style.display = 'none';
+//  document.body.appendChild(iframe);
+//  // wait untill iframe is ready
+//  goog.events.listenOnce(iframe, 'load', function(e) {
+//    // clean up the DOM
+//    var cleanedObj = silex.utils.DomCleaner.cleanup(iframe.contentDocument, baseUrl);
+//    // store the files to download and copy to assets, scripts...
+//    var htmlString = cleanedObj['htmlString'];
+//    var cssString = cleanedObj['cssString'];
+//    var jsString = cleanedObj['jsString'];
+//    var files = cleanedObj['files'];
+//    // get rid of the iframe
+//    document.body.removeChild(iframe);
+//    // call the publish service
+//    silex.service.SilexTasks.getInstance().publish(publicationFolder, htmlString, cssString, jsString, files, statusCallback, opt_errCbk);
+//  }, false);
+//  // prevent scripts from executing
+//  html = html.replace(/type=\"text\/javascript\"/gi, 'type="text/notjavascript"');
+//  // write the content (leave this after "listen")
+//  iframe.contentDocument.open();
+//  iframe.contentDocument.write(html);
+//  iframe.contentDocument.close();
 };
