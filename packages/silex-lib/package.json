@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "body-parser": "1.13.3",
-    "cloud-explorer": "github:lexoyo/CloudExplorer2#master",
+    "cloud-explorer": "github:silexlabs/CloudExplorer2#master",
     "compression": "1.5.2",
     "connect-fs2": "*",
     "connect-multiparty": "2.0.0",
