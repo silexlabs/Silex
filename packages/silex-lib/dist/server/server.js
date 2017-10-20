@@ -85,12 +85,13 @@ if(process.env.DROPBOX_CLIENT_ID && process.env.DROPBOX_CLIENT_SECRET) {
 }
 
 // Local file system service
-console.log('Local file system service: looking for env vars SILEX_ELECTRON or SILEX_DEBUG');
-if(process.env.SILEX_DEBUG || process.env.SILEX_ELECTRON) {
-  console.info('Local file system service: ENABLED => local file system is writable');
+console.log('Local file system service: looking for env vars SILEX_ELECTRON or SILEX_DEBUG or ENABLE_FS');
+if(process.env.SILEX_DEBUG || process.env.SILEX_ELECTRON || process.env.ENABLE_FS) {
+  const fsRoot = process.env.FS_ROOT || Os.homedir();
+  console.info('Local file system service: ENABLED => local file system is writable, use FS_ROOT as root (', fsRoot, ')');
   routerOptions.fs = {
     showHiddenFile: false,
-    sandbox: Os.homedir(),
+    sandbox: fsRoot,
     infos: {
       displayName: 'fs',
     },
