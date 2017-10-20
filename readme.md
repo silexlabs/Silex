@@ -151,7 +151,7 @@ If you develop or debug Silex, these npm scripts can be used with npm (they are 
 * `SILEX_DEBUG`, optional, default: `false`, when `true` this will enable the service "www" (storage on the local server in `www/`) with login `admin` and pass `admin`, [used here in the code](dist/server/server.js#L78)
 * `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`: optional, to activate github service, you need to create a github app to get these info ([create a github app](https://github.com/settings/applications/new) to get those)
 * `DROPBOX_CLIENT_ID` and `DROPBOX_CLIENT_SECRET`: optional, this will activate Dropbox service, you need to create a Dropbox app on developers.dropbox.com
-* `ENABLE_FTP`, `ENABLE_SFTP`, `ENABLE_WEBDAV`: optional, used to activate the corresponding services
+* `ENABLE_FTP`, `ENABLE_SFTP`, `ENABLE_WEBDAV`, `ENABLE_FS`: optional, used to activate the corresponding services
 * `SILEX_ELECTRON`: this is set by Silex electron app, in order to activate the `fs` service and access your file system from within Silex
 
 > Tip: for your tests on localhost, you can use these test apps
