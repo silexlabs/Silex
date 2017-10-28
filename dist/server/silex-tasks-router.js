@@ -45,7 +45,7 @@ module.exports = function (app, unifile) {
           });
           return;
         }
-        publishers[req.session.sessionID] = new Publisher(req.session.sessionID, unifile, req.body.folder, req.session);
+        publishers[req.session.sessionID] = new Publisher(req.session.sessionID, unifile, req.body.folder, req.session, req.cookies, req.protocol + '://' + req.get('host'));
         publishers[req.session.sessionID].publish(req.body.html, req.body.css, req.body.js, req.body.files);
         // imediately returns to avoid timeout
         res.end();
@@ -94,15 +94,19 @@ module.exports = function (app, unifile) {
 
 
 class Publisher {
-  constructor(id, unifile, folder, session) {
+  constructor(id, unifile, folder, session, cookies, serverUrl) {
     this.id = id;
     this.unifile = unifile;
     this.folder = folder;
     this.session = session;
+    this.cookies = cookies;
     this.abort = false;
     this.success = false;
     this.error = false;
     this.state = 'In progress.'
+
+    this.jar = request.jar();
+    for(let key in this.cookies) this.jar.setCookie(request.cookie(key + '=' + this.cookies[key]), serverUrl);
   }
   stop() {
     if(this.isStopped() === false) {
@@ -133,57 +137,82 @@ class Publisher {
    * @param {?string=} files optional list of files to download and copy to assets/
    */
   publish(html, css, js, files) {
-    // create the folders css, js and html
     if(this.abort) {
       reject('Aborted.');
       return Promise.reject();
     }
-    this.state = 'Creating files: index.html css/styles.css js/script.js';
-    const batchActions = [{
-        name: 'mkdir',
-        path: this.folder.path + '/css',
-      }, {
-        name: 'mkdir',
-        path: this.folder.path + '/js',
-      }, {
+
+    // files and folders paths
+    const rootPath = this.folder.path;
+    const indexFile = rootPath + '/index.html';
+    const cssFolder = rootPath + '/css';
+    const jsFolder = rootPath + '/js';
+    const assetsFolder = rootPath + '/assets';
+    const jsFile = jsFolder + '/script.js';
+    const cssFile = cssFolder + '/styles.css';
+
+    this.state = `Creating folders: <ul><li>${cssFolder}</li><li>${jsFolder}</li><li>${assetsFolder}</li></ul>`;
+
+    return Promise.all([
+      this.unifile.stat(this.session.unifile, this.folder.service, cssFolder),
+      this.unifile.stat(this.session.unifile, this.folder.service, jsFolder),
+      this.unifile.stat(this.session.unifile, this.folder.service, assetsFolder),
+    ].map(promise => promise.catch(err => console.error('a folder does not exist', err))))
+    .then(([statCss, statJs, statAssets]) => {
+      this.state = `Creating files <ul><li>${indexFile}</li><li>${cssFile}</li><li>${jsFile}</li></ul>`;
+      const batchActions = [{
         name: 'writefile',
-        path: this.folder.path + '/index.html',
-        content: html
+        path: indexFile,
+        content: html,
       }];
-    if(!!css) {
-      batchActions.push({
-        name: 'writefile',
-        path: this.folder.path + '/css/styles.css',
-        content: css,
-      });
-    }
-    if(!!js) {
-      batchActions.push({
-        name: 'writefile',
-        path: this.folder.path + '/js/script.js',
-        content: js
-      });
-    }
-    if(!!files) {
-      batchActions.push({
-        name: 'mkdir',
-        path: this.folder.path + '/assets',
-      });
-    }
-    return this.unifile.batch(this.session.unifile, this.folder.service, batchActions)
-    .then(() => {
-      return new Promise((resolve, reject) => {
-        this.streamFileRecursive(files, 0, err => {
-          if(err) {
-            this.error = true;
-            this.state = err.message;
-            reject(err);
-          }
-          else {
-            this.state = 'Done.';
-            this.success = true;
-            resolve();
-          }
+      if(!!css && !statCss) {
+        batchActions.push({
+          name: 'mkdir',
+          path: cssFolder,
+        });
+      }
+      if(!!js && !statJs) {
+        batchActions.push({
+          name: 'mkdir',
+          path: jsFolder,
+        });
+      }
+      if(!!files && !statAssets) {
+        batchActions.push({
+          name: 'mkdir',
+          path: assetsFolder,
+        });
+      }
+      if(!!css) {
+        batchActions.push({
+          name: 'writefile',
+          path: cssFile,
+          content: css,
+        });
+      }
+      if(!!js) {
+        batchActions.push({
+          name: 'writefile',
+          path: jsFile,
+          content: js
+        });
+      }
+      return this.unifile.batch(this.session.unifile, this.folder.service, batchActions)
+      .then(() => {
+        return new Promise((resolve, reject) => {
+          this.streamFileRecursive(files, 0, err => {
+            if(err) {
+              console.log('download asset file failed', err);
+              this.error = true;
+              this.state = err.message;
+              reject(err);
+            }
+            else {
+              this.state = 'Done.';
+              this.success = true;
+              resolve();
+            }
+          });
         });
       });
     })
@@ -191,8 +220,9 @@ class Publisher {
       console.error(err);
       this.error = true;
       this.state = err.message;
+      this.cleanup();
     })
-    .finally(() => {
+    .then(() => {
       this.cleanup();
     });
   }
@@ -208,12 +238,15 @@ class Publisher {
         srcPath: decodeURIComponent(files[idx].srcPath),
         url: files[idx].url,
       };
-      this.state = 'Downloading ' + file.destPath;
+      this.state = 'Downloading ' + this.folder.path + '/' + file.destPath;
       //if(file.src.indexOf('http') === 0) {
         // load from URL
         // "encoding: null" is needed for images (which in this case will be served from /static)
+        // for(let key in this.session.unifile) console.log('xxxxxaaaa', key, this.session.unifile[key]);
+        // "jar" is needed to pass the client cookies to unifile, because we load resources from different servers including ourself
         request(file.srcPath, {
-            encoding: null
+            jar: this.jar,
+            encoding: null,
           }, (error, response, body) => {
           if (!error && response.statusCode == 200) {
             // FIXME: should be done in batch
@@ -222,7 +255,7 @@ class Publisher {
             .catch(error => cbk(error));
           }
           else {
-            console.error('Error while loading ', file.srcPath, response.statusCode);
+            console.error('Error while loading ', file.srcPath, error);
             // keep loading
             // cbk(error || {'message' : `Error ${ response.statusCode} for ressource ${ file.srcPath }` });
             this.streamFileRecursive(files, idx + 1, cbk);
