@@ -31,7 +31,7 @@ app.use( bodyParser.json({limit: '10mb'}) );
 app.use(cookieParser());
 app.use(session({
   name: 'silex-session',
-  secret: 'test session secret'
+  secret: process.env.SILEX_SESSION_SECRET || 'test session secret'
 }));
 
 // Build router options
