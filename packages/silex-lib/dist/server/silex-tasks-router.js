@@ -134,7 +134,7 @@ class Publisher {
    * @param {string} html content of index.html
    * @param {?string=} css optional content of css/styles.css
    * @param {?string=} js optional content of js/scripts.js
-   * @param {?string=} files optional list of files to download and copy to assets/
+   * @param {?string=} files optional list of files to download and copy to assets/ js/ and css/
    */
   publish(html, css, js, files) {
     if(this.abort) {
@@ -157,7 +157,7 @@ class Publisher {
       this.unifile.stat(this.session.unifile, this.folder.service, cssFolder),
       this.unifile.stat(this.session.unifile, this.folder.service, jsFolder),
       this.unifile.stat(this.session.unifile, this.folder.service, assetsFolder),
-    ].map(promise => promise.catch(err => console.error('a folder does not exist', err))))
+    ].map(promise => promise.catch(err => console.log('Creating a folder because it does not exist yet', err.message))))
     .then(([statCss, statJs, statAssets]) => {
       this.state = `Creating files <ul><li>${indexFile}</li><li>${cssFile}</li><li>${jsFile}</li></ul>`;
       const batchActions = [{
@@ -165,19 +165,19 @@ class Publisher {
         path: indexFile,
         content: html,
       }];
-      if(!!css && !statCss) {
+      if(!statCss) {
         batchActions.push({
           name: 'mkdir',
           path: cssFolder,
         });
       }
-      if(!!js && !statJs) {
+      if(!statJs) {
         batchActions.push({
           name: 'mkdir',
           path: jsFolder,
         });
       }
-      if(!!files && !statAssets) {
+      if(!statAssets) {
         batchActions.push({
           name: 'mkdir',
           path: assetsFolder,
