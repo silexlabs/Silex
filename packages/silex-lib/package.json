@@ -19,7 +19,7 @@
   "scripts": {
     "start": "pm2 start .pm2.json",
     "stop": "pm2 stop .pm2.json",
-    "start:debug": "SILEX_DEBUG=true node dist/server/server.js",
+    "start:debug": "SILEX_DEBUG=true npm start",
     "build": "npm run build:css && npm run build:html && npm run build:prodotype && npm run build:js:release",
     "build:prodotype": "prodotype src/components dist/client/libs/prodotype/components/",
     "build:css": "lessc src/css/_styles.less dist/client/css/admin.css --source-map",

@@ -83,7 +83,9 @@ silex.utils.BackwardCompat.process = function(doc, model, cbk) {
     goog.array.forEach(elements, function(element) {
       const propName = element.src ? 'src' : 'href';
       const newUrl = silex.utils.BackwardCompat.getStaticResourceUrl(element[propName]);
-      if(element[propName] != newUrl) {
+      const oldUrl = element[propName].substr(element[propName].indexOf('//')); // remove the protocol
+      if(oldUrl != newUrl) {
+        console.info('BC rewrite URL', element, oldUrl, newUrl)
         element[propName] = newUrl;
         needsReload = true;
       }
