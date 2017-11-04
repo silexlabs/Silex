@@ -20,7 +20,6 @@
 
 goog.provide('silex.view.dialog.FileExplorer');
 goog.require('silex.service.CloudStorage');
-goog.require('silex.utils.Url');
 
 
 
