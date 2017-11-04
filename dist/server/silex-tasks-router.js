@@ -238,38 +238,29 @@ class Publisher {
         srcPath: decodeURIComponent(files[idx].srcPath),
         url: files[idx].url,
       };
-      this.state = 'Downloading ' + this.folder.path + '/' + file.destPath;
-      //if(file.src.indexOf('http') === 0) {
-        // load from URL
-        // "encoding: null" is needed for images (which in this case will be served from /static)
-        // for(let key in this.session.unifile) console.log('xxxxxaaaa', key, this.session.unifile[key]);
-        // "jar" is needed to pass the client cookies to unifile, because we load resources from different servers including ourself
-        request(file.srcPath, {
-            jar: this.jar,
-            encoding: null,
-          }, (error, response, body) => {
-          if (!error && response.statusCode == 200) {
-            // FIXME: should be done in batch
-            this.unifile.writeFile(this.session.unifile, this.folder.service, this.folder.path + '/' + file.destPath, body)
-            .then(() => this.streamFileRecursive(files, idx + 1, cbk))
-            .catch(error => cbk(error));
-          }
-          else {
-            console.error('Error while loading ', file.srcPath, error);
-            // keep loading
-            // cbk(error || {'message' : `Error ${ response.statusCode} for ressource ${ file.srcPath }` });
-            this.streamFileRecursive(files, idx + 1, cbk);
-          }
-        });
-      // }
-      // else {
-      //   // load from unifile
-      //   this.unifile.createReadStream(this.session.unifile, file.src.service, file.src.path)
-      //   .pipe(unifile.createWriteStream(this.session.unifile, file.dst.service, file.dst.path))
-      //   .on('end', () => {
-      //     this.streamFileRecursive(files, idx + 1, cbk);
-      //   });
-      // }
+      const fullDestPath = this.folder.path + '/' + file.destPath;
+      this.state = 'Downloading ' + fullDestPath;
+      // load from URL
+      // "encoding: null" is needed for images (which in this case will be served from /static)
+      // for(let key in this.session.unifile) console.log('unifile session key', key, this.session.unifile[key]);
+      // "jar" is needed to pass the client cookies to unifile, because we load resources from different servers including ourself
+      request(file.srcPath, {
+        jar: this.jar,
+        encoding: null,
+      })
+      .on('error', (error) => {
+        console.error('Error while loading ', file.srcPath, error);
+      })
+      .pipe(this.unifile.createWriteStream(this.session.unifile, this.folder.service, fullDestPath))
+      .on('error', (error) => {
+        console.error('Error while writing ', file.srcPath, error);
+        // cbk(error || {'message' : `Error ${ response.statusCode} for ressource ${ file.srcPath }` });
+      })
+      .on('finish', () => {
+        // console.log('Finish download and upload', file.srcPath, fullDestPath);
+        // keep loading
+        this.streamFileRecursive(files, idx + 1, cbk);
+      })
     }
   }
 }
