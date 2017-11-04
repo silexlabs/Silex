@@ -99,13 +99,13 @@ class SettingsDialog {
     this.bindTextField('.social-pane .input-image-path', (v) => this.controller.settingsDialogController.setThumbnailSocialPath(v));
     this.bindTextField('.publish-pane .input-publication-path', (v) => {
       const fileInfo = this.controller.settingsDialogController.getPublicationPath();
-      fileInfo.path = v;
-      this.controller.settingsDialogController.setPublicationPath(fileInfo);
+      const fileInfoNew = silex.utils.Url.updateFileInfo(fileInfo, {'path': v});
+      this.controller.settingsDialogController.setPublicationPath(fileInfoNew);
     });
     this.bindTextField('.publish-pane .input-publication-service', (v) => {
       const fileInfo = this.controller.settingsDialogController.getPublicationPath();
-      fileInfo.service = v;
-      this.controller.settingsDialogController.setPublicationPath(fileInfo);
+      const fileInfoNew = silex.utils.Url.updateFileInfo(fileInfo, {'service': v});
+      this.controller.settingsDialogController.setPublicationPath(fileInfoNew);
     });
 
     // image path browse button
@@ -272,7 +272,6 @@ class SettingsDialog {
       this.publicationPath.service = service;
       this.publicationPath.path = path;
     }
-    console.log('getPub', this.publicationPath);
     return this.publicationPath;
   }
 
