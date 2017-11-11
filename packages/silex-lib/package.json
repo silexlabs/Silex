@@ -48,6 +48,7 @@
     "express": "4.13.3",
     "express-force-ssl": "^0.3.2",
     "prodotype": "github:silexlabs/Prodotype",
+    "promise-sequential": "^1.1.1",
     "request": "2.81.0",
     "serve-static": "^1.12.3",
     "silex-blank-templates": "github:silexlabs/silex-blank-templates#717e228",
