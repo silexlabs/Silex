@@ -296,6 +296,18 @@ silex.utils.Style.hexToArray = function(hex) {
 
 
 /**
+ * convert rgb to hex
+ * example:    rgb(0, 0, 0) will return #000000
+ * @param {string} rgb
+ * @return {string}
+ */
+silex.utils.Style.rgbToHex = function(rgb) {
+  const hexWithA = silex.utils.Style.rgbaToHex(rgb);
+  return hexWithA.substr(0, 7);
+}
+
+
+/**
  * convert rgba to hex
  * example:    rgba(0, 0, 0, 1) will return #000000FF
  * @param {string} rgba
