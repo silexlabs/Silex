@@ -153,8 +153,13 @@ silex.model.Page.prototype.getParentPage = function(element) {
  */
 silex.model.Page.prototype.getPages = function() {
   // retrieve all page names from the head section
-  var pages = [];
-  var elements = this.model.body.getBodyElement().querySelectorAll('a[data-silex-type="page"]');
+  const pages = [];
+  const bodyElement = this.model.body.getBodyElement();
+  if(!bodyElement) {
+    console.warn('Can not get pages, the body element is null');
+    return [];
+  }
+  const elements = bodyElement.querySelectorAll('a[data-silex-type="page"]');
   goog.array.forEach(elements, function(element) {
     pages.push(element.getAttribute('id'));
   }, this);
