@@ -16,6 +16,7 @@ const PassThrough = require('stream').PassThrough;
 const Assert = require('assert');
 const request = require('request');
 const uuid = require('uuid');
+const sequential = require('promise-sequential');
 
 // shared map of Publisher instances,
 // these are all the publications currently taking place
@@ -92,7 +93,6 @@ module.exports = function (app, unifile) {
   });
 }
 
-
 class Publisher {
   constructor(id, unifile, folder, session, cookies, serverUrl) {
     this.id = id;
@@ -103,6 +103,7 @@ class Publisher {
     this.abort = false;
     this.success = false;
     this.error = false;
+    this.filesNotDownloaded = [];
     this.state = 'In progress.'
 
     this.jar = request.jar();
@@ -112,7 +113,7 @@ class Publisher {
     if(this.isStopped() === false) {
       console.warn('stopping publication in progress');
       this.abort = true;
-      this.state = 'Canceled.';
+      this.setStatus('Canceled.');
       this.cleanup();
     }
   }
@@ -122,10 +123,22 @@ class Publisher {
   getStatus() {
     return this.state;
   }
+  setStatus(status) {
+    return new Promise((resolve, reject) => {
+      this.state = status;
+      resolve();
+    });
+  }
   cleanup() {
     setTimeout(() => {
       publishers.delete(this.id);
     }, 60*1000);
+  }
+  getSuccessMessage() {
+    if(this.filesNotDownloaded.length > 0) {
+      return 'Done. <br><br>Warning: these files could not be downloaded: <ul><li>' + this.filesNotDownloaded.join('</li><li>') + '</li></ul>';
+    }
+    return 'Done.';
   }
   /**
    * the method called to publish a website to a location
@@ -151,15 +164,26 @@ class Publisher {
     const jsFile = jsFolder + '/script.js';
     const cssFile = cssFolder + '/styles.css';
 
-    this.state = `Creating folders: <ul><li>${cssFolder}</li><li>${jsFolder}</li><li>${assetsFolder}</li></ul>`;
+    this.setStatus(`Creating folders: <ul><li>${cssFolder}</li><li>${jsFolder}</li><li>${assetsFolder}</li></ul>`);
 
-    return Promise.all([
-      this.unifile.stat(this.session.unifile, this.folder.service, cssFolder),
-      this.unifile.stat(this.session.unifile, this.folder.service, jsFolder),
-      this.unifile.stat(this.session.unifile, this.folder.service, assetsFolder),
-    ].map(promise => promise.catch(err => console.log('Creating a folder because it does not exist yet', err.message))))
-    .then(([statCss, statJs, statAssets]) => {
-      this.state = `Creating files <ul><li>${indexFile}</li><li>${cssFile}</li><li>${jsFile}</li></ul>`;
+    const preventErr = promise => promise.catch(err => '');
+
+    // start by testing if the folders exist before creating them
+    // then download all assets
+    // FIXME: should use unifile's batch method to avoid conflicts or the "too many clients" error in FTP
+    //return Promise.all([
+    return sequential([
+        () => preventErr(this.unifile.stat(this.session.unifile, this.folder.service, cssFolder)),
+        () => preventErr(this.unifile.stat(this.session.unifile, this.folder.service, jsFolder)),
+        () => preventErr(this.unifile.stat(this.session.unifile, this.folder.service, assetsFolder)),
+      ]
+      // add catch to each stat call to avoid errors when the folder does not exist yet
+      // add the promises to download each asset
+      .concat(this.downloadAllAssets(files))
+    )
+    // then we can do a big batch to publish everything at once
+    .then(([statCss, statJs, statAssets, ...assets]) => {
+      this.setStatus(`Creating files <ul><li>${indexFile}</li><li>${cssFile}</li><li>${jsFile}</li></ul>`);
       const batchActions = [{
         name: 'writefile',
         path: indexFile,
@@ -194,74 +218,75 @@ class Publisher {
         batchActions.push({
           name: 'writefile',
           path: jsFile,
-          content: js
+          content: js,
         });
       }
-      return this.unifile.batch(this.session.unifile, this.folder.service, batchActions)
+      const batchActionsWithAssets = batchActions.concat(
+        assets
+        .filter(file => !!file)
+        .map(file => {
+          return {
+            name: 'writeFile',
+            path: this.folder.path + '/' +file.path,
+            content: file.content,
+          };
+        }));
+      return this.unifile.batch(this.session.unifile, this.folder.service, batchActionsWithAssets)
       .then(() => {
-        return new Promise((resolve, reject) => {
-          this.streamFileRecursive(files, 0, err => {
-            if(err) {
-              console.log('download asset file failed', err);
-              this.error = true;
-              this.state = err.message;
-              reject(err);
-            }
-            else {
-              this.state = 'Done.';
-              this.success = true;
-              resolve();
-            }
-          });
-        });
+        this.setStatus(this.getSuccessMessage());
+        this.success = true;
+			})
+      .catch(err => {
+        console.error('An error occured while publishing with unifile', err);
+        this.error = true;
+        this.setStatus(err.message);
+        return Promise.reject(err);
       });
     })
     .catch((err) => {
       console.error(err);
       this.error = true;
-      this.state = err.message;
+      this.setStatus(err.message);
       this.cleanup();
     })
     .then(() => {
       this.cleanup();
     });
   }
-  streamFileRecursive(files, idx, cbk) {
-    if(this.abort) {
-      cbk('Aborted.');
-      return;
-    }
-    if(idx >= files.length) cbk();
-    else {
-      const file = {
-        destPath: decodeURIComponent(files[idx].destPath),
-        srcPath: decodeURIComponent(files[idx].srcPath),
-        url: files[idx].url,
-      };
-      const fullDestPath = this.folder.path + '/' + file.destPath;
-      this.state = 'Downloading ' + fullDestPath;
-      // load from URL
-      // "encoding: null" is needed for images (which in this case will be served from /static)
-      // for(let key in this.session.unifile) console.log('unifile session key', key, this.session.unifile[key]);
-      // "jar" is needed to pass the client cookies to unifile, because we load resources from different servers including ourself
-      request(file.srcPath, {
-        jar: this.jar,
-        encoding: null,
+
+  // create the promises to download each asset
+  downloadAllAssets(files) {
+    return files.map(file => {
+      const srcPath = decodeURIComponent(file.srcPath);
+      const destPath = decodeURIComponent(file.destPath);
+      const shortSrcPath = srcPath.substr(srcPath.lastIndexOf('/') + 1);
+      return () => new Promise((resolve, reject) => {
+        if(this.abort) {
+          console.warn('Aborted publish');
+          reject('Aborted.');
+          return;
+        }
+        this.setStatus(`Downloading file ${ shortSrcPath }...`);
+        // load from URL
+        // "encoding: null" is needed for images (which in this case will be served from /static)
+        // for(let key in this.session.unifile) console.log('unifile session key', key, this.session.unifile[key]);
+        // "jar" is needed to pass the client cookies to unifile, because we load resources from different servers including ourself
+        request(srcPath, {
+          jar: this.jar,
+          encoding: null,
+        }, (err, res, data) => {
+          if(err) reject(err);
+          else if(res.statusCode != 200) reject(`Could not download file ${ srcPath }.`);
+          else resolve({
+            content: data,
+            path: destPath,
+          });
+        });
       })
-      .on('error', (error) => {
-        console.error('Error while loading ', file.srcPath, error);
-      })
-      .pipe(this.unifile.createWriteStream(this.session.unifile, this.folder.service, fullDestPath))
-      .on('error', (error) => {
-        console.error('Error while writing ', file.srcPath, error);
-        // cbk(error || {'message' : `Error ${ response.statusCode} for ressource ${ file.srcPath }` });
-      })
-      .on('finish', () => {
-        // console.log('Finish download and upload', file.srcPath, fullDestPath);
-        // keep loading
-        this.streamFileRecursive(files, idx + 1, cbk);
-      })
-    }
+      .catch(err => {
+        this.filesNotDownloaded.push(shortSrcPath);
+      });
+    });
   }
 }
 
