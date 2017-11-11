@@ -343,9 +343,7 @@ class TextEditor {
 
   getFocus() {
     if(this.modalDialog.isOpen) {
-      // this.textField.focusAndPlaceCursorAtStart();
-      this.textField.getElement().focus();
-      this.textField.getElement().blur();
+      this.textField.focus();
     }
   }
 
@@ -507,24 +505,39 @@ class TextEditor {
   }
 
 
-  /**
-   * user clicked font color button
-   */
-  updateFontColorButton() {
+  getColorContainer() {
+    const container = this.textField.getRange().getContainer();
+    /*
     const range = this.textField.getRange();
     const startNode = this.textField.getRange().getStartNode();
     const container = startNode.nextElementSibling == null ? startNode : startNode.nextElementSibling;
+    */
+    // when the body is selected and has only one child, then this is the container we want
+    // happens when we already enclosed the content in a span
+    if(container.nodeName.toLowerCase() === 'body' && container.childNodes.length === 1) {
+      return container.childNodes[0];
+    }
+    return container;
+  }
+
+  /**
+   * update the font color button in the toolbar
+   * return {string} color in rgb(rr, gg, bb) format
+   */
+  updateFontColorButton() {
+    const container = this.getColorContainer();
     let color = '#000000';
     if(container && container.style && container.style.color) {
       color = container.style.color;
     }
     else if (container) {
-      const el = /** @type {Element} */ (container.nodeType === goog.dom.NodeType.ELEMENT ? container : container.parentNode);
-      color = window.getComputedStyle(el).color;
+      const el = /** @type {Element} */ (container.nodeType === goog.dom.NodeType.ELEMENT ? container : container.parentElement);
+      if(el) color = window.getComputedStyle(el).color;
     }
     // apply the color input and the button to the selection color
-    this.colorInput.value = color;
+    // update the button color in the tool bar
     this.fontColorButtonEl.style.color = color;
+    return color;
   }
 
 
@@ -533,12 +546,17 @@ class TextEditor {
    */
   onFontColorClick(event) {
     // this.colorInput.focus();
-    this.updateFontColorButton();
+    const color = this.updateFontColorButton();
+    // update the color picker to match the value
+    // here we need to convert from rgb to hex because color picker is hex and element.style.color is rgb
+    this.colorInput.value = silex.utils.Style.rgbToHex(color);
     // open the browser's color picker
     this.colorInput.click();
     this.colorInput.onchange = e => {
-      let container = this.textField.getRange().getContainer();
-      if(container.nodeType === goog.dom.NodeType.TEXT) {
+      let container = this.getColorContainer();
+      // enclose the body into a span, do not apply color to it directly
+      // same for a simple text nodes
+      if(container.nodeName.toLowerCase() === 'body' || container.nodeType === goog.dom.NodeType.TEXT) {
         container = document.createElement('span');
         this.textField.getRange().surroundContents(container);
       }
