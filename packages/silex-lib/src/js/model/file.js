@@ -238,7 +238,7 @@ silex.model.File.prototype.contentChanged = function(bypassBC, opt_cbk) {
 
   // first time in chrome, and always in firefox
   // load scripts for edition in the iframe
-  this.includeEditionTags(goog.bind(function() {
+  this.includeEditionTags(() => {
     if(bypassBC) {
       this.onContentLoaded(false, opt_cbk);
     }
@@ -248,11 +248,12 @@ silex.model.File.prototype.contentChanged = function(bypassBC, opt_cbk) {
         this.onContentLoaded(needsReload, opt_cbk);
       });
     }
-  }, this), goog.bind(function() {
+  },
+  () => {
     // error loading editable script
     console.error('error loading editable script');
     throw new Error('error loading editable script');
-  }, this));
+  });
 };
 
 
