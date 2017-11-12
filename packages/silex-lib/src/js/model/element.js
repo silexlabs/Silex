@@ -176,6 +176,14 @@ silex.model.Element.JUST_ADDED_CLASS_NAME = 'silex-just-added';
 
 
 /**
+ * class for elements which are hidden in mobile version
+ * @const
+ * @type {string}
+ */
+silex.model.Element.HIDE_ON_MOBILE = 'hide-on-mobile';
+
+
+/**
  * prepare element for edition
  * @param  {string} rawHtml   raw HTML of the element to prepare
  * @return {string} the processed HTML
@@ -234,6 +242,19 @@ silex.model.Element.prototype.getTabs = function(num) {
 
 
 /**
+ * for properties or style which are to be applied to elements
+ * but in the case of a section not to the internal container, only the whole section
+ * this method will return the element or the section when the element is a section container
+ */
+silex.model.Element.prototype.noSectionContent = function(element) {
+  if(this.isSectionContent(element)) {
+    return /** @type {Element} */ (element.parentNode);
+  }
+  return element;
+}
+
+
+/**
  * get/set type of the element
  * @param  {Element} element   created by silex, either a text box, image, ...
  * @return  {?string}           the style of the element
@@ -255,20 +276,48 @@ silex.model.Element.prototype.isElementContent = function(element) {
 
 /**
  * @param  {Element} element   created by silex
- * @return true if `element` is a section
+ * @return {boolean} true if `element` is a section
  */
 silex.model.Element.prototype.isSection = function(element) {
+  if(!element || !element.classList) return false;
   return element.classList.contains(silex.model.Element.TYPE_SECTION + '-element');
 }
 
 
 /**
  * @param  {Element} element   created by silex
- * @return true if `element` is the content container of a section
+ * @return {boolean} true if `element` is the content container of a section
  */
 silex.model.Element.prototype.isSectionContent = function(element) {
+  if(!element || !element.classList) return false; // this happens in mobile editor, when dragg/dropping (element is document)
   return element.classList.contains(silex.model.Element.TYPE_CONTAINER_CONTENT);
 }
+
+
+/**
+ * get/set the "hide on mobile" property
+ * @param {Element} element
+ * @return {boolean} true if the element is hidden on mobile
+ */
+silex.model.Element.prototype.getHideOnMobile = function(element) {
+  if(!element || !element.classList) return false; // this happens in mobile editor, when dragg/dropping (element is document)
+  return this.noSectionContent(element).classList.contains(silex.model.Element.HIDE_ON_MOBILE);
+};
+
+
+/**
+ * get/set the "hide on mobile" property
+ * @param {Element} element
+ * @param {boolean} hide, true if the element has to be hidden on mobile
+ */
+silex.model.Element.prototype.setHideOnMobile = function(element, hide) {
+  if(hide) {
+    this.noSectionContent(element).classList.add(silex.model.Element.HIDE_ON_MOBILE);
+  }
+  else {
+    this.noSectionContent(element).classList.remove(silex.model.Element.HIDE_ON_MOBILE);
+  }
+};
 
 
 /**
@@ -431,9 +480,8 @@ silex.model.Element.prototype.getContentNode = function(element) {
  */
 silex.model.Element.prototype.move = function(element, direction) {
   // do not move a section's container content, but the section itself
-  if(this.isSectionContent(element)) {
-    element = /** @type {Element} */ (element.parentNode);
-  }
+  element = this.noSectionContent(element);
+
   switch (direction) {
     case silex.model.DomDirection.UP:
       let nextSibling = this.getNextElement(element, true);
@@ -594,9 +642,8 @@ silex.model.Element.prototype.setImageUrl = function(element, url, opt_callback,
  */
 silex.model.Element.prototype.removeElement = function(element) {
   // never delete sections container content, but the section itself
-  if(this.isSectionContent(element)) {
-    element = /** @type {Element} */ (element.parentNode);
-  }
+  element = this.noSectionContent(element);
+
   // check this is allowed, i.e. an element inside the stage container
   if (this.model.body.getBodyElement() !== element &&
     goog.dom.contains(this.model.body.getBodyElement(), element)) {
@@ -994,3 +1041,4 @@ silex.model.Element.prototype.getHeightStyleName = function(element) {
   }
   return 'minHeight';
 };
+

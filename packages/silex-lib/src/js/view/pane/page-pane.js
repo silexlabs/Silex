@@ -107,26 +107,21 @@ silex.view.pane.PagePane.prototype.buildUi = function() {
   // View on mobile checkbox
   this.viewOnMobileCheckbox = /** @type {HTMLInputElement} */ (this.element.querySelector('.view-on-mobile-check'));
   goog.events.listen(this.viewOnMobileCheckbox, goog.ui.Component.EventType.CHANGE,
-      function(event) {
-        goog.array.forEach(this.selectedElements, function(element) {
-          if(this.viewOnMobileCheckbox.checked) {
-            element.classList.remove('hide-on-mobile');
-          }
-          else {
-            element.classList.add('hide-on-mobile');
-          }
-        }, this);
-      }, false, this);
+      event => {
+        this.selectedElements.forEach(element => {
+          this.model.element.setHideOnMobile(element, !this.viewOnMobileCheckbox.checked);
+        });
+      }, false);
 
   // View on all pages
   this.viewOnAllPagesCheckbox = /** @type {HTMLInputElement} */ (this.element.querySelector('.view-on-allpages-check'));
   goog.events.listen(this.viewOnAllPagesCheckbox, goog.ui.Component.EventType.CHANGE,
-    function(event) {
+    event => {
       if(this.viewOnAllPagesCheckbox.checked) {
         this.checkAllPages();
       }
       this.removeFromAllPages();
-    }, false, this);
+    }, false);
 };
 
 
@@ -267,8 +262,8 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, pageNames
     }
   }, this);
   // update the "view on mobile" checkbox
-  var isVisibleOnMobile = this.getCommonProperty(selectedElements, function(element) {
-    return !element.classList.contains('hide-on-mobile');
+  var isVisibleOnMobile = this.getCommonProperty(selectedElements, element => {
+    return !this.model.element.getHideOnMobile(element);
   });
   if(!goog.isNull(isVisibleOnMobile)) {
     this.viewOnMobileCheckbox.checked = (isVisibleOnMobile);
@@ -279,7 +274,7 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, pageNames
   }
   // special case of the background / main container only selected element
   var bgOnly = false;
-  if (selectedElements.length === 1 && goog.dom.classlist.contains(selectedElements[0], 'background')) {
+  if (selectedElements.length === 1 && selectedElements[0].classList.contains('background')) {
     bgOnly = true;
   }
   if (elementsNoStage.length > 0 && bgOnly === false) {

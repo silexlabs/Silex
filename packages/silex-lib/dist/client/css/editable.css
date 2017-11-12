@@ -60,7 +60,7 @@ this makes the video clickable:
   height:100%;
 }
 /* style while dragging */
-.dragging-pending.silex-selected {
+body .editable-style.dragging-pending.silex-selected {
   z-index: 99999;
   opacity: .75;
   position: absolute;
