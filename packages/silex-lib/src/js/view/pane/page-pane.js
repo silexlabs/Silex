@@ -88,11 +88,11 @@ silex.view.pane.PagePane.prototype.pageCheckboxes = null;
 silex.view.pane.PagePane.prototype.buildUi = function() {
   // link, select page or enter custom link
   // handle the dropdown list from the template
-  this.linkDropdown = this.element.querySelector('.link-combo-box');
+  this.linkDropdown = /** @type {HTMLInputElement} */ (this.element.querySelector('.link-combo-box'));
   this.linkDropdown.onchange = goog.bind(this.onLinkChanged, this);
 
   // create a text field for custom link
-  this.linkInputTextField = this.element.querySelector('.link-input-text');
+  this.linkInputTextField = /** @type {HTMLInputElement} */ (this.element.querySelector('.link-input-text'));
 
   // hide by default
   this.linkInputTextField.style.display = 'none';
@@ -105,7 +105,6 @@ silex.view.pane.PagePane.prototype.buildUi = function() {
       this);
 
   // View on mobile checkbox
-  var viewOnMobileElement = goog.dom.getElementByClass('view-on-mobile', this.element);
   this.viewOnMobileCheckbox = /** @type {HTMLInputElement} */ (this.element.querySelector('.view-on-mobile-check'));
   goog.events.listen(this.viewOnMobileCheckbox, goog.ui.Component.EventType.CHANGE,
       function(event) {
@@ -140,7 +139,7 @@ silex.view.pane.PagePane.prototype.setPages = function(pages) {
   this.pages = pages;
 
   // build an array of obects with name and displayName properties
-  var pageData = pages.map(goog.bind(function(pageName) {
+  var pageData = pages.map(pageName => {
     const pageElement = this.model.file.getContentDocument().getElementById(pageName);
     if(!pageElement) {
       // this happens while undoing or redoing
@@ -151,7 +150,7 @@ silex.view.pane.PagePane.prototype.setPages = function(pages) {
       'displayName': pageElement.innerHTML,
       'linkName': '#!' + pageName
     };
-  }, this));
+  });
 
   // link selector
   var pageDataWithDefaultOptions = ([
@@ -166,20 +165,16 @@ silex.view.pane.PagePane.prototype.setPages = function(pages) {
       'linkName': 'custom'
     }
   ]).concat(pageData);
-  var linkContainer = goog.dom.getElementByClass('link-combo-box',
-      this.element);
-  var templateHtml = goog.dom.getElementByClass('link-template',
-      this.element).innerHTML;
+  var linkContainer = /** @type {HTMLInputElement} */ (this.element.querySelector('.link-combo-box'));
+  var templateHtml = /** @type {HTMLInputElement} */ (this.element.querySelector('.link-template')).innerHTML;
   linkContainer.innerHTML = silex.utils.Dom.renderList(
       templateHtml,
       pageDataWithDefaultOptions);
 
   // render page/visibility template
   // init page template
-  var pagesContainer = goog.dom.getElementByClass('pages-container',
-      this.element);
-  templateHtml = goog.dom.getElementByClass('pages-selector-template',
-      this.element).innerHTML;
+  var pagesContainer = /** @type {HTMLInputElement} */ (this.element.querySelector('.pages-container'));
+  templateHtml = /** @type {HTMLInputElement} */ (this.element.querySelector('.pages-selector-template')).innerHTML;
   pagesContainer.innerHTML = silex.utils.Dom.renderList(
       templateHtml,
       pageData);
@@ -193,23 +188,20 @@ silex.view.pane.PagePane.prototype.setPages = function(pages) {
     });
   }
   // create page checkboxes
-  this.pageCheckboxes = [];
-  var mainContainer = goog.dom.getElementByClass('pages-container',
-      this.element);
-  var items = goog.dom.getElementsByClass('page-container', mainContainer);
-  var idx = 0;
-  goog.array.forEach(items, function(item) {
-    var checkbox = /** @type {HTMLInputElement} */ (item.querySelector('.page-check'));
-    var name = this.pages[idx++];
-    this.pageCheckboxes.push({
-      checkbox: checkbox,
-      pageName: name
-    });
+  const mainContainer = /** @type {HTMLInputElement} */ (this.element.querySelector('.pages-container'));
+  const items = /** @type {Array.<Element>} */ (Array.from(mainContainer.querySelectorAll('.page-container')));
+  this.pageCheckboxes = items.map((item, idx) => {
+    const checkbox = /** @type {HTMLInputElement} */ (item.querySelector('.page-check'));
+    const name = this.pages[idx++];
     goog.events.listen(checkbox, goog.ui.Component.EventType.CHANGE,
-        function(event) {
-          this.checkPage(name, checkbox);
-        }, false, this);
-  }, this);
+      event => {
+        this.checkPage(name, checkbox);
+      }, false);
+    return {
+      checkbox: checkbox,
+      pageName: name,
+    };
+  });
 };
 
 
