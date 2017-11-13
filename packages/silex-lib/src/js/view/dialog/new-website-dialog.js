@@ -259,7 +259,7 @@ class NewWebsiteDialog {
           const icon = document.createElement('span');
           icon.setAttribute('data-file-info', JSON.stringify(blob));
           // cloudIcon= fa-github | fa-dropbox | fa-server | fa-cloud | fa-cloud-download
-          const cloudIcon = 'fa-' + (['github', 'dropbox'].indexOf(blob.service) === 0 ? blob.service : (blob.service === 'webdav' ? 'cloud-download' : (blob.service === 'ftp' ? 'server' : 'cloud')));
+          const cloudIcon = 'fa-' + (['github', 'dropbox'].indexOf(blob.service) >= 0 ? blob.service : (blob.service === 'webdav' ? 'cloud-download' : (blob.service === 'ftp' ? 'server' : 'cloud')));
           icon.classList.add('fa', cloudIcon);
           li.appendChild(icon);
 
