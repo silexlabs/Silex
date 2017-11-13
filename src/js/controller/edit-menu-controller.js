@@ -266,7 +266,7 @@ silex.controller.EditMenuController.prototype.editElement = function(opt_element
       break;
     case silex.model.Element.TYPE_HTML:
       this.view.htmlEditor.open();
-      this.view.htmlEditor.setValue(this.model.element.getInnerHtml(element));
+      this.view.htmlEditor.setSelection([element]);
       break;
     case silex.model.Element.TYPE_IMAGE:
       this.view.fileExplorer.openFile(FileExplorer.IMAGE_EXTENSIONS)

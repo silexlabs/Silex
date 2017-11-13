@@ -42,7 +42,38 @@ class HtmlEditor extends AceEditorBase {
    * the content has changed, notify the controler
    */
   contentChanged() {
-    this.controller.htmlEditorController.changed(this.ace.getValue());
+    var selection = this.model.body.getSelection();
+    if(selection.length <= 1) {
+      this.controller.htmlEditorController.changed(selection[0], this.ace.getValue());
+    }
+  }
+
+  setSelection(selection) {
+    if (selection.length === 0) {
+      // edit head tag
+      this.setValue(this.model.head.getUserHeadTag());
+      this.ace.setReadOnly(false);
+    }
+    else if (selection.length === 1) {
+      if(selection[0].tagName.toLowerCase() === 'body') {
+        // edit head tag
+        this.setValue(this.model.head.getUserHeadTag());
+        this.ace.setReadOnly(false);
+      }
+      else if(this.model.element.getType(selection[0]) === silex.model.Element.TYPE_HTML) {
+        // edit current selection
+        this.setValue(this.model.element.getInnerHtml(selection[0]));
+        this.ace.setReadOnly(false);
+      }
+      else {
+        this.setValue('-select an HTML box or press ESC-');
+        this.ace.setReadOnly(true);
+      }
+    }
+    else {
+      this.setValue('-select an HTML box or press ESC-');
+      this.ace.setReadOnly(true);
+    }
   }
 }
 
