@@ -257,7 +257,7 @@ silex.model.Element.prototype.noSectionContent = function(element) {
 /**
  * get/set type of the element
  * @param  {Element} element   created by silex, either a text box, image, ...
- * @return  {?string}           the style of the element
+ * @return  {?string}           the type of element
  * example: for a container this will return "container"
  */
 silex.model.Element.prototype.getType = function(element) {

@@ -38,17 +38,16 @@ goog.inherits(silex.controller.HtmlEditorController, silex.controller.Controller
 
 /**
  * htmlEditor event handler
+ * @param {Element} element
  * @param {string} content
  */
-silex.controller.HtmlEditorController.prototype.changed = function(content) {
-  // update content
-  var selection = this.model.body.getSelection();
-  if (selection.length === 1 && selection[0].tagName.toLowerCase() === 'body') {
+silex.controller.HtmlEditorController.prototype.changed = function(element, content) {
+  if (!element || element.tagName.toLowerCase() === 'body') {
     // edit head tag
     this.model.head.setUserHeadTag(content);
   }
   else {
     // edit current selection
-    this.model.element.setInnerHtml(selection[0], content);
+    this.model.element.setInnerHtml(element, content);
   }
 };
