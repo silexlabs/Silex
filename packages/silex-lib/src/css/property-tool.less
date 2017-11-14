@@ -129,6 +129,14 @@
       display: block;
       padding: 13px;
       line-height: 0;
+      &.page-label {
+        // trucate page names
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        padding-left: 0;
+        line-height: 1px; // needed for firefox to show ellipsis
+      }
     }
     .button {
       .small-combo;
