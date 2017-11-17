@@ -249,7 +249,7 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, pageNames
   this.setPages(pageNames);
 
   // View on mobile checkbox
-  this.viewOnMobileCheckbox.enabled = this.model.head.getEnableMobile();
+  this.viewOnMobileCheckbox.disabled = !this.model.head.getEnableMobile();
 
   // not available for stage element
   var elementsNoStage = [];
@@ -258,7 +258,7 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, pageNames
       elementsNoStage.push(element);
     }
     else {
-      this.viewOnMobileCheckbox.enabled = false;
+      this.viewOnMobileCheckbox.disabled = true;
     }
   }, this);
   // update the "view on mobile" checkbox
@@ -279,12 +279,12 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, pageNames
   }
   if (elementsNoStage.length > 0 && bgOnly === false) {
     // not stage element only
-    this.linkDropdown.removeAttribute('disabled');
+    this.linkDropdown.disabled = false;
     // refresh page checkboxes
     let isInNoPage = true;
     goog.array.forEach(this.pageCheckboxes, function(item) {
       // there is a selection
-      item.checkbox.enabled = true;
+      item.checkbox.disabled = false;
       // compute common pages
       var isInPage = this.getCommonProperty(selectedElements, element => {
         return this.model.page.isInPage(element, item.pageName);
@@ -300,7 +300,7 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, pageNames
         item.checkbox.checked = (isInPage);
       }
     }, this);
-    this.viewOnAllPagesCheckbox.enabled = true;
+    this.viewOnAllPagesCheckbox.disabled = false;
     if(isInNoPage) {
       this.viewOnAllPagesCheckbox.checked = true;
       // this.checkAllPages();
@@ -340,13 +340,13 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, pageNames
   else {
     // stage element only
     goog.array.forEach(this.pageCheckboxes, function(item) {
-      item.checkbox.enabled = false;
+      item.checkbox.disabled = true;
       item.checkbox.indeterminate = true;
     }, this);
     this.linkDropdown.value = 'none';
-    this.linkDropdown.setAttribute('disabled', true);
+    this.linkDropdown.disabled = true;
     this.linkInputTextField.style.display = 'none';
-    this.viewOnAllPagesCheckbox.enabled = false;
+    this.viewOnAllPagesCheckbox.disabled = true;
     this.viewOnAllPagesCheckbox.checked = true;
   }
   this.iAmRedrawing = false;
