@@ -550,6 +550,11 @@ silex.utils.BackwardCompat.to2_2_0 = function(version, doc, model, cbk) {
         metaNode.setAttribute('content', value);
       }
     }
+    // the body needs to be a container,
+    // and 100% width which will then be moved to styles
+    doc.body.classList.add('container-element');
+    doc.body.setAttribute('data-silex-type', 'container');
+    doc.body.style.minWidth = '100%';
   }
   cbk();
 };
