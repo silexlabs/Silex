@@ -166,7 +166,13 @@ class Publisher {
 
     this.setStatus(`Creating folders: <ul><li>${cssFolder}</li><li>${jsFolder}</li><li>${assetsFolder}</li></ul>`);
 
-    const preventErr = promise => promise.catch(err => '');
+    // do not throw an error if the folder is not found, this is what we want to test
+    // instead catch the error and do nothing so that the result is null in .then(stat
+    const preventErr = promise => promise.catch(err => {
+      if(err.code != 'ENOENT') {
+        throw err;
+      }
+    });
 
     // start by testing if the folders exist before creating them
     // then download all assets
@@ -177,7 +183,6 @@ class Publisher {
         () => preventErr(this.unifile.stat(this.session.unifile, this.folder.service, jsFolder)),
         () => preventErr(this.unifile.stat(this.session.unifile, this.folder.service, assetsFolder)),
       ]
-      // add catch to each stat call to avoid errors when the folder does not exist yet
       // add the promises to download each asset
       .concat(this.downloadAllAssets(files))
     )
@@ -237,14 +242,14 @@ class Publisher {
         this.success = true;
 			})
       .catch(err => {
-        console.error('An error occured while publishing with unifile', err);
+        console.error('An error occured in unifile batch', err.message);
         this.error = true;
         this.setStatus(err.message);
         return Promise.reject(err);
       });
     })
     .catch((err) => {
-      console.error(err);
+      console.error('An error occured in the sequence of promises before unifile batch', err.message);
       this.error = true;
       this.setStatus(err.message);
       this.cleanup();
@@ -261,7 +266,7 @@ class Publisher {
       const destPath = decodeURIComponent(file.destPath);
       const shortSrcPath = srcPath.substr(srcPath.lastIndexOf('/') + 1);
       return () => new Promise((resolve, reject) => {
-        if(this.abort) {
+        if(this.isStopped()) {
           console.warn('Aborted publish');
           reject('Aborted.');
           return;

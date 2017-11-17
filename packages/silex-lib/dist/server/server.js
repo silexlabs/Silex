@@ -41,6 +41,7 @@ const routerOptions = {};
 // FTP service
 console.log('FTP service: looking for env vars ENABLE_FTP');
 if(process.env.ENABLE_FTP) {
+  console.log('FTP service: found');
   routerOptions.ftp = {
     redirectUri: rootUrl + '/ftp/signin',
   };
@@ -49,6 +50,7 @@ if(process.env.ENABLE_FTP) {
 // SFTP service
 console.log('SFTP service: looking for env vars ENABLE_SFTP');
 if(process.env.ENABLE_SFTP) {
+  console.log('SFTP service: found');
   routerOptions.sftp = {
     redirectUri: rootUrl + '/sftp/signin',
   };
@@ -57,6 +59,7 @@ if(process.env.ENABLE_SFTP) {
 // Webdav service
 console.log('Webdav service: looking for env vars ENABLE_WEBDAV');
 if(process.env.ENABLE_WEBDAV) {
+  console.log('Webdav service: found');
   routerOptions.webdav = {
     redirectUri: rootUrl + '/webdav/signin',
   };
