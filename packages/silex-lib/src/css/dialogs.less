@@ -23,4 +23,9 @@
   width: 100% - 2*@dialog-margin;
   height: 100% - 2*@dialog-margin;
 }
+.alertify {
+  /* overflow of alertify, needed for the publish dialog when the window is not high enough */
+  overflow-y: auto;
+  max-height: 90%;
+}
 
