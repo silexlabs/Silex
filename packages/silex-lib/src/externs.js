@@ -272,7 +272,7 @@ CloudExplorer.prototype.saveAs = function(defaultFileName, extensions) {};
  *   modified: string,
  *   name: string,
  *   isDir: boolean,
- *   mime: string
+ *   mime: string,
  * }}
  */
 var FileInfo;
@@ -280,34 +280,14 @@ var FileInfo;
 
 /**
  * unifile externs
- * @constructor
+ * @typedef {{
+ *   success: boolean,
+ *   message: ?string,
+ *   tempLink: ?string,
+ *   code: ?string,
+ * }}
  */
-var UnifileResponse = function() {};
-
-
-/**
- * @type {boolean}
- */
-UnifileResponse.prototype.success = false;
-
-
-/**
- * @type {?string}
- */
-UnifileResponse.prototype.message = null;
-
-
-/**
- * @type {?string}
- */
-UnifileResponse.prototype.tempLink = null;
-
-
-/**
- * @type {?string}
- */
-UnifileResponse.prototype.code = null;
-
+var UnifileResponse;
 
 
 /**
