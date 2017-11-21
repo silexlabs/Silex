@@ -265,7 +265,7 @@ class NewWebsiteDialog {
 
           const name = document.createElement('span');
           name.setAttribute('data-file-info', JSON.stringify(blob));
-          name.innerHTML = blob.path;
+          name.innerHTML = blob.name;
           li.appendChild(name);
 
           return li;

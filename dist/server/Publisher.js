@@ -1,5 +1,3 @@
-'use strict';
-
 //////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
@@ -11,89 +9,10 @@
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
 
-const Path = require('path');
-const PassThrough = require('stream').PassThrough;
-const Assert = require('assert');
 const request = require('request');
-const uuid = require('uuid');
 const sequential = require('promise-sequential');
 
-// shared map of Publisher instances,
-// these are all the publications currently taking place
-// to be scalable, should be stored in a DB
-const publishers = new Map();
-
-module.exports = function (app, unifile) {
-
-  app.post('/tasks/:task', (req, res, next) => {
-    // init the session (shouldn't it be done by express??
-    req.session.sessionID = req.session.sessionID || uuid.v4();
-    switch(req.params.task){
-      case 'publish':
-        if(publishers.has(req.session.sessionID)) {
-          publishers[req.session.sessionID].stop();
-        }
-        try {
-          // check input params
-          // paras `files`, `js` and `css` are optional
-          Assert.ok(!!req.body.folder, 'Missing param "folder"');
-          Assert.ok(!!req.body.html, 'Missing param "html"');
-        }
-        catch(e) {
-          console.error('Invalid params', e);
-          res.status(400).send({
-            message: 'Received invalid params. ' + e.message,
-          });
-          return;
-        }
-        publishers[req.session.sessionID] = new Publisher(req.session.sessionID, unifile, req.body.folder, req.session, req.cookies, req.protocol + '://' + req.get('host'));
-        publishers[req.session.sessionID].publish(req.body.html, req.body.css, req.body.js, req.body.files);
-        // imediately returns to avoid timeout
-        res.end();
-      break;
-      default:
-        res.status(400).send({
-          message: 'Silex task "' + req.params.task + '" does not exist'
-        });
-    }
-  });
-  app.get('/tasks/:task', (req, res, next) => {
-    switch(req.params.task){
-      case 'publishState':
-        const publisher = publishers[req.session.sessionID];
-        if(publisher) {
-          if(publisher.error) res.status(500);
-          res.send({
-            'message': publisher.getStatus(),
-            'stop': publisher.isStopped(),
-          });
-        }
-        else {
-          res.status(404).send({
-            'message': 'No pending publication.',
-            'stop': true,
-          });
-        }
-      break;
-      case process.env.RESTART_ROUTE || 'reload':
-        if(!process.env.RESTART_ROUTE) {
-          res.status(500).send({
-            message: 'You need to define an env var RESTART_ROUTE and call /{{RESTART_ROUTE}}'
-          });
-          return;
-        }
-        res.send();
-        process.send('restart');
-      break;
-      default:
-        res.status(500).send({
-          message: 'Silex task "' + req.params.task + '" does not exist'
-        });
-    }
-  });
-}
-
-class Publisher {
+module.exports = class Publisher {
   constructor(id, unifile, folder, session, cookies, serverUrl) {
     this.id = id;
     this.unifile = unifile;
@@ -105,6 +24,8 @@ class Publisher {
     this.error = false;
     this.filesNotDownloaded = [];
     this.state = 'In progress.'
+
+    this.pleaseDeleteMe = false;
 
     this.jar = request.jar();
     for(let key in this.cookies) this.jar.setCookie(request.cookie(key + '=' + this.cookies[key]), serverUrl);
@@ -131,7 +52,7 @@ class Publisher {
   }
   cleanup() {
     setTimeout(() => {
-      publishers.delete(this.id);
+      this.pleaseDeleteMe = true;
     }, 60*1000);
   }
   getSuccessMessage() {
@@ -249,7 +170,7 @@ class Publisher {
       });
     })
     .catch((err) => {
-      console.error('An error occured in the sequence of promises before unifile batch', err.message);
+      console.error('An error occured in the sequence of promises before unifile batch:', err.message);
       this.error = true;
       this.setStatus(err.message);
       this.cleanup();
@@ -267,7 +188,6 @@ class Publisher {
       const shortSrcPath = srcPath.substr(srcPath.lastIndexOf('/') + 1);
       return () => new Promise((resolve, reject) => {
         if(this.isStopped()) {
-          console.warn('Aborted publish');
           reject('Aborted.');
           return;
         }
