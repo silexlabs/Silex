@@ -37,6 +37,25 @@ silex.utils.BackwardCompat.LATEST_VERSION = [2, 2, 7];
 
 
 /**
+ * check if a given site has been made with Silex
+ * @param {string} raw HTML string
+ */
+silex.utils.BackwardCompat.isSilexWebsite = function(rawHtml) {
+  return rawHtml.indexOf('<meta name="generator" content="Silex v2') < 0 ||
+    // or the old page system from Silex 2.0.0
+    rawHtml.indexOf('<meta name="page" content="') < 0
+}
+
+
+/**
+ * check if a given site is a published version of a Silex site
+ * @param {string} raw HTML string
+ */
+silex.utils.BackwardCompat.isPublishedWebsite = function(rawHtml) {
+  return rawHtml.indexOf('silex-published') >= 0;
+}
+
+/**
  * handle backward compatibility issues
  * Backwardcompatibility process takes place after opening a file
  * @param {Document} doc
