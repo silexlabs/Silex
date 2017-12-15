@@ -18,3 +18,4 @@ dist/client/libs/prodotype*
 dist/client/functional-tests/publish
 dist/client/functional-tests/editable.html
 test/selenium-server-standalone-2.37.0.jar
+.vscode
