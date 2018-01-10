@@ -21,7 +21,6 @@ goog.provide('silex.view.pane.PagePane');
 goog.require('goog.array');
 goog.require('goog.cssom');
 goog.require('goog.object');
-goog.require('goog.ui.ColorButton');
 goog.require('goog.ui.HsvaPalette');
 goog.require('silex.view.pane.PaneBase');
 

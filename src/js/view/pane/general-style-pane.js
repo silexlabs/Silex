@@ -19,7 +19,6 @@
 goog.provide('silex.view.pane.GeneralStylePane');
 goog.require('goog.array');
 goog.require('goog.object');
-goog.require('goog.ui.ColorButton');
 goog.require('goog.ui.HsvaPalette');
 goog.require('goog.ui.TabBar');
 goog.require('silex.view.pane.PaneBase');
