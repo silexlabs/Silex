@@ -169,8 +169,11 @@ $(function() {
       this.setAttribute('src', this.getAttribute('data-silex-iframe-src'));
     });
     $('.paged-element-hidden iframe').each(function() {
-      this.setAttribute('data-silex-iframe-src', this.getAttribute('src'));
-      this.setAttribute('src', '');
+      var src = this.getAttribute('src');
+      if(src) {
+        this.setAttribute('data-silex-iframe-src', src);
+        this.setAttribute('src', '');
+      }
     });
     // resize on page change (size will vary)
     resizeBody();
