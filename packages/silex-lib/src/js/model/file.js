@@ -151,10 +151,17 @@ silex.model.File.prototype.hasContent = function() {
  * @param {string} rawHtml
  * @param {?function()=} opt_cbk
  * @param {?boolean=} opt_showLoader
- * @param {?boolean=} opt_bypassBC if true will bypass backward compat check, default is true
  * @export
  */
-silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk, opt_showLoader, opt_bypassBC) {
+silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk, opt_showLoader) {
+  // warn the user
+  if (silex.utils.BackwardCompat.amIObsolete(version, LATEST_VERSION)) {
+    silex.utils.Notification.alert('This website has been saved with a newer version of Silex. Continue at your own risks.', function() {});
+  }
+  else if (hasToUpdate) {
+    silex.utils.Notification.alert('This website has been updated with the latest version of Silex.<br><br>Before you save it, please check that everything is fine. Saving it with another name could be a good idea too (menu file > save as).', function() {});
+  }
+
   // cleanup
   this.view.stage.removeEvents(this.contentDocument_.body);
   // reset iframe content
@@ -168,27 +175,24 @@ silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk, opt_showLoader, 
   else {
     this.view.stage.element.classList.add(silex.model.File.LOADING_LIGHT_CSS_CLASS);
   }
-  if (typeof(opt_bypassBC) === 'undefined') {
-    opt_bypassBC = true;
-  }
   // remove user's head tag before it is interprated by the browser
   // - in case it has bad HTML tags, it could break the whole site, insert tags into the body instead of the head...
   rawHtml = this.model.head.extractUserHeadTag(rawHtml);
+
   // write the content
   this.contentDocument_.open();
   this.contentDocument_.write(rawHtml);
   this.contentDocument_.close();
-  this.contentChanged(!!opt_bypassBC, opt_cbk);
+  this.contentChanged(opt_cbk);
 };
 
 
 
 /**
  * the content of the iframe changed
- * @param {boolean} bypassBC if true will bypass backward compat check
  * @param {?function()=} opt_cbk
  */
-silex.model.File.prototype.contentChanged = function(bypassBC, opt_cbk) {
+silex.model.File.prototype.contentChanged = function(opt_cbk) {
   // wait for the webste to be loaded
   // can not rely on the load event of the iframe because there may be missing assets
   this.contentDocument_ = goog.dom.getFrameContentDocument(this.iFrameElement_);
@@ -197,32 +201,11 @@ silex.model.File.prototype.contentChanged = function(bypassBC, opt_cbk) {
     this.contentWindow_ === null ||
     this.contentWindow_['$'] === null) {
     setTimeout(() => {
-      this.contentChanged(bypassBC, opt_cbk);
+      this.contentChanged(opt_cbk);
     }, 100);
     return;
   }
 
-  // include edition tags and call onContentLoaded
-  // the first time, it takes time to load the scripts
-  // the second time, no load event, and jquery is already loaded
-  if(bypassBC) {
-    this.onContentLoaded(false, opt_cbk);
-  }
-  else {
-    // handle retrocompatibility issues
-    silex.utils.BackwardCompat.process(this.contentDocument_, this.model, (needsReload) => {
-      this.onContentLoaded(needsReload, opt_cbk);
-    });
-  }
-};
-
-
-/**
- * content successfully changed in the iframe
- * @param {boolean} needsReload
- * @param {?function()=} opt_cbk
- */
-silex.model.File.prototype.onContentLoaded = function(needsReload, opt_cbk) {
   // check the integrity and store silex style sheet which holds silex elements styles
   this.model.property.initStyles(this.contentDocument_);
   this.model.property.loadProperties(this.contentDocument_);
@@ -235,12 +218,6 @@ silex.model.File.prototype.onContentLoaded = function(needsReload, opt_cbk) {
   // notify the caller
   if (opt_cbk) {
     opt_cbk();
-  }
-  // if backward compat says it needs reload
-  if(needsReload) {
-    console.warn('backward compat needs reload');
-    this.setHtml(this.getHtml());
-    return;
   }
   // loading
   this.view.stage.element.classList.remove(silex.model.File.LOADING_CSS_CLASS);
