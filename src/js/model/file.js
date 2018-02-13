@@ -154,14 +154,6 @@ silex.model.File.prototype.hasContent = function() {
  * @export
  */
 silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk, opt_showLoader) {
-  // warn the user
-  if (silex.utils.BackwardCompat.amIObsolete(version, LATEST_VERSION)) {
-    silex.utils.Notification.alert('This website has been saved with a newer version of Silex. Continue at your own risks.', function() {});
-  }
-  else if (hasToUpdate) {
-    silex.utils.Notification.alert('This website has been updated with the latest version of Silex.<br><br>Before you save it, please check that everything is fine. Saving it with another name could be a good idea too (menu file > save as).', function() {});
-  }
-
   // cleanup
   this.view.stage.removeEvents(this.contentDocument_.body);
   // reset iframe content
@@ -312,17 +304,16 @@ silex.model.File.prototype.getHtmlGenerator = function* () {
  */
 silex.model.File.prototype.openFromUrl = function(url, opt_cbk = null, opt_errCbk = null) {
   this.isTemplate = true;
-  silex.service.CloudStorage.getInstance().loadLocal(url,
-      goog.bind(function(rawHtml) {
-        this.fileInfo = /** @type {FileInfo} */ ({
-          isDir: false,
-          mime: 'text/html',
-          url: url
-        });
-        if (opt_cbk) {
-          opt_cbk(rawHtml);
-        }
-      }, this), opt_errCbk);
+  silex.service.CloudStorage.getInstance().loadLocal(url, (rawHtml) => {
+    this.fileInfo = /** @type {FileInfo} */ ({
+      isDir: false,
+      mime: 'text/html',
+      url: url
+    });
+    if (opt_cbk) {
+      opt_cbk(rawHtml);
+    }
+  }, opt_errCbk);
 };
 
 
@@ -368,7 +359,7 @@ silex.model.File.prototype.save = function(rawHtml, cbk, opt_errCbk) {
  * load a new file
  * @param {FileInfo} fileInfo
  * @param {function(string)} cbk receives the raw HTML
- * @param {?function(Object)=} opt_errCbk (err)
+ * @param  {?function(Object, string)=} opt_errCbk
  */
 silex.model.File.prototype.open = function(fileInfo, cbk, opt_errCbk) {
   this.isTemplate = false;
