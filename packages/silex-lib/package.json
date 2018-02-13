@@ -1,7 +1,7 @@
 {
   "name": "Silex",
   "description": "Free and easy website builder for everyone.",
-  "version": "2.2.7",
+  "version": "2.2.7", "<---------- be careful": "this is used in BackwardCompat.js",
   "author": "Alex Hoyau <a.hoyau@silexlabs.org> (https://lexoyo.me/)",
   "contributors": [
     "Thomas Fetiveau aka zabojad"

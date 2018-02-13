@@ -54,7 +54,6 @@ goog.require('silex.service.Tracker');
 goog.require('silex.types.Controller');
 goog.require('silex.types.Model');
 goog.require('silex.types.View');
-goog.require('silex.utils.BackwardCompat');
 goog.require('silex.utils.Dom');
 goog.require('silex.utils.InvalidationManager');
 goog.require('silex.utils.Polyfills');
