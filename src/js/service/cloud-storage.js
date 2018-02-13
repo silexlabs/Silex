@@ -98,7 +98,7 @@ silex.service.CloudStorage.prototype.write = function(fileInfo, rawData, cbk, op
  * load text blob from unifile
  * @param  {FileInfo} fileInfo
  * @param  {function(string)} cbk
- * @param  {?function(Object)=} opt_errCbk
+ * @param  {?function(Object, string)=} opt_errCbk
  */
 silex.service.CloudStorage.prototype.read = function(fileInfo, cbk, opt_errCbk) {
 
@@ -135,12 +135,19 @@ silex.service.CloudStorage.prototype.loadLocal = function(absPath, cbk, opt_errC
   const oReq = new XMLHttpRequest();
   oReq.addEventListener('load', e => {
     // success of the request
-    if(oReq.status === 200) cbk(oReq.responseText);
+    if(oReq.status === 200) {
+      const data = JSON.parse(oReq.responseText);
+      // warn the user
+      if (data['message']) {
+        silex.utils.Notification.alert(data['message'], function() {});
+      }
+      cbk(data['html']);
+    }
     else {
       const err = new Event('error');
       let msg = '';
       const response = JSON.parse(oReq.responseText);
-      if(response.message) msg = response.message;
+      if(response['message']) msg = response['message'];
       else switch(oReq.status) {
         case 404: msg = 'File not found.';
         break;
