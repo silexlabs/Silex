@@ -18,10 +18,14 @@ const bodyParser = require('body-parser');
 const { URL } = require('url');
 const CloudExplorer = require('cloud-explorer');
 
+const BackwardCompat = require('./BackwardCompat.js');
+
 const clientRoot = Path.resolve(__dirname, '..');
-const constants = require(Path.resolve(__dirname, '../../src/js/Constants.json'));
+const constants = require('./Constants.json');
 
 module.exports = function(port, rootUrl, unifile) {
+
+  const backwardCompat = new BackwardCompat(rootUrl);
 
   /**
    * list all the templates of the given folder
@@ -57,8 +61,8 @@ module.exports = function(port, rootUrl, unifile) {
     const path = req.params[1];
     const url = new URL(`${ rootUrl }/${ connector }/get/${ Path.dirname(path) }/`);
     unifile.readFile(req.session.unifile, connector, path)
-      .then(data => {
-        res.send(prepareWebsite(data.toString('utf-8'), url));
+      .then(buffer => {
+        return sendWebsiteData(res, buffer, url);
       })
       .catch((err) => {
         console.error('unifile error catched:', err);
@@ -73,18 +77,32 @@ module.exports = function(port, rootUrl, unifile) {
     const localPath = Path.resolve(__dirname, '../client' + path);
     const url = new URL(`${ rootUrl }${ Path.dirname(path) }/`);
     if(localPath.startsWith(clientRoot)) {
-      fs.readFile(localPath, (err, data) => {
+      fs.readFile(localPath, (err, buffer) => {
         if(err) {
           CloudExplorer.handleError(res, err);
         }
         else {
-          res.send(prepareWebsite(data.toString('utf-8'), url));
+          sendWebsiteData(res, buffer, url);
         }
       });
     }
     else {
       CloudExplorer.handleError(res, {message: 'Not authorized.', code: 'EACCES'});
     }
+  }
+  function sendWebsiteData(res, buffer, url) {
+    const dom = new JSDOM(buffer.toString('utf-8'), { url: url.href, });
+    return backwardCompat.update(dom.window.document)
+    .then(wanrningMsg => {
+      prepareWebsite(dom, url);
+      // done, back to a string
+      const str = dom.serialize();
+      dom.window.close();
+      res.send({
+        message: wanrningMsg,
+        html: str,
+      });
+    })
   }
   /**
    * save a website to the cloud storage of the user
@@ -93,8 +111,13 @@ module.exports = function(port, rootUrl, unifile) {
     const connector = req.params[0];
     const path = req.params[1];
     const url = new URL(`${ rootUrl }/${ connector }/get/${ Path.dirname(path) }/`);
-    const body = unprepareWebsite(req.body, url);
-    unifile.writeFile(req.session.unifile, connector, req.params[1], body)
+
+    const dom = new JSDOM(req.body, { url: url.href, });
+    unprepareWebsite(dom, url);
+    const str = dom.serialize();
+    dom.window.close();
+
+    unifile.writeFile(req.session.unifile, connector, req.params[1], str)
       .then(result => {
         res.send(result);
       })
@@ -104,16 +127,16 @@ module.exports = function(port, rootUrl, unifile) {
       });
   }
   function transformPaths(dom, fn) {
+    // images, videos, stylesheets, iframes...
     ['src', 'href'].forEach(attr => {
       const elements = dom.window.document.querySelectorAll(`[${attr}]`);
       for(let idx=0; idx<elements.length; idx++) {
         const el = elements[idx];
-        if(el.tagName.toLowerCase() === 'a') {
+        if(el.tagName.toLowerCase() === 'a' || el.getAttribute('data-silex-href')) {
           // do nothing with <a> links
           continue;
         }
         if(el.hasAttribute('data-silex-static')) {
-          // TODO
           continue;
         }
         const val = el.getAttribute(attr);
@@ -121,15 +144,43 @@ module.exports = function(port, rootUrl, unifile) {
         if(newVal) el.setAttribute(attr, newVal);
       }
     });
+    // CSS rules
+    // FIXME: it would be safer (?) to use CSSStyleSheet::ownerNode instead of browsing the DOM
+    // see the bug in jsdom: https://github.com/jsdom/jsdom/issues/992
+    const tags = dom.window.document.head.querySelectorAll('style');
+    const stylesheets = dom.window.document.styleSheets;
+    for(let stylesheetIdx=0; stylesheetIdx<stylesheets.length; stylesheetIdx++) {
+      const stylesheet = stylesheets[stylesheetIdx];
+      console.log(stylesheet.ownerNode)
+      const tag = tags[stylesheetIdx];
+      let cssText = '';
+      for(let ruleIdx=0; ruleIdx<stylesheet.cssRules.length; ruleIdx++) {
+        const rule = stylesheet.cssRules[ruleIdx];
+        if(rule.style) for(let valIdx=0; valIdx<rule.style.length; valIdx++) {
+          const valName = rule.style[valIdx];
+          const value = rule.style[valName];
+          if(value.indexOf('url(') === 0) {
+            const valueArr = value.split('\'');
+            const url = valueArr[1];
+            const newUrl = fn(url, stylesheet);
+            if(newUrl) {
+              changed = true;
+              valueArr[1] = newUrl;
+            }
+            rule.style[valName] = valueArr.join('\'');
+          }
+        }
+        cssText += rule.cssText;
+      }
+      tag.innerHTML = cssText;
+    }
   }
   /**
    * prepare website for edit mode
    * * make all URLs absolute (so that images are still found when I "save as" my website to another folder)
    * * adds markup and css classes needed by Silex front end
    */
-  function prepareWebsite(html, baseUrl) {
-    // use a parsed dom, not a string
-    const dom = new JSDOM(html);
+  function prepareWebsite(dom, baseUrl) {
     // URLs
     transformPaths(dom, (path, el) => {
       const url = new URL(path, baseUrl);
@@ -154,19 +205,13 @@ module.exports = function(port, rootUrl, unifile) {
         el.appendChild(handle);
       });
     }
-    // done, back to a string
-    const str = dom.serialize();
-    dom.window.close()
-    return str;
   }
   /**
    * prepare website for being saved
    * * make all URLs relative to current path
    * * remove useless markup and css classes
    */
-  function unprepareWebsite(html, baseUrl) {
-    // use a parsed dom, not a string
-    const dom = new JSDOM(html);
+  function unprepareWebsite(dom, baseUrl) {
     // URLs
     transformPaths(dom, (path, el) => {
       const url = new URL(path, baseUrl);
@@ -195,10 +240,6 @@ module.exports = function(port, rootUrl, unifile) {
     // cleanup inline styles
     dom.window.document.body.minWidth = '';
     dom.window.document.body.minHeight = '';
-    // done, back to a string
-    const str = dom.serialize();
-    dom.window.close()
-    return str;
   }
 
   const router = express.Router();

@@ -105,7 +105,7 @@ silex.controller.FileMenuController.prototype.onOpened = function(opt_cbk, rawHt
     // undo redo reset
     this.undoReset();
     this.fileOperationSuccess(null, true);
-  }, true, false); // with loader and backward compat check
+  }, true); // with loader
   // QOS, track success
   this.tracker.trackAction('controller-events', 'success', 'file.new', 1);
   if(opt_cbk) {
@@ -156,14 +156,15 @@ silex.controller.FileMenuController.prototype.openFile = function(opt_cbk, opt_e
           if (opt_cbk) {
             opt_cbk(/** @type {FileInfo} */ (fileInfo));
           }
-        }, true, false); // with loader and backward compat check
+        }, true); // with loader
       },
-      error => {
-        silex.utils.Notification.notifyError('Error: I did not manage to open this file. \n' + (error.message || ''));
+      (error, message) => {
+        silex.utils.Notification.alert('Error: I did not manage to open this file. \n' + (message || error.message || ''), () => {
+          if (opt_errorCbk) {
+            opt_errorCbk(error);
+          }
+        });
         this.tracker.trackAction('controller-events', 'error', 'file.open', -1);
-        if (opt_errorCbk) {
-          opt_errorCbk(error);
-        }
       });
     }
     else {
