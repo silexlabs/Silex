@@ -389,10 +389,10 @@ silex.model.File.prototype.getHtmlAsync = function (cbk) {
 silex.model.File.prototype.getHtmlNextStep = function (cbk, generator) {
   let res = generator.next();
   if(res.done) {
-    setTimeout(() => cbk(res.value), 100);
+    setTimeout(() => cbk(res.value), 0);
   }
   else {
-    setTimeout(() => this.getHtmlNextStep(cbk, generator), 100);
+    setTimeout(() => this.getHtmlNextStep(cbk, generator), 0);
   }
 };
 
