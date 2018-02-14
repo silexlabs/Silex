@@ -322,7 +322,7 @@ silex.model.File.prototype.openFromUrl = function(url, opt_cbk = null, opt_errCb
  * @param {FileInfo} fileInfo
  * @param {string} rawHtml
  * @param {function()} cbk receives the raw HTML
- * @param {?function(Object)=} opt_errCbk
+ * @param  {?function(Object, string)=} opt_errCbk
  * @export
  */
 silex.model.File.prototype.saveAs = function(fileInfo, rawHtml, cbk, opt_errCbk) {
@@ -337,7 +337,7 @@ silex.model.File.prototype.saveAs = function(fileInfo, rawHtml, cbk, opt_errCbk)
  * write content to the file
  * @param {string} rawHtml
  * @param {function()} cbk
- * @param {?function(Object)=} opt_errCbk
+ * @param  {?function(Object, string)=} opt_errCbk
  * @export
  */
 silex.model.File.prototype.save = function(rawHtml, cbk, opt_errCbk) {

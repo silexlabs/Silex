@@ -151,7 +151,6 @@ module.exports = function(port, rootUrl, unifile) {
     const stylesheets = dom.window.document.styleSheets;
     for(let stylesheetIdx=0; stylesheetIdx<stylesheets.length; stylesheetIdx++) {
       const stylesheet = stylesheets[stylesheetIdx];
-      console.log(stylesheet.ownerNode)
       const tag = tags[stylesheetIdx];
       let cssText = '';
       for(let ruleIdx=0; ruleIdx<stylesheet.cssRules.length; ruleIdx++) {

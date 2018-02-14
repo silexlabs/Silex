@@ -568,12 +568,13 @@ silex.controller.ControllerBase.prototype.doSave = function(fileInfo, opt_cbk, o
           opt_cbk();
         }
       }, this),
-      goog.bind(function(error) {
-        silex.utils.Notification.notifyError('Error: I did not manage to save the file. \n' + (error.message || ''));
+      goog.bind(function(error, msg) {
+        silex.utils.Notification.alert('Error: I did not manage to save the file. \n' + (msg || error.message || ''), () => {
+          if (opt_errorCbk) {
+            opt_errorCbk(error);
+          }
+        });
         this.tracker.trackAction('controller-events', 'error', 'file.save', -1);
-        if (opt_errorCbk) {
-          opt_errorCbk(error);
-        }
       }, this));
 };
 
