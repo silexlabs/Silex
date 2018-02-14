@@ -66,7 +66,7 @@ silex.service.CloudStorage.prototype.ready = function(cbk) {
  * @param  {FileInfo} fileInfo
  * @param  {string} rawData
  * @param  {function()} cbk
- * @param  {?function(Object)=} opt_errCbk
+ * @param  {?function(Object, string)=} opt_errCbk
  */
 silex.service.CloudStorage.prototype.write = function(fileInfo, rawData, cbk, opt_errCbk) {
   // // save the data
@@ -83,10 +83,11 @@ silex.service.CloudStorage.prototype.write = function(fileInfo, rawData, cbk, op
 		if(oReq.status === 200) {
 			cbk();
 		}
-	};
-	oReq.onerror = function(e) {
-		console.error('error for the request', e);
-		if(opt_errCbk) opt_errCbk(e);
+    else {
+      const err = new Event('error');
+      let msg = this.getErrorMessage(oReq);
+      if(opt_errCbk) opt_errCbk(err, msg);
+    }
 	};
 	const url = `/website/${ fileInfo.service }/put/${ fileInfo.path }`;
 	oReq.open('PUT', url);
@@ -125,6 +126,31 @@ silex.service.CloudStorage.prototype.read = function(fileInfo, cbk, opt_errCbk) 
 
 
 /**
+ * get an error message out of a CloudExplorer's router error response
+ * @return {string} the error message
+ */
+silex.service.CloudStorage.prototype.getErrorMessage = function(oReq) {
+  let msg = '';
+  try {
+    const response = JSON.parse(oReq.responseText);
+    if(response['message']) msg = response['message'];
+  }
+  catch(e) {}
+  if(msg === '') {
+    if(oReq.responseText !== '') msg = oReq.responseText;
+    else switch(oReq.status) {
+      case 404: msg = 'File not found.';
+      break;
+      case 401: msg = 'You are not connected to the cloud service you are trying to use.';
+      break;
+      default: msg = 'Unknown error with HTTP status ' + oReq.status;
+    }
+  }
+  return msg === '' ? null : msg;
+};
+
+
+/**
  * load data
  * @param  {string} absPath
  * @param  {function(string)} cbk
@@ -145,17 +171,7 @@ silex.service.CloudStorage.prototype.loadLocal = function(absPath, cbk, opt_errC
     }
     else {
       const err = new Event('error');
-      let msg = '';
-      const response = JSON.parse(oReq.responseText);
-      if(response['message']) msg = response['message'];
-      else switch(oReq.status) {
-        case 404: msg = 'File not found.';
-        break;
-        case 401: msg = 'You are not connected to the cloud service you are trying to use.';
-        break;
-        default: msg = 'Unknown error with HTTP status ' + oReq.status;
-      }
-      err.currentTarget = err.target = oReq;
+      let msg = this.getErrorMessage(oReq);
       opt_errCbk(err, msg);
     }
   });
