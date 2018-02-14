@@ -448,17 +448,6 @@ silex.model.Property.prototype.findCssRule = function(elementId, isMobile) {
 
 
 /**
- * update Silex style tag with the styles of all elements
- * because the dom do not update automatically when we change document.styleSheets
- * @param {Document} doc docment of the iframe containing the website
- */
-silex.model.Property.prototype.updateStylesInDom = function(doc) {
-  var styleTag = doc.querySelector('.' + silex.model.Property.INLINE_STYLE_TAG_CLASS_NAME);
-  styleTag.innerHTML = this.getAllStyles(doc);
-};
-
-
-/**
  * @param {Document} doc docment of the iframe containing the website
  * @return {string} the string defining all elements styles
  */
