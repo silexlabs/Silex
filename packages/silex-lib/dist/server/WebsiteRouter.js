@@ -126,6 +126,27 @@ module.exports = function(port, rootUrl, unifile) {
         CloudExplorer.handleError(res, err);
       });
   }
+  function transformStylesheet(stylesheet, fn) {
+    let cssText = '';
+    for(let ruleIdx=0; ruleIdx<stylesheet.cssRules.length; ruleIdx++) {
+      const rule = stylesheet.cssRules[ruleIdx];
+      if(rule.style) for(let valIdx=0; valIdx<rule.style.length; valIdx++) {
+        const valName = rule.style[valIdx];
+        const value = rule.style[valName];
+        if(value.indexOf('url(') === 0) {
+          const valueArr = value.split('\'');
+          const url = valueArr[1];
+          const newUrl = fn(url, stylesheet);
+          if(newUrl) {
+            valueArr[1] = newUrl;
+          }
+          rule.style[valName] = valueArr.join('\'');
+        }
+      }
+      cssText += rule.cssText;
+    }
+    return cssText;
+  }
   function transformPaths(dom, fn) {
     // images, videos, stylesheets, iframes...
     ['src', 'href'].forEach(attr => {
@@ -149,30 +170,17 @@ module.exports = function(port, rootUrl, unifile) {
     // see the bug in jsdom: https://github.com/jsdom/jsdom/issues/992
     const tags = dom.window.document.head.querySelectorAll('style');
     const stylesheets = dom.window.document.styleSheets;
+    const matches = [];
     for(let stylesheetIdx=0; stylesheetIdx<stylesheets.length; stylesheetIdx++) {
       const stylesheet = stylesheets[stylesheetIdx];
       const tag = tags[stylesheetIdx];
-      let cssText = '';
-      for(let ruleIdx=0; ruleIdx<stylesheet.cssRules.length; ruleIdx++) {
-        const rule = stylesheet.cssRules[ruleIdx];
-        if(rule.style) for(let valIdx=0; valIdx<rule.style.length; valIdx++) {
-          const valName = rule.style[valIdx];
-          const value = rule.style[valName];
-          if(value.indexOf('url(') === 0) {
-            const valueArr = value.split('\'');
-            const url = valueArr[1];
-            const newUrl = fn(url, stylesheet);
-            if(newUrl) {
-              changed = true;
-              valueArr[1] = newUrl;
-            }
-            rule.style[valName] = valueArr.join('\'');
-          }
-        }
-        cssText += rule.cssText;
-      }
-      tag.innerHTML = cssText;
+      const cssText = transformStylesheet(stylesheet, fn);
+      matches.push({
+        tag: tag,
+        innerHTML: cssText,
+      });
     }
+    matches.forEach(({tag, innerHTML}) => tag.innerHTML = innerHTML);
   }
   /**
    * prepare website for edit mode
@@ -246,7 +254,7 @@ module.exports = function(port, rootUrl, unifile) {
   // website specials
   router.get(/\/website\/(.*)\/get\/(.*)/, readWebsite);
   router.get(/\/website(.*)/, readTemplate);
-  router.put(/\/website\/(.*)\/put\/(.*)/, bodyParser.text({}), writeWebsite);
+  router.put(/\/website\/(.*)\/put\/(.*)/, bodyParser.text({limit: '1mb'}), writeWebsite);
 
   // **
   // list templates
