@@ -268,9 +268,13 @@ silex.model.File.prototype.getHtmlNextStep = function (cbk, generator) {
  */
 silex.model.File.prototype.getHtmlGenerator = function* () {
   // update style tag (the dom do not update automatically when we change document.styleSheets)
+  let updatedStyles = this.model.property.getAllStyles(this.contentDocument_);
   this.model.property.saveProperties(this.contentDocument_);
   // clone
   var cleanFile = /** @type {Node} */ (this.contentDocument_.cloneNode(true));
+  yield;
+  var styleTag = cleanFile.querySelector('.' + silex.model.Property.INLINE_STYLE_TAG_CLASS_NAME);
+  styleTag.innerHTML = updatedStyles;
   yield;
   // get html
   var rawHtml = /** @type {Document} */ (cleanFile).documentElement.innerHTML;
