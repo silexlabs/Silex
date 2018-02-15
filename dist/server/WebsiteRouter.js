@@ -168,17 +168,19 @@ module.exports = function(port, rootUrl, unifile) {
     // CSS rules
     // FIXME: it would be safer (?) to use CSSStyleSheet::ownerNode instead of browsing the DOM
     // see the bug in jsdom: https://github.com/jsdom/jsdom/issues/992
-    const tags = dom.window.document.head.querySelectorAll('style');
+    const tags = dom.window.document.querySelectorAll('style');
     const stylesheets = dom.window.document.styleSheets;
     const matches = [];
     for(let stylesheetIdx=0; stylesheetIdx<stylesheets.length; stylesheetIdx++) {
       const stylesheet = stylesheets[stylesheetIdx];
-      const tag = tags[stylesheetIdx];
-      const cssText = transformStylesheet(stylesheet, fn);
-      matches.push({
-        tag: tag,
-        innerHTML: cssText,
-      });
+      if(tags[stylesheetIdx]) { // seems to happen sometimes?
+        const tag = tags[stylesheetIdx];
+        const cssText = transformStylesheet(stylesheet, fn);
+        matches.push({
+          tag: tag,
+          innerHTML: cssText,
+        });
+      }
     }
     matches.forEach(({tag, innerHTML}) => tag.innerHTML = innerHTML);
   }
