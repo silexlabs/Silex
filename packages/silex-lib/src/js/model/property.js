@@ -177,6 +177,7 @@ silex.model.Property.prototype.saveProperties = function(doc) {
   var styleTag = doc.querySelector('.' + silex.model.Property.JSON_STYLE_TAG_CLASS_NAME);
   if (!styleTag) {
     styleTag = doc.createElement('script');
+    styleTag.type = 'text/json';
     styleTag.classList.add(silex.model.Property.JSON_STYLE_TAG_CLASS_NAME);
     goog.dom.appendChild(doc.head, styleTag);
   }
@@ -185,7 +186,8 @@ silex.model.Property.prototype.saveProperties = function(doc) {
     'mobile': this.mobileStylesObj,
     'componentData': this.componentDataObj,
   };
-  styleTag.innerHTML = '[' + JSON.stringify(obj) + ']';
+  // NOTE: it is useless to store an array, a single object would be better
+  styleTag.innerHTML = JSON.stringify([obj]);
 };
 
 
