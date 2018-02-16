@@ -10,7 +10,6 @@
 //////////////////////////////////////////////////
 
 const Path = require('path');
-const uuid = require('uuid');
 const express = require('express');
 const fs = require('fs');
 const { JSDOM } = require('jsdom');
@@ -19,6 +18,7 @@ const { URL } = require('url');
 const CloudExplorer = require('cloud-explorer');
 
 const BackwardCompat = require('./BackwardCompat.js');
+const DomTools = require('./DomTools.js');
 
 const clientRoot = Path.resolve(__dirname, '..');
 const constants = require('./Constants.json');
@@ -126,64 +126,6 @@ module.exports = function(port, rootUrl, unifile) {
         CloudExplorer.handleError(res, err);
       });
   }
-  function transformStylesheet(stylesheet, fn) {
-    let cssText = '';
-    for(let ruleIdx=0; ruleIdx<stylesheet.cssRules.length; ruleIdx++) {
-      const rule = stylesheet.cssRules[ruleIdx];
-      if(rule.style) for(let valIdx=0; valIdx<rule.style.length; valIdx++) {
-        const valName = rule.style[valIdx];
-        const value = rule.style[valName];
-        if(value.indexOf('url(') === 0) {
-          const valueArr = value.split('\'');
-          const url = valueArr[1];
-          const newUrl = fn(url, stylesheet);
-          if(newUrl) {
-            valueArr[1] = newUrl;
-          }
-          rule.style[valName] = valueArr.join('\'');
-        }
-      }
-      cssText += rule.cssText;
-    }
-    return cssText;
-  }
-  function transformPaths(dom, fn) {
-    // images, videos, stylesheets, iframes...
-    ['src', 'href'].forEach(attr => {
-      const elements = dom.window.document.querySelectorAll(`[${attr}]`);
-      for(let idx=0; idx<elements.length; idx++) {
-        const el = elements[idx];
-        if(el.tagName.toLowerCase() === 'a' || el.getAttribute('data-silex-href')) {
-          // do nothing with <a> links
-          continue;
-        }
-        if(el.hasAttribute('data-silex-static')) {
-          continue;
-        }
-        const val = el.getAttribute(attr);
-        const newVal = fn(val, el);
-        if(newVal) el.setAttribute(attr, newVal);
-      }
-    });
-    // CSS rules
-    // FIXME: it would be safer (?) to use CSSStyleSheet::ownerNode instead of browsing the DOM
-    // see the bug in jsdom: https://github.com/jsdom/jsdom/issues/992
-    const tags = dom.window.document.querySelectorAll('style');
-    const stylesheets = dom.window.document.styleSheets;
-    const matches = [];
-    for(let stylesheetIdx=0; stylesheetIdx<stylesheets.length; stylesheetIdx++) {
-      const stylesheet = stylesheets[stylesheetIdx];
-      if(tags[stylesheetIdx]) { // seems to happen sometimes?
-        const tag = tags[stylesheetIdx];
-        const cssText = transformStylesheet(stylesheet, fn);
-        matches.push({
-          tag: tag,
-          innerHTML: cssText,
-        });
-      }
-    }
-    matches.forEach(({tag, innerHTML}) => tag.innerHTML = innerHTML);
-  }
   /**
    * prepare website for edit mode
    * * make all URLs absolute (so that images are still found when I "save as" my website to another folder)
@@ -191,12 +133,13 @@ module.exports = function(port, rootUrl, unifile) {
    */
   function prepareWebsite(dom, baseUrl) {
     // URLs
-    transformPaths(dom, (path, el) => {
+    DomTools.transformPaths(dom, (path, el) => {
       const url = new URL(path, baseUrl);
       return url.href;
     });
     // markup
     dom.window.document.body.classList.remove('silex-runtime');
+    deactivateScripts(dom);
     // add /css/editable.css
     var tag = dom.window.document.createElement('link');
     tag.rel = 'stylesheet';
@@ -222,7 +165,7 @@ module.exports = function(port, rootUrl, unifile) {
    */
   function unprepareWebsite(dom, baseUrl) {
     // URLs
-    transformPaths(dom, (path, el) => {
+    DomTools.transformPaths(dom, (path, el) => {
       const url = new URL(path, baseUrl);
       if(url.href.startsWith(rootUrl)) {
         // make it relative
@@ -232,6 +175,7 @@ module.exports = function(port, rootUrl, unifile) {
     });
     // markup
     dom.window.document.body.classList.add('silex-runtime');
+    reactivateScripts(dom);
     // remove temp tags 
     const toBeRemoved = dom.window.document.querySelectorAll(`.${constants.SILEX_TEMP_TAGS_CSS_CLASS}, #${constants.SILEX_CURRENT_PAGE_ID}, .${ constants.RISZE_HANDLE_CSS_CLASS }`);
     for(let idx=0; idx<toBeRemoved.length; idx++) {
@@ -249,6 +193,26 @@ module.exports = function(port, rootUrl, unifile) {
     // cleanup inline styles
     dom.window.document.body.minWidth = '';
     dom.window.document.body.minHeight = '';
+  }
+
+  function deactivateScripts(dom) {
+    const scripts = dom.window.document.getElementsByTagName('script');
+    for(let idx=0; idx<scripts.length; idx++) {
+      const el = scripts[idx];
+      // do not execute scripts, unless they are silex's static scripts
+      // and leave it alone if it has a type different from 'text/javascript'
+      if(!el.hasAttribute('data-silex-static') && (!el.hasAttribute('type') || el.getAttribute('type') === 'text/javascript')) {
+        el.setAttribute('type', 'text/notjavascript');
+      }
+    }
+  }
+
+  function reactivateScripts(dom) {
+    const scripts = dom.window.document.querySelectorAll('script[type="text/notjavascript"]');
+    for(let idx=0; idx<scripts.length; idx++) {
+      const el = scripts[idx];
+      el.setAttribute('type', 'text/javascript');
+    }
   }
 
   const router = express.Router();

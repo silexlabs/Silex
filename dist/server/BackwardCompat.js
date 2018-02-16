@@ -34,6 +34,8 @@ module.exports = class BackwardCompat {
    * @return {Promise} a Promise, resolve can be called with a warning message
    */
   update(doc) {
+    var styleTag = doc.querySelector('.' + constants.JSON_STYLE_TAG_CLASS_NAME);
+    styleTag.type = 'text/json';
     // if no generator tag, create one
     var metaNode = doc.querySelector('meta[name="generator"]');
     if (!metaNode) {
@@ -62,8 +64,8 @@ module.exports = class BackwardCompat {
       // TODO: will be useful when there is BC again      
       // // convert to the latest version
       // return this.to2_2_7(version, doc, function() {
-        // update the static scripts to match the current server and latest version
-        this.updateStatic(doc);
+      //  // update the static scripts to match the current server and latest version
+      //  this.updateStatic(doc);
       //   // store the latest version
       //   metaNode.setAttribute('content', 'Silex v' + LATEST_VERSION.join('.'));
       //   // continue
@@ -89,10 +91,10 @@ module.exports = class BackwardCompat {
       const element = elements[idx];
       const propName = element.src ? 'src' : 'href';
       const newUrl = this.getStaticResourceUrl(element[propName]);
-      const oldUrl = element[propName];
+      const oldUrl = element.getAttribute(propName);
       if(oldUrl != newUrl) {
         console.info('BC rewrite URL', element, oldUrl, newUrl)
-        element[propName] = newUrl;
+        element.setAttribute(propName, newUrl);
       }
     }
   }

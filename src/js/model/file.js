@@ -408,10 +408,9 @@ silex.model.File.prototype.clearLatestFiles = function() {
  */
 silex.model.File.prototype.getLatestFiles = function() {
   const str = window.localStorage.getItem('silex:recent-files');
+  console.log('***************', str);
   if(str) {
-    return (/** @type {Array.<FileInfo>} */ (JSON.parse(str)))
-      // remove old URLs from previous CE version
-      .filter(fileInfo => fileInfo.name != null);
+    return (/** @type {Array.<FileInfo>} */ (JSON.parse(str)));
   }
   else return [];
 };
@@ -422,20 +421,12 @@ silex.model.File.prototype.getLatestFiles = function() {
  * @param {?FileInfo} fileInfo
  */
 silex.model.File.prototype.addToLatestFiles = function(fileInfo) {
-  // url= http://localhost:6805/api/1.0/github/exec/get/silex-tests/gh-pages/abcd.html
-  const latestFiles = this.getLatestFiles();
-  // remove if it is already in the array
-  // so that it goes back to the top of the list
-  let foundIndex = -1;
-  latestFiles.forEach((item, idx) => item.url === fileInfo.absPath ? foundIndex = idx : null);
-  if(foundIndex > -1) {
-    latestFiles.splice(foundIndex, 1);
-  }
-  latestFiles.unshift(fileInfo);
-  // limit size
-  if(latestFiles.length > silex.model.File.MAX_RECENT_FILES) {
-    latestFiles.splice(silex.model.File.MAX_RECENT_FILES, latestFiles.length - silex.model.File.MAX_RECENT_FILES);
-  }
+  const latestFiles = [fileInfo].concat(
+    this.getLatestFiles()
+    .filter((item, idx) => item.absPath !== fileInfo.absPath && idx < silex.model.File.MAX_RECENT_FILES)
+  );
+
+  console.log('***************', latestFiles.length);
   window.localStorage.setItem('silex:recent-files', JSON.stringify(latestFiles));
 };
 
