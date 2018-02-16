@@ -23,5 +23,10 @@
 	    "ui-resizable-nw",
 	    "ui-resizable-se",
 	    "ui-resizable-sw"
- 	]
+ 	],
+	"JSON_STYLE_TAG_CLASS_NAME": "silex-json-styles",
+	"SILEX_SCRIPT_ELEMENT_CSS_CLASS": "silex-script",
+	"INLINE_STYLE_TAG_CLASS_NAME": "silex-inline-styles",
+	"LINK_ATTR": "data-silex-href",
+	"SILEX_STYLE_ELEMENT_CSS_CLASS": "silex-style"
 }

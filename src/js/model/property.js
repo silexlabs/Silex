@@ -181,6 +181,9 @@ silex.model.Property.prototype.saveProperties = function(doc) {
     styleTag.classList.add(silex.model.Property.JSON_STYLE_TAG_CLASS_NAME);
     goog.dom.appendChild(doc.head, styleTag);
   }
+  // always save as json, it used to be javascript and sometimes it tabs mess up the json
+  styleTag.type = 'text/json';
+
   let obj = {
     'desktop': this.stylesObj,
     'mobile': this.mobileStylesObj,
