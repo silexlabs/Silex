@@ -15,6 +15,7 @@
 const Path = require('path');
 const fs = require('fs');
 const express = require('express');
+const compression = require('compression');
 const cookieParser = require('cookie-parser');
 const session = require('cookie-session');
 const serveStatic = require('serve-static');
@@ -28,6 +29,9 @@ const port = process.env.PORT || 6805;
 const rootUrl = process.env.SERVER_URL || `http://localhost:${port}`;
 
 const app = express();
+
+// compress gzip when possible
+app.use(compression());
 
 // cookie & session
 app.use(cookieParser());
