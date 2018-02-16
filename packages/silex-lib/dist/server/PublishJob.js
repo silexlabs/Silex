@@ -10,18 +10,37 @@
 //////////////////////////////////////////////////
 
 const request = require('request');
+const assert = require('assert');
+const Path = require('path');
+const { URL } = require('url');
+const { JSDOM } = require('jsdom');
+const Promise = require('bluebird');
+const fs = Promise.promisifyAll(require('fs'));
 const sequential = require('promise-sequential');
+
+const DomPublisher = require('./DomPublisher.js');
+
+// const TMP_FOLDER = '.tmp';
+
+// // create the .tmp folder used by the publication classes
+// const exists = fs.existsSync(TMP_FOLDER);
+// if(!exists) fs.mkdirSync(TMP_FOLDER);
 
 // shared map of PublishJob instances,
 // these are all the publications currently taking place
 const publishJobs = new Map();
 // regularely check for ended publications
 setInterval(() => {
+  let nJobs = 0;
+  let nDeleted = 0;
   publishJobs.forEach(publishJob => {
     if(publishJob.pleaseDeleteMe) {
       publishJobs.delete(publishJob.id);
+      nDeleted++;
     }
+    nJobs++;
   });
+  console.info('Cleaning publish jobs. Deleted', nDeleted, '/', nJobs);
 }, 60*1000);
 
 module.exports = class PublishJob {
@@ -31,16 +50,16 @@ module.exports = class PublishJob {
   /**
    * factory to create a publish job
    */
-  static create(id, { folder, html, css, js, files }, unifile, session, cookies, serverUrl) {
+  static create(id, { folder, file }, unifile, session, cookies, serverUrl) {
     // FIXME: several publications should be possible, e.g. when you publish 2 different websites from 2 browser tabs. So we should have an ID which is generated, then returned to the client side to be used when calling cancel or publishState
+    // stop other compilations from the same user
     if(publishJobs.has(id)) {
       publishJobs.get(id).stop();
     }
     try {
       // check input params
-      // paras `files`, `js` and `css` are optional
-      Assert.ok(!!folder, 'Missing param "folder"');
-      Assert.ok(!!html, 'Missing param "html"');
+      assert.ok(!!folder, 'Missing param "folder"');
+      assert.ok(!!file, 'Missing param "file"');
     }
     catch(e) {
       console.error('Invalid params', e);
@@ -51,7 +70,15 @@ module.exports = class PublishJob {
     }
     const publishJob = new PublishJob(id, unifile, folder, session, cookies, serverUrl);
     publishJobs.set(id, publishJob);
-    publishJob.publish(html, css, js, files);
+    publishJob.publish(file)
+    .then(() => {
+      console.info(`PublishJob ${publishJob.id} success.`, !!this.error);
+      publishJob.cleanup()
+    })
+    .catch((err) => {
+      console.info(`PublishJob ${publishJob.id} error (${err}).`);
+      publishJob.cleanup()
+    })
     return publishJob;
   }
 
@@ -65,7 +92,18 @@ module.exports = class PublishJob {
     this.success = false;
     this.error = false;
     this.filesNotDownloaded = [];
-    this.state = 'In progress.'
+    this.setStatus('In progress.');
+    // this.tmpFolder = Path.resolve(TMP_FOLDER, `publication_${this.id}`);
+
+    // files and folders paths
+    this.rootPath = this.folder.path;
+    this.indexFile = this.rootPath + '/index.html';
+    this.cssFolder = this.rootPath + '/css';
+    this.jsFolder = this.rootPath + '/js';
+    this.assetsFolder = this.rootPath + '/assets';
+    this.jsFile = this.jsFolder + '/script.js';
+    this.cssFile = this.cssFolder + '/styles.css';
+
 
     this.pleaseDeleteMe = false;
 
@@ -77,7 +115,6 @@ module.exports = class PublishJob {
       console.warn('stopping publication in progress');
       this.abort = true;
       this.setStatus('Canceled.');
-      this.cleanup();
     }
   }
   isStopped() {
@@ -87,15 +124,19 @@ module.exports = class PublishJob {
     return this.state;
   }
   setStatus(status) {
-    return new Promise((resolve, reject) => {
-      this.state = status;
-      resolve();
-    });
+    // console.log(`Status changed for PublishJob ${this.id}: ${status}`);
+    this.state = status;
   }
   cleanup() {
-    setTimeout(() => {
-      this.pleaseDeleteMe = true;
-    }, 60*1000);
+    // console.info('PublishJob cleanup, will ask to be deleted in 60s', this.id);
+    if(this.pleaseDeleteMe) console.error('PublishJob was already marked for deletion', this.id);
+    else {
+      if(this.dom) this.dom.window.close();
+      setTimeout(() => {
+        // console.log('PublishJob cleanup, now asking to be deleted', this.id);
+        this.pleaseDeleteMe = true;
+      }, 60*1000);
+    }
   }
   getSuccessMessage() {
     if(this.filesNotDownloaded.length > 0) {
@@ -103,31 +144,152 @@ module.exports = class PublishJob {
     }
     return 'Done.';
   }
+
+  /**
+   * the method called to publish a website and serve it for 24h
+   * @param {?string=} file to download and publish
+   */
+  // share(file) {
+  //   if(this.isStopped()) {
+  //     return;
+  //   }
+
+  //   // create temp folder
+  //   this.setStatus(`Creating temp folder`);
+  //   fs.existsAsync(this.tmpFolder)
+  //   .catch(() => {
+  //     return true;
+  //   })
+  //   .then(exists => {
+  //     if(exists) return Promise.resolve();
+  //     else return fs.mkdirAsync(this.tmpFolder)
+  //   })
+  //   .catch(err => {
+  //     console.error('Publication error, could not create temp folder', err.message);
+  //   })
+
+  //   // download file
+  //   .then(() => {
+  //     this.setStatus(`Downloading website ${file.name}`);
+  //     return this.unifile.readFile(this.session.unifile, file.service, file.path)
+  //   })
+  //   .catch(err => {
+  //     console.error('Publication error, could not download file', err.message);
+  //   })
+
+  //   // build folders tree
+  //   .then(buffer => {
+  //     console.log('file downloaded', buffer.toString());
+  //     console.log('write', this.tmpFolder);
+  //     return fs.writeFileAsync(this.tmpFolder + '/index.html')
+  //   })
+  //   .catch(err => {
+  //     console.error('Publication error, could not download file', err.message);
+  //   })
+  //   .then(() => {
+  //     console.log('Done.');
+  //   })
+  // }
+
   /**
    * the method called to publish a website to a location
-   * copy assets and files to and from unifile services
-   * write css and html data to a unifile service
-   * @param {string} html content of index.html
-   * @param {?string=} css optional content of css/styles.css
-   * @param {?string=} js optional content of js/scripts.js
-   * @param {?string=} files optional list of files to download and copy to assets/ js/ and css/
+   * @param {?string=} file to download and publish
    */
-  publish(html, css, js, files) {
-    if(this.abort) {
-      reject('Aborted.');
-      return Promise.reject();
+  publish(file) {
+    if(this.isStopped()) {
+      return;
     }
 
-    // files and folders paths
-    const rootPath = this.folder.path;
-    const indexFile = rootPath + '/index.html';
-    const cssFolder = rootPath + '/css';
-    const jsFolder = rootPath + '/js';
-    const assetsFolder = rootPath + '/assets';
-    const jsFile = jsFolder + '/script.js';
-    const cssFile = cssFolder + '/styles.css';
+    // download file
+    this.setStatus(`Downloading website ${file.name}`);
+    return this.unifile.readFile(this.session.unifile, file.service, file.path)
+    .catch(err => {
+      console.error('Publication error, could not download file:', err.message);
+      this.error = true;
+      this.setStatus(err.message);
+    })
 
-    this.setStatus(`Creating folders: <ul><li>${cssFolder}</li><li>${jsFolder}</li><li>${assetsFolder}</li></ul>`);
+    // build folders tree
+    .then(buffer => {
+      if(this.isStopped()) {
+        return;
+      }
+      this.setStatus(`Splitting file ${file.name}`);
+      const url = new URL(file.url);
+      const baseUrl = new URL(url.origin + Path.dirname(url.pathname) + '/');
+      this.dom = new JSDOM(buffer.toString('utf-8'), baseUrl);
+      const domPublisher = new DomPublisher(this.dom);
+      domPublisher.cleanup();
+      this.tree = domPublisher.split(baseUrl);
+    })
+    .catch(err => {
+      console.error('Publication error, could not split file:', err.message);
+      this.error = true;
+      this.setStatus(err.message);
+    })
+
+    // download all assets
+    // check existing folder structure
+    .then(() => {
+      if(this.isStopped()) {
+        return;
+      }
+      return this.readOperations();
+      // const total = this.tree.actions.length;
+      // let downloaded = 0;
+      // this.setStatus(`Downloading ${total} files for ${file.name}`);
+      // console.log('tree:', this.tree);
+      // return Promise.all(
+      //   this.tree.actions.map(action => {
+      //     console.log('download start', action.displayName);
+      //     return this.unifile.readFile(this.session.unifile, action.src.service, action.src.path)
+      //     .then(buffer => {
+      //       console.log('download end', action.displayName);
+      //       downloaded++;
+      //       this.setStatus(`Downloading ${downloaded}/${total} files for ${file.name}`);
+      //       console.log('download ok', action.src);
+      //       action.buffer = buffer
+      //       return action;
+      //     })
+      //     .catch(err => {
+      //       console.warn('could not download file', action, err);
+      //       return Promise.resolve(action);
+      //     })
+      //   })
+      // )
+    })
+    .catch(err => {
+      // FIXME: will never go through here
+      console.error('Publication error, could not download files:', this.tree.actions.map(action => action.displayName).join(', '), '. Error:', err.message);
+      this.error = true;
+      this.setStatus(err.message);
+    })
+
+    // write and upload all files in a batch operation
+    .then(([statCss, statJs, statAssets, ...assets]) => {
+      if(this.isStopped()) {
+        return;
+      }
+      return this.writeOperations(statCss, statJs, statAssets, ...assets)
+    })
+    .catch(err => {
+      console.error('An error occured in unifile batch', err.message);
+      this.error = true;
+      this.setStatus(err.message);
+    })
+
+    // all operations done
+    .then(() => {
+      if(this.isStopped()) {
+        return;
+      }
+      this.setStatus(this.getSuccessMessage());
+      this.success = true;
+    })
+  }
+
+  readOperations() {
+    this.setStatus(`Creating folders: <ul><li>${this.cssFolder}</li><li>${this.jsFolder}</li><li>${this.assetsFolder}</li></ul>`);
 
     // do not throw an error if the folder is not found, this is what we want to test
     // instead catch the error and do nothing so that the result is null in .then(stat
@@ -142,84 +304,65 @@ module.exports = class PublishJob {
     // FIXME: should use unifile's batch method to avoid conflicts or the "too many clients" error in FTP
     //return Promise.all([
     return sequential([
-        () => preventErr(this.unifile.stat(this.session.unifile, this.folder.service, cssFolder)),
-        () => preventErr(this.unifile.stat(this.session.unifile, this.folder.service, jsFolder)),
-        () => preventErr(this.unifile.stat(this.session.unifile, this.folder.service, assetsFolder)),
+        () => preventErr(this.unifile.stat(this.session.unifile, this.folder.service, this.cssFolder)),
+        () => preventErr(this.unifile.stat(this.session.unifile, this.folder.service, this.jsFolder)),
+        () => preventErr(this.unifile.stat(this.session.unifile, this.folder.service, this.assetsFolder)),
       ]
       // add the promises to download each asset
-      .concat(this.downloadAllAssets(files))
+      .concat(this.downloadAllAssets(this.tree.actions))
     )
-    // then we can do a big batch to publish everything at once
-    .then(([statCss, statJs, statAssets, ...assets]) => {
-      this.setStatus(`Creating files <ul><li>${indexFile}</li><li>${cssFile}</li><li>${jsFile}</li></ul>`);
-      const batchActions = [{
-        name: 'writefile',
-        path: indexFile,
-        content: html,
-      }];
-      if(!statCss) {
-        batchActions.push({
-          name: 'mkdir',
-          path: cssFolder,
-        });
-      }
-      if(!statJs) {
-        batchActions.push({
-          name: 'mkdir',
-          path: jsFolder,
-        });
-      }
-      if(!statAssets) {
-        batchActions.push({
-          name: 'mkdir',
-          path: assetsFolder,
-        });
-      }
-      if(!!css) {
-        batchActions.push({
-          name: 'writefile',
-          path: cssFile,
-          content: css,
-        });
-      }
-      if(!!js) {
-        batchActions.push({
-          name: 'writefile',
-          path: jsFile,
-          content: js,
-        });
-      }
-      const batchActionsWithAssets = batchActions.concat(
-        assets
-        .filter(file => !!file)
-        .map(file => {
-          return {
-            name: 'writeFile',
-            path: this.folder.path + '/' +file.path,
-            content: file.content,
-          };
-        }));
-      return this.unifile.batch(this.session.unifile, this.folder.service, batchActionsWithAssets)
-      .then(() => {
-        this.setStatus(this.getSuccessMessage());
-        this.success = true;
-			})
-      .catch(err => {
-        console.error('An error occured in unifile batch', err.message);
-        this.error = true;
-        this.setStatus(err.message);
-        return Promise.reject(err);
+  }
+
+  writeOperations(statCss, statJs, statAssets, ...assets) {
+    this.setStatus(`Creating files <ul><li>${this.indexFile}</li><li>${this.cssFile}</li><li>${this.jsFile}</li></ul>`);
+    const batchActions = [{
+      name: 'writefile',
+      path: this.indexFile,
+      content: this.dom.serialize(),
+    }];
+    if(!statCss) {
+      batchActions.push({
+        name: 'mkdir',
+        path: this.cssFolder,
       });
-    })
-    .catch((err) => {
-      console.error('An error occured in the sequence of promises before unifile batch:', err.message);
-      this.error = true;
-      this.setStatus(err.message);
-      this.cleanup();
-    })
-    .then(() => {
-      this.cleanup();
-    });
+    }
+    if(!statJs) {
+      batchActions.push({
+        name: 'mkdir',
+        path: this.jsFolder,
+      });
+    }
+    if(!statAssets) {
+      batchActions.push({
+        name: 'mkdir',
+        path: this.assetsFolder,
+      });
+    }
+    if(!!this.tree.styleTags.length > 0) {
+      batchActions.push({
+        name: 'writefile',
+        path: this.cssFile,
+        content: this.tree.styleTags.reduce((prev, tag) => prev + tag.innerHTML, ''),
+      });
+    }
+    if(!!this.tree.scriptTags) {
+      batchActions.push({
+        name: 'writefile',
+        path: this.jsFile,
+        content: this.tree.scriptTags.reduce((prev, tag) => prev + tag.innerHTML, ''),
+      });
+    }
+    const batchActionsWithAssets = batchActions.concat(
+      assets
+      .filter(file => !!file)
+      .map(file => {
+        return {
+          name: 'writeFile',
+          path: this.folder.path + '/' +file.path,
+          content: file.content,
+        };
+      }));
+    return this.unifile.batch(this.session.unifile, this.folder.service, batchActionsWithAssets)
   }
 
   // create the promises to download each asset
@@ -230,7 +373,7 @@ module.exports = class PublishJob {
       const shortSrcPath = srcPath.substr(srcPath.lastIndexOf('/') + 1);
       return () => new Promise((resolve, reject) => {
         if(this.isStopped()) {
-          reject('Aborted.');
+          resolve();
           return;
         }
         this.setStatus(`Downloading file ${ shortSrcPath }...`);
@@ -243,7 +386,10 @@ module.exports = class PublishJob {
           encoding: null,
         }, (err, res, data) => {
           if(err) reject(err);
-          else if(res.statusCode != 200) reject(`Could not download file ${ srcPath }.`);
+          else if(res.statusCode != 200) {
+            console.warn(`Could not download file ${ srcPath }.`);
+            reject(`Could not download file ${ srcPath }.`);
+          }
           else resolve({
             content: data,
             path: destPath,
