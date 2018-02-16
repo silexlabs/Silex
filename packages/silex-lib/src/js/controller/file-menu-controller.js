@@ -218,10 +218,9 @@ silex.controller.FileMenuController.prototype.publish = function() {
       }
       timer = -1;
     }, 'Close');
-    silex.utils.Dom.publish(
-      folder,
+    silex.service.SilexTasks.getInstance().publish(
       file,
-      this.model.file.getHtml(),
+      folder,
       () => {
         setTimeout(() => {
           // tip of the day

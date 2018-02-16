@@ -1,7 +1,8 @@
 {
   "name": "Silex",
   "description": "Free and easy website builder for everyone.",
-  "version": "2.2.7", "<---------- be careful": "this is used in BackwardCompat.js",
+  "version": "2.2.7",
+  "<---------- be careful": "this is used in BackwardCompat.js",
   "author": "Alex Hoyau <a.hoyau@silexlabs.org> (https://lexoyo.me/)",
   "contributors": [
     "Thomas Fetiveau aka zabojad"
@@ -38,6 +39,7 @@
     "start:electron": "SILEX_ELECTRON=true electron ."
   },
   "dependencies": {
+    "bluebird": "^3.5.1",
     "body-parser": "1.13.3",
     "cloud-explorer": "github:silexlabs/CloudExplorer2#master",
     "compression": "1.5.2",
