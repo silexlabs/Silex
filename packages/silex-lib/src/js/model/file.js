@@ -408,7 +408,6 @@ silex.model.File.prototype.clearLatestFiles = function() {
  */
 silex.model.File.prototype.getLatestFiles = function() {
   const str = window.localStorage.getItem('silex:recent-files');
-  console.log('***************', str);
   if(str) {
     return (/** @type {Array.<FileInfo>} */ (JSON.parse(str)));
   }
@@ -426,7 +425,6 @@ silex.model.File.prototype.addToLatestFiles = function(fileInfo) {
     .filter((item, idx) => item.absPath !== fileInfo.absPath && idx < silex.model.File.MAX_RECENT_FILES)
   );
 
-  console.log('***************', latestFiles.length);
   window.localStorage.setItem('silex:recent-files', JSON.stringify(latestFiles));
 };
 
