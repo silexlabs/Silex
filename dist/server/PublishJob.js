@@ -40,7 +40,9 @@ setInterval(() => {
     }
     nJobs++;
   });
-  console.info('Cleaning publish jobs. Deleted', nDeleted, '/', nJobs);
+  if(nDeleted > 0) {
+    console.info('Cleaning publish jobs. Deleted', nDeleted, '/', nJobs);
+  }
 }, 60*1000);
 
 module.exports = class PublishJob {

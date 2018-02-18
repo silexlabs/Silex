@@ -56,7 +56,7 @@ silex.utils.Style.SILEX_CLASS_NAMES = [
   silex.model.Element.TYPE_TEXT + '-element',
   silex.model.Element.TYPE_HTML + '-element',
   silex.model.Element.HIDE_ON_MOBILE,
-  silex.model.Component.COMPONENT_CLASS_NAME,
+  Component.COMPONENT_CLASS_NAME,
   silex.view.BreadCrumbs.EDITABLE_STYLE_HOVER_CLASS,
 ];
 

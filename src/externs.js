@@ -143,44 +143,6 @@ Piwik.prototype.trackEvent = function(c, d, e, f) {};
 
 
 /**
- * pixlr lib, in /dist/client/libs/pixlr/pixlr.js
- * @param {string} pixlrSendImageUrl
- * @param {string} pixlrCloseWindowUrl
- * @param {?Object=} opt_settings
- * @constructor
- */
-function Pixlr(pixlrSendImageUrl, pixlrCloseWindowUrl, opt_settings) {}
-
-
-/**
- * pixlr lib, in /dist/client/libs/pixlr/pixlr.js
- * @param {string|HTMLElement} image
- * @param {?string=} opt_imageDst
- * @param {?string=} opt_target
- */
-Pixlr.prototype.edit = function(image, opt_imageDst, opt_target) {};
-
-
-/**
- * pixlr lib, in /dist/client/libs/pixlr/pixlr.js
- * @param {string|HTMLElement} image
- * @param {?string=} opt_imageDst
- * @param {?string=} opt_target
- */
-Pixlr.prototype.express = function(image, opt_imageDst, opt_target) {};
-
-
-
-/**
- * pixlr lib, in /dist/client/libs/pixlr/pixlr.js
- * callback for update events
- * @type {?function()}
- */
-Pixlr.prototype.onUpdate = null;
-
-
-
-/**
  * jquery externs
  * @constructor
  */

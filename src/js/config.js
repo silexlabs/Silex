@@ -63,6 +63,14 @@ silex.Config.WIKI_SILEX = 'https://github.com/silexlabs/Silex/wiki';
 
 
 /**
+ * Link in property tool dialog
+ * this is also hard coded in property-tool.jade
+ * @const
+ */
+silex.Config.WIKI_SILEX_CUSTOM_CSS_CLASS = 'https://github.com/silexlabs/Silex/wiki/Silex-CSS-editor#custom-css-classes';
+
+
+/**
  * Link of the menu
  * @const
  */

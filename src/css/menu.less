@@ -2,36 +2,36 @@
   background-color: @silexmediumgrey; /* hide sub menu during opening */
   position: fixed;
   z-index: 2; /* over the sub menus */
-  .icon {
-    cursor: pointer;
-    width: 25px;
-    height: 18px;
-    background-repeat: no-repeat;
-    background-position: center center;
-    background-size: contain;
-    transition: opacity 0.1s linear 0s;
-    text-decoration: none;
-  }
-  .off {
-    opacity: .5;
-  }
-  .on {
-    opacity: 1;
-    color: white;
-  }
-  .selected {
-    color: @silexlightblue;
-  }
-  .icon:hover {
-    .on();
-    color: @silexlightblue;
-  }
-  div.icon, a.icon, span.icon {
-    font-size: large;
-  }
-  .sep {
-    border: 1px solid @silexmediumdarkgrey;
-  }
+}
+.icon {
+  cursor: pointer;
+  width: 25px;
+  height: 18px;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: contain;
+  transition: opacity 0.1s linear 0s;
+  text-decoration: none;
+}
+.off {
+  opacity: .5;
+}
+.on {
+  opacity: 1;
+  color: white;
+}
+.selected {
+  color: @silexlightblue;
+}
+.icon:hover {
+  .on();
+  color: @silexlightblue;
+}
+div.icon, a.icon, span.icon {
+  font-size: large;
+}
+.sep {
+  border: 1px solid @silexmediumdarkgrey;
 }
 .silex-menu .menu-container {
   .silex-icons-menu();
@@ -221,7 +221,7 @@ body .silex-menu {
     font-size: 27px;
   }
 }
-body .silex-menu .mobile {.silex-icons-menu .on}
-body .silex-menu .desktop {.silex-icons-menu .on; .silex-icons-menu .selected}
-body.mobile-mode .silex-menu .mobile {.silex-icons-menu .on; .silex-icons-menu .selected}
-body.mobile-mode .silex-menu .desktop {.silex-icons-menu .on}
+body .silex-menu .mobile {.on}
+body .silex-menu .desktop {.on; .selected}
+body.mobile-mode .silex-menu .mobile {.on; .selected}
+body.mobile-mode .silex-menu .desktop {.on}

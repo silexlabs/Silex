@@ -45,6 +45,15 @@ silex.model.Property.CSSRuleInfo;
 
 
 /**
+ * @typedef {{
+ *    component: Object,
+ *    style: Object
+ * }}
+ */
+var ProdotypeData;
+
+
+/**
  * constant for the ID of the style tag
  * containing all CSS rules for the elements on stage
  * which are being edited with the wysiwyg
@@ -76,6 +85,15 @@ silex.model.Property.MOBILE_MEDIA_QUERY = 'only screen and (max-width: 480px), o
 
 
 /**
+ * @type ProdotypeData
+ */
+silex.model.Property.EMPTY_PRODOTYPE_DATA = {
+  'component': {},
+  'style': {},
+}
+
+
+/**
  * the current file's silex style sheet which holds silex elements styles
  * this is stored for performance reasons
  * @type {?StyleSheet}
@@ -103,10 +121,10 @@ silex.model.Property.prototype.mobileStylesObj = {};
 
 
 /**
- * arbitrary data for elements and components
- * @type {Object}
+ * arbitrary data for prodotype components
+ * @type {ProdotypeData}
  */
-silex.model.Property.prototype.componentDataObj = {};
+silex.model.Property.prototype.prodotypeDataObj = silex.model.Property.EMPTY_PRODOTYPE_DATA;
 
 
 /**
@@ -187,7 +205,7 @@ silex.model.Property.prototype.saveProperties = function(doc) {
   let obj = {
     'desktop': this.stylesObj,
     'mobile': this.mobileStylesObj,
-    'componentData': this.componentDataObj,
+    'prodotypeData': this.prodotypeDataObj,
   };
   // NOTE: it is useless to store an array, a single object would be better
   styleTag.innerHTML = JSON.stringify([obj]);
@@ -201,19 +219,16 @@ silex.model.Property.prototype.loadProperties = function(doc) {
   var styleTag = doc.querySelector('.' + silex.model.Property.JSON_STYLE_TAG_CLASS_NAME);
   if (styleTag != null) {
     let styles = /** @type {Object} */ (JSON.parse(styleTag.innerHTML)[0]);
-    if (styles && styles['desktop'] && styles['mobile']) {
-      this.stylesObj = styles['desktop'] || {};
-      this.mobileStylesObj = styles['mobile'] || {};
-      this.componentDataObj = styles['componentData'] || {};
-    }
-    else {
-      console.error('Error: could not retrieve desktop and mobile styles from the dom (.' + silex.model.Property.JSON_STYLE_TAG_CLASS_NAME + ')');
-    }
+    this.stylesObj = styles['desktop'] || {};
+    this.mobileStylesObj = styles['mobile'] || {};
+    this.prodotypeDataObj = styles['prodotypeData'] || silex.model.Property.EMPTY_PRODOTYPE_DATA;
+    // FIXME: put this in backward compat
+    if(styles['componentData']) this.prodotypeDataObj['component'] = styles['componentData'];
   }
   else {
     this.stylesObj = {};
     this.mobileStylesObj = {};
-    this.componentDataObj = {};
+    this.prodotypeDataObj = silex.model.Property.EMPTY_PRODOTYPE_DATA;
     console.info('Warning: no JSON styles array found in the dom');
   }
 };
@@ -230,7 +245,7 @@ silex.model.Property.prototype.initStyles = function(doc) {
     styleTag = doc.createElement('style');
     styleTag.classList.add(silex.model.Property.INLINE_STYLE_TAG_CLASS_NAME);
     styleTag.setAttribute('type', 'text/css');
-    goog.dom.appendChild(doc.head, styleTag);
+    doc.head.appendChild(styleTag);
   }
   //retrieve the style sheet with Silex definitions
   this.styleSheet = null;
@@ -247,12 +262,48 @@ silex.model.Property.prototype.initStyles = function(doc) {
 
 
 /**
+ * get / set the data associated with an ID
+ * if opt_prodotypeData is null this data set will removed
+ * @param {string} id
+ * @param {string} type
+ * @param {?Object=} opt_prodotypeData
+ */
+silex.model.Property.prototype.setProdotypeData = function(id, type, opt_prodotypeData) {
+  // store in object
+  if(opt_prodotypeData) {
+    this.prodotypeDataObj[type][id] = opt_prodotypeData;
+  }
+  else {
+    delete this.prodotypeDataObj[type][id];
+  }
+};
+
+
+/**
+ * get / set the data associated with an element
+ * @param {string} id
+ * @param {string} type
+ * @return {?Object} a clone of the data object
+ */
+silex.model.Property.prototype.getProdotypeData = function(id, type) {
+  let res = this.prodotypeDataObj[type][id];
+  if(res) {
+    // clone the object
+    return /** @type {Object} */ (Object.assign({}, res));
+  }
+  // returns value of object
+  return res;
+};
+
+
+/**
  * get / set the data associated with an element
  * if opt_componentData is null this will remove the rule
  * @param {Element} element
+ * @param {string} type
  * @param {?Object=} opt_componentData
  */
-silex.model.Property.prototype.setComponentData = function(element, opt_componentData) {
+silex.model.Property.prototype.setElementData = function(element, type, opt_componentData) {
   // a section's container content can not be a component, but the section itself may be
   if(this.model.element.isSectionContent(element)) {
     element = /** @type {Element} */ (element.parentNode);
@@ -260,34 +311,25 @@ silex.model.Property.prototype.setComponentData = function(element, opt_componen
   // get the internal ID
   var elementId =  /** @type {string} */ (this.getSilexId(element));
   // store in object
-  if(opt_componentData) {
-    this.componentDataObj[elementId] = opt_componentData;
-  }
-  else {
-    delete this.componentDataObj[elementId];
-  }
+  this.setProdotypeData(elementId, type, opt_componentData)
 };
 
 
 /**
  * get / set the data associated with an element
  * @param {Element} element
+ * @param {string} type
  * @return {?Object} a clone of the data object
  */
-silex.model.Property.prototype.getComponentData = function(element) {
+silex.model.Property.prototype.getElementData = function(element, type) {
   // a section's container content can not be a component, but the section itself may be
   if(this.model.element.isSectionContent(element)) {
     element = /** @type {Element} */ (element.parentNode);
   }
   // get the internal ID
   var elementId =  /** @type {string} */ (this.getSilexId(element));
-  let res = this.componentDataObj[elementId];
-  if(res) {
-    // clone the object
-    res = /** @type {Object} */ (JSON.parse(JSON.stringify(res)));
-  }
   // returns value of object
-  return res;
+  return this.getProdotypeData(elementId, type);
 };
 
 
@@ -482,11 +524,21 @@ silex.model.Property.prototype.getAllStyles = function(doc) {
     styleStr = silex.utils.Style.styleToString(this.mobileStylesObj[elementId], '\n    ');
     if (styleStr != '') {
       styleStr = '.' + elementId + ' {' + styleStr + '\n}\n';
-      styleStr = '@media ' + silex.model.Property.MOBILE_MEDIA_QUERY + '{' + styleStr + '}';
+      styleStr = this.addMediaQuery(styleStr);
       allStyles += styleStr;
     }
   }, this);
   return allStyles;
+};
+
+
+/**
+ * add a media query around the style string
+ * will make the style mobile-only
+ * @param {string} styleStr
+ */
+silex.model.Property.prototype.addMediaQuery = function(styleStr) {
+  return '@media ' + silex.model.Property.MOBILE_MEDIA_QUERY + '{' + styleStr + '}';
 };
 
 

@@ -1,0 +1,131 @@
+---
+name: Text styles
+description: "Text styles to apply to the selected text box."
+doc: https://github.com/silexlabs/Silex/wiki/style-editor
+category: Text styles
+tags:
+- text
+- style
+props:
+- name: className
+  type: string
+  readonly: true
+- name: TextStyle
+  type: template
+  props:
+  - name: font-family
+    type:
+    - ""
+    - "Arial, sans-serif"
+    - "Courier New, monospace"
+    - "Georgia, serif"
+    - "Times New Roman, serif"
+    - "Trebuchet MS, sans-serif"
+    - "Verdana, sans-serif"
+  - name: font-style
+    type:
+    - normal
+    - italic
+    - oblique
+  - name: font-variant
+    type:
+    - normal
+    - small-caps
+  - name: font-weight
+    type:
+    - ""
+    - normal
+    - bold
+    - lighter
+    - bolder
+    - 100
+    - 200
+    - 300
+    - 400
+    - 500
+    - 600
+    - 700
+    - 800
+    - 900
+  - name: font-size
+    type:
+    - ""
+    - xx-small
+    - x-small
+    - small
+    - medium
+    - large
+    - x-large
+    - xx-large
+    - larger
+    - smaller
+  - name: numerical-size
+    type: number
+    unit:
+    - px
+    - em
+    - "%"
+  - name: color
+    type: color
+  - name: background-color
+    type: color
+  - name: text-decoration
+    type:
+    - ""
+    - underline
+    - overline
+    - "line-through"
+    - blink
+    - none
+  - name: text-align
+    type:
+    - ""
+    - center
+    - left
+    - right
+    - justify
+  - name: text-transform
+    type:
+    - ""
+    - capitalize
+    - uppercase
+    - lowercase
+    - none
+  - name: line-height
+    type: number
+    unit:
+    - ""
+    - px
+    - em
+    - "%"
+  - name: word-spacing
+    type: number
+    unit:
+    - px
+    - em
+  - name: letter-spacing
+    type: number
+    unit:
+    - px
+    - em
+  - name: text-indent
+    type: number
+    unit:
+    - px
+    - em
+    - "%"
+  - name: direction
+    type:
+    - ltr
+    - rtl
+  # - white-space
+- name: Paragraphs
+  type: TextStyle
+- name: Links
+  type: TextStyle
+- name: Title1
+  type: TextStyle
+- name: Title2
+  type: TextStyle
+- name: Title3
+  type: TextStyle

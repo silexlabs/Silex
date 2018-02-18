@@ -1,7 +1,12 @@
 /* array of object editor */
-.component-editor {
+.prodotype-component-editor, .prodotype-style-editor {
   .prop-editor-base.prop-editor-expand > .prop-editor-container {
     padding-bottom: 10px;
+    margin-left: 5px;
+
+    input {
+      display: inline !important;
+    }
   }
   .sub-editors-container {
     border-bottom: 1px solid #2F2F2F;
@@ -23,6 +28,17 @@
       padding: 0;
     }
     /* *************************************** */
+  }
+  .prop-editor-base .number-editor  .prop-editor-container > .unit-selector {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    text-align: center;
+    margin-left: -30px;
+    padding: 0;
+    border: none;
+    box-shadow: none;
+    cursor: pointer;
   }
   .btn {
     width: 90%;

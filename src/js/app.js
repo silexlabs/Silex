@@ -261,7 +261,7 @@ class App {
     /** @type {silex.view.PropertyTool} */
     var propertyTool = new silex.view.PropertyTool(propertyToolElement, this.model, this.controller);
 
-    // PropertyTool
+    // workspace
     var workspaceElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-workspace'));
     /** @type {silex.view.Workspace} */
     var workspace = new silex.view.Workspace(workspaceElement, this.model, this.controller);
@@ -308,7 +308,7 @@ class App {
         new silex.model.Body(this.model, this.view),
         new silex.model.Page(this.model, this.view),
         new silex.model.Element(this.model, this.view),
-        new silex.model.Component(this.model, this.view),
+        new Component(this.model, this.view),
         new silex.model.Property(this.model, this.view)
     );
   }
