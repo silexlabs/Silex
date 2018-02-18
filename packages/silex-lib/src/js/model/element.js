@@ -598,7 +598,7 @@ silex.model.Element.prototype.removeElement = function(element) {
   if (this.model.body.getBodyElement() !== element &&
     goog.dom.contains(this.model.body.getBodyElement(), element)) {
     // remove style and component data
-    this.model.property.setComponentData(element);
+    this.model.property.setElementData(element, Component.COMPONENT_TYPE);
     this.model.property.setStyle(element, null, true);
     this.model.property.setStyle(element, null, false);
     // remove the element
@@ -931,7 +931,7 @@ silex.model.Element.prototype.getClassName = function(element) {
   const pages = this.model.page.getPages();
   let componentCssClasses = [];
   if(this.model.component.isComponent(element)) {
-    const templateName = this.model.property.getComponentData(element)['templateName'];
+    const templateName = this.model.property.getElementData(element, Component.COMPONENT_TYPE)['templateName'];
     componentCssClasses = this.model.component.getCssClasses(templateName);
   }
   return element.className.split(' ').filter((name) => {

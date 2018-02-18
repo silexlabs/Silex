@@ -135,7 +135,7 @@ silex.controller.EditMenuController.prototype.recursiveCopy = function(element) 
     element: element,
     style: this.model.property.getStyle(element, false),
     mobileStyle: this.model.property.getStyle(element, true),
-    componentData: this.model.property.getComponentData(element),
+    componentData: this.model.property.getElementData(element, Component.COMPONENT_TYPE),
     children: [],
   };
   // case of a container, handle its children
@@ -200,7 +200,7 @@ silex.controller.EditMenuController.prototype.recursivePaste = function(clipboar
   }, this);
   // init component props
   if(clipboardItem.componentData) {
-    this.model.property.setComponentData(element, clipboardItem.componentData);
+    this.model.property.setElementData(element, Component.COMPONENT_TYPE, clipboardItem.componentData);
     // re-render components (makes inner ID change)
     this.model.component.render(element);
   }

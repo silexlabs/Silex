@@ -19,20 +19,27 @@
   right: 0;
   left: @propertiesToolWidth;
   top: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden;
   bottom: 0;
   background-color: @silexmediumgrey;
   font-size: small;
   hr {
-    border-style: groove;
-    margin: 7px 10px 3px;
+    margin: 7px 0 3px;
+    max-width: none;
+    border: none;
+    border-top: 1px solid #2F2F2F;
+  }
+
+  &.design-tab {
+    input {
+      display: block;
+    }
   }
 
   /* visibility of the content depends on tabs */
   &.params-tab .main-container > span {
     display: none;
-    &.component-editor {
+    &.prodotype-component-editor {
       display: initial;
     }
     .image-preview {
@@ -44,8 +51,18 @@
       color: @silexdarkgrey; /* no need to display "no file chosen" */
     }
   }
-  .main-container span.component-editor {
+  .main-container span.prodotype-component-editor {
     display: none;
+  }
+  .main-container span.prodotype-style-editor {
+    display: none;
+  }
+  /* visibility of the content depends on tabs */
+  &.style-tab .main-container > span {
+    display: none;
+    &.prodotype-style-editor {
+      display: initial;
+    }
   }
   .tabs {
     height: @contextMenuHeight;
@@ -64,7 +81,6 @@
         background-color: @silexmediumgrey;
         border: 1px solid @silexdarkgrey;
         border-bottom-color: @silexmediumgrey;
-        padding-bottom: 14px;
       }
     }
   }
@@ -75,34 +91,24 @@
     padding: 0;
     width: 97%;
     border-bottom: 1px solid @silexdarkgrey;
+    flex: 1 0 auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+    bottom: 0;
+    top: @contextMenuHeight;
+    position: absolute;
 
     /* size set by workspace.js when the user resizes the property tool */
     &.size1 {
-      -webkit-column-count: 1;
-    	-moz-column-count: 1;
-    	-o-column-count: 1;
-    	-ms-column-count: 1;
-    	column-count: 1;
     }
 
     &.size2 {
-      -webkit-column-count: 2;
-    	-moz-column-count: 2;
-    	-o-column-count: 2;
-    	-ms-column-count: 2;
-    	column-count: 2;
     }
 
     &.size3 {
-      -webkit-column-count: 3;
-    	-moz-column-count: 3;
-    	-o-column-count: 3;
-    	-ms-column-count: 3;
-    	column-count: 3;
     }
 
     input {
-      display: inherit;
       height: 22px;
       overflow: hidden;
       margin: 4px 0;
@@ -124,6 +130,7 @@
       height: 15px;
       margin: 6px;
       float: left;
+      min-width: 0;
     }
     input.checkbox+label {
       display: block;
@@ -227,6 +234,9 @@
       max-height: inherit;
       margin: 10px;
     }
+  }
+  .expandable:last-child {
+    border-bottom: 1px solid @silexdarkgrey;
   }
 
   .tab-page {
@@ -502,13 +512,21 @@
 
     }
   }
-  .component-editor {
+  .editor-container {
+    top: @contextMenuHeight;
+    bottom: 0;
+  }
+  .prodotype-style-editor-menu > div {
+    padding: 10px;
+  }
+  .prodotype-component-editor, .prodotype-style-editor {
     .expandable;
     border-top: 1px solid @silexdarkgrey;
     &.hide-panel {
       display: none;
     }
-    & > section > ul {
+    & > section > ul,
+    & > .prodotype-container > section > ul {
       padding-left: 0;
     }
     label {
@@ -516,5 +534,12 @@
       display: block;
       padding-bottom: 5px;
     }
+  }
+  .prodotype-style-editor .prodotype-style-editor-menu > label:first-child {
+    border-top: none; /* no border just bellow the tabs */
+  }
+  .prodotype-style-editor .prop-editor-base:last-child,
+  .prodotype-component-editor .prop-editor-base:last-child {
+    border-bottom: 1px solid @silexdarkgrey; /* last "accordion" header has a border */
   }
 }
