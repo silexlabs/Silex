@@ -217,7 +217,7 @@ module.exports = class PublishJob {
       this.setStatus(`Splitting file ${file.name}`);
       const url = new URL(file.url);
       const baseUrl = new URL(url.origin + Path.dirname(url.pathname) + '/');
-      this.dom = new JSDOM(buffer.toString('utf-8'), baseUrl);
+      this.dom = new JSDOM(buffer.toString('utf-8'), { url: baseUrl.href });
       const domPublisher = new DomPublisher(this.dom);
       domPublisher.cleanup();
       this.tree = domPublisher.split(baseUrl);
@@ -273,7 +273,7 @@ module.exports = class PublishJob {
       return this.writeOperations(statCss, statJs, statAssets, ...assets)
     })
     .catch(err => {
-      console.error('An error occured in unifile batch', err.message);
+      console.error('An error occured in unifile batch', err.message, err);
       this.error = true;
       this.setStatus(err.message);
     })
@@ -342,20 +342,22 @@ module.exports = class PublishJob {
       batchActions.push({
         name: 'writefile',
         path: this.cssFile,
-        content: this.tree.styleTags.reduce((prev, tag) => prev + tag.innerHTML, ''),
+        content: this.tree.styleTags.reduce((prev, tag) => prev + '\n' + tag.innerHTML, ''),
       });
     }
     if(!!this.tree.scriptTags) {
       batchActions.push({
         name: 'writefile',
         path: this.jsFile,
-        content: this.tree.scriptTags.reduce((prev, tag) => prev + tag.innerHTML, ''),
+        content: this.tree.scriptTags.reduce((prev, tag) => prev + '\n' + tag.innerHTML, ''),
       });
     }
     const batchActionsWithAssets = batchActions.concat(
       assets
       .filter(file => !!file)
       .map(file => {
+        if(file.path === 'css/') {
+        }
         return {
           name: 'writeFile',
           path: this.folder.path + '/' +file.path,

@@ -287,9 +287,6 @@ silex.model.File.prototype.getHtmlGenerator = function* () {
   yield;
   // add the user's head tag
   rawHtml = this.model.head.insertUserHeadTag(rawHtml);
-  yield;
-  // beutify html
-  rawHtml = window['html_beautify'](rawHtml);
   return rawHtml;
 };
 
