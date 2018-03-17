@@ -259,13 +259,30 @@ class NewWebsiteDialog {
           const icon = document.createElement('span');
           icon.setAttribute('data-file-info', JSON.stringify(blob));
           // cloudIcon= fa-github | fa-dropbox | fa-server | fa-cloud | fa-cloud-download
-          const cloudIcon = 'fa-' + (['github', 'dropbox'].indexOf(blob.service) >= 0 ? blob.service : (blob.service === 'webdav' ? 'cloud-download' : (blob.service === 'ftp' ? 'server' : 'cloud')));
+          const cloudIcon = (() => {
+            let name;
+            switch(blob.service) {
+              case 'github':
+                return 'fa-github';
+              case 'dropbox':
+                return 'fa-dropbox';
+              case 'webdav':
+                return 'fa-cloud-download';
+              case 'ftp':
+              case 'sftp':
+                return 'fa-server';
+              case 'fs':
+                return 'fa-hdd';
+              default:
+                return 'fa-cloud';
+            }
+          })();
           icon.classList.add('fa', cloudIcon);
           li.appendChild(icon);
 
           const name = document.createElement('span');
           name.setAttribute('data-file-info', JSON.stringify(blob));
-          name.innerHTML = blob.name;
+          name.innerHTML = '/' + blob.folder + '<strong>/' + blob.name + '</strong>';
           li.appendChild(name);
 
           return li;
