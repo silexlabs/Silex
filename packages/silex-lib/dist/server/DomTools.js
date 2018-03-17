@@ -10,7 +10,7 @@
 //////////////////////////////////////////////////
 
 module.exports = class DomTools {
-  static transformStylesheet(stylesheet, fn) {
+  static transformStylesheet(stylesheet, isInHead, fn) {
     let cssText = '';
     for(let ruleIdx=0; ruleIdx<stylesheet.cssRules.length; ruleIdx++) {
       const rule = stylesheet.cssRules[ruleIdx];
@@ -20,7 +20,7 @@ module.exports = class DomTools {
         if(value.indexOf('url(') === 0) {
           const valueArr = value.split('\'');
           const url = valueArr[1];
-          const newUrl = fn(url, stylesheet);
+          const newUrl = fn(url, stylesheet, isInHead);
           if(newUrl) {
             valueArr[1] = newUrl;
           }
@@ -41,11 +41,15 @@ module.exports = class DomTools {
           // do nothing with <a> links
           continue;
         }
+        if(el.tagName.toLowerCase() === 'link' && el.getAttribute('rel') !== 'stylesheet') {
+          // do nothing with <link> tags unless it is an external stylesheet
+          continue;
+        }
         if(el.hasAttribute('data-silex-static')) {
           continue;
         }
         const val = el.getAttribute(attr);
-        const newVal = fn(val, el);
+        const newVal = fn(val, el, el.parentNode === dom.window.document.head);
         if(newVal) el.setAttribute(attr, newVal);
       }
     });
@@ -59,7 +63,7 @@ module.exports = class DomTools {
       const stylesheet = stylesheets[stylesheetIdx];
       if(tags[stylesheetIdx]) { // seems to happen sometimes?
         const tag = tags[stylesheetIdx];
-        const cssText = DomTools.transformStylesheet(stylesheet, fn);
+        const cssText = DomTools.transformStylesheet(stylesheet, tag.parentNode === dom.window.document.head, fn);
         matches.push({
           tag: tag,
           innerHTML: cssText,
