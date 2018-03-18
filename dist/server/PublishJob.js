@@ -315,6 +315,9 @@ module.exports = class PublishJob {
 
   writeOperations(statCss, statJs, statAssets, ...assets) {
     this.setStatus(`Creating files <ul><li>${this.indexFile}</li><li>${this.cssFile}</li><li>${this.jsFile}</li></ul>`);
+    // hide website before styles.css is loaded
+    this.dom.window.document.body.style.display = 'none';
+    // create an object to describe a batch of actions
     const batchActions = [{
       name: 'writefile',
       path: this.indexFile,
@@ -339,13 +342,16 @@ module.exports = class PublishJob {
       });
     }
     if(!!this.tree.styleTags.length > 0) {
+      // show website after styles.css is loaded
+      const showBodyRule = 'body {display: initial !important;}\n';
+      // create the style.css file
       batchActions.push({
         name: 'writefile',
         path: this.cssFile,
-        content: this.tree.styleTags.reduce((prev, tag) => prev + '\n' + tag.innerHTML, ''),
+        content: this.tree.styleTags.reduce((prev, tag) => prev + '\n' + tag.innerHTML, showBodyRule),
       });
     }
-    if(!!this.tree.scriptTags) {
+    if(!!this.tree.scriptTags.length > 0) {
       batchActions.push({
         name: 'writefile',
         path: this.jsFile,
