@@ -267,6 +267,7 @@ CloudExplorer.prototype.saveAs = function(defaultFileName, extensions) {};
  * @typedef {{
  *   url: string,
  *   path: string,
+ *   folder: string,
  *   service: string,
  *   size: number,
  *   modified: string,
