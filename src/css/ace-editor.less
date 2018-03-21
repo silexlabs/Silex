@@ -13,6 +13,7 @@
 /* */
 .ace-editor-container {
   position: absolute;
+  width: auto;
   z-index: 110;
   .buttons.dock-btn {
     background-image: url("../assets/dock.png");
@@ -35,9 +36,7 @@
     position: absolute;
   }
   .ace-editor {
-    width: 100%;
-    height: 90%;
-    position: inherit;
+    flex: 1 1 auto;
   }
   .title-bar {
     border-top: 1px solid @silexdarkgrey;

@@ -153,8 +153,13 @@ silex.model.Page.prototype.getParentPage = function(element) {
  */
 silex.model.Page.prototype.getPages = function() {
   // retrieve all page names from the head section
-  var pages = [];
-  var elements = this.model.body.getBodyElement().querySelectorAll('a[data-silex-type="page"]');
+  const pages = [];
+  const bodyElement = this.model.body.getBodyElement();
+  if(!bodyElement) {
+    console.warn('Can not get pages, the body element is null');
+    return [];
+  }
+  const elements = bodyElement.querySelectorAll('a[data-silex-type="page"]');
   goog.array.forEach(elements, function(element) {
     pages.push(element.getAttribute('id'));
   }, this);
@@ -441,17 +446,8 @@ silex.model.Page.prototype.getPagesForElement = function(element) {
   if(this.model.element.isSectionContent(element)) {
     element = /** @type {Element} */ (element.parentNode);
   }
-  var res = [];
-  // get all the pages
-  var pages = this.getPages();
-  for (let idx in pages) {
-    var pageName = pages[idx];
-    // remove the component from the page
-    if (goog.dom.classlist.contains(element, pageName)) {
-      res.push(pageName);
-    }
-  }
-  return res;
+  return this.getPages()
+    .filter(pageName => element.classList.contains(pageName));
 };
 
 

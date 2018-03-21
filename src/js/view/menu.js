@@ -81,20 +81,19 @@ silex.view.Menu.prototype.buildUi = function() {
   var globalKeys = [];
 
   // create the menu items
-  for (let i in silex.Config.menu.names) {
+  silex.Config.menu.names.forEach((itemData, i) => {
     // Create the drop down menu with a few suboptions.
     var menu = new goog.ui.Menu();
-    goog.array.forEach(silex.Config.menu.options[i], (itemData) => {
-      this.addToMenu(itemData, menu, shortcutHandler, globalKeys);
-    }, this);
+    silex.Config.menu.options[i].forEach(itemOption => {
+      this.addToMenu(itemOption, menu, shortcutHandler, globalKeys);
+    });
 
     // Create a button inside menubar.
-    var menuItemData = silex.Config.menu.names[i];
-    var btn = new goog.ui.MenuButton(menuItemData.label, menu);
-    btn.addClassName(menuItemData.className);
+    var btn = new goog.ui.MenuButton(itemData.label, menu);
+    btn.addClassName(itemData.className);
     btn.setDispatchTransitionEvents(goog.ui.Component.State.ALL, true);
     this.menu.addChild(btn, true);
-  }
+  });
 
   shortcutHandler.setAlwaysPreventDefault(false);
   //  shortcutHandler.setAllShortcutsAreGlobal(false);
@@ -189,7 +188,7 @@ silex.view.Menu.prototype.buildUi = function() {
 
 /**
  * add an item to the menu
- * @param {{mnemonic:goog.events.KeyCodes.<number>,checkable:boolean,id:string,shortcut:Array.<number>, globalKey:string, tooltip:goog.events.KeyCodes.<number>}} itemData menu item as defined in config.js
+ * @param {{mnemonic:goog.events.KeyCodes.<number>,checkable:boolean,id:string,shortcut:Array.<number>, globalKey:Object, tooltip:goog.events.KeyCodes.<number>}} itemData menu item as defined in config.js
  * @param {goog.ui.Menu} menu
  * @param {goog.ui.KeyboardShortcutHandler} shortcutHandler
  * @param {Array.<Object>} globalKeys
@@ -214,9 +213,9 @@ silex.view.Menu.prototype.addToMenu = function(itemData, menu, shortcutHandler, 
     // }
     // shortcut
     if (itemData.shortcut) {
-      for (let idx in itemData.shortcut) {
+      itemData.shortcut.forEach(shortcutId => {
         try {
-          shortcutHandler.registerShortcut(itemData.id, itemData.shortcut[idx]);
+          shortcutHandler.registerShortcut(itemData.id, shortcutId);
         }
         catch (e) {
           console.error('Catched error for shortcut', id, '. Error: ', e);
@@ -224,7 +223,7 @@ silex.view.Menu.prototype.addToMenu = function(itemData, menu, shortcutHandler, 
         if (itemData.globalKey) {
           globalKeys.push(itemData.globalKey);
         }
-      }
+      });
     }
   }
   // else {
@@ -307,14 +306,14 @@ silex.view.Menu.prototype.onMenuEvent = function(type, opt_componentName) {
       this.controller.fileMenuController.save();
       break;
     case 'file.publish.settings':
-      this.controller.fileMenuController.view.settingsDialog.openDialog();
+      this.controller.fileMenuController.view.settingsDialog.open();
       this.controller.fileMenuController.view.workspace.redraw(this.controller.fileMenuController.view);
       break;
     case 'file.publish':
       this.controller.fileMenuController.publish();
       break;
     case 'file.save':
-      this.controller.fileMenuController.save(this.controller.fileMenuController.model.file.getUrl());
+      this.controller.fileMenuController.save(this.controller.fileMenuController.model.file.getFileInfo());
       break;
     case 'file.open':
       this.controller.fileMenuController.openFile();
@@ -326,7 +325,7 @@ silex.view.Menu.prototype.onMenuEvent = function(type, opt_componentName) {
       this.controller.viewMenuController.previewResponsize();
       break;
     case 'view.open.fileExplorer':
-      this.controller.viewMenuController.view.fileExplorer.openDialog(function(url) {}, function(error) {});
+      this.controller.viewMenuController.view.fileExplorer.openFile();
       break;
     case 'view.open.cssEditor':
       this.controller.viewMenuController.openCssEditor();

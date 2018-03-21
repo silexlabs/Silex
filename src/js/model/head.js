@@ -47,6 +47,13 @@ silex.model.Head = function(model, view) {
 
 
 /**
+ * id of the style element which holds current page style
+ * e.g. <style id="current-page-style">.page-page-1 {display: inherit;}</style>
+ */
+silex.model.Head.SILEX_CURRENT_PAGE_CSS_CLASS = 'current-page-style';
+
+
+/**
  * id of the style element which holds silex editable css styles
  */
 silex.model.Head.SILEX_STYLE_ELEMENT_CSS_CLASS = 'silex-style';
@@ -351,22 +358,28 @@ silex.model.Head.prototype.setMeta = function(name, opt_value) {
 /**
  * get/set the publication path
  * publication path is always absolute url
- * @param {?string=} opt_path
+ * @param {?FileInfo=} opt_fileInfo
  */
-silex.model.Head.prototype.setPublicationPath = function(opt_path) {
-  this.setMeta('publicationPath', opt_path);
-  this.view.settingsDialog.setPublicationPath(opt_path);
+silex.model.Head.prototype.setPublicationPath = function(opt_fileInfo) {
+  // TODO: remove meta and store this value in the JSON like components params (see model/property.js)
+  this.setMeta('publicationPath', opt_fileInfo == null ? null : JSON.stringify(opt_fileInfo));
+  this.view.settingsDialog.setPublicationPath(opt_fileInfo);
 };
 
 
 /**
  * get/set the publication path
  * publication path is always absolute url
- * @return {?string}
+ * @return {?FileInfo}
  */
 silex.model.Head.prototype.getPublicationPath = function() {
-  var url = this.getMeta('publicationPath');
-  return url;
+  var fileInfo = this.getMeta('publicationPath');
+  try {
+    return fileInfo == null ? null : /** @type {FileInfo} */ (JSON.parse(fileInfo));
+  } catch(e) {
+    // this happens with old publication path (just a string)
+    return null;
+  }
 };
 
 
@@ -514,8 +527,8 @@ silex.model.Head.prototype.getFaviconPath = function() {
   if (faviconTag) {
     url = faviconTag.getAttribute('href');
   }
-  if (url && this.model.file.getUrl()) {
-    var baseUrl = silex.utils.Url.getBaseUrl() + this.model.file.getUrl();
+  if (url && this.model.file.getFileInfo()) {
+    var baseUrl = silex.utils.Url.getBaseUrl() + this.model.file.getFileInfo().url;
     url = silex.utils.Url.getRelativePath(url, baseUrl);
   }
   return url;
@@ -618,8 +631,8 @@ silex.model.Head.prototype.setThumbnailSocialPath = function(opt_path) {
  */
 silex.model.Head.prototype.getThumbnailSocialPath = function() {
   var url = this.getMeta('og:image') || this.getMeta('twitter:image');
-  if (url && this.model.file.getUrl()) {
-    var baseUrl = silex.utils.Url.getBaseUrl() + this.model.file.getUrl();
+  if (url && this.model.file.getFileInfo()) {
+    var baseUrl = this.model.file.getFileInfo().url;
     url = silex.utils.Url.getRelativePath(url, baseUrl);
   }
   return url;
@@ -653,6 +666,20 @@ silex.model.Head.prototype.getHeadElement = function() {
   // returns the head of the document in the iframe
   return this.model.file.getContentDocument().head;
 };
+
+
+
+/**
+ * @param {?Element=} opt_headElement
+ *
+ */
+silex.model.Head.prototype.removeCurrentPageStyleTag = function(opt_headElement) {
+  if (!opt_headElement) {
+    opt_headElement = this.getHeadElement();
+  }
+  const tag = opt_headElement.querySelector('#' + silex.model.Head.SILEX_CURRENT_PAGE_CSS_CLASS);
+  goog.dom.removeNode(tag);
+}
 
 
 /**

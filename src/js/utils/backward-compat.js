@@ -37,6 +37,25 @@ silex.utils.BackwardCompat.LATEST_VERSION = [2, 2, 7];
 
 
 /**
+ * check if a given site has been made with Silex
+ * @param {string} rawHtml HTML string
+ */
+silex.utils.BackwardCompat.isSilexWebsite = function(rawHtml) {
+  return rawHtml.indexOf('<meta name="generator" content="Silex v2') < 0 ||
+    // or the old page system from Silex 2.0.0
+    rawHtml.indexOf('<meta name="page" content="') < 0
+}
+
+
+/**
+ * check if a given site is a published version of a Silex site
+ * @param {string} rawHtml HTML string
+ */
+silex.utils.BackwardCompat.isPublishedWebsite = function(rawHtml) {
+  return rawHtml.indexOf('silex-published') >= 0;
+}
+
+/**
  * handle backward compatibility issues
  * Backwardcompatibility process takes place after opening a file
  * @param {Document} doc
@@ -80,11 +99,12 @@ silex.utils.BackwardCompat.process = function(doc, model, cbk) {
     // update //{{host}}/2.x/... to latest version
     var elements = doc.querySelectorAll('[data-silex-static]');
     let needsReload = false;
-    const silexHost = silex.utils.Url.getHost();
     goog.array.forEach(elements, function(element) {
       const propName = element.src ? 'src' : 'href';
       const newUrl = silex.utils.BackwardCompat.getStaticResourceUrl(element[propName]);
-      if(silex.utils.Url.getHost(element[propName]) != silexHost) {
+      const oldUrl = element[propName].substr(element[propName].indexOf('//')); // remove the protocol
+      if(oldUrl != newUrl) {
+        console.info('BC rewrite URL', element, oldUrl, newUrl)
         element[propName] = newUrl;
         needsReload = true;
       }
@@ -222,7 +242,7 @@ silex.utils.BackwardCompat.to2_2_6 = function(version, doc, model, cbk) {
   if (!jsonStyleTag) {
     let styleTag = doc.querySelector('.' + silex.model.Property.INLINE_STYLE_TAG_CLASS_NAME);
     let styleSheet = null;
-    for (var idx in doc.styleSheets) {
+    for (let idx=0; idx<doc.styleSheets.length; idx++) {
       if (doc.styleSheets[idx].ownerNode && doc.styleSheets[idx].ownerNode == styleTag) {
         styleSheet = doc.styleSheets[idx];
       }
@@ -233,7 +253,7 @@ silex.utils.BackwardCompat.to2_2_6 = function(version, doc, model, cbk) {
     else {
       let stylesObj = {};
       let mobileStylesObj = {};
-      for (var idx = 0; idx < styleSheet.cssRules.length; idx++) {
+      for (let idx = 0; idx < styleSheet.cssRules.length; idx++) {
         let cssRule = styleSheet.cssRules[idx];
         let id = cssRule.selectorText.substr(1);
         let style = silex.utils.Style.styleToObject(cssRule.style);
@@ -549,6 +569,11 @@ silex.utils.BackwardCompat.to2_2_0 = function(version, doc, model, cbk) {
         metaNode.setAttribute('content', value);
       }
     }
+    // the body needs to be a container,
+    // and 100% width which will then be moved to styles
+    doc.body.classList.add('container-element');
+    doc.body.setAttribute('data-silex-type', 'container');
+    doc.body.style.minWidth = '100%';
   }
   cbk();
 };

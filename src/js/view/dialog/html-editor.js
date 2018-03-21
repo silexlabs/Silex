@@ -11,56 +11,69 @@
 
 /**
  * @fileoverview
- * the Silex HtmlEditor class, based on ace editor
- * @see     http://ace.c9.io/
- *
+ * the Silex HTML editor
  *
  */
 
 goog.provide('silex.view.dialog.HtmlEditor');
-
-goog.require('goog.events.KeyCodes');
-goog.require('goog.ui.KeyboardShortcutHandler');
 goog.require('silex.view.dialog.AceEditorBase');
 
 
-
 /**
- * @constructor
- * @extends {silex.view.dialog.AceEditorBase}
- * @param {!Element} element   container to render the UI
- * @param  {!silex.types.Model} model  model class which holds
- *                                  the model instances - views use it for read operation only
- * @param  {!silex.types.Controller} controller  structure which holds
- *                                               the controller instances
+ * @class {silex.view.dialog.CssEditor}
  */
-silex.view.dialog.HtmlEditor = function(element, model, controller) {
-  // call super
-  goog.base(this, element, model, controller);
-  // set the visibility css class
-  this.visibilityClass = 'html-editor';
-};
+class HtmlEditor extends AceEditorBase {
+  /**
+   * @param {!Element} element   container to render the UI
+   * @param  {!silex.types.Model} model  model class which holds
+   *                                  the model instances - views use it for read operation only
+   * @param  {!silex.types.Controller} controller  structure which holds
+   *                                               the controller instances
+   */
+  constructor(element, model, controller) {
+    super(element, model, controller);
 
-// inherit from silex.view.dialog.AceEditorBase
-goog.inherits(silex.view.dialog.HtmlEditor, silex.view.dialog.AceEditorBase);
-
-
-/**
- * init the menu and UIs
- */
-silex.view.dialog.HtmlEditor.prototype.buildUi = function() {
-  // call super
-  goog.base(this, 'buildUi');
-  // set mode
-  // for some reason, this.ace.getSession().* is undefined,
-  //    closure renames it despite the fact that that it is declared in the externs.js file
-  this.ace.getSession()['setMode']('ace/mode/html');
-};
+    // set mode
+    this.ace.getSession()['setMode']('ace/mode/html');
+  }
 
 
-/**
- * the content has changed, notify the controler
- */
-silex.view.dialog.HtmlEditor.prototype.contentChanged = function() {
-  this.controller.htmlEditorController.changed(this.ace.getValue());
-};
+  /**
+   * the content has changed, notify the controler
+   */
+  contentChanged() {
+    var selection = this.model.body.getSelection();
+    if(selection.length <= 1) {
+      this.controller.htmlEditorController.changed(selection[0], this.ace.getValue());
+    }
+  }
+
+  setSelection(selection) {
+    if (selection.length === 0) {
+      // edit head tag
+      this.setValue(this.model.head.getUserHeadTag());
+      this.ace.setReadOnly(false);
+    }
+    else if (selection.length === 1) {
+      if(selection[0].tagName.toLowerCase() === 'body') {
+        // edit head tag
+        this.setValue(this.model.head.getUserHeadTag());
+        this.ace.setReadOnly(false);
+      }
+      else if(this.model.element.getType(selection[0]) === silex.model.Element.TYPE_HTML) {
+        // edit current selection
+        this.setValue(this.model.element.getInnerHtml(selection[0]));
+        this.ace.setReadOnly(false);
+      }
+      else {
+        this.setValue('-select an HTML box or press ESC-');
+        this.ace.setReadOnly(true);
+      }
+    }
+    else {
+      this.setValue('-select an HTML box or press ESC-');
+      this.ace.setReadOnly(true);
+    }
+  }
+}
+

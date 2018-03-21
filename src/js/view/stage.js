@@ -757,7 +757,7 @@ silex.view.Stage.prototype.getVisibility = function(element) {
   while (parent &&
          (!goog.dom.classlist.contains(/** @type {Element} */ (parent), silex.model.Page.PAGED_CLASS_NAME) ||
           goog.dom.classlist.contains(/** @type {Element} */ (parent), this.currentPageName)) &&
-         !(this.isMobileMode() && goog.dom.classlist.contains(/** @type {Element} */ (parent), 'hide-on-mobile'))
+         !(this.isMobileMode() && this.model.element.getHideOnMobile(parent))
    ) {
     parent = /** @type {?Element} */ (parent.parentNode);
   }
@@ -879,7 +879,6 @@ silex.view.Stage.prototype.followElementPosition =
     // or if it is the stage
     // or if it has been marked as not draggable
     if (follower.tagName.toUpperCase() !== 'BODY' &&
-      !this.isMobileMode() &&
       !goog.dom.getAncestorByClass(follower.parentNode, silex.model.Element.SELECTED_CLASS_NAME) &&
       !goog.dom.classlist.contains(follower, silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME)) {
         // do not do this anymore because the element is moved to the body during drag so its position is wrong:

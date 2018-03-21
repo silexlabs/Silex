@@ -31,7 +31,6 @@ class InvalidationManager {
 
   /**
    * @param {number} delay the minimum time between two calls, in seconds
-   * @constructor
    */
   constructor(delay) {
     /**

@@ -39,7 +39,10 @@ body {
     font-family: FontAwesome;
     text-decoration: none;
   }
-  input {
+  input[disabled], select[disabled] {
+    background-color: @silexmediumdarkgrey;
+  }
+  input, select {
     border: 1px solid @silexmediumgrey;
     color: @silexlightergrey;
     background-color: @silexdarkgrey;
@@ -49,6 +52,13 @@ body {
     border-radius: 2px;
     box-sizing: border-box;
     padding: 0 5px;
+    display: inline;
+  }
+  input[type=checkbox], select, label[for] {
+    cursor: pointer;
+  }
+  input[type=checkbox] {
+    opacity: .8;
   }
   input[type=number]::-webkit-inner-spin-button,
   input[type=number]::-webkit-outer-spin-button {
@@ -65,10 +75,10 @@ body {
 }
 
 .modal-dialog {
-  z-index: 120;
+  z-index: 220;
 }
 label {
-    vertical-align: middle;
+  vertical-align: top;
 }
 
 .advanced-mode-off {
@@ -95,6 +105,3 @@ h1, h2, h3 {
   color: @silexlightergrey;
 }
 
-#silex-file-explorer{
-  z-index: 215; /* must be higher than the dashboard in case there is an error */
-}

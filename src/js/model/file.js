@@ -94,12 +94,12 @@ silex.model.File.LOADING_LIGHT_CSS_CLASS = 'loading-website-light';
 
 
 /**
- * current file url
- * if the current file is a new file, it has no url
- * if set, this is an absolute URL, use silex.model.File::getUrl to get the relatvie URL
- * @type {?string}
+ * current file url and path and info returned by CE
+ * if the current file is a new file, it has no fileInfo
+ * if set, this is an absolute URL, use silex.model.File::getFileInfo to get the relatvie URL
+ * @type {?FileInfo}
  */
-silex.model.File.prototype.url = null;
+silex.model.File.prototype.fileInfo = null;
 
 
 /**
@@ -152,7 +152,7 @@ silex.model.File.prototype.hasContent = function() {
  * @param {?function()=} opt_cbk
  * @param {?boolean=} opt_showLoader
  * @param {?boolean=} opt_bypassBC if true will bypass backward compat check, default is true
- * @expose
+ * @export
  */
 silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk, opt_showLoader, opt_bypassBC) {
   // reset iframe content
@@ -175,8 +175,8 @@ silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk, opt_showLoader, 
   // add base tag from the beginning
   // should not be needed since we change all  the URLs to absolute
   // but just in case abs/rel conversion bugs
-  if (this.url) {
-    rawHtml = rawHtml.replace('<head>', '<head><base class="' + silex.model.Head.SILEX_TEMP_TAGS_CSS_CLASS + '" href="' + this.url + '" target="_blank">');
+  if (this.fileInfo) {
+    rawHtml = rawHtml.replace('<head>', '<head><base class="' + silex.model.Head.SILEX_TEMP_TAGS_CSS_CLASS + '" href="' + this.fileInfo.url + '" target="_blank">');
   }
   // remove user's head tag before it is interprated by the browser
   // - in case it has bad HTML tags, it could break the whole site, insert tags into the body instead of the head...
@@ -186,12 +186,13 @@ silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk, opt_showLoader, 
   // make everything protocol agnostic to avoid problems with silex being https
   rawHtml = rawHtml.replace('http://', '//', 'g');
   // detect non-silex websites
-  if (rawHtml.indexOf('silex-runtime') < 0) {
+  if (!silex.utils.BackwardCompat.isSilexWebsite(rawHtml)) {
     console.error('This is not a website editable in Silex.');
     silex.utils.Notification.alert('I can not open this website. I can only open website made with Silex. <a target="_blank" href="https://github.com/silexlabs/Silex/issues/282">More info here</a>.', function() {});
     return;
   }
-  else if (rawHtml.indexOf('silex-published') >= 0) {
+  // then detect published versions of Silex websites
+  else if (silex.utils.BackwardCompat.isPublishedWebsite(rawHtml)) {
     console.error('This is a published website.');
     silex.utils.Notification.alert('I can not open this website. It is a published version of a Silex website. <a target="_blank" href="https://github.com/silexlabs/Silex/issues/282">More info here</a>.', function() {});
     return;
@@ -205,7 +206,9 @@ silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk, opt_showLoader, 
     return match.replace('silex-runtime', '');
   }, 'g');
   // write the content
-  goog.dom.iframe.writeContent(this.iFrameElement_, rawHtml);
+  this.contentDocument_.open();
+  this.contentDocument_.write(rawHtml);
+  this.contentDocument_.close();
   this.contentChanged(!!opt_bypassBC, opt_cbk);
 };
 
@@ -236,7 +239,7 @@ silex.model.File.prototype.contentChanged = function(bypassBC, opt_cbk) {
 
   // first time in chrome, and always in firefox
   // load scripts for edition in the iframe
-  this.includeEditionTags(goog.bind(function() {
+  this.includeEditionTags(() => {
     if(bypassBC) {
       this.onContentLoaded(false, opt_cbk);
     }
@@ -246,11 +249,12 @@ silex.model.File.prototype.contentChanged = function(bypassBC, opt_cbk) {
         this.onContentLoaded(needsReload, opt_cbk);
       });
     }
-  }, this), goog.bind(function() {
+  },
+  () => {
     // error loading editable script
     console.error('error loading editable script');
     throw new Error('error loading editable script');
-  }, this));
+  });
 };
 
 
@@ -290,6 +294,9 @@ silex.model.File.prototype.onContentLoaded = function(needsReload, opt_cbk) {
   // refresh the view
   var page = this.model.page.getCurrentPage();
   this.model.page.setCurrentPage(page);
+  // remove publication path for templates
+  if(this.isTemplate) this.model.head.setPublicationPath(null);
+
   // // refresh the view again
   // // workaround for a bug where no page is opened after open a website or undo
   // setTimeout(goog.bind(function() {
@@ -339,6 +346,7 @@ silex.model.File.prototype.getHtml = function() {
   this.model.property.updateStylesInDom(/** @type {Document} */ (cleanFile));
   this.model.property.saveProperties(this.contentDocument_);
   // cleanup
+  this.model.head.removeCurrentPageStyleTag(/** @type {Document} */ (cleanFile).head);
   this.model.head.removeTempTags(/** @type {Document} */ (cleanFile).head);
   this.model.body.removeEditableClasses(/** @type {!Element} */ (cleanFile));
   silex.utils.Style.removeInternalClasses(/** @type {!Element} */ (cleanFile), false, true);
@@ -381,10 +389,10 @@ silex.model.File.prototype.getHtmlAsync = function (cbk) {
 silex.model.File.prototype.getHtmlNextStep = function (cbk, generator) {
   let res = generator.next();
   if(res.done) {
-    setTimeout(() => cbk(res.value), 100);
+    setTimeout(() => cbk(res.value), 0);
   }
   else {
-    setTimeout(() => this.getHtmlNextStep(cbk, generator), 100);
+    setTimeout(() => this.getHtmlNextStep(cbk, generator), 0);
   }
 };
 
@@ -404,6 +412,7 @@ silex.model.File.prototype.getHtmlGenerator = function* () {
   styleTag.innerHTML = updatedStyles;
   yield;
   // cleanup
+  this.model.head.removeCurrentPageStyleTag(/** @type {Document} */ (cleanFile).head);
   this.model.head.removeTempTags(/** @type {Document} */ (cleanFile).head);
   yield;
   this.model.body.removeEditableClasses(/** @type {!Element} */ (cleanFile));
@@ -446,14 +455,19 @@ silex.model.File.prototype.getHtmlGenerator = function* () {
  * will not be able to save
  * @param {string} url
  * @param {?function(string)=} opt_cbk
- * @param {?function(Object, string)=} opt_errCbk
- * @expose
+ * @param  {?function(Object, string)=} opt_errCbk
+ * @export
  */
-silex.model.File.prototype.openFromUrl = function(url, opt_cbk, opt_errCbk) {
+silex.model.File.prototype.openFromUrl = function(url, opt_cbk = null, opt_errCbk = null) {
   this.isTemplate = true;
   silex.service.CloudStorage.getInstance().loadLocal(url,
       goog.bind(function(rawHtml) {
-        this.setUrl(url);
+        this.fileInfo = /** @type {FileInfo} */ ({
+          isDir: false,
+          mime: 'text/html',
+          url: url
+        });
+        // this.setUrl(url);
         if (opt_cbk) {
           opt_cbk(rawHtml);
         }
@@ -463,22 +477,31 @@ silex.model.File.prototype.openFromUrl = function(url, opt_cbk, opt_errCbk) {
 
 /**
  * save a file with a new name
- * @expose
+ * @param {FileInfo} fileInfo
+ * @param {string} rawHtml
+ * @param {function()} cbk receives the raw HTML
+ * @param {?function(Object)=} opt_errCbk
+ * @export
  */
-silex.model.File.prototype.saveAs = function(url, rawHtml, cbk, opt_errCbk) {
+silex.model.File.prototype.saveAs = function(fileInfo, rawHtml, cbk, opt_errCbk) {
   // save the data
-  this.setUrl(url);
+  this.fileInfo = fileInfo;
+  this.addToLatestFiles(this.fileInfo);
   this.save(rawHtml, cbk, opt_errCbk);
 };
 
 
 /**
  * write content to the file
- * @expose
+ * @param {string} rawHtml
+ * @param {function()} cbk
+ * @param {?function(Object)=} opt_errCbk
+ * @export
  */
 silex.model.File.prototype.save = function(rawHtml, cbk, opt_errCbk) {
-  silex.service.CloudStorage.getInstance().save(
-      this.getUrl(),
+  if(this.fileInfo == null) throw new Error('Can not save, fileInfo is null');
+  silex.service.CloudStorage.getInstance().write(
+      /** @type {FileInfo} */ (this.fileInfo),
       rawHtml,
       () => {
         this.isTemplate = false;
@@ -492,19 +515,23 @@ silex.model.File.prototype.save = function(rawHtml, cbk, opt_errCbk) {
 
 /**
  * load a new file
+ * @param {FileInfo} fileInfo
+ * @param {function(string)} cbk receives the raw HTML
+ * @param {?function(Object)=} opt_errCbk (err)
  */
-silex.model.File.prototype.open = function(url, cbk, opt_errCbk) {
+silex.model.File.prototype.open = function(fileInfo, cbk, opt_errCbk) {
   this.isTemplate = false;
-  silex.service.CloudStorage.getInstance().load(
-      url,
-      goog.bind(function(rawHtml) {
+  silex.service.CloudStorage.getInstance().read(
+      fileInfo,
+      (rawHtml) => {
         // update model
         this.close();
-        this.setUrl(url);
+        this.fileInfo = fileInfo;
+        this.addToLatestFiles(this.fileInfo);
         if (cbk) {
           cbk(rawHtml);
         }
-      }, this), opt_errCbk);
+      }, opt_errCbk);
 };
 
 
@@ -512,34 +539,16 @@ silex.model.File.prototype.open = function(url, cbk, opt_errCbk) {
  * reset data, close file
  */
 silex.model.File.prototype.close = function() {
-  this.url = null;
+  this.fileInfo = null;
 };
 
 
 /**
  * get the url of the file
+ * @return {?FileInfo}
  */
-silex.model.File.prototype.getUrl = function() {
-  // revert to relative URL
-  if (this.url){
-    var baseUrl = silex.utils.Url.getBaseUrl();
-    return silex.utils.Url.getRelativePath(this.url, baseUrl);
-  }
-  return this.url;
-};
-
-
-/**
- * store url of this file
- * @param {?string} url
- */
-silex.model.File.prototype.setUrl = function(url) {
-  if (url) {
-    var baseUrl = silex.utils.Url.getBaseUrl();
-    url = silex.utils.Url.getAbsolutePath(url, baseUrl);
-    this.addToLatestFiles(url);
-  }
-  this.url = url;
+silex.model.File.prototype.getFileInfo = function() {
+  return this.fileInfo;
 };
 
 
@@ -553,51 +562,37 @@ silex.model.File.prototype.clearLatestFiles = function() {
 
 /**
  * get the latest opened files
- * @return {Array.<{name:string, path:string, cloudIcon:string}>}
+ * @return {Array.<FileInfo>}
  */
 silex.model.File.prototype.getLatestFiles = function() {
   const str = window.localStorage.getItem('silex:recent-files');
-  if(str) return /** @type {Array.<{name:string, path:string, cloudIcon:string}>} */ (JSON.parse(str));
+  if(str) {
+    return (/** @type {Array.<FileInfo>} */ (JSON.parse(str)))
+      // remove old URLs from previous CE version
+      .filter(fileInfo => fileInfo.name != null);
+  }
   else return [];
 };
 
 
 /**
  * store this file in the latest opened files
- * @param {?string} url
+ * @param {?FileInfo} fileInfo
  */
-silex.model.File.prototype.addToLatestFiles = function(url) {
+silex.model.File.prototype.addToLatestFiles = function(fileInfo) {
   // url= http://localhost:6805/api/1.0/github/exec/get/silex-tests/gh-pages/abcd.html
   const latestFiles = this.getLatestFiles();
-  const versionIdx = url.indexOf('/api/1.0/');
-  if(versionIdx >= 0) {
-    // path= /api/1.0/github/exec/get/silex-tests/gh-pages/abcd.html
-    const path = url.substr(versionIdx);
-    // remove if it is already in the array
-    // so that it goes back to the top of the list
-    let foundIndex = -1;
-    latestFiles.forEach((item, idx) => item.path === path ? foundIndex = idx : null);
-    if(foundIndex > -1) {
-      latestFiles.splice(foundIndex, 1);
-    }
-    const serviceIdx = versionIdx + '/api/1.0/'.length;
-    // folder= /silex-tests/gh-pages/abcd.html
-    const folder = url.substr(url.indexOf('exec/get', serviceIdx) + 'exec/get'.length);
-    // service= github
-    const service = url.substring(serviceIdx, url.indexOf('/', serviceIdx));
-    // cloudIcon= fa-github | fa-dropbox | fa-server | fa-cloud | fa-cloud-download
-    const cloudIcon = 'fa-' + (['github', 'dropbox'].indexOf(service) === 0 ? service : (service === 'webdav' ? 'cloud-download' : (service === 'ftp' ? 'server' : 'cloud')));
-    latestFiles.unshift({
-      'url': url,
-      'path': path,
-      'folder': folder,
-      'service': service,
-      'cloudIcon': cloudIcon,
-    });
-    // limit size
-    if(latestFiles.length > silex.model.File.MAX_RECENT_FILES) {
-      latestFiles.splice(silex.model.File.MAX_RECENT_FILES, latestFiles.length - silex.model.File.MAX_RECENT_FILES);
-    }
-    window.localStorage.setItem('silex:recent-files', JSON.stringify(latestFiles));
+  // remove if it is already in the array
+  // so that it goes back to the top of the list
+  let foundIndex = -1;
+  latestFiles.forEach((item, idx) => item.url === fileInfo.url ? foundIndex = idx : null);
+  if(foundIndex > -1) {
+    latestFiles.splice(foundIndex, 1);
   }
+  latestFiles.unshift(fileInfo);
+  // limit size
+  if(latestFiles.length > silex.model.File.MAX_RECENT_FILES) {
+    latestFiles.splice(silex.model.File.MAX_RECENT_FILES, latestFiles.length - silex.model.File.MAX_RECENT_FILES);
+  }
+  window.localStorage.setItem('silex:recent-files', JSON.stringify(latestFiles));
 };

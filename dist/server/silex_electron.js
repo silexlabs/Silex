@@ -1,3 +1,14 @@
+//////////////////////////////////////////////////
+// Silex, live web creation
+// http://projects.silexlabs.org/?/silex/
+//
+// Copyright (c) 2012 Silex Labs
+// http://www.silexlabs.org/
+//
+// Silex is available under the GPL license
+// http://www.silexlabs.org/silex/silex-licensing/
+//////////////////////////////////////////////////
+
 'use strict';
 
 const Path = require('path');
@@ -9,12 +20,14 @@ let win;
 
 function createWindow () {
   // Create the browser window.
+  // 950x630
   win = new BrowserWindow({
     width: 1200,
     height: 800,
+    minWidth: 950,
+    minHeight: 630,
     icon: Path.join(__dirname, '..', 'client', 'assets', 'logo-silex.png'),
     titleBarStyle: 'hidden',
-    frame: false,
     webPreferences: {
       nodeIntegration: false,
       // Needed by CE callback
@@ -72,4 +85,9 @@ app.on('ready', () => {
   }, (error) => {
     if (error) console.error('Failed to register protocol')
   });
+});
+
+// Remove menu bar
+app.on('browser-window-created',function(e,window) {
+  window.setMenu(null);
 });

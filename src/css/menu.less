@@ -17,9 +17,14 @@
   }
   .on {
     opacity: 1;
+    color: white;
+  }
+  .selected {
+    color: @silexlightblue;
   }
   .icon:hover {
     .on();
+    color: @silexlightblue;
   }
   div.icon, a.icon, span.icon {
     font-size: large;
@@ -216,8 +221,7 @@ body .silex-menu {
     font-size: 27px;
   }
 }
-body .silex-menu .mobile {.silex-icons-menu .off}
-body .silex-menu .mobile:hover {.silex-icons-menu .on}
-body.mobile-mode .silex-menu .mobile {.silex-icons-menu .on}
-body.mobile-mode .silex-menu .desktop {.silex-icons-menu .off}
-body.mobile-mode .silex-menu .desktop:hover {.silex-icons-menu .on}
+body .silex-menu .mobile {.silex-icons-menu .on}
+body .silex-menu .desktop {.silex-icons-menu .on; .silex-icons-menu .selected}
+body.mobile-mode .silex-menu .mobile {.silex-icons-menu .on; .silex-icons-menu .selected}
+body.mobile-mode .silex-menu .desktop {.silex-icons-menu .on}
