@@ -112,20 +112,6 @@ module.exports = class SilexRouter extends express.Router {
       require(Path.join(__dirname, 'silex_electron'));
     }
 
-    // SSL
-    // force ssl if the env var SILEX_FORCE_HTTPS is set
-    if(process.env.SILEX_FORCE_HTTPS) {
-      console.log('force SSL is active (env var SILEX_FORCE_HTTPS is set)');
-      var forceSSL = require('express-force-ssl');
-      this.set('forceSSLOptions', {
-        trustXFPHeader: !!process.env.SILEX_FORCE_HTTPS_TRUST_XFP_HEADER
-      });
-      this.use(forceSSL);
-    }
-    else {
-      console.log('force SSL NOT active (env var SILEX_FORCE_HTTPS is NOT set)');
-    }
-
     // add static folders to serve silex files
     this.use('/', serveStatic(Path.join(__dirname, '../../dist/client')));
     // debug silex, for js source map
