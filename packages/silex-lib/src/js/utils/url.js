@@ -23,22 +23,17 @@ goog.require('goog.net.XhrIo');
 
 
 /**
- * cleanup URLs and remove double slashes which are sometimes added by cloud explorer / unifile
- * FIXME: fix the issue in cloud explorer/unifile
+ * set a field in a FileInfo object, and update the `url` attribute accordingly
+ * @param {?FileInfo} fileInfo
+ * @param {Object} attributes a partial FileInfo object
+ * @return {?FileInfo}
  */
-silex.utils.Url.workaroundCE = function(url) {
-  // cleanup: replace all groups of slashes by one slash, except when it has http(s):// or url(' in front of it
-  // this is to handle the cases like ../../..//sites-silex/ or api/v1.0/dropbox/get//sites-silex/
-  // this is a workaround for cloud explorer
-  url = url.replace(/(.)(:|'|"|\(|)(\/\/+)/, (match, p1, p2, p3) => {
-      // case where /(//...///) do not have : or ' or " or ... in just before it
-      if (p2 === '') {
-        return p1 + '/';
-      }
-      // this is not a bug, not like ../../..//sites-silex/
-      return match;
-  }, 'g');
-  return url;
+silex.utils.Url.updateFileInfo = function(fileInfo, attributes) {
+  if(!fileInfo) return null;
+  const fileInfoNew = Object.assign({}, fileInfo, attributes);
+  return /** @type {FileInfo} */ (Object.assign({}, fileInfoNew, {
+    'url': silex.utils.Url.getBaseUrl() + fileInfoNew.service + '/get/' + fileInfoNew.path,
+  }));
 }
 
 
@@ -253,8 +248,6 @@ silex.utils.Url.getRelativePath = function(url, base) {
     url.indexOf('data:') === 0) {
     return url;
   }
-  base = silex.utils.Url.workaroundCE(base);
-  url = silex.utils.Url.workaroundCE(url);
   // get an array out of the URLs
   var urlArr = url.split('/');
   var baseArr = base.split('/');
@@ -306,8 +299,6 @@ silex.utils.Url.getAbsolutePath = function(rel, base) {
     // do not convert to absolute the anchors or protocol agnostic urls nor data: images
     return rel;
   }
-  base = silex.utils.Url.workaroundCE(base);
-  rel = silex.utils.Url.workaroundCE(rel);
   return goog.Uri.resolve(base, rel).toString();
 };
 
@@ -319,11 +310,6 @@ silex.utils.Url.getAbsolutePath = function(rel, base) {
  * @return  {boolean} true if the file has an extension which is in the array
  */
 silex.utils.Url.checkFileExt = function(fileName, extArray) {
-  var ext = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
-  for (let idx in extArray) {
-    if (extArray[idx] === ext) {
-      return true;
-    }
-  }
-  return false;
+  const ext = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
+  return extArray.findIndex(function(str) { return str === ext; }) >= 0;
 };

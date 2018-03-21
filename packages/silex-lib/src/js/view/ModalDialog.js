@@ -1,4 +1,3 @@
-
 /**
  * Silex, live web creation
  * http://projects.silexlabs.org/?/silex/
@@ -21,17 +20,15 @@ goog.provide('silex.view.ModalDialog');
 
 const HIDE_DIALOG_CLASS_NAME = 'silex-hide-dialog';
 const MODAL_DIALOG_CLASS_NAME = 'silex-modal-dialog';
-const HIDE_DIALOGS_BACKGROUND = 'silex-hide-dialog-background';
 
 /**
  * implement a "modal" behavior to hide and show dialogs
  * there is a static method to open dialogs by name
- * @type {silex.view.ModalDialog}
+ * @class {silex.view.ModalDialog}
  */
-silex.view.ModalDialog = class {
+class ModalDialog {
 
   /**
-   * @constructor
    * @param  {{name:(string|undefined), element:Element, onOpen:!function(?Object=), onClose:!function()}} options
    */
   constructor(options) {
@@ -48,46 +45,24 @@ silex.view.ModalDialog = class {
     else throw 'Modal dialog options missing a "onClose" field';
     // init the static fields
     silex.view.ModalDialog.dialogs = silex.view.ModalDialog.dialogs || {};
-    // init css classes
-    this.element.classList.add(MODAL_DIALOG_CLASS_NAME);
-    if(!silex.view.ModalDialog.currentDialog) {
-      document.body.classList.add(HIDE_DIALOGS_BACKGROUND);
-    }
     // set the flag
     this.isOpen = false;
     // set the css classes
+    this.element.classList.add(MODAL_DIALOG_CLASS_NAME);
     this.element.classList.add(HIDE_DIALOG_CLASS_NAME);
     // close button
     const closeBtn = this.element.querySelector('.close-btn');
     if(closeBtn) closeBtn.onclick = e => this.close();
-  }
-
-
-  /**
-   * open a dialog by name
-   * @param  {string} name
-   * @param  {?Object=} args
-   */
-  static open(name, args = null) {
-    if(silex.view.ModalDialog.dialogs && silex.view.ModalDialog.dialogs[name]) {
-      silex.view.ModalDialog.dialogs[name].open(args);
-    }
-    else {
-      console.error('could not open dialog', name, silex.view.ModalDialog.dialogs);
-    }
-  }
-
-
-  /**
-   * close a dialog by name
-   */
-  static close() {
-    if(silex.view.ModalDialog.currentDialog) {
-      silex.view.ModalDialog.currentDialog.close();
-    }
-    else {
-      console.error('could not close dialog, there is no dialog opened');
-    }
+    // handle escape key
+    let keyHandler = new goog.events.KeyHandler(document);
+    goog.events.listen(keyHandler, 'key',
+      (e) => {
+        if(this.isOpen && e.keyCode === goog.events.KeyCodes.ESC) {
+          this.close();
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      });
   }
 
 
@@ -106,7 +81,6 @@ silex.view.ModalDialog = class {
       silex.view.ModalDialog.currentDialog = this;
       // css classes to show the dialog and the background
       this.element.classList.remove(HIDE_DIALOG_CLASS_NAME);
-      document.body.classList.remove(HIDE_DIALOGS_BACKGROUND);
       // call the callback
       this.onOpen(args);
     }
@@ -122,7 +96,6 @@ silex.view.ModalDialog = class {
       this.isOpen = false;
       silex.view.ModalDialog.currentDialog = null;
       this.element.classList.add(HIDE_DIALOG_CLASS_NAME);
-      document.body.classList.add(HIDE_DIALOGS_BACKGROUND);
       this.onClose();
     }
     else {
@@ -130,3 +103,32 @@ silex.view.ModalDialog = class {
     }
   }
 }
+
+
+/**
+ * open a dialog by name
+ * @param  {string} name
+ * @param  {?Object=} args
+ */
+silex.view.ModalDialog.open = function(name, args = null) {
+  if(silex.view.ModalDialog.dialogs && silex.view.ModalDialog.dialogs[name]) {
+    silex.view.ModalDialog.dialogs[name].open(args);
+  }
+  else {
+    console.error('could not open dialog', name, silex.view.ModalDialog.dialogs);
+  }
+};
+
+
+/**
+ * close a dialog by name
+ */
+silex.view.ModalDialog.close = function() {
+  if(silex.view.ModalDialog.currentDialog) {
+    silex.view.ModalDialog.currentDialog.close();
+  }
+  else {
+    console.error('could not close dialog, there is no dialog opened');
+  }
+};
+

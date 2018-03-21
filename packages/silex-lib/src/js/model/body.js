@@ -125,7 +125,12 @@ silex.model.Body.prototype.getSelection = function() {
   var elements = goog.dom.getElementsByClass(silex.model.Element.SELECTED_CLASS_NAME, this.getBodyElement());
   if (!elements || elements.length === 0) {
     // default, return the body
-    return [this.getBodyElement()];
+    const bodyElement = this.getBodyElement();
+    if(!bodyElement) {
+      console.warn('Could not get body element because it is not created yet.');
+      return [];
+    }
+    return [bodyElement];
   }
   // build the result array
   var res = [];
@@ -163,6 +168,7 @@ silex.model.Body.prototype.setSelection = function(selectedElements) {
   this.view.stage.redraw(selectedElements, pages, page);
   this.view.contextMenu.redraw(selectedElements, pages, page);
   this.view.breadCrumbs.redraw(selectedElements, pages, page);
+  this.view.htmlEditor.setSelection(selectedElements);
 };
 
 

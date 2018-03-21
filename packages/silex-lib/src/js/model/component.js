@@ -320,20 +320,29 @@ silex.model.Component.prototype.edit = function(element) {
         'onBrowse': (e, cbk) => {
           e.preventDefault();
           // browse with CE
-          this.view.settingsDialog.controller.settingsDialogController.browse(
-            'prodotype.browse',
-            { },
-            (url, blob) => {
+          const promise = this.view.fileExplorer.openFile();
+          // add tracking and undo/redo checkpoint
+          this.view.settingsDialog.controller.settingsDialogController.track(promise, 'prodotype.browse');
+          this.view.settingsDialog.controller.settingsDialogController.undoredo(promise);
+          // handle the result
+          promise.then(fileInfo => {
+            if(fileInfo) {
               cbk([{
-                'url': url, // not blob.url because it misses a "/" at the beginning
-                'lastModified': blob.lastModified, // not in blob?
-                'lastModifiedDate': blob.lastModifiedDate, // not in blob?
-                'name': blob.filename,
-                'size': blob.size,
-                'type': blob.type, // not in blob?
+                'url': fileInfo.url,
+                'lastModified': fileInfo.lastModified,
+                'lastModifiedDate': new Date(fileInfo.lastModified),
+                'name': fileInfo.name,
+                'size': fileInfo.size,
+                'type': fileInfo.type,
               }]);
-            });
-        },
+            }
+          })
+          .catch(error => {
+            silex.utils.Notification.notifyError(
+              'Error: I could not select the file. <br /><br />' +
+              (error.message || ''));
+          });
+        }
       });
   }
 };

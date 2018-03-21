@@ -122,7 +122,7 @@ silex.controller.ControllerBase.prototype.undoCheckPoint = function() {
   this.undoCheckpointInvalidationManager.callWhenReady(() => {
     silex.controller.ControllerBase.redoHistory = [];
     silex.controller.ControllerBase.getStatePending++;
-    this.getState((state) => {
+    this.getStateAsync((state) => {
       silex.controller.ControllerBase.getStatePending--;
       // if the previous state was different
       if (silex.controller.ControllerBase.undoHistory.length === 0 ||
@@ -141,30 +141,33 @@ silex.controller.ControllerBase.prototype.undoCheckPoint = function() {
 
 /**
  * build a state object for undo/redo
- * asyn operation if opt_cbk is provided
- * @param {?function(silex.types.UndoItem)=} opt_cbk
- * @return {silex.types.UndoItem|null}
+ * async operation to improve performance
+ * @param {!function(silex.types.UndoItem)} opt_cbk
  */
-silex.controller.ControllerBase.prototype.getState = function(opt_cbk) {
-  if(opt_cbk) {
-    this.model.file.getHtmlAsync((html) => {
-      opt_cbk({
-        html:html,
-        page: this.model.page.getCurrentPage(),
-        scrollX: this.view.stage.getScrollX(),
-        scrollY: this.view.stage.getScrollY()
-      });
-    });
-  }
-  else {
-    return {
-      html: this.model.file.getHtml(),
+silex.controller.ControllerBase.prototype.getStateAsync = function(opt_cbk) {
+  this.model.file.getHtmlAsync((html) => {
+    opt_cbk({
+      html:html,
       page: this.model.page.getCurrentPage(),
       scrollX: this.view.stage.getScrollX(),
       scrollY: this.view.stage.getScrollY()
-    };
-  }
-  return null;
+    });
+  });
+};
+
+
+
+/**
+ * build a state object for undo/redo
+ * @return {silex.types.UndoItem}
+ */
+silex.controller.ControllerBase.prototype.getState = function() {
+  return {
+    html: this.model.file.getHtml(),
+    page: this.model.page.getCurrentPage(),
+    scrollX: this.view.stage.getScrollX(),
+    scrollY: this.view.stage.getScrollY()
+  };
 };
 
 
@@ -196,32 +199,24 @@ silex.controller.ControllerBase.prototype.undoReset = function() {
  */
 silex.controller.ControllerBase.prototype.browseBgImage = function() {
   this.tracker.trackAction('controller-events', 'request', 'selectBgImage', 0);
-
-  var errCbk = function(error) {
+  // open the file browser
+  this.view.fileExplorer.openFile(FileExplorer.IMAGE_EXTENSIONS)
+  .then(fileInfo => {
+    if(fileInfo) {
+      // update the model
+      var element = this.model.body.getSelection()[0];
+      // undo checkpoint
+      this.undoCheckPoint();
+      // load the image
+      this.model.element.setBgImage(element, fileInfo.url);
+      // tracking
+      this.tracker.trackAction('controller-events', 'success', 'selectBgImage', 1);
+    }
+  })
+  .catch(error => {
     silex.utils.Notification.notifyError('Error: I could not load the image. \n' + (error.message || ''));
     this.tracker.trackAction('controller-events', 'error', 'selectBgImage', -1);
-  };
-
-  var successCbk = function(url) {
-    // update the model
-    var element = this.model.body.getSelection()[0];
-    // absolute url only on stage
-    var baseUrl = silex.utils.Url.getBaseUrl();
-    url = silex.utils.Url.getAbsolutePath(url, baseUrl);
-    // undo checkpoint
-    this.undoCheckPoint();
-    // load the image
-    this.model.element.setBgImage(element, url);
-    // tracking
-    this.tracker.trackAction('controller-events', 'success', 'selectBgImage', 1);
-  };
-
-  // open the file browser
-  this.view.fileExplorer.openDialog(
-      goog.bind(successCbk, this),
-      { 'mimetypes': ['image/jpeg', 'image/png', 'image/gif'] },
-      goog.bind(errCbk, this)
-  );
+  });
 };
 
 
@@ -230,33 +225,30 @@ silex.controller.ControllerBase.prototype.browseBgImage = function() {
  */
 silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
   this.tracker.trackAction('controller-events', 'request', 'insert.image', 0);
-  this.view.fileExplorer.openDialog(
-      goog.bind(function(url) {
-        // absolute url only on stage
-        var baseUrl = silex.utils.Url.getBaseUrl();
-        url = silex.utils.Url.getAbsolutePath(url, baseUrl);
-        // undo checkpoint
-        this.undoCheckPoint();
-        // create the element
-        let img = this.addElement(silex.model.Element.TYPE_IMAGE);
-        // load the image
-        this.model.element.setImageUrl(img, url,
-            goog.bind(function(element, imgElement) {
-              this.tracker.trackAction('controller-events', 'success', 'insert.image', 1);
-            }, this),
-            goog.bind(function(element, message) {
-              silex.utils.Notification.notifyError('Error: I did not manage to load the image. \n' + message);
-              this.model.element.removeElement(element);
-              this.tracker.trackAction('controller-events', 'error', 'insert.image', -1);
-            }, this)
-        );
-      }, this),
-      { 'mimetypes': ['image/jpeg', 'image/png', 'image/gif'] },
-      goog.bind(function(error) {
-        silex.utils.Notification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''));
-        this.tracker.trackAction('controller-events', 'error', 'insert.image', -1);
-      }, this)
-  );
+  this.view.fileExplorer.openFile(FileExplorer.IMAGE_EXTENSIONS)
+  .then(fileInfo => {
+    if(fileInfo) {
+      // undo checkpoint
+      this.undoCheckPoint();
+      // create the element
+      let img = this.addElement(silex.model.Element.TYPE_IMAGE);
+      // load the image
+      this.model.element.setImageUrl(img, fileInfo.url,
+        (element, imgElement) => {
+          this.tracker.trackAction('controller-events', 'success', 'insert.image', 1);
+        },
+        (element, message) => {
+          silex.utils.Notification.notifyError('Error: I did not manage to load the image. \n' + message);
+          this.model.element.removeElement(element);
+          this.tracker.trackAction('controller-events', 'error', 'insert.image', -1);
+        }
+      );
+    }
+  })
+  .catch(error => {
+    silex.utils.Notification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''));
+    this.tracker.trackAction('controller-events', 'error', 'insert.image', -1);
+  });
   this.view.workspace.redraw(this.view);
 };
 
@@ -412,11 +404,8 @@ silex.controller.ControllerBase.prototype.checkElementVisibility = function(elem
   if (parentPage !== null) {
     // get all the pages
     var pages = this.model.page.getPagesForElement(element);
-    for (let idx in pages) {
-      // remove the component from the page
-      var pageName = pages[idx];
-      this.model.page.removeFromPage(element, pageName);
-    }
+    // remove the components from the page
+    pages.forEach(pageName => this.model.page.removeFromPage(element, pageName));
   }
 };
 
@@ -490,41 +479,45 @@ silex.controller.ControllerBase.prototype.toggleMobileMode = function() {
 
 /**
  * save or save-as
- * @param {?string=} opt_url
+ * @param {?FileInfo=} opt_fileInfo
  * @param {?function()=} opt_cbk
- * @param {?function(Object)=} opt_errorCbk
+ * @param {?function(*)=} opt_errorCbk
  */
-silex.controller.ControllerBase.prototype.save = function(opt_url, opt_cbk, opt_errorCbk) {
+silex.controller.ControllerBase.prototype.save = function(opt_fileInfo, opt_cbk, opt_errorCbk) {
   this.tracker.trackAction('controller-events', 'request', 'file.save', 0);
-  if (opt_url && !this.model.file.isTemplate) {
-    this.doSave(opt_url, opt_cbk, opt_errorCbk);
+  if (opt_fileInfo && !this.model.file.isTemplate) {
+    this.doSave(/** @type {FileInfo} */ (opt_fileInfo), opt_cbk, opt_errorCbk);
   }
   else {
     // choose a new name
-    this.view.fileExplorer.saveAsDialog(
-        goog.bind(function(url) {
-          this.doSave(url, opt_cbk, opt_errorCbk);
-        }, this),
-        {'mimetype': 'text/html'},
-        goog.bind(function(error) {
-          this.tracker.trackAction('controller-events', 'error', 'file.save', -1);
-          if (opt_errorCbk) {
-            opt_errorCbk(error);
-          }
-        }, this));
+    this.view.fileExplorer.saveAs('editable.html', FileExplorer.HTML_EXTENSIONS)
+    .then(fileInfo => {
+      if(fileInfo != null) {
+        this.doSave(/** @type {FileInfo} */ (fileInfo), opt_cbk, opt_errorCbk);
+      }
+      else {
+        console.log('user aborted save as');
+      }
+    })
+    .catch(error => {
+      this.tracker.trackAction('controller-events', 'error', 'file.save', -1);
+      if (opt_errorCbk) {
+        opt_errorCbk(error);
+      }
+    });
   }
 };
 
 
 /**
  * save or save-as
- * @param {string} url
+ * @param {FileInfo} fileInfo
  * @param {?function()=} opt_cbk
  * @param {?function(Object)=} opt_errorCbk
  */
-silex.controller.ControllerBase.prototype.doSave = function(url, opt_cbk, opt_errorCbk) {
+silex.controller.ControllerBase.prototype.doSave = function(fileInfo, opt_cbk, opt_errorCbk) {
   // urls will be relative to the html file url
-  this.model.file.setUrl(url);
+  this.model.file.fileInfo = fileInfo;
   // relative urls only in the files
   var rawHtml = this.model.file.getHtml();
   // look for bug of firefox inserting quotes in url("")
@@ -539,14 +532,14 @@ silex.controller.ControllerBase.prototype.doSave = function(url, opt_cbk, opt_er
   }
   // runtime check for a recurrent error
   // check that there is no more of the basUrl in the Html
-  if (this.url && rawHtml.indexOf(this.url) >= 0) {
+  if (this.fileInfo && rawHtml.indexOf(this.fileInfo.url) >= 0) {
     console.warn('Base URL remains in the HTML, there is probably an error in the convertion to relative URL process');
     // log this (QA)
     this.tracker.trackAction('controller-events', 'warning', 'file.save.corrupted', -1);
   }
   // save to file
   this.model.file.saveAs(
-      url,
+      fileInfo,
       rawHtml,
       goog.bind(function() {
         this.tracker.trackAction('controller-events', 'success', 'file.save', 1);
@@ -578,10 +571,10 @@ silex.controller.ControllerBase.prototype.fileOperationSuccess = function(opt_me
     // update fonts
     this.refreshFonts();
     // update dialogs
-    this.view.jsEditor.closeEditor();
-    this.view.cssEditor.closeEditor();
-    this.view.htmlEditor.closeEditor();
-    this.view.settingsDialog.closeEditor();
+    this.view.jsEditor.close();
+    this.view.cssEditor.close();
+    this.view.htmlEditor.close();
+    this.view.settingsDialog.redraw();
     this.view.contextMenu.redraw();
     this.view.breadCrumbs.redraw();
   }

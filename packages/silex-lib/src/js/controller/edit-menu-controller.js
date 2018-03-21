@@ -52,9 +52,9 @@ silex.controller.EditMenuController.prototype.undo = function() {
   this.undoredoInvalidationManager.callWhenReady(() => {
     if (silex.controller.ControllerBase.getStatePending === 0 &&
       silex.controller.ControllerBase.undoHistory.length > 0) {
-      var state = this.getState();
+      const state = this.getState();
       silex.controller.ControllerBase.redoHistory.push(state);
-      var prevState = silex.controller.ControllerBase.undoHistory.pop();
+      const prevState = silex.controller.ControllerBase.undoHistory.pop();
       this.restoreState(prevState);
     }
     else {
@@ -71,9 +71,9 @@ silex.controller.EditMenuController.prototype.redo = function() {
   this.model.body.setSelection([]);
   this.undoredoInvalidationManager.callWhenReady(() => {
     if (silex.controller.ControllerBase.redoHistory.length > 0) {
-      var state = this.getState();
+      const state = this.getState();
       silex.controller.ControllerBase.undoHistory.push(state);
-      var prevState = silex.controller.ControllerBase.redoHistory.pop();
+      const prevState = silex.controller.ControllerBase.redoHistory.pop();
       this.restoreState(prevState);
     }
   });
@@ -140,9 +140,9 @@ silex.controller.EditMenuController.prototype.recursiveCopy = function(element) 
   };
   // case of a container, handle its children
   if (this.model.element.getType(res.element) === silex.model.Element.TYPE_CONTAINER) {
-    let len = res.element.childNodes.length;
+    const len = res.element.childNodes.length;
     for (let idx = 0; idx < len; idx++) {
-      let el = res.element.childNodes[idx];
+      const el = /** @type {Element} */ (res.element.childNodes[idx]);
       if (el.nodeType === 1 && this.model.element.getType(el) !== null) {
         res.children.push(this.recursiveCopy(el));
       }
@@ -255,7 +255,7 @@ silex.controller.EditMenuController.prototype.editElement = function(opt_element
         bgColor = [255, 255, 255, 255];
       }
       // open the text editor with the same bg color as the element
-      this.view.textEditor.openEditor();
+      this.view.textEditor.open();
       this.view.textEditor.setValue(this.model.element.getInnerHtml(element));
       this.view.textEditor.setElementClassNames(element.className);
       this.view.textEditor.setBackgroundColor(goog.color.rgbToHex(
@@ -265,68 +265,22 @@ silex.controller.EditMenuController.prototype.editElement = function(opt_element
           ));
       break;
     case silex.model.Element.TYPE_HTML:
-      this.view.htmlEditor.openEditor();
-      this.view.htmlEditor.setValue(this.model.element.getInnerHtml(element));
+      this.view.htmlEditor.open();
+      this.view.htmlEditor.setSelection([element]);
       break;
     case silex.model.Element.TYPE_IMAGE:
-      this.view.fileExplorer.openDialog(
-          goog.bind(function(url) {
-            // absolute url only on stage
-            var baseUrl = silex.utils.Url.getBaseUrl();
-            url = silex.utils.Url.getAbsolutePath(url, baseUrl);
-            // load the image
-            this.model.element.setImageUrl(element, url);
-          }, this),
-          { 'mimetypes': ['image/jpeg', 'image/png', 'image/gif'] },
-          goog.bind(function(error) {
-            silex.utils.Notification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''));
-          }, this)
-      );
+      this.view.fileExplorer.openFile(FileExplorer.IMAGE_EXTENSIONS)
+      .then(blob => {
+        if(blob) {
+          // load the image
+          this.model.element.setImageUrl(element, blob.url);
+        }
+      })
+      .catch(error => {
+        silex.utils.Notification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''));
+      });
       break;
   }
-};
-
-
-/**
- * get the previous element in the DOM, which is a Silex element
- * @see   {silex.model.element}
- * @param {Element} element
- * @return {?Element}
- */
-silex.controller.EditMenuController.prototype.getPreviousElement = function(element) {
-  let len = element.parentNode.childNodes.length;
-  let res = null;
-  for (let idx = 0; idx < len; idx++) {
-    let el = element.parentNode.childNodes[idx];
-    if (el.nodeType === 1 && this.model.element.getType(el) !== null) {
-      if (el === element) {
-        return res;
-      }
-      res = el;
-    }
-  }
-  return null;
-};
-
-
-/**
- * get the previous element in the DOM, which is a Silex element
- * @see   {silex.model.element}
- * @param {Element} element
- * @return {?Element}
- */
-silex.controller.EditMenuController.prototype.getNextElement = function(element) {
-  let prev = null;
-  for (let idx = element.parentNode.childNodes.length - 1; idx >= 0; idx--) {
-    let el = element.parentNode.childNodes[idx];
-    if (el.nodeType === 1 && this.model.element.getType(el) !== null) {
-      if (el === element) {
-        return prev;
-      }
-      prev = el;
-    }
-  }
-  return null;
 };
 
 

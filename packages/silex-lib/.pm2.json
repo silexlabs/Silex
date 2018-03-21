@@ -5,8 +5,12 @@
     "watch"       : "dist/server/",
     "env": {
       "NODE_ENV": "production",
-      "GITHUB_CLIENT_ID": "a173a2e4af98211d94c9",
-      "GITHUB_CLIENT_SECRET": "1fce6f8127611c44bafaa19c3843d890cbd479df"
+      "DROPBOX_CLIENT_ID": "ckixgyo62obeo05",
+      "DROPBOX_CLIENT_SECRET": "ptg6u5iw7gs6r6o",
+      "GITHUB_CLIENT_ID": "f124e4148bf9d633d58b",
+      "GITHUB_CLIENT_SECRET": "1a8fcb93d5d0786eb0a16d81e8c118ce03eefece",
+      "ENABLE_FTP": true,
+      "ENABLE_SFTP": true
     }
   }]
 }

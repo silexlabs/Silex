@@ -21,9 +21,7 @@ goog.provide('silex.view.PropertyTool');
 
 goog.require('goog.array');
 goog.require('goog.cssom');
-goog.require('goog.editor.Field');
 goog.require('goog.object');
-goog.require('goog.ui.Checkbox');
 goog.require('goog.ui.TabBar');
 goog.require('silex.view.pane.BgPane');
 goog.require('silex.view.pane.BorderPane');
@@ -162,14 +160,13 @@ silex.view.PropertyTool.prototype.buildUi = function() {
   const expandables = this.element.querySelectorAll('.expandable legend');
   for(let idx=0; idx<expandables.length; idx++) {
     const el = expandables[idx];
+    const lsKey = 'silex-expand-property-' + idx;
+    const isExpand = window.localStorage.getItem(lsKey) === 'true';
+    if(isExpand) this.togglePanel(el);
     el.onclick = e => {
-      el.parentNode.classList.toggle('expanded');
-      const caret = el.querySelector('.fa-inverse');
-      if(caret) {
-        caret.classList.toggle('fa-caret-right');
-        caret.classList.toggle('fa-caret-down');
-      }
-    }
+      this.togglePanel(el);
+      window.localStorage.setItem(lsKey, el.parentNode.classList.contains('expanded').toString());
+    };
   }
 
   // tabs
@@ -177,6 +174,19 @@ silex.view.PropertyTool.prototype.buildUi = function() {
   const paramsTab = this.element.querySelector('.params');
   designTab.addEventListener('click', () => this.openDesignTab());
   paramsTab.addEventListener('click', () => this.openParamsTab());
+};
+
+
+/**
+ * toggle a property panel
+ */
+silex.view.PropertyTool.prototype.togglePanel = function(el) {
+  el.parentNode.classList.toggle('expanded');
+  const caret = el.querySelector('.fa-inverse');
+  if(caret) {
+    caret.classList.toggle('fa-caret-right');
+    caret.classList.toggle('fa-caret-down');
+  }
 };
 
 

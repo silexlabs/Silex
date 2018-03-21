@@ -35,158 +35,73 @@ goog.addSingletonGetter(silex.service.SilexTasks);
 
 /**
  * publish a website to a given folder
- * @param {string} path
+ * @param {FileInfo} folder
  * @param {string} html
  * @param {string} css
  * @param {string} js
  * @param {Array.<{url: string, destPath: string, srcPath: string}>} files
- * @param {function({success: boolean})} cbk to receive the json response
+ * @param {function()} cbk called when success
  * @param {function(string)=} opt_errCbk to receive the json response
  */
-silex.service.SilexTasks.prototype.publish = function(path, html, css, js, files, cbk, opt_errCbk) {
-  // check inputs
-  if (goog.isNull(path) || goog.isNull(html) || goog.isNull(css) || goog.isNull(js) || goog.isNull(files)) {
-    console.error('Param path, html, css, js or files missing');
-    if (opt_errCbk) {
-      opt_errCbk('Param path, html, css, js or files missing');
-    }
-    return;
-  }
-  let url = '/tasks/publish';
-  let qd = new goog.Uri.QueryData();
-  qd.add('path', path);
-  qd.add('html', html);
-  qd.add('css', css);
-  qd.add('js', js);
-  qd.add('files', JSON.stringify(files));
-  goog.net.XhrIo.send(url, function(e) {
-    // success of the request
-    let xhr = e.target;
-    if (xhr.isSuccess()) {
-      let json = xhr.getResponseJson();
-      if (json.success) {
-        if (cbk) {
-          cbk(json);
-        }
-      }
-      else {
-        let message = json.code || json.message;
-        console.error('Error in while trying to connect with back end', message, xhr, xhr.isSuccess(), xhr.getStatus(), xhr.headers.toString());
-        if (opt_errCbk) {
-          opt_errCbk(message);
-        }
-      }
-    }
-    else {
-      let message = xhr.getLastError();
-      console.error('Error in while trying to connect with back end', xhr.getLastError(), xhr.getLastErrorCode(), xhr.isSuccess(), xhr.getStatus(), xhr.headers);
-      if (opt_errCbk) {
-        opt_errCbk(message);
-      }
-    }
-  }, 'POST', qd.toString());
+silex.service.SilexTasks.prototype.publish = function(folder, html, css, js, files, cbk, opt_errCbk) {
+  this.callServer('/tasks/publish', JSON.stringify({
+    'folder': folder,
+    'html': html,
+    'css': css,
+    'js': js,
+    'files': files,
+  }), 'POST', json => cbk(), opt_errCbk);
 };
 
 
 /**
  * get the state of the current publication
- * @param {function({success: boolean})} cbk to receive the json response
+ * @param {function({message:string, stop:boolean})} cbk to receive the json response
  * @param {function(string)=} opt_errCbk to receive the json response
  */
 silex.service.SilexTasks.prototype.publishState = function(cbk, opt_errCbk) {
-  let url = '/tasks/publishState';
-  let qd = new goog.Uri.QueryData();
-  goog.net.XhrIo.send(url, function(e) {
+  // FIXME: use standard XMLHttpRequest instead of closure lib
+  this.callServer('/tasks/publishState', '', 'GET', cbk, opt_errCbk);
+};
+
+
+/**
+ * @param {string} url
+ * @param {string} data
+ * @param {string} method
+ * @param cbk to receive the json response
+ * @param {function(string)=} opt_errCbk to receive the json response
+ */
+silex.service.SilexTasks.prototype.callServer = function(url, data, method, cbk, opt_errCbk) {
+  const oReq = new XMLHttpRequest();
+  oReq.addEventListener('load', e => {
+    /** @type {string} */
+    let message = oReq.responseText;
+    /** @type {Object} */
+    let json = null;
+    try {
+      json = /** @type {Object} */ (JSON.parse(oReq.responseText));
+      message = /** @type {string} */ (json.message);
+    } catch(e) {} // may be an empty response or a "Internal Server Error" string
     // success of the request
-    let xhr = e.target;
-    if (xhr.isSuccess()) {
-      let json = xhr.getResponseJson();
+    if(oReq.status === 200) {
       cbk(json);
     }
     else {
-      let message = xhr.getLastError();
-      console.error('Error in while trying to connect with back end', xhr.getLastError(), xhr.getLastErrorCode(), xhr.isSuccess(), xhr.getStatus(), xhr.headers);
+      console.error('Error while trying to connect with back end', message);
       if (opt_errCbk) {
-        opt_errCbk(message);
+        opt_errCbk(json ? json.message : message);
       }
     }
-  }, 'POST', qd.toString());
+  });
+  oReq.addEventListener('error', e => {
+    console.error('could not load website', e);
+    if (opt_errCbk) {
+      opt_errCbk('Network error, please check your internet connection or try again later.');
+    }
+  });
+  oReq.open(method, url);
+  oReq.setRequestHeader('Content-Type', 'application/json');
+  oReq.send(data);
 };
 
-
-/**
- * create a temp link on the server
- * @param {string} path
- * @param {function(string)} cbk
- * @param {?function(string)=} opt_errCbk
- */
-silex.service.SilexTasks.prototype.getTempLink = function(path, cbk, opt_errCbk) {
-  let url = '/tasks/getTempLink?path=' + path;
-  goog.net.XhrIo.send(url, function(e) {
-    // success of the request
-    let xhr = e.target;
-    if (xhr.isSuccess()) {
-      let jsonString = xhr.getResponse();
-      /** @type {?UnifileResponse} */
-      let json = null;
-      if (jsonString) {
-        json = /** @type {UnifileResponse} */ (JSON.parse(jsonString));
-      }
-      if (jsonString && json && json.success === true && json.tempLink) {
-        if (cbk) {
-          cbk(json.tempLink);
-        }
-      }
-      else {
-        console.error('could not get temp link for resource', xhr, xhr.isSuccess(), xhr.getStatus(), xhr.headers.toString());
-        if (opt_errCbk) {
-          opt_errCbk('could not get temp link for resource');
-        }
-      }
-    }
-    else {
-      let message = xhr.getLastError();
-      console.error(xhr.getLastError(), xhr.getLastErrorCode(), xhr.isSuccess(), xhr.getStatus(), xhr.headers);
-      if (opt_errCbk) {
-        opt_errCbk(message);
-      }
-    }
-  }, 'GET');
-};
-
-
-/**
- * remove the temp link on the server
- * @param {string} name
- * @param {?function(UnifileResponse)=} opt_cbk
- * @param {?function(string)=} opt_errCbk
- */
-silex.service.SilexTasks.prototype.disposeTempLink = function(name, opt_cbk, opt_errCbk) {
-  let url = '/tasks/disposeTempLink?name=' + name;
-  goog.net.XhrIo.send(url, function(e) {
-    // success of the request
-    let xhr = e.target;
-    if (xhr.isSuccess()) {
-      let json = /** @type {UnifileResponse} */ (xhr.getResponseJson());
-      if (json.success === true) {
-        if (opt_cbk) {
-          opt_cbk(json);
-        }
-      }
-      else {
-        let message = /** @type {string} */ (json.code || json.message);
-        console.error(message, xhr, xhr.isSuccess(), xhr.getStatus(), xhr.headers.toString());
-        if (opt_errCbk) {
-          opt_errCbk(message);
-        }
-      }
-    }
-    else {
-      let message = xhr.getLastError();
-      console.error('Error in while trying to connect with back end', xhr.getLastError(), xhr.getLastErrorCode(), xhr.isSuccess(), xhr.getStatus(), xhr.headers);
-      if (opt_errCbk) {
-        opt_errCbk(message);
-      }
-    }
-  }, 'GET');
-};

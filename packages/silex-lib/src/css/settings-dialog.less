@@ -1,9 +1,4 @@
 .silex-settings-dialog {
-  position: absolute;
-  width: 80%;
-  max-width: 929px;
-  z-index: 110;
-  margin: auto;
   /* ************** */
   /* pane selection */
   /* ************** */
@@ -38,10 +33,8 @@
   /* left pane styles */
   /* **************** */
   .left-pane {
-    width: 25%;
-    height: 100%;
     border-right: 1px solid @silexdarkgrey;
-    float: left;
+    min-width: 210px;
     ul {
       list-style: none;
       margin:0;
@@ -54,48 +47,23 @@
   }
   .dialog a:link, .dialog a:visited {
       color: white;
-    }
-  .dialog {
-    color: white;
-    font-style: normal;
-    font-size: 13px;
-    line-height: normal;
-    max-width: 929px;
-    height: 580px;
-    position: static;
-    margin: auto;
-    background-color: @silexmediumdarkgrey;
-    border-color: @silexdarkgrey;
-    border-style: solid;
-    border-width: 1px;
-    -moz-box-shadow: rgba(0, 0, 0, 0.2) 0 4px 16px 0;
-    -webkit-box-shadow: rgba(0, 0, 0, 0.2) 0 4px 16px 0;
-    box-shadow: rgba(0, 0, 0, 0.2) 0 4px 16px 0;
   }
-  .close-btn {
-    background: url("../assets/goog-ui/close.png") no-repeat center center;
-    width: 30px;
-    display: inline-block;
-    border: 0;
-    padding: 0;
-    margin-right: 15px;
-    margin-right: 10px;
-    height: 30px;
-    cursor: pointer;
-    right: 15px;
-    position: absolute;
+  .dialog {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    a:link, .silex-settings-dialog .dialog a:visited {
+      color: @silexlightergrey;
+    }
   }
   .body {
-    border-top: 1px solid @silexdarkgrey;
     overflow: hidden;
-    height: 524px;
-    width: 100%;
+    display: flex;
   }
   .right-pane {
     overflow-y: auto;
     overflow-x: hidden;
-    height: 524px;
-    width: 74%;
+    flex: 1 1 auto;
     .pane > p {
       margin: 10px;
     }
@@ -119,6 +87,10 @@
           border: 1px solid @silexlightergrey;
           margin: 10px;
           padding: 10px;
+        }
+        input[type="checkbox"] {
+          margin-right: 5px;
+          margin-top: 1px;
         }
       }
     }

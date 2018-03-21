@@ -99,7 +99,7 @@ silex.view.BreadCrumbs.prototype.redraw = function(opt_selectedElements, opt_pag
       ancestors = newAncestors;
     });
     // empty current bread crumbs
-    while(this.element.childNodes.length) this.removeCrumb(this.element.childNodes[0]);
+    while(this.element.childNodes.length) this.removeCrumb(/** @type {HTMLElement} */ (this.element.childNodes[0]));
     // create a button for each ancester
     ancestors.forEach((ancestor) => this.addCrumb(ancestor));
   });

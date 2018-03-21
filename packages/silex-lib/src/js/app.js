@@ -88,7 +88,6 @@ class App {
   /**
    * Entry point of Silex client application
    * create all views and models and controllers
-   * @constructor
    *
    */
   constructor() {
@@ -135,11 +134,6 @@ class App {
     this.view.contextMenu.buildUi();
     this.view.breadCrumbs.buildUi();
     this.view.pageTool.buildUi();
-    this.view.htmlEditor.buildUi();
-    this.view.cssEditor.buildUi();
-    this.view.jsEditor.buildUi();
-    this.view.textEditor.buildUi();
-    this.view.settingsDialog.buildUi();
     this.view.newWebsiteDialog.buildUi();
     this.view.propertyTool.buildUi();
 
@@ -231,38 +225,38 @@ class App {
 
     // HtmlEditor
     var htmlEditorElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-html-editor'));
-    /** @type {silex.view.dialog.HtmlEditor} */
-    var htmlEditor = new silex.view.dialog.HtmlEditor(htmlEditorElement, this.model, this.controller);
+    /** @type {HtmlEditor} */
+    var htmlEditor = new HtmlEditor(htmlEditorElement, this.model, this.controller);
 
     // CssEditor
     var cssEditorElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-css-editor'));
-    /** @type {silex.view.dialog.CssEditor} */
-    var cssEditor = new silex.view.dialog.CssEditor(cssEditorElement, this.model, this.controller);
+    /** @type {CssEditor} */
+    var cssEditor = new CssEditor(cssEditorElement, this.model, this.controller);
 
     // JsEditor
     var jsEditorElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-js-editor'));
-    /** @type {silex.view.dialog.JsEditor} */
-    var jsEditor = new silex.view.dialog.JsEditor(jsEditorElement, this.model, this.controller);
+    /** @type {JsEditor} */
+    var jsEditor = new JsEditor(jsEditorElement, this.model, this.controller);
 
     // TextEditor
     var textEditorElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-text-editor'));
-    /** @type {silex.view.dialog.TextEditor} */
-    var textEditor = new silex.view.dialog.TextEditor(textEditorElement, this.model, this.controller);
+    /** @type {TextEditor} */
+    var textEditor = new TextEditor(textEditorElement, this.model, this.controller);
 
     // SettingsDialog
     var settingsDialogElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-settings-dialog'));
-    /** @type {silex.view.dialog.SettingsDialog} */
-    var settingsDialog = new silex.view.dialog.SettingsDialog(settingsDialogElement, this.model, this.controller);
+    /** @type {SettingsDialog} */
+    var settingsDialog = new SettingsDialog(settingsDialogElement, this.model, this.controller);
 
     // NewWebsiteDialog
     var newWebsiteDialogElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-newwebsite-dialog'));
-    /** @type {silex.view.dialog.NewWebsiteDialog} */
-    var newWebsiteDialog = new silex.view.dialog.NewWebsiteDialog(newWebsiteDialogElement, this.model, this.controller);
+    /** @type {NewWebsiteDialog} */
+    var newWebsiteDialog = new NewWebsiteDialog(newWebsiteDialogElement, this.model, this.controller);
 
     // FileExplorer
     var fileExplorerElement = /** @type {!Element} */ (document.getElementById('silex-file-explorer'));
-    /** @type {silex.view.dialog.FileExplorer} */
-    var fileExplorer = new silex.view.dialog.FileExplorer(fileExplorerElement, this.model, this.controller);
+    /** @type {FileExplorer} */
+    var fileExplorer = new FileExplorer(fileExplorerElement, this.model, this.controller);
 
     // PropertyTool
     var propertyToolElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-property-tool'));

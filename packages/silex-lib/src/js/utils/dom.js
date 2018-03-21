@@ -144,23 +144,23 @@ silex.utils.Dom.removeCacheControl = function(url) {
 /**
  * render a template by duplicating the itemTemplateString and inserting the data in it
  * @param {string} itemTemplateString   the template containing \{\{markers\}\}
- * @param {Array.<string>}  data                 the array of strings conaining the data
+ * @param {Array.<Object>}  data                 the array of strings conaining the data
  * @return {string} the template string with the data in it
  */
 silex.utils.Dom.renderList = function(itemTemplateString, data) {
   var res = '';
   // for each item in data, e.g. each page in the list
-  for (let itemIdx in data) {
+  data.forEach(itemData => {
     // build an item
     var item = itemTemplateString;
     // replace each key by its value
-    for (let key in data[itemIdx]) {
-      var value = data[itemIdx][key];
+    for (let key in itemData) {
+      var value = itemData[key];
       item = item.replace(new RegExp('{{' + key + '}}', 'g'), value);
     }
     // add the item to the rendered template
     res += item;
-  }
+  });
   return res;
 };
 
@@ -170,43 +170,41 @@ silex.utils.Dom.renderList = function(itemTemplateString, data) {
  * get all the files included in the website, and put them into assets/ or js/ or css/
  * the HTML file must be saved somewhere because all URLs are made relative
  * This method uses a temporary iframe to manage the temporary dom
- * @param {string} publicationUrl    the url where to publish to, e.g. /api/1.0/dropbox/exec/put/.../...
- * @param {string} fileUrl    the url of the file being published
+ * @param {FileInfo} publicationFolder    the folder where to publish to
+ * @param {FileInfo} file    the file being published
  * @param {string} html    the html data of the website
- * @param {function({success: boolean})} statusCallback callback to be notified when operation is done, with the json response
+ * @param {function()} statusCallback callback to be notified when operation is done
  * @param {function(string)=} opt_errCbk    callback to be notified of server side errors
  */
-silex.utils.Dom.publish = function(publicationUrl, fileUrl, html, statusCallback, opt_errCbk) {
-  // the file must be saved somewhere because all URLs are made relative
-  if (!fileUrl) {
-    if (opt_errCbk) {
-      opt_errCbk('The file must be saved before I can clean it up for you.');
-    }
-    return;
-  }
+silex.utils.Dom.publish = function(publicationFolder, file, html, statusCallback, opt_errCbk) {
   // get the base url for the provided file url
   // @type {string}
-  var baseUrl = silex.utils.Url.getBaseUrl() + fileUrl.substring(0, fileUrl.lastIndexOf('/'));
+  var baseUrl = silex.utils.Url.getBaseUrl() + file.service + '/get/' + file.path.slice(0, -file.name.length);
+  console.log('publish', publicationFolder, file, baseUrl);
   // create the iframe used to compute temporary dom
-  var iframe = goog.dom.iframe.createBlank(goog.dom.getDomHelper(), 'position: absolute; left: -99999px; ');
-  goog.dom.appendChild(document.body, iframe);
+  var iframe = document.createElement('iframe')
+  iframe.style.display = 'none';
+  document.body.appendChild(iframe);
   // wait untill iframe is ready
   goog.events.listenOnce(iframe, 'load', function(e) {
     // clean up the DOM
-    var contentDocument = goog.dom.getFrameContentDocument(iframe);
-    var cleanedObj = silex.utils.DomCleaner.cleanup(contentDocument, baseUrl);
+    var cleanedObj = silex.utils.DomCleaner.cleanup(iframe.contentDocument, baseUrl);
     // store the files to download and copy to assets, scripts...
     var htmlString = cleanedObj['htmlString'];
     var cssString = cleanedObj['cssString'];
     var jsString = cleanedObj['jsString'];
     var files = cleanedObj['files'];
+    // get rid of the iframe
+    document.body.removeChild(iframe);
     // call the publish service
-    silex.service.SilexTasks.getInstance().publish(publicationUrl, htmlString, cssString, jsString, files, statusCallback, opt_errCbk);
+    silex.service.SilexTasks.getInstance().publish(publicationFolder, htmlString, cssString, jsString, files, statusCallback, opt_errCbk);
   }, false);
   // prevent scripts from executing
   html = html.replace(/type=\"text\/javascript\"/gi, 'type="text/notjavascript"');
   // write the content (leave this after "listen")
-  goog.dom.iframe.writeContent(iframe, html);
+  iframe.contentDocument.open();
+  iframe.contentDocument.write(html);
+  iframe.contentDocument.close();
 };
 
 
