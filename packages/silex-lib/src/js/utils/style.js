@@ -60,50 +60,6 @@ silex.utils.Style.SILEX_CLASS_NAMES = [
   silex.view.BreadCrumbs.EDITABLE_STYLE_HOVER_CLASS,
 ];
 
-
-/**
- * constant for the class names which are of internal use in Silex
- * only the classes which are temporary and useless to store
- * @const
- * @type {Array.<string>}
- */
-silex.utils.Style.SILEX_TEMP_CLASS_NAMES = [
-  silex.model.Page.PAGED_HIDDEN_CLASS_NAME,
-  silex.model.Page.PAGED_VISIBLE_CLASS_NAME,
-  silex.model.Page.PAGEABLE_PLUGIN_READY_CLASS_NAME,
-  silex.model.Element.SELECTED_CLASS_NAME,
-  silex.model.Element.JUST_ADDED_CLASS_NAME,
-  silex.view.BreadCrumbs.EDITABLE_STYLE_HOVER_CLASS
-];
-
-
-/**
- * remove useless class names of an element created by silex
- * remove all silex internal classes
- * @param  {!Element|Document} element   created by silex, either a text box, image, ...
- * @param  {?boolean=} opt_allClasses   if true, remove all Silex classes, not only the classes which are temporary and useless to store
- * @param  {?boolean=} opt_isRecursive  if true, remove classes from the element and its children
- */
-silex.utils.Style.removeInternalClasses = function(element, opt_allClasses, opt_isRecursive) {
-  let classes = silex.utils.Style.SILEX_TEMP_CLASS_NAMES;
-  if (opt_allClasses) {
-    classes = silex.utils.Style.SILEX_CLASS_NAMES;
-  }
-  classes.forEach(className => {
-    if(element.classList != null) {
-      // case of the document for example
-      element.classList.remove(className);
-    }
-    if (opt_isRecursive) {
-      var elements = element.querySelectorAll('.' + className);
-      for(let idx=0; idx<elements.length; idx++) {
-        elements[idx].classList.remove(className);
-      }
-    }
-  });
-};
-
-
 /**
  * convert style object to object
  * with only the keys which are set

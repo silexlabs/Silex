@@ -35,22 +35,16 @@ goog.addSingletonGetter(silex.service.SilexTasks);
 
 /**
  * publish a website to a given folder
+ * @param {FileInfo} file
  * @param {FileInfo} folder
- * @param {string} html
- * @param {string} css
- * @param {string} js
- * @param {Array.<{url: string, destPath: string, srcPath: string}>} files
- * @param {function()} cbk called when success
+ * @param {function(string)} cbk called when success
  * @param {function(string)=} opt_errCbk to receive the json response
  */
-silex.service.SilexTasks.prototype.publish = function(folder, html, css, js, files, cbk, opt_errCbk) {
+silex.service.SilexTasks.prototype.publish = function(file, folder, cbk, opt_errCbk) {
   this.callServer('/tasks/publish', JSON.stringify({
     'folder': folder,
-    'html': html,
-    'css': css,
-    'js': js,
-    'files': files,
-  }), 'POST', json => cbk(), opt_errCbk);
+    'file': file,
+  }), 'POST', json => cbk(json), opt_errCbk);
 };
 
 
