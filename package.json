@@ -11,7 +11,7 @@
   "main": "dist/server/index.js",
   "license": "GPL-3.0",
   "engines": {
-    "node": "~6.5.0",
+    "node": "~8.10.0",
     "npm": "~3.8.6"
   },
   "precommit": [
