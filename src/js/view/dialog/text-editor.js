@@ -113,10 +113,10 @@ class TextEditor {
         tag.href = 'libs/normalize.css';
         goog.dom.appendChild(head, tag);
 
-        tag = iframeDoc.createElement('link');
-        tag.rel = 'stylesheet';
-        tag.href = silex.utils.BackwardCompat.getStaticResourceUrl('front-end.css');
-        goog.dom.appendChild(head, tag);
+        // tag = iframeDoc.createElement('link');
+        // tag.rel = 'stylesheet';
+        // tag.href = silex.utils.BackwardCompat.getStaticResourceUrl('front-end.css');
+        // goog.dom.appendChild(head, tag);
 
         // prevent paged content to be hidden (pageable jquery plugin)
         tag = iframeDoc.createElement('style');
