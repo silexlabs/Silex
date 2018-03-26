@@ -1,7 +1,7 @@
 const fs = require('fs');
 const express = require('express');
 
-module.exports = function() {
+module.exports = function(app) {
   const router = express.Router();
 
   // SSL
@@ -9,7 +9,7 @@ module.exports = function() {
   if(process.env.SILEX_FORCE_HTTPS) {
     console.log('force SSL is active (env var SILEX_FORCE_HTTPS is set)');
     const forceSSL = require('express-force-ssl');
-    router.set('forceSSLOptions', {
+    app.set('forceSSLOptions', {
       trustXFPHeader: !!process.env.SILEX_FORCE_HTTPS_TRUST_XFP_HEADER
     });
     router.use(forceSSL);

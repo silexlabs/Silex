@@ -45,7 +45,7 @@ app.use(session({
 const cloudExplorerRouter = new CloudExplorerRouter(rootUrl);
 app.use(new WebsiteRouter(port, rootUrl, cloudExplorerRouter.unifile));
 app.use(new PublishRouter(port, rootUrl, cloudExplorerRouter.unifile));
-app.use(new SslRouter());
+app.use(new SslRouter(app));
 app.use(cloudExplorerRouter); // last because the routes start with "*" for the service
 
 // add static folders to serve silex files
