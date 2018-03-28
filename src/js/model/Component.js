@@ -41,10 +41,11 @@ class Component {
     Component.STYLE_TYPE = 'style';
 
     /**
-     * possible states for the styles
+     * possible visibility for the styles
      * @type {Array.<string>}
      */
-    Component.STYLE_STATES = ['desktop-mobile', 'mobile'];
+    Component.STYLE_VISIBILITY = ['desktop-mobile', 'mobile'];
+    Component.STYLE_VISIBILITY_LABELS = ['Desktop+Mobile', 'Mobile'];
 
     // store the model and the view
     /**
@@ -116,10 +117,12 @@ class Component {
 
   /**
    * get Prodotype descriptor of the components
+   * @param {string} type
    * @return {ProdotypeCompDef} component descriptors
    */
-  getComponentsDef() {
-    return this.prodotypeComponent ? this.prodotypeComponent.componentsDef : /** @type {ProdotypeCompDef} */ ({});
+  getComponentsDef(type) {
+    const obj = type === Component.COMPONENT_TYPE ? this.prodotypeComponent : this.prodotypeStyle;
+    return obj ? obj.componentsDef : /** @type {ProdotypeCompDef} */ ({});
   }
 
 
@@ -142,7 +145,7 @@ class Component {
       this.updateDepenedencies()
     });
     // css styles
-    const componentsDef = this.getComponentsDef();
+    const componentsDef = this.getComponentsDef(Component.COMPONENT_TYPE);
     const comp = componentsDef[templateName];
     if(comp) {
       // apply the style found in component definition
@@ -211,7 +214,7 @@ class Component {
    * @return {Array.<string>} an array of CSS classes
    */
   getCssClasses (templateName) {
-    const componentsDef = this.getComponentsDef();
+    const componentsDef = this.getComponentsDef(Component.COMPONENT_TYPE);
     const comp = componentsDef[templateName];
     let cssClasses = [Component.COMPONENT_CLASS_NAME + '-'  + templateName];
     if(comp) {
@@ -281,21 +284,13 @@ class Component {
   getProdotypeComponents(type) {
     const className = type === Component.COMPONENT_TYPE ? Component.COMPONENT_CLASS_NAME : Component.STYLE_CLASS_NAME;
     return this.getElementsAsArray('.' + className).map(el => {
-      const data = (() => {
-        if(type === Component.COMPONENT_TYPE) {
-          // the data is the JSON object
-          return this.model.property.getElementData(el, type);
-        }
-        // the data is one of the state's object
-        const styleData = this.model.property.getProdotypeData(el.getAttribute('data-style-id'), Component.STYLE_TYPE);
-        return styleData[Component.STYLE_STATES.filter(state => !!styleData[state])[0]];
-      })();
+      const data = this.model.property.getProdotypeData(el.getAttribute('data-style-id'), type);
       const name = data['name'] || data['className'];
       const templateName = data['templateName'];
       return {
         'name': name,
         'templateName': templateName,
-        'displayName': `${name} (${templateName})`,
+        'displayName': `${ name }`,
       };
     });
   }
@@ -347,7 +342,7 @@ class Component {
    */
   saveEditableChildren(parentElement) {
     const fragment = document.createDocumentFragment();
-    for(var i = 0, el; el = parentElement.children[i]; i++) {
+    for(let i = 0, el; el = parentElement.children[i]; i++) {
       if(el.classList.contains('editable-style')) {
         fragment.appendChild(el.cloneNode(true));
       }
@@ -435,20 +430,23 @@ class Component {
 
   /**
    * @param {string} className, the css class to edit the style for
-   * @param {string} state, the state we're editing, e.g. mobile only, desktop and mobile...
+   * @param {string} pseudoClass, e.g. normal, :hover, ::first-letter
+   * @param {string} visibility, e.g. mobile only, desktop and mobile...
    */
-  editStyle(className, state) {
+  editStyle(className, pseudoClass, visibility) {
     const styleData = this.model.property.getProdotypeData(className, Component.STYLE_TYPE) || {};
-    const stateData = styleData[state] || {
+    const visibilityData = styleData[visibility] || {};
+    const pseudoClassData = visibilityData[pseudoClass] || {
       'templateName': 'text',
       'className': className,
+      'pseudoClass': pseudoClass,
     };
     this.prodotypeStyle.edit(
-      stateData,
+      pseudoClassData,
       [], // no need to have references to other styles
       'text',
       {
-        'onChange': (newData, html) => this.styleChanged(className, state, newData),
+        'onChange': (newData, html) => this.styleChanged(className, pseudoClass, visibility, newData),
       }
     );
   }
@@ -456,38 +454,38 @@ class Component {
   /**
    * save an empty style or reset a style
    * @param {string} className
+   * @param {string} pseudoClass
+   * @param {string} visibility
    * @param {?Object=} opt_data
    */
-  initStyle(className, opt_data) {
-    // set the minimum data
-    const data = opt_data || {};
-
-    // change the style in the dom and in the JSON object
-    Component.STYLE_STATES.forEach(state => {
-      this.styleChanged(className, state, data[state]);
-    });
+  initStyle(className, pseudoClass, visibility, opt_data) {
+    this.styleChanged(className, pseudoClass, visibility, opt_data);
   }
 
 
   /**
    * apply the style to the dom and save it to the JSON object
    * @param {string} className
-   * @param {string} state
-   * @param {?Object} newData
+   * @param {string} pseudoClass
+   * @param {string} visibility
+   * @param {?Object=} opt_data
    */
-  styleChanged(className, state, newData) {
-    // make sure we modify the style of the right css class
-    newData = newData || {};
+  styleChanged(className, pseudoClass, visibility, opt_data) {
+    // expose the class name and pseudo class to the prodotype template
+    const newData = opt_data || {};
     newData['className'] = className;
+    newData['pseudoClass'] = pseudoClass;
 
     // undo checkpoint
     this.view.settingsDialog.controller.settingsDialogController.undoCheckPoint();
 
     // store the component's data for later edition
-    const data = this.model.property.getProdotypeData(className, Component.STYLE_TYPE) || {};
-    data[state] = newData;
+    const data = this.model.property.getProdotypeData(className, Component.STYLE_TYPE) || {
+      'className': className,
+    };
+    data[visibility] = data[visibility] || {};
+    data[visibility][pseudoClass] = newData;
     this.model.property.setProdotypeData(className, Component.STYLE_TYPE, data);
-
     // update the head style with the new template
     const head = this.model.head.getHeadElement();
     let elStyle = head.querySelector(`[data-style-id="${className}"]`)
@@ -500,35 +498,53 @@ class Component {
       head.appendChild(elStyle);
     }
 
-    // render all states
-    const dataStates = Component.STYLE_STATES
-    .map(state => { return {
-      state: state,
-      data: data[state],
+    // render all pseudo classes in all visibility object
+    const pseudoClassData = Component.STYLE_VISIBILITY
+    // build an object for each existing visibility
+    .map(visibility => { return {
+      visibility: visibility,
+      data: data[visibility],
     }})
-    .filter(obj => !!obj.data);
-    if(dataStates.length > 0) {
+    .filter(obj => !!obj.data)
+    // build an object for each pseudoClass
+    .map(vData => {
+      const arrayOfPCData = [];
+      for(let pcName in vData.data) {
+        arrayOfPCData.push({
+          visibility: vData.visibility,
+          pseudoClass: pcName, /* unused, the data is in data */
+          data: vData.data[pcName],
+        });
+      }
+      return arrayOfPCData;
+    })
+    // flatten
+    .reduce((acc, val) => acc.concat(val), []);
+
+    if(pseudoClassData.length > 0) {
       Promise.all(
-        dataStates
+        pseudoClassData
         .map(obj => {
           return this.prodotypeStyle.decorate('text', obj.data)
-          .then(html => this.addMediaQuery(html, obj.state))
+          .then(html => this.addMediaQuery(html, obj.visibility))
         })
       )
       .then(htmlStrings => {
         elStyle.innerHTML = htmlStrings.join('');
       });
     }
+    // refresh the view
+    this.view.settingsDialog.controller.propertyToolController.refreshView();
   }
 
   /**
    * add a media query around the style string
    * when needed for mobile-only
    * @param {string} html
-   * @param {string} state
+   * @param {string} visibility
    */
-  addMediaQuery(html, state) {
-    if(state === Component.STYLE_STATES[0]) {
+  addMediaQuery(html, visibility) {
+    if(visibility === Component.STYLE_VISIBILITY[0]) {
       return html;
     }
     return this.model.property.addMediaQuery(html);

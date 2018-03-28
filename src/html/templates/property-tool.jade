@@ -202,9 +202,11 @@
       .remove-style.icon.fa.fa-lg.fa-minus(title='Delete the current text style.')
       .duplicate-style.icon.fa.fa-lg.fa-copy(title='Duplicate the current text style.')
       .reset-style.icon.fa.fa-lg.fa-recycle(title='Reset the current text style.')
-      .edit-style.icon.fa.fa-lg.fa-edit(title='Rename the current text style.')
-      label(for='state-style-combo-box') State:
-      select#state-style-combo-box.state-style-combo-box.combobox
+      .edit-style.icon.fa.fa-lg.fa-edit(title='Name the current text style.')
+      label(for='visibility-style-combo-box') Visibility:
+      select#visibility-style-combo-box.visibility-style-combo-box.combobox
         option(value='desktop-mobile') Desktop and Mobile
         option(value='mobile') Mobile only
+      label(for='pseudoclass-style-combo-box') Pseudo class:
+      select#pseudoclass-style-combo-box.pseudoclass-style-combo-box.combobox
     .prodotype-container

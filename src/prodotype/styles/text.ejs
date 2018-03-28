@@ -1,20 +1,21 @@
 <%
+const pseudo = !pseudoClass || pseudoClass === 'normal' ? '' : pseudoClass;
 const props = [
   {
     obj: Title1,
-    selector: 'h1',
+    selector: 'h1' + pseudo,
   }, {
     obj: Title2,
-    selector: 'h2',
+    selector: 'h2' + pseudo,
   }, {
     obj: Title3,
-    selector: 'h3',
+    selector: 'h3' + pseudo,
   }, {
-    obj: Paragraphs,
-    selector: '',
+    obj: Paragraph,
+    selector: 'p' + pseudo,
   }, {
-    obj: Links,
-    selector: 'a',
+    obj: Link,
+    selector: 'a' + pseudo,
   }
 ].filter(prop => typeof prop.obj !== 'undefined');
 function getProp(prop, propName) {
