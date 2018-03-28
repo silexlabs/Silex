@@ -1,19 +1,17 @@
 ---
 name: Text styles
 description: "Text styles to apply to the selected text box."
-doc: https://github.com/silexlabs/Silex/wiki/style-editor
+doc: https://github.com/silexlabs/Silex/wiki/editor-ui#style-editor
 category: Text styles
 tags:
 - text
 - style
 props:
-- name: className
-  type: string
-  readonly: true
 - name: TextStyle
   type: template
   props:
   - name: font-family
+    default: ""
     type:
     - ""
     - "Arial, sans-serif"
@@ -23,15 +21,20 @@ props:
     - "Trebuchet MS, sans-serif"
     - "Verdana, sans-serif"
   - name: font-style
+    default: ""
     type:
+    - ""
     - normal
     - italic
     - oblique
   - name: font-variant
+    default: ""
     type:
+    - ""
     - normal
     - small-caps
   - name: font-weight
+    default: ""
     type:
     - ""
     - normal
@@ -48,6 +51,7 @@ props:
     - 800
     - 900
   - name: font-size
+    default: ""
     type:
     - ""
     - xx-small
@@ -60,16 +64,20 @@ props:
     - larger
     - smaller
   - name: numerical-size
+    default: ""
     type: number
     unit:
     - px
     - em
     - "%"
   - name: color
+    default: ""
     type: color
   - name: background-color
+    default: ""
     type: color
   - name: text-decoration
+    default: ""
     type:
     - ""
     - underline
@@ -78,6 +86,7 @@ props:
     - blink
     - none
   - name: text-align
+    default: ""
     type:
     - ""
     - center
@@ -85,6 +94,7 @@ props:
     - right
     - justify
   - name: text-transform
+    default: ""
     type:
     - ""
     - capitalize
@@ -92,6 +102,7 @@ props:
     - lowercase
     - none
   - name: line-height
+    default: ""
     type: number
     unit:
     - ""
@@ -99,29 +110,34 @@ props:
     - em
     - "%"
   - name: word-spacing
+    default: ""
     type: number
     unit:
     - px
     - em
   - name: letter-spacing
+    default: ""
     type: number
     unit:
     - px
     - em
   - name: text-indent
+    default: ""
     type: number
     unit:
     - px
     - em
     - "%"
   - name: direction
+    default: ""
     type:
+    - ""
     - ltr
     - rtl
   # - white-space
-- name: Paragraphs
+- name: Paragraph
   type: TextStyle
-- name: Links
+- name: Link
   type: TextStyle
 - name: Title1
   type: TextStyle
@@ -129,3 +145,20 @@ props:
   type: TextStyle
 - name: Title3
   type: TextStyle
+- name: className
+  type: string
+  readonly: true
+- name: pseudoClass
+  type:
+  - "normal"
+  - ":hover"
+  - ":focus-within"
+  - ":first-child"
+  - ":last-child"
+  - ":first-of-type"
+  - ":last-of-type"
+  - ":only-child"
+  - "::first-letter"
+  - "::first-line"
+  readonly: true
+  default: normal

@@ -851,7 +851,7 @@ silex.model.Element.prototype.createTextElement = function() {
   var element = this.createElementWithContent(silex.model.Element.TYPE_TEXT);
   // add default content
   var content = this.getContentNode(element);
-  content.innerHTML = 'New text box';
+  content.innerHTML = '<p>New text box</p>';
   // add normal class for default text formatting
   // sometimes there is only in text node in content
   // e.g. whe select all + remove formatting

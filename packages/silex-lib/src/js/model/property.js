@@ -154,24 +154,24 @@ silex.model.Property.prototype.setSilexId = function(element, uniqueId) {
 
 /**
  * @param {string} uniqueId
- * @param {?Document=} doc docment of the iframe containing the website
+ * @param {?Document=} opt_doc docment of the iframe containing the website
  * @return {Element}
  */
-silex.model.Property.prototype.getElementBySilexId = function(uniqueId, doc) {
-  doc = doc || this.model.file.getContentDocument();
-  return doc.querySelector('[' + silex.model.Property.ELEMENT_ID_ATTR_NAME + '="' + uniqueId + '"]');
+silex.model.Property.prototype.getElementBySilexId = function(uniqueId, opt_doc) {
+  opt_doc = opt_doc || this.model.file.getContentDocument();
+  return opt_doc.querySelector('[' + silex.model.Property.ELEMENT_ID_ATTR_NAME + '="' + uniqueId + '"]');
 };
 
 
 /**
- * @param {?Document=} doc docment of the iframe containing the website
+ * @param {?Document=} opt_doc docment of the iframe containing the website
  * @return {string}
  */
-silex.model.Property.prototype.generateSilexId = function(doc) {
+silex.model.Property.prototype.generateSilexId = function(opt_doc) {
   var uniqueId;
   do {
     uniqueId = Date.now().toString() + '-' + (this.nextId++);
-  } while (this.getElementBySilexId(uniqueId, doc));
+  } while (this.getElementBySilexId(uniqueId, opt_doc));
   return uniqueId;
 };
 

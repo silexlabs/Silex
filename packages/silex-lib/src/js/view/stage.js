@@ -1200,7 +1200,7 @@ silex.view.Stage.prototype.startScrolling = function(scrollSpeed) {
  */
 silex.view.Stage.prototype.propertyChanged = function() {
   // update property tool box
-  this.controller.stageController.updateView();
+  this.controller.stageController.refreshView();
 };
 
 

@@ -167,8 +167,10 @@ class NewWebsiteDialog {
     body.onclick = e => {
       // listen for a click in the list of recent files
       const a = e.target;
-      const templateUrl = a.getAttribute('data-editable');
-      const recentFileInfo = a.getAttribute('data-file-info');
+      // get the attribute of the link (<a> tag)
+      // it might be in e.target.parentNode since there are <strong> tags in the <a>
+      const templateUrl = a.getAttribute('data-editable') || a.parentNode.getAttribute('data-editable');
+      const recentFileInfo = a.getAttribute('data-file-info') || a.parentNode.getAttribute('data-file-info');
       if(!!templateUrl || !!recentFileInfo) {
         this.selected = {
           fileInfo: /** @type {FileInfo} */ (JSON.parse(recentFileInfo)),
