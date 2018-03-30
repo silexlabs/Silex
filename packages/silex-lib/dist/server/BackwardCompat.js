@@ -59,9 +59,9 @@ module.exports = class BackwardCompat {
     }
     else if (hasToUpdate) {
       return Promise.reject({
-        message: 'This website has been saved with an older version of Silex, which is not supported anymore as of March 2018. In order to convert it to a newer version, please go to <a href="https://old.silex.me">old.silex.me</a> to open and then save your website.',
+        message: 'This website has been saved with an older version of Silex, which is not supported anymore as of March 2018. In order to convert it to a newer version, please go to <a href="https://old.silex.me">old.silex.me</a> to open and then save your website. <a href="https://github.com/silexlabs/Silex/wiki/Website-saved-with-older-version-of-Silex">More about this here</a>',
       });
-      // TODO: will be useful when there is BC again      
+      // TODO: will be useful when there is BC again
       // // convert to the latest version
       // return this.to2_2_7(version, doc, function() {
       //  // update the static scripts to match the current server and latest version
