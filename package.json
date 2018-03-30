@@ -11,8 +11,8 @@
   "main": "dist/server/index.js",
   "license": "GPL-3.0",
   "engines": {
-    "node": "~8.10.0",
-    "npm": "~3.8.6"
+    "node": "8.10.x",
+    "npm": "5.6.x"
   },
   "precommit": [
     "lint:js",
@@ -40,33 +40,33 @@
     "start:electron": "SILEX_ELECTRON=true electron ."
   },
   "dependencies": {
-    "bluebird": "3.5.1",
-    "body-parser": "1.13.3",
+    "bluebird": "*",
+    "body-parser": "*",
     "cloud-explorer": "github:silexlabs/CloudExplorer2#master",
-    "compression": "1.5.2",
-    "cookie-parser": "1.3.5",
-    "cookie-session": "2.0.0-beta.2",
-    "express": "4.16.0",
-    "express-force-ssl": "0.3.2",
-    "jsdom": "11.3.0",
+    "compression": "*",
+    "cookie-parser": "*",
+    "cookie-session": "*",
+    "express": "*",
+    "express-force-ssl": "*",
+    "jsdom": "*",
     "prodotype": "github:silexlabs/Prodotype",
-    "promise-sequential": "1.1.1",
-    "request": "2.81.0",
-    "serve-static": "1.12.3",
+    "promise-sequential": "*",
+    "request": "*",
+    "serve-static": "*",
     "silex-blank-templates": "github:silexlabs/silex-blank-templates#717e228",
     "silex-templates": "github:silexlabs/silex-templates#f9c2dcb"
   },
   "devDependencies": {
-    "cross-env": "5.1.1",
-    "electron": "1.6.5",
-    "eslint": "1.0.0",
+    "cross-env": "*",
+    "electron": "*",
+    "eslint": "*",
     "google-closure-compiler": "20170218.0.0",
     "google-closure-library": "20170218.0.1",
-    "jade": "1.11.0",
-    "less": "2.7.1",
-    "pm2": "1.1.3",
-    "pre-commit": "1.1.1",
-    "watch": "0.16.0"
+    "jade": "*",
+    "less": "*",
+    "pm2": "*",
+    "pre-commit": "*",
+    "watch": "*"
   },
   "repository": {
     "type": "git",
