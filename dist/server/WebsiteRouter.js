@@ -176,7 +176,7 @@ module.exports = function(port, rootUrl, unifile) {
     // markup
     dom.window.document.body.classList.add('silex-runtime');
     reactivateScripts(dom);
-    // remove temp tags 
+    // remove temp tags
     const toBeRemoved = dom.window.document.querySelectorAll(`.${constants.SILEX_TEMP_TAGS_CSS_CLASS}, #${constants.SILEX_CURRENT_PAGE_ID}, .${ constants.RISZE_HANDLE_CSS_CLASS }`);
     for(let idx=0; idx<toBeRemoved.length; idx++) {
       const el = toBeRemoved[idx];
@@ -216,7 +216,7 @@ module.exports = function(port, rootUrl, unifile) {
   }
 
   const router = express.Router();
-  
+
   // website specials
   router.get(/\/website\/(.*)\/get\/(.*)/, readWebsite);
   router.get(/\/website(.*)/, readTemplate);

@@ -1,6 +1,5 @@
 const PublishJob = require('./PublishJob.js');
 const express = require('express');
-const uuid = require('uuid');
 const bodyParser = require('body-parser');
 
 module.exports = function(port, rootUrl, unifile) {
@@ -10,8 +9,6 @@ module.exports = function(port, rootUrl, unifile) {
   // **
   // publication tasks
   router.post('/tasks/:task', bodyParser.json(), (req, res, next) => {
-    // init the session (shouldn't it be done by express??
-    req.session.sessionID = req.session.sessionID || uuid.v4();
     switch(req.params.task) {
       case 'publish':
         PublishJob.create(req.session.sessionID, req.body, unifile, req.session, req.cookies, req.protocol + '://' + req.get('host'));
