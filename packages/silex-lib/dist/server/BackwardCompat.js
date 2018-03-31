@@ -14,10 +14,11 @@ const constants = require('./Constants.json');
 
 /**
  * the version of the website is stored in the generator tag as "Silex v-X-Y-Z"
- * used for backward compat
- * also the static files are taken from //{{host}}/static/Y-Z
+ * if you start the server with NPM, it sets an env variable for you otherwise we get it from package.json
+ * used for backward compat and for the static files URLs taken from //{{host}}/static/{{Y-Z}}
  */
-const LATEST_VERSION = require(Path.resolve(__dirname, '../../package.json')).version.split('.');
+const LATEST_VERSION = (process.env.npm_package_version || require(Path.resolve(__dirname, '../../package.json')).version).split('.');
+console.log('Silex starts with version', LATEST_VERSION);
 
 /**
  * @fileoverview Handle backward compatibility when a user opens a site for edition

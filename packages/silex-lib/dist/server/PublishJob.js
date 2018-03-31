@@ -362,8 +362,6 @@ module.exports = class PublishJob {
       assets
       .filter(file => !!file)
       .map(file => {
-        if(file.path === 'css/') {
-        }
         return {
           name: 'writeFile',
           path: this.folder.path + '/' +file.path,
