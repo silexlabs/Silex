@@ -41,7 +41,6 @@
   },
   "dependencies": {
     "bluebird": "3.5.1",
-    "body-parser": "1.18.2",
     "cloud-explorer": "github:silexlabs/CloudExplorer2#master",
     "compression": "1.7.2",
     "cookie-parser": "1.4.3",

@@ -59,7 +59,7 @@ module.exports = function(port, rootUrl, unifile) {
   function readWebsite(req, res, next) {
     const connector = req.params[0];
     const path = req.params[1];
-    const url = new URL(`${ rootUrl }/${ connector }/get/${ Path.dirname(path) }/`);
+    const url = new URL(`${ rootUrl }/ce/${ connector }/get/${ Path.dirname(path) }/`);
     unifile.readFile(req.session.unifile, connector, path)
       .then(buffer => {
         return sendWebsiteData(res, buffer, url);
@@ -110,7 +110,7 @@ module.exports = function(port, rootUrl, unifile) {
   function writeWebsite(req, res, next) {
     const connector = req.params[0];
     const path = req.params[1];
-    const url = new URL(`${ rootUrl }/${ connector }/get/${ Path.dirname(path) }/`);
+    const url = new URL(`${ rootUrl }/ce/${ connector }/get/${ Path.dirname(path) }/`);
 
     const dom = new JSDOM(req.body, { url: url.href, });
     unprepareWebsite(dom, url);
