@@ -69,7 +69,7 @@ module.exports = class DomPublisher {
     // remove data-silex-static (will then be downloaded like any other script, not striped by DomTools.transformPath)
     // remove data-dependency
     // do NOT remove data-silex-type because it is used by front-end.js at runtime
-    const tagsToClean = this.doc.querySelectorAll(`[data-silex-type], [data-silex-id], [data-silex-static]`);
+    const tagsToClean = this.doc.querySelectorAll('[data-silex-type], [data-silex-id], [data-silex-static]');
     for(let idx=0; idx<tagsToClean.length; idx++) {
       tagsToClean[idx].removeAttribute('data-silex-id');
       tagsToClean[idx].removeAttribute('data-silex-static');
