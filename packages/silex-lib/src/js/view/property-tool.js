@@ -70,13 +70,6 @@ silex.view.PropertyTool = function(element, model, controller) {
 };
 
 /**
- * class name targeted by the style editor at start
- * @const
- * @type {string}
- */
-silex.view.PropertyTool.GLOBAL_STYLE_CLASS_NAME = 'text-element';
-
-/**
  * base url for relative/absolute urls
  */
 silex.view.PropertyTool.prototype.baseUrl = null;
@@ -277,7 +270,7 @@ silex.view.PropertyTool.prototype.redraw = function(selectedElements, pageNames,
       this.model.component.editComponent(selectedElements[0]);
     }
     else {
-      this.model.component.resetSelection();
+      this.model.component.resetSelection(Component.COMPONENT_TYPE);
     }
   });
 };
