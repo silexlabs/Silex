@@ -31,6 +31,10 @@ class Component {
   constructor(model, view) {
     Component.COMPONENT_CLASS_NAME = 'silex-component';
     Component.STYLE_CLASS_NAME = 'silex-prodotype-style';
+
+
+    Component.BODY_STYLE_NAME = 'All texts';
+    Component.BODY_STYLE_CSS_CLASS = 'BODY';
     /**
      * @type {string}
      */
@@ -285,13 +289,7 @@ class Component {
     const className = type === Component.COMPONENT_TYPE ? Component.COMPONENT_CLASS_NAME : Component.STYLE_CLASS_NAME;
     return this.getElementsAsArray('.' + className).map(el => {
       const data = this.model.property.getProdotypeData(el.getAttribute('data-style-id'), type);
-      const name = data['name'] || data['className'];
-      const templateName = data['templateName'];
-      return {
-        'name': name,
-        'templateName': templateName,
-        'displayName': `${ name }`,
-      };
+      return data;
     });
   }
 
@@ -327,10 +325,18 @@ class Component {
 
   /**
    * hide component editors
+   * @param {string} type
    */
-  resetSelection() {
-    if(this.prodotypeComponent) {
-      this.prodotypeComponent.edit();
+  resetSelection(type) {
+    if(type === Component.COMPONENT_TYPE) {
+      if(this.prodotypeComponent) {
+        this.prodotypeComponent.edit();
+      }
+    }
+    else {
+      if(this.prodotypeStyle) {
+        this.prodotypeStyle.edit();
+      }
     }
   }
 
@@ -409,7 +415,7 @@ class Component {
     }
     else {
       this.componentEditorElement.classList.add('hide-panel');
-      this.resetSelection();
+      this.resetSelection(Component.COMPONENT_TYPE);
     }
   }
 
@@ -453,13 +459,14 @@ class Component {
 
   /**
    * save an empty style or reset a style
+   * @param {string} displayName
    * @param {string} className
    * @param {string} pseudoClass
    * @param {string} visibility
    * @param {?Object=} opt_data
    */
-  initStyle(className, pseudoClass, visibility, opt_data) {
-    this.styleChanged(className, pseudoClass, visibility, opt_data);
+  initStyle(displayName, className, pseudoClass, visibility, opt_data) {
+    this.styleChanged(className, pseudoClass, visibility, opt_data, displayName);
   }
 
 
@@ -469,8 +476,9 @@ class Component {
    * @param {string} pseudoClass
    * @param {string} visibility
    * @param {?Object=} opt_data
+   * @param {?string=} opt_displayName
    */
-  styleChanged(className, pseudoClass, visibility, opt_data) {
+  styleChanged(className, pseudoClass, visibility, opt_data, opt_displayName) {
     // expose the class name and pseudo class to the prodotype template
     const newData = opt_data || {};
     newData['className'] = className;
@@ -482,6 +490,8 @@ class Component {
     // store the component's data for later edition
     const data = this.model.property.getProdotypeData(className, Component.STYLE_TYPE) || {
       'className': className,
+      'templateName': 'text',
+      'displayName': opt_displayName,
     };
     data[visibility] = data[visibility] || {};
     data[visibility][pseudoClass] = newData;
