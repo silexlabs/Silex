@@ -177,15 +177,20 @@ silex.model.Property.prototype.saveProperties = function(doc) {
   var styleTag = doc.querySelector('.' + silex.model.Property.JSON_STYLE_TAG_CLASS_NAME);
   if (!styleTag) {
     styleTag = doc.createElement('script');
+    styleTag.type = 'text/json';
     styleTag.classList.add(silex.model.Property.JSON_STYLE_TAG_CLASS_NAME);
     goog.dom.appendChild(doc.head, styleTag);
   }
+  // always save as json, it used to be javascript and sometimes it tabs mess up the json
+  styleTag.type = 'text/json';
+
   let obj = {
     'desktop': this.stylesObj,
     'mobile': this.mobileStylesObj,
     'componentData': this.componentDataObj,
   };
-  styleTag.innerHTML = '[' + JSON.stringify(obj) + ']';
+  // NOTE: it is useless to store an array, a single object would be better
+  styleTag.innerHTML = JSON.stringify([obj]);
 };
 
 
