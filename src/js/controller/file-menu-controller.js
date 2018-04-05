@@ -52,7 +52,7 @@ silex.controller.FileMenuController.prototype.loadTemplate = function(url, opt_c
  * @param {?function(Object)=} opt_errorCbk
  */
 silex.controller.FileMenuController.prototype.loadBlank = function(opt_cbk, opt_errorCbk) {
-  const blankUrl = 'libs/templates/silex-blank-templates/desktop/editable.html';
+  const blankUrl = '/libs/templates/silex-blank-templates/desktop/editable.html';
   this.loadTemplate(blankUrl, opt_cbk, opt_errorCbk);
 };
 
@@ -105,7 +105,7 @@ silex.controller.FileMenuController.prototype.onOpened = function(opt_cbk, rawHt
     // undo redo reset
     this.undoReset();
     this.fileOperationSuccess(null, true);
-  }, true, false); // with loader and backward compat check
+  }, true); // with loader
   // QOS, track success
   this.tracker.trackAction('controller-events', 'success', 'file.new', 1);
   if(opt_cbk) {
@@ -156,14 +156,15 @@ silex.controller.FileMenuController.prototype.openFile = function(opt_cbk, opt_e
           if (opt_cbk) {
             opt_cbk(/** @type {FileInfo} */ (fileInfo));
           }
-        }, true, false); // with loader and backward compat check
+        }, true); // with loader
       },
-      error => {
-        silex.utils.Notification.notifyError('Error: I did not manage to open this file. \n' + (error.message || ''));
+      (error, message) => {
+        silex.utils.Notification.alert('Error: I did not manage to open this file. \n' + (message || error.message || ''), () => {
+          if (opt_errorCbk) {
+            opt_errorCbk(error);
+          }
+        });
         this.tracker.trackAction('controller-events', 'error', 'file.open', -1);
-        if (opt_errorCbk) {
-          opt_errorCbk(error);
-        }
       });
     }
     else {
@@ -217,10 +218,9 @@ silex.controller.FileMenuController.prototype.publish = function() {
       }
       timer = -1;
     }, 'Close');
-    silex.utils.Dom.publish(
-      folder,
+    silex.service.SilexTasks.getInstance().publish(
       file,
-      this.model.file.getHtml(),
+      folder,
       () => {
         setTimeout(() => {
           // tip of the day

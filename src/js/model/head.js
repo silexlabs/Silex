@@ -47,13 +47,6 @@ silex.model.Head = function(model, view) {
 
 
 /**
- * id of the style element which holds current page style
- * e.g. <style id="current-page-style">.page-page-1 {display: inherit;}</style>
- */
-silex.model.Head.SILEX_CURRENT_PAGE_CSS_CLASS = 'current-page-style';
-
-
-/**
  * id of the style element which holds silex editable css styles
  */
 silex.model.Head.SILEX_STYLE_ELEMENT_CSS_CLASS = 'silex-style';
@@ -63,13 +56,6 @@ silex.model.Head.SILEX_STYLE_ELEMENT_CSS_CLASS = 'silex-style';
  * id of the style element which holds silex editable css styles
  */
 silex.model.Head.SILEX_SCRIPT_ELEMENT_CSS_CLASS = 'silex-script';
-
-
-/**
- * css class which marks the temporary tags, i.e. the tags inserted while editing a file
- * only for tags in the head section
- */
-silex.model.Head.SILEX_TEMP_TAGS_CSS_CLASS = 'silex-temp-tag';
 
 
 /**
@@ -109,6 +95,9 @@ silex.model.Head.prototype.updateFromDom = function() {
   this.setTitle(this.getTitle());
   this.setEnableMobile(this.getEnableMobile());
   this.setWebsiteWidth(this.getWebsiteWidth());
+  // update text editor with the website custom styles and script
+  this.model.head.setHeadStyle(this.model.head.getHeadStyle());
+  this.model.head.setHeadScript(this.model.head.getHeadScript());
 };
 
 
@@ -182,10 +171,9 @@ silex.model.Head.prototype.getHeadScript = function() {
       silex.model.Head.SILEX_SCRIPT_ELEMENT_CSS_CLASS,
       this.getHeadElement());
   if (!scriptTag) {
-    console.warn('no silex editable script defined');
     return '';
   }
-  return this.model.element.unprepareHtmlForEdit(scriptTag.innerHTML);
+  return scriptTag.innerHTML;
 };
 
 
@@ -204,7 +192,7 @@ silex.model.Head.prototype.setHeadScript = function(jsString) {
     scriptTag.className = silex.model.Head.SILEX_SCRIPT_ELEMENT_CSS_CLASS;
     goog.dom.appendChild(this.getHeadElement(), scriptTag);
   }
-  scriptTag.innerHTML = this.model.element.prepareHtmlForEdit(jsString);
+  scriptTag.innerHTML = jsString;
 };
 
 
@@ -221,7 +209,7 @@ silex.model.Head.prototype.getHeadStyle = function() {
     console.warn('no silex editable styles defined');
     return '';
   }
-  return window['css_beautify'](this.model.element.unprepareHtmlForEdit(silexStyle.innerHTML));
+  return window['css_beautify'](silexStyle.innerHTML);
 };
 
 
@@ -240,7 +228,6 @@ silex.model.Head.prototype.setHeadStyle = function(cssString) {
     silexStyle.className = silex.model.Head.SILEX_STYLE_ELEMENT_CSS_CLASS;
     goog.dom.appendChild(this.getHeadElement(), silexStyle);
   }
-  cssString = this.model.element.prepareHtmlForEdit(cssString);
   silexStyle.innerHTML = cssString;
   // refresh the text editor's styles
   this.view.textEditor.setCustomCssStyles(cssString);
@@ -527,10 +514,6 @@ silex.model.Head.prototype.getFaviconPath = function() {
   if (faviconTag) {
     url = faviconTag.getAttribute('href');
   }
-  if (url && this.model.file.getFileInfo()) {
-    var baseUrl = silex.utils.Url.getBaseUrl() + this.model.file.getFileInfo().url;
-    url = silex.utils.Url.getRelativePath(url, baseUrl);
-  }
   return url;
 };
 
@@ -540,11 +523,6 @@ silex.model.Head.prototype.getFaviconPath = function() {
  * @param {?string=} opt_path
  */
 silex.model.Head.prototype.setFaviconPath = function(opt_path) {
-  if (opt_path) {
-    // absolute url only in the dom
-    var baseUrl = silex.utils.Url.getBaseUrl();
-    opt_path = silex.utils.Url.getAbsolutePath(/** @type {string} */ (opt_path), baseUrl);
-  }
   var faviconTag = this.getHeadElement().querySelector('link[rel="shortcut icon"]');
   if (!faviconTag) {
     if (opt_path) {
@@ -613,11 +591,6 @@ silex.model.Head.prototype.getDescriptionSocial = function() {
  * @param {?string=} opt_path
  */
 silex.model.Head.prototype.setThumbnailSocialPath = function(opt_path) {
-  if (opt_path) {
-    // absolute url only in the dom
-    var baseUrl = silex.utils.Url.getBaseUrl();
-    opt_path = silex.utils.Url.getAbsolutePath(/** @type {string} */ (opt_path), baseUrl);
-  }
   this.setMeta('twitter:card', opt_path ? 'summary' : '');
   this.setMeta('twitter:image', opt_path);
   this.setMeta('og:image', opt_path);
@@ -631,10 +604,6 @@ silex.model.Head.prototype.setThumbnailSocialPath = function(opt_path) {
  */
 silex.model.Head.prototype.getThumbnailSocialPath = function() {
   var url = this.getMeta('og:image') || this.getMeta('twitter:image');
-  if (url && this.model.file.getFileInfo()) {
-    var baseUrl = this.model.file.getFileInfo().url;
-    url = silex.utils.Url.getRelativePath(url, baseUrl);
-  }
   return url;
 };
 
@@ -665,89 +634,4 @@ silex.model.Head.prototype.getTwitterSocial = function() {
 silex.model.Head.prototype.getHeadElement = function() {
   // returns the head of the document in the iframe
   return this.model.file.getContentDocument().head;
-};
-
-
-
-/**
- * @param {?Element=} opt_headElement
- *
- */
-silex.model.Head.prototype.removeCurrentPageStyleTag = function(opt_headElement) {
-  if (!opt_headElement) {
-    opt_headElement = this.getHeadElement();
-  }
-  const tag = opt_headElement.querySelector('#' + silex.model.Head.SILEX_CURRENT_PAGE_CSS_CLASS);
-  goog.dom.removeNode(tag);
-}
-
-
-/**
- * load temp tags (js and css) to be removed later
- * @param {Array.<Element>|Element} tags the tag(s) to add
- * @param {?function()=} opt_onSuccess
- * @param {?function()=} opt_onError
- */
-silex.model.Head.prototype.addTempTag = function(tags, opt_onSuccess, opt_onError) {
-  var tagsWichSupportOnload = ['link', 'script'];
-  if (typeof tags === 'string') {
-    // convert tags to an array
-    tags = [tags];
-  }
-  // onload callback
-  var onload = goog.bind(function() {
-    if (tags.length > 0) {
-      addNextTag();
-    }
-    else {
-      if (opt_onSuccess) {
-        opt_onSuccess();
-      }
-    }
-  }, this);
-  // nex tag function
-  var addNextTag = goog.bind(function() {
-    var tag = tags.shift();
-    if (goog.array.contains(tagsWichSupportOnload, tag.tagName.toLowerCase())) {
-      // use onload
-      tag.onload = onload;
-    }
-    else {
-      // no onload for this kind of tags, load right away
-      onload();
-    }
-    tag.onerror = function() {
-      console.error('scripts loading error');
-      if (opt_onError) {
-        opt_onError();
-      }
-    };
-    goog.dom.classlist.add(tag, silex.model.Head.SILEX_TEMP_TAGS_CSS_CLASS);
-    goog.dom.appendChild(this.getHeadElement(), tag);
-  }, this);
-  // start the loading process: call next tag
-  if (tags.length > 0) {
-    addNextTag();
-  }
-  else {
-    if (opt_onError) {
-      opt_onError();
-    }
-  }
-};
-
-
-/**
- * remove temp tags
- * @param {?Element=} opt_headElement
- */
-silex.model.Head.prototype.removeTempTags = function(opt_headElement) {
-  if (!opt_headElement) {
-    opt_headElement = this.getHeadElement();
-  }
-  // remove tags marked as silex-temp-tag
-  var tags = goog.dom.getElementsByTagNameAndClass(null, silex.model.Head.SILEX_TEMP_TAGS_CSS_CLASS, opt_headElement);
-  goog.array.forEach(tags, function(tag) {
-    goog.dom.removeNode(tag);
-  });
 };
