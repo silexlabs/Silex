@@ -13,7 +13,6 @@ const Path = require('path');
 const express = require('express');
 const fs = require('fs');
 const { JSDOM } = require('jsdom');
-const bodyParser = require('body-parser');
 const { URL } = require('url');
 const CloudExplorer = require('cloud-explorer');
 
@@ -111,7 +110,6 @@ module.exports = function(port, rootUrl, unifile) {
     const connector = req.params[0];
     const path = req.params[1];
     const url = new URL(`${ rootUrl }/ce/${ connector }/get/${ Path.dirname(path) }/`);
-
     const dom = new JSDOM(req.body, { url: url.href, });
     unprepareWebsite(dom, url);
     const str = dom.serialize();
@@ -220,7 +218,7 @@ module.exports = function(port, rootUrl, unifile) {
   // website specials
   router.get(/\/website\/(.*)\/get\/(.*)/, readWebsite);
   router.get(/\/website(.*)/, readTemplate);
-  router.put(/\/website\/(.*)\/put\/(.*)/, bodyParser.text({limit: '1mb'}), writeWebsite);
+  router.put(/\/website\/(.*)\/put\/(.*)/, writeWebsite);
 
   // **
   // list templates

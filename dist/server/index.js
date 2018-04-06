@@ -23,6 +23,7 @@ const WebsiteRouter = require('./WebsiteRouter.js');
 const CloudExplorerRouter = require('./CloudExplorerRouter.js');
 const PublishRouter = require('./PublishRouter.js');
 const SslRouter = require('./SslRouter.js');
+const bodyParser = require('body-parser');
 
 // 6805 is the date of sexual revolution started in paris france 8-)
 const port = process.env.PORT || 6805;
@@ -34,8 +35,8 @@ const app = express();
 app.use(compression());
 
 // cookie & session
-app.use(express.json());
-app.use(express.urlencoded());
+app.use(bodyParser.json({limit: '1mb'}));
+app.use(bodyParser.text({limit: '1mb'}));
 app.use(cookieParser());
 app.use(session({
   name: 'silex-session',
