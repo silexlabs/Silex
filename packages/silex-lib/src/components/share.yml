@@ -23,19 +23,21 @@ props:
   - Simple Icons
   - Simple Icons - Black
   default: Flat Web Icon Set - Color
-- name: networks
-  type: array
-  default: ["Facebook", "Twitter", "Google+", "Tumblr", "Pinterest", "Pocket", "Reddit", "LinkedIn", "WordPress", "Pinboard", "Email"]
 - name: url
   type: string
   default: http://yoursite.com
 - name: title
   type: string
   default: Your site title
-- name: description
-  type: multiline
-  default: Your site description
+- name: networks
+  expandable: true
+  type: array
+  default: ["Facebook", "Twitter", "Google+", "Tumblr", "Pinterest", "Pocket", "Reddit", "LinkedIn", "WordPress", "Pinboard", "Email"]
 - name: twitter
   type: string
   description: Your name on twitter
   default: "silexlabs"
+- name: description
+  expandable: true
+  type: multiline
+  default: Your site description

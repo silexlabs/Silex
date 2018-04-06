@@ -91,6 +91,7 @@ silex.service.CloudStorage.prototype.write = function(fileInfo, rawData, cbk, op
   };
   const url = `/website/${ fileInfo.service }/put/${ fileInfo.path }`;
   oReq.open('PUT', url);
+  oReq.setRequestHeader('Content-Type', 'text/plain; charset=utf-8');
   oReq.send(rawData);
 };
 
