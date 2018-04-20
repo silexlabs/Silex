@@ -216,9 +216,9 @@ module.exports = function(port, rootUrl, unifile) {
   const router = express.Router();
 
   // website specials
-  router.get(/\/website\/(.*)\/get\/(.*)/, readWebsite);
+  router.get(/\/website\/ce\/(.*)\/get\/(.*)/, readWebsite);
   router.get(/\/website(.*)/, readTemplate);
-  router.put(/\/website\/(.*)\/put\/(.*)/, writeWebsite);
+  router.put(/\/website\/ce\/(.*)\/put\/(.*)/, writeWebsite);
 
   // **
   // list templates
