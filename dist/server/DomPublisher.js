@@ -116,7 +116,6 @@ module.exports = class DomPublisher {
             tagName: el.tagName,
             displayName: fileName,
           });
-          console.log(el.tagName, el.className, isInHead, destPath);
           if(el.tagName) {
             // not an URL from a style sheet
             return destPath;

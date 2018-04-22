@@ -16,6 +16,7 @@ initialCss:
   background-color: 'transparent'
 props:
 - name: bars
+  expandable: true
   description: Bars and labels
   type:
     - name: label
@@ -42,18 +43,22 @@ props:
       description: Background of the label
       default: "#6adcfa"
 - name: speed
+  expandable: true
   description: Time of the animation
   type: number
   default: 6000
 - name: delay
+  expandable: true
   description: Delay before the animation
   type: number
   default: 500
 - name: labelSize
+  expandable: true
   description: Width of the label in percentage of the bar
   type: number
   default: 25
 - name: barHeight
+  expandable: true
   description: Height of the bars in pixels
   type: number
   default: 35
