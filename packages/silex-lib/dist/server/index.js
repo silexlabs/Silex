@@ -23,6 +23,7 @@ const WebsiteRouter = require('./WebsiteRouter.js');
 const CloudExplorerRouter = require('./CloudExplorerRouter.js');
 const PublishRouter = require('./PublishRouter.js');
 const SslRouter = require('./SslRouter.js');
+const bodyParser = require('body-parser');
 
 // 6805 is the date of sexual revolution started in paris france 8-)
 const port = process.env.PORT || 6805;
@@ -34,6 +35,8 @@ const app = express();
 app.use(compression());
 
 // cookie & session
+app.use(bodyParser.json({limit: '1mb'}));
+app.use(bodyParser.text({limit: '1mb'}));
 app.use(cookieParser());
 app.use(session({
   name: 'silex-session',
@@ -42,11 +45,11 @@ app.use(session({
 
 // create the routes for unifile/CloudExplorer
 // and for Silex tasks
-const cloudExplorerRouter = new CloudExplorerRouter(rootUrl);
+const cloudExplorerRouter = new CloudExplorerRouter(rootUrl + '/ce');
+app.use('/ce', cloudExplorerRouter);
 app.use(new WebsiteRouter(port, rootUrl, cloudExplorerRouter.unifile));
 app.use(new PublishRouter(port, rootUrl, cloudExplorerRouter.unifile));
 app.use(new SslRouter(app));
-app.use(cloudExplorerRouter); // last because the routes start with "*" for the service
 
 // add static folders to serve silex files
 app.use('/', serveStatic(Path.join(__dirname, '../../dist/client')));
