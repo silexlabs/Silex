@@ -348,7 +348,7 @@ module.exports = class PublishJob {
       batchActions.push({
         name: 'writefile',
         path: this.cssFile,
-        content: this.tree.styleTags.reduce((prev, tag) => prev + '\n' + tag.innerHTML, showBodyRule),
+        content: this.tree.styleTags.reduce((prev, tag) => prev + '\n' + tag.innerHTML, '') + showBodyRule,
       });
     }
     if(!!this.tree.scriptTags.length > 0) {
