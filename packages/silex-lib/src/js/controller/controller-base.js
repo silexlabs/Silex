@@ -228,7 +228,6 @@ silex.controller.ControllerBase.prototype.browseAndAddImage = function() {
   this.view.fileExplorer.openFile(FileExplorer.IMAGE_EXTENSIONS)
   .then(fileInfo => {
     if(fileInfo) {
-      console.log('xxx', fileInfo);
       // undo checkpoint
       this.undoCheckPoint();
       // create the element

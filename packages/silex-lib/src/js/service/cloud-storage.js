@@ -78,20 +78,21 @@ silex.service.CloudStorage.prototype.write = function(fileInfo, rawData, cbk, op
   //   console.error('Error: could not write file', fileInfo, e);
   //   if (opt_errCbk) opt_errCbk(/** @type {Object} */ (e));
   // });
-	const oReq = new XMLHttpRequest();
-	oReq.onload = function(event) {
-		if(oReq.status === 200) {
-			cbk();
-		}
+  const oReq = new XMLHttpRequest();
+  oReq.onload = function(event) {
+    if(oReq.status === 200) {
+      cbk();
+    }
     else {
       const err = new Event('error');
       let msg = this.getErrorMessage(oReq);
       if(opt_errCbk) opt_errCbk(err, msg);
     }
-	};
-	const url = `/website/${ fileInfo.service }/put/${ fileInfo.path }`;
-	oReq.open('PUT', url);
-	oReq.send(rawData);
+  };
+  const url = `/website/ce/${ fileInfo.service }/put/${ fileInfo.path }`;
+  oReq.open('PUT', url);
+  oReq.setRequestHeader('Content-Type', 'text/plain; charset=utf-8');
+  oReq.send(rawData);
 };
 
 
