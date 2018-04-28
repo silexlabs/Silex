@@ -49,7 +49,6 @@ class Component {
      * @type {Array.<string>}
      */
     Component.STYLE_VISIBILITY = ['desktop-mobile', 'mobile'];
-    Component.STYLE_VISIBILITY_LABELS = ['Desktop+Mobile', 'Mobile'];
 
     // store the model and the view
     /**

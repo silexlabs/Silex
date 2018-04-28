@@ -196,8 +196,13 @@
   span.prodotype-component-editor.editor-container
   span.prodotype-style-editor.editor-container
     .prodotype-style-editor-menu
-      label(for='class-name-style-combo-box') Apply to:
-      select#class-name-style-combo-box.class-name-style-combo-box.combobox
+      label.class-name-style-label(for='class-name-style-combo-box')
+        span Style name:
+        select#pseudoclass-style-combo-box.pseudoclass-style-combo-box.combobox
+      div.class-name-block
+        input#visibility-style-checkbox.visibility-style-checkbox.hidden(type='checkbox')
+        label.visibility-style-label.fa-fw.icon.fa-inverse.fa-mobile.expandable(for='visibility-style-checkbox', title='Mobile only')
+        select#class-name-style-combo-box.class-name-style-combo-box.combobox
       .add-style.icon.fa.fa-lg.fa-plus(title='Add a text style.')
       .remove-style.icon.fa.fa-lg.fa-minus(title='Delete the current text style.')
       .apply-style.icon.fa.fa-lg.fa-paint-brush(title='Apply the current style to selected text boxes.')
@@ -205,10 +210,26 @@
       .select-style.icon.fa.fa-lg.fa-object-group(title='Select text boxes with the current style.')
       .duplicate-style.icon.fa.fa-lg.fa-copy(title='Duplicate the current text style.')
       .edit-style.icon.fa.fa-lg.fa-edit(title='Rename the current text style.')
-      label(for='visibility-style-combo-box') Visibility:
-      select#visibility-style-combo-box.visibility-style-combo-box.combobox
-        option(value='desktop-mobile') Desktop and Mobile
-        option(value='mobile') Mobile only
-      label(for='pseudoclass-style-combo-box') Pseudo class:
-      select#pseudoclass-style-combo-box.pseudoclass-style-combo-box.combobox
-    .prodotype-container
+      form.style-editor-tag-form
+        input#style-editor-tag-paragraph.hidden(type='radio', name='style-editor-tag-name', value='paragraph', checked)
+        input#style-editor-tag-link.hidden(type='radio', name='style-editor-tag-name', value='link')
+        input#style-editor-tag-bold.hidden(type='radio', name='style-editor-tag-name', value='bold')
+        input#style-editor-tag-underline.hidden(type='radio', name='style-editor-tag-name', value='underline')
+        input#style-editor-tag-italic.hidden(type='radio', name='style-editor-tag-name', value='italic')
+        input#style-editor-tag-heading1.hidden(type='radio', name='style-editor-tag-name', value='heading1')
+        input#style-editor-tag-heading2.hidden(type='radio', name='style-editor-tag-name', value='heading2')
+        input#style-editor-tag-heading3.hidden(type='radio', name='style-editor-tag-name', value='heading3')
+        input#style-editor-tag-ul.hidden(type='radio', name='style-editor-tag-name', value='ul')
+        input#style-editor-tag-ol.hidden(type='radio', name='style-editor-tag-name', value='ol')
+        div.labels
+          label.first-button(for='style-editor-tag-paragraph', title='Edit style of text marked as "normal"') P
+          label(for='style-editor-tag-link', title='Edit style of links') A
+          label(for='style-editor-tag-bold', title='Edit style of bold text') B
+          label(for='style-editor-tag-underline', title='Edit style of underlined text') U
+          label.last-button(for='style-editor-tag-italic', title='Edit style of italic text') I
+          label.first-button(for='style-editor-tag-heading1', title='Edit style of Heading1 text') H1
+          label(for='style-editor-tag-heading2', title='Edit style of Heading2 text') H2
+          label(for='style-editor-tag-heading3', title='Edit style of Heading3 text') H3
+          label(for='style-editor-tag-ul', title='Edit style of unordered lists') UL
+          label.last-button(for='style-editor-tag-ol', title='Edit style of ordered lists') OL
+        .prodotype-container

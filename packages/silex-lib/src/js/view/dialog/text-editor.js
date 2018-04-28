@@ -210,7 +210,7 @@ class TextEditor {
     // add our styles
     goog.ui.editor.ToolbarFactory.addFormatOption(
         /** @type {!goog.ui.Select} */ (formatButton),
-        'Normal', goog.dom.TagName.P);
+        'Paragraph', goog.dom.TagName.P);
     goog.ui.editor.ToolbarFactory.addFormatOption(
         /** @type {!goog.ui.Select} */ (formatButton),
         'Heading 1', goog.dom.TagName.H1);
@@ -615,7 +615,7 @@ class TextEditor {
             container, ['normal', 'heading1', 'heading2', 'heading3']);
         // add the desired class
         switch (e.target.getContent()) {
-          case 'Normal':
+          case 'Paragraph':
             goog.dom.classlist.add(container, 'normal');
             break;
           case 'Heading 1':
