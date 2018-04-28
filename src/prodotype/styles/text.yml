@@ -1,8 +1,4 @@
 ---
-name: Text styles
-description: "Text styles to apply to the selected text box."
-doc: https://github.com/silexlabs/Silex/wiki/editor-ui#style-editor
-category: Text styles
 tags:
 - text
 - style
@@ -139,11 +135,21 @@ props:
   type: TextStyle
 - name: Link
   type: TextStyle
-- name: Title1
+- name: Bold
   type: TextStyle
-- name: Title2
+- name: Underline
   type: TextStyle
-- name: Title3
+- name: Italic
+  type: TextStyle
+- name: Heading1
+  type: TextStyle
+- name: Heading2
+  type: TextStyle
+- name: Heading3
+  type: TextStyle
+- name: UnorderedList
+  type: TextStyle
+- name: OrderedList
   type: TextStyle
 - name: className
   type: string
@@ -158,6 +164,8 @@ props:
   - ":first-of-type"
   - ":last-of-type"
   - ":only-child"
+  - ":nth-child(even)"
+  - ":nth-child(odd)"
   - "::first-letter"
   - "::first-line"
   readonly: true

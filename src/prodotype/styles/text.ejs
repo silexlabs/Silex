@@ -2,13 +2,13 @@
 const pseudo = !pseudoClass || pseudoClass === 'normal' ? '' : pseudoClass;
 const props = [
   {
-    obj: Title1,
+    obj: Heading1,
     selector: 'h1' + pseudo,
   }, {
-    obj: Title2,
+    obj: Heading2,
     selector: 'h2' + pseudo,
   }, {
-    obj: Title3,
+    obj: Heading3,
     selector: 'h3' + pseudo,
   }, {
     obj: Paragraph,
@@ -16,6 +16,21 @@ const props = [
   }, {
     obj: Link,
     selector: 'a' + pseudo,
+  }, {
+    obj: Bold,
+    selector: 'b' + pseudo,
+  }, {
+    obj: Italic,
+    selector: 'i' + pseudo,
+  }, {
+    obj: Underline,
+    selector: 'u' + pseudo,
+  }, {
+    obj: UnorderedList,
+    selector: 'ul' + pseudo,
+  }, {
+    obj: OrderedList,
+    selector: 'ol' + pseudo,
   }
 ].filter(prop => typeof prop.obj !== 'undefined');
 function getProp(prop, propName) {

@@ -108,7 +108,7 @@
     &.size3 {
     }
 
-    input {
+    input, select {
       height: 22px;
       overflow: hidden;
       margin: 4px 0;
@@ -519,6 +519,21 @@
   .prodotype-style-editor-menu > div {
     padding: 10px;
   }
+  /* button templates to be used in this stylesheet, not referenced in the HTML */
+  .button-template-selected {
+    color: @silexlightblue;
+    background-color: @silexdarkgrey;
+  }
+  .button-template {
+    background-color: @silexlightgrey;
+    border: 1px solid @silexdarkgrey;
+    display: block;
+    width: 30px;
+    text-align: center;
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+  /* */
   .prodotype-component-editor, .prodotype-style-editor {
     .expandable;
     border-top: 1px solid @silexdarkgrey;
@@ -529,7 +544,42 @@
     & > .prodotype-container > section > ul {
       padding-left: 0;
     }
-    label {
+    form.style-editor-tag-form {
+      /* tags H1, H2, H3, P, A */
+      .labels {
+        display: inline-block; /* push the elements underneeth dispite it is floated */
+        width: 100%;
+        margin-left: 5%;
+        & > label {
+          .button-template;
+          width: 17%;
+          min-width: 30px;
+          font-weight: bold;
+          margin-top: 5px;
+          float: left;
+          border-left: initial;
+          &:hover {
+            background-color: @silexdarkgrey;
+          }
+          &.first-button {
+            border-top-left-radius: 4px;
+            border-bottom-left-radius: 4px;
+            border-left: 1px solid @silexdarkgrey;
+            clear: left;
+          }
+          &.last-button {
+            border-top-right-radius: 4px;
+            border-bottom-right-radius: 4px;
+            border-right: 1px solid @silexdarkgrey;
+          }
+        }
+      }
+      /* prodotype sub-editors labels, e.g. font-family */
+      .sub-editors label {
+      }
+    }
+    /* prodotype editors labels, e.g. Heading1 */
+    .prop-editor-base label, .class-name-style-label {
       .expandable-legend;
       display: block;
       padding-bottom: 5px;
@@ -542,4 +592,108 @@
   .prodotype-component-editor .prop-editor-base:last-child {
     border-bottom: 1px solid @silexdarkgrey; /* last "accordion" header has a border */
   }
+  .prodotype-style-editor {
+    /* style the title of the ditor, i.e. "Paragraph", "Link"... */
+    .prodotype-container > .editor > ul > .prop-editor-base > .prop-editor-name {
+    }
+    /* all labels in the style editor */
+    .prodotype-container .prop-editor-name {
+      cursor: default;
+    }
+
+    /* highlight selected label, e.g. H1 */
+    .hidden { display: none; }
+    .style-editor-tag-form input:checked:nth-child(1) ~
+    .labels label:nth-child(1),
+    .style-editor-tag-form input:checked:nth-child(2) ~
+    .labels label:nth-child(2),
+    .style-editor-tag-form input:checked:nth-child(3) ~
+    .labels label:nth-child(3),
+    .style-editor-tag-form input:checked:nth-child(4) ~
+    .labels label:nth-child(4),
+    .style-editor-tag-form input:checked:nth-child(5) ~
+    .labels label:nth-child(5),
+    .style-editor-tag-form input:checked:nth-child(6) ~
+    .labels label:nth-child(6),
+    .style-editor-tag-form input:checked:nth-child(7) ~
+    .labels label:nth-child(7),
+    .style-editor-tag-form input:checked:nth-child(8) ~
+    .labels label:nth-child(8),
+    .style-editor-tag-form input:checked:nth-child(9) ~
+    .labels label:nth-child(9),
+    .style-editor-tag-form input:checked:nth-child(10) ~
+    .labels label:nth-child(10) { .button-template-selected }
+    /* Pure CSS to show / hide prodotype editors (tags H1, H2, H3, P, A) */
+    .prodotype-container .editor > ul > .prop-editor-base { display: none; }
+    /* Paragraph */
+    .style-editor-tag-form input:checked:nth-child(1) ~
+    .prodotype-container .editor > ul > .prop-editor-base:nth-child(1),
+    /* Link */
+    .style-editor-tag-form input:checked:nth-child(2) ~
+    .prodotype-container .editor > ul > .prop-editor-base:nth-child(2),
+    /* Bold */
+    .style-editor-tag-form input:checked:nth-child(3) ~
+    .prodotype-container .editor > ul > .prop-editor-base:nth-child(3),
+    /* Underline */
+    .style-editor-tag-form input:checked:nth-child(4) ~
+    .prodotype-container .editor > ul > .prop-editor-base:nth-child(4),
+    /* Italic */
+    .style-editor-tag-form input:checked:nth-child(5) ~
+    .prodotype-container .editor > ul > .prop-editor-base:nth-child(5),
+    /* Heading1 */
+    .style-editor-tag-form input:checked:nth-child(6) ~
+    .prodotype-container .editor > ul > .prop-editor-base:nth-child(6),
+    /* Heading2 */
+    .style-editor-tag-form input:checked:nth-child(7) ~
+    .prodotype-container .editor > ul > .prop-editor-base:nth-child(7),
+    /* Heading3 */
+    .style-editor-tag-form input:checked:nth-child(8) ~
+    .prodotype-container .editor > ul > .prop-editor-base:nth-child(8),
+    /* UL */
+    .style-editor-tag-form input:checked:nth-child(9) ~
+    .prodotype-container .editor > ul > .prop-editor-base:nth-child(9),
+    /* OL */
+    .style-editor-tag-form input:checked:nth-child(10) ~
+    .prodotype-container .editor > ul > .prop-editor-base:nth-child(10) { display: initial; }
+    .editor {
+      /* hide description and help button, FIXME: should be doable in the .yaml */
+      & > h1, & > h1 + div { display: none; }
+    }
+
+    /* vivibility checkbox (mobile only or not) */
+    .visibility-style-label {
+      .button-template;
+      margin: 0;
+      padding: 0;
+      height: 28px;
+      font-size: 25px;
+    }
+    .visibility-style-checkbox:checked ~ .visibility-style-label {
+      .button-template-selected;
+    }
+    .class-name-block {
+      display: flex;
+      padding: 0;
+      select {
+        margin: 0;
+        height: 30px;
+        background-color: @silexlightgrey;
+        border-left: none;
+      }
+    }
+    .class-name-style-label {
+      display: flex;
+      justify-content: space-between;
+      padding: 0;
+    }
+    select.combobox.pseudoclass-style-combo-box {
+      width: 103px;
+      text-align: center;
+      background-color: @silexlightgrey;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+    }
+  }
+
 }

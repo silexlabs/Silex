@@ -8,12 +8,42 @@
       display: inline !important;
     }
   }
+  .prop-editor-base .number-editor  .prop-editor-container > .unit-selector {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    text-align: center;
+    margin-left: -30px;
+    padding: 0;
+    border: none;
+    box-shadow: none;
+    cursor: pointer;
+    width: auto;
+  }
+  .btn {
+    width: 90%;
+    cursor: pointer;
+    display: inline;
+    margin: 10px;
+    opacity: .8;
+    font-size: 1.4em;
+  }
+  .btn:hover {
+    opacity: 1;
+  }
+  .add-btn {
+  }
+  ul {
+    padding-left: 0; /* override default ul value for style editor which has only sub editors */
+  }
+}
+.prodotype-component-editor {
   .sub-editors-container {
     border-bottom: 1px solid #2F2F2F;
     border-left: 1px solid #2F2F2F;
     border-right: 1px solid #2F2F2F;
     margin-bottom: 10px;
-    margin-left: 10px;
+    padding-left: 5px;
     padding-bottom: 10px;
     .prop-editor-base > .prop-editor-container {
       padding-bottom: 0;
@@ -28,29 +58,5 @@
       padding: 0;
     }
     /* *************************************** */
-  }
-  .prop-editor-base .number-editor  .prop-editor-container > .unit-selector {
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    text-align: center;
-    margin-left: -30px;
-    padding: 0;
-    border: none;
-    box-shadow: none;
-    cursor: pointer;
-  }
-  .btn {
-    width: 90%;
-    cursor: pointer;
-    display: inline;
-    margin: 10px;
-    opacity: .8;
-    font-size: 1.4em;
-  }
-  .btn:hover {
-    opacity: 1;
-  }
-  .add-btn {
   }
 }

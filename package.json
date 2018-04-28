@@ -53,7 +53,7 @@
     "promise-sequential": "1.1.1",
     "request": "2.85.0",
     "serve-static": "1.13.2",
-    "silex-blank-templates": "github:silexlabs/silex-blank-templates#717e228",
+    "silex-blank-templates": "github:silexlabs/silex-blank-templates#5334f08",
     "silex-templates": "github:silexlabs/silex-templates#f9c2dcb"
   },
   "devDependencies": {

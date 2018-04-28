@@ -27,13 +27,13 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
     // Build the UI
     this.styleCombo = this.element.querySelector('.class-name-style-combo-box');
     this.pseudoClassCombo = this.element.querySelector('.pseudoclass-style-combo-box');
-    this.visibilityCombo = this.element.querySelector('.visibility-style-combo-box');
+    this.mobileOnlyCheckbox = this.element.querySelector('.visibility-style-checkbox');
     this.pseudoClassCombo.onchange = e => {
-      this.model.component.editStyle(this.styleCombo.value, this.getPseudoClass(), this.visibilityCombo.value);
+      this.model.component.editStyle(this.styleCombo.value, this.getPseudoClass(), this.getVisibility());
     };
-    this.visibilityCombo.onchange = e => {
+    this.mobileOnlyCheckbox.onchange = e => {
       // edit selected style
-      this.model.component.editStyle(this.styleCombo.value, this.getPseudoClass(), this.visibilityCombo.value);
+      this.model.component.editStyle(this.styleCombo.value, this.getPseudoClass(), this.getVisibility());
       // update pseudo class dropdown
       const styleData = this.model.property.getProdotypeData(this.styleCombo.value, Component.STYLE_TYPE) || {};
       this.populatePseudoClassCombo(styleData);
@@ -86,7 +86,7 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
     this.element.querySelector('.duplicate-style').onclick = e => {
       this.createStyle(this.model.property.getProdotypeData(this.styleCombo.value, Component.STYLE_TYPE));
     };
-    // reset style: this.model.component.initStyle(this.styleCombo.options[this.styleCombo.selectedIndex].text, this.styleCombo.value, this.getPseudoClass(), this.visibilityCombo.value);
+    // reset style: this.model.component.initStyle(this.styleCombo.options[this.styleCombo.selectedIndex].text, this.styleCombo.value, this.getPseudoClass(), this.getVisibility());
     // rename style
     this.element.querySelector('.edit-style').onclick = e => {
       const oldClassName = this.styleCombo.value;
@@ -102,6 +102,11 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
         this.deleteStyle(oldClassName);
       });
     };
+  }
+
+
+  getVisibility() {
+    return Component.STYLE_VISIBILITY[this.mobileOnlyCheckbox.checked ? 1 : 0];
   }
 
 
@@ -130,7 +135,7 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
     const currentSelection = this.styleCombo.value;
     let currentSelectionFound = false;
     // reset the combo box
-    this.styleCombo.innerHTML = '<option disabled selected value> -- select a style to edit -- </option>';
+    this.styleCombo.innerHTML = '';
     // add all the existing styles to the dropdown list
     this.model.component.getProdotypeComponents(Component.STYLE_TYPE)
     .map(obj => {
@@ -156,23 +161,22 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
       // populate combos
       const styleData = this.model.property.getProdotypeData(this.styleCombo.value, Component.STYLE_TYPE) || {};
       this.populatePseudoClassCombo(styleData);
-      this.populateVisibilityCombo(styleData);
-      this.visibilityCombo.disabled = false;
+      this.mobileOnlyCheckbox.disabled = false;
       this.pseudoClassCombo.disabled = false;
       // store prev value
       if(this.styleComboPrevValue !== this.styleCombo.value) {
         // reset state
-        this.visibilityCombo.selectedIndex = 0;
+        this.mobileOnlyCheckbox.checked = false;
         this.pseudoClassCombo.selectedIndex = 0;
       }
       this.styleComboPrevValue = this.styleCombo.value;
       // start editing the style with prodotype
-      this.model.component.editStyle(this.styleCombo.value, this.getPseudoClass(), this.visibilityCombo.value);
+      this.model.component.editStyle(this.styleCombo.value, this.getPseudoClass(), this.getVisibility());
     }
     else {
       this.model.component.resetSelection(Component.STYLE_TYPE);
-      this.visibilityCombo.innerHTML = '';
-      this.visibilityCombo.disabled = true;
+      this.mobileOnlyCheckbox.checked = false;
+      this.mobileOnlyCheckbox.disabled = true;
       this.pseudoClassCombo.innerHTML = '';
       this.pseudoClassCombo.disabled = true;
     }
@@ -183,31 +187,8 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
    * useful to mark combo elements with "*" when there is data there
    * @param {Object} styleData
    */
-  populateVisibilityCombo(styleData) {
-    // populate visibility class combo
-    const selectedIndex = this.visibilityCombo.selectedIndex;
-    this.visibilityCombo.innerHTML = '';
-    Component.STYLE_VISIBILITY
-    .map((visibility, idx) => {
-      // create the combo box options
-      const option = document.createElement('option');
-      option.value = visibility;
-      option.innerHTML = Component.STYLE_VISIBILITY_LABELS[idx] + (!!styleData && !!styleData[visibility] ? ' *' : '');
-      return option;
-    })
-    // append options to the dom
-    .forEach(option => this.visibilityCombo.appendChild(option));
-    // keep selection
-    this.visibilityCombo.selectedIndex = selectedIndex;
-  }
-
-
-  /**
-   * useful to mark combo elements with "*" when there is data there
-   * @param {Object} styleData
-   */
   populatePseudoClassCombo(styleData) {
-    const visibilityData = styleData[this.visibilityCombo.value];
+    const visibilityData = styleData[this.getVisibility()];
     // populate pseudo class combo
     const selectedIndex = this.pseudoClassCombo.selectedIndex;
     this.pseudoClassCombo.innerHTML = '';
@@ -270,7 +251,7 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
       (accept, name) => {
         if(accept && name && name !== '') {
           const className = name.replace(/ /g, '-').toLowerCase();
-          this.model.component.initStyle(name, className, this.getPseudoClass(), this.visibilityCombo.value, opt_data);
+          this.model.component.initStyle(name, className, this.getPseudoClass(), this.getVisibility(), opt_data);
           // FIXME: needed to select className but model.Component::initStyle calls refreshView which calls updateStyleList
           this.styleCombo.value = className;
           this.updateStyleList();
