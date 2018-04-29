@@ -8,7 +8,19 @@
       display: inline !important;
     }
   }
-  .prop-editor-base .number-editor  .prop-editor-container > .unit-selector {
+  .prop-editor-container > input[type=color] {
+    width: 15%;
+    padding: 2px;
+    float: left;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+  .prop-editor-container > input[type=color] + input {
+    width: 80%;
+    margin: 0;
+    padding-left: 0;
+  }
+  .prop-editor-base .number-editor .prop-editor-container > .unit-selector {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
@@ -19,6 +31,10 @@
     box-shadow: none;
     cursor: pointer;
     width: auto;
+    /* override styles Silex's combo boxes */
+    display: inline;
+    background-color: transparent;
+    border-left: 1px solid @silexdarkgrey;
   }
   .btn {
     width: 90%;
