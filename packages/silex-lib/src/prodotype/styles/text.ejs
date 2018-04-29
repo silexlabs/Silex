@@ -31,6 +31,9 @@ const props = [
   }, {
     obj: OrderedList,
     selector: 'ol' + pseudo,
+  }, {
+    obj: Active,
+    selector: '.page-link-active' + pseudo,
   }
 ].filter(prop => typeof prop.obj !== 'undefined');
 function getProp(prop, propName) {
@@ -48,15 +51,16 @@ function getProp(prop, propName) {
   if(found) {
   %>
     .<%= className %> <%= prop.selector %> {
+      <%= getProp(prop, 'list-style-type') -%>
+      <% if(prop.obj['list-style-image']) { %>
+        list-style-image: url(<%= prop.obj['list-style-image'] -%>);
+      <% } %>
+      <%= getProp(prop, 'list-style-position') -%>
       <%= getProp(prop, 'font-family') -%>
       <%= getProp(prop, 'font-style') -%>
       <%= getProp(prop, 'font-variant') -%>
       <%= getProp(prop, 'font-weight') -%>
-      <% if(prop.obj['numerical-size']) { %>
-        font-size: <%= prop.obj['numerical-size'] -%>;
-      <% } else { %>
-        <%= getProp(prop, 'font-size') -%>
-      <% } %>
+      <%= getProp(prop, 'font-size') -%>
       <%= getProp(prop, 'color') -%>
       <%= getProp(prop, 'background-color') -%>
       <%= getProp(prop, 'text-decoration') -%>

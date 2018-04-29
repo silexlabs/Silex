@@ -382,32 +382,7 @@ class Component {
               // put back the editable elements
               element.appendChild(tempElements);
             },
-            'onBrowse': (e, cbk) => {
-              e.preventDefault();
-              // browse with CE
-              const promise = this.view.fileExplorer.openFile();
-              // add tracking and undo/redo checkpoint
-              this.view.settingsDialog.controller.settingsDialogController.track(promise, 'prodotype.browse');
-              this.view.settingsDialog.controller.settingsDialogController.undoredo(promise);
-              // handle the result
-              promise.then(fileInfo => {
-                if(fileInfo) {
-                  cbk([{
-                    'url': fileInfo.absPath,
-                    'lastModified': fileInfo.lastModified,
-                    'lastModifiedDate': new Date(fileInfo.lastModified),
-                    'name': fileInfo.name,
-                    'size': fileInfo.size,
-                    'type': fileInfo.type,
-                  }]);
-                }
-              })
-              .catch(error => {
-                silex.utils.Notification.notifyError(
-                  'Error: I could not select the file. <br /><br />' +
-                  (error.message || ''));
-              });
-            }
+            'onBrowse': (e, cbk) => this.onBrowse(e, cbk),
           });
       }
       this.componentEditorElement.classList.remove('hide-panel');
@@ -416,6 +391,33 @@ class Component {
       this.componentEditorElement.classList.add('hide-panel');
       this.resetSelection(Component.COMPONENT_TYPE);
     }
+  }
+
+  onBrowse(e, cbk) {
+    e.preventDefault();
+    // browse with CE
+    const promise = this.view.fileExplorer.openFile();
+    // add tracking and undo/redo checkpoint
+    this.view.settingsDialog.controller.settingsDialogController.track(promise, 'prodotype.browse');
+    this.view.settingsDialog.controller.settingsDialogController.undoredo(promise);
+    // handle the result
+    promise.then(fileInfo => {
+      if(fileInfo) {
+        cbk([{
+          'url': fileInfo.absPath,
+          'lastModified': fileInfo.lastModified,
+          'lastModifiedDate': new Date(fileInfo.lastModified),
+          'name': fileInfo.name,
+          'size': fileInfo.size,
+          'type': fileInfo.type,
+        }]);
+      }
+    })
+    .catch(error => {
+      silex.utils.Notification.notifyError(
+        'Error: I could not select the file. <br /><br />' +
+        (error.message || ''));
+    });
   }
 
   removeStyle(className) {
@@ -452,6 +454,7 @@ class Component {
       'text',
       {
         'onChange': (newData, html) => this.styleChanged(className, pseudoClass, visibility, newData),
+        'onBrowse': (e, cbk) => this.onBrowse(e, cbk),
       }
     );
   }
