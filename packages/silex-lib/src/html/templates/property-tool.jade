@@ -9,20 +9,20 @@
         span.fa.fa-fw.fa-inverse.fa-caret-right
         span Position and size
       .body
-        div.two-col
+        .two-col
           label X
           label W
-        div.two-col
+        .two-col
           .input-with-unit
             input.position-input.left-input(placeholder='-', type='number', tabindex='1')
             label.unit PX
           .input-with-unit
             input.position-input.width-input(placeholder='-', type='number', tabindex='3', min='0')
             label.unit PX
-        div.two-col
+        .two-col
           label Y
           label H
-        div.two-col
+        .two-col
           .input-with-unit
             input.position-input.top-input(placeholder='-', type='number', tabindex='2')
             label.unit PX
@@ -199,17 +199,23 @@
       label.class-name-style-label(for='class-name-style-combo-box')
         span Style name:
         select#pseudoclass-style-combo-box.pseudoclass-style-combo-box.combobox
-      div.class-name-block
+      .class-name-block
         input#visibility-style-checkbox.visibility-style-checkbox.hidden(type='checkbox')
         label.visibility-style-label.fa-fw.icon.fa-inverse.fa-mobile.expandable(for='visibility-style-checkbox', title='Mobile only')
         select#class-name-style-combo-box.class-name-style-combo-box.combobox
-      .add-style.icon.fa.fa-lg.fa-plus(title='Add a text style.')
-      .remove-style.icon.fa.fa-lg.fa-minus(title='Delete the current text style.')
-      .apply-style.icon.fa.fa-lg.fa-paint-brush(title='Apply the current style to selected text boxes.')
-      .unapply-style.icon.fa.fa-lg.fa-eraser(title='Remove the current style from selected text boxes.')
-      .select-style.icon.fa.fa-lg.fa-object-group(title='Select text boxes with the current style.')
-      .duplicate-style.icon.fa.fa-lg.fa-copy(title='Duplicate the current text style.')
-      .edit-style.icon.fa.fa-lg.fa-edit(title='Rename the current text style.')
+
+      p.selection-info-container
+        span.dot.fa.fa-circle
+        span.on-page 2 on this page (<span>select</span>),
+        span.total 5 total (<span>select</span>)
+
+      .add-style.icon-btn.icon-btn-left.icon-btn-first(title='Add a text style.') <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'><defs><style>.cls-1 {fill: #e5e5e5;}</style></defs><path id='Union_18' data-name='Union 18' class='cls-1' d='M4,10V6H0V4H4V0H6V4h4V6H6v4Z'/></svg>
+      .edit-style.icon-btn.icon-btn-left(title='Rename the current text style.') <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10.007'><defs><style>.cls-1 {fill: #e5e5e5;fill-rule: evenodd;}</style></defs><path id='editA' class='cls-1' d='M7.43,0a.67.67,0,0,0-.475.2L9.8,3.05a.671.671,0,0,0,0-.95L7.9.2A.67.67,0,0,0,7.43,0ZM9.8,3.05,6.955.2,1.5,5.655,4.351,8.508,9.8,3.05ZM.707,7.315c-.118.334-.252.736-.4,1.226,0,.017-.01.034-.016.051-.013.043-.027.088-.04.133s-.025.08-.037.121-.021.068-.031.1l-.073.245c-.054.183-.187.6-.037.748s.563.017.746-.037l.243-.073L1.166,9.8l.114-.035.139-.043.041-.013c.5-.154.9-.29,1.236-.41L.707,7.315Z' transform='translate(0 -0.002)'/></svg>
+      .duplicate-style.icon-btn.icon-btn-left(title='Duplicate the current text style.') <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 11 11'><defs><style>.cls-1 {fill: #e5e5e5;}</style></defs><path id='Union_19' data-name='Union 19' class='cls-1' d='M5,11V5h6v6ZM3,6H0V0H6V3H3V6H3Z'/></svg>
+      .remove-style.icon-btn.icon-btn-right.icon-btn-last(title='Delete the current text style.') <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 11'><defs><style>.cls-1 {fill: #e5e5e5;}</style></defs><path id='Union_17' data-name='Union 17' class='cls-1' d='M2,11a1,1,0,0,1-1-1V3H9v7a1,1,0,0,1-1,1ZM0,2V1H10V2ZM3,1A1,1,0,0,1,4,0H6A1,1,0,0,1,7,1Z'/></svg>
+      .unapply-style.icon-btn.icon-btn-right(title='Remove the current style from selected text boxes.') <svg id='Group_9' data-name='Group 9' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 13 11'><defs><style>.cls-1 {fill: #e4e4e4;}</style></defs><path id='Path_72' data-name='Path 72' class='cls-1' d='M8.964-6A3.516,3.516,0,0,0,5.5-9,3.5,3.5,0,0,0,2-5.5,3.5,3.5,0,0,0,5.5-2,3.53,3.53,0,0,0,6-2.036V-.023C5.831-.007,5.663,0,5.5,0A5.506,5.506,0,0,1,0-5.5,5.506,5.506,0,0,1,5.5-11,5.482,5.482,0,0,1,9.218-9.55,5.485,5.485,0,0,1,10.977-6H13L10-2,7-6Z' transform='translate(0 11)'/></svg>
+      .apply-style.icon-btn.icon-btn-right(title='Apply the current style to selected text boxes.') <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 15.667"><defs><style>.cls-1 {fill: #e5e5e5;}</style></defs><g id="paint-brush" transform="translate(0 -1)"><path id="Path_23" data-name="Path 23" class="cls-1" d="M1.969,11.8c-1.262,1.24-.2,2.513-1.873,4.4-.757.852,3.115.592,5.033-1.293a1.916,1.916,0,0,0-.289-2.824A1.993,1.993,0,0,0,1.969,11.8ZM15.95,1.049C15.3.412,8.134,6.156,6,8.254a14.7,14.7,0,0,0-1.737,2.017c-.141.181.045.237.129.28a3.972,3.972,0,0,1,1.092.785,3.908,3.908,0,0,1,.8,1.074c.044.083.1.266.285.128A14.819,14.819,0,0,0,8.62,10.83C10.754,8.732,16.6,1.685,15.95,1.049Z" transform="translate(0 0)"/></g></svg>
+      <hr>
       form.style-editor-tag-form
         input#style-editor-tag-paragraph.hidden(type='radio', name='style-editor-tag-name', value='paragraph', checked)
         input#style-editor-tag-link.hidden(type='radio', name='style-editor-tag-name', value='link')
@@ -221,7 +227,7 @@
         input#style-editor-tag-heading3.hidden(type='radio', name='style-editor-tag-name', value='heading3')
         input#style-editor-tag-ul.hidden(type='radio', name='style-editor-tag-name', value='ul')
         input#style-editor-tag-ol.hidden(type='radio', name='style-editor-tag-name', value='ol')
-        div.labels
+        .labels
           label.first-button(for='style-editor-tag-paragraph', title='Edit style of text marked as "normal"') P
           label(for='style-editor-tag-link', title='Edit style of links') A
           label(for='style-editor-tag-bold', title='Edit style of bold text') B
