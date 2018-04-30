@@ -41,7 +41,7 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
     this.styleCombo.onchange = e => {
       // select elements which have this style
       // TODO: this is probably bad UX, unless we scroll to the element and open a page where it is visible
-      const newSelection = this.model.component.getElementsAsArray('.' + this.styleCombo.value);
+      const newSelection = this.getElementsWithStyle(this.styleCombo.value, false);
       this.model.body.setSelection(newSelection);
       // edit this style
       this.updateStyleList();
@@ -77,9 +77,17 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
       this.controller.propertyToolController.refreshView();
     };
     // select elements which have this style
-    this.element.querySelector('.select-style').onclick = e => {
-      const newSelection = this.model.component.getElementsAsArray('.' + this.styleCombo.value)
-      .filter(el => this.model.element.getType(el) === 'text')
+    this.selectionCountTotal = this.element.querySelector('.total');
+    this.selectionCountTotal.onclick = e => {
+      const newSelection = this.getElementsWithStyle(this.styleCombo.value, true);
+      console.log('selectionCountTotal', newSelection);
+      this.model.body.setSelection(newSelection);
+    };
+    // select only elements on this page
+    this.selectionCountPage = this.element.querySelector('.on-page');
+    this.selectionCountPage.onclick = e => {
+      const newSelection = this.getElementsWithStyle(this.styleCombo.value, false);
+      console.log('selectionCountPage', newSelection);
       this.model.body.setSelection(newSelection);
     };
     // duplicate a style
@@ -102,6 +110,14 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
         this.deleteStyle(oldClassName);
       });
     };
+  }
+
+
+  getElementsWithStyle(styleName, includeOffPage) {
+    const newSelection = this.model.component.getElementsAsArray('.' + this.styleCombo.value)
+    if(includeOffPage) return newSelection;
+    else return newSelection
+      .filter(el => this.model.page.isInPage(el) || this.model.page.getPagesForElement(el).length === 0);
   }
 
 
@@ -172,6 +188,12 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
       this.styleComboPrevValue = this.styleCombo.value;
       // start editing the style with prodotype
       this.model.component.editStyle(this.styleCombo.value, this.getPseudoClass(), this.getVisibility());
+
+      // update selection count
+      const total = this.getElementsWithStyle(this.styleCombo.value, true).length;
+      const onPage = total === 0 ? 0 : this.getElementsWithStyle(this.styleCombo.value, false).length;
+      this.selectionCountPage.innerHTML = `${ onPage } on this page (<span>select</span>),&nbsp;`;
+      this.selectionCountTotal.innerHTML = `${ total } total (<span>select</span>)`;
     }
     else {
       this.model.component.resetSelection(Component.STYLE_TYPE);
