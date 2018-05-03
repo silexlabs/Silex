@@ -98,10 +98,10 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
     // rename style
     this.element.querySelector('.edit-style').onclick = e => {
       const oldClassName = this.styleCombo.value;
-      this.createStyle(this.model.property.getProdotypeData(this.styleCombo.value, Component.STYLE_TYPE), name => {
+      const data = this.model.property.getProdotypeData(oldClassName, Component.STYLE_TYPE);
+      this.createStyle(data, name => {
         // update the style name
-        this.model.component.getElementsAsArray('.' + oldClassName)
-        .filter(el => this.model.element.getType(el) === 'text')
+        this.getElementsWithStyle(oldClassName, true)
         .forEach(el => {
           el.classList.add(this.styleCombo.value);
           el.classList.remove(oldClassName);
@@ -114,7 +114,7 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
 
 
   getElementsWithStyle(styleName, includeOffPage) {
-    const newSelection = this.model.component.getElementsAsArray('.' + this.styleCombo.value)
+    const newSelection = this.model.component.getElementsAsArray('.' + styleName)
     if(includeOffPage) return newSelection;
     else return newSelection
       .filter(el => this.model.page.isInPage(el) || this.model.page.getPagesForElement(el).length === 0);
@@ -269,6 +269,7 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
    * @param {?function(?string=)=} opt_cbk
    */
   createStyle(opt_data, opt_cbk) {
+    console.log('createStyle', opt_data)
     silex.utils.Notification.prompt('Enter a name for your style!', 'My Style',
       (accept, name) => {
         if(accept && name && name !== '') {
