@@ -140,6 +140,34 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
 
     // FIXME: no need to recreate the whole style list every time the selection changes
     this.updateStyleList();
+
+    // edit the style of the selection
+    if(selectedElements.length > 0) {
+      const allStyles = this.model.component.getProdotypeComponents(Component.STYLE_TYPE);
+      // get the selected elements style, i.e. which style applies to them
+      const selectionStyle = (() => {
+        // get the class names common to the selection
+        var classNames = selectedElements
+        // from array of elements to array of array of classNames
+        .map(element => element.className.split(' ').filter(className => className != ''))
+        // to array of class names in common to all selected elements
+        .reduce((prev, classNames, currentIndex) => {
+          return prev.filter(prevClassName => classNames.includes(prevClassName));
+        }) // no initial value so the first element in the array will be used, it will start with the 2nd element
+        // keep only the styles defined in the style editor
+        .filter(className => allStyles.find(style => style['className'] === className));
+        // choose the style to edit
+        if(classNames.length >= 1) {
+          return classNames[0];
+        }
+        return null;
+      })()
+      if(selectionStyle && this.styleCombo.value != selectionStyle) {
+        this.styleCombo.value = selectionStyle;
+        // edit this style
+        this.updateStyleList();
+      }
+    }
   }
 
 
