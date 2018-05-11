@@ -35,7 +35,7 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
       // edit selected style
       this.model.component.editStyle(this.styleCombo.value, this.getPseudoClass(), this.getVisibility());
       // update pseudo class dropdown
-      const styleData = this.model.property.getProdotypeData(this.styleCombo.value, Component.STYLE_TYPE) || {};
+      const styleData = this.model.property.getStyleData(this.styleCombo.value) || {};
       this.populatePseudoClassCombo(styleData);
     };
     this.styleCombo.onchange = e => {
@@ -80,34 +80,34 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
     this.selectionCountTotal = this.element.querySelector('.total');
     this.selectionCountTotal.onclick = e => {
       const newSelection = this.getElementsWithStyle(this.styleCombo.value, true);
-      console.log('selectionCountTotal', newSelection);
       this.model.body.setSelection(newSelection);
     };
     // select only elements on this page
     this.selectionCountPage = this.element.querySelector('.on-page');
     this.selectionCountPage.onclick = e => {
       const newSelection = this.getElementsWithStyle(this.styleCombo.value, false);
-      console.log('selectionCountPage', newSelection);
       this.model.body.setSelection(newSelection);
     };
     // duplicate a style
     this.element.querySelector('.duplicate-style').onclick = e => {
-      this.createStyle(this.model.property.getProdotypeData(this.styleCombo.value, Component.STYLE_TYPE));
+      this.createStyle(this.model.property.getStyleData(this.styleCombo.value));
     };
     // reset style: this.model.component.initStyle(this.styleCombo.options[this.styleCombo.selectedIndex].text, this.styleCombo.value, this.getPseudoClass(), this.getVisibility());
     // rename style
     this.element.querySelector('.edit-style').onclick = e => {
       const oldClassName = this.styleCombo.value;
-      const data = this.model.property.getProdotypeData(oldClassName, Component.STYLE_TYPE);
+      const data = this.model.property.getStyleData(oldClassName);
       this.createStyle(data, name => {
-        // update the style name
-        this.getElementsWithStyle(oldClassName, true)
-        .forEach(el => {
-          el.classList.add(this.styleCombo.value);
-          el.classList.remove(oldClassName);
-        });
-        // delete the old one
-        this.deleteStyle(oldClassName);
+        if(name) {
+          // update the style name
+          this.getElementsWithStyle(oldClassName, true)
+          .forEach(el => {
+            el.classList.remove(oldClassName);
+            el.classList.add(this.styleCombo.value);
+          });
+          // delete the old one
+          this.deleteStyle(oldClassName, false);
+        }
       });
     };
   }
@@ -155,11 +155,10 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
     // add all the existing styles to the dropdown list
     this.model.component.getProdotypeComponents(Component.STYLE_TYPE)
     .map(obj => {
-
       // create the combo box option
       const option = document.createElement('option');
-      option.value = obj.className;
-      option.innerHTML = obj.displayName;
+      option.value = obj['className'];
+      option.innerHTML = obj['displayName'];
 
       // keep the previous selection
       if(currentSelection === option.value) {
@@ -175,7 +174,7 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
     }
     if(this.styleCombo.value) {
       // populate combos
-      const styleData = this.model.property.getProdotypeData(this.styleCombo.value, Component.STYLE_TYPE) || {};
+      const styleData = this.model.property.getStyleData(this.styleCombo.value) || {};
       this.populatePseudoClassCombo(styleData);
       this.mobileOnlyCheckbox.disabled = false;
       this.pseudoClassCombo.disabled = false;
@@ -265,16 +264,15 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
 
   /**
    * utility function to create a style in the style combo box or duplicate one
-   * @param {?Object=} opt_data
+   * @param {?silex.model.data.StyleData=} opt_data
    * @param {?function(?string=)=} opt_cbk
    */
   createStyle(opt_data, opt_cbk) {
-    console.log('createStyle', opt_data)
-    silex.utils.Notification.prompt('Enter a name for your style!', 'My Style',
+    silex.utils.Notification.prompt('Enter a name for your style!', opt_data ? opt_data['displayName'] : 'My Style',
       (accept, name) => {
         if(accept && name && name !== '') {
           const className = name.replace(/ /g, '-').toLowerCase();
-          this.model.component.initStyle(name, className, this.getPseudoClass(), this.getVisibility(), opt_data);
+          this.model.component.initStyle(name, className, opt_data);
           // FIXME: needed to select className but model.Component::initStyle calls refreshView which calls updateStyleList
           this.styleCombo.value = className;
           this.updateStyleList();
@@ -291,17 +289,30 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
 
   /**
    * utility function to delete a style in the style
+   * @param {!string} name
+   * @param {?boolean=} opt_confirm, default is true, if false it will skip user confirmation popin
    */
-  deleteStyle(name) {
-    silex.utils.Notification.confirm(`I am about to delete the style <b>${ name }</b>!<br><br>Are you sure?`,
+  deleteStyle(name, opt_confirm) {
+    if(opt_confirm === false) this.doDeleteStyle(name);
+    else silex.utils.Notification.confirm(`I am about to delete the style <b>${ name }</b>!<br><br>Are you sure?`,
       (accept) => {
       if(accept) {
-        const option = this.styleCombo.querySelector('option[value="' + name + '"]');
-        if(option && option.value !== Component.BODY_STYLE_CSS_CLASS) {
-          this.model.component.removeStyle(option.value);
-          this.styleCombo.removeChild(option);
-        }
+        this.doDeleteStyle(name);
       }
     });
+  }
+
+
+  /**
+   * utility function to delete a style in the style
+   * @param {!string} name
+   * @private
+   */
+  doDeleteStyle(name) {
+    const option = this.styleCombo.querySelector('option[value="' + name + '"]');
+    if(option && option.value !== Component.BODY_STYLE_CSS_CLASS) {
+      this.model.component.removeStyle(option.value);
+      this.styleCombo.removeChild(option);
+    }
   }
 }
