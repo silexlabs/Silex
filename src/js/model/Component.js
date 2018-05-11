@@ -12,7 +12,7 @@
 /**
  * @fileoverview
  *   This class is used to manage Prodotype components
- *   Components are based on Silex elements, but Prodotype renders a template in it
+ *   Components are based on Silex elements, use Prodotype to render a templates
  */
 
 goog.provide('silex.model.Component');
@@ -35,10 +35,12 @@ class Component {
 
     Component.BODY_STYLE_NAME = 'All texts';
     Component.BODY_STYLE_CSS_CLASS = 'BODY';
+
     /**
      * @type {string}
      */
     Component.COMPONENT_TYPE = 'component';
+
     /**
      * @type {string}
      */
@@ -48,7 +50,7 @@ class Component {
      * possible visibility for the styles
      * @type {Array.<string>}
      */
-    Component.STYLE_VISIBILITY = ['desktop-mobile', 'mobile'];
+    Component.STYLE_VISIBILITY = ['desktop', 'mobile'];
 
     // store the model and the view
     /**
@@ -138,7 +140,7 @@ class Component {
     // for selection (select all components)
     element.classList.add(Component.COMPONENT_CLASS_NAME);
     // for styles (select buttons and apply a style)
-    this.model.property.setElementData(element, Component.COMPONENT_TYPE, {
+    this.model.property.setElementComponentData(element, {
       'name': name,
       'templateName': templateName,
     });
@@ -195,7 +197,7 @@ class Component {
   }
 
   renderType(element, type, opt_cbk) {
-    const data = this.model.property.getElementData(element, type);
+    const data = (type === Component.COMPONENT_TYPE ? this.model.property.getElementComponentData(element) : this.model.property.getElementStyleData(element));
     const templateName = data['templateName'];
     const prodotype = this.getProdotype(type);
 
@@ -282,14 +284,15 @@ class Component {
 
   /**
    * @param {string} type, Component.COMPONENT_TYPE or Component.STYLE_TYPE
-   * @return {Array.<{name:string, templateName:string, displayName:string}>}
+   * @return {Array.<{name:string, templateName:silex.model.data.TemplateName, displayName:string}>}
    */
   getProdotypeComponents(type) {
     const className = type === Component.COMPONENT_TYPE ? Component.COMPONENT_CLASS_NAME : Component.STYLE_CLASS_NAME;
     return this.getElementsAsArray('.' + className).map(el => {
-      const data = this.model.property.getProdotypeData(el.getAttribute('data-style-id'), type);
+      const attr = el.getAttribute('data-style-id');
+      const data = (type === Component.COMPONENT_TYPE ? this.model.property.getComponentData(attr) : this.model.property.getStyleData(attr));
       return data;
-    });
+    }).filter(data => !!data);
   }
 
 
@@ -361,7 +364,7 @@ class Component {
    */
   editComponent(element) {
     if(this.isComponent(element)) {
-      const componentData = this.model.property.getElementData(element, Component.COMPONENT_TYPE);
+      const componentData = this.model.property.getElementComponentData(element);
       if(element && this.prodotypeComponent && componentData) {
         this.prodotypeComponent.edit(
           componentData,
@@ -374,7 +377,7 @@ class Component {
               // remove the editable elements temporarily
               const tempElements = this.saveEditableChildren(element);
               // store the component's data for later edition
-              this.model.property.setElementData(element, Component.COMPONENT_TYPE, newData);
+              this.model.property.setElementComponentData(element, newData);
               // update the element with the new template
               this.model.element.setInnerHtml(element, html);
               // execute the scripts
@@ -393,6 +396,10 @@ class Component {
     }
   }
 
+  /**
+   * @param {Event} e
+   * @param {function(Array.<FileInfo>)} cbk
+   */
   onBrowse(e, cbk) {
     e.preventDefault();
     // browse with CE
@@ -425,7 +432,7 @@ class Component {
     this.view.settingsDialog.controller.settingsDialogController.undoCheckPoint();
 
     // remove prodotype data from json object
-    this.model.property.setProdotypeData(className, Component.STYLE_TYPE);
+    this.model.property.setStyleData(className);
 
     // remove style from dom
     const head = this.model.head.getHeadElement();
@@ -436,13 +443,13 @@ class Component {
   }
 
   /**
-   * @param {string} className, the css class to edit the style for
-   * @param {string} pseudoClass, e.g. normal, :hover, ::first-letter
-   * @param {string} visibility, e.g. mobile only, desktop and mobile...
+   * @param {silex.model.data.StyleName} className, the css class to edit the style for
+   * @param {silex.model.data.PseudoClass} pseudoClass, e.g. normal, :hover, ::first-letter
+   * @param {silex.model.data.Visibility} visibility, e.g. mobile only, desktop and mobile...
    */
   editStyle(className, pseudoClass, visibility) {
-    const styleData = this.model.property.getProdotypeData(className, Component.STYLE_TYPE) || {};
-    const visibilityData = styleData[visibility] || {};
+    const styleData = this.model.property.getStyleData(className) || { styles: {} };
+    const visibilityData = styleData['styles'][visibility] || {};
     const pseudoClassData = visibilityData[pseudoClass] || {
       'templateName': 'text',
       'className': className,
@@ -462,22 +469,55 @@ class Component {
   /**
    * save an empty style or reset a style
    * @param {string} displayName
-   * @param {string} className
-   * @param {string} pseudoClass
-   * @param {string} visibility
-   * @param {?Object=} opt_data
+   * @param {silex.model.data.StyleName} className
+   * @param {?silex.model.data.StyleData=} opt_data
    */
-  initStyle(displayName, className, pseudoClass, visibility, opt_data) {
-    this.styleChanged(className, pseudoClass, visibility, opt_data, displayName);
+  initStyle(displayName, className, opt_data) {
+    // render all pseudo classes in all visibility object
+    this.getPseudoClassData(opt_data || /** @type {silex.model.data.StyleData} */ ({'styles': { 'desktop': {'normal': {}}}}))
+    .forEach(pseudoClassData => {
+      this.styleChanged(className, pseudoClassData['pseudoClass'], pseudoClassData['visibility'], pseudoClassData['data'], displayName);
+    });
+  }
+
+
+  /**
+   * build an array of all the data we provide to Prodotype for the "text" template
+   * @param  {silex.model.data.StyleData} styleData
+   * @return {Array<{visibility: silex.model.data.Visibility, pseudoClass: silex.model.data.PseudoClass, data: silex.model.data.PseudoClassData}>}
+   */
+  getPseudoClassData(styleData) {
+    // return all pseudo classes in all visibility object
+    return Component.STYLE_VISIBILITY
+    // build an object for each existing visibility
+    .map(visibility => { return {
+      'visibility': visibility,
+      'data': styleData['styles'][visibility],
+    }})
+    .filter(obj => !!obj['data'])
+    // build an object for each pseudoClass
+    .map(vData => {
+      const arrayOfPCData = [];
+      for(let pcName in vData.data) {
+        arrayOfPCData.push({
+          'visibility': vData['visibility'],
+          'pseudoClass': pcName, /* unused, the data is in data */
+          'data': vData.data[pcName],
+        });
+      }
+      return arrayOfPCData;
+    })
+    // flatten
+    .reduce((acc, val) => acc.concat(val), []);
   }
 
 
   /**
    * apply the style to the dom and save it to the JSON object
-   * @param {string} className
-   * @param {string} pseudoClass
-   * @param {string} visibility
-   * @param {?Object=} opt_data
+   * @param {silex.model.data.StyleName} className
+   * @param {silex.model.data.PseudoClass} pseudoClass
+   * @param {silex.model.data.Visibility} visibility
+   * @param {?silex.model.data.PseudoClassData=} opt_data
    * @param {?string=} opt_displayName
    */
   styleChanged(className, pseudoClass, visibility, opt_data, opt_displayName) {
@@ -490,48 +530,29 @@ class Component {
     this.view.settingsDialog.controller.settingsDialogController.undoCheckPoint();
 
     // store the component's data for later edition
-    const data = this.model.property.getProdotypeData(className, Component.STYLE_TYPE) || {
+    const styleData = /** @type {silex.model.data.StyleData} */ (this.model.property.getStyleData(className) || {
       'className': className,
       'templateName': 'text',
       'displayName': opt_displayName,
-    };
-    data[visibility] = data[visibility] || {};
-    data[visibility][pseudoClass] = newData;
-    this.model.property.setProdotypeData(className, Component.STYLE_TYPE, data);
+      'styles': {},
+    });
+    if(!styleData['styles'][visibility]) styleData['styles'][visibility] = {};
+    styleData['styles'][visibility][pseudoClass] = newData;
+    this.model.property.setStyleData(className, styleData);
     // update the head style with the new template
     const head = this.model.head.getHeadElement();
     let elStyle = head.querySelector(`[data-style-id="${className}"]`)
     if(!elStyle) {
       const doc = this.model.file.getContentDocument();
       elStyle = doc.createElement('style');
-      elStyle.className = `${Component.STYLE_CLASS_NAME}`;
+      elStyle.className = Component.STYLE_CLASS_NAME;
       elStyle.setAttribute('type', 'text/css');
       elStyle.setAttribute('data-style-id', className);
       head.appendChild(elStyle);
     }
 
     // render all pseudo classes in all visibility object
-    const pseudoClassData = Component.STYLE_VISIBILITY
-    // build an object for each existing visibility
-    .map(visibility => { return {
-      visibility: visibility,
-      data: data[visibility],
-    }})
-    .filter(obj => !!obj.data)
-    // build an object for each pseudoClass
-    .map(vData => {
-      const arrayOfPCData = [];
-      for(let pcName in vData.data) {
-        arrayOfPCData.push({
-          visibility: vData.visibility,
-          pseudoClass: pcName, /* unused, the data is in data */
-          data: vData.data[pcName],
-        });
-      }
-      return arrayOfPCData;
-    })
-    // flatten
-    .reduce((acc, val) => acc.concat(val), []);
+    const pseudoClassData = this.getPseudoClassData(styleData);
 
     if(pseudoClassData.length > 0) {
       Promise.all(
@@ -553,7 +574,7 @@ class Component {
    * add a media query around the style string
    * when needed for mobile-only
    * @param {string} html
-   * @param {string} visibility
+   * @param {silex.model.data.Visibility} visibility
    */
   addMediaQuery(html, visibility) {
     if(visibility === Component.STYLE_VISIBILITY[0]) {

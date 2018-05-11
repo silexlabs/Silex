@@ -17,6 +17,9 @@ const props = [
     obj: Link,
     selector: 'a' + pseudo,
   }, {
+    obj: Link,
+    selector: '[data-silex-href]' + pseudo, /* this is for links in silex editor and preview, before publish only */
+  }, {
     obj: Bold,
     selector: 'b' + pseudo,
   }, {
