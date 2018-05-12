@@ -39,12 +39,20 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
       this.populatePseudoClassCombo(styleData);
     };
     this.styleCombo.onchange = e => {
-      // select elements which have this style
-      // TODO: this is probably bad UX, unless we scroll to the element and open a page where it is visible
-      const newSelection = this.getElementsWithStyle(this.styleCombo.value, false);
-      this.model.body.setSelection(newSelection);
-      // edit this style
-      this.updateStyleList();
+      this.selectedElements
+      .filter(el => this.model.element.getType(el) === 'text')
+      .forEach(element => {
+        // un-apply the old style if there was one
+        if(this.styleComboPrevValue && this.styleComboPrevValue !== '') {
+          element.classList.remove(this.styleComboPrevValue);
+        }
+        // apply the new style if there is one
+        if(this.styleCombo.value !== '') {
+          element.classList.add(this.styleCombo.value);
+        }
+      });
+      // refresh the view
+      this.controller.propertyToolController.refreshView();
     };
     this.element.querySelector('.add-style').onclick = e => {
       this.createStyle();
@@ -56,15 +64,6 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
       .forEach(el => el.classList.remove(this.styleCombo.value));
       // delete from styles list
       this.deleteStyle(this.styleCombo.value);
-    };
-    this.element.querySelector('.apply-style').onclick = e => {
-      this.selectedElements
-      .filter(el => this.model.element.getType(el) === 'text')
-      .forEach(element => {
-        element.classList.add(this.styleCombo.value);
-      });
-      // refresh the view
-      this.controller.propertyToolController.refreshView();
     };
     // un-apply style
     this.element.querySelector('.unapply-style').onclick = e => {
@@ -113,6 +112,12 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
   }
 
 
+  /**
+   * Get all the elements which have a given style
+   * @param  {silex.model.data.StyleName} styleName
+   * @param  {boolean} includeOffPage, if false it excludes the elements which are not visible in the current page
+   * @return {Array<Element>}
+   */
   getElementsWithStyle(styleName, includeOffPage) {
     const newSelection = this.model.component.getElementsAsArray('.' + styleName)
     if(includeOffPage) return newSelection;
@@ -121,8 +126,31 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
   }
 
 
+  /**
+   * get the visibility (mobile+desktop or desktop) of the style being edited
+   * @return {silex.model.data.Visibility}
+   */
   getVisibility() {
     return Component.STYLE_VISIBILITY[this.mobileOnlyCheckbox.checked ? 1 : 0];
+  }
+
+
+  /**
+   * retrieve the styles applyed to the set of elements
+   * @param  {Array<Element>} elements
+   * @return {Array<silex.model.data.StyleName>}
+   */
+  getStyles(elements) {
+    const allStyles = this.model.component.getProdotypeComponents(Component.STYLE_TYPE);
+    return elements
+    // from array of elements to array of array of classNames
+    .map(element => element.className.split(' ').filter(className => className != ''))
+    // to array of class names in common to all selected elements
+    .reduce((prev, classNames, currentIndex) => {
+      return prev.filter(prevClassName => classNames.includes(prevClassName));
+    }) // no initial value so the first element in the array will be used, it will start with the 2nd element
+    // keep only the styles defined in the style editor
+    .filter(className => allStyles.find(style => style['className'] === className));
   }
 
 
@@ -143,30 +171,25 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
 
     // edit the style of the selection
     if(selectedElements.length > 0) {
-      const allStyles = this.model.component.getProdotypeComponents(Component.STYLE_TYPE);
       // get the selected elements style, i.e. which style applies to them
       const selectionStyle = (() => {
         // get the class names common to the selection
-        var classNames = selectedElements
-        // from array of elements to array of array of classNames
-        .map(element => element.className.split(' ').filter(className => className != ''))
-        // to array of class names in common to all selected elements
-        .reduce((prev, classNames, currentIndex) => {
-          return prev.filter(prevClassName => classNames.includes(prevClassName));
-        }) // no initial value so the first element in the array will be used, it will start with the 2nd element
-        // keep only the styles defined in the style editor
-        .filter(className => allStyles.find(style => style['className'] === className));
+        var classNames = this.getStyles(selectedElements);
         // choose the style to edit
         if(classNames.length >= 1) {
           return classNames[0];
         }
         return null;
       })()
-      if(selectionStyle && this.styleCombo.value != selectionStyle) {
-        this.styleCombo.value = selectionStyle;
-        // edit this style
-        this.updateStyleList();
+      if(!selectionStyle) {
+        // edit a new empty style
+        this.styleCombo.selectedIndex = 0;
       }
+      else if(selectionStyle && this.styleCombo.value != selectionStyle) {
+        // edit selection style
+        this.styleCombo.value = selectionStyle;
+      }
+      this.updateStyleList();
     }
   }
 
@@ -181,7 +204,11 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
     // reset the combo box
     this.styleCombo.innerHTML = '';
     // add all the existing styles to the dropdown list
-    this.model.component.getProdotypeComponents(Component.STYLE_TYPE)
+    [{
+      'className': Component.EMPTY_STYLE_CLASS_NAME,
+      'displayName': Component.EMPTY_STYLE_DISPLAY_NAME,
+    }]
+    .concat(this.model.component.getProdotypeComponents(Component.STYLE_TYPE))
     .map(obj => {
       // create the combo box option
       const option = document.createElement('option');
@@ -200,7 +227,20 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
     if(currentSelectionFound) {
       this.styleCombo.value = currentSelection;
     }
-    if(this.styleCombo.value) {
+    // edit style only if there are only text boxes or elements with a style (the body)
+    const onlyTextBoxes = this.selectedElements.length > 0 && this.selectedElements.reduce((prev, element) => {
+      const styles = this.getStyles([element]);
+      if(this.styleCombo.value === Component.EMPTY_STYLE_CLASS_NAME) {
+        // edit style only if there are only text boxes without styles
+        return prev && this.model.element.getType(element) === 'text' && styles.length === 0;
+      }
+      else {
+        // edit style only if all the elements have the same style
+        return prev && !!styles.find(style => style === this.styleCombo.value);
+      }
+    }, true);
+    if(onlyTextBoxes) {
+      this.element.classList.remove('no-style');
       // populate combos
       const styleData = this.model.property.getStyleData(this.styleCombo.value) || {};
       this.populatePseudoClassCombo(styleData);
@@ -223,11 +263,7 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
       this.selectionCountTotal.innerHTML = `${ total } total (<span>select</span>)`;
     }
     else {
-      this.model.component.resetSelection(Component.STYLE_TYPE);
-      this.mobileOnlyCheckbox.checked = false;
-      this.mobileOnlyCheckbox.disabled = true;
-      this.pseudoClassCombo.innerHTML = '';
-      this.pseudoClassCombo.disabled = true;
+      this.element.classList.add('no-style');
     }
   }
 
@@ -304,7 +340,6 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
           // FIXME: needed to select className but model.Component::initStyle calls refreshView which calls updateStyleList
           this.styleCombo.value = className;
           this.updateStyleList();
-          //this.styleComboPrevValue = this.styleCombo.value;
           if(opt_cbk) opt_cbk(name);
         }
         else {

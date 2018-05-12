@@ -36,6 +36,9 @@ class Component {
     Component.BODY_STYLE_NAME = 'All texts';
     Component.BODY_STYLE_CSS_CLASS = 'BODY';
 
+    Component.EMPTY_STYLE_CLASS_NAME = 'empty-style-class-name';
+    Component.EMPTY_STYLE_DISPLAY_NAME = '';
+
     /**
      * @type {string}
      */
@@ -48,7 +51,7 @@ class Component {
 
     /**
      * possible visibility for the styles
-     * @type {Array.<string>}
+     * @type {Array.<silex.model.data.Visibility>}
      */
     Component.STYLE_VISIBILITY = ['desktop', 'mobile'];
 
@@ -284,7 +287,7 @@ class Component {
 
   /**
    * @param {string} type, Component.COMPONENT_TYPE or Component.STYLE_TYPE
-   * @return {Array.<{name:string, templateName:silex.model.data.TemplateName, displayName:string}>}
+   * @return {Array<silex.model.data.ComponentData|silex.model.data.StyleData>}
    */
   getProdotypeComponents(type) {
     const className = type === Component.COMPONENT_TYPE ? Component.COMPONENT_CLASS_NAME : Component.STYLE_CLASS_NAME;
@@ -521,6 +524,23 @@ class Component {
    * @param {?string=} opt_displayName
    */
   styleChanged(className, pseudoClass, visibility, opt_data, opt_displayName) {
+    // create a new style if needed
+    if(className === Component.EMPTY_STYLE_CLASS_NAME) {
+      const textBoxes = this.model.body.getSelection().filter(el => this.model.element.getType(el) === 'text');
+      if(textBoxes.length > 0) {
+        // create a new unique name
+        const allStyles = this.getProdotypeComponents(Component.STYLE_TYPE);
+        const baseDisplayName = textBoxes.length === 1 ? 'Text Style ' : 'Group Style ';
+        const baseClassName = textBoxes.length === 1 ? 'text-style-' : 'group-style-';
+        let idx = 1;
+        while(allStyles.find(obj => obj['className'] === baseClassName + idx.toString())) idx++;
+        opt_displayName = baseDisplayName + idx;
+        className = baseClassName + idx;
+        // apply to the selection
+        textBoxes.forEach(element => element.classList.add(className));
+      }
+    }
+
     // expose the class name and pseudo class to the prodotype template
     const newData = opt_data || {};
     newData['className'] = className;
