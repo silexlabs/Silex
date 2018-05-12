@@ -32,11 +32,15 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
       this.model.component.editStyle(this.styleCombo.value, this.getPseudoClass(), this.getVisibility());
     };
     this.mobileOnlyCheckbox.onchange = e => {
-      // edit selected style
-      this.model.component.editStyle(this.styleCombo.value, this.getPseudoClass(), this.getVisibility());
-      // update pseudo class dropdown
-      const styleData = this.model.property.getStyleData(this.styleCombo.value) || {};
-      this.populatePseudoClassCombo(styleData);
+      // FIXME: should switch the mobile editor mode
+      e.preventDefault();
+      this.mobileOnlyCheckbox.checked = this.isMobile();
+      // this.view.workspace.setMobileEditor(this.mobileOnlyCheckbox.checked);
+      // // edit selected style
+      // this.model.component.editStyle(this.styleCombo.value, this.getPseudoClass(), this.getVisibility());
+      // // update pseudo class dropdown
+      // const styleData = this.model.property.getStyleData(this.styleCombo.value) || {};
+      // this.populatePseudoClassCombo(styleData);
     };
     this.styleCombo.onchange = e => {
       this.selectedElements
@@ -131,7 +135,17 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
    * @return {silex.model.data.Visibility}
    */
   getVisibility() {
-    return Component.STYLE_VISIBILITY[this.mobileOnlyCheckbox.checked ? 1 : 0];
+    return Component.STYLE_VISIBILITY[this.isMobile() ? 1 : 0];
+  }
+
+
+  /**
+   * @return {boolean} true if we are in mobile editor
+   * because views (view.workspace.get/setMobileEditor) is not accessible from other views
+   * FIXME: find another way to expose isMobileEditor to views
+   */
+  isMobile() {
+    return document.body.classList.contains('mobile-mode');
   }
 
 
@@ -162,6 +176,9 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
    */
   redraw(selectedElements, pageNames, currentPageName) {
     super.redraw(selectedElements, pageNames, currentPageName);
+
+    // mobile mode
+    this.mobileOnlyCheckbox.checked = this.isMobile();
 
     // reuse selectedElements in combo box on change
     this.selectedElements = selectedElements;
@@ -244,12 +261,10 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
       // populate combos
       const styleData = this.model.property.getStyleData(this.styleCombo.value) || {};
       this.populatePseudoClassCombo(styleData);
-      this.mobileOnlyCheckbox.disabled = false;
       this.pseudoClassCombo.disabled = false;
       // store prev value
       if(this.styleComboPrevValue !== this.styleCombo.value) {
         // reset state
-        this.mobileOnlyCheckbox.checked = false;
         this.pseudoClassCombo.selectedIndex = 0;
       }
       this.styleComboPrevValue = this.styleCombo.value;
