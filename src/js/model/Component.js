@@ -448,7 +448,7 @@ class Component {
    * @param {silex.model.data.Visibility} visibility, e.g. mobile only, desktop and mobile...
    */
   editStyle(className, pseudoClass, visibility) {
-    const styleData = this.model.property.getStyleData(className) || { styles: {} };
+    const styleData = this.model.property.getStyleData(className) || { 'styles': {} };
     const visibilityData = styleData['styles'][visibility] || {};
     const pseudoClassData = visibilityData[pseudoClass] || {
       'templateName': 'text',
