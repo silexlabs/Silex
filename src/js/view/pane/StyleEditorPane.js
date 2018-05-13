@@ -21,7 +21,7 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
     this.controller = controller;
     /** @type {?Array.<Element>} */
     this.selectedElements = null;
-    /** @type {string} */
+    /** @type {silex.model.data.StyleName} */
     this.styleComboPrevValue = '';
 
     // Build the UI
@@ -183,9 +183,6 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
     // reuse selectedElements in combo box on change
     this.selectedElements = selectedElements;
 
-    // FIXME: no need to recreate the whole style list every time the selection changes
-    this.updateStyleList();
-
     // edit the style of the selection
     if(selectedElements.length > 0) {
       // get the selected elements style, i.e. which style applies to them
@@ -196,86 +193,80 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
         if(classNames.length >= 1) {
           return classNames[0];
         }
-        return null;
+        return Component.EMPTY_STYLE_CLASS_NAME;
       })()
-      if(!selectionStyle) {
-        // edit a new empty style
-        this.styleCombo.selectedIndex = 0;
-      }
-      else if(selectionStyle && this.styleCombo.value != selectionStyle) {
-        // edit selection style
-        this.styleCombo.value = selectionStyle;
-      }
-      this.updateStyleList();
+      this.updateStyleList(selectionStyle);
     }
+    else {
+      // FIXME: no need to recreate the whole style list every time the selection changes
+      this.updateStyleList(null);
+    }
+
   }
 
 
   /**
    * update the list of styles
+   * @param {?silex.model.data.StyleName} styleName: option to select, or null for hide editor or `Component.EMPTY_STYLE_CLASS_NAME` for add an empty selection and select it
    */
-  updateStyleList() {
-    // keep the current selected style in the combo box
-    const currentSelection = this.styleCombo.value;
-    let currentSelectionFound = false;
+  updateStyleList(styleName) {
     // reset the combo box
     this.styleCombo.innerHTML = '';
     // add all the existing styles to the dropdown list
-    [{
+    (styleName === Component.EMPTY_STYLE_CLASS_NAME ? [{
       'className': Component.EMPTY_STYLE_CLASS_NAME,
       'displayName': Component.EMPTY_STYLE_DISPLAY_NAME,
-    }]
+    }] : [])
     .concat(this.model.component.getProdotypeComponents(Component.STYLE_TYPE))
     .map(obj => {
       // create the combo box option
       const option = document.createElement('option');
       option.value = obj['className'];
       option.innerHTML = obj['displayName'];
-
-      // keep the previous selection
-      if(currentSelection === option.value) {
-        currentSelectionFound = true;
-      }
       return option;
     })
     // append options to the dom
     .forEach(option => this.styleCombo.appendChild(option));
-    // set the new selection
-    if(currentSelectionFound) {
-      this.styleCombo.value = currentSelection;
-    }
-    // edit style only if there are only text boxes or elements with a style (the body)
-    const onlyTextBoxes = this.selectedElements.length > 0 && this.selectedElements.reduce((prev, element) => {
-      const styles = this.getStyles([element]);
-      if(this.styleCombo.value === Component.EMPTY_STYLE_CLASS_NAME) {
-        // edit style only if there are only text boxes without styles
-        return prev && this.model.element.getType(element) === 'text' && styles.length === 0;
+    if(styleName != null) {
+      const styleNameNotNull = /** @type {!silex.model.data.StyleName} */ (styleName);
+      // set the new selection
+      this.styleCombo.value = /** @type {!string} */ (styleNameNotNull);
+      // edit style only if there are only text boxes or elements with a style (the body)
+      const onlyTextBoxes = this.selectedElements.length > 0 && this.selectedElements.reduce((prev, element) => {
+        const styles = this.getStyles([element]);
+        if(styleNameNotNull === Component.EMPTY_STYLE_CLASS_NAME) {
+          // edit style only if there are only text boxes without styles
+          return prev && this.model.element.getType(element) === 'text' && styles.length === 0;
+        }
+        else {
+          // edit style only if all the elements have the same style
+          return prev && !!styles.find(style => style === styleNameNotNull);
+        }
+      }, true);
+      if(onlyTextBoxes) {
+        this.element.classList.remove('no-style');
+        // populate combos
+        const styleData = this.model.property.getStyleData(styleNameNotNull) || {};
+        this.populatePseudoClassCombo(styleData);
+        this.pseudoClassCombo.disabled = false;
+        // store prev value
+        if(this.styleComboPrevValue !== styleNameNotNull) {
+          // reset state
+          this.pseudoClassCombo.selectedIndex = 0;
+        }
+        this.styleComboPrevValue = styleNameNotNull;
+        // start editing the style with prodotype
+        this.model.component.editStyle(styleNameNotNull, this.getPseudoClass(), this.getVisibility());
+
+        // update selection count
+        const total = this.getElementsWithStyle(styleNameNotNull, true).length;
+        const onPage = total === 0 ? 0 : this.getElementsWithStyle(styleNameNotNull, false).length;
+        this.selectionCountPage.innerHTML = `${ onPage } on this page (<span>select</span>),&nbsp;`;
+        this.selectionCountTotal.innerHTML = `${ total } total (<span>select</span>)`;
       }
       else {
-        // edit style only if all the elements have the same style
-        return prev && !!styles.find(style => style === this.styleCombo.value);
+        this.element.classList.add('no-style');
       }
-    }, true);
-    if(onlyTextBoxes) {
-      this.element.classList.remove('no-style');
-      // populate combos
-      const styleData = this.model.property.getStyleData(this.styleCombo.value) || {};
-      this.populatePseudoClassCombo(styleData);
-      this.pseudoClassCombo.disabled = false;
-      // store prev value
-      if(this.styleComboPrevValue !== this.styleCombo.value) {
-        // reset state
-        this.pseudoClassCombo.selectedIndex = 0;
-      }
-      this.styleComboPrevValue = this.styleCombo.value;
-      // start editing the style with prodotype
-      this.model.component.editStyle(this.styleCombo.value, this.getPseudoClass(), this.getVisibility());
-
-      // update selection count
-      const total = this.getElementsWithStyle(this.styleCombo.value, true).length;
-      const onPage = total === 0 ? 0 : this.getElementsWithStyle(this.styleCombo.value, false).length;
-      this.selectionCountPage.innerHTML = `${ onPage } on this page (<span>select</span>),&nbsp;`;
-      this.selectionCountTotal.innerHTML = `${ total } total (<span>select</span>)`;
     }
     else {
       this.element.classList.add('no-style');
@@ -353,8 +344,7 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
           const className = name.replace(/ /g, '-').toLowerCase();
           this.model.component.initStyle(name, className, opt_data);
           // FIXME: needed to select className but model.Component::initStyle calls refreshView which calls updateStyleList
-          this.styleCombo.value = className;
-          this.updateStyleList();
+          this.updateStyleList(className);
           if(opt_cbk) opt_cbk(name);
         }
         else {

@@ -338,7 +338,7 @@ silex.model.Property.prototype.getComponentData = function(id) {
 
 /**
  * get / set the data associated with an element
- * @param {silex.model.data.SilexId} id
+ * @param {silex.model.data.StyleName} id
  * @return {?silex.model.data.StyleData} a clone of the data object
  */
 silex.model.Property.prototype.getStyleData = function(id) {
