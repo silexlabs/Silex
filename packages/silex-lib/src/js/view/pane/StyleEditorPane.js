@@ -15,6 +15,9 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
   constructor(element, model, controller) {
     super(element, model, controller);
 
+    // tracker for analytics
+    this.tracker = silex.service.Tracker.getInstance();
+
     // store the params
     this.element = element;
     this.model = model;
@@ -29,6 +32,7 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
     this.pseudoClassCombo = this.element.querySelector('.pseudoclass-style-combo-box');
     this.mobileOnlyCheckbox = this.element.querySelector('.visibility-style-checkbox');
     this.pseudoClassCombo.onchange = e => {
+      this.tracker.trackAction('style-editor-events', 'select-pseudo-class');
       this.model.component.editStyle(this.styleCombo.value, this.getPseudoClass(), this.getVisibility());
     };
     this.mobileOnlyCheckbox.onchange = e => {
@@ -43,6 +47,7 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
       // this.populatePseudoClassCombo(styleData);
     };
     this.styleCombo.onchange = e => {
+      this.tracker.trackAction('style-editor-events', 'apply-style');
       this.selectedElements
       .filter(el => this.model.element.getType(el) === 'text')
       .forEach(element => {
@@ -59,9 +64,11 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
       this.controller.propertyToolController.refreshView();
     };
     this.element.querySelector('.add-style').onclick = e => {
+      this.tracker.trackAction('style-editor-events', 'create-style');
       this.createStyle();
     };
     this.element.querySelector('.remove-style').onclick = e => {
+      this.tracker.trackAction('style-editor-events', 'remove-style');
       // remove from elements
       this.model.component.getElementsAsArray('.' + this.styleCombo.value)
       .filter(el => this.model.element.getType(el) === 'text')
@@ -71,6 +78,7 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
     };
     // un-apply style
     this.element.querySelector('.unapply-style').onclick = e => {
+      this.tracker.trackAction('style-editor-events', 'unapply-style');
       this.selectedElements
       .filter(el => this.model.element.getType(el) === 'text')
       .forEach(element => {
@@ -82,22 +90,26 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
     // select elements which have this style
     this.selectionCountTotal = this.element.querySelector('.total');
     this.selectionCountTotal.onclick = e => {
+      this.tracker.trackAction('style-editor-events', 'select-elements-with-style');
       const newSelection = this.getElementsWithStyle(this.styleCombo.value, true);
       this.model.body.setSelection(newSelection);
     };
     // select only elements on this page
     this.selectionCountPage = this.element.querySelector('.on-page');
     this.selectionCountPage.onclick = e => {
+      this.tracker.trackAction('style-editor-events', 'select-all-elements-with-style');
       const newSelection = this.getElementsWithStyle(this.styleCombo.value, false);
       this.model.body.setSelection(newSelection);
     };
     // duplicate a style
     this.element.querySelector('.duplicate-style').onclick = e => {
+      this.tracker.trackAction('style-editor-events', 'duplicate-style');
       this.createStyle(this.model.property.getStyleData(this.styleCombo.value));
     };
     // reset style: this.model.component.initStyle(this.styleCombo.options[this.styleCombo.selectedIndex].text, this.styleCombo.value, this.getPseudoClass(), this.getVisibility());
     // rename style
     this.element.querySelector('.edit-style').onclick = e => {
+      this.tracker.trackAction('style-editor-events', 'edit-style');
       const oldClassName = this.styleCombo.value;
       const data = this.model.property.getStyleData(oldClassName);
       this.createStyle(data, name => {
@@ -112,6 +124,10 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
           this.deleteStyle(oldClassName, false);
         }
       });
+    };
+    // for tracking only
+    this.element.querySelector('.style-editor-tag-form .labels').onclick = e => {
+      this.tracker.trackAction('style-editor-events', 'select-tag');
     };
   }
 
