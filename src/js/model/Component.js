@@ -150,7 +150,7 @@ class Component {
     // first rendering of the component
     this.render(element, () => {
       // update the dependencies once the component is added
-      this.updateDepenedencies()
+      this.updateDepenedencies(Component.COMPONENT_TYPE);
     });
     // css styles
     const componentsDef = this.getComponentsDef(Component.COMPONENT_TYPE);
@@ -199,20 +199,30 @@ class Component {
     }
   }
 
+
+  /**
+   * render a component or style
+   * @param  {Element} element
+   * @param  {silex.model.data.SilexId|silex.model.data.StyleName} type
+   * @param {?function()=} opt_cbk
+   */
   renderType(element, type, opt_cbk) {
     const data = (type === Component.COMPONENT_TYPE ? this.model.property.getElementComponentData(element) : this.model.property.getElementStyleData(element));
-    const templateName = data['templateName'];
-    const prodotype = this.getProdotype(type);
+    if(data) {
+      const templateName = data['templateName'];
+      const prodotype = this.getProdotype(type);
 
-    prodotype.decorate(templateName, data)
-    .then(html => {
-      this.model.element.setInnerHtml(element, html);
-      // notify the owner
-      if(opt_cbk) opt_cbk();
-      // execute the scripts
-      // FIXME: should exec scripts only after dependencies are loaded
-      this.executeScripts(element);
-    });
+      prodotype.decorate(templateName, data)
+      .then(html => {
+        this.model.element.setInnerHtml(element, html);
+        // notify the owner
+        if(opt_cbk) opt_cbk();
+        // execute the scripts
+        // FIXME: should exec scripts only after dependencies are loaded
+        this.executeScripts(element);
+      });
+    }
+    else if(opt_cbk) opt_cbk();
   }
 
   /**
@@ -291,8 +301,9 @@ class Component {
    */
   getProdotypeComponents(type) {
     const className = type === Component.COMPONENT_TYPE ? Component.COMPONENT_CLASS_NAME : Component.STYLE_CLASS_NAME;
+    const attrName = type === Component.COMPONENT_TYPE ? silex.model.Property.ELEMENT_ID_ATTR_NAME : 'data-style-id';
     return this.getElementsAsArray('.' + className).map(el => {
-      const attr = el.getAttribute('data-style-id');
+      const attr = el.getAttribute(attrName);
       const data = (type === Component.COMPONENT_TYPE ? this.model.property.getComponentData(attr) : this.model.property.getStyleData(attr));
       return data;
     }).filter(data => !!data);
@@ -302,15 +313,19 @@ class Component {
   /**
    * update the dependencies of Prodotype components
    * FIXME: should have a callback to know if/when scripts are loaded
+   * @param {string} type, Component.COMPONENT_TYPE or Component.STYLE_TYPE
    */
-  updateDepenedencies() {
+  updateDepenedencies(type) {
     const head = this.model.head.getHeadElement();
-    const components = this.getProdotypeComponents(Component.COMPONENT_TYPE).concat(this.getProdotypeComponents(Component.STYLE_TYPE));
+    const components = this.getProdotypeComponents(type);
+    const prodotype = this.getProdotype(type);
+
+
     // remove unused dependencies (scripts and style sheets)
     const nodeList = this.model.head.getHeadElement().querySelectorAll('[data-dependency]');
     const elements = [];
     for(let idx=0; idx<nodeList.length; idx++) elements.push(nodeList[idx]);
-    const unused = this.prodotypeComponent.getUnusedDependencies(
+    const unused = prodotype.getUnusedDependencies(
       elements,
       components
     );
@@ -319,7 +334,7 @@ class Component {
       head.removeChild(el);
     };
     // add missing dependencies (scripts and style sheets)
-    let missing = this.prodotypeComponent.getMissingDependencies(head, components);
+    let missing = prodotype.getMissingDependencies(head, components);
     for(let idx=0; idx < missing.length; idx++) {
       const el = missing[idx];
       el.setAttribute('data-dependency', '');
@@ -443,6 +458,9 @@ class Component {
     if(elStyle) {
       head.removeChild(elStyle);
     }
+
+    // update dependencies
+    this.updateDepenedencies(Component.STYLE_TYPE);
   }
 
   /**
@@ -481,6 +499,7 @@ class Component {
     .forEach(pseudoClassData => {
       this.styleChanged(className, pseudoClassData['pseudoClass'], pseudoClassData['visibility'], pseudoClassData['data'], displayName);
     });
+    this.updateDepenedencies(Component.STYLE_TYPE);
   }
 
 

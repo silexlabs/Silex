@@ -319,8 +319,9 @@ silex.model.Property.prototype.setStyleData = function(id, opt_prodotypeData) {
 silex.model.Property.prototype.getProdotypeData = function(id, type) {
   const res = this.prodotypeDataObj[type][id];
   if(res) {
+    const clone = /** @type {silex.model.data.ComponentData|silex.model.data.StyleData} */ (JSON.parse(JSON.stringify(res)));
     // clone the object
-    return /** @type {silex.model.data.ComponentData|silex.model.data.StyleData} */ (JSON.parse(JSON.stringify(res)));
+    return clone;
   }
   return null;
 };
