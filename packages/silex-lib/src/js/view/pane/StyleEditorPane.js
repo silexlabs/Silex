@@ -34,6 +34,8 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
     this.pseudoClassCombo.onchange = e => {
       this.tracker.trackAction('style-editor-events', 'select-pseudo-class');
       this.model.component.editStyle(this.styleCombo.value, this.getPseudoClass(), this.getVisibility());
+      const styleData = /** @type {silex.model.data.StyleData} */ (this.model.property.getStyleData(this.styleCombo.value) || {});
+      this.updateTagButtonBar(styleData);
     };
     this.mobileOnlyCheckbox.onchange = e => {
       // FIXME: should switch the mobile editor mode
@@ -70,7 +72,7 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
     this.element.querySelector('.remove-style').onclick = e => {
       this.tracker.trackAction('style-editor-events', 'remove-style');
       // remove from elements
-      this.model.component.getElementsAsArray('.' + this.styleCombo.value)
+      silex.utils.Dom.getElementsAsArray(this.model.file.getContentDocument(), '.' + this.styleCombo.value)
       .filter(el => this.model.element.getType(el) === 'text')
       .forEach(el => el.classList.remove(this.styleCombo.value));
       // delete from styles list
@@ -139,7 +141,7 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
    * @return {Array<Element>}
    */
   getElementsWithStyle(styleName, includeOffPage) {
-    const newSelection = this.model.component.getElementsAsArray('.' + styleName)
+    const newSelection = silex.utils.Dom.getElementsAsArray(this.model.file.getContentDocument(), '.' + styleName)
     if(includeOffPage) return newSelection;
     else return newSelection
       .filter(el => this.model.page.isInPage(el) || this.model.page.getPagesForElement(el).length === 0);
@@ -217,7 +219,6 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
       // FIXME: no need to recreate the whole style list every time the selection changes
       this.updateStyleList(null);
     }
-
   }
 
 
@@ -262,7 +263,7 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
       if(onlyTextBoxes) {
         this.element.classList.remove('no-style');
         // populate combos
-        const styleData = this.model.property.getStyleData(styleNameNotNull) || {};
+        const styleData = /** @type {silex.model.data.StyleData} */ (this.model.property.getStyleData(styleNameNotNull) || {});
         this.populatePseudoClassCombo(styleData);
         this.pseudoClassCombo.disabled = false;
         // store prev value
@@ -279,6 +280,9 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
         const onPage = total === 0 ? 0 : this.getElementsWithStyle(styleNameNotNull, false).length;
         this.selectionCountPage.innerHTML = `${ onPage } on this page (<span>select</span>),&nbsp;`;
         this.selectionCountTotal.innerHTML = `${ total } total (<span>select</span>)`;
+
+        // update tags buttons
+        this.updateTagButtonBar(styleData);
       }
       else {
         this.element.classList.add('no-style');
@@ -289,13 +293,27 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
     }
   }
 
+  /**
+   * mark tags push buttons to show which tags have styles
+   * @param {silex.model.data.StyleData} styleData
+   */
+  updateTagButtonBar(styleData) {
+    const visibilityData = (styleData['styles'] || {})[this.getVisibility()] || {};
+    const tagData = visibilityData[this.getPseudoClass()] || {};
+    silex.utils.Dom.getElementsAsArray(this.element, '[data-prodotype-name]').forEach(el => {
+      const tagName = el.getAttribute('data-prodotype-name');
+      const label = el.getAttribute('data-initial-value') + (tagData[tagName] ? ' *' : '');
+      if(el.innerHTML != label) el.innerHTML = label;
+    });
+  }
+
 
   /**
    * useful to mark combo elements with "*" when there is data there
-   * @param {Object} styleData
+   * @param {silex.model.data.StyleData} styleData
    */
   populatePseudoClassCombo(styleData) {
-    const visibilityData = styleData[this.getVisibility()];
+    const visibilityData = (styleData['styles'] || {})[this.getVisibility()];
     // populate pseudo class combo
     const selectedIndex = this.pseudoClassCombo.selectedIndex;
     this.pseudoClassCombo.innerHTML = '';

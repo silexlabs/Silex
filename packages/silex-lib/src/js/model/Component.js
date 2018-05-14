@@ -281,28 +281,13 @@ class Component {
 
 
   /**
-   * retrieve all dom elements containing the components or styles
-   * @param {string} selector, CSS selector of the elements containing the components or styles
-   * @return {Array.<Element>}
-   */
-  getElementsAsArray(selector) {
-    // get all elements which are components
-    const components = this.model.file.getContentDocument().querySelectorAll(selector);
-    // make an array out of it
-    var arr = [];
-    for (let idx=0; idx < components.length; idx++) arr.push(components[idx]);
-    return arr;
-  }
-
-
-  /**
    * @param {string} type, Component.COMPONENT_TYPE or Component.STYLE_TYPE
    * @return {Array<silex.model.data.ComponentData|silex.model.data.StyleData>}
    */
   getProdotypeComponents(type) {
     const className = type === Component.COMPONENT_TYPE ? Component.COMPONENT_CLASS_NAME : Component.STYLE_CLASS_NAME;
     const attrName = type === Component.COMPONENT_TYPE ? silex.model.Property.ELEMENT_ID_ATTR_NAME : 'data-style-id';
-    return this.getElementsAsArray('.' + className).map(el => {
+    return silex.utils.Dom.getElementsAsArray(this.model.file.getContentDocument(), '.' + className).map(el => {
       const attr = el.getAttribute(attrName);
       const data = (type === Component.COMPONENT_TYPE ? this.model.property.getComponentData(attr) : this.model.property.getStyleData(attr));
       return data;

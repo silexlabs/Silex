@@ -182,6 +182,7 @@ props:
   - name: list-style-type
     type:
       - ""
+      - none
       - disc
       - circle
       - square
@@ -222,6 +223,7 @@ props:
   - name: list-style-type
     type:
       - ""
+      - none
       - disc
       - circle
       - square
@@ -265,15 +267,11 @@ props:
   type:
   - "normal"
   - ":hover"
-  - ":focus-within"
   - ":first-child"
   - ":last-child"
-  - ":first-of-type"
-  - ":last-of-type"
-  - ":only-child"
   - ":nth-child(even)"
   - ":nth-child(odd)"
   - "::first-letter"
   - "::first-line"
   readonly: true
-  default: normal
+  default: "normal"
