@@ -273,6 +273,7 @@ silex.model.File.prototype.getHtmlGenerator = function* () {
   // clone
   var cleanFile = /** @type {Node} */ (this.contentDocument_.cloneNode(true));
   yield;
+  // apply styles in JSON to the DOM, this is to ensure we save the styles untuched by the browser
   var styleTag = cleanFile.querySelector('.' + silex.model.Property.INLINE_STYLE_TAG_CLASS_NAME);
   styleTag.innerHTML = updatedStyles;
   yield;

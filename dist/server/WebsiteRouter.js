@@ -13,7 +13,6 @@ const Path = require('path');
 const express = require('express');
 const fs = require('fs');
 const { JSDOM } = require('jsdom');
-const bodyParser = require('body-parser');
 const { URL } = require('url');
 const CloudExplorer = require('cloud-explorer');
 
@@ -59,7 +58,7 @@ module.exports = function(port, rootUrl, unifile) {
   function readWebsite(req, res, next) {
     const connector = req.params[0];
     const path = req.params[1];
-    const url = new URL(`${ rootUrl }/${ connector }/get/${ Path.dirname(path) }/`);
+    const url = new URL(`${ rootUrl }/ce/${ connector }/get/${ Path.dirname(path) }/`);
     unifile.readFile(req.session.unifile, connector, path)
       .then(buffer => {
         return sendWebsiteData(res, buffer, url);
@@ -110,8 +109,7 @@ module.exports = function(port, rootUrl, unifile) {
   function writeWebsite(req, res, next) {
     const connector = req.params[0];
     const path = req.params[1];
-    const url = new URL(`${ rootUrl }/${ connector }/get/${ Path.dirname(path) }/`);
-
+    const url = new URL(`${ rootUrl }/ce/${ connector }/get/${ Path.dirname(path) }/`);
     const dom = new JSDOM(req.body, { url: url.href, });
     unprepareWebsite(dom, url);
     const str = dom.serialize();
@@ -218,9 +216,9 @@ module.exports = function(port, rootUrl, unifile) {
   const router = express.Router();
 
   // website specials
-  router.get(/\/website\/(.*)\/get\/(.*)/, readWebsite);
+  router.get(/\/website\/ce\/(.*)\/get\/(.*)/, readWebsite);
   router.get(/\/website(.*)/, readTemplate);
-  router.put(/\/website\/(.*)\/put\/(.*)/, bodyParser.text({limit: '1mb'}), writeWebsite);
+  router.put(/\/website\/ce\/(.*)\/put\/(.*)/, writeWebsite);
 
   // **
   // list templates

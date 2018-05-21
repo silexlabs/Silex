@@ -72,7 +72,7 @@ class FileExplorer {
    * @return {FileInfo}
    */
   addAbsPath(fileInfo) {
-    return /** @type {FileInfo} */ (Object.assign({'absPath': `/${ fileInfo.service }/get/${ fileInfo.path }`}, fileInfo));
+    return /** @type {FileInfo} */ (Object.assign({'absPath': `/ce/${ fileInfo.service }/get/${ fileInfo.path }`}, fileInfo));
   }
 
 

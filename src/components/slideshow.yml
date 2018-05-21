@@ -27,6 +27,7 @@ initialCss:
   background-color: 'transparent'
 props:
 - name: slides
+  expandable: true
   type:
     - name: image
       type: file
@@ -44,6 +45,7 @@ props:
       type: string
       description: Link to open when the user clicks on the slide
 - name: animation
+  expandable: true
   default: 'horizontal'
   description: How should Unslider animate each slide? Right now, there's three different animation types
   type:
@@ -51,14 +53,17 @@ props:
   - vertical
   - fade
 - name: captionColor
+  expandable: true
   type: color
   description: "the captions text color"
   default: white
 - name: captionBgColor
+  expandable: true
   type: color
   description: "the captions background color"
   default: "rgba(0,0,0,0.5)"
 - name: captionAlignH
+  expandable: true
   type:
   - left
   - center
@@ -66,6 +71,7 @@ props:
   description: "the captions horizontal position"
   default: center
 - name: captionAlignV
+  expandable: true
   type:
   - top
   - center
@@ -73,29 +79,36 @@ props:
   description: "the captions vertical position"
   default: bottom
 - name: autoplay
+  expandable: true
   type: boolean
   default: false
   description: Should the slider move by itself or only be triggered manually?
 - name: speed
+  expandable: true
   type: number
   default: 750
   description: How fast (in milliseconds) Unslider should animate between slides.
 - name: delay
+  expandable: true
   type: number
   default: 3000
   description: If autoplay is set to true, how many milliseconds should pass between moving the slides?
 - name: index
+  expandable: true
   type: number
   default: 0
   description: "If this is set to an integer, 'first' or 'last', it'll set the default slide to that position rather than the first slide."
 - name: nav
+  expandable: true
   type: boolean
   default: true
   description: Do you want to generate an automatic clickable navigation for each slide in your slider?
 - name: arrows
+  expandable: true
   type: boolean
   default: true
   description: Do you want to add left/right arrows to your slider?
 - name: onchange
+  expandable: true
   type: action
   description: "Fires the moment when the slide changes"

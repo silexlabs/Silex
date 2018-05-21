@@ -22,10 +22,12 @@ initialCss:
   background-color: 'transparent'
 props:
 - name: url
+  expandable: true
   type: string
   default: http://www.openstreetmap.org/#map=18/48.87378/2.29489&layers=C
   description: URL of the map on openstreetmap.org
 - name: marker
+  expandable: true
   type: file
   default: [{url: 'https://openlayers.org/en/v4.0.1/examples/data/icon.png'}]
   description: Image to display at the center of the map (called a marker)
