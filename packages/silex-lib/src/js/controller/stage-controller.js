@@ -78,16 +78,6 @@ silex.controller.StageController.prototype.deselect = function(target) {
 
 
 /**
- * callback for the stage to notify a component has been moved or resized
- */
-silex.controller.StageController.prototype.updateView = function() {
-  // refresh the toolboxes
-  var selection = this.model.body.getSelection();
-  this.model.body.setSelection(selection);
-};
-
-
-/**
  * mark the state for undo/redo
  */
 silex.controller.StageController.prototype.markAsUndoable = function() {

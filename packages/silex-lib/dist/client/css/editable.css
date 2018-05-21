@@ -1,3 +1,16 @@
+::-webkit-scrollbar {
+    width: 10px;
+}
+::-webkit-scrollbar-track {
+    background-color: @silexdarkgrey;
+}
+::-webkit-scrollbar-thumb {
+    background-color: @silexmediumgrey;
+}
+::-webkit-scrollbar-thumb:hover {
+    background-color: @silexmediumdarkgrey;
+}
+
 /* leave space around the main container */
 body{
   padding-bottom: 100px;

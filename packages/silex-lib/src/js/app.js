@@ -76,6 +76,25 @@ goog.require('silex.view.dialog.TextEditor');
 
 goog.require('silex.view.ModalDialog');
 
+goog.require('silex.model.data.SilexId');
+goog.require('silex.model.data.StyleName');
+goog.require('silex.model.data.CssRule');
+goog.require('silex.model.data.ComponentData');
+goog.require('silex.model.data.StyleData');
+goog.require('silex.model.data.ProdotypeData');
+goog.require('silex.model.data.SilexData');
+goog.require('silex.model.data.JsonData');
+goog.require('silex.model.data.ProdotypeTypes');
+goog.require('silex.model.data.VisibilityData');
+goog.require('silex.model.data.PseudoClassData');
+goog.require('silex.model.data.Visibility');
+goog.require('silex.model.data.PseudoClass');
+goog.require('silex.model.data.TagName');
+goog.require('silex.model.data.CssPropertyName');
+goog.require('silex.model.data.CssPropertyValue');
+goog.require('silex.model.data.TemplateName');
+
+
 /**
  * Defines the entry point of Silex client application
  *
@@ -261,7 +280,7 @@ class App {
     /** @type {silex.view.PropertyTool} */
     var propertyTool = new silex.view.PropertyTool(propertyToolElement, this.model, this.controller);
 
-    // PropertyTool
+    // workspace
     var workspaceElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-workspace'));
     /** @type {silex.view.Workspace} */
     var workspace = new silex.view.Workspace(workspaceElement, this.model, this.controller);
@@ -308,7 +327,7 @@ class App {
         new silex.model.Body(this.model, this.view),
         new silex.model.Page(this.model, this.view),
         new silex.model.Element(this.model, this.view),
-        new silex.model.Component(this.model, this.view),
+        new Component(this.model, this.view),
         new silex.model.Property(this.model, this.view)
     );
   }

@@ -153,7 +153,7 @@ silex.view.Menu.prototype.buildUi = function() {
   this.model.component.ready(() => {
     // **
     const list = this.element.querySelector('.add-menu-container');
-    const componentsDef = this.model.component.getComponentsDef();
+    const componentsDef = this.model.component.getComponentsDef(Component.COMPONENT_TYPE);
     // build a list of component categories
     const elements = {};
     for(let id in componentsDef) {
