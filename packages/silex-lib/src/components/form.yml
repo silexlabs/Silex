@@ -21,51 +21,67 @@ initialCss:
   background-color: 'transparent'
 props:
 - name: sendTo
+  expandable: true
   type: string
   default: your@email.com
   description: Your email (use formspree) or the URL of your server where the form will send data.
 - name: submitButtonLabel
+  expandable: true
   type: string
   default: Send
 - name: buttonTextColor
+  expandable: true
   type: color
   default: "#FFFFFF"
 - name: buttonBackgroundColor
+  expandable: true
   type: color
   default: "#4CAF50"
 - name: buttonBorderColor
+  expandable: true
   type: color
   default: "#4CAF50"
 - name: labelTextColor
+  expandable: true
   type: color
   default: "#000000"
 - name: field1
+  expandable: true
   type: boolean
   default: true
 - name: label1
+  expandable: true
   type: string
   default: Name
 - name: placeholder1
+  expandable: true
   type: string
   default: Your name
 - name: field2
+  expandable: true
   type: boolean
   default: true
 - name: label2
+  expandable: true
   type: string
   default: Your email adress
 - name: placeholder2
+  expandable: true
   type: string
   default: your@email.com
 - name: field3
+  expandable: true
   type: boolean
   default: true
 - name: label3
+  expandable: true
   type: string
   default: Your message
 - name: placeholder3
+  expandable: true
   type: string
   default: What you have to say
 - name: onsubmit
+  expandable: true
   type: action
   description: "Fires when the form is about to be submitted. Use the 'event' object or return false to prevent submit."

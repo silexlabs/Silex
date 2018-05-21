@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "bluebird": "3.5.1",
-    "body-parser": "1.18.2",
+    "body-parser": "^1.18.2",
     "cloud-explorer": "github:silexlabs/CloudExplorer2#master",
     "compression": "1.7.2",
     "cookie-parser": "1.4.3",
@@ -49,7 +49,7 @@
     "express": "4.16.3",
     "express-force-ssl": "0.3.2",
     "jsdom": "11.6.2",
-    "prodotype": "github:silexlabs/Prodotype",
+    "prodotype": "github:silexlabs/Prodotype#master",
     "promise-sequential": "1.1.1",
     "request": "2.85.0",
     "serve-static": "1.13.2",
