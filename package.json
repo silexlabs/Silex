@@ -23,7 +23,7 @@
     "stop": "pm2 stop .pm2.json",
     "start:debug": "cross-env SILEX_DEBUG=true npm start",
     "build": "npm run build:css && npm run build:html && npm run build:prodotype && npm run build:js:release",
-    "build:prodotype": "prodotype src/components dist/client/libs/prodotype/components/",
+    "build:prodotype": "prodotype src/prodotype/components dist/client/libs/prodotype/components/ && prodotype src/prodotype/styles dist/client/libs/prodotype/styles/",
     "build:css": "lessc src/css/_styles.less dist/client/css/admin.css --source-map",
     "build:html": "jade src/html/index.jade --out dist/client/ --no-debug",
     "init:prodotype": "bash build/init-prodotype.sh",
@@ -53,7 +53,7 @@
     "promise-sequential": "1.1.1",
     "request": "2.85.0",
     "serve-static": "1.13.2",
-    "silex-blank-templates": "github:silexlabs/silex-blank-templates#717e228",
+    "silex-blank-templates": "github:silexlabs/silex-blank-templates#d18ca94",
     "silex-templates": "github:silexlabs/silex-templates#f9c2dcb"
   },
   "devDependencies": {

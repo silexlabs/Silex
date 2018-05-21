@@ -273,6 +273,8 @@ silex.controller.ControllerBase.prototype.styleChanged = function(name, value, o
     // update the model
     this.model.element.setStyle(element, name, value);
   }, this);
+  // refresh the view
+  this.refreshView();
 };
 
 
@@ -292,6 +294,8 @@ silex.controller.ControllerBase.prototype.multipleStylesChanged = function(style
     // update the model
     this.model.property.setStyle(element, style);
   }, this);
+  // refresh the view
+  this.refreshView();
 };
 
 
@@ -313,6 +317,8 @@ silex.controller.ControllerBase.prototype.propertyChanged = function(name, value
     // update the model
     this.model.element.setProperty(element, name, value, opt_applyToContent);
   }, this);
+  // refresh the view
+  this.refreshView();
 };
 
 
@@ -331,6 +337,8 @@ silex.controller.ControllerBase.prototype.setClassName = function(name) {
     // refresh the views
     this.view.breadCrumbs.redraw();
   }, this);
+  // refresh the view
+  this.refreshView();
 };
 
 

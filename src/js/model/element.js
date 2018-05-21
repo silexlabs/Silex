@@ -281,11 +281,10 @@ silex.model.Element.prototype.setHideOnMobile = function(element, hide) {
 /**
  * get all the element's styles
  * @param  {Element} element   created by silex, either a text box, image, ...
- * @param {?boolean=} opt_computed use window.getComputedStyle instead of the element's stylesheet
  * @return  {string}           the styles of the element
  */
-silex.model.Element.prototype.getAllStyles = function(element, opt_computed) {
-  var styleObject = this.model.property.getStyle(element, null, opt_computed);
+silex.model.Element.prototype.getAllStyles = function(element) {
+  var styleObject = this.model.property.getStyle(element);
   var styleStr = silex.utils.Style.styleToString(styleObject);
   return styleStr;
 };
@@ -295,19 +294,18 @@ silex.model.Element.prototype.getAllStyles = function(element, opt_computed) {
  * get/set style of the element
  * @param  {Element} element   created by silex, either a text box, image, ...
  * @param  {string} styleName  the style name
- * @param {?boolean=} opt_computed use window.getComputedStyle instead of the element's stylesheet
  * @return  {?string}           the style of the element
  */
-silex.model.Element.prototype.getStyle = function(element, styleName, opt_computed) {
+silex.model.Element.prototype.getStyle = function(element, styleName) {
   const cssName = goog.string.toSelectorCase(styleName);
   const isMobile = this.view.workspace.getMobileEditor();
-  let styleObject = this.model.property.getStyle(element, isMobile, opt_computed);
+  let styleObject = this.model.property.getStyle(element, isMobile);
   if (styleObject && styleObject[cssName]) {
     return styleObject[cssName];
   }
   else if (isMobile) {
     // get the non mobile style if it is not defined in mobile
-    styleObject = this.model.property.getStyle(element, false, opt_computed);
+    styleObject = this.model.property.getStyle(element, false);
     if (styleObject && styleObject[cssName]) {
       return styleObject[cssName];
     }
@@ -467,21 +465,13 @@ silex.model.Element.prototype.move = function(element, direction) {
  */
 silex.model.Element.prototype.getNextElement = function(element, forward) {
   let node = /** @type {Node} */ (element);
-  console.log('getNextElement', element, forward);
   while(node = forward ? node.nextSibling : node.previousSibling) {
-    console.log('getNextElement nodeType=', node.nodeType, node);
     if (node.nodeType === 1) {
       const el = /** @type {Element} */ (node);
-      console.log('getNextElement', {
-        'type': this.getType(el),
-        'isInPage': this.model.page.isInPage(el),
-        'pages': this.model.page.getPagesForElement(el),
-      });
       // candidates are the elements which are visible in the current page, or visible everywhere (not paged)
       if(this.getType(el) !== null &&
         (this.model.page.isInPage(el) ||
           this.model.page.getPagesForElement(el).length === 0)) {
-        console.log('getNextElement FOUND!!');
         return el;
       }
     }
@@ -598,7 +588,7 @@ silex.model.Element.prototype.removeElement = function(element) {
   if (this.model.body.getBodyElement() !== element &&
     goog.dom.contains(this.model.body.getBodyElement(), element)) {
     // remove style and component data
-    this.model.property.setComponentData(element);
+    this.model.property.setElementComponentData(element);
     this.model.property.setStyle(element, null, true);
     this.model.property.setStyle(element, null, false);
     // remove the element
@@ -851,7 +841,7 @@ silex.model.Element.prototype.createTextElement = function() {
   var element = this.createElementWithContent(silex.model.Element.TYPE_TEXT);
   // add default content
   var content = this.getContentNode(element);
-  content.innerHTML = 'New text box';
+  content.innerHTML = '<p>New text box</p>';
   // add normal class for default text formatting
   // sometimes there is only in text node in content
   // e.g. whe select all + remove formatting
@@ -931,7 +921,7 @@ silex.model.Element.prototype.getClassName = function(element) {
   const pages = this.model.page.getPages();
   let componentCssClasses = [];
   if(this.model.component.isComponent(element)) {
-    const templateName = this.model.property.getComponentData(element)['templateName'];
+    const templateName = /** @type {silex.model.data.TemplateName} */ (this.model.property.getElementComponentData(element)['templateName']);
     componentCssClasses = this.model.component.getCssClasses(templateName);
   }
   return element.className.split(' ').filter((name) => {

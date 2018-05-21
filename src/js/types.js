@@ -67,7 +67,7 @@ silex.types.Model = function() {
  * @param {silex.model.Body} body
  * @param {silex.model.Page} page
  * @param {silex.model.Element} element
- * @param {silex.model.Component} component
+ * @param {Component} component
  * @param {silex.model.Property} property
  */
 silex.types.Model.prototype.init = function(file, head, body, page, element, component, property) {
@@ -92,7 +92,7 @@ silex.types.Model.prototype.init = function(file, head, body, page, element, com
    */
   this.element = element;
   /**
-   * @type {silex.model.Component}
+   * @type {Component}
    */
   this.component = component;
   /**

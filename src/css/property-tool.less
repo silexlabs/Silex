@@ -19,20 +19,28 @@
   right: 0;
   left: @propertiesToolWidth;
   top: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden;
   bottom: 0;
   background-color: @silexmediumgrey;
   font-size: small;
   hr {
-    border-style: groove;
-    margin: 7px 10px 3px;
+    margin: 7px 0 3px;
+    max-width: none;
+    border: none;
+    border-top: 1px solid @silexdarkergrey;
+    clear: both;
+  }
+
+  &.design-tab {
+    input {
+      display: block;
+    }
   }
 
   /* visibility of the content depends on tabs */
   &.params-tab .main-container > span {
     display: none;
-    &.component-editor {
+    &.prodotype-component-editor {
       display: initial;
     }
     .image-preview {
@@ -44,8 +52,18 @@
       color: @silexdarkgrey; /* no need to display "no file chosen" */
     }
   }
-  .main-container span.component-editor {
+  .main-container span.prodotype-component-editor {
     display: none;
+  }
+  .main-container span.prodotype-style-editor {
+    display: none;
+  }
+  /* visibility of the content depends on tabs */
+  &.style-tab .main-container > span {
+    display: none;
+    &.prodotype-style-editor {
+      display: initial;
+    }
   }
   .tabs {
     height: @contextMenuHeight;
@@ -64,7 +82,6 @@
         background-color: @silexmediumgrey;
         border: 1px solid @silexdarkgrey;
         border-bottom-color: @silexmediumgrey;
-        padding-bottom: 14px;
       }
     }
   }
@@ -75,38 +92,31 @@
     padding: 0;
     width: 97%;
     border-bottom: 1px solid @silexdarkgrey;
+    flex: 1 0 auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+    bottom: 0;
+    top: @contextMenuHeight;
+    position: absolute;
 
     /* size set by workspace.js when the user resizes the property tool */
     &.size1 {
-      -webkit-column-count: 1;
-    	-moz-column-count: 1;
-    	-o-column-count: 1;
-    	-ms-column-count: 1;
-    	column-count: 1;
     }
 
     &.size2 {
-      -webkit-column-count: 2;
-    	-moz-column-count: 2;
-    	-o-column-count: 2;
-    	-ms-column-count: 2;
-    	column-count: 2;
     }
 
     &.size3 {
-      -webkit-column-count: 3;
-    	-moz-column-count: 3;
-    	-o-column-count: 3;
-    	-ms-column-count: 3;
-    	column-count: 3;
     }
 
-    input {
-      display: inherit;
-      height: 22px;
+    select {
+      background-color: @silexlightgrey;
+    }
+    input, select {
+      height: 30px;
+      width: 95%;
       overflow: hidden;
-      margin: 4px 0;
-      width: 100%;
+      margin-left: 2.5%;
 
       &:focus {
         outline: none;
@@ -124,6 +134,7 @@
       height: 15px;
       margin: 6px;
       float: left;
+      min-width: 0;
     }
     input.checkbox+label {
       display: block;
@@ -228,6 +239,10 @@
       margin: 10px;
     }
   }
+  .expandable:last-child,
+  .prodotype-component-editor .prop-editor-base:last-child {
+    border-bottom: 1px solid @silexdarkgrey; /* last "accordion" header has a border */
+  }
 
   .tab-page {
     .border-placement-container {
@@ -255,13 +270,6 @@
   .background-property {
     line-height: 22px;
 
-    .color-button {
-
-      .goog-menu-button-inner-box {
-        padding: 2px;
-      }
-
-    }
     input.checkbox {
       margin: 3px;
     }
@@ -281,15 +289,6 @@
 
   .opacity-input {
     width: 91px;
-  }
-
-  .goog-color-menu-button-indicator {
-    font-size: 12px;
-    border-bottom-width: 10px;
-  }
-
-  .goog-hsva-palette-sm-input {
-    font-size: 13px;
   }
 
   fieldset {
@@ -375,16 +374,6 @@
     }
   }
 
-  .goog-hsva-palette-sm {
-    overflow: hidden;
-    width: 210px;
-  }
-
-  .link-small-btn {
-    color: blue;
-    cursor: pointer;
-  }
-
   .page-container {
     margin: 4px 0;
   }
@@ -398,20 +387,6 @@
     font-size: 14px;
     text-transform: uppercase;
     background-color: @silexmediumgrey;
-  }
-
-  .goog-tab-bar {
-    background-color: transparent;
-    padding-left: 1px;
-
-    .goog-tab-selected {
-      background-color: #f3f3f3;
-    }
-
-  }
-
-  .link-small-btn:hover {
-    text-decoration: underline;
   }
 
   .element-style-editor{
@@ -444,15 +419,6 @@
         .small-text-input();
         clear: left;
       }
-      .border-color-button {
-        margin-top: 7px;
-
-        .goog-menu-button-inner-box {
-          padding: 2px;
-        }
-
-      }
-
     }
     select.combobox {
       .small-combo;
@@ -473,13 +439,7 @@
       .border-type-combo-box {
         background: #FFF;
         .small-text-input();
-
-        .goog-menu-button-caption {
-          padding-right: 10px;
-        }
-
       }
-
     }
 
     .border-radius-container {
@@ -502,19 +462,269 @@
 
     }
   }
-  .component-editor {
+  .editor-container {
+    top: @contextMenuHeight;
+    bottom: 0;
+  }
+  .prodotype-style-editor-menu > div {
+    padding: 10px;
+  }
+  /* button templates to be used in this stylesheet, not referenced in the HTML */
+  .button-template-selected {
+    color: @silexlightblue;
+    background-color: @silexdarkgrey;
+  }
+  .button-template {
+    background-color: @silexlightgrey;
+    border: 1px solid @silexdarkgrey;
+    display: block;
+    width: 30px;
+    text-align: center;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    cursor: pointer;
+    &:hover {
+      background-color: @silexdarkgrey;
+    }
+  }
+  .button-bar-template {
+    .button-template;
+    width: 17%;
+    min-width: 30px;
+    font-weight: bold;
+    float: left;
+    border-left: initial;
+  }
+  .button-bar-first {
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-left: 1px solid @silexdarkgrey;
+    clear: left;
+  }
+  .button-bar-last {
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+    border-right: 1px solid @silexdarkgrey;
+  }
+
+  /* */
+  .prodotype-component-editor, .prodotype-style-editor {
     .expandable;
     border-top: 1px solid @silexdarkgrey;
     &.hide-panel {
       display: none;
     }
-    & > section > ul {
+    & > section > ul,
+    & > .prodotype-container > section > ul {
       padding-left: 0;
     }
-    label {
+    form.style-editor-tag-form {
+      /* tags H1, H2, H3, P, A */
+      .labels {
+        display: inline-block; /* push the elements underneeth dispite it is floated */
+        width: 100%;
+        margin-left: 7%;
+        & > label {
+          .button-bar-template;
+          margin-top: 5px;
+          &.last-button {
+            .button-bar-last;
+          }
+          &.first-button {
+            .button-bar-first;
+          }
+        }
+      }
+      /* prodotype sub-editors labels, e.g. font-family */
+      .sub-editors label {
+      }
+    }
+    /* prodotype editors labels, e.g. Heading1 */
+    .prop-editor-base label, .class-name-style-label {
       .expandable-legend;
       display: block;
       padding-bottom: 5px;
     }
   }
+  .prodotype-style-editor .prodotype-style-editor-menu > label:first-child {
+    border-top: none; /* no border just bellow the tabs */
+  }
+  .prodotype-style-editor {
+    /* buttons */
+    .icon-btn {
+      .button-template;
+      width: 13px;
+      height: 7px;
+      padding: 7px 7px 13px 7px;
+      margin: 4px 2px 10px 0;
+    }
+    .icon-btn-first {
+      margin-left: 7px;
+    }
+    .icon-btn-last {
+      margin-right: 8px;
+    }
+    .icon-btn-left {
+      float: left;
+    }
+    .icon-btn-right {
+      float: right;
+    }
+    /* all labels in the style editor */
+    .prodotype-container .prop-editor-name {
+      cursor: default;
+      border-top: none;
+    }
+    /* style the title of the ditor, i.e. "Paragraph", "Link"... */
+    .prodotype-container > .editor > ul > .prop-editor-base > .prop-editor-name {
+      border-top: 1px solid @silexdarkergrey;
+    }
+
+    /* highlight selected label, e.g. H1 */
+    .hidden { display: none; }
+    .style-editor-tag-form input:checked:nth-child(1) ~
+    .labels label:nth-child(1),
+    .style-editor-tag-form input:checked:nth-child(2) ~
+    .labels label:nth-child(2),
+    .style-editor-tag-form input:checked:nth-child(3) ~
+    .labels label:nth-child(3),
+    .style-editor-tag-form input:checked:nth-child(4) ~
+    .labels label:nth-child(4),
+    .style-editor-tag-form input:checked:nth-child(5) ~
+    .labels label:nth-child(5),
+    .style-editor-tag-form input:checked:nth-child(6) ~
+    .labels label:nth-child(6),
+    .style-editor-tag-form input:checked:nth-child(7) ~
+    .labels label:nth-child(7),
+    .style-editor-tag-form input:checked:nth-child(8) ~
+    .labels label:nth-child(8),
+    .style-editor-tag-form input:checked:nth-child(9) ~
+    .labels label:nth-child(9),
+    .style-editor-tag-form input:checked:nth-child(10) ~
+    .labels label:nth-child(10) { .button-template-selected }
+    /* Pure CSS to show / hide prodotype editors (tags H1, H2, H3, P, A) */
+    .prodotype-container .editor > ul > .prop-editor-base { display: none; }
+    /* Paragraph */
+    .style-editor-tag-form input:checked:nth-child(1) ~
+    .prodotype-container .editor > ul > .prop-editor-base:nth-child(1),
+    /* Link */
+    .style-editor-tag-form input:checked:nth-child(2) ~
+    .prodotype-container .editor > ul > .prop-editor-base:nth-child(2),
+    /* Bold */
+    .style-editor-tag-form input:checked:nth-child(3) ~
+    .prodotype-container .editor > ul > .prop-editor-base:nth-child(3),
+    /* Underline */
+    .style-editor-tag-form input:checked:nth-child(4) ~
+    .prodotype-container .editor > ul > .prop-editor-base:nth-child(4),
+    /* Italic */
+    .style-editor-tag-form input:checked:nth-child(5) ~
+    .prodotype-container .editor > ul > .prop-editor-base:nth-child(5),
+    /* Heading1 */
+    .style-editor-tag-form input:checked:nth-child(6) ~
+    .prodotype-container .editor > ul > .prop-editor-base:nth-child(6),
+    /* Heading2 */
+    .style-editor-tag-form input:checked:nth-child(7) ~
+    .prodotype-container .editor > ul > .prop-editor-base:nth-child(7),
+    /* Heading3 */
+    .style-editor-tag-form input:checked:nth-child(8) ~
+    .prodotype-container .editor > ul > .prop-editor-base:nth-child(8),
+    /* UL */
+    .style-editor-tag-form input:checked:nth-child(9) ~
+    .prodotype-container .editor > ul > .prop-editor-base:nth-child(9),
+    /* OL */
+    .style-editor-tag-form input:checked:nth-child(10) ~
+    .prodotype-container .editor > ul > .prop-editor-base:nth-child(10) { display: initial; }
+    .editor {
+      /* hide description and help button, FIXME: should be doable in the .yaml */
+      & > h1, & > h1 + div { display: none; }
+    }
+
+    /* vivibility checkbox (mobile only or not) */
+    .visibility-style-label {
+      .button-template;
+      margin: 0;
+      padding: 0;
+      height: 28px;
+      font-size: 25px;
+    }
+    .visibility-style-checkbox:checked ~ .visibility-style-label {
+      .button-template-selected;
+    }
+    .class-name-block {
+      display: flex;
+      padding: 0 2.5%; /* select boxes have width:95% => padding of this container is 5% => 2.5% each side */
+      select {
+        border-left: none;
+        margin: 0;
+      }
+    }
+    .class-name-style-label {
+      display: flex;
+      justify-content: space-between;
+      padding: 0;
+      margin: 5px auto;
+      width: 95%;
+    }
+    select.combobox.pseudoclass-style-combo-box {
+      width: 103px;
+      height: 25px;
+      text-align: center;
+      background-color: @silexlightgrey;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      margin: 0;
+      margin-top: 2px;
+    }
+    .selection-info-container {
+      .dot {
+        margin: 0 7px;
+        cursor: default;
+      }
+      span {
+        cursor: pointer;
+        margin-right: 3px;
+      }
+      span:hover span {
+        text-decoration: underline;
+      }
+    }
+    .toggle-button {
+      .button-bar-template;
+      height: 30px;
+      background-repeat: no-repeat;
+      background-position: 50%;
+      background-size: 18px;
+      &:first-child {
+        .button-bar-first;
+        margin-left: 5px;
+      }
+      &:last-child {
+        .button-bar-last;
+      }
+      &[data-selected=true] {
+        .button-template-selected;
+      }
+    }
+    .prop-editor-container {
+      display: inline-block; /* for toggle buttons which are floated */
+      width: 100%;
+    }
+    .half-width {
+      width: 49%;
+      display: inline-block;
+    }
+    .medium-width {
+      width: 66%;
+      display: inline-block;
+    }
+    .small-width {
+      width: 33%;
+      float: right;
+    }
+    .no-style .style-editor-tag-form {
+      visibility: hidden;
+    }
+  }
+
 }

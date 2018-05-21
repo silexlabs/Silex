@@ -29,7 +29,7 @@ goog.require('silex.view.pane.GeneralStylePane');
 goog.require('silex.view.pane.PagePane');
 goog.require('silex.view.pane.PropertyPane');
 goog.require('silex.view.pane.StylePane');
-
+goog.require('silex.view.pane.StyleEditorPane');
 
 
 //////////////////////////////////////////////////////////////////
@@ -68,7 +68,6 @@ silex.view.PropertyTool = function(element, model, controller) {
   this.invalidationManager = new InvalidationManager(500);
 
 };
-
 
 /**
  * base url for relative/absolute urls
@@ -119,6 +118,13 @@ silex.view.PropertyTool.prototype.stylePane = null;
 
 
 /**
+ * style editor
+ * @see     silex.view.pane.StyleEditorPane
+ */
+silex.view.PropertyTool.prototype.StyleEditorPane = null;
+
+
+/**
  * build the UI
  */
 silex.view.PropertyTool.prototype.buildUi = function() {
@@ -152,9 +158,16 @@ silex.view.PropertyTool.prototype.buildUi = function() {
       goog.dom.getElementByClass('style-editor', this.element),
       this.model, this.controller);
 
-  // component editor
-  this.model.component.initComponents(this.element.querySelector('.component-editor'));
-  this.componentEditorElement = this.element.querySelector('.component-editor');
+  // Style editor
+  const styleEditorMenu = this.element.querySelector('.prodotype-style-editor .prodotype-style-editor-menu');
+  this.styleEditorPane = new StyleEditorPane(
+      styleEditorMenu,
+      this.model, this.controller);
+
+  // init component editor and style editor
+  const styleEditorElement = this.element.querySelector('.prodotype-style-editor .prodotype-container');
+  this.componentEditorElement = this.element.querySelector('.prodotype-component-editor');
+  this.model.component.init(this.componentEditorElement, styleEditorElement);
 
   // expandables
   const expandables = this.element.querySelectorAll('.expandable legend');
@@ -172,8 +185,10 @@ silex.view.PropertyTool.prototype.buildUi = function() {
   // tabs
   const designTab = this.element.querySelector('.design');
   const paramsTab = this.element.querySelector('.params');
+  const styleTab = this.element.querySelector('.style');
   designTab.addEventListener('click', () => this.openDesignTab());
   paramsTab.addEventListener('click', () => this.openParamsTab());
+  styleTab.addEventListener('click', () => this.openStyleTab());
 };
 
 
@@ -197,6 +212,7 @@ silex.view.PropertyTool.prototype.openDesignTab = function() {
   const designTab = this.element.querySelector('.design');
   this.selectTab(designTab);
   this.element.classList.remove('params-tab');
+  this.element.classList.remove('style-tab');
   this.element.classList.add('design-tab');
 };
 
@@ -208,7 +224,20 @@ silex.view.PropertyTool.prototype.openParamsTab = function() {
   const paramsTab = this.element.querySelector('.params');
   this.selectTab(paramsTab);
   this.element.classList.remove('design-tab');
+  this.element.classList.remove('style-tab');
   this.element.classList.add('params-tab');
+};
+
+
+/**
+ * open the "style" tab
+ */
+silex.view.PropertyTool.prototype.openStyleTab = function() {
+  const styleTab = this.element.querySelector('.style');
+  this.selectTab(styleTab);
+  this.element.classList.remove('design-tab');
+  this.element.classList.remove('params-tab');
+  this.element.classList.add('style-tab');
 };
 
 
@@ -223,9 +252,9 @@ silex.view.PropertyTool.prototype.selectTab = function(tab) {
 
 /**
  * redraw all panes
-* @param   {Array.<HTMLElement>} selectedElements the elements currently selected
-* @param   {Array.<string>} pageNames   the names of the pages which appear in the current HTML file
-* @param   {string}  currentPageName   the name of the current page
+ * @param   {Array.<HTMLElement>} selectedElements the elements currently selected
+ * @param   {Array.<string>} pageNames   the names of the pages which appear in the current HTML file
+ * @param   {string}  currentPageName   the name of the current page
  */
 silex.view.PropertyTool.prototype.redraw = function(selectedElements, pageNames, currentPageName) {
   this.invalidationManager.callWhenReady(() => {
@@ -236,13 +265,12 @@ silex.view.PropertyTool.prototype.redraw = function(selectedElements, pageNames,
     this.generalStylePane.redraw(selectedElements, pageNames, currentPageName);
     this.stylePane.redraw(selectedElements, pageNames, currentPageName);
     this.bgPane.redraw(selectedElements, pageNames, currentPageName);
-    if(selectedElements.length === 1 && this.model.property.getComponentData(selectedElements[0])) {
-      this.model.component.edit(selectedElements[0]);
-      this.componentEditorElement.classList.remove('hide-panel');
+    this.styleEditorPane.redraw(selectedElements, pageNames, currentPageName);
+    if(selectedElements.length === 1) {
+      this.model.component.editComponent(selectedElements[0]);
     }
     else {
-      this.model.component.resetSelection();
-      this.componentEditorElement.classList.add('hide-panel');
+      this.model.component.resetSelection(Component.COMPONENT_TYPE);
     }
   });
 };
