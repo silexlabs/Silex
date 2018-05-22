@@ -59,12 +59,6 @@ silex.view.Stage = function(element, model, controller) {
 
 
   /**
-   * invalidation mechanism
-   * @type {InvalidationManager}
-   */
-  this.invalidationManagerFocus = new InvalidationManager(500);
-
-  /**
    * @type {!HTMLIFrameElement}
    */
   this.iframeElement = /** @type {!HTMLIFrameElement} */ (goog.dom.getElementByClass(silex.view.Stage.STAGE_CLASS_NAME));
@@ -159,12 +153,6 @@ silex.view.Stage.prototype.selectedElements = null;
 
 
 /**
- * input element to get the focus
- */
-silex.view.Stage.prototype.focusInput = null;
-
-
-/**
  * flag to store the state
  */
 silex.view.Stage.prototype.isResizing = false;
@@ -188,13 +176,6 @@ silex.view.Stage.prototype.pendingMM = 0;
  * called by the app constructor
  */
 silex.view.Stage.prototype.buildUi = function() {
-  // create an input element to get the focus
-  this.focusInput = goog.dom.createElement('input');
-  goog.style.setStyle(this.focusInput, 'left', '-1000px');
-  goog.style.setStyle(this.focusInput, 'position', 'absolute');
-  document.body.appendChild(this.focusInput);
-
-
   // Disable horizontal scrolling for Back page on Mac OS, over Silex UI
   goog.events.listen(new goog.events.MouseWheelHandler(document.body),
       goog.events.MouseWheelHandler.EventType.MOUSEWHEEL,
@@ -390,7 +371,7 @@ silex.view.Stage.prototype.redraw =
   // reset focus out of the text inputs,
   // this also prevents a bug when the page is loaded and the user presses a key,
   // the body is replaced by the keys chars
-  this.resetFocus();
+  silex.model.Body.resetFocus();
   // remember selection
   this.selectedElements = selectedElements;
   this.currentPageName = currentPageName;
@@ -504,7 +485,7 @@ silex.view.Stage.prototype.handleMouseUp = function(target, x, y, shiftKey) {
     return;
   }
   // give focus to the stage
-  this.resetFocus();
+  silex.model.Body.resetFocus();
   // update state
   this.isDown = false;
   // handle the mouse up
@@ -568,17 +549,6 @@ silex.view.Stage.prototype.handleMouseUp = function(target, x, y, shiftKey) {
       }
     }
   }
-};
-
-
-/**
- * remove the focus from text fields
- */
-silex.view.Stage.prototype.resetFocus = function() {
-  this.invalidationManagerFocus.callWhenReady(() => {
-    this.focusInput.focus();
-    this.focusInput.blur();
-  });
 };
 
 

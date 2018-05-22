@@ -718,6 +718,31 @@ silex.model.Element.prototype.initElement = function(element) {
     // and in the right container
     this.addElementDefaultPosition(element);
   }
+  // set element editable
+  this.initUiHandles(element);
+};
+
+
+/**
+ * Add UI to resize elements. This is usually done on the server side but when the client side adds an element it does add UIs itself.
+ * @param  {Element} element
+ */
+silex.model.Element.prototype.initUiHandles = function(element) {
+  goog.array.forEach([
+    'ui-resizable-n',
+    'ui-resizable-s',
+    'ui-resizable-e',
+    'ui-resizable-w',
+    'ui-resizable-ne',
+    'ui-resizable-nw',
+    'ui-resizable-se',
+    'ui-resizable-sw'
+  ], function(className) {
+    var handle = this.model.file.getContentDocument().createElement('div');
+    goog.dom.classlist.add(handle, className);
+    goog.dom.classlist.add(handle, 'ui-resizable-handle');
+    goog.dom.appendChild(element, handle);
+  }, this);
 };
 
 
