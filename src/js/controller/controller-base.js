@@ -394,32 +394,6 @@ silex.controller.ControllerBase.prototype.doAddElement = function(element) {
   this.checkElementVisibility(element);
   // select the component
   this.model.body.setSelection([element]);
-  // set element editable
-  // TODO: move this to element::createElement
-  this.initUiHandles(element);
-};
-
-
-/**
- * @param  {Element} element
- * TODO: move this to element::createElement
- */
-silex.controller.ControllerBase.prototype.initUiHandles = function(element) {
-  goog.array.forEach([
-    'ui-resizable-n',
-    'ui-resizable-s',
-    'ui-resizable-e',
-    'ui-resizable-w',
-    'ui-resizable-ne',
-    'ui-resizable-nw',
-    'ui-resizable-se',
-    'ui-resizable-sw'
-  ], function(className) {
-    var handle = this.model.file.getContentDocument().createElement('div');
-    goog.dom.classlist.add(handle, className);
-    goog.dom.classlist.add(handle, 'ui-resizable-handle');
-    goog.dom.appendChild(element, handle);
-  }, this);
 };
 
 

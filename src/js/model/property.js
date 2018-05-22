@@ -521,8 +521,9 @@ silex.model.Property.prototype.getStyle = function(element, opt_isMobile) {
   var elementId =  /** @type {silex.model.data.SilexId} */ (this.getSilexId(element));
   const isMobile = opt_isMobile != null ? opt_isMobile : this.view.workspace.getMobileEditor()
   const targetObj = /** @type {silex.model.data.SilexData} */ (isMobile ? this.mobileStylesObj : this.stylesObj);
-  const style = /** @type {silex.model.data.CssRule} */(targetObj[elementId]);
+  const style = /** @type {silex.model.data.CssRule} */ (targetObj[elementId]);
   if(!!style) {
+    const clone = /** @type {silex.model.data.CssRule} */ (JSON.parse(JSON.stringify(style)));
     // convert to obj (also makes it a copy we can change)
     // styles of sections are special
     // the min-height of the section is stored on its content container
@@ -531,13 +532,13 @@ silex.model.Property.prototype.getStyle = function(element, opt_isMobile) {
       const contentElement = /** @type {Element} */ (this.model.element.getContentNode(element));
       const contentStyle = this.getStyle(contentElement, isMobile);
       if(contentStyle) {
-        style['min-height'] = contentStyle['min-height'];
+        clone['min-height'] = contentStyle['min-height'];
       }
       // width of section is null
       // style['width'] = undefined;
-      delete style['width'];
+      delete clone['width'];
     }
-    return style;
+    return clone;
   }
   return null;
 };
