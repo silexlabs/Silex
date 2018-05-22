@@ -120,10 +120,15 @@ class ModalDialog {
    */
   close() {
     if(this.isOpen) {
+      // reset the flags
       this.isOpen = false;
       ModalDialog.currentDialog = null;
-      this.element.classList.add(HIDE_DIALOG_CLASS_NAME);
+      // notify the dialog itself
       this.onClose();
+      // give focus to the stage, this will trigger a change event on the input elements which have focus
+      silex.model.Body.resetFocus();
+      // finally hide the dialog - this has to be last, otherwise things like blur inputs will fail since this makes the dialog display: none;
+      this.element.classList.add(HIDE_DIALOG_CLASS_NAME);
     }
     else {
       console.warn('dialog is already closed', this.name ? this.name : '');
