@@ -724,6 +724,7 @@ silex.model.Element.prototype.initElement = function(element) {
 
 
 /**
+ * Add UI to resize elements. This is usually done on the server side but when the client side adds an element it does add UIs itself.
  * @param  {Element} element
  */
 silex.model.Element.prototype.initUiHandles = function(element) {
