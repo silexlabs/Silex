@@ -15,16 +15,16 @@
  */
 
 
-goog.provide('silex.view.dialog.NewWebsiteDialog');
+goog.provide('silex.view.dialog.Dashboard');
 goog.require('silex.view.ModalDialog');
 goog.require('silex.view.TipOfTheDay');
 
 
 /**
  * Silex Dashboard dialog
- * @class {silex.view.dialog.NewWebsiteDialog}
+ * @class {silex.view.dialog.Dashboard}
  */
-class NewWebsiteDialog {
+class Dashboard {
   /**
    * @param {!Element} element   container to render the UI
    * @param  {!silex.types.Model} model  model class which holds
@@ -70,23 +70,24 @@ class NewWebsiteDialog {
   /**
    * render the data loaded from github into a <ul>
    * @param  {Element} ul
+   * @param  {string} className
    * @param  {string} repo
    * @param  {*} data
    */
-  renderTemplateList(ul, repo, data) {
-    // handle previously rendered elements
-    const elements = ul.querySelectorAll('li.rendered-item');
-    for(let idx=0; idx<elements.length; idx++) {
-      const el = elements[idx];
-      el.parentNode.removeChild(el);
-    }
+  renderTemplateList(ul, className, repo, data) {
+    // // handle previously rendered elements
+    // const elements = ul.querySelectorAll('li.rendered-item');
+    // for(let idx=0; idx<elements.length; idx++) {
+    //   const el = elements[idx];
+    //   el.parentNode.removeChild(el);
+    // }
     if(Array.isArray(data)) {
       // render the data
       data
         // make a list of <li> tags
         .map(item => {
           const li = document.createElement('li');
-          li.classList.add('rendered-item');
+          li.classList.add('rendered-item', className);
 
           // thumbnail
           const thumbnail = document.createElement('div');
@@ -147,7 +148,7 @@ class NewWebsiteDialog {
    * init the menu and UIs
    */
   buildUi() {
-    const createList = (ul, repo, success, error) => {
+    const createList = (ul, className, repo, success, error) => {
       const repoUrl = `/get/${repo}`;
       const oReq = new XMLHttpRequest();
       oReq.addEventListener('error', e => {
@@ -156,7 +157,7 @@ class NewWebsiteDialog {
       });
       oReq.addEventListener('load', e => {
         const list = JSON.parse(oReq.responseText);
-        this.renderTemplateList(ul, repo, list);
+        this.renderTemplateList(ul, className, repo, list);
         success();
       });
       oReq.open('GET', repoUrl);
@@ -187,6 +188,7 @@ class NewWebsiteDialog {
       if(toLoad.length > 0) {
         const item = toLoad.pop();
         createList(this.element.querySelector(item.selector),
+          item.className,
           item.repo,
           () => loadNext(toLoad),
           e => {
@@ -207,10 +209,12 @@ class NewWebsiteDialog {
       {
         selector: '.general-pane ul',
         repo: 'silex-templates',
+        className: 'silex-templates',
       },
       {
-        selector: '.blank-page-pane ul',
+        selector: '.general-pane ul',
         repo: 'silex-blank-templates',
+        className: 'silex-blank-templates',
       },
     ];
     loadNext(toLoad);
@@ -265,21 +269,21 @@ class NewWebsiteDialog {
             let name;
             switch(blob.service) {
               case 'github':
-                return 'fa-github';
+                return ['fa', 'fa-github'];
               case 'dropbox':
-                return 'fa-dropbox';
+                return ['fa', 'fa-dropbox'];
               case 'webdav':
-                return 'fa-cloud-download';
+                return ['fa', 'fa-cloud-download'];
               case 'ftp':
               case 'sftp':
-                return 'fa-server';
+                return ['fa', 'fa-server'];
               case 'fs':
-                return 'fa-hdd';
+                return ['fa', 'fa-folder'];
               default:
-                return 'fa-cloud';
+                return ['fa', 'fa-cloud'];
             }
           })();
-          icon.classList.add('fa', cloudIcon);
+          icon.classList.add(...cloudIcon);
           li.appendChild(icon);
 
           const name = document.createElement('span');
