@@ -67,6 +67,10 @@ module.exports = class DomTools {
 
   /**
    * if value conatains `url('...')` this will be "transformed" by the provided function `fn`
+   * @param {string} value, e.g. "transparent" or "100px" or "url('image/photo%20page%20accueil.png')"
+   * @param {?CSSStyleSheet} stylesheet or null if the value comes from the JSON object holding silex data
+   * @param {boolean} isInHead, true if the stylesheet is in the head tag
+   * @param {function} fn
    */
   static transformValueUrlKeyword(value, stylesheet, isInHead, fn) {
     if(typeof value === 'string' && value.indexOf('url(') === 0) {
@@ -112,7 +116,7 @@ module.exports = class DomTools {
           const elementData = dataObj[elementId];
           for(let propName in elementData) {
             const propValue = elementData[propName];
-            const valueUrlKeyword = DomTools.transformValueUrlKeyword(propValue, null, null, fn);
+            const valueUrlKeyword = DomTools.transformValueUrlKeyword(propValue, null, true, fn);
             if(valueUrlKeyword) {
               elementData[propName] = valueUrlKeyword;
             }
