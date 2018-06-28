@@ -103,20 +103,28 @@ module.exports = class DomPublisher {
     // all scripts, styles and assets from head => local
     const actions = [];
     DomTools.transformPaths(this.dom, (path, el, isInHead) => {
+      // el may be null if the path comes from the JSON object holding Silex data
+      // This is never supposed to happen because the tag holding the JSON object
+      // is removed from the head tag in DomPublisher::cleanup.
+      // But sometimes it appears that the tags are in the body
+      // Maybe we should change cleanup to look for the tagsToRemove also in the body?
+      const tagName = el ? el.tagName : null;
+
       const url = new URL(path, baseUrl);
+
       if(this.isDownloadable(url)) {
         const fileName = Path.basename(url.pathname);
-        const destFolder = this.getDestFolder(Path.extname(url.pathname), el.tagName);
+        const destFolder = this.getDestFolder(Path.extname(url.pathname), tagName);
         if(destFolder) {
           const destPath = `${destFolder}/${fileName}`;
           actions.push({
             original: path,
             srcPath: url.href,
             destPath: destPath,
-            tagName: el.tagName,
+            tagName: tagName,
             displayName: fileName,
           });
-          if(el.tagName) {
+          if(tagName) {
             // not an URL from a style sheet
             return destPath;
           }
