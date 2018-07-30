@@ -1,5 +1,6 @@
 .tabs
   .tab.design.fa.fa-lg.fa-paint-brush.on
+  .tab.style.fa.fa-lg.fa-font
   .tab.params.fa.fa-lg.fa-cog
 .main-container
   span.position-editor.editor-container
@@ -8,20 +9,20 @@
         span.fa.fa-fw.fa-inverse.fa-caret-right
         span Position and size
       .body
-        div.two-col
+        .two-col
           label X
           label W
-        div.two-col
+        .two-col
           .input-with-unit
             input.position-input.left-input(placeholder='-', type='number', tabindex='1')
             label.unit PX
           .input-with-unit
             input.position-input.width-input(placeholder='-', type='number', tabindex='3', min='0')
             label.unit PX
-        div.two-col
+        .two-col
           label Y
           label H
-        div.two-col
+        .two-col
           .input-with-unit
             input.position-input.top-input(placeholder='-', type='number', tabindex='2')
             label.unit PX
@@ -189,8 +190,51 @@
             span Styles
           .body
             label CSS classes
-              a.help-icon(href='https://github.com/silexlabs/Silex/issues/184#properties-css-panel', title='about Silex and CSS', target='_blank') Help
+              a.help-icon(href='https://github.com/silexlabs/Silex/wiki/Silex-CSS-editor#custom-css-classes', title='about Silex and CSS', target='_blank') Help
             input.style-css-classes-input(placeholder='-', type='text')
             .element-style-editor.editor-container
-  span.component-editor.editor-container
+  span.prodotype-component-editor.editor-container
+  span.prodotype-style-editor.editor-container
+    .prodotype-style-editor-menu
+      label.class-name-style-label(for='class-name-style-combo-box')
+        span Style name:
+        select#pseudoclass-style-combo-box.pseudoclass-style-combo-box.combobox
+      .class-name-block
+        input#visibility-style-checkbox.visibility-style-checkbox.hidden(type='checkbox')
+        label.visibility-style-label.fa-fw.icon.fa-inverse.fa-mobile.expandable(for='visibility-style-checkbox', title='Mobile only')
+        select#class-name-style-combo-box.class-name-style-combo-box.combobox
 
+      p.selection-info-container
+        span.dot.fa.fa-circle
+        span.on-page 2 on this page (<span>select</span>),
+        span.total 5 total (<span>select</span>)
+
+      .add-style.icon-btn.icon-btn-left.icon-btn-first(title='Add a text style.') <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'><defs><style>.cls-1 {fill: #e5e5e5;}</style></defs><path id='Union_18' data-name='Union 18' class='cls-1' d='M4,10V6H0V4H4V0H6V4h4V6H6v4Z'/></svg>
+      .edit-style.icon-btn.icon-btn-left(title='Rename the current text style.') <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10.007'><defs><style>.cls-1 {fill: #e5e5e5;fill-rule: evenodd;}</style></defs><path id='editA' class='cls-1' d='M7.43,0a.67.67,0,0,0-.475.2L9.8,3.05a.671.671,0,0,0,0-.95L7.9.2A.67.67,0,0,0,7.43,0ZM9.8,3.05,6.955.2,1.5,5.655,4.351,8.508,9.8,3.05ZM.707,7.315c-.118.334-.252.736-.4,1.226,0,.017-.01.034-.016.051-.013.043-.027.088-.04.133s-.025.08-.037.121-.021.068-.031.1l-.073.245c-.054.183-.187.6-.037.748s.563.017.746-.037l.243-.073L1.166,9.8l.114-.035.139-.043.041-.013c.5-.154.9-.29,1.236-.41L.707,7.315Z' transform='translate(0 -0.002)'/></svg>
+      .duplicate-style.icon-btn.icon-btn-left(title='Duplicate the current text style.') <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 11 11'><defs><style>.cls-1 {fill: #e5e5e5;}</style></defs><path id='Union_19' data-name='Union 19' class='cls-1' d='M5,11V5h6v6ZM3,6H0V0H6V3H3V6H3Z'/></svg>
+      .remove-style.icon-btn.icon-btn-right.icon-btn-last(title='Delete the current text style.') <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 11'><defs><style>.cls-1 {fill: #e5e5e5;}</style></defs><path id='Union_17' data-name='Union 17' class='cls-1' d='M2,11a1,1,0,0,1-1-1V3H9v7a1,1,0,0,1-1,1ZM0,2V1H10V2ZM3,1A1,1,0,0,1,4,0H6A1,1,0,0,1,7,1Z'/></svg>
+      .unapply-style.icon-btn.icon-btn-right(title='Remove the current style from selected text boxes.') <svg id='Group_9' data-name='Group 9' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 13 11'><defs><style>.cls-1 {fill: #e4e4e4;}</style></defs><path id='Path_72' data-name='Path 72' class='cls-1' d='M8.964-6A3.516,3.516,0,0,0,5.5-9,3.5,3.5,0,0,0,2-5.5,3.5,3.5,0,0,0,5.5-2,3.53,3.53,0,0,0,6-2.036V-.023C5.831-.007,5.663,0,5.5,0A5.506,5.506,0,0,1,0-5.5,5.506,5.506,0,0,1,5.5-11,5.482,5.482,0,0,1,9.218-9.55,5.485,5.485,0,0,1,10.977-6H13L10-2,7-6Z' transform='translate(0 11)'/></svg>
+      <hr>
+      form.style-editor-tag-form
+        input#style-editor-tag-paragraph.hidden(type='radio', name='style-editor-tag-name', value='paragraph', checked)
+        input#style-editor-tag-link.hidden(type='radio', name='style-editor-tag-name', value='link')
+        input#style-editor-tag-bold.hidden(type='radio', name='style-editor-tag-name', value='bold')
+        input#style-editor-tag-underline.hidden(type='radio', name='style-editor-tag-name', value='underline')
+        input#style-editor-tag-italic.hidden(type='radio', name='style-editor-tag-name', value='italic')
+        input#style-editor-tag-heading1.hidden(type='radio', name='style-editor-tag-name', value='heading1')
+        input#style-editor-tag-heading2.hidden(type='radio', name='style-editor-tag-name', value='heading2')
+        input#style-editor-tag-heading3.hidden(type='radio', name='style-editor-tag-name', value='heading3')
+        input#style-editor-tag-ul.hidden(type='radio', name='style-editor-tag-name', value='ul')
+        input#style-editor-tag-ol.hidden(type='radio', name='style-editor-tag-name', value='ol')
+        .labels
+          label.first-button(for='style-editor-tag-paragraph', title='Edit style of text marked as "normal"' data-initial-value='P' data-prodotype-name='Paragraph') P
+          label(for='style-editor-tag-link', title='Edit style of links' data-initial-value='A' data-prodotype-name='Link') A
+          label(for='style-editor-tag-bold', title='Edit style of bold text' data-initial-value='B' data-prodotype-name='Bold') B
+          label(for='style-editor-tag-underline', title='Edit style of underlined text' data-initial-value='U' data-prodotype-name='Underline') U
+          label.last-button(for='style-editor-tag-italic', title='Edit style of italic text' data-initial-value='I' data-prodotype-name='Italic') I
+          label.first-button(for='style-editor-tag-heading1', title='Edit style of Heading1 text' data-initial-value='H1' data-prodotype-name='Heading1') H1
+          label(for='style-editor-tag-heading2', title='Edit style of Heading2 text' data-initial-value='H2' data-prodotype-name='Heading2') H2
+          label(for='style-editor-tag-heading3', title='Edit style of Heading3 text' data-initial-value='H3' data-prodotype-name='Heading3') H3
+          label(for='style-editor-tag-ul', title='Edit style of unordered lists' data-initial-value='UL' data-prodotype-name='UnorderedList') UL
+          label.last-button(for='style-editor-tag-ol', title='Edit style of ordered lists' data-initial-value='OL' data-prodotype-name='OrderedList') OL
+        .prodotype-container

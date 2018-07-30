@@ -67,7 +67,7 @@ silex.types.Model = function() {
  * @param {silex.model.Body} body
  * @param {silex.model.Page} page
  * @param {silex.model.Element} element
- * @param {silex.model.Component} component
+ * @param {Component} component
  * @param {silex.model.Property} property
  */
 silex.types.Model.prototype.init = function(file, head, body, page, element, component, property) {
@@ -92,7 +92,7 @@ silex.types.Model.prototype.init = function(file, head, body, page, element, com
    */
   this.element = element;
   /**
-   * @type {silex.model.Component}
+   * @type {Component}
    */
   this.component = component;
   /**
@@ -228,7 +228,7 @@ silex.types.View = function() {
  * @param {TextEditor} textEditor
  * @param {FileExplorer} fileExplorer
  * @param {SettingsDialog} settingsDialog
- * @param {NewWebsiteDialog} newWebsiteDialog
+ * @param {Dashboard} dashboard
  * @param {silex.view.Splitter} propSplitter
  * @param {silex.view.Workspace} workspace
  */
@@ -245,7 +245,7 @@ silex.types.View.prototype.init = function(
     textEditor,
     fileExplorer,
     settingsDialog,
-    newWebsiteDialog,
+    dashboard,
     propSplitter,
     workspace) {
   /**
@@ -297,9 +297,9 @@ silex.types.View.prototype.init = function(
    */
   this.settingsDialog = settingsDialog;
   /**
-   * @type {NewWebsiteDialog}
+   * @type {Dashboard}
    */
-  this.newWebsiteDialog = newWebsiteDialog;
+  this.dashboard = dashboard;
   /**
    * @type {silex.view.Splitter}
    */

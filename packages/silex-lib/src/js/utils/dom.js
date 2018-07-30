@@ -154,3 +154,19 @@ silex.utils.Dom.renderList = function(itemTemplateString, data) {
   });
   return res;
 };
+
+
+  /**
+   * retrieve all dom elements containing the components or styles
+   * @param {Element|Document} parentNode the element into which we query, defaults to the contentDocument of the website
+   * @param {string} selector, CSS selector of the elements containing the components or styles
+   * @return {Array.<Element>}
+   */
+silex.utils.Dom.getElementsAsArray = function(parentNode, selector) {
+  // get all elements which are components
+  const components = parentNode.querySelectorAll(selector);
+  // make an array out of it
+  var arr = [];
+  for (let idx=0; idx < components.length; idx++) arr.push(components[idx]);
+  return arr;
+};

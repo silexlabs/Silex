@@ -28,7 +28,7 @@
   }
 }
 
-.silex-newwebsite-dialog {
+.silex-dashboard {
   //////////////////////
   // sections (blank layouts, community templates...)
   //////////////////////
@@ -88,22 +88,23 @@
       display: flex;
       flex-wrap: wrap;
       justify-content: space-between;
-      &.small-items {
-        justify-content: initial;
-        li.rendered-item {
-          width: @cardWidthSmall;
-          height: @cardHeightSmall;
-          flex: initial;
+      // &.small-items {
+      //  justify-content: initial;
+      //  li.rendered-item,
+        li.silex-blank-templates {
+          // width: @cardWidthSmall;
+          // height: @cardHeightSmall;
+          // flex: initial;
           .thumbnail {
-            width: 100%;
-            height: @cardHeightSmall - @titleHeight;
-            max-width: @cardWidth;
+            // width: 100%;
+            // height: @cardHeightSmall - @titleHeight;
+            // max-width: @cardWidth;
             background-size: initial;
           }
           .ui a {
             display: none;
           }
-        }
+        // }
       }
     }
     .btn:hover, .list-item:hover {
