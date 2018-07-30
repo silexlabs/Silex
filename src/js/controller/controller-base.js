@@ -273,6 +273,8 @@ silex.controller.ControllerBase.prototype.styleChanged = function(name, value, o
     // update the model
     this.model.element.setStyle(element, name, value);
   }, this);
+  // refresh the view
+  this.refreshView();
 };
 
 
@@ -292,6 +294,8 @@ silex.controller.ControllerBase.prototype.multipleStylesChanged = function(style
     // update the model
     this.model.property.setStyle(element, style);
   }, this);
+  // refresh the view
+  this.refreshView();
 };
 
 
@@ -313,6 +317,8 @@ silex.controller.ControllerBase.prototype.propertyChanged = function(name, value
     // update the model
     this.model.element.setProperty(element, name, value, opt_applyToContent);
   }, this);
+  // refresh the view
+  this.refreshView();
 };
 
 
@@ -331,6 +337,8 @@ silex.controller.ControllerBase.prototype.setClassName = function(name) {
     // refresh the views
     this.view.breadCrumbs.redraw();
   }, this);
+  // refresh the view
+  this.refreshView();
 };
 
 
@@ -386,32 +394,6 @@ silex.controller.ControllerBase.prototype.doAddElement = function(element) {
   this.checkElementVisibility(element);
   // select the component
   this.model.body.setSelection([element]);
-  // set element editable
-  // TODO: move this to element::createElement
-  this.initUiHandles(element);
-};
-
-
-/**
- * @param  {Element} element
- * TODO: move this to element::createElement
- */
-silex.controller.ControllerBase.prototype.initUiHandles = function(element) {
-  goog.array.forEach([
-    'ui-resizable-n',
-    'ui-resizable-s',
-    'ui-resizable-e',
-    'ui-resizable-w',
-    'ui-resizable-ne',
-    'ui-resizable-nw',
-    'ui-resizable-se',
-    'ui-resizable-sw'
-  ], function(className) {
-    var handle = this.model.file.getContentDocument().createElement('div');
-    goog.dom.classlist.add(handle, className);
-    goog.dom.classlist.add(handle, 'ui-resizable-handle');
-    goog.dom.appendChild(element, handle);
-  }, this);
 };
 
 

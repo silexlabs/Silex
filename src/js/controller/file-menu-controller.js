@@ -52,7 +52,7 @@ silex.controller.FileMenuController.prototype.loadTemplate = function(url, opt_c
  * @param {?function(Object)=} opt_errorCbk
  */
 silex.controller.FileMenuController.prototype.loadBlank = function(opt_cbk, opt_errorCbk) {
-  const blankUrl = '/libs/templates/silex-blank-templates/desktop/editable.html';
+  const blankUrl = '/libs/templates/silex-blank-templates/blank/editable.html';
   this.loadTemplate(blankUrl, opt_cbk, opt_errorCbk);
 };
 
@@ -65,7 +65,7 @@ silex.controller.FileMenuController.prototype.loadBlank = function(opt_cbk, opt_
 silex.controller.FileMenuController.prototype.newFile = function(opt_cbk, opt_errorCbk) {
 
   this.tracker.trackAction('controller-events', 'request', 'file.new', 0);
-  this.view.newWebsiteDialog.openDialog({
+  this.view.dashboard.openDialog({
     openFileInfo: (fileInfo) => {
       if(!fileInfo && !this.model.file.hasContent()) {
         // if the user closes the dialog and no website is being edited then load default blank website

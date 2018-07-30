@@ -77,6 +77,7 @@ class SettingsDialog {
         this.redraw();
       },
       onClose: () => {
+        // notify the caller of this dialog
         if(this.onClose) this.onClose();
       },
     });
@@ -173,11 +174,9 @@ class SettingsDialog {
     if (!input) {
       throw new Error('Settings panel error: could not find the element to bind.');
     }
-    goog.events.listen(
-        input, goog.ui.Component.EventType.CHANGE,
-        function() {
-          cbk(input.value);
-        }, false, this);
+    input.onchange = (e) => {
+      cbk(input.value);
+    };
   }
 
 

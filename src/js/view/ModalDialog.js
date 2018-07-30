@@ -27,6 +27,33 @@ const MODAL_DIALOG_CLASS_NAME = 'silex-modal-dialog';
  * @class {silex.view.ModalDialog}
  */
 class ModalDialog {
+  /**
+   * open a dialog by name
+   * @param  {string} name
+   * @param  {?Object=} args
+   */
+   static open(name, args = null) {
+    if(ModalDialog.dialogs && ModalDialog.dialogs[name]) {
+      ModalDialog.dialogs[name].open(args);
+    }
+    else {
+      console.error('could not open dialog', name, ModalDialog.dialogs);
+    }
+  };
+
+
+  /**
+   * close a dialog by name
+   */
+   static close() {
+    if(ModalDialog.currentDialog) {
+      ModalDialog.currentDialog.close();
+    }
+    else {
+      console.error('could not close dialog, there is no dialog opened');
+    }
+  }
+
 
   /**
    * @param  {{name:(string|undefined), element:Element, onOpen:!function(?Object=), onClose:!function()}} options
@@ -35,7 +62,7 @@ class ModalDialog {
     // check and store options
     if(options.name) {
       this.name = options.name;
-      silex.view.ModalDialog.dialogs[this.name] = this;
+      ModalDialog.dialogs[this.name] = this;
     }
     if(options.element) this.element = options.element;
     else throw 'Modal dialog options missing a "element" field';
@@ -44,7 +71,7 @@ class ModalDialog {
     if(options.onClose) this.onClose = options.onClose;
     else throw 'Modal dialog options missing a "onClose" field';
     // init the static fields
-    silex.view.ModalDialog.dialogs = silex.view.ModalDialog.dialogs || {};
+    ModalDialog.dialogs = ModalDialog.dialogs || {};
     // set the flag
     this.isOpen = false;
     // set the css classes
@@ -75,10 +102,10 @@ class ModalDialog {
       // set the flag
       this.isOpen = true;
       // handle the current dialog
-      if(silex.view.ModalDialog.currentDialog) {
-        silex.view.ModalDialog.currentDialog.close();
+      if(ModalDialog.currentDialog) {
+        ModalDialog.currentDialog.close();
       }
-      silex.view.ModalDialog.currentDialog = this;
+      ModalDialog.currentDialog = this;
       // css classes to show the dialog and the background
       this.element.classList.remove(HIDE_DIALOG_CLASS_NAME);
       // call the callback
@@ -93,42 +120,18 @@ class ModalDialog {
    */
   close() {
     if(this.isOpen) {
+      // reset the flags
       this.isOpen = false;
-      silex.view.ModalDialog.currentDialog = null;
-      this.element.classList.add(HIDE_DIALOG_CLASS_NAME);
+      ModalDialog.currentDialog = null;
+      // notify the dialog itself
       this.onClose();
+      // give focus to the stage, this will trigger a change event on the input elements which have focus
+      silex.model.Body.resetFocus();
+      // finally hide the dialog - this has to be last, otherwise things like blur inputs will fail since this makes the dialog display: none;
+      this.element.classList.add(HIDE_DIALOG_CLASS_NAME);
     }
     else {
       console.warn('dialog is already closed', this.name ? this.name : '');
     }
   }
 }
-
-
-/**
- * open a dialog by name
- * @param  {string} name
- * @param  {?Object=} args
- */
-silex.view.ModalDialog.open = function(name, args = null) {
-  if(silex.view.ModalDialog.dialogs && silex.view.ModalDialog.dialogs[name]) {
-    silex.view.ModalDialog.dialogs[name].open(args);
-  }
-  else {
-    console.error('could not open dialog', name, silex.view.ModalDialog.dialogs);
-  }
-};
-
-
-/**
- * close a dialog by name
- */
-silex.view.ModalDialog.close = function() {
-  if(silex.view.ModalDialog.currentDialog) {
-    silex.view.ModalDialog.currentDialog.close();
-  }
-  else {
-    console.error('could not close dialog, there is no dialog opened');
-  }
-};
-

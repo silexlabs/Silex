@@ -20,6 +20,7 @@
 goog.provide('silex.model.Body');
 goog.require('silex.Config');
 goog.require('silex.types.Model');
+goog.require('silex.utils.InvalidationManager');
 
 
 
@@ -34,6 +35,23 @@ silex.model.Body = function(model, view) {
   // get the iframe
   // retrieve the element which will hold the body of the opened file
   this.iframeElement = /** @type {!HTMLIFrameElement} */ (goog.dom.getElementByClass(silex.view.Stage.STAGE_CLASS_NAME));
+
+  // hide the focus input and attach it to the DOM
+  silex.model.Body.focusInput.style.left = '-1000px';
+  silex.model.Body.focusInput.style.position = 'absolute';
+  document.body.appendChild(silex.model.Body.focusInput);
+};
+
+
+/**
+ * remove the focus from text fields
+ * @static
+ */
+silex.model.Body.resetFocus = function() {
+  silex.model.Body.invalidationManagerFocus.callWhenReady(() => {
+    silex.model.Body.focusInput.focus();
+    silex.model.Body.focusInput.blur();
+  });
 };
 
 
@@ -42,6 +60,23 @@ silex.model.Body = function(model, view) {
  * @type {HTMLIFrameElement}
  */
 silex.model.Body.prototype.iframeElement = null;
+
+
+/**
+ * invalidation mechanism for focus
+ * @type {InvalidationManager}
+ * @static
+ */
+silex.model.Body.invalidationManagerFocus = new InvalidationManager(500);
+
+
+/**
+ * input element to get the focus
+ * used to blur the UI inputs
+ * @type {Element}
+ * @static
+ */
+silex.model.Body.focusInput = document.createElement('input');
 
 
 /**
