@@ -507,6 +507,18 @@
     border-bottom-right-radius: 4px;
     border-right: 1px solid @silexdarkgrey;
   }
+  /* text inline format pane, keep selection */
+  .format-pane form .labels > .wysihtml-command-active {
+    .button-template-selected;
+  }
+  .format-pane {
+    opacity: .5;
+    pointer-events: none;
+  }
+  .format-pane.text-editor-editing {
+    opacity: 1;
+    pointer-events: auto;
+  }
 
   /* */
   .prodotype-component-editor, .prodotype-style-editor {

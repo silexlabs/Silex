@@ -36,7 +36,7 @@
     "watch:client": "watch 'npm run build:css && npm run build:html && npm run build:prodotype && npm run build:js:debug && npm run lint:js' src/",
     "lint:js": "eslint src/js/",
     "lint:server": "eslint dist/server/",
-    "postinstall": "npm run init:prodotype && npm run init:templates && npm run build",
+    "postinstall": "npm run init:prodotype && npm run init:templates && npm run init:wysihtml && npm run build",
     "start:electron": "SILEX_ELECTRON=true electron ."
   },
   "dependencies": {

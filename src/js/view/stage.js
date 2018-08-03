@@ -328,16 +328,23 @@ silex.view.Stage.prototype.initEvents = function(contentWindow) {
 
   // detect mouse down
   goog.events.listen(this.bodyElement, 'mousedown', function(event) {
+    // get the first parent node which is editable (silex-editable css class)
+    const editableElement = goog.dom.getAncestorByClass(
+        event.target,
+        silex.model.Body.EDITABLE_CLASS_NAME) || this.bodyElement;
+
+    // if this is a text box being edited inline, do nothing
+    const content = this.model.element.getContentNode(editableElement);
+    if(content.getAttribute('contenteditable')) {
+      return true;
+    }
+
     this.lastClickWasResize = goog.dom.classlist.contains(
         event.target,
         'ui-resizable-handle');
     this.resizeDirection = this.getResizeDirection(event.target);
     let x = event.clientX;
     let y = event.clientY;
-    // get the first parent node which is editable (silex-editable css class)
-    let editableElement = goog.dom.getAncestorByClass(
-        event.target,
-        silex.model.Body.EDITABLE_CLASS_NAME) || this.bodyElement;
     try {
       // in firefox, this is needed to keep recieving events while dragging outside the iframe
       // in chrome this will throw an error
