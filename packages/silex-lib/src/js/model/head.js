@@ -229,8 +229,6 @@ silex.model.Head.prototype.setHeadStyle = function(cssString) {
     goog.dom.appendChild(this.getHeadElement(), silexStyle);
   }
   silexStyle.innerHTML = cssString;
-  // refresh the text editor's styles
-  this.view.textEditor.setCustomCssStyles(cssString);
 };
 
 

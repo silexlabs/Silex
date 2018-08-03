@@ -255,14 +255,7 @@ silex.controller.EditMenuController.prototype.editElement = function(opt_element
         bgColor = [255, 255, 255, 255];
       }
       // open the text editor with the same bg color as the element
-      this.view.textEditor.open();
-      this.view.textEditor.setValue(this.model.element.getInnerHtml(element));
-      this.view.textEditor.setElementClassNames(element.className);
-      this.view.textEditor.setBackgroundColor(goog.color.rgbToHex(
-          Math.round(bgColor[0]),
-          Math.round(bgColor[1]),
-          Math.round(bgColor[2])
-          ));
+      this.view.propertyTool.formatEditorStart();
       break;
     case silex.model.Element.TYPE_HTML:
       this.view.htmlEditor.open();

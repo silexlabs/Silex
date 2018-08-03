@@ -72,7 +72,6 @@ goog.require('silex.view.dialog.HtmlEditor');
 goog.require('silex.view.dialog.JsEditor');
 goog.require('silex.view.dialog.SettingsDialog');
 goog.require('silex.view.dialog.Dashboard');
-goog.require('silex.view.dialog.TextEditor');
 
 goog.require('silex.view.ModalDialog');
 
@@ -255,11 +254,6 @@ class App {
     /** @type {JsEditor} */
     var jsEditor = new JsEditor(jsEditorElement, this.model, this.controller);
 
-    // TextEditor
-    var textEditorElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-text-editor'));
-    /** @type {TextEditor} */
-    var textEditor = new TextEditor(textEditorElement, this.model, this.controller);
-
     // SettingsDialog
     var settingsDialogElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-settings-dialog'));
     /** @type {SettingsDialog} */
@@ -305,7 +299,6 @@ class App {
         htmlEditor,
         cssEditor,
         jsEditor,
-        textEditor,
         fileExplorer,
         settingsDialog,
         dashboard,
