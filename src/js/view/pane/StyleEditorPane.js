@@ -1,4 +1,19 @@
+/**
+ * Silex, live web creation
+ * http://projects.silexlabs.org/?/silex/
+ *
+ * Copyright (c) 2012 Silex Labs
+ * http://www.silexlabs.org/
+ *
+ * Silex is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
+ */
 
+/**
+ * @fileoverview The style editor pane is displayed in the property panel on the right.
+ * It is a prodotype component used to edit the css styles
+ *
+ */
 
 goog.provide('silex.view.pane.StyleEditorPane');
 

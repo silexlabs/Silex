@@ -37,7 +37,7 @@
     "old:lint:js:closure": "eslint src/js/ && node_modules/google-closure-linter/closure_linter/gjslint.py --max_line_length=200 src/js/**/*.js",
     "old:fix:js": "node_modules/google-closure-linter/closure_linter/fixjsstyle.py -r src/js/ && node_modules/google-closure-linter/closure_linter/gjslint.py --max_line_length=200 src/js/**/*.js",
     "lint:server": "eslint dist/server/",
-    "postinstall": "npm run init:prodotype && npm run init:templates && npm run build",
+    "postinstall": "npm run init:prodotype && npm run init:templates && npm run init:wysihtml && npm run build",
     "start:electron": "SILEX_ELECTRON=true electron ."
   },
   "dependencies": {
