@@ -79,11 +79,6 @@ class TextEditor {
     this.fontColorButtonEl = null;
 
     /**
-     * list of custom fonts to apply when the editor opens
-     */
-    this.currentCustomFonts = null;
-
-    /**
      * list of custom css styles to apply when the editor opens
      */
     this.currentCustomCssStyles = null;
@@ -97,10 +92,6 @@ class TextEditor {
         // handle current css styles
         if (this.currentCustomCssStyles) {
           this.setCustomCssStyles(this.currentCustomCssStyles);
-        }
-        // handle current fonts
-        if (this.currentCustomFonts) {
-          this.setCustomFonts(this.currentCustomFonts);
         }
         // add styles already present in the main editor iframe
         // this is useful to have text rendered the same way
@@ -172,18 +163,6 @@ class TextEditor {
     this.textField.registerPlugin(new silex.view.dialog.LinkDialogPlugin());
     this.textField.registerPlugin(new goog.editor.plugins.LinkBubble());
 
-    // add fonts
-    var fontFaceButton = goog.ui.editor.DefaultToolbar.makeBuiltInToolbarButton(
-        goog.editor.Command.FONT_FACE);
-
-    var availableFonts = silex.Config.fonts;
-    for (let fontName in availableFonts) {
-      goog.ui.editor.ToolbarFactory.addFont(
-          /** @type {!goog.ui.Select} */ (fontFaceButton),
-          fontName,
-          availableFonts[fontName].value);
-    }
-
     // add font sizes
     var fontSizeButton = goog.ui.editor.DefaultToolbar.makeBuiltInToolbarButton(
         goog.editor.Command.FONT_SIZE);
@@ -250,7 +229,6 @@ class TextEditor {
     // Specify the buttons to add to the toolbar, using built in default buttons.
     var buttons = [
       formatButton,
-      fontFaceButton,
       fontSizeButton,
       goog.editor.Command.BOLD,
       goog.editor.Command.ITALIC,
@@ -412,40 +390,6 @@ class TextEditor {
    */
   close() {
     this.modalDialog.close();
-  }
-
-
-  /**
-   * set the list of custom fonts
-   * @param {Array.<{name:string, href:string}>} customFonts ,
-   *                                      the custom fonts used in the text fields
-   */
-  setCustomFonts(customFonts) {
-    // store for later use
-    this.currentCustomFonts = customFonts;
-    // get the iframe document
-    var iframe = goog.dom.getElementsByTagNameAndClass(
-        'iframe', null, this.element)[0];
-    if (!iframe) {
-      // iframe not yet defined, the text editor is loading
-      return;
-    }
-    var iframeDoc = goog.dom.getFrameContentDocument(iframe);
-    var iframeHead = iframeDoc.head;
-    //detach all previously loaded font before, to avoid duplicate
-    var links = goog.dom.getElementsByClass(
-        silex.model.Head.CUSTOM_FONTS_CSS_CLASS, iframeHead);
-    goog.array.forEach(links, function(link) {
-      link.parentNode.removeChild(link);
-    });
-    goog.array.forEach(customFonts, function(font) {
-      var link = goog.dom.createElement('link');
-      link.setAttribute('href', font.href);
-      link.setAttribute('rel', 'stylesheet');
-      link.setAttribute('type', 'text/css');
-      link.setAttribute('class', silex.model.Head.CUSTOM_FONTS_CSS_CLASS);
-      iframeHead.appendChild(link);
-    }, this);
   }
 
 
