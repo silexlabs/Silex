@@ -255,6 +255,40 @@ var UnifileResponse;
 
 
 /**
+ * wysihtml library
+ * @package
+ */
+var wysihtml;
+
+
+/**
+ * @constructor
+ * @param {Element} el
+ * @param {Object} options
+ */
+wysihtml.Editor = function(el, options) {};
+
+
+/**
+ * @param {?boolean=} changePosition
+ */
+wysihtml.Editor.prototype.focus = function(changePosition) {};
+
+
+/**
+ * @param {string} eventName
+ * @param {function()} cbk
+ */
+wysihtml.Editor.prototype.on = function(eventName, cbk) {};
+
+
+/**
+ * @type {Object}
+ */
+var wysihtmlParserRules;
+
+
+/**
  * ace externs
  * @constructor
  */

@@ -225,7 +225,6 @@ silex.types.View = function() {
  * @param {HtmlEditor} htmlEditor
  * @param {CssEditor} cssEditor
  * @param {JsEditor} jsEditor
- * @param {TextEditor} textEditor
  * @param {FileExplorer} fileExplorer
  * @param {SettingsDialog} settingsDialog
  * @param {Dashboard} dashboard
@@ -242,7 +241,6 @@ silex.types.View.prototype.init = function(
     htmlEditor,
     cssEditor,
     jsEditor,
-    textEditor,
     fileExplorer,
     settingsDialog,
     dashboard,
@@ -284,10 +282,6 @@ silex.types.View.prototype.init = function(
    * @type {JsEditor}
    */
   this.jsEditor = jsEditor;
-  /**
-   * @type {TextEditor}
-   */
-  this.textEditor = textEditor;
   /**
    * @type {FileExplorer}
    */
