@@ -205,19 +205,3 @@ silex.model.Body.prototype.setSelection = function(selectedElements) {
   this.view.breadCrumbs.redraw(selectedElements, pages, page);
   this.view.htmlEditor.setSelection(selectedElements);
 };
-
-
-/**
- * @return {Object.<boolean>} object of fonts which are used in the text fields (key is the font name)
- */
-silex.model.Body.prototype.getNeededFonts = function() {
-  var neededFonts = [];
-  if (this.getBodyElement()) {
-    var innerHTML = this.getBodyElement().innerHTML;
-    innerHTML.replace(/<font[^"]*face="?([^"]*)"/gi, function(match, group1) {
-      neededFonts[group1] = true;
-      return match;
-    });
-  }
-  return neededFonts;
-};
