@@ -39,6 +39,10 @@ class FormatPane extends silex.view.pane.PaneBase {
     this.controller = controller;
     /** @type {?Array.<Element>} */
     this.selectedElements = null;
+    /** @type {?Array.<string>} */
+    this.pageNames = null;
+    /** @type {?string} */
+    this.currentPageName = null;
     /** @type {?Element} */
     this.currentTextBox = null;
     this.wysihtmlEditor = null;
@@ -56,7 +60,30 @@ class FormatPane extends silex.view.pane.PaneBase {
    */
   onKeyPressed(e) {
     e = e || window.event;
-    if (e.keyCode == 27) this.stopEditing();
+    if (e.keyCode == 27) {
+      this.stopEditing();
+      e.preventDefault();
+    }
+    else {
+      // workaround wysihtml intercepting events
+      // forward events to document
+      const evt = new KeyboardEvent('keydown', {
+        'key': e.key,
+        'charCode': e.charCode,
+        'keyCode': e.keyCode,
+        'code': e.code,
+        'location': e.location,
+        'shiftKey': e.shiftKey,
+        'altKey': e.altKey,
+        'ctrlKey': e.ctrlKey,
+        'metaKey': e.metaKey,
+      });
+      const canceled = !document.dispatchEvent(evt);
+      if(evt.defaultPrevented || canceled) {
+        console.log('defaultPrevented');
+        e.preventDefault();
+      }
+    }
   }
 
 
@@ -65,8 +92,9 @@ class FormatPane extends silex.view.pane.PaneBase {
    */
   stopEditing() {
     if(this.wysihtmlEditor) {
+      const doc = this.model.file.getContentDocument();
       // remove event listener
-      this.model.file.getContentDocument().removeEventListener('keydown', this.onKeyPressedBinded);
+      doc.removeEventListener('keydown', this.onKeyPressedBinded);
       // remove and put back the whole UI
       // this is the way to go with wysihtml
       // @see https://github.com/Voog/wysihtml/issues/109#issuecomment-198350743
@@ -81,12 +109,13 @@ class FormatPane extends silex.view.pane.PaneBase {
       this.toolbar = clone;
       // reset focus
       silex.model.Body.resetFocus();
-      this.model.file.getContentDocument()['getSelection']().removeAllRanges(); // use array acces for getSelection as a workaround for google closure warning 'Property getSelection never defined on Document'
+      doc['getSelection']().removeAllRanges(); // use array acces for getSelection as a workaround for google closure warning 'Property getSelection never defined on Document'
       // cleanup
       const editable = this.model.element.getContentNode(this.currentTextBox);
       editable.removeAttribute('contentEditable');
       editable.classList.remove('wysihtml-sandbox', 'wysihtml-editor');
       this.currentTextBox.classList.remove('text-editor-focus');
+      this.currentTextBox.removeAttribute('data-allow-silex-shortcuts');
       this.currentTextBox.onclick = null;
       this.currentTextBox = null;
     }
@@ -95,6 +124,7 @@ class FormatPane extends silex.view.pane.PaneBase {
 
 
   startEditing() {
+    const doc = this.model.file.getContentDocument();
     // edit the style of the selection
     if(this.selectedElements.length === 1) {
       const newTextBox = this.selectedElements[0];
@@ -122,7 +152,15 @@ class FormatPane extends silex.view.pane.PaneBase {
               'ul': {},
               'ol': {},
               'li': {},
-              'a': {},
+              'a': {
+                'check_attributes': {
+                    'href': 'href',
+                    'download': 'href',
+                    'target': 'any',
+                    'title': 'any',
+                    'type': 'any',
+                },
+              },
               'img': {},
               'font': {
                 'rename_tag': 'span',
@@ -136,18 +174,126 @@ class FormatPane extends silex.view.pane.PaneBase {
         this.wysihtmlEditor = new wysihtml.Editor(editable, options);
         // CSS classes
         this.currentTextBox.classList.add('text-editor-focus');
+        this.currentTextBox.setAttribute('data-allow-silex-shortcuts', true);
         this.element.classList.add('text-editor-editing');
         // handle the focus
-        this.model.file.getContentDocument().addEventListener('keydown', this.onKeyPressedBinded);
+        doc.addEventListener('keydown', this.onKeyPressedBinded);
         this.currentTextBox.onclick = e => {
           if(e.target === this.currentTextBox) {
             this.stopEditing();
           }
         };
+
+        const LINK_ATTRIBUTES =  ['href', 'rel', 'target', 'type', 'title', 'download'];
         this.wysihtmlEditor.on('load', () => {
           this.wysihtmlEditor.focus(false);
           setTimeout(() => this.wysihtmlEditor.focus(false), 250);
           setTimeout(() => this.wysihtmlEditor.focus(false), 500);
+          this.element.querySelector('.create-link').onclick = e => {
+            // get link current values
+            const linkData = LINK_ATTRIBUTES
+            .reduce((acc, attr) => {
+              const el = this.element.querySelector('.get-' + attr);
+              if(!el) {
+                console.error('could not get data from link editor for attribute', attr);
+              }
+              else {
+                acc[attr] = el.value;
+              }
+              return acc;
+            }, {});
+
+            // external link data
+            const isExternal = !linkData['href'].startsWith('#!');
+
+            // prompt
+            silex.utils.Notification.prompt('Link editor', 'unused', (accept, unused) => {
+              if(accept) {
+                // get new values
+                const newData = LINK_ATTRIBUTES
+                .reduce((acc, attr) => {
+                  const el = dialogBody.querySelector('.' + attr);
+                  if(!el) {
+                    console.error('could not get data from wysihtml for attribute', attr);
+                  }
+                  else {
+                    acc[attr] = el.value;
+                  }
+                  return acc;
+                }, {});
+
+                // internal link info
+                const newIsExternal = dialogBody.querySelector('#link-editor-external').checked;
+                const page = dialogBody.querySelector('.page').value;
+
+                const options = { 'href': newIsExternal ? newData['href'] : page };
+                if(newData['target'] != '') options.target = newData['target'];
+                if(newData['rel'] != '') options.rel = newData['rel'];
+                if(newData['title'] != '') options.title = newData['title'];
+                if(newData['type'] != '') options.type = newData['type'];
+                if(newData['download'] != '') options.download = newData['download'];
+
+                this.wysihtmlEditor.composer.commands.exec('createLink', options);
+              }
+            });
+            // TODO: which link types? https://developer.mozilla.org/en-US/docs/Web/HTML/Link_types
+            // TODO: remove link
+            // TODO: file::getHtml() should remove wysihtml markup
+            // TODO: keyboard shoortcuts
+            // adds info about the link
+            const dialogBody = silex.utils.Notification.getFormElement();
+            dialogBody.innerHTML = `
+              <section class="link-editor">
+                <div class="link-editor-tab">
+                  <input id="link-editor-external" class="link-editor-radio" type="radio" name="link-editor-tab-group"${ isExternal ? ' checked ' : '' }/>
+                  <div class="link-editor-tab-container">
+                    <label for="link-editor-external">External Link</label>
+                    <input autocomplete="nope" id="link-editor-href" class="alertify-text href tabbed" type="url" value="${ isExternal ? linkData['href'] : '' }">
+                  </div>
+                </div>
+                <div class="link-editor-tab">
+                  <input autocomplete="nope" id="link-editor-internal" class="link-editor-radio" type="radio" name="link-editor-tab-group"${ !isExternal ? ' checked ' : '' }/>
+                  <div class="link-editor-tab-container">
+                    <label for="link-editor-internal">Link to a page</label>
+                    <select autocomplete="nope" class="tabbed alertify-text page" id="link-editor-page">
+                      <option value=""${ isExternal ? ' selected ' : ''}></option>
+                      ${ this.pageNames.map(page => `<option value="#!${ page }"${ !isExternal && '#!' + page === linkData['href'] ? ' selected ' : ''} >${ this.model.page.getDisplayName(page) }</option>`) }
+                    </select>
+                  </div>
+                </div>
+                <div class="link-editor-2col-container">
+                  <div class="link-editor-2col">
+                    <label for="link-editor-target">Target</label>
+                    <select autocomplete="nope" id="link-editor-target" class="alertify-text target">
+                      <option${ linkData['target'] === '' ? ' selected ' : ''} value=""></option>
+                      <option${ linkData['target'] === '_self' ? ' selected ' : ''} value="_self">_self</option>
+                      <option${ linkData['target'] === '_blank' ? ' selected ' : ''} value="_blank">_blank</option>
+                      <option${ linkData['target'] === '_parent' ? ' selected ' : ''} value="_parent">_parent</option>
+                      <option${ linkData['target'] === '_top' ? ' selected ' : ''} value="_top">_top</option>
+                    </select>
+                  </div>
+                  <div class="link-editor-2col">
+                    <label for="link-editor-title">Title</label>
+                    <input autocomplete="nope" id="link-editor-title" class="alertify-text title" type="text" value="${ linkData['title'] }">
+                  </div>
+                </div>
+                <hr>
+                <div class="link-editor-advanced-container">
+                  <input autocomplete="nope" id="link-editor-show-advanced" type="checkbox">
+                  <label for="link-editor-show-advanced">Advanced params</label>
+                  <div class="link-editor-advanced">
+                    <label for="link-editor-rel">The "rel" attribute. Describes the relationship between the current document and the destination.</label>
+                    <input autocomplete="nope" id="link-editor-rel" class="alertify-text rel" type="text" value="${ linkData['rel'] }">
+                    <label for="link-editor-type">The "type" attribute. Specifies the MIME type of the linked resource.</label>
+                    <input autocomplete="nope" id="link-editor-type" class="alertify-text type" type="text" value="${ linkData['type'] }">
+                    <label for="link-editor-download">The "download" attribute. Indicates that the link is to be used for downloading a resource (such as a file). The author can specify a default file name by providing a value.</label>
+                    <input autocomplete="nope" id="link-editor-download" class="alertify-text download" type="text" value="${ linkData['download'] }">
+                  </div>
+                </div>
+              </section>
+            `;
+            e.preventDefault();
+          };
         });
         // debug
         window['wysihtmlEditor'] = this.wysihtmlEditor;
@@ -170,6 +316,10 @@ class FormatPane extends silex.view.pane.PaneBase {
 
     // reuse selectedElements in combo box on change
     this.selectedElements = selectedElements;
+
+    // reuse pageNames in combo box on change
+    this.pageNames = pageNames;
+    this.currentPageName = currentPageName;
 
     // stop editing, even if we may not be editing right now
     this.stopEditing();
