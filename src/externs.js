@@ -270,16 +270,33 @@ wysihtml.Editor = function(el, options) {};
 
 
 /**
- * @param {?boolean=} changePosition
+ * @type {function(boolean)}
  */
 wysihtml.Editor.prototype.focus = function(changePosition) {};
 
 
 /**
- * @param {string} eventName
- * @param {function()} cbk
+ * @type {function(string, function())}
  */
 wysihtml.Editor.prototype.on = function(eventName, cbk) {};
+
+
+/**
+ * @type {{commands}}
+ */
+wysihtml.Editor.prototype.composer;
+
+
+/**
+ * @type {{exec}}
+ */
+wysihtml.Editor.prototype.composer.commands;
+
+
+/**
+ * @type {function(string, Object)}
+ */
+wysihtml.Editor.prototype.composer.commands.exec = function(cmd, options) {};
 
 
 /**
