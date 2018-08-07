@@ -201,8 +201,16 @@
       form
         #wysihtml5-toolbar.labels
           label.first-button(data-wysihtml-command='formatBlock', data-wysihtml-command-value='p') P
-          label(data-wysihtml-command='createLink', title='CTRL+K') A
-          //label(data-wysihtml-command='removeLink') A
+          label.create-link(data-wysihtml-command='createLink', title='CTRL+K') A
+          div.hidden
+            // this is a wysihtml dialog used by silex to get the link value
+            div.link-dialog(data-wysihtml-dialog='createLink')
+              input.get-href(data-wysihtml-dialog-field='href', value='')
+              input.get-rel(data-wysihtml-dialog-field='rel', value='')
+              input.get-target(data-wysihtml-dialog-field='target', value='')
+              input.get-title(data-wysihtml-dialog-field='title', value='')
+              input.get-download(data-wysihtml-dialog-field='download', value='')
+              input.get-type(data-wysihtml-dialog-field='type', value='')
           label(data-wysihtml-command='bold', title='CTRL+B') B
           label(data-wysihtml-command='underline', title='CTRL+U') U
           label.last-button(data-wysihtml-command='italic', title='CTRL+I') I
@@ -213,7 +221,6 @@
           label.last-button(data-wysihtml-command='insertOrderedList', title='Make the current line a list') OL
           label.first-button.fa.fa-image(href='javascript:editor.composer.commands.exec("insertImage", { src: "https://developer.mozilla.org/static/img/web-docs-sprite.22a6a085cf14.svg", alt: "this is an image" })', title='Insert an image')
           label.last-butto.fa.fa-code(data-wysihtml-action='change_view', title='View HTML code')
-
 
     .expendable.prodotype-style-editor-menu
       label.class-name-style-label(for='class-name-style-combo-box')
