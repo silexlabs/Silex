@@ -1,0 +1,43 @@
+.link-editor {
+  .link-editor-tab {
+    display: flex;
+    margin: 10px 0;
+    // labels on 1 line
+    label {
+      display: block;
+    }
+  }
+  .link-editor-radio {
+    margin-right: 10px;
+    outline: none;
+    &:checked + .link-editor-tab-container {
+      border: 1px dashed @silexlightgrey;
+    }
+  }
+  .link-editor-tab-container {
+    flex: 1 1 auto;
+    padding: 5px;
+  }
+  .link-editor-advanced-container {
+    label {
+      display: block;
+      margin-top: 20px;
+    }
+    & > label:first-of-type {
+      margin-bottom: 20px;
+      border: 1px solid @silexlightgrey;
+      display: inline-block;
+      margin-top: 10px;
+      padding: 5px;
+    }
+    #link-editor-show-advanced {
+      display: none;
+      &:checked ~ .link-editor-advanced {
+        display: block;
+      }
+    }
+    .link-editor-advanced {
+      display: none;
+    }
+  }
+}
