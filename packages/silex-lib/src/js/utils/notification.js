@@ -251,6 +251,22 @@ silex.utils.Notification.setText = function(message) {
 
 
 /**
+ * @return {Element} element which holds the text of the current notification
+ */
+silex.utils.Notification.getTextElement = function() {
+  return document.querySelector('.alertify-message');
+};
+
+
+/**
+ * @return {Element} element which holds the text field of the current notification
+ */
+silex.utils.Notification.getFormElement = function() {
+  return document.querySelector('.alertify-text-wrapper');
+};
+
+
+/**
  * add an HTML panel with info of type "while you wait, here is an info"
  * @param {Element} element
  */
