@@ -318,7 +318,7 @@ module.exports = class PublishJob {
   writeOperations(statCss, statJs, statAssets, ...assets) {
     this.setStatus(`Creating files <ul><li>${this.indexFile}</li><li>${this.cssFile}</li><li>${this.jsFile}</li></ul>`);
     // hide website before styles.css is loaded
-    this.dom.window.document.body.style.display = 'none';
+    this.dom.window.document.head.innerHTML += '<style>body { opacity: 0; transition: .25s opacity ease; }</style>';
     // create an object to describe a batch of actions
     const batchActions = [{
       name: 'writefile',
@@ -345,7 +345,7 @@ module.exports = class PublishJob {
     }
     if(!!this.tree.styleTags.length > 0) {
       // show website after styles.css is loaded
-      const showBodyRule = 'body {display: initial !important;}\n';
+      const showBodyRule = 'body.silex-runtime {opacity: 1;}\n';
       // create the style.css file
       batchActions.push({
         name: 'writefile',
