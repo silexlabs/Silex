@@ -355,7 +355,7 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, pageNames
 /**
  * callback for checkboxes click event
  * changes the visibility of the current component for the given page
- * @param   {string} pageName   the page for wich the visibility changes
+ * @param   {string} pageName   the page for which the visibility changes
  * @param   {HTMLInputElement} checkbox   the checkbox clicked
  */
 silex.view.pane.PagePane.prototype.checkPage = function(pageName, checkbox) {
