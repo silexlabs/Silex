@@ -28,7 +28,7 @@ goog.require('goog.events.MouseWheelHandler');
  * the Silex stage class
  * @constructor
  * load the template and render to the given html element
- * @param  {Element}  element  DOM element to wich I render the UI
+ * @param  {Element}  element  DOM element to which I render the UI
  *  has been changed by the user
  * @param  {!silex.types.Model} model  model class which holds
  *                                  the model instances - views use it for read operation only
@@ -1102,7 +1102,7 @@ silex.view.Stage.prototype.getScrollMaxY = function() {
 
 
 /**
- * @param  {Element}  element in the DOM to wich I am scrolling
+ * @param  {Element}  element in the DOM to which I am scrolling
  */
 silex.view.Stage.prototype.setScrollTarget = function(element) {
   if(element !== this.bodyElement) {
@@ -1119,7 +1119,7 @@ silex.view.Stage.prototype.setScrollTarget = function(element) {
 
 
 /**
- * @param  {number}  scrollTop to wich I am scrolling
+ * @param  {number}  scrollTop to which I am scrolling
  * @param  {?number=}  scrollSpeed number of pixels per frame to go there
  */
 silex.view.Stage.prototype.scrollTo = function(scrollTop, scrollSpeed) {
