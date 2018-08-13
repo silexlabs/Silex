@@ -13,6 +13,12 @@
  * @fileoverview The format pane is displayed in the property panel on the right.
  * It uses the wysihtml library to change text format
  *
+ // TODO:
+ // * file::getHtml() should remove wysihtml markup
+ // * keyboard shoortcuts => filter del, enter, ...
+ // * image
+ // * tooltips on button bar (A => link)
+ // * link target = just "in a new tab"
  */
 
 goog.provide('silex.view.pane.FormatPane');
@@ -65,6 +71,8 @@ class FormatPane extends silex.view.pane.PaneBase {
       e.preventDefault();
     }
     else {
+      // do not forward some useful events
+      // arow keys, del, backspace, copy/paste, undo/redo
       // workaround wysihtml intercepting events
       // forward events to document
       const evt = new KeyboardEvent('keydown', {
@@ -78,11 +86,8 @@ class FormatPane extends silex.view.pane.PaneBase {
         'ctrlKey': e.ctrlKey,
         'metaKey': e.metaKey,
       });
-      const canceled = !document.dispatchEvent(evt);
-      if(evt.defaultPrevented || canceled) {
-        console.log('defaultPrevented');
-        e.preventDefault();
-      }
+      document.dispatchEvent(evt);
+      //e.preventDefault();
     }
   }
 
@@ -236,34 +241,33 @@ class FormatPane extends silex.view.pane.PaneBase {
                 this.wysihtmlEditor.composer.commands.exec('createLink', options);
               }
             });
-            // TODO: which link types? https://developer.mozilla.org/en-US/docs/Web/HTML/Link_types
-            // TODO: remove link
-            // TODO: file::getHtml() should remove wysihtml markup
-            // TODO: keyboard shoortcuts
-            // adds info about the link
-            const dialogBody = silex.utils.Notification.getFormElement();
+
+            // add a remove link button
+            const dialogButtons = silex.utils.Notification.getFormButtons();
+            const fragmentButtons = document.createElement('fragment');
+            fragmentButtons.innerHTML = `
+              <button class="alertify-button alertify-button-remove">remove link</button>
+            `;
+            dialogButtons.insertBefore(fragmentButtons, dialogButtons.childNodes[0]);
+            dialogButtons.querySelector('.alertify-button-remove')
+            .onclick = (e => {
+              silex.utils.Notification.close();
+              this.wysihtmlEditor.composer.commands.exec('removeLink');
+            });
+
+            // add info about the link
+            const dialogBody = silex.utils.Notification.getFormBody();
             dialogBody.innerHTML = `
               <section class="link-editor">
-                <div class="link-editor-tab">
-                  <input id="link-editor-external" class="link-editor-radio" type="radio" name="link-editor-tab-group"${ isExternal ? ' checked ' : '' }/>
+                <div class="labels">
+                  <label for="link-editor-external" title="External Link" class="link-editor-tab-label first-button fa fa-lg fa-link${ isExternal ? ' checked ' : '' }"></label>
+                  <label for="link-editor-internal" title="Link to a page" class="link-editor-tab-label last-button fa fa-lg fa-file"${ isExternal ? '' : ' checked ' }></label>
+                </div>
+                <input autocomplete="nope" id="link-editor-external" class="link-editor-radio" type="radio" name="link-editor-tab-group"${ isExternal ? ' checked ' : '' }/>
+                <div class="link-editor-tab link-editor-tab-external">
                   <div class="link-editor-tab-container">
-                    <label for="link-editor-external">External Link</label>
+                    <label for="link-editor-href">External link</label>
                     <input autocomplete="nope" id="link-editor-href" class="alertify-text href tabbed" type="url" value="${ isExternal ? linkData['href'] : '' }">
-                  </div>
-                </div>
-                <div class="link-editor-tab">
-                  <input autocomplete="nope" id="link-editor-internal" class="link-editor-radio" type="radio" name="link-editor-tab-group"${ !isExternal ? ' checked ' : '' }/>
-                  <div class="link-editor-tab-container">
-                    <label for="link-editor-internal">Link to a page</label>
-                    <select autocomplete="nope" class="tabbed alertify-text page" id="link-editor-page">
-                      <option value=""${ isExternal ? ' selected ' : ''}></option>
-                      ${ this.pageNames.map(page => `<option value="#!${ page }"${ !isExternal && '#!' + page === linkData['href'] ? ' selected ' : ''} >${ this.model.page.getDisplayName(page) }</option>`) }
-                    </select>
-                  </div>
-                </div>
-                <div class="link-editor-2col-container">
-                  <div class="link-editor-2col">
-                    <label for="link-editor-target">Target</label>
                     <select autocomplete="nope" id="link-editor-target" class="alertify-text target">
                       <option${ linkData['target'] === '' ? ' selected ' : ''} value=""></option>
                       <option${ linkData['target'] === '_self' ? ' selected ' : ''} value="_self">_self</option>
@@ -272,6 +276,18 @@ class FormatPane extends silex.view.pane.PaneBase {
                       <option${ linkData['target'] === '_top' ? ' selected ' : ''} value="_top">_top</option>
                     </select>
                   </div>
+                </div>
+                <input autocomplete="nope" id="link-editor-internal" class="link-editor-radio" type="radio" name="link-editor-tab-group"${ !isExternal ? ' checked ' : '' }/>
+                <div class="link-editor-tab link-editor-tab-internal">
+                  <div class="link-editor-tab-container">
+                    <label for="link-editor-page">Link to a page</label>
+                    <select autocomplete="nope" class="tabbed alertify-text page" id="link-editor-page">
+                      <option value=""${ isExternal ? ' selected ' : ''}></option>
+                      ${ this.pageNames.map(page => `<option value="#!${ page }"${ !isExternal && '#!' + page === linkData['href'] ? ' selected ' : ''} >${ this.model.page.getDisplayName(page) }</option>`) }
+                    </select>
+                  </div>
+                </div>
+                <div class="link-editor-2col-container">
                   <div class="link-editor-2col">
                     <label for="link-editor-title">Title</label>
                     <input autocomplete="nope" id="link-editor-title" class="alertify-text title" type="text" value="${ linkData['title'] }">
@@ -292,6 +308,14 @@ class FormatPane extends silex.view.pane.PaneBase {
                 </div>
               </section>
             `;
+            Array.from(dialogBody.querySelectorAll('.link-editor-tab-label'))
+            .forEach(el => {
+              el.onclick = _ => {
+                Array.from(dialogBody.querySelectorAll('.link-editor-tab-label.checked'))
+                .forEach(selected => selected.classList.remove('checked'));
+                el.classList.add('checked');
+              }
+            });
             e.preventDefault();
           };
         });
