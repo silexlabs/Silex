@@ -205,3 +205,16 @@ silex.model.Body.prototype.setSelection = function(selectedElements) {
   this.view.breadCrumbs.redraw(selectedElements, pages, page);
   this.view.htmlEditor.setSelection(selectedElements);
 };
+
+
+/**
+ * @param {Document} doc
+ */
+silex.model.Body.prototype.removeWysihtmlMarkup = function(doc) {
+  Array.from(doc.querySelectorAll('.wysihtml-editor'))
+  .forEach(el => {
+    el.classList.remove('wysihtml-sandbox', 'wysihtml-editor');
+    el.removeAttribute('contenteditable');
+  });
+};
+

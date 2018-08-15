@@ -14,7 +14,6 @@
  * It uses the wysihtml library to change text format
  *
  // TODO:
- // * file::getHtml() should remove wysihtml markup
  // * keyboard shoortcuts => filter del, enter, ...
  // * image
  // * tooltips on button bar (A => link)
