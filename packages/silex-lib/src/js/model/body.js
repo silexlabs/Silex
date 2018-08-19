@@ -208,10 +208,10 @@ silex.model.Body.prototype.setSelection = function(selectedElements) {
 
 
 /**
- * @param {Document} doc
+ * @param {Node} root
  */
-silex.model.Body.prototype.removeWysihtmlMarkup = function(doc) {
-  Array.from(doc.querySelectorAll('.wysihtml-editor'))
+silex.model.Body.prototype.removeWysihtmlMarkup = function(root) {
+  Array.from(root.querySelectorAll('.wysihtml-editor'))
   .forEach(el => {
     el.classList.remove('wysihtml-sandbox', 'wysihtml-editor');
     el.removeAttribute('contenteditable');
