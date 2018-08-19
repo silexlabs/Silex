@@ -254,8 +254,8 @@ silex.controller.EditMenuController.prototype.editElement = function(opt_element
         // case where all parents are transparent
         bgColor = [255, 255, 255, 255];
       }
-      // open the text editor with the same bg color as the element
-      this.view.propertyTool.formatEditorStart();
+      // open the text editor
+      this.view.propertyTool.formatEditorStart(this.view.fileExplorer);
       break;
     case silex.model.Element.TYPE_HTML:
       this.view.htmlEditor.open();
