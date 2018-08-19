@@ -264,9 +264,12 @@ silex.view.PropertyTool.prototype.selectTab = function(tab) {
 };
 
 
-silex.view.PropertyTool.prototype.formatEditorStart = function() {
+/**
+ * @param {FileExplorer} fileExplorer
+ */
+silex.view.PropertyTool.prototype.formatEditorStart = function(fileExplorer) {
   this.openStyleTab();
-  this.formatPane.startEditing();
+  this.formatPane.startEditing(fileExplorer);
 };
 
 
