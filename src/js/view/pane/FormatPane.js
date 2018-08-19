@@ -191,8 +191,8 @@ class FormatPane extends silex.view.pane.PaneBase {
         const LINK_ATTRIBUTES =  ['href', 'rel', 'target', 'type', 'title', 'download'];
         this.wysihtmlEditor.on('load', () => {
           this.wysihtmlEditor.focus(false);
-          setTimeout(() => this.wysihtmlEditor.focus(false), 250);
-          setTimeout(() => this.wysihtmlEditor.focus(false), 500);
+          setTimeout(() => {if(this.wysihtmlEditor) this.wysihtmlEditor.focus(false)}, 250);
+          setTimeout(() => {if(this.wysihtmlEditor) this.wysihtmlEditor.focus(false)}, 500);
           this.element.querySelector('.create-link').onclick = e => {
             // get link current values
             const linkData = LINK_ATTRIBUTES
