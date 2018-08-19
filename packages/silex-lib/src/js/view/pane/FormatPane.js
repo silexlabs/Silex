@@ -15,9 +15,9 @@
  *
  // TODO:
  // * keyboard shoortcuts => filter del, enter, ...
- // * image
  // * tooltips on button bar (A => link)
- // * link target = just "in a new tab"
+ // * ? link target = just "in a new tab"
+ // * ? image float
  */
 
 goog.provide('silex.view.pane.FormatPane');
@@ -127,7 +127,10 @@ class FormatPane extends silex.view.pane.PaneBase {
   }
 
 
-  startEditing() {
+  /**
+   * @param {FileExplorer} fileExplorer
+   */
+  startEditing(fileExplorer) {
     const doc = this.model.file.getContentDocument();
     // edit the style of the selection
     if(this.selectedElements.length === 1) {
@@ -158,14 +161,21 @@ class FormatPane extends silex.view.pane.PaneBase {
               'li': {},
               'a': {
                 'check_attributes': {
-                    'href': 'href',
-                    'download': 'href',
-                    'target': 'any',
-                    'title': 'any',
-                    'type': 'any',
+                  'href': 'href',
+                  'download': 'href',
+                  'target': 'any',
+                  'title': 'any',
+                  'type': 'any',
                 },
               },
-              'img': {},
+              'img': {
+                'check_attributes': {
+                  'src': 'src',
+                  'title': 'any',
+                  'width': 'number',
+                  'height': 'number',
+                },
+              },
               'font': {
                 'rename_tag': 'span',
                 'add_class': {
@@ -193,6 +203,24 @@ class FormatPane extends silex.view.pane.PaneBase {
           this.wysihtmlEditor.focus(false);
           setTimeout(() => {if(this.wysihtmlEditor) this.wysihtmlEditor.focus(false)}, 250);
           setTimeout(() => {if(this.wysihtmlEditor) this.wysihtmlEditor.focus(false)}, 500);
+
+          this.element.querySelector('.insert-image').onclick = e => {
+            this.tracker.trackAction('controller-events', 'request', 'insert.image.text', 0);
+            fileExplorer.openFile(FileExplorer.IMAGE_EXTENSIONS)
+              .then(fileInfo => {
+                if(fileInfo) {
+                  // undo checkpoint
+                  this.controller.propertyToolController.undoCheckPoint();
+                  this.wysihtmlEditor.composer.commands.exec("insertImage", { src: fileInfo.absPath, alt: "this is an image" })
+                  this.tracker.trackAction('controller-events', 'success', 'insert.image.text', 1);
+                }
+              })
+              .catch(error => {
+                silex.utils.Notification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''));
+                this.tracker.trackAction('controller-events', 'error', 'insert.image.text', -1);
+              });
+          };
+
           this.element.querySelector('.create-link').onclick = e => {
             // get link current values
             const linkData = LINK_ATTRIBUTES
