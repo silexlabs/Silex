@@ -12,7 +12,7 @@
 /**
  * @fileoverview
  * the Silex menu on the left
- * TODO: clean up and remove the old google closure menu, implement a mechanism for keyboard shortcuts
+ * TODO: clean up and remove the old google closure menu
  * based on closure menu class
  *
  */
@@ -22,12 +22,13 @@ goog.provide('silex.view.Menu');
 //goog.require('goog.ui.Tooltip');
 goog.require('goog.events.KeyCodes');
 goog.require('goog.events.KeyHandler');
-goog.require('goog.ui.KeyboardShortcutHandler');
 goog.require('goog.ui.Menu');
 goog.require('goog.ui.MenuButton');
 goog.require('goog.ui.MenuItem');
 goog.require('goog.ui.menuBar');
 goog.require('silex.Config');
+goog.require('silex.utils.Keyboard');
+goog.require('silex.utils.MenuShortcut');
 
 
 
@@ -77,15 +78,17 @@ silex.view.Menu.prototype.buildUi = function() {
   this.menu = goog.ui.menuBar.create();
 
   // shortcut handler
-  var shortcutHandler = new goog.ui.KeyboardShortcutHandler(document);
-  var globalKeys = [];
+  const keyboard = new silex.utils.Keyboard(document);
 
   // create the menu items
   silex.Config.menu.names.forEach((itemData, i) => {
     // Create the drop down menu with a few suboptions.
     var menu = new goog.ui.Menu();
     silex.Config.menu.options[i].forEach(itemOption => {
-      this.addToMenu(itemOption, menu, shortcutHandler, globalKeys);
+      this.addToMenu(itemOption, menu);
+      if(itemOption && itemOption.key) {
+        keyboard.addShortcut(itemOption, e => this.onMenuEvent(itemOption.id));
+      }
     });
 
     // Create a button inside menubar.
@@ -94,45 +97,6 @@ silex.view.Menu.prototype.buildUi = function() {
     btn.setDispatchTransitionEvents(goog.ui.Component.State.ALL, true);
     this.menu.addChild(btn, true);
   });
-
-  shortcutHandler.setAlwaysPreventDefault(false);
-  //  shortcutHandler.setAllShortcutsAreGlobal(false);
-  shortcutHandler.setModifierShortcutsAreGlobal(false);
-
-  // shortcuts
-  shortcutHandler.setGlobalKeys(globalKeys);
-  goog.events.listen(
-      shortcutHandler,
-      goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED,
-      goog.bind(function(event) {
-        if (!silex.utils.Notification.isActive) {
-          event.preventDefault();
-          this.onMenuEvent(event.identifier);
-        }
-      }, this)
-  );
-  // enter and escape shortcuts
-  var keyHandler = new goog.events.KeyHandler(document);
-  goog.events.listen(keyHandler, 'key', goog.bind(function(event) {
-    if (!silex.utils.Notification.isActive) {
-      // Allow ENTER to be used as shortcut for silex
-      if (event.keyCode === goog.events.KeyCodes.ENTER &&
-          event.shiftKey === false &&
-          event.altKey === false &&
-          event.ctrlKey === false) {
-        // but not in text inputs
-        if (event.target.tagName.toUpperCase() !== 'INPUT' &&
-            event.target.tagName.toUpperCase() !== 'TEXTAREA') {
-          // silex takes an action
-          event.preventDefault();
-          this.onMenuEvent('view.open.editor');
-        }
-        // else  {
-          // let browser handle
-        // }
-      }
-    }
-  }, this));
 
   function elFromCompDef(comp, id) {
     // build the dom elements for each comp by category
@@ -188,13 +152,10 @@ silex.view.Menu.prototype.buildUi = function() {
 
 /**
  * add an item to the menu
- * @param {{mnemonic:goog.events.KeyCodes.<number>,checkable:boolean,id:string,shortcut:Array.<number>, globalKey:Object, tooltip:goog.events.KeyCodes.<number>}} itemData menu item as defined in config.js
+ * @param {silex.utils.MenuShortcut} itemData menu item as defined in config.js
  * @param {goog.ui.Menu} menu
- * @param {goog.ui.KeyboardShortcutHandler} shortcutHandler
- * @param {Array.<Object>} globalKeys
- * TODO: clean up and remove the old google closure menu, implement a mechanism for keyboard shortcuts
  */
-silex.view.Menu.prototype.addToMenu = function(itemData, menu, shortcutHandler, globalKeys) {
+silex.view.Menu.prototype.addToMenu = function(itemData, menu) {
   var item;
   if (itemData) {
     // create the menu item
@@ -203,45 +164,7 @@ silex.view.Menu.prototype.addToMenu = function(itemData, menu, shortcutHandler, 
     item = new goog.ui.MenuItem(label);
     item.setId(id);
     item.addClassName(itemData.className);
-    // checkable
-    // if (itemData.checkable) {
-    //   item.setCheckable(true);
-    // }
-    // // mnemonic (access to an item with keyboard when the menu is open)
-    // if (itemData.mnemonic) {
-    //   item.setMnemonic(itemData.mnemonic);
-    // }
-    // shortcut
-    if (itemData.shortcut) {
-      itemData.shortcut.forEach(shortcutId => {
-        try {
-          shortcutHandler.registerShortcut(itemData.id, shortcutId);
-        }
-        catch (e) {
-          console.error('Catched error for shortcut', id, '. Error: ', e);
-        }
-        if (itemData.globalKey) {
-          globalKeys.push(itemData.globalKey);
-        }
-      });
-    }
   }
-  // else {
-  //   item = new goog.ui.MenuSeparator();
-  // }
-  // add the menu item
-  // menu.addChild(item, true);
-  // add tooltip (has to be after menu.addItem)
-  // TODO: add accelerator (only display shortcut here, could not get it to work automatically with closure's accelerator concept)
-  // if (itemData && itemData.tooltip) {
-  //   // add label
-  //   var div = goog.dom.createElement('span');
-  //   div.innerHTML = itemData.tooltip;
-  //   div.className = 'goog-menuitem-accel';
-  //   item.getElement().appendChild(div);
-  //   // add a real tooltip
-  //   //new goog.ui.Tooltip(item.getElement(), itemData.tooltip);
-  // }
 };
 
 
@@ -335,9 +258,6 @@ silex.view.Menu.prototype.onMenuEvent = function(type, opt_componentName) {
       break;
     case 'view.open.htmlHeadEditor':
       this.controller.viewMenuController.openHtmlHeadEditor();
-      break;
-    case 'view.open.editor':
-      this.controller.editMenuController.editElement();
       break;
     case 'tools.advanced.activate':
       this.controller.toolMenuController.toggleAdvanced();

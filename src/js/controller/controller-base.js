@@ -453,6 +453,15 @@ silex.controller.ControllerBase.prototype.refreshView = function() {
 
 
 /**
+ * get mobile mode
+ * @return {boolean} true if mobile mode is active
+ */
+silex.controller.ControllerBase.prototype.getMobileMode = function() {
+  return this.view.workspace.getMobileEditor();
+};
+
+
+/**
  * set mobile mode
  * @param {boolean} isMobile
  */
