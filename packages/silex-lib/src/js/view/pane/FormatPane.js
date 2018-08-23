@@ -61,32 +61,14 @@ class FormatPane extends silex.view.pane.PaneBase {
 
 
   /**
-   * check if user pressed esc key
+   * Intercept keys before it is forwarded from iframe to Silex
    */
   onKeyPressed(e) {
     e = e || window.event;
-    if (e.keyCode == 27) {
+    if (e.key === 'Escape') {
+      // stop editing but keep selection
       this.stopEditing();
       e.preventDefault();
-    }
-    else {
-      // do not forward some useful events
-      // arow keys, del, backspace, copy/paste, undo/redo
-      // workaround wysihtml intercepting events
-      // forward events to document
-      const evt = new KeyboardEvent('keydown', {
-        'key': e.key,
-        'charCode': e.charCode,
-        'keyCode': e.keyCode,
-        'code': e.code,
-        'location': e.location,
-        'shiftKey': e.shiftKey,
-        'altKey': e.altKey,
-        'ctrlKey': e.ctrlKey,
-        'metaKey': e.metaKey,
-      });
-      document.dispatchEvent(evt);
-      //e.preventDefault();
     }
   }
 
@@ -116,7 +98,7 @@ class FormatPane extends silex.view.pane.PaneBase {
       doc['getSelection']().removeAllRanges(); // use array acces for getSelection as a workaround for google closure warning 'Property getSelection never defined on Document'
       // cleanup
       const editable = this.model.element.getContentNode(this.currentTextBox);
-      editable.removeAttribute('contentEditable');
+      editable.removeAttribute('contenteditable');
       editable.classList.remove('wysihtml-sandbox', 'wysihtml-editor');
       this.currentTextBox.classList.remove('text-editor-focus');
       this.currentTextBox.removeAttribute('data-allow-silex-shortcuts');
