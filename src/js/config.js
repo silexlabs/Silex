@@ -276,35 +276,35 @@ silex.Config.menu = {
         label: 'Bring to front',
         id: 'edit.move.to.top',
         className: 'menu-item-edit-move-to-top',
-        key: 'ArrowUp',
-        altKey: true,
-        shiftKey: true,
-        tooltip: altKeyDisplay + '⇧ Up'
+        // handled in stage: key: 'ArrowUp',
+        // altKey: true,
+        // shiftKey: true,
+        tooltip: altKeyDisplay + 'Left'
       },
       {
         label: 'Bring forward',
         id: 'edit.move.up',
         className: 'menu-item-edit-move-up',
-        altKey: true,
-        key: 'ArrowUp',
+        // altKey: true,
+        // handled in stage: key: 'ArrowUp',
         tooltip: altKeyDisplay + 'Up',
       },
       {
         label: 'Bring backward',
         id: 'edit.move.down',
         className: 'menu-item-edit-move-down',
-        altKey: true,
-        key: 'ArrowDown',
+        // altKey: true,
+        // handled in stage: key: 'ArrowDown',
         tooltip: altKeyDisplay + 'Down',
       },
       {
         label: 'Send to back',
         id: 'edit.move.to.bottom',
         className: 'menu-item-edit-move-to-bottom',
-        altKey: true,
-        shiftKey: true,
-        key: 'ArrowDown',
-        tooltip: altKeyDisplay + '⇧ Down'
+        // altKey: true,
+        // shiftKey: true,
+        // handled in stage: key: 'ArrowDown',
+        tooltip: altKeyDisplay + 'Right'
       },
       null,
       {
