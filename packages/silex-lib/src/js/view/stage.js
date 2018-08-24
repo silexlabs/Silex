@@ -442,7 +442,7 @@ silex.view.Stage.prototype.handleKeyDown = function(event) {
         (this.model.element.isSection(cur) ||
           this.model.element.isSectionContent(cur)), true));
 
-    if(isPositioned) {
+    if(isPositioned || event.altKey) {
       // move the elements in the dom
       let tookAction = true;
       switch(event.key) {
@@ -472,10 +472,6 @@ silex.view.Stage.prototype.handleKeyDown = function(event) {
       let amount = 10;
       if (event.shiftKey === true) {
         amount = 1;
-      }
-      if (event.altKey === true) {
-        // this is the bring forward/backward shortcut @see config.js
-        return;
       }
       // compute the direction
       let offsetX = 0;
