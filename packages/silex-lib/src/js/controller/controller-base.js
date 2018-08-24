@@ -428,18 +428,6 @@ silex.controller.ControllerBase.prototype.setTitle = function(title) {
 
 
 /**
- * refresh font list in the text editor, and in the head tag
- */
-silex.controller.ControllerBase.prototype.refreshFonts = function() {
-  //update loaded font list, as user might have choose a new one
-  var neededFonts = this.model.body.getNeededFonts();
-  // refresh the font list in the text editor
-  var customFontsForTextEditor = this.model.head.refreshFontList(neededFonts);
-  this.view.textEditor.setCustomFonts(customFontsForTextEditor);
-};
-
-
-/**
  * toggle advanced / apollo mode
  */
 silex.controller.ControllerBase.prototype.toggleAdvanced = function() {
@@ -461,6 +449,15 @@ silex.controller.ControllerBase.prototype.refreshView = function() {
   var pages = this.model.page.getPages();
   var currentPage = this.model.page.getCurrentPage();
   this.view.propertyTool.redraw(this.model.body.getSelection(), pages, currentPage);
+};
+
+
+/**
+ * get mobile mode
+ * @return {boolean} true if mobile mode is active
+ */
+silex.controller.ControllerBase.prototype.getMobileMode = function() {
+  return this.view.workspace.getMobileEditor();
 };
 
 
@@ -568,8 +565,6 @@ silex.controller.ControllerBase.prototype.doSave = function(fileInfo, opt_cbk, o
 silex.controller.ControllerBase.prototype.fileOperationSuccess = function(opt_message, opt_updateTools) {
   // update tools
   if (opt_updateTools) {
-    // update fonts
-    this.refreshFonts();
     // update dialogs
     this.view.jsEditor.close();
     this.view.cssEditor.close();

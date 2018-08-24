@@ -34,16 +34,3 @@ silex.controller.TextEditorController = function(model, view) {
 
 // inherit from silex.controller.ControllerBase
 goog.inherits(silex.controller.TextEditorController, silex.controller.ControllerBase);
-
-
-/**
- * textEditor event handler
- * @param {string} content the user's content
- */
-silex.controller.TextEditorController.prototype.changed = function(content) {
-  // update content
-  var element = this.model.body.getSelection()[0];
-  this.model.element.setInnerHtml(element, content);
-  // update fonts
-  this.refreshFonts();
-};

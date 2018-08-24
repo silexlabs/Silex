@@ -15,6 +15,7 @@ dist/client/js/admin*
 dist/client/css/admin*
 dist/client/libs/templates*
 dist/client/libs/prodotype*
+dist/client/libs/wysihtml*
 dist/client/functional-tests/publish
 dist/client/functional-tests/editable.html
 test/selenium-server-standalone-2.37.0.jar

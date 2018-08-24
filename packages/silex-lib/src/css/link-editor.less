@@ -1,0 +1,60 @@
+.link-editor {
+  .labels {
+    display: inline-block;
+    margin: 5px;
+    label {
+      .button-bar-template;
+      padding: 10px;
+      color: @silexdarkergrey;
+      background-color: @silexlightergrey;
+      &.checked, &:hover {
+        background-color: transparent;
+      }
+      &.last-button {
+        .button-bar-last;
+      }
+      &.first-button {
+        .button-bar-first;
+      }
+    }
+  }
+  .link-editor-tab {
+    display: none;
+    margin: 10px 0;
+    // labels on 1 line
+    label {
+      display: block;
+    }
+  }
+  .link-editor-radio {
+    display: none;
+    &:checked + .link-editor-tab {
+      display: flex;
+    }
+  }
+  .link-editor-tab-container {
+    flex: 1 1 auto;
+  }
+  .link-editor-advanced-container {
+    label {
+      display: block;
+      margin-top: 20px;
+    }
+    & > label:first-of-type {
+      margin-bottom: 20px;
+      border: 1px solid @silexlightgrey;
+      display: inline-block;
+      margin-top: 10px;
+      padding: 5px;
+    }
+    #link-editor-show-advanced {
+      display: none;
+      &:checked ~ .link-editor-advanced {
+        display: block;
+      }
+    }
+    .link-editor-advanced {
+      display: none;
+    }
+  }
+}

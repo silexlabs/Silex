@@ -38,6 +38,22 @@ body.compute-body-size-pending {
 .silex-element-content {
   pointer-events: none;
 }
+.silex-element-content[contenteditable="true"] {
+  min-height: 20px;
+  cursor: text;
+  pointer-events: auto;
+}
+.editable-style.silex-selected.text-editor-focus {
+  /* remove text box selection markers
+  box-shadow: none;
+  */
+  /* a click on current text box will select it */
+  cursor: pointer;
+}
+.text-editor-focus .ui-resizable-handle {
+  /* remove text box UI handles for resize */
+  display: none;
+}
 .section-element > .silex-element-content {
   /* section have a content element, and it needs to keep pointer events
      because it container other silex elements
@@ -102,6 +118,15 @@ body.silex-runtime .silex-element-content {
 .text-element a:hover, a.text-element:hover{
   color: inherit;
   text-decoration: underline;
+}
+/* wysihtml text editor styles */
+.wysiwyg-float-left {
+  float: left;
+  margin: 0 8px 8px 0;
+}
+.wysiwyg-float-right {
+  float: right;
+  margin: 0 0 8px 8px;
 }
 /* Remove dots surrounding links in Firefox
     because of normalize.css */

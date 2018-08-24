@@ -208,16 +208,13 @@ silex.model.Body.prototype.setSelection = function(selectedElements) {
 
 
 /**
- * @return {Object.<boolean>} object of fonts which are used in the text fields (key is the font name)
+ * @param {Node} root
  */
-silex.model.Body.prototype.getNeededFonts = function() {
-  var neededFonts = [];
-  if (this.getBodyElement()) {
-    var innerHTML = this.getBodyElement().innerHTML;
-    innerHTML.replace(/<font[^"]*face="?([^"]*)"/gi, function(match, group1) {
-      neededFonts[group1] = true;
-      return match;
-    });
-  }
-  return neededFonts;
+silex.model.Body.prototype.removeWysihtmlMarkup = function(root) {
+  Array.from(root.querySelectorAll('.wysihtml-editor'))
+  .forEach(el => {
+    el.classList.remove('wysihtml-sandbox', 'wysihtml-editor');
+    el.removeAttribute('contenteditable');
+  });
 };
+
