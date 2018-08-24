@@ -195,7 +195,44 @@
             .element-style-editor.editor-container
   span.prodotype-component-editor.editor-container
   span.prodotype-style-editor.editor-container
-    .prodotype-style-editor-menu
+    .expendable.format-pane
+      legend
+        span Format
+      form
+        #wysihtml5-toolbar.labels
+          label.first-button(data-wysihtml-command='formatBlock', data-wysihtml-command-value='p') P
+          label.create-link(data-wysihtml-command='createLink', title='CTRL+K') A
+          div.hidden
+            // this is a wysihtml dialog used by silex to get the link value
+            div.link-dialog(data-wysihtml-dialog='createLink')
+              input.get-href(data-wysihtml-dialog-field='href', value='')
+              input.get-rel(data-wysihtml-dialog-field='rel', value='')
+              input.get-target(data-wysihtml-dialog-field='target', value='')
+              input.get-title(data-wysihtml-dialog-field='title', value='')
+              input.get-download(data-wysihtml-dialog-field='download', value='')
+              input.get-type(data-wysihtml-dialog-field='type', value='')
+          label(data-wysihtml-command='bold', title='CTRL+B') B
+          label(data-wysihtml-command='underline', title='CTRL+U') U
+          label.last-button(data-wysihtml-command='italic', title='CTRL+I') I
+          label.first-button(data-wysihtml-command='formatBlock', data-wysihtml-command-value='h1', title='Make the current line a title') H1
+          label(data-wysihtml-command='formatBlock', data-wysihtml-command-value='h2', title='Make the current line a title') H2
+          label(data-wysihtml-command='formatBlock', data-wysihtml-command-value='h3', title='Make the current line a title') H3
+          label(data-wysihtml-command='insertUnorderedList', title='Make the current line a list') UL
+          label.last-button(data-wysihtml-command='insertOrderedList', title='Make the current line a list') OL
+          label.insert-image.first-button.last-button.fa.fa-image(title='Insert an image')
+          a.hidden(data-wysihtml-command="insertImage", href="javascript:;", unselectable="on") Image
+          .image-details(data-wysihtml-dialog="insertImage", style="display: none;")
+            h3 Image details
+            input.src.hidden(data-wysihtml-dialog-field="src", value="http://")
+            label alt:
+            input.alt(data-wysihtml-dialog-field="alt", value="")
+            select.float(data-wysihtml-dialog-field="className")
+              option(value="") No float
+              option(value="wysiwyg-float-left") left
+              option(value="wysiwyg-float-right") right
+            a#auto-submit-image.hidden(data-wysihtml-dialog-action="save")
+
+    .expendable.prodotype-style-editor-menu
       label.class-name-style-label(for='class-name-style-combo-box')
         span Style name:
         select#pseudoclass-style-combo-box.pseudoclass-style-combo-box.combobox

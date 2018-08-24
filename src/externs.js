@@ -255,6 +255,57 @@ var UnifileResponse;
 
 
 /**
+ * wysihtml library
+ * @package
+ */
+var wysihtml;
+
+
+/**
+ * @constructor
+ * @param {Element} el
+ * @param {Object} options
+ */
+wysihtml.Editor = function(el, options) {};
+
+
+/**
+ * @type {function(boolean)}
+ */
+wysihtml.Editor.prototype.focus = function(changePosition) {};
+
+
+/**
+ * @type {function(string, function())}
+ */
+wysihtml.Editor.prototype.on = function(eventName, cbk) {};
+
+
+/**
+ * @type {{commands}}
+ */
+wysihtml.Editor.prototype.composer;
+
+
+/**
+ * @type {{exec}}
+ */
+wysihtml.Editor.prototype.composer.commands;
+
+
+/**
+ * @type {function(string, Object)}
+ */
+wysihtml.Editor.prototype.composer.commands.exec = function(cmd, options) {};
+
+
+/**
+ * @type {Object}
+ */
+var wysihtmlParserRules;
+
+
+/**
  * ace externs
  * @constructor
  */

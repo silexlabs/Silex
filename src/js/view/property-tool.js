@@ -30,6 +30,7 @@ goog.require('silex.view.pane.PagePane');
 goog.require('silex.view.pane.PropertyPane');
 goog.require('silex.view.pane.StylePane');
 goog.require('silex.view.pane.StyleEditorPane');
+goog.require('silex.view.pane.FormatPane');
 
 
 //////////////////////////////////////////////////////////////////
@@ -121,7 +122,14 @@ silex.view.PropertyTool.prototype.stylePane = null;
  * style editor
  * @see     silex.view.pane.StyleEditorPane
  */
-silex.view.PropertyTool.prototype.StyleEditorPane = null;
+silex.view.PropertyTool.prototype.styleEditorPane = null;
+
+
+/**
+ * format editor
+ * @see     silex.view.pane.FormatPane
+ */
+silex.view.PropertyTool.prototype.formatPane = null;
 
 
 /**
@@ -156,6 +164,12 @@ silex.view.PropertyTool.prototype.buildUi = function() {
   // silex styles
   this.stylePane = new silex.view.pane.StylePane(
       goog.dom.getElementByClass('style-editor', this.element),
+      this.model, this.controller);
+
+  // Format editor
+  const formatPane = this.element.querySelector('.prodotype-style-editor .format-pane');
+  this.formatPane = new FormatPane(
+      formatPane,
       this.model, this.controller);
 
   // Style editor
@@ -251,6 +265,15 @@ silex.view.PropertyTool.prototype.selectTab = function(tab) {
 
 
 /**
+ * @param {FileExplorer} fileExplorer
+ */
+silex.view.PropertyTool.prototype.formatEditorStart = function(fileExplorer) {
+  this.openStyleTab();
+  this.formatPane.startEditing(fileExplorer);
+};
+
+
+/**
  * redraw all panes
  * @param   {Array.<HTMLElement>} selectedElements the elements currently selected
  * @param   {Array.<string>} pageNames   the names of the pages which appear in the current HTML file
@@ -266,6 +289,7 @@ silex.view.PropertyTool.prototype.redraw = function(selectedElements, pageNames,
     this.stylePane.redraw(selectedElements, pageNames, currentPageName);
     this.bgPane.redraw(selectedElements, pageNames, currentPageName);
     this.styleEditorPane.redraw(selectedElements, pageNames, currentPageName);
+    this.formatPane.redraw(selectedElements, pageNames, currentPageName);
     if(selectedElements.length === 1) {
       this.model.component.editComponent(selectedElements[0]);
     }

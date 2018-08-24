@@ -13,6 +13,45 @@
   padding: 2px;
   cursor: pointer;
 }
+/* button templates to be used in this stylesheet, not referenced in the HTML */
+.button-template-selected {
+  color: @silexlightblue;
+  background-color: @silexdarkgrey;
+}
+.button-template {
+  background-color: @silexlightgrey;
+  border: 1px solid @silexdarkgrey;
+  display: block;
+  width: 30px;
+  text-align: center;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  cursor: pointer;
+  &:hover {
+    background-color: @silexdarkgrey;
+  }
+}
+.button-bar-template {
+  .button-template;
+  width: 18.5%;
+  min-width: 30px;
+  min-height: 17px;
+  font-weight: bold;
+  float: left;
+  border-left: initial;
+}
+.button-bar-first {
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+  border-left: 1px solid @silexdarkgrey;
+  clear: left;
+}
+.button-bar-last {
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+  border-right: 1px solid @silexdarkgrey;
+}
+
 .silex-property-tool {
   color: @silexlightergrey;
   position: fixed;
@@ -469,44 +508,33 @@
   .prodotype-style-editor-menu > div {
     padding: 10px;
   }
-  /* button templates to be used in this stylesheet, not referenced in the HTML */
-  .button-template-selected {
-    color: @silexlightblue;
-    background-color: @silexdarkgrey;
+  /* text inline format pane, keep selection */
+  .format-pane form .labels > .wysihtml-command-active {
+    .button-template-selected;
   }
-  .button-template {
-    background-color: @silexlightgrey;
-    border: 1px solid @silexdarkgrey;
-    display: block;
-    width: 30px;
-    text-align: center;
-    padding-top: 5px;
-    padding-bottom: 5px;
-    cursor: pointer;
-    &:hover {
-      background-color: @silexdarkgrey;
+  .format-pane {
+    opacity: .5;
+    pointer-events: none;
+  }
+  .format-pane.text-editor-editing {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  div.image-details {
+    & > * { margin: 0; }
+    h3 {
+      clear: both;
+      line-height: 2;
+    }
+    /* the "alt" label */
+    label {
+      position: absolute;
+      margin: 7px;
+    }
+    input {
+      padding-left: 30px;
     }
   }
-  .button-bar-template {
-    .button-template;
-    width: 17%;
-    min-width: 30px;
-    font-weight: bold;
-    float: left;
-    border-left: initial;
-  }
-  .button-bar-first {
-    border-top-left-radius: 4px;
-    border-bottom-left-radius: 4px;
-    border-left: 1px solid @silexdarkgrey;
-    clear: left;
-  }
-  .button-bar-last {
-    border-top-right-radius: 4px;
-    border-bottom-right-radius: 4px;
-    border-right: 1px solid @silexdarkgrey;
-  }
-
   /* */
   .prodotype-component-editor, .prodotype-style-editor {
     .expandable;
@@ -518,12 +546,13 @@
     & > .prodotype-container > section > ul {
       padding-left: 0;
     }
-    form.style-editor-tag-form {
+    form {
       /* tags H1, H2, H3, P, A */
       .labels {
         display: inline-block; /* push the elements underneeth dispite it is floated */
         width: 100%;
-        margin-left: 7%;
+        margin-left: 2.5%;
+        padding-bottom: 15px;
         & > label {
           .button-bar-template;
           margin-top: 5px;

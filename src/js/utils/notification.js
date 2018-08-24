@@ -146,6 +146,7 @@ silex.utils.Notification.nativeNotification = function(message, iconUrl) {
  * @param {?string=} opt_default
  */
 silex.utils.Notification.dialog = function(dialogMethod, message, cbk, opt_okLabel, opt_cancelLabel, opt_default) {
+  silex.utils.Notification.close();
   alertify.set({
     'labels': {
       'ok': opt_okLabel || 'ok',
@@ -160,6 +161,14 @@ silex.utils.Notification.dialog = function(dialogMethod, message, cbk, opt_okLab
     // call the callback
     cbk.apply(this, arguments);
   }, opt_default);
+};
+
+/**
+ * close (cancel) the current notification
+ */
+silex.utils.Notification.close = function() {
+  const cancel = document.querySelector('#alertify-cancel');
+  if(cancel) cancel.click(); // :facepalm:
 };
 
 
@@ -247,6 +256,30 @@ silex.utils.Notification.notifyInfo = function(message) {
  */
 silex.utils.Notification.setText = function(message) {
   document.querySelector('.alertify-message').innerHTML = message;
+};
+
+
+/**
+ * @return {Element} element which holds the text of the current notification
+ */
+silex.utils.Notification.getTextElement = function() {
+  return document.querySelector('.alertify-message');
+};
+
+
+/**
+ * @return {Element} element which holds the text field of the current notification
+ */
+silex.utils.Notification.getFormBody = function() {
+  return document.querySelector('.alertify-text-wrapper');
+};
+
+
+/**
+ * @return {Element} element which holds the buttons of the current notification
+ */
+silex.utils.Notification.getFormButtons = function() {
+  return document.querySelector('.alertify-buttons');
 };
 
 
