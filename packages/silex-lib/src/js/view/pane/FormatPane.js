@@ -84,6 +84,7 @@ class FormatPane extends silex.view.pane.PaneBase {
       // remove and put back the whole UI
       // this is the way to go with wysihtml
       // @see https://github.com/Voog/wysihtml/issues/109#issuecomment-198350743
+      this.element.querySelector('.image-details').style.display = 'none';
       this.wysihtmlEditor.destroy();
       this.wysihtmlEditor = null;
       const parent = this.toolbar.parentNode;
@@ -123,6 +124,11 @@ class FormatPane extends silex.view.pane.PaneBase {
         const options = {
           'toolbar': this.toolbar,
           'handleTables': false,
+          'useLineBreaks': false,
+          'classes': {
+            'wysiwyg-float-left': 1, // this doesnt work for some reason
+            'wysiwyg-float-right': 1, // this doesnt work for some reason
+          },
           'parserRules': {
             'tags': {
               'b': {},
@@ -153,9 +159,11 @@ class FormatPane extends silex.view.pane.PaneBase {
               'img': {
                 'check_attributes': {
                   'src': 'src',
+                  'alt': 'alt',
                   'title': 'any',
-                  'width': 'number',
-                  'height': 'number',
+                  'width': 'any',
+                  'height': 'any',
+                  'class': 'any', // this should not be necessary, workaround
                 },
               },
               'font': {
@@ -193,7 +201,7 @@ class FormatPane extends silex.view.pane.PaneBase {
                 if(fileInfo) {
                   // undo checkpoint
                   this.controller.propertyToolController.undoCheckPoint();
-                  this.wysihtmlEditor.composer.commands.exec("insertImage", { src: fileInfo.absPath, alt: "this is an image" })
+                  this.wysihtmlEditor.composer.commands.exec('insertImage', { src: fileInfo.absPath, alt: 'this is an image' })
                   this.tracker.trackAction('controller-events', 'success', 'insert.image.text', 1);
                 }
               })
@@ -202,6 +210,21 @@ class FormatPane extends silex.view.pane.PaneBase {
                 this.tracker.trackAction('controller-events', 'error', 'insert.image.text', -1);
               });
           };
+
+          // image details UI
+          const imageDetails = this.element.querySelector('.image-details');
+          const autoBtn = imageDetails.querySelector('#auto-submit-image');
+          function autoSubmitImage(e) {
+            // give time to the value to be updated and validate wysihtml image dialog
+            setTimeout(_ => {
+              autoBtn.click();
+              imageDetails.style.display = '';
+              e.target.focus();
+            }, 100);
+          }
+          imageDetails.querySelector('.float').onchange = e => autoSubmitImage(e);
+          imageDetails.querySelector('.src').onkeydown = e => autoSubmitImage(e);
+          imageDetails.querySelector('.alt').onkeydown = e => autoSubmitImage(e);
 
           this.element.querySelector('.create-link').onclick = e => {
             // get link current values
@@ -255,7 +278,7 @@ class FormatPane extends silex.view.pane.PaneBase {
             const dialogButtons = silex.utils.Notification.getFormButtons();
             const fragmentButtons = document.createElement('fragment');
             fragmentButtons.innerHTML = `
-              <button class="alertify-button alertify-button-remove">remove link</button>
+              <button class=wyg-float-right": 1,alertify-button alertify-button-remove">remove link</button>
             `;
             dialogButtons.insertBefore(fragmentButtons, dialogButtons.childNodes[0]);
             dialogButtons.querySelector('.alertify-button-remove')

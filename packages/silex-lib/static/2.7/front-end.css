@@ -119,6 +119,15 @@ body.silex-runtime .silex-element-content {
   color: inherit;
   text-decoration: underline;
 }
+/* wysihtml text editor styles */
+.wysiwyg-float-left {
+  float: left;
+  margin: 0 8px 8px 0;
+}
+.wysiwyg-float-right {
+  float: right;
+  margin: 0 0 8px 8px;
+}
 /* Remove dots surrounding links in Firefox
     because of normalize.css */
 a:focus{ outline: none;}

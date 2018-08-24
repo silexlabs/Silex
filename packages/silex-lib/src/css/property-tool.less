@@ -520,7 +520,21 @@
     opacity: 1;
     pointer-events: auto;
   }
-
+  div.image-details {
+    & > * { margin: 0; }
+    h3 {
+      clear: both;
+      line-height: 2;
+    }
+    /* the "alt" label */
+    label {
+      position: absolute;
+      margin: 7px;
+    }
+    input {
+      padding-left: 30px;
+    }
+  }
   /* */
   .prodotype-component-editor, .prodotype-style-editor {
     .expandable;
