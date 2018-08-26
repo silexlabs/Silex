@@ -1,0 +1,27 @@
+language: node_js
+node_js:
+- '8'
+matrix:
+  include:
+  - os: linux
+    dist: xenial
+    sudo: required
+  - os: osx
+cache:
+  yarn: true
+notifications:
+  email: false
+script:
+- npm run build
+- npm run build:electron
+deploy:
+  provider: releases
+  api_key:
+    secure: H72TbvbYGaf8vjRZvTZuXQMDxiOIuYskVQJQrGBF6B7F748SwH6UIBBkscXD1rVE1c55WhmuWIGGUZi1++wlhBHylwmBwfqwcbVykMiRMHMU6l9PEMIvxMOCyVZlBxxo0g3ULOJnvoakGC6NCxrJAl4jLIvRzZHMGACzTNpTei8=
+  on:
+    repo: lexoyo/Silex
+    branch: electron-ci
+env:
+  global:
+    - GH_TOKEN=H72TbvbYGaf8vjRZvTZuXQMDxiOIuYskVQJQrGBF6B7F748SwH6UIBBkscXD1rVE1c55WhmuWIGGUZi1++wlhBHylwmBwfqwcbVykMiRMHMU6l9PEMIvxMOCyVZlBxxo0g3ULOJnvoakGC6NCxrJAl4jLIvRzZHMGACzTNpTei8=
+
