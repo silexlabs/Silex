@@ -16,11 +16,17 @@ script:
 - npm run build:electron
 deploy:
   provider: releases
+  skip_cleanup: true
+  file_glob: true
+  file: 
+    - dist/*.deb
+    - dist/*.AppImage
   api_key:
     secure: H72TbvbYGaf8vjRZvTZuXQMDxiOIuYskVQJQrGBF6B7F748SwH6UIBBkscXD1rVE1c55WhmuWIGGUZi1++wlhBHylwmBwfqwcbVykMiRMHMU6l9PEMIvxMOCyVZlBxxo0g3ULOJnvoakGC6NCxrJAl4jLIvRzZHMGACzTNpTei8=
   on:
     repo: lexoyo/Silex
     branch: electron-ci
+    tags: true
 env:
   global:
     - GH_TOKEN=H72TbvbYGaf8vjRZvTZuXQMDxiOIuYskVQJQrGBF6B7F748SwH6UIBBkscXD1rVE1c55WhmuWIGGUZi1++wlhBHylwmBwfqwcbVykMiRMHMU6l9PEMIvxMOCyVZlBxxo0g3ULOJnvoakGC6NCxrJAl4jLIvRzZHMGACzTNpTei8=

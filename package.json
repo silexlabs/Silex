@@ -1,5 +1,5 @@
 {
-  "name": "Silex",
+  "name": "silex",
   "description": "Free and easy website builder for everyone.",
   "<-- be careful": "version is used in BackwardCompat.js -->",
   "version": "2.2.7",
