@@ -72,7 +72,6 @@ class FileExplorer {
    * @return {FileInfo}
    */
   addAbsPath(fileInfo) {
-    if(fileInfo === null) return fileInfo; // case of cancel
     return /** @type {FileInfo} */ (Object.assign({'absPath': `/ce/${ fileInfo.service }/get/${ fileInfo.path }`}, fileInfo));
   }
 
