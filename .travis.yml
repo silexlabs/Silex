@@ -5,6 +5,9 @@ node_js:
 - '8'
 notifications:
   email: false
+cache:
+  directories:
+    - "node_modules"
 jobs:
   include:
     - stage: build 🔨
@@ -12,9 +15,9 @@ jobs:
     - stage: deploy 📦
       if: branch = master
       script: npm run build:electron
-      matrix:
-        include:
-        - os: linux
-          dist: xenial
-        - os: osx
+      os: linux
+      dist: xenial
+    - if: branch = master
+      script: npm run build:electron
+      os: osx
 
