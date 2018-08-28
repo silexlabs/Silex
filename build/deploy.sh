@@ -11,7 +11,7 @@
 # * `SILEX_RELOAD_ROUTE`: the path to call to reboot the nodejs server
 
 ls -al dist/client/js/
-zip -r silex.zip dist/ node_modules/ static/
+zip -r silex.zip dist/ node_modules/ static/ package.json
 echo 'put silex.zip' | sftp -o "StrictHostKeyChecking no" "$1":vhosts/default
-echo "wget $2/$SILEX_RELOAD_ROUTE"
+echo "wget --secure-protocol=TLSv1 $2/$SILEX_RELOAD_ROUTE"
 wget "$2/$SILEX_RELOAD_ROUTE"

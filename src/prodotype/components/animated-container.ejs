@@ -1,0 +1,55 @@
+<div id="id_<%= uid %>"></div>
+<script type="text/javascript">
+/*
+animation widget from here: https://github.com/silexlabs/Silex/issues/443
+*/
+$(function() {
+  var bodyEl = $('body');
+  // execute only outside silex editor
+  if(!bodyEl.hasClass('silex-runtime')) return;
+  // init ScrollReveal lib
+  window.sr = window.sr || ScrollReveal();
+  // animate this element on page change
+  bodyEl.on('pageChanged', animate_<%= uid %>);
+  // animate this element at start
+  animate_<%= uid %>();
+  // the function to start the animation
+  function animate_<%= uid %> (event, pageName) {
+    // get the silex element in which we are
+    var silexElement = $('#id_<%= uid %>').parent();
+    if(// only if the element is in the dom
+      silexElement &&
+      // and is visible in the current page
+      (silexElement.hasClass(bodyEl.pageable('option').currentPage) ||
+      // or visible in all pages
+      !silexElement.hasClass('paged-element')) &&
+      // but never in mobile mode
+      (!bodyEl.hasClass('enable-mobile') || $(window).width() >= 480)) {
+      // use ScrollReveal API
+      sr.reveal(silexElement, {
+        origin:  '<%= origin %>',
+        distance: '<%= distance %>',
+        duration: <%= duration %>,
+        delay: <%= delay %>,
+        rotate: { x: <%= rotateX %>, y: <%= rotateY %>, z: <%= rotateZ %> },
+        opacity: <%= opacity %>,
+        scale: <%= scale %>,
+        easing: '<%= easing %>',
+        reset: <%= reset %>,
+        beforeReveal: function(el){
+          <%= beforeReveal %>
+        },
+        beforeReset: function(el){
+          <%= beforeReset %>
+        },
+        afterReveal: function(el){
+          <%= afterReveal %>
+        },
+        afterReset: function(el){
+          <%= afterReset %>
+        }
+      });
+    }
+  }
+})
+</script>

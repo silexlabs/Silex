@@ -1,32 +1,21 @@
 .silex-text-editor {
-  position: absolute;
-  z-index: 110;
-  box-shadow: 0px 0px 5px @silexdarkgrey;
   .text-field {
-    width: 100%;
-    bottom: 13px;
-    top: 0;
-    position: absolute;
-    height: 100%;
+    flex: 1 1 auto;
+    border: 10px solid @silexlightergrey;
   }
   .toolbar {
-    width: 100%;
-    top: -28px;
-    position: relative;
+    background-color: @silexlightergrey;
+    padding: 10px;
   }
   .close-btn {
     background-image: url("../assets/goog-ui/text-editor-close.png");
-    cursor: pointer;
-    height: 38px;
-    position: absolute;
-    right: 0;
-    top: -28px;
-    width: 39px;
   }
-}
-.dock-editors .silex-text-editor {
-  z-index: 109; /* behind the docked editors and splitter */
 }
 div.tr_bubble {
   z-index: 999 !important;
+}
+.goog-toolbar {
+  background-image: none !important;
+  background: none;
+  border: none;
 }

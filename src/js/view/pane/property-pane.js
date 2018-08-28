@@ -101,42 +101,42 @@ silex.view.pane.PropertyPane.prototype.selectedElements = null;
 silex.view.pane.PropertyPane.prototype.buildUi = function() {
 
   // position and size
-  this.leftInput = goog.dom.getElementByClass('left-input');
+  this.leftInput = document.querySelector('.left-input');
   this.leftInput.setAttribute('data-style-name', 'left');
   goog.events.listen(this.leftInput,
       goog.events.EventType.INPUT,
       this.onPositionChanged,
       false,
       this);
-  this.widthInput = goog.dom.getElementByClass('width-input');
+  this.widthInput = document.querySelector('.width-input');
   this.widthInput.setAttribute('data-style-name', 'width');
   goog.events.listen(this.widthInput,
       goog.events.EventType.INPUT,
       this.onPositionChanged,
       false,
       this);
-  this.topInput = goog.dom.getElementByClass('top-input');
+  this.topInput = document.querySelector('.top-input');
   this.topInput.setAttribute('data-style-name', 'top');
   goog.events.listen(this.topInput,
       goog.events.EventType.INPUT,
       this.onPositionChanged,
       false,
       this);
-  this.heightInput = goog.dom.getElementByClass('height-input');
-  this.heightInput.setAttribute('data-style-name', 'height');
+  this.heightInput = document.querySelector('.height-input');
+  this.heightInput.setAttribute('data-style-name', 'minHeight');
   goog.events.listen(this.heightInput,
       goog.events.EventType.INPUT,
       this.onPositionChanged,
       false,
       this);
 
-  this.altInput = goog.dom.getElementByClass('alt-input');
+  this.altInput = document.querySelector('.alt-input');
   goog.events.listen(this.altInput,
       goog.events.EventType.INPUT,
       this.onAltChanged,
       false,
       this);
-  this.titleInput = goog.dom.getElementByClass('title-input');
+  this.titleInput = document.querySelector('.title-input');
   goog.events.listen(this.titleInput,
       goog.events.EventType.INPUT,
       this.onTitleChanged,
@@ -159,29 +159,29 @@ silex.view.pane.PropertyPane.prototype.onPositionChanged =
   if (input.value !== '') {
     // get the value
     var value = parseFloat(input.value);
-    // handle minimum size
-    if (name === 'width' && value < silex.model.Element.MIN_WIDTH) {
-      value = silex.model.Element.MIN_WIDTH;
-    }
-    if (name === 'height' && value < silex.model.Element.MIN_HEIGHT) {
-      value = silex.model.Element.MIN_HEIGHT;
+    // handle minimum size of elements on stage
+    switch (name) {
+      case 'width': value = Math.max(value, silex.model.Element.MIN_WIDTH);
+      case 'minHeight': value = Math.max(value, silex.model.Element.MIN_HEIGHT);
     }
     // get the old value
     var oldValue = parseFloat(input.getAttribute('data-prev-value') || 0);
+    // keep track of the new value for next time
     input.setAttribute('data-prev-value', value);
     // compute the offset
     var offset = value - oldValue;
     // apply the change to all elements
     goog.array.forEach(this.selectedElements, function(element) {
       if (goog.isNumber(oldValue)) {
-        var elementStyle = this.model.property.getStyleObject(element);
-        var styleValue = 0;
-        if (elementStyle && elementStyle[name] && elementStyle[name] !== '') {
-          styleValue = parseFloat(elementStyle[name].substr(0, elementStyle[name].indexOf('px')));
-        }
         // compute the new value relatively to the old value,
         // in order to match the group movement
+        var elementStyle = this.model.element.getStyle(element, name);
+        var styleValue = 0;
+        if (elementStyle && elementStyle !== '') {
+          styleValue = parseFloat(elementStyle);
+        }
         var newValue = styleValue + offset;
+        // apply the change to the current element
         this.styleChanged(name,
             newValue + 'px',
             [element]);
@@ -267,7 +267,6 @@ silex.view.pane.PropertyPane.prototype.redraw = function(selectedElements, pageN
     this.selectedElements = selectedElements;
 
     var bb = this.model.property.getBoundingBox(selectedElements);
-
     // display position and size
     this.topInput.value = bb.top || '0';
     this.leftInput.value = bb.left || '0';
@@ -275,9 +274,19 @@ silex.view.pane.PropertyPane.prototype.redraw = function(selectedElements, pageN
     this.heightInput.value = bb.height || '0';
 
     // special case of the background / main container only selected element
-    if (selectedElements.length === 1 && goog.dom.classlist.contains(selectedElements[0], 'background')) {
-      this.topInput.value = '';
-      this.leftInput.value = '';
+    if (selectedElements.length === 1) {
+      if (
+        goog.dom.classlist.contains(selectedElements[0], 'background') ||
+        this.model.element.isSection(selectedElements[0]) ||
+        this.model.element.isSectionContent(selectedElements[0]) ||
+        this.isMobileMode()
+      ) {
+        this.topInput.value = '';
+        this.leftInput.value = '';
+      }
+      if (this.model.element.isSection(selectedElements[0])) {
+        this.widthInput.value = '';
+      }
     }
 
     // alt, only for images
@@ -287,7 +296,7 @@ silex.view.pane.PropertyPane.prototype.redraw = function(selectedElements, pageN
     if (elementsType === silex.model.Element.TYPE_IMAGE) {
       this.altInput.removeAttribute('disabled');
       var alt = this.getCommonProperty(selectedElements, function(element) {
-        var content = goog.dom.getElementByClass(silex.model.Element.ELEMENT_CONTENT_CLASS_NAME, element);
+        var content = element.querySelector(silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
         if (content) {
           return content.getAttribute('alt');
         }
@@ -338,3 +347,14 @@ silex.view.pane.PropertyPane.prototype.redraw = function(selectedElements, pageN
 
   this.iAmRedrawing = false;
 };
+
+
+/**
+ * helper for other views,
+ * because views (view.workspace.get/setMobileEditor) is not accessible from other views
+ * FIXME: find another way to expose isMobileEditor to views
+ */
+silex.view.pane.PropertyPane.prototype.isMobileMode = function() {
+  return goog.dom.classlist.contains(document.body, 'mobile-mode');
+};
+

@@ -51,7 +51,7 @@ silex.Config.debug = {
   /**
    * @type {boolean}
    */
-  preventQuit: false,
+  preventQuit: false
 };
 
 
@@ -59,7 +59,22 @@ silex.Config.debug = {
  * Link of the menu
  * @const
  */
-silex.Config.ABOUT_SILEX = 'http://www.silex.me/';
+silex.Config.WIKI_SILEX = 'https://github.com/silexlabs/Silex/wiki';
+
+
+/**
+ * Link in property tool dialog
+ * this is also hard coded in property-tool.jade
+ * @const
+ */
+silex.Config.WIKI_SILEX_CUSTOM_CSS_CLASS = 'https://github.com/silexlabs/Silex/wiki/Silex-CSS-editor#custom-css-classes';
+
+
+/**
+ * Link of the menu
+ * @const
+ */
+silex.Config.CROWD_FUNDING = 'http://crowdfunding.silex.me/';
 
 
 /**
@@ -101,7 +116,7 @@ silex.Config.SUBSCRIBE_SILEX_LABS = 'http://eepurl.com/F48q5';
  * Link of the menu
  * @const
  */
-silex.Config.SOCIAL_GPLUS = 'https://plus.google.com/communities/107373636457908189681';
+silex.Config.SOCIAL_DIASPORA = 'https://diasp.org/people/f37438103a9b013250aa2a0000053625';
 
 
 /**
@@ -129,14 +144,7 @@ silex.Config.FORK_CODE = 'https://github.com/silexlabs/Silex';
  * Link of the menu
  * @const
  */
-silex.Config.CONTRIBUTE = 'https://github.com/silexlabs/Silex/blob/master/docs/contribute.md';
-
-
-/**
- * Link of the menu
- * @const
- */
-silex.Config.CONTRIBUTORS = 'https://github.com/silexlabs/Silex/blob/master/docs/contributors.md';
+silex.Config.CONTRIBUTE = 'https://github.com/silexlabs/Silex/wiki/Contribute';
 
 
 /**
@@ -172,8 +180,8 @@ silex.Config.menu = {
         id: 'file.new',
         className: 'menu-item-file-new',
         globalKey: goog.events.KeyCodes.N,
-        shortcut: [[goog.events.KeyCodes.N, altKeyMac || ctrlKeyPC]],
-        tooltip: altKeyMacDisplay + ctrlKeyPCDisplay + 'n',
+        shortcut: [[goog.events.KeyCodes.N, altKeyModifyer]],
+        tooltip: altKeyDisplay + 'n',
         mnemonic: goog.events.KeyCodes.N,
         accelerator: 'n'
       },
@@ -217,17 +225,6 @@ silex.Config.menu = {
         label: 'Settings...',
         id: 'file.publish.settings',
         className: 'menu-item-file-publish-settings'
-      },
-      null,
-      {
-        label: 'Close File',
-        id: 'file.close',
-        className: 'menu-item-file-close',
-        globalKey: goog.events.KeyCodes.W,
-        shortcut: [[goog.events.KeyCodes.W, altKeyMac || ctrlKeyPC]],
-        tooltip: altKeyMacDisplay + ctrlKeyPCDisplay + 'w',
-        mnemonic: goog.events.KeyCodes.W,
-        accelerator: 'w'
       }
     ],
     [
@@ -281,21 +278,6 @@ silex.Config.menu = {
         className: 'menu-item-view-open-textEditor',
         tooltip: '↵'
       },
-      {
-        label: 'Edit image with Express',
-        id: 'tools.pixlr.express',
-        className: 'menu-item-tools-pixllr.express',
-        shortcut: [[goog.events.KeyCodes.ENTER, altKeyModifyer + goog.ui.KeyboardShortcutHandler.Modifiers.SHIFT]],
-        tooltip: altKeyDisplay + '⇧ ↵'
-      },
-      {
-        label: 'Edit image with Pixlr',
-        id: 'tools.pixlr.edit',
-        className: 'menu-item-tools-pixllr.edit',
-        shortcut: [[goog.events.KeyCodes.ENTER, altKeyModifyer]],
-        tooltip: altKeyDisplay + '↵'
-      },
-      null,
       {
         label: 'Bring to front',
         id: 'edit.move.to.top',
@@ -366,6 +348,16 @@ silex.Config.menu = {
         mnemonic: goog.events.KeyCodes.A,
         accelerator: 'a'
       },
+      {
+        label: 'Mobile editor',
+        id: 'tools.mobile.mode',
+        className: 'menu-item-tools-mobile-mode',
+        checkable: true,
+        shortcut: [[goog.events.KeyCodes.M, altKeyModifyer]],
+        tooltip: ctrlKeyDisplay + altKeyDisplay + 'M',
+        mnemonic: goog.events.KeyCodes.M,
+        accelerator: 'm'
+      },
       null,
       {
         label: 'HTML <head> editor',
@@ -433,7 +425,6 @@ silex.Config.menu = {
         mnemonic: goog.events.KeyCodes.C,
         accelerator: 'c'
       },
-      null,
       {
         label: 'HTML box',
         id: 'insert.html',
@@ -443,6 +434,12 @@ silex.Config.menu = {
         tooltip: altKeyDisplay + 'H',
         mnemonic: goog.events.KeyCodes.H,
         accelerator: 'h'
+      },
+      {
+        label: 'Section',
+        id: 'insert.section',
+        shortcut: [[goog.events.KeyCodes.S, altKeyModifyer]],
+        tooltip: altKeyDisplay + 'S'
       },
       null,
       {
@@ -513,11 +510,6 @@ silex.Config.menu = {
       {
         label: 'Source code and download Silex',
         id: 'help.forkMe',
-        className: 'menu-item-help-forkMe'
-      },
-      {
-        label: 'Contributors',
-        id: 'help.contributors',
         className: 'menu-item-help-forkMe'
       }
     ]

@@ -1,26 +1,28 @@
-h1.title1 Properties
-.switch-apollo-mode
-  label Apollo Mode<br>(Advanced)
-  button
+.tabs
+  .tab.design.fa.fa-lg.fa-paint-brush.on
+  .tab.style.fa.fa-lg.fa-font
+  .tab.params.fa.fa-lg.fa-cog
 .main-container
-  span.position-editor
-    fieldset.small-font
-      legend Position and size
-      div
-        div.two-col
+  span.position-editor.editor-container
+    .expandable
+      legend
+        span.fa.fa-fw.fa-inverse.fa-caret-right
+        span Position and size
+      .body
+        .two-col
           label X
           label W
-        div.two-col
+        .two-col
           .input-with-unit
             input.position-input.left-input(placeholder='-', type='number', tabindex='1')
             label.unit PX
           .input-with-unit
             input.position-input.width-input(placeholder='-', type='number', tabindex='3', min='0')
             label.unit PX
-        div.two-col
+        .two-col
           label Y
           label H
-        div.two-col
+        .two-col
           .input-with-unit
             input.position-input.top-input(placeholder='-', type='number', tabindex='2')
             label.unit PX
@@ -28,144 +30,211 @@ h1.title1 Properties
             input.position-input.height-input(placeholder='-', type='number', tabindex='4', min='0')
             label.unit PX
 
-  span.seo-editor.advanced-only
-    fieldset.small-font
-      legend SEO (search engines)
-      div
+  span.seo-editor.old-advanced-only.editor-container
+    .expandable
+      legend
+        span.fa.fa-fw.fa-inverse.fa-caret-right
+        span SEO (search engines)
+      .body
         label.alt-label Alt (images only)
         input.alt-input(placeholder='-', type='text')
         label.title-label Title and tooltip
         input.title-input(placeholder='-', type='text')
 
 
-  span.page-editor
+  span.page-editor.editor-container
     script.pages-selector-template(type='text/x-handlebars-template')
-      <div class="page-container">
-      <div class="page-check-container">
-      <span class="page-check" />
-      </div>
-      <label class="page-label xsmall-font">{{displayName}}</label>
+      <div class='page-container'>
+      <input class='page-check checkbox' type='checkbox' id='{{name}}' />
+      <label class='page-label xsmall-font' for='{{name}}' >{{displayName}}</label>
       </div>
 
     script.link-template(type='text/x-handlebars-template')
-      <option value="{{linkName}}">{{displayName}}</option>
+      <option value='{{linkName}}'>{{displayName}}</option>
 
-    fieldset.small-font
+    .expandable
       legend
-        | Show only on
-      .pages-container
-    fieldset.small-font
-      legend Link
-      div
-        select.link-combo-box
-      input.link-input-text(placeholder='-', type='text')
-
-
-
+        span.fa.fa-fw.fa-inverse.fa-caret-right
+        span Visible on
+      .body
+        .view-on-mobile
+          input#mobile.view-on-mobile-check.checkbox(type='checkbox')
+          label.view-on-mobile-label.xsmall-font(for='mobile')
+            | mobile version
+          hr
+        .view-on-allpages
+          input#allpages.view-on-allpages-check.checkbox(type='checkbox')
+          label.view-on-allpages-label.xsmall-font(for='allpages')
+            | all pages
+        .pages-container
+    .expandable
+      legend
+        span.fa.fa-fw.fa-inverse.fa-caret-right
+        span Link
+      .body
+        select.link-combo-box.combobox
+        input.link-input-text(placeholder='-', type='text')
 
   span.style-container
     span.tab-page
-      .general-editor
-        fieldset.small-font.opacity-property.advanced-only
+      .general-editor.editor-container
+        .expandable.opacity-property.old-advanced-only
           legend
-            | Opacity
+            span.fa.fa-fw.fa-inverse.fa-caret-right
+            span Opacity
             small  in %
-          input.opacity-input(placeholder='-', type='number', min='0', max='100')
-      .background-editor
-        fieldset.small-font.background-property
-          legend Background Color
-          span.color-bg-button.color-button
-          span.color-bg-palette
-          span.enable-color-bg-button.goog-checkbox-unchecked
-          | Transparent
-        fieldset.small-font.background-image
-          legend Background Image
-          div
-            .button.bg-image-button Select image
-            .button.clear-bg-image-button Clear image
-          div
-            .bg-position-h-combo-box.combobox.goog-select
-              ul.goog-menu
-                li#left.goog-menuitem left
-                li#center.goog-menuitem center
-                li#right.goog-menuitem right
-            .bg-position-v-combo-box.combobox.goog-select
-              ul.goog-menu
-                li#top.goog-menuitem top
-                li#center.goog-menuitem center
-                li#bottom.goog-menuitem bottom
-          .background-image
-            .bg-attachment-combo-box.combobox.goog-select
-              ul.goog-menu
-                li#scroll.goog-menuitem(title='The background scrolls along with the element') scroll
-                li#fixed.goog-menuitem(title='The background is fixed with regard to the viewport') fixed
-            .bg-repeat-combo-box.combobox.goog-select
-              ul.goog-menu
-                li#repeat.goog-menuitem(title='The background image is repeated both vertically and horizontally') repeat
-                li#repeat-x.goog-menuitem(title='The background image is only repeated horizontally') repeat-x
-                li#repeat-y.goog-menuitem(title='The background image is only repeated vertically') repeat-y
-                li#no-repeat.goog-menuitem(title='The background-image is not repeated') no-repeat
-            .bg-size-combo-box.combobox.goog-select
-              ul.goog-menu
-                li#auto.goog-menuitem(title='The background image is not resized') auto
-                li#contain.goog-menuitem(title='The background image is scaled so that the whole image is visible') contain
-                li#cover.goog-menuitem(title='The background image is scaled so that it completely covers the element') cover
-      .border-editor
-        fieldset.small-font.border-property
+          .body
+            input.opacity-input(placeholder='-', type='number', min='0', max='100')
+
+      .background-editor.editor-container
+        .expandable.background-property
           legend
-            | Border
-          .border-width-color-container
-            label.border-width-label Width
-            input.border-width-input(placeholder='-', type='number', min='0')
-            label.border-color-label Color
-            span.border-color-button.color-button
-          span.border-color-palette
-          .border-type-conainer.advanced-only
-            .border-type-label Style
-            .border-type-combo-box.combobox.goog-select
-              ul.goog-menu
-                li#solid.goog-menuitem solid
-                li#dotted.goog-menuitem dotted
-                li#dashed.goog-menuitem dashed
-                li#double.goog-menuitem double
-                li#groove.goog-menuitem groove
-                li#ridge.goog-menuitem ridge
-                li#inset.goog-menuitem inset
-                li#outset.goog-menuitem outset
-          .border-placement-container.advanced-only
-            .half-col
-              span.border-placement-check.goog-checkbox
-              label.border-placement-label Top
-            .half-col
-              span.border-placement-check.goog-checkbox
-              label.border-placement-label Right
-            .half-col
-              span.border-placement-check.goog-checkbox
-              label.border-placement-label Bottom
-            .half-col
-              span.border-placement-check.goog-checkbox
-              label.border-placement-label Left
-          .border-radius-container
-            .border-radius-width-container
-              label.border-radius-label Radius
-              input.corner-radius-input(placeholder='-', type='number', min='0')
-            .corner-placement-container.advanced-only
+            span.fa.fa-fw.fa-inverse.fa-caret-right
+            span Background Color
+          .body
+            .color-edit-container
+              label.color-edit-label.alpha Alpha
+              input.color-edit-text-input.color-opacity-input(placeholder='-', type='number', min='0', max='100')
+              input.color-edit-color-input.color-button.color-button(type='color', defaultValue='rgba(0, 0, 0, 1)', placeholder='-')
+              input#bgtransp.color-edit-transparent-check(type='checkbox', indeterminate='true')
+              label.color-edit-label(for='bgtransp') Transparent
+        .expandable.background-image
+          legend
+            span.fa.fa-fw.fa-inverse.fa-caret-right
+            span Background Image
+          .body
+            div
+              input.button.bg-image-button(type='button', value='Select image')
+              input.button.clear-bg-image-button(type='button', value='Clear image')
+            div
+              select.bg-position-h-combo-box.combobox
+                  option(value='left') left
+                  option(value='center') center
+                  option(value='right') right
+              select.bg-position-v-combo-box.combobox
+                  option(value='top') top
+                  option(value='center') center
+                  option(value='bottom') bottom
+            .background-image
+              select.bg-attachment-combo-box.combobox
+                  option(value='scroll', title='The background scrolls along with the element') scroll
+                  option(value='fixed', title='The background is fixed with regard to the viewport') fixed
+              select.bg-repeat-combo-box.combobox
+                  option(value='repeat', title='The background image is repeated both vertically and horizontally') repeat
+                  option(value='repeat-x', title='The background image is only repeated horizontally') repeat-x
+                  option(value='repeat-y', title='The background image is only repeated vertically') repeat-y
+                  option(value='no-repeat', title='The background-image is not repeated') no-repeat
+              select.bg-size-combo-box.combobox
+                  option(value='auto', title='The background image is not resized') auto
+                  option(value='contain', title='The background image is scaled so that the whole image is visible') contain
+                  option(value='cover', title='The background image is scaled so that it completely covers the element') cover
+      .border-editor.editor-container
+        .expandable.border-property
+          legend
+            span.fa.fa-fw.fa-inverse.fa-caret-right
+            span Border
+          .body
+            .border-width-container
+              label.border-width-label Width
+              label.border-type-label Style
+              input.border-width-input(placeholder='-', type='number', min='0')
+              select.border-type-combo-box.combobox
+                option(value='solid') solid
+                option(value='dotted') dotted
+                option(value='dashed') dashed
+                option(value='double') double
+                option(value='groove') groove
+                option(value='ridge') ridge
+                option(value='inset') inset
+                option(value='outset') outset
+            .color-edit-container
+              label.color-edit-label Alpha
+              input.color-edit-text-input.color-opacity-input.color-border-opacity-input(placeholder='-', type='number', min='0', max='100')
+              input.color-edit-color-input.color-border-button.color-button(type='color', defaultValue='rgba(0, 0, 0, 1)', placeholder='-')
+              input#bordertransp.color-edit-transparent-check(type='checkbox', indeterminate='true')
+              label.color-edit-label.alpha(for='bordertransp') Transparent
+            .border-placement-container.old-advanced-only
               .half-col
-                span.corner-placement-check.goog-checkbox
-                label.corner-placement-label Top Left
+                input#topplacement.top.border-placement-check.checkbox(type='checkbox')
+                label.border-placement-label(for='topplacement') Top
               .half-col
-                span.corner-placement-check.goog-checkbox
-                label.corner-placement-label Top Right
+                input#leftplacement.left.border-placement-check.checkbox(type='checkbox')
+                label.border-placement-label(for='leftplacement') Left
               .half-col
-                span.corner-placement-check.goog-checkbox
-                label.corner-placement-label Btm. Left
+                input#bottomplacement.bottom.border-placement-check.checkbox(type='checkbox')
+                label.border-placement-label(for='bottomplacement') Bottom
               .half-col
-                span.corner-placement-check.goog-checkbox
-                label.corner-placement-label Btm. Right
-      .style-editor
-        fieldset.small-font.style-property.advanced-only
-          legend Styles
-          label CSS classes
-            a.help-icon(href='https://github.com/silexlabs/Silex/issues/184#properties-css-panel', title='about Silex and CSS', target='_blank') Help
-          input.style-css-classes-input(placeholder='-', type='text')
-          .element-style-editor
+                input#rightplacement.right.border-placement-check.checkbox(type='checkbox')
+                label.border-placement-label(for='rightplacement') Right
+            .border-radius-container
+              .border-radius-width-container
+                label.border-radius-label Radius
+                input.corner-radius-input(placeholder='-', type='number', min='0')
+              .corner-placement-container.old-advanced-only
+                .half-col
+                  input#topleftplacementradius.top-left.corner-placement-check.checkbox(type='checkbox')
+                  label.corner-placement-label(for='topleftplacementradius') Top Left
+                .half-col
+                  input#toprightplacementradius.top-right.corner-placement-check.checkbox(type='checkbox')
+                  label.corner-placement-label(for='toprightplacementradius') Top Right
+                .half-col
+                  input#bottomleftplacementradius.bottom-left.corner-placement-check.checkbox(type='checkbox')
+                  label.corner-placement-label(for='bottomleftplacementradius') Btm Left
+                .half-col
+                  input#bottomrightplacementradius.bottom-right.corner-placement-check.checkbox(type='checkbox')
+                  label.corner-placement-label(for='bottomrightplacementradius') Btm Right
+      .style-editor.editor-container
+        .expandable.style-property.old-advanced-only
+          legend
+            span.fa.fa-fw.fa-inverse.fa-caret-right
+            span Styles
+          .body
+            label CSS classes
+              a.help-icon(href='https://github.com/silexlabs/Silex/wiki/Silex-CSS-editor#custom-css-classes', title='about Silex and CSS', target='_blank') Help
+            input.style-css-classes-input(placeholder='-', type='text')
+            .element-style-editor.editor-container
+  span.prodotype-component-editor.editor-container
+  span.prodotype-style-editor.editor-container
+    .prodotype-style-editor-menu
+      label.class-name-style-label(for='class-name-style-combo-box')
+        span Style name:
+        select#pseudoclass-style-combo-box.pseudoclass-style-combo-box.combobox
+      .class-name-block
+        input#visibility-style-checkbox.visibility-style-checkbox.hidden(type='checkbox')
+        label.visibility-style-label.fa-fw.icon.fa-inverse.fa-mobile.expandable(for='visibility-style-checkbox', title='Mobile only')
+        select#class-name-style-combo-box.class-name-style-combo-box.combobox
+
+      p.selection-info-container
+        span.dot.fa.fa-circle
+        span.on-page 2 on this page (<span>select</span>),
+        span.total 5 total (<span>select</span>)
+
+      .add-style.icon-btn.icon-btn-left.icon-btn-first(title='Add a text style.') <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'><defs><style>.cls-1 {fill: #e5e5e5;}</style></defs><path id='Union_18' data-name='Union 18' class='cls-1' d='M4,10V6H0V4H4V0H6V4h4V6H6v4Z'/></svg>
+      .edit-style.icon-btn.icon-btn-left(title='Rename the current text style.') <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10.007'><defs><style>.cls-1 {fill: #e5e5e5;fill-rule: evenodd;}</style></defs><path id='editA' class='cls-1' d='M7.43,0a.67.67,0,0,0-.475.2L9.8,3.05a.671.671,0,0,0,0-.95L7.9.2A.67.67,0,0,0,7.43,0ZM9.8,3.05,6.955.2,1.5,5.655,4.351,8.508,9.8,3.05ZM.707,7.315c-.118.334-.252.736-.4,1.226,0,.017-.01.034-.016.051-.013.043-.027.088-.04.133s-.025.08-.037.121-.021.068-.031.1l-.073.245c-.054.183-.187.6-.037.748s.563.017.746-.037l.243-.073L1.166,9.8l.114-.035.139-.043.041-.013c.5-.154.9-.29,1.236-.41L.707,7.315Z' transform='translate(0 -0.002)'/></svg>
+      .duplicate-style.icon-btn.icon-btn-left(title='Duplicate the current text style.') <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 11 11'><defs><style>.cls-1 {fill: #e5e5e5;}</style></defs><path id='Union_19' data-name='Union 19' class='cls-1' d='M5,11V5h6v6ZM3,6H0V0H6V3H3V6H3Z'/></svg>
+      .remove-style.icon-btn.icon-btn-right.icon-btn-last(title='Delete the current text style.') <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 11'><defs><style>.cls-1 {fill: #e5e5e5;}</style></defs><path id='Union_17' data-name='Union 17' class='cls-1' d='M2,11a1,1,0,0,1-1-1V3H9v7a1,1,0,0,1-1,1ZM0,2V1H10V2ZM3,1A1,1,0,0,1,4,0H6A1,1,0,0,1,7,1Z'/></svg>
+      .unapply-style.icon-btn.icon-btn-right(title='Remove the current style from selected text boxes.') <svg id='Group_9' data-name='Group 9' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 13 11'><defs><style>.cls-1 {fill: #e4e4e4;}</style></defs><path id='Path_72' data-name='Path 72' class='cls-1' d='M8.964-6A3.516,3.516,0,0,0,5.5-9,3.5,3.5,0,0,0,2-5.5,3.5,3.5,0,0,0,5.5-2,3.53,3.53,0,0,0,6-2.036V-.023C5.831-.007,5.663,0,5.5,0A5.506,5.506,0,0,1,0-5.5,5.506,5.506,0,0,1,5.5-11,5.482,5.482,0,0,1,9.218-9.55,5.485,5.485,0,0,1,10.977-6H13L10-2,7-6Z' transform='translate(0 11)'/></svg>
+      <hr>
+      form.style-editor-tag-form
+        input#style-editor-tag-paragraph.hidden(type='radio', name='style-editor-tag-name', value='paragraph', checked)
+        input#style-editor-tag-link.hidden(type='radio', name='style-editor-tag-name', value='link')
+        input#style-editor-tag-bold.hidden(type='radio', name='style-editor-tag-name', value='bold')
+        input#style-editor-tag-underline.hidden(type='radio', name='style-editor-tag-name', value='underline')
+        input#style-editor-tag-italic.hidden(type='radio', name='style-editor-tag-name', value='italic')
+        input#style-editor-tag-heading1.hidden(type='radio', name='style-editor-tag-name', value='heading1')
+        input#style-editor-tag-heading2.hidden(type='radio', name='style-editor-tag-name', value='heading2')
+        input#style-editor-tag-heading3.hidden(type='radio', name='style-editor-tag-name', value='heading3')
+        input#style-editor-tag-ul.hidden(type='radio', name='style-editor-tag-name', value='ul')
+        input#style-editor-tag-ol.hidden(type='radio', name='style-editor-tag-name', value='ol')
+        .labels
+          label.first-button(for='style-editor-tag-paragraph', title='Edit style of text marked as "normal"' data-initial-value='P' data-prodotype-name='Paragraph') P
+          label(for='style-editor-tag-link', title='Edit style of links' data-initial-value='A' data-prodotype-name='Link') A
+          label(for='style-editor-tag-bold', title='Edit style of bold text' data-initial-value='B' data-prodotype-name='Bold') B
+          label(for='style-editor-tag-underline', title='Edit style of underlined text' data-initial-value='U' data-prodotype-name='Underline') U
+          label.last-button(for='style-editor-tag-italic', title='Edit style of italic text' data-initial-value='I' data-prodotype-name='Italic') I
+          label.first-button(for='style-editor-tag-heading1', title='Edit style of Heading1 text' data-initial-value='H1' data-prodotype-name='Heading1') H1
+          label(for='style-editor-tag-heading2', title='Edit style of Heading2 text' data-initial-value='H2' data-prodotype-name='Heading2') H2
+          label(for='style-editor-tag-heading3', title='Edit style of Heading3 text' data-initial-value='H3' data-prodotype-name='Heading3') H3
+          label(for='style-editor-tag-ul', title='Edit style of unordered lists' data-initial-value='UL' data-prodotype-name='UnorderedList') UL
+          label.last-button(for='style-editor-tag-ol', title='Edit style of ordered lists' data-initial-value='OL' data-prodotype-name='OrderedList') OL
+        .prodotype-container

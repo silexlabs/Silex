@@ -130,6 +130,7 @@ silex.view.pane.PaneBase.prototype.redraw = function(selectedElements, pageNames
  * @param {Array.<Element>} elements
  * @param {function(Element): ?(string|number|boolean)} getPropertyFunction the callback which returns the value for one element
  * @return ? {string|number|boolean} the value or null if the value is not the same for all elements
+ * FIXME: we should use Array::reduce
  */
 silex.view.pane.PaneBase.prototype.getCommonProperty = function(elements, getPropertyFunction) {
   var value = null;

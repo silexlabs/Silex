@@ -1,0 +1,83 @@
+<form id="id_<%= uid %>" action="<% if(sendTo.indexOf('http') !== 0 && sendTo.indexOf('//') !== 0) { %>https://formspree.io/<% } %><%= sendTo %>" method="POST" <% if(onsubmit) { %>onsubmit="return onsubmit_<%= uid %>(event);"<% } %>>
+  <% if(field1) { %>
+  <div>
+    <% if(label1) { %><label for="field1"><%= label1 %></label><% } %>
+    <input type="text" required id="field1" name="field1" placeholder="<%= placeholder1 %>">
+  </div>
+  <% } %>
+  <% if(field2) { %>
+  <div>
+    <% if(label2) { %><label for="field2"><%= label2 %></label><% } %>
+    <input type="text" required id="field2" name="field2" placeholder="<%= placeholder2 %>">
+  </div>
+  <% } %>
+  <% if(field3) { %>
+  <div class="fill-vertical">
+    <% if(label3) { %><label for="field3"><%= label3 %></label><% } %>
+    <textarea required id="field3" name="field3" placeholder="<%= placeholder3 %>"></textarea>
+  </div>
+  <% } %>
+  <input type="submit" value="<%= submitButtonLabel %>">
+</form>
+<style>
+#id_<%= uid %> input[type=text], select {
+    width: 100%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    box-sizing: border-box;
+}
+
+#id_<%= uid %> input[type=submit] {
+    width: 100%;
+    background-color: <%- buttonBackgroundColor %>;
+    color: <%- buttonTextColor %>;
+    padding: 14px 20px;
+    margin: 8px 0;
+    border: 1px solid <%- buttonBorderColor %>;
+    border-radius: 3px;
+    cursor: pointer;
+}
+#id_<%= uid %> label {
+    color: <%- labelTextColor %>;
+}
+/* *************************** */
+/* resize the 3rd field
+   and fill the vertical space */
+#id_<%= uid %> .fill-vertical {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+}
+#id_<%= uid %> .fill-vertical textarea {
+    flex: 1 1 auto;
+    width: 100%;
+    height: 150px;
+    padding: 12px 20px;
+    box-sizing: border-box;
+    border: 2px solid #ccc;
+    border-radius: 3px;
+    background-color: #f8f8f8;
+    font-size: 16px;
+    resize: none;
+}
+/* ************************ */
+#id_<%= uid %> {
+    border-radius: 3px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+}
+</style>
+<% if(onsubmit) { %>
+<script type="text/javascript">
+function onsubmit_<%= uid %>(event) {
+try {
+    <%- onsubmit %>
+} catch(e) {}
+}
+</script>
+<% } %>

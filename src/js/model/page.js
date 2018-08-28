@@ -136,11 +136,14 @@ silex.model.Page.PAGE_LINK_ACTIVE_CLASS_NAME = 'page-link-active';
  * @return {Element} null or the element or one of its parents which has the css class silex.model.Page.PAGED_CLASS_NAME
  */
 silex.model.Page.prototype.getParentPage = function(element) {
+  if(this.model.element.isSectionContent(element)) {
+    element = /** @type {Element} */ (element.parentNode);
+  }
   var parent = element.parentNode;
-  while (parent && !goog.dom.classlist.contains(/** @type {Element|null} */ (parent), silex.model.Page.PAGED_CLASS_NAME)) {
+  while (parent && !goog.dom.classlist.contains(/** @type {?Element} */ (parent), silex.model.Page.PAGED_CLASS_NAME)) {
     parent = parent.parentNode;
   }
-  return /** @type {Element|null} */ (parent);
+  return /** @type {?Element} */ (parent);
 };
 
 
@@ -150,8 +153,13 @@ silex.model.Page.prototype.getParentPage = function(element) {
  */
 silex.model.Page.prototype.getPages = function() {
   // retrieve all page names from the head section
-  var pages = [];
-  var elements = this.model.body.getBodyElement().querySelectorAll('a[data-silex-type="page"]');
+  const pages = [];
+  const bodyElement = this.model.body.getBodyElement();
+  if(!bodyElement) {
+    console.warn('Can not get pages, the body element is null');
+    return [];
+  }
+  const elements = bodyElement.querySelectorAll('a[data-silex-type="page"]');
   goog.array.forEach(elements, function(element) {
     pages.push(element.getAttribute('id'));
   }, this);
@@ -170,12 +178,14 @@ silex.model.Page.prototype.getCurrentPage = function() {
   var bodyElement = this.model.body.getBodyElement();
   var pageName = null;
   try {
-    if(this.model.file.getContentWindow().jQuery(bodyElement).pageable) {
+    if (this.model.file.getContentWindow().jQuery(bodyElement).pageable) {
       pageName = this.model.file.getContentWindow().jQuery(bodyElement).pageable('option', 'currentPage');
     }
   }
-  catch(e) {
-    console.error('error, could not retrieve the current page', e);
+  catch (e) {
+    // there was a problem in the pageable plugin, return the first page
+    console.warn(`warning, could not retrieve the current page, I will return the first page (${ this.getPages() })`);
+    pageName = this.getPages()[0];
   }
   return pageName;
 };
@@ -187,6 +197,7 @@ silex.model.Page.prototype.getCurrentPage = function() {
 silex.model.Page.prototype.refreshView = function() {
   var pages = this.getPages();
   var currentPage = this.getCurrentPage();
+  this.view.contextMenu.redraw(this.model.body.getSelection(), pages, currentPage);
   this.view.pageTool.redraw(this.model.body.getSelection(), pages, currentPage);
   this.view.propertyTool.redraw(this.model.body.getSelection(), pages, currentPage);
   this.view.stage.redraw(this.model.body.getSelection(), pages, currentPage);
@@ -200,7 +211,7 @@ silex.model.Page.prototype.refreshView = function() {
  */
 silex.model.Page.prototype.setCurrentPage = function(pageName) {
   var bodyElement = this.model.body.getBodyElement();
-  if(this.model.file.getContentWindow().jQuery(bodyElement).pageable) {
+  if (this.model.file.getContentWindow().jQuery(bodyElement).pageable) {
     this.model.file.getContentWindow().jQuery(bodyElement).pageable({'currentPage': pageName});
   }
   this.refreshView();
@@ -288,18 +299,44 @@ silex.model.Page.prototype.removePage = function(pageName) {
 
 
 /**
+ * move a page in the dom
+ * @param {string} pageName
+ * @param {string} direction up or down
+ */
+silex.model.Page.prototype.movePage = function(pageName, direction) {
+  if(direction !== 'up' && direction !== 'down') throw 'wrong direction ' + direction + ', can not move page';
+  const elements = this.model.body.getBodyElement().querySelectorAll('a[data-silex-type="page"]');
+  let prevEl = null;
+  for(let idx=0; idx<elements.length; idx++) {
+    const el = elements[idx];
+    if(prevEl &&
+      ((el.id === pageName && direction === 'up') ||
+      (prevEl.id === pageName && direction === 'down'))) {
+      el.parentNode.insertBefore(el, prevEl);
+      var pages = this.getPages();
+      var currentPage = this.getCurrentPage();
+      this.view.pageTool.redraw(this.model.body.getSelection(), pages, currentPage);
+      return;
+    }
+    prevEl = el;
+  };
+  console.error('page could not be moved', pageName, direction, prevEl);
+};
+
+
+/**
  * add a page to the dom
  * @param {string} name
  * @param {string} displayName
  */
 silex.model.Page.prototype.createPage = function(name, displayName) {
-  var bodyElement = this.model.body.getBodyElement();
+  var container = this.model.body.getBodyElement().querySelector('.' + silex.model.Page.PAGES_CONTAINER_CLASS_NAME);
   // create the DOM element
   var aTag = goog.dom.createElement('a');
   aTag.setAttribute('id', name);
   aTag.setAttribute('data-silex-type', 'page');
   aTag.innerHTML = displayName;
-  goog.dom.appendChild(bodyElement, aTag);
+  goog.dom.appendChild(container, aTag);
   // for coherence with other silex elements
   goog.dom.classlist.add(aTag, silex.model.Page.PAGE_CLASS_NAME);
   // select this page
@@ -343,12 +380,23 @@ silex.model.Page.prototype.renamePage = function(oldName, newName, newDisplayNam
 
 /**
  * set/get a the visibility of an element in the given page
+ * remove from all pages if visible in all pages
  * @param {Element} element
  * @param {string} pageName
  */
 silex.model.Page.prototype.addToPage = function(element, pageName) {
-  goog.dom.classlist.add(element, pageName);
-  goog.dom.classlist.add(element, silex.model.Page.PAGED_CLASS_NAME);
+  if(this.model.element.isSectionContent(element)) {
+    element = /** @type {Element} */ (element.parentNode);
+  }
+  const pages = this.getPagesForElement(element);
+  if (pages.length + 1 === this.getPages().length) {
+    pages.forEach(page => element.classList.remove(page));
+    goog.dom.classlist.remove(element, silex.model.Page.PAGED_CLASS_NAME);
+  }
+  else {
+    goog.dom.classlist.add(element, pageName);
+    goog.dom.classlist.add(element, silex.model.Page.PAGED_CLASS_NAME);
+  }
   this.refreshView();
 };
 
@@ -359,8 +407,11 @@ silex.model.Page.prototype.addToPage = function(element, pageName) {
  * @param {string} pageName
  */
 silex.model.Page.prototype.removeFromPage = function(element, pageName) {
+  if(this.model.element.isSectionContent(element)) {
+    element = /** @type {Element} */ (element.parentNode);
+  }
   goog.dom.classlist.remove(element, pageName);
-  if (!this.getPagesForElement(element).length > 0) {
+  if (this.getPagesForElement(element).length <= 0) {
     goog.dom.classlist.remove(element, silex.model.Page.PAGED_CLASS_NAME);
   }
   this.refreshView();
@@ -372,6 +423,9 @@ silex.model.Page.prototype.removeFromPage = function(element, pageName) {
  * @param {Element} element
  */
 silex.model.Page.prototype.removeFromAllPages = function(element) {
+  if(this.model.element.isSectionContent(element)) {
+    element = /** @type {Element} */ (element.parentNode);
+  }
   var pages = this.getPagesForElement(element);
   goog.array.forEach(pages, function(pageName) {
     goog.dom.classlist.remove(element, pageName);
@@ -389,17 +443,11 @@ silex.model.Page.prototype.removeFromAllPages = function(element) {
  * @return {Array.<string>}
  */
 silex.model.Page.prototype.getPagesForElement = function(element) {
-  var res = [];
-  // get all the pages
-  var pages = this.getPages();
-  for (let idx in pages) {
-    var pageName = pages[idx];
-    // remove the component from the page
-    if (goog.dom.classlist.contains(element, pageName)) {
-      res.push(pageName);
-    }
+  if(this.model.element.isSectionContent(element)) {
+    element = /** @type {Element} */ (element.parentNode);
   }
-  return res;
+  return this.getPages()
+    .filter(pageName => element.classList.contains(pageName));
 };
 
 
@@ -410,8 +458,12 @@ silex.model.Page.prototype.getPagesForElement = function(element) {
  * @return {boolean}
  */
 silex.model.Page.prototype.isInPage = function(element, opt_pageName) {
+  if(this.model.element.isSectionContent(element)) {
+    element = /** @type {Element} */ (element.parentNode);
+  }
   if (!opt_pageName) {
     opt_pageName = this.getCurrentPage();
   }
   return goog.dom.classlist.contains(element, opt_pageName);
 };
+

@@ -1,28 +1,22 @@
 .silex-page-tool {
-  padding: 0;
-  float: left;
-  left:0;
-  width: @pageToolWidth;
-  position: absolute;
-  top: @menuHeight;
-  bottom: 0;
-  overflow-y: auto;
-  background-color: @silexlightgrey;
-  -moz-box-shadow: inset 0px 0px 6px 0px #000;
-  -webkit-box-shadow: inset 0px 0px 6px 0px #000;
-  -o-box-shadow: inset 0px 0px 6px 0px #000;
-  box-shadow: inset 0px 0px 6px 0px #000;
-  filter:progid:DXImageTransform.Microsoft.Shadow(color=#000, Direction=NaN, Strength=6);
+  .silex-sub-menu();
+  padding: 8px 10px 0 10px;
+  bottom: @breadCrumbsHeight;
+  top: @contextMenuHeight;
+  display: flex;
+  flex-direction: column;
+  bottom: @breadCrumbsHeight;
 
   .page-preview {
     border: 1px solid @silexdarkgrey;
     width: 131px;
     height: 80px;
     position: relative;
-    margin: auto;
+    margin-bottom: 15px;
+    margin-left: 5px;
     cursor: default;
     background-color: #FFF;
-    transition: all .3s;
+    cursor: pointer;
 
     &:hover {
       border: 1px solid #000;
@@ -50,64 +44,63 @@
     }
 
   }
+  .ui-selected {
 
-  .page-tool-container {
+    .page-preview {
+      margin-left: 0;
+      width: 141px;
+      height: 89px;
+      border: none;
+      background-color: #FFF;
+      /* does not work because template => innerHTML is set
+         transition: all .3s; */
 
-    .ui-selected {
+      &:before {
+        pointer-events: none;
+        position: absolute;
+        content: '';
+        height: 0;
+        width: 0;
+        top: 0;
+        left: 0;
+        background: white;
+        /* IE9 */
+        background: linear-gradient(135deg, @silexmediumgrey   45%, #aaaaaa 50%, #cccccc 56%, white 80%);
+        filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr='#ffffff', endColorstr='#000000');
+        /*For IE7-8-9*/
+        z-index: 1000;
+        box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4);
+        -webkit-transition-duration: 0.3s;
+        transition-duration: 0.3s;
+        -webkit-transition-property: width, height;
+        transition-property: width, height;
+      }
 
-      .page-preview {
-        width: 141px;
-        height: 89px;
-        border: 1px solid @silexdarkgrey;
-        background-color: #FFF;
-        box-shadow: 1px 1px 6px 1px @silexdarkgrey;
-        filter:progid:DXImageTransform.Microsoft.Shadow(color=@silexdarkgrey, Direction=134, Strength=6);
-        transition: all .3s;
+      &:hover:before,&:focus:before,&:active:before {
+        width: 25px;
+        height: 25px;
+      }
 
-        &:before {
-          pointer-events: none;
-          position: absolute;
-          content: '';
-          height: 0;
-          width: 0;
-          top: 0;
-          left: 0;
-          background: white;
-          /* IE9 */
-          background: linear-gradient(135deg, white 45%, #aaaaaa 50%, #cccccc 56%, white 80%);
-          filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr='#ffffff', endColorstr='#000000');
-          /*For IE7-8-9*/
-          z-index: 1000;
-          box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4);
-          -webkit-transition-duration: 0.3s;
-          transition-duration: 0.3s;
-          -webkit-transition-property: width, height;
-          transition-property: width, height;
-        }
-
-        &:hover:before,&:focus:before,&:active:before {
-          width: 25px;
-          height: 25px;
-        }
-
-        .label {
-          font-weight: bold;
-        }
-
+      .label {
+        font-weight: bold;
       }
 
     }
 
   }
 
-  .page-container {
-    overflow-x: visible;
+  .page-tool-container {
+    flex: 1 1 auto;
+    overflow-x: hidden;
     overflow-y: auto;
-    overflow: visible;
-    text-align: center;
-    margin: 10px;
+    padding: 10px;
+  }
+
+  .page-container {
+    margin-top: 5px;
     text-decoration: none;
     outline: none;
+    display: block;
 
     .label {
       bottom: 0;
@@ -130,7 +123,19 @@
       }
 
     }
-
   }
-
+  .icon.fa-fw.fa-inverse {
+    font-size: initial;
+    font-weight: lighter;
+    cursor: pointer;
+    margin: auto;
+    padding: 0;
+    line-height: 1.25;
+    padding-right: 5px;
+    display: inline-block;
+  }
+  .ui-container {
+    padding: 0;
+    display: flex;
+  }
 }

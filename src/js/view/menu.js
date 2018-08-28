@@ -11,7 +11,8 @@
 
 /**
  * @fileoverview
- * the Silex menu
+ * the Silex menu on the left
+ * TODO: clean up and remove the old google closure menu, implement a mechanism for keyboard shortcuts
  * based on closure menu class
  *
  */
@@ -54,6 +55,12 @@ silex.view.Menu = function(element, model, controller) {
   this.controller = controller;
 };
 
+/**
+ * Get the menu container
+ * @static
+ * @type {string}
+ */
+silex.view.Menu.CLASS_NAME='menu-container';
 
 /**
  * reference to the menu class of the closure library
@@ -74,20 +81,19 @@ silex.view.Menu.prototype.buildUi = function() {
   var globalKeys = [];
 
   // create the menu items
-  for (let i in silex.Config.menu.names) {
+  silex.Config.menu.names.forEach((itemData, i) => {
     // Create the drop down menu with a few suboptions.
     var menu = new goog.ui.Menu();
-    goog.array.forEach(silex.Config.menu.options[i], (itemData) => {
-      this.addToMenu(itemData, menu, shortcutHandler, globalKeys);
-    }, this);
+    silex.Config.menu.options[i].forEach(itemOption => {
+      this.addToMenu(itemOption, menu, shortcutHandler, globalKeys);
+    });
 
     // Create a button inside menubar.
-    var menuItemData = silex.Config.menu.names[i];
-    var btn = new goog.ui.MenuButton(menuItemData.label, menu);
-    btn.addClassName(menuItemData.className);
+    var btn = new goog.ui.MenuButton(itemData.label, menu);
+    btn.addClassName(itemData.className);
     btn.setDispatchTransitionEvents(goog.ui.Component.State.ALL, true);
     this.menu.addChild(btn, true);
-  }
+  });
 
   shortcutHandler.setAlwaysPreventDefault(false);
   //  shortcutHandler.setAllShortcutsAreGlobal(false);
@@ -128,22 +134,65 @@ silex.view.Menu.prototype.buildUi = function() {
     }
   }, this));
 
-
-  // render the menu
-  this.menu.render(this.element);
+  function elFromCompDef(comp, id) {
+    // build the dom elements for each comp by category
+    const iconClassName = comp.faIconClass || 'prodotype-icon';
+    const baseElementType = comp.baseElement || 'html';
+    const el = document.createElement('div');
+    el.classList.add('sub-menu-item');
+    el.title = `${comp.name}`;
+    el.setAttribute('data-menu-action', 'insert.' + baseElementType);
+    el.setAttribute('data-comp-id', id);
+    el.innerHTML = `
+      <span class="icon fa-inverse ${iconClassName}"></span>
+      ${comp.name}
+    `;
+    return el;
+  }
+  // components
+  this.model.component.ready(() => {
+    // **
+    const list = this.element.querySelector('.add-menu-container');
+    const componentsDef = this.model.component.getComponentsDef(Component.COMPONENT_TYPE);
+    // build a list of component categories
+    const elements = {};
+    for(let id in componentsDef) {
+      const comp = componentsDef[id];
+      if(comp.isPrivate !== true) {
+        if(!elements[comp.category]) elements[comp.category] = [elFromCompDef(comp, id)];
+        else elements[comp.category].push(elFromCompDef(comp, id));
+      }
+    }
+    for(let id in elements) {
+      // create a label for the category
+      const label = document.createElement('div');
+      label.classList.add('label');
+      label.innerHTML = id;
+      list.appendChild(label);
+      // attach each comp's element
+      elements[id].forEach(el => list.appendChild(el));
+    }
+  });
   // event handling
-  goog.events.listen(this.menu, goog.ui.Component.EventType.ACTION, function(e) {
-    this.onMenuEvent(e.target.getId());
-  }, false, this);
+  this.element.onclick = e => {
+    const action = e.target.getAttribute('data-menu-action') || e.target.parentNode.getAttribute('data-menu-action');
+    const componentId = e.target.getAttribute('data-comp-id') || e.target.parentNode.getAttribute('data-comp-id');
+    this.onMenuEvent(action, componentId);
+    if(e.target.parentNode && !e.target.parentNode.classList.contains('menu-container')) {
+      // not a first level menu => close sub menus
+      this.closeAllSubMenu();
+    }
+  };
 };
 
 
 /**
  * add an item to the menu
- * @param {{mnemonic:goog.events.KeyCodes.<number>,checkable:boolean,id:string,shortcut:Array.<number>, globalKey:string, tooltip:goog.events.KeyCodes.<number>}} itemData menu item as defined in config.js
+ * @param {{mnemonic:goog.events.KeyCodes.<number>,checkable:boolean,id:string,shortcut:Array.<number>, globalKey:Object, tooltip:goog.events.KeyCodes.<number>}} itemData menu item as defined in config.js
  * @param {goog.ui.Menu} menu
  * @param {goog.ui.KeyboardShortcutHandler} shortcutHandler
  * @param {Array.<Object>} globalKeys
+ * TODO: clean up and remove the old google closure menu, implement a mechanism for keyboard shortcuts
  */
 silex.view.Menu.prototype.addToMenu = function(itemData, menu, shortcutHandler, globalKeys) {
   var item;
@@ -155,18 +204,18 @@ silex.view.Menu.prototype.addToMenu = function(itemData, menu, shortcutHandler, 
     item.setId(id);
     item.addClassName(itemData.className);
     // checkable
-    if (itemData.checkable) {
-      item.setCheckable(true);
-    }
-    // mnemonic (access to an item with keyboard when the menu is open)
-    if (itemData.mnemonic) {
-      item.setMnemonic(itemData.mnemonic);
-    }
+    // if (itemData.checkable) {
+    //   item.setCheckable(true);
+    // }
+    // // mnemonic (access to an item with keyboard when the menu is open)
+    // if (itemData.mnemonic) {
+    //   item.setMnemonic(itemData.mnemonic);
+    // }
     // shortcut
     if (itemData.shortcut) {
-      for (let idx in itemData.shortcut) {
+      itemData.shortcut.forEach(shortcutId => {
         try {
-          shortcutHandler.registerShortcut(itemData.id, itemData.shortcut[idx]);
+          shortcutHandler.registerShortcut(itemData.id, shortcutId);
         }
         catch (e) {
           console.error('Catched error for shortcut', id, '. Error: ', e);
@@ -174,25 +223,25 @@ silex.view.Menu.prototype.addToMenu = function(itemData, menu, shortcutHandler, 
         if (itemData.globalKey) {
           globalKeys.push(itemData.globalKey);
         }
-      }
+      });
     }
-  } else {
-    item = new goog.ui.MenuSeparator();
   }
-  //item.setDispatchTransitionEvents(goog.ui.Component.State.ALL, true);
+  // else {
+  //   item = new goog.ui.MenuSeparator();
+  // }
   // add the menu item
-  menu.addChild(item, true);
+  // menu.addChild(item, true);
   // add tooltip (has to be after menu.addItem)
   // TODO: add accelerator (only display shortcut here, could not get it to work automatically with closure's accelerator concept)
-  if (itemData && itemData.tooltip) {
-    // add label
-    var div = goog.dom.createElement('span');
-    div.innerHTML = itemData.tooltip;
-    div.className = 'goog-menuitem-accel';
-    item.getElement().appendChild(div);
-    // add a real tooltip
-    //new goog.ui.Tooltip(item.getElement(), itemData.tooltip);
-  }
+  // if (itemData && itemData.tooltip) {
+  //   // add label
+  //   var div = goog.dom.createElement('span');
+  //   div.innerHTML = itemData.tooltip;
+  //   div.className = 'goog-menuitem-accel';
+  //   item.getElement().appendChild(div);
+  //   // add a real tooltip
+  //   //new goog.ui.Tooltip(item.getElement(), itemData.tooltip);
+  // }
 };
 
 
@@ -206,14 +255,50 @@ silex.view.Menu.prototype.redraw = function(selectedElements, pageNames, current
 };
 
 
+silex.view.Menu.SUB_MENU_CLASSES = ['page-tool-visible', 'about-menu-visible', 'file-menu-visible', 'code-menu-visible', 'add-menu-visible'];
+silex.view.Menu.prototype.closeAllSubMenu = function() {
+  silex.view.Menu.SUB_MENU_CLASSES.forEach(className => {
+    document.body.classList.remove(className);
+  });
+};
+
+
+silex.view.Menu.prototype.toggleSubMenu = function(classNameToToggle) {
+  silex.view.Menu.SUB_MENU_CLASSES.forEach(className => {
+    if(classNameToToggle === className) {
+      document.body.classList.toggle(className);
+    }
+    else {
+      document.body.classList.remove(className);
+    }
+  });
+}
+
+
 /**
  * handles click events
  * calls onStatus to notify the controller
  * @param {string} type
+ * @param {?string=} opt_componentName the component type if it is a component
  */
-silex.view.Menu.prototype.onMenuEvent = function(type) {
+silex.view.Menu.prototype.onMenuEvent = function(type, opt_componentName) {
+  let added = null;
   switch (type) {
-    case 'file.close':
+    case 'show.pages':
+      this.toggleSubMenu('page-tool-visible');
+      break;
+    case 'show.about.menu':
+      this.toggleSubMenu('about-menu-visible');
+      break;
+    case 'show.file.menu':
+      this.toggleSubMenu('file-menu-visible');
+      break;
+    case 'show.code.menu':
+      this.toggleSubMenu('code-menu-visible');
+      break;
+    case 'show.add.menu':
+      this.toggleSubMenu('add-menu-visible');
+      break;
     case 'file.new':
       this.controller.fileMenuController.newFile();
       break;
@@ -221,14 +306,14 @@ silex.view.Menu.prototype.onMenuEvent = function(type) {
       this.controller.fileMenuController.save();
       break;
     case 'file.publish.settings':
-      this.controller.fileMenuController.view.settingsDialog.openDialog();
+      this.controller.fileMenuController.view.settingsDialog.open();
       this.controller.fileMenuController.view.workspace.redraw(this.controller.fileMenuController.view);
       break;
     case 'file.publish':
       this.controller.fileMenuController.publish();
       break;
     case 'file.save':
-      this.controller.fileMenuController.save(this.controller.fileMenuController.model.file.getUrl());
+      this.controller.fileMenuController.save(this.controller.fileMenuController.model.file.getFileInfo());
       break;
     case 'file.open':
       this.controller.fileMenuController.openFile();
@@ -240,7 +325,7 @@ silex.view.Menu.prototype.onMenuEvent = function(type) {
       this.controller.viewMenuController.previewResponsize();
       break;
     case 'view.open.fileExplorer':
-      this.controller.viewMenuController.view.fileExplorer.openDialog(function(url) {}, function(error) {});
+      this.controller.viewMenuController.view.fileExplorer.openFile();
       break;
     case 'view.open.cssEditor':
       this.controller.viewMenuController.openCssEditor();
@@ -257,20 +342,33 @@ silex.view.Menu.prototype.onMenuEvent = function(type) {
     case 'tools.advanced.activate':
       this.controller.toolMenuController.toggleAdvanced();
       break;
+    case 'tools.mobile.mode':
+      this.controller.toolMenuController.toggleMobileMode();
+      break;
+    case 'tools.mobile.mode.on':
+      this.controller.toolMenuController.setMobileMode(true);
+      break;
+    case 'tools.mobile.mode.off':
+      this.controller.toolMenuController.setMobileMode(false);
+      break;
     case 'insert.page':
       this.controller.insertMenuController.createPage();
       break;
     case 'insert.text':
-      this.controller.insertMenuController.addElement(silex.model.Element.TYPE_TEXT);
+      added = this.controller.insertMenuController.addElement(silex.model.Element.TYPE_TEXT, opt_componentName);
+      break;
+    case 'insert.section':
+      added = this.controller.insertMenuController.addElement(silex.model.Element.TYPE_SECTION, opt_componentName);
       break;
     case 'insert.html':
-      this.controller.insertMenuController.addElement(silex.model.Element.TYPE_HTML);
+      added = this.controller.insertMenuController.addElement(silex.model.Element.TYPE_HTML, opt_componentName);
       break;
     case 'insert.image':
+      // FIXME: add opt_componentName param to browseAndAddImage
       this.controller.insertMenuController.browseAndAddImage();
       break;
     case 'insert.container':
-      this.controller.insertMenuController.addElement(silex.model.Element.TYPE_CONTAINER);
+      added = this.controller.insertMenuController.addElement(silex.model.Element.TYPE_CONTAINER, opt_componentName);
       break;
     case 'edit.delete.selection':
       // delete component
@@ -307,8 +405,11 @@ silex.view.Menu.prototype.onMenuEvent = function(type) {
       this.controller.pageToolController.renamePage();
       break;
     // Help menu
-    case 'help.about':
-      window.open(silex.Config.ABOUT_SILEX);
+    case 'help.wiki':
+      window.open(silex.Config.WIKI_SILEX);
+      break;
+    case 'help.crowdfunding':
+      window.open(silex.Config.CROWD_FUNDING);
       break;
     case 'help.issues':
       window.open(silex.Config.ISSUES_SILEX);
@@ -325,8 +426,8 @@ silex.view.Menu.prototype.onMenuEvent = function(type) {
     case 'help.newsLetter':
       window.open(silex.Config.SUBSCRIBE_SILEX_LABS);
       break;
-    case 'help.googlPlus':
-      window.open(silex.Config.SOCIAL_GPLUS);
+    case 'help.diaspora':
+      window.open(silex.Config.SOCIAL_DIASPORA);
       break;
     case 'help.twitter':
       window.open(silex.Config.SOCIAL_TWITTER);
@@ -340,15 +441,12 @@ silex.view.Menu.prototype.onMenuEvent = function(type) {
     case 'help.contribute':
       window.open(silex.Config.CONTRIBUTE);
       break;
-    case 'help.contributors':
-      window.open(silex.Config.CONTRIBUTORS);
-      break;
-    case 'tools.pixlr.express':
-      this.controller.toolMenuController.pixlrExpress();
-      break;
-    case 'tools.pixlr.edit':
-      this.controller.toolMenuController.pixlrEdit();
-      break;
+    // case 'tools.pixlr.express':
+    //   this.controller.toolMenuController.pixlrExpress();
+    //   break;
+    // case 'tools.pixlr.edit':
+    //   this.controller.toolMenuController.pixlrEdit();
+    //   break;
     default:
       console.warn('menu type not found', type);
   }

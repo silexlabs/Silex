@@ -1,3 +1,4 @@
+
 /**
  * @preserve
  * Silex, live web creation
@@ -28,6 +29,7 @@ goog.require('goog.dom.classlist');
 goog.require('goog.events');
 goog.require('goog.style');
 goog.require('silex.Config');
+goog.require('silex.controller.ContextMenuController');
 goog.require('silex.controller.CssEditorController');
 goog.require('silex.controller.EditMenuController');
 goog.require('silex.controller.FileMenuController');
@@ -41,11 +43,9 @@ goog.require('silex.controller.StageController');
 goog.require('silex.controller.TextEditorController');
 goog.require('silex.controller.ToolMenuController');
 goog.require('silex.controller.ViewMenuController');
-goog.require('silex.controller.ContextMenuController');
-goog.require('silex.model.Property');
-goog.require('silex.model.Element');
 goog.require('silex.model.Body');
 goog.require('silex.model.Element');
+goog.require('silex.model.Component');
 goog.require('silex.model.File');
 goog.require('silex.model.Head');
 goog.require('silex.model.Page');
@@ -55,16 +55,15 @@ goog.require('silex.types.Controller');
 goog.require('silex.types.Model');
 goog.require('silex.types.View');
 goog.require('silex.utils.Dom');
-goog.require('silex.utils.DomCleaner');
-goog.require('silex.utils.Polyfills');
-goog.require('silex.utils.BackwardCompat');
 goog.require('silex.utils.InvalidationManager');
-goog.require('silex.view.Menu');
+goog.require('silex.utils.Polyfills');
+goog.require('silex.utils.Style');
 goog.require('silex.view.ContextMenu');
+goog.require('silex.view.BreadCrumbs');
+goog.require('silex.view.Menu');
 goog.require('silex.view.PageTool');
 goog.require('silex.view.PropertyTool');
 goog.require('silex.view.Splitter');
-goog.require('silex.view.TipOfTheDay');
 goog.require('silex.view.Stage');
 goog.require('silex.view.Workspace');
 goog.require('silex.view.dialog.CssEditor');
@@ -72,8 +71,28 @@ goog.require('silex.view.dialog.FileExplorer');
 goog.require('silex.view.dialog.HtmlEditor');
 goog.require('silex.view.dialog.JsEditor');
 goog.require('silex.view.dialog.SettingsDialog');
+goog.require('silex.view.dialog.Dashboard');
 goog.require('silex.view.dialog.TextEditor');
 
+goog.require('silex.view.ModalDialog');
+
+goog.require('silex.model.data.SilexId');
+goog.require('silex.model.data.StyleName');
+goog.require('silex.model.data.CssRule');
+goog.require('silex.model.data.ComponentData');
+goog.require('silex.model.data.StyleData');
+goog.require('silex.model.data.ProdotypeData');
+goog.require('silex.model.data.SilexData');
+goog.require('silex.model.data.JsonData');
+goog.require('silex.model.data.ProdotypeTypes');
+goog.require('silex.model.data.VisibilityData');
+goog.require('silex.model.data.PseudoClassData');
+goog.require('silex.model.data.Visibility');
+goog.require('silex.model.data.PseudoClass');
+goog.require('silex.model.data.TagName');
+goog.require('silex.model.data.CssPropertyName');
+goog.require('silex.model.data.CssPropertyValue');
+goog.require('silex.model.data.TemplateName');
 
 
 /**
@@ -86,16 +105,12 @@ class App {
   /**
    * Entry point of Silex client application
    * create all views and models and controllers
-   * @constructor
    *
    */
   constructor() {
 
     // **
     // general initializations
-    // **
-    // tracker / qos
-    silex.service.Tracker.getInstance().trackAction('app-events', 'start', null, 2);
 
     // polyfills
     silex.utils.Polyfills.init();
@@ -134,26 +149,51 @@ class App {
     this.view.stage.buildUi();
     this.view.menu.buildUi();
     this.view.contextMenu.buildUi();
+    this.view.breadCrumbs.buildUi();
     this.view.pageTool.buildUi();
-    this.view.htmlEditor.buildUi();
-    this.view.cssEditor.buildUi();
-    this.view.jsEditor.buildUi();
-    this.view.textEditor.buildUi();
-    this.view.settingsDialog.buildUi();
+    this.view.dashboard.buildUi();
     this.view.propertyTool.buildUi();
 
 
     // warning when IE
     if (navigator.appName === 'Microsoft Internet Explorer' || (navigator.appName === 'Netscape' && navigator.userAgent.indexOf('Trident') >= 0)) {
-      silex.utils.Notification.alert('Your browser is not supported yet.<br>Considere using chrome or firefox instead of Internet Explorer.',
-          goog.bind(function() {}, this));
+      silex.utils.Notification.alert(
+        'Your browser is not supported yet.<br><br>Considere using chrome or firefox instead of Internet Explorer.',
+        () => {});
+    }
+
+    if (!goog.DEBUG) {
+      // warning small screen size
+      // height must be enough to view the settings pannel
+      // width is just arbitrary
+      const winSizeWidth = document.documentElement.clientWidth;
+      const winSizeHeight = document.documentElement.clientHeight;
+      const minWinSizeWidth = 950;
+      const minWinSizeHeight = 630;
+      if (winSizeHeight < minWinSizeHeight || winSizeWidth < minWinSizeWidth) {
+        silex.utils.Notification.alert(
+          `Your window is very small (${winSizeWidth}x${winSizeHeight}) and Silex may not display correctly.<br><br>Considere maximizing the window or use a bigger screen to use Silex at its best. A window size of ${minWinSizeWidth}x${minWinSizeHeight} is considered to be a acceptable.`,
+          () => {});
+      }
     }
 
     // draw the workspace once
     this.view.workspace.redraw(this.view);
 
     // application start, open a new empty file
-    this.controller.fileMenuController.newFile();
+    this.controller.fileMenuController.newFile(
+      () => {
+        this.view.workspace.loadingDone();
+        this.initDebug();
+      },
+      () => {
+        this.view.workspace.loadingDone();
+        this.initDebug();
+      }
+    );
+  }
+
+  initDebug() {
     if (goog.DEBUG) {
       window['model'] = this.model;
       window['view'] = this.view;
@@ -181,14 +221,19 @@ class App {
     var stage = new silex.view.Stage(stageElement, this.model, this.controller);
 
     // Menu
-    var menuElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-menu'));
+     var menuElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-menu'));
     /** @type {silex.view.Menu} */
     var menu = new silex.view.Menu(menuElement, this.model, this.controller);
 
     // context menu
-    var contextMenuElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-context-menu'));
+    var contextMenuElement = /** @type {!Element} */ (goog.dom.getElementByClass(silex.view.ContextMenu.CLASS_NAME));
     /** @type {silex.view.ContextMenu} */
     var contextMenu = new silex.view.ContextMenu(contextMenuElement, this.model, this.controller);
+
+    // bread crumbs
+    var breadCrumbsElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-bread-crumbs'));
+    /** @type {silex.view.BreadCrumbs} */
+    var breadCrumbs = new silex.view.BreadCrumbs(breadCrumbsElement, this.model, this.controller);
 
     // PageTool
     var pageToolElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-page-tool'));
@@ -197,40 +242,45 @@ class App {
 
     // HtmlEditor
     var htmlEditorElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-html-editor'));
-    /** @type {silex.view.dialog.HtmlEditor} */
-    var htmlEditor = new silex.view.dialog.HtmlEditor(htmlEditorElement, this.model, this.controller);
+    /** @type {HtmlEditor} */
+    var htmlEditor = new HtmlEditor(htmlEditorElement, this.model, this.controller);
 
     // CssEditor
     var cssEditorElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-css-editor'));
-    /** @type {silex.view.dialog.CssEditor} */
-    var cssEditor = new silex.view.dialog.CssEditor(cssEditorElement, this.model, this.controller);
+    /** @type {CssEditor} */
+    var cssEditor = new CssEditor(cssEditorElement, this.model, this.controller);
 
     // JsEditor
     var jsEditorElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-js-editor'));
-    /** @type {silex.view.dialog.JsEditor} */
-    var jsEditor = new silex.view.dialog.JsEditor(jsEditorElement, this.model, this.controller);
+    /** @type {JsEditor} */
+    var jsEditor = new JsEditor(jsEditorElement, this.model, this.controller);
 
     // TextEditor
     var textEditorElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-text-editor'));
-    /** @type {silex.view.dialog.TextEditor} */
-    var textEditor = new silex.view.dialog.TextEditor(textEditorElement, this.model, this.controller);
+    /** @type {TextEditor} */
+    var textEditor = new TextEditor(textEditorElement, this.model, this.controller);
 
     // SettingsDialog
     var settingsDialogElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-settings-dialog'));
-    /** @type {silex.view.dialog.SettingsDialog} */
-    var settingsDialog = new silex.view.dialog.SettingsDialog(settingsDialogElement, this.model, this.controller);
+    /** @type {SettingsDialog} */
+    var settingsDialog = new SettingsDialog(settingsDialogElement, this.model, this.controller);
 
-    // SettingsDialog
+    // Dashboard
+    var dashboardElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-dashboard'));
+    /** @type {Dashboard} */
+    var dashboard = new Dashboard(dashboardElement, this.model, this.controller);
+
+    // FileExplorer
     var fileExplorerElement = /** @type {!Element} */ (document.getElementById('silex-file-explorer'));
-    /** @type {silex.view.dialog.FileExplorer} */
-    var fileExplorer = new silex.view.dialog.FileExplorer(fileExplorerElement, this.model, this.controller);
+    /** @type {FileExplorer} */
+    var fileExplorer = new FileExplorer(fileExplorerElement, this.model, this.controller);
 
     // PropertyTool
     var propertyToolElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-property-tool'));
     /** @type {silex.view.PropertyTool} */
     var propertyTool = new silex.view.PropertyTool(propertyToolElement, this.model, this.controller);
 
-    // PropertyTool
+    // workspace
     var workspaceElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-workspace'));
     /** @type {silex.view.Workspace} */
     var workspace = new silex.view.Workspace(workspaceElement, this.model, this.controller);
@@ -240,18 +290,15 @@ class App {
     /** @type {silex.view.Splitter} */
     var propSplitter = new silex.view.Splitter(propSplitterElement, this.model, this.controller, () => workspace.resizeProperties());
     propSplitter.addLeft(contextMenuElement);
+    propSplitter.addLeft(breadCrumbsElement);
     propSplitter.addLeft(stageElement);
     propSplitter.addRight(propertyToolElement);
-
-    // tip of the day
-    var tipOfTheDayElement = /** @type {!Element} */ (goog.dom.getElementByClass('tip-of-the-day'));
-    /** @type {silex.view.TipOfTheDay} */
-    var tipOfTheDay = new silex.view.TipOfTheDay(tipOfTheDayElement, this.model, this.controller);
 
     // init the view class which references all the views
     this.view.init(
         menu,
         contextMenu,
+        breadCrumbs,
         stage,
         pageTool,
         propertyTool,
@@ -261,6 +308,7 @@ class App {
         textEditor,
         fileExplorer,
         settingsDialog,
+        dashboard,
         propSplitter,
         workspace
     );
@@ -279,6 +327,7 @@ class App {
         new silex.model.Body(this.model, this.view),
         new silex.model.Page(this.model, this.view),
         new silex.model.Element(this.model, this.view),
+        new Component(this.model, this.view),
         new silex.model.Property(this.model, this.view)
     );
   }
@@ -305,7 +354,7 @@ class App {
         new silex.controller.TextEditorController(this.model, this.view)
     );
   }
-}
+};
 
 
 // Ensures the symbol will be visible after compiler renaming

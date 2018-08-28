@@ -31,8 +31,13 @@ goog.require('silex.service.SilexTasks');
 silex.controller.EditMenuController = function(model, view) {
   // call super
   silex.controller.ControllerBase.call(this, model, view);
-  // init clipboard
-  this.clipboard = [];
+
+
+  /**
+   * invalidation mechanism
+   * @type {InvalidationManager}
+   */
+  this.undoredoInvalidationManager = new InvalidationManager(1000);
 };
 
 // inherit from silex.controller.ControllerBase
@@ -40,30 +45,22 @@ goog.inherits(silex.controller.EditMenuController, silex.controller.ControllerBa
 
 
 /**
- * storage for the clipboard
- * @type Array.<silex.types.ClipboardItem>
- */
-silex.controller.EditMenuController.prototype.clipboard = null;
-
-
-/**
- * storage for the clipboard
- * @type {?Element}
- */
-//silex.controller.EditMenuController.prototype.clipboardParent = null;
-
-
-/**
  * undo the last action
  */
 silex.controller.EditMenuController.prototype.undo = function() {
-  if (silex.controller.ControllerBase.getStatePending === 0 &&
-    silex.controller.ControllerBase.undoHistory.length > 0) {
-    var state = this.getState();
-    silex.controller.ControllerBase.redoHistory.push(state);
-    var prevState = silex.controller.ControllerBase.undoHistory.pop();
-    this.restoreState(prevState);
-  }
+  this.model.body.setSelection([]);
+  this.undoredoInvalidationManager.callWhenReady(() => {
+    if (silex.controller.ControllerBase.getStatePending === 0 &&
+      silex.controller.ControllerBase.undoHistory.length > 0) {
+      const state = this.getState();
+      silex.controller.ControllerBase.redoHistory.push(state);
+      const prevState = silex.controller.ControllerBase.undoHistory.pop();
+      this.restoreState(prevState);
+    }
+    else {
+      requestAnimationFrame(() => this.undo());
+    }
+  });
 };
 
 
@@ -71,12 +68,15 @@ silex.controller.EditMenuController.prototype.undo = function() {
  * redo the last action
  */
 silex.controller.EditMenuController.prototype.redo = function() {
-  if (silex.controller.ControllerBase.redoHistory.length > 0) {
-    var state = this.getState();
-    silex.controller.ControllerBase.undoHistory.push(state);
-    var prevState = silex.controller.ControllerBase.redoHistory.pop();
-    this.restoreState(prevState);
-  }
+  this.model.body.setSelection([]);
+  this.undoredoInvalidationManager.callWhenReady(() => {
+    if (silex.controller.ControllerBase.redoHistory.length > 0) {
+      const state = this.getState();
+      silex.controller.ControllerBase.undoHistory.push(state);
+      const prevState = silex.controller.ControllerBase.redoHistory.pop();
+      this.restoreState(prevState);
+    }
+  });
 };
 
 
@@ -85,55 +85,68 @@ silex.controller.EditMenuController.prototype.redo = function() {
  */
 silex.controller.EditMenuController.prototype.copySelection = function() {
   this.tracker.trackAction('controller-events', 'info', 'copy', 0);
-  // default is selected element
-  var elements = this.model.body.getSelection();
+  const body = this.model.body.getBodyElement();
+  // select the sections instead of their container content
+  const elements =
+    this.model.body.getSelection()
+    .map(element => {
+      if(this.model.element.isSectionContent(element)) {
+        return element.parentNode;
+      }
+      else {
+        return element;
+      }
+    })
+    .filter(element => {
+      // not the body
+      return body !== element &&
+        // not an element which has a selected parent
+        // FIXME: closest is not yet defined on Element in google closure, remove the array access ['closest'] when it is
+        element.parentElement['closest']('.' + silex.model.Element.SELECTED_CLASS_NAME) == null;
+    })
+    // clone the elements
+    .map(element => {
+      return element.cloneNode(true);
+    });
   if (elements.length > 0) {
     // reset clipboard
     silex.controller.ControllerBase.clipboard = [];
     // add each selected element to the clipboard
     goog.array.forEach(elements, function(element) {
-      if (this.model.body.getBodyElement() !== element) {
-        // disable editable
-        this.model.body.setEditable(element, false);
-        // copy the element and its children
-        silex.controller.ControllerBase.clipboard.push(this.recursiveCopy(element));
-        // re-enable editable
-        this.model.body.setEditable(element, true);
-        // update the views
-        this.model.body.setSelection(this.model.body.getSelection());
-      }
-      else {
-        console.error('could not copy this element (', element, ') because it is the stage element');
-      }
+      // copy the element and its children
+      silex.controller.ControllerBase.clipboard.push(this.recursiveCopy(element));
     }, this);
+    // update the views
+    this.model.body.setSelection(this.model.body.getSelection());
   }
 };
 
 
-
 /**
- * make a copy of a Silex element and its sub-elements (for containers)
+ * make a recursive copy of an element styles/mobileStyle/componentData
+ * the element and its children are already clones of the selection
+ * this is needed to "freez" elements properties
  * @param {Element} element
+ * return {silex.types.ClipboardItem}
  */
 silex.controller.EditMenuController.prototype.recursiveCopy = function(element) {
   // duplicate the node
   var res = {
-    element: element.cloneNode(true),
-    style: this.model.property.getStyleObject(element),
-    children: []
+    element: element,
+    style: this.model.property.getStyle(element, false),
+    mobileStyle: this.model.property.getStyle(element, true),
+    componentData: this.model.property.getElementComponentData(element),
+    children: [],
   };
   // case of a container, handle its children
   if (this.model.element.getType(res.element) === silex.model.Element.TYPE_CONTAINER) {
-    let toBeRemoved = [];
-    let len = res.element.childNodes.length;
+    const len = res.element.childNodes.length;
     for (let idx = 0; idx < len; idx++) {
-      let el = res.element.childNodes[idx];
+      const el = /** @type {Element} */ (res.element.childNodes[idx]);
       if (el.nodeType === 1 && this.model.element.getType(el) !== null) {
         res.children.push(this.recursiveCopy(el));
-        toBeRemoved.push(el);
       }
     }
-    toBeRemoved.forEach((el) => res.element.removeChild(el));
   }
   return res;
 };
@@ -145,61 +158,55 @@ silex.controller.EditMenuController.prototype.recursiveCopy = function(element) 
 silex.controller.EditMenuController.prototype.pasteSelection = function() {
   this.tracker.trackAction('controller-events', 'info', 'paste', 0);
   // default is selected element
-  if (silex.controller.ControllerBase.clipboard) {
+  if (silex.controller.ControllerBase.clipboard && silex.controller.ControllerBase.clipboard.length > 0) {
     // undo checkpoint
     this.undoCheckPoint();
-    // find the container: original container, main background container or the stage
-    var container;
-    container = goog.dom.getElementByClass(silex.view.Stage.BACKGROUND_CLASS_NAME, this.model.body.getBodyElement());
-    if (!container) {
-      container = this.model.body.getBodyElement();
-    }
     // take the scroll into account (drop at (100, 100) from top left corner of the window, not the stage)
-    var doc = this.model.file.getContentDocument();
-    var elements = silex.controller.ControllerBase.clipboard.map(function(item) {return item.element;});
-    var selection = [];
-    // duplicate and add to the container
-    goog.array.forEach(silex.controller.ControllerBase.clipboard, function(clipboardItem) {
+    const doc = this.model.file.getContentDocument();
+    let offset = 0;
+    // add to the container
+    const selection = silex.controller.ControllerBase.clipboard.map(clipboardItem => {
       var element = this.recursivePaste(clipboardItem);
-      // add to the selection
-      selection.push(element);
       // reset editable option
       this.doAddElement(element);
       // add to stage and set the "silex-just-added" css class
-      this.model.element.addElement(/** @type {Element} */ (container), element);
-    }, this);
-    // apply the offset to the elements, according to the scroll position
-    var offsetX = 100 + this.view.stage.getScrollX();
-    var offsetY = 100 + this.view.stage.getScrollY();
-    var bb = this.model.property.getBoundingBox(selection);
-    this.view.stage.followElementPosition(
-      selection,
-      offsetX - bb.left,
-      offsetY - bb.top
-    );
-    // reset selection
+      this.model.element.addElementDefaultPosition(element, offset);
+      offset += 20;
+      // this is what will be added to selection
+      return element;
+    });
+    // select the new elements
     this.model.body.setSelection(selection);
+    // copy again so that we can paste several times (elements will be duplicated again)
+    this.copySelection();
   }
 };
 
 
 /**
- * paste a Silex element and its sub-elements (for containers)
+ * add the stored properties of the element and its children to the dom
+ * also reset the ID of the element and its children
+ * the elements have already been added to stage
  * @param {silex.types.ClipboardItem} clipboardItem
  * @return {Element}
  */
 silex.controller.EditMenuController.prototype.recursivePaste = function(clipboardItem) {
-  var element = clipboardItem.element.cloneNode(true);
+  var element = clipboardItem.element;
   // reset the ID
   this.model.property.initSilexId(element);
-  // keep the original style
-  this.model.property.setStyle(element, clipboardItem.style);
   // add its children
   goog.array.forEach(clipboardItem.children, function(childItem) {
     var childElement = this.recursivePaste(childItem);
-    // add to stage
-    this.model.element.addElement(element, childElement);
-    }, this);
+  }, this);
+  // init component props
+  if(clipboardItem.componentData) {
+    this.model.property.setElementComponentData(element, clipboardItem.componentData);
+    // re-render components (makes inner ID change)
+    this.model.component.render(element);
+  }
+  // keep the original style
+  this.model.property.setStyle(element, clipboardItem.style, false);
+  this.model.property.setStyle(element, clipboardItem.mobileStyle, true);
 
   return element;
 };
@@ -235,7 +242,12 @@ silex.controller.EditMenuController.prototype.editElement = function(opt_element
   this.undoCheckPoint();
   // default is selected element
   var element = opt_element || this.model.body.getSelection()[0];
-  switch (this.model.element.getType(element)) {
+  // open the params tab for the components
+  // or the editor for the elements
+  if(this.model.component.isComponent(element)) {
+    this.view.propertyTool.openParamsTab();
+  }
+  else switch (this.model.element.getType(element)) {
     case silex.model.Element.TYPE_TEXT:
       var bgColor = silex.utils.Style.computeBgColor(element, this.model.file.getContentWindow());
       if (!bgColor) {
@@ -243,7 +255,7 @@ silex.controller.EditMenuController.prototype.editElement = function(opt_element
         bgColor = [255, 255, 255, 255];
       }
       // open the text editor with the same bg color as the element
-      this.view.textEditor.openEditor();
+      this.view.textEditor.open();
       this.view.textEditor.setValue(this.model.element.getInnerHtml(element));
       this.view.textEditor.setElementClassNames(element.className);
       this.view.textEditor.setBackgroundColor(goog.color.rgbToHex(
@@ -253,68 +265,22 @@ silex.controller.EditMenuController.prototype.editElement = function(opt_element
           ));
       break;
     case silex.model.Element.TYPE_HTML:
-      this.view.htmlEditor.openEditor();
-      this.view.htmlEditor.setValue(this.model.element.getInnerHtml(element));
+      this.view.htmlEditor.open();
+      this.view.htmlEditor.setSelection([element]);
       break;
     case silex.model.Element.TYPE_IMAGE:
-      this.view.fileExplorer.openDialog(
-          goog.bind(function(url) {
-            // absolute url only on stage
-            var baseUrl = silex.utils.Url.getBaseUrl();
-            url = silex.utils.Url.getAbsolutePath(url, baseUrl);
-            // load the image
-            this.model.element.setImageUrl(element, url);
-          }, this),
-          { 'mimetypes': ['image/jpeg', 'image/png', 'image/gif'] },
-          goog.bind(function(error) {
-            silex.utils.Notification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''));
-          }, this)
-      );
+      this.view.fileExplorer.openFile(FileExplorer.IMAGE_EXTENSIONS)
+      .then(blob => {
+        if(blob) {
+          // load the image
+          this.model.element.setImageUrl(element, blob.url);
+        }
+      })
+      .catch(error => {
+        silex.utils.Notification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''));
+      });
       break;
   }
-};
-
-
-/**
- * get the previous element in the DOM, which is a Silex element
- * @see   {silex.model.element}
- * @param {Element} element
- * @return {?Element}
- */
-silex.controller.EditMenuController.prototype.getPreviousElement = function(element) {
-  let len = element.parentNode.childNodes.length;
-  let res = null;
-  for (let idx = 0; idx < len; idx++) {
-    let el = element.parentNode.childNodes[idx];
-    if (el.nodeType === 1 && this.model.element.getType(el) !== null) {
-      if (el === element) {
-        return res;
-      }
-      res = el;
-    }
-  }
-  return null;
-};
-
-
-/**
- * get the previous element in the DOM, which is a Silex element
- * @see   {silex.model.element}
- * @param {Element} element
- * @return {?Element}
- */
-silex.controller.EditMenuController.prototype.getNextElement = function(element) {
-  let prev = null;
-  for (let idx = element.parentNode.childNodes.length - 1; idx >= 0; idx--) {
-    let el = element.parentNode.childNodes[idx];
-    if (el.nodeType === 1 && this.model.element.getType(el) !== null) {
-      if (el === element) {
-        return prev;
-      }
-      prev = el;
-    }
-  }
-  return null;
 };
 
 
@@ -350,7 +316,8 @@ silex.controller.EditMenuController.prototype.move = function(direction) {
   });
   // move up
   elements.forEach((element) => {
-    let reverse = this.model.element.getStyle(element, 'position', true) !== 'absolute';
+    let stylesObj = this.model.file.getContentWindow().getComputedStyle(element);
+    let reverse = stylesObj['position'] !== 'absolute';
     if(reverse) {
       switch(direction) {
         case silex.model.DomDirection.UP:

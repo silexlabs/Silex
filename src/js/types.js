@@ -20,6 +20,7 @@ goog.provide('silex.types.Controller');
 goog.provide('silex.types.Model');
 goog.provide('silex.types.View');
 
+goog.require('silex.controller.ContextMenuController');
 goog.require('silex.controller.CssEditorController');
 goog.require('silex.controller.EditMenuController');
 goog.require('silex.controller.FileMenuController');
@@ -33,7 +34,6 @@ goog.require('silex.controller.StageController');
 goog.require('silex.controller.TextEditorController');
 goog.require('silex.controller.ToolMenuController');
 goog.require('silex.controller.ViewMenuController');
-goog.require('silex.controller.ContextMenuController');
 
 
 
@@ -67,9 +67,10 @@ silex.types.Model = function() {
  * @param {silex.model.Body} body
  * @param {silex.model.Page} page
  * @param {silex.model.Element} element
+ * @param {Component} component
  * @param {silex.model.Property} property
  */
-silex.types.Model.prototype.init = function(file, head, body, page, element, property) {
+silex.types.Model.prototype.init = function(file, head, body, page, element, component, property) {
   /**
    * @type {silex.model.File}
    */
@@ -90,6 +91,10 @@ silex.types.Model.prototype.init = function(file, head, body, page, element, pro
    * @type {silex.model.Element}
    */
   this.element = element;
+  /**
+   * @type {Component}
+   */
+  this.component = component;
   /**
    * @type {silex.model.Property}
    */
@@ -213,21 +218,24 @@ silex.types.View = function() {
  * store references
  * @param {silex.view.Menu} menu
  * @param {silex.view.ContextMenu} contextMenu
+ * @param {silex.view.BreadCrumbs} breadCrumbs
  * @param {silex.view.Stage} stage
  * @param {silex.view.PageTool} pageTool
  * @param {silex.view.PropertyTool} propertyTool
- * @param {silex.view.dialog.HtmlEditor} htmlEditor
- * @param {silex.view.dialog.CssEditor} cssEditor
- * @param {silex.view.dialog.JsEditor} jsEditor
- * @param {silex.view.dialog.TextEditor} textEditor
- * @param {silex.view.dialog.FileExplorer} fileExplorer
- * @param {silex.view.dialog.SettingsDialog} settingsDialog
+ * @param {HtmlEditor} htmlEditor
+ * @param {CssEditor} cssEditor
+ * @param {JsEditor} jsEditor
+ * @param {TextEditor} textEditor
+ * @param {FileExplorer} fileExplorer
+ * @param {SettingsDialog} settingsDialog
+ * @param {Dashboard} dashboard
  * @param {silex.view.Splitter} propSplitter
  * @param {silex.view.Workspace} workspace
  */
 silex.types.View.prototype.init = function(
     menu,
     contextMenu,
+    breadCrumbs,
     stage,
     pageTool,
     propertyTool,
@@ -237,6 +245,7 @@ silex.types.View.prototype.init = function(
     textEditor,
     fileExplorer,
     settingsDialog,
+    dashboard,
     propSplitter,
     workspace) {
   /**
@@ -247,6 +256,10 @@ silex.types.View.prototype.init = function(
    * @type {silex.view.ContextMenu}
    */
   this.contextMenu = contextMenu;
+  /**
+   * @type {silex.view.BreadCrumbs}
+   */
+  this.breadCrumbs = breadCrumbs;
   /**
    * @type {silex.view.Stage}
    */
@@ -260,29 +273,33 @@ silex.types.View.prototype.init = function(
    */
   this.propertyTool = propertyTool;
   /**
-   * @type {silex.view.dialog.HtmlEditor}
+   * @type {HtmlEditor}
    */
   this.htmlEditor = htmlEditor;
   /**
-   * @type {silex.view.dialog.CssEditor}
+   * @type {CssEditor}
    */
   this.cssEditor = cssEditor;
   /**
-   * @type {silex.view.dialog.JsEditor}
+   * @type {JsEditor}
    */
   this.jsEditor = jsEditor;
   /**
-   * @type {silex.view.dialog.TextEditor}
+   * @type {TextEditor}
    */
   this.textEditor = textEditor;
   /**
-   * @type {silex.view.dialog.FileExplorer}
+   * @type {FileExplorer}
    */
   this.fileExplorer = fileExplorer;
   /**
-   * @type {silex.view.dialog.SettingsDialog}
+   * @type {SettingsDialog}
    */
   this.settingsDialog = settingsDialog;
+  /**
+   * @type {Dashboard}
+   */
+  this.dashboard = dashboard;
   /**
    * @type {silex.view.Splitter}
    */

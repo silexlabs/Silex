@@ -1,0 +1,18 @@
+---
+name: Autosize Section
+description: 'This is a section which automatically takes the size of its content.'
+doc:
+category: Dynamic list
+tags:
+- ui
+- ux
+- website
+- dynamic data
+isPrivate: true
+baseElement: section
+faIconClass: fa-arrows-v
+props:
+- name: margin
+  type: number
+  description: Margin at the bottom of the last element.
+  default: 20

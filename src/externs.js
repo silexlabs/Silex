@@ -1,4 +1,4 @@
-/**
+/**inst
  * Silex, live web creation
  * http://projects.silexlabs.org/?/silex/
  *
@@ -16,13 +16,112 @@
 
 
 /**
+ * Parse and consume source maps. By Mozilla
+ * @see https://github.com/mozilla/source-map/
+ * @type {Object.<*>}
+ */
+var sourceMap = {};
+
+
+/**
+ * Prodotype
+ * @see https://github.com/lexoyo/Prodotype
+ * @constructor
+ */
+function Prodotype(container, rootPath) {}
+
+
+/**
+ * @typedef {{
+ *          faIconClass:?string,
+ *          initialCss:?Array,
+ *          initialCssContentContainer:?Array,
+ *          initialCssClass:?Array,
+ *          baseElement:?string,
+ *          name:?string,
+ *          category:?string,
+ *          isPrivate:?boolean
+ *          }}
+ */
+var ProdotypeCompDef;
+
+
+/**
+ * @type {ProdotypeCompDef}
+ */
+Prodotype.prototype.componentsDef;
+
+
+/**
+ * @param {string} templateName
+ * @param {Object.<*>} data
+ */
+Prodotype.prototype.decorate = function(templateName, data) {};
+
+
+/**
+ * @param {function(?Object)} cbk
+ */
+Prodotype.prototype.ready = function(cbk) {};
+
+
+/**
+ * @param {?Object.<*>=} data
+ * @param {?Array.<{name:string, displayName:string, templateName:string}>=} list
+ * @param {?string=} templateName
+ * @param {?Object.<function()>=} events
+ */
+Prodotype.prototype.edit = function(data, list, templateName, events) {};
+
+
+/**
+ *
+ */
+Prodotype.prototype.reset = function() {};
+
+
+/**
+ * @return {string}
+ */
+Prodotype.prototype.createName = function(type, list) {};
+
+
+/**
+ * @param {Element} container the element containing the dependencies (scripts and style sheets)
+ * @param {Array.<{templateName:string}>} componentNames the list of all the component names
+ * @return {Array.<Element>} the elements to be added to the site
+ */
+Prodotype.prototype.getMissingDependencies = function(container, componentNames) {};
+
+
+/**
+ * @param {Array.<Element>} dependencyElements depencies, i.e. scripts and style sheets
+ * @param {Array.<{templateName:string}>} componentNames the list of all the component names
+ */
+Prodotype.prototype.getUnusedDependencies = function(dependencyElements, componentNames) {};
+
+
+/**
+ * @param {string} rawSourceMap
+ * @constructor
+ */
+sourceMap.SourceMapConsumer = function (rawSourceMap) {}
+
+
+/**
+ * @param {{line:*, column:*, bias:*}} generatedPosition
+ * @return {{source:string, line:number, column:number, name:*}}
+ */
+sourceMap.SourceMapConsumer.prototype.originalPositionFor = function(generatedPosition) {};
+
+/**
  * piwik analytics
  * @constructor
  */
-function Piwik() {};
+function Piwik() {}
 
 /**
- * @type {Array.<string|number>}
+ * @type {Array.<Array.<string|number>>}
  */
 var _paq = [];
 
@@ -39,45 +138,7 @@ Piwik.getAsyncTracker = function() {};
  * @param {?string=} e
  * @param {?number=} f
  */
-Piwik.prototype.trackEvent = function(c, d, e, f) {}
-
-
-
-/**
- * pixlr lib, in /dist/client/libs/pixlr/pixlr.js
- * @param {string} pixlrSendImageUrl
- * @param {string} pixlrCloseWindowUrl
- * @param {?Object=} opt_settings
- * @constructor
- */
-function Pixlr(pixlrSendImageUrl, pixlrCloseWindowUrl, opt_settings) {}
-
-
-/**
- * pixlr lib, in /dist/client/libs/pixlr/pixlr.js
- * @param {string|HTMLElement} image
- * @param {?string=} opt_imageDst
- * @param {?string=} opt_target
- */
-Pixlr.prototype.edit = function(image, opt_imageDst, opt_target) {};
-
-
-/**
- * pixlr lib, in /dist/client/libs/pixlr/pixlr.js
- * @param {string|HTMLElement} image
- * @param {?string=} opt_imageDst
- * @param {?string=} opt_target
- */
-Pixlr.prototype.express = function(image, opt_imageDst, opt_target) {};
-
-
-
-/**
- * pixlr lib, in /dist/client/libs/pixlr/pixlr.js
- * callback for update events
- * @type {?function()}
- */
-Pixlr.prototype.onUpdate = null;
+Piwik.prototype.trackEvent = function(c, d, e, f) {};
 
 
 
@@ -113,119 +174,84 @@ window.jQuery = function(any) {};
 
 /**
  * cloud explorer externs
- * @type {Object.<*>}
- */
-var ce = {};
-
-
-/**
- * cloud explorer externs
- * @type {Object.<*>}
- */
-ce.api = {};
-
-
-
-/**
- * cloud explorer externs
  * @constructor
  */
-ce.api.CloudExplorer = function() {};
+var CloudExplorer = function() {};
 
 
 /**
- * cloud explorer externs
- * @param {string} className
+ * @return {Promise}
  */
-ce.api.CloudExplorer.get = function(className) {};
+CloudExplorer.prototype.getServices = function() {};
 
 
 /**
- * cloud explorer externs
- * TODO: add the real params names and types
- * @param arg1
- * @param arg2
- * @param arg3
- * @param arg4
- * @param arg5
+ * @param {?Array.<string>=} extensions
+ * @return {Promise}
  */
-ce.api.CloudExplorer.prototype.read = function(arg1, arg2, arg3, arg4, arg5) {};
+CloudExplorer.prototype.openFile = function(extensions) {};
 
 
 /**
- * cloud explorer externs
- * TODO: add the real params names and types
- * @param arg1
- * @param arg2
- * @param arg3
- * @param arg4
- * @param arg5
- * @param arg6
+ * @param {?Array.<string>=} extensions
+ * @return {Promise}
  */
-ce.api.CloudExplorer.prototype.write = function(arg1, arg2, arg3, arg4, arg5, arg6) {};
+CloudExplorer.prototype.openFiles = function(extensions) {};
 
 
 /**
- * cloud explorer externs
- * TODO: add the real params names and types
- * @param arg1
- * @param arg2
- * @param arg3
+ * @return {Promise}
  */
-ce.api.CloudExplorer.prototype.pick = function(arg1, arg2, arg3) {};
+CloudExplorer.prototype.openFolder = function() {};
 
 
 /**
- * cloud explorer externs
- * TODO: add the real params names and types
- * @param arg1
- * @param arg2
- * @param arg3
+ * @return {Promise}
  */
-ce.api.CloudExplorer.prototype.requestAuthorize = function(arg1, arg2, arg3) {};
+CloudExplorer.prototype.write = function(data, blob) {};
 
 
 /**
- * cloud explorer externs
- * TODO: add the real params names and types
- * @param arg1
- * @param arg2
- * @param arg3
- * @param arg4
+ * @return {Promise}
  */
-ce.api.CloudExplorer.prototype.exportFile = function(arg1, arg2, arg3, arg4) {};
+CloudExplorer.prototype.read = function(blob) {};
+
+
+/**
+ * @param {string}  defaultFileName
+ * @param {?Array.<string>=} extensions
+ * @return {Promise}
+ */
+CloudExplorer.prototype.saveAs = function(defaultFileName, extensions) {};
+
+
+/**
+ * @typedef {{
+ *   url: string,
+ *   path: string,
+ *   folder: string,
+ *   service: string,
+ *   size: number,
+ *   modified: string,
+ *   name: string,
+ *   isDir: boolean,
+ *   mime: string,
+ *   absPath: string
+ * }}
+ */
+var FileInfo;
 
 
 /**
  * unifile externs
- * @constructor
+ * @typedef {{
+ *   success: boolean,
+ *   message: ?string,
+ *   tempLink: ?string,
+ *   code: ?string,
+ * }}
  */
-var UnifileResponse = function() {};
-
-
-/**
- * @type {boolean}
- */
-UnifileResponse.prototype.success = false;
-
-
-/**
- * @type {?string}
- */
-UnifileResponse.prototype.message = null;
-
-
-/**
- * @type {?string}
- */
-UnifileResponse.prototype.tempLink = null;
-
-
-/**
- * @type {?string}
- */
-UnifileResponse.prototype.code = null;
-
+var UnifileResponse;
 
 
 /**

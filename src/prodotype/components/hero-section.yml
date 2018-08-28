@@ -1,0 +1,30 @@
+---
+name: Hero Section
+description: 'This is a hero section component, which takes the whole screen. You can add elements to the section and use the css classes "hero-center", "hero-bottom", "hero-scroll"'
+doc: https://en.wikipedia.org/wiki/Hero_image
+category: Hero Section
+tags:
+- ui
+- ux
+- website
+isPrivate: true
+baseElement: section
+faIconClass: fa-header
+initialCss:
+  min-height: 400px
+initialCssContentContainer:
+  background-color: 'transparent'
+props:
+- name: width
+  type: number
+  description: Width in %
+  default: 100
+- name: align
+  type:
+  - left
+  - right
+  description: Horizontal alignment
+- name: height
+  type: number
+  description: Height in %
+  default: 100

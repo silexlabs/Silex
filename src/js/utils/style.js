@@ -22,6 +22,8 @@ goog.require('goog.style');
 goog.require('silex.model.Body');
 goog.require('silex.model.Element');
 goog.require('silex.model.Page');
+goog.require('silex.model.Head');
+goog.require('silex.view.BreadCrumbs');
 
 
 /**
@@ -31,7 +33,13 @@ goog.require('silex.model.Page');
  * @type {Array.<string>}
  */
 silex.utils.Style.SILEX_CLASS_NAMES = [
+  silex.model.Body.DRAGGING_CLASS_NAME,
+  silex.model.Body.DROP_CANDIDATE_CLASS_NAME,
+  silex.model.Body.PREVENT_DROPPABLE_CLASS_NAME,
+  silex.model.Body.PREVENT_RESIZABLE_CLASS_NAME,
+  silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME,
   silex.model.Body.EDITABLE_CLASS_NAME,
+  silex.model.Head.ENABLE_MOBILE_CSS_CLASS,
   silex.model.Page.PAGED_CLASS_NAME,
   silex.model.Page.PAGED_HIDDEN_CLASS_NAME,
   silex.model.Page.PAGED_VISIBLE_CLASS_NAME,
@@ -39,52 +47,18 @@ silex.utils.Style.SILEX_CLASS_NAMES = [
   silex.model.Page.PAGE_LINK_ACTIVE_CLASS_NAME,
   silex.model.Element.SELECTED_CLASS_NAME,
   silex.model.Element.JUST_ADDED_CLASS_NAME,
+  silex.model.Element.ELEMENT_CONTENT_CLASS_NAME, // useful to hide it when the content container of a section is selected
+  silex.model.Element.TYPE_CONTAINER_CONTENT, // useful to hide it when the content container of a section is selected
+  silex.model.Element.WEBSITE_WIDTH_CLASS_NAME,
   silex.model.Element.TYPE_CONTAINER + '-element',
+  silex.model.Element.TYPE_SECTION + '-element',
   silex.model.Element.TYPE_IMAGE + '-element',
   silex.model.Element.TYPE_TEXT + '-element',
-  silex.model.Element.TYPE_HTML + '-element'
+  silex.model.Element.TYPE_HTML + '-element',
+  silex.model.Element.HIDE_ON_MOBILE,
+  Component.COMPONENT_CLASS_NAME,
+  silex.view.BreadCrumbs.EDITABLE_STYLE_HOVER_CLASS,
 ];
-
-
-/**
- * constant for the class names which are of internal use in Silex
- * only the classes which are temporary and useless to store
- * @const
- * @type {Array.<string>}
- */
-silex.utils.Style.SILEX_TEMP_CLASS_NAMES = [
-  silex.model.Page.PAGED_HIDDEN_CLASS_NAME,
-  silex.model.Page.PAGED_VISIBLE_CLASS_NAME,
-  silex.model.Page.PAGEABLE_PLUGIN_READY_CLASS_NAME,
-  silex.model.Element.SELECTED_CLASS_NAME,
-  silex.model.Element.JUST_ADDED_CLASS_NAME
-];
-
-
-/**
- * remove useless class names of an element created by silex
- * remove all silex internal classes
- * @param  {!Element} element   created by silex, either a text box, image, ...
- * @param  {?boolean=} opt_allClasses   if true, remove all Silex classes, not only the classes which are temporary and useless to store
- * @param  {?boolean=} opt_isRecursive  if true, remove classes from the element and its children
- */
-silex.utils.Style.removeInternalClasses = function(element, opt_allClasses, opt_isRecursive) {
-  var classes = silex.utils.Style.SILEX_TEMP_CLASS_NAMES;
-  if (opt_allClasses) {
-    classes = silex.utils.Style.SILEX_CLASS_NAMES;
-  }
-  for (let idx in classes) {
-    var className = classes[idx];
-    goog.dom.classlist.remove(element, className);
-    if (opt_isRecursive) {
-      var elements = goog.dom.getElementsByClass(className, element);
-      goog.array.forEach(elements, function(child) {
-        goog.dom.classlist.remove(child, className);
-      });
-    }
-  }
-};
-
 
 /**
  * convert style object to object
@@ -94,7 +68,7 @@ silex.utils.Style.removeInternalClasses = function(element, opt_allClasses, opt_
  */
 silex.utils.Style.styleToObject = function(styleObj) {
   var res = {};
-  for (let idx=0 ; idx < styleObj.length; idx++) {
+  for (let idx = 0; idx < styleObj.length; idx++) {
     var styleName = styleObj[idx];
     res[styleName] = styleObj[styleName];
   }
@@ -276,6 +250,18 @@ silex.utils.Style.hexToArray = function(hex) {
   var result = [r, g, b, a];
   return result;
 };
+
+
+/**
+ * convert rgb to hex
+ * example:    rgb(0, 0, 0) will return #000000
+ * @param {string} rgb
+ * @return {string}
+ */
+silex.utils.Style.rgbToHex = function(rgb) {
+  const hexWithA = silex.utils.Style.rgbaToHex(rgb);
+  return hexWithA.substr(0, 7);
+}
 
 
 /**

@@ -20,6 +20,7 @@
 goog.provide('silex.model.Body');
 goog.require('silex.Config');
 goog.require('silex.types.Model');
+goog.require('silex.utils.InvalidationManager');
 
 
 
@@ -33,14 +34,49 @@ silex.model.Body = function(model, view) {
   this.model = model;
   // get the iframe
   // retrieve the element which will hold the body of the opened file
-  this.iframeElement = goog.dom.getElementByClass(silex.view.Stage.STAGE_CLASS_NAME);
+  this.iframeElement = /** @type {!HTMLIFrameElement} */ (goog.dom.getElementByClass(silex.view.Stage.STAGE_CLASS_NAME));
+
+  // hide the focus input and attach it to the DOM
+  silex.model.Body.focusInput.style.left = '-1000px';
+  silex.model.Body.focusInput.style.position = 'absolute';
+  document.body.appendChild(silex.model.Body.focusInput);
+};
+
+
+/**
+ * remove the focus from text fields
+ * @static
+ */
+silex.model.Body.resetFocus = function() {
+  silex.model.Body.invalidationManagerFocus.callWhenReady(() => {
+    silex.model.Body.focusInput.focus();
+    silex.model.Body.focusInput.blur();
+  });
 };
 
 
 /**
  * element which holds the opened website
+ * @type {HTMLIFrameElement}
  */
 silex.model.Body.prototype.iframeElement = null;
+
+
+/**
+ * invalidation mechanism for focus
+ * @type {InvalidationManager}
+ * @static
+ */
+silex.model.Body.invalidationManagerFocus = new InvalidationManager(500);
+
+
+/**
+ * input element to get the focus
+ * used to blur the UI inputs
+ * @type {Element}
+ * @static
+ */
+silex.model.Body.focusInput = document.createElement('input');
 
 
 /**
@@ -49,14 +85,6 @@ silex.model.Body.prototype.iframeElement = null;
  * @type {string}
  */
 silex.model.Body.SILEX_TYPE_ATTR_NAME = 'data-silex-type';
-
-
-/**
- * value of the type attribute
- * @const
- * @type {string}
- */
-silex.model.Body.SILEX_TYPE_CONTAINER = 'container';
 
 
 /**
@@ -92,6 +120,16 @@ silex.model.Body.PREVENT_DROPPABLE_CLASS_NAME = 'prevent-droppable';
 
 
 /**
+ * class name which can be used to force Silex to use height instead of minHeight
+ * to set the height of an element
+ * this is useful if the element has content with height set to 100%
+ * @const
+ * @type {string}
+ */
+silex.model.Body.SILEX_USE_HEIGHT_NOT_MINHEIGHT = 'silex-use-height-not-minheight';
+
+
+/**
  * class name set on elements in which we are about to drop
  * @const
  * @type {string}
@@ -122,7 +160,12 @@ silex.model.Body.prototype.getSelection = function() {
   var elements = goog.dom.getElementsByClass(silex.model.Element.SELECTED_CLASS_NAME, this.getBodyElement());
   if (!elements || elements.length === 0) {
     // default, return the body
-    return [this.getBodyElement()];
+    const bodyElement = this.getBodyElement();
+    if(!bodyElement) {
+      console.warn('Could not get body element because it is not created yet.');
+      return [];
+    }
+    return [bodyElement];
   }
   // build the result array
   var res = [];
@@ -137,6 +180,10 @@ silex.model.Body.prototype.getSelection = function() {
  * @param  {Array.<Element>} selectedElements  array of elements which are to select
  */
 silex.model.Body.prototype.setSelection = function(selectedElements) {
+  if(this.getBodyElement() === null) {
+    // body is null, this happens while undoing or redoing
+    return;
+  }
   // reset selection
   var elements = goog.dom.getElementsByClass(silex.model.Element.SELECTED_CLASS_NAME, this.getBodyElement());
   goog.array.forEach(elements, function(element) {
@@ -155,6 +202,8 @@ silex.model.Body.prototype.setSelection = function(selectedElements) {
   this.view.propertyTool.redraw(selectedElements, pages, page);
   this.view.stage.redraw(selectedElements, pages, page);
   this.view.contextMenu.redraw(selectedElements, pages, page);
+  this.view.breadCrumbs.redraw(selectedElements, pages, page);
+  this.view.htmlEditor.setSelection(selectedElements);
 };
 
 
@@ -171,125 +220,4 @@ silex.model.Body.prototype.getNeededFonts = function() {
     });
   }
   return neededFonts;
-};
-
-
-/**
- * @param  {Element} element
- */
-silex.model.Body.prototype.initUiHandles = function(element) {
-  goog.array.forEach([
-    'ui-resizable-n',
-    'ui-resizable-s',
-    'ui-resizable-e',
-    'ui-resizable-w',
-    'ui-resizable-ne',
-    'ui-resizable-nw',
-    'ui-resizable-se',
-    'ui-resizable-sw'
-  ], function(className) {
-    var handle = this.model.file.getContentDocument().createElement('div');
-    goog.dom.classlist.add(handle, className);
-    goog.dom.classlist.add(handle, 'ui-resizable-handle');
-    goog.dom.appendChild(element, handle);
-  }, this);
-};
-
-
-/**
- * init, activate and remove the "editable" jquery plugin
- * @param {Element} rootElement
- * @param {boolean} isEditable
- */
-silex.model.Body.prototype.setEditable = function(rootElement, isEditable) {
-  if(!rootElement) {
-    // this happens on firefox sometimes at start
-    // FIXME: find why this happens instead of this workaround
-    return;
-  }
-  // handle the root element itself
-  if (isEditable) {
-    if (goog.dom.getElementsByClass('ui-resizable-s', rootElement).length === 0) {
-      this.initUiHandles(rootElement);
-    }
-  }
-  else {
-      this.removeEditableClasses(rootElement);
-  }
-
-  // activate editable plugin on all editable children
-  var elements = goog.dom.getElementsByClass(silex.model.Body.EDITABLE_CLASS_NAME, rootElement);
-  goog.array.forEach(elements, function(element) {
-    if (isEditable && goog.dom.getElementsByClass('ui-resizable-s', element).length === 0) {
-      this.initUiHandles(element);
-    }
-  }, this);
-
-  // prevent the user from following links
-  var links = rootElement.querySelectorAll('a');
-  goog.array.forEach(elements, function(element) {
-    goog.events.listen(element, goog.events.EventType.CLICK, function(e) {
-      e.preventDefault();
-    }, false, this);
-  }, this);
-
-  // add a div on top of the HTML content elements in order to
-  // prevent interactions with iframes and html content while editing
-  // start by removing all
-  var coverElements = rootElement.querySelectorAll('.html-element>.temp-editable-cover');
-  goog.array.forEach(coverElements, function(element) {
-    goog.dom.removeNode(element);
-  }, this);
-  // then add one in each HTML element
-  var htmlContentElements = rootElement.querySelectorAll('.html-element');
-  goog.array.forEach(htmlContentElements, function(element) {
-    // create the cover element
-    let cover = goog.dom.createElement('div');
-    goog.dom.classlist.add(cover, 'temp-editable-cover');
-    // insert cover on top of all elements
-    goog.dom.insertChildAt(element, cover, 0);
-  }, this);
-  // handle the root element itself
-  if (rootElement.getAttribute(silex.model.Body.SILEX_TYPE_ATTR_NAME) === silex.model.Element.TYPE_HTML) {
-    // create the cover element
-    let cover = goog.dom.createElement('div');
-    goog.dom.classlist.add(cover, 'temp-editable-cover');
-    // insert cover on top of all elements
-    goog.dom.insertChildAt(rootElement, cover, 0);
-  }
-};
-
-
-/**
- * remove the classes set by Silex and the editable.js plugin
- * @param {Element} rootElement
- */
-silex.model.Body.prototype.removeEditableClasses = function(rootElement) {
-  if (rootElement !== null) {
-    var elements;
-    elements = goog.dom.getElementsByClass(silex.model.Element.SELECTED_CLASS_NAME, rootElement);
-    goog.array.forEach(elements, function(element) {
-      goog.dom.classlist.remove(element, silex.model.Element.SELECTED_CLASS_NAME);
-    }, this);
-
-    elements = goog.dom.getElementsByClass(silex.model.Body.DROP_CANDIDATE_CLASS_NAME, rootElement);
-    goog.array.forEach(elements, function(element) {
-      goog.dom.classlist.remove(element, silex.model.Body.DROP_CANDIDATE_CLASS_NAME);
-    }, this);
-
-    elements = rootElement.querySelectorAll('[aria-disabled]');
-    goog.array.forEach(elements, function(element) {
-      element.removeAttribute('aria-disabled');
-    }, this);
-
-    // remove html elements added by the editable.js plugin
-    elements = goog.dom.getElementsByClass('ui-resizable-handle', rootElement);
-    goog.array.forEach(elements, function(element) {
-      goog.dom.removeNode(element);
-    }, this);
-    elements = goog.dom.getElementsByClass('temp-editable-cover', rootElement);
-    goog.array.forEach(elements, function(element) {
-      goog.dom.removeNode(element);
-    }, this);
-  }
 };

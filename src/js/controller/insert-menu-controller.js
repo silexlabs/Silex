@@ -40,16 +40,24 @@ goog.inherits(silex.controller.InsertMenuController, silex.controller.Controller
 /**
  * create an element and add it to the stage
  * @param {string} type the desired type for the new element
+ * @param {?string=} opt_componentName the desired component type if it is a component
  * @return {Element} the new element
  */
-silex.controller.InsertMenuController.prototype.addElement = function(type) {
+silex.controller.InsertMenuController.prototype.addElement = function(type, opt_componentName) {
   this.tracker.trackAction('controller-events', 'request', 'insert.' + type, 0);
   // undo checkpoint
   this.undoCheckPoint();
-  var element = null;
   // create the element and add it to the stage
-  element = this.model.element.createElement(type);
+  var element = this.model.element.createElement(type);
+  // apply component styles etc
+  if(!!opt_componentName) {
+    this.model.component.initComponent(element, opt_componentName);
+  }
+  // apply default size
+  this.model.element.initElement(element);
+  // make element editable and visible on current page
   this.doAddElement(element);
+  // tracking
   this.tracker.trackAction('controller-events', 'success', 'insert.' + type, 1);
   return element;
 };

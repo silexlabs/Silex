@@ -1,0 +1,226 @@
+/**
+ * This file holds the basic CSS styles of Silex websites
+ */
+
+/* the body covers the whole available space */
+/* the body is resized to its content size when needed in front-end.js */
+body {
+  min-width: 100%;
+  min-height: 100%;
+  position: absolute;
+  transition: min-width .5s ease-out, min-height .5s ease-out; /* smooth body resize when dragging elements near the side, or when page have different size */
+  font-family: Arial, sans-serif;
+  font-weight: lighter;
+}
+body.compute-body-size-pending {
+  transition: none;
+  width: 0;
+  height: 0;
+}
+/* pages */
+.page-element{
+  display: none;
+}
+.paged-element{
+  display: none;
+}
+/* default style for silex elements */
+.editable-style{
+  position: absolute;
+  box-sizing: content-box; /* this is needed to set the size of elements with a border (though it could be omited since this is the default value) */
+}
+.silex-element-content{
+  overflow: hidden;
+  border-radius: initial;
+  width: 100%;
+  height: 100%;
+}
+.silex-element-content {
+  pointer-events: none;
+}
+.section-element > .silex-element-content {
+  /* section have a content element, and it needs to keep pointer events
+     because it container other silex elements
+  */
+  pointer-events: auto;
+}
+body.silex-runtime .silex-element-content {
+  pointer-events: auto;
+}
+/*  needed to have the content 100% height but mess up with UI
+.html-element .silex-element-content{
+  position: absolute;
+}
+*/
+.editable-style.section-element {
+  position: relative;
+  left: 0;
+  top: 0;
+  right: 0;
+  padding: 15px 100px;
+  margin: 5px 5px;
+}
+.silex-runtime .editable-style.section-element {
+  padding: 0;
+  margin: 0;
+}
+.default-site-width, /* for backward compat, FIXME: remove in a while */
+.website-width {
+  width: 960px;
+}
+.section-element .silex-container-content {
+  position: relative;
+  left: 0;
+  top: 0;
+  margin-left: auto;
+  margin-right: auto;
+  height: 100%;
+  overflow: initial;
+}
+/* background */
+.background{
+  position: relative !important;
+  left: 0 !important;
+  top: 0 !important; /* !important is useful while editing */
+  margin-left: auto;
+  margin-right: auto;
+  z-index: 1;
+}
+/* resize */
+.editable-style.image-element .silex-element-content{
+  position: absolute;
+  border-radius: inherit; /* this is to follow the element's radius */
+}
+/* links default formatting */
+.editable-style[data-silex-href]{
+  cursor: pointer;
+}
+.text-element a, a.text-element{
+  color: inherit;
+  text-decoration: initial;
+}
+.text-element a:hover, a.text-element:hover{
+  color: inherit;
+  text-decoration: underline;
+}
+/* Remove dots surrounding links in Firefox
+    because of normalize.css */
+a:focus{ outline: none;}
+
+.silex-pages .menu-button {
+  display: none;
+}
+/* Mobile styles */
+@media (max-width:480px) {
+  /* hide horizontal scroll bar which appears because of residual values in css */
+  html {
+    overflow-x: hidden;
+  }
+  /* mobile hamburger menu */
+  body.enable-mobile .silex-pages .menu-button {
+    width: 50px;
+    height: 40px;
+    left: 105%;
+    top: 10px;
+    position: absolute;
+    cursor: pointer;
+    border-radius: 6px;
+    display: initial;
+  }
+
+  /* mobile side bar */
+  body.enable-mobile .silex-pages {
+    position: fixed;
+    z-index: 999999;
+    width: 80%;
+    height: 100%;
+    background-color: #4C4C4C;
+    right: 100%;
+    top: 0;
+    transition: right .1s ease-out;
+    border-style: solid;
+    border-width: 0 1px 0 0;
+    border-color: #8E8E8E;
+  }
+  body.enable-mobile.show-mobile-menu .silex-pages {
+    right: 20%;
+  }
+  body.enable-mobile .page-element {
+    display: block;
+    cursor: pointer;
+    padding: 1em;
+    font-size: 1.6em;
+    color: #FFFFFF;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  body.enable-mobile .page-element.page-link-active {
+    background-color: #262626;
+  }
+  /* elements styles */
+  body.enable-mobile {
+    padding: 60px 0 0 0; /* leave space for the hamburger button */
+  }
+  body.enable-mobile .background {
+    height: initial;
+    padding-bottom: 50px;
+  }
+  body.enable-mobile {
+    min-height: 100%;
+    max-width: 100%;
+  }
+  body.enable-mobile .editable-style,
+  body.enable-mobile .background.background-initial {
+    position: relative;
+    top: auto;
+    left: auto;
+    max-width: 95%; /* less than 100% in the editor to be able to resize container */
+    min-width: auto; /* this is to remove sections min-width, since section min-width is set to the witdh of its content in Element::setStyle() */
+    margin-left: auto;
+    margin-right: auto;
+  }
+  body.enable-mobile .editable-style.section-element {
+    max-width: 100%; /* section bg should be 100% width because user do not need to grab the side and resize */
+    padding: 0;
+    margin: 0;
+  }
+  body.enable-mobile .container-element {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    flex-wrap: wrap;
+  }
+  /* but still hide paged elements or desktop only elements */
+  .paged-element-hidden.paged-element.editable-style {
+    display: none;
+  }
+  body.enable-mobile .editable-style.hide-on-mobile {
+    display: none;
+  }
+  body.silex-runtime.enable-mobile .editable-style,
+  body.silex-runtime.enable-mobile .background.background-initial {
+    max-width: 100%;
+  }
+}
+
+/**
+ * prodotype components
+ */
+.prodotype-runtime {
+  display: none;
+}
+body.silex-runtime .prodotype-runtime {
+  display: block;
+}
+body.silex-runtime .prodotype-preview {
+  display: none;
+}
+.prodotype-force-size {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+.silex-component-button button {
+  width: 100%;
+}

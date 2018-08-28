@@ -94,6 +94,16 @@ silex.view.PageTool.prototype.buildUi = function() {
     }
     e.preventDefault();
   }, false, this);
+  function attach(className, cbk) {
+    const addBtns = document.querySelectorAll(className);
+    for(let idx=0; idx<addBtns.length; idx++) {
+      addBtns[idx].onclick = cbk;
+    }
+  }
+  attach('.add-page', e => this.controller.insertMenuController.createPage());
+  attach('.remove-page', e => this.controller.pageToolController.removePage());
+  attach('.move-page-up', e => this.controller.pageToolController.movePageUp());
+  attach('.move-page-down', e => this.controller.pageToolController.movePageDown());
 };
 
 
@@ -110,6 +120,11 @@ silex.view.PageTool.prototype.redraw = function(selectedElements, pageNames, cur
     // make an array with name, displayName, linkName and className
     var idx = 0;
     this.pages = pageNames.map(goog.bind(function(pageName) {
+      const pageElement = this.model.file.getContentDocument().getElementById(pageName);
+      if(!pageElement) {
+        // this happens while undoing or redoing
+        return null;
+      }
       var res = {
         'name': pageName,
         'displayName': this.model.file.getContentDocument().getElementById(pageName).innerHTML,

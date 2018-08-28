@@ -1,0 +1,64 @@
+---
+name: Skill bars
+description: 'Represent a set of skills as progress bars.'
+doc: https://github.com/silexlabs/Silex/wiki/Skill-bar-component
+category: Utils
+tags:
+- skill
+- progress
+- bar
+isPrivate: false
+baseElement: html
+faIconClass: fa-tasks
+initialCss:
+  min-height: 100px
+  width: 400px
+  background-color: 'transparent'
+props:
+- name: bars
+  expandable: true
+  description: Bars and labels
+  type:
+    - name: label
+      type: string
+      description: Label of the bar
+      default: 'Skill #1'
+    - name: percentage
+      type: number
+      description: Filled percentage of the bar
+      default: 50
+    - name: value
+      type: string
+      description: Value written in the bar
+      default: Good
+    - name: background
+      type: color
+      description: Background of the bar
+      default: "#6adcfa"
+    - name: backgroundImage
+      type: file
+      description: Background image of the bar
+    - name: labelColor
+      type: color
+      description: Background of the label
+      default: "#6adcfa"
+- name: speed
+  expandable: true
+  description: Time of the animation
+  type: number
+  default: 6000
+- name: delay
+  expandable: true
+  description: Delay before the animation
+  type: number
+  default: 500
+- name: labelSize
+  expandable: true
+  description: Width of the label in percentage of the bar
+  type: number
+  default: 25
+- name: barHeight
+  expandable: true
+  description: Height of the bars in pixels
+  type: number
+  default: 35

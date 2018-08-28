@@ -44,6 +44,14 @@ silex.view.ContextMenu = function(element, model, controller) {
 
 
   /**
+   * hold the element in the context menu which has the current page name
+   * @type {Element}
+   */
+  this.currentPageElement = element.querySelector('.current-page');
+  this.currentPageElement.onclick = e => this.controller.viewMenuController.showPages();
+
+
+  /**
    * invalidation mechanism
    * @type {InvalidationManager}
    */
@@ -51,28 +59,26 @@ silex.view.ContextMenu = function(element, model, controller) {
 
 };
 
+/**
+ * Get the silex context menu
+ * @static
+ * @type {string}
+ */
+silex.view.ContextMenu.CLASS_NAME='silex-context-menu';
 
 /**
  * create the context menu
  * called by the app constructor
  */
 silex.view.ContextMenu.prototype.buildUi = function() {
-    this.element.querySelector('.save').addEventListener('click', () => {this.controller.fileMenuController.save()});
-    this.element.querySelector('.undo').addEventListener('click', () => {this.controller.editMenuController.undo()});
-    this.element.querySelector('.redo').addEventListener('click', () => {this.controller.editMenuController.redo()});
-    this.element.querySelector('.text').addEventListener('click', () => {this.controller.insertMenuController.addElement(silex.model.Element.TYPE_TEXT)});
-    this.element.querySelector('.image').addEventListener('click', () => {this.controller.insertMenuController.browseAndAddImage()});
-    this.element.querySelector('.container').addEventListener('click', () => {this.controller.insertMenuController.addElement(silex.model.Element.TYPE_CONTAINER)});
-    this.element.querySelector('.html').addEventListener('click', () => {this.controller.insertMenuController.addElement(silex.model.Element.TYPE_HTML)});
-    this.element.querySelector('.delete').addEventListener('click', () => {this.controller.editMenuController.removeSelectedElements()});
-    this.element.querySelector('.copy').addEventListener('click', () => {this.controller.editMenuController.copySelection()});
-    this.element.querySelector('.paste').addEventListener('click', () => {this.controller.editMenuController.pasteSelection()});
-    this.element.querySelector('.top').addEventListener('click', () => {this.controller.editMenuController.moveToTop()});
-    this.element.querySelector('.up').addEventListener('click', () => {this.controller.editMenuController.moveUp()});
-    this.element.querySelector('.down').addEventListener('click', () => {this.controller.editMenuController.moveDown()});
-    this.element.querySelector('.bottom').addEventListener('click', () => {this.controller.editMenuController.moveToBottom()});
-    this.element.querySelector('.preview').addEventListener('click', () => {this.controller.viewMenuController.preview()});
-    this.element.querySelector('.previewResponsize').addEventListener('click', () => {this.controller.viewMenuController.previewResponsize()});
+    this.element.querySelector('.delete').addEventListener('click', () => {this.controller.editMenuController.removeSelectedElements();});
+    this.element.querySelector('.edit').addEventListener('click', () => {this.controller.editMenuController.editElement();});
+    this.element.querySelector('.copy').addEventListener('click', () => {this.controller.editMenuController.copySelection();});
+    this.element.querySelector('.paste').addEventListener('click', () => {this.controller.editMenuController.pasteSelection();});
+    this.element.querySelector('.top').addEventListener('click', () => {this.controller.editMenuController.moveToTop();});
+    this.element.querySelector('.up').addEventListener('click', () => {this.controller.editMenuController.moveUp();});
+    this.element.querySelector('.down').addEventListener('click', () => {this.controller.editMenuController.moveDown();});
+    this.element.querySelector('.bottom').addEventListener('click', () => {this.controller.editMenuController.moveToBottom();});
 };
 
 
@@ -85,11 +91,16 @@ silex.view.ContextMenu.prototype.buildUi = function() {
  */
 silex.view.ContextMenu.prototype.redraw = function(opt_selectedElements, opt_pageNames, opt_currentPageName) {
   this.invalidationManager.callWhenReady(() => {
+    // update page name
+    if(opt_currentPageName) {
+      this.currentPageElement.innerHTML = this.model.page.getDisplayName(opt_currentPageName);
+    }
     // get the selection if not provided
-    if(!opt_selectedElements) opt_selectedElements = this.model.body.getSelection();
+    if (!opt_selectedElements) opt_selectedElements = this.model.body.getSelection();
     //update menu items according to selection
-    if(opt_selectedElements.length === 1 && opt_selectedElements[0].tagName.toLowerCase() === 'body') {
+    if (opt_selectedElements.length === 1 && opt_selectedElements[0].tagName.toLowerCase() === 'body') {
       this.element.querySelector('.delete').classList.add('off');
+      this.element.querySelector('.edit').classList.add('off');
       this.element.querySelector('.copy').classList.add('off');
       this.element.querySelector('.top').classList.add('off');
       this.element.querySelector('.up').classList.add('off');
@@ -98,39 +109,18 @@ silex.view.ContextMenu.prototype.redraw = function(opt_selectedElements, opt_pag
     }
     else {
       this.element.querySelector('.delete').classList.remove('off');
+      this.element.querySelector('.edit').classList.remove('off');
       this.element.querySelector('.copy').classList.remove('off');
       this.element.querySelector('.top').classList.remove('off');
       this.element.querySelector('.up').classList.remove('off');
       this.element.querySelector('.down').classList.remove('off');
       this.element.querySelector('.bottom').classList.remove('off');
     }
-    if(silex.controller.ControllerBase.undoHistory.length > 0) {
-      this.element.querySelector('.undo').classList.remove('off');
-    }
-    else {
-      this.element.querySelector('.undo').classList.add('off');
-    }
-    if(silex.controller.ControllerBase.redoHistory.length > 0) {
-      this.element.querySelector('.redo').classList.remove('off');
-    }
-    else {
-      this.element.querySelector('.redo').classList.add('off');
-    }
-    if(silex.controller.ControllerBase.clipboard && silex.controller.ControllerBase.clipboard.length > 0) {
+    if (silex.controller.ControllerBase.clipboard && silex.controller.ControllerBase.clipboard.length > 0) {
       this.element.querySelector('.paste').classList.remove('off');
     }
     else {
       this.element.querySelector('.paste').classList.add('off');
-    }
-    if(this.controller.fileMenuController.isDirty()) {
-      this.element.querySelector('.save').classList.remove('off');
-      this.element.querySelector('.preview').classList.add('off');
-      this.element.querySelector('.previewResponsize').classList.add('off');
-    }
-    else {
-      this.element.querySelector('.save').classList.add('off');
-      this.element.querySelector('.preview').classList.remove('off');
-      this.element.querySelector('.previewResponsize').classList.remove('off');
     }
   });
 };

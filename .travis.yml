@@ -1,0 +1,20 @@
+sudo: false
+
+language: node_js
+node_js:
+- '8'
+notifications:
+  email: false
+jobs:
+  include:
+    - stage: build 🔨
+      script: npm run build
+    - stage: deploy 📦
+      if: branch = master
+      script: npm run build:electron
+      matrix:
+        include:
+        - os: linux
+          dist: xenial
+        - os: osx
+

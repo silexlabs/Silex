@@ -59,13 +59,6 @@ silex.model.Head.SILEX_SCRIPT_ELEMENT_CSS_CLASS = 'silex-script';
 
 
 /**
- * css class which marks the temporary tags, i.e. the tags inserted while editing a file
- * only for tags in the head section
- */
-silex.model.Head.SILEX_TEMP_TAGS_CSS_CLASS = 'silex-temp-tag';
-
-
-/**
  * css class which marks the tags added to load a custom font
  */
 silex.model.Head.CUSTOM_FONTS_CSS_CLASS = 'silex-custom-font';
@@ -84,16 +77,27 @@ silex.model.Head.HEAD_TAG_STOP = '<!-- End of Silex HEAD tag do not remove -->';
 
 
 /**
+ * css class set to enable mobile version
+ */
+silex.model.Head.ENABLE_MOBILE_CSS_CLASS = 'enable-mobile';
+
+
+/**
  * Update the settings from the DOM after a website was loaded
  */
 silex.model.Head.prototype.updateFromDom = function() {
-  this.view.settingsDialog.setPublicationPath(this.model.head.getPublicationPath());
-  this.view.settingsDialog.setFaviconPath(this.model.head.getFaviconPath());
-  this.view.settingsDialog.setThumbnailSocialPath(this.model.head.getThumbnailSocialPath());
-  this.view.settingsDialog.setDescription(this.model.head.getDescription());
-  this.view.settingsDialog.setDescriptionSocial(this.model.head.getDescriptionSocial());
-  this.view.settingsDialog.setTitleSocial(this.model.head.getTitleSocial());
-  this.view.settingsDialog.setTitle(this.model.head.getTitle());
+  this.setPublicationPath(this.getPublicationPath());
+  this.setFaviconPath(this.getFaviconPath());
+  this.setThumbnailSocialPath(this.getThumbnailSocialPath());
+  this.setDescription(this.getDescription());
+  this.setDescriptionSocial(this.getDescriptionSocial());
+  this.setTitleSocial(this.getTitleSocial());
+  this.setTitle(this.getTitle());
+  this.setEnableMobile(this.getEnableMobile());
+  this.setWebsiteWidth(this.getWebsiteWidth());
+  // update text editor with the website custom styles and script
+  this.model.head.setHeadStyle(this.model.head.getHeadStyle());
+  this.model.head.setHeadScript(this.model.head.getHeadScript());
 };
 
 
@@ -167,10 +171,9 @@ silex.model.Head.prototype.getHeadScript = function() {
       silex.model.Head.SILEX_SCRIPT_ELEMENT_CSS_CLASS,
       this.getHeadElement());
   if (!scriptTag) {
-    console.warn('no silex editable script defined');
     return '';
   }
-  return this.model.element.unprepareHtmlForEdit(scriptTag.innerHTML);
+  return scriptTag.innerHTML;
 };
 
 
@@ -189,7 +192,7 @@ silex.model.Head.prototype.setHeadScript = function(jsString) {
     scriptTag.className = silex.model.Head.SILEX_SCRIPT_ELEMENT_CSS_CLASS;
     goog.dom.appendChild(this.getHeadElement(), scriptTag);
   }
-  scriptTag.innerHTML = this.model.element.prepareHtmlForEdit(jsString);
+  scriptTag.innerHTML = jsString;
 };
 
 
@@ -206,7 +209,7 @@ silex.model.Head.prototype.getHeadStyle = function() {
     console.warn('no silex editable styles defined');
     return '';
   }
-  return this.model.element.unprepareHtmlForEdit(silexStyle.innerHTML);
+  return window['css_beautify'](silexStyle.innerHTML);
 };
 
 
@@ -225,7 +228,6 @@ silex.model.Head.prototype.setHeadStyle = function(cssString) {
     silexStyle.className = silex.model.Head.SILEX_STYLE_ELEMENT_CSS_CLASS;
     goog.dom.appendChild(this.getHeadElement(), silexStyle);
   }
-  cssString = this.model.element.prepareHtmlForEdit(cssString);
   silexStyle.innerHTML = cssString;
   // refresh the text editor's styles
   this.view.textEditor.setCustomCssStyles(cssString);
@@ -343,24 +345,112 @@ silex.model.Head.prototype.setMeta = function(name, opt_value) {
 /**
  * get/set the publication path
  * publication path is always absolute url
- * @param {?string=} opt_path
+ * @param {?FileInfo=} opt_fileInfo
  */
-silex.model.Head.prototype.setPublicationPath = function(opt_path) {
-  this.setMeta('publicationPath', opt_path);
-  this.view.settingsDialog.setPublicationPath(opt_path);
+silex.model.Head.prototype.setPublicationPath = function(opt_fileInfo) {
+  // TODO: remove meta and store this value in the JSON like components params (see model/property.js)
+  this.setMeta('publicationPath', opt_fileInfo == null ? null : JSON.stringify(opt_fileInfo));
+  this.view.settingsDialog.setPublicationPath(opt_fileInfo);
 };
 
 
 /**
  * get/set the publication path
  * publication path is always absolute url
- * @return {?string}
+ * @return {?FileInfo}
  */
 silex.model.Head.prototype.getPublicationPath = function() {
-  var url = this.getMeta('publicationPath');
-  return url;
+  var fileInfo = this.getMeta('publicationPath');
+  try {
+    return fileInfo == null ? null : /** @type {FileInfo} */ (JSON.parse(fileInfo));
+  } catch(e) {
+    // this happens with old publication path (just a string)
+    return null;
+  }
 };
 
+
+/**
+ * enable/disable the mobile version
+ * @param {boolean} enable
+ */
+silex.model.Head.prototype.setEnableMobile = function(enable) {
+  let doc = this.model.file.getContentDocument();
+  if(doc.body === null) {
+    // body is null, this happens while undoing or redoing
+    return;
+  }
+  let viewport = doc.querySelector('meta[data-silex-viewport]');
+  if (enable === true) {
+    doc.body.classList.add(silex.model.Head.ENABLE_MOBILE_CSS_CLASS);
+    if (!viewport) {
+      viewport = /** @type {HTMLMetaElement} */ (doc.createElement('meta'));
+      viewport.name = 'viewport';
+      viewport.content = 'width=device-width, initial-scale=1, maximum-scale=2.2';
+      viewport.setAttribute('data-silex-viewport', '');
+      doc.head.appendChild(viewport);
+    }
+  } else {
+    doc.body.classList.remove(silex.model.Head.ENABLE_MOBILE_CSS_CLASS);
+    if (viewport) {
+      doc.head.removeChild(viewport);
+    }
+  }
+  this.view.settingsDialog.setEnableMobile(enable);
+
+  // redraw UI
+  var pages = this.model.page.getPages();
+  var page = this.model.page.getCurrentPage();
+  this.view.propertyTool.redraw(this.model.body.getSelection(), pages, page);
+};
+
+
+/**
+ * enable/disable the mobile version
+ * @return {boolean}
+ */
+silex.model.Head.prototype.getEnableMobile = function() {
+  const body = this.model.file.getContentDocument().body;
+  if(body === null) {
+    // body is null, this happens while undoing or redoing
+    return false;
+  }
+  return body.classList.contains(silex.model.Head.ENABLE_MOBILE_CSS_CLASS);
+};
+
+
+/**
+ * get/set the website width
+ * @param {?string=} opt_value
+ */
+silex.model.Head.prototype.setWebsiteWidth = function(opt_value) {
+  this.setMeta('website-width', opt_value);
+  this.view.settingsDialog.setWebsiteWidth(opt_value);
+  let silexStyle = this.getHeadElement().querySelector('.silex-style-settings');
+  if(opt_value && opt_value !== '') {
+    if (!silexStyle) {
+      silexStyle = goog.dom.createElement('style');
+      silexStyle.type = 'text/css';
+      silexStyle.className = 'silex-style-settings';
+      goog.dom.appendChild(this.getHeadElement(), silexStyle);
+    }
+    silexStyle.innerHTML = `
+      .${silex.model.Element.WEBSITE_WIDTH_CLASS_NAME} {
+        width: ${opt_value}px;
+      }
+    `;
+  }
+  else if(silexStyle) this.getHeadElement().removeChild(silexStyle);
+};
+
+
+/**
+ * get/set the website width
+ * @return {?string}
+ */
+silex.model.Head.prototype.getWebsiteWidth = function() {
+  return this.getMeta('website-width');
+};
 
 /**
  * get/set the description
@@ -398,7 +488,7 @@ silex.model.Head.prototype.getTitle = function() {
 
 /**
  * website title
- * @param {string} name
+ * @param {?string} name
  */
 silex.model.Head.prototype.setTitle = function(name) {
   // find or create the title tag in the head section
@@ -408,7 +498,7 @@ silex.model.Head.prototype.setTitle = function(name) {
     goog.dom.appendChild(this.getHeadElement(), titleNode);
   }
   // update website title
-  titleNode.innerHTML = name;
+  titleNode.innerHTML = name || '';
   // update view
   this.view.settingsDialog.setTitle(name);
 };
@@ -424,10 +514,6 @@ silex.model.Head.prototype.getFaviconPath = function() {
   if (faviconTag) {
     url = faviconTag.getAttribute('href');
   }
-  if(url && this.model.file.getUrl()) {
-    var baseUrl = silex.utils.Url.getBaseUrl() + this.model.file.getUrl();
-    url = silex.utils.Url.getRelativePath(url, baseUrl);
-  }
   return url;
 };
 
@@ -437,11 +523,6 @@ silex.model.Head.prototype.getFaviconPath = function() {
  * @param {?string=} opt_path
  */
 silex.model.Head.prototype.setFaviconPath = function(opt_path) {
-  if(opt_path) {
-    // absolute url only in the dom
-    var baseUrl = silex.utils.Url.getBaseUrl();
-    opt_path = silex.utils.Url.getAbsolutePath(/** @type {string} */ (opt_path), baseUrl);
-  }
   var faviconTag = this.getHeadElement().querySelector('link[rel="shortcut icon"]');
   if (!faviconTag) {
     if (opt_path) {
@@ -451,7 +532,7 @@ silex.model.Head.prototype.setFaviconPath = function(opt_path) {
       goog.dom.appendChild(this.getHeadElement(), faviconTag);
     }
   }
-  else if(!opt_path) {
+  else if (!opt_path) {
     goog.dom.removeNode(faviconTag);
   }
   if (opt_path) {
@@ -510,11 +591,6 @@ silex.model.Head.prototype.getDescriptionSocial = function() {
  * @param {?string=} opt_path
  */
 silex.model.Head.prototype.setThumbnailSocialPath = function(opt_path) {
-  if(opt_path) {
-    // absolute url only in the dom
-    var baseUrl = silex.utils.Url.getBaseUrl();
-    opt_path = silex.utils.Url.getAbsolutePath(/** @type {string} */ (opt_path), baseUrl);
-  }
   this.setMeta('twitter:card', opt_path ? 'summary' : '');
   this.setMeta('twitter:image', opt_path);
   this.setMeta('og:image', opt_path);
@@ -528,10 +604,6 @@ silex.model.Head.prototype.setThumbnailSocialPath = function(opt_path) {
  */
 silex.model.Head.prototype.getThumbnailSocialPath = function() {
   var url = this.getMeta('og:image') || this.getMeta('twitter:image');
-  if(url && this.model.file.getUrl()) {
-    var baseUrl = silex.utils.Url.getBaseUrl() + this.model.file.getUrl();
-    url = silex.utils.Url.getRelativePath(url, baseUrl);
-  }
   return url;
 };
 
@@ -562,75 +634,4 @@ silex.model.Head.prototype.getTwitterSocial = function() {
 silex.model.Head.prototype.getHeadElement = function() {
   // returns the head of the document in the iframe
   return this.model.file.getContentDocument().head;
-};
-
-
-/**
- * load temp tags (js and css) to be removed later
- * @param {Array.<Element>|Element} tags the tag(s) to add
- * @param {?function()=} opt_onSuccess
- * @param {?function()=} opt_onError
- */
-silex.model.Head.prototype.addTempTag = function(tags, opt_onSuccess, opt_onError) {
-  var tagsWichSupportOnload = ['link', 'script'];
-  if (typeof tags === 'string') {
-    // convert tags to an array
-    tags = [tags];
-  }
-  // onload callback
-  var onload = goog.bind(function() {
-    if (tags.length > 0) {
-      addNextTag();
-    }
-    else {
-      if (opt_onSuccess) {
-        opt_onSuccess();
-      }
-    }
-  }, this);
-  // nex tag function
-  var addNextTag = goog.bind(function() {
-    var tag = tags.shift();
-    if (goog.array.contains(tagsWichSupportOnload, tag.tagName.toLowerCase())) {
-      // use onload
-      tag.onload = onload;
-    }
-    else {
-      // no onload for this kind of tags, load right away
-      onload();
-    }
-    tag.onerror = function() {
-      console.error('scripts loading error');
-      if (opt_onError) {
-        opt_onError();
-      }
-    };
-    goog.dom.classlist.add(tag, silex.model.Head.SILEX_TEMP_TAGS_CSS_CLASS);
-    goog.dom.appendChild(this.getHeadElement(), tag);
-  }, this);
-  // start the loading process: call next tag
-  if (tags.length > 0) {
-    addNextTag();
-  }
-  else {
-    if (opt_onError) {
-      opt_onError();
-    }
-  }
-};
-
-
-/**
- * remove temp tags
- * @param {?Element=} opt_headElement
- */
-silex.model.Head.prototype.removeTempTags = function(opt_headElement) {
-  if (!opt_headElement) {
-    opt_headElement = this.getHeadElement();
-  }
-  // remove tags marked as silex-temp-tag
-  var tags = goog.dom.getElementsByTagNameAndClass(null, silex.model.Head.SILEX_TEMP_TAGS_CSS_CLASS, opt_headElement);
-  goog.array.forEach(tags, function(tag) {
-    goog.dom.removeNode(tag);
-  });
 };

@@ -85,8 +85,8 @@ silex.utils.Notification.isListeningForFocus = false;
  * @return {boolean}
  */
 silex.utils.Notification.useNative = function() {
-  return silex.utils.Notification.hasFocus == false
-    && ("Notification" in window && Notification.permission === "granted");
+  return silex.utils.Notification.hasFocus === false &&
+      ('Notification' in window && Notification.permission === 'granted');
 };
 
 
@@ -96,7 +96,7 @@ silex.utils.Notification.useNative = function() {
 silex.utils.Notification.activateNative = function() {
   if ('Notification' in window && Notification.permission !== 'denied') {
     if (!silex.utils.Notification.useNative()) {
-      goog.events.listenOnce(document, goog.events.EventType.CLICK, function(e) {
+      goog.events.listenOnce(document, goog.events.EventType.MOUSEMOVE, function(e) {
         Notification.requestPermission();
       });
     }
@@ -113,7 +113,7 @@ silex.utils.Notification.activateNative = function() {
  * @param {string} iconUrl
  */
 silex.utils.Notification.nativeNotification = function(message, iconUrl) {
-  if(!silex.utils.Notification.isListeningForFocus) {
+  if (!silex.utils.Notification.isListeningForFocus) {
     silex.utils.Notification.isListeningForFocus = true;
     window.onfocus = (e) => silex.utils.Notification.hasFocus = true;
     window.onblur = (e) => silex.utils.Notification.hasFocus = false;
@@ -129,7 +129,9 @@ silex.utils.Notification.nativeNotification = function(message, iconUrl) {
     }, silex.utils.Notification.NOTIFICATION_DURATION_MS);
   }
   else {
-    silex.utils.Notification.activateNative();
+    // Desktop notifications disabled because it disturbs more than it serves
+    // FIXME: remove all calls to nativeNotification since it is not useful anymore
+    // silex.utils.Notification.activateNative();
   }
 };
 
@@ -231,7 +233,6 @@ silex.utils.Notification.notifyError = function(message) {
  * @param {string} message
  */
 silex.utils.Notification.notifyInfo = function(message) {
-  console.info(message);
   alertify.set({
     'delay': silex.utils.Notification.NOTIFICATION_DURATION_MS
   });
@@ -251,18 +252,19 @@ silex.utils.Notification.setText = function(message) {
 
 /**
  * add an HTML panel with info of type "while you wait, here is an info"
- * @param {string} message
+ * @param {Element} element
  */
-silex.utils.Notification.setInfoPanel = function(message) {
+silex.utils.Notification.setInfoPanel = function(element) {
   var container = document.querySelector('.alertify-inner');
   var infoPanel = container.querySelector('.silex-info-panel');
   if (infoPanel === null) {
     infoPanel = document.createElement('DIV');
     infoPanel.classList.add('info-panel');
     // limit height so that small screens still see the close button
-    var stage = document.querySelector('#silex-stage-iframe')
+    var stage = document.querySelector('#silex-stage-iframe');
     infoPanel.style.maxHeight = Math.round(stage.offsetHeight * 2/3) + 'px';
     container.insertBefore(infoPanel, container.childNodes[container.childNodes.length - 1]);
   }
-  infoPanel.innerHTML = message;
+  infoPanel.innerHTML = '';
+  infoPanel.appendChild(element);
 };

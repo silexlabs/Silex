@@ -18,19 +18,14 @@
 
 
 goog.provide('silex.view.TipOfTheDay');
-goog.require('goog.net.XhrIo');
 
 
 
 /**
  * @constructor
  * @param {Element} element   container to render the UI
- * @param  {!silex.types.Model} model  model class which holds
- *                                  the model instances - views use it for read operation only
- * @param  {!silex.types.Controller} controller  structure which holds
- *                                  the controller instances
  */
-silex.view.TipOfTheDay = function(element, model, controller) {
+silex.view.TipOfTheDay = function(element) {
   /**
    * @type {Element}
    */
@@ -52,36 +47,31 @@ silex.view.TipOfTheDay.NUM_VISITS_LOCAL_STORAGE_NAME = 'silex-caping';
 silex.view.TipOfTheDay.prototype.init = function()
 {
   let itemTrackAction = '';
-  // hide
-  this.element.classList.add('hidden-dialog');
-  // wait for a while
-  setTimeout(() => {
-    // start loading
-    this.element.classList.add('loading');
-    // capping to prevent harrassing the user
-    let visits = 0;
-    if(window.localStorage) {
-      // init local storage
-      let visitsStr = window.localStorage.getItem(silex.view.TipOfTheDay.NUM_VISITS_LOCAL_STORAGE_NAME);
-      if(visitsStr) {
-        visits = parseInt(visitsStr, 10);
-      }
-      window.localStorage.setItem(silex.view.TipOfTheDay.NUM_VISITS_LOCAL_STORAGE_NAME, (visits + 1).toString());
-      // the more visits the less chance we have to show the tip
-      let rand = Math.random() * visits;
-      if(rand > 3) {
-        silex.service.Tracker.getInstance().trackAction('tip-of-the-day', 'noshow', itemTrackAction, 0);
-        return;
-      }
-    }
-    // load data
-    goog.net.XhrIo.send('https://api.github.com/repos/silexlabs/Silex/issues?labels=tip-of-the-day', (e) => {
-      // get the json response
-      let xhr = e.target;
-      let items = xhr.getResponseJson();
-      // loop on the items backward
-      let idx = items.length - (visits % items.length) -1;
-      let item = items[idx];
+  // start loading
+  this.element.classList.add('tip-of-the-day');
+  this.element.classList.add('loading');
+  // keep track of the visits
+  let visits = 0;
+  let visitsStr = window.localStorage.getItem(silex.view.TipOfTheDay.NUM_VISITS_LOCAL_STORAGE_NAME);
+  if (visitsStr) {
+    visits = parseInt(visitsStr, 10);
+  }
+  window.localStorage.setItem(silex.view.TipOfTheDay.NUM_VISITS_LOCAL_STORAGE_NAME, (visits + 1).toString());
+  // load data
+  var oReq = new XMLHttpRequest();
+  oReq.open('GET', 'https://api.github.com/repos/silexlabs/Silex/issues?labels=tip-of-the-day');
+  oReq.send();
+  oReq.addEventListener('error', e => {
+    (this.element.querySelector('.container') || this.element).innerHTML = 'It looks like you are offline. I could not load data from github issues';
+    this.element.classList.remove('loading');
+  });
+  oReq.addEventListener('load', e => {
+    // get the json response
+    const items = JSON.parse(oReq.responseText);
+    // loop on the items backward
+    let idx = items.length - (visits % items.length) - 1;
+    let item = items[idx];
+    if(item) {
       // store for actions tracking (QA)
       itemTrackAction = item['title'];
       silex.service.Tracker.getInstance().trackAction('tip-of-the-day', 'show', itemTrackAction, 0);
@@ -89,33 +79,21 @@ silex.view.TipOfTheDay.prototype.init = function()
       let tmp = document.createElement('div');
       tmp.innerHTML = item['body'];
       let firstLink = tmp.querySelector('a');
-      console.log('firstLink', firstLink, tmp);
+      // let firstImage = tmp.querySelector('img');
       // display the content
       let el = document.createElement('a');
       el.target='_blank';
       el.title= item['title'];
-      el.innerHTML = '<h1>' + item['title'] + '</h1><p>' + this.strip(item['body']) + '</p>';
+      el.innerHTML = '<h3>' + item['title'] + '</h3><p>' + this.strip(item['body']) + '</p>';
       if(firstLink != null) el.href = firstLink.href;
-      this.element.appendChild(el);
-      // close button
-      let a = document.createElement('a');
-      a.className = 'close';
-      a.textContent = 'Close';
-      this.element.appendChild(a);
-      // show the tooltip
-      this.element.classList.remove('loading');
-      this.element.classList.remove('hidden-dialog');
-      // add a timeout
-      setTimeout(() => {
-        this.element.classList.add('hidden-dialog');
-        silex.service.Tracker.getInstance().trackAction('tip-of-the-day', 'timeout', itemTrackAction, -1);
-      }, 30000);
-    });
-  }, 4000);
+      // if(firstImage != null) el.style.backgroundImage = `url(${firstImage.src})`;
+      (this.element.querySelector('.container') || this.element).appendChild(el);
+    } // else { console.log('It looks like you are offline. I could not load data from github issues'); }
+    // show the tooltip
+    this.element.classList.remove('loading');
+  });
   // attach click event
   goog.events.listen(this.element, goog.events.EventType.CLICK, (e) => {
-    // hide
-    this.element.classList.add('hidden-dialog');
     if(e.target.classList.contains('close')) {
       silex.service.Tracker.getInstance().trackAction('tip-of-the-day', 'close', itemTrackAction, 0);
     }
@@ -131,7 +109,7 @@ silex.view.TipOfTheDay.prototype.init = function()
  */
 silex.view.TipOfTheDay.prototype.strip = function(html)
 {
-  var node = document.createElement("DIV");
+  var node = document.createElement('DIV');
   node.innerHTML = html;
-  return node.textContent || node.innerText || "";
+  return node.textContent || node.innerText || '';
 };

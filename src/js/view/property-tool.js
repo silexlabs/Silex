@@ -21,9 +21,7 @@ goog.provide('silex.view.PropertyTool');
 
 goog.require('goog.array');
 goog.require('goog.cssom');
-goog.require('goog.editor.Field');
 goog.require('goog.object');
-goog.require('goog.ui.Checkbox');
 goog.require('goog.ui.TabBar');
 goog.require('silex.view.pane.BgPane');
 goog.require('silex.view.pane.BorderPane');
@@ -31,7 +29,7 @@ goog.require('silex.view.pane.GeneralStylePane');
 goog.require('silex.view.pane.PagePane');
 goog.require('silex.view.pane.PropertyPane');
 goog.require('silex.view.pane.StylePane');
-
+goog.require('silex.view.pane.StyleEditorPane');
 
 
 //////////////////////////////////////////////////////////////////
@@ -69,13 +67,7 @@ silex.view.PropertyTool = function(element, model, controller) {
    */
   this.invalidationManager = new InvalidationManager(500);
 
-  var btn = this.element.querySelector('.switch-apollo-mode button');
-  goog.events.listen(btn, goog.events.EventType.CLICK, function() {
-    this.controller.propertyToolController.toggleAdvanced();
-  }, false, this);
-
 };
-
 
 /**
  * base url for relative/absolute urls
@@ -126,6 +118,13 @@ silex.view.PropertyTool.prototype.stylePane = null;
 
 
 /**
+ * style editor
+ * @see     silex.view.pane.StyleEditorPane
+ */
+silex.view.PropertyTool.prototype.StyleEditorPane = null;
+
+
+/**
  * build the UI
  */
 silex.view.PropertyTool.prototype.buildUi = function() {
@@ -159,14 +158,103 @@ silex.view.PropertyTool.prototype.buildUi = function() {
       goog.dom.getElementByClass('style-editor', this.element),
       this.model, this.controller);
 
+  // Style editor
+  const styleEditorMenu = this.element.querySelector('.prodotype-style-editor .prodotype-style-editor-menu');
+  this.styleEditorPane = new StyleEditorPane(
+      styleEditorMenu,
+      this.model, this.controller);
+
+  // init component editor and style editor
+  const styleEditorElement = this.element.querySelector('.prodotype-style-editor .prodotype-container');
+  this.componentEditorElement = this.element.querySelector('.prodotype-component-editor');
+  this.model.component.init(this.componentEditorElement, styleEditorElement);
+
+  // expandables
+  const expandables = this.element.querySelectorAll('.expandable legend');
+  for(let idx=0; idx<expandables.length; idx++) {
+    const el = expandables[idx];
+    const lsKey = 'silex-expand-property-' + idx;
+    const isExpand = window.localStorage.getItem(lsKey) === 'true';
+    if(isExpand) this.togglePanel(el);
+    el.onclick = e => {
+      this.togglePanel(el);
+      window.localStorage.setItem(lsKey, el.parentNode.classList.contains('expanded').toString());
+    };
+  }
+
+  // tabs
+  const designTab = this.element.querySelector('.design');
+  const paramsTab = this.element.querySelector('.params');
+  const styleTab = this.element.querySelector('.style');
+  designTab.addEventListener('click', () => this.openDesignTab());
+  paramsTab.addEventListener('click', () => this.openParamsTab());
+  styleTab.addEventListener('click', () => this.openStyleTab());
+};
+
+
+/**
+ * toggle a property panel
+ */
+silex.view.PropertyTool.prototype.togglePanel = function(el) {
+  el.parentNode.classList.toggle('expanded');
+  const caret = el.querySelector('.fa-inverse');
+  if(caret) {
+    caret.classList.toggle('fa-caret-right');
+    caret.classList.toggle('fa-caret-down');
+  }
+};
+
+
+/**
+ * open the "design" tab
+ */
+silex.view.PropertyTool.prototype.openDesignTab = function() {
+  const designTab = this.element.querySelector('.design');
+  this.selectTab(designTab);
+  this.element.classList.remove('params-tab');
+  this.element.classList.remove('style-tab');
+  this.element.classList.add('design-tab');
+};
+
+
+/**
+ * open the "params" tab
+ */
+silex.view.PropertyTool.prototype.openParamsTab = function() {
+  const paramsTab = this.element.querySelector('.params');
+  this.selectTab(paramsTab);
+  this.element.classList.remove('design-tab');
+  this.element.classList.remove('style-tab');
+  this.element.classList.add('params-tab');
+};
+
+
+/**
+ * open the "style" tab
+ */
+silex.view.PropertyTool.prototype.openStyleTab = function() {
+  const styleTab = this.element.querySelector('.style');
+  this.selectTab(styleTab);
+  this.element.classList.remove('design-tab');
+  this.element.classList.remove('params-tab');
+  this.element.classList.add('style-tab');
+};
+
+
+silex.view.PropertyTool.prototype.selectTab = function(tab) {
+  const onTabs = this.element.querySelectorAll('.tab');
+  for(let idx=0; idx<onTabs.length; idx++) {
+    onTabs[idx].classList.remove('on');
+  }
+  tab.classList.add('on');
 };
 
 
 /**
  * redraw all panes
-* @param   {Array.<HTMLElement>} selectedElements the elements currently selected
-* @param   {Array.<string>} pageNames   the names of the pages which appear in the current HTML file
-* @param   {string}  currentPageName   the name of the current page
+ * @param   {Array.<HTMLElement>} selectedElements the elements currently selected
+ * @param   {Array.<string>} pageNames   the names of the pages which appear in the current HTML file
+ * @param   {string}  currentPageName   the name of the current page
  */
 silex.view.PropertyTool.prototype.redraw = function(selectedElements, pageNames, currentPageName) {
   this.invalidationManager.callWhenReady(() => {
@@ -177,5 +265,12 @@ silex.view.PropertyTool.prototype.redraw = function(selectedElements, pageNames,
     this.generalStylePane.redraw(selectedElements, pageNames, currentPageName);
     this.stylePane.redraw(selectedElements, pageNames, currentPageName);
     this.bgPane.redraw(selectedElements, pageNames, currentPageName);
+    this.styleEditorPane.redraw(selectedElements, pageNames, currentPageName);
+    if(selectedElements.length === 1) {
+      this.model.component.editComponent(selectedElements[0]);
+    }
+    else {
+      this.model.component.resetSelection(Component.COMPONENT_TYPE);
+    }
   });
 };

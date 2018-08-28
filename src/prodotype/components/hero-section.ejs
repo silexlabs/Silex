@@ -1,0 +1,69 @@
+<div id="<%= uid %>"></div>
+<style type="text/css">
+  <% if(align==='right') { %>
+  .silex-runtime .component-hero-section {
+    margin-left: auto;
+  }
+  <% } %>
+  .hero-scroll {
+    cursor: pointer;
+  }
+  .hero-bottom {
+    bottom: 0;
+    top: initial;
+  }
+</style>
+<script type="text/javascript">
+(function() {
+    // retrieve the section HTML elements
+    var el = document.getElementById('<%= uid %>');
+    var sectionContent = el.parentNode;
+    var section = sectionContent.parentNode;
+    function fullHeight<%= uid %>() {
+        // no resize while dragging
+        if($('.dragging-pending').length) return;
+        // do nothing in mobile version
+        if($(window).width() < 480) return;
+        // params
+        var WIDTH_RATIO = <%= width %> * .01;
+        var HEIGHT_RATIO = <%= height %> * .01;
+        var ALIGN_LEFT = ('<%= align %>' === 'left');
+        // if this is a section, get its content container's min-height and apply it to the section
+        // so that the section has a minimum height
+        var minHeight = sectionContent.length ? sectionContent.css('min-height') : '0';
+        var css = {
+          'height': $(window).height() * HEIGHT_RATIO,
+          'width': $(window).width() * WIDTH_RATIO,
+          'min-height': minHeight
+        };
+        if(ALIGN_LEFT) {
+          css['margin-left'] = 'auto';
+        }
+        $(section).css(css);
+        // center the hero-center class
+        $(section).find('.hero-center').each(function() {
+            var elementMinHeight = $(this).css('min-height');
+            $(this).css({
+                'top': '50%',
+                'margin-top': Math.round(-parseInt(elementMinHeight) / 2) + 'px'
+            });
+        });
+    }
+    $(window).resize(fullHeight<%= uid %>);
+    $(window).ready(fullHeight<%= uid %>);
+    $(document).on('silex:resize', function() { fullHeight<%= uid %>(false); });
+
+    // init scroll buttons
+    var height = Math.max(
+      Math.round(parseInt($(section).css('min-height'))),
+      Math.round(parseInt($(section).css('height')))
+    );
+    $(section).find('.hero-scroll').click(function() {
+        var container = $('html,body');
+        container.animate({
+            scrollTop: height - container.offset().top + container.scrollTop()
+        });
+    });
+
+})();
+</script>

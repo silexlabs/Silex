@@ -9,9 +9,9 @@
 .silex-stage {
   background-color: @silexdarkgrey;
   position: absolute;
-  top: @menuHeight + @contextMenuHeight;
-  bottom: 0;
-  left: @pageToolWidth;
+  top: @contextMenuHeight;
+  bottom: @breadCrumbsHeight;
+  left: @menuWidth;
   right: @propertiesToolWidth;
 }
 
@@ -34,3 +34,49 @@
 .silex-stage.loading-website-light iframe{
 }
 
+.mobile-mode {
+  .silex-stage-iframe {
+    max-width: @mobileStageWidth;
+    position: initial;
+  }
+  .silex-stage {
+    text-align: center;
+    background-image: url('../assets/stripe.png');
+    background-color: @silexlightgrey;
+  }
+}
+
+/**
+* Right click button style
+**/
+
+.rightClick {
+    position: absolute;
+    width: 150px;
+    text-align: center;
+    background-color: @silexdarkgrey;
+    color: #FFF;
+    width: 200px;
+    height: 46px;
+    border-radius: .15em;
+    border: 1px solid #444;
+    z-index: 11111;
+    top:20000px;
+    left:20000px;
+}
+.parentImgRightClick {
+    display: inline;
+}
+.imgRightClick {
+    width: 70px;
+    height: 38px;
+    margin-top: 5px;
+    float:left;
+}
+.textRightClick {
+    display: inline;
+    color: @silexlightergrey;
+    position: relative;
+    top: 25%;
+    font-size: 13px;
+}

@@ -21,6 +21,7 @@ goog.provide('silex.model.Element');
 goog.require('goog.net.EventType');
 goog.require('goog.net.ImageLoader');
 goog.require('silex.types.Model');
+goog.require('silex.utils.Url');
 
 
 /**
@@ -28,10 +29,10 @@ goog.require('silex.types.Model');
  * @enum {string}
  */
 silex.model.DomDirection = {
-  UP: "UP",
-  DOWN: "DOWN",
-  TOP: "TOP",
-  BOTTOM: "BOTTOM"
+  UP: 'UP',
+  DOWN: 'DOWN',
+  TOP: 'TOP',
+  BOTTOM: 'BOTTOM'
 };
 
 
@@ -90,6 +91,22 @@ silex.model.Element.TYPE_CONTAINER = 'container';
  * @const
  * @type {string}
  */
+silex.model.Element.TYPE_SECTION = 'section';
+
+
+/**
+ * constant for the content element of a section, which is also a container
+ * @const
+ * @type {string}
+ */
+silex.model.Element.TYPE_CONTAINER_CONTENT = 'silex-container-content';
+
+
+/**
+ * constant for silex element type
+ * @const
+ * @type {string}
+ */
 silex.model.Element.TYPE_IMAGE = 'image';
 
 
@@ -126,6 +143,15 @@ silex.model.Element.ELEMENT_CONTENT_CLASS_NAME = 'silex-element-content';
 
 
 /**
+ * constant for the class name of the default site width, rule is set when setting is changed
+ * used to set a default width to section content container
+ * @const
+ * @type {string}
+ */
+silex.model.Element.WEBSITE_WIDTH_CLASS_NAME = 'website-width'
+
+
+/**
  * constant for the attribute name of the links
  * @const
  * @type {string}
@@ -151,42 +177,11 @@ silex.model.Element.JUST_ADDED_CLASS_NAME = 'silex-just-added';
 
 
 /**
- * prepare element for edition
- * @param  {string} rawHtml   raw HTML of the element to prepare
- * @return {string} the processed HTML
+ * class for elements which are hidden in mobile version
+ * @const
+ * @type {string}
  */
-silex.model.Element.prototype.prepareHtmlForEdit = function(rawHtml) {
-  // prevent the user scripts from executing while editing
-  rawHtml = rawHtml.replace(/<script.*class=\"silex-script\".*?>/gi, '<script type="text/notjavascript" class="silex-script">');
-  // convert to absolute urls
-  if (this.model.file.getUrl()) {
-    rawHtml = silex.utils.Url.relative2Absolute(rawHtml, silex.utils.Url.getBaseUrl() + this.model.file.getUrl());
-  }
-  return rawHtml;
-};
-
-
-
-/**
- * unprepare element for edition
- * @param  {string} rawHtml   raw HTML of the element to prepare
- * @return {string} the processed HTML
- */
-silex.model.Element.prototype.unprepareHtmlForEdit = function(rawHtml) {
-  // put back the user script
-  rawHtml = rawHtml.replace(/type=\"text\/notjavascript\"/gi, 'type="text/javascript"');
-  // remove cache control used to refresh images after editing by pixlr
-  rawHtml = silex.utils.Dom.removeCacheControl(rawHtml);
-  if (this.model.file.getUrl()) {
-    // convert to relative urls
-    let baseUrl = silex.utils.Url.getBaseUrl();
-    rawHtml = silex.utils.Url.absolute2Relative(rawHtml, baseUrl + this.model.file.getUrl());
-    // put back the static scripts (protocol agnostic)
-    let staticUrl = baseUrl.substr(baseUrl.indexOf('//')) + 'static/';
-    rawHtml = rawHtml.replace(new RegExp('\.\./\.\./\.\./\.\./\.\./[\.\./]*static/', 'g'), staticUrl);
-  }
-  return rawHtml;
-};
+silex.model.Element.HIDE_ON_MOBILE = 'hide-on-mobile';
 
 
 /**
@@ -205,27 +200,93 @@ silex.model.Element.prototype.getTabs = function(num) {
 
 
 /**
+ * for properties or style which are to be applied to elements
+ * but in the case of a section not to the internal container, only the whole section
+ * this method will return the element or the section when the element is a section container
+ */
+silex.model.Element.prototype.noSectionContent = function(element) {
+  if(this.isSectionContent(element)) {
+    return /** @type {Element} */ (element.parentNode);
+  }
+  return element;
+}
+
+
+/**
  * get/set type of the element
  * @param  {Element} element   created by silex, either a text box, image, ...
- * @return  {string|null}           the style of the element
+ * @return  {?string}           the type of element
  * example: for a container this will return "container"
  */
 silex.model.Element.prototype.getType = function(element) {
-  //return goog.style.getStyle(element, styleName);
   return element.getAttribute(silex.model.Element.TYPE_ATTR);
+};
+
+
+/**
+ * @param  {Element} element   created by silex
+ * @return true if `element` is a an element's content (the element in an image, html box, section...)
+ */
+silex.model.Element.prototype.isElementContent = function(element) {
+  return element.classList.contains(silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
+}
+
+
+/**
+ * @param  {Element} element   created by silex
+ * @return {boolean} true if `element` is a section
+ */
+silex.model.Element.prototype.isSection = function(element) {
+  if(!element || !element.classList) return false;
+  return element.classList.contains(silex.model.Element.TYPE_SECTION + '-element');
+}
+
+
+/**
+ * @param  {Element} element   created by silex
+ * @return {boolean} true if `element` is the content container of a section
+ */
+silex.model.Element.prototype.isSectionContent = function(element) {
+  if(!element || !element.classList) return false; // this happens in mobile editor, when dragg/dropping (element is document)
+  return element.classList.contains(silex.model.Element.TYPE_CONTAINER_CONTENT);
+}
+
+
+/**
+ * get/set the "hide on mobile" property
+ * @param {Element} element
+ * @return {boolean} true if the element is hidden on mobile
+ */
+silex.model.Element.prototype.getHideOnMobile = function(element) {
+  if(!element || !element.classList) return false; // this happens in mobile editor, when dragg/dropping (element is document)
+  return this.noSectionContent(element).classList.contains(silex.model.Element.HIDE_ON_MOBILE);
+};
+
+
+/**
+ * get/set the "hide on mobile" property
+ * @param {Element} element
+ * @param {boolean} hide, true if the element has to be hidden on mobile
+ */
+silex.model.Element.prototype.setHideOnMobile = function(element, hide) {
+  if(hide) {
+    this.noSectionContent(element).classList.add(silex.model.Element.HIDE_ON_MOBILE);
+  }
+  else {
+    this.noSectionContent(element).classList.remove(silex.model.Element.HIDE_ON_MOBILE);
+  }
 };
 
 
 /**
  * get all the element's styles
  * @param  {Element} element   created by silex, either a text box, image, ...
- * @param {?boolean=} opt_computed use window.getComputedStyle instead of the element's stylesheet
  * @return  {string}           the styles of the element
  */
-silex.model.Element.prototype.getAllStyles = function(element, opt_computed) {
-  var styleObject = this.model.property.getStyleObject(element, opt_computed);
+silex.model.Element.prototype.getAllStyles = function(element) {
+  var styleObject = this.model.property.getStyle(element);
   var styleStr = silex.utils.Style.styleToString(styleObject);
-  return this.unprepareHtmlForEdit(styleStr);
+  return styleStr;
 };
 
 
@@ -233,14 +294,21 @@ silex.model.Element.prototype.getAllStyles = function(element, opt_computed) {
  * get/set style of the element
  * @param  {Element} element   created by silex, either a text box, image, ...
  * @param  {string} styleName  the style name
- * @param {?boolean=} opt_computed use window.getComputedStyle instead of the element's stylesheet
- * @return  {string|null}           the style of the element
+ * @return  {?string}           the style of the element
  */
-silex.model.Element.prototype.getStyle = function(element, styleName, opt_computed) {
-  var styleObject = this.model.property.getStyleObject(element, opt_computed);
-  var cssName = goog.string.toSelectorCase(styleName);
+silex.model.Element.prototype.getStyle = function(element, styleName) {
+  const cssName = goog.string.toSelectorCase(styleName);
+  const isMobile = this.view.workspace.getMobileEditor();
+  let styleObject = this.model.property.getStyle(element, isMobile);
   if (styleObject && styleObject[cssName]) {
-    return this.unprepareHtmlForEdit(styleObject[cssName]);
+    return styleObject[cssName];
+  }
+  else if (isMobile) {
+    // get the non mobile style if it is not defined in mobile
+    styleObject = this.model.property.getStyle(element, false);
+    if (styleObject && styleObject[cssName]) {
+      return styleObject[cssName];
+    }
   }
   return null;
 };
@@ -251,26 +319,28 @@ silex.model.Element.prototype.getStyle = function(element, styleName, opt_comput
  * @param  {Element} element            created by silex, either a text box, image, ...
  * @param  {string}  styleName          the style name, camel case, not css with dashes
  * @param  {?string=}  opt_styleValue     the value for this styleName
+ * @param  {?boolean=}  opt_preserveJustAdded     if true, do not remove the "just added" css class, default is false
  */
-silex.model.Element.prototype.setStyle = function(element, styleName, opt_styleValue) {
+silex.model.Element.prototype.setStyle = function(element, styleName, opt_styleValue, opt_preserveJustAdded) {
   // convert to css case
   styleName = goog.string.toSelectorCase(styleName);
+  // remove the 'just pasted' class
+  if(!opt_preserveJustAdded) element.classList.remove(silex.model.Element.JUST_ADDED_CLASS_NAME);
   // retrieve style
-  var styleObject = this.model.property.getStyleObject(element);
+  var styleObject = this.model.property.getStyle(element);
   if (!styleObject) {
     styleObject = {};
   }
+  // apply the new style
   if (styleObject[styleName] !== opt_styleValue) {
     if (goog.isDefAndNotNull(opt_styleValue)) {
-      styleObject[styleName] = this.prepareHtmlForEdit(opt_styleValue);
+      styleObject[styleName] = opt_styleValue;
     }
     else {
       styleObject[styleName] = '';
     }
     this.model.property.setStyle(element, styleObject);
   }
-  // remove the 'just pasted' class
-  element.classList.remove(silex.model.Element.JUST_ADDED_CLASS_NAME);
 };
 
 
@@ -317,13 +387,9 @@ silex.model.Element.prototype.setBgImage = function(element, url) {
  * @return  {string}  the html content
  */
 silex.model.Element.prototype.getInnerHtml = function(element) {
-  // disable editable
-  this.model.body.setEditable(element, false);
   var innerHTML = this.getContentNode(element).innerHTML;
-  // remove absolute urls and not executable scripts
-  innerHTML = this.unprepareHtmlForEdit(innerHTML);
-  // re-enable editable
-  this.model.body.setEditable(element, true);
+  // put back executable scripts
+  innerHTML = silex.utils.Dom.reactivateScripts(innerHTML);
   return innerHTML;
 };
 
@@ -336,14 +402,10 @@ silex.model.Element.prototype.getInnerHtml = function(element) {
 silex.model.Element.prototype.setInnerHtml = function(element, innerHTML) {
   // get the container of the html content of the element
   var contentNode = this.getContentNode(element);
-  // cleanup
-  this.model.body.setEditable(element, false);
-  // remove absolute urls and not executable scripts
-  innerHTML = this.prepareHtmlForEdit(innerHTML);
+  // deactivate executable scripts
+  innerHTML = silex.utils.Dom.deactivateScripts(innerHTML);
   // set html
   contentNode.innerHTML = innerHTML;
-  // make editable again
-  this.model.body.setEditable(element, true);
 };
 
 
@@ -353,20 +415,9 @@ silex.model.Element.prototype.setInnerHtml = function(element, innerHTML) {
  * @return  {Element}  the element which holds the content, i.e. a div, an image, ...
  */
 silex.model.Element.prototype.getContentNode = function(element) {
-  var content;
-  // find the content elements
-  var contentElements = goog.dom.getElementsByClass(
-      silex.model.Element.ELEMENT_CONTENT_CLASS_NAME,
-      element);
-  if (contentElements && contentElements.length === 1) {
-    // image or html box case
-    content = contentElements[0];
-  }
-  else {
-    // text box or container case
-    content = element;
-  }
-  return content;
+  return element.querySelector(
+    ':scope > .' + silex.model.Element.ELEMENT_CONTENT_CLASS_NAME) ||
+    element;
 };
 
 
@@ -376,19 +427,22 @@ silex.model.Element.prototype.getContentNode = function(element) {
  * @param  {silex.model.DomDirection} direction
  */
 silex.model.Element.prototype.move = function(element, direction) {
-  switch(direction) {
+  // do not move a section's container content, but the section itself
+  element = this.noSectionContent(element);
+
+  switch (direction) {
     case silex.model.DomDirection.UP:
-      let sibling = this.getNextElement(element);
-      if(sibling) {
+      let nextSibling = this.getNextElement(element, true);
+      if (nextSibling) {
         // insert after
-        element.parentNode.insertBefore(sibling, element);
+        element.parentNode.insertBefore(nextSibling, element);
       }
       break;
     case silex.model.DomDirection.DOWN:
-      let sibling = this.getPreviousElement(element);
-      if(sibling) {
+      let prevSibling = this.getNextElement(element, false);
+      if (prevSibling) {
         // insert before
-        element.parentNode.insertBefore(sibling, element.nextSibling);
+        element.parentNode.insertBefore(prevSibling, element.nextSibling);
       }
       break;
     case silex.model.DomDirection.TOP:
@@ -404,46 +458,21 @@ silex.model.Element.prototype.move = function(element, direction) {
 
 
 /**
- * get the previous element in the DOM, which is a Silex element
+ * get the previous or next element in the DOM, which is a Silex element
  * @param {Element} element
- * @return {Element|null}
+ * @param {boolean} forward if true look for the next element, if false for the previous
+ * @return {?Element}
  */
-silex.model.Element.prototype.getPreviousElement = function(element) {
-  let len = element.parentNode.childNodes.length;
-  let res = null;
-  for (let idx=0; idx < len; idx++) {
-    let el = element.parentNode.childNodes[idx];
-    if (el.nodeType === 1 && this.getType(el) !== null) {
-      if(el === element) {
-        return res;
-      }
+silex.model.Element.prototype.getNextElement = function(element, forward) {
+  let node = /** @type {Node} */ (element);
+  while(node = forward ? node.nextSibling : node.previousSibling) {
+    if (node.nodeType === 1) {
+      const el = /** @type {Element} */ (node);
       // candidates are the elements which are visible in the current page, or visible everywhere (not paged)
-      if(this.model.page.isInPage(el) || this.model.page.getPagesForElement(el).length === 0) {
-        res = el;
-      }
-    }
-  }
-  return null;
-};
-
-
-/**
- * get the previous element in the DOM, which is a Silex element
- * @param {Element} element
- * @return {Element|null}
- */
-silex.model.Element.prototype.getNextElement = function(element) {
-  let len = element.parentNode.childNodes.length;
-  let res = null;
-  for (let idx=len - 1; idx >= 0; idx--) {
-    let el = element.parentNode.childNodes[idx];
-    if (el.nodeType === 1 && this.getType(el) !== null) {
-      if(el === element) {
-        return res;
-      }
-      // candidates are the elements which are visible in the current page, or visible everywhere (not paged)
-      if(this.model.page.isInPage(el) || this.model.page.getPagesForElement(el).length === 0) {
-        res = el;
+      if(this.getType(el) !== null &&
+        (this.model.page.isInPage(el) ||
+          this.model.page.getPagesForElement(el).length === 0)) {
+        return el;
       }
     }
   }
@@ -491,32 +520,35 @@ silex.model.Element.prototype.setImageUrl = function(element, url, opt_callback,
       // listen to the complete event
       var imageLoader = new goog.net.ImageLoader();
       goog.events.listenOnce(imageLoader, goog.events.EventType.LOAD,
-          function(e) {
-            // handle the loaded image
-            img = e.target;
-            // callback
-            if (opt_callback) {
-              opt_callback(element, img);
-            }
-            // add the image to the element
-            goog.dom.appendChild(element, img);
-            // add a marker to find the inner content afterwards, with getContent
-            goog.dom.classlist.add(img, silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
-            // remove the id set by the loader (it needs it to know what has already been loaded?)
-            img.removeAttribute('id');
-            // remove loading asset
-            goog.dom.classlist.remove(element, silex.model.Element.LOADING_ELEMENT_CSS_CLASS);
-            // redraw tools
-            this.model.body.setSelection(this.model.body.getSelection());
-          }, true, this);
+        function(e) {
+          // handle the loaded image
+          img = e.target;
+          // update element size
+          this.setStyle(element, 'width', Math.max(silex.model.Element.MIN_WIDTH, img.naturalWidth) + 'px', true);
+          this.setStyle(element, this.getHeightStyleName(element), Math.max(silex.model.Element.MIN_HEIGHT, img.naturalHeight) + 'px', true);
+          // callback
+          if (opt_callback) {
+            opt_callback(element, img);
+          }
+          // add the image to the element
+          goog.dom.appendChild(element, img);
+          // add a marker to find the inner content afterwards, with getContent
+          goog.dom.classlist.add(img, silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
+          // remove the id set by the loader (it needs it to know what has already been loaded?)
+          img.removeAttribute('id');
+          // remove loading asset
+          goog.dom.classlist.remove(element, silex.model.Element.LOADING_ELEMENT_CSS_CLASS);
+          // redraw tools
+          this.model.body.setSelection(this.model.body.getSelection());
+        }, true, this);
       goog.events.listenOnce(imageLoader, goog.net.EventType.ERROR,
-          function() {
-            console.error('An error occured while loading the image.', element);
-            // callback
-            if (opt_errorCallback) {
-              opt_errorCallback(element, 'An error occured while loading the image.');
-            }
-          }, true, this);
+        function(e) {
+          console.error('An error occured while loading the image.', element, e);
+          // callback
+          if (opt_errorCallback) {
+            opt_errorCallback(element, 'An error occured while loading the image.');
+          }
+        }, true, this);
       // add loading asset
       goog.dom.classlist.add(element, silex.model.Element.LOADING_ELEMENT_CSS_CLASS);
       // remove previous img tag
@@ -549,10 +581,16 @@ silex.model.Element.prototype.setImageUrl = function(element, url, opt_callback,
  * @param  {Element} element   the element to remove
  */
 silex.model.Element.prototype.removeElement = function(element) {
+  // never delete sections container content, but the section itself
+  element = this.noSectionContent(element);
+
   // check this is allowed, i.e. an element inside the stage container
   if (this.model.body.getBodyElement() !== element &&
-      goog.dom.contains(this.model.body.getBodyElement(), element)) {
-    // useless? Should remove its style? this.model.property.setStyle(element);
+    goog.dom.contains(this.model.body.getBodyElement(), element)) {
+    // remove style and component data
+    this.model.property.setElementComponentData(element);
+    this.model.property.setStyle(element, null, true);
+    this.model.property.setStyle(element, null, false);
     // remove the element
     goog.dom.removeNode(element);
   }
@@ -569,10 +607,143 @@ silex.model.Element.prototype.removeElement = function(element) {
  * @param {Element} element
  */
 silex.model.Element.prototype.addElement = function(container, element) {
+  // for sections, force body
+  if(this.isSection(element)) {
+    container = this.model.body.getBodyElement();
+  }
   goog.dom.appendChild(container, element);
   // add the class to keep the element above all others
   element.classList.add(silex.model.Element.JUST_ADDED_CLASS_NAME);
- };
+  // resize the body
+  // call the method defined in front-end.js
+  // this will resize the body according to its content
+  // it will also trigger a "silex:resize" event
+  this.model.file.getContentWindow()['resizeBody']();
+};
+
+silex.model.Element.INITIAL_ELEMENT_SIZE = 100;
+
+
+/**
+ * add an element at the center of the stage
+ * and move it into the container beneeth it
+ * @param {Element} element    the element to add
+ * @param {?number=} opt_offset an offset to apply to its position (x and y)
+ */
+silex.model.Element.prototype.addElementDefaultPosition = function(element, opt_offset) {
+  opt_offset = opt_offset || 0;
+  // find the container (main background container or the stage)
+  const stageSize = this.view.stage.getStageSize();
+  const bb = this.model.property.getBoundingBox([element]);
+  const posX = Math.round((stageSize.width / 2) - (bb.width / 2));
+  const posY = 100;
+  const container = this.getBestContainerForNewElement(posX, posY);
+  // take the scroll into account (drop at (100, 100) from top left corner of the window, not the stage)
+  const bbContainer = goog.style.getBounds(container);
+  const offsetX = posX + this.view.stage.getScrollX() - bbContainer.left;
+  const offsetY = posY + this.view.stage.getScrollY() - bbContainer.top;
+  // add to stage
+  this.addElement(container, element);
+  // apply the style (force desktop style, not mobile)
+  const styleObject = this.model.property.getStyle(element, false);
+  styleObject.top = (opt_offset + offsetY) + 'px';
+  styleObject.left = (opt_offset + offsetX) + 'px';
+  this.model.property.setStyle(element, styleObject, false);
+};
+
+
+/**
+ * find the best drop zone at a given position
+ * NEW: drop in the body directly since containers have their own z-index
+ *      and the element is partly hidden sometimes if we drop it in a container
+ * @param  {number} x position in px
+ * @param  {number} y position in px
+ * @return {Element} the container element under (x, y)
+ */
+silex.model.Element.prototype.getBestContainerForNewElement = function(x, y) {
+  // let dropZone = this.view.stage.getDropZone(x, y) || {'element': this.model.body.getBodyElement(), 'zIndex': 0};
+  // return dropZone.element;
+  return this.model.body.getBodyElement();
+};
+
+
+/**
+ * init the element depending on its type
+ * @param {Element} element
+ */
+silex.model.Element.prototype.initElement = function(element) {
+  // default style
+  var defaultStyle = {};
+  defaultStyle['width'] = silex.model.Element.INITIAL_ELEMENT_SIZE + 'px';
+  defaultStyle[this.getHeightStyleName(element)] = silex.model.Element.INITIAL_ELEMENT_SIZE + 'px';
+
+  // init the element depending on its type
+  switch(this.getType(element)) {
+    case silex.model.Element.TYPE_CONTAINER:
+    case silex.model.Element.TYPE_HTML:
+      if(!this.isSection(element)){
+        defaultStyle['background-color'] = 'rgb(255, 255, 255)';
+      }
+      break;
+    case silex.model.Element.TYPE_TEXT:
+    case silex.model.Element.TYPE_IMAGE:
+      break;
+  }
+  // special case of section content
+  if(this.isSectionContent(element)) {
+    // no bg color for the content container
+    defaultStyle['background-color'] = '';
+    // no width either, it will take the .website-width
+    // the default one from front-end.css or the one in the settings
+    defaultStyle['width'] = '';
+  }
+  // send the scroll to the target
+  this.view.stage.setScrollTarget(element);
+
+  // default style to the element style
+  // keep the style if there is one, usually set by component::initComponent
+  const finalStyle = this.model.property.getStyle(element, false) || {};
+  for(var name in defaultStyle) {
+    finalStyle[name] = finalStyle[name] || defaultStyle[name];
+  }
+  // apply the style (force desktop style, not mobile)
+  this.model.property.setStyle(element, finalStyle, false);
+
+  // add the element to the stage
+  if(this.isSection(element)) {
+    this.addElement(this.model.body.getBodyElement(), element);
+  }
+  else if(!this.isElementContent(element)) {
+    // add to the stage at the right position
+    // and in the right container
+    this.addElementDefaultPosition(element);
+  }
+  // set element editable
+  this.initUiHandles(element);
+};
+
+
+/**
+ * Add UI to resize elements. This is usually done on the server side but when the client side adds an element it does add UIs itself.
+ * @param  {Element} element
+ */
+silex.model.Element.prototype.initUiHandles = function(element) {
+  goog.array.forEach([
+    'ui-resizable-n',
+    'ui-resizable-s',
+    'ui-resizable-e',
+    'ui-resizable-w',
+    'ui-resizable-ne',
+    'ui-resizable-nw',
+    'ui-resizable-se',
+    'ui-resizable-sw'
+  ], function(className) {
+    var handle = this.model.file.getContentDocument().createElement('div');
+    goog.dom.classlist.add(handle, className);
+    goog.dom.classlist.add(handle, 'ui-resizable-handle');
+    goog.dom.appendChild(element, handle);
+  }, this);
+};
 
 
 /**
@@ -584,47 +755,30 @@ silex.model.Element.prototype.addElement = function(container, element) {
  * @return  {Element}   the newly created element
  */
 silex.model.Element.prototype.createElement = function(type) {
-  // find the container (main background container or the stage)
-  var bodyElement = this.model.body.getBodyElement();
-  var container = goog.dom.getElementByClass(silex.view.Stage.BACKGROUND_CLASS_NAME, bodyElement);
-  if (!container) {
-    container = bodyElement;
-  }
-  // take the scroll into account (drop at (100, 100) from top left corner of the window, not the stage)
-  var offsetX = 100 + this.view.stage.getScrollX();
-  var offsetY = 100 + this.view.stage.getScrollY();
-  // default style
-  var styleObject = {
-    height: '100px',
-    width: '100px',
-    top: offsetY + 'px',
-    left: offsetX + 'px'
-  };
-
   // create the element
   var element = null;
   switch (type) {
-
-    // container
+      // container
     case silex.model.Element.TYPE_CONTAINER:
       element = this.createContainerElement();
-      // add a default style
-      styleObject.backgroundColor = '#FFFFFF';
       break;
 
-    // text
+      // section
+    case silex.model.Element.TYPE_SECTION:
+      element = this.createSectionElement();
+      break;
+
+      // text
     case silex.model.Element.TYPE_TEXT:
       element = this.createTextElement();
       break;
 
-    // HTML box
+      // HTML box
     case silex.model.Element.TYPE_HTML:
       element = this.createHtmlElement();
-      // add a default style
-      styleObject.backgroundColor = '#FFFFFF';
       break;
 
-    // Image
+      // Image
     case silex.model.Element.TYPE_IMAGE:
       element = this.createImageElement();
       break;
@@ -635,16 +789,9 @@ silex.model.Element.prototype.createElement = function(type) {
   goog.dom.classlist.add(element, silex.model.Body.EDITABLE_CLASS_NAME);
   this.model.property.initSilexId(element, this.model.file.getContentDocument());
 
-  // apply the style
-  this.model.property.setStyle(element, styleObject);
-
-  // make it editable
-  this.model.body.setEditable(element, true);
-
   // add css class for Silex styles
   goog.dom.classlist.add(element, type + '-element');
-  // add to stage
-  this.addElement(container, element);
+
   // return the element
   return element;
 };
@@ -664,26 +811,67 @@ silex.model.Element.prototype.createContainerElement = function() {
 
 
 /**
+ * @param {string} className
+ * @return {Element}
+ */
+silex.model.Element.prototype.createElementWithContent = function(className) {
+  // create the element
+  var element = goog.dom.createElement('div');
+  element.setAttribute(silex.model.Element.TYPE_ATTR, className);
+  // create the container for text content
+  var content = goog.dom.createElement('div');
+  // add empty content
+  goog.dom.appendChild(element, content);
+  // add a marker to find the inner content afterwards, with getContent
+  goog.dom.classlist.add(content, silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
+  // done
+  return element;
+};
+
+
+/**
+ * element creation method for a given type
+ * called from createElement
+ * @return {Element}
+ */
+silex.model.Element.prototype.createSectionElement = function() {
+  // create the element
+  var element = goog.dom.createElement('div');
+  element.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_CONTAINER);
+  element.classList.add(silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME);
+  element.classList.add(silex.model.Element.TYPE_CONTAINER + '-element');
+
+  // content element is both a container and a content element
+  var content = this.createElement(silex.model.Element.TYPE_CONTAINER);
+  content.classList.add(silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
+  content.classList.add(silex.model.Element.TYPE_CONTAINER_CONTENT);
+  content.classList.add(silex.model.Element.WEBSITE_WIDTH_CLASS_NAME);
+  content.classList.add(silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME);
+  element.appendChild(content);
+
+  this.initElement(content);
+
+  // done
+  return element;
+};
+
+
+/**
  * element creation method for a given type
  * called from createElement
  * @return {Element}
  */
 silex.model.Element.prototype.createTextElement = function() {
   // create the element
-  var element = goog.dom.createElement('div');
-  element.setAttribute(silex.model.Element.TYPE_ATTR, silex.model.Element.TYPE_TEXT);
-  // create the container for text content
-  var textContent = goog.dom.createElement('div');
-  // add empty content
-  textContent.innerHTML = 'New text box';
-  goog.dom.appendChild(element, textContent);
-  // add a marker to find the inner content afterwards, with getContent
-  goog.dom.classlist.add(textContent, silex.model.Element.ELEMENT_CONTENT_CLASS_NAME);
+  var element = this.createElementWithContent(silex.model.Element.TYPE_TEXT);
+  // add default content
+  var content = this.getContentNode(element);
+  content.innerHTML = '<p>New text box</p>';
   // add normal class for default text formatting
-  // sometimes there is only in text node in textContent
+  // sometimes there is only in text node in content
   // e.g. whe select all + remove formatting
-  goog.dom.classlist.add(textContent, 'normal');
-
+  goog.dom.classlist.add(content, 'normal');
+  // done
   return element;
 };
 
@@ -724,7 +912,7 @@ silex.model.Element.prototype.createImageElement = function() {
 /**
  * set/get a "silex style link" on an element
  * @param  {Element} element
- * @param  {?string=} opt_link  a link (absolute or relative)
+ * @param  {?string=} opt_link an URL
  *         or an internal link (beginning with #!)
  *         or null to remove the link
  */
@@ -755,15 +943,22 @@ silex.model.Element.prototype.getLink = function(element) {
  * @return  {?string}           the value for this styleName
  */
 silex.model.Element.prototype.getClassName = function(element) {
-  var pages = this.model.page.getPages();
-  return goog.array.map(element.className.split(' '), function(name) {
-    if (goog.array.contains(silex.utils.Style.SILEX_CLASS_NAMES, name) ||
-        goog.array.contains(pages, name) ||
-        this.model.property.getSilexId(element) === name) {
-      return;
+  const pages = this.model.page.getPages();
+  let componentCssClasses = [];
+  if(this.model.component.isComponent(element)) {
+    const templateName = /** @type {silex.model.data.TemplateName} */ (this.model.property.getElementComponentData(element)['templateName']);
+    componentCssClasses = this.model.component.getCssClasses(templateName);
+  }
+  return element.className.split(' ').filter((name) => {
+    if (name === '' ||
+      goog.array.contains(silex.utils.Style.SILEX_CLASS_NAMES, name) ||
+      goog.array.contains(pages, name) ||
+      goog.array.contains(componentCssClasses, name) ||
+      this.model.property.getSilexId(element) === name) {
+      return false;
     }
-    return name;
-  }, this).join(' ').trim();
+    return true;
+  }).join(' ');
 };
 
 
@@ -779,8 +974,8 @@ silex.model.Element.prototype.setClassName = function(element, opt_className) {
   var pages = this.model.page.getPages();
   var classNamesToKeep = goog.array.map(element.className.split(' '), function(name) {
     if (goog.array.contains(silex.utils.Style.SILEX_CLASS_NAMES, name) ||
-        goog.array.contains(pages, name) ||
-        this.model.property.getSilexId(element) === name) {
+      goog.array.contains(pages, name) ||
+      this.model.property.getSilexId(element) === name) {
       return name;
     }
   }, this);
@@ -797,3 +992,18 @@ silex.model.Element.prototype.setClassName = function(element, opt_className) {
     });
   }
 };
+
+
+/**
+ * get the name of the style to be used to set the height of the element
+ * returns 'height' or 'minHeight' depending on the element type
+ * @param {Element} element
+ * @return {string} 'height' or 'minHeight' depending on the element type
+ */
+silex.model.Element.prototype.getHeightStyleName = function(element) {
+  if(element.classList.contains(silex.model.Body.SILEX_USE_HEIGHT_NOT_MINHEIGHT)) {
+    return 'height';
+  }
+  return 'minHeight';
+};
+

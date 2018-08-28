@@ -44,7 +44,7 @@ silex.controller.ViewMenuController.prototype.openCssEditor = function() {
   // undo checkpoint
   this.undoCheckPoint();
   // open the editor
-  this.view.cssEditor.openEditor();
+  this.view.cssEditor.open();
   this.view.cssEditor.setValue(this.model.head.getHeadStyle());
 };
 
@@ -58,7 +58,7 @@ silex.controller.ViewMenuController.prototype.openHtmlHeadEditor = function() {
   // deselect all elements
   this.model.body.setSelection([]);
   // open the editor
-  this.view.htmlEditor.openEditor();
+  this.view.htmlEditor.open();
   this.view.htmlEditor.setValue(this.model.head.getUserHeadTag());
 };
 
@@ -70,7 +70,7 @@ silex.controller.ViewMenuController.prototype.openJsEditor = function() {
   // undo checkpoint
   this.undoCheckPoint();
   // open the editor
-  this.view.jsEditor.openEditor();
+  this.view.jsEditor.open();
   this.view.jsEditor.setValue(this.model.head.getHeadScript());
 };
 
@@ -92,6 +92,14 @@ silex.controller.ViewMenuController.prototype.previewResponsize = function() {
 
 
 /**
+ * open the page pannel
+ */
+silex.controller.ViewMenuController.prototype.showPages = function() {
+  this.view.menu.toggleSubMenu('page-tool-visible');
+};
+
+
+/**
  * preview the website in a new window or in responsize
  * ask the user to save the file if needed
  * @param {boolean} inResponsize if true this will open the preview in responsize
@@ -102,38 +110,37 @@ silex.controller.ViewMenuController.prototype.doPreview = function(inResponsize)
   var doOpenPreview = function() {
     if (inResponsize) {
       this.view.workspace.setPreviewWindowLocation('http://www.responsize.org/?url=' +
-        silex.utils.Url.getBaseUrl() +
-        this.model.file.getUrl() +
+        this.model.file.getFileInfo().url +
         '#!' + this.model.page.getCurrentPage());
     }
     else {
-      this.view.workspace.setPreviewWindowLocation(this.model.file.getUrl() + '#!' + this.model.page.getCurrentPage());
+      this.view.workspace.setPreviewWindowLocation(this.model.file.getFileInfo().url + '#!' + this.model.page.getCurrentPage());
     }
     this.tracker.trackAction('controller-events', 'success', 'view.file', 1);
   }.bind(this);
   // save before preview
-  var doSaveTheFile = function() {
+  var doSaveTheFile = () => {
     this.save(
-      this.model.file.getUrl(),
+      this.model.file.getFileInfo(),
       goog.bind(function(url) {
         //doOpenPreview();
       }, this),
       goog.bind(function(err) {
         this.tracker.trackAction('controller-events', 'error', 'view.file', -1);
       }, this));
-  }.bind(this);
-  if(this.model.file.getUrl()) {
+  };
+  if (this.model.file.getFileInfo() && !this.model.file.isTemplate) {
     // open the preview window
     // it is important to do it now, on the user click so that it is not blocked
     // it will be refreshed after save
     doOpenPreview();
     // also save
-    if(this.isDirty()) {
+    if (this.isDirty()) {
       doSaveTheFile();
     }
   }
   else {
-    silex.utils.Notification.alert('You need to save the website before I can show a preview', goog.bind(function () {
+    silex.utils.Notification.alert('You need to save the website before I can show a preview', goog.bind(function() {
       doSaveTheFile();
     }, this));
   }
