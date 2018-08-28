@@ -1,8 +1,9 @@
 sudo: false
 
 env:
-  - ELECTRON_CACHE=$HOME/.cache/electron
-  - ELECTRON_BUILDER_CACHE=$HOME/.cache/electron-builder
+  global:
+    - ELECTRON_CACHE=$HOME/.cache/electron
+    - ELECTRON_BUILDER_CACHE=$HOME/.cache/electron-builder
 
 language: node_js
 node_js:
@@ -19,18 +20,33 @@ jobs:
     - stage: build 🔨
       script: npm run build
     - stage: quality ✔
-      name: tests
-      script: echo Not yet!
-    - name: lint front
+      name: lint front
       script: npm run lint:js
     - name: lint back
       script: npm run lint:server
     - stage: deploy 📦
+      name: online version
+      deploy:
+        skip_cleanup: true
+        # deploy develop to the staging environment
+        - provider: script
+          script: bash dist/deploy.sh $HOST_PREPROD $URL_PREPROD
+          on:
+            repo: silexlabs/silex
+            branch: develop
+        # deploy master to production
+        - provider: script
+          script: bash dist/deploy.sh $HOST_PROD $URL_PROD
+          on:
+            repo: silexlabs/silex
+            branch: master
+    - name: linux app
       if: branch = master AND fork != false
       script: npm run release
       os: linux
       dist: xenial
-    - if: branch = master AND fork != false
+    - name: osx app
+      if: branch = master AND fork != false
       script: npm run release
       os: osx
 
