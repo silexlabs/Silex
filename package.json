@@ -6,7 +6,7 @@
   "<-- ": "version is used in BackwardCompat.js -->",
   "author": "Alex Hoyau <a.hoyau@silexlabs.org> (https://lexoyo.me/)",
   "contributors": [
-    "Thomas Fetiveau aka zabojad"
+    "Jean-Baptiste Richardet <jeanbaptiste.richardet@gmail.com> (https://github.com/JbIPS)"
   ],
   "main": "dist/server/index.js",
   "license": "GPL-3.0",
@@ -23,7 +23,7 @@
     "stop": "pm2 stop .pm2.json",
     "start:debug": "cross-env SILEX_DEBUG=true npm start",
     "build": "npm run build:css && npm run build:html && npm run build:prodotype && npm run build:js:release",
-    "build:electron": "electron-builder --publish always",
+    "release": "electron-builder",
     "build:prodotype": "prodotype src/prodotype/components dist/client/libs/prodotype/components/ && prodotype src/prodotype/styles dist/client/libs/prodotype/styles/",
     "build:css": "lessc src/css/_styles.less dist/client/css/admin.css --source-map",
     "build:html": "jade src/html/index.jade --out dist/client/ --no-debug",
@@ -34,8 +34,6 @@
     "watch:server": "watch 'npm run lint:server' dist/server/",
     "watch:client": "watch 'npm run build:css && npm run build:html && npm run build:prodotype && npm run build:js:debug && npm run lint:js' src/",
     "lint:js": "eslint src/js/",
-    "old:lint:js:closure": "eslint src/js/ && node_modules/google-closure-linter/closure_linter/gjslint.py --max_line_length=200 src/js/**/*.js",
-    "old:fix:js": "node_modules/google-closure-linter/closure_linter/fixjsstyle.py -r src/js/ && node_modules/google-closure-linter/closure_linter/gjslint.py --max_line_length=200 src/js/**/*.js",
     "lint:server": "eslint dist/server/",
     "postinstall": "npm run init:prodotype && npm run init:templates && npm run build",
     "start:electron": "SILEX_ELECTRON=true electron ."

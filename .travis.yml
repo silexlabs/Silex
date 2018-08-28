@@ -1,5 +1,9 @@
 sudo: false
 
+env:
+  - ELECTRON_CACHE=$HOME/.cache/electron
+  - ELECTRON_BUILDER_CACHE=$HOME/.cache/electron-builder
+
 language: node_js
 node_js:
 - '8'
@@ -8,16 +12,25 @@ notifications:
 cache:
   directories:
     - "node_modules"
+    - $HOME/.cache/electron
+    - $HOME/.cache/electron-builder
 jobs:
   include:
     - stage: build 🔨
       script: npm run build
+    - stage: quality ✔
+      name: tests
+      script: echo Not yet!
+    - name: lint front
+      script: npm run lint:js
+    - name: lint back
+      script: npm run lint:server
     - stage: deploy 📦
-      if: branch = master
-      script: npm run build:electron
+      if: branch = master AND fork != false
+      script: npm run release
       os: linux
       dist: xenial
-    - if: branch = master
-      script: npm run build:electron
+    - if: branch = master AND fork != false
+      script: npm run release
       os: osx
 
