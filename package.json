@@ -1,12 +1,12 @@
 {
-  "name": "Silex",
+  "name": "silex",
   "description": "Free and easy website builder for everyone.",
   "<-- be careful": "version is used in BackwardCompat.js -->",
   "version": "2.2.7",
   "<-- ": "version is used in BackwardCompat.js -->",
   "author": "Alex Hoyau <a.hoyau@silexlabs.org> (https://lexoyo.me/)",
   "contributors": [
-    "Thomas Fetiveau aka zabojad"
+    "Jean-Baptiste Richardet <jeanbaptiste.richardet@gmail.com> (https://github.com/JbIPS)"
   ],
   "main": "dist/server/index.js",
   "license": "GPL-3.0",
@@ -23,6 +23,7 @@
     "stop": "pm2 stop .pm2.json",
     "start:debug": "cross-env SILEX_DEBUG=true npm start",
     "build": "npm run build:css && npm run build:html && npm run build:prodotype && npm run build:js:release",
+    "release": "electron-builder",
     "build:prodotype": "prodotype src/prodotype/components dist/client/libs/prodotype/components/ && prodotype src/prodotype/styles dist/client/libs/prodotype/styles/",
     "build:css": "lessc src/css/_styles.less dist/client/css/admin.css --source-map",
     "build:html": "jade src/html/index.jade --out dist/client/ --no-debug",
@@ -33,8 +34,6 @@
     "watch:server": "watch 'npm run lint:server' dist/server/",
     "watch:client": "watch 'npm run build:css && npm run build:html && npm run build:prodotype && npm run build:js:debug && npm run lint:js' src/",
     "lint:js": "eslint src/js/",
-    "old:lint:js:closure": "eslint src/js/ && node_modules/google-closure-linter/closure_linter/gjslint.py --max_line_length=200 src/js/**/*.js",
-    "old:fix:js": "node_modules/google-closure-linter/closure_linter/fixjsstyle.py -r src/js/ && node_modules/google-closure-linter/closure_linter/gjslint.py --max_line_length=200 src/js/**/*.js",
     "lint:server": "eslint dist/server/",
     "postinstall": "npm run init:prodotype && npm run init:templates && npm run build",
     "start:electron": "SILEX_ELECTRON=true electron ."
@@ -59,6 +58,7 @@
   "devDependencies": {
     "cross-env": "5.1.4",
     "electron": "1.8.4",
+    "electron-builder": "^20.28.2",
     "eslint": "4.19.1",
     "google-closure-compiler": "20170218.0.0",
     "google-closure-library": "20170218.0.1",
@@ -113,5 +113,46 @@
     "github",
     "silex",
     "creative commons"
-  ]
+  ],
+  "build": {
+    "appId": "org.silexlabs.silex",
+    "files": [
+      "dist",
+      "node_modules",
+      "static",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.developer-tools"
+    },
+    "dmg": {
+      "contents": [
+        {
+          "x": 110,
+          "y": 150
+        },
+        {
+          "x": 240,
+          "y": 150,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
+    "linux": {
+      "category": "Network",
+      "icon": "build/icons/",
+      "target": [
+        "AppImage",
+        "deb"
+      ]
+    },
+    "win": {
+      "target": "squirrel",
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "createDesktopShortcut": "always"
+    }
+  }
 }
