@@ -123,7 +123,8 @@
       "package.json"
     ],
     "mac": {
-      "category": "public.app-category.developer-tools"
+      "category": "public.app-category.developer-tools",
+      "target": "dmg"
     },
     "dmg": {
       "contents": [
