@@ -15,16 +15,21 @@ cache:
     - "node_modules"
     - $HOME/.cache/electron
     - $HOME/.cache/electron-builder
+before_install:
+  - npm i -g npm@6.4.1
 jobs:
   include:
     - stage: build 🔨
+      install: npm ci
       script: npm run build
     - stage: quality ✔
+      install: npm ci --ignore-scripts
       name: lint front
       script: npm run lint:js
     - name: lint back
       script: npm run lint:server
     - stage: deploy 📦
+      install: npm ci --production
       name: online version
       deploy:
         # deploy develop to the staging environment
@@ -42,6 +47,7 @@ jobs:
             repo: silexlabs/Silex
             branch: master
     - name: linux app
+      install: npm ci
       if: branch = master AND repo = silexlabs/Silex
       script: npm run release
       os: linux
