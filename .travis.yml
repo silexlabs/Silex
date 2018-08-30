@@ -40,14 +40,14 @@ jobs:
         # deploy develop to the staging environment
         - provider: script
           skip_cleanup: true
-          script: bash build/deploy.sh $HOST_PREPROD $PATH_PREPROD $SSH_PASS_PREPROD
+          script: bash build/deploy.sh $HOST_PREPROD $URL_PREPROD $SFTP_PASS_PREPROD
           on:
             repo: silexlabs/Silex
             branch: develop
         # deploy master to production
         - provider: script
           skip_cleanup: true
-          script: bash build/deploy.sh $HOST_PROD $PATH_PROD $SSH_PASS_PROD
+          script: bash build/deploy.sh $HOST_PROD $URL_PROD $SFTP_PASS_PROD
           on:
             repo: silexlabs/Silex
             branch: master
