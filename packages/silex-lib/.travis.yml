@@ -30,24 +30,24 @@ jobs:
         # deploy develop to the staging environment
         - provider: script
           skip_cleanup: true
-          script: bash dist/deploy.sh $HOST_PREPROD $PATH_PREPROD $SSH_PASS_PREPROD
+          script: bash build/deploy.sh $HOST_PREPROD $PATH_PREPROD $SSH_PASS_PREPROD
           on:
             repo: silexlabs/Silex
             branch: develop
         # deploy master to production
         - provider: script
           skip_cleanup: true
-          script: bash dist/deploy.sh $HOST_PROD $PATH_PROD $SSH_PASS_PROD
+          script: bash build/deploy.sh $HOST_PROD $PATH_PROD $SSH_PASS_PROD
           on:
             repo: silexlabs/Silex
             branch: master
     - name: linux app
-      if: branch = masterd$ AND fork != false
+      if: branch = master AND repo = silexlabs/Silex
       script: npm run release
       os: linux
       dist: xenial
     - name: osx app
-      if: branch = master AND fork != false
+      if: branch = master AND repo = silexlabs/Silex
       script: npm run release
       os: osx
 
