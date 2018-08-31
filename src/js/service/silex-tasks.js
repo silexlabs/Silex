@@ -60,6 +60,17 @@ silex.service.SilexTasks.prototype.publishState = function(cbk, opt_errCbk) {
 
 
 /**
+ * get the state of the current publication
+ * @param {function({providers: Array<Provider>})} cbk to receive the json response
+ * @param {function(string)=} opt_errCbk to receive the json response
+ */
+silex.service.SilexTasks.prototype.hosting = function(cbk, opt_errCbk) {
+  // FIXME: use standard XMLHttpRequest instead of closure lib
+  this.callServer('/hosting/', '', 'GET', cbk, opt_errCbk);
+};
+
+
+/**
  * @param {string} url
  * @param {string} data
  * @param {string} method
