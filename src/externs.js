@@ -25,6 +25,18 @@
 var Font;
 
 /**
+ * @typedef {{
+ *   displayName: string,
+ *   isLoggedIn: boolean,
+ *   loginUrl: string,
+ *   vhosts: Array<Object>,
+ *   dashboardUrl: string,
+ *   pleaseCreateAVhost: string,
+ * }}
+ */
+var Provider;
+
+/**
  * Parse and consume source maps. By Mozilla
  * @see https://github.com/mozilla/source-map/
  * @type {Object.<*>}
