@@ -43,5 +43,17 @@ module.exports = function({ port, rootUrl }, unifile) {
         });
     }
   });
+  router.get('/hosting/', (req, res, next) => {
+    res.json([
+      {
+        displayName: 'Github Pages',
+        isLoggedIn: false,
+        loginUrl: '',
+        vhosts: [],
+        dashboardUrl: 'https://www.github.com',
+        pleaseCreateAVhost: 'Please create a repository.',
+      }
+    ])
+  });
   return router;
 };
