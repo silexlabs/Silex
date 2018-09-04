@@ -27,8 +27,11 @@ module.exports = class DomTools {
           // do nothing with <a> links
           continue;
         }
-        if(el.tagName.toLowerCase() === 'link' && el.getAttribute('rel') !== 'stylesheet') {
-          // do nothing with <link> tags unless it is an external stylesheet
+        if(el.tagName.toLowerCase() === 'link' &&
+          el.getAttribute('rel').toLowerCase() !== 'stylesheet' &&
+          el.getAttribute('rel').toLowerCase() !== 'shortcut icon'
+        ) {
+          // do nothing with <link> tags unless it is an external stylesheet or the favicon
           continue;
         }
         if(el.hasAttribute('data-silex-static')) {
