@@ -195,12 +195,14 @@ silex.model.Page.prototype.getCurrentPage = function() {
  * refresh the view
  */
 silex.model.Page.prototype.refreshView = function() {
-  var pages = this.getPages();
-  var currentPage = this.getCurrentPage();
-  this.view.contextMenu.redraw(this.model.body.getSelection(), pages, currentPage);
-  this.view.pageTool.redraw(this.model.body.getSelection(), pages, currentPage);
-  this.view.propertyTool.redraw(this.model.body.getSelection(), pages, currentPage);
-  this.view.stage.redraw(this.model.body.getSelection(), pages, currentPage);
+  const pages = this.getPages();
+  const currentPage = this.getCurrentPage();
+  const selectedElements = this.model.body.getSelection();
+  this.view.contextMenu.redraw(selectedElements, pages, currentPage);
+  this.view.pageTool.redraw(selectedElements, pages, currentPage);
+  this.view.propertyTool.redraw(selectedElements, pages, currentPage);
+  this.view.textFormatBar.redraw(selectedElements, pages, currentPage);
+  this.view.stage.redraw(selectedElements, pages, currentPage);
 };
 
 

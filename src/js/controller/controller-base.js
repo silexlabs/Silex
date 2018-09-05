@@ -449,6 +449,7 @@ silex.controller.ControllerBase.prototype.refreshView = function() {
   var pages = this.model.page.getPages();
   var currentPage = this.model.page.getCurrentPage();
   this.view.propertyTool.redraw(this.model.body.getSelection(), pages, currentPage);
+  this.view.textFormatBar.redraw(this.model.body.getSelection(), pages, currentPage);
 };
 
 

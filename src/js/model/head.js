@@ -337,7 +337,9 @@ silex.model.Head.prototype.setEnableMobile = function(enable) {
   // redraw UI
   var pages = this.model.page.getPages();
   var page = this.model.page.getCurrentPage();
-  this.view.propertyTool.redraw(this.model.body.getSelection(), pages, page);
+  const selectedElements = this.model.body.getSelection();
+  this.view.propertyTool.redraw(selectedElements, pages, page);
+  this.view.textFormatBar.redraw(selectedElements, pages, page);
 };
 
 

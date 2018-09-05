@@ -63,6 +63,7 @@ goog.require('silex.view.BreadCrumbs');
 goog.require('silex.view.Menu');
 goog.require('silex.view.PageTool');
 goog.require('silex.view.PropertyTool');
+goog.require('silex.view.TextFormatBar');
 goog.require('silex.view.Splitter');
 goog.require('silex.view.Stage');
 goog.require('silex.view.Workspace');
@@ -274,6 +275,11 @@ class App {
     /** @type {silex.view.PropertyTool} */
     var propertyTool = new silex.view.PropertyTool(propertyToolElement, this.model, this.controller);
 
+    // TextFormatBar
+    var textFormatBarElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-text-format-bar'));
+    /** @type {silex.view.TextFormatBar} */
+    var textFormatBar = new silex.view.TextFormatBar(textFormatBarElement, this.model, this.controller);
+
     // workspace
     var workspaceElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-workspace'));
     /** @type {silex.view.Workspace} */
@@ -296,6 +302,7 @@ class App {
         stage,
         pageTool,
         propertyTool,
+        textFormatBar,
         htmlEditor,
         cssEditor,
         jsEditor,

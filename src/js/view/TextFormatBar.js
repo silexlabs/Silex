@@ -10,20 +10,19 @@
  */
 
 /**
- * @fileoverview The format pane is displayed in the property panel on the right.
- * It uses the wysihtml library to change text format
- *
- // TODO:
- // * keyboard shoortcuts => filter del, enter, ...
- // * tooltips on button bar (A => link)
- // * ? link target = just "in a new tab"
- // * ? image float
+ * @fileoverview
+ *   This class handle a div positioned on top of the selected text in a text box
+ *   It uses the wysihtml library to change text format
  */
 
-goog.provide('silex.view.pane.FormatPane');
 
-class FormatPane extends silex.view.pane.PaneBase {
+goog.provide('silex.view.TextFormatBar');
 
+
+/**
+ * @class {silex.view.TextFormatBar}
+ */
+silex.view.TextFormatBar = class {
   /**
    *
    * @param {Element} element   container to render the UI
@@ -33,8 +32,6 @@ class FormatPane extends silex.view.pane.PaneBase {
    *                                  the controller instances
    */
   constructor(element, model, controller) {
-    super(element, model, controller);
-
     // tracker for analytics
     this.tracker = silex.service.Tracker.getInstance();
 
@@ -52,11 +49,11 @@ class FormatPane extends silex.view.pane.PaneBase {
     this.currentTextBox = null;
     this.wysihtmlEditor = null;
 
-    // Build the UI
     this.toolbar = this.element.querySelector('#wysihtml5-toolbar');
 
     // for event add / remove
     this.onKeyPressedBinded = this.onKeyPressed.bind(this);
+    this.onScrollBinded = this.onScroll.bind(this);
   }
 
 
@@ -71,6 +68,9 @@ class FormatPane extends silex.view.pane.PaneBase {
       e.preventDefault();
     }
   }
+  onScroll(e) {
+    this.controller.textEditorController.attachToTextBox(this.currentTextBox, this.element);
+  }
 
 
   /**
@@ -79,8 +79,10 @@ class FormatPane extends silex.view.pane.PaneBase {
   stopEditing() {
     if(this.wysihtmlEditor) {
       const doc = this.model.file.getContentDocument();
+      const win = this.model.file.getContentWindow();
       // remove event listener
       doc.removeEventListener('keydown', this.onKeyPressedBinded);
+      win.removeEventListener('scroll', this.onScrollBinded);
       // remove and put back the whole UI
       // this is the way to go with wysihtml
       // @see https://github.com/Voog/wysihtml/issues/109#issuecomment-198350743
@@ -109,17 +111,20 @@ class FormatPane extends silex.view.pane.PaneBase {
     this.element.classList.remove('text-editor-editing');
   }
 
-
   /**
    * @param {FileExplorer} fileExplorer
    */
   startEditing(fileExplorer) {
     const doc = this.model.file.getContentDocument();
+    const win = this.model.file.getContentWindow();
     // edit the style of the selection
     if(this.selectedElements.length === 1) {
       const newTextBox = this.selectedElements[0];
       if(newTextBox != this.currentTextBox) {
         this.currentTextBox = newTextBox;
+        // this.currentTextBox.insertBefore(this.element, this.currentTextBox.firstChild);
+        this.controller.textEditorController.attachToTextBox(this.currentTextBox, this.element);
+
         const editable = this.model.element.getContentNode(this.currentTextBox);
         const options = {
           'toolbar': this.toolbar,
@@ -182,6 +187,7 @@ class FormatPane extends silex.view.pane.PaneBase {
         this.element.classList.add('text-editor-editing');
         // handle the focus
         doc.addEventListener('keydown', this.onKeyPressedBinded);
+        win.addEventListener('scroll', this.onScrollBinded);
         this.currentTextBox.onclick = e => {
           if(e.target === this.currentTextBox) {
             this.stopEditing();
@@ -200,8 +206,8 @@ class FormatPane extends silex.view.pane.PaneBase {
               .then(fileInfo => {
                 if(fileInfo) {
                   // undo checkpoint
-                  this.controller.propertyToolController.undoCheckPoint();
-                  this.wysihtmlEditor.composer.commands.exec('insertImage', { src: fileInfo.absPath, alt: 'this is an image' })
+                  this.controller.textEditorController.undoCheckPoint();
+                  this.wysihtmlEditor.composer.commands.exec('insertImage', { src: fileInfo.absPath, alt: '' })
                   this.tracker.trackAction('controller-events', 'success', 'insert.image.text', 1);
                 }
               })
@@ -278,7 +284,7 @@ class FormatPane extends silex.view.pane.PaneBase {
             const dialogButtons = silex.utils.Notification.getFormButtons();
             const fragmentButtons = document.createElement('fragment');
             fragmentButtons.innerHTML = `
-              <button class=wyg-float-right": 1,alertify-button alertify-button-remove">remove link</button>
+              <button class="alertify-button alertify-button-remove">remove link</button>
             `;
             dialogButtons.insertBefore(fragmentButtons, dialogButtons.childNodes[0]);
             dialogButtons.querySelector('.alertify-button-remove')
@@ -368,8 +374,6 @@ class FormatPane extends silex.view.pane.PaneBase {
    * @param   {string}  currentPageName   the name of the current page
    */
   redraw(selectedElements, pageNames, currentPageName) {
-    super.redraw(selectedElements, pageNames, currentPageName);
-
     // reuse selectedElements in combo box on change
     this.selectedElements = selectedElements;
 
@@ -380,4 +384,6 @@ class FormatPane extends silex.view.pane.PaneBase {
     // stop editing, even if we may not be editing right now
     this.stopEditing();
   }
-}
+
+};
+

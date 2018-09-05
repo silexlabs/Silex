@@ -255,7 +255,8 @@ silex.controller.EditMenuController.prototype.editElement = function(opt_element
         bgColor = [255, 255, 255, 255];
       }
       // open the text editor
-      this.view.propertyTool.formatEditorStart(this.view.fileExplorer);
+      this.view.textFormatBar.startEditing(this.view.fileExplorer);
+      //this.view.propertyTool.openStyleTab();
       break;
     case silex.model.Element.TYPE_HTML:
       this.view.htmlEditor.open();
