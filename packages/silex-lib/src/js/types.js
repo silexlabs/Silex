@@ -222,6 +222,7 @@ silex.types.View = function() {
  * @param {silex.view.Stage} stage
  * @param {silex.view.PageTool} pageTool
  * @param {silex.view.PropertyTool} propertyTool
+ * @param {silex.view.TextFormatBar} textFormatBar
  * @param {HtmlEditor} htmlEditor
  * @param {CssEditor} cssEditor
  * @param {JsEditor} jsEditor
@@ -238,6 +239,7 @@ silex.types.View.prototype.init = function(
     stage,
     pageTool,
     propertyTool,
+    textFormatBar,
     htmlEditor,
     cssEditor,
     jsEditor,
@@ -270,6 +272,10 @@ silex.types.View.prototype.init = function(
    * @type {silex.view.PropertyTool}
    */
   this.propertyTool = propertyTool;
+  /**
+   * @type {silex.view.TextFormatBar}
+   */
+  this.textFormatBar = textFormatBar;
   /**
    * @type {HtmlEditor}
    */

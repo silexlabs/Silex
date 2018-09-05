@@ -200,6 +200,7 @@ silex.model.Body.prototype.setSelection = function(selectedElements) {
   var page = this.model.page.getCurrentPage();
   this.view.pageTool.redraw(selectedElements, pages, page);
   this.view.propertyTool.redraw(selectedElements, pages, page);
+  this.view.textFormatBar.redraw(selectedElements, pages, page);
   this.view.stage.redraw(selectedElements, pages, page);
   this.view.contextMenu.redraw(selectedElements, pages, page);
   this.view.breadCrumbs.redraw(selectedElements, pages, page);
