@@ -42,7 +42,7 @@ goog.inherits(silex.controller.FileMenuController, silex.controller.ControllerBa
  * @param {?function(Object)=} opt_errorCbk
  */
 silex.controller.FileMenuController.prototype.loadTemplate = function(url, opt_cbk, opt_errorCbk) {
-    this.model.file.openFromUrl(url, rawHtml => this.onOpened(opt_cbk, rawHtml), (err, msg) => this.onOpenError(err, msg, opt_errorCbk));
+  this.model.file.openFromUrl(url, rawHtml => this.onOpened(opt_cbk, rawHtml), (err, msg) => this.onOpenError(err, msg, opt_errorCbk));
 };
 
 
@@ -143,40 +143,40 @@ silex.controller.FileMenuController.prototype.openFile = function(opt_cbk, opt_e
   this.tracker.trackAction('controller-events', 'request', 'file.open', 0);
   // let the user choose the file
   this.view.fileExplorer.openFile(FileExplorer.HTML_EXTENSIONS)
-  .then(fileInfo => {
-    if(fileInfo) {
-      this.model.file.open(fileInfo, rawHtml => {
-        this.model.file.setHtml(rawHtml, () => {
-          // undo redo reset
-          this.undoReset();
-          // display and redraw
-          this.fileOperationSuccess((this.model.head.getTitle() || 'Untitled website') + ' opened.', true);
-          // QOS, track success
-          this.tracker.trackAction('controller-events', 'success', 'file.open', 1);
-          if (opt_cbk) {
-            opt_cbk(/** @type {FileInfo} */ (fileInfo));
-          }
-        }, true); // with loader
-      },
-      (error, message) => {
-        silex.utils.Notification.alert('Error: I did not manage to open this file. \n' + (message || error.message || ''), () => {
-          if (opt_errorCbk) {
-            opt_errorCbk(error);
-          }
-        });
-        this.tracker.trackAction('controller-events', 'error', 'file.open', -1);
-      });
-    }
-    else {
-      if(opt_cancelCbk) opt_cancelCbk();
-    }
-  })
-  .catch(error => {
-    this.tracker.trackAction('controller-events', 'error', 'file.open', -1);
-    if (opt_errorCbk) {
-      opt_errorCbk(error);
-    }
-  });
+    .then(fileInfo => {
+      if(fileInfo) {
+        this.model.file.open(fileInfo, rawHtml => {
+          this.model.file.setHtml(rawHtml, () => {
+            // undo redo reset
+            this.undoReset();
+            // display and redraw
+            this.fileOperationSuccess((this.model.head.getTitle() || 'Untitled website') + ' opened.', true);
+            // QOS, track success
+            this.tracker.trackAction('controller-events', 'success', 'file.open', 1);
+            if (opt_cbk) {
+              opt_cbk(/** @type {FileInfo} */ (fileInfo));
+            }
+          }, true); // with loader
+        },
+          (error, message) => {
+            silex.utils.Notification.alert('Error: I did not manage to open this file. \n' + (message || error.message || ''), () => {
+              if (opt_errorCbk) {
+                opt_errorCbk(error);
+              }
+            });
+            this.tracker.trackAction('controller-events', 'error', 'file.open', -1);
+          });
+      }
+      else {
+        if(opt_cancelCbk) opt_cancelCbk();
+      }
+    })
+    .catch(error => {
+      this.tracker.trackAction('controller-events', 'error', 'file.open', -1);
+      if (opt_errorCbk) {
+        opt_errorCbk(error);
+      }
+    });
 };
 
 
@@ -189,7 +189,8 @@ silex.controller.FileMenuController.prototype.publish = function() {
     console.warn('Publish canceled because a modal dialog is opened already.');
     return;
   }
-  silex.service.SilexTasks.getInstance().hosting(providers => {
+  const service = silex.service.SilexTasks.getInstance();
+  service.hosting(providers => {
     console.log('hosting providers:', providers);
     if(providers.length === 0) {
       this.doPublish(null);
@@ -198,12 +199,18 @@ silex.controller.FileMenuController.prototype.publish = function() {
       const provider = providers[0];
       if(provider.isLoggedIn) this.selectVhost(provider);
       else {
-        silex.utils.Notification.alert(`Please&nbsp;
-          <a href="${ provider.loginUrl }" target="_blank">
+        service.authorize(provider, loginUrl => {
+          silex.utils.Notification.alert(`Please&nbsp;
+          <a href="${ loginUrl }" target="_blank">
             click here and login to ${ provider.displayName }.
-          </a>
-        `, () => {
-          this.selectVhost(provider);
+          </a>, then click "next".
+          `, () => {
+            this.selectVhost(provider);
+          }, 'next');
+        }, msg => {
+          console.error('Error: I did not manage to publish the file.', msg);
+          silex.utils.Notification.setText(`<strong>An error occured.</strong><p>I did not manage to publish the website. I could not authenticate with ${ provider.name } hosting provider.</p><p>Error message: ${ msg }</p><p><a href="${ silex.Config.ISSUES_SILEX }" target="_blank">Get help in Silex forums.</a></p>`);
+          this.tracker.trackAction('controller-events', 'error', 'file.publish', -1);
         });
       }
     }
@@ -218,84 +225,94 @@ silex.controller.FileMenuController.prototype.publish = function() {
 };
 
 silex.controller.FileMenuController.prototype.selectVhost = function(provider) {
-  if(provider.vhosts.length === 0) {
-    silex.utils.Notification.alert(`Please&nbsp;
+  const service = silex.service.SilexTasks.getInstance();
+  service.vhosts(provider, vhosts => {
+    console.log('xxxxxx', vhosts);
+    if(vhosts.length === 0) {
+      silex.utils.Notification.alert(`Please click here to
       <a href="${ provider.dashboardUrl }" target="_blank">
         ${ provider.pleaseCreateAVhost }
       </a>
     `, () => {
       this.selectVhost(provider);
-    });
-  }
-  else if(provider.vhosts.length == 1) {
-    this.doPublish(provider.vhosts[0].publicationPath);
-  }
-  else {
-    console.error('to do: select a vhost', provider);
-  }
+    }, 'Check again');
+    }
+    else if(vhosts.length == 1) {
+      this.doPublish(vhosts[0].publicationPath);
+    }
+    else {
+      console.error('to do: select a vhost', provider, vhosts);
+    }
+  }, msg => {
+    console.error('Error: I did not manage to publish the file.', msg);
+    silex.utils.Notification.setText(`<strong>An error occured.</strong><p>I did not manage to publish the website. I could not get the list of vhost for ${ provider.name } hosting provider.</p><p>Error message: ${ msg }</p><p><a href="${ silex.Config.ISSUES_SILEX }" target="_blank">Get help in Silex forums.</a></p>`);
+    this.tracker.trackAction('controller-events', 'error', 'file.publish', -1);
+  });
 };
 
 silex.controller.FileMenuController.prototype.doPublish = function(path) {
-    const file = this.model.file.getFileInfo();
-    const folder = path || this.model.head.getPublicationPath();
-    this.tracker.trackAction('controller-events', 'request', 'file.publish', 0);
-    if (!folder) {
-      silex.utils.Notification.alert('I do not know where to publish your site.' +
-        'Select a folder in the settings pannel and do "publish" again.' +
-        '\nNow I will open the publish settings.',
-        () => {
-          this.view.settingsDialog.open(function() {
-            //here the panel was closed
-          }, 'publish-pane');
-          this.view.workspace.redraw(this.view);
-          this.tracker.trackAction('controller-events', 'cancel', 'file.publish', 0);
-        });
-    }
-    // the file must be saved somewhere because all URLs are made relative
-    else if (!file) {
-      console.error('The file must be saved before I can publish it.');
-      silex.utils.Notification.notifyError('The file must be saved before I can publish it.');
-      this.tracker.trackAction('controller-events', 'cancel', 'file.publish', 0);
-    }
-    else {
-      let timer = -1;
-      silex.utils.Notification.alert('<strong>I am about to publish your site. This may take several minutes.</strong>', () => {
-        if(timer > 0) {
-          clearInterval(timer);
-        }
-        timer = -1;
-      }, 'Close');
-      silex.service.SilexTasks.getInstance().publish(
-        file,
-        folder,
-        () => {
-          setTimeout(() => {
-            // tip of the day
-            const tipOfTheDayElement = /** @type {!Element} */ (document.createElement('div'));
-            const tipOfTheDay = new silex.view.TipOfTheDay(tipOfTheDayElement);
-            silex.utils.Notification.setInfoPanel(tipOfTheDayElement);
-          }, 2000);
-          timer = setInterval(() => {
-            silex.service.SilexTasks.getInstance().publishState(json => {
-              let msg = `<strong>${json['message']}</strong>`;
-              if(json['stop'] === true) {
-                clearInterval(timer);
-                msg += `<p>Preview <a target="_blanck" href="${folder.url}/index.html">your published site here</a>.</p>`;
-              }
-              silex.utils.Notification.setText(msg);
-            }, msg => {
-              console.error('Error: ', msg);
-              silex.utils.Notification.setText(`<strong>An error occured.</strong><p>I did not manage to publish the website. You may want to check the publication settings and your internet connection.</p><p>Error message: ${ msg }</p><p><a href="${ silex.Config.ISSUES_SILEX }" target="_blank">Get help in Silex forums.</a></p>`);
+  const file = this.model.file.getFileInfo();
+  const folder = path || this.model.head.getPublicationPath();
+  console.log('yyyyyyy', folder);
+  const service = silex.service.SilexTasks.getInstance();
+  this.tracker.trackAction('controller-events', 'request', 'file.publish', 0);
+  if (!folder) {
+    silex.utils.Notification.alert('I do not know where to publish your site.' +
+      'Select a folder in the settings pannel and do "publish" again.' +
+      '\nNow I will open the publish settings.',
+      () => {
+        this.view.settingsDialog.open(function() {
+          //here the panel was closed
+        }, 'publish-pane');
+        this.view.workspace.redraw(this.view);
+        this.tracker.trackAction('controller-events', 'cancel', 'file.publish', 0);
+      });
+  }
+  // the file must be saved somewhere because all URLs are made relative
+  else if (!file) {
+    console.error('The file must be saved before I can publish it.');
+    silex.utils.Notification.notifyError('The file must be saved before I can publish it.');
+    this.tracker.trackAction('controller-events', 'cancel', 'file.publish', 0);
+  }
+  else {
+    let timer = -1;
+    silex.utils.Notification.alert('<strong>I am about to publish your site. This may take several minutes.</strong>', () => {
+      if(timer > 0) {
+        clearInterval(timer);
+      }
+      timer = -1;
+    }, 'Close');
+    service.publish(
+      file,
+      folder,
+      () => {
+        setTimeout(() => {
+          // tip of the day
+          const tipOfTheDayElement = /** @type {!Element} */ (document.createElement('div'));
+          const tipOfTheDay = new silex.view.TipOfTheDay(tipOfTheDayElement);
+          silex.utils.Notification.setInfoPanel(tipOfTheDayElement);
+        }, 2000);
+        timer = setInterval(() => {
+          service.publishState(json => {
+            let msg = `<strong>${json['message']}</strong>`;
+            if(json['stop'] === true) {
               clearInterval(timer);
-            });
-          }, 1000);
-          this.tracker.trackAction('controller-events', 'success', 'file.publish', 1);
-        },
-        msg => {
-          console.error('Error: I did not manage to publish the file. (2)', msg);
-          silex.utils.Notification.setText(`<strong>An error occured.</strong><p>I did not manage to publish the website. You may want to check the publication settings and your internet connection.</p><p>Error message: ${ msg }</p><p><a href="${ silex.Config.ISSUES_SILEX }" target="_blank">Get help in Silex forums.</a></p>`);
-          this.tracker.trackAction('controller-events', 'error', 'file.publish', -1);
-        });
-    }
+              msg += `<p>Preview <a target="_blanck" href="${folder.url}/index.html">your published site here</a>.</p>`;
+            }
+            silex.utils.Notification.setText(msg);
+          }, msg => {
+            console.error('Error: ', msg);
+            silex.utils.Notification.setText(`<strong>An error occured.</strong><p>I did not manage to publish the website. You may want to check the publication settings and your internet connection.</p><p>Error message: ${ msg }</p><p><a href="${ silex.Config.ISSUES_SILEX }" target="_blank">Get help in Silex forums.</a></p>`);
+            clearInterval(timer);
+          });
+        }, 1000);
+        this.tracker.trackAction('controller-events', 'success', 'file.publish', 1);
+      },
+      msg => {
+        console.error('Error: I did not manage to publish the file. (2)', msg);
+        silex.utils.Notification.setText(`<strong>An error occured.</strong><p>I did not manage to publish the website. You may want to check the publication settings and your internet connection.</p><p>Error message: ${ msg }</p><p><a href="${ silex.Config.ISSUES_SILEX }" target="_blank">Get help in Silex forums.</a></p>`);
+        this.tracker.trackAction('controller-events', 'error', 'file.publish', -1);
+      });
+  }
 };
 
