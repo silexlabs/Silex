@@ -69,6 +69,26 @@ silex.service.SilexTasks.prototype.hosting = function(cbk, opt_errCbk) {
 
 
 /**
+ * get the login URL
+ * @param {function(string)} cbk to receive the json response
+ * @param {function(string)=} opt_errCbk
+ */
+silex.service.SilexTasks.prototype.authorize = function(provider, cbk, opt_errCbk) {
+  this.callServer(provider.authorizeUrl, '', 'POST', cbk, opt_errCbk);
+};
+
+
+/**
+ * get the vhosts for a provider to which we are connected
+ * @param {function(Array<VHost>)} cbk to receive the json response
+ * @param {function(string)=} opt_errCbk
+ */
+silex.service.SilexTasks.prototype.vhosts = function(provider, cbk, opt_errCbk) {
+  this.callServer(provider.vhosts, '', 'GET', cbk, opt_errCbk);
+};
+
+
+/**
  * @param {string} url
  * @param {string} data
  * @param {string} method
@@ -88,7 +108,7 @@ silex.service.SilexTasks.prototype.callServer = function(url, data, method, cbk,
     } catch(e) {} // may be an empty response or a "Internal Server Error" string
     // success of the request
     if(oReq.status === 200) {
-      cbk(json);
+      cbk(json || oReq.responseText); // handle the case where the response is just a string, e.g. an URL in the case of oauth
     }
     else {
       console.error('Error while trying to connect with back end', message);
