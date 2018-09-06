@@ -43,17 +43,49 @@ module.exports = function({ port, rootUrl }, unifile) {
         });
     }
   });
+  const providers = [
+    {
+      name: 'ghpages',
+      displayName: 'Github Pages',
+      isLoggedIn: false,
+      authorizeUrl: '/ce/github/authorize',
+      dashboardUrl: 'https://www.github.com',
+      pleaseCreateAVhost: 'create an empty repository.',
+      vhosts: '/hosting/ghpages/vhost',
+    }
+  ];
   router.get('/hosting/', (req, res, next) => {
-    res.json([
-      {
-        displayName: 'Github Pages',
-        isLoggedIn: false,
-        loginUrl: '',
-        vhosts: [],
-        dashboardUrl: 'https://www.github.com',
-        pleaseCreateAVhost: 'Please create a repository.',
-      }
-    ])
+    res.json(providers);
+  });
+  router.get('/hosting/ghpages/vhost', (req, res, next) => {
+      unifile.readdir(req.session.unifile, 'github', '/')
+      .then(result => {
+        res.json(result
+          .sort((a, b) => new Date(b.modified) - new Date(a.modified))
+          //.slice(0, 1) // max number of repos
+          .map(file => {
+            return {
+              name: file.name,
+              publicationPath: {
+                absPath: `/ce/github/get/${ file.name }/gh-pages`,
+                isDir: true,
+                mime: 'application/octet-stream',
+                name: 'gh-pages',
+                folder: file.name,
+                path: `${ file.name }/gh-pages`,
+                service: 'github',
+                url: `http://localhost:6805/ce/github/get/${ file.name }/gh-pages`,
+              }
+            };
+          })
+        );
+      })
+      .catch(err => {
+        res.status(400).send({
+          message: `Hosting provider "${ req.params.id } does not exist`
+        });
+
+      });
   });
   return router;
 };
