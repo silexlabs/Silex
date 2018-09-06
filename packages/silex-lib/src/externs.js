@@ -28,13 +28,21 @@ var Font;
  * @typedef {{
  *   displayName: string,
  *   isLoggedIn: boolean,
- *   loginUrl: string,
- *   vhosts: Array<Object>,
+ *   authorizeUrl: string,
  *   dashboardUrl: string,
  *   pleaseCreateAVhost: string,
+ *   vhosts: string,
  * }}
  */
 var Provider;
+
+/**
+ * @typedef {{
+ *   name: string,
+ *   publicationPath: FileInfo,
+ * }}
+ */
+var VHost
 
 /**
  * Parse and consume source maps. By Mozilla
