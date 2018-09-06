@@ -1,9 +1,8 @@
 {
   "name": "silex",
   "description": "Free and easy website builder for everyone.",
-  "<-- be careful": "version is used in BackwardCompat.js -->",
   "version": "2.2.7",
-  "<-- ": "version is used in BackwardCompat.js -->",
+  "version:frontend": "2.2.7",
   "author": "Alex Hoyau <a.hoyau@silexlabs.org> (https://lexoyo.me/)",
   "contributors": [
     "Jean-Baptiste Richardet <jeanbaptiste.richardet@gmail.com> (https://github.com/JbIPS)"
@@ -20,6 +19,7 @@
   ],
   "scripts": {
     "start": "pm2 start .pm2.json",
+    "start:simple": "node dist/server/silex_web.js",
     "stop": "pm2 stop .pm2.json",
     "start:debug": "cross-env SILEX_DEBUG=true npm start",
     "build": "npm run build:css && npm run build:html && npm run build:prodotype && npm run build:js:release",

@@ -1,7 +1,7 @@
 const PublishJob = require('./PublishJob.js');
 const express = require('express');
 
-module.exports = function(port, rootUrl, unifile) {
+module.exports = function({ port, rootUrl }, unifile) {
 
   const router = express.Router();
 
@@ -36,16 +36,6 @@ module.exports = function(port, rootUrl, unifile) {
             'stop': true,
           });
         }
-        break;
-      case process.env.RESTART_ROUTE || 'reload':
-        if(!process.env.RESTART_ROUTE) {
-          res.status(500).send({
-            message: 'You need to define an env var RESTART_ROUTE and call /{{RESTART_ROUTE}}'
-          });
-          return;
-        }
-        res.send();
-        process.send('restart');
         break;
       default:
         res.status(500).send({
