@@ -22,7 +22,7 @@ const DomTools = require('./DomTools.js');
 const clientRoot = Path.resolve(__dirname, '..');
 const constants = require('./Constants.json');
 
-module.exports = function(port, rootUrl, unifile) {
+module.exports = function({ port, rootUrl }, unifile) {
 
   const backwardCompat = new BackwardCompat(rootUrl);
 
