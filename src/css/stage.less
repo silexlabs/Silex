@@ -17,12 +17,19 @@
 
 
 .silex-stage iframe{
-  transition: opacity 0.1s linear;
+  //transition: opacity 0.1s linear;
+}
+
+.silex-stage.loading-website-light iframe{
+  transition: none;
+  opacity: .57;
+  pointer-events: none;
 }
 
 .silex-stage.loading-website iframe{
   transition: none;
   opacity: .001;
+  pointer-events: none;
 }
 
 .silex-stage.loading-website {
