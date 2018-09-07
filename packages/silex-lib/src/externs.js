@@ -26,12 +26,22 @@ var Font;
 
 /**
  * @typedef {{
+ *   providers:Array<Provider>,
+ *   skipProviderSelection: boolean,
+ * }}
+ */
+var Hosting;
+
+/**
+ * @typedef {{
  *   displayName: string,
  *   isLoggedIn: boolean,
  *   authorizeUrl: string,
  *   dashboardUrl: string,
  *   pleaseCreateAVhost: string,
- *   vhosts: string,
+ *   vhostsUrl: string,
+ *   buyDomainUrl: string,
+ *   skipVhostSelection: boolean,
  * }}
  */
 var Provider;
@@ -39,6 +49,8 @@ var Provider;
 /**
  * @typedef {{
  *   name: string,
+ *   domainUrl: string,
+ *   skipDomainSelection: boolean,
  *   publicationPath: FileInfo,
  * }}
  */

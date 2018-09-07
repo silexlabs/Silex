@@ -272,11 +272,11 @@ module.exports = class PublishJob {
     })
 
     // write and upload all files in a batch operation
-    .then(([statCss, statJs, statAssets, ...assets]) => {
+    .then(([statRoot, statCss, statJs, statAssets, ...assets]) => {
       if(this.isStopped()) {
         return;
       }
-      return this.writeOperations(statCss, statJs, statAssets, ...assets)
+      return this.writeOperations(statRoot, statCss, statJs, statAssets, ...assets)
     })
     .catch(err => {
       console.error('An error occured in unifile batch', err.message, err);
@@ -310,6 +310,7 @@ module.exports = class PublishJob {
     // FIXME: should use unifile's batch method to avoid conflicts or the "too many clients" error in FTP
     //return Promise.all([
     return sequential([
+        () => preventErr(this.unifile.stat(this.session.unifile, this.folder.service, this.rootPath)),
         () => preventErr(this.unifile.stat(this.session.unifile, this.folder.service, this.cssFolder)),
         () => preventErr(this.unifile.stat(this.session.unifile, this.folder.service, this.jsFolder)),
         () => preventErr(this.unifile.stat(this.session.unifile, this.folder.service, this.assetsFolder)),
@@ -319,16 +320,23 @@ module.exports = class PublishJob {
     )
   }
 
-  writeOperations(statCss, statJs, statAssets, ...assets) {
+  writeOperations(statRoot, statCss, statJs, statAssets, ...assets) {
     this.setStatus(`Creating files <ul><li>${this.indexFile}</li><li>${this.cssFile}</li><li>${this.jsFile}</li></ul>`);
     // hide website before styles.css is loaded
     this.dom.window.document.head.innerHTML += '<style>body { opacity: 0; transition: .25s opacity ease; }</style>';
     // create an object to describe a batch of actions
-    const batchActions = [{
+    const batchActions = [];
+    if(!statRoot) {
+      batchActions.push({
+        name: 'mkdir',
+        path: this.rootPath,
+      });
+    }
+    batchActions.push({
       name: 'writefile',
       path: this.indexFile,
       content: this.dom.serialize(),
-    }];
+    });
     if(!statCss) {
       batchActions.push({
         name: 'mkdir',
