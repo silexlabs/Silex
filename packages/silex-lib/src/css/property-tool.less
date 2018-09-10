@@ -1,3 +1,43 @@
+.format-buttons {
+  label {
+    &.p {
+      font-size: 13px;
+    }
+    &.b {
+      font-weight: bold;
+    }
+    &.u {
+      text-decoration: underline;
+    }
+    &.i {
+      font-style: italic;
+    }
+    &.h1 {
+      font-weight: bold;
+      font-size: 18px;
+      padding-top: 4px;
+      padding-bottom: 6px;
+    }
+    &.h {
+      font-weight: bold;
+      font-size: 16px;
+      padding-top: 5px;
+      padding-bottom: 5px;
+    }
+    &.h {
+      font-weight: bold;
+      font-size: 14px;
+      padding-top: 7px;
+      padding-bottom: 3px;
+    }
+    &.a {
+      font-size: 14px;
+      padding-top: 7px;
+      padding-bottom: 3px;
+    }
+  }
+}
+
 .small-text-input {
   width: 52px;
   float: left;
@@ -459,6 +499,17 @@
   }
   .prodotype-style-editor-menu > div {
     padding: 10px;
+  }
+  .prodotype-style-editor-menu .labels {
+    .format-buttons;
+    label {
+      &.h1 {
+        font-size: 16px;
+        height: 0;
+      }
+      &.h2, &.h3 { font-weight: bold; }
+
+    }
   }
   /* */
   .prodotype-component-editor, .prodotype-style-editor {
