@@ -210,8 +210,8 @@ props:
       - oriya
       - telugu
       - thai
-  - name: list-style-image
-    type: file
+  # - name: list-style-image
+  #   type: file
   - name: list-style-position
     type:
       - ""
