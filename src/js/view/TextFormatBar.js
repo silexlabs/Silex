@@ -250,7 +250,7 @@ silex.view.TextFormatBar = class {
             const isExternal = !linkData['href'].startsWith('#!');
 
             // prompt
-            silex.utils.Notification.prompt('Link editor', 'unused', (accept, unused) => {
+            silex.utils.Notification.prompt('Link editor <a class="link-editor-help-button fa fa-question-circle" target="_blank" href="https://github.com/silexlabs/Silex/wiki/Editor-UI#link-editor">       Help</a>', 'unused', (accept, unused) => {
               if(accept) {
                 // get new values
                 const newData = LINK_ATTRIBUTES
