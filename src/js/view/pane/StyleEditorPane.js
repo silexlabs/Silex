@@ -65,18 +65,7 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
     };
     this.styleCombo.onchange = e => {
       this.tracker.trackAction('style-editor-events', 'apply-style');
-      this.selectedElements
-      .filter(el => this.model.element.getType(el) === 'text')
-      .forEach(element => {
-        // un-apply the old style if there was one
-        if(this.styleComboPrevValue && this.styleComboPrevValue !== '') {
-          element.classList.remove(this.styleComboPrevValue);
-        }
-        // apply the new style if there is one
-        if(this.styleCombo.value !== '') {
-          element.classList.add(this.styleCombo.value);
-        }
-      });
+      this.applyStyle(this.selectedElements, this.styleCombo.value);
       // refresh the view
       this.controller.propertyToolController.refreshView();
     };
@@ -86,10 +75,6 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
     };
     this.element.querySelector('.remove-style').onclick = e => {
       this.tracker.trackAction('style-editor-events', 'remove-style');
-      // remove from elements
-      silex.utils.Dom.getElementsAsArray(this.model.file.getContentDocument(), '.' + this.styleCombo.value)
-      .filter(el => this.model.element.getType(el) === 'text')
-      .forEach(el => el.classList.remove(this.styleCombo.value));
       // delete from styles list
       this.deleteStyle(this.styleCombo.value);
     };
@@ -97,7 +82,7 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
     this.element.querySelector('.unapply-style').onclick = e => {
       this.tracker.trackAction('style-editor-events', 'unapply-style');
       this.selectedElements
-      .filter(el => this.model.element.getType(el) === 'text')
+      .filter(el => this.isTextBox(el))
       .forEach(element => {
         element.classList.remove(this.styleCombo.value);
       });
@@ -130,16 +115,13 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
       const oldClassName = this.styleCombo.value;
       const data = this.model.property.getStyleData(oldClassName);
       this.createStyle(data, name => {
-        if(name) {
-          // update the style name
-          this.getElementsWithStyle(oldClassName, true)
-          .forEach(el => {
-            el.classList.remove(oldClassName);
-            el.classList.add(this.styleCombo.value);
-          });
-          // delete the old one
-          this.deleteStyle(oldClassName, false);
-        }
+        // update the style name
+        this.getElementsWithStyle(oldClassName, true)
+        .forEach(el => {
+          el.classList.add(this.styleCombo.value);
+        });
+        // delete the old one
+        this.deleteStyle(oldClassName, false);
       });
     };
     // for tracking only
@@ -179,6 +161,41 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
    */
   isMobile() {
     return document.body.classList.contains('mobile-mode');
+  }
+
+
+  /**
+   * apply a style to a set of elements, remove old styles
+   * @param {Array<Element>} elements
+   * @param  {silex.model.data.StyleName} newStyle
+   */
+  applyStyle(elements, newStyle) {
+    this.controller.propertyToolController.undoCheckPoint();
+    elements
+    .filter(el => this.isTextBox(el))
+    .forEach(el => {
+      // un-apply the old style if there was one
+      this.removeAllStyles(el);
+      // apply the new style if there is one
+      el.classList.add(newStyle);
+    });
+    this.controller.propertyToolController.refreshView();
+  }
+
+
+  /**
+   * @param {Element} el
+   */
+  isTextBox(el) {
+    return this.model.element.getType(el) === 'text';
+  }
+
+
+  /**
+   * @param {Element} el
+   */
+  removeAllStyles(el) {
+    this.getStyles([el]).forEach(styleName => el.classList.remove(styleName));
   }
 
 
@@ -268,7 +285,7 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
         const styles = this.getStyles([element]);
         if(styleNameNotNull === Component.EMPTY_STYLE_CLASS_NAME) {
           // edit style only if there are only text boxes without styles
-          return prev && this.model.element.getType(element) === 'text' && styles.length === 0;
+          return prev && this.isTextBox(element) && styles.length === 0;
         }
         else {
           // edit style only if all the elements have the same style
@@ -387,20 +404,26 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
    * @param {?function(?string=)=} opt_cbk
    */
   createStyle(opt_data, opt_cbk) {
-    silex.utils.Notification.prompt('Enter a name for your style!', opt_data ? opt_data['displayName'] : 'My Style',
-      (accept, name) => {
-        if(accept && name && name !== '') {
-          const className = name.replace(/ /g, '-').toLowerCase();
-          this.model.component.initStyle(name, className, opt_data);
-          // FIXME: needed to select className but model.Component::initStyle calls refreshView which calls updateStyleList
-          this.updateStyleList(className);
-          if(opt_cbk) opt_cbk(name);
+    const textBoxes = this.selectedElements.filter(el => this.isTextBox(el));
+    if(textBoxes.length <= 0) {
+      silex.utils.Notification.alert('Error: you need to select a TextBox for this action.', () => {});
+    }
+    else {
+      silex.utils.Notification.prompt('Enter a name for your style!', opt_data ? opt_data['displayName'] : 'My Style',
+        (accept, name) => {
+          if(accept && name && name !== '') {
+            this.controller.propertyToolController.undoCheckPoint();
+            const className = name.replace(/ /g, '-').toLowerCase();
+            this.model.component.initStyle(name, className, opt_data);
+            this.applyStyle(textBoxes, className);
+            // FIXME: needed to select className but model.Component::initStyle calls refreshView which calls updateStyleList
+            this.updateStyleList(className);
+            if(opt_cbk) opt_cbk(name);
+            this.controller.propertyToolController.refreshView();
+          }
         }
-        else {
-          if(opt_cbk) opt_cbk();
-        }
-      }
-    );
+      );
+    }
   }
 
 
@@ -428,8 +451,16 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
   doDeleteStyle(name) {
     const option = this.styleCombo.querySelector('option[value="' + name + '"]');
     if(option && option.value !== Component.BODY_STYLE_CSS_CLASS) {
+      // undo checkpoint
+      this.controller.propertyToolController.undoCheckPoint();
+      // remove from elements
+      silex.utils.Dom.getElementsAsArray(this.model.file.getContentDocument(), '.' + name)
+      .filter(el => this.isTextBox(el))
+      .forEach(el => el.classList.remove(name));
+      // remove from model
       this.model.component.removeStyle(option.value);
       this.styleCombo.removeChild(option);
+      this.controller.propertyToolController.refreshView();
     }
   }
 }
