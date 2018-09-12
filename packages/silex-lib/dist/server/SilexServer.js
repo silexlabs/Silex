@@ -23,13 +23,16 @@ const PublishRouter = require('./PublishRouter.js');
 const SslRouter = require('./SslRouter.js');
 const bodyParser = require('body-parser');
 
-module.exports = function({
-  serverOptions,
-  publisherOptions,
-  ceOptions,
-  electronOptions,
-  sslOptions,
-}) {
+module.exports = function(options) {
+  this.options = options;
+  const {
+    serverOptions,
+    publisherOptions,
+    ceOptions,
+    electronOptions,
+    sslOptions,
+  } = this.options;
+
   this.app = express();
 
   // compress gzip when possible
@@ -51,7 +54,18 @@ module.exports = function({
   this.publishRouter = new PublishRouter(publisherOptions, this.ceRouter.unifile);
   this.sslRouter = new SslRouter(sslOptions, this.app);
   this.unifile = this.ceRouter.unifile; // for access by third party
+};
 
+module.exports.prototype.start = function(cbk) {
+  const {
+    serverOptions,
+    publisherOptions,
+    ceOptions,
+    electronOptions,
+    sslOptions,
+  } = this.options;
+
+  // use routers
   this.app.use(serverOptions.cePath, this.ceRouter);
   this.app.use(this.websiteRouter);
   this.app.use(this.publishRouter);
@@ -72,6 +86,7 @@ module.exports = function({
   // server 'loop'
   this.app.listen(serverOptions.port, function() {
     console.log('Listening on ' + serverOptions.port);
+    if(cbk) cbk();
   });
 };
 
