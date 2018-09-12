@@ -47,6 +47,8 @@ const ceOptions = {
 const publisherOptions = {
   rootUrl: serverOptions.rootUrl,
   port: serverOptions.port,
+  skipProviderSelection: false,
+  enableGithubPages: true,
 }
 
 const exported = function() {};
