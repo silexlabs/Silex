@@ -42,6 +42,7 @@ var Hosting;
  *   vhostsUrl: string,
  *   buyDomainUrl: string,
  *   skipVhostSelection: boolean,
+ *   afterPublishMessage: string,
  * }}
  */
 var Provider;

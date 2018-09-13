@@ -1,24 +1,34 @@
 .alertify {
-    background: #FFF;
+    background-color: @silexdarkgrey;
+    &, a { color: @silexlightergrey; }
     border-radius: 0;
 
     .alertify-text {
-        color: #555;
+        color: @silexlightergrey;
         border-radius: 0;
+        background-color: @silexdarkgrey;
 
         &:focus {
-            border-color: #999;
+            border-color: @silexlightergrey;
             box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(0,0,0,.2);
         }
     }
-
-    .alertify-button, .alertify-button:hover, .alertify-button:focus, .alertify-button:active {
+    .alertify-buttons {
+      background-color: transparent;
+      border-top-color: @silexlightgrey;
+      box-shadow: inset 0 1px 0 @silexmediumgrey;
+      .alertify-button, .alertify-button:hover, .alertify-button:focus, .alertify-button:active {
         border-radius: 0;
-    }
-
-    .alertify-button-ok, .alertify-button-ok:hover, .alertify-button-ok:focus, .alertify-button-ok:active {
+      }
+      .alertify-button-ok, .alertify-button-ok:hover, .alertify-button-ok:focus, .alertify-button-ok:active {
         background-color: @silexmediumgrey;
         border: 1px solid @silexdarkgrey;
+      }
+      .alertify-button-cancel, .alertify-button-cancel:hover, .alertify-button-cancel:focus, .alertify-button-cancel:active {
+        background: @silexmediumgrey;
+        color: @silexlightergrey;
+        border: none;
+      }
     }
     .info-panel {
         width: 99%;
@@ -26,18 +36,19 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        border-color: @silexmediumgrey;
         .tip-of-the-day {
             * {
-                color: black;
+                color: @silexlightergrey;
                 margin: 10px;
             }
       }
-
+    }
+    .alertify-inner p {
+      padding: 15px;
     }
     select {
       padding: 5px;
-      background-color: @silexlightergrey;
-      color: @silexdarkgrey;
       margin-bottom: 50px;
     }
 }

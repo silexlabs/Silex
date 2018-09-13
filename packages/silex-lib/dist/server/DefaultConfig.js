@@ -41,7 +41,7 @@ const ceOptions = {
   dropboxClientSecret: process.env.DROPBOX_CLIENT_SECRET,
   enableFs: process.env.SILEX_DEBUG || process.env.SILEX_ELECTRON || process.env.ENABLE_FS,
   fsRoot: process.env.FS_ROOT,
-  rootUrl: serverOptions.rootUrl,
+  rootUrl: serverOptions.rootUrl + serverOptions.cePath,
 };
 
 const publisherOptions = {

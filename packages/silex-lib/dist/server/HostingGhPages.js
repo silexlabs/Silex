@@ -32,6 +32,7 @@ module.exports = function(unifile) {
       vhostsUrl: '/hosting/ghpages/vhost',
       buyDomainUrl: 'https://www.gandi.net',
       skipVhostSelection: false,
+      afterPublishMessage: 'Your website is being deployed to github pages.<br><br><strong>It may take a few minutes to be live, be patient!</strong>',
     };
     res.locals.providers.push(options);
     next();
@@ -42,21 +43,19 @@ module.exports = function(unifile) {
       .then(result => {
         res.json(result
           .sort((a, b) => new Date(b.modified) - new Date(a.modified))
-          //.slice(0, 1) // max number of repos
+          //.slice(0, 10) // max number of repos
           .map(file => {
             return {
               name: file.name,
               domainUrl: `/hosting/ghpages/vhost/${ file.name }`,
               skipDomainSelection: false,
               publicationPath: {
-                absPath: `/ce/github/get/${ file.name }/gh-pages`,
-                isDir: true,
-                mime: 'application/octet-stream',
+                //absPath: `/ce/github/get/${ file.name }/gh-pages`,
                 name: 'gh-pages',
                 folder: file.name,
                 path: `${ file.name }/gh-pages`,
                 service: 'github',
-                url: `http://localhost:6805/ce/github/get/${ file.name }/gh-pages`,
+                url: `https://${ req.session.unifile.github.account.login }.github.io/${ file.name }/`,
               }
             };
           })
@@ -64,7 +63,7 @@ module.exports = function(unifile) {
       })
       .catch(err => {
         res.status(400).send({
-          message: `Error from hosting provider "${ req.params.id }": ${ err.message }`,
+          message: `Error from hosting provider "Github Pages": ${ err.message }`,
           err: err,
         });
       });
@@ -74,13 +73,12 @@ module.exports = function(unifile) {
       .then(result => {
         res.json({
           domain: result.toString().replace(/\n/g, ''),
-          https: true,
         });
       })
       .catch(err => {
         res.json({
-          domain: `${ req.session.unifile.github.account.login }.github.io/${ req.params.name }`,
-          https: true,
+          //domain: `${ req.session.unifile.github.account.login }.github.io/${ req.params.name }`,
+          domain: '',
           msg: err,
         });
       });
@@ -90,7 +88,6 @@ module.exports = function(unifile) {
       .then(result => {
         res.json({
           domain: req.body.domain,
-          https: true,
         });
       })
       .catch(err => {
@@ -104,7 +101,6 @@ module.exports = function(unifile) {
     function genericDomain() {
       res.json({
         domain: `${ req.session.unifile.github.account.login }.github.io/${ req.params.name }`,
-        https: true,
       });
     }
     unifile.unlink(req.session.unifile, 'github', `/${ req.params.name }/gh-pages/CNAME`, req.body.domain)
