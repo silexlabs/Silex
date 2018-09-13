@@ -107,3 +107,4 @@ silex.controller.StageController.prototype.newContainer = function(container, el
   // then element should be visible everywhere
   this.checkElementVisibility(element);
 };
+
