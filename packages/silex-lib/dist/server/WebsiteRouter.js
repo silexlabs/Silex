@@ -21,27 +21,32 @@ const DomTools = require('./DomTools.js');
 
 const clientRoot = Path.resolve(__dirname, '..');
 const constants = require('./Constants.json');
+const nodeModules = require('node_modules-path');
 
 module.exports = function({ port, rootUrl }, unifile) {
 
   const backwardCompat = new BackwardCompat(rootUrl);
 
+  function isInTemplateFolder(path) {
+    if(path.startsWith(nodeModules('silex-templates') + '/silex-templates') ||
+      path.startsWith(nodeModules('silex-blank-templates') + '/silex-blank-templates')) {
+        return true;
+    }
+    return false;
+  }
   /**
    * list all the templates of the given folder
    */
   function getTemplatesList(req, res, next) {
-    switch(req.params.folder) {
-      case 'silex-templates':
-      case 'silex-blank-templates':
-        break;
-      default:
+    const templateFolder = Path.join(nodeModules(req.params.folder), req.params.folder);
+    if(!isInTemplateFolder(templateFolder)){
+        console.error('Error while trying to get the json representation of the folder ', templateFolder, err);
         res.send({success: false, error: 'Error while trying to get the json representation of the folder ' + req.params.folder + ' - folder does not exist'});
         return;
     }
-    var templateFolder = Path.join(__dirname, '../../dist/client/libs/templates/', req.params.folder);
     fs.readdir(templateFolder, function(err, result) {
       if(err) {
-        console.error('Error while trying to get the json representation of the folder ' + req.params.folder, err);
+        console.error('Error while trying to get the json representation of the folder ', templateFolder, err);
         res.send({success: false, error: 'Error while trying to get the json representation of the folder ' + req.params.folder + ' - ' + err});
       } else {
         var templateList = result.filter(function(entry) {
@@ -73,9 +78,9 @@ module.exports = function({ port, rootUrl }, unifile) {
    */
   function readTemplate(req, res, next) {
     const path = req.params[0];
-    const localPath = Path.resolve(__dirname, '../client' + path);
-    const url = new URL(`${ rootUrl }${ Path.dirname(path) }/`);
-    if(localPath.startsWith(clientRoot)) {
+    const localPath = Path.resolve(nodeModules('silex-templates'), path);
+    const url = new URL(`${ rootUrl }/libs/templates/${ Path.dirname(path) }/`);
+    if(isInTemplateFolder(localPath)){
       fs.readFile(localPath, (err, buffer) => {
         if(err) {
           CloudExplorer.handleError(res, err);
@@ -223,7 +228,7 @@ module.exports = function({ port, rootUrl }, unifile) {
 
   // website specials
   router.get(/\/website\/ce\/(.*)\/get\/(.*)/, readWebsite);
-  router.get(/\/website(.*)/, readTemplate);
+  router.get(/\/website\/libs\/templates\/(.*)/, readTemplate);
   router.put(/\/website\/ce\/(.*)\/put\/(.*)/, writeWebsite);
 
   // **
