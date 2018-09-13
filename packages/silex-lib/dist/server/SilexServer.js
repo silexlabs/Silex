@@ -22,6 +22,7 @@ const WebsiteRouter = require('./WebsiteRouter.js');
 const PublishRouter = require('./PublishRouter.js');
 const SslRouter = require('./SslRouter.js');
 const bodyParser = require('body-parser');
+const nodeModules = require('node_modules-path');
 
 module.exports = function(options) {
   this.options = options;
@@ -77,6 +78,12 @@ module.exports.prototype.start = function(cbk) {
   this.app.use('/js/src', serveStatic(Path.join(__dirname, '../../src')));
   // the scripts which have to be available in all versions (v2.1, v2.2, v2.3, ...)
   this.app.use('/static', serveStatic(Path.join(__dirname, '../../static')));
+  // wysihtml
+  this.app.use('/libs/wysihtml', serveStatic(Path.resolve(nodeModules('wysihtml'), 'wysihtml/parser_rules')));
+  this.app.use('/libs/wysihtml', serveStatic(Path.resolve(nodeModules('wysihtml'), 'wysihtml/dist/minified')));
+  // templates
+  this.app.use('/libs/templates/silex-templates', serveStatic(Path.resolve(nodeModules('silex-templates'), 'silex-templates')));
+  this.app.use('/libs/templates/silex-blank-templates', serveStatic(Path.resolve(nodeModules('silex-blank-templates'), 'silex-blank-templates')));
 
   // Start Silex as an Electron app
   if(electronOptions.enabled) {

@@ -14,5 +14,5 @@ RUN apt-get update \
 &&  npm run build
 
 EXPOSE 6805
-CMD ["node", "dist/server/server.js"]
+CMD ["node", "dist/server/silex_web.js"]
 
