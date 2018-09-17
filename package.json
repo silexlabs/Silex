@@ -7,7 +7,7 @@
   "contributors": [
     "Jean-Baptiste Richardet <jeanbaptiste.richardet@gmail.com> (https://github.com/JbIPS)"
   ],
-  "main": "dist/server/silex_web.js",
+  "main": "dist/server/index.js",
   "license": "GPL-3.0",
   "engines": {
     "node": "8.10.x",
@@ -52,7 +52,7 @@
     "jade": "1.11.0",
     "jsdom": "11.6.2",
     "less": "3.0.1",
-    "node_modules-path": "^2.0.0",
+    "node_modules-path": "github:lexoyo/node_modules-path#master",
     "prodotype": "github:silexlabs/Prodotype#master",
     "promise-sequential": "1.1.1",
     "request": "2.85.0",
