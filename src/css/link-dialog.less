@@ -1,26 +1,40 @@
 .link-editor {
+  & > div {
+    margin: 10px;
+  }
+  background-color: @silexmediumgrey;
+  input.alertify-text, select.alertify-text {
+    background-color: @silexmediumdarkgrey;
+  }
   .labels {
+    margin: 0;
     display: inline-block;
-    margin: 5px;
+    width: 100%;
+    background-color: @silexdarkgrey;
     label {
       .button-bar-template;
+      border: none;
       padding: 10px;
-      color: @silexdarkergrey;
-      background-color: @silexlightergrey;
+      color: @silexlightergrey;
+      background-color: @silexmediumdarkgrey;
       &.checked, &:hover {
-        background-color: transparent;
+        background-color: @silexmediumgrey;
+        color: @silexlightblue;
       }
       &.last-button {
         .button-bar-last;
+        border-bottom-right-radius: 0;
+        border: 0;
       }
       &.first-button {
         .button-bar-first;
+        border-bottom-left-radius: 0;
+        border: 0;
       }
     }
   }
   .link-editor-tab {
     display: none;
-    margin: 10px 0;
     // labels on 1 line
     label {
       display: block;
@@ -42,7 +56,6 @@
     }
     & > label:first-of-type {
       margin-bottom: 20px;
-      border: 1px solid @silexlightgrey;
       display: inline-block;
       margin-top: 10px;
       padding: 5px;
