@@ -107,18 +107,6 @@ body.silex-runtime .silex-element-content {
   position: absolute;
   border-radius: inherit; /* this is to follow the element's radius */
 }
-/* links default formatting */
-.editable-style[data-silex-href]{
-  cursor: pointer;
-}
-.text-element a, a.text-element{
-  color: inherit;
-  text-decoration: initial;
-}
-.text-element a:hover, a.text-element:hover{
-  color: inherit;
-  text-decoration: underline;
-}
 /* wysihtml text editor styles */
 .wysiwyg-float-left {
   float: left;

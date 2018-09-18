@@ -267,6 +267,7 @@ props:
   type:
   - "normal"
   - ":hover"
+  - ":active"
   - ":first-child"
   - ":last-child"
   - ":nth-child(even)"
