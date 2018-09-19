@@ -84,6 +84,7 @@ module.exports.prototype.start = function(cbk) {
   // templates
   this.app.use('/libs/templates/silex-templates', serveStatic(Path.resolve(nodeModules('silex-templates'), 'silex-templates')));
   this.app.use('/libs/templates/silex-blank-templates', serveStatic(Path.resolve(nodeModules('silex-blank-templates'), 'silex-blank-templates')));
+  this.app.use('/libs/prodotype', serveStatic(Path.resolve(nodeModules('prodotype'), 'prodotype/pub')));
 
   // Start Silex as an Electron app
   if(electronOptions.enabled) {
