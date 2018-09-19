@@ -226,6 +226,7 @@
         input#style-editor-tag-heading3.hidden(type='radio', name='style-editor-tag-name', value='heading3')
         input#style-editor-tag-ul.hidden(type='radio', name='style-editor-tag-name', value='ul')
         input#style-editor-tag-ol.hidden(type='radio', name='style-editor-tag-name', value='ol')
+        input#style-editor-tag-active.hidden(type='radio', name='style-editor-tag-name', value='active')
         .labels
           label.p.first-button(for='style-editor-tag-paragraph', title='Edit style of text marked as "normal"' data-initial-value='P' data-prodotype-name='Paragraph') P
           label.a.fa.fa-link(for='style-editor-tag-link', title='Edit style of links' data-initial-value='' data-prodotype-name='Link')
@@ -237,4 +238,5 @@
           label.h3(for='style-editor-tag-heading3', title='Edit style of Heading3 text' data-initial-value='H3' data-prodotype-name='Heading3') H3
           label.ul(for='style-editor-tag-ul', title='Edit style of unordered lists' data-initial-value='UL' data-prodotype-name='UnorderedList') UL
           label.ol.last-button(for='style-editor-tag-ol', title='Edit style of ordered lists' data-initial-value='OL' data-prodotype-name='OrderedList') OL
+          label.active.first-button.last-button.fa.fa-file(for='style-editor-tag-active', title='Edit style of links leading to the current page' data-initial-value='' data-prodotype-name='Active')
         .prodotype-container
