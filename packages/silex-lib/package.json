@@ -24,7 +24,7 @@
     "start:debug": "cross-env SILEX_DEBUG=true npm start",
     "build": "npm run build:css && npm run build:html && npm run build:prodotype && npm run build:js:release",
     "release": "electron-builder",
-    "build:prodotype": "prodotype src/prodotype/components dist/client/libs/prodotype/components/ && prodotype src/prodotype/styles dist/client/libs/prodotype/styles/",
+    "build:prodotype": "mkdir -p dist/client/libs/prodotype/components &&  prodotype src/prodotype/components dist/client/libs/prodotype/components/ && prodotype src/prodotype/styles dist/client/libs/prodotype/styles/",
     "build:css": "lessc src/css/_styles.less dist/client/css/admin.css --source-map",
     "build:html": "jade src/html/index.jade --out dist/client/ --no-debug",
     "build:js:release": "java -jar `node_modules google-closure-compiler`/google-closure-compiler/compiler.jar --js `node_modules google-closure-library`/google-closure-library/closure/goog/ --js src/js/ --externs src/externs.js --js_output_file dist/client/js/admin.js --compilation_level ADVANCED_OPTIMIZATIONS --warning_level=VERBOSE --language_in ECMASCRIPT6_STRICT --language_out ECMASCRIPT5 --create_source_map dist/client/js/admin.js.map --closure_entry_point silex.App --only_closure_dependencies --define=\"goog.DEBUG=false\"",
