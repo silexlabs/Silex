@@ -201,21 +201,13 @@ props:
     - px
     - em
   # - white-space
+- name: All
+  type: TextStyle
 - name: Paragraph
   type: TextStyle
 - name: Link
   type: TextStyle
-- name: Bold
-  type: TextStyle
-- name: Underline
-  type: TextStyle
-- name: Italic
-  type: TextStyle
-- name: Heading1
-  type: TextStyle
-- name: Heading2
-  type: TextStyle
-- name: Heading3
+- name: Active
   type: TextStyle
 - name: UnorderedList
   type: TextStyle
@@ -299,7 +291,17 @@ props:
       - ""
       - inside
       - outside
-- name: Active
+- name: Heading1
+  type: TextStyle
+- name: Heading2
+  type: TextStyle
+- name: Heading3
+  type: TextStyle
+- name: Bold
+  type: TextStyle
+- name: Underline
+  type: TextStyle
+- name: Italic
   type: TextStyle
 - name: className
   type: string

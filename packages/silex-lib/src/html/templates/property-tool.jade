@@ -216,27 +216,30 @@
       .unapply-style.icon-btn.icon-btn-right(title='Remove the current style from selected text boxes.') <svg id='Group_9' data-name='Group 9' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 13 11'><defs><style>.cls-1 {fill: #e4e4e4;}</style></defs><path id='Path_72' data-name='Path 72' class='cls-1' d='M8.964-6A3.516,3.516,0,0,0,5.5-9,3.5,3.5,0,0,0,2-5.5,3.5,3.5,0,0,0,5.5-2,3.53,3.53,0,0,0,6-2.036V-.023C5.831-.007,5.663,0,5.5,0A5.506,5.506,0,0,1,0-5.5,5.506,5.506,0,0,1,5.5-11,5.482,5.482,0,0,1,9.218-9.55,5.485,5.485,0,0,1,10.977-6H13L10-2,7-6Z' transform='translate(0 11)'/></svg>
       <hr>
       form.style-editor-tag-form
+        input#style-editor-tag-all.hidden(type='radio', name='style-editor-tag-name', value='all', checked)
         input#style-editor-tag-paragraph.hidden(type='radio', name='style-editor-tag-name', value='paragraph', checked)
         input#style-editor-tag-link.hidden(type='radio', name='style-editor-tag-name', value='link')
-        input#style-editor-tag-bold.hidden(type='radio', name='style-editor-tag-name', value='bold')
-        input#style-editor-tag-underline.hidden(type='radio', name='style-editor-tag-name', value='underline')
-        input#style-editor-tag-italic.hidden(type='radio', name='style-editor-tag-name', value='italic')
+        input#style-editor-tag-active.hidden(type='radio', name='style-editor-tag-name', value='active')
+        input#style-editor-tag-ul.hidden(type='radio', name='style-editor-tag-name', value='ul')
+        input#style-editor-tag-ol.hidden(type='radio', name='style-editor-tag-name', value='ol')
         input#style-editor-tag-heading1.hidden(type='radio', name='style-editor-tag-name', value='heading1')
         input#style-editor-tag-heading2.hidden(type='radio', name='style-editor-tag-name', value='heading2')
         input#style-editor-tag-heading3.hidden(type='radio', name='style-editor-tag-name', value='heading3')
-        input#style-editor-tag-ul.hidden(type='radio', name='style-editor-tag-name', value='ul')
-        input#style-editor-tag-ol.hidden(type='radio', name='style-editor-tag-name', value='ol')
-        input#style-editor-tag-active.hidden(type='radio', name='style-editor-tag-name', value='active')
+        input#style-editor-tag-bold.hidden(type='radio', name='style-editor-tag-name', value='bold')
+        input#style-editor-tag-underline.hidden(type='radio', name='style-editor-tag-name', value='underline')
+        input#style-editor-tag-italic.hidden(type='radio', name='style-editor-tag-name', value='italic')
         .labels
-          label.p.first-button(for='style-editor-tag-paragraph', title='Edit style of text marked as "normal"' data-initial-value='P' data-prodotype-name='Paragraph') P
-          label.a.fa.fa-link(for='style-editor-tag-link', title='Edit style of links' data-initial-value='' data-prodotype-name='Link')
-          label.b(for='style-editor-tag-bold', title='Edit style of bold text' data-initial-value='B' data-prodotype-name='Bold') B
-          label.u(for='style-editor-tag-underline', title='Edit style of underlined text' data-initial-value='U' data-prodotype-name='Underline') U
-          label.i.last-button(for='style-editor-tag-italic', title='Edit style of italic text' data-initial-value='I' data-prodotype-name='Italic') I
-          label.h1.first-button(for='style-editor-tag-heading1', title='Edit style of Heading1 text' data-initial-value='H1' data-prodotype-name='Heading1') H1
-          label.h2(for='style-editor-tag-heading2', title='Edit style of Heading2 text' data-initial-value='H2' data-prodotype-name='Heading2') H2
-          label.h3(for='style-editor-tag-heading3', title='Edit style of Heading3 text' data-initial-value='H3' data-prodotype-name='Heading3') H3
-          label.ul(for='style-editor-tag-ul', title='Edit style of unordered lists' data-initial-value='UL' data-prodotype-name='UnorderedList') UL
-          label.ol.last-button(for='style-editor-tag-ol', title='Edit style of ordered lists' data-initial-value='OL' data-prodotype-name='OrderedList') OL
-          label.active.first-button.last-button.fa.fa-file(for='style-editor-tag-active', title='Edit style of links leading to the current page' data-initial-value='' data-prodotype-name='Active')
+          label.all.first-button(for='style-editor-tag-all', title='Edit style of all texts', data-initial-value='All', data-prodotype-name='All') All
+          label.p(for='style-editor-tag-paragraph', title='Edit style of paragraphs', data-initial-value='P', data-prodotype-name='Paragraph') P
+          label.a.fa.fa-link(for='style-editor-tag-link', title='Edit style of links', data-initial-value='', data-prodotype-name='Link')
+          label.active.fa.fa-file(for='style-editor-tag-active', title='Edit style of links leading to the current page', data-initial-value='', data-prodotype-name='Active')
+          label.ul(for='style-editor-tag-ul', title='Edit style of unordered lists', data-initial-value='UL', data-prodotype-name='UnorderedList') UL
+          label.ol.last-button(for='style-editor-tag-ol', title='Edit style of ordered lists', data-initial-value='OL', data-prodotype-name='OrderedList') OL
+          label.h1.first-button(for='style-editor-tag-heading1', title='Edit style of Heading1 text', data-initial-value='H1', data-prodotype-name='Heading1') H1
+          label.h2(for='style-editor-tag-heading2', title='Edit style of Heading2 text', data-initial-value='H2', data-prodotype-name='Heading2') H2
+          label.h3(for='style-editor-tag-heading3', title='Edit style of Heading3 text', data-initial-value='H3', data-prodotype-name='Heading3') H3
+          label.b(for='style-editor-tag-bold', title='Edit style of bold text', data-initial-value='B', data-prodotype-name='Bold') B
+          label.u(for='style-editor-tag-underline', title='Edit style of underlined text', data-initial-value='U', data-prodotype-name='Underline') U
+          label.i.last-button(for='style-editor-tag-italic', title='Edit style of italic text', data-initial-value='I', data-prodotype-name='Italic') I
+        a.help-section(href='https://github.com/silexlabs/Silex/wiki/Editor-UI#style-manager', target='_blank') Style manager help
         .prodotype-container
