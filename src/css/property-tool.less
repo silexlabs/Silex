@@ -54,6 +54,14 @@
   bottom: 0;
   background-color: @silexmediumgrey;
   font-size: small;
+  a.help-section, a.help-section:visited {
+    /* help links */
+    color: @silexlightergrey;
+    outline: none;
+    text-align: right;
+    display: block;
+    padding: 0 10px;
+  }
   hr {
     margin: 7px 0 3px;
     max-width: none;
@@ -519,7 +527,7 @@
       margin-left: 2.5%;
       padding-bottom: 15px;
       label {
-        width: 18.5%;
+        width: 15.8%;
         min-width: 30px;
         min-height: 17px;
       }
@@ -596,7 +604,9 @@
     .style-editor-tag-form input:checked:nth-child(10) ~
     .labels label:nth-child(10),
     .style-editor-tag-form input:checked:nth-child(11) ~
-    .labels label:nth-child(11) { .button-template-selected }
+    .labels label:nth-child(11),
+    .style-editor-tag-form input:checked:nth-child(12) ~
+    .labels label:nth-child(12) { .button-template-selected }
     /* Pure CSS to show / hide prodotype editors (tags H1, H2, H3, P, A) */
     .prodotype-container .editor > ul > .prop-editor-base { display: none; }
     /* Paragraph */
@@ -631,7 +641,10 @@
     .prodotype-container .editor > ul > .prop-editor-base:nth-child(10),
     /* active link */
     .style-editor-tag-form input:checked:nth-child(11) ~
-    .prodotype-container .editor > ul > .prop-editor-base:nth-child(11) { display: initial; }
+    .prodotype-container .editor > ul > .prop-editor-base:nth-child(11),
+    /* All */
+    .style-editor-tag-form input:checked:nth-child(12) ~
+    .prodotype-container .editor > ul > .prop-editor-base:nth-child(12) { display: initial; }
     .editor {
       /* hide description and help button, FIXME: should be doable in the .yaml */
       & > h1, & > h1 + div { display: none; }
