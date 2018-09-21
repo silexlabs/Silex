@@ -8,14 +8,14 @@ props:
   props:
   - name: font-family
     default: ""
-    type:
-    - ""
-    - "Arial, sans-serif"
-    - "Courier New, monospace"
-    - "Georgia, serif"
-    - "Times New Roman, serif"
-    - "Trebuchet MS, sans-serif"
-    - "Verdana, sans-serif"
+    type: component
+    # - ""
+    # - "Arial, sans-serif"
+    # - "Courier New, monospace"
+    # - "Georgia, serif"
+    # - "Times New Roman, serif"
+    # - "Trebuchet MS, sans-serif"
+    # - "Verdana, sans-serif"
   - name: font-weight
     className: medium-width
     default: ""

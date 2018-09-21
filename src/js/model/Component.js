@@ -463,7 +463,17 @@ class Component {
     };
     this.prodotypeStyle.edit(
       pseudoClassData,
-      [], // no need to have references to other styles
+      [{
+        displayName: '',
+        name: '',
+        templateName: '',
+      }].concat(this.model.property.getFonts()).map(font => {
+        return {
+          displayName: font.family,
+          name: font.family,
+          templateName: '',
+        };
+      }),
       'text',
       {
         'onChange': (newData, html) => this.styleChanged(className, pseudoClass, visibility, newData),
