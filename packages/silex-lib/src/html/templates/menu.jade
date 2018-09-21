@@ -1,6 +1,5 @@
 .silex-menu
   .menu-container
-    .show-about-menu.silex-logo(title='About Silex', data-menu-action='show.about.menu')
     .show-file-menu.fa-fw.icon.fa-inverse.fa-cloud(title='File menu', data-menu-action='show.file.menu')
     .show-add-menu.fa-fw.icon.fa-inverse.fa-plus-square(title='Add elements', data-menu-action='show.add.menu')
     .show-code-menu.fa-fw.icon.fa-inverse.fa-code(title='Code', data-menu-action='show.code.menu')
@@ -15,6 +14,7 @@
     .right.desktop.fa-fw.icon.fa-inverse.fa-desktop(title='Desktop editor (Alt M)', data-menu-action="tools.mobile.mode.off")
     .icon.sep
     .show-settings.fa-fw.icon.fa-inverse.fa-cogs(title='Settings', data-menu-action='file.publish.settings')
+    .show-fonts.fa-fw.icon.fa-inverse.fa-font(title='Fonts', data-menu-action='file.fonts')
     .show-about-menu.fa-fw.icon.fa-inverse.fa-question-circle(title='About Silex', data-menu-action='show.about.menu')
 
   .about-menu-container
@@ -129,6 +129,7 @@
   include ./page-tool.jade
 
 .silex-context-menu
+  .show-about-menu.silex-logo(title='About Silex', data-menu-action='show.about.menu')
   .current-page
   .icon.edit.fa-inverse.fa-pencil.off(title='Edit (↵)')
   .icon.delete.fa-inverse.fa-trash.off(title='Delete (SUPPR)')

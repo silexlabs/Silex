@@ -232,6 +232,10 @@ silex.view.Menu.prototype.onMenuEvent = function(type, opt_componentName) {
       this.controller.fileMenuController.view.settingsDialog.open();
       this.controller.fileMenuController.view.workspace.redraw(this.controller.fileMenuController.view);
       break;
+    case 'file.fonts':
+      this.controller.fileMenuController.view.settingsDialog.open(null, 'fonts-pane');
+      this.controller.fileMenuController.view.workspace.redraw(this.controller.fileMenuController.view);
+      break;
     case 'file.publish':
       this.controller.fileMenuController.publish();
       break;

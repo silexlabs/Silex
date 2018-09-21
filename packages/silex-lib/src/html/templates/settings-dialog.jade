@@ -9,6 +9,7 @@
         li.general-pane(data-pane="general-pane") General
         li.social-pane(data-pane="social-pane") Social Networks
         li.publish-pane(data-pane="publish-pane") Publish settings
+        li.fonts-pane(data-pane="fonts-pane") Fonts
     .right-pane
       .pane.general-pane
         ul
@@ -100,8 +101,8 @@
           li
             fieldset
               legend
-                h3.title Publication Path
-                  a.help-icon(href="https://github.com/silexlabs/Silex/wiki/Publishing-and-Releasing-Your-Website", title="about Silex publication process", target="blank") - Help
+                h3.title Publication Path -&nbsp;
+                  a.help-icon(href="https://github.com/silexlabs/Silex/wiki/Publishing-and-Releasing-Your-Website", title="about Silex publication process", target="blank") Help
               p
                 | The folder in which I will publish the website.
                 | <b>This folder content will be deleted.</b>
@@ -110,3 +111,16 @@
               label.path Path
                 input.input-path.input-publication-path(type="text", value="")
               button.browse-publication-path(type="button") Configure
+      .pane.fonts-pane
+        ul
+          li
+            fieldset
+              legend
+                h3.title Embeded Fonts -&nbsp;
+                  a.help-icon(href="https://github.com/silexlabs/Silex/wiki/Editor-UI#style-manager", title="about the fonts in silex", target="blank") Help
+              p
+                | These are the fonts which will be embedded in your website.
+              p.ui
+                button.add-font-btn Add a font
+              div.fonts-list
+

@@ -311,7 +311,7 @@ silex.model.Head.prototype.getPublicationPath = function() {
  * @param {boolean} enable
  */
 silex.model.Head.prototype.setEnableMobile = function(enable) {
-  let doc = this.model.file.getContentDocument();
+  const doc = this.model.file.getContentDocument();
   if(doc.body === null) {
     // body is null, this happens while undoing or redoing
     return;
@@ -573,3 +573,54 @@ silex.model.Head.prototype.getHeadElement = function() {
   // returns the head of the document in the iframe
   return this.model.file.getContentDocument().head;
 };
+
+
+/**
+ * @return  {Array<Font>} all the fonts for this website
+ */
+silex.model.Head.prototype.getFonts = function() {
+  return this.model.property.getFonts();
+};
+
+
+/**
+ * @param {Array<Font>} fonts
+ */
+silex.model.Head.prototype.setFonts = function(fonts) {
+  /**
+   * @param {Font} f1
+   * @param {Font} f2
+   * @return {boolean} true if the fonts are the same
+   */
+  function compareFonts(f1, f2) {
+    return f1.family === f2.family && f1.href === f2.href;
+  }
+  // remove fonts which are not in fonts anymore
+  const head = this.getHeadElement();
+  const doc = this.model.file.getContentDocument();
+  const oldFonts = this.getFonts();
+  oldFonts
+  .filter(font => !fonts.find(f => compareFonts(f, font)))
+  .forEach(font => {
+    const link = head.querySelector(`link[href="${ font.href }"]`);
+    if(link) head.removeChild(link);
+    else {
+      console.warn('Could not remove font from the dom', font, link);
+    }
+  });
+  // add new fonts
+  fonts
+  .filter(font => !oldFonts.find(f => compareFonts(f, font)))
+  .forEach(font => {
+    const link = doc.createElement('link');
+    link.href = font.href;
+    link.rel = 'stylesheet';
+    link.className = silex.model.Head.CUSTOM_FONTS_CSS_CLASS;
+    head.appendChild(link);
+  });
+  // store the list in db
+  this.model.property.setFonts(fonts);
+  // update views
+  this.view.settingsDialog.redraw();
+};
+
