@@ -41,7 +41,7 @@ module.exports = class DomTools {
         const newVal = fn(val, el, el.parentNode === dom.window.document.head);
         if(newVal) {
           el.setAttribute(attr, newVal);
-          if(val != newVal) console.log('URL transformed:', attr, val, '=>', newVal);
+          if(val != newVal) console.log('URL transformed:', attr, val, '=>', newVal, '(image)');
         }
       }
     });
@@ -83,7 +83,7 @@ module.exports = class DomTools {
       if(newUrl) {
         valueArr[1] = newUrl;
       }
-      console.log('URL transformed:', url, '=>', newUrl);
+      console.log('URL transformed:', url, '=>', newUrl, '(image in CSS)');
       return valueArr.join('\'');
     }
     return null;
@@ -126,7 +126,7 @@ module.exports = class DomTools {
             else {
               if(['src', 'href'].indexOf(propName) >= 0) {
                 elementData[propName] = fn(propValue) || propValue;
-                console.log('URL transformed:', propName, propValue, '=>', elementData[propName]);
+                console.log('URL transformed:', propName, propValue, '=>', elementData[propName], '(URL in Silex JSON data)');
               }
             }
           }
