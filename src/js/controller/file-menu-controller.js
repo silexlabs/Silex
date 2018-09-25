@@ -57,6 +57,24 @@ silex.controller.FileMenuController.prototype.loadBlank = function(opt_cbk, opt_
 };
 
 
+silex.controller.FileMenuController.prototype.openRecent = function(fileInfo, opt_cbk) {
+  // a recent file was selected
+  this.model.file.open(/** @type {FileInfo} */ (fileInfo), rawHtml => this.onOpened(opt_cbk, rawHtml), err => {
+    silex.utils.Notification.confirm(`Could not open this recent file, you probably need to connect to ${ fileInfo.service } again.`, ok => {
+      const ce = silex.service.CloudStorage.getInstance().ce;
+      console.log('before auth', ce);
+      silex.utils.Notification.alert(`I am trying to connect you to ${ fileInfo.service } again, please accept the connection in the popup I have just opened then <strong>please wait</strong>.`, () => {});
+      ce['auth'](fileInfo.service).then(res => {
+        silex.utils.Notification.close();
+        if(ok) {
+          this.openRecent(fileInfo, opt_cbk);
+        }
+      });
+    });
+  });
+};
+
+
 /**
  * open a file
  * @param {?function()=} opt_cbk
@@ -72,8 +90,7 @@ silex.controller.FileMenuController.prototype.newFile = function(opt_cbk, opt_er
         this.loadBlank(opt_cbk, opt_errorCbk);
       }
       else if(fileInfo) {
-        // a recent file was selected
-        this.model.file.open(/** @type {FileInfo} */ (fileInfo), rawHtml => this.onOpened(opt_cbk, rawHtml), err => this.onOpenError(err, 'Could not open this recent file, are you connected to ' + fileInfo.service + '?', opt_errorCbk));
+        this.openRecent(fileInfo, opt_cbk);
       }
     },
     openTemplate: (url) => {
