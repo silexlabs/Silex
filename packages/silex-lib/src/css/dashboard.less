@@ -132,8 +132,16 @@
         box-shadow: inset 0 1px 0 @silexlightgrey;
         padding: 10px;
         cursor: pointer;
+
+        /* display ellipsis at the beginning of the line to truncate */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        direction: rtl;
+
         .fa {
           padding-right: 10px;
+          float: left;
         }
       }
       &.list-item:last-child {
