@@ -37,7 +37,7 @@ div.icon, a.icon, span.icon {
   .silex-icons-menu();
   overflow-x: hidden;
   overflow-y: auto;
-  top: 0;
+  top: @contextMenuHeight;
   bottom: 0;
   width: @menuWidth;
   .previewResponsize {background-image: url(../assets/context-menu/responsize-small.png);}
@@ -124,11 +124,10 @@ div.icon, a.icon, span.icon {
   .silex-sub-menu-text();
 }
 .silex-logo {
-  background: url(../assets/logo-silex.png) no-repeat;
-  background-position: 50% 50%;
-  height: 35px;
-  background-size: 65%;
   cursor: pointer;
+  position: relative;
+  z-index: 3;
+  margin: 3px;
 }
 .file-menu-container {
   .icon.svg {
