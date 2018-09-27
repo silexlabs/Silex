@@ -278,7 +278,7 @@ class Dashboard {
               case 'sftp':
                 return ['fa', 'fa-server'];
               case 'fs':
-                return ['fa', 'fa-folder'];
+                return ['fa', 'fa-hdd-o'];
               default:
                 return ['fa', 'fa-cloud'];
             }
@@ -288,7 +288,7 @@ class Dashboard {
 
           const name = document.createElement('span');
           name.setAttribute('data-file-info', JSON.stringify(blob));
-          name.innerHTML = '/' + blob.folder + '<strong>/' + blob.name + '</strong>';
+          name.innerHTML = blob.folder + '<strong>/' + blob.name + '</strong>/'; // the '/' is at the end because the css are "ltr" in order to have ellipsis at the beginning
           li.appendChild(name);
 
           return li;
