@@ -142,7 +142,10 @@ silex.view.Menu.prototype.buildUi = function() {
     const action = e.target.getAttribute('data-menu-action') || e.target.parentNode.getAttribute('data-menu-action');
     const componentId = e.target.getAttribute('data-comp-id') || e.target.parentNode.getAttribute('data-comp-id');
     this.onMenuEvent(action, componentId);
-    if(e.target.parentNode && !e.target.parentNode.classList.contains('menu-container')) {
+    if(e.target.parentNode &&
+      !e.target.parentNode.classList.contains('menu-container') &&
+      !e.target.parentNode.classList.contains('silex-menu')
+    ) {
       // not a first level menu => close sub menus
       this.closeAllSubMenu();
     }
@@ -179,12 +182,12 @@ silex.view.Menu.prototype.redraw = function(selectedElements, pageNames, current
 
 
 silex.view.Menu.SUB_MENU_CLASSES = ['page-tool-visible', 'about-menu-visible', 'file-menu-visible', 'code-menu-visible', 'add-menu-visible'];
+
 silex.view.Menu.prototype.closeAllSubMenu = function() {
   silex.view.Menu.SUB_MENU_CLASSES.forEach(className => {
     document.body.classList.remove(className);
   });
 };
-
 
 silex.view.Menu.prototype.toggleSubMenu = function(classNameToToggle) {
   silex.view.Menu.SUB_MENU_CLASSES.forEach(className => {
@@ -196,7 +199,6 @@ silex.view.Menu.prototype.toggleSubMenu = function(classNameToToggle) {
     }
   });
 }
-
 
 /**
  * handles click events
