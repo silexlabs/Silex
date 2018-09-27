@@ -57,31 +57,31 @@ function getProp(prop, propName) {
   if(found) {
   %>
     <% if(className != 'all-style') { %>.<%= className %><% } %><%- prop.selector %> {
-      <%= getProp(prop, 'list-style-type') -%>
+      <%- getProp(prop, 'list-style-type') -%>
       <% if(prop.obj['list-style-image']) { %>
         list-style-image: url(<%= prop.obj['list-style-image'] -%>);
       <% } %>
-      <%= getProp(prop, 'list-style-position') -%>
-      <%= getProp(prop, 'font-family') -%>
-      <%= getProp(prop, 'font-style') -%>
-      <%= getProp(prop, 'font-variant') -%>
-      <%= getProp(prop, 'font-weight') -%>
-      <%= getProp(prop, 'font-size') -%>
-      <%= getProp(prop, 'color') -%>
-      <%= getProp(prop, 'background-color') -%>
-      <%= getProp(prop, 'text-decoration') -%>
-      <%= getProp(prop, 'text-align') -%>
-      <%= getProp(prop, 'text-transform') -%>
-      <%= getProp(prop, 'line-height') -%>
-      <%= getProp(prop, 'word-spacing') -%>
-      <%= getProp(prop, 'letter-spacing') -%>
-      <%= getProp(prop, 'text-indent') -%>
-      <%= getProp(prop, 'direction') -%>
-      <%= getProp(prop, 'columns') -%>
-      <%= getProp(prop, 'column-rule-width') -%>
-      <%= getProp(prop, 'column-gap') -%>
-      <%= getProp(prop, 'column-rule-color') -%>
-      <%= getProp(prop, 'column-rule-style') -%>
+      <%- getProp(prop, 'list-style-position') -%>
+      <%- getProp(prop, 'font-family') -%>
+      <%- getProp(prop, 'font-style') -%>
+      <%- getProp(prop, 'font-variant') -%>
+      <%- getProp(prop, 'font-weight') -%>
+      <%- getProp(prop, 'font-size') -%>
+      <%- getProp(prop, 'color') -%>
+      <%- getProp(prop, 'background-color') -%>
+      <%- getProp(prop, 'text-decoration') -%>
+      <%- getProp(prop, 'text-align') -%>
+      <%- getProp(prop, 'text-transform') -%>
+      <%- getProp(prop, 'line-height') -%>
+      <%- getProp(prop, 'word-spacing') -%>
+      <%- getProp(prop, 'letter-spacing') -%>
+      <%- getProp(prop, 'text-indent') -%>
+      <%- getProp(prop, 'direction') -%>
+      <%- getProp(prop, 'columns') -%>
+      <%- getProp(prop, 'column-rule-width') -%>
+      <%- getProp(prop, 'column-gap') -%>
+      <%- getProp(prop, 'column-rule-color') -%>
+      <%- getProp(prop, 'column-rule-style') -%>
     }
   <% } %>
 <% }) %>
