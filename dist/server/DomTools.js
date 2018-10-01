@@ -90,7 +90,7 @@ module.exports = class DomTools {
   }
 
 
-  static transformStylesheet(stylesheet, isInHead, fn) {
+  static transformStylesheet(stylesheet, isInHead, fn, isMediaQuerySubRule = false) {
     let cssText = '';
     for(let ruleIdx=0; ruleIdx<stylesheet.cssRules.length; ruleIdx++) {
       const rule = stylesheet.cssRules[ruleIdx];
@@ -99,7 +99,14 @@ module.exports = class DomTools {
         const value = rule.style[valName];
         rule.style[valName] = DomTools.transformValueUrlKeyword(value, stylesheet, isInHead, fn) || value;
       }
-      cssText += rule.cssText;
+      else if(rule.cssRules) {
+        // case of a mediaquery
+        DomTools.transformStylesheet(rule, isInHead, fn, true);
+      }
+      if(!isMediaQuerySubRule) {
+        // if it is a media query then the parent rule will be written
+        cssText += rule.cssText;
+      }
     }
     return cssText;
   }
