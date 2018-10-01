@@ -150,6 +150,7 @@ silex.view.TextFormatBar = class {
               'h5': {},
               'h6': {},
               'ul': {},
+              'u': {},
               'ol': {},
               'li': {},
               'a': {
