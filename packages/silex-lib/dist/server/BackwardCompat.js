@@ -35,8 +35,9 @@ module.exports = class BackwardCompat {
    * @return {Promise} a Promise, resolve can be called with a warning message
    */
   update(doc) {
+    // fix an issue when the style tag has no type, then json is "broken"
     var styleTag = doc.querySelector('.' + constants.JSON_STYLE_TAG_CLASS_NAME);
-    styleTag.type = 'text/json';
+    if(styleTag) styleTag.type = 'text/json'; // old versions of silex have no json at all so do nothing in that case
     // if no generator tag, create one
     var metaNode = doc.querySelector('meta[name="generator"]');
     if (!metaNode) {
