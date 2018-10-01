@@ -7,10 +7,6 @@
 body {
   min-width: 100%;
   min-height: 100%;
-  position: absolute;
-  transition: min-width .5s ease-out, min-height .5s ease-out; /* smooth body resize when dragging elements near the side, or when page have different size */
-  font-family: Arial, sans-serif;
-  font-weight: lighter;
 }
 body.compute-body-size-pending {
   transition: none;
@@ -120,6 +116,9 @@ body.silex-runtime .silex-element-content {
     because of normalize.css */
 a:focus{ outline: none;}
 
+body.silex-runtime .editable-style[data-silex-href] {
+  cursor: pointer;
+}
 .silex-pages .menu-button {
   display: none;
 }
@@ -172,17 +171,11 @@ a:focus{ outline: none;}
     background-color: #262626;
   }
   /* elements styles */
-  body.enable-mobile {
-    padding: 60px 0 0 0; /* leave space for the hamburger button */
-  }
   body.enable-mobile .background {
     height: initial;
     padding-bottom: 50px;
   }
-  body.enable-mobile {
-    min-height: 100%;
-    max-width: 100%;
-  }
+  /* mobile mode */
   body.enable-mobile .editable-style,
   body.enable-mobile .background.background-initial {
     position: relative;
