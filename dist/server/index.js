@@ -36,7 +36,7 @@ app.use(compression());
 
 // cookie & session
 app.use(bodyParser.json({limit: '1mb'}));
-app.use(bodyParser.text({limit: '1mb'}));
+app.use(bodyParser.text({limit: '10mb'}));
 app.use(cookieParser());
 app.use(session({
   name: 'silex-session',
