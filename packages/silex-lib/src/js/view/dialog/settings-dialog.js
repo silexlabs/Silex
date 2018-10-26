@@ -404,7 +404,7 @@ class SettingsDialog {
         <link href="${ font.href }" rel="stylesheet">
         <style>
           body {
-            width: 100%
+            width: 100%;
             font-family: ${ font.family };
             color: white;
             text-overflow: ellipsis;
