@@ -53,15 +53,11 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
       this.updateTagButtonBar(styleData);
     };
     this.mobileOnlyCheckbox.onchange = e => {
-      // FIXME: should switch the mobile editor mode
-      e.preventDefault();
-      this.mobileOnlyCheckbox.checked = this.isMobile();
-      // this.view.workspace.setMobileEditor(this.mobileOnlyCheckbox.checked);
-      // // edit selected style
-      // this.model.component.editStyle(this.styleCombo.value, this.getPseudoClass(), this.getVisibility());
-      // // update pseudo class dropdown
-      // const styleData = this.model.property.getStyleData(this.styleCombo.value) || {};
-      // this.populatePseudoClassCombo(styleData);
+      // switch the mobile editor mode
+      this.controller.propertyToolController
+        .view.workspace.setMobileEditor(this.mobileOnlyCheckbox.checked);
+      // refresh the view
+      this.controller.propertyToolController.refreshView();
     };
     this.styleCombo.onchange = e => {
       this.tracker.trackAction('style-editor-events', 'apply-style');
@@ -113,16 +109,24 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
     this.element.querySelector('.edit-style').onclick = e => {
       this.tracker.trackAction('style-editor-events', 'edit-style');
       const oldClassName = this.styleCombo.value;
-      const data = this.model.property.getStyleData(oldClassName);
-      this.createStyle(data, name => {
-        // update the style name
-        this.getElementsWithStyle(oldClassName, true)
-        .forEach(el => {
-          el.classList.add(this.styleCombo.value);
+      if(oldClassName === Component.BODY_STYLE_CSS_CLASS) {
+        silex.utils.Notification.alert(`The style '${ Component.BODY_STYLE_NAME }' is a special style, you can not rename it.`, () => {});
+      }
+      else {
+        const data = this.model.property.getStyleData(oldClassName);
+        this.createStyle(data, name => {
+          // update the style name
+          this.getElementsWithStyle(oldClassName, true)
+            .forEach(el => {
+              el.classList.add(this.styleCombo.value);
+            });
+          // delete the old one
+          if(oldClassName != Component.EMPTY_STYLE_CLASS_NAME) {
+            // case of rename the empty style (=> only create a new style)
+            this.deleteStyle(oldClassName, false);
+          }
         });
-        // delete the old one
-        this.deleteStyle(oldClassName, false);
-      });
+      }
     };
     // for tracking only
     this.element.querySelector('.style-editor-tag-form .labels').onclick = e => {
@@ -170,18 +174,22 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
    * @param  {silex.model.data.StyleName} newStyle
    */
   applyStyle(elements, newStyle) {
-    this.controller.propertyToolController.undoCheckPoint();
-    elements
-    .filter(el => this.isTextBox(el))
-    .forEach(el => {
-      // un-apply the old style if there was one
-      this.removeAllStyles(el);
-      // apply the new style if there is one
-      el.classList.add(newStyle);
-    });
-    this.controller.propertyToolController.refreshView();
+    if(newStyle === Component.BODY_STYLE_CSS_CLASS) {
+      silex.utils.Notification.alert(`The style '${ Component.BODY_STYLE_NAME }' is a special style, it is already applyed to all text elements.`, () => {});
+    }
+    else {
+      this.controller.propertyToolController.undoCheckPoint();
+      elements
+        .filter(el => this.isTextBox(el))
+        .forEach(el => {
+          // un-apply the old style if there was one
+          this.removeAllStyles(el);
+          // apply the new style if there is one
+          el.classList.add(newStyle);
+        });
+      this.controller.propertyToolController.refreshView();
+    }
   }
-
 
   /**
    * @param {Element} el
@@ -378,7 +386,6 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
 
   /**
    * @return {string} name to display for the element's style
-   */
   getDisplayName(element) {
     const type = this.model.element.getType(element);
     const className = this.model.element.getClassName(element);
@@ -396,6 +403,7 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
       return `${ element.tagName } .${ id } ${ cssClasses }`;
     }
   }
+   */
 
 
   /**
@@ -434,6 +442,9 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
    */
   deleteStyle(name, opt_confirm) {
     if(opt_confirm === false) this.doDeleteStyle(name);
+    else if(name === Component.BODY_STYLE_CSS_CLASS) {
+      silex.utils.Notification.alert(`The style '${ Component.BODY_STYLE_NAME }' is a special style, you can not delete it.`, () => {});
+    }
     else silex.utils.Notification.confirm(`I am about to delete the style <b>${ name }</b>!<br><br>Are you sure?`,
       (accept) => {
       if(accept) {
@@ -450,17 +461,15 @@ class StyleEditorPane extends silex.view.pane.PaneBase {
    */
   doDeleteStyle(name) {
     const option = this.styleCombo.querySelector('option[value="' + name + '"]');
-    if(option && option.value !== Component.BODY_STYLE_CSS_CLASS) {
-      // undo checkpoint
-      this.controller.propertyToolController.undoCheckPoint();
-      // remove from elements
-      silex.utils.Dom.getElementsAsArray(this.model.file.getContentDocument(), '.' + name)
+    // undo checkpoint
+    this.controller.propertyToolController.undoCheckPoint();
+    // remove from elements
+    silex.utils.Dom.getElementsAsArray(this.model.file.getContentDocument(), '.' + name)
       .filter(el => this.isTextBox(el))
       .forEach(el => el.classList.remove(name));
-      // remove from model
-      this.model.component.removeStyle(option.value);
-      this.styleCombo.removeChild(option);
-      this.controller.propertyToolController.refreshView();
-    }
+    // remove from model
+    this.model.component.removeStyle(option.value);
+    this.styleCombo.removeChild(option);
+    this.controller.propertyToolController.refreshView();
   }
 }
