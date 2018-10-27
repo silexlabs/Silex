@@ -94,6 +94,7 @@ class AceEditorBase {
     this.modalDialog = new ModalDialog({
       element: element,
       onOpen: args => {
+        this.ace.focus();
       },
       onClose: () => {
       },
