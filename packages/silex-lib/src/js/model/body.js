@@ -48,10 +48,8 @@ silex.model.Body = function(model, view) {
  * @static
  */
 silex.model.Body.resetFocus = function() {
-  silex.model.Body.invalidationManagerFocus.callWhenReady(() => {
-    silex.model.Body.focusInput.focus();
-    silex.model.Body.focusInput.blur();
-  });
+  silex.model.Body.focusInput.focus();
+  silex.model.Body.focusInput.blur();
 };
 
 
@@ -60,14 +58,6 @@ silex.model.Body.resetFocus = function() {
  * @type {HTMLIFrameElement}
  */
 silex.model.Body.prototype.iframeElement = null;
-
-
-/**
- * invalidation mechanism for focus
- * @type {InvalidationManager}
- * @static
- */
-silex.model.Body.invalidationManagerFocus = new InvalidationManager(500);
 
 
 /**
