@@ -7,7 +7,7 @@
 body {
   min-width: 100%;
   min-height: 100%;
-  position: absolute;
+  position: absolute; /* when position is absolute the body has at least the width of its content, which is good when window is smaller than section width for section containers */
 }
 body.compute-body-size-pending {
   transition: none;
@@ -128,6 +128,9 @@ body.silex-runtime .editable-style[data-silex-href] {
   /* hide horizontal scroll bar which appears because of residual values in css */
   html {
     overflow-x: hidden;
+  }
+  body {
+    position: initial; /* when position is absolute the body has the size of its content */
   }
   /* mobile hamburger menu */
   body.enable-mobile .silex-pages .menu-button {
