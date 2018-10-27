@@ -201,6 +201,7 @@ silex.model.File.prototype.contentChanged = function(opt_cbk) {
   // check the integrity and store silex style sheet which holds silex elements styles
   this.model.property.initStyles(this.contentDocument_);
   this.model.property.loadProperties(this.contentDocument_);
+  this.model.component.initStyles(this.contentDocument_);
   // select the body
   this.model.body.setSelection([this.contentDocument_.body]);
   // update the settings
