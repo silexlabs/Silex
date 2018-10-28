@@ -90,7 +90,10 @@ module.exports = function(port, rootUrl, unifile) {
     }
   }
   function sendWebsiteData(res, buffer, url) {
-    const dom = new JSDOM(buffer.toString('utf-8'), { url: url.href, });
+    // remove user head tag to avoid bad markup messing with the website
+    const { html, userHead } = DomTools.extractUserHeadTag(buffer.toString('utf-8'));
+    // from now on use a parsed DOM
+    const dom = new JSDOM(html, { url: url.href, });
     return backwardCompat.update(dom.window.document)
     .then(wanrningMsg => {
       prepareWebsite(dom, url);
@@ -100,6 +103,7 @@ module.exports = function(port, rootUrl, unifile) {
       res.send({
         message: wanrningMsg,
         html: str,
+        userHead,
       });
     })
   }
@@ -109,13 +113,15 @@ module.exports = function(port, rootUrl, unifile) {
   function writeWebsite(req, res, next) {
     const connector = req.params[0];
     const path = req.params[1];
+    const { userHead, html } = JSON.parse(req.body);
     const url = new URL(`${ rootUrl }/ce/${ connector }/get/${ Path.dirname(path) }/`);
-    const dom = new JSDOM(req.body, { url: url.href, });
+    const dom = new JSDOM(html, { url: url.href, });
     unprepareWebsite(dom, url);
     const str = dom.serialize();
+    const fullHtml = DomTools.insertUserHeadTag(str, userHead);
     dom.window.close();
 
-    unifile.writeFile(req.session.unifile, connector, req.params[1], str)
+    unifile.writeFile(req.session.unifile, connector, req.params[1], fullHtml)
       .then(result => {
         res.send(result);
       })
