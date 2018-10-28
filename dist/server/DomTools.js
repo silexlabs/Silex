@@ -171,4 +171,44 @@ module.exports = class DomTools {
       console.error('Error: no JSON styles array found in the dom');
     }
   }
+
+
+  /**
+   * Split the user editable head tag and silex head tags
+   * the head tag edited by the user is a portion of the real head tag
+   * it is delimited by specific comments
+   * it can not be interpreted while editing, in case it has bad HTML tags, it could break the whole site, insert tags into the body instead of the head...
+   * @param {string} headString   initial head tag
+   * @return {{html: string, userHead: string}} split initial head tag and user editable head tag
+   */
+  static extractUserHeadTag(headString) {
+    const regExp = new RegExp(constants.HEAD_TAG_START + '([\\\s\\\S.]*)' + constants.HEAD_TAG_STOP);
+    const found = headString.match(regExp);
+    if (found) {
+      console.log('extractUserHeadTag found', !!found[1]);
+      return {
+        userHead: found[1],
+        html: headString.replace(regExp, ''),
+      };
+    }
+    return headString;
+  };
+
+
+  /**
+   * insert the HEAD tag back into an HTML string
+   * the head tag edited by the user is a portion of the real head tag
+   * it is delimited by specific comments
+   * it can not be interpreted while editing, in case it has bad HTML tags, it could break the whole site, insert tags into the body instead of the head...
+   * @param {string} htmlString
+   * @param {string} userHead
+   * @return {string} the provided string with the user's head tags
+   */
+  static insertUserHeadTag(htmlString, userHead) {
+    console.log('insertUserHeadTag', !!htmlString, !!userHead);
+    return htmlString.replace(/<\/head>/i, constants.HEAD_TAG_START + userHead + constants.HEAD_TAG_STOP + '</head>');
+  };
+
+
+
 }
