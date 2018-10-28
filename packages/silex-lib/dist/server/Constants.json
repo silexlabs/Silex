@@ -28,5 +28,7 @@
   "SILEX_SCRIPT_ELEMENT_CSS_CLASS": "silex-script",
   "INLINE_STYLE_TAG_CLASS_NAME": "silex-inline-styles",
   "LINK_ATTR": "data-silex-href",
-  "SILEX_STYLE_ELEMENT_CSS_CLASS": "silex-style"
+  "SILEX_STYLE_ELEMENT_CSS_CLASS": "silex-style",
+  "HEAD_TAG_START": "<!-- Silex HEAD tag do not remove -->",
+  "HEAD_TAG_STOP": "<!-- End of Silex HEAD tag do not remove -->"
 }
