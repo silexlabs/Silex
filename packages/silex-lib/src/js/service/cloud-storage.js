@@ -65,10 +65,11 @@ silex.service.CloudStorage.prototype.ready = function(cbk) {
  * save a file
  * @param  {FileInfo} fileInfo
  * @param  {string} rawData
+ * @param  {string} userHead
  * @param  {function()} cbk
  * @param  {?function(Object, string)=} opt_errCbk
  */
-silex.service.CloudStorage.prototype.write = function(fileInfo, rawData, cbk, opt_errCbk) {
+silex.service.CloudStorage.prototype.write = function(fileInfo, rawData, userHead, cbk, opt_errCbk) {
   // // save the data
   // this.ce.write(new Blob([rawData], {type: 'text/plain'}), fileInfo)
   // .then(() => {
@@ -92,14 +93,17 @@ silex.service.CloudStorage.prototype.write = function(fileInfo, rawData, cbk, op
   const url = `/website/ce/${ fileInfo.service }/put/${ fileInfo.path }`;
   oReq.open('PUT', url);
   oReq.setRequestHeader('Content-Type', 'text/plain; charset=utf-8');
-  oReq.send(rawData);
+  oReq.send(JSON.stringify({
+    'html': rawData,
+    'userHead': userHead,
+  }));
 };
 
 
 /**
  * load text blob from unifile
  * @param  {FileInfo} fileInfo
- * @param  {function(string)} cbk
+ * @param  {function(string, string)} cbk
  * @param  {?function(Object, string)=} opt_errCbk
  */
 silex.service.CloudStorage.prototype.read = function(fileInfo, cbk, opt_errCbk) {
@@ -154,7 +158,7 @@ silex.service.CloudStorage.prototype.getErrorMessage = function(oReq) {
 /**
  * load data
  * @param  {string} absPath
- * @param  {function(string)} cbk
+ * @param  {function(string, string)} cbk
  * @param  {?function(Object, string)=} opt_errCbk
  */
 silex.service.CloudStorage.prototype.loadLocal = function(absPath, cbk, opt_errCbk) {
@@ -168,7 +172,7 @@ silex.service.CloudStorage.prototype.loadLocal = function(absPath, cbk, opt_errC
       if (data['message']) {
         silex.utils.Notification.alert(data['message'], function() {});
       }
-      cbk(data['html']);
+      cbk(data['html'], data['userHead']);
     }
     else {
       const err = new Event('error');
