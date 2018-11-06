@@ -58,9 +58,12 @@
         span Visible on
       .body
         .view-on-mobile
-          input#mobile.view-on-mobile-check.checkbox(type='checkbox')
-          label.view-on-mobile-label.xsmall-font(for='mobile')
-            | mobile version
+          input#mobile.checkbox(type='radio', name='visibility', value='mobile')
+          label.xsmall-font(for='mobile') mobile
+          input#desktop.checkbox(type='radio', name='visibility', value='desktop')
+          label.xsmall-font(for='desktop') desktop
+          input#both.checkbox(type='radio', name='visibility', value='both')
+          label.xsmall-font(for='both') both
           hr
         .view-on-allpages
           input#allpages.view-on-allpages-check.checkbox(type='checkbox')
