@@ -185,6 +185,14 @@ silex.model.Element.HIDE_ON_MOBILE = 'hide-on-mobile';
 
 
 /**
+ * class for elements which are hidden in desktop version
+ * @const
+ * @type {string}
+ */
+silex.model.Element.HIDE_ON_DESKTOP = 'hide-on-desktop';
+
+
+/**
  * get num tabs
  * example: getTabs(2) returns '        '
  * @param {number} num
@@ -247,7 +255,7 @@ silex.model.Element.prototype.isSection = function(element) {
  * @return {boolean} true if `element` is the content container of a section
  */
 silex.model.Element.prototype.isSectionContent = function(element) {
-  if(!element || !element.classList) return false; // this happens in mobile editor, when dragg/dropping (element is document)
+  if(!element || !element.classList) return false; // FIXME: this is a workaround, it happens in mobile editor, when dragg/dropping (element is document)
   return element.classList.contains(silex.model.Element.TYPE_CONTAINER_CONTENT);
 }
 
@@ -258,7 +266,7 @@ silex.model.Element.prototype.isSectionContent = function(element) {
  * @return {boolean} true if the element is hidden on mobile
  */
 silex.model.Element.prototype.getHideOnMobile = function(element) {
-  if(!element || !element.classList) return false; // this happens in mobile editor, when dragg/dropping (element is document)
+  if(!element || !element.classList) return false; // FIXME: this is a workaround, it happens in mobile editor, when dragg/dropping (element is document)
   return this.noSectionContent(element).classList.contains(silex.model.Element.HIDE_ON_MOBILE);
 };
 
@@ -274,6 +282,32 @@ silex.model.Element.prototype.setHideOnMobile = function(element, hide) {
   }
   else {
     this.noSectionContent(element).classList.remove(silex.model.Element.HIDE_ON_MOBILE);
+  }
+};
+
+
+/**
+ * get/set the "hide on desktop" property
+ * @param {Element} element
+ * @return {boolean} true if the element is hidden on desktop
+ */
+silex.model.Element.prototype.getHideOnDesktop = function(element) {
+  if(!element || !element.classList) return false; // FIXME: this is a workaround, it happens in mobile editor, when dragg/dropping (element is document)
+  return this.noSectionContent(element).classList.contains(silex.model.Element.HIDE_ON_DESKTOP);
+};
+
+
+/**
+ * get/set the "hide on desktop" property
+ * @param {Element} element
+ * @param {boolean} hide, true if the element has to be hidden on desktop
+ */
+silex.model.Element.prototype.setHideOnDesktop = function(element, hide) {
+  if(hide) {
+    this.noSectionContent(element).classList.add(silex.model.Element.HIDE_ON_DESKTOP);
+  }
+  else {
+    this.noSectionContent(element).classList.remove(silex.model.Element.HIDE_ON_DESKTOP);
   }
 };
 
