@@ -123,6 +123,9 @@ body.silex-runtime .editable-style[data-silex-href] {
 .silex-pages .menu-button {
   display: none;
 }
+body.enable-mobile .editable-style.hide-on-desktop {
+  display: none;
+}
 /* Mobile styles */
 @media (max-width:480px) {
   /* hide horizontal scroll bar which appears because of residual values in css */
@@ -207,6 +210,9 @@ body.silex-runtime .editable-style[data-silex-href] {
   }
   body.enable-mobile .editable-style.hide-on-mobile {
     display: none;
+  }
+  body.enable-mobile .editable-style.hide-on-desktop {
+    display: initial;
   }
   body.silex-runtime.enable-mobile .editable-style,
   body.silex-runtime.enable-mobile .background.background-initial {
