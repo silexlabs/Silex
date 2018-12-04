@@ -1,4 +1,4 @@
-/**
+  /**
  * Silex, live web creation
  * http://projects.silexlabs.org/?/silex/
  *
@@ -94,7 +94,7 @@ silex.view.dialog.LinkDialog = class {
     const dialogButtons = silex.utils.Notification.getFormButtons();
     const fragmentButtons = document.createElement('fragment');
     fragmentButtons.innerHTML = `
-              <button class="alertify-button alertify-button-remove">remove link</button>
+              <button class="alertify-button alertify-button-cancel alertify-button-remove">remove link</button>
             `;
     dialogButtons.insertBefore(fragmentButtons, dialogButtons.childNodes[0]);
     dialogButtons.querySelector('.alertify-button-remove')
