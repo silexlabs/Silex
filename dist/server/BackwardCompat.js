@@ -17,8 +17,8 @@ const constants = require('./Constants.json');
  * if you start the server with NPM, it sets an env variable for you otherwise we get it from package.json
  * used for backward compat and for the static files URLs taken from //{{host}}/static/{{Y-Z}}
  */
-const LATEST_VERSION = (process.env.npm_package_version || require(Path.resolve(__dirname, '../../package.json')).version).split('.');
-console.log('Silex starts with version', LATEST_VERSION);
+const LATEST_VERSION = (process.env.npm_package_version || require(Path.resolve(__dirname, '../../package.json'))['version:frontend']).split('.');
+console.log('Silex starts with front end version', LATEST_VERSION);
 
 /**
  * @fileoverview Handle backward compatibility when a user opens a site for edition
