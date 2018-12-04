@@ -1,9 +1,26 @@
+//////////////////////////////////////////////////
+// Silex, live web creation
+// http://projects.silexlabs.org/?/silex/
+//
+// Copyright (c) 2012 Silex Labs
+// http://www.silexlabs.org/
+//
+// Silex is available under the GPL license
+// http://www.silexlabs.org/silex/silex-licensing/
+//////////////////////////////////////////////////
+
 const PublishJob = require('./PublishJob.js');
+const HostingGhPages = require('./HostingGhPages.js');
 const express = require('express');
 
-module.exports = function({ port, rootUrl }, unifile) {
+module.exports = function({ port, rootUrl, enableGithubPages, skipProviderSelection }, unifile) {
 
   const router = express.Router();
+
+  if(enableGithubPages) {
+    const p = require('./HostingGhPages.js');
+    router.use(new p(unifile));
+  }
 
   // **
   // publication tasks
@@ -42,6 +59,12 @@ module.exports = function({ port, rootUrl }, unifile) {
           message: 'Silex task "' + req.params.task + '" does not exist'
         });
     }
+  });
+  router.get('/hosting/', (req, res, next) => {
+    res.json({
+      providers: res.locals.providers,
+      skipProviderSelection: skipProviderSelection,
+    });
   });
   return router;
 };

@@ -63,6 +63,10 @@ class SettingsDialog {
      */
     this.publicationPath = null;
 
+    /**
+     * @type {?string}
+     */
+    this.websiteUrl = null;
 
     /**
      * @type {function()|null}
@@ -108,6 +112,11 @@ class SettingsDialog {
       const fileInfo = this.controller.settingsDialogController.getPublicationPath();
       const fileInfoNew = silex.utils.Url.updateFileInfo(fileInfo, {'service': v});
       this.controller.settingsDialogController.setPublicationPath(fileInfoNew);
+    });
+    this.bindTextField('.publish-pane .input-website-url', (v) => {
+      if(v === '') v = null;
+      this.model.head.setWebsiteUrl(v);
+      this.websiteUrl = v;
     });
 
     // image path browse button
@@ -301,6 +310,12 @@ class SettingsDialog {
   }
 
 
+  setWebsiteUrl(opt_url) {
+    this.setInputValue('.publish-pane .input-website-url', opt_url);
+    this.websiteUrl = opt_url;
+  }
+
+
   /**
    * enable/disable mobile version
    * @see silex.model.Head
@@ -390,6 +405,7 @@ class SettingsDialog {
   redraw() {
     try{
       this.setPublicationPath(this.model.head.getPublicationPath());
+      this.setWebsiteUrl(this.model.head.getWebsiteUrl());
       this.setFonts(this.model.head.getFonts());
     } catch(e){}
   }
