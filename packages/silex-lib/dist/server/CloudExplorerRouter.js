@@ -11,7 +11,7 @@ module.exports = function(ceOptions) {
   if(ceOptions.enableFtp) {
     console.log('FTP service: found');
     routerOptions.ftp = {
-      redirectUri: ceOptions.rootUrl + '/ce/ftp/signin',
+      redirectUri: ceOptions.rootUrl + '/ftp/signin',
     };
   }
 
@@ -20,7 +20,7 @@ module.exports = function(ceOptions) {
   if(ceOptions.enableSftp) {
     console.log('SFTP service: found');
     routerOptions.sftp = {
-      redirectUri: ceOptions.rootUrl + '/ce/sftp/signin',
+      redirectUri: ceOptions.rootUrl + '/sftp/signin',
     };
   }
 
@@ -29,7 +29,7 @@ module.exports = function(ceOptions) {
   if(ceOptions.enableWebdav) {
     console.log('Webdav service: found');
     routerOptions.webdav = {
-      redirectUri: ceOptions.rootUrl + '/ce/webdav/signin',
+      redirectUri: ceOptions.rootUrl + '/webdav/signin',
     };
   }
 
@@ -40,7 +40,7 @@ module.exports = function(ceOptions) {
     routerOptions.github = {
       clientId: ceOptions.githubClientId,
       clientSecret: ceOptions.githubClientSecret,
-      redirectUri: ceOptions.rootUrl + '/ce/github/oauth_callback',
+      redirectUri: ceOptions.rootUrl + '/github/oauth_callback',
     };
   }
 
@@ -51,7 +51,7 @@ module.exports = function(ceOptions) {
     routerOptions.dropbox = {
       clientId: ceOptions.dropboxClientId,
       clientSecret: ceOptions.dropboxClientSecret,
-      redirectUri: ceOptions.rootUrl + '/ce/dropbox/oauth_callback',
+      redirectUri: ceOptions.rootUrl + '/dropbox/oauth_callback',
     };
   }
 
