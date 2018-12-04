@@ -25,6 +25,39 @@
 var Font;
 
 /**
+ * @typedef {{
+ *   providers:Array<Provider>,
+ *   skipProviderSelection: boolean,
+ * }}
+ */
+var Hosting;
+
+/**
+ * @typedef {{
+ *   displayName: string,
+ *   isLoggedIn: boolean,
+ *   authorizeUrl: string,
+ *   dashboardUrl: string,
+ *   pleaseCreateAVhost: string,
+ *   vhostsUrl: string,
+ *   buyDomainUrl: string,
+ *   skipVhostSelection: boolean,
+ *   afterPublishMessage: string,
+ * }}
+ */
+var Provider;
+
+/**
+ * @typedef {{
+ *   name: string,
+ *   domainUrl: string,
+ *   skipDomainSelection: boolean,
+ *   publicationPath: FileInfo,
+ * }}
+ */
+var VHost
+
+/**
  * Parse and consume source maps. By Mozilla
  * @see https://github.com/mozilla/source-map/
  * @type {Object.<*>}

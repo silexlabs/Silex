@@ -22,14 +22,18 @@ const WebsiteRouter = require('./WebsiteRouter.js');
 const PublishRouter = require('./PublishRouter.js');
 const SslRouter = require('./SslRouter.js');
 const bodyParser = require('body-parser');
+const nodeModules = require('node_modules-path');
 
-module.exports = function({
-  serverOptions,
-  publisherOptions,
-  ceOptions,
-  electronOptions,
-  sslOptions,
-}) {
+module.exports = function(options) {
+  this.options = options;
+  const {
+    serverOptions,
+    publisherOptions,
+    ceOptions,
+    electronOptions,
+    sslOptions,
+  } = this.options;
+
   this.app = express();
 
   // compress gzip when possible
@@ -51,7 +55,18 @@ module.exports = function({
   this.publishRouter = new PublishRouter(publisherOptions, this.ceRouter.unifile);
   this.sslRouter = new SslRouter(sslOptions, this.app);
   this.unifile = this.ceRouter.unifile; // for access by third party
+};
 
+module.exports.prototype.start = function(cbk) {
+  const {
+    serverOptions,
+    publisherOptions,
+    ceOptions,
+    electronOptions,
+    sslOptions,
+  } = this.options;
+
+  // use routers
   this.app.use(serverOptions.cePath, this.ceRouter);
   this.app.use(this.websiteRouter);
   this.app.use(this.publishRouter);
@@ -63,6 +78,13 @@ module.exports = function({
   this.app.use('/js/src', serveStatic(Path.join(__dirname, '../../src')));
   // the scripts which have to be available in all versions (v2.1, v2.2, v2.3, ...)
   this.app.use('/static', serveStatic(Path.join(__dirname, '../../static')));
+  // wysihtml
+  this.app.use('/libs/wysihtml', serveStatic(Path.resolve(nodeModules('wysihtml'), 'wysihtml/parser_rules')));
+  this.app.use('/libs/wysihtml', serveStatic(Path.resolve(nodeModules('wysihtml'), 'wysihtml/dist/minified')));
+  // templates
+  this.app.use('/libs/templates/silex-templates', serveStatic(Path.resolve(nodeModules('silex-templates'), 'silex-templates')));
+  this.app.use('/libs/templates/silex-blank-templates', serveStatic(Path.resolve(nodeModules('silex-blank-templates'), 'silex-blank-templates')));
+  this.app.use('/libs/prodotype', serveStatic(Path.resolve(nodeModules('prodotype'), 'prodotype/pub')));
 
   // Start Silex as an Electron app
   if(electronOptions.enabled) {
@@ -72,6 +94,7 @@ module.exports = function({
   // server 'loop'
   this.app.listen(serverOptions.port, function() {
     console.log('Listening on ' + serverOptions.port);
+    if(cbk) cbk();
   });
 };
 
