@@ -5,67 +5,9 @@
 @import (inline) "../../dist/client/libs/alertify/alertify.core.css";
 @import (inline) "../../dist/client/libs/alertify/alertify.bootstrap.css";
 
-/* Google closure mixins */
-// @import (inline) "../../dist/client/css/closure/autocomplete.css";
-@import (inline) "../../dist/client/css/closure/bubble.css";
-@import (inline) "../../dist/client/css/closure/button.css";						// CSS removed from property-tool.jade & workspace.jade & html-editor.jade
-// @import (inline) "../../dist/client/css/closure/charpicker.css";
-@import (inline) "../../dist/client/css/closure/checkbox.css";						// CSS removed from property-tool.jade
-@import (inline) "../../dist/client/css/closure/colormenubutton.css";				// CSS removed from property-tool.jade & workspace.jade & html-editor.jade
-@import (inline) "../../dist/client/css/closure/colorpalette.css";					// CSS removed from property-tool.jade & workspace.jade & html-editor.jade
-// @import (inline) "../../dist/client/css/closure/colorpicker-simplegrid.css";
-// @import (inline) "../../dist/client/css/closure/combobox.css";
-@import (inline) "../../dist/client/css/closure/common.css";						// CSS removed from head.jade
-// @import (inline) "../../dist/client/css/closure/css3button.css";
-// @import (inline) "../../dist/client/css/closure/css3menubutton.css";
-@import (inline) "../../dist/client/css/closure/custombutton.css";					// CSS removed from property-tool.jade
-// @import (inline) "../../dist/client/css/closure/datepicker.css";
-@import (inline) "../../dist/client/css/closure/dialog.css";						// CSS removed from workspace.jade & html-editor.jade
-// @import (inline) "../../dist/client/css/closure/dimensionpicker.css";
-// @import (inline) "../../dist/client/css/closure/dragdropdetector.css";
-@import (inline) "../../dist/client/css/closure/editortoolbar.css";					// CSS removed from html-editor.jade
-// @import (inline) "../../dist/client/css/closure/filteredmenu.css";
-// @import (inline) "../../dist/client/css/closure/filterobservingmenuitem.css";
-@import (inline) "../../dist/client/css/closure/flatbutton.css";					// CSS removed from property-tool.jade
-// @import (inline) "../../dist/client/css/closure/flatmenubutton.css";
-// @import (inline) "../../dist/client/css/closure/hovercard.css";
-@import (inline) "../../dist/client/css/closure/hsvapalette.css";					// CSS removed from property-tool.jade
-// @import (inline) "../../dist/client/css/closure/hsvpalette.css";
-// @import (inline) "../../dist/client/css/closure/imagelessbutton.css";
-// @import (inline) "../../dist/client/css/closure/imagelessmenubutton.css";
-// @import (inline) "../../dist/client/css/closure/inputdatepicker.css";
-@import (inline) "../../dist/client/css/closure/linkbutton.css";					// CSS removed from property-tool.jade & workspace.jade & html-editor.jade
-@import (inline) "../../dist/client/css/closure/menu.css";							// CSS removed from warkspace.jade & workspace.jade & html-editor.jade
-@import (inline) "../../dist/client/css/closure/menubar.css";						// CSS removed from warkspace.jade
-@import (inline) "../../dist/client/css/closure/menubutton.css";					// CSS removed from warkspace.jade
-@import (inline) "../../dist/client/css/closure/menuitem.css";						// CSS removed from warkspace.jade & workspace.jade & html-editor.jade
-@import (inline) "../../dist/client/css/closure/menuseparator.css";					// CSS removed from warkspace.jade & workspace.jade & html-editor.jade
-// @import (inline) "../../dist/client/css/closure/multitestrunner.css";
-// @import (inline) "../../dist/client/css/closure/offline.css";
-@import (inline) "../../dist/client/css/closure/palette.css";						// CSS removed from property-tool.jade & workspace.jade & html-editor.jade
-// @import (inline) "../../dist/client/css/closure/popupdatepicker.css";
-// @import (inline) "../../dist/client/css/closure/roundedpanel.css";
-// @import (inline) "../../dist/client/css/closure/roundedtab.css";
-// @import (inline) "../../dist/client/css/closure/submenu.css";
-@import (inline) "../../dist/client/css/closure/tab.css";							// CSS removed from property-tool.jade & workspace.jade & html-editor.jade
-@import (inline) "../../dist/client/css/closure/tabbar.css";						// CSS removed from property-tool.jade & workspace.jade & html-editor.jade
-// @import (inline) "../../dist/client/css/closure/tablesorter.css";
-@import (inline) "../../dist/client/css/closure/toolbar.css";						// CSS removed from workspace.jade & html-editor.jade
-// @import (inline) "../../dist/client/css/closure/tooltip.css";
-// @import (inline) "../../dist/client/css/closure/tree.css";
-// @import (inline) "../../dist/client/css/closure/tristatemenuitem.css";
-
-/* Google closure editor mixins */
-@import (inline) "../../dist/client/css/closure/editor/bubble.css";					// .silex-menu CSS removed from warkspace.jade & html-editor.jade
-@import (inline) "../../dist/client/css/closure/editor/dialog.css";					// .silex-menu CSS removed from warkspace.jade & html-editor.jade
-@import (inline) "../../dist/client/css/closure/editor/linkdialog.css";				// .silex-menu CSS removed from warkspace.jade & html-editor.jade
-// @import (inline) "../../dist/client/css/closure/editor/editortoolbar.css";		// .silex-menu CSS removed from warkspace.jade
-
-/* Google closure patches */
-@import (inline) "../../dist/client/css/closure-patches.css";						// Closure CSS patch after the others closure CSS
-
 /* Silex styles imports */
 @import "_variables";
+@import "main";
 @import "dialogs";
 @import "modal-dialog";
 @import "dashboard";
@@ -82,5 +24,6 @@
 @import "tip-of-the-day";
 @import "settings-dialog";
 @import "stage";
-@import "text-editor";
 @import "alertify";
+@import "link-editor";
+@import "text-format-bar";

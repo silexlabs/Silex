@@ -9,6 +9,7 @@
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
 
+const uuid = require('uuid');
 const request = require('request');
 const assert = require('assert');
 const Path = require('path');
@@ -52,9 +53,10 @@ module.exports = class PublishJob {
   /**
    * factory to create a publish job
    */
-  static create(id, { folder, file }, unifile, session, cookies, serverUrl) {
-    // FIXME: several publications should be possible, e.g. when you publish 2 different websites from 2 browser tabs. So we should have an ID which is generated, then returned to the client side to be used when calling cancel or publishState
-    // stop other compilations from the same user
+  static create({ folder, file }, unifile, session, cookies, rootUrl) {
+    // stop other publications from the same user
+    session.publicationId = session.publicationId || uuid.v4();
+    const id = session.publicationId;
     if(publishJobs.has(id)) {
       publishJobs.get(id).stop();
     }
@@ -70,7 +72,7 @@ module.exports = class PublishJob {
       });
       return;
     }
-    const publishJob = new PublishJob(id, unifile, folder, session, cookies, serverUrl);
+    const publishJob = new PublishJob(id, unifile, folder, session, cookies, rootUrl);
     publishJobs.set(id, publishJob);
     publishJob.publish(file)
     .then(() => {
@@ -84,12 +86,14 @@ module.exports = class PublishJob {
     return publishJob;
   }
 
-  constructor(id, unifile, folder, session, cookies, serverUrl) {
+  constructor(id, unifile, folder, session, cookies, rootUrl) {
+    console.log('---------------\nNew Publish Job', id, '\nPublish to:', folder.url, '\nSilex instance:', rootUrl, '\n--------------');
     this.id = id;
     this.unifile = unifile;
     this.folder = folder;
     this.session = session;
     this.cookies = cookies;
+    this.rootUrl = rootUrl;
     this.abort = false;
     this.success = false;
     this.error = false;
@@ -110,7 +114,7 @@ module.exports = class PublishJob {
     this.pleaseDeleteMe = false;
 
     this.jar = request.jar();
-    for(let key in this.cookies) this.jar.setCookie(request.cookie(key + '=' + this.cookies[key]), serverUrl);
+    for(let key in this.cookies) this.jar.setCookie(request.cookie(key + '=' + this.cookies[key]), rootUrl);
   }
   stop() {
     if(this.isStopped() === false) {
@@ -220,7 +224,7 @@ module.exports = class PublishJob {
       const url = new URL(file.url);
       const baseUrl = new URL(url.origin + Path.dirname(url.pathname) + '/');
       this.dom = new JSDOM(buffer.toString('utf-8'), { url: baseUrl.href });
-      const domPublisher = new DomPublisher(this.dom);
+      const domPublisher = new DomPublisher(this.dom, this.rootUrl);
       domPublisher.cleanup();
       this.tree = domPublisher.split(baseUrl);
     })

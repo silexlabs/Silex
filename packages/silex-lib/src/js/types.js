@@ -222,10 +222,10 @@ silex.types.View = function() {
  * @param {silex.view.Stage} stage
  * @param {silex.view.PageTool} pageTool
  * @param {silex.view.PropertyTool} propertyTool
+ * @param {silex.view.TextFormatBar} textFormatBar
  * @param {HtmlEditor} htmlEditor
  * @param {CssEditor} cssEditor
  * @param {JsEditor} jsEditor
- * @param {TextEditor} textEditor
  * @param {FileExplorer} fileExplorer
  * @param {SettingsDialog} settingsDialog
  * @param {Dashboard} dashboard
@@ -239,10 +239,10 @@ silex.types.View.prototype.init = function(
     stage,
     pageTool,
     propertyTool,
+    textFormatBar,
     htmlEditor,
     cssEditor,
     jsEditor,
-    textEditor,
     fileExplorer,
     settingsDialog,
     dashboard,
@@ -273,6 +273,10 @@ silex.types.View.prototype.init = function(
    */
   this.propertyTool = propertyTool;
   /**
+   * @type {silex.view.TextFormatBar}
+   */
+  this.textFormatBar = textFormatBar;
+  /**
    * @type {HtmlEditor}
    */
   this.htmlEditor = htmlEditor;
@@ -284,10 +288,6 @@ silex.types.View.prototype.init = function(
    * @type {JsEditor}
    */
   this.jsEditor = jsEditor;
-  /**
-   * @type {TextEditor}
-   */
-  this.textEditor = textEditor;
   /**
    * @type {FileExplorer}
    */

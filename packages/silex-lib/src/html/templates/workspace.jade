@@ -37,6 +37,10 @@
   .silex-dashboard
     include ./dashboard.jade
 
+  // text format bar
+  .silex-text-format-bar
+    include ./text-format-bar.jade
+
   // html editor
   .silex-html-editor.ace-editor-container.notranslate.hidden-dialog
     .title-bar HTML editor
@@ -60,12 +64,6 @@
     .ace-editor
     .dock-btn.buttons
     .close-btn.js-editor-close-btn.buttons
-
-  // text editor
-  .silex-text-editor.notranslate.hidden-dialog
-    .toolbar
-    #text-editor.text-field
-    .close-btn.text-editor-close-btn.buttons
 
   // Displayed div on right click
   .rightClick

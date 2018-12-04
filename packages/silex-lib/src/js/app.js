@@ -63,6 +63,7 @@ goog.require('silex.view.BreadCrumbs');
 goog.require('silex.view.Menu');
 goog.require('silex.view.PageTool');
 goog.require('silex.view.PropertyTool');
+goog.require('silex.view.TextFormatBar');
 goog.require('silex.view.Splitter');
 goog.require('silex.view.Stage');
 goog.require('silex.view.Workspace');
@@ -72,7 +73,6 @@ goog.require('silex.view.dialog.HtmlEditor');
 goog.require('silex.view.dialog.JsEditor');
 goog.require('silex.view.dialog.SettingsDialog');
 goog.require('silex.view.dialog.Dashboard');
-goog.require('silex.view.dialog.TextEditor');
 
 goog.require('silex.view.ModalDialog');
 
@@ -255,11 +255,6 @@ class App {
     /** @type {JsEditor} */
     var jsEditor = new JsEditor(jsEditorElement, this.model, this.controller);
 
-    // TextEditor
-    var textEditorElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-text-editor'));
-    /** @type {TextEditor} */
-    var textEditor = new TextEditor(textEditorElement, this.model, this.controller);
-
     // SettingsDialog
     var settingsDialogElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-settings-dialog'));
     /** @type {SettingsDialog} */
@@ -279,6 +274,11 @@ class App {
     var propertyToolElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-property-tool'));
     /** @type {silex.view.PropertyTool} */
     var propertyTool = new silex.view.PropertyTool(propertyToolElement, this.model, this.controller);
+
+    // TextFormatBar
+    var textFormatBarElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-text-format-bar'));
+    /** @type {silex.view.TextFormatBar} */
+    var textFormatBar = new silex.view.TextFormatBar(textFormatBarElement, this.model, this.controller);
 
     // workspace
     var workspaceElement = /** @type {!Element} */ (goog.dom.getElementByClass('silex-workspace'));
@@ -302,10 +302,10 @@ class App {
         stage,
         pageTool,
         propertyTool,
+        textFormatBar,
         htmlEditor,
         cssEditor,
         jsEditor,
-        textEditor,
         fileExplorer,
         settingsDialog,
         dashboard,

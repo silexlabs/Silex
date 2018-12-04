@@ -41,7 +41,7 @@ module.exports = class DomTools {
         const newVal = fn(val, el, el.parentNode === dom.window.document.head);
         if(newVal) {
           el.setAttribute(attr, newVal);
-          if(val != newVal) console.log('URL transformed:', attr, val, '=>', newVal);
+          if(val != newVal) console.log('URL transformed:', attr, val, '=>', newVal, '(image)');
         }
       }
     });
@@ -83,14 +83,14 @@ module.exports = class DomTools {
       if(newUrl) {
         valueArr[1] = newUrl;
       }
-      console.log('URL transformed:', url, '=>', newUrl);
+      console.log('URL transformed:', url, '=>', newUrl, '(image in CSS)');
       return valueArr.join('\'');
     }
     return null;
   }
 
 
-  static transformStylesheet(stylesheet, isInHead, fn) {
+  static transformStylesheet(stylesheet, isInHead, fn, isMediaQuerySubRule = false) {
     let cssText = '';
     for(let ruleIdx=0; ruleIdx<stylesheet.cssRules.length; ruleIdx++) {
       const rule = stylesheet.cssRules[ruleIdx];
@@ -99,7 +99,14 @@ module.exports = class DomTools {
         const value = rule.style[valName];
         rule.style[valName] = DomTools.transformValueUrlKeyword(value, stylesheet, isInHead, fn) || value;
       }
-      cssText += rule.cssText;
+      else if(rule.cssRules) {
+        // case of a mediaquery
+        DomTools.transformStylesheet(rule, isInHead, fn, true);
+      }
+      if(!isMediaQuerySubRule) {
+        // if it is a media query then the parent rule will be written
+        cssText += rule.cssText;
+      }
     }
     return cssText;
   }
@@ -126,7 +133,7 @@ module.exports = class DomTools {
             else {
               if(['src', 'href'].indexOf(propName) >= 0) {
                 elementData[propName] = fn(propValue) || propValue;
-                console.log('URL transformed:', propName, propValue, '=>', elementData[propName]);
+                console.log('URL transformed:', propName, propValue, '=>', elementData[propName], '(URL in Silex JSON data)');
               }
             }
           }
@@ -164,4 +171,44 @@ module.exports = class DomTools {
       console.error('Error: no JSON styles array found in the dom');
     }
   }
+
+
+  /**
+   * Split the user editable head tag and silex head tags
+   * the head tag edited by the user is a portion of the real head tag
+   * it is delimited by specific comments
+   * it can not be interpreted while editing, in case it has bad HTML tags, it could break the whole site, insert tags into the body instead of the head...
+   * @param {string} headString   initial head tag
+   * @return {{html: string, userHead: string}} split initial head tag and user editable head tag
+   */
+  static extractUserHeadTag(headString) {
+    const regExp = new RegExp(constants.HEAD_TAG_START + '([\\\s\\\S.]*)' + constants.HEAD_TAG_STOP);
+    const found = headString.match(regExp);
+    if (found) {
+      console.log('extractUserHeadTag found', !!found[1]);
+      return {
+        userHead: found[1],
+        html: headString.replace(regExp, ''),
+      };
+    }
+    return headString;
+  };
+
+
+  /**
+   * insert the HEAD tag back into an HTML string
+   * the head tag edited by the user is a portion of the real head tag
+   * it is delimited by specific comments
+   * it can not be interpreted while editing, in case it has bad HTML tags, it could break the whole site, insert tags into the body instead of the head...
+   * @param {string} htmlString
+   * @param {string} userHead
+   * @return {string} the provided string with the user's head tags
+   */
+  static insertUserHeadTag(htmlString, userHead) {
+    console.log('insertUserHeadTag', !!htmlString, !!userHead);
+    return htmlString.replace(/<\/head>/i, constants.HEAD_TAG_START + userHead + constants.HEAD_TAG_STOP + '</head>');
+  };
+
+
+
 }

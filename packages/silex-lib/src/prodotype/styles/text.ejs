@@ -3,40 +3,43 @@ const pseudo = !pseudoClass || pseudoClass === 'normal' ? '' : pseudoClass;
 const props = [
   {
     obj: Heading1,
-    selector: 'h1' + pseudo,
+    selector: ' h1' + pseudo,
   }, {
     obj: Heading2,
-    selector: 'h2' + pseudo,
+    selector: ' h2' + pseudo,
   }, {
     obj: Heading3,
-    selector: 'h3' + pseudo,
+    selector: ' h3' + pseudo,
+  }, {
+    obj: All,
+    selector: '.text-element > .silex-element-content' + pseudo,
   }, {
     obj: Paragraph,
-    selector: 'p' + pseudo,
+    selector: ' p' + pseudo,
   }, {
     obj: Link,
-    selector: 'a' + pseudo,
+    selector: ' a' + pseudo,
   }, {
     obj: Link,
-    selector: '[data-silex-href]' + pseudo, /* this is for links in silex editor and preview, before publish only */
+    selector: ' [data-silex-href]' + pseudo, /* this is for links in silex editor and preview, before publish only */
   }, {
     obj: Bold,
-    selector: 'b' + pseudo,
+    selector: ' b' + pseudo,
   }, {
     obj: Italic,
-    selector: 'i' + pseudo,
+    selector: ' i' + pseudo,
   }, {
     obj: Underline,
-    selector: 'u' + pseudo,
+    selector: ' u' + pseudo,
   }, {
     obj: UnorderedList,
-    selector: 'ul li' + pseudo,
+    selector: ' ul li' + pseudo,
   }, {
     obj: OrderedList,
-    selector: 'ol li' + pseudo,
+    selector: ' ol li' + pseudo,
   }, {
     obj: Active,
-    selector: '.page-link-active' + pseudo,
+    selector: ' .page-link-active' + pseudo,
   }
 ].filter(prop => typeof prop.obj !== 'undefined');
 function getProp(prop, propName) {
@@ -53,27 +56,32 @@ function getProp(prop, propName) {
   }
   if(found) {
   %>
-    .<%= className %> <%= prop.selector %> {
-      <%= getProp(prop, 'list-style-type') -%>
+    <% if(className != 'all-style') { %>.<%= className %><% } %><%- prop.selector %> {
+      <%- getProp(prop, 'list-style-type') -%>
       <% if(prop.obj['list-style-image']) { %>
         list-style-image: url(<%= prop.obj['list-style-image'] -%>);
       <% } %>
-      <%= getProp(prop, 'list-style-position') -%>
-      <%= getProp(prop, 'font-family') -%>
-      <%= getProp(prop, 'font-style') -%>
-      <%= getProp(prop, 'font-variant') -%>
-      <%= getProp(prop, 'font-weight') -%>
-      <%= getProp(prop, 'font-size') -%>
-      <%= getProp(prop, 'color') -%>
-      <%= getProp(prop, 'background-color') -%>
-      <%= getProp(prop, 'text-decoration') -%>
-      <%= getProp(prop, 'text-align') -%>
-      <%= getProp(prop, 'text-transform') -%>
-      <%= getProp(prop, 'line-height') -%>
-      <%= getProp(prop, 'word-spacing') -%>
-      <%= getProp(prop, 'letter-spacing') -%>
-      <%= getProp(prop, 'text-indent') -%>
-      <%= getProp(prop, 'direction') -%>
+      <%- getProp(prop, 'list-style-position') -%>
+      <%- getProp(prop, 'font-family') -%>
+      <%- getProp(prop, 'font-style') -%>
+      <%- getProp(prop, 'font-variant') -%>
+      <%- getProp(prop, 'font-weight') -%>
+      <%- getProp(prop, 'font-size') -%>
+      <%- getProp(prop, 'color') -%>
+      <%- getProp(prop, 'background-color') -%>
+      <%- getProp(prop, 'text-decoration') -%>
+      <%- getProp(prop, 'text-align') -%>
+      <%- getProp(prop, 'text-transform') -%>
+      <%- getProp(prop, 'line-height') -%>
+      <%- getProp(prop, 'word-spacing') -%>
+      <%- getProp(prop, 'letter-spacing') -%>
+      <%- getProp(prop, 'text-indent') -%>
+      <%- getProp(prop, 'direction') -%>
+      <%- getProp(prop, 'columns') -%>
+      <%- getProp(prop, 'column-rule-width') -%>
+      <%- getProp(prop, 'column-gap') -%>
+      <%- getProp(prop, 'column-rule-color') -%>
+      <%- getProp(prop, 'column-rule-style') -%>
     }
   <% } %>
 <% }) %>

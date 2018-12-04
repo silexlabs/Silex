@@ -8,14 +8,14 @@ props:
   props:
   - name: font-family
     default: ""
-    type:
-    - ""
-    - "Arial, sans-serif"
-    - "Courier New, monospace"
-    - "Georgia, serif"
-    - "Times New Roman, serif"
-    - "Trebuchet MS, sans-serif"
-    - "Verdana, sans-serif"
+    type: component
+    # - ""
+    # - "Arial, sans-serif"
+    # - "Courier New, monospace"
+    # - "Georgia, serif"
+    # - "Times New Roman, serif"
+    # - "Trebuchet MS, sans-serif"
+    # - "Verdana, sans-serif"
   - name: font-weight
     className: medium-width
     default: ""
@@ -159,22 +159,55 @@ props:
       - value: small-caps
         description: Small caps
         imageUrl: "\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 9'><defs><style>.cls-1 {fill: %23e5e5e5;}</style></defs><path id='Union_13' data-name='Union 13' class='cls-1' d='M8-91v-1H9v-4H8v1H7v-2h5v1H10v4h1v1ZM2-91v-1H3v-7H1v1H0v-2H8v1H5v7H6v1Zm9-4v-1h1v1ZM7-98v-1H8v1Z' transform='translate(0 100)'/></svg>\""
+  - name: columns
+    className: medium-width
+    default: ""
+    type: number
+    unit:
+    - ""
+    - px
+    - em
+    - vw
+  - name: column-gap
+    className: small-width
+    default: ""
+    type: number
+    unit:
+    - px
+    - em
+    - "%"
+  - name: column-rule-style
+    default: ""
+    type:
+    - ""
+    - "none"
+    - "solid"
+    - "dotted"
+    - "dashed"
+    - "double"
+    - "groove"
+    - "ridge"
+    - "inset"
+    - "outset"
+  - name: column-rule-color
+    className: half-width
+    default: ""
+    type: color
+  - name: column-rule-width
+    className: half-width
+    default: ""
+    type: number
+    unit:
+    - px
+    - em
   # - white-space
+- name: All
+  type: TextStyle
 - name: Paragraph
   type: TextStyle
 - name: Link
   type: TextStyle
-- name: Bold
-  type: TextStyle
-- name: Underline
-  type: TextStyle
-- name: Italic
-  type: TextStyle
-- name: Heading1
-  type: TextStyle
-- name: Heading2
-  type: TextStyle
-- name: Heading3
+- name: Active
   type: TextStyle
 - name: UnorderedList
   type: TextStyle
@@ -210,8 +243,6 @@ props:
       - oriya
       - telugu
       - thai
-  - name: list-style-image
-    type: file
   - name: list-style-position
     type:
       - ""
@@ -251,14 +282,22 @@ props:
       - oriya
       - telugu
       - thai
-  - name: list-style-image
-    type: file
   - name: list-style-position
     type:
       - ""
       - inside
       - outside
-- name: Active
+- name: Heading1
+  type: TextStyle
+- name: Heading2
+  type: TextStyle
+- name: Heading3
+  type: TextStyle
+- name: Bold
+  type: TextStyle
+- name: Underline
+  type: TextStyle
+- name: Italic
   type: TextStyle
 - name: className
   type: string
@@ -267,6 +306,7 @@ props:
   type:
   - "normal"
   - ":hover"
+  - ":active"
   - ":first-child"
   - ":last-child"
   - ":nth-child(even)"

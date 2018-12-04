@@ -1,0 +1,35 @@
+form
+  #wysihtml5-toolbar.labels
+    label.p.first-button(data-wysihtml-command='formatBlock', data-wysihtml-command-value='p') P
+    label.a.create-link.fa.fa-link(data-wysihtml-command='createLink', title='CTRL+K')
+    div.hidden
+      // this is a wysihtml dialog used by silex to get the link value
+      div.link-dialog(data-wysihtml-dialog='createLink')
+        input.get-href(data-wysihtml-dialog-field='href', value='')
+        input.get-rel(data-wysihtml-dialog-field='rel', value='')
+        input.get-target(data-wysihtml-dialog-field='target', value='')
+        input.get-title(data-wysihtml-dialog-field='title', value='')
+        input.get-download(data-wysihtml-dialog-field='download', value='')
+        input.get-type(data-wysihtml-dialog-field='type', value='')
+    label.b(data-wysihtml-command='bold', title='CTRL+B') B
+    label.u(data-wysihtml-command='underline', title='CTRL+U') U
+    label.i.last-button(data-wysihtml-command='italic', title='CTRL+I') I
+    label.h1.first-button(data-wysihtml-command='formatBlock', data-wysihtml-command-value='h1', title='Make the current line a title') H1
+    label.h2(data-wysihtml-command='formatBlock', data-wysihtml-command-value='h2', title='Make the current line a title') H2
+    label.h3(data-wysihtml-command='formatBlock', data-wysihtml-command-value='h3', title='Make the current line a title') H3
+    label.ul(data-wysihtml-command='insertUnorderedList', title='Make the current line a list') UL
+    label.ol.last-button(data-wysihtml-command='insertOrderedList', title='Make the current line a list') OL
+    label.img.insert-image.first-button.fa.fa-image(title='Insert an image')
+    a(target="_blank" href="https://github.com/silexlabs/Silex/wiki/Editor-UI#text-format-bar", title: "help section: text format bar")
+      label.fa.fa-question.fa-inverse
+    a.hidden(data-wysihtml-command="insertImage", href="javascript:;", unselectable="on") Image
+    .image-details(data-wysihtml-dialog="insertImage", style="display: none;")
+      input.src.hidden(data-wysihtml-dialog-field="src", value="http://")
+      label alt:
+      input.alt(data-wysihtml-dialog-field="alt", value="", placeholder="Image description")
+      select.float(data-wysihtml-dialog-field="className")
+        option(value="") No float
+        option(value="wysiwyg-float-left") left
+        option(value="wysiwyg-float-right") right
+      a#auto-submit-image.hidden(data-wysihtml-dialog-action="save")
+

@@ -18,32 +18,32 @@ goog.provide('silex.controller.TextEditorController');
 
 goog.require('silex.controller.ControllerBase');
 
-
+const MENU_WIDTH = 35;
+const CONTEXT_MENU_HEIGHT = 35;
 
 /**
- * @constructor
+ * @class
  * @extends {silex.controller.ControllerBase}
- * listen to the view events and call the main controller's methods}
- * @param {silex.types.Model} model
- * @param  {silex.types.View} view  view class which holds the other views
  */
-silex.controller.TextEditorController = function(model, view) {
-  // call super
-  silex.controller.ControllerBase.call(this, model, view);
-};
+silex.controller.TextEditorController = class extends silex.controller.ControllerBase {
+  /**
+   * listen to the view events and call the main controller's methods}
+   * @param {silex.types.Model} model
+   * @param  {silex.types.View} view  view class which holds the other views
+   */
+  constructor(model, view) {
+    super(model, view);
+  }
 
-// inherit from silex.controller.ControllerBase
-goog.inherits(silex.controller.TextEditorController, silex.controller.ControllerBase);
+  attachToTextBox(textBox, toolbar) {
+    const pos = textBox.getBoundingClientRect();
+    const stageSize = this.view.stage.element.getBoundingClientRect();
 
+    const theoricalBottom = stageSize.height + stageSize.top - pos.top;
+    const bottom = Math.max(theoricalBottom - pos.height + CONTEXT_MENU_HEIGHT, Math.min(stageSize.height - 20, theoricalBottom));
+    const left = pos.left + MENU_WIDTH;
+    toolbar.style.bottom = bottom + 'px';
+    toolbar.style.left = left + 'px';
+  }
+}
 
-/**
- * textEditor event handler
- * @param {string} content the user's content
- */
-silex.controller.TextEditorController.prototype.changed = function(content) {
-  // update content
-  var element = this.model.body.getSelection()[0];
-  this.model.element.setInnerHtml(element, content);
-  // update fonts
-  this.refreshFonts();
-};

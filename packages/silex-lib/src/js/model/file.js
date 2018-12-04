@@ -167,10 +167,6 @@ silex.model.File.prototype.setHtml = function(rawHtml, opt_cbk, opt_showLoader) 
   else {
     this.view.stage.element.classList.add(silex.model.File.LOADING_LIGHT_CSS_CLASS);
   }
-  // remove user's head tag before it is interprated by the browser
-  // - in case it has bad HTML tags, it could break the whole site, insert tags into the body instead of the head...
-  rawHtml = this.model.head.extractUserHeadTag(rawHtml);
-
   // write the content
   this.contentDocument_.open();
   this.contentDocument_.write(rawHtml);
@@ -201,6 +197,7 @@ silex.model.File.prototype.contentChanged = function(opt_cbk) {
   // check the integrity and store silex style sheet which holds silex elements styles
   this.model.property.initStyles(this.contentDocument_);
   this.model.property.loadProperties(this.contentDocument_);
+  this.model.component.initStyles(this.contentDocument_);
   // select the body
   this.model.body.setSelection([this.contentDocument_.body]);
   // update the settings
@@ -278,6 +275,8 @@ silex.model.File.prototype.getHtmlGenerator = function* () {
   styleTag.innerHTML = updatedStyles;
   yield;
   // get html
+  this.model.body.removeWysihtmlMarkup(cleanFile);
+  yield;
   var rawHtml = /** @type {Document} */ (cleanFile).documentElement.innerHTML;
   yield;
   // add the outer html (html tag)
@@ -285,9 +284,6 @@ silex.model.File.prototype.getHtmlGenerator = function* () {
   yield;
   // add doctype
   rawHtml = '<!DOCTYPE html>' + rawHtml;
-  yield;
-  // add the user's head tag
-  rawHtml = this.model.head.insertUserHeadTag(rawHtml);
   return rawHtml;
 };
 
@@ -302,12 +298,14 @@ silex.model.File.prototype.getHtmlGenerator = function* () {
  */
 silex.model.File.prototype.openFromUrl = function(url, opt_cbk = null, opt_errCbk = null) {
   this.isTemplate = true;
-  silex.service.CloudStorage.getInstance().loadLocal(url, (rawHtml) => {
+  silex.service.CloudStorage.getInstance()
+    .loadLocal(url, (rawHtml, userHead) => {
     this.fileInfo = /** @type {FileInfo} */ ({
       isDir: false,
       mime: 'text/html',
       url: url
     });
+    this.model.head.setUserHeadTag(userHead);
     if (opt_cbk) {
       opt_cbk(rawHtml);
     }
@@ -343,6 +341,7 @@ silex.model.File.prototype.save = function(rawHtml, cbk, opt_errCbk) {
   silex.service.CloudStorage.getInstance().write(
       /** @type {FileInfo} */ (this.fileInfo),
       rawHtml,
+      this.model.head.getUserHeadTag(),
       () => {
         this.isTemplate = false;
         if (cbk) {
@@ -363,11 +362,12 @@ silex.model.File.prototype.open = function(fileInfo, cbk, opt_errCbk) {
   this.isTemplate = false;
   silex.service.CloudStorage.getInstance().read(
       fileInfo,
-      (rawHtml) => {
+      (rawHtml, userHead) => {
         // update model
         this.close();
         this.fileInfo = fileInfo;
         this.addToLatestFiles(this.fileInfo);
+        this.model.head.setUserHeadTag(userHead);
         if (cbk) {
           cbk(rawHtml);
         }

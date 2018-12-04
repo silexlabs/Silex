@@ -10,7 +10,7 @@ module.exports = function(port, rootUrl, unifile) {
   router.post('/tasks/:task', (req, res, next) => {
     switch(req.params.task) {
       case 'publish':
-        PublishJob.create(req.session.sessionID, req.body, unifile, req.session, req.cookies, req.protocol + '://' + req.get('host'));
+        PublishJob.create(req.body, unifile, req.session, req.cookies, rootUrl);
         res.end();
         break;
       default:
@@ -22,7 +22,7 @@ module.exports = function(port, rootUrl, unifile) {
   router.get('/tasks/:task', (req, res, next) => {
     switch(req.params.task){
       case 'publishState':
-        const publishJob = PublishJob.get(req.session.sessionID);
+        const publishJob = PublishJob.get(req.session.publicationId);
         if(publishJob) {
           if(publishJob.error) res.status(500);
           res.send({
