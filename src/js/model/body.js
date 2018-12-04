@@ -48,10 +48,8 @@ silex.model.Body = function(model, view) {
  * @static
  */
 silex.model.Body.resetFocus = function() {
-  silex.model.Body.invalidationManagerFocus.callWhenReady(() => {
-    silex.model.Body.focusInput.focus();
-    silex.model.Body.focusInput.blur();
-  });
+  silex.model.Body.focusInput.focus();
+  silex.model.Body.focusInput.blur();
 };
 
 
@@ -60,14 +58,6 @@ silex.model.Body.resetFocus = function() {
  * @type {HTMLIFrameElement}
  */
 silex.model.Body.prototype.iframeElement = null;
-
-
-/**
- * invalidation mechanism for focus
- * @type {InvalidationManager}
- * @static
- */
-silex.model.Body.invalidationManagerFocus = new InvalidationManager(500);
 
 
 /**
@@ -200,6 +190,7 @@ silex.model.Body.prototype.setSelection = function(selectedElements) {
   var page = this.model.page.getCurrentPage();
   this.view.pageTool.redraw(selectedElements, pages, page);
   this.view.propertyTool.redraw(selectedElements, pages, page);
+  this.view.textFormatBar.redraw(selectedElements, pages, page);
   this.view.stage.redraw(selectedElements, pages, page);
   this.view.contextMenu.redraw(selectedElements, pages, page);
   this.view.breadCrumbs.redraw(selectedElements, pages, page);
@@ -208,16 +199,13 @@ silex.model.Body.prototype.setSelection = function(selectedElements) {
 
 
 /**
- * @return {Object.<boolean>} object of fonts which are used in the text fields (key is the font name)
+ * @param {Node} root
  */
-silex.model.Body.prototype.getNeededFonts = function() {
-  var neededFonts = [];
-  if (this.getBodyElement()) {
-    var innerHTML = this.getBodyElement().innerHTML;
-    innerHTML.replace(/<font[^"]*face="?([^"]*)"/gi, function(match, group1) {
-      neededFonts[group1] = true;
-      return match;
-    });
-  }
-  return neededFonts;
+silex.model.Body.prototype.removeWysihtmlMarkup = function(root) {
+  Array.from(root.querySelectorAll('.wysihtml-editor'))
+  .forEach(el => {
+    el.classList.remove('wysihtml-sandbox', 'wysihtml-editor');
+    el.removeAttribute('contenteditable');
+  });
 };
+

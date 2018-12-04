@@ -29,7 +29,8 @@ goog.require('silex.view.ModalDialog');
 const PANE_CSS_CLASSES = [
   'general-pane',
   'social-pane',
-  'publish-pane'
+  'publish-pane',
+  'fonts-pane',
 ];
 
 /**
@@ -138,6 +139,31 @@ class SettingsDialog {
         }
       });
     });
+    // font button
+    this.element.querySelector('.pane.fonts-pane .add-font-btn').onclick = e => {
+      this.addFont();
+    };
+    this.list = this.element.querySelector('.fonts-list');
+    this.list.onclick = e => {
+      const el = e.target;
+      if(el.classList.contains('del-btn')) {
+        const idx = parseInt(el.getAttribute('data-idx'), 10);
+        const fonts = this.model.head.getFonts();
+        const newFonts = fonts.slice()
+        newFonts.splice(idx, 1);
+        this.model.head.setFonts(newFonts);
+      }
+      else if(el.classList.contains('edit-btn')) {
+        const idx = parseInt(el.getAttribute('data-idx'), 10);
+        const fonts = this.model.head.getFonts();
+        console.log('edit', fonts[idx]);
+        this.editFont(fonts[idx], font => {
+          const newFonts = fonts.slice()
+          newFonts[idx] = font;
+          this.model.head.setFonts(newFonts);
+        });
+      }
+    };
   }
 
 
@@ -363,8 +389,74 @@ class SettingsDialog {
    */
   redraw() {
     try{
-     this.setPublicationPath(this.model.head.getPublicationPath());
+      this.setPublicationPath(this.model.head.getPublicationPath());
+      this.setFonts(this.model.head.getFonts());
     } catch(e){}
+  }
+
+
+  /**
+   * @param {Array<Font>} fonts
+   */
+  setFonts(fonts) {
+    this.list.innerHTML = '<ul>' + fonts.map((font, idx) => {
+      const iframeContent = encodeURIComponent(`
+        <link href="${ font.href }" rel="stylesheet">
+        <style>
+          body {
+            width: 100%;
+            font-family: ${ font.family };
+            color: white;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+          }
+        </style>
+        <span style="font-size:14px;">${ font.family }</span> -&nbsp;
+        <span style="font-size:28px;">${ font.family }</span> -&nbsp;
+        <span style="font-size:56px;">${ font.family }</span>
+      `);
+      return `<li>
+        <div class="ui">
+          <button class="edit-btn fa fa-pencil" title="Edit this font" data-idx="${ idx }"></button>
+          <button class="del-btn" title="Remove this font" data-idx="${ idx }"></button>
+        </div>
+        <div class="content">
+          <iframe src="data:text/html,${ iframeContent }"></iframe>
+        </div>
+      </li>`;
+    }).join('') + '</ul>';
+  }
+
+
+  addFont() {
+    this.editFont({
+      href: 'https://fonts.googleapis.com/css?family=Roboto',
+      family: '\'Roboto\', sans-serif',
+    }, newFont => {
+      const fonts = this.model.head.getFonts();
+      if(fonts.find(/** @param {Font} font */ (font) => font.href === newFont.href && font.family === newFont.family)) {
+        console.warn('This font is already embedded in this website');
+      }
+      else {
+        fonts.push(newFont);
+        this.model.head.setFonts(fonts);
+      }
+    });
+  }
+
+
+  editFont(font, cbk) {
+    silex.utils.Notification.prompt('What is the CSS stylesheet for your font, e.g. https://fonts.googleapis.com/css?family=Roboto', font.href, (ok, href) => {
+      if(ok) silex.utils.Notification.prompt('What is the name of your font, e.g. \'Roboto\', sans-serif', font.family, (ok, family) => {
+        if(ok) {
+          cbk(/** @type {Font} */ ({
+            family: family,
+            href: href,
+          }));
+        }
+      });
+    });
   }
 
 

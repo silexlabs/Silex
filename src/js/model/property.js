@@ -113,6 +113,12 @@ silex.model.Property.prototype.stylesObj = {};
 
 
 /**
+ * @type {Array<Font>}
+ */
+silex.model.Property.prototype.fonts = [];
+
+
+/**
  * @type {silex.model.data.SilexData}
  */
 silex.model.Property.prototype.mobileStylesObj = {};
@@ -123,6 +129,23 @@ silex.model.Property.prototype.mobileStylesObj = {};
  * @type {silex.model.data.ProdotypeData}
  */
 silex.model.Property.prototype.prodotypeDataObj = silex.model.Property.EMPTY_PRODOTYPE_DATA;
+
+
+/**
+ * @param {Array<Font>} fonts
+ */
+silex.model.Property.prototype.setFonts = function(fonts) {
+  console.log('setFonts aaa', fonts)
+  this.fonts = fonts;
+};
+
+
+/**
+ * @return {Array<Font>} returns a copy of this.fonts
+ */
+silex.model.Property.prototype.getFonts = function() {
+  return this.fonts.slice();
+};
 
 
 /**
@@ -201,6 +224,7 @@ silex.model.Property.prototype.saveProperties = function(doc) {
   styleTag.type = 'text/json';
 
   let obj = /** @type {silex.model.data.JsonData} */({
+    'fonts': this.fonts || [],
     'desktop': this.stylesObj || {},
     'mobile': this.mobileStylesObj || {},
     'prodotypeData': {
@@ -220,6 +244,7 @@ silex.model.Property.prototype.loadProperties = function(doc) {
   var styleTag = doc.querySelector('.' + silex.model.Property.JSON_STYLE_TAG_CLASS_NAME);
   if (styleTag != null) {
     let styles = /** @type {Object} */ (JSON.parse(styleTag.innerHTML)[0]);
+    this.fonts = styles['fonts'] || [];
     this.stylesObj = styles['desktop'] || {};
     this.mobileStylesObj = styles['mobile'] || {};
     this.prodotypeDataObj = styles['prodotypeData'] && styles['prodotypeData']['component'] && styles['prodotypeData']['style'] ? /** @type {silex.model.data.ProdotypeData} */ ({
@@ -230,6 +255,7 @@ silex.model.Property.prototype.loadProperties = function(doc) {
     if(styles['componentData']) this.prodotypeDataObj['component'] = styles['componentData'];
   }
   else {
+    this.fonts = [];
     this.stylesObj = {};
     this.mobileStylesObj = {};
     this.prodotypeDataObj = silex.model.Property.EMPTY_PRODOTYPE_DATA;
@@ -238,9 +264,10 @@ silex.model.Property.prototype.loadProperties = function(doc) {
 
   // make it easy to inspect the properties in debug mode
   if(goog.DEBUG) {
-    window['silexStylesObj'] = this.stylesObj
-    window['silexMobileStylesObj'] = this.mobileStylesObj
-    window['silexProdotypeDataObj'] = this.prodotypeDataObj
+    window['silexFonts'] = this.fonts;
+    window['silexStylesObj'] = this.stylesObj;
+    window['silexMobileStylesObj'] = this.mobileStylesObj;
+    window['silexProdotypeDataObj'] = this.prodotypeDataObj;
   }
 };
 

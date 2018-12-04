@@ -121,7 +121,7 @@ silex.view.PropertyTool.prototype.stylePane = null;
  * style editor
  * @see     silex.view.pane.StyleEditorPane
  */
-silex.view.PropertyTool.prototype.StyleEditorPane = null;
+silex.view.PropertyTool.prototype.styleEditorPane = null;
 
 
 /**

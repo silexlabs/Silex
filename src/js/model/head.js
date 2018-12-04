@@ -65,18 +65,6 @@ silex.model.Head.CUSTOM_FONTS_CSS_CLASS = 'silex-custom-font';
 
 
 /**
- * delimiter for the head tag edited by the user
- */
-silex.model.Head.HEAD_TAG_START = '<!-- Silex HEAD tag do not remove -->';
-
-
-/**
- * delimiter for the head tag edited by the user
- */
-silex.model.Head.HEAD_TAG_STOP = '<!-- End of Silex HEAD tag do not remove -->';
-
-
-/**
  * css class set to enable mobile version
  */
 silex.model.Head.ENABLE_MOBILE_CSS_CLASS = 'enable-mobile';
@@ -122,42 +110,6 @@ silex.model.Head.prototype.getUserHeadTag = function() {
  */
 silex.model.Head.prototype.setUserHeadTag = function(str) {
   this.userHeadTag = str;
-};
-
-
-/**
- * remove the user's head tag from the provided string and store it into this.userHeadTag
- * the head tag edited by the user is a portion of the real head tag
- * it is delimited by specific comments
- * it can not be interpreted while editing, in case it has bad HTML tags, it could break the whole site, insert tags into the body instead of the head...
- * @param {string} headString   initial head tag
- * @return {string} initial head tag without the user's head tag
- */
-silex.model.Head.prototype.extractUserHeadTag = function(headString) {
-  var regExp = new RegExp(silex.model.Head.HEAD_TAG_START + '([\\\s\\\S.]*)' + silex.model.Head.HEAD_TAG_STOP);
-  var found = headString.match(regExp);
-  if (found) {
-    headString = headString.replace(regExp, '');
-    this.userHeadTag = found[1];
-  }
-  else {
-    this.userHeadTag = '';
-  }
-  return headString;
-};
-
-
-/**
- * insert the HEAD tag into an HTML string
- * the head tag edited by the user is a portion of the real head tag
- * it is delimited by specific comments
- * it can not be interpreted while editing, in case it has bad HTML tags, it could break the whole site, insert tags into the body instead of the head...
- * @param {string} htmlString
- * @return {string} the provided string with the user's head tags
- */
-silex.model.Head.prototype.insertUserHeadTag = function(htmlString) {
-  htmlString = htmlString.replace(/<\/head>/i, silex.model.Head.HEAD_TAG_START + this.userHeadTag + silex.model.Head.HEAD_TAG_STOP + '</head>');
-  return htmlString;
 };
 
 
@@ -229,70 +181,6 @@ silex.model.Head.prototype.setHeadStyle = function(cssString) {
     goog.dom.appendChild(this.getHeadElement(), silexStyle);
   }
   silexStyle.innerHTML = cssString;
-  // refresh the text editor's styles
-  this.view.textEditor.setCustomCssStyles(cssString);
-};
-
-
-/**
- * refresh the list of loaded fonts. When a user changes the font family
- * of a text, the corresponding font file is loaded if available
- * @param {Object.<boolean>} neededFonts the embed fonts found in the website's body
- * @return {Array.<{href: string, name: string}>} font list
- */
-silex.model.Head.prototype.refreshFontList = function(neededFonts) {
-  var head = this.getHeadElement();
-  //detach all previously loaded font before, to avoid duplicate
-  var links = goog.dom.getElementsByClass(silex.model.Head.CUSTOM_FONTS_CSS_CLASS, head);
-  goog.array.forEach(links, function(linkElement) {
-    linkElement.parentNode.removeChild(linkElement);
-  });
-
-  //text styles can also be applied using old-school font tag.
-  //Get face attribute values from them
-  var fontTags = goog.dom.getElementsByTagNameAndClass('font', null, head);
-  goog.array.forEach(fontTags, function(fontTag) {
-    if (fontTag.getAttribute('face') !== null) {
-      neededFonts[fontTag.getAttribute('face')] = true;
-    }
-  });
-
-  //get authorised fonts
-  var availableFonts = silex.Config.fonts;
-  //return the font from the font family or null
-  var getFont = function(fontFamily) {
-    for (let fontName in availableFonts) {
-      if (availableFonts[fontName].value === fontFamily) {
-        return availableFonts[fontName];
-      }
-    }
-    return null;
-  };
-  var customFontsForTextEditor = [];
-  //for each used font family, if a corresponding font is available, load it
-  for (let fontFamily in neededFonts) {
-
-    var font = getFont(fontFamily);
-    //check that a URL to load is available. There is none for system font (serif, sans-serif...)
-    if (font && font.href) {
-
-      //load the font by appending a link, which will load a CSS file containing the
-      //font rules
-      var link = goog.dom.createElement('link');
-      link.setAttribute('href', font.href);
-      link.setAttribute('rel', 'stylesheet');
-      link.setAttribute('type', 'text/css');
-      link.setAttribute('class', silex.model.Head.CUSTOM_FONTS_CSS_CLASS);
-
-      head.appendChild(link);
-
-      customFontsForTextEditor.push({
-        name: fontFamily,
-        href: font.href
-      });
-    }
-  }
-  return customFontsForTextEditor;
 };
 
 
@@ -375,7 +263,7 @@ silex.model.Head.prototype.getPublicationPath = function() {
  * @param {boolean} enable
  */
 silex.model.Head.prototype.setEnableMobile = function(enable) {
-  let doc = this.model.file.getContentDocument();
+  const doc = this.model.file.getContentDocument();
   if(doc.body === null) {
     // body is null, this happens while undoing or redoing
     return;
@@ -401,7 +289,9 @@ silex.model.Head.prototype.setEnableMobile = function(enable) {
   // redraw UI
   var pages = this.model.page.getPages();
   var page = this.model.page.getCurrentPage();
-  this.view.propertyTool.redraw(this.model.body.getSelection(), pages, page);
+  const selectedElements = this.model.body.getSelection();
+  this.view.propertyTool.redraw(selectedElements, pages, page);
+  this.view.textFormatBar.redraw(selectedElements, pages, page);
 };
 
 
@@ -635,3 +525,54 @@ silex.model.Head.prototype.getHeadElement = function() {
   // returns the head of the document in the iframe
   return this.model.file.getContentDocument().head;
 };
+
+
+/**
+ * @return  {Array<Font>} all the fonts for this website
+ */
+silex.model.Head.prototype.getFonts = function() {
+  return this.model.property.getFonts();
+};
+
+
+/**
+ * @param {Array<Font>} fonts
+ */
+silex.model.Head.prototype.setFonts = function(fonts) {
+  /**
+   * @param {Font} f1
+   * @param {Font} f2
+   * @return {boolean} true if the fonts are the same
+   */
+  function compareFonts(f1, f2) {
+    return f1.family === f2.family && f1.href === f2.href;
+  }
+  // remove fonts which are not in fonts anymore
+  const head = this.getHeadElement();
+  const doc = this.model.file.getContentDocument();
+  const oldFonts = this.getFonts();
+  oldFonts
+  .filter(font => !fonts.find(f => compareFonts(f, font)))
+  .forEach(font => {
+    const link = head.querySelector(`link[href="${ font.href }"]`);
+    if(link) head.removeChild(link);
+    else {
+      console.warn('Could not remove font from the dom', font, link);
+    }
+  });
+  // add new fonts
+  fonts
+  .filter(font => !oldFonts.find(f => compareFonts(f, font)))
+  .forEach(font => {
+    const link = doc.createElement('link');
+    link.href = font.href;
+    link.rel = 'stylesheet';
+    link.className = silex.model.Head.CUSTOM_FONTS_CSS_CLASS;
+    head.appendChild(link);
+  });
+  // store the list in db
+  this.model.property.setFonts(fonts);
+  // update views
+  this.view.settingsDialog.redraw();
+};
+

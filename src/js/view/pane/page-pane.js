@@ -56,9 +56,9 @@ silex.view.pane.PagePane.prototype.linkDropdown = null;
 
 /**
  * check box "view on mobile"
- * @type {HTMLInputElement}
+ * @type {HTMLDivElement}
  */
-silex.view.pane.PagePane.prototype.viewOnMobileCheckbox = null;
+silex.view.pane.PagePane.prototype.viewOnDeviceEl = null;
 
 
 /**
@@ -104,13 +104,15 @@ silex.view.pane.PagePane.prototype.buildUi = function() {
       this);
 
   // View on mobile checkbox
-  this.viewOnMobileCheckbox = /** @type {HTMLInputElement} */ (this.element.querySelector('.view-on-mobile-check'));
-  goog.events.listen(this.viewOnMobileCheckbox, goog.ui.Component.EventType.CHANGE,
-      event => {
-        this.selectedElements.forEach(element => {
-          this.model.element.setHideOnMobile(element, !this.viewOnMobileCheckbox.checked);
-        });
-      }, false);
+  this.viewOnDeviceEl = /** @type {HTMLDivElement} */ (this.element.querySelector('.view-on-mobile'));
+  this.viewOnDeviceEl.onclick = e => {
+    const selected = this.element.querySelector('.view-on-mobile input:checked');
+    const value = selected.value;
+    this.selectedElements.forEach(element => {
+      this.model.element.setHideOnMobile(element, value === 'desktop');
+      this.model.element.setHideOnDesktop(element, value === 'mobile');
+    });
+  };
 
   // View on all pages
   this.viewOnAllPagesCheckbox = /** @type {HTMLInputElement} */ (this.element.querySelector('.view-on-allpages-check'));
@@ -248,7 +250,8 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, pageNames
   this.setPages(pageNames);
 
   // View on mobile checkbox
-  this.viewOnMobileCheckbox.disabled = !this.model.head.getEnableMobile();
+  Array.from(this.viewOnDeviceEl.querySelectorAll('.view-on-mobile input'))
+  .forEach(el => el.disabled = !this.model.head.getEnableMobile());
 
   // not available for stage element
   var elementsNoStage = [];
@@ -257,19 +260,32 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, pageNames
       elementsNoStage.push(element);
     }
     else {
-      this.viewOnMobileCheckbox.disabled = true;
+      Array.from(this.viewOnDeviceEl.querySelectorAll('.view-on-mobile input'))
+      .forEach(el => el.disabled = true);
     }
   }, this);
   // update the "view on mobile" checkbox
-  var isVisibleOnMobile = this.getCommonProperty(selectedElements, element => {
-    return !this.model.element.getHideOnMobile(element);
+  var visibility = this.getCommonProperty(selectedElements, element => {
+    if(this.model.element.getHideOnMobile(element)) {
+      return 'desktop';
+    }
+    else if(this.model.element.getHideOnDesktop(element)) {
+      return 'mobile';
+    }
+    else {
+      return 'both';
+    }
   });
-  if(!goog.isNull(isVisibleOnMobile)) {
-    this.viewOnMobileCheckbox.checked = (isVisibleOnMobile);
-    this.viewOnMobileCheckbox.indeterminate = false;
+  if(!goog.isNull(visibility)) {
+    Array.from(this.viewOnDeviceEl.querySelectorAll('.view-on-mobile input'))
+    .forEach(el => {
+      el.checked = (visibility === el.value);
+      el.indeterminate = false;
+    });
   }
   else {
-    this.viewOnMobileCheckbox.indeterminate = true;
+    Array.from(this.viewOnDeviceEl.querySelectorAll('.view-on-mobile input'))
+    .forEach(el => el.indeterminate = true);
   }
   // special case of the background / main container only selected element
   var bgOnly = false;
@@ -355,7 +371,7 @@ silex.view.pane.PagePane.prototype.redraw = function(selectedElements, pageNames
 /**
  * callback for checkboxes click event
  * changes the visibility of the current component for the given page
- * @param   {string} pageName   the page for wich the visibility changes
+ * @param   {string} pageName   the page for which the visibility changes
  * @param   {HTMLInputElement} checkbox   the checkbox clicked
  */
 silex.view.pane.PagePane.prototype.checkPage = function(pageName, checkbox) {

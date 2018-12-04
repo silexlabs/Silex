@@ -33,8 +33,26 @@ class HtmlEditor extends AceEditorBase {
   constructor(element, model, controller) {
     super(element, model, controller);
 
+    const session = this.ace.getSession();
+
     // set mode
-    this.ace.getSession()['setMode']('ace/mode/html');
+    session['setMode']('ace/mode/html');
+
+    // dirty hack to prevent errors not applicable in our case (we edit a part of an html doc only)
+    // comes from this discussion https://groups.google.com/forum/#!topic/ace-discuss/qOVHhjhgpsU
+    session['on']('changeAnnotation', () => {
+      const annotations = session['getAnnotations']() || [];
+      const len = annotations.length;
+      let i = len;
+      while (i--) {
+        if(/doctype/i.test(annotations[i].text)) {
+          annotations.splice(i, 1);
+        }
+      }
+      if(len>annotations.length) {
+        session['setAnnotations'](annotations);
+      }
+    });
   }
 
 

@@ -31,11 +31,12 @@
     "build:js:release": "java -jar node_modules/google-closure-compiler/compiler.jar --js node_modules/google-closure-library/closure/goog/ --js src/js/ --externs src/externs.js --js_output_file dist/client/js/admin.js --compilation_level ADVANCED_OPTIMIZATIONS --warning_level=VERBOSE --language_in ECMASCRIPT6_STRICT --language_out ECMASCRIPT5 --create_source_map dist/client/js/admin.js.map --closure_entry_point silex.App --only_closure_dependencies --define=\"goog.DEBUG=false\"",
     "build:js:debug": "java -jar node_modules/google-closure-compiler/compiler.jar --debug --js node_modules/google-closure-library/closure/goog/ --js src/js/ --externs src/externs.js --js_output_file dist/client/js/admin.js --compilation_level ADVANCED_OPTIMIZATIONS --warning_level=VERBOSE --language_in ECMASCRIPT6_STRICT --language_out ECMASCRIPT5 --create_source_map dist/client/js/admin.js.map --closure_entry_point silex.App --only_closure_dependencies --define=\"goog.DEBUG=true\" && echo \"//# sourceMappingURL=/js/admin.js.map\" >> dist/client/js/admin.js ",
     "init:templates": "cross-env mkdir -p dist/client/libs/templates && cp -r node_modules/silex-templates node_modules/silex-blank-templates dist/client/libs/templates/",
+    "init:wysihtml": "cross-env mkdir -p dist/client/libs/wysihtml && cross-env cp -r node_modules/wysihtml/parser_rules/* node_modules/wysihtml/dist/minified/* dist/client/libs/wysihtml",
     "watch:server": "watch 'npm run lint:server' dist/server/",
     "watch:client": "watch 'npm run build:css && npm run build:html && npm run build:prodotype && npm run build:js:debug && npm run lint:js' src/",
     "lint:js": "eslint src/js/",
     "lint:server": "eslint dist/server/",
-    "postinstall": "npm run init:prodotype && npm run init:templates && npm run build",
+    "postinstall": "npm run init:prodotype && npm run init:templates && npm run init:wysihtml && npm run build",
     "start:electron": "SILEX_ELECTRON=true electron ."
   },
   "dependencies": {
@@ -57,8 +58,9 @@
     "promise-sequential": "1.1.1",
     "request": "2.85.0",
     "serve-static": "1.13.2",
-    "silex-blank-templates": "github:silexlabs/silex-blank-templates#ec07456",
-    "silex-templates": "github:silexlabs/silex-templates#f9c2dcb"
+    "silex-blank-templates": "github:silexlabs/silex-blank-templates#311dbe425f9dc53e14918fd40f09e8ee8c0411f1",
+    "silex-templates": "github:silexlabs/silex-templates#6db76ea2ca085ba5325136a94cad65d035b1572d",
+    "wysihtml": "^0.6.0-beta1"
   },
   "devDependencies": {
     "electron": "1.8.4",

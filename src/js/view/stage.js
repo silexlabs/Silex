@@ -19,6 +19,7 @@
 
 goog.provide('silex.view.Stage');
 
+goog.require('silex.utils.Keyboard');
 goog.require('goog.events');
 goog.require('goog.events.MouseWheelHandler');
 
@@ -28,7 +29,7 @@ goog.require('goog.events.MouseWheelHandler');
  * the Silex stage class
  * @constructor
  * load the template and render to the given html element
- * @param  {Element}  element  DOM element to wich I render the UI
+ * @param  {Element}  element  DOM element to which I render the UI
  *  has been changed by the user
  * @param  {!silex.types.Model} model  model class which holds
  *                                  the model instances - views use it for read operation only
@@ -111,18 +112,20 @@ silex.view.Stage.DEFAULT_SCROLL_SPEED = 100;
 
 
 /**
- * the keys we listen to for moving elements
- * @type {Array.<number>}
+ * the keys we listen to which are not in a menu
+ * @type {Array.<silex.utils.Shortcut>}
  */
-silex.view.Stage.KEYS_TO_CATCH = [
-  goog.events.KeyCodes.LEFT,
-  goog.events.KeyCodes.RIGHT,
-  goog.events.KeyCodes.UP,
-  goog.events.KeyCodes.DOWN,
-  goog.events.KeyCodes.ESC,
-  goog.events.KeyCodes.PAGE_UP, // this is to prevent scroll in the html tag
-  goog.events.KeyCodes.PAGE_DOWN, // this is to prevent scroll in the html tag
-  goog.events.KeyCodes.SPACE, // this is to prevent scroll in the html tag
+silex.view.Stage.ACTION_KEYS = [
+  {key: 'ArrowLeft', modifiers: false, input: false},
+  {key: 'ArrowRight', modifiers: false, input: false},
+  {key: 'ArrowUp', modifiers: false, input: false},
+  {key: 'ArrowDown', modifiers: false, input: false},
+  {key: 'Escape', input: false},
+  {key: 'Enter', input: false},
+  // the keys bellow are intercepted to prevent scroll in the html tag
+  {key: 'PageUp', input: false},
+  {key: 'PageDown', input: false},
+  {key: ' ', input: false},
 ];
 
 
@@ -215,9 +218,16 @@ silex.view.Stage.prototype.buildUi = function() {
       false,
       this);
 
-  // keyboard
-  let keyHandler = new goog.events.KeyHandler(document);
-  goog.events.listen(keyHandler, 'key', goog.bind(this.handleKey, this));
+  // action keys
+  const keyboard = new silex.utils.Keyboard(document);
+  silex.view.Stage.ACTION_KEYS.forEach(({key, input, modifiers}) => {
+    keyboard.addShortcut({
+      key: key,
+      modifiers: modifiers,
+      input: input,
+    }, e => this.handleKeyDown(e));
+  });
+
 };
 
 
@@ -252,6 +262,25 @@ silex.view.Stage.prototype.onMouseUpOverUi = function(event) {
     this.bodyElement.dispatchEvent(newEvObj);
     this.iAmClicking = false;
   }
+};
+
+
+/**
+ * relay the event to Silex UI out of the iframe where the website is being edited
+ * this happens when editing text in place
+ * @param {Event} event
+ */
+silex.view.Stage.prototype.handleKeyInIframe = function(event) {
+  const newEvent = new KeyboardEvent('keydown', {
+    'key': event.key,
+    'shiftKey': event.shiftKey,
+    'altKey': event.altKey,
+    'ctrlKey': event.ctrlKey,
+    'target': event.target,
+    'cancelable': true,
+  });
+  document.dispatchEvent(newEvent);
+  if(newEvent.defaultPrevented) event.preventDefault();
 };
 
 
@@ -310,6 +339,10 @@ silex.view.Stage.prototype.initEvents = function(contentWindow) {
     event.preventDefault();
     return false;
   }, false, this);
+
+  // forward keyboard events from the stage to the UI, useful for the text editor because contentEditable captures keys
+  this.contentDocument.addEventListener('keydown', event => this.handleKeyInIframe(event));
+
   // listen on body instead of element because user can release
   // on the tool boxes
   goog.events.listen(contentWindow.document, 'mouseup', function(event) {
@@ -328,16 +361,23 @@ silex.view.Stage.prototype.initEvents = function(contentWindow) {
 
   // detect mouse down
   goog.events.listen(this.bodyElement, 'mousedown', function(event) {
+    // get the first parent node which is editable (silex-editable css class)
+    const editableElement = goog.dom.getAncestorByClass(
+        event.target,
+        silex.model.Body.EDITABLE_CLASS_NAME) || this.bodyElement;
+
+    // if this is a text box being edited inline, do nothing
+    const content = this.model.element.getContentNode(editableElement);
+    if(content.getAttribute('contenteditable')) {
+      return true;
+    }
+
     this.lastClickWasResize = goog.dom.classlist.contains(
         event.target,
         'ui-resizable-handle');
     this.resizeDirection = this.getResizeDirection(event.target);
     let x = event.clientX;
     let y = event.clientY;
-    // get the first parent node which is editable (silex-editable css class)
-    let editableElement = goog.dom.getAncestorByClass(
-        event.target,
-        silex.model.Body.EDITABLE_CLASS_NAME) || this.bodyElement;
     try {
       // in firefox, this is needed to keep recieving events while dragging outside the iframe
       // in chrome this will throw an error
@@ -379,39 +419,48 @@ silex.view.Stage.prototype.redraw =
 
 
 /**
- * handle key strikes, look for arrow keys to move selection
+ * handles keyboard keys which are action and not in a menu
  * @param {Event} event
  */
-silex.view.Stage.prototype.handleKey = function(event) {
-  // not in text inputs
-  if (event.target.tagName.toUpperCase() !== 'INPUT' &&
-      event.target.tagName.toUpperCase() !== 'TEXTAREA' &&
-      silex.view.Stage.KEYS_TO_CATCH.indexOf(event.keyCode) >= 0) {
+silex.view.Stage.prototype.handleKeyDown = function(event) {
+  let tookAction = true;
+  switch(event.key) {
+    case 'Enter':
+      this.controller.editMenuController.editElement();
+      break;
+    case 'Escape':
+      this.controller.stageController.selectNone();
+      break;
+    default:
+      tookAction = false;
+  }
+  // scroll to the moving element
+  if(!tookAction) {
     // mobile mode or selection contains only sections elements
-    if(this.isMobileMode() ||
+    const isPositioned = this.controller.stageController.getMobileMode() ||
       (this.selectedElements && this.selectedElements.reduce((prev, cur) => prev &&
         (this.model.element.isSection(cur) ||
-          this.model.element.isSectionContent(cur)), true))) {
+          this.model.element.isSectionContent(cur)), true));
+
+    if(isPositioned || event.altKey) {
       // move the elements in the dom
       let tookAction = true;
-      switch (event.keyCode) {
-        case goog.events.KeyCodes.LEFT:
+      switch(event.key) {
+        case 'ArrowLeft':
           this.controller.editMenuController.moveToTop();
-        break;
-        case goog.events.KeyCodes.RIGHT:
+          break;
+        case 'ArrowRight':
           this.controller.editMenuController.moveToBottom();
-        break;
-        case goog.events.KeyCodes.UP:
+          break;
+        case 'ArrowUp':
           this.controller.editMenuController.moveUp()
-        break;
-        case goog.events.KeyCodes.DOWN:
+          break;
+        case 'ArrowDown':
           this.controller.editMenuController.moveDown()
-        break;
-        case goog.events.KeyCodes.ESC:
-          this.controller.stageController.selectNone();
-        break;
+          break;
         default:
           tookAction = false;
+          console.warn('key not found', event.key);
       }
       // scroll to the moving element
       if(tookAction) {
@@ -424,29 +473,24 @@ silex.view.Stage.prototype.handleKey = function(event) {
       if (event.shiftKey === true) {
         amount = 1;
       }
-      if (event.altKey === true) {
-        // this is the bring forward/backward shortcut
-        return;
-      }
       // compute the direction
       let offsetX = 0;
       let offsetY = 0;
-      switch (event.keyCode) {
-        case goog.events.KeyCodes.LEFT:
+      switch (event.key) {
+        case 'ArrowLeft':
           offsetX = -amount;
         break;
-        case goog.events.KeyCodes.RIGHT:
+        case 'ArrowRight':
           offsetX = amount;
         break;
-        case goog.events.KeyCodes.UP:
+        case 'ArrowUp':
           offsetY = -amount;
         break;
-        case goog.events.KeyCodes.DOWN:
+        case 'ArrowDown':
           offsetY = amount;
         break;
-        case goog.events.KeyCodes.ESC:
-          this.controller.stageController.selectNone();
-        break;
+        default:
+          console.warn('key not found', event.key);
       }
       // if there is something to move
       if (offsetX !== 0 || offsetY !== 0) {
@@ -456,12 +500,12 @@ silex.view.Stage.prototype.handleKey = function(event) {
         this.moveElements(this.selectedElements, offsetX, offsetY);
       }
     }
-    // prevent default behavior for this key
-    // especially important to have this for arrow keys and page up/down
-    // to prevent stage scroll in body in firefox (opened issue in ff:
-    // https://bugzilla.mozilla.org/show_bug.cgi?id=295020 )
-    event.preventDefault();
   }
+  // prevent default behavior for this key
+  // especially important to have this for arrow keys and page up/down
+  // to prevent stage scroll in body in firefox (opened issue in ff:
+  // https://bugzilla.mozilla.org/show_bug.cgi?id=295020 )
+  event.preventDefault();
 };
 
 
@@ -727,7 +771,7 @@ silex.view.Stage.prototype.getVisibility = function(element) {
   while (parent &&
          (!goog.dom.classlist.contains(/** @type {Element} */ (parent), silex.model.Page.PAGED_CLASS_NAME) ||
           goog.dom.classlist.contains(/** @type {Element} */ (parent), this.currentPageName)) &&
-         !(this.isMobileMode() && this.model.element.getHideOnMobile(parent))
+         !(this.controller.stageController.getMobileMode() && this.model.element.getHideOnMobile(parent))
    ) {
     parent = /** @type {?Element} */ (parent.parentNode);
   }
@@ -1102,7 +1146,7 @@ silex.view.Stage.prototype.getScrollMaxY = function() {
 
 
 /**
- * @param  {Element}  element in the DOM to wich I am scrolling
+ * @param  {Element}  element in the DOM to which I am scrolling
  */
 silex.view.Stage.prototype.setScrollTarget = function(element) {
   if(element !== this.bodyElement) {
@@ -1119,7 +1163,7 @@ silex.view.Stage.prototype.setScrollTarget = function(element) {
 
 
 /**
- * @param  {number}  scrollTop to wich I am scrolling
+ * @param  {number}  scrollTop to which I am scrolling
  * @param  {?number=}  scrollSpeed number of pixels per frame to go there
  */
 silex.view.Stage.prototype.scrollTo = function(scrollTop, scrollSpeed) {
@@ -1200,15 +1244,6 @@ silex.view.Stage.prototype.moveElements = function(elements, offsetX, offsetY) {
   this.propertyChanged();
 };
 
-
-/**
- * helper for other views,
- * because views (view.workspace.get/setMobileEditor) is not accessible from other views
- * FIXME: find another way to expose isMobileEditor to views
- */
-silex.view.Stage.prototype.isMobileMode = function() {
-  return goog.dom.classlist.contains(document.body, 'mobile-mode');
-};
 
 /**
  * Handle the right click and display a small text to inform users

@@ -1,0 +1,74 @@
+.link-editor-help-button {
+  // in the alertify popin
+  margin-left: 10px;
+}
+.silex-text-format-bar {
+  position: absolute;
+  z-index: @text-format-bar-z-index;
+  color: @silexlightergrey;
+
+  padding-left: 5px;
+  padding-right: 3px;
+  border: 1px solid @silexdarkergrey;
+  border-radius: 3px;
+  background-color: @silexmediumgrey;
+
+  // hide when not editing
+  opacity: 0;
+  pointer-events: none;
+  &.text-editor-editing {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  /* text inline format pane, keep selection */
+  form {
+    .button-bar-container-template;
+    .labels {
+      .format-buttons;
+      label {
+      width: 40px;
+      height: 18px;
+      background-color: transparent;
+      border: none;
+      &.first-button {
+        clear: none;
+        border: none;
+      }
+      &.last-button {
+        border-radius: 0;
+      }
+      &.wysihtml-command-active {
+        .button-template-selected;
+        background-color: transparent;
+      }
+    }
+    }
+  }
+  div.image-details {
+    display: flex;
+    clear: both;
+
+    & > * {
+      margin: 5px;
+      line-height: 2;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    /* the "alt" label */
+    label {
+      position: absolute;
+      margin: 0;
+      top: 34px;
+      left: 5px;
+      color: @silexlightblue;
+    }
+    // the alt input
+    input {
+      padding-left: 30px;
+      flex: 1 1 auto;
+    }
+    // all inputs
+    input, select, label {
+    }
+  }
+}

@@ -22,8 +22,9 @@ const constants = require('./Constants.json');
 
 module.exports = class DomPublisher {
 
-  constructor(dom) {
+  constructor(dom, rootUrl) {
     this.dom = dom;
+    this.rootUrl = rootUrl;
     this.doc = dom.window.document;
   }
 
@@ -227,7 +228,8 @@ module.exports = class DomPublisher {
     // do not download files with GET params since it is probably dynamic
     return url.search === ''
     // do not download data:* images
-    && url.protocol !== 'data:';
+    && url.protocol !== 'data:'
+    && url.origin === this.rootUrl;
   }
 
 }

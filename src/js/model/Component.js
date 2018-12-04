@@ -33,8 +33,8 @@ class Component {
     Component.STYLE_CLASS_NAME = 'silex-prodotype-style';
 
 
-    Component.BODY_STYLE_NAME = 'All texts';
-    Component.BODY_STYLE_CSS_CLASS = 'BODY';
+    Component.BODY_STYLE_NAME = 'All style';
+    Component.BODY_STYLE_CSS_CLASS = 'all-style';
 
     Component.EMPTY_STYLE_CLASS_NAME = 'empty-style-class-name';
     Component.EMPTY_STYLE_DISPLAY_NAME = '';
@@ -110,6 +110,22 @@ class Component {
   ready(cbk) {
     if(this.prodotypeComponent) this.prodotypeComponent.ready(err => cbk(err));
     else this.readyCbkArr.push(cbk);
+  }
+
+
+  /**
+   * check existance and possibly create the body style if it is missing
+   * @param {Document} doc docment of the iframe containing the website
+   */
+  initStyles(doc) {
+    const element = doc.body;
+    // make sure that the style exists
+    const styleData = this.model.property.getStyleData(Component.BODY_STYLE_CSS_CLASS);
+    if(!styleData) {
+      this.initStyle(Component.BODY_STYLE_NAME, Component.BODY_STYLE_CSS_CLASS, null);
+    }
+    // make sure that body has the style
+    element.classList.add(Component.BODY_STYLE_CSS_CLASS);
   }
 
 
@@ -463,7 +479,17 @@ class Component {
     };
     this.prodotypeStyle.edit(
       pseudoClassData,
-      [], // no need to have references to other styles
+      [{
+        displayName: '',
+        name: '',
+        templateName: '',
+      }].concat(this.model.property.getFonts()).map(font => {
+        return {
+          displayName: font.family,
+          name: font.family,
+          templateName: '',
+        };
+      }),
       'text',
       {
         'onChange': (newData, html) => this.styleChanged(className, pseudoClass, visibility, newData),

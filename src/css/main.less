@@ -8,16 +8,16 @@
 }
 
 ::-webkit-scrollbar {
-    width: 10px;
+  width: 10px;
 }
 ::-webkit-scrollbar-track {
-    background-color: @silexdarkgrey;
+  background-color: @silexdarkgrey;
 }
 ::-webkit-scrollbar-thumb {
-    background-color: @silexmediumgrey;
+  background-color: @silexmediumgrey;
 }
 ::-webkit-scrollbar-thumb:hover {
-    background-color: @silexmediumdarkgrey;
+  background-color: @silexmediumdarkgrey;
 }
 
 ::selection {
@@ -70,10 +70,75 @@ body {
   }
 }
 
+.hidden { display: none; }
+/* "apollo mode" UI */
+.advanced-mode-on .silex-property-tool .switch-apollo-mode button:after {
+  content: '\f205';
+}
+.small-combo {
+  width: 45%;
+  padding: 2px;
+  cursor: pointer;
+}
+/* button templates to be used in this stylesheet, not referenced in the HTML */
+.button-template-selected {
+  color: @silexlightblue;
+  background-color: @silexdarkgrey;
+}
+.button-template {
+  background-color: @silexlightgrey;
+  border: 1px solid @silexdarkgrey;
+  display: block;
+  text-align: center;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  cursor: pointer;
+  &:hover {
+    background-color: @silexdarkgrey;
+  }
+}
+.button-bar-template {
+  .button-template;
+  font-weight: lighter;
+  float: left;
+  border-left: initial;
+}
+.button-bar-first {
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+  border-left: 1px solid @silexdarkgrey;
+  clear: left;
+}
+.button-bar-last {
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+  border-right: 1px solid @silexdarkgrey;
+  margin-right: 2px;
+}
+.button-bar-container-template {
+  /* tags H1, H2, H3, P, A */
+  .labels {
+    display: inline-block; /* push the elements underneeth dispite it is floated */
+    width: 100%;
+    label {
+      .button-bar-template;
+      margin-top: 5px;
+      &.last-button {
+        .button-bar-last;
+      }
+      &.first-button {
+        .button-bar-first;
+      }
+    }
+  }
+
+}
 .small-font {
   font-size: 12px;
 }
-
+.silex-logo-small {
+  vertical-align: middle;
+}
 .modal-dialog {
   z-index: 220;
 }
@@ -87,21 +152,16 @@ label {
     display: none;
   }
 
-}
+  h1, h2, h3 {
+    font-family: sans-serif;
+    color: @silexlightergrey;
+    font-weight: normal;
+  }
 
-.goog-toolbar-menu-button-dropdown, .tr-icon {
-  background-image: url(../assets/goog-ui/editortoolbar.png);
-}
-
-h1, h2, h3 {
-  font-family: sans-serif;
-  color: @silexlightergrey;
-  font-weight: normal;
-}
-
-.xsmall-font {
-  font-size: 13px;
-  font-weight: lighter;
-  color: @silexlightergrey;
+  .xsmall-font {
+    font-size: 13px;
+    font-weight: lighter;
+    color: @silexlightergrey;
+  }
 }
 
