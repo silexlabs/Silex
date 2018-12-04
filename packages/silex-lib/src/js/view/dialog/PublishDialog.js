@@ -300,7 +300,7 @@ silex.view.dialog.PublishDialog = class {
               let msg = `<strong>${json['message']}</strong>`;
               if(json['stop'] === true) {
                 clearInterval(timer);
-                const websiteUrl = this.model.head.getWebsiteUrl() || folder.url;
+                const websiteUrl = this.model.head.getWebsiteUrl() || folder.url + '/index.html';
                 msg += `<p>Please visit <a target="_blanck" href="${ websiteUrl }">your published website here</a>. ${ provider && provider.afterPublishMessage ? provider.afterPublishMessage : '' }</p>`;
                 resolve(msg);
               }
