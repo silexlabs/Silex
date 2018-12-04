@@ -1,1 +1,1 @@
-web: node dist/server/index.js
+web: node dist/server/silex_web.js
