@@ -108,7 +108,15 @@ silex.view.dialog.PublishDialog = class {
    */
   selectProvider(providers, providerName) {
     return new Promise((resolve, reject) => {
-      silex.utils.Notification.prompt('Choose the hosting provider you love!', 'unused', ok => {
+      const helpBtnStr = `
+        <a href="https://github.com/silexlabs/Silex/wiki/Publishing-and-Releasing-Your-Website#hosting-providers" target="_blank"
+        title="About hosting providers" class="help-btn">
+          <span class="icon fa fa-inverse fa-info-circle"></span>
+          <span class="label">Help</span>
+        </a>
+      `;
+
+      silex.utils.Notification.prompt('Choose the hosting provider you love! &nbsp; ' + helpBtnStr, 'unused', ok => {
         if(ok) {
           this.model.head.setHostingProvider(selectEl.value);
           if(selectEl.value === FOLDER_PROVIDER) {
