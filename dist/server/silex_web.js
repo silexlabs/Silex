@@ -19,6 +19,7 @@ const silex = new SilexServer(config);
 // here you can change routers,
 // e.g. add unifile services `silex.unifile.use(unifileConnector)`
 // and use `silex.app.get(...)` to add callbacks
+// silex.publishRouter.addHostingProvider(...)
 // @see https://github.com/silexlabs/Silex/wiki/Silex-Developer-Guide#add-unifile-services-eg-for-hosting-companies
 
 silex.start(function() {

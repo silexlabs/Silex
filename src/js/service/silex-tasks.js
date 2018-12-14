@@ -35,16 +35,12 @@ goog.addSingletonGetter(silex.service.SilexTasks);
 
 /**
  * publish a website to a given folder
- * @param {FileInfo} file
- * @param {FileInfo} folder
+ * @param {PublicationOptions} options
  * @param {function(string)} cbk called when success
  * @param {function(string)=} opt_errCbk to receive the json response
  */
-silex.service.SilexTasks.prototype.publish = function(file, folder, cbk, opt_errCbk) {
-  this.callServer('/tasks/publish', JSON.stringify({
-    'folder': folder,
-    'file': file,
-  }), 'POST', json => cbk(json), opt_errCbk);
+silex.service.SilexTasks.prototype.publish = function(options, cbk, opt_errCbk) {
+  this.callServer('/tasks/publish', JSON.stringify(options), 'POST', json => cbk(json), opt_errCbk);
 };
 
 
@@ -70,41 +66,46 @@ silex.service.SilexTasks.prototype.hosting = function(cbk, opt_errCbk) {
 
 /**
  * get the login URL
+ * @param {Provider} provider
  * @param {function(string)} cbk to receive the json response
  * @param {function(string)=} opt_errCbk
  */
 silex.service.SilexTasks.prototype.authorize = function(provider, cbk, opt_errCbk) {
-  this.callServer(provider.authorizeUrl, '', 'POST', cbk, opt_errCbk);
+  this.callServer(provider['authorizeUrl'], '', 'POST', cbk, opt_errCbk);
 };
 
 
 /**
  * get the vhosts for a provider to which we are connected
+ * @param {Provider} provider
  * @param {function(Array<VHost>)} cbk to receive the json response
  * @param {function(string)=} opt_errCbk
  */
 silex.service.SilexTasks.prototype.vhosts = function(provider, cbk, opt_errCbk) {
-  this.callServer(provider.vhostsUrl, '', 'GET', cbk, opt_errCbk);
+  this.callServer(provider['vhostsUrl'], '', 'GET', cbk, opt_errCbk);
 };
 
 
 /**
  * get the domain name for a vhost
+ * @param {VHost} vhost
  * @param {function({domain:string}=)} cbk to receive the json response
  * @param {function(string)=} opt_errCbk
  */
 silex.service.SilexTasks.prototype.domain = function(vhost, cbk, opt_errCbk) {
-  this.callServer(vhost.domainUrl, '', 'GET', cbk, opt_errCbk);
+  this.callServer(vhost['domainUrl'], '', 'GET', cbk, opt_errCbk);
 };
 
 
 /**
  * update the domain name for a vhost
+ * @param {VHost} vhost
+ * @param {string} newDomain
  * @param {function({domain:string, https:boolean})} cbk to receive the json response
  * @param {function(string)=} opt_errCbk
  */
 silex.service.SilexTasks.prototype.updateDomain = function(vhost, newDomain, cbk, opt_errCbk) {
-  this.callServer(vhost.domainUrl, JSON.stringify({
+  this.callServer(vhost['domainUrl'], JSON.stringify({
     'domain': newDomain,
   }), 'POST', cbk, opt_errCbk);
 };
@@ -112,11 +113,13 @@ silex.service.SilexTasks.prototype.updateDomain = function(vhost, newDomain, cbk
 
 /**
  * remove the domain name for a vhost
+ * @param {VHost} vhost
+ * @param {string} newDomain
  * @param {function({domain:string, https:boolean})} cbk to receive the json response
  * @param {function(string)=} opt_errCbk
  */
 silex.service.SilexTasks.prototype.removeDomain = function(vhost, newDomain, cbk, opt_errCbk) {
-  this.callServer(vhost.domainUrl, JSON.stringify({
+  this.callServer(vhost['domainUrl'], JSON.stringify({
     'domain': newDomain,
   }), 'DELETE', cbk, opt_errCbk);
 };

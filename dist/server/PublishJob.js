@@ -53,7 +53,9 @@ module.exports = class PublishJob {
   /**
    * factory to create a publish job
    */
-  static create({ folder, file }, unifile, session, cookies, rootUrl) {
+  static create({ publicationPath, file }, unifile, session, cookies, rootUrl, hostingProvider) {
+    assert(!!hostingProvider, 'hosting provider is null');
+
     // stop other publications from the same user
     session.publicationId = session.publicationId || uuid.v4();
     const id = session.publicationId;
@@ -62,7 +64,7 @@ module.exports = class PublishJob {
     }
     try {
       // check input params
-      assert.ok(!!folder, 'Missing param "folder"');
+      assert.ok(!!publicationPath, 'Missing param "publicationPath"');
       assert.ok(!!file, 'Missing param "file"');
     }
     catch(e) {
@@ -72,25 +74,28 @@ module.exports = class PublishJob {
       });
       return;
     }
-    const publishJob = new PublishJob(id, unifile, folder, session, cookies, rootUrl);
+    const publishJob = new PublishJob(id, unifile, publicationPath, session, cookies, rootUrl, hostingProvider);
     publishJobs.set(id, publishJob);
     publishJob.publish(file)
     .then(() => {
-      console.info(`PublishJob ${publishJob.id} success.`, !!this.error);
+      console.info(`PublishJob ${publishJob.id} success. Possibly with error:`, !!publishJob.error);
       publishJob.cleanup()
     })
     .catch((err) => {
-      console.info(`PublishJob ${publishJob.id} error (${err}).`);
+      console.error(`PublishJob ${publishJob.id} throws an error (${err}).`, err);
+      publishJob.error = true;
+      publishJob.setStatus(err.message);
       publishJob.cleanup()
     })
     return publishJob;
   }
 
-  constructor(id, unifile, folder, session, cookies, rootUrl) {
-    console.log('---------------\nNew Publish Job', id, '\nPublish to:', folder.url, '\nSilex instance:', rootUrl, '\n--------------');
+  constructor(id, unifile, publicationPath, session, cookies, rootUrl, hostingProvider) {
+    console.log('---------------\nNew Publish Job', id, '\nPublish to:', publicationPath.url, '\nSilex instance:', rootUrl, '\n--------------');
     this.id = id;
     this.unifile = unifile;
-    this.folder = folder;
+    this.hostingProvider = hostingProvider;
+    this.publicationPath = publicationPath;
     this.session = session;
     this.cookies = cookies;
     this.rootUrl = rootUrl;
@@ -102,7 +107,7 @@ module.exports = class PublishJob {
     // this.tmpFolder = Path.resolve(TMP_FOLDER, `publication_${this.id}`);
 
     // files and folders paths
-    this.rootPath = this.folder.path;
+    this.rootPath = this.publicationPath.path;
     this.indexFile = this.rootPath + '/index.html';
     this.cssFolder = this.rootPath + '/css';
     this.jsFolder = this.rootPath + '/js';
@@ -283,12 +288,18 @@ module.exports = class PublishJob {
       this.error = true;
       this.setStatus(err.message);
     })
-
+    .then(() => {
+      if(this.isStopped()) {
+        return Promise.resolve();
+      }
+      return this.hostingProvider.finalizePublication(file, this.publicationPath, this.session.unifile, msg => this.setStatus(msg));
+    })
     // all operations done
     .then(() => {
       if(this.isStopped()) {
         return;
       }
+      console.log('Publication done with success');
       this.setStatus(this.getSuccessMessage());
       this.success = true;
     })
@@ -310,10 +321,10 @@ module.exports = class PublishJob {
     // FIXME: should use unifile's batch method to avoid conflicts or the "too many clients" error in FTP
     //return Promise.all([
     return sequential([
-        () => preventErr(this.unifile.stat(this.session.unifile, this.folder.service, this.rootPath)),
-        () => preventErr(this.unifile.stat(this.session.unifile, this.folder.service, this.cssFolder)),
-        () => preventErr(this.unifile.stat(this.session.unifile, this.folder.service, this.jsFolder)),
-        () => preventErr(this.unifile.stat(this.session.unifile, this.folder.service, this.assetsFolder)),
+        () => preventErr(this.unifile.stat(this.session.unifile, this.publicationPath.service, this.rootPath)),
+        () => preventErr(this.unifile.stat(this.session.unifile, this.publicationPath.service, this.cssFolder)),
+        () => preventErr(this.unifile.stat(this.session.unifile, this.publicationPath.service, this.jsFolder)),
+        () => preventErr(this.unifile.stat(this.session.unifile, this.publicationPath.service, this.assetsFolder)),
       ]
       // add the promises to download each asset
       .concat(this.downloadAllAssets(this.tree.actions))
@@ -321,7 +332,7 @@ module.exports = class PublishJob {
   }
 
   writeOperations(statRoot, statCss, statJs, statAssets, ...assets) {
-    this.setStatus(`Creating files <ul><li>${this.indexFile}</li><li>${this.cssFile}</li><li>${this.jsFile}</li></ul>`);
+    this.setStatus(`Creating files <ul><li>${this.indexFile}</li><li>${this.cssFile}</li><li>${this.jsFile}</li></ul>And uploading ${ assets.length } images.`);
     // hide website before styles.css is loaded
     this.dom.window.document.head.innerHTML += '<style>body { opacity: 0; transition: .25s opacity ease; }</style>';
     // create an object to describe a batch of actions
@@ -378,11 +389,11 @@ module.exports = class PublishJob {
       .map(file => {
         return {
           name: 'writeFile',
-          path: this.folder.path + '/' +file.path,
+          path: this.publicationPath.path + '/' +file.path,
           content: file.content,
         };
       }));
-    return this.unifile.batch(this.session.unifile, this.folder.service, batchActionsWithAssets)
+    return this.unifile.batch(this.session.unifile, this.publicationPath.service, batchActionsWithAssets)
   }
 
   // create the promises to download each asset
@@ -391,34 +402,38 @@ module.exports = class PublishJob {
       const srcPath = decodeURIComponent(file.srcPath);
       const destPath = decodeURIComponent(file.destPath);
       const shortSrcPath = srcPath.substr(srcPath.lastIndexOf('/') + 1);
-      return () => new Promise((resolve, reject) => {
-        if(this.isStopped()) {
-          resolve();
-          return;
-        }
-        this.setStatus(`Downloading file ${ shortSrcPath }...`);
-        // load from URL
-        // "encoding: null" is needed for images (which in this case will be served from /static)
-        // for(let key in this.session.unifile) console.log('unifile session key', key, this.session.unifile[key]);
-        // "jar" is needed to pass the client cookies to unifile, because we load resources from different servers including ourself
-        request(srcPath, {
-          jar: this.jar,
-          encoding: null,
-        }, (err, res, data) => {
-          if(err) reject(err);
-          else if(res.statusCode != 200) {
-            console.warn(`Could not download file ${ srcPath }.`);
-            reject(`Could not download file ${ srcPath }.`);
+      return () => {
+        return new Promise((resolve, reject) => {
+          if(this.isStopped()) {
+            resolve();
+            return;
           }
-          else resolve({
-            content: data,
-            path: destPath,
+          this.setStatus(`Downloading file ${ shortSrcPath }...`);
+          // load from URL
+          // "encoding: null" is needed for images (which in this case will be served from /static)
+          // for(let key in this.session.unifile) console.log('unifile session key', key, this.session.unifile[key]);
+          // "jar" is needed to pass the client cookies to unifile, because we load resources from different servers including ourself
+          request(srcPath, {
+            jar: this.jar,
+            encoding: null,
+          }, (err, res, data) => {
+            if(err) reject(err);
+            else if(res.statusCode != 200) {
+              console.warn(`Could not download file ${ srcPath }.`);
+              reject(`Could not download file ${ srcPath }.`);
+            }
+            else {
+              resolve({
+                content: data,
+                path: destPath,
+              });
+            }
           });
+        })
+        .catch(err => {
+          this.filesNotDownloaded.push(shortSrcPath);
         });
-      })
-      .catch(err => {
-        this.filesNotDownloaded.push(shortSrcPath);
-      });
+      }
     });
   }
 }
