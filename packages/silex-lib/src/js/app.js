@@ -29,6 +29,7 @@ goog.require('goog.dom.classlist');
 goog.require('goog.events');
 goog.require('goog.style');
 goog.require('silex.Config');
+goog.require('silex.controller.ControllerBase');
 goog.require('silex.controller.ContextMenuController');
 goog.require('silex.controller.CssEditorController');
 goog.require('silex.controller.EditMenuController');
@@ -51,6 +52,7 @@ goog.require('silex.model.Head');
 goog.require('silex.model.Page');
 goog.require('silex.model.Property');
 goog.require('silex.service.Tracker');
+goog.require('silex.service.SilexTasks');
 goog.require('silex.types.Controller');
 goog.require('silex.types.Model');
 goog.require('silex.types.View');
@@ -58,6 +60,7 @@ goog.require('silex.utils.Dom');
 goog.require('silex.utils.InvalidationManager');
 goog.require('silex.utils.Polyfills');
 goog.require('silex.utils.Style');
+goog.require('silex.utils.Notification');
 goog.require('silex.view.ContextMenu');
 goog.require('silex.view.BreadCrumbs');
 goog.require('silex.view.Menu');
@@ -73,7 +76,7 @@ goog.require('silex.view.dialog.HtmlEditor');
 goog.require('silex.view.dialog.JsEditor');
 goog.require('silex.view.dialog.SettingsDialog');
 goog.require('silex.view.dialog.Dashboard');
-
+goog.require('silex.view.dialog.PublishDialog');
 goog.require('silex.view.ModalDialog');
 
 goog.require('silex.model.data.SilexId');
@@ -94,6 +97,11 @@ goog.require('silex.model.data.CssPropertyName');
 goog.require('silex.model.data.CssPropertyValue');
 goog.require('silex.model.data.TemplateName');
 
+goog.require('Font');
+goog.require('Hosting');
+goog.require('Provider');
+goog.require('VHost');
+goog.require('PublicationOptions');
 
 /**
  * Defines the entry point of Silex client application
