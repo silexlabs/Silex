@@ -20,86 +20,40 @@ $(function() {
   // be careful since it will change after undo/redo or open file in Silex editor
   var bodyEl = $('body');
 
-   /**
-   * returns a function that will not be called more than every `wait` seconds
-   */
-  function debounce(func, wait) {
-    var timeout;
-    return function() {
-      var context = this, args = arguments;
-      var later = function() {
-        clearTimeout(timeout);
-        timeout = null;
-        func.apply(context, args);
-      };
-      if(!timeout) timeout = setTimeout(later, wait);
-    };
-  };
-
   /**
-   * compute the desired size of the body
-   * this will allways be as big as the viewport
-   * and the bounding box (0,0) (width, height) contains all the elements in the body
-   * even if the elements are absolute positioned
-   * @return {width, height}
-   *
-  function getBodySize() {
-    var width = 0;
-    var height = 0;
-    $('body > *').each(function (index) {
-      var el = $(this);
-      // take elements visible on the current page
-      if(el.hasClass('editable-style') &&
-        (!el.hasClass('paged-element') || el.hasClass($('body').pageable('option').currentPage)) &&
-        (!el.hasClass('hide-on-mobile') || win.width() >= 480)
-      ) {
-        if(el.hasClass('section-element') && win.width() >= 480) {
-          var position = el.children('.silex-container-content').position();
-          var right = position.left + el.width();
-          var bottom = position.top + el.height();
-        }
-        else {
-          var position = el.position();
-          var right = position.left + el.width();
-          var bottom = position.top + el.height();
-        }
-        if (width < right) width = right;
-        if (height < bottom) height = bottom;
-      }
-    });
-    return {
-      'width': width || win.width(),
-      'height': height || win.height()
-    };
-  }
-*/
-  /**
-   * resize body to the size of its content
-   * this is needed since the content has absolute position
-   * so it is not automatic with css
+   * window resize event
    */
-  var resizeBody = debounce(function (event){
-/*
+  var siteWidth = parseInt($('meta[name=website-width]').attr('content'));
+  var resizeBody = function (event){
     var bodyEl = $('body');
-    // start computation, put the body to a 0x0 size
-    // to avoid 100% elements to mess with the size computation
-    bodyEl.addClass('compute-body-size-pending');
-    // get the size of the elements in the body
-    var boundingBox = getBodySize();
-    console.log('boundingBox', boundingBox)
-    var width = boundingBox.width;
-    var height = boundingBox.height;
     // behavior which is not the same in Silex editor and outside the editor
     if(bodyEl.hasClass('silex-runtime')) {
+      // if the site has a defined width and the window is smaller than this width, then
+      // scale the website to fit the window
       var winWidth = win.width();
-      // handle the scroll bar manually
-      // prevent the scroll bar to appear when we are only a few pixels short
-      // this allows us to set width to 100% instead of 99%
-      // this will only take place on mobile with winWidth < 480 (not needed on desktop apparently)
-      if(width < winWidth + 10 && winWidth < 480)
-        bodyEl.css('overflow-x', 'hidden');
-      else
-        bodyEl.css('overflow-x', 'auto');
+      if(winWidth < 480) {
+        $('body').css({
+          'transform': 'scale(' + (winWidth / 480) + ')',
+          'transform-origin': '0 0',
+          'min-width': '480px',
+        })
+      }
+      else if(winWidth > 480 && winWidth < siteWidth) {
+          $('body').css({
+            'transform': 'scale(' + (winWidth / 1200) + ')',
+            'transform-origin': '0 0',
+            'min-width': '1200px',
+          })
+      }
+      else {
+        // case of winWidth === 480 || winWidth > siteWidth
+        // reset transform
+        $('body').css({
+            'transform': '',
+            'transform-origin': '',
+            'min-width': '',
+          })
+      }
     }
     else {
       // add space around the elements in the body
@@ -107,32 +61,11 @@ $(function() {
       //width += 50;
       //height += 50;
     }
-    // set the body size to contain all the elements
-    // this has to be done manually since the elements are absolutely positioned
-    // only on desktop since in mobile the elements are in the flow
-    if(win.width() >= 480 || !bodyEl.hasClass('enable-mobile')) {
-      var size = {
-        'min-width': width + 'px',
-        'min-height': height + 'px'
-      };
-      console.log('resizeBody desktop', size);
-      bodyEl.css(size);
-    }
-    else {
-      console.log('resizeBody mobile');
-      bodyEl.css({
-        'min-width': '',
-        'min-height': ''
-      });
-    }
-    // end computation, put back the body to a normal size
-    bodyEl.removeClass('compute-body-size-pending');
     // dispatch an event so that components can update
-*/
-
     $(document).trigger('silex:resize');
-  }, 500);
+  };
 
+  /* this doesn't work? at least not in google bot mobile
   // only outside silex editor when the window is small enough
   // change viewport to enable mobile view scale mode
   // for "pixel perfect" mobile version
@@ -143,8 +76,8 @@ $(function() {
       $('meta[data-silex-viewport]').attr('content', 'width=479, user-scalable=no, maximum-scale=1');
     }
   }
-
- /**
+  */
+  /**
    * list all pages from the head section
    * and open the 1st one by default
    */
