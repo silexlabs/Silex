@@ -12,59 +12,131 @@
 const PublishJob = require('./PublishJob.js');
 const HostingGhPages = require('./HostingGhPages.js');
 const express = require('express');
+const hostingProviders = [];
+const router = express.Router();
 
 module.exports = function({ port, rootUrl, enableGithubPages, skipProviderSelection }, unifile) {
 
-  const router = express.Router();
-
   if(enableGithubPages) {
-    const p = require('./HostingGhPages.js');
-    router.use(new p(unifile));
+    const hostingGhPages = new HostingGhPages(unifile);
+    this.addHostingProvider(hostingGhPages);
   }
 
   // **
   // publication tasks
-  router.post('/tasks/:task', (req, res, next) => {
-    switch(req.params.task) {
-      case 'publish':
-        PublishJob.create(req.body, unifile, req.session, req.cookies, rootUrl);
-        res.end();
-        break;
-      default:
-        res.status(400).send({
-          message: 'Silex task "' + req.params.task + '" does not exist'
-        });
+  router.post('/tasks/publish', (req, res, next) => {
+    if(!req.body.provider || !req.body.provider.name) {
+      res.status(400).send({
+        message: 'Error in the request, hosting provider required',
+      });
+    }
+    else {
+      PublishJob.create(req.body, unifile, req.session, req.cookies, rootUrl, this.getHostingProvider(req.session.unifile, req.body.provider.name));
+      res.end();
     }
   });
-  router.get('/tasks/:task', (req, res, next) => {
-    switch(req.params.task){
-      case 'publishState':
-        const publishJob = PublishJob.get(req.session.publicationId);
-        if(publishJob) {
-          if(publishJob.error) res.status(500);
-          res.send({
-            'message': publishJob.getStatus(),
-            'stop': publishJob.isStopped(),
-          });
-        }
-        else {
-          res.status(404).send({
-            'message': 'No pending publication.',
-            'stop': true,
-          });
-        }
-        break;
-      default:
-        res.status(500).send({
-          message: 'Silex task "' + req.params.task + '" does not exist'
-        });
+
+  router.get('/tasks/publishState', (req, res, next) => {
+    const publishJob = PublishJob.get(req.session.publicationId);
+    if(publishJob) {
+      if(publishJob.error) res.status(500);
+      res.send({
+        'message': publishJob.getStatus(),
+        'stop': publishJob.isStopped(),
+      });
+    }
+    else {
+      res.status(404).send({
+        'message': 'No pending publication.',
+        'stop': true,
+      });
     }
   });
+
   router.get('/hosting/', (req, res, next) => {
+    const session = !!req.session && !!req.session.unifile ? req.session.unifile : {};
     res.json({
-      providers: res.locals.providers,
+      providers: hostingProviders.map(hostingProvider => hostingProvider.getOptions(session)),
       skipProviderSelection: skipProviderSelection,
     });
   });
+
+  // vhosts
+  router.get('/hosting/:hostingProviderName/vhost', (req, res, next) => {
+    const hostingProvider = this.getHostingProviderFromReq(req)
+    const hostingProviderInfo = hostingProvider.getOptions(req.session.unifile);
+    hostingProvider.getVhosts(req.session.unifile)
+    .then(vhosts => {
+      res.json(vhosts
+        .sort((a, b) => new Date(b.modified) - new Date(a.modified))
+        //.slice(0, 10) // max number of vhosts
+      );
+    })
+    .catch(err => {
+      res.status(400).send({
+        message: `Error from hosting provider "${ hostingProviderInfo.displayName }": ${ err.message }`,
+        err: err,
+      });
+    });
+  });
+  router.get('/hosting/:hostingProviderName/vhost/:name', (req, res, next) => {
+    const hostingProvider = this.getHostingProviderFromReq(req)
+    hostingProvider.getVhostData(req.session.unifile, req.params.name)
+    .then(result => {
+      res.json(result);
+    })
+    .catch(err => {
+      res.json({
+        domain: '',
+        msg: err,
+      });
+    });
+  });
+  router.post('/hosting/:hostingProviderName/vhost/:name', (req, res, next) => {
+    const hostingProvider = this.getHostingProviderFromReq(req)
+    const data = {
+      domain: req.body.domain,
+    };
+    hostingProvider.setVhostData(req.session.unifile, req.params.name, data)
+    .then(result => {
+      res.json(result);
+    })
+    .catch(err => {
+      console.error('Error when trying to attach a domain', req.params.name, data, err);
+      res.status(400).send({
+        message: `Error when trying to attach a domain to "${ req.params.name }". Error details: ${ err.message }`,
+        err: err,
+      });
+    });
+  });
+  router.delete('/hosting/:hostingProviderName/vhost/:name', (req, res, next) => {
+    const hostingProvider = this.getHostingProviderFromReq(req)
+    hostingProvider.setVhostData(req.session.unifile, req.params.name, null)
+    .then(result => {
+      res.json(result);
+    })
+    .catch(err => {
+      console.error('Error when trying to delete a domain', req.params.name, data, err);
+      res.status(400).send({
+        message: `Error when trying to remove domain from "${ req.params.name }". Error details: ${ err.message }`,
+        err: err,
+      });
+    });
+  });
   return router;
+};
+
+module.exports.prototype.addHostingProvider = function(hostingProvider) {
+  hostingProviders.push(hostingProvider);
+};
+
+module.exports.prototype.getHostingProviderFromReq = function(req) {
+  const hostingProviderName = req.params.hostingProviderName;
+  const hostingProvider = this.getHostingProvider(req.session.unifile, hostingProviderName)
+  if(!hostingProvider) throw('could not find the hosting provider ' + hostingProviderName);
+  return hostingProvider;
+};
+
+module.exports.prototype.getHostingProvider = function(session, hostingProviderName) {
+  return hostingProviders.find(hostingProvider => hostingProvider.getOptions(session).name === hostingProviderName)
 };

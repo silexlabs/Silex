@@ -10,113 +10,163 @@
 //////////////////////////////////////////////////
 
 const express = require('express');
+const request = require('request');
 
-module.exports = function(unifile) {
-  // create a router to return
-  const router = express.Router();
-  // add my options to the list of hosting providers
-  router.get('/hosting/', (req, res, next) => {
-    req.session = req.session || {};
-    req.session.unifile = req.session.unifile || {};
-    res.locals = res.locals || [];
-    res.locals.providers = res.locals.providers || [];
-    const infos = unifile.getInfos(req.session.unifile, 'github');
-    const options = {
-      name: 'ghpages',
-      displayName: 'Github Pages',
-      isLoggedIn: infos.isLoggedIn,
-      username: infos.username,
-      authorizeUrl: '/ce/github/authorize',
-      dashboardUrl: 'https://www.github.com',
-      pleaseCreateAVhost: 'create an empty repository.',
-      vhostsUrl: '/hosting/ghpages/vhost',
-      buyDomainUrl: 'https://www.gandi.net',
-      skipVhostSelection: false,
-      afterPublishMessage: 'Your website is being deployed to github pages.<br><br><strong>It may take a few minutes to be live, be patient!</strong>',
+function setTimeoutPromise(time) {
+  return new Promise((resolve) => setTimeout(() => resolve(), time));
+}
+
+function callServer(path, method, token) {
+  return new Promise((resolve, reject) => {
+    const reqOptions = {
+      url: `https://api.github.com${path}`,
+      method: method,
+      headers: {
+        'Accept': 'application/vnd.github.mister-fantastic-preview+json',
+        'Authorization': token,
+        'User-Agent': 'Unifile',
+        'X-OAuth-Scopes': 'delete_repo, repo, user',
+      },
+      //qs: {},
     };
-    res.locals.providers.push(options);
-    next();
-  });
-  // add my callbacks to the router
-  router.get('/hosting/ghpages/vhost', (req, res, next) => {
-    unifile.readdir(req.session.unifile, 'github', '/')
-      .then(result => {
-        res.json(result
-          .sort((a, b) => new Date(b.modified) - new Date(a.modified))
-          //.slice(0, 10) // max number of repos
-          .map(file => {
-            return {
-              name: file.name,
-              domainUrl: `/hosting/ghpages/vhost/${ file.name }`,
-              skipDomainSelection: false,
-              publicationPath: {
-                //absPath: `/ce/github/get/${ file.name }/gh-pages`,
-                name: 'gh-pages',
-                folder: file.name,
-                path: `${ file.name }/gh-pages`,
-                service: 'github',
-                url: `https://${ req.session.unifile.github.account.login }.github.io/${ file.name }/`,
-              }
-            };
-          })
-        );
-      })
-      .catch(err => {
-        res.status(400).send({
-          message: `Error from hosting provider "Github Pages": ${ err.message }`,
-          err: err,
-        });
-      });
-  });
-  router.get('/hosting/ghpages/vhost/:name', (req, res, next) => {
-    unifile.readFile(req.session.unifile, 'github', `/${ req.params.name }/gh-pages/CNAME`)
-      .then(result => {
-        res.json({
-          domain: result.toString().replace(/\n/g, ''),
-        });
-      })
-      .catch(err => {
-        res.json({
-          //domain: `${ req.session.unifile.github.account.login }.github.io/${ req.params.name }`,
-          domain: '',
-          msg: err,
-        });
-      });
-  });
-  router.post('/hosting/ghpages/vhost/:name', (req, res, next) => {
-    unifile.writeFile(req.session.unifile, 'github', `/${ req.params.name }/gh-pages/CNAME`, req.body.domain)
-      .then(result => {
-        res.json({
-          domain: req.body.domain,
-        });
-      })
-      .catch(err => {
-        res.status(400).send({
-          message: `Error when trying to attach a domain to "${ req.params.id }". Error details: ${ err.message }`,
-          err: err,
-        });
-      });
-  });
-  router.delete('/hosting/ghpages/vhost/:name', (req, res, next) => {
-    function genericDomain() {
-      res.json({
-        domain: `${ req.session.unifile.github.account.login }.github.io/${ req.params.name }`,
-      });
-    }
-    unifile.unlink(req.session.unifile, 'github', `/${ req.params.name }/gh-pages/CNAME`, req.body.domain)
-      .then(result => genericDomain())
-      .catch(err => {
-        if(err.code === 'ENOENT') {
-          // there was no CNAME file
-          genericDomain();
+    request(reqOptions, (err, res, body) => {
+      try {
+        if(err) {
+          console.error('Github pages error', err);
+          reject(err);
         }
         else {
-          res.status(400).send({
-            message: `Error when trying to remove domain from "${ req.params.name }". Error details: ${ err.message }`,
-            err: err,
-          });
+          console.log('Github pages result', body);
+          const result = JSON.parse(body);
+          resolve(result);
         }
-      });
+      }
+      catch(e) {
+        console.error('Github pages error (try/catch)', err);
+        reject(e);
+      }
+    });
   });
-  return router;
+}
+
+module.exports = function(unifile) {
+  this.unifile = unifile;
 };
+
+module.exports.prototype.getOptions = function(session) {
+  const infos = this.unifile.getInfos(session, 'github');
+  return {
+    name: 'ghpages',
+    displayName: 'Github Pages',
+    isLoggedIn: infos.isLoggedIn,
+    username: infos.username,
+    authorizeUrl: '/ce/github/authorize',
+    dashboardUrl: 'https://www.github.com',
+    pleaseCreateAVhost: 'create an empty repository.',
+    vhostsUrl: '/hosting/ghpages/vhost',
+    buyDomainUrl: 'https://www.gandi.net',
+    skipVhostSelection: false,
+    afterPublishMessage: 'Your website is now live.',
+  };
+};
+
+module.exports.prototype.getVhosts = async function(session) {
+  const repos = await (this.unifile.readdir(session, 'github', '/'));
+  return repos
+  .map(file => {
+    return {
+      name: file.name,
+      domainUrl: `/hosting/ghpages/vhost/${ file.name }`,
+      skipDomainSelection: false,
+      publicationPath: {
+        //absPath: `/ce/github/get/${ file.name }/gh-pages`,
+        name: 'gh-pages',
+        folder: file.name,
+        path: `${ file.name }/gh-pages`,
+        service: 'github',
+        url: `https://${ session.github.account.login }.github.io/${ file.name }/`,
+      }
+    };
+  })
+};
+
+module.exports.prototype.getVhostData = async function(session, vhostName) {
+  const owner = session.github.account.login;
+  const path = `/repos/${owner}/${ vhostName }/pages`;
+  return callServer(path, 'GET', session.github.token)
+  .then(result => {
+    return {
+      domain: result.cname,
+      url: result.html_url,
+      status: result.status,
+    };
+  });
+};
+
+module.exports.prototype.setVhostData = async function(session, vhostName, data) {
+  // TODO: use https://developer.github.com/v3/repos/pages/#update-information-about-a-pages-site
+  if(data && data.domain && data.domain != '') {
+    return this.unifile.writeFile(session, 'github', `/${ vhostName }/gh-pages/CNAME`, data.domain)
+    .then(() => setTimeoutPromise(5000))
+    .then(() => this.getVhostData(session, vhostName))
+  }
+  else {
+    // TODO: use https://developer.github.com/v3/repos/pages/#update-information-about-a-pages-site
+    return this.unifile.unlink(session, 'github', `/${ vhostName }/gh-pages/CNAME`)
+    .catch(err => {
+      if(err.code != 'ENOENT') {
+        console.error('Github pages error', err)
+        return Promise.reject(err);
+      }
+      // there was no CNAME file, not a real error
+      return Promise.resolve();
+    })
+    .then(() => setTimeoutPromise(5000))
+    .then(() => this.getVhostData(session, vhostName))
+  }
+};
+
+module.exports.prototype.finalizePublication = function(from, to, session, onStatus) {
+  return setTimeoutPromise(2000)
+  .then(() => {
+    return new Promise((resolve, reject) => {
+      try {
+        const repo = to.path.split('/')[0];
+        const owner = session.github.account.login;
+        const path = `/repos/${owner}/${repo}/pages`;
+        resolve(
+          callServer(path, 'GET', session.github.token)
+          .then(result => {
+            if(result.status) {
+              switch(result.status) {
+                case 'queued':
+                  onStatus('Waiting for Github Pages to start deployment');
+                  return this.finalizePublication(from, to, session, onStatus);
+                  break;
+                case 'building':
+                  onStatus('Deploying to Github Pages');
+                  return this.finalizePublication(from, to, session, onStatus);
+                  break;
+                case 'built':
+                  onStatus('Done, the site is live on Github Pages');
+                  return result.html_url;
+                  break;
+                case 'errored':
+                  onStatus('Github page build error');
+                  throw new Error('Github page build error');
+                  break;
+              }
+            }
+            else {
+              console.error('Unknown Github pages error', result);
+              reject(new Error(result.message || 'Unknown Github Pages error.'));
+            }
+          })
+        );
+      }
+      catch(e) {
+        reject(e);
+      }
+    });
+  });
+}

@@ -308,14 +308,13 @@ silex.model.Head.prototype.setEnableMobile = function(enable) {
     // body is null, this happens while undoing or redoing
     return;
   }
-  let viewport = doc.querySelector('meta[data-silex-viewport]');
+  let viewport = doc.querySelector('meta[name=viewport]');
   if (enable === true) {
     doc.body.classList.add(silex.model.Head.ENABLE_MOBILE_CSS_CLASS);
     if (!viewport) {
       viewport = /** @type {HTMLMetaElement} */ (doc.createElement('meta'));
       viewport.name = 'viewport';
-      viewport.content = 'width=device-width, initial-scale=1, maximum-scale=2.2';
-      viewport.setAttribute('data-silex-viewport', '');
+      viewport.content = 'width=device-width, initial-scale=1';
       doc.head.appendChild(viewport);
     }
   } else {
