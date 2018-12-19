@@ -213,6 +213,7 @@ silex.controller.FileMenuController.prototype.publish = function() {
     return;
   }
   this.tracker.trackAction('controller-events', 'request', 'file.publish', 0);
+  /** @type {silex.view.dialog.PublishDialog} */
   const dialog = new silex.view.dialog.PublishDialog(this.model, this.view);
   dialog.open().then(publishOptions => {
     if(publishOptions) {
@@ -227,13 +228,16 @@ silex.controller.FileMenuController.prototype.publish = function() {
           this.tracker.trackAction('controller-events', 'cancel', 'file.publish', 0);
         }
         else {
-          dialog.publish(finalPublicationOptions)
+          dialog.publish(/** @type {PublicationOptions} */ (finalPublicationOptions))
           .then(msg => {
             this.tracker.trackAction('controller-events', 'success', 'file.publish', 1);
             dialog.close();
             silex.utils.Notification.alert(msg, () => {});
           })
-          .catch(msg => this.publishError(msg));
+          .catch(msg => {
+            dialog.close();
+            this.publishError(msg);
+          });
         }
       });
     }
@@ -245,11 +249,19 @@ silex.controller.FileMenuController.prototype.publish = function() {
 };
 
 
+/**
+ * @param {PublicationOptions} publicationOptions
+ * @param {function(?string, ?string, ?PublicationOptions)} cbk
+ */
 silex.controller.FileMenuController.prototype.doPublish = function(publicationOptions, cbk) {
-  const { publicationPath, provider, vhost } = publicationOptions;
+  const publicationPath = publicationOptions['publicationPath'];
+  const provider = publicationOptions['provider'];
+  const vhost = publicationOptions['vhost'];
+
   // get info about the website file
   const file = this.model.file.getFileInfo();
   const isTemplate = this.model.file.isTemplate;
+
   // save new path when needed and get publication path
   if(publicationPath) this.model.head.setPublicationPath(publicationPath);
   const folder = this.model.head.getPublicationPath();
@@ -260,20 +272,39 @@ silex.controller.FileMenuController.prototype.doPublish = function(publicationOp
     this.view.workspace.redraw(this.view);
     cbk(null, 'I do not know where to publish your site.' +
       'Select a folder in the settings pannel and do "publish" again.' +
-      '\nNow I will open the publish settings.');
+      '\nNow I will open the publish settings.', null);
   }
   // the file must be saved somewhere because all URLs are made relative
   else if (!file || isTemplate) {
     console.error('The file must be saved before I can publish it.');
-    cbk(null, 'The file must be saved before I can publish it.');
+    cbk(null, 'The file must be saved before I can publish it.', null);
   }
   else {
-    cbk(null, null, {
-      file: file,
-      folder: folder,
-      provider: provider,
-      vhost: vhost,
-    });
+    if(!provider) {
+      const providerName = this.model.head.getHostingProvider();
+      if(!providerName) {
+        throw new Error('I need a hosting provider name for this website. And none is configured.');
+      }
+      silex.service.SilexTasks.getInstance().hosting(hosting => {
+        /** @type {Provider} */ const storedProvider = hosting['providers'].find(p => p['name'] === providerName);
+        if(!storedProvider) {
+          silex.utils.Notification.alert(`Unknown provider ${ providerName }. Is it configured on this servier? Here are the hosting providers I know: ${ hosting['providers'].map(p => p['name']).join(', ') }`, () => {});
+          throw new Error(`Unknown provider ${ providerName }. Is it configured on this servier? Here are the hosting providers I know: <ul>${ hosting['providers'].map(p => '<li>' + p['name'] + '</li>').join('') }</ul>`);
+        }
+        cbk(null, null, /** @type {PublicationOptions} */ ({
+          'file': file,
+          'publicationPath': folder,
+          'provider': storedProvider,
+        }));
+      });
+    }
+    else {
+      cbk(null, null, /** @type {PublicationOptions} */ ({
+        'file': file,
+        'publicationPath': folder,
+        'provider': provider,
+      }));
+    }
   }
 };
 

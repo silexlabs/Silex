@@ -160,7 +160,7 @@ module.exports = class DomPublisher {
       this.doc.head.appendChild(scriptTagSrc);
     }
     else {
-      console.warn('no scripts found in head');
+      console.info('no script found in head');
     }
 
     // add head css
