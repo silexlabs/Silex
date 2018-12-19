@@ -61,7 +61,7 @@
     "wysihtml": "^0.6.0-beta1"
   },
   "devDependencies": {
-    "electron": "1.8.4",
+    "electron": "^1.8.8",
     "electron-builder": "^20.28.2",
     "eslint": "4.19.1",
     "pm2": "2.10.2",
