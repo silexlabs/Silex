@@ -70,7 +70,7 @@ module.exports.prototype.getOptions = function(session) {
   };
 };
 
-module.exports.prototype.getVhosts = async (function(session) {
+module.exports.prototype.getVhosts = async function(session) {
   const repos = await (this.unifile.readdir(session, 'github', '/'));
   return repos
   .map(file => {
@@ -88,9 +88,9 @@ module.exports.prototype.getVhosts = async (function(session) {
       }
     };
   })
-});
+};
 
-module.exports.prototype.getVhostData = async (function(session, vhostName) {
+module.exports.prototype.getVhostData = async function(session, vhostName) {
   const owner = session.github.account.login;
   const path = `/repos/${owner}/${ vhostName }/pages`;
   return callServer(path, 'GET', session.github.token)
@@ -101,9 +101,9 @@ module.exports.prototype.getVhostData = async (function(session, vhostName) {
       status: result.status,
     };
   });
-});
+};
 
-module.exports.prototype.setVhostData = async (function(session, vhostName, data) {
+module.exports.prototype.setVhostData = async function(session, vhostName, data) {
   // TODO: use https://developer.github.com/v3/repos/pages/#update-information-about-a-pages-site
   if(data && data.domain && data.domain != '') {
     return this.unifile.writeFile(session, 'github', `/${ vhostName }/gh-pages/CNAME`, data.domain)
@@ -124,7 +124,7 @@ module.exports.prototype.setVhostData = async (function(session, vhostName, data
     .then(() => setTimeoutPromise(5000))
     .then(() => this.getVhostData(session, vhostName))
   }
-});
+};
 
 module.exports.prototype.finalizePublication = function(from, to, session, onStatus) {
   return setTimeoutPromise(2000)
