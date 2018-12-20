@@ -285,18 +285,28 @@ silex.controller.FileMenuController.prototype.doPublish = function(publicationOp
       if(!providerName) {
         throw new Error('I need a hosting provider name for this website. And none is configured.');
       }
-      silex.service.SilexTasks.getInstance().hosting(hosting => {
-        /** @type {Provider} */ const storedProvider = hosting['providers'].find(p => p['name'] === providerName);
-        if(!storedProvider) {
-          silex.utils.Notification.alert(`Unknown provider ${ providerName }. Is it configured on this servier? Here are the hosting providers I know: ${ hosting['providers'].map(p => p['name']).join(', ') }`, () => {});
-          throw new Error(`Unknown provider ${ providerName }. Is it configured on this servier? Here are the hosting providers I know: <ul>${ hosting['providers'].map(p => '<li>' + p['name'] + '</li>').join('') }</ul>`);
-        }
+      else if(providerName === silex.view.dialog.PublishDialog.FOLDER_PROVIDER.name) {
+        // choose a folder
         cbk(null, null, /** @type {PublicationOptions} */ ({
           'file': file,
           'publicationPath': folder,
-          'provider': storedProvider,
+          'provider': silex.view.dialog.PublishDialog.FOLDER_PROVIDER,
         }));
-      });
+      }
+      else {
+        silex.service.SilexTasks.getInstance().hosting(hosting => {
+          /** @type {Provider} */ const storedProvider = hosting['providers'].find(p => p['name'] === providerName);
+          if(!storedProvider) {
+            silex.utils.Notification.alert(`Unknown provider ${ providerName }. Is it configured on this servier? Here are the hosting providers I know: ${ hosting['providers'].map(p => p['name']).join(', ') }`, () => {});
+            throw new Error(`Unknown provider ${ providerName }. Is it configured on this servier? Here are the hosting providers I know: <ul>${ hosting['providers'].map(p => '<li>' + p['name'] + '</li>').join('') }</ul>`);
+          }
+          cbk(null, null, /** @type {PublicationOptions} */ ({
+            'file': file,
+            'publicationPath': folder,
+            'provider': storedProvider,
+          }));
+        });
+      }
     }
     else {
       cbk(null, null, /** @type {PublicationOptions} */ ({

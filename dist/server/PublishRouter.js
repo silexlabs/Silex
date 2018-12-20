@@ -68,7 +68,6 @@ module.exports = function({ port, rootUrl, enableGithubPages, skipProviderSelect
     hostingProvider.getVhosts(req.session.unifile)
     .then(vhosts => {
       res.json(vhosts
-        .sort((a, b) => new Date(b.modified) - new Date(a.modified))
         //.slice(0, 10) // max number of vhosts
       );
     })

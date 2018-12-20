@@ -17,13 +17,25 @@
 
 goog.provide('silex.view.dialog.PublishDialog');
 
-const FOLDER_PROVIDER = 'custom';
-const FOLDER_PROVIDER_DISPLAY_NAME = 'a folder of service ';
-
 /**
  * the PublishDialog class
  */
 silex.view.dialog.PublishDialog = class {
+  static get FOLDER_PROVIDER() {
+    return {
+      name: 'folder',
+      displayName: 'Choose a folder',
+      isLoggedIn: false,
+      authorizeUrl: '',
+      dashboardUrl: '',
+      pleaseCreateAVhost: '',
+      vhostsUrl: '',
+      buyDomainUrl: '',
+      skipVhostSelection: true,
+      afterPublishMessage: '',
+    }
+  }
+
   /**
    * @param  {silex.types.Model} model
    * @param  {silex.types.View} view
@@ -117,7 +129,7 @@ silex.view.dialog.PublishDialog = class {
       silex.utils.Notification.prompt('Choose the hosting provider you love! &nbsp; ' + helpBtnStr, 'unused', ok => {
         if(ok) {
           this.model.head.setHostingProvider(selectEl.value);
-          if(selectEl.value === FOLDER_PROVIDER) {
+          if(selectEl.value === silex.view.dialog.PublishDialog.FOLDER_PROVIDER.name) {
             resolve(this.view.fileExplorer.openFolder()
               .then(folder => {
                 return {
@@ -139,7 +151,7 @@ silex.view.dialog.PublishDialog = class {
       body.innerHTML = `
     <select class="providers">
       ${ providers.map(p => `<option value="${ p.name }">${ p.displayName }</option>`) }
-      <option value="${ FOLDER_PROVIDER }">Choose a folder</option>
+      <option value="${ silex.view.dialog.PublishDialog.FOLDER_PROVIDER.name }">${ silex.view.dialog.PublishDialog.FOLDER_PROVIDER.displayName }</option>
     </select>
     <br />
   `;

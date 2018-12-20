@@ -73,6 +73,7 @@ module.exports.prototype.getOptions = function(session) {
 module.exports.prototype.getVhosts = async function(session) {
   const repos = await (this.unifile.readdir(session, 'github', '/'));
   return repos
+  .sort((a, b) => new Date(b.modified) - new Date(a.modified))
   .map(file => {
     return {
       name: file.name,

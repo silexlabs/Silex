@@ -54,8 +54,6 @@ module.exports = class PublishJob {
    * factory to create a publish job
    */
   static create({ publicationPath, file }, unifile, session, cookies, rootUrl, hostingProvider) {
-    assert(!!hostingProvider, 'hosting provider is null');
-
     // stop other publications from the same user
     session.publicationId = session.publicationId || uuid.v4();
     const id = session.publicationId;
@@ -290,6 +288,9 @@ module.exports = class PublishJob {
     })
     .then(() => {
       if(this.isStopped()) {
+        return Promise.resolve();
+      }
+      if(!this.hostingProvider) {
         return Promise.resolve();
       }
       return this.hostingProvider.finalizePublication(file, this.publicationPath, this.session.unifile, msg => this.setStatus(msg));
