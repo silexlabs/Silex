@@ -65,6 +65,7 @@ module.exports.prototype.getOptions = function(session) {
     pleaseCreateAVhost: 'create an empty repository.',
     vhostsUrl: '/hosting/ghpages/vhost',
     buyDomainUrl: 'https://www.gandi.net',
+    skipFolderSelection: true,
     skipVhostSelection: false,
     afterPublishMessage: 'Your website is now live.',
   };

@@ -17,8 +17,9 @@ const constants = require('./Constants.json');
  * we get it from package.json
  * used for backward compat and for the static files URLs taken from //{{host}}/static/{{Y-Z}}
  */
-const LATEST_VERSION = (require(Path.resolve(__dirname, '../../package.json'))['version:frontend']).split('.');
-console.log('Silex starts with front end version', LATEST_VERSION);
+const FRONT_END_VERSION = (require(Path.resolve(__dirname, '../../package.json'))['version:frontend']).split('.');
+const LATEST_VERSION = (require(Path.resolve(__dirname, '../../package.json'))['version:backwardcompat']).split('.');
+console.log('Silex starts with backward compat version', LATEST_VERSION, 'and front end version', FRONT_END_VERSION);
 
 /**
  * @fileoverview Handle backward compatibility when a user opens a site for edition
@@ -59,21 +60,22 @@ module.exports = class BackwardCompat {
     if (this.amIObsolete(version, LATEST_VERSION)) {
       return Promise.resolve('This website has been saved with a newer version of Silex. Continue at your own risks.');
     }
-    else if (hasToUpdate) {
+    else if (this.hasToUpdate(version, [2,2,7])) {
       return Promise.reject({
         message: 'This website has been saved with an older version of Silex, which is not supported anymore as of March 2018. In order to convert it to a newer version, please go to <a href="https://old.silex.me">old.silex.me</a> to open and then save your website. <a href="https://github.com/silexlabs/Silex/wiki/Website-saved-with-older-version-of-Silex">More about this here</a>',
       });
-      // TODO: will be useful when there is BC again
-      // // convert to the latest version
-      // return this.to2_2_7(version, doc, function() {
-      //  // update the static scripts to match the current server and latest version
-      //  this.updateStatic(doc);
-      //   // store the latest version
-      //   metaNode.setAttribute('content', 'Silex v' + LATEST_VERSION.join('.'));
-      //   // continue
-      //   // needs to reload if silex scripts and stylesheets have been updated
-      // })
-      // .then(() => 'This website has been updated with the latest version of Silex.<br><br>Before you save it, please check that everything is fine. Saving it with another name could be a good idea too (menu file > save as).')
+    }
+    else if (hasToUpdate) {
+      // convert to the latest version
+      return this.to2_2_8(version, doc, function() {
+       // update the static scripts to match the current server and latest version
+       this.updateStatic(doc);
+        // store the latest version
+        metaNode.setAttribute('content', 'Silex v' + LATEST_VERSION.join('.'));
+        // continue
+        // needs to reload if silex scripts and stylesheets have been updated
+      })
+      .then(() => 'This website has been updated with the latest version of Silex.<br><br>Before you save it, please check that everything is fine. Saving it with another name could be a good idea too (menu file > save as).')
     }
     else {
       // update the static scripts to match the current server URL
@@ -123,7 +125,7 @@ module.exports = class BackwardCompat {
       return url;
     }
     const pathRelativeToStatic = pathRelativeToStaticMatch[1];
-    return `${ this.rootUrl }/static/${ LATEST_VERSION[1] }.${ LATEST_VERSION[2] }/${ pathRelativeToStatic }`;
+    return `${ this.rootUrl }/static/${ FRONT_END_VERSION[0] }.${ FRONT_END_VERSION[1] }/${ pathRelativeToStatic }`;
   }
 
 
@@ -158,10 +160,10 @@ module.exports = class BackwardCompat {
    * @param {Document} doc
    * @return {Promise} a Promise
    */
-  to2_2_7(version, doc) {
+  to2_2_8(version, doc) {
     // TODO when there will be BC again
     return new Promise((resolve, reject) => {
-      if (this.hasToUpdate(version, [2, 2, 7])) {
+      if (this.hasToUpdate(version, [2, 2, 8])) {
       }
       resolve();
     });

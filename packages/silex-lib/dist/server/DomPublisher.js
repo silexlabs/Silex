@@ -22,9 +22,10 @@ const constants = require('./Constants.json');
 
 module.exports = class DomPublisher {
 
-  constructor(dom, rootUrl) {
+  constructor(dom, rootUrl, rootPath) {
     this.dom = dom;
     this.rootUrl = rootUrl;
+    this.rootPath = rootPath;
     this.doc = dom.window.document;
   }
 
@@ -100,7 +101,62 @@ module.exports = class DomPublisher {
     }
   }
 
-  split(baseUrl) {
+  split() {
+    // remove unused scripts when there is no deeplink navigation anymore
+    ['js/jquery-ui.js', 'js/pageable.js']
+    .map(path => this.doc.querySelector(`script[src="${ path }"]`))
+    .filter(el => !!el) // when not updated yet to the latest version, the URLs are not relative
+    .forEach(el => el.parentNode.removeChild(el))
+    // split in multiple pages
+    var firstPageName;
+    return Array.from(this.doc.querySelectorAll('a[data-silex-type="page"]'))
+    .map((el, idx) => {
+      if(idx === 0) firstPageName = el.getAttribute('id');
+      return  {
+        name: el.getAttribute('id'),
+        displayName: el.innerHTML,
+        fileName: idx === 0 ? 'index.html' : (el.getAttribute('id').substr('page-'.length) + '.html'),
+      };
+    })
+    .map(({displayName, name, fileName}) => {
+      // clone the document
+      const clone = this.doc.cloneNode(true);
+      // update title (TODO: description and SEO)
+      (clone.head.querySelector('title') || {}).innerHTML += ' - ' + displayName;
+      // remove elements from other pages
+      Array.from(clone.querySelectorAll('.paged-element'))
+      .forEach(el => {
+        if(el.classList.contains(name)) {
+          el.classList.add('page-link-active');
+        }
+        else {
+          el.parentNode.removeChild(el);
+        }
+      })
+      // update links
+      Array.from(clone.querySelectorAll('a'))
+      .filter(el => el.hash.startsWith('#!'))
+      .forEach(el => {
+        const [pageName, anchor] = el.hash.substr('#!'.length).split('#');
+        el.href = (pageName === firstPageName ? 'index.html' : pageName.substr('page-'.length) + '.html') + (anchor ? '#' + anchor : '');
+        if(pageName ===  name) {
+          el.classList.add('page-link-active');
+        }
+        else {
+          el.classList.remove('page-link-active'); // set when you save the file
+        }
+      })
+      // create a unifile batch action
+      return {
+        name: 'writefile',
+        path: this.rootPath + '/' + fileName,
+        displayName: fileName,
+        content: clone.documentElement.innerHTML,
+      }
+    })
+  }
+
+  extractAssets(baseUrl) {
     // all scripts, styles and assets from head => local
     const actions = [];
     DomTools.transformPaths(this.dom, (path, el, isInHead) => {
