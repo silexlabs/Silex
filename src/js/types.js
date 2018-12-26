@@ -70,6 +70,7 @@ var Hosting;
  *   vhostsUrl: string,
  *   buyDomainUrl: string,
  *   skipVhostSelection: boolean,
+ *   skipFolderSelection: boolean,
  *   afterPublishMessage: string,
  * }}
  */

@@ -17,13 +17,11 @@
 
 goog.provide('silex.view.dialog.PublishDialog');
 
-const FOLDER_PROVIDER = 'custom';
-const FOLDER_PROVIDER_DISPLAY_NAME = 'a folder of service ';
-
 /**
  * the PublishDialog class
  */
 silex.view.dialog.PublishDialog = class {
+
   /**
    * @param  {silex.types.Model} model
    * @param  {silex.types.View} view
@@ -117,20 +115,17 @@ silex.view.dialog.PublishDialog = class {
       silex.utils.Notification.prompt('Choose the hosting provider you love! &nbsp; ' + helpBtnStr, 'unused', ok => {
         if(ok) {
           this.model.head.setHostingProvider(selectEl.value);
-          if(selectEl.value === FOLDER_PROVIDER) {
-            resolve(this.view.fileExplorer.openFolder()
-              .then(folder => {
-                return {
-                  'publicationPath': folder,
-                  'provider': null,
-                  'vhost': null,
-                }
-              }));
+          const idx = selectEl.selectedIndex;
+          const provider = providers[idx];
+          if(provider.skipFolderSelection) {
+            resolve(this.onSelectProvider(provider));
           }
           else {
-            const idx = selectEl.selectedIndex;
-            const provider = providers[idx];
-            resolve(this.onSelectProvider(provider));
+            this.view.fileExplorer.openFolder()
+            .then(folder => {
+              this.model.head.setPublicationPath(folder);
+              resolve(this.onSelectProvider(provider));
+            })
           }
         }
         else resolve(null);
@@ -139,7 +134,6 @@ silex.view.dialog.PublishDialog = class {
       body.innerHTML = `
     <select class="providers">
       ${ providers.map(p => `<option value="${ p.name }">${ p.displayName }</option>`) }
-      <option value="${ FOLDER_PROVIDER }">Choose a folder</option>
     </select>
     <br />
   `;
@@ -179,41 +173,43 @@ silex.view.dialog.PublishDialog = class {
   selectVhost(provider) {
     return new Promise((resolve, reject) => {
       this.loading(true);
-      this.service.vhosts(provider, vhosts => {
-        this.loading(false);
-        if(vhosts.length === 0) {
-          silex.utils.Notification.alert(`Please click here to
-            <a href="${ provider['dashboardUrl'] }" target="_blank">
-              ${ provider['pleaseCreateAVhost'] }
-            </a>
-          `, () => {
-            resolve(this.selectVhost(provider));
-          }, 'Check again');
-        }
-        else if(provider['skipVhostSelection'] === true) {
-          console.log('Skip vhost selection for provider:', provider, vhosts);
-          resolve(this.selectDomain(provider, vhosts[0]));
-        }
-        else {
-          silex.utils.Notification.prompt('Choose the website you are working on', 'unused', ok => {
-            if(ok) {
-              const idx = selectEl.selectedIndex;
-              const vhost = vhosts[idx];
-              resolve(this.selectDomain(provider, vhost));
-            }
-          }, 'next', 'cancel');
-          const body = silex.utils.Notification.getFormBody();
-          body.innerHTML = `
-        <select class="vhosts">
-          ${ vhosts.map(v => `<option value="${ v.name }">${ v.name }</option>`) }
-        </select>
-        <br />
-      `;
-          const selectEl = body.querySelector('.vhosts');
-          const publicationPath = this.model.head.getPublicationPath();
-          if(publicationPath) selectEl.value = publicationPath.folder;
-        }
-      }, msg => reject(msg));
+      if(provider['skipVhostSelection'] === true) {
+        console.log('Skip vhost selection for provider:', provider);
+        resolve({});
+      }
+      else {
+        this.service.vhosts(provider, vhosts => {
+          this.loading(false);
+          if(vhosts.length === 0) {
+            silex.utils.Notification.alert(`Please click here to
+              <a href="${ provider['dashboardUrl'] }" target="_blank">
+                ${ provider['pleaseCreateAVhost'] }
+              </a>
+            `, () => {
+              resolve(this.selectVhost(provider));
+            }, 'Check again');
+          }
+          else {
+            silex.utils.Notification.prompt('Choose the website you are working on', 'unused', ok => {
+              if(ok) {
+                const idx = selectEl.selectedIndex;
+                const vhost = vhosts[idx];
+                resolve(this.selectDomain(provider, vhost));
+              }
+            }, 'next', 'cancel');
+            const body = silex.utils.Notification.getFormBody();
+            body.innerHTML = `
+          <select class="vhosts">
+            ${ vhosts.map(v => `<option value="${ v.name }">${ v.name }</option>`) }
+          </select>
+          <br />
+        `;
+            const selectEl = body.querySelector('.vhosts');
+            const publicationPath = this.model.head.getPublicationPath();
+            if(publicationPath) selectEl.value = publicationPath.folder;
+          }
+        }, msg => reject(msg));
+      }
     });
   }
 
