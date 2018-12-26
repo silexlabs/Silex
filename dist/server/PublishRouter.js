@@ -10,14 +10,19 @@
 //////////////////////////////////////////////////
 
 const PublishJob = require('./PublishJob.js');
-const HostingGhPages = require('./HostingGhPages.js');
 const express = require('express');
 const hostingProviders = [];
 const router = express.Router();
 
-module.exports = function({ port, rootUrl, enableGithubPages, skipProviderSelection }, unifile) {
+module.exports = function({ port, rootUrl, enableHostingGhPages, enableHostingUnifile, skipProviderSelection }, unifile) {
+  if(enableHostingUnifile) {
+    const HostingUnifile = require('./HostingUnifile.js');
+    const hostingUnifile = new HostingUnifile(unifile);
+    this.addHostingProvider(hostingUnifile);
+  }
 
-  if(enableGithubPages) {
+  if(enableHostingGhPages) {
+    const HostingGhPages = require('./HostingGhPages.js');
     const hostingGhPages = new HostingGhPages(unifile);
     this.addHostingProvider(hostingGhPages);
   }
@@ -126,12 +131,13 @@ module.exports = function({ port, rootUrl, enableGithubPages, skipProviderSelect
 };
 
 module.exports.prototype.addHostingProvider = function(hostingProvider) {
+  console.log('adding hosting provider', hostingProvider.getOptions({}).displayName);
   hostingProviders.push(hostingProvider);
 };
 
 module.exports.prototype.getHostingProviderFromReq = function(req) {
   const hostingProviderName = req.params.hostingProviderName;
-  const hostingProvider = this.getHostingProvider(req.session.unifile, hostingProviderName)
+  const hostingProvider = this.getHostingProvider(req.session.unifile, hostingProviderName);
   if(!hostingProvider) throw('could not find the hosting provider ' + hostingProviderName);
   return hostingProvider;
 };

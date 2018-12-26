@@ -48,7 +48,8 @@ const publisherOptions = {
   rootUrl: serverOptions.rootUrl,
   port: serverOptions.port,
   skipProviderSelection: false,
-  enableGithubPages: true,
+  enableHostingGhPages: true,
+  enableHostingUnifile: true,
 }
 
 const exported = function() {};

@@ -14,7 +14,7 @@
 const { SilexServer, DefaultConfig } = require('./index');
 const config = new DefaultConfig();
 // here you can change config,
-// e.g. use config.publishRouterOptions.enableGithubPages
+// e.g. use config.publishRouterOptions.enableHostingGhPages
 const silex = new SilexServer(config);
 // here you can change routers,
 // e.g. add unifile services `silex.unifile.use(unifileConnector)`
