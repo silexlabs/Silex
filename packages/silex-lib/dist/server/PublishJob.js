@@ -54,8 +54,6 @@ module.exports = class PublishJob {
    * factory to create a publish job
    */
   static create({ publicationPath, file }, unifile, session, cookies, rootUrl, hostingProvider) {
-    assert(!!hostingProvider, 'hosting provider is null');
-
     // stop other publications from the same user
     session.publicationId = session.publicationId || uuid.v4();
     const id = session.publicationId;
@@ -104,11 +102,9 @@ module.exports = class PublishJob {
     this.error = false;
     this.filesNotDownloaded = [];
     this.setStatus('In progress.');
-    // this.tmpFolder = Path.resolve(TMP_FOLDER, `publication_${this.id}`);
 
     // files and folders paths
     this.rootPath = this.publicationPath.path;
-    this.indexFile = this.rootPath + '/index.html';
     this.cssFolder = this.rootPath + '/css';
     this.jsFolder = this.rootPath + '/js';
     this.assetsFolder = this.rootPath + '/assets';
@@ -142,7 +138,6 @@ module.exports = class PublishJob {
     // console.info('PublishJob cleanup, will ask to be deleted in 60s', this.id);
     if(this.pleaseDeleteMe) console.error('PublishJob was already marked for deletion', this.id);
     else {
-      if(this.dom) this.dom.window.close();
       setTimeout(() => {
         // console.log('PublishJob cleanup, now asking to be deleted', this.id);
         this.pleaseDeleteMe = true;
@@ -157,57 +152,12 @@ module.exports = class PublishJob {
   }
 
   /**
-   * the method called to publish a website and serve it for 24h
-   * @param {?string=} file to download and publish
-   */
-  // share(file) {
-  //   if(this.isStopped()) {
-  //     return;
-  //   }
-
-  //   // create temp folder
-  //   this.setStatus(`Creating temp folder`);
-  //   fs.existsAsync(this.tmpFolder)
-  //   .catch(() => {
-  //     return true;
-  //   })
-  //   .then(exists => {
-  //     if(exists) return Promise.resolve();
-  //     else return fs.mkdirAsync(this.tmpFolder)
-  //   })
-  //   .catch(err => {
-  //     console.error('Publication error, could not create temp folder', err.message);
-  //   })
-
-  //   // download file
-  //   .then(() => {
-  //     this.setStatus(`Downloading website ${file.name}`);
-  //     return this.unifile.readFile(this.session.unifile, file.service, file.path)
-  //   })
-  //   .catch(err => {
-  //     console.error('Publication error, could not download file', err.message);
-  //   })
-
-  //   // build folders tree
-  //   .then(buffer => {
-  //     console.log('file downloaded', buffer.toString());
-  //     console.log('write', this.tmpFolder);
-  //     return fs.writeFileAsync(this.tmpFolder + '/index.html')
-  //   })
-  //   .catch(err => {
-  //     console.error('Publication error, could not download file', err.message);
-  //   })
-  //   .then(() => {
-  //     console.log('Done.');
-  //   })
-  // }
-
-  /**
    * the method called to publish a website to a location
    * @param {?string=} file to download and publish
    */
   publish(file) {
     if(this.isStopped()) {
+      console.warn('job is stopped', this.error, this.abort, this.success);
       return;
     }
 
@@ -223,51 +173,38 @@ module.exports = class PublishJob {
     // build folders tree
     .then(buffer => {
       if(this.isStopped()) {
+        console.warn('job is stopped', this.error, this.abort, this.success);
         return;
       }
       this.setStatus(`Splitting file ${file.name}`);
       const url = new URL(file.url);
       const baseUrl = new URL(url.origin + Path.dirname(url.pathname) + '/');
-      this.dom = new JSDOM(buffer.toString('utf-8'), { url: baseUrl.href });
-      const domPublisher = new DomPublisher(this.dom, this.rootUrl);
+      const dom = new JSDOM(buffer.toString('utf-8'), { url: baseUrl.href });
+      const domPublisher = new DomPublisher(dom, this.rootUrl, this.rootPath);
+      // remove classes used by Silex during edition
       domPublisher.cleanup();
-      this.tree = domPublisher.split(baseUrl);
+      // rewrite URLs and extract assets
+      this.tree = domPublisher.extractAssets(baseUrl);
+      // hide website before styles.css is loaded
+      dom.window.document.head.innerHTML += '<style>body { opacity: 0; transition: .25s opacity ease; }</style>';
+      // split into pages
+      this.pageActions = domPublisher.split();
+      // release the dom object
+      dom.window.close();
     })
     .catch(err => {
-      console.error('Publication error, could not split file:', err.message);
+      console.error('Publication error, could not extract assets from file:', err.message);
       this.error = true;
       this.setStatus(err.message);
     })
-
     // download all assets
     // check existing folder structure
     .then(() => {
       if(this.isStopped()) {
-        return;
+        console.warn('job is stopped', this.error, this.abort, this.success);
+        return [];
       }
       return this.readOperations();
-      // const total = this.tree.actions.length;
-      // let downloaded = 0;
-      // this.setStatus(`Downloading ${total} files for ${file.name}`);
-      // console.log('tree:', this.tree);
-      // return Promise.all(
-      //   this.tree.actions.map(action => {
-      //     console.log('download start', action.displayName);
-      //     return this.unifile.readFile(this.session.unifile, action.src.service, action.src.path)
-      //     .then(buffer => {
-      //       console.log('download end', action.displayName);
-      //       downloaded++;
-      //       this.setStatus(`Downloading ${downloaded}/${total} files for ${file.name}`);
-      //       console.log('download ok', action.src);
-      //       action.buffer = buffer
-      //       return action;
-      //     })
-      //     .catch(err => {
-      //       console.warn('could not download file', action, err);
-      //       return Promise.resolve(action);
-      //     })
-      //   })
-      // )
     })
     .catch(err => {
       // FIXME: will never go through here
@@ -275,10 +212,10 @@ module.exports = class PublishJob {
       this.error = true;
       this.setStatus(err.message);
     })
-
     // write and upload all files in a batch operation
     .then(([statRoot, statCss, statJs, statAssets, ...assets]) => {
       if(this.isStopped()) {
+        console.warn('job is stopped', this.error, this.abort, this.success);
         return;
       }
       return this.writeOperations(statRoot, statCss, statJs, statAssets, ...assets)
@@ -290,6 +227,10 @@ module.exports = class PublishJob {
     })
     .then(() => {
       if(this.isStopped()) {
+        console.warn('job is stopped', this.error, this.abort, this.success);
+        return Promise.resolve();
+      }
+      if(!this.hostingProvider) {
         return Promise.resolve();
       }
       return this.hostingProvider.finalizePublication(file, this.publicationPath, this.session.unifile, msg => this.setStatus(msg));
@@ -297,6 +238,7 @@ module.exports = class PublishJob {
     // all operations done
     .then(() => {
       if(this.isStopped()) {
+        console.warn('job is stopped', this.error, this.abort, this.success);
         return;
       }
       console.log('Publication done with success');
@@ -332,9 +274,8 @@ module.exports = class PublishJob {
   }
 
   writeOperations(statRoot, statCss, statJs, statAssets, ...assets) {
-    this.setStatus(`Creating files <ul><li>${this.indexFile}</li><li>${this.cssFile}</li><li>${this.jsFile}</li></ul>And uploading ${ assets.length } images.`);
-    // hide website before styles.css is loaded
-    this.dom.window.document.head.innerHTML += '<style>body { opacity: 0; transition: .25s opacity ease; }</style>';
+    // build the batch actions
+    this.setStatus(`Creating files <ul>${this.pageActions.map(action => '<li>' + action.displayName + '</li>').join('')}<li>${this.cssFile}</li><li>${this.jsFile}</li></ul>And uploading ${ assets.length } images.`);
     // create an object to describe a batch of actions
     const batchActions = [];
     if(!statRoot) {
@@ -343,11 +284,13 @@ module.exports = class PublishJob {
         path: this.rootPath,
       });
     }
-    batchActions.push({
-      name: 'writefile',
-      path: this.indexFile,
-      content: this.dom.serialize(),
-    });
+    // batchActions.push({
+    //   name: 'writefile',
+    //   path: this.indexFile,
+    //   content: this.dom.serialize(),
+    // });
+    batchActions.push(...this.pageActions);
+
     if(!statCss) {
       batchActions.push({
         name: 'mkdir',
@@ -405,6 +348,7 @@ module.exports = class PublishJob {
       return () => {
         return new Promise((resolve, reject) => {
           if(this.isStopped()) {
+            console.warn('job is stopped', this.error, this.abort, this.success);
             resolve();
             return;
           }
