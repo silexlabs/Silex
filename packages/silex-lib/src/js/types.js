@@ -54,7 +54,7 @@ var Font;
 /**
  * @typedef {{
  *   providers:Array<Provider>,
- *   skipProviderSelection: boolean,
+ *   skipHostingSelection: boolean,
  * }}
  */
 var Hosting;
