@@ -9,9 +9,11 @@
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
 
-const express = require('express');
 const request = require('request');
 
+//////////////////////////////
+// Utils
+//////////////////////////////
 function setTimeoutPromise(time) {
   return new Promise((resolve) => setTimeout(() => resolve(), time));
 }
@@ -49,9 +51,70 @@ function callServer(path, method, token) {
   });
 }
 
+//////////////////////////////
+// Exported class
+//////////////////////////////
+
 module.exports = function(unifile) {
   this.unifile = unifile;
 };
+
+//////////////////////////////
+// Publication "hooks"
+//////////////////////////////
+
+module.exports.prototype.getDefaultPageFileName = function() {
+  return 'index.html';
+};
+
+module.exports.prototype.finalizePublication = function(from, to, session, onStatus) {
+  return setTimeoutPromise(2000)
+  .then(() => {
+    return new Promise((resolve, reject) => {
+      try {
+        const repo = to.path.split('/')[0];
+        const owner = session.github.account.login;
+        const path = `/repos/${owner}/${repo}/pages`;
+        resolve(
+          callServer(path, 'GET', session.github.token)
+          .then(result => {
+            if(result.status) {
+              switch(result.status) {
+                case 'queued':
+                  onStatus('Waiting for Github Pages to start deployment');
+                  return this.finalizePublication(from, to, session, onStatus);
+                  break;
+                case 'building':
+                  onStatus('Deploying to Github Pages');
+                  return this.finalizePublication(from, to, session, onStatus);
+                  break;
+                case 'built':
+                  onStatus('Done, the site is live on Github Pages');
+                  return result.html_url;
+                  break;
+                case 'errored':
+                  onStatus('Github page build error');
+                  throw new Error('Github page build error');
+                  break;
+              }
+            }
+            else {
+              console.error('Unknown Github pages error', result);
+              reject(new Error(result.message || 'Unknown Github Pages error.'));
+            }
+          })
+        );
+      }
+      catch(e) {
+        reject(e);
+      }
+    });
+  });
+}
+
+//////////////////////////////
+// Front end exposed methods
+//////////////////////////////
 
 module.exports.prototype.getOptions = function(session) {
   const infos = this.unifile.getInfos(session, 'github');
@@ -127,48 +190,3 @@ module.exports.prototype.setVhostData = async function(session, vhostName, data)
     .then(() => this.getVhostData(session, vhostName))
   }
 };
-
-module.exports.prototype.finalizePublication = function(from, to, session, onStatus) {
-  return setTimeoutPromise(2000)
-  .then(() => {
-    return new Promise((resolve, reject) => {
-      try {
-        const repo = to.path.split('/')[0];
-        const owner = session.github.account.login;
-        const path = `/repos/${owner}/${repo}/pages`;
-        resolve(
-          callServer(path, 'GET', session.github.token)
-          .then(result => {
-            if(result.status) {
-              switch(result.status) {
-                case 'queued':
-                  onStatus('Waiting for Github Pages to start deployment');
-                  return this.finalizePublication(from, to, session, onStatus);
-                  break;
-                case 'building':
-                  onStatus('Deploying to Github Pages');
-                  return this.finalizePublication(from, to, session, onStatus);
-                  break;
-                case 'built':
-                  onStatus('Done, the site is live on Github Pages');
-                  return result.html_url;
-                  break;
-                case 'errored':
-                  onStatus('Github page build error');
-                  throw new Error('Github page build error');
-                  break;
-              }
-            }
-            else {
-              console.error('Unknown Github pages error', result);
-              reject(new Error(result.message || 'Unknown Github Pages error.'));
-            }
-          })
-        );
-      }
-      catch(e) {
-        reject(e);
-      }
-    });
-  });
-}

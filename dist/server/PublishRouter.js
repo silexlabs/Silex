@@ -14,7 +14,7 @@ const express = require('express');
 const hostingProviders = [];
 const router = express.Router();
 
-module.exports = function({ port, rootUrl, enableHostingGhPages, enableHostingUnifile, skipProviderSelection }, unifile) {
+module.exports = function({ port, rootUrl, enableHostingGhPages, enableHostingUnifile, enableHostingJekyll, skipProviderSelection }, unifile) {
   if(enableHostingUnifile) {
     const HostingUnifile = require('./HostingUnifile.js');
     const hostingUnifile = new HostingUnifile(unifile);
@@ -27,7 +27,13 @@ module.exports = function({ port, rootUrl, enableHostingGhPages, enableHostingUn
     this.addHostingProvider(hostingGhPages);
   }
 
-  // **
+  if(enableHostingJekyll) {
+    const HostingJekyll = require('./HostingJekyll.js');
+    const hostingJekyll = new HostingJekyll(unifile);
+    this.addHostingProvider(hostingJekyll);
+  }
+
+    // **
   // publication tasks
   router.post('/tasks/publish', (req, res, next) => {
     if(!req.body.provider || !req.body.provider.name) {
