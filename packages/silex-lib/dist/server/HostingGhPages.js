@@ -10,6 +10,7 @@
 //////////////////////////////////////////////////
 
 const request = require('request');
+const assert = require('assert');
 
 //////////////////////////////
 // Utils
@@ -57,6 +58,10 @@ function callServer(path, method, token) {
 
 module.exports = function(unifile) {
   this.unifile = unifile;
+  assert(
+    this.unifile.listConnectors().find(connectorName => connectorName === 'github'),
+    'Error: the Github service is required in order to activate the Github Pages hosting provider. You need to enable Github in unifile config, or disable Github Pages hosting provider (env var ENABLE_GITHUB_PAGES)'
+  );
 };
 
 //////////////////////////////
