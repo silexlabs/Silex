@@ -22,10 +22,11 @@ const constants = require('./Constants.json');
 
 module.exports = class DomPublisher {
 
-  constructor(dom, rootUrl, rootPath) {
+  constructor(dom, rootUrl, rootPath, getDestFolder) {
     this.dom = dom;
     this.rootUrl = rootUrl;
     this.rootPath = rootPath;
+    this.getDestFolder = getDestFolder;
     this.doc = dom.window.document;
   }
 
@@ -79,43 +80,21 @@ module.exports = class DomPublisher {
     }
   }
 
-  getDestFolder(ext, tagName) {
-    // tags
-    if(tagName) {
-      switch(tagName.toLowerCase()) {
-        case 'script':
-          return 'js';
-        case 'link':
-          return 'css';
-        case 'img':
-        case 'source':
-        case 'video':
-          return 'assets';
-      }
-      // could be an iframe
-      return null;
-    }
-    // css url()
-    else  {
-      return 'assets';
-    }
-  }
-
-  split() {
+  split(newFirstPageName) {
     // remove unused scripts when there is no deeplink navigation anymore
     ['js/jquery-ui.js', 'js/pageable.js']
     .map(path => this.doc.querySelector(`script[src="${ path }"]`))
     .filter(el => !!el) // when not updated yet to the latest version, the URLs are not relative
     .forEach(el => el.parentNode.removeChild(el))
     // split in multiple pages
-    var firstPageName;
-    return Array.from(this.doc.querySelectorAll('a[data-silex-type="page"]'))
+    const pages = Array.from(this.doc.querySelectorAll('a[data-silex-type="page"]'));
+    const initialFirstPageName = pages[0];
+    return pages
     .map((el, idx) => {
-      if(idx === 0) firstPageName = el.getAttribute('id');
       return  {
         name: el.getAttribute('id'),
         displayName: el.innerHTML,
-        fileName: idx === 0 ? 'index.html' : (el.getAttribute('id').substr('page-'.length) + '.html'),
+        fileName: el.getAttribute('id') === initialFirstPageName && newFirstPageName ? 'index.html' : (el.getAttribute('id').substr('page-'.length) + '.html'),
       };
     })
     .map(({displayName, name, fileName}) => {
@@ -138,7 +117,7 @@ module.exports = class DomPublisher {
       .filter(el => el.hash.startsWith('#!'))
       .forEach(el => {
         const [pageName, anchor] = el.hash.substr('#!'.length).split('#');
-        el.href = (pageName === firstPageName ? 'index.html' : pageName.substr('page-'.length) + '.html') + (anchor ? '#' + anchor : '');
+        el.href = (pageName === initialFirstPageName && newFirstPageName ? 'index.html' : pageName.substr('page-'.length) + '.html') + (anchor ? '#' + anchor : '');
         if(pageName ===  name) {
           el.classList.add('page-link-active');
         }
@@ -149,9 +128,9 @@ module.exports = class DomPublisher {
       // create a unifile batch action
       return {
         name: 'writefile',
-        path: this.rootPath + '/' + fileName,
+        path: this.rootPath + '/' + this.getDestFolder('.html', null) + '/' + fileName,
         displayName: fileName,
-        content: clone.documentElement.innerHTML,
+        content: '<!doctype html>' + clone.documentElement.outerHTML,
       }
     })
   }
@@ -177,7 +156,7 @@ module.exports = class DomPublisher {
           actions.push({
             original: path,
             srcPath: url.href,
-            destPath: destPath,
+            destPath: this.rootPath + '/' + destPath,
             tagName: tagName,
             displayName: fileName,
           });
@@ -266,12 +245,11 @@ module.exports = class DomPublisher {
 
     this.doc.body.classList.add('silex-published');
 
-    const res = {
+    return {
       scriptTags: scriptTags,
       styleTags: styleTags,
       actions: actions,
     };
-    return res;
   }
 
 
