@@ -1,6 +1,6 @@
 {
   "name": "Silex",
-  "description": "Free and easy website builder for everyone.",
+  "description": "Hackable website builder",
   "logo": "https://user-images.githubusercontent.com/715377/45088401-2944d900-b109-11e8-8bae-54cf87724de9.png",
   "repository":"https://github.com/silexlabs/Silex.git",
 	"buildpacks": [
@@ -33,7 +33,7 @@
       "required": false
     },
     "ENABLE_SFTP": {
-      "description": "[Optional] Set this value to 'true' if you want your users to be able to use SFTP to open/save/publish. Leave blank to disable.",
+      "description": "[Optional, default is 'true'] Set this value to 'false' if you do not want your users to be able to use SFTP to open/save/publish. Leave blank to disable.",
       "required": false
     },
     "ENABLE_WEBDAV": {
@@ -46,6 +46,22 @@
     },
     "DROPBOX_CLIENT_SECRET": {
       "description": "[Optional] Dropbox app secret. Set this value if you want your users to be able to open/save/publish to their Dropbox account. Leave blank to disable. You will need to <a href='https://www.dropbox.com/developers/apps'>create an app here</a> with a 'Redirect URIs' set to the URL of your new Silex instance on heroku + '/ce/dropbox/oauth_callback'. E.g. 'http://app-name.herokuapp.com/ce/dropbox/oauth_callback'",
+      "required": false
+    },
+    "SKIP_HOSTING_SELECTION": {
+      "description": "[Optional] Skip the hosting selection dialog. This is a publication setting. Set this value to true if you want the user to be forced to publish in the first hosting provider you enable. This is useful when you provide hosting to your users.",
+      "required": false
+    },
+    "ENABLE_HOSTING_GH_PAGES": {
+      "description": "[Optional] Enable Github Pages hosting provider. This is a publication setting. Set this value to true if you want your users to be able to publish to <a href='https://pages.github.com/'>Github Pages</a>.",
+      "required": false
+    },
+    "ENABLE_HOSTING_UNIFILE": {
+      "description": "[Optional, default is 'true'] Enable the user to select a folder to publish to. This is a publication setting. Set this value to false if you do not want your users to be able to manually select a folder when they try to publsh a website.",
+      "required": false
+    },
+    "ENABLE_HOSTING_JEKYLL": {
+      "description": "[Optional] Enable Jekyll hosting provider. This is a publication setting. Set this value to true if you want the user to be able to publish their website as a template for a <a href='https://jekyllrb.com/'>Jekyll website</a>",
       "required": false
     }
 	},

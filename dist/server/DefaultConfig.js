@@ -11,6 +11,7 @@
 
 // server options
 const serverOptions = {};
+serverOptions.debug = process.env.SILEX_DEBUG === 'true';
 serverOptions.port = process.env.PORT || 6805; // 6805 is the date of sexual revolution started in paris france 8-)
 serverOptions.rootUrl = process.env.SERVER_URL || `http://localhost:${serverOptions.port}`;
 serverOptions.sessionSecret = process.env.SILEX_SESSION_SECRET || 'test session secret';
@@ -18,13 +19,13 @@ serverOptions.cePath = '/ce';
 
 // electron app
 const electronOptions = {
-  enabled: process.env.SILEX_ELECTRON || false,
+  enabled: process.env.SILEX_ELECTRON  === 'true',
 }
 
 // SSL options
 const sslOptions = {
-  forceHttps: process.env.SILEX_FORCE_HTTPS,
-  trustXFPHeader: process.env.SILEX_FORCE_HTTPS_TRUST_XFP_HEADER,
+  forceHttps: process.env.SILEX_FORCE_HTTPS === 'true',
+  trustXFPHeader: process.env.SILEX_FORCE_HTTPS_TRUST_XFP_HEADER === 'true',
   privateKey: process.env.SILEX_SSL_PRIVATE_KEY,
   certificate: process.env.SILEX_SSL_CERTIFICATE,
   sslPort: process.env.SSL_PORT || 443,
@@ -32,14 +33,14 @@ const sslOptions = {
 
 // cloud explorer options
 const ceOptions = {
-  enableFtp: process.env.ENABLE_FTP,
-  enableSftp: process.env.ENABLE_SFTP,
-  enableWebdav: process.env.ENABLE_WEBDAV,
+  enableFtp: process.env.ENABLE_FTP === 'true',
+  enableSftp: process.env.ENABLE_SFTP != 'false', // true by default
+  enableWebdav: process.env.ENABLE_WEBDAV === 'true',
   githubClientId: process.env.GITHUB_CLIENT_ID,
   githubClientSecret: process.env.GITHUB_CLIENT_SECRET,
   dropboxClientId: process.env.DROPBOX_CLIENT_ID,
   dropboxClientSecret: process.env.DROPBOX_CLIENT_SECRET,
-  enableFs: process.env.SILEX_DEBUG || process.env.SILEX_ELECTRON || process.env.ENABLE_FS,
+  enableFs: serverOptions.debug || electronOptions.enabled || process.env.ENABLE_FS === 'true',
   fsRoot: process.env.FS_ROOT,
   rootUrl: serverOptions.rootUrl + serverOptions.cePath,
 };
@@ -47,10 +48,10 @@ const ceOptions = {
 const publisherOptions = {
   rootUrl: serverOptions.rootUrl,
   port: serverOptions.port,
-  skipProviderSelection: false,
-  enableHostingGhPages: true,
-  enableHostingUnifile: true,
-  enableHostingJekyll: false, // beta
+  skipHostingSelection: process.env.SKIP_HOSTING_SELECTION === 'true',
+  enableHostingGhPages: process.env.ENABLE_HOSTING_GH_PAGES === 'true',
+  enableHostingUnifile: process.env.ENABLE_HOSTING_UNIFILE != 'false', // true by default
+  enableHostingJekyll: process.env.ENABLE_HOSTING_JEKYLL === 'true',
 }
 
 const exported = function() {};

@@ -14,7 +14,7 @@ const express = require('express');
 const hostingProviders = [];
 const router = express.Router();
 
-module.exports = function({ port, rootUrl, enableHostingGhPages, enableHostingUnifile, enableHostingJekyll, skipProviderSelection }, unifile) {
+module.exports = function({ port, rootUrl, enableHostingGhPages, enableHostingUnifile, enableHostingJekyll, skipHostingSelection }, unifile) {
   if(enableHostingUnifile) {
     const HostingUnifile = require('./HostingUnifile.js');
     const hostingUnifile = new HostingUnifile(unifile);
@@ -68,7 +68,7 @@ module.exports = function({ port, rootUrl, enableHostingGhPages, enableHostingUn
     const session = !!req.session && !!req.session.unifile ? req.session.unifile : {};
     res.json({
       providers: hostingProviders.map(hostingProvider => hostingProvider.getOptions(session)),
-      skipProviderSelection: skipProviderSelection,
+      skipHostingSelection: skipHostingSelection,
     });
   });
 
