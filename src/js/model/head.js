@@ -82,6 +82,7 @@ silex.model.Head.prototype.updateFromDom = function() {
   this.setDescriptionSocial(this.getDescriptionSocial());
   this.setTitleSocial(this.getTitleSocial());
   this.setTitle(this.getTitle());
+  this.setLang(this.getLang());
   this.setEnableMobile(this.getEnableMobile());
   this.setWebsiteWidth(this.getWebsiteWidth());
   // update text editor with the website custom styles and script
@@ -430,6 +431,26 @@ silex.model.Head.prototype.setTitle = function(name) {
   titleNode.innerHTML = name || '';
   // update view
   this.view.settingsDialog.setTitle(name);
+};
+
+
+/**
+ * website default website language
+ * @return {?string}
+ */
+silex.model.Head.prototype.getLang = function() {
+  return this.model.file.getContentDocument().querySelector('html').lang;
+};
+
+
+/**
+ * website default website language
+ * @param {?string} name
+ */
+silex.model.Head.prototype.setLang = function(name) {
+  this.model.file.getContentDocument().querySelector('html').lang = name || '';
+  // update view
+  this.view.settingsDialog.setLang(name || '');
 };
 
 
