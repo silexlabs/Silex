@@ -9,11 +9,6 @@ body {
   min-height: 100%;
   position: absolute; /* when position is absolute the body has at least the width of its content, which is good when window is smaller than section width for section containers */
 }
-body.compute-body-size-pending {
-  transition: none;
-  width: 0;
-  height: 0;
-}
 /* pages */
 .page-element{
   display: none;
@@ -211,6 +206,7 @@ body.enable-mobile .editable-style.hide-on-desktop {
     align-items: center;
     justify-content: space-around;
     flex-wrap: wrap;
+    height: fit-content;
   }
   /* but still hide paged elements or desktop only elements */
   .paged-element-hidden.paged-element.editable-style {
@@ -222,7 +218,6 @@ body.enable-mobile .editable-style.hide-on-desktop {
   body.enable-mobile .editable-style.hide-on-desktop {
     display: initial;
   }
-  body.silex-runtime.enable-mobile .editable-style,
   body.silex-runtime.enable-mobile .background.background-initial {
     max-width: 100%;
   }

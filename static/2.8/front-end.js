@@ -10,7 +10,7 @@
 //////////////////////////////////////////////////
 
 $(function() {
-  var win = $(window);
+  var $win = $(window);
 
   // allow HTML5 tags used by Silex to be styled with CSS (polyfill)
   document.createElement('HEADER');
@@ -18,41 +18,44 @@ $(function() {
 
   // store the body selector
   // be careful since it will change after undo/redo or open file in Silex editor
-  var bodyEl = $('body');
+  var $body = $('body');
 
   /**
    * window resize event
    */
   var siteWidth = parseInt($('meta[name=website-width]').attr('content'));
   var resizeBody = function (event){
-    var bodyEl = $('body');
+    var $html = $('html');
     // behavior which is not the same in Silex editor and outside the editor
-    if(bodyEl.hasClass('silex-runtime')) {
+    if($body.hasClass('silex-runtime')) {
       // if the site has a defined width and the window is smaller than this width, then
       // scale the website to fit the window
-      var winWidth = win.width();
-      if(winWidth < 480) {
-        $('body').css({
-          'transform': 'scale(' + (winWidth / 480) + ')',
+
+      var scrollRatio = $body.scrollTop() / $body.prop("scrollHeight");
+
+      // reset transform
+      // needed to measure window width
+      $html.css({
+        'transform': '',
+        'transform-origin': '',
+        'min-width': '',
+      })
+      var winWidth = $win.width();
+
+      // handle resize when needed
+      if(winWidth < siteWidth) {
+        // scale the site
+        var breakPoint = winWidth < 480 ? 480 : siteWidth;
+        var ratio = winWidth / breakPoint;
+        $html.css({
+          'transform': 'scale(' + ratio + ')',
           'transform-origin': '0 0',
-          'min-width': '480px',
+          'min-width': breakPoint + 'px',
         })
-      }
-      else if(winWidth > 480 && winWidth < siteWidth) {
-          $('body').css({
-            'transform': 'scale(' + (winWidth / 1200) + ')',
-            'transform-origin': '0 0',
-            'min-width': '1200px',
-          })
-      }
-      else {
-        // case of winWidth === 480 || winWidth > siteWidth
-        // reset transform
-        $('body').css({
-            'transform': '',
-            'transform-origin': '',
-            'min-width': '',
-          })
+        // keep the scroll position when resizing,
+        // fixes a bug on mobile when reaching the bottom of page and the broser UI comes back and changes the viewport size
+        var scrollTarget = scrollRatio * $body.prop("scrollHeight");
+        $body.scrollTop(scrollTarget);
       }
     }
     else {
@@ -70,14 +73,14 @@ $(function() {
   // change viewport to enable mobile view scale mode
   // for "pixel perfect" mobile version
   // bellow 960, the window width will be seen as 480
-  if(bodyEl.hasClass('silex-runtime')) {
+  if($body.hasClass('silex-runtime')) {
     var winWidth = win.width();
     if(winWidth < 960) {
       $('meta[data-silex-viewport]').attr('content', 'width=479, user-scalable=no, maximum-scale=1');
     }
   }
   */
-  if(!$('body').hasClass('silex-published')) {
+  if(!$body.hasClass('silex-published')) {
     /**
      * list all pages from the head section
      * and open the 1st one by default
@@ -92,7 +95,7 @@ $(function() {
      * callback for change events
      * called when a page is opened
      */
-    bodyEl.on('pageChanged', function (event, pageName) {
+    $body.on('pageChanged', function (event, pageName) {
       // mark links to the current page as active
       $('[data-silex-href*="#!'+pageName+'"]').addClass('page-link-active');
       $('[id*="'+pageName+'"]').addClass('page-link-active');
@@ -116,9 +119,9 @@ $(function() {
      * init page system
      * Use deep links (hash) only when `body.silex-runtime` is defined, i.e. not while editing
      */
-    bodyEl.pageable({
+    $body.pageable({
       currentPage: firstPageName,
-      useDeeplink: bodyEl.hasClass('silex-runtime'),
+      useDeeplink: $body.hasClass('silex-runtime'),
       pageClass: 'paged-element'
     });
     /**
@@ -155,7 +158,7 @@ $(function() {
   resizeBody();
 
   // resize body on window resize
-  win.resize(resizeBody);
+  $win.resize(resizeBody);
 
   // expose for use by the widgets and Silex editor
   window.resizeBody = resizeBody;
