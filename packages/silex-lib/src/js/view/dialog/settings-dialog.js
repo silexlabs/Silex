@@ -96,6 +96,7 @@ class SettingsDialog {
 
     // input text fields
     this.bindTextField('.general-pane .input-title', (v) => this.controller.settingsDialogController.setTitle(v));
+    this.bindTextField('.general-pane .input-lang', (v) => this.controller.settingsDialogController.setLang(v));
     this.bindTextField('.general-pane .input-site-width', (v) => this.controller.settingsDialogController.setWebsiteWidth(v));
     this.bindTextField('.social-pane .input-title', (v) => this.controller.settingsDialogController.setTitleSocial(v));
     this.bindTextField('.general-pane .input-description', (v) => this.controller.settingsDialogController.setDescription(v));
@@ -204,7 +205,6 @@ class SettingsDialog {
    * @param {function(string)} cbk
    */
   bindTextField(cssSelector, cbk) {
-    // title input field
     var input = this.element.querySelector(cssSelector);
     if (!input) {
       throw new Error('Settings panel error: could not find the element to bind.');
@@ -221,7 +221,6 @@ class SettingsDialog {
    * @param {function()} cbk
    */
   bindBrowseButton(cssSelector, cbk) {
-    // title input field
     var btn = this.element.querySelector(cssSelector);
     if (!btn) {
       throw new Error('Settings panel error: could not find the element to bind.');
@@ -343,6 +342,16 @@ class SettingsDialog {
    */
   setTitle(opt_title) {
     this.setInputValue('.general-pane .input-title', opt_title);
+  }
+
+
+  /**
+   * set the site default language
+   * @see silex.model.Head
+   * @param {?string=} opt_lang   the site lang
+   */
+  setLang(opt_lang) {
+    this.setInputValue('.general-pane .input-lang', opt_lang);
   }
 
 
