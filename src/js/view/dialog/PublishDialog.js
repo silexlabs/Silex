@@ -86,7 +86,7 @@ silex.view.dialog.PublishDialog = class {
         // use publication settings or send the user to publish settings
         resolve({});
       }
-      else if(hosting['skipProviderSelection'] === true) {
+      else if(hosting['skipHostingSelection'] === true) {
         const provider = hosting['providers'][0];
         console.log('Skip provider selection for hosting:', hosting);
         // continue to next step
