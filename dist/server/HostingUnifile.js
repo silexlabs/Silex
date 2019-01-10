@@ -32,3 +32,7 @@ module.exports.prototype.getOptions = function(session) {
 module.exports.prototype.finalizePublication = function(from, to, session, onStatus) {
   return Promise.resolve();
 }
+
+module.exports.prototype.getDefaultPageFileName = function() {
+  return 'index.html';
+};

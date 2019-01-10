@@ -428,6 +428,17 @@ silex.controller.ControllerBase.prototype.setTitle = function(title) {
 
 
 /**
+ * ask the user for a new file lang
+ * @param {string} lang
+ */
+silex.controller.ControllerBase.prototype.setLang = function(lang) {
+  // undo checkpoint
+  this.undoCheckPoint();
+  this.model.head.setLang(lang);
+};
+
+
+/**
  * toggle advanced / apollo mode
  */
 silex.controller.ControllerBase.prototype.toggleAdvanced = function() {

@@ -90,6 +90,8 @@ module.exports = class PublishJob {
 
   constructor(id, unifile, publicationPath, session, cookies, rootUrl, hostingProvider) {
     console.log('---------------\nNew Publish Job', id, '\nPublish to:', publicationPath.url, '\nSilex instance:', rootUrl, '\n--------------');
+    this.setStatus('Publication starting.');
+
     this.id = id;
     this.unifile = unifile;
     this.hostingProvider = hostingProvider;
@@ -101,13 +103,13 @@ module.exports = class PublishJob {
     this.success = false;
     this.error = false;
     this.filesNotDownloaded = [];
-    this.setStatus('In progress.');
 
     // files and folders paths
     this.rootPath = this.publicationPath.path;
-    this.cssFolder = this.rootPath + '/css';
-    this.jsFolder = this.rootPath + '/js';
-    this.assetsFolder = this.rootPath + '/assets';
+    this.htmlFolder = this.rootPath + '/' + this.getHtmlFolder();
+    this.cssFolder = this.rootPath + '/' + this.getCssFolder();
+    this.jsFolder = this.rootPath + '/' + this.getJsFolder();
+    this.assetsFolder = this.rootPath + '/' + this.getAssetsFolder();
     this.jsFile = this.jsFolder + '/script.js';
     this.cssFile = this.cssFolder + '/styles.css';
 
@@ -121,7 +123,7 @@ module.exports = class PublishJob {
     if(this.isStopped() === false) {
       console.warn('stopping publication in progress');
       this.abort = true;
-      this.setStatus('Canceled.');
+      this.setStatus('Publication canceled.');
     }
   }
   isStopped() {
@@ -150,6 +152,59 @@ module.exports = class PublishJob {
     }
     return 'Done.';
   }
+  getHtmlFolder() {
+    const defaultFolder = '';
+    if(this.hostingProvider && this.hostingProvider.getHtmlFolder) {
+      return this.hostingProvider.getHtmlFolder(defaultFolder) || defaultFolder;
+    }
+    else return defaultFolder;
+  }
+  getJsFolder() {
+    const defaultFolder = 'js';
+    if(this.hostingProvider && this.hostingProvider.getJsFolder) {
+      return this.hostingProvider.getJsFolder(defaultFolder) || defaultFolder;
+    }
+    else return defaultFolder;
+  }
+  getCssFolder() {
+    const defaultFolder = 'css';
+    if(this.hostingProvider && this.hostingProvider.getCssFolder) {
+      return this.hostingProvider.getCssFolder(defaultFolder) || defaultFolder;
+    }
+    else return defaultFolder;
+  }
+  getAssetsFolder() {
+    const defaultFolder = 'assets';
+    if(this.hostingProvider && this.hostingProvider.getAssetsFolder) {
+      return this.hostingProvider.getAssetsFolder(defaultFolder) || defaultFolder;
+    }
+    else return defaultFolder;
+  }
+  getDestFolder(ext, tagName) {
+    console.log('getDestFolder', ext, tagName);
+    // tags
+    if(tagName) {
+      switch(tagName.toLowerCase()) {
+        case 'script':
+          return this.getJsFolder();
+        case 'link':
+          return this.getCssFolder();
+        case 'img':
+        case 'source':
+        case 'video':
+          return this.getAssetsFolder();
+      }
+      // could be an iframe
+      return null;
+    }
+    else if(ext === '.html') {
+      return this.getHtmlFolder();
+    }
+    // css url()
+    else  {
+      return this.getAssetsFolder();
+    }
+  }
 
   /**
    * the method called to publish a website to a location
@@ -165,7 +220,7 @@ module.exports = class PublishJob {
     this.setStatus(`Downloading website ${file.name}`);
     return this.unifile.readFile(this.session.unifile, file.service, file.path)
     .catch(err => {
-      console.error('Publication error, could not download file:', err.message);
+      console.error('Publication error, could not download file:', err);
       this.error = true;
       this.setStatus(err.message);
     })
@@ -180,7 +235,7 @@ module.exports = class PublishJob {
       const url = new URL(file.url);
       const baseUrl = new URL(url.origin + Path.dirname(url.pathname) + '/');
       const dom = new JSDOM(buffer.toString('utf-8'), { url: baseUrl.href });
-      const domPublisher = new DomPublisher(dom, this.rootUrl, this.rootPath);
+      const domPublisher = new DomPublisher(dom, this.rootUrl, this.rootPath, (ext, tagName) => this.getDestFolder(ext, tagName));
       // remove classes used by Silex during edition
       domPublisher.cleanup();
       // rewrite URLs and extract assets
@@ -188,12 +243,13 @@ module.exports = class PublishJob {
       // hide website before styles.css is loaded
       dom.window.document.head.innerHTML += '<style>body { opacity: 0; transition: .25s opacity ease; }</style>';
       // split into pages
-      this.pageActions = domPublisher.split();
+      const newFirstPageName = this.hostingProvider && this.hostingProvider.getDefaultPageFileName ? this.hostingProvider.getDefaultPageFileName() : null;
+      this.pageActions = domPublisher.split(newFirstPageName);
       // release the dom object
       dom.window.close();
     })
     .catch(err => {
-      console.error('Publication error, could not extract assets from file:', err.message);
+      console.error('Publication error, could not extract assets from file:', err);
       this.error = true;
       this.setStatus(err.message);
     })
@@ -208,20 +264,20 @@ module.exports = class PublishJob {
     })
     .catch(err => {
       // FIXME: will never go through here
-      console.error('Publication error, could not download files:', this.tree.actions.map(action => action.displayName).join(', '), '. Error:', err.message);
+      console.error('Publication error, could not download files:', this.tree.actions.map(action => action.displayName).join(', '), '. Error:', err);
       this.error = true;
       this.setStatus(err.message);
     })
     // write and upload all files in a batch operation
-    .then(([statRoot, statCss, statJs, statAssets, ...assets]) => {
+    .then(([statRoot, statHtml, statCss, statJs, statAssets, ...assets]) => {
       if(this.isStopped()) {
         console.warn('job is stopped', this.error, this.abort, this.success);
         return;
       }
-      return this.writeOperations(statRoot, statCss, statJs, statAssets, ...assets)
+      return this.writeOperations(statRoot, statHtml, statCss, statJs, statAssets, ...assets)
     })
     .catch(err => {
-      console.error('An error occured in unifile batch', err.message, err);
+      console.error('An error occured in unifile batch', err, err);
       this.error = true;
       this.setStatus(err.message);
     })
@@ -248,7 +304,7 @@ module.exports = class PublishJob {
   }
 
   readOperations() {
-    this.setStatus(`Creating folders: <ul><li>${this.cssFolder}</li><li>${this.jsFolder}</li><li>${this.assetsFolder}</li></ul>`);
+    this.setStatus(`Looking for folders: <ul><li>${this.cssFolder}</li><li>${this.jsFolder}</li><li>${this.assetsFolder}</li></ul>`);
 
     // do not throw an error if the folder is not found, this is what we want to test
     // instead catch the error and do nothing so that the result is null in .then(stat
@@ -263,19 +319,19 @@ module.exports = class PublishJob {
     // FIXME: should use unifile's batch method to avoid conflicts or the "too many clients" error in FTP
     //return Promise.all([
     return sequential([
-        () => preventErr(this.unifile.stat(this.session.unifile, this.publicationPath.service, this.rootPath)),
-        () => preventErr(this.unifile.stat(this.session.unifile, this.publicationPath.service, this.cssFolder)),
-        () => preventErr(this.unifile.stat(this.session.unifile, this.publicationPath.service, this.jsFolder)),
-        () => preventErr(this.unifile.stat(this.session.unifile, this.publicationPath.service, this.assetsFolder)),
-      ]
-      // add the promises to download each asset
-      .concat(this.downloadAllAssets(this.tree.actions))
-    )
+      () => preventErr(this.unifile.stat(this.session.unifile, this.publicationPath.service, this.rootPath)),
+      () => preventErr(this.unifile.stat(this.session.unifile, this.publicationPath.service, this.htmlFolder)),
+      () => preventErr(this.unifile.stat(this.session.unifile, this.publicationPath.service, this.cssFolder)),
+      () => preventErr(this.unifile.stat(this.session.unifile, this.publicationPath.service, this.jsFolder)),
+      () => preventErr(this.unifile.stat(this.session.unifile, this.publicationPath.service, this.assetsFolder)),
+    ]
+    // add the promises to download each asset
+    .concat(this.downloadAllAssets(this.tree.actions)))
   }
 
-  writeOperations(statRoot, statCss, statJs, statAssets, ...assets) {
+  writeOperations(statRoot, statHtml, statCss, statJs, statAssets, ...assets) {
     // build the batch actions
-    this.setStatus(`Creating files <ul>${this.pageActions.map(action => '<li>' + action.displayName + '</li>').join('')}<li>${this.cssFile}</li><li>${this.jsFile}</li></ul>And uploading ${ assets.length } images.`);
+    this.setStatus(`Creating files <ul>${this.pageActions.map(action => '<li>' + action.displayName + '</li>').join('')}<li>${this.cssFile}</li><li>${this.jsFile}</li></ul>And uploading ${ assets.length } assets.`);
     // create an object to describe a batch of actions
     const batchActions = [];
     if(!statRoot) {
@@ -284,11 +340,12 @@ module.exports = class PublishJob {
         path: this.rootPath,
       });
     }
-    // batchActions.push({
-    //   name: 'writefile',
-    //   path: this.indexFile,
-    //   content: this.dom.serialize(),
-    // });
+    if(!statHtml) {
+      batchActions.push({
+        name: 'mkdir',
+        path: this.htmlFolder,
+      });
+    }
     batchActions.push(...this.pageActions);
 
     if(!statCss) {
@@ -332,10 +389,12 @@ module.exports = class PublishJob {
       .map(file => {
         return {
           name: 'writeFile',
-          path: this.publicationPath.path + '/' +file.path,
+          path: file.path,
           content: file.content,
         };
-      }));
+      })
+    );
+    // console.log('Batch actions:', batchActionsWithAssets.filter(action => !!action).map(action => action.path));
     return this.unifile.batch(this.session.unifile, this.publicationPath.service, batchActionsWithAssets)
   }
 

@@ -50,6 +50,7 @@ const publisherOptions = {
   skipProviderSelection: false,
   enableHostingGhPages: true,
   enableHostingUnifile: true,
+  enableHostingJekyll: false, // beta
 }
 
 const exported = function() {};
