@@ -269,10 +269,10 @@ silex.controller.ControllerBase.prototype.styleChanged = function(name, value, o
     this.undoCheckPoint();
   }
   // apply the change to all elements
-  goog.array.forEach(opt_elements, function(element) {
+  opt_elements.forEach((element) => {
     // update the model
     this.model.element.setStyle(element, name, value);
-  }, this);
+  });
   // refresh the view
   this.refreshView();
 };

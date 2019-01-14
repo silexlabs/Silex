@@ -51,6 +51,7 @@ goog.require('silex.model.File');
 goog.require('silex.model.Head');
 goog.require('silex.model.Page');
 goog.require('silex.model.Property');
+goog.require('silex.model.DragSystem');
 goog.require('silex.service.Tracker');
 goog.require('silex.service.SilexTasks');
 goog.require('silex.types.Controller');
@@ -336,7 +337,8 @@ class App {
         new silex.model.Page(this.model, this.view),
         new silex.model.Element(this.model, this.view),
         new Component(this.model, this.view),
-        new silex.model.Property(this.model, this.view)
+        new silex.model.Property(this.model, this.view),
+        new DragSystem(this.model, this.view)
     );
   }
 

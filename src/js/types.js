@@ -44,6 +44,29 @@ goog.require('silex.controller.ViewMenuController');
 
 
 /**
+ * @enum {string}
+ */
+var StickyPoint = {
+  LEFT: 'left',
+  RIGHT: 'right',
+  TOP: 'top',
+  BOTTOM: 'bottom',
+  // MID_V: 'midV',
+  // MID_H: 'midH',
+};
+
+/**
+ * @typedef {{
+ *   id: string,
+ *   vertical: boolean,
+ *   position: number,
+ *   stickyPoint: StickyPoint,
+ *   metaData: *,
+ * }}
+ */
+var StickyLine;
+
+/**
  * @typedef {{
  *   family: string,
  *   href: string,
@@ -53,7 +76,7 @@ var Font;
 
 /**
  * @typedef {{
- *   providers:Array<Provider>,
+ *   providers: Array<Provider>,
  *   skipHostingSelection: boolean,
  * }}
  */
@@ -126,8 +149,9 @@ silex.types.Model = function() {};
  * @param {silex.model.Element} element
  * @param {Component} component
  * @param {silex.model.Property} property
+ * @param {DragSystem} dragSystem
  */
-silex.types.Model.prototype.init = function(file, head, body, page, element, component, property) {
+silex.types.Model.prototype.init = function(file, head, body, page, element, component, property, dragSystem) {
   /**
    * @type {silex.model.File}
    */
@@ -156,6 +180,10 @@ silex.types.Model.prototype.init = function(file, head, body, page, element, com
    * @type {silex.model.Property}
    */
   this.property = property;
+  /**
+   * @type {DragSystem}
+   */
+  this.dragSystem = dragSystem;
 };
 
 
