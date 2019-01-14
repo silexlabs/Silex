@@ -79,6 +79,7 @@ silex.view.ContextMenu.prototype.buildUi = function() {
     this.element.querySelector('.up').addEventListener('click', () => {this.controller.editMenuController.moveUp();});
     this.element.querySelector('.down').addEventListener('click', () => {this.controller.editMenuController.moveDown();});
     this.element.querySelector('.bottom').addEventListener('click', () => {this.controller.editMenuController.moveToBottom();});
+    this.element.querySelector('.sticky-elements').addEventListener('click', () => {this.model.dragSystem.toggleStickyElements();});
 };
 
 
@@ -121,6 +122,12 @@ silex.view.ContextMenu.prototype.redraw = function(opt_selectedElements, opt_pag
     }
     else {
       this.element.querySelector('.paste').classList.add('off');
+    }
+    if(this.model.dragSystem.getStickyElements()) {
+      this.element.querySelector('.sticky-elements').classList.remove('off');
+    }
+    else {
+      this.element.querySelector('.sticky-elements').classList.add('off');
     }
   });
 };

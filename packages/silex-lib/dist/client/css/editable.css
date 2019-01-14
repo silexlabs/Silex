@@ -72,6 +72,13 @@ this makes the video clickable:
   width:100%;
   height:100%;
 }
+/* while dragging, stuck to a sticky line */
+.editable-style.stuck.stuck-right > .ui-resizable-e,
+.editable-style.stuck.stuck-left > .ui-resizable-w,
+.editable-style.stuck.stuck-bottom > .ui-resizable-s,
+.editable-style.stuck.stuck-top > .ui-resizable-n {
+  background-image: linear-gradient(to bottom right, rgba(255, 255, 255, 0.5), rgba(255, 0, 0, 0.5), rgba(0, 0, 0, 0.5));
+}
 /* style while dragging */
 body .editable-style.dragging-pending.silex-selected {
   z-index: 99999;

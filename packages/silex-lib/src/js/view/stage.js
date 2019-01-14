@@ -558,6 +558,8 @@ silex.view.Stage.prototype.handleMouseUp = function(target, x, y, shiftKey) {
     // keep flags up to date
     this.isDragging = false;
     this.isResizing = false;
+    // stop the drag system
+    this.model.dragSystem.stopDrag(this.contentWindow);
     // remove dragging style
     const dragged = this.bodyElement.querySelectorAll('.' + silex.model.Body.DRAGGING_CLASS_NAME);
     for (let idx = 0, el = null; el = dragged[idx]; ++idx) {
@@ -647,22 +649,27 @@ silex.view.Stage.prototype.onMouseMove = function(target, x, y, shiftKey) {
       else {
         // switch to dragging state
         this.isDragging = true;
-        this.selectedElements
-        .filter(element => element !== this.bodyElement && !element.classList.contains(silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME))
+
+        const draggableElements = this.selectedElements
+        .filter(element => element !== this.bodyElement && !element.classList.contains(silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME));
+
+        draggableElements
         .forEach(element => {
           // move to the body so that it is above everything
           // move back to the same x, y position
           // var elementPos = element.getBoundingClientRect();
           var elementPos = goog.style.getPageOffset(element);
-          // apply new position
-          element.style.left = elementPos.x + 'px';
-          element.style.top = elementPos.y + 'px';
+          // // apply new position
+          this.model.element.setStyle(element, 'left', elementPos.x + 'px');
+          this.model.element.setStyle(element, 'top', elementPos.y + 'px');
           // attache to body
           this.bodyElement.appendChild(element);
           // dragging style
           element.classList.add(silex.model.Body.DRAGGING_CLASS_NAME);
         });
       }
+      // start the drag system
+      this.model.dragSystem.startDrag(this.contentWindow);
     }
 
     // do MouseMove is a function which will be called while the user holds the mouse button down
@@ -783,7 +790,8 @@ silex.view.Stage.prototype.getVisibility = function(element) {
  * @return {{width, height}} the size of the stage
  */
 silex.view.Stage.prototype.getStageSize = function() {
-  return goog.style.getSize(this.element)
+  // FIXME: use document.documentElement.clientWidth
+  return goog.style.getSize(this.element);
 }
 
 
@@ -851,7 +859,7 @@ silex.view.Stage.prototype.multipleDragged = function(x, y, shiftKey) {
     }
     let offsetX = x - this.lastPosX + (scrollX - this.lastScrollLeft);
     let offsetY = y - this.lastPosY + (scrollY - this.lastScrollTop);
-    this.followElementPosition(followers, offsetX, offsetY);
+    this.model.dragSystem.followElementPosition(this.contentWindow, followers, offsetX, offsetY);
   }
   else if (this.isResizing) {
     // handle shift key to move on one axis or preserve ratio
@@ -869,146 +877,13 @@ silex.view.Stage.prototype.multipleDragged = function(x, y, shiftKey) {
     }
     let offsetX = x - this.lastPosX + (scrollX - this.lastScrollLeft);
     let offsetY = y - this.lastPosY + (scrollY - this.lastScrollTop);
-    this.followElementSize(followers, this.resizeDirection, offsetX, offsetY);
+    this.model.dragSystem.followElementSize(this.contentWindow, followers, this.resizeDirection, offsetX, offsetY);
   }
   // update the latest position and scroll
   this.lastPosX = x;
   this.lastPosY = y;
   this.lastScrollLeft = scrollX;
   this.lastScrollTop = scrollY;
-};
-
-
-/**
- * make the followers follow the element's position
- * @param   {Array.<HTMLElement>} followers which will follow the elements
- * @param   {number} offsetX the delta to be applied
- * @param   {number} offsetY the delta to be applied
- */
-silex.view.Stage.prototype.followElementPosition =
-  function(followers, offsetX, offsetY) {
-  // apply offset to other selected element
-  goog.array.forEach(followers, function(follower) {
-    // do not move an element if one of its parent is already being moved
-    // or if it is the stage
-    // or if it has been marked as not draggable
-    if (follower.tagName.toUpperCase() !== 'BODY' &&
-      !goog.dom.getAncestorByClass(follower.parentNode, silex.model.Element.SELECTED_CLASS_NAME) &&
-      !goog.dom.classlist.contains(follower, silex.model.Body.PREVENT_DRAGGABLE_CLASS_NAME)) {
-        // do not do this anymore because the element is moved to the body during drag so its position is wrong:
-        // update the toolboxes to display the position during drag
-        // let pos = goog.style.getPosition(follower);
-        // let finalY = Math.round(pos.y + offsetY);
-        // let finalX = Math.round(pos.x + offsetX);
-        // this.controller.stageController.styleChanged('top', finalY + 'px', [follower], false);
-        // this.controller.stageController.styleChanged('left', finalX + 'px', [follower], false);
-        // move the element
-        let pos = goog.style.getPosition(follower);
-        let left = parseInt(follower.style.left, 10) || pos.x;
-        let top = parseInt(follower.style.top, 10) || pos.y;
-        follower.style.left = (left + offsetX) + 'px';
-        follower.style.top = (top + offsetY) + 'px';
-    }
-  }, this);
-};
-
-
-/**
- * make the followers follow the element's size
- * @param   {Array.<HTMLElement>} followers which will follow the elements
- * @param   {string} resizeDirection the direction n, s, e, o, ne, no, se, so
- * @param   {number} offsetX the delta to be applied
- * @param   {number} offsetY the delta to be applied
- */
-silex.view.Stage.prototype.followElementSize =
-  function(followers, resizeDirection, offsetX, offsetY) {
-  // apply offset to other selected element
-  goog.array.forEach(followers, function(follower) {
-    // do not resize the stage or the un-resizeable elements
-    if (follower.tagName.toUpperCase() !== 'BODY' &&
-      !goog.dom.classlist.contains(follower, silex.model.Body.PREVENT_RESIZABLE_CLASS_NAME)) {
-      var pos = goog.style.getPosition(follower);
-      var offsetPosX = pos.x;
-      var offsetPosY = pos.y;
-      var offsetSizeX = offsetX;
-      var offsetSizeY = offsetY;
-      // depending on the handle which is dragged,
-      // only width and/or height should be set
-      switch (resizeDirection) {
-      case 's':
-        offsetSizeX = 0;
-        break;
-      case 'n':
-        offsetPosY += offsetSizeY;
-        offsetSizeY = -offsetSizeY;
-        offsetSizeX = 0;
-        break;
-      case 'w':
-        offsetPosX += offsetSizeX;
-        offsetSizeX = -offsetSizeX;
-        offsetSizeY = 0;
-        break;
-      case 'e':
-        offsetSizeY = 0;
-        break;
-      case 'se':
-        break;
-      case 'sw':
-        offsetPosX += offsetSizeX;
-        offsetSizeX = -offsetSizeX;
-        break;
-      case 'ne':
-        offsetPosY += offsetSizeY;
-        offsetSizeY = -offsetSizeY;
-        break;
-      case 'nw':
-        offsetPosX += offsetSizeX;
-        offsetPosY += offsetSizeY;
-        offsetSizeY = -offsetSizeY;
-        offsetSizeX = -offsetSizeX;
-        break;
-      }
-      const size = goog.style.getSize(follower);
-      const borderBox = goog.style.getBorderBox(follower);
-      const style = this.contentWindow.getComputedStyle(follower);
-      const paddingBox = {
-        left: parseInt(style.paddingLeft, 10),
-        right: parseInt(style.paddingRight, 10),
-        top: parseInt(style.paddingTop, 10),
-        bottom: parseInt(style.paddingBottom, 10),
-      };
-      // handle section content elements which are forced centered
-      // (only when the background is smaller than the body)
-      // TODO in a while: remove support of .background since it is now a section
-      if((follower.classList.contains(silex.view.Stage.BACKGROUND_CLASS_NAME) ||
-        this.model.element.isSectionContent(follower)) &&
-        size.width < this.getStageSize().width - 100) {
-        offsetSizeX *= 2;
-      }
-      // compute new size
-      var newSizeW = size.width + offsetSizeX - borderBox.left - paddingBox.left - borderBox.right - paddingBox.right;
-      var newSizeH = size.height + offsetSizeY - borderBox.top - paddingBox.top - borderBox.bottom - paddingBox.bottom;
-      // handle min size
-      if (newSizeW < silex.model.Element.MIN_WIDTH) {
-        if (resizeDirection === 'w' || resizeDirection === 'sw' || resizeDirection === 'nw') {
-          offsetPosX -= silex.model.Element.MIN_WIDTH - newSizeW;
-        }
-        newSizeW = silex.model.Element.MIN_WIDTH;
-      }
-      if (newSizeH < silex.model.Element.MIN_HEIGHT) {
-        if (resizeDirection === 'n' || resizeDirection === 'ne' || resizeDirection === 'nw') {
-          offsetPosY -= silex.model.Element.MIN_HEIGHT - newSizeH;
-        }
-        newSizeH = silex.model.Element.MIN_HEIGHT;
-      }
-      // set position in case we are resizing up or left
-      this.controller.stageController.styleChanged('top', Math.round(offsetPosY) + 'px', [follower], false);
-      this.controller.stageController.styleChanged('left', Math.round(offsetPosX) + 'px', [follower], false);
-      // apply the new size
-      this.controller.stageController.styleChanged('width', Math.round(newSizeW) + 'px', [follower], false);
-      this.controller.stageController.styleChanged(this.model.element.getHeightStyleName(follower), Math.round(newSizeH) + 'px', [follower], false);
-    }
-  }, this);
 };
 
 
@@ -1222,8 +1097,8 @@ silex.view.Stage.prototype.propertyChanged = function() {
  * reset 1 element properties since they are stored in the CSS by the model
  */
 silex.view.Stage.prototype.cleanupElement = function(element) {
-  element.style.top = '';
-  element.style.left = '';
+  // element.style.top = '';
+  // element.style.left = '';
 };
 
 
@@ -1233,13 +1108,13 @@ silex.view.Stage.prototype.cleanupElement = function(element) {
  */
 silex.view.Stage.prototype.moveElements = function(elements, offsetX, offsetY) {
   // just like when mouse moves
-  this.followElementPosition(elements, offsetX, offsetY);
+  this.model.dragSystem.followElementPosition(this.contentWindow, elements, offsetX, offsetY);
   // reset elements properties since they are stored in the CSS by the model
-  elements.forEach((element) => {
-    this.controller.stageController.styleChanged('top', element.style.top, [element], false);
-    this.controller.stageController.styleChanged('left', element.style.left, [element], false);
-    this.cleanupElement(element);
-  });
+  // elements.forEach((element) => {
+  //   this.controller.stageController.styleChanged('top', element.style.top, [element], false);
+  //   this.controller.stageController.styleChanged('left', element.style.left, [element], false);
+  //   this.cleanupElement(element);
+  // });
   // notify the controller
   this.propertyChanged();
 };
