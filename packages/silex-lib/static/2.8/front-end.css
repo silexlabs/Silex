@@ -28,7 +28,6 @@ body {
   overflow: hidden;
   border-radius: initial;
   width: 100%;
-  height: 100%;
 }
 .silex-element-content {
   pointer-events: none;
@@ -85,7 +84,6 @@ body.silex-runtime .silex-element-content {
   top: 0;
   margin-left: auto;
   margin-right: auto;
-  height: 100%;
   overflow: initial;
 }
 /* background */
@@ -101,6 +99,7 @@ body.silex-runtime .silex-element-content {
 .editable-style.image-element .silex-element-content{
   position: absolute;
   border-radius: inherit; /* this is to follow the element's radius */
+  height: 100%;
 }
 /* wysihtml text editor styles */
 .wysiwyg-float-left {
