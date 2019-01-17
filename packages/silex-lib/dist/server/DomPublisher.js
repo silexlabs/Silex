@@ -88,7 +88,7 @@ module.exports = class DomPublisher {
     .forEach(el => el.parentNode.removeChild(el))
     // split in multiple pages
     const pages = Array.from(this.doc.querySelectorAll('a[data-silex-type="page"]'));
-    const initialFirstPageName = pages[0];
+    const initialFirstPageName = pages[0].getAttribute('id');
     return pages
     .map((el, idx) => {
       return  {
