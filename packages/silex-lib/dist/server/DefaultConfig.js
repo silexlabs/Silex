@@ -9,6 +9,14 @@
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
 
+/**
+ * @fileoverview this is where the default config is defined
+ * The values can be overriden with env vars or before passing the config to Silex
+ * @see {@link https://github.com/lexoyo/silex-for-hosting-company|example of customization with the config object}
+ * @see {@link https://github.com/silexlabs/Silex/blob/develop/app.json|all the env vars in this definition file for heroku 1 click deploy}
+ * @see {@link https://github.com/silexlabs/Silex/wiki/How-to-Host-An-Instance-of-Silex#environment-variables|Silex env vars}
+ */
+
 // server options
 const serverOptions = {};
 serverOptions.debug = process.env.SILEX_DEBUG === 'true';
