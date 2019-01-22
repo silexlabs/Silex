@@ -58,6 +58,12 @@ silex.utils.Style.SILEX_CLASS_NAMES = [
   silex.model.Element.HIDE_ON_MOBILE,
   Component.COMPONENT_CLASS_NAME,
   silex.view.BreadCrumbs.EDITABLE_STYLE_HOVER_CLASS,
+  // sticky lines classes
+  DragSystem.STUCK_CSS_CLASS,
+  DragSystem.STUCK_LEFT_CSS_CLASS,
+  DragSystem.STUCK_RIGHT_CSS_CLASS,
+  DragSystem.STUCK_TOP_CSS_CLASS,
+  DragSystem.STUCK_BOTTOM_CSS_CLASS,
 ];
 
 /**
