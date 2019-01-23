@@ -203,6 +203,9 @@ module.exports = class DomPublisher {
     const styles = this.doc.head.querySelectorAll('style');
     for(let idx=0; idx<styles.length; idx++) {
       const tag = styles[idx];
+      if(tag.innerHTML.indexOf('style class') >= 0) {
+        console.error('xxxxxxxxxxxxxxxxxxxxxx', tag.outerHTML)
+      }
       tag.parentNode.removeChild(tag);
       styleTags.push(tag);
     }
