@@ -117,7 +117,7 @@ silex.view.dialog.PublishDialog = class {
           this.model.head.setHostingProvider(selectEl.value);
           const idx = selectEl.selectedIndex;
           const provider = providers[idx];
-          if(provider.skipFolderSelection) {
+          if(provider['skipFolderSelection']) {
             resolve(this.onSelectProvider(provider));
           }
           else {

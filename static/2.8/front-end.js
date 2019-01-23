@@ -149,11 +149,6 @@ $(function() {
   $('.silex-runtime.enable-mobile').click(function (e) {
     $(document.body).removeClass('show-mobile-menu');
   });
-  $('.silex-runtime.enable-mobile .silex-pages .page-element').click(function(e) {
-    window.location.hash = '#!' + this.id;
-    e.preventDefault();
-  });
-
   // resize body at start
   resizeBody();
 
