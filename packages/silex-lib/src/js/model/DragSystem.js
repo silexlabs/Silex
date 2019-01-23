@@ -475,7 +475,17 @@ class DragSystem {
    * @return {{left:number, right:number, top:number, bottom:number}}
    */
   getBoundingBox(win, element) {
-    const box = this.model.property.getStyle(element);
+    const box = (() => {
+      if(this.view.workspace.getMobileEditor()) {
+        // mobile => mix the 2 syles to have the final style
+        const mob = this.model.property.getStyle(element, true) || {};
+        const desk = this.model.property.getStyle(element, false) || {};
+        return Object.assign({}, desk, mob);
+      }
+      else {
+        return this.model.property.getStyle(element, false);
+      }
+    })()
     if(box) {
       const computedHeight = parseInt(win.getComputedStyle(element).height || 0, 10);
       const height = Math.max(computedHeight, parseInt(box['min-height'], 10));

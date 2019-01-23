@@ -117,11 +117,57 @@ a:focus{ outline: none;}
 body.silex-runtime .editable-style[data-silex-href] {
   cursor: pointer;
 }
-.silex-pages .menu-button {
-  display: none;
-}
 body.enable-mobile .editable-style.hide-on-desktop {
   display: none;
+}
+/* mobile hamburger menu */
+body.enable-mobile .silex-pages .menu-button {
+  left: 105%;
+  top: 10px;
+  position: absolute;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+/* mobile side bar */
+body.enable-mobile .silex-pages {
+  position: fixed;
+  z-index: 999999;
+  width: 80%;
+  height: 100%;
+  background-color: #4C4C4C;
+  right: 100%;
+  top: 0;
+  transition: right .1s ease-out;
+  border-style: solid;
+  border-width: 0 1px 0 0;
+  border-color: #8E8E8E;
+}
+body.enable-mobile.show-mobile-menu {
+  cursor: pointer;
+}
+body.enable-mobile.show-mobile-menu .silex-pages {
+  right: 20%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+body.enable-mobile .page-element {
+  display: block;
+  cursor: pointer;
+  padding: 1em;
+  font-size: 1.6em;
+  color: #FFFFFF;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+body.enable-mobile .page-element.page-link-active {
+  background-color: #262626;
+}
+/* elements styles */
+body.enable-mobile .background {
+  height: initial;
+  padding-bottom: 50px;
 }
 /* Mobile styles */
 @media (max-width:480px) {
@@ -131,58 +177,6 @@ body.enable-mobile .editable-style.hide-on-desktop {
   }
   body {
     position: initial; /* when position is absolute the body has the size of its content */
-  }
-  /* mobile hamburger menu */
-  body.enable-mobile .silex-pages .menu-button {
-    width: 50px;
-    height: 40px;
-    left: 105%;
-    top: 10px;
-    position: absolute;
-    cursor: pointer;
-    border-radius: 6px;
-    display: initial;
-  }
-
-  /* mobile side bar */
-  body.enable-mobile .silex-pages {
-    position: fixed;
-    z-index: 999999;
-    width: 80%;
-    height: 100%;
-    background-color: #4C4C4C;
-    right: 100%;
-    top: 0;
-    transition: right .1s ease-out;
-    border-style: solid;
-    border-width: 0 1px 0 0;
-    border-color: #8E8E8E;
-  }
-  body.enable-mobile.show-mobile-menu {
-    cursor: pointer;
-  }
-  body.enable-mobile.show-mobile-menu .silex-pages {
-    right: 20%;
-    overflow-y: auto;
-    overflow-x: hidden;
-  }
-  body.enable-mobile .page-element {
-    display: block;
-    cursor: pointer;
-    padding: 1em;
-    font-size: 1.6em;
-    color: #FFFFFF;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
-  }
-  body.enable-mobile .page-element.page-link-active {
-    background-color: #262626;
-  }
-  /* elements styles */
-  body.enable-mobile .background {
-    height: initial;
-    padding-bottom: 50px;
   }
   /* mobile mode */
   body.enable-mobile .editable-style,
