@@ -17,8 +17,8 @@ const constants = require('./Constants.json');
  * we get it from package.json
  * used for backward compat and for the static files URLs taken from //{{host}}/static/{{Y-Z}}
  */
-const FRONT_END_VERSION = (require(Path.resolve(__dirname, '../../package.json'))['version:frontend']).split('.');
-const LATEST_VERSION = (require(Path.resolve(__dirname, '../../package.json'))['version:backwardcompat']).split('.');
+const FRONT_END_VERSION = (require(Path.resolve(__dirname, '../../package.json'))['version:frontend']).split('.').map(s => parseInt(s));
+const LATEST_VERSION = (require(Path.resolve(__dirname, '../../package.json'))['version:backwardcompat']).split('.').map(s => parseInt(s));
 console.log('Silex starts with backward compat version', LATEST_VERSION, 'and front end version', FRONT_END_VERSION);
 
 /**
@@ -50,32 +50,31 @@ module.exports = class BackwardCompat {
     var version = (metaNode.getAttribute('content') || '')
       .replace('Silex v', '')
       .split('.')
-      .map(function(str) {
-        return parseInt(str, 10) || 0;
-      });
+      .map(str => parseInt(str, 10) || 0);
 
     var hasToUpdate = this.hasToUpdate(version, LATEST_VERSION);
+    console.log('BC', version, LATEST_VERSION, hasToUpdate);
 
     // warn the user
     if (this.amIObsolete(version, LATEST_VERSION)) {
       return Promise.resolve('This website has been saved with a newer version of Silex. Continue at your own risks.');
     }
-    else if (this.hasToUpdate(version, [2,2,7])) {
+    else if (this.hasToUpdate(version, [2, 2, 7])) {
       return Promise.reject({
         message: 'This website has been saved with an older version of Silex, which is not supported anymore as of March 2018. In order to convert it to a newer version, please go to <a href="https://old.silex.me">old.silex.me</a> to open and then save your website. <a href="https://github.com/silexlabs/Silex/wiki/Website-saved-with-older-version-of-Silex">More about this here</a>',
       });
     }
     else if (hasToUpdate) {
       // convert to the latest version
-      return this.to2_2_8(version, doc, function() {
-       // update the static scripts to match the current server and latest version
-       this.updateStatic(doc);
+      return this.to2_2_8(version, doc).then(() => {
+        // update the static scripts to match the current server and latest version
+        this.updateStatic(doc);
         // store the latest version
         metaNode.setAttribute('content', 'Silex v' + LATEST_VERSION.join('.'));
         // continue
         // needs to reload if silex scripts and stylesheets have been updated
+        return 'This website has been updated with the latest version of Silex.<br><br>Before you save it, please check that everything is fine. Saving it with another name could be a good idea too (menu file > save as).';
       })
-      .then(() => 'This website has been updated with the latest version of Silex.<br><br>Before you save it, please check that everything is fine. Saving it with another name could be a good idea too (menu file > save as).')
     }
     else {
       // update the static scripts to match the current server URL
@@ -164,6 +163,19 @@ module.exports = class BackwardCompat {
     // TODO when there will be BC again
     return new Promise((resolve, reject) => {
       if (this.hasToUpdate(version, [2, 2, 8])) {
+        console.log('updating', version, [2, 2, 8]);
+        // cleanup the hamburger menu icon
+        const menuButton = doc.querySelector('.menu-button')
+        menuButton.classList.remove('paged-element', 'paged-element-hidden', 'page-page-1', 'prevent-resizable');
+        menuButton.classList.add('hide-on-desktop');
+        // give the hamburger menu a size (TODO: add to the json model too)
+        doc.querySelector('.silex-inline-styles').innerHTML += '.silex-id-hamburger-menu {width: 50px;min-height: 40px;}'
+        // pages need to have href set
+        Array.from(doc.querySelectorAll('.page-element'))
+        .forEach(el => {
+          el.setAttribute('href', '#!' + el.getAttribute('id'));
+          console.log('set href of hamburger menu page', el.href);
+        });
       }
       resolve();
     });

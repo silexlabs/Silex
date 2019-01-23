@@ -3,7 +3,7 @@
   "description": "Free and easy website builder for everyone.",
   "version": "2.4.0",
   "version:frontend": "2.8",
-  "version:backwardcompat": "2.2.7",
+  "version:backwardcompat": "2.2.8",
   "author": "Alex Hoyau <a.hoyau@silexlabs.org> (https://lexoyo.me/)",
   "contributors": [
     "Jean-Baptiste Richardet <jeanbaptiste.richardet@gmail.com> (https://github.com/JbIPS)"
