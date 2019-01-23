@@ -336,6 +336,7 @@ silex.model.Page.prototype.createPage = function(name, displayName) {
   // create the DOM element
   var aTag = goog.dom.createElement('a');
   aTag.setAttribute('id', name);
+  aTag.setAttribute('href', '#!' + name);
   aTag.setAttribute('data-silex-type', 'page');
   aTag.innerHTML = displayName;
   goog.dom.appendChild(container, aTag);
@@ -359,6 +360,7 @@ silex.model.Page.prototype.renamePage = function(oldName, newName, newDisplayNam
   goog.array.forEach(elements, function(element) {
     if (element.getAttribute('id') === oldName) {
       element.setAttribute('id', newName);
+      element.setAttribute('href', '#!' + newName);
       element.innerHTML = newDisplayName;
     }
   }, this);
