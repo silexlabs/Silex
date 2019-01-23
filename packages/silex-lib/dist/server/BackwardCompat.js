@@ -166,8 +166,10 @@ module.exports = class BackwardCompat {
         console.log('updating', version, [2, 2, 8]);
         // cleanup the hamburger menu icon
         const menuButton = doc.querySelector('.menu-button')
-        menuButton.classList.remove('paged-element', 'paged-element-hidden', 'page-page-1', 'prevent-resizable');
-        menuButton.classList.add('hide-on-desktop');
+        if(menuButton) {
+          menuButton.classList.remove('paged-element', 'paged-element-hidden', 'page-page-1', 'prevent-resizable');
+          menuButton.classList.add('hide-on-desktop');
+        }
         // give the hamburger menu a size (TODO: add to the json model too)
         doc.querySelector('.silex-inline-styles').innerHTML += '.silex-id-hamburger-menu {width: 50px;min-height: 40px;}'
         // pages need to have href set

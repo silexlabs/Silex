@@ -4,11 +4,6 @@
 
 /* the body covers the whole available space */
 /* the body is resized to its content size when needed in front-end.js */
-body {
-  min-width: 100%;
-  min-height: 100%;
-  position: absolute; /* when position is absolute the body has at least the width of its content, which is good when window is smaller than section width for section containers */
-}
 /* pages */
 .page-element{
   display: none;
@@ -171,10 +166,11 @@ body.enable-mobile .background {
 }
 /* Mobile styles */
 @media (max-width:480px) {
-  /* hide horizontal scroll bar which appears because of residual values in css */
+  /* hide horizontal scroll bar which appears because of residual values in css
   html {
     overflow-x: hidden;
   }
+  */
   body {
     position: initial; /* when position is absolute the body has the size of its content */
   }
