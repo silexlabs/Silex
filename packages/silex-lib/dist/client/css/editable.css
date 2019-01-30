@@ -12,9 +12,11 @@
 }
 
 /* leave space around the main container */
-body{
+body {
   padding-bottom: 100px;
   position: absolute; /* this make container element of sections full width, even when the window width is smaller than min-width of sections */
+  min-width: 100%; /* this makes sure that the body and sections are full width even when window is wider than minimum section width */
+  min-height: 100%; /* this makes sure that the body covers the whole stage, even when website content is very short */
 }
 .loading-image {
   background-image: url(../../assets/image-loader.gif);
