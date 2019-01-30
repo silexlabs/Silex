@@ -2,8 +2,6 @@
  * This file holds the basic CSS styles of Silex websites
  */
 
-/* the body covers the whole available space */
-/* the body is resized to its content size when needed in front-end.js */
 /* pages */
 .page-element{
   display: none;
@@ -172,7 +170,7 @@ body.enable-mobile .background {
   }
   */
   body {
-    position: initial; /* when position is absolute the body has the size of its content */
+    position: initial; /* used to be absolute but now only in editor (editable.css), when position is absolute the body has the size of its content */
   }
   /* mobile mode */
   body.enable-mobile .editable-style,
