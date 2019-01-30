@@ -277,10 +277,7 @@ silex.model.File.prototype.getHtmlGenerator = function* () {
   // get html
   this.model.body.removeWysihtmlMarkup(cleanFile);
   yield;
-  var rawHtml = /** @type {Document} */ (cleanFile).documentElement.innerHTML;
-  yield;
-  // add the outer html (html tag)
-  rawHtml = '<html>' + rawHtml + '</html>';
+  var rawHtml = /** @type {Document} */ (cleanFile).documentElement.outerHTML;
   yield;
   // add doctype
   rawHtml = '<!DOCTYPE html>' + rawHtml;

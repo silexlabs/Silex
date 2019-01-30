@@ -20,6 +20,13 @@ goog.provide('silex.types.Controller');
 goog.provide('silex.types.Model');
 goog.provide('silex.types.View');
 
+goog.provide('Font');
+goog.provide('Hosting');
+goog.provide('Provider');
+goog.provide('VHost');
+goog.provide('PublicationOptions');
+
+
 goog.require('silex.controller.ContextMenuController');
 goog.require('silex.controller.CssEditorController');
 goog.require('silex.controller.EditMenuController');
@@ -35,6 +42,81 @@ goog.require('silex.controller.TextEditorController');
 goog.require('silex.controller.ToolMenuController');
 goog.require('silex.controller.ViewMenuController');
 
+
+/**
+ * @enum {string}
+ */
+var StickyPoint = {
+  LEFT: 'left',
+  RIGHT: 'right',
+  TOP: 'top',
+  BOTTOM: 'bottom',
+  // MID_V: 'midV',
+  // MID_H: 'midH',
+};
+
+/**
+ * @typedef {{
+ *   id: string,
+ *   vertical: boolean,
+ *   position: number,
+ *   stickyPoint: StickyPoint,
+ *   metaData: *,
+ * }}
+ */
+var StickyLine;
+
+/**
+ * @typedef {{
+ *   family: string,
+ *   href: string,
+ * }}
+ */
+var Font;
+
+/**
+ * @typedef {{
+ *   providers: Array<Provider>,
+ *   skipHostingSelection: boolean,
+ * }}
+ */
+var Hosting;
+
+/**
+ * @typedef {{
+ *   name: string,
+ *   displayName: string,
+ *   isLoggedIn: boolean,
+ *   authorizeUrl: string,
+ *   dashboardUrl: string,
+ *   pleaseCreateAVhost: string,
+ *   vhostsUrl: string,
+ *   buyDomainUrl: string,
+ *   skipVhostSelection: boolean,
+ *   skipFolderSelection: boolean,
+ *   afterPublishMessage: string,
+ * }}
+ */
+var Provider;
+
+/**
+ * @typedef {{
+ *   name: string,
+ *   domainUrl: string,
+ *   skipDomainSelection: boolean,
+ *   publicationPath: FileInfo,
+ * }}
+ */
+var VHost;
+
+/**
+ * @typedef {{
+ *   file:FileInfo,
+ *   publicationPath:FileInfo,
+ *   provider:Provider,
+ * }}
+ */
+var PublicationOptions;
 
 
 /**
@@ -55,9 +137,7 @@ silex.types.UndoItem;
  * @struct
  * @constructor
  */
-silex.types.Model = function() {
-
-};
+silex.types.Model = function() {};
 
 
 /**
@@ -69,8 +149,9 @@ silex.types.Model = function() {
  * @param {silex.model.Element} element
  * @param {Component} component
  * @param {silex.model.Property} property
+ * @param {DragSystem} dragSystem
  */
-silex.types.Model.prototype.init = function(file, head, body, page, element, component, property) {
+silex.types.Model.prototype.init = function(file, head, body, page, element, component, property, dragSystem) {
   /**
    * @type {silex.model.File}
    */
@@ -99,6 +180,10 @@ silex.types.Model.prototype.init = function(file, head, body, page, element, com
    * @type {silex.model.Property}
    */
   this.property = property;
+  /**
+   * @type {DragSystem}
+   */
+  this.dragSystem = dragSystem;
 };
 
 

@@ -22,9 +22,11 @@ const constants = require('./Constants.json');
 
 module.exports = class DomPublisher {
 
-  constructor(dom, rootUrl) {
+  constructor(dom, rootUrl, rootPath, getDestFolder) {
     this.dom = dom;
     this.rootUrl = rootUrl;
+    this.rootPath = rootPath;
+    this.getDestFolder = getDestFolder;
     this.doc = dom.window.document;
   }
 
@@ -78,29 +80,62 @@ module.exports = class DomPublisher {
     }
   }
 
-  getDestFolder(ext, tagName) {
-    // tags
-    if(tagName) {
-      switch(tagName.toLowerCase()) {
-        case 'script':
-          return 'js';
-        case 'link':
-          return 'css';
-        case 'img':
-        case 'source':
-        case 'video':
-          return 'assets';
+  split(newFirstPageName) {
+    // remove unused scripts when there is no deeplink navigation anymore
+    ['js/jquery-ui.js', 'js/pageable.js']
+    .map(path => this.doc.querySelector(`script[src="${ path }"]`))
+    .filter(el => !!el) // when not updated yet to the latest version, the URLs are not relative
+    .forEach(el => el.parentNode.removeChild(el))
+    // split in multiple pages
+    const pages = Array.from(this.doc.querySelectorAll('a[data-silex-type="page"]'));
+    const initialFirstPageName = pages[0].getAttribute('id');
+    return pages
+    .map((el, idx) => {
+      return  {
+        name: el.getAttribute('id'),
+        displayName: el.innerHTML,
+        fileName: el.getAttribute('id') === initialFirstPageName && newFirstPageName ? 'index.html' : (el.getAttribute('id').substr('page-'.length) + '.html'),
+      };
+    })
+    .map(({displayName, name, fileName}) => {
+      // clone the document
+      const clone = this.doc.cloneNode(true);
+      // update title (TODO: description and SEO)
+      (clone.head.querySelector('title') || {}).innerHTML += ' - ' + displayName;
+      // remove elements from other pages
+      Array.from(clone.querySelectorAll('.paged-element'))
+      .forEach(el => {
+        if(el.classList.contains(name)) {
+          el.classList.add('page-link-active');
+        }
+        else {
+          el.parentNode.removeChild(el);
+        }
+      })
+      // update links
+      Array.from(clone.querySelectorAll('a'))
+      .filter(el => el.hash.startsWith('#!'))
+      .forEach(el => {
+        const [pageName, anchor] = el.hash.substr('#!'.length).split('#');
+        el.href = (pageName === initialFirstPageName && newFirstPageName ? 'index.html' : pageName.substr('page-'.length) + '.html') + (anchor ? '#' + anchor : '');
+        if(pageName ===  name) {
+          el.classList.add('page-link-active');
+        }
+        else {
+          el.classList.remove('page-link-active'); // set when you save the file
+        }
+      })
+      // create a unifile batch action
+      return {
+        name: 'writefile',
+        path: this.rootPath + '/' + this.getDestFolder('.html', null) + '/' + fileName,
+        displayName: fileName,
+        content: '<!doctype html>' + clone.documentElement.outerHTML,
       }
-      // could be an iframe
-      return null;
-    }
-    // css url()
-    else  {
-      return 'assets';
-    }
+    })
   }
 
-  split(baseUrl) {
+  extractAssets(baseUrl) {
     // all scripts, styles and assets from head => local
     const actions = [];
     DomTools.transformPaths(this.dom, (path, el, isInHead) => {
@@ -121,7 +156,7 @@ module.exports = class DomPublisher {
           actions.push({
             original: path,
             srcPath: url.href,
-            destPath: destPath,
+            destPath: this.rootPath + '/' + destPath,
             tagName: tagName,
             displayName: fileName,
           });
@@ -160,7 +195,7 @@ module.exports = class DomPublisher {
       this.doc.head.appendChild(scriptTagSrc);
     }
     else {
-      console.warn('no scripts found in head');
+      console.info('no script found in head');
     }
 
     // add head css
@@ -210,12 +245,11 @@ module.exports = class DomPublisher {
 
     this.doc.body.classList.add('silex-published');
 
-    const res = {
+    return {
       scriptTags: scriptTags,
       styleTags: styleTags,
       actions: actions,
     };
-    return res;
   }
 
 

@@ -1,16 +1,16 @@
 const fs = require('fs');
 const express = require('express');
 
-module.exports = function(app) {
+module.exports = function(sslOptions, app) {
   const router = express.Router();
 
   // SSL
   // force ssl if the env var SILEX_FORCE_HTTPS is set
-  if(process.env.SILEX_FORCE_HTTPS) {
+  if(sslOptions.forceHttps) {
     console.log('force SSL is active (env var SILEX_FORCE_HTTPS is set)');
     const forceSSL = require('express-force-ssl');
     app.set('forceSSLOptions', {
-      trustXFPHeader: !!process.env.SILEX_FORCE_HTTPS_TRUST_XFP_HEADER
+      trustXFPHeader: !!sslOptions.trustXFPHeader,
     });
     router.use(forceSSL);
   }
@@ -20,11 +20,11 @@ module.exports = function(app) {
 
   // SSL certificate
   console.log('SSL: looking for env vars SILEX_SSL_CERTIFICATE and SILEX_SSL_PRIVATE_KEY');
-  if(process.env.SILEX_SSL_PRIVATE_KEY && process.env.SILEX_SSL_CERTIFICATE) {
-    console.log('SSL: found certificate', process.env.SILEX_SSL_CERTIFICATE);
+  if(sslOptions.privateKey && sslOptions.certificate) {
+    console.log('SSL: found certificate', sslOptions.certificate);
     try {
-      var privateKey = fs.readFileSync(process.env.SILEX_SSL_PRIVATE_KEY).toString();
-      var certificate = fs.readFileSync(process.env.SILEX_SSL_CERTIFICATE).toString();
+      var privateKey = fs.readFileSync(sslOptions.privateKey).toString();
+      var certificate = fs.readFileSync(sslOptions.certificate).toString();
 
       var options = {
         key: privateKey,
@@ -33,9 +33,8 @@ module.exports = function(app) {
         rejectUnauthorized: false
       };
 
-      var sslPort = process.env.SSL_PORT || 443;
-      https.createServer(options, this).listen(sslPort, function() {
-        console.log('SSL: listening on port ', sslPort);
+      https.createServer(options, this).listen(sslOptions.sslPort, function() {
+        console.log('SSL: listening on port ', sslOptions.sslPort);
       });
     }
     catch(e) {

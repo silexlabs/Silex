@@ -34,32 +34,15 @@ jobs:
       install: npm ci --ignore-scripts
       script: npm run lint:server
     - stage: deploy 📦
-      install: npm ci --production
-      name: online version
-      deploy:
-        # deploy develop to the staging environment
-        - provider: script
-          skip_cleanup: true
-          script: bash build/deploy.sh $HOST_PREPROD $URL_PREPROD $SFTP_PASS_PREPROD
-          on:
-            repo: silexlabs/Silex
-            branch: develop
-        # deploy master to production
-        - provider: script
-          skip_cleanup: true
-          script: bash build/deploy.sh $HOST_PROD $URL_PROD $SFTP_PASS_PROD
-          on:
-            repo: silexlabs/Silex
-            branch: master
-    - name: linux app
+      name: linux app
+      if: branch = develop AND repo = silexlabs/Silex
       install: npm ci
-      if: branch = master AND repo = silexlabs/Silex
       script: npm run release
       os: linux
       dist: xenial
     - name: osx app
+      if: branch = develop AND repo = silexlabs/Silex
       install: npm ci
-      if: branch = master AND repo = silexlabs/Silex
       script: npm run release
       os: osx
 

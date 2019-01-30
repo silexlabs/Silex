@@ -17,7 +17,7 @@
 goog.provide('silex.controller.FileMenuController');
 
 goog.require('silex.controller.ControllerBase');
-goog.require('silex.service.SilexTasks');
+goog.require('silex.view.dialog.PublishDialog');
 
 
 
@@ -42,7 +42,7 @@ goog.inherits(silex.controller.FileMenuController, silex.controller.ControllerBa
  * @param {?function(Object)=} opt_errorCbk
  */
 silex.controller.FileMenuController.prototype.loadTemplate = function(url, opt_cbk, opt_errorCbk) {
-    this.model.file.openFromUrl(url, rawHtml => this.onOpened(opt_cbk, rawHtml), (err, msg) => this.onOpenError(err, msg, opt_errorCbk));
+  this.model.file.openFromUrl(url, rawHtml => this.onOpened(opt_cbk, rawHtml), (err, msg) => this.onOpenError(err, msg, opt_errorCbk));
 };
 
 
@@ -54,6 +54,24 @@ silex.controller.FileMenuController.prototype.loadTemplate = function(url, opt_c
 silex.controller.FileMenuController.prototype.loadBlank = function(opt_cbk, opt_errorCbk) {
   const blankUrl = '/libs/templates/silex-blank-templates/blank/editable.html';
   this.loadTemplate(blankUrl, opt_cbk, opt_errorCbk);
+};
+
+
+silex.controller.FileMenuController.prototype.openRecent = function(fileInfo, opt_cbk) {
+  // a recent file was selected
+  this.model.file.open(/** @type {FileInfo} */ (fileInfo), rawHtml => this.onOpened(opt_cbk, rawHtml), err => {
+    silex.utils.Notification.confirm(`Could not open this recent file, you probably need to connect to ${ fileInfo.service } again.`, ok => {
+      const ce = silex.service.CloudStorage.getInstance().ce;
+      console.log('before auth', ce);
+      silex.utils.Notification.alert(`I am trying to connect you to ${ fileInfo.service } again, please accept the connection in the popup I have just opened then <strong>please wait</strong>.`, () => {});
+      ce['auth'](fileInfo.service).then(res => {
+        silex.utils.Notification.close();
+        if(ok) {
+          this.openRecent(fileInfo, opt_cbk);
+        }
+      });
+    });
+  });
 };
 
 
@@ -72,8 +90,7 @@ silex.controller.FileMenuController.prototype.newFile = function(opt_cbk, opt_er
         this.loadBlank(opt_cbk, opt_errorCbk);
       }
       else if(fileInfo) {
-        // a recent file was selected
-        this.model.file.open(/** @type {FileInfo} */ (fileInfo), rawHtml => this.onOpened(opt_cbk, rawHtml), err => this.onOpenError(err, 'Could not open this recent file, are you connected to ' + fileInfo.service + '?', opt_errorCbk));
+        this.openRecent(fileInfo, opt_cbk);
       }
     },
     openTemplate: (url) => {
@@ -143,42 +160,48 @@ silex.controller.FileMenuController.prototype.openFile = function(opt_cbk, opt_e
   this.tracker.trackAction('controller-events', 'request', 'file.open', 0);
   // let the user choose the file
   this.view.fileExplorer.openFile(FileExplorer.HTML_EXTENSIONS)
-  .then(fileInfo => {
-    if(fileInfo) {
-      this.model.file.open(fileInfo, rawHtml => {
-        this.model.file.setHtml(rawHtml, () => {
-          // undo redo reset
-          this.undoReset();
-          // display and redraw
-          this.fileOperationSuccess((this.model.head.getTitle() || 'Untitled website') + ' opened.', true);
-          // QOS, track success
-          this.tracker.trackAction('controller-events', 'success', 'file.open', 1);
-          if (opt_cbk) {
-            opt_cbk(/** @type {FileInfo} */ (fileInfo));
-          }
-        }, true); // with loader
-      },
-      (error, message) => {
-        silex.utils.Notification.alert('Error: I did not manage to open this file. \n' + (message || error.message || ''), () => {
-          if (opt_errorCbk) {
-            opt_errorCbk(error);
-          }
-        });
-        this.tracker.trackAction('controller-events', 'error', 'file.open', -1);
-      });
-    }
-    else {
-      if(opt_cancelCbk) opt_cancelCbk();
-    }
-  })
-  .catch(error => {
-    this.tracker.trackAction('controller-events', 'error', 'file.open', -1);
-    if (opt_errorCbk) {
-      opt_errorCbk(error);
-    }
-  });
+    .then(fileInfo => {
+      if(fileInfo) {
+        this.model.file.open(fileInfo, rawHtml => {
+          this.model.file.setHtml(rawHtml, () => {
+            // undo redo reset
+            this.undoReset();
+            // display and redraw
+            this.fileOperationSuccess((this.model.head.getTitle() || 'Untitled website') + ' opened.', true);
+            // QOS, track success
+            this.tracker.trackAction('controller-events', 'success', 'file.open', 1);
+            if (opt_cbk) {
+              opt_cbk(/** @type {FileInfo} */ (fileInfo));
+            }
+          }, true); // with loader
+        },
+          (error, message) => {
+            silex.utils.Notification.alert('Error: I did not manage to open this file. \n' + (message || error.message || ''), () => {
+              if (opt_errorCbk) {
+                opt_errorCbk(error);
+              }
+            });
+            this.tracker.trackAction('controller-events', 'error', 'file.open', -1);
+          });
+      }
+      else {
+        if(opt_cancelCbk) opt_cancelCbk();
+      }
+    })
+    .catch(error => {
+      this.tracker.trackAction('controller-events', 'error', 'file.open', -1);
+      if (opt_errorCbk) {
+        opt_errorCbk(error);
+      }
+    });
 };
 
+
+silex.controller.FileMenuController.prototype.publishError = function(message) {
+  this.tracker.trackAction('controller-events', 'error', 'file.publish', -1);
+  console.error('Error: I did not manage to publish the file.', message);
+  silex.utils.Notification.alert(`<strong>An error occured.</strong><p>I did not manage to publish the website. ${ message }</p><p><a href="${ silex.Config.ISSUES_SILEX }" target="_blank">Get help in Silex forums.</a></p>`, () => {});
+};
 
 /**
  * ask the user for a new file title
@@ -189,65 +212,101 @@ silex.controller.FileMenuController.prototype.publish = function() {
     console.warn('Publish canceled because a modal dialog is opened already.');
     return;
   }
-  const file = this.model.file.getFileInfo();
-  const folder = this.model.head.getPublicationPath();
   this.tracker.trackAction('controller-events', 'request', 'file.publish', 0);
-  if (!folder) {
-    silex.utils.Notification.alert('I do not know where to publish your site.' +
-      'Select a folder in the settings pannel and do "publish" again.' +
-      '\nNow I will open the publish settings.',
-        goog.bind(function() {
-          this.view.settingsDialog.open(function() {
-            //here the panel was closed
-          }, 'publish-pane');
-          this.view.workspace.redraw(this.view);
+  /** @type {silex.view.dialog.PublishDialog} */
+  const dialog = new silex.view.dialog.PublishDialog(this.model, this.view);
+  dialog.open().then(publishOptions => {
+    if(publishOptions) {
+      this.doPublish(publishOptions, (errMsg, warningMsg, finalPublicationOptions) => {
+        if(errMsg) {
+          dialog.close();
+          this.publishError(errMsg);
+        }
+        else if(warningMsg) {
+          dialog.close();
+          silex.utils.Notification.alert(warningMsg, () => {});
           this.tracker.trackAction('controller-events', 'cancel', 'file.publish', 0);
-        }, this));
+        }
+        else {
+          dialog.publish(/** @type {PublicationOptions} */ (finalPublicationOptions))
+          .then(msg => {
+            this.tracker.trackAction('controller-events', 'success', 'file.publish', 1);
+            dialog.close();
+            silex.utils.Notification.alert(msg, () => {});
+          })
+          .catch(msg => {
+            dialog.close();
+            this.publishError(msg);
+          });
+        }
+      });
+    }
+    else {
+      this.tracker.trackAction('controller-events', 'cancel', 'file.publish', 0);
+    }
+  })
+  .catch(msg => this.publishError(msg));
+};
+
+
+/**
+ * @param {PublicationOptions} publicationOptions
+ * @param {function(?string, ?string, ?PublicationOptions)} cbk
+ */
+silex.controller.FileMenuController.prototype.doPublish = function(publicationOptions, cbk) {
+  const publicationPath = publicationOptions['publicationPath'];
+  const provider = publicationOptions['provider'];
+  const vhost = publicationOptions['vhost'];
+
+  // get info about the website file
+  const file = this.model.file.getFileInfo();
+  const isTemplate = this.model.file.isTemplate;
+
+  // save new path when needed and get publication path
+  if(publicationPath) this.model.head.setPublicationPath(publicationPath);
+  const folder = this.model.head.getPublicationPath();
+  if (!folder) {
+    this.view.settingsDialog.open(function() {
+      //here the panel was closed
+    }, 'publish-pane');
+    this.view.workspace.redraw(this.view);
+    cbk(null, 'I do not know where to publish your site.' +
+      'Select a folder in the settings pannel and do "publish" again.' +
+      '\nNow I will open the publish settings.', null);
   }
   // the file must be saved somewhere because all URLs are made relative
-  else if (!file) {
+  else if (!file || isTemplate) {
     console.error('The file must be saved before I can publish it.');
-    silex.utils.Notification.notifyError('The file must be saved before I can publish it.');
-    this.tracker.trackAction('controller-events', 'cancel', 'file.publish', 0);
+    cbk(null, 'The file must be saved before I can publish it.', null);
   }
   else {
-    let timer = -1;
-    silex.utils.Notification.alert('<strong>I am about to publish your site. This may take several minutes.</strong>', () => {
-      if(timer > 0) {
-        clearInterval(timer);
+    if(!provider) {
+      const providerName = this.model.head.getHostingProvider();
+      if(!providerName) {
+        throw new Error('I need a hosting provider name for this website. And none is configured.');
       }
-      timer = -1;
-    }, 'Close');
-    silex.service.SilexTasks.getInstance().publish(
-      file,
-      folder,
-      () => {
-        setTimeout(() => {
-          // tip of the day
-          const tipOfTheDayElement = /** @type {!Element} */ (document.createElement('div'));
-          const tipOfTheDay = new silex.view.TipOfTheDay(tipOfTheDayElement);
-          silex.utils.Notification.setInfoPanel(tipOfTheDayElement);
-        }, 2000);
-        timer = setInterval(() => {
-          silex.service.SilexTasks.getInstance().publishState(json => {
-            let msg = `<strong>${json['message']}</strong>`;
-            if(json['stop'] === true) {
-              clearInterval(timer);
-              msg += `<p>Preview <a target="_blanck" href="${folder.url}/index.html">your published site here</a>.</p>`;
-            }
-            silex.utils.Notification.setText(msg);
-          }, msg => {
-            console.error('Error: ', msg);
-            silex.utils.Notification.setText(`<strong>An error occured.</strong><p>I did not manage to publish the website. You may want to check the publication settings and your internet connection.</p><p>Error message: ${ msg }</p><p><a href="${ silex.Config.ISSUES_SILEX }" target="_blank">Get help in Silex forums.</a></p>`);
-            clearInterval(timer);
-          });
-        }, 1000);
-        this.tracker.trackAction('controller-events', 'success', 'file.publish', 1);
-      },
-      msg => {
-        console.error('Error: I did not manage to publish the file. (2)', msg);
-            silex.utils.Notification.setText(`<strong>An error occured.</strong><p>I did not manage to publish the website. You may want to check the publication settings and your internet connection.</p><p>Error message: ${ msg }</p><p><a href="${ silex.Config.ISSUES_SILEX }" target="_blank">Get help in Silex forums.</a></p>`);
-        this.tracker.trackAction('controller-events', 'error', 'file.publish', -1);
-      });
+      else {
+        silex.service.SilexTasks.getInstance().hosting(hosting => {
+          /** @type {Provider} */ const storedProvider = hosting['providers'].find(p => p['name'] === providerName);
+          if(!storedProvider) {
+            silex.utils.Notification.alert(`Unknown provider ${ providerName }. Is it configured on this servier? Here are the hosting providers I know: ${ hosting['providers'].map(p => p['name']).join(', ') }`, () => {});
+            throw new Error(`Unknown provider ${ providerName }. Is it configured on this servier? Here are the hosting providers I know: <ul>${ hosting['providers'].map(p => '<li>' + p['name'] + '</li>').join('') }</ul>`);
+          }
+          cbk(null, null, /** @type {PublicationOptions} */ ({
+            'file': file,
+            'publicationPath': folder,
+            'provider': storedProvider,
+          }));
+        });
+      }
+    }
+    else {
+      cbk(null, null, /** @type {PublicationOptions} */ ({
+        'file': file,
+        'publicationPath': folder,
+        'provider': provider,
+      }));
+    }
   }
 };
+
