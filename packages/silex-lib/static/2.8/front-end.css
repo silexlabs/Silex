@@ -215,6 +215,9 @@ body.enable-mobile .background {
 /**
  * prodotype components
  */
+.silex-element-content-full-height .silex-element-content {
+  height: 100%;
+}
 .prodotype-runtime {
   display: none;
 }
