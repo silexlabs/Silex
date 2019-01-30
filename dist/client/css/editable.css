@@ -2,19 +2,21 @@
     width: 10px;
 }
 ::-webkit-scrollbar-track {
-    background-color: @silexdarkgrey;
+    background-color: #2F2F2F; /* @silexdarkgrey */
 }
 ::-webkit-scrollbar-thumb {
-    background-color: @silexmediumgrey;
+    background-color: #444; /* @silexmediumgrey */
 }
 ::-webkit-scrollbar-thumb:hover {
-    background-color: @silexmediumdarkgrey;
+    background-color: #393939; /* @silexmediumdarkgrey */
 }
 
 /* leave space around the main container */
-body{
+body {
   padding-bottom: 100px;
-/*  transition: min-width .5s, min-height .5s; */
+  position: absolute; /* this make container element of sections full width, even when the window width is smaller than min-width of sections */
+  min-width: 100%; /* this makes sure that the body and sections are full width even when window is wider than minimum section width */
+  min-height: 100%; /* this makes sure that the body covers the whole stage, even when website content is very short */
 }
 .loading-image {
   background-image: url(../../assets/image-loader.gif);
@@ -71,6 +73,13 @@ this makes the video clickable:
   left:0;
   width:100%;
   height:100%;
+}
+/* while dragging, stuck to a sticky line */
+.editable-style.stuck.stuck-right > .ui-resizable-e,
+.editable-style.stuck.stuck-left > .ui-resizable-w,
+.editable-style.stuck.stuck-bottom > .ui-resizable-s,
+.editable-style.stuck.stuck-top > .ui-resizable-n {
+  background-image: linear-gradient(to bottom right, rgba(255, 255, 255, 0.5), rgba(255, 0, 0, 0.5), rgba(0, 0, 0, 0.5));
 }
 /* style while dragging */
 body .editable-style.dragging-pending.silex-selected {

@@ -63,6 +63,10 @@ class SettingsDialog {
      */
     this.publicationPath = null;
 
+    /**
+     * @type {?string}
+     */
+    this.websiteUrl = null;
 
     /**
      * @type {function()|null}
@@ -92,6 +96,7 @@ class SettingsDialog {
 
     // input text fields
     this.bindTextField('.general-pane .input-title', (v) => this.controller.settingsDialogController.setTitle(v));
+    this.bindTextField('.general-pane .input-lang', (v) => this.controller.settingsDialogController.setLang(v));
     this.bindTextField('.general-pane .input-site-width', (v) => this.controller.settingsDialogController.setWebsiteWidth(v));
     this.bindTextField('.social-pane .input-title', (v) => this.controller.settingsDialogController.setTitleSocial(v));
     this.bindTextField('.general-pane .input-description', (v) => this.controller.settingsDialogController.setDescription(v));
@@ -108,6 +113,11 @@ class SettingsDialog {
       const fileInfo = this.controller.settingsDialogController.getPublicationPath();
       const fileInfoNew = silex.utils.Url.updateFileInfo(fileInfo, {'service': v});
       this.controller.settingsDialogController.setPublicationPath(fileInfoNew);
+    });
+    this.bindTextField('.publish-pane .input-website-url', (v) => {
+      if(v === '') v = null;
+      this.model.head.setWebsiteUrl(v);
+      this.websiteUrl = v;
     });
 
     // image path browse button
@@ -195,7 +205,6 @@ class SettingsDialog {
    * @param {function(string)} cbk
    */
   bindTextField(cssSelector, cbk) {
-    // title input field
     var input = this.element.querySelector(cssSelector);
     if (!input) {
       throw new Error('Settings panel error: could not find the element to bind.');
@@ -212,7 +221,6 @@ class SettingsDialog {
    * @param {function()} cbk
    */
   bindBrowseButton(cssSelector, cbk) {
-    // title input field
     var btn = this.element.querySelector(cssSelector);
     if (!btn) {
       throw new Error('Settings panel error: could not find the element to bind.');
@@ -301,6 +309,12 @@ class SettingsDialog {
   }
 
 
+  setWebsiteUrl(opt_url) {
+    this.setInputValue('.publish-pane .input-website-url', opt_url);
+    this.websiteUrl = opt_url;
+  }
+
+
   /**
    * enable/disable mobile version
    * @see silex.model.Head
@@ -328,6 +342,16 @@ class SettingsDialog {
    */
   setTitle(opt_title) {
     this.setInputValue('.general-pane .input-title', opt_title);
+  }
+
+
+  /**
+   * set the site default language
+   * @see silex.model.Head
+   * @param {?string=} opt_lang   the site lang
+   */
+  setLang(opt_lang) {
+    this.setInputValue('.general-pane .input-lang', opt_lang);
   }
 
 
@@ -390,6 +414,7 @@ class SettingsDialog {
   redraw() {
     try{
       this.setPublicationPath(this.model.head.getPublicationPath());
+      this.setWebsiteUrl(this.model.head.getWebsiteUrl());
       this.setFonts(this.model.head.getFonts());
     } catch(e){}
   }

@@ -24,10 +24,10 @@ goog.provide('silex.model.Component');
  */
 class Component {
 
-/**
- * @param  {silex.types.Model} model  model class which holds the other models
- * @param  {silex.types.View} view  view class which holds the other views
- */
+  /**
+   * @param  {silex.types.Model} model  model class which holds the other models
+   * @param  {silex.types.View} view  view class which holds the other views
+   */
   constructor(model, view) {
     Component.COMPONENT_CLASS_NAME = 'silex-component';
     Component.STYLE_CLASS_NAME = 'silex-prodotype-style';

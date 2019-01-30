@@ -269,10 +269,10 @@ silex.controller.ControllerBase.prototype.styleChanged = function(name, value, o
     this.undoCheckPoint();
   }
   // apply the change to all elements
-  goog.array.forEach(opt_elements, function(element) {
+  opt_elements.forEach((element) => {
     // update the model
     this.model.element.setStyle(element, name, value);
-  }, this);
+  });
   // refresh the view
   this.refreshView();
 };
@@ -424,6 +424,17 @@ silex.controller.ControllerBase.prototype.setTitle = function(title) {
   // undo checkpoint
   this.undoCheckPoint();
   this.model.head.setTitle(title);
+};
+
+
+/**
+ * ask the user for a new file lang
+ * @param {string} lang
+ */
+silex.controller.ControllerBase.prototype.setLang = function(lang) {
+  // undo checkpoint
+  this.undoCheckPoint();
+  this.model.head.setLang(lang);
 };
 
 

@@ -33,6 +33,13 @@
           li
             fieldset
               legend
+                h3.title Website language
+              p
+                | This is the default language code for this website. Examples: en, fr, es...
+              input.input-text.input-lang(type="text", value="", placeholder="en")
+          li
+            fieldset
+              legend
                 h3.title Website Title
               p
                 | Title of the browser window, and title in the search engines results.
@@ -100,6 +107,12 @@
       .pane.publish-pane
         ul
           li
+            fieldset
+              legend
+                h3.title Website URL
+              p
+                | The address where your website will be available after publish.
+              input.input-path.input-website-url(type="text", value="")
             fieldset
               legend
                 h3.title Publication Path -&nbsp;

@@ -167,8 +167,9 @@ silex.utils.Notification.dialog = function(dialogMethod, message, cbk, opt_okLab
  * close (cancel) the current notification
  */
 silex.utils.Notification.close = function() {
-  const cancel = document.querySelector('#alertify-cancel');
-  if(cancel) cancel.click(); // :facepalm:
+  const btn = document.querySelector('#alertify-cancel') ||
+    document.querySelector('#alertify-ok');
+  if(btn) btn.click(); // :facepalm:
 };
 
 

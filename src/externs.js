@@ -17,14 +17,6 @@
 
 
 /**
- * @typedef {{
- *   family: string,
- *   href: string,
- * }}
- */
-var Font;
-
-/**
  * Parse and consume source maps. By Mozilla
  * @see https://github.com/mozilla/source-map/
  * @type {Object.<*>}

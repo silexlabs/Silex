@@ -75,12 +75,14 @@ silex.model.Head.ENABLE_MOBILE_CSS_CLASS = 'enable-mobile';
  */
 silex.model.Head.prototype.updateFromDom = function() {
   this.setPublicationPath(this.getPublicationPath());
+  this.setWebsiteUrl(this.getWebsiteUrl());
   this.setFaviconPath(this.getFaviconPath());
   this.setThumbnailSocialPath(this.getThumbnailSocialPath());
   this.setDescription(this.getDescription());
   this.setDescriptionSocial(this.getDescriptionSocial());
   this.setTitleSocial(this.getTitleSocial());
   this.setTitle(this.getTitle());
+  this.setLang(this.getLang());
   this.setEnableMobile(this.getEnableMobile());
   this.setWebsiteWidth(this.getWebsiteWidth());
   // update text editor with the website custom styles and script
@@ -259,6 +261,45 @@ silex.model.Head.prototype.getPublicationPath = function() {
 
 
 /**
+ * get/set the website URL
+ * @param {?string=} opt_url
+ */
+silex.model.Head.prototype.setWebsiteUrl = function(opt_url) {
+  // TODO: remove meta and store this value in the JSON like components params (see model/property.js)
+  this.setMeta('websiteUrl', opt_url);
+  this.view.settingsDialog.setWebsiteUrl(opt_url);
+};
+
+
+/**
+ * get/set the website URL
+ * @return {?string}
+ */
+silex.model.Head.prototype.getWebsiteUrl = function() {
+  return this.getMeta('websiteUrl');
+};
+
+
+/**
+ * get/set the hosting provider
+ * @param {?string=} opt_url
+ */
+silex.model.Head.prototype.setHostingProvider = function(opt_url) {
+  // TODO: remove meta and store this value in the JSON like components params (see model/property.js)
+  this.setMeta('hostingProvider', opt_url);
+};
+
+
+/**
+ * get/set the hosting provider
+ * @return {?string}
+ */
+silex.model.Head.prototype.getHostingProvider = function() {
+  return this.getMeta('hostingProvider');
+};
+
+
+/**
  * enable/disable the mobile version
  * @param {boolean} enable
  */
@@ -390,6 +431,26 @@ silex.model.Head.prototype.setTitle = function(name) {
   titleNode.innerHTML = name || '';
   // update view
   this.view.settingsDialog.setTitle(name);
+};
+
+
+/**
+ * website default website language
+ * @return {?string}
+ */
+silex.model.Head.prototype.getLang = function() {
+  return this.model.file.getContentDocument().querySelector('html').lang;
+};
+
+
+/**
+ * website default website language
+ * @param {?string} name
+ */
+silex.model.Head.prototype.setLang = function(name) {
+  this.model.file.getContentDocument().querySelector('html').lang = name || '';
+  // update view
+  this.view.settingsDialog.setLang(name || '');
 };
 
 
