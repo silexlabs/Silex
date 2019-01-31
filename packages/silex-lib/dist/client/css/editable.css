@@ -11,12 +11,15 @@
     background-color: #393939; /* @silexmediumdarkgrey */
 }
 
-/* leave space around the main container */
 body {
-  padding-bottom: 100px;
-  position: absolute; /* this make container element of sections full width, even when the window width is smaller than min-width of sections */
+  padding-bottom: 100px; /* leave space at the bottom */
   min-width: 100%; /* this makes sure that the body and sections are full width even when window is wider than minimum section width */
   min-height: 100%; /* this makes sure that the body covers the whole stage, even when website content is very short */
+}
+@media (min-width:481px) {
+  body {
+    position: absolute; /* this make container element of sections full width, even when the window width is smaller than min-width of sections */
+  }
 }
 .loading-image {
   background-image: url(../../assets/image-loader.gif);
