@@ -23,7 +23,7 @@ $(function() {
   /**
    * window resize event
    */
-  var siteWidth = parseInt($('meta[name=website-width]').attr('content'));
+  var siteWidth = parseInt($('meta[name=website-width]').attr('content') || '480');
   var resizeBody = function (event){
     var $html = $('html');
     // behavior which is not the same in Silex editor and outside the editor
