@@ -193,11 +193,8 @@ module.exports = function({ port, rootUrl }, unifile) {
     }
     // remove useless css classes
     constants.SILEX_TEMP_CLASS_NAMES.forEach(className => {
-      const elements = dom.window.document.getElementsByClassName(className);
-      for(let idx=0; idx<elements.length; idx++) {
-        const el = elements[idx];
-        el.classList.remove(className);
-      }
+      Array.from(dom.window.document.getElementsByClassName(className))
+      .forEach(el => el.classList.remove(className));
     });
     // cleanup inline styles
     dom.window.document.body.minWidth = '';
