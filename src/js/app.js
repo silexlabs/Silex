@@ -164,10 +164,12 @@ class App {
     this.view.propertyTool.buildUi();
 
 
-    // warning when IE
-    if (navigator.appName === 'Microsoft Internet Explorer' || (navigator.appName === 'Netscape' && navigator.userAgent.indexOf('Trident') >= 0)) {
+    // warning when not ff or chrome
+    const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+    const isChrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
+    if (!isFirefox && !isChrome) {
       silex.utils.Notification.alert(
-        'Your browser is not supported yet.<br><br>Considere using chrome or firefox instead of Internet Explorer.',
+        'Your browser is not supported yet.<br><br>Considere using <a href="https://www.mozilla.org/firefox/" target="_blank">Firefox</a> or <a href="https://www.google.com/chrome/" target="_blank">chrome</a>.',
         () => {});
     }
 
