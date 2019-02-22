@@ -17,12 +17,13 @@ function init_<%= uid %>() {
 
     // apply position and zoom
     // from map URL http://www.openstreetmap.org/#map=18/48.88680/2.34235&layers=C
-    var params = '<%- url %>'.match(/.*map=([0-9]*)\/(.*)\/(.*)&layers=(.)/);
+    // var params = '<%- url %>'.match(/.*map=([0-9]*)\/(.*)\/(.*)&layers=(.)/);
+    var params = '<%- url %>'.match(/.*map=([0-9]*)\/(.*)\/(.*)/);
     if(params) {
         var zoom = parseFloat(params[1]);
         var lat = parseFloat(params[2]);
         var lon = parseFloat(params[3]);
-        var layer = params[4];
+        // var layer = params[4] || 'S';
         var center = ol.proj.fromLonLat([lon, lat]);
         var map = new ol.Map({
           layers: [
