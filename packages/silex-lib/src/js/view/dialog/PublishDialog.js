@@ -90,7 +90,7 @@ silex.view.dialog.PublishDialog = class {
         const provider = hosting['providers'][0];
         console.log('Skip provider selection for hosting:', hosting);
         // continue to next step
-        resolve(this.onSelectProvider(provider));
+        resolve(this.selectProviderFolder(provider));
       }
       else {
         resolve(this.selectProvider(hosting['providers'], providerName));
@@ -114,19 +114,9 @@ silex.view.dialog.PublishDialog = class {
 
       silex.utils.Notification.prompt('Choose the hosting provider you love! &nbsp; ' + helpBtnStr, 'unused', ok => {
         if(ok) {
-          this.model.head.setHostingProvider(selectEl.value);
           const idx = selectEl.selectedIndex;
           const provider = providers[idx];
-          if(provider['skipFolderSelection']) {
-            resolve(this.onSelectProvider(provider));
-          }
-          else {
-            this.view.fileExplorer.openFolder()
-            .then(folder => {
-              this.model.head.setPublicationPath(folder);
-              resolve(this.onSelectProvider(provider));
-            })
-          }
+          resolve(this.selectProviderFolder(provider));
         }
         else resolve(null);
       }, 'next', 'cancel');
@@ -139,6 +129,28 @@ silex.view.dialog.PublishDialog = class {
   `;
       const selectEl = body.querySelector('.providers');
       if(providerName) selectEl.value = providerName;
+    });
+  }
+
+
+  /**
+   * store the selected provider and open a folder selection if needed
+   * @param {Provider} provider
+   * @return {Promise}
+   */
+  selectProviderFolder(provider) {
+    return new Promise((resolve, reject) => {
+      this.model.head.setHostingProvider(provider.name);
+      if(provider['skipFolderSelection']) {
+        resolve(this.onSelectProvider(provider));
+      }
+      else {
+        this.view.fileExplorer.openFolder()
+        .then(folder => {
+          this.model.head.setPublicationPath(folder);
+          resolve(this.onSelectProvider(provider));
+        })
+      }
     });
   }
 
