@@ -133,6 +133,7 @@ module.exports = function({ port, rootUrl, enableHostingGhPages, enableHostingUn
       });
     });
   });
+  router.addHostingProvider = (hostingProvider) => this.addHostingProvider(hostingProvider);
   return router;
 };
 
