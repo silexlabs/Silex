@@ -173,6 +173,10 @@ module.exports = function({ port, rootUrl }, unifile) {
    * * remove useless markup and css classes
    */
   function unprepareWebsite(dom, baseUrl) {
+    // markup
+    dom.window.document.body.classList.add('silex-runtime');
+    reactivateScripts(dom);
+    restoreIFrames(dom);
     // URLs
     DomTools.transformPaths(dom, (path, el) => {
       const url = new URL(path, baseUrl);
@@ -182,9 +186,6 @@ module.exports = function({ port, rootUrl }, unifile) {
       }
       return path;
     });
-    // markup
-    dom.window.document.body.classList.add('silex-runtime');
-    reactivateScripts(dom);
     // remove temp tags
     const toBeRemoved = dom.window.document.querySelectorAll(`.${constants.SILEX_TEMP_TAGS_CSS_CLASS}, #${constants.SILEX_CURRENT_PAGE_ID}, .${ constants.RISZE_HANDLE_CSS_CLASS }`);
     for(let idx=0; idx<toBeRemoved.length; idx++) {
@@ -213,12 +214,17 @@ module.exports = function({ port, rootUrl }, unifile) {
     }
   }
 
+  function restoreIFrames(dom) {
+    Array.from(dom.window.document.querySelectorAll('[data-silex-iframe-src]'))
+    .forEach(el => {
+      el.setAttribute('src', el.getAttribute('data-silex-iframe-src'));
+      el.removeAttribute('data-silex-iframe-src');
+    });
+  }
+
   function reactivateScripts(dom) {
-    const scripts = dom.window.document.querySelectorAll('script[type="text/notjavascript"]');
-    for(let idx=0; idx<scripts.length; idx++) {
-      const el = scripts[idx];
-      el.setAttribute('type', 'text/javascript');
-    }
+    Array.from(dom.window.document.querySelectorAll('script[type="text/notjavascript"]'))
+    .forEach(el => el.setAttribute('type', 'text/javascript'));
   }
 
   const router = express.Router();
