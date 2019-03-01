@@ -148,6 +148,7 @@ module.exports = function({ port, rootUrl }, unifile) {
     });
     // markup
     dom.window.document.body.classList.remove('silex-runtime');
+    dom.window.document.body.classList.add('silex-editor');
     deactivateScripts(dom);
     // add /css/editable.css
     var tag = dom.window.document.createElement('link');
@@ -175,6 +176,7 @@ module.exports = function({ port, rootUrl }, unifile) {
   function unprepareWebsite(dom, baseUrl) {
     // markup
     dom.window.document.body.classList.add('silex-runtime');
+    dom.window.document.body.classList.remove('silex-editor');
     reactivateScripts(dom);
     restoreIFrames(dom);
     // URLs
