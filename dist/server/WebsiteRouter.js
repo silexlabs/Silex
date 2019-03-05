@@ -179,6 +179,7 @@ module.exports = function({ port, rootUrl }, unifile) {
     dom.window.document.body.classList.remove('silex-editor');
     reactivateScripts(dom);
     restoreIFrames(dom);
+    cleanupNoscripts(dom);
     // URLs
     DomTools.transformPaths(dom, (path, el) => {
       const url = new URL(path, baseUrl);
@@ -224,6 +225,17 @@ module.exports = function({ port, rootUrl }, unifile) {
     });
   }
 
+  function cleanupNoscripts(dom) {
+    Array.from(dom.window.document.querySelectorAll('noscript'))
+    .forEach(el => {
+      el.innerHTML = decodeHTMLEntities(el.innerHTML);
+    });
+  }
+  function decodeHTMLEntities(text) {
+    const entities = [['amp', '&'], ['apos', '\''], ['#x27', '\''], ['#x2F', '/'], ['#39', '\''], ['#47', '/'], ['lt', '<'], ['gt', '>'], ['nbsp', ' '], ['quot', '"']];
+    entities.forEach(entity => text = text.replace(new RegExp('&'+entity[0]+';', 'g'), entity[1]));
+    return text;
+  }
   function reactivateScripts(dom) {
     Array.from(dom.window.document.querySelectorAll('script[type="text/notjavascript"]'))
     .forEach(el => el.setAttribute('type', 'text/javascript'));
