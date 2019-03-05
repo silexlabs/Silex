@@ -1,0 +1,8 @@
+{{ (site.<%= collectionName %><%
+  for(var idx in whereFilters) {
+  %> | where: <%= whereFilters[idx].variable + whereFilters[idx].leftValue
+  %>, "<%= whereFilters[idx].rightValue %>"<%
+} %> | first).<%= fieldName %><%
+for(var idx in formatFilters) {
+  %> | <%= formatFilters[idx].filter + (formatFilters[idx].params === '' ? '' : (': ' + formatFilters[idx].params)) %><%
+} %> }}

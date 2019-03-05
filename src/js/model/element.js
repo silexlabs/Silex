@@ -652,7 +652,7 @@ silex.model.Element.prototype.addElement = function(container, element) {
   // call the method defined in front-end.js
   // this will resize the body according to its content
   // it will also trigger a "silex:resize" event
-  this.model.file.getContentWindow()['resizeBody']();
+  this.model.file.getContentWindow()['silex']['resizeBody']();
 };
 
 silex.model.Element.INITIAL_ELEMENT_SIZE = 100;

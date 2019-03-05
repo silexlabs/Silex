@@ -37,7 +37,7 @@ $(document).ready(function(){
         var section = ul.parent();
         section.css({'min-height': 'auto'});
       <% } %>
-      resizeBody();
+      window.silex.resizeBody();
     });
     <% if(refreshInterval > 0) { %>
       // refresh if the element is still in the dom

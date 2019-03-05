@@ -173,7 +173,7 @@ body.enable-mobile .background {
     position: initial; /* used to be absolute but now only in editor (editable.css), when position is absolute the body has the size of its content */
   }
   /* mobile mode */
-  body.enable-mobile .editable-style,
+  body.enable-mobile .editable-style:not(.prevent-mobile-style),
   body.enable-mobile .background.background-initial {
     position: relative;
     top: auto;
