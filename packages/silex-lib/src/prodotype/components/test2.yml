@@ -1,0 +1,18 @@
+---
+name: back to top
+description: Click and go back to top
+category: Tests
+faIconClass: fa-caret-o-up
+props:
+- name: selectedIndex
+  type: number
+- name: data
+  type:
+    - name: value
+      type: string
+    - name: label
+      type: string
+  description: 'The options, 1 per line'
+  default:
+  - option 1
+  - option 2

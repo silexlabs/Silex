@@ -1,0 +1,12 @@
+<script>
+var currentScript = $('script').last();
+$(document).ready( function(){
+    if($('body').hasClass('silex-runtime')) {
+        console.log(currentScript.parent().parent())
+        currentScript.parent().parent().click(function() {
+            var body = $("html, body");
+            body.stop().animate({scrollTop:0}, 500, 'swing');
+        })
+    }
+})
+</script>
