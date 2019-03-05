@@ -19,6 +19,7 @@ const Promise = require('bluebird');
 const fs = Promise.promisifyAll(require('fs'));
 const sequential = require('promise-sequential');
 
+const DomTools = require('./DomTools.js');
 const DomPublisher = require('./DomPublisher.js');
 
 // const TMP_FOLDER = '.tmp';
@@ -234,8 +235,11 @@ module.exports = class PublishJob {
       this.setStatus(`Splitting file ${file.name}`);
       const url = new URL(file.url);
       const baseUrl = new URL(url.origin + Path.dirname(url.pathname) + '/');
-      const dom = new JSDOM(buffer.toString('utf-8'), { url: baseUrl.href });
-      const domPublisher = new DomPublisher(dom, this.rootUrl, this.rootPath, (ext, tagName) => this.getDestFolder(ext, tagName));
+
+      // build the dom
+      const { html, userHead } = DomTools.extractUserHeadTag(buffer.toString('utf-8'));
+      const dom = new JSDOM(html, { url: baseUrl.href });
+      const domPublisher = new DomPublisher(dom, userHead, this.rootUrl, this.rootPath, (ext, tagName) => this.getDestFolder(ext, tagName));
       // remove classes used by Silex during edition
       domPublisher.cleanup();
       // rewrite URLs and extract assets

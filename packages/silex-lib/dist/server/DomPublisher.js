@@ -22,8 +22,9 @@ const constants = require('./Constants.json');
 
 module.exports = class DomPublisher {
 
-  constructor(dom, rootUrl, rootPath, getDestFolder) {
+  constructor(dom, userHead, rootUrl, rootPath, getDestFolder) {
     this.dom = dom;
+    this.userHead = userHead;
     this.rootUrl = rootUrl;
     this.rootPath = rootPath;
     this.getDestFolder = getDestFolder;
@@ -217,6 +218,10 @@ module.exports = class DomPublisher {
     else {
       console.warn('no styles found in head');
     }
+
+    // put back the user head now that all other scrips and styles are moved to external files
+    this.doc.head.innerHTML += this.userHead;
+    // this.doc.head.appendChild(this.doc.createTextNode(this.userHead));
 
     // cleanup classes used by Silex during edition
     // DomTools.removeInternalClasses(this.dom);
