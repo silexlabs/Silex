@@ -48,6 +48,7 @@ $(function() {
 
       // handle resize when needed
       if(winWidth < siteWidth) {
+        var height = $html.height();
         // scale the site
         var breakPoint = winWidth < 480 ? 480 : siteWidth;
         var ratio = winWidth / breakPoint;
@@ -55,6 +56,7 @@ $(function() {
           'transform': 'scale(' + ratio + ')',
           'transform-origin': '0 0',
           'min-width': breakPoint + 'px',
+          'height': height * ratio,
         })
         // expose the ratio to components
         window.silex.resizeRatio = ratio;
