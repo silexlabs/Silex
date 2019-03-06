@@ -685,7 +685,7 @@ silex.view.Stage.prototype.onMouseMove = function(target, x, y, shiftKey) {
         me.updateScroll(x, y);
 
         // update body size with the front-end.js API
-        me.contentWindow['resizeBody']();
+        me.contentWindow['silex']['resizeBody']();
 
         // loop while the mouse has not moved
         requestAnimationFrame(() => doMM(me));
