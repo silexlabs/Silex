@@ -85,6 +85,11 @@ class Component {
      * @type {Array.<function(?Object)>}
      */
     this.readyCbkArr = [];
+
+    /**
+     * @type {silex.view.dialog.LinkDialog}
+     */
+    this.linkDialog = new silex.view.dialog.LinkDialog(this.model);
   }
 
 
@@ -404,7 +409,8 @@ class Component {
               // put back the editable elements
               element.appendChild(tempElements);
             },
-            'onBrowse': (e, cbk) => this.onBrowse(e, cbk),
+            'onBrowse': (e, url, cbk) => this.onBrowse(e, url, cbk),
+            'onEditLink': (e, linkData, cbk) => this.onEditLink(e, linkData, cbk),
           });
       }
       this.componentEditorElement.classList.remove('hide-panel');
@@ -417,9 +423,23 @@ class Component {
 
   /**
    * @param {Event} e
+   * @param {LinkData} linkData
+   * @param {function(?LinkData)} cbk
+   */
+  onEditLink(e, linkData, cbk) {
+    e.preventDefault();
+    var pages = this.model.page.getPages();
+    this.linkDialog.open(linkData, pages, linkData => {
+      cbk(linkData);
+    });
+  }
+
+  /**
+   * @param {Event} e
+   * @param {string} url
    * @param {function(Array.<FileInfo>)} cbk
    */
-  onBrowse(e, cbk) {
+  onBrowse(e, url, cbk) {
     e.preventDefault();
     // browse with CE
     const promise = this.view.fileExplorer.openFile();
@@ -493,7 +513,7 @@ class Component {
       'text',
       {
         'onChange': (newData, html) => this.styleChanged(className, pseudoClass, visibility, newData),
-        'onBrowse': (e, cbk) => this.onBrowse(e, cbk),
+        'onBrowse': (e, url, cbk) => this.onBrowse(e, url, cbk),
       }
     );
   }

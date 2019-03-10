@@ -49,7 +49,7 @@ silex.view.TextFormatBar = class {
     /** @type {?Element} */
     this.currentTextBox = null;
     this.wysihtmlEditor = null;
-    this.linkDialog = new silex.view.dialog.LinkDialog(element, model);
+    this.linkDialog = new silex.view.dialog.LinkDialog(this.model);
 
     this.toolbar = this.element.querySelector('#wysihtml5-toolbar');
 
@@ -58,6 +58,24 @@ silex.view.TextFormatBar = class {
     this.onScrollBinded = this.onScroll.bind(this);
   }
 
+  /**
+   * get the link of selected text in text editor
+   * this uses a hidden text field in the text format bar, which has a value set by wysihtml
+   * @return {LinkData}
+   */
+  getLink() {
+    return LINK_ATTRIBUTES
+      .reduce((acc, attr) => {
+        const el = this.element.querySelector('.get-' + attr);
+        if(!el) {
+          console.error('could not get data from link editor for attribute', attr);
+        }
+        else {
+          acc[attr] = el.value;
+        }
+        return acc;
+      }, {})
+  }
 
   /**
    * Intercept keys before it is forwarded from iframe to Silex
@@ -236,7 +254,14 @@ silex.view.TextFormatBar = class {
 
           this.element.querySelector('.create-link').onclick = e => {
             // open link editor
-            this.linkDialog.open(this.wysihtmlEditor, this.pageNames);
+            this.linkDialog.open(this.getLink(), this.pageNames, options => {
+              if(options) {
+                this.wysihtmlEditor.composer.commands.exec('createLink', options);
+              }
+              else {
+                this.wysihtmlEditor.composer.commands.exec('removeLink');
+              }
+            });
 
             // prevent click on the button
             e.preventDefault();

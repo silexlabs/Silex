@@ -1,0 +1,36 @@
+---
+name: Hamburger Menu
+description: 'A "hamburger" menu for your site.'
+doc: https://github.com/silexlabs/Silex/wiki/Hamburger-menu-component
+category: Utils
+tags:
+- menu
+- responsive
+- nav
+- navigation
+isPrivate: false
+baseElement: html
+faIconClass: fa-bars
+initialCssClass:
+  prevent-mobile-style
+initialCss:
+  min-height: 33px
+  width: 33px
+  background-color: 'transparent'
+props:
+- name: fixed
+  expandable: false
+  type: boolean
+  default: false
+  description: Does the hamburger icon stay when you scroll?
+- name: links
+  expandable: false
+  default: []
+  description: Content of the menu
+  type:
+    - name: properties
+      type: link
+      description: The link properties
+    - name: text
+      type: string
+      description: The text for the element in the menu
