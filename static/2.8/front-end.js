@@ -19,44 +19,88 @@ $(function() {
   document.createElement('VIDEO');
 
   // store the body selector
-  // be careful since it will change after undo/redo or open file in Silex editor
   var $body = $('body');
+  var $preventScale = $('.prevent-scale');
 
   /**
    * window resize event
    */
   var siteWidth = parseInt($('meta[name=website-width]').attr('content') || '480');
-  var resizeBody = function (event){
-    var $html = $('html');
+  function resizeBody() {
     window.silex.resizeRatio = 1;
 
     // behavior which is not the same in Silex editor and outside the editor
     if($body.hasClass('silex-runtime')) {
+      // Fixed CSS style when the site is scaled
+      // this is because `position: fixed;`
+      // does not work inside a container with `transform: scale(...)`
+      //
+      // store all fixed elements with their initial top position
+      var $fixedElements = $('.fixed').map(function(el) {
+        $(this).css({
+          'position': ''
+        });
+        var offset = $(this).offset();
+        var res = {
+          offsetTop: offset.top,
+          offsetLeft: offset.left,
+          $el: $(this)
+        };
+        $(this).css({
+          'position': 'fixed',
+          'top': offset.top,
+          'left': offset.left,
+        });
+        return res;
+      });
+      // now listen to the scroll event and move the element
+      window.addEventListener('scroll', function() {
+        var scrollTop = $('html').scrollTop();
+        // apply scroll with silex offset due to body transform
+        $fixedElements.each(function($obj) {
+          var obj = $(this).get(0);
+          // var scrollNew = (scrollTop + obj.offsetTop) / window.silex.resizeRatio;
+          var scrollNewTop = obj.offsetTop + (scrollTop / window.silex.resizeRatio);
+          obj.$el.css({
+            'top': window.silex.resizeRatio === 1 ? obj.offsetTop : scrollNewTop + 'px',
+            'left': obj.offsetLeft + 'px',
+            'position': 'fixed'
+          });
+        });
+      });
+
       // if the site has a defined width and the window is smaller than this width, then
       // scale the website to fit the window
-
-      var scrollRatio = $body.scrollTop() / $body.prop("scrollHeight");
-
       // reset transform
       // needed to measure window width
-      $html.css({
+      $body.css({
         'transform': '',
         'transform-origin': '',
         'min-width': '',
-      })
-      var winWidth = $win.width();
+      });
+      $preventScale.css({
+        'transform': '',
+        'transform-origin': '',
+      });
 
       // handle resize when needed
+      var winWidth = $win.width();
       if(winWidth < siteWidth) {
-        var height = $html.height();
+        // store body data before resizing it
+        var scrollRatio = $body.scrollTop() / $body.prop("scrollHeight");
+        var height = $body.height();
         // scale the site
         var breakPoint = winWidth < 480 ? 480 : siteWidth;
         var ratio = winWidth / breakPoint;
-        $html.css({
+        $body.css({
           'transform': 'scale(' + ratio + ')',
           'transform-origin': '0 0',
           'min-width': breakPoint + 'px',
           'height': height * ratio,
+        })
+        $preventScale.css({
+          'transform': 'scale(' + (1/ratio) + ')',
+          'transform-origin': '0 0',
         })
         // expose the ratio to components
         window.silex.resizeRatio = ratio;
