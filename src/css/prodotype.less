@@ -8,6 +8,25 @@
       display: inline !important;
     }
   }
+  .prop-editor-base.prop_link .prop-editor-container > div {
+    display: flex;
+    input {
+      width: auto;
+      &[type="url"] {
+        flex: 1 1 auto;
+      }
+      &[type="button"] {
+        padding: 0 10px;
+      }
+    }
+  }
+  .prop-editor-no-expandable .prop-editor-container > input[type=checkbox] {
+    float: right;
+    width: 30px;
+    top: -34px;
+    position: relative;
+    right: 5px;
+  }
   .prop-editor-container > input[type=color] {
     width: 15%;
     padding: 2px;

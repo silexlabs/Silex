@@ -1,0 +1,127 @@
+<style>
+.menuToggle_<%= uid %> a {
+    text-decoration: none;
+    color: #232323;
+    transition: color 0.3s ease;
+}
+
+.menuToggle_<%= uid %> a:hover {
+    color: #1d428a;
+}
+
+.menuToggle_<%= uid %> {
+    display: block;
+    z-index: 1;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.menuToggle_<%= uid %> input {
+    display: block;
+    width: 40px;
+    height: 32px;
+    position: absolute;
+    top: -7px;
+    left: -5px;
+    cursor: pointer;
+    opacity: 0;
+    z-index: 3;
+    -webkit-touch-callout: none;
+}
+
+.menuToggle_<%= uid %> span {
+    display: block;
+    width: 30px;
+    height: 5px;
+    margin-bottom: 3px;
+    position: relative;
+    background-color: black;
+    border: 1px solid white;
+    border-radius: 3px;
+    z-index: 2;
+    transform-origin: 4px 4px;
+    transition: transform 0.5s cubic-bezier(0.77, 0.2, 0.05, 1.0), background 0.5s cubic-bezier(0.77, 0.2, 0.05, 1.0), opacity 0.55s ease;
+}
+
+.menuToggle_<%= uid %> span:first-child {
+    transform-origin: 2px -4px;
+}
+
+.menuToggle_<%= uid %> span:nth-last-child(2) {
+    transform-origin: 0% 100%;
+}
+
+.menuToggle_<%= uid %> input:checked~span {
+    opacity: 1;
+    transform: rotate(45deg) translate(7px, -4px);
+    background: #232323;
+    border: none;
+}
+
+.menuToggle_<%= uid %> input:checked~span:nth-child(4) {
+    opacity: 0;
+    transform: rotate(0deg) scale(0.2, 0.2);
+}
+
+.menuToggle_<%= uid %> input:checked~span:nth-child(3) {
+    transform: rotate(-45deg) translate(0, 14px);
+}
+
+.menuToggle_<%= uid %> ul {
+    z-index: 1;
+    position: absolute;
+    width: 300px;
+    min-height: 0;
+    margin: -100px 0 0 -50px;
+    padding: 50px;
+    padding-top: 125px;
+    background: #ededed;
+    list-style-type: none;
+    -webkit-font-smoothing: antialiased;
+    transform-origin: 0% 0%;
+    transform: translate(-100%, 0);
+    transition: transform 0.5s cubic-bezier(0.77, 0.2, 0.05, 1.0), min-height 0s ease .8s;
+}
+
+.menuToggle_<%= uid %> ul li {
+    padding: 10px 0;
+    font-size: 22px;
+    list-style: none;
+}
+
+.menuToggle_<%= uid %> input:checked~.list ul {
+    min-height: 100vh;
+    height: 100vh;
+    transform: none;
+}
+</style>
+<!-- inspired by https://codepen.io/erikterwan/pen/EVzeRP -->
+<nav role="navigation">
+  <div class="menuToggle_<%= uid %> <% if(fixed) { %>fixed<% } %>">
+    <input type="checkbox" class="hamburger-check">
+    <span></span>
+    <span></span>
+    <span></span>
+    <div class="list preview">
+        <div class="prevent-scale">
+            <ul class="">
+            <% for(var idx in links) { %>
+                <li><a
+                    <% for(var attrName in links[idx].link) { %>
+                        <%= attrName %>="<%= links[idx].link[attrName] %>"
+                    <% } %>
+                ><%= links[idx].text %></a></li>
+            <% } %>
+            </ul>
+        </div>
+    </div>
+  </div>
+</nav>
+<script>
+function close() {
+  $('.menuToggle_<%= uid %> .hamburger-check').attr('checked', false);
+}
+window.addEventListener('scroll', function() { close(); });
+//$('.menuToggle_<%= uid %>').click(function() { close(); });
+</script>
+
