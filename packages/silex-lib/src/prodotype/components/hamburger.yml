@@ -9,7 +9,7 @@ tags:
 - nav
 - navigation
 isPrivate: false
-baseElement: html
+baseElement: text
 faIconClass: fa-bars
 initialCssClass:
   prevent-mobile-style
