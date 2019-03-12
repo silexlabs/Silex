@@ -101,10 +101,10 @@
 }
 .hamburger-menu__<%= uid %> .nav-container {
   xxposition: absolute;
+  z-index: 10;
 }
 .hamburger-menu__<%= uid %> nav {
   position: fixed;
-  z-index: 10;
   top: 0;
   height: 0;
   left: -300px;
@@ -168,8 +168,8 @@
       <span></span>
       <span></span>
     </div>
-    <div class="nav-container">
-      <nav role="navigation" class="fixed prevent-scale" silex-fixed-style-left="0" silex-fixed-style-top="0">
+    <div class="nav-container fixed prevent-scale" silex-fixed-style-left="0" silex-fixed-style-top="0">
+      <nav role="navigation">
           <ul class="">
           <% for(var idx in links) { %>
               <li><a
@@ -194,7 +194,6 @@
   }
   $('.hamburger-menu__<%= uid %> .hamburger-btn').click(function() { toggle(); });
   window.addEventListener('scroll', function() { close(); });
-  //$('.hamburger-btn').click(function() { close(); });
 })();
 </script>
 
