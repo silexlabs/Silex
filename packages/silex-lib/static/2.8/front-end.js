@@ -36,6 +36,8 @@ $(function() {
 
   // this script is only for outside the editor
   if($body.hasClass('silex-runtime')) {
+    // store fixed positions
+
     // listens for events
     resizeNeededFlag = true;
     onScroll();
@@ -100,9 +102,6 @@ $(function() {
           });
       }
       else {
-        // store body data before resizing it
-        // var scrollRatio = getScrollTop() / $body.prop("scrollHeight");
-
         // scale the body
         setScale($body, {
           'transform': 'scale(' + ratio + ')',
@@ -142,7 +141,6 @@ $(function() {
         return;
       };
 
-      var scrollTop = getScrollTop();
       var ratio = getScaleRatio();
       if(ratio === 1) {
         console.log('no scale => use css position: fixed')
@@ -161,12 +159,10 @@ $(function() {
           setScale($body, {}, function(oldCss) {
             $fixed.each(function() {
               applyOffset($(this), {
-                top: scrollTop / ratio,
-                left: 0,
+                top: $('html').scrollTop() / ratio,
+                left: $('html').scrollLeft() / ratio,
               });
             });
-            // set old scoll and sclae
-            // $body.scrollTop(scrollTop);
             setScale($body, oldCss, function() {
               if(!unblock()) {
                 console.log('scrolling is done');
@@ -180,6 +176,10 @@ $(function() {
     function applyOffset($el, opt_delta, opt_cbk) {
       var delta = opt_delta || {};
       var offset = $el.offset();
+      offset.top = $el.attr('silex-fixed-style-top') || offset.top;
+      offset.left = $el.attr('silex-fixed-style-left') || offset.left;
+      // $el.attr('silex-fixed-style-top', offset.top);
+      // $el.attr('silex-fixed-style-left', offset.left);
       // set positions
       setPosition($el, {
         'position': 'fixed',
@@ -201,9 +201,6 @@ $(function() {
     function getScaleBreakPoint() {
       var winWidth = $win.width();
       return winWidth < 480 ? 480 : siteWidth;
-    }
-    function getScrollTop() {
-      return $('html, body').scrollTop();
     }
     // generic set attributes with defaults
     // wait for the dom to render
@@ -284,6 +281,8 @@ $(function() {
           }
         });
         // resize on page change (size will vary)
+        resizeNeededFlag = true;
+        onScroll();
         onResize();
       });
       /**
