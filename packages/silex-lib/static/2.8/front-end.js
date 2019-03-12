@@ -34,7 +34,7 @@ $(function() {
   window.silex.resizeRatio = 1;
 
   // FIXME: why is it needed?
-  window.silex.resizeBody = function() {}
+  window.silex.resizeBody = resizeBody;
 
   // this script is only for outside the editor
   if($body.hasClass('silex-runtime')) {
@@ -44,12 +44,11 @@ $(function() {
     }
     initFixedPositions();
     onScroll();
-    onResize();
+    resizeBody();
     $win.resize(onResize);
-    $win.resize(onScroll);
     $win.scroll(onScroll);
     if(!$body.hasClass('silex-published')) {
-      $body.on('pageChanged', resetAll);
+      $body.on('pageChanged', onResize);
     }
     function initFixedPositions() {
       console.log('getFixedPositions');
@@ -66,7 +65,7 @@ $(function() {
       });
     }
 
-    function resetAll() {
+    function onResize() {
       $body.css({
         'transform': '',
         'transform-origin': '',
@@ -83,11 +82,11 @@ $(function() {
       });
       initFixedPositions();
       onScroll();
-      onResize();
+      resizeBody();
     }
 
-    function onResize() {
-      console.log('onResize');
+    function resizeBody() {
+      console.log('resizeBody');
 
       // if the site has a defined width and the window is smaller than this width, then
       // scale the website to fit the window

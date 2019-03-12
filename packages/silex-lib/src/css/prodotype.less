@@ -8,15 +8,23 @@
       display: inline !important;
     }
   }
-  .prop-editor-base.prop_link .prop-editor-container > div {
-    display: flex;
-    input {
-      width: auto;
-      &[type="url"] {
-        flex: 1 1 auto;
+  .prop-editor-base.prop_links {
+    .prop-editor-base {
+      padding: 10px;
+      border: none;
+    }
+    .prop_properties {
+      .prop-editor-container > div {
+        display: flex;
       }
-      &[type="button"] {
-        padding: 0 10px;
+      input {
+        width: unset;
+        &[type="url"] {
+          flex: 1 1 auto;
+        }
+        &[type="button"] {
+          padding: 0 10px;
+        }
       }
     }
   }
