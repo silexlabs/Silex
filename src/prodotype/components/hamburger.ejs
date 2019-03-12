@@ -173,8 +173,8 @@
           <ul class="">
           <% for(var idx in links) { %>
               <li><a
-                  <% for(var attrName in links[idx].link) { %>
-                      <%= attrName %>="<%= links[idx].link[attrName] %>"
+                  <% for(var attrName in links[idx].properties) { %>
+                      <%= attrName %>="<%= links[idx].properties[attrName] %>"
                   <% } %>
               ><%= links[idx].text %></a></li>
           <% } %>
