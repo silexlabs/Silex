@@ -283,7 +283,7 @@ $(function() {
         // resize on page change (size will vary)
         resizeNeededFlag = true;
         onScroll();
-        onResize();
+        // onResize();
       });
       /**
        * init page system
