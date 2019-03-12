@@ -17,14 +17,16 @@ $(function() {
   var $win = $(window);
   var $doc = $(document);
   var $body = $('body');
+  var $html = $('html');
   var $preventScale = $('.prevent-scale');
   var $fixed = $('.fixed');
   var siteWidth = parseInt($('meta[name=website-width]').attr('content')) || null;
+  var $fixedPositions = $([]);
 
   // flags
-  var blockedFlag = false;
-  var resizeNeededFlag = false;
-  var iAmScaling = false;
+  // var blockedFlag = false;
+  // var resizeNeededFlag = false;
+  // var iAmScaling = false;
 
   // expose data to components
   window.silex = window.silex || {};
@@ -36,45 +38,57 @@ $(function() {
 
   // this script is only for outside the editor
   if($body.hasClass('silex-runtime')) {
-    // store fixed positions
 
-    // listens for events
-    resizeNeededFlag = true;
+    if(!$body.hasClass('silex-published')) {
+      initPages();
+    }
+    initFixedPositions();
     onScroll();
+    onResize();
     $win.resize(onResize);
+    $win.resize(onScroll);
     $win.scroll(onScroll);
+    if(!$body.hasClass('silex-published')) {
+      $body.on('pageChanged', resetAll);
+    }
+    function initFixedPositions() {
+      console.log('getFixedPositions');
+      $fixedPositions = $fixed.map(function(el) {
+        var offset = $(this).offset();
+        offset.top = $(this).attr('silex-fixed-style-top') || offset.top;
+        offset.left = $(this).attr('silex-fixed-style-left') || offset.left;
+        console.log(this, offset);
+        return {
+          offsetTop: offset.top,
+          offsetLeft: offset.left,
+          $el: $(this)
+        };
+      });
+    }
 
-    // Event handlers
-    function block() {
-      if(blockedFlag) {
-        console.log('blocked !!!')
-        resizeNeededFlag = true;
-        return true;
-      }
-      blockedFlag = true;
-      return false;
+    function resetAll() {
+      $body.css({
+        'transform': '',
+        'transform-origin': '',
+        'min-width': '',
+        'height': '',
+      });
+      $fixedPositions.each(function($obj) {
+        var obj = $(this).get(0);
+        obj.$el.css({
+          'position': '',
+          'top': '',
+          'left': '',
+        });
+      });
+      initFixedPositions();
+      onScroll();
+      onResize();
     }
-    function unblock() {
-      blockedFlag = false;
-      if(resizeNeededFlag) {
-        console.log('resize needed !!!')
-        onResize();
-        resizeNeededFlag = false
-        return true;
-      }
-      return false;
-    }
+
     function onResize() {
       console.log('onResize');
-      if(iAmScaling) {
-        console.warn('iAmScaling !!!');
-        return;
-      }
-      // wait if scale or scroll is pending
-      if(block()) {
-        console.warn('scaling or scrolling is pending, can not scale now, will do later!!!');
-        return;
-      }
+
       // if the site has a defined width and the window is smaller than this width, then
       // scale the website to fit the window
       // This happens also on mobile
@@ -88,104 +102,68 @@ $(function() {
       window.silex.resizeRatio = ratio;
       if(ratio === 1) {
         // reset scale
-        setScale($body, {}, function() {
-          // add space around the elements in the body
-          // I removed this because it bugs when there are elements with 100% width
-          //width += 50;
-          //height += 50;
-          // check if a redraw is needed
-          if(!unblock()) {
-            console.log('no scaling');
-            // notify the components that the resize is done
-            $doc.trigger('silex.resize');
-          }
-          });
+        $body.css({
+          'transform': '',
+          'transform-origin': '',
+          'min-width': '',
+          'height': '',
+        });
+        // unscale some elements
+        $preventScale.css({
+          'transform': '',
+          'transform-origin': '',
+        })
+        // add space around the elements in the body
+        // I removed this because it bugs when there are elements with 100% width
+        //width += 50;
+        //height += 50;
+        // check if a redraw is needed
       }
       else {
         // scale the body
-        setScale($body, {
+        $body.css({
           'transform': 'scale(' + ratio + ')',
           'transform-origin': '0 0',
           'min-width': getScaleBreakPoint() + 'px',
           'height': $body.height() * ratio,
-        }, function() {
-          // unscale some elements
-          // $preventScale.css({
-          //   'transform': 'scale(' + (1/ratio) + ')',
-          //   'transform-origin': '0 0',
-          // })
-
-          // keep the scroll position when resizing,
-          // fixes a bug on mobile when reaching the bottom of page and the broser UI comes back and changes the viewport size
-          // var scrollTarget = scrollRatio * $body.prop("scrollHeight");
-          // $body.scrollTop(scrollTarget);
-
-          // check if a redraw is needed
-          if(!unblock()) {
-            console.log('scaling is done');
-            // notify the components that the resize is done
-            $doc.trigger('silex.resize');
-          }
         });
-      }
+        // unscale some elements
+        $preventScale.css({
+          'transform': 'scale(' + (1/ratio) + ')',
+          'transform-origin': '0 0',
+        })
+        }
     }
 
     function onScroll() {
-      console.log('onScroll');
-      if(iAmScaling) {
-        console.warn('iAmScaling !!!');
-        return;
-      }
-      if(block()) {
-        console.warn('scaling is pending, can not scroll!!!');
-        return;
-      };
-
+      console.log('onScroll', $fixedPositions);
       var ratio = getScaleRatio();
       if(ratio === 1) {
+        // in this case, there is no transformation and we use the native fixed position
         console.log('no scale => use css position: fixed')
-        setPosition($fixed, {}, function() {
-          applyOffset($fixed, {}, function() {
-            if(!unblock()) {
-              console.log('scrolling is done');
-            }
+        $fixedPositions.each(function($obj) {
+          var obj = $(this).get(0);
+          obj.$el.css({
+            'position': 'fixed',
+            'top': `${ obj.offsetTop }px`,
+            'left': `${ obj.offsetLeft }px`,
           });
         });
       }
       else {
-        // reset positions
-        setPosition($fixed, {}, function() {
-          // reset scale
-          setScale($body, {}, function(oldCss) {
-            $fixed.each(function() {
-              applyOffset($(this), {
-                top: $('html').scrollTop() / ratio,
-                left: $('html').scrollLeft() / ratio,
-              });
-            });
-            setScale($body, oldCss, function() {
-              if(!unblock()) {
-                console.log('scrolling is done');
-              }
-            });
+        var delta = {
+          top: $html.scrollTop() / ratio,
+          left: $html.scrollLeft() / ratio,
+        };
+        $fixedPositions.each(function($obj) {
+          var obj = $(this).get(0);
+          obj.$el.css({
+            'position': 'fixed',
+            'top': `${ obj.offsetTop + delta.top }px`,
+            'left': `${ obj.offsetLeft + delta.left }px`,
           });
         });
       }
-    }
-
-    function applyOffset($el, opt_delta, opt_cbk) {
-      var delta = opt_delta || {};
-      var offset = $el.offset();
-      offset.top = $el.attr('silex-fixed-style-top') || offset.top;
-      offset.left = $el.attr('silex-fixed-style-left') || offset.left;
-      // $el.attr('silex-fixed-style-top', offset.top);
-      // $el.attr('silex-fixed-style-left', offset.left);
-      // set positions
-      setPosition($el, {
-        'position': 'fixed',
-        'top': `${ offset.top + (delta.top || 0) }px`,
-        'left': `${ offset.left + (delta.left || 0) }px`,
-      }, opt_cbk);
     }
 
     // utility functions
@@ -202,53 +180,8 @@ $(function() {
       var winWidth = $win.width();
       return winWidth < 480 ? 480 : siteWidth;
     }
-    // generic set attributes with defaults
-    // wait for the dom to render
-    function setAttr(attrs, $el, opt_cssObj, opt_cbk) {
-      var cssObj = opt_cssObj || {};
-      var oldCss = $el.css(attrs);
-      var newCss = {};
-      // this is a reduce but works in old browsers
-      for(var name in attrs) {
-        if(cssObj[attrs[name]] === 'keep') {
-          newCss[attrs[name]] = oldCss[attrs[name]];
-        }
-        else {
-          newCss[attrs[name]] = cssObj[attrs[name]] || '';
-        }
-      };
-      iAmScaling = true;
-      $el.css(newCss);
-      if(opt_cbk) {
-        setTimeout(function() {
-          iAmScaling = false;
-          opt_cbk(oldCss)
-        }, 0);
-      }
-    }
-    // scale mode
-    function setScale($el, opt_cssObj, opt_cbk) {
-      console.log('setScale', opt_cssObj, iAmScaling);
-      setAttr([
-        'transform',
-        'transform-origin',
-        'min-width',
-        'height',
-      ], $el, opt_cssObj, function(oldCss) {
-        if(opt_cbk) opt_cbk(oldCss);
-      })
-    }
-    // positions
-    function setPosition($el, opt_cssObj, opt_cbk) {
-      console.log('setPosition', opt_cssObj);
-      // opt_cssObj.position = 'fixed'
-      setAttr([
-        'position',
-        'top',
-        'left',
-      ], $el, opt_cssObj, opt_cbk)
-    }
-    if(!$body.hasClass('silex-published')) {
+
+    function initPages() {
       /**
        * list all pages from the head section
        * and open the 1st one by default
@@ -264,6 +197,7 @@ $(function() {
        * called when a page is opened
        */
       $body.on('pageChanged', function (event, pageName) {
+        console.log('pageChanged')
         // mark links to the current page as active
         $('[data-silex-href*="#!'+pageName+'"]').addClass('page-link-active');
         $('[id*="'+pageName+'"]').addClass('page-link-active');
@@ -280,10 +214,6 @@ $(function() {
             this.setAttribute('src', '');
           }
         });
-        // resize on page change (size will vary)
-        resizeNeededFlag = true;
-        onScroll();
-        // onResize();
       });
       /**
        * init page system
