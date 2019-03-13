@@ -17,16 +17,7 @@ $(function() {
   var $win = $(window);
   var $doc = $(document);
   var $body = $('body');
-  var $html = $('html');
-  var $preventScale = $('.prevent-scale');
-  var $fixed = $('.fixed');
   var siteWidth = parseInt($('meta[name=website-width]').attr('content')) || null;
-  var $fixedPositions = $([]);
-
-  // flags
-  // var blockedFlag = false;
-  // var resizeNeededFlag = false;
-  // var iAmScaling = false;
 
   // expose data to components
   window.silex = window.silex || {};
@@ -34,60 +25,35 @@ $(function() {
   window.silex.resizeRatio = 1;
 
   // FIXME: why is it needed?
-  window.silex.resizeBody = resizeBody;
+  window.silex.resizeBody = function() {};
 
   // this script is only for outside the editor
   if($body.hasClass('silex-runtime')) {
-
     if(!$body.hasClass('silex-published')) {
       initPages();
     }
-    initFixedPositions();
     onScroll();
-    resizeBody();
+    onResize();
     $win.resize(onResize);
     $win.scroll(onScroll);
-    if(!$body.hasClass('silex-published')) {
-      $body.on('pageChanged', onResize);
-    }
-    function initFixedPositions() {
-      console.log('getFixedPositions');
-      $fixedPositions = $fixed.map(function(el) {
-        var offset = $(this).offset();
-        offset.top = $(this).attr('silex-fixed-style-top') || offset.top;
-        offset.left = $(this).attr('silex-fixed-style-left') || offset.left;
-        console.log(this, offset);
-        return {
-          offsetTop: offset.top,
-          offsetLeft: offset.left,
-          $el: $(this)
-        };
-      });
+    // if(!$body.hasClass('silex-published')) {
+    //   $body.on('pageChanged', function() {
+    //     initFixedPositions();
+    //     onScroll();
+    //     onResize();
+    //   });
+    // }
+    // cross browser get scroll (even IE)
+
+    function getScroll() {
+      var container = $(document.scrollingElement || 'html');
+      return {
+        left: container.scrollLeft(),
+        top: container.scrollTop()
+      }
     }
 
     function onResize() {
-      $body.css({
-        'transform': '',
-        'transform-origin': '',
-        'min-width': '',
-        'height': '',
-      });
-      $fixedPositions.each(function($obj) {
-        var obj = $(this).get(0);
-        obj.$el.css({
-          'position': '',
-          'top': '',
-          'left': '',
-        });
-      });
-      initFixedPositions();
-      onScroll();
-      resizeBody();
-    }
-
-    function resizeBody() {
-      console.log('resizeBody');
-
       // if the site has a defined width and the window is smaller than this width, then
       // scale the website to fit the window
       // This happens also on mobile
@@ -105,18 +71,13 @@ $(function() {
           'transform': '',
           'transform-origin': '',
           'min-width': '',
-          'height': '',
+          'height': ''
         });
         // unscale some elements
-        $preventScale.css({
+        $('.prevent-scale').css({
           'transform': '',
-          'transform-origin': '',
+          'transform-origin': ''
         })
-        // add space around the elements in the body
-        // I removed this because it bugs when there are elements with 100% width
-        //width += 50;
-        //height += 50;
-        // check if a redraw is needed
       }
       else {
         // scale the body
@@ -124,45 +85,32 @@ $(function() {
           'transform': 'scale(' + ratio + ')',
           'transform-origin': '0 0',
           'min-width': getScaleBreakPoint() + 'px',
-          'height': $body.height() * ratio,
+          'height': $body.height() * ratio
         });
         // unscale some elements
-        $preventScale.css({
+        $('.prevent-scale').css({
           'transform': 'scale(' + (1/ratio) + ')',
-          'transform-origin': '0 0',
+          'transform-origin': '0 0'
         })
-        }
+      }
     }
 
     function onScroll() {
-      console.log('onScroll', $fixedPositions);
+      // simulate the fixed position
       var ratio = getScaleRatio();
-      if(ratio === 1) {
-        // in this case, there is no transformation and we use the native fixed position
-        console.log('no scale => use css position: fixed')
-        $fixedPositions.each(function($obj) {
-          var obj = $(this).get(0);
-          obj.$el.css({
-            'position': 'fixed',
-            'top': `${ obj.offsetTop }px`,
-            'left': `${ obj.offsetLeft }px`,
-          });
-        });
-      }
-      else {
-        var delta = {
-          top: $html.scrollTop() / ratio,
-          left: $html.scrollLeft() / ratio,
-        };
-        $fixedPositions.each(function($obj) {
-          var obj = $(this).get(0);
-          obj.$el.css({
-            'position': 'fixed',
-            'top': `${ obj.offsetTop + delta.top }px`,
-            'left': `${ obj.offsetLeft + delta.left }px`,
-          });
-        });
-      }
+      var scroll = getScroll();
+      var offsetTop = scroll.top / ratio;
+      var offsetLeft = scroll.left / ratio;
+      $('.fixed').css({
+        'position': '',
+        'transform': 'translate(' + offsetLeft + 'px, ' + offsetTop + 'px)',
+        'transform-origin': '0 0'
+      });
+      $('.fixed.prevent-scale').css({
+        'position': '',
+        'transform': 'translate(' + offsetLeft + 'px, ' + offsetTop + 'px) scale(' + (1/ratio) + ')',
+        'transform-origin': '0 0'
+      });
     }
 
     // utility functions
@@ -196,7 +144,6 @@ $(function() {
        * called when a page is opened
        */
       $body.on('pageChanged', function (event, pageName) {
-        console.log('pageChanged')
         // mark links to the current page as active
         $('[data-silex-href*="#!'+pageName+'"]').addClass('page-link-active');
         $('[id*="'+pageName+'"]').addClass('page-link-active');
