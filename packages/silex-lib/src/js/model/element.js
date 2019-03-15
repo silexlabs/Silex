@@ -1038,6 +1038,6 @@ silex.model.Element.prototype.getHeightStyleName = function(element) {
   if(element.classList.contains(silex.model.Body.SILEX_USE_HEIGHT_NOT_MINHEIGHT)) {
     return 'height';
   }
-  return 'minHeight';
+  return 'min-height';
 };
 

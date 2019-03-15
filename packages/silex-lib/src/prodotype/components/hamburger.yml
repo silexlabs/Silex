@@ -1,10 +1,11 @@
 ---
 name: Hamburger Menu
-description: 'A "hamburger" menu for your site.'
-doc: https://github.com/silexlabs/Silex/wiki/Hamburger-menu-component
-category: Utils
+description: 'A "hamburger" menu for your site. Apply styles to the links with the text style editor.'
+doc: https://github.com/silexlabs/Silex/wiki/Hamburger-menu
+category: UI
 tags:
 - menu
+- ui
 - responsive
 - nav
 - navigation
@@ -12,8 +13,9 @@ isPrivate: false
 baseElement: text
 faIconClass: fa-bars
 initialCssClass:
+  prevent-resizable
 initialCss:
-  min-height: 33px
+  min-height: '27px'
   width: 33px
   background-color: 'transparent'
 props:
@@ -22,6 +24,21 @@ props:
   type: boolean
   default: false
   description: Does the hamburger icon stay when you scroll?
+- name: button-background-color
+  expandable: false
+  type: color
+  default: '#000000'
+  description: Background color of the hamburger button
+- name: button-border-color
+  expandable: false
+  type: color
+  default: '#ffffff'
+  description: Color of the border of the hamburger button
+- name: background-color
+  expandable: false
+  type: color
+  default: '#ededed'
+  description: Background color of the menu when it is open
 - name: links
   expandable: false
   default: []
