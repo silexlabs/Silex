@@ -12,7 +12,6 @@ isPrivate: false
 baseElement: text
 faIconClass: fa-bars
 initialCssClass:
-  prevent-mobile-style
 initialCss:
   min-height: 33px
   width: 33px

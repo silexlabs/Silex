@@ -22,7 +22,8 @@ $(function() {
   // expose data to components
   window.silex = window.silex || {};
   window.silex.siteWidth = siteWidth;
-  window.silex.resizeRatio = 1;
+  window.silex.scale = 1;
+  window.silex.scroll = {top: 0, left: 0};
 
   // FIXME: why is it needed?
   window.silex.resizeBody = function() {};
@@ -58,13 +59,27 @@ $(function() {
       // scale the website to fit the window
       // This happens also on mobile
 
-      // notify the components that the resize will occure
-      $doc.trigger('silex.preresize');
-
       // scale on mobile or on desktop only when needed
       var ratio = getScaleRatio();
+      var scroll = getScroll();
+
+      // notify the components that the resize will occure
+      $doc.trigger('silex.preresize', {
+        scrollTop: scroll.top/ratio,
+        scrollLeft: scroll.left/ratio,
+        scale: ratio
+      });
+      window.data = {
+        scrollTop: scroll.top/ratio,
+        scrollLeft: scroll.left/ratio,
+        scale: ratio
+      };
+
       // expose the ratio to components
-      window.silex.resizeRatio = ratio;
+      window.silex.scale = ratio;
+      window.silex.scrollTop = scroll.top;
+      window.silex.scrollLeft = scroll.left;
+
       if(ratio === 1) {
         // reset scale
         $body.css({
@@ -93,12 +108,27 @@ $(function() {
           'transform-origin': '0 0'
         })
       }
+      $doc.trigger('silex.resize', {
+        scrollTop: scroll.top/ratio,
+        scrollLeft: scroll.left/ratio,
+        scale: ratio
+      });
     }
 
     function onScroll() {
       // simulate the fixed position
       var ratio = getScaleRatio();
       var scroll = getScroll();
+      $doc.trigger('silex.prescroll', {
+        scrollTop: scroll.top/ratio,
+        scrollLeft: scroll.left/ratio,
+        scale: ratio
+      });
+      window.data = {
+        scrollTop: scroll.top/ratio,
+        scrollLeft: scroll.left/ratio,
+        scale: ratio
+      };
       var offsetTop = scroll.top / ratio;
       var offsetLeft = scroll.left / ratio;
       $('.fixed').css({
@@ -110,6 +140,11 @@ $(function() {
         'position': '',
         'transform': 'translate(' + offsetLeft + 'px, ' + offsetTop + 'px) scale(' + (1/ratio) + ')',
         'transform-origin': '0 0'
+      });
+      $doc.trigger('silex.scroll', {
+        scrollTop: scroll.top/ratio,
+        scrollLeft: scroll.left/ratio,
+        scale: ratio
       });
     }
 
