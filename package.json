@@ -2,7 +2,7 @@
   "name": "silex",
   "description": "Free and easy website builder for everyone.",
   "version": "2.5.0",
-  "version:frontend": "2.8",
+  "version:frontend": "2.9",
   "version:backwardcompat": "2.2.9",
   "author": "Alex Hoyau <a.hoyau@silexlabs.org> (https://lexoyo.me/)",
   "contributors": [

@@ -163,6 +163,10 @@ body.enable-mobile .background {
   height: initial;
   padding-bottom: 50px;
 }
+.fixed {
+  position: absolute;
+  z-index: 5;
+}
 /* Mobile styles */
 @media (max-width:480px) {
   /* hide horizontal scroll bar which appears because of residual values in css
