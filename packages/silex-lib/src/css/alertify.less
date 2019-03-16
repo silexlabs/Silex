@@ -44,8 +44,30 @@
             }
       }
     }
-    .alertify-inner p {
-      padding: 15px;
+    .alertify-inner {
+      p, h1, h2, h3 {
+        padding: 15px;
+      }
+      ul {
+        padding: 0 15px;
+        list-style: none;
+        text-align: justify;
+        margin: 0;
+        li.no-list {
+          border-left: 1px solid white;
+          padding: 0 15px;
+          margin: 15px 0;
+          p {
+            padding: 0;
+            margin: 0;
+          }
+        }
+      }
+      hr {
+        border: none;
+        border-top: 1px solid @silexlightgrey;
+        max-width: 80%;
+      }
     }
     select {
       padding: 5px;

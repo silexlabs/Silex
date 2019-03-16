@@ -105,13 +105,14 @@
     }
   }
   .tabs {
-    height: @contextMenuHeight;
+    border-bottom: 1px solid @silexdarkergrey;
+    z-index: 1; /* over the scroll bar */
+    position: absolute;
     width: 100%;
-    padding-bottom: 2px;
-    margin-bottom: 3px;
-    position: relative;
-    border-bottom: 1px solid @silexdarkgrey;
+
+    height: @contextMenuHeight;
     background-color: @silexdarkgrey;
+
     .tab {
       cursor: pointer;
       padding: 12px;
@@ -129,7 +130,7 @@
 
   .main-container {
     padding: 0;
-    width: 97%;
+    width: 100%;
     border-bottom: 1px solid @silexdarkgrey;
     flex: 1 0 auto;
     overflow-x: hidden;
@@ -137,6 +138,10 @@
     bottom: 0;
     top: @contextMenuHeight;
     position: absolute;
+
+    .expandable > *, section > * {
+      max-width: 97%; /* avoid horizontal scroll bar in the property tool */
+    }
 
     /* size set by workspace.js when the user resizes the property tool */
     &.size1 {
@@ -164,9 +169,6 @@
     }
     > span {
       clear: both;
-    }
-    select.combobox {
-      width: 100%;
     }
     input.checkbox {
       width: 15px;
