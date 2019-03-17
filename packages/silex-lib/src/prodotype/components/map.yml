@@ -1,7 +1,7 @@
 ---
 name: Live Map
 description: 'Display a map in your website. Your users will be able to move the map, zoom in and out in order to locate where you are exactly'
-doc: https://github.com/silexlabs/Silex/wiki/Live-map-component
+doc: https://github.com/silexlabs/Silex/wiki/Live-map
 category: Utils
 tags:
 - map

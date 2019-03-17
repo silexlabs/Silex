@@ -51,7 +51,7 @@
     }
     $(window).resize(fullHeight<%= uid %>);
     $(window).ready(fullHeight<%= uid %>);
-    $(document).on('silex:resize', function() { fullHeight<%= uid %>(false); });
+    $(document).on('silex.resize', function() { fullHeight<%= uid %>(false); });
 
     // init scroll buttons
     var height = Math.max(

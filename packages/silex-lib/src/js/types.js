@@ -42,6 +42,18 @@ goog.require('silex.controller.TextEditorController');
 goog.require('silex.controller.ToolMenuController');
 goog.require('silex.controller.ViewMenuController');
 
+/**
+ * @typedef {{
+ *   href:string,
+ *   target:string,
+ *   title:string,
+ *   rel:string,
+ *   type:string,
+ *   download:string
+ * }}
+ * warning: if you change that type, also change the default value in LinkDialog
+ */
+var LinkData;
 
 /**
  * @enum {string}
