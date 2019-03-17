@@ -19,46 +19,36 @@ goog.provide('silex.view.dialog.LinkDialog');
 goog.require('silex.utils.Notification');
 
 const LINK_ATTRIBUTES =  ['href', 'rel', 'target', 'type', 'title', 'download'];
+const DEFAULT_LINK_DATA = {
+  href: '',
+  target: '',
+  title: '',
+  rel: '',
+  type: '',
+  download: '',
+}
 
 /**
  * the LinkDialog class
  */
 silex.view.dialog.LinkDialog = class {
 
-  constructor(element, model) {
-    this.element = element;
+  constructor(model) {
     this.model = model;
   }
 
   /**
-   * get the link of selected text in text editor
-   * this uses a hidden text field in the text format bar, which has a value set by wysihtml
-   * @return {{href:string, target:string, title:string, rel:string, type:string, download:string}}
-   */
-  getLink() {
-    return LINK_ATTRIBUTES
-      .reduce((acc, attr) => {
-        const el = this.element.querySelector('.get-' + attr);
-        if(!el) {
-          console.error('could not get data from link editor for attribute', attr);
-        }
-        else {
-          acc[attr] = el.value;
-        }
-        return acc;
-      }, {})
-  }
-
-  /**
-   * @param {wysihtml.Editor} wysihtmlEditor
+   * @param {LinkData} linkDataArg
    * @param {Array<string>} pageNames
+   * @param {function(?LinkData)} cbk
    */
-  open(wysihtmlEditor, pageNames) {
-    // get link current values
-    const linkData = this.getLink();
+  open(linkDataArg, pageNames, cbk) {
+    console.log('edit link', linkDataArg, pageNames)
+    // default values for new link
+    const linkData = Object.assign({}, DEFAULT_LINK_DATA, linkDataArg);
 
     // external link data
-    const isExternal = !linkData['href'].startsWith('#!');
+    const isExternal = !(linkData['href']).startsWith('#!');
 
     silex.utils.Notification.prompt('Link editor <a class="link-editor-help-button fa fa-question-circle" target="_blank" href="https://github.com/silexlabs/Silex/wiki/Editor-UI#link-editor">       Help</a>', 'unused', (accept, unused) => {
       if(accept) {
@@ -67,7 +57,7 @@ silex.view.dialog.LinkDialog = class {
           .reduce((acc, attr) => {
             const el = dialogBody.querySelector('.' + attr);
             if(!el) {
-              console.error('could not get data from wysihtml for attribute', attr);
+              console.error('could not get data from for attribute', attr);
             }
             else {
               acc[attr] = el.value;
@@ -86,7 +76,7 @@ silex.view.dialog.LinkDialog = class {
         if(newData['type'] != '') options.type = newData['type'];
         if(newData['download'] != '') options.download = newData['download'];
 
-        wysihtmlEditor.composer.commands.exec('createLink', options);
+        cbk(options);
       }
     });
 
@@ -100,7 +90,7 @@ silex.view.dialog.LinkDialog = class {
     dialogButtons.querySelector('.alertify-button-remove')
       .onclick = (e => {
         silex.utils.Notification.close();
-        wysihtmlEditor.composer.commands.exec('removeLink');
+        cbk(null);
       });
 
     // add info about the link

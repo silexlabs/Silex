@@ -62,7 +62,7 @@ function init_<%= uid %>() {
     }
 }
 init_<%= uid %>();
-$(document).on('silex:resize', function() {
+$(document).on('silex.resize', function() {
     $('#mapdiv_<%= uid %>').empty();
     init_<%= uid %>();
 });

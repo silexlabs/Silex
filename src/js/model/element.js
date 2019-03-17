@@ -651,7 +651,7 @@ silex.model.Element.prototype.addElement = function(container, element) {
   // resize the body
   // call the method defined in front-end.js
   // this will resize the body according to its content
-  // it will also trigger a "silex:resize" event
+  // it will also trigger a "silex.resize" event
   this.model.file.getContentWindow()['silex']['resizeBody']();
 };
 
@@ -1038,6 +1038,6 @@ silex.model.Element.prototype.getHeightStyleName = function(element) {
   if(element.classList.contains(silex.model.Body.SILEX_USE_HEIGHT_NOT_MINHEIGHT)) {
     return 'height';
   }
-  return 'minHeight';
+  return 'min-height';
 };
 

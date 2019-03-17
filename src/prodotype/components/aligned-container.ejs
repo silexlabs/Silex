@@ -56,7 +56,7 @@
     }
   }
   vertical_<%= uid %>();
-  $(document).on('silex:resize', vertical_<%= uid %>);
+  $(document).on('silex.resize', vertical_<%= uid %>);
   // execute only in silex editor
   if($('body').hasClass('silex-runtime')) return;
   function redraw_<%= uid %>() {
@@ -111,7 +111,7 @@
     }
   }
   redraw_<%= uid %>();
-  $(document).on('silex:resize', function() {
+  $(document).on('silex.resize', function() {
     redraw_<%= uid %>();
   });
 })()
