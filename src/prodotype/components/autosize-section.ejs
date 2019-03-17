@@ -26,6 +26,6 @@ function resizeSection_<%= uid %>(dispatchResize) {
 }
 $(window).resize(function() { resizeSection_<%= uid %>(true); });
 $(document).ready(function(){ resizeSection_<%= uid %>(true); });
-$(document).on('silex:resize', function() { resizeSection_<%= uid %>(false); });
+$(document).on('silex.resize', function() { resizeSection_<%= uid %>(false); });
 resizeSection_<%= uid %>(false);
 </script>
