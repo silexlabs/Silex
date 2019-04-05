@@ -57,7 +57,7 @@
     "promise-sequential": "1.1.1",
     "request": "2.85.0",
     "serve-static": "1.13.2",
-    "silex-blank-templates": "github:silexlabs/silex-blank-templates#39a9f21e18dedd3e38cf09daea873f1e3789ab48",
+    "silex-blank-templates": "github:silexlabs/silex-blank-templates#67a90220873251c96b8f3608615ea58075422505",
     "silex-templates": "github:silexlabs/silex-templates#6566dde0f6b3f00dcefc84379a8f90710def57ed",
     "wysihtml": "^0.6.0-beta1"
   },
