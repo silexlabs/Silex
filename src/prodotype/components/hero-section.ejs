@@ -17,8 +17,8 @@
 (function() {
     // retrieve the section HTML elements
     var el = document.getElementById('<%= uid %>');
-    var sectionContent = el.parentNode;
-    var section = sectionContent.parentNode;
+    var sectionContent = el.parentElement;
+    var section = sectionContent.parentElement;
     function fullHeight<%= uid %>() {
         // no resize while dragging
         if($('.dragging-pending').length) return;

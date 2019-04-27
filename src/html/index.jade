@@ -8,21 +8,13 @@ head
       background-color: #444;
     }
 
-  include ./templates/head.jade
-
-  // Silex styles and code
-  script(type='text/javascript', src='js/admin.js')
-
   // all the css in the head with _styles.less imports
   link(rel='stylesheet', type='text/css', href='css/admin.css')
+
+  include ./templates/head.jade
 
 body.loading-pending.advanced-mode-off
   include ./templates/body.jade
 
-  // google closure js patches, to be included after the other includes
-  script(type='text/javascript', src='js/closure-patches.js')
-
-  // start Silex
-  script(type='text/javascript').
-    // boot silex app
-    window.silexApp = new silex.App();
+  block silex-options
+  script(type='text/javascript' src='js/index.js')

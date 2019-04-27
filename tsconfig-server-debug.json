@@ -1,0 +1,15 @@
+{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "outDir": "dist/server/",
+    "target": "es6",
+    "watch": true,
+    "inlineSourceMap": true,
+    "module": "commonjs",
+    "removeComments": false,
+  },
+  "include": [
+    "src/server/silex_electron.ts",
+    "src/server/silex_web.ts",
+  ],
+}
