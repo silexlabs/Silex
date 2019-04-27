@@ -1,16 +1,31 @@
 .link-editor {
+  hr {
+    border-color: @silexmediumgrey;
+  }
+  padding-bottom: 30px;
+  margin: -0px -25px 0 -20px;
   & > div {
     margin: 10px;
+  }
+  .flex {
+    display: flex;
+    justify-content: space-between;
+  }
+  .big {
+    flex: 1 1 auto;
+    margin-right: 5px;
+    min-width: 50%;
   }
   background-color: @silexmediumgrey;
   input.alertify-text, select.alertify-text {
     background-color: @silexmediumdarkgrey;
+    border: 1px solid;
   }
   .labels {
     margin: 0;
     display: inline-block;
     width: 100%;
-    background-color: @silexdarkgrey;
+    background-color: @silexdarkergrey;
     label {
       .button-bar-template;
       border: none;
@@ -35,10 +50,6 @@
   }
   .link-editor-tab {
     display: none;
-    // labels on 1 line
-    label {
-      display: block;
-    }
   }
   .link-editor-radio {
     display: none;
@@ -48,11 +59,17 @@
   }
   .link-editor-tab-container {
     flex: 1 1 auto;
+    // labels on 1 line
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
   }
   .link-editor-advanced-container {
     label {
       display: block;
       margin-top: 20px;
+      margin-bottom: 10px;
     }
     & > label:first-of-type {
       margin-bottom: 20px;

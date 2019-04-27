@@ -7,14 +7,14 @@
     .show-pages.fa-fw.fa-fw.icon.fa-inverse.fa-file(title='Pages', data-menu-action='show.pages')
     .icon.sep
     .icon.undo.fa-fw.fa-inverse.fa-undo.off(title='Undo (Ctrl Z)', data-menu-action='edit.undo')
-    .icon.redo.fa-fw.fa-inverse.fa-repeat.off(title='Redo (⇧ Ctrl Z)', data-menu-action='edit.redo')
+    .icon.redo.fa-fw.fa-inverse.fa-repeat.off(title='Redo (Ctrl ⇧ Z)', data-menu-action='edit.redo')
     .icon.sep
     .view-file.fa-fw.icon.fa-inverse.fa-eye(title='Preview (Alt V)', data-menu-action='view.file')
     .view-file-responsize.icon.previewResponsize(title='Preview in Responsize (⇧ Alt V)', data-menu-action='view.file.responsize')
     .right.mobile.fa-fw.icon.fa-inverse.fa-mobile(title='Mobile editor (Alt M)', data-menu-action="tools.mobile.mode.on")
     .right.desktop.fa-fw.icon.fa-inverse.fa-desktop(title='Desktop editor (Alt M)', data-menu-action="tools.mobile.mode.off")
     .icon.sep
-    .show-settings.fa-fw.icon.fa-inverse.fa-cogs(title='Settings', data-menu-action='file.publish.settings')
+    .show-settings.fa-fw.icon.fa-inverse.fa-cogs(title='Settings (Alt O)', data-menu-action='file.publish.settings')
     .show-fonts.fa-fw.icon.fa-inverse.fa-font(title='Fonts', data-menu-action='file.fonts')
     .show-about-menu.fa-fw.icon.fa-inverse.fa-question-circle(title='About Silex', data-menu-action='show.about.menu')
 
@@ -81,6 +81,7 @@
       .icon.svg
         include ./save-as.svg
       span Save website as
+      .shortcut Ctrl ⇪ S
     .icon.sep
     .sub-menu-item(data-menu-action='file.publish')
       span.icon.fa-inverse.fa-fw.fa-rocket

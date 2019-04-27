@@ -1,7 +1,7 @@
 .silex-icons-menu {
   background-color: @silexmediumgrey; /* hide sub menu during opening */
   position: fixed;
-  z-index: 2; /* over the sub menus */
+  z-index: 4; /* over the sub menus */
 }
 .icon {
   cursor: pointer;
@@ -58,7 +58,7 @@ div.icon, a.icon, span.icon {
 .silex-sub-menu() {
   .silex-icons-menu();
   .sub-menu-hidden(200px); /* the width is an approximation */
-  z-index: 1;
+  z-index: 3;
   .icon {
     margin: 9px 9px 20px;
   }

@@ -1,78 +1,84 @@
-.alertify {
+.alertify .ajs-modal .ajs-dialog {
+  background-color: @silexdarkergrey;
+  .ajs-header, .ajs-footer {
     background-color: @silexdarkgrey;
-    &, a { color: @silexlightergrey; }
-    border-radius: 0;
+  }
+  .ajs-body {
+    background-color: @silexdarkergrey;
+  }
+  &, a { color: @silexlightergrey; }
+  border-radius: 0;
 
-    .alertify-text {
-        color: @silexlightergrey;
-        border-radius: 0;
-        background-color: @silexdarkgrey;
+  .alertify-text {
+      color: @silexlightergrey;
+      border-radius: 0;
+      background-color: @silexdarkgrey;
 
-        &:focus {
-            border-color: @silexlightergrey;
-            box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(0,0,0,.2);
-        }
+      &:focus {
+          border-color: @silexlightergrey;
+          box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(0,0,0,.2);
+      }
+  }
+  .alertify-buttons {
+    background-color: transparent;
+    border-top-color: @silexlightgrey;
+    box-shadow: inset 0 1px 0 @silexmediumgrey;
+    .alertify-button, .alertify-button:hover, .alertify-button:focus, .alertify-button:active {
+      border-radius: 0;
     }
-    .alertify-buttons {
-      background-color: transparent;
-      border-top-color: @silexlightgrey;
-      box-shadow: inset 0 1px 0 @silexmediumgrey;
-      .alertify-button, .alertify-button:hover, .alertify-button:focus, .alertify-button:active {
-        border-radius: 0;
-      }
-      .alertify-button-ok, .alertify-button-ok:hover, .alertify-button-ok:focus, .alertify-button-ok:active {
-        background-color: @silexmediumgrey;
-        border: 1px solid @silexdarkgrey;
-      }
-      .alertify-button-cancel, .alertify-button-cancel:hover, .alertify-button-cancel:focus, .alertify-button-cancel:active {
-        background: @silexmediumgrey;
-        color: @silexlightergrey;
-        border: none;
-      }
+    .alertify-button-ok, .alertify-button-ok:hover, .alertify-button-ok:focus, .alertify-button-ok:active {
+      background-color: @silexmediumgrey;
+      border: 1px solid @silexdarkgrey;
     }
-    .info-panel {
-        width: 99%;
-        height: 600px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-color: @silexmediumgrey;
-        .tip-of-the-day {
-            * {
-                color: @silexlightergrey;
-                margin: 10px;
-            }
-      }
+    .alertify-button-cancel, .alertify-button-cancel:hover, .alertify-button-cancel:focus, .alertify-button-cancel:active {
+      background: @silexmediumgrey;
+      color: @silexlightergrey;
+      border: none;
     }
-    .alertify-inner {
-      p, h1, h2, h3 {
-        padding: 15px;
-      }
-      ul {
-        padding: 0 15px;
-        list-style: none;
-        text-align: justify;
-        margin: 0;
-        li.no-list {
-          border-left: 1px solid white;
-          padding: 0 15px;
-          margin: 15px 0;
-          p {
-            padding: 0;
-            margin: 0;
+  }
+  .info-panel {
+      width: 99%;
+      height: 600px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-color: @silexmediumgrey;
+      .tip-of-the-day {
+          * {
+              color: @silexlightergrey;
+              margin: 10px;
           }
+    }
+  }
+  .alertify-inner {
+    p, h1, h2, h3 {
+      padding: 15px;
+    }
+    ul {
+      padding: 0 15px;
+      list-style: none;
+      text-align: justify;
+      margin: 0;
+      li.no-list {
+        border-left: 1px solid white;
+        padding: 0 15px;
+        margin: 15px 0;
+        p {
+          padding: 0;
+          margin: 0;
         }
       }
-      hr {
-        border: none;
-        border-top: 1px solid @silexlightgrey;
-        max-width: 80%;
-      }
     }
-    select {
-      padding: 5px;
-      margin-bottom: 50px;
+    hr {
+      border: none;
+      border-top: 1px solid @silexlightgrey;
+      max-width: 80%;
     }
+  }
+  select {
+    padding: 5px;
+    margin-bottom: 50px;
+  }
 }
 
 .alertify-cover {
