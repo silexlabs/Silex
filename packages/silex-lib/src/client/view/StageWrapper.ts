@@ -1,8 +1,8 @@
 import { Constants } from '../../Constants';
 import { Controller, Model } from '../types';
 // import { Stage } from 'drag-drop-stage-component'; // this is not recognized by my IDE
-import { Stage } from 'drag-drop-stage-component/src/ts/index';
-import { ScrollData, SelectableState } from 'drag-drop-stage-component/src/ts/Types';
+import { Stage } from '../../../node_modules/drag-drop-stage-component/src/ts/index';
+import { ScrollData, SelectableState } from '../../../node_modules/drag-drop-stage-component/src/ts/Types';
 
 export class StageWrapper {
   private stage: Stage;
@@ -20,6 +20,10 @@ export class StageWrapper {
   redraw() {
     if(!this.stage) return;
     this.stage.redraw();
+  }
+  reset() {
+    if(!this.stage) return;
+    this.stage.reset(this.model.page.getElementsForPage());
   }
   resizeWindow() {
     if(!this.stage) return;
@@ -86,8 +90,8 @@ export class StageWrapper {
 
   init(iframe: HTMLIFrameElement) {
     this.cleanup();
-    this.stage = new Stage(iframe, iframe.contentWindow.document.querySelectorAll(`[${Constants.ELEMENT_ID_ATTR_NAME}]`), {
-      isSelectable: (el => !el.classList.contains(Constants.PREVENT_SELECTABLE_CLASS_NAME)),
+    this.stage = new Stage(iframe, [], {
+      isSelectable: (el => this.model.page.isVisible(el) && !el.classList.contains(Constants.PREVENT_SELECTABLE_CLASS_NAME)),
       isDraggable: (el => !el.classList.contains(Constants.PREVENT_DRAGGABLE_CLASS_NAME)),
       isDropZone: ((el) => !el.classList.contains(Constants.PREVENT_DROPPABLE_CLASS_NAME) && el.classList.contains(Constants.TYPE_CONTAINER)),
       isResizeable: ((el) => {

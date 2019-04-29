@@ -109,7 +109,7 @@ export class Page {
     this.view.pageTool.redraw(selectedElements, pages, currentPage);
     this.view.propertyTool.redraw(states, pages, currentPage);
     this.view.textFormatBar.redraw(selectedElements, pages, currentPage);
-    this.view.stageWrapper.redraw();
+    this.view.stageWrapper.reset();
   }
 
   /**
@@ -314,7 +314,7 @@ export class Page {
   }
 
   /**
-   * set/get a "silex style link" on an element
+   *
    */
   removeFromPage(element: HTMLElement, pageName: string) {
     if (this.model.element.isSectionContent(element)) {
@@ -328,7 +328,7 @@ export class Page {
   }
 
   /**
-   * set/get a "silex style link" on an element
+   *
    */
   removeFromAllPages(element: HTMLElement) {
     if (this.model.element.isSectionContent(element)) {
@@ -345,7 +345,7 @@ export class Page {
   }
 
   /**
-   * set/get a "silex style link" on an element
+   * get the pages on which this element is visible
    */
   getPagesForElement(element: HTMLElement): string[] {
     if (this.model.element.isSectionContent(element)) {
@@ -356,15 +356,29 @@ export class Page {
   }
 
   /**
+   * get all elements visible when the given page is opened
+   */
+  getElementsForPage(page: string = this.getCurrentPage()): HTMLElement[] {
+    return (Array.from(this.model.file.getContentDocument().querySelectorAll(`.${Constants.EDITABLE_CLASS_NAME}`)) as HTMLElement[])
+    .filter(el => this.isVisible(el, page));
+  }
+
+  /**
    * check if an element is in the given page (current page by default)
    */
-  isInPage(element: HTMLElement, opt_pageName?: string): boolean {
+  isInPage(element: HTMLElement, opt_pageName: string = this.getCurrentPage()): boolean {
     if (this.model.element.isSectionContent(element)) {
       element = (element.parentElement as HTMLElement);
     }
-    if (!opt_pageName) {
-      opt_pageName = this.getCurrentPage();
-    }
     return element.classList.contains(opt_pageName);
+  }
+
+  /**
+   * check if an element is visible in the given page
+   * this means that the element is allways visible or it is visible in this page
+   */
+  isVisible(element: HTMLElement, opt_pageName: string = this.getCurrentPage()) {
+    const parentPaged = this.model.page.getParentPage(element);
+    return !parentPaged || this.model.page.isInPage(parentPaged, opt_pageName);
   }
 }

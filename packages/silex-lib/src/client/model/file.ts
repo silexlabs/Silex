@@ -123,9 +123,9 @@ export class File {
 
     // loading
     if (opt_showLoader !== false) {
-      this.iFrameElement_.classList.add(File.LOADING_CSS_CLASS);
+      getUiElements().stage.classList.add(File.LOADING_CSS_CLASS);
     } else {
-      this.iFrameElement_.classList.add(File.LOADING_LIGHT_CSS_CLASS);
+      getUiElements().stage.classList.add(File.LOADING_LIGHT_CSS_CLASS);
     }
 
     // write the content
@@ -169,14 +169,6 @@ export class File {
       opt_cbk();
     }
 
-    // loading
-    this.iFrameElement_.classList.remove(File.LOADING_CSS_CLASS);
-    this.iFrameElement_.classList.remove(File.LOADING_LIGHT_CSS_CLASS);
-
-    // refresh the view
-    let page = this.model.page.getCurrentPage();
-    this.model.page.setCurrentPage(page);
-
     // remove publication path for templates
     if (this.isTemplate) {
       this.model.head.setPublicationPath(null);
@@ -185,6 +177,14 @@ export class File {
     setTimeout(() => {
       // restore the stage
       this.view.stageWrapper.init(this.iFrameElement_);
+
+      // refresh the view
+      let page = this.model.page.getCurrentPage();
+      this.model.page.setCurrentPage(page);
+
+      // loading
+      getUiElements().stage.classList.remove(File.LOADING_CSS_CLASS);
+      getUiElements().stage.classList.remove(File.LOADING_LIGHT_CSS_CLASS);
     }, 1000);
   }
 
