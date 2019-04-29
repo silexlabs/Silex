@@ -51,7 +51,7 @@
     "cookie-parser": "1.4.3",
     "cookie-session": "2.0.0-beta.3",
     "cross-env": "5.1.4",
-    "drag-drop-stage-component": "^1.0.0",
+    "drag-drop-stage-component": "github:silexlabs/drag-drop-stage-component#master",
     "express": "4.16.3",
     "express-force-ssl": "0.3.2",
     "font-awesome": "^4.7.0",
