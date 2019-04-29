@@ -14,10 +14,6 @@
     "node": "8.10.x",
     "npm": "5.6.x"
   },
-  "precommit": [
-    "lint:js",
-    "lint:server"
-  ],
   "scripts": {
     "webpack": "webpack --config webpack.config.js",
     "start": "node dist/server/server/silex_web.js",
