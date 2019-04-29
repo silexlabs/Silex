@@ -19,7 +19,6 @@
 import { Property } from '../model/property';
 import { CloudStorage } from '../service/cloud-storage';
 import { FileInfo, Model, View } from '../types';
-// import { Stage } from 'stage'; // this is not recognized by my IDE
 import { getUiElements } from '../view/UiElements';
 
 /**

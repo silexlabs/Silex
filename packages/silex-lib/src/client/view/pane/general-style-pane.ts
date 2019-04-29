@@ -17,7 +17,7 @@
 
 import { Controller, Model } from '../../types';
 import { PaneBase } from './pane-base';
-import { SelectableState } from 'stage/src/ts/Types';
+import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
 
 
 /**

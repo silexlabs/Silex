@@ -18,7 +18,7 @@ import { SilexElement } from '../../model/element';
 import { Controller, Model } from '../../types';
 import { PaneBase } from './pane-base';
 import { Constants } from '../../../Constants';
-import { SelectableState } from 'stage/src/ts/Types';
+import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
 
 /**
  * on of Silex Editors class

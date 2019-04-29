@@ -14,7 +14,7 @@
  * Controls the background params
  *
  */
-import { SelectableState } from 'stage/src/ts/Types';
+import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
 import { Controller, Model } from '../../types';
 import { ColorPicker } from '../ColorPicker';
 import { PaneBase } from './pane-base';

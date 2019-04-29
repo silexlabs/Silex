@@ -20,7 +20,7 @@ import {Model} from '../types';
  */
 
 
-import { addEvent } from 'stage/src/ts/utils/Events'
+import { addEvent } from 'drag-drop-stage-component/src/ts/utils/Events'
 
 /**
  * @param element   container to render the UI
