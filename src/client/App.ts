@@ -58,8 +58,7 @@ import { Splitter } from './view/splitter';
 import { TextFormatBar } from './view/TextFormatBar';
 import { Workspace } from './view/workspace';
 
-// import { Stage } from 'stage'; // this is not recognized by my IDE
-import { Stage } from 'stage/src/ts/index';
+import { Stage } from 'drag-drop-stage-component/src/ts/index';
 
 import { getUiElements } from './view/UiElements';
 import { StageWrapper } from './view/StageWrapper';

@@ -26,7 +26,7 @@ import { PagePane } from './pane/page-pane';
 import { PropertyPane } from './pane/property-pane';
 import { StylePane } from './pane/style-pane';
 import { StyleEditorPane } from './pane/StyleEditorPane';
-import { SelectableState } from 'stage/src/ts/Types';
+import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
 
 
 //////////////////////////////////////////////////////////////////
