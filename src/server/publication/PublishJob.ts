@@ -18,7 +18,7 @@ const { JSDOM } = require('jsdom');
 const sequential = require('promise-sequential');
 
 import DomTools from '../utils/DomTools';
-import DomPublisher from './DomPublisher';
+import {DomPublisher, File, Action} from './DomPublisher';
 
 // const TMP_FOLDER = '.tmp';
 
@@ -72,7 +72,9 @@ export default class PublishJob {
     publishJobs.set(id, publishJob);
     publishJob.publish(file)
     .then(() => {
-      console.info(`PublishJob ${publishJob.id} success. Possibly with error:`, !!publishJob.error);
+      if(publishJob.error) {
+        console.warn(`Warning: possible error in PublishJob ${publishJob.id} (${publishJob.error})`)
+      }
       publishJob.cleanup()
     })
     .catch((err) => {
@@ -98,8 +100,8 @@ export default class PublishJob {
   private pleaseDeleteMe: boolean;
   private jar: any;
   private state: string;
-  private tree: any;
-  private pageActions: any;
+  private tree: {scriptTags: HTMLElement[], styleTags: HTMLElement[], files: File[]};
+  private pageActions: Action[];
 
   constructor(public id:string, private unifile, private publicationPath, private session, private cookies, private rootUrl:string, private hostingProvider) {
     console.log('---------------\nNew Publish Job', id, '\nPublish to:', publicationPath.url, '\nSilex instance:', rootUrl, '\n--------------');
@@ -266,7 +268,7 @@ export default class PublishJob {
     })
     .catch(err => {
       // FIXME: will never go through here
-      console.error('Publication error, could not download files:', this.tree.actions.map(action => action.displayName).join(', '), '. Error:', err);
+      console.error('Publication error, could not download files:', this.tree.files.map(file => file.displayName).join(', '), '. Error:', err);
       this.error = true;
       this.setStatus(err.message);
     })
@@ -328,10 +330,10 @@ export default class PublishJob {
       () => preventErr(this.unifile.stat(this.session.unifile, this.publicationPath.service, this.assetsFolder)),
     ]
     // add the promises to download each asset
-    .concat(this.downloadAllAssets(this.tree.actions)))
+    .concat(this.downloadAllAssets(this.tree.files)))
   }
 
-  writeOperations(statRoot, statHtml, statCss, statJs, statAssets, ...assets) {
+  writeOperations(statRoot: boolean, statHtml: boolean, statCss: boolean, statJs: boolean, statAssets: boolean, ...assets) {
     // build the batch actions
     this.setStatus(`Creating files <ul>${this.pageActions.map(action => '<li>' + action.displayName + '</li>').join('')}<li>${this.cssFile}</li><li>${this.jsFile}</li></ul>And uploading ${ assets.length } assets.`);
     // create an object to describe a batch of actions

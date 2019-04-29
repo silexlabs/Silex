@@ -12,7 +12,21 @@
 const { URL } = require('url');
 const Path = require('path');
 import DomTools from '../utils/DomTools';
-import { Constants } from '../../Constants';
+import { Constants, FileInfo } from '../../Constants';
+
+export interface File {
+  original: string,
+  srcPath: string,
+  destPath: string,
+  tagName: string,
+  displayName: string,
+}
+export interface Action {
+  name: string,
+  path: string,
+  displayName: string,
+  content: string,
+}
 
 /**
  * @fileoverview Helper class used to cleanup the DOM when publishing a website
@@ -20,7 +34,7 @@ import { Constants } from '../../Constants';
  */
 
 
-export default class DomPublisher {
+export class DomPublisher {
 
   private doc: HTMLDocument;
 
@@ -77,7 +91,9 @@ export default class DomPublisher {
     }
   }
 
-  split(newFirstPageName) {
+  split(newFirstPageName: string): Action[] {
+    this.doc.body.classList.add(Constants.WEBSITE_CONTEXT_PUBLISHED_CLASS_NAME);
+
     // remove unused scripts when there is no deeplink navigation anymore
     ['js/jquery-ui.js', 'js/pageable.js']
     .map(path => this.doc.querySelector(`script[src="${ path }"]`))
@@ -100,7 +116,7 @@ export default class DomPublisher {
       // update title (TODO: description and SEO)
       (clone.head.querySelector('title') || ({} as HTMLTitleElement)).innerHTML += ' - ' + displayName;
       // remove elements from other pages
-      Array.from(clone.querySelectorAll('.paged-element'))
+      Array.from(clone.querySelectorAll(`.${Constants.PAGED_CLASS_NAME}`))
       .forEach(el => {
         if(el.classList.contains(name)) {
           el.classList.add('page-link-active');
@@ -122,6 +138,15 @@ export default class DomPublisher {
           el.classList.remove('page-link-active'); // set when you save the file
         }
       })
+
+      // remove useless css classes
+      // do not do this before as these classes are needed until the last moment, e.g. to select paged elements
+      Constants.SILEX_CLASS_NAMES_TO_REMOVE_AT_PUBLISH.forEach(className => {
+        Array.from(clone.getElementsByClassName(className))
+        .forEach((el: HTMLElement) => el.classList.remove(className));
+      });
+
+
       // create a unifile batch action
       return {
         name: 'writefile',
@@ -132,9 +157,9 @@ export default class DomPublisher {
     })
   }
 
-  extractAssets(baseUrl) {
+  extractAssets(baseUrl: string): {scriptTags: HTMLElement[], styleTags: HTMLElement[], files: File[]} {
     // all scripts, styles and assets from head => local
-    const actions = [];
+    const files: File[] = [];
     DomTools.transformPaths(this.dom, (path, el, isInHead) => {
       // el may be null if the path comes from the JSON object holding Silex data
       // This is never supposed to happen because the tag holding the JSON object
@@ -150,7 +175,7 @@ export default class DomPublisher {
         const destFolder = this.getDestFolder(Path.extname(url.pathname), tagName);
         if(destFolder) {
           const destPath = `${destFolder}/${fileName}`;
-          actions.push({
+          files.push({
             original: path,
             srcPath: url.href,
             destPath: this.rootPath + '/' + destPath,
@@ -243,18 +268,10 @@ export default class DomPublisher {
       element.parentElement.replaceChild(replacement, element);
     });
 
-    this.doc.body.classList.add(Constants.WEBSITE_CONTEXT_PUBLISHED_CLASS_NAME);
-
-    // remove useless css classes
-    Constants.SILEX_CLASS_NAMES_TO_REMOVE_AT_PUBLISH.forEach(className => {
-      Array.from(this.doc.getElementsByClassName(className))
-      .forEach((el: HTMLElement) => el.classList.remove(className));
-    });
-
     return {
       scriptTags: scriptTags,
       styleTags: styleTags,
-      actions: actions,
+      files,
     };
   }
 
@@ -264,7 +281,7 @@ export default class DomPublisher {
    * @param {string} url
    * @return {boolean} true if the url is relative or it is a known domain (sttic.silex.me)
    */
-  isDownloadable(url) {
+  isDownloadable(url): boolean {
     // do not download files with GET params since it is probably dynamic
     return url.search === ''
     // do not download data:* images
