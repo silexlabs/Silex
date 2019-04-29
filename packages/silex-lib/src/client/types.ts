@@ -51,6 +51,7 @@ import { Splitter } from './view/splitter';
 import { TextFormatBar } from './view/TextFormatBar';
 import { Workspace } from './view/workspace';
 import { StageWrapper } from './view/StageWrapper';
+import { FileInfo } from '../Constants';
 
 /**
  * warning: if you change that type, also change the default value in LinkDialog
@@ -61,13 +62,13 @@ export interface LinkData {
   title?: string,
   rel?: string,
   type?: string,
-  download?: string
+  download?: string,
 };
 export enum StickyPoint {
   LEFT = 'left',
   RIGHT = 'right',
   TOP = 'top',
-  BOTTOM = 'bottom'
+  BOTTOM = 'bottom',
 }
 // MID_V: 'midV',
 // MID_H: 'midH',
@@ -76,27 +77,15 @@ export interface StickyLine {
   vertical: boolean,
   position: number,
   stickyPoint: StickyPoint,
-  metaData: any
+  metaData: any,
 };
 export interface Font {
   family: string,
-  href: string
+  href: string,
 };
-export interface FileInfo {
-  url: string,
-  path: string,
-  folder: string,
-  service: string,
-  size: number,
-  modified: string,
-  name: string,
-  isDir: boolean,
-  mime: string,
-  absPath: string,
-}
 export interface Hosting {
   providers: Provider[],
-  skipHostingSelection: boolean
+  skipHostingSelection: boolean,
 };
 export interface Provider {
   name: string,
@@ -109,18 +98,18 @@ export interface Provider {
   buyDomainUrl: string,
   skipVhostSelection: boolean,
   skipFolderSelection: boolean,
-  afterPublishMessage: string
+  afterPublishMessage: string,
 };
 export interface VHost {
   name: string,
   domainUrl: string,
   skipDomainSelection: boolean,
-  publicationPath: FileInfo
+  publicationPath: FileInfo,
 };
 export interface PublicationOptions {
   file: FileInfo,
   publicationPath: FileInfo,
-  provider: Provider
+  provider: Provider,
 };
 export interface UndoItem {
   page: string,
@@ -133,7 +122,7 @@ export interface ClipboardItem {
   style: Object;
   mobileStyle: Object;
   componentData: ComponentData;
-  children: Array<ClipboardItem>
+  children: Array<ClipboardItem>;
 }
 
 /**
