@@ -15,20 +15,6 @@
  */
 
 
-export interface FileInfo {
-  url: string,
-  path: string,
-  folder: string,
-  service: string,
-  size: number,
-  modified: string,
-  name: string,
-  isDir: boolean,
-  mime: string,
-  absPath: string,
-}
-
-
 export class Constants {
   /**
    * constant for the class name set on the body depending on the context in which is the website

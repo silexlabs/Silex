@@ -1,6 +1,7 @@
 interface Dialog {
   set(optoins: any);
   close();
+  destroy();
   setContent(el: HTMLElement|DocumentFragment);
 }
 interface Alertify {
@@ -120,12 +121,17 @@ export class SilexNotification {
    * close (cancel) the current notification
    */
   static close() {
-    if(SilexNotification.currentDialog) SilexNotification.currentDialog.close();
+    if(SilexNotification.currentDialog) {
+      // close the dialog
+      // SilexNotification.currentDialog.close();
+      // reset the body in case we used setContent
+      SilexNotification.currentDialog.setContent(null);
+      SilexNotification.currentDialog.destroy();
+    }
     SilexNotification.currentDialog = null;
   }
 
   static setup(dialog: Dialog) {
-    SilexNotification.close();
     SilexNotification.isActive = true;
     SilexNotification.currentDialog = dialog;
     document.querySelector('.alertify').setAttribute('spellcheck', 'false');
@@ -139,7 +145,9 @@ export class SilexNotification {
    * display a message
    */
   static alert(title: string, message: string, cbk: () => any, label: string = 'ok') {
+    SilexNotification.close();
     SilexNotification.setup(alertify.alert(title, message, () => {
+      SilexNotification.close();
       SilexNotification.isActive = false;
       SilexNotification.currentDialog = null;
       cbk();
@@ -152,7 +160,9 @@ export class SilexNotification {
    * ask for a text
    */
   static prompt(title: string, message: string, text: string, cbk: (p1: boolean, p2: string) => any, ok: string = 'ok', cancel: string = 'cancel') {
+    SilexNotification.close();
     SilexNotification.setup(alertify.prompt(title, message, text, (evt, value) => {
+      SilexNotification.close();
       SilexNotification.isActive = false;
       SilexNotification.currentDialog = null;
       cbk(true, value);
@@ -172,7 +182,9 @@ export class SilexNotification {
    * ask for confirmation
    */
   static confirm(title: string, message: string, cbk: (p1: boolean) => any, ok: string = 'ok', cancel: string = 'cancel') {
+    SilexNotification.close();
     SilexNotification.setup(alertify.confirm(title, message, () => {
+      SilexNotification.close();
       SilexNotification.isActive = false;
       SilexNotification.currentDialog = null;
       cbk(true);
@@ -192,7 +204,6 @@ export class SilexNotification {
    * notify the user with success formatting
    */
   static notifySuccess(message: string) {
-    console.log(message);
     SilexNotification.nativeNotification(message, SilexNotification.SUCCESS_ICON);
     alertify.notify(message, 'success', SilexNotification.NOTIFICATION_DURATION_MS, () => {});
   }
@@ -207,19 +218,12 @@ export class SilexNotification {
   }
 
   /**
-   * notify the user with success formatting
-   */
-  static notifyInfo(message: string) {
-    SilexNotification.nativeNotification(message, SilexNotification.INFO_ICON);
-    alertify.notify(message, 'notify', SilexNotification.NOTIFICATION_DURATION_MS, () => {});
-  }
-
-  /**
    * change the text of the current notification
    */
   static setContent(el: HTMLElement|DocumentFragment) {
     if(SilexNotification.currentDialog) {
       SilexNotification.currentDialog.setContent(el);
+      // document.querySelector('.ajs-content').appendChild(el);
     }
   }
 

@@ -51,7 +51,6 @@ import { Splitter } from './view/splitter';
 import { TextFormatBar } from './view/TextFormatBar';
 import { Workspace } from './view/workspace';
 import { StageWrapper } from './view/StageWrapper';
-import { FileInfo } from '../Constants';
 
 /**
  * warning: if you change that type, also change the default value in LinkDialog
@@ -83,6 +82,18 @@ export interface Font {
   family: string,
   href: string,
 };
+export interface FileInfo {
+  url: string,
+  path: string,
+  folder: string,
+  service: string,
+  size: number,
+  modified: string,
+  name: string,
+  isDir: boolean,
+  mime: string,
+  absPath: string,
+}
 export interface Hosting {
   providers: Provider[],
   skipHostingSelection: boolean,
