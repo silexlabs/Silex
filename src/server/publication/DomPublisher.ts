@@ -12,7 +12,7 @@
 const { URL } = require('url');
 const Path = require('path');
 import DomTools from '../utils/DomTools';
-import { Constants, FileInfo } from '../../Constants';
+import { Constants } from '../../Constants';
 
 export interface File {
   original: string,

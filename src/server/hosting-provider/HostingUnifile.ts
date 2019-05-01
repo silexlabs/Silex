@@ -16,14 +16,14 @@ export default class HostingUnifile {
       name: 'unifile',
       displayName: 'Choose a folder',
       isLoggedIn: true,
-      authorizeUrl: '',
-      dashboardUrl: '',
-      pleaseCreateAVhost: '',
-      vhostsUrl: '',
-      buyDomainUrl: '',
+      authorizeUrl: null,
+      dashboardUrl: null,
+      pleaseCreateAVhost: null,
+      vhostsUrl: null,
+      buyDomainUrl: null,
       skipVhostSelection: true,
       skipFolderSelection: false,
-      afterPublishMessage: '',
+      afterPublishMessage: null,
     };
   }
 

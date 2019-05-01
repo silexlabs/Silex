@@ -224,7 +224,7 @@ export class FileMenuController extends ControllerBase {
     this.tracker.trackAction('controller-events', 'request', 'file.publish', 0);
     const dialog: PublishDialog = new PublishDialog(this.model, this.view);
     dialog.open()
-        .then((publishOptions) => {
+        .then((publishOptions: PublicationOptions) => {
           if (publishOptions) {
             this.doPublish(publishOptions, (errMsg, warningMsg, finalPublicationOptions) => {
               if (errMsg) {
@@ -263,9 +263,8 @@ export class FileMenuController extends ControllerBase {
       publicationOptions: PublicationOptions,
       cbk: (p1: string, p2: string, p3: PublicationOptions) =>
           any) {
-    const publicationPath = publicationOptions['publicationPath'];
-    const provider = publicationOptions['provider'];
-    const vhost = publicationOptions['vhost'];
+    const publicationPath = publicationOptions.publicationPath;
+    const provider = publicationOptions.provider;
 
     // get info about the website file
     const file = this.model.file.getFileInfo();
