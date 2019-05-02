@@ -113,7 +113,9 @@ export class LinkDialog {
         <div class="labels">
           <label for="link-editor-external" title="External Link" class="link-editor-tab-label first-button fa fa-lg fa-link${isExternal ? ' checked ' : ''}"></label>
           <label for="link-editor-internal" title="Link to a page" class="link-editor-tab-label last-button fa fa-lg fa-file"${isExternal ? '' : ' checked '}></label>
+          <div class="space"></div>
         </div>
+        <div class="link-editor-body">
         <input autocomplete="nope" id="link-editor-external" class="link-editor-radio" type="radio" name="link-editor-tab-group"${isExternal ? ' checked ' : ''}/>
         <div class="link-editor-tab link-editor-tab-external">
           <div class="link-editor-tab-container">
@@ -160,6 +162,7 @@ export class LinkDialog {
             <label for="link-editor-download">The "download" attribute. Indicates that the link is to be used for downloading a resource (such as a file). The author can specify a default file name by providing a value.</label>
             <input autocomplete="nope" id="link-editor-download" class="alertify-text download" type="text" value="${linkData['download']}">
           </div>
+        </div>
         </div>
       </section>
     `;

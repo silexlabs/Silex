@@ -1,0 +1,75 @@
+.alerts {
+  background-color: rgba(0,0,0,.9);
+  position: fixed;
+  z-index: 200;
+  width: 100vw;
+  height: 100vh;
+  top: 0;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 1;
+  transition: opacity .1s ease;
+
+  &.closed {
+    width: 0;
+    height: 0;
+    top: -9999px;
+    left: -9999px;
+    opacity: 0;
+  }
+
+  .notification-dialog {
+    // background-color: @silexdarkergrey;
+    color: @silexlightergrey;
+    position: absolute;
+    padding: 50px;
+    width: 50%;
+    min-width: 400px;
+
+    &, a { color: @silexlightergrey; }
+
+    input, select, button {
+      color: @silexdarkergrey;
+      background-color: @silexlightergrey;
+      border: 1px solid @silexlightergrey;
+    }
+
+    .notification-dialog_content {
+      .block-dialog {
+        display: block;
+        margin: 20px 0;
+        min-width: 48%;
+      }
+
+      strong, b, a {
+        background-color: @silexdarkgrey;
+      }
+    }
+    .notification-dialog_buttons {
+      border-top-color: @silexlightgrey;
+      box-shadow: inset 0 1px 0 @silexmediumgrey;
+      padding-top: 15px;
+      input, select, button {
+        color: @silexlightergrey;
+        background-color: transparent;
+        cursor: pointer;
+      }
+    }
+    .notification-dialog_info {
+      width: 99%;
+      height: 600px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-color: @silexmediumgrey;
+      .tip-of-the-day {
+        * {
+            color: @silexlightergrey;
+            margin: 10px;
+        }
+      }
+    }
+  }
+}

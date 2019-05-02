@@ -1,18 +1,4 @@
-interface Dialog {
-  set(optoins: any);
-  close();
-  destroy();
-  setContent(el: HTMLElement|DocumentFragment);
-}
-interface Alertify {
-  alert(title:string, message: string, cbk: () => void): Dialog;
-  prompt(title:string, message: string, value: string, ok: (evt: Event, value: string) => void, cancel: () => void): Dialog;
-  confirm(title:string, message: string, ok: () => void, cancel: () => void): Dialog;
-  notify(message: string, type: string, wait: number, cbk: () => void);
-}
-declare var alertify: Alertify;
-
-
+import { getUiElements } from "../view/UiElements";
 
 /**
  * Silex, live web creation
@@ -25,186 +11,152 @@ declare var alertify: Alertify;
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
+interface Dialog {
+  set(optoins: any);
+  close();
+  destroy();
+  setContent(el: HTMLElement|DocumentFragment);
+}
+interface Alertify {
+  notify(message: string, type: string, wait: number, cbk: () => void);
+  // the following do not work properly:
+  // alert(title:string, message: string, cbk: () => void): Dialog;
+  // prompt(title:string, message: string, value: string, ok: (evt: Event, value: string) => void, cancel: () => void): Dialog;
+  // confirm(title:string, message: string, ok: () => void, cancel: () => void): Dialog;
+}
+declare var alertify: Alertify;
+
+interface Options {
+  labelOk?: string,
+  labelCancel?: string,
+  defaultValue?: string,
+  cancel?: () => {},
+  title: string,
+  content: string,
+}
+
 /**
  * @fileoverview Helper class for common tasks
  *
  */
 export class SilexNotification {
-  /**
-   * constant for the duration of the notifications, in ms
-   */
-  static NOTIFICATION_DURATION_MS: number = 5;
+  private static NOTIFICATION_DURATION_MS = 30000;
+  private static NOTIFICATION_CSS_CLASS = 'notification-dialog';
 
-  /**
-   * constant for the url of the icon
-   */
-  static ERROR_ICON: string = 'assets/notifications/error.png';
-
-  /**
-   * constant for the url of the icon
-   */
-  static SUCCESS_ICON: string = 'assets/notifications/success.png';
-
-  /**
-   * constant for the url of the icon
-   */
-  static INFO_ICON: string = 'assets/notifications/info.png';
+  static get isActive(): boolean {
+    return !!SilexNotification.currentDialog || !document.querySelector('.alerts').classList.contains('closed');
+  }
 
   /**
    * flag to indicate wether a modal dialog is opened
    */
-  static isActive: boolean = false;
-
-  /**
-   * flag to indicate wether a modal dialog is opened
-   */
-  static currentDialog: Dialog;
-
-  /**
-   * flag to indicate wether the window/tab has focus
-   */
-  static hasFocus: boolean = true;
-
-  /**
-   * flag to indicate wether we are listening for focus event already
-   */
-  static isListeningForFocus: boolean = false;
+  private static get currentDialog(): HTMLElement {
+    return document.querySelector(`.${SilexNotification.NOTIFICATION_CSS_CLASS}`);
+  };
 
   constructor() {
     throw 'this is a static class and it canot be instanciated';
   }
 
-  /**
-   * use native alerts vs alertify
-   */
-  static useNative(): boolean {
-    return SilexNotification.hasFocus === false &&
-        ('Notification' in window && Notification.permission === 'granted');
-  }
-
-  /**
-   * activate native alerts if available
-   */
-  static activateNative() {
-    if ('Notification' in window && Notification.permission !== 'denied') {
-      if (!SilexNotification.useNative()) {
-        document.addEventListener('mousemove', function activateNativeListener(e) {
-          Notification.requestPermission();
-          document.removeEventListener('mousemove', activateNativeListener);
-        });
-      }
-    }
-  }
-
-  /**
-   * display a native notification, or ask for permission
-   */
-  static nativeNotification(message: string, iconUrl: string) {
-    if (!SilexNotification.isListeningForFocus) {
-      SilexNotification.isListeningForFocus = true;
-      window.onfocus = (e) => SilexNotification.hasFocus = true;
-      window.onblur = (e) => SilexNotification.hasFocus = false;
-    }
-    if (SilexNotification.useNative()) {
-      let notification = new Notification(
-          'Silex speaking...',
-          {'icon': iconUrl, 'body': message, 'lang': 'en-US'});
-      setTimeout(function() {
-        notification.close();
-      }, SilexNotification.NOTIFICATION_DURATION_MS);
-    } else {
-    }
-  }
-
+  private static cbkOk: () => void;
+  private static cbkCancel: () => void;
 
   /**
    * close (cancel) the current notification
    */
-  static close() {
+  static close(isOk=false) {
     if(SilexNotification.currentDialog) {
-      // close the dialog
-      // SilexNotification.currentDialog.close();
-      // reset the body in case we used setContent
-      SilexNotification.currentDialog.setContent(null);
-      SilexNotification.currentDialog.destroy();
+      SilexNotification.currentDialog.remove();
+      if(isOk) SilexNotification.cbkOk();
+      else SilexNotification.cbkCancel();
+      const container: HTMLElement = document.querySelector('.alerts');
+      container.classList.add('closed');
+      SilexNotification.cbkCancel = null;
+      SilexNotification.cbkOk = null;
     }
-    SilexNotification.currentDialog = null;
+  }
+  private static getMarkup(options: Options) {
+    return `
+      <section class="${SilexNotification.NOTIFICATION_CSS_CLASS}">
+        <h2>${options.title}</h2>
+        <p class="${SilexNotification.NOTIFICATION_CSS_CLASS}_content">
+          ${options.content}
+          ${options.defaultValue ? `<input id="${SilexNotification.NOTIFICATION_CSS_CLASS}_value" class="block-dialog" type="text" value="${options.defaultValue}">` : ''}
+        </p>
+        <div class="${SilexNotification.NOTIFICATION_CSS_CLASS}_buttons">
+          ${options.labelCancel ? `<input id="${SilexNotification.NOTIFICATION_CSS_CLASS}_cancel" type="button" value="${options.labelCancel}">` : ''}
+          ${options.labelOk ? `<input id="${SilexNotification.NOTIFICATION_CSS_CLASS}_ok" type="button" value="${options.labelOk}">` : ''}
+        </div>
+      </section>
+    `;
   }
 
-  static setup(dialog: Dialog) {
-    SilexNotification.isActive = true;
-    SilexNotification.currentDialog = dialog;
-    document.querySelector('.alertify').setAttribute('spellcheck', 'false');
-    return dialog.set({
-      movable: false,
-      transition: 'fade',
-    } as any);
+  private static create(markup: string) {
+    const container: HTMLElement = document.querySelector('.alerts');
+    container.insertAdjacentHTML('afterbegin', markup);
+    container.classList.remove('closed');
+    (SilexNotification.currentDialog.querySelector(`#${SilexNotification.NOTIFICATION_CSS_CLASS}_ok`) as HTMLElement).focus();
   }
 
   /**
    * display a message
    */
-  static alert(title: string, message: string, cbk: () => any, label: string = 'ok') {
+  static alert(title: string, content: string, ok: () => any, labelOk: string = 'ok') {
     SilexNotification.close();
-    SilexNotification.setup(alertify.alert(title, message, () => {
-      SilexNotification.close();
-      SilexNotification.isActive = false;
-      SilexNotification.currentDialog = null;
-      cbk();
-    }).set({
-      label,
-    } as any));
+    SilexNotification.create(SilexNotification.getMarkup({
+      labelOk,
+      title,
+      content,
+    }));
+    SilexNotification.cbkCancel = SilexNotification.cbkOk = () => ok();
+    (SilexNotification.currentDialog.querySelector(`#${SilexNotification.NOTIFICATION_CSS_CLASS}_ok`) as HTMLElement).onclick = e => SilexNotification.close();
   }
 
   /**
    * ask for a text
    */
-  static prompt(title: string, message: string, text: string, cbk: (p1: boolean, p2: string) => any, ok: string = 'ok', cancel: string = 'cancel') {
+  static prompt(title: string, content: string, defaultValue: string, cbk: (isOk: boolean, value: string) => any, labelOk: string = 'ok', labelCancel: string = 'cancel') {
     SilexNotification.close();
-    SilexNotification.setup(alertify.prompt(title, message, text, (evt, value) => {
-      SilexNotification.close();
-      SilexNotification.isActive = false;
-      SilexNotification.currentDialog = null;
-      cbk(true, value);
-    }, () => {
-      SilexNotification.isActive = false;
-      SilexNotification.currentDialog = null;
+    SilexNotification.create(SilexNotification.getMarkup({
+      labelOk,
+      labelCancel,
+      defaultValue,
+      title,
+      content,
+    }));
+    const input: HTMLInputElement = SilexNotification.currentDialog.querySelector(`#${SilexNotification.NOTIFICATION_CSS_CLASS}_value`);
+    SilexNotification.cbkOk = () => {
+      cbk(true, input.value);
+    };
+    SilexNotification.cbkCancel = () => {
       cbk(false, null);
-    }).set({
-      label: {
-        ok,
-        cancel,
-      },
-    } as any));
+    };
+    (SilexNotification.currentDialog.querySelector(`#${SilexNotification.NOTIFICATION_CSS_CLASS}_ok`) as HTMLElement).onclick = e => SilexNotification.close(true);
+    (SilexNotification.currentDialog.querySelector(`#${SilexNotification.NOTIFICATION_CSS_CLASS}_cancel`) as HTMLElement).onclick = e => SilexNotification.close(false);
   }
 
   /**
    * ask for confirmation
    */
-  static confirm(title: string, message: string, cbk: (p1: boolean) => any, ok: string = 'ok', cancel: string = 'cancel') {
+  static confirm(title: string, content: string, cbk: (isOk: boolean) => any, labelOk: string = 'ok', labelCancel: string = 'cancel') {
     SilexNotification.close();
-    SilexNotification.setup(alertify.confirm(title, message, () => {
-      SilexNotification.close();
-      SilexNotification.isActive = false;
-      SilexNotification.currentDialog = null;
-      cbk(true);
-    }, () => {
-      SilexNotification.isActive = false;
-      SilexNotification.currentDialog = null;
-      cbk(false);
-    }).set({
-      label: {
-        ok,
-        cancel,
-      },
-    } as any));
+    SilexNotification.create(SilexNotification.getMarkup({
+      labelOk,
+      labelCancel,
+      title,
+      content,
+    }));
+    SilexNotification.cbkOk = () => cbk(true);
+    SilexNotification.cbkCancel = () => cbk(false);
+
+    (SilexNotification.currentDialog.querySelector(`#${SilexNotification.NOTIFICATION_CSS_CLASS}_ok`) as HTMLElement).onclick = e => SilexNotification.close(true);
+    (SilexNotification.currentDialog.querySelector(`#${SilexNotification.NOTIFICATION_CSS_CLASS}_cancel`) as HTMLElement).onclick = e => SilexNotification.close(false);
   }
 
   /**
    * notify the user with success formatting
    */
   static notifySuccess(message: string) {
-    SilexNotification.nativeNotification(message, SilexNotification.SUCCESS_ICON);
     alertify.notify(message, 'success', SilexNotification.NOTIFICATION_DURATION_MS, () => {});
   }
 
@@ -213,17 +165,17 @@ export class SilexNotification {
    */
   static notifyError(message: string) {
     console.error(message);
-    SilexNotification.nativeNotification(message, SilexNotification.ERROR_ICON);
     alertify.notify(message, 'error', SilexNotification.NOTIFICATION_DURATION_MS, () => {});
   }
 
   /**
    * change the text of the current notification
    */
-  static setContent(el: HTMLElement|DocumentFragment) {
+  static setContent(el: HTMLElement|DocumentFragment, keepExisiting=false) {
     if(SilexNotification.currentDialog) {
-      SilexNotification.currentDialog.setContent(el);
-      // document.querySelector('.ajs-content').appendChild(el);
+      const container = SilexNotification.currentDialog.querySelector(`.${SilexNotification.NOTIFICATION_CSS_CLASS}_content`);
+      if(!keepExisiting) container.innerHTML = '';
+      container.appendChild(el);
     }
   }
 
@@ -234,36 +186,38 @@ export class SilexNotification {
     if(SilexNotification.currentDialog) {
       const el = document.createElement('div');
       el.insertAdjacentHTML('afterbegin', `<p>${text}</p>`);
-      SilexNotification.currentDialog.setContent(el);
+      SilexNotification.setContent(el);
     }
   }
 
   /**
-   * @return element which holds the buttons of the current notification
+   * add a button to the button bar
    */
-  static addButton(el: HTMLElement) {
-    const container = document.querySelector('.ajs-buttons');
-    container.insertBefore(el, container.childNodes[0]);
+  static addButton(el: HTMLElement|DocumentFragment) {
+    if(SilexNotification.currentDialog) {
+      SilexNotification.currentDialog.querySelector(`.${SilexNotification.NOTIFICATION_CSS_CLASS}_buttons`);
+    }
   }
 
   /**
    * add an HTML panel with info of type "while you wait, here is an info"
    */
   static setInfoPanel(element: HTMLElement) {
-    let container = document.querySelector('.ajs-content');
-    let infoPanel = container.querySelector('.silex-info-panel') as HTMLElement;
-    if (infoPanel === null) {
-      infoPanel = document.createElement('DIV');
-      infoPanel.classList.add('info-panel');
+    if(SilexNotification.currentDialog) {
+      let infoPanel = SilexNotification.currentDialog.querySelector(`#${SilexNotification.NOTIFICATION_CSS_CLASS}_info`) as HTMLElement;
+      if(!infoPanel) {
+        infoPanel = document.createElement('div');
+        infoPanel.insertAdjacentHTML('afterbegin', `<p class="${SilexNotification.NOTIFICATION_CSS_CLASS}_info"></p>`);
+        SilexNotification.setContent(infoPanel, true);
+      }
 
       // limit height so that small screens still see the close button
-      let stage = document.querySelector('#silex-stage-iframe');
+      let stage = getUiElements().stage.querySelector('iframe');
       infoPanel.style.maxHeight = Math.round(stage.clientHeight * 2 / 3) + 'px';
-      container.insertBefore(
-          infoPanel, container.childNodes[container.childNodes.length - 1]);
+      SilexNotification.currentDialog.insertBefore(infoPanel, SilexNotification.currentDialog.childNodes[SilexNotification.currentDialog.childNodes.length - 1]);
+      infoPanel.innerHTML = '';
+      infoPanel.appendChild(element);
     }
-    infoPanel.innerHTML = '';
-    infoPanel.appendChild(element);
   }
 }
 
@@ -276,3 +230,5 @@ export class SilexNotification {
 // Notification.activateNative();
 
 // :facepalm:
+
+window['SilexNotification'] = SilexNotification;
