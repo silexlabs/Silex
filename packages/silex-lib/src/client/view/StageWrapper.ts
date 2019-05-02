@@ -3,6 +3,7 @@ import { Controller, Model } from '../types';
 // import { Stage } from 'drag-drop-stage-component'; // this is not recognized by my IDE
 import { Stage } from '../../../node_modules/drag-drop-stage-component/src/ts/index';
 import { ScrollData, SelectableState } from '../../../node_modules/drag-drop-stage-component/src/ts/Types';
+import { SilexNotification } from '../utils/notification';
 
 export class StageWrapper {
   private stage: Stage;
@@ -109,7 +110,9 @@ export class StageWrapper {
           || dropZone.tagName.toLowerCase() === 'body';
       }),
       onEdit: () => {
-        this.controller.editMenuController.editElement();
+        if(!SilexNotification.isActive) {
+          this.controller.editMenuController.editElement();
+        }
       },
       onDrop: change => this.updateView(change),
       onResizeEnd: change => this.updateView(change),

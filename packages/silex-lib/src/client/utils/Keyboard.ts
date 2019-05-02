@@ -48,15 +48,19 @@ export class Keyboard {
 
   handleKeyDown(e) {
     if(!e.defaultPrevented) {
-      const shortcuts = this.getShortcutsFromEvent(e);
-      if (shortcuts.length > 0 &&
-          // not while in a modal alert
-          !SilexNotification.isActive) {
-        shortcuts.forEach((shortcut) => {
-          shortcut.cbk(e);
-        });
-        e.preventDefault();
-        e.stopPropagation();
+      if(SilexNotification.isActive) {
+        if(e.key === 'Enter') SilexNotification.close(true);
+        if(e.key === 'Escape') SilexNotification.close(false);
+      }
+      else {
+        const shortcuts = this.getShortcutsFromEvent(e);
+        if (shortcuts.length > 0) {
+          shortcuts.forEach((shortcut) => {
+            shortcut.cbk(e);
+          });
+          e.preventDefault();
+          e.stopPropagation();
+        }
       }
     }
   }
