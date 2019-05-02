@@ -9,9 +9,7 @@
   "globals": {
     "silex": true,
     "ga": true,
-    "alertify": true,
     "ce": true,
-    "Pixlr": true,
     "ace": true
   },
   "rules": {
