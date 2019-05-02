@@ -8,11 +8,8 @@
   },
   "globals": {
     "silex": true,
-    "goog": true,
     "ga": true,
-    "alertify": true,
     "ce": true,
-    "Pixlr": true,
     "ace": true
   },
   "rules": {
