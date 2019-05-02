@@ -452,7 +452,7 @@ export class StyleEditorPane extends PaneBase {
     if (textBoxes.length <= 0) {
       SilexNotification.alert('Create a style', 'Error: you need to select a TextBox for this action.', () => {});
     } else {
-      SilexNotification.prompt('Create a style', 'Enter a name for your style!', opt_data ? opt_data['displayName'] : 'My Style', (accept, name) => {
+      SilexNotification.prompt('Create a style', 'Enter a name for your style!', opt_data ? opt_data['displayName'] : '', 'Your Style', (accept, name) => {
         if (accept && name && name !== '') {
           this.controller.propertyToolController.undoCheckPoint();
           const className = name.replace(/ /g, '-').toLowerCase();

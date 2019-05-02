@@ -462,11 +462,11 @@ export class SettingsDialog {
   editFont(font, cbk) {
     SilexNotification.prompt('Edit font',
       'What is the CSS stylesheet for your font, e.g. https://fonts.googleapis.com/css?family=Roboto',
-      font.href, (ok, href) => {
+      font.href, 'https://fonts.googleapis.com/css?family=Roboto', (ok, href) => {
         if (ok) {
           SilexNotification.prompt('Edit font',
             'What is the name of your font, e.g. \'Roboto\', sans-serif',
-            font.family, (ok, family) => {
+            font.family, '\'Roboto\', sans-serif', (ok, family) => {
               if (ok) {
                 cbk(({family: family, href: href} as Font));
               }

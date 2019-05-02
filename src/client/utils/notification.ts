@@ -25,6 +25,7 @@ interface Options {
   cancel?: () => {},
   title: string,
   content: string,
+  placeholder?: string,
 }
 
 /**
@@ -36,7 +37,7 @@ export class SilexNotification {
   private static NOTIFICATION_CSS_CLASS = 'notification-dialog';
 
   static get isActive(): boolean {
-    return !!SilexNotification.currentDialog || !document.querySelector('.alerts').classList.contains('closed');
+    return !!SilexNotification.currentDialog && !document.querySelector('.alerts').classList.contains('closed');
   }
 
   /**
@@ -58,13 +59,18 @@ export class SilexNotification {
    */
   static close(isOk=false) {
     if(SilexNotification.currentDialog) {
-      SilexNotification.currentDialog.remove();
-      if(isOk) SilexNotification.cbkOk();
-      else SilexNotification.cbkCancel();
+      // hide dialogs
       const container: HTMLElement = document.querySelector('.alerts');
       container.classList.add('closed');
+
+      // cleanup
+      const cbk = isOk ? SilexNotification.cbkOk : SilexNotification.cbkCancel;
+      SilexNotification.currentDialog.remove();
       SilexNotification.cbkCancel = null;
       SilexNotification.cbkOk = null;
+
+      // all done, we can open another one or do something
+      cbk();
     }
   }
   private static getMarkup(options: Options) {
@@ -73,7 +79,15 @@ export class SilexNotification {
         <h2>${options.title}</h2>
         <p class="${SilexNotification.NOTIFICATION_CSS_CLASS}_content">
           ${options.content}
-          ${options.defaultValue ? `<input id="${SilexNotification.NOTIFICATION_CSS_CLASS}_value" class="block-dialog" type="text" value="${options.defaultValue}">` : ''}
+          ${
+            typeof options.defaultValue !== 'undefined' ? `
+              <input
+                id="${SilexNotification.NOTIFICATION_CSS_CLASS}_value"
+                ${options.placeholder ? `placeholder="${options.placeholder}"` : ''}
+                class="block-dialog" type="text" value="${options.defaultValue}"
+              >`
+              : ''
+          }
         </p>
         <div class="${SilexNotification.NOTIFICATION_CSS_CLASS}_buttons">
           ${options.labelCancel ? `<input id="${SilexNotification.NOTIFICATION_CSS_CLASS}_cancel" type="button" value="${options.labelCancel}">` : ''}
@@ -107,7 +121,7 @@ export class SilexNotification {
   /**
    * ask for a text
    */
-  static prompt(title: string, content: string, defaultValue: string, cbk: (isOk: boolean, value: string) => any, labelOk: string = 'ok', labelCancel: string = 'cancel') {
+  static prompt(title: string, content: string, defaultValue: string, placeholder: string, cbk: (isOk: boolean, value: string) => any, labelOk: string = 'ok', labelCancel: string = 'cancel') {
     SilexNotification.close();
     SilexNotification.create(SilexNotification.getMarkup({
       labelOk,
@@ -115,6 +129,7 @@ export class SilexNotification {
       defaultValue,
       title,
       content,
+      placeholder,
     }));
     const input: HTMLInputElement = SilexNotification.currentDialog.querySelector(`#${SilexNotification.NOTIFICATION_CSS_CLASS}_value`);
     SilexNotification.cbkOk = () => {
@@ -233,4 +248,5 @@ export class SilexNotification {
 
 // :facepalm:
 
-// window['SilexNotification'] = SilexNotification;
+// debug
+window['SilexNotification'] = SilexNotification;
