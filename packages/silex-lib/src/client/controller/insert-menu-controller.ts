@@ -35,7 +35,7 @@ super(model, view);
   createPage(successCbk?: (() => any), cancelCbk?: (() => any)) {
     this.tracker.trackAction('controller-events', 'request', 'insert.page', 0);
     this.getUserInputPageName(
-        'Your new page name', (name, displayName) => {
+        '', (name, displayName) => {
           if (name) {
             // undo checkpoint
             this.undoCheckPoint();

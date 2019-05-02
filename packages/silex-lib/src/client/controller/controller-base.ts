@@ -394,7 +394,7 @@ export class ControllerBase {
   getUserInputPageName(defaultName: string, cbk: (p1?: string, p2?: string) => void) {
     SilexNotification.prompt(
       'Page name',
-      'Enter a name for your page!', defaultName, (accept, name) => {
+      'Enter a name for your page!', defaultName, 'Your page name', (accept, name) => {
         if (accept && name && name.length > 0) {
           // keep the full name
           let displayName = name;

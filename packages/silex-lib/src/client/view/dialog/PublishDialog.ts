@@ -104,7 +104,7 @@ export class PublishDialog {
   selectProvider(providers: Provider[], providerName: string): Promise<PublicationOptions> {
 
     return new Promise<PublicationOptions>((resolve, reject) => {
-      SilexNotification.prompt('Publication', 'unused', 'unused', (ok) => {
+      SilexNotification.prompt('Publication', 'unused', 'unused', 'unused', (ok) => {
         if (ok) {
           const idx = selectEl.selectedIndex;
           const provider = providers[idx];
@@ -188,7 +188,7 @@ export class PublishDialog {
             if (provider['skipVhostSelection'] === true) {
               resolve(this.selectDomain(provider, vhosts[0]));
             } else {
-              SilexNotification.prompt('Publication', 'unused', 'unused', (ok) => {
+              SilexNotification.prompt('Publication', 'unused', 'unused', 'unused', (ok) => {
                 if (ok) {
                   const idx = selectEl.selectedIndex;
                   const vhost = vhosts[idx];
@@ -246,12 +246,12 @@ export class PublishDialog {
           const initialDomain = domain || '';
 
           SilexNotification.prompt('Publication', `
-            <h2>Optional: provide your domain name<h2>
+            <h3>Optional: provide your domain name<h3>
             <p>Choose the domain you want associated with this website. Leave blank and you will be provided with a generic domain.</p>
           ` + (provider['buyDomainUrl'] ? `
             <p>You can also <a target="_blank" href="${provider['buyDomainUrl']}">buy a domain name here.</a></p>
           ` : ''),
-          initialDomain, (ok, newDomain) => {
+          initialDomain, '[Optional] your-domain.com', (ok, newDomain) => {
             const updateOrRemoveSuccess = (res) => {
               // update website url
               if (res['url']) {

@@ -44,7 +44,7 @@ export class LinkDialog {
     const isExternal = !linkData['href'].startsWith('#!');
     SilexNotification.prompt(`
       Link editor <a class="link-editor-help-button fa fa-question-circle" target="_blank" href="https://github.com/silexlabs/Silex/wiki/Editor-UI#link-editor"> Help</a>
-    `, '', 'unused', (accept, unused) => {
+    `, 'unused', 'unused', 'unused', (accept, unused) => {
       if (accept) {
         // get new values
         const newData = LINK_ATTRIBUTES.reduce((acc, attr) => {
