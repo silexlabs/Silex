@@ -19,7 +19,7 @@
     "start": "node dist/server/server/silex_web.js",
     "start:debug": "cross-env SILEX_DEBUG=true nodemon dist/server/server/silex_web.js",
     "start:electron": "SILEX_ELECTRON=true electron .",
-    "build": "npm run workaround-stage && npm run build:css:release && npm run build:html && npm run build:prodotype && npm run build:client:release && npm run build:server:release",
+    "build": "npm run build:css:release && npm run build:html && npm run build:prodotype && npm run build:client:release && npm run build:server:release",
     "release": "electron-builder",
     "build:prodotype": "mkdir -p dist/prodotype/components &&  prodotype src/prodotype/components dist/prodotype/components/ && prodotype src/prodotype/styles dist/prodotype/styles/",
     "build:css:release": "lessc src/css/_styles.less dist/html/css/admin.css",
@@ -32,9 +32,7 @@
     "build:server:debug": "npm run workaround-babel && tsc -p tsconfig-server-debug.json",
     "postinstall": "npm run build",
     "workaround-babel": "rm -rf `node_modules`/@types/babel__*",
-    "note: workaround-babel issue:": "https://github.com/facebook/jest/issues/8218",
-    "workaround-stage": "cd node_modules/drag-drop-stage-component/ && npm i --production && cd ../../",
-    "note: workaround-stage issue:": "this needs to be done because redux package is not found when installing stage normally"
+    "note: workaround-babel issue:": "https://github.com/facebook/jest/issues/8218"
   },
   "dependencies": {
     "ace-builds": "^1.4.3",
@@ -44,7 +42,7 @@
     "cookie-parser": "1.4.3",
     "cookie-session": "2.0.0-beta.3",
     "cross-env": "5.1.4",
-    "drag-drop-stage-component": "github:silexlabs/drag-drop-stage-component#master",
+    "drag-drop-stage-component": "^1.0.2",
     "express": "4.16.3",
     "express-force-ssl": "0.3.2",
     "font-awesome": "^4.7.0",
