@@ -119,25 +119,16 @@ export class StageWrapper {
       onSelect: change => this.updateView(change, false),
       onResize: change => this.updateView(change),
       onDrag: change => this.updateView(change, false),
+      onStartDrag: change => this.prepareUndo(),
+      onStartResize: change => this.prepareUndo(),
     });
   }
+  prepareUndo() {
+    this.controller.stageController.undoCheckPoint();
+  }
   updateView(change, applyStyles = true) {
+    // removed the inline styles
     change.forEach(s => {
-      // apply changes
-      if(applyStyles) {
-        if(!this.model.element.isSection(s.el)) {
-          // sections have no top, left, width
-          if(!this.model.element.isSectionContent(s.el)) {
-            // section contents have no top, left
-            this.model.element.setStyle(s.el, 'top', s.metrics.computedStyleRect.top + 'px');
-            this.model.element.setStyle(s.el, 'left', s.metrics.computedStyleRect.left + 'px');
-          }
-          this.model.element.setStyle(s.el, 'width', s.metrics.computedStyleRect.width + 'px');
-        }
-        this.model.element.setStyle(s.el, s.useMinHeight ? 'min-height' : 'height', s.metrics.computedStyleRect.height + 'px');
-      }
-
-      // cleanup element
       // these are all the properties that can be set by the stage component
       s.el.style.top = '';
       s.el.style.left = '';
@@ -150,7 +141,22 @@ export class StageWrapper {
       s.el.style.border = '';
       s.el.style.minHeight = '';
       s.el.style.position = '';
+
+      // apply the new styles
+      if(applyStyles) {
+        if(!this.model.element.isSection(s.el)) {
+          // sections have no top, left, width
+          if(!this.model.element.isSectionContent(s.el)) {
+            // section contents have no top, left
+            this.model.element.setStyle(s.el, 'top', s.metrics.computedStyleRect.top + 'px');
+            this.model.element.setStyle(s.el, 'left', s.metrics.computedStyleRect.left + 'px');
+          }
+          this.model.element.setStyle(s.el, 'width', s.metrics.computedStyleRect.width + 'px');
+        }
+        this.model.element.setStyle(s.el, s.useMinHeight ? 'min-height' : 'height', s.metrics.computedStyleRect.height + 'px');
+      }
     });
+
 
     const selection = this.stage.getSelection();
     this.model.body.setSelection(selection.map(s => s.el));

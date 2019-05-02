@@ -43,33 +43,39 @@ export class EditMenuController extends ControllerBase {
    * undo the last action
    */
   undo() {
-    this.model.body.setSelection([]);
-    this.undoredoInvalidationManager.callWhenReady(() => {
-      if (ControllerBase.getStatePending === 0 &&
-          ControllerBase.undoHistory.length > 0) {
-        const state = this.getState();
-        ControllerBase.redoHistory.push(state);
-        const prevState = ControllerBase.undoHistory.pop();
-        this.restoreState(prevState);
-      } else {
-        requestAnimationFrame(() => this.undo());
-      }
-    });
+    if(ControllerBase.undoHistory.length > 0) {
+      this.model.body.setSelection([]);
+      this.undoredoInvalidationManager.callWhenReady(() => {
+        if (ControllerBase.getStatePending === 0 &&
+            ControllerBase.undoHistory.length > 0) {
+          const state = this.getState();
+          ControllerBase.redoHistory.push(state);
+          const prevState = ControllerBase.undoHistory.pop();
+          this.restoreState(prevState);
+          this.view.menu.redraw();
+        } else {
+          requestAnimationFrame(() => this.undo());
+        }
+      });
+    }
   }
 
   /**
    * redo the last action
    */
   redo() {
-    this.model.body.setSelection([]);
-    this.undoredoInvalidationManager.callWhenReady(() => {
-      if (ControllerBase.redoHistory.length > 0) {
-        const state = this.getState();
-        ControllerBase.undoHistory.push(state);
-        const prevState = ControllerBase.redoHistory.pop();
-        this.restoreState(prevState);
-      }
-    });
+    if(ControllerBase.redoHistory.length > 0) {
+      this.model.body.setSelection([]);
+      this.undoredoInvalidationManager.callWhenReady(() => {
+        if (ControllerBase.redoHistory.length > 0) {
+          const state = this.getState();
+          ControllerBase.undoHistory.push(state);
+          const prevState = ControllerBase.redoHistory.pop();
+          this.restoreState(prevState);
+          this.view.menu.redraw();
+        }
+      });
+    }
   }
 
   /**
@@ -223,20 +229,28 @@ export class EditMenuController extends ControllerBase {
   removeSelectedElements() {
     let elements = this.model.body.getSelection();
 
-    // confirm and delete
-    SilexNotification.confirm('Delete elements', 'I am about to <strong>delete the selected element(s)</strong>, are you sure?',
-      accept => {
-        if (accept) {
-          // undo checkpoint
-          this.undoCheckPoint();
+    if(!!elements.find(el => el === this.model.body.getBodyElement())) {
+      SilexNotification.alert('Delete elements',
+        'Error: I can not delete the body as it is the root container of all your website. <strong>Please select an element to delete it</strong>.',
+        () => {}
+      );
+    }
+    else {
+      // confirm and delete
+      SilexNotification.confirm('Delete elements', 'I am about to <strong>delete the selected element(s)</strong>, are you sure?',
+        accept => {
+          if (accept) {
+            // undo checkpoint
+            this.undoCheckPoint();
 
-          // do remove selected elements
-          elements.forEach(element => {
-            this.model.element.removeElement(element);
-          });
-        }
-      }, 'delete', 'cancel'
-    );
+            // do remove selected elements
+            elements.forEach(element => {
+              this.model.element.removeElement(element);
+            });
+          }
+        }, 'delete', 'cancel'
+      );
+    }
   }
 
   /**
