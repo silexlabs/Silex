@@ -122,8 +122,21 @@ export class ControllerBase {
    * @return true if the website has unsaved changes
    */
   isDirty(): boolean {
-    return ControllerBase.lastSaveUndoIdx !==
-        ControllerBase.undoHistory.length - 1;
+    return ControllerBase.lastSaveUndoIdx !== ControllerBase.undoHistory.length - 1;
+  }
+
+  /**
+   * @return true if there are actions to redo
+   */
+  hasRedo(): boolean {
+    return ControllerBase.redoHistory.length > 0;
+  }
+
+  /**
+   * @return true if there are actions to undo
+   */
+  hasUndo(): boolean {
+    return ControllerBase.undoHistory.length > 0;
   }
 
   /**
@@ -150,11 +163,10 @@ export class ControllerBase {
 
         // if the previous state was different
         if (ControllerBase.undoHistory.length === 0 ||
-            ControllerBase.undoHistory[ControllerBase.undoHistory.length - 1]
-                    .html !== state.html ||
-            ControllerBase.undoHistory[ControllerBase.undoHistory.length - 1]
-                    .page !== state.page) {
+          ControllerBase.undoHistory[ControllerBase.undoHistory.length - 1].html !== state.html ||
+          ControllerBase.undoHistory[ControllerBase.undoHistory.length - 1].page !== state.page) {
           ControllerBase.undoHistory.push(state);
+          this.view.menu.redraw();
         } else {
           console.warn('Did not store undo state, because nothing has changed');
         }
@@ -630,8 +642,7 @@ export class ControllerBase {
     // save to file
     this.model.file.saveAs(fileInfo, rawHtml, () => {
       this.tracker.trackAction('controller-events', 'success', 'file.save', 1);
-      ControllerBase.lastSaveUndoIdx =
-          ControllerBase.undoHistory.length - 1;
+      ControllerBase.lastSaveUndoIdx = ControllerBase.undoHistory.length - 1;
       this.fileOperationSuccess('File is saved.', false);
       this.view.workspace.setPreviewWindowLocation();
       if (opt_cbk) {

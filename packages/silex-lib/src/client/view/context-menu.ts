@@ -90,14 +90,11 @@ export class ContextMenu {
    * @param opt_pageNames   the names of the pages
    * @param  opt_currentPageName   the name of the current page
    */
-  redraw(
-      opt_selectedElements?: HTMLElement[], opt_pageNames?: string[],
-      opt_currentPageName?: string) {
+  redraw(opt_selectedElements?: HTMLElement[], opt_pageNames?: string[], opt_currentPageName?: string) {
     this.invalidationManager.callWhenReady(() => {
       // update page name
       if (opt_currentPageName) {
-        this.currentPageElement.innerHTML =
-            this.model.page.getDisplayName(opt_currentPageName);
+        this.currentPageElement.innerHTML = this.model.page.getDisplayName(opt_currentPageName);
       }
 
       // get the selection if not provided

@@ -118,7 +118,20 @@ export class Menu {
   *     file
   * @param  currentPageName   the name of the current page
   */
-  redraw(selectedElements: HTMLElement[], pageNames: string[], currentPageName: string) {}
+  redraw() {
+    if(this.controller.editMenuController.hasUndo()) {
+      this.element.querySelector('.undo').classList.remove('off');
+    }
+    else {
+      this.element.querySelector('.undo').classList.add('off');
+    }
+    if(this.controller.editMenuController.hasRedo()) {
+      this.element.querySelector('.redo').classList.remove('off');
+    }
+    else {
+      this.element.querySelector('.redo').classList.add('off');
+    }
+  }
 
   closeAllSubMenu() {
     Menu.SUB_MENU_CLASSES.forEach((className) => {
