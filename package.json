@@ -38,7 +38,6 @@
   },
   "dependencies": {
     "ace-builds": "^1.4.3",
-    "alertifyjs": "^1.11.2",
     "bluebird": "3.5.1",
     "body-parser": "^1.18.2",
     "clang-format": "^1.2.4",

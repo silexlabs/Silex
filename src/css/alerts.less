@@ -1,7 +1,27 @@
+// notifications (bottom right)
+.alerts-notify {
+  position: fixed;
+  width: 400px;
+  bottom: 0;
+  right: 0;
+  z-index: @notification-notify-z-index;
+  & > p {
+    background: rgba(0,0,0,.9);
+    color: @silexlightergrey;
+    padding: 20px;
+    margin: 10px;
+    text-align: center;
+    border: 1px solid white;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+}
+
+// dialogs
 .alerts {
   background-color: rgba(0,0,0,.9);
   position: fixed;
-  z-index: 200;
+  z-index: @notification-dialogs-z-index;
   width: 100vw;
   height: 100vh;
   top: 0;

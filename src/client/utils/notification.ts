@@ -17,14 +17,6 @@ interface Dialog {
   destroy();
   setContent(el: HTMLElement|DocumentFragment);
 }
-interface Alertify {
-  notify(message: string, type: string, wait: number, cbk: () => void);
-  // the following do not work properly:
-  // alert(title:string, message: string, cbk: () => void): Dialog;
-  // prompt(title:string, message: string, value: string, ok: (evt: Event, value: string) => void, cancel: () => void): Dialog;
-  // confirm(title:string, message: string, ok: () => void, cancel: () => void): Dialog;
-}
-declare var alertify: Alertify;
 
 interface Options {
   labelOk?: string,
@@ -157,7 +149,17 @@ export class SilexNotification {
    * notify the user with success formatting
    */
   static notifySuccess(message: string) {
-    alertify.notify(message, 'success', SilexNotification.NOTIFICATION_DURATION_MS, () => {});
+    const container: HTMLElement = document.querySelector('.alerts-notify');
+    const el = document.createElement('p');
+    el.innerHTML = message;
+    container.appendChild(el);
+    const id = setTimeout(() => {
+      el.remove();
+    }, SilexNotification.NOTIFICATION_DURATION_MS)
+    el.onclick = e => {
+      clearTimeout(id);
+      el.remove();
+    }
   }
 
   /**
@@ -165,7 +167,7 @@ export class SilexNotification {
    */
   static notifyError(message: string) {
     console.error(message);
-    alertify.notify(message, 'error', SilexNotification.NOTIFICATION_DURATION_MS, () => {});
+    SilexNotification.notifySuccess(message);
   }
 
   /**
@@ -231,4 +233,4 @@ export class SilexNotification {
 
 // :facepalm:
 
-window['SilexNotification'] = SilexNotification;
+// window['SilexNotification'] = SilexNotification;
