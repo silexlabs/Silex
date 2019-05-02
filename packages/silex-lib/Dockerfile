@@ -14,5 +14,5 @@ RUN npm install
 RUN npm run build
 
 EXPOSE 6805
-CMD ["node", "dist/server/silex_web.js"]
+CMD ["node", "dist/server/server/silex_web.js"]
 
