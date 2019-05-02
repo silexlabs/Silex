@@ -33,14 +33,12 @@
     "postinstall": "npm run build",
     "workaround-babel": "rm -rf `node_modules`/@types/babel__*",
     "note: workaround-babel issue:": "https://github.com/facebook/jest/issues/8218",
-    "workaround-stage": "cd node_modules/drag-drop-stage-component/ && npm i && cd ../../",
+    "workaround-stage": "cd node_modules/drag-drop-stage-component/ && npm i --production && cd ../../",
     "note: workaround-stage issue:": "this needs to be done because redux package is not found when installing stage normally"
   },
   "dependencies": {
     "ace-builds": "^1.4.3",
-    "bluebird": "3.5.1",
     "body-parser": "^1.18.2",
-    "clang-format": "^1.2.4",
     "cloud-explorer": "github:silexlabs/CloudExplorer2#master",
     "compression": "1.7.2",
     "cookie-parser": "1.4.3",
@@ -54,7 +52,6 @@
     "jsdom": "11.6.2",
     "less": "3.0.1",
     "node_modules-path": "github:lexoyo/node_modules-path#master",
-    "nodemon": "^1.18.10",
     "normalize.css": "^8.0.1",
     "prodotype": "github:silexlabs/Prodotype#master",
     "promise-sequential": "1.1.1",
@@ -68,6 +65,7 @@
     "wysihtml": "^0.6.0-beta1"
   },
   "devDependencies": {
+    "nodemon": "^1.18.10",
     "@types/redux": "^3.6.31",
     "@types/ace": "0.0.42",
     "@types/node": "^11.11.7",
