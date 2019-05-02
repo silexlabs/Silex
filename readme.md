@@ -10,24 +10,28 @@ Brought to you by Silex Labs team, promoting free software. Feel free to [use th
 
 ![Silex UI](https://github.com/silexlabs/www.silex.me/raw/gh-pages/assets/silex-ui.gif)
 
-Links
+Silex for DIY and passionate people who want a free alternative to Wix or other closed source website builders:
+
 * [Silex official website](http://www.silex.me/)
 * [Documentation wiki](https://github.com/silexlabs/Silex/wiki)
-* [questions and answers, bug report, feature requests](http://www.silexlabs.org/silex/)
+* [Silex forums](https://github.com/silexlabs/Silex/issues)
+* [subscribe to Silex news by email (a few messages per year)](http://eepurl.com/F48q5) and follow us on [Facebook](http://www.facebook.com/silexlabs), [Twitter](https://twitter.com/silexlabs)
+
+
+Silex for professionals, agencies and hosting companies:
+
+* If you know HTML and CSS here is how to [add your own components to the "+" menu](https://github.com/silexlabs/Silex/wiki/Create-Silex-components)
+* If you are a designer, here is how to [add your own templates to Silex](https://github.com/silexlabs/Silex/wiki/Create-templates-for-Silex)
+* If you are a freelance designer and wants to create Silex website for clients, [please leave your email here](http://eepurl.com/gjYnib)
+* If you are looking for a designer to help you create your website, [please leave your email here](http://eepurl.com/gjYnib)
+* [Hire a contributor from this list](https://github.com/silexlabs/Silex/graphs/contributors) or [from one](https://github.com/silexlabs/unifile/graphs/contributors) [of these](https://github.com/silexlabs/CloudExplorer2/graphs/contributors) [other lists](https://github.com/silexlabs/drag-drop-stage-component/graphs/contributors)
+
+
+Other links
+
 * [Silex license is GPL](http://www.silexlabs.org/silex/silex-licensing/)
 * [Road map](https://github.com/silexlabs/Silex/blob/master/docs/roadmap.md) and [change log](https://github.com/silexlabs/Silex/blob/master/docs/change-log.md)
 
-News and tutorials
-
-* See Silex wiki, there is a tutorials section
-* [Silex blog](http://www.silexlabs.org/category/the-blog/blog-silex/)
-* [subscribe by email](http://eepurl.com/F48q5)
-
-Contact us and let people know about Silex
-
-* [Facebook](http://www.facebook.com/silexlabs)
-* [Twitter](https://twitter.com/silexlabs)
-* [Contributors list](https://github.com/silexlabs/Silex/graphs/contributors)
 
 ## Host an instance of Silex on a server or run Silex on your computer
 
@@ -123,7 +127,7 @@ These are the upstream projects we use in Silex
 
 * [unifile](https://github.com/silexlabs/unifile), a nodejs library which provides a unified access to cloud services
 * [Cloud explorer](http://cloud-explorer.org), a file manager for the cloud services. It is a front end javascript app which connects to a unifile server
-* [Stage](https://github.com/lexoyo/stage), a stage component to add a drag and drop to your project
+* [Stage](https://github.com/silexlabs/drag-drop-stage-component), a stage component to add a drag and drop to your project
 * [Prodotype](https://github.com/silexlabs/Prodotype), Build components and generate a UI to make them editable in your app
 * [Resonsize](http://www.responsize.org/), preview websites at different sizes
 * [Typescript](https://www.typescriptlang.org/) is used to build Silex
