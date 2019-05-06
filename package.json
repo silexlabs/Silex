@@ -1,7 +1,7 @@
 {
   "name": "silex-website-builder",
   "description": "Free and easy website builder for everyone.",
-  "version": "2.5.10",
+  "version": "2.5.11",
   "version:frontend": "2.10",
   "version:backwardcompat": "2.2.10",
   "author": "Alex Hoyau <a.hoyau@silexlabs.org> (https://lexoyo.me/)",
@@ -27,7 +27,8 @@
     "cleanup": "mkdir -p tmp && mv dist/public tmp/ && rm -rf dist && mv tmp dist",
     "release": "electron-builder",
     "webpack": "webpack --config webpack.config.js",
-    "build:prodotype": "mkdir -p dist/prodotype/components &&  prodotype src/prodotype/components dist/prodotype/components/ && prodotype src/prodotype/styles dist/prodotype/styles/",
+    "build:components": "mkdir -p dist/prodotype/components &&  prodotype src/prodotype/components dist/prodotype/components/",
+    "build:prodotype": "npm run build:components && mkdir -p dist/prodotype/styles &&  prodotype src/prodotype/styles dist/prodotype/styles/",
     "build:css:release": "lessc src/css/_styles.less dist/html/css/admin.css",
     "build:css:debug": "lessc src/css/_styles.less dist/html/css/admin.css --source-map",
     "build:html": "pug src/html/index.jade --out dist/html/ --no-debug",
