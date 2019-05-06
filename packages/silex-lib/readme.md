@@ -42,6 +42,16 @@ See this [help section about installing Silex on a server or on your computer, a
 
 Please note that there is also an effort to make Silex a desktop software (in opposition to online app), you can [test the offline version of Silex from here](https://github.com/silexlabs/Silex/releases)
 
+## About the git repo
+
+[Silex source code repository](https://github.com/silexlabs/Silex/) is organized with 2 git branches:
+
+* `master` is the stable version, you can see it in action here: [editor.silex.me](https://editor.silex.me)
+
+* `develop` is the "preprod" or "staging" version, it is deployed on [preprod.silex.me](https://preprod.silex.me) for anyone to test (this is a good contribution, thx in advance, open an issue for each bug)
+
+During your development, you may need to rebase your work on the latest version of Silex develop branch. To do so you can git stash your changes or commit the work in progress, and then use `git pull --rebase upstream develop` to get the latest changes of Silex repo. The rerun `npm install`
+
 ## Size of the project's code base
 
 As of june 2017, around 100.000 lines of code. See [github API count (includes blank lines and comments I guess)](https://api.github.com/repos/silexlabs/Silex/languages):
