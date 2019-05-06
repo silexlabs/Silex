@@ -1,7 +1,7 @@
 {
   "name": "silex-website-builder",
   "description": "Free and easy website builder for everyone.",
-  "version": "2.5.4",
+  "version": "2.5.5",
   "version:frontend": "2.10",
   "version:backwardcompat": "2.2.10",
   "author": "Alex Hoyau <a.hoyau@silexlabs.org> (https://lexoyo.me/)",
@@ -11,7 +11,7 @@
   "main": "dist/server/server/silex_web.js",
   "bin": {
     "silex_web": "./dist/server/server/silex_web.js",
-    "silex_app": "SILEX_ELECTRON=true electron ./dist/server/server/silex_electron.js"
+    "silex_app": "./dist/server/server/silex_electron.js"
   },
   "license": "GPL-3.0",
   "engines": {
