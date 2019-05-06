@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 //////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/

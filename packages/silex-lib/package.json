@@ -1,7 +1,7 @@
 {
   "name": "silex-website-builder",
   "description": "Free and easy website builder for everyone.",
-  "version": "2.5.3",
+  "version": "2.5.4",
   "version:frontend": "2.10",
   "version:backwardcompat": "2.2.10",
   "author": "Alex Hoyau <a.hoyau@silexlabs.org> (https://lexoyo.me/)",
@@ -11,7 +11,7 @@
   "main": "dist/server/server/silex_web.js",
   "bin": {
     "silex_web": "./dist/server/server/silex_web.js",
-    "silex_app": "./dist/server/server/silex_electron.js"
+    "silex_app": "SILEX_ELECTRON=true electron ./dist/server/server/silex_electron.js"
   },
   "license": "GPL-3.0",
   "engines": {
@@ -25,7 +25,7 @@
     "prepublish": "npm run build",
     "prepare": "npm run build",
     "build": "npm run cleanup && npm run build:css:release && npm run build:html && npm run build:prodotype && npm run build:client:release && npm run build:server:release",
-    "cleanup": "mkdir tmp && mv dist/public tmp/ && rm -rf dist/* && mv tmp dist",
+    "cleanup": "mkdir -p tmp && mv dist/public tmp/ && rm -rf dist && mv tmp dist",
     "release": "electron-builder",
     "webpack": "webpack --config webpack.config.js",
     "build:prodotype": "mkdir -p dist/prodotype/components &&  prodotype src/prodotype/components dist/prodotype/components/ && prodotype src/prodotype/styles dist/prodotype/styles/",
@@ -48,7 +48,6 @@
     "cookie-parser": "1.4.3",
     "cookie-session": "2.0.0-beta.3",
     "cross-env": "5.1.4",
-    "drag-drop-stage-component": "^1.0.2",
     "electron": "^1.8.8",
     "express": "4.16.3",
     "express-force-ssl": "0.3.2",
@@ -67,6 +66,7 @@
     "wysihtml": "^0.6.0-beta1"
   },
   "devDependencies": {
+    "drag-drop-stage-component": "^1.0.2",
     "less": "3.0.1",
     "pug-cli": "^1.0.0-alpha6",
     "typescript": "^3.3.3333",
