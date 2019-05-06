@@ -20,6 +20,7 @@ Silex for DIY and passionate people who want a free alternative to Wix or other 
 
 Silex for professionals, agencies and hosting companies:
 
+* Run Silex locally with `npm install -g silex-website-builder`
 * If you know HTML and CSS here is how to [add your own components to the "+" menu](https://github.com/silexlabs/Silex/wiki/Create-Silex-components)
 * If you are a designer, here is how to [add your own templates to Silex](https://github.com/silexlabs/Silex/wiki/Create-templates-for-Silex)
 * If you are a freelance designer and wants to create Silex website for clients, [please leave your email here](http://eepurl.com/gjYnib)

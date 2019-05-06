@@ -11,7 +11,7 @@
 
 'use strict';
 
-import index from './index';
+import {SilexServer} from './index';
 const config = new Config();
 // here you can change config,
 // e.g. use config.publishRouterOptions.enableHostingGhPages
