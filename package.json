@@ -1,14 +1,14 @@
 {
   "name": "silex-website-builder",
   "description": "Free and easy website builder for everyone.",
-  "version": "2.5.8",
+  "version": "2.5.9",
   "version:frontend": "2.10",
   "version:backwardcompat": "2.2.10",
   "author": "Alex Hoyau <a.hoyau@silexlabs.org> (https://lexoyo.me/)",
   "contributors": [
     "Jean-Baptiste Richardet <jeanbaptiste.richardet@gmail.com> (https://github.com/JbIPS)"
   ],
-  "main": "dist/server/server/silex_web.js",
+  "main": "dist/server/server/index.js",
   "bin": {
     "silex": "./dist/server/server/silex_web.js"
   },
