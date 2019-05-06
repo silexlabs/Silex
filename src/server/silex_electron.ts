@@ -1,5 +1,3 @@
-#!/usr/bin/env electron
-
 //////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
