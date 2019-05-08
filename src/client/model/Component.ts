@@ -15,10 +15,10 @@
  *   Components are based on Silex elements, use Prodotype to render a templates
  */
 
-import { Constants } from '../../Constants';
 import { Prodotype, ProdotypeCompDef } from '../externs';
 import { Model, View } from '../types';
 import { ComponentData, PseudoClass, PseudoClassData, SilexId, StyleData, StyleName, Visibility } from './Data';
+import { Constants } from '../../Constants';
 
 /**
  * Manage Prodotype components and styles
@@ -30,7 +30,7 @@ export class Component {
   prodotypeStyle: Prodotype = null;
   componentEditorElement: HTMLElement = null;
   styleEditorElement: HTMLElement = null;
-  readyCbkArr: Array<(p1: Object) => any> = [];
+  readyCbkArr: ((p1: Object) => any)[] = [];
 
   /**
    * @param model  model class which holds the other models
@@ -44,10 +44,10 @@ export class Component {
   init(componentEditorElement, styleEditorElement) {
     this.componentEditorElement = componentEditorElement;
     this.styleEditorElement = styleEditorElement;
-    this.prodotypeComponent = new window.Prodotype(
+    this.prodotypeComponent = new window['Prodotype'](
         componentEditorElement, './prodotype/components');
     this.prodotypeStyle =
-        new window.Prodotype(styleEditorElement, './prodotype/styles');
+        new window['Prodotype'](styleEditorElement, './prodotype/styles');
     this.prodotypeComponent.ready((err) => {
       this.readyCbkArr.forEach((cbk) => cbk(err));
       this.readyCbkArr = [];
@@ -115,7 +115,7 @@ export class Component {
     element.classList.add(Constants.COMPONENT_CLASS_NAME);
 
     // for styles (select buttons and apply a style)
-    this.model.property.setElementComponentData(element, {name, templateName});
+    this.model.property.setElementComponentData(element, {'name': name, 'templateName': templateName});
 
     // first rendering of the component
     this.render(element, () => {
@@ -171,7 +171,7 @@ export class Component {
       case Constants.STYLE_TYPE:
         return this.prodotypeStyle;
       default:
-        throw new Error('Unknown type in renderType');
+        throw 'Unknown type in renderType';
     }
   }
 
@@ -185,7 +185,7 @@ export class Component {
         this.model.property.getElementComponentData(element) :
         this.model.property.getElementStyleData(element);
     if (data) {
-      const templateName = data.templateName;
+      const templateName = data['templateName'];
       const prodotype = this.getProdotype(type);
       prodotype.decorate(templateName, data).then((html) => {
         this.model.element.setInnerHtml(element, html);
@@ -245,7 +245,7 @@ export class Component {
     // execute the scripts
     const scripts = element.querySelectorAll('script');
     for (let idx = 0; idx < scripts.length; idx++) {
-      this.model.file.getContentWindow().eval(scripts[idx].innerText);
+      this.model.file.getContentWindow()['eval'](scripts[idx].innerText);
     }
   }
 
@@ -254,7 +254,7 @@ export class Component {
    */
   applyStyleTo(element: HTMLElement, styleObj: Object) {
     const style = this.model.property.getStyle(element, false) || {};
-    for (const name in styleObj) {
+    for (let name in styleObj) {
       style[name] = styleObj[name];
     }
     this.model.property.setStyle(element, style, false);
@@ -299,7 +299,7 @@ export class Component {
     }
 
     // add missing dependencies (scripts and style sheets)
-    const missing = prodotype.getMissingDependencies(head, components);
+    let missing = prodotype.getMissingDependencies(head, components);
     for (let idx = 0; idx < missing.length; idx++) {
       const el = missing[idx];
       el.setAttribute('data-dependency', '');
@@ -338,13 +338,14 @@ export class Component {
     return fragment;
   }
 
+
   removeStyle(className) {
     // remove prodotype data from json object
     this.model.property.setStyleData(className);
 
     // remove style from dom
     const head = this.model.head.getHeadElement();
-    const elStyle = head.querySelector(`[data-style-id="${className}"]`);
+    let elStyle = head.querySelector(`[data-style-id="${className}"]`);
     if (elStyle) {
       head.removeChild(elStyle);
     }
@@ -362,10 +363,10 @@ export class Component {
       className: '',
       displayName: '',
       templateName: '',
-      styles: {desktop: {normal: {}}},
+      styles: {'desktop': {'normal': {}}},
     } as StyleData))
     .forEach((pseudoClassData) => {
-      this.componentStyleChanged(className, pseudoClassData.pseudoClass, pseudoClassData.visibility, pseudoClassData.data, displayName);
+      this.componentStyleChanged(className, pseudoClassData['pseudoClass'], pseudoClassData['visibility'], pseudoClassData['data'], displayName);
     });
     this.updateDepenedencies(Constants.STYLE_TYPE);
   }
@@ -374,7 +375,7 @@ export class Component {
    * build an array of all the data we provide to Prodotype for the "text"
    * template
    */
-  getPseudoClassData(styleData: StyleData): Array<{visibility: Visibility, pseudoClass: PseudoClass, data: PseudoClassData}> {
+  getPseudoClassData(styleData: StyleData): {visibility: Visibility, pseudoClass: PseudoClass, data: PseudoClassData}[] {
     // return all pseudo classes in all visibility object
     // flatten
     // build an object for each pseudoClass
@@ -382,19 +383,19 @@ export class Component {
     return Constants.STYLE_VISIBILITY
     .map((visibility) => {
       return {
-        visibility,
-        data: styleData.styles[visibility],
+        'visibility': visibility,
+        'data': styleData['styles'][visibility]
       };
     })
-    .filter((obj) => !!obj.data)
+    .filter((obj) => !!obj['data'])
     .map((vData) => {
       const arrayOfPCData = [];
-      for (const pcName in vData.data) {
+      for (let pcName in vData.data) {
         arrayOfPCData.push({
-          visibility: vData.visibility,
-          pseudoClass: pcName,
+          'visibility': vData['visibility'],
+          'pseudoClass': pcName,
           /* unused, the data is in data */
-          data: vData.data[pcName],
+          'data': vData.data[pcName]
         });
       }
       return arrayOfPCData;
@@ -418,7 +419,7 @@ export class Component {
         const baseClassName =
             textBoxes.length === 1 ? 'text-style-' : 'group-style-';
         let idx = 1;
-        while (allStyles.filter((obj) => obj.className === baseClassName + idx.toString()).length > 0) {
+        while (allStyles.filter(obj => obj['className'] === baseClassName + idx.toString()).length > 0) {
           idx++;
         }
         opt_displayName = baseDisplayName + idx;
@@ -431,20 +432,20 @@ export class Component {
 
     // expose the class name and pseudo class to the prodotype template
     const newData = opt_data || {};
-    newData.className = className;
-    newData.pseudoClass = pseudoClass;
+    newData['className'] = className;
+    newData['pseudoClass'] = pseudoClass;
 
     // store the component's data for later edition
     const styleData = (this.model.property.getStyleData(className) || {
-      className,
-      templateName: 'text',
-      displayName: opt_displayName,
-      styles: {},
+      'className': className,
+      'templateName': 'text',
+      'displayName': opt_displayName,
+      'styles': {}
     } as StyleData);
-    if (!styleData.styles[visibility]) {
-      styleData.styles[visibility] = {};
+    if (!styleData['styles'][visibility]) {
+      styleData['styles'][visibility] = {};
     }
-    styleData.styles[visibility][pseudoClass] = newData;
+    styleData['styles'][visibility][pseudoClass] = newData;
     this.model.property.setStyleData(className, styleData);
 
     // update the head style with the new template
@@ -466,7 +467,7 @@ export class Component {
             return this.prodotypeStyle.decorate('text', obj.data)
                 .then((html) => this.addMediaQuery(html, obj.visibility));
           }) as Array<Promise<string>>)
-          .then((htmlStrings) => {
+          .then(htmlStrings => {
             elStyle.innerHTML = htmlStrings.join('');
           });
     }

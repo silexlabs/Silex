@@ -16,7 +16,7 @@
  *
  */
 
-import {Hosting, Provider, PublicationOptions, VHost} from '../types';
+import {PublicationOptions, Provider, Hosting, VHost} from '../types';
 /**
  * the Silex SilexTasks singleton
  * based on http://www.inkfilepicker.com/
@@ -61,7 +61,7 @@ export class SilexTasks {
    * @param cbk to receive the json response
    */
   authorize(provider: Provider, cbk: (p1: string) => any, opt_errCbk?: (p1: string) => any) {
-    this.callServer(provider.authorizeUrl, '', 'POST', cbk, opt_errCbk);
+    this.callServer(provider['authorizeUrl'], '', 'POST', cbk, opt_errCbk);
   }
 
   /**
@@ -69,7 +69,7 @@ export class SilexTasks {
    * @param cbk to receive the json response
    */
   vhosts(provider: Provider, cbk: (p1: VHost[]) => any, opt_errCbk?: (p1: string) => any) {
-    this.callServer(provider.vhostsUrl, '', 'GET', cbk, opt_errCbk);
+    this.callServer(provider['vhostsUrl'], '', 'GET', cbk, opt_errCbk);
   }
 
   /**
@@ -77,7 +77,7 @@ export class SilexTasks {
    * @param cbk to receive the json response
    */
   domain(vhost: VHost, cbk: (p1?: {domain: string}) => any, opt_errCbk?: (p1: string) => any) {
-    this.callServer(vhost.domainUrl, '', 'GET', cbk, opt_errCbk);
+    this.callServer(vhost['domainUrl'], '', 'GET', cbk, opt_errCbk);
   }
 
   /**
@@ -85,7 +85,7 @@ export class SilexTasks {
    * @param cbk to receive the json response
    */
   updateDomain(vhost: VHost, newDomain: string, cbk: (p1: {domain: string, https: boolean}) => any, opt_errCbk?: (p1: string) => any) {
-    this.callServer(vhost.domainUrl, JSON.stringify({domain: newDomain}), 'POST', cbk,   opt_errCbk);
+    this.callServer(vhost['domainUrl'], JSON.stringify({'domain': newDomain}), 'POST', cbk,   opt_errCbk);
   }
 
   /**
@@ -93,7 +93,7 @@ export class SilexTasks {
    * @param cbk to receive the json response
    */
   removeDomain(vhost: VHost, newDomain: string, cbk: (p1: {domain: string, https: boolean}) => any, opt_errCbk?: (p1: string) => any) {
-    this.callServer(vhost.domainUrl, JSON.stringify({domain: newDomain}), 'DELETE',   cbk, opt_errCbk);
+    this.callServer(vhost['domainUrl'], JSON.stringify({'domain': newDomain}), 'DELETE',   cbk, opt_errCbk);
   }
 
   /**

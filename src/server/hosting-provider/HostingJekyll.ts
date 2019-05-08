@@ -29,5 +29,5 @@ export default class HostingJekyll extends HostingUnifile {
   }
   getDefaultPageFileName() {
     return null;
-  }
+  };
 }

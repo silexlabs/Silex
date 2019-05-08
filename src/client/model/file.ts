@@ -145,7 +145,7 @@ export class File {
     this.contentDocument_ = this.iFrameElement_.contentDocument;
     this.contentWindow_ = this.iFrameElement_.contentWindow;
     if (this.contentDocument_.body === null || this.contentWindow_ === null ||
-        this.contentWindow_.$ === null) {
+        this.contentWindow_['$'] === null) {
       setTimeout(() => {
         this.contentChanged(opt_cbk);
       }, 100);
@@ -179,7 +179,7 @@ export class File {
       this.view.stageWrapper.init(this.iFrameElement_);
 
       // refresh the view
-      const page = this.model.page.getCurrentPage();
+      let page = this.model.page.getCurrentPage();
       this.model.page.setCurrentPage(page);
 
       // loading
@@ -215,7 +215,7 @@ export class File {
    * does one more step of the async getHtml process
    */
   getHtmlNextStep(cbk, generator) {
-    const res = generator.next();
+    let res = generator.next();
     if (res.done) {
       setTimeout(() => cbk(res.value), 0);
     } else {
@@ -232,16 +232,16 @@ export class File {
   * getHtmlGenerator() {
     // update style tag (the dom do not update automatically when we change
     // document.styleSheets)
-    const updatedStyles = this.model.property.getAllStyles(this.contentDocument_);
+    let updatedStyles = this.model.property.getAllStyles(this.contentDocument_);
     this.model.property.saveProperties(this.contentDocument_);
 
     // clone
-    const cleanFile = (this.contentDocument_.cloneNode(true) as Document);
+    let cleanFile = (this.contentDocument_.cloneNode(true) as Document);
     yield;
 
     // apply styles in JSON to the DOM, this is to ensure we save the styles
     // untuched by the browser
-    const styleTag = cleanFile.querySelector('.' + Property.INLINE_STYLE_TAG_CLASS_NAME);
+    let styleTag = cleanFile.querySelector('.' + Property.INLINE_STYLE_TAG_CLASS_NAME);
     styleTag.innerHTML = updatedStyles;
     yield;
 
@@ -268,7 +268,7 @@ export class File {
     CloudStorage.getInstance().loadLocal(
         url, (rawHtml, userHead) => {
           this.fileInfo =
-              ({isDir: false, mime: 'text/html', url} as FileInfo);
+              ({isDir: false, mime: 'text/html', url: url} as FileInfo);
           this.model.head.setUserHeadTag(userHead);
           if (opt_cbk) {
             opt_cbk(rawHtml);

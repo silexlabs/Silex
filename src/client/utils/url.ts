@@ -28,7 +28,7 @@ export class Url {
     }
     const fileInfoNew = Object.assign({}, fileInfo, attributes);
     return (Object.assign({}, fileInfoNew, {
-      url: Url.getBaseUrl() + fileInfoNew.service + '/get/' + fileInfoNew.path,
+      'url': Url.getBaseUrl() + fileInfoNew.service + '/get/' + fileInfoNew.path
     }) as FileInfo);
   }
 
@@ -68,8 +68,8 @@ export class Url {
    * example: https://duckduckgo.com/abc/ returns duckduckgo.com
    */
   static getHost(opt_url?: string): string {
-    const root = Url.getRootUrl(opt_url);
-    const host = root.substr(root.indexOf('//') + 2);
+    let root = Url.getRootUrl(opt_url);
+    let host = root.substr(root.indexOf('//') + 2);
     return host;
   }
 

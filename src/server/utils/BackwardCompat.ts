@@ -21,8 +21,8 @@ import { Constants } from '../../Constants';
  * used for backward compat and for the static files URLs taken from //{{host}}/static/{{Y-Z}}
  */
 const PACKAGE_JSON_DATA = require(Path.resolve(__dirname, '../../../../package.json'));
-const FRONT_END_VERSION = PACKAGE_JSON_DATA['version:frontend'].split('.').map((s) => parseInt(s));
-const LATEST_VERSION = PACKAGE_JSON_DATA['version:backwardcompat'].split('.').map((s) => parseInt(s));
+const FRONT_END_VERSION = PACKAGE_JSON_DATA['version:frontend'].split('.').map(s => parseInt(s));
+const LATEST_VERSION = PACKAGE_JSON_DATA['version:backwardcompat'].split('.').map(s => parseInt(s));
 
 console.log(`\nSilex starts with backward compat version ${LATEST_VERSION} and front end version ${FRONT_END_VERSION}\n`);
 
@@ -31,7 +31,7 @@ console.log(`\nSilex starts with backward compat version ${LATEST_VERSION} and f
  *
  */
 export default class BackwardCompat {
-  constructor(private rootUrl: string) {}
+  constructor(private rootUrl:string) {}
   /**
    * handle backward compatibility issues
    * Backwardcompatibility process takes place after opening a file
@@ -40,48 +40,50 @@ export default class BackwardCompat {
    */
   update(doc): Promise<string> {
     // fix an issue when the style tag has no type, then json is "broken"
-    const styleTag = doc.querySelector('.' + Constants.JSON_STYLE_TAG_CLASS_NAME);
-    if (styleTag) { styleTag.type = 'text/json'; } // old versions of silex have no json at all so do nothing in that case
+    var styleTag = doc.querySelector('.' + Constants.JSON_STYLE_TAG_CLASS_NAME);
+    if(styleTag) styleTag.type = 'text/json'; // old versions of silex have no json at all so do nothing in that case
     // if no generator tag, create one
-    let metaNode = doc.querySelector('meta[name="generator"]');
+    var metaNode = doc.querySelector('meta[name="generator"]');
     if (!metaNode) {
       metaNode = doc.createElement('meta');
       metaNode.setAttribute('name', 'generator');
       doc.head.appendChild(metaNode);
     }
     // retrieve the website version from generator tag
-    const version = (metaNode.getAttribute('content') || '')
+    var version = (metaNode.getAttribute('content') || '')
       .replace('Silex v', '')
       .split('.')
-      .map((str) => parseInt(str, 10) || 0);
+      .map(str => parseInt(str, 10) || 0);
 
-    const hasToUpdate = this.hasToUpdate(version, LATEST_VERSION);
+    var hasToUpdate = this.hasToUpdate(version, LATEST_VERSION);
 
     // warn the user
     if (this.amIObsolete(version, LATEST_VERSION)) {
       return Promise.resolve('This website has been saved with a newer version of Silex. Continue at your own risks.');
-    } else if (this.hasToUpdate(version, [2, 2, 7])) {
+    }
+    else if (this.hasToUpdate(version, [2, 2, 7])) {
       return Promise.reject({
         message: 'This website has been saved with an older version of Silex, which is not supported anymore as of March 2018. In order to convert it to a newer version, please go to <a href="https://old.silex.me">old.silex.me</a> to open and then save your website. <a href="https://github.com/silexlabs/Silex/wiki/Website-saved-with-older-version-of-Silex">More about this here</a>',
       });
-    } else if (hasToUpdate) {
+    }
+    else if (hasToUpdate) {
       const allActions = {};
       // convert to the latest version
-      return this.to2_2_8(version, doc).then((actions: string[]) => {
-        if (actions.length) { allActions['2.2.8'] = actions; }
-        return this.to2_2_9(version, doc).then((actions: string[]) => {
-        if (actions.length) { allActions['2.2.9'] = actions; }
-        return this.to2_2_10(version, doc).then((actions: string[]) => {
-        if (actions.length) { allActions['2.2.10'] = actions; }
+      return this.to2_2_8(version, doc).then((actions:Array<string>) => {
+        if(actions.length) allActions['2.2.8'] = actions;
+      return this.to2_2_9(version, doc).then((actions:Array<string>) => {
+        if(actions.length) allActions['2.2.9'] = actions;
+      return this.to2_2_10(version, doc).then((actions:Array<string>) => {
+        if(actions.length) allActions['2.2.10'] = actions;
         // update the static scripts to match the current server and latest version
         this.updateStatic(doc);
         // store the latest version
         metaNode.setAttribute('content', 'Silex v' + LATEST_VERSION.join('.'));
         // build the report for the user
-        const report = Object.keys(allActions).map((version) => {
+        const report = Object.keys(allActions).map(version => {
           return `<small>Update to version ${ version }:
-              <ul>${ allActions[version].map((action) => `<li class="no-list">${ action }</li>`).join('') }</ul>
-          </small>`;
+              <ul>${ allActions[version].map(action => `<li class="no-list">${ action }</li>`).join('') }</ul>
+          </small>`
         }).join('');
         // needs to reload if silex scripts and stylesheets have been updated
         return `<h2>Website updated</h2>
@@ -90,32 +92,35 @@ export default class BackwardCompat {
           <small>Bellow you will find details of what I did.</small>
           ${ report }
         `;
-      });
-    });
-  });
-} else {
+      })
+    })
+  })
+}
+    else {
       // update the static scripts to match the current server URL
       this.updateStatic(doc);
       return Promise.resolve('');
     }
   }
 
+
   /**
    * update the static scripts to match the current server and latest version
    */
   updateStatic(doc) {
     // update //{{host}}/2.x/... to latest version
-    const elements = doc.querySelectorAll('[data-silex-static]');
-    for (let idx = 0; idx < elements.length; idx++) {
+    var elements = doc.querySelectorAll('[data-silex-static]');
+    for(let idx=0; idx<elements.length; idx++) {
       const element = elements[idx];
       const propName = element.src ? 'src' : 'href';
       const newUrl = this.getStaticResourceUrl(element[propName]);
       const oldUrl = element.getAttribute(propName);
-      if (oldUrl != newUrl) {
+      if(oldUrl != newUrl) {
         element.setAttribute(propName, newUrl);
       }
     }
   }
+
 
   /**
    * get the complete URL for the static file,
@@ -133,13 +138,14 @@ export default class BackwardCompat {
    */
   getStaticResourceUrl(url) {
     const pathRelativeToStaticMatch = url.match(/static\/[0-9]*\.[0-9]*\/(.*)/);
-    if (pathRelativeToStaticMatch == null) {
+    if(pathRelativeToStaticMatch == null) {
       console.warn('Error: could not extract the path and file name of static asset', url);
       return url;
     }
     const pathRelativeToStatic = pathRelativeToStaticMatch[1];
     return `${ this.rootUrl }/static/${ FRONT_END_VERSION[0] }.${ FRONT_END_VERSION[1] }/${ pathRelativeToStatic }`;
   }
+
 
   /**
    * check if the website has been edited with a newer version of Silex
@@ -153,6 +159,7 @@ export default class BackwardCompat {
       initialVersion[2] > targetVersion[2];
   }
 
+
   /**
    * check if the website has to be updated for the given version of Silex
    * @param {Array.<number>} initialVersion the website version
@@ -165,23 +172,24 @@ export default class BackwardCompat {
       initialVersion[2] < targetVersion[2];
     }
 
+
     /**
      * @param {Array.<number>} version
      * @param {Document} doc
      * @return {Promise} a Promise
      */
-    to2_2_8(version, doc): Promise<string[]> {
+    to2_2_8(version, doc):Promise<Array<string>> {
       return new Promise((resolve, reject) => {
         const actions = [];
         if (this.hasToUpdate(version, [2, 2, 8])) {
           // cleanup the hamburger menu icon
-          const menuButton = doc.querySelector('.menu-button');
-          if (menuButton) {
+          const menuButton = doc.querySelector('.menu-button')
+          if(menuButton) {
             menuButton.classList.remove('paged-element', 'paged-element-hidden', 'page-page-1', 'prevent-resizable');
             menuButton.classList.add('hide-on-desktop');
           }
           // give the hamburger menu a size (TODO: add to the json model too)
-          doc.querySelector('.silex-inline-styles').innerHTML += '.silex-id-hamburger-menu {width: 50px;min-height: 40px;}';
+          doc.querySelector('.silex-inline-styles').innerHTML += '.silex-id-hamburger-menu {width: 50px;min-height: 40px;}'
           // pages need to have href set
           Array.from(doc.querySelectorAll('.page-element'))
           .forEach((el: HTMLLinkElement) => {
@@ -195,18 +203,19 @@ export default class BackwardCompat {
       });
     }
 
+
     /**
      * @param {Array.<number>} version
      * @param {Document} doc
      * @return {Promise} a Promise
      */
-    to2_2_9(version, doc): Promise<string[]> {
+    to2_2_9(version, doc):Promise<Array<string>> {
       return new Promise((resolve, reject) => {
-        const actions = [];
+        let actions = [];
         if (this.hasToUpdate(version, [2, 2, 9])) {
           // remove the hamburger menu icon
-          const menuButton = doc.querySelector('.menu-button');
-          if (menuButton) {
+          const menuButton = doc.querySelector('.menu-button')
+          if(menuButton) {
             menuButton.parentElement.removeChild(menuButton);
             actions.push(`
               <p>I removed the mobile menu as there is now a component for that.</p>
@@ -222,9 +231,9 @@ export default class BackwardCompat {
      * @param {Document} doc
      * @return {Promise} a Promise
      */
-    to2_2_10(version, doc): Promise<string[]> {
+    to2_2_10(version, doc):Promise<Array<string>> {
       return new Promise((resolve, reject) => {
-        const actions = [];
+        let actions = [];
         if (this.hasToUpdate(version, [2, 2, 10])) {
           // the body is a drop zone, not selectable, not draggable, resizeable
           doc.body.classList.add(

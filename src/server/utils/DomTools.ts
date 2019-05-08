@@ -19,27 +19,27 @@ export default class DomTools {
    */
   static transformPaths(dom, fn) {
     // images, videos, stylesheets, iframes...
-    ['src', 'href'].forEach((attr) => {
+    ['src', 'href'].forEach(attr => {
       const elements = dom.window.document.querySelectorAll(`[${attr}]`);
-      for (let idx = 0; idx < elements.length; idx++) {
+      for(let idx=0; idx<elements.length; idx++) {
         const el = elements[idx];
-        if (el.tagName.toLowerCase() === 'a' || el.getAttribute('data-silex-href')) {
+        if(el.tagName.toLowerCase() === 'a' || el.getAttribute('data-silex-href')) {
           // do nothing with <a> links
           continue;
         }
-        if (el.tagName.toLowerCase() === 'link' &&
+        if(el.tagName.toLowerCase() === 'link' &&
           el.getAttribute('rel').toLowerCase() !== 'stylesheet' &&
           el.getAttribute('rel').toLowerCase() !== 'shortcut icon'
         ) {
           // do nothing with <link> tags unless it is an external stylesheet or the favicon
           continue;
         }
-        if (el.hasAttribute('data-silex-static')) {
+        if(el.hasAttribute('data-silex-static')) {
           continue;
         }
         const val = el.getAttribute(attr);
         const newVal = fn(val, el, el.parentElement === dom.window.document.head);
-        if (newVal) {
+        if(newVal) {
           el.setAttribute(attr, newVal);
         }
       }
@@ -50,13 +50,13 @@ export default class DomTools {
     const tags = dom.window.document.querySelectorAll('style');
     const stylesheets = dom.window.document.styleSheets;
     const matches = [];
-    for (let stylesheetIdx = 0; stylesheetIdx < stylesheets.length; stylesheetIdx++) {
+    for(let stylesheetIdx=0; stylesheetIdx<stylesheets.length; stylesheetIdx++) {
       const stylesheet = stylesheets[stylesheetIdx];
-      if (tags[stylesheetIdx]) { // seems to happen sometimes?
+      if(tags[stylesheetIdx]) { // seems to happen sometimes?
         const tag = tags[stylesheetIdx];
         const cssText = DomTools.transformStylesheet(stylesheet, tag.parentElement === dom.window.document.head, fn);
         matches.push({
-          tag,
+          tag: tag,
           innerHTML: cssText,
         });
       }
@@ -66,6 +66,7 @@ export default class DomTools {
     DomTools.transformJson(dom, fn);
   }
 
+
   /**
    * if value conatains `url('...')` this will be "transformed" by the provided function `fn`
    * @param {string} value, e.g. "transparent" or "100px" or "url('image/photo%20page%20accueil.png')"
@@ -74,11 +75,11 @@ export default class DomTools {
    * @param {function} fn
    */
   static transformValueUrlKeyword(value, stylesheet, isInHead, fn) {
-    if (typeof value === 'string' && value.indexOf('url(') === 0) {
+    if(typeof value === 'string' && value.indexOf('url(') === 0) {
       const valueArr = value.split('\'');
       const url = valueArr[1];
       const newUrl = fn(url, stylesheet, isInHead);
-      if (newUrl) {
+      if(newUrl) {
         valueArr[1] = newUrl;
       }
       return valueArr.join('\'');
@@ -86,26 +87,28 @@ export default class DomTools {
     return null;
   }
 
+
   static transformStylesheet(stylesheet, isInHead, fn, isMediaQuerySubRule = false) {
     let cssText = '';
-    for (let ruleIdx = 0; ruleIdx < stylesheet.cssRules.length; ruleIdx++) {
+    for(let ruleIdx=0; ruleIdx<stylesheet.cssRules.length; ruleIdx++) {
       const rule = stylesheet.cssRules[ruleIdx];
-      if (rule.style) { for (let valIdx = 0; valIdx < rule.style.length; valIdx++) {
+      if(rule.style) for(let valIdx=0; valIdx<rule.style.length; valIdx++) {
         const valName = rule.style[valIdx];
         const value = rule.style[valName];
         rule.style[valName] = DomTools.transformValueUrlKeyword(value, stylesheet, isInHead, fn) || value;
       }
-      } else if (rule.cssRules) {
+      else if(rule.cssRules) {
         // case of a mediaquery
         DomTools.transformStylesheet(rule, isInHead, fn, true);
       }
-      if (!isMediaQuerySubRule) {
+      if(!isMediaQuerySubRule) {
         // if it is a media query then the parent rule will be written
         cssText += rule.cssText;
       }
     }
     return cssText;
   }
+
 
   /**
    * Transform the JSON object stored by Silex in the DOM
@@ -114,18 +117,19 @@ export default class DomTools {
    */
   static transformJson(dom, fn) {
     const jsonData = DomTools.getProperties(dom.window.document);
-    if (jsonData) {
-      for (const dataObjName in jsonData) {
+    if(jsonData) {
+      for(let dataObjName in jsonData) {
         const dataObj = jsonData[dataObjName];
-        for (const elementId in dataObj) {
+        for(let elementId in dataObj) {
           const elementData = dataObj[elementId];
-          for (const propName in elementData) {
+          for(let propName in elementData) {
             const propValue = elementData[propName];
             const valueUrlKeyword = DomTools.transformValueUrlKeyword(propValue, null, true, fn);
-            if (valueUrlKeyword) {
+            if(valueUrlKeyword) {
               elementData[propName] = valueUrlKeyword;
-            } else {
-              if (['src', 'href'].indexOf(propName) >= 0) {
+            }
+            else {
+              if(['src', 'href'].indexOf(propName) >= 0) {
                 elementData[propName] = fn(propValue) || propValue;
               }
             }
@@ -136,12 +140,13 @@ export default class DomTools {
     }
   }
 
+
   /**
    * Load the styles from the json saved in a script tag
    * This code comes from the client side class property.js
    */
   static getProperties(doc) {
-    const styleTag = doc.querySelector('.' + Constants.JSON_STYLE_TAG_CLASS_NAME);
+    var styleTag = doc.querySelector('.' + Constants.JSON_STYLE_TAG_CLASS_NAME);
     if (styleTag != null) {
       return JSON.parse(styleTag.innerHTML)[0];
     }
@@ -150,18 +155,21 @@ export default class DomTools {
     return null;
   }
 
+
   /**
    * Saves the styles to a script tag
    * This code comes from the client side class property.js
    */
   static setProperties(doc, value) {
-    const styleTag = doc.querySelector('.' + Constants.JSON_STYLE_TAG_CLASS_NAME);
+    var styleTag = doc.querySelector('.' + Constants.JSON_STYLE_TAG_CLASS_NAME);
     if (styleTag != null) {
       styleTag.innerHTML = JSON.stringify([value]);
-    } else {
+    }
+    else {
       console.error('Error: no JSON styles array found in the dom');
     }
   }
+
 
   /**
    * Split the user editable head tag and silex head tags
@@ -184,7 +192,8 @@ export default class DomTools {
       userHead: '',
       html: headString,
     };
-  }
+  };
+
 
   /**
    * insert the HEAD tag back into an HTML string
@@ -196,11 +205,14 @@ export default class DomTools {
    * @return {string} the provided string with the user's head tags
    */
   static insertUserHeadTag(htmlString, userHead) {
-    if (userHead) {
+    if(userHead) {
       return htmlString.replace(/<\/head>/i, Constants.HEAD_TAG_START + userHead + Constants.HEAD_TAG_STOP + '</head>');
-    } else {
+    }
+    else {
       return htmlString;
     }
-  }
+  };
+
+
 
 }
