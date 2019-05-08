@@ -65,6 +65,7 @@
     "serve-static": "1.14.0",
     "silex-blank-templates": "github:silexlabs/silex-blank-templates#59b55d32a7829e004de6a9dd96c1af2d30ee4b6a",
     "silex-templates": "github:silexlabs/silex-templates#85d84f533bbd8d3234c314284bc64c7a114de606",
+    "source-map-support": "^0.5.12",
     "wysihtml": "^0.6.0-beta1"
   },
   "devDependencies": {
@@ -78,7 +79,6 @@
     "less": "3.9.0",
     "nodemon": "^1.19.0",
     "pug-cli": "^1.0.0-alpha6",
-    "source-map-support": "^0.5.12",
     "ts-loader": "^6.0.0",
     "tslint": "^5.16.0",
     "typescript": "^3.4.5",
