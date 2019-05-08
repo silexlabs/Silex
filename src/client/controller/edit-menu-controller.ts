@@ -139,8 +139,7 @@ export class EditMenuController extends ControllerBase {
     };
 
     // case of a container, handle its children
-    if (this.model.element.getType(res.element) ===
-        Constants.TYPE_CONTAINER) {
+    if (this.model.element.getType(res.element) === Constants.TYPE_CONTAINER) {
       const len = res.element.childNodes.length;
       for (let idx = 0; idx < len; idx++) {
         const el = (res.element.childNodes[idx] as HTMLElement);
