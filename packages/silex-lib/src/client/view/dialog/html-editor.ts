@@ -79,8 +79,7 @@ export class HtmlEditor extends AceEditorBase {
           this.setValue(this.model.head.getUserHeadTag());
           this.ace.setReadOnly(false);
         } else {
-          if (this.model.element.getType(selection[0]) ===
-              Constants.TYPE_HTML) {
+          if (this.model.element.getType(selection[0]) === Constants.TYPE_HTML) {
             // edit current selection
             this.setValue(this.model.element.getInnerHtml(selection[0]));
             this.ace.setReadOnly(false);

@@ -402,8 +402,7 @@ export class Component {
   componentStyleChanged(className: StyleName, pseudoClass: PseudoClass, visibility: Visibility, opt_data?: PseudoClassData, opt_displayName?: string) {
     // create a new style if needed
     if (className === Constants.EMPTY_STYLE_CLASS_NAME) {
-      const textBoxes = this.model.body.getSelection().filter(
-          (el) => this.model.element.getType(el) === 'text');
+      const textBoxes = this.model.body.getSelection().filter((el) => this.model.element.getType(el) === Constants.TYPE_TEXT);
       if (textBoxes.length > 0) {
         // create a new unique name
         const allStyles = this.getProdotypeComponents(Constants.STYLE_TYPE) as StyleData[];

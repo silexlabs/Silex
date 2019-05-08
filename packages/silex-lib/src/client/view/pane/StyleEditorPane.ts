@@ -216,7 +216,7 @@ export class StyleEditorPane extends PaneBase {
   }
 
   isTextBox(el: HTMLElement) {
-    return this.model.element.getType(el) === 'text';
+    return this.model.element.getType(el) === Constants.TYPE_TEXT;
   }
 
   removeAllStyles(el: HTMLElement) {
@@ -312,17 +312,16 @@ export class StyleEditorPane extends PaneBase {
 
       // edit style only if there are only text boxes or elements with a style
       // (the body)
-      const onlyTextBoxes = this.states.length > 0 &&
-          this.states.reduce((prev, state) => {
-            const styles = this.getStyles([state.el]);
-            if (styleNameNotNull === Constants.EMPTY_STYLE_CLASS_NAME) {
-              // edit style only if there are only text boxes without styles
-              return prev && this.isTextBox(state.el) && styles.length === 0;
-            } else {
-              // edit style only if all the elements have the same style
-              return prev && !!styles.find((style) => style === styleNameNotNull);
-            }
-          }, true);
+      const onlyTextBoxes = this.states.length > 0 && this.states.reduce((prev, state) => {
+        const styles = this.getStyles([state.el]);
+        if (styleNameNotNull === Constants.EMPTY_STYLE_CLASS_NAME) {
+          // edit style only if there are only text boxes without styles
+          return prev && this.isTextBox(state.el) && styles.length === 0;
+        } else {
+          // edit style only if all the elements have the same style
+          return prev && !!styles.find((style) => style === styleNameNotNull);
+        }
+      }, true);
       if (onlyTextBoxes) {
         this.element.classList.remove('no-style');
 
@@ -421,8 +420,7 @@ export class StyleEditorPane extends PaneBase {
   /**
    * utility function to create a style in the style combo box or duplicate one
    */
-  createStyle(
-      opt_data?: StyleData, opt_cbk?: ((p1?: string) => any)) {
+  createStyle(opt_data?: StyleData, opt_cbk?: ((p1?: string) => any)) {
     const textBoxes = this.states.filter((state) => this.isTextBox(state.el));
     if (textBoxes.length <= 0) {
       SilexNotification.alert('Create a style', 'Error: you need to select a TextBox for this action.', () => {});
