@@ -39,8 +39,7 @@
     "workaround-babel": "rm -rf `node_modules`/@types/babel__*",
     "note: workaround-babel issue:": "https://github.com/facebook/jest/issues/8218",
     "lint": "tslint --fix -c tslint.json 'src/**/*.ts'",
-    "lint:js": "npm run lint",
-    "lint:server": "npm run lint"
+    "lint:js": "npm run lint"
   },
   "dependencies": {
     "11": "0.0.1",
