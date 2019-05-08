@@ -15,7 +15,6 @@
  *
  */
 
-import { Constants } from '../../Constants';
 import {Controller} from '../types';
 import {Model} from '../types';
 import {InvalidationManager} from '../utils/invalidation-manager';
@@ -111,11 +110,14 @@ export class BreadCrumbs {
   addCrumb(ancestor: HTMLElement) {
     const crumb = document.createElement('DIV');
     let cssClasses = this.model.element.getClassName(ancestor);
+    console.log('cssClasses', cssClasses)
     if (cssClasses !== '') {
       cssClasses = '.' + cssClasses.split(' ').join('.');
     }
+    const displayName = ancestor.tagName.toLowerCase() === 'body' ? 'Body' :
+      this.model.component.isComponent(ancestor) ? 'Component' : this.model.element.getDisplayName(this.model.element.getType(ancestor));
     crumb.classList.add('crumb');
-    crumb.innerHTML = ancestor.tagName + '.' + ancestor.getAttribute('data-silex-type') + '-element' + cssClasses;
+    crumb.innerHTML = displayName + cssClasses;
     crumb.style.zIndex = (100 - this.element.childNodes.length).toString();
     this.element.appendChild(crumb);
     crumb.onclick = () => this.controller.stageController.select(ancestor);

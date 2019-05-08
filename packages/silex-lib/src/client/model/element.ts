@@ -801,6 +801,22 @@ export class SilexElement {
     return element.getAttribute(Constants.LINK_ATTR);
   }
 
+
+  /**
+   * get a name to display for this type
+   */
+  getDisplayName(silexType: string): string {
+    switch (silexType) {
+      case Constants.TYPE_TEXT: return 'Text';
+      case Constants.TYPE_IMAGE: return 'Image';
+      case Constants.TYPE_CONTAINER: return 'Container';
+      case Constants.TYPE_CONTAINER_CONTENT: return 'Container';
+      case Constants.TYPE_HTML: return 'Html';
+      case Constants.TYPE_SECTION: return 'Section';
+      default: return silexType;
+    }
+  }
+
   /**
    * get/set class name of the element of a container created by silex
    * remove all silex internal classes
@@ -817,17 +833,17 @@ export class SilexElement {
       componentCssClasses = this.model.component.getCssClasses(templateName);
     }
     return element.className.split(' ')
-        .filter((name) => {
-          if (name === '' ||
-              Constants.SILEX_CLASS_NAMES.indexOf(name) > -1 ||
-              pages.indexOf(name) > -1 ||
-              componentCssClasses.indexOf(name) > -1 ||
-              this.model.property.getSilexId(element) === name) {
-            return false;
-          }
-          return true;
-        })
-        .join(' ');
+    .filter((name) => {
+      if (name === '' ||
+          Constants.SILEX_CLASS_NAMES.indexOf(name) > -1 ||
+          pages.indexOf(name) > -1 ||
+          componentCssClasses.indexOf(name) > -1 ||
+          this.model.property.getSilexId(element) === name) {
+        return false;
+      }
+      return true;
+    })
+    .join(' ');
   }
 
   /**
