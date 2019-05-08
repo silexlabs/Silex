@@ -1,184 +1,184 @@
-.silex-settings-dialog {
+.silex - settings - dialog; {
   /* ************** */
   /* pane selection */
   /* ************** */
-  .right-pane > div {
+  .right - pane > div; {
     display: none;
   }
-  &.general-pane-visible {
-    .right-pane .general-pane {
+   & .general - pane - visible; {
+    .right - pane .general - pane; {
       display: initial;
     }
-    .left-pane .general-pane {
-      font-weight: bold;
+    .left - pane .general - pane; {
+      font - weight; : bold;
     }
   }
-  &.publish-pane-visible {
-    .right-pane .publish-pane {
+   & .publish - pane - visible; {
+    .right - pane .publish - pane; {
       display: initial;
     }
-    .left-pane .publish-pane {
-      font-weight: bold;
+    .left - pane .publish - pane; {
+      font - weight; : bold;
     }
   }
-  &.fonts-pane-visible {
-    .right-pane .fonts-pane {
+   & .fonts - pane - visible; {
+    .right - pane .fonts - pane; {
       display: initial;
     }
-    .left-pane .fonts-pane {
-      font-weight: bold;
+    .left - pane .fonts - pane; {
+      font - weight; : bold;
     }
   }
-  &.social-pane-visible {
-    .right-pane .social-pane {
+   & .social - pane - visible; {
+    .right - pane .social - pane; {
       display: initial;
     }
-    .left-pane .social-pane {
-      font-weight: bold;
+    .left - pane .social - pane; {
+      font - weight; : bold;
     }
   }
   /* **************** */
   /* left pane styles */
   /* **************** */
-  .left-pane {
-    border-right: 1px solid @silexdarkgrey;
-    min-width: 210px;
-    ul {
-      list-style: none;
-      margin:0;
+  .left - pane; {
+    border - right; : 1; px; solid; @silexdarkgrey
+    min - width; : 210; px;
+    ul; {
+      list - style; : none;
+      margin: 0;
       padding: 0;
-      li {
-        padding: 15px 0;
+      li; {
+        padding: 15; px; 0;
         cursor: pointer;
       }
     }
   }
-  .dialog a:link, .dialog a:visited {
+  .dialog; a: link,  .dialog; a: visited; {
       color: white;
   }
-  .dialog {
+  .dialog; {
     display: flex;
-    flex-direction: column;
-    height: 100%;
-    a:link, .silex-settings-dialog .dialog a:visited {
-      color: @silexlightergrey;
+    flex - direction; : column;
+    height: 100 % ;
+    a: link,  .silex - settings - dialog .dialog; a: visited; {
+      color: @silexlightergrey
     }
   }
-  .body {
+  .body; {
     overflow: hidden;
     display: flex;
   }
-  .right-pane {
-    overflow-y: auto;
-    overflow-x: hidden;
-    flex: 1 1 auto;
-    .pane > p {
-      margin: 10px;
+  .right - pane; {
+    overflow - y; : auto;
+    overflow - x; : hidden;
+    flex: 1; 1; auto;
+    .pane > p; {
+      margin: 10; px;
     }
-    ul {
-      list-style: none;
-      margin:0;
+    ul; {
+      list - style; : none;
+      margin: 0;
       padding: 0;
-      li {
+      li; {
         color: white;
-        font-style: normal;
-        font-size: 13px;
-        line-height: normal;
-        .input-text {
-          width: 100%;
+        font - style; : normal;
+        font - size; : 13; px;
+        line - height; : normal;
+        .input - text; {
+          width: 100 % ;
         }
-        .input-text {
-          background-color: @silexdarkgrey;
+        .input - text; {
+          background - color; : @silexdarkgrey
           color: white;
         }
-        fieldset {
-          border: 1px solid @silexlightergrey;
-          margin: 10px;
-          padding: 10px;
+        fieldset; {
+          border: 1; px; solid; @silexlightergrey
+          margin: 10; px;
+          padding: 10; px;
         }
-        input[type="checkbox"] {
-          margin-right: 5px;
-          margin-top: 1px;
+        input[type = 'checkbox']; {
+          margin - right; : 5; px;
+          margin - top; : 1; px;
         }
       }
     }
-    .publish-pane {
-      .input-service, .input-path {
+    .publish - pane; {
+      .input - service,  .input - path; {
         display: block;
-        width: 100%;
-        padding: 5px;
-        margin-top: 5px;
+        width: 100 % ;
+        padding: 5; px;
+        margin - top; : 5; px;
       }
-      label {
-        margin-bottom: 20px;
-        display: inline-block;
+       label; {
+        margin - bottom; : 20; px;
+        display: inline - block;
       }
-      label.service {
-        width: 29%;
+       label.service; {
+        width: 29 % ;
       }
-      label.path {
-        width: 69%;
+       label.path; {
+        width: 69 % ;
       }
-      button.browse-publication-path {
+       button.browse - publication - path; {
         display: block;
       }
     }
-    .fonts-pane {
-      button {
-        padding: 5px;
-        margin: 5px;
-        border: 1px solid @silexlightergrey;
-        border-radius: 2px;
-        background-color: transparent;
-        color: @silexlightergrey;
-        min-width: 25px;
-        min-height: 25px;
+    .fonts - pane; {
+      button; {
+        padding: 5; px;
+        margin: 5; px;
+        border: 1; px; solid; @silexlightergrey
+        border - radius; : 2; px;
+        background - color; : transparent;
+        color: @silexlightergrey
+        min - width; : 25; px;
+        min - height; : 25; px;
       }
-      fieldset {
-        padding: 0;
-        & > legend, & > p { padding: 10px; }
-        & > legend { margin: 10px; }
+      fieldset; {
+        padding: 0; 
+        & > legend,  & > p; { padding: 10; px; }
+        & > legend; { margin: 10; px; }
       }
-      .fonts-list ul li {
+      .fonts - list; ul; li; {
         display: flex;
-        border-bottom: 1px solid;
-        &:last-child { border-bottom: none; }
-        &:first-child { border-top: 1px solid; }
-        .ui {
+        border - bottom; : 1; px; solid; 
+        & ; : last - child; { border - bottom; : none; }
+        & ; : first - child; { border - top; : 1; px; solid; }
+        .ui; {
           display: flex;
-          flex-direction: column;
-          border-right: @silexlightgrey;
-          justify-content: center;
-          padding: 5px;
-          .del-btn {
-            background-image: url("../assets/goog-ui/close.png");
-            background-position: 55% 40%;
-            background-repeat: no-repeat;
+          flex - direction; : column;
+          border - right; : @silexlightgrey
+          justify - content; : center;
+          padding: 5; px;
+          .del - btn; {
+            background - image; : url('../assets/goog-ui/close.png');
+            background - position; : 55 % 40 % ;
+            background - repeat; : no - repeat;
           }
         }
-        .content {
-          flex: 1 1 auto;
-          iframe {
-            width: 100%;
-            height: 100px;
+        .content; {
+          flex: 1; 1; auto;
+          iframe; {
+            width: 100 % ;
+            height: 100; px;
             border: none;
           }
         }
       }
     }
   }
-  h1.title {
-    border-top: 1px solid @silexdarkgrey;
-    height: 20px;
-    padding: 17px 20px;
+   h1.title; {
+    border - top; : 1; px; solid; @silexdarkgrey
+    height: 20; px;
+    padding: 17; px; 20; px;
     margin: 0;
-    font-size: 20px;
+    font - size; : 20; px;
   }
-  h3.title {
-    font-weight: 100;
+   h3.title; {
+    font - weight; : 100;
   }
   /* hide the labels and inputs when publication path is not set */
-  &.publication-path-not-set .publish-pane label {
+   & .publication - path - not - set .publish - pane; label; {
     display: none;
   }
 }

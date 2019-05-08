@@ -43,7 +43,7 @@ const props = [
   }
 ].filter(prop => typeof prop.obj !== 'undefined');
 function getProp(prop, propName) {
-  if(typeof prop.obj[propName] != 'undefined' && prop.obj[propName] != '')
+  if(typeof prop.obj[propName] !== 'undefined' && prop.obj[propName] !== '')
     return propName + ': ' + prop.obj[propName] + ';';
   return '';
 }
@@ -56,7 +56,7 @@ function getProp(prop, propName) {
   }
   if(found) {
   %>
-    <% if(className != 'all-style') { %>.<%= className %><% } %><%- prop.selector %> {
+    <% if(className !== 'all-style') { %>.<%= className %><% } %><%- prop.selector %> {
       <%- getProp(prop, 'list-style-type') -%>
       <% if(prop.obj['list-style-image']) { %>
         list-style-image: url(<%= prop.obj['list-style-image'] -%>);

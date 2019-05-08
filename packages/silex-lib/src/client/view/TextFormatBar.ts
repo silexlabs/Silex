@@ -148,7 +148,7 @@ export class TextFormatBar {
     // edit the style of the selection
     if (this.selectedElements.length === 1) {
       const newTextBox = this.selectedElements[0];
-      if (newTextBox != this.currentTextBox) {
+      if (newTextBox !== this.currentTextBox) {
         this.currentTextBox = newTextBox;
 
         // this.currentTextBox.insertBefore(this.element,
@@ -268,9 +268,9 @@ export class TextFormatBar {
           (imageDetails.querySelector('.alt') as HTMLElement).onkeydown = (e) => autoSubmitImage(e);
           (this.element.querySelector('.create-link') as HTMLElement).onclick = (e) => {
             // open link editor
-            this.linkDialog.open(this.getLink(), this.pageNames, (options) => {
-              if (options) {
-                this.wysihtmlEditor.composer.commands.exec('createLink', options);
+            this.linkDialog.open(this.getLink(), this.pageNames, (_options) => {
+              if (_options) {
+                this.wysihtmlEditor.composer.commands.exec('createLink', _options);
               } else {
                 this.wysihtmlEditor.composer.commands.exec('removeLink');
               }
@@ -280,9 +280,6 @@ export class TextFormatBar {
             e.preventDefault();
           };
         });
-
-        // debug
-        window.wysihtmlEditor = this.wysihtmlEditor;
       }
     } else {
       console.error('Error, can not edit selection with format pane', this.selectedElements);

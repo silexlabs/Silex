@@ -25,7 +25,7 @@ import { InvalidationManager } from '../utils/invalidation-manager';
  *
  * @param element   container to render the UI
  * @param model  model class which holds
-  * the model instances - views use it for read
+ * the model instances - views use it for read
  * operation only
  * @param controller  structure which holds
  * the controller instances
@@ -75,10 +75,8 @@ export class PageTool {
     }, false);
 
     function attach(className, cbk) {
-      const addBtns = document.querySelectorAll(className);
-      for (let idx = 0; idx < addBtns.length; idx++) {
-        addBtns[idx].onclick = cbk;
-      }
+      Array.from(document.querySelectorAll(className))
+      .forEach((el) => el.onclick = cbk);
     }
     attach(
         '.add-page', (e) => this.controller.insertMenuController.createPage());

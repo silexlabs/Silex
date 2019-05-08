@@ -30,7 +30,7 @@ export class Component {
   prodotypeStyle: Prodotype = null;
   componentEditorElement: HTMLElement = null;
   styleEditorElement: HTMLElement = null;
-  readyCbkArr: Array<(p1: Object) => any> = [];
+  readyCbkArr: Array<(p1: any) => any> = [];
 
   /**
    * @param model  model class which holds the other models
@@ -44,10 +44,9 @@ export class Component {
   init(componentEditorElement, styleEditorElement) {
     this.componentEditorElement = componentEditorElement;
     this.styleEditorElement = styleEditorElement;
-    this.prodotypeComponent = new window.Prodotype(
-        componentEditorElement, './prodotype/components');
-    this.prodotypeStyle =
-        new window.Prodotype(styleEditorElement, './prodotype/styles');
+    // tslint:disable:no-string-literal
+    this.prodotypeComponent = new window['Prodotype'](componentEditorElement, './prodotype/components');
+    this.prodotypeStyle = new window['Prodotype'](styleEditorElement, './prodotype/styles');
     this.prodotypeComponent.ready((err) => {
       this.readyCbkArr.forEach((cbk) => cbk(err));
       this.readyCbkArr = [];
@@ -58,7 +57,7 @@ export class Component {
    * notify when Prodotype library is ready
    * @param cbk callback to be called when prodotype is ready
    */
-  ready(cbk: (p1: Object) => any) {
+  ready(cbk: (p1: any) => any) {
     if (this.prodotypeComponent) {
       this.prodotypeComponent.ready((err) => cbk(err));
     } else {
@@ -74,8 +73,7 @@ export class Component {
     const element = doc.body;
 
     // make sure that the style exists
-    const styleData =
-        this.model.property.getStyleData(Constants.BODY_STYLE_CSS_CLASS);
+    const styleData = this.model.property.getStyleData(Constants.BODY_STYLE_CSS_CLASS);
     if (!styleData) {
       this.initStyle(Constants.BODY_STYLE_NAME, Constants.BODY_STYLE_CSS_CLASS, null);
     }
@@ -98,8 +96,7 @@ export class Component {
    * @return component descriptors
    */
   getComponentsDef(type: string): ProdotypeCompDef {
-    const obj = type === Constants.COMPONENT_TYPE ? this.prodotypeComponent :
-                                                    this.prodotypeStyle;
+    const obj = type === Constants.COMPONENT_TYPE ? this.prodotypeComponent : this.prodotypeStyle;
     return obj ? obj.componentsDef : ({} as ProdotypeCompDef);
   }
 
@@ -108,8 +105,7 @@ export class Component {
    * @param templateName type of component
    */
   initComponent(element: HTMLElement, templateName: string) {
-    const name = this.prodotypeComponent.createName(
-        templateName, this.getProdotypeComponents(Constants.COMPONENT_TYPE));
+    const name = this.prodotypeComponent.createName(templateName, this.getProdotypeComponents(Constants.COMPONENT_TYPE));
 
     // for selection (select all components)
     element.classList.add(Constants.COMPONENT_CLASS_NAME);
@@ -229,9 +225,7 @@ export class Component {
           cssClasses = cssClasses.concat(comp.initialCssClass);
       }
     } else {
-      console.error(
-          `Error: component's definition not found in prodotype templates, with template name "${
-              templateName}".`);
+      console.error(`Error: component's definition not found in prodotype templates, with template name "${templateName}".`);
     }
     return cssClasses;
   }
@@ -244,15 +238,16 @@ export class Component {
   executeScripts(element: HTMLElement) {
     // execute the scripts
     const scripts = element.querySelectorAll('script');
-    for (let idx = 0; idx < scripts.length; idx++) {
-      this.model.file.getContentWindow().eval(scripts[idx].innerText);
+    for (const el of scripts) {
+      // tslint:disable:no-string-literal
+      this.model.file.getContentWindow()['eval'](el.innerText);
     }
   }
 
   /**
    * apply a style to an element
    */
-  applyStyleTo(element: HTMLElement, styleObj: Object) {
+  applyStyleTo(element: HTMLElement, styleObj: any) {
     const style = this.model.property.getStyle(element, false) || {};
     for (const name in styleObj) {
       style[name] = styleObj[name];
@@ -289,19 +284,17 @@ export class Component {
     const nodeList =
         this.model.head.getHeadElement().querySelectorAll('[data-dependency]');
     const elements = [];
-    for (let idx = 0; idx < nodeList.length; idx++) {
-      elements.push(nodeList[idx]);
+    for (const el of nodeList) {
+      elements.push(el);
     }
     const unused = prodotype.getUnusedDependencies(elements, components);
-    for (let idx = 0; idx < unused.length; idx++) {
-      const el = unused[idx];
+    for (const el of unused) {
       head.removeChild(el);
     }
 
     // add missing dependencies (scripts and style sheets)
     const missing = prodotype.getMissingDependencies(head, components);
-    for (let idx = 0; idx < missing.length; idx++) {
-      const el = missing[idx];
+    for (const el of missing) {
       el.setAttribute('data-dependency', '');
       head.appendChild(el);
     }
@@ -330,11 +323,12 @@ export class Component {
    */
   saveEditableChildren(parentElement: HTMLElement): DocumentFragment {
     const fragment = document.createDocumentFragment();
-    for (let i = 0, el; el = parentElement.children[i]; i++) {
+    Array.from(parentElement.children)
+    .forEach((el) => {
       if (el.classList.contains('editable-style')) {
         fragment.appendChild(el.cloneNode(true));
       }
-    }
+    });
     return fragment;
   }
 
@@ -412,11 +406,9 @@ export class Component {
           (el) => this.model.element.getType(el) === 'text');
       if (textBoxes.length > 0) {
         // create a new unique name
-        const allStyles = this.getProdotypeComponents(Constants.STYLE_TYPE);
-        const baseDisplayName =
-            textBoxes.length === 1 ? 'Text Style ' : 'Group Style ';
-        const baseClassName =
-            textBoxes.length === 1 ? 'text-style-' : 'group-style-';
+        const allStyles = this.getProdotypeComponents(Constants.STYLE_TYPE) as StyleData[];
+        const baseDisplayName = textBoxes.length === 1 ? 'Text Style ' : 'Group Style ';
+        const baseClassName = textBoxes.length === 1 ? 'text-style-' : 'group-style-';
         let idx = 1;
         while (allStyles.filter((obj) => obj.className === baseClassName + idx.toString()).length > 0) {
           idx++;

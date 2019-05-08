@@ -23,7 +23,7 @@ import { addEvent } from 'drag-drop-stage-component/src/ts/utils/Events';
 /**
  * @param element   container to render the UI
  * @param model  model class which holds
-  * the model instances - views use it for read
+ * the model instances - views use it for read
  * operation only
  * @param controller  structure which holds
  * the controller instances
@@ -105,7 +105,7 @@ export class Splitter {
       this.onRedraw();
     }
   }
-  onMouseDown(e: Event) {
+  onMouseDown(_: Event) {
     this.isDown = true;
 
     // listen mouse events

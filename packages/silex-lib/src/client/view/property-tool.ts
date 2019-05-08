@@ -37,7 +37,7 @@ import { StyleEditorPane } from './pane/StyleEditorPane';
  *
  * @param element   container to render the UI
  * @param model  model class which holds
-  * the model instances - views use it for read
+ * the model instances - views use it for read
  * operation only
  * @param controller  structure which holds
  * the controller instances
@@ -191,10 +191,8 @@ export class PropertyTool {
   }
 
   selectTab(tab) {
-    const onTabs = this.element.querySelectorAll('.tab');
-    for (let idx = 0; idx < onTabs.length; idx++) {
-      onTabs[idx].classList.remove('on');
-    }
+    Array.from(this.element.querySelectorAll('.tab'))
+    .forEach((el) => el.classList.remove('on'));
     tab.classList.add('on');
   }
 

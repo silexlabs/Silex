@@ -175,8 +175,8 @@ export class Property {
    */
   loadProperties(doc) {
     const styleTag = doc.querySelector('.' + Property.JSON_STYLE_TAG_CLASS_NAME);
-    if (styleTag != null) {
-      const styles = (JSON.parse(styleTag.innerHTML)[0] as Object);
+    if (styleTag !== null) {
+      const styles = (JSON.parse(styleTag.innerHTML)[0] as any);
       this.fonts = styles.fonts || [];
       this.stylesObj = styles.desktop || {};
       this.mobileStylesObj = styles.mobile || {};
@@ -217,10 +217,10 @@ export class Property {
       doc.head.appendChild(styleTag);
     }
     this.styleSheet = null;
-    for (let idx = 0; idx < doc.styleSheets.length; idx++) {
-      if (doc.styleSheets[idx].ownerNode &&
-          doc.styleSheets[idx].ownerNode == styleTag) {
-        this.styleSheet = doc.styleSheets[idx] as CSSStyleSheet;
+    for (const s of doc.styleSheets) {
+      if (s.ownerNode &&
+          s.ownerNode === styleTag) {
+        this.styleSheet = s as CSSStyleSheet;
       }
     }
     if (this.styleSheet === null) {
@@ -321,11 +321,11 @@ export class Property {
    * this creates or update a rule in the style tag with id
    * INLINE_STYLE_TAG_CLASS_NAME if style is null this will remove the rule
    */
-  setStyle(element: HTMLElement, styleObj: Object, opt_isMobile?: boolean) {
+  setStyle(element: HTMLElement, styleObj: any, opt_isMobile?: boolean) {
     const deleteStyle = !styleObj;
     const style = styleObj || {};
     const elementId = (this.getSilexId(element) as SilexId);
-    const isMobile = opt_isMobile != null ? opt_isMobile : this.view.workspace.getMobileEditor();
+    const isMobile = opt_isMobile !== null ? opt_isMobile : this.view.workspace.getMobileEditor();
 
     if (!deleteStyle) {
       // styles of sections are special
@@ -392,7 +392,7 @@ export class Property {
    */
   getStyle(element: HTMLElement, opt_isMobile?: boolean): CssRule {
     const elementId = (this.getSilexId(element) as SilexId);
-    const isMobile = opt_isMobile != null ? opt_isMobile :  this.view.workspace.getMobileEditor();
+    const isMobile = opt_isMobile !== null ? opt_isMobile :  this.view.workspace.getMobileEditor();
     const targetObj = (isMobile ? this.mobileStylesObj : this.stylesObj as SilexData);
     const style = (targetObj[elementId] as CssRule);
     if (!!style) {
@@ -425,7 +425,7 @@ export class Property {
   findCssRule(elementId: string, isMobile: boolean): CSSRuleInfo {
     // find the rule for the given element
     for (let idx = 0; idx < this.styleSheet.cssRules.length; idx++) {
-      const cssRule = this.styleSheet.cssRules[idx] as CSSRule;
+      const cssRule = this.styleSheet.cssRules[idx] as any; // FIXME: should be CSSRule ?
 
       // we use the class name because elements have their ID as a css class too
       if (isMobile === false && cssRule.selectorText === '.' + elementId ||
@@ -448,8 +448,7 @@ export class Property {
   getAllStyles(doc: Document): string {
     const elements = doc.querySelectorAll('body, .' + Constants.EDITABLE_CLASS_NAME);
     let allStyles = '';
-    for (let idx = 0; idx < elements.length; idx++) {
-      const element = elements[idx];
+    for (const element of elements) {
       const elementId = (this.getSilexId(element as HTMLElement) as SilexId);
 
       // desktop
@@ -486,7 +485,7 @@ export class Property {
    */
   getBoundingBox(elements: HTMLElement[]): {top?: number, left?: number, width?: number, height?: number} {
     // compute the positions and sizes, which may end up to be NaN or a number
-    let top = NaN, left = NaN, right = NaN, bottom = NaN;
+    let top = NaN; let left = NaN; let right = NaN; let bottom = NaN;
 
     // browse all elements and compute the containing rect
     elements.forEach((element) => {
@@ -518,7 +517,7 @@ export class Property {
       // in mobile editor, if a mobile style is set use it
       if (this.view.workspace.getMobileEditor()) {
         const mobileStyle = this.getStyle(element, true);
-        if (mobileStyle != null) {
+        if (mobileStyle !== null) {
           if (!!mobileStyle.top) {
             elementStyle.top = mobileStyle.top;
           }

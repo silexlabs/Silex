@@ -1,16 +1,3 @@
-// const path = require('path');
-
-// module.exports = {
-//     entry: './dist/client/client/App.js',
-//     devtool: 'inline-source-map',
-//     // devtool: 'source-map',
-//     output: {
-//         filename: 'index.js',
-//         path: path.resolve(__dirname, '/dist/client'),
-//     }
-// };
-
-
 const path = require('path');
 
 module.exports = {

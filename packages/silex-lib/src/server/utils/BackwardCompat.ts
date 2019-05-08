@@ -9,7 +9,8 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
-const Path = require('path');
+import * as fs from 'fs';
+import * as Path from 'path';
 import { Constants } from '../../Constants';
 
 // FIXME: path in constants
@@ -20,7 +21,7 @@ import { Constants } from '../../Constants';
  * we get it from package.json
  * used for backward compat and for the static files URLs taken from //{{host}}/static/{{Y-Z}}
  */
-const PACKAGE_JSON_DATA = require(Path.resolve(__dirname, '../../../../package.json'));
+const PACKAGE_JSON_DATA = JSON.parse(fs.readFileSync(Path.resolve(__dirname, '../../../../package.json')).toString());
 const FRONT_END_VERSION = PACKAGE_JSON_DATA['version:frontend'].split('.').map((s) => parseInt(s));
 const LATEST_VERSION = PACKAGE_JSON_DATA['version:backwardcompat'].split('.').map((s) => parseInt(s));
 
@@ -67,20 +68,20 @@ export default class BackwardCompat {
     } else if (hasToUpdate) {
       const allActions = {};
       // convert to the latest version
-      return this.to2_2_8(version, doc).then((actions: string[]) => {
-        if (actions.length) { allActions['2.2.8'] = actions; }
-        return this.to2_2_9(version, doc).then((actions: string[]) => {
-        if (actions.length) { allActions['2.2.9'] = actions; }
-        return this.to2_2_10(version, doc).then((actions: string[]) => {
-        if (actions.length) { allActions['2.2.10'] = actions; }
+      return this.to2_2_8(version, doc).then((actions8: string[]) => {
+        if (actions8.length) { allActions['2.2.8'] = actions8; }
+        return this.to2_2_9(version, doc).then((actions9: string[]) => {
+        if (actions9.length) { allActions['2.2.9'] = actions9; }
+        return this.to2_2_10(version, doc).then((actions10: string[]) => {
+        if (actions10.length) { allActions['2.2.10'] = actions10; }
         // update the static scripts to match the current server and latest version
         this.updateStatic(doc);
         // store the latest version
         metaNode.setAttribute('content', 'Silex v' + LATEST_VERSION.join('.'));
         // build the report for the user
-        const report = Object.keys(allActions).map((version) => {
-          return `<small>Update to version ${ version }:
-              <ul>${ allActions[version].map((action) => `<li class="no-list">${ action }</li>`).join('') }</ul>
+        const report = Object.keys(allActions).map((_version) => {
+          return `<small>Update to version ${ _version }:
+              <ul>${ allActions[_version].map((_action) => `<li class="no-list">${ _action }</li>`).join('') }</ul>
           </small>`;
         }).join('');
         // needs to reload if silex scripts and stylesheets have been updated
@@ -106,12 +107,11 @@ export default class BackwardCompat {
   updateStatic(doc) {
     // update //{{host}}/2.x/... to latest version
     const elements = doc.querySelectorAll('[data-silex-static]');
-    for (let idx = 0; idx < elements.length; idx++) {
-      const element = elements[idx];
+    for (const element of elements) {
       const propName = element.src ? 'src' : 'href';
       const newUrl = this.getStaticResourceUrl(element[propName]);
       const oldUrl = element.getAttribute(propName);
-      if (oldUrl != newUrl) {
+      if (oldUrl !== newUrl) {
         element.setAttribute(propName, newUrl);
       }
     }

@@ -22,9 +22,9 @@
     "start:electron": "SILEX_ELECTRON=true electron .",
     "prepublish": "npm run build",
     "prepare": "npm run build",
-    "build": "npm run cleanup && npm run build:css:release && npm run build:html && npm run build:prodotype && npm run build:client:release && npm run build:server:release",
+    "build": "npm run cleanup && npm run lint && npm run build:css:release && npm run build:html && npm run build:prodotype && npm run build:client:release && npm run build:server:release",
     "cleanup": "mkdir -p tmp && mv dist/public tmp/ && rm -rf dist && mv tmp dist",
-    "release": "electron-builder",
+    "release": "npm run lint && electron-builder",
     "webpack": "webpack --config webpack.config.js",
     "build:components": "mkdir -p dist/prodotype/components &&  prodotype src/prodotype/components dist/prodotype/components/",
     "build:prodotype": "npm run build:components && mkdir -p dist/prodotype/styles &&  prodotype src/prodotype/styles dist/prodotype/styles/",
@@ -38,10 +38,8 @@
     "build:server:debug": "npm run workaround-babel && tsc -p tsconfig-server-debug.json",
     "workaround-babel": "rm -rf `node_modules`/@types/babel__*",
     "note: workaround-babel issue:": "https://github.com/facebook/jest/issues/8218",
-    "lint": "npm run lint:client && npm run lint:server",
-    "lint:js": "npm run lint:client",
-    "lint:client": "tslint -c tslint.json src/client/**/*.ts",
-    "lint:server": "tslint -c tslint.json src/server/**/*.ts"
+    "lint": "tslint --fix -c tslint.json 'src/**/*.ts'",
+    "lint:js": "npm run lint"
   },
   "dependencies": {
     "11": "0.0.1",

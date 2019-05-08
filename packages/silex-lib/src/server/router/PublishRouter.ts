@@ -9,12 +9,12 @@
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
 
+import * as express from 'express';
 import HostingGhPages from '../hosting-provider/HostingGhPages';
 import HostingJekyll from '../hosting-provider/HostingJekyll';
 import HostingUnifile from '../hosting-provider/HostingUnifile';
 import PublishJob from '../publication/PublishJob';
 
-const express = require('express');
 const hostingProviders = [];
 const router = express.Router();
 

@@ -8,7 +8,16 @@
       "quotemark": [true, "single", "jsx-double"],
       "member-access": [true, "no-public"],
       "no-empty": false,
-      "class-name": false
+      "variable-name": false,
+      "radix": false,
+      "max-line-length": false,
+      "no-console": false,
+      "object-literal-sort-keys": false,
+      "forin": false,
+      "interface-name": false,
+      "no-bitwise": false,
+      "max-classes-per-file": false,
+      "no-conditional-assignment": false
     },
     "rulesDirectory": []
 }

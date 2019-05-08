@@ -20,49 +20,49 @@
 
 // server options
 export interface ServerOptions {
-  debug: boolean,
-  port: string,
-  rootUrl: string,
-  sessionSecret: string,
-  cePath: string,
-};
+  debug: boolean;
+  port: string;
+  rootUrl: string;
+  sessionSecret: string;
+  cePath: string;
+}
 // electron app
 export interface ElectronOptions {
-  enabled: boolean,
-};
+  enabled: boolean;
+}
 // SSL options
 export interface SslOptions {
-  forceHttps: boolean,
-  trustXFPHeader: boolean,
-  privateKey: string,
-  certificate: string,
-  sslPort: string,
-};
+  forceHttps: boolean;
+  trustXFPHeader: boolean;
+  privateKey: string;
+  certificate: string;
+  sslPort: string;
+}
 
 // cloud explorer options
 export interface CeOptions {
-  enableFtp: boolean,
-  enableSftp: boolean,
-  enableWebdav: boolean,
-  githubClientId: string,
-  githubClientSecret: string,
-  dropboxClientId: string,
-  dropboxClientSecret: string,
-  enableFs: boolean,
-  fsRoot: string,
-  rootUrl: string,
-};
+  enableFtp: boolean;
+  enableSftp: boolean;
+  enableWebdav: boolean;
+  githubClientId: string;
+  githubClientSecret: string;
+  dropboxClientId: string;
+  dropboxClientSecret: string;
+  enableFs: boolean;
+  fsRoot: string;
+  rootUrl: string;
+}
 
 export interface PublisherOptions {
-  rootUrl: string,
-  port: string,
-  skipHostingSelection: boolean,
-  enableHostingGhPages: boolean,
-  enableHostingUnifile: boolean,
-  enableHostingJekyll: boolean,
-};
+  rootUrl: string;
+  port: string;
+  skipHostingSelection: boolean;
+  enableHostingGhPages: boolean;
+  enableHostingUnifile: boolean;
+  enableHostingJekyll: boolean;
+}
 
-export interface StaticOptions {}
+export type StaticOptions = any;
 
 export class Config {
   ceOptions: CeOptions;
@@ -82,7 +82,7 @@ export class Config {
     };
     this.electronOptions = {
       enabled: process.env.SILEX_ELECTRON  === 'true',
-    }
+    };
     this.sslOptions = {
       forceHttps: process.env.SILEX_FORCE_HTTPS === 'true',
       trustXFPHeader: process.env.SILEX_FORCE_HTTPS_TRUST_XFP_HEADER === 'true',
@@ -92,7 +92,7 @@ export class Config {
     };
     this.ceOptions = {
       enableFtp: process.env.ENABLE_FTP === 'true',
-      enableSftp: process.env.ENABLE_SFTP != 'false', // true by default
+      enableSftp: process.env.ENABLE_SFTP !== 'false', // true by default
       enableWebdav: process.env.ENABLE_WEBDAV === 'true',
       githubClientId: process.env.GITHUB_CLIENT_ID,
       githubClientSecret: process.env.GITHUB_CLIENT_SECRET,
@@ -107,9 +107,9 @@ export class Config {
       port: this.serverOptions.port,
       skipHostingSelection: process.env.SKIP_HOSTING_SELECTION === 'true',
       enableHostingGhPages: process.env.ENABLE_HOSTING_GH_PAGES === 'true',
-      enableHostingUnifile: process.env.ENABLE_HOSTING_UNIFILE != 'false', // true by default
+      enableHostingUnifile: process.env.ENABLE_HOSTING_UNIFILE !== 'false', // true by default
       enableHostingJekyll: process.env.ENABLE_HOSTING_JEKYLL === 'true',
-    }
-    this.staticOptions = {}
+    };
+    this.staticOptions = {};
   }
-};
+}

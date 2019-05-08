@@ -9,8 +9,8 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
-const { URL } = require('url');
-const Path = require('path');
+import * as Path from 'path';
+import { URL } from 'url';
 import { Constants } from '../../Constants';
 import DomTools from '../utils/DomTools';
 
@@ -49,11 +49,10 @@ export class DomPublisher {
   cleanupFirefoxInlines() {
     // remove inlined scripts and styles
     ['script', 'style'].forEach((tagName) => {
-      const elements = this.doc.querySelectorAll(`${tagName}[style="display:none"]`);
-      for (let idx = 0; idx < elements.length; idx++) {
-        const element = elements[idx];
+      Array.from(this.doc.querySelectorAll(`${tagName}[style="display:none"]`))
+      .forEach((element) => {
         element.parentElement.removeChild(element);
-      }
+      });
     });
   }
 
@@ -73,20 +72,20 @@ export class DomPublisher {
 
     // remove publication path
     // remove JSON styles
-    const tagsToRemove = this.doc.head.querySelectorAll(`meta[name="publicationPath"], .${Constants.JSON_STYLE_TAG_CLASS_NAME}`);
-    for (let idx = 0; idx < tagsToRemove.length; idx++) {
-      tagsToRemove[idx].parentElement.removeChild(tagsToRemove[idx]);
-    }
+    Array.from(this.doc.head.querySelectorAll(`meta[name="publicationPath"], .${Constants.JSON_STYLE_TAG_CLASS_NAME}`))
+    .forEach((tagToRemove) => {
+      tagToRemove.parentElement.removeChild(tagToRemove);
+    });
     // remove data-silex-id
     // remove data-silex-static (will then be downloaded like any other script, not striped by DomTools.transformPath)
     // remove data-dependency
     // do NOT remove data-silex-type because it is used by front-end.js at runtime
-    const tagsToClean = this.doc.querySelectorAll(`[${Constants.TYPE_ATTR}], [${Constants.ELEMENT_ID_ATTR_NAME}], [${Constants.STATIC_ASSET_ATTR}]`);
-    for (let idx = 0; idx < tagsToClean.length; idx++) {
-      tagsToClean[idx].removeAttribute(Constants.ELEMENT_ID_ATTR_NAME);
-      tagsToClean[idx].removeAttribute(Constants.STATIC_ASSET_ATTR);
-      tagsToClean[idx].removeAttribute('data-dependency');
-    }
+    Array.from(this.doc.querySelectorAll(`[${Constants.TYPE_ATTR}], [${Constants.ELEMENT_ID_ATTR_NAME}], [${Constants.STATIC_ASSET_ATTR}]`))
+    .forEach((tagToClean) => {
+      tagToClean.removeAttribute(Constants.ELEMENT_ID_ATTR_NAME);
+      tagToClean.removeAttribute(Constants.STATIC_ASSET_ATTR);
+      tagToClean.removeAttribute('data-dependency');
+    });
   }
 
   split(newFirstPageName: string): Action[] {
@@ -152,7 +151,7 @@ export class DomPublisher {
     });
   }
 
-  extractAssets(baseUrl: string): {scriptTags: HTMLElement[], styleTags: HTMLElement[], files: File[]} {
+  extractAssets(baseUrl: string|URL): {scriptTags: HTMLElement[], styleTags: HTMLElement[], files: File[]} {
     // all scripts, styles and assets from head => local
     const files: File[] = [];
     DomTools.transformPaths(this.dom, (path, el, isInHead) => {
@@ -195,14 +194,14 @@ export class DomPublisher {
 
     // final js script to store in js/script.js
     const scriptTags = [];
-    const scripts = this.doc.head.querySelectorAll('script');
-    for (let idx = 0; idx < scripts.length; idx++) {
-      const tag = scripts[idx];
+    Array.from(this.doc.head.querySelectorAll('script'))
+    .forEach((tag) => {
       if (!tag.src && tag.innerHTML) {
         tag.parentElement.removeChild(tag);
         scriptTags.push(tag);
       }
-    }
+    });
+
     // link the user's script
     if (scriptTags.length > 0) {
       const scriptTagSrc = this.doc.createElement('script');
@@ -215,12 +214,12 @@ export class DomPublisher {
 
     // add head css
     const styleTags = [];
-    const styles = this.doc.head.querySelectorAll('style');
-    for (let idx = 0; idx < styles.length; idx++) {
-      const tag = styles[idx];
+    Array.from(this.doc.head.querySelectorAll('style'))
+    .forEach((tag) => {
       tag.parentElement.removeChild(tag);
       styleTags.push(tag);
-    }
+    });
+
     // link the user's stylesheet
     if (styleTags.length > 0) {
       const cssTagSrc = this.doc.createElement('link');

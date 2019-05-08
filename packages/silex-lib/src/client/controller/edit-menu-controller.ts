@@ -296,7 +296,7 @@ export class EditMenuController extends ControllerBase {
     }
   }
 
-    /**
+  /**
    * @param element, the component to edit
    */
   editComponent(element: HTMLElement) {
@@ -341,8 +341,8 @@ export class EditMenuController extends ControllerBase {
   onEditLink(e: Event, linkData: LinkData, cbk: (p1: LinkData) => any) {
     e.preventDefault();
     const pages = this.model.page.getPages();
-    this.linkDialog.open(linkData, pages, (linkData) => {
-      cbk(linkData);
+    this.linkDialog.open(linkData, pages, (_linkData) => {
+      cbk(_linkData);
     });
   }
 

@@ -42,15 +42,16 @@ export class CloudStorage {
   ready(cbk: () => any) {
     const uiElements = getUiElements();
     // cloud explorer instance
-    if (uiElements.fileExplorer.contentWindow.ce) {
-      this.ce = (uiElements.fileExplorer.contentWindow.ce as CloudExplorer);
+    // tslint:disable:no-string-literal
+    if (uiElements.fileExplorer.contentWindow['ce']) {
+      this.ce = (uiElements.fileExplorer.contentWindow['ce'] as CloudExplorer);
       cbk();
     } else {
       if (this.cbks == null) {
         this.cbks = [];
         uiElements.fileExplorer.addEventListener('load', (e) => {
-          this.ce = (uiElements.fileExplorer.contentWindow.ce as CloudExplorer);
-          this.cbks.forEach((cbk) => cbk());
+          this.ce = (uiElements.fileExplorer.contentWindow['ce'] as CloudExplorer);
+          this.cbks.forEach((_) => _());
           this.cbks = [];
         });
       }
@@ -63,7 +64,7 @@ export class CloudStorage {
    */
   write(
       fileInfo: FileInfo, rawData: string, userHead: string, cbk: () => any,
-      opt_errCbk?: ((p1: Object, p2: string) => any)) {
+      opt_errCbk?: ((p1: any, p2: string) => any)) {
     // // save the data
     // this.ce.write(new Blob([rawData], {type: 'text/plain'}), fileInfo)
     // .then(() => {
@@ -71,7 +72,7 @@ export class CloudStorage {
     // })
     // .catch(e => {
     //   console.error('Error: could not write file', fileInfo, e);
-    //   if (opt_errCbk) opt_errCbk(/** @type {Object} */ (e));
+    //   if (opt_errCbk) opt_errCbk(/** @type {any} */ (e));
     // });
     const oReq = new XMLHttpRequest();
     oReq.onload = () => {
@@ -96,7 +97,7 @@ export class CloudStorage {
    */
   read(
       fileInfo: FileInfo, cbk: (p1: string, p2: string) => any,
-      opt_errCbk?: ((p1: Object, p2: string) => any)) {
+      opt_errCbk?: ((p1: any, p2: string) => any)) {
     this.loadLocal(fileInfo.absPath, cbk, opt_errCbk);
   }
 
@@ -138,7 +139,7 @@ export class CloudStorage {
    */
   loadLocal(
       absPath: string, cbk: (p1: string, p2: string) => any,
-      opt_errCbk?: ((p1: Object, p2: string) => any)) {
+      opt_errCbk?: ((p1: any, p2: string) => any)) {
     const url = '/website' + absPath;
     const oReq = new XMLHttpRequest();
     oReq.addEventListener('load', (e) => {
@@ -148,7 +149,7 @@ export class CloudStorage {
 
         // warn the user
         if (data.message) {
-          SilexNotification.alert('Open a website', data.message, function() {});
+          SilexNotification.alert('Open a website', data.message, () => {});
         }
         cbk(data.html, data.userHead);
       } else {

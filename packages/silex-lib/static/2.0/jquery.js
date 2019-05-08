@@ -343,7 +343,7 @@ jQuery.extend = jQuery.fn.extend = function() {
 
 	for ( ; i < length; i++ ) {
 		// Only deal with non-null/undefined values
-		if ( (options = arguments[ i ]) != null ) {
+		if ( (options = arguments[ i ]) !== null ) {
 			// Extend the base object
 			for ( name in options ) {
 				src = target[ name ];
@@ -450,7 +450,7 @@ jQuery.extend({
 	},
 
 	isWindow: function( obj ) {
-		return obj != null && obj == obj.window;
+		return obj !== null && obj == obj.window;
 	},
 
 	isNumeric: function( obj ) {
@@ -684,7 +684,7 @@ jQuery.extend({
 	makeArray: function( arr, results ) {
 		var ret = results || [];
 
-		if ( arr != null ) {
+		if ( arr !== null ) {
 			if ( isArraylike( Object(arr) ) ) {
 				jQuery.merge( ret,
 					typeof arr === "string" ?
@@ -772,7 +772,7 @@ jQuery.extend({
 			for ( ; i < length; i++ ) {
 				value = callback( elems[ i ], i, arg );
 
-				if ( value != null ) {
+				if ( value !== null ) {
 					ret[ ret.length ] = value;
 				}
 			}
@@ -782,7 +782,7 @@ jQuery.extend({
 			for ( i in elems ) {
 				value = callback( elems[ i ], i, arg );
 
-				if ( value != null ) {
+				if ( value !== null ) {
 					ret[ ret.length ] = value;
 				}
 			}
@@ -1206,7 +1206,7 @@ jQuery.extend({
 				// Get a promise for this deferred
 				// If obj is provided, the promise aspect is added to the object
 				promise: function( obj ) {
-					return obj != null ? jQuery.extend( obj, promise ) : promise;
+					return obj !== null ? jQuery.extend( obj, promise ) : promise;
 				}
 			},
 			deferred = {};
@@ -1720,7 +1720,7 @@ function internalRemoveData( elem, name, pvt ) {
 		jQuery.cleanData( [ elem ], true );
 
 	// Use delete when supported for expandos or `cache` is not a window per isWindow (#10080)
-	} else if ( jQuery.support.deleteExpando || cache != cache.window ) {
+	} else if ( jQuery.support.deleteExpando || cache !== cache.window ) {
 		delete cache[ id ];
 
 	// When all else fails, null
@@ -2503,7 +2503,7 @@ boolHook = {
 			detail = typeof prop === "boolean" ?
 
 				getSetInput && getSetAttribute ?
-					attr != null :
+					attr !== null :
 					// oldIE fabricates an empty string for missing boolean attributes
 					// and conflates checked/selected into attroperties
 					ruseDefault.test( name ) ?
@@ -3102,7 +3102,7 @@ jQuery.event = {
 		// Avoid non-left-click bubbling in Firefox (#3861)
 		if ( delegateCount && cur.nodeType && (!event.button || event.type !== "click") ) {
 
-			for ( ; cur != this; cur = cur.parentNode || this ) {
+			for ( ; cur !== this; cur = cur.parentNode || this ) {
 
 				// Don't check non-elements (#13208)
 				// Don't process clicks on disabled elements (#6911, #8165, #11382, #11764)
@@ -3195,7 +3195,7 @@ jQuery.event = {
 
 			// Add which for key events
 			if ( event.which == null ) {
-				event.which = original.charCode != null ? original.charCode : original.keyCode;
+				event.which = original.charCode !== null ? original.charCode : original.keyCode;
 			}
 
 			return event;
@@ -3210,7 +3210,7 @@ jQuery.event = {
 				fromElement = original.fromElement;
 
 			// Calculate pageX/Y if missing and clientX/Y available
-			if ( event.pageX == null && original.clientX != null ) {
+			if ( event.pageX == null && original.clientX !== null ) {
 				eventDoc = event.target.ownerDocument || document;
 				doc = eventDoc.documentElement;
 				body = eventDoc.body;
@@ -5157,7 +5157,7 @@ function condense( unmatched, map, filter, context, xml ) {
 		newUnmatched = [],
 		i = 0,
 		len = unmatched.length,
-		mapped = map != null;
+		mapped = map !== null;
 
 	for ( ; i < len; i++ ) {
 		if ( (elem = unmatched[i]) ) {
@@ -5329,7 +5329,7 @@ function matcherFromGroupMatchers( elementMatchers, setMatchers ) {
 				matchedCount = 0,
 				i = "0",
 				unmatched = seed && [],
-				outermost = expandContext != null,
+				outermost = expandContext !== null,
 				contextBackup = outermostContext,
 				// We must always have either seed elements or context
 				elems = seed || byElement && Expr.find["TAG"]( "*", expandContext && context.parentNode || context ),
@@ -5343,7 +5343,7 @@ function matcherFromGroupMatchers( elementMatchers, setMatchers ) {
 
 			// Add elements passing elementMatchers directly to results
 			// Keep `i` a string if there are no elements so `matchedCount` will be "00" below
-			for ( ; (elem = elems[i]) != null; i++ ) {
+			for ( ; (elem = elems[i]) !== null; i++ ) {
 				if ( byElement && elem ) {
 					j = 0;
 					while ( (matcher = elementMatchers[j++]) ) {
@@ -5982,7 +5982,7 @@ jQuery.fn.extend({
 		var elem,
 			i = 0;
 
-		for ( ; (elem = this[i]) != null; i++ ) {
+		for ( ; (elem = this[i]) !== null; i++ ) {
 			if ( !selector || jQuery.filter( selector, [ elem ] ).length > 0 ) {
 				if ( !keepData && elem.nodeType === 1 ) {
 					jQuery.cleanData( getAll( elem ) );
@@ -6004,7 +6004,7 @@ jQuery.fn.extend({
 		var elem,
 			i = 0;
 
-		for ( ; (elem = this[i]) != null; i++ ) {
+		for ( ; (elem = this[i]) !== null; i++ ) {
 			// Remove element nodes and prevent memory leaks
 			if ( elem.nodeType === 1 ) {
 				jQuery.cleanData( getAll( elem, false ) );
@@ -6223,7 +6223,7 @@ function restoreScript( elem ) {
 function setGlobalEval( elems, refElements ) {
 	var elem,
 		i = 0;
-	for ( ; (elem = elems[i]) != null; i++ ) {
+	for ( ; (elem = elems[i]) !== null; i++ ) {
 		jQuery._data( elem, "globalEval", !refElements || jQuery._data( refElements[i], "globalEval" ) );
 	}
 }
@@ -6357,7 +6357,7 @@ function getAll( context, tag ) {
 			undefined;
 
 	if ( !found ) {
-		for ( found = [], elems = context.childNodes || context; (elem = elems[i]) != null; i++ ) {
+		for ( found = [], elems = context.childNodes || context; (elem = elems[i]) !== null; i++ ) {
 			if ( !tag || jQuery.nodeName( elem, tag ) ) {
 				found.push( elem );
 			} else {
@@ -6400,7 +6400,7 @@ jQuery.extend({
 			srcElements = getAll( elem );
 
 			// Fix all IE cloning issues
-			for ( i = 0; (node = srcElements[i]) != null; ++i ) {
+			for ( i = 0; (node = srcElements[i]) !== null; ++i ) {
 				// Ensure that the destination node is not null; Fixes #9587
 				if ( destElements[i] ) {
 					fixCloneNodeIssues( node, destElements[i] );
@@ -6414,7 +6414,7 @@ jQuery.extend({
 				srcElements = srcElements || getAll( elem );
 				destElements = destElements || getAll( clone );
 
-				for ( i = 0; (node = srcElements[i]) != null; i++ ) {
+				for ( i = 0; (node = srcElements[i]) !== null; i++ ) {
 					cloneCopyEvent( node, destElements[i] );
 				}
 			} else {
@@ -6569,7 +6569,7 @@ jQuery.extend({
 			deleteExpando = jQuery.support.deleteExpando,
 			special = jQuery.event.special;
 
-		for ( ; (elem = elems[i]) != null; i++ ) {
+		for ( ; (elem = elems[i]) !== null; i++ ) {
 
 			if ( acceptData || jQuery.acceptData( elem ) ) {
 
@@ -9057,7 +9057,7 @@ Tween.propHooks = {
 		get: function( tween ) {
 			var result;
 
-			if ( tween.elem[ tween.prop ] != null &&
+			if ( tween.elem[ tween.prop ] !== null &&
 				(!tween.elem.style || tween.elem.style[ tween.prop ] == null) ) {
 				return tween.elem[ tween.prop ];
 			}
@@ -9075,7 +9075,7 @@ Tween.propHooks = {
 			// available and use plain properties where available
 			if ( jQuery.fx.step[ tween.prop ] ) {
 				jQuery.fx.step[ tween.prop ]( tween );
-			} else if ( tween.elem.style && ( tween.elem.style[ jQuery.cssProps[ tween.prop ] ] != null || jQuery.cssHooks[ tween.prop ] ) ) {
+			} else if ( tween.elem.style && ( tween.elem.style[ jQuery.cssProps[ tween.prop ] ] !== null || jQuery.cssHooks[ tween.prop ] ) ) {
 				jQuery.style( tween.elem, tween.prop, tween.now + tween.unit );
 			} else {
 				tween.elem[ tween.prop ] = tween.now;
@@ -9151,7 +9151,7 @@ jQuery.fn.extend({
 
 		return this.each(function() {
 			var dequeue = true,
-				index = type != null && type + "queueHooks",
+				index = type !== null && type + "queueHooks",
 				timers = jQuery.timers,
 				data = jQuery._data( this );
 
@@ -9429,10 +9429,10 @@ jQuery.offset = {
 			options = options.call( elem, i, curOffset );
 		}
 
-		if ( options.top != null ) {
+		if ( options.top !== null ) {
 			props.top = ( options.top - curOffset.top ) + curTop;
 		}
-		if ( options.left != null ) {
+		if ( options.left !== null ) {
 			props.left = ( options.left - curOffset.left ) + curLeft;
 		}
 
