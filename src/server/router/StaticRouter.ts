@@ -2,7 +2,7 @@ const Path = require('path');
 const nodeModules = require('node_modules-path');
 const serveStatic = require('serve-static');
 const express = require('express');
-import { StaticOptions } from "../ServerConfig";
+import { StaticOptions } from '../ServerConfig';
 
 export default function(staticOptions: StaticOptions) {
   const router = express.Router();

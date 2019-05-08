@@ -16,10 +16,9 @@
  *   It has methods to manipulate the dom
  */
 
-
+import {Constants} from '../../Constants';
 import {View} from '../types';
 import {Model} from '../types';
-import {Constants} from '../../Constants';
 
 /**
  * @param model  model class which holds the other models
@@ -32,13 +31,6 @@ export class Body {
    * @static
    */
   static focusInput: HTMLElement;
-
-  constructor(private model: Model, private view: View) {
-    // hide the focus input and attach it to the DOM
-    Body.focusInput.style.left = '-1000px';
-    Body.focusInput.style.position = 'absolute';
-    document.body.appendChild(Body.focusInput);
-  }
 
   /**
    * remove the focus from text fields
@@ -54,6 +46,13 @@ export class Body {
     }, 0);
   }
 
+  constructor(private model: Model, private view: View) {
+    // hide the focus input and attach it to the DOM
+    Body.focusInput.style.left = '-1000px';
+    Body.focusInput.style.position = 'absolute';
+    document.body.appendChild(Body.focusInput);
+  }
+
   /**
    * @return   body element
    */
@@ -65,7 +64,7 @@ export class Body {
    * @return   array of elements which are currently selected
    */
   getSelection(): HTMLElement[] {
-    let elements = this.view.stageWrapper.getSelection().map(s => s.el);
+    const elements = this.view.stageWrapper.getSelection().map((s) => s.el);
     if (!elements || elements.length === 0) {
       // default, return the body
       const bodyElement = this.getBodyElement();
@@ -78,7 +77,7 @@ export class Body {
     }
 
     // build the result array
-    let res = [];
+    const res = [];
     elements.forEach((element) => {
       res.push(element);
     });
@@ -89,25 +88,25 @@ export class Body {
    * @param selectedElements  array of elements which are to select
    */
   setSelection(selectedElements: HTMLElement[]) {
-    const selection = this.view.stageWrapper.getSelection().map(s => s.el);
+    const selection = this.view.stageWrapper.getSelection().map((s) => s.el);
     // only if selection changed
-    if(selection.filter(el => !selectedElements.find(s => s === el)).length !== 0
-      || selectedElements.filter(el => !selection.find(s => s === el)).length !== 0) {
+    if (selection.filter((el) => !selectedElements.find((s) => s === el)).length !== 0
+      || selectedElements.filter((el) => !selection.find((s) => s === el)).length !== 0) {
       this.view.stageWrapper.setSelection(selectedElements);
     }
 
       // refresh views
-      let pages = this.model.page.getPages();
-      let page = this.model.page.getCurrentPage();
-      this.view.pageTool.redraw(selectedElements, pages, page);
-      this.view.propertyTool.redraw(this.view.stageWrapper.getSelection(), pages, page);
-      this.view.textFormatBar.redraw(selectedElements, pages, page);
+    const pages = this.model.page.getPages();
+    const page = this.model.page.getCurrentPage();
+    this.view.pageTool.redraw(selectedElements, pages, page);
+    this.view.propertyTool.redraw(this.view.stageWrapper.getSelection(), pages, page);
+    this.view.textFormatBar.redraw(selectedElements, pages, page);
       // this.view.stageWrapper.redraw(selectedElements, pages, page);
-      this.view.contextMenu.redraw(selectedElements, pages, page);
-      this.view.breadCrumbs.redraw(selectedElements, pages, page);
-      this.view.htmlEditor.setSelection(selectedElements);
+    this.view.contextMenu.redraw(selectedElements, pages, page);
+    this.view.breadCrumbs.redraw(selectedElements, pages, page);
+    this.view.htmlEditor.setSelection(selectedElements);
 
-      Body.resetFocus();
+    Body.resetFocus();
   }
 
   removeWysihtmlMarkup(root: HTMLElement|Document) {

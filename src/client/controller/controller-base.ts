@@ -29,8 +29,8 @@ import {FileInfo} from '../types';
 import {InvalidationManager} from '../utils/invalidation-manager';
 import {SilexNotification} from '../utils/notification';
 import {FileExplorer} from '../view/dialog/file-explorer';
-import { getUiElements } from '../view/UiElements';
 import { LinkDialog } from '../view/dialog/LinkDialog';
+import { getUiElements } from '../view/UiElements';
 
 /**
  * base class for all UI controllers of the controller package
@@ -75,14 +75,14 @@ export class ControllerBase {
   protected tracker: Tracker;
 
   /**
-   * invalidation mechanism
-   */
-  private undoCheckpointInvalidationManager: InvalidationManager;
-
-  /**
    * link editor
    */
   protected linkDialog: LinkDialog;
+
+  /**
+   * invalidation mechanism
+   */
+  private undoCheckpointInvalidationManager: InvalidationManager;
 
   /**
    * base class for all UI controllers of the controller package
@@ -183,7 +183,7 @@ export class ControllerBase {
 
     this.model.file.getHtmlAsync((html) => {
       opt_cbk({
-        html: html,
+        html,
         page: this.model.page.getCurrentPage(),
         scrollX: scrollData.x,
         scrollY: scrollData.y,
@@ -236,10 +236,10 @@ export class ControllerBase {
 
     try {
       // open the file browser
-      const fileInfo = await this.view.fileExplorer.openFile(FileExplorer.IMAGE_EXTENSIONS)
+      const fileInfo = await this.view.fileExplorer.openFile(FileExplorer.IMAGE_EXTENSIONS);
       if (fileInfo) {
         // update the model
-        let element = this.model.body.getSelection()[0];
+        const element = this.model.body.getSelection()[0];
 
         // undo checkpoint
         this.undoCheckPoint();
@@ -250,9 +250,8 @@ export class ControllerBase {
         // tracking
         this.tracker.trackAction('controller-events', 'success', 'selectBgImage', 1);
       }
-    }
-    catch(error) {
-      SilexNotification.notifyError(`Error: I could not load the image. \n${error['message'] || ''}`);
+    } catch (error) {
+      SilexNotification.notifyError(`Error: I could not load the image. \n${error.message || ''}`);
       this.tracker.trackAction('controller-events', 'error', 'selectBgImage', -1);
     }
   }
@@ -269,7 +268,7 @@ export class ControllerBase {
         this.undoCheckPoint();
 
         // create the element
-        let img = this.addElement(Constants.TYPE_IMAGE);
+        const img = this.addElement(Constants.TYPE_IMAGE);
 
         // load the image
         this.model.element.setImageUrl(
@@ -285,12 +284,12 @@ export class ControllerBase {
             this.model.element.removeElement(element);
             this.tracker.trackAction(
                 'controller-events', 'error', 'insert.image', -1);
-          }
+          },
         );
       }
     })
     .catch((error) => {
-      SilexNotification.notifyError('Error: I did not manage to load the image. \n' + (error['message'] || ''));
+      SilexNotification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''));
       this.tracker.trackAction('controller-events', 'error', 'insert.image', -1);
     });
     this.view.workspace.redraw(this.view);
@@ -312,7 +311,7 @@ export class ControllerBase {
     // apply the change to all elements
     opt_elements.forEach((element) => {
       // update the model
-      if(['top', 'left', 'width', 'height', 'min-height'].indexOf(name) >= 0) {
+      if (['top', 'left', 'width', 'height', 'min-height'].indexOf(name) >= 0) {
         const state = this.view.stageWrapper.getState(element);
         this.view.stageWrapper.setState(element, {
           ...state,
@@ -324,7 +323,7 @@ export class ControllerBase {
               left: name === 'left' ? parseInt(value) : state.metrics.computedStyleRect.left,
               width: name === 'width' ? parseInt(value) : state.metrics.computedStyleRect.width,
               height: name === 'height' || name === 'min-height' ? parseInt(value) : state.metrics.computedStyleRect.height,
-            }
+            },
           },
         });
       }
@@ -386,7 +385,7 @@ export class ControllerBase {
     this.undoCheckPoint();
 
     // apply the change to all elements
-    let elements = this.model.body.getSelection();
+    const elements = this.model.body.getSelection();
     elements.forEach((element) => {
       // update the model
       this.model.element.setClassName(element, name);
@@ -409,7 +408,7 @@ export class ControllerBase {
       'Enter a name for your page!', defaultName, 'Your page name', (accept, name) => {
         if (accept && name && name.length > 0) {
           // keep the full name
-          let displayName = name;
+          const displayName = name;
 
           // cleanup the page name
           name = name.replace(/\W+/g, '-').toLowerCase();
@@ -419,7 +418,7 @@ export class ControllerBase {
           name = 'page-' + name;
 
           // check if a page with this name exists
-          let pages = this.model.page.getPages();
+          const pages = this.model.page.getPages();
           let exists = false;
           pages.forEach((pageName) => {
             if (pageName === name) {
@@ -434,7 +433,7 @@ export class ControllerBase {
           }
         }
         cbk();
-      }
+      },
     );
   }
 
@@ -462,7 +461,7 @@ export class ControllerBase {
     this.undoCheckPoint();
 
     // create the element and add it to the stage
-    let element = this.model.element.createElement(type) as HTMLElement;
+    const element = this.model.element.createElement(type) as HTMLElement;
 
     // apply component styles etc
     if (!!opt_componentName) {
@@ -488,7 +487,7 @@ export class ControllerBase {
    */
   doAddElement(element: HTMLElement) {
     // only visible on the current page
-    let currentPageName = this.model.page.getCurrentPage();
+    const currentPageName = this.model.page.getCurrentPage();
     this.model.page.removeFromAllPages(element);
     this.model.page.addToPage(element, currentPageName);
 
@@ -508,10 +507,10 @@ export class ControllerBase {
    * its parent
    */
   checkElementVisibility(element: HTMLElement) {
-    let parentPage = this.model.page.getParentPage(element);
+    const parentPage = this.model.page.getParentPage(element);
     if (parentPage !== null) {
       // get all the pages
-      let pages = this.model.page.getPagesForElement(element);
+      const pages = this.model.page.getPagesForElement(element);
 
       // remove the components from the page
       pages.forEach(
@@ -554,8 +553,8 @@ export class ControllerBase {
    * refresh tools after mobile/desktop editor switch
    */
   refreshView() {
-    let pages = this.model.page.getPages();
-    let currentPage = this.model.page.getCurrentPage();
+    const pages = this.model.page.getPages();
+    const currentPage = this.model.page.getCurrentPage();
     this.view.propertyTool.redraw(this.view.stageWrapper.getSelection(), pages, currentPage);
     this.view.textFormatBar.redraw(this.model.body.getSelection(), pages, currentPage);
     this.view.stageWrapper.redraw();
@@ -650,7 +649,7 @@ export class ControllerBase {
       }
     },
     (error, msg) => {
-      SilexNotification.alert('Save website', 'Error: I did not manage to save the file. \n' + (msg || error['message'] || ''),
+      SilexNotification.alert('Save website', 'Error: I did not manage to save the file. \n' + (msg || error.message || ''),
       () => {
         if (opt_errorCbk) {
           opt_errorCbk(error);
