@@ -22,7 +22,7 @@ import { Dom } from '../utils/dom';
 import { Style } from '../utils/style';
 import { Url } from '../utils/url';
 import { getUiElements } from '../view/UiElements';
-import { StyleData, TemplateName } from './Data';
+import { TemplateName } from './Data';
 
 /**
  * direction in the dom
@@ -531,8 +531,7 @@ export class SilexElement {
     // call the method defined in front-end.js
     // this will resize the body according to its content
     // it will also trigger a "silex.resize" event
-    // tslint:disable:no-string-literal
-    this.model.file.getContentWindow()['silex'].resizeBody();
+    this.model.file.getContentWindow().silex.resizeBody();
 
     // update all metrics in case this new element has moved other elements
     this.view.stageWrapper.redraw();
@@ -573,7 +572,7 @@ export class SilexElement {
    */
   initElement(element: HTMLElement) {
     // default style
-    const defaultStyle: any = {};
+    const defaultStyle = {};
     defaultStyle.width = SilexElement.INITIAL_ELEMENT_SIZE + 'px';
     defaultStyle[this.getHeightStyleName(element)] = SilexElement.INITIAL_ELEMENT_SIZE + 'px';
 

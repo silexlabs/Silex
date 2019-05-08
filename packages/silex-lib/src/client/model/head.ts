@@ -117,8 +117,7 @@ export class Head {
       console.warn('no silex editable styles defined');
       return '';
     }
-      // tslint:disable:no-string-literal
-    return window['css_beautify'](silexStyle.innerHTML);
+    return window.css_beautify(silexStyle.innerHTML);
   }
 
   /**

@@ -48,21 +48,21 @@ import { Menu } from './view/menu';
 import { PageTool } from './view/page-tool';
 import { PropertyTool } from './view/property-tool';
 import { Splitter } from './view/splitter';
-import { StageWrapper } from './view/StageWrapper';
 import { TextFormatBar } from './view/TextFormatBar';
 import { Workspace } from './view/workspace';
+import { StageWrapper } from './view/StageWrapper';
 
 /**
  * warning: if you change that type, also change the default value in LinkDialog
  */
 export interface LinkData {
-  href?: string;
-  target?: string;
-  title?: string;
-  rel?: string;
-  type?: string;
-  download?: string;
-}
+  href?: string,
+  target?: string,
+  title?: string,
+  rel?: string,
+  type?: string,
+  download?: string,
+};
 export enum StickyPoint {
   LEFT = 'left',
   RIGHT = 'right',
@@ -72,69 +72,68 @@ export enum StickyPoint {
 // MID_V: 'midV',
 // MID_H: 'midH',
 export interface StickyLine {
-  id: string;
-  vertical: boolean;
-  position: number;
-  stickyPoint: StickyPoint;
-  metaData: any;
-}
+  id: string,
+  vertical: boolean,
+  position: number,
+  stickyPoint: StickyPoint,
+  metaData: any,
+};
 export interface Font {
-  family: string;
-  href: string;
-}
+  family: string,
+  href: string,
+};
 export interface FileInfo {
-  url: string;
-  path: string;
-  folder: string;
-  service: string;
-  size: number;
-  modified: string;
-  name: string;
-  isDir: boolean;
-  mime: string;
-  absPath: string;
+  url: string,
+  path: string,
+  folder: string,
+  service: string,
+  size: number,
+  modified: string,
+  name: string,
+  isDir: boolean,
+  mime: string,
+  absPath: string,
 }
 export interface Hosting {
-  providers: Provider[];
-  skipHostingSelection: boolean;
-}
+  providers: Provider[],
+  skipHostingSelection: boolean,
+};
 export interface Provider {
-  name: string;
-  displayName: string;
-  isLoggedIn: boolean;
-  authorizeUrl: string;
-  dashboardUrl: string;
-  pleaseCreateAVhost: string;
-  vhostsUrl: string;
-  buyDomainUrl: string;
-  skipVhostSelection: boolean;
-  skipFolderSelection: boolean;
-  afterPublishMessage: string;
-}
+  name: string,
+  displayName: string,
+  isLoggedIn: boolean,
+  authorizeUrl: string,
+  dashboardUrl: string,
+  pleaseCreateAVhost: string,
+  vhostsUrl: string,
+  buyDomainUrl: string,
+  skipVhostSelection: boolean,
+  skipFolderSelection: boolean,
+  afterPublishMessage: string,
+};
 export interface VHost {
-  name: string;
-  domainUrl: string;
-  skipDomainSelection: boolean;
-  publicationPath: FileInfo;
-  url: string;
-}
+  name: string,
+  domainUrl: string,
+  skipDomainSelection: boolean,
+  publicationPath: FileInfo,
+};
 export interface PublicationOptions {
-  file: FileInfo;
-  publicationPath: FileInfo;
-  provider: Provider;
-}
+  file: FileInfo,
+  publicationPath: FileInfo,
+  provider: Provider,
+};
 export interface UndoItem {
-  page: string;
-  html: string;
-  scrollX: number;
-  scrollY: number;
-}
+  page: string,
+  html: string,
+  scrollX: number,
+  scrollY: number
+};
 export interface ClipboardItem {
   element: HTMLElement;
-  style: any;
-  mobileStyle: any;
+  style: Object;
+  mobileStyle: Object;
   componentData: ComponentData;
-  children: ClipboardItem[];
+  children: Array<ClipboardItem>;
 }
 
 /**
@@ -189,4 +188,4 @@ export interface View {
   propSplitter: Splitter;
   workspace: Workspace;
   stageWrapper: StageWrapper;
-}
+};

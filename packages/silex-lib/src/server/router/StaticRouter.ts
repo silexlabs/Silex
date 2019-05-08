@@ -1,7 +1,7 @@
-import * as express from 'express';
-import * as nodeModules from 'node_modules-path';
-import * as Path from 'path';
-import * as serveStatic from 'serve-static';
+const Path = require('path');
+const nodeModules = require('node_modules-path');
+const serveStatic = require('serve-static');
+const express = require('express');
 import { StaticOptions } from '../ServerConfig';
 
 export default function(staticOptions: StaticOptions) {

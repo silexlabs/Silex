@@ -87,7 +87,7 @@ export class TipOfTheDay {
         el.title = item.title;
         el.innerHTML = '<h3>' + item.title + '</h3><p>' +
             this.strip(item.body) + '</p>';
-        if (firstLink !== null) {
+        if (firstLink != null) {
           el.href = firstLink.href;
         }
         (this.element.querySelector('.container') || this.element).appendChild(el);

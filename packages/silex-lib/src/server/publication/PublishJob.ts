@@ -9,15 +9,16 @@
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
 
-import * as assert from 'assert';
-import { JSDOM } from 'jsdom';
-import * as Path from 'path';
-import * as sequential from 'promise-sequential';
-import * as request from 'request';
-import { URL } from 'url';
-import * as uuid from 'uuid';
+const uuid = require('uuid');
+const request = require('request');
+const assert = require('assert');
+const Path = require('path');
+const { URL } = require('url');
+const { JSDOM } = require('jsdom');
+const sequential = require('promise-sequential');
+
 import DomTools from '../utils/DomTools';
-import { Action, DomPublisher, File } from './DomPublisher';
+import {Action, DomPublisher, File} from './DomPublisher';
 
 // const TMP_FOLDER = '.tmp';
 
@@ -256,7 +257,7 @@ export default class PublishJob {
     })
     .catch((err) => {
       // FIXME: will never go through here
-      console.error('Publication error, could not download files:', this.tree.files.map((f) => f.displayName).join(', '), '. Error:', err);
+      console.error('Publication error, could not download files:', this.tree.files.map((file) => file.displayName).join(', '), '. Error:', err);
       this.error = true;
       this.setStatus(err.message);
     })
@@ -301,7 +302,7 @@ export default class PublishJob {
     // do not throw an error if the folder is not found, this is what we want to test
     // instead catch the error and do nothing so that the result is null in .then(stat
     const preventErr = (promise) => promise.catch((err) => {
-      if (err.code !== 'ENOENT') {
+      if (err.code != 'ENOENT') {
         throw err;
       }
     });
@@ -412,7 +413,7 @@ export default class PublishJob {
             jar: this.jar,
             encoding: null,
           }, (err, res, data) => {
-            if (err) { reject(err); } else if (res.statusCode !== 200) {
+            if (err) { reject(err); } else if (res.statusCode != 200) {
               console.warn(`Could not download file ${ srcPath }.`);
               reject(`Could not download file ${ srcPath }.`);
             } else {

@@ -475,7 +475,7 @@ vjs.fixEvent = function(event) {
     event.isImmediatePropagationStopped = returnFalse;
 
     // Handle mouse position
-    if (event.clientX !== null) {
+    if (event.clientX != null) {
       var doc = document.documentElement, body = document.body;
 
       event.pageX = event.clientX +
@@ -491,7 +491,7 @@ vjs.fixEvent = function(event) {
 
     // Fix button for mouse clicks:
     // 0 == left; 1 == middle; 2 == right
-    if (event.button !== null) {
+    if (event.button != null) {
       event.button = (event.button & 1 ? 0 :
         (event.button & 4 ? 1 :
           (event.button & 2 ? 2 : 0)));
@@ -5350,7 +5350,7 @@ vjs.Html5.disposeMediaElement = function(el){
   // Override Android 2.2 and less canPlayType method which is broken
 if (vjs.IS_OLD_ANDROID) {
   document.createElement('video').constructor.prototype.canPlayType = function(type){
-    return (type && type.toLowerCase().indexOf('video/mp4') !== -1) ? 'maybe' : '';
+    return (type && type.toLowerCase().indexOf('video/mp4') != -1) ? 'maybe' : '';
   };
 }
 /**

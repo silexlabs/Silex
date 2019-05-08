@@ -16,18 +16,19 @@
  *
  */
 
-import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
+
 import { Constants } from '../../../Constants';
 import { Controller, Model } from '../../types';
 import { Dom } from '../../utils/dom';
 import { PaneBase } from './pane-base';
+import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
 
 /**
  * on of Silex Editors class
  * const user edit style of components
  * @param element   container to render the UI
  * @param model  model class which holds
- * the model instances - views use it for read
+  * the model instances - views use it for read
  * operation only
  * @param controller  structure which holds
  * the controller instances
@@ -58,7 +59,7 @@ export class PagePane extends PaneBase {
   /**
    * Array of checkboxes used to add/remove the element from pages
    */
-  pageCheckboxes: Array<{checkbox: HTMLInputElement, pageName: string}> = null;
+  pageCheckboxes: {checkbox: HTMLInputElement, pageName: string}[] = null;
 
   constructor(element: HTMLElement, model: Model, controller: Controller) {
 
@@ -85,7 +86,7 @@ export class PagePane extends PaneBase {
     this.viewOnDeviceEl.onclick = (e) => {
       const selected: HTMLInputElement = this.element.querySelector('.view-on-mobile input:checked');
       const value = selected.value;
-      this.states.forEach((state) => {
+      this.states.forEach(state => {
         this.model.element.setHideOnMobile(state.el, value === 'desktop');
         this.model.element.setHideOnDesktop(state.el, value === 'mobile');
       });
@@ -103,7 +104,7 @@ export class PagePane extends PaneBase {
    * refresh with new pages
    * @param pages   the new list of pages
    */
-  setPages(pages: string[]) {
+  setPages(pages: Array<string>) {
     this.pageNames = pages;
 
     // build an array of obects with name and displayName properties
@@ -115,16 +116,16 @@ export class PagePane extends PaneBase {
         return null;
       }
       return {
-        name: pageName,
-        displayName: pageElement.innerHTML,
-        linkName: '#!' + pageName,
+        'name': pageName,
+        'displayName': pageElement.innerHTML,
+        'linkName': '#!' + pageName
       };
     });
 
     // link selector
     const pageDataWithDefaultOptions = [
-      {name: 'none', displayName: '-', linkName: 'none'},
-      {name: 'custom', displayName: 'External link', linkName: 'custom'},
+      {'name': 'none', 'displayName': '-', 'linkName': 'none'},
+      {'name': 'custom', 'displayName': 'External link', 'linkName': 'custom'}
     ].concat(pageData);
     const linkContainer = this.element.querySelector('.link-combo-box');
     let templateHtml = this.element.querySelector('.link-template').innerHTML;
@@ -139,7 +140,7 @@ export class PagePane extends PaneBase {
     // reset page checkboxes
     if (this.pageCheckboxes) {
       this.pageCheckboxes.forEach((item) => {
-        if (item.checkbox.parentElement !== null) {
+        if (item.checkbox.parentElement != null) {
           item.checkbox.parentElement.removeChild(item.checkbox);
         }
         item.checkbox.onchange = null;
@@ -155,7 +156,7 @@ export class PagePane extends PaneBase {
       checkbox.onchange = () => {
         this.checkPage(name, checkbox);
       };
-      return {checkbox, pageName: name};
+      return {checkbox: checkbox, pageName: name};
     });
   }
 
@@ -164,14 +165,14 @@ export class PagePane extends PaneBase {
    */
   onLinkChanged() {
     if (this.linkDropdown.value === 'none') {
-      this.controller.propertyToolController.removeLink(this.states.map((state) => state.el));
+      this.controller.propertyToolController.removeLink(this.states.map(state => state.el));
       this.linkInputTextField.style.display = 'none';
     } else {
       if (this.linkDropdown.value === 'custom') {
         this.linkInputTextField.value = '';
         this.linkInputTextField.style.display = 'inherit';
       } else {
-        this.controller.propertyToolController.addLink(this.states.map((state) => state.el), this.linkDropdown.value);
+        this.controller.propertyToolController.addLink(this.states.map(state => state.el), this.linkDropdown.value);
       }
     }
   }
@@ -180,7 +181,7 @@ export class PagePane extends PaneBase {
    * the user changed the link text field
    */
   onLinkTextChanged() {
-    this.controller.propertyToolController.addLink(this.states.map((state) => state.el), this.linkInputTextField.value);
+    this.controller.propertyToolController.addLink(this.states.map(state => state.el), this.linkInputTextField.value);
   }
 
   /**
@@ -200,10 +201,10 @@ export class PagePane extends PaneBase {
         .forEach((el: HTMLInputElement) => el.disabled = !this.model.head.getEnableMobile());
 
     // not available for stage element
-    const statesNoBody = states.filter((data) => data.el !== this.model.body.getBodyElement());
-    if (statesNoBody.length > 0) {
+    const statesNoBody = states.filter(data => data.el !== this.model.body.getBodyElement());
+    if(statesNoBody.length > 0) {
       // update the "view on mobile" checkbox
-      const visibility = this.getCommonProperty(states, (state) => {
+      const visibility = this.getCommonProperty(states, state => {
         if (this.model.element.getHideOnMobile(state.el)) {
           return 'desktop';
         } else {
@@ -235,7 +236,7 @@ export class PagePane extends PaneBase {
         item.checkbox.disabled = false;
 
         // compute common pages
-        const isInPage = this.getCommonProperty(states, (state) => this.model.page.isInPage(state.el, item.pageName));
+        const isInPage = this.getCommonProperty(states, state => this.model.page.isInPage(state.el, item.pageName));
 
         // set visibility
         isInNoPage = isInNoPage && isInPage === false;
@@ -258,7 +259,7 @@ export class PagePane extends PaneBase {
 
       // refresh the link inputs
       // get the link of the element
-      const elementLink = this.getCommonProperty(states, (state) => state.el.getAttribute(Constants.LINK_ATTR));
+      const elementLink = this.getCommonProperty(states, state => state.el.getAttribute(Constants.LINK_ATTR));
 
       // default selection
       if (!elementLink || elementLink === '') {
@@ -280,7 +281,8 @@ export class PagePane extends PaneBase {
       } else {
         this.linkInputTextField.style.display = 'none';
       }
-    } else {
+    }
+    else {
       // body element only
       this.pageCheckboxes.forEach((item) => {
         item.checkbox.disabled = true;
@@ -307,9 +309,9 @@ export class PagePane extends PaneBase {
   checkPage(pageName: string, checkbox: HTMLInputElement) {
     // notify the toolbox
     if (checkbox.checked) {
-      this.controller.propertyToolController.addToPage(this.states.map((state) => state.el), pageName);
+      this.controller.propertyToolController.addToPage(this.states.map(state => state.el), pageName);
     } else {
-      this.controller.propertyToolController.removeFromPage(this.states.map((state) => state.el), pageName);
+      this.controller.propertyToolController.removeFromPage(this.states.map(state => state.el), pageName);
     }
   }
 
@@ -322,7 +324,7 @@ export class PagePane extends PaneBase {
 
   removeFromAllPages() {
     this.pageCheckboxes.forEach((item) => {
-      this.controller.propertyToolController.removeFromPage(this.states.map((state) => state.el), item.pageName);
+      this.controller.propertyToolController.removeFromPage(this.states.map(state => state.el), item.pageName);
     });
   }
 }

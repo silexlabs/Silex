@@ -1,6 +1,6 @@
-import * as express from 'express';
-import * as fs from 'fs';
-import * as https from 'https';
+const fs = require('fs');
+const express = require('express');
+const https = require('https');
 
 export default function(sslOptions, app) {
   const router = express.Router();
@@ -22,17 +22,17 @@ export default function(sslOptions, app) {
   if (sslOptions.privateKey && sslOptions.certificate) {
     console.log('> SSL certificate is enabled, found certificate:', sslOptions.certificate);
     try {
-      const privateKey = fs.readFileSync(sslOptions.privateKey).toString();
-      const certificate = fs.readFileSync(sslOptions.certificate).toString();
+      let privateKey = fs.readFileSync(sslOptions.privateKey).toString();
+      let certificate = fs.readFileSync(sslOptions.certificate).toString();
 
-      const options = {
+      let options = {
         key: privateKey,
         cert: certificate,
         requestCert: true,
         rejectUnauthorized: false,
       };
 
-      https.createServer(options, this).listen(sslOptions.sslPort, () => {
+      https.createServer(options, this).listen(sslOptions.sslPort, function() {
         console.log('SSL: listening on port ', sslOptions.sslPort);
       });
     } catch (e) {

@@ -9,6 +9,7 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
+
 /**
  * @fileoverview define externs for libs used in Silex
  */
@@ -28,16 +29,16 @@ import { ComponentData } from './model/Data';
  *          }}
  */
 export interface ProdotypeCompDef {
-  faIconClass?: string;
-  initialCss?: any[];
-  initialCssContentContainer?: any[];
-  initialCssClass?: any[];
-  baseElement?: string;
-  name?: string;
-  category?: string;
-  isPrivate?: boolean;
-  text: any; // FIXME: why? this is only used in StyleEditorPane
-}
+  faIconClass?: string,
+  initialCss?: Array<any>,
+  initialCssContentContainer?: Array<any>,
+  initialCssClass?: Array<any>,
+  baseElement?: string,
+  name?: string,
+  category?: string,
+  isPrivate?: boolean
+};
+
 
 /**
  * Prodotype
@@ -46,27 +47,29 @@ export interface ProdotypeCompDef {
  */
 export interface Prodotype {
   componentsDef: ProdotypeCompDef;
-
+  constructor(container, rootPath);
   decorate(templateName: string, data: any);
   ready(cbk: (any) => void);
   edit(
-    data?: any,
-    list?: ComponentData[],
+    data?:any,
+    list?: Array<ComponentData>,
     templateName?: string,
     events?: any);
   reset();
-  createName(type, list): string;
+  createName(type, list):string;
   getMissingDependencies(
     container: HTMLElement,
-    componentNames: Array<{templateName: string}>,
-  ): Element[];
-  getUnusedDependencies(dependencyElements: Element[], componentNames: Array<{templateName: string}>);
+    componentNames:Array<{templateName:string}>
+  ): Array<Element>;
+  getUnusedDependencies(dependencyElements:Array<Element>, componentNames: Array<{templateName:string}>);
 }
+
 
 /**
  * @type {Array.<Array.<string|number>>}
  */
-export let _paq = [];
+export var _paq = [];
+
 
 /**
  * piwik analytics
@@ -74,6 +77,7 @@ export let _paq = [];
  */
 export interface Piwik {
   // static getAsyncTracker(): Piwik;
+  constructor();
   trackEvent(c: string, d: string, e?: string, f?: number);
 }
 
@@ -83,7 +87,8 @@ export interface Piwik {
 export interface JQuery {
   editable(options);
   pageable(option, value);
-}
+};
+
 
 /**
  * cloud explorer externs
@@ -96,32 +101,34 @@ export interface CloudExplorer {
   write(data, blob): Promise<any>;
   read(blob): Promise<any>;
   saveAs(defaultFileName, extensions): Promise<any>;
-}
+};
+
 
 /**
  * unifile externs
  */
 export interface UnifileResponse {
-   success: boolean;
-   message?: string;
-   tempLink?: string;
-   code?: string;
- }
+   success: boolean,
+   message?: string,
+   tempLink?: string,
+   code?: string,
+ };
+
 
 /**
  * wysihtml library
  */
-// tslint:disable:no-string-literal
-export let wysihtml: any = window['wysihtml'];
+export var wysihtml:any = window['wysihtml'];
 
 // export declare var wysihtml:WysiHtml;
 // export declare class wysihtml {
 //   public static Editor: any;
 // }
 export interface WysiHtmlEditor {
-  composer: WysiHtmlComposer;
+  constructor(el: HTMLElement, options);
   focus(changePosition);
   on(eventName, cbk);
+  composer: WysiHtmlComposer;
   destroy();
 }
 interface WysiHtmlComposer {
@@ -129,6 +136,7 @@ interface WysiHtmlComposer {
 }
 interface WysiHtmlCommand {
   exec(cmd: string, options?: any);
-}
+};
 
-export type wysihtmlParserRules = any;
+export type wysihtmlParserRules = Object;
+

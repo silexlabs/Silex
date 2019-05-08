@@ -1,76 +1,77 @@
 @modalDialogsMargin: 0;
 @modalDialogZIndexFront: 200;
 
-.silex - modal - dialog; {
-  & .silex - hide - dialog; {
+.silex-modal-dialog {
+  &.silex-hide-dialog {
     display: none;
   }
-  z - index; : @modalDialogZIndexFront
+  z-index: @modalDialogZIndexFront;
   display: flex;
-  flex - direction; : column;
-  .header,  .body; {
-    padding: 0; 35; px;
-    color: @silexlightergrey
-    font - size; : 20; px;
-    font - weight; : lighter;
+  flex-direction: column;
+  .header, .body {
+    padding: 0 35px;
+    color: @silexlightergrey;
+    font-size: 20px;
+    font-weight: lighter;
   }
-  .header; h1; {
-    display: inline - block;
-    padding: 17; px; 20; px;
+  .header h1 {
+    display: inline-block;
+    padding: 17px 20px;
     margin: 0;
-    font - size; : 20; px;
-    font - weight; : 400;
+    font-size: 20px;
+    font-weight: 400;
   }
-  .header .help - btn; {
-    margin - left; : 20; px;
-    font - weight; : 100;
-    font - size; : 16; px;
-    text - decoration; : none;
-    color: @silexlightergrey
-    opacity: .7; 
-    & ; : hover; {
+  .header .help-btn {
+    margin-left: 20px;
+    font-weight: 100;
+    font-size: 16px;
+    text-decoration: none;
+    color: @silexlightergrey;
+    opacity: .7;
+    &:hover {
       opacity: 1;
     }
-    .icon: before; {
-      padding: 0; 5; px;
+    .icon:before {
+      padding: 0 5px;
     }
-    .label: hover; {
-      text - decoration; : underline;
+    .label:hover {
+      text-decoration: underline;
     }
   }
-  .body; {
+  .body {
     overflow: auto;
-    flex: 1; 1; auto;
-    height: 100 % ;
-    border - top; : 1; px; solid; @silexdarkgrey
-    h2; {
-      font - size; : 18; px;
+    flex: 1 1 auto;
+    height: 100%;
+    border-top: 1px solid @silexdarkgrey;
+    h2 {
+      font-size: 18px;
     }
-    background - color; : @silexmediumgrey
+    background-color: @silexmediumgrey;
   }
 
-  background - color; : @silexmediumdarkgrey
+  background-color: @silexmediumdarkgrey;
 
   position: absolute;
-  top: @modalDialogsMargin
-  left: @modalDialogsMargin
-  right: @modalDialogsMargin
-  bottom: @modalDialogsMargin
-  width: 100 % ; /* for CE iframe */
-  height: 100 % ; /* for CE iframe */
-  .pane > ul; {
+  top: @modalDialogsMargin;
+  left: @modalDialogsMargin;
+  right: @modalDialogsMargin;
+  bottom: @modalDialogsMargin;
+  width: 100%; /* for CE iframe */
+  height: 100%; /* for CE iframe */
+  .pane > ul {
     padding: 0;
   }
-  .close - btn; {
-    background: url('../assets/goog-ui/close.png'); no - repeat; center; center;
-    width: 30; px;
-    display: inline - block;
+  .close-btn {
+    background: url("../assets/goog-ui/close.png") no-repeat center center;
+    width: 30px;
+    display: inline-block;
     border: 0;
     padding: 0;
-    height: 30; px;
+    height: 30px;
     cursor: pointer;
-    right: 15; px;
-    top: 15; px;
+    right: 15px;
+    top: 15px;
     position: absolute;
   }
 }
+

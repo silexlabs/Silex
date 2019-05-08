@@ -55,10 +55,13 @@ import { Menu } from './view/menu';
 import { PageTool } from './view/page-tool';
 import { PropertyTool } from './view/property-tool';
 import { Splitter } from './view/splitter';
-import { StageWrapper } from './view/StageWrapper';
 import { TextFormatBar } from './view/TextFormatBar';
-import { getUiElements } from './view/UiElements';
 import { Workspace } from './view/workspace';
+
+import { Stage } from 'drag-drop-stage-component/src/ts/index';
+
+import { getUiElements } from './view/UiElements';
+import { StageWrapper } from './view/StageWrapper';
 
 /**
  * Defines the entry point of Silex client application
@@ -88,11 +91,11 @@ export class App {
    * create all views and models and controllers
    *
    */
-  constructor(debug= false) {
+  constructor(debug=false) {
     // the debug flag comes from index.jade or debug.jade
     Config.debug.debugMode = debug;
-    if (Config.debug.debugMode) {
-      console.warn('Silex starting in debug mode.');
+    if(Config.debug.debugMode) {
+      console.warn('Silex starting in debug mode.')
     }
 
     // empty objects, to pass references to each other and later populate them
@@ -198,6 +201,10 @@ export class App {
 
   initDebug() {
     if (Config.debug.debugMode && Config.debug.debugScript) {
+      window['model'] = this.model;
+      window['view'] = this.view;
+      window['controller'] = this.controller;
+
       const script = document.createElement('script');
       script.type = 'text/javascript';
       script.src = Config.debug.debugScript;
@@ -326,5 +333,4 @@ export class App {
   }
 }
 
-// tslint:disable:no-string-literal
 window['silex'] = new App();

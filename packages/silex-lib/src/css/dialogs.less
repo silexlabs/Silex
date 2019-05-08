@@ -1,5 +1,5 @@
 /* less definitions */
-@dialog-margin; : 0;
+@dialog-margin: 0;
 
 /* */
 /* generic styles  */
@@ -7,19 +7,20 @@
   hidden-dialog is used instead of display none,
   so that dialogs load normally even when the dialog is hidden
 */
-.hidden - dialog; {
+.hidden-dialog{
   position: absolute;
-  top: -9999; px;
-  left: -9999; px;
+  top: -9999px;
+  left: -9999px;
   bottom: initial;
   right: initial;
 }
-.visible - dialog; {
+.visible-dialog {
   position: absolute;
   top: @dialog-margin;
   left: @dialog-margin;
   bottom: @dialog-margin;
   right: @dialog-margin;
-  width: 100 % - 2 * ; @dialog-margin;
-  height: 100 % - 2 * ; @dialog-margin;
+  width: 100% - 2*@dialog-margin;
+  height: 100% - 2*@dialog-margin;
 }
+

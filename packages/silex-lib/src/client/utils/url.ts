@@ -22,7 +22,7 @@ export class Url {
    * @param attributes a partial FileInfo object
    */
   static updateFileInfo(
-      fileInfo: FileInfo, attributes: any): FileInfo {
+      fileInfo: FileInfo, attributes: Object): FileInfo {
     if (!fileInfo) {
       return null;
     }

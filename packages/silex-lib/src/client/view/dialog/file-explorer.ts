@@ -17,11 +17,12 @@
  *
  */
 
-import {CloudExplorer} from '../../externs';
+
 import {CloudStorage} from '../../service/cloud-storage';
 import {Model} from '../../types';
 import {Controller} from '../../types';
 import {FileInfo} from '../../types';
+import {CloudExplorer} from '../../externs';
 import {ModalDialog} from '../../view/ModalDialog';
 
 /**
@@ -57,7 +58,7 @@ export class FileExplorer {
     CloudStorage.getInstance().ready(() => {
       this.ce = CloudStorage.getInstance().ce;
     });
-    this.modalDialog = new ModalDialog({name: 'File explorer', element, onOpen: (args) => {}, onClose: () => {}});
+    this.modalDialog = new ModalDialog({name: 'File explorer', element: element, onOpen: (args) => {}, onClose: () => {}});
   }
 
   /**
@@ -72,7 +73,7 @@ export class FileExplorer {
     // case of cancel
     return (
         Object.assign(
-            {absPath: `/ce/${fileInfo.service}/get/${fileInfo.path}`},
+            {'absPath': `/ce/${fileInfo.service}/get/${fileInfo.path}`},
             fileInfo) as FileInfo);
   }
 

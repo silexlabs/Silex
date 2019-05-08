@@ -17,8 +17,9 @@
 
 import { File } from '../../model/file';
 import { SilexTasks } from '../../service/silex-tasks';
-import { Model, Provider, PublicationOptions, VHost, View } from '../../types';
+import { Model, Provider, VHost, View, PublicationOptions } from '../../types';
 import { SilexNotification } from '../../utils/notification';
+import { TipOfTheDay } from '../../view/tip-of-the-day';
 import { getUiElements } from '../UiElements';
 
 /**
@@ -55,10 +56,10 @@ export class PublishDialog {
         const providerName = this.model.head.getHostingProvider();
         const publicationPath = this.model.head.getPublicationPath();
         if (providerName && publicationPath) {
-          const provider: Provider = hosting.providers.find(
-              (p) => p.name === providerName);
+          const provider: Provider = hosting['providers'].find(
+              (p) => p['name'] === providerName);
           const providerDisplayName = provider ?
-              provider.displayName || provider.name :
+              provider['displayName'] || provider['name'] :
               publicationPath.service;
           SilexNotification.confirm('Publication', `
             I am about to publish your webiste to <strong>${providerDisplayName}</strong>, in the folder ${publicationPath.path}.
@@ -80,7 +81,7 @@ export class PublishDialog {
 
   doOpen(usePredifinedSettings, hosting, providerName): Promise<PublicationOptions> {
     return new Promise<PublicationOptions>((resolve, reject) => {
-      if (usePredifinedSettings || hosting.providers.length === 0) {
+      if (usePredifinedSettings || hosting['providers'].length === 0) {
         // use publication settings or send the user to publish settings
         resolve({
           file: null,
@@ -88,13 +89,13 @@ export class PublishDialog {
           provider: null,
         });
       } else {
-        if (hosting.skipHostingSelection === true) {
-          const provider = hosting.providers[0];
+        if (hosting['skipHostingSelection'] === true) {
+          const provider = hosting['providers'][0];
 
           // continue to next step
           resolve(this.selectProviderFolder(provider));
         } else {
-          resolve(this.selectProvider(hosting.providers, providerName));
+          resolve(this.selectProvider(hosting['providers'], providerName));
         }
       }
     });
@@ -138,7 +139,7 @@ export class PublishDialog {
   selectProviderFolder(provider: Provider): Promise<PublicationOptions> {
     return new Promise<PublicationOptions>((resolve, reject) => {
       this.model.head.setHostingProvider(provider.name);
-      if (provider.skipFolderSelection) {
+      if (provider['skipFolderSelection']) {
         resolve(this.onSelectProvider(provider));
       } else {
         this.view.fileExplorer.openFolder().then((folder) => {
@@ -151,14 +152,14 @@ export class PublishDialog {
 
   onSelectProvider(provider: Provider): Promise<PublicationOptions> {
     return new Promise<PublicationOptions>((resolve, reject) => {
-      if (provider.isLoggedIn) {
+      if (provider['isLoggedIn']) {
         resolve(this.selectVhost(provider));
       } else {
         this.loading(true);
         this.service.authorize(provider, (loginUrl) => {
           this.loading(false);
           SilexNotification.confirm('Publication', `
-            Please&nbsp;<a href="${loginUrl}" target="_blank">click here and login to ${provider.displayName}.</a>, then click "next".
+            Please&nbsp;<a href="${loginUrl}" target="_blank">click here and login to ${provider['displayName']}.</a>, then click "next".
           `, () => {
             resolve(this.selectVhost(provider));
           },
@@ -170,21 +171,21 @@ export class PublishDialog {
 
   selectVhost(provider: Provider): Promise<PublicationOptions> {
     return new Promise<PublicationOptions>((resolve, reject) => {
-      if (provider.vhostsUrl) {
+      if(provider.vhostsUrl) {
         this.loading(true);
         this.service.vhosts(provider, (vhosts: VHost[]) => {
           this.loading(false);
           if (vhosts.length === 0) {
             SilexNotification.alert('Publication', `Please click here to
-              <a href="${provider.dashboardUrl}" target="_blank">
-                ${provider.pleaseCreateAVhost}
+              <a href="${provider['dashboardUrl']}" target="_blank">
+                ${provider['pleaseCreateAVhost']}
               </a>
             `, () => {
               resolve(this.selectVhost(provider));
             },
             'Check again');
           } else {
-            if (provider.skipVhostSelection === true) {
+            if (provider['skipVhostSelection'] === true) {
               resolve(this.selectDomain(provider, vhosts[0]));
             } else {
               SilexNotification.prompt('Publication', 'unused', 'unused', 'unused', (ok) => {
@@ -213,11 +214,12 @@ export class PublishDialog {
             }
           }
         }, (msg) => reject(msg));
-      } else {
+      }
+      else {
         resolve({
           file: this.model.file.getFileInfo(),
           publicationPath: this.model.head.getPublicationPath(),
-          provider,
+          provider: provider,
         });
 
       }
@@ -226,19 +228,19 @@ export class PublishDialog {
 
   selectDomain(provider: Provider, vhost: VHost): Promise<PublicationOptions> {
     return new Promise<PublicationOptions>((resolve: (PublicationOptions) => void, reject) => {
-      this.model.head.setWebsiteUrl(vhost.url);
-      if (vhost.skipDomainSelection === true) {
+      this.model.head.setWebsiteUrl(vhost['url']);
+      if (vhost['skipDomainSelection'] === true) {
         resolve({
           file: this.model.file.getFileInfo(),
-          publicationPath: vhost.publicationPath,
-          provider,
+          publicationPath: vhost['publicationPath'],
+          provider: provider,
         });
       } else {
         this.loading(true);
         this.service.domain(vhost, (res) => {
-          const domain = res.domain;
-          if (res.url) {
-            this.model.head.setWebsiteUrl(res.url);
+          const domain = res['domain'];
+          if (res['url']) {
+            this.model.head.setWebsiteUrl(res['url']);
           }
           this.loading(false);
           const initialDomain = domain || '';
@@ -246,41 +248,41 @@ export class PublishDialog {
           SilexNotification.prompt('Publication', `
             <h3>Optional: provide your domain name<h3>
             <p>Choose the domain you want associated with this website. Leave blank and you will be provided with a generic domain.</p>
-          ` + (provider.buyDomainUrl ? `
-            <p>You can also <a target="_blank" href="${provider.buyDomainUrl}">buy a domain name here.</a></p>
+          ` + (provider['buyDomainUrl'] ? `
+            <p>You can also <a target="_blank" href="${provider['buyDomainUrl']}">buy a domain name here.</a></p>
           ` : ''),
           initialDomain, '[Optional] your-domain.com', (ok, newDomain) => {
-            const updateOrRemoveSuccess = (resUrl) => {
+            const updateOrRemoveSuccess = (res) => {
               // update website url
-              if (resUrl.url) {
-                this.model.head.setWebsiteUrl(resUrl.url);
+              if (res['url']) {
+                this.model.head.setWebsiteUrl(res['url']);
               }
               this.loading(false);
               SilexNotification.notifySuccess('Domain updated');
               resolve({
                 file: this.model.file.getFileInfo(),
-                publicationPath: vhost.publicationPath,
-                provider,
+                publicationPath: vhost['publicationPath'],
+                provider: provider,
               });
             };
             if (ok) {
-              if (newDomain !== initialDomain) {
+              if (newDomain != initialDomain) {
                 this.loading(true);
-                if (newDomain !== '') {
+                if (newDomain != '') {
                   this.service.updateDomain(
                       vhost, (newDomain as string),
-                      (_res) => updateOrRemoveSuccess(_res),
+                      (res) => updateOrRemoveSuccess(res),
                       (msg) => reject(msg));
                 } else {
                   this.service.removeDomain(
-                      vhost, newDomain, (_res) => updateOrRemoveSuccess(_res),
+                      vhost, newDomain, (res) => updateOrRemoveSuccess(res),
                       (msg) => reject(msg));
                 }
               } else {
                 resolve({
                   file: this.model.file.getFileInfo(),
-                  publicationPath: vhost.publicationPath,
-                  provider,
+                  publicationPath: vhost['publicationPath'],
+                  provider: provider,
                 });
               }
             } else {
@@ -294,19 +296,20 @@ export class PublishDialog {
 
   publish(options: PublicationOptions): Promise<string> {
     return new Promise<string>((resolve, reject) => {
-      const file = options.file;
-      const publicationPath = options.publicationPath;
-      const provider = options.provider;
+      const file = options['file'];
+      const publicationPath = options['publicationPath'];
+      const provider = options['provider'];
       let timer = -1;
       SilexNotification.alert('Publication', '<strong>I am about to publish your site. This may take several minutes.</strong>',
         () => {
-          if (timer > 0) {
+          if(timer > 0) {
             clearInterval(timer);
           }
         },
         'Close');
       timer = -1;
       this.loading(true);
+      console.info('Publish', options);
       this.service.publish(options, () => {
         this.loading(false);
         // setTimeout(() => {
@@ -318,13 +321,13 @@ export class PublishDialog {
         timer = window.setInterval(() => {
           this.service.publishState(
             (json) => {
-              let msg = `<strong>${json.message}</strong>`;
-              if (json.stop === true) {
+              let msg = `<strong>${json['message']}</strong>`;
+              if (json['stop'] === true) {
                 clearInterval(timer);
                 const websiteUrl = this.model.head.getWebsiteUrl() || publicationPath.url + '/index.html';
                 msg += `
                   <p>Please visit <a target="_blanck" href="${websiteUrl}">your published website here</a>.
-                  ${provider && provider.afterPublishMessage ? provider.afterPublishMessage : ''}</p>
+                  ${provider && provider['afterPublishMessage'] ? provider['afterPublishMessage'] : ''}</p>
                 `;
                 resolve(msg);
               } else {
@@ -334,7 +337,7 @@ export class PublishDialog {
             (msg) => {
               clearInterval(timer);
               reject(msg);
-            },
+            }
           );
         }, 1000);
       }, (msg) => reject(msg));

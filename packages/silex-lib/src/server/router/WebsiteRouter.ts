@@ -9,16 +9,18 @@
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
 
-import CloudExplorer from 'cloud-explorer';
-import * as express from 'express';
-import * as fs from 'fs';
-import { JSDOM } from 'jsdom';
-import * as nodeModules from 'node_modules-path';
-import * as Path from 'path';
-import { URL } from 'url';
+const Path = require('path');
+const express = require('express');
+const fs = require('fs');
+const { JSDOM } = require('jsdom');
+const { URL } = require('url');
+const CloudExplorer = require('cloud-explorer');
+
 import { Constants } from '../../Constants';
 import BackwardCompat from '../utils/BackwardCompat';
 import DomTools from '../utils/DomTools';
+
+import * as nodeModules from 'node_modules-path';
 
 export default function({ port, rootUrl }, unifile) {
 
@@ -41,12 +43,12 @@ export default function({ port, rootUrl }, unifile) {
         res.send({success: false, error: 'Error while trying to get the json representation of the folder ' + req.params.folder + ' - folder does not exist'});
         return;
     }
-    fs.readdir(templateFolder, (err, result) => {
+    fs.readdir(templateFolder, function(err, result) {
       if (err) {
         console.error('Error while trying to get the json representation of the folder ', templateFolder, err);
         res.send({success: false, error: 'Error while trying to get the json representation of the folder ' + req.params.folder + ' - ' + err});
       } else {
-        const templateList = result.filter((entry) => {
+        let templateList = result.filter(function(entry) {
           return fs.statSync(Path.join(templateFolder, entry)).isDirectory();
         });
 
@@ -151,7 +153,7 @@ export default function({ port, rootUrl }, unifile) {
     dom.window.document.body.classList.add(Constants.WEBSITE_CONTEXT_EDITOR_CLASS_NAME);
     deactivateScripts(dom);
     // add /css/editable.css
-    const tag = dom.window.document.createElement('link');
+    let tag = dom.window.document.createElement('link');
     tag.rel = 'stylesheet';
     tag.href = rootUrl + '/css/editable.css';
     tag.classList.add(Constants.SILEX_TEMP_TAGS_CSS_CLASS);
@@ -179,13 +181,11 @@ export default function({ port, rootUrl }, unifile) {
       return path;
     });
     // remove temp tags
-    Array.from(dom.window.document.querySelectorAll(`
-      .${Constants.SILEX_TEMP_TAGS_CSS_CLASS},
-      #${Constants.SILEX_CURRENT_PAGE_ID},
-      .${ Constants.RISZE_HANDLE_CSS_CLASS }`))
-    .forEach((el: HTMLElement) => {
+    const toBeRemoved = dom.window.document.querySelectorAll(`.${Constants.SILEX_TEMP_TAGS_CSS_CLASS}, #${Constants.SILEX_CURRENT_PAGE_ID}, .${ Constants.RISZE_HANDLE_CSS_CLASS }`);
+    for (let idx = 0; idx < toBeRemoved.length; idx++) {
+      const el = toBeRemoved[idx];
       el.remove();
-    });
+    }
     // remove useless css classes
     Constants.SILEX_TEMP_CLASS_NAMES.forEach((className) => {
       Array.from(dom.window.document.getElementsByClassName(className))
@@ -198,14 +198,15 @@ export default function({ port, rootUrl }, unifile) {
   }
 
   function deactivateScripts(dom) {
-    Array.from(dom.window.document.getElementsByTagName('script'))
-    .forEach((el: HTMLElement) => {
+    const scripts = dom.window.document.getElementsByTagName('script');
+    for (let idx = 0; idx < scripts.length; idx++) {
+      const el = scripts[idx];
       // do not execute scripts, unless they are silex's static scripts
       // and leave it alone if it has a type different from 'text/javascript'
       if (!el.hasAttribute('data-silex-static') && (!el.hasAttribute('type') || el.getAttribute('type') === 'text/javascript')) {
         el.setAttribute('type', 'text/notjavascript');
       }
-    });
+    }
   }
 
   function restoreIFrames(dom) {
