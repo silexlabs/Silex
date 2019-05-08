@@ -175,7 +175,7 @@ export class Property {
    */
   loadProperties(doc) {
     const styleTag = doc.querySelector('.' + Property.JSON_STYLE_TAG_CLASS_NAME);
-    if (styleTag !== null) {
+    if (styleTag != null ) {
       const styles = (JSON.parse(styleTag.innerHTML)[0] as any);
       this.fonts = styles.fonts || [];
       this.stylesObj = styles.desktop || {};
@@ -234,8 +234,7 @@ export class Property {
    * if opt_prodotypeData is null this data set will removed
    */
   setComponentData(id: SilexId, opt_prodotypeData?: ComponentData) {
-    this.setProdotypeData(
-        id, ProdotypeTypes.COMPONENT, opt_prodotypeData);
+    this.setProdotypeData(id, ProdotypeTypes.COMPONENT, opt_prodotypeData);
   }
 
   /**
@@ -243,8 +242,7 @@ export class Property {
    * if opt_prodotypeData is null this data set will removed
    */
   setStyleData(id: SilexId, opt_prodotypeData?: StyleData) {
-    this.setProdotypeData(
-        id, ProdotypeTypes.STYLE, opt_prodotypeData);
+    this.setProdotypeData(id, ProdotypeTypes.STYLE, opt_prodotypeData);
   }
 
   /**
@@ -252,10 +250,7 @@ export class Property {
    * @return a clone of the data object
    */
   getComponentData(id: SilexId): ComponentData {
-    return (
-        this.getProdotypeData(id, ProdotypeTypes.COMPONENT) as
-            ComponentData |
-        null);
+    return (this.getProdotypeData(id, ProdotypeTypes.COMPONENT) as ComponentData |null);
   }
 
   /**
@@ -263,29 +258,23 @@ export class Property {
    * @return a clone of the data object
    */
   getStyleData(id: StyleName): StyleData {
-    return (
-        this.getProdotypeData(id, ProdotypeTypes.STYLE) as
-            StyleData |
-        null);
+    return (this.getProdotypeData(id, ProdotypeTypes.STYLE) as StyleData |null);
   }
 
   /**
    * get / set the data associated with an element
    * if opt_componentData is null this will remove the rule
    */
-  setElementComponentData(
-      element: HTMLElement, opt_componentData?: ComponentData) {
+  setElementComponentData(element: HTMLElement, opt_componentData?: ComponentData) {
     // call private generic method
-    this.setElementData(
-        element, ProdotypeTypes.COMPONENT, opt_componentData);
+    this.setElementData(  element, ProdotypeTypes.COMPONENT, opt_componentData);
   }
 
   /**
    * get / set the data associated with an element
    * if opt_componentData is null this will remove the rule
    */
-  setElementStyleData(
-      element: HTMLElement, opt_componentData?: StyleData) {
+  setElementStyleData(element: HTMLElement, opt_componentData?: StyleData) {
     // call private generic method
     this.setElementData(
         element, ProdotypeTypes.STYLE, opt_componentData);
@@ -321,11 +310,10 @@ export class Property {
    * this creates or update a rule in the style tag with id
    * INLINE_STYLE_TAG_CLASS_NAME if style is null this will remove the rule
    */
-  setStyle(element: HTMLElement, styleObj: any, opt_isMobile?: boolean) {
+  setStyle(element: HTMLElement, styleObj: any, isMobile = this.view.workspace.getMobileEditor()) {
     const deleteStyle = !styleObj;
     const style = styleObj || {};
     const elementId = (this.getSilexId(element) as SilexId);
-    const isMobile = opt_isMobile !== null ? opt_isMobile : this.view.workspace.getMobileEditor();
 
     if (!deleteStyle) {
       // styles of sections are special
@@ -392,7 +380,7 @@ export class Property {
    */
   getStyle(element: HTMLElement, opt_isMobile?: boolean): CssRule {
     const elementId = (this.getSilexId(element) as SilexId);
-    const isMobile = opt_isMobile !== null ? opt_isMobile :  this.view.workspace.getMobileEditor();
+    const isMobile = opt_isMobile != null  ? opt_isMobile :  this.view.workspace.getMobileEditor();
     const targetObj = (isMobile ? this.mobileStylesObj : this.stylesObj as SilexData);
     const style = (targetObj[elementId] as CssRule);
     if (!!style) {
@@ -403,8 +391,7 @@ export class Property {
       // the min-height of the section is stored on its content container
       if (this.model.element.isSection(element)) {
         // min-height of sections is the min-height of section content
-        const contentElement =
-            (this.model.element.getContentNode(element) as HTMLElement);
+        const contentElement = (this.model.element.getContentNode(element) as HTMLElement);
         const contentStyle = this.getStyle(contentElement, isMobile);
         if (contentStyle) {
           clone['min-height'] = contentStyle['min-height'];
@@ -426,11 +413,10 @@ export class Property {
     // find the rule for the given element
     for (let idx = 0; idx < this.styleSheet.cssRules.length; idx++) {
       const cssRule = this.styleSheet.cssRules[idx] as any; // FIXME: should be CSSRule ?
-
       // we use the class name because elements have their ID as a css class too
-      if (isMobile === false && cssRule.selectorText === '.' + elementId ||
-          cssRule.media && cssRule.cssRules && cssRule.cssRules[0] &&
-              cssRule.cssRules[0].selectorText === '.' + elementId) {
+      if ((isMobile === false && cssRule.selectorText === '.' + elementId) ||
+          (cssRule.media && cssRule.cssRules && cssRule.cssRules[0] &&
+              cssRule.cssRules[0].selectorText === '.' + elementId)) {
         return {
           rule: cssRule,
           parent: this.styleSheet,
@@ -517,7 +503,7 @@ export class Property {
       // in mobile editor, if a mobile style is set use it
       if (this.view.workspace.getMobileEditor()) {
         const mobileStyle = this.getStyle(element, true);
-        if (mobileStyle !== null) {
+        if (mobileStyle != null ) {
           if (!!mobileStyle.top) {
             elementStyle.top = mobileStyle.top;
           }

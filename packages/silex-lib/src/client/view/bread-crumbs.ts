@@ -110,7 +110,6 @@ export class BreadCrumbs {
   addCrumb(ancestor: HTMLElement) {
     const crumb = document.createElement('DIV');
     let cssClasses = this.model.element.getClassName(ancestor);
-    console.log('cssClasses', cssClasses)
     if (cssClasses !== '') {
       cssClasses = '.' + cssClasses.split(' ').join('.');
     }

@@ -139,7 +139,7 @@ export default class DomTools {
    */
   static getProperties(doc) {
     const styleTag = doc.querySelector('.' + Constants.JSON_STYLE_TAG_CLASS_NAME);
-    if (styleTag !== null) {
+    if (styleTag != null ) {
       return JSON.parse(styleTag.innerHTML)[0];
     }
     // no JSON styles array found in the dom
@@ -153,7 +153,7 @@ export default class DomTools {
    */
   static setProperties(doc, value) {
     const styleTag = doc.querySelector('.' + Constants.JSON_STYLE_TAG_CLASS_NAME);
-    if (styleTag !== null) {
+    if (styleTag != null ) {
       styleTag.innerHTML = JSON.stringify([value]);
     } else {
       console.error('Error: no JSON styles array found in the dom');

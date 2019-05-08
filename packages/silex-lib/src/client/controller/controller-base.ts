@@ -507,7 +507,7 @@ export class ControllerBase {
    */
   checkElementVisibility(element: HTMLElement) {
     const parentPage = this.model.page.getParentPage(element);
-    if (parentPage !== null) {
+    if (parentPage != null ) {
       // get all the pages
       const pages = this.model.page.getPagesForElement(element);
 
@@ -597,7 +597,7 @@ export class ControllerBase {
       this.view.fileExplorer
           .saveAs('editable.html', FileExplorer.HTML_EXTENSIONS)
           .then((fileInfo) => {
-            if (fileInfo !== null) {
+            if (fileInfo != null ) {
               this.doSave((fileInfo as FileInfo), opt_cbk, opt_errorCbk);
             } else {
               // user aborted save as

@@ -304,7 +304,7 @@ export class StyleEditorPane extends PaneBase {
       return option;
     })
     .forEach((option) => this.styleCombo.appendChild(option));
-    if (styleName !== null) {
+    if (styleName != null ) {
       const styleNameNotNull = (styleName as StyleName);
 
       // set the new selection

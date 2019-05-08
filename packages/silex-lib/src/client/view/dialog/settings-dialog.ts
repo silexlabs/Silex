@@ -270,7 +270,7 @@ export class SettingsDialog {
    * @param fileInfo   the publication path
    */
   setPublicationPath(fileInfo?: FileInfo) {
-    if (fileInfo !== null) {
+    if (fileInfo != null ) {
       // set input tags the values
       this.setInputValue(
           '.publish-pane .input-publication-service', fileInfo.service);
@@ -301,7 +301,7 @@ export class SettingsDialog {
   getPublicationPath(): FileInfo {
     const service = (this.element.querySelector('.publish-pane .input-publication-service') as HTMLInputElement).value;
     const path = (this.element.querySelector('.publish-pane .input-publication-path') as HTMLInputElement).value;
-    if (this.publicationPath !== null && service && path && service !== '' && path !== '') {
+    if (this.publicationPath != null  && service && path && service !== '' && path !== '') {
       this.publicationPath.service = service;
       this.publicationPath.path = path;
     }
