@@ -21,6 +21,7 @@ import {Hosting, Provider, PublicationOptions, VHost} from '../types';
  * the Silex SilexTasks singleton
  * based on http://www.inkfilepicker.com/
  * load and save data to and from the cloud storage services
+ * FIXME: use types common to front and back end
  */
 export class SilexTasks {
 
@@ -76,7 +77,7 @@ export class SilexTasks {
    * get the domain name for a vhost
    * @param cbk to receive the json response
    */
-  domain(vhost: VHost, cbk: (p1?: {domain: string}) => any, opt_errCbk?: (p1: string) => any) {
+  domain(vhost: VHost, cbk: (p1?: {domain: string, url: string, status: string}) => any, opt_errCbk?: (p1: string) => any) {
     this.callServer(vhost.domainUrl, '', 'GET', cbk, opt_errCbk);
   }
 
@@ -106,7 +107,7 @@ export class SilexTasks {
       let message: string = oReq.responseText;
       let json: any = null;
       try {
-        json = (JSON.parse(oReq.responseText) as Object);
+        json = (JSON.parse(oReq.responseText));
         message = (json.message as string);
       } catch (e) {
       }

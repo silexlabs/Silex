@@ -78,14 +78,15 @@ export class Page {
    * @return name of the page currently opened
    */
   getCurrentPage(): string {
-    if (!this.model.file.getContentWindow().jQuery) {
+    // tslint:disable:no-string-literal
+    if (!this.model.file.getContentWindow()['jQuery']) {
       throw new Error('JQuery not loaded in the opened website');
     }
     const bodyElement = this.model.body.getBodyElement();
     let pageName = null;
     try {
-      if (this.model.file.getContentWindow().jQuery(bodyElement).pageable) {
-        pageName = this.model.file.getContentWindow().jQuery(bodyElement).pageable('option', 'currentPage');
+      if (this.model.file.getContentWindow()['jQuery'](bodyElement).pageable) {
+        pageName = this.model.file.getContentWindow()['jQuery'](bodyElement).pageable('option', 'currentPage');
       }
     } catch (e) {
       // there was a problem in the pageable plugin, return the first page
@@ -118,13 +119,14 @@ export class Page {
    * @param pageName   name of the page to open
    */
   setCurrentPage(pageName: string) {
-    const bodyElement = this.model.body.getBodyElement();
-    if (this.model.file.getContentWindow().jQuery(bodyElement).pageable) {
-      this.model.file.getContentWindow().jQuery(bodyElement).pageable({
+    // tslint:disable:no-string-literal
+      const bodyElement = this.model.body.getBodyElement();
+      if (this.model.file.getContentWindow()['jQuery'](bodyElement).pageable) {
+      this.model.file.getContentWindow()['jQuery'](bodyElement).pageable({
         currentPage: pageName,
       });
     }
-    this.refreshView();
+      this.refreshView();
   }
 
   /**
@@ -219,16 +221,14 @@ export class Page {
     }
     const elements = this.model.body.getBodyElement().querySelectorAll(`a[data-silex-type="${Constants.TYPE_PAGE}"]`);
     let prevEl = null;
-    for (let idx = 0; idx < elements.length; idx++) {
-      const el = elements[idx];
-      if (prevEl &&
-          (el.id === pageName && direction === 'up' ||
-           prevEl.id === pageName && direction === 'down')) {
+    for (const el of elements) {
+      if (prevEl
+        && (el.id === pageName && direction === 'up'
+        || prevEl.id === pageName && direction === 'down')) {
         el.parentElement.insertBefore(el, prevEl);
         const pages = this.getPages();
         const currentPage = this.getCurrentPage();
-        this.view.pageTool.redraw(
-            this.model.body.getSelection(), pages, currentPage);
+        this.view.pageTool.redraw(this.model.body.getSelection(), pages, currentPage);
         return;
       }
       prevEl = el;

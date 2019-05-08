@@ -29,10 +29,9 @@ export class Style {
    * convert style object to object
    * with only the keys which are set
    */
-  static styleToObject(styleObj: CSSStyleDeclaration): Object {
+  static styleToObject(styleObj: CSSStyleDeclaration): object {
     const res = {};
-    for (let idx = 0; idx < styleObj.length; idx++) {
-      const styleName = styleObj[idx];
+    for (const styleName of styleObj) {
       res[styleName] = styleObj[styleName];
     }
     return res;
@@ -41,8 +40,7 @@ export class Style {
   /**
    * convert style object to string
    */
-  static styleToString(
-      style: string|Object|CSSStyleDeclaration, opt_tab?: string): string {
+  static styleToString(style: string|object|CSSStyleDeclaration, opt_tab?: string): string {
     if (typeof style === 'string') {
       return style;
     }

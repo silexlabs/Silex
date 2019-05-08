@@ -25,6 +25,8 @@ import {ModalDialog} from '../ModalDialog';
  *
  */
 export class AceEditorBase {
+
+  static isDocked: boolean;
   /**
    * instance of ace editor
    */
@@ -37,8 +39,6 @@ export class AceEditorBase {
 
   // make this a dialog
   modalDialog: any;
-
-  static isDocked: boolean;
 
   /**
    * @param element   container to render the UI
@@ -53,9 +53,9 @@ export class AceEditorBase {
     this.ace = ace.edit(element.querySelector('.ace-editor') as HTMLElement);
     this.ace.setTheme('ace/theme/idle_fingers');
     this.ace.setOptions({
-      'enableBasicAutocompletion': true,
-      'enableSnippets': true,
-      'enableLiveAutocompletion': true
+      enableBasicAutocompletion: true,
+      enableSnippets: true,
+      enableLiveAutocompletion: true,
     });
 
     // this.ace.setTheme("ace/theme/monokai");
@@ -63,7 +63,7 @@ export class AceEditorBase {
     // for some reason, this.ace.getSession().on is undefined,
     //    closure renames it despite the fact that that it is declared in the
     //    externs.js file
-    this.ace.getSession()['on']('change', (event) => {
+    this.ace.getSession().on('change', (event) => {
       if (this.iAmSettingValue === false && this.modalDialog.isOpen) {
         setTimeout(() => {
           this.contentChanged();
@@ -72,7 +72,7 @@ export class AceEditorBase {
     });
 
     // dock mode
-    let dockBtn = element.querySelector('.dock-btn');
+    const dockBtn = element.querySelector('.dock-btn');
     if (dockBtn) {
       dockBtn.addEventListener('click', () => {
         AceEditorBase.isDocked = !AceEditorBase.isDocked;
@@ -82,11 +82,11 @@ export class AceEditorBase {
     }
     this.modalDialog = new ModalDialog({
       name: 'Ace editor',
-      element: element,
+      element,
       onOpen: (args) => {
         this.ace.focus();
       },
-      onClose: () => {}
+      onClose: () => {},
     });
   }
 
@@ -123,6 +123,6 @@ export class AceEditorBase {
    * the content has changed, notify the controler
    */
   contentChanged() {
-    throw 'to be overridden in sub classes';
+    throw new Error('to be overridden in sub classes');
   }
 }

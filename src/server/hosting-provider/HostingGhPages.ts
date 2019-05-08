@@ -9,8 +9,8 @@
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
 
-const request = require('request');
-const assert = require('assert');
+import * as assert from 'assert';
+import * as request from 'request';
 
 //////////////////////////////
 // Utils
@@ -65,9 +65,7 @@ export default function HostingGhPages(unifile) {
 // Publication "hooks"
 //////////////////////////////
 
-HostingGhPages.prototype.getDefaultPageFileName = function() {
-  return 'index.html';
-};
+HostingGhPages.prototype.getDefaultPageFileName = () => 'index.html';
 
 HostingGhPages.prototype.finalizePublication = function(from, to, session, onStatus) {
   return setTimeoutPromise(2000)
@@ -157,7 +155,7 @@ HostingGhPages.prototype.getVhosts = async function(session) {
   });
 };
 
-HostingGhPages.prototype.getVhostData = async function(session, vhostName) {
+HostingGhPages.prototype.getVhostData = async (session, vhostName) => {
   const owner = session.github.account.login;
   const path = `/repos/${owner}/${ vhostName }/pages`;
   return callServer(path, 'GET', session.github.token)
@@ -172,7 +170,7 @@ HostingGhPages.prototype.getVhostData = async function(session, vhostName) {
 
 HostingGhPages.prototype.setVhostData = async function(session, vhostName, data) {
   // TODO: use https://developer.github.com/v3/repos/pages/#update-information-about-a-pages-site
-  if (data && data.domain && data.domain != '') {
+  if (data && data.domain && data.domain !== '') {
     return this.unifile.writeFile(session, 'github', `/${ vhostName }/gh-pages/CNAME`, data.domain)
     .then(() => setTimeoutPromise(5000))
     .then(() => this.getVhostData(session, vhostName));
@@ -180,7 +178,7 @@ HostingGhPages.prototype.setVhostData = async function(session, vhostName, data)
     // TODO: use https://developer.github.com/v3/repos/pages/#update-information-about-a-pages-site
     return this.unifile.unlink(session, 'github', `/${ vhostName }/gh-pages/CNAME`)
     .catch((err) => {
-      if (err.code != 'ENOENT') {
+      if (err.code !== 'ENOENT') {
         console.error('Github pages error', err);
         return Promise.reject(err);
       }

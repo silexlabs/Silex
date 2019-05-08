@@ -23,7 +23,7 @@ import {Body} from '../model/body';
  */
 export class ModalDialog {
 
-  static dialogs: any = {};
+  static dialogs: Map<string, ModalDialog> = new Map();
   static currentDialog: ModalDialog;
   static HIDE_DIALOG_CLASS_NAME = 'silex-hide-dialog';
   static MODAL_DIALOG_CLASS_NAME = 'silex-modal-dialog';
@@ -31,9 +31,9 @@ export class ModalDialog {
   /**
    * open a dialog by name
    */
-  static open(name: string, args: Object = null) {
-    if (ModalDialog.dialogs && ModalDialog.dialogs[name]) {
-      ModalDialog.dialogs[name].open(args);
+  static open(name: string, args: any = null) {
+    if (ModalDialog.dialogs.has(name)) {
+      ModalDialog.dialogs.get(name).open(args);
     } else {
       console.error('could not open dialog', name, ModalDialog.dialogs);
     }
@@ -49,13 +49,13 @@ export class ModalDialog {
       console.error('could not close dialog, there is no dialog opened');
     }
   }
-  name: any;
-  element: any;
-  onOpen: any;
-  onClose: any;
+  name: string;
+  element: HTMLElement;
+  onOpen: (p1?: any) => any;
+  onClose: () => any;
 
   // set the flag
-  isOpen: any = false;
+  isOpen = false;
 
   constructor(options: {
     name: string,
@@ -66,7 +66,7 @@ export class ModalDialog {
     // check and store options
     if (options.name) {
       this.name = options.name;
-      ModalDialog.dialogs[this.name] = this;
+      ModalDialog.dialogs.set(this.name, this);
     }
     if (options.element) {
       this.element = options.element;
@@ -89,7 +89,7 @@ export class ModalDialog {
     this.element.classList.add(ModalDialog.HIDE_DIALOG_CLASS_NAME);
 
     // close button
-    const closeBtn = this.element.querySelector('.close-btn');
+    const closeBtn = this.element.querySelector('.close-btn') as HTMLElement;
     if (closeBtn) {
       closeBtn.onclick = (e) => this.close();
     }
@@ -108,7 +108,7 @@ export class ModalDialog {
    * open the dialog
    * @param args optional args to pass to the dialog
    */
-  open(args?: Object) {
+  open(args?: any) {
     if (!this.isOpen) {
       // set the flag
       this.isOpen = true;

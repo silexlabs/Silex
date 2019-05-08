@@ -1,55 +1,54 @@
-.silex-stage-iframe {
-  width: 100%;
-  height: 100%;
+.silex - stage - iframe; {
+  width: 100 % ;
+  height: 100 % ;
   position: absolute;
-  z-index: 0;
+  z - index; : 0;
   border: none;
 }
 
-.silex-stage {
-  background-color: @silexdarkgrey;
+.silex - stage; {
+  background - color; : @silexdarkgrey
   position: absolute;
-  top: @contextMenuHeight;
-  bottom: @breadCrumbsHeight;
-  left: @menuWidth;
-  right: @propertiesToolWidth;
+  top: @contextMenuHeight
+  bottom: @breadCrumbsHeight
+  left: @menuWidth
+  right: @propertiesToolWidth
 }
 
-
-.silex-stage iframe{
-  transition: opacity 0.1s linear;
+.silex - stage; iframe; {
+  transition: opacity; 0.1; s; linear;
 }
 
-.loading-website-light{
+.loading - website - light; {
   // transition: none;
   opacity: .57;
-  pointer-events: none;
+  pointer - events; : none;
 }
 
-.loading-website{
+.loading - website; {
   // transition: none;
   opacity: .001;
-  pointer-events: none;
+  pointer - events; : none;
 }
 
-.silex-stage {
-  background-image: url(../assets/image-loader.gif);
-  background-repeat: no-repeat;
-  background-position: 50%;
+.silex - stage; {
+  background - image; : url(../assets/image - loader.gif);
+  background - repeat; : no - repeat;
+  background - position; : 50 % ;
 }
 
-.loading-website-light{
+.loading - website - light; {
 }
 
-.mobile-mode {
-  .silex-stage-iframe {
-    max-width: @mobileStageWidth;
+.mobile - mode; {
+  .silex - stage - iframe; {
+    max - width; : @mobileStageWidth
     position: initial;
   }
-  .silex-stage {
-    text-align: center;
-    background-image: url('../assets/stripe.png');
-    background-color: @silexlightgrey;
+  .silex - stage; {
+    text - align; : center;
+    background - image; : url('../assets/stripe.png');
+    background - color; : @silexlightgrey
   }
 }
 
@@ -57,33 +56,33 @@
 * Right click button style
 **/
 
-.rightClick {
+.rightClick; {
     position: absolute;
-    width: 150px;
-    text-align: center;
-    background-color: @silexdarkgrey;
-    color: #FFF;
-    width: 200px;
-    height: 46px;
-    border-radius: .15em;
-    border: 1px solid #444;
-    z-index: 11111;
-    top:20000px;
-    left:20000px;
+    width: 150; px;
+    text - align; : center;
+    background - color; : @silexdarkgrey
+    color: ; #FFF;
+    width: 200; px;
+    height: 46; px;
+    border - radius; : .15e; m;
+    border: 1; px; solid; #444;
+    z - index; : 11111;
+    top: 20000; px;
+    left: 20000; px;
 }
-.parentImgRightClick {
+.parentImgRightClick; {
     display: inline;
 }
-.imgRightClick {
-    width: 70px;
-    height: 38px;
-    margin-top: 5px;
-    float:left;
+.imgRightClick; {
+    width: 70; px;
+    height: 38; px;
+    margin - top; : 5; px;
+    float: left;
 }
-.textRightClick {
+.textRightClick; {
     display: inline;
-    color: @silexlightergrey;
+    color: @silexlightergrey
     position: relative;
-    top: 25%;
-    font-size: 13px;
+    top: 25 % ;
+    font - size; : 13; px;
 }

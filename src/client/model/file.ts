@@ -144,8 +144,8 @@ export class File {
     // assets
     this.contentDocument_ = this.iFrameElement_.contentDocument;
     this.contentWindow_ = this.iFrameElement_.contentWindow;
-    if (this.contentDocument_.body === null || this.contentWindow_ === null ||
-        this.contentWindow_.$ === null) {
+    // tslint:disable:no-string-literal
+    if (this.contentDocument_.body === null || this.contentWindow_ === null || this.contentWindow_['jQuery'] === null) {
       setTimeout(() => {
         this.contentChanged(opt_cbk);
       }, 100);
@@ -263,7 +263,7 @@ export class File {
    */
   openFromUrl(
       url: string, opt_cbk: ((p1: string) => any) = null,
-      opt_errCbk: ((p1: Object, p2: string) => any) = null) {
+      opt_errCbk: ((p1: any, p2: string) => any) = null) {
     this.isTemplate = true;
     CloudStorage.getInstance().loadLocal(
         url, (rawHtml, userHead) => {
@@ -283,7 +283,7 @@ export class File {
    */
   saveAs(
       fileInfo: FileInfo, rawHtml: string, cbk: () => any,
-      opt_errCbk?: ((p1: Object, p2: string) => any)) {
+      opt_errCbk?: ((p1: any, p2: string) => any)) {
     // save the data
     this.fileInfo = fileInfo;
     this.addToLatestFiles(this.fileInfo);
@@ -296,7 +296,7 @@ export class File {
    */
   save(
       rawHtml: string, cbk: () => any,
-      opt_errCbk?: ((p1: Object, p2: string) => any)) {
+      opt_errCbk?: ((p1: any, p2: string) => any)) {
     if (this.fileInfo == null) {
       throw new Error('Can not save, fileInfo is null');
     }
@@ -316,7 +316,7 @@ export class File {
    */
   open(
       fileInfo: FileInfo, cbk: (p1: string) => any,
-      opt_errCbk?: ((p1: Object, p2: string) => any)) {
+      opt_errCbk?: ((p1: any, p2: string) => any)) {
     this.isTemplate = false;
     CloudStorage.getInstance().read(
       fileInfo, (rawHtml, userHead) => {

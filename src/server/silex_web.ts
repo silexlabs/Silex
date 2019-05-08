@@ -13,8 +13,9 @@
 
 'use strict';
 
-import SilexServer from './SilexServer';
+import 'source-map-support/register';
 import { Config } from './ServerConfig';
+import SilexServer from './SilexServer';
 
 const config = new Config();
 // here you can change config,
@@ -26,6 +27,6 @@ const silex = new SilexServer(config);
 // silex.publishRouter.addHostingProvider(...)
 // @see https://github.com/silexlabs/Silex/wiki/Silex-Developer-Guide#add-unifile-services-eg-for-hosting-companies
 
-silex.start(function() {
+silex.start(() => {
   // server started
 });

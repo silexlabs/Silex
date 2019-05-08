@@ -1,5 +1,5 @@
-const Os = require('os');
-const CloudExplorer = require('cloud-explorer');
+import * as CloudExplorer from 'cloud-explorer';
+import * as Os from 'os';
 import {CeOptions} from '../ServerConfig';
 
 export default function(ceOptions: CeOptions) {

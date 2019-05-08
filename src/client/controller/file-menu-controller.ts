@@ -33,7 +33,7 @@ export class FileMenuController extends ControllerBase {
 
   loadTemplate(
       url, opt_cbk?: (() => any),
-      opt_errorCbk?: ((p1: Object) => any)) {
+      opt_errorCbk?: ((p1: any) => any)) {
     this.model.file.openFromUrl(
         url, (rawHtml) => this.onOpened(opt_cbk, rawHtml),
         (err, msg) => this.onOpenError(err, msg, opt_errorCbk));
@@ -43,7 +43,7 @@ export class FileMenuController extends ControllerBase {
    * load blank template
    */
   loadBlank(
-      opt_cbk?: (() => any), opt_errorCbk?: ((p1: Object) => any)) {
+      opt_cbk?: (() => any), opt_errorCbk?: ((p1: any) => any)) {
     const blankUrl =
         '/libs/templates/silex-blank-templates/blank/editable.html';
     this.loadTemplate(blankUrl, opt_cbk, opt_errorCbk);
@@ -62,9 +62,9 @@ export class FileMenuController extends ControllerBase {
             SilexNotification.alert('Open recent file', `
               I am trying to connect you to ${fileInfo.service} again,
               please accept the connection in the popup I have just opened then <strong>please wait</strong>.
-            `,
-                () => {});
-            ce.auth(fileInfo.service).then((res) => {
+            `, () => {});
+            // tslint:disable:no-string-literal
+            ce['auth'](fileInfo.service).then((res) => {
               SilexNotification.close();
               if (ok) {
                 this.openRecent(fileInfo, opt_cbk);
@@ -78,7 +78,7 @@ export class FileMenuController extends ControllerBase {
    * open a file
    */
   newFile(
-      opt_cbk?: (() => any), opt_errorCbk?: ((p1: Object) => any)) {
+      opt_cbk?: (() => any), opt_errorCbk?: ((p1: any) => any)) {
     this.tracker.trackAction('controller-events', 'request', 'file.new', 0);
     this.view.dashboard.openDialog({
       openFileInfo: (fileInfo) => {
@@ -133,7 +133,7 @@ export class FileMenuController extends ControllerBase {
     }
   }
 
-  onOpenError(err: Object, msg: string, opt_errorCbk?: ((p1: Object) => any)) {
+  onOpenError(err: any, msg: string, opt_errorCbk?: ((p1: any) => any)) {
     console.error('opening template error', err);
     SilexNotification.alert('Open file', 'An error occured. ' + msg, () => {});
     if (opt_errorCbk) {
@@ -279,7 +279,7 @@ export class FileMenuController extends ControllerBase {
     // the file must be saved somewhere because all URLs are made relative
     if (!folder) {
       this.view.settingsDialog.open(
-          function() {},
+          () => {},
           // here the panel was closed
           'publish-pane');
       this.view.workspace.redraw(this.view);

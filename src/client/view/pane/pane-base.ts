@@ -16,16 +16,15 @@
  *
  */
 
-import { Controller, Model } from '../../types';
 import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
-
+import { Controller, Model } from '../../types';
 
 /**
  * base class for all UI panes of the view.pane package
  *
  * @param element   container to render the UI
  * @param model  model class which holds
-  * the model instances - views use it for read
+ * the model instances - views use it for read
  * operation only
  * @param controller  structure which holds
  * the controller instances
@@ -44,46 +43,6 @@ export class PaneBase {
   protected baseUrl = null;
 
   constructor(protected element: HTMLElement, protected model: Model, protected controller: Controller) {}
-
-  /**
-   * Init a combo box or
-   */
-  private initEventTarget(selector: string, eventName: string, onChange: (e: Event) => void): HTMLInputElement {
-    // get a reference to the element
-    const eventTarget = this.element.querySelector(selector) as HTMLInputElement;
-
-    // attach event
-    eventTarget.addEventListener(eventName, (e: Event) => {
-      // let redraw update the value
-      e.preventDefault();
-      e.stopPropagation();
-      // call the provided callback
-      onChange(e);
-    });
-
-    return eventTarget;
-  }
-
-  /**
-   * Init a combo box or
-   */
-  protected initInput(selector: string, onChange: (e: Event) => void): HTMLInputElement {
-    return this.initEventTarget(selector, 'input', onChange);
-  }
-
-  /**
-   * Init a combo box or a checbox
-   */
-  protected initComboBox(selector: string, onChange: (e: Event) => void): HTMLSelectElement {
-    return this.initEventTarget(selector, 'change', onChange) as any as HTMLSelectElement;
-  }
-
-  /**
-   * Init a combo box or a checbox
-   */
-  protected initCheckBox(selector: string, onChange: (e: Event) => void): HTMLInputElement {
-    return this.initEventTarget(selector, 'change', onChange);
-  }
 
   /**
    * notify the controller that the style changed
@@ -127,8 +86,8 @@ export class PaneBase {
     let value = null;
     let hasCommonValue: boolean = true;
     let isFirstValue = true;
-    states.forEach(state => {
-      let elementValue = getPropertyFunction(state);
+    states.forEach((state) => {
+      const elementValue = getPropertyFunction(state);
       if (isFirstValue) {
         isFirstValue = false;
 
@@ -145,5 +104,45 @@ export class PaneBase {
       value = null;
     }
     return value;
+  }
+
+  /**
+   * Init a combo box or
+   */
+  protected initInput(selector: string, onChange: (e: Event) => void): HTMLInputElement {
+    return this.initEventTarget(selector, 'input', onChange);
+  }
+
+  /**
+   * Init a combo box or a checbox
+   */
+  protected initComboBox(selector: string, onChange: (e: Event) => void): HTMLSelectElement {
+    return this.initEventTarget(selector, 'change', onChange) as any as HTMLSelectElement;
+  }
+
+  /**
+   * Init a combo box or a checbox
+   */
+  protected initCheckBox(selector: string, onChange: (e: Event) => void): HTMLInputElement {
+    return this.initEventTarget(selector, 'change', onChange);
+  }
+
+  /**
+   * Init a combo box or
+   */
+  private initEventTarget(selector: string, eventName: string, onChange: (e: Event) => void): HTMLInputElement {
+    // get a reference to the element
+    const eventTarget = this.element.querySelector(selector) as HTMLInputElement;
+
+    // attach event
+    eventTarget.addEventListener(eventName, (e: Event) => {
+      // let redraw update the value
+      e.preventDefault();
+      e.stopPropagation();
+      // call the provided callback
+      onChange(e);
+    });
+
+    return eventTarget;
   }
 }

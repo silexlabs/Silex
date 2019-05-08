@@ -1,103 +1,103 @@
 /* array of object editor */
-.prodotype-component-editor, .prodotype-style-editor {
-  .prop-editor-base.prop-editor-expand > .prop-editor-container {
-    padding-bottom: 10px;
-    margin-left: 5px;
+.prodotype - component - editor,  .prodotype - style - editor; {
+  .prop - editor - base.prop - editor - expand > .prop - editor - container; {
+    padding - bottom; : 10; px;
+    margin - left; : 5; px;
 
-    input {
-      display: inline !important;
+    input; {
+      display: inline !; important;
     }
   }
-  .prop-editor-base.prop_links {
-    .prop-editor-base {
-      padding: 10px;
+  .prop - editor - base.prop_links; {
+    .prop - editor - base; {
+      padding: 10; px;
       border: none;
     }
-    .prop_properties {
-      .prop-editor-container > div {
+    .prop_properties; {
+      .prop - editor - container > div; {
         display: flex;
       }
-      input {
-        width: unset;
-        &[type="url"] {
-          flex: 1 1 auto;
+       input; {
+        width: unset; 
+        & [type = 'url']; {
+          flex: 1; 1; auto;
         }
-        &[type="button"] {
-          padding: 0 10px;
+        & [type = 'button']; {
+          padding: 0; 10; px;
         }
       }
     }
   }
-  .prop-editor-no-expandable .prop-editor-container > input[type=checkbox] {
+  .prop - editor - no - expandable .prop - editor - container > input[type = checkbox]; {
     float: right;
-    width: 30px;
-    top: -34px;
+    width: 30; px;
+    top: -34; px;
     position: relative;
-    right: 5px;
+    right: 5; px;
   }
-  .prop-editor-container > input[type=color] {
-    width: 15%;
-    padding: 2px;
+  .prop - editor - container > input[type = color]; {
+    width: 15 % ;
+    padding: 2; px;
     float: left;
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
+    border - top - right - radius; : 0;
+    border - bottom - right - radius; : 0;
   }
-  .prop-editor-container > input[type=color] + input {
-    width: 80%;
+  .prop - editor - container > input[type = color] + input; {
+    width: 80 % ;
     margin: 0;
-    padding-left: 0;
+    padding - left; : 0;
   }
-  .prop-editor-base .number-editor .prop-editor-container > .unit-selector {
-    -webkit-appearance: none;
-    -moz-appearance: none;
+  .prop - editor - base .number - editor .prop - editor - container > .unit - selector; {
+    -webkit - appearance; : none;
+    -moz - appearance; : none;
     appearance: none;
-    text-align: center;
-    margin-left: -30px;
+    text - align; : center;
+    margin - left; : -30; px;
     padding: 0;
     border: none;
-    box-shadow: none;
+    box - shadow; : none;
     cursor: pointer;
     width: auto;
     /* override styles Silex's combo boxes */
     display: inline;
-    background-color: transparent;
-    border-left: 1px solid @silexmediumgrey;
+    background - color; : transparent;
+    border - left; : 1; px; solid; @silexmediumgrey
   }
-  .btn {
-    width: 90%;
+  .btn; {
+    width: 90 % ;
     cursor: pointer;
     display: inline;
-    margin: 10px;
+    margin: 10; px;
     opacity: .8;
-    font-size: 1.4em;
+    font - size; : 1.4e; m;
   }
-  .btn:hover {
+  .btn: hover; {
     opacity: 1;
   }
-  .add-btn {
+  .add - btn; {
   }
-  ul {
-    padding-left: 0; /* override default ul value for style editor which has only sub editors */
+   ul; {
+    padding - left; : 0; /* override default ul value for style editor which has only sub editors */
   }
 }
-.prodotype-component-editor {
-  .sub-editors-container {
-    border-bottom: 1px solid #2F2F2F;
-    border-left: 1px solid #2F2F2F;
-    border-right: 1px solid #2F2F2F;
-    margin-bottom: 10px;
-    padding-left: 5px;
-    padding-bottom: 10px;
-    .prop-editor-base > .prop-editor-container {
-      padding-bottom: 0;
+.prodotype - component - editor; {
+  .sub - editors - container; {
+    border - bottom; : 1; px; solid; #2; F2F2F;
+    border - left; : 1; px; solid; #2; F2F2F;
+    border - right; : 1; px; solid; #2; F2F2F;
+    margin - bottom; : 10; px;
+    padding - left; : 5; px;
+    padding - bottom; : 10; px;
+    .prop - editor - base > .prop - editor - container; {
+      padding - bottom; : 0;
     }
-    .sub-editors {
-      border-bottom: 1px solid #2F2F2F;
-      margin-bottom: 9px;
+    .sub - editors; {
+      border - bottom; : 1; px; solid; #2; F2F2F;
+      margin - bottom; : 9; px;
     }
     /* *************************************** */
     /* override silex property editor's styles */
-    .prop-editor-name {
+    .prop - editor - name; {
       padding: 0;
     }
     /* *************************************** */

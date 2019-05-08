@@ -1,20 +1,20 @@
 /**
-* Silex, live web creation
-* http://projects.silexlabs.org/?/silex/
-*
-* Copyright (c) 2012 Silex Labs
-* http://www.silexlabs.org/
-*
-* Silex is available under the GPL license
-* http://www.silexlabs.org/silex/silex-licensing/
-*/
+ * Silex, live web creation
+ * http://projects.silexlabs.org/?/silex/
+ *
+ * Copyright (c) 2012 Silex Labs
+ * http://www.silexlabs.org/
+ *
+ * Silex is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
+ */
 
 /**
-* @fileoverview
-* the Silex menu on the left
-* based on closure menu class
-*
-*/
+ * @fileoverview
+ * the Silex menu on the left
+ * based on closure menu class
+ *
+ */
 
 import { Constants } from '../../Constants';
 import { Config } from '../ClientConfig';
@@ -22,13 +22,11 @@ import { Controller, Model } from '../types';
 import { Keyboard } from '../utils/Keyboard';
 
 /**
-* @param element   container to render the UI
-* @param model  model class which holds
- * the model instances - views use it for read
-* operation only
-* @param controller  structure which holds
-*                                  the controller instances
-*/
+ * @param element   container to render the UI
+ * @param model  model class which holds
+ * the model instances - views use it for read operation only
+ * @param controller  structure which holds the controller instances
+ */
 export class Menu {
   static SUB_MENU_CLASSES = [
     'page-tool-visible', 'about-menu-visible', 'file-menu-visible',
@@ -53,9 +51,9 @@ export class Menu {
     return el;
   }
   /**
-  * create the menu with closure API
-  * called by the app constructor
-  */
+   * create the menu with closure API
+   * called by the app constructor
+   */
   buildUi() {
     const keyboard = new Keyboard(document);
     // Shortcuts
@@ -110,12 +108,12 @@ export class Menu {
   }
 
   /**
-  * redraw the menu
-  * @param selectedElements the elements currently selected
-  * @param pageNames   the names of the pages which appear in the current HTML
-  *     file
-  * @param  currentPageName   the name of the current page
-  */
+   * redraw the menu
+   * @param selectedElements the elements currently selected
+   * @param pageNames   the names of the pages which appear in the current HTML
+   *     file
+   * @param  currentPageName   the name of the current page
+   */
   redraw() {
     if (this.controller.editMenuController.hasUndo()) {
       this.element.querySelector('.undo').classList.remove('off');
@@ -146,11 +144,11 @@ export class Menu {
   }
 
   /**
-  * handles click events
-  * calls onStatus to notify the controller
-  * @param opt_componentName the component type if it is a component
-  * TODO: use redux for this
-  */
+   * handles click events
+   * calls onStatus to notify the controller
+   * @param opt_componentName the component type if it is a component
+   * TODO: use redux for this
+   */
   onMenuEvent(type: string, opt_componentName?: string) {
     let added = null;
     switch (type) {
