@@ -1,7 +1,7 @@
 {
   "name": "silex-website-builder",
   "description": "Free and easy website builder for everyone.",
-  "version": "2.5.11",
+  "version": "2.5.12",
   "version:frontend": "2.10",
   "version:backwardcompat": "2.2.10",
   "author": "Alex Hoyau <a.hoyau@silexlabs.org> (https://lexoyo.me/)",
@@ -14,7 +14,7 @@
   },
   "license": "GPL-3.0",
   "engines": {
-    "node": ">=8.10.0 <11.15.0"
+    "node": ">=8.10.0 <=11.15.0"
   },
   "scripts": {
     "start": "node dist/server/server/silex_web.js",
@@ -43,7 +43,7 @@
     "11": "0.0.1",
     "ace-builds": "^1.4.4",
     "body-parser": "^1.19.0",
-    "cloud-explorer": "^2.0.1",
+    "cloud-explorer": "^2.0.2",
     "compression": "1.7.4",
     "cookie-parser": "1.4.4",
     "cookie-session": "2.0.0-beta.3",
@@ -60,7 +60,7 @@
     "promise-sequential": "1.1.1",
     "redux": "^4.0.1",
     "request": "2.88.0",
-    "serve-static": "1.13.2",
+    "serve-static": "1.14.0",
     "silex-blank-templates": "github:silexlabs/silex-blank-templates#59b55d32a7829e004de6a9dd96c1af2d30ee4b6a",
     "silex-templates": "github:silexlabs/silex-templates#85d84f533bbd8d3234c314284bc64c7a114de606",
     "wysihtml": "^0.6.0-beta1"
