@@ -139,7 +139,7 @@ export class PagePane extends PaneBase {
     // reset page checkboxes
     if (this.pageCheckboxes) {
       this.pageCheckboxes.forEach((item) => {
-        if (item.checkbox.parentElement !== null) {
+        if (item.checkbox.parentElement != null ) {
           item.checkbox.parentElement.removeChild(item.checkbox);
         }
         item.checkbox.onchange = null;

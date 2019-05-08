@@ -143,7 +143,7 @@ export class EditMenuController extends ControllerBase {
       const len = res.element.childNodes.length;
       for (let idx = 0; idx < len; idx++) {
         const el = (res.element.childNodes[idx] as HTMLElement);
-        if (el.nodeType === 1 && this.model.element.getType(el) !== null) {
+        if (el.nodeType === 1 && this.model.element.getType(el) != null ) {
           res.children.push(this.recursiveCopy(el));
         }
       }

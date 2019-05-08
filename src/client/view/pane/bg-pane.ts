@@ -128,7 +128,7 @@ export class BgPane extends PaneBase {
       this.colorPicker.setIndeterminate(color == null);
 
       // display color
-      if (color !== null) {
+      if (color != null ) {
         this.colorPicker.setColor(color);
       }
     } else {
@@ -150,7 +150,7 @@ export class BgPane extends PaneBase {
     };
     const bgImage = this.getCommonProperty(states, (state) => this.model.element.getStyle(state.el, 'background-image'));
 
-    if (bgImage !== null && bgImage !== 'none' && bgImage !== '') {
+    if (bgImage != null  && bgImage !== 'none' && bgImage !== '') {
       enableBgComponents(true);
     } else {
       enableBgComponents(false);

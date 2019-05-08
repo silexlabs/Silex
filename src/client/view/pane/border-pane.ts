@@ -149,7 +149,7 @@ export class BorderPane extends PaneBase {
       this.colorPicker.setIndeterminate(color == null);
 
       // display color
-      if (color !== null) {
+      if (color != null ) {
         this.colorPicker.setColor(color);
       }
     } else {
@@ -165,18 +165,18 @@ export class BorderPane extends PaneBase {
 
     // get corner radius value, get the first non-zero value
     let val = values[0];
-    if (values[1] !== null && val === '0' || val === '0px') {
+    if (values[1] != null  && val === '0' || val === '0px') {
       val = values[1];
     }
-    if (values[2] !== null && val === '0' || val === '0px') {
+    if (values[2] != null  && val === '0' || val === '0px') {
       val = values[2];
     }
-    if (values[3] !== null && val === '0' || val === '0px') {
+    if (values[3] != null  && val === '0' || val === '0px') {
       val = values[3];
     }
 
     // remove unit when needed
-    if (val !== null && val !== '0' && val !== '0px') {
+    if (val != null  && val !== '0' && val !== '0px') {
       this.borderRadiusInput.value = val.substr(0, val.indexOf('px'));
 
       // corner placement
@@ -204,13 +204,13 @@ export class BorderPane extends PaneBase {
 
     // get the first non-zero value
     let val = values[0];
-    if (values[1] !== null && val === '0' || val === '0px') {
+    if (values[1] != null  && val === '0' || val === '0px') {
       val = values[1];
     }
-    if (values[2] !== null && val === '0' || val === '0px') {
+    if (values[2] != null  && val === '0' || val === '0px') {
       val = values[2];
     }
-    if (values[3] !== null && val === '0' || val === '0px') {
+    if (values[3] != null  && val === '0' || val === '0px') {
       val = values[3];
     }
 
@@ -332,7 +332,7 @@ export class BorderPane extends PaneBase {
    */
   onBorderCornerChanged() {
     // corner radius
-    if (this.borderRadiusInput.value !== null &&
+    if (this.borderRadiusInput.value != null  &&
         this.borderRadiusInput.value !== '') {
       // corner placement
       let borderWidthStr = '';

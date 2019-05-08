@@ -250,7 +250,7 @@ export class SilexElement {
 
     // apply the new style
     if (styleObject[styleName] !== opt_styleValue) {
-      if (opt_styleValue !== null) {
+      if (opt_styleValue != null ) {
         styleObject[styleName] = opt_styleValue;
       } else {
         styleObject[styleName] = '';
@@ -274,7 +274,7 @@ export class SilexElement {
     if (opt_applyToContent) {
       element = this.getContentNode(element);
     }
-    if (opt_propertyValue !== null) {
+    if (opt_propertyValue != null ) {
       element.setAttribute(propertyName, (opt_propertyValue as string));
     } else {
       element.removeAttribute(propertyName);
@@ -377,7 +377,7 @@ export class SilexElement {
 
         // candidates are the elements which are visible in the current page, or
         // visible everywhere (not paged)
-        if (this.getType(el) !== null &&
+        if (this.getType(el) != null  &&
             (this.model.page.isInPage(el) ||
              this.model.page.getPagesForElement(el).length === 0)) {
           return el;
@@ -800,7 +800,6 @@ export class SilexElement {
   getLink(element: HTMLElement): string {
     return element.getAttribute(Constants.LINK_ATTR);
   }
-
 
   /**
    * get a name to display for this type
