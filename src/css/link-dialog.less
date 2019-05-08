@@ -1,83 +1,83 @@
-.link - editor; {
-  hr; {
-    border - color; : @silexmediumgrey
+.link-editor {
+  hr {
+    border-color: @silexmediumgrey;
   }
-  padding - bottom; : 30; px;
-  .flex; {
+  padding-bottom: 30px;
+  .flex {
     display: flex;
-    justify - content; : space - between;
+    justify-content: space-between;
   }
-  .big; {
-    flex: 1; 1; auto;
-    margin - right; : 5; px;
-    min - width; : 50 % ;
+  .big {
+    flex: 1 1 auto;
+    margin-right: 5px;
+    min-width: 50%;
   }
-  input.alertify - text, select.alertify - text; {
-    border: 1; px; solid; @silexlightergrey
+  input.alertify-text, select.alertify-text {
+    border: 1px solid @silexlightergrey;
   }
-  .link - editor - body; {
-    border: 1; px; solid; @silexlightergrey
-    border - top; : none;
-    padding - top; : 1; px; 
-    & > div; {
-      margin: 10; px;
+  .link-editor-body {
+    border: 1px solid @silexlightergrey;
+    border-top: none;
+    padding-top: 1px;
+    & > div {
+      margin: 10px;
     }
   }
-  .labels; {
+  .labels {
     margin: 0;
     display: flex;
-    width: 100 % ;
-    label; {
-      border: 1; px; solid; white;
-      background - color; : transparent;
-      padding: 10; px;
-      color: @silexlightergrey
-      & .checked; {
-        border - bottom; : none;
+    width: 100%;
+    label {
+      border: 1px solid white;
+      background-color: transparent;
+      padding: 10px;
+      color: @silexlightergrey;
+      &.checked {
+        border-bottom: none;
       }
     }
-    .space; {
-      flex: 1; 1; auto;
-      border - bottom; : 1; px; solid;
+    .space {
+      flex: 1 1 auto;
+      border-bottom: 1px solid;
     }
   }
-  .link - editor - tab; {
+  .link-editor-tab {
     display: none;
   }
-  .link - editor - radio; {
-    display: none; 
-    & ; : checked + .link - editor - tab; {
+  .link-editor-radio {
+    display: none;
+    &:checked + .link-editor-tab {
       display: flex;
-      border - bottom; : none;
+      border-bottom: none;
     }
   }
-  .link - editor - tab - container; {
-    flex: 1; 1; auto;
+  .link-editor-tab-container {
+    flex: 1 1 auto;
     // labels on 1 line
-    label; {
+    label {
       display: block;
-      margin - bottom; : 5; px;
+      margin-bottom: 5px;
     }
   }
-  .link - editor - advanced - container; {
-    label; {
+  .link-editor-advanced-container {
+    label {
       display: block;
-      margin - top; : 20; px;
-      margin - bottom; : 10; px;
+      margin-top: 20px;
+      margin-bottom: 10px;
     }
-    & > label; : first - of - type; {
-      margin - bottom; : 20; px;
-      display: inline - block;
-      margin - top; : 10; px;
-      padding: 5; px;
+    & > label:first-of-type {
+      margin-bottom: 20px;
+      display: inline-block;
+      margin-top: 10px;
+      padding: 5px;
     }
-    #link - editor - show - advanced; {
-      display: none; 
-      & ; : checked; ~ .link - editor - advanced; {
+    #link-editor-show-advanced {
+      display: none;
+      &:checked ~ .link-editor-advanced {
         display: block;
       }
     }
-    .link - editor - advanced; {
+    .link-editor-advanced {
       display: none;
     }
   }

@@ -30,6 +30,7 @@ import {InvalidationManager} from '../utils/invalidation-manager';
 import {SilexNotification} from '../utils/notification';
 import {FileExplorer} from '../view/dialog/file-explorer';
 import { LinkDialog } from '../view/dialog/LinkDialog';
+import { getUiElements } from '../view/UiElements';
 
 /**
  * base class for all UI controllers of the controller package
@@ -337,7 +338,7 @@ export class ControllerBase {
   /**
    * set a set of styles to the current selection
    */
-  multipleStylesChanged(style: any, opt_elements?: HTMLElement[]) {
+  multipleStylesChanged(style: Object, opt_elements?: HTMLElement[]) {
     if (!opt_elements) {
       opt_elements = this.model.body.getSelection();
     }
@@ -597,7 +598,7 @@ export class ControllerBase {
       this.view.fileExplorer
           .saveAs('editable.html', FileExplorer.HTML_EXTENSIONS)
           .then((fileInfo) => {
-            if (fileInfo !== null) {
+            if (fileInfo != null) {
               this.doSave((fileInfo as FileInfo), opt_cbk, opt_errorCbk);
             } else {
               // user aborted save as
@@ -615,7 +616,7 @@ export class ControllerBase {
   /**
    * save or save-as
    */
-  doSave(fileInfo: FileInfo, opt_cbk?: (() => any), opt_errorCbk?: ((p1: any) => any)) {
+  doSave(fileInfo: FileInfo, opt_cbk?: (() => any), opt_errorCbk?: ((p1: Object) => any)) {
     // urls will be relative to the html file url
     this.model.file.fileInfo = fileInfo;
 

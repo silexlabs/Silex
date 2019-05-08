@@ -14,18 +14,18 @@
  *
  */
 
-import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
-import { Constants } from '../../../Constants';
 import { SilexElement } from '../../model/element';
 import { Controller, Model } from '../../types';
 import { PaneBase } from './pane-base';
+import { Constants } from '../../../Constants';
+import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
 
 /**
  * on of Silex Editors class
  * const user edit style of components
  * @param element   container to render the UI
  * @param model  model class which holds
- * the model instances - views use it for read
+  * the model instances - views use it for read
  * operation only
  * @param controller  structure which holds
  * the controller instances
@@ -74,16 +74,16 @@ export class PropertyPane extends PaneBase {
    * build the UI
    */
   buildUi() {
-    this.leftInput = this.initInput('.left-input', (e) => this.onPositionChanged(e));
+    this.leftInput = this.initInput('.left-input', e => this.onPositionChanged(e));
     this.leftInput.setAttribute('data-style-name', 'left');
-    this.widthInput = this.initInput('.width-input', (e) => this.onPositionChanged(e));
+    this.widthInput = this.initInput('.width-input', e => this.onPositionChanged(e));
     this.widthInput.setAttribute('data-style-name', 'width');
-    this.topInput = this.initInput('.top-input', (e) => this.onPositionChanged(e));
+    this.topInput = this.initInput('.top-input', e => this.onPositionChanged(e));
     this.topInput.setAttribute('data-style-name', 'top');
-    this.heightInput = this.initInput('.height-input', (e) => this.onPositionChanged(e));
+    this.heightInput = this.initInput('.height-input', e => this.onPositionChanged(e));
     this.heightInput.setAttribute('data-style-name', 'min-height');
-    this.altInput = this.initInput('.alt-input', (e) => this.onAltChanged(e));
-    this.titleInput = this.initInput('.title-input', (e) => this.onTitleChanged(e));
+    this.altInput = this.initInput('.alt-input', e => this.onAltChanged(e));
+    this.titleInput = this.initInput('.title-input', e => this.onTitleChanged(e));
   }
 
   /**
@@ -123,8 +123,8 @@ export class PropertyPane extends PaneBase {
       const offset = value - oldValue;
 
       // apply the change to all elements
-      this.states.forEach((state) => {
-        if (isNaN(oldValue)) {
+      this.states.forEach(state => {
+        if (oldValue != NaN) {
           // compute the new value relatively to the old value,
           // in order to match the group movement
           const elementStyle = this.model.element.getStyle(state.el, name);
@@ -185,7 +185,7 @@ export class PropertyPane extends PaneBase {
     super.redraw(states, pageNames, currentPageName);
 
     // not available for stage element
-    const statesNoBody: SelectableState[] = states.filter((data) => data.el !== this.model.body.getBodyElement());
+    const statesNoBody: SelectableState[] = states.filter(data => data.el !== this.model.body.getBodyElement());
     this.states = statesNoBody;
 
     if (statesNoBody.length > 0) {
@@ -198,7 +198,7 @@ export class PropertyPane extends PaneBase {
       this.titleInput.disabled = false;
 
       // TODO: Use stage metrics here
-      const bb = this.model.property.getBoundingBox(states.map((state) => state.el));
+      const bb = this.model.property.getBoundingBox(states.map(state => state.el));
 
       // display position and size
       this.topInput.value = (bb.top || 0).toString();
@@ -210,15 +210,16 @@ export class PropertyPane extends PaneBase {
       if (statesNoBody.length === 1 && this.model.element.isSection(statesNoBody[0].el)) {
         this.widthInput.value = '';
         this.widthInput.disabled = true;
-      } else {
+      }
+      else {
         this.widthInput.disabled = false;
       }
 
       // alt, only for images
-      const elementsType = this.getCommonProperty(states, (state) => this.model.element.getType(state.el));
+      const elementsType = this.getCommonProperty(states, state => this.model.element.getType(state.el));
       if (elementsType === Constants.TYPE_IMAGE) {
         this.altInput.disabled = false;
-        const alt = this.getCommonProperty(states, (state) => {
+        const alt = this.getCommonProperty(states, state => {
           const content = this.model.element.getContentNode(state.el);
           if (content) {
             return content.getAttribute('alt');
@@ -236,7 +237,7 @@ export class PropertyPane extends PaneBase {
       }
 
       // title
-      const title = this.getCommonProperty(states, (state) => state.el.getAttribute('title'));
+      const title = this.getCommonProperty(states, state => state.el.getAttribute('title'));
       if (title) {
         this.titleInput.value = title;
       } else {

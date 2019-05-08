@@ -107,7 +107,7 @@ export class Config {
   /**
    * The main application menu
    */
-  static shortcuts: Shortcut[] = [
+  static shortcuts: Array<Shortcut> = [
     {
       label: 'New File',
       id: 'file.new',

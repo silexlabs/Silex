@@ -1,344 +1,344 @@
-.format - buttons; {
-  label; {
-    & .p; {
-      font - size; : 13; px;
+.format-buttons {
+  label {
+    &.p {
+      font-size: 13px;
     }
-    & .b; {
-      font - weight; : bold;
+    &.b {
+      font-weight: bold;
     }
-    & .u; {
-      text - decoration; : underline;
+    &.u {
+      text-decoration: underline;
     }
-    & .i; {
-      font - style; : italic;
+    &.i {
+      font-style: italic;
     }
-    & .h1; {
-      font - weight; : bold;
-      font - size; : 18; px;
-      padding - top; : 4; px;
-      padding - bottom; : 6; px;
+    &.h1 {
+      font-weight: bold;
+      font-size: 18px;
+      padding-top: 4px;
+      padding-bottom: 6px;
     }
-    & .h; {
-      font - weight; : bold;
-      font - size; : 16; px;
-      padding - top; : 5; px;
-      padding - bottom; : 5; px;
+    &.h {
+      font-weight: bold;
+      font-size: 16px;
+      padding-top: 5px;
+      padding-bottom: 5px;
     }
-    & .h; {
-      font - weight; : bold;
-      font - size; : 14; px;
-      padding - top; : 7; px;
-      padding - bottom; : 3; px;
+    &.h {
+      font-weight: bold;
+      font-size: 14px;
+      padding-top: 7px;
+      padding-bottom: 3px;
     }
-    & .a; {
-      font - size; : 14; px;
-      padding - top; : 7; px;
-      padding - bottom; : 3; px;
+    &.a {
+      font-size: 14px;
+      padding-top: 7px;
+      padding-bottom: 3px;
     }
   }
 }
 
-.small - text - input; {
-  width: 52; px;
+.small-text-input {
+  width: 52px;
   float: left;
-  margin: 0; 4; px;
+  margin: 0 4px;
 }
 
-.silex - property - tool; {
-  color: @silexlightergrey
+.silex-property-tool {
+  color: @silexlightergrey;
   position: fixed;
   right: 0;
-  left: @propertiesToolWidth
+  left: @propertiesToolWidth;
   top: 0;
   overflow: hidden;
   bottom: 0;
-  background - color; : @silexmediumgrey
-  font - size; : small;
-  a.help - section, a.help - section; : visited; {
+  background-color: @silexmediumgrey;
+  font-size: small;
+  a.help-section, a.help-section:visited {
     /* help links */
-    color: @silexlightergrey
+    color: @silexlightergrey;
     outline: none;
-    text - align; : right;
+    text-align: right;
     display: block;
-    padding: 0; 10; px;
+    padding: 0 10px;
   }
-  hr; {
-    margin: 7; px; 0; 3; px;
-    max - width; : none;
+  hr {
+    margin: 7px 0 3px;
+    max-width: none;
     border: none;
-    border - top; : 1; px; solid; @silexdarkergrey
+    border-top: 1px solid @silexdarkergrey;
     clear: both;
   }
 
-  & .design - tab; {
-    input; {
+  &.design-tab {
+    input {
       display: block;
     }
   }
 
   /* visibility of the content depends on tabs */
-  & .params - tab .main - container > span; {
-    display: none; 
-    & .prodotype - component - editor; {
+  &.params-tab .main-container > span {
+    display: none;
+    &.prodotype-component-editor {
       display: initial;
     }
-    .image - preview; {
-      min - height; : 100; px;
-      background - size; : cover;
-      background - position; : center;
+    .image-preview {
+      min-height: 100px;
+      background-size: cover;
+      background-position: center;
     }
-    input[type = file]; {
-      color: @silexdarkgrey /* no need to display "no file chosen" */
+    input[type=file] {
+      color: @silexdarkgrey; /* no need to display "no file chosen" */
     }
   }
-  .main - container; span.prodotype - component - editor; {
+  .main-container span.prodotype-component-editor {
     display: none;
   }
-  .main - container; span.prodotype - style - editor; {
+  .main-container span.prodotype-style-editor {
     display: none;
   }
   /* visibility of the content depends on tabs */
-  & .style - tab .main - container > span; {
-    display: none; 
-    & .prodotype - style - editor; {
+  &.style-tab .main-container > span {
+    display: none;
+    &.prodotype-style-editor {
       display: initial;
     }
   }
-  .tabs; {
-    border - bottom; : 1; px; solid; @silexdarkergrey
-    z - index; : 1; /* over the scroll bar */
+  .tabs {
+    border-bottom: 1px solid @silexdarkergrey;
+    z-index: 1; /* over the scroll bar */
     position: absolute;
-    width: 100 % ;
+    width: 100%;
 
-    height: @contextMenuHeight
-    background - color; : @silexdarkgrey
+    height: @contextMenuHeight;
+    background-color: @silexdarkgrey;
 
-    .tab; {
+    .tab {
       cursor: pointer;
-      padding: 12; px;
-      border - right; : 1; px; solid; @silexdarkgrey
-      background - color; : @silexmediumdarkgrey
-      & .on; {
-        background - color; : @silexmediumgrey
-        border: 1; px; solid; @silexdarkgrey
-        border - bottom - color; : @silexmediumgrey
+      padding: 12px;
+      border-right: 1px solid @silexdarkgrey;
+      background-color: @silexmediumdarkgrey;
+      &.on {
+        background-color: @silexmediumgrey;
+        border: 1px solid @silexdarkgrey;
+        border-bottom-color: @silexmediumgrey;
       }
     }
   }
 
   /* */
 
-  .main - container; {
+  .main-container {
     padding: 0;
-    width: 100 % ;
-    border - bottom; : 1; px; solid; @silexdarkgrey
-    flex: 1; 0; auto;
-    overflow - x; : hidden;
-    overflow - y; : auto;
+    width: 100%;
+    border-bottom: 1px solid @silexdarkgrey;
+    flex: 1 0 auto;
+    overflow-x: hidden;
+    overflow-y: auto;
     bottom: 0;
-    top: @contextMenuHeight
+    top: @contextMenuHeight;
     position: absolute;
 
-    .expandable > * , section > * {
-      max - width; : 97 % ; /* avoid horizontal scroll bar in the property tool */
+    .expandable > *, section > * {
+      max-width: 97%; /* avoid horizontal scroll bar in the property tool */
     }
 
     /* size set by workspace.js when the user resizes the property tool */
-  & .size1; {
+    &.size1 {
     }
 
-  & .size2; {
+    &.size2 {
     }
 
-  & .size3; {
+    &.size3 {
     }
 
-  select; {
-      background - color; : @silexlightgrey
+    select {
+      background-color: @silexlightgrey;
     }
-  input, select; {
-      height: 30; px;
-      width: 95 % ;
+    input, select {
+      height: 30px;
+      width: 95%;
       overflow: hidden;
-      margin - left; : 2.5 % ; 
+      margin-left: 2.5%;
 
-      & ; : focus; {
+      &:focus {
         outline: none;
-        border: 1; px; solid; @silexdarkgrey
+        border: 1px solid @silexdarkgrey;
       }
     }
-  > span; {
+    > span {
       clear: both;
     }
-  input.checkbox; {
-      width: 15; px;
-      height: 15; px;
-      margin: 6; px;
+    input.checkbox {
+      width: 15px;
+      height: 15px;
+      margin: 6px;
       float: left;
-      min - width; : 0;
+      min-width: 0;
     }
-    .pages - container; {
-      margin - top; : 10; px;
-      input.checkbox + label; {
+    .pages-container {
+      margin-top: 10px;
+      input.checkbox+label {
         display: block;
-        padding: 13; px; 0;
-        line - height; : 0;
+        padding: 13px 0;
+        line-height: 0;
       }
-      .page - label; {
+      .page-label {
         // trucate page names
-        text - overflow; : ellipsis;
+        text-overflow: ellipsis;
         overflow: hidden;
-        white - space; : nowrap;
-        padding - left; : 0;
-        line - height; : 1; px; // needed for firefox to show ellipsis
+        white-space: nowrap;
+        padding-left: 0;
+        line-height: 1px; // needed for firefox to show ellipsis
       }
     }
-    .view - on - mobile; {
-      input.checkbox + label; {
+    .view-on-mobile {
+      input.checkbox+label {
         float: left;
       }
     }
-    .button; {
-      .small - combo;
-       display: inline;
-       margin - right; : 5; px;
-       margin - top; : 5; px; 
-       & .disabled; {
+    .button {
+      .small-combo;
+      display: inline;
+      margin-right: 5px;
+      margin-top: 5px;
+      &.disabled {
         color: graytext;
-        background - color; : @silexmediumdarkgrey
+        background-color: @silexmediumdarkgrey;
       }
     }
 
   }
 
- fieldset; {
-    margin: 15; px; 0;
-    border: 1; px; solid; @silexlightergrey
-    width: 90 % ;
+  fieldset {
+    margin: 15px 0;
+    border: 1px solid @silexlightergrey;
+    width: 90%;
     display: inline;
   }
 
   /* only the inline editor stays 100% width */
- fieldset.style - property; {
-    max - width; : none;
+  fieldset.style-property {
+    max-width: none;
   }
 
-  .help - icon; {
-    color: ; #a9a9a9;
-    font - size; : medium;
-    margin - left; : 10; px;
+  .help-icon {
+    color: #a9a9a9;
+    font-size: medium;
+    margin-left: 10px;
   }
 
-  .xsmall - font; {
-    font - size; : 13; px;
-    font - weight; : lighter;
-    color: ; #FFF;
-    line - height; : 22; px;
+  .xsmall-font {
+    font-size: 13px;
+    font-weight: lighter;
+    color: #FFF;
+    line-height: 22px;
   }
 
-  .color - button; {
+  .color-button {
     display: block;
-    width: 30; px;
+    width: 30px;
     float: left;
-    padding - top; : 2; px;
+    padding-top: 2px;
 
-    .goog - inline - block; {
+    .goog-inline-block {
       display: block;
     }
 
   }
 
-  .image - url - input; {
+  .image-url-input {
     float: left;
-    margin - top; : 2; px;
-    width: 185; px;
+    margin-top: 2px;
+    width: 185px;
   }
 
-  .expandable; {
-    margin - top; : -4; px;
-    display: inline - block;
-    width: 100 % ;
-    legend,  .expandable - legend; {
-      background - color; : @silexmediumgrey
-      font - weight; : 700;
-      font - size; : 13; px;
-      padding - top; : 8; px;
-      padding - left; : 8; px;
-      cursor: ; default
-      line - height; : 2;
-      width: 100 % ;
+  .expandable {
+    margin-top: -4px;
+    display: inline-block;
+    width: 100%;
+    legend, .expandable-legend {
+      background-color: @silexmediumgrey;
+      font-weight: 700;
+      font-size: 13px;
+      padding-top: 8px;
+      padding-left: 8px;
+      cursor: default;
+      line-height: 2;
+      width: 100%;
       cursor: pointer;
-      border - top; : 1; px; solid; @silexdarkgrey
-      .fa; {
-        margin - right; : 5; px;
+      border-top: 1px solid @silexdarkgrey;
+      .fa {
+        margin-right: 5px;
       }
     }
-    .body; {
+    .body {
       margin: 0;
-      margin - top; : 5; px;
-      max - height; : 0;
+      margin-top: 5px;
+      max-height: 0;
       overflow: hidden;
-      transition: max - height; @silexUiTransitions
+      transition: max-height @silexUiTransitions;
     }
-    & .expanded .body; {
-      max - height; : inherit;
-      margin: 10; px;
+    &.expanded .body {
+      max-height: inherit;
+      margin: 10px;
     }
   }
-  .expandable: last - child, 
-  .prodotype - component - editor .prop - editor - base; : last - child; {
-    border - bottom; : 1; px; solid; @silexdarkgrey /* last "accordion" header has a border */
+  .expandable:last-child,
+  .prodotype-component-editor .prop-editor-base:last-child {
+    border-bottom: 1px solid @silexdarkgrey; /* last "accordion" header has a border */
   }
 
-  .tab - page; {
-    .border - placement - container; {
-      border - bottom; : 1; px; solid; @silexdarkgrey
-      margin - bottom; : 5; px;
-      padding - bottom; : 15; px;
+  .tab-page {
+    .border-placement-container {
+      border-bottom: 1px solid @silexdarkgrey;
+      margin-bottom: 5px;
+      padding-bottom: 15px;
       clear: both;
     }
 
-     label.corner - placement - label,
-    label.border - placement - label; {
+    label.corner-placement-label,
+    label.border-placement-label {
       display: block;
-      width: 100 % ;
+      width: 100%;
       margin: 0;
-      line - height; : 22; px;
+      line-height: 22px;
     }
 
-    .half - col; {
-        display: inline - block;
-        width: 45 % ;
+    .half-col {
+        display: inline-block;
+        width: 45%;
       }
 
   }
 
-  .background - property; {
-    line - height; : 22; px;
+  .background-property {
+    line-height: 22px;
 
-    input.checkbox; {
-      margin: 3; px;
+    input.checkbox {
+      margin: 3px;
     }
   }
 
-  .background - editor; {
-    .background - image; {
-      select.combobox; {
-        .small - combo;
-         margin - right; : 5; px;
-         margin - top; : 5; px;
+  .background-editor {
+    .background-image {
+      select.combobox {
+        .small-combo;
+        margin-right: 5px;
+        margin-top: 5px;
       }
 
     }
 
   }
 
-  .opacity - input; {
-    width: 91; px;
+  .opacity-input {
+    width: 91px;
   }
 
- fieldset; {
-    margin - bottom; : 10; px;
+  fieldset {
+    margin-bottom: 10px;
   }
 
   /*
@@ -346,402 +346,403 @@
     * label + text for alpha
     * color input tag
    */
-  .color - edit - container; {
-    .color - edit - label; {
+  .color-edit-container {
+    .color-edit-label {
       float: left;
-      margin: 4; px; 
-      & .alpha; {
-        margin: 6; px; 0;
+      margin: 4px;
+      &.alpha {
+        margin: 6px 0;
       }
     }
-    .color - edit - color - input, 
-    .color - edit - text - input; {
-      .small - text - input();
+    .color-edit-color-input,
+    .color-edit-text-input {
+      .small-text-input();
     }
-    .color - edit - text - input; {
+    .color-edit-text-input {
       clear: left;
     }
-    .color - edit - transparent - check; {
+    .color-edit-transparent-check {
       clear: left;
-      margin: 6; px;
+      margin: 6px;
       float: left;
-      width: 15; px;
-      height: 15; px;
+      width: 15px;
+      height: 15px;
     }
   }
 
-  .position - editor; {
+  .position-editor {
 
-    label; {
+    label {
       float: left;
-      margin: 5; px; 5; px; 5; px; 0; px;
-      width: 10; px;
-      text - align; : right;
-      color: @silexlightergrey
-      font - size; : 11; px;
+      margin: 5px 5px 5px 0px;
+      width: 10px;
+      text-align: right;
+      color: @silexlightergrey;
+      font-size: 11px;
     }
-    .two - col; label, 
-    .two - col; input; {
-      width: 42 % ;
-      margin: 5; px;
-      text - align; : left;
-    }
-
-    .right - bottom; {
-      width: 25; px;
+    .two-col label,
+    .two-col input {
+      width: 42%;
+      margin: 5px;
+      text-align: left;
     }
 
-    .z - index - label; {
-      text - align; : center;
-      width: 69; px;
+    .right-bottom {
+      width: 25px;
     }
 
-    .new - line; {
+    .z-index-label {
+      text-align: center;
+      width: 69px;
+    }
+
+    .new-line {
       clear: left;
     }
-    .input - ; with -unit {
-      display: inline - block;
-      width: 44 % ;
-      margin: 0; px; 10; px; 0; px; 0;
-      label.unit; {
-        font - size; : 70 % ;
-        margin - left; : 0;
-        margin - top; : 0;
-        padding: 4; px;
+    .input-with-unit {
+      display: inline-block;
+      width: 44%;
+      margin: 0px 10px 0px 0;
+      label.unit {
+        font-size: 70%;
+        margin-left: 0;
+        margin-top: 0;
+        padding: 4px;
         width: 0;
       }
-      input; {
-        width: 75 % ;
+      input {
+        width: 75%;
         float: left;
-        font - size; : 12; px;
-        text - align; : left;
+        font-size: 12px;
+        text-align: left;
         margin: 0;
       }
     }
   }
 
-  .page - container; {
-    margin: 4; px; 0;
+  .page-container {
+    margin: 4px 0;
   }
 
-  .title1; {
-    color: @silexlightergrey
+  .title1 {
+    color: @silexlightergrey;
     margin: 0;
-    font - weight; : bold;
-    padding: 10; px; 0; 0; 19; px;
-    height: 15; px;
-    font - size; : 14; px;
-    text - transform; : uppercase;
-    background - color; : @silexmediumgrey
+    font-weight: bold;
+    padding: 10px 0 0 19px;
+    height: 15px;
+    font-size: 14px;
+    text-transform: uppercase;
+    background-color: @silexmediumgrey;
   }
 
-  .element - style - editor; {
-    margin - top; : 10; px;
-    height: 400; px;
+  .element-style-editor{
+    margin-top: 10px;
+    height: 400px;
   }
 
-  .opacity - property; {
+  .opacity-property {
 
-    .opacity - input; {
-      .small - text - input();
+    .opacity-input {
+      .small-text-input();
     }
 
   }
 
-  .border - property; {
 
-    .border - width - container; {
-      width: 100 % ;
+  .border-property {
+
+    .border-width-container {
+      width: 100%;
       clear: both;
       display: block;
 
-      label; {
-        .small - text - input();
-         margin: 4; px;
+      label {
+        .small-text-input();
+        margin: 4px;
       }
 
-      input.border - width - input; {
-        .small - text - input();
-         clear: left;
+      input.border-width-input {
+        .small-text-input();
+        clear: left;
       }
     }
-     select.combobox; {
-      .small - combo;
+    select.combobox {
+      .small-combo;
     }
-     select.combobox; {
-      .small - combo;
-       margin: 5; px; 10; px;
+    select.combobox {
+      .small-combo;
+      margin: 5px 10px;
     }
 
-    .border - type - conainer; {
+    .border-type-conainer {
       float: left;
-      width: 100 % ;
+      width: 100%;
 
-      div.border - type - label; {
+      div.border-type-label {
         float: left;
-        margin: 8; px;
+        margin: 8px;
       }
-      .border - type - combo - box; {
-        background: ; #FFF;
-        .small - text - input();
+      .border-type-combo-box {
+        background: #FFF;
+        .small-text-input();
       }
     }
 
-    .border - radius - container; {
+    .border-radius-container {
 
-      .border - radius - width - container; {
+      .border-radius-width-container {
         float: left;
-        width: 100 % ;
-        margin: 5; px; 0;
+        width: 100%;
+        margin: 5px 0;
 
-        label.border - radius - label; {
+        label.border-radius-label {
           float: left;
-          margin: 8; px;
+          margin: 8px;
         }
 
-        input.corner - radius - input; {
-          .small - text - input();
+        input.corner-radius-input {
+          .small-text-input();
         }
 
       }
 
     }
   }
-  .editor - container; {
-    top: @contextMenuHeight
+  .editor-container {
+    top: @contextMenuHeight;
     bottom: 0;
   }
-  .prodotype - style - editor - menu > div; {
-    padding: 10; px;
+  .prodotype-style-editor-menu > div {
+    padding: 10px;
   }
-  .prodotype - style - editor - menu .labels; {
-    .format - buttons;
-     label; {
-      & .h1; {
-        font - size; : 16; px;
+  .prodotype-style-editor-menu .labels {
+    .format-buttons;
+    label {
+      &.h1 {
+        font-size: 16px;
         height: 0;
       }
-      & .h2,  & .h3; { font - weight; : bold; }
+      &.h2, &.h3 { font-weight: bold; }
 
     }
   }
   /* */
-  .prodotype - component - editor,  .prodotype - style - editor; {
+  .prodotype-component-editor, .prodotype-style-editor {
     .expandable;
-     form; {
-      .button - bar - container - template;
-       margin - left; : 2.5 % ;
-       padding - bottom; : 15; px;
-       label; {
-        width: 15.8 % ;
-        min - width; : 30; px;
-        min - height; : 17; px;
+    form {
+      .button-bar-container-template;
+      margin-left: 2.5%;
+      padding-bottom: 15px;
+      label {
+        width: 15.8%;
+        min-width: 30px;
+        min-height: 17px;
       }
     }
-     border - top; : 1; px; solid; @silexdarkgrey
-     & .hide - panel; {
+    border-top: 1px solid @silexdarkgrey;
+    &.hide-panel {
       display: none;
     }
-     & > section > ul, 
-    & > .prodotype - container > section > ul; {
-      padding - left; : 0;
+    & > section > ul,
+    & > .prodotype-container > section > ul {
+      padding-left: 0;
     }
     /* prodotype editors labels, e.g. Heading1 */
-    .prop - editor - base; label,  .class - name - style - label; {
-      .expandable - legend;
-       display: block;
-       padding - bottom; : 5; px;
+    .prop-editor-base label, .class-name-style-label {
+      .expandable-legend;
+      display: block;
+      padding-bottom: 5px;
     }
   }
-  .prodotype - style - editor .prodotype - style - editor - menu > label; : first - child; {
-    border - top; : none; /* no border just bellow the tabs */
+  .prodotype-style-editor .prodotype-style-editor-menu > label:first-child {
+    border-top: none; /* no border just bellow the tabs */
   }
-  .prodotype - style - editor; {
+  .prodotype-style-editor {
     /* buttons */
-    .icon - btn; {
-      .button - template;
-       width: 13; px;
-       height: 7; px;
-       padding: 7; px; 7; px; 13; px; 7; px;
-       margin: 4; px; 2; px; 10; px; 0;
+    .icon-btn {
+      .button-template;
+      width: 13px;
+      height: 7px;
+      padding: 7px 7px 13px 7px;
+      margin: 4px 2px 10px 0;
     }
-    .icon - btn - first; {
-      margin - left; : 7; px;
+    .icon-btn-first {
+      margin-left: 7px;
     }
-    .icon - btn - last; {
-      margin - right; : 8; px;
+    .icon-btn-last {
+      margin-right: 8px;
     }
-    .icon - btn - left; {
+    .icon-btn-left {
       float: left;
     }
-    .icon - btn - right; {
+    .icon-btn-right {
       float: right;
     }
     /* all labels in the style editor */
-    .prodotype - container .prop - editor - name; {
-      cursor: ; default
-      border - top; : none;
+    .prodotype-container .prop-editor-name {
+      cursor: default;
+      border-top: none;
     }
     /* style the title of the ditor, i.e. "Paragraph", "Link"... */
-    .prodotype - container > .editor > ul > .prop - editor - base > .prop - editor - name; {
-      border - top; : 1; px; solid; @silexdarkergrey
+    .prodotype-container > .editor > ul > .prop-editor-base > .prop-editor-name {
+      border-top: 1px solid @silexdarkergrey;
     }
 
     /* highlight selected label, e.g. H1 */
-    .hidden; { display: none; }
-    .style - editor - tag - form; input: checked: nth - child(1); ~
-    .labels; label: nth - child(1), 
-    .style - editor - tag - form; input: checked: nth - child(2); ~
-    .labels; label: nth - child(2), 
-    .style - editor - tag - form; input: checked: nth - child(3); ~
-    .labels; label: nth - child(3), 
-    .style - editor - tag - form; input: checked: nth - child(4); ~
-    .labels; label: nth - child(4), 
-    .style - editor - tag - form; input: checked: nth - child(5); ~
-    .labels; label: nth - child(5), 
-    .style - editor - tag - form; input: checked: nth - child(6); ~
-    .labels; label: nth - child(6), 
-    .style - editor - tag - form; input: checked: nth - child(7); ~
-    .labels; label: nth - child(7), 
-    .style - editor - tag - form; input: checked: nth - child(8); ~
-    .labels; label: nth - child(8), 
-    .style - editor - tag - form; input: checked: nth - child(9); ~
-    .labels; label: nth - child(9), 
-    .style - editor - tag - form; input: checked: nth - child(10); ~
-    .labels; label: nth - child(10), 
-    .style - editor - tag - form; input: checked: nth - child(11); ~
-    .labels; label: nth - child(11), 
-    .style - editor - tag - form; input: checked: nth - child(12); ~
-    .labels; label: nth - child(12); { .button - template - selected; }
+    .hidden { display: none; }
+    .style-editor-tag-form input:checked:nth-child(1) ~
+    .labels label:nth-child(1),
+    .style-editor-tag-form input:checked:nth-child(2) ~
+    .labels label:nth-child(2),
+    .style-editor-tag-form input:checked:nth-child(3) ~
+    .labels label:nth-child(3),
+    .style-editor-tag-form input:checked:nth-child(4) ~
+    .labels label:nth-child(4),
+    .style-editor-tag-form input:checked:nth-child(5) ~
+    .labels label:nth-child(5),
+    .style-editor-tag-form input:checked:nth-child(6) ~
+    .labels label:nth-child(6),
+    .style-editor-tag-form input:checked:nth-child(7) ~
+    .labels label:nth-child(7),
+    .style-editor-tag-form input:checked:nth-child(8) ~
+    .labels label:nth-child(8),
+    .style-editor-tag-form input:checked:nth-child(9) ~
+    .labels label:nth-child(9),
+    .style-editor-tag-form input:checked:nth-child(10) ~
+    .labels label:nth-child(10),
+    .style-editor-tag-form input:checked:nth-child(11) ~
+    .labels label:nth-child(11),
+    .style-editor-tag-form input:checked:nth-child(12) ~
+    .labels label:nth-child(12) { .button-template-selected }
     /* Pure CSS to show / hide prodotype editors (tags H1, H2, H3, P, A) */
-    .prodotype - container .editor > ul > .prop - editor - base; { display: none; }
+    .prodotype-container .editor > ul > .prop-editor-base { display: none; }
     /* Paragraph */
-    .style - editor - tag - form; input: checked: nth - child(1); ~
-    .prodotype - container .editor > ul > .prop - editor - base; : nth - child(1), 
+    .style-editor-tag-form input:checked:nth-child(1) ~
+    .prodotype-container .editor > ul > .prop-editor-base:nth-child(1),
     /* Link */
-    .style - editor - tag - form; input: checked: nth - child(2); ~
-    .prodotype - container .editor > ul > .prop - editor - base; : nth - child(2), 
+    .style-editor-tag-form input:checked:nth-child(2) ~
+    .prodotype-container .editor > ul > .prop-editor-base:nth-child(2),
     /* Bold */
-    .style - editor - tag - form; input: checked: nth - child(3); ~
-    .prodotype - container .editor > ul > .prop - editor - base; : nth - child(3), 
+    .style-editor-tag-form input:checked:nth-child(3) ~
+    .prodotype-container .editor > ul > .prop-editor-base:nth-child(3),
     /* Underline */
-    .style - editor - tag - form; input: checked: nth - child(4); ~
-    .prodotype - container .editor > ul > .prop - editor - base; : nth - child(4), 
+    .style-editor-tag-form input:checked:nth-child(4) ~
+    .prodotype-container .editor > ul > .prop-editor-base:nth-child(4),
     /* Italic */
-    .style - editor - tag - form; input: checked: nth - child(5); ~
-    .prodotype - container .editor > ul > .prop - editor - base; : nth - child(5), 
+    .style-editor-tag-form input:checked:nth-child(5) ~
+    .prodotype-container .editor > ul > .prop-editor-base:nth-child(5),
     /* Heading1 */
-    .style - editor - tag - form; input: checked: nth - child(6); ~
-    .prodotype - container .editor > ul > .prop - editor - base; : nth - child(6), 
+    .style-editor-tag-form input:checked:nth-child(6) ~
+    .prodotype-container .editor > ul > .prop-editor-base:nth-child(6),
     /* Heading2 */
-    .style - editor - tag - form; input: checked: nth - child(7); ~
-    .prodotype - container .editor > ul > .prop - editor - base; : nth - child(7), 
+    .style-editor-tag-form input:checked:nth-child(7) ~
+    .prodotype-container .editor > ul > .prop-editor-base:nth-child(7),
     /* Heading3 */
-    .style - editor - tag - form; input: checked: nth - child(8); ~
-    .prodotype - container .editor > ul > .prop - editor - base; : nth - child(8), 
+    .style-editor-tag-form input:checked:nth-child(8) ~
+    .prodotype-container .editor > ul > .prop-editor-base:nth-child(8),
     /* UL */
-    .style - editor - tag - form; input: checked: nth - child(9); ~
-    .prodotype - container .editor > ul > .prop - editor - base; : nth - child(9), 
+    .style-editor-tag-form input:checked:nth-child(9) ~
+    .prodotype-container .editor > ul > .prop-editor-base:nth-child(9),
     /* OL */
-    .style - editor - tag - form; input: checked: nth - child(10); ~
-    .prodotype - container .editor > ul > .prop - editor - base; : nth - child(10), 
+    .style-editor-tag-form input:checked:nth-child(10) ~
+    .prodotype-container .editor > ul > .prop-editor-base:nth-child(10),
     /* active link */
-    .style - editor - tag - form; input: checked: nth - child(11); ~
-    .prodotype - container .editor > ul > .prop - editor - base; : nth - child(11), 
+    .style-editor-tag-form input:checked:nth-child(11) ~
+    .prodotype-container .editor > ul > .prop-editor-base:nth-child(11),
     /* All */
-    .style - editor - tag - form; input: checked: nth - child(12); ~
-    .prodotype - container .editor > ul > .prop - editor - base; : nth - child(12); { display: initial; }
-    .editor; {
+    .style-editor-tag-form input:checked:nth-child(12) ~
+    .prodotype-container .editor > ul > .prop-editor-base:nth-child(12) { display: initial; }
+    .editor {
       /* hide description and help button, FIXME: should be doable in the .yaml */
-      & > h1,  & > h1 + div; { display: none; }
+      & > h1, & > h1 + div { display: none; }
     }
 
     /* vivibility checkbox (mobile only or not) */
-    .visibility - style - label; {
-      .button - template;
-       margin: 0;
-       padding: 0;
-       height: 28; px;
-       width: 28; px;
-       font - size; : 25; px;
+    .visibility-style-label {
+      .button-template;
+      margin: 0;
+      padding: 0;
+      height: 28px;
+      width: 28px;
+      font-size: 25px;
     }
-    .visibility - style - checkbox; : checked; ~ .visibility - style - label; {
-      .button - template - selected;
+    .visibility-style-checkbox:checked ~ .visibility-style-label {
+      .button-template-selected;
     }
-    .class-name - block; {
+    .class-name-block {
       display: flex;
-      padding: 0; 2.5 % ; /* select boxes have width:95% => padding of this container is 5% => 2.5% each side */
-      select; {
-        border - left; : none;
+      padding: 0 2.5%; /* select boxes have width:95% => padding of this container is 5% => 2.5% each side */
+      select {
+        border-left: none;
         margin: 0;
       }
     }
-    .class-name - style - label; {
+    .class-name-style-label {
       display: flex;
-      justify - content; : space - between;
+      justify-content: space-between;
       padding: 0;
-      margin: 5; px; auto;
-      width: 95 % ;
+      margin: 5px auto;
+      width: 95%;
     }
-     select.combobox.pseudoclass - style - combo - box; {
-      width: 103; px;
-      height: 25; px;
-      text - align; : center;
-      background - color; : @silexlightgrey
-      -webkit - appearance; : none;
-      -moz - appearance; : none;
+    select.combobox.pseudoclass-style-combo-box {
+      width: 103px;
+      height: 25px;
+      text-align: center;
+      background-color: @silexlightgrey;
+      -webkit-appearance: none;
+      -moz-appearance: none;
       appearance: none;
       margin: 0;
-      margin - top; : 2; px;
+      margin-top: 2px;
     }
-    .selection - info - container; {
-      .dot; {
-        margin: 0; 7; px;
-        cursor: ; default
+    .selection-info-container {
+      .dot {
+        margin: 0 7px;
+        cursor: default;
       }
-       span; {
+      span {
         cursor: pointer;
-        margin - right; : 3; px;
+        margin-right: 3px;
       }
-       span: hover; span; {
-        text - decoration; : underline;
-      }
-    }
-    .toggle - button; {
-      .button - bar - template;
-       height: 30; px;
-       min - width; : 30; px;
-       background - repeat; : no - repeat;
-       background - position; : 50 % ;
-       background - size; : 18; px; 
-       & ; : first - child; {
-        .button - bar - first;
-         margin - left; : 5; px;
-      }
-       & ; : last - child; {
-        .button - bar - last;
-      }
-       & [data - selected= true]; {
-        .button - template - selected;
+      span:hover span {
+        text-decoration: underline;
       }
     }
-    .prop - editor - container; {
-      display: inline - block; /* for toggle buttons which are floated */
-      width: 100 % ;
+    .toggle-button {
+      .button-bar-template;
+      height: 30px;
+      min-width: 30px;
+      background-repeat: no-repeat;
+      background-position: 50%;
+      background-size: 18px;
+      &:first-child {
+        .button-bar-first;
+        margin-left: 5px;
+      }
+      &:last-child {
+        .button-bar-last;
+      }
+      &[data-selected=true] {
+        .button-template-selected;
+      }
     }
-    .half - width; {
-      width: 49 % ;
-      display: inline - block;
+    .prop-editor-container {
+      display: inline-block; /* for toggle buttons which are floated */
+      width: 100%;
     }
-    .medium - width; {
-      width: 66 % ;
-      display: inline - block;
+    .half-width {
+      width: 49%;
+      display: inline-block;
     }
-    .small - width; {
-      width: 33 % ;
+    .medium-width {
+      width: 66%;
+      display: inline-block;
+    }
+    .small-width {
+      width: 33%;
       float: right;
     }
-    .no - style .style - editor - tag - form; {
+    .no-style .style-editor-tag-form {
       visibility: hidden;
     }
   }

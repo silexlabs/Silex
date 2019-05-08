@@ -1,20 +1,20 @@
-.silex - workspace; {
-  transition: opacity; .5; s; ease - out; .25; s;
+.silex-workspace {
+  transition: opacity .5s ease-out .25s;
   opacity: 1;
 }
-.loader; {
-  z - index; : -1;
+.loader {
+  z-index: -1;
   height: 0;
   overflow: hidden;
 }
-.loading - pending; {
-  .silex - workspace; {
+.loading-pending {
+  .silex-workspace {
     opacity: 0; // also in index.jade
   }
-  .loader; {
-    color: ; #DDD;
-    text - align; : center;
-    margin - top; : 50; vh;
+  .loader {
+    color: #DDD;
+    text-align: center;
+    margin-top: 50vh;
     height: auto;
   }
 }

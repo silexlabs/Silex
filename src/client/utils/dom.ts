@@ -31,7 +31,7 @@ export class Dom {
    */
   static refreshImage(img: HTMLImageElement, cbk: () => any) {
     const initialUrl = img.src;
-    img.onload = (e) => {
+    img.onload = function(e) {
       // stop the process
       img.onload = null;
       cbk();
@@ -77,7 +77,7 @@ export class Dom {
       const re = new RegExp(
           '([?|&|&amp;]' + Dom.CACHE_CONTROL_PARAM_NAME + '=[0-9]*[&*]?)',
           'gi');
-      url = url.replace(re, (match, group1, group2) => {
+      url = url.replace(re, function(match, group1, group2) {
         // if there is a ? or & then return ?
         // aaaaaaaa.com?silex-cache-control=09238734&ccsqcqsc&
         // aaaaaaaa.com?silex-cache-control=09238734099890
@@ -127,7 +127,7 @@ export class Dom {
    * @param  data                 the array of strings conaining the data
    * @return the template string with the data in it
    */
-  static renderList(itemTemplateString: string, data: any[]): string {
+  static renderList(itemTemplateString: string, data: Object[]): string {
     let res = '';
 
     // for each item in data, e.g. each page in the list

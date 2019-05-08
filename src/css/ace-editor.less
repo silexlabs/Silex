@@ -1,57 +1,57 @@
 /* hide auto completion box when closed */
-.ace_autocomplete; {
+.ace_autocomplete {
   display: none;
 }
-.js - editor - opened, 
-.css - editor - opened, 
-.html - editor - opened, 
-.settings - editor - opened; {
-  .ace_autocomplete; {
+.js-editor-opened,
+.css-editor-opened,
+.html-editor-opened,
+.settings-editor-opened {
+  .ace_autocomplete {
     display: initial;
   }
 }
 /* */
-.ace - editor - container; {
+.ace-editor-container {
   position: absolute;
   width: auto;
-  z - index; : 110;
-  .buttons.dock - btn; {
-    background - image; : url('../assets/dock.png');
-    right: 40; px;
-    height: 15; px;
-    width: 15; px;
-    background - size; : contain;
-    background - repeat; : no - repeat;
-    top: 21; px;
+  z-index: 110;
+  .buttons.dock-btn {
+    background-image: url("../assets/dock.png");
+    right: 40px;
+    height: 15px;
+    width: 15px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    top: 21px;
   }
-  .buttons.close - btn; {
-    background - image; : url('../assets/goog-ui/close.png');
+  .buttons.close-btn {
+    background-image: url("../assets/goog-ui/close.png");
     right: 0;
-    height: 38; px;
-    width: 39; px;
-    top: 11; px;
+    height: 38px;
+    width: 39px;
+    top: 11px;
   }
-  .buttons; {
+  .buttons {
     cursor: pointer;
     position: absolute;
   }
-  .ace - editor; {
-    flex: 1; 1; auto;
+  .ace-editor {
+    flex: 1 1 auto;
   }
-  .title - bar; {
-    border - top; : 1; px; solid; @silexdarkgrey
-    font - size; : 20; px;
-    height: 21; px;
-    padding: 17; px; 20; px;
+  .title-bar {
+    border-top: 1px solid @silexdarkgrey;
+    font-size: 20px;
+    height: 21px;
+    padding: 17px 20px;
     color: white;
-    background - color; : @silexmediumdarkgrey
-    .help-icon; {
-      color: ; #a9a9a9;
-      font - size; : medium;
-      margin - left; : 10; px;
+    background-color: @silexmediumdarkgrey;
+    .help-icon {
+      color: #a9a9a9;
+      font-size: medium;
+      margin-left: 10px;
     }
   }
 }
-.tr_bubble; {
-  z - index; : 999 !; important;
+.tr_bubble {
+  z-index: 999 !important;
 }

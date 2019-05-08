@@ -10,21 +10,22 @@
 //////////////////////////////////////////////////
 
 // node modules
-import * as bodyParser from 'body-parser';
-import * as compression from 'compression';
-import * as cookieParser from 'cookie-parser';
-import * as session from 'cookie-session';
-import * as express from 'express';
-import * as Path from 'path';
+const Path = require('path');
+const express = require('express');
+const compression = require('compression');
+const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
+const session = require('cookie-session');
+
 import CloudExplorerRouter from './router/CloudExplorerRouter';
+import WebsiteRouter from './router/WebsiteRouter';
+import StaticRouter from './router/StaticRouter';
 import PublishRouter from './router/PublishRouter';
 import SslRouter from './router/SslRouter';
-import StaticRouter from './router/StaticRouter';
-import WebsiteRouter from './router/WebsiteRouter';
 import { Config } from './ServerConfig';
 
 export default function SilexServer(config: Config) {
-  if (config.serverOptions.debug) {
+  if(config.serverOptions.debug) {
     require('source-map-support').install();
   }
 
@@ -52,7 +53,7 @@ export default function SilexServer(config: Config) {
   this.publishRouter = PublishRouter(this.config.publisherOptions, this.ceRouter.unifile);
   this.sslRouter = SslRouter(this.config.sslOptions, this.app);
   this.unifile = this.ceRouter.unifile; // for access by third party
-}
+};
 
 SilexServer.prototype.start = function(cbk) {
   // use routers
@@ -66,13 +67,13 @@ SilexServer.prototype.start = function(cbk) {
   this.app.use(this.staticRouter);
 
   // Start Silex as an Electron app
-  if (this.config.electronOptions.enabled) {
+  if(this.config.electronOptions.enabled) {
     require(Path.join(__dirname, 'silex_electron'));
   }
 
   // server 'loop'
   this.app.listen(this.config.serverOptions.port, () => {
     console.info(`\nI'm ready, listening to port ${this.config.serverOptions.port}\n`);
-    if (cbk) { cbk(); }
+    if(cbk) cbk();
   });
 };

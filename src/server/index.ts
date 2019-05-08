@@ -11,10 +11,10 @@
 
 'use strict';
 
-import { Config } from './ServerConfig';
 import SilexServer from './SilexServer';
+import { Config } from './ServerConfig';
 
 export {
   Config,
   SilexServer,
-};
+}

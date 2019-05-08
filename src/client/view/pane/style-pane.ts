@@ -14,17 +14,17 @@
  * Controls the general params of the selected component
  *
  */
-import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
-import { Controller, Model } from '../../types';
-import {Style} from '../../utils/style';
+import { Model, Controller } from '../../types';
 import {PaneBase} from './pane-base';
+import {Style} from '../../utils/style';
+import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
 
 /**
  * on of Silex Editors class
  * let user edit style of components
  * @param element   container to render the UI
  * @param model  model class which holds
- * the model instances - views use it for read
+  * the model instances - views use it for read
  * operation only
  * @param controller  structure which holds
  * the controller instances
@@ -60,11 +60,11 @@ export class StylePane extends PaneBase {
     // for some reason, this.ace.getSession().* is undefined,
     //    closure renames it despite the fact that that it is declared in the
     //    externs.js file
-    this.ace.getSession().setMode('ace/mode/css');
+    this.ace.getSession()['setMode']('ace/mode/css');
     this.ace.setOptions({
-      enableBasicAutocompletion: true,
-      enableSnippets: true,
-      enableLiveAutocompletion: true,
+      'enableBasicAutocompletion': true,
+      'enableSnippets': true,
+      'enableLiveAutocompletion': true,
     });
     this.ace.setReadOnly(true);
   }
@@ -79,7 +79,7 @@ export class StylePane extends PaneBase {
     super.redraw(states, pageNames, currentPageName);
 
     // css classes
-    const cssClasses = this.getCommonProperty(states, (state) => this.model.element.getClassName(state.el));
+    let cssClasses = this.getCommonProperty(states, state => this.model.element.getClassName(state.el));
 
     if (cssClasses) {
       this.cssClassesInput.value = cssClasses;
@@ -88,11 +88,11 @@ export class StylePane extends PaneBase {
     }
 
     // css inline style
-    const cssInlineStyle = this.getCommonProperty(states, (state) => this.model.element.getAllStyles(state.el));
+    let cssInlineStyle = this.getCommonProperty(states, state => this.model.element.getAllStyles(state.el));
 
     if (cssInlineStyle) {
-      const str = '.element{\n' + cssInlineStyle.replace(/; /gi, ';\n') + '\n}';
-      const pos = this.ace.getCursorPosition();
+      let str = '.element{\n' + cssInlineStyle.replace(/; /gi, ';\n') + '\n}';
+      let pos = this.ace.getCursorPosition();
       this.ace.setValue(str, 1);
       this.ace.gotoLine(pos.row + 1, pos.column, false);
     } else {
@@ -123,3 +123,4 @@ export class StylePane extends PaneBase {
     //     Style.stringToStyle(value || ''));
   }
 }
+

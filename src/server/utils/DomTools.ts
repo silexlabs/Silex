@@ -21,7 +21,8 @@ export default class DomTools {
     // images, videos, stylesheets, iframes...
     ['src', 'href'].forEach((attr) => {
       const elements = dom.window.document.querySelectorAll(`[${attr}]`);
-      for (const el of elements) {
+      for (let idx = 0; idx < elements.length; idx++) {
+        const el = elements[idx];
         if (el.tagName.toLowerCase() === 'a' || el.getAttribute('data-silex-href')) {
           // do nothing with <a> links
           continue;
@@ -87,10 +88,12 @@ export default class DomTools {
 
   static transformStylesheet(stylesheet, isInHead, fn, isMediaQuerySubRule = false) {
     let cssText = '';
-    for (const rule of stylesheet.cssRules) {
-      if (rule.style) { for (const valName of Array.from(rule.style)) {
-        const value = rule.style[valName as string];
-        rule.style[valName as string] = DomTools.transformValueUrlKeyword(value, stylesheet, isInHead, fn) || value;
+    for (let ruleIdx = 0; ruleIdx < stylesheet.cssRules.length; ruleIdx++) {
+      const rule = stylesheet.cssRules[ruleIdx];
+      if (rule.style) { for (let valIdx = 0; valIdx < rule.style.length; valIdx++) {
+        const valName = rule.style[valIdx];
+        const value = rule.style[valName];
+        rule.style[valName] = DomTools.transformValueUrlKeyword(value, stylesheet, isInHead, fn) || value;
       }
       } else if (rule.cssRules) {
         // case of a mediaquery
@@ -139,7 +142,7 @@ export default class DomTools {
    */
   static getProperties(doc) {
     const styleTag = doc.querySelector('.' + Constants.JSON_STYLE_TAG_CLASS_NAME);
-    if (styleTag !== null) {
+    if (styleTag != null) {
       return JSON.parse(styleTag.innerHTML)[0];
     }
     // no JSON styles array found in the dom
@@ -153,7 +156,7 @@ export default class DomTools {
    */
   static setProperties(doc, value) {
     const styleTag = doc.querySelector('.' + Constants.JSON_STYLE_TAG_CLASS_NAME);
-    if (styleTag !== null) {
+    if (styleTag != null) {
       styleTag.innerHTML = JSON.stringify([value]);
     } else {
       console.error('Error: no JSON styles array found in the dom');

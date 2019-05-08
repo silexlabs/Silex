@@ -36,7 +36,7 @@ export class JsEditor extends AceEditorBase {
     super(element, model, controller);
 
     // set mode
-    this.ace.getSession().setMode('ace/mode/javascript');
+    this.ace.getSession()['setMode']('ace/mode/javascript');
   }
 
   /**

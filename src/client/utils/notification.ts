@@ -247,3 +247,6 @@ export class SilexNotification {
 // Notification.activateNative();
 
 // :facepalm:
+
+// debug
+window.SilexNotification = SilexNotification;

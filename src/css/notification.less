@@ -1,93 +1,93 @@
 // notifications (bottom right)
-.alerts - notify; {
+.alerts-notify {
   position: fixed;
-  width: 400; px;
+  width: 400px;
   bottom: 0;
   right: 0;
-  z - index; : @notification-notify - z - index; 
-  & > p; {
-    background: rgba(0, 0, 0, .9);
-    color: @silexlightergrey
-    padding: 20; px;
-    margin: 10; px;
-    text - align; : center;
-    border: 1; px; solid; white;
-    border - radius; : 5; px;
+  z-index: @notification-notify-z-index;
+  & > p {
+    background: rgba(0,0,0,.9);
+    color: @silexlightergrey;
+    padding: 20px;
+    margin: 10px;
+    text-align: center;
+    border: 1px solid white;
+    border-radius: 5px;
     cursor: pointer;
   }
 }
 
 // dialogs
-.alerts; {
-  background - color; : rgba(0, 0, 0, .9);
+.alerts {
+  background-color: rgba(0,0,0,.9);
   position: fixed;
-  z - index; : @notification-dialogs - z - index;
-  width: 100; vw;
-  height: 100; vh;
+  z-index: @notification-dialogs-z-index;
+  width: 100vw;
+  height: 100vh;
   top: 0;
   left: 0;
   display: flex;
-  justify - content; : center;
-  align - items; : center;
+  justify-content: center;
+  align-items: center;
   opacity: 1;
-  transition: opacity; .1; s; ease; 
+  transition: opacity .1s ease;
 
-  & .closed; {
+  &.closed {
     width: 0;
     height: 0;
-    top: -9999; px;
-    left: -9999; px;
+    top: -9999px;
+    left: -9999px;
     opacity: 0;
   }
 
-  .notification - dialog; {
+  .notification-dialog {
     // background-color: @silexdarkergrey;
-    color: @silexlightergrey
+    color: @silexlightergrey;
     position: absolute;
-    padding: 50; px;
-    width: 50 % ;
-    min - width; : 400; px; 
+    padding: 50px;
+    width: 50%;
+    min-width: 400px;
 
-    & , a; { color: @silexlightergrey }
+    &, a { color: @silexlightergrey; }
 
-    input, select, button; {
-      color: @silexdarkergrey
-      background - color; : @silexlightergrey
-      border: 1; px; solid; @silexlightergrey
+    input, select, button {
+      color: @silexdarkergrey;
+      background-color: @silexlightergrey;
+      border: 1px solid @silexlightergrey;
     }
 
-    .notification - dialog_content; {
-      .block - dialog; {
+    .notification-dialog_content {
+      .block-dialog {
         display: block;
-        margin: 20; px; 0;
-        min - width; : 48 % ;
+        margin: 20px 0;
+        min-width: 48%;
       }
 
-       strong, b, a; {
-        font - style; : italic;
+      strong, b, a {
+        font-style: italic;
       }
     }
-    .notification - dialog_buttons; {
-      border - top - color; : @silexlightgrey
-      box - shadow; : inset; 0; 1; px; 0; @silexmediumgrey
-      padding - top; : 15; px;
-      input, select, button; {
-        color: @silexlightergrey
-        background - color; : transparent;
+    .notification-dialog_buttons {
+      border-top-color: @silexlightgrey;
+      box-shadow: inset 0 1px 0 @silexmediumgrey;
+      padding-top: 15px;
+      input, select, button {
+        color: @silexlightergrey;
+        background-color: transparent;
         cursor: pointer;
       }
     }
-    .notification - dialog_info; {
-      width: 99 % ;
-      height: 600; px;
+    .notification-dialog_info {
+      width: 99%;
+      height: 600px;
       display: flex;
-      align - items; : center;
-      justify - content; : center;
-      border - color; : @silexmediumgrey
-      .tip-of - the - day; {
+      align-items: center;
+      justify-content: center;
+      border-color: @silexmediumgrey;
+      .tip-of-the-day {
         * {
-            color: ; @silexlightergrey
-        margin: 10; px;
+            color: @silexlightergrey;
+            margin: 10px;
         }
       }
     }

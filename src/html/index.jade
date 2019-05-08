@@ -1,20 +1,20 @@
-doctype; html;
-head;
-style.
-    .loading - pending .silex - workspace; {
+doctype html
+head
+  style.
+    .loading-pending .silex-workspace {
       opacity: 0;
     }
-body; {
-      background - color; : #444;
+    body {
+      background-color: #444;
     }
 
   // all the css in the head with _styles.less imports
-link(rel = 'stylesheet', type = 'text/css', href = 'css/admin.css');
+  link(rel='stylesheet', type='text/css', href='css/admin.css')
 
-include . / templates / head.jade;
+  include ./templates/head.jade
 
-body.loading - pending.advanced - mode - off;
-include . / templates / body.jade;
+body.loading-pending.advanced-mode-off
+  include ./templates/body.jade
 
-block; silex - options;
-script(type = 'text/javascript' src = 'js/index.js');
+  block silex-options
+  script(type='text/javascript' src='js/index.js')

@@ -15,10 +15,10 @@
  *
  */
 
-import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
 import { Controller, Model } from '../../types';
 import { ColorPicker } from '../ColorPicker';
 import { PaneBase } from './pane-base';
+import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
 
 /**
  * on of Silex Editors class
@@ -78,15 +78,15 @@ export class BorderPane extends PaneBase {
       '.border-placement-container .top',
       '.border-placement-container .right',
       '.border-placement-container .bottom',
-      '.border-placement-container .left',
-    ].map((selector) => this.initCheckBox(selector, (e) => this.onBorderWidthChanged()));
+      '.border-placement-container .left'
+    ].map(selector => this.initCheckBox(selector, (e) => this.onBorderWidthChanged()));
 
     this.cornerPlacementCheckBoxes = [
       '.border-radius-container .top-left',
       '.border-radius-container .top-right',
       '.border-radius-container .bottom-right',
-      '.border-radius-container .bottom-left',
-    ].map((selector) => this.initCheckBox(selector, () => this.onBorderCornerChanged()));
+      '.border-radius-container .bottom-left'
+    ].map(selector => this.initCheckBox(selector, () => this.onBorderCornerChanged()));
 
     this.borderWidthInput = this.initInput('.border-width-input', (e) => this.onBorderWidthChanged());
     this.borderStyleComboBox = this.initComboBox('.border-type-combo-box', (e) => this.onBorderStyleChanged());
@@ -101,9 +101,9 @@ export class BorderPane extends PaneBase {
 
     // border width, this builds a string like "0px 1px 2px 3px"
     // FIXME: should not build a string which is then split in redrawBorderWidth
-    const borderWidth = this.getCommonProperty(states, (state) => {
+    const borderWidth = this.getCommonProperty(states, state => {
       const w = this.model.element.getStyle(state.el, 'border-width');
-      if (w && w !== '') {
+      if (w && w != '') {
         return w;
       } else {
         return null;
@@ -119,7 +119,7 @@ export class BorderPane extends PaneBase {
     }
 
     // border style
-    const borderStyle = this.getCommonProperty(states, (state) => this.model.element.getStyle(state.el, 'border-style'));
+    const borderStyle = this.getCommonProperty(states, state => this.model.element.getStyle(state.el, 'border-style'));
 
     if (borderStyle) {
       this.borderStyleComboBox.value = borderStyle;
@@ -128,7 +128,7 @@ export class BorderPane extends PaneBase {
     }
 
     // border radius
-    const borderRadiusStr = this.getCommonProperty(states, (state) => this.model.element.getStyle(state.el, 'border-radius'));
+    const borderRadiusStr = this.getCommonProperty(states, state => this.model.element.getStyle(state.el, 'border-radius'));
 
     if (borderRadiusStr) {
       this.redrawBorderRadius(borderRadiusStr);
@@ -143,13 +143,13 @@ export class BorderPane extends PaneBase {
   redrawBorderColor(states) {
     if (states.length > 0) {
       this.colorPicker.setDisabled(false);
-      const color = this.getCommonProperty(states, (state) => this.model.element.getStyle(state.el, 'border-color') || 'rgba(0,0,0,1)');
+      const color = this.getCommonProperty(states, state => this.model.element.getStyle(state.el, 'border-color') || 'rgba(0,0,0,1)');
 
       // indeterminate state
       this.colorPicker.setIndeterminate(color == null);
 
       // display color
-      if (color !== null) {
+      if (color != null) {
         this.colorPicker.setColor(color);
       }
     } else {

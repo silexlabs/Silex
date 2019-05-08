@@ -15,16 +15,17 @@
  *
  */
 
-import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
 import { Controller, Model } from '../../types';
 import { PaneBase } from './pane-base';
+import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
+
 
 /**
  * on of Silex Editors class
  * let user edit style of components
  * @param element   container to render the UI
  * @param model  model class which holds
- * the model instances - views use it for read
+  * the model instances - views use it for read
  * operation only
  * @param controller  structure which holds
  * the controller instances
@@ -60,14 +61,14 @@ export class GeneralStylePane extends PaneBase {
     super.redraw(states, pageNames, currentPageName);
 
     // not available for stage element
-    const statesNoBody = states.filter((data) => data.el !== this.model.body.getBodyElement());
+    const statesNoBody = states.filter(data => data.el !== this.model.body.getBodyElement());
 
     if (statesNoBody.length > 0) {
       // not stage element only
       this.opacityInput.removeAttribute('disabled');
 
       // get the opacity
-      const opacity = this.getCommonProperty(states, (state) => this.model.element.getStyle(state.el, 'opacity'));
+      let opacity = this.getCommonProperty(states, (state) => this.model.element.getStyle(state.el, 'opacity'));
 
       if (opacity === null) {
         this.opacityInput.value = '';

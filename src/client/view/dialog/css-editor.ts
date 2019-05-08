@@ -35,7 +35,7 @@ export class CssEditor extends AceEditorBase {
     super(element, model, controller);
 
     // set mode
-    this.ace.getSession().setMode('ace/mode/css');
+    this.ace.getSession()['setMode']('ace/mode/css');
   }
 
   /**

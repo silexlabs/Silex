@@ -1,10 +1,10 @@
 //////////////////////////////////////////////////
 // Silex, live web creation
 // http://projects.silexlabs.org/?/silex/
-//
+// 
 // Copyright (c) 2012 Silex Labs
 // http://www.silexlabs.org/
-//
+// 
 // Silex is available under the GPL license
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
@@ -32,7 +32,7 @@ $(function() {
 	 * init page system
 	 */
 	$( 'body' ).pageable({
-		currentPage: firstPageName,
+		currentPage: firstPageName, 
 		useDeeplink:true
 	});
 	/**
@@ -73,7 +73,7 @@ $(function() {
 		element.setAttribute('style', element.getAttribute('data-style-normal'));
 
 		// apply specific style
-		if (state !== 'normal'){
+		if (state != 'normal'){
 			var stylesStr = element.getAttribute('data-style-'+state).split(';');
 			var styles = {};
 			for (var idx=0; idx<stylesStr.length; idx++){
@@ -97,7 +97,7 @@ $(function() {
 			if (height < bottom) height = bottom;
 		});
 		$("body").css({
-			"min-width": width + "px",
+			"min-width": width + "px", 
 			"min-height": height + "px"
 		});
 	}

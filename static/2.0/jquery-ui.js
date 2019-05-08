@@ -319,7 +319,7 @@ var uuid = 0,
 	slice = Array.prototype.slice,
 	_cleanData = $.cleanData;
 $.cleanData = function( elems ) {
-	for ( var i = 0, elem; (elem = elems[i]) !== null; i++ ) {
+	for ( var i = 0, elem; (elem = elems[i]) != null; i++ ) {
 		try {
 			$( elem ).triggerHandler( "remove" );
 		// http://bugs.jquery.com/ticket/8235
@@ -5077,7 +5077,7 @@ color.fn = jQuery.extend( color.prototype, {
 			if (isCache) {
 				localCache = inst[ space.cache ] || space.to && space.to( inst._rgba ) || [];
 				each( space.props, function( _, prop ) {
-					if ( isCache[ prop.idx ] !== null ) {
+					if ( isCache[ prop.idx ] != null ) {
 						same = ( isCache[ prop.idx ] === localCache[ prop.idx ] );
 						return same;
 					}
@@ -6991,7 +6991,7 @@ $.widget( "ui.autocomplete", {
 	},
 
 	search: function( value, event ) {
-		value = value !== null ? value : this._value();
+		value = value != null ? value : this._value();
 
 		// always save the actual value, not the one passed as an argument
 		this.term = this._value();
@@ -8590,7 +8590,7 @@ $.extend(Datepicker.prototype, {
 			target = $(id),
 			inst = this._getInst(target[0]);
 
-		dateStr = (dateStr !== null ? dateStr : this._formatDate(inst));
+		dateStr = (dateStr != null ? dateStr : this._formatDate(inst));
 		if (inst.input) {
 			inst.input.val(dateStr);
 		}
