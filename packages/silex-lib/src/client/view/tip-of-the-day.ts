@@ -43,7 +43,7 @@ export class TipOfTheDay {
 
     // keep track of the visits
     let visits = 0;
-    let visitsStr =
+    const visitsStr =
         window.localStorage.getItem(TipOfTheDay.NUM_VISITS_LOCAL_STORAGE_NAME);
     if (visitsStr) {
       visits = parseInt(visitsStr, 10);
@@ -52,7 +52,7 @@ export class TipOfTheDay {
         TipOfTheDay.NUM_VISITS_LOCAL_STORAGE_NAME, (visits + 1).toString());
 
     // load data
-    let oReq = new XMLHttpRequest();
+    const oReq = new XMLHttpRequest();
     oReq.open(
         'GET',
         'https://api.github.com/repos/silexlabs/Silex/issues?labels=tip-of-the-day');
@@ -67,26 +67,26 @@ export class TipOfTheDay {
       const items = JSON.parse(oReq.responseText);
 
       // loop on the items backward
-      let idx = items.length - visits % items.length - 1;
-      let item = items[idx];
+      const idx = items.length - visits % items.length - 1;
+      const item = items[idx];
       if (item) {
         // store for actions tracking (QA)
-        itemTrackAction = item['title'];
+        itemTrackAction = item.title;
         Tracker.getInstance().trackAction(
             'tip-of-the-day', 'show', itemTrackAction, 0);
 
         // extract the first link from the issue
-        let tmp = document.createElement('div');
-        tmp.innerHTML = item['body'];
-        let firstLink = tmp.querySelector('a');
+        const tmp = document.createElement('div');
+        tmp.innerHTML = item.body;
+        const firstLink = tmp.querySelector('a');
 
         // let firstImage = tmp.querySelector('img');
         // display the content
-        let el = document.createElement('a');
+        const el = document.createElement('a');
         el.target = '_blank';
-        el.title = item['title'];
-        el.innerHTML = '<h3>' + item['title'] + '</h3><p>' +
-            this.strip(item['body']) + '</p>';
+        el.title = item.title;
+        el.innerHTML = '<h3>' + item.title + '</h3><p>' +
+            this.strip(item.body) + '</p>';
         if (firstLink != null) {
           el.href = firstLink.href;
         }
@@ -96,7 +96,7 @@ export class TipOfTheDay {
     });
 
     // attach click event
-    this.element.addEventListener('click', e => {
+    this.element.addEventListener('click', (e) => {
       if ((e.target as HTMLElement).classList.contains('close')) {
         Tracker.getInstance().trackAction(
             'tip-of-the-day', 'close', itemTrackAction, 0);
@@ -111,7 +111,7 @@ export class TipOfTheDay {
    * remove the html from a string
    */
   strip(html) {
-    let node = document.createElement('DIV');
+    const node = document.createElement('DIV');
     node.innerHTML = html;
     return node.textContent || node.innerText || '';
   }

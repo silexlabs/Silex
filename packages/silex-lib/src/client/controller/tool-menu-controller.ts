@@ -18,8 +18,8 @@ import {SilexTasks} from '../service/silex-tasks';
 import {Model} from '../types';
 import {View} from '../types';
 
-import {ControllerBase} from './controller-base';
 import { getUiElements } from '../view/UiElements';
+import {ControllerBase} from './controller-base';
 
 /**
  * @param view  view class which holds the other views

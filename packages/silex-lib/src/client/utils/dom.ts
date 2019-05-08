@@ -1,5 +1,4 @@
 
-
 /**
  * Silex, live web creation
  * http://projects.silexlabs.org/?/silex/
@@ -27,15 +26,11 @@ export class Dom {
    */
   static CACHE_CONTROL_PARAM_NAME = 'silex-cache-control';
 
-  constructor() {
-    throw 'this is a static class and it canot be instanciated';
-  }
-
   /**
    * refresh an image with its latest version on the server
    */
   static refreshImage(img: HTMLImageElement, cbk: () => any) {
-    let initialUrl = img.src;
+    const initialUrl = img.src;
     img.onload = function(e) {
       // stop the process
       img.onload = null;
@@ -79,7 +74,7 @@ export class Dom {
   static removeCacheControl(url: string): string {
     // only when there is an existing cache control
     if (url.indexOf(Dom.CACHE_CONTROL_PARAM_NAME) > 0) {
-      let re = new RegExp(
+      const re = new RegExp(
           '([?|&|&amp;]' + Dom.CACHE_CONTROL_PARAM_NAME + '=[0-9]*[&*]?)',
           'gi');
       url = url.replace(re, function(match, group1, group2) {
@@ -141,8 +136,8 @@ export class Dom {
       let item = itemTemplateString;
 
       // replace each key by its value
-      for (let key in itemData) {
-        let value = itemData[key];
+      for (const key in itemData) {
+        const value = itemData[key];
         item = item.replace(new RegExp('{{' + key + '}}', 'g'), value);
       }
 
@@ -150,5 +145,9 @@ export class Dom {
       res += item;
     });
     return res;
+  }
+
+  constructor() {
+    throw new Error('this is a static class and it canot be instanciated');
   }
 }

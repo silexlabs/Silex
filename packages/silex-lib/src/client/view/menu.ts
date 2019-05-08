@@ -16,11 +16,10 @@
 *
 */
 
-import { Config } from '../ClientConfig';
 import { Constants } from '../../Constants';
+import { Config } from '../ClientConfig';
 import { Controller, Model } from '../types';
 import { Keyboard } from '../utils/Keyboard';
-
 
 /**
 * @param element   container to render the UI
@@ -33,9 +32,8 @@ import { Keyboard } from '../utils/Keyboard';
 export class Menu {
   static SUB_MENU_CLASSES = [
     'page-tool-visible', 'about-menu-visible', 'file-menu-visible',
-    'code-menu-visible', 'add-menu-visible'
+    'code-menu-visible', 'add-menu-visible',
   ];
-
 
   constructor(public element: HTMLElement, public model: Model, public controller: Controller) {}
 
@@ -73,7 +71,7 @@ export class Menu {
 
       // build a list of component categories
       const elements = {};
-      for (let id in componentsDef) {
+      for (const id in componentsDef) {
         const comp = componentsDef[id];
         if (comp.isPrivate !== true) {
           if (!elements[comp.category]) {
@@ -83,7 +81,7 @@ export class Menu {
           }
         }
       }
-      for (let id in elements) {
+      for (const id in elements) {
         // create a label for the category
         const label = document.createElement('div');
         label.classList.add('label');
@@ -119,16 +117,14 @@ export class Menu {
   * @param  currentPageName   the name of the current page
   */
   redraw() {
-    if(this.controller.editMenuController.hasUndo()) {
+    if (this.controller.editMenuController.hasUndo()) {
       this.element.querySelector('.undo').classList.remove('off');
-    }
-    else {
+    } else {
       this.element.querySelector('.undo').classList.add('off');
     }
-    if(this.controller.editMenuController.hasRedo()) {
+    if (this.controller.editMenuController.hasRedo()) {
       this.element.querySelector('.redo').classList.remove('off');
-    }
-    else {
+    } else {
       this.element.querySelector('.redo').classList.add('off');
     }
   }

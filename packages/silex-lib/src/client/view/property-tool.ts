@@ -16,6 +16,7 @@
  *
  */
 
+import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
 import { Constants } from '../../Constants';
 import { Controller, Model } from '../types';
 import { InvalidationManager } from '../utils/invalidation-manager';
@@ -26,8 +27,6 @@ import { PagePane } from './pane/page-pane';
 import { PropertyPane } from './pane/property-pane';
 import { StylePane } from './pane/style-pane';
 import { StyleEditorPane } from './pane/StyleEditorPane';
-import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
-
 
 //////////////////////////////////////////////////////////////////
 // PropertyTool class
@@ -97,7 +96,6 @@ export class PropertyTool {
    * @see     silex.view.pane.StyleEditorPane
    */
   styleEditorPane: StyleEditorPane = null;
-
 
   constructor(public element: HTMLElement, public model: Model, public controller: Controller) {
     this.invalidationManager = new InvalidationManager(500);
@@ -206,7 +204,7 @@ export class PropertyTool {
    * @param pageNames   the names of the pages which appear in the current HTML file
    * @param  currentPageName   the name of the current page
    */
-  redraw(states: SelectableState[], pageNames: string[],currentPageName: string) {
+  redraw(states: SelectableState[], pageNames: string[], currentPageName: string) {
     this.invalidationManager.callWhenReady(() => {
       // refresh panes
       this.borderPane.redraw(states, pageNames, currentPageName);

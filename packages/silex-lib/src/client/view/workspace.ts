@@ -18,14 +18,13 @@
  *
  */
 import { Controller, Model, View } from '../types';
-import { SilexNotification } from '../utils/notification';
 import { InvalidationManager } from '../utils/invalidation-manager';
-
+import { SilexNotification } from '../utils/notification';
 
 /**
  * @param element   container to render the UI
  * @param model  model class which holds
-  * the model instances - views use it for read
+ * the model instances - views use it for read
  * operation only
  * @param controller  controller class which holds the other controllers
  */
@@ -106,8 +105,7 @@ export class Workspace {
    */
   resizeProperties() {
     this.invalidationManagerResize.callWhenReady(() => {
-      let container =
-          this.element.querySelector('.silex-property-tool .main-container');
+      const container = this.element.querySelector('.silex-property-tool .main-container');
       if (container.clientWidth < 500) {
         container.classList.add('size1');
         container.classList.remove('size2');
@@ -140,7 +138,7 @@ export class Workspace {
         this.previewWindow.focus();
       } else {
         try {
-          if (this.previewWindow.location.href != 'about:blank') {
+          if (this.previewWindow.location.href !== 'about:blank') {
             // only when loaded, reload
             this.previewWindow.location.reload(true);
           }
@@ -168,7 +166,7 @@ export class Workspace {
         SilexNotification.alert('Mobile editor warning', `
           Warning: you are entering the mobile editor, but your website is not configured to support it,
           so you need to open the menu "File", then "Settings" and "Enable mobile version".
-        `,() => {});
+        `, () => {});
       }
     } else {
       document.body.classList.remove('mobile-mode');
