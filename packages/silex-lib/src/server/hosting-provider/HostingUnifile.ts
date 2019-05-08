@@ -10,7 +10,7 @@
 //////////////////////////////////////////////////
 
 export default class HostingUnifile {
-  constructor(private unifile) {}
+  constructor(private unifile) {};
   getOptions(session) {
     return {
       name: 'unifile',

@@ -11,27 +11,28 @@
 
 const { URL } = require('url');
 const Path = require('path');
-import { Constants } from '../../Constants';
 import DomTools from '../utils/DomTools';
+import { Constants } from '../../Constants';
 
 export interface File {
-  original: string;
-  srcPath: string;
-  destPath: string;
-  tagName: string;
-  displayName: string;
+  original: string,
+  srcPath: string,
+  destPath: string,
+  tagName: string,
+  displayName: string,
 }
 export interface Action {
-  name: string;
-  path: string;
-  displayName: string;
-  content: string;
+  name: string,
+  path: string,
+  displayName: string,
+  content: string,
 }
 
 /**
  * @fileoverview Helper class used to cleanup the DOM when publishing a website
  *
  */
+
 
 export class DomPublisher {
 
@@ -48,14 +49,15 @@ export class DomPublisher {
    */
   cleanupFirefoxInlines() {
     // remove inlined scripts and styles
-    ['script', 'style'].forEach((tagName) => {
+    ['script', 'style'].forEach(tagName => {
       const elements = this.doc.querySelectorAll(`${tagName}[style="display:none"]`);
-      for (let idx = 0; idx < elements.length; idx++) {
+      for (let idx=0; idx<elements.length; idx++) {
         const element = elements[idx];
         element.parentElement.removeChild(element);
       }
     });
-  }
+  };
+
 
   /**
    * cleanup html page
@@ -74,7 +76,7 @@ export class DomPublisher {
     // remove publication path
     // remove JSON styles
     const tagsToRemove = this.doc.head.querySelectorAll(`meta[name="publicationPath"], .${Constants.JSON_STYLE_TAG_CLASS_NAME}`);
-    for (let idx = 0; idx < tagsToRemove.length; idx++) {
+    for(let idx=0; idx<tagsToRemove.length; idx++) {
       tagsToRemove[idx].parentElement.removeChild(tagsToRemove[idx]);
     }
     // remove data-silex-id
@@ -82,7 +84,7 @@ export class DomPublisher {
     // remove data-dependency
     // do NOT remove data-silex-type because it is used by front-end.js at runtime
     const tagsToClean = this.doc.querySelectorAll(`[${Constants.TYPE_ATTR}], [${Constants.ELEMENT_ID_ATTR_NAME}], [${Constants.STATIC_ASSET_ATTR}]`);
-    for (let idx = 0; idx < tagsToClean.length; idx++) {
+    for(let idx=0; idx<tagsToClean.length; idx++) {
       tagsToClean[idx].removeAttribute(Constants.ELEMENT_ID_ATTR_NAME);
       tagsToClean[idx].removeAttribute(Constants.STATIC_ASSET_ATTR);
       tagsToClean[idx].removeAttribute('data-dependency');
@@ -94,9 +96,9 @@ export class DomPublisher {
 
     // remove unused scripts when there is no deeplink navigation anymore
     ['js/jquery-ui.js', 'js/pageable.js']
-    .map((path) => this.doc.querySelector(`script[src="${ path }"]`))
-    .filter((el) => !!el) // when not updated yet to the latest version, the URLs are not relative
-    .forEach((el) => el.parentElement.removeChild(el));
+    .map(path => this.doc.querySelector(`script[src="${ path }"]`))
+    .filter(el => !!el) // when not updated yet to the latest version, the URLs are not relative
+    .forEach(el => el.parentElement.removeChild(el))
     // split in multiple pages
     const pages = Array.from(this.doc.querySelectorAll(`a[${Constants.TYPE_ATTR}="${Constants.TYPE_PAGE}"]`));
     const initialFirstPageName = pages[0].getAttribute('id');
@@ -115,32 +117,35 @@ export class DomPublisher {
       (clone.head.querySelector('title') || ({} as HTMLTitleElement)).innerHTML += ' - ' + displayName;
       // remove elements from other pages
       Array.from(clone.querySelectorAll(`.${Constants.PAGED_CLASS_NAME}`))
-      .forEach((el) => {
-        if (el.classList.contains(name)) {
+      .forEach(el => {
+        if(el.classList.contains(name)) {
           el.classList.add('page-link-active');
-        } else {
+        }
+        else {
           el.parentElement.removeChild(el);
         }
-      });
+      })
       // update links
       Array.from(clone.querySelectorAll('a'))
-      .filter((el) => el.hash.startsWith('#!'))
-      .forEach((el) => {
+      .filter(el => el.hash.startsWith('#!'))
+      .forEach(el => {
         const [pageName, anchor] = el.hash.substr('#!'.length).split('#');
         el.href = (pageName === initialFirstPageName && newFirstPageName ? 'index.html' : pageName.substr('page-'.length) + '.html') + (anchor ? '#' + anchor : '');
-        if (pageName ===  name) {
+        if(pageName ===  name) {
           el.classList.add('page-link-active');
-        } else {
+        }
+        else {
           el.classList.remove('page-link-active'); // set when you save the file
         }
-      });
+      })
 
       // remove useless css classes
       // do not do this before as these classes are needed until the last moment, e.g. to select paged elements
-      Constants.SILEX_CLASS_NAMES_TO_REMOVE_AT_PUBLISH.forEach((className) => {
+      Constants.SILEX_CLASS_NAMES_TO_REMOVE_AT_PUBLISH.forEach(className => {
         Array.from(clone.getElementsByClassName(className))
         .forEach((el: HTMLElement) => el.classList.remove(className));
       });
+
 
       // create a unifile batch action
       return {
@@ -148,8 +153,8 @@ export class DomPublisher {
         path: this.rootPath + '/' + this.getDestFolder('.html', null) + '/' + fileName,
         displayName: fileName,
         content: '<!doctype html>' + clone.documentElement.outerHTML,
-      };
-    });
+      }
+    })
   }
 
   extractAssets(baseUrl: string): {scriptTags: HTMLElement[], styleTags: HTMLElement[], files: File[]} {
@@ -165,22 +170,23 @@ export class DomPublisher {
 
       const url = new URL(path, baseUrl);
 
-      if (this.isDownloadable(url)) {
+      if(this.isDownloadable(url)) {
         const fileName = Path.basename(url.pathname);
         const destFolder = this.getDestFolder(Path.extname(url.pathname), tagName);
-        if (destFolder) {
+        if(destFolder) {
           const destPath = `${destFolder}/${fileName}`;
           files.push({
             original: path,
             srcPath: url.href,
             destPath: this.rootPath + '/' + destPath,
-            tagName,
+            tagName: tagName,
             displayName: fileName,
           });
-          if (tagName) {
+          if(tagName) {
             // not an URL from a style sheet
             return destPath;
-          } else if (isInHead) {
+          }
+          else if(isInHead) {
             // URL from a style sheet
             // called from '/css'
             return '../' + destPath;
@@ -196,39 +202,41 @@ export class DomPublisher {
     // final js script to store in js/script.js
     const scriptTags = [];
     const scripts = this.doc.head.querySelectorAll('script');
-    for (let idx = 0; idx < scripts.length; idx++) {
+    for(let idx=0; idx<scripts.length; idx++) {
       const tag = scripts[idx];
-      if (!tag.src && tag.innerHTML) {
+      if(!tag.src && tag.innerHTML) {
         tag.parentElement.removeChild(tag);
         scriptTags.push(tag);
       }
     }
     // link the user's script
-    if (scriptTags.length > 0) {
+    if(scriptTags.length > 0) {
       const scriptTagSrc = this.doc.createElement('script');
       scriptTagSrc.src = 'js/script.js';
       scriptTagSrc.type = 'text/javascript';
       this.doc.head.appendChild(scriptTagSrc);
-    } else {
+    }
+    else {
       console.info('no script found in head');
     }
 
     // add head css
     const styleTags = [];
     const styles = this.doc.head.querySelectorAll('style');
-    for (let idx = 0; idx < styles.length; idx++) {
+    for(let idx=0; idx<styles.length; idx++) {
       const tag = styles[idx];
       tag.parentElement.removeChild(tag);
       styleTags.push(tag);
     }
     // link the user's stylesheet
-    if (styleTags.length > 0) {
+    if(styleTags.length > 0) {
       const cssTagSrc = this.doc.createElement('link');
       cssTagSrc.href = 'css/styles.css';
       cssTagSrc.rel = 'stylesheet';
       cssTagSrc.type = 'text/css';
       this.doc.head.appendChild(cssTagSrc);
-    } else {
+    }
+    else {
       console.warn('no styles found in head');
     }
 
@@ -249,7 +257,7 @@ export class DomPublisher {
       const replacement = this.doc.createElement('a');
       replacement.setAttribute('href', href);
       replacement.innerHTML = element.innerHTML;
-      for (let attrIdx = 0; attrIdx < element.attributes.length; attrIdx++) {
+      for(let attrIdx=0; attrIdx<element.attributes.length; attrIdx++) {
         const nodeName = element.attributes.item(attrIdx).nodeName;
         const nodeValue = element.attributes.item(attrIdx).nodeValue;
         replacement.setAttribute(nodeName, nodeValue);
@@ -261,11 +269,12 @@ export class DomPublisher {
     });
 
     return {
-      scriptTags,
-      styleTags,
+      scriptTags: scriptTags,
+      styleTags: styleTags,
       files,
     };
   }
+
 
   /**
    * det if a given URL is supposed to be downloaded locally
@@ -281,3 +290,4 @@ export class DomPublisher {
   }
 
 }
+

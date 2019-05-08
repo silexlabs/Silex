@@ -17,9 +17,9 @@
 import {Model} from '../types';
 import {View} from '../types';
 import {FileInfo} from '../types';
+import {ControllerBase} from './controller-base';
 import {SilexNotification} from '../utils/notification';
 import {FileExplorer} from '../view/dialog/file-explorer';
-import {ControllerBase} from './controller-base';
 
 /**
  * @param view  view class which holds the other views

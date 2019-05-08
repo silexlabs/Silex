@@ -1,6 +1,7 @@
 import {Controller} from '../types';
 import {Model} from '../types';
 
+
 /**
  * Silex, live web creation
  * http://projects.silexlabs.org/?/silex/
@@ -18,7 +19,8 @@ import {Model} from '../types';
  *
  */
 
-import { addEvent } from 'drag-drop-stage-component/src/ts/utils/Events';
+
+import { addEvent } from 'drag-drop-stage-component/src/ts/utils/Events'
 
 /**
  * @param element   container to render the UI
@@ -29,11 +31,6 @@ import { addEvent } from 'drag-drop-stage-component/src/ts/utils/Events';
  * the controller instances
  */
 export class Splitter {
-
-  /**
-   * width of the splitter, as defined in the CSS
-   */
-  static WIDTH = 5;
   onRedraw: (() => any)|undefined;
   onTheLeft: HTMLElement[] = [];
   onTheRight: HTMLElement[] = [];
@@ -47,15 +44,15 @@ export class Splitter {
   viewport: any;
 
   /**
-   * handle mouse event
+   * width of the splitter, as defined in the CSS
    */
-  toBeCleared: Array<() => void> = [];
+  static WIDTH = 5;
 
   constructor(public element: HTMLElement, public model: Model, public controller: Controller, opt_onRedraw?: (() => any)) {
     this.onRedraw = opt_onRedraw;
 
     // mouse down event
-    this.element.addEventListener('mousedown', (e) => this.onMouseDown(e), false);
+    this.element.addEventListener('mousedown', e => this.onMouseDown(e), false);
 
     // handle window resize event
     window.addEventListener('resize', () => this.redraw(), false);
@@ -91,28 +88,33 @@ export class Splitter {
    * redraw the components
    */
   redraw() {
-    const pos = this.element.getBoundingClientRect();
-    const parentSize = this.element.parentElement.getBoundingClientRect();
+    let pos = this.element.getBoundingClientRect();
+    let parentSize = this.element.parentElement.getBoundingClientRect();
 
     // apply the position to the elements
-    this.onTheLeft.forEach((element) => {
+    this.onTheLeft.forEach(element => {
       element.style.right = parentSize.width - pos.left + 'px';
     });
-    this.onTheRight.forEach((element) => {
+    this.onTheRight.forEach(element => {
       element.style.left = Splitter.WIDTH + pos.left + 'px';
     });
     if (this.onRedraw) {
       this.onRedraw();
     }
   }
+
+  /**
+   * handle mouse event
+   */
+  toBeCleared: Array<() => void> = [];
   onMouseDown(e: Event) {
     this.isDown = true;
 
     // listen mouse events
     this.toBeCleared.push(
       addEvent(this.model.file.getContentWindow(), 'mousemove', (e: MouseEvent) => this.onMouseMove(e), false),
-      addEvent(this.model.file.getContentWindow(), 'mouseup', (e) => this.onMouseUp(e), true),
-      addEvent(document.body, 'mouseup', (e) => this.onMouseUp(e), false),
+      addEvent(this.model.file.getContentWindow(), 'mouseup', e => this.onMouseUp(e), true),
+      addEvent(document.body, 'mouseup', e => this.onMouseUp(e), false),
       addEvent(document.body, 'mousemove', (e: MouseEvent) => this.onMouseMove(e), false),
     );
   }
@@ -122,7 +124,7 @@ export class Splitter {
    */
   onMouseUp(e: Event) {
     this.isDown = false;
-    this.toBeCleared.forEach((clear) => clear());
+    this.toBeCleared.forEach(clear => clear());
     this.toBeCleared = [];
   }
 
@@ -131,9 +133,9 @@ export class Splitter {
    */
   onMouseMove(e: MouseEvent) {
     let right = parseInt(this.element.style.right);
-    if (this.element.style.right === '') {
-      const parentSize = this.element.parentElement.getBoundingClientRect();
-      const pos = (e.target as HTMLElement).getBoundingClientRect();
+    if(this.element.style.right === '') {
+      let parentSize = this.element.parentElement.getBoundingClientRect();
+      let pos = (e.target as HTMLElement).getBoundingClientRect();
       right = parentSize.right - pos.right;
     }
     this.element.style.right = (right - e.movementX) + 'px';

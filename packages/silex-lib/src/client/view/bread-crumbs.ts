@@ -15,10 +15,11 @@
  *
  */
 
-import { Constants } from '../../Constants';
+import {InvalidationManager} from '../utils/invalidation-manager';
 import {Controller} from '../types';
 import {Model} from '../types';
-import {InvalidationManager} from '../utils/invalidation-manager';
+import { Constants } from '../../Constants';
+
 
 /**
  * @param element   container to render the UI
@@ -62,12 +63,12 @@ export class BreadCrumbs {
 
       // clone the selection array in order to avoid side effects after
       // manipulating the array
-      const selectedElements = [];
+      let selectedElements = [];
       opt_selectedElements.forEach((element) => selectedElements.push(element));
 
       // get the common ancesters to all selected elements
       function getParents(elem) {
-        const parents = [];
+        let parents = [];
         while (elem && elem.tagName !== 'HTML') {
           parents.unshift(elem);
           elem = elem.parentElement;
@@ -80,13 +81,13 @@ export class BreadCrumbs {
       selectedElements.sort(
           (elem1, elem2) =>
               getParents(elem2).length - getParents(elem1).length);
-      const deepest = selectedElements.shift();
+      let deepest = selectedElements.shift();
 
       // for this "deepest" element, find the common ancestors with all others
       let ancestors = getParents(deepest);
       selectedElements.forEach((element) => {
-        const parents = getParents(element);
-        const newAncestors = [];
+        let parents = getParents(element);
+        let newAncestors = [];
         let idx = 0;
         while (idx < ancestors.length && idx < parents.length &&
                ancestors[idx] === parents[idx]) {
@@ -109,7 +110,7 @@ export class BreadCrumbs {
    * add a button in the bread crumb container
    */
   addCrumb(ancestor: HTMLElement) {
-    const crumb = document.createElement('DIV');
+    let crumb = document.createElement('DIV');
     let cssClasses = this.model.element.getClassName(ancestor);
     if (cssClasses !== '') {
       cssClasses = '.' + cssClasses.split(' ').join('.');

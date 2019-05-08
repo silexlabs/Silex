@@ -18,6 +18,7 @@
 import { Model, View } from '../types';
 import { ControllerBase } from './controller-base';
 
+
 /**
  * @param view  view class which holds the other views
  */
@@ -47,7 +48,7 @@ export class StageController extends ControllerBase {
    * @param target selected element
    */
   selectMultiple(target: HTMLElement) {
-    const selection = this.model.body.getSelection();
+    let selection = this.model.body.getSelection();
     selection.push(target);
     this.model.body.setSelection(selection);
   }
@@ -59,7 +60,7 @@ export class StageController extends ControllerBase {
    * @param target selected element
    */
   deselect(target: HTMLElement) {
-    const selection = this.model.body.getSelection();
+    let selection = this.model.body.getSelection();
     selection.splice(selection.indexOf(target), 1);
     this.model.body.setSelection(selection);
   }

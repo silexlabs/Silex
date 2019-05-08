@@ -14,7 +14,7 @@
  *
  */
 
-type Rgb = number[];
+type Rgb = Array<number>;
 
 export class Style {
 
@@ -30,9 +30,9 @@ export class Style {
    * with only the keys which are set
    */
   static styleToObject(styleObj: CSSStyleDeclaration): Object {
-    const res = {};
+    let res = {};
     for (let idx = 0; idx < styleObj.length; idx++) {
-      const styleName = styleObj[idx];
+      let styleName = styleObj[idx];
       res[styleName] = styleObj[styleName];
     }
     return res;
@@ -50,7 +50,7 @@ export class Style {
       opt_tab = '';
     }
     let styleStr = '';
-    for (const idx in style) {
+    for (let idx in style) {
       // filter the numerical indexes of a CSSStyleDeclaration object
       // filter initial values and shorthand properties
       if (style[idx] && typeof style[idx] === 'string' && style[idx] !== '' &&
@@ -63,11 +63,11 @@ export class Style {
   }
 
   static hexToRgb(hexColor: string): any {
-    console.warn('why convert', hexColor, 'to RGB?');
-    const rgb = parseInt(hexColor.substr(1), 16);
-    const r = rgb >> 16;
-    const g = (rgb >> 8) & 255;
-    const b = rgb & 255;
+    console.warn('why convert', hexColor, 'to RGB?')
+    var rgb = parseInt(hexColor.substr(1), 16);
+    var r = rgb >> 16;
+    var g = (rgb >> 8) & 255;
+    var b = rgb & 255;
     return [r, g, b];
   }
 
@@ -83,12 +83,12 @@ export class Style {
       console.error('Error in length ' + hex + ' - ' + hex.length);
       return hex;
     }
-    const hexArr = Style.hexToArray(hex);
-    const r = hexArr[0];
-    const g = hexArr[1];
-    const b = hexArr[2];
-    const a = hexArr[3];
-    const result = 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+    let hexArr = Style.hexToArray(hex);
+    let r = hexArr[0];
+    let g = hexArr[1];
+    let b = hexArr[2];
+    let a = hexArr[3];
+    let result = 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
     return result;
   }
 
@@ -101,11 +101,11 @@ export class Style {
       return null;
     }
     hex = hex.replace('#', '');
-    const r = parseInt(hex.substring(0, 2), 16);
-    const g = parseInt(hex.substring(2, 4), 16);
-    const b = parseInt(hex.substring(4, 6), 16);
-    const a = parseInt(hex.substring(6, 8), 16) / 255;
-    const result = [r, g, b, a];
+    let r = parseInt(hex.substring(0, 2), 16);
+    let g = parseInt(hex.substring(2, 4), 16);
+    let b = parseInt(hex.substring(4, 6), 16);
+    let a = parseInt(hex.substring(6, 8), 16) / 255;
+    let result = [r, g, b, a];
     return result;
   }
 
@@ -129,7 +129,7 @@ export class Style {
     }
 
     // get the array version
-    const rgbaArr = Style.rgbaToArray(rgba);
+    let rgbaArr = Style.rgbaToArray(rgba);
     let r = rgbaArr[0].toString(16);
     if (r.length < 2) {
       r = '0' + r;
@@ -146,7 +146,7 @@ export class Style {
     if (a.length < 2) {
       a = '0' + a;
     }
-    const result = '#' + (r + g + b + a);
+    let result = '#' + (r + g + b + a);
     return result;
   }
 
@@ -167,17 +167,17 @@ export class Style {
       rgba = rgba.replace('rgba', '');
     }
     rgba = rgba.replace(' ', '');
-    const rgbaArr = rgba.substring(1, rgba.length - 1).split(',');
+    let rgbaArr = rgba.substring(1, rgba.length - 1).split(',');
 
     // add alpha if needed
     if (rgbaArr.length < 4) {
       rgbaArr.push('1');
     }
-    const r = parseInt(rgbaArr[0], 10);
-    const g = parseInt(rgbaArr[1], 10);
-    const b = parseInt(rgbaArr[2], 10);
-    const a = parseFloat(rgbaArr[3]) * 255;
-    const result = [r, g, b, a];
+    let r = parseInt(rgbaArr[0], 10);
+    let g = parseInt(rgbaArr[1], 10);
+    let b = parseInt(rgbaArr[2], 10);
+    let a = parseFloat(rgbaArr[3]) * 255;
+    let result = [r, g, b, a];
     return result;
   }
 }

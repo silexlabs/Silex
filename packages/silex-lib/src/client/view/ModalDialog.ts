@@ -16,17 +16,25 @@
 
 import {Body} from '../model/body';
 
+
 /**
  * implement a "modal" behavior to hide and show dialogs
  * there is a static method to open dialogs by name
  * @class {silex.view.ModalDialog}
  */
 export class ModalDialog {
+  name: any;
+  element: any;
+  onOpen: any;
+  onClose: any;
 
   static dialogs: any = {};
   static currentDialog: ModalDialog;
   static HIDE_DIALOG_CLASS_NAME = 'silex-hide-dialog';
   static MODAL_DIALOG_CLASS_NAME = 'silex-modal-dialog';
+
+  // set the flag
+  isOpen: any = false;
 
   /**
    * open a dialog by name
@@ -49,19 +57,12 @@ export class ModalDialog {
       console.error('could not close dialog, there is no dialog opened');
     }
   }
-  name: any;
-  element: any;
-  onOpen: any;
-  onClose: any;
-
-  // set the flag
-  isOpen: any = false;
 
   constructor(options: {
     name: string,
     element: HTMLElement,
     onOpen: (p1?: any) => any,
-    onClose: () => any,
+    onClose: () => any
   }) {
     // check and store options
     if (options.name) {
@@ -71,17 +72,17 @@ export class ModalDialog {
     if (options.element) {
       this.element = options.element;
     } else {
-      throw new Error('Modal dialog options missing a "element" field');
+      throw 'Modal dialog options missing a "element" field';
     }
     if (options.onOpen) {
       this.onOpen = options.onOpen;
     } else {
-      throw new Error('Modal dialog options missing a "onOpen" field');
+      throw 'Modal dialog options missing a "onOpen" field';
     }
     if (options.onClose) {
       this.onClose = options.onClose;
     } else {
-      throw new Error('Modal dialog options missing a "onClose" field');
+      throw 'Modal dialog options missing a "onClose" field';
     }
 
     // set the css classes
@@ -95,7 +96,7 @@ export class ModalDialog {
     }
 
     // handle escape key
-    document.addEventListener('keydown', (e) => {
+    document.addEventListener('keydown', e => {
       if (this.isOpen && e.key === 'Escape') {
         this.close();
         e.preventDefault();

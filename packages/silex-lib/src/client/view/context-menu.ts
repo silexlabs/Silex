@@ -1,6 +1,7 @@
 import {Controller} from '../types';
 import {Model} from '../types';
 
+
 /**
  * Silex, live web creation
  * http://projects.silexlabs.org/?/silex/
@@ -18,8 +19,8 @@ import {Model} from '../types';
  *
  */
 
-import {ControllerBase} from '../controller/controller-base';
-import {InvalidationManager} from '../utils/invalidation-manager';
+ import {InvalidationManager} from '../utils/invalidation-manager';
+ import {ControllerBase} from '../controller/controller-base';
 
 /**
  * @param element   container to render the UI
@@ -78,7 +79,7 @@ export class ContextMenu {
     });
     this.element.querySelector('.sticky-elements')
         .addEventListener('click', () => {
-          throw new Error('todo');
+          throw 'todo'
         });
   }
 

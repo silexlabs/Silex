@@ -53,7 +53,7 @@ export class PageTool {
    */
   buildUi() {
     // listen for the click on a page
-    this.element.addEventListener('click', (e) => {
+    this.element.addEventListener('click', e => {
       if ((e.target as HTMLElement).classList.contains('delete')) {
         // remove the page
         this.removePageAtIndex(
@@ -65,7 +65,7 @@ export class PageTool {
               this.getCellIndex((e.target as HTMLElement).parentElement.parentElement as HTMLElement));
         } else {
           // select page
-          const cellIndex = this.getCellIndex((e.target as HTMLElement).parentElement as HTMLElement);
+          let cellIndex = this.getCellIndex((e.target as HTMLElement).parentElement as HTMLElement);
           if (cellIndex >= 0) {
             this.setSelectedIndex(cellIndex, true);
           }
@@ -113,14 +113,14 @@ export class PageTool {
           // this happens while undoing or redoing
           return null;
         }
-        const res = {
-          name: pageName,
-          displayName: this.model.file.getContentDocument()
+        let res = {
+          'name': pageName,
+          'displayName': this.model.file.getContentDocument()
             .getElementById(pageName)
             .innerHTML,
-          linkName: '#!' + pageName,
-          idx: idx++,
-          className: '',
+          'linkName': '#!' + pageName,
+          'idx': idx++,
+          'className': '',
         };
         if (currentPageName === pageName) {
           res.className = 'ui-selected';
@@ -129,8 +129,8 @@ export class PageTool {
       });
 
       // refresh the list with new pages
-      const container = this.element.getElementsByClassName('page-tool-container')[0];
-      const templateHtml = this.element.getElementsByClassName('page-tool-template')[0].innerHTML;
+      let container = this.element.getElementsByClassName('page-tool-container')[0];
+      let templateHtml = this.element.getElementsByClassName('page-tool-template')[0].innerHTML;
       container.innerHTML = Dom.renderList(templateHtml, this.pages);
     });
   }
@@ -167,7 +167,7 @@ export class PageTool {
    * @param element which represents the cell in the dom
    */
   getCellIndex(element: HTMLElement): number {
-    const pageIdx = element.getAttribute('data-page-idx');
+    let pageIdx = element.getAttribute('data-page-idx');
     if (pageIdx) {
       return parseInt(pageIdx, 10);
     } else {
