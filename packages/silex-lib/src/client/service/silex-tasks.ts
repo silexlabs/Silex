@@ -16,11 +16,12 @@
  *
  */
 
-import {PublicationOptions, Provider, Hosting, VHost} from '../types';
+import {Hosting, Provider, PublicationOptions, VHost} from '../types';
 /**
  * the Silex SilexTasks singleton
  * based on http://www.inkfilepicker.com/
  * load and save data to and from the cloud storage services
+ * FIXME: use types common to front and back end
  */
 export class SilexTasks {
 
@@ -61,7 +62,7 @@ export class SilexTasks {
    * @param cbk to receive the json response
    */
   authorize(provider: Provider, cbk: (p1: string) => any, opt_errCbk?: (p1: string) => any) {
-    this.callServer(provider['authorizeUrl'], '', 'POST', cbk, opt_errCbk);
+    this.callServer(provider.authorizeUrl, '', 'POST', cbk, opt_errCbk);
   }
 
   /**
@@ -69,15 +70,15 @@ export class SilexTasks {
    * @param cbk to receive the json response
    */
   vhosts(provider: Provider, cbk: (p1: VHost[]) => any, opt_errCbk?: (p1: string) => any) {
-    this.callServer(provider['vhostsUrl'], '', 'GET', cbk, opt_errCbk);
+    this.callServer(provider.vhostsUrl, '', 'GET', cbk, opt_errCbk);
   }
 
   /**
    * get the domain name for a vhost
    * @param cbk to receive the json response
    */
-  domain(vhost: VHost, cbk: (p1?: {domain: string}) => any, opt_errCbk?: (p1: string) => any) {
-    this.callServer(vhost['domainUrl'], '', 'GET', cbk, opt_errCbk);
+  domain(vhost: VHost, cbk: (p1?: {domain: string, url: string, status: string}) => any, opt_errCbk?: (p1: string) => any) {
+    this.callServer(vhost.domainUrl, '', 'GET', cbk, opt_errCbk);
   }
 
   /**
@@ -85,7 +86,7 @@ export class SilexTasks {
    * @param cbk to receive the json response
    */
   updateDomain(vhost: VHost, newDomain: string, cbk: (p1: {domain: string, https: boolean}) => any, opt_errCbk?: (p1: string) => any) {
-    this.callServer(vhost['domainUrl'], JSON.stringify({'domain': newDomain}), 'POST', cbk,   opt_errCbk);
+    this.callServer(vhost.domainUrl, JSON.stringify({domain: newDomain}), 'POST', cbk,   opt_errCbk);
   }
 
   /**
@@ -93,7 +94,7 @@ export class SilexTasks {
    * @param cbk to receive the json response
    */
   removeDomain(vhost: VHost, newDomain: string, cbk: (p1: {domain: string, https: boolean}) => any, opt_errCbk?: (p1: string) => any) {
-    this.callServer(vhost['domainUrl'], JSON.stringify({'domain': newDomain}), 'DELETE',   cbk, opt_errCbk);
+    this.callServer(vhost.domainUrl, JSON.stringify({domain: newDomain}), 'DELETE',   cbk, opt_errCbk);
   }
 
   /**
@@ -106,7 +107,7 @@ export class SilexTasks {
       let message: string = oReq.responseText;
       let json: any = null;
       try {
-        json = (JSON.parse(oReq.responseText) as Object);
+        json = (JSON.parse(oReq.responseText));
         message = (json.message as string);
       } catch (e) {
       }

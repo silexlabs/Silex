@@ -27,7 +27,7 @@ import {TipOfTheDay} from '../tip-of-the-day';
 export class Dashboard {
   // define properties
   readyCbk: (() => any) = null;
-  errorCbk: ((p1?: Object) => any) = null;
+  errorCbk: ((p1?: any) => any) = null;
   selected: {url: string, fileInfo: FileInfo} = null;
 
   // make this a dialog
@@ -50,9 +50,9 @@ export class Dashboard {
   constructor(protected element: HTMLElement, protected model: Model, protected controller: Controller) {
     this.modalDialog = new ModalDialog({
       name: 'Dashboard',
-      element: element,
+      element,
       onOpen: (args) => this.redraw(),
-      onClose: () => {}
+      onClose: () => {},
     });
   }
 
@@ -170,7 +170,7 @@ export class Dashboard {
       if (!!templateUrl || !!recentFileInfo) {
         this.selected = {
           fileInfo: (JSON.parse(recentFileInfo) as FileInfo),
-          url: templateUrl
+          url: templateUrl,
         };
 
         // close the dialog, which will trigger a call the dialog onClose
@@ -203,19 +203,19 @@ export class Dashboard {
         this.errorCbk = null;
       }
     };
-    const toLoad = [
+    const _toLoad = [
       {
         selector: '.general-pane ul',
         repo: 'silex-templates',
-        className: 'silex-templates'
+        className: 'silex-templates',
       },
       {
         selector: '.general-pane ul',
         repo: 'silex-blank-templates',
-        className: 'silex-blank-templates'
-      }
+        className: 'silex-blank-templates',
+      },
     ];
-    loadNext(toLoad);
+    loadNext(_toLoad);
 
     // clear button
     const clearBtn = this.element.querySelector('.clear-btn') as HTMLElement;
@@ -237,7 +237,7 @@ export class Dashboard {
 
     // tip of the day
     const tipOfTheDayElement = this.element.querySelector('.tip-of-the-day') as HTMLElement;
-    let tipOfTheDay: TipOfTheDay = new TipOfTheDay(tipOfTheDayElement);
+    const tipOfTheDay: TipOfTheDay = new TipOfTheDay(tipOfTheDayElement);
   }
 
   /**
@@ -273,7 +273,6 @@ export class Dashboard {
             // cloudIcon= fa-github | fa-dropbox | fa-server | fa-cloud |
             // fa-cloud-download
             const cloudIcon = (() => {
-              let name;
               switch (blob.service) {
                 case 'github':
                   return ['fa', 'fa-github'];
@@ -318,7 +317,7 @@ export class Dashboard {
     openFileInfo: (p1: FileInfo) => any,
     openTemplate: (p1: string) => any,
     ready: (() => any),
-    error: ((p1?: Object) => any)
+    error: ((p1?: any) => any),
   }) {
     // is ready callback
     // error callback

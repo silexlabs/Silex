@@ -9,16 +9,15 @@
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
 
-const uuid = require('uuid');
-const request = require('request');
-const assert = require('assert');
-const Path = require('path');
-const { URL } = require('url');
-const { JSDOM } = require('jsdom');
-const sequential = require('promise-sequential');
-
+import * as assert from 'assert';
+import { JSDOM } from 'jsdom';
+import * as Path from 'path';
+import * as sequential from 'promise-sequential';
+import * as request from 'request';
+import { URL } from 'url';
+import * as uuid from 'uuid';
 import DomTools from '../utils/DomTools';
-import {DomPublisher, File, Action} from './DomPublisher';
+import { Action, DomPublisher, File } from './DomPublisher';
 
 // const TMP_FOLDER = '.tmp';
 
@@ -33,17 +32,17 @@ const publishJobs = new Map();
 setInterval(() => {
   let nJobs = 0;
   let nDeleted = 0;
-  publishJobs.forEach(publishJob => {
-    if(publishJob.pleaseDeleteMe) {
+  publishJobs.forEach((publishJob) => {
+    if (publishJob.pleaseDeleteMe) {
       publishJobs.delete(publishJob.id);
       nDeleted++;
     }
     nJobs++;
   });
-  if(nDeleted > 0) {
+  if (nDeleted > 0) {
     console.info('Cleaning publish jobs. Deleted', nDeleted, '/', nJobs);
   }
-}, 60*1000);
+}, 60 * 1000);
 
 export default class PublishJob {
   static get(id) {
@@ -56,15 +55,14 @@ export default class PublishJob {
     // stop other publications from the same user
     session.publicationId = session.publicationId || uuid.v4();
     const id = session.publicationId;
-    if(publishJobs.has(id)) {
+    if (publishJobs.has(id)) {
       publishJobs.get(id).stop();
     }
     try {
       // check input params
       assert.ok(!!publicationPath, 'Missing param "publicationPath"');
       assert.ok(!!file, 'Missing param "file"');
-    }
-    catch(e) {
+    } catch (e) {
       console.error('Invalid params', e);
       throw new Error('Received invalid params. ' + e.message);
     }
@@ -72,17 +70,17 @@ export default class PublishJob {
     publishJobs.set(id, publishJob);
     publishJob.publish(file)
     .then(() => {
-      if(publishJob.error) {
-        console.warn(`Warning: possible error in PublishJob ${publishJob.id} (${publishJob.error})`)
+      if (publishJob.error) {
+        console.warn(`Warning: possible error in PublishJob ${publishJob.id} (${publishJob.error})`);
       }
-      publishJob.cleanup()
+      publishJob.cleanup();
     })
     .catch((err) => {
       console.error(`PublishJob ${publishJob.id} throws an error (${err}).`, err);
       publishJob.error = true;
       publishJob.setStatus(err.message);
-      publishJob.cleanup()
-    })
+      publishJob.cleanup();
+    });
     return publishJob;
   }
 
@@ -103,10 +101,9 @@ export default class PublishJob {
   private tree: {scriptTags: HTMLElement[], styleTags: HTMLElement[], files: File[]};
   private pageActions: Action[];
 
-  constructor(public id:string, private unifile, private publicationPath, private session, private cookies, private rootUrl:string, private hostingProvider) {
+  constructor(public id: string, private unifile, private publicationPath, private session, private cookies, private rootUrl: string, private hostingProvider) {
     console.log('---------------\nNew Publish Job', id, '\nPublish to:', publicationPath.url, '\nSilex instance:', rootUrl, '\n--------------');
     this.setStatus('Publication starting.');
-
 
     // files and folders paths
     this.rootPath = this.publicationPath.path;
@@ -117,14 +114,13 @@ export default class PublishJob {
     this.jsFile = this.jsFolder + '/script.js';
     this.cssFile = this.cssFolder + '/styles.css';
 
-
     this.pleaseDeleteMe = false;
 
     this.jar = request.jar();
-    for(let key in this.cookies) this.jar.setCookie(request.cookie(key + '=' + this.cookies[key]), rootUrl);
+    for (const key in this.cookies) { this.jar.setCookie(request.cookie(key + '=' + this.cookies[key]), rootUrl); }
   }
   stop() {
-    if(this.isStopped() === false) {
+    if (this.isStopped() === false) {
       console.warn('stopping publication in progress');
       this.abort = true;
       this.setStatus('Publication canceled.');
@@ -141,51 +137,46 @@ export default class PublishJob {
   }
   cleanup() {
     // console.info('PublishJob cleanup, will ask to be deleted in 60s', this.id);
-    if(this.pleaseDeleteMe) console.error('PublishJob was already marked for deletion', this.id);
-    else {
+    if (this.pleaseDeleteMe) { console.error('PublishJob was already marked for deletion', this.id); } else {
       setTimeout(() => {
         this.pleaseDeleteMe = true;
-      }, 60*1000);
+      }, 60 * 1000);
     }
   }
   getSuccessMessage() {
-    if(this.filesNotDownloaded.length > 0) {
+    if (this.filesNotDownloaded.length > 0) {
       return 'Done. <br><br>Warning: these files could not be downloaded: <ul><li>' + this.filesNotDownloaded.join('</li><li>') + '</li></ul>';
     }
     return 'Done.';
   }
   getHtmlFolder() {
     const defaultFolder = '';
-    if(this.hostingProvider && this.hostingProvider.getHtmlFolder) {
+    if (this.hostingProvider && this.hostingProvider.getHtmlFolder) {
       return this.hostingProvider.getHtmlFolder(defaultFolder) || defaultFolder;
-    }
-    else return defaultFolder;
+    } else { return defaultFolder; }
   }
   getJsFolder() {
     const defaultFolder = 'js';
-    if(this.hostingProvider && this.hostingProvider.getJsFolder) {
+    if (this.hostingProvider && this.hostingProvider.getJsFolder) {
       return this.hostingProvider.getJsFolder(defaultFolder) || defaultFolder;
-    }
-    else return defaultFolder;
+    } else { return defaultFolder; }
   }
   getCssFolder() {
     const defaultFolder = 'css';
-    if(this.hostingProvider && this.hostingProvider.getCssFolder) {
+    if (this.hostingProvider && this.hostingProvider.getCssFolder) {
       return this.hostingProvider.getCssFolder(defaultFolder) || defaultFolder;
-    }
-    else return defaultFolder;
+    } else { return defaultFolder; }
   }
   getAssetsFolder() {
     const defaultFolder = 'assets';
-    if(this.hostingProvider && this.hostingProvider.getAssetsFolder) {
+    if (this.hostingProvider && this.hostingProvider.getAssetsFolder) {
       return this.hostingProvider.getAssetsFolder(defaultFolder) || defaultFolder;
-    }
-    else return defaultFolder;
+    } else { return defaultFolder; }
   }
   getDestFolder(ext, tagName) {
     // tags
-    if(tagName) {
-      switch(tagName.toLowerCase()) {
+    if (tagName) {
+      switch (tagName.toLowerCase()) {
         case 'script':
           return this.getJsFolder();
         case 'link':
@@ -197,12 +188,9 @@ export default class PublishJob {
       }
       // could be an iframe
       return null;
-    }
-    else if(ext === '.html') {
+    } else if (ext === '.html') {
       return this.getHtmlFolder();
-    }
-    // css url()
-    else  {
+    } else  {
       return this.getAssetsFolder();
     }
   }
@@ -212,7 +200,7 @@ export default class PublishJob {
    * @param {?string=} file to download and publish
    */
   publish(file) {
-    if(this.isStopped()) {
+    if (this.isStopped()) {
       console.warn('job is stopped', this.error, this.abort, this.success);
       return;
     }
@@ -220,15 +208,15 @@ export default class PublishJob {
     // download file
     this.setStatus(`Downloading website ${file.name}`);
     return this.unifile.readFile(this.session.unifile, file.service, file.path)
-    .catch(err => {
+    .catch((err) => {
       console.error('Publication error, could not download file:', err);
       this.error = true;
       this.setStatus(err.message);
     })
 
     // build folders tree
-    .then(buffer => {
-      if(this.isStopped()) {
+    .then((buffer) => {
+      if (this.isStopped()) {
         console.warn('job is stopped', this.error, this.abort, this.success);
         return;
       }
@@ -252,7 +240,7 @@ export default class PublishJob {
       // release the dom object
       dom.window.close();
     })
-    .catch(err => {
+    .catch((err) => {
       console.error('Publication error, could not extract assets from file:', err);
       this.error = true;
       this.setStatus(err.message);
@@ -260,51 +248,51 @@ export default class PublishJob {
     // download all assets
     // check existing folder structure
     .then(() => {
-      if(this.isStopped()) {
+      if (this.isStopped()) {
         console.warn('job is stopped', this.error, this.abort, this.success);
         return [];
       }
       return this.readOperations();
     })
-    .catch(err => {
+    .catch((err) => {
       // FIXME: will never go through here
-      console.error('Publication error, could not download files:', this.tree.files.map(file => file.displayName).join(', '), '. Error:', err);
+      console.error('Publication error, could not download files:', this.tree.files.map((f) => f.displayName).join(', '), '. Error:', err);
       this.error = true;
       this.setStatus(err.message);
     })
     // write and upload all files in a batch operation
     .then(([statRoot, statHtml, statCss, statJs, statAssets, ...assets]) => {
-      if(this.isStopped()) {
+      if (this.isStopped()) {
         console.warn('job is stopped', this.error, this.abort, this.success);
         return;
       }
-      return this.writeOperations(statRoot, statHtml, statCss, statJs, statAssets, ...assets)
+      return this.writeOperations(statRoot, statHtml, statCss, statJs, statAssets, ...assets);
     })
-    .catch(err => {
+    .catch((err) => {
       console.error('An error occured in unifile batch', err, err);
       this.error = true;
       this.setStatus(err.message);
     })
     .then(() => {
-      if(this.isStopped()) {
+      if (this.isStopped()) {
         console.warn('job is stopped', this.error, this.abort, this.success);
         return Promise.resolve();
       }
-      if(!this.hostingProvider) {
+      if (!this.hostingProvider) {
         return Promise.resolve();
       }
-      return this.hostingProvider.finalizePublication(file, this.publicationPath, this.session.unifile, msg => this.setStatus(msg));
+      return this.hostingProvider.finalizePublication(file, this.publicationPath, this.session.unifile, (msg) => this.setStatus(msg));
     })
     // all operations done
     .then(() => {
-      if(this.isStopped()) {
+      if (this.isStopped()) {
         console.warn('job is stopped', this.error, this.abort, this.success);
         return;
       }
       console.log('Publication done with success');
       this.setStatus(this.getSuccessMessage());
       this.success = true;
-    })
+    });
   }
 
   readOperations() {
@@ -312,8 +300,8 @@ export default class PublishJob {
 
     // do not throw an error if the folder is not found, this is what we want to test
     // instead catch the error and do nothing so that the result is null in .then(stat
-    const preventErr = promise => promise.catch(err => {
-      if(err.code != 'ENOENT') {
+    const preventErr = (promise) => promise.catch((err) => {
+      if (err.code !== 'ENOENT') {
         throw err;
       }
     });
@@ -321,7 +309,7 @@ export default class PublishJob {
     // start by testing if the folders exist before creating them
     // then download all assets
     // FIXME: should use unifile's batch method to avoid conflicts or the "too many clients" error in FTP
-    //return Promise.all([
+    // return Promise.all([
     return sequential([
       () => preventErr(this.unifile.stat(this.session.unifile, this.publicationPath.service, this.rootPath)),
       () => preventErr(this.unifile.stat(this.session.unifile, this.publicationPath.service, this.htmlFolder)),
@@ -330,21 +318,21 @@ export default class PublishJob {
       () => preventErr(this.unifile.stat(this.session.unifile, this.publicationPath.service, this.assetsFolder)),
     ]
     // add the promises to download each asset
-    .concat(this.downloadAllAssets(this.tree.files)))
+    .concat(this.downloadAllAssets(this.tree.files)));
   }
 
   writeOperations(statRoot: boolean, statHtml: boolean, statCss: boolean, statJs: boolean, statAssets: boolean, ...assets) {
     // build the batch actions
-    this.setStatus(`Creating files <ul>${this.pageActions.map(action => '<li>' + action.displayName + '</li>').join('')}<li>${this.cssFile}</li><li>${this.jsFile}</li></ul>And uploading ${ assets.length } assets.`);
+    this.setStatus(`Creating files <ul>${this.pageActions.map((action) => '<li>' + action.displayName + '</li>').join('')}<li>${this.cssFile}</li><li>${this.jsFile}</li></ul>And uploading ${ assets.length } assets.`);
     // create an object to describe a batch of actions
     const batchActions = [];
-    if(!statRoot) {
+    if (!statRoot) {
       batchActions.push({
         name: 'mkdir',
         path: this.rootPath,
       });
     }
-    if(!statHtml) {
+    if (!statHtml) {
       batchActions.push({
         name: 'mkdir',
         path: this.htmlFolder,
@@ -352,25 +340,25 @@ export default class PublishJob {
     }
     batchActions.push(...this.pageActions);
 
-    if(!statCss) {
+    if (!statCss) {
       batchActions.push({
         name: 'mkdir',
         path: this.cssFolder,
       });
     }
-    if(!statJs) {
+    if (!statJs) {
       batchActions.push({
         name: 'mkdir',
         path: this.jsFolder,
       });
     }
-    if(!statAssets) {
+    if (!statAssets) {
       batchActions.push({
         name: 'mkdir',
         path: this.assetsFolder,
       });
     }
-    if(this.tree.styleTags.length > 0) {
+    if (this.tree.styleTags.length > 0) {
       // show website after styles.css is loaded
       const showBodyRule = 'body.silex-runtime {opacity: 1;}\n';
       // create the style.css file
@@ -380,7 +368,7 @@ export default class PublishJob {
         content: this.tree.styleTags.reduce((prev, tag) => prev + '\n' + tag.innerHTML, '') + showBodyRule,
       });
     }
-    if(this.tree.scriptTags.length > 0) {
+    if (this.tree.scriptTags.length > 0) {
       batchActions.push({
         name: 'writefile',
         path: this.jsFile,
@@ -389,28 +377,28 @@ export default class PublishJob {
     }
     const batchActionsWithAssets = batchActions.concat(
       assets
-      .filter(file => !!file)
-      .map(file => {
+      .filter((file) => !!file)
+      .map((file) => {
         return {
           name: 'writeFile',
           path: file.path,
           content: file.content,
         };
-      })
+      }),
     );
     // console.log('Batch actions:', batchActionsWithAssets.filter(action => !!action).map(action => action.path));
-    return this.unifile.batch(this.session.unifile, this.publicationPath.service, batchActionsWithAssets)
+    return this.unifile.batch(this.session.unifile, this.publicationPath.service, batchActionsWithAssets);
   }
 
   // create the promises to download each asset
   downloadAllAssets(files) {
-    return files.map(file => {
+    return files.map((file) => {
       const srcPath = decodeURIComponent(file.srcPath);
       const destPath = decodeURIComponent(file.destPath);
       const shortSrcPath = srcPath.substr(srcPath.lastIndexOf('/') + 1);
       return () => {
         return new Promise((resolve, reject) => {
-          if(this.isStopped()) {
+          if (this.isStopped()) {
             console.warn('job is stopped', this.error, this.abort, this.success);
             resolve();
             return;
@@ -424,12 +412,10 @@ export default class PublishJob {
             jar: this.jar,
             encoding: null,
           }, (err, res, data) => {
-            if(err) reject(err);
-            else if(res.statusCode != 200) {
+            if (err) { reject(err); } else if (res.statusCode !== 200) {
               console.warn(`Could not download file ${ srcPath }.`);
               reject(`Could not download file ${ srcPath }.`);
-            }
-            else {
+            } else {
               resolve({
                 content: data,
                 path: destPath,
@@ -437,11 +423,10 @@ export default class PublishJob {
             }
           });
         })
-        .catch(err => {
+        .catch((err) => {
           this.filesNotDownloaded.push(shortSrcPath);
         });
-      }
+      };
     });
   }
 }
-

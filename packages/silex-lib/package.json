@@ -1,7 +1,7 @@
 {
   "name": "silex-website-builder",
   "description": "Free and easy website builder for everyone.",
-  "version": "2.5.12",
+  "version": "2.5.13",
   "version:frontend": "2.10",
   "version:backwardcompat": "2.2.10",
   "author": "Alex Hoyau <a.hoyau@silexlabs.org> (https://lexoyo.me/)",
@@ -22,9 +22,9 @@
     "start:electron": "SILEX_ELECTRON=true electron .",
     "prepublish": "npm run build",
     "prepare": "npm run build",
-    "build": "npm run cleanup && npm run build:css:release && npm run build:html && npm run build:prodotype && npm run build:client:release && npm run build:server:release",
+    "build": "npm run cleanup && npm run lint && npm run build:css:release && npm run build:html && npm run build:prodotype && npm run build:client:release && npm run build:server:release",
     "cleanup": "mkdir -p tmp && mv dist/public tmp/ && rm -rf dist && mv tmp dist",
-    "release": "electron-builder",
+    "release": "npm run lint && electron-builder",
     "webpack": "webpack --config webpack.config.js",
     "build:components": "mkdir -p dist/prodotype/components &&  prodotype src/prodotype/components dist/prodotype/components/",
     "build:prodotype": "npm run build:components && mkdir -p dist/prodotype/styles &&  prodotype src/prodotype/styles dist/prodotype/styles/",
@@ -37,7 +37,10 @@
     "build:server:release": "npm run workaround-babel && tsc -p tsconfig-server-release.json",
     "build:server:debug": "npm run workaround-babel && tsc -p tsconfig-server-debug.json",
     "workaround-babel": "rm -rf `node_modules`/@types/babel__*",
-    "note: workaround-babel issue:": "https://github.com/facebook/jest/issues/8218"
+    "note: workaround-babel issue:": "https://github.com/facebook/jest/issues/8218",
+    "lint": "tslint --fix -c tslint.json 'src/**/*.ts'",
+    "lint:js": "npm run lint",
+    "lint:server": "npm run lint"
   },
   "dependencies": {
     "11": "0.0.1",
@@ -48,7 +51,6 @@
     "cookie-parser": "1.4.4",
     "cookie-session": "2.0.0-beta.3",
     "cross-env": "5.2.0",
-    "electron": "^5.0.1",
     "express": "4.16.4",
     "express-force-ssl": "0.3.2",
     "font-awesome": "^4.7.0",
@@ -70,6 +72,7 @@
     "@types/node": "^12.0.0",
     "@types/redux": "^3.6.31",
     "drag-drop-stage-component": "^1.0.2",
+    "electron": "^5.0.1",
     "electron-builder": "^20.39.0",
     "eslint": "^5.16.0",
     "less": "3.9.0",
@@ -77,6 +80,7 @@
     "pug-cli": "^1.0.0-alpha6",
     "source-map-support": "^0.5.12",
     "ts-loader": "^6.0.0",
+    "tslint": "^5.16.0",
     "typescript": "^3.4.5",
     "webpack": "^4.30.0",
     "webpack-cli": "^3.3.2"

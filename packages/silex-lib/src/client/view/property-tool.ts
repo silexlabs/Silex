@@ -16,6 +16,7 @@
  *
  */
 
+import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
 import { Constants } from '../../Constants';
 import { Controller, Model } from '../types';
 import { InvalidationManager } from '../utils/invalidation-manager';
@@ -26,8 +27,6 @@ import { PagePane } from './pane/page-pane';
 import { PropertyPane } from './pane/property-pane';
 import { StylePane } from './pane/style-pane';
 import { StyleEditorPane } from './pane/StyleEditorPane';
-import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
-
 
 //////////////////////////////////////////////////////////////////
 // PropertyTool class
@@ -38,7 +37,7 @@ import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
  *
  * @param element   container to render the UI
  * @param model  model class which holds
-  * the model instances - views use it for read
+ * the model instances - views use it for read
  * operation only
  * @param controller  structure which holds
  * the controller instances
@@ -97,7 +96,6 @@ export class PropertyTool {
    * @see     silex.view.pane.StyleEditorPane
    */
   styleEditorPane: StyleEditorPane = null;
-
 
   constructor(public element: HTMLElement, public model: Model, public controller: Controller) {
     this.invalidationManager = new InvalidationManager(500);
@@ -193,10 +191,8 @@ export class PropertyTool {
   }
 
   selectTab(tab) {
-    const onTabs = this.element.querySelectorAll('.tab');
-    for (let idx = 0; idx < onTabs.length; idx++) {
-      onTabs[idx].classList.remove('on');
-    }
+    Array.from(this.element.querySelectorAll('.tab'))
+    .forEach((el) => el.classList.remove('on'));
     tab.classList.add('on');
   }
 
@@ -206,7 +202,7 @@ export class PropertyTool {
    * @param pageNames   the names of the pages which appear in the current HTML file
    * @param  currentPageName   the name of the current page
    */
-  redraw(states: SelectableState[], pageNames: string[],currentPageName: string) {
+  redraw(states: SelectableState[], pageNames: string[], currentPageName: string) {
     this.invalidationManager.callWhenReady(() => {
       // refresh panes
       this.borderPane.redraw(states, pageNames, currentPageName);

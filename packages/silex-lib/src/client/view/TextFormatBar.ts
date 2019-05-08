@@ -21,7 +21,7 @@ import { Tracker } from '../service/tracker';
 import { Controller, LinkData, Model } from '../types';
 import { SilexNotification } from '../utils/notification';
 import { FileExplorer } from '../view/dialog/file-explorer';
-import { LinkDialog, LINK_ATTRIBUTES } from './dialog/LinkDialog';
+import { LINK_ATTRIBUTES, LinkDialog } from './dialog/LinkDialog';
 
 /**
  * @class {silex.view.TextFormatBar}
@@ -148,7 +148,7 @@ export class TextFormatBar {
     // edit the style of the selection
     if (this.selectedElements.length === 1) {
       const newTextBox = this.selectedElements[0];
-      if (newTextBox != this.currentTextBox) {
+      if (newTextBox !== this.currentTextBox) {
         this.currentTextBox = newTextBox;
 
         // this.currentTextBox.insertBefore(this.element,
@@ -156,55 +156,55 @@ export class TextFormatBar {
         this.controller.textEditorController.attachToTextBox(this.currentTextBox, this.element);
         const editable = this.model.element.getContentNode(this.currentTextBox);
         const options = {
-          'toolbar': this.toolbar,
-          'handleTables': false,
-          'useLineBreaks': false,
-          'classes': {
+          toolbar: this.toolbar,
+          handleTables: false,
+          useLineBreaks: false,
+          classes: {
             'wysiwyg-float-left': 1,
             // this doesnt work for some reason
-            'wysiwyg-float-right': 1
+            'wysiwyg-float-right': 1,
           },
           // this doesnt work for some reason
-          'parserRules': {
-            'tags': {
-              'b': {},
-              'strong': {'rename_tag': 'b'},
-              'i': {},
-              'br': {},
-              'p': {},
-              'h1': {},
-              'h2': {},
-              'h3': {},
-              'h4': {},
-              'h5': {},
-              'h6': {},
-              'ul': {},
-              'u': {},
-              'ol': {},
-              'li': {},
-              'a': {
-                'check_attributes': {
-                  'href': 'href',
-                  'download': 'href',
-                  'target': 'any',
-                  'title': 'any',
-                  'type': 'any'
-                }
+          parserRules: {
+            tags: {
+              b: {},
+              strong: {rename_tag: 'b'},
+              i: {},
+              br: {},
+              p: {},
+              h1: {},
+              h2: {},
+              h3: {},
+              h4: {},
+              h5: {},
+              h6: {},
+              ul: {},
+              u: {},
+              ol: {},
+              li: {},
+              a: {
+                check_attributes: {
+                  href: 'href',
+                  download: 'href',
+                  target: 'any',
+                  title: 'any',
+                  type: 'any',
+                },
               },
-              'img': {
-                'check_attributes': {
-                  'src': 'src',
-                  'alt': 'alt',
-                  'title': 'any',
-                  'width': 'any',
-                  'height': 'any',
-                  'class': 'any'
-                }
+              img: {
+                check_attributes: {
+                  src: 'src',
+                  alt: 'alt',
+                  title: 'any',
+                  width: 'any',
+                  height: 'any',
+                  class: 'any',
+                },
               },
               // this should not be necessary, workaround
-              'font': {'rename_tag': 'span', 'add_class': {'size': 'size_font'}}
-            }
-          }
+              font: {rename_tag: 'span', add_class: {size: 'size_font'}},
+            },
+          },
         };
         this.wysihtmlEditor = new wysihtml.Editor(editable, options);
 
@@ -217,7 +217,7 @@ export class TextFormatBar {
         doc.addEventListener('keydown', this.onKeyDownBinded);
         win.addEventListener('scroll', this.onScrollBinded);
         this.wysihtmlEditor.on('blur', (e) => {
-          if(!SilexNotification.isActive) {
+          if (!SilexNotification.isActive) {
             this.stopEditing();
           }
         });
@@ -268,9 +268,9 @@ export class TextFormatBar {
           (imageDetails.querySelector('.alt') as HTMLElement).onkeydown = (e) => autoSubmitImage(e);
           (this.element.querySelector('.create-link') as HTMLElement).onclick = (e) => {
             // open link editor
-            this.linkDialog.open(this.getLink(), this.pageNames, (options) => {
-              if (options) {
-                this.wysihtmlEditor.composer.commands.exec('createLink', options);
+            this.linkDialog.open(this.getLink(), this.pageNames, (_options) => {
+              if (_options) {
+                this.wysihtmlEditor.composer.commands.exec('createLink', _options);
               } else {
                 this.wysihtmlEditor.composer.commands.exec('removeLink');
               }
@@ -280,9 +280,6 @@ export class TextFormatBar {
             e.preventDefault();
           };
         });
-
-        // debug
-        window['wysihtmlEditor'] = this.wysihtmlEditor;
       }
     } else {
       console.error('Error, can not edit selection with format pane', this.selectedElements);

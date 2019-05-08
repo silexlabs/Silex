@@ -25,7 +25,7 @@ import { InvalidationManager } from '../utils/invalidation-manager';
  *
  * @param element   container to render the UI
  * @param model  model class which holds
-  * the model instances - views use it for read
+ * the model instances - views use it for read
  * operation only
  * @param controller  structure which holds
  * the controller instances
@@ -53,7 +53,7 @@ export class PageTool {
    */
   buildUi() {
     // listen for the click on a page
-    this.element.addEventListener('click', e => {
+    this.element.addEventListener('click', (e) => {
       if ((e.target as HTMLElement).classList.contains('delete')) {
         // remove the page
         this.removePageAtIndex(
@@ -65,7 +65,7 @@ export class PageTool {
               this.getCellIndex((e.target as HTMLElement).parentElement.parentElement as HTMLElement));
         } else {
           // select page
-          let cellIndex = this.getCellIndex((e.target as HTMLElement).parentElement as HTMLElement);
+          const cellIndex = this.getCellIndex((e.target as HTMLElement).parentElement as HTMLElement);
           if (cellIndex >= 0) {
             this.setSelectedIndex(cellIndex, true);
           }
@@ -75,10 +75,8 @@ export class PageTool {
     }, false);
 
     function attach(className, cbk) {
-      const addBtns = document.querySelectorAll(className);
-      for (let idx = 0; idx < addBtns.length; idx++) {
-        addBtns[idx].onclick = cbk;
-      }
+      Array.from(document.querySelectorAll(className))
+      .forEach((el) => el.onclick = cbk);
     }
     attach(
         '.add-page', (e) => this.controller.insertMenuController.createPage());
@@ -113,14 +111,14 @@ export class PageTool {
           // this happens while undoing or redoing
           return null;
         }
-        let res = {
-          'name': pageName,
-          'displayName': this.model.file.getContentDocument()
+        const res = {
+          name: pageName,
+          displayName: this.model.file.getContentDocument()
             .getElementById(pageName)
             .innerHTML,
-          'linkName': '#!' + pageName,
-          'idx': idx++,
-          'className': '',
+          linkName: '#!' + pageName,
+          idx: idx++,
+          className: '',
         };
         if (currentPageName === pageName) {
           res.className = 'ui-selected';
@@ -129,8 +127,8 @@ export class PageTool {
       });
 
       // refresh the list with new pages
-      let container = this.element.getElementsByClassName('page-tool-container')[0];
-      let templateHtml = this.element.getElementsByClassName('page-tool-template')[0].innerHTML;
+      const container = this.element.getElementsByClassName('page-tool-container')[0];
+      const templateHtml = this.element.getElementsByClassName('page-tool-template')[0].innerHTML;
       container.innerHTML = Dom.renderList(templateHtml, this.pages);
     });
   }
@@ -167,7 +165,7 @@ export class PageTool {
    * @param element which represents the cell in the dom
    */
   getCellIndex(element: HTMLElement): number {
-    let pageIdx = element.getAttribute('data-page-idx');
+    const pageIdx = element.getAttribute('data-page-idx');
     if (pageIdx) {
       return parseInt(pageIdx, 10);
     } else {

@@ -1,26 +1,25 @@
 import {SilexNotification} from '../utils/notification';
 
-export type Shortcut = {
-  label?: string,
-  id?: string,
-  key: string,
-  altKey?: boolean,
-  ctrlKey?: boolean,
-  shiftKey?: boolean,
-  modifiers?: boolean,
-  input?: boolean,
-};
+export interface Shortcut {
+  label?: string;
+  id?: string;
+  key: string;
+  altKey?: boolean;
+  ctrlKey?: boolean;
+  shiftKey?: boolean;
+  modifiers?: boolean;
+  input?: boolean;
+}
 
-type ShortcutItem = {
-  s: Shortcut,
-  cbk: (e: KeyboardEvent) => void,
+interface ShortcutItem {
+  s: Shortcut;
+  cbk: (e: KeyboardEvent) => void;
 }
 
 /**
  * @class Keyboard
  */
 export class Keyboard {
-  shortcuts: Map<string, ShortcutItem[]>;
 
   static isInput(target: HTMLElement) {
     return !target.tagName ||
@@ -29,6 +28,7 @@ export class Keyboard {
         target.tagName.toUpperCase() === 'TEXTAREA' ||
         target.getAttribute('contenteditable') === 'true';
   }
+  shortcuts: Map<string, ShortcutItem[]>;
 
   constructor(doc: Document) {
     this.shortcuts = new Map();
@@ -47,12 +47,11 @@ export class Keyboard {
   }
 
   handleKeyDown(e) {
-    if(!e.defaultPrevented) {
-      if(SilexNotification.isActive) {
-        if(e.key === 'Enter') SilexNotification.close(true);
-        if(e.key === 'Escape') SilexNotification.close(false);
-      }
-      else {
+    if (!e.defaultPrevented) {
+      if (SilexNotification.isActive) {
+        if (e.key === 'Enter') { SilexNotification.close(true); }
+        if (e.key === 'Escape') { SilexNotification.close(false); }
+      } else {
         const shortcuts = this.getShortcutsFromEvent(e);
         if (shortcuts.length > 0) {
           shortcuts.forEach((shortcut) => {

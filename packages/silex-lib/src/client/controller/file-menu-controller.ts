@@ -14,14 +14,14 @@
  *      and call the main {silex.controller.Controller} controller's methods
  *
  */
-import { FileInfo, Model, PublicationOptions, View, Provider } from '../types';
+import { Config } from '../ClientConfig';
+import { CloudStorage } from '../service/cloud-storage';
+import { SilexTasks } from '../service/silex-tasks';
+import { FileInfo, Model, Provider, PublicationOptions, View } from '../types';
 import { SilexNotification } from '../utils/notification';
 import { FileExplorer } from '../view/dialog/file-explorer';
 import { PublishDialog } from '../view/dialog/PublishDialog';
 import { ControllerBase } from './controller-base';
-import { CloudStorage } from '../service/cloud-storage';
-import { Config } from '../ClientConfig';
-import { SilexTasks } from '../service/silex-tasks';
 
 /**
  * @param view  view class which holds the other views
@@ -33,7 +33,7 @@ export class FileMenuController extends ControllerBase {
 
   loadTemplate(
       url, opt_cbk?: (() => any),
-      opt_errorCbk?: ((p1: Object) => any)) {
+      opt_errorCbk?: ((p1: any) => any)) {
     this.model.file.openFromUrl(
         url, (rawHtml) => this.onOpened(opt_cbk, rawHtml),
         (err, msg) => this.onOpenError(err, msg, opt_errorCbk));
@@ -43,7 +43,7 @@ export class FileMenuController extends ControllerBase {
    * load blank template
    */
   loadBlank(
-      opt_cbk?: (() => any), opt_errorCbk?: ((p1: Object) => any)) {
+      opt_cbk?: (() => any), opt_errorCbk?: ((p1: any) => any)) {
     const blankUrl =
         '/libs/templates/silex-blank-templates/blank/editable.html';
     this.loadTemplate(blankUrl, opt_cbk, opt_errorCbk);
@@ -62,8 +62,8 @@ export class FileMenuController extends ControllerBase {
             SilexNotification.alert('Open recent file', `
               I am trying to connect you to ${fileInfo.service} again,
               please accept the connection in the popup I have just opened then <strong>please wait</strong>.
-            `,
-                () => {});
+            `, () => {});
+            // tslint:disable:no-string-literal
             ce['auth'](fileInfo.service).then((res) => {
               SilexNotification.close();
               if (ok) {
@@ -78,7 +78,7 @@ export class FileMenuController extends ControllerBase {
    * open a file
    */
   newFile(
-      opt_cbk?: (() => any), opt_errorCbk?: ((p1: Object) => any)) {
+      opt_cbk?: (() => any), opt_errorCbk?: ((p1: any) => any)) {
     this.tracker.trackAction('controller-events', 'request', 'file.new', 0);
     this.view.dashboard.openDialog({
       openFileInfo: (fileInfo) => {
@@ -112,7 +112,7 @@ export class FileMenuController extends ControllerBase {
       error: (err) => {
         console.error('loading templates error');
         this.onOpenError(err, 'Loading templates error', opt_errorCbk);
-      }
+      },
     });
   }
 
@@ -133,7 +133,7 @@ export class FileMenuController extends ControllerBase {
     }
   }
 
-  onOpenError(err: Object, msg: string, opt_errorCbk?: ((p1: Object) => any)) {
+  onOpenError(err: any, msg: string, opt_errorCbk?: ((p1: any) => any)) {
     console.error('opening template error', err);
     SilexNotification.alert('Open file', 'An error occured. ' + msg, () => {});
     if (opt_errorCbk) {
@@ -279,7 +279,7 @@ export class FileMenuController extends ControllerBase {
     // the file must be saved somewhere because all URLs are made relative
     if (!folder) {
       this.view.settingsDialog.open(
-          function() {},
+          () => {},
           // here the panel was closed
           'publish-pane');
       this.view.workspace.redraw(this.view);
@@ -301,32 +301,32 @@ export class FileMenuController extends ControllerBase {
           } else {
             SilexTasks.getInstance().hosting((hosting) => {
               const storedProvider: Provider =
-                  hosting['providers'].find((p) => p['name'] === providerName);
+                  hosting.providers.find((p) => p.name === providerName);
               if (!storedProvider) {
                 SilexNotification.alert('Publication', `
                   <p>Unknown provider ${providerName}.</p>
                   <p>Is it configured on this servier? Here are the hosting providers I know:
-                  ${hosting['providers'].map((p) => p['name']).join(', ')}</p>
+                  ${hosting.providers.map((p) => p.name).join(', ')}</p>
                 `, () => {});
                 throw new Error(`
                   Unknown provider ${providerName}.
-                  Is it configured on this servier? Here are the hosting providers I know: <ul>${hosting['providers']
-                  .map((p) => '<li>' + p['name'] + '</li>')
+                  Is it configured on this servier? Here are the hosting providers I know: <ul>${hosting.providers
+                  .map((p) => '<li>' + p.name + '</li>')
                   .join('')}</ul>
                 `);
               }
               cbk(null, null, ({
-                    'file': file,
-                    'publicationPath': folder,
-                    'provider': storedProvider
+                    file,
+                    publicationPath: folder,
+                    provider: storedProvider,
                   } as PublicationOptions));
             });
           }
         } else {
           cbk(null, null, ({
-            'file': file,
-            'publicationPath': folder,
-            'provider': provider
+            file,
+            publicationPath: folder,
+            provider,
           } as PublicationOptions));
         }
       }

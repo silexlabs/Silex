@@ -16,32 +16,24 @@
 
 import {Body} from '../model/body';
 
-
 /**
  * implement a "modal" behavior to hide and show dialogs
  * there is a static method to open dialogs by name
  * @class {silex.view.ModalDialog}
  */
 export class ModalDialog {
-  name: any;
-  element: any;
-  onOpen: any;
-  onClose: any;
 
-  static dialogs: any = {};
+  static dialogs: Map<string, ModalDialog> = new Map();
   static currentDialog: ModalDialog;
   static HIDE_DIALOG_CLASS_NAME = 'silex-hide-dialog';
   static MODAL_DIALOG_CLASS_NAME = 'silex-modal-dialog';
 
-  // set the flag
-  isOpen: any = false;
-
   /**
    * open a dialog by name
    */
-  static open(name: string, args: Object = null) {
-    if (ModalDialog.dialogs && ModalDialog.dialogs[name]) {
-      ModalDialog.dialogs[name].open(args);
+  static open(name: string, args: any = null) {
+    if (ModalDialog.dialogs.has(name)) {
+      ModalDialog.dialogs.get(name).open(args);
     } else {
       console.error('could not open dialog', name, ModalDialog.dialogs);
     }
@@ -57,32 +49,39 @@ export class ModalDialog {
       console.error('could not close dialog, there is no dialog opened');
     }
   }
+  name: string;
+  element: HTMLElement;
+  onOpen: (p1?: any) => any;
+  onClose: () => any;
+
+  // set the flag
+  isOpen = false;
 
   constructor(options: {
     name: string,
     element: HTMLElement,
     onOpen: (p1?: any) => any,
-    onClose: () => any
+    onClose: () => any,
   }) {
     // check and store options
     if (options.name) {
       this.name = options.name;
-      ModalDialog.dialogs[this.name] = this;
+      ModalDialog.dialogs.set(this.name, this);
     }
     if (options.element) {
       this.element = options.element;
     } else {
-      throw 'Modal dialog options missing a "element" field';
+      throw new Error('Modal dialog options missing a "element" field');
     }
     if (options.onOpen) {
       this.onOpen = options.onOpen;
     } else {
-      throw 'Modal dialog options missing a "onOpen" field';
+      throw new Error('Modal dialog options missing a "onOpen" field');
     }
     if (options.onClose) {
       this.onClose = options.onClose;
     } else {
-      throw 'Modal dialog options missing a "onClose" field';
+      throw new Error('Modal dialog options missing a "onClose" field');
     }
 
     // set the css classes
@@ -90,13 +89,13 @@ export class ModalDialog {
     this.element.classList.add(ModalDialog.HIDE_DIALOG_CLASS_NAME);
 
     // close button
-    const closeBtn = this.element.querySelector('.close-btn');
+    const closeBtn = this.element.querySelector('.close-btn') as HTMLElement;
     if (closeBtn) {
       closeBtn.onclick = (e) => this.close();
     }
 
     // handle escape key
-    document.addEventListener('keydown', e => {
+    document.addEventListener('keydown', (e) => {
       if (this.isOpen && e.key === 'Escape') {
         this.close();
         e.preventDefault();
@@ -109,7 +108,7 @@ export class ModalDialog {
    * open the dialog
    * @param args optional args to pass to the dialog
    */
-  open(args?: Object) {
+  open(args?: any) {
     if (!this.isOpen) {
       // set the flag
       this.isOpen = true;

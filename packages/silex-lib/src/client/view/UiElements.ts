@@ -1,25 +1,25 @@
 
 export interface UiElements {
-  stage: HTMLIFrameElement,
-  fileExplorer: HTMLIFrameElement,
-  contextMenu: HTMLElement,
-  menu: HTMLElement,
-  breadCrumbs: HTMLElement,
-  pageTool: HTMLElement,
-  htmlEditor: HTMLElement,
-  cssEditor: HTMLElement,
-  jsEditor: HTMLElement,
-  settingsDialog: HTMLElement,
-  dashboard: HTMLElement,
-  propertyTool: HTMLElement,
-  textFormatBar: HTMLElement,
-  workspace: HTMLElement,
-  verticalSplitter: HTMLElement,
+  stage: HTMLIFrameElement;
+  fileExplorer: HTMLIFrameElement;
+  contextMenu: HTMLElement;
+  menu: HTMLElement;
+  breadCrumbs: HTMLElement;
+  pageTool: HTMLElement;
+  htmlEditor: HTMLElement;
+  cssEditor: HTMLElement;
+  jsEditor: HTMLElement;
+  settingsDialog: HTMLElement;
+  dashboard: HTMLElement;
+  propertyTool: HTMLElement;
+  textFormatBar: HTMLElement;
+  workspace: HTMLElement;
+  verticalSplitter: HTMLElement;
 }
 
 let uiElements: UiElements;
 export function getUiElements(): UiElements {
-  if(!uiElements) uiElements = {
+  if (!uiElements) { uiElements = {
     stage: document.querySelector('#silex-stage-iframe'),
     fileExplorer: document.querySelector('#silex-file-explorer'),
     contextMenu: document.querySelector('.silex-context-menu'),
@@ -36,5 +36,6 @@ export function getUiElements(): UiElements {
     workspace: document.querySelector('.silex-workspace'),
     verticalSplitter: document.querySelector('.vertical-splitter'),
   };
+  }
   return uiElements;
-};
+}

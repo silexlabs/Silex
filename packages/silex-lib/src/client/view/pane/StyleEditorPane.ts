@@ -9,17 +9,17 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
+import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
+import {Constants} from '../../../Constants';
+import {StyleName} from '../../model/Data';
 import {Visibility} from '../../model/Data';
 import {StyleData} from '../../model/Data';
-import {StyleName} from '../../model/Data';
-import {Constants} from '../../../Constants';
+import {Tracker} from '../../service/tracker';
 import {Controller} from '../../types';
 import {Model} from '../../types';
-import {PaneBase} from './pane-base';
 import {Dom} from '../../utils/dom';
-import {Tracker} from '../../service/tracker';
 import {SilexNotification} from '../../utils/notification';
-import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
+import {PaneBase} from './pane-base';
 
 /**
  * @fileoverview The style editor pane is displayed in the property panel on the
@@ -74,7 +74,7 @@ export class StyleEditorPane extends PaneBase {
     };
     this.styleCombo.onchange = (e) => {
       this.tracker.trackAction('style-editor-events', 'apply-style');
-      this.applyStyle(this.states.map(state => state.el), this.styleCombo.value);
+      this.applyStyle(this.states.map((state) => state.el), this.styleCombo.value);
 
       // refresh the view
       this.controller.propertyToolController.refreshView();
@@ -93,8 +93,8 @@ export class StyleEditorPane extends PaneBase {
     // un-apply style
     (this.element.querySelector('.unapply-style') as HTMLElement).onclick = (e) => {
       this.tracker.trackAction('style-editor-events', 'unapply-style');
-      this.states.filter(state => this.isTextBox(state.el))
-      .forEach(state => {
+      this.states.filter((state) => this.isTextBox(state.el))
+      .forEach((state) => {
         state.el.classList.remove(this.styleCombo.value);
       });
 
@@ -144,7 +144,7 @@ export class StyleEditorPane extends PaneBase {
           });
 
           // delete the old one
-          if (oldClassName != Constants.EMPTY_STYLE_CLASS_NAME) {
+          if (oldClassName !== Constants.EMPTY_STYLE_CLASS_NAME) {
             // case of rename the empty style (=> only create a new style)
             this.deleteStyle(oldClassName, false);
           }
@@ -238,13 +238,11 @@ export class StyleEditorPane extends PaneBase {
     // from array of elements to array of array of classNames
     return elements
       .map(
-          (element) => element.className.split(' ').filter((className) => className != ''))
+          (element) => element.className.split(' ').filter((className) => className !== ''))
       .reduce((prev, classNames, currentIndex) => {
         return prev.filter((prevClassName) => classNames.indexOf(prevClassName) > -1);
       })
-      .filter(
-          (className) => allStyles.find(
-              (style) => style['className'] === className));
+      .filter((className) => allStyles.find((style: StyleData) => style.className === className));
   }
 
   /**
@@ -264,7 +262,7 @@ export class StyleEditorPane extends PaneBase {
       // get the selected elements style, i.e. which style applies to them
       const selectionStyle = (() => {
         // get the class names common to the selection
-        let classNames = this.getStyles(states.map(state => state.el));
+        const classNames = this.getStyles(states.map((state) => state.el));
 
         // choose the style to edit
         if (classNames.length >= 1) {
@@ -294,19 +292,19 @@ export class StyleEditorPane extends PaneBase {
 
     // append options to the dom
     (styleName === Constants.EMPTY_STYLE_CLASS_NAME ? [{
-      'className': Constants.EMPTY_STYLE_CLASS_NAME,
-      'displayName': Constants.EMPTY_STYLE_DISPLAY_NAME
+      className: Constants.EMPTY_STYLE_CLASS_NAME,
+      displayName: Constants.EMPTY_STYLE_DISPLAY_NAME,
     }] : [])
-    .concat(this.model.component.getProdotypeComponents(Constants.STYLE_TYPE) as {className: string, displayName: string}[])
+    .concat(this.model.component.getProdotypeComponents(Constants.STYLE_TYPE) as Array<{className: string, displayName: string}>)
     .map((obj) => {
       // create the combo box option
       const option = document.createElement('option');
-      option.value = obj['className'];
-      option.innerHTML = obj['displayName'];
+      option.value = obj.className;
+      option.innerHTML = obj.displayName;
       return option;
     })
     .forEach((option) => this.styleCombo.appendChild(option));
-    if (styleName != null) {
+    if (styleName !== null) {
       const styleNameNotNull = (styleName as StyleName);
 
       // set the new selection
@@ -367,13 +365,13 @@ export class StyleEditorPane extends PaneBase {
    * mark tags push buttons to show which tags have styles
    */
   updateTagButtonBar(styleData: StyleData) {
-    const visibilityData = (styleData['styles'] || {})[this.getVisibility()] || {};
+    const visibilityData = (styleData.styles || {})[this.getVisibility()] || {};
     const tagData = visibilityData[this.getPseudoClass()] || {};
     Array.from(this.element.querySelectorAll('[data-prodotype-name]'))
     .forEach((el: HTMLElement) => {
       const tagName = el.getAttribute('data-prodotype-name');
       const label = el.getAttribute('data-initial-value') + (tagData[tagName] ? ' *' : '');
-      if (el.innerHTML != label) {
+      if (el.innerHTML !== label) {
         el.innerHTML = label;
       }
     });
@@ -383,7 +381,7 @@ export class StyleEditorPane extends PaneBase {
    * useful to mark combo elements with "*" when there is data there
    */
   populatePseudoClassCombo(styleData: StyleData) {
-    const visibilityData = (styleData['styles'] || {})[this.getVisibility()];
+    const visibilityData = (styleData.styles || {})[this.getVisibility()];
 
     // populate pseudo class combo
     const selectedIndex = this.pseudoClassCombo.selectedIndex;
@@ -393,10 +391,8 @@ export class StyleEditorPane extends PaneBase {
     // {"name":"Text
     // styles","props":[{"name":"pseudoClass","type":["normal",":hover",":focus-within",
     // ...
-    const componentsDef =
-        this.model.component.getComponentsDef(Constants.STYLE_TYPE);
-    const pseudoClasses = componentsDef['text']['props'].filter(
-        (prop) => prop.name === 'pseudoClass')[0]['type'];
+    const componentsDef = this.model.component.getComponentsDef(Constants.STYLE_TYPE);
+    const pseudoClasses = componentsDef.text.props.filter((prop) => prop.name === 'pseudoClass')[0].type;
 
     // append options to the dom
     pseudoClasses
@@ -423,41 +419,20 @@ export class StyleEditorPane extends PaneBase {
   }
 
   /**
-     * @return name to display for the element's style
-    getDisplayName(element) {
-      const type = this.model.element.getType(element);
-      const className = this.model.element.getClassName(element);
-      const cssClasses = className === '' ? '' : '(.' + className.split('
-    ').join('.') + ')';
-      // note: ID is null before we open a website
-      const id = this.model.property.getSilexId(element) || '';
-      const match = id.match(/silex-id-\d*(\d{3}-\d*)/);
-      if(match && match.length === 2) {
-        // case of a Silex ID with a normal format
-        // display only the end of the ID
-        return `${ type }${ match[1] } ${ cssClasses }`;
-      }
-      else {
-        // case of the body or another tag with a hand made Silex ID
-        return `${ element.tagName } .${ id } ${ cssClasses }`;
-      }
-    }
-     */
-  /**
    * utility function to create a style in the style combo box or duplicate one
    */
   createStyle(
       opt_data?: StyleData, opt_cbk?: ((p1?: string) => any)) {
-    const textBoxes = this.states.filter(state => this.isTextBox(state.el));
+    const textBoxes = this.states.filter((state) => this.isTextBox(state.el));
     if (textBoxes.length <= 0) {
       SilexNotification.alert('Create a style', 'Error: you need to select a TextBox for this action.', () => {});
     } else {
-      SilexNotification.prompt('Create a style', 'Enter a name for your style!', opt_data ? opt_data['displayName'] : '', 'Your Style', (accept, name) => {
+      SilexNotification.prompt('Create a style', 'Enter a name for your style!', opt_data ? opt_data.displayName : '', 'Your Style', (accept, name) => {
         if (accept && name && name !== '') {
           this.controller.propertyToolController.undoCheckPoint();
           const className = name.replace(/ /g, '-').toLowerCase();
           this.model.component.initStyle(name, className, opt_data);
-          this.applyStyle(textBoxes.map(state => state.el), className);
+          this.applyStyle(textBoxes.map((state) => state.el), className);
 
           // FIXME: needed to select className but
           // model.Component::initStyle calls refreshView which calls
@@ -482,11 +457,11 @@ export class StyleEditorPane extends PaneBase {
       this.doDeleteStyle(name);
     } else {
       if (name === Constants.BODY_STYLE_CSS_CLASS) {
-        SilexNotification.alert('Delete a style',`
+        SilexNotification.alert('Delete a style', `
           The style '${Constants.BODY_STYLE_NAME}' is a special style, you can not delete it.
         `, () => {});
       } else {
-        SilexNotification.confirm('Delete a style',`
+        SilexNotification.confirm('Delete a style', `
           I am about to delete the style <b>${name}</b>!<br><br>Are you sure?
         `, (accept) => {
           if (accept) {

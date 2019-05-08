@@ -18,48 +18,48 @@ export type SilexId = string;
 
 export type StyleName = string;
 
-export type CssRule = {
-  [key: string]: CssPropertyValue
-};
+export interface CssRule {
+  [key: string]: CssPropertyValue;
+}
 
-export type ComponentData = {
-  name: string,
-  displayName?: string,
-  templateName: TemplateName
-};
+export interface ComponentData {
+  name: string;
+  displayName?: string;
+  templateName: TemplateName;
+}
 
-export type StyleData = {
-  className: StyleName,
-  displayName: string,
-  templateName: TemplateName,
-  styles: {[key: string]: VisibilityData}
-};
+export interface StyleData {
+  className: StyleName;
+  displayName: string;
+  templateName: TemplateName;
+  styles: {[key: string]: VisibilityData};
+}
 
-export type ProdotypeData = {
-  component: {[key: string]: ComponentData},
-  style: {[key: string]: StyleData}
-};
+export interface ProdotypeData {
+  component: {[key: string]: ComponentData};
+  style: {[key: string]: StyleData};
+}
 
-export type SilexData = {
-  [key: string]: CssRule
-};
+export interface SilexData {
+  [key: string]: CssRule;
+}
 
-export type JsonData = {
-  desktop: SilexData,
-  mobile: SilexData,
-  prodotypeData: ProdotypeData
-};
+export interface JsonData {
+  desktop: SilexData;
+  mobile: SilexData;
+  prodotypeData: ProdotypeData;
+}
 
 export enum ProdotypeTypes {
   COMPONENT = 'component',
-  STYLE = 'style'
+  STYLE = 'style',
 }
-export type VisibilityData = {
-  [key: string]: PseudoClassData
-};
-export type PseudoClassData = {
-  [key: string]: CssRule|TemplateName|StyleName
-};
+export interface VisibilityData {
+  [key: string]: PseudoClassData;
+}
+export interface PseudoClassData {
+  [key: string]: CssRule|TemplateName|StyleName;
+}
 export type Visibility = string;
 
 export type PseudoClass = string;
