@@ -15,16 +15,15 @@
  *
  */
 
-import {InvalidationManager} from '../utils/invalidation-manager';
+import { Constants } from '../../Constants';
 import {Controller} from '../types';
 import {Model} from '../types';
-import { Constants } from '../../Constants';
-
+import {InvalidationManager} from '../utils/invalidation-manager';
 
 /**
  * @param element   container to render the UI
  * @param model  model class which holds
-  * the model instances - views use it for read
+ * the model instances - views use it for read
  * operation only
  * @param controller  structure which holds
  * the controller instances
@@ -63,12 +62,12 @@ export class BreadCrumbs {
 
       // clone the selection array in order to avoid side effects after
       // manipulating the array
-      let selectedElements = [];
+      const selectedElements = [];
       opt_selectedElements.forEach((element) => selectedElements.push(element));
 
       // get the common ancesters to all selected elements
       function getParents(elem) {
-        let parents = [];
+        const parents = [];
         while (elem && elem.tagName !== 'HTML') {
           parents.unshift(elem);
           elem = elem.parentElement;
@@ -81,13 +80,13 @@ export class BreadCrumbs {
       selectedElements.sort(
           (elem1, elem2) =>
               getParents(elem2).length - getParents(elem1).length);
-      let deepest = selectedElements.shift();
+      const deepest = selectedElements.shift();
 
       // for this "deepest" element, find the common ancestors with all others
       let ancestors = getParents(deepest);
       selectedElements.forEach((element) => {
-        let parents = getParents(element);
-        let newAncestors = [];
+        const parents = getParents(element);
+        const newAncestors = [];
         let idx = 0;
         while (idx < ancestors.length && idx < parents.length &&
                ancestors[idx] === parents[idx]) {
@@ -110,7 +109,7 @@ export class BreadCrumbs {
    * add a button in the bread crumb container
    */
   addCrumb(ancestor: HTMLElement) {
-    let crumb = document.createElement('DIV');
+    const crumb = document.createElement('DIV');
     let cssClasses = this.model.element.getClassName(ancestor);
     if (cssClasses !== '') {
       cssClasses = '.' + cssClasses.split(' ').join('.');

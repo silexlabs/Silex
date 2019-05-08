@@ -13,8 +13,8 @@
  * @fileoverview The dialog to edit links
  *
  */
-import {SilexNotification} from '../../utils/notification';
 import {LinkData} from '../../types';
+import {SilexNotification} from '../../utils/notification';
 
 export const LINK_ATTRIBUTES =
     ['href', 'rel', 'target', 'type', 'title', 'download'];
@@ -24,7 +24,7 @@ const DEFAULT_LINK_DATA = {
   title: '',
   rel: '',
   type: '',
-  download: ''
+  download: '',
 };
 
 /**
@@ -41,13 +41,13 @@ export class LinkDialog {
     const linkData = Object.assign({}, DEFAULT_LINK_DATA, linkDataArg);
 
     // external link data
-    const isExternal = !linkData['href'].startsWith('#!');
+    const isExternal = !linkData.href.startsWith('#!');
     SilexNotification.prompt(`
       Link editor <a class="link-editor-help-button fa fa-question-circle" target="_blank" href="https://github.com/silexlabs/Silex/wiki/Editor-UI#link-editor"> Help</a>
     `, 'unused', 'unused', 'unused', (accept, unused) => {
       if (accept) {
         // get new values
-        const newData = LINK_ATTRIBUTES.reduce((acc, attr) => {
+        const newData: LinkData = LINK_ATTRIBUTES.reduce((acc, attr) => {
           const el = dialogBody.querySelector('.' + attr) as HTMLInputElement;
           if (!el) {
             console.error('could not get data from for attribute', attr);
@@ -60,21 +60,21 @@ export class LinkDialog {
         // internal link info
         const newIsExternal = (dialogBody.querySelector('#link-editor-external') as HTMLInputElement).checked;
         const page = (dialogBody.querySelector('.page') as HTMLInputElement).value;
-        const options: LinkData = {'href': newIsExternal ? newData['href'] : page};
-        if (newData['target'] != '') {
-          options.target = newData['target'];
+        const options: LinkData = {href: newIsExternal ? newData.href : page};
+        if (newData.target !== '') {
+          options.target = newData.target;
         }
-        if (newData['rel'] != '') {
-          options.rel = newData['rel'];
+        if (newData.rel !== '') {
+          options.rel = newData.rel;
         }
-        if (newData['title'] != '') {
-          options.title = newData['title'];
+        if (newData.title !== '') {
+          options.title = newData.title;
         }
-        if (newData['type'] != '') {
-          options.type = newData['type'];
+        if (newData.type !== '') {
+          options.type = newData.type;
         }
-        if (newData['download'] != '') {
-          options.download = newData['download'];
+        if (newData.download !== '') {
+          options.download = newData.download;
         }
         cbk(options);
       }
@@ -93,7 +93,7 @@ export class LinkDialog {
 
     // add info about the link
     const dialogBody = document.createElement('div');
-    dialogBody.insertAdjacentHTML('afterbegin', this.getDialogHtml({isExternal: isExternal, linkData: linkData, pageNames: pageNames}));
+    dialogBody.insertAdjacentHTML('afterbegin', this.getDialogHtml({isExternal, linkData, pageNames}));
     Array.from(dialogBody.querySelectorAll('.link-editor-tab-label'))
     .forEach((el: HTMLElement) => {
       el.onclick = (_) => {
@@ -101,7 +101,7 @@ export class LinkDialog {
       .from(dialogBody.querySelectorAll(
         '.link-editor-tab-label.checked'))
         .forEach((selected) => selected.classList.remove('checked'));
-        el.classList.add('checked');
+      el.classList.add('checked');
       };
     });
     SilexNotification.setContent(dialogBody);
@@ -121,13 +121,13 @@ export class LinkDialog {
           <div class="link-editor-tab-container">
             <label for="link-editor-href">External link</label>
             <div class="flex">
-              <input autocomplete="nope" spellcheck="false" id="link-editor-href" class="big alertify-text href tabbed" type="url" value="${isExternal ? linkData['href'] : ''}">
+              <input autocomplete="nope" spellcheck="false" id="link-editor-href" class="big alertify-text href tabbed" type="url" value="${isExternal ? linkData.href : ''}">
               <select autocomplete="nope" id="link-editor-target" class="alertify-text target">
-                <option${linkData['target'] === '' ? ' selected ' : ''} value=""></option>
-                <option${linkData['target'] === '_self' ? ' selected ' : ''} value="_self">_self</option>
-                <option${linkData['target'] === '_blank' ? ' selected ' : ''} value="_blank">_blank</option>
-                <option${linkData['target'] === '_parent' ? ' selected ' : ''} value="_parent">_parent</option>
-                <option${linkData['target'] === '_top' ? ' selected ' : ''} value="_top">_top</option>
+                <option${linkData.target === '' ? ' selected ' : ''} value=""></option>
+                <option${linkData.target === '_self' ? ' selected ' : ''} value="_self">_self</option>
+                <option${linkData.target === '_blank' ? ' selected ' : ''} value="_blank">_blank</option>
+                <option${linkData.target === '_parent' ? ' selected ' : ''} value="_parent">_parent</option>
+                <option${linkData.target === '_top' ? ' selected ' : ''} value="_top">_top</option>
               </select>
             </div>
           </div>
@@ -138,7 +138,7 @@ export class LinkDialog {
             <label for="link-editor-page">Page</label>
             <select autocomplete="nope" class="tabbed alertify-text page big" id="link-editor-page">
               <option value=""${isExternal ? ' selected ' : ''}></option>
-              ${pageNames.map((page) => `<option value="#!${page}"${        !isExternal && '#!' + page === linkData['href'] ? ' selected ' : ''} >
+              ${pageNames.map((page) => `<option value="#!${page}"${        !isExternal && '#!' + page === linkData.href ? ' selected ' : ''} >
                 ${this.model.page.getDisplayName(page)}
               </option>`)}
             </select>
@@ -147,7 +147,7 @@ export class LinkDialog {
         <div class="link-editor-tab-container">
           <div class="link-editor-2col">
             <label for="link-editor-title">Title</label>
-            <input autocomplete="nope" id="link-editor-title" class="alertify-text title big" type="text" value="${linkData['title']}">
+            <input autocomplete="nope" id="link-editor-title" class="alertify-text title big" type="text" value="${linkData.title}">
           </div>
         </div>
         <hr>
@@ -156,11 +156,11 @@ export class LinkDialog {
           <label for="link-editor-show-advanced">Advanced params</label>
           <div class="link-editor-advanced">
             <label for="link-editor-rel">The "rel" attribute. Describes the relationship between the current document and the destination.</label>
-            <input autocomplete="nope" id="link-editor-rel" class="alertify-text rel" type="text" value="${linkData['rel']}">
+            <input autocomplete="nope" id="link-editor-rel" class="alertify-text rel" type="text" value="${linkData.rel}">
             <label for="link-editor-type">The "type" attribute. Specifies the MIME type of the linked resource.</label>
-            <input autocomplete="nope" id="link-editor-type" class="alertify-text type" type="text" value="${linkData['type']}">
+            <input autocomplete="nope" id="link-editor-type" class="alertify-text type" type="text" value="${linkData.type}">
             <label for="link-editor-download">The "download" attribute. Indicates that the link is to be used for downloading a resource (such as a file). The author can specify a default file name by providing a value.</label>
-            <input autocomplete="nope" id="link-editor-download" class="alertify-text download" type="text" value="${linkData['download']}">
+            <input autocomplete="nope" id="link-editor-download" class="alertify-text download" type="text" value="${linkData.download}">
           </div>
         </div>
         </div>

@@ -59,8 +59,8 @@ export class SettingsDialog {
    */
   constructor(protected element: HTMLElement, protected model: Model, protected controller: Controller) {
     this.modalDialog = new ModalDialog({
-      name:'Settings dialog',
-      element: element,
+      name: 'Settings dialog',
+      element,
       onOpen: (args) => {
         this.onClose = args.cbk;
         if (args.pane) {
@@ -73,12 +73,12 @@ export class SettingsDialog {
         if (this.onClose) {
           this.onClose();
         }
-      }
+      },
     });
     this.paneCssClasses = PANE_CSS_CLASSES;
     this.element.classList.add(this.paneCssClasses[0] + '-visible');
-    let leftPane = document.querySelector('.left-pane');
-    leftPane.addEventListener('click', e => this.onNavClick(e), false);
+    const leftPane = document.querySelector('.left-pane');
+    leftPane.addEventListener('click', (e) => this.onNavClick(e), false);
 
     // input text fields
     this.bindTextField(
@@ -113,14 +113,14 @@ export class SettingsDialog {
     this.bindTextField('.publish-pane .input-publication-path', (v) => {
       const fileInfo =
           this.controller.settingsDialogController.getPublicationPath();
-      const fileInfoNew = Url.updateFileInfo(fileInfo, {'path': v});
+      const fileInfoNew = Url.updateFileInfo(fileInfo, {path: v});
       this.controller.settingsDialogController.setPublicationPath(fileInfoNew);
     });
     this.bindTextField('.publish-pane .input-publication-service', (v) => {
       const fileInfo =
           this.controller.settingsDialogController.getPublicationPath();
       const fileInfoNew =
-          Url.updateFileInfo(fileInfo, {'service': v});
+          Url.updateFileInfo(fileInfo, {service: v});
       this.controller.settingsDialogController.setPublicationPath(fileInfoNew);
     });
     this.bindTextField('.publish-pane .input-website-url', (v) => {
@@ -153,18 +153,17 @@ export class SettingsDialog {
         const select = this.element.querySelector(
             '.publish-pane .input-publication-service');
         select.innerHTML = '';
-        for (let idx = 0; idx < services.length; idx++) {
-          const service = services[idx];
+        services.forEach((service) => {
           const option = document.createElement('option');
           option.value = service.name;
           option.innerHTML = service.displayName || service.name;
           select.appendChild(option);
-        }
+        });
       });
     });
 
     // font button
-    (this.element.querySelector('.pane.fonts-pane .add-font-btn') as HTMLElement).onclick = e => this.addFont();
+    (this.element.querySelector('.pane.fonts-pane .add-font-btn') as HTMLElement).onclick = (e) => this.addFont();
     this.list = this.element.querySelector('.fonts-list');
     this.list.onclick = (e) => {
       const el = (e.target as HTMLElement);
@@ -212,7 +211,7 @@ export class SettingsDialog {
    * binds an input element with a callback
    */
   bindTextField(cssSelector: string, cbk: (p1: string) => any) {
-    let input = this.element.querySelector(cssSelector) as HTMLInputElement;
+    const input = this.element.querySelector(cssSelector) as HTMLInputElement;
     if (!input) {
       throw new Error(
           'Settings panel error: could not find the element to bind.');
@@ -226,7 +225,7 @@ export class SettingsDialog {
    * binds a button element with a callback
    */
   bindBrowseButton(cssSelector: string, cbk: () => any) {
-    let btn = this.element.querySelector(cssSelector);
+    const btn = this.element.querySelector(cssSelector);
     if (!btn) {
       throw new Error(
           'Settings panel error: could not find the element to bind.');
@@ -241,7 +240,7 @@ export class SettingsDialog {
    * @see silex.model.Head
    */
   setInputValue(cssSelector: string, opt_value?: string) {
-    let input = this.element.querySelector(cssSelector) as HTMLInputElement;
+    const input = this.element.querySelector(cssSelector) as HTMLInputElement;
     if (opt_value) {
       input.value = opt_value;
     } else {
@@ -271,7 +270,7 @@ export class SettingsDialog {
    * @param fileInfo   the publication path
    */
   setPublicationPath(fileInfo?: FileInfo) {
-    if (fileInfo != null) {
+    if (fileInfo !== null) {
       // set input tags the values
       this.setInputValue(
           '.publish-pane .input-publication-service', fileInfo.service);
@@ -302,7 +301,7 @@ export class SettingsDialog {
   getPublicationPath(): FileInfo {
     const service = (this.element.querySelector('.publish-pane .input-publication-service') as HTMLInputElement).value;
     const path = (this.element.querySelector('.publish-pane .input-publication-path') as HTMLInputElement).value;
-    if (this.publicationPath != null && service && path && service !== '' && path !== '') {
+    if (this.publicationPath !== null && service && path && service !== '' && path !== '') {
       this.publicationPath.service = service;
       this.publicationPath.path = path;
     }
@@ -444,7 +443,7 @@ export class SettingsDialog {
     this.editFont(
         {
           href: 'https://fonts.googleapis.com/css?family=Roboto',
-          family: '\'Roboto\', sans-serif'
+          family: '\'Roboto\', sans-serif',
         },
         (newFont) => {
           const fonts = this.model.head.getFonts();
@@ -466,14 +465,14 @@ export class SettingsDialog {
         if (ok) {
           SilexNotification.prompt('Edit font',
             'What is the name of your font, e.g. \'Roboto\', sans-serif',
-            font.family, '\'Roboto\', sans-serif', (ok, family) => {
-              if (ok) {
-                cbk(({family: family, href: href} as Font));
+            font.family, '\'Roboto\', sans-serif', (_ok, family) => {
+              if (_ok) {
+                cbk(({family, href} as Font));
               }
-            }
+            },
           );
         }
-      }
+      },
     );
   }
 

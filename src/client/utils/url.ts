@@ -22,13 +22,13 @@ export class Url {
    * @param attributes a partial FileInfo object
    */
   static updateFileInfo(
-      fileInfo: FileInfo, attributes: Object): FileInfo {
+      fileInfo: FileInfo, attributes: any): FileInfo {
     if (!fileInfo) {
       return null;
     }
     const fileInfoNew = Object.assign({}, fileInfo, attributes);
     return (Object.assign({}, fileInfoNew, {
-      'url': Url.getBaseUrl() + fileInfoNew.service + '/get/' + fileInfoNew.path
+      url: Url.getBaseUrl() + fileInfoNew.service + '/get/' + fileInfoNew.path,
     }) as FileInfo);
   }
 
@@ -68,8 +68,8 @@ export class Url {
    * example: https://duckduckgo.com/abc/ returns duckduckgo.com
    */
   static getHost(opt_url?: string): string {
-    let root = Url.getRootUrl(opt_url);
-    let host = root.substr(root.indexOf('//') + 2);
+    const root = Url.getRootUrl(opt_url);
+    const host = root.substr(root.indexOf('//') + 2);
     return host;
   }
 

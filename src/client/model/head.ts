@@ -22,7 +22,6 @@ import {FileInfo} from '../types';
 import {Model} from '../types';
 import {Font} from '../types';
 
-
 /**
  * @param model  model class which holds the other models
  * @param view  view class which holds the other views
@@ -84,7 +83,7 @@ export class Head {
    */
   getHeadScript(): string {
     // get silex scripts from the DOM
-    let scriptTag = this.getHeadElement().querySelector('.' + Constants.SILEX_SCRIPT_ELEMENT_CSS_CLASS);
+    const scriptTag = this.getHeadElement().querySelector('.' + Constants.SILEX_SCRIPT_ELEMENT_CSS_CLASS);
     if (!scriptTag) {
       return '';
     }
@@ -113,11 +112,12 @@ export class Head {
    */
   getHeadStyle(): string {
     // get silex styles from the DOM
-    let silexStyle = this.getHeadElement().querySelector('.' + Constants.SILEX_STYLE_ELEMENT_CSS_CLASS);
+    const silexStyle = this.getHeadElement().querySelector('.' + Constants.SILEX_STYLE_ELEMENT_CSS_CLASS);
     if (!silexStyle) {
       console.warn('no silex editable styles defined');
       return '';
     }
+      // tslint:disable:no-string-literal
     return window['css_beautify'](silexStyle.innerHTML);
   }
 
@@ -143,7 +143,7 @@ export class Head {
    * get/set a meta data
    */
   getMeta(name: string): string {
-    let metaNode = this.model.file.getContentDocument().querySelector(
+    const metaNode = this.model.file.getContentDocument().querySelector(
         'meta[name="' + name + '"]');
     if (metaNode) {
       return metaNode.getAttribute('content');
@@ -171,7 +171,7 @@ export class Head {
         metaNode.setAttribute('content', opt_value);
       } else {
         // remove the opt_value
-        if(metaNode) metaNode.parentElement.removeChild(metaNode);
+        if (metaNode) { metaNode.parentElement.removeChild(metaNode); }
       }
     }
   }
@@ -194,7 +194,7 @@ export class Head {
    * publication path is always absolute url
    */
   getPublicationPath(): FileInfo {
-    let fileInfo = this.getMeta('publicationPath');
+    const fileInfo = this.getMeta('publicationPath');
     try {
       return fileInfo == null ? null : (JSON.parse(fileInfo) as FileInfo);
     } catch (e) {
@@ -263,8 +263,8 @@ export class Head {
     this.view.settingsDialog.setEnableMobile(enable);
 
     // redraw UI
-    let pages = this.model.page.getPages();
-    let page = this.model.page.getCurrentPage();
+    const pages = this.model.page.getPages();
+    const page = this.model.page.getCurrentPage();
     const selectedElements = this.model.body.getSelection();
     const states = this.view.stageWrapper.getSelection();
     this.view.propertyTool.redraw(states, pages, page);
@@ -340,7 +340,7 @@ export class Head {
    * website title
    */
   getTitle(): string {
-    let titleNode = this.getHeadElement().querySelector('title');
+    const titleNode = this.getHeadElement().querySelector('title');
     if (titleNode) {
       return titleNode.innerHTML;
     } else {
@@ -389,7 +389,7 @@ export class Head {
    * website favicon
    */
   getFaviconPath(): string {
-    let faviconTag =
+    const faviconTag =
         this.getHeadElement().querySelector('link[rel="shortcut icon"]');
     let url = null;
     if (faviconTag) {
@@ -407,10 +407,10 @@ export class Head {
     if (!faviconTag) {
       if (opt_path) {
       const doc = this.model.file.getContentDocument();
-        faviconTag = doc.createElement('link');
-        faviconTag.setAttribute('href', opt_path);
-        faviconTag.setAttribute('rel', 'shortcut icon');
-        this.getHeadElement().appendChild(faviconTag);
+      faviconTag = doc.createElement('link');
+      faviconTag.setAttribute('href', opt_path);
+      faviconTag.setAttribute('rel', 'shortcut icon');
+      this.getHeadElement().appendChild(faviconTag);
       }
     } else {
       if (!opt_path) {
@@ -475,7 +475,7 @@ export class Head {
    * get/set the thumbnail image for social networks
    */
   getThumbnailSocialPath(): string {
-    let url = this.getMeta('og:image') || this.getMeta('twitter:image');
+    const url = this.getMeta('og:image') || this.getMeta('twitter:image');
     return url;
   }
 

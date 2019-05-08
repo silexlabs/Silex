@@ -15,15 +15,15 @@
  *
  */
 
+import { Constants } from '../../Constants';
+import { ComponentData, PseudoClass, StyleName, Visibility } from '../model/Data';
 import { DomDirection, SilexElement } from '../model/element';
-import { ClipboardItem, Model, View, LinkData, FileInfo } from '../types';
+import { ClipboardItem, FileInfo, LinkData, Model, View } from '../types';
 import { InvalidationManager } from '../utils/invalidation-manager';
 import { SilexNotification } from '../utils/notification';
 import { Style } from '../utils/style';
 import { FileExplorer } from '../view/dialog/file-explorer';
 import { ControllerBase } from './controller-base';
-import { Constants } from '../../Constants';
-import { ComponentData, StyleName, PseudoClass, Visibility } from '../model/Data';
 
 /**
  * @param view  view class which holds the other views
@@ -43,7 +43,7 @@ export class EditMenuController extends ControllerBase {
    * undo the last action
    */
   undo() {
-    if(ControllerBase.undoHistory.length > 0) {
+    if (ControllerBase.undoHistory.length > 0) {
       this.model.body.setSelection([]);
       this.undoredoInvalidationManager.callWhenReady(() => {
         if (ControllerBase.getStatePending === 0 &&
@@ -64,7 +64,7 @@ export class EditMenuController extends ControllerBase {
    * redo the last action
    */
   redo() {
-    if(ControllerBase.redoHistory.length > 0) {
+    if (ControllerBase.redoHistory.length > 0) {
       this.model.body.setSelection([]);
       this.undoredoInvalidationManager.callWhenReady(() => {
         if (ControllerBase.redoHistory.length > 0) {
@@ -98,7 +98,7 @@ export class EditMenuController extends ControllerBase {
             })
             .filter((element) => {
               // not the body
-              return body !== element
+              return body !== element;
                   // // not an element which has a selected parent
                   // // FIXME: closest is not yet defined on Element in google
                   // // closure, remove the array access ['closest'] when it is
@@ -130,12 +130,12 @@ export class EditMenuController extends ControllerBase {
    */
   recursiveCopy(element: HTMLElement) {
     // duplicate the node
-    let res = {
-      element: element,
+    const res = {
+      element,
       style: this.model.property.getStyle(element, false),
       mobileStyle: this.model.property.getStyle(element, true),
       componentData: this.model.property.getElementComponentData(element),
-      children: []
+      children: [],
     };
 
     // case of a container, handle its children
@@ -168,7 +168,7 @@ export class EditMenuController extends ControllerBase {
 
       // add to the container
       const selection = ControllerBase.clipboard.map((clipboardItem) => {
-        let element = this.recursivePaste(clipboardItem) as HTMLElement;
+        const element = this.recursivePaste(clipboardItem) as HTMLElement;
 
         // reset editable option
         this.doAddElement(element);
@@ -198,14 +198,14 @@ export class EditMenuController extends ControllerBase {
    * the elements have already been added to stage
    */
   recursivePaste(clipboardItem: ClipboardItem): HTMLElement {
-    let element = clipboardItem.element;
+    const element = clipboardItem.element;
 
     // reset the ID
     this.model.property.initSilexId(element);
 
     // add its children
     clipboardItem.children.forEach((childItem) => {
-      let childElement = this.recursivePaste(childItem);
+      const childElement = this.recursivePaste(childItem);
     });
 
     // init component props
@@ -227,28 +227,27 @@ export class EditMenuController extends ControllerBase {
    * remove selected elements from the stage
    */
   removeSelectedElements() {
-    let elements = this.model.body.getSelection();
+    const elements = this.model.body.getSelection();
 
-    if(!!elements.find(el => el === this.model.body.getBodyElement())) {
+    if (!!elements.find((el) => el === this.model.body.getBodyElement())) {
       SilexNotification.alert('Delete elements',
         'Error: I can not delete the body as it is the root container of all your website. <strong>Please select an element to delete it</strong>.',
-        () => {}
+        () => {},
       );
-    }
-    else {
+    } else {
       // confirm and delete
       SilexNotification.confirm('Delete elements', 'I am about to <strong>delete the selected element(s)</strong>, are you sure?',
-        accept => {
+        (accept) => {
           if (accept) {
             // undo checkpoint
             this.undoCheckPoint();
 
             // do remove selected elements
-            elements.forEach(element => {
+            elements.forEach((element) => {
               this.model.element.removeElement(element);
             });
           }
-        }, 'delete', 'cancel'
+        }, 'delete', 'cancel',
       );
     }
   }
@@ -262,7 +261,7 @@ export class EditMenuController extends ControllerBase {
     this.undoCheckPoint();
 
     // default is selected element
-    let element = opt_element || this.model.body.getSelection()[0];
+    const element = opt_element || this.model.body.getSelection()[0];
 
     // open the params tab for the components
     // or the editor for the elements
@@ -297,7 +296,7 @@ export class EditMenuController extends ControllerBase {
     }
   }
 
-    /**
+  /**
    * @param element, the component to edit
    */
   editComponent(element: HTMLElement) {
@@ -306,9 +305,9 @@ export class EditMenuController extends ControllerBase {
       if (element && this.model.component.prodotypeComponent && componentData) {
         this.model.component.prodotypeComponent.edit(
             componentData,
-            this.model.component.getProdotypeComponents(Constants.COMPONENT_TYPE) as Array<ComponentData>,
-            componentData['templateName'], {
-              'onChange': (newData, html) => {
+            this.model.component.getProdotypeComponents(Constants.COMPONENT_TYPE) as ComponentData[],
+            componentData.templateName, {
+              onChange: (newData, html) => {
                 // undo checkpoint
                 this.undoCheckPoint();
 
@@ -327,9 +326,9 @@ export class EditMenuController extends ControllerBase {
                 // put back the editable elements
                 element.appendChild(tempElements);
               },
-              'onBrowse': (e, url, cbk) => this.onBrowse(e, url, cbk),
-              'onEditLink': (e, linkData, cbk) =>
-                  this.onEditLink(e, linkData, cbk)
+              onBrowse: (e, url, cbk) => this.onBrowse(e, url, cbk),
+              onEditLink: (e, linkData, cbk) =>
+                  this.onEditLink(e, linkData, cbk),
             });
       }
       this.model.component.componentEditorElement.classList.remove('hide-panel');
@@ -341,9 +340,9 @@ export class EditMenuController extends ControllerBase {
 
   onEditLink(e: Event, linkData: LinkData, cbk: (p1: LinkData) => any) {
     e.preventDefault();
-    let pages = this.model.page.getPages();
-    this.linkDialog.open(linkData, pages, (linkData) => {
-      cbk(linkData);
+    const pages = this.model.page.getPages();
+    this.linkDialog.open(linkData, pages, (_linkData) => {
+      cbk(_linkData);
     });
   }
 
@@ -362,16 +361,16 @@ export class EditMenuController extends ControllerBase {
     .then((fileInfo: FileInfo) => {
       if (fileInfo) {
         cbk([{
-          'url': fileInfo.absPath,
-          'modified': fileInfo.modified,
-          'name': fileInfo.name,
-          'size': fileInfo.size,
-          'mime': fileInfo.mime,
-          'path': '',
-          'absPath': '',
-          'folder': '',
-          'service': '',
-          'isDir': true,
+          url: fileInfo.absPath,
+          modified: fileInfo.modified,
+          name: fileInfo.name,
+          size: fileInfo.size,
+          mime: fileInfo.mime,
+          path: '',
+          absPath: '',
+          folder: '',
+          service: '',
+          isDir: true,
         }]);
       }
     })
@@ -380,19 +379,18 @@ export class EditMenuController extends ControllerBase {
     });
   }
 
-
   /**
    * @param className, the css class to edit the style for
    * @param pseudoClass, e.g. normal, :hover, ::first-letter
    * @param visibility, e.g. mobile only, desktop and mobile...
    */
   editStyle(className: StyleName, pseudoClass: PseudoClass, visibility: Visibility) {
-  const styleData = this.model.property.getStyleData(className) || {'styles': {}};
-  const visibilityData = styleData['styles'][visibility] || {};
+  const styleData = this.model.property.getStyleData(className) || {styles: {}};
+  const visibilityData = styleData.styles[visibility] || {};
   const pseudoClassData = visibilityData[pseudoClass] || {
-    'templateName': 'text',
-    'className': className,
-    'pseudoClass': pseudoClass
+    templateName: 'text',
+    className,
+    pseudoClass,
   };
   this.model.component.prodotypeStyle.edit(
     pseudoClassData,
@@ -402,22 +400,21 @@ export class EditMenuController extends ControllerBase {
         return {
           displayName: font.family,
           name: font.family,
-          templateName: ''
+          templateName: '',
         };
-      })
+      }),
     ),
     'text', {
-      'onChange': (newData, html) => this.model.component.componentStyleChanged(className, pseudoClass, visibility, newData),
-      'onBrowse': (e, url, cbk) => this.onBrowse(e, url, cbk)
+      onChange: (newData, html) => this.model.component.componentStyleChanged(className, pseudoClass, visibility, newData),
+      onBrowse: (e, url, cbk) => this.onBrowse(e, url, cbk),
     });
   }
-
 
   /**
    * get the index of the element in the DOM
    */
   indexOfElement(element: HTMLElement): number {
-    let len = element.parentElement.childNodes.length;
+    const len = element.parentElement.childNodes.length;
     for (let idx = 0; idx < len; idx++) {
       if (element.parentElement.childNodes[idx] === element) {
         return idx;
@@ -436,7 +433,7 @@ export class EditMenuController extends ControllerBase {
     this.undoCheckPoint();
 
     // get the selected elements
-    let elements = this.model.body.getSelection();
+    const elements = this.model.body.getSelection();
 
     // sort the array
     elements.sort((a, b) => {
@@ -445,9 +442,9 @@ export class EditMenuController extends ControllerBase {
 
     // move up
     elements.forEach((element) => {
-      let stylesObj =
+      const stylesObj =
           this.model.file.getContentWindow().getComputedStyle(element);
-      let reverse = stylesObj['position'] !== 'absolute';
+      const reverse = stylesObj.position !== 'absolute';
       if (reverse) {
         switch (direction) {
           case DomDirection.UP:

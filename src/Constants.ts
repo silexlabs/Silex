@@ -14,7 +14,6 @@
  *
  */
 
-
 export class Constants {
   /**
    * constant for the class name set on the body depending on the context in which is the website

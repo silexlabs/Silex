@@ -97,7 +97,7 @@ export class ViewMenuController extends ControllerBase {
    */
   doPreview(inResponsize: boolean) {
     this.tracker.trackAction('controller-events', 'request', 'view.file', 0);
-    let doOpenPreview = function() {
+    const doOpenPreview = function() {
       if (inResponsize) {
         this.view.workspace.setPreviewWindowLocation(
             'http://www.responsize.org/?url=' +
@@ -112,7 +112,7 @@ export class ViewMenuController extends ControllerBase {
     }.bind(this);
 
     // save before preview
-    let doSaveTheFile = () => {
+    const doSaveTheFile = () => {
       this.save(
           this.model.file.getFileInfo(),
           () => {},
@@ -137,7 +137,7 @@ export class ViewMenuController extends ControllerBase {
         'You need to save the website before I can show a preview',
         () => {
           doSaveTheFile();
-        }
+        },
       );
     }
   }

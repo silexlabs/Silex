@@ -14,11 +14,10 @@
  * the Silex HTML editor
  *
  */
+import { Constants } from '../../../Constants';
 import {Model} from '../../types';
 import {Controller} from '../../types';
 import {AceEditorBase} from './ace-editor-base';
-import { Constants } from '../../../Constants';
-
 
 /**
  * @class {silex.view.dialog.HtmlEditor}
@@ -37,13 +36,13 @@ export class HtmlEditor extends AceEditorBase {
     const session = this.ace.getSession();
 
     // set mode
-    session['setMode']('ace/mode/html');
+    session.setMode('ace/mode/html');
 
     // dirty hack to prevent errors not applicable in our case (we edit a part
     // of an html doc only) comes from this discussion
     // https://groups.google.com/forum/#!topic/ace-discuss/qOVHhjhgpsU
-    session['on']('changeAnnotation', () => {
-      const annotations = session['getAnnotations']() || [];
+    session.on('changeAnnotation', () => {
+      const annotations = session.getAnnotations() || [];
       const len = annotations.length;
       let i = len;
       while (i--) {
@@ -52,7 +51,7 @@ export class HtmlEditor extends AceEditorBase {
         }
       }
       if (len > annotations.length) {
-        session['setAnnotations'](annotations);
+        session.setAnnotations(annotations);
       }
     });
   }
@@ -61,7 +60,7 @@ export class HtmlEditor extends AceEditorBase {
    * the content has changed, notify the controler
    */
   contentChanged() {
-    let selection = this.model.body.getSelection();
+    const selection = this.model.body.getSelection();
     if (selection.length <= 1) {
       this.controller.htmlEditorController.changed(
           selection[0], this.ace.getValue());

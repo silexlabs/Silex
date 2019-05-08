@@ -1,41 +1,37 @@
 /**
-* Silex, live web creation
-* http://projects.silexlabs.org/?/silex/
-*
-* Copyright (c) 2012 Silex Labs
-* http://www.silexlabs.org/
-*
-* Silex is available under the GPL license
-* http://www.silexlabs.org/silex/silex-licensing/
-*/
+ * Silex, live web creation
+ * http://projects.silexlabs.org/?/silex/
+ *
+ * Copyright (c) 2012 Silex Labs
+ * http://www.silexlabs.org/
+ *
+ * Silex is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
+ */
 
 /**
-* @fileoverview
-* the Silex menu on the left
-* based on closure menu class
-*
-*/
+ * @fileoverview
+ * the Silex menu on the left
+ * based on closure menu class
+ *
+ */
 
-import { Config } from '../ClientConfig';
 import { Constants } from '../../Constants';
+import { Config } from '../ClientConfig';
 import { Controller, Model } from '../types';
 import { Keyboard } from '../utils/Keyboard';
 
-
 /**
-* @param element   container to render the UI
-* @param model  model class which holds
- * the model instances - views use it for read
-* operation only
-* @param controller  structure which holds
-*                                  the controller instances
-*/
+ * @param element   container to render the UI
+ * @param model  model class which holds
+ * the model instances - views use it for read operation only
+ * @param controller  structure which holds the controller instances
+ */
 export class Menu {
   static SUB_MENU_CLASSES = [
     'page-tool-visible', 'about-menu-visible', 'file-menu-visible',
-    'code-menu-visible', 'add-menu-visible'
+    'code-menu-visible', 'add-menu-visible',
   ];
-
 
   constructor(public element: HTMLElement, public model: Model, public controller: Controller) {}
 
@@ -55,9 +51,9 @@ export class Menu {
     return el;
   }
   /**
-  * create the menu with closure API
-  * called by the app constructor
-  */
+   * create the menu with closure API
+   * called by the app constructor
+   */
   buildUi() {
     const keyboard = new Keyboard(document);
     // Shortcuts
@@ -73,7 +69,7 @@ export class Menu {
 
       // build a list of component categories
       const elements = {};
-      for (let id in componentsDef) {
+      for (const id in componentsDef) {
         const comp = componentsDef[id];
         if (comp.isPrivate !== true) {
           if (!elements[comp.category]) {
@@ -83,7 +79,7 @@ export class Menu {
           }
         }
       }
-      for (let id in elements) {
+      for (const id in elements) {
         // create a label for the category
         const label = document.createElement('div');
         label.classList.add('label');
@@ -112,23 +108,21 @@ export class Menu {
   }
 
   /**
-  * redraw the menu
-  * @param selectedElements the elements currently selected
-  * @param pageNames   the names of the pages which appear in the current HTML
-  *     file
-  * @param  currentPageName   the name of the current page
-  */
+   * redraw the menu
+   * @param selectedElements the elements currently selected
+   * @param pageNames   the names of the pages which appear in the current HTML
+   *     file
+   * @param  currentPageName   the name of the current page
+   */
   redraw() {
-    if(this.controller.editMenuController.hasUndo()) {
+    if (this.controller.editMenuController.hasUndo()) {
       this.element.querySelector('.undo').classList.remove('off');
-    }
-    else {
+    } else {
       this.element.querySelector('.undo').classList.add('off');
     }
-    if(this.controller.editMenuController.hasRedo()) {
+    if (this.controller.editMenuController.hasRedo()) {
       this.element.querySelector('.redo').classList.remove('off');
-    }
-    else {
+    } else {
       this.element.querySelector('.redo').classList.add('off');
     }
   }
@@ -150,11 +144,11 @@ export class Menu {
   }
 
   /**
-  * handles click events
-  * calls onStatus to notify the controller
-  * @param opt_componentName the component type if it is a component
-  * TODO: use redux for this
-  */
+   * handles click events
+   * calls onStatus to notify the controller
+   * @param opt_componentName the component type if it is a component
+   * TODO: use redux for this
+   */
   onMenuEvent(type: string, opt_componentName?: string) {
     let added = null;
     switch (type) {

@@ -16,8 +16,8 @@
  */
 import {Model} from '../types';
 import {View} from '../types';
-import {ControllerBase} from './controller-base';
 import {SilexNotification} from '../utils/notification';
+import {ControllerBase} from './controller-base';
 
 /**
  * @param view  view class which holds the other views
@@ -67,7 +67,7 @@ export class PageToolController extends ControllerBase {
     SilexNotification.confirm(
       'Delete page',
       'I am about to <strong>delete the page "' + this.model.page.getDisplayName(opt_pageName) + '"</strong>, are you sure?',
-        accept => {
+        (accept) => {
         if (accept) {
           // undo checkpoint
           this.undoCheckPoint();
@@ -75,7 +75,7 @@ export class PageToolController extends ControllerBase {
           // update model
           this.model.page.removePage((opt_pageName as string));
         }
-      }, 'delete', 'cancel'
+      }, 'delete', 'cancel',
     );
   }
 

@@ -27,21 +27,22 @@ import { getUiElements } from '../view/UiElements';
  * this is a singleton
  */
 export class CloudStorage {
-  /**
-   * reference to the filepicker instance
-   */
-  ce: CloudExplorer = null;
-  cbks: any;
 
   static instance: CloudStorage;
   static getInstance() {
     CloudStorage.instance = CloudStorage.instance || new CloudStorage();
     return CloudStorage.instance;
   }
+  /**
+   * reference to the filepicker instance
+   */
+  ce: CloudExplorer = null;
+  cbks: any;
 
   ready(cbk: () => any) {
     const uiElements = getUiElements();
     // cloud explorer instance
+    // tslint:disable:no-string-literal
     if (uiElements.fileExplorer.contentWindow['ce']) {
       this.ce = (uiElements.fileExplorer.contentWindow['ce'] as CloudExplorer);
       cbk();
@@ -50,7 +51,7 @@ export class CloudStorage {
         this.cbks = [];
         uiElements.fileExplorer.addEventListener('load', (e) => {
           this.ce = (uiElements.fileExplorer.contentWindow['ce'] as CloudExplorer);
-          this.cbks.forEach((cbk) => cbk());
+          this.cbks.forEach((_) => _());
           this.cbks = [];
         });
       }
@@ -63,7 +64,7 @@ export class CloudStorage {
    */
   write(
       fileInfo: FileInfo, rawData: string, userHead: string, cbk: () => any,
-      opt_errCbk?: ((p1: Object, p2: string) => any)) {
+      opt_errCbk?: ((p1: any, p2: string) => any)) {
     // // save the data
     // this.ce.write(new Blob([rawData], {type: 'text/plain'}), fileInfo)
     // .then(() => {
@@ -71,7 +72,7 @@ export class CloudStorage {
     // })
     // .catch(e => {
     //   console.error('Error: could not write file', fileInfo, e);
-    //   if (opt_errCbk) opt_errCbk(/** @type {Object} */ (e));
+    //   if (opt_errCbk) opt_errCbk(/** @type {any} */ (e));
     // });
     const oReq = new XMLHttpRequest();
     oReq.onload = () => {
@@ -79,7 +80,7 @@ export class CloudStorage {
         cbk();
       } else {
         const err = new Event('error');
-        let msg = this.getErrorMessage(oReq);
+        const msg = this.getErrorMessage(oReq);
         if (opt_errCbk) {
           opt_errCbk(err, msg);
         }
@@ -88,7 +89,7 @@ export class CloudStorage {
     const url = `/website/ce/${fileInfo.service}/put/${fileInfo.path}`;
     oReq.open('PUT', url);
     oReq.setRequestHeader('Content-Type', 'text/plain; charset=utf-8');
-    oReq.send(JSON.stringify({'html': rawData, 'userHead': userHead}));
+    oReq.send(JSON.stringify({html: rawData, userHead}));
   }
 
   /**
@@ -96,7 +97,7 @@ export class CloudStorage {
    */
   read(
       fileInfo: FileInfo, cbk: (p1: string, p2: string) => any,
-      opt_errCbk?: ((p1: Object, p2: string) => any)) {
+      opt_errCbk?: ((p1: any, p2: string) => any)) {
     this.loadLocal(fileInfo.absPath, cbk, opt_errCbk);
   }
 
@@ -108,8 +109,8 @@ export class CloudStorage {
     let msg = '';
     try {
       const response = JSON.parse(oReq.responseText);
-      if (response['message']) {
-        msg = response['message'];
+      if (response.message) {
+        msg = response.message;
       }
     } catch (e) {
     }
@@ -138,7 +139,7 @@ export class CloudStorage {
    */
   loadLocal(
       absPath: string, cbk: (p1: string, p2: string) => any,
-      opt_errCbk?: ((p1: Object, p2: string) => any)) {
+      opt_errCbk?: ((p1: any, p2: string) => any)) {
     const url = '/website' + absPath;
     const oReq = new XMLHttpRequest();
     oReq.addEventListener('load', (e) => {
@@ -147,13 +148,13 @@ export class CloudStorage {
         const data = JSON.parse(oReq.responseText);
 
         // warn the user
-        if (data['message']) {
-          SilexNotification.alert('Open a website', data['message'], function() {});
+        if (data.message) {
+          SilexNotification.alert('Open a website', data.message, () => {});
         }
-        cbk(data['html'], data['userHead']);
+        cbk(data.html, data.userHead);
       } else {
         const err = new Event('error');
-        let msg = this.getErrorMessage(oReq);
+        const msg = this.getErrorMessage(oReq);
         opt_errCbk(err, msg);
       }
     });
