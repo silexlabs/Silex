@@ -1,7 +1,7 @@
 {
   "name": "silex-website-builder",
   "description": "Free and easy website builder for everyone.",
-  "version": "2.5.15",
+  "version": "2.5.16",
   "version:frontend": "2.10",
   "version:backwardcompat": "2.2.10",
   "author": "Alex Hoyau <a.hoyau@silexlabs.org> (https://lexoyo.me/)",
@@ -60,8 +60,8 @@
     "redux": "^4.0.1",
     "request": "2.88.0",
     "serve-static": "1.14.0",
-    "silex-blank-templates": "github:silexlabs/silex-blank-templates#59b55d32a7829e004de6a9dd96c1af2d30ee4b6a",
-    "silex-templates": "github:silexlabs/silex-templates#85d84f533bbd8d3234c314284bc64c7a114de606",
+    "silex-blank-templates": "1.0.0",
+    "silex-templates": "1.0.0",
     "source-map-support": "^0.5.12",
     "wysihtml": "^0.6.0-beta1"
   },
