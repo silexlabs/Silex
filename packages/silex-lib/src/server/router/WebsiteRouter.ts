@@ -25,8 +25,8 @@ export default function({ port, rootUrl }, unifile) {
   const backwardCompat = new BackwardCompat(rootUrl);
 
   function isInTemplateFolder(path) {
-    if (path.startsWith(nodeModules('silex-templates') + '/silex-templates') ||
-      path.startsWith(nodeModules('silex-blank-templates') + '/silex-blank-templates')) {
+    if (path.startsWith(nodeModules(Path.join('silex-templates', 'silex-templates'))) ||
+      path.startsWith(nodeModules(Path.join('silex-blank-templates', 'silex-blank-templates')))) {
         return true;
     }
     return false;
