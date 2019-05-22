@@ -23,6 +23,7 @@ import { Style } from '../utils/style';
 import { Url } from '../utils/url';
 import { getUiElements } from '../view/UiElements';
 import { StyleData, TemplateName } from './Data';
+import { Property } from './property';
 
 /**
  * direction in the dom
@@ -43,16 +44,6 @@ export class SilexElement {
    * constant for default size of an element
    */
   static INITIAL_ELEMENT_SIZE = 100;
-
-  /**
-   * constant for minimum elements size
-   */
-  static MIN_HEIGHT: number = 20;
-
-  /**
-   * constant for minimum elements size
-   */
-  static MIN_WIDTH: number = 20;
 
   static async loadImage(url: string): Promise<HTMLImageElement> {
     return new Promise<HTMLImageElement>((resolve, reject) => {
@@ -239,9 +230,6 @@ export class SilexElement {
    *     css class, default is false
    */
   setStyle(element: HTMLElement, styleName: string, opt_styleValue?: string, opt_preserveJustAdded?: boolean) {
-    // convert to css case
-    styleName = styleName;
-
     // retrieve style
     let styleObject = this.model.property.getStyle(element);
     if (!styleObject) {
@@ -438,8 +426,8 @@ export class SilexElement {
           const loadedImg: HTMLImageElement = await SilexElement.loadImage(url);
 
           // update element size
-          this.setStyle(element, 'width', Math.max(SilexElement.MIN_WIDTH, loadedImg.naturalWidth) + 'px', true);
-          this.setStyle(element, this.getHeightStyleName(element), Math.max(SilexElement.MIN_HEIGHT, loadedImg.naturalHeight) + 'px', true);
+          this.setStyle(element, 'width', loadedImg.naturalWidth + 'px', true);
+          this.setStyle(element, this.getHeightStyleName(element), loadedImg.naturalHeight + 'px', true);
 
           // callback
           if (opt_callback) {

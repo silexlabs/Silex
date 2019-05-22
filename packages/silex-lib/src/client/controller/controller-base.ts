@@ -325,9 +325,10 @@ export class ControllerBase {
             },
           },
         });
+      } else {
+        // update the values in the model too
+        this.model.element.setStyle(element, name, value);
       }
-      // update the values in the model too
-      this.model.element.setStyle(element, name, value);
     });
 
     // refresh the view

@@ -107,4 +107,7 @@ export class StageController extends ControllerBase {
   resizeWindow() {
     this.view.stageWrapper.resizeWindow();
   }
+  reset() {
+    this.view.stageWrapper.reset();
+  }
 }

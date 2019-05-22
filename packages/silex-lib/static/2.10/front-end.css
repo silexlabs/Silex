@@ -75,13 +75,6 @@ body.silex-runtime .silex-element-content {
   margin-right: auto;
   overflow: initial;
 }
-.silex-editor .section-element .silex-container-content {
-  border-left: 1px dashed;
-  border-right: 1px dashed;
-}
-.silex-editor .section-element:last-of-type .silex-container-content {
-  border-bottom: 1px dashed;
-}
 /* background */
 .background{
   position: relative !important;

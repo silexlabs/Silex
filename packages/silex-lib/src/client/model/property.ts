@@ -332,9 +332,8 @@ export class Property {
         // do not apply min-height to the section itself
         delete style['min-height'];
       } else if (style.width
-        && this.model.element.isSectionContent(element)
-        && !this.view.workspace.getMobileEditor()) {
-
+          && this.model.element.isSectionContent(element)
+          && !this.view.workspace.getMobileEditor()) {
         // set website width
         const width = parseInt(style.width);
         if (!!width && this.model.head.getWebsiteWidth() !== width) {
@@ -384,9 +383,9 @@ export class Property {
     const targetObj = (isMobile ? this.mobileStylesObj : this.stylesObj as SilexData);
     const style = (targetObj[elementId] as CssRule);
     if (!!style) {
+      // convert to obj (also makes it a copy we can change)
       const clone = (JSON.parse(JSON.stringify(style)) as CssRule);
 
-      // convert to obj (also makes it a copy we can change)
       // styles of sections are special
       // the min-height of the section is stored on its content container
       if (this.model.element.isSection(element)) {
@@ -396,10 +395,9 @@ export class Property {
         if (contentStyle) {
           clone['min-height'] = contentStyle['min-height'];
         }
-
-        // width of section is null
-        // style['width'] = undefined;
-        delete clone.width;
+      }
+      if (this.model.element.isSection(element) || this.model.element.isSectionContent(element)) {
+        clone.width = this.model.head.getWebsiteWidth() + 'px';
       }
       return clone;
     }

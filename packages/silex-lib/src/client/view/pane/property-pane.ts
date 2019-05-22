@@ -101,17 +101,7 @@ export class PropertyPane extends PaneBase {
     // '')
     if (input.value !== '') {
       // get the value
-      let value = parseFloat(input.value);
-
-      // handle minimum size of elements on stage
-      switch (name) {
-        case 'width':
-          value = Math.max(value, SilexElement.MIN_WIDTH);
-          break;
-        case 'min-height':
-          value = Math.max(value, SilexElement.MIN_HEIGHT);
-          break;
-      }
+      const value = parseFloat(input.value);
 
       // get the old value
       const oldValue = parseFloat(input.getAttribute('data-prev-value') || '0');
