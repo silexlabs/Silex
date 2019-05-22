@@ -69,7 +69,7 @@
     "@types/ace": "0.0.42",
     "@types/node": "^12.0.0",
     "@types/redux": "^3.6.31",
-    "drag-drop-stage-component": "^1.0.4",
+    "drag-drop-stage-component": "^1.0.5",
     "electron": "^5.0.1",
     "electron-builder": "^20.40.2",
     "eslint": "^5.16.0",
