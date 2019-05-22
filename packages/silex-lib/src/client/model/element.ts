@@ -533,18 +533,16 @@ export class SilexElement {
    * @param opt_offset an offset to apply to its position (x and y)
    */
   addElementDefaultPosition(element: HTMLElement, opt_offset: number = 0) {
-    const scrollData = this.view.stageWrapper.getScroll();
-
     // find the container (main background container or the stage)
     const stageSize = getUiElements().stage.getBoundingClientRect();
     const bb = this.model.property.getBoundingBox([element]);
-    const posX = Math.round(stageSize.width / 2 - bb.width / 2);
-    const posY = Math.round(stageSize.height / 2 - bb.height / 2);
+    const posX = Math.round((stageSize.width / 2) - (bb.width / 2));
+    const posY = Math.round((stageSize.height / 2) - (bb.height / 2));
     const container = this.view.stageWrapper.getDropZone(posX, posY, element) || this.model.body.getBodyElement();
     // take the scroll into account (drop at (100, 100) from top left corner of the window, not the stage)
-    const bbContainer = element.getBoundingClientRect();
-    const offsetX = posX + scrollData.x - bbContainer.left;
-    const offsetY = posY + scrollData.y - bbContainer.top;
+    const bbContainer = container.getBoundingClientRect();
+    const offsetX = Math.round((bbContainer.width / 2) - (bb.width / 2));
+    const offsetY = Math.round((bbContainer.height / 2) - (bb.height / 2));
 
     // add to stage
     this.addElement(container, element);
@@ -601,8 +599,6 @@ export class SilexElement {
     // add the element to the stage
     if (this.isSection(element)) {
       this.addElement(this.model.body.getBodyElement(), element);
-      // send the scroll to the target
-      this.view.stageWrapper.center([element]);
     } else {
       if (!this.isElementContent(element)) {
         // add to the stage at the right position
@@ -613,6 +609,9 @@ export class SilexElement {
 
     // update stage store
     this.view.stageWrapper.addElement(element);
+
+    // send the scroll to the target
+    this.view.stageWrapper.center([element]);
   }
 
   /**
