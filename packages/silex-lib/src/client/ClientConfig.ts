@@ -181,6 +181,12 @@ export class Config {
       key: 'Delete',
       input: false,
     },
+    {
+      label: 'Empty selection',
+      id: 'edit.empty.selection',
+      key: 'Escape',
+      input: false,
+    },
     /////////////////////////////////////////////////
     // handled in stage: key: 'ArrowUp',
     // {

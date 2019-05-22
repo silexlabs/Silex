@@ -88,6 +88,9 @@ export class Body {
    * @param selectedElements  array of elements which are to select
    */
   setSelection(selectedElements: HTMLElement[]) {
+    if (selectedElements.length === 0) {
+      selectedElements = [this.getBodyElement()];
+    }
     const selection = this.view.stageWrapper.getSelection().map((s) => s.el);
     // only if selection changed
     if (selection.filter((el) => !selectedElements.find((s) => s === el)).length !== 0
