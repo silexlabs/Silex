@@ -107,6 +107,12 @@ export class StageController extends ControllerBase {
   resizeWindow() {
     this.view.stageWrapper.resizeWindow();
   }
+  subscribeMouseEvent(type: string, cbk: (e) => void): () => void {
+    return this.view.stageWrapper.subscribeMouseEvent(type, cbk);
+  }
+  hideScrolls(hide: boolean) {
+    return this.view.stageWrapper.hideScrolls(hide);
+  }
   reset() {
     this.view.stageWrapper.reset();
   }

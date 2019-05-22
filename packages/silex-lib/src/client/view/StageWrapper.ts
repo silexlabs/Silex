@@ -90,6 +90,21 @@ export class StageWrapper {
     }
   }
 
+  /**
+   * safe subscribe to mouse event
+   * handle the multiple iframes and the current window
+   * @return function to call to unsubscribe
+   */
+  subscribeMouseEvent(type: string, cbk: (e) => void): () => void {
+    if (!this.stage) { return; }
+    return this.stage.subscribeMouseEvent(type, cbk);
+  }
+
+  hideScrolls(hide: boolean) {
+    if (!this.stage) { return; }
+    this.stage.hideScrolls(hide);
+  }
+
   init(iframe: HTMLIFrameElement) {
     this.cleanup();
     this.stage = new Stage(iframe, [], {
@@ -134,10 +149,12 @@ export class StageWrapper {
     });
   }
   startDrag() {
+    this.hideScrolls(true);
     this.dragging = true;
     this.prepareUndo();
   }
   stopDrag(change, redraw = false) {
+    this.hideScrolls(false);
     this.dragging = false;
     this.applyStyle(change);
     this.updateView();
