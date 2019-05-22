@@ -205,7 +205,7 @@ export class StyleEditorPane extends PaneBase {
     } else {
       this.controller.propertyToolController.undoCheckPoint();
       const textBoxes = elements.filter((el) => this.isTextBox(el));
-      if(textBoxes.length > 0) {
+      if (textBoxes.length > 0) {
         textBoxes.forEach((el) => {
           // un-apply the old style if there was one
           this.removeAllStyles(el);
