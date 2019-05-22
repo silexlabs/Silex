@@ -201,6 +201,7 @@ export class StageWrapper {
         // apply styles
         this.model.property.setStyle(s.el, styleObject);
       });
+      this.updateView();
     }
   }
 }
