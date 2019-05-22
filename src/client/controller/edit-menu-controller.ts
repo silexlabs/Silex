@@ -78,6 +78,10 @@ export class EditMenuController extends ControllerBase {
     }
   }
 
+  emptySelection() {
+    this.model.body.setSelection([]);
+  }
+
   /**
    * copy the selection for later paste
    */
@@ -384,29 +388,30 @@ export class EditMenuController extends ControllerBase {
    * @param visibility, e.g. mobile only, desktop and mobile...
    */
   editStyle(className: StyleName, pseudoClass: PseudoClass, visibility: Visibility) {
-  const styleData = this.model.property.getStyleData(className) || {styles: {}};
-  const visibilityData = styleData.styles[visibility] || {};
-  const pseudoClassData = visibilityData[pseudoClass] || {
-    templateName: 'text',
-    className,
-    pseudoClass,
-  };
-  this.model.component.prodotypeStyle.edit(
-    pseudoClassData,
-    [{displayName: '', name: '', templateName: ''}]
-      .concat(this.model.property.getFonts()
-      .map((font) => {
-        return {
-          displayName: font.family,
-          name: font.family,
-          templateName: '',
-        };
-      }),
-    ),
-    'text', {
-      onChange: (newData, html) => this.model.component.componentStyleChanged(className, pseudoClass, visibility, newData),
-      onBrowse: (e, url, cbk) => this.onBrowse(e, url, cbk),
-    });
+    const styleData = this.model.property.getStyleData(className) || {styles: {}};
+    const visibilityData = styleData.styles[visibility] || {};
+    const pseudoClassData = visibilityData[pseudoClass] || {
+      templateName: 'text',
+      className,
+      pseudoClass,
+    };
+    this.model.component.prodotypeStyle.edit(
+      pseudoClassData,
+      [{displayName: '', name: '', templateName: ''}]
+        .concat(this.model.property.getFonts()
+        .map((font) => {
+          return {
+            displayName: font.family,
+            name: font.family,
+            templateName: '',
+          };
+        }),
+      ),
+      'text', {
+        onChange: (newData, html) => this.model.component.componentStyleChanged(className, pseudoClass, visibility, newData),
+        onBrowse: (e, url, cbk) => this.onBrowse(e, url, cbk),
+      },
+    );
   }
 
   /**

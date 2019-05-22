@@ -250,6 +250,9 @@ export class Menu {
       case 'edit.delete.selection':
         this.controller.editMenuController.removeSelectedElements();
         break;
+      case 'edit.empty.selection':
+        this.controller.editMenuController.emptySelection();
+        break;
       case 'edit.copy.selection':
         this.controller.editMenuController.copySelection();
         break;

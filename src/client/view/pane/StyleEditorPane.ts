@@ -204,14 +204,19 @@ export class StyleEditorPane extends PaneBase {
       () => {});
     } else {
       this.controller.propertyToolController.undoCheckPoint();
-      elements.filter((el) => this.isTextBox(el)).forEach((el) => {
-        // un-apply the old style if there was one
-        this.removeAllStyles(el);
+      const textBoxes = elements.filter((el) => this.isTextBox(el));
+      if(textBoxes.length > 0) {
+        textBoxes.forEach((el) => {
+          // un-apply the old style if there was one
+          this.removeAllStyles(el);
 
-        // apply the new style if there is one
-        el.classList.add(newStyle);
-      });
-      this.controller.propertyToolController.refreshView();
+          // apply the new style if there is one
+          el.classList.add(newStyle);
+        });
+        this.controller.propertyToolController.refreshView();
+      } else {
+        SilexNotification.alert('Apply a style', 'Error: you need to select a TextBox for this action.', () => {});
+      }
     }
   }
 
@@ -268,13 +273,13 @@ export class StyleEditorPane extends PaneBase {
         if (classNames.length >= 1) {
           return classNames[0];
         }
-        return Constants.EMPTY_STYLE_CLASS_NAME;
+        return Constants.BODY_STYLE_CSS_CLASS;
       })();
       this.updateStyleList(selectionStyle);
     } else {
       // FIXME: no need to recreate the whole style list every time the
       // selection changes
-      this.updateStyleList(null);
+      this.updateStyleList(Constants.BODY_STYLE_CSS_CLASS);
     }
   }
 
@@ -310,51 +315,35 @@ export class StyleEditorPane extends PaneBase {
       // set the new selection
       this.styleCombo.value = (styleNameNotNull as string);
 
-      // edit style only if there are only text boxes or elements with a style
-      // (the body)
-      const onlyTextBoxes = this.states.length > 0 && this.states.reduce((prev, state) => {
-        const styles = this.getStyles([state.el]);
-        if (styleNameNotNull === Constants.EMPTY_STYLE_CLASS_NAME) {
-          // edit style only if there are only text boxes without styles
-          return prev && this.isTextBox(state.el) && styles.length === 0;
-        } else {
-          // edit style only if all the elements have the same style
-          return prev && !!styles.find((style) => style === styleNameNotNull);
-        }
-      }, true);
-      if (onlyTextBoxes) {
-        this.element.classList.remove('no-style');
+      this.element.classList.remove('no-style');
 
-        // populate combos
-        const styleData = (this.model.property.getStyleData(styleNameNotNull) || {} as StyleData);
-        this.populatePseudoClassCombo(styleData);
-        this.pseudoClassCombo.disabled = false;
+      // populate combos
+      const styleData = (this.model.property.getStyleData(styleNameNotNull) || {} as StyleData);
+      this.populatePseudoClassCombo(styleData);
+      this.pseudoClassCombo.disabled = false;
 
-        // store prev value
-        if (this.styleComboPrevValue !== styleNameNotNull) {
-          // reset state
-          this.pseudoClassCombo.selectedIndex = 0;
-        }
-        this.styleComboPrevValue = styleNameNotNull;
-
-        // start editing the style with prodotype
-        this.controller.editMenuController.editStyle(styleNameNotNull, this.getPseudoClass(), this.getVisibility());
-
-        // update selection count
-        const total = this.getElementsWithStyle(styleNameNotNull, true).length;
-        const onPage = total === 0 ?
-            0 :
-            this.getElementsWithStyle(styleNameNotNull, false).length;
-        this.selectionCountPage.innerHTML =
-            `${onPage} on this page (<span>select</span>),&nbsp;`;
-        this.selectionCountTotal.innerHTML =
-            `${total} total (<span>select</span>)`;
-
-        // update tags buttons
-        this.updateTagButtonBar(styleData);
-      } else {
-        this.element.classList.add('no-style');
+      // store prev value
+      if (this.styleComboPrevValue !== styleNameNotNull) {
+        // reset state
+        this.pseudoClassCombo.selectedIndex = 0;
       }
+      this.styleComboPrevValue = styleNameNotNull;
+
+      // start editing the style with prodotype
+      this.controller.editMenuController.editStyle(styleNameNotNull, this.getPseudoClass(), this.getVisibility());
+
+      // update selection count
+      const total = this.getElementsWithStyle(styleNameNotNull, true).length;
+      const onPage = total === 0 ?
+          0 :
+          this.getElementsWithStyle(styleNameNotNull, false).length;
+      this.selectionCountPage.innerHTML =
+          `${onPage} on this page (<span>select</span>),&nbsp;`;
+      this.selectionCountTotal.innerHTML =
+          `${total} total (<span>select</span>)`;
+
+      // update tags buttons
+      this.updateTagButtonBar(styleData);
     } else {
       this.element.classList.add('no-style');
     }
