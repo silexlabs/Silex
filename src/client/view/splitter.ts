@@ -105,15 +105,14 @@ export class Splitter {
       this.onRedraw();
     }
   }
-  onMouseDown(_: Event) {
+  onMouseDown(evt: Event) {
     this.isDown = true;
+    this.controller.stageController.hideScrolls(true);
 
     // listen mouse events
     this.toBeCleared.push(
-      addEvent(this.model.file.getContentWindow(), 'mousemove', (e: MouseEvent) => this.onMouseMove(e), false),
-      addEvent(this.model.file.getContentWindow(), 'mouseup', (e) => this.onMouseUp(e), true),
-      addEvent(document.body, 'mouseup', (e) => this.onMouseUp(e), false),
-      addEvent(document.body, 'mousemove', (e: MouseEvent) => this.onMouseMove(e), false),
+      this.controller.stageController.subscribeMouseEvent('mousemove', (e: MouseEvent) => this.onMouseMove(e)),
+      this.controller.stageController.subscribeMouseEvent('mouseup', (e: MouseEvent) => this.onMouseUp(e)),
     );
   }
 
@@ -122,6 +121,7 @@ export class Splitter {
    */
   onMouseUp(e: Event) {
     this.isDown = false;
+    this.controller.stageController.hideScrolls(false);
     this.toBeCleared.forEach((clear) => clear());
     this.toBeCleared = [];
   }
