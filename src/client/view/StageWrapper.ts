@@ -7,6 +7,7 @@ import { SilexNotification } from '../utils/notification';
 
 export class StageWrapper {
   private stage: Stage;
+  private dragging = false;
   /**
    *
    * @param element   container to render the UI
@@ -96,12 +97,20 @@ export class StageWrapper {
       isDraggable: ((el) => !el.classList.contains(Constants.PREVENT_DRAGGABLE_CLASS_NAME)),
       isDropZone: ((el) => !el.classList.contains(Constants.PREVENT_DROPPABLE_CLASS_NAME) && el.classList.contains(Constants.TYPE_CONTAINER)),
       isResizeable: ((el) => {
-        return el.classList.contains(Constants.PREVENT_RESIZABLE_CLASS_NAME) ? false : ({
+        // section content is not resizeable on mobile
+        const isSectionContentOnMobile = this.controller.stageController.getMobileMode() && this.model.element.isSectionContent(el);
+        // css classes which prevent resize
+        const hasPreventCssClass = el.classList.contains(Constants.PREVENT_RESIZABLE_CLASS_NAME);
+        if (isSectionContentOnMobile || hasPreventCssClass) {
+          return false;
+        }
+        // case of all or part of the sides are resizeable
+        return {
           top: !el.classList.contains(Constants.PREVENT_RESIZABLE_TOP_CLASS_NAME),
           left: !el.classList.contains(Constants.PREVENT_RESIZABLE_LEFT_CLASS_NAME),
           bottom: !el.classList.contains(Constants.PREVENT_RESIZABLE_BOTTOM_CLASS_NAME),
           right: !el.classList.contains(Constants.PREVENT_RESIZABLE_RIGHT_CLASS_NAME),
-        });
+        };
       }),
       useMinHeight: ((el) => !el.classList.contains(Constants.SILEX_USE_HEIGHT_NOT_MINHEIGHT)),
       canDrop: ((el: HTMLElement, dropZone: HTMLElement) => {
@@ -114,50 +123,67 @@ export class StageWrapper {
           this.controller.editMenuController.editElement();
         }
       },
-      onDrop: (change) => this.updateView(change),
-      onResizeEnd: (change) => this.updateView(change),
-      onSelect: (change) => this.updateView(change, false),
-      onResize: (change) => this.updateView(change),
-      onDrag: (change) => this.updateView(change, false),
-      onStartDrag: (change) => this.prepareUndo(),
-      onStartResize: (change) => this.prepareUndo(),
+      onChange: (change) => this.applyStyle(change),
+      onDrop: (change) => this.stopDrag(change),
+      onResizeEnd: (change) => this.stopDrag(change, true),
+      // onDrag: (change) => this.updateView(),
+      // onResize: (change) => this.updateView(),
+      onSelect: (change) => this.updateView(),
+      onStartDrag: (change) => this.startDrag(),
+      onStartResize: (change) => this.startDrag(),
     });
+  }
+  startDrag() {
+    this.dragging = true;
+    this.prepareUndo();
+  }
+  stopDrag(change, redraw = false) {
+    this.dragging = false;
+    this.applyStyle(change);
+    this.updateView();
+    this.redraw();
   }
   prepareUndo() {
     this.controller.stageController.undoCheckPoint();
   }
-  updateView(change, applyStyles = true) {
-    // removed the inline styles
-    change.forEach((s) => {
-      // these are all the properties that can be set by the stage component
-      s.el.style.top = '';
-      s.el.style.left = '';
-      s.el.style.right = '';
-      s.el.style.bottom = '';
-      s.el.style.width = '';
-      s.el.style.height = '';
-      s.el.style.margin = '';
-      s.el.style.padding = '';
-      s.el.style.border = '';
-      s.el.style.minHeight = '';
-      s.el.style.position = '';
+  updateView() {
+    this.model.body.setSelection(this.stage.getSelection().map((s) => s.el));
+  }
+  applyStyle(change) {
+    // do not mess up the css translation applyed by stage during drag
+    if (!this.dragging) {
+      change.forEach((s) => {
+        // removed the inline styles
+        // these are all the properties that can be set by the stage component
+        s.el.style.top = '';
+        s.el.style.left = '';
+        s.el.style.right = '';
+        s.el.style.bottom = '';
+        s.el.style.width = '';
+        s.el.style.height = '';
+        s.el.style.margin = '';
+        s.el.style.padding = '';
+        s.el.style.border = '';
+        s.el.style.minHeight = '';
+        s.el.style.position = '';
 
-      // apply the new styles
-      if (applyStyles) {
+        // get element style
+        const styleObject = this.model.property.getStyle(s.el) || {};
+        // compute style
+        styleObject[s.useMinHeight ? 'min-height' : 'height'] = s.metrics.computedStyleRect.height + 'px';
         if (!this.model.element.isSection(s.el)) {
           // sections have no top, left, width
           if (!this.model.element.isSectionContent(s.el)) {
             // section contents have no top, left
-            this.model.element.setStyle(s.el, 'top', s.metrics.computedStyleRect.top + 'px');
-            this.model.element.setStyle(s.el, 'left', s.metrics.computedStyleRect.left + 'px');
+            styleObject.top = s.metrics.computedStyleRect.top + 'px';
+            styleObject.left = s.metrics.computedStyleRect.left + 'px';
           }
-          this.model.element.setStyle(s.el, 'width', s.metrics.computedStyleRect.width + 'px');
+          // apply width
+          styleObject.width = s.metrics.computedStyleRect.width + 'px';
         }
-        this.model.element.setStyle(s.el, s.useMinHeight ? 'min-height' : 'height', s.metrics.computedStyleRect.height + 'px');
-      }
-    });
-
-    const selection = this.stage.getSelection();
-    this.model.body.setSelection(selection.map((s) => s.el));
+        // apply styles
+        this.model.property.setStyle(s.el, styleObject);
+      });
+    }
   }
 }

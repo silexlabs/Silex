@@ -145,7 +145,7 @@ export class DomPublisher {
       return {
         name: 'writefile',
         path: this.rootPath + '/' + this.getDestFolder('.html', null) + '/' + fileName,
-        displayName: fileName,
+        displayName: fileName, // FIXME: this is not part of a unifile aciton
         content: '<!doctype html>' + clone.documentElement.outerHTML,
       };
     });
