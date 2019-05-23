@@ -98,18 +98,15 @@ export class Body {
       this.view.stageWrapper.setSelection(selectedElements);
     }
 
-      // refresh views
+    // refresh views
     const pages = this.model.page.getPages();
     const page = this.model.page.getCurrentPage();
     this.view.pageTool.redraw(selectedElements, pages, page);
     this.view.propertyTool.redraw(this.view.stageWrapper.getSelection(), pages, page);
     this.view.textFormatBar.redraw(selectedElements, pages, page);
-      // this.view.stageWrapper.redraw(selectedElements, pages, page);
     this.view.contextMenu.redraw(selectedElements, pages, page);
     this.view.breadCrumbs.redraw(selectedElements, pages, page);
     this.view.htmlEditor.setSelection(selectedElements);
-
-    Body.resetFocus();
   }
 
   removeWysihtmlMarkup(root: HTMLElement|Document) {

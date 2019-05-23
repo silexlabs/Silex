@@ -230,7 +230,10 @@ export class SilexNotification {
     const container: HTMLElement = document.querySelector('.alerts');
     container.insertAdjacentHTML('afterbegin', markup);
     container.classList.remove('closed');
-    (SilexNotification.currentDialog.querySelector(`#${SilexNotification.NOTIFICATION_CSS_CLASS}_ok`) as HTMLElement).focus();
+    const input = (SilexNotification.currentDialog.querySelector(`#${SilexNotification.NOTIFICATION_CSS_CLASS}_value`) as HTMLElement);
+    if (input) {
+      input.focus();
+    }
   }
 
   constructor() {
