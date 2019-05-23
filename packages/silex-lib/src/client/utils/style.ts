@@ -17,14 +17,6 @@
 type Rgb = number[];
 
 export class Style {
-
-  // static toSelectorCase(str: string): string {
-  //   const res = str.replace(/([A-Z])/g, '-$1').toLowerCase();
-  //   if(res !== str) console.error('these 2 strings should be the same', str, res);
-  //   // else console.warn('todo: do not use this useless function')
-  //   return res;
-  // }
-
   /**
    * convert style object to object
    * with only the keys which are set

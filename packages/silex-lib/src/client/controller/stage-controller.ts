@@ -116,4 +116,15 @@ export class StageController extends ControllerBase {
   reset() {
     this.view.stageWrapper.reset();
   }
+  getEnableSticky(): boolean {
+    return this.view.stageWrapper.getEnableSticky();
+  }
+  setEnableSticky(enable: boolean) {
+    this.view.stageWrapper.setEnableSticky(enable);
+    this.view.contextMenu.redraw();
+  }
+  toggleSticky() {
+    this.view.stageWrapper.toggleSticky();
+    this.view.contextMenu.redraw();
+  }
 }

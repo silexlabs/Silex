@@ -55,6 +55,18 @@ export class StageWrapper {
     if (!this.stage) { return; }
     this.stage.setScroll(scroll);
   }
+  getEnableSticky(): boolean {
+    if (!this.stage) { return false; }
+    return this.stage.enableSticky;
+  }
+  setEnableSticky(enable: boolean) {
+    if (!this.stage) { return; }
+    this.stage.enableSticky = enable;
+  }
+  toggleSticky() {
+    if (!this.stage) { return; }
+    this.stage.enableSticky = !this.stage.enableSticky;
+  }
   getState(el: HTMLElement): SelectableState {
     if (!this.stage) { return null; }
     return this.stage.getState(el);
