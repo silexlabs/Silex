@@ -181,8 +181,6 @@ export class Head {
    * publication path is always absolute url
    */
   setPublicationPath(opt_fileInfo?: FileInfo) {
-    // TODO: remove meta and store this value in the JSON like components params
-    // (see model/property.js)
     this.setMeta(
         'publicationPath',
         opt_fileInfo == null ? null : JSON.stringify(opt_fileInfo));
@@ -207,8 +205,6 @@ export class Head {
    * get/set the website URL
    */
   setWebsiteUrl(opt_url?: string) {
-    // TODO: remove meta and store this value in the JSON like components params
-    // (see model/property.js)
     this.setMeta('websiteUrl', opt_url);
     this.view.settingsDialog.setWebsiteUrl(opt_url);
   }
@@ -224,8 +220,6 @@ export class Head {
    * get/set the hosting provider
    */
   setHostingProvider(opt_url?: string) {
-    // TODO: remove meta and store this value in the JSON like components params
-    // (see model/property.js)
     this.setMeta('hostingProvider', opt_url);
   }
 

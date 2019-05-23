@@ -76,10 +76,9 @@ export class ContextMenu {
     this.element.querySelector('.bottom').addEventListener('click', () => {
       this.controller.editMenuController.moveToBottom();
     });
-    this.element.querySelector('.sticky-elements')
-        .addEventListener('click', () => {
-          throw new Error('todo');
-        });
+    this.element.querySelector('.sticky-elements').addEventListener('click', (e) => {
+      this.controller.stageController.toggleSticky();
+    });
   }
 
   /**
@@ -125,12 +124,12 @@ export class ContextMenu {
       } else {
         this.element.querySelector('.paste').classList.add('off');
       }
-      // todo: sticky elements UI (remove or implement )
-      // if (this.model.dragSystem.getStickyElements()) {
-      //   this.element.querySelector('.sticky-elements').classList.remove('off');
-      // } else {
-      //   this.element.querySelector('.sticky-elements').classList.add('off');
-      // }
+      // sticky elements UI (remove or implement )
+      if (this.controller.stageController.getEnableSticky()) {
+        this.element.querySelector('.sticky-elements').classList.remove('off');
+      } else {
+        this.element.querySelector('.sticky-elements').classList.add('off');
+      }
     });
   }
 }
