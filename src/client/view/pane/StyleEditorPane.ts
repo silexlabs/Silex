@@ -417,7 +417,7 @@ export class StyleEditorPane extends PaneBase {
       SilexNotification.prompt('Create a style', 'Enter a name for your style!', opt_data ? opt_data.displayName : '', 'Your Style', (accept, name) => {
         if (accept && name && name !== '') {
           this.controller.propertyToolController.undoCheckPoint();
-          const className = name.replace(/ /g, '-').toLowerCase();
+          const className = 'style-' + name.replace(/ /g, '-').toLowerCase();
           this.model.component.initStyle(name, className, opt_data);
           this.applyStyle(textBoxes.map((state) => state.el), className);
 
