@@ -184,6 +184,9 @@ export class EditMenuController extends ControllerBase {
         return element;
       });
 
+      // send the scroll to the target
+      this.view.stageWrapper.center(selection);
+
       // select the new elements
       this.model.body.setSelection(selection);
 

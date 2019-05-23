@@ -522,6 +522,9 @@ export class SilexElement {
     // tslint:disable:no-string-literal
     this.model.file.getContentWindow()['silex'].resizeBody();
 
+    // update stage store
+    this.view.stageWrapper.addElement(element);
+
     // update all metrics in case this new element has moved other elements
     this.view.stageWrapper.redraw();
   }
@@ -607,11 +610,10 @@ export class SilexElement {
       }
     }
 
-    // update stage store
-    this.view.stageWrapper.addElement(element);
-
     // send the scroll to the target
-    this.view.stageWrapper.center([element]);
+    setTimeout(() => {
+      this.view.stageWrapper.center([element]);
+    }, 0);
   }
 
   /**
