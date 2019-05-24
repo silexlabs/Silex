@@ -101,13 +101,7 @@ export class EditMenuController extends ControllerBase {
     const clonesData =
         // clone the elements
         elements
-            .map((element) => {
-              if (this.model.element.isSectionContent(element)) {
-                return element.parentElement;
-              } else {
-                return element;
-              }
-            })
+            .map((element) => this.model.element.noSectionContent(element))
             .filter((element) => {
               // not the body
               return body !== element;

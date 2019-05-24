@@ -318,9 +318,8 @@ export class SilexElement {
    */
   getContentNode(element: HTMLElement): HTMLElement {
     const content: HTMLElement = element.querySelector(':scope > .' + Constants.ELEMENT_CONTENT_CLASS_NAME);
-    if ([Constants.TYPE_IMAGE, Constants.TYPE_HTML, Constants.TYPE_SECTION].indexOf(this.getType(element)) > -1) {
+    if (!content && [Constants.TYPE_IMAGE, Constants.TYPE_HTML, Constants.TYPE_SECTION].indexOf(this.getType(element)) > -1) {
       console.warn('This element is supposed to have a content container', element);
-      return null;
     }
     return content || element;
   }
