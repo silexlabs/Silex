@@ -44,9 +44,6 @@ export class Page {
    *     silex.model.Constants.PAGED_CLASS_NAME
    */
   getParentPage(element: HTMLElement): HTMLElement {
-    if (this.model.element.isSectionContent(element)) {
-      element = (element.parentElement as HTMLElement);
-    }
     let parent = element.parentElement as HTMLElement;
     while (parent && !parent.classList.contains(Constants.PAGED_CLASS_NAME)) {
       parent = parent.parentElement as HTMLElement;
@@ -203,7 +200,7 @@ export class Page {
               this.model.element.removeElement(element);
             } else {
               // remove from this page
-              this.model.page.removeFromAllPages(element);
+              this.removeFromAllPages(element);
             }
           });
         },
@@ -241,8 +238,7 @@ export class Page {
    * add a page to the dom
    */
   createPage(name: string, displayName: string) {
-    const container = this.model.body.getBodyElement().querySelector(
-        '.' + Constants.PAGES_CONTAINER_CLASS_NAME);
+    const container = this.model.body.getBodyElement().querySelector('.' + Constants.PAGES_CONTAINER_CLASS_NAME);
 
     // create the DOM element
     const aTag = this.model.file.getContentDocument().createElement('a');
@@ -300,9 +296,7 @@ export class Page {
    * remove from all pages if visible in all pages
    */
   addToPage(element: HTMLElement, pageName: string) {
-    if (this.model.element.isSectionContent(element)) {
-      element = (element.parentElement);
-    }
+    element = this.model.element.noSectionContent(element);
     const pages = this.getPagesForElement(element);
     if (pages.length + 1 === this.getPages().length) {
       pages.forEach((page) => element.classList.remove(page));
@@ -318,9 +312,7 @@ export class Page {
    *
    */
   removeFromPage(element: HTMLElement, pageName: string) {
-    if (this.model.element.isSectionContent(element)) {
-      element = (element.parentElement as HTMLElement);
-    }
+    element = this.model.element.noSectionContent(element);
     element.classList.remove(pageName);
     if (this.getPagesForElement(element).length <= 0) {
       element.classList.remove(Constants.PAGED_CLASS_NAME);
@@ -332,9 +324,7 @@ export class Page {
    *
    */
   removeFromAllPages(element: HTMLElement) {
-    if (this.model.element.isSectionContent(element)) {
-      element = (element.parentElement as HTMLElement);
-    }
+    element = this.model.element.noSectionContent(element);
     const pages = this.getPagesForElement(element);
     pages.forEach((pageName) => {
       element.classList.remove(pageName);
@@ -349,9 +339,7 @@ export class Page {
    * get the pages on which this element is visible
    */
   getPagesForElement(element: HTMLElement): string[] {
-    if (this.model.element.isSectionContent(element)) {
-      element = (element.parentElement as HTMLElement);
-    }
+    element = this.model.element.noSectionContent(element);
     return this.getPages().filter(
         (pageName) => element.classList.contains(pageName));
   }
@@ -368,9 +356,7 @@ export class Page {
    * check if an element is in the given page (current page by default)
    */
   isInPage(element: HTMLElement, opt_pageName: string = this.getCurrentPage()): boolean {
-    if (this.model.element.isSectionContent(element)) {
-      element = (element.parentElement as HTMLElement);
-    }
+    element = this.model.element.noSectionContent(element);
     return element.classList.contains(opt_pageName);
   }
 
@@ -379,7 +365,10 @@ export class Page {
    * this means that the element is allways visible or it is visible in this page
    */
   isVisible(element: HTMLElement, opt_pageName: string = this.getCurrentPage()) {
-    const parentPaged = this.model.page.getParentPage(element);
-    return !parentPaged || this.model.page.isInPage(parentPaged, opt_pageName);
+    if (element.classList.contains(Constants.PAGED_CLASS_NAME) && !this.isInPage(element, opt_pageName)) {
+      return false;
+    }
+    const parentPaged = this.getParentPage(element);
+    return !parentPaged || (this.isInPage(parentPaged, opt_pageName) && this.isVisible(parentPaged, opt_pageName));
   }
 }

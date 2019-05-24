@@ -619,9 +619,7 @@ export class Property {
       opt_componentData?: ComponentData|StyleData) {
     // a section's container content can not be a component, but the section
     // itself may be
-    if (this.model.element.isSectionContent(element)) {
-      element = (element.parentElement as HTMLElement);
-    }
+    element = this.model.element.noSectionContent(element);
 
     // get the internal ID
     const elementId = (this.getSilexId(element) as SilexId);
@@ -638,9 +636,7 @@ export class Property {
       ComponentData|StyleData {
     // a section's container content can not be a component, but the section
     // itself may be
-    if (this.model.element.isSectionContent(element)) {
-      element = (element.parentElement as HTMLElement);
-    }
+    element = this.model.element.noSectionContent(element);
 
     // get the internal ID
     const elementId = (this.getSilexId(element) as SilexId);
