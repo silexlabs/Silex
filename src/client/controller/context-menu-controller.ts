@@ -32,6 +32,6 @@ export class ContextMenuController extends ControllerBase {
   }
 
   hasElementsToPaste() {
-    return ControllerBase.clipboard && ControllerBase.clipboard.length > 0;
+    return !!ControllerBase.clipboard && ControllerBase.clipboard.length > 0;
   }
 }

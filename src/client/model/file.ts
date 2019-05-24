@@ -148,7 +148,7 @@ export class File {
     if (this.contentDocument_.body === null || this.contentWindow_ === null || this.contentWindow_['jQuery'] === null) {
       setTimeout(() => {
         this.contentChanged(opt_cbk);
-      }, 100);
+      }, 10);
       return;
     }
 
@@ -185,7 +185,7 @@ export class File {
       // loading
       getUiElements().stage.classList.remove(File.LOADING_CSS_CLASS);
       getUiElements().stage.classList.remove(File.LOADING_LIGHT_CSS_CLASS);
-    }, 1000);
+    }, 10);
   }
 
   /**

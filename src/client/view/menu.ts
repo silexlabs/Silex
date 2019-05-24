@@ -257,7 +257,10 @@ export class Menu {
         this.controller.editMenuController.copySelection();
         break;
       case 'edit.paste.selection':
-        this.controller.editMenuController.pasteSelection();
+        this.controller.editMenuController.pasteClipBoard();
+        break;
+      case 'edit.duplicate.selection':
+        this.controller.editMenuController.duplicate();
         break;
       case 'edit.undo':
         this.controller.editMenuController.undo();

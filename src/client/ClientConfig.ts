@@ -161,6 +161,13 @@ export class Config {
       input: false,
     },
     {
+      label: 'Duplicate',
+      id: 'edit.duplicate.selection',
+      key: 'D',
+      ctrlKey: true,
+      input: false,
+    },
+    {
       label: 'Undo',
       id: 'edit.undo',
       key: 'z',

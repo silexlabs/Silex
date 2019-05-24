@@ -130,6 +130,7 @@ export interface UndoItem {
   scrollY: number;
 }
 export interface ClipboardItem {
+  parent: HTMLElement;
   element: HTMLElement;
   style: any;
   mobileStyle: any;

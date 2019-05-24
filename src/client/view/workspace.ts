@@ -172,7 +172,7 @@ export class Workspace {
       document.body.classList.remove('mobile-mode');
     }
     this.controller.stageController.resizeWindow();
-    this.controller.stageController.reset();
+    this.controller.stageController.redraw();
   }
 
   /**
