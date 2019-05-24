@@ -113,8 +113,8 @@ export class StageController extends ControllerBase {
   hideScrolls(hide: boolean) {
     return this.view.stageWrapper.hideScrolls(hide);
   }
-  reset() {
-    this.view.stageWrapper.reset();
+  redraw() {
+    this.view.stageWrapper.redraw();
   }
   getEnableSticky(): boolean {
     return this.view.stageWrapper.getEnableSticky();

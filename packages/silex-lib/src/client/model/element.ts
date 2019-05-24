@@ -113,6 +113,8 @@ export class SilexElement {
    * @return true if `element` is a section
    */
   isSection(element: HTMLElement): boolean {
+    // FIXME: this is a workaround, it happens in mobile editor, when
+    // dragg/dropping (element is document)
     if (!element || !element.classList) {
       return false;
     }
@@ -124,12 +126,11 @@ export class SilexElement {
    * @return true if `element` is the content container of a section
    */
   isSectionContent(element: HTMLElement): boolean {
+    // FIXME: this is a workaround, it happens in mobile editor, when
+    // dragg/dropping (element is document)
     if (!element || !element.classList) {
       return false;
     }
-
-    // FIXME: this is a workaround, it happens in mobile editor, when
-    // dragg/dropping (element is document)
     return element.classList.contains(Constants.TYPE_CONTAINER_CONTENT);
   }
 
@@ -138,14 +139,12 @@ export class SilexElement {
    * @return true if the element is hidden on mobile
    */
   getHideOnMobile(element: HTMLElement): boolean {
+    // FIXME: this is a workaround, it happens in mobile editor, when
+    // dragg/dropping (element is document)
     if (!element || !element.classList) {
       return false;
     }
-
-    // FIXME: this is a workaround, it happens in mobile editor, when
-    // dragg/dropping (element is document)
-    return this.noSectionContent(element).classList.contains(
-        Constants.HIDE_ON_MOBILE);
+    return this.noSectionContent(element).classList.contains(Constants.HIDE_ON_MOBILE);
   }
 
   /**
@@ -318,7 +317,12 @@ export class SilexElement {
    * @return  the element which holds the content, i.e. a div, an image, ...
    */
   getContentNode(element: HTMLElement): HTMLElement {
-    return element.querySelector(':scope > .' + Constants.ELEMENT_CONTENT_CLASS_NAME) || element;
+    const content: HTMLElement = element.querySelector(':scope > .' + Constants.ELEMENT_CONTENT_CLASS_NAME);
+    if ([Constants.TYPE_IMAGE, Constants.TYPE_HTML, Constants.TYPE_SECTION].indexOf(this.getType(element)) > -1) {
+      console.warn('This element is supposed to have a content container', element);
+      return null;
+    }
+    return content || element;
   }
 
   /**
@@ -508,10 +512,16 @@ export class SilexElement {
    * append an element to the stage
    * handles undo/redo
    */
-  addElement(container: HTMLElement, element: HTMLElement) {
+  addElement(container: HTMLElement, element: HTMLElement, opt_offset: number = 0) {
     // for sections, force body
     if (this.isSection(element)) {
       container = this.model.body.getBodyElement();
+    }
+    if (opt_offset > 0) {
+      const styleObject = this.model.property.getStyle(element, false);
+      // styleObject.top = (parseInt(styleObject.top) + opt_offset) + 'px';
+      styleObject.left = (parseInt(styleObject.left) + opt_offset) + 'px';
+      this.model.property.setStyle(element, styleObject, false);
     }
     container.appendChild(element);
 

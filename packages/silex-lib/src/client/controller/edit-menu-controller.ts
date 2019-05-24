@@ -86,13 +86,21 @@ export class EditMenuController extends ControllerBase {
    * copy the selection for later paste
    */
   copySelection() {
+    ControllerBase.clipboard = this.cloneItems(this.model.body.getSelection());
+    this.view.contextMenu.redraw();
+  }
+
+  /**
+   * clone the selection and make an array of ClipboardItem
+   */
+  cloneItems(elements: HTMLElement[]): ClipboardItem[] {
     this.tracker.trackAction('controller-events', 'info', 'copy', 0);
     const body = this.model.body.getBodyElement();
 
     // select the sections instead of their container content
-    const elements =
+    const clonesData =
         // clone the elements
-        this.model.body.getSelection()
+        elements
             .map((element) => {
               if (this.model.element.isSectionContent(element)) {
                 return element.parentElement;
@@ -109,21 +117,23 @@ export class EditMenuController extends ControllerBase {
                   // && element.parentElement['closest']('.' + Constants.SELECTED_CLASS_NAME) == null;
             })
             .map((element) => {
-              return element.cloneNode(true) as HTMLElement;
+              return {
+                el: element.cloneNode(true) as HTMLElement,
+                parent: element.parentElement,
+              };
             });
-    if (elements.length > 0) {
+    if (clonesData.length > 0) {
       // reset clipboard
-      ControllerBase.clipboard = [];
+      const clipboard: ClipboardItem[] = [];
 
       // add each selected element to the clipboard
-      elements.forEach((element) => {
+      clonesData.forEach((data) => {
         // copy the element and its children
-        ControllerBase.clipboard.push(this.recursiveCopy(element));
+        clipboard.push(this.recursiveCopy(data.el, data.parent));
       });
-
-      // update the views
-      this.model.body.setSelection(this.model.body.getSelection());
+      return clipboard;
     }
+    return [];
   }
 
   /**
@@ -132,9 +142,10 @@ export class EditMenuController extends ControllerBase {
    * this is needed to "freez" elements properties
    * return {silex.types.ClipboardItem}
    */
-  recursiveCopy(element: HTMLElement) {
+  recursiveCopy(element: HTMLElement, parent: HTMLElement): ClipboardItem {
     // duplicate the node
-    const res = {
+    const res: ClipboardItem = {
+      parent,
       element,
       style: this.model.property.getStyle(element, false),
       mobileStyle: this.model.property.getStyle(element, true),
@@ -148,7 +159,7 @@ export class EditMenuController extends ControllerBase {
       for (let idx = 0; idx < len; idx++) {
         const el = (res.element.childNodes[idx] as HTMLElement);
         if (el.nodeType === 1 && this.model.element.getType(el) != null ) {
-          res.children.push(this.recursiveCopy(el));
+          res.children.push(this.recursiveCopy(el, el.parentElement));
         }
       }
     }
@@ -158,11 +169,20 @@ export class EditMenuController extends ControllerBase {
   /**
    * paste the previously copied element
    */
-  pasteSelection() {
+  pasteClipBoard() {
+    const elements = this.pasteItems(ControllerBase.clipboard);
+    // copy again so that we can paste several times (elements will be duplicated again)
+    ControllerBase.clipboard = this.cloneItems(elements);
+  }
+
+  /**
+   * paste the previously copied element
+   */
+  pasteItems(clipboard, toDefaultPostion = true): HTMLElement[] {
     this.tracker.trackAction('controller-events', 'info', 'paste', 0);
 
     // default is selected element
-    if (ControllerBase.clipboard && ControllerBase.clipboard.length > 0) {
+    if (clipboard && clipboard.length > 0) {
       // undo checkpoint
       this.undoCheckPoint();
 
@@ -170,14 +190,17 @@ export class EditMenuController extends ControllerBase {
       let offset = 0;
 
       // add to the container
-      const selection = ControllerBase.clipboard.map((clipboardItem) => {
+      const selection = clipboard.map((clipboardItem) => {
         const element = this.recursivePaste(clipboardItem) as HTMLElement;
-
         // reset editable option
         this.doAddElement(element);
 
         // add to stage and set the "silex-just-added" css class
-        this.model.element.addElementDefaultPosition(element, offset);
+        if (toDefaultPostion) {
+          this.model.element.addElementDefaultPosition(element, offset);
+        } else {
+          this.model.element.addElement(clipboardItem.parent, element, offset + 20);
+        }
         offset += 20;
 
         // this is what will be added to selection
@@ -190,11 +213,10 @@ export class EditMenuController extends ControllerBase {
       // select the new elements
       this.model.body.setSelection(selection);
 
-      // copy again so that we can paste several times (elements will be duplicated again)
-      this.copySelection();
-
       // refresh elements positions
       this.view.stageWrapper.redraw();
+
+      return selection;
     }
   }
 
@@ -216,17 +238,27 @@ export class EditMenuController extends ControllerBase {
 
     // init component props
     if (clipboardItem.componentData) {
-      this.model.property.setElementComponentData(
-          element, clipboardItem.componentData);
+      this.model.property.setElementComponentData(element, clipboardItem.componentData);
 
       // re-render components (makes inner ID change)
       this.model.component.render(element);
     }
 
+    // add this element
+    this.model.element.addElement(clipboardItem.parent, element);
+
     // keep the original style
     this.model.property.setStyle(element, clipboardItem.style, false);
     this.model.property.setStyle(element, clipboardItem.mobileStyle, true);
     return element;
+  }
+
+  /**
+   * duplicate selection
+   */
+  duplicate() {
+    const copied = this.cloneItems(this.model.body.getSelection());
+    this.pasteItems(copied, false);
   }
 
   /**

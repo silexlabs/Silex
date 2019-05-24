@@ -62,7 +62,10 @@ export class ContextMenu {
       this.controller.editMenuController.copySelection();
     });
     this.element.querySelector('.paste').addEventListener('click', () => {
-      this.controller.editMenuController.pasteSelection();
+      this.controller.editMenuController.pasteClipBoard();
+    });
+    this.element.querySelector('.duplicate').addEventListener('click', () => {
+      this.controller.editMenuController.duplicate();
     });
     this.element.querySelector('.top').addEventListener('click', () => {
       this.controller.editMenuController.moveToTop();
@@ -110,6 +113,7 @@ export class ContextMenu {
         this.element.querySelector('.up').classList.add('off');
         this.element.querySelector('.down').classList.add('off');
         this.element.querySelector('.bottom').classList.add('off');
+        this.element.querySelector('.duplicate').classList.add('off');
       } else {
         this.element.querySelector('.delete').classList.remove('off');
         this.element.querySelector('.edit').classList.remove('off');
@@ -118,13 +122,13 @@ export class ContextMenu {
         this.element.querySelector('.up').classList.remove('off');
         this.element.querySelector('.down').classList.remove('off');
         this.element.querySelector('.bottom').classList.remove('off');
+        this.element.querySelector('.duplicate').classList.remove('off');
       }
       if (this.controller.contextMenuController.hasElementsToPaste()) {
         this.element.querySelector('.paste').classList.remove('off');
       } else {
         this.element.querySelector('.paste').classList.add('off');
       }
-      // sticky elements UI (remove or implement )
       if (this.controller.stageController.getEnableSticky()) {
         this.element.querySelector('.sticky-elements').classList.remove('off');
       } else {

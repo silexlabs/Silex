@@ -110,7 +110,7 @@ export class Page {
     this.view.pageTool.redraw(selectedElements, pages, currentPage);
     this.view.propertyTool.redraw(states, pages, currentPage);
     this.view.textFormatBar.redraw(selectedElements, pages, currentPage);
-    this.view.stageWrapper.reset();
+    this.view.stageWrapper.redraw();
   }
 
   /**
@@ -120,13 +120,14 @@ export class Page {
    */
   setCurrentPage(pageName: string) {
     // tslint:disable:no-string-literal
-      const bodyElement = this.model.body.getBodyElement();
-      if (this.model.file.getContentWindow()['jQuery'](bodyElement).pageable) {
+    const bodyElement = this.model.body.getBodyElement();
+    if (this.model.file.getContentWindow()['jQuery'](bodyElement).pageable) {
       this.model.file.getContentWindow()['jQuery'](bodyElement).pageable({
         currentPage: pageName,
       });
     }
-      this.refreshView();
+    this.view.stageWrapper.reset();
+    this.refreshView();
   }
 
   /**

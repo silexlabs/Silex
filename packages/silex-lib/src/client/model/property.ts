@@ -391,9 +391,13 @@ export class Property {
       if (this.model.element.isSection(element)) {
         // min-height of sections is the min-height of section content
         const contentElement = (this.model.element.getContentNode(element) as HTMLElement);
-        const contentStyle = this.getStyle(contentElement, isMobile);
-        if (contentStyle) {
-          clone['min-height'] = contentStyle['min-height'];
+        if (contentElement === element) {
+          console.warn('This section has no content, how is this possible?', element);
+        } else {
+          const contentStyle = this.getStyle(contentElement, isMobile);
+          if (contentStyle) {
+            clone['min-height'] = contentStyle['min-height'];
+          }
         }
       }
       if (this.model.element.isSection(element) || this.model.element.isSectionContent(element)) {
