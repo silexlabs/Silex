@@ -16,7 +16,22 @@
   "engines": {
     "node": ">=8.10.0 <=11.15.0"
   },
+  "watch": {
+    "build:css:debug": {
+      "patterns": [
+        "src/css/"
+      ],
+      "extensions": "less"
+    },
+    "build:html:debug": {
+      "patterns": [
+        "src/html/"
+      ],
+      "extensions": "jade"
+    }
+  },
   "scripts": {
+    "watch": "npm-watch",
     "start": "node dist/server/server/silex_web.js",
     "start:debug": "cross-env SILEX_DEBUG=true nodemon dist/server/server/silex_web.js",
     "start:electron": "SILEX_ELECTRON=true electron .",
@@ -75,6 +90,7 @@
     "eslint": "^5.16.0",
     "less": "3.9.0",
     "nodemon": "^1.19.0",
+    "npm-watch": "^0.6.0",
     "pug-cli": "^1.0.0-alpha6",
     "ts-loader": "^6.0.0",
     "tslint": "^5.16.0",
