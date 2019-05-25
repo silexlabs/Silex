@@ -34,6 +34,7 @@ export class Body {
 
   /**
    * remove the focus from text fields
+   * TODO: make this a method of body (problem is: ModalDialog needs it but is static)
    * @static
    */
   static resetFocus() {
@@ -84,6 +85,10 @@ export class Body {
     return res;
   }
 
+  emptySelection() {
+    this.setSelection([]);
+  }
+
   /**
    * @param selectedElements  array of elements which are to select
    */
@@ -97,7 +102,10 @@ export class Body {
       || selectedElements.filter((el) => !selection.find((s) => s === el)).length !== 0) {
       this.view.stageWrapper.setSelection(selectedElements);
     }
+    this.refreshViews(selectedElements);
+  }
 
+  refreshViews(selectedElements = this.getSelection()) {
     // refresh views
     const pages = this.model.page.getPages();
     const page = this.model.page.getCurrentPage();

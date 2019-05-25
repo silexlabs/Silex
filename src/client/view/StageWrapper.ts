@@ -8,6 +8,7 @@ import { SilexNotification } from '../utils/notification';
 export class StageWrapper {
   private stage: Stage;
   private dragging = false;
+  private toBeUnsubscribed = [];
   /**
    *
    * @param element   container to render the UI
@@ -100,6 +101,8 @@ export class StageWrapper {
       this.stage.cleanup();
       this.stage = null;
     }
+    this.toBeUnsubscribed.forEach((u) => u());
+    this.toBeUnsubscribed = [];
   }
 
   /**
@@ -155,10 +158,22 @@ export class StageWrapper {
       onResizeEnd: (change) => this.stopDrag(change, true),
       // onDrag: (change) => this.updateView(),
       // onResize: (change) => this.updateView(),
-      onSelect: (change) => this.updateView(),
+      onSelect: (change) => this.onSelectionChanged(change),
       onStartDrag: (change) => this.startDrag(),
       onStartResize: (change) => this.startDrag(),
     });
+    // give time to iframes to initialize
+    setTimeout(() => {
+      // TODO: this should go in a "selection" model
+      this.toBeUnsubscribed.push(
+        this.subscribeMouseEvent('mousedown', (e: MouseEvent) => {
+          // reset focus when the stage is clicked
+          if (window !== (e.target as HTMLElement).ownerDocument.defaultView) {
+            this.model.body.resetFocus();
+          }
+        }),
+      );
+    }, 0);
   }
   startDrag() {
     this.hideScrolls(true);
@@ -169,14 +184,17 @@ export class StageWrapper {
     this.hideScrolls(false);
     this.dragging = false;
     this.applyStyle(change);
-    this.updateView();
     this.redraw();
+    this.updateView();
   }
   prepareUndo() {
     this.controller.stageController.undoCheckPoint();
   }
   updateView() {
-    this.model.body.setSelection(this.stage.getSelection().map((s) => s.el));
+    this.model.body.refreshViews();
+  }
+  onSelectionChanged(_) {
+    this.model.body.refreshViews();
   }
   applyStyle(change) {
     // do not mess up the css translation applyed by stage during drag

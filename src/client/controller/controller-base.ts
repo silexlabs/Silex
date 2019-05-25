@@ -549,6 +549,10 @@ export class ControllerBase {
     }
   }
 
+  emptySelection() {
+    this.model.body.emptySelection();
+  }
+
   /**
    * refresh tools after mobile/desktop editor switch
    */

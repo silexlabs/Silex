@@ -159,7 +159,7 @@ export class File {
     this.model.component.initStyles(this.contentDocument_);
 
     // select the body
-    this.model.body.setSelection([this.contentDocument_.body]);
+    this.model.body.emptySelection();
 
     // update the settings
     this.model.head.updateFromDom();

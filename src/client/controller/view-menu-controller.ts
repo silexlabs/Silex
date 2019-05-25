@@ -48,7 +48,7 @@ export class ViewMenuController extends ControllerBase {
     this.undoCheckPoint();
 
     // deselect all elements
-    this.model.body.setSelection([]);
+    this.emptySelection();
 
     // open the editor
     this.view.htmlEditor.open();

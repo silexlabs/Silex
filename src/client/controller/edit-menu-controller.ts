@@ -44,7 +44,7 @@ export class EditMenuController extends ControllerBase {
    */
   undo() {
     if (ControllerBase.undoHistory.length > 0) {
-      this.model.body.setSelection([]);
+      this.model.body.emptySelection();
       this.undoredoInvalidationManager.callWhenReady(() => {
         if (ControllerBase.getStatePending === 0 &&
             ControllerBase.undoHistory.length > 0) {
@@ -65,7 +65,7 @@ export class EditMenuController extends ControllerBase {
    */
   redo() {
     if (ControllerBase.redoHistory.length > 0) {
-      this.model.body.setSelection([]);
+      this.model.body.emptySelection();
       this.undoredoInvalidationManager.callWhenReady(() => {
         if (ControllerBase.redoHistory.length > 0) {
           const state = this.getState();
@@ -76,10 +76,6 @@ export class EditMenuController extends ControllerBase {
         }
       });
     }
-  }
-
-  emptySelection() {
-    this.model.body.setSelection([]);
   }
 
   /**
