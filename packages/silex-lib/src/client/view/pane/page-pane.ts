@@ -92,10 +92,12 @@ export class PagePane extends PaneBase {
     };
     this.viewOnAllPagesCheckbox = this.element.querySelector('.view-on-allpages-check');
     this.viewOnAllPagesCheckbox.onchange = () => {
+      const elements = this.states.map((state) => state.el);
       if (this.viewOnAllPagesCheckbox.checked) {
-        this.checkAllPages();
+        this.controller.propertyToolController.visibleOnAllPages(elements);
+      } else {
+        this.controller.propertyToolController.addToPage(elements);
       }
-      this.removeFromAllPages();
     };
   }
 
@@ -311,18 +313,5 @@ export class PagePane extends PaneBase {
     } else {
       this.controller.propertyToolController.removeFromPage(this.states.map((state) => state.el), pageName);
     }
-  }
-
-  checkAllPages() {
-    this.pageCheckboxes.forEach((item) => {
-      item.checkbox.checked = true;
-    });
-    this.viewOnAllPagesCheckbox.checked = true;
-  }
-
-  removeFromAllPages() {
-    this.pageCheckboxes.forEach((item) => {
-      this.controller.propertyToolController.removeFromPage(this.states.map((state) => state.el), item.pageName);
-    });
   }
 }
