@@ -16,7 +16,6 @@
  *   It has methods to manipulate the dom
  */
 
-import {Constants} from '../../Constants';
 import {View} from '../types';
 import {Model} from '../types';
 
