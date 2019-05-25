@@ -31,11 +31,11 @@ super(model, view);
   /**
    * add the provided elements to a given page
    */
-  addToPage(elements: HTMLElement[], name: string) {
+  addToPage(elements: HTMLElement[], opt_name = this.model.page.getCurrentPage()) {
     // undo checkpoint
     this.undoCheckPoint();
     elements.forEach((element) => {
-      this.model.page.addToPage(element, name);
+      this.model.page.addToPage(element, opt_name);
     });
   }
 
@@ -47,6 +47,17 @@ super(model, view);
     this.undoCheckPoint();
     elements.forEach((element) => {
       this.model.page.removeFromPage(element, name);
+    });
+  }
+
+  /**
+   * add provided elements to all pages
+   */
+  visibleOnAllPages(elements: HTMLElement[]) {
+    // undo checkpoint
+    this.undoCheckPoint();
+    elements.forEach((element) => {
+      this.model.page.removeFromAllPages(element);
     });
   }
 

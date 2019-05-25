@@ -124,7 +124,6 @@ export class Page {
       });
     }
     this.view.stageWrapper.reset();
-    this.refreshView();
   }
 
   /**
@@ -296,28 +295,59 @@ export class Page {
    * remove from all pages if visible in all pages
    */
   addToPage(element: HTMLElement, pageName: string) {
+    if (this.isInPage(element, pageName)) {
+      console.error('Element is already in page', element, pageName);
+      return;
+    }
     element = this.model.element.noSectionContent(element);
     const pages = this.getPagesForElement(element);
     if (pages.length + 1 === this.getPages().length) {
-      pages.forEach((page) => element.classList.remove(page));
-      element.classList.remove(Constants.PAGED_CLASS_NAME);
+      // from visible in some pages to visible everywhere
+      this.removeFromAllPages(element);
     } else {
       element.classList.add(pageName);
       element.classList.add(Constants.PAGED_CLASS_NAME);
+      if (pages.length === 0) {
+        // from visible visible everywhere to visible in some pages
+        if (pageName !== this.getCurrentPage()) {
+          this.view.stageWrapper.removeElement(element);
+        } else {
+          this.refreshView();
+        }
+      } else if (pageName === this.getCurrentPage()) {
+        // from visible in some pages to visible in this page
+        console.warn('How is this possible?');
+        this.view.stageWrapper.addElement(element);
+      } else {
+        console.warn('How is this possible?');
+        this.refreshView();
+      }
     }
-    this.refreshView();
   }
 
   /**
    *
    */
   removeFromPage(element: HTMLElement, pageName: string) {
-    element = this.model.element.noSectionContent(element);
-    element.classList.remove(pageName);
-    if (this.getPagesForElement(element).length <= 0) {
-      element.classList.remove(Constants.PAGED_CLASS_NAME);
+    if (!this.isInPage(element, pageName)) {
+      console.error('Element is not in page', element, pageName);
+      return;
     }
-    this.refreshView();
+    element = this.model.element.noSectionContent(element);
+    const pages = this.getPagesForElement(element);
+    if (pages.length - 1 === 0) {
+      // from visible in some pages to visible everywhere
+      this.removeFromAllPages(element);
+    } else {
+      if (pageName === this.getCurrentPage()) {
+        // update stage store
+        this.view.stageWrapper.removeElement(element);
+      } else {
+        this.refreshView();
+      }
+      element.classList.add(Constants.PAGED_CLASS_NAME);
+      element.classList.remove(pageName);
+    }
   }
 
   /**
@@ -325,6 +355,7 @@ export class Page {
    */
   removeFromAllPages(element: HTMLElement) {
     element = this.model.element.noSectionContent(element);
+    const wasVisible = this.isVisible(element);
     const pages = this.getPagesForElement(element);
     pages.forEach((pageName) => {
       element.classList.remove(pageName);
@@ -332,7 +363,13 @@ export class Page {
 
     // the element is not "paged" anymore
     element.classList.remove(Constants.PAGED_CLASS_NAME);
-    this.refreshView();
+
+    if (!wasVisible) {
+      // update stage store
+      this.view.stageWrapper.addElement(element);
+    } else {
+      this.refreshView();
+    }
   }
 
   /**
