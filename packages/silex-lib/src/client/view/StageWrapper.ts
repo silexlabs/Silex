@@ -2,6 +2,7 @@
 import { Stage } from '../../../node_modules/drag-drop-stage-component/src/ts/index';
 import { ScrollData, SelectableState } from '../../../node_modules/drag-drop-stage-component/src/ts/Types';
 import { Constants } from '../../Constants';
+import { Body } from '../model/body';
 import { Controller, Model } from '../types';
 import { SilexNotification } from '../utils/notification';
 
@@ -169,7 +170,7 @@ export class StageWrapper {
         this.subscribeMouseEvent('mousedown', (e: MouseEvent) => {
           // reset focus when the stage is clicked
           if (window !== (e.target as HTMLElement).ownerDocument.defaultView) {
-            this.model.body.resetFocus();
+            Body.resetFocus();
           }
         }),
       );
