@@ -279,7 +279,7 @@ export class SilexElement {
     }
 
     // redraw tools
-    this.model.body.setSelection(this.model.body.getSelection());
+    this.model.body.refreshViews();
   }
 
   /**
@@ -448,7 +448,7 @@ export class SilexElement {
           element.classList.remove(Constants.LOADING_ELEMENT_CSS_CLASS);
 
           // redraw tools
-          this.model.body.setSelection(this.model.body.getSelection());
+          this.model.body.refreshViews();
           this.view.stageWrapper.redraw();
         } catch (e) {
           console.error('An error occured while loading the image.', element, e);
