@@ -28,6 +28,12 @@
         "src/html/"
       ],
       "extensions": "jade"
+    },
+    "build:prodotype": {
+      "patterns": [
+        "src/prodotype/"
+      ],
+      "extensions": "*"
     }
   },
   "scripts": {
@@ -70,7 +76,7 @@
     "jsdom": "15.0.0",
     "node_modules-path": "*",
     "normalize.css": "^8.0.1",
-    "prodotype": "^1.0.6",
+    "prodotype": "^1.0.7",
     "promise-sequential": "1.1.1",
     "redux": "^4.0.1",
     "request": "2.88.0",

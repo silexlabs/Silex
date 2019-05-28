@@ -142,6 +142,32 @@
     .expandable > *, section > * {
       max-width: 97%; /* avoid horizontal scroll bar in the property tool */
     }
+    h1.name {
+      display: inline-block;
+      margin-top: 10px;
+    }
+    .help {
+      float: right;
+      margin: 10px;
+      padding: 10px;
+      border-radius: 50%;
+      height: 30px;
+      width: 30px;
+      line-height: 0;
+    }
+    .prop-editor-base {
+      width: 100%;
+      flex: 1 1 auto;
+      &.half-col {
+        width: 50%;
+      }
+    }
+    .prodotype-component-editor {
+      .sub-editors .prop-editor-base {
+        padding: 5px 0;
+        border: none;
+      }
+    }
 
     /* size set by workspace.js when the user resizes the property tool */
     &.size1 {
@@ -201,8 +227,6 @@
     .button {
       .small-combo;
       display: inline;
-      margin-right: 5px;
-      margin-top: 5px;
       &.disabled {
         color: graytext;
         background-color: @silexmediumdarkgrey;
@@ -214,7 +238,6 @@
   fieldset {
     margin: 15px 0;
     border: 1px solid @silexlightergrey;
-    width: 90%;
     display: inline;
   }
 
@@ -269,6 +292,7 @@
       width: 100%;
       cursor: pointer;
       border-top: 1px solid @silexdarkgrey;
+      margin-top: 2px;
       .fa {
         margin-right: 5px;
       }
@@ -546,6 +570,8 @@
     & > section > ul,
     & > .prodotype-container > section > ul {
       padding-left: 0;
+      display: flex;
+      flex-wrap: wrap;
     }
     /* prodotype editors labels, e.g. Heading1 */
     .prop-editor-base label, .class-name-style-label {
@@ -652,10 +678,6 @@
     /* All */
     .style-editor-tag-form input:checked:nth-child(12) ~
     .prodotype-container .editor > ul > .prop-editor-base:nth-child(12) { display: initial; }
-    .editor {
-      /* hide description and help button, FIXME: should be doable in the .yaml */
-      & > h1, & > h1 + div { display: none; }
-    }
 
     /* vivibility checkbox (mobile only or not) */
     .visibility-style-label {
@@ -717,7 +739,7 @@
       background-size: 18px;
       &:first-child {
         .button-bar-first;
-        margin-left: 5px;
+        margin-left: 2px;
       }
       &:last-child {
         .button-bar-last;
