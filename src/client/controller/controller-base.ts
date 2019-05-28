@@ -591,9 +591,7 @@ export class ControllerBase {
   /**
    * save or save-as
    */
-  save(
-      opt_fileInfo?: FileInfo, opt_cbk?: (() => any),
-      opt_errorCbk?: ((p1: any) => any)) {
+  save(opt_fileInfo?: FileInfo, opt_cbk?: (() => any), opt_errorCbk?: ((p1: any) => any)) {
     this.tracker.trackAction('controller-events', 'request', 'file.save', 0);
     if (opt_fileInfo && !this.model.file.isTemplate) {
       this.doSave((opt_fileInfo as FileInfo), opt_cbk, opt_errorCbk);
@@ -628,18 +626,17 @@ export class ControllerBase {
     let rawHtml = this.model.file.getHtml();
 
     // look for bug of firefox inserting quotes in url("")
+    // FIXME: remove this!!
     if (rawHtml.indexOf('url(\'&quot;') > -1) {
-      console.warn(
-          'I have found HTML entities in some urls, there us probably an error in the save process.');
+      console.warn('I have found HTML entities in some urls, there us probably an error in the save process.');
 
       // log this (QA)
       this.tracker.trackAction('controller-events', 'warning', 'file.save.corrupted', -1);
 
       // try to cleanup the mess
-      rawHtml = rawHtml.replace(
-          /url\('&quot;()(.+?)\1&quot;'\)/gi, (match, group1, group2) => {
-            return 'url(\'' + group2 + '\')';
-          });
+      rawHtml = rawHtml.replace(/url\('&quot;()(.+?)\1&quot;'\)/gi, (match, group1, group2) => {
+        return 'url(\'' + group2 + '\')';
+      });
     }
 
     // save to file

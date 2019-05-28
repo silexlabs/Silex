@@ -85,16 +85,23 @@ export default class DomTools {
     return null;
   }
 
-  static transformStylesheet(stylesheet, isInHead, fn, isMediaQuerySubRule = false) {
+  /**
+   * FIXME: this removes comments from CSS
+   */
+  static transformStylesheet(stylesheet: CSSStyleSheet, isInHead, fn, isMediaQuerySubRule = false) {
     let cssText = '';
-    for (const rule of stylesheet.cssRules) {
+    for (const sheetOrRule of stylesheet.cssRules) {
+      // have to play with types
+      const rule: CSSStyleRule = sheetOrRule as CSSStyleRule;
+      const sheet: CSSStyleSheet = sheetOrRule as any;
       if (rule.style) { for (const valName of Array.from(rule.style)) {
         const value = rule.style[valName as string];
         rule.style[valName as string] = DomTools.transformValueUrlKeyword(value, stylesheet, isInHead, fn) || value;
       }
-      } else if (rule.cssRules) {
+      } else if (sheet.cssRules) {
         // case of a mediaquery
-        DomTools.transformStylesheet(rule, isInHead, fn, true);
+        DomTools.transformStylesheet(sheet, isInHead, fn, true);
+      } else {
       }
       if (!isMediaQuerySubRule) {
         // if it is a media query then the parent rule will be written

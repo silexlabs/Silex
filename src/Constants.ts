@@ -329,4 +329,12 @@ export class Constants {
     Constants.STAGE_COMPONENT_NOT_SELECTED_CLASS_NAME,
     Constants.SELECTED_CLASS_NAME,
   ];
+  /**
+   * Elements to remove from the DOM after publishing
+   */
+  static ELEMENTS_TO_REMOVE_AT_PUBLISH = [
+    '.prodotype-preview',
+    'meta[name="publicationPath"]',
+    '.${Constants.JSON_STYLE_TAG_CLASS_NAME}',
+  ];
 }

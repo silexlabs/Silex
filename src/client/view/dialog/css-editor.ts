@@ -17,12 +17,12 @@
  */
 import {Model} from '../../types';
 import {Controller} from '../../types';
-import {AceEditorBase} from './ace-editor-base';
+import {CodeEditorBase} from './CodeEditorBase';
 
 /**
  * @class {silex.view.dialog.CssEditor}
  */
-export class CssEditor extends AceEditorBase {
+export class CssEditor extends CodeEditorBase {
   /**
    * @param element   container to render the UI
    * @param model  model class which holds
@@ -32,16 +32,13 @@ export class CssEditor extends AceEditorBase {
    * the controller instances
    */
   constructor(element: HTMLElement, model: Model, controller: Controller) {
-    super(element, model, controller);
-
-    // set mode
-    this.ace.getSession().setMode('ace/mode/css');
+    super(element, model, controller, 'css');
   }
 
   /**
    * the content has changed, notify the controler
    */
   contentChanged() {
-    this.controller.cssEditorController.changed(this.ace.getValue());
+    this.controller.cssEditorController.changed(this.editor.getValue());
   }
 }

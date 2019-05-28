@@ -22,6 +22,10 @@ import {FileInfo} from '../types';
 import {Model} from '../types';
 import {Font} from '../types';
 
+const BEAUTIFY_CSS_OPTIONS = {
+  indent_size: 2,
+};
+
 /**
  * @param model  model class which holds the other models
  * @param view  view class which holds the other views
@@ -117,8 +121,8 @@ export class Head {
       console.warn('no silex editable styles defined');
       return '';
     }
-      // tslint:disable:no-string-literal
-    return window['css_beautify'](silexStyle.innerHTML);
+    // tslint:disable:no-string-literal
+    return window['css_beautify'](silexStyle.innerHTML, BEAUTIFY_CSS_OPTIONS);
   }
 
   /**
