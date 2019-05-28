@@ -40,6 +40,6 @@ export class JsEditor extends CodeEditorBase {
    * the content has changed, notify the controler
    */
   contentChanged() {
-    this.controller.jsEditorController.changed(this.editor.getValue());
+    this.controller.jsEditorController.changed(this.getValue());
   }
 }

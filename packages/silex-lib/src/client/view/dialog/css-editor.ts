@@ -39,6 +39,6 @@ export class CssEditor extends CodeEditorBase {
    * the content has changed, notify the controler
    */
   contentChanged() {
-    this.controller.cssEditorController.changed(this.editor.getValue());
+    this.controller.cssEditorController.changed(this.getValue());
   }
 }
