@@ -20,8 +20,8 @@ export default function(staticOptions: StaticOptions) {
   router.use('/libs/wysihtml', serveStatic(Path.resolve(nodeModules('wysihtml'), 'wysihtml/dist/minified')));
   // js-beautify
   router.use('/libs/js-beautify', serveStatic(Path.resolve(nodeModules('js-beautify'), 'js-beautify/js/lib')));
-  // ace
-  router.use('/libs/ace', serveStatic(Path.resolve(nodeModules('ace-builds'), 'ace-builds/src-min')));
+  // code editor
+  // router.use('/libs/monaco-editor', serveStatic(Path.resolve(nodeModules('monaco-editor'), 'monaco-editor/esm/vs/editor/')));
   // // normalize.css
   // router.use('/libs/normalize.css', serveStatic(Path.resolve(nodeModules('normalize.css'), 'normalize.css')));
   // font-awesome

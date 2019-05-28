@@ -1,16 +1,4 @@
-// const path = require('path');
-
-// module.exports = {
-//     entry: './dist/client/client/App.js',
-//     devtool: 'inline-source-map',
-//     // devtool: 'source-map',
-//     output: {
-//         filename: 'index.js',
-//         path: path.resolve(__dirname, '/dist/client'),
-//     }
-// };
-
-
+// const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 const path = require('path');
 
 module.exports = {
@@ -22,7 +10,11 @@ module.exports = {
       {
         test: /\.tsx?$/,
         use: 'ts-loader',
-      }
+      },
+      // {
+      //   test: /\.css$/,
+      //   use: ['style-loader', 'css-loader'],
+      // }
     ]
   },
   resolve: {
@@ -31,5 +23,8 @@ module.exports = {
   output: {
     filename: 'index.js',
     path: path.resolve(__dirname, 'dist/client')
-  }
+  },
+  // plugins: [
+  //   new MonacoWebpackPlugin()
+  // ],
 };

@@ -17,12 +17,12 @@
 import { Constants } from '../../../Constants';
 import {Model} from '../../types';
 import {Controller} from '../../types';
-import {AceEditorBase} from './ace-editor-base';
+import {CodeEditorBase} from './CodeEditorBase';
 
 /**
  * @class {silex.view.dialog.HtmlEditor}
  */
-export class HtmlEditor extends AceEditorBase {
+export class HtmlEditor extends CodeEditorBase {
   /**
    * @param element   container to render the UI
    * @param model  model class which holds
@@ -32,28 +32,7 @@ export class HtmlEditor extends AceEditorBase {
    * the controller instances
    */
   constructor(element: HTMLElement, model: Model, controller: Controller) {
-    super(element, model, controller);
-    const session = this.ace.getSession();
-
-    // set mode
-    session.setMode('ace/mode/html');
-
-    // dirty hack to prevent errors not applicable in our case (we edit a part
-    // of an html doc only) comes from this discussion
-    // https://groups.google.com/forum/#!topic/ace-discuss/qOVHhjhgpsU
-    session.on('changeAnnotation', () => {
-      const annotations = session.getAnnotations() || [];
-      const len = annotations.length;
-      let i = len;
-      while (i--) {
-        if (/doctype/i.test(annotations[i].text)) {
-          annotations.splice(i, 1);
-        }
-      }
-      if (len > annotations.length) {
-        session.setAnnotations(annotations);
-      }
-    });
+    super(element, model, controller, 'html');
   }
 
   /**
@@ -62,8 +41,7 @@ export class HtmlEditor extends AceEditorBase {
   contentChanged() {
     const selection = this.model.body.getSelection();
     if (selection.length <= 1) {
-      this.controller.htmlEditorController.changed(
-          selection[0], this.ace.getValue());
+      this.controller.htmlEditorController.changed(selection[0], this.editor.getValue());
     }
   }
 
@@ -71,26 +49,26 @@ export class HtmlEditor extends AceEditorBase {
     if (selection.length === 0) {
       // edit head tag
       this.setValue(this.model.head.getUserHeadTag());
-      this.ace.setReadOnly(false);
+      this.editor.updateOptions({ readOnly: false });
     } else {
       if (selection.length === 1) {
         if (selection[0].tagName.toLowerCase() === 'body') {
           // edit head tag
           this.setValue(this.model.head.getUserHeadTag());
-          this.ace.setReadOnly(false);
+          this.editor.updateOptions({ readOnly: false });
         } else {
-          if (this.model.element.getType(selection[0]) === Constants.TYPE_HTML) {
+          if (this.model.element.getType(selection[0]) ===  Constants.TYPE_HTML) {
             // edit current selection
             this.setValue(this.model.element.getInnerHtml(selection[0]));
-            this.ace.setReadOnly(false);
+            this.editor.updateOptions({ readOnly: false });
           } else {
             this.setValue('-select an HTML box or press ESC-');
-            this.ace.setReadOnly(true);
+            this.editor.updateOptions({ readOnly: true });
           }
         }
       } else {
         this.setValue('-select an HTML box or press ESC-');
-        this.ace.setReadOnly(true);
+        this.editor.updateOptions({ readOnly: true });
       }
     }
   }

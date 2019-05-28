@@ -281,9 +281,7 @@ export class File {
    * @param cbk receives the raw HTML
    * @export
    */
-  saveAs(
-      fileInfo: FileInfo, rawHtml: string, cbk: () => any,
-      opt_errCbk?: ((p1: any, p2: string) => any)) {
+  saveAs(fileInfo: FileInfo, rawHtml: string, cbk: () => any, opt_errCbk?: ((p1: any, p2: string) => any)) {
     // save the data
     this.fileInfo = fileInfo;
     this.addToLatestFiles(this.fileInfo);
@@ -294,9 +292,7 @@ export class File {
    * write content to the file
    * @export
    */
-  save(
-      rawHtml: string, cbk: () => any,
-      opt_errCbk?: ((p1: any, p2: string) => any)) {
+  save(rawHtml: string, cbk: () => any, opt_errCbk?: ((p1: any, p2: string) => any)) {
     if (this.fileInfo == null) {
       throw new Error('Can not save, fileInfo is null');
     }

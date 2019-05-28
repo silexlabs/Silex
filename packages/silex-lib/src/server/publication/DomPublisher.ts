@@ -72,7 +72,7 @@ export class DomPublisher {
 
     // remove publication path
     // remove JSON styles
-    Array.from(this.doc.head.querySelectorAll(`meta[name="publicationPath"], .${Constants.JSON_STYLE_TAG_CLASS_NAME}`))
+    Array.from(this.doc.head.querySelectorAll(Constants.ELEMENTS_TO_REMOVE_AT_PUBLISH.join(', ')))
     .forEach((tagToRemove) => {
       tagToRemove.parentElement.removeChild(tagToRemove);
     });

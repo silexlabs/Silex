@@ -38,7 +38,7 @@ export class StylePane extends PaneBase {
   /**
    * instance of ace editor
    */
-  ace: AceAjax.Editor;
+  // ace: AceAjax.Editor;
 
   constructor(element: HTMLElement, model: Model, controller: Controller) {
 
@@ -53,20 +53,20 @@ export class StylePane extends PaneBase {
    */
   buildUi() {
     this.cssClassesInput = this.initInput('.style-css-classes-input', () => this.onInputChanged());
-    this.ace = ace.edit(this.element.querySelector('.element-style-editor') as HTMLElement);
-    this.ace.setTheme('ace/theme/idle_fingers');
-    this.ace.renderer.setShowGutter(false);
+    // this.ace = ace.edit(this.element.querySelector('.element-style-editor') as HTMLElement);
+    // this.ace.setTheme('ace/theme/idle_fingers');
+    // this.ace.renderer.setShowGutter(false);
 
-    // for some reason, this.ace.getSession().* is undefined,
-    //    closure renames it despite the fact that that it is declared in the
-    //    externs.js file
-    this.ace.getSession().setMode('ace/mode/css');
-    this.ace.setOptions({
-      enableBasicAutocompletion: true,
-      enableSnippets: true,
-      enableLiveAutocompletion: true,
-    });
-    this.ace.setReadOnly(true);
+    // // for some reason, this.ace.getSession().* is undefined,
+    // //    closure renames it despite the fact that that it is declared in the
+    // //    externs.js file
+    // this.ace.getSession().setMode('ace/mode/css');
+    // this.ace.setOptions({
+    //   enableBasicAutocompletion: true,
+    //   enableSnippets: true,
+    //   enableLiveAutocompletion: true,
+    // });
+    // this.ace.setReadOnly(true);
   }
 
   /**
@@ -88,16 +88,16 @@ export class StylePane extends PaneBase {
     }
 
     // css inline style
-    const cssInlineStyle = this.getCommonProperty(states, (state) => this.model.element.getAllStyles(state.el));
+    // const cssInlineStyle = this.getCommonProperty(states, (state) => this.model.element.getAllStyles(state.el));
 
-    if (cssInlineStyle) {
-      const str = '.element{\n' + cssInlineStyle.replace(/; /gi, ';\n') + '\n}';
-      const pos = this.ace.getCursorPosition();
-      this.ace.setValue(str, 1);
-      this.ace.gotoLine(pos.row + 1, pos.column, false);
-    } else {
-      this.ace.setValue('.element{\n/' + '* multiple elements selected *' + '/\n}', 1);
-    }
+    // if (cssInlineStyle) {
+    //   const str = '.element{\n' + cssInlineStyle.replace(/; /gi, ';\n') + '\n}';
+    //   const pos = this.ace.getCursorPosition();
+    //   this.ace.setValue(str, 1);
+    //   this.ace.gotoLine(pos.row + 1, pos.column, false);
+    // } else {
+    //   this.ace.setValue('.element{\n/' + '* multiple elements selected *' + '/\n}', 1);
+    // }
   }
 
   /**
@@ -112,7 +112,8 @@ export class StylePane extends PaneBase {
    */
   contentChanged() {
     console.warn('this is not allowed anymore');
-    this.ace.setValue(this.ace.getValue());
+    // this.ace.setValue(this.ace.getValue());
+
     // let value = this.ace.getValue();
     // if (value) {
     //   value = value.replace('.element{\n', '');
