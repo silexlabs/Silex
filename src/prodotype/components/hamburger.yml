@@ -25,28 +25,38 @@ props:
   default: false
   description: Does the hamburger icon stay when you scroll?
 - name: button-background-color
+  displayName: Button Color
   expandable: false
+  className: half-col
   type: color
   default: '#000000'
   description: Background color of the hamburger button
 - name: button-border-color
+  displayName: Button border
   expandable: false
+  className: half-col
   type: color
   default: '#ffffff'
   description: Color of the border of the hamburger button
 - name: background-color
+  displayName: Bg color
   expandable: false
+  className: half-col
   type: color
   default: '#ededed'
   description: Background color of the menu when it is open
 - name: links
-  expandable: false
+  displayName: Menu links
   default: []
   description: Content of the menu
   type:
+    - name: text
+      hideTitle: true
+      type: string
+      placeholder: Text
+      description: The text for the element in the menu
     - name: properties
+      hideTitle: true
+      displayName: link
       type: link
       description: The link properties
-    - name: text
-      type: string
-      description: The text for the element in the menu
