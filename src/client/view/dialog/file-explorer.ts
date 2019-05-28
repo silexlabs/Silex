@@ -30,7 +30,7 @@ import {ModalDialog} from '../../view/ModalDialog';
  */
 export class FileExplorer {
   static get IMAGE_EXTENSIONS() {
-    return ['.jpg', '.jpeg', '.png', '.gif'];
+    return ['.jpg', '.jpeg', '.png', '.gif', '.svg'];
   }
   static get HTML_EXTENSIONS() {
     return ['.html', '.htm'];
