@@ -62,12 +62,12 @@ export class HtmlEditor extends CodeEditorBase {
             this.setValue(this.model.element.getInnerHtml(selection[0]));
             this.setReadOnly(false);
           } else {
-            this.setValue('-select an HTML box or press ESC-');
+            this.setValue('-select an HTML box-');
             this.setReadOnly(true);
           }
         }
       } else {
-        this.setValue('-select an HTML box or press ESC-');
+        this.setValue('-select an HTML box-');
         this.setReadOnly(true);
       }
     }
