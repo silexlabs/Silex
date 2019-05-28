@@ -41,7 +41,7 @@ export class HtmlEditor extends CodeEditorBase {
   contentChanged() {
     const selection = this.model.body.getSelection();
     if (selection.length <= 1) {
-      this.controller.htmlEditorController.changed(selection[0], this.editor.getValue());
+      this.controller.htmlEditorController.changed(selection[0], this.getValue());
     }
   }
 
@@ -49,26 +49,26 @@ export class HtmlEditor extends CodeEditorBase {
     if (selection.length === 0) {
       // edit head tag
       this.setValue(this.model.head.getUserHeadTag());
-      this.editor.updateOptions({ readOnly: false });
+      this.setReadOnly(false);
     } else {
       if (selection.length === 1) {
         if (selection[0].tagName.toLowerCase() === 'body') {
           // edit head tag
           this.setValue(this.model.head.getUserHeadTag());
-          this.editor.updateOptions({ readOnly: false });
+          this.setReadOnly(false);
         } else {
           if (this.model.element.getType(selection[0]) ===  Constants.TYPE_HTML) {
             // edit current selection
             this.setValue(this.model.element.getInnerHtml(selection[0]));
-            this.editor.updateOptions({ readOnly: false });
+            this.setReadOnly(false);
           } else {
             this.setValue('-select an HTML box or press ESC-');
-            this.editor.updateOptions({ readOnly: true });
+            this.setReadOnly(true);
           }
         }
       } else {
         this.setValue('-select an HTML box or press ESC-');
-        this.editor.updateOptions({ readOnly: true });
+        this.setReadOnly(true);
       }
     }
   }

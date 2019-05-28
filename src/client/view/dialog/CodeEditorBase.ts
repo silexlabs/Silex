@@ -38,13 +38,18 @@ import { ModalDialog } from '../ModalDialog';
 export class CodeEditorBase {
 
   static isDocked: boolean;
+  // make this a dialog
+  modalDialog: ModalDialog;
+
+  /**
+   * if true, do not propagate onChange event
+   */
+  private lockOnChange = false;
+
   /**
    * instance of monaco editor
    */
-  editor: monaco.editor.ICodeEditor;
-
-  // make this a dialog
-  modalDialog: any;
+  private editor: monaco.editor.ICodeEditor;
 
   /**
    * @param element   container to render the UI
@@ -61,7 +66,11 @@ export class CodeEditorBase {
       language,
       theme: 'vs-dark',
     });
-    this.editor.onDidChangeModelContent((e) => this.contentChanged());
+    this.editor.onDidChangeModelContent((e) => {
+      if (!this.lockOnChange) {
+        this.contentChanged();
+      }
+    });
 
     // dock mode
     const dockBtn = element.querySelector('.dock-btn');
@@ -69,6 +78,7 @@ export class CodeEditorBase {
       dockBtn.addEventListener('click', () => {
         CodeEditorBase.isDocked = !CodeEditorBase.isDocked;
         this.controller.toolMenuController.dockPanel(CodeEditorBase.isDocked);
+        this.setOptions();
         this.editor.render();
       }, false);
     }
@@ -76,9 +86,22 @@ export class CodeEditorBase {
       name: `${language} Editor`,
       element,
       onOpen: (args) => {
+        this.setOptions();
         this.editor.focus();
       },
       onClose: () => {},
+    });
+  }
+
+  /**
+   * set editor's options
+   */
+  setOptions() {
+    this.editor.updateOptions({
+      lineNumbers: CodeEditorBase.isDocked ? 'off' : 'on',
+      minimap: {
+        enabled: !CodeEditorBase.isDocked,
+      },
     });
   }
 
@@ -97,12 +120,28 @@ export class CodeEditorBase {
   }
 
   /**
+   * editor read only property
+   */
+  setReadOnly(readOnly: boolean) {
+    this.editor.updateOptions({ readOnly });
+  }
+
+  /**
+   * current value of the editor
+   */
+  getValue(): string {
+    return this.editor.getValue();
+  }
+
+  /**
    * Set a value to the editor
    * param {!string} value
    */
   setValue(value) {
     // set value
+    this.lockOnChange = true;
     this.editor.setValue(value);
+    this.lockOnChange = false;
 
     // force ace redraw
     this.editor.layout();
