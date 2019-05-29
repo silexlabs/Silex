@@ -370,6 +370,7 @@ export class Property {
         this.styleSheet.insertRule(styleStr, 0);
       }
     }
+    this.view.stageWrapper.redraw();
   }
 
   /**
@@ -591,6 +592,9 @@ export class Property {
     } else {
       delete this.prodotypeDataObj[type][id];
     }
+    setTimeout(() => {
+      this.view.stageWrapper.redraw();
+    }, 0);
   }
 
   /**

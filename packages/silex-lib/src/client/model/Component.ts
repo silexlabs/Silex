@@ -399,24 +399,24 @@ export class Component {
    */
   componentStyleChanged(className: StyleName, pseudoClass: PseudoClass, visibility: Visibility, opt_data?: PseudoClassData, opt_displayName?: string) {
     // create a new style if needed
-    if (className === Constants.EMPTY_STYLE_CLASS_NAME) {
-      const textBoxes = this.model.body.getSelection().filter((el) => this.model.element.getType(el) === Constants.TYPE_TEXT);
-      if (textBoxes.length > 0) {
-        // create a new unique name
-        const allStyles = this.getProdotypeComponents(Constants.STYLE_TYPE) as StyleData[];
-        const baseDisplayName = textBoxes.length === 1 ? 'Text Style ' : 'Group Style ';
-        const baseClassName = textBoxes.length === 1 ? 'text-style-' : 'group-style-';
-        let idx = 1;
-        while (allStyles.filter((obj) => obj.className === baseClassName + idx.toString()).length > 0) {
-          idx++;
-        }
-        opt_displayName = baseDisplayName + idx;
-        className = baseClassName + idx;
+    // if (className === Constants.EMPTY_STYLE_CLASS_NAME) {
+    //   const textBoxes = this.model.body.getSelection().filter((el) => this.model.element.getType(el) === Constants.TYPE_TEXT);
+    //   if (textBoxes.length > 0) {
+    //     // create a new unique name
+    //     const allStyles = this.getProdotypeComponents(Constants.STYLE_TYPE) as StyleData[];
+    //     const baseDisplayName = textBoxes.length === 1 ? 'Text Style ' : 'Group Style ';
+    //     const baseClassName = textBoxes.length === 1 ? 'text-style-' : 'group-style-';
+    //     let idx = 1;
+    //     while (allStyles.filter((obj) => obj.className === baseClassName + idx.toString()).length > 0) {
+    //       idx++;
+    //     }
+    //     opt_displayName = baseDisplayName + idx;
+    //     className = baseClassName + idx;
 
-        // apply to the selection
-        textBoxes.forEach((element) => element.classList.add(className));
-      }
-    }
+    //     // apply to the selection
+    //     textBoxes.forEach((element) => element.classList.add(className));
+    //   }
+    // }
 
     // expose the class name and pseudo class to the prodotype template
     const newData = opt_data || {};
