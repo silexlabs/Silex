@@ -337,7 +337,7 @@ props:
       - px
     - name: border-style
       className: half-width
-      default: ""
+      default: "solid"
       type:
       - solid
       - hidden
