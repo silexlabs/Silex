@@ -100,7 +100,16 @@ function getProp(prop, propName, container) {
       <%- getProp(prop, 'border-color', 'border') -%>
 
       <% if(prop.obj['gradient']) { %>
-        background: linear-gradient(<%- prop.obj['gradient'].map(function(g) {return g.color}).join(', ') -%>);
+        background: linear-gradient(<%- prop.obj['gradient'].map(g => g.color).join(', ') -%>);
+      <% } %>
+
+      <% if(prop.obj['transition']) { %>
+        <%-
+          ['-webkit-transition', '-moz-transition', '-o-transition', 'transition'].map(name => {
+            var trans = prop.obj['transition'].map(t => `${t.property} ${t.duration}s ${t.func || ''} ${t.delay ? t.delay + 's' : ''}`).join(', ');
+            return name + ': ' + trans + ';';
+          }).join(' ')
+        -%>
       <% } %>
     }
   <% } %>
