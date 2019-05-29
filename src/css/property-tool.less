@@ -184,9 +184,9 @@
     }
     input, select {
       height: 30px;
-      width: 95%;
+      width: 93%;
       overflow: hidden;
-      margin-left: 2.5%;
+      // margin-left: 2.5%;
 
       &:focus {
         outline: none;
@@ -286,7 +286,6 @@
       font-weight: 700;
       font-size: 13px;
       padding-top: 8px;
-      padding-left: 8px;
       cursor: default;
       line-height: 2;
       width: 100%;
@@ -430,7 +429,7 @@
       label.unit {
         font-size: 70%;
         margin-left: 0;
-        margin-top: 0;
+        margin-top: 5px;
         padding: 4px;
         width: 0;
       }
@@ -555,7 +554,7 @@
     .expandable;
     .style-editor-tag-form {
       .button-bar-container-template;
-      margin-left: 2.5%;
+      // margin-left: 2.5%;
       padding-bottom: 15px;
       label {
         width: 15.8%;
@@ -574,10 +573,13 @@
       flex-wrap: wrap;
     }
     /* prodotype editors labels, e.g. Heading1 */
-    .prop-editor-base label, .class-name-style-label {
+    .prop-editor-base > label, .class-name-style-label {
       .expandable-legend;
       display: block;
       padding-bottom: 5px;
+    }
+    .prop-editor-base.prop-editor-no-expandable > label {
+      font-size: 10px;
     }
   }
   .prodotype-style-editor .prodotype-style-editor-menu > label:first-child {
@@ -693,7 +695,6 @@
       background-size: 18px;
       &:first-child {
         .button-bar-first;
-        margin-left: 2px;
       }
       &:last-child {
         .button-bar-last;

@@ -117,8 +117,8 @@ function getProp(prop, propName, container) {
       <%- getProp(prop, 'border-width', 'border') -%>
       <%- getProp(prop, 'border-color', 'border') -%>
 
-      <% if(prop.obj['gradient']) { %>
-        background: linear-gradient(<%- prop.obj['gradient'].map(g => g.color).join(', ') -%>);
+      <% if(prop.obj['gradient'] && prop.obj['gradient'].colors) { %>
+        background: linear-gradient(<%- prop.obj['gradient'].orientation ? prop.obj['gradient'].orientation + 'deg, ' : '' -%><%- prop.obj['gradient'].colors.map(g => g.color).join(', ') -%>);
       <% } %>
 
       <% if(prop.obj['transition']) { %>
