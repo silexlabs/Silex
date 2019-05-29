@@ -350,15 +350,15 @@ props:
       className: half-width
       default: ""
       type:
-      - solid;
-      - hidden;
-      - dotted;
-      - dashed;
-      - double;
-      - groove;
-      - ridge;
-      - inset;
-      - outset;
+      - solid
+      - hidden
+      - dotted
+      - dashed
+      - double
+      - groove
+      - ridge
+      - inset
+      - outset
     - name: border-color
       className: half-width
       default: ""
