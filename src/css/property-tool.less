@@ -616,68 +616,22 @@
 
     /* highlight selected label, e.g. H1 */
     .hidden { display: none; }
-    .style-editor-tag-form input:checked:nth-child(1) ~
-    .labels label:nth-child(1),
-    .style-editor-tag-form input:checked:nth-child(2) ~
-    .labels label:nth-child(2),
-    .style-editor-tag-form input:checked:nth-child(3) ~
-    .labels label:nth-child(3),
-    .style-editor-tag-form input:checked:nth-child(4) ~
-    .labels label:nth-child(4),
-    .style-editor-tag-form input:checked:nth-child(5) ~
-    .labels label:nth-child(5),
-    .style-editor-tag-form input:checked:nth-child(6) ~
-    .labels label:nth-child(6),
-    .style-editor-tag-form input:checked:nth-child(7) ~
-    .labels label:nth-child(7),
-    .style-editor-tag-form input:checked:nth-child(8) ~
-    .labels label:nth-child(8),
-    .style-editor-tag-form input:checked:nth-child(9) ~
-    .labels label:nth-child(9),
-    .style-editor-tag-form input:checked:nth-child(10) ~
-    .labels label:nth-child(10),
-    .style-editor-tag-form input:checked:nth-child(11) ~
-    .labels label:nth-child(11),
-    .style-editor-tag-form input:checked:nth-child(12) ~
-    .labels label:nth-child(12) { .button-template-selected }
+
     /* Pure CSS to show / hide prodotype editors (tags H1, H2, H3, P, A) */
     .prodotype-container .editor > ul > .prop-editor-base { display: none; }
-    /* Paragraph */
-    .style-editor-tag-form input:checked:nth-child(1) ~
-    .prodotype-container .editor > ul > .prop-editor-base:nth-child(1),
-    /* Link */
-    .style-editor-tag-form input:checked:nth-child(2) ~
-    .prodotype-container .editor > ul > .prop-editor-base:nth-child(2),
-    /* Bold */
-    .style-editor-tag-form input:checked:nth-child(3) ~
-    .prodotype-container .editor > ul > .prop-editor-base:nth-child(3),
-    /* Underline */
-    .style-editor-tag-form input:checked:nth-child(4) ~
-    .prodotype-container .editor > ul > .prop-editor-base:nth-child(4),
-    /* Italic */
-    .style-editor-tag-form input:checked:nth-child(5) ~
-    .prodotype-container .editor > ul > .prop-editor-base:nth-child(5),
-    /* Heading1 */
-    .style-editor-tag-form input:checked:nth-child(6) ~
-    .prodotype-container .editor > ul > .prop-editor-base:nth-child(6),
-    /* Heading2 */
-    .style-editor-tag-form input:checked:nth-child(7) ~
-    .prodotype-container .editor > ul > .prop-editor-base:nth-child(7),
-    /* Heading3 */
-    .style-editor-tag-form input:checked:nth-child(8) ~
-    .prodotype-container .editor > ul > .prop-editor-base:nth-child(8),
-    /* UL */
-    .style-editor-tag-form input:checked:nth-child(9) ~
-    .prodotype-container .editor > ul > .prop-editor-base:nth-child(9),
-    /* OL */
-    .style-editor-tag-form input:checked:nth-child(10) ~
-    .prodotype-container .editor > ul > .prop-editor-base:nth-child(10),
-    /* active link */
-    .style-editor-tag-form input:checked:nth-child(11) ~
-    .prodotype-container .editor > ul > .prop-editor-base:nth-child(11),
-    /* All */
-    .style-editor-tag-form input:checked:nth-child(12) ~
-    .prodotype-container .editor > ul > .prop-editor-base:nth-child(12) { display: initial; }
+
+    .loop(@counter) when (@counter > 0) {
+      /* highlight selected label, e.g. H1 */
+      .style-editor-tag-form input:checked:nth-child(@{counter}) ~
+      .labels label:nth-child(@{counter}) { .button-template-selected }
+
+      /* Pure CSS to show / hide prodotype editors (tags H1, H2, H3, P, A) */
+      .style-editor-tag-form input:checked:nth-child(@{counter}) ~
+      .prodotype-container .editor > ul > .prop-editor-base:nth-child(@{counter}) { display: initial; }
+
+      .loop((@counter - 1));    // next iteration
+    }
+    .loop(18);
 
     /* vivibility checkbox (mobile only or not) */
     .visibility-style-label {

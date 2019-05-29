@@ -1,6 +1,6 @@
 .tabs
-  .tab.design.fa.fa-lg.fa-paint-brush.on
-  .tab.style.fa.fa-lg.fa-font
+  .tab.design.fa.fa-lg.fa-pencil.on
+  .tab.style.fa.fa-lg.fa-paint-brush
   .tab.params.fa.fa-lg.fa-cog
 .main-container
   span.position-editor.editor-container
@@ -218,7 +218,7 @@
       .remove-style.icon-btn.icon-btn-right.icon-btn-last(title='Delete the current text style.') <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 11'><defs><style>.cls-1 {fill: #e5e5e5;}</style></defs><path id='Union_17' data-name='Union 17' class='cls-1' d='M2,11a1,1,0,0,1-1-1V3H9v7a1,1,0,0,1-1,1ZM0,2V1H10V2ZM3,1A1,1,0,0,1,4,0H6A1,1,0,0,1,7,1Z'/></svg>
       .unapply-style.icon-btn.icon-btn-right(title='Remove the current style from selected text boxes.') <svg id='Group_9' data-name='Group 9' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 13 11'><defs><style>.cls-1 {fill: #e4e4e4;}</style></defs><path id='Path_72' data-name='Path 72' class='cls-1' d='M8.964-6A3.516,3.516,0,0,0,5.5-9,3.5,3.5,0,0,0,2-5.5,3.5,3.5,0,0,0,5.5-2,3.53,3.53,0,0,0,6-2.036V-.023C5.831-.007,5.663,0,5.5,0A5.506,5.506,0,0,1,0-5.5,5.506,5.506,0,0,1,5.5-11,5.482,5.482,0,0,1,9.218-9.55,5.485,5.485,0,0,1,10.977-6H13L10-2,7-6Z' transform='translate(0 11)'/></svg>
       <hr>
-      .style-editor-tag-form
+      .style-editor-tag-form.add-menu-icons
         input#style-editor-tag-all.hidden(type='radio', name='style-editor-tag-name', value='all', checked)
         input#style-editor-tag-paragraph.hidden(type='radio', name='style-editor-tag-name', value='paragraph')
         input#style-editor-tag-link.hidden(type='radio', name='style-editor-tag-name', value='link')
@@ -231,6 +231,12 @@
         input#style-editor-tag-bold.hidden(type='radio', name='style-editor-tag-name', value='bold')
         input#style-editor-tag-underline.hidden(type='radio', name='style-editor-tag-name', value='underline')
         input#style-editor-tag-italic.hidden(type='radio', name='style-editor-tag-name', value='italic')
+        input#style-editor-tag-text.hidden(type='radio', name='style-editor-tag-name', value='text')
+        input#style-editor-tag-image.hidden(type='radio', name='style-editor-tag-name', value='image')
+        input#style-editor-tag-container.hidden(type='radio', name='style-editor-tag-name', value='container')
+        input#style-editor-tag-html.hidden(type='radio', name='style-editor-tag-name', value='html')
+        input#style-editor-tag-section.hidden(type='radio', name='style-editor-tag-name', value='section')
+        input#style-editor-tag-containercontent.hidden(type='radio', name='style-editor-tag-name', value='containercontent')
         .labels
           label.all.first-button(for='style-editor-tag-all', title='Edit style of all texts', data-initial-value='All', data-prodotype-name='All') All
           label.p(for='style-editor-tag-paragraph', title='Edit style of paragraphs', data-initial-value='P', data-prodotype-name='Paragraph') P
@@ -244,5 +250,11 @@
           label.b(for='style-editor-tag-bold', title='Edit style of bold text', data-initial-value='B', data-prodotype-name='Bold') B
           label.u(for='style-editor-tag-underline', title='Edit style of underlined text', data-initial-value='U', data-prodotype-name='Underline') U
           label.i.last-button(for='style-editor-tag-italic', title='Edit style of italic text', data-initial-value='I', data-prodotype-name='Italic') I
+          label.small-icon.text.first-button(for='style-editor-tag-text', title='Edit style of Text', data-initial-value='', data-prodotype-name='Text')
+          label.small-icon.image(for='style-editor-tag-image', title='Edit style of Image', data-initial-value='', data-prodotype-name='Image')
+          label.small-icon.container(for='style-editor-tag-container', title='Edit style of Container', data-initial-value='', data-prodotype-name='Container')
+          label.html.fa-inverse.fa-code(for='style-editor-tag-html', title='Edit style of Html', data-initial-value='', data-prodotype-name='Html')
+          label.fa-inverse.fa-fw.fa-list-alt.section(for='style-editor-tag-section', title='Edit style of Section', data-initial-value='', data-prodotype-name='Section')
+          label.containercontent.fa-inverse.fa-clone.last-button(for='style-editor-tag-containercontent', title='Edit style of Section container', data-initial-value='', data-prodotype-name='ContainerContent')
         a.help-section(href='https://github.com/silexlabs/Silex/wiki/Editor-UI#style-manager', target='_blank') Style manager help
         .prodotype-container

@@ -174,9 +174,7 @@ export class Component {
   /**
    * render a component or style
    */
-  renderType(
-      element: HTMLElement, type: SilexId|StyleName,
-      opt_cbk?: (() => any)) {
+  renderType(element: HTMLElement, type: SilexId|StyleName, opt_cbk?: (() => any)) {
     const data = type === Constants.COMPONENT_TYPE ?
         this.model.property.getElementComponentData(element) :
         this.model.property.getElementStyleData(element);
