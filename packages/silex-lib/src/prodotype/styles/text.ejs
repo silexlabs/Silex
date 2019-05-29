@@ -42,9 +42,10 @@ const props = [
     selector: ' .page-link-active' + pseudo,
   }
 ].filter(prop => typeof prop.obj !== 'undefined');
-function getProp(prop, propName) {
-  if(typeof prop.obj[propName] != 'undefined' && prop.obj[propName] != '')
-    return propName + ': ' + prop.obj[propName] + ';';
+function getProp(prop, propName, container) {
+  var obj = container ? prop.obj[container] : prop.obj;
+  if(typeof obj != 'undefined' && typeof obj[propName] != 'undefined' && obj[propName] != '')
+    return propName + ': ' + obj[propName] + ';';
   return '';
 }
 %>
@@ -77,11 +78,30 @@ function getProp(prop, propName) {
       <%- getProp(prop, 'letter-spacing') -%>
       <%- getProp(prop, 'text-indent') -%>
       <%- getProp(prop, 'direction') -%>
-      <%- getProp(prop, 'columns') -%>
-      <%- getProp(prop, 'column-rule-width') -%>
-      <%- getProp(prop, 'column-gap') -%>
-      <%- getProp(prop, 'column-rule-color') -%>
-      <%- getProp(prop, 'column-rule-style') -%>
+
+      <%- getProp(prop, 'columns', 'column') -%>
+      <%- getProp(prop, 'column-rule-width', 'column') -%>
+      <%- getProp(prop, 'column-gap', 'column') -%>
+      <%- getProp(prop, 'column-rule-color', 'column') -%>
+      <%- getProp(prop, 'column-rule-style', 'column') -%>
+
+      <%- getProp(prop, 'margin-top', 'margin') -%>
+      <%- getProp(prop, 'margin-left', 'margin') -%>
+      <%- getProp(prop, 'margin-bottom', 'margin') -%>
+      <%- getProp(prop, 'margin-right', 'margin') -%>
+
+      <%- getProp(prop, 'padding-top', 'padding') -%>
+      <%- getProp(prop, 'padding-left', 'padding') -%>
+      <%- getProp(prop, 'padding-bottom', 'padding') -%>
+      <%- getProp(prop, 'padding-right', 'padding') -%>
+
+      <%- getProp(prop, 'border-style', 'border') -%>
+      <%- getProp(prop, 'border-width', 'border') -%>
+      <%- getProp(prop, 'border-color', 'border') -%>
+
+      <% if(prop.obj['gradient']) { %>
+        background: linear-gradient(<%- prop.obj['gradient'].map(function(g) {return g.color}).join(', ') -%>);
+      <% } %>
     }
   <% } %>
 <% }) %>

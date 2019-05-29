@@ -159,48 +159,173 @@ props:
       - value: small-caps
         description: Small caps
         imageUrl: "\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 9'><defs><style>.cls-1 {fill: %23e5e5e5;}</style></defs><path id='Union_13' data-name='Union 13' class='cls-1' d='M8-91v-1H9v-4H8v1H7v-2h5v1H10v4h1v1ZM2-91v-1H3v-7H1v1H0v-2H8v1H5v7H6v1Zm9-4v-1h1v1ZM7-98v-1H8v1Z' transform='translate(0 100)'/></svg>\""
-  - name: columns
-    className: medium-width
-    default: ""
-    type: number
-    unit:
-    - ""
-    - px
-    - em
-    - vw
-  - name: column-gap
-    className: small-width
-    default: ""
-    type: number
-    unit:
-    - px
-    - em
-    - "%"
-  - name: column-rule-style
-    default: ""
+  - name: gradient
+    expandable: true
+    displayName: Gradient background
     type:
-    - ""
-    - "none"
-    - "solid"
-    - "dotted"
-    - "dashed"
-    - "double"
-    - "groove"
-    - "ridge"
-    - "inset"
-    - "outset"
-  - name: column-rule-color
-    className: half-width
-    default: ""
-    type: color
-  - name: column-rule-width
-    className: half-width
-    default: ""
-    type: number
-    unit:
-    - px
-    - em
-  # - white-space
+      - name: color
+        hideTitle: true
+        type: color
+  - name: column
+    expandable: true
+    displayName: Columns
+    type: object
+    props:
+    - name: columns
+      className: medium-width
+      default: ""
+      type: number
+      unit:
+      - ""
+      - px
+      - em
+      - vw
+    - name: column-gap
+      className: small-width
+      default: ""
+      type: number
+      unit:
+      - px
+      - em
+      - "%"
+    - name: column-rule-style
+      default: ""
+      type:
+      - ""
+      - "none"
+      - "solid"
+      - "dotted"
+      - "dashed"
+      - "double"
+      - "groove"
+      - "ridge"
+      - "inset"
+      - "outset"
+    - name: column-rule-color
+      className: half-width
+      default: ""
+      type: color
+    - name: column-rule-width
+      className: half-width
+      default: ""
+      type: number
+      unit:
+      - px
+      - em
+    # - white-space
+  - name: margin
+    expandable: true
+    displayName: Margins
+    type: object
+    props:
+    - name: margin-top
+      displayName: top
+      className: quarter-width
+      default: ""
+      type: number
+      unit:
+      - px
+      - em
+      - vw
+    - name: margin-left
+      displayName: left
+      className: quarter-width
+      default: ""
+      type: number
+      unit:
+      - px
+      - em
+      - vw
+    - name: margin-bottom
+      displayName: bottom
+      className: quarter-width
+      default: ""
+      type: number
+      unit:
+      - px
+      - em
+      - vw
+    - name: margin-right
+      displayName: right
+      className: quarter-width
+      default: ""
+      type: number
+      unit:
+      - px
+      - em
+      - vw
+  - name: padding
+    expandable: true
+    displayName: Padding
+    type: object
+    props:
+    - name: padding-top
+      displayName: top
+      className: quarter-width
+      default: ""
+      type: number
+      unit:
+      - px
+      - em
+      - vw
+    - name: padding-left
+      hideTitle: true
+      displayName: left
+      className: quarter-width
+      default: ""
+      type: number
+      unit:
+      - px
+      - em
+      - vw
+    - name: padding-bottom
+      hideTitle: true
+      displayName: bottom
+      className: quarter-width
+      default: ""
+      type: number
+      unit:
+      - px
+      - em
+      - vw
+    - name: padding-right
+      hideTitle: true
+      displayName: right
+      className: quarter-width
+      default: ""
+      type: number
+      unit:
+      - px
+      - em
+      - vw
+  - name: border
+    expandable: true
+    displayName: Border
+    type: object
+    props:
+    - name: border-width
+      className: half-width
+      default: ""
+      type: number
+      unit:
+      - px
+    - name: border-style
+      className: half-width
+      default: ""
+      type:
+      - solid;
+      - hidden;
+      - dotted;
+      - dashed;
+      - double;
+      - groove;
+      - ridge;
+      - inset;
+      - outset;
+    - name: border-color
+      className: half-width
+      default: ""
+      type: color
 - name: All
   type: TextStyle
 - name: Paragraph
