@@ -213,6 +213,43 @@ props:
       - px
       - em
     # - white-space
+  - name: transition
+    expandable: true
+    displayName: Transition
+    type:
+      - name: property
+        hideTitle: true
+        type:
+        - all
+        - background
+        - border
+        - color
+        - columns
+        - font
+        - letter-spacing
+        - margin
+        - opacity
+        - padding
+        - text-decoration
+        - text-indent
+        - word-spacing
+      - name: duration
+        hideTitle: true
+        type: number
+        default: 1
+      - name: delay
+        hideTitle: true
+        type: number
+      - name: func
+        hideTitle: true
+        type:
+        - ease
+        - ease-in
+        - ease-out
+        - ease-in-out
+        - linear
+        - step-start
+        - step-end
   - name: margin
     expandable: true
     displayName: Margins
