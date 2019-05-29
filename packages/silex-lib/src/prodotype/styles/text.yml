@@ -450,6 +450,74 @@ props:
   type: TextStyle
 - name: Italic
   type: TextStyle
+
+
+
+- name: Text
+  type: TextStyle
+  # props:
+  # - name: position
+  #   type:
+  #     - ""
+  #     - absolute
+  #     - initial
+- name: Image
+  type: TextStyle
+  # props:
+  # - name: position
+  #   type:
+  #     - ""
+  #     - absolute
+  #     - initial
+- name: Container
+  type: TextStyle
+  # props:
+  # - name: display
+  #   type:
+  #     - ""
+  #     - block
+  #     - flex
+  #     - none
+  # - name: position
+  #   type:
+  #     - ""
+  #     - absolute
+  #     - initial
+- name: Html
+  type: TextStyle
+  # props:
+  # - name: position
+  #   type:
+  #     - ""
+  #     - absolute
+  #     - initial
+- name: Section
+  type: TextStyle
+  # props:
+  # - name: display
+  #   type:
+  #     - ""
+  #     - block
+  #     - flex
+  #     - none
+- name: ContainerContent
+  displayName: Section container
+  type: TextStyle
+  # props:
+  # - name: display
+  #   type:
+  #     - ""
+  #     - block
+  #     - flex
+  #     - none
+  # - name: position
+  #   type:
+  #     - ""
+  #     - absolute
+  #     - initial
+
+
+
 - name: className
   type: string
   readonly: true

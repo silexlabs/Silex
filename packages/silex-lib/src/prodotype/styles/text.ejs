@@ -40,6 +40,24 @@ const props = [
   }, {
     obj: Active,
     selector: ' .page-link-active' + pseudo,
+  }, {
+    obj: Container,
+    selector: '.container-element' + pseudo,
+  }, {
+    obj: Section,
+    selector: '.section-element' + pseudo,
+  }, {
+    obj: Image,
+    selector: '.image-element' + pseudo,
+  }, {
+    obj: Text,
+    selector: '.text-element' + pseudo,
+  }, {
+    obj: Html,
+    selector: '.html-element' + pseudo,
+  }, {
+    obj: ContainerContent,
+    selector: '.section-element .silex-container-content' + pseudo,
   }
 ].filter(prop => typeof prop.obj !== 'undefined');
 function getProp(prop, propName, container) {
@@ -111,6 +129,10 @@ function getProp(prop, propName, container) {
           }).join(' ')
         -%>
       <% } %>
+
+      <%- getProp(prop, 'display') -%>
+      <%- getProp(prop, 'position') -%>
+
     }
   <% } %>
 <% }) %>

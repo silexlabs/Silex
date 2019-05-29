@@ -17,7 +17,6 @@ import {StyleData} from '../../model/Data';
 import {Tracker} from '../../service/tracker';
 import {Controller} from '../../types';
 import {Model} from '../../types';
-import {Dom} from '../../utils/dom';
 import {SilexNotification} from '../../utils/notification';
 import {PaneBase} from './pane-base';
 
@@ -93,7 +92,7 @@ export class StyleEditorPane extends PaneBase {
     // un-apply style
     (this.element.querySelector('.unapply-style') as HTMLElement).onclick = (e) => {
       this.tracker.trackAction('style-editor-events', 'unapply-style');
-      this.states.filter((state) => this.isTextBox(state.el))
+      this.states.filter((state) => state.el !== this.model.body.getBodyElement())
       .forEach((state) => {
         state.el.classList.remove(this.styleCombo.value);
       });
@@ -199,14 +198,14 @@ export class StyleEditorPane extends PaneBase {
   applyStyle(elements: HTMLElement[], newStyle: StyleName) {
     if (newStyle === Constants.BODY_STYLE_CSS_CLASS) {
       SilexNotification.alert('Apply a style', `
-        The style '${Constants.BODY_STYLE_NAME}' is a special style, it is already applyed to all text elements.
+        The style '${Constants.BODY_STYLE_NAME}' is a special style, it is already applyed to all elements.
       `,
       () => {});
     } else {
       this.controller.propertyToolController.undoCheckPoint();
-      const textBoxes = elements.filter((el) => this.isTextBox(el));
-      if (textBoxes.length > 0) {
-        textBoxes.forEach((el) => {
+      const noBody = elements.filter((el) => el !== this.model.body.getBodyElement());
+      if (noBody.length > 0) {
+        noBody.forEach((el) => {
           // un-apply the old style if there was one
           this.removeAllStyles(el);
 
@@ -215,13 +214,9 @@ export class StyleEditorPane extends PaneBase {
         });
         this.controller.propertyToolController.refreshView();
       } else {
-        SilexNotification.alert('Apply a style', 'Error: you need to select a TextBox for this action.', () => {});
+        SilexNotification.alert('Apply a style', 'Error: you need to select at least 1 element for this action.', () => {});
       }
     }
-  }
-
-  isTextBox(el: HTMLElement) {
-    return this.model.element.getType(el) === Constants.TYPE_TEXT;
   }
 
   removeAllStyles(el: HTMLElement) {
@@ -232,19 +227,16 @@ export class StyleEditorPane extends PaneBase {
    * retrieve the styles applyed to the set of elements
    */
   getStyles(elements: HTMLElement[]): StyleName[] {
-    const allStyles =
-        this.model.component.getProdotypeComponents(Constants.STYLE_TYPE);
-    // no initial value so the first element in the array will be used, it
-    // will start with the 2nd element keep only the styles defined in the
-    // style editor
-
-    // to array of class names in common to all selected elements
-
-    // from array of elements to array of array of classNames
+    const allStyles = this.model.component.getProdotypeComponents(Constants.STYLE_TYPE);
     return elements
-      .map(
-          (element) => element.className.split(' ').filter((className) => className !== ''))
-      .reduce((prev, classNames, currentIndex) => {
+      .map((element) => element.className.split(' ')
+      .filter((className) => className !== ''))
+      // About this reduce:
+      // no initial value so the first element in the array will be used, it
+      // will start with the 2nd element keep only the styles defined in the
+      // style editor to array of class names in common to all selected elements
+      // from array of elements to array of array of classNames
+      .reduce((prev, classNames) => {
         return prev.filter((prevClassName) => classNames.indexOf(prevClassName) > -1);
       })
       .filter((className) => allStyles.find((style: StyleData) => style.className === className));
@@ -410,16 +402,16 @@ export class StyleEditorPane extends PaneBase {
    * utility function to create a style in the style combo box or duplicate one
    */
   createStyle(opt_data?: StyleData, opt_cbk?: ((p1?: string) => any)) {
-    const textBoxes = this.states.filter((state) => this.isTextBox(state.el));
-    if (textBoxes.length <= 0) {
-      SilexNotification.alert('Create a style', 'Error: you need to select a TextBox for this action.', () => {});
+    const noBody = this.states.filter((state) => state.el !== this.model.body.getBodyElement());
+    if (noBody.length <= 0) {
+      SilexNotification.alert('Create a style', 'Error: you need to select at least 1 element for this action.', () => {});
     } else {
       SilexNotification.prompt('Create a style', 'Enter a name for your style!', opt_data ? opt_data.displayName : '', 'Your Style', (accept, name) => {
         if (accept && name && name !== '') {
           this.controller.propertyToolController.undoCheckPoint();
           const className = 'style-' + name.replace(/ /g, '-').toLowerCase();
           this.model.component.initStyle(name, className, opt_data);
-          this.applyStyle(textBoxes.map((state) => state.el), className);
+          this.applyStyle(noBody.map((state) => state.el), className);
 
           // FIXME: needed to select className but
           // model.Component::initStyle calls refreshView which calls
@@ -471,7 +463,7 @@ export class StyleEditorPane extends PaneBase {
 
     // remove from elements
     Array.from(this.model.file.getContentDocument().querySelectorAll('.' + name))
-    .filter((el: HTMLElement) => this.isTextBox(el))
+    .filter((el) => el !== this.model.body.getBodyElement())
     .forEach((el: HTMLElement) => el.classList.remove(name));
 
     // undo checkpoint
