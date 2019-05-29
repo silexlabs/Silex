@@ -162,10 +162,19 @@ props:
   - name: gradient
     expandable: true
     displayName: Gradient background
-    type:
-      - name: color
-        hideTitle: true
-        type: color
+    type: object
+    props:
+    - name: orientation
+      displayName: Orientation
+      type: number
+      unit:
+      - deg
+    - name: colors
+      displayName: Colors
+      type:
+        - name: color
+          hideTitle: true
+          type: color
   - name: column
     expandable: true
     displayName: Columns
@@ -337,8 +346,9 @@ props:
       - px
     - name: border-style
       className: half-width
-      default: "solid"
+      default: ""
       type:
+      - ""
       - solid
       - hidden
       - dotted
