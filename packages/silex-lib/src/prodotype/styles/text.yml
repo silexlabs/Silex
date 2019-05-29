@@ -258,7 +258,6 @@ props:
     - name: margin-top
       displayName: top
       className: quarter-width
-      default: ""
       type: number
       unit:
       - px
@@ -267,7 +266,6 @@ props:
     - name: margin-left
       displayName: left
       className: quarter-width
-      default: ""
       type: number
       unit:
       - px
@@ -276,7 +274,6 @@ props:
     - name: margin-bottom
       displayName: bottom
       className: quarter-width
-      default: ""
       type: number
       unit:
       - px
@@ -285,7 +282,6 @@ props:
     - name: margin-right
       displayName: right
       className: quarter-width
-      default: ""
       type: number
       unit:
       - px
@@ -299,37 +295,30 @@ props:
     - name: padding-top
       displayName: top
       className: quarter-width
-      default: ""
       type: number
       unit:
       - px
       - em
       - vw
     - name: padding-left
-      hideTitle: true
       displayName: left
       className: quarter-width
-      default: ""
       type: number
       unit:
       - px
       - em
       - vw
     - name: padding-bottom
-      hideTitle: true
       displayName: bottom
       className: quarter-width
-      default: ""
       type: number
       unit:
       - px
       - em
       - vw
     - name: padding-right
-      hideTitle: true
       displayName: right
       className: quarter-width
-      default: ""
       type: number
       unit:
       - px
