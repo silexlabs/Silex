@@ -332,7 +332,7 @@ export default class PublishJob {
         path: this.rootPath,
       });
     }
-    if (!statHtml) {
+    if (!statHtml && this.htmlFolder.replace(/\/$/, '') !== this.rootPath.replace(/\/$/, '')) {
       batchActions.push({
         name: 'mkdir',
         path: this.htmlFolder,
@@ -386,7 +386,6 @@ export default class PublishJob {
         };
       }),
     );
-    // console.log('Batch actions:', batchActionsWithAssets.filter(action => !!action).map(action => action.path));
     return this.unifile.batch(this.session.unifile, this.publicationPath.service, batchActionsWithAssets);
   }
 

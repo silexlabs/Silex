@@ -335,6 +335,6 @@ export class Constants {
   static ELEMENTS_TO_REMOVE_AT_PUBLISH = [
     '.prodotype-preview',
     'meta[name="publicationPath"]',
-    '.${Constants.JSON_STYLE_TAG_CLASS_NAME}',
+    `.${Constants.JSON_STYLE_TAG_CLASS_NAME}`,
   ];
 }
