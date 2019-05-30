@@ -1,7 +1,7 @@
 {
   "name": "silex-website-builder",
   "description": "Free and easy website builder for everyone.",
-  "version": "2.5.22",
+  "version": "2.5.23",
   "version:frontend": "2.10",
   "version:backwardcompat": "2.2.10",
   "author": "Alex Hoyau <a.hoyau@silexlabs.org> (https://lexoyo.me/)",
@@ -64,7 +64,7 @@
   },
   "dependencies": {
     "body-parser": "^1.19.0",
-    "cloud-explorer": "^2.0.3",
+    "cloud-explorer": "^2.0.5",
     "compression": "1.7.4",
     "cookie-parser": "1.4.4",
     "cookie-session": "2.0.0-beta.3",
