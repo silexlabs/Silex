@@ -82,11 +82,11 @@ function getProp(prop, propName, container) {
       <%- getProp(prop, 'text-indent') -%>
       <%- getProp(prop, 'direction') -%>
 
-      <%- getProp(prop, 'columns', 'column') -%>
-      <%- getProp(prop, 'column-rule-width', 'column') -%>
-      <%- getProp(prop, 'column-gap', 'column') -%>
-      <%- getProp(prop, 'column-rule-color', 'column') -%>
-      <%- getProp(prop, 'column-rule-style', 'column') -%>
+      <%- getProp(prop, 'columns') -%>
+      <%- getProp(prop, 'column-rule-width') -%>
+      <%- getProp(prop, 'column-gap') -%>
+      <%- getProp(prop, 'column-rule-color') -%>
+      <%- getProp(prop, 'column-rule-style') -%>
 
       <%- getProp(prop, 'margin-top', 'margin') -%>
       <%- getProp(prop, 'margin-left', 'margin') -%>
@@ -102,14 +102,14 @@ function getProp(prop, propName, container) {
       <%- getProp(prop, 'border-width', 'border') -%>
       <%- getProp(prop, 'border-color', 'border') -%>
 
-      <% if(prop.obj['gradient'] && prop.obj['gradient'].colors) { %>
-        background: linear-gradient(<%- prop.obj['gradient'].orientation ? prop.obj['gradient'].orientation + (prop.obj['gradient'].colors.length > 0 ? ', ' : '') : '' -%><%- prop.obj['gradient'].colors.map(g => g.color).join(', ') -%>);
+      <% if(prop.obj['gradient'] && prop.obj['gradient'].colors && prop.obj['gradient'].colors.length > 0) { %>
+        background: linear-gradient(<%- prop.obj['gradient'].orientation ? prop.obj['gradient'].orientation + ', ' : '' -%><%- prop.obj['gradient'].colors.map(g => g.color).join(', ') -%>);
       <% } %>
 
-      <% if(prop.obj['transition']) { %>
+      <% if(prop.obj['transition'] && prop.obj['transition'].length > 0) { %>
         <%-
           ['-webkit-transition', '-moz-transition', '-o-transition', 'transition'].map(name => {
-            var trans = prop.obj['transition'].map(t => `${t.property} ${t.duration}s ${t.func || ''} ${t.delay ? t.delay + 's' : ''}`).join(', ');
+            var trans = prop.obj['transition'].map(t => `${t.property || 'all'} ${t.duration || '1' }s ${t.func || 'ease'} ${t.delay ? t.delay + 's' : ''}`).join(', ');
             return name + ': ' + trans + ';';
           }).join(' ')
         -%>
