@@ -302,8 +302,10 @@ export default class PublishJob {
     // instead catch the error and do nothing so that the result is null in .then(stat
     const preventErr = (promise) => promise.catch((err) => {
       if (err.code !== 'ENOENT') {
-        throw err;
-      }
+        console.error('The stat operation failed with error:', err);
+        this.error = true;
+        this.setStatus(err.message);
+        }
     });
 
     // start by testing if the folders exist before creating them
