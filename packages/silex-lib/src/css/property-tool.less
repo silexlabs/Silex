@@ -614,6 +614,11 @@
     /* style the title of the ditor, i.e. "Paragraph", "Link"... */
     .prodotype-container > .editor > ul > .prop-editor-base > .prop-editor-name {
       border-top: 1px solid @silexdarkergrey;
+      font-size: 12px;
+      text-align: center;
+      color: @silexlightblue;
+      font-weight: normal;
+      cursor: default;
     }
 
     /* highlight selected label, e.g. H1 */
@@ -634,6 +639,15 @@
       .loop((@counter - 1));    // next iteration
     }
     .loop(18);
+    // hide text styles and edit notext
+    .style-editor-notext {
+      .style-editor-text {
+        display: none !important;
+      }
+      .style-editor-tag-notext {
+        display: block !important;
+      }
+    }
 
     /* vivibility checkbox (mobile only or not) */
     .visibility-style-label {

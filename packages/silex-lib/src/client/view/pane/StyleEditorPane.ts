@@ -273,6 +273,13 @@ export class StyleEditorPane extends PaneBase {
       // selection changes
       this.updateStyleList(Constants.BODY_STYLE_CSS_CLASS);
     }
+    const onlyTexts = this.states.length > 0
+      && this.states.filter((state) => this.model.element.getType(state.el) !== Constants.TYPE_TEXT).length === 0;
+    if (onlyTexts) {
+      this.element.classList.remove('style-editor-notext');
+    } else {
+      this.element.classList.add('style-editor-notext');
+    }
   }
 
   /**

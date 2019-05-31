@@ -231,13 +231,8 @@
         input#style-editor-tag-bold.hidden(type='radio', name='style-editor-tag-name', value='bold')
         input#style-editor-tag-underline.hidden(type='radio', name='style-editor-tag-name', value='underline')
         input#style-editor-tag-italic.hidden(type='radio', name='style-editor-tag-name', value='italic')
-        input#style-editor-tag-text.hidden(type='radio', name='style-editor-tag-name', value='text')
-        input#style-editor-tag-image.hidden(type='radio', name='style-editor-tag-name', value='image')
-        input#style-editor-tag-container.hidden(type='radio', name='style-editor-tag-name', value='container')
-        input#style-editor-tag-html.hidden(type='radio', name='style-editor-tag-name', value='html')
-        input#style-editor-tag-section.hidden(type='radio', name='style-editor-tag-name', value='section')
-        input#style-editor-tag-containercontent.hidden(type='radio', name='style-editor-tag-name', value='containercontent')
-        .labels
+        input#style-editor-tag-notext.hidden(type='radio', name='style-editor-tag-name', value='notext')
+        .labels.style-editor-text
           label.all.first-button(for='style-editor-tag-all', title='Edit style of all texts', data-initial-value='All', data-prodotype-name='All') All
           label.p(for='style-editor-tag-paragraph', title='Edit style of paragraphs', data-initial-value='P', data-prodotype-name='Paragraph') P
           label.a.fa.fa-link(for='style-editor-tag-link', title='Edit style of links', data-initial-value='', data-prodotype-name='Link')
@@ -250,11 +245,5 @@
           label.b(for='style-editor-tag-bold', title='Edit style of bold text', data-initial-value='B', data-prodotype-name='Bold') B
           label.u(for='style-editor-tag-underline', title='Edit style of underlined text', data-initial-value='U', data-prodotype-name='Underline') U
           label.i.last-button(for='style-editor-tag-italic', title='Edit style of italic text', data-initial-value='I', data-prodotype-name='Italic') I
-          label.small-icon.text.first-button(for='style-editor-tag-text', title='Edit style of Text', data-initial-value='', data-prodotype-name='Text')
-          label.small-icon.image(for='style-editor-tag-image', title='Edit style of Image', data-initial-value='', data-prodotype-name='Image')
-          label.small-icon.container(for='style-editor-tag-container', title='Edit style of Container', data-initial-value='', data-prodotype-name='Container')
-          label.html.fa-inverse.fa-code(for='style-editor-tag-html', title='Edit style of Html', data-initial-value='', data-prodotype-name='Html')
-          label.fa-inverse.fa-fw.fa-list-alt.section(for='style-editor-tag-section', title='Edit style of Section', data-initial-value='', data-prodotype-name='Section')
-          label.containercontent.fa-inverse.fa-clone.last-button(for='style-editor-tag-containercontent', title='Edit style of Section container', data-initial-value='', data-prodotype-name='ContainerContent')
         a.help-section(href='https://github.com/silexlabs/Silex/wiki/Editor-UI#style-manager', target='_blank') Style manager help
         .prodotype-container

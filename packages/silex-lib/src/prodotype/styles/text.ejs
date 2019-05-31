@@ -41,23 +41,8 @@ const props = [
     obj: Active,
     selector: ' .page-link-active' + pseudo,
   }, {
-    obj: Container,
-    selector: ' .container-element' + pseudo,
-  }, {
-    obj: Section,
-    selector: ' .section-element' + pseudo,
-  }, {
-    obj: Image,
-    selector: ' .image-element' + pseudo,
-  }, {
-    obj: Text,
-    selector: ' .text-element' + pseudo,
-  }, {
-    obj: Html,
-    selector: ' .html-element' + pseudo,
-  }, {
-    obj: ContainerContent,
-    selector: '.section-element .silex-container-content' + pseudo,
+    obj: Element,
+    selector: '.editable-style' + pseudo,
   }
 ].filter(prop => typeof prop.obj !== 'undefined');
 function getProp(prop, propName, container) {
@@ -118,7 +103,7 @@ function getProp(prop, propName, container) {
       <%- getProp(prop, 'border-color', 'border') -%>
 
       <% if(prop.obj['gradient'] && prop.obj['gradient'].colors) { %>
-        background: linear-gradient(<%- prop.obj['gradient'].orientation ? prop.obj['gradient'].orientation + 'deg, ' : '' -%><%- prop.obj['gradient'].colors.map(g => g.color).join(', ') -%>);
+        background: linear-gradient(<%- prop.obj['gradient'].orientation ? prop.obj['gradient'].orientation + (prop.obj['gradient'].colors.length > 0 ? ', ' : '') : '' -%><%- prop.obj['gradient'].colors.map(g => g.color).join(', ') -%>);
       <% } %>
 
       <% if(prop.obj['transition']) { %>
