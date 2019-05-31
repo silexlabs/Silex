@@ -19,6 +19,8 @@
  *
  */
 
+import { detect } from '../../node_modules/detect-browser/index';
+// import { detect } from 'detect-browser';
 import { Config } from './ClientConfig';
 import { ContextMenuController } from './controller/context-menu-controller';
 import { CssEditorController } from './controller/css-editor-controller';
@@ -154,11 +156,20 @@ export class App {
     this.view.propertyTool.buildUi();
 
     // warning when not ff or chrome
-    const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
-    const isChrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
+    const browser = detect();
+    const isFirefox = browser && browser.name === 'firefox';
+    const isChrome = browser && browser.name === 'chrome';
+
     if (!isFirefox && !isChrome) {
       SilexNotification.alert('Warning',
-          'Your browser is not supported yet.<br><br>Considere using <a href="https://www.mozilla.org/firefox/" target="_blank">Firefox</a> or <a href="https://www.google.com/chrome/" target="_blank">chrome</a>.',
+          `
+            Your browser is not supported yet.
+            <br><br>
+            Considere using <a href="https://www.mozilla.org/firefox/" target="_blank">Firefox</a>
+             or <a href="https://www.google.com/chrome/" target="_blank">chrome</a>.
+             <br><br>
+             <small>Note: I believe you use ${ browser ? browser.name : 'Unknown' }</small>
+             `,
           () => {});
     }
 
