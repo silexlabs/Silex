@@ -163,53 +163,48 @@ props:
       - value: small-caps
         description: Small caps
         imageUrl: "\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 9'><defs><style>.cls-1 {fill: %23e5e5e5;}</style></defs><path id='Union_13' data-name='Union 13' class='cls-1' d='M8-91v-1H9v-4H8v1H7v-2h5v1H10v4h1v1ZM2-91v-1H3v-7H1v1H0v-2H8v1H5v7H6v1Zm9-4v-1h1v1ZM7-98v-1H8v1Z' transform='translate(0 100)'/></svg>\""
-  - name: column
-    expandable: true
-    displayName: Columns
-    type: object
-    props:
-    - name: columns
-      className: medium-width
-      default: ""
-      type: number
-      unit:
-      - ""
-      - px
-      - em
-      - vw
-    - name: column-gap
-      className: small-width
-      default: ""
-      type: number
-      unit:
-      - px
-      - em
-      - "%"
-    - name: column-rule-style
-      default: ""
-      type:
-      - ""
-      - "none"
-      - "solid"
-      - "dotted"
-      - "dashed"
-      - "double"
-      - "groove"
-      - "ridge"
-      - "inset"
-      - "outset"
-    - name: column-rule-color
-      className: half-width
-      default: ""
-      type: color
-    - name: column-rule-width
-      className: half-width
-      default: ""
-      type: number
-      unit:
-      - px
-      - em
-    # - white-space
+  - name: columns
+    className: medium-width
+    default: ""
+    type: number
+    unit:
+    - ""
+    - px
+    - em
+    - vw
+  - name: column-gap
+    className: small-width
+    default: ""
+    type: number
+    unit:
+    - px
+    - em
+    - "%"
+  - name: column-rule-style
+    default: ""
+    type:
+    - ""
+    - "none"
+    - "solid"
+    - "dotted"
+    - "dashed"
+    - "double"
+    - "groove"
+    - "ridge"
+    - "inset"
+    - "outset"
+  - name: column-rule-color
+    className: half-width
+    default: ""
+    type: color
+  - name: column-rule-width
+    className: half-width
+    default: ""
+    type: number
+    unit:
+    - px
+    - em
+  # - white-space
 
 - name: ListStyle
   type: template
@@ -277,6 +272,7 @@ props:
     type:
       - name: property
         hideTitle: true
+        default: all
         type:
         - all
         - background
@@ -300,6 +296,7 @@ props:
         type: number
       - name: func
         hideTitle: true
+        default: ease
         type:
         - ease
         - ease-in
