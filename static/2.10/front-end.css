@@ -22,6 +22,9 @@
   border-radius: initial;
   width: 100%;
 }
+.section-element > .silex-element-content > * {
+  z-index: 10;
+}
 .silex-element-content {
   pointer-events: none;
 }
@@ -114,9 +117,9 @@ body.enable-mobile .background {
   height: initial;
   padding-bottom: 50px;
 }
-.fixed {
+.silex-runtime .fixed {
   position: absolute;
-  z-index: 5;
+  z-index: 20;
 }
 /* Mobile styles */
 @media (max-width:480px) {
