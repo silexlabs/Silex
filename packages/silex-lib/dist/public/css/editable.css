@@ -28,38 +28,3 @@ body {
 .editable-style[data-silex-sub-type="image"] img {
   border-radius: inherit;
 } */
-.silex-element-content {
-  pointer-events: none;
-}
-.silex-element-content[contenteditable="true"] {
-  min-height: 20px;
-  cursor: text;
-  pointer-events: auto;
-}
-.text-editor-focus .ui-resizable-handle {
-  /* remove text box UI handles for resize */
-  display: none;
-}
-.section-element > .silex-element-content {
-  /* section have a content element, and it needs to keep pointer events
-     because it container other silex elements
-  */
-  pointer-events: auto;
-}
-body.silex-runtime .silex-element-content {
-  pointer-events: auto;
-}
-.editable-style.section-element {
-  padding: 0;
-  margin: 0;
-  margin-top: -1px;
-}
-/* wysihtml text editor styles */
-.wysiwyg-float-left {
-  float: left;
-  margin: 0 8px 8px 0;
-}
-.wysiwyg-float-right {
-  float: right;
-  margin: 0 0 8px 8px;
-}
