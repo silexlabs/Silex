@@ -3,7 +3,7 @@
   "compilerOptions": {
     "outDir": "dist/server/",
     "target": "es6",
-    "watch": true,
+    "watch": false,
     "inlineSourceMap": true,
     "module": "commonjs",
     "removeComments": false,
