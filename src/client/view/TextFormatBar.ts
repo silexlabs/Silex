@@ -101,10 +101,9 @@ export class TextFormatBar {
     this.controller.stageController.stopEdit();
 
     if (this.wysihtmlEditor) {
+      // remove event listener
       const doc = this.model.file.getContentDocument();
       const win = this.model.file.getContentWindow();
-
-      // remove event listener
       doc.removeEventListener('keydown', this.onKeyDownBinded);
       win.removeEventListener('scroll', this.onScrollBinded);
 
@@ -140,15 +139,13 @@ export class TextFormatBar {
   }
 
   startEditing(fileExplorer: FileExplorer) {
-    this.controller.stageController.startEdit();
-
-    const doc = this.model.file.getContentDocument();
-    const win = this.model.file.getContentWindow();
-
     // edit the style of the selection
     if (this.selectedElements.length === 1) {
       const newTextBox = this.selectedElements[0];
       if (newTextBox !== this.currentTextBox) {
+        this.stopEditing();
+        this.controller.stageController.startEdit();
+
         this.currentTextBox = newTextBox;
 
         // this.currentTextBox.insertBefore(this.element,
@@ -214,6 +211,8 @@ export class TextFormatBar {
         this.element.classList.add('text-editor-editing');
 
         // handle the focus
+        const doc = this.model.file.getContentDocument();
+        const win = this.model.file.getContentWindow();
         doc.addEventListener('keydown', this.onKeyDownBinded);
         win.addEventListener('scroll', this.onScrollBinded);
         this.wysihtmlEditor.on('blur', (e) => {
