@@ -55,6 +55,7 @@ export class StylePane extends PaneBase {
     const cssClassesInput = this.initInput('.style-css-classes-input', () => this.onInputChanged());
     tagsInput(cssClassesInput);
     this.cssClassesTagsInput = cssClassesInput.nextElementSibling;
+    this.cssClassesTagsInput.classList.add('silex-input');
     // this.ace = ace.edit(this.element.querySelector('.element-style-editor') as HTMLElement);
     // this.ace.setTheme('ace/theme/idle_fingers');
     // this.ace.renderer.setShowGutter(false);
