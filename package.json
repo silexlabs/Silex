@@ -93,7 +93,7 @@
     "redux": "^4.0.1",
     "request": "2.88.0",
     "serve-static": "1.14.0",
-    "silex-blank-templates": "1.0.0",
+    "silex-blank-templates": "1.0.1",
     "silex-templates": "1.0.0",
     "source-map-support": "^0.5.12",
     "wysihtml": "^0.6.0-beta1"
