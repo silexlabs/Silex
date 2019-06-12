@@ -19,8 +19,7 @@
  *
  */
 
-import { detect } from '../../node_modules/detect-browser/index';
-// import { detect } from 'detect-browser';
+import { detect } from 'detect-browser';
 import { Config } from './ClientConfig';
 import { ContextMenuController } from './controller/context-menu-controller';
 import { CssEditorController } from './controller/css-editor-controller';
