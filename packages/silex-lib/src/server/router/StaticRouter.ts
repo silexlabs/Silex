@@ -29,6 +29,8 @@ export default function(staticOptions: StaticOptions) {
   router.use('/libs/font-awesome/fonts', serveStatic(Path.resolve(nodeModules('font-awesome'), 'font-awesome/fonts')));
   // ejs and prodotype
   router.use('/libs/prodotype', serveStatic(Path.resolve(nodeModules('prodotype'), 'prodotype/pub')));
+  // styles for tags-input component
+  router.use('/libs/tags-input', serveStatic(Path.resolve(nodeModules('tags-input'), 'tags-input')));
   // templates
   router.use('/libs/templates/silex-templates', serveStatic(Path.resolve(nodeModules('silex-templates'), 'silex-templates')));
   router.use('/libs/templates/silex-blank-templates', serveStatic(Path.resolve(nodeModules('silex-blank-templates'), 'silex-blank-templates')));

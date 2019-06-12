@@ -15,9 +15,9 @@
  *
  */
 import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
+import tagsInput from 'tags-input';
 import { Controller, Model } from '../../types';
-import {Style} from '../../utils/style';
-import {PaneBase} from './pane-base';
+import { PaneBase } from './pane-base';
 
 /**
  * on of Silex Editors class
@@ -31,9 +31,9 @@ import {PaneBase} from './pane-base';
  */
 export class StylePane extends PaneBase {
   /**
-   * css class name input
+   * css class tags-input component
    */
-  cssClassesInput: HTMLInputElement;
+  cssClassesTagsInput: any;
 
   /**
    * instance of ace editor
@@ -52,7 +52,9 @@ export class StylePane extends PaneBase {
    * build the UI
    */
   buildUi() {
-    this.cssClassesInput = this.initInput('.style-css-classes-input', () => this.onInputChanged());
+    const cssClassesInput = this.initInput('.style-css-classes-input', () => this.onInputChanged());
+    tagsInput(cssClassesInput);
+    this.cssClassesTagsInput = cssClassesInput.nextElementSibling;
     // this.ace = ace.edit(this.element.querySelector('.element-style-editor') as HTMLElement);
     // this.ace.setTheme('ace/theme/idle_fingers');
     // this.ace.renderer.setShowGutter(false);
@@ -81,10 +83,12 @@ export class StylePane extends PaneBase {
     // css classes
     const cssClasses = this.getCommonProperty(states, (state) => this.model.element.getClassName(state.el));
 
-    if (cssClasses) {
-      this.cssClassesInput.value = cssClasses;
-    } else {
-      this.cssClassesInput.value = '';
+    if (this.cssClassesTagsInput.getValue() !== cssClasses) {
+      if (cssClasses) {
+        this.cssClassesTagsInput.setValue(cssClasses);
+      } else {
+        this.cssClassesTagsInput.setValue('');
+      }
     }
 
     // css inline style
@@ -104,7 +108,7 @@ export class StylePane extends PaneBase {
    * User has selected a color
    */
   onInputChanged() {
-    this.controller.propertyToolController.setClassName(this.cssClassesInput.value);
+    this.controller.propertyToolController.setClassName(this.cssClassesTagsInput.getValue());
   }
 
   /**
