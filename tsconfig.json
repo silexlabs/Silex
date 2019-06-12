@@ -7,6 +7,7 @@
     "sourceMap": true,
     "module": "es6",
     "removeComments": false,
+    "typeRoots": ["src/types"],
   },
   "include": [
     "src/client/App.ts",
