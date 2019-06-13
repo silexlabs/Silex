@@ -178,13 +178,27 @@ body.enable-mobile .background {
 .silex-element-content-full-height .silex-element-content {
   height: 100%;
 }
-.prodotype-runtime {
+.prodotype-preview {
   display: none;
 }
-body.silex-runtime .prodotype-runtime {
+.prodotype-runtime,
+.prodotype-runtime-strict {
+  display: none;
+}
+.prodotype-published {
+  display: none;
+}
+body.silex-editor .prodotype-preview {
   display: block;
 }
-body.silex-runtime .prodotype-preview {
+body.silex-runtime .prodotype-runtime,
+body.silex-runtime .prodotype-runtime-strict {
+  display: block;
+}
+body.silex-published .prodotype-published {
+  display: block;
+}
+body.silex-publish .prodotype-runtime-strict {
   display: none;
 }
 .prodotype-force-size {
