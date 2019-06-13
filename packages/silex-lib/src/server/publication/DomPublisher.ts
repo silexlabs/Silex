@@ -72,7 +72,8 @@ export class DomPublisher {
 
     // remove publication path
     // remove JSON styles
-    Array.from(this.doc.head.querySelectorAll(Constants.ELEMENTS_TO_REMOVE_AT_PUBLISH.join(', ')))
+    // remove prodotype previews
+    Array.from(this.doc.querySelectorAll(Constants.ELEMENTS_TO_REMOVE_AT_PUBLISH.join(', ')))
     .forEach((tagToRemove) => {
       tagToRemove.parentElement.removeChild(tagToRemove);
     });
