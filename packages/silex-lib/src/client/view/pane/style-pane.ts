@@ -84,11 +84,11 @@ export class StylePane extends PaneBase {
     // css classes
     const cssClasses = this.getCommonProperty(states, (state) => this.model.element.getClassName(state.el));
 
-    if (this.cssClassesTagsInput.getValue() !== cssClasses) {
+    if (this.getClassesTags() !== cssClasses) {
       if (cssClasses) {
-        this.cssClassesTagsInput.setValue(cssClasses);
+        this.setClassesTags(cssClasses);
       } else {
-        this.cssClassesTagsInput.setValue('');
+        this.setClassesTags('');
       }
     }
 
@@ -105,11 +105,19 @@ export class StylePane extends PaneBase {
     // }
   }
 
+  getClassesTags() {
+    return this.cssClassesTagsInput.getValue().split(',').join(' ');
+  }
+
+  setClassesTags(cssClasses) {
+    this.cssClassesTagsInput.setValue(cssClasses.split(' ').join(','));
+  }
+
   /**
    * User has selected a color
    */
   onInputChanged() {
-    this.controller.propertyToolController.setClassName(this.cssClassesTagsInput.getValue());
+    this.controller.propertyToolController.setClassName(this.getClassesTags());
   }
 
   /**
