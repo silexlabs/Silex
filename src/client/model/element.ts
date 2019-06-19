@@ -513,8 +513,9 @@ export class SilexElement {
    */
   addElement(container: HTMLElement, element: HTMLElement, opt_offset: number = 0) {
     // for sections, force body
-    if (this.isSection(element)) {
-      container = this.model.body.getBodyElement();
+    if (this.isSection(element) && container !== this.model.body.getBodyElement()) {
+      // container = this.model.body.getBodyElement();
+      throw new Error('Cannot add a section to other than the body');
     }
     if (opt_offset > 0) {
       const styleObject = this.model.property.getStyle(element, false);
@@ -611,6 +612,8 @@ export class SilexElement {
     // add the element to the stage
     if (this.isSection(element)) {
       this.addElement(this.model.body.getBodyElement(), element);
+    } else if (this.isSectionContent(element)) {
+      this.addElement(element.parentElement, element);
     } else {
       if (!this.isElementContent(element)) {
         // add to the stage at the right position
