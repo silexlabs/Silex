@@ -805,14 +805,20 @@ export class SilexElement {
   /**
    * get a name to display for this type
    */
-  getDisplayName(silexType: string): string {
+  getDisplayName(element: HTMLElement): string {
+    if (this.isSectionContent(element)) {
+      return 'Section Container';
+    } else if (this.isSection(element)) {
+      return 'Section';
+    }
+    const silexType = this.getType(element);
     switch (silexType) {
       case Constants.TYPE_TEXT: return 'Text';
       case Constants.TYPE_IMAGE: return 'Image';
       case Constants.TYPE_CONTAINER: return 'Container';
-      case Constants.TYPE_CONTAINER_CONTENT: return 'Container';
       case Constants.TYPE_HTML: return 'Html';
-      case Constants.TYPE_SECTION: return 'Section';
+      // case Constants.TYPE_CONTAINER_CONTENT: return 'Container';
+      // case Constants.TYPE_SECTION: return 'Section';
       default: return silexType;
     }
   }

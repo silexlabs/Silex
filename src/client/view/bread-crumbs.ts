@@ -114,7 +114,7 @@ export class BreadCrumbs {
       cssClasses = '.' + cssClasses.split(' ').join('.');
     }
     const displayName = ancestor.tagName.toLowerCase() === 'body' ? 'Body' :
-      this.model.component.isComponent(ancestor) ? 'Component' : this.model.element.getDisplayName(this.model.element.getType(ancestor));
+      this.model.component.isComponent(ancestor) ? 'Component' : this.model.element.getDisplayName(ancestor);
     crumb.classList.add('crumb');
     crumb.innerHTML = displayName + cssClasses;
     crumb.style.zIndex = (100 - this.element.childNodes.length).toString();
