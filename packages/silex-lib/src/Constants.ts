@@ -293,6 +293,7 @@ export class Constants {
     Constants.WEBSITE_CONTEXT_EDITOR_CLASS_NAME,
     Constants.WEBSITE_CONTEXT_PUBLISHED_CLASS_NAME,
     Constants.WEBSITE_CONTEXT_RUNTIME_CLASS_NAME,
+    Constants.BODY_STYLE_CSS_CLASS,
   ];
   /**
    * Classes to remove when saving
