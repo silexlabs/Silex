@@ -61,7 +61,7 @@ export class PublishDialog {
               provider.displayName || provider.name :
               publicationPath.service;
           SilexNotification.confirm('Publication', `
-            I am about to publish your webiste to <strong>${providerDisplayName}</strong>, in the folder ${publicationPath.path}.
+            I am about to publish your website to <strong>${providerDisplayName}</strong>, in the folder ${publicationPath.path || '/'}.
           `, (ok) => {
             resolve(this.doOpen(ok, hosting, providerName));
           },
