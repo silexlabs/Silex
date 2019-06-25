@@ -419,10 +419,10 @@ export class SilexElement {
         element.classList.add(Constants.LOADING_ELEMENT_CSS_CLASS);
 
         // remove previous img tag
-        const imgTags = element.querySelectorAll('img.' + Constants.ELEMENT_CONTENT_CLASS_NAME);
-        while (imgTags.length > 0) {
-          imgTags[0].parentElement.removeChild(imgTags[0]);
-        }
+        const imgTags = Array.from(element.querySelectorAll('img.' + Constants.ELEMENT_CONTENT_CLASS_NAME));
+        imgTags.forEach((imgTag: HTMLImageElement) => {
+          imgTag.parentElement.removeChild(imgTag);
+        });
 
         try {
           // load the new image
