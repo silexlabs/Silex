@@ -74,13 +74,11 @@ export default class DomTools {
    */
   static transformValueUrlKeyword(value, stylesheet, isInHead, fn) {
     if (typeof value === 'string' && value.indexOf('url(') === 0) {
-      const valueArr = value.split('\'');
-      const url = valueArr[1];
-      const newUrl = fn(url, stylesheet, isInHead);
-      if (newUrl) {
-        valueArr[1] = newUrl;
-      }
-      return valueArr.join('\'');
+      // support url(...), url('...'), url("...")
+      return value.replace(/url\('(.*)'\)|url\("(.*)"\)|url\((.*)\)/, (str, match1, match2, match3) => {
+        const match = match1 || match2 || match3;
+        return str.replace(match, fn(match));
+      });
     }
     return null;
   }
