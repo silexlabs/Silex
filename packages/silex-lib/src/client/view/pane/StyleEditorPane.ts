@@ -268,17 +268,21 @@ export class StyleEditorPane extends PaneBase {
         return Constants.BODY_STYLE_CSS_CLASS;
       })();
       this.updateStyleList(selectionStyle);
+
+      // show text styles only when a text box is selected
+      const onlyTexts = this.states.length > 0
+        && this.states.filter((state) => this.model.element.getType(state.el) !== Constants.TYPE_TEXT).length === 0;
+      if (onlyTexts) {
+        this.element.classList.remove('style-editor-notext');
+      } else {
+        this.element.classList.add('style-editor-notext');
+      }
     } else {
       // FIXME: no need to recreate the whole style list every time the
       // selection changes
       this.updateStyleList(Constants.BODY_STYLE_CSS_CLASS);
-    }
-    const onlyTexts = this.states.length > 0
-      && this.states.filter((state) => this.model.element.getType(state.el) !== Constants.TYPE_TEXT).length === 0;
-    if (onlyTexts) {
+      // show the text styles in the case of "all style" so that the user can edit text styles, even when no text box is selected
       this.element.classList.remove('style-editor-notext');
-    } else {
-      this.element.classList.add('style-editor-notext');
     }
   }
 
