@@ -75,10 +75,12 @@ export default class DomTools {
   static transformValueUrlKeyword(value, stylesheet, isInHead, fn) {
     if (typeof value === 'string' && value.indexOf('url(') === 0) {
       // support url(...), url('...'), url("...")
-      return value.replace(/url\('(.*)'\)|url\("(.*)"\)|url\((.*)\)/, (str, match1, match2, match3) => {
-        const match = match1 || match2 || match3;
-        return str.replace(match, fn(match));
-      });
+      return `url(${
+        value.replace(/url\('(.*)'\)|url\("(.*)"\)|url\((.*)\)/, (str, match1, match2, match3) => {
+          const match = match1 || match2 || match3;
+          return fn(match, stylesheet, isInHead) || match;
+        })
+      })`;
     }
     return null;
   }
@@ -92,10 +94,11 @@ export default class DomTools {
       // have to play with types
       const rule: CSSStyleRule = sheetOrRule as CSSStyleRule;
       const sheet: CSSStyleSheet = sheetOrRule as any;
-      if (rule.style) { for (const valName of Array.from(rule.style)) {
-        const value = rule.style[valName as string];
-        rule.style[valName as string] = DomTools.transformValueUrlKeyword(value, stylesheet, isInHead, fn) || value;
-      }
+      if (rule.style) {
+        for (const valName of Array.from(rule.style)) {
+          const value = rule.style[valName as string];
+          rule.style[valName as string] = DomTools.transformValueUrlKeyword(value, stylesheet, isInHead, fn) || value;
+        }
       } else if (sheet.cssRules) {
         // case of a mediaquery
         DomTools.transformStylesheet(sheet, isInHead, fn, true);
