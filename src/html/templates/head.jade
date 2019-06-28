@@ -2,19 +2,6 @@ title Silex
 
 meta(name='description', content='This is a public instance of Silex website builder. Build websites in the browser')
 
-// analytics
-script(type='text/javascript').
-  var _paq = _paq || [];
-  _paq.push(['trackPageView']);
-  _paq.push(['enableLinkTracking']);
-  (function() {
-    var u="//lexoyo.piwikpro.com/";
-    _paq.push(['setTrackerUrl', u+'piwik.php']);
-    _paq.push(['setSiteId', 3]);
-    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-    g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js'; s.parentElement.insertBefore(g,s);
-  })();
-
 // beautifyers
 script(type='text/javascript', src='libs/js-beautify/beautify-html.js')
 script(type='text/javascript', src='libs/js-beautify/beautify-css.js')
@@ -37,6 +24,3 @@ script(type='text/javascript', src='libs/wysihtml/wysihtml.min.js')
 script(type='text/javascript', src='libs/wysihtml/wysihtml.all-commands.min.js')
 script(type='text/javascript', src='libs/wysihtml/wysihtml.toolbar.min.js')
 script(type='text/javascript', src='libs/wysihtml/simple.js')
-
-// arbitrary HTML
-include ../custom.html
