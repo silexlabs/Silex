@@ -16,8 +16,6 @@
  *
  */
 
-import {_paq} from '../externs';
-
 /**
  * the Silex Tracker class logs user actions
  * this is for us to detect problems and improve user experience
@@ -37,17 +35,21 @@ export class Tracker {
   }
 
   /**
-   * track an action in G.A.
-   *
+   * track an action in piwik
    */
-  trackAction(
-      category: string, action: string, opt_label?: string,
-      opt_value?: number) {
+  trackAction(category: string, action: string, opt_label?: string, opt_value?: number) {
+    // tslint:disable
     // console.info('trackAction (anonymized)', arguments);
-    _paq.push(['trackEvent', category, action, opt_label, opt_value]);
+    if (window['tracker'] && window['tracker'].log) {
+      window['tracker'].log(...arguments);
+    }
   }
 
   trackOnError(msg: string, url: string, line: number, colno?: number, error?: Error) {
-    this.trackAction('controller-events', 'uncaught.error ', msg, -1);
+    // tslint:disable
+    // console.error('trackOnError (anonymized)', arguments);
+    if (window['tracker'] && window['tracker'].error) {
+      window['tracker'].error(...arguments);
+    }
   }
 }

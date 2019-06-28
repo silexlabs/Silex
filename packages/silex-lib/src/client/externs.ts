@@ -64,20 +64,6 @@ export interface Prodotype {
 }
 
 /**
- * @type {Array.<Array.<string|number>>}
- */
-export let _paq = [];
-
-/**
- * piwik analytics
- * @constructor
- */
-export interface Piwik {
-  // static getAsyncTracker(): Piwik;
-  trackEvent(c: string, d: string, e?: string, f?: number);
-}
-
-/**
  * jquery externs
  */
 export interface JQuery {
