@@ -35,6 +35,7 @@ silex.start(function() {
 
 const { GA_TRACKING_ID } = require('./env.js')
 function trackEvent (category, action, label, value) {
+  console.log('logging in alanytics:', {GA_TRACKING_ID, category, action, label, value})
   const data = {
     // API Version.
     v: '1',
