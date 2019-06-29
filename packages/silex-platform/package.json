@@ -7,11 +7,12 @@
     "start": "node index.js",
     "postinstall": "npm run build",
     "build": "npm run build:html",
-    "build:html": "pug index.pug -o dist/"
+    "build:html": "pug -O env.js index.pug -o dist/"
   },
   "author": "lexoyo",
   "license": "MIT",
   "dependencies": {
+    "got": "^9.6.0",
     "pug": "^2.0.4",
     "pug-cli": "^1.0.0-alpha6",
     "silex-website-builder": "2.5.35"

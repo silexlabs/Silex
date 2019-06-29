@@ -3,21 +3,20 @@
 const { SilexServer, Config } = require('silex-website-builder')
 const serveStatic = require('serve-static')
 const path = require('path')
+const got = require('got')
 
 const config = new Config()
 const silex = new SilexServer(config)
 
 // logs for debugging prod version
-let stats = {}
-setInterval(() => {
-  console.log('Static file requested', stats)
-  // stats = {}
-}, 1000 * 60 * 10)
 silex.app.use('/static', (req, res, next) => {
-  const version = req.url.split('/')[1]
+  const splitted = req.url.split('/')
+  const version = splitted[1]
+  const filename = splitted.pop()
   const referer = req.header('Referer')
-  stats[version] = (stats[version] || 0) + 1
-  stats[referer] = (stats[referer] || 0) + 1
+  if(filename === 'jquery.js') {
+    trackEvent('static-file-request', version, referer, filename)
+  }
   next()
 })
 
@@ -27,3 +26,30 @@ silex.app.use('/', serveStatic(path.resolve('./dist/')))
 silex.start(function() {
   console.log('server started')
 })
+
+const { GA_TRACKING_ID } = require('./env.js')
+function trackEvent (category, action, label, value) {
+  const data = {
+    // API Version.
+    v: '1',
+    // Tracking ID / Property ID.
+    tid: GA_TRACKING_ID,
+    // Anonymous Client Identifier. Ideally, this should be a UUID that
+    // is associated with particular user, device, or browser instance.
+    cid: '555',
+    // Event hit type.
+    t: 'event',
+    // Event category.
+    ec: category,
+    // Event action.
+    ea: action,
+    // Event label.
+    el: label,
+    // Event value.
+    ev: value
+  }
+
+  return got.post('http://www.google-analytics.com/collect', {
+    form: data
+  })
+}
