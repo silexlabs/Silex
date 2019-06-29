@@ -15,9 +15,12 @@ silex.app.use('/static', (req, res, next) => {
   const filename = splitted.pop()
   const referer = req.header('Referer')
   if(filename === 'jquery.js') {
-    trackEvent('static-file-request', version, referer, filename)
+    trackEvent('static-file-request', version, referer, 0)
     .then(response => {
-      console.log('logged in alanytics:', version, filename, referer, 'response:', response.body)
+      console.log('logged in alanytics SUCCESS:', version, filename, referer)
+    })
+    .catch(err => {
+      console.error('logged in alanytics ERROR:', version, filename, referer, err)
     })
   }
   next()
