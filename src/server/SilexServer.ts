@@ -23,6 +23,18 @@ import StaticRouter from './router/StaticRouter';
 import WebsiteRouter from './router/WebsiteRouter';
 import { Config } from './ServerConfig';
 
+function noCache(req, res, next) {
+  res.header('Cache-Control', 'private,no-cache,no-store,must-revalidate,proxy-revalidate');
+  res.header('Expires', '-1');
+  res.header('Pragma', 'no-cache');
+  next();
+}
+
+function withCache(req, res, next) {
+  res.header('Cache-Control', 'public,max-age=86400,immutable'); // 24h
+  next();
+}
+
 export default function SilexServer(config: Config) {
   if (config.serverOptions.debug) {
     require('source-map-support').install();
@@ -56,14 +68,11 @@ export default function SilexServer(config: Config) {
 
 SilexServer.prototype.start = function(cbk) {
   // use routers
-  this.app.use(this.config.serverOptions.cePath, this.ceRouter);
-  this.app.use(this.staticRouter);
-  this.app.use(this.websiteRouter);
-  this.app.use(this.publishRouter);
+  this.app.use(this.config.serverOptions.cePath, this.ceRouter); // CE handles cache headers
+  this.app.use(withCache, this.staticRouter);
+  this.app.use(noCache, this.websiteRouter);
+  this.app.use(noCache, this.publishRouter);
   this.app.use(this.sslRouter);
-
-  // add static folders to serve published files
-  this.app.use(this.staticRouter);
 
   // Start Silex as an Electron app
   if (this.config.electronOptions.enabled) {
