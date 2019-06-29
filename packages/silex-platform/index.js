@@ -52,7 +52,8 @@ function trackEvent (category, action, label, value) {
     // Event label.
     el: label,
     // Event value.
-    ev: value
+    ev: value,
+    z: Math.round(Math.random() * 9999),
   }
 
   return got.post('http://www.google-analytics.com/collect', {
