@@ -1,0 +1,23 @@
+{
+  "name": "editor.silex.me",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "postinstall": "npm run build",
+    "build": "npm run build:html",
+    "build:html": "pug index.pug -o dist/"
+  },
+  "author": "lexoyo",
+  "license": "MIT",
+  "dependencies": {
+    "pug": "^2.0.4",
+    "pug-cli": "^1.0.0-alpha6",
+    "silex-website-builder": "2.5.35"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:silexlabs/editor.silex.me.git"
+  }
+}
