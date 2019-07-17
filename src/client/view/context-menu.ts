@@ -95,7 +95,10 @@ export class ContextMenu {
     this.invalidationManager.callWhenReady(() => {
       // update page name
       if (opt_currentPageName) {
-        this.currentPageElement.innerHTML = this.model.page.getDisplayName(opt_currentPageName);
+        this.currentPageElement.innerHTML = `
+          ${this.model.file.getFileInfo().path ? this.model.file.getFileInfo().path + ' - ' : ''}
+          ${this.model.page.getDisplayName(opt_currentPageName)}
+        `;
       }
 
       // get the selection if not provided
