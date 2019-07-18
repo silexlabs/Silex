@@ -289,6 +289,7 @@ export class Constants {
     Constants.TYPE_TEXT,
     Constants.TYPE_HTML,
     Constants.HIDE_ON_MOBILE,
+    Constants.HIDE_ON_DESKTOP,
     Constants.COMPONENT_CLASS_NAME,
     Constants.WEBSITE_CONTEXT_EDITOR_CLASS_NAME,
     Constants.WEBSITE_CONTEXT_PUBLISHED_CLASS_NAME,
