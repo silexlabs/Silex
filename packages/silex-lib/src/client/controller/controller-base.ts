@@ -577,7 +577,6 @@ export class ControllerBase {
    */
   setMobileMode(isMobile: boolean) {
     this.view.workspace.setMobileEditor(isMobile);
-    this.refreshView();
   }
 
   /**
@@ -585,7 +584,6 @@ export class ControllerBase {
    */
   toggleMobileMode() {
     this.view.workspace.setMobileEditor(!this.view.workspace.getMobileEditor());
-    this.refreshView();
   }
 
   /**

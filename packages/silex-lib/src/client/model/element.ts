@@ -152,10 +152,17 @@ export class SilexElement {
    * @param hide, true if the element has to be hidden on mobile
    */
   setHideOnMobile(element: HTMLElement, hide: boolean) {
+    const wasHidden = this.getHideOnMobile(element);
     if (hide) {
       this.noSectionContent(element).classList.add(Constants.HIDE_ON_MOBILE);
+      if (!wasHidden && this.view.workspace.getMobileEditor()) {
+        this.view.stageWrapper.removeElement(element);
+      }
     } else {
       this.noSectionContent(element).classList.remove(Constants.HIDE_ON_MOBILE);
+      if (wasHidden && this.view.workspace.getMobileEditor()) {
+        this.view.stageWrapper.addElement(element);
+      }
     }
   }
 
@@ -179,10 +186,17 @@ export class SilexElement {
    * @param hide, true if the element has to be hidden on desktop
    */
   setHideOnDesktop(element: HTMLElement, hide: boolean) {
+    const wasHidden = this.getHideOnDesktop(element);
     if (hide) {
       this.noSectionContent(element).classList.add(Constants.HIDE_ON_DESKTOP);
+      if (!wasHidden && !this.view.workspace.getMobileEditor()) {
+        this.view.stageWrapper.removeElement(element);
+      }
     } else {
       this.noSectionContent(element).classList.remove(Constants.HIDE_ON_DESKTOP);
+      if (wasHidden && !this.view.workspace.getMobileEditor()) {
+        this.view.stageWrapper.addElement(element);
+      }
     }
   }
 

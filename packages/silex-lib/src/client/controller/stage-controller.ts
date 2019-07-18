@@ -66,6 +66,12 @@ export class StageController extends ControllerBase {
   resizeWindow() {
     this.view.stageWrapper.resizeWindow();
   }
+  /**
+   * call this when elements visibility has changed
+   */
+  resetStageModel() {
+    this.view.stageWrapper.reset();
+  }
   subscribeMouseEvent(type: string, cbk: (e) => void): () => void {
     return this.view.stageWrapper.subscribeMouseEvent(type, cbk);
   }

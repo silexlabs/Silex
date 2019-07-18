@@ -107,7 +107,9 @@ export class Page {
     this.view.pageTool.redraw(selectedElements, pages, currentPage);
     this.view.propertyTool.redraw(states, pages, currentPage);
     this.view.textFormatBar.redraw(selectedElements, pages, currentPage);
-    this.view.stageWrapper.redraw();
+
+    // visibility of elements has changed
+    this.view.stageWrapper.reset();
   }
 
   /**
@@ -123,7 +125,7 @@ export class Page {
         currentPage: pageName,
       });
     }
-    this.view.stageWrapper.reset();
+    this.refreshView();
   }
 
   /**
@@ -384,9 +386,11 @@ export class Page {
   /**
    * get all elements visible when the given page is opened
    */
-  getElementsForPage(page: string = this.getCurrentPage()): HTMLElement[] {
+  getElementsForPage(page: string = this.getCurrentPage(), includeHideDesktop = this.view.workspace.getMobileEditor(), includeHideMobile = !this.view.workspace.getMobileEditor()): HTMLElement[] {
     return (Array.from(this.model.file.getContentDocument().querySelectorAll(`.${Constants.EDITABLE_CLASS_NAME}`)) as HTMLElement[])
-    .filter((el) => this.isVisible(el, page));
+    .filter((el) => this.isVisible(el, page) &&
+      (includeHideDesktop || !this.model.element.getHideOnDesktop(el)) &&
+      (includeHideMobile || !this.model.element.getHideOnMobile(el)));
   }
 
   /**
