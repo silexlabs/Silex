@@ -172,7 +172,8 @@ export class Workspace {
       document.body.classList.remove('mobile-mode');
     }
     this.controller.stageController.resizeWindow();
-    this.controller.stageController.redraw();
+    // visibility of elements has changed
+    this.controller.stageController.resetStageModel();
   }
 
   /**
