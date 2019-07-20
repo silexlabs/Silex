@@ -9,6 +9,7 @@
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
 
+import { Action } from '../publication/DomPublisher';
 import HostingUnifile from './HostingUnifile';
 
 export default class HostingJekyll extends HostingUnifile {
@@ -29,5 +30,8 @@ export default class HostingJekyll extends HostingUnifile {
   }
   getDefaultPageFileName() {
     return null;
+  }
+  getRootUrl(rootUrl) {
+    return '{{ site.url }}{{ site.baseurl }}/';
   }
 }
