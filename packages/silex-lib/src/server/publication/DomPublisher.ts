@@ -152,7 +152,7 @@ export class DomPublisher {
     });
   }
 
-  extractAssets(baseUrl: string|URL): {scriptTags: HTMLElement[], styleTags: HTMLElement[], files: File[]} {
+  extractAssets(baseUrl: string|URL, absoluteRootUrl?: string): {scriptTags: HTMLElement[], styleTags: HTMLElement[], files: File[]} {
     // all scripts, styles and assets from head => local
     const files: File[] = [];
     DomTools.transformPaths(this.dom, (path, el, isInHead) => {
@@ -177,7 +177,9 @@ export class DomPublisher {
             tagName,
             displayName: fileName,
           });
-          if (tagName) {
+          if (!!absoluteRootUrl) {
+            return absoluteRootUrl + destPath;
+          } else if (tagName) {
             // not an URL from a style sheet
             return destPath;
           } else if (isInHead) {
@@ -206,7 +208,7 @@ export class DomPublisher {
     // link the user's script
     if (scriptTags.length > 0) {
       const scriptTagSrc = this.doc.createElement('script');
-      scriptTagSrc.src = 'js/script.js';
+      scriptTagSrc.src = `${ absoluteRootUrl || '' }js/script.js`;
       scriptTagSrc.type = 'text/javascript';
       this.doc.head.appendChild(scriptTagSrc);
     } else {
@@ -224,7 +226,7 @@ export class DomPublisher {
     // link the user's stylesheet
     if (styleTags.length > 0) {
       const cssTagSrc = this.doc.createElement('link');
-      cssTagSrc.href = 'css/styles.css';
+      cssTagSrc.href = `${ absoluteRootUrl || '' }css/styles.css`;
       cssTagSrc.rel = 'stylesheet';
       cssTagSrc.type = 'text/css';
       this.doc.head.appendChild(cssTagSrc);

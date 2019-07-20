@@ -231,7 +231,7 @@ export default class PublishJob {
       // remove classes used by Silex during edition
       domPublisher.cleanup();
       // rewrite URLs and extract assets
-      this.tree = domPublisher.extractAssets(baseUrl);
+      this.tree = domPublisher.extractAssets(baseUrl, this.hostingProvider.getRootUrl ? this.hostingProvider.getRootUrl(baseUrl) : null);
       // hide website before styles.css is loaded
       dom.window.document.head.innerHTML += '<style>body { opacity: 0; transition: .25s opacity ease; }</style>';
       // split into pages
@@ -388,7 +388,11 @@ export default class PublishJob {
         };
       }),
     );
-    return this.unifile.batch(this.session.unifile, this.publicationPath.service, batchActionsWithAssets);
+    // beforeWrite hook
+    const hookedActions = this.hostingProvider.beforeWrite ? this.hostingProvider.beforeWrite(batchActionsWithAssets) : batchActionsWithAssets;
+
+    // creates all files
+    return this.unifile.batch(this.session.unifile, this.publicationPath.service, hookedActions);
   }
 
   // create the promises to download each asset
