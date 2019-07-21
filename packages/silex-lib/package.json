@@ -1,7 +1,7 @@
 {
   "name": "silex-website-builder",
   "description": "Free and easy website builder for everyone.",
-  "version": "2.5.42",
+  "version": "2.5.43",
   "version:frontend": "2.10",
   "version:backwardcompat": "2.2.10",
   "author": "Alex Hoyau <a.hoyau@silexlabs.org> (https://lexoyo.me/)",
@@ -88,7 +88,7 @@
     "jsdom": "15.0.0",
     "node_modules-path": "*",
     "normalize.css": "^8.0.1",
-    "prodotype": "^1.0.11",
+    "prodotype": "^1.0.13",
     "promise-sequential": "1.1.1",
     "redux": "^4.0.1",
     "request": "2.88.0",
