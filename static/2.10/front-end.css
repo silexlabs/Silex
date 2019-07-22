@@ -22,7 +22,9 @@
   border-radius: initial;
   width: 100%;
 }
-.section-element > .silex-element-content > * {
+/* prevent-auto-z-index is to let the components handle their z-index */
+.section-element > .silex-element-content > *:not(.prevent-auto-z-index) {
+  /* put the elements of a section on top of sections bellow */
   z-index: 10;
 }
 .silex-element-content {

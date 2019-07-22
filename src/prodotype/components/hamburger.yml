@@ -14,6 +14,7 @@ baseElement: text
 faIconClass: fa-bars
 initialCssClass:
   prevent-resizable
+  prevent-auto-z-index
 initialCss:
   min-height: '27px'
   width: 33px
