@@ -137,15 +137,20 @@ export class StyleEditorPane extends PaneBase {
       } else {
         const data = this.model.property.getStyleData(oldClassName);
         this.createStyle(data, (name) => {
-          // update the style name
-          this.getElementsWithStyle(oldClassName, true).forEach((el) => {
-            el.classList.add(this.styleCombo.value);
-          });
+          try {
+            // update the style name
+            this.getElementsWithStyle(oldClassName, true).forEach((el) => {
+              el.classList.add(this.styleCombo.value);
+            });
 
-          // delete the old one
-          if (oldClassName !== Constants.EMPTY_STYLE_CLASS_NAME) {
-            // case of rename the empty style (=> only create a new style)
-            this.deleteStyle(oldClassName, false);
+            // delete the old one
+            if (oldClassName !== Constants.EMPTY_STYLE_CLASS_NAME) {
+              // case of rename the empty style (=> only create a new style)
+              this.deleteStyle(oldClassName, false);
+            }
+          }
+          catch(e) {
+            // the style already exists
           }
         });
       }
