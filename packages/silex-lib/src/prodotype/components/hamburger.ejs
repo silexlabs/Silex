@@ -76,6 +76,30 @@
     transform: rotate(-45deg) translate(0, 12px);
 }
 
+/* themes */
+<% if(style === 'full-width') { %>
+.hamburger-menu_<%- uid %> ul li {
+  padding: 20px 4px;
+  border-bottom: 1px solid #b3b3b3;
+  list-style-type: none;
+  color: #4B4B4B;
+  margin: 0 60px 0 20px;
+}
+
+.hamburger-menu_<%- uid %> ul li a {
+  color: #4B4B4B;
+}
+
+.hamburger-menu_<%- uid %>.open nav {
+  top: -20px;
+}
+
+.hamburger-menu_<%- uid %> nav {
+  width: 101vw !important;
+  margin: 0 -1px;
+}
+<% } %>
+
 </style>
 <!-- inspired by https://codepen.io/erikterwan/pen/EVzeRP -->
 <div class="hamburger-menu_<%- uid %> closed">

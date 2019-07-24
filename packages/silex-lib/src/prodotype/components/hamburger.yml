@@ -23,7 +23,16 @@ props:
 - name: fixed
   expandable: false
   type: boolean
+  className: half-col
   default: false
+  description: Does the hamburger icon stay when you scroll?
+- name: style
+  expandable: false
+  type:
+  - left
+  - full-width
+  className: half-col
+  default: left
   description: Does the hamburger icon stay when you scroll?
 - name: button-background-color
   displayName: Button Color
