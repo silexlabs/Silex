@@ -148,8 +148,7 @@ export class StyleEditorPane extends PaneBase {
               // case of rename the empty style (=> only create a new style)
               this.deleteStyle(oldClassName, false);
             }
-          }
-          catch(e) {
+          } catch (e) {
             // the style already exists
           }
         });
