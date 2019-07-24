@@ -117,7 +117,7 @@ export class DomPublisher {
       Array.from(clone.querySelectorAll(`.${Constants.PAGED_CLASS_NAME}`))
       .forEach((el) => {
         if (el.classList.contains(name)) {
-          el.classList.add('page-link-active');
+          el.classList.add(Constants.PAGED_VISIBLE_CLASS_NAME);
         } else {
           el.parentElement.removeChild(el);
         }
@@ -129,9 +129,9 @@ export class DomPublisher {
         const [pageName, anchor] = el.hash.substr('#!'.length).split('#');
         el.href = (pageName === initialFirstPageName && newFirstPageName ? 'index.html' : pageName.substr('page-'.length) + '.html') + (anchor ? '#' + anchor : '');
         if (pageName ===  name) {
-          el.classList.add('page-link-active');
+          el.classList.add(Constants.PAGE_LINK_ACTIVE_CLASS_NAME);
         } else {
-          el.classList.remove('page-link-active'); // set when you save the file
+          el.classList.remove(Constants.PAGE_LINK_ACTIVE_CLASS_NAME); // may be added when you save the file
         }
       });
 
