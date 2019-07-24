@@ -349,17 +349,23 @@ export class Component {
    * save an empty style or reset a style
    */
   initStyle(displayName: string, className: StyleName, opt_data?: StyleData) {
-    // render all pseudo classes in all visibility object
-    this.getPseudoClassData(opt_data || ({
-      className: '',
-      displayName: '',
-      templateName: '',
-      styles: {desktop: {normal: {}}},
-    } as StyleData))
-    .forEach((pseudoClassData) => {
-      this.componentStyleChanged(className, pseudoClassData.pseudoClass, pseudoClassData.visibility, pseudoClassData.data, displayName);
-    });
-    this.updateDepenedencies(Constants.STYLE_TYPE);
+    // check that style does not exist
+    if (this.model.property.getStyleData(className)) {
+      console.error('This style already exists');
+      throw new Error('This style already exists');
+    } else {
+      // render all pseudo classes in all visibility object
+      this.getPseudoClassData(opt_data || ({
+        className: '',
+        displayName: '',
+        templateName: '',
+        styles: {desktop: {normal: {}}},
+      } as StyleData))
+      .forEach((pseudoClassData) => {
+        this.componentStyleChanged(className, pseudoClassData.pseudoClass, pseudoClassData.visibility, pseudoClassData.data, displayName);
+      });
+      this.updateDepenedencies(Constants.STYLE_TYPE);
+    }
   }
 
   /**
