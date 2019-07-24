@@ -211,3 +211,16 @@ body.silex-publish .prodotype-runtime-strict {
 .silex-component-button button {
   width: 100%;
 }
+/* full-width component*/
+div.editable-style.full-width-section {
+  min-height: 100px;
+}
+
+div.editable-style.full-width-section>.editable-style {
+  position: static;
+  min-width: 100%;
+}
+
+div.editable-style.full-width-section>.editable-style.silex-element-content {
+  display: none;
+}

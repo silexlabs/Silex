@@ -156,12 +156,12 @@ export class StageWrapper {
       },
       onChange: (change) => this.applyStyle(change),
       onDrop: (change) => this.stopDrag(change),
-      onResizeEnd: (change) => this.stopDrag(change, true),
+      onResizeEnd: (change) => this.stopResize(change, true),
       // onDrag: (change) => this.updateView(),
       // onResize: (change) => this.updateView(),
       onSelect: (change) => this.onSelectionChanged(change),
       onStartDrag: (change) => this.startDrag(),
-      onStartResize: (change) => this.startDrag(),
+      onStartResize: (change) => this.startResize(),
     });
     // give time to iframes to initialize
     setTimeout(() => {
@@ -176,17 +176,33 @@ export class StageWrapper {
       );
     }, 0);
   }
-  startDrag() {
+  startDragOrResize() {
     this.hideScrolls(true);
     this.dragging = true;
     this.prepareUndo();
   }
-  stopDrag(change, redraw = false) {
+  startResize() {
+    this.model.body.getBodyElement().classList.add('silex-resizing');
+    this.startDragOrResize();
+  }
+  startDrag() {
+    this.model.body.getBodyElement().classList.add('silex-dragging');
+    this.startDragOrResize();
+  }
+  stopDragOrResize(change, redraw) {
     this.hideScrolls(false);
     this.dragging = false;
     this.applyStyle(change);
     this.redraw();
     this.updateView();
+  }
+  stopResize(change, redraw = false) {
+    this.model.body.getBodyElement().classList.remove('silex-resizing');
+    this.stopDragOrResize(change, redraw);
+  }
+  stopDrag(change, redraw = false) {
+    this.model.body.getBodyElement().classList.remove('silex-dragging');
+    this.stopDragOrResize(change, redraw);
   }
   prepareUndo() {
     this.controller.stageController.undoCheckPoint();
