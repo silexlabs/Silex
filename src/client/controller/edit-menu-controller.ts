@@ -282,7 +282,7 @@ export class EditMenuController extends ControllerBase {
 
   isEditable(el: HTMLElement) {
     return this.model.component.isComponent(el) ||
-      Constants.EDITABLE_ELEMENT_TYPES.indexOf(this.model.element.getType(el)) > -1
+      Constants.EDITABLE_ELEMENT_TYPES.indexOf(this.model.element.getType(el)) > -1;
   }
 
   /**
@@ -295,11 +295,6 @@ export class EditMenuController extends ControllerBase {
 
     // default is selected element
     const element = opt_element || this.model.body.getSelection().filter((el) => this.isEditable(el))[0];
-    console.log('editElement', {
-      element, opt_element,
-      selection: this.model.body.getSelection(),
-      selectionEditables: this.model.body.getSelection().filter((el) => this.isEditable(el)),
-    })
     this.model.body.setSelection([element]);
 
     // open the params tab for the components
