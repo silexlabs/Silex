@@ -108,6 +108,10 @@ export class Constants {
    */
   static TYPE_ATTR: string = 'data-silex-type';
 
+  static EDITABLE_ELEMENT_TYPES: string[] = [
+    Constants.TYPE_HTML, Constants.TYPE_IMAGE, Constants.TYPE_TEXT,
+  ];
+
   /**
    * constant for the attribute name holding the IDs given to Silex editable
    * elements

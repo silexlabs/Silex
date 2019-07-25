@@ -280,6 +280,11 @@ export class EditMenuController extends ControllerBase {
     }
   }
 
+  isEditable(el: HTMLElement) {
+    return this.model.component.isComponent(el) ||
+      Constants.EDITABLE_ELEMENT_TYPES.indexOf(this.model.element.getType(el)) > -1
+  }
+
   /**
    * edit an {silex.types.Element} element
    * take its type into account and open the corresponding editor
@@ -289,7 +294,13 @@ export class EditMenuController extends ControllerBase {
     this.undoCheckPoint();
 
     // default is selected element
-    const element = opt_element || this.model.body.getSelection()[0];
+    const element = opt_element || this.model.body.getSelection().filter((el) => this.isEditable(el))[0];
+    console.log('editElement', {
+      element, opt_element,
+      selection: this.model.body.getSelection(),
+      selectionEditables: this.model.body.getSelection().filter((el) => this.isEditable(el)),
+    })
+    this.model.body.setSelection([element]);
 
     // open the params tab for the components
     // or the editor for the elements
