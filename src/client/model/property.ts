@@ -341,6 +341,10 @@ export class Property {
         }
         delete style.width;
       }
+      if (this.model.element.isSection(element) || this.model.element.isSection(element)) {
+        delete style.top;
+        delete style.left;
+      }
     }
 
     // store in JSON

@@ -234,12 +234,12 @@ export class EditMenuController extends ControllerBase {
       this.model.component.render(element);
     }
 
-    // add this element
-    this.model.element.addElement(clipboardItem.parent, element);
-
     // keep the original style
     this.model.property.setStyle(element, clipboardItem.style, false);
     this.model.property.setStyle(element, clipboardItem.mobileStyle, true);
+
+    // add this element
+    this.model.element.addElement(clipboardItem.parent, element);
     return element;
   }
 
