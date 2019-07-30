@@ -139,10 +139,22 @@ body.enable-mobile .background {
     position: static;
     top: auto;
     left: auto;
-    max-width: 95%; /* less than 100% in the editor to be able to resize container */
+    max-width: 100%;
     min-width: auto; /* this is to remove sections min-width, since section min-width is set to the witdh of its content in Element::setStyle() */
     margin-left: auto;
     margin-right: auto;
+  }
+  body.enable-mobile .editable-style.container-element {
+    padding: 10px; /* leave space between a container and its content */
+  }
+  body.enable-mobile .editable-style.section-element {
+    padding: 0;
+  }
+  body.enable-mobile .editable-style.section-element > .silex-element-content {
+    padding: 10px 0; /* leave space between a container and its content */
+  }
+  body.enable-mobile.silex-resizing .editable-style:not(.prevent-mobile-style) {
+    max-width: unset; /* while dragging let the user size the elements freely */
   }
   body.enable-mobile .image-element.editable-style:not(.prevent-mobile-style) {
     position: relative;

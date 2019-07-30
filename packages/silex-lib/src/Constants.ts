@@ -156,6 +156,16 @@ export class Constants {
   static SELECTED_CLASS_NAME: string = 'silex-selected';
 
   /**
+   * css class on the body while draggin/resizeing
+   */
+  static RESIZING_CLASS_NAME: string = 'silex-resizing';
+
+  /**
+   * css class on the body while draggin/resizeing
+   */
+  static DRAGGING_CLASS_NAME: string = 'silex-dragging';
+
+  /**
    * class for elements which are hidden in mobile version
    */
   static HIDE_ON_MOBILE: string = 'hide-on-mobile';
@@ -288,6 +298,8 @@ export class Constants {
     Constants.STAGE_COMPONENT_SELECTED_CLASS_NAME,
     Constants.STAGE_COMPONENT_NOT_SELECTED_CLASS_NAME,
     Constants.SELECTED_CLASS_NAME,
+    Constants.RESIZING_CLASS_NAME,
+    Constants.DRAGGING_CLASS_NAME,
     Constants.ELEMENT_CONTENT_CLASS_NAME,
     // useful to hide it when the content container of a section is selected
     Constants.TYPE_CONTAINER_CONTENT,
@@ -317,6 +329,8 @@ export class Constants {
     Constants.STAGE_COMPONENT_SELECTED_CLASS_NAME,
     Constants.STAGE_COMPONENT_NOT_SELECTED_CLASS_NAME,
     Constants.SELECTED_CLASS_NAME,
+    Constants.RESIZING_CLASS_NAME,
+    Constants.DRAGGING_CLASS_NAME,
   ];
   /**
    * Classes to remove when publishing
@@ -339,6 +353,8 @@ export class Constants {
     Constants.STAGE_COMPONENT_SELECTED_CLASS_NAME,
     Constants.STAGE_COMPONENT_NOT_SELECTED_CLASS_NAME,
     Constants.SELECTED_CLASS_NAME,
+    Constants.RESIZING_CLASS_NAME,
+    Constants.DRAGGING_CLASS_NAME,
   ];
   /**
    * Elements to remove from the DOM after publishing

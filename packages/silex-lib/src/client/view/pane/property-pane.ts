@@ -187,21 +187,26 @@ export class PropertyPane extends PaneBase {
       this.altInput.disabled = false;
       this.titleInput.disabled = false;
 
-      // TODO: Use stage metrics here
-      const bb = this.model.property.getBoundingBox(states.map((state) => state.el));
-
       // display position and size
-      this.topInput.value = (bb.top || 0).toString();
-      this.leftInput.value = (bb.left || 0).toString();
-      this.widthInput.value = (bb.width || 0).toString();
-      this.heightInput.value = (bb.height || 0).toString();
+      // fixme: stageWrapper should be accessible in the views
+      const bb = this.controller.editMenuController.view.stageWrapper.getSelectionBox();
+      this.topInput.value = Math.round(bb.top || 0).toString();
+      this.leftInput.value = Math.round(bb.left || 0).toString();
+      this.widthInput.value = Math.round(bb.width || 0).toString();
+      this.heightInput.value = Math.round(bb.height || 0).toString();
 
-      // special case of the background / main container only selected element
-      if (statesNoBody.length === 1 && this.model.element.isSection(statesNoBody[0].el)) {
-        this.widthInput.value = '';
-        this.widthInput.disabled = true;
+      // special case of the body and sections
+      if (statesNoBody
+        .filter((s: SelectableState) => !this.model.element.isSection(s.el) && !this.model.element.isSectionContent(s.el))
+        .length === 0
+      ) {
+        this.leftInput.value = '';
+        this.topInput.value = '';
+        this.leftInput.disabled = true;
+        this.topInput.disabled = true;
       } else {
-        this.widthInput.disabled = false;
+        this.leftInput.disabled = false;
+        this.topInput.disabled = false;
       }
 
       // alt, only for images

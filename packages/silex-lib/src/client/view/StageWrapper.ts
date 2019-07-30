@@ -85,6 +85,10 @@ export class StageWrapper {
     if (!this.stage) { return; }
     this.stage.setSelection(elements);
   }
+  getSelectionBox() {
+    if (!this.stage) { return; }
+    return this.stage.getSelectionBox();
+  }
   getEditMode(): boolean {
     if (!this.stage) { return false; }
     return this.stage.catchingEvents;
@@ -128,12 +132,22 @@ export class StageWrapper {
       isDraggable: ((el) => !el.classList.contains(Constants.PREVENT_DRAGGABLE_CLASS_NAME)),
       isDropZone: ((el) => !el.classList.contains(Constants.PREVENT_DROPPABLE_CLASS_NAME) && el.classList.contains(Constants.TYPE_CONTAINER)),
       isResizeable: ((el) => {
-        // section content is not resizeable on mobile
-        const isSectionContentOnMobile = this.controller.stageController.getMobileMode() && this.model.element.isSectionContent(el);
+        // section is not resizeable on mobile
+        const isSectionOnMobile = this.controller.stageController.getMobileMode() && this.model.element.isSection(el);
         // css classes which prevent resize
         const hasPreventCssClass = el.classList.contains(Constants.PREVENT_RESIZABLE_CLASS_NAME);
-        if (isSectionContentOnMobile || hasPreventCssClass) {
+        if (isSectionOnMobile || hasPreventCssClass) {
           return false;
+        }
+        // section content resizable height only
+        const isSectionContentOnMobile = this.controller.stageController.getMobileMode() && this.model.element.isSectionContent(el);
+        if (isSectionContentOnMobile) {
+          return {
+            top: !el.classList.contains(Constants.PREVENT_RESIZABLE_TOP_CLASS_NAME),
+            left: false,
+            bottom: !el.classList.contains(Constants.PREVENT_RESIZABLE_BOTTOM_CLASS_NAME),
+            right: false,
+          };
         }
         // case of all or part of the sides are resizeable
         return {
@@ -182,11 +196,11 @@ export class StageWrapper {
     this.prepareUndo();
   }
   startResize() {
-    this.model.body.getBodyElement().classList.add('silex-resizing');
+    this.model.body.getBodyElement().classList.add(Constants.RESIZING_CLASS_NAME);
     this.startDragOrResize();
   }
   startDrag() {
-    this.model.body.getBodyElement().classList.add('silex-dragging');
+    this.model.body.getBodyElement().classList.add(Constants.DRAGGING_CLASS_NAME);
     this.startDragOrResize();
   }
   stopDragOrResize(change, redraw) {
@@ -197,11 +211,11 @@ export class StageWrapper {
     this.updateView();
   }
   stopResize(change, redraw = false) {
-    this.model.body.getBodyElement().classList.remove('silex-resizing');
+    this.model.body.getBodyElement().classList.remove(Constants.RESIZING_CLASS_NAME);
     this.stopDragOrResize(change, redraw);
   }
   stopDrag(change, redraw = false) {
-    this.model.body.getBodyElement().classList.remove('silex-dragging');
+    this.model.body.getBodyElement().classList.remove(Constants.DRAGGING_CLASS_NAME);
     this.stopDragOrResize(change, redraw);
   }
   prepareUndo() {
@@ -233,18 +247,13 @@ export class StageWrapper {
 
         // get element style
         const styleObject = this.model.property.getStyle(s.el) || {};
+
         // compute style
         styleObject[s.useMinHeight ? 'min-height' : 'height'] = s.metrics.computedStyleRect.height + 'px';
-        if (!this.model.element.isSection(s.el)) {
-          // sections have no top, left, width
-          if (!this.model.element.isSectionContent(s.el)) {
-            // section contents have no top, left
-            styleObject.top = s.metrics.computedStyleRect.top + 'px';
-            styleObject.left = s.metrics.computedStyleRect.left + 'px';
-          }
-          // apply width
-          styleObject.width = s.metrics.computedStyleRect.width + 'px';
-        }
+        styleObject.top = s.metrics.computedStyleRect.top + 'px';
+        styleObject.left = s.metrics.computedStyleRect.left + 'px';
+        styleObject.width = s.metrics.computedStyleRect.width + 'px';
+
         // apply styles
         this.model.property.setStyle(s.el, styleObject);
       });
