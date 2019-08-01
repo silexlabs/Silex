@@ -97,40 +97,36 @@ export class PropertyPane extends PaneBase {
     // the name of the property to change
     const name: string = input.getAttribute('data-style-name');
 
-    // do nothing if the value is not a number (numeric stepers's value set to
-    // '')
-    if (input.value !== '') {
-      // get the value
-      const value = parseFloat(input.value);
-
-      // get the old value
-      const oldValue = parseFloat(input.getAttribute('data-prev-value') || '0');
-
-      // keep track of the new value for next time
-      input.setAttribute('data-prev-value', value.toString());
-
-      // compute the offset
-      const offset = value - oldValue;
-
-      // apply the change to all elements
-      this.states.forEach((state) => {
-        if (isNaN(oldValue)) {
-          // compute the new value relatively to the old value,
-          // in order to match the group movement
-          const elementStyle = this.model.element.getStyle(state.el, name);
-          let styleValue = 0;
-          if (elementStyle && elementStyle !== '') {
-            styleValue = parseFloat(elementStyle);
-          }
-          const newValue = styleValue + offset;
-
-          // apply the change to the current element
-          this.styleChanged(name, newValue + 'px', [state.el]);
-        } else {
-          this.styleChanged(name, value + 'px');
-        }
-      });
+    // prevent empty string in positions/dimentions, because silex needs positions/dimentions
+    if (input.value === '') {
+      input.value = '0';
     }
+
+    // get the value
+    const value = parseFloat(input.value);
+
+    // get the old value
+    const oldValue = parseFloat(input.getAttribute('data-prev-value') || '0');
+
+    // keep track of the new value for next time
+    input.setAttribute('data-prev-value', value.toString());
+
+    // compute the offset
+    const offset = value - oldValue;
+
+    // apply the change to all elements
+    this.states.forEach((state) => {
+      // compute the new value relatively to the old value,
+      // in order to match the group movement
+      const elementStyle = this.model.element.getStyle(state.el, name);
+      let styleValue = 0;
+      if (elementStyle && elementStyle !== '') {
+        styleValue = parseFloat(elementStyle);
+      }
+      const newValue = styleValue + offset;
+      // apply the change to the current element
+      this.styleChanged(name, newValue + 'px', [state.el]);
+    });
   }
 
   /**
