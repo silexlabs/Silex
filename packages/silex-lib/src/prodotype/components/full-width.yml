@@ -6,7 +6,7 @@ category: UI
 tags:
 - section
 - ui
-isPrivate: false
+isPrivate: true
 baseElement: section
 initialCssClass:
   full-width-section
