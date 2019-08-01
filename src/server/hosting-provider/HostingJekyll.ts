@@ -34,4 +34,13 @@ export default class HostingJekyll extends HostingUnifile {
   getRootUrl(rootUrl) {
     return '{{ site.url }}{{ site.baseurl }}/';
   }
+  beforeWrite(actions: Action[]) {
+    const action = actions.find((a) => a.name === 'writefile' && a.path.endsWith('/styles.css'));
+    if (action) {
+      action.content = '---\n---' + (action.content as Buffer).toString('utf-8');
+    } else {
+      throw new Error('Could not make the file style.css a Jekyll file with front matter');
+    }
+    return actions;
+  }
 }
