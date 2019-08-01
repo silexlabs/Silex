@@ -25,7 +25,7 @@ export interface Action {
   name: string;
   path: string;
   displayName: string;
-  content: string;
+  content: string|Buffer;
 }
 
 /**
