@@ -173,7 +173,8 @@ export class SilexNotification {
    */
   static addButton(el: HTMLElement|DocumentFragment) {
     if (SilexNotification.currentDialog) {
-      SilexNotification.currentDialog.querySelector(`.${SilexNotification.NOTIFICATION_CSS_CLASS}_buttons`);
+      const buttonBar = SilexNotification.currentDialog.querySelector(`.${SilexNotification.NOTIFICATION_CSS_CLASS}_buttons`);
+      buttonBar.appendChild(el);
     }
   }
 

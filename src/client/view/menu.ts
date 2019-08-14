@@ -32,6 +32,7 @@ export class Menu {
     'page-tool-visible', 'about-menu-visible', 'file-menu-visible',
     'code-menu-visible', 'add-menu-visible',
   ];
+  static keyboard = new Keyboard(document);
 
   constructor(public element: HTMLElement, public model: Model, public controller: Controller) {}
 
@@ -55,10 +56,9 @@ export class Menu {
    * called by the app constructor
    */
   buildUi() {
-    const keyboard = new Keyboard(document);
     // Shortcuts
     Config.shortcuts.forEach((shortcut) => {
-      keyboard.addShortcut(shortcut, (e) => this.onMenuEvent(shortcut.id));
+      Menu.keyboard.addShortcut(shortcut, (e) => this.onMenuEvent(shortcut.id));
     });
 
     // components

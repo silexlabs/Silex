@@ -22,6 +22,7 @@ import { Controller, LinkData, Model } from '../types';
 import { SilexNotification } from '../utils/notification';
 import { FileExplorer } from '../view/dialog/file-explorer';
 import { LINK_ATTRIBUTES, LinkDialog } from './dialog/LinkDialog';
+import { Menu } from './menu';
 
 /**
  * @class {silex.view.TextFormatBar}
@@ -39,9 +40,8 @@ export class TextFormatBar {
   linkDialog: LinkDialog;
   toolbar: HTMLElement;
 
-  // for event add / remove
-  onKeyDownBinded: (e: Event) => void;
-  onScrollBinded: (e: Event) => void;
+  // for event remove events, this is reset on stop edit
+  private onStopEditCbks: Array<() => void> = [];
 
   /**
    *
@@ -56,8 +56,6 @@ export class TextFormatBar {
     this.tracker = Tracker.getInstance();
     this.linkDialog = new LinkDialog(this.model);
     this.toolbar = this.element.querySelector('#wysihtml5-toolbar');
-    this.onKeyDownBinded = this.onKeyDown.bind(this);
-    this.onScrollBinded = this.onScroll.bind(this);
   }
 
   /**
@@ -66,28 +64,19 @@ export class TextFormatBar {
    * by wysihtml
    */
   getLink(): LinkData {
-    return LINK_ATTRIBUTES.reduce((acc, attr) => {
-      const el = this.element.querySelector('.get-' + attr) as HTMLInputElement;
-      if (!el) {
-        console.error(
-            'could not get data from link editor for attribute', attr);
-      } else {
-        acc[attr] = el.value;
-      }
-      return acc;
-    }, {});
-  }
-
-  /**
-   * Intercept keys before it is forwarded from iframe to Silex
-   */
-  onKeyDown(e) {
-    if (e.key === 'Escape') {
-      // stop editing but keep selection
-      this.stopEditing();
-      e.preventDefault();
-      e.stopPropagation();
+    const isLink = this.element.querySelector('.create-link').classList.contains('wysihtml-command-active');
+    if (isLink) {
+      return LINK_ATTRIBUTES.reduce((acc, attr) => {
+        const el = this.element.querySelector('.get-' + attr) as HTMLInputElement;
+        if (!el) {
+          console.error('could not get data from link editor for attribute', attr);
+        } else {
+          acc[attr] = el.value;
+        }
+        return acc;
+      }, {});
     }
+    return null;
   }
 
   onScroll(e) {
@@ -101,11 +90,10 @@ export class TextFormatBar {
     this.controller.stageController.stopEdit();
 
     if (this.wysihtmlEditor) {
-      // remove event listener
-      const doc = this.model.file.getContentDocument();
-      const win = this.model.file.getContentWindow();
-      doc.removeEventListener('keydown', this.onKeyDownBinded);
-      win.removeEventListener('scroll', this.onScrollBinded);
+
+      // remove event listeners
+      this.onStopEditCbks.forEach((cbk) => cbk());
+      this.onStopEditCbks = [];
 
       // remove and put back the whole UI
       // this is the way to go with wysihtml
@@ -213,8 +201,22 @@ export class TextFormatBar {
         // handle the focus
         const doc = this.model.file.getContentDocument();
         const win = this.model.file.getContentWindow();
-        doc.addEventListener('keydown', this.onKeyDownBinded);
-        win.addEventListener('scroll', this.onScrollBinded);
+        const onKeyScrollBinded = (e) => this.onScroll(e);
+        // events and shortcuts
+        this.onStopEditCbks.push(
+          Menu.keyboard.attach(doc),
+          Menu.keyboard.addShortcut({
+            label: 'Edit link',
+            key: 'k',
+            ctrlKey: true,
+          }, (e) => this.openLinkEditor(e)),
+          Menu.keyboard.addShortcut({
+            label: 'Exit text editor',
+            key: 'Escape',
+          }, (e) => this.stopEditing()),
+          () => win.addEventListener('scroll', onKeyScrollBinded),
+        );
+        win.addEventListener('scroll', onKeyScrollBinded);
         this.wysihtmlEditor.on('blur', (e) => {
           if (!SilexNotification.isActive) {
             this.stopEditing();
@@ -273,14 +275,22 @@ export class TextFormatBar {
     }
   }
 
-  // open the link editor, which uses SilexNotification
+  /**
+   * open the link editor, which uses SilexNotification
+   */
   openLinkEditor(e: Event) {
-    this.linkDialog.open(this.getLink(), this.pageNames, (_options) => {
+    const oldLink = this.getLink();
+    this.linkDialog.open(oldLink, this.pageNames, (_options) => {
+      // _options is the same as oldLink when the user canceled the link editor
+      // therfore it is undefined when the selection is not a link
+      // and it will be undefined when the user clicks "remove link"
       if (_options) {
         this.wysihtmlEditor.composer.commands.exec('createLink', _options);
       } else {
         this.wysihtmlEditor.composer.commands.exec('removeLink');
       }
+      // give back the focus to the editor
+      this.wysihtmlEditor.focus(false); // seems to be needed only when _options is undefined
     });
     // prevent click on the button
     e.preventDefault();

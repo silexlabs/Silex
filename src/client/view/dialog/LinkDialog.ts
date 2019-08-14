@@ -33,12 +33,9 @@ const DEFAULT_LINK_DATA = {
 export class LinkDialog {
   constructor(private model) {}
 
-  open(
-      linkDataArg: LinkData, pageNames: string[],
-      cbk: (p1: LinkData) => any) {
-
+  open(linkDataArg: LinkData, pageNames: string[], cbk: (p1: LinkData) => any) {
     // default values for new link
-    const linkData = Object.assign({}, DEFAULT_LINK_DATA, linkDataArg);
+    const linkData = Object.assign({}, DEFAULT_LINK_DATA, linkDataArg || {});
 
     // external link data
     const isExternal = !linkData.href.startsWith('#!');
@@ -77,6 +74,8 @@ export class LinkDialog {
           options.download = newData.download;
         }
         cbk(options);
+      } else {
+        cbk(linkDataArg);
       }
     });
 

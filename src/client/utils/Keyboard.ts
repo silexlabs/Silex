@@ -13,6 +13,7 @@ export interface Shortcut {
 
 interface ShortcutItem {
   s: Shortcut;
+  id: any;
   cbk: (e: KeyboardEvent) => void;
 }
 
@@ -28,22 +29,47 @@ export class Keyboard {
         target.tagName.toUpperCase() === 'TEXTAREA' ||
         target.getAttribute('contenteditable') === 'true';
   }
-  shortcuts: Map<string, ShortcutItem[]>;
+
+  private shortcuts: Map<string, ShortcutItem[]>;
+  private nextId = 0;
 
   constructor(doc: Document) {
     this.shortcuts = new Map();
-    doc.addEventListener('keydown', (e) => this.handleKeyDown(e));
+    this.attach(doc);
   }
 
-  addShortcut(s: Shortcut, cbk: (p1: Event) => void) {
-    const key = s.key.toLowerCase();
+  attach(doc: Document) {
+    const cbk = (e) => this.handleKeyDown(e);
+    doc.addEventListener('keydown', cbk);
+    return () => {
+      doc.removeEventListener('keydown', cbk);
+    };
+  }
+
+  /**
+   * Ads a shortcut
+   * @param shortcut shortcut object
+   * @param cbk callback to call on shortcut
+   * @returns a function to call to remove this shortcut
+   */
+  addShortcut(shortcut: Shortcut, cbk: (p1: Event) => void): () => void {
+    const key = shortcut.key.toLowerCase();
     if (!cbk || !key) {
       throw new Error('Can not add shortcut, callback and key are required');
     }
     if (!this.shortcuts.has(key)) {
       this.shortcuts.set(key, []);
     }
-    this.shortcuts.get(key).push({s, cbk});
+    const id = this.nextId++;
+    this.shortcuts.get(key).push({s: shortcut, cbk, id});
+
+    return () => {
+      const arr = this.shortcuts.get(key);
+      const pos = arr.findIndex((s) => s.id === id);
+      if (pos >= 0) {
+        arr.splice(pos, 1);
+      }
+    };
   }
 
   handleKeyDown(e) {
@@ -55,7 +81,9 @@ export class Keyboard {
         const shortcuts = this.getShortcutsFromEvent(e);
         if (shortcuts.length > 0) {
           shortcuts.forEach((shortcut) => {
-            shortcut.cbk(e);
+            if (!e.defaultPrevented) {
+              shortcut.cbk(e);
+            }
           });
           e.preventDefault();
         }
