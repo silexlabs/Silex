@@ -99,12 +99,13 @@ export class TextFormatBar {
       // this is the way to go with wysihtml
       // @see https://github.com/Voog/wysihtml/issues/109#issuecomment-198350743
       (this.element.querySelector('.image-details') as HTMLElement).style.display = 'none';
+      this.wysihtmlEditor.focus(true);
       this.wysihtmlEditor.destroy();
       this.wysihtmlEditor = null;
       const parent = this.toolbar.parentElement;
       const clone = this.toolbar.cloneNode(true) as HTMLElement;
       Array.from(clone.querySelectorAll('.wysihtml-command-active'))
-          .forEach((el: HTMLElement) => el.classList.remove('wysihtml-command-active'));
+      .forEach((el: HTMLElement) => el.classList.remove('wysihtml-command-active'));
       parent.insertBefore(clone, this.toolbar);
       parent.removeChild(this.toolbar);
       this.toolbar = clone;
