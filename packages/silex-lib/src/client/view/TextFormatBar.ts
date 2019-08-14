@@ -28,7 +28,7 @@ import { LINK_ATTRIBUTES, LinkDialog } from './dialog/LinkDialog';
  */
 export class TextFormatBar {
   // tracker for analytics
-  tracker: any;
+  tracker: Tracker;
 
   // store the params
   selectedElements: HTMLElement[] = null;
@@ -36,12 +36,12 @@ export class TextFormatBar {
   currentPageName: string = null;
   currentTextBox: HTMLElement = null;
   wysihtmlEditor: WysiHtmlEditor = null;
-  linkDialog: any;
-  toolbar: any;
+  linkDialog: LinkDialog;
+  toolbar: HTMLElement;
 
   // for event add / remove
-  onKeyDownBinded: any;
-  onScrollBinded: any;
+  onKeyDownBinded: (e: Event) => void;
+  onScrollBinded: (e: Event) => void;
 
   /**
    *
@@ -114,7 +114,7 @@ export class TextFormatBar {
       this.wysihtmlEditor.destroy();
       this.wysihtmlEditor = null;
       const parent = this.toolbar.parentElement;
-      const clone = this.toolbar.cloneNode(true);
+      const clone = this.toolbar.cloneNode(true) as HTMLElement;
       Array.from(clone.querySelectorAll('.wysihtml-command-active'))
           .forEach((el: HTMLElement) => el.classList.remove('wysihtml-command-active'));
       parent.insertBefore(clone, this.toolbar);
@@ -265,24 +265,25 @@ export class TextFormatBar {
           (imageDetails.querySelector('.float') as HTMLElement).onchange = (e) => autoSubmitImage(e);
           (imageDetails.querySelector('.src') as HTMLElement).onkeydown = (e) => autoSubmitImage(e);
           (imageDetails.querySelector('.alt') as HTMLElement).onkeydown = (e) => autoSubmitImage(e);
-          (this.element.querySelector('.create-link') as HTMLElement).onclick = (e) => {
-            // open link editor
-            this.linkDialog.open(this.getLink(), this.pageNames, (_options) => {
-              if (_options) {
-                this.wysihtmlEditor.composer.commands.exec('createLink', _options);
-              } else {
-                this.wysihtmlEditor.composer.commands.exec('removeLink');
-              }
-            });
-
-            // prevent click on the button
-            e.preventDefault();
-          };
+          (this.element.querySelector('.create-link') as HTMLElement).onclick = (e) => this.openLinkEditor(e);
         });
       }
     } else {
       console.error('Error, can not edit selection with format pane', this.selectedElements);
     }
+  }
+
+  // open the link editor, which uses SilexNotification
+  openLinkEditor(e: Event) {
+    this.linkDialog.open(this.getLink(), this.pageNames, (_options) => {
+      if (_options) {
+        this.wysihtmlEditor.composer.commands.exec('createLink', _options);
+      } else {
+        this.wysihtmlEditor.composer.commands.exec('removeLink');
+      }
+    });
+    // prevent click on the button
+    e.preventDefault();
   }
 
   /**
