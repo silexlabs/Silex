@@ -194,34 +194,6 @@ export class Config {
       key: 'Escape',
       input: false,
     },
-    /////////////////////////////////////////////////
-    // handled in stage: key: 'ArrowUp',
-    // {
-    //   label: 'Bring to front',
-    //   id: 'edit.move.to.top',
-    //   altKey: true,
-    //   shiftKey: true,
-    // },
-    // {
-    //   label: 'Bring forward',
-    //   id: 'edit.move.up',
-    //   // altKey: true,
-    //   // handled in stage: key: 'ArrowUp',
-    // },
-    // {
-    //   label: 'Bring backward',
-    //   id: 'edit.move.down',
-    //   // altKey: true,
-    //   // handled in stage: key: 'ArrowDown',
-    // },
-    // {
-    //   label: 'Send to back',
-    //   id: 'edit.move.to.bottom',
-    //   // altKey: true,
-    //   // shiftKey: true,
-    //   // handled in stage: key: 'ArrowDown',
-    // },
-    /////////////////////////////////////////////////
     {
       label: 'Rename page',
       id: 'edit.rename.page',

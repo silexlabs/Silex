@@ -18,6 +18,7 @@
 
 import { Constants } from '../../Constants';
 import { Config } from '../ClientConfig';
+import { DomDirection } from '../model/element';
 import { Controller, Model } from '../types';
 import { Keyboard } from '../utils/Keyboard';
 
@@ -51,6 +52,17 @@ export class Menu {
     `;
     return el;
   }
+
+  /**
+   *
+   */
+  handleSectionCase(direction: DomDirection) {
+    this.model.body.getSelection()
+    .map((el) => this.model.element.noSectionContent(el))
+    .filter((el) => this.model.element.isSection(el))
+    .forEach((el) => this.model.element.move(el, direction));
+  }
+
   /**
    * create the menu with closure API
    * called by the app constructor
@@ -60,6 +72,15 @@ export class Menu {
     Config.shortcuts.forEach((shortcut) => {
       Menu.keyboard.addShortcut(shortcut, (e) => this.onMenuEvent(shortcut.id));
     });
+    // special case of the sections which are not draggable but can be moved with arrows
+    Menu.keyboard.addShortcut({
+      label: 'Move section up',
+      key: 'ArrowDown',
+    }, (e) => this.handleSectionCase(DomDirection.UP));
+    Menu.keyboard.addShortcut({
+      label: 'Move section down',
+      key: 'ArrowUp',
+    }, (e) => this.handleSectionCase(DomDirection.DOWN));
 
     // components
     this.model.component.ready(() => {
