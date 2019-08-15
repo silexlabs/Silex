@@ -475,7 +475,7 @@ export class EditMenuController extends ControllerBase {
       return this.indexOfElement(a) - this.indexOfElement(b);
     });
 
-    // move up
+    // move all the elements in the selection
     elements.forEach((element) => {
       const stylesObj =
           this.model.file.getContentWindow().getComputedStyle(element);
