@@ -56,7 +56,7 @@ export class Property {
    * constant for the value of media query for mobile version
    * @static
    */
-  static MOBILE_MEDIA_QUERY = 'only screen and (max-width: 480px), only screen and (max-device-width: 480px)';
+  static MOBILE_MEDIA_QUERY = 'only screen and (max-width: 480px)';
 
   /**
    * the current file's silex style sheet which holds silex elements styles
@@ -446,17 +446,14 @@ export class Property {
 
       // desktop
       if (this.stylesObj[elementId]) {
-        const styleStr = Style.styleToString(
-            this.stylesObj[elementId], '\n    ');
+        const styleStr = Style.styleToString(this.stylesObj[elementId], '\n    ');
         allStyles += '.' + elementId + ' {' + styleStr + '\n}\n';
       }
 
       // mobile
       if (this.mobileStylesObj[elementId]) {
-        const styleStr = Style.styleToString(
-            this.mobileStylesObj[elementId], '\n    ');
-        allStyles +=
-            this.addMediaQuery('.' + elementId + ' {' + styleStr + '\n}\n');
+        const styleStr = Style.styleToString(this.mobileStylesObj[elementId], '\n    ');
+        allStyles += this.addMediaQuery('.' + elementId + ' {' + styleStr + '\n}\n');
       }
     }
     return allStyles;
