@@ -149,9 +149,12 @@ $(function() {
     }
 
     // utility functions
+    function isBellowBreakPoint() {
+      return window.matchMedia('only screen and (max-width: 480px)').matches;
+    }
     function getScaleRatio() {
       var winWidth = $win.width();
-      if((siteWidth && winWidth < siteWidth) || winWidth < 480) {
+      if((siteWidth && winWidth < siteWidth) || isBellowBreakPoint()) {
         // scale the site
         var breakPoint = getScaleBreakPoint();
         return winWidth / breakPoint;
@@ -159,8 +162,7 @@ $(function() {
       return 1;
     }
     function getScaleBreakPoint() {
-      var winWidth = $win.width();
-      return winWidth < 480 ? 480 : siteWidth;
+      return isBellowBreakPoint() ? 480 : siteWidth;
     }
 
     function initPages() {
