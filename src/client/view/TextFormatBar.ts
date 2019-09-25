@@ -127,7 +127,7 @@ export class TextFormatBar {
     this.element.classList.remove('text-editor-editing');
   }
 
-  startEditing(fileExplorer: FileExplorer) {
+  startEditing(fileExplorer: FileExplorer, bookmark = null, cbk = null) {
     // edit the style of the selection
     if (this.selectedElements.length === 1) {
       const newTextBox = this.selectedElements[0];
@@ -219,36 +219,33 @@ export class TextFormatBar {
         );
         win.addEventListener('scroll', onKeyScrollBinded);
         this.wysihtmlEditor.on('blur', (e) => {
-          if (!SilexNotification.isActive) {
-            this.stopEditing();
-          }
+          // leave time for the onclick events to fire (wtf? events in the toolbar always come after blur + huge dekay)
+          setTimeout(() => {
+            if (!SilexNotification.isActive) {
+              this.stopEditing();
+            }
+          }, 500)
         });
         this.wysihtmlEditor.on('load', () => {
-          this.wysihtmlEditor.focus(false);
-          setTimeout(() => {
-            if (this.wysihtmlEditor) {
-              this.wysihtmlEditor.focus(false);
-            }
-          }, 250);
-          setTimeout(() => {
-            if (this.wysihtmlEditor) {
-              this.wysihtmlEditor.focus(false);
-            }
-          }, 500);
           (this.element.querySelector('.insert-image') as HTMLElement).onclick = (e) => {
             this.tracker.trackAction('controller-events', 'request', 'insert.image.text', 0);
+            const bookmark = this.wysihtmlEditor.composer.selection.getBookmark();
             fileExplorer.openFile(FileExplorer.IMAGE_EXTENSIONS)
                 .then((fileInfo) => {
-                  if (fileInfo) {
-                    // undo checkpoint
-                    this.controller.textEditorController.undoCheckPoint();
-                    this.wysihtmlEditor.composer.commands.exec('insertImage', {src: fileInfo.absPath, alt: ''});
-                    this.tracker.trackAction('controller-events', 'success', 'insert.image.text', 1);
-                  }
+                  this.startEditing(fileExplorer, bookmark, () => {
+                    if (fileInfo) {
+                      // undo checkpoint
+                      this.controller.textEditorController.undoCheckPoint();
+                      this.wysihtmlEditor.composer.commands.exec('insertImage', {src: fileInfo.absPath, alt: ''});
+                      this.tracker.trackAction('controller-events', 'success', 'insert.image.text', 1);
+                    }
+                  })
                 })
                 .catch((error) => {
                   SilexNotification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''));
                   this.tracker.trackAction('controller-events', 'error', 'insert.image.text', -1);
+
+                  this.startEditing(fileExplorer, bookmark)
                 });
           };
 
@@ -269,10 +266,24 @@ export class TextFormatBar {
           (imageDetails.querySelector('.src') as HTMLElement).onkeydown = (e) => autoSubmitImage(e);
           (imageDetails.querySelector('.alt') as HTMLElement).onkeydown = (e) => autoSubmitImage(e);
           (this.element.querySelector('.create-link') as HTMLElement).onclick = (e) => this.openLinkEditor(e);
+
+          // loaded
+          this.focus(bookmark);
+          if(cbk) cbk();
         });
       }
+      else if(cbk) cbk();
     } else {
       console.error('Error, can not edit selection with format pane', this.selectedElements);
+    }
+  }
+
+  // give focus to the editor if it still exists
+  focus(bookmark) {
+    if (this.wysihtmlEditor) {
+      this.wysihtmlEditor.focus(false);
+      // move the cursor where it was before
+      if(bookmark) this.wysihtmlEditor.composer.selection.setBookmark(bookmark)
     }
   }
 
