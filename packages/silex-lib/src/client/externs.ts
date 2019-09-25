@@ -112,6 +112,7 @@ export interface WysiHtmlEditor {
 }
 interface WysiHtmlComposer {
   commands: WysiHtmlCommand;
+  selection: any;
 }
 interface WysiHtmlCommand {
   exec(cmd: string, options?: any);
