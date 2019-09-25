@@ -224,28 +224,28 @@ export class TextFormatBar {
             if (!SilexNotification.isActive) {
               this.stopEditing();
             }
-          }, 500)
+          }, 500);
         });
         this.wysihtmlEditor.on('load', () => {
           (this.element.querySelector('.insert-image') as HTMLElement).onclick = (e) => {
             this.tracker.trackAction('controller-events', 'request', 'insert.image.text', 0);
-            const bookmark = this.wysihtmlEditor.composer.selection.getBookmark();
+            const bookmarkNew = this.wysihtmlEditor.composer.selection.getBookmark();
             fileExplorer.openFile(FileExplorer.IMAGE_EXTENSIONS)
                 .then((fileInfo) => {
-                  this.startEditing(fileExplorer, bookmark, () => {
+                  this.startEditing(fileExplorer, bookmarkNew, () => {
                     if (fileInfo) {
                       // undo checkpoint
                       this.controller.textEditorController.undoCheckPoint();
                       this.wysihtmlEditor.composer.commands.exec('insertImage', {src: fileInfo.absPath, alt: ''});
                       this.tracker.trackAction('controller-events', 'success', 'insert.image.text', 1);
                     }
-                  })
+                  });
                 })
                 .catch((error) => {
                   SilexNotification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''));
                   this.tracker.trackAction('controller-events', 'error', 'insert.image.text', -1);
 
-                  this.startEditing(fileExplorer, bookmark)
+                  this.startEditing(fileExplorer, bookmarkNew);
                 });
           };
 
@@ -269,10 +269,13 @@ export class TextFormatBar {
 
           // loaded
           this.focus(bookmark);
-          if(cbk) cbk();
+          if (cbk) {
+            cbk();
+          }
         });
+      } else if (cbk) {
+        cbk();
       }
-      else if(cbk) cbk();
     } else {
       console.error('Error, can not edit selection with format pane', this.selectedElements);
     }
@@ -283,7 +286,9 @@ export class TextFormatBar {
     if (this.wysihtmlEditor) {
       this.wysihtmlEditor.focus(false);
       // move the cursor where it was before
-      if(bookmark) this.wysihtmlEditor.composer.selection.setBookmark(bookmark)
+      if (bookmark) {
+        this.wysihtmlEditor.composer.selection.setBookmark(bookmark);
+      }
     }
   }
 
