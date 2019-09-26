@@ -99,6 +99,8 @@ export class DomPublisher {
     .forEach((el) => el.parentElement.removeChild(el));
     // split in multiple pages
     const pages = Array.from(this.doc.querySelectorAll(`a[${Constants.TYPE_ATTR}="${Constants.TYPE_PAGE}"]`));
+    if (!pages) { throw new Error('Could not find the pages of the website.'); }
+    if (pages.length === 0) { throw new Error('The website has 0 pages.'); }
     const initialFirstPageName = pages[0].getAttribute('id');
     return pages
     .map((el, idx) => {
