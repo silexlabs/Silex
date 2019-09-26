@@ -72,7 +72,7 @@ export class FileMenuController extends ControllerBase {
                     this.openRecent(fileInfo, opt_cbk);
                   }
                 });
-              }
+              },
             );
           } else {
             SilexNotification.confirm('Open recent file', `

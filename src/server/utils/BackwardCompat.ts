@@ -78,6 +78,8 @@ export default class BackwardCompat {
         this.updateStatic(doc);
         // store the latest version
         metaNode.setAttribute('content', 'Silex v' + LATEST_VERSION.join('.'));
+        // apply all-time fixes
+        this.fixes(doc);
         // build the report for the user
         const report = Object.keys(allActions).map((_version) => {
           return `<small>Update to version ${ _version }:
@@ -97,7 +99,21 @@ export default class BackwardCompat {
 } else {
       // update the static scripts to match the current server URL
       this.updateStatic(doc);
+      // apply all-time fixes
+      this.fixes(doc);
+      // resolve immediately
       return Promise.resolve('');
+    }
+  }
+
+  /**
+   * Check for common errors in editable html files
+   */
+  fixes(doc) {
+    const pages: HTMLElement[] = Array.from(doc.querySelectorAll(`.${Constants.PAGES_CONTAINER_CLASS_NAME} a[${Constants.TYPE_ATTR}="page"]`));
+    if (pages.length > 0) {
+      console.log('Fix error of wrong silex type for', pages.length, 'pages');
+      pages.forEach((page) => page.setAttribute(Constants.TYPE_ATTR, Constants.TYPE_PAGE));
     }
   }
 
