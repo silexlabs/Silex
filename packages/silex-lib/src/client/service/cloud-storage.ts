@@ -64,7 +64,7 @@ export class CloudStorage {
    */
   write(
       fileInfo: FileInfo, rawData: string, userHead: string, cbk: () => any,
-      opt_errCbk?: ((p1: any, p2: string) => any)) {
+      opt_errCbk?: ((p1: any, p2: string, code: number) => any)) {
     // // save the data
     // this.ce.write(new Blob([rawData], {type: 'text/plain'}), fileInfo)
     // .then(() => {
@@ -82,7 +82,7 @@ export class CloudStorage {
         const err = new Event('error');
         const msg = this.getErrorMessage(oReq);
         if (opt_errCbk) {
-          opt_errCbk(err, msg);
+          opt_errCbk(err, msg, oReq.status);
         }
       }
     };
@@ -97,7 +97,7 @@ export class CloudStorage {
    */
   read(
       fileInfo: FileInfo, cbk: (p1: string, p2: string) => any,
-      opt_errCbk?: ((p1: any, p2: string) => any)) {
+      opt_errCbk?: ((p1: any, msg: string, code: number) => any)) {
     this.loadLocal(fileInfo.absPath, cbk, opt_errCbk);
   }
 
@@ -139,7 +139,7 @@ export class CloudStorage {
    */
   loadLocal(
       absPath: string, cbk: (p1: string, p2: string) => any,
-      opt_errCbk?: ((p1: any, p2: string) => any)) {
+      opt_errCbk?: ((p1: any, p2: string, code: number) => any)) {
     const url = '/website' + absPath;
     const oReq = new XMLHttpRequest();
     oReq.addEventListener('load', (e) => {
@@ -155,7 +155,7 @@ export class CloudStorage {
       } else {
         const err = new Event('error');
         const msg = this.getErrorMessage(oReq);
-        opt_errCbk(err, msg);
+        opt_errCbk(err, msg, oReq.status);
       }
     });
     oReq.addEventListener('error', (e) => {
@@ -163,7 +163,7 @@ export class CloudStorage {
       if (opt_errCbk) {
         opt_errCbk(
             e,
-            'Network error, please check your internet connection or try again later.');
+            'Network error, please check your internet connection or try again later.', oReq.status);
       }
     });
     oReq.open('GET', url);

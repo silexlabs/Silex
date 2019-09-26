@@ -292,7 +292,7 @@ export class File {
    * write content to the file
    * @export
    */
-  save(rawHtml: string, cbk: () => any, opt_errCbk?: ((p1: any, p2: string) => any)) {
+  save(rawHtml: string, cbk: () => any, opt_errCbk?: ((p1: any, msg: string, code: number) => any)) {
     if (this.fileInfo == null) {
       throw new Error('Can not save, fileInfo is null');
     }
@@ -312,7 +312,7 @@ export class File {
    */
   open(
       fileInfo: FileInfo, cbk: (p1: string) => any,
-      opt_errCbk?: ((p1: any, p2: string) => any)) {
+      opt_errCbk?: ((p1: any, msg: string, code: number) => any)) {
     this.isTemplate = false;
     CloudStorage.getInstance().read(
       fileInfo, (rawHtml, userHead) => {
