@@ -53,24 +53,33 @@ export class FileMenuController extends ControllerBase {
     // a recent file was selected
     this.model.file.open(
         (fileInfo as FileInfo), (rawHtml) => this.onOpened(opt_cbk, rawHtml),
-        (err) => {
-          SilexNotification.confirm('Open recent file', `
-            Could not open this recent file, you probably need to connect to ${fileInfo.service} again.
-          `,
-          (ok) => {
-            const ce = CloudStorage.getInstance().ce;
-            SilexNotification.alert('Open recent file', `
-              I am trying to connect you to ${fileInfo.service} again,
-              please accept the connection in the popup I have just opened then <strong>please wait</strong>.
-            `, () => {});
-            // tslint:disable:no-string-literal
-            ce['auth'](fileInfo.service).then((res) => {
-              SilexNotification.close();
-              if (ok) {
-                this.openRecent(fileInfo, opt_cbk);
+        (err, message, code) => {
+          console.log('Could not open recent file', err, message, code);
+          if (code === 403) {
+            // user not logged in
+            SilexNotification.confirm(
+              'Open recent file', `Could not open this recent file, you probably need to connect to ${fileInfo.service} again.`,
+              (ok) => {
+                const ce = CloudStorage.getInstance().ce;
+                SilexNotification.alert('Open recent file', `
+                  I am trying to connect you to ${fileInfo.service} again,
+                  please accept the connection in the popup I have just opened then <strong>please wait</strong>.
+                `, () => {});
+                // tslint:disable:no-string-literal
+                ce['auth'](fileInfo.service).then((res) => {
+                  SilexNotification.close();
+                  if (ok) {
+                    this.openRecent(fileInfo, opt_cbk);
+                  }
+                });
               }
-            });
-          });
+            );
+          } else {
+            SilexNotification.confirm('Open recent file', `
+              Could not open this recent file. ${ message }
+            `,
+            (ok) => {});
+          }
         });
   }
 

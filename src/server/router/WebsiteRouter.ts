@@ -9,7 +9,7 @@
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
 
-import CloudExplorer from 'cloud-explorer';
+import * as CloudExplorer from 'cloud-explorer';
 import * as express from 'express';
 import * as fs from 'fs';
 import { JSDOM } from 'jsdom';
@@ -94,24 +94,31 @@ export default function({ port, rootUrl }, unifile) {
     const { html, userHead } = DomTools.extractUserHeadTag(buffer.toString('utf-8'));
     // from now on use a parsed DOM
     const dom = new JSDOM(html, { url: url.href });
-    return backwardCompat.update(dom.window.document)
-    .then((wanrningMsg) => {
-      prepareWebsite(dom, url);
-      // done, back to a string
-      const str = dom.serialize();
-      dom.window.close();
-      res.send({
-        message: wanrningMsg,
-        html: str,
-        userHead,
-      });
-    })
-    .catch((err) => {
-      console.error('Could not send website data: ', err);
+    if (dom.window.document.body.classList.contains(Constants.WEBSITE_CONTEXT_PUBLISHED_CLASS_NAME)) {
+      console.error('Could not open this website for edition as it is a published Silex website');
       res.status(400).send({
-        message: err.message,
+        message: 'Could not open this website for edition as it is a published Silex website, <a href="https://github.com/silexlabs/Silex/wiki/FAQ#why-do-i-get-the-error-could-not-open-this-website-for-edition-as-it-is-a-published-silex-website" target="_blank">Read more about this error here</a>.',
       });
-    });
+    } else {
+      return backwardCompat.update(dom.window.document)
+      .then((wanrningMsg) => {
+        prepareWebsite(dom, url);
+        // done, back to a string
+        const str = dom.serialize();
+        dom.window.close();
+        res.send({
+          message: wanrningMsg,
+          html: str,
+          userHead,
+        });
+      })
+      .catch((err) => {
+        console.error('Could not send website data: ', err);
+        res.status(400).send({
+          message: err.message,
+        });
+      });
+    }
   }
   /**
    * save a website to the cloud storage of the user
