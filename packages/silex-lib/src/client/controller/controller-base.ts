@@ -669,11 +669,12 @@ export class ControllerBase {
       this.view.cssEditor.close();
       this.view.htmlEditor.close();
       this.view.settingsDialog.redraw();
-      this.view.contextMenu.redraw();
       this.view.breadCrumbs.redraw();
     }
+    // always update context menu as it contains the file name
+    this.view.contextMenu.redraw();
+    // notify user
     if (opt_message) {
-      // notify user
       SilexNotification.notifySuccess(opt_message);
     }
   }

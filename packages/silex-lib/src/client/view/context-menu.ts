@@ -42,8 +42,7 @@ export class ContextMenu {
 
   constructor(public element: HTMLElement, public model: Model, public controller: Controller) {
     this.currentPageElement = element.querySelector('.current-page');
-    this.currentPageElement.onclick = (e) =>
-        this.controller.viewMenuController.showPages();
+    this.currentPageElement.onclick = (e) => this.controller.viewMenuController.showPages();
     this.invalidationManager = new InvalidationManager(500);
   }
 
@@ -95,8 +94,9 @@ export class ContextMenu {
     this.invalidationManager.callWhenReady(() => {
       // update page name
       if (opt_currentPageName) {
+        const fileInfo = this.model.file.getFileInfo();
         this.currentPageElement.innerHTML = `
-          ${this.model.file.getFileInfo().path ? this.model.file.getFileInfo().path + ' - ' : ''}
+          ${fileInfo.path ? fileInfo.path + ' - ' : ''}
           ${this.model.page.getDisplayName(opt_currentPageName)}
         `;
       }
