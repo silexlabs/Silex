@@ -67,6 +67,8 @@ export default function HostingGhPages(unifile) {
 
 HostingGhPages.prototype.getDefaultPageFileName = () => 'index.html';
 
+HostingGhPages.prototype.getPermalink = (pageName) => pageName === 'index.html' ? './' : pageName;
+
 HostingGhPages.prototype.finalizePublication = function(from, to, session, onStatus) {
   return setTimeoutPromise(2000)
   .then(() => {

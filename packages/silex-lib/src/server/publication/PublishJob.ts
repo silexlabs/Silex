@@ -236,7 +236,8 @@ export default class PublishJob {
       dom.window.document.head.innerHTML += '<style>body { opacity: 0; transition: .25s opacity ease; }</style>';
       // split into pages
       const newFirstPageName = this.hostingProvider && this.hostingProvider.getDefaultPageFileName ? this.hostingProvider.getDefaultPageFileName() : null;
-      this.pageActions = domPublisher.split(newFirstPageName);
+      const permalinkHook = this.hostingProvider && this.hostingProvider.getPermalink ? this.hostingProvider.getPermalink : (pageName) => pageName;
+      this.pageActions = domPublisher.split(newFirstPageName, permalinkHook);
       // release the dom object
       dom.window.close();
     })

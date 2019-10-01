@@ -89,7 +89,7 @@ export class DomPublisher {
     });
   }
 
-  split(newFirstPageName: string): Action[] {
+split(newFirstPageName: string, permalinkHook: (pageName: string) => string): Action[] {
     this.doc.body.classList.add(Constants.WEBSITE_CONTEXT_PUBLISHED_CLASS_NAME);
 
     // remove unused scripts when there is no deeplink navigation anymore
@@ -129,7 +129,7 @@ export class DomPublisher {
       .filter((el) => el.hash.startsWith('#!'))
       .forEach((el) => {
         const [pageName, anchor] = el.hash.substr('#!'.length).split('#');
-        el.href = (pageName === initialFirstPageName && newFirstPageName ? 'index.html' : pageName.substr('page-'.length) + '.html') + (anchor ? '#' + anchor : '');
+        el.href = permalinkHook(pageName === initialFirstPageName && newFirstPageName ? 'index.html' : pageName.substr('page-'.length) + '.html') + (anchor ? '#' + anchor : '');
         if (pageName ===  name) {
           el.classList.add(Constants.PAGE_LINK_ACTIVE_CLASS_NAME);
         } else {

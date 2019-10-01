@@ -43,4 +43,7 @@ export default class HostingJekyll extends HostingUnifile {
     }
     return actions;
   }
+  getPermalink(pageName) {
+    return pageName === 'index.html' ? '/' : pageName;
+  }
 }
