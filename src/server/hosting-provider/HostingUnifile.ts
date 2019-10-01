@@ -34,4 +34,9 @@ export default class HostingUnifile {
   getDefaultPageFileName() {
     return 'index.html';
   }
+
+  // this is commented out because with FS we need to explicitely link to index.html, not to the ./ folder
+  // getPermalink(pageName) {
+  //   return pageName === 'index.html' ? './' : pageName;
+  // }
 }
