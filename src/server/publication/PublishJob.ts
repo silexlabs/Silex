@@ -250,7 +250,7 @@ export default class PublishJob {
     // check existing folder structure
     .then(() => {
       if (this.isStopped()) {
-        console.warn('job is stopped', this.error, this.abort, this.success);
+        console.warn('job is stopped', 'error:', this.error, 'abort:', this.abort, 'success:', this.success);
         return [];
       }
       return this.readOperations();
