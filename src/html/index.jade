@@ -1,5 +1,7 @@
 doctype html
 head
+  block head-start
+
   style.
     .loading-pending .silex-workspace {
       opacity: 0;
@@ -8,21 +10,18 @@ head
       background-color: #444;
     }
 
-  include ./templates/head.jade
+  block styles
+    // all the css in the head with _styles.less imports
+    link(rel='stylesheet', type='text/css', href='css/admin.css')
 
-  // Silex styles and code
-  script(type='text/javascript', src='js/admin.js')
-
-  // all the css in the head with _styles.less imports
-  link(rel='stylesheet', type='text/css', href='css/admin.css')
+  block head-end
+    include ./templates/head.jade
 
 body.loading-pending.advanced-mode-off
-  include ./templates/body.jade
+  block body-start
+    include ./templates/body.jade
 
-  // google closure js patches, to be included after the other includes
-  script(type='text/javascript', src='js/closure-patches.js')
+  block silex-options
 
-  // start Silex
-  script(type='text/javascript').
-    // boot silex app
-    window.silexApp = new silex.App();
+  block body-end
+    script(type='text/javascript' src='js/index.js')

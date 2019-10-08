@@ -4,7 +4,7 @@
   font-family: 'Roboto';
   font-style: normal;
   font-weight: lighter;
-  src: local('Roboto'), url('../roboto.woff2') format('woff2');
+  src: local('Roboto'), url('../ce/cloud-explorer/fonts/Regular/OpenSans-Regular.woff2') format('woff2');
 }
 
 ::-webkit-scrollbar {
@@ -43,7 +43,7 @@ body {
   button, input[disabled], select[disabled] {
     background-color: @silexmediumdarkgrey;
   }
-  button, input, select {
+  button, input, select, .silex-input {
     border: 1px solid @silexmediumgrey;
     color: @silexlightergrey;
     background-color: @silexdarkgrey;
@@ -53,6 +53,7 @@ body {
     border-radius: 2px;
     box-sizing: border-box;
     padding: 0 5px;
+    height: 35px;
   }
   input[type=checkbox], select, label[for] {
     cursor: pointer;

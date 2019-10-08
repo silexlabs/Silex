@@ -1,40 +1,23 @@
 title Silex
 
-// analytics
-script(type='text/javascript').
-  var _paq = _paq || [];
-  _paq.push(['trackPageView']);
-  _paq.push(['enableLinkTracking']);
-  (function() {
-    var u="//lexoyo.piwikpro.com/";
-    _paq.push(['setTrackerUrl', u+'piwik.php']);
-    _paq.push(['setSiteId', 3]);
-    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-    g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
-  })();
-
-// alertify.js
-script(type='text/javascript', src='libs/alertify/alertify.min.js')
-
-// prodotype
-script(type='text/javascript', src='libs/prodotype/prodotype.js')
-
-// source map
-script(type='text/javascript', src='libs/source-map.min.js')
-
-// ace
-script(type='text/javascript', src='libs/ace/ace.js')
-script(type='text/javascript', src='libs/ace/ext-language_tools.js')
-
-// favicon
-link(rel="shortcut icon", href="assets/favicon.png")
-
-// pixlr editor
-// script(type='text/javascript', src='libs/pixlr/pixlr.js')
+meta(name='description', content='This is a public instance of Silex website builder. Build websites in the browser')
 
 // beautifyers
 script(type='text/javascript', src='libs/js-beautify/beautify-html.js')
 script(type='text/javascript', src='libs/js-beautify/beautify-css.js')
+
+// prodotype
+script(type='text/javascript', src='libs/prodotype/ejs.min.js')
+script(type='text/javascript', src='libs/prodotype/prodotype.js')
+
+// tags-input component
+link(rel='stylesheet', type='text/css', href='libs/tags-input/tags-input.css')
+
+// code editor
+script(type='text/javascript', src='js/monaco-editor.js')
+
+// favicon
+link(rel="shortcut icon", href="assets/favicon.png")
 
 // wysihtml library
 script(type='text/javascript', src='libs/wysihtml/wysihtml.min.js')

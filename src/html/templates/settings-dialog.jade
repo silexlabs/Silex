@@ -36,7 +36,7 @@
                 h3.title Website language
               p
                 | This is the default language code for this website. Examples: en, fr, es...
-              input.input-text.input-lang(type="text", value="", placeholder="en")
+              input.input-text.input-lang(type="text", spellcheck="false", value="", placeholder="en")
           li
             fieldset
               legend
@@ -96,14 +96,14 @@
                 | If you use an image that is smaller than 400 pixels x 209 pixels, it will render as a much smaller thumbnail.
               p
                 | Please enter the full URL here, e.g. "http://mysite.com/path/to/image.jpg"
-              input.input-text.input-image-path(type="text", value="", placeholder="Image URL")
+              input.input-text.input-image-path(type="text", spellcheck="false", value="", placeholder="Image URL")
           li
             fieldset
               legend
                 h3.title Twitter account
               p
                 | Indicates your Twitter account.
-              input.input-text.input-twitter(type="text", value="", placeholder="@twitteraccount", pattern="^@*", title="Twitter account name")
+              input.input-text.input-twitter(type="text", spellcheck="false", value="", placeholder="@twitteraccount", pattern="^@*", title="Twitter account name")
       .pane.publish-pane
         ul
           li
@@ -112,7 +112,7 @@
                 h3.title Website URL
               p
                 | The address where your website will be available after publish.
-              input.input-path.input-website-url(type="text", value="")
+              input.input-path.input-website-url(type="url", spellcheck="false", value="")
             fieldset
               legend
                 h3.title Publication Path -&nbsp;
@@ -123,7 +123,7 @@
               label.service Service
                 select.input-service.input-publication-service(value="")
               label.path Path
-                input.input-path.input-publication-path(type="text", value="")
+                input.input-path.input-publication-path(type="text", spellcheck="false", value="")
               button.browse-publication-path(type="button") Configure
       .pane.fonts-pane
         ul

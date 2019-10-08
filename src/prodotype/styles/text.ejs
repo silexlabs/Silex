@@ -40,11 +40,15 @@ const props = [
   }, {
     obj: Active,
     selector: ' .page-link-active' + pseudo,
+  }, {
+    obj: Element,
+    selector: '.editable-style' + pseudo,
   }
 ].filter(prop => typeof prop.obj !== 'undefined');
-function getProp(prop, propName) {
-  if(typeof prop.obj[propName] != 'undefined' && prop.obj[propName] != '')
-    return propName + ': ' + prop.obj[propName] + ';';
+function getProp(prop, propName, container) {
+  var obj = container ? prop.obj[container] : prop.obj;
+  if(typeof obj != 'undefined' && typeof obj[propName] != 'undefined' && obj[propName] != '')
+    return propName + ': ' + obj[propName] + ';';
   return '';
 }
 %>
@@ -77,11 +81,43 @@ function getProp(prop, propName) {
       <%- getProp(prop, 'letter-spacing') -%>
       <%- getProp(prop, 'text-indent') -%>
       <%- getProp(prop, 'direction') -%>
+
       <%- getProp(prop, 'columns') -%>
       <%- getProp(prop, 'column-rule-width') -%>
       <%- getProp(prop, 'column-gap') -%>
       <%- getProp(prop, 'column-rule-color') -%>
       <%- getProp(prop, 'column-rule-style') -%>
+
+      <%- getProp(prop, 'margin-top', 'margin') -%>
+      <%- getProp(prop, 'margin-left', 'margin') -%>
+      <%- getProp(prop, 'margin-bottom', 'margin') -%>
+      <%- getProp(prop, 'margin-right', 'margin') -%>
+
+      <%- getProp(prop, 'padding-top', 'padding') -%>
+      <%- getProp(prop, 'padding-left', 'padding') -%>
+      <%- getProp(prop, 'padding-bottom', 'padding') -%>
+      <%- getProp(prop, 'padding-right', 'padding') -%>
+
+      <%- getProp(prop, 'border-style', 'border') -%>
+      <%- getProp(prop, 'border-width', 'border') -%>
+      <%- getProp(prop, 'border-color', 'border') -%>
+
+      <% if(prop.obj['gradient'] && prop.obj['gradient'].colors && prop.obj['gradient'].colors.length > 0) { %>
+        background: linear-gradient(<%- prop.obj['gradient'].orientation ? prop.obj['gradient'].orientation + ', ' : '' -%><%- prop.obj['gradient'].colors.map(g => g.color).join(', ') -%>);
+      <% } %>
+
+      <% if(prop.obj['transition'] && prop.obj['transition'].length > 0) { %>
+        <%-
+          ['-webkit-transition', '-moz-transition', '-o-transition', 'transition'].map(name => {
+            var trans = prop.obj['transition'].map(t => `${t.property || 'all'} ${t.duration || '1' }s ${t.func || 'ease'} ${t.delay ? t.delay + 's' : ''}`).join(', ');
+            return name + ': ' + trans + ';';
+          }).join(' ')
+        -%>
+      <% } %>
+
+      <%- getProp(prop, 'display') -%>
+      <%- getProp(prop, 'position') -%>
+
     }
   <% } %>
 <% }) %>

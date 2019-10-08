@@ -142,6 +142,32 @@
     .expandable > *, section > * {
       max-width: 97%; /* avoid horizontal scroll bar in the property tool */
     }
+    h1.name {
+      display: inline-block;
+      margin-top: 10px;
+    }
+    .help {
+      float: right;
+      margin: 10px;
+      padding: 10px;
+      border-radius: 50%;
+      height: 30px;
+      width: 30px;
+      line-height: 0;
+    }
+    .prop-editor-base {
+      width: 100%;
+      flex: 1 1 auto;
+      &.half-col {
+        width: 50%;
+      }
+    }
+    .prodotype-component-editor {
+      .sub-editors .prop-editor-base {
+        padding: 5px 0;
+        border: none;
+      }
+    }
 
     /* size set by workspace.js when the user resizes the property tool */
     &.size1 {
@@ -158,9 +184,9 @@
     }
     input, select {
       height: 30px;
-      width: 95%;
+      width: 93%;
       overflow: hidden;
-      margin-left: 2.5%;
+      // margin-left: 2.5%;
 
       &:focus {
         outline: none;
@@ -201,8 +227,6 @@
     .button {
       .small-combo;
       display: inline;
-      margin-right: 5px;
-      margin-top: 5px;
       &.disabled {
         color: graytext;
         background-color: @silexmediumdarkgrey;
@@ -214,7 +238,6 @@
   fieldset {
     margin: 15px 0;
     border: 1px solid @silexlightergrey;
-    width: 90%;
     display: inline;
   }
 
@@ -263,12 +286,12 @@
       font-weight: 700;
       font-size: 13px;
       padding-top: 8px;
-      padding-left: 8px;
       cursor: default;
       line-height: 2;
       width: 100%;
       cursor: pointer;
       border-top: 1px solid @silexdarkgrey;
+      margin-top: 2px;
       .fa {
         margin-right: 5px;
       }
@@ -406,7 +429,7 @@
       label.unit {
         font-size: 70%;
         margin-left: 0;
-        margin-top: 0;
+        margin-top: 5px;
         padding: 4px;
         width: 0;
       }
@@ -438,6 +461,16 @@
   .element-style-editor{
     margin-top: 10px;
     height: 400px;
+  }
+  .silex-input {
+    // this is the tags-input component for css classes
+    height: auto;
+    .tag {
+      color: @silexlightergrey;
+      background-color: @silexmediumgrey;
+      border: none;
+      padding-bottom: 3px;
+    }
   }
 
   .opacity-property {
@@ -529,9 +562,9 @@
   /* */
   .prodotype-component-editor, .prodotype-style-editor {
     .expandable;
-    form {
+    .style-editor-tag-form {
       .button-bar-container-template;
-      margin-left: 2.5%;
+      // margin-left: 2.5%;
       padding-bottom: 15px;
       label {
         width: 15.8%;
@@ -543,15 +576,20 @@
     &.hide-panel {
       display: none;
     }
-    & > section > ul,
-    & > .prodotype-container > section > ul {
+    & > section > div,
+    & > .prodotype-container > section > div {
       padding-left: 0;
+      display: flex;
+      flex-wrap: wrap;
     }
     /* prodotype editors labels, e.g. Heading1 */
-    .prop-editor-base label, .class-name-style-label {
+    .prop-editor-base > label, .class-name-style-label {
       .expandable-legend;
       display: block;
       padding-bottom: 5px;
+    }
+    .prop-editor-base.prop-editor-no-expandable > label {
+      font-size: 10px;
     }
   }
   .prodotype-style-editor .prodotype-style-editor-menu > label:first-child {
@@ -579,82 +617,46 @@
       float: right;
     }
     /* all labels in the style editor */
-    .prodotype-container .prop-editor-name {
+    .prodotype-container .prop-editor-name.prop-editor-no-expandable {
       cursor: default;
       border-top: none;
     }
     /* style the title of the ditor, i.e. "Paragraph", "Link"... */
-    .prodotype-container > .editor > ul > .prop-editor-base > .prop-editor-name {
+    .prodotype-container > .editor > div > .prop-editor-base > .prop-editor-name {
       border-top: 1px solid @silexdarkergrey;
+      font-size: 12px;
+      text-align: center;
+      color: @silexlightblue;
+      font-weight: normal;
+      cursor: default;
     }
 
     /* highlight selected label, e.g. H1 */
     .hidden { display: none; }
-    .style-editor-tag-form input:checked:nth-child(1) ~
-    .labels label:nth-child(1),
-    .style-editor-tag-form input:checked:nth-child(2) ~
-    .labels label:nth-child(2),
-    .style-editor-tag-form input:checked:nth-child(3) ~
-    .labels label:nth-child(3),
-    .style-editor-tag-form input:checked:nth-child(4) ~
-    .labels label:nth-child(4),
-    .style-editor-tag-form input:checked:nth-child(5) ~
-    .labels label:nth-child(5),
-    .style-editor-tag-form input:checked:nth-child(6) ~
-    .labels label:nth-child(6),
-    .style-editor-tag-form input:checked:nth-child(7) ~
-    .labels label:nth-child(7),
-    .style-editor-tag-form input:checked:nth-child(8) ~
-    .labels label:nth-child(8),
-    .style-editor-tag-form input:checked:nth-child(9) ~
-    .labels label:nth-child(9),
-    .style-editor-tag-form input:checked:nth-child(10) ~
-    .labels label:nth-child(10),
-    .style-editor-tag-form input:checked:nth-child(11) ~
-    .labels label:nth-child(11),
-    .style-editor-tag-form input:checked:nth-child(12) ~
-    .labels label:nth-child(12) { .button-template-selected }
+
     /* Pure CSS to show / hide prodotype editors (tags H1, H2, H3, P, A) */
-    .prodotype-container .editor > ul > .prop-editor-base { display: none; }
-    /* Paragraph */
-    .style-editor-tag-form input:checked:nth-child(1) ~
-    .prodotype-container .editor > ul > .prop-editor-base:nth-child(1),
-    /* Link */
-    .style-editor-tag-form input:checked:nth-child(2) ~
-    .prodotype-container .editor > ul > .prop-editor-base:nth-child(2),
-    /* Bold */
-    .style-editor-tag-form input:checked:nth-child(3) ~
-    .prodotype-container .editor > ul > .prop-editor-base:nth-child(3),
-    /* Underline */
-    .style-editor-tag-form input:checked:nth-child(4) ~
-    .prodotype-container .editor > ul > .prop-editor-base:nth-child(4),
-    /* Italic */
-    .style-editor-tag-form input:checked:nth-child(5) ~
-    .prodotype-container .editor > ul > .prop-editor-base:nth-child(5),
-    /* Heading1 */
-    .style-editor-tag-form input:checked:nth-child(6) ~
-    .prodotype-container .editor > ul > .prop-editor-base:nth-child(6),
-    /* Heading2 */
-    .style-editor-tag-form input:checked:nth-child(7) ~
-    .prodotype-container .editor > ul > .prop-editor-base:nth-child(7),
-    /* Heading3 */
-    .style-editor-tag-form input:checked:nth-child(8) ~
-    .prodotype-container .editor > ul > .prop-editor-base:nth-child(8),
-    /* UL */
-    .style-editor-tag-form input:checked:nth-child(9) ~
-    .prodotype-container .editor > ul > .prop-editor-base:nth-child(9),
-    /* OL */
-    .style-editor-tag-form input:checked:nth-child(10) ~
-    .prodotype-container .editor > ul > .prop-editor-base:nth-child(10),
-    /* active link */
-    .style-editor-tag-form input:checked:nth-child(11) ~
-    .prodotype-container .editor > ul > .prop-editor-base:nth-child(11),
-    /* All */
-    .style-editor-tag-form input:checked:nth-child(12) ~
-    .prodotype-container .editor > ul > .prop-editor-base:nth-child(12) { display: initial; }
-    .editor {
-      /* hide description and help button, FIXME: should be doable in the .yaml */
-      & > h1, & > h1 + div { display: none; }
+    .prodotype-container .editor > div > .prop-editor-base { display: none; }
+
+    .loop(@counter) when (@counter > 0) {
+      /* highlight selected label, e.g. H1 */
+      .style-editor-tag-form input:checked:nth-child(@{counter}) ~
+      .labels label:nth-child(@{counter}) { .button-template-selected }
+
+      /* Pure CSS to show / hide prodotype editors (tags H1, H2, H3, P, A) */
+      .style-editor-tag-form input:checked:nth-child(@{counter}) ~
+      .prodotype-container .editor > div > .prop-editor-base:nth-child(@{counter}) { display: initial; }
+
+      .loop((@counter - 1));    // next iteration
+    }
+    .loop(18);
+    // hide text styles and edit notext
+    .style-editor-notext {
+      .style-editor-text {
+        display: none !important;
+      }
+      .style-editor-tag-notext {
+        display: block !important;
+      }
     }
 
     /* vivibility checkbox (mobile only or not) */
@@ -717,7 +719,6 @@
       background-size: 18px;
       &:first-child {
         .button-bar-first;
-        margin-left: 5px;
       }
       &:last-child {
         .button-bar-last;
@@ -732,6 +733,10 @@
     }
     .half-width {
       width: 49%;
+      display: inline-block;
+    }
+    .quarter-width {
+      width: 24%;
       display: inline-block;
     }
     .medium-width {

@@ -27,6 +27,14 @@
     border: 1px solid @silexdarkergrey;
     color: @silexlightergrey;
     cursor: pointer;
+
+    /* elipsis at the begining when overflow */
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    direction: rtl;
+    /* */
+
     label {
       cursor: pointer;
       opacity: .5;

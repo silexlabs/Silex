@@ -5,12 +5,12 @@ form
     div.hidden
       // this is a wysihtml dialog used by silex to get the link value
       div.link-dialog(data-wysihtml-dialog='createLink')
-        input.get-href(data-wysihtml-dialog-field='href', value='')
-        input.get-rel(data-wysihtml-dialog-field='rel', value='')
-        input.get-target(data-wysihtml-dialog-field='target', value='')
-        input.get-title(data-wysihtml-dialog-field='title', value='')
-        input.get-download(data-wysihtml-dialog-field='download', value='')
-        input.get-type(data-wysihtml-dialog-field='type', value='')
+        input.get-href(data-wysihtml-dialog-field='href', value='', autocomplete="off")
+        input.get-rel(data-wysihtml-dialog-field='rel', value='', autocomplete="off")
+        input.get-target(data-wysihtml-dialog-field='target', value='', autocomplete="off")
+        input.get-title(data-wysihtml-dialog-field='title', value='', autocomplete="off")
+        input.get-download(data-wysihtml-dialog-field='download', value='', autocomplete="off")
+        input.get-type(data-wysihtml-dialog-field='type', value='', autocomplete="off")
     label.b(data-wysihtml-command='bold', title='CTRL+B') B
     label.u(data-wysihtml-command='underline', title='CTRL+U') U
     label.i.last-button(data-wysihtml-command='italic', title='CTRL+I') I
@@ -24,9 +24,9 @@ form
       label.fa.fa-question.fa-inverse
     a.hidden(data-wysihtml-command="insertImage", href="javascript:;", unselectable="on") Image
     .image-details(data-wysihtml-dialog="insertImage", style="display: none;")
-      input.src.hidden(data-wysihtml-dialog-field="src", value="http://")
+      input.src.hidden(data-wysihtml-dialog-field="src", value="http://", autocomplete="off")
       label alt:
-      input.alt(data-wysihtml-dialog-field="alt", value="", placeholder="Image description")
+      input.alt(data-wysihtml-dialog-field="alt", value="", placeholder="Image description", autocomplete="off")
       select.float(data-wysihtml-dialog-field="className")
         option(value="") No float
         option(value="wysiwyg-float-left") left
