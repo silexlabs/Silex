@@ -3,8 +3,12 @@ tags:
 - text
 - style
 props:
+# #################################
+# Templates
+# #################################
 - name: TextStyle
   type: template
+  extends: ElementStyle
   props:
   - name: font-family
     default: ""
@@ -201,104 +205,272 @@ props:
     - px
     - em
   # - white-space
+
+- name: ListStyle
+  type: template
+  extends: TextStyle
+  props:
+  - name: list-style-type
+    type:
+      - ""
+      - none
+      - disc
+      - circle
+      - square
+      - decimal
+      - decimal-leading-zero
+      - lower-roman
+      - upper-roman
+      - lower-greek
+      - lower-latin
+      - upper-latin
+      - arabic-indic
+      - armenian
+      - bengali
+      - cjk-earthly-branch
+      - cjk-heavenly-stem
+      - devanagari
+      - georgian
+      - gujarati
+      - gurmukhi
+      - kannada
+      - khmer
+      - lao
+      - malayalam
+      - myanmar
+      - oriya
+      - telugu
+      - thai
+  - name: list-style-position
+    type:
+      - ""
+      - inside
+      - outside
+
+- name: ElementStyle
+  type: template
+  props:
+  - name: gradient
+    expandable: true
+    displayName: Gradient background
+    type: object
+    props:
+    - name: orientation
+      displayName: Orientation
+      type: number
+      unit:
+      - deg
+    - name: colors
+      displayName: Colors
+      type:
+        - name: color
+          hideTitle: true
+          type: color
+  - name: transition
+    expandable: true
+    displayName: Transition
+    type:
+      - name: property
+        hideTitle: true
+        default: all
+        type:
+        - all
+        - background
+        - border
+        - color
+        - columns
+        - font
+        - letter-spacing
+        - margin
+        - opacity
+        - padding
+        - text-decoration
+        - text-indent
+        - word-spacing
+      - name: duration
+        hideTitle: true
+        type: number
+        default: 1
+      - name: delay
+        hideTitle: true
+        type: number
+      - name: func
+        hideTitle: true
+        default: ease
+        type:
+        - ease
+        - ease-in
+        - ease-out
+        - ease-in-out
+        - linear
+        - step-start
+        - step-end
+  - name: margin
+    expandable: true
+    displayName: Margins
+    type: object
+    props:
+    - name: margin-top
+      displayName: top
+      className: quarter-width
+      type: number
+      unit:
+      - px
+      - em
+      - vw
+    - name: margin-left
+      displayName: left
+      className: quarter-width
+      type: number
+      unit:
+      - px
+      - em
+      - vw
+    - name: margin-bottom
+      displayName: bottom
+      className: quarter-width
+      type: number
+      unit:
+      - px
+      - em
+      - vw
+    - name: margin-right
+      displayName: right
+      className: quarter-width
+      type: number
+      unit:
+      - px
+      - em
+      - vw
+  - name: padding
+    expandable: true
+    displayName: Padding
+    type: object
+    props:
+    - name: padding-top
+      displayName: top
+      className: quarter-width
+      type: number
+      unit:
+      - px
+      - em
+      - vw
+    - name: padding-left
+      displayName: left
+      className: quarter-width
+      type: number
+      unit:
+      - px
+      - em
+      - vw
+    - name: padding-bottom
+      displayName: bottom
+      className: quarter-width
+      type: number
+      unit:
+      - px
+      - em
+      - vw
+    - name: padding-right
+      displayName: right
+      className: quarter-width
+      type: number
+      unit:
+      - px
+      - em
+      - vw
+  - name: border
+    expandable: true
+    displayName: Border
+    type: object
+    props:
+    - name: border-width
+      className: half-width
+      default: ""
+      type: number
+      unit:
+      - px
+    - name: border-style
+      className: half-width
+      default: ""
+      type:
+      - ""
+      - solid
+      - hidden
+      - dotted
+      - dashed
+      - double
+      - groove
+      - ridge
+      - inset
+      - outset
+    - name: border-color
+      className: half-width
+      default: ""
+      type: color
+
+# #################################
+# Types
+# #################################
+
 - name: All
+  displayName: Editing style for all texts (P, A, UL, H1, H2...)
   type: TextStyle
+  className: style-editor-text
 - name: Paragraph
+  displayName: Editing style of paragraphs (P)
   type: TextStyle
+  className: style-editor-text
 - name: Link
+  displayName: Editing style of links (A)
   type: TextStyle
+  className: style-editor-text
 - name: Active
+  displayName: Editing style of actives (A:active)
   type: TextStyle
+  className: style-editor-text
 - name: UnorderedList
-  type: TextStyle
-  props:
-  - name: list-style-type
-    type:
-      - ""
-      - none
-      - disc
-      - circle
-      - square
-      - decimal
-      - decimal-leading-zero
-      - lower-roman
-      - upper-roman
-      - lower-greek
-      - lower-latin
-      - upper-latin
-      - arabic-indic
-      - armenian
-      - bengali
-      - cjk-earthly-branch
-      - cjk-heavenly-stem
-      - devanagari
-      - georgian
-      - gujarati
-      - gurmukhi
-      - kannada
-      - khmer
-      - lao
-      - malayalam
-      - myanmar
-      - oriya
-      - telugu
-      - thai
-  - name: list-style-position
-    type:
-      - ""
-      - inside
-      - outside
+  displayName: Editing style of unordered lists (UL)
+  type: ListStyle
+  className: style-editor-text
 - name: OrderedList
-  type: TextStyle
-  props:
-  - name: list-style-type
-    type:
-      - ""
-      - none
-      - disc
-      - circle
-      - square
-      - decimal
-      - decimal-leading-zero
-      - lower-roman
-      - upper-roman
-      - lower-greek
-      - lower-latin
-      - upper-latin
-      - arabic-indic
-      - armenian
-      - bengali
-      - cjk-earthly-branch
-      - cjk-heavenly-stem
-      - devanagari
-      - georgian
-      - gujarati
-      - gurmukhi
-      - kannada
-      - khmer
-      - lao
-      - malayalam
-      - myanmar
-      - oriya
-      - telugu
-      - thai
-  - name: list-style-position
-    type:
-      - ""
-      - inside
-      - outside
+  displayName: Editing style of ordered lists (OL)
+  type: ListStyle
+  className: style-editor-text
 - name: Heading1
+  displayName: Editing style of heading 1 (H1)
   type: TextStyle
+  className: style-editor-text
 - name: Heading2
+  displayName: Editing style of heading 2 (H2)
   type: TextStyle
+  className: style-editor-text
 - name: Heading3
+  displayName: Editing style of heading 3 (H3)
   type: TextStyle
+  className: style-editor-text
 - name: Bold
+  displayName: Editing style of bolds (B)
   type: TextStyle
+  className: style-editor-text
 - name: Underline
+  displayName: Editing style of underlines (U)
   type: TextStyle
+  className: style-editor-text
 - name: Italic
+  displayName: Editing style of italics (I)
   type: TextStyle
+  className: style-editor-text
+
+
+
+- name: Element
+  displayName: Editing style for selected elements
+  type: ElementStyle
+  className: style-editor-tag-notext
+
+
+
 - name: className
   type: string
   readonly: true
