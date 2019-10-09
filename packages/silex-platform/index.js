@@ -15,9 +15,12 @@ silex.app.use('/static', (req, res, next) => {
   const filename = splitted.pop()
   const referer = req.header('Referer')
   if(filename === 'jquery.js') {
-    trackEvent('static-file-request', version, referer, filename)
+    trackEvent('static-file-request', version, referer, 0)
     .then(response => {
-      console.log('logged in alanytics:', version, filename, referer, 'response:', response.body)
+      console.log('logged in alanytics SUCCESS:', version, filename, referer)
+    })
+    .catch(err => {
+      console.error('logged in alanytics ERROR:', version, filename, referer, err)
     })
   }
   next()
@@ -32,6 +35,7 @@ silex.start(function() {
 
 const { GA_TRACKING_ID } = require('./env.js')
 function trackEvent (category, action, label, value) {
+  console.log('logging in alanytics:', {GA_TRACKING_ID, category, action, label, value})
   const data = {
     // API Version.
     v: '1',
@@ -49,7 +53,8 @@ function trackEvent (category, action, label, value) {
     // Event label.
     el: label,
     // Event value.
-    ev: value
+    ev: value,
+    z: Math.round(Math.random() * 9999),
   }
 
   return got.post('http://www.google-analytics.com/collect', {

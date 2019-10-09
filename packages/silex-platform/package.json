@@ -1,7 +1,7 @@
 {
   "name": "editor.silex.me",
-  "version": "1.0.0",
-  "description": "",
+  "version": "1.0.2",
+  "description": "This repo holds the code for the free public Silex instance hosted by Silex Labs foundation",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -15,7 +15,7 @@
     "got": "^9.6.0",
     "pug": "^2.0.4",
     "pug-cli": "^1.0.0-alpha6",
-    "silex-website-builder": "2.5.35"
+    "silex-website-builder": "2.5.58"
   },
   "repository": {
     "type": "git",
