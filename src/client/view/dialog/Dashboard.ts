@@ -17,6 +17,7 @@ import {FileInfo, Model, Controller } from '../../types';
 
 import {ModalDialog} from '../ModalDialog';
 import {TipOfTheDay} from '../tip-of-the-day';
+import {Config} from '../../ClientConfig';
 
 export interface DashboardOptions {
   openFileInfo: (p1: FileInfo) => any,
@@ -25,17 +26,11 @@ export interface DashboardOptions {
   error: ((p1?: any) => any),
 };
 
-export abstract class Dashboard {
-  constructor(protected element: HTMLElement, protected model: Model, protected controller: Controller) {}
-  abstract openDialog(DashboardOptions);
-  abstract buildUi();
-}
-
 /**
  * Silex Dashboard dialog
  * @class {silex.view.dialog.Dashboard}
  */
-export class DefaultDashboard extends Dashboard {
+export class Dashboard {
   // define properties
   readyCbk: (() => any) = null;
   errorCbk: ((p1?: any) => any) = null;
@@ -59,8 +54,9 @@ export class DefaultDashboard extends Dashboard {
    * the controller instances
    */
   constructor(protected element: HTMLElement, protected model: Model, protected controller: Controller) {
-    super(element, model, controller);
-
+    if(Config.singleSiteMode) {
+      return;
+    }
     this.modalDialog = new ModalDialog({
       name: 'Dashboard',
       element,
@@ -72,8 +68,7 @@ export class DefaultDashboard extends Dashboard {
   /**
    * render the data loaded from github into a <ul>
    */
-  private renderTemplateList(
-      ul: HTMLElement, className: string, repo: string, data: any) {
+  private renderTemplateList(ul: HTMLElement, className: string, repo: string, data: any) {
     // // handle previously rendered elements
     // const elements = ul.querySelectorAll('li.rendered-item');
     // for(let idx=0; idx<elements.length; idx++) {
@@ -151,6 +146,10 @@ export class DefaultDashboard extends Dashboard {
    * init the menu and UIs
    */
   buildUi() {
+    if(Config.singleSiteMode) {
+      return;
+    }
+
     const createList = (ul, className, repo, success, error) => {
       const repoUrl = `/get/${repo}`;
       const oReq = new XMLHttpRequest();
@@ -327,6 +326,13 @@ export class DefaultDashboard extends Dashboard {
    * @param options   options object
    */
   openDialog(options: DashboardOptions) {
+    if(Config.singleSiteMode) {
+      if (options.ready) {
+        options.ready();
+      }
+      return;
+    }
+
     // is ready callback
     // error callback
     if (this.state === 'ready') {

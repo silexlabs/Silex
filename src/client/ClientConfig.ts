@@ -107,10 +107,10 @@ export class Config {
   static CONTRIBUTE = 'https://github.com/silexlabs/Silex/wiki/Contribute';
 
   /**
-   * Options to be provided by the HTML page
-   * This is the way to configure Silex on the client side
+   * Single site mode, skip the dashboard and get the site from the URL
+   * Option to be provided by the client side
    */
-  static alternativeDashboard: { new(): Dashboard } = null;
+  static singleSiteMode = false
 
   /**
    * The main application menu
