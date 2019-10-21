@@ -17,6 +17,18 @@
 import {FileInfo} from '../types';
 
 export class Url {
+  static getUrlParams(): any {
+    return window.location.search
+    .substr(1)
+    .split('&')
+    .reduce((aggr, next) => {
+      const split = next.split('=');
+      if(split.length === 2) {
+        aggr[split[0]] = split[1];
+      }
+      return aggr;
+    }, {});
+  }
   /**
    * set a field in a FileInfo object, and update the `url` attribute accordingly
    * @param attributes a partial FileInfo object

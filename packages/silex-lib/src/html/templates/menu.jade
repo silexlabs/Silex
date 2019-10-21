@@ -61,15 +61,15 @@
 
   .file-menu-container
     .label File Menu
-    .sub-menu-item(data-menu-action='file.new')
+    .sub-menu-item.single-site-mode-hidden(data-menu-action='file.new')
       span.icon.fa-inverse.fa-fw.fa-home
       span Dashboard
       .shortcut Alt N
     .sub-menu-item(data-menu-action='view.open.fileExplorer')
       span.icon.fa-inverse.fa-fw.fa-cloud-upload
       span File explorer
-    .icon.sep
-    .sub-menu-item(data-menu-action='file.open')
+    .icon.sep.single-site-mode-hidden
+    .sub-menu-item.single-site-mode-hidden(data-menu-action='file.open')
       span.icon.fa-inverse.fa-fw.fa-folder-open
       span Open website
       .shortcut Ctrl O
@@ -77,12 +77,12 @@
       span.icon.fa-inverse.fa-fw.fa-floppy-o
       span Save website
       .shortcut Ctrl S
-    .file-save-as.sub-menu-item(data-menu-action='file.saveas')
+    .file-save-as.sub-menu-item.single-site-mode-hidden(data-menu-action='file.saveas')
       .icon.svg
         include ./save-as.svg
       span Save website as
       .shortcut Ctrl ⇪ S
-    .icon.sep
+    .icon.sep.single-site-mode-hidden
     .sub-menu-item(data-menu-action='file.publish')
       span.icon.fa-inverse.fa-fw.fa-rocket
       span Publish
