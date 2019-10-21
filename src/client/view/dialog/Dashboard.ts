@@ -13,18 +13,29 @@
  * @fileoverview Silex Dashboard / "new website" dialog which displays templates
  *
  */
-import {FileInfo} from '../../types';
-import {Model} from '../../types';
-import {Controller} from '../../types';
+import {FileInfo, Model, Controller } from '../../types';
 
 import {ModalDialog} from '../ModalDialog';
 import {TipOfTheDay} from '../tip-of-the-day';
+
+export interface DashboardOptions {
+  openFileInfo: (p1: FileInfo) => any,
+  openTemplate: (p1: string) => any,
+  ready: (() => any),
+  error: ((p1?: any) => any),
+};
+
+export abstract class Dashboard {
+  constructor(protected element: HTMLElement, protected model: Model, protected controller: Controller) {}
+  abstract openDialog(DashboardOptions);
+  abstract buildUi();
+}
 
 /**
  * Silex Dashboard dialog
  * @class {silex.view.dialog.Dashboard}
  */
-export class Dashboard {
+export class DefaultDashboard extends Dashboard {
   // define properties
   readyCbk: (() => any) = null;
   errorCbk: ((p1?: any) => any) = null;
@@ -48,6 +59,8 @@ export class Dashboard {
    * the controller instances
    */
   constructor(protected element: HTMLElement, protected model: Model, protected controller: Controller) {
+    super(element, model, controller);
+
     this.modalDialog = new ModalDialog({
       name: 'Dashboard',
       element,
@@ -59,7 +72,7 @@ export class Dashboard {
   /**
    * render the data loaded from github into a <ul>
    */
-  renderTemplateList(
+  private renderTemplateList(
       ul: HTMLElement, className: string, repo: string, data: any) {
     // // handle previously rendered elements
     // const elements = ul.querySelectorAll('li.rendered-item');
@@ -243,7 +256,7 @@ export class Dashboard {
   /**
    * redraw UI each time the dialog opens
    */
-  redraw() {
+  private redraw() {
     // recent files
     const recentFiles = this.model.file.getLatestFiles();
 
@@ -313,12 +326,7 @@ export class Dashboard {
    * open the dialog
    * @param options   options object
    */
-  openDialog(options: {
-    openFileInfo: (p1: FileInfo) => any,
-    openTemplate: (p1: string) => any,
-    ready: (() => any),
-    error: ((p1?: any) => any),
-  }) {
+  openDialog(options: DashboardOptions) {
     // is ready callback
     // error callback
     if (this.state === 'ready') {
