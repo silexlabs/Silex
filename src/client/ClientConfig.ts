@@ -13,8 +13,8 @@
  * @fileoverview Silex config
  */
 
-import { Shortcut } from './utils/Keyboard';
 import {FileInfo} from 'types';
+import { Shortcut } from './utils/Keyboard';
 import {Dashboard} from './view/dialog/Dashboard';
 
 export class Config {
@@ -110,7 +110,7 @@ export class Config {
    * Single site mode, skip the dashboard and get the site from the URL
    * Option to be provided by the client side
    */
-  static singleSiteMode = false
+  static singleSiteMode = false;
 
   /**
    * The main application menu

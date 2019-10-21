@@ -23,7 +23,7 @@ export class Url {
     .split('&')
     .reduce((aggr, next) => {
       const split = next.split('=');
-      if(split.length === 2) {
+      if (split.length === 2) {
         aggr[split[0]] = split[1];
       }
       return aggr;
