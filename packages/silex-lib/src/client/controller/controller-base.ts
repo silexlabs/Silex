@@ -18,8 +18,8 @@
  *
  */
 
-import { Config } from '../ClientConfig';
 import { Constants } from '../../Constants';
+import { Config } from '../ClientConfig';
 import {Tracker} from '../service/tracker';
 import {UndoItem} from '../types';
 import {ClipboardItem} from '../types';

@@ -19,7 +19,6 @@
  *
  */
 
-import { Url } from './utils/url';
 import { detect } from 'detect-browser';
 import { Config } from './ClientConfig';
 import { ContextMenuController } from './controller/context-menu-controller';
@@ -45,6 +44,7 @@ import { Page } from './model/page';
 import { Property } from './model/property';
 import { Controller, Model, View } from './types';
 import { SilexNotification } from './utils/notification';
+import { Url } from './utils/url';
 import { BreadCrumbs } from './view/bread-crumbs';
 import { ContextMenu } from './view/context-menu';
 import { CssEditor } from './view/dialog/css-editor';
@@ -196,16 +196,16 @@ export class App {
     this.view.workspace.redraw(this.view);
 
     // application start, open a file
-    if(Config.singleSiteMode) {
+    if (Config.singleSiteMode) {
       // hide menu items
       document.body.classList.add('single-site-mode');
       // open the website from url
       const params = Url.getUrlParams();
       if (params.path && params.service) {
         this.controller.fileMenuController.openRecent({
-          'path': params.path,
-          'service': params.service,
-          'absPath': `/ce/${params.service}/get/${params.path}`,
+          path: params.path,
+          service: params.service,
+          absPath: `/ce/${params.service}/get/${params.path}`,
         }, () => {
           console.log('opened');
           this.initDone();
@@ -225,7 +225,7 @@ export class App {
         },
         () => {
           this.initDone();
-        }
+        },
       );
     }
   }
@@ -369,5 +369,3 @@ window['silex']['init'] = () => {
 window['silex']['start'] = () => {
   window['silex']['app'] = new App();
 };
-
-
