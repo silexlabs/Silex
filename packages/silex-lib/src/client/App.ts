@@ -47,7 +47,7 @@ import { SilexNotification } from './utils/notification';
 import { BreadCrumbs } from './view/bread-crumbs';
 import { ContextMenu } from './view/context-menu';
 import { CssEditor } from './view/dialog/css-editor';
-import { Dashboard } from './view/dialog/Dashboard';
+import { DefaultDashboard } from './view/dialog/Dashboard';
 import { FileExplorer } from './view/dialog/file-explorer';
 import { HtmlEditor } from './view/dialog/html-editor';
 import { JsEditor } from './view/dialog/js-editor';
@@ -254,7 +254,7 @@ export class App {
     const settingsDialog = new SettingsDialog(uiElements.settingsDialog, emptyModel, emptyController);
 
     // Dashboard
-    const dashboard = new Dashboard(uiElements.dashboard, emptyModel, emptyController);
+    const dashboard = new (Config.alternativeDashboard || DefaultDashboard)(uiElements.dashboard, emptyModel, emptyController);
 
     // FileExplorer
     const fileExplorer = new FileExplorer(uiElements.fileExplorer, emptyModel, emptyController);
@@ -337,4 +337,12 @@ export class App {
 }
 
 // tslint:disable:no-string-literal
-window['silex'] = new App();
+window['silex'] = {};
+window['silex']['init'] = () => {
+  window['silex']['config'] = Config;
+};
+window['silex']['start'] = () => {
+  window['silex']['app'] = new App();
+};
+
+

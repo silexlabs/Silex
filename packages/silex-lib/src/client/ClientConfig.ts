@@ -14,6 +14,8 @@
  */
 
 import { Shortcut } from './utils/Keyboard';
+import {FileInfo} from 'types';
+import {Dashboard} from './view/dialog/Dashboard';
 
 export class Config {
 
@@ -103,6 +105,12 @@ export class Config {
    * Link of the menu
    */
   static CONTRIBUTE = 'https://github.com/silexlabs/Silex/wiki/Contribute';
+
+  /**
+   * Options to be provided by the HTML page
+   * This is the way to configure Silex on the client side
+   */
+  static alternativeDashboard: { new(): Dashboard } = null;
 
   /**
    * The main application menu

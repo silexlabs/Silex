@@ -21,7 +21,17 @@ body.loading-pending.advanced-mode-off
   block body-start
     include ./templates/body.jade
 
-  block silex-options
 
   block body-end
     script(type='text/javascript' src='js/index.js')
+
+  block silex-init
+    script.
+      window.silex.init();
+
+  block silex-options
+    // Here you can use silex.config to hook into silex options before silex starts
+
+  block silex-start
+    script.
+      window.silex.start();
