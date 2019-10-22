@@ -206,7 +206,7 @@ export class App {
           path: params.path,
           service: params.service,
           absPath: `/ce/${params.service}/get${params.path}`,
-          url: `/ce/${params.service}/get${params.path}`,
+          url: `${Url.getBaseUrl()}/ce/${params.service}/get${params.path}`,
         }, () => {
           console.log('opened');
           this.initDone();
