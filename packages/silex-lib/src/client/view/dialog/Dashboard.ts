@@ -54,9 +54,7 @@ export class Dashboard {
    * the controller instances
    */
   constructor(protected element: HTMLElement, protected model: Model, protected controller: Controller) {
-    if (Config.singleSiteMode) {
-      return;
-    }
+    // keep this bit even when Config.singleSiteMode is true, this will hide the Dashboard
     this.modalDialog = new ModalDialog({
       name: 'Dashboard',
       element,
