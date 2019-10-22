@@ -205,7 +205,8 @@ export class App {
         this.controller.fileMenuController.openRecent({
           path: params.path,
           service: params.service,
-          absPath: `/ce/${params.service}/get/${params.path}`,
+          absPath: `/ce/${params.service}/get${params.path}`,
+          url: `/ce/${params.service}/get${params.path}`,
         }, () => {
           console.log('opened');
           this.initDone();
@@ -213,7 +214,7 @@ export class App {
       } else {
         SilexNotification.alert('Open a file', `
            Could not open the file ${params.path}.<br /><br />
-           You need to specify which website I am supposed to open with the variables "path" and "service" in the URL. Please <a href="https://github.com/silexlabs/Silex/wiki/Single-site-mode" target="_blank">check this document</a> or <a href="https://github.com/silexlabs/Silex/issues" target="_blank">get in touch on Silex forums"</a>
+           You need to specify which website I am supposed to open with the variables "path" and "service" in the URL. Please <a href="https://github.com/silexlabs/Silex/wiki/Single-site-mode" target="_blank">check this document</a> or <a href="https://github.com/silexlabs/Silex/issues" target="_blank">get in touch in Silex forums"</a>
         `,
         () => {});
         this.initDone();
