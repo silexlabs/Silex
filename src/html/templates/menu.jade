@@ -1,5 +1,6 @@
 .silex-menu
-  img.show-about-menu.silex-logo(title='About Silex', data-menu-action='show.about.menu', src='assets/logo-silex-small.png')
+  block customizable-menu
+    img.show-about-menu.silex-logo(title='About Silex', data-menu-action='show.about.menu', src='assets/logo-silex-small.png')
   .menu-container
     .show-file-menu.fa-fw.icon.fa-inverse.fa-cloud(title='File menu', data-menu-action='show.file.menu')
     .show-add-menu.fa-fw.icon.fa-inverse.fa-plus-square(title='Add elements', data-menu-action='show.add.menu')
