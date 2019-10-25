@@ -51,6 +51,7 @@ export interface CeOptions {
   enableFs: boolean;
   fsRoot: string;
   rootUrl: string;
+  enableImageMagick: boolean;
 }
 
 export interface PublisherOptions {
@@ -101,6 +102,7 @@ export class Config {
       enableFs: this.serverOptions.debug || this.electronOptions.enabled || process.env.ENABLE_FS === 'true',
       fsRoot: process.env.FS_ROOT,
       rootUrl: this.serverOptions.rootUrl + this.serverOptions.cePath,
+      enableImageMagick: process.env.ENABLE_IMAGE_MAGICK !== 'false',
     };
     this.publisherOptions = {
       rootUrl: this.serverOptions.rootUrl,
