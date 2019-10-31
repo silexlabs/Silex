@@ -54,9 +54,9 @@ export interface CeOptions {
   enableImageMagick: boolean;
   unsplash?: {
     accessKey: string;
-    appName:string;
+    appName: string;
     offlineTestPath: string;
-  }
+  };
 }
 
 export interface PublisherOptions {
@@ -112,7 +112,7 @@ export class Config {
         accessKey: process.env.UNSPLASH_ACCESS_KEY,
         appName: process.env.UNSPLASH_APP_NAME,
         offlineTestPath: process.env.UNSPLASH_OFFLINE_TEST_PATH,
-      }
+      },
     };
     this.publisherOptions = {
       rootUrl: this.serverOptions.rootUrl,
