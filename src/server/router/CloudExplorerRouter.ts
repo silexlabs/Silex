@@ -77,6 +77,7 @@ export default function(ceOptions: CeOptions) {
   }
 
   routerOptions.enableImageMagick = ceOptions.enableImageMagick;
+  routerOptions.unsplash = ceOptions.unsplash;
 
   return new CloudExplorer(routerOptions);
 }
