@@ -68,12 +68,10 @@ export class FileExplorer {
     if (fileInfo === null) {
       return fileInfo;
     }
-
-    // case of cancel
-    return (
-        Object.assign(
-            {absPath: `/ce/${fileInfo.service}/get/${fileInfo.path}`},
-            fileInfo) as FileInfo);
+    const absPath = fileInfo.service ? `/ce/${fileInfo.service}/get/${fileInfo.path}` : fileInfo.url;
+    return (Object.assign(
+      {absPath},
+      fileInfo) as FileInfo);
   }
 
   /**

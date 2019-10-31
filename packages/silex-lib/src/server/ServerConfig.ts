@@ -52,6 +52,11 @@ export interface CeOptions {
   fsRoot: string;
   rootUrl: string;
   enableImageMagick: boolean;
+  unsplash?: {
+    accessKey: string;
+    appName:string;
+    offlineTestPath: string;
+  }
 }
 
 export interface PublisherOptions {
@@ -103,6 +108,11 @@ export class Config {
       fsRoot: process.env.FS_ROOT,
       rootUrl: this.serverOptions.rootUrl + this.serverOptions.cePath,
       enableImageMagick: process.env.ENABLE_IMAGE_MAGICK !== 'false',
+      unsplash: {
+        accessKey: process.env.UNSPLASH_ACCESS_KEY,
+        appName: process.env.UNSPLASH_APP_NAME,
+        offlineTestPath: process.env.UNSPLASH_OFFLINE_TEST_PATH,
+      }
     };
     this.publisherOptions = {
       rootUrl: this.serverOptions.rootUrl,
