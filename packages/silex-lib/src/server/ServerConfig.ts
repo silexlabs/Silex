@@ -51,11 +51,15 @@ export interface CeOptions {
   enableFs: boolean;
   fsRoot: string;
   rootUrl: string;
-  enableImageMagick: boolean;
   unsplash?: {
     accessKey: string;
     appName: string;
     offlineTestPath: string;
+  };
+  thumbnails?: {
+    width: number;
+    height: number;
+    extensions: string[];
   };
 }
 
@@ -107,11 +111,15 @@ export class Config {
       enableFs: this.serverOptions.debug || this.electronOptions.enabled || process.env.ENABLE_FS === 'true',
       fsRoot: process.env.FS_ROOT,
       rootUrl: this.serverOptions.rootUrl + this.serverOptions.cePath,
-      enableImageMagick: process.env.ENABLE_IMAGE_MAGICK !== 'false',
       unsplash: {
         accessKey: process.env.UNSPLASH_ACCESS_KEY,
         appName: process.env.UNSPLASH_APP_NAME,
         offlineTestPath: process.env.UNSPLASH_OFFLINE_TEST_PATH,
+      },
+      thumbnails: {
+        width: 255,
+        height: 255,
+        extensions: ['jpg', 'jpeg', 'png', 'svg'], // unsupported extensions will be replaced with an icon
       },
     };
     this.publisherOptions = {
