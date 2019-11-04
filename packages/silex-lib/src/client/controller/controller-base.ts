@@ -19,6 +19,7 @@
  */
 
 import { Constants } from '../../Constants';
+import { Config } from '../ClientConfig';
 import {Tracker} from '../service/tracker';
 import {UndoItem} from '../types';
 import {ClipboardItem} from '../types';
@@ -593,6 +594,8 @@ export class ControllerBase {
     this.tracker.trackAction('controller-events', 'request', 'file.save', 0);
     if (opt_fileInfo && !this.model.file.isTemplate) {
       this.doSave((opt_fileInfo as FileInfo), opt_cbk, opt_errorCbk);
+    } else if (Config.singleSiteMode) {
+      // do nothing in single site mode
     } else {
       // choose a new name
       this.view.fileExplorer
