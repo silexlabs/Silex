@@ -23,6 +23,7 @@ import {Model} from '../../types';
 import {Controller} from '../../types';
 import {FileInfo} from '../../types';
 import {ModalDialog} from '../../view/ModalDialog';
+import {SilexNotification} from '../../utils/notification';
 
 /**
  * the Silex FileExplorer class
@@ -81,14 +82,50 @@ export class FileExplorer {
    *                           null to show all the files and folders
    *                           [] to show only folders
    */
-  openFile(opt_extensions?: string[]): Promise<FileInfo> {
+  async openFile(opt_extensions?: string[]): Promise<FileInfo> {
     this.open();
-    return this.ce.openFile(opt_extensions)
-        .then((fileInfo) => this.addAbsPath(fileInfo))
-        .then((fileInfo) => {
-          this.close();
-          return fileInfo;
-        });
+    const fileInfo = await this.ce.openFile(opt_extensions)
+    if(fileInfo.attribution) await this.promptAttribution(fileInfo.attribution);
+    this.close();
+    return this.addAbsPath(fileInfo);
+  }
+
+  async promptAttribution(attribution) {
+    return new Promise((resolve, reject) => {
+      SilexNotification.confirm('Attribution for his image', `
+        <p>
+          ${attribution.message}
+        </p><br/>
+        <code>
+          ${attribution.content}
+        </code>
+      `, (ok) => {
+        if(ok) {
+          resolve();
+          const copyText = document.createElement('div');
+          document.body.appendChild(copyText);
+          try {
+            copyText.innerHTML = attribution.content;
+            var range = document.createRange()
+            range.selectNode(copyText);
+            window.getSelection().addRange(range);
+            const success = document.execCommand('copy');
+            if(success) {
+              SilexNotification.notifySuccess('Attribution copied to clipboard');
+            } else {
+              SilexNotification.notifyError('Attribution has not been copied to clipboard');
+              console.error('Could not copy to clipboard', attribution);
+            }
+          } catch(err) {
+            SilexNotification.notifyError('Attribution has not been copied to clipboard');
+            console.error('Could not copy to clipboard', err, attribution);
+          }
+          document.body.removeChild(copyText);
+        } else {
+          resolve();
+        }
+      }, 'Copy', 'Ignore');
+    });
   }
 
   /**
