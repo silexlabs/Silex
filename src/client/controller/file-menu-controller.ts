@@ -54,7 +54,12 @@ export class FileMenuController extends ControllerBase {
     this.model.file.open(
         (fileInfo as FileInfo), (rawHtml) => this.onOpened(opt_cbk, rawHtml),
         (err, message, code) => {
-          console.log('Could not open recent file', err, message, code);
+          console.error('Could not open recent file', err, message, code);
+          // make silex visible
+          if (opt_cbk) {
+            opt_cbk();
+          }
+          // handle the error
           if (code === 403) {
             // user not logged in
             SilexNotification.confirm(
@@ -158,6 +163,10 @@ export class FileMenuController extends ControllerBase {
    * open a file
    */
   openFile(opt_cbk?: ((p1: FileInfo) => any), opt_errorCbk?: ((p1: any) => any), opt_cancelCbk?: (() => any)) {
+    if (Config.singleSiteMode) {
+      return;
+    }
+
     // QOS, track success
     this.tracker.trackAction('controller-events', 'request', 'file.open', 0);
 
