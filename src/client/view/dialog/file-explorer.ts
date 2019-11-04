@@ -85,7 +85,7 @@ export class FileExplorer {
   async openFile(opt_extensions?: string[]): Promise<FileInfo> {
     this.open();
     const fileInfo = await this.ce.openFile(opt_extensions);
-    if (fileInfo.attribution) { await this.promptAttribution(fileInfo.attribution); }
+    if (fileInfo && fileInfo.attribution) { await this.promptAttribution(fileInfo.attribution); }
     this.close();
     return this.addAbsPath(fileInfo);
   }
