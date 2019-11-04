@@ -22,8 +22,8 @@ import {CloudStorage} from '../../service/cloud-storage';
 import {Model} from '../../types';
 import {Controller} from '../../types';
 import {FileInfo} from '../../types';
-import {ModalDialog} from '../../view/ModalDialog';
 import {SilexNotification} from '../../utils/notification';
+import {ModalDialog} from '../../view/ModalDialog';
 
 /**
  * the Silex FileExplorer class
@@ -84,8 +84,8 @@ export class FileExplorer {
    */
   async openFile(opt_extensions?: string[]): Promise<FileInfo> {
     this.open();
-    const fileInfo = await this.ce.openFile(opt_extensions)
-    if(fileInfo.attribution) await this.promptAttribution(fileInfo.attribution);
+    const fileInfo = await this.ce.openFile(opt_extensions);
+    if (fileInfo.attribution) { await this.promptAttribution(fileInfo.attribution); }
     this.close();
     return this.addAbsPath(fileInfo);
   }
@@ -100,23 +100,23 @@ export class FileExplorer {
           ${attribution.content}
         </code>
       `, (ok) => {
-        if(ok) {
+        if (ok) {
           resolve();
           const copyText = document.createElement('div');
           document.body.appendChild(copyText);
           try {
             copyText.innerHTML = attribution.content;
-            var range = document.createRange()
+            const range = document.createRange();
             range.selectNode(copyText);
             window.getSelection().addRange(range);
             const success = document.execCommand('copy');
-            if(success) {
+            if (success) {
               SilexNotification.notifySuccess('Attribution copied to clipboard');
             } else {
               SilexNotification.notifyError('Attribution has not been copied to clipboard');
               console.error('Could not copy to clipboard', attribution);
             }
-          } catch(err) {
+          } catch (err) {
             SilexNotification.notifyError('Attribution has not been copied to clipboard');
             console.error('Could not copy to clipboard', err, attribution);
           }
