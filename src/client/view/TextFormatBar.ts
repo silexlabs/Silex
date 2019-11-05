@@ -16,13 +16,13 @@
  */
 
 import { wysihtml, WysiHtmlEditor } from '../externs';
-import { Body } from '../model/body';
-import { Tracker } from '../service/tracker';
+import { Body } from '../model/Body';
+import { Tracker } from '../service/Tracker';
 import { Controller, LinkData, Model } from '../types';
-import { SilexNotification } from '../utils/notification';
-import { FileExplorer } from '../view/dialog/file-explorer';
+import { SilexNotification } from '../utils/Notification';
+import { FileExplorer } from '../view/dialog/FileExplorer';
 import { LINK_ATTRIBUTES, LinkDialog } from './dialog/LinkDialog';
-import { Menu } from './menu';
+import { Menu } from './Menu';
 
 /**
  * @class {silex.view.TextFormatBar}

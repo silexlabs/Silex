@@ -14,7 +14,7 @@
  *   This class is in charge of the "modal" behavior of the dialogs in Silex
  */
 
-import {Body} from '../model/body';
+import {Body} from '../model/Body';
 
 /**
  * implement a "modal" behavior to hide and show dialogs
