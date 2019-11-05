@@ -14,43 +14,43 @@
  * Controller structures
  *
  */
-import { ContextMenuController } from './controller/context-menu-controller';
-import { CssEditorController } from './controller/css-editor-controller';
-import { EditMenuController } from './controller/edit-menu-controller';
-import { FileMenuController } from './controller/file-menu-controller';
-import { HtmlEditorController } from './controller/html-editor-controller';
-import { InsertMenuController } from './controller/insert-menu-controller';
-import { JsEditorController } from './controller/js-editor-controller';
-import { PageToolController } from './controller/page-tool-controller';
-import { PropertyToolController } from './controller/property-tool-controller';
-import { SettingsDialogController } from './controller/settings-dialog-controller';
-import { StageController } from './controller/stage-controller';
-import { TextEditorController } from './controller/text-editor-controller';
-import { ToolMenuController } from './controller/tool-menu-controller';
-import { ViewMenuController } from './controller/view-menu-controller';
-import { Body } from './model/body';
+import { ContextMenuController } from './controller/ContextMenuController';
+import { CssEditorController } from './controller/CssEditorController';
+import { EditMenuController } from './controller/EditMenuController';
+import { FileMenuController } from './controller/FileMenuController';
+import { HtmlEditorController } from './controller/HtmlEditorController';
+import { InsertMenuController } from './controller/InsertMenuController';
+import { JsEditorController } from './controller/JsEditorController';
+import { PageToolController } from './controller/PageToolController';
+import { PropertyToolController } from './controller/PropertyToolController';
+import { SettingsDialogController } from './controller/SettingsDialogController';
+import { StageController } from './controller/StageController';
+import { TextEditorController } from './controller/TextEditorController';
+import { ToolMenuController } from './controller/ToolMenuController';
+import { ViewMenuController } from './controller/ViewMenuController';
+import { Body } from './model/Body';
 import { Component } from './model/Component';
 import { ComponentData } from './model/Data';
-import { SilexElement } from './model/element';
-import { File } from './model/file';
-import { Head } from './model/head';
-import { Page } from './model/page';
-import { Property } from './model/property';
-import { BreadCrumbs } from './view/bread-crumbs';
-import { ContextMenu } from './view/context-menu';
-import { CssEditor } from './view/dialog/css-editor';
+import { SilexElement } from './model/Element';
+import { File } from './model/File';
+import { Head } from './model/Head';
+import { Page } from './model/Page';
+import { Property } from './model/Property';
+import { BreadCrumbs } from './view/BreadCrumbs';
+import { ContextMenu } from './view/ContextMenu';
+import { CssEditor } from './view/dialog/CssEditor';
 import { Dashboard } from './view/dialog/Dashboard';
-import { FileExplorer } from './view/dialog/file-explorer';
-import { HtmlEditor } from './view/dialog/html-editor';
-import { JsEditor } from './view/dialog/js-editor';
-import { SettingsDialog } from './view/dialog/settings-dialog';
-import { Menu } from './view/menu';
-import { PageTool } from './view/page-tool';
-import { PropertyTool } from './view/property-tool';
-import { Splitter } from './view/splitter';
+import { FileExplorer } from './view/dialog/FileExplorer';
+import { HtmlEditor } from './view/dialog/HtmlEditor';
+import { JsEditor } from './view/dialog/JsEditor';
+import { SettingsDialog } from './view/dialog/SettingsDialog';
+import { Menu } from './view/Menu';
+import { PageTool } from './view/PageTool';
+import { PropertyTool } from './view/PropertyTool';
+import { Splitter } from './view/Splitter';
 import { StageWrapper } from './view/StageWrapper';
 import { TextFormatBar } from './view/TextFormatBar';
-import { Workspace } from './view/workspace';
+import { Workspace } from './view/Workspace';
 
 /**
  * warning: if you change that type, also change the default value in LinkDialog
