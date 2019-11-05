@@ -15,10 +15,10 @@
  * FIXME: use a type instead of Promise<PublicationOptions>
  */
 
-import { File } from '../../model/file';
-import { SilexTasks } from '../../service/silex-tasks';
+import { File } from '../../model/File';
+import { SilexTasks } from '../../service/SilexTasks';
 import { Model, Provider, PublicationOptions, VHost, View } from '../../types';
-import { SilexNotification } from '../../utils/notification';
+import { SilexNotification } from '../../utils/Notification';
 import { getUiElements } from '../UiElements';
 
 /**
