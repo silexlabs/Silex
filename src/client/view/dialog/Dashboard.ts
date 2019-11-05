@@ -17,7 +17,7 @@ import {Controller, FileInfo, Model } from '../../types';
 
 import {Config} from '../../ClientConfig';
 import {ModalDialog} from '../ModalDialog';
-import {TipOfTheDay} from '../tip-of-the-day';
+import {TipOfTheDay} from '../TipOfTheDay';
 
 export interface DashboardOptions {
   openFileInfo: (p1: FileInfo) => any;
