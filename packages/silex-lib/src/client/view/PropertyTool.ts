@@ -25,8 +25,8 @@ import { BorderPane } from './pane/BorderPane';
 import { GeneralStylePane } from './pane/GeneralStylePane';
 import { PagePane } from './pane/PagePane';
 import { PropertyPane } from './pane/PropertyPane';
-import { StylePane } from './pane/StylePane';
 import { StyleEditorPane } from './pane/StyleEditorPane';
+import { StylePane } from './pane/StylePane';
 
 //////////////////////////////////////////////////////////////////
 // PropertyTool class
