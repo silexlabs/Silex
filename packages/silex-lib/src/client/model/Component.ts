@@ -274,17 +274,16 @@ export class Component {
    * @param type, Constants.COMPONENT_TYPE or Constants.STYLE_TYPE
    */
   updateDepenedencies(type: string) {
+    if (type !==  Constants.COMPONENT_TYPE) {
+      // TODO: cleanup since this would need to support several types of components?
+      throw new Error('Not supported, all dependencies are for components for now, not styles');
+    }
     const head = this.model.head.getHeadElement();
     const components = this.getProdotypeComponents(type);
     const prodotype = this.getProdotype(type);
 
     // remove unused dependencies (scripts and style sheets)
-    const nodeList =
-        this.model.head.getHeadElement().querySelectorAll('[data-dependency]');
-    const elements = [];
-    for (const el of nodeList) {
-      elements.push(el);
-    }
+    const elements = Array.from(this.model.head.getHeadElement().querySelectorAll('[data-dependency]'));
     const unused = prodotype.getUnusedDependencies(elements, components);
     for (const el of unused) {
       head.removeChild(el);
@@ -340,9 +339,6 @@ export class Component {
     if (elStyle) {
       head.removeChild(elStyle);
     }
-
-    // update dependencies
-    this.updateDepenedencies(Constants.STYLE_TYPE);
   }
 
   /**
@@ -364,7 +360,6 @@ export class Component {
       .forEach((pseudoClassData) => {
         this.componentStyleChanged(className, pseudoClassData.pseudoClass, pseudoClassData.visibility, pseudoClassData.data, displayName);
       });
-      this.updateDepenedencies(Constants.STYLE_TYPE);
     }
   }
 
