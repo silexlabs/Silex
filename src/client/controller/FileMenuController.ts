@@ -279,8 +279,13 @@ export class FileMenuController extends ControllerBase {
 
   doPublish(
       publicationOptions: PublicationOptions,
-      cbk: (p1: string, p2: string, p3: PublicationOptions) =>
-          any) {
+      cbk: (p1: string, p2: string, p3: PublicationOptions) => any) {
+    if (Config.singleSiteMode && publicationOptions.file) {
+      publicationOptions.publicationPath = {
+        ...publicationOptions.publicationPath,
+        path: publicationOptions.file.path.split('/').slice(0, -1).join('/'),
+      };
+    }
     const publicationPath = publicationOptions.publicationPath;
     const provider = publicationOptions.provider;
 
