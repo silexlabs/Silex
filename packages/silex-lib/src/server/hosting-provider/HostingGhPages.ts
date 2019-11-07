@@ -65,11 +65,11 @@ export default function HostingGhPages(unifile) {
 // Publication "hooks"
 //////////////////////////////
 
-HostingGhPages.prototype.getDefaultPageFileName = () => 'index.html';
+HostingGhPages.prototype.getDefaultPageFileName = (context) => 'index.html';
 
 HostingGhPages.prototype.getPermalink = (pageName) => pageName === 'index.html' ? './' : pageName;
 
-HostingGhPages.prototype.finalizePublication = function(from, to, session, onStatus) {
+HostingGhPages.prototype.finalizePublication = function({from, to, session}, onStatus) {
   return setTimeoutPromise(2000)
   .then(() => {
     return new Promise((resolve, reject) => {
@@ -84,11 +84,11 @@ HostingGhPages.prototype.finalizePublication = function(from, to, session, onSta
               switch (result.status) {
                 case 'queued':
                   onStatus('Waiting for Github Pages to start deployment');
-                  return this.finalizePublication(from, to, session, onStatus);
+                  return this.finalizePublication({from, to, session}, onStatus);
                   break;
                 case 'building':
                   onStatus('Deploying to Github Pages');
-                  return this.finalizePublication(from, to, session, onStatus);
+                  return this.finalizePublication({from, to, session}, onStatus);
                   break;
                 case 'built':
                   onStatus('Done, the site is live on Github Pages');
