@@ -21,14 +21,13 @@
   overflow: hidden;
   border-radius: initial;
   width: 100%;
+  min-height: inherit;
+  pointer-events: none;
 }
 /* prevent-auto-z-index is to let the components handle their z-index */
 .section-element > .silex-element-content > *:not(.prevent-auto-z-index) {
   /* put the elements of a section on top of sections bellow */
   z-index: 10;
-}
-.silex-element-content {
-  pointer-events: none;
 }
 .silex-element-content[contenteditable="true"] {
   min-height: 20px;
@@ -194,6 +193,7 @@ body.enable-mobile .background {
 }
 .prodotype-preview {
   display: none;
+  min-height: inherit;
 }
 .prodotype-runtime,
 .prodotype-runtime-strict {
