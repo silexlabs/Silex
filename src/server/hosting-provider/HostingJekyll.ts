@@ -25,16 +25,16 @@ export default class HostingJekyll extends HostingUnifile {
 
     });
   }
-  getHtmlFolder(defaultFolder) {
+  getHtmlFolder(context, defaultFolder) {
     return '_layouts';
   }
-  getDefaultPageFileName() {
+  getDefaultPageFileName(context) {
     return null;
   }
-  getRootUrl(rootUrl) {
+  getRootUrl(context, rootUrl) {
     return '{{ site.url }}{{ site.baseurl }}/';
   }
-  beforeWrite(actions: Action[]) {
+  beforeWrite(context, actions: Action[]) {
     const action = actions.find((a) => a.name === 'writefile' && a.path.endsWith('/styles.css'));
     if (action) {
       action.content = '---\n---' + (action.content as Buffer).toString('utf-8');
