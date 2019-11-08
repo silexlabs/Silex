@@ -115,6 +115,8 @@ split(newFirstPageName: string, permalinkHook: (pageName: string) => string): Ac
       const clone = this.doc.cloneNode(true) as HTMLDocument;
       // update title (TODO: description and SEO)
       (clone.head.querySelector('title') || ({} as HTMLTitleElement)).innerHTML += ' - ' + displayName;
+      // add page name on the body (used in front-end.js)
+      clone.body.setAttribute('data-current-page', name);
       // remove elements from other pages
       Array.from(clone.querySelectorAll(`.${Constants.PAGED_CLASS_NAME}`))
       .forEach((el) => {
