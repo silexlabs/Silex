@@ -167,7 +167,7 @@ export class Component {
       case Constants.STYLE_TYPE:
         return this.prodotypeStyle;
       default:
-        throw new Error('Unknown type in renderType');
+        throw new Error('Unknown component type ' + type);
     }
   }
 
