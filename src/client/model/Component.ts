@@ -181,7 +181,7 @@ export class Component {
     if (data) {
       const templateName = data.templateName;
       const prodotype = this.getProdotype(type);
-      prodotype.decorate(templateName, data).then((html) => {
+      prodotype.decorate(templateName, data, this.model.property.getDataSources()).then((html) => {
         this.model.element.setInnerHtml(element, html);
 
         // notify the owner
@@ -453,7 +453,7 @@ export class Component {
     const pseudoClassData = this.getPseudoClassData(styleData);
     if (pseudoClassData.length > 0) {
       Promise.all(pseudoClassData.map((obj) => {
-            return this.prodotypeStyle.decorate('text', obj.data)
+            return this.prodotypeStyle.decorate('text', obj.data, this.model.property.getDataSources())
                 .then((html) => this.addMediaQuery(html, obj.visibility));
           }) as Array<Promise<string>>)
           .then((htmlStrings) => {

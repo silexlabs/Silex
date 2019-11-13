@@ -2,41 +2,19 @@
   /* ************** */
   /* pane selection */
   /* ************** */
-  .right-pane > div {
-    display: none;
+  .right-pane {
+    /* pane visibility */
+    .pane { display: none; }
+    input:checked + .pane { display: initial; }
   }
-  &.general-pane-visible {
-    .right-pane .general-pane {
-      display: initial;
-    }
-    .left-pane .general-pane {
-      font-weight: bold;
-    }
-  }
-  &.publish-pane-visible {
-    .right-pane .publish-pane {
-      display: initial;
-    }
-    .left-pane .publish-pane {
-      font-weight: bold;
-    }
-  }
-  &.fonts-pane-visible {
-    .right-pane .fonts-pane {
-      display: initial;
-    }
-    .left-pane .fonts-pane {
-      font-weight: bold;
-    }
-  }
-  &.social-pane-visible {
-    .right-pane .social-pane {
-      display: initial;
-    }
-    .left-pane .social-pane {
-      font-weight: bold;
-    }
-  }
+
+  /* current pane highlight */
+  &.general-pane-visible [for=settings-general-pane] { font-weight: bold; }
+  &.publish-pane-visible [for=settings-publish-pane] { font-weight: bold; }
+  &.fonts-pane-visible [for=settings-fonts-pane] { font-weight: bold; }
+  &.data-sources-pane-visible [for=settings-data-sources-pane] { font-weight: bold; }
+  &.social-pane-visible [for=settings-social-pane] { font-weight: bold; }
+
   /* **************** */
   /* left pane styles */
   /* **************** */
@@ -123,7 +101,7 @@
         display: block;
       }
     }
-    .fonts-pane {
+    .fonts-pane, .data-sources-pane {
       button {
         padding: 5px;
         margin: 5px;
@@ -139,7 +117,7 @@
         & > legend, & > p { padding: 10px; }
         & > legend { margin: 10px; }
       }
-      .fonts-list ul li {
+      .fonts-list ul li, .data-sources-list ul li {
         display: flex;
         border-bottom: 1px solid;
         &:last-child { border-bottom: none; }

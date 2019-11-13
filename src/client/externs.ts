@@ -47,11 +47,11 @@ export interface ProdotypeCompDef {
 export interface Prodotype {
   componentsDef: ProdotypeCompDef;
 
-  decorate(templateName: string, data: any);
+  decorate(templateName: string, data: any, dataSources: object);
   ready(cbk: (any) => void);
   edit(
     data?: any,
-    list?: ComponentData[],
+    dataSources?: object,
     templateName?: string,
     events?: any);
   reset();
