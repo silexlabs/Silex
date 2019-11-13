@@ -339,7 +339,7 @@ export class EditMenuController extends ControllerBase {
       if (element && this.model.component.prodotypeComponent && componentData) {
         this.model.component.prodotypeComponent.edit(
             componentData,
-            this.model.component.getProdotypeComponents(Constants.COMPONENT_TYPE) as ComponentData[],
+            this.model.property.getDataSources(),
             componentData.templateName, {
               onChange: (newData, html) => {
                 // undo checkpoint

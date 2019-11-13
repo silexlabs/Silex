@@ -72,7 +72,8 @@
     "build:monaco-editor": "webpack --config webpack-monaco-editor.config.js",
     "lint": "tslint -c tslint.json 'src/**/*.ts'",
     "lint:js": "npm run lint",
-    "lint:server": "npm run lint"
+    "lint:server": "npm run lint",
+    "lint:fix": "npm run lint -- --fix"
   },
   "dependencies": {
     "body-parser": "^1.19.0",
@@ -88,7 +89,7 @@
     "jsdom": "15.0.0",
     "node_modules-path": "*",
     "normalize.css": "^8.0.1",
-    "prodotype": "^1.0.15",
+    "prodotype": "^1.0.16",
     "promise-sequential": "1.1.1",
     "redux": "^4.0.1",
     "request": "2.88.0",

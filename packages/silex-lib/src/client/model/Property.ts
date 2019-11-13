@@ -15,7 +15,8 @@
  */
 
 import { Constants } from '../../Constants';
-import { Font, Model, View } from '../types';
+import { DataSource, Font, Model, View } from '../types';
+import { SilexNotification } from '../utils/Notification';
 import { Style } from '../utils/Style';
 import { ComponentData, CssRule, JsonData, ProdotypeData, ProdotypeTypes, SilexData, SilexId, StyleData, StyleName } from './Data';
 
@@ -71,6 +72,7 @@ export class Property {
   nextId: number = 0;
   stylesObj: SilexData = {};
   fonts: Font[] = [];
+  dataSources: DataSource[] = [];
   mobileStylesObj: SilexData = {};
 
   /**
@@ -79,6 +81,39 @@ export class Property {
   prodotypeDataObj: ProdotypeData = Property.EMPTY_PRODOTYPE_DATA;
 
   constructor(public model: Model, public view: View) {}
+
+  async setDataSources(data: DataSource[]) {
+    this.dataSources = data;
+    return this.loadDataSources(false);
+  }
+  async loadDataSources(reload): Promise<void> {
+    try {
+      this.dataSources = await Promise.all(
+        this.dataSources.map(async (dataSource) => {
+          if (!reload && !dataSource.data) {
+            const res = await fetch(dataSource.href);
+            const data = await res.json();
+            return {
+              ...dataSource,
+              data,
+            };
+          } else {
+            return dataSource;
+          }
+        }),
+      );
+    } catch (err) {
+      console.error('could not load data sources', err);
+      SilexNotification.alert('Error', `There was an error loading the data sources: ${err}`, () => { throw err; });
+    }
+  }
+
+  /**
+   * @return returns a copy of this.dataSources
+   */
+  getDataSources(): DataSource[] {
+    return this.dataSources.slice();
+  }
 
   setFonts(fonts: Font[]) {
     this.fonts = fonts;
@@ -158,6 +193,7 @@ export class Property {
     styleTag.type = 'text/json';
     const obj = ({
       fonts: this.fonts || [],
+      dataSources: this.dataSources || [],
       desktop: this.stylesObj || {},
       mobile: this.mobileStylesObj || {},
       prodotypeData: {
@@ -178,6 +214,7 @@ export class Property {
     if (styleTag != null ) {
       const styles = (JSON.parse(styleTag.innerHTML)[0] as any);
       this.fonts = styles.fonts || [];
+      this.dataSources = styles.dataSources || []; // TODO: why store this in the styles object?
       this.stylesObj = styles.desktop || {};
       this.mobileStylesObj = styles.mobile || {};
       this.prodotypeDataObj = styles.prodotypeData &&
@@ -195,6 +232,7 @@ export class Property {
       }
     } else {
       this.fonts = [];
+      this.dataSources = [];
       this.stylesObj = {};
       this.mobileStylesObj = {};
       this.prodotypeDataObj = Property.EMPTY_PRODOTYPE_DATA;
