@@ -89,7 +89,7 @@
     "jsdom": "15.0.0",
     "node_modules-path": "*",
     "normalize.css": "^8.0.1",
-    "prodotype": "^1.0.16",
+    "prodotype": "^1.0.17",
     "promise-sequential": "1.1.1",
     "redux": "^4.0.1",
     "request": "2.88.0",
