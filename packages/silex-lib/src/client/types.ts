@@ -79,10 +79,10 @@ export interface StickyLine {
   metaData: any;
 }
 export interface DataSource {
-  name: string;
   href: string;
   data?: object;
 }
+export interface DataSources { [key: string]: DataSource; }
 export interface Font {
   family: string;
   href: string;
