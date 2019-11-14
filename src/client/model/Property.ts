@@ -15,7 +15,7 @@
  */
 
 import { Constants } from '../../Constants';
-import { DataSource, Font, Model, View } from '../types';
+import { DataSource, DataSources, Font, Model, View } from '../types';
 import { SilexNotification } from '../utils/Notification';
 import { Style } from '../utils/Style';
 import { ComponentData, CssRule, JsonData, ProdotypeData, ProdotypeTypes, SilexData, SilexId, StyleData, StyleName } from './Data';
@@ -72,7 +72,7 @@ export class Property {
   nextId: number = 0;
   stylesObj: SilexData = {};
   fonts: Font[] = [];
-  dataSources: DataSource[] = [];
+  dataSources: DataSources = {};
   mobileStylesObj: SilexData = {};
 
   /**
@@ -82,26 +82,20 @@ export class Property {
 
   constructor(public model: Model, public view: View) {}
 
-  async setDataSources(data: DataSource[]) {
+  async setDataSources(data: DataSources) {
     this.dataSources = data;
     return this.loadDataSources(false);
   }
   async loadDataSources(reload): Promise<void> {
     try {
-      this.dataSources = await Promise.all(
-        this.dataSources.map(async (dataSource) => {
-          if (!reload && !dataSource.data) {
-            const res = await fetch(dataSource.href);
-            const data = await res.json();
-            return {
-              ...dataSource,
-              data,
-            };
-          } else {
-            return dataSource;
-          }
-        }),
-      );
+      Object.keys(this.dataSources).map(async (name) => {
+        const dataSource = this.dataSources[name];
+        if (reload || !dataSource.data) {
+          const res = await fetch(dataSource.href);
+          const data = await res.json();
+          dataSource.data = data;
+        }
+      });
     } catch (err) {
       console.error('could not load data sources', err);
       SilexNotification.alert('Error', `There was an error loading the data sources: ${err}`, () => { throw err; });
@@ -111,8 +105,8 @@ export class Property {
   /**
    * @return returns a copy of this.dataSources
    */
-  getDataSources(): DataSource[] {
-    return this.dataSources.slice();
+  getDataSources(): DataSources {
+    return {...this.dataSources};
   }
 
   setFonts(fonts: Font[]) {
@@ -193,7 +187,7 @@ export class Property {
     styleTag.type = 'text/json';
     const obj = ({
       fonts: this.fonts || [],
-      dataSources: this.dataSources || [],
+      dataSources: this.dataSources || {},
       desktop: this.stylesObj || {},
       mobile: this.mobileStylesObj || {},
       prodotypeData: {
@@ -214,7 +208,7 @@ export class Property {
     if (styleTag != null ) {
       const styles = (JSON.parse(styleTag.innerHTML)[0] as any);
       this.fonts = styles.fonts || [];
-      this.dataSources = styles.dataSources || []; // TODO: why store this in the styles object?
+      this.dataSources = styles.dataSources || {}; // TODO: why store this in the styles object?
       this.stylesObj = styles.desktop || {};
       this.mobileStylesObj = styles.mobile || {};
       this.prodotypeDataObj = styles.prodotypeData &&
@@ -232,7 +226,7 @@ export class Property {
       }
     } else {
       this.fonts = [];
-      this.dataSources = [];
+      this.dataSources = {};
       this.stylesObj = {};
       this.mobileStylesObj = {};
       this.prodotypeDataObj = Property.EMPTY_PRODOTYPE_DATA;

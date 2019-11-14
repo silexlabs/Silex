@@ -15,7 +15,7 @@
  */
 
 import { CloudStorage } from '../../service/CloudStorage';
-import { Controller, DataSource, FileInfo, Font, Model } from '../../types';
+import { Controller, DataSource, DataSources, FileInfo, Font, Model } from '../../types';
 import { SilexNotification } from '../../utils/Notification';
 import { Url } from '../../utils/Url';
 import { ModalDialog } from '../ModalDialog';
@@ -170,18 +170,16 @@ export class SettingsDialog {
       if (el.classList.contains('del-btn')) {
         const idx = parseInt(el.getAttribute('data-idx'), 10);
         const dataSources = this.model.head.getDataSources();
-        const newDataSource = dataSources.slice();
-        newDataSource.splice(idx, 1);
-        this.model.head.setDataSources(newDataSource);
+        delete dataSources[idx];
+        this.model.head.setDataSources(dataSources);
       } else {
         if (el.classList.contains('edit-btn')) {
-          const idx = parseInt(el.getAttribute('data-idx'), 10);
+          const idx = el.getAttribute('data-idx');
           const dataSources = this.model.head.getDataSources();
-          this.editDataSource(dataSources[idx], (dataSource) => {
-            const newDataSource = dataSources.slice();
-            newDataSource[idx] = dataSource;
-            this.model.head.setDataSources(newDataSource);
-            console.log('adding', dataSource, newDataSource);
+          this.editDataSource(idx, dataSources[idx].href, (newName, newHref) => {
+            dataSources[newName] = { href: newHref };
+            if (newName !== idx) { delete dataSources[idx]; }
+            this.model.head.setDataSources(dataSources);
           });
         }
       }
@@ -432,18 +430,18 @@ export class SettingsDialog {
     } catch (e) {
     }
   }
-  getDataSourcesList(dataSources: DataSource[]) {
-    console.log('getDataSources', dataSources);
+  getDataSourcesList(dataSources: DataSources) {
     return '<ul>' +
-        dataSources
-            .map((dataSource, idx) => {
+        Object.keys(dataSources)
+            .map((name, idx) => {
+              const dataSource = dataSources[name];
               return `<li>
         <div class="ui">
-          <button class="edit-btn fa fa-pencil" title="Edit this data source" data-idx="${idx}"></button>
-          <button class="del-btn" title="Remove this data source" data-idx="${idx}"></button>
+          <button class="edit-btn fa fa-pencil" title="Edit this data source" data-idx="${name}"></button>
+          <button class="del-btn" title="Remove this data source" data-idx="${name}"></button>
         </div>
         <div class="content">
-          <h3>${ dataSource.name } &nbsp<small>(${ dataSource.data ? Object.keys(dataSource.data).length + ' elements' : 'loading data...' })</small></h3>
+          <h3>${ name } &nbsp<small>(${ dataSource.data ? Object.keys(dataSource.data).length + ' elements' : 'loading data...' })</small></h3>
           <p>${ dataSource.href }</p>
           <pre>${ dataSource.data ? JSON.stringify(dataSource.data) : '' }</pre>
         </div>
@@ -454,33 +452,29 @@ export class SettingsDialog {
   }
 
   addDataSource() {
-    this.editDataSource(
-        {
-          href: 'https://jsonplaceholder.typicode.com/photos',
-          name: 'My photos',
-        },
-        (newDataSource) => {
+    this.editDataSource('My photos', 'https://jsonplaceholder.typicode.com/photos',
+        (name, href) => {
           const dataSources = this.model.head.getDataSources();
-          if (dataSources.find(
-            (dataSource: DataSource) => dataSource.href === newDataSource.href && dataSource.name === newDataSource.name)) {
+          if (dataSources[name]) {
             console.warn('This data source already exists in this website');
+            SilexNotification.alert('Error', 'This data source already exists in this website', () => {});
           } else {
-            dataSources.push(newDataSource);
+            dataSources[name] = { href };
             this.model.head.setDataSources(dataSources);
           }
         });
   }
 
-  editDataSource(dataSource, cbk) {
+  editDataSource(name, href, cbk: (name: string, href: string) => void) {
     SilexNotification.prompt('Edit Data Source',
       'What is the URL of your data source?',
-      dataSource.href, 'https://jsonplaceholder.typicode.com/photos', (ok, href) => {
+      href, 'https://jsonplaceholder.typicode.com/photos', (ok, newHref) => {
         if (ok) {
           SilexNotification.prompt('Edit Data Source',
             'What is the name of your data source?',
-            dataSource.name, 'My photos', (_ok, name) => {
+            name, 'My photos', (_ok, newName) => {
               if (_ok) {
-                cbk(({name, href} as DataSource));
+                cbk(newName, newHref);
               }
             },
           );

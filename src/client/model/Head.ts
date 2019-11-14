@@ -17,7 +17,7 @@
  */
 
 import { Constants } from '../../Constants';
-import {DataSource, FileInfo, Font, Model, View} from '../types';
+import {DataSources, FileInfo, Font, Model, View} from '../types';
 
 const BEAUTIFY_CSS_OPTIONS = {
   indent_size: 2,
@@ -498,10 +498,10 @@ export class Head {
     return this.model.file.getContentDocument().head;
   }
 
-  getDataSources(): DataSource[] {
+  getDataSources(): DataSources {
     return this.model.property.getDataSources();
   }
-  setDataSources(data: DataSource[]) {
+  setDataSources(data: DataSources) {
     this.model.property.setDataSources(data)
     .then(() => this.view.settingsDialog.redraw());
   }
