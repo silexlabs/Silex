@@ -16,6 +16,7 @@
  */
 
 import { Constants } from '../../Constants';
+import { Config } from '../ClientConfig';
 import { Prodotype, ProdotypeCompDef } from '../externs';
 import { Model, View } from '../types';
 import { ComponentData, PseudoClass, PseudoClassData, SilexId, StyleData, StyleName, Visibility } from './Data';
@@ -45,7 +46,7 @@ export class Component {
     this.componentEditorElement = componentEditorElement;
     this.styleEditorElement = styleEditorElement;
     // tslint:disable:no-string-literal
-    this.prodotypeComponent = new window['Prodotype'](componentEditorElement, './prodotype/components');
+    this.prodotypeComponent = new window['Prodotype'](componentEditorElement, Config.componentFolders);
     this.prodotypeStyle = new window['Prodotype'](styleEditorElement, './prodotype/styles');
     this.prodotypeComponent.ready((err) => {
       this.readyCbkArr.forEach((cbk) => cbk(err));
