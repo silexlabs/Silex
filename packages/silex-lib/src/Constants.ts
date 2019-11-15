@@ -52,6 +52,16 @@ export class Constants {
   static PAGES_CONTAINER_CLASS_NAME: string = 'silex-pages';
 
   /**
+   * attributes of the page (on one of the invisible links which define pages)
+   */
+  static PAGE_PREVENT_DELETE = 'data-prevent-delete';
+
+  /**
+   * attributes of the page (on one of the invisible links which define pages)
+   */
+  static PAGE_PREVENT_RENAME = 'data-prevent-rename';
+
+  /**
    * constant for the class name of elements when it is in a visible page
    * this css class is set in pageable.js
    */
