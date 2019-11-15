@@ -148,64 +148,68 @@ export class Page {
    */
   removePage(pageName: string) {
     let pages = this.getPages();
-    const pageDisplayName = this.getDisplayName(pageName);
     if (pages.length < 2) {
-      SilexNotification.notifyError(
-          'I could not delete this page because <strong>it is the only page!</strong>');
+      SilexNotification.alert('Error', 'I can not delete this page because <strong>it is the only page</strong>.', () => {});
     } else {
-      // remove the DOM element
-      const pageElements = Array.from(this.model.body.getBodyElement().querySelectorAll(`a[data-silex-type="${Constants.TYPE_PAGE}"]`));
-      pageElements.forEach((element) => {
-        if (element.getAttribute('id') === pageName) {
-          element.parentElement.removeChild(element);
-        }
-      });
+      const pageElement = this.model.body.getBodyElement()
+        .querySelector(`a[data-silex-type="${Constants.TYPE_PAGE}"][id="${pageName}"]`) as HTMLAnchorElement;
+      if (pageElement) {
+        if (pageElement.hasAttribute(Constants.PAGE_PREVENT_DELETE)) {
+          SilexNotification.alert('Error', 'I can not delete this page because <strong>it is a protected page</strong>.', () => {});
+        } else {
+          // remove the DOM element
+          pageElement.parentElement.removeChild(pageElement);
 
-      // remove the links to this page
-      const linkElements = Array.from(this.model.body.getBodyElement().querySelectorAll('*[data-silex-href="#!' + pageName + '"]'));
-      linkElements.forEach((element) => {
-        element.removeAttribute('data-silex-href');
-      });
+          // remove the links to this page
+          const linkElements = Array.from(this.model.body.getBodyElement().querySelectorAll('*[data-silex-href="#!' + pageName + '"]'));
+          linkElements.forEach((element) => {
+            element.removeAttribute('data-silex-href');
+          });
 
-      // check elements which were only visible on this page
-      // and returns them in this case
-      const elementsOnlyOnThisPage = [];
-      const elementsOfThisPage = Array.from(this.model.body.getBodyElement().getElementsByClassName(pageName));
-      elementsOfThisPage.forEach((element: HTMLElement) => {
-        element.remove();
-        const pagesOfElement = this.getPagesForElement(element);
-        if (pagesOfElement.length <= 0) {
-          elementsOnlyOnThisPage.push(element);
-        }
-      });
+          // check elements which were only visible on this page
+          // and returns them in this case
+          const elementsOnlyOnThisPage = [];
+          const elementsOfThisPage = Array.from(this.model.body.getBodyElement().getElementsByClassName(pageName));
+          elementsOfThisPage.forEach((element: HTMLElement) => {
+            element.remove();
+            const pagesOfElement = this.getPagesForElement(element);
+            if (pagesOfElement.length <= 0) {
+              elementsOnlyOnThisPage.push(element);
+            }
+          });
 
-      // update the page list
-      pages = this.getPages();
+          // update the page list
+          pages = this.getPages();
 
-      // open default/first page
-      this.setCurrentPage(pages[0]);
+          // open default/first page
+          this.setCurrentPage(pages[0]);
 
-      // handle elements which should be deleted
-      if (elementsOnlyOnThisPage.length > 0) {
-        SilexNotification.confirm('Delete elements' , `
+          // handle elements which should be deleted
+          if (elementsOnlyOnThisPage.length > 0) {
+            const pageDisplayName = this.getDisplayName(pageName);
+            SilexNotification.confirm('Delete elements' , `
           ${elementsOnlyOnThisPage.length} elements were only visible on this page (${pageDisplayName}).
           <br /><ul>
             <li>Do you want me to <strong>delete these elements?</strong><br /></li>
             <li>or keep them and <strong>make them visible on all pages?</strong></li>
           </ul>
         `,
-        (accept) => {
-          elementsOnlyOnThisPage.forEach((element) => {
-            if (accept) {
-              // remove these elements
-              this.model.element.removeElement(element);
-            } else {
-              // remove from this page
-              this.removeFromAllPages(element);
-            }
-          });
-        },
-        'delete', 'keep');
+              (accept) => {
+                elementsOnlyOnThisPage.forEach((element) => {
+                  if (accept) {
+                    // remove these elements
+                    this.model.element.removeElement(element);
+                  } else {
+                    // remove from this page
+                    this.removeFromAllPages(element);
+                  }
+                });
+              },
+              'delete', 'keep');
+          }
+        }
+      } else {
+        SilexNotification.alert('Error', `I could not delete this page: page ${pageName} not found.`, () => {});
       }
     }
   }
@@ -263,33 +267,34 @@ export class Page {
     const bodyElement = this.model.body.getBodyElement();
 
     // update the DOM element
-    const pageElements = Array.from(bodyElement.querySelectorAll(`a[data-silex-type="${Constants.TYPE_PAGE}"]`));
-    pageElements.forEach((element) => {
-      if (element.getAttribute('id') === oldName) {
-        element.setAttribute('id', newName);
-        element.setAttribute('href', '#!' + newName);
-        element.innerHTML = newDisplayName;
-      }
-    });
+    const pageElement = this.model.body.getBodyElement()
+      .querySelector(`a[data-silex-type="${Constants.TYPE_PAGE}"][id="${oldName}"]`) as HTMLAnchorElement;
+    if (pageElement.hasAttribute(Constants.PAGE_PREVENT_RENAME)) {
+      SilexNotification.alert('Error', 'I can not rename this page because <strong>it is a protected page</strong>.', () => {});
+    } else {
+      pageElement.setAttribute('id', newName);
+      pageElement.setAttribute('href', '#!' + newName);
+      pageElement.innerHTML = newDisplayName;
 
-    // update the links to this page
-    const linkElements = Array.from(bodyElement.querySelectorAll(`*[data-silex-href="#!${oldName}"]`));
-    linkElements.forEach((element) => {
-      element.setAttribute('data-silex-href', '#!' + newName);
-    });
+      // update the links to this page
+      const linkElements = Array.from(bodyElement.querySelectorAll(`*[data-silex-href="#!${oldName}"]`));
+      linkElements.forEach((element) => {
+        element.setAttribute('data-silex-href', '#!' + newName);
+      });
 
-    // update the visibility of the compoents
-    const componentElements = Array.from(bodyElement.getElementsByClassName(oldName));
-    componentElements.forEach((element) => {
-      element.classList.remove(oldName);
-      element.classList.add(newName);
-    });
+      // update the visibility of the compoents
+      const componentElements = Array.from(bodyElement.getElementsByClassName(oldName));
+      componentElements.forEach((element) => {
+        element.classList.remove(oldName);
+        element.classList.add(newName);
+      });
 
-    // wait until the dom reflects the changes
-    setTimeout(() => {
-      // select this page
-      this.setCurrentPage(newName);
-    }, 100);
+      // wait until the dom reflects the changes
+      setTimeout(() => {
+        // select this page
+        this.setCurrentPage(newName);
+      }, 100);
+    }
   }
 
   /**
