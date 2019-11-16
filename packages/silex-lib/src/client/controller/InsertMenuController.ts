@@ -32,30 +32,23 @@ super(model, view);
   /**
    * create a page
    */
-  createPage(successCbk?: (() => any), cancelCbk?: (() => any)) {
+  createPage(): Promise<void> {
     this.tracker.trackAction('controller-events', 'request', 'insert.page', 0);
-    this.getUserInputPageName(
-        '', (name, displayName) => {
-          if (name) {
-            // undo checkpoint
-            this.undoCheckPoint();
+    return this.editPageSettings()
+      .then(({name, displayName}) => {
+        // undo checkpoint
+        this.undoCheckPoint();
 
-            // create the page model
-            this.model.page.createPage(name, displayName);
+        // create the page model
+        this.model.page.createPage(name, displayName);
 
-            // update view
-            if (successCbk) {
-              successCbk();
-            }
-            this.tracker.trackAction(
-                'controller-events', 'success', 'insert.page', 1);
-          } else {
-            if (cancelCbk) {
-              cancelCbk();
-            }
-            this.tracker.trackAction(
-                'controller-events', 'cancel', 'insert.page', 0);
-          }
-        });
+        // tracking
+        this.tracker.trackAction(
+          'controller-events', 'success', 'insert.page', 1);
+      })
+      .catch((e) => {
+        // tracking
+        this.tracker.trackAction('controller-events', 'cancel', 'insert.page', 0);
+      });
   }
 }

@@ -403,39 +403,30 @@ export class ControllerBase {
    * promp user for page name
    * used in insert page, rename page...
    */
-  getUserInputPageName(defaultName: string, cbk: (p1?: string, p2?: string) => void) {
-    SilexNotification.prompt(
-      'Page name',
-      'Enter a name for your page!', defaultName, 'Your page name', (accept, name) => {
-        if (accept && name && name.length > 0) {
-          // keep the full name
-          const displayName = name;
+  editPageSettings(pageName: string = null): Promise<{name: string, displayName: string}> {
+    return new Promise((resolve, reject) => {
+      SilexNotification.prompt(
+        'Page Settings',
+        'Page Name', pageName, 'Your page name', (accept, newName) => {
+          if (accept && newName && newName.length > 0) {
+            // cleanup the page name
+            // add a prefix to prevent names which start with an dash or number (see css specifications)
+            const cleanName = 'page-' + newName.replace(/\W+/g, '-').toLowerCase();
 
-          // cleanup the page name
-          name = name.replace(/\W+/g, '-').toLowerCase();
-
-          // do not allow to start with an dash or number (see css
-          // specifications)
-          name = 'page-' + name;
-
-          // check if a page with this name exists
-          const pages = this.model.page.getPages();
-          let exists = false;
-          pages.forEach((pageName) => {
-            if (pageName === name) {
-              exists = true;
+            // check if a page with this name exists
+            if (!!this.model.page.getPageData(newName)) {
+              // open the new page
+              this.openPage(newName);
+              reject('Page already exists');
+            } else {
+              resolve({name: cleanName, displayName: newName});
             }
-          });
-          if (exists) {
-            // just open the new page
-            this.openPage(name);
           } else {
-            cbk(name, displayName);
+            reject('Canceled');
           }
-        }
-        cbk();
-      },
-    );
+        },
+      );
+    });
   }
 
   /**
