@@ -36,21 +36,17 @@ export class PageToolController extends ControllerBase {
     if (!opt_pageName) {
       opt_pageName = this.model.page.getCurrentPage();
     }
-    this.getUserInputPageName(
-        this.model.page.getDisplayName(opt_pageName),
-          (name, newDisplayName) => {
-            if (newDisplayName) {
-              // undo checkpoint
-              this.undoCheckPoint();
+    this.editPageSettings(this.model.page.getDisplayName(opt_pageName))
+      .then(({name, displayName}) => {
+        // undo checkpoint
+        this.undoCheckPoint();
 
-              // update model
-              this.model.page.renamePage(
-                  (opt_pageName as string), name, newDisplayName);
-            } else {
-              // just open the new page
-              this.openPage((opt_pageName as string));
-            }
-          });
+        // update model
+        this.model.page.renamePage(
+          (opt_pageName as string), name, displayName);
+      })
+      .catch((e) => {
+      });
   }
 
   /**
@@ -80,20 +76,11 @@ export class PageToolController extends ControllerBase {
   }
 
   /**
-   * move a page up/down
-   * @param opt_pageName name of the page to be moved
+   * move a page
+   * @param pageName name of the page to be moved
+   * @param offset
    */
-  movePageUp(opt_pageName?: string) {
-    this.model.page.movePage(
-        (opt_pageName || this.model.page.getCurrentPage() as string), 'up');
-  }
-
-  /**
-   * move a page up/down
-   * @param opt_pageName name of the page to be moved
-   */
-  movePageDown(opt_pageName?: string) {
-    this.model.page.movePage(
-        (opt_pageName || this.model.page.getCurrentPage() as string), 'down');
+  movePageTo(pageName: string, idx: number) {
+    this.model.page.movePage(pageName, idx);
   }
 }

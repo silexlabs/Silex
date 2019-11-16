@@ -96,6 +96,7 @@
     "serve-static": "1.14.0",
     "silex-blank-templates": "1.0.0",
     "silex-templates": "1.0.3",
+    "sortablejs": "^1.10.1",
     "source-map-support": "^0.5.12",
     "tags-input": "^1.1.1",
     "wysihtml": "^0.6.0-beta1"

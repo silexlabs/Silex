@@ -25,10 +25,11 @@ import { SilexNotification } from '../utils/Notification';
  * @struct
  */
 export class PageData {
-  name: string = '';
-  displayName: string = '';
-  linkName: string = '';
-  idx: number = -1;
+  name: string;
+  displayName: string;
+  linkName: string;
+  idx: number;
+  isCurrent: boolean;
 }
 
 /**
@@ -49,6 +50,23 @@ export class Page {
       parent = parent.parentElement as HTMLElement;
     }
     return (parent as HTMLElement | null);
+  }
+
+  getPageData(pageName): PageData {
+    const pageElement = this.model.file.getContentDocument().getElementById(pageName);
+    if (pageElement) {
+      return {
+        name: pageName,
+        displayName: pageElement.innerHTML,
+        linkName: '#!' + pageName,
+        idx: this.getPages().findIndex((p) => p === pageName),
+        isCurrent: this.getCurrentPage() === pageName,
+      };
+    } else {
+      // this happens while undoing or redoing
+      // or when the page does not exist
+      return null;
+    }
   }
 
   /**
@@ -218,25 +236,22 @@ export class Page {
    * move a page in the dom
    * @param direction up or down
    */
-  movePage(pageName: string, direction: string) {
-    if (direction !== 'up' && direction !== 'down') {
-      throw new Error('wrong direction ' + direction + ', can not move page');
+  movePage(pageName: string, newPageIdx: number) {
+    const pages = this.getPages();
+    const pageIdx = pages.findIndex((page) => page === pageName);
+    const container = this.model.body.getBodyElement().querySelector('.' + Constants.PAGES_CONTAINER_CLASS_NAME);
+    const element = container.children[pageIdx];
+    if (typeof pageIdx === 'undefined' || newPageIdx < 0 || newPageIdx >= pages.length) {
+      console.error('I cannot move this page to this index', pageName, pages);
+    } else if (newPageIdx >= pages.length - 1) {
+      container.appendChild(element);
+    } else {
+      // handle the case where the next element is myself
+      const target = newPageIdx + 1 === pageIdx ? container.children[newPageIdx] : container.children[newPageIdx + 1];
+      container.insertBefore(element, target);
     }
-    const elements = this.model.body.getBodyElement().querySelectorAll(`a[data-silex-type="${Constants.TYPE_PAGE}"]`);
-    let prevEl = null;
-    for (const el of elements) {
-      if (prevEl
-        && (el.id === pageName && direction === 'up'
-        || prevEl.id === pageName && direction === 'down')) {
-        el.parentElement.insertBefore(el, prevEl);
-        const pages = this.getPages();
-        const currentPage = this.getCurrentPage();
-        this.view.pageTool.redraw(this.model.body.getSelection(), pages, currentPage);
-        return;
-      }
-      prevEl = el;
-    }
-    console.error('page could not be moved', pageName, direction, prevEl);
+    const currentPage = this.getCurrentPage();
+    this.view.pageTool.redraw(this.model.body.getSelection(), this.getPages(), currentPage);
   }
 
   /**

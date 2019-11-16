@@ -16,6 +16,7 @@
  *
  */
 
+import Sortable from '../../../node_modules/sortablejs/modular/sortable.core.esm.js';
 import { PageData } from '../model/Page';
 import { Controller, Model } from '../types';
 import { Dom } from '../utils/Dom';
@@ -37,6 +38,7 @@ export class PageTool {
    * @see silex.model.PageData
    */
   pages: PageData[] = [];
+  currentPage: PageData = null;
 
   /**
    * invalidation mechanism
@@ -54,12 +56,12 @@ export class PageTool {
   buildUi() {
     // listen for the click on a page
     this.element.addEventListener('click', (e) => {
-      if ((e.target as HTMLElement).classList.contains('delete')) {
+      if ((e.target as HTMLElement).classList.contains('page-delete')) {
         // remove the page
         this.removePageAtIndex(
             this.getCellIndex((e.target as HTMLElement).parentElement.parentElement as HTMLElement));
       } else {
-        if ((e.target as HTMLElement).classList.contains('label')) {
+        if ((e.target as HTMLElement).classList.contains('page-properties')) {
           // rename the page
           this.renamePageAtIndex(
               this.getCellIndex((e.target as HTMLElement).parentElement.parentElement as HTMLElement));
@@ -78,16 +80,14 @@ export class PageTool {
       Array.from(document.querySelectorAll(className))
       .forEach((el) => el.onclick = cbk);
     }
-    attach(
-        '.add-page', (e) => this.controller.insertMenuController.createPage());
-    attach(
-        '.remove-page', (e) => this.controller.pageToolController.removePage());
-    attach(
-        '.move-page-up',
-        (e) => this.controller.pageToolController.movePageUp());
-    attach(
-        '.move-page-down',
-        (e) => this.controller.pageToolController.movePageDown());
+    attach('.add-page', (e) => this.controller.insertMenuController.createPage());
+    attach('.remove-page', (e) => this.controller.pageToolController.removePage());
+    attach('.move-page-up', (e) => {
+      this.controller.pageToolController.movePageTo(this.currentPage.name, this.currentPage.idx - 1);
+    });
+    attach('.move-page-down', (e) => {
+      this.controller.pageToolController.movePageTo(this.currentPage.name, this.currentPage.idx + 1);
+    });
   }
 
   /**
@@ -97,39 +97,25 @@ export class PageTool {
    * @param pageNames   the names of the pages which appear in the current HTML file
    * @param  currentPageName   the name of the current page
    */
-  redraw(
-      selectedElements: HTMLElement[], pageNames: string[],
-      currentPageName: string) {
+  redraw(selectedElements: HTMLElement[], pageNames: string[], currentPageName: string) {
     this.invalidationManager.callWhenReady(() => {
       // prepare the data for the template
-      // make an array with name, displayName, linkName and className
-      let idx = 0;
-      this.pages = pageNames.map((pageName) => {
-        const pageElement =
-            this.model.file.getContentDocument().getElementById(pageName);
-        if (!pageElement) {
-          // this happens while undoing or redoing
-          return null;
-        }
-        const res = {
-          name: pageName,
-          displayName: this.model.file.getContentDocument()
-            .getElementById(pageName)
-            .innerHTML,
-          linkName: '#!' + pageName,
-          idx: idx++,
-          className: '',
-        };
-        if (currentPageName === pageName) {
-          res.className = 'ui-selected';
-        }
-        return res;
-      });
+      // make an array with name, displayName, linkName
+      this.pages = pageNames.map((pageName) => this.model.page.getPageData(pageName));
+      this.currentPage = this.model.page.getPageData(currentPageName);
 
       // refresh the list with new pages
       const container = this.element.getElementsByClassName('page-tool-container')[0];
       const templateHtml = this.element.getElementsByClassName('page-tool-template')[0].innerHTML;
-      container.innerHTML = Dom.renderList(templateHtml, this.pages);
+      container.innerHTML = Dom.renderList(templateHtml, this.pages.map((p) => Object.assign({ className: p.isCurrent ? ' ui-selected' : ''}, p)));
+      Sortable.create(container, {
+        ghostClass: 'page-ghost',
+        animation: 150,
+        handle: '.page-handle',
+        onSort: (e) => {
+          this.controller.pageToolController.movePageTo(this.pages[e.oldIndex].name, e.newIndex);
+        },
+      });
     });
   }
 
