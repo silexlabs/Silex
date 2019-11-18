@@ -28,6 +28,29 @@ export class PageToolController extends ControllerBase {
   }
 
   /**
+   * create a page
+   */
+  createPage(): Promise<void> {
+    this.tracker.trackAction('controller-events', 'request', 'insert.page', 0);
+    return this.editPageSettings()
+      .then(({name, displayName}) => {
+        // undo checkpoint
+        this.undoCheckPoint();
+
+        // create the page model
+        this.model.page.createPage(name, displayName);
+
+        // tracking
+        this.tracker.trackAction(
+          'controller-events', 'success', 'insert.page', 1);
+      })
+      .catch((e) => {
+        // tracking
+        this.tracker.trackAction('controller-events', 'cancel', 'insert.page', 0);
+      });
+  }
+
+  /**
    * rename a page
    * @param opt_pageName name of the page to be renamed
    */

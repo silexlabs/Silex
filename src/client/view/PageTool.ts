@@ -80,7 +80,7 @@ export class PageTool {
       Array.from(document.querySelectorAll(className))
       .forEach((el) => el.onclick = cbk);
     }
-    attach('.add-page', (e) => this.controller.insertMenuController.createPage());
+    attach('.add-page', (e) => this.controller.pageToolController.createPage());
     attach('.remove-page', (e) => this.controller.pageToolController.removePage());
     attach('.move-page-up', (e) => {
       this.controller.pageToolController.movePageTo(this.currentPage.name, this.currentPage.idx - 1);

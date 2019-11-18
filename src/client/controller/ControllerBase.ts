@@ -403,10 +403,10 @@ export class ControllerBase {
    * promp user for page name
    * used in insert page, rename page...
    */
-  editPageSettings(pageName: string = null): Promise<{name: string, displayName: string}> {
+  editPageSettings(pageName: string = ''): Promise<{name: string, displayName: string}> {
     return new Promise((resolve, reject) => {
       SilexNotification.prompt(
-        'Page Settings',
+        'Page Properties',
         'Page Name', pageName, 'Your page name', (accept, newName) => {
           if (accept && newName && newName.length > 0) {
             // cleanup the page name
