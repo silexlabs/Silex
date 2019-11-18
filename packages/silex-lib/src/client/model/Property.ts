@@ -14,6 +14,7 @@
  *   This class is used to access Silex elements properties
  */
 
+import * as objectPath from '../../../node_modules/object-path/index.js';
 import { Constants } from '../../Constants';
 import { DataSource, DataSources, Font, Model, View } from '../types';
 import { SilexNotification } from '../utils/Notification';
@@ -90,16 +91,25 @@ export class Property {
     try {
       Object.keys(this.dataSources).map(async (name) => {
         const dataSource = this.dataSources[name];
-        if (reload || !dataSource.data) {
+        if (reload || !dataSource.data || !dataSource.structure) {
           const res = await fetch(dataSource.href);
           const data = await res.json();
+          const root = objectPath.get(data, dataSource.root);
+          const first = objectPath.get(root, '0');
           dataSource.data = data;
+          dataSource.structure = {};
+          if (first) {
+            Object.keys(first).forEach((key) => dataSource.structure[key] = this.getDataSourceType(first[key]));
+          }
         }
       });
     } catch (err) {
       console.error('could not load data sources', err);
       SilexNotification.alert('Error', `There was an error loading the data sources: ${err}`, () => { throw err; });
     }
+  }
+  getDataSourceType(value) {
+    return Array.isArray(value) ? 'array' : typeof(value);
   }
 
   /**

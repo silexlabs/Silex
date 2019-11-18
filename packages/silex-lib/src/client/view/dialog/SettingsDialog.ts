@@ -168,7 +168,7 @@ export class SettingsDialog {
     this.dataSourcesList.onclick = (e) => {
       const el = (e.target as HTMLElement);
       if (el.classList.contains('del-btn')) {
-        const idx = parseInt(el.getAttribute('data-idx'), 10);
+        const idx = el.getAttribute('data-idx');
         const dataSources = this.model.head.getDataSources();
         delete dataSources[idx];
         this.model.head.setDataSources(dataSources);
@@ -176,8 +176,8 @@ export class SettingsDialog {
         if (el.classList.contains('edit-btn')) {
           const idx = el.getAttribute('data-idx');
           const dataSources = this.model.head.getDataSources();
-          this.editDataSource(idx, dataSources[idx].href, (newName, newHref) => {
-            dataSources[newName] = { href: newHref };
+          this.editDataSource(idx, dataSources[idx], (newName, dataSource) => {
+            dataSources[newName] = dataSource;
             if (newName !== idx) { delete dataSources[idx]; }
             this.model.head.setDataSources(dataSources);
           });
@@ -435,6 +435,8 @@ export class SettingsDialog {
         Object.keys(dataSources)
             .map((name, idx) => {
               const dataSource = dataSources[name];
+              const htmlEntityP = document.createElement('p');
+              htmlEntityP.textContent = dataSource.data ? JSON.stringify(dataSource.data) : '';
               return `<li>
         <div class="ui">
           <button class="edit-btn fa fa-pencil" title="Edit this data source" data-idx="${name}"></button>
@@ -443,7 +445,7 @@ export class SettingsDialog {
         <div class="content">
           <h3>${ name } &nbsp<small>(${ dataSource.data ? Object.keys(dataSource.data).length + ' elements' : 'loading data...' })</small></h3>
           <p>${ dataSource.href }</p>
-          <pre>${ dataSource.data ? JSON.stringify(dataSource.data) : '' }</pre>
+          <pre>${ htmlEntityP.innerHTML }</pre>
         </div>
       </li>`;
             })
@@ -452,29 +454,36 @@ export class SettingsDialog {
   }
 
   addDataSource() {
-    this.editDataSource('My photos', 'https://jsonplaceholder.typicode.com/photos',
-        (name, href) => {
+    this.editDataSource('My photos', {href: 'https://jsonplaceholder.typicode.com/photos', root: ''},
+        (name, dataSource) => {
           const dataSources = this.model.head.getDataSources();
           if (dataSources[name]) {
             console.warn('This data source already exists in this website');
             SilexNotification.alert('Error', 'This data source already exists in this website', () => {});
           } else {
-            dataSources[name] = { href };
+            dataSources[name] = dataSource;
             this.model.head.setDataSources(dataSources);
           }
         });
   }
 
-  editDataSource(name, href, cbk: (name: string, href: string) => void) {
+  editDataSource(oldName: string, dataSource: DataSource, cbk: (name: string, dataSource: DataSource) => void) {
     SilexNotification.prompt('Edit Data Source',
       'What is the URL of your data source?',
-      href, 'https://jsonplaceholder.typicode.com/photos', (ok, newHref) => {
+      dataSource.href, 'https://jsonplaceholder.typicode.com/photos', (ok, href) => {
         if (ok) {
           SilexNotification.prompt('Edit Data Source',
             'What is the name of your data source?',
-            name, 'My photos', (_ok, newName) => {
+            oldName, 'My photos', (_ok, name) => {
               if (_ok) {
-                cbk(newName, newHref);
+                SilexNotification.prompt('Edit Data Source',
+                  'What is the root of your data source?',
+                  dataSource.root, '', (__ok, root) => {
+                    if (__ok) {
+                      cbk(name, {href, root});
+                    }
+                  },
+                );
               }
             },
           );

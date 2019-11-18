@@ -80,7 +80,9 @@ export interface StickyLine {
 }
 export interface DataSource {
   href: string;
+  root: string;
   data?: object;
+  structure?: object;
 }
 export interface DataSources { [key: string]: DataSource; }
 export interface Font {
