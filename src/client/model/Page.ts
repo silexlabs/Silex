@@ -30,6 +30,9 @@ export class PageData {
   linkName: string;
   idx: number;
   isCurrent: boolean;
+  canDelete: boolean;
+  canProperties: boolean;
+  canMove: boolean;
 }
 
 /**
@@ -61,6 +64,9 @@ export class Page {
         linkName: '#!' + pageName,
         idx: this.getPages().findIndex((p) => p === pageName),
         isCurrent: this.getCurrentPage() === pageName,
+        canDelete: !pageElement.hasAttribute(Constants.PAGE_PREVENT_DELETE),
+        canProperties: !pageElement.hasAttribute(Constants.PAGE_PREVENT_PROPERTIES),
+        canMove: !pageElement.hasAttribute(Constants.PAGE_PREVENT_MOVE),
       };
     } else {
       // this happens while undoing or redoing
@@ -284,32 +290,29 @@ export class Page {
     // update the DOM element
     const pageElement = this.model.body.getBodyElement()
       .querySelector(`a[data-silex-type="${Constants.TYPE_PAGE}"][id="${oldName}"]`) as HTMLAnchorElement;
-    if (pageElement.hasAttribute(Constants.PAGE_PREVENT_RENAME)) {
-      SilexNotification.alert('Error', 'I can not rename this page because <strong>it is a protected page</strong>.', () => {});
-    } else {
-      pageElement.setAttribute('id', newName);
-      pageElement.setAttribute('href', '#!' + newName);
-      pageElement.innerHTML = newDisplayName;
 
-      // update the links to this page
-      const linkElements = Array.from(bodyElement.querySelectorAll(`*[data-silex-href="#!${oldName}"]`));
-      linkElements.forEach((element) => {
-        element.setAttribute('data-silex-href', '#!' + newName);
-      });
+    pageElement.setAttribute('id', newName);
+    pageElement.setAttribute('href', '#!' + newName);
+    pageElement.innerHTML = newDisplayName;
 
-      // update the visibility of the compoents
-      const componentElements = Array.from(bodyElement.getElementsByClassName(oldName));
-      componentElements.forEach((element) => {
-        element.classList.remove(oldName);
-        element.classList.add(newName);
-      });
+    // update the links to this page
+    const linkElements = Array.from(bodyElement.querySelectorAll(`*[data-silex-href="#!${oldName}"]`));
+    linkElements.forEach((element) => {
+      element.setAttribute('data-silex-href', '#!' + newName);
+    });
 
-      // wait until the dom reflects the changes
-      setTimeout(() => {
-        // select this page
-        this.setCurrentPage(newName);
-      }, 100);
-    }
+    // update the visibility of the compoents
+    const componentElements = Array.from(bodyElement.getElementsByClassName(oldName));
+    componentElements.forEach((element) => {
+      element.classList.remove(oldName);
+      element.classList.add(newName);
+    });
+
+    // wait until the dom reflects the changes
+    setTimeout(() => {
+      // select this page
+      this.setCurrentPage(newName);
+    }, 100);
   }
 
   /**

@@ -65,6 +65,7 @@
       transition-property: width, height;
     }
 
+    /*
     .delete {
       opacity: 0;
       right: 4px;
@@ -78,8 +79,8 @@
       &:hover {
         color: #F00;
       }
-
     }
+    */
 
   }
   .page-container {
@@ -87,6 +88,9 @@
       width: 25px;
       height: 25px;
     }
+    &.ui-can-not-delete .page-delete { display: none; }
+    &.ui-can-not-properties .page-properties { display: none }
+    &.ui-can-not-move .page-handle { display: none }
   }
 
   .ui-selected {

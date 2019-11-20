@@ -107,7 +107,9 @@ export class PageTool {
       // refresh the list with new pages
       const container = this.element.getElementsByClassName('page-tool-container')[0];
       const templateHtml = this.element.getElementsByClassName('page-tool-template')[0].innerHTML;
-      container.innerHTML = Dom.renderList(templateHtml, this.pages.map((p) => Object.assign({ className: p.isCurrent ? ' ui-selected' : ''}, p)));
+      container.innerHTML = Dom.renderList(templateHtml, this.pages.map((p) => Object.assign({
+        className: (p.isCurrent ? ' ui-selected' : '') + (p.canDelete ? ' ui-can-delete' : ' ui-can-not-delete') + (p.canProperties ? ' ui-can-properties' : ' ui-can-not-properties') + (p.canMove ? ' ui-can-move' : ' ui-can-not-move'),
+      }, p)));
       Sortable.create(container, {
         ghostClass: 'page-ghost',
         animation: 150,

@@ -59,7 +59,12 @@ export class Constants {
   /**
    * attributes of the page (on one of the invisible links which define pages)
    */
-  static PAGE_PREVENT_RENAME = 'data-prevent-rename';
+  static PAGE_PREVENT_MOVE = 'data-prevent-delete';
+
+  /**
+   * attributes of the page (on one of the invisible links which define pages)
+   */
+  static PAGE_PREVENT_PROPERTIES = 'data-prevent-properties';
 
   /**
    * constant for the class name of elements when it is in a visible page
