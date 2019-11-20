@@ -61,7 +61,7 @@ export default function({ port, rootUrl }, unifile) {
     const connector = req.params[0];
     const path = req.params[1];
     const url = new URL(`${ rootUrl }/ce/${ connector }/get/${ Path.dirname(path) }/`);
-    unifile.readFile(req.session.unifile, connector, path)
+    unifile.readFile(req.session.unifile || {}, connector, path)
       .then((buffer) => {
         return sendWebsiteData(res, buffer, url);
       })
@@ -139,7 +139,7 @@ export default function({ port, rootUrl }, unifile) {
     const fullHtml = DomTools.insertUserHeadTag(str, userHead);
     dom.window.close();
 
-    unifile.writeFile(req.session.unifile, connector, req.params[1], fullHtml)
+    unifile.writeFile(req.session.unifile || {}, connector, req.params[1], fullHtml)
       .then((result) => {
         res.send(result);
       })
