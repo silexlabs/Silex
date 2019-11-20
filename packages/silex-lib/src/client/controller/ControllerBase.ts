@@ -406,7 +406,7 @@ export class ControllerBase {
   editPageSettings(pageName: string = ''): Promise<{name: string, displayName: string}> {
     return new Promise((resolve, reject) => {
       SilexNotification.prompt(
-        'Page Properties',
+        pageName === '' ? 'New page' : 'Page Properties',
         'Page Name', pageName, 'Your page name', (accept, newName) => {
           if (accept && newName && newName.length > 0) {
             // cleanup the page name
