@@ -29,6 +29,101 @@
           .input-with-unit
             input.position-input.height-input(placeholder='-', type='number', tabindex='4', min='0')
             label.unit PX
+    .expandable
+      legend
+        span.fa.fa-fw.fa-inverse.fa-caret-right
+        span Layout
+      .body
+        select.position-select.combobox
+          option(value='')
+          option(value='absolute') Absolute
+          option(value='static') Automatic
+        hr
+        label.full-width Container content flow
+        select.display-select.combobox
+          option(value='')
+          option(value='block') Normal
+          option(value='flex') Flex
+        label.full-width Flex flow
+        .two-col
+          select.flex-direction-select.combobox
+            option(value='')
+            option(value='row') Row
+            option(value='column') Column
+            option(value='row-reverse') Row reverse
+            option(value='column-reverse') Column reverse
+          select.flex-wrap-select.combobox
+            option(value='')
+            option(value='nowrap') No wrap
+            option(value='wrap') Wrap
+            option(value='wrap-reverse') Wrap reverse
+          select.align-items-select.combobox
+            option(value='')
+            option(value='normal') Normal
+            option(value='stretch') Stretch
+            option(value='center') Center
+            option(value='start') Start
+            option(value='end') End
+            option(value='flex-start') Flex start
+            option(value='flex-end') Flex end
+          select.justify-content-select.combobox
+            option(value='')
+            option(value='normal') Normal
+            option(value='stretch') Stretch
+            option(value='center') Center
+            option(value='start') Start
+            option(value='end') End
+            option(value='flex-start') Flex start
+            option(value='flex-end') Flex end
+            option(value='left') Left
+            option(value='right') Right
+            option(value='space-between') Space between
+            option(value='space-around') Space around
+            option(value='space-evenly') Space evenly
+        hr
+        span Margin
+        .two-col
+          label Left
+          label Right
+        .two-col
+          .input-with-unit
+            input.position-input.margin-left-input(placeholder='-', type='number', tabindex='1')
+            label.unit PX
+          .input-with-unit
+            input.position-input.margin-right-input(placeholder='-', type='number', tabindex='3', min='0')
+            label.unit PX
+        .two-col
+          label Top
+          label Bottom
+        .two-col
+          .input-with-unit
+            input.position-input.margin-top-input(placeholder='-', type='number', tabindex='2')
+            label.unit PX
+          .input-with-unit
+            input.position-input.margin-bottom-input(placeholder='-', type='number', tabindex='4', min='0')
+            label.unit PX
+      .body
+        span Padding
+        .two-col
+          label Left
+          label Right
+        .two-col
+          .input-with-unit
+            input.position-input.padding-left-input(placeholder='-', type='number', tabindex='1')
+            label.unit PX
+          .input-with-unit
+            input.position-input.padding-right-input(placeholder='-', type='number', tabindex='3', min='0')
+            label.unit PX
+        .two-col
+          label Top
+          label Bottom
+        .two-col
+          .input-with-unit
+            input.position-input.padding-top-input(placeholder='-', type='number', tabindex='2')
+            label.unit PX
+          .input-with-unit
+            input.position-input.padding-bottom-input(placeholder='-', type='number', tabindex='4', min='0')
+            label.unit PX
 
   span.seo-editor.old-advanced-only.editor-container
     .expandable

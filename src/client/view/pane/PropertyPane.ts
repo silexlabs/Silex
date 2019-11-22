@@ -14,11 +14,31 @@
  *
  */
 
-import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
+import { SelectableState } from '../../../../node_modules/drag-drop-stage-component/src/ts/Types';
+// FIXME: do not find module only in vim: import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
 import { Constants } from '../../../Constants';
 import { SilexElement } from '../../model/Element';
 import { Controller, Model } from '../../types';
 import { PaneBase } from './PaneBase';
+
+const FlexWrapSelect = '.flex-wrap-select';
+const JustifyContentSelect = '.justify-content-select';
+const AlignItemsSelect = '.align-items-select';
+const FlexDirectionSelect = '.flex-direction-select';
+const DisplaySelect = '.display-select';
+const PositionSelect = '.position-select';
+const PaddingLeftInput = '.padding-left-input';
+const PaddingBottomInput = '.padding-bottom-input';
+const PaddingRightInput = '.padding-right-input';
+const PaddingTopInput = '.padding-top-input';
+const MarginLeftInput = '.margin-left-input';
+const MarginBottomInput = '.margin-bottom-input';
+const MarginRightInput = '.margin-right-input';
+const MarginTopInput = '.margin-top-input';
+const HeightInput = '.height-input';
+const WidthInput = '.width-input';
+const TopInput = '.top-input';
+const LeftInput = '.left-input';
 
 /**
  * on of Silex Editors class
@@ -31,25 +51,6 @@ import { PaneBase } from './PaneBase';
  * the controller instances
  */
 export class PropertyPane extends PaneBase {
-  /**
-   * UI for position and size
-   */
-  leftInput: HTMLInputElement;
-
-  /**
-   * UI for position and size
-   */
-  topInput: HTMLInputElement;
-
-  /**
-   * UI for position and size
-   */
-  widthInput: HTMLInputElement;
-
-  /**
-   * UI for position and size
-   */
-  heightInput: HTMLInputElement;
 
   /**
    * UI for alt and title
@@ -74,59 +75,29 @@ export class PropertyPane extends PaneBase {
    * build the UI
    */
   buildUi() {
-    this.leftInput = this.initInput('.left-input', (e) => this.onPositionChanged(e));
-    this.leftInput.setAttribute('data-style-name', 'left');
-    this.widthInput = this.initInput('.width-input', (e) => this.onPositionChanged(e));
-    this.widthInput.setAttribute('data-style-name', 'width');
-    this.topInput = this.initInput('.top-input', (e) => this.onPositionChanged(e));
-    this.topInput.setAttribute('data-style-name', 'top');
-    this.heightInput = this.initInput('.height-input', (e) => this.onPositionChanged(e));
-    this.heightInput.setAttribute('data-style-name', 'min-height');
+    this.createInput([
+      { selector: LeftInput, styleName: 'left', eventName: 'input', unit: 'px' },
+      { selector: TopInput, styleName: 'top', eventName: 'input', unit: 'px' },
+      { selector: WidthInput, styleName: 'width', eventName: 'input', unit: 'px' },
+      { selector: HeightInput, styleName: 'height', eventName: 'input', unit: 'px' },
+      { selector: MarginTopInput, styleName: 'margin-top', eventName: 'input', unit: 'px' },
+      { selector: MarginRightInput, styleName: 'margin-right', eventName: 'input', unit: 'px' },
+      { selector: MarginBottomInput, styleName: 'margin-bottom', eventName: 'input', unit: 'px' },
+      { selector: MarginLeftInput, styleName: 'margin-left', eventName: 'input', unit: 'px' },
+      { selector: PaddingTopInput, styleName: 'padding-top', eventName: 'input', unit: 'px' },
+      { selector: PaddingRightInput, styleName: 'padding-right', eventName: 'input', unit: 'px' },
+      { selector: PaddingBottomInput, styleName: 'padding-bottom', eventName: 'input', unit: 'px' },
+      { selector: PaddingLeftInput, styleName: 'padding-left', eventName: 'input', unit: 'px' },
+      { selector: PositionSelect, styleName: 'position', eventName: 'change', unit: '' },
+      { selector: DisplaySelect, styleName: 'display', eventName: 'change', unit: '' },
+      { selector: FlexDirectionSelect, styleName: 'flex-direction', eventName: 'change', unit: '' },
+      { selector: AlignItemsSelect, styleName: 'align-items', eventName: 'change', unit: '' },
+      { selector: JustifyContentSelect, styleName: 'justify-content', eventName: 'change', unit: '' },
+      { selector: FlexWrapSelect, styleName: 'flex-wrap', eventName: 'change', unit: '' },
+    ]);
+
     this.altInput = this.initInput('.alt-input', (e) => this.onAltChanged(e));
     this.titleInput = this.initInput('.title-input', (e) => this.onTitleChanged(e));
-  }
-
-  /**
-   * position or size changed
-   * callback for number inputs
-   */
-  onPositionChanged(e: Event) {
-    // get the selected element
-    const input = e.target as HTMLInputElement;
-
-    // the name of the property to change
-    const name: string = input.getAttribute('data-style-name');
-
-    // prevent empty string in positions/dimentions, because silex needs positions/dimentions
-    if (input.value === '') {
-      input.value = '0';
-    }
-
-    // get the value
-    const value = parseFloat(input.value);
-
-    // get the old value
-    const oldValue = parseFloat(input.getAttribute('data-prev-value') || '0');
-
-    // keep track of the new value for next time
-    input.setAttribute('data-prev-value', value.toString());
-
-    // compute the offset
-    const offset = value - oldValue;
-
-    // apply the change to all elements
-    this.states.forEach((state) => {
-      // compute the new value relatively to the old value,
-      // in order to match the group movement
-      const elementStyle = this.model.element.getStyle(state.el, name);
-      let styleValue = 0;
-      if (elementStyle && elementStyle !== '') {
-        styleValue = parseFloat(elementStyle);
-      }
-      const newValue = styleValue + offset;
-      // apply the change to the current element
-      this.styleChanged(name, newValue + 'px', [state.el]);
-    });
   }
 
   /**
@@ -170,46 +141,65 @@ export class PropertyPane extends PaneBase {
   redraw(states: SelectableState[], pageNames: string[], currentPageName: string) {
     super.redraw(states, pageNames, currentPageName);
 
-    // not available for stage element
-    const statesNoBody: SelectableState[] = states.filter((data) => data.el !== this.model.body.getBodyElement());
+    // useful filters
+    const statesNoBody: SelectableState[] = states
+      .filter((data) => data.el !== this.model.body.getBodyElement());
+    const statesNoBodyNoSection = statesNoBody
+      .filter((s: SelectableState) => !this.model.element.isSection(s.el));
+    const statesNoBodyNoSectionNoSectionContent = statesNoBodyNoSection
+      .filter((s: SelectableState) => !this.model.element.isSectionContent(s.el));
+
+    // useful values
+    const elementsDisplay = this.getCommonProperty(statesNoBody, (state) => this.model.file.getContentWindow().getComputedStyle(state.el).display);
+    const elementsPosition = this.getCommonProperty(statesNoBody, (state) => state.metrics.position);
+    const bb = this.controller.editMenuController.view.stageWrapper.getSelectionBox(); // FIXME: stageWrapper should be accessible in the views
+
+    // states is selection minus body
+    // this is used in the event attached to the inputs
+    // FIXME: bad design, bad side effect
     this.states = statesNoBody;
 
+    const computeValue = new Map([
+      [LeftInput, () => Math.round(bb.left || 0).toString()],
+      [TopInput, () => Math.round(bb.top || 0).toString()],
+      [WidthInput, () => Math.round(bb.width || 0).toString()],
+      [HeightInput, () => Math.round(bb.height || 0).toString()],
+      [MarginTopInput, () => this.getCommonProperty(statesNoBody, (state) => state.metrics.margin.top)],
+      [MarginRightInput, () => this.getCommonProperty(statesNoBody, (state) => state.metrics.margin.right)],
+      [MarginBottomInput, () => this.getCommonProperty(statesNoBody, (state) => state.metrics.margin.bottom)],
+      [MarginLeftInput, () => this.getCommonProperty(statesNoBody, (state) => state.metrics.margin.left)],
+      [PaddingTopInput, () => this.getCommonProperty(statesNoBody, (state) => state.metrics.padding.top)],
+      [PaddingRightInput, () => this.getCommonProperty(statesNoBody, (state) => state.metrics.padding.right)],
+      [PaddingBottomInput, () => this.getCommonProperty(statesNoBody, (state) => state.metrics.padding.bottom)],
+      [PaddingLeftInput, () => this.getCommonProperty(statesNoBody, (state) => state.metrics.padding.left)],
+      [PositionSelect, () => elementsPosition],
+      [DisplaySelect, () => elementsDisplay],
+      [FlexDirectionSelect, () => this.getCommonProperty(statesNoBody, (state) => this.model.file.getContentWindow().getComputedStyle(state.el)['flex-direction'])],
+      [AlignItemsSelect, () => this.getCommonProperty(statesNoBody, (state) => this.model.file.getContentWindow().getComputedStyle(state.el)['align-items'])],
+      [JustifyContentSelect, () => this.getCommonProperty(statesNoBody, (state) => this.model.file.getContentWindow().getComputedStyle(state.el)['justify-content'])],
+      [FlexWrapSelect, () => this.getCommonProperty(statesNoBody, (state) => this.model.file.getContentWindow().getComputedStyle(state.el)['flex-wrap'])],
+    ]);
+
+    // compute visibility
     if (statesNoBody.length > 0) {
-      // not stage element only
-      this.leftInput.disabled = false;
-      this.topInput.disabled = false;
-      this.widthInput.disabled = false;
-      this.heightInput.disabled = false;
       this.altInput.disabled = false;
       this.titleInput.disabled = false;
-
-      // display position and size
-      // fixme: stageWrapper should be accessible in the views
-      const bb = this.controller.editMenuController.view.stageWrapper.getSelectionBox();
-      this.topInput.value = Math.round(bb.top || 0).toString();
-      this.leftInput.value = Math.round(bb.left || 0).toString();
-      this.widthInput.value = Math.round(bb.width || 0).toString();
-      this.heightInput.value = Math.round(bb.height || 0).toString();
-
-      // special case of the body and sections
-      if (statesNoBody
-        .filter((s: SelectableState) => !this.model.element.isSection(s.el) && !this.model.element.isSectionContent(s.el))
-        .length === 0
-      ) {
-        this.leftInput.value = '';
-        this.topInput.value = '';
-        this.leftInput.disabled = true;
-        this.topInput.disabled = true;
+      this.onInputPxChanged(WidthInput, computeValue.get(WidthInput)());
+      this.onInputPxChanged(HeightInput, computeValue.get(HeightInput)());
+      // body and sections and section content and static content
+      if (elementsPosition === 'static' || !statesNoBodyNoSectionNoSectionContent.length) {
+        this.onInputPxChanged(TopInput, null);
+        this.onInputPxChanged(LeftInput, null);
       } else {
-        this.leftInput.disabled = false;
-        this.topInput.disabled = false;
+        this.onInputPxChanged(TopInput, computeValue.get(TopInput)());
+        this.onInputPxChanged(LeftInput, computeValue.get(LeftInput)());
       }
 
-      // alt, only for images
-      const elementsType = this.getCommonProperty(states, (state) => this.model.element.getType(state.el));
+      // only images
+      const elementsType = this.getCommonProperty(statesNoBody, (state) => this.model.element.getType(state.el));
       if (elementsType === Constants.TYPE_IMAGE) {
         this.altInput.disabled = false;
-        const alt = this.getCommonProperty(states, (state) => {
+        const alt = this.getCommonProperty(statesNoBody, (state) => {
           const content = this.model.element.getContentNode(state.el);
           if (content) {
             return content.getAttribute('alt');
@@ -226,34 +216,75 @@ export class PropertyPane extends PaneBase {
         this.altInput.disabled = true;
       }
 
+      // not for sections or sections content
+      if (!!statesNoBodyNoSectionNoSectionContent.length) {
+        this.onInputPxChanged(PositionSelect, computeValue.get(PositionSelect)());
+      } else {
+        this.onInputPxChanged(PositionSelect, null);
+      }
+
+      // containers but no sections
+      if (elementsType === Constants.TYPE_CONTAINER && statesNoBodyNoSection.length) {
+        this.onInputPxChanged(DisplaySelect, computeValue.get(DisplaySelect)());
+      } else {
+        this.onInputPxChanged(DisplaySelect, null);
+      }
+
+      // containers but no sections and flex only
+      if (elementsType === Constants.TYPE_CONTAINER && statesNoBodyNoSection.length && elementsDisplay === 'flex') {
+        this.onInputPxChanged(FlexDirectionSelect, computeValue.get(FlexDirectionSelect)());
+        this.onInputPxChanged(AlignItemsSelect, computeValue.get(AlignItemsSelect)());
+        this.onInputPxChanged(JustifyContentSelect, computeValue.get(JustifyContentSelect)());
+        this.onInputPxChanged(FlexWrapSelect, computeValue.get(FlexWrapSelect)());
+      } else {
+        this.onInputPxChanged(FlexDirectionSelect, null);
+        this.onInputPxChanged(AlignItemsSelect, null);
+        this.onInputPxChanged(JustifyContentSelect, null);
+        this.onInputPxChanged(FlexWrapSelect, null);
+      }
+
       // title
-      const title = this.getCommonProperty(states, (state) => state.el.getAttribute('title'));
+      const title = this.getCommonProperty(statesNoBody, (state) => state.el.getAttribute('title'));
       if (title) {
         this.titleInput.value = title;
       } else {
         this.titleInput.value = '';
       }
+
     } else {
-      // stage element only
-      this.leftInput.disabled = true;
-      this.leftInput.value = '';
-      this.topInput.disabled = true;
-      this.topInput.value = '';
-      this.widthInput.disabled = true;
-      this.widthInput.value = '';
-      this.heightInput.disabled = true;
-      this.heightInput.value = '';
+      // seclection contains only the body
+      this.onInputPxChanged(FlexWrapSelect, null);
+      this.onInputPxChanged(JustifyContentSelect, null);
+      this.onInputPxChanged(AlignItemsSelect, null);
+      this.onInputPxChanged(FlexDirectionSelect, null);
+      this.onInputPxChanged(DisplaySelect, null);
+      this.onInputPxChanged(PositionSelect, null);
+      this.onInputPxChanged(PaddingLeftInput, null);
+      this.onInputPxChanged(PaddingBottomInput, null);
+      this.onInputPxChanged(PaddingRightInput, null);
+      this.onInputPxChanged(PaddingTopInput, null);
+      this.onInputPxChanged(MarginLeftInput, null);
+      this.onInputPxChanged(MarginBottomInput, null);
+      this.onInputPxChanged(MarginRightInput, null);
+      this.onInputPxChanged(MarginTopInput, null);
+      this.onInputPxChanged(HeightInput, null);
+      this.onInputPxChanged(WidthInput, null);
+      this.onInputPxChanged(TopInput, null);
+      this.onInputPxChanged(LeftInput, null);
+
       this.altInput.disabled = true;
       this.altInput.value = '';
       this.titleInput.disabled = true;
       this.titleInput.value = '';
     }
-
-    // keep track of old position and size
-    this.topInput.setAttribute('data-prev-value', this.topInput.value);
-    this.leftInput.setAttribute('data-prev-value', this.leftInput.value);
-    this.widthInput.setAttribute('data-prev-value', this.widthInput.value);
-    this.heightInput.setAttribute('data-prev-value', this.heightInput.value);
+    this.onInputPxChanged(MarginTopInput, computeValue.get(MarginTopInput)());
+    this.onInputPxChanged(MarginLeftInput, computeValue.get(MarginLeftInput)());
+    this.onInputPxChanged(MarginRightInput, computeValue.get(MarginRightInput)());
+    this.onInputPxChanged(MarginBottomInput, computeValue.get(MarginBottomInput)());
+    this.onInputPxChanged(PaddingTopInput, computeValue.get(PaddingTopInput)());
+    this.onInputPxChanged(PaddingLeftInput, computeValue.get(PaddingLeftInput)());
+    this.onInputPxChanged(PaddingRightInput, computeValue.get(PaddingRightInput)());
+    this.onInputPxChanged(PaddingBottomInput, computeValue.get(PaddingBottomInput)());
   }
 
   /**
