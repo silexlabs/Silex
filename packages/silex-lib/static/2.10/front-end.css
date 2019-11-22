@@ -90,7 +90,6 @@ body.silex-runtime .silex-element-content {
 }
 /* resize */
 .editable-style.image-element .silex-element-content {
-  position: absolute;
   border-radius: inherit; /* this is to follow the element's radius */
   height: 100%;
 }
@@ -193,7 +192,6 @@ body.enable-mobile .background {
 }
 .prodotype-preview {
   display: none;
-  min-height: inherit;
 }
 .prodotype-runtime,
 .prodotype-runtime-strict {

@@ -16,8 +16,16 @@
  *
  */
 
-import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
+import { SelectableState } from '../../../../node_modules/drag-drop-stage-component/src/ts/Types';
+// FIXME: do not find module only in vim: import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
 import { Controller, Model } from '../../types';
+
+export interface InputData {
+  selector: string;
+  styleName: string;
+  eventName: string;
+  unit: string;
+}
 
 /**
  * base class for all UI panes of the view.pane package
@@ -36,6 +44,7 @@ export class PaneBase {
    * store the last selection
    */
   protected states: SelectableState[] = null;
+  protected change = new Map();
 
   /**
    * base url for relative/absolute urls
@@ -105,9 +114,52 @@ export class PaneBase {
     }
     return value;
   }
+  protected onInputPxChanged(selector: string, value: string) {
+    if (this.change.has(selector)) {
+      this.change.get(selector).onChange(value);
+    } else {
+      throw new Error('Unknown input ' + selector);
+    }
+  }
+  /**
+   * Init a set of input with px unit
+   */
+  protected createInput(inputs: InputData[]) {
+    inputs.forEach((inputData) => {
+      // get a reference to the element
+      const input = this.element.querySelector(inputData.selector) as HTMLInputElement;
+      if (!input) { throw new Error('Could not find input ' + inputData.selector); }
+
+      const changeObj = {
+        freez: false,
+        onChange: (value: string) => {
+          if (changeObj.freez) { return; }
+          if (value !== null) {
+            input.value = value;
+            input.disabled = false;
+          } else {
+            input.value = '';
+            input.disabled = true;
+          }
+        },
+      };
+
+      // attach event
+      input.addEventListener(inputData.eventName, (e: Event) => {
+        changeObj.freez = true;
+        const val = input.value ? input.value + inputData.unit : '';
+        this.styleChanged(inputData.styleName, val, this.states.map((s) => s.el));
+        changeObj.freez = false;
+      });
+
+      // store the onChange callback for use in onInputChanged
+      this.change.set(inputData.selector, changeObj);
+    });
+  }
 
   /**
-   * Init a combo box or
+   * Init a combo box or text input
+   * FIXME: use createInput instead as in PropertyPane
    */
   protected initInput(selector: string, onChange: (e: Event) => void): HTMLInputElement {
     return this.initEventTarget(selector, 'input', onChange);
@@ -115,6 +167,7 @@ export class PaneBase {
 
   /**
    * Init a combo box or a checbox
+   * FIXME: use createInput instead as in PropertyPane
    */
   protected initComboBox(selector: string, onChange: (e: Event) => void): HTMLSelectElement {
     return this.initEventTarget(selector, 'change', onChange) as any as HTMLSelectElement;
