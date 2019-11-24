@@ -837,6 +837,14 @@ export class SilexElement {
     }
   }
 
+  getComponentClassName(element) {
+    if (this.model.component.isComponent(element)) {
+      const templateName = (this.model.property.getElementComponentData(element).templateName as TemplateName);
+      return this.model.component.getCssClasses(templateName);
+    }
+    return [];
+  }
+
   /**
    * get/set class name of the element of a container created by silex
    * remove all silex internal classes
@@ -845,19 +853,12 @@ export class SilexElement {
    */
   getClassName(element: HTMLElement): string {
     const pages = this.model.page.getPages();
-    let componentCssClasses = [];
-    if (this.model.component.isComponent(element)) {
-      const templateName =
-          (this.model.property.getElementComponentData(
-               element).templateName as TemplateName);
-      componentCssClasses = this.model.component.getCssClasses(templateName);
-    }
     return element.className.split(' ')
     .filter((name) => {
       if (name === '' ||
           Constants.SILEX_CLASS_NAMES.indexOf(name) > -1 ||
           pages.indexOf(name) > -1 ||
-          componentCssClasses.indexOf(name) > -1 ||
+          this.getComponentClassName(element).indexOf(name) > -1 ||
           this.model.property.getSilexId(element) === name) {
         return false;
       }
@@ -877,13 +878,15 @@ export class SilexElement {
     // i.e. the one which are in element.className + in Silex internal classes
     const pages = this.model.page.getPages();
     const classNamesToKeep =
+      this.getComponentClassName(element).concat(
         element.className.split(' ').map((name) => {
           if (Constants.SILEX_CLASS_NAMES.indexOf(name) > -1 ||
               pages.indexOf(name) > -1 ||
               this.model.property.getSilexId(element) === name) {
             return name;
           }
-        });
+        }),
+      );
 
     // reset element class name
     element.className = classNamesToKeep.join(' ');

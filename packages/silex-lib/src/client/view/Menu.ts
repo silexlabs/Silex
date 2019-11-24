@@ -246,7 +246,7 @@ export class Menu {
         this.controller.toolMenuController.setMobileMode(false);
         break;
       case 'insert.page':
-        this.controller.insertMenuController.createPage();
+        this.controller.pageToolController.createPage();
         break;
       case 'insert.text':
         added = this.controller.insertMenuController.addElement(

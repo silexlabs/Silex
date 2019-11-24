@@ -111,6 +111,7 @@ export class Config {
    * Option to be provided by the client side
    */
   static singleSiteMode = false;
+  static componentFolders = ['./prodotype/components'];
 
   /**
    * The main application menu

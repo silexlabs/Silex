@@ -78,6 +78,13 @@ export interface StickyLine {
   stickyPoint: StickyPoint;
   metaData: any;
 }
+export interface DataSource {
+  href: string;
+  root: string;
+  data?: object;
+  structure?: object;
+}
+export interface DataSources { [key: string]: DataSource; }
 export interface Font {
   family: string;
   href: string;

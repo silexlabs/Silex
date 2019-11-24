@@ -7,26 +7,65 @@
   flex-direction: column;
   bottom: @breadCrumbsHeight;
 
+  .add-page {
+    position: absolute;
+    right: 0;
+    margin: 4px 20px;
+    cursor: pointer;
+    line-height: 1;
+    &:hover {
+      color: @silexlightblue;
+    }
+  }
+
+  .page-ghost {
+    opacity: .5;
+  }
+
+  .page-icon {
+    color: @silexlightgrey;
+    padding: 4px;
+    float: right;
+    cursor: pointer;
+  }
+  .page-icon:hover {
+    color: @silexlightblue;
+  }
+  .page-handle {
+    cursor: move;
+  }
+
   .page-preview {
-    border: 1px solid @silexdarkgrey;
     width: 131px;
     height: 80px;
     position: relative;
     margin-bottom: 15px;
     margin-left: 5px;
-    cursor: default;
     background-color: #FFF;
     cursor: pointer;
 
-    &:hover {
-      border: 1px solid #000;
-
-      .delete {
-        opacity: 1;
-      }
-
+    &:before {
+      pointer-events: none;
+      position: absolute;
+      content: '';
+      height: 0;
+      width: 0;
+      top: 0;
+      left: 0;
+      background: white;
+      /* IE9 */
+      background: linear-gradient(135deg, @silexmediumgrey   45%, #aaaaaa 50%, #cccccc 56%, white 80%);
+      filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr='#ffffff', endColorstr='#000000');
+      /*For IE7-8-9*/
+      z-index: 1000;
+      box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4);
+      -webkit-transition-duration: 0.3s;
+      transition-duration: 0.3s;
+      -webkit-transition-property: width, height;
+      transition-property: width, height;
     }
 
+    /*
     .delete {
       opacity: 0;
       right: 4px;
@@ -40,53 +79,31 @@
       &:hover {
         color: #F00;
       }
-
     }
+    */
 
   }
-  .ui-selected {
+  .page-container {
+    &.ui-selected .page-preview:before, .page-preview:hover:before {
+      width: 25px;
+      height: 25px;
+    }
+    &.ui-can-not-delete .page-delete { display: none; }
+    &.ui-can-not-properties .page-properties { display: none }
+    &.ui-can-not-move .page-handle { display: none }
+  }
 
+  .ui-selected {
     .page-preview {
+      cursor: default;
       margin-left: 0;
       width: 141px;
       height: 89px;
       border: none;
-      background-color: #FFF;
-      /* does not work because template => innerHTML is set
-         transition: all .3s; */
-
-      &:before {
-        pointer-events: none;
-        position: absolute;
-        content: '';
-        height: 0;
-        width: 0;
-        top: 0;
-        left: 0;
-        background: white;
-        /* IE9 */
-        background: linear-gradient(135deg, @silexmediumgrey   45%, #aaaaaa 50%, #cccccc 56%, white 80%);
-        filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr='#ffffff', endColorstr='#000000');
-        /*For IE7-8-9*/
-        z-index: 1000;
-        box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4);
-        -webkit-transition-duration: 0.3s;
-        transition-duration: 0.3s;
-        -webkit-transition-property: width, height;
-        transition-property: width, height;
-      }
-
-      &:hover:before,&:focus:before,&:active:before {
-        width: 25px;
-        height: 25px;
-      }
-
       .label {
         font-weight: bold;
       }
-
     }
-
   }
 
   .page-tool-container {
@@ -94,6 +111,7 @@
     overflow-x: hidden;
     overflow-y: auto;
     padding: 10px;
+    min-width: 150px;
   }
 
   .page-container {
@@ -106,22 +124,17 @@
       bottom: 0;
       padding: 5px;
       position: absolute;
-      cursor: text;
-      white-space: nowrap;
       width: 100%;
       overflow: hidden;
-      text-overflow: ellipsis;
-      box-sizing: border-box;
-      text-align: center;
       color: #333;
-      border-top: 1px dashed transparent;
-      transition: all .4s;
-
-      &:hover {
-        border-top: 1px dashed #333;
-        background-color: #FFF;
-      }
-
+      top: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      pointer-events: none;
+      color: @silexdarkergrey;
+    }
+    &:hover .label {
     }
   }
   .icon.fa-fw.fa-inverse {

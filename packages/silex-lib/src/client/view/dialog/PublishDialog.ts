@@ -63,9 +63,11 @@ export class PublishDialog {
           SilexNotification.confirm('Publication', `
             I am about to publish your website to <strong>${providerDisplayName}</strong>, in the folder ${publicationPath.path || '/'}.
           `, (ok) => {
-            resolve(this.doOpen(ok, hosting, providerName));
+            if (ok) {
+              resolve(this.doOpen(ok, hosting, providerName));
+            }
           },
-          'Continue', 'Edit publish settings');
+          'Continue', 'Cancel');
         } else {
           // no publish settings
           resolve(this.doOpen(false, hosting, providerName));
