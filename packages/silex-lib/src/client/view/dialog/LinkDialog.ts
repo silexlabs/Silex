@@ -14,7 +14,7 @@
  *
  */
 import {LinkData} from '../../types';
-import {SilexNotification} from '../../utils/notification';
+import {SilexNotification} from '../../utils/Notification';
 
 export const LINK_ATTRIBUTES =
     ['href', 'rel', 'target', 'type', 'title', 'download'];

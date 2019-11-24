@@ -1,5 +1,6 @@
 .silex-menu
-  img.show-about-menu.silex-logo(title='About Silex', data-menu-action='show.about.menu', src='assets/logo-silex.png')
+  block customizable-menu
+    img.show-about-menu.silex-logo(title='About Silex', data-menu-action='show.about.menu', src='assets/logo-silex-small.png')
   .menu-container
     .show-file-menu.fa-fw.icon.fa-inverse.fa-cloud(title='File menu', data-menu-action='show.file.menu')
     .show-add-menu.fa-fw.icon.fa-inverse.fa-plus-square(title='Add elements', data-menu-action='show.add.menu')
@@ -61,15 +62,15 @@
 
   .file-menu-container
     .label File Menu
-    .sub-menu-item(data-menu-action='file.new')
+    .sub-menu-item.single-site-mode-hidden(data-menu-action='file.new')
       span.icon.fa-inverse.fa-fw.fa-home
       span Dashboard
       .shortcut Alt N
     .sub-menu-item(data-menu-action='view.open.fileExplorer')
       span.icon.fa-inverse.fa-fw.fa-cloud-upload
       span File explorer
-    .icon.sep
-    .sub-menu-item(data-menu-action='file.open')
+    .icon.sep.single-site-mode-hidden
+    .sub-menu-item.single-site-mode-hidden(data-menu-action='file.open')
       span.icon.fa-inverse.fa-fw.fa-folder-open
       span Open website
       .shortcut Ctrl O
@@ -77,12 +78,12 @@
       span.icon.fa-inverse.fa-fw.fa-floppy-o
       span Save website
       .shortcut Ctrl S
-    .file-save-as.sub-menu-item(data-menu-action='file.saveas')
+    .file-save-as.sub-menu-item.single-site-mode-hidden(data-menu-action='file.saveas')
       .icon.svg
         include ./save-as.svg
       span Save website as
       .shortcut Ctrl ⇪ S
-    .icon.sep
+    .icon.sep.single-site-mode-hidden
     .sub-menu-item(data-menu-action='file.publish')
       span.icon.fa-inverse.fa-fw.fa-rocket
       span Publish
