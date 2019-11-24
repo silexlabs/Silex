@@ -61,7 +61,7 @@ export default function({ port, rootUrl }, unifile) {
     const connector = req.params[0];
     const path = req.params[1];
     const url = new URL(`${ rootUrl }/ce/${ connector }/get/${ Path.dirname(path) }/`);
-    unifile.readFile(req.session.unifile, connector, path)
+    unifile.readFile(req.session.unifile || {}, connector, path)
       .then((buffer) => {
         return sendWebsiteData(res, buffer, url);
       })
@@ -82,14 +82,14 @@ export default function({ port, rootUrl }, unifile) {
         if (err) {
           CloudExplorer.handleError(res, err);
         } else {
-          sendWebsiteData(res, buffer, url);
+          sendWebsiteData(res, buffer, url, true);
         }
       });
     } else {
       CloudExplorer.handleError(res, {message: 'Not authorized.', code: 'EACCES'});
     }
   }
-  function sendWebsiteData(res, buffer, url): Promise<void> {
+  function sendWebsiteData(res, buffer, url, isTemplate = false): Promise<void> {
     // remove user head tag to avoid bad markup messing with the website
     const { html, userHead } = DomTools.extractUserHeadTag(buffer.toString('utf-8'));
     // from now on use a parsed DOM
@@ -100,6 +100,11 @@ export default function({ port, rootUrl }, unifile) {
         message: 'Could not open this website for edition as it is a published Silex website, <a href="https://github.com/silexlabs/Silex/wiki/FAQ#why-do-i-get-the-error-could-not-open-this-website-for-edition-as-it-is-a-published-silex-website" target="_blank">Read more about this error here</a>.',
       });
     } else {
+      if (isTemplate) {
+        // remove publication path
+        const publicationPath = dom.window.document.querySelector('meta[name=publicationPath]');
+        if (publicationPath) { publicationPath.remove(); }
+      }
       return backwardCompat.update(dom.window.document)
       .then((wanrningMsg) => {
         prepareWebsite(dom, url);
@@ -134,7 +139,7 @@ export default function({ port, rootUrl }, unifile) {
     const fullHtml = DomTools.insertUserHeadTag(str, userHead);
     dom.window.close();
 
-    unifile.writeFile(req.session.unifile, connector, req.params[1], fullHtml)
+    unifile.writeFile(req.session.unifile || {}, connector, req.params[1], fullHtml)
       .then((result) => {
         res.send(result);
       })

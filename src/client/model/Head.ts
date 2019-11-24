@@ -17,10 +17,7 @@
  */
 
 import { Constants } from '../../Constants';
-import {View} from '../types';
-import {FileInfo} from '../types';
-import {Model} from '../types';
-import {Font} from '../types';
+import {DataSources, FileInfo, Font, Model, View} from '../types';
 
 const BEAUTIFY_CSS_OPTIONS = {
   indent_size: 2,
@@ -499,6 +496,18 @@ export class Head {
   getHeadElement(): HTMLElement {
     // returns the head of the document in the iframe
     return this.model.file.getContentDocument().head;
+  }
+
+  getDataSources(): DataSources {
+    return this.model.property.getDataSources();
+  }
+  setDataSources(data: DataSources) {
+    this.model.property.setDataSources(data)
+    .then(() => this.view.settingsDialog.redraw());
+  }
+  reloadDataSources() {
+    this.model.property.loadDataSources(true)
+    .then(() => this.view.settingsDialog.redraw());
   }
 
   /**

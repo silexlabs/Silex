@@ -15,7 +15,7 @@
  */
 
 import { CloudStorage } from '../../service/CloudStorage';
-import { Controller, FileInfo, Font, Model } from '../../types';
+import { Controller, DataSource, DataSources, FileInfo, Font, Model } from '../../types';
 import { SilexNotification } from '../../utils/Notification';
 import { Url } from '../../utils/Url';
 import { ModalDialog } from '../ModalDialog';
@@ -23,8 +23,7 @@ import { ModalDialog } from '../ModalDialog';
 /**
  * constant for all pane css classes
  */
-const PANE_CSS_CLASSES: string[] =
-    ['general-pane', 'social-pane', 'publish-pane', 'fonts-pane'];
+const PANE_CSS_CLASSES: string[] = ['general-pane', 'social-pane', 'publish-pane', 'fonts-pane', 'data-sources-pane'];
 
 /**
  * the Silex SettingsDialog class
@@ -46,8 +45,8 @@ export class SettingsDialog {
   modalDialog: any;
 
   // navigation
-  paneCssClasses: any;
-  list: any;
+  fontList: HTMLElement;
+  dataSourcesList: HTMLElement;
 
   /**
    * @param element   container to render the UI
@@ -65,6 +64,8 @@ export class SettingsDialog {
         this.onClose = args.cbk;
         if (args.pane) {
           this.openPane(args.pane);
+        } else {
+          this.openPane(PANE_CSS_CLASSES[0]);
         }
         this.redraw();
       },
@@ -75,97 +76,118 @@ export class SettingsDialog {
         }
       },
     });
-    this.paneCssClasses = PANE_CSS_CLASSES;
-    this.element.classList.add(this.paneCssClasses[0] + '-visible');
     const leftPane = document.querySelector('.left-pane');
     leftPane.addEventListener('click', (e) => this.onNavClick(e), false);
 
     // input text fields
     this.bindTextField(
-        '.general-pane .input-title',
-        (v) => this.controller.settingsDialogController.setTitle(v));
+      '.general-pane .input-title',
+      (v) => this.controller.settingsDialogController.setTitle(v));
     this.bindTextField(
-        '.general-pane .input-lang',
-        (v) => this.controller.settingsDialogController.setLang(v));
+      '.general-pane .input-lang',
+      (v) => this.controller.settingsDialogController.setLang(v));
     this.bindTextField(
-        '.general-pane .input-site-width',
-        (v) => this.controller.settingsDialogController.setWebsiteWidth(!!v ? parseInt(v) : null));
+      '.general-pane .input-site-width',
+      (v) => this.controller.settingsDialogController.setWebsiteWidth(!!v ? parseInt(v) : null));
     this.bindTextField(
-        '.social-pane .input-title',
-        (v) => this.controller.settingsDialogController.setTitleSocial(v));
+      '.social-pane .input-title',
+      (v) => this.controller.settingsDialogController.setTitleSocial(v));
     this.bindTextField(
-        '.general-pane .input-description',
-        (v) => this.controller.settingsDialogController.setDescription(v));
+      '.general-pane .input-description',
+      (v) => this.controller.settingsDialogController.setDescription(v));
     this.bindTextField(
-        '.social-pane .input-description',
-        (v) =>
-            this.controller.settingsDialogController.setDescriptionSocial(v));
+      '.social-pane .input-description',
+      (v) =>
+          this.controller.settingsDialogController.setDescriptionSocial(v));
     this.bindTextField(
-        '.social-pane .input-twitter',
-        (v) => this.controller.settingsDialogController.setTwitterSocial(v));
+      '.social-pane .input-twitter',
+      (v) => this.controller.settingsDialogController.setTwitterSocial(v));
     this.bindTextField(
-        '.general-pane .input-favicon-path',
-        (v) => this.controller.settingsDialogController.setFaviconPath(v));
+      '.general-pane .input-favicon-path',
+      (v) => this.controller.settingsDialogController.setFaviconPath(v));
     this.bindTextField(
-        '.social-pane .input-image-path',
-        (v) =>
-            this.controller.settingsDialogController.setThumbnailSocialPath(v));
+      '.social-pane .input-image-path',
+      (v) =>
+          this.controller.settingsDialogController.setThumbnailSocialPath(v));
     this.bindTextField('.publish-pane .input-publication-path', (v) => {
-      const fileInfo =
-          this.controller.settingsDialogController.getPublicationPath();
-      const fileInfoNew = Url.updateFileInfo(fileInfo, {path: v});
-      this.controller.settingsDialogController.setPublicationPath(fileInfoNew);
-    });
+    const fileInfo =
+        this.controller.settingsDialogController.getPublicationPath();
+    const fileInfoNew = Url.updateFileInfo(fileInfo, {path: v});
+    this.controller.settingsDialogController.setPublicationPath(fileInfoNew);
+  });
     this.bindTextField('.publish-pane .input-publication-service', (v) => {
-      const fileInfo =
-          this.controller.settingsDialogController.getPublicationPath();
-      const fileInfoNew =
-          Url.updateFileInfo(fileInfo, {service: v});
-      this.controller.settingsDialogController.setPublicationPath(fileInfoNew);
-    });
+    const fileInfo =
+        this.controller.settingsDialogController.getPublicationPath();
+    const fileInfoNew =
+        Url.updateFileInfo(fileInfo, {service: v});
+    this.controller.settingsDialogController.setPublicationPath(fileInfoNew);
+  });
     this.bindTextField('.publish-pane .input-website-url', (v) => {
-      if (v === '') {
-        v = null;
-      }
-      this.model.head.setWebsiteUrl(v);
-      this.websiteUrl = v;
-    });
+    if (v === '') {
+      v = null;
+    }
+    this.model.head.setWebsiteUrl(v);
+    this.websiteUrl = v;
+  });
 
-    // image path browse button
+  // image path browse button
     this.bindBrowseButton('.general-pane .browse-favicon-path', () => {
-      this.controller.settingsDialogController.browseFaviconPath(
-          () => this.open());
-    });
+    this.controller.settingsDialogController.browseFaviconPath(
+        () => this.open());
+  });
     this.bindBrowseButton('.publish-pane .browse-publication-path', () => {
-      this.controller.settingsDialogController.browsePublishPath(
-          () => this.open());
-    });
+    this.controller.settingsDialogController.browsePublishPath(
+        () => this.open());
+  });
 
-    // build UI
+  // build UI
     this.mobileCheckbox = this.element.querySelector('.mobile-check');
     this.mobileCheckbox.addEventListener('click', () => {
-          this.controller.settingsDialogController.toggleEnableMobile();
-        }, false);
+        this.controller.settingsDialogController.toggleEnableMobile();
+      }, false);
 
-    // fill the options of the service selector
+  // fill the options of the service selector
     CloudStorage.getInstance().ready(() => {
-      CloudStorage.getInstance().getServices((services) => {
-        const select = this.element.querySelector(
-            '.publish-pane .input-publication-service');
-        select.innerHTML = '';
-        services.forEach((service) => {
-          const option = document.createElement('option');
-          option.value = service.name;
-          option.innerHTML = service.displayName || service.name;
-          select.appendChild(option);
-        });
+    CloudStorage.getInstance().getServices((services) => {
+      const select = this.element.querySelector(
+          '.publish-pane .input-publication-service');
+      select.innerHTML = '';
+      services.forEach((service) => {
+        const option = document.createElement('option');
+        option.value = service.name;
+        option.innerHTML = service.displayName || service.name;
+        select.appendChild(option);
       });
     });
+  });
 
+  // add data source button
+    (this.element.querySelector('.pane.data-sources-pane .add-data-source-btn') as HTMLElement).onclick = (e) => this.addDataSource();
+    (this.element.querySelector('.pane.data-sources-pane .reload-data-sources-btn') as HTMLElement).onclick = (e) => this.model.head.reloadDataSources();
+    this.dataSourcesList = this.element.querySelector('.data-sources-list') as HTMLElement;
+    this.dataSourcesList.onclick = (e) => {
+      const el = (e.target as HTMLElement);
+      if (el.classList.contains('del-btn')) {
+        const idx = el.getAttribute('data-idx');
+        const dataSources = this.model.head.getDataSources();
+        delete dataSources[idx];
+        this.model.head.setDataSources(dataSources);
+      } else {
+        if (el.classList.contains('edit-btn')) {
+          const idx = el.getAttribute('data-idx');
+          const dataSources = this.model.head.getDataSources();
+          this.editDataSource(idx, dataSources[idx], (newName, dataSource) => {
+            dataSources[newName] = dataSource;
+            if (newName !== idx) { delete dataSources[idx]; }
+            this.model.head.setDataSources(dataSources);
+          });
+        }
+      }
+    };
     // font button
     (this.element.querySelector('.pane.fonts-pane .add-font-btn') as HTMLElement).onclick = (e) => this.addFont();
-    this.list = this.element.querySelector('.fonts-list');
-    this.list.onclick = (e) => {
+    this.fontList = this.element.querySelector('.fonts-list') as HTMLElement;
+    this.fontList.onclick = (e) => {
       const el = (e.target as HTMLElement);
       if (el.classList.contains('del-btn')) {
         const idx = parseInt(el.getAttribute('data-idx'), 10);
@@ -191,7 +213,10 @@ export class SettingsDialog {
    * click in the navigation
    */
   onNavClick(e: Event) {
-    this.openPane((e.target as HTMLElement).getAttribute('data-pane'));
+    const paneCssClass = (e.target as HTMLElement).getAttribute('data-pane');
+    if (paneCssClass) {
+      this.openPane(paneCssClass);
+    }
   }
 
   /**
@@ -200,11 +225,13 @@ export class SettingsDialog {
    */
   openPane(paneCssClass: string) {
     // close all panes
-    this.paneCssClasses.forEach(
-        (className) => this.element.classList.remove(className + '-visible'));
+    PANE_CSS_CLASSES.forEach((className) => this.element.classList.remove(className + '-visible'));
 
     // open the one we want
     this.element.classList.add(paneCssClass + '-visible');
+    // change the selection in case it is not from a user click
+    const input = this.element.querySelector(`#settings-${paneCssClass}`) as HTMLInputElement;
+    input.checked = true;
   }
 
   /**
@@ -398,13 +425,75 @@ export class SettingsDialog {
     try {
       this.setPublicationPath(this.model.head.getPublicationPath());
       this.setWebsiteUrl(this.model.head.getWebsiteUrl());
-      this.setFonts(this.model.head.getFonts());
+      this.fontList.innerHTML = this.getFontList(this.model.head.getFonts());
+      this.dataSourcesList.innerHTML = this.getDataSourcesList(this.model.head.getDataSources());
     } catch (e) {
     }
   }
+  getDataSourcesList(dataSources: DataSources) {
+    return '<ul>' +
+        Object.keys(dataSources)
+            .map((name, idx) => {
+              const dataSource = dataSources[name];
+              const htmlEntityP = document.createElement('p');
+              htmlEntityP.textContent = dataSource.data ? JSON.stringify(dataSource.data) : '';
+              return `<li>
+        <div class="ui">
+          <button class="edit-btn fa fa-pencil" title="Edit this data source" data-idx="${name}"></button>
+          <button class="del-btn" title="Remove this data source" data-idx="${name}"></button>
+        </div>
+        <div class="content">
+          <h3>${ name } &nbsp<small>(${ dataSource.data ? Object.keys(dataSource.data).length + ' elements' : 'loading data...' })</small></h3>
+          <p>${ dataSource.href }</p>
+          <pre>${ htmlEntityP.innerHTML }</pre>
+        </div>
+      </li>`;
+            })
+            .join('') +
+        '</ul>';
+  }
 
-  setFonts(fonts: Font[]) {
-    this.list.innerHTML = '<ul>' +
+  addDataSource() {
+    this.editDataSource('My photos', {href: 'https://jsonplaceholder.typicode.com/photos', root: ''},
+        (name, dataSource) => {
+          const dataSources = this.model.head.getDataSources();
+          if (dataSources[name]) {
+            console.warn('This data source already exists in this website');
+            SilexNotification.alert('Error', 'This data source already exists in this website', () => {});
+          } else {
+            dataSources[name] = dataSource;
+            this.model.head.setDataSources(dataSources);
+          }
+        });
+  }
+
+  editDataSource(oldName: string, dataSource: DataSource, cbk: (name: string, dataSource: DataSource) => void) {
+    SilexNotification.prompt('Edit Data Source',
+      'What is the URL of your data source?',
+      dataSource.href, 'https://jsonplaceholder.typicode.com/photos', (ok, href) => {
+        if (ok) {
+          SilexNotification.prompt('Edit Data Source',
+            'What is the name of your data source?',
+            oldName, 'My photos', (_ok, name) => {
+              if (_ok) {
+                SilexNotification.prompt('Edit Data Source',
+                  'What is the root of your data source?',
+                  dataSource.root, '', (__ok, root) => {
+                    if (__ok) {
+                      cbk(name, {href, root});
+                    }
+                  },
+                );
+              }
+            },
+          );
+        }
+      },
+    );
+  }
+
+  getFontList(fonts: Font[]) {
+    return '<ul>' +
         fonts
             .map((font, idx) => {
               const iframeContent = encodeURIComponent(`
@@ -425,10 +514,8 @@ export class SettingsDialog {
       `);
               return `<li>
         <div class="ui">
-          <button class="edit-btn fa fa-pencil" title="Edit this font" data-idx="${
-                  idx}"></button>
-          <button class="del-btn" title="Remove this font" data-idx="${
-                  idx}"></button>
+          <button class="edit-btn fa fa-pencil" title="Edit this font" data-idx="${idx}"></button>
+          <button class="del-btn" title="Remove this font" data-idx="${idx}"></button>
         </div>
         <div class="content">
           <iframe src="data:text/html,${iframeContent}"></iframe>
@@ -437,9 +524,7 @@ export class SettingsDialog {
             })
             .join('') +
         '</ul>';
-  }
-
-  addFont() {
+  }  addFont() {
     this.editFont(
         {
           href: 'https://fonts.googleapis.com/css?family=Roboto',

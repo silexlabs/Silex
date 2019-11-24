@@ -27,11 +27,11 @@ export default class HostingUnifile {
     };
   }
 
-  finalizePublication(from, to, session, onStatus) {
+  finalizePublication(context, onStatus) {
     return Promise.resolve();
   }
 
-  getDefaultPageFileName() {
+  getDefaultPageFileName(context) {
     return 'index.html';
   }
 

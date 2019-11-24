@@ -52,6 +52,14 @@ export default class PublishJob {
    * factory to create a publish job
    */
   static create({ publicationPath, file }, unifile, session, cookies, rootUrl, hostingProvider): PublishJob {
+    const context = {
+      from: file,
+      to: publicationPath,
+      url: rootUrl,
+      session: session.unifile,
+      cookies,
+      hostingProvider,
+    };
     // stop other publications from the same user
     session.publicationId = session.publicationId || uuid.v4();
     const id = session.publicationId;
@@ -66,9 +74,9 @@ export default class PublishJob {
       console.error('Invalid params', e);
       throw new Error('Received invalid params. ' + e.message);
     }
-    const publishJob = new PublishJob(id, unifile, publicationPath, session, cookies, rootUrl, hostingProvider);
+    const publishJob = new PublishJob(id, unifile, context);
     publishJobs.set(id, publishJob);
-    publishJob.publish(file)
+    publishJob.publish()
     .then(() => {
       if (publishJob.error) {
         console.warn(`Warning: possible error in PublishJob ${publishJob.id} (${publishJob.error})`);
@@ -101,12 +109,12 @@ export default class PublishJob {
   private tree: {scriptTags: HTMLElement[], styleTags: HTMLElement[], files: File[]};
   private pageActions: Action[];
 
-  constructor(public id: string, private unifile, private publicationPath, private session, private cookies, private rootUrl: string, private hostingProvider) {
-    console.log('---------------\nNew Publish Job', id, '\nPublish to:', publicationPath.url, '\nSilex instance:', rootUrl, '\n--------------');
+  constructor(public id: string, private unifile, private context) {
+    console.log('---------------\nNew Publish Job', id, '\nPublish to:', context.to.url, '\nSilex instance:', context.url, '\n--------------');
     this.setStatus('Publication starting.');
 
     // files and folders paths
-    this.rootPath = this.publicationPath.path;
+    this.rootPath = this.context.to.path;
     this.htmlFolder = this.rootPath + '/' + this.getHtmlFolder();
     this.cssFolder = this.rootPath + '/' + this.getCssFolder();
     this.jsFolder = this.rootPath + '/' + this.getJsFolder();
@@ -117,7 +125,7 @@ export default class PublishJob {
     this.pleaseDeleteMe = false;
 
     this.jar = request.jar();
-    for (const key in this.cookies) { this.jar.setCookie(request.cookie(key + '=' + this.cookies[key]), rootUrl); }
+    for (const key in this.context.cookies) { this.jar.setCookie(request.cookie(key + '=' + this.context.cookies[key]), context.url); }
   }
   stop() {
     if (this.isStopped() === false) {
@@ -151,26 +159,26 @@ export default class PublishJob {
   }
   getHtmlFolder() {
     const defaultFolder = '';
-    if (this.hostingProvider && this.hostingProvider.getHtmlFolder) {
-      return this.hostingProvider.getHtmlFolder(defaultFolder) || defaultFolder;
+    if (this.context.hostingProvider && this.context.hostingProvider.getHtmlFolder) {
+      return this.context.hostingProvider.getHtmlFolder(this.context, defaultFolder) || defaultFolder;
     } else { return defaultFolder; }
   }
   getJsFolder() {
     const defaultFolder = 'js';
-    if (this.hostingProvider && this.hostingProvider.getJsFolder) {
-      return this.hostingProvider.getJsFolder(defaultFolder) || defaultFolder;
+    if (this.context.hostingProvider && this.context.hostingProvider.getJsFolder) {
+      return this.context.hostingProvider.getJsFolder(this.context, defaultFolder) || defaultFolder;
     } else { return defaultFolder; }
   }
   getCssFolder() {
     const defaultFolder = 'css';
-    if (this.hostingProvider && this.hostingProvider.getCssFolder) {
-      return this.hostingProvider.getCssFolder(defaultFolder) || defaultFolder;
+    if (this.context.hostingProvider && this.context.hostingProvider.getCssFolder) {
+      return this.context.hostingProvider.getCssFolder(this.context, defaultFolder) || defaultFolder;
     } else { return defaultFolder; }
   }
   getAssetsFolder() {
     const defaultFolder = 'assets';
-    if (this.hostingProvider && this.hostingProvider.getAssetsFolder) {
-      return this.hostingProvider.getAssetsFolder(defaultFolder) || defaultFolder;
+    if (this.context.hostingProvider && this.context.hostingProvider.getAssetsFolder) {
+      return this.context.hostingProvider.getAssetsFolder(this.context, defaultFolder) || defaultFolder;
     } else { return defaultFolder; }
   }
   getDestFolder(ext, tagName) {
@@ -197,17 +205,16 @@ export default class PublishJob {
 
   /**
    * the method called to publish a website to a location
-   * @param {?string=} file to download and publish
    */
-  publish(file) {
+  publish() {
     if (this.isStopped()) {
       console.warn('job is stopped', this.error, this.abort, this.success);
       return;
     }
 
     // download file
-    this.setStatus(`Downloading website ${file.name}`);
-    return this.unifile.readFile(this.session.unifile, file.service, file.path)
+    this.setStatus(`Downloading website ${this.context.from.name}`);
+    return this.unifile.readFile(this.context.session, this.context.from.service, this.context.from.path)
     .catch((err) => {
       console.error('Publication error, could not download file:', err);
       this.error = true;
@@ -220,23 +227,23 @@ export default class PublishJob {
         console.warn('job is stopped', this.error, this.abort, this.success);
         return;
       }
-      this.setStatus(`Splitting file ${file.name}`);
-      const url = new URL(file.url);
+      this.setStatus(`Splitting file ${this.context.from.name}`);
+      const url = new URL(this.context.from.url);
       const baseUrl = new URL(url.origin + Path.dirname(url.pathname) + '/');
 
       // build the dom
       const { html, userHead } = DomTools.extractUserHeadTag(buffer.toString('utf-8'));
       const dom = new JSDOM(html, { url: baseUrl.href });
-      const domPublisher = new DomPublisher(dom, userHead, this.rootUrl, this.rootPath, (ext, tagName) => this.getDestFolder(ext, tagName));
+      const domPublisher = new DomPublisher(dom, userHead, this.context.url, this.rootPath, (ext, tagName) => this.getDestFolder(ext, tagName));
       // remove classes used by Silex during edition
       domPublisher.cleanup();
       // rewrite URLs and extract assets
-      this.tree = domPublisher.extractAssets(baseUrl, this.hostingProvider.getRootUrl ? this.hostingProvider.getRootUrl(baseUrl) : null);
+      this.tree = domPublisher.extractAssets(baseUrl, this.context.hostingProvider.getRootUrl ? this.context.hostingProvider.getRootUrl(this.context, baseUrl) : null);
       // hide website before styles.css is loaded
       dom.window.document.head.innerHTML += '<style>body { opacity: 0; transition: .25s opacity ease; }</style>';
       // split into pages
-      const newFirstPageName = this.hostingProvider && this.hostingProvider.getDefaultPageFileName ? this.hostingProvider.getDefaultPageFileName() : null;
-      const permalinkHook = this.hostingProvider && this.hostingProvider.getPermalink ? this.hostingProvider.getPermalink : (pageName) => pageName;
+      const newFirstPageName = this.context.hostingProvider && this.context.hostingProvider.getDefaultPageFileName ? this.context.hostingProvider.getDefaultPageFileName(this.context) : null;
+      const permalinkHook = this.context.hostingProvider && this.context.hostingProvider.getPermalink ? this.context.hostingProvider.getPermalink : (pageName) => pageName;
       this.pageActions = domPublisher.split(newFirstPageName, permalinkHook);
       // release the dom object
       dom.window.close();
@@ -279,10 +286,10 @@ export default class PublishJob {
         console.warn('job is stopped', this.error, this.abort, this.success);
         return Promise.resolve();
       }
-      if (!this.hostingProvider) {
+      if (!this.context.hostingProvider) {
         return Promise.resolve();
       }
-      return this.hostingProvider.finalizePublication(file, this.publicationPath, this.session.unifile, (msg) => this.setStatus(msg));
+      return this.context.hostingProvider.finalizePublication(this.context, (msg) => this.setStatus(msg));
     })
     // all operations done
     .then(() => {
@@ -314,11 +321,11 @@ export default class PublishJob {
     // FIXME: should use unifile's batch method to avoid conflicts or the "too many clients" error in FTP
     // return Promise.all([
     return sequential([
-      () => preventErr(this.unifile.stat(this.session.unifile, this.publicationPath.service, this.rootPath)),
-      () => preventErr(this.unifile.stat(this.session.unifile, this.publicationPath.service, this.htmlFolder)),
-      () => preventErr(this.unifile.stat(this.session.unifile, this.publicationPath.service, this.cssFolder)),
-      () => preventErr(this.unifile.stat(this.session.unifile, this.publicationPath.service, this.jsFolder)),
-      () => preventErr(this.unifile.stat(this.session.unifile, this.publicationPath.service, this.assetsFolder)),
+      () => preventErr(this.unifile.stat(this.context.session, this.context.to.service, this.rootPath)),
+      () => preventErr(this.unifile.stat(this.context.session, this.context.to.service, this.htmlFolder)),
+      () => preventErr(this.unifile.stat(this.context.session, this.context.to.service, this.cssFolder)),
+      () => preventErr(this.unifile.stat(this.context.session, this.context.to.service, this.jsFolder)),
+      () => preventErr(this.unifile.stat(this.context.session, this.context.to.service, this.assetsFolder)),
     ]
     // add the promises to download each asset
     .concat(this.downloadAllAssets(this.tree.files)));
@@ -390,10 +397,10 @@ export default class PublishJob {
       }),
     );
     // beforeWrite hook
-    const hookedActions = this.hostingProvider.beforeWrite ? this.hostingProvider.beforeWrite(batchActionsWithAssets) : batchActionsWithAssets;
+    const hookedActions = this.context.hostingProvider.beforeWrite ? this.context.hostingProvider.beforeWrite(this.context, batchActionsWithAssets) : batchActionsWithAssets;
 
     // creates all files
-    return this.unifile.batch(this.session.unifile, this.publicationPath.service, hookedActions);
+    return this.unifile.batch(this.context.session, this.context.to.service, hookedActions);
   }
 
   // create the promises to download each asset
@@ -412,7 +419,7 @@ export default class PublishJob {
           this.setStatus(`Downloading file ${ shortSrcPath }...`);
           // load from URL
           // "encoding: null" is needed for images (which in this case will be served from /static)
-          // for(let key in this.session.unifile) console.log('unifile session key', key, this.session.unifile[key]);
+          // for(let key in this.context.session) console.log('unifile session key', key, this.context.session[key]);
           // "jar" is needed to pass the client cookies to unifile, because we load resources from different servers including ourself
           request(srcPath, {
             jar: this.jar,

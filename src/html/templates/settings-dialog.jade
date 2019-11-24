@@ -7,11 +7,18 @@
   .body
     .left-pane
       ul.tree
-        li.general-pane(data-pane="general-pane") General
-        li.social-pane(data-pane="social-pane") Social Networks
-        li.publish-pane(data-pane="publish-pane") Publish settings
-        li.fonts-pane(data-pane="fonts-pane") Fonts
+        li
+          label(for="settings-general-pane", data-pane="general-pane") General
+        li
+          label(for="settings-social-pane", data-pane="social-pane") Social Networks
+        li
+          label(for="settings-publish-pane", data-pane="publish-pane") Publish settings
+        li
+          label(for="settings-fonts-pane", data-pane="fonts-pane") Fonts
+        li
+          label(for="settings-data-sources-pane", data-pane="data-sources-pane") Data sources
     .right-pane
+      input#settings-general-pane.hidden(type="radio", name="settings-visibility-group", checked=true)
       .pane.general-pane
         ul
           li
@@ -64,6 +71,7 @@
                 | The recommended size is 16×16 or 32×32 pixels.
               input.input-url.input-favicon-path(type="text", value="")
               button.browse-favicon-path(type="button") Browse
+      input#settings-social-pane.hidden(type="radio", name="settings-visibility-group")
       .pane.social-pane
         p Meta tags for search engines, Facebook, Google+, Twitter, Linkedin, ... The following settings enable Open Graph and Twitter Cards.
         ul
@@ -104,6 +112,7 @@
               p
                 | Indicates your Twitter account.
               input.input-text.input-twitter(type="text", spellcheck="false", value="", placeholder="@twitteraccount", pattern="^@*", title="Twitter account name")
+      input#settings-publish-pane.hidden(type="radio", name="settings-visibility-group")
       .pane.publish-pane
         ul
           li
@@ -125,6 +134,7 @@
               label.path Path
                 input.input-path.input-publication-path(type="text", spellcheck="false", value="")
               button.browse-publication-path(type="button") Configure
+      input#settings-fonts-pane.hidden(type="radio", name="settings-visibility-group")
       .pane.fonts-pane
         ul
           li
@@ -137,4 +147,18 @@
               p.ui
                 button.add-font-btn Add a font
               div.fonts-list
+      input#settings-data-sources-pane.hidden(type="radio", name="settings-visibility-group")
+      .pane.data-sources-pane
+        ul
+          li
+            fieldset
+              legend
+                h3.title Data sources for this website -&nbsp;
+                  a.help-icon(href="https://github.com/silexlabs/Silex/wiki/Data-sources", title="about the data sourcesin silex", target="blank") Help
+              p
+                | Data sources are a way to import external data and use it as params of components in Silex.
+              p.ui
+                button.add-data-source-btn Add a data source
+                button.reload-data-sources-btn Reload data sources
+              div.data-sources-list
 

@@ -16,6 +16,7 @@
  */
 
 import { Constants } from '../../Constants';
+import { Config } from '../ClientConfig';
 import { Prodotype, ProdotypeCompDef } from '../externs';
 import { Model, View } from '../types';
 import { ComponentData, PseudoClass, PseudoClassData, SilexId, StyleData, StyleName, Visibility } from './Data';
@@ -45,7 +46,7 @@ export class Component {
     this.componentEditorElement = componentEditorElement;
     this.styleEditorElement = styleEditorElement;
     // tslint:disable:no-string-literal
-    this.prodotypeComponent = new window['Prodotype'](componentEditorElement, './prodotype/components');
+    this.prodotypeComponent = new window['Prodotype'](componentEditorElement, Config.componentFolders);
     this.prodotypeStyle = new window['Prodotype'](styleEditorElement, './prodotype/styles');
     this.prodotypeComponent.ready((err) => {
       this.readyCbkArr.forEach((cbk) => cbk(err));
@@ -167,7 +168,7 @@ export class Component {
       case Constants.STYLE_TYPE:
         return this.prodotypeStyle;
       default:
-        throw new Error('Unknown type in renderType');
+        throw new Error('Unknown component type ' + type);
     }
   }
 
@@ -181,7 +182,7 @@ export class Component {
     if (data) {
       const templateName = data.templateName;
       const prodotype = this.getProdotype(type);
-      prodotype.decorate(templateName, data).then((html) => {
+      prodotype.decorate(templateName, data, this.model.property.getDataSources()).then((html) => {
         this.model.element.setInnerHtml(element, html);
 
         // notify the owner
@@ -274,17 +275,16 @@ export class Component {
    * @param type, Constants.COMPONENT_TYPE or Constants.STYLE_TYPE
    */
   updateDepenedencies(type: string) {
+    if (type !==  Constants.COMPONENT_TYPE) {
+      // TODO: cleanup since this would need to support several types of components?
+      throw new Error('Not supported, all dependencies are for components for now, not styles');
+    }
     const head = this.model.head.getHeadElement();
     const components = this.getProdotypeComponents(type);
     const prodotype = this.getProdotype(type);
 
     // remove unused dependencies (scripts and style sheets)
-    const nodeList =
-        this.model.head.getHeadElement().querySelectorAll('[data-dependency]');
-    const elements = [];
-    for (const el of nodeList) {
-      elements.push(el);
-    }
+    const elements = Array.from(this.model.head.getHeadElement().querySelectorAll('[data-dependency]'));
     const unused = prodotype.getUnusedDependencies(elements, components);
     for (const el of unused) {
       head.removeChild(el);
@@ -340,9 +340,6 @@ export class Component {
     if (elStyle) {
       head.removeChild(elStyle);
     }
-
-    // update dependencies
-    this.updateDepenedencies(Constants.STYLE_TYPE);
   }
 
   /**
@@ -364,7 +361,6 @@ export class Component {
       .forEach((pseudoClassData) => {
         this.componentStyleChanged(className, pseudoClassData.pseudoClass, pseudoClassData.visibility, pseudoClassData.data, displayName);
       });
-      this.updateDepenedencies(Constants.STYLE_TYPE);
     }
   }
 
@@ -458,7 +454,7 @@ export class Component {
     const pseudoClassData = this.getPseudoClassData(styleData);
     if (pseudoClassData.length > 0) {
       Promise.all(pseudoClassData.map((obj) => {
-            return this.prodotypeStyle.decorate('text', obj.data)
+            return this.prodotypeStyle.decorate('text', obj.data, this.model.property.getDataSources())
                 .then((html) => this.addMediaQuery(html, obj.visibility));
           }) as Array<Promise<string>>)
           .then((htmlStrings) => {
