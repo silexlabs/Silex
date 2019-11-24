@@ -13,12 +13,18 @@
  * @fileoverview Silex Dashboard / "new website" dialog which displays templates
  *
  */
-import {FileInfo} from '../../types';
-import {Model} from '../../types';
-import {Controller} from '../../types';
+import {Controller, FileInfo, Model } from '../../types';
 
+import {Config} from '../../ClientConfig';
 import {ModalDialog} from '../ModalDialog';
-import {TipOfTheDay} from '../tip-of-the-day';
+import {TipOfTheDay} from '../TipOfTheDay';
+
+export interface DashboardOptions {
+  openFileInfo: (p1: FileInfo) => any;
+  openTemplate: (p1: string) => any;
+  ready: (() => any);
+  error: ((p1?: any) => any);
+}
 
 /**
  * Silex Dashboard dialog
@@ -48,6 +54,7 @@ export class Dashboard {
    * the controller instances
    */
   constructor(protected element: HTMLElement, protected model: Model, protected controller: Controller) {
+    // keep this bit even when Config.singleSiteMode is true, this will hide the Dashboard
     this.modalDialog = new ModalDialog({
       name: 'Dashboard',
       element,
@@ -57,87 +64,13 @@ export class Dashboard {
   }
 
   /**
-   * render the data loaded from github into a <ul>
-   */
-  renderTemplateList(
-      ul: HTMLElement, className: string, repo: string, data: any) {
-    // // handle previously rendered elements
-    // const elements = ul.querySelectorAll('li.rendered-item');
-    // for(let idx=0; idx<elements.length; idx++) {
-    //   const el = elements[idx];
-    //   el.parentElement.removeChild(el);
-    // }
-    if (Array.isArray(data)) {
-      // render the data
-
-      // add the <li> tags to the <ul> tag
-
-      // make a list of <li> tags
-      data.map((item) => {
-            const li = document.createElement('li');
-            li.classList.add('rendered-item', className);
-
-            // thumbnail
-            const thumbnail = document.createElement('div');
-            const templateFolder = `/libs/templates/${repo}/${item}`;
-            thumbnail.classList.add('thumbnail');
-            thumbnail.style.backgroundImage =
-                `url(${templateFolder}/screenshot.png)`;
-            thumbnail.setAttribute(
-                'data-editable', `${templateFolder}/editable.html`);
-            thumbnail.setAttribute('data-is-template', 'true');
-            li.appendChild(thumbnail);
-
-            // UI container
-            const ui = document.createElement('div');
-            ui.classList.add('ui');
-            li.appendChild(ui);
-
-            // title
-            const h3 = document.createElement('h3');
-            h3.innerHTML = item;
-            h3.setAttribute('data-editable', `${templateFolder}/editable.html`);
-            h3.setAttribute('data-is-template', 'true');
-            ui.appendChild(h3);
-
-            // preview
-            const previewEl = document.createElement('a');
-            previewEl.classList.add('fa', 'fa-external-link');
-            previewEl.innerHTML = 'Preview';
-            previewEl.setAttribute('data-action', 'preview');
-            previewEl.target = '_blank';
-            previewEl.href = `${templateFolder}/index.html`;
-            ui.appendChild(previewEl);
-
-            // info
-            const infoEl = document.createElement('a');
-            infoEl.classList.add('fa', 'fa-info');
-            infoEl.innerHTML = 'Info';
-            infoEl.target = '_blank';
-            infoEl.href = `https://github.com/silexlabs/${repo}/blob/gh-pages/${
-                item}/README.md`;
-            infoEl.setAttribute('data-action', 'info');
-            ui.appendChild(infoEl);
-
-            // edit
-            const editEl = document.createElement('a');
-            editEl.classList.add('fa', 'fa-pencil');
-            editEl.innerHTML = 'Select';
-            editEl.setAttribute(
-                'data-editable',
-                `/libs/templates/${repo}/${item}/editable.html`);
-            editEl.setAttribute('data-is-template', 'true');
-            ui.appendChild(editEl);
-            return li;
-          })
-          .forEach((li) => ul.appendChild(li));
-    }
-  }
-
-  /**
    * init the menu and UIs
    */
   buildUi() {
+    if (Config.singleSiteMode) {
+      return;
+    }
+
     const createList = (ul, className, repo, success, error) => {
       const repoUrl = `/get/${repo}`;
       const oReq = new XMLHttpRequest();
@@ -241,9 +174,133 @@ export class Dashboard {
   }
 
   /**
+   * open the dialog
+   * @param options   options object
+   */
+  openDialog(options: DashboardOptions) {
+    if (Config.singleSiteMode) {
+      if (options.ready) {
+        options.ready();
+      }
+      return;
+    }
+
+    // is ready callback
+    // error callback
+    if (this.state === 'ready') {
+      // notify the owner
+      if (options.ready) {
+        options.ready();
+      }
+    } else {
+      // store them for later
+      if (this.state === 'error') {
+        if (options.error) {
+          options.error();
+        }
+      } else {
+        this.readyCbk = options.ready;
+        this.errorCbk = options.error;
+      }
+    }
+    this.selected = null;
+    this.modalDialog.onClose = () => {
+      // notify the owner, with the url to load or nothing (will load blank
+      // template)
+      if (this.selected) {
+        if (this.selected.fileInfo) {
+          options.openFileInfo(this.selected.fileInfo);
+        } else {
+          options.openTemplate(this.selected.url);
+        }
+      } else {
+        options.openTemplate(null);
+      }
+    };
+    this.modalDialog.open();
+  }
+
+  /**
+   * render the data loaded from github into a <ul>
+   */
+  private renderTemplateList(ul: HTMLElement, className: string, repo: string, data: any) {
+    // // handle previously rendered elements
+    // const elements = ul.querySelectorAll('li.rendered-item');
+    // for(let idx=0; idx<elements.length; idx++) {
+    //   const el = elements[idx];
+    //   el.parentElement.removeChild(el);
+    // }
+    if (Array.isArray(data)) {
+      // render the data
+
+      // add the <li> tags to the <ul> tag
+
+      // make a list of <li> tags
+      data.map((item) => {
+            const li = document.createElement('li');
+            li.classList.add('rendered-item', className);
+
+            // thumbnail
+            const thumbnail = document.createElement('div');
+            const templateFolder = `/libs/templates/${repo}/${item}`;
+            thumbnail.classList.add('thumbnail');
+            thumbnail.style.backgroundImage =
+                `url(${templateFolder}/screenshot.png)`;
+            thumbnail.setAttribute(
+                'data-editable', `${templateFolder}/editable.html`);
+            thumbnail.setAttribute('data-is-template', 'true');
+            li.appendChild(thumbnail);
+
+            // UI container
+            const ui = document.createElement('div');
+            ui.classList.add('ui');
+            li.appendChild(ui);
+
+            // title
+            const h3 = document.createElement('h3');
+            h3.innerHTML = item;
+            h3.setAttribute('data-editable', `${templateFolder}/editable.html`);
+            h3.setAttribute('data-is-template', 'true');
+            ui.appendChild(h3);
+
+            // preview
+            const previewEl = document.createElement('a');
+            previewEl.classList.add('fa', 'fa-external-link');
+            previewEl.innerHTML = 'Preview';
+            previewEl.setAttribute('data-action', 'preview');
+            previewEl.target = '_blank';
+            previewEl.href = `${templateFolder}/index.html`;
+            ui.appendChild(previewEl);
+
+            // info
+            const infoEl = document.createElement('a');
+            infoEl.classList.add('fa', 'fa-info');
+            infoEl.innerHTML = 'Info';
+            infoEl.target = '_blank';
+            infoEl.href = `https://github.com/silexlabs/${repo}/blob/gh-pages/${
+                item}/README.md`;
+            infoEl.setAttribute('data-action', 'info');
+            ui.appendChild(infoEl);
+
+            // edit
+            const editEl = document.createElement('a');
+            editEl.classList.add('fa', 'fa-pencil');
+            editEl.innerHTML = 'Select';
+            editEl.setAttribute(
+                'data-editable',
+                `/libs/templates/${repo}/${item}/editable.html`);
+            editEl.setAttribute('data-is-template', 'true');
+            ui.appendChild(editEl);
+            return li;
+          })
+          .forEach((li) => ul.appendChild(li));
+    }
+  }
+
+  /**
    * redraw UI each time the dialog opens
    */
-  redraw() {
+  private redraw() {
     // recent files
     const recentFiles = this.model.file.getLatestFiles();
 
@@ -307,50 +364,5 @@ export class Dashboard {
         })
         .filter((item) => !!item)
         .forEach((li) => ul.appendChild(li));
-  }
-
-  /**
-   * open the dialog
-   * @param options   options object
-   */
-  openDialog(options: {
-    openFileInfo: (p1: FileInfo) => any,
-    openTemplate: (p1: string) => any,
-    ready: (() => any),
-    error: ((p1?: any) => any),
-  }) {
-    // is ready callback
-    // error callback
-    if (this.state === 'ready') {
-      // notify the owner
-      if (options.ready) {
-        options.ready();
-      }
-    } else {
-      // store them for later
-      if (this.state === 'error') {
-        if (options.error) {
-          options.error();
-        }
-      } else {
-        this.readyCbk = options.ready;
-        this.errorCbk = options.error;
-      }
-    }
-    this.selected = null;
-    this.modalDialog.onClose = () => {
-      // notify the owner, with the url to load or nothing (will load blank
-      // template)
-      if (this.selected) {
-        if (this.selected.fileInfo) {
-          options.openFileInfo(this.selected.fileInfo);
-        } else {
-          options.openTemplate(this.selected.url);
-        }
-      } else {
-        options.openTemplate(null);
-      }
-    };
-    this.modalDialog.open();
   }
 }

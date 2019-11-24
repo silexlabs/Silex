@@ -76,5 +76,8 @@ export default function(ceOptions: CeOptions) {
     console.log('> Local file system service disabled, env vars SILEX_ELECTRON or SILEX_DEBUG or ENABLE_FS not set');
   }
 
+  routerOptions.thumbnails = ceOptions.thumbnails;
+  routerOptions.unsplash = ceOptions.unsplash;
+
   return new CloudExplorer(routerOptions);
 }

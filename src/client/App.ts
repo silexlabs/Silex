@@ -21,45 +21,46 @@
 
 import { detect } from 'detect-browser';
 import { Config } from './ClientConfig';
-import { ContextMenuController } from './controller/context-menu-controller';
-import { CssEditorController } from './controller/css-editor-controller';
-import { EditMenuController } from './controller/edit-menu-controller';
-import { FileMenuController } from './controller/file-menu-controller';
-import { HtmlEditorController } from './controller/html-editor-controller';
-import { InsertMenuController } from './controller/insert-menu-controller';
-import { JsEditorController } from './controller/js-editor-controller';
-import { PageToolController } from './controller/page-tool-controller';
-import { PropertyToolController } from './controller/property-tool-controller';
-import { SettingsDialogController } from './controller/settings-dialog-controller';
-import { StageController } from './controller/stage-controller';
-import { TextEditorController } from './controller/text-editor-controller';
-import { ToolMenuController } from './controller/tool-menu-controller';
-import { ViewMenuController } from './controller/view-menu-controller';
-import { Body } from './model/body';
+import { ContextMenuController } from './controller/ContextMenuController';
+import { CssEditorController } from './controller/CssEditorController';
+import { EditMenuController } from './controller/EditMenuController';
+import { FileMenuController } from './controller/FileMenuController';
+import { HtmlEditorController } from './controller/HtmlEditorController';
+import { InsertMenuController } from './controller/InsertMenuController';
+import { JsEditorController } from './controller/JsEditorController';
+import { PageToolController } from './controller/PageToolController';
+import { PropertyToolController } from './controller/PropertyToolController';
+import { SettingsDialogController } from './controller/SettingsDialogController';
+import { StageController } from './controller/StageController';
+import { TextEditorController } from './controller/TextEditorController';
+import { ToolMenuController } from './controller/ToolMenuController';
+import { ViewMenuController } from './controller/ViewMenuController';
+import { Body } from './model/Body';
 import { Component } from './model/Component';
-import { SilexElement } from './model/element';
-import { File } from './model/file';
-import { Head } from './model/head';
-import { Page } from './model/page';
-import { Property } from './model/property';
+import { SilexElement } from './model/Element';
+import { File } from './model/File';
+import { Head } from './model/Head';
+import { Page } from './model/Page';
+import { Property } from './model/Property';
 import { Controller, Model, View } from './types';
-import { SilexNotification } from './utils/notification';
-import { BreadCrumbs } from './view/bread-crumbs';
-import { ContextMenu } from './view/context-menu';
-import { CssEditor } from './view/dialog/css-editor';
+import { SilexNotification } from './utils/Notification';
+import { Url } from './utils/Url';
+import { BreadCrumbs } from './view/BreadCrumbs';
+import { ContextMenu } from './view/ContextMenu';
+import { CssEditor } from './view/dialog/CssEditor';
 import { Dashboard } from './view/dialog/Dashboard';
-import { FileExplorer } from './view/dialog/file-explorer';
-import { HtmlEditor } from './view/dialog/html-editor';
-import { JsEditor } from './view/dialog/js-editor';
-import { SettingsDialog } from './view/dialog/settings-dialog';
-import { Menu } from './view/menu';
-import { PageTool } from './view/page-tool';
-import { PropertyTool } from './view/property-tool';
-import { Splitter } from './view/splitter';
+import { FileExplorer } from './view/dialog/FileExplorer';
+import { HtmlEditor } from './view/dialog/HtmlEditor';
+import { JsEditor } from './view/dialog/JsEditor';
+import { SettingsDialog } from './view/dialog/SettingsDialog';
+import { Menu } from './view/Menu';
+import { PageTool } from './view/PageTool';
+import { PropertyTool } from './view/PropertyTool';
+import { Splitter } from './view/Splitter';
 import { StageWrapper } from './view/StageWrapper';
 import { TextFormatBar } from './view/TextFormatBar';
 import { getUiElements } from './view/UiElements';
-import { Workspace } from './view/workspace';
+import { Workspace } from './view/Workspace';
 
 /**
  * Defines the entry point of Silex client application
@@ -194,19 +195,44 @@ export class App {
     // draw the workspace once
     this.view.workspace.redraw(this.view);
 
-    // application start, open a new empty file
-    this.controller.fileMenuController.newFile(
+    // application start, open a file
+    if (Config.singleSiteMode) {
+      // hide menu items
+      document.body.classList.add('single-site-mode');
+      // open the website from url
+      const params = Url.getUrlParams();
+      if (params.path && params.service) {
+        this.controller.fileMenuController.openRecent({
+          path: params.path,
+          service: params.service,
+          absPath: `/ce/${params.service}/get${params.path}`,
+          url: `${Url.getRootUrl()}/ce/${params.service}/get${params.path}`,
+        }, () => {
+          console.log('opened');
+          this.initDone();
+        });
+      } else {
+        SilexNotification.alert('Open a file', `
+           Could not open the file ${params.path}.<br /><br />
+           You need to specify which website I am supposed to open with the variables "path" and "service" in the URL. Please <a href="https://github.com/silexlabs/Silex/wiki/Single-site-mode" target="_blank">check this document</a> or <a href="https://github.com/silexlabs/Silex/issues" target="_blank">get in touch in Silex forums"</a>
+        `,
+        () => {});
+        this.initDone();
+      }
+    } else {
+      this.controller.fileMenuController.newFile(
         () => {
-          this.view.workspace.loadingDone();
-          this.initDebug();
+          this.initDone();
         },
         () => {
-          this.view.workspace.loadingDone();
-          this.initDebug();
-        });
+          this.initDone();
+        },
+      );
+    }
   }
 
-  initDebug() {
+  initDone() {
+    this.view.workspace.loadingDone();
     if (Config.debug.debugMode && Config.debug.debugScript) {
       const script = document.createElement('script');
       script.type = 'text/javascript';
@@ -337,4 +363,10 @@ export class App {
 }
 
 // tslint:disable:no-string-literal
-window['silex'] = new App();
+window['silex'] = {};
+window['silex']['init'] = () => {
+  window['silex']['config'] = Config;
+};
+window['silex']['start'] = () => {
+  window['silex']['app'] = new App();
+};

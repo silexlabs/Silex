@@ -14,11 +14,11 @@ import {Constants} from '../../../Constants';
 import {StyleName} from '../../model/Data';
 import {Visibility} from '../../model/Data';
 import {StyleData} from '../../model/Data';
-import {Tracker} from '../../service/tracker';
+import {Tracker} from '../../service/Tracker';
 import {Controller} from '../../types';
 import {Model} from '../../types';
-import {SilexNotification} from '../../utils/notification';
-import {PaneBase} from './pane-base';
+import {SilexNotification} from '../../utils/Notification';
+import {PaneBase} from './PaneBase';
 
 /**
  * @fileoverview The style editor pane is displayed in the property panel on the
