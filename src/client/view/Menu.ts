@@ -305,7 +305,7 @@ export class Menu {
         this.controller.pageToolController.removePage();
         break;
       case 'edit.rename.page':
-        this.controller.pageToolController.renamePage();
+        this.controller.pageToolController.editPage();
         break;
       // Help menu
       case 'help.wiki':

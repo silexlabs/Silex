@@ -31,6 +31,7 @@ import {InvalidationManager} from '../utils/InvalidationManager';
 import {SilexNotification} from '../utils/Notification';
 import {FileExplorer} from '../view/dialog/FileExplorer';
 import { LinkDialog } from '../view/dialog/LinkDialog';
+import { PageData } from '../model/Page';
 
 /**
  * base class for all UI controllers of the controller package
@@ -400,14 +401,28 @@ export class ControllerBase {
   }
 
   /**
-   * promp user for page name
-   * used in insert page, rename page...
+   * promp user for page properties
+   * @param pageData data of the page edited, defaults to a new page
    */
-  editPageSettings(pageName: string = ''): Promise<{name: string, displayName: string}> {
+  editPageSettings(pageData: PageData = null): Promise<{name: string, displayName: string}> {
     return new Promise((resolve, reject) => {
-      SilexNotification.prompt(
-        pageName === '' ? 'New page' : 'Page Properties',
-        'Page Name', pageName, 'Your page name', (accept, newName) => {
+      const form = document.createElement('div');
+      form.innerHTML = `
+        Page Name
+        <input
+          id="page-property-name"
+          class="block-dialog"
+          placeholder="Your page name here"
+          value="${ pageData ? pageData.displayName : '' }"
+          ${ !pageData || pageData.canRename ? '' : 'disabled' }
+          />
+      `;
+      const nameInput = form.querySelector('#page-property-name') as HTMLInputElement;
+      SilexNotification.confirm(
+        pageData ? 'Page Properties' : 'New page',
+        '',
+        (accept) => {
+          const newName = nameInput.value;
           if (accept && newName && newName.length > 0) {
             // cleanup the page name
             // add a prefix to prevent names which start with an dash or number (see css specifications)
@@ -426,6 +441,7 @@ export class ControllerBase {
           }
         },
       );
+      SilexNotification.setContent(form);
     });
   }
 

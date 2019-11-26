@@ -63,7 +63,7 @@ export class PageTool {
       } else {
         if ((e.target as HTMLElement).classList.contains('page-properties')) {
           // rename the page
-          this.renamePageAtIndex(
+          this.editPageAtIndex(
               this.getCellIndex((e.target as HTMLElement).parentElement.parentElement as HTMLElement));
         } else {
           // select page
@@ -133,8 +133,8 @@ export class PageTool {
    * user wants to rename a page
    * @param idx index of the page
    */
-  renamePageAtIndex(idx: number) {
-    this.controller.pageToolController.renamePage(this.pages[idx].name);
+  editPageAtIndex(idx: number) {
+    this.controller.pageToolController.editPage(this.pages[idx]);
   }
 
   /**

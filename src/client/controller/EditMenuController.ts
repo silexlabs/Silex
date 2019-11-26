@@ -317,7 +317,7 @@ export class EditMenuController extends ControllerBase {
               .then((blob) => {
                 if (blob) {
                   // load the image
-                  this.model.element.setImageUrl(element, blob.url);
+                  this.model.element.setImageUrl(element, blob.absPath);
                 }
               })
               .catch((error) => {
@@ -394,18 +394,8 @@ export class EditMenuController extends ControllerBase {
     promise
     .then((fileInfo: FileInfo) => {
       if (fileInfo) {
-        cbk([{
-          url: fileInfo.absPath,
-          modified: fileInfo.modified,
-          name: fileInfo.name,
-          size: fileInfo.size,
-          mime: fileInfo.mime,
-          path: '',
-          absPath: '',
-          folder: '',
-          service: '',
-          isDir: true,
-        }]);
+        console.log('xxxxxxxx', fileInfo)
+        cbk([fileInfo]);
       }
     })
     .catch((error) => {

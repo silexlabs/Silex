@@ -89,8 +89,8 @@ export interface Font {
   family: string;
   href: string;
 }
+// FIXME: choose between path and folder + name, remove absPath
 export interface FileInfo {
-  url: string;
   path: string;
   folder: string;
   service: string;

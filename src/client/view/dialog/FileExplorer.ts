@@ -69,7 +69,7 @@ export class FileExplorer {
     if (fileInfo === null) {
       return fileInfo;
     }
-    const absPath = fileInfo.service ? `/ce/${fileInfo.service}/get/${fileInfo.path}` : fileInfo.url;
+    const absPath = fileInfo.service ? `/ce/${fileInfo.service}/get/${fileInfo.path}` : fileInfo.absPath;
     return (Object.assign(
       {absPath},
       fileInfo) as FileInfo);
