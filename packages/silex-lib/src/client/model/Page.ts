@@ -27,12 +27,14 @@ import { SilexNotification } from '../utils/Notification';
 export class PageData {
   name: string;
   displayName: string;
+  pageElement: HTMLAnchorElement;
   linkName: string;
   idx: number;
   isCurrent: boolean;
   canDelete: boolean;
   canProperties: boolean;
   canMove: boolean;
+  canRename: boolean;
 }
 
 /**
@@ -56,17 +58,19 @@ export class Page {
   }
 
   getPageData(pageName): PageData {
-    const pageElement = this.model.file.getContentDocument().getElementById(pageName);
+    const pageElement = this.model.file.getContentDocument().getElementById(pageName) as HTMLAnchorElement;
     if (pageElement) {
       return {
         name: pageName,
         displayName: pageElement.innerHTML,
+        pageElement,
         linkName: '#!' + pageName,
         idx: this.getPages().findIndex((p) => p === pageName),
         isCurrent: this.getCurrentPage() === pageName,
         canDelete: !pageElement.hasAttribute(Constants.PAGE_PREVENT_DELETE),
         canProperties: !pageElement.hasAttribute(Constants.PAGE_PREVENT_PROPERTIES),
         canMove: !pageElement.hasAttribute(Constants.PAGE_PREVENT_MOVE),
+        canRename: !pageElement.hasAttribute(Constants.PAGE_PREVENT_RENAME),
       };
     } else {
       // this happens while undoing or redoing

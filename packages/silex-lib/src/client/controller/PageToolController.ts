@@ -14,6 +14,7 @@
  *      and call the main {silex.controller.Controller} controller's methods
  *
  */
+import { PageData } from '../model/Page';
 import {Model} from '../types';
 import {View} from '../types';
 import {SilexNotification} from '../utils/Notification';
@@ -32,7 +33,7 @@ export class PageToolController extends ControllerBase {
    */
   createPage(): Promise<void> {
     this.tracker.trackAction('controller-events', 'request', 'insert.page', 0);
-    return this.editPageSettings()
+    return this.editPageSettings(null)
       .then(({name, displayName}) => {
         // undo checkpoint
         this.undoCheckPoint();
@@ -51,22 +52,19 @@ export class PageToolController extends ControllerBase {
   }
 
   /**
-   * rename a page
-   * @param opt_pageName name of the page to be renamed
+   * edit a page properties
+   * @param pageData data of the page edited, defaults to current page
    */
-  renamePage(opt_pageName?: string) {
-    // default to the current page
-    if (!opt_pageName) {
-      opt_pageName = this.model.page.getCurrentPage();
-    }
-    this.editPageSettings(this.model.page.getDisplayName(opt_pageName))
+  editPage(pageData: PageData = this.model.page.getPageData(this.model.page.getCurrentPage())) {
+    this.editPageSettings(pageData)
       .then(({name, displayName}) => {
         // undo checkpoint
         this.undoCheckPoint();
 
         // update model
-        this.model.page.renamePage(
-          (opt_pageName as string), name, displayName);
+        if(pageData.name !== name && pageData.canRename) {
+          this.model.page.renamePage(pageData.name, name, displayName);
+        }
       })
       .catch((e) => {
       });

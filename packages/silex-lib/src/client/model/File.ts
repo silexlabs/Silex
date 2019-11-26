@@ -42,7 +42,7 @@ export class File {
   static LOADING_LIGHT_CSS_CLASS = 'loading-website-light';
 
   /**
-   * current file url and path and info returned by CE
+   * current file info returned by CE
    * if the current file is a new file, it has no FileInfo
    * if set, this is an absolute URL, use silex.model.File::getFileInfo to get
    * the relatvie URL
@@ -257,7 +257,7 @@ export class File {
   }
 
   /**
-   * load an arbitrary url as a silex html file
+   * load an arbitrary url as a silex html editable file
    * will not be able to save
    * @export
    */
@@ -268,7 +268,7 @@ export class File {
     CloudStorage.getInstance().loadLocal(
         url, (rawHtml, userHead) => {
           this.fileInfo =
-              ({isDir: false, mime: 'text/html', url} as FileInfo);
+              ({isDir: false, mime: 'text/html'} as FileInfo);
           this.model.head.setUserHeadTag(userHead);
           if (opt_cbk) {
             opt_cbk(rawHtml);
@@ -335,7 +335,7 @@ export class File {
   }
 
   /**
-   * get the url of the file
+   * get the info of the current file
    */
   getFileInfo(): FileInfo {
     return this.fileInfo;

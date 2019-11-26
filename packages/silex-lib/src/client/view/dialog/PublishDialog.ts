@@ -323,7 +323,8 @@ export class PublishDialog {
               let msg = `<strong>${json.message}</strong>`;
               if (json.stop === true) {
                 clearInterval(timer);
-                const websiteUrl = this.model.head.getWebsiteUrl() || publicationPath.url + '/index.html';
+                console.log('publish dialog', publicationPath)
+                const websiteUrl = this.model.head.getWebsiteUrl() || publicationPath.absPath + '/index.html';
                 msg += `
                   <p>Please visit <a target="_blanck" href="${websiteUrl}">your published website here</a>.
                   ${provider && provider.afterPublishMessage ? provider.afterPublishMessage : ''}</p>
