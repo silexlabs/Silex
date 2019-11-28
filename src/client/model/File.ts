@@ -20,9 +20,9 @@ import { Property } from '../model/Property';
 import { CloudStorage } from '../service/CloudStorage';
 import { FileInfo, Model, View } from '../types';
 import { getUiElements } from '../view/UiElements';
-import { getPages } from '../renderer/page-renderer';
-import { initializePages, openPage } from '../model-new/page-model';
+import { initializePages, openPage } from '../api';
 import { startPageObserver, stopPageObserver } from '../observer/page-observer';
+import { getPagesFromDom } from '../renderer/page-renderer';
 
 /**
  * @param model  model class which holds the other models
@@ -163,7 +163,7 @@ export class File {
 
     // update model
     stopPageObserver();
-    const pages = getPages();
+    const pages = getPagesFromDom();
     initializePages(pages);
     startPageObserver();
 

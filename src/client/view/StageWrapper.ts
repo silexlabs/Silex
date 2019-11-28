@@ -5,7 +5,7 @@ import { Constants } from '../../Constants';
 import { Body } from '../model/Body';
 import { Controller, Model } from '../types';
 import { SilexNotification } from '../utils/Notification';
-import { pageStore } from '../model-new/page-model';
+import { getPages, subscribePages } from '../api';
 
 export class StageWrapper {
   private stage: Stage;
@@ -21,7 +21,7 @@ export class StageWrapper {
    * the controller instances
    */
   constructor(protected element: HTMLElement, protected model: Model, protected controller: Controller) {
-    pageStore.subscribe(() => this.reset())
+    subscribePages((prevState, nextState) => this.reset())
   }
 
   redraw() {

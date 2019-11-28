@@ -23,7 +23,7 @@ import { SilexNotification } from '../utils/Notification';
 import { FileExplorer } from '../view/dialog/FileExplorer';
 import { LINK_ATTRIBUTES, LinkDialog } from './dialog/LinkDialog';
 import { Menu } from './Menu';
-import { pageStore } from '../model-new/page-model';
+import { getPages } from '../api';
 
 /**
  * @class {silex.view.TextFormatBar}
@@ -322,6 +322,6 @@ export class TextFormatBar {
     this.selectedElements = selectedElements;
 
     // reuse pageNames in combo box on change
-    this.pageNames = pageStore.getState().map(p => p.name);
+    this.pageNames = getPages().map(p => p.name);
   }
 }

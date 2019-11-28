@@ -24,7 +24,8 @@ import { Url } from '../utils/Url';
 import { getUiElements } from '../view/UiElements';
 import { StyleData, TemplateName } from './Data';
 import { Property } from './Property';
-import { pageStore, PageData } from '../model-new/page-model';
+import { PageData } from '../store/page-store';
+import { getPages } from '../api';
 
 /**
  * direction in the dom
@@ -202,7 +203,7 @@ export class SilexElement {
   }
 
   getCurrentPage(): PageData {
-    const pages = pageStore.getState();
+    const pages = getPages();
     console.log('getCurrentPage', pages)
     return pages.find(p => p.isOpen);
   }
@@ -255,7 +256,7 @@ export class SilexElement {
    */
   getPagesForElement(element: HTMLElement): PageData[] {
     element = this.noSectionContent(element);
-    return pageStore.getState().filter(
+    return getPages().filter(
         (page) => element.classList.contains(page.name));
   }
 
@@ -271,7 +272,7 @@ export class SilexElement {
     }
     element = this.noSectionContent(element);
     const pages = this.getPagesForElement(element);
-    if (pages.length + 1 === pageStore.getState().length) {
+    if (pages.length + 1 === getPages().length) {
       // from visible in some pages to visible everywhere
       this.removeFromAllPages(element);
     } else {
@@ -1009,7 +1010,7 @@ export class SilexElement {
    * @return           the value for this styleName
    */
   getClassName(element: HTMLElement): string {
-    const pages = pageStore.getState();
+    const pages = getPages();
     return element.className.split(' ')
     .filter((name) => {
       if (name === '' ||
@@ -1033,7 +1034,7 @@ export class SilexElement {
   setClassName(element: HTMLElement, opt_className?: string) {
     // compute class names to keep, no matter what
     // i.e. the one which are in element.className + in Silex internal classes
-    const pages = pageStore.getState();
+    const pages = getPages();
     const classNamesToKeep =
       this.getComponentClassName(element).concat(
         element.className.split(' ').map((name) => {

@@ -1,8 +1,8 @@
-import { PageData, pageStore } from '../model-new/page-model'
-import { getPages, createPage, removePage, renamePage, openPage } from '../renderer/page-renderer'
-import { updatePage } from '../model-new/page-model'
+import { PageData } from '../store/page-store'
+import { createPage, removePage, renamePage, openPage } from '../renderer/page-renderer'
+import { getPages, updatePage, subscribePages } from '../api';
 
-const unsub = pageStore.subscribe(onChange)
+const unsub = subscribePages(onChange)
 
 let stoped = true
 export function startPageObserver() {
@@ -14,10 +14,7 @@ export function stopPageObserver() {
   stoped = true
 }
 
-let current: PageData[] = []
-function onChange() {
-  const prev = current
-  current = pageStore.getState()
+function onChange(prev, current) {
   if(!stoped && current !== prev) {
     console.log('Pages state changed', prev, current)
 

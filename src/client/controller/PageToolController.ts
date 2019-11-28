@@ -14,12 +14,12 @@
  *      and call the main {silex.controller.Controller} controller's methods
  *
  */
-import { PageData } from '../model-new/page-model';
+import { PageData } from '../store/page-store';
 import {Model} from '../types';
 import {View} from '../types';
 import {SilexNotification} from '../utils/Notification';
 import {ControllerBase} from './ControllerBase';
-import { pageStore, createPage, updatePage, deletePage, movePage } from '../model-new/page-model';
+import { createPage, updatePage, deletePage, movePage, getPages } from '../api';
 /**
  * @param view  view class which holds the other views
  */
@@ -66,7 +66,7 @@ export class PageToolController extends ControllerBase {
    * edit a page properties
    * @param pageData data of the page edited, defaults to current page
    */
-  editPage(pageData: PageData = pageStore.getState().find(p => p.isOpen)) {
+  editPage(pageData: PageData = getPages().find(p => p.isOpen)) {
     this.editPageSettings(pageData)
       .then(({name, displayName}) => {
         // undo checkpoint
@@ -89,7 +89,7 @@ export class PageToolController extends ControllerBase {
   /**
    * remvove a page
    */
-  removePage(page: PageData = pageStore.getState().find(p => p.isOpen)) {
+  removePage(page: PageData = getPages().find(p => p.isOpen)) {
     // confirm and delete
     SilexNotification.confirm(
       'Delete page',
