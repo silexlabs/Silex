@@ -15,7 +15,7 @@
  */
 import {LinkData} from '../../types';
 import {SilexNotification} from '../../utils/Notification';
-import { pageStore } from '../../model-new/page-model';
+import { getPages } from '../../api';
 
 export const LINK_ATTRIBUTES =
     ['href', 'rel', 'target', 'type', 'title', 'download'];
@@ -138,7 +138,7 @@ export class LinkDialog {
             <label for="link-editor-page">Page</label>
             <select autocomplete="nope" class="tabbed alertify-text page big" id="link-editor-page">
               <option value=""${isExternal ? ' selected ' : ''}></option>
-              ${pageStore.getState().map((page) => `<option value="#!${page.name}"${        !isExternal && '#!' + page.name === linkData.href ? ' selected ' : ''} >
+              ${getPages().map((page) => `<option value="#!${page.name}"${        !isExternal && '#!' + page.name === linkData.href ? ' selected ' : ''} >
                 ${page.displayName}
               </option>`)}
             </select>

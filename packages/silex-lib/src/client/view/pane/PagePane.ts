@@ -21,8 +21,8 @@ import { Constants } from '../../../Constants';
 import { Controller, Model } from '../../types';
 import { Dom } from '../../utils/Dom';
 import { PaneBase } from './PaneBase';
-import { pageStore, PageData } from '../../model-new/page-model';
-
+import { PageData } from '../../store/page-store';
+import { getPages } from '../../api';
 /**
  * on of Silex Editors class
  * const user edit style of components
@@ -154,7 +154,7 @@ export class PagePane extends PaneBase {
     const items = (Array.from(mainContainer.querySelectorAll('.page-container')) as HTMLElement[]);
     this.pageCheckboxes = items.map((item, idx) => {
       const checkbox: HTMLInputElement = item.querySelector('.page-check');
-      const page = pageStore.getState()[idx++];
+      const page = getPages()[idx++];
       checkbox.onchange = () => {
         this.checkPage(page, checkbox);
       };
@@ -196,7 +196,7 @@ export class PagePane extends PaneBase {
     super.redraw(states);
 
     // update page list
-    this.setPages(pageStore.getState().map(p => p.name));
+    this.setPages(getPages().map(p => p.name));
 
     // View on mobile checkbox
     Array.from(this.viewOnDeviceEl.querySelectorAll('.view-on-mobile input'))
@@ -238,7 +238,7 @@ export class PagePane extends PaneBase {
         item.checkbox.disabled = false;
 
         // compute common pages
-        const page = pageStore.getState().find(p => p.name === item.page.name);
+        const page = getPages().find(p => p.name === item.page.name);
         const isInPage = this.getCommonProperty(states, (state) => this.model.element.isInPage(state.el, page));
 
         // set visibility

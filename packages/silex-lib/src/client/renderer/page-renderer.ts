@@ -1,5 +1,5 @@
 import { Constants } from '../../Constants'
-import { PageData } from '../model-new/page-model'
+import { PageData } from '../store/page-store'
 import { SilexNotification } from '../utils/Notification'
 import { getSiteDocument, getSiteWindow } from '../view/UiElements'
 import { noSectionContent, removeElement } from './element-renderer'
@@ -44,7 +44,7 @@ function getPageData(pageName): PageData {
  * get the pages from the dom
  * @return an array of the page names I have found in the DOM
  */
-export function getPages(): PageData[] {
+export function getPagesFromDom(): PageData[] {
   return Array.from(getSiteDocument().body.querySelectorAll(`a[data-silex-type="${Constants.TYPE_PAGE}"]`))
     .map((element) => getPageDataFromElement(element as HTMLAnchorElement))
 }
@@ -67,8 +67,8 @@ export function getCurrentPage(): PageData {
     return getPageData(getCurrentPageName())
   } catch (e) {
     // there was a problem in the pageable plugin, return the first page
-    console.warn(`warning, could not retrieve the current page, I will return the first page (${getPages()[0]})`)
-    return getPages()[0]
+    console.warn(`warning, could not retrieve the current page, I will return the first page (${getPagesFromDom()[0]})`)
+    return getPagesFromDom()[0]
   }
 }
 
@@ -90,7 +90,7 @@ export function openPage(pageData: PageData) {
  * elements which are only in this page should be deleted
  */
 export function removePage(pageData: PageData) {
-  const pages = getPages()
+  const pages = getPagesFromDom()
   if (pages.length < 2) {
     SilexNotification.alert('Error', 'I can not delete this page because <strong>it is the only page</strong>.', () => {})
   } else {
@@ -145,7 +145,7 @@ export function removePage(pageData: PageData) {
  * move a page in the dom
  */
 export function movePage(pageData: PageData, newPageIdx: number) {
-  const pages = getPages()
+  const pages = getPagesFromDom()
   const pageIdx = pages.findIndex((page) => page === pageData)
   const container = getSiteDocument().body.querySelector('.' + Constants.PAGES_CONTAINER_CLASS_NAME)
   if (typeof pageIdx === 'undefined' || newPageIdx < 0 || newPageIdx >= pages.length) {
@@ -209,7 +209,7 @@ export function addToPage(element: HTMLElement, pageData: PageData) {
     console.error('Element is already in page', element, pageData)
   } else {
     const noSectionEl = noSectionContent(element)
-    if (getPagesForElement(noSectionEl).length + 1 === getPages().length) {
+    if (getPagesForElement(noSectionEl).length + 1 === getPagesFromDom().length) {
       // from visible in some pages to visible everywhere
       removeFromAllPages(noSectionEl)
     } else {
@@ -257,7 +257,7 @@ export function removeFromAllPages(element: HTMLElement) {
  */
 export function getPagesForElement(element: HTMLElement): PageData[] {
   const noSectionEl = noSectionContent(element)
-  return getPages().filter(
+  return getPagesFromDom().filter(
       (pageData) => noSectionEl.classList.contains(pageData.name))
 }
 

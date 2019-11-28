@@ -24,7 +24,7 @@ import { SilexNotification } from '../utils/Notification';
 import { Style } from '../utils/Style';
 import { FileExplorer } from '../view/dialog/FileExplorer';
 import { ControllerBase } from './ControllerBase';
-import { pageStore } from '../model-new/page-model';
+import { getPages } from '../api';
 
 /**
  * @param view  view class which holds the other views

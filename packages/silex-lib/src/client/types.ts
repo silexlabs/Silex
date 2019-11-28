@@ -50,7 +50,7 @@ import { Splitter } from './view/Splitter';
 import { StageWrapper } from './view/StageWrapper';
 import { TextFormatBar } from './view/TextFormatBar';
 import { Workspace } from './view/Workspace';
-import { PageData } from './model-new/page-model';
+import { PageData } from './store/page-store';
 
 /**
  * warning: if you change that type, also change the default value in LinkDialog
