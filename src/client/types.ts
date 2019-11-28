@@ -34,7 +34,6 @@ import { ComponentData } from './model/Data';
 import { SilexElement } from './model/Element';
 import { File } from './model/File';
 import { Head } from './model/Head';
-import { Page } from './model/Page';
 import { Property } from './model/Property';
 import { BreadCrumbs } from './view/BreadCrumbs';
 import { ContextMenu } from './view/ContextMenu';
@@ -51,6 +50,7 @@ import { Splitter } from './view/Splitter';
 import { StageWrapper } from './view/StageWrapper';
 import { TextFormatBar } from './view/TextFormatBar';
 import { Workspace } from './view/Workspace';
+import { PageData } from './model-new/page-model';
 
 /**
  * warning: if you change that type, also change the default value in LinkDialog
@@ -131,7 +131,7 @@ export interface PublicationOptions {
   provider: Provider;
 }
 export interface UndoItem {
-  page: string;
+  page: PageData;
   html: string;
   scrollX: number;
   scrollY: number;
@@ -152,7 +152,6 @@ export interface Model {
   file: File;
   head: Head;
   body: Body;
-  page: Page;
   element: SilexElement;
   component: Component;
   property: Property;

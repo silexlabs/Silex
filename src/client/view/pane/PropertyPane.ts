@@ -138,8 +138,8 @@ export class PropertyPane extends PaneBase {
    * @param pageNames   the names of the pages which appear in the current HTML file
    * @param  currentPageName   the name of the current page
    */
-  redraw(states: SelectableState[], pageNames: string[], currentPageName: string) {
-    super.redraw(states, pageNames, currentPageName);
+  redraw(states: SelectableState[]) {
+    super.redraw(states);
 
     // useful filters
     const statesNoBody: SelectableState[] = states

@@ -24,6 +24,7 @@ import { Url } from '../utils/Url';
 import { getUiElements } from '../view/UiElements';
 import { StyleData, TemplateName } from './Data';
 import { Property } from './Property';
+import { pageStore, PageData } from '../model-new/page-model';
 
 /**
  * direction in the dom
@@ -199,6 +200,162 @@ export class SilexElement {
       }
     }
   }
+
+  getCurrentPage(): PageData {
+    const pages = pageStore.getState();
+    console.log('getCurrentPage', pages)
+    return pages.find(p => p.isOpen);
+  }
+
+
+  /**
+   * get all elements visible when the given page is opened
+   */
+  getElementsForPage(page: PageData = this.getCurrentPage(), includeHideDesktop = this.view.workspace.getMobileEditor(), includeHideMobile = !this.view.workspace.getMobileEditor()): HTMLElement[] {
+    return (Array.from(this.model.file.getContentDocument().querySelectorAll(`.${Constants.EDITABLE_CLASS_NAME}`)) as HTMLElement[])
+    .filter((el) => this.isVisible(el, page) &&
+      (includeHideDesktop || !this.model.element.getHideOnDesktop(el)) &&
+      (includeHideMobile || !this.model.element.getHideOnMobile(el)));
+  }
+
+
+  /**
+   * check if an element is visible in the given page
+   * this means that the element is allways visible or it is visible in this page
+   */
+  isVisible(element: HTMLElement, page: PageData = this.getCurrentPage()) {
+    if (element.classList.contains(Constants.PAGED_CLASS_NAME) && !this.isInPage(element, page)) {
+      return false;
+    }
+    const parentPaged = this.getParentPage(element);
+    return !parentPaged || (this.isInPage(parentPaged, page) && this.isVisible(parentPaged, page));
+  }
+
+
+  getParentPage(element: HTMLElement): HTMLElement {
+    let parent = element.parentElement as HTMLElement;
+    while (parent && !parent.classList.contains(Constants.PAGED_CLASS_NAME)) {
+      parent = parent.parentElement as HTMLElement;
+    }
+    return (parent as HTMLElement | null);
+  }
+
+
+
+  /**
+   * check if an element is in the given page (current page by default)
+   */
+  isInPage(element: HTMLElement, page: PageData = this.getCurrentPage()): boolean {
+    return this.noSectionContent(element).classList.contains(page.name);
+  }
+
+
+  /**
+   * get the pages on which this element is visible
+   */
+  getPagesForElement(element: HTMLElement): PageData[] {
+    element = this.noSectionContent(element);
+    return pageStore.getState().filter(
+        (page) => element.classList.contains(page.name));
+  }
+
+
+  /**
+   * set/get a the visibility of an element in the given page
+   * remove from all pages if visible in all pages
+   */
+  addToPage(element: HTMLElement, page: PageData) {
+    if (this.isInPage(element, page)) {
+      console.error('Element is already in page', element, page);
+      return;
+    }
+    element = this.noSectionContent(element);
+    const pages = this.getPagesForElement(element);
+    if (pages.length + 1 === pageStore.getState().length) {
+      // from visible in some pages to visible everywhere
+      this.removeFromAllPages(element);
+    } else {
+      element.classList.add(page.name);
+      element.classList.add(Constants.PAGED_CLASS_NAME);
+      if (pages.length === 0) {
+        // from visible visible everywhere to visible in some pages
+        if (page.isOpen) {
+          this.view.stageWrapper.removeElement(element);
+        } else {
+          // this.refreshView();
+        }
+      } else if (page.isOpen) {
+        // from visible in some pages to visible in this page
+        console.warn('How is this possible?');
+        this.view.stageWrapper.addElement(element);
+      } else {
+        console.warn('How is this possible?');
+        // this.refreshView();
+      }
+    }
+  }
+
+  removeFromAllPages(element: HTMLElement) {
+    element = this.noSectionContent(element);
+    const wasVisible = this.isVisible(element);
+    const pages = this.getPagesForElement(element);
+    pages.forEach((p) => {
+      element.classList.remove(p.name);
+    });
+
+    // the element is not "paged" anymore
+    element.classList.remove(Constants.PAGED_CLASS_NAME);
+
+    if (!wasVisible) {
+      // update stage store
+      this.view.stageWrapper.addElement(element);
+    } else {
+      // this.refreshView();
+    }
+  }
+
+
+  /**
+   *
+   */
+  removeFromPage(element: HTMLElement, page: PageData) {
+    if (!this.isInPage(element, page)) {
+      console.error('Element is not in page', element, page);
+      return;
+    }
+    element = this.noSectionContent(element);
+    const pages = this.getPagesForElement(element);
+    if (pages.length - 1 === 0) {
+      // from visible in some pages to visible everywhere
+      this.removeFromAllPages(element);
+    } else {
+      if (page.isOpen) {
+        // update stage store
+        this.view.stageWrapper.removeElement(element);
+      } else {
+        // this.refreshView();
+      }
+      element.classList.add(Constants.PAGED_CLASS_NAME);
+      element.classList.remove(page.name);
+    }
+  }
+
+
+  // /**
+  //  * refresh the view
+  //  */
+  // refreshView() {
+  //   const states = this.view.stageWrapper.getSelection();
+  //   const selectedElements = this.model.body.getSelection();
+  //   this.view.contextMenu.redraw(selectedElements);
+  //   this.view.pageTool.redraw(selectedElements);
+  //   this.view.propertyTool.redraw(states);
+  //   this.view.textFormatBar.redraw(selectedElements);
+
+  //   // visibility of elements has changed
+  //   this.view.stageWrapper.reset();
+  // }
+
 
   /**
    * get all the element's styles
@@ -383,8 +540,8 @@ export class SilexElement {
         // candidates are the elements which are visible in the current page, or
         // visible everywhere (not paged)
         if (this.getType(el) != null  &&
-            (this.model.page.isInPage(el) ||
-             this.model.page.getPagesForElement(el).length === 0)) {
+            (this.isInPage(el) ||
+             this.getPagesForElement(el).length === 0)) {
           return el;
         }
       }
@@ -852,12 +1009,12 @@ export class SilexElement {
    * @return           the value for this styleName
    */
   getClassName(element: HTMLElement): string {
-    const pages = this.model.page.getPages();
+    const pages = pageStore.getState();
     return element.className.split(' ')
     .filter((name) => {
       if (name === '' ||
           Constants.SILEX_CLASS_NAMES.indexOf(name) > -1 ||
-          pages.indexOf(name) > -1 ||
+          pages.findIndex(page => page.name === name) > -1 ||
           this.getComponentClassName(element).indexOf(name) > -1 ||
           this.model.property.getSilexId(element) === name) {
         return false;
@@ -876,12 +1033,12 @@ export class SilexElement {
   setClassName(element: HTMLElement, opt_className?: string) {
     // compute class names to keep, no matter what
     // i.e. the one which are in element.className + in Silex internal classes
-    const pages = this.model.page.getPages();
+    const pages = pageStore.getState();
     const classNamesToKeep =
       this.getComponentClassName(element).concat(
         element.className.split(' ').map((name) => {
           if (Constants.SILEX_CLASS_NAMES.indexOf(name) > -1 ||
-              pages.indexOf(name) > -1 ||
+              pages.findIndex(page => page.name === name) > -1 ||
               this.model.property.getSilexId(element) === name) {
             return name;
           }

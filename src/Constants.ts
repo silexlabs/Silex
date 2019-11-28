@@ -67,8 +67,8 @@ export class Constants {
   static PAGE_PREVENT_RENAME = 'data-prevent-rename';
 
    /**
-   * attributes of the page (on one of the invisible links which define pages)
-   */
+    * attributes of the page (on one of the invisible links which define pages)
+    */
   static PAGE_PREVENT_PROPERTIES = 'data-prevent-properties';
 
   /**

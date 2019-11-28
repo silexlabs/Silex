@@ -8,6 +8,7 @@
     "module": "es6",
     "removeComments": false,
     "typeRoots": ["src/types"],
+    "esModuleInterop": true,
   },
   "include": [
     "src/client/App.ts",

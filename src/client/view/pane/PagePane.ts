@@ -16,11 +16,12 @@
  *
  */
 
-import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
+import { SelectableState } from '../../../../node_modules/drag-drop-stage-component/src/ts/Types';
 import { Constants } from '../../../Constants';
 import { Controller, Model } from '../../types';
 import { Dom } from '../../utils/Dom';
 import { PaneBase } from './PaneBase';
+import { pageStore, PageData } from '../../model-new/page-model';
 
 /**
  * on of Silex Editors class
@@ -58,7 +59,7 @@ export class PagePane extends PaneBase {
   /**
    * Array of checkboxes used to add/remove the element from pages
    */
-  pageCheckboxes: Array<{checkbox: HTMLInputElement, pageName: string}> = null;
+  pageCheckboxes: Array<{checkbox: HTMLInputElement, page: PageData}> = null;
 
   constructor(element: HTMLElement, model: Model, controller: Controller) {
 
@@ -153,11 +154,11 @@ export class PagePane extends PaneBase {
     const items = (Array.from(mainContainer.querySelectorAll('.page-container')) as HTMLElement[]);
     this.pageCheckboxes = items.map((item, idx) => {
       const checkbox: HTMLInputElement = item.querySelector('.page-check');
-      const name = this.pageNames[idx++];
+      const page = pageStore.getState()[idx++];
       checkbox.onchange = () => {
-        this.checkPage(name, checkbox);
+        this.checkPage(page, checkbox);
       };
-      return {checkbox, pageName: name};
+      return {checkbox, page};
     });
   }
 
@@ -191,11 +192,11 @@ export class PagePane extends PaneBase {
    * @param pageNames   the names of the pages which appear in the current HTML file
    * @param  currentPageName   the name of the current page
    */
-  redraw(states: SelectableState[], pageNames: string[], currentPageName: string) {
-    super.redraw( states, pageNames, currentPageName);
+  redraw(states: SelectableState[]) {
+    super.redraw(states);
 
     // update page list
-    this.setPages(pageNames);
+    this.setPages(pageStore.getState().map(p => p.name));
 
     // View on mobile checkbox
     Array.from(this.viewOnDeviceEl.querySelectorAll('.view-on-mobile input'))
@@ -237,7 +238,8 @@ export class PagePane extends PaneBase {
         item.checkbox.disabled = false;
 
         // compute common pages
-        const isInPage = this.getCommonProperty(states, (state) => this.model.page.isInPage(state.el, item.pageName));
+        const page = pageStore.getState().find(p => p.name === item.page.name);
+        const isInPage = this.getCommonProperty(states, (state) => this.model.element.isInPage(state.el, page));
 
         // set visibility
         isInNoPage = isInNoPage && isInPage === false;
@@ -303,15 +305,13 @@ export class PagePane extends PaneBase {
   /**
    * callback for checkboxes click event
    * changes the visibility of the current component for the given page
-   * @param pageName   the page for which the visibility changes
-   * @param checkbox   the checkbox clicked
    */
-  checkPage(pageName: string, checkbox: HTMLInputElement) {
+  checkPage(page: PageData, checkbox: HTMLInputElement) {
     // notify the toolbox
     if (checkbox.checked) {
-      this.controller.propertyToolController.addToPage(this.states.map((state) => state.el), pageName);
+      this.controller.propertyToolController.addToPage(this.states.map((state) => state.el), page);
     } else {
-      this.controller.propertyToolController.removeFromPage(this.states.map((state) => state.el), pageName);
+      this.controller.propertyToolController.removeFromPage(this.states.map((state) => state.el), page);
     }
   }
 }

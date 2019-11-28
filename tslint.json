@@ -17,7 +17,8 @@
     "interface-name": false,
     "no-bitwise": false,
     "max-classes-per-file": false,
-    "no-conditional-assignment": false
+    "no-conditional-assignment": false,
+    "semicolon": false
   },
   "rulesDirectory": []
 }

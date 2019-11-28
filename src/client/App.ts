@@ -40,7 +40,6 @@ import { Component } from './model/Component';
 import { SilexElement } from './model/Element';
 import { File } from './model/File';
 import { Head } from './model/Head';
-import { Page } from './model/Page';
 import { Property } from './model/Property';
 import { Controller, Model, View } from './types';
 import { SilexNotification } from './utils/Notification';
@@ -102,7 +101,6 @@ export class App {
       file: null,
       head: null,
       body: null,
-      page: null,
       element: null,
       component: null,
       property: null,
@@ -331,7 +329,6 @@ export class App {
     emptyModel.file = new File(emptyModel, emptyView);
     emptyModel.head = new Head(emptyModel, emptyView);
     emptyModel.body = new Body(emptyModel, emptyView);
-    emptyModel.page = new Page(emptyModel, emptyView);
     emptyModel.element = new SilexElement(emptyModel, emptyView);
     emptyModel.component = new Component(emptyModel, emptyView);
     emptyModel.property = new Property(emptyModel, emptyView);
@@ -363,7 +360,7 @@ export class App {
 }
 
 // tslint:disable:no-string-literal
-window['silex'] = {};
+window['silex'] = window['silex'] || {};
 window['silex']['init'] = () => {
   window['silex']['config'] = Config;
 };

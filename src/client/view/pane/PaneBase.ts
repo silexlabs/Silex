@@ -19,6 +19,7 @@
 import { SelectableState } from '../../../../node_modules/drag-drop-stage-component/src/ts/Types';
 // FIXME: do not find module only in vim: import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
 import { Controller, Model } from '../../types';
+import { pageStore } from '../../model-new/page-model';
 
 export interface InputData {
   selector: string;
@@ -77,10 +78,11 @@ export class PaneBase {
    * @param pageNames   the names of the pages which appear in the current HTML file
    * @param  currentPageName   the name of the current page
    */
-  redraw(states: SelectableState[], pageNames: string[], currentPageName: string) {
+  redraw(states: SelectableState[]) {
     this.states = states;
-    this.pageNames = pageNames;
-    this.currentPageName = currentPageName;
+    this.pageNames = pageStore.getState().map(p => p.name);
+    const currentPage = pageStore.getState().find(p => p.isOpen);
+    this.currentPageName = currentPage ? currentPage.name : null;
   }
 
   /**

@@ -20,6 +20,7 @@ import {Model} from '../types';
 
 import {ControllerBase} from '../controller/ControllerBase';
 import {InvalidationManager} from '../utils/InvalidationManager';
+import { pageStore } from '../model-new/page-model';
 
 /**
  * @param element   container to render the UI
@@ -87,17 +88,16 @@ export class ContextMenu {
    * the selection has changed
    * called by silex.model.Body
    * @param opt_selectedElements the selected elements
-   * @param opt_pageNames   the names of the pages
-   * @param  opt_currentPageName   the name of the current page
    */
-  redraw(opt_selectedElements?: HTMLElement[], opt_pageNames?: string[], opt_currentPageName?: string) {
+  redraw(opt_selectedElements?: HTMLElement[]) {
     this.invalidationManager.callWhenReady(() => {
+      const page = pageStore.getState().find(p => p.isOpen);
       // update page name
-      if (opt_currentPageName) {
+      if (page) {
         const fileInfo = this.model.file.getFileInfo();
         this.currentPageElement.innerHTML = `
           ${fileInfo.path ? fileInfo.path + ' - ' : ''}
-          ${this.model.page.getDisplayName(opt_currentPageName)}
+          ${page.displayName}
         `;
       }
 

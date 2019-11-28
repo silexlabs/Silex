@@ -5,6 +5,7 @@ import { Constants } from '../../Constants';
 import { Body } from '../model/Body';
 import { Controller, Model } from '../types';
 import { SilexNotification } from '../utils/Notification';
+import { pageStore } from '../model-new/page-model';
 
 export class StageWrapper {
   private stage: Stage;
@@ -19,15 +20,18 @@ export class StageWrapper {
    * @param controller  structure which holds
    * the controller instances
    */
-  constructor(protected element: HTMLElement, protected model: Model, protected controller: Controller) {}
+  constructor(protected element: HTMLElement, protected model: Model, protected controller: Controller) {
+    pageStore.subscribe(() => this.reset())
+  }
 
   redraw() {
     if (!this.stage) { return; }
     this.stage.redraw();
   }
   reset() {
+    console.log('reset stage', this.stage, this.model.element.getElementsForPage)
     if (!this.stage) { return; }
-    this.stage.reset(this.model.page.getElementsForPage());
+    this.stage.reset(this.model.element.getElementsForPage());
   }
   resizeWindow() {
     if (!this.stage) { return; }
@@ -128,7 +132,7 @@ export class StageWrapper {
   init(iframe: HTMLIFrameElement) {
     this.cleanup();
     this.stage = new Stage(iframe, [], {
-      isSelectable: ((el) => this.model.page.isVisible(el) && !el.classList.contains(Constants.PREVENT_SELECTABLE_CLASS_NAME)),
+      isSelectable: ((el) => this.model.element.isVisible(el) && !el.classList.contains(Constants.PREVENT_SELECTABLE_CLASS_NAME)),
       isDraggable: ((el) => !el.classList.contains(Constants.PREVENT_DRAGGABLE_CLASS_NAME)),
       isDropZone: ((el) => !el.classList.contains(Constants.PREVENT_DROPPABLE_CLASS_NAME) && el.classList.contains(Constants.TYPE_CONTAINER)),
       isResizeable: ((el) => {

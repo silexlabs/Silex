@@ -17,10 +17,11 @@
  */
 
 import Sortable from '../../../node_modules/sortablejs/modular/sortable.core.esm.js';
-import { PageData } from '../model/Page';
+import { PageData } from '../model-new/page-model';
 import { Controller, Model } from '../types';
 import { Dom } from '../utils/Dom';
 import { InvalidationManager } from '../utils/InvalidationManager';
+import { pageStore, openPage, movePage, deletePage } from '../model-new/page-model';
 
 /**
  *
@@ -32,13 +33,6 @@ import { InvalidationManager } from '../utils/InvalidationManager';
  * the controller instances
  */
 export class PageTool {
-  /**
-   * page list based on what is passed to redraw
-   * array of pages for the opened website
-   * @see silex.model.PageData
-   */
-  pages: PageData[] = [];
-  currentPage: PageData = null;
 
   /**
    * invalidation mechanism
@@ -83,10 +77,12 @@ export class PageTool {
     attach('.add-page', (e) => this.controller.pageToolController.createPage());
     attach('.remove-page', (e) => this.controller.pageToolController.removePage());
     attach('.move-page-up', (e) => {
-      this.controller.pageToolController.movePageTo(this.currentPage.name, this.currentPage.idx - 1);
+      const currentPage = pageStore.getState().find(page => page.isOpen);
+      this.controller.pageToolController.movePageTo(currentPage, currentPage.idx - 1);
     });
     attach('.move-page-down', (e) => {
-      this.controller.pageToolController.movePageTo(this.currentPage.name, this.currentPage.idx + 1);
+      const currentPage = pageStore.getState().find(page => page.isOpen);
+      this.controller.pageToolController.movePageTo(currentPage, currentPage.idx + 1);
     });
   }
 
@@ -94,28 +90,26 @@ export class PageTool {
    * refresh the pages
    * find all pages in the dom
    * @param selectedElements the elements currently selected
-   * @param pageNames   the names of the pages which appear in the current HTML file
-   * @param  currentPageName   the name of the current page
    */
-  redraw(selectedElements: HTMLElement[], pageNames: string[], currentPageName: string) {
+  redraw(selectedElements: HTMLElement[]) {
     this.invalidationManager.callWhenReady(() => {
+      const pages = pageStore.getState();
       // prepare the data for the template
       // make an array with name, displayName, linkName
-      this.pages = pageNames.map((pageName) => this.model.page.getPageData(pageName));
-      this.currentPage = this.model.page.getPageData(currentPageName);
-
+      const templateData = pages
+        .map((p) => Object.assign({
+          className: (p.isOpen ? ' ui-selected' : '') + (p.canDelete ? ' ui-can-delete' : ' ui-can-not-delete') + (p.canProperties ? ' ui-can-properties' : ' ui-can-not-properties') + (p.canMove ? ' ui-can-move' : ' ui-can-not-move'),
+        }, p))
       // refresh the list with new pages
       const container = this.element.getElementsByClassName('page-tool-container')[0];
       const templateHtml = this.element.getElementsByClassName('page-tool-template')[0].innerHTML;
-      container.innerHTML = Dom.renderList(templateHtml, this.pages.map((p) => Object.assign({
-        className: (p.isCurrent ? ' ui-selected' : '') + (p.canDelete ? ' ui-can-delete' : ' ui-can-not-delete') + (p.canProperties ? ' ui-can-properties' : ' ui-can-not-properties') + (p.canMove ? ' ui-can-move' : ' ui-can-not-move'),
-      }, p)));
+      container.innerHTML = Dom.renderList(templateHtml, templateData);
       Sortable.create(container, {
         ghostClass: 'page-ghost',
         animation: 150,
         handle: '.page-handle',
         onSort: (e) => {
-          this.controller.pageToolController.movePageTo(this.pages[e.oldIndex].name, e.newIndex);
+          movePage(pages[e.oldIndex], e.newIndex);
         },
       });
     });
@@ -126,7 +120,7 @@ export class PageTool {
    * @param idx index of the page
    */
   removePageAtIndex(idx: number) {
-    this.controller.pageToolController.removePage(this.pages[idx].name);
+    deletePage(pageStore.getState()[idx]);
   }
 
   /**
@@ -134,7 +128,7 @@ export class PageTool {
    * @param idx index of the page
    */
   editPageAtIndex(idx: number) {
-    this.controller.pageToolController.editPage(this.pages[idx]);
+    this.controller.pageToolController.editPage(pageStore.getState()[idx]);
   }
 
   /**
@@ -144,7 +138,7 @@ export class PageTool {
   setSelectedIndex(idx: number, opt_notify?: boolean) {
     // notify the controller
     if (opt_notify) {
-      this.controller.pageToolController.openPage(this.pages[idx].name);
+      openPage(pageStore.getState()[idx])
     }
   }
 
