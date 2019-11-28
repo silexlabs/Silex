@@ -15,7 +15,7 @@
  *
  */
 
-import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
+import { SelectableState } from '../../../../node_modules/drag-drop-stage-component/src/ts/Types';
 import { Controller, Model } from '../../types';
 import { ColorPicker } from '../ColorPicker';
 import { PaneBase } from './PaneBase';
@@ -96,8 +96,8 @@ export class BorderPane extends PaneBase {
   /**
    * redraw the properties
    */
-  redraw(states: SelectableState[], pageNames: string[], currentPageName: string) {
-    super.redraw(states, pageNames, currentPageName);
+  redraw(states: SelectableState[]) {
+    super.redraw(states);
 
     // border width, this builds a string like "0px 1px 2px 3px"
     // FIXME: should not build a string which is then split in redrawBorderWidth

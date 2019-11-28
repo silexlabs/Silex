@@ -23,6 +23,7 @@ import { SilexNotification } from '../utils/Notification';
 import { FileExplorer } from '../view/dialog/FileExplorer';
 import { LINK_ATTRIBUTES, LinkDialog } from './dialog/LinkDialog';
 import { Menu } from './Menu';
+import { pageStore } from '../model-new/page-model';
 
 /**
  * @class {silex.view.TextFormatBar}
@@ -34,7 +35,6 @@ export class TextFormatBar {
   // store the params
   selectedElements: HTMLElement[] = null;
   pageNames: string[] = null;
-  currentPageName: string = null;
   currentTextBox: HTMLElement = null;
   wysihtmlEditor: WysiHtmlEditor = null;
   linkDialog: LinkDialog;
@@ -297,7 +297,7 @@ export class TextFormatBar {
    */
   openLinkEditor(e: Event) {
     const oldLink = this.getLink();
-    this.linkDialog.open(oldLink, this.pageNames, (_options) => {
+    this.linkDialog.open(oldLink, (_options) => {
       // _options is the same as oldLink when the user canceled the link editor
       // therfore it is undefined when the selection is not a link
       // and it will be undefined when the user clicks "remove link"
@@ -316,15 +316,12 @@ export class TextFormatBar {
   /**
    * redraw the properties
    * @param selectedElements the elements currently selected
-   * @param pageNames   the names of the pages which appear in the current HTML file
-   * @param  currentPageName   the name of the current page
    */
-  redraw(selectedElements: HTMLElement[], pageNames: string[], currentPageName: string) {
+  redraw(selectedElements: HTMLElement[]) {
     // reuse selectedElements in combo box on change
     this.selectedElements = selectedElements;
 
     // reuse pageNames in combo box on change
-    this.pageNames = pageNames;
-    this.currentPageName = currentPageName;
+    this.pageNames = pageStore.getState().map(p => p.name);
   }
 }

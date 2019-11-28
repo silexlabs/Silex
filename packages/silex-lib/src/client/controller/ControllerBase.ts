@@ -26,12 +26,14 @@ import {ClipboardItem} from '../types';
 import {Model} from '../types';
 import {View} from '../types';
 
+import { PageData } from '../model-new/page-model';
 import {FileInfo} from '../types';
 import {InvalidationManager} from '../utils/InvalidationManager';
 import {SilexNotification} from '../utils/Notification';
 import {FileExplorer} from '../view/dialog/FileExplorer';
 import { LinkDialog } from '../view/dialog/LinkDialog';
-import { PageData } from '../model/Page';
+
+import { pageStore, openPage } from '../model-new/page-model';
 
 /**
  * base class for all UI controllers of the controller package
@@ -185,7 +187,7 @@ export class ControllerBase {
     this.model.file.getHtmlAsync((html) => {
       opt_cbk({
         html,
-        page: this.model.page.getCurrentPage(),
+        page: pageStore.getState().find(p => p.isOpen),
         scrollX: scrollData.x,
         scrollY: scrollData.y,
       });
@@ -200,7 +202,7 @@ export class ControllerBase {
 
     return {
       html: this.model.file.getHtml(),
-      page: this.model.page.getCurrentPage(),
+      page: pageStore.getState().find(p => p.isOpen),
       scrollX: scrollData.x,
       scrollY: scrollData.y,
     };
@@ -211,7 +213,7 @@ export class ControllerBase {
    */
   restoreState(state: UndoItem) {
     this.model.file.setHtml(state.html, () => {
-      this.model.page.setCurrentPage(state.page);
+      openPage(state.page);
       this.view.stageWrapper.setScroll({
         x: state.scrollX,
         y: state.scrollY,
@@ -429,9 +431,10 @@ export class ControllerBase {
             const cleanName = 'page-' + newName.replace(/\W+/g, '-').toLowerCase();
 
             // check if a page with this name exists
-            if (!!this.model.page.getPageData(newName)) {
+            const existing = pageStore.getState().find(p => p.name === newName);
+            if (!!existing) {
               // open the new page
-              this.openPage(newName);
+              this.openPage(existing);
               reject('Page already exists');
             } else {
               resolve({name: cleanName, displayName: newName});
@@ -448,12 +451,12 @@ export class ControllerBase {
   /**
    * open a page
    */
-  openPage(pageName: string) {
+  openPage(page: PageData) {
     // undo checkpoint
     this.undoCheckPoint();
 
     // do the action
-    this.model.page.setCurrentPage(pageName);
+    openPage(page);
   }
 
   /**
@@ -495,9 +498,8 @@ export class ControllerBase {
    */
   doAddElement(element: HTMLElement) {
     // only visible on the current page
-    const currentPageName = this.model.page.getCurrentPage();
-    this.model.page.removeFromAllPages(element);
-    this.model.page.addToPage(element, currentPageName);
+    this.model.element.removeFromAllPages(element);
+    this.model.element.addToPage(element, pageStore.getState().find(p => p.isOpen));
 
     // unless one of its parents is in a page already
     this.checkElementVisibility(element);
@@ -515,14 +517,14 @@ export class ControllerBase {
    * its parent
    */
   checkElementVisibility(element: HTMLElement) {
-    const parentPage = this.model.page.getParentPage(element);
+    const parentPage = this.model.element.getParentPage(element);
     if (parentPage != null ) {
       // get all the pages
-      const pages = this.model.page.getPagesForElement(element);
+      const pages = this.model.element.getPagesForElement(element);
 
       // remove the components from the page
       pages.forEach(
-          (pageName) => this.model.page.removeFromPage(element, pageName));
+          (pageName) => this.model.element.removeFromPage(element, pageName));
     }
   }
 
@@ -565,10 +567,8 @@ export class ControllerBase {
    * refresh tools after mobile/desktop editor switch
    */
   refreshView() {
-    const pages = this.model.page.getPages();
-    const currentPage = this.model.page.getCurrentPage();
-    this.view.propertyTool.redraw(this.view.stageWrapper.getSelection(), pages, currentPage);
-    this.view.textFormatBar.redraw(this.model.body.getSelection(), pages, currentPage);
+    this.view.propertyTool.redraw(this.view.stageWrapper.getSelection());
+    this.view.textFormatBar.redraw(this.model.body.getSelection());
     this.view.stageWrapper.redraw();
   }
 

@@ -16,7 +16,7 @@
  *
  */
 
-import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
+import { SelectableState } from '../../../node_modules/drag-drop-stage-component/src/ts/Types';
 import { Constants } from '../../Constants';
 import { Controller, Model } from '../types';
 import { InvalidationManager } from '../utils/InvalidationManager';
@@ -202,16 +202,16 @@ export class PropertyTool {
    * @param pageNames   the names of the pages which appear in the current HTML file
    * @param  currentPageName   the name of the current page
    */
-  redraw(states: SelectableState[], pageNames: string[], currentPageName: string) {
+  redraw(states: SelectableState[]) {
     this.invalidationManager.callWhenReady(() => {
       // refresh panes
-      this.borderPane.redraw(states, pageNames, currentPageName);
-      this.propertyPane.redraw(states, pageNames, currentPageName);
-      this.pagePane.redraw(states, pageNames, currentPageName);
-      this.generalStylePane.redraw(states, pageNames, currentPageName);
-      this.stylePane.redraw(states, pageNames, currentPageName);
-      this.bgPane.redraw(states, pageNames, currentPageName);
-      this.styleEditorPane.redraw(states, pageNames, currentPageName);
+      this.borderPane.redraw(states);
+      this.propertyPane.redraw(states);
+      this.pagePane.redraw(states);
+      this.generalStylePane.redraw(states);
+      this.stylePane.redraw(states);
+      this.bgPane.redraw(states);
+      this.styleEditorPane.redraw(states);
       if (states.length === 1) {
         this.controller.editMenuController.editComponent(states[0].el);
       } else {

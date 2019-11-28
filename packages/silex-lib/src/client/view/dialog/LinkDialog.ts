@@ -15,6 +15,7 @@
  */
 import {LinkData} from '../../types';
 import {SilexNotification} from '../../utils/Notification';
+import { pageStore } from '../../model-new/page-model';
 
 export const LINK_ATTRIBUTES =
     ['href', 'rel', 'target', 'type', 'title', 'download'];
@@ -33,7 +34,7 @@ const DEFAULT_LINK_DATA = {
 export class LinkDialog {
   constructor(private model) {}
 
-  open(linkDataArg: LinkData, pageNames: string[], cbk: (p1: LinkData) => any) {
+  open(linkDataArg: LinkData, cbk: (p1: LinkData) => any) {
     // default values for new link
     const linkData = Object.assign({}, DEFAULT_LINK_DATA, linkDataArg || {});
 
@@ -92,7 +93,7 @@ export class LinkDialog {
 
     // add info about the link
     const dialogBody = document.createElement('div');
-    dialogBody.insertAdjacentHTML('afterbegin', this.getDialogHtml({isExternal, linkData, pageNames}));
+    dialogBody.insertAdjacentHTML('afterbegin', this.getDialogHtml({isExternal, linkData}));
     Array.from(dialogBody.querySelectorAll('.link-editor-tab-label'))
     .forEach((el: HTMLElement) => {
       el.onclick = (_) => {
@@ -106,7 +107,7 @@ export class LinkDialog {
     SilexNotification.setContent(dialogBody);
   }
 
-  getDialogHtml({isExternal, linkData, pageNames}) {
+  getDialogHtml({isExternal, linkData}) {
     return `
       <section class="link-editor">
         <div class="labels">
@@ -137,8 +138,8 @@ export class LinkDialog {
             <label for="link-editor-page">Page</label>
             <select autocomplete="nope" class="tabbed alertify-text page big" id="link-editor-page">
               <option value=""${isExternal ? ' selected ' : ''}></option>
-              ${pageNames.map((page) => `<option value="#!${page}"${        !isExternal && '#!' + page === linkData.href ? ' selected ' : ''} >
-                ${this.model.page.getDisplayName(page)}
+              ${pageStore.getState().map((page) => `<option value="#!${page.name}"${        !isExternal && '#!' + page.name === linkData.href ? ' selected ' : ''} >
+                ${page.displayName}
               </option>`)}
             </select>
           </div>

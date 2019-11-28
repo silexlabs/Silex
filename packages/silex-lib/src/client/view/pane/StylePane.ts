@@ -14,7 +14,7 @@
  * Controls the general params of the selected component
  *
  */
-import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
+import { SelectableState } from '../../../../node_modules/drag-drop-stage-component/src/ts/Types';
 import tagsInput from 'tags-input';
 import { Controller, Model } from '../../types';
 import { PaneBase } from './PaneBase';
@@ -80,8 +80,8 @@ export class StylePane extends PaneBase {
    * @param pageNames   the names of the pages which appear in the current HTML file
    * @param  currentPageName   the name of the current page
    */
-  redraw(states: SelectableState[], pageNames: string[], currentPageName: string) {
-    super.redraw(states, pageNames, currentPageName);
+  redraw(states: SelectableState[]) {
+    super.redraw(states);
 
     // css classes
     const cssClasses = this.getCommonProperty(states, (state) => this.model.element.getClassName(state.el));

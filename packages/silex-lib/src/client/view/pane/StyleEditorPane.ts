@@ -9,7 +9,7 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
-import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
+import { SelectableState } from '../../../../node_modules/drag-drop-stage-component/src/ts/Types';
 import {Constants} from '../../../Constants';
 import {StyleName} from '../../model/Data';
 import {Visibility} from '../../model/Data';
@@ -174,8 +174,8 @@ export class StyleEditorPane extends PaneBase {
       return newSelection;
     } else {
       return newSelection.filter(
-          (el) => this.model.page.isInPage(el) ||
-              this.model.page.getPagesForElement(el).length === 0);
+          (el) => this.model.element.isInPage(el) ||
+              this.model.element.getPagesForElement(el).length === 0);
     }
   }
 
@@ -252,8 +252,8 @@ export class StyleEditorPane extends PaneBase {
    * @param pageNames   the names of the pages which appear in the current HTML file
    * @param  currentPageName   the name of the current page
    */
-  redraw(states: SelectableState[], pageNames: string[], currentPageName: string) {
-    super.redraw(states, pageNames, currentPageName);
+  redraw(states: SelectableState[]) {
+    super.redraw(states);
 
     // mobile mode
     this.mobileOnlyCheckbox.checked = this.isMobile();

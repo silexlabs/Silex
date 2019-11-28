@@ -16,6 +16,7 @@
  */
 import {Model} from '../types';
 import {View} from '../types';
+import { PageData } from '../model-new/page-model';
 
 import {ControllerBase} from './ControllerBase';
 
@@ -31,22 +32,22 @@ super(model, view);
   /**
    * add the provided elements to a given page
    */
-  addToPage(elements: HTMLElement[], opt_name = this.model.page.getCurrentPage()) {
+  addToPage(elements: HTMLElement[], opt_name = this.model.element.getCurrentPage()) {
     // undo checkpoint
     this.undoCheckPoint();
     elements.forEach((element) => {
-      this.model.page.addToPage(element, opt_name);
+      this.model.element.addToPage(element, opt_name);
     });
   }
 
   /**
    * remove the provided elements from a given page
    */
-  removeFromPage(elements: HTMLElement[], name: string) {
+  removeFromPage(elements: HTMLElement[], page: PageData) {
     // undo checkpoint
     this.undoCheckPoint();
     elements.forEach((element) => {
-      this.model.page.removeFromPage(element, name);
+      this.model.element.removeFromPage(element, name);
     });
   }
 
@@ -57,7 +58,7 @@ super(model, view);
     // undo checkpoint
     this.undoCheckPoint();
     elements.forEach((element) => {
-      this.model.page.removeFromAllPages(element);
+      this.model.element.removeFromAllPages(element);
     });
   }
 

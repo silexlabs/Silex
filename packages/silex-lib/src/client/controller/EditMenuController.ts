@@ -24,6 +24,7 @@ import { SilexNotification } from '../utils/Notification';
 import { Style } from '../utils/Style';
 import { FileExplorer } from '../view/dialog/FileExplorer';
 import { ControllerBase } from './ControllerBase';
+import { pageStore } from '../model-new/page-model';
 
 /**
  * @param view  view class which holds the other views
@@ -374,8 +375,7 @@ export class EditMenuController extends ControllerBase {
 
   onEditLink(e: Event, linkData: LinkData, cbk: (p1: LinkData) => any) {
     e.preventDefault();
-    const pages = this.model.page.getPages();
-    this.linkDialog.open(linkData, pages, (_linkData) => {
+    this.linkDialog.open(linkData, (_linkData) => {
       cbk(_linkData);
     });
   }
@@ -394,7 +394,6 @@ export class EditMenuController extends ControllerBase {
     promise
     .then((fileInfo: FileInfo) => {
       if (fileInfo) {
-        console.log('xxxxxxxx', fileInfo)
         cbk([fileInfo]);
       }
     })

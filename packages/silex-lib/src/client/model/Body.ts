@@ -106,19 +106,17 @@ export class Body {
 
   refreshViews(selectedElements = this.getSelection()) {
     // refresh views
-    const pages = this.model.page.getPages();
-    const page = this.model.page.getCurrentPage();
-    this.view.pageTool.redraw(selectedElements, pages, page);
-    this.view.propertyTool.redraw(this.view.stageWrapper.getSelection(), pages, page);
-    this.view.textFormatBar.redraw(selectedElements, pages, page);
-    this.view.contextMenu.redraw(selectedElements, pages, page);
-    this.view.breadCrumbs.redraw(selectedElements, pages, page);
+    this.view.pageTool.redraw(selectedElements);
+    this.view.propertyTool.redraw(this.view.stageWrapper.getSelection());
+    this.view.textFormatBar.redraw(selectedElements);
+    this.view.contextMenu.redraw(selectedElements);
+    this.view.breadCrumbs.redraw(selectedElements);
     this.view.htmlEditor.setSelection(selectedElements);
   }
 
   removeWysihtmlMarkup(root: HTMLElement|Document) {
     Array.from(root.querySelectorAll('.wysihtml-editor')).forEach((el) => {
-      el.classList.remove('wysihtml-sandbox', 'wysihtml-editor');
+      el.classList.remove('wysihtml-sandbox');
       el.removeAttribute('contenteditable');
     });
   }

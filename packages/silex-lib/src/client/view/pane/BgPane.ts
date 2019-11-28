@@ -14,7 +14,7 @@
  * Controls the background params
  *
  */
-import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
+import { SelectableState } from '../../../../node_modules/drag-drop-stage-component/src/ts/Types';
 import { Controller, Model } from '../../types';
 import { ColorPicker } from '../ColorPicker';
 import { PaneBase } from './PaneBase';
@@ -116,8 +116,8 @@ export class BgPane extends PaneBase {
    * @param pageNames   the names of the pages which appear in the current HTML file
    * @param  currentPageName   the name of the current page
    */
-  redraw(states: SelectableState[], pageNames: string[], currentPageName: string) {
-    super.redraw(states, pageNames, currentPageName);
+  redraw(states: SelectableState[]) {
+    super.redraw(states);
 
     // BG color
     if (states.length > 0) {
@@ -220,6 +220,6 @@ export class BgPane extends PaneBase {
 
     // UI needs to be updated (which is prevented in this.styleChanged by the
     // flag iAmSettingTheValue
-    this.redraw(this.states, this.pageNames, this.currentPageName);
+    this.redraw(this.states);
   }
 }

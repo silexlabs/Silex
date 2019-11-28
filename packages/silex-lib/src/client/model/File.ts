@@ -20,6 +20,9 @@ import { Property } from '../model/Property';
 import { CloudStorage } from '../service/CloudStorage';
 import { FileInfo, Model, View } from '../types';
 import { getUiElements } from '../view/UiElements';
+import { getPages } from '../renderer/page-renderer';
+import { initializePages, openPage } from '../model-new/page-model';
+import { startPageObserver, stopPageObserver } from '../observer/page-observer';
 
 /**
  * @param model  model class which holds the other models
@@ -158,16 +161,28 @@ export class File {
     this.model.property.loadProperties(this.contentDocument_);
     this.model.component.initStyles(this.contentDocument_);
 
-    // select the body
-    this.model.body.emptySelection();
+    // update model
+    stopPageObserver();
+    const pages = getPages();
+    initializePages(pages);
+    startPageObserver();
 
-    // update the settings
-    this.model.head.updateFromDom();
+    // restore the stage
+    this.view.stageWrapper.init(this.iFrameElement_);
+
+    openPage(pages[0])
+
 
     // notify the caller
     if (opt_cbk) {
       opt_cbk();
     }
+
+    // select the body
+    this.model.body.emptySelection();
+
+    // update the settings
+    this.model.head.updateFromDom();
 
     // remove publication path for templates
     if (this.isTemplate) {
@@ -175,13 +190,6 @@ export class File {
     }
 
     setTimeout(() => {
-      // restore the stage
-      this.view.stageWrapper.init(this.iFrameElement_);
-
-      // refresh the view
-      const page = this.model.page.getCurrentPage();
-      this.model.page.setCurrentPage(page);
-
       // loading
       getUiElements().stage.classList.remove(File.LOADING_CSS_CLASS);
       getUiElements().stage.classList.remove(File.LOADING_LIGHT_CSS_CLASS);

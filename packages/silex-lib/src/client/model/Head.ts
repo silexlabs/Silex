@@ -258,12 +258,10 @@ export class Head {
     this.view.settingsDialog.setEnableMobile(enable);
 
     // redraw UI
-    const pages = this.model.page.getPages();
-    const page = this.model.page.getCurrentPage();
     const selectedElements = this.model.body.getSelection();
     const states = this.view.stageWrapper.getSelection();
-    this.view.propertyTool.redraw(states, pages, page);
-    this.view.textFormatBar.redraw(selectedElements, pages, page);
+    this.view.propertyTool.redraw(states);
+    this.view.textFormatBar.redraw(selectedElements);
   }
 
   /**
