@@ -1,5 +1,5 @@
 import { getPages, subscribePages, updatePage } from '../api';
-import { createPage, openPage, removePage, renamePage } from '../dom/page-dom'
+import { createPage, openPage, removePage, renamePage, movePage } from '../dom/page-dom'
 import { PageData } from '../flux/page-store'
 
 const unsub = subscribePages(onChange)
@@ -55,5 +55,8 @@ function onUpdatePage(oldPage: PageData, page: PageData) {
   const newPage = renamePage(oldPage, page.name, page.displayName)
   if (!oldPage.isOpen && page.isOpen) {
     openPage(page)
+  }
+  if(oldPage.idx !== page.idx) {
+    movePage(oldPage, page.idx)
   }
 }

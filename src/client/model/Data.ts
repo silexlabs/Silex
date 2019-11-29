@@ -14,7 +14,6 @@
  *   Types for Silex data objects stored in a JSON object in the HTML page of
  * the websites
  */
-export type SilexId = string;
 
 export type StyleName = string;
 
