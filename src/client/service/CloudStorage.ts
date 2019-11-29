@@ -17,9 +17,9 @@ import {FileInfo} from '../types';
  *
  */
 
+import { getUiElements } from '../components/UiElements';
 import {CloudExplorer} from '../externs';
 import {SilexNotification} from '../utils/Notification';
-import { getUiElements } from '../components/UiElements';
 
 /**
  * the Silex CloudStorage service

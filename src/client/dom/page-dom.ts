@@ -1,7 +1,7 @@
 import { Constants } from '../../Constants'
+import { getSiteDocument, getSiteWindow } from '../components/UiElements'
 import { PageData } from '../flux/page-store'
 import { SilexNotification } from '../utils/Notification'
-import { getSiteDocument, getSiteWindow } from '../components/UiElements'
 import { noSectionContent, removeElement } from './element-dom'
 
 /**
@@ -183,7 +183,7 @@ export function renamePage(pageData: PageData, newName: string, newDisplayName: 
   pageData.element.setAttribute('href', '#!' + newName)
   pageData.element.innerHTML = newDisplayName
 
-  if(pageData.name !== newName) {
+  if (pageData.name !== newName) {
     // update the links to this page
     getLinksToPage(pageData)
       .forEach((element) => {

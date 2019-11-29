@@ -14,11 +14,11 @@
  *      and call the main {silex.controller.Controller} controller's methods
  *
  */
+import {FileExplorer} from '../components/dialog/FileExplorer';
 import {Model} from '../types';
 import {View} from '../types';
 import {FileInfo} from '../types';
 import {SilexNotification} from '../utils/Notification';
-import {FileExplorer} from '../components/dialog/FileExplorer';
 import {ControllerBase} from './ControllerBase';
 
 /**

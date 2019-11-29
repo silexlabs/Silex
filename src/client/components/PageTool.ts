@@ -17,11 +17,11 @@
  */
 
 import Sortable from '../../../node_modules/sortablejs/modular/sortable.core.esm.js';
+import { deletePage, getPages, movePage, openPage } from '../api';
 import { PageData } from '../flux/page-store';
 import { Controller, Model } from '../types';
 import { Dom } from '../utils/Dom';
 import { InvalidationManager } from '../utils/InvalidationManager';
-import { getPages, openPage, movePage, deletePage } from '../api';
 
 /**
  *
@@ -77,11 +77,11 @@ export class PageTool {
     attach('.add-page', (e) => this.controller.pageToolController.createPage());
     attach('.remove-page', (e) => this.controller.pageToolController.removePage());
     attach('.move-page-up', (e) => {
-      const currentPage = getPages().find(page => page.isOpen);
+      const currentPage = getPages().find((page) => page.isOpen);
       this.controller.pageToolController.movePageTo(currentPage, currentPage.idx - 1);
     });
     attach('.move-page-down', (e) => {
-      const currentPage = getPages().find(page => page.isOpen);
+      const currentPage = getPages().find((page) => page.isOpen);
       this.controller.pageToolController.movePageTo(currentPage, currentPage.idx + 1);
     });
   }

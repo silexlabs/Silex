@@ -21,6 +21,22 @@
 
 import { detect } from 'detect-browser';
 import { Config } from './ClientConfig';
+import { BreadCrumbs } from './components/BreadCrumbs';
+import { ContextMenu } from './components/ContextMenu';
+import { CssEditor } from './components/dialog/CssEditor';
+import { Dashboard } from './components/dialog/Dashboard';
+import { FileExplorer } from './components/dialog/FileExplorer';
+import { HtmlEditor } from './components/dialog/HtmlEditor';
+import { JsEditor } from './components/dialog/JsEditor';
+import { SettingsDialog } from './components/dialog/SettingsDialog';
+import { Menu } from './components/Menu';
+import { PageTool } from './components/PageTool';
+import { PropertyTool } from './components/PropertyTool';
+import { Splitter } from './components/Splitter';
+import { StageWrapper } from './components/StageWrapper';
+import { TextFormatBar } from './components/TextFormatBar';
+import { getUiElements } from './components/UiElements';
+import { Workspace } from './components/Workspace';
 import { ContextMenuController } from './controller/ContextMenuController';
 import { CssEditorController } from './controller/CssEditorController';
 import { EditMenuController } from './controller/EditMenuController';
@@ -44,22 +60,6 @@ import { Property } from './model/Property';
 import { Controller, Model, View } from './types';
 import { SilexNotification } from './utils/Notification';
 import { Url } from './utils/Url';
-import { BreadCrumbs } from './components/BreadCrumbs';
-import { ContextMenu } from './components/ContextMenu';
-import { CssEditor } from './components/dialog/CssEditor';
-import { Dashboard } from './components/dialog/Dashboard';
-import { FileExplorer } from './components/dialog/FileExplorer';
-import { HtmlEditor } from './components/dialog/HtmlEditor';
-import { JsEditor } from './components/dialog/JsEditor';
-import { SettingsDialog } from './components/dialog/SettingsDialog';
-import { Menu } from './components/Menu';
-import { PageTool } from './components/PageTool';
-import { PropertyTool } from './components/PropertyTool';
-import { Splitter } from './components/Splitter';
-import { StageWrapper } from './components/StageWrapper';
-import { TextFormatBar } from './components/TextFormatBar';
-import { getUiElements } from './components/UiElements';
-import { Workspace } from './components/Workspace';
 
 /**
  * Defines the entry point of Silex client application

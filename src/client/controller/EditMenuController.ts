@@ -16,15 +16,15 @@
  */
 
 import { Constants } from '../../Constants';
+import { getPages } from '../api';
+import { FileExplorer } from '../components/dialog/FileExplorer';
 import { ComponentData, PseudoClass, StyleName, Visibility } from '../model/Data';
 import { DomDirection, SilexElement } from '../model/Element';
 import { ClipboardItem, FileInfo, LinkData, Model, View } from '../types';
 import { InvalidationManager } from '../utils/InvalidationManager';
 import { SilexNotification } from '../utils/Notification';
 import { Style } from '../utils/Style';
-import { FileExplorer } from '../components/dialog/FileExplorer';
 import { ControllerBase } from './ControllerBase';
-import { getPages } from '../api';
 
 /**
  * @param view  view class which holds the other views

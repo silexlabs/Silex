@@ -14,8 +14,8 @@
  */
 
 import {FileInfo} from 'types';
-import { Shortcut } from './utils/Keyboard';
 import {Dashboard} from './components/dialog/Dashboard';
+import { Shortcut } from './utils/Keyboard';
 
 export class Config {
 

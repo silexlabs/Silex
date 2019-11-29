@@ -14,9 +14,9 @@
  *      and call the main {silex.controller.Controller} controller's methods
  *
  */
+import { PageData } from '../flux/page-store';
 import {Model} from '../types';
 import {View} from '../types';
-import { PageData } from '../flux/page-store';
 
 import {ControllerBase} from './ControllerBase';
 

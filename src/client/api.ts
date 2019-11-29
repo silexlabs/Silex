@@ -1,5 +1,5 @@
-import { createStore, Store, combineReducers } from 'redux'
-import { PageData, PageAction, pages } from './flux/page-store'
+import { combineReducers, createStore, Store } from 'redux'
+import { PageAction, PageData, pagesReducer } from './flux/page-store'
 
 interface State {
   pages: PageData[],
@@ -9,7 +9,7 @@ interface State {
 // //////////////////////
 // Create the main store
 export const store: Store<State> = createStore(combineReducers({
-  pages,
+  pagesReducer,
   // elements,
 }))
 
@@ -52,7 +52,7 @@ export const getPages = () => store.getState().pages
 const subscribeTo = (name: string, cbk: (prevState: State, nextState: State) => void): () => void => {
   return store.subscribe(() => {
     const state = store.getState()
-    if(!prevState || state[name] !== prevState[name]) {
+    if (!prevState || state[name] !== prevState[name]) {
       cbk(prevState ? prevState[name] : null, state[name])
     }
   })
@@ -71,8 +71,8 @@ export const subscribePages = (cbk: (prevState: State, nextState: State) => void
 
 // //////////////////////
 // Expose the API to JS
+// tslint:disable:no-string-literal
 window['silex'] = window['silex'] || {};
-window['silex']['page'] = {
+window['silex'].page = {
   initializePages, createPage, deletePage, updatePage, movePage, openPage, getPages,
 }
-

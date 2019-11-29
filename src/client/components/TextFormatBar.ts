@@ -15,15 +15,15 @@
  * box It uses the wysihtml library to change text format
  */
 
+import { getPages } from '../api';
+import { FileExplorer } from '../components/dialog/FileExplorer';
 import { wysihtml, WysiHtmlEditor } from '../externs';
 import { Body } from '../model/Body';
 import { Tracker } from '../service/Tracker';
 import { Controller, LinkData, Model } from '../types';
 import { SilexNotification } from '../utils/Notification';
-import { FileExplorer } from '../components/dialog/FileExplorer';
 import { LINK_ATTRIBUTES, LinkDialog } from './dialog/LinkDialog';
 import { Menu } from './Menu';
-import { getPages } from '../api';
 
 /**
  * @class {silex.view.TextFormatBar}
@@ -322,6 +322,6 @@ export class TextFormatBar {
     this.selectedElements = selectedElements;
 
     // reuse pageNames in combo box on change
-    this.pageNames = getPages().map(p => p.name);
+    this.pageNames = getPages().map((p) => p.name);
   }
 }
