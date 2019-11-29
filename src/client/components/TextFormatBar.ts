@@ -20,7 +20,7 @@ import { Body } from '../model/Body';
 import { Tracker } from '../service/Tracker';
 import { Controller, LinkData, Model } from '../types';
 import { SilexNotification } from '../utils/Notification';
-import { FileExplorer } from '../view/dialog/FileExplorer';
+import { FileExplorer } from '../components/dialog/FileExplorer';
 import { LINK_ATTRIBUTES, LinkDialog } from './dialog/LinkDialog';
 import { Menu } from './Menu';
 import { getPages } from '../api';

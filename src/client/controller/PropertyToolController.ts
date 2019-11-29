@@ -16,7 +16,7 @@
  */
 import {Model} from '../types';
 import {View} from '../types';
-import { PageData } from '../store/page-store';
+import { PageData } from '../flux/page-store';
 
 import {ControllerBase} from './ControllerBase';
 

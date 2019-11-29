@@ -21,7 +21,7 @@ import { Constants } from '../../../Constants';
 import { Controller, Model } from '../../types';
 import { Dom } from '../../utils/Dom';
 import { PaneBase } from './PaneBase';
-import { PageData } from '../../store/page-store';
+import { PageData } from '../../flux/page-store';
 import { getPages } from '../../api';
 /**
  * on of Silex Editors class

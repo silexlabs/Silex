@@ -21,10 +21,10 @@ import { Model, View } from '../types';
 import { Dom } from '../utils/Dom';
 import { Style } from '../utils/Style';
 import { Url } from '../utils/Url';
-import { getUiElements } from '../view/UiElements';
+import { getUiElements } from '../components/UiElements';
 import { StyleData, TemplateName } from './Data';
 import { Property } from './Property';
-import { PageData } from '../store/page-store';
+import { PageData } from '../flux/page-store';
 import { getPages } from '../api';
 
 /**

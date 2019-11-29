@@ -19,8 +19,8 @@ import { CloudStorage } from '../service/CloudStorage';
 import { SilexTasks } from '../service/SilexTasks';
 import { FileInfo, Model, Provider, PublicationOptions, View } from '../types';
 import { SilexNotification } from '../utils/Notification';
-import { FileExplorer } from '../view/dialog/FileExplorer';
-import { PublishDialog } from '../view/dialog/PublishDialog';
+import { FileExplorer } from '../components/dialog/FileExplorer';
+import { PublishDialog } from '../components/dialog/PublishDialog';
 import { ControllerBase } from './ControllerBase';
 
 /**

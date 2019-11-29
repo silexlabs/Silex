@@ -18,8 +18,8 @@ import {SilexTasks} from '../service/SilexTasks';
 import {Model} from '../types';
 import {View} from '../types';
 
-import { ModalDialog } from '../view/ModalDialog';
-import { getUiElements } from '../view/UiElements';
+import { ModalDialog } from '../components/ModalDialog';
+import { getUiElements } from '../components/UiElements';
 import {ControllerBase} from './ControllerBase';
 
 /**
