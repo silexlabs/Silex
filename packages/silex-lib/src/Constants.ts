@@ -9,6 +9,16 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
+export type SilexId = string;
+export enum SilexType {
+  CONTAINER = 'container-element',
+  SECTION = 'section-element',
+  CONTAINER_CONTENT = 'silex-container-content',
+  IMAGE = 'image-element',
+  TEXT = 'text-element',
+  HTML = 'html-element',
+}
+
 /**
  * @fileoverview Constants and types shared between front and back
  *
@@ -96,40 +106,10 @@ export class Constants {
   /**
    * constant for silex element type
    */
-  static TYPE_CONTAINER: string = 'container-element';
-
-  /**
-   * constant for silex element type
-   */
-  static TYPE_SECTION: string = 'section-element';
-
-  /**
-   * constant for the content element of a section, which is also a container
-   */
-  static TYPE_CONTAINER_CONTENT: string = 'silex-container-content';
-
-  /**
-   * constant for silex element type
-   */
-  static TYPE_IMAGE: string = 'image-element';
-
-  /**
-   * constant for silex element type
-   */
-  static TYPE_TEXT: string = 'text-element';
-
-  /**
-   * constant for silex element type
-   */
-  static TYPE_HTML: string = 'html-element';
-
-  /**
-   * constant for silex element type
-   */
   static TYPE_ATTR: string = 'data-silex-type';
 
   static EDITABLE_ELEMENT_TYPES: string[] = [
-    Constants.TYPE_HTML, Constants.TYPE_IMAGE, Constants.TYPE_TEXT,
+    SilexType.HTML, SilexType.IMAGE, SilexType.TEXT,
   ];
 
   /**
@@ -322,14 +302,14 @@ export class Constants {
     Constants.DRAGGING_CLASS_NAME,
     Constants.ELEMENT_CONTENT_CLASS_NAME,
     // useful to hide it when the content container of a section is selected
-    Constants.TYPE_CONTAINER_CONTENT,
+    SilexType.CONTAINER_CONTENT,
     // useful to hide it when the content container of a section is selected
     Constants.WEBSITE_WIDTH_CLASS_NAME,
-    Constants.TYPE_CONTAINER,
-    Constants.TYPE_SECTION,
-    Constants.TYPE_IMAGE,
-    Constants.TYPE_TEXT,
-    Constants.TYPE_HTML,
+    SilexType.CONTAINER,
+    SilexType.SECTION,
+    SilexType.IMAGE,
+    SilexType.TEXT,
+    SilexType.HTML,
     Constants.HIDE_ON_MOBILE,
     Constants.HIDE_ON_DESKTOP,
     Constants.COMPONENT_CLASS_NAME,

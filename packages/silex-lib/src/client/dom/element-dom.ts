@@ -1,8 +1,5 @@
 import { Constants } from '../../Constants'
 
-export function removeElement(element) {
-}
-
 /**
  * for properties or style which are to be applied to elements
  * but in the case of a section not to the internal container, only the whole

@@ -1,7 +1,7 @@
 // import { Stage } from 'drag-drop-stage-component'; // this is not recognized by my IDE
 import { Stage } from '../../../node_modules/drag-drop-stage-component/src/ts/index';
 import { ScrollData, SelectableState } from '../../../node_modules/drag-drop-stage-component/src/ts/Types';
-import { Constants } from '../../Constants';
+import { SilexType, Constants } from '../../Constants';
 import { getPages, subscribePages } from '../api';
 import { Body } from '../model/Body';
 import { Controller, Model } from '../types';
@@ -134,7 +134,7 @@ export class StageWrapper {
     this.stage = new Stage(iframe, [], {
       isSelectable: ((el) => this.model.element.isVisible(el) && !el.classList.contains(Constants.PREVENT_SELECTABLE_CLASS_NAME)),
       isDraggable: ((el) => !el.classList.contains(Constants.PREVENT_DRAGGABLE_CLASS_NAME)),
-      isDropZone: ((el) => !el.classList.contains(Constants.PREVENT_DROPPABLE_CLASS_NAME) && el.classList.contains(Constants.TYPE_CONTAINER)),
+      isDropZone: ((el) => !el.classList.contains(Constants.PREVENT_DROPPABLE_CLASS_NAME) && el.classList.contains(SilexType.CONTAINER)),
       isResizeable: ((el) => {
         // section is not resizeable on mobile
         const isSectionOnMobile = this.controller.stageController.getMobileMode() && this.model.element.isSection(el);
@@ -164,7 +164,7 @@ export class StageWrapper {
       useMinHeight: ((el) => !el.classList.contains(Constants.SILEX_USE_HEIGHT_NOT_MINHEIGHT)),
       canDrop: ((el: HTMLElement, dropZone: HTMLElement) => {
         // sections can only be dropped in the body
-        return !el.classList.contains(Constants.TYPE_SECTION)
+        return !el.classList.contains(SilexType.SECTION)
           || dropZone.tagName.toLowerCase() === 'body';
       }),
       onEdit: () => {
