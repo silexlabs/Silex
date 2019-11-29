@@ -18,7 +18,7 @@ import {Model} from '../types';
 import {View} from '../types';
 import {FileInfo} from '../types';
 import {SilexNotification} from '../utils/Notification';
-import {FileExplorer} from '../view/dialog/FileExplorer';
+import {FileExplorer} from '../components/dialog/FileExplorer';
 import {ControllerBase} from './ControllerBase';
 
 /**

@@ -1,5 +1,5 @@
 import { createStore, Store, combineReducers } from 'redux'
-import { PageData, PageAction, pages } from './store/page-store'
+import { PageData, PageAction, pages } from './flux/page-store'
 
 interface State {
   pages: PageData[],

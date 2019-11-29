@@ -19,10 +19,10 @@
 import { Property } from '../model/Property';
 import { CloudStorage } from '../service/CloudStorage';
 import { FileInfo, Model, View } from '../types';
-import { getUiElements } from '../view/UiElements';
+import { getUiElements } from '../components/UiElements';
 import { initializePages, openPage } from '../api';
-import { startPageObserver, stopPageObserver } from '../observer/page-observer';
-import { getPagesFromDom } from '../renderer/page-renderer';
+import { startPageObserver, stopPageObserver } from '../observers/page-observer';
+import { getPagesFromDom } from '../dom/page-dom';
 
 /**
  * @param model  model class which holds the other models

@@ -17,7 +17,7 @@
  */
 
 import Sortable from '../../../node_modules/sortablejs/modular/sortable.core.esm.js';
-import { PageData } from '../store/page-store';
+import { PageData } from '../flux/page-store';
 import { Controller, Model } from '../types';
 import { Dom } from '../utils/Dom';
 import { InvalidationManager } from '../utils/InvalidationManager';

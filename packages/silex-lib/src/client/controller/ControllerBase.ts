@@ -29,10 +29,10 @@ import {View} from '../types';
 import {FileInfo} from '../types';
 import {InvalidationManager} from '../utils/InvalidationManager';
 import {SilexNotification} from '../utils/Notification';
-import {FileExplorer} from '../view/dialog/FileExplorer';
-import { LinkDialog } from '../view/dialog/LinkDialog';
+import {FileExplorer} from '../components/dialog/FileExplorer';
+import { LinkDialog } from '../components/dialog/LinkDialog';
 
-import { PageData } from '../store/page-store';
+import { PageData } from '../flux/page-store';
 import { getPages, openPage } from '../api';
 
 /**

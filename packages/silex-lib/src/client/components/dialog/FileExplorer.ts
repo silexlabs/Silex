@@ -23,7 +23,7 @@ import {Model} from '../../types';
 import {Controller} from '../../types';
 import {FileInfo} from '../../types';
 import {SilexNotification} from '../../utils/Notification';
-import {ModalDialog} from '../../view/ModalDialog';
+import {ModalDialog} from '../../components/ModalDialog';
 
 /**
  * the Silex FileExplorer class

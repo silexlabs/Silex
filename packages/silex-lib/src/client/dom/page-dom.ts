@@ -1,8 +1,8 @@
 import { Constants } from '../../Constants'
-import { PageData } from '../store/page-store'
+import { PageData } from '../flux/page-store'
 import { SilexNotification } from '../utils/Notification'
-import { getSiteDocument, getSiteWindow } from '../view/UiElements'
-import { noSectionContent, removeElement } from './element-renderer'
+import { getSiteDocument, getSiteWindow } from '../components/UiElements'
+import { noSectionContent, removeElement } from './element-dom'
 
 /**
  * Util function to get page data from name

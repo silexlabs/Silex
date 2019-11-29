@@ -1,5 +1,5 @@
-import { PageData } from '../store/page-store'
-import { createPage, removePage, renamePage, openPage } from '../renderer/page-renderer'
+import { PageData } from '../flux/page-store'
+import { createPage, removePage, renamePage, openPage } from '../dom/page-dom'
 import { getPages, updatePage, subscribePages } from '../api';
 
 const unsub = subscribePages(onChange)

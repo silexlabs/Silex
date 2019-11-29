@@ -22,7 +22,7 @@ import { ClipboardItem, FileInfo, LinkData, Model, View } from '../types';
 import { InvalidationManager } from '../utils/InvalidationManager';
 import { SilexNotification } from '../utils/Notification';
 import { Style } from '../utils/Style';
-import { FileExplorer } from '../view/dialog/FileExplorer';
+import { FileExplorer } from '../components/dialog/FileExplorer';
 import { ControllerBase } from './ControllerBase';
 import { getPages } from '../api';
 
