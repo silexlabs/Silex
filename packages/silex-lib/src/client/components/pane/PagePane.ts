@@ -18,11 +18,11 @@
 
 import { SelectableState } from '../../../../node_modules/drag-drop-stage-component/src/ts/Types';
 import { Constants } from '../../../Constants';
+import { getPages } from '../../api';
+import { PageData } from '../../flux/page-store';
 import { Controller, Model } from '../../types';
 import { Dom } from '../../utils/Dom';
 import { PaneBase } from './PaneBase';
-import { PageData } from '../../flux/page-store';
-import { getPages } from '../../api';
 /**
  * on of Silex Editors class
  * const user edit style of components
@@ -196,7 +196,7 @@ export class PagePane extends PaneBase {
     super.redraw(states);
 
     // update page list
-    this.setPages(getPages().map(p => p.name));
+    this.setPages(getPages().map((p) => p.name));
 
     // View on mobile checkbox
     Array.from(this.viewOnDeviceEl.querySelectorAll('.view-on-mobile input'))
@@ -238,7 +238,7 @@ export class PagePane extends PaneBase {
         item.checkbox.disabled = false;
 
         // compute common pages
-        const page = getPages().find(p => p.name === item.page.name);
+        const page = getPages().find((p) => p.name === item.page.name);
         const isInPage = this.getCommonProperty(states, (state) => this.model.element.isInPage(state.el, page));
 
         // set visibility

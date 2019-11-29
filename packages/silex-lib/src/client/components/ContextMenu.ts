@@ -18,9 +18,9 @@ import {Model} from '../types';
  *
  */
 
+import { getPages } from '../api';
 import {ControllerBase} from '../controller/ControllerBase';
 import {InvalidationManager} from '../utils/InvalidationManager';
-import { getPages } from '../api';
 
 /**
  * @param element   container to render the UI
@@ -91,7 +91,7 @@ export class ContextMenu {
    */
   redraw(opt_selectedElements?: HTMLElement[]) {
     this.invalidationManager.callWhenReady(() => {
-      const page = getPages().find(p => p.isOpen);
+      const page = getPages().find((p) => p.isOpen);
       // update page name
       if (page) {
         const fileInfo = this.model.file.getFileInfo();

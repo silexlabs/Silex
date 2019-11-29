@@ -16,13 +16,13 @@
  *   It has methods to manipulate the File
  */
 
+import { initializePages, openPage } from '../api';
+import { getUiElements } from '../components/UiElements';
+import { getPagesFromDom } from '../dom/page-dom';
 import { Property } from '../model/Property';
+import { startPageObserver, stopPageObserver } from '../observers/page-observer';
 import { CloudStorage } from '../service/CloudStorage';
 import { FileInfo, Model, View } from '../types';
-import { getUiElements } from '../components/UiElements';
-import { initializePages, openPage } from '../api';
-import { startPageObserver, stopPageObserver } from '../observers/page-observer';
-import { getPagesFromDom } from '../dom/page-dom';
 
 /**
  * @param model  model class which holds the other models
@@ -171,7 +171,6 @@ export class File {
     this.view.stageWrapper.init(this.iFrameElement_);
 
     openPage(pages[0])
-
 
     // notify the caller
     if (opt_cbk) {

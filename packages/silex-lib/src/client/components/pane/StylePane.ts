@@ -14,8 +14,8 @@
  * Controls the general params of the selected component
  *
  */
-import { SelectableState } from '../../../../node_modules/drag-drop-stage-component/src/ts/Types';
 import tagsInput from 'tags-input';
+import { SelectableState } from '../../../../node_modules/drag-drop-stage-component/src/ts/Types';
 import { Controller, Model } from '../../types';
 import { PaneBase } from './PaneBase';
 

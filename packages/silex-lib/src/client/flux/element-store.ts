@@ -1,5 +1,8 @@
-import { ScrollData, SelectableState } from '../../../node_modules/drag-drop-stage-component/src/ts/Types';
+import { SelectableState } from '../../../node_modules/drag-drop-stage-component/src/ts/Types';
 
-export SelectableState
+export type ElementData = SelectableState
 
-
+export const elements = (state: ElementData[], action: any) => {
+  switch (action.type) {
+  }
+}

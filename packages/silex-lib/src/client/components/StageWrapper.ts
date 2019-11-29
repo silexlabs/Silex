@@ -2,10 +2,10 @@
 import { Stage } from '../../../node_modules/drag-drop-stage-component/src/ts/index';
 import { ScrollData, SelectableState } from '../../../node_modules/drag-drop-stage-component/src/ts/Types';
 import { Constants } from '../../Constants';
+import { getPages, subscribePages } from '../api';
 import { Body } from '../model/Body';
 import { Controller, Model } from '../types';
 import { SilexNotification } from '../utils/Notification';
-import { getPages, subscribePages } from '../api';
 
 export class StageWrapper {
   private stage: Stage;

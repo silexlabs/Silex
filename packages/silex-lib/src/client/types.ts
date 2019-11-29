@@ -14,27 +14,6 @@
  * Controller structures
  *
  */
-import { ContextMenuController } from './controller/ContextMenuController';
-import { CssEditorController } from './controller/CssEditorController';
-import { EditMenuController } from './controller/EditMenuController';
-import { FileMenuController } from './controller/FileMenuController';
-import { HtmlEditorController } from './controller/HtmlEditorController';
-import { InsertMenuController } from './controller/InsertMenuController';
-import { JsEditorController } from './controller/JsEditorController';
-import { PageToolController } from './controller/PageToolController';
-import { PropertyToolController } from './controller/PropertyToolController';
-import { SettingsDialogController } from './controller/SettingsDialogController';
-import { StageController } from './controller/StageController';
-import { TextEditorController } from './controller/TextEditorController';
-import { ToolMenuController } from './controller/ToolMenuController';
-import { ViewMenuController } from './controller/ViewMenuController';
-import { Body } from './model/Body';
-import { Component } from './model/Component';
-import { ComponentData } from './model/Data';
-import { SilexElement } from './model/Element';
-import { File } from './model/File';
-import { Head } from './model/Head';
-import { Property } from './model/Property';
 import { BreadCrumbs } from './components/BreadCrumbs';
 import { ContextMenu } from './components/ContextMenu';
 import { CssEditor } from './components/dialog/CssEditor';
@@ -50,7 +29,28 @@ import { Splitter } from './components/Splitter';
 import { StageWrapper } from './components/StageWrapper';
 import { TextFormatBar } from './components/TextFormatBar';
 import { Workspace } from './components/Workspace';
+import { ContextMenuController } from './controller/ContextMenuController';
+import { CssEditorController } from './controller/CssEditorController';
+import { EditMenuController } from './controller/EditMenuController';
+import { FileMenuController } from './controller/FileMenuController';
+import { HtmlEditorController } from './controller/HtmlEditorController';
+import { InsertMenuController } from './controller/InsertMenuController';
+import { JsEditorController } from './controller/JsEditorController';
+import { PageToolController } from './controller/PageToolController';
+import { PropertyToolController } from './controller/PropertyToolController';
+import { SettingsDialogController } from './controller/SettingsDialogController';
+import { StageController } from './controller/StageController';
+import { TextEditorController } from './controller/TextEditorController';
+import { ToolMenuController } from './controller/ToolMenuController';
+import { ViewMenuController } from './controller/ViewMenuController';
 import { PageData } from './flux/page-store';
+import { Body } from './model/Body';
+import { Component } from './model/Component';
+import { ComponentData } from './model/Data';
+import { SilexElement } from './model/Element';
+import { File } from './model/File';
+import { Head } from './model/Head';
+import { Property } from './model/Property';
 
 /**
  * warning: if you change that type, also change the default value in LinkDialog

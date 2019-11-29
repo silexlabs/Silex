@@ -1,4 +1,4 @@
-import { createStore, Store, applyMiddleware } from 'redux'
+import { applyMiddleware, createStore, Store } from 'redux'
 
 /**
  * structure to store all of a page data
@@ -28,7 +28,7 @@ export enum PageAction {
 
 const updateIdx = (page: PageData, idx: number) => page.idx !== idx ? Object.assign({}, page, { idx }) : page
 
-export const pages = (state: PageData[] = [], action) => {
+export const pagesReducer = (state: PageData[] = [], action: any) => {
   switch (action.type) {
     case PageAction.INITIALIZE: return action.pages.slice()
     case PageAction.CREATE: return state.concat([action.page]).map(updateIdx)
@@ -39,4 +39,3 @@ export const pages = (state: PageData[] = [], action) => {
     default: return state
   }
 }
-

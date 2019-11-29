@@ -1,6 +1,6 @@
+import { getPages, subscribePages, updatePage } from '../api';
+import { createPage, openPage, removePage, renamePage } from '../dom/page-dom'
 import { PageData } from '../flux/page-store'
-import { createPage, removePage, renamePage, openPage } from '../dom/page-dom'
-import { getPages, updatePage, subscribePages } from '../api';
 
 const unsub = subscribePages(onChange)
 
@@ -15,26 +15,26 @@ export function stopPageObserver() {
 }
 
 function onChange(prev, current) {
-  if(!stoped && current !== prev) {
+  if (!stoped && current !== prev) {
     console.log('Pages state changed', prev, current)
 
     // added pages
     current
-      .filter(page => !prev.find(p => p.name === page.name))
-      .forEach(page => onAddPage(page))
+      .filter((page) => !prev.find((p) => p.name === page.name))
+      .forEach((page) => onAddPage(page))
 
     // removed
     prev
-      .filter(page => !current.find(p => p.name === page.name))
-      .forEach(page => onDeletePage(page))
+      .filter((page) => !current.find((p) => p.name === page.name))
+      .forEach((page) => onDeletePage(page))
 
     // updated
     current
-      .filter(page => {
-        const prevPage = prev.find(p => p.name === page.name)
+      .filter((page) => {
+        const prevPage = prev.find((p) => p.name === page.name)
         return !!prevPage && prevPage !== page
       })
-      .forEach(page => onUpdatePage(prev.find(p => p.name === page.name)
+      .forEach((page) => onUpdatePage(prev.find((p) => p.name === page.name)
 , page))
   }
 }
@@ -53,8 +53,7 @@ function onDeletePage(page: PageData) {
 function onUpdatePage(oldPage: PageData, page: PageData) {
   console.log('Updating page to the DOM')
   const newPage = renamePage(oldPage, page.name, page.displayName)
-  if(!oldPage.isOpen && page.isOpen) {
+  if (!oldPage.isOpen && page.isOpen) {
     openPage(page)
   }
 }
-

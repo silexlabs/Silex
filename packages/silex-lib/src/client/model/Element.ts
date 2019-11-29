@@ -17,15 +17,15 @@
  */
 
 import { Constants } from '../../Constants';
+import { getPages } from '../api';
+import { getUiElements } from '../components/UiElements';
+import { PageData } from '../flux/page-store';
 import { Model, View } from '../types';
 import { Dom } from '../utils/Dom';
 import { Style } from '../utils/Style';
 import { Url } from '../utils/Url';
-import { getUiElements } from '../components/UiElements';
 import { StyleData, TemplateName } from './Data';
 import { Property } from './Property';
-import { PageData } from '../flux/page-store';
-import { getPages } from '../api';
 
 /**
  * direction in the dom
@@ -205,9 +205,8 @@ export class SilexElement {
   getCurrentPage(): PageData {
     const pages = getPages();
     console.log('getCurrentPage', pages)
-    return pages.find(p => p.isOpen);
+    return pages.find((p) => p.isOpen);
   }
-
 
   /**
    * get all elements visible when the given page is opened
@@ -218,7 +217,6 @@ export class SilexElement {
       (includeHideDesktop || !this.model.element.getHideOnDesktop(el)) &&
       (includeHideMobile || !this.model.element.getHideOnMobile(el)));
   }
-
 
   /**
    * check if an element is visible in the given page
@@ -232,7 +230,6 @@ export class SilexElement {
     return !parentPaged || (this.isInPage(parentPaged, page) && this.isVisible(parentPaged, page));
   }
 
-
   getParentPage(element: HTMLElement): HTMLElement {
     let parent = element.parentElement as HTMLElement;
     while (parent && !parent.classList.contains(Constants.PAGED_CLASS_NAME)) {
@@ -241,15 +238,12 @@ export class SilexElement {
     return (parent as HTMLElement | null);
   }
 
-
-
   /**
    * check if an element is in the given page (current page by default)
    */
   isInPage(element: HTMLElement, page: PageData = this.getCurrentPage()): boolean {
     return this.noSectionContent(element).classList.contains(page.name);
   }
-
 
   /**
    * get the pages on which this element is visible
@@ -259,7 +253,6 @@ export class SilexElement {
     return getPages().filter(
         (page) => element.classList.contains(page.name));
   }
-
 
   /**
    * set/get a the visibility of an element in the given page
@@ -315,7 +308,6 @@ export class SilexElement {
     }
   }
 
-
   /**
    *
    */
@@ -341,7 +333,6 @@ export class SilexElement {
     }
   }
 
-
   // /**
   //  * refresh the view
   //  */
@@ -356,7 +347,6 @@ export class SilexElement {
   //   // visibility of elements has changed
   //   this.view.stageWrapper.reset();
   // }
-
 
   /**
    * get all the element's styles
@@ -1015,7 +1005,7 @@ export class SilexElement {
     .filter((name) => {
       if (name === '' ||
           Constants.SILEX_CLASS_NAMES.indexOf(name) > -1 ||
-          pages.findIndex(page => page.name === name) > -1 ||
+          pages.findIndex((page) => page.name === name) > -1 ||
           this.getComponentClassName(element).indexOf(name) > -1 ||
           this.model.property.getSilexId(element) === name) {
         return false;
@@ -1039,7 +1029,7 @@ export class SilexElement {
       this.getComponentClassName(element).concat(
         element.className.split(' ').map((name) => {
           if (Constants.SILEX_CLASS_NAMES.indexOf(name) > -1 ||
-              pages.findIndex(page => page.name === name) > -1 ||
+              pages.findIndex((page) => page.name === name) > -1 ||
               this.model.property.getSilexId(element) === name) {
             return name;
           }

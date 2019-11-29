@@ -26,14 +26,14 @@ import {ClipboardItem} from '../types';
 import {Model} from '../types';
 import {View} from '../types';
 
+import {FileExplorer} from '../components/dialog/FileExplorer';
+import { LinkDialog } from '../components/dialog/LinkDialog';
 import {FileInfo} from '../types';
 import {InvalidationManager} from '../utils/InvalidationManager';
 import {SilexNotification} from '../utils/Notification';
-import {FileExplorer} from '../components/dialog/FileExplorer';
-import { LinkDialog } from '../components/dialog/LinkDialog';
 
-import { PageData } from '../flux/page-store';
 import { getPages, openPage } from '../api';
+import { PageData } from '../flux/page-store';
 
 /**
  * base class for all UI controllers of the controller package
@@ -187,7 +187,7 @@ export class ControllerBase {
     this.model.file.getHtmlAsync((html) => {
       opt_cbk({
         html,
-        page: getPages().find(p => p.isOpen),
+        page: getPages().find((p) => p.isOpen),
         scrollX: scrollData.x,
         scrollY: scrollData.y,
       });
@@ -202,7 +202,7 @@ export class ControllerBase {
 
     return {
       html: this.model.file.getHtml(),
-      page: getPages().find(p => p.isOpen),
+      page: getPages().find((p) => p.isOpen),
       scrollX: scrollData.x,
       scrollY: scrollData.y,
     };
@@ -431,7 +431,7 @@ export class ControllerBase {
             const cleanName = 'page-' + newName.replace(/\W+/g, '-').toLowerCase();
 
             // check if a page with this name exists
-            const existing = getPages().find(p => p.name === newName);
+            const existing = getPages().find((p) => p.name === newName);
             if (!!existing) {
               // open the new page
               this.openPage(existing);
@@ -499,7 +499,7 @@ export class ControllerBase {
   doAddElement(element: HTMLElement) {
     // only visible on the current page
     this.model.element.removeFromAllPages(element);
-    this.model.element.addToPage(element, getPages().find(p => p.isOpen));
+    this.model.element.addToPage(element, getPages().find((p) => p.isOpen));
 
     // unless one of its parents is in a page already
     this.checkElementVisibility(element);

@@ -13,9 +13,9 @@
  * @fileoverview The dialog to edit links
  *
  */
+import { getPages } from '../../api';
 import {LinkData} from '../../types';
 import {SilexNotification} from '../../utils/Notification';
-import { getPages } from '../../api';
 
 export const LINK_ATTRIBUTES =
     ['href', 'rel', 'target', 'type', 'title', 'download'];
