@@ -15,9 +15,10 @@
  *
  */
 import { SelectableState } from '../../../../node_modules/drag-drop-stage-component/src/ts/Types';
-import { Controller, Model } from '../../types';
+import { Controller, Model } from '../../ClientTypes';
 import { ColorPicker } from '../ColorPicker';
 import { PaneBase } from './PaneBase';
+import { ElementData } from '../../../types';
 
 /**
  * on of Silex Editors class
@@ -116,13 +117,13 @@ export class BgPane extends PaneBase {
    * @param pageNames   the names of the pages which appear in the current HTML file
    * @param  currentPageName   the name of the current page
    */
-  redraw(states: SelectableState[]) {
-    super.redraw(states);
+  redraw(selectElements: ElementData[]) {
+    super.redraw(selectElements);
 
     // BG color
-    if (states.length > 0) {
+    if (selectElements.length > 0) {
       this.colorPicker.setDisabled(false);
-      const color = this.getCommonProperty(states, (state) => this.model.element.getStyle(state.el, 'background-color') || '');
+      const color = this.getCommonProperty(selectElements, (el) => el.style['background-color'] || '');
 
       // indeterminate state
       this.colorPicker.setIndeterminate(color == null);
@@ -148,7 +149,7 @@ export class BgPane extends PaneBase {
       this.repeatComboBox.disabled = !enable;
       this.sizeComboBox.disabled = !enable;
     };
-    const bgImage = this.getCommonProperty(states, (state) => this.model.element.getStyle(state.el, 'background-image'));
+    const bgImage = this.getCommonProperty(selectElements, (el) => el.style['background-image']);
 
     if (bgImage != null  && bgImage !== 'none' && bgImage !== '') {
       enableBgComponents(true);
@@ -157,7 +158,7 @@ export class BgPane extends PaneBase {
     }
 
     // bg image attachment
-    const bgImageAttachment = this.getCommonProperty(states, (state) => this.model.element.getStyle(state.el, 'background-attachment'));
+    const bgImageAttachment = this.getCommonProperty(selectElements, (el) => el.style['background-attachment']);
     if (bgImageAttachment) {
       this.attachmentComboBox.value = bgImageAttachment;
     } else {
@@ -165,7 +166,7 @@ export class BgPane extends PaneBase {
     }
 
     // bg image position
-    const bgImagePosition: string = this.getCommonProperty(states, (state) => this.model.element.getStyle(state.el, 'background-position'));
+    const bgImagePosition: string = this.getCommonProperty(selectElements, (el) => el.style['background-position']);
     if (bgImagePosition && bgImagePosition !== '') {
       const hPosition = bgImagePosition.includes('left') ? 'left' : bgImagePosition.includes('right') ? 'right' : bgImagePosition.includes('center') ? 'center' : '';
       const vPosition = bgImagePosition.includes('top') ? 'top' : bgImagePosition.includes('bottom') ? 'bottom' : bgImagePosition.includes('center') ? 'center' : '';
@@ -179,7 +180,7 @@ export class BgPane extends PaneBase {
     }
 
     // bg image repeat
-    const bgImageRepeat = this.getCommonProperty(states, (state) => this.model.element.getStyle(state.el, 'background-repeat'));
+    const bgImageRepeat = this.getCommonProperty(selectElements, (el) => el.style['background-repeat']);
 
     if (bgImageRepeat) {
       this.repeatComboBox.value = bgImageRepeat;
@@ -188,7 +189,7 @@ export class BgPane extends PaneBase {
     }
 
     // bg image size
-    const bgImageSize = this.getCommonProperty(states, (state) => this.model.element.getStyle(state.el, 'background-size'));
+    const bgImageSize = this.getCommonProperty(selectElements, (el) => el.style['background-size']);
 
     if (bgImageSize) {
       this.sizeComboBox.value = bgImageSize;
@@ -220,6 +221,5 @@ export class BgPane extends PaneBase {
 
     // UI needs to be updated (which is prevented in this.styleChanged by the
     // flag iAmSettingTheValue
-    this.redraw(this.states);
   }
 }

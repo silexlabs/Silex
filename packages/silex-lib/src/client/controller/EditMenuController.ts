@@ -15,29 +15,24 @@
  *
  */
 
-import { Constants } from '../../Constants';
-import { getPages } from '../api';
+import { Constants } from '../../constants';
+import { ElementData, ElementId, ElementType, FileInfo } from '../../types';
+import { createElements, deleteElements, getElements, getSite, moveElement, updateElements } from '../api';
 import { FileExplorer } from '../components/dialog/FileExplorer';
-import { ComponentData, PseudoClass, StyleName, Visibility } from '../model/Data';
-import { DomDirection, SilexElement } from '../model/Element';
-import { ClipboardItem, FileInfo, LinkData, Model, View } from '../types';
-import { InvalidationManager } from '../utils/InvalidationManager';
+import { getSiteDocument } from '../components/UiElements';
+import { getDomElement } from '../dom/element-dom';
+import { PseudoClass, StyleName, Visibility } from '../model/Data';
+import { DomDirection } from '../model/Element';
+import { LinkData, Model, View } from '../ClientTypes';
 import { SilexNotification } from '../utils/Notification';
-import { Style } from '../utils/Style';
 import { ControllerBase } from './ControllerBase';
 
 /**
  * @param view  view class which holds the other views
  */
 export class EditMenuController extends ControllerBase {
-  /**
-   * invalidation mechanism
-   */
-  undoredoInvalidationManager: InvalidationManager;
-
   constructor(model: Model, view: View) {
     super(model, view);
-    this.undoredoInvalidationManager = new InvalidationManager(1000);
   }
 
   /**
@@ -45,19 +40,15 @@ export class EditMenuController extends ControllerBase {
    */
   undo() {
     if (ControllerBase.undoHistory.length > 0) {
-      this.model.body.emptySelection();
-      this.undoredoInvalidationManager.callWhenReady(() => {
-        if (ControllerBase.getStatePending === 0 &&
-            ControllerBase.undoHistory.length > 0) {
-          const state = this.getState();
-          ControllerBase.redoHistory.push(state);
-          const prevState = ControllerBase.undoHistory.pop();
-          this.restoreState(prevState);
-          this.view.menu.redraw();
-        } else {
-          requestAnimationFrame(() => this.undo());
-        }
-      });
+      if (ControllerBase.getStatePending === 0 && ControllerBase.undoHistory.length > 0) {
+        const state = this.getState();
+        ControllerBase.redoHistory.push(state);
+        const prevState = ControllerBase.undoHistory.pop();
+        this.restoreState(prevState);
+        this.view.menu.redraw();
+      } else {
+        requestAnimationFrame(() => this.undo());
+      }
     }
   }
 
@@ -66,16 +57,10 @@ export class EditMenuController extends ControllerBase {
    */
   redo() {
     if (ControllerBase.redoHistory.length > 0) {
-      this.model.body.emptySelection();
-      this.undoredoInvalidationManager.callWhenReady(() => {
-        if (ControllerBase.redoHistory.length > 0) {
-          const state = this.getState();
-          ControllerBase.undoHistory.push(state);
-          const prevState = ControllerBase.redoHistory.pop();
-          this.restoreState(prevState);
-          this.view.menu.redraw();
-        }
-      });
+      const state = this.getState();
+      ControllerBase.undoHistory.push(state);
+      const prevState = ControllerBase.redoHistory.pop();
+      this.restoreState(prevState);
     }
   }
 
@@ -83,97 +68,38 @@ export class EditMenuController extends ControllerBase {
    * copy the selection for later paste
    */
   copySelection() {
-    ControllerBase.clipboard = this.cloneItems(this.model.body.getSelection());
-    this.view.contextMenu.redraw();
+    // this is a flat map
+    ControllerBase.clipboard = [];
+    getElements().filter((el) => el.selected)
+      .forEach((el) => ControllerBase.clipboard.concat(this.getClone(el)));
   }
 
   /**
-   * clone the selection and make an array of ClipboardItem
+   * clone elements
+   * reset the ID of the element and its children
+   * the elements have already been added to stage
    */
-  cloneItems(elements: HTMLElement[]): ClipboardItem[] {
-    this.tracker.trackAction('controller-events', 'info', 'copy', 0);
-    const body = this.model.body.getBodyElement();
-
-    // select the sections instead of their container content
-    const clonesData =
-        // clone the elements
-        elements
-            .map((element) => this.model.element.noSectionContent(element))
-            .filter((element) => {
-              // not the body
-              return body !== element;
-                  // // not an element which has a selected parent
-                  // // FIXME: closest is not yet defined on Element in google
-                  // // closure, remove the array access ['closest'] when it is
-                  // && element.parentElement['closest']('.' + Constants.SELECTED_CLASS_NAME) == null;
-            })
-            .map((element) => {
-              return {
-                el: element.cloneNode(true) as HTMLElement,
-                parent: element.parentElement,
-              };
-            });
-    if (clonesData.length > 0) {
-      // reset clipboard
-      const clipboard: ClipboardItem[] = [];
-
-      // add each selected element to the clipboard
-      clonesData.forEach((data) => {
-        // copy the element and its children
-        clipboard.push(this.recursiveCopy(data.el, data.parent));
-      });
-      return clipboard;
-    }
-    return [];
-  }
-
-  /**
-   * make a recursive copy of an element styles/mobileStyle/componentData
-   * the element and its children are already clones of the selection
-   * this is needed to "freez" elements properties
-   * return {silex.types.ClipboardItem}
-   */
-  recursiveCopy(element: HTMLElement, parent: HTMLElement): ClipboardItem {
-    // duplicate the node
-    const res: ClipboardItem = {
-      parent,
-      element,
-      style: this.model.property.getStyle(element, false),
-      mobileStyle: this.model.property.getStyle(element, true),
-      componentData: this.model.property.getElementComponentData(element),
-      children: [],
-    };
-
-    // case of a container, handle its children
-    if (this.model.element.getType(res.element) === Constants.TYPE_CONTAINER) {
-      const len = res.element.childNodes.length;
-      for (let idx = 0; idx < len; idx++) {
-        const el = (res.element.childNodes[idx] as HTMLElement);
-        if (el.nodeType === 1 && this.model.element.getType(el) != null ) {
-          res.children.push(this.recursiveCopy(el, el.parentElement));
-        }
-      }
-    }
-    return res;
+  getClone(element: ElementData, parentId: ElementId = null): ElementData[] {
+    const newId = this.model.property.getNewId(getSiteDocument());
+    return [{
+      ...JSON.parse(JSON.stringify(element)),
+      id: newId,
+      parent: parentId,
+      selected: parentId === null,
+    }]
+    .concat(element
+      .children
+      .map((id) => this.getClone(getElements().find((e) => e.id === id), newId)))
   }
 
   /**
    * paste the previously copied element
    */
-  pasteClipBoard() {
-    const elements = this.pasteItems(ControllerBase.clipboard);
-    // copy again so that we can paste several times (elements will be duplicated again)
-    ControllerBase.clipboard = this.cloneItems(elements);
-  }
-
-  /**
-   * paste the previously copied element
-   */
-  pasteItems(clipboard, toDefaultPostion = true): HTMLElement[] {
+  pasteClipBoard(toDefaultPostion: boolean) {
     this.tracker.trackAction('controller-events', 'info', 'paste', 0);
 
     // default is selected element
-    if (clipboard && clipboard.length > 0) {
+    if (ControllerBase.clipboard && ControllerBase.clipboard.length > 0) {
       // undo checkpoint
       this.undoCheckPoint();
 
@@ -181,84 +107,42 @@ export class EditMenuController extends ControllerBase {
       let offset = 0;
 
       // add to the container
-      const selection = clipboard.map((clipboardItem) => {
-        const element = this.recursivePaste(clipboardItem) as HTMLElement;
-        // reset editable option
-        this.doAddElement(element);
-
-        // add to stage and set the "silex-just-added" css class
-        if (toDefaultPostion) {
-          this.model.element.addElementDefaultPosition(element, offset);
-        } else {
-          this.model.element.addElement(clipboardItem.parent, element, offset + 20);
-        }
+      createElements(ControllerBase.clipboard.map((element: ElementData) => {
+        // apply default size
+        const withDefaults: ElementData = toDefaultPostion ? this.model.element.getDefaults(element) : element;
+        // make element editable and visible on current page
+        const initComplete = this.doAddElement(withDefaults);
         offset += 20;
-
-        // this is what will be added to selection
-        return element;
-      });
-
-      // send the scroll to the target
-      this.view.stageWrapper.center(selection);
-
-      // select the new elements
-      this.model.body.setSelection(selection);
-
-      // refresh elements positions
-      this.view.stageWrapper.redraw();
-
-      return selection;
+        return {
+          ...initComplete,
+          style: {
+            ...initComplete.style,
+            left: initComplete.style.left + offset,
+          },
+        }
+      }));
     }
-  }
-
-  /**
-   * add the stored properties of the element and its children to the dom
-   * also reset the ID of the element and its children
-   * the elements have already been added to stage
-   */
-  recursivePaste(clipboardItem: ClipboardItem): HTMLElement {
-    const element = clipboardItem.element;
-
-    // reset the ID
-    this.model.property.initSilexId(element);
-
-    // add its children
-    clipboardItem.children.forEach((childItem) => {
-      const childElement = this.recursivePaste(childItem);
-    });
-
-    // init component props
-    if (clipboardItem.componentData) {
-      this.model.property.setElementComponentData(element, clipboardItem.componentData);
-
-      // re-render components (makes inner ID change)
-      this.model.component.render(element);
-    }
-
-    // keep the original style
-    this.model.property.setStyle(element, clipboardItem.style, false);
-    this.model.property.setStyle(element, clipboardItem.mobileStyle, true);
-
-    // add this element
-    this.model.element.addElement(clipboardItem.parent, element);
-    return element;
+    // copy again so that we can paste several times (elements will be duplicated again)
+    const clone = [];
+    ControllerBase.clipboard
+      .forEach((el) => clone.concat(this.getClone(el)));
+    ControllerBase.clipboard = clone;
   }
 
   /**
    * duplicate selection
    */
   duplicate() {
-    const copied = this.cloneItems(this.model.body.getSelection());
-    this.pasteItems(copied, false);
+    this.pasteClipBoard(false);
   }
 
   /**
    * remove selected elements from the stage
    */
   removeSelectedElements() {
-    const elements = this.model.body.getSelection();
+    const elements = getElements().filter((el) => el.selected);
 
-    if (!!elements.find((el) => el === this.model.body.getBodyElement())) {
+    if (!!elements.find((el) => el.parent === null)) {
       SilexNotification.alert('Delete elements',
         'Error: I can not delete the body as it is the root container of all your website. <strong>Please select an element to delete it</strong>.',
         () => {},
@@ -272,53 +156,60 @@ export class EditMenuController extends ControllerBase {
             this.undoCheckPoint();
 
             // do remove selected elements
-            elements.forEach((element) => {
-              this.model.element.removeElement(element);
-            });
+            deleteElements(elements);
           }
         }, 'delete', 'cancel',
       );
     }
   }
 
-  isEditable(el: HTMLElement) {
-    return this.model.component.isComponent(el) ||
-      Constants.EDITABLE_ELEMENT_TYPES.indexOf(this.model.element.getType(el)) > -1;
+  isEditable(el: ElementData) {
+    return this.model.component.isComponent(getDomElement(el)) ||
+      Constants.EDITABLE_ELEMENT_TYPES.indexOf(el.type) > -1;
   }
 
   /**
    * edit an {silex.types.Element} element
    * take its type into account and open the corresponding editor
    */
-  editElement(opt_element?: HTMLElement) {
+  editElement(element: ElementData = getElements().filter((el) => this.isEditable(el))[0]) {
     // undo checkpoint
     this.undoCheckPoint();
 
-    // default is selected element
-    const element = opt_element || this.model.body.getSelection().filter((el) => this.isEditable(el))[0];
-    this.model.body.setSelection([element]);
-
     // open the params tab for the components
     // or the editor for the elements
-    if (this.model.component.isComponent(element)) {
+    const domEl = getDomElement(element);
+    if (this.model.component.isComponent(domEl)) {
       this.view.propertyTool.openParamsTab();
     } else {
-      switch (this.model.element.getType(element)) {
-        case Constants.TYPE_TEXT:
+      switch (element.type) {
+        case ElementType.TEXT:
           // open the text editor
           this.view.textFormatBar.startEditing(this.view.fileExplorer);
           // this.view.propertyTool.openStyleTab();
           break;
-        case Constants.TYPE_HTML:
+        case ElementType.HTML:
           this.view.htmlEditor.open();
-          this.view.htmlEditor.setSelection([element]);
+          // this.view.htmlEditor.setSelection([element]);
           break;
-        case Constants.TYPE_IMAGE:
+        case ElementType.IMAGE:
           this.view.fileExplorer.openFile(FileExplorer.IMAGE_EXTENSIONS)
               .then((blob) => {
                 if (blob) {
                   // load the image
-                  this.model.element.setImageUrl(element, blob.absPath);
+                  this.model.element.setImageUrl(domEl, blob.absPath, (naturalWidth: number, naturalHeight: number) => {
+                    updateElements([{
+                      from: element,
+                      to: {
+                        ...element,
+                        style: {
+                          ...element.style,
+                          width: naturalWidth + 'px',
+                          height: naturalHeight + 'px',
+                        },
+                      },
+                    }])
+                  });
                 }
               })
               .catch((error) => {
@@ -334,44 +225,53 @@ export class EditMenuController extends ControllerBase {
   /**
    * @param element, the component to edit
    */
-  editComponent(element: HTMLElement) {
-    if (this.model.component.isComponent(element)) {
-      const componentData = this.model.property.getElementComponentData(element);
-      if (element && this.model.component.prodotypeComponent && componentData) {
-        this.model.component.prodotypeComponent.edit(
-            componentData,
-            this.model.property.getDataSources(),
-            componentData.templateName, {
-              onChange: (newData, html) => {
-                // undo checkpoint
-                this.undoCheckPoint();
+  editComponent(element: ElementData) {
+    if (element && element.data.component) {
+      const componentData = element.data.component;
+      this.model.component.prodotypeComponent.edit(
+        componentData,
+        getSite().dataSources,
+        componentData.templateName, {
+          onChange: (newData, html) => {
+            // undo checkpoint
+            this.undoCheckPoint();
 
-                // remove the editable elements temporarily
-                const tempElements = this.model.component.saveEditableChildren(element);
+            const domEl = getDomElement(element);
 
-                // store the component's data for later edition
-                this.model.property.setElementComponentData(element, newData);
+            // remove the editable elements temporarily
+            const tempElements = this.model.component.saveEditableChildren(domEl);
 
-                // update the element with the new template
-                this.model.element.setInnerHtml(element, html);
-
-                // execute the scripts
-                this.model.component.executeScripts(element);
-
-                // put back the editable elements
-                element.appendChild(tempElements);
+            // store the component's data for later edition
+            updateElements([{
+              from: element,
+              to: {
+                ...element,
+                data: {
+                  ...element.data,
+                  ...newData,
+                },
               },
-              onBrowse: (e, url, cbk) => this.onBrowse(e, url, cbk),
-              onEditLink: (e, linkData, cbk) =>
-                  this.onEditLink(e, linkData, cbk),
-            });
-      }
+            }]);
+
+            // update the element with the new template
+            this.model.element.setInnerHtml(domEl, html);
+
+            // execute the scripts
+            this.model.component.executeScripts(domEl);
+
+            // put back the editable elements
+            domEl.appendChild(tempElements);
+          },
+          onBrowse: (e, url, cbk) => this.onBrowse(e, url, cbk),
+          onEditLink: (e, linkData, cbk) =>
+          this.onEditLink(e, linkData, cbk),
+        });
       this.model.component.componentEditorElement.classList.remove('hide-panel');
-    } else {
-      this.model.component.componentEditorElement.classList.add('hide-panel');
-      this.model.component.resetSelection(Constants.COMPONENT_TYPE);
+      } else {
+        this.model.component.componentEditorElement.classList.add('hide-panel');
+        this.model.component.resetSelection(Constants.COMPONENT_TYPE);
+      }
     }
-  }
 
   onEditLink(e: Event, linkData: LinkData, cbk: (p1: LinkData) => any) {
     e.preventDefault();
@@ -457,35 +357,44 @@ export class EditMenuController extends ControllerBase {
     this.undoCheckPoint();
 
     // get the selected elements
-    const elements = this.model.body.getSelection();
-
-    // sort the array
-    elements.sort((a, b) => {
-      return this.indexOfElement(a) - this.indexOfElement(b);
-    });
+    const elements = getElements().filter((el) => el.selected);
 
     // move all the elements in the selection
-    elements.forEach((element) => {
-      const stylesObj =
-          this.model.file.getContentWindow().getComputedStyle(element);
-      const reverse = stylesObj.position !== 'absolute';
-      if (reverse) {
+    // this is handled by the stage component ?
+    // updateElements(elements
+    //   .filter((element) => element.style.position === 'absolute')
+    //   .map((element) => ({
+    //     from: element,
+    //     to: {
+    //       ...element,
+    //       style: {
+    //         ...element.style,
+    //         top: direction === DomDirection.UP ? element.style.top - QTY
+    //          : direction === DomDirection.DOWN ? element.style.top + QTY
+    //          : element.style.top,
+    //       },
+    //     },
+    //   })));
+
+    // move all the elements in the selection
+    // FIXME: this is handled by the stage component ?
+    elements
+      .filter((element) => element.style.position !== 'absolute')
+      .forEach((element, idx) => {
         switch (direction) {
           case DomDirection.UP:
-            direction = DomDirection.DOWN;
+            moveElement(element, idx - 1);
             break;
           case DomDirection.DOWN:
-            direction = DomDirection.UP;
+            moveElement(element, idx + 1);
             break;
           case DomDirection.TOP:
-            direction = DomDirection.BOTTOM;
+            moveElement(element, 0);
             break;
           case DomDirection.BOTTOM:
-            direction = DomDirection.TOP;
+            moveElement(element, getElements().find((el) => el.id === element.parent).children.length - 1);
             break;
         }
-      }
-      this.model.element.move(element, direction);
     });
   }
 

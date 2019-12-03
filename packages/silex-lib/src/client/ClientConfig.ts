@@ -13,8 +13,6 @@
  * @fileoverview Silex config
  */
 
-import {FileInfo} from 'types';
-import {Dashboard} from './components/dialog/Dashboard';
 import { Shortcut } from './utils/Keyboard';
 
 export class Config {

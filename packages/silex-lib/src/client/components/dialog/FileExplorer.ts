@@ -17,13 +17,12 @@
  *
  */
 
-import {ModalDialog} from '../../components/ModalDialog';
-import {CloudExplorer} from '../../externs';
-import {CloudStorage} from '../../service/CloudStorage';
-import {Model} from '../../types';
-import {Controller} from '../../types';
-import {FileInfo} from '../../types';
-import {SilexNotification} from '../../utils/Notification';
+import { FileInfo } from '../../../types';
+import { Controller, Model } from '../../ClientTypes';
+import { ModalDialog } from '../../components/ModalDialog';
+import { CloudExplorer } from '../../externs';
+import { CloudStorage } from '../../service/CloudStorage';
+import { SilexNotification } from '../../utils/Notification';
 
 /**
  * the Silex FileExplorer class

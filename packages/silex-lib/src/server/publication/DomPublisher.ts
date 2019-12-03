@@ -11,7 +11,7 @@
 
 import * as Path from 'path';
 import { URL } from 'url';
-import { Constants } from '../../Constants';
+import { Constants } from '../../constants';
 import DomTools from '../utils/DomTools';
 
 export interface File {

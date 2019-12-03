@@ -14,12 +14,12 @@
  *      and call the main {silex.controller.Controller} controller's methods
  *
  */
-import { createPage, deletePage, getPages, movePage, updatePage } from '../api';
-import { PageData } from '../flux/page-store';
-import {Model} from '../types';
-import {View} from '../types';
-import {SilexNotification} from '../utils/Notification';
-import {ControllerBase} from './ControllerBase';
+import { LinkType, PageData } from '../../types';
+import { createPages, deletePages, getPages, movePage, updatePages } from '../api';
+import { Model, View } from '../ClientTypes';
+import { SilexNotification } from '../utils/Notification';
+import { ControllerBase } from './ControllerBase';
+
 /**
  * @param view  view class which holds the other views
  */
@@ -39,18 +39,20 @@ export class PageToolController extends ControllerBase {
         this.undoCheckPoint();
 
         // create the page model
-        createPage({
+        createPages([{
           name,
           displayName,
-          previewLink: '#!' + name,
+          link: {
+            type: LinkType.PAGE,
+            value: '#!' + name,
+          },
           element: null,
-          idx: null,
           isOpen: false,
           canDelete: true,
           canRename: true,
           canMove: true,
           canProperties: true,
-        });
+        }]);
 
         // tracking
         this.tracker.trackAction(
@@ -74,12 +76,18 @@ export class PageToolController extends ControllerBase {
 
         // update model
         if (pageData.name !== name && pageData.canRename) {
-          updatePage(pageData, {
-            ...pageData,
-            name,
-            displayName,
-            previewLink: '#!' + name,
-          });
+          updatePages([
+            {
+              from: pageData, to: {
+              ...pageData,
+              name,
+              displayName,
+              link: {
+                type: LinkType.PAGE,
+                value: '#!' + name,
+              },
+            },
+          }]);
         }
       })
       .catch((e) => {
@@ -100,10 +108,23 @@ export class PageToolController extends ControllerBase {
           this.undoCheckPoint();
 
           // update model
-          deletePage(page);
+          this.doRemovePage(page);
         }
       }, 'delete', 'cancel',
     );
+  }
+
+  doRemovePage(pageData: PageData) {
+    const pages = getPages()
+    if (pages.length < 2) {
+      SilexNotification.alert('Error', 'I can not delete this page because <strong>it is the only page</strong>.', () => {})
+    } else {
+      if (pageData.canDelete) {
+        deletePages([pageData])
+      } else {
+        SilexNotification.alert('Error', 'I can not delete this page because <strong>it is a protected page</strong>.', () => {})
+      }
+    }
   }
 
   /**

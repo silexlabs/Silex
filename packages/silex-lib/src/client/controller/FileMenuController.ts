@@ -14,14 +14,16 @@
  *      and call the main {silex.controller.Controller} controller's methods
  *
  */
+import { getSite, updateSite } from '../api';
 import { Config } from '../ClientConfig';
 import { FileExplorer } from '../components/dialog/FileExplorer';
 import { PublishDialog } from '../components/dialog/PublishDialog';
 import { CloudStorage } from '../service/CloudStorage';
 import { SilexTasks } from '../service/SilexTasks';
-import { FileInfo, Model, Provider, PublicationOptions, View } from '../types';
+import { Model, PublicationOptions, View } from '../ClientTypes';
 import { SilexNotification } from '../utils/Notification';
 import { ControllerBase } from './ControllerBase';
+import { FileInfo, Provider } from '../../types';
 
 /**
  * @param view  view class which holds the other views
@@ -183,7 +185,7 @@ export class FileMenuController extends ControllerBase {
 
                     // display and redraw
                     this.fileOperationSuccess(
-                        (this.model.head.getTitle() || 'Untitled website') +
+                        (getSite().title || 'Untitled website') +
                             ' opened.',
                         true);
 
@@ -295,9 +297,12 @@ export class FileMenuController extends ControllerBase {
 
     // save new path when needed and get publication path
     if (publicationPath) {
-      this.model.head.setPublicationPath(publicationPath);
+      updateSite({
+        ...getSite(),
+        publicationPath,
+      });
     }
-    const folder = this.model.head.getPublicationPath();
+    const folder = getSite().publicationPath;
 
     // the file must be saved somewhere because all URLs are made relative
     if (!folder) {
@@ -317,7 +322,7 @@ export class FileMenuController extends ControllerBase {
         cbk(null, 'The file must be saved before I can publish it.', null);
       } else {
         if (!provider) {
-          const providerName = this.model.head.getHostingProvider();
+          const providerName = getSite().hostingProvider;
           if (!providerName) {
             throw new Error(
                 'I need a hosting provider name for this website. And none is configured.');

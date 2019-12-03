@@ -14,11 +14,10 @@
  *      and call the main {silex.controller.Controller} controller's methods
  *
  */
-import {SilexTasks} from '../service/SilexTasks';
-import {Model} from '../types';
-import {View} from '../types';
-import {SilexNotification} from '../utils/Notification';
-import {ControllerBase} from './ControllerBase';
+import { getElements, updateElements } from '../api';
+import { Model, View } from '../ClientTypes';
+import { SilexNotification } from '../utils/Notification';
+import { ControllerBase } from './ControllerBase';
 
 /**
  * @param view  view class which holds the other views
@@ -37,7 +36,6 @@ export class ViewMenuController extends ControllerBase {
 
     // open the editor
     this.view.cssEditor.open();
-    this.view.cssEditor.setValue(this.model.head.getHeadStyle());
   }
 
   /**
@@ -48,11 +46,18 @@ export class ViewMenuController extends ControllerBase {
     this.undoCheckPoint();
 
     // deselect all elements
-    this.emptySelection();
+    updateElements(getElements()
+      .filter((el) => el.selected)
+      .map((el) => ({
+        from: el,
+        to: {
+          ...el,
+          selected: false,
+        },
+      })))
 
     // open the editor
     this.view.htmlEditor.open();
-    this.view.htmlEditor.setValue(this.model.head.getUserHeadTag());
   }
 
   /**
@@ -64,7 +69,6 @@ export class ViewMenuController extends ControllerBase {
 
     // open the editor
     this.view.jsEditor.open();
-    this.view.jsEditor.setValue(this.model.head.getHeadScript());
   }
 
   /**

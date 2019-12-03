@@ -15,9 +15,10 @@
  *
  */
 
-import { SelectableState } from '../../../../node_modules/drag-drop-stage-component/src/ts/Types';
-import { Controller, Model } from '../../types';
+import { ElementData } from '../../../types';
+import { Controller, Model } from '../../ClientTypes';
 import { PaneBase } from './PaneBase';
+import { updateElements, getElements, getStageState } from '../../api';
 
 /**
  * on of Silex Editors class
@@ -51,23 +52,39 @@ export class GeneralStylePane extends PaneBase {
   }
 
   /**
-   * redraw the properties
-   * @param selectedElements the elements currently selected
-   * @param pageNames   the names of the pages which appear in the current HTML file
-   * @param  currentPageName   the name of the current page
+   * User has selected a color
    */
-  redraw(states: SelectableState[]) {
-    super.redraw(states);
+  onInputChanged(event) {
+    const val = !!this.opacityInput.value && this.opacityInput.value !== '' ?
+      Math.max(0, (Math.min(1, parseFloat(this.opacityInput.value) / 100.0)))
+      : null;
 
-    // not available for stage element
-    const statesNoBody = states.filter((data) => data.el !== this.model.body.getBodyElement());
+    updateElements(getElements()
+      .filter((el) => el.selected)
+      .map((el) => ({
+        from: el,
+        to: {
+          ...el,
+          style: {
+            ...el,
+            opacity: val ? val.toString() : null,
+          },
+        },
+      })));
+  }
 
-    if (statesNoBody.length > 0) {
+  /**
+   * redraw the properties
+   */
+  protected redraw(selectedElements: ElementData[]) {
+    super.redraw(selectedElements);
+    const elementsNoBody = selectedElements.filter((el) => !!el.parent);
+    if (elementsNoBody.length > 0) {
       // not stage element only
       this.opacityInput.removeAttribute('disabled');
 
       // get the opacity
-      const opacity = this.getCommonProperty(states, (state) => this.model.element.getStyle(state.el, 'opacity'));
+      const opacity = this.getCommonProperty<ElementData>(elementsNoBody, (el) => el.style.opacity);
 
       if (opacity === null) {
         this.opacityInput.value = '';
@@ -82,24 +99,6 @@ export class GeneralStylePane extends PaneBase {
       // stage element only
       this.opacityInput.value = '';
       this.opacityInput.setAttribute('disabled', 'true');
-    }
-  }
-
-  /**
-   * User has selected a color
-   */
-  onInputChanged(event) {
-    if (this.opacityInput.value && this.opacityInput.value !== '') {
-      let val = parseFloat(this.opacityInput.value) / 100.0;
-      if (val < 0) {
-        val = 0;
-      }
-      if (val > 1) {
-        val = 1;
-      }
-      this.styleChanged('opacity', val.toString());
-    } else {
-      this.styleChanged('opacity');
     }
   }
 }

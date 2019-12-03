@@ -14,7 +14,7 @@
  *
  */
 import { getPages } from '../../api';
-import {LinkData} from '../../types';
+import {LinkData} from '../../ClientTypes';
 import {SilexNotification} from '../../utils/Notification';
 
 export const LINK_ATTRIBUTES =

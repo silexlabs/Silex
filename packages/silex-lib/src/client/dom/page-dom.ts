@@ -1,22 +1,32 @@
-import { Constants } from '../../Constants'
-import { getSiteDocument, getSiteWindow } from '../components/UiElements'
-import { PageData } from '../flux/page-store'
-import { SilexNotification } from '../utils/Notification'
-import { noSectionContent, removeElement } from './element-dom'
+/**
+ * Silex, live web creation
+ * http://projects.silexlabs.org/?/silex/
+ *
+ * Copyright (c) 2012 Silex Labs
+ * http://www.silexlabs.org/
+ *
+ * Silex is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
+ */
+
+import { Constants } from '../../constants';
+import { LinkType, PageData } from '../../types';
+import { getSiteDocument, getSiteWindow } from '../components/UiElements';
+import { noSectionContent } from './element-dom';
 
 /**
  * Util function to get page data from name
  */
 function getPageDataFromElement(element: HTMLAnchorElement): PageData {
   const pageName = element.getAttribute('id')
-  const idx = Array.from(element.parentElement.children)
-    .findIndex((el) => el.getAttribute('id') === pageName)
   return {
     name: pageName,
     displayName: element.innerHTML,
     element,
-    previewLink: '#!' + pageName,
-    idx,
+    link: {
+      type: LinkType.PAGE,
+      value: '#!' + pageName,
+    },
     // isOpen: getCurrentPageName() === pageName,
     isOpen: false,
     canDelete: !element.hasAttribute(Constants.PAGE_PREVENT_DELETE),
@@ -90,55 +100,7 @@ export function openPage(pageData: PageData) {
  * elements which are only in this page should be deleted
  */
 export function removePage(pageData: PageData) {
-  const pages = getPagesFromDom()
-  if (pages.length < 2) {
-    SilexNotification.alert('Error', 'I can not delete this page because <strong>it is the only page</strong>.', () => {})
-  } else {
-    if (pageData.element.hasAttribute(Constants.PAGE_PREVENT_DELETE)) {
-      SilexNotification.alert('Error', 'I can not delete this page because <strong>it is a protected page</strong>.', () => {})
-    } else {
-      // remove the DOM element
-      pageData.element.remove()
-
-      // remove the links to this page
-      // TODO: this should be done by throug the observers
-      // FIXME: handle links in HTML boxes and texts?
-      getLinksToPage(pageData)
-        .forEach((element) => element.removeAttribute('data-silex-href'))
-
-      // remove the elements which were only visible on this page
-      // getElementsForPage(pageData)
-      //   .filter(element => element.classList.contains(Constants.PAGED_CLASS_NAME))
-      //   .forEach((element: HTMLElement) => element.remove())
-      const elementsOnlyOnThisPage = getElementsForPage(pageData)
-        .filter((element) => element.classList.contains(Constants.PAGED_CLASS_NAME))
-        .filter((element) => getPagesForElement(element).length === 0)
-
-      // handle elements which should be deleted
-      if (elementsOnlyOnThisPage.length > 0) {
-        SilexNotification.confirm('Delete elements' , `
-            ${elementsOnlyOnThisPage.length} elements were only visible on this page (${pageData.name}).
-            <br /><ul>
-              <li>Do you want me to <strong>delete these elements?</strong><br /></li>
-              <li>or keep them and <strong>make them visible on all pages?</strong></li>
-            </ul>
-          `,
-          (accept) => {
-            elementsOnlyOnThisPage.forEach((element) => {
-              if (accept) {
-                // remove these elements
-                // FIXME: to be done throug observers with an action
-                removeElement(element)
-              } else {
-                // remove from this page
-                // TODO: should be done through the store and observers
-                removeFromAllPages(element)
-              }
-            })
-          }, 'delete', 'keep')
-      }
-    }
-  }
+  pageData.element.remove()
 }
 
 /**
@@ -162,7 +124,7 @@ export function movePage(pageData: PageData, newPageIdx: number) {
 /**
  * add a page to the dom
  */
-export function createPage(name: string, displayName: string): PageData {
+export function createPage(name: string, displayName: string) {
   const aTag = getSiteDocument().createElement('a')
   aTag.setAttribute('id', name)
   aTag.setAttribute('href', '#!' + name)
@@ -171,33 +133,31 @@ export function createPage(name: string, displayName: string): PageData {
   aTag.innerHTML = displayName
   getSiteDocument().body.querySelector('.' + Constants.PAGES_CONTAINER_CLASS_NAME)
     .appendChild(aTag)
-  return getPageData(name)
 }
 
 /**
  * rename a page in the dom
  */
-export function renamePage(pageData: PageData, newName: string, newDisplayName: string): PageData {
+export function renamePage(pageData: PageData, newName: string, newDisplayName: string) {
   // update the dom element
   pageData.element.setAttribute('id', newName)
   pageData.element.setAttribute('href', '#!' + newName)
   pageData.element.innerHTML = newDisplayName
-
-  if (pageData.name !== newName) {
-    // update the links to this page
-    getLinksToPage(pageData)
-      .forEach((element) => {
-        element.setAttribute('data-silex-href', '#!' + newName)
-      })
-
-    // update the visibility of the compoents
-    Array.from(getSiteDocument().body.getElementsByClassName(pageData.name))
-      .forEach((element) => {
-        element.classList.remove(pageData.name)
-        element.classList.add(newName)
-      })
-  }
-  return getPageData(newName)
+//
+//   if (pageData.name !== newName) {
+//     // update the links to this page
+//     getLinksToPage(pageData)
+//       .forEach((element) => {
+//         element.setAttribute('data-silex-href', '#!' + newName)
+//       })
+//
+//     // update the visibility of the compoents
+//     Array.from(getSiteDocument().body.getElementsByClassName(pageData.name))
+//       .forEach((element) => {
+//         element.classList.remove(pageData.name)
+//         element.classList.add(newName)
+//       })
+//   }
 }
 
 /**
@@ -220,22 +180,22 @@ export function addToPage(element: HTMLElement, pageData: PageData) {
   }
 }
 
-/**
- * remove an element from a page
- */
-export function removeFromPage(element: HTMLElement, pageData: PageData) {
-  if (!isInPage(element, pageData)) {
-    console.error('Element is not in page', element, pageData.displayName)
-  } else {
-    const noSectionEl = noSectionContent(element)
-    if (getPagesForElement(noSectionEl).length - 1 === 0) {
-      // from visible in some pages to visible everywhere
-      removeFromAllPages(noSectionEl)
-    } else {
-      noSectionEl.classList.remove(pageData.name)
-    }
-  }
-}
+// /**
+//  * remove an element from a page
+//  */
+// export function removeFromPage(element: HTMLElement, pageData: PageData) {
+//   if (!isInPage(element, pageData)) {
+//     console.error('Element is not in page', element, pageData.displayName)
+//   } else {
+//     const noSectionEl = noSectionContent(element)
+//     if (getPagesForElement(noSectionEl).length - 1 === 0) {
+//       // from visible in some pages to visible everywhere
+//       removeFromAllPages(noSectionEl)
+//     } else {
+//       noSectionEl.classList.remove(pageData.name)
+//     }
+//   }
+// }
 
 /**
  * remove an element from all the pages

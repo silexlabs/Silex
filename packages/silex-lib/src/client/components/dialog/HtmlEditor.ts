@@ -14,10 +14,12 @@
  * the Silex HTML editor
  *
  */
-import { Constants } from '../../../Constants';
-import {Model} from '../../types';
-import {Controller} from '../../types';
+import { Constants } from '../../../constants';
+import {Model} from '../../ClientTypes';
+import {Controller} from '../../ClientTypes';
 import {CodeEditorBase} from './CodeEditorBase';
+import { getElements, updateSite, getSite } from '../../api';
+import { getDomElement } from '../../dom/element-dom';
 
 /**
  * @class {silex.view.dialog.HtmlEditor}
@@ -39,37 +41,42 @@ export class HtmlEditor extends CodeEditorBase {
    * the content has changed, notify the controler
    */
   contentChanged() {
-    const selection = this.model.body.getSelection();
-    if (selection.length <= 1) {
-      this.controller.htmlEditorController.changed(selection[0], this.getValue());
+    const selection = getElements().filter((el) => el.selected);
+    if (selection.length === 0) {
+      updateSite({
+        ...getSite(),
+        userHeadTag: this.getValue(),
+      });
+    } else {
+      this.model.element.setInnerHtml(getDomElement(selection[0]), this.getValue());
     }
   }
 
-  setSelection(selection) {
-    if (selection.length === 0) {
-      // edit head tag
-      this.setValue(this.model.head.getUserHeadTag());
-      this.setReadOnly(false);
-    } else {
-      if (selection.length === 1) {
-        if (selection[0].tagName.toLowerCase() === 'body') {
-          // edit head tag
-          this.setValue(this.model.head.getUserHeadTag());
-          this.setReadOnly(false);
-        } else {
-          if (this.model.element.getType(selection[0]) ===  Constants.TYPE_HTML) {
-            // edit current selection
-            this.setValue(this.model.element.getInnerHtml(selection[0]));
-            this.setReadOnly(false);
-          } else {
-            this.setValue('-select an HTML box-');
-            this.setReadOnly(true);
-          }
-        }
-      } else {
-        this.setValue('-select an HTML box-');
-        this.setReadOnly(true);
-      }
-    }
-  }
+  // setSelection(selection) {
+  //   if (selection.length === 0) {
+  //     // edit head tag
+  //     this.setValue(this.model.head.getUserHeadTag());
+  //     this.setReadOnly(false);
+  //   } else {
+  //     if (selection.length === 1) {
+  //       if (selection[0].tagName.toLowerCase() === 'body') {
+  //         // edit head tag
+  //         this.setValue(this.model.head.getUserHeadTag());
+  //         this.setReadOnly(false);
+  //       } else {
+  //         if (this.model.element.getType(selection[0]) ===  ElementType.HTML) {
+  //           // edit current selection
+  //           this.setValue(this.model.element.getInnerHtml(selection[0]));
+  //           this.setReadOnly(false);
+  //         } else {
+  //           this.setValue('-select an HTML box-');
+  //           this.setReadOnly(true);
+  //         }
+  //       }
+  //     } else {
+  //       this.setValue('-select an HTML box-');
+  //       this.setReadOnly(true);
+  //     }
+  //   }
+  // }
 }

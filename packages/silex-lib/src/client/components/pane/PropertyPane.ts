@@ -15,10 +15,9 @@
  */
 
 import { SelectableState } from '../../../../node_modules/drag-drop-stage-component/src/ts/Types';
-// FIXME: do not find module only in vim: import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
-import { Constants } from '../../../Constants';
-import { SilexElement } from '../../model/Element';
-import { Controller, Model } from '../../types';
+import { ElementData, ElementType } from '../../../types';
+import { getElements, getStageState, updateElements } from '../../api';
+import { Controller, Model } from '../../ClientTypes';
 import { PaneBase } from './PaneBase';
 
 const FlexWrapSelect = '.flex-wrap-select';
@@ -109,11 +108,16 @@ export class PropertyPane extends PaneBase {
     const input = e.target as HTMLInputElement;
 
     // apply the change to all elements
-    if (input.value !== '') {
-      this.propertyChanged('alt', input.value, null, true);
-    } else {
-      this.propertyChanged('alt', null, null, true);
-    }
+    updateElements(getElements()
+      .map((el) => ({
+        from: el,
+        to: {
+          ...el,
+          alt: input.value,
+        },
+      })))
+
+    this.controller.propertyToolController.undoCheckPoint();
   }
 
   /**
@@ -125,21 +129,24 @@ export class PropertyPane extends PaneBase {
     const input = e.target as HTMLInputElement;
 
     // apply the change to all elements
-    if (input.value !== '') {
-      this.propertyChanged('title', input.value);
-    } else {
-      this.propertyChanged('title');
-    }
+    updateElements(getElements()
+      .map((el) => ({
+        from: el,
+        to: {
+          ...el,
+          title: input.value,
+        },
+      })))
+
+    this.controller.propertyToolController.undoCheckPoint();
   }
 
   /**
    * redraw the properties
-   * @param states the elements currently selected
-   * @param pageNames   the names of the pages which appear in the current HTML file
-   * @param  currentPageName   the name of the current page
    */
-  redraw(states: SelectableState[]) {
-    super.redraw(states);
+  protected redraw(selectedElements: ElementData[]) {
+    super.redraw(selectedElements);
+    const states = selectedElements.map((el) => getStageState(el));
 
     // useful filters
     const statesNoBody: SelectableState[] = states
@@ -153,11 +160,6 @@ export class PropertyPane extends PaneBase {
     const elementsDisplay = this.getCommonProperty(statesNoBody, (state) => this.model.file.getContentWindow().getComputedStyle(state.el).display);
     const elementsPosition = this.getCommonProperty(statesNoBody, (state) => state.metrics.position);
     const bb = this.controller.editMenuController.view.stageWrapper.getSelectionBox(); // FIXME: stageWrapper should be accessible in the views
-
-    // states is selection minus body
-    // this is used in the event attached to the inputs
-    // FIXME: bad design, bad side effect
-    this.states = statesNoBody;
 
     const computeValue = new Map([
       [LeftInput, () => Math.round(bb.left || 0).toString()],
@@ -197,7 +199,7 @@ export class PropertyPane extends PaneBase {
 
       // only images
       const elementsType = this.getCommonProperty(statesNoBody, (state) => this.model.element.getType(state.el));
-      if (elementsType === Constants.TYPE_IMAGE) {
+      if (elementsType === ElementType.IMAGE) {
         this.altInput.disabled = false;
         const alt = this.getCommonProperty(statesNoBody, (state) => {
           const content = this.model.element.getContentNode(state.el);
@@ -224,14 +226,14 @@ export class PropertyPane extends PaneBase {
       }
 
       // containers but no sections
-      if (elementsType === Constants.TYPE_CONTAINER && statesNoBodyNoSection.length) {
+      if (elementsType === ElementType.CONTAINER && statesNoBodyNoSection.length) {
         this.onInputPxChanged(DisplaySelect, computeValue.get(DisplaySelect)());
       } else {
         this.onInputPxChanged(DisplaySelect, null);
       }
 
       // containers but no sections and flex only
-      if (elementsType === Constants.TYPE_CONTAINER && statesNoBodyNoSection.length && elementsDisplay === 'flex') {
+      if (elementsType === ElementType.CONTAINER && statesNoBodyNoSection.length && elementsDisplay === 'flex') {
         this.onInputPxChanged(FlexDirectionSelect, computeValue.get(FlexDirectionSelect)());
         this.onInputPxChanged(AlignItemsSelect, computeValue.get(AlignItemsSelect)());
         this.onInputPxChanged(JustifyContentSelect, computeValue.get(JustifyContentSelect)());
@@ -285,15 +287,5 @@ export class PropertyPane extends PaneBase {
     this.onInputPxChanged(PaddingLeftInput, computeValue.get(PaddingLeftInput)());
     this.onInputPxChanged(PaddingRightInput, computeValue.get(PaddingRightInput)());
     this.onInputPxChanged(PaddingBottomInput, computeValue.get(PaddingBottomInput)());
-  }
-
-  /**
-   * helper for other views,
-   * because views (view.workspace.get/setMobileEditor) is not accessible from
-   * other views
-   * FIXME: find another way to expose isMobileEditor to views
-   */
-  isMobileMode() {
-    return document.body.classList.contains('mobile-mode');
   }
 }

@@ -13,11 +13,12 @@
  * @fileoverview Silex Dashboard / "new website" dialog which displays templates
  *
  */
-import {Controller, FileInfo, Model } from '../../types';
+import { FileInfo } from '../../../types';
+import { Config } from '../../ClientConfig';
+import { Controller, Model } from '../../ClientTypes';
+import { ModalDialog } from '../ModalDialog';
+import { TipOfTheDay } from '../TipOfTheDay';
 
-import {Config} from '../../ClientConfig';
-import {ModalDialog} from '../ModalDialog';
-import {TipOfTheDay} from '../TipOfTheDay';
 
 export interface DashboardOptions {
   openFileInfo: (p1: FileInfo) => any;

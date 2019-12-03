@@ -1,6 +1,3 @@
-import {Controller} from '../types';
-import {Model} from '../types';
-
 /**
  * Silex, live web creation
  * http://projects.silexlabs.org/?/silex/
@@ -11,16 +8,13 @@ import {Model} from '../types';
  * Silex is available under the GPL license
  * http://www.silexlabs.org/silex/silex-licensing/
  */
-
 /**
  * @fileoverview
  * the Silex context menu
  *
  */
-
-import { getPages } from '../api';
-import {ControllerBase} from '../controller/ControllerBase';
-import {InvalidationManager} from '../utils/InvalidationManager';
+import { getElements, getPages } from '../api';
+import { Controller, Model } from '../ClientTypes';
 
 /**
  * @param element   container to render the UI
@@ -36,15 +30,9 @@ export class ContextMenu {
    */
   currentPageElement: HTMLElement;
 
-  /**
-   * invalidation mechanism
-   */
-  invalidationManager: InvalidationManager;
-
   constructor(public element: HTMLElement, public model: Model, public controller: Controller) {
     this.currentPageElement = element.querySelector('.current-page');
     this.currentPageElement.onclick = (e) => this.controller.viewMenuController.showPages();
-    this.invalidationManager = new InvalidationManager(500);
   }
 
   /**
@@ -62,7 +50,7 @@ export class ContextMenu {
       this.controller.editMenuController.copySelection();
     });
     this.element.querySelector('.paste').addEventListener('click', () => {
-      this.controller.editMenuController.pasteClipBoard();
+      this.controller.editMenuController.pasteClipBoard(true);
     });
     this.element.querySelector('.duplicate').addEventListener('click', () => {
       this.controller.editMenuController.duplicate();
@@ -89,54 +77,50 @@ export class ContextMenu {
    * called by silex.model.Body
    * @param opt_selectedElements the selected elements
    */
-  redraw(opt_selectedElements?: HTMLElement[]) {
-    this.invalidationManager.callWhenReady(() => {
-      const page = getPages().find((p) => p.isOpen);
-      // update page name
-      if (page) {
-        const fileInfo = this.model.file.getFileInfo();
-        this.currentPageElement.innerHTML = `
-          ${fileInfo.path ? fileInfo.path + ' - ' : ''}
-          ${page.displayName}
-        `;
-      }
+  private redraw() {
+    const page = getPages().find((p) => p.isOpen);
+    // update page name
+    if (page) {
+      const fileInfo = this.model.file.getFileInfo();
+      this.currentPageElement.innerHTML = `
+        ${fileInfo.path ? fileInfo.path + ' - ' : ''}
+        ${page.displayName}
+      `;
+    }
 
-      // get the selection if not provided
-      if (!opt_selectedElements) {
-        opt_selectedElements = this.model.body.getSelection();
-      }
+    // get the selection
+    const selectedElements = getElements().filter((el) => el.selected)
 
-      // update menu items according to selection
-      if (opt_selectedElements.length === 1 &&
-          opt_selectedElements[0].tagName.toLowerCase() === 'body') {
-        this.element.querySelector('.delete').classList.add('off');
-        this.element.querySelector('.edit').classList.add('off');
-        this.element.querySelector('.copy').classList.add('off');
-        this.element.querySelector('.top').classList.add('off');
-        this.element.querySelector('.up').classList.add('off');
-        this.element.querySelector('.down').classList.add('off');
-        this.element.querySelector('.bottom').classList.add('off');
-        this.element.querySelector('.duplicate').classList.add('off');
-      } else {
-        this.element.querySelector('.delete').classList.remove('off');
-        this.element.querySelector('.edit').classList.remove('off');
-        this.element.querySelector('.copy').classList.remove('off');
-        this.element.querySelector('.top').classList.remove('off');
-        this.element.querySelector('.up').classList.remove('off');
-        this.element.querySelector('.down').classList.remove('off');
-        this.element.querySelector('.bottom').classList.remove('off');
-        this.element.querySelector('.duplicate').classList.remove('off');
-      }
-      if (this.controller.contextMenuController.hasElementsToPaste()) {
-        this.element.querySelector('.paste').classList.remove('off');
-      } else {
-        this.element.querySelector('.paste').classList.add('off');
-      }
-      if (this.controller.stageController.getEnableSticky()) {
-        this.element.querySelector('.sticky-elements').classList.remove('off');
-      } else {
-        this.element.querySelector('.sticky-elements').classList.add('off');
-      }
-    });
+    // update menu items according to selection
+    if (selectedElements.length === 1 && selectedElements[0].parent === null) {
+      // only body is selected
+      this.element.querySelector('.delete').classList.add('off');
+      this.element.querySelector('.edit').classList.add('off');
+      this.element.querySelector('.copy').classList.add('off');
+      this.element.querySelector('.top').classList.add('off');
+      this.element.querySelector('.up').classList.add('off');
+      this.element.querySelector('.down').classList.add('off');
+      this.element.querySelector('.bottom').classList.add('off');
+      this.element.querySelector('.duplicate').classList.add('off');
+    } else {
+      this.element.querySelector('.delete').classList.remove('off');
+      this.element.querySelector('.edit').classList.remove('off');
+      this.element.querySelector('.copy').classList.remove('off');
+      this.element.querySelector('.top').classList.remove('off');
+      this.element.querySelector('.up').classList.remove('off');
+      this.element.querySelector('.down').classList.remove('off');
+      this.element.querySelector('.bottom').classList.remove('off');
+      this.element.querySelector('.duplicate').classList.remove('off');
+    }
+    if (this.controller.contextMenuController.hasElementsToPaste()) {
+      this.element.querySelector('.paste').classList.remove('off');
+    } else {
+      this.element.querySelector('.paste').classList.add('off');
+    }
+    if (this.controller.stageController.getEnableSticky()) {
+      this.element.querySelector('.sticky-elements').classList.remove('off');
+    } else {
+      this.element.querySelector('.sticky-elements').classList.add('off');
+    }
   }
 }

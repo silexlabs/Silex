@@ -14,12 +14,12 @@
  *      and call the main {silex.controller.Controller} controller's methods
  *
  */
-import {FileExplorer} from '../components/dialog/FileExplorer';
-import {Model} from '../types';
-import {View} from '../types';
-import {FileInfo} from '../types';
-import {SilexNotification} from '../utils/Notification';
-import {ControllerBase} from './ControllerBase';
+import { FileInfo } from '../../types';
+import { getSite, updateSite } from '../api';
+import { Model, View } from '../ClientTypes';
+import { FileExplorer } from '../components/dialog/FileExplorer';
+import { SilexNotification } from '../utils/Notification';
+import { ControllerBase } from './ControllerBase';
 
 /**
  * @param view  view class which holds the other views
@@ -46,7 +46,10 @@ export class SettingsDialogController extends ControllerBase {
         .then((fileInfo) => {
           if (fileInfo) {
             // set the new publication path
-            this.model.head.setPublicationPath(fileInfo);
+            updateSite({
+              ...getSite(),
+              publicationPath: fileInfo,
+            })
 
             // notify caller (used to reopen settings)
             if (opt_cbk) {
@@ -78,7 +81,10 @@ export class SettingsDialogController extends ControllerBase {
         .then((fileInfo) => {
           if (fileInfo) {
             // set the new favicon path
-            this.model.head.setFaviconPath(fileInfo.absPath);
+            updateSite({
+              ...getSite(),
+              faviconPath: fileInfo.absPath,
+            })
 
             // notify caller (used to reopen settings)
             if (opt_cbk) {
@@ -110,7 +116,10 @@ export class SettingsDialogController extends ControllerBase {
         .then((fileInfo) => {
           if (fileInfo) {
             // set the new path
-            this.model.head.setThumbnailSocialPath(fileInfo.absPath);
+            updateSite({
+              ...getSite(),
+              thumbnailSocialPath: fileInfo.absPath,
+            })
 
             // notify caller (used to reopen settings)
             if (opt_cbk) {
@@ -131,7 +140,11 @@ export class SettingsDialogController extends ControllerBase {
   toggleEnableMobile() {
     // undo checkpoint
     this.undoCheckPoint();
-    this.model.head.setEnableMobile(!this.model.head.getEnableMobile());
+    const site = getSite();
+    updateSite({
+      ...site,
+      enableMobile: !site.enableMobile,
+    })
   }
 
   /**
@@ -140,7 +153,10 @@ export class SettingsDialogController extends ControllerBase {
   setWebsiteWidth(opt_data?: number) {
     // undo checkpoint
     this.undoCheckPoint();
-    this.model.head.setWebsiteWidth(opt_data);
+    updateSite({
+      ...getSite(),
+      width: opt_data,
+    })
   }
 
   /**
@@ -149,15 +165,19 @@ export class SettingsDialogController extends ControllerBase {
   setPublicationPath(opt_data?: FileInfo) {
     // undo checkpoint
     this.undoCheckPoint();
-    this.model.head.setPublicationPath(opt_data);
+    updateSite({
+      ...getSite(),
+      publicationPath: opt_data,
+    })
   }
 
-  /**
-   * callback for the publication path text input
-   */
-  getPublicationPath(): FileInfo {
-    return this.model.head.getPublicationPath();
-  }
+  // use getSite().*
+  // /**
+  //  * callback for the publication path text input
+  //  */
+  // getPublicationPath(): FileInfo {
+  //   return this.model.head.getPublicationPath();
+  // }
 
   /**
    * callback for the favicon path text input
@@ -165,7 +185,10 @@ export class SettingsDialogController extends ControllerBase {
   setFaviconPath(opt_data?: string) {
     // undo checkpoint
     this.undoCheckPoint();
-    this.model.head.setFaviconPath(opt_data);
+    updateSite({
+      ...getSite(),
+      faviconPath: opt_data,
+    })
   }
 
   /**
@@ -174,7 +197,11 @@ export class SettingsDialogController extends ControllerBase {
   setDescription(opt_data?: string) {
     // undo checkpoint
     this.undoCheckPoint();
-    this.model.head.setDescription(opt_data);
+    updateSite({
+      ...getSite(),
+      description: opt_data,
+    })
+
   }
 
   /**
@@ -183,7 +210,10 @@ export class SettingsDialogController extends ControllerBase {
   setTitleSocial(opt_data?: string) {
     // undo checkpoint
     this.undoCheckPoint();
-    this.model.head.setTitleSocial(opt_data);
+    updateSite({
+      ...getSite(),
+      titleSocial: opt_data,
+    })
   }
 
   /**
@@ -192,7 +222,10 @@ export class SettingsDialogController extends ControllerBase {
   setDescriptionSocial(opt_data?: string) {
     // undo checkpoint
     this.undoCheckPoint();
-    this.model.head.setDescriptionSocial(opt_data);
+    updateSite({
+      ...getSite(),
+      descriptionSocial: opt_data,
+    })
   }
 
   /**
@@ -201,7 +234,10 @@ export class SettingsDialogController extends ControllerBase {
   setThumbnailSocialPath(opt_data?: string) {
     // undo checkpoint
     this.undoCheckPoint();
-    this.model.head.setThumbnailSocialPath(opt_data);
+    updateSite({
+      ...getSite(),
+      thumbnailSocialPath: opt_data,
+    })
   }
 
   /**
@@ -210,6 +246,9 @@ export class SettingsDialogController extends ControllerBase {
   setTwitterSocial(opt_data?: string) {
     // undo checkpoint
     this.undoCheckPoint();
-    this.model.head.setTwitterSocial(opt_data);
+    updateSite({
+      ...getSite(),
+      twitterSocial: opt_data,
+    })
   }
 }

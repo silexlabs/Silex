@@ -15,11 +15,14 @@
  *   Components are based on Silex elements, use Prodotype to render a templates
  */
 
-import { Constants } from '../../Constants';
+import { Constants } from '../../constants';
+import { ElementId, ElementData } from '../../types';
 import { Config } from '../ClientConfig';
 import { Prodotype, ProdotypeCompDef } from '../externs';
-import { Model, View } from '../types';
-import { ComponentData, PseudoClass, PseudoClassData, SilexId, StyleData, StyleName, Visibility } from './Data';
+import { Model, View } from '../ClientTypes';
+import { ComponentData, PseudoClass, PseudoClassData, StyleData, StyleName, Visibility } from './Data';
+import { updateElements } from '../api';
+import { getDomElement } from '../dom/element-dom';
 
 /**
  * Manage Prodotype components and styles
@@ -105,17 +108,35 @@ export class Component {
    * @param element component just added
    * @param templateName type of component
    */
-  initComponent(element: HTMLElement, templateName: string) {
+  initComponent(element: ElementData, templateName: string) {
     const name = this.prodotypeComponent.createName(templateName, this.getProdotypeComponents(Constants.COMPONENT_TYPE));
 
     // for selection (select all components)
-    element.classList.add(Constants.COMPONENT_CLASS_NAME);
+    // element.classList.add(Constants.COMPONENT_CLASS_NAME);
+
+    // apply the style found in component definition
+    // this includes the css class of the component (component-templateName)
+    const cssClasses = this.getCssClasses(templateName) || [];
 
     // for styles (select buttons and apply a style)
-    this.model.property.setElementComponentData(element, {name, templateName});
+    updateElements([{
+      from: element,
+      to: {
+        ...element,
+        classList: element.classList.concat(cssClasses),
+        data: {
+          ...element.data,
+          component: {
+            name,
+            templateName,
+          },
+        },
+      },
+    }]);
+    // this.model.property.setElementComponentData(element, {name, templateName});
 
     // first rendering of the component
-    this.render(element, () => {
+    this.render(getDomElement(element), () => {
       // update the dependencies once the component is added
       this.updateDepenedencies(Constants.COMPONENT_TYPE);
     });
@@ -126,24 +147,16 @@ export class Component {
     if (comp) {
       // apply the style found in component definition
       if (comp.initialCss) {
-        this.applyStyleTo(element, comp.initialCss);
+        // this.applyStyleTo(element, comp.initialCss);
+        throw new Error('not implemented')
       }
 
       // same for the container inside the element (content node)
       if (comp.initialCssContentContainer) {
-        this.applyStyleTo(
-            this.model.element.getContentNode(element),
-            comp.initialCssContentContainer);
-      }
-
-      // same for CSS classes to apply
-      // apply the style found in component definition
-      // this includes the css class of the component (component-templateName)
-      const cssClasses = this.getCssClasses(templateName);
-      if (cssClasses) {
-        const oldClassName = this.model.element.getClassName(element);
-        this.model.element.setClassName(
-            element, oldClassName + ' ' + cssClasses.join(' '));
+        // this.applyStyleTo(
+        //     this.model.element.getContentNode(element),
+        //     comp.initialCssContentContainer);
+        throw new Error('not implemented')
       }
     }
   }
@@ -175,7 +188,7 @@ export class Component {
   /**
    * render a component or style
    */
-  renderType(element: HTMLElement, type: SilexId|StyleName, opt_cbk?: (() => any)) {
+  renderType(element: HTMLElement, type: ElementId|StyleName, opt_cbk?: (() => any)) {
     const data = type === Constants.COMPONENT_TYPE ?
         this.model.property.getElementComponentData(element) :
         this.model.property.getElementStyleData(element);
@@ -243,16 +256,16 @@ export class Component {
     }
   }
 
-  /**
-   * apply a style to an element
-   */
-  applyStyleTo(element: HTMLElement, styleObj: any) {
-    const style = this.model.property.getStyle(element, false) || {};
-    for (const name in styleObj) {
-      style[name] = styleObj[name];
-    }
-    this.model.property.setStyle(element, style, false);
-  }
+  // /**
+  //  * apply a style to an element
+  //  */
+  // applyStyleTo(element: HTMLElement, styleObj: any) {
+  //   const style = this.model.property.getStyle(element, false) || {};
+  //   for (const name in styleObj) {
+  //     style[name] = styleObj[name];
+  //   }
+  //   this.model.property.setStyle(element, style, false);
+  // }
 
   /**
    * @param type, Constants.COMPONENT_TYPE or Constants.STYLE_TYPE
@@ -331,15 +344,16 @@ export class Component {
   }
 
   removeStyle(className) {
-    // remove prodotype data from json object
-    this.model.property.setStyleData(className);
+    throw new Error('not implemented')
+    // // remove prodotype data from json object
+    // this.model.property.setStyleData(className);
 
-    // remove style from dom
-    const head = this.model.head.getHeadElement();
-    const elStyle = head.querySelector(`[data-style-id="${className}"]`);
-    if (elStyle) {
-      head.removeChild(elStyle);
-    }
+    // // remove style from dom
+    // const head = this.model.head.getHeadElement();
+    // const elStyle = head.querySelector(`[data-style-id="${className}"]`);
+    // if (elStyle) {
+    //   head.removeChild(elStyle);
+    // }
   }
 
   /**
@@ -402,7 +416,7 @@ export class Component {
   componentStyleChanged(className: StyleName, pseudoClass: PseudoClass, visibility: Visibility, opt_data?: PseudoClassData, opt_displayName?: string) {
     // create a new style if needed
     // if (className === Constants.EMPTY_STYLE_CLASS_NAME) {
-    //   const textBoxes = this.model.body.getSelection().filter((el) => this.model.element.getType(el) === Constants.TYPE_TEXT);
+    //   const textBoxes = this.model.body.getSelection().filter((el) => this.model.element.getType(el) === ElementType.TEXT);
     //   if (textBoxes.length > 0) {
     //     // create a new unique name
     //     const allStyles = this.getProdotypeComponents(Constants.STYLE_TYPE) as StyleData[];
@@ -436,7 +450,9 @@ export class Component {
       styleData.styles[visibility] = {};
     }
     styleData.styles[visibility][pseudoClass] = newData;
-    this.model.property.setStyleData(className, styleData);
+    throw new Error('not implemented')
+    // FIXME: pour this to the new model?
+    // this.model.property.setStyleData(className, styleData);
 
     // update the head style with the new template
     const head = this.model.head.getHeadElement();

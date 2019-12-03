@@ -15,8 +15,8 @@
  *
  *
  */
-import {Model} from '../../types';
-import {Controller} from '../../types';
+import {Model} from '../../ClientTypes';
+import {Controller} from '../../ClientTypes';
 import {CodeEditorBase} from './CodeEditorBase';
 
 /**

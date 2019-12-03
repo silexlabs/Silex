@@ -1,5 +1,5 @@
-import {Controller} from '../types';
-import {Model} from '../types';
+import {Controller} from '../ClientTypes';
+import {Model} from '../ClientTypes';
 
 /**
  * Silex, live web creation
@@ -18,7 +18,7 @@ import {Model} from '../types';
  *
  */
 
-import { addEvent } from 'drag-drop-stage-component/src/ts/utils/Events';
+import { addEvent } from '../../../node_modules/drag-drop-stage-component/src/ts/utils/Events';
 
 /**
  * @param element   container to render the UI
@@ -138,6 +138,5 @@ export class Splitter {
     }
     this.element.style.right = (right - e.movementX) + 'px';
     this.redraw();
-    this.controller.stageController.resizeWindow();
   }
 }
