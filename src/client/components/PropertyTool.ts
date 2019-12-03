@@ -16,10 +16,7 @@
  *
  */
 
-import { SelectableState } from '../../../node_modules/drag-drop-stage-component/src/ts/Types';
-import { Constants } from '../../Constants';
-import { Controller, Model } from '../types';
-import { InvalidationManager } from '../utils/InvalidationManager';
+import { Controller, Model } from '../ClientTypes';
 import { BgPane } from './pane/BgPane';
 import { BorderPane } from './pane/BorderPane';
 import { GeneralStylePane } from './pane/GeneralStylePane';
@@ -43,10 +40,6 @@ import { StylePane } from './pane/StylePane';
  * the controller instances
  */
 export class PropertyTool {
-  /**
-   * invalidation mechanism
-   */
-  invalidationManager: InvalidationManager;
 
   componentEditorElement: any;
 
@@ -97,9 +90,7 @@ export class PropertyTool {
    */
   styleEditorPane: StyleEditorPane = null;
 
-  constructor(public element: HTMLElement, public model: Model, public controller: Controller) {
-    this.invalidationManager = new InvalidationManager(500);
-  }
+  constructor(public element: HTMLElement, public model: Model, public controller: Controller) {}
 
   /**
    * build the UI
@@ -194,29 +185,5 @@ export class PropertyTool {
     Array.from(this.element.querySelectorAll('.tab'))
     .forEach((el) => el.classList.remove('on'));
     tab.classList.add('on');
-  }
-
-  /**
-   * redraw all panes
-   * @param states the elements currently selected
-   * @param pageNames   the names of the pages which appear in the current HTML file
-   * @param  currentPageName   the name of the current page
-   */
-  redraw(states: SelectableState[]) {
-    this.invalidationManager.callWhenReady(() => {
-      // refresh panes
-      this.borderPane.redraw(states);
-      this.propertyPane.redraw(states);
-      this.pagePane.redraw(states);
-      this.generalStylePane.redraw(states);
-      this.stylePane.redraw(states);
-      this.bgPane.redraw(states);
-      this.styleEditorPane.redraw(states);
-      if (states.length === 1) {
-        this.controller.editMenuController.editComponent(states[0].el);
-      } else {
-        this.model.component.resetSelection(Constants.COMPONENT_TYPE);
-      }
-    });
   }
 }

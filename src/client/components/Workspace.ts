@@ -17,9 +17,8 @@
  *   redraw many times in the same key frame
  *
  */
-import { Controller, Model, View } from '../types';
+import { Controller, Model, View } from '../ClientTypes';
 import { InvalidationManager } from '../utils/InvalidationManager';
-import { SilexNotification } from '../utils/Notification';
 
 /**
  * @param element   container to render the UI
@@ -27,6 +26,7 @@ import { SilexNotification } from '../utils/Notification';
  * the model instances - views use it for read
  * operation only
  * @param controller  controller class which holds the other controllers
+ * FIXME: most of this should go in the flux model
  */
 export class Workspace {
   /**
@@ -93,13 +93,6 @@ export class Workspace {
   }
 
   /**
-   * loading is over, hide the loader
-   */
-  loadingDone() {
-    document.body.classList.remove('loading-pending');
-  }
-
-  /**
    * called by silex.App when the property pannel is resized
    * here we change the number of columns in the pannel
    */
@@ -154,32 +147,5 @@ export class Workspace {
         this.previewWindow.focus();
       }
     }
-  }
-
-  /**
-   * set/get mobile editor mode
-   */
-  setMobileEditor(isMobileEditor: boolean) {
-    if (isMobileEditor) {
-      document.body.classList.add('mobile-mode');
-      if (!this.model.head.getEnableMobile()) {
-        SilexNotification.alert('Mobile editor warning', `
-          Warning: you are entering the mobile editor, but your website is not configured to support it,
-          so you need to open the menu "File", then "Settings" and "Enable mobile version".
-        `, () => {});
-      }
-    } else {
-      document.body.classList.remove('mobile-mode');
-    }
-    this.controller.stageController.resizeWindow();
-    // visibility of elements has changed
-    this.controller.stageController.resetStageModel();
-  }
-
-  /**
-   * set/get mobile editor mode
-   */
-  getMobileEditor(): boolean {
-    return document.body.classList.contains('mobile-mode');
   }
 }

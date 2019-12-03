@@ -1,62 +1,84 @@
-import { getPages, subscribePages, updatePage } from '../api';
-import { createPage, openPage, removePage, renamePage, movePage } from '../dom/page-dom'
-import { PageData } from '../flux/page-store'
+import { LinkType, PageData } from '../../types';
+import { deleteElements, getElements, updateElements } from '../api';
+import { getPagesFromDom, openPage } from '../dom/page-dom';
+import { SilexNotification } from '../utils/Notification';
 
-const unsub = subscribePages(onChange)
-
-let stoped = true
-export function startPageObserver() {
-  console.log('startPageObserver')
-  stoped = false
-}
-export function stopPageObserver() {
-  console.log('stoptPageObserver')
-  stoped = true
+export function onAddPage(page: PageData) {
+  // useless now: console.log('Adding a page to the DOM')
+  // useless now: createPage(page.name, page.displayName)
 }
 
-function onChange(prev, current) {
-  if (!stoped && current !== prev) {
-    console.log('Pages state changed', prev, current)
+export function onDeletePage(page: PageData) {
+  // remove the links to this page
+  // TODO: handle links in HTML boxes and texts?
+  updateElements(getElements()
+    .filter((element) => !!element.link && element.link.type === LinkType.PAGE && element.link.value === page.link.value)
+    .map((element) => ({
+      from: element,
+      to: {
+        ...element,
+        link: null,
+      },
+    })))
 
-    // added pages
-    current
-      .filter((page) => !prev.find((p) => p.name === page.name))
-      .forEach((page) => onAddPage(page))
+  // remove the elements which were only visible on this page
+  // getElementsForPage(page)
+  //   .filter(element => element.classList.contains(Constants.PAGED_CLASS_NAME))
+  //   .forEach((element: HTMLElement) => element.remove())
+  const elementsOnlyOnThisPage = getElements()
+    .filter((element) => element.pageNames.length === 1 && element.pageNames.find((name) => name === page.name))
 
-    // removed
-    prev
-      .filter((page) => !current.find((p) => p.name === page.name))
-      .forEach((page) => onDeletePage(page))
-
-    // updated
-    current
-      .filter((page) => {
-        const prevPage = prev.find((p) => p.name === page.name)
-        return !!prevPage && prevPage !== page
-      })
-      .forEach((page) => onUpdatePage(prev.find((p) => p.name === page.name)
-, page))
+  // handle elements which should be deleted
+  if (elementsOnlyOnThisPage.length > 0) {
+    SilexNotification.confirm('Delete elements' , `
+            ${elementsOnlyOnThisPage.length} elements were only visible on this page (${page.name}).
+            <br /><ul>
+              <li>Do you want me to <strong>delete these elements?</strong><br /></li>
+              <li>or keep them and <strong>make them visible on all pages?</strong></li>
+            </ul>
+          `,
+          (accept) => {
+            if (accept) {
+              elementsOnlyOnThisPage.forEach((element) => {
+                // remove these elements
+                deleteElements([element])
+              })
+            } else {
+              // make it visible in all pages
+              updateElements(elementsOnlyOnThisPage
+                .map((element) => ({
+                  from: element,
+                  to: {
+                    ...element,
+                    pageNames: [],
+                  },
+                })))
+              }
+            }, 'delete', 'keep')
   }
+  // useless now: removePage(page)
 }
 
-function onAddPage(page: PageData) {
-  console.log('Adding a page to the DOM')
-  const newPage = createPage(page.name, page.displayName)
-  updatePage(page, newPage)
-}
-
-function onDeletePage(page: PageData) {
-  console.log('Removing page to the DOM')
-  removePage(page)
-}
-
-function onUpdatePage(oldPage: PageData, page: PageData) {
+export function onUpdatePage(oldPage: PageData, page: PageData) {
   console.log('Updating page to the DOM')
-  const newPage = renamePage(oldPage, page.name, page.displayName)
   if (!oldPage.isOpen && page.isOpen) {
     openPage(page)
   }
-  if(oldPage.idx !== page.idx) {
-    movePage(oldPage, page.idx)
+  if (oldPage.name !== page.name) {
+    // update links to this page
+    // TODO: handle links in HTML boxes and texts?
+    updateElements(getElements()
+      .filter((element) => !!element.link && element.link.type === LinkType.PAGE && element.link.value === page.link.value)
+      .map((element) => ({
+        from: element,
+        to: {
+          ...element,
+          link: page.link,
+        },
+      })))
+    // rename the page in the DOM
+    // useless now: renamePage(oldPage, page.name, page.displayName)
   }
+  // reorder pages
+  // useless now
 }

@@ -15,8 +15,9 @@
  *
  */
 
-import { SelectableState } from '../../../../node_modules/drag-drop-stage-component/src/ts/Types';
-import { Controller, Model } from '../../types';
+import { ElementData } from '../../../types';
+import { getElements, updateElements } from '../../api';
+import { Controller, Model } from '../../ClientTypes';
 import { ColorPicker } from '../ColorPicker';
 import { PaneBase } from './PaneBase';
 
@@ -96,13 +97,13 @@ export class BorderPane extends PaneBase {
   /**
    * redraw the properties
    */
-  redraw(states: SelectableState[]) {
-    super.redraw(states);
+  redraw(selectedElements: ElementData[]) {
+    super.redraw(selectedElements);
 
     // border width, this builds a string like "0px 1px 2px 3px"
     // FIXME: should not build a string which is then split in redrawBorderWidth
-    const borderWidth = this.getCommonProperty(states, (state) => {
-      const w = this.model.element.getStyle(state.el, 'border-width');
+    const borderWidth = this.getCommonProperty<ElementData>(selectedElements, (el) => {
+      const w = el.style['border-width'];
       if (w && w !== '') {
         return w;
       } else {
@@ -113,13 +114,13 @@ export class BorderPane extends PaneBase {
     // display width or reset borders if width is null
     if (borderWidth) {
       this.redrawBorderWidth(borderWidth);
-      this.redrawBorderColor(states);
+      this.redrawBorderColor(selectedElements);
     } else {
       this.resetBorder();
     }
 
     // border style
-    const borderStyle = this.getCommonProperty(states, (state) => this.model.element.getStyle(state.el, 'border-style'));
+    const borderStyle = this.getCommonProperty(selectedElements, (el) => el.style['border-style']);
 
     if (borderStyle) {
       this.borderStyleComboBox.value = borderStyle;
@@ -128,7 +129,7 @@ export class BorderPane extends PaneBase {
     }
 
     // border radius
-    const borderRadiusStr = this.getCommonProperty(states, (state) => this.model.element.getStyle(state.el, 'border-radius'));
+    const borderRadiusStr = this.getCommonProperty(selectedElements, (el) => el.style['border-radius']);
 
     if (borderRadiusStr) {
       this.redrawBorderRadius(borderRadiusStr);
@@ -140,10 +141,10 @@ export class BorderPane extends PaneBase {
   /**
    * redraw border color UI
    */
-  redrawBorderColor(states) {
-    if (states.length > 0) {
+  redrawBorderColor(selectedElements: ElementData[]) {
+    if (selectedElements.length > 0) {
       this.colorPicker.setDisabled(false);
-      const color = this.getCommonProperty(states, (state) => this.model.element.getStyle(state.el, 'border-color') || 'rgba(0,0,0,1)');
+      const color = this.getCommonProperty(selectedElements, (el) => el.style['border-color'] || 'rgba(0,0,0,1)');
 
       // indeterminate state
       this.colorPicker.setIndeterminate(color == null);
@@ -297,14 +298,33 @@ export class BorderPane extends PaneBase {
       // changed the same value)
       this.colorPicker.setIndeterminate(false);
 
-      // border width
-      this.styleChanged('border-width', borderWidthStr);
+      const borderStyleStr = this.borderStyleComboBox.value;
 
-      // border style
-      this.onBorderStyleChanged();
+      updateElements(getElements()
+      .map((el) => {
+          const newEl = {
+            ...el,
+          };
+          newEl['border-width'] = borderWidthStr;
+          newEl['border-style'] = borderStyleStr;
+          return {
+            from: el,
+            to: newEl,
+          };
+        }));
     } else {
-      this.styleChanged('border-width', '');
-      this.styleChanged('border-style', '');
+      updateElements(getElements()
+      .map((el) => {
+          const newEl = {
+            ...el,
+          };
+          newEl['border-width'] = '';
+          newEl['border-style'] = '';
+          return {
+            from: el,
+            to: newEl,
+          };
+        }));
       this.colorPicker.setDisabled(true);
     }
   }
@@ -315,7 +335,17 @@ export class BorderPane extends PaneBase {
    * border style
    */
   onBorderStyleChanged() {
-    this.styleChanged('border-style', this.borderStyleComboBox.value);
+    updateElements(getElements()
+    .map((el) => {
+        const newEl = {
+          ...el,
+        };
+        newEl['border-style'] = this.borderStyleComboBox.value;
+        return {
+          from: el,
+          to: newEl,
+        };
+      }));
   }
 
   /**
@@ -323,7 +353,17 @@ export class BorderPane extends PaneBase {
    * callback for number inputs
    */
   onBorderColorChanged() {
-    this.styleChanged('border-color', this.colorPicker.getColor());
+    updateElements(getElements()
+    .map((el) => {
+        const newEl = {
+          ...el,
+        };
+        newEl['border-color'] = this.colorPicker.getColor();
+        return {
+          from: el,
+          to: newEl,
+        };
+      }));
   }
 
   /**
@@ -346,9 +386,29 @@ export class BorderPane extends PaneBase {
           borderWidthStr += '0 ';
         }
       }
-      this.styleChanged('border-radius', borderWidthStr);
+      updateElements(getElements()
+      .map((el) => {
+          const newEl = {
+            ...el,
+          };
+          newEl['border-radius'] = borderWidthStr;
+          return {
+            from: el,
+            to: newEl,
+          };
+        }));
     } else {
-      this.styleChanged('border-radius', '');
+      updateElements(getElements()
+      .map((el) => {
+          const newEl = {
+            ...el,
+          };
+          newEl['border-radius'] = '';
+          return {
+            from: el,
+            to: newEl,
+          };
+        }));
     }
   }
 }

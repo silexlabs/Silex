@@ -9,16 +9,14 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
-import { SelectableState } from '../../../../node_modules/drag-drop-stage-component/src/ts/Types';
-import {Constants} from '../../../Constants';
-import {StyleName} from '../../model/Data';
-import {Visibility} from '../../model/Data';
-import {StyleData} from '../../model/Data';
-import {Tracker} from '../../service/Tracker';
-import {Controller} from '../../types';
-import {Model} from '../../types';
-import {SilexNotification} from '../../utils/Notification';
-import {PaneBase} from './PaneBase';
+import { Constants } from '../../../constants';
+import { ElementData, ElementType } from '../../../types';
+import { getElements, getPages, getUi, updateElements, updateUi } from '../../api';
+import { StyleData, StyleName, Visibility } from '../../model/Data';
+import { Tracker } from '../../service/Tracker';
+import { Controller, Model } from '../../ClientTypes';
+import { SilexNotification } from '../../utils/Notification';
+import { PaneBase } from './PaneBase';
 
 /**
  * @fileoverview The style editor pane is displayed in the property panel on the
@@ -65,18 +63,14 @@ export class StyleEditorPane extends PaneBase {
     };
     this.mobileOnlyCheckbox.onchange = (e) => {
       // switch the mobile editor mode
-      this.controller.propertyToolController.view.workspace.setMobileEditor(
-          this.mobileOnlyCheckbox.checked);
-
-      // refresh the view
-      this.controller.propertyToolController.refreshView();
+      updateUi({
+        ...getUi(),
+        mobileEditor: this.mobileOnlyCheckbox.checked,
+      })
     };
     this.styleCombo.onchange = (e) => {
       this.tracker.trackAction('style-editor-events', 'apply-style');
-      this.applyStyle(this.states.map((state) => state.el), this.styleCombo.value);
-
-      // refresh the view
-      this.controller.propertyToolController.refreshView();
+      this.applyStyle(this.styleCombo.value);
     };
     (this.element.querySelector('.add-style') as HTMLElement).onclick = (e) => {
       this.tracker.trackAction('style-editor-events', 'create-style');
@@ -92,28 +86,43 @@ export class StyleEditorPane extends PaneBase {
     // un-apply style
     (this.element.querySelector('.unapply-style') as HTMLElement).onclick = (e) => {
       this.tracker.trackAction('style-editor-events', 'unapply-style');
-      this.states.filter((state) => state.el !== this.model.body.getBodyElement())
-      .forEach((state) => {
-        state.el.classList.remove(this.styleCombo.value);
-      });
-
-      // refresh the view
-      this.controller.propertyToolController.refreshView();
+      updateElements(getElements()
+        .filter((el) => el.selected)
+        .map((el) => ({
+          from: el,
+          to: {
+          ...el,
+          classList: el.classList.filter((c) => c !== this.styleCombo.value),
+        }})))
     };
     this.selectionCountTotal = this.element.querySelector('.total');
     this.selectionCountTotal.onclick = (e) => {
       this.tracker.trackAction(
           'style-editor-events', 'select-elements-with-style');
-      const newSelection = this.getElementsWithStyle(this.styleCombo.value, true);
-      this.model.body.setSelection(newSelection);
+      updateElements(getElements()
+        .filter((el) => el.selected !== !!el.classList.find((c) => c === this.styleCombo.value))
+        .map((el) => ({
+          from: el,
+          to: {
+            ...el,
+            selected: !el.selected,
+          },
+        })))
     };
     this.selectionCountPage = this.element.querySelector('.on-page');
     this.selectionCountPage.onclick = (e) => {
       this.tracker.trackAction(
           'style-editor-events', 'select-all-elements-with-style');
-      const newSelection =
-          this.getElementsWithStyle(this.styleCombo.value, false);
-      this.model.body.setSelection(newSelection);
+      const currentPage = getPages().find((p) => p.isOpen);
+      updateElements(getElements()
+      .filter((el) => el.selected !== !!el.classList.find((c) => c === this.styleCombo.value) && (el.pageNames.length === 0 || !!el.pageNames.find((name) => name === currentPage.name)))
+      .map((el) => ({
+        from: el,
+        to: {
+          ...el,
+          selected: !el.selected,
+        },
+      })))
     };
 
     // duplicate a style
@@ -199,95 +208,49 @@ export class StyleEditorPane extends PaneBase {
   /**
    * apply a style to a set of elements, remove old styles
    */
-  applyStyle(elements: HTMLElement[], newStyle: StyleName) {
+  applyStyle(newStyle: StyleName) {
+    const noBody = getElements()
+      .filter((el) => el.selected && !!el.parent) // remove body
     if (newStyle === Constants.BODY_STYLE_CSS_CLASS) {
       SilexNotification.alert('Apply a style', `
         The style '${Constants.BODY_STYLE_NAME}' is a special style, it is already applyed to all elements.
       `,
       () => {});
-    } else {
+    } else if (noBody.length) {
       this.controller.propertyToolController.undoCheckPoint();
-      const noBody = elements.filter((el) => el !== this.model.body.getBodyElement());
-      if (noBody.length > 0) {
-        noBody.forEach((el) => {
-          // un-apply the old style if there was one
-          this.removeAllStyles(el);
-
-          // apply the new style if there is one
-          el.classList.add(newStyle);
-        });
-        this.controller.propertyToolController.refreshView();
-      } else {
-        SilexNotification.alert('Apply a style', 'Error: you need to select at least 1 element for this action.', () => {});
-      }
+      updateElements(noBody
+        .map((el) => ({
+          from: el,
+          to: {
+            ...el,
+            classList: !!el.classList.find((c) => c === newStyle) ? el.classList : el.classList.concat([newStyle]),
+          },
+        })))
+    } else {
+      SilexNotification.alert('Apply a style', 'Error: you need to select at least 1 element for this action.', () => {});
     }
   }
 
-  removeAllStyles(el: HTMLElement) {
-    this.getStyles([el]).forEach((styleName) => el.classList.remove(styleName));
-  }
+  // removeAllStyles(el: HTMLElement) {
+  //   this.getStyles([el]).forEach((styleName) => el.classList.remove(styleName));
+  // }
 
   /**
    * retrieve the styles applyed to the set of elements
    */
-  getStyles(elements: HTMLElement[]): StyleName[] {
+  getStyles(elements: ElementData[]): StyleName[] {
     const allStyles = this.model.component.getProdotypeComponents(Constants.STYLE_TYPE);
     return elements
-      .map((element) => element.className.split(' ')
-      .filter((className) => className !== ''))
+      .map((el) => el.classList)
       // About this reduce:
+      // from array of elements to array of classNames
       // no initial value so the first element in the array will be used, it
       // will start with the 2nd element keep only the styles defined in the
       // style editor to array of class names in common to all selected elements
-      // from array of elements to array of array of classNames
       .reduce((prev, classNames) => {
         return prev.filter((prevClassName) => classNames.indexOf(prevClassName) > -1);
       })
       .filter((className) => allStyles.find((style: StyleData) => style.className === className));
-  }
-
-  /**
-   * redraw the properties
-   * @param states the elements currently selected
-   * @param pageNames   the names of the pages which appear in the current HTML file
-   * @param  currentPageName   the name of the current page
-   */
-  redraw(states: SelectableState[]) {
-    super.redraw(states);
-
-    // mobile mode
-    this.mobileOnlyCheckbox.checked = this.isMobile();
-
-    // edit the style of the selection
-    if (states.length > 0) {
-      // get the selected elements style, i.e. which style applies to them
-      const selectionStyle = (() => {
-        // get the class names common to the selection
-        const classNames = this.getStyles(states.map((state) => state.el));
-
-        // choose the style to edit
-        if (classNames.length >= 1) {
-          return classNames[0];
-        }
-        return Constants.BODY_STYLE_CSS_CLASS;
-      })();
-      this.updateStyleList(selectionStyle);
-
-      // show text styles only when a text box is selected
-      const onlyTexts = this.states.length > 0
-        && this.states.filter((state) => this.model.element.getType(state.el) !== Constants.TYPE_TEXT).length === 0;
-      if (onlyTexts) {
-        this.element.classList.remove('style-editor-notext');
-      } else {
-        this.element.classList.add('style-editor-notext');
-      }
-    } else {
-      // FIXME: no need to recreate the whole style list every time the
-      // selection changes
-      this.updateStyleList(Constants.BODY_STYLE_CSS_CLASS);
-      // show the text styles in the case of "all style" so that the user can edit text styles, even when no text box is selected
-      this.element.classList.remove('style-editor-notext');
-    }
   }
 
   /**
@@ -417,7 +380,7 @@ export class StyleEditorPane extends PaneBase {
    * utility function to create a style in the style combo box or duplicate one
    */
   createStyle(opt_data?: StyleData, opt_cbk?: ((p1?: string) => any)) {
-    const noBody = this.states.filter((state) => state.el !== this.model.body.getBodyElement());
+    const noBody = getElements().filter((el) => !!el.parent);
     if (noBody.length <= 0) {
       SilexNotification.alert('Create a style', 'Error: you need to select at least 1 element for this action.', () => {});
     } else {
@@ -426,7 +389,7 @@ export class StyleEditorPane extends PaneBase {
           this.controller.propertyToolController.undoCheckPoint();
           const className = 'style-' + name.replace(/ /g, '-').toLowerCase();
           this.model.component.initStyle(name, className, opt_data);
-          this.applyStyle(noBody.map((state) => state.el), className);
+          this.applyStyle(className);
 
           // FIXME: needed to select className but
           // model.Component::initStyle calls refreshView which calls
@@ -435,7 +398,6 @@ export class StyleEditorPane extends PaneBase {
           if (opt_cbk) {
             opt_cbk(name);
           }
-          this.controller.propertyToolController.refreshView();
         }
       });
     }
@@ -467,6 +429,47 @@ export class StyleEditorPane extends PaneBase {
   }
 
   /**
+   * redraw the properties
+   */
+  protected redraw(selectedElements: ElementData[]) {
+    super.redraw(selectedElements);
+
+    // mobile mode
+    this.mobileOnlyCheckbox.checked = this.isMobile();
+
+    // edit the style of the selection
+    if (selectedElements.length > 0) {
+      // get the selected elements style, i.e. which style applies to them
+      const selectionStyle = (() => {
+        // get the class names common to the selection
+        const classNames = this.getStyles(selectedElements);
+
+        // choose the style to edit
+        if (classNames.length >= 1) {
+          return classNames[0];
+        }
+        return Constants.BODY_STYLE_CSS_CLASS;
+      })();
+      this.updateStyleList(selectionStyle);
+
+      // show text styles only when a text box is selected
+      const onlyTexts = selectedElements.length > 0
+        && selectedElements.filter((el) => el.type !== ElementType.TEXT).length === 0;
+      if (onlyTexts) {
+        this.element.classList.remove('style-editor-notext');
+      } else {
+        this.element.classList.add('style-editor-notext');
+      }
+    } else {
+      // FIXME: no need to recreate the whole style list every time the
+      // selection changes
+      this.updateStyleList(Constants.BODY_STYLE_CSS_CLASS);
+      // show the text styles in the case of "all style" so that the user can edit text styles, even when no text box is selected
+      this.element.classList.remove('style-editor-notext');
+    }
+  }
+
+  /**
    * utility function to delete a style in the style
    */
   private doDeleteStyle(name: string) {
@@ -487,6 +490,5 @@ export class StyleEditorPane extends PaneBase {
     // remove from model
     this.model.component.removeStyle(option.value);
     this.styleCombo.removeChild(option);
-    this.controller.propertyToolController.refreshView();
   }
 }

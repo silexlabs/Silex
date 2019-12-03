@@ -28,7 +28,7 @@ declare namespace monaco.editor {
 }
 // tslint:enable
 
-import { Controller, Model } from '../../types';
+import { Controller, Model } from '../../ClientTypes';
 import { ModalDialog } from '../ModalDialog';
 
 /**

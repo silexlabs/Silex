@@ -16,10 +16,12 @@
  *
  */
 
-import { Constants } from '../../Constants';
+import { Constants } from '../../constants';
+import { ElementType } from '../../types';
+import { getElements, getUi, moveElement, updateElements, updateUi } from '../api';
 import { Config } from '../ClientConfig';
 import { DomDirection } from '../model/Element';
-import { Controller, Model } from '../types';
+import { Controller, Model } from '../ClientTypes';
 import { Keyboard } from '../utils/Keyboard';
 
 /**
@@ -57,10 +59,11 @@ export class Menu {
    *
    */
   handleSectionCase(direction: DomDirection) {
-    this.model.body.getSelection()
-    .map((el) => this.model.element.noSectionContent(el))
-    .filter((el) => this.model.element.isSection(el))
-    .forEach((el) => this.model.element.move(el, direction));
+    getElements()
+      .filter((el) => el.selected)
+      .map((el) => this.model.element.noSectionContent(el))
+      .filter((el) => this.model.element.isSection(el))
+      .forEach((el, idx) => moveElement(el, direction === DomDirection.UP ? idx - 1 : idx + 1));
   }
 
   /**
@@ -233,52 +236,60 @@ export class Menu {
       case 'view.open.htmlHeadEditor':
         this.controller.viewMenuController.openHtmlHeadEditor();
         break;
-      case 'tools.advanced.activate':
-        this.controller.toolMenuController.toggleAdvanced();
-        break;
+      // case 'tools.advanced.activate':
+      //   this.controller.toolMenuController.toggleAdvanced();
+      //   break;
       case 'tools.mobile.mode':
-        this.controller.toolMenuController.toggleMobileMode();
+        const ui = getUi();
+        updateUi({
+          ...ui,
+          mobileEditor: !ui.mobileEditor,
+        });
         break;
       case 'tools.mobile.mode.on':
-        this.controller.toolMenuController.setMobileMode(true);
+        updateUi({
+          ...getUi(),
+          mobileEditor: true,
+        });
         break;
       case 'tools.mobile.mode.off':
-        this.controller.toolMenuController.setMobileMode(false);
+        updateUi({
+          ...getUi(),
+          mobileEditor: false,
+        });
         break;
       case 'insert.page':
         this.controller.pageToolController.createPage();
         break;
       case 'insert.text':
-        added = this.controller.insertMenuController.addElement(
-        Constants.TYPE_TEXT, opt_componentName);
+        added = this.controller.insertMenuController.addElement(ElementType.TEXT, opt_componentName);
         break;
       case 'insert.section':
-        added = this.controller.insertMenuController.addElement(
-        Constants.TYPE_SECTION, opt_componentName);
+        added = this.controller.insertMenuController.addElement(ElementType.SECTION, opt_componentName);
         break;
       case 'insert.html':
-        added = this.controller.insertMenuController.addElement(
-        Constants.TYPE_HTML, opt_componentName);
+        added = this.controller.insertMenuController.addElement(ElementType.HTML, opt_componentName);
         break;
       case 'insert.image':
       // FIXME: add opt_componentName param to browseAndAddImage
         this.controller.insertMenuController.browseAndAddImage();
         break;
       case 'insert.container':
-        added = this.controller.insertMenuController.addElement(
-        Constants.TYPE_CONTAINER, opt_componentName);
+        added = this.controller.insertMenuController.addElement(ElementType.CONTAINER, opt_componentName);
         break;
       case 'edit.delete.selection':
         this.controller.editMenuController.removeSelectedElements();
         break;
       case 'edit.empty.selection':
-        this.controller.editMenuController.emptySelection();
+        updateElements(getElements()
+          .filter((el) => el.selected)
+          .map((el) => ({ from: el, to: { ...el, selected: false }})))
         break;
       case 'edit.copy.selection':
         this.controller.editMenuController.copySelection();
         break;
       case 'edit.paste.selection':
-        this.controller.editMenuController.pasteClipBoard();
+        this.controller.editMenuController.pasteClipBoard(true);
         break;
       case 'edit.duplicate.selection':
         this.controller.editMenuController.duplicate();

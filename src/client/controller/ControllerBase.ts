@@ -18,22 +18,17 @@
  *
  */
 
-import { Constants } from '../../Constants';
+import { ElementData, ElementType, PageData, FileInfo } from '../../types';
+import { createElements, deleteElements, getElements, getPages, initializeElements, initializePages, openPage, updateElements } from '../api';
 import { Config } from '../ClientConfig';
-import {Tracker} from '../service/Tracker';
-import {UndoItem} from '../types';
-import {ClipboardItem} from '../types';
-import {Model} from '../types';
-import {View} from '../types';
-
-import {FileExplorer} from '../components/dialog/FileExplorer';
+import { FileExplorer } from '../components/dialog/FileExplorer';
 import { LinkDialog } from '../components/dialog/LinkDialog';
-import {FileInfo} from '../types';
-import {InvalidationManager} from '../utils/InvalidationManager';
-import {SilexNotification} from '../utils/Notification';
-
-import { getPages, openPage } from '../api';
-import { PageData } from '../flux/page-store';
+import { getSiteDocument } from '../components/UiElements';
+import { getDomElement } from '../dom/element-dom';
+import { Tracker } from '../service/Tracker';
+import { Model, UndoItem, View } from '../ClientTypes';
+import { InvalidationManager } from '../utils/InvalidationManager';
+import { SilexNotification } from '../utils/Notification';
 
 /**
  * base class for all UI controllers of the controller package
@@ -63,7 +58,7 @@ export class ControllerBase {
   /**
    * @static because it is shared by all controllers
    */
-  protected static clipboard: ClipboardItem[] = null;
+  protected static clipboard: ElementData[] = null;
 
   /**
    * flag to indicate that a getState ation is pending
@@ -187,6 +182,8 @@ export class ControllerBase {
     this.model.file.getHtmlAsync((html) => {
       opt_cbk({
         html,
+        elements: getElements(),
+        pages: getPages(),
         page: getPages().find((p) => p.isOpen),
         scrollX: scrollData.x,
         scrollY: scrollData.y,
@@ -201,6 +198,8 @@ export class ControllerBase {
     const scrollData = this.view.stageWrapper.getScroll();
 
     return {
+      elements: getElements(),
+      pages: getPages(),
       html: this.model.file.getHtml(),
       page: getPages().find((p) => p.isOpen),
       scrollX: scrollData.x,
@@ -213,7 +212,8 @@ export class ControllerBase {
    */
   restoreState(state: UndoItem) {
     this.model.file.setHtml(state.html, () => {
-      openPage(state.page);
+      initializeElements(state.elements),
+      initializePages(state.pages),
       this.view.stageWrapper.setScroll({
         x: state.scrollX,
         y: state.scrollY,
@@ -242,13 +242,22 @@ export class ControllerBase {
       const fileInfo = await this.view.fileExplorer.openFile(FileExplorer.IMAGE_EXTENSIONS);
       if (fileInfo) {
         // update the model
-        const element = this.model.body.getSelection()[0];
+        const element = getElements().filter((el) => el.selected)[0];
 
         // undo checkpoint
         this.undoCheckPoint();
 
         // load the image
-        this.model.element.setBgImage(element, fileInfo.absPath);
+        updateElements([{
+          from: element,
+          to: {
+            ...element,
+            style: {
+              ...element.style,
+              'background-image': fileInfo.absPath,
+            },
+          },
+        }]);
 
         // tracking
         this.tracker.trackAction('controller-events', 'success', 'selectBgImage', 1);
@@ -271,7 +280,8 @@ export class ControllerBase {
         this.undoCheckPoint();
 
         // create the element
-        const img = this.addElement(Constants.TYPE_IMAGE);
+        const imgData = this.addElement(ElementType.IMAGE);
+        const img = getDomElement(imgData);
 
         // load the image
         this.model.element.setImageUrl(
@@ -284,7 +294,8 @@ export class ControllerBase {
             SilexNotification.notifyError(
                 'Error: I did not manage to load the image. \n' +
                 message);
-            this.model.element.removeElement(element);
+            // FIXME: find another way to remove this element?
+            deleteElements([getElements().find((el) => element === getDomElement(el))]);
             this.tracker.trackAction(
                 'controller-events', 'error', 'insert.image', -1);
           },
@@ -301,84 +312,51 @@ export class ControllerBase {
   /**
    * set a given style to the current selection
    * @param opt_isUndoable default is true
+   * FIXME: useless method
    */
-  styleChanged(name: string, value?: string, opt_elements?: HTMLElement[], opt_isUndoable?: boolean) {
-    if (!opt_elements) {
-      opt_elements = this.model.body.getSelection();
-    }
+  styleChanged(name: string, value?: string, elements: ElementData[] = getElements().filter((el) => el.selected), opt_isUndoable?: boolean) {
     if (opt_isUndoable !== false) {
       // undo checkpoint
       this.undoCheckPoint();
     }
 
-    // apply the change to all elements
-    opt_elements.forEach((element) => {
-      // update the model
-      if (['top', 'left', 'width', 'height', 'min-height'].indexOf(name) >= 0) {
-        const state = this.view.stageWrapper.getState(element);
-        this.view.stageWrapper.setState(element, {
-          ...state,
-          metrics: {
-            ...state.metrics,
-            computedStyleRect: {
-              ...state.metrics.computedStyleRect,
-              top: name === 'top' ? parseInt(value) : state.metrics.computedStyleRect.top,
-              left: name === 'left' ? parseInt(value) : state.metrics.computedStyleRect.left,
-              width: name === 'width' ? parseInt(value) : state.metrics.computedStyleRect.width,
-              height: name === 'height' || name === 'min-height' ? parseInt(value) : state.metrics.computedStyleRect.height,
-            },
-          },
-        });
-      } else {
-        // update the values in the model too
-        this.model.element.setStyle(element, name, value);
-      }
-    });
+    // build the style change object
+    const newStyle = {};
+    newStyle[name] = value,
 
-    // refresh the view
-    this.refreshView();
+    this.multipleStylesChanged(newStyle);
   }
 
   /**
    * set a set of styles to the current selection
    */
-  multipleStylesChanged(style: any, opt_elements?: HTMLElement[]) {
-    if (!opt_elements) {
-      opt_elements = this.model.body.getSelection();
-    }
-
+  multipleStylesChanged(style: object, elements = getElements().filter((el) => el.selected)) {
     // undo checkpoint
     this.undoCheckPoint();
 
     // apply the change to all elements
-    opt_elements.forEach((element) => {
-      // update the model
-      this.model.property.setStyle(element, style);
-    });
-
-    // refresh the view
-    this.refreshView();
+    updateElements(elements.map((el) => ({
+      from: el,
+      to: {
+        ...el,
+        style: {
+          ...el.style,
+          ...style,
+        },
+      },
+    })));
   }
 
   /**
    * set a given property to the current selection
    */
-  propertyChanged(name: string, value?: string, opt_elements?: HTMLElement[], opt_applyToContent?: boolean) {
-    if (!opt_elements) {
-      opt_elements = this.model.body.getSelection();
-    }
-
+  propertyChanged(name: string, value?: string, elements = getElements().filter((el) => el.selected), opt_applyToContent?: boolean) {
     // undo checkpoint
     this.undoCheckPoint();
 
-    // apply the change to all elements
-    opt_elements.forEach((element) => {
-      // update the model
-      this.model.element.setProperty(element, name, value, opt_applyToContent);
-    });
+    const data = {};
+    data[name] = value;
 
-    // refresh the view
-    this.refreshView();
   }
 
   /**
@@ -389,17 +367,15 @@ export class ControllerBase {
     this.undoCheckPoint();
 
     // apply the change to all elements
-    const elements = this.model.body.getSelection();
-    elements.forEach((element) => {
-      // update the model
-      this.model.element.setClassName(element, name);
-
-      // refresh the views
-      this.view.breadCrumbs.redraw();
-    });
-
-    // refresh the view
-    this.refreshView();
+    updateElements(getElements()
+      .filter((el) => el.selected)
+      .map((el) => ({
+        from: el,
+        to: {
+          ...el,
+          classList: name.split(' '),
+        },
+      })))
   }
 
   /**
@@ -465,29 +441,55 @@ export class ControllerBase {
    * @param opt_componentName the desired component type if it is a component
    * @return the new element
    */
-  addElement(type: string, opt_componentName?: string): HTMLElement {
+  addElement(type: ElementType, opt_componentName?: string): ElementData {
     this.tracker.trackAction('controller-events', 'request', 'insert.' + type, 0);
 
     // undo checkpoint
     this.undoCheckPoint();
 
+    // FIXME: provide container
+    const container = getElements().find((el) => !el.parent)
+
     // create the element and add it to the stage
-    const element = this.model.element.createElement(type) as HTMLElement;
+    const element: ElementData = {
+      id: this.model.property.getNewId(getSiteDocument()),
+      type,
+      parent: container ? container.id : null,
+      visibility: {
+        desktop: true,
+        mobile: true,
+      },
+      style: {},
+      data: {
+        component: {},
+      },
+      children: [],
+      pageNames: [],
+      classList: [],
+      link: null,
+      enableDrag: true,
+      enableDrop: type === ElementType.CONTAINER, // FIXME: sections to?
+      enableResize: { top: true, bottom: true, left: true, right: true }, // FIXME: handle sections?
+      selected: true,
+      useMinHeight: true,
+    }
 
     // apply component styles etc
     if (!!opt_componentName) {
-      this.model.component.initComponent(element, opt_componentName);
+      this.model.component.initComponent(element, opt_componentName); // FIXME: handle components data in the new model
     }
 
     // apply default size
-    this.model.element.initElement(element);
+    const withDefaults: ElementData = this.model.element.getDefaults(element);
 
     // make element editable and visible on current page
-    this.doAddElement(element);
+    const initComplete = this.doAddElement(withDefaults);
+
+    createElements([initComplete]);
 
     // tracking
     this.tracker.trackAction('controller-events', 'success', 'insert.' + type, 1);
-    return element;
+    return initComplete;
   }
 
   /**
@@ -496,16 +498,30 @@ export class ControllerBase {
    * is in a page) redraw the tools and set the element as editable
    * @param element the element to add
    */
-  doAddElement(element: HTMLElement) {
+  doAddElement(element: ElementData): ElementData {
     // only visible on the current page
-    this.model.element.removeFromAllPages(element);
-    this.model.element.addToPage(element, getPages().find((p) => p.isOpen));
+    const finalElement = {
+      ...element,
+      pageNames: [getPages().find((p) => p.isOpen).name],
+    }
+
+    // reset selection
+    updateElements(getElements()
+      .filter((el) => el.selected)
+      .map((el) => ({
+        from: el,
+        to: {
+          ...el,
+          selected: false,
+        },
+      })))
 
     // unless one of its parents is in a page already
-    this.checkElementVisibility(element);
+    if (this.getFirstPagedParent(finalElement)) {
+      finalElement.pageNames = [];
+    }
 
-    // select the component
-    this.model.body.setSelection([element]);
+    return finalElement;
   }
 
   /**
@@ -516,83 +532,48 @@ export class ControllerBase {
    * then the element should be visible everywhere, i.e. in the same pages as
    * its parent
    */
-  checkElementVisibility(element: HTMLElement) {
-    const parentPage = this.model.element.getParentPage(element);
-    if (parentPage != null ) {
-      // get all the pages
-      const pages = this.model.element.getPagesForElement(element);
-
-      // remove the components from the page
-      pages.forEach(
-          (pageName) => this.model.element.removeFromPage(element, pageName));
+  getFirstPagedParent(element: ElementData): ElementData {
+    if (!!element.parent) {
+      const parent = getElements().find((el) => el.id === element.parent);
+      if (parent.pageNames.length) {
+        return parent;
+      }
+      return this.getFirstPagedParent(parent);
     }
+    // body
+    return null;
   }
 
-  /**
-   * ask the user for a new file title
-   */
-  setTitle(title: string) {
-    // undo checkpoint
-    this.undoCheckPoint();
-    this.model.head.setTitle(title);
-  }
+  // /**
+  //  * ask the user for a new file title
+  //  */
+  // setTitle(title: string) {
+  //   // undo checkpoint
+  //   this.undoCheckPoint();
+  //   this.model.head.setTitle(title);
+  // }
 
-  /**
-   * ask the user for a new file lang
-   */
-  setLang(lang: string) {
-    // undo checkpoint
-    this.undoCheckPoint();
-    this.model.head.setLang(lang);
-  }
+  // /**
+  //  * ask the user for a new file lang
+  //  */
+  // setLang(lang: string) {
+  //   // undo checkpoint
+  //   this.undoCheckPoint();
+  //   this.model.head.setLang(lang);
+  // }
 
-  /**
-   * toggle advanced / apollo mode
-   */
-  toggleAdvanced() {
-    if (!document.body.classList.contains('advanced-mode-on')) {
-      document.body.classList.add('advanced-mode-on');
-      document.body.classList.remove('advanced-mode-off');
-    } else {
-      document.body.classList.remove('advanced-mode-on');
-      document.body.classList.add('advanced-mode-off');
-    }
-  }
-
-  emptySelection() {
-    this.model.body.emptySelection();
-  }
-
-  /**
-   * refresh tools after mobile/desktop editor switch
-   */
-  refreshView() {
-    this.view.propertyTool.redraw(this.view.stageWrapper.getSelection());
-    this.view.textFormatBar.redraw(this.model.body.getSelection());
-    this.view.stageWrapper.redraw();
-  }
-
-  /**
-   * get mobile mode
-   * @return true if mobile mode is active
-   */
-  getMobileMode(): boolean {
-    return this.view.workspace.getMobileEditor();
-  }
-
-  /**
-   * set mobile mode
-   */
-  setMobileMode(isMobile: boolean) {
-    this.view.workspace.setMobileEditor(isMobile);
-  }
-
-  /**
-   * toggle mobile mode
-   */
-  toggleMobileMode() {
-    this.view.workspace.setMobileEditor(!this.view.workspace.getMobileEditor());
-  }
+  // /**
+  //  * toggle advanced / apollo mode
+  //  */
+  // toggleAdvanced() {
+  //   if (!document.body.classList.contains('advanced-mode-on')) {
+  //     document.body.classList.add('advanced-mode-on');
+  //     document.body.classList.remove('advanced-mode-off');
+  //   } else {
+  //     document.body.classList.remove('advanced-mode-on');
+  //     document.body.classList.add('advanced-mode-off');
+  //   }
+  // }
 
   /**
    * save or save-as
@@ -672,17 +653,6 @@ export class ControllerBase {
    * success of an operation involving changing the file model
    */
   fileOperationSuccess(opt_message?: string, opt_updateTools?: boolean) {
-    // update tools
-    if (opt_updateTools) {
-      // update dialogs
-      this.view.jsEditor.close();
-      this.view.cssEditor.close();
-      this.view.htmlEditor.close();
-      this.view.settingsDialog.redraw();
-      this.view.breadCrumbs.redraw();
-    }
-    // always update context menu as it contains the file name
-    this.view.contextMenu.redraw();
     // notify user
     if (opt_message) {
       SilexNotification.notifySuccess(opt_message);

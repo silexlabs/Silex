@@ -16,8 +16,8 @@
  *   It has methods to manipulate the dom
  */
 
-import {View} from '../types';
-import {Model} from '../types';
+import {View} from '../ClientTypes';
+import {Model} from '../ClientTypes';
 
 /**
  * @param model  model class which holds the other models
@@ -60,59 +60,49 @@ export class Body {
     return this.model.file.getContentDocument().body;
   }
 
-  /**
-   * @return   array of elements which are currently selected
-   */
-  getSelection(): HTMLElement[] {
-    const elements = this.view.stageWrapper.getSelection().map((s) => s.el);
-    if (!elements || elements.length === 0) {
-      // default, return the body
-      const bodyElement = this.getBodyElement();
-      if (!bodyElement) {
-        console.warn(
-            'Could not get body element because it is not created yet.');
-        return [];
-      }
-      return [bodyElement];
-    }
+  // /**
+  //  * @return   array of elements which are currently selected
+  //  * FIXME: refactore this with the new model
+  //  */
+  // getSelection(): HTMLElement[] {
+  //   const elements = this.view.stageWrapper.getSelection().map((s) => s.el);
+  //   if (!elements || elements.length === 0) {
+  //     // default, return the body
+  //     const bodyElement = this.getBodyElement();
+  //     if (!bodyElement) {
+  //       console.warn(
+  //           'Could not get body element because it is not created yet.');
+  //       return [];
+  //     }
+  //     return [bodyElement];
+  //   }
 
-    // build the result array
-    const res = [];
-    elements.forEach((element) => {
-      res.push(element);
-    });
-    return res;
-  }
+  //   // build the result array
+  //   const res = [];
+  //   elements.forEach((element) => {
+  //     res.push(element);
+  //   });
+  //   return res;
+  // }
 
-  emptySelection() {
-    this.setSelection([]);
-  }
+  // emptySelection() {
+  //   this.setSelection([]);
+  // }
 
-  /**
-   * @param selectedElements  array of elements which are to select
-   */
-  setSelection(selectedElements: HTMLElement[]) {
-    if (selectedElements.length === 0) {
-      selectedElements = [this.getBodyElement()];
-    }
-    const selection = this.view.stageWrapper.getSelection().map((s) => s.el);
-    // only if selection changed
-    if (selection.filter((el) => !selectedElements.find((s) => s === el)).length !== 0
-      || selectedElements.filter((el) => !selection.find((s) => s === el)).length !== 0) {
-      this.view.stageWrapper.setSelection(selectedElements);
-    }
-    this.refreshViews(selectedElements);
-  }
-
-  refreshViews(selectedElements = this.getSelection()) {
-    // refresh views
-    this.view.pageTool.redraw(selectedElements);
-    this.view.propertyTool.redraw(this.view.stageWrapper.getSelection());
-    this.view.textFormatBar.redraw(selectedElements);
-    this.view.contextMenu.redraw(selectedElements);
-    this.view.breadCrumbs.redraw(selectedElements);
-    this.view.htmlEditor.setSelection(selectedElements);
-  }
+  // /**
+  //  * @param selectedElements  array of elements which are to select
+  //  */
+  // setSelection(selectedElements: HTMLElement[]) {
+  //   if (selectedElements.length === 0) {
+  //     selectedElements = [this.getBodyElement()];
+  //   }
+  //   const selection = this.view.stageWrapper.getSelection().map((s) => s.el);
+  //   // only if selection changed
+  //   if (selection.filter((el) => !selectedElements.find((s) => s === el)).length !== 0
+  //     || selectedElements.filter((el) => !selection.find((s) => s === el)).length !== 0) {
+  //     this.view.stageWrapper.setSelection(selectedElements);
+  //   }
+  // }
 
   removeWysihtmlMarkup(root: HTMLElement|Document) {
     Array.from(root.querySelectorAll('.wysihtml-editor')).forEach((el) => {

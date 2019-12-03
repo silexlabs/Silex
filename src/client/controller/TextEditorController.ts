@@ -15,8 +15,8 @@
  *
  */
 import { getUiElements } from '../components/UiElements';
-import {Model} from '../types';
-import {View} from '../types';
+import {Model} from '../ClientTypes';
+import {View} from '../ClientTypes';
 import {ControllerBase} from './ControllerBase';
 const MENU_WIDTH = 35;
 const CONTEXT_MENU_HEIGHT = 35;

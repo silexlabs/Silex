@@ -9,20 +9,12 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
-export type SilexId = string;
-export enum SilexType {
-  CONTAINER = 'container-element',
-  SECTION = 'section-element',
-  CONTAINER_CONTENT = 'silex-container-content',
-  IMAGE = 'image-element',
-  TEXT = 'text-element',
-  HTML = 'html-element',
-}
-
 /**
  * @fileoverview Constants and types shared between front and back
  *
  */
+
+import { ElementType } from './types';
 
 export class Constants {
   /**
@@ -109,7 +101,7 @@ export class Constants {
   static TYPE_ATTR: string = 'data-silex-type';
 
   static EDITABLE_ELEMENT_TYPES: string[] = [
-    SilexType.HTML, SilexType.IMAGE, SilexType.TEXT,
+    ElementType.HTML, ElementType.IMAGE, ElementType.TEXT,
   ];
 
   /**
@@ -252,6 +244,11 @@ export class Constants {
    */
   static ENABLE_MOBILE_CSS_CLASS = 'enable-mobile';
 
+  /**
+   * CSS class applied to the **editor** body (not the site)
+   */
+  static MOBILE_MODE_CSS_CLASS = 'mobile-mode';
+
   // head tag constants
   static SILEX_CURRENT_PAGE_ID = 'current-page-style';
   static SILEX_TEMP_TAGS_CSS_CLASS = 'silex-temp-tag';
@@ -302,14 +299,14 @@ export class Constants {
     Constants.DRAGGING_CLASS_NAME,
     Constants.ELEMENT_CONTENT_CLASS_NAME,
     // useful to hide it when the content container of a section is selected
-    SilexType.CONTAINER_CONTENT,
+    ElementType.CONTAINER_CONTENT,
     // useful to hide it when the content container of a section is selected
     Constants.WEBSITE_WIDTH_CLASS_NAME,
-    SilexType.CONTAINER,
-    SilexType.SECTION,
-    SilexType.IMAGE,
-    SilexType.TEXT,
-    SilexType.HTML,
+    ElementType.CONTAINER,
+    ElementType.SECTION,
+    ElementType.IMAGE,
+    ElementType.TEXT,
+    ElementType.HTML,
     Constants.HIDE_ON_MOBILE,
     Constants.HIDE_ON_DESKTOP,
     Constants.COMPONENT_CLASS_NAME,

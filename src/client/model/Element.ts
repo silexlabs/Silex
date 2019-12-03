@@ -16,16 +16,13 @@
  *      created by new silex.model.Element().createElement
  */
 
-import { Constants } from '../../Constants';
-import { getPages } from '../api';
-import { getUiElements } from '../components/UiElements';
-import { PageData } from '../flux/page-store';
-import { Model, View } from '../types';
+import { Constants } from '../../constants';
+import { ElementData, ElementType, PageData } from '../../types';
+import { getPages, updateElements } from '../api';
+import { Model, View } from '../ClientTypes';
 import { Dom } from '../utils/Dom';
 import { Style } from '../utils/Style';
-import { Url } from '../utils/Url';
-import { StyleData, TemplateName } from './Data';
-import { Property } from './Property';
+import { TemplateName } from './Data';
 
 /**
  * direction in the dom
@@ -120,7 +117,7 @@ export class SilexElement {
     if (!element || !element.classList) {
       return false;
     }
-    return element.classList.contains(Constants.TYPE_SECTION);
+    return element.classList.contains(ElementType.SECTION);
   }
 
   /**
@@ -133,7 +130,7 @@ export class SilexElement {
     if (!element || !element.classList) {
       return false;
     }
-    return element.classList.contains(Constants.TYPE_CONTAINER_CONTENT);
+    return element.classList.contains(ElementType.CONTAINER_CONTENT);
   }
 
   /**
@@ -153,19 +150,17 @@ export class SilexElement {
    * get/set the "hide on mobile" property
    * @param hide, true if the element has to be hidden on mobile
    */
-  setHideOnMobile(element: HTMLElement, hide: boolean) {
-    const wasHidden = this.getHideOnMobile(element);
-    if (hide) {
-      this.noSectionContent(element).classList.add(Constants.HIDE_ON_MOBILE);
-      if (!wasHidden && this.view.workspace.getMobileEditor()) {
-        this.view.stageWrapper.removeElement(element);
-      }
-    } else {
-      this.noSectionContent(element).classList.remove(Constants.HIDE_ON_MOBILE);
-      if (wasHidden && this.view.workspace.getMobileEditor()) {
-        this.view.stageWrapper.addElement(element);
-      }
-    }
+  setHideOnMobile(element: ElementData, hide: boolean) {
+    updateElements([{
+      from: element,
+      to: {
+        ...element,
+        visibility: {
+          ...element.visibility,
+          mobile: hide,
+        },
+      },
+    }]);
   }
 
   /**
@@ -187,42 +182,40 @@ export class SilexElement {
    * get/set the "hide on desktop" property
    * @param hide, true if the element has to be hidden on desktop
    */
-  setHideOnDesktop(element: HTMLElement, hide: boolean) {
-    const wasHidden = this.getHideOnDesktop(element);
-    if (hide) {
-      this.noSectionContent(element).classList.add(Constants.HIDE_ON_DESKTOP);
-      if (!wasHidden && !this.view.workspace.getMobileEditor()) {
-        this.view.stageWrapper.removeElement(element);
-      }
-    } else {
-      this.noSectionContent(element).classList.remove(Constants.HIDE_ON_DESKTOP);
-      if (wasHidden && !this.view.workspace.getMobileEditor()) {
-        this.view.stageWrapper.addElement(element);
-      }
-    }
+  setHideOnDesktop(element: ElementData, hide: boolean) {
+    updateElements([{
+      from: element,
+      to: {
+        ...element,
+        visibility: {
+          ...element.visibility,
+          desktop: hide,
+        },
+      },
+    }]);
   }
 
-  getCurrentPage(): PageData {
-    const pages = getPages();
-    console.log('getCurrentPage', pages)
-    return pages.find((p) => p.isOpen);
-  }
+  // getCurrentPage(): PageData {
+  //   const pages = getPages();
+  //   console.log('getCurrentPage', pages)
+  //   return pages.find((p) => p.isOpen);
+  // }
 
-  /**
-   * get all elements visible when the given page is opened
-   */
-  getElementsForPage(page: PageData = this.getCurrentPage(), includeHideDesktop = this.view.workspace.getMobileEditor(), includeHideMobile = !this.view.workspace.getMobileEditor()): HTMLElement[] {
-    return (Array.from(this.model.file.getContentDocument().querySelectorAll(`.${Constants.EDITABLE_CLASS_NAME}`)) as HTMLElement[])
-    .filter((el) => this.isVisible(el, page) &&
-      (includeHideDesktop || !this.model.element.getHideOnDesktop(el)) &&
-      (includeHideMobile || !this.model.element.getHideOnMobile(el)));
-  }
+  // /**
+  //  * get all elements visible when the given page is opened
+  //  */
+  // getElementsForPage(page: PageData = getPages().find((p) => p.isOpen), includeHideDesktop = this.view.workspace.getMobileEditor(), includeHideMobile = !this.view.workspace.getMobileEditor()): HTMLElement[] {
+  //   return (Array.from(this.model.file.getContentDocument().querySelectorAll(`.${Constants.EDITABLE_CLASS_NAME}`)) as HTMLElement[])
+  //   .filter((el) => this.isVisible(el, page) &&
+  //     (includeHideDesktop || !this.model.element.getHideOnDesktop(el)) &&
+  //     (includeHideMobile || !this.model.element.getHideOnMobile(el)));
+  // }
 
   /**
    * check if an element is visible in the given page
    * this means that the element is allways visible or it is visible in this page
    */
-  isVisible(element: HTMLElement, page: PageData = this.getCurrentPage()) {
+  isVisible(element: HTMLElement, page: PageData = getPages().find((p) => p.isOpen)) {
     if (element.classList.contains(Constants.PAGED_CLASS_NAME) && !this.isInPage(element, page)) {
       return false;
     }
@@ -241,7 +234,7 @@ export class SilexElement {
   /**
    * check if an element is in the given page (current page by default)
    */
-  isInPage(element: HTMLElement, page: PageData = this.getCurrentPage()): boolean {
+  isInPage(element: HTMLElement, page: PageData = getPages().find((p) => p.isOpen)): boolean {
     return this.noSectionContent(element).classList.contains(page.name);
   }
 
@@ -271,21 +264,6 @@ export class SilexElement {
     } else {
       element.classList.add(page.name);
       element.classList.add(Constants.PAGED_CLASS_NAME);
-      if (pages.length === 0) {
-        // from visible visible everywhere to visible in some pages
-        if (page.isOpen) {
-          this.view.stageWrapper.removeElement(element);
-        } else {
-          // this.refreshView();
-        }
-      } else if (page.isOpen) {
-        // from visible in some pages to visible in this page
-        console.warn('How is this possible?');
-        this.view.stageWrapper.addElement(element);
-      } else {
-        console.warn('How is this possible?');
-        // this.refreshView();
-      }
     }
   }
 
@@ -299,13 +277,6 @@ export class SilexElement {
 
     // the element is not "paged" anymore
     element.classList.remove(Constants.PAGED_CLASS_NAME);
-
-    if (!wasVisible) {
-      // update stage store
-      this.view.stageWrapper.addElement(element);
-    } else {
-      // this.refreshView();
-    }
   }
 
   /**
@@ -322,12 +293,6 @@ export class SilexElement {
       // from visible in some pages to visible everywhere
       this.removeFromAllPages(element);
     } else {
-      if (page.isOpen) {
-        // update stage store
-        this.view.stageWrapper.removeElement(element);
-      } else {
-        // this.refreshView();
-      }
       element.classList.add(Constants.PAGED_CLASS_NAME);
       element.classList.remove(page.name);
     }
@@ -349,6 +314,7 @@ export class SilexElement {
   // }
 
   /**
+   * FIXME: for retro compat in element-dom
    * get all the element's styles
    * @param element   created by silex, either a text box, image, ...
    * @return           the styles of the element
@@ -359,90 +325,90 @@ export class SilexElement {
     return styleStr;
   }
 
-  /**
-   * get/set style of the element
-   * @param element   created by silex, either a text box, image, ...
-   * @param styleName  the style name
-   * @return           the style of the element
-   */
-  getStyle(element: HTMLElement, cssName: string): string {
-    const isMobile = this.view.workspace.getMobileEditor();
-    let styleObject = this.model.property.getStyle(element, isMobile);
-    if (styleObject && styleObject[cssName]) {
-      return styleObject[cssName];
-    } else {
-      if (isMobile) {
-        // get the non mobile style if it is not defined in mobile
-        styleObject = this.model.property.getStyle(element, false);
-        if (styleObject && styleObject[cssName]) {
-          return styleObject[cssName];
-        }
-      }
-    }
-    return null;
-  }
+  // /**
+  //  * get/set style of the element
+  //  * @param element   created by silex, either a text box, image, ...
+  //  * @param styleName  the style name
+  //  * @return           the style of the element
+  //  */
+  // getStyle(element: HTMLElement, cssName: string): string {
+  //   const isMobile = this.view.workspace.getMobileEditor();
+  //   let styleObject = this.model.property.getStyle(element, isMobile);
+  //   if (styleObject && styleObject[cssName]) {
+  //     return styleObject[cssName];
+  //   } else {
+  //     if (isMobile) {
+  //       // get the non mobile style if it is not defined in mobile
+  //       styleObject = this.model.property.getStyle(element, false);
+  //       if (styleObject && styleObject[cssName]) {
+  //         return styleObject[cssName];
+  //       }
+  //     }
+  //   }
+  //   return null;
+  // }
 
-  /**
-   * get/set style of element from a container created by silex
-   * @param element            created by silex, either a text box, image, ...
-   * @param  styleName          the style name, camel case, not css with dashes
-   * @param  opt_styleValue     the value for this styleName
-   * @param  opt_preserveJustAdded     if true, do not remove the "just added"
-   *     css class, default is false
-   */
-  setStyle(element: HTMLElement, styleName: string, opt_styleValue?: string, opt_preserveJustAdded?: boolean) {
-    // retrieve style
-    let styleObject = this.model.property.getStyle(element);
-    if (!styleObject) {
-      styleObject = {};
-    }
+  // /**
+  //  * get/set style of element from a container created by silex
+  //  * @param element            created by silex, either a text box, image, ...
+  //  * @param  styleName          the style name, camel case, not css with dashes
+  //  * @param  opt_styleValue     the value for this styleName
+  //  * @param  opt_preserveJustAdded     if true, do not remove the "just added"
+  //  *     css class, default is false
+  //  */
+  // setStyle(element: HTMLElement, styleName: string, opt_styleValue?: string, opt_preserveJustAdded?: boolean) {
+  //   // retrieve style
+  //   let styleObject = this.model.property.getStyle(element);
+  //   if (!styleObject) {
+  //     styleObject = {};
+  //   }
 
-    // apply the new style
-    if (styleObject[styleName] !== opt_styleValue) {
-      if (opt_styleValue != null ) {
-        styleObject[styleName] = opt_styleValue;
-      } else {
-        styleObject[styleName] = '';
-      }
-      this.model.property.setStyle(element, styleObject);
-    }
-  }
+  //   // apply the new style
+  //   if (styleObject[styleName] !== opt_styleValue) {
+  //     if (opt_styleValue != null ) {
+  //       styleObject[styleName] = opt_styleValue;
+  //     } else {
+  //       styleObject[styleName] = '';
+  //     }
+  //     this.model.property.setStyle(element, styleObject);
+  //   }
+  // }
 
-  /**
-   * get/set a property of an element from a container created by silex
-   * @param element            created by silex, either a text box, image, ...
-   * @param  propertyName          the property name
-   * @param  opt_propertyValue     the value for this propertyName
-   * @param  opt_applyToContent    apply to the element or to its
-   *     ".silex-element-content" element
-   * example: element.setProperty(imgElement, 'style', 'top: 5px; left: 30px;')
-   */
-  setProperty(
-      element: HTMLElement, propertyName: string,
-      opt_propertyValue?: string, opt_applyToContent?: boolean) {
-    if (opt_applyToContent) {
-      element = this.getContentNode(element);
-    }
-    if (opt_propertyValue != null ) {
-      element.setAttribute(propertyName, (opt_propertyValue as string));
-    } else {
-      element.removeAttribute(propertyName);
-    }
-  }
+  // /**
+  //  * get/set a property of an element from a container created by silex
+  //  * @param element            created by silex, either a text box, image, ...
+  //  * @param  propertyName          the property name
+  //  * @param  opt_propertyValue     the value for this propertyName
+  //  * @param  opt_applyToContent    apply to the element or to its
+  //  *     ".silex-element-content" element
+  //  * example: element.setProperty(imgElement, 'style', 'top: 5px; left: 30px;')
+  //  */
+  // setProperty(
+  //     element: HTMLElement, propertyName: string,
+  //     opt_propertyValue?: string, opt_applyToContent?: boolean) {
+  //   if (opt_applyToContent) {
+  //     element = this.getContentNode(element);
+  //   }
+  //   if (opt_propertyValue != null ) {
+  //     element.setAttribute(propertyName, (opt_propertyValue as string));
+  //   } else {
+  //     element.removeAttribute(propertyName);
+  //   }
+  // }
 
-  /**
-   * @param url    URL of the image chosen by the user
-   */
-  setBgImage(element: HTMLElement, url: string) {
-    if (url) {
-      this.setStyle(element, 'background-image', Url.addUrlKeyword(url));
-    } else {
-      this.setStyle(element, 'background-image');
-    }
+  // /**
+  //  * @param url    URL of the image chosen by the user
+  //  */
+  // setBgImage(element: HTMLElement, url: string) {
+  //   if (url) {
+  //     this.setStyle(element, 'background-image', Url.addUrlKeyword(url));
+  //   } else {
+  //     this.setStyle(element, 'background-image');
+  //   }
 
-    // redraw tools
-    this.model.body.refreshViews();
-  }
+  //   // redraw tools
+  //   this.model.body.refreshViews();
+  // }
 
   /**
    * get/set html from a container created by silex
@@ -480,65 +446,61 @@ export class SilexElement {
    */
   getContentNode(element: HTMLElement): HTMLElement {
     const content: HTMLElement = element.querySelector(':scope > .' + Constants.ELEMENT_CONTENT_CLASS_NAME);
-    if (!content && [Constants.TYPE_IMAGE, Constants.TYPE_HTML, Constants.TYPE_SECTION].indexOf(this.getType(element)) > -1) {
-      console.warn('This element is supposed to have a content container', element);
-    }
     return content || element;
   }
 
-  /**
-   * move the element up/down the DOM
-   */
-  move(element: HTMLElement, direction: DomDirection) {
-    // do not move a section's container content, but the section itself
-    element = this.noSectionContent(element);
-    switch (direction) {
-      case DomDirection.UP:
-        const nextSibling = this.getNextElement(element, true);
-        if (nextSibling) {
-          // insert after
-          element.parentElement.insertBefore(nextSibling, element);
-        }
-        break;
-      case DomDirection.DOWN:
-        const prevSibling = this.getNextElement(element, false);
-        if (prevSibling) {
-          // insert before
-          element.parentElement.insertBefore(prevSibling, element.nextSibling);
-        }
-        break;
-      case DomDirection.TOP:
-        element.parentElement.appendChild(element);
-        break;
-      case DomDirection.BOTTOM:
-        element.parentElement.insertBefore(
-            element, element.parentElement.childNodes[0]);
-        break;
-    }
-    this.view.stageWrapper.redraw();
-  }
+  // /**
+  //  * move the element up/down the DOM
+  //  */
+  // move(element: HTMLElement, direction: DomDirection) {
+  //   // do not move a section's container content, but the section itself
+  //   element = this.noSectionContent(element);
+  //   switch (direction) {
+  //     case DomDirection.UP:
+  //       const nextSibling = this.getNextElement(element, true);
+  //       if (nextSibling) {
+  //         // insert after
+  //         element.parentElement.insertBefore(nextSibling, element);
+  //       }
+  //       break;
+  //     case DomDirection.DOWN:
+  //       const prevSibling = this.getNextElement(element, false);
+  //       if (prevSibling) {
+  //         // insert before
+  //         element.parentElement.insertBefore(prevSibling, element.nextSibling);
+  //       }
+  //       break;
+  //     case DomDirection.TOP:
+  //       element.parentElement.appendChild(element);
+  //       break;
+  //     case DomDirection.BOTTOM:
+  //       element.parentElement.insertBefore(
+  //           element, element.parentElement.childNodes[0]);
+  //       break;
+  //   }
+  // }
 
-  /**
-   * get the previous or next element in the DOM, which is a Silex element
-   * @param forward if true look for the next element, if false for the previous
-   */
-  getNextElement(element: HTMLElement, forward: boolean): HTMLElement {
-    let node = (element as Node);
-    while (node = forward ? node.nextSibling : node.previousSibling) {
-      if (node.nodeType === 1) {
-        const el = (node as HTMLElement);
+  // /**
+  //  * get the previous or next element in the DOM, which is a Silex element
+  //  * @param forward if true look for the next element, if false for the previous
+  //  */
+  // getNextElement(element: HTMLElement, forward: boolean): HTMLElement {
+  //   let node = (element as Node);
+  //   while (node = forward ? node.nextSibling : node.previousSibling) {
+  //     if (node.nodeType === 1) {
+  //       const el = (node as HTMLElement);
 
-        // candidates are the elements which are visible in the current page, or
-        // visible everywhere (not paged)
-        if (this.getType(el) != null  &&
-            (this.isInPage(el) ||
-             this.getPagesForElement(el).length === 0)) {
-          return el;
-        }
-      }
-    }
-    return null;
-  }
+  //       // candidates are the elements which are visible in the current page, or
+  //       // visible everywhere (not paged)
+  //       if (this.getType(el) != null  &&
+  //           (this.isInPage(el) ||
+  //            this.getPagesForElement(el).length === 0)) {
+  //         return el;
+  //       }
+  //     }
+  //   }
+  //   return null;
+  // }
 
   /**
    * set/get the image URL of an image element
@@ -547,7 +509,7 @@ export class SilexElement {
    */
   getImageUrl(element: HTMLElement): string {
     let url = '';
-    if (element.getAttribute(Constants.TYPE_ATTR) === Constants.TYPE_IMAGE) {
+    if (element.getAttribute(Constants.TYPE_ATTR) === ElementType.IMAGE) {
       // get the image tag
       const img = this.getContentNode(element);
       if (img) {
@@ -568,12 +530,13 @@ export class SilexElement {
    * @param url  the url of the image
    * @param opt_callback the callback to be notified when the image is loaded
    * @param opt_errorCallback the callback to be notified of errors
+   * FIXME: this should go in element-dom
    */
   async setImageUrl(
       element: HTMLElement, url: string,
-      opt_callback?: ((p1: HTMLElement, p2: HTMLElement) => void),
+      opt_callback?: ((naturalWidth: number, naturalheight: number) => void),
       opt_errorCallback?: ((p1: HTMLElement, p2: string) => void)) {
-    if (element.getAttribute(Constants.TYPE_ATTR) === Constants.TYPE_IMAGE) {
+    if (element.getAttribute(Constants.TYPE_ATTR) === ElementType.IMAGE) {
       // get the image tag
       const img = this.getContentNode(element) as HTMLImageElement;
       if (img) {
@@ -590,13 +553,9 @@ export class SilexElement {
           // load the new image
           const loadedImg: HTMLImageElement = await SilexElement.loadImage(url);
 
-          // update element size
-          this.setStyle(element, 'width', loadedImg.naturalWidth + 'px', true);
-          this.setStyle(element, this.getHeightStyleName(element), loadedImg.naturalHeight + 'px', true);
-
           // callback
           if (opt_callback) {
-            opt_callback(element, loadedImg);
+            opt_callback(loadedImg.naturalWidth, loadedImg.naturalHeight);
           }
 
           // add the image to the element
@@ -608,10 +567,6 @@ export class SilexElement {
 
           // remove loading asset
           element.classList.remove(Constants.LOADING_ELEMENT_CSS_CLASS);
-
-          // redraw tools
-          this.model.body.refreshViews();
-          this.view.stageWrapper.redraw();
         } catch (e) {
           console.error('An error occured while loading the image.', element, e);
 
@@ -637,8 +592,10 @@ export class SilexElement {
   }
 
   /**
+   * FIXME: for retro compat in element-dom
    * remove a DOM element and its styles as well as its children's
    * @param element   the element to remove
+   * FIXME: move to element-dom
    */
   removeElement(rootElement: HTMLElement) {
     // never delete sections container content, but the section itself
@@ -651,146 +608,152 @@ export class SilexElement {
       // check this is allowed, i.e. an element inside the stage container
       if (this.model.body.getBodyElement() !== element && !!element.parentElement) {
         // remove style and component data
-        this.model.property.setElementComponentData(element);
-        this.model.property.setStyle(element, null, true);
-        this.model.property.setStyle(element, null, false);
+        // this.model.property.setElementComponentData(element);
+        // this.model.property.setStyle(element, null, true);
+        // this.model.property.setStyle(element, null, false);
 
         // remove the element
         element.parentElement.removeChild(element);
-
-        // update stage store
-        this.view.stageWrapper.removeElement(element);
       } else {
         // could not delete element because it is not in the stage element
         // this happens when you select an element and its children and delete them all
       }
     });
-    // update all metrics in case this new element has moved other elements
-    this.view.stageWrapper.redraw();
   }
 
-  /**
-   * append an element to the stage
-   * handles undo/redo
-   */
-  addElement(container: HTMLElement, element: HTMLElement, opt_offset: number = 0) {
-    // for sections, force body
-    if (this.isSection(element) && container !== this.model.body.getBodyElement()) {
-      // container = this.model.body.getBodyElement();
-      throw new Error('Cannot add a section to other than the body');
-    }
-    if (opt_offset > 0) {
-      const styleObject = this.model.property.getStyle(element, false);
-      // styleObject.top = (parseInt(styleObject.top) + opt_offset) + 'px';
-      styleObject.left = (parseInt(styleObject.left) + opt_offset) + 'px';
-      this.model.property.setStyle(element, styleObject, false);
-    }
-    container.appendChild(element);
+  // /**
+  //  * append an element to the stage
+  //  * handles undo/redo
+  //  */
+  // addElement(container: ElementData, element: ElementData, opt_offset: number = 0) {
+  //   // for sections, force body
+  //   if (this.isSection(element) && container !== this.model.body.getBodyElement()) {
+  //     // container = this.model.body.getBodyElement();
+  //     throw new Error('Cannot add a section to other than the body');
+  //   }
+  //   if (opt_offset > 0) {
+  //     const styleObject = this.model.property.getStyle(element, false);
+  //     // styleObject.top = (parseInt(styleObject.top) + opt_offset) + 'px';
+  //     styleObject.left = (parseInt(styleObject.left) + opt_offset) + 'px';
+  //     this.model.property.setStyle(element, styleObject, false);
+  //   }
+  //   container.appendChild(element);
 
-    // resize the body
-    // call the method defined in front-end.js
-    // this will resize the body according to its content
-    // it will also trigger a "silex.resize" event
-    // tslint:disable:no-string-literal
-    this.model.file.getContentWindow()['silex'].resizeBody();
+  //   // resize the body
+  //   // call the method defined in front-end.js
+  //   // this will resize the body according to its content
+  //   // it will also trigger a "silex.resize" event
+  //   // tslint:disable:no-string-literal
+  //   this.model.file.getContentWindow()['silex'].resizeBody();
+  // }
 
-    // update stage store
-    this.view.stageWrapper.addElement(element);
+  // /**
+  //  * add an element at the center of the stage
+  //  * and move it into the container beneeth it
+  //  * @param element    the element to add
+  //  * @param opt_offset an offset to apply to its position (x and y)
+  //  */
+  // addElementDefaultPosition(element: ElementData, opt_offset: number = 0) {
+  //   // FIXME: select a container and compute coords
 
-    // update all metrics in case this new element has moved other elements
-    this.view.stageWrapper.redraw();
+  //   // // find the container (main background container or the stage)
+  //   // const stageSize = getUiElements().stage.getBoundingClientRect();
+  //   // const bb = this.model.property.getBoundingBox([element]);
+  //   // const posX = Math.round((stageSize.width / 2) - (bb.width / 2));
+  //   // const posY = Math.round((stageSize.height / 2) - (bb.height / 2));
+  //   // const container = this.view.stageWrapper.getDropZone(posX, posY, element) || this.model.body.getBodyElement();
+  //   // // take the scroll into account (drop at (100, 100) from top left corner of the window, not the stage)
+  //   // const bbContainer = container.getBoundingClientRect();
+  //   // const offsetX = Math.round((bbContainer.width / 2) - (bb.width / 2));
+  //   // const offsetY = Math.round((bbContainer.height / 2) - (bb.height / 2));
+
+  //   // add to stage
+  //   this.addElement(getElements().find((el) => !el.parent), element);
+
+  //   // apply the style (force desktop style, not mobile)
+  //   const styleObject = this.model.property.getStyle(element, false);
+  //   styleObject.top = opt_offset + offsetY + 'px';
+  //   styleObject.left = opt_offset + offsetX + 'px';
+  //   this.model.property.setStyle(element, styleObject, false);
+  // }
+
+  getDefaults(element: ElementData): ElementData {
+    return {
+      ...element,
+      style: {
+        'width': SilexElement.INITIAL_ELEMENT_SIZE + 'px',
+        'height': SilexElement.INITIAL_ELEMENT_SIZE + 'px',
+        'background-color': element.type === ElementType.HTML || element.type === ElementType.CONTAINER ? 'rgb(255, 255, 255)' : element.style['background-color'],
+        // keep the style if there is one, usually set by component::initComponent
+        ...element.style,
+      },
+    };
   }
 
-  /**
-   * add an element at the center of the stage
-   * and move it into the container beneeth it
-   * @param element    the element to add
-   * @param opt_offset an offset to apply to its position (x and y)
-   */
-  addElementDefaultPosition(element: HTMLElement, opt_offset: number = 0) {
-    // find the container (main background container or the stage)
-    const stageSize = getUiElements().stage.getBoundingClientRect();
-    const bb = this.model.property.getBoundingBox([element]);
-    const posX = Math.round((stageSize.width / 2) - (bb.width / 2));
-    const posY = Math.round((stageSize.height / 2) - (bb.height / 2));
-    const container = this.view.stageWrapper.getDropZone(posX, posY, element) || this.model.body.getBodyElement();
-    // take the scroll into account (drop at (100, 100) from top left corner of the window, not the stage)
-    const bbContainer = container.getBoundingClientRect();
-    const offsetX = Math.round((bbContainer.width / 2) - (bb.width / 2));
-    const offsetY = Math.round((bbContainer.height / 2) - (bb.height / 2));
+  // use getDefault instead
+  // /**
+  //  * init the element depending on its type
+  //  */
+  // initElement(element: ElementData): ElementData {
+  //   // default style
+  //   const defaultStyle: any = {};
+  //   defaultStyle.width = SilexElement.INITIAL_ELEMENT_SIZE + 'px';
+  //   defaultStyle[this.getHeightStyleName(element)] = SilexElement.INITIAL_ELEMENT_SIZE + 'px';
 
-    // add to stage
-    this.addElement(container, element);
+  //   // init the element depending on its type
+  //   switch (element.type) {
+  //     case ElementType.CONTAINER:
+  //     case ElementType.HTML:
+  //       if (!this.isSection(element)) {
+  //         defaultStyle['background-color'] = 'rgb(255, 255, 255)';
+  //       }
+  //       break;
+  //     case ElementType.TEXT:
+  //     case ElementType.IMAGE:
+  //       break;
+  //   }
 
-    // apply the style (force desktop style, not mobile)
-    const styleObject = this.model.property.getStyle(element, false);
-    styleObject.top = opt_offset + offsetY + 'px';
-    styleObject.left = opt_offset + offsetX + 'px';
-    this.model.property.setStyle(element, styleObject, false);
-  }
+  //   // special case of section content
+  //   if (this.isSectionContent(element)) {
+  //     // no bg color for the content container
+  //     defaultStyle['background-color'] = '';
 
-  /**
-   * init the element depending on its type
-   */
-  initElement(element: HTMLElement) {
-    // default style
-    const defaultStyle: any = {};
-    defaultStyle.width = SilexElement.INITIAL_ELEMENT_SIZE + 'px';
-    defaultStyle[this.getHeightStyleName(element)] = SilexElement.INITIAL_ELEMENT_SIZE + 'px';
+  //     // no width either, it will take the .website-width
+  //     // the default one from front-end.css or the one in the settings
+  //     defaultStyle.width = '';
+  //   }
 
-    // init the element depending on its type
-    switch (this.getType(element)) {
-      case Constants.TYPE_CONTAINER:
-      case Constants.TYPE_HTML:
-        if (!this.isSection(element)) {
-          defaultStyle['background-color'] = 'rgb(255, 255, 255)';
-        }
-        break;
-      case Constants.TYPE_TEXT:
-      case Constants.TYPE_IMAGE:
-        break;
-    }
+  //   // default style to the element style
+  //   // keep the style if there is one, usually set by component::initComponent
+  //   const finalStyle = this.model.property.getStyle(element, false) || {};
+  //   for (const name in defaultStyle) {
+  //     finalStyle[name] = finalStyle[name] || defaultStyle[name];
+  //   }
 
-    // special case of section content
-    if (this.isSectionContent(element)) {
-      // no bg color for the content container
-      defaultStyle['background-color'] = '';
+  //   // apply the style (force desktop style, not mobile)
+  //   this.model.property.setStyle(element, finalStyle, false);
 
-      // no width either, it will take the .website-width
-      // the default one from front-end.css or the one in the settings
-      defaultStyle.width = '';
-    }
+  //   // add the element to the stage
+  //   if (this.isSection(element)) {
+  //     this.addElement(this.model.body.getBodyElement(), element);
+  //   } else if (this.isSectionContent(element)) {
+  //     this.addElement(element.parentElement, element);
+  //   } else {
+  //     if (!this.isElementContent(element)) {
+  //       // add to the stage at the right position
+  //       // and in the right container
+  //       this.addElementDefaultPosition(element);
+  //     }
+  //   }
 
-    // default style to the element style
-    // keep the style if there is one, usually set by component::initComponent
-    const finalStyle = this.model.property.getStyle(element, false) || {};
-    for (const name in defaultStyle) {
-      finalStyle[name] = finalStyle[name] || defaultStyle[name];
-    }
-
-    // apply the style (force desktop style, not mobile)
-    this.model.property.setStyle(element, finalStyle, false);
-
-    // add the element to the stage
-    if (this.isSection(element)) {
-      this.addElement(this.model.body.getBodyElement(), element);
-    } else if (this.isSectionContent(element)) {
-      this.addElement(element.parentElement, element);
-    } else {
-      if (!this.isElementContent(element)) {
-        // add to the stage at the right position
-        // and in the right container
-        this.addElementDefaultPosition(element);
-      }
-    }
-
-    // send the scroll to the target
-    setTimeout(() => {
-      this.view.stageWrapper.center([element]);
-    }, 0);
-  }
+  //   // send the scroll to the target
+  //   setTimeout(() => {
+  //     this.view.stageWrapper.center([element]);
+  //   }, 0);
+  // }
 
   /**
+   * FIXME: move to element-dom
    * element creation
    * create a DOM element, attach it to this container
    * and returns a new component for the element
@@ -803,33 +766,32 @@ export class SilexElement {
     let element = null;
     switch (type) {
       // container
-      case Constants.TYPE_CONTAINER:
+      case ElementType.CONTAINER:
         element = this.createContainerElement();
         break;
 
       // section
-      case Constants.TYPE_SECTION:
+      case ElementType.SECTION:
         element = this.createSectionElement();
         break;
 
       // text
-      case Constants.TYPE_TEXT:
+      case ElementType.TEXT:
         element = this.createTextElement();
         break;
 
       // HTML box
-      case Constants.TYPE_HTML:
+      case ElementType.HTML:
         element = this.createHtmlElement();
         break;
 
       // Image
-      case Constants.TYPE_IMAGE:
+      case ElementType.IMAGE:
         element = this.createImageElement();
         break;
     }
     // init the element
     element.classList.add(Constants.EDITABLE_CLASS_NAME);
-    this.model.property.initSilexId(element, this.model.file.getContentDocument());
 
     // add css class for Silex styles
     element.classList.add(type);
@@ -845,7 +807,7 @@ export class SilexElement {
   createContainerElement(): HTMLElement {
     // create the conatiner
     const element = this.model.file.getContentDocument().createElement('div');
-    element.setAttribute(Constants.TYPE_ATTR, Constants.TYPE_CONTAINER);
+    element.setAttribute(Constants.TYPE_ATTR, ElementType.CONTAINER);
     return element;
   }
 
@@ -868,25 +830,25 @@ export class SilexElement {
   }
 
   /**
+   * FIXME: move to element-dom
    * element creation method for a given type
    * called from createElement
    */
   createSectionElement(): HTMLElement {
     // create the element
     const element = this.model.file.getContentDocument().createElement('div');
-    element.setAttribute(Constants.TYPE_ATTR, Constants.TYPE_CONTAINER);
+    element.setAttribute(Constants.TYPE_ATTR, ElementType.CONTAINER);
     element.classList.add(Constants.PREVENT_DRAGGABLE_CLASS_NAME);
     element.classList.add(Constants.PREVENT_RESIZABLE_CLASS_NAME);
-    element.classList.add(Constants.TYPE_CONTAINER);
+    element.classList.add(ElementType.CONTAINER);
 
     // content element is both a container and a content element
-    const content = this.createElement(Constants.TYPE_CONTAINER);
+    const content = this.createElement(ElementType.CONTAINER);
     content.classList.add(Constants.ELEMENT_CONTENT_CLASS_NAME);
-    content.classList.add(Constants.TYPE_CONTAINER_CONTENT);
+    content.classList.add(ElementType.CONTAINER_CONTENT);
     content.classList.add(Constants.WEBSITE_WIDTH_CLASS_NAME);
     content.classList.add(Constants.PREVENT_DRAGGABLE_CLASS_NAME);
     element.appendChild(content);
-    this.initElement(content);
 
     // done
     return element;
@@ -898,7 +860,7 @@ export class SilexElement {
    */
   createTextElement(): HTMLElement {
     // create the element
-    const element = this.createElementWithContent(Constants.TYPE_TEXT);
+    const element = this.createElementWithContent(ElementType.TEXT);
 
     // add default content
     const content = this.getContentNode(element);
@@ -920,7 +882,7 @@ export class SilexElement {
   createHtmlElement(): HTMLElement {
     // create the element
     const element = this.model.file.getContentDocument().createElement('div');
-    element.setAttribute(Constants.TYPE_ATTR, Constants.TYPE_HTML);
+    element.setAttribute(Constants.TYPE_ATTR, ElementType.HTML);
 
     // create the container for html content
     const htmlContent = this.model.file.getContentDocument().createElement('div');
@@ -939,7 +901,7 @@ export class SilexElement {
   createImageElement(): HTMLElement {
     // create the element
     const element = this.model.file.getContentDocument().createElement('div');
-    element.setAttribute(Constants.TYPE_ATTR, Constants.TYPE_IMAGE);
+    element.setAttribute(Constants.TYPE_ATTR, ElementType.IMAGE);
     return element;
   }
 
@@ -975,12 +937,12 @@ export class SilexElement {
     }
     const silexType = this.getType(element);
     switch (silexType) {
-      case Constants.TYPE_TEXT: return 'Text';
-      case Constants.TYPE_IMAGE: return 'Image';
-      case Constants.TYPE_CONTAINER: return 'Container';
-      case Constants.TYPE_HTML: return 'Html';
-      // case Constants.TYPE_CONTAINER_CONTENT: return 'Container';
-      // case Constants.TYPE_SECTION: return 'Section';
+      case ElementType.TEXT: return 'Text';
+      case ElementType.IMAGE: return 'Image';
+      case ElementType.CONTAINER: return 'Container';
+      case ElementType.HTML: return 'Html';
+      // case ElementType.CONTAINER_CONTENT: return 'Container';
+      // case ElementType.SECTION: return 'Section';
       default: return silexType;
     }
   }
@@ -1007,7 +969,7 @@ export class SilexElement {
           Constants.SILEX_CLASS_NAMES.indexOf(name) > -1 ||
           pages.findIndex((page) => page.name === name) > -1 ||
           this.getComponentClassName(element).indexOf(name) > -1 ||
-          this.model.property.getSilexId(element) === name) {
+          this.model.property.getElementId(element) === name) {
         return false;
       }
       return true;
@@ -1030,7 +992,7 @@ export class SilexElement {
         element.className.split(' ').map((name) => {
           if (Constants.SILEX_CLASS_NAMES.indexOf(name) > -1 ||
               pages.findIndex((page) => page.name === name) > -1 ||
-              this.model.property.getSilexId(element) === name) {
+              this.model.property.getElementId(element) === name) {
             return name;
           }
         }),
@@ -1054,10 +1016,7 @@ export class SilexElement {
    * returns 'height' or 'minHeight' depending on the element type
    * @return 'height' or 'minHeight' depending on the element type
    */
-  getHeightStyleName(element: HTMLElement): string {
-    if (element.classList.contains(Constants.SILEX_USE_HEIGHT_NOT_MINHEIGHT)) {
-      return 'height';
-    }
-    return 'min-height';
+  getHeightStyleName(element: ElementData): string {
+    return element.useMinHeight ? 'min-height' : 'height';
   }
 }

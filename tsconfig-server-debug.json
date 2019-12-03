@@ -2,7 +2,7 @@
   "compileOnSave": true,
   "compilerOptions": {
     "outDir": "dist/server/",
-    "target": "es6",
+    "target": "esnext",
     "watch": false,
     "inlineSourceMap": true,
     "module": "commonjs",

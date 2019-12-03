@@ -14,11 +14,10 @@
  *      and call the main {silex.controller.Controller} controller's methods
  *
  */
-import { PageData } from '../flux/page-store';
-import {Model} from '../types';
-import {View} from '../types';
-
-import {ControllerBase} from './ControllerBase';
+import { ElementData, Link, PageData } from '../../types';
+import { getPages, updateElements } from '../api';
+import { Model, View } from '../ClientTypes';
+import { ControllerBase } from './ControllerBase';
 
 /**
  * @param view  view class which holds the other views
@@ -32,55 +31,81 @@ super(model, view);
   /**
    * add the provided elements to a given page
    */
-  addToPage(elements: HTMLElement[], opt_name = this.model.element.getCurrentPage()) {
+  addToPage(elements: ElementData[], page = getPages().find((p) => p.isOpen)) {
     // undo checkpoint
     this.undoCheckPoint();
-    elements.forEach((element) => {
-      this.model.element.addToPage(element, opt_name);
-    });
+    updateElements(elements
+      .map((el) => ({
+        from: el,
+        to: {
+          ...el,
+          pageNames: el.pageNames.concat([page.name]),
+        },
+      })))
   }
 
   /**
    * remove the provided elements from a given page
    */
-  removeFromPage(elements: HTMLElement[], page: PageData) {
+  removeFromPage(elements: ElementData[], page: PageData) {
     // undo checkpoint
     this.undoCheckPoint();
-    elements.forEach((element) => {
-      this.model.element.removeFromPage(element, name);
-    });
+    updateElements(elements
+      .map((el) => ({
+        from: el,
+        to: {
+          ...el,
+          pageNames: el.pageNames.filter((name) => name === page.name),
+        },
+      })))
   }
 
   /**
    * add provided elements to all pages
    */
-  visibleOnAllPages(elements: HTMLElement[]) {
+  visibleOnAllPages(elements: ElementData[]) {
     // undo checkpoint
     this.undoCheckPoint();
-    elements.forEach((element) => {
-      this.model.element.removeFromAllPages(element);
-    });
+    updateElements(elements
+      .map((el) => ({
+        from: el,
+        to: {
+          ...el,
+          pageNames: [],
+        },
+      })))
   }
 
   /**
    * add link to the provided elements
    */
-  addLink(elements: HTMLElement[], name: string) {
+  addLink(elements: ElementData[], link: Link) {
     // undo checkpoint
     this.undoCheckPoint();
-    elements.forEach((element) => {
-      this.model.element.setLink(element, name);
-    });
+    updateElements(elements
+      .map((el) => ({
+        from: el,
+        to: {
+          ...el,
+          link,
+        },
+      })))
+
   }
 
   /**
    * remove link from the provided elements
    */
-  removeLink(elements: HTMLElement[]) {
+  removeLink(elements: ElementData[]) {
     // undo checkpoint
     this.undoCheckPoint();
-    elements.forEach((element) => {
-      this.model.element.setLink(element);
-    });
+    updateElements(elements
+      .map((el) => ({
+        from: el,
+        to: {
+          ...el,
+          link: null,
+        },
+      })))
   }
 }

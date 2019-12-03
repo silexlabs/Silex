@@ -16,10 +16,11 @@
  *
  */
 
-import { SelectableState } from '../../../../node_modules/drag-drop-stage-component/src/ts/Types';
-import { getPages } from '../../api';
 // FIXME: do not find module only in vim: import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
-import { Controller, Model } from '../../types';
+import { SelectableState } from '../../../../node_modules/drag-drop-stage-component/src/ts/Types';
+import { ElementData } from '../../../types';
+import { getElements, subscribeElements, updateElements } from '../../api';
+import { Controller, Model } from '../../ClientTypes';
 
 export interface InputData {
   selector: string;
@@ -41,10 +42,6 @@ export interface InputData {
 export class PaneBase {
   protected pageNames: string[];
   protected currentPageName: string;
-  /**
-   * store the last selection
-   */
-  protected states: SelectableState[] = null;
   protected change = new Map();
 
   /**
@@ -52,38 +49,27 @@ export class PaneBase {
    */
   protected baseUrl = null;
 
-  constructor(protected element: HTMLElement, protected model: Model, protected controller: Controller) {}
-
-  /**
-   * notify the controller that the style changed
-   * @param styleName   not css style but camel case
-   */
-  styleChanged(styleName: string, opt_styleValue?: string, opt_elements?: HTMLElement[]) {
-    // notify the controller
-    this.controller.propertyToolController.styleChanged(styleName, opt_styleValue, opt_elements);
+  constructor(protected element: HTMLElement, protected model: Model, protected controller: Controller) {
+    subscribeElements(() => this.redraw(getElements().filter((el) => el.selected)))
   }
 
-  /**
-   * notify the controller that a property has changed
-   * @param propertyName   property name, e.g. 'src'
-   */
-  propertyChanged(propertyName: string, opt_propertyValue?: string, opt_elements?: HTMLElement[], opt_applyToContent?: boolean) {
-    // notify the controller
-    this.controller.propertyToolController.propertyChanged(propertyName, opt_propertyValue, opt_elements, opt_applyToContent);
-  }
+  // /**
+  //  * notify the controller that the style changed
+  //  * @param styleName   not css style but camel case
+  //  */
+  // styleChanged(styleName: string, opt_styleValue?: string, opt_elements?: HTMLElement[]) {
+  //   // notify the controller
+  //   this.controller.propertyToolController.styleChanged(styleName, opt_styleValue, opt_elements);
+  // }
 
-  /**
-   * refresh the displayed data
-   * @param selectedElements the elements currently selected
-   * @param pageNames   the names of the pages which appear in the current HTML file
-   * @param  currentPageName   the name of the current page
-   */
-  redraw(states: SelectableState[]) {
-    this.states = states;
-    this.pageNames = getPages().map((p) => p.name);
-    const currentPage = getPages().find((p) => p.isOpen);
-    this.currentPageName = currentPage ? currentPage.name : null;
-  }
+  // /**
+  //  * notify the controller that a property has changed
+  //  * @param propertyName   property name, e.g. 'src'
+  //  */
+  // propertyChanged(propertyName: string, opt_propertyValue?: string, opt_elements?: HTMLElement[], opt_applyToContent?: boolean) {
+  //   // notify the controller
+  //   this.controller.propertyToolController.propertyChanged(propertyName, opt_propertyValue, opt_elements, opt_applyToContent);
+  // }
 
   /**
    * get the common property of a group of elements
@@ -93,11 +79,11 @@ export class PaneBase {
    *     same for all elements
    * FIXME: we should use Array::reduce
    */
-  getCommonProperty(states: SelectableState[], getPropertyFunction: (p1: SelectableState) => string | number | boolean | null): any {
+  getCommonProperty<T>(items: T[], getPropertyFunction: (p1: T) => string | number | boolean | null): any {
     let value = null;
     let hasCommonValue: boolean = true;
     let isFirstValue = true;
-    states.forEach((state) => {
+    items.forEach((state) => {
       const elementValue = getPropertyFunction(state);
       if (isFirstValue) {
         isFirstValue = false;
@@ -116,6 +102,12 @@ export class PaneBase {
     }
     return value;
   }
+
+  /**
+   * refresh the displayed data
+   */
+  protected redraw(selectedElements: ElementData[]) {}
+
   protected onInputPxChanged(selector: string, value: string) {
     if (this.change.has(selector)) {
       this.change.get(selector).onChange(value);
@@ -150,13 +142,41 @@ export class PaneBase {
       input.addEventListener(inputData.eventName, (e: Event) => {
         changeObj.freez = true;
         const val = input.value ? input.value + inputData.unit : '';
-        this.styleChanged(inputData.styleName, val, this.states.map((s) => s.el));
+        updateElements(getElements()
+          .filter((el) => el.selected)
+          .map((el) => {
+            const style = { ...el.style };
+            style[inputData.styleName] = val;
+            return {
+              from: el,
+              to: {
+                ...el,
+                style,
+              },
+            };
+          }))
         changeObj.freez = false;
       });
 
       // store the onChange callback for use in onInputChanged
       this.change.set(inputData.selector, changeObj);
     });
+  }
+
+  protected styleChanged(styleName, val) {
+    updateElements(getElements()
+    .filter((el) => el.selected)
+    .map((el) => {
+      const style = { ...el.style };
+      style[styleName] = val;
+      return {
+        from: el,
+        to: {
+          ...el,
+          style,
+        },
+      };
+    }))
   }
 
   /**

@@ -9,7 +9,7 @@
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
 
-import {Constants} from '../../Constants.js';
+import {Constants} from '../../constants.js';
 
 export default class DomTools {
   /**

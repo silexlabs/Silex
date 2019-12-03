@@ -14,9 +14,9 @@
  *      and call the main {silex.controller.Controller} controller's methods
  *
  */
-import {Model} from '../types';
-import {View} from '../types';
-import {ControllerBase} from './ControllerBase';
+import { getSite, updateSite } from '../api';
+import { Model, View } from '../ClientTypes';
+import { ControllerBase } from './ControllerBase';
 
 /**
  * @param view  view class which holds the other views
@@ -30,8 +30,10 @@ super(model, view);
   /**
    * JsEditor event handler
    */
-  changed(content: string) {
-    // update content
-    this.model.head.setHeadScript(content);
+  changed(headScript: string) {
+    updateSite({
+      ...getSite(),
+      headScript,
+    });
   }
 }

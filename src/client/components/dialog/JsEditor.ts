@@ -1,5 +1,5 @@
-import {Controller} from '../../types';
-import {Model} from '../../types';
+import {Controller} from '../../ClientTypes';
+import {Model} from '../../ClientTypes';
 
 /**
  * Silex, live web creation

@@ -11,7 +11,7 @@
 
 import * as fs from 'fs';
 import * as Path from 'path';
-import { Constants } from '../../Constants';
+import { Constants } from '../../constants';
 
 // FIXME: path in constants
 // const components = require('../../../dist/client/libs/prodotype/components/components.json')

@@ -16,13 +16,15 @@
  *   It has methods to manipulate the File
  */
 
-import { initializePages, openPage } from '../api';
+import { FileInfo } from '../../types';
+import { getSite, initializeElements, initializePages, openPage, updateSite } from '../api';
+import { Model, View } from '../ClientTypes';
 import { getUiElements } from '../components/UiElements';
+import { getElementsFromDom } from '../dom/element-dom';
 import { getPagesFromDom } from '../dom/page-dom';
 import { Property } from '../model/Property';
-import { startPageObserver, stopPageObserver } from '../observers/page-observer';
+import { startObservers, stopObservers } from '../observers/index';
 import { CloudStorage } from '../service/CloudStorage';
-import { FileInfo, Model, View } from '../types';
 
 /**
  * @param model  model class which holds the other models
@@ -157,15 +159,17 @@ export class File {
 
     // check the integrity and store silex style sheet which holds silex
     // elements styles
-    this.model.property.initStyles(this.contentDocument_);
-    this.model.property.loadProperties(this.contentDocument_);
-    this.model.component.initStyles(this.contentDocument_);
+    // this.model.property.initStyles(this.contentDocument_);
+    // this.model.property.loadProperties(this.contentDocument_);
+    // this.model.component.initStyles(this.contentDocument_);
 
     // update model
-    stopPageObserver();
+    stopObservers();
     const pages = getPagesFromDom();
     initializePages(pages);
-    startPageObserver();
+    const elements = getElementsFromDom();
+    initializeElements(elements);
+    startObservers();
 
     // restore the stage
     this.view.stageWrapper.init(this.iFrameElement_);
@@ -177,15 +181,12 @@ export class File {
       opt_cbk();
     }
 
-    // select the body
-    this.model.body.emptySelection();
-
-    // update the settings
-    this.model.head.updateFromDom();
-
     // remove publication path for templates
     if (this.isTemplate) {
-      this.model.head.setPublicationPath(null);
+      updateSite({
+        ...getSite(),
+        publicationPath: null,
+      });
     }
 
     setTimeout(() => {
@@ -240,7 +241,8 @@ export class File {
     // update style tag (the dom do not update automatically when we change
     // document.styleSheets)
     const updatedStyles = this.model.property.getAllStyles(this.contentDocument_);
-    this.model.property.saveProperties(this.contentDocument_);
+    throw new Error('not implemented: save state');
+    // FIXME: do this? this.model.property.saveProperties(this.contentDocument_);
 
     // clone
     const cleanFile = (this.contentDocument_.cloneNode(true) as Document);
@@ -276,7 +278,10 @@ export class File {
         url, (rawHtml, userHead) => {
           this.fileInfo =
               ({isDir: false, mime: 'text/html'} as FileInfo);
-          this.model.head.setUserHeadTag(userHead);
+          updateSite({
+            ...getSite(),
+            userHeadTag: userHead,
+          });
           if (opt_cbk) {
             opt_cbk(rawHtml);
           }
@@ -305,7 +310,7 @@ export class File {
     }
     CloudStorage.getInstance().write(
         (this.fileInfo as FileInfo), rawHtml,
-        this.model.head.getUserHeadTag(), () => {
+        getSite().userHeadTag, () => {
           this.isTemplate = false;
           if (cbk) {
             cbk();
@@ -327,7 +332,10 @@ export class File {
         this.close();
         this.fileInfo = fileInfo;
         this.addToLatestFiles(this.fileInfo);
-        this.model.head.setUserHeadTag(userHead);
+        updateSite({
+          ...getSite(),
+          userHeadTag: userHead,
+        });
         if (cbk) {
           cbk(rawHtml);
         }

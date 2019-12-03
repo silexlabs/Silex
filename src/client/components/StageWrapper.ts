@@ -1,11 +1,17 @@
 // import { Stage } from 'drag-drop-stage-component'; // this is not recognized by my IDE
 import { Stage } from '../../../node_modules/drag-drop-stage-component/src/ts/index';
 import { ScrollData, SelectableState } from '../../../node_modules/drag-drop-stage-component/src/ts/Types';
-import { SilexType, Constants } from '../../Constants';
-import { getPages, subscribePages } from '../api';
+import { Constants } from '../../constants';
+import { ElementData, ElementType } from '../../types';
+import { getElements, getPages, getUi, subscribeElements, subscribePages, updateElements } from '../api';
+import { getDomElement, getElementData } from '../dom/element-dom';
 import { Body } from '../model/Body';
-import { Controller, Model } from '../types';
+import { Controller, Model } from '../ClientTypes';
 import { SilexNotification } from '../utils/Notification';
+
+// WIP: will be the way to interact with the model
+let stage: Stage
+export const getStage = () => stage;
 
 export class StageWrapper {
   private stage: Stage;
@@ -21,45 +27,16 @@ export class StageWrapper {
    * the controller instances
    */
   constructor(protected element: HTMLElement, protected model: Model, protected controller: Controller) {
-    subscribePages((prevState, nextState) => this.reset())
-  }
-
-  redraw() {
-    if (!this.stage) { return; }
-    this.stage.redraw();
-  }
-  reset() {
-    console.log('reset stage', this.stage, this.model.element.getElementsForPage)
-    if (!this.stage) { return; }
-    this.stage.reset(this.model.element.getElementsForPage());
-  }
-  resizeWindow() {
-    if (!this.stage) { return; }
-    this.stage.resizeWindow();
-  }
-  addElement(element: HTMLElement) {
-    if (!this.stage) { return; }
-    this.stage.addElement(element);
-  }
-  removeElement(element: HTMLElement) {
-    if (!this.stage) { return; }
-    this.stage.removeElement(element);
-  }
-  center(elements: HTMLElement[]) {
-    if (!this.stage) { return; }
-    this.stage.center(elements);
-  }
-  getDropZone(posX: number, posY: number, element: HTMLElement): HTMLElement {
-    if (!this.stage) { return this.model.body.getBodyElement(); }
-    return this.stage.getDropZone(posX, posY, element);
-  }
-  getScroll(): ScrollData {
-    if (!this.stage) { return {x: 0, y: 0}; }
-    return this.stage.getScroll();
-  }
-  setScroll(scroll: ScrollData) {
-    if (!this.stage) { return; }
-    this.stage.setScroll(scroll);
+    subscribePages((prevState, nextState) => {
+      this.reset();
+    });
+    subscribeElements((prevState, nextState) => {
+      const newElements = nextState.filter((el) => !prevState.find((e) => e.id === el.id));
+      if (newElements.length) {
+        // send the scroll to the target
+        this.center(newElements.map((el) => getDomElement(el)));
+      }
+    });
   }
   getEnableSticky(): boolean {
     if (!this.stage) { return false; }
@@ -109,6 +86,7 @@ export class StageWrapper {
     if (!!this.stage) {
       this.stage.cleanup();
       this.stage = null;
+      stage = null;
     }
     this.toBeUnsubscribed.forEach((u) => u());
     this.toBeUnsubscribed = [];
@@ -131,20 +109,20 @@ export class StageWrapper {
 
   init(iframe: HTMLIFrameElement) {
     this.cleanup();
-    this.stage = new Stage(iframe, [], {
+    stage = this.stage = new Stage(iframe, [], {
       isSelectable: ((el) => this.model.element.isVisible(el) && !el.classList.contains(Constants.PREVENT_SELECTABLE_CLASS_NAME)),
       isDraggable: ((el) => !el.classList.contains(Constants.PREVENT_DRAGGABLE_CLASS_NAME)),
-      isDropZone: ((el) => !el.classList.contains(Constants.PREVENT_DROPPABLE_CLASS_NAME) && el.classList.contains(SilexType.CONTAINER)),
+      isDropZone: ((el) => !el.classList.contains(Constants.PREVENT_DROPPABLE_CLASS_NAME) && el.classList.contains(ElementType.CONTAINER)),
       isResizeable: ((el) => {
         // section is not resizeable on mobile
-        const isSectionOnMobile = this.controller.stageController.getMobileMode() && this.model.element.isSection(el);
+        const isSectionOnMobile = getUi().mobileEditor && this.model.element.isSection(el);
         // css classes which prevent resize
         const hasPreventCssClass = el.classList.contains(Constants.PREVENT_RESIZABLE_CLASS_NAME);
         if (isSectionOnMobile || hasPreventCssClass) {
           return false;
         }
         // section content resizable height only
-        const isSectionContentOnMobile = this.controller.stageController.getMobileMode() && this.model.element.isSectionContent(el);
+        const isSectionContentOnMobile = getUi().mobileEditor && this.model.element.isSectionContent(el);
         if (isSectionContentOnMobile) {
           return {
             top: !el.classList.contains(Constants.PREVENT_RESIZABLE_TOP_CLASS_NAME),
@@ -164,7 +142,7 @@ export class StageWrapper {
       useMinHeight: ((el) => !el.classList.contains(Constants.SILEX_USE_HEIGHT_NOT_MINHEIGHT)),
       canDrop: ((el: HTMLElement, dropZone: HTMLElement) => {
         // sections can only be dropped in the body
-        return !el.classList.contains(SilexType.SECTION)
+        return !el.classList.contains(ElementType.SECTION)
           || dropZone.tagName.toLowerCase() === 'body';
       }),
       onEdit: () => {
@@ -183,7 +161,6 @@ export class StageWrapper {
     });
     // give time to iframes to initialize
     setTimeout(() => {
-      // TODO: this should go in a "selection" model
       this.toBeUnsubscribed.push(
         this.subscribeMouseEvent('mousedown', (e: MouseEvent) => {
           // reset focus when the stage is clicked
@@ -194,48 +171,66 @@ export class StageWrapper {
       );
     }, 0);
   }
-  startDragOrResize() {
+  getScroll(): ScrollData {
+    if (!this.stage) { return {x: 0, y: 0}; }
+    return this.stage.getScroll();
+  }
+  setScroll(scroll: ScrollData) {
+    if (!this.stage) { return; }
+    this.stage.setScroll(scroll);
+  }
+  redraw() {
+    if (!this.stage) { return; }
+    this.stage.redraw();
+  }
+  private startDragOrResize() {
     this.hideScrolls(true);
     this.dragging = true;
     this.prepareUndo();
   }
-  startResize() {
+  private startResize() {
     this.model.body.getBodyElement().classList.add(Constants.RESIZING_CLASS_NAME);
     this.startDragOrResize();
   }
-  startDrag() {
+  private startDrag() {
     this.model.body.getBodyElement().classList.add(Constants.DRAGGING_CLASS_NAME);
     this.startDragOrResize();
   }
-  stopDragOrResize(change, redraw) {
+  private stopDragOrResize(change, redraw) {
     this.hideScrolls(false);
     this.dragging = false;
     this.applyStyle(change);
     this.redraw();
-    this.updateView();
   }
-  stopResize(change, redraw = false) {
+  private stopResize(change, redraw = false) {
     this.model.body.getBodyElement().classList.remove(Constants.RESIZING_CLASS_NAME);
     this.stopDragOrResize(change, redraw);
   }
-  stopDrag(change, redraw = false) {
+  private stopDrag(change, redraw = false) {
     this.model.body.getBodyElement().classList.remove(Constants.DRAGGING_CLASS_NAME);
     this.stopDragOrResize(change, redraw);
   }
-  prepareUndo() {
+  private onSelectionChanged(changed: SelectableState[]) {
+    updateElements(changed
+      .map((selectable) => {
+        const element = getElementData(selectable.el);
+        return {
+          from: element,
+          to: {
+            ...element,
+            selected: selectable.selected,
+          },
+        };
+      }))
+  }
+  private prepareUndo() {
     this.controller.stageController.undoCheckPoint();
   }
-  updateView() {
-    this.model.body.refreshViews();
-  }
-  onSelectionChanged(_) {
-    this.model.body.refreshViews();
-  }
-  applyStyle(change) {
+  private applyStyle(change) {
     // do not mess up the css translation applyed by stage during drag
     if (!this.dragging) {
+      // removed the inline styles
       change.forEach((s) => {
-        // removed the inline styles
         // these are all the properties that can be set by the stage component
         s.el.style.top = '';
         s.el.style.left = '';
@@ -248,20 +243,55 @@ export class StageWrapper {
         s.el.style.border = '';
         s.el.style.minHeight = '';
         s.el.style.position = '';
-
-        // get element style
-        const styleObject = this.model.property.getStyle(s.el) || {};
-
-        // compute style
-        styleObject[s.useMinHeight ? 'min-height' : 'height'] = s.metrics.computedStyleRect.height + 'px';
-        styleObject.top = s.metrics.computedStyleRect.top + 'px';
-        styleObject.left = s.metrics.computedStyleRect.left + 'px';
-        styleObject.width = s.metrics.computedStyleRect.width + 'px';
-
-        // apply styles
-        this.model.property.setStyle(s.el, styleObject);
       });
-      this.updateView();
+      // apply the style
+      updateElements(change.map((s) => {
+        const element = getElementData(s.el);
+        return {
+          from: element,
+          to: {
+            ...element,
+            height: s.metrics.computedStyleRect.height + 'px',
+            top: s.metrics.computedStyleRect.top + 'px',
+            left: s.metrics.computedStyleRect.left + 'px',
+            width: s.metrics.computedStyleRect.width + 'px',
+          },
+        };
+      }))
     }
+  }
+  private reset() {
+    if (!this.stage) { return; }
+    const currentPage = getPages().find((p) => p.isOpen);
+    console.log('reset stage', currentPage)
+    this.stage.reset(getElements()
+      .filter(
+        (el: ElementData) => (el.pageNames.length === 0 || !!el.pageNames.find((name) => name === currentPage.name))
+        && ((el.visibility.desktop && !this.isMobileEditor()) || (el.visibility.mobile && this.isMobileEditor())))
+      .map((el) => getDomElement(el)));
+  }
+  // FIXME: find another way to expose isMobileEditor to views
+  private isMobileEditor(): boolean {
+    return document.body.classList.contains('mobile-mode');
+  }
+  private resizeWindow() {
+    if (!this.stage) { return; }
+    this.stage.resizeWindow();
+  }
+  private addElement(element: HTMLElement) {
+    if (!this.stage) { return; }
+    this.stage.addElement(element);
+  }
+  private removeElement(element: HTMLElement) {
+    if (!this.stage) { return; }
+    this.stage.removeElement(element);
+  }
+  private center(elements: HTMLElement[]) {
+    if (!this.stage) { return; }
+    this.stage.center(elements);
+  }
+  private getDropZone(posX: number, posY: number, element: HTMLElement): HTMLElement {
+    if (!this.stage) { return this.model.body.getBodyElement(); }
+    return this.stage.getDropZone(posX, posY, element);
   }
 }

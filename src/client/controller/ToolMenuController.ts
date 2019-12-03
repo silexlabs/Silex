@@ -15,8 +15,8 @@
  *
  */
 import {SilexTasks} from '../service/SilexTasks';
-import {Model} from '../types';
-import {View} from '../types';
+import {Model} from '../ClientTypes';
+import {View} from '../ClientTypes';
 
 import { ModalDialog } from '../components/ModalDialog';
 import { getUiElements } from '../components/UiElements';

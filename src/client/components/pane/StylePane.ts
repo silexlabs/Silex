@@ -16,8 +16,9 @@
  */
 import tagsInput from 'tags-input';
 import { SelectableState } from '../../../../node_modules/drag-drop-stage-component/src/ts/Types';
-import { Controller, Model } from '../../types';
+import { Controller, Model } from '../../ClientTypes';
 import { PaneBase } from './PaneBase';
+import { ElementData } from '../../../types';
 
 /**
  * on of Silex Editors class
@@ -74,39 +75,6 @@ export class StylePane extends PaneBase {
     // this.ace.setReadOnly(true);
   }
 
-  /**
-   * redraw the properties
-   * @param selectedElements the elements currently selected
-   * @param pageNames   the names of the pages which appear in the current HTML file
-   * @param  currentPageName   the name of the current page
-   */
-  redraw(states: SelectableState[]) {
-    super.redraw(states);
-
-    // css classes
-    const cssClasses = this.getCommonProperty(states, (state) => this.model.element.getClassName(state.el));
-
-    if (this.getClassesTags() !== cssClasses) {
-      if (cssClasses) {
-        this.setClassesTags(cssClasses);
-      } else {
-        this.setClassesTags('');
-      }
-    }
-
-    // css inline style
-    // const cssInlineStyle = this.getCommonProperty(states, (state) => this.model.element.getAllStyles(state.el));
-
-    // if (cssInlineStyle) {
-    //   const str = '.element{\n' + cssInlineStyle.replace(/; /gi, ';\n') + '\n}';
-    //   const pos = this.ace.getCursorPosition();
-    //   this.ace.setValue(str, 1);
-    //   this.ace.gotoLine(pos.row + 1, pos.column, false);
-    // } else {
-    //   this.ace.setValue('.element{\n/' + '* multiple elements selected *' + '/\n}', 1);
-    // }
-  }
-
   getClassesTags() {
     return this.cssClassesTagsInput.getValue().split(',').join(' ');
   }
@@ -137,5 +105,39 @@ export class StylePane extends PaneBase {
     // }
     // this.controller.propertyToolController.multipleStylesChanged(
     //     Style.stringToStyle(value || ''));
+  }
+
+  /**
+   * redraw the properties
+   */
+  protected redraw(selectedElements: ElementData[]) {
+    super.redraw(selectedElements);
+
+    // intersection of css classes in all selected elements
+    // FIXME: this may lead to erase some css classes, we'd better not change multiple css classes if different accross selection?
+    // const cssClasses = this.getCommonProperty(selectedElements, (el) => el.classList);
+    const cssClasses = selectedElements
+      .map((el) => el.classList)
+      .reduce((a, b) => a.filter((c) => !!b.find((d) => d === c)));
+
+    if (this.getClassesTags() !== cssClasses) {
+      if (cssClasses) {
+        this.setClassesTags(cssClasses);
+      } else {
+        this.setClassesTags('');
+      }
+    }
+
+    // css inline style
+    // const cssInlineStyle = this.getCommonProperty(states, (state) => this.model.element.getAllStyles(state.el));
+
+    // if (cssInlineStyle) {
+    //   const str = '.element{\n' + cssInlineStyle.replace(/; /gi, ';\n') + '\n}';
+    //   const pos = this.ace.getCursorPosition();
+    //   this.ace.setValue(str, 1);
+    //   this.ace.gotoLine(pos.row + 1, pos.column, false);
+    // } else {
+    //   this.ace.setValue('.element{\n/' + '* multiple elements selected *' + '/\n}', 1);
+    // }
   }
 }

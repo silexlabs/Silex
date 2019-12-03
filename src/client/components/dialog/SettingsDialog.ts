@@ -14,8 +14,10 @@
  *
  */
 
+import { DataSource, DataSources, FileInfo, Font } from '../../../types';
+import { getSite, subscribeSite, updateSite } from '../../api';
+import { Controller, Model } from '../../ClientTypes';
 import { CloudStorage } from '../../service/CloudStorage';
-import { Controller, DataSource, DataSources, FileInfo, Font, Model } from '../../types';
 import { SilexNotification } from '../../utils/Notification';
 import { Url } from '../../utils/Url';
 import { ModalDialog } from '../ModalDialog';
@@ -34,19 +36,16 @@ export class SettingsDialog {
    */
   mobileCheckbox: HTMLInputElement = null;
 
-  /**
-   * store the current publication path
-   */
-  publicationPath: FileInfo = null;
-  websiteUrl: string = null;
   onClose: (() => any) = null;
-
-  // make this a dialog
-  modalDialog: any;
 
   // navigation
   fontList: HTMLElement;
   dataSourcesList: HTMLElement;
+
+  // make this a dialog
+  modalDialog: any;
+
+  unsub: () => void = null;
 
   /**
    * @param element   container to render the UI
@@ -67,9 +66,13 @@ export class SettingsDialog {
         } else {
           this.openPane(PANE_CSS_CLASSES[0]);
         }
+        this.unsub = subscribeSite(() => this.redraw());
         this.redraw();
       },
       onClose: () => {
+        if (this.unsub) {
+          this.unsub();
+        }
         // notify the caller of this dialog
         if (this.onClose) {
           this.onClose();
@@ -82,104 +85,144 @@ export class SettingsDialog {
     // input text fields
     this.bindTextField(
       '.general-pane .input-title',
-      (v) => this.controller.settingsDialogController.setTitle(v));
+      (v) => updateSite({
+        ...getSite(),
+        title: v,
+      }));
     this.bindTextField(
       '.general-pane .input-lang',
-      (v) => this.controller.settingsDialogController.setLang(v));
+      (v) => updateSite({
+        ...getSite(),
+        lang: v,
+      }));
     this.bindTextField(
       '.general-pane .input-site-width',
-      (v) => this.controller.settingsDialogController.setWebsiteWidth(!!v ? parseInt(v) : null));
+      (v) => updateSite({
+        ...getSite(),
+        width: !!v ? parseInt(v) : null,
+      }));
     this.bindTextField(
       '.social-pane .input-title',
-      (v) => this.controller.settingsDialogController.setTitleSocial(v));
+      (v) => updateSite({
+        ...getSite(),
+        titleSocial: v,
+      }));
     this.bindTextField(
       '.general-pane .input-description',
-      (v) => this.controller.settingsDialogController.setDescription(v));
+      (v) => updateSite({
+        ...getSite(),
+        description: v,
+      }));
     this.bindTextField(
       '.social-pane .input-description',
       (v) =>
-          this.controller.settingsDialogController.setDescriptionSocial(v));
+          updateSite({
+            ...getSite(),
+            descriptionSocial: v,
+          }));
     this.bindTextField(
       '.social-pane .input-twitter',
-      (v) => this.controller.settingsDialogController.setTwitterSocial(v));
+      (v) => updateSite({
+        ...getSite(),
+        twitterSocial: v,
+      }));
     this.bindTextField(
       '.general-pane .input-favicon-path',
-      (v) => this.controller.settingsDialogController.setFaviconPath(v));
+      (v) => updateSite({
+        ...getSite(),
+        faviconPath: v,
+      }));
     this.bindTextField(
       '.social-pane .input-image-path',
       (v) =>
-          this.controller.settingsDialogController.setThumbnailSocialPath(v));
+          updateSite({
+            ...getSite(),
+            thumbnailSocialPath: v,
+          }));
     this.bindTextField('.publish-pane .input-publication-path', (v) => {
-    const fileInfo =
-        this.controller.settingsDialogController.getPublicationPath();
-    const fileInfoNew = Url.updateFileInfo(fileInfo, {path: v});
-    this.controller.settingsDialogController.setPublicationPath(fileInfoNew);
-  });
+      const fileInfo = getSite().publicationPath;
+      const fileInfoNew = Url.updateFileInfo(fileInfo, {path: v});
+      updateSite({
+        ...getSite(),
+        publicationPath: fileInfoNew,
+      });
+    });
     this.bindTextField('.publish-pane .input-publication-service', (v) => {
-    const fileInfo =
-        this.controller.settingsDialogController.getPublicationPath();
-    const fileInfoNew =
-        Url.updateFileInfo(fileInfo, {service: v});
-    this.controller.settingsDialogController.setPublicationPath(fileInfoNew);
-  });
+      const fileInfo = getSite().publicationPath;
+      const fileInfoNew = Url.updateFileInfo(fileInfo, {service: v});
+      updateSite({
+        ...getSite(),
+        publicationPath: fileInfoNew,
+      });
+    });
     this.bindTextField('.publish-pane .input-website-url', (v) => {
-    if (v === '') {
-      v = null;
-    }
-    this.model.head.setWebsiteUrl(v);
-    this.websiteUrl = v;
-  });
+      if (v === '') {
+        v = null;
+      }
+      updateSite({
+        ...getSite(),
+        websiteUrl: v,
+      });
+    });
 
-  // image path browse button
+    // image path browse button
     this.bindBrowseButton('.general-pane .browse-favicon-path', () => {
-    this.controller.settingsDialogController.browseFaviconPath(
-        () => this.open());
-  });
+      this.controller.settingsDialogController.browseFaviconPath(
+          () => this.open());
+    });
     this.bindBrowseButton('.publish-pane .browse-publication-path', () => {
-    this.controller.settingsDialogController.browsePublishPath(
+      this.controller.settingsDialogController.browsePublishPath(
         () => this.open());
-  });
+    });
 
-  // build UI
+    // build UI
     this.mobileCheckbox = this.element.querySelector('.mobile-check');
     this.mobileCheckbox.addEventListener('click', () => {
         this.controller.settingsDialogController.toggleEnableMobile();
       }, false);
 
-  // fill the options of the service selector
+    // fill the options of the service selector
     CloudStorage.getInstance().ready(() => {
-    CloudStorage.getInstance().getServices((services) => {
-      const select = this.element.querySelector(
-          '.publish-pane .input-publication-service');
-      select.innerHTML = '';
-      services.forEach((service) => {
-        const option = document.createElement('option');
-        option.value = service.name;
-        option.innerHTML = service.displayName || service.name;
-        select.appendChild(option);
+      CloudStorage.getInstance().getServices((services) => {
+        const select = this.element.querySelector(
+            '.publish-pane .input-publication-service');
+        select.innerHTML = '';
+        services.forEach((service) => {
+          const option = document.createElement('option');
+          option.value = service.name;
+          option.innerHTML = service.displayName || service.name;
+          select.appendChild(option);
+        });
       });
     });
-  });
 
-  // add data source button
+    // add data source button
     (this.element.querySelector('.pane.data-sources-pane .add-data-source-btn') as HTMLElement).onclick = (e) => this.addDataSource();
-    (this.element.querySelector('.pane.data-sources-pane .reload-data-sources-btn') as HTMLElement).onclick = (e) => this.model.head.reloadDataSources();
+    (this.element.querySelector('.pane.data-sources-pane .reload-data-sources-btn') as HTMLElement).onclick = (e) => this.model.property.loadDataSources(getSite().dataSources, true);
     this.dataSourcesList = this.element.querySelector('.data-sources-list') as HTMLElement;
     this.dataSourcesList.onclick = (e) => {
       const el = (e.target as HTMLElement);
       if (el.classList.contains('del-btn')) {
         const idx = el.getAttribute('data-idx');
-        const dataSources = this.model.head.getDataSources();
+        const site = getSite();
+        const dataSources = { ...site.dataSources };
         delete dataSources[idx];
-        this.model.head.setDataSources(dataSources);
+        updateSite({
+          ...site,
+          dataSources,
+        })
       } else {
         if (el.classList.contains('edit-btn')) {
           const idx = el.getAttribute('data-idx');
-          const dataSources = this.model.head.getDataSources();
-          this.editDataSource(idx, dataSources[idx], (newName, dataSource) => {
+          const site = getSite();
+          this.editDataSource(idx, site.dataSources[idx], (newName, dataSource) => {
+            const dataSources = { ...site.dataSources };
             dataSources[newName] = dataSource;
             if (newName !== idx) { delete dataSources[idx]; }
-            this.model.head.setDataSources(dataSources);
+            updateSite({
+              ...site,
+              dataSources,
+            })
           });
         }
       }
@@ -191,18 +234,24 @@ export class SettingsDialog {
       const el = (e.target as HTMLElement);
       if (el.classList.contains('del-btn')) {
         const idx = parseInt(el.getAttribute('data-idx'), 10);
-        const fonts = this.model.head.getFonts();
+        const fonts = getSite().fonts;
         const newFonts = fonts.slice();
         newFonts.splice(idx, 1);
-        this.model.head.setFonts(newFonts);
+        updateSite({
+          ...getSite(),
+          fonts: newFonts,
+        });
       } else {
         if (el.classList.contains('edit-btn')) {
           const idx = parseInt(el.getAttribute('data-idx'), 10);
-          const fonts = this.model.head.getFonts();
+          const fonts = getSite().fonts;
           this.editFont(fonts[idx], (font) => {
             const newFonts = fonts.slice();
             newFonts[idx] = font;
-            this.model.head.setFonts(newFonts);
+            updateSite({
+              ...getSite(),
+              fonts: newFonts,
+            });
           });
         }
       }
@@ -299,25 +348,23 @@ export class SettingsDialog {
   setPublicationPath(fileInfo?: FileInfo) {
     if (fileInfo != null ) {
       // set input tags the values
-      this.setInputValue(
-          '.publish-pane .input-publication-service', fileInfo.service);
-      this.setInputValue(
-          '.publish-pane .input-publication-path', fileInfo.path);
+      this.setInputValue('.publish-pane .input-publication-service', fileInfo.service);
+      this.setInputValue('.publish-pane .input-publication-path', fileInfo.path);
 
       // display the UI with publication path set
       this.element.classList.remove('publication-path-not-set');
-
-      // store FileInfo value, clone FileInfo for safety
-      this.publicationPath = (Object.assign({}, fileInfo) as FileInfo);
     } else {
       this.setInputValue('.publish-pane .input-publication-service', '');
       this.setInputValue('.publish-pane .input-publication-path', '');
 
       // display the "not set" UI
       this.element.classList.add('publication-path-not-set');
-
-      // store FileInfo value
-      this.publicationPath = null;
+    }
+    if (getSite().publicationPath !== fileInfo) {
+      updateSite({
+        ...getSite(),
+        publicationPath: fileInfo,
+      })
     }
   }
 
@@ -328,16 +375,21 @@ export class SettingsDialog {
   getPublicationPath(): FileInfo {
     const service = (this.element.querySelector('.publish-pane .input-publication-service') as HTMLInputElement).value;
     const path = (this.element.querySelector('.publish-pane .input-publication-path') as HTMLInputElement).value;
-    if (this.publicationPath != null  && service && path && service !== '' && path !== '') {
-      this.publicationPath.service = service;
-      this.publicationPath.path = path;
+    const publicationPath = getSite().publicationPath;
+    if (publicationPath != null  && service && path && service !== '' && path !== '') {
+      publicationPath.service = service;
+      publicationPath.path = path;
     }
-    return this.publicationPath;
+    return publicationPath;
   }
-
   setWebsiteUrl(opt_url) {
     this.setInputValue('.publish-pane .input-website-url', opt_url);
-    this.websiteUrl = opt_url;
+    if (getSite().websiteUrl !== opt_url) {
+      updateSite({
+        ...getSite(),
+        websiteUrl: opt_url,
+      })
+    }
   }
 
   /**
@@ -423,10 +475,11 @@ export class SettingsDialog {
    */
   redraw() {
     try {
-      this.setPublicationPath(this.model.head.getPublicationPath());
-      this.setWebsiteUrl(this.model.head.getWebsiteUrl());
-      this.fontList.innerHTML = this.getFontList(this.model.head.getFonts());
-      this.dataSourcesList.innerHTML = this.getDataSourcesList(this.model.head.getDataSources());
+      const site = getSite();
+      this.setPublicationPath(site.publicationPath);
+      this.setWebsiteUrl(site.websiteUrl);
+      this.fontList.innerHTML = this.getFontList(getSite().fonts);
+      this.dataSourcesList.innerHTML = this.getDataSourcesList(site.dataSources);
     } catch (e) {
     }
   }
@@ -456,13 +509,16 @@ export class SettingsDialog {
   addDataSource() {
     this.editDataSource('My photos', {href: 'https://jsonplaceholder.typicode.com/photos', root: ''},
         (name, dataSource) => {
-          const dataSources = this.model.head.getDataSources();
+          const dataSources = { ...getSite().dataSources };
           if (dataSources[name]) {
             console.warn('This data source already exists in this website');
             SilexNotification.alert('Error', 'This data source already exists in this website', () => {});
           } else {
             dataSources[name] = dataSource;
-            this.model.head.setDataSources(dataSources);
+            updateSite({
+              ...getSite(),
+              dataSources,
+            })
           }
         });
   }
@@ -531,14 +587,17 @@ export class SettingsDialog {
           family: '\'Roboto\', sans-serif',
         },
         (newFont) => {
-          const fonts = this.model.head.getFonts();
+          const fonts = getSite().fonts;
           if (fonts.find(
                   (font: Font) => font.href === newFont.href &&
                       font.family === newFont.family)) {
             console.warn('This font is already embedded in this website');
           } else {
             fonts.push(newFont);
-            this.model.head.setFonts(fonts);
+            updateSite({
+              ...getSite(),
+              fonts,
+            });
           }
         });
   }

@@ -14,6 +14,7 @@
  * Controller structures
  *
  */
+import { ElementData, FileInfo, PageData, Provider } from '../types';
 import { BreadCrumbs } from './components/BreadCrumbs';
 import { ContextMenu } from './components/ContextMenu';
 import { CssEditor } from './components/dialog/CssEditor';
@@ -43,18 +44,15 @@ import { StageController } from './controller/StageController';
 import { TextEditorController } from './controller/TextEditorController';
 import { ToolMenuController } from './controller/ToolMenuController';
 import { ViewMenuController } from './controller/ViewMenuController';
-import { PageData } from './flux/page-store';
 import { Body } from './model/Body';
 import { Component } from './model/Component';
-import { ComponentData } from './model/Data';
 import { SilexElement } from './model/Element';
 import { File } from './model/File';
 import { Head } from './model/Head';
 import { Property } from './model/Property';
 
-/**
- * warning: if you change that type, also change the default value in LinkDialog
- */
+// FIXME: this file should not exist
+
 export interface LinkData {
   href?: string;
   target?: string;
@@ -78,71 +76,18 @@ export interface StickyLine {
   stickyPoint: StickyPoint;
   metaData: any;
 }
-export interface DataSource {
-  href: string;
-  root: string;
-  data?: object;
-  structure?: object;
-}
-export interface DataSources { [key: string]: DataSource; }
-export interface Font {
-  family: string;
-  href: string;
-}
-// FIXME: choose between path and folder + name, remove absPath
-export interface FileInfo {
-  path: string;
-  folder: string;
-  service: string;
-  size: number;
-  modified: string;
-  name: string;
-  isDir: boolean;
-  mime: string;
-  absPath: string;
-}
-export interface Hosting {
-  providers: Provider[];
-  skipHostingSelection: boolean;
-}
-export interface Provider {
-  name: string;
-  displayName: string;
-  isLoggedIn: boolean;
-  authorizeUrl: string;
-  dashboardUrl: string;
-  pleaseCreateAVhost: string;
-  vhostsUrl: string;
-  buyDomainUrl: string;
-  skipVhostSelection: boolean;
-  skipFolderSelection: boolean;
-  afterPublishMessage: string;
-}
-export interface VHost {
-  name: string;
-  domainUrl: string;
-  skipDomainSelection: boolean;
-  publicationPath: FileInfo;
-  url: string;
-}
 export interface PublicationOptions {
   file: FileInfo;
   publicationPath: FileInfo;
   provider: Provider;
 }
 export interface UndoItem {
+  elements: ElementData[];
+  pages: PageData[];
   page: PageData;
   html: string;
   scrollX: number;
   scrollY: number;
-}
-export interface ClipboardItem {
-  parent: HTMLElement;
-  element: HTMLElement;
-  style: any;
-  mobileStyle: any;
-  componentData: ComponentData;
-  children: ClipboardItem[];
 }
 
 /**

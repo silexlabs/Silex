@@ -16,7 +16,7 @@ import { JSDOM } from 'jsdom';
 import * as nodeModules from 'node_modules-path';
 import * as Path from 'path';
 import { URL } from 'url';
-import { Constants } from '../../Constants';
+import { Constants } from '../../constants';
 import BackwardCompat from '../utils/BackwardCompat';
 import DomTools from '../utils/DomTools';
 

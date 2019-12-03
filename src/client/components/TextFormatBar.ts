@@ -15,12 +15,14 @@
  * box It uses the wysihtml library to change text format
  */
 
-import { getPages } from '../api';
+import { ElementData } from '../../types';
+import { getElements } from '../api';
 import { FileExplorer } from '../components/dialog/FileExplorer';
+import { getDomElement } from '../dom/element-dom';
 import { wysihtml, WysiHtmlEditor } from '../externs';
 import { Body } from '../model/Body';
 import { Tracker } from '../service/Tracker';
-import { Controller, LinkData, Model } from '../types';
+import { Controller, LinkData, Model } from '../ClientTypes';
 import { SilexNotification } from '../utils/Notification';
 import { LINK_ATTRIBUTES, LinkDialog } from './dialog/LinkDialog';
 import { Menu } from './Menu';
@@ -33,9 +35,7 @@ export class TextFormatBar {
   tracker: Tracker;
 
   // store the params
-  selectedElements: HTMLElement[] = null;
-  pageNames: string[] = null;
-  currentTextBox: HTMLElement = null;
+  currentTextBox: ElementData = null;
   wysihtmlEditor: WysiHtmlEditor = null;
   linkDialog: LinkDialog;
   toolbar: HTMLElement;
@@ -80,7 +80,7 @@ export class TextFormatBar {
   }
 
   onScroll(e) {
-    this.controller.textEditorController.attachToTextBox(this.currentTextBox, this.element);
+    this.controller.textEditorController.attachToTextBox(getDomElement(this.currentTextBox), this.element);
   }
 
   /**
@@ -112,35 +112,38 @@ export class TextFormatBar {
 
       // reset focus
       Body.resetFocus();
-      this.controller.stageController.refreshView();
 
       // use array acces for getSelection as a workaround for google closure
       // warning 'Property getSelection never defined on Document' cleanup
-      const editable = this.model.element.getContentNode(this.currentTextBox);
+      const currentTextBoxEl = getDomElement(this.currentTextBox);
+      this.currentTextBox = null;
+
+      const editable = this.model.element.getContentNode(currentTextBoxEl);
       editable.removeAttribute('contenteditable');
       editable.classList.remove('wysihtml-sandbox', 'wysihtml-editor');
-      this.currentTextBox.classList.remove('text-editor-focus');
-      this.currentTextBox.removeAttribute('data-allow-silex-shortcuts');
-      this.currentTextBox.onclick = null;
-      this.currentTextBox = null;
+      currentTextBoxEl.classList.remove('text-editor-focus');
+      currentTextBoxEl.removeAttribute('data-allow-silex-shortcuts');
+      currentTextBoxEl.onclick = null;
     }
     this.element.classList.remove('text-editor-editing');
   }
 
   startEditing(fileExplorer: FileExplorer, bookmark = null, cbk = null) {
+    const selectedElements = getElements().filter((el) => el.selected)
     // edit the style of the selection
-    if (this.selectedElements.length === 1) {
-      const newTextBox = this.selectedElements[0];
+    if (selectedElements.length === 1) {
+      const newTextBox = selectedElements[0];
       if (newTextBox !== this.currentTextBox) {
         this.stopEditing();
         this.controller.stageController.startEdit();
 
         this.currentTextBox = newTextBox;
+        const currentTextBoxEl = getDomElement(this.currentTextBox);
 
-        // this.currentTextBox.insertBefore(this.element,
-        // this.currentTextBox.firstChild);
-        this.controller.textEditorController.attachToTextBox(this.currentTextBox, this.element);
-        const editable = this.model.element.getContentNode(this.currentTextBox);
+        // currentTextBoxEl.insertBefore(this.element,
+        // currentTextBoxEl.firstChild);
+        this.controller.textEditorController.attachToTextBox(currentTextBoxEl, this.element);
+        const editable = this.model.element.getContentNode(currentTextBoxEl);
         const options = {
           toolbar: this.toolbar,
           handleTables: false,
@@ -195,8 +198,8 @@ export class TextFormatBar {
         this.wysihtmlEditor = new wysihtml.Editor(editable, options);
 
         // CSS classes
-        this.currentTextBox.classList.add('text-editor-focus');
-        this.currentTextBox.setAttribute('data-allow-silex-shortcuts', 'true');
+        currentTextBoxEl.classList.add('text-editor-focus');
+        currentTextBoxEl.setAttribute('data-allow-silex-shortcuts', 'true');
         this.element.classList.add('text-editor-editing');
 
         // handle the focus
@@ -277,7 +280,7 @@ export class TextFormatBar {
         cbk();
       }
     } else {
-      console.error('Error, can not edit selection with format pane', this.selectedElements);
+      console.error('Error, can not edit selection with format pane', selectedElements);
     }
   }
 
@@ -311,17 +314,5 @@ export class TextFormatBar {
     });
     // prevent click on the button
     e.preventDefault();
-  }
-
-  /**
-   * redraw the properties
-   * @param selectedElements the elements currently selected
-   */
-  redraw(selectedElements: HTMLElement[]) {
-    // reuse selectedElements in combo box on change
-    this.selectedElements = selectedElements;
-
-    // reuse pageNames in combo box on change
-    this.pageNames = getPages().map((p) => p.name);
   }
 }

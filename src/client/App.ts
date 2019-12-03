@@ -20,6 +20,7 @@
  */
 
 import { detect } from 'detect-browser';
+import * as api from './api';
 import { Config } from './ClientConfig';
 import { BreadCrumbs } from './components/BreadCrumbs';
 import { ContextMenu } from './components/ContextMenu';
@@ -51,13 +52,14 @@ import { StageController } from './controller/StageController';
 import { TextEditorController } from './controller/TextEditorController';
 import { ToolMenuController } from './controller/ToolMenuController';
 import { ViewMenuController } from './controller/ViewMenuController';
+import { setModel } from './dom/wip-refacto-model';
 import { Body } from './model/Body';
 import { Component } from './model/Component';
 import { SilexElement } from './model/Element';
 import { File } from './model/File';
 import { Head } from './model/Head';
 import { Property } from './model/Property';
-import { Controller, Model, View } from './types';
+import { Controller, Model, View } from './ClientTypes';
 import { SilexNotification } from './utils/Notification';
 import { Url } from './utils/Url';
 
@@ -230,7 +232,10 @@ export class App {
   }
 
   initDone() {
-    this.view.workspace.loadingDone();
+    api.updateUi({
+      ...api.getUi(),
+      loading: false,
+    });
     if (Config.debug.debugMode && Config.debug.debugScript) {
       const script = document.createElement('script');
       script.type = 'text/javascript';
@@ -333,6 +338,8 @@ export class App {
     emptyModel.component = new Component(emptyModel, emptyView);
     emptyModel.property = new Property(emptyModel, emptyView);
 
+    setModel(emptyModel)
+
     return emptyModel;
   }
 
@@ -359,8 +366,13 @@ export class App {
   }
 }
 
+// //////////////////////
+// Expose the API to JS
 // tslint:disable:no-string-literal
 window['silex'] = window['silex'] || {};
+window['silex'].api = api;
+
+// Expose the APP to JS for debug
 window['silex']['init'] = () => {
   window['silex']['config'] = Config;
 };

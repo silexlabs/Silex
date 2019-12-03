@@ -14,7 +14,7 @@
  *
  */
 
-import {FileInfo} from '../types';
+import {FileInfo} from '../../types';
 
 export class Url {
   static getUrlParams(): any {

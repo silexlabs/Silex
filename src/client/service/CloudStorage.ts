@@ -1,4 +1,4 @@
-import {FileInfo} from '../types';
+import {FileInfo} from '../../types';
 
 /**
  * Silex, live web creation

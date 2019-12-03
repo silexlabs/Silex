@@ -1,25 +1,22 @@
-interface State {
-  idx: number,
-}
-
-function updateIdx<S extends State>(state: S[], item: S) {
-  return state
-    .sort((i1: S, i2: S) => i1.idx === i2.idx ? i1 === item ? -1 : 1 : i1.idx - i2.idx)
-    .map((i, idx) => i.idx === idx ? i : Object.assign({}, i, { idx }))
-}
-
-
-export function withCrud<S extends State>(actionEnum: any, next: (state: S[], action: any) => any, label: string) {
-  return function(state: S[], action: any) {
+export function withCrud<State>(actionEnum: any, next: (state: State[], action: any) => any, label: string) {
+  return (state: State[], action: any) => {
     // console.log('CRUD reducer', label, state, action)
     switch (action.type) {
-      case actionEnum.INITIALIZE: return updateIdx<S>(action.items.slice(), null)
+      case actionEnum.INITIALIZE: return action.items.slice()
 
-      case actionEnum.CREATE: return updateIdx<S>(state.concat([action.item]), action.item)
-      case actionEnum.DELETE: return updateIdx<S>(state.filter((item) => item !== action.item), action.item)
-      case actionEnum.UPDATE: return updateIdx<S>(state.map((item) => item === action.oldItem ? action.newItem : item), action.newItem)
+      case actionEnum.CREATE: return state.concat(action.items)
+      case actionEnum.DELETE: return state.filter((item) => !action.items.find((i) => i === item))
+      case actionEnum.UPDATE: return state.map((item) => {
+        const found = action.changes.find((i) => i.from = item)
+        return found ? found.to : item
+      })
+      case actionEnum.MOVE:
+        // remove the item
+        const idx = state.findIndex((item) => item === action.item)
+        const withoutItem = [...state.slice(0, idx), ...state.slice(idx + 1)]
+        // put it back
+        return [...withoutItem.slice(0, action.idx), action.item, ...withoutItem.slice(action.idx)]
       default: return next(state, action)
     }
   }
 }
-
