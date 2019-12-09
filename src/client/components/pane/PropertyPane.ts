@@ -16,9 +16,12 @@
 
 import { SelectableState } from '../../../../node_modules/drag-drop-stage-component/src/ts/Types';
 import { ElementData, ElementType } from '../../../types';
-import { getElements, getStageState, updateElements } from '../../api';
+import { getElements, updateElements } from '../../api';
 import { Controller, Model } from '../../ClientTypes';
+import { getDomElement } from '../../dom/element-dom';
+import { getStage } from '../StageWrapper';
 import { PaneBase } from './PaneBase';
+import { getSiteDocument } from '../UiElements';
 
 const FlexWrapSelect = '.flex-wrap-select';
 const JustifyContentSelect = '.justify-content-select';
@@ -125,11 +128,14 @@ export class PropertyPane extends PaneBase {
    * callback for inputs
    */
   onTitleChanged(e: Event) {
+    e.preventDefault();
     // get the selected element
     const input = e.target as HTMLInputElement;
 
+    console.log('onTitleChanged', input, input.value)
     // apply the change to all elements
     updateElements(getElements()
+      .filter((el) => el.selected)
       .map((el) => ({
         from: el,
         to: {
@@ -146,7 +152,7 @@ export class PropertyPane extends PaneBase {
    */
   protected redraw(selectedElements: ElementData[]) {
     super.redraw(selectedElements);
-    const states = selectedElements.map((el) => getStageState(el));
+    const states = selectedElements.map((el) => getStage().getState(getDomElement(getSiteDocument(), el)));
 
     // useful filters
     const statesNoBody: SelectableState[] = states
@@ -201,12 +207,8 @@ export class PropertyPane extends PaneBase {
       const elementsType = this.getCommonProperty(statesNoBody, (state) => this.model.element.getType(state.el));
       if (elementsType === ElementType.IMAGE) {
         this.altInput.disabled = false;
-        const alt = this.getCommonProperty(statesNoBody, (state) => {
-          const content = this.model.element.getContentNode(state.el);
-          if (content) {
-            return content.getAttribute('alt');
-          }
-          return null;
+        const alt = this.getCommonProperty(selectedElements, (el) => {
+          return el.alt;
         });
         if (alt) {
           this.altInput.value = alt;
@@ -246,7 +248,7 @@ export class PropertyPane extends PaneBase {
       }
 
       // title
-      const title = this.getCommonProperty(statesNoBody, (state) => state.el.getAttribute('title'));
+      const title = this.getCommonProperty(selectedElements, (el) => el.title);
       if (title) {
         this.titleInput.value = title;
       } else {

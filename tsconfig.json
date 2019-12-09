@@ -11,6 +11,6 @@
     "esModuleInterop": true,
   },
   "include": [
-    "src/client/App.ts", "src/client/ClientTypes.ts",
+    "src/client/App.ts",
   ],
 }

@@ -1,41 +1,62 @@
 import { ElementData, ElementId } from '../../types';
-import { getElements, getPages } from '../api';
-import { addToPage, createElement, getDomElement, getElementData, moveToContainer, removeElement, removeFromAllPages, reorderElements, setClassName, setLink } from '../dom/element-dom';
+import { getElements, getPages, getUi } from '../api';
+import { getStage } from '../components/StageWrapper';
+import { addToPage, createElement, getDomElement, removeElement, removeFromAllPages, reorderElements, setClassName, setLink, writeStyleToDom, getDomElementById, getContentNode } from '../dom/element-dom';
+import { getSiteDocument } from '../components/UiElements';
+import { Style } from '../utils/Style';
 
-export function onAddElement(element: ElementData) {
+export function onAddElement(element: ElementData, doc = getSiteDocument()) {
   console.log('Adding a element to the DOM')
   // create with defaults
-  const newElement = getElementData(createElement(element.type))
+  const newElement: ElementData = createElement(element.id, element.type)
+
   // update with provided data
-  onUpdateElement(element, newElement)
+  onUpdateElement(newElement, element)
+
+  getStage().addElement(getDomElement(doc, element))
 
   // need to call Component:initComponent (adds default data)
-  throw new Error('not implemented: components');
+  console.error('not implemented: components')
 }
 
-export function onDeleteElement(element: ElementData) {
-  console.log('Removing element to the DOM')
-  removeElement(getDomElement(element))
+export function onDeleteElement(element: ElementData, doc = getSiteDocument()) {
+  console.log('Removing element to the DOM', element)
+  getStage().removeElement(getDomElement(doc, element))
+  removeElement(getDomElement(doc, element))
 }
 
-export function onUpdateElement(oldElement: ElementData, element: ElementData) {
-  console.log('Updating element to the DOM')
-  const domEl = getDomElement(element)
+export function onUpdateElement(oldElement: ElementData, element: ElementData, doc = getSiteDocument()) {
+  // console.log('Updating element to the DOM', oldElement, element, element.style !== oldElement.style, element.style.desktop !== oldElement.style.desktop)
+  const domEl = getDomElement(doc, element)
+  // selection
+  if (element.selected !== oldElement.selected) {
+    const selection = getStage().getSelection()
+    const found = selection.find((s) => s.el === domEl)
+    if (element.selected) {
+      if (!found) {
+        getStage().setSelection(selection.map((s) => s.el).concat([domEl]))
+      }
+    } else {
+      if (found) {
+        getStage().setSelection(selection.filter((s) => s !== found).map((s) => s.el))
+      }
+    }
+  }
   if (element.pageNames !== oldElement.pageNames) {
-    console.log('Updating page', oldElement.pageNames, element.pageNames)
+    console.log('Updating element visibility', oldElement.pageNames, element.pageNames)
     removeFromAllPages(domEl)
-    element.pageNames.forEach((name) => addToPage(domEl, getPages().find((p) => p.name === name)))
+    element.pageNames.forEach((name) => addToPage(domEl, getPages().find((p) => p.id === name)))
   }
   if (element.parent !== oldElement.parent) {
-    console.log('Updating parent', oldElement.parent, element.parent)
     const parentEl = getElements().find((el) => element.parent === el.id)
-    moveToContainer(getDomElement(element), getDomElement(parentEl))
+    console.log('Updating parent', oldElement.parent, element.parent)
+    getDomElement(doc, parentEl).appendChild(getDomElement(doc, element))
   }
   if (element.children !== oldElement.children) {
     console.log('Updating children', oldElement.children, element.children)
     reorderElements(element
       .children
-      .map((id: ElementId) => getDomElement(getElements().find((el) => el.id === id))))
+      .map((id: ElementId) => getDomElement(doc, getElements().find((el) => el.id === id))))
   }
   if (element.link !== oldElement.link) {
     setLink(domEl, element.link)
@@ -44,7 +65,7 @@ export function onUpdateElement(oldElement: ElementData, element: ElementData) {
     setClassName(domEl, element.classList.join(' '))
   }
   if (element.visibility !== oldElement.visibility) {
-    throw new Error('not implemented')
+    console.error('not implemented')
     // check visible in current page + in current mobile mode
     //   this.noSectionContent(element).classList.add(Constants.HIDE_ON_MOBILE);
     //   if (!wasHidden && this.view.workspace.getMobileEditor()) {
@@ -69,28 +90,45 @@ export function onUpdateElement(oldElement: ElementData, element: ElementData) {
     //   }
     // }
   }
+  if (element.alt !== oldElement.alt) {
+    const img: HTMLImageElement = getContentNode(domEl) as HTMLImageElement
+    if (img) {
+      img.alt = element.alt
+    } else {
+      console.error('could not set alt attribute as no image element was found')
+    }
+  }
+  if (element.title !== oldElement.title) {
+    getDomElement(doc, element).title = element.title
+  }
   if (element.style !== oldElement.style) {
-    throw new Error('not implemented')
-    // FIXME: handle min-height VS height
-    //   model.property.writeStyleToDom(element.id, element.style)
-
-    // if(['top', 'left', 'width', 'height', 'min-height'].indexOf(name) >= 0) {
-    //   const state = getStageState(el);
-    //    return state: {
-    //      ...state,
-    //      metrics: {
-    //        ...state.metrics,
-    //        computedStyleRect: {
-    //          ...state.metrics.computedStyleRect,
-    //          top: name === 'top' ? parseInt(value) : state.metrics.computedStyleRect.top,
-    //          left: name === 'left' ? parseInt(value) : state.metrics.computedStyleRect.left,
-    //          width: name === 'width' ? parseInt(value) : state.metrics.computedStyleRect.width,
-    //          height: name === 'height' || name === 'min-height' ? parseInt(value) : state.metrics.computedStyleRect.height,
-    //        },
-    //      },
-    //    },
-    //  });
-    // else this.model.property.setStyle(element, style);
-
+    // handle min-height VS height
+    const mobileOrDesktop = getUi().mobileEditor ? 'mobile' : 'desktop'
+    const height = element.style[mobileOrDesktop].height
+    const style = Style.addToMobileOrDesktopStyle(getUi().mobileEditor, element.style, {
+      'min-height': element.useMinHeight ? height : null,
+      'height': element.useMinHeight ? null : height,
+    })
+    // write css rules
+    writeStyleToDom(doc, element.id, style[mobileOrDesktop], getUi().mobileEditor)
+    // update stage for element and children
+    getStage().redrawSome([getDomElement(doc, element)]
+      .concat(element.children.map((id) => getDomElementById(doc, id)))
+      .map((el) => getStage().getState(el)))
+    // if (['top', 'left', 'width', 'height'].find((name) => !!element.style[name])) {
+    // const state = getStage().getState(domEl);
+    // getStage().setState(domEl, {
+    //   ...state,
+    //   metrics: {
+    //     ...state.metrics,
+    //     clientRect: {
+    //       ...state.metrics.clientRect,
+    //       top: element.style[mobileOrDesktop].top ? parseInt(element.style[mobileOrDesktop].top) : state.metrics.clientRect.top,
+    //       left: element.style[mobileOrDesktop].left ? parseInt(element.style[mobileOrDesktop].left) : state.metrics.clientRect.left,
+    //       width: element.style[mobileOrDesktop].width ? parseInt(element.style[mobileOrDesktop].width) : state.metrics.clientRect.width,
+    //       height: element.style[mobileOrDesktop].height ? parseInt(element.style[mobileOrDesktop].height) : state.metrics.clientRect.height,
+    //     },
+    //   },
+    // });
   }
 }

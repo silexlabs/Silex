@@ -16,13 +16,14 @@
  */
 
 import { Constants } from '../../constants';
-import { ElementId, ElementData } from '../../types';
+import { ElementData, ElementId } from '../../types';
+import { updateElements, getSite } from '../api';
 import { Config } from '../ClientConfig';
-import { Prodotype, ProdotypeCompDef } from '../externs';
 import { Model, View } from '../ClientTypes';
-import { ComponentData, PseudoClass, PseudoClassData, StyleData, StyleName, Visibility } from './Data';
-import { updateElements } from '../api';
 import { getDomElement } from '../dom/element-dom';
+import { Prodotype, ProdotypeCompDef } from '../externs';
+import { ComponentData, PseudoClass, PseudoClassData, StyleData, StyleName, Visibility } from './Data';
+import { getSiteDocument } from '../components/UiElements';
 
 /**
  * Manage Prodotype components and styles
@@ -136,7 +137,7 @@ export class Component {
     // this.model.property.setElementComponentData(element, {name, templateName});
 
     // first rendering of the component
-    this.render(getDomElement(element), () => {
+    this.render(getDomElement(getSiteDocument(), element), () => {
       // update the dependencies once the component is added
       this.updateDepenedencies(Constants.COMPONENT_TYPE);
     });
@@ -148,7 +149,7 @@ export class Component {
       // apply the style found in component definition
       if (comp.initialCss) {
         // this.applyStyleTo(element, comp.initialCss);
-        throw new Error('not implemented')
+        console.error('not implemented')
       }
 
       // same for the container inside the element (content node)
@@ -156,7 +157,7 @@ export class Component {
         // this.applyStyleTo(
         //     this.model.element.getContentNode(element),
         //     comp.initialCssContentContainer);
-        throw new Error('not implemented')
+        console.error('not implemented')
       }
     }
   }
@@ -195,7 +196,7 @@ export class Component {
     if (data) {
       const templateName = data.templateName;
       const prodotype = this.getProdotype(type);
-      prodotype.decorate(templateName, data, this.model.property.getDataSources()).then((html) => {
+      prodotype.decorate(templateName, data, getSite().dataSources).then((html) => {
         this.model.element.setInnerHtml(element, html);
 
         // notify the owner
@@ -344,7 +345,7 @@ export class Component {
   }
 
   removeStyle(className) {
-    throw new Error('not implemented')
+    console.error('not implemented')
     // // remove prodotype data from json object
     // this.model.property.setStyleData(className);
 
@@ -450,7 +451,7 @@ export class Component {
       styleData.styles[visibility] = {};
     }
     styleData.styles[visibility][pseudoClass] = newData;
-    throw new Error('not implemented')
+    console.error('not implemented')
     // FIXME: pour this to the new model?
     // this.model.property.setStyleData(className, styleData);
 
@@ -470,7 +471,7 @@ export class Component {
     const pseudoClassData = this.getPseudoClassData(styleData);
     if (pseudoClassData.length > 0) {
       Promise.all(pseudoClassData.map((obj) => {
-            return this.prodotypeStyle.decorate('text', obj.data, this.model.property.getDataSources())
+            return this.prodotypeStyle.decorate('text', obj.data, getSite().dataSources)
                 .then((html) => this.addMediaQuery(html, obj.visibility));
           }) as Array<Promise<string>>)
           .then((htmlStrings) => {

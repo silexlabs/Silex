@@ -16,9 +16,9 @@
  */
 
 import { ElementData } from '../../../types';
+import { getUi } from '../../api';
 import { Controller, Model } from '../../ClientTypes';
 import { PaneBase } from './PaneBase';
-import { updateElements, getElements, getStageState } from '../../api';
 
 /**
  * on of Silex Editors class
@@ -58,19 +58,7 @@ export class GeneralStylePane extends PaneBase {
     const val = !!this.opacityInput.value && this.opacityInput.value !== '' ?
       Math.max(0, (Math.min(1, parseFloat(this.opacityInput.value) / 100.0)))
       : null;
-
-    updateElements(getElements()
-      .filter((el) => el.selected)
-      .map((el) => ({
-        from: el,
-        to: {
-          ...el,
-          style: {
-            ...el,
-            opacity: val ? val.toString() : null,
-          },
-        },
-      })));
+    this.styleChanged('opacity', val ? val.toString() : null);
   }
 
   /**
@@ -84,7 +72,7 @@ export class GeneralStylePane extends PaneBase {
       this.opacityInput.removeAttribute('disabled');
 
       // get the opacity
-      const opacity = this.getCommonProperty<ElementData>(elementsNoBody, (el) => el.style.opacity);
+      const opacity = this.getCommonProperty<ElementData>(elementsNoBody, (el) => el.style[getUi().mobileEditor ? 'mobile' : 'desktop'].opacity);
 
       if (opacity === null) {
         this.opacityInput.value = '';

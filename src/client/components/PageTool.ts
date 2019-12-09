@@ -17,7 +17,7 @@
  */
 
 import Sortable from '../../../node_modules/sortablejs/modular/sortable.core.esm.js';
-import { deletePages, getPages, openPage, subscribePages, movePage } from '../api';
+import { deletePages, getPages, movePage, openPage, subscribePages } from '../api';
 import { Controller, Model } from '../ClientTypes';
 import { Dom } from '../utils/Dom';
 

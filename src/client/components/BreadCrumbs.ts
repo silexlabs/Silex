@@ -18,6 +18,8 @@
 import { getElements, subscribeElements, updateElements } from '../api';
 import { Controller, Model } from '../ClientTypes';
 import { getDomElement } from '../dom/element-dom';
+import { ElementData } from '../../types';
+import { getSiteDocument } from './UiElements';
 
 /**
  * @param element   container to render the UI
@@ -45,43 +47,52 @@ export class BreadCrumbs {
    * @param  opt_currentPageName   the name of the current page
    */
   private redraw() {
-    const selectedElements = getElements().filter((el) => el.selected)
 
     // get the common ancesters to all selected elements
-    function getParents(elem) {
-      const parents = [];
-      while (elem && elem.tagName !== 'HTML') {
-        parents.unshift(elem);
-        elem = elem.parentElement;
-      }
-      return parents;
+    function getParents(element: ElementData): ElementData[] {
+      const parent = getElements().find((el) => el.id === element.parent)
+      return parent ? (parent.parent ? [parent].concat(getParents(parent)) : [parent]) : []
     }
 
     // find the selected element which is the "deepest" in the dom, i.e. has
     // the greater number of parent nodes
-    selectedElements.sort((elem1, elem2) => getParents(elem2).length - getParents(elem1).length);
-    const deepest = selectedElements.shift();
+    const selectedElements = getElements()
+      .filter((el) => el.selected)
+      .sort((elem1, elem2) => getParents(elem2).length - getParents(elem1).length);
 
-    // for this "deepest" element, find the common ancestors with all others
-    let ancestors = getParents(deepest);
-    selectedElements.forEach((element) => {
-      const parents = getParents(element);
-      const newAncestors = [];
-      let idx = 0;
-      while (idx < ancestors.length && idx < parents.length &&
-              ancestors[idx] === parents[idx]) {
-        newAncestors.push(ancestors[idx++]);
+    if (selectedElements.length) {
+      const deepest = selectedElements.shift();
+
+      console.log('parents', selectedElements)
+
+      // for this "deepest" element, find the common ancestors with all others
+      let ancestors = getParents(deepest);
+      selectedElements.forEach((element) => {
+        const parents = getParents(element);
+        const newAncestors = [];
+        let idx = 0;
+        while (idx < ancestors.length && idx < parents.length &&
+                ancestors[idx] === parents[idx]) {
+          newAncestors.push(ancestors[idx++]);
+        }
+        ancestors = newAncestors;
+      });
+
+      // if only 1 element is selected, display it in the crumbs
+      if (selectedElements.length === 0) {
+        ancestors.unshift(deepest);
       }
-      ancestors = newAncestors;
-    });
 
-    // empty current bread crumbs
-    while (this.element.childNodes.length) {
-      this.removeCrumb((this.element.childNodes[0] as HTMLElement));
+      // empty current bread crumbs
+      while (this.element.childNodes.length) {
+        this.removeCrumb((this.element.childNodes[0] as HTMLElement));
+      }
+
+      // create a button for each ancester
+      ancestors
+        .reverse()
+        .forEach((ancestor) => this.addCrumb(getDomElement(getSiteDocument(), ancestor)));
     }
-
-    // create a button for each ancester
-    ancestors.forEach((ancestor) => this.addCrumb(ancestor));
   }
 
   /**
@@ -99,12 +110,12 @@ export class BreadCrumbs {
     crumb.style.zIndex = (100 - this.element.childNodes.length).toString();
     this.element.appendChild(crumb);
     crumb.onclick = () => updateElements(getElements()
-      .filter((el) => el.selected || getDomElement(el) === ancestor)
+      .filter((el) => el.selected || getDomElement(getSiteDocument(), el) === ancestor)
       .map((el) => ({
         from: el,
         to: {
           ...el,
-          selected: getDomElement(el) === ancestor,
+          selected: getDomElement(getSiteDocument(), el) === ancestor,
         },
       })));
     const svg = '<svg class="svg" viewBox="0 0 7 28" height="28" width="7"><path d="M.5 0l6 14-6 14H7V0z" fill="currentColor"></path><path d="M1 0H0l6 14-6 14h1l6-14z" fill="#858585"></path></svg>';

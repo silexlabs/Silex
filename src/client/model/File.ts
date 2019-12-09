@@ -16,13 +16,12 @@
  *   It has methods to manipulate the File
  */
 
+import { Constants } from '../../constants';
 import { FileInfo } from '../../types';
-import { getSite, initializeElements, initializePages, openPage, updateSite } from '../api';
+import { getElements, getPages, getSite, initializeElements, initializePages, initializeSite, openPage, updateSite } from '../api';
 import { Model, View } from '../ClientTypes';
 import { getUiElements } from '../components/UiElements';
-import { getElementsFromDom } from '../dom/element-dom';
-import { getPagesFromDom } from '../dom/page-dom';
-import { Property } from '../model/Property';
+import { readDataFromDom, writeDataToDom } from '../dom/site-dom';
 import { startObservers, stopObservers } from '../observers/index';
 import { CloudStorage } from '../service/CloudStorage';
 
@@ -149,6 +148,7 @@ export class File {
     // assets
     this.contentDocument_ = this.iFrameElement_.contentDocument;
     this.contentWindow_ = this.iFrameElement_.contentWindow;
+    console.log('IFrame content changed')
     // tslint:disable:no-string-literal
     if (this.contentDocument_.body === null || this.contentWindow_ === null || this.contentWindow_['jQuery'] === null) {
       setTimeout(() => {
@@ -163,18 +163,24 @@ export class File {
     // this.model.property.loadProperties(this.contentDocument_);
     // this.model.component.initStyles(this.contentDocument_);
 
+    console.log('start')
     // update model
     stopObservers();
-    const pages = getPagesFromDom();
+
+    const { site, pages, elements }  = readDataFromDom(getUiElements().stage.contentDocument);
+    console.log('loaded data', { site, pages, elements })
+
+    initializeSite(site);
+
     initializePages(pages);
-    const elements = getElementsFromDom();
+    openPage(pages[0]);
+
     initializeElements(elements);
-    startObservers();
 
     // restore the stage
     this.view.stageWrapper.init(this.iFrameElement_);
 
-    openPage(pages[0])
+    startObservers();
 
     // notify the caller
     if (opt_cbk) {
@@ -240,9 +246,16 @@ export class File {
   * getHtmlGenerator() {
     // update style tag (the dom do not update automatically when we change
     // document.styleSheets)
-    const updatedStyles = this.model.property.getAllStyles(this.contentDocument_);
-    throw new Error('not implemented: save state');
-    // FIXME: do this? this.model.property.saveProperties(this.contentDocument_);
+    const updatedStyles = this.model.property.getAllStyles(getElements());
+    yield;
+
+    // update data
+    writeDataToDom(this.contentDocument_, {
+      site: getSite(),
+      pages: getPages(),
+      elements: getElements(),
+    })
+    yield;
 
     // clone
     const cleanFile = (this.contentDocument_.cloneNode(true) as Document);
@@ -250,7 +263,7 @@ export class File {
 
     // apply styles in JSON to the DOM, this is to ensure we save the styles
     // untuched by the browser
-    const styleTag = cleanFile.querySelector('.' + Property.INLINE_STYLE_TAG_CLASS_NAME);
+    const styleTag = cleanFile.querySelector('.' + Constants.INLINE_STYLE_TAG_CLASS_NAME);
     styleTag.innerHTML = updatedStyles;
     yield;
 
@@ -280,7 +293,7 @@ export class File {
               ({isDir: false, mime: 'text/html'} as FileInfo);
           updateSite({
             ...getSite(),
-            userHeadTag: userHead,
+            headTag: userHead,
           });
           if (opt_cbk) {
             opt_cbk(rawHtml);
@@ -310,7 +323,7 @@ export class File {
     }
     CloudStorage.getInstance().write(
         (this.fileInfo as FileInfo), rawHtml,
-        getSite().userHeadTag, () => {
+        getSite().headTag, () => {
           this.isTemplate = false;
           if (cbk) {
             cbk();
@@ -334,7 +347,7 @@ export class File {
         this.addToLatestFiles(this.fileInfo);
         updateSite({
           ...getSite(),
-          userHeadTag: userHead,
+          headTag: userHead,
         });
         if (cbk) {
           cbk(rawHtml);

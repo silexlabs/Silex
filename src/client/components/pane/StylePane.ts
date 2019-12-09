@@ -16,9 +16,9 @@
  */
 import tagsInput from 'tags-input';
 import { SelectableState } from '../../../../node_modules/drag-drop-stage-component/src/ts/Types';
+import { ElementData } from '../../../types';
 import { Controller, Model } from '../../ClientTypes';
 import { PaneBase } from './PaneBase';
-import { ElementData } from '../../../types';
 
 /**
  * on of Silex Editors class
@@ -80,31 +80,20 @@ export class StylePane extends PaneBase {
   }
 
   setClassesTags(cssClasses) {
-    this.cssClassesTagsInput.setValue(cssClasses.split(' ').join(','));
+    if (this.getClassesTags() !== cssClasses) {
+      this.cssClassesTagsInput.setValue(cssClasses.split(' ').join(','));
+    }
   }
 
   /**
    * User has selected a color
    */
   onInputChanged() {
-    this.controller.propertyToolController.setClassName(this.getClassesTags());
-  }
-
-  /**
-   * the content has changed, notify the controller
-   */
-  contentChanged() {
-    console.warn('this is not allowed anymore');
-    // this.ace.setValue(this.ace.getValue());
-
-    // let value = this.ace.getValue();
-    // if (value) {
-    //   value = value.replace('.element{\n', '');
-    //   value = value.replace('\n}', '');
-    //   value = value.replace(/\n/, ' ');
-    // }
-    // this.controller.propertyToolController.multipleStylesChanged(
-    //     Style.stringToStyle(value || ''));
+    if (this.cssClassesTagsInput.classList.contains('off')) {
+      this.setClassesTags('');
+    } else {
+      this.controller.propertyToolController.setClassName(this.getClassesTags());
+    }
   }
 
   /**
@@ -113,20 +102,29 @@ export class StylePane extends PaneBase {
   protected redraw(selectedElements: ElementData[]) {
     super.redraw(selectedElements);
 
-    // intersection of css classes in all selected elements
-    // FIXME: this may lead to erase some css classes, we'd better not change multiple css classes if different accross selection?
-    // const cssClasses = this.getCommonProperty(selectedElements, (el) => el.classList);
-    const cssClasses = selectedElements
-      .map((el) => el.classList)
-      .reduce((a, b) => a.filter((c) => !!b.find((d) => d === c)));
-
-    if (this.getClassesTags() !== cssClasses) {
-      if (cssClasses) {
-        this.setClassesTags(cssClasses);
-      } else {
-        this.setClassesTags('');
-      }
+    // edit classes only if there is 1 element
+    if (selectedElements.length === 1) {
+      this.cssClassesTagsInput.classList.remove('off');
+      this.setClassesTags(selectedElements[0].classList.join(' '));
+    } else {
+      this.cssClassesTagsInput.classList.add('off');
+      this.setClassesTags('');
     }
+
+    // if (selectedElements.length) {
+    //   const cssClasses = selectedElements
+    //     .map((el) => el.classList)
+    //     .reduce((a, b) => a.filter((c) => !!b.find((d) => d === c)));
+    //   console.trace('StylePane redraw', cssClasses, this.getClassesTags())
+
+    //   if (this.getClassesTags() !== cssClasses) {
+    //     if (cssClasses) {
+    //       this.setClassesTags(cssClasses);
+    //     } else {
+    //       this.setClassesTags('');
+    //     }
+    //   }
+    // }
 
     // css inline style
     // const cssInlineStyle = this.getCommonProperty(states, (state) => this.model.element.getAllStyles(state.el));

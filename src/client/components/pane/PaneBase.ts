@@ -19,8 +19,9 @@
 // FIXME: do not find module only in vim: import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
 import { SelectableState } from '../../../../node_modules/drag-drop-stage-component/src/ts/Types';
 import { ElementData } from '../../../types';
-import { getElements, subscribeElements, updateElements } from '../../api';
+import { getElements, subscribeElements, updateElements, getUi } from '../../api';
 import { Controller, Model } from '../../ClientTypes';
+import { Style } from '../../utils/Style';
 
 export interface InputData {
   selector: string;
@@ -125,9 +126,9 @@ export class PaneBase {
       if (!input) { throw new Error('Could not find input ' + inputData.selector); }
 
       const changeObj = {
-        freez: false,
+        // freez: false,
         onChange: (value: string) => {
-          if (changeObj.freez) { return; }
+          // if (changeObj.freez) { return; }
           if (value !== null) {
             input.value = value;
             input.disabled = false;
@@ -140,22 +141,11 @@ export class PaneBase {
 
       // attach event
       input.addEventListener(inputData.eventName, (e: Event) => {
-        changeObj.freez = true;
+        e.preventDefault()
+        // changeObj.freez = true;
         const val = input.value ? input.value + inputData.unit : '';
-        updateElements(getElements()
-          .filter((el) => el.selected)
-          .map((el) => {
-            const style = { ...el.style };
-            style[inputData.styleName] = val;
-            return {
-              from: el,
-              to: {
-                ...el,
-                style,
-              },
-            };
-          }))
-        changeObj.freez = false;
+        this.styleChanged(inputData.styleName, val)
+        // changeObj.freez = false;
       });
 
       // store the onChange callback for use in onInputChanged
@@ -163,17 +153,20 @@ export class PaneBase {
     });
   }
 
-  protected styleChanged(styleName, val) {
+  protected styleChanged(styleName: string, val: string) {
     updateElements(getElements()
     .filter((el) => el.selected)
     .map((el) => {
-      const style = { ...el.style };
-      style[styleName] = val;
+      const style = {}
+      style[styleName] = val
       return {
         from: el,
         to: {
           ...el,
-          style,
+          style: {
+            ...el.style,
+            ...Style.addToMobileOrDesktopStyle(getUi().mobileEditor, el.style, style),
+          },
         },
       };
     }))

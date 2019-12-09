@@ -43,12 +43,13 @@ export interface SilexData {
   [key: string]: CssRule;
 }
 
-export interface JsonData {
-  desktop: SilexData;
-  mobile: SilexData;
-  prodotypeData: ProdotypeData;
-}
+// export interface JsonData {
+//   desktop: SilexData;
+//   mobile: SilexData;
+//   prodotypeData: ProdotypeData;
+// }
 
+// FIXME: still used for text styles, remove this as it is useless with the new model
 export enum ProdotypeTypes {
   COMPONENT = 'component',
   STYLE = 'style',

@@ -198,7 +198,12 @@ export class SettingsDialog {
 
     // add data source button
     (this.element.querySelector('.pane.data-sources-pane .add-data-source-btn') as HTMLElement).onclick = (e) => this.addDataSource();
-    (this.element.querySelector('.pane.data-sources-pane .reload-data-sources-btn') as HTMLElement).onclick = (e) => this.model.property.loadDataSources(getSite().dataSources, true);
+    (this.element.querySelector('.pane.data-sources-pane .reload-data-sources-btn') as HTMLElement).onclick = (e) => updateSite({
+      ...getSite(),
+      dataSources: {
+        ...getSite().dataSources, // simply update with the same data to reload in observer
+      },
+    });
     this.dataSourcesList = this.element.querySelector('.data-sources-list') as HTMLElement;
     this.dataSourcesList.onclick = (e) => {
       const el = (e.target as HTMLElement);

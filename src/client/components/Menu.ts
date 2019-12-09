@@ -20,8 +20,8 @@ import { Constants } from '../../constants';
 import { ElementType } from '../../types';
 import { getElements, getUi, moveElement, updateElements, updateUi } from '../api';
 import { Config } from '../ClientConfig';
-import { DomDirection } from '../model/Element';
 import { Controller, Model } from '../ClientTypes';
+import { DomDirection } from '../model/Element';
 import { Keyboard } from '../utils/Keyboard';
 
 /**

@@ -14,9 +14,9 @@
  *      and call the main {silex.controller.Controller} controller's methods
  *
  */
-import {SilexTasks} from '../service/SilexTasks';
 import {Model} from '../ClientTypes';
 import {View} from '../ClientTypes';
+import {SilexTasks} from '../service/SilexTasks';
 
 import { ModalDialog } from '../components/ModalDialog';
 import { getUiElements } from '../components/UiElements';

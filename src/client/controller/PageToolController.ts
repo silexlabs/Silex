@@ -34,19 +34,18 @@ export class PageToolController extends ControllerBase {
   createPage(): Promise<void> {
     this.tracker.trackAction('controller-events', 'request', 'insert.page', 0);
     return this.editPageSettings(null)
-      .then(({name, displayName}) => {
+      .then(({id, displayName}) => {
         // undo checkpoint
         this.undoCheckPoint();
 
         // create the page model
         createPages([{
-          name,
+          id,
           displayName,
           link: {
             type: LinkType.PAGE,
             value: '#!' + name,
           },
-          element: null,
           isOpen: false,
           canDelete: true,
           canRename: true,
@@ -70,21 +69,21 @@ export class PageToolController extends ControllerBase {
    */
   editPage(pageData: PageData = getPages().find((p) => p.isOpen)) {
     this.editPageSettings(pageData)
-      .then(({name, displayName}) => {
+      .then(({id, displayName}) => {
         // undo checkpoint
         this.undoCheckPoint();
 
         // update model
-        if (pageData.name !== name && pageData.canRename) {
+        if (pageData.id !== id && pageData.canRename) {
           updatePages([
             {
               from: pageData, to: {
               ...pageData,
-              name,
+              id,
               displayName,
               link: {
                 type: LinkType.PAGE,
-                value: '#!' + name,
+                value: '#!' + id,
               },
             },
           }]);

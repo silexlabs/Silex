@@ -1,11 +1,10 @@
 import { LinkType, PageData } from '../../types';
-import { deleteElements, getElements, updateElements } from '../api';
-import { getPagesFromDom, openPage } from '../dom/page-dom';
+import { deleteElements, getElements, openPage, updateElements } from '../api';
 import { SilexNotification } from '../utils/Notification';
 
 export function onAddPage(page: PageData) {
   // useless now: console.log('Adding a page to the DOM')
-  // useless now: createPage(page.name, page.displayName)
+  // useless now: createPage(page.id, page.displayName)
 }
 
 export function onDeletePage(page: PageData) {
@@ -26,12 +25,12 @@ export function onDeletePage(page: PageData) {
   //   .filter(element => element.classList.contains(Constants.PAGED_CLASS_NAME))
   //   .forEach((element: HTMLElement) => element.remove())
   const elementsOnlyOnThisPage = getElements()
-    .filter((element) => element.pageNames.length === 1 && element.pageNames.find((name) => name === page.name))
+    .filter((element) => element.pageNames.length === 1 && element.pageNames.find((name) => name === page.id))
 
   // handle elements which should be deleted
   if (elementsOnlyOnThisPage.length > 0) {
     SilexNotification.confirm('Delete elements' , `
-            ${elementsOnlyOnThisPage.length} elements were only visible on this page (${page.name}).
+            ${elementsOnlyOnThisPage.length} elements were only visible on this page (${page.id}).
             <br /><ul>
               <li>Do you want me to <strong>delete these elements?</strong><br /></li>
               <li>or keep them and <strong>make them visible on all pages?</strong></li>
@@ -56,15 +55,15 @@ export function onDeletePage(page: PageData) {
               }
             }, 'delete', 'keep')
   }
-  // useless now: removePage(page)
+  // FIXME: useless now? removePage(page)
 }
 
 export function onUpdatePage(oldPage: PageData, page: PageData) {
   console.log('Updating page to the DOM')
-  if (!oldPage.isOpen && page.isOpen) {
+  if (!oldPage || !oldPage.isOpen && page.isOpen) {
     openPage(page)
   }
-  if (oldPage.name !== page.name) {
+  if (!oldPage || oldPage.id !== page.id) {
     // update links to this page
     // TODO: handle links in HTML boxes and texts?
     updateElements(getElements()
@@ -77,8 +76,7 @@ export function onUpdatePage(oldPage: PageData, page: PageData) {
         },
       })))
     // rename the page in the DOM
-    // useless now: renamePage(oldPage, page.name, page.displayName)
+    // useless now: renamePage(oldPage, page.id, page.displayName)
   }
-  // reorder pages
-  // useless now
+  // FIXME: useless now? reorder pages
 }

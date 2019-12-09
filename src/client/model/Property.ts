@@ -13,15 +13,12 @@
  * @fileoverview
  *   This class is used to access Silex elements properties
  */
-
-import * as objectPath from '../../../node_modules/object-path/index.js';
 import { Constants } from '../../constants';
-import { DataSources, ElementId, Font } from '../../types.js';
+import { DataSources, ElementData, ElementId, Font } from '../../types.js';
 import { getSite, getUi } from '../api';
 import { Model, View } from '../ClientTypes';
-import { SilexNotification } from '../utils/Notification';
 import { Style } from '../utils/Style';
-import { ComponentData, CssRule, JsonData, ProdotypeData, ProdotypeTypes, SilexData, StyleData, StyleName } from './Data';
+import { ComponentData, CssRule, ProdotypeData, ProdotypeTypes, SilexData, StyleData, StyleName } from './Data';
 
 export interface CSSRuleInfo {
   rule: CSSRule;
@@ -41,15 +38,7 @@ export class Property {
    * containing all CSS rules for the elements on stage
    * which are being edited with the wysiwyg
    */
-  static INLINE_STYLE_TAG_CLASS_NAME = 'silex-inline-styles';
-
-  /**
-   * constant for the ID of the HTML node used
-   * to store Silex data as a JSON object of type SilexData
-   * containing all CSS rules for the elements on stage
-   * which are being edited with the wysiwyg
-   */
-  static JSON_STYLE_TAG_CLASS_NAME = 'silex-json-styles';
+  // static INLINE_STYLE_TAG_CLASS_NAME = 'silex-inline-styles';
 
   /**
    * constant for the prefix of the IDs given to Silex editable elements
@@ -89,50 +78,50 @@ export class Property {
   //   this.dataSources = data;
   //   return this.loadDataSources(false);
   // }
-  async loadDataSources(dataSources: DataSources, reload): Promise<DataSources> {
-    try {
-      const dataSourcesClone = { ...dataSources };
-      return (await Promise.all(Object.keys(dataSourcesClone).map(async (name) => {
-        const dataSource = dataSourcesClone[name];
-        if (reload || !dataSource.data || !dataSource.structure) {
-          const res = await fetch(dataSource.href);
-          const data = await res.json();
-          const root = objectPath.get(data, dataSource.root);
-          const first = objectPath.get(root, '0');
-          dataSource.data = data;
-          dataSource.structure = {};
-          if (first) {
-            Object.keys(first).forEach((key) => dataSource.structure[key] = this.getDataSourceType(first[key]));
-          }
-          return {name, dataSource};
-        }
-      }))).reduce((prev, cur) => prev[cur.name] = cur.dataSource, {});
-    } catch (err) {
-      console.error('could not load data sources', err);
-      SilexNotification.alert('Error', `There was an error loading the data sources: ${err}`, () => { throw err; });
-    }
-  }
-  getDataSourceType(value) {
-    return Array.isArray(value) ? 'array' : typeof(value);
-  }
+  // async loadDataSources(dataSources: DataSources, reload): Promise<DataSources> {
+  //   try {
+  //     const dataSourcesClone = { ...dataSources };
+  //     return (await Promise.all(Object.keys(dataSourcesClone).map(async (name) => {
+  //       const dataSource = dataSourcesClone[name];
+  //       if (reload || !dataSource.data || !dataSource.structure) {
+  //         const res = await fetch(dataSource.href);
+  //         const data = await res.json();
+  //         const root = objectPath.get(data, dataSource.root);
+  //         const first = objectPath.get(root, '0');
+  //         dataSource.data = data;
+  //         dataSource.structure = {};
+  //         if (first) {
+  //           Object.keys(first).forEach((key) => dataSource.structure[key] = this.getDataSourceType(first[key]));
+  //         }
+  //         return {name, dataSource};
+  //       }
+  //     }))).reduce((prev, cur) => prev[cur.name] = cur.dataSource, {});
+  //   } catch (err) {
+  //     console.error('could not load data sources', err);
+  //     SilexNotification.alert('Error', `There was an error loading the data sources: ${err}`, () => { throw err; });
+  //   }
+  // }
+  // getDataSourceType(value) {
+  //   return Array.isArray(value) ? 'array' : typeof(value);
+  // }
 
-  /**
-   * @return returns a copy of this.dataSources
-   */
-  getDataSources(): DataSources {
-    return {...this.dataSources};
-  }
+  // /**
+  //  * @return returns a copy of this.dataSources
+  //  */
+  // getDataSources(): DataSources {
+  //   return {...this.dataSources};
+  // }
 
-  setFonts(fonts: Font[]) {
-    this.fonts = fonts;
-  }
+  // setFonts(fonts: Font[]) {
+  //   this.fonts = fonts;
+  // }
 
-  /**
-   * @return returns a copy of this.fonts
-   */
-  getFonts(): Font[] {
-    return this.fonts.slice();
-  }
+  // /**
+  //  * @return returns a copy of this.fonts
+  //  */
+  // getFonts(): Font[] {
+  //   return this.fonts.slice();
+  // }
 
   /**
    * get/set Silex ID
@@ -223,36 +212,36 @@ export class Property {
    * FIXME: for retro compat in element-dom
    * Load the styles from the json saved in a script tag
    */
-  loadProperties(doc) {
-    const styleTag = doc.querySelector('.' + Property.JSON_STYLE_TAG_CLASS_NAME);
-    if (styleTag != null ) {
-      const styles = (JSON.parse(styleTag.innerHTML)[0] as any);
-      this.fonts = styles.fonts || [];
-      this.dataSources = styles.dataSources || {}; // TODO: why store this in the styles object?
-      this.stylesObj = styles.desktop || {};
-      this.mobileStylesObj = styles.mobile || {};
-      this.prodotypeDataObj = styles.prodotypeData &&
-              styles.prodotypeData.component &&
-              styles.prodotypeData.style ?
-          ({
-            component: styles.prodotypeData.component,
-            style: styles.prodotypeData.style,
-          } as ProdotypeData) :
-          Property.EMPTY_PRODOTYPE_DATA;
+  // loadProperties(doc) {
+  //   const styleTag = doc.querySelector('.' + Property.JSON_STYLE_TAG_CLASS_NAME);
+  //   if (styleTag != null ) {
+  //     const styles = (JSON.parse(styleTag.innerHTML)[0] as any);
+  //     this.fonts = styles.fonts || [];
+  //     this.dataSources = styles.dataSources || {}; // TODO: why store this in the styles object?
+  //     this.stylesObj = styles.desktop || {};
+  //     this.mobileStylesObj = styles.mobile || {};
+  //     this.prodotypeDataObj = styles.prodotypeData &&
+  //             styles.prodotypeData.component &&
+  //             styles.prodotypeData.style ?
+  //         ({
+  //           component: styles.prodotypeData.component,
+  //           style: styles.prodotypeData.style,
+  //         } as ProdotypeData) :
+  //         Property.EMPTY_PRODOTYPE_DATA;
 
-      // FIXME: put this in backward compat
-      if (styles.componentData) {
-        this.prodotypeDataObj.component = styles.componentData;
-      }
-    } else {
-      this.fonts = [];
-      this.dataSources = {};
-      this.stylesObj = {};
-      this.mobileStylesObj = {};
-      this.prodotypeDataObj = Property.EMPTY_PRODOTYPE_DATA;
-      console.info('Warning: no JSON styles array found in the dom');
-    }
-  }
+  //     // FIXME: put this in backward compat
+  //     if (styles.componentData) {
+  //       this.prodotypeDataObj.component = styles.componentData;
+  //     }
+  //   } else {
+  //     this.fonts = [];
+  //     this.dataSources = {};
+  //     this.stylesObj = {};
+  //     this.mobileStylesObj = {};
+  //     this.prodotypeDataObj = Property.EMPTY_PRODOTYPE_DATA;
+  //     console.info('Warning: no JSON styles array found in the dom');
+  //   }
+  // }
 
   // /**
   //  * check existance and possibly create a style tag holding Silex elements
@@ -362,20 +351,24 @@ export class Property {
   //  * this creates or update a rule in the style tag with id
   //  * INLINE_STYLE_TAG_CLASS_NAME if style is null this will remove the rule
   //  */
-  // setStyle(element: HTMLElement, styleObj: any, isMobile = getUi().mobileEditor) {
+  // setStyle(element: ElementData, styleObj: any, isMobile = getUi().mobileEditor) {
   //   const deleteStyle = !styleObj;
-  //   const style = styleObj || {};
-  //   const elementId = (this.getElementId(element) as ElementId);
+  //   const style = {
+  //     ...(isMobile ? element.style.mobile : element.style.desktop),
+  //   };
 
   //   if (!deleteStyle) {
   //     // styles of sections are special
-  //     if (this.model.element.isSection(element)) {
+  //     if (element.type === ElementType.SECTION) {
   //       // do not apply width to sections
   //       delete style.width;
 
   //       // apply height to section content and not section itself
-  //       const contentElement = (this.model.element.getContentNode(element) as HTMLElement);
-  //       const contentStyle = this.getStyle(contentElement, isMobile) || {};
+  //       // const contentElement = getElements().find((el) => !!element.children.find((id) => id === el.id) && el.)
+  //       const contentElementDom = (this.model.element.getContentNode(getDomElement(element)) as HTMLElement);
+  //       const contentElement = getElements().find((el) => getDomElement(el) === contentElementDom)
+  //       const contentStyle = isMobile ? contentElement.style.mobile : contentElement.style.desktop;
+  //       // if (style['min-height'] && style['min-height'] !== contentStyle['min-height']) {
   //       if (style['min-height'] && style['min-height'] !== contentStyle['min-height']) {
   //         contentStyle['min-height'] = style['min-height'];
   //         this.setStyle(contentElement, contentStyle, isMobile);
@@ -384,7 +377,7 @@ export class Property {
   //       // do not apply min-height to the section itself
   //       delete style['min-height'];
   //     } else if (style.width
-  //         && this.model.element.isSectionContent(element)
+  //         && this.model.element.isSectionContent(getDomElement(element))
   //         && !getUi().mobileEditor) {
   //       // set website width
   //       const width = parseInt(style.width);
@@ -396,14 +389,14 @@ export class Property {
   //         });
   //       }
   //     }
-  //     const elementData = getElementData(element);
-  //     if (elementData.type === ElementType.SECTION) {
+  //     // const elementData = getElementData(element);
+  //     if (element.type === ElementType.SECTION) {
   //       delete style.top;
   //       delete style.left;
   //     }
   //   } else {
   //     // FIXME: useless??
-  //     throw new Error('not implemented');
+  //     console.error('not implemented');
   //   }
 
   //   // // store in JSON
@@ -414,25 +407,26 @@ export class Property {
   //   //   targetObj[elementId] = style as CssRule;
   //   // }
   // }
-  writeStyleToDom(elementId, style, isMobile) {
-    // find the index of the rule for the given element
-    const cssRuleObject = this.findCssRule(elementId, isMobile);
 
-    // update or create the rule
-    if (cssRuleObject) {
-      this.styleSheet.deleteRule(cssRuleObject.index);
-    }
-    // convert style to string
-    // we use the class name because elements have their ID as a css class too
-    const styleStr = '.' + elementId + '{' + Style.styleToString(style) + '} ';
-    if (isMobile) {
-      // add the rule to the dom to see the changes, mobile rules after
-      // desktop ones
-      this.styleSheet.insertRule(this.addMediaQuery(styleStr), this.styleSheet.cssRules.length);
-    } else {
-      this.styleSheet.insertRule(styleStr, 0);
-    }
-  }
+  // writeStyleToDom(elementId, style, isMobile) {
+  //   // find the index of the rule for the given element
+  //   const cssRuleObject = this.findCssRule(elementId, isMobile);
+
+  //   // update or create the rule
+  //   if (cssRuleObject) {
+  //     this.styleSheet.deleteRule(cssRuleObject.index);
+  //   }
+  //   // convert style to string
+  //   // we use the class name because elements have their ID as a css class too
+  //   const styleStr = '.' + elementId + '{' + Style.styleToString(style) + '} ';
+  //   if (isMobile) {
+  //     // add the rule to the dom to see the changes, mobile rules after
+  //     // desktop ones
+  //     this.styleSheet.insertRule(this.addMediaQuery(styleStr), this.styleSheet.cssRules.length);
+  //   } else {
+  //     this.styleSheet.insertRule(styleStr, 0);
+  //   }
+  // }
 
   /**
    * FIXME: for retro compat in element-dom, used in Element:getAllStyles
@@ -471,51 +465,62 @@ export class Property {
     return null;
   }
 
-  /**
-   * @return null if not found
-   */
-  findCssRule(elementId: string, isMobile: boolean): CSSRuleInfo {
-    // find the rule for the given element
-    for (let idx = 0; idx < this.styleSheet.cssRules.length; idx++) {
-      const cssRule = this.styleSheet.cssRules[idx] as any; // FIXME: should be CSSRule ?
-      // we use the class name because elements have their ID as a css class too
-      if ((isMobile === false && cssRule.selectorText === '.' + elementId) ||
-          (cssRule.media && cssRule.cssRules && cssRule.cssRules[0] &&
-              cssRule.cssRules[0].selectorText === '.' + elementId)) {
-        return {
-          rule: cssRule,
-          parent: this.styleSheet,
-          index: idx,
-        };
-      }
-    }
-    return null;
-  }
+  // /**
+  //  * @return null if not found
+  //  */
+  // findCssRule(elementId: string, isMobile: boolean): CSSRuleInfo {
+  //   // find the rule for the given element
+  //   for (let idx = 0; idx < this.styleSheet.cssRules.length; idx++) {
+  //     const cssRule = this.styleSheet.cssRules[idx] as any; // FIXME: should be CSSRule ?
+  //     // we use the class name because elements have their ID as a css class too
+  //     if ((isMobile === false && cssRule.selectorText === '.' + elementId) ||
+  //         (cssRule.media && cssRule.cssRules && cssRule.cssRules[0] &&
+  //             cssRule.cssRules[0].selectorText === '.' + elementId)) {
+  //       return {
+  //         rule: cssRule,
+  //         parent: this.styleSheet,
+  //         index: idx,
+  //       };
+  //     }
+  //   }
+  //   return null;
+  // }
 
   /**
    * @param doc docment of the iframe containing the website
    * @return the string defining all elements styles
    */
-  getAllStyles(doc: Document): string {
-    const elements = doc.querySelectorAll('body, .' + Constants.EDITABLE_CLASS_NAME);
-    let allStyles = '';
-    for (const element of elements) {
-      const elementId = (this.getElementId(element as HTMLElement) as ElementId);
-
-      // desktop
-      if (this.stylesObj[elementId]) {
-        const styleStr = Style.styleToString(this.stylesObj[elementId], '\n    ');
-        allStyles += '.' + elementId + ' {' + styleStr + '\n}\n';
-      }
-
-      // mobile
-      if (this.mobileStylesObj[elementId]) {
-        const styleStr = Style.styleToString(this.mobileStylesObj[elementId], '\n    ');
-        allStyles += this.addMediaQuery('.' + elementId + ' {' + styleStr + '\n}\n');
-      }
-    }
-    return allStyles;
+  getAllStyles(elements: ElementData[]): string {
+    const {desktop, mobile} = elements
+    .reduce((prev, el) => ({
+      desktop: `${prev.desktop}\n.${el.id} {\n${Style.styleToString(el.style.desktop, '\n    ')}\n}\n`,
+      mobile: `${prev.mobile}\n.${el.id} {\n${Style.styleToString(el.style.mobile, '\n    ')}\n}\n`,
+    }), {
+      desktop: '',
+      mobile: '',
+    })
+    return `${desktop}\n\n${this.addMediaQuery(mobile)}\n`;
   }
+  // getAllStyles(doc: Document): string {
+  //   const elements = doc.querySelectorAll('body, .' + Constants.EDITABLE_CLASS_NAME);
+  //   let allStyles = '';
+  //   for (const element of elements) {
+  //     const elementId = (this.getElementId(element as HTMLElement) as ElementId);
+
+  //     // desktop
+  //     if (this.stylesObj[elementId]) {
+  //       const styleStr = Style.styleToString(this.stylesObj[elementId], '\n    ');
+  //       allStyles += '.' + elementId + ' {' + styleStr + '\n}\n';
+  //     }
+
+  //     // mobile
+  //     if (this.mobileStylesObj[elementId]) {
+  //       const styleStr = Style.styleToString(this.mobileStylesObj[elementId], '\n    ');
+  //       allStyles += this.addMediaQuery('.' + elementId + ' {' + styleStr + '\n}\n');
+  //     }
+  //   }
+  //   return allStyles;
+  // }
 
   /**
    * add a media query around the style string

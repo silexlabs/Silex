@@ -18,17 +18,21 @@
  *
  */
 
-import { ElementData, ElementType, PageData, FileInfo } from '../../types';
-import { createElements, deleteElements, getElements, getPages, initializeElements, initializePages, openPage, updateElements } from '../api';
+import { Constants } from '../../constants';
+import { ElementData, ElementId, ElementType, FileInfo, PageData } from '../../types';
+import { createElements, deleteElements, getElements, getPages, getUi, initializeElements, initializePages, openPage, updateElements } from '../api';
 import { Config } from '../ClientConfig';
+import { Model, UndoItem, View } from '../ClientTypes';
 import { FileExplorer } from '../components/dialog/FileExplorer';
 import { LinkDialog } from '../components/dialog/LinkDialog';
 import { getSiteDocument } from '../components/UiElements';
 import { getDomElement } from '../dom/element-dom';
+import { SilexElement } from '../model/Element';
 import { Tracker } from '../service/Tracker';
-import { Model, UndoItem, View } from '../ClientTypes';
 import { InvalidationManager } from '../utils/InvalidationManager';
 import { SilexNotification } from '../utils/Notification';
+import { Style } from '../utils/Style';
+import { Url } from '../utils/Url';
 
 /**
  * base class for all UI controllers of the controller package
@@ -252,10 +256,7 @@ export class ControllerBase {
           from: element,
           to: {
             ...element,
-            style: {
-              ...element.style,
-              'background-image': fileInfo.absPath,
-            },
+            style: Style.addToMobileOrDesktopStyle(getUi().mobileEditor, element.style, { 'background-image': Url.addUrlKeyword(fileInfo.absPath) }),
           },
         }]);
 
@@ -281,7 +282,7 @@ export class ControllerBase {
 
         // create the element
         const imgData = this.addElement(ElementType.IMAGE);
-        const img = getDomElement(imgData);
+        const img = getDomElement(getSiteDocument(), imgData);
 
         // load the image
         this.model.element.setImageUrl(
@@ -295,7 +296,7 @@ export class ControllerBase {
                 'Error: I did not manage to load the image. \n' +
                 message);
             // FIXME: find another way to remove this element?
-            deleteElements([getElements().find((el) => element === getDomElement(el))]);
+            deleteElements([getElements().find((el) => element === getDomElement(getSiteDocument(), el))]);
             this.tracker.trackAction(
                 'controller-events', 'error', 'insert.image', -1);
           },
@@ -382,7 +383,7 @@ export class ControllerBase {
    * promp user for page properties
    * @param pageData data of the page edited, defaults to a new page
    */
-  editPageSettings(pageData: PageData = null): Promise<{name: string, displayName: string}> {
+  editPageSettings(pageData: PageData = null): Promise<{id: string, displayName: string}> {
     return new Promise((resolve, reject) => {
       const form = document.createElement('div');
       form.innerHTML = `
@@ -407,13 +408,13 @@ export class ControllerBase {
             const cleanName = 'page-' + newName.replace(/\W+/g, '-').toLowerCase();
 
             // check if a page with this name exists
-            const existing = getPages().find((p) => p.name === newName);
+            const existing = getPages().find((p) => p.id === newName);
             if (!!existing) {
               // open the new page
               this.openPage(existing);
               reject('Page already exists');
             } else {
-              resolve({name: cleanName, displayName: newName});
+              resolve({id: cleanName, displayName: newName});
             }
           } else {
             reject('Canceled');
@@ -441,30 +442,58 @@ export class ControllerBase {
    * @param opt_componentName the desired component type if it is a component
    * @return the new element
    */
-  addElement(type: ElementType, opt_componentName?: string): ElementData {
+  addElement(type: ElementType, opt_componentName?: string, parent?: ElementData): ElementData {
     this.tracker.trackAction('controller-events', 'request', 'insert.' + type, 0);
 
     // undo checkpoint
     this.undoCheckPoint();
 
-    // FIXME: provide container
-    const container = getElements().find((el) => !el.parent)
+    const element = this.createEmptyElement(type, opt_componentName, parent)
 
-    // create the element and add it to the stage
+    if (type === ElementType.SECTION) {
+      const content = this.createEmptyElement(ElementType.CONTAINER, null, element)
+      const contentFinal = {
+        ...content,
+        classList: content.classList.concat([
+          Constants.ELEMENT_CONTENT_CLASS_NAME,
+          Constants.WEBSITE_WIDTH_CLASS_NAME,
+          Constants.PREVENT_DRAGGABLE_CLASS_NAME,
+        ]),
+      }
+      createElements([element, content]);
+    } else {
+      createElements([element]);
+    }
+
+    // tracking
+    this.tracker.trackAction('controller-events', 'success', 'insert.' + type, 1);
+    return element;
+  }
+  createEmptyElement(type: ElementType, opt_componentName?: string, parent?: ElementData): ElementData {
+      // create the element and add it to the stage
     const element: ElementData = {
       id: this.model.property.getNewId(getSiteDocument()),
       type,
-      parent: container ? container.id : null,
+      alt: null,
+      title: null,
+      parent: parent ? parent.id : null,
       visibility: {
         desktop: true,
         mobile: true,
       },
-      style: {},
+      style: {
+        desktop: {
+          'width': SilexElement.INITIAL_ELEMENT_SIZE + 'px',
+          'height': SilexElement.INITIAL_ELEMENT_SIZE + 'px',
+          'background-color': type === ElementType.HTML || type === ElementType.CONTAINER ? 'rgb(255, 255, 255)' : null,
+        },
+        mobile: {},
+      },
       data: {
         component: {},
       },
       children: [],
-      pageNames: [],
+      pageNames: !!parent && !!this.getFirstPagedParent(parent) ? [] : [getPages().find((p) => p.isOpen).id], // only visible on the current page unless one of its parents is in a page already
       classList: [],
       link: null,
       enableDrag: true,
@@ -476,20 +505,10 @@ export class ControllerBase {
 
     // apply component styles etc
     if (!!opt_componentName) {
-      this.model.component.initComponent(element, opt_componentName); // FIXME: handle components data in the new model
+      // FIXME: handle components data in the new model
+      // this.model.component.initComponent(element, opt_componentName);
     }
-
-    // apply default size
-    const withDefaults: ElementData = this.model.element.getDefaults(element);
-
-    // make element editable and visible on current page
-    const initComplete = this.doAddElement(withDefaults);
-
-    createElements([initComplete]);
-
-    // tracking
-    this.tracker.trackAction('controller-events', 'success', 'insert.' + type, 1);
-    return initComplete;
+    return element
   }
 
   /**
@@ -498,31 +517,31 @@ export class ControllerBase {
    * is in a page) redraw the tools and set the element as editable
    * @param element the element to add
    */
-  doAddElement(element: ElementData): ElementData {
-    // only visible on the current page
-    const finalElement = {
-      ...element,
-      pageNames: [getPages().find((p) => p.isOpen).name],
-    }
+  // doAddElement(element: ElementData): ElementData {
+  //   // only visible on the current page
+  //   const finalElement = {
+  //     ...element,
+  //     pageNames: [getPages().find((p) => p.isOpen).id],
+  //   }
 
-    // reset selection
-    updateElements(getElements()
-      .filter((el) => el.selected)
-      .map((el) => ({
-        from: el,
-        to: {
-          ...el,
-          selected: false,
-        },
-      })))
+  //   // reset selection
+  //   updateElements(getElements()
+  //     .filter((el) => el.selected)
+  //     .map((el) => ({
+  //       from: el,
+  //       to: {
+  //         ...el,
+  //         selected: false,
+  //       },
+  //     })))
 
-    // unless one of its parents is in a page already
-    if (this.getFirstPagedParent(finalElement)) {
-      finalElement.pageNames = [];
-    }
+  //   // unless one of its parents is in a page already
+  //   if (this.getFirstPagedParent(finalElement)) {
+  //     finalElement.pageNames = [];
+  //   }
 
-    return finalElement;
-  }
+  //   return finalElement;
+  // }
 
   /**
    * check if the element's parents belong to a page, and if one of them do,

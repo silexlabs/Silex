@@ -2,7 +2,7 @@ import { createPages, deletePages, getPages, initializePages, movePage, subscrib
 import { LinkType, PageData } from '../src/types';
 
 const PAGE1 = {
-  name: 'page-1',
+  id: 'page-1',
   displayName: 'Page 1',
   element: document.createElement('a'),
   link: {
@@ -17,7 +17,7 @@ const PAGE1 = {
   canRename: true,
 }
 const PAGE2 = {
-  name: 'page-2',
+  id: 'page-2',
   displayName: 'Page 2',
   element: document.createElement('a'),
   link: {
@@ -32,7 +32,7 @@ const PAGE2 = {
   canRename: true,
 }
 const PAGE3 = {
-  name: 'page-3',
+  id: 'page-3',
   displayName: 'Page 3',
   element: document.createElement('a'),
   link: {
@@ -54,7 +54,6 @@ test('Initialize page store', () => {
   expect(getPages()).toHaveLength(0)
   initializePages(PAGES_1)
   expect(getPages()).toHaveLength(1)
-  expect(getPages()[0].element).not.toBeNull()
   expect(getPages()[0]).toBe(PAGE1)
   initializePages(PAGES_2)
   expect(getPages()).toHaveLength(2)
@@ -75,11 +74,11 @@ test('Delete a page', () => {
   initializePages(PAGES_2)
   deletePages([PAGE2])
   expect(getPages()).toHaveLength(1)
-  expect(getPages()[0].name).toBe(PAGE1.name)
+  expect(getPages()[0].id).toBe(PAGE1.id)
   initializePages(PAGES_2)
   deletePages([PAGE1])
   expect(getPages()).toHaveLength(1)
-  expect(getPages()[0].name).toBe(PAGE2.name)
+  expect(getPages()[0].id).toBe(PAGE2.id)
 })
 
 test('Update a page', () => {

@@ -20,6 +20,7 @@ import { Constants } from '../../constants';
 import { ElementData, ElementType, PageData } from '../../types';
 import { getPages, updateElements } from '../api';
 import { Model, View } from '../ClientTypes';
+import { getSiteDocument } from '../components/UiElements';
 import { Dom } from '../utils/Dom';
 import { Style } from '../utils/Style';
 import { TemplateName } from './Data';
@@ -130,7 +131,7 @@ export class SilexElement {
     if (!element || !element.classList) {
       return false;
     }
-    return element.classList.contains(ElementType.CONTAINER_CONTENT);
+    return element.classList.contains(Constants.SECTION_CONTAINER);
   }
 
   /**
@@ -205,7 +206,7 @@ export class SilexElement {
   //  * get all elements visible when the given page is opened
   //  */
   // getElementsForPage(page: PageData = getPages().find((p) => p.isOpen), includeHideDesktop = this.view.workspace.getMobileEditor(), includeHideMobile = !this.view.workspace.getMobileEditor()): HTMLElement[] {
-  //   return (Array.from(this.model.file.getContentDocument().querySelectorAll(`.${Constants.EDITABLE_CLASS_NAME}`)) as HTMLElement[])
+  //   return (Array.from(getSiteDocument().querySelectorAll(`.${Constants.EDITABLE_CLASS_NAME}`)) as HTMLElement[])
   //   .filter((el) => this.isVisible(el, page) &&
   //     (includeHideDesktop || !this.model.element.getHideOnDesktop(el)) &&
   //     (includeHideMobile || !this.model.element.getHideOnMobile(el)));
@@ -216,6 +217,7 @@ export class SilexElement {
    * this means that the element is allways visible or it is visible in this page
    */
   isVisible(element: HTMLElement, page: PageData = getPages().find((p) => p.isOpen)) {
+    console.trace('isVisible', element, page)
     if (element.classList.contains(Constants.PAGED_CLASS_NAME) && !this.isInPage(element, page)) {
       return false;
     }
@@ -235,7 +237,8 @@ export class SilexElement {
    * check if an element is in the given page (current page by default)
    */
   isInPage(element: HTMLElement, page: PageData = getPages().find((p) => p.isOpen)): boolean {
-    return this.noSectionContent(element).classList.contains(page.name);
+    console.log('isInPage', {element, page});
+    return this.noSectionContent(element).classList.contains(page.id);
   }
 
   /**
@@ -244,7 +247,7 @@ export class SilexElement {
   getPagesForElement(element: HTMLElement): PageData[] {
     element = this.noSectionContent(element);
     return getPages().filter(
-        (page) => element.classList.contains(page.name));
+        (page) => element.classList.contains(page.id));
   }
 
   /**
@@ -262,17 +265,18 @@ export class SilexElement {
       // from visible in some pages to visible everywhere
       this.removeFromAllPages(element);
     } else {
-      element.classList.add(page.name);
+      element.classList.add(page.id);
       element.classList.add(Constants.PAGED_CLASS_NAME);
     }
   }
 
-  removeFromAllPages(element: HTMLElement) {
-    element = this.noSectionContent(element);
-    const wasVisible = this.isVisible(element);
+  removeFromAllPages(_: HTMLElement) {
+    console.trace('removeFromAllPages')
+    const element = this.noSectionContent(_);
+    console.log('removeFromAllPages', {element, _})
     const pages = this.getPagesForElement(element);
     pages.forEach((p) => {
-      element.classList.remove(p.name);
+      element.classList.remove(p.id);
     });
 
     // the element is not "paged" anymore
@@ -294,7 +298,7 @@ export class SilexElement {
       this.removeFromAllPages(element);
     } else {
       element.classList.add(Constants.PAGED_CLASS_NAME);
-      element.classList.remove(page.name);
+      element.classList.remove(page.id);
     }
   }
 
@@ -606,7 +610,7 @@ export class SilexElement {
     children.concat([rootElement])
     .forEach((element: HTMLElement) => {
       // check this is allowed, i.e. an element inside the stage container
-      if (this.model.body.getBodyElement() !== element && !!element.parentElement) {
+      if (getSiteDocument().body !== element && !!element.parentElement) {
         // remove style and component data
         // this.model.property.setElementComponentData(element);
         // this.model.property.setStyle(element, null, true);
@@ -677,18 +681,21 @@ export class SilexElement {
   //   this.model.property.setStyle(element, styleObject, false);
   // }
 
-  getDefaults(element: ElementData): ElementData {
-    return {
-      ...element,
-      style: {
-        'width': SilexElement.INITIAL_ELEMENT_SIZE + 'px',
-        'height': SilexElement.INITIAL_ELEMENT_SIZE + 'px',
-        'background-color': element.type === ElementType.HTML || element.type === ElementType.CONTAINER ? 'rgb(255, 255, 255)' : element.style['background-color'],
-        // keep the style if there is one, usually set by component::initComponent
-        ...element.style,
-      },
-    };
-  }
+  // getDefaults(element: ElementData): ElementData {
+  //   return {
+  //     ...element,
+  //     enableDrop: element.type === ElementType.CONTAINER,
+  //     style: {
+  //       ...element.style,
+  //       desktop: {
+  //         'width': SilexElement.INITIAL_ELEMENT_SIZE + 'px',
+  //         'height': SilexElement.INITIAL_ELEMENT_SIZE + 'px',
+  //         'background-color': element.type === ElementType.HTML || element.type === ElementType.CONTAINER ? 'rgb(255, 255, 255)' : element.style['background-color'],
+  //         // keep the style if there is one, usually set by component::initComponent
+  //       },
+  //     },
+  //   };
+  // }
 
   // use getDefault instead
   // /**
@@ -806,18 +813,18 @@ export class SilexElement {
    */
   createContainerElement(): HTMLElement {
     // create the conatiner
-    const element = this.model.file.getContentDocument().createElement('div');
+    const element = getSiteDocument().createElement('div');
     element.setAttribute(Constants.TYPE_ATTR, ElementType.CONTAINER);
     return element;
   }
 
   createElementWithContent(className: string): HTMLElement {
     // create the element
-    const element = this.model.file.getContentDocument().createElement('div');
+    const element = getSiteDocument().createElement('div');
     element.setAttribute(Constants.TYPE_ATTR, className);
 
     // create the container for text content
-    const content = this.model.file.getContentDocument().createElement('div');
+    const content = getSiteDocument().createElement('div');
 
     // add empty content
     element.appendChild(content);
@@ -836,7 +843,7 @@ export class SilexElement {
    */
   createSectionElement(): HTMLElement {
     // create the element
-    const element = this.model.file.getContentDocument().createElement('div');
+    const element = getSiteDocument().createElement('div');
     element.setAttribute(Constants.TYPE_ATTR, ElementType.CONTAINER);
     element.classList.add(Constants.PREVENT_DRAGGABLE_CLASS_NAME);
     element.classList.add(Constants.PREVENT_RESIZABLE_CLASS_NAME);
@@ -845,7 +852,7 @@ export class SilexElement {
     // content element is both a container and a content element
     const content = this.createElement(ElementType.CONTAINER);
     content.classList.add(Constants.ELEMENT_CONTENT_CLASS_NAME);
-    content.classList.add(ElementType.CONTAINER_CONTENT);
+    content.classList.add(Constants.SECTION_CONTAINER);
     content.classList.add(Constants.WEBSITE_WIDTH_CLASS_NAME);
     content.classList.add(Constants.PREVENT_DRAGGABLE_CLASS_NAME);
     element.appendChild(content);
@@ -881,11 +888,11 @@ export class SilexElement {
    */
   createHtmlElement(): HTMLElement {
     // create the element
-    const element = this.model.file.getContentDocument().createElement('div');
+    const element = getSiteDocument().createElement('div');
     element.setAttribute(Constants.TYPE_ATTR, ElementType.HTML);
 
     // create the container for html content
-    const htmlContent = this.model.file.getContentDocument().createElement('div');
+    const htmlContent = getSiteDocument().createElement('div');
     htmlContent.innerHTML = '<p>New HTML box</p>';
     element.appendChild(htmlContent);
 
@@ -900,7 +907,7 @@ export class SilexElement {
    */
   createImageElement(): HTMLElement {
     // create the element
-    const element = this.model.file.getContentDocument().createElement('div');
+    const element = getSiteDocument().createElement('div');
     element.setAttribute(Constants.TYPE_ATTR, ElementType.IMAGE);
     return element;
   }
@@ -967,7 +974,7 @@ export class SilexElement {
     .filter((name) => {
       if (name === '' ||
           Constants.SILEX_CLASS_NAMES.indexOf(name) > -1 ||
-          pages.findIndex((page) => page.name === name) > -1 ||
+          pages.findIndex((page) => page.id === name) > -1 ||
           this.getComponentClassName(element).indexOf(name) > -1 ||
           this.model.property.getElementId(element) === name) {
         return false;
@@ -991,7 +998,7 @@ export class SilexElement {
       this.getComponentClassName(element).concat(
         element.className.split(' ').map((name) => {
           if (Constants.SILEX_CLASS_NAMES.indexOf(name) > -1 ||
-              pages.findIndex((page) => page.name === name) > -1 ||
+              pages.findIndex((page) => page.id === name) > -1 ||
               this.model.property.getElementId(element) === name) {
             return name;
           }

@@ -18,10 +18,13 @@
 
 import { Constants } from '../../../constants';
 import { ElementData, LinkType, PageData } from '../../../types';
-import { getElements, getPages, getSite, getStageState, updateElements } from '../../api';
+import { getElements, getPages, getSite, updateElements } from '../../api';
 import { Controller, Model } from '../../ClientTypes';
+import { getDomElement } from '../../dom/element-dom';
 import { Dom } from '../../utils/Dom';
+import { getStage } from '../StageWrapper';
 import { PaneBase } from './PaneBase';
+import { getSiteDocument } from '../UiElements';
 
 /**
  * on of Silex Editors class
@@ -107,7 +110,7 @@ export class PagePane extends PaneBase {
           from: el,
           to: {
             ...el,
-            pageNames: this.viewOnAllPagesCheckbox.checked ? [] : [getPages().find((p) => p.isOpen).name],
+            pageNames: this.viewOnAllPagesCheckbox.checked ? [] : [getPages().find((p) => p.isOpen).id],
           },
         })));
       // const elements = this.states.map((state) => state.el);
@@ -227,10 +230,10 @@ export class PagePane extends PaneBase {
    */
   protected redraw(selectedElements: ElementData[]) {
     super.redraw(selectedElements);
-    const states = selectedElements.map((el) => getStageState(el));
+    const states = selectedElements.map((el) => getStage().getState(getDomElement(getSiteDocument(), el)));
 
     // update page list
-    this.setPages(getPages().map((p) => p.name));
+    this.setPages(getPages().map((p) => p.id));
 
     // View on mobile checkbox
     Array.from(this.viewOnDeviceEl.querySelectorAll('.view-on-mobile input'))
@@ -272,7 +275,7 @@ export class PagePane extends PaneBase {
         item.checkbox.disabled = false;
 
         // compute common pages
-        const page = getPages().find((p) => p.name === item.page.name);
+        const page = getPages().find((p) => p.id === item.page.id);
         const isInPage = this.getCommonProperty(states, (state) => this.model.element.isInPage(state.el, page));
 
         // set visibility

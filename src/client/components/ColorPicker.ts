@@ -97,9 +97,6 @@ export class ColorPicker {
 
     // notify the owner
     this.cbk();
-
-    // update the disabled states of the inputs
-    // this.redraw();
   }
 
   redraw() {
